@@ -1,0 +1,5 @@
+Docker:
+  Bridge: cbr0
+  LogLevel: warn
+  IPTables: false
+  IPMasq: false

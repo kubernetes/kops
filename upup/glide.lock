@@ -1,0 +1,53 @@
+hash: 67b60195692c44c9e3be82ced106118324e5de46357a1c11a2942aef8675816e
+updated: 2016-05-06T15:48:38.735466083-04:00
+imports:
+- name: github.com/cloudfoundry-incubator/candiedyaml
+  version: 99c3df83b51532e3615f851d8c2dbb638f5313bf
+- name: github.com/ghodss/yaml
+  version: e8e0db9016175449df0e9c4b6e6995a9433a395c
+- name: github.com/golang/glog
+  version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
+- name: github.com/golang/protobuf
+  version: 7cc19b78d562895b13596ddce7aafb59dd789318
+  subpackages:
+  - proto
+- name: golang.org/x/net
+  version: 7e42c0e1329bb108f7376a7618a2871ab90f1c4d
+  subpackages:
+  - context
+  - context/ctxhttp
+- name: golang.org/x/oauth2
+  version: e86e2718db89775a4604abc10a5d3a5672e7336e
+  subpackages:
+  - google
+  - internal
+  - jws
+  - jwt
+- name: google.golang.org/api
+  version: f9a4669e07732c84854dce1f5c451c22427228fb
+  subpackages:
+  - compute/v1
+  - googleapi
+  - storage/v1
+  - gensupport
+  - googleapi/internal/uritemplates
+- name: google.golang.org/appengine
+  version: e234e71924d4aa52444bc76f2f831f13fa1eca60
+  subpackages:
+  - urlfetch
+  - internal
+  - internal/app_identity
+  - internal/modules
+  - internal/urlfetch
+  - internal/base
+  - internal/datastore
+  - internal/log
+  - internal/remote_api
+- name: google.golang.org/cloud
+  version: 200292f09e3aaa34878d801ab71fe823b1f7d36a
+  subpackages:
+  - compute/metadata
+  - internal
+- name: google.golang.org/grpc
+  version: 9604a2bb7dd81d87c2873a9580258465f3c311c8
+devImports: []

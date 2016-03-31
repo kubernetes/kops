@@ -1,0 +1,1 @@
+DAEMON_ARGS="{{ BuildFlags .Kubelet }}"

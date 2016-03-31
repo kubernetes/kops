@@ -1,0 +1,4 @@
+DNS:
+  Replicas: 1
+  ServerIP: 10.0.0.10
+  Domain: cluster.local

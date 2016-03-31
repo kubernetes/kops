@@ -1,0 +1,7 @@
+{
+  "version": "1.9.1-0~jessie",
+  "source": "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.9.1-0~jessie_amd64.deb",
+  "hash": "c58c39008fd6399177f6b2491222e4438f518d78",
+
+  "preventStart": true
+}

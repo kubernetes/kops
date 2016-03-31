@@ -1,0 +1,12 @@
+subject:
+  CommonName: kubernetes-master
+type: server
+alternateNames:
+  - kubernetes
+  - kubernetes.default
+  - kubernetes.default.svc
+  - kubernetes.default.svc.{{ .DNSDomain }}
+  - {{ .MasterName }}
+  - {{ .MasterPublicIP }}
+  - {{ .MasterInternalIP }}
+  - {{ .WellKnownServiceIP 1 }}

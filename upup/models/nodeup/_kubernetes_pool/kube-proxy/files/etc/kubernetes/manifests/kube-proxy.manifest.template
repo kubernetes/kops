@@ -1,0 +1,40 @@
+# kube-proxy podspec
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kube-proxy
+  namespace: kube-system
+spec:
+  hostNetwork: true
+  containers:
+  - name: kube-proxy
+    image: {{ .KubeProxy.Image }}
+    resources:
+      requests:
+        cpu: {{ .KubeProxy.CPURequest }}
+    command:
+    - /bin/sh
+    - -c
+    - kube-proxy --kubeconfig=/var/lib/kube-proxy/kubeconfig --resource-container="" {{ BuildFlags .KubeProxy }} 1>>/var/log/kube-proxy.log 2>&1
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - mountPath: /etc/ssl/certs
+      name: ssl-certs-host
+      readOnly: true
+    - mountPath: /var/log
+      name: varlog
+      readOnly: false
+    - mountPath: /var/lib/kube-proxy/kubeconfig
+      name: kubeconfig
+      readOnly: false
+  volumes:
+  - hostPath:
+      path: /usr/share/ca-certificates
+    name: ssl-certs-host
+  - hostPath:
+      path: /var/lib/kube-proxy/kubeconfig
+    name: kubeconfig
+  - hostPath:
+      path: /var/log
+    name: varlog

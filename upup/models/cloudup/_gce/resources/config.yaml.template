@@ -1,0 +1,39 @@
+Kubelet:
+  Certificate: {{ Base64Encode (CA.Cert "kubelet").AsString }}
+  Key: {{ Base64Encode (CA.PrivateKey "kubelet").AsString }}
+
+NodeUp:
+  Location: https://kubeupv2.s3.amazonaws.com/nodeup/nodeup.tar.gz
+
+CACertificate: {{ Base64Encode (CA.Cert "ca").AsString }}
+
+APIServer:
+  Certificate: {{ Base64Encode (CA.Cert "master").AsString }}
+  Key: {{ Base64Encode (CA.PrivateKey "master").AsString }}
+
+KubeUser: {{ .KubeUser }}
+KubePassword: {{ (Secrets.Secret "kube").AsString }}
+
+Tokens:
+  admin: {{ (Secrets.Secret "admin").AsString }}
+  kubelet: {{ (Secrets.Secret "kubelet").AsString }}
+  kube-proxy: {{ (Secrets.Secret "kube-proxy").AsString }}
+  "system:scheduler": {{ (Secrets.Secret "system:scheduler").AsString }}
+  "system:controller_manager": {{ (Secrets.Secret "system:controller_manager").AsString }}
+  "system:logging": {{ (Secrets.Secret "system:logging").AsString }}
+  "system:monitoring": {{ (Secrets.Secret "system:monitoring").AsString }}
+  "system:dns": {{ (Secrets.Secret "system:dns").AsString }}
+
+Tags:
+{{ range $tag := Args }}
+  - {{ $tag }}
+{{ end }}
+  - _gce
+  - _jessie
+  - _debian_family
+  - _systemd
+
+Assets:
+{{ range $asset := .Assets }}
+  - {{ $asset }}
+{{ end }}
