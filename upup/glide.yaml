@@ -1,0 +1,16 @@
+package: k8s.io/kube-deploy/upup
+import:
+- package: github.com/ghodss/yaml
+- package: github.com/golang/glog
+- package: golang.org/x/net
+  subpackages:
+  - context
+- package: golang.org/x/oauth2
+  subpackages:
+  - google
+- package: google.golang.org/api
+  subpackages:
+  - compute/v1
+  - googleapi
+  - storage/v1
+- package: google.golang.org/grpc

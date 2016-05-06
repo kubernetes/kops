@@ -1,0 +1,5 @@
+{% set log_level = "--log-level=warn" -%}
+{% if pillar['docker_test_log_level'] is defined -%}
+  {% set log_level = pillar['docker_test_log_level'] -%}
+{% endif -%}
+docker.bridge=

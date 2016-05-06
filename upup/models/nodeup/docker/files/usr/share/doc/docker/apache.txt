@@ -1,0 +1,4 @@
+{
+  "source": "https://storage.googleapis.com/kubernetes-release/docker/apache2.txt",
+  "hash": "2b8b815229aa8a61e483fb4ba0588b8b6c491890"
+}

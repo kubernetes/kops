@@ -1,0 +1,2 @@
+DOCKER_OPTS="{{ BuildFlags .Docker }}"
+DOCKER_NOFILE=1000000

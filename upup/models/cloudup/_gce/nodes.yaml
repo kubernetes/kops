@@ -1,0 +1,48 @@
+# TODO: Support multiple instance groups
+
+instanceTemplate/{{ .NodeInstancePrefix }}-template:
+  network: network/default
+  machineType: {{ .NodeMachineType }}
+  # TODO: Make configurable
+  bootDiskType: pd-standard
+  bootDiskSizeGB: 100
+  bootDiskImage: {{ .NodeImage }}
+  canIpForward: true
+  # TODO: Support preemptible nodes?
+  preemptible: false
+  scopes:
+    - compute-rw
+    - monitoring
+    - logging-write
+    - storage-ro
+  metadata:
+    # kube-env: resources/kube-env
+{{ if eq .NodeInit "cloudinit" }}
+    # TODO: we should probably always store the config somewhere
+    config: resources/cloudinit.yaml _kubernetes_master
+{{ else }}
+    startup-script: resources/nodeup.sh
+    config: resources/config.yaml _kubernetes_pool
+{{ end }}
+    cluster-name: resources/cluster-name
+  tags:
+    - {{ .NodeTag }}
+
+managedInstanceGroup/{{ .NodeInstancePrefix }}-group:
+  zone: {{ .Zone }}
+  baseInstanceName: {{ .NodeInstancePrefix }}
+  targetSize: {{ .NodeCount }}
+  instanceTemplate: instanceTemplate/{{ .NodeInstancePrefix }}-template
+
+# Allow traffic from nodes -> nodes
+firewallRule/{{ .NodeTag }}-all:
+  network: network/default
+  sourceRanges: {{ .ClusterIPRange }}
+  targetTags: {{ .NodeTag }}
+  allowed:
+    - tcp
+    - udp
+    - icmp
+    - esp
+    - ah
+    - sctp

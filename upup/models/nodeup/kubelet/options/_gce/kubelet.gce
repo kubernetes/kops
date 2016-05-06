@@ -1,0 +1,8 @@
+Kubelet:
+  CloudProvider: gce
+  APIServers: https://kubernetes-master
+  HairpinMode: promiscuous-bridge
+  RuntimeCgroups: /docker-daemon
+  KubeletCgroups: /kubelet
+  SystemCgroups: /system
+  CgroupRoot: /

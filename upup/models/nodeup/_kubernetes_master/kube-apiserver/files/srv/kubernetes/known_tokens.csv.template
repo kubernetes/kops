@@ -1,0 +1,3 @@
+{{ range $id, $token := .Tokens }}
+{{ $token }},{{ $id }},{{ $id }}
+{{ end }}

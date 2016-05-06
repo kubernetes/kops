@@ -1,0 +1,20 @@
+{{ $networkName := "default" }}
+
+network/{{ $networkName }}:
+  cidr: 10.240.0.0/16
+
+# Allow all internal traffic
+firewallRule/{{ $networkName }}-default-internal:
+  network: network/{{$networkName}}
+  sourceRanges: 10.0.0.0/8
+  allowed:
+    - tcp:1-65535
+    - udp:1-65535
+    - icmp
+
+# SSH is open to the world
+firewallRule/{{ $networkName }}-default-ssh:
+  network: network/default
+  sourceRanges: 0.0.0.0/0
+  allowed: tcp:22
+
