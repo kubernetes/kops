@@ -14,13 +14,17 @@ func buildFlags(options interface{}) (string, error) {
 
 	walker := func(path string, field *reflect.StructField, val reflect.Value) error {
 		if field == nil {
-			glog.V(4).Infof("skipping non-field: %s", path)
+			glog.V(4).Infof("not writing non-field: %s", path)
 			return nil
 		}
 		tag := field.Tag.Get("flag")
 		if tag == "" {
-			glog.V(4).Infof("skipping field with no flag tag: %s", path)
+			glog.V(4).Infof("not writing field with no flag tag: %s", path)
 			return nil
+		}
+		if tag == "-" {
+			glog.V(4).Infof("skipping field with %q flag tag: %s", tag, path)
+			return utils.SkipReflection
 		}
 		flagName := tag
 

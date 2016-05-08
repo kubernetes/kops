@@ -75,6 +75,9 @@ func equalFieldValues(a, e reflect.Value) bool {
 	if a.Kind() == reflect.Map {
 		return equalMapValues(a, e)
 	}
+	if a.Kind() == reflect.Slice {
+		return equalSlice(a, e)
+	}
 	if (a.Kind() == reflect.Ptr || a.Kind() == reflect.Interface) && !a.IsNil() {
 		aHasID, ok := a.Interface().(CompareWithID)
 		if ok && (e.Kind() == reflect.Ptr || e.Kind() == reflect.Interface) && !e.IsNil() {
@@ -122,10 +125,35 @@ func equalMapValues(a, e reflect.Value) bool {
 		valA := a.MapIndex(k)
 		valE := e.MapIndex(k)
 
-		glog.Infof("comparing maps: %v %v %v", k, valA, valE)
+		glog.V(10).Infof("comparing maps: %v %v %v", k, valA, valE)
 
 		if !equalFieldValues(valA, valE) {
-			glog.Infof("unequals map value: %v %v %v", k, valA, valE)
+			glog.V(4).Infof("unequal map value: %v %v %v", k, valA, valE)
+			return false
+		}
+	}
+	return true
+}
+
+// equalSlice performs a deep-equality check on a slice, but using our custom comparison logic (equalFieldValues)
+func equalSlice(a, e reflect.Value) bool {
+	if a.IsNil() != e.IsNil() {
+		return false
+	}
+	if a.IsNil() && e.IsNil() {
+		return true
+	}
+	if a.Len() != e.Len() {
+		return false
+	}
+	for i := 0; i < a.Len(); i++ {
+		valA := a.Index(i)
+		valE := e.Index(i)
+
+		glog.V(10).Infof("comparing slices: %d %v %v", i, valA, valE)
+
+		if !equalFieldValues(valA, valE) {
+			glog.V(4).Infof("unequal slice value: %d %v %v", i, valA, valE)
 			return false
 		}
 	}

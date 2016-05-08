@@ -1,6 +1,7 @@
 package fi
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 )
@@ -39,6 +40,17 @@ func DebugPrint(o interface{}) string {
 	if o == nil {
 		return "<nil>"
 	}
+	if resource, ok := o.(Resource); ok {
+		s, err := ResourceAsString(resource)
+		if err != nil {
+			return fmt.Sprintf("error converting resource to string: %v", err)
+		}
+		if len(s) >= 256 {
+			s = s[:256] + "... (truncated)"
+		}
+		return s
+	}
+
 	v := reflect.ValueOf(o)
 	if v.Kind() == reflect.Ptr {
 		if v.IsNil() {
@@ -50,9 +62,25 @@ func DebugPrint(o interface{}) string {
 		return "<?>"
 	}
 	o = v.Interface()
-	stringer, ok := o.(fmt.Stringer)
-	if ok {
+	if stringer, ok := o.(fmt.Stringer); ok {
 		return stringer.String()
 	}
+
 	return fmt.Sprint(o)
+}
+
+func DebugAsJsonString(v interface{}) string {
+	data, err := json.Marshal(v)
+	if err != nil {
+		return fmt.Sprintf("error marshalling: %v", err)
+	}
+	return string(data)
+}
+
+func DebugAsJsonStringIndent(v interface{}) string {
+	data, err := json.MarshalIndent(v, "", "  ")
+	if err != nil {
+		return fmt.Sprintf("error marshalling: %v", err)
+	}
+	return string(data)
 }

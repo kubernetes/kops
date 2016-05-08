@@ -7,7 +7,6 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
-	"k8s.io/kube-deploy/upup/pkg/fi/utils"
 	"strings"
 )
 
@@ -18,12 +17,12 @@ type PersistentDisk struct {
 	Zone       *string
 }
 
-func (d *PersistentDisk) String() string {
-	return utils.JsonString(d)
+func (e *PersistentDisk) String() string {
+	return fi.TaskAsString(e)
 }
 
-func (d *PersistentDisk) CompareWithID() *string {
-	return d.Name
+func (e *PersistentDisk) CompareWithID() *string {
+	return e.Name
 }
 
 // Returns the last component of a URL, i.e. anything after the last slash
@@ -70,7 +69,7 @@ func (e *PersistentDisk) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
-func (s *PersistentDisk) CheckChanges(a, e, changes *PersistentDisk) error {
+func (_ *PersistentDisk) CheckChanges(a, e, changes *PersistentDisk) error {
 	if a != nil {
 		if changes.SizeGB != nil {
 			return fi.CannotChangeField("SizeGB")

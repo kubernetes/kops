@@ -1,0 +1,59 @@
+# IAM configuration
+# We create an instance role for the nodes
+iamRole/kubernetes-node-{{ .ClusterName }}:
+  rolePolicyDocument: resources/iam/kubernetes-node-role.json
+
+iamRolePolicy/kubernetes-node-{{ .ClusterName }}:
+  role: iamRole/kubernetes-node-{{ .ClusterName }}
+  policyDocument: resources/iam/kubernetes-node-policy.json
+
+iamInstanceProfile/kubernetes-node-{{ .ClusterName }}:
+  name: kubernetes-node-{{ .ClusterName }}
+
+iamInstanceProfileRole/kubernetes-node-{{ .ClusterName }}:
+  instanceProfile: iamInstanceProfile/kubernetes-node-{{ .ClusterName }}
+  role: iamRole/kubernetes-node-{{ .ClusterName }}
+
+# Create security group for nodes
+securityGroup/kubernetes-node-{{.ClusterName}}:
+  vpc: vpc/kubernetes-{{ .ClusterName }}
+  description: 'Security group for nodes'
+
+# SSH is open to the world
+securityGroupIngress/ssh-external-to-node:
+  securityGroup: securityGroup/kubernetes-node-{{.ClusterName}}
+  cidr: 0.0.0.0/0
+  protocol: tcp
+  fromPort: 22
+  toPort: 22
+
+# Nodes can talk to nodes
+securityGroupIngress/all-node-to-node:
+  securityGroup: securityGroup/kubernetes-node-{{.ClusterName}}
+  sourceGroup: securityGroup/kubernetes-node-{{.ClusterName}}
+
+# Nodes can talk masters nodes
+securityGroupIngress/all-node-to-master:
+  securityGroup: securityGroup/kubernetes-master-{{ .ClusterName }}
+  sourceGroup: securityGroup/kubernetes-node-{{.ClusterName}}
+
+autoscalingGroup/nodes-{{ .ClusterName }}-{{ .Zone }}:
+  minSize: {{ .NodeCount }}
+  maxSize: {{ .NodeCount }}
+  subnet: subnet/kubernetes-{{ .ClusterName }}-{{ .Zone }}
+  tags:
+    k8s.io/role: node
+  sshKey: sshKey/kubernetes-{{ .ClusterName }}
+  securityGroups:
+    - securityGroup/kubernetes-node-{{ .ClusterName }}
+  iamInstanceProfile: iamInstanceProfile/kubernetes-node-{{ .ClusterName }}
+  imageId: {{ .NodeImage }}
+  instanceType: {{ .NodeMachineType }}
+  associatePublicIP: true
+  userData: resources/nodeup.sh _kubernetes_pool
+  blockDeviceMappings:
+    # Map all the ephemeral devices
+    {{ range $d := (MachineTypeInfo .NodeMachineType).EphemeralDevices }}
+    - DeviceName: {{ $d.DeviceName }}
+      VirtualName: {{ $d.VirtualNmae }}
+    {{ end }}

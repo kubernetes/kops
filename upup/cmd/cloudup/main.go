@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup"
+	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awstasks"
+	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/gcetasks"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
@@ -41,6 +43,9 @@ func main() {
 	flag.StringVar(&config.KubernetesVersion, "kubernetes-version", config.KubernetesVersion, "Version of kubernetes to run")
 	//flag.StringVar(&config.Region, "region", config.Region, "Cloud region to target")
 
+	sshPublicKey := path.Join(os.Getenv("HOME"), ".ssh", "id_rsa.pub")
+	flag.StringVar(&sshPublicKey, "ssh-public-key", sshPublicKey, "SSH public key to use")
+
 	flag.Parse()
 
 	if dryrun {
@@ -53,6 +58,7 @@ func main() {
 		StateDir:     stateDir,
 		Target:       target,
 		NodeModelDir: nodeModelDir,
+		SSHPublicKey: sshPublicKey,
 	}
 
 	if configFile != "" {
@@ -84,6 +90,8 @@ type CreateClusterCmd struct {
 	Target string
 	// The directory in which the node model is found
 	NodeModelDir string
+	// The SSH public key (file) to use
+	SSHPublicKey string
 }
 
 func (c *CreateClusterCmd) LoadConfig(configFile string) error {
@@ -144,51 +152,133 @@ func (c *CreateClusterCmd) Run() error {
 
 	checkExisting := true
 
+	c.Config.NodeUpTags = append(c.Config.NodeUpTags, "_jessie", "_debian_family", "_systemd")
+
 	switch c.Config.CloudProvider {
 	case "gce":
-		tags["_gce"] = struct{}{}
-		l.AddTypes(map[string]interface{}{
-			"persistentDisk":       &gcetasks.PersistentDisk{},
-			"instance":             &gcetasks.Instance{},
-			"instanceTemplate":     &gcetasks.InstanceTemplate{},
-			"network":              &gcetasks.Network{},
-			"managedInstanceGroup": &gcetasks.ManagedInstanceGroup{},
-			"firewallRule":         &gcetasks.FirewallRule{},
-			"ipAddress":            &gcetasks.IPAddress{},
-		})
+		{
+			tags["_gce"] = struct{}{}
+			c.Config.NodeUpTags = append(c.Config.NodeUpTags, "_gce")
 
-		// For now a zone to be specified...
-		// This will be replace with a region when we go full HA
-		zone := c.Config.Zone
-		if zone == "" {
-			return fmt.Errorf("Must specify a zone (use -zone)")
-		}
-		tokens := strings.Split(zone, "-")
-		if len(tokens) <= 2 {
-			return fmt.Errorf("Invalid Zone: %v", zone)
-		}
-		region = tokens[0] + "-" + tokens[1]
+			l.AddTypes(map[string]interface{}{
+				"persistentDisk":       &gcetasks.PersistentDisk{},
+				"instance":             &gcetasks.Instance{},
+				"instanceTemplate":     &gcetasks.InstanceTemplate{},
+				"network":              &gcetasks.Network{},
+				"managedInstanceGroup": &gcetasks.ManagedInstanceGroup{},
+				"firewallRule":         &gcetasks.FirewallRule{},
+				"ipAddress":            &gcetasks.IPAddress{},
+			})
 
-		project = c.Config.Project
-		if project == "" {
-			return fmt.Errorf("project is required for GCE")
+			// For now a zone to be specified...
+			// This will be replace with a region when we go full HA
+			zone := c.Config.Zone
+			if zone == "" {
+				return fmt.Errorf("Must specify a zone (use -zone)")
+			}
+			tokens := strings.Split(zone, "-")
+			if len(tokens) <= 2 {
+				return fmt.Errorf("Invalid Zone: %v", zone)
+			}
+			region = tokens[0] + "-" + tokens[1]
+
+			project = c.Config.Project
+			if project == "" {
+				return fmt.Errorf("project is required for GCE")
+			}
+			gceCloud, err := gce.NewGCECloud(region, project)
+			if err != nil {
+				return err
+			}
+			cloud = gceCloud
 		}
-		gceCloud, err := gce.NewGCECloud(region, project)
-		if err != nil {
-			return err
+
+	case "aws":
+		{
+			tags["_aws"] = struct{}{}
+			c.Config.NodeUpTags = append(c.Config.NodeUpTags, "_aws")
+
+			l.AddTypes(map[string]interface{}{
+				"autoscalingGroup":            &awstasks.AutoscalingGroup{},
+				"dhcpOptions":                 &awstasks.DHCPOptions{},
+				"elasticIP":                   &awstasks.ElasticIP{},
+				"iamInstanceProfile":          &awstasks.IAMInstanceProfile{},
+				"iamInstanceProfileRole":      &awstasks.IAMInstanceProfileRole{},
+				"iamRole":                     &awstasks.IAMRole{},
+				"iamRolePolicy":               &awstasks.IAMRolePolicy{},
+				"instance":                    &awstasks.Instance{},
+				"instanceElasticIPAttachment": &awstasks.InstanceElasticIPAttachment{},
+				"instanceVolumeAttachment":    &awstasks.InstanceVolumeAttachment{},
+				"internetGateway":             &awstasks.InternetGateway{},
+				"internetGatewayAttachment":   &awstasks.InternetGatewayAttachment{},
+				"ebsVolume":                   &awstasks.EBSVolume{},
+				"route":                       &awstasks.Route{},
+				"routeTable":                  &awstasks.RouteTable{},
+				"routeTableAssociation":       &awstasks.RouteTableAssociation{},
+				"securityGroup":               &awstasks.SecurityGroup{},
+				"securityGroupIngress":        &awstasks.SecurityGroupIngress{},
+				"sshKey":                      &awstasks.SSHKey{},
+				"subnet":                      &awstasks.Subnet{},
+				"vpc":                         &awstasks.VPC{},
+				"vpcDHDCPOptionsAssociation": &awstasks.VPCDHCPOptionsAssociation{},
+			})
+
+			// For now a zone to be specified...
+			// This will be replace with a region when we go full HA
+			zone := c.Config.Zone
+			if zone == "" {
+				return fmt.Errorf("Must specify a zone (use -zone)")
+			}
+			if len(zone) <= 2 {
+				return fmt.Errorf("Invalid AWS zone: %v", zone)
+			}
+
+			if c.SSHPublicKey == "" {
+				return fmt.Errorf("SSH public key must be specified when running with AWS")
+			}
+
+			region := zone[:len(zone)-1]
+			c.Config.Region = region
+
+			if c.Config.ClusterName == "" {
+				return fmt.Errorf("ClusterName is required for AWS")
+			}
+
+			cloudTags := map[string]string{"KubernetesCluster": c.Config.ClusterName}
+
+			awsCloud, err := awsup.NewAWSCloud(region, cloudTags)
+			if err != nil {
+				return err
+			}
+			cloud = awsCloud
+
+			l.TemplateFunctions["MachineTypeInfo"] = awsup.GetMachineTypeInfo
 		}
-		cloud = gceCloud
 
 	default:
 		return fmt.Errorf("unknown CloudProvider %q", c.Config.CloudProvider)
 	}
 
 	l.Tags = tags
-	l.CAStore = caStore
-	l.SecretStore = secretStore
 	l.StateDir = c.StateDir
 	l.NodeModelDir = c.NodeModelDir
 	l.OptionsLoader = loader.NewOptionsLoader(c.Config)
+
+	l.TemplateFunctions["CA"] = func() fi.CAStore {
+		return caStore
+	}
+	l.TemplateFunctions["Secrets"] = func() fi.SecretStore {
+		return secretStore
+	}
+
+	if c.SSHPublicKey != "" {
+		authorized, err := ioutil.ReadFile(c.SSHPublicKey)
+		if err != nil {
+			return fmt.Errorf("error reading SSH key file %q: %v", c.SSHPublicKey, err)
+		}
+
+		l.Resources["ssh-public-key"] = fi.NewStringResource(string(authorized))
+	}
 
 	taskMap, err := l.Build(c.ModelDir)
 	if err != nil {
@@ -210,6 +300,8 @@ func (c *CreateClusterCmd) Run() error {
 		switch c.Config.CloudProvider {
 		case "gce":
 			target = gce.NewGCEAPITarget(cloud.(*gce.GCECloud))
+		case "aws":
+			target = awsup.NewAWSAPITarget(cloud.(*awsup.AWSCloud))
 		default:
 			return fmt.Errorf("direct configuration not supported with CloudProvider:%q", c.Config.CloudProvider)
 		}

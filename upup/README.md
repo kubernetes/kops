@@ -15,12 +15,20 @@ Some of the more interesting features:
 
 ## Bringing up a cluster
 
-Set `YOUR_GCE_PROJECT`, then:
-
+Build the code:
 ```
 cd upup
 make
+```
+
+For GCE: Set `YOUR_GCE_PROJECT`, then:
+```
 ${GOPATH}/bin/cloudup --v=0 --logtostderr -cloud=gce -zone=us-central1-f -project=$YOUR_GCE_PROJECT -name=kubernetes -kubernetes-version=1.2.2
+```
+
+For AWS: Set `AWS_PROFILE` (if you need to select a profile for the AWS CLI to work), then:
+```
+${GOPATH}/bin/cloudup --v=0 --logtostderr -cloud=aws -zone=us-east-1c -name=kubernetes -kubernetes-version=1.2.2
 ```
 
 If you have problems, please set `--v=8 --logtostderr` and open an issue, and ping justinsb on slack!

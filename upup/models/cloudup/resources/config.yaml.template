@@ -28,10 +28,9 @@ Tags:
 {{ range $tag := Args }}
   - {{ $tag }}
 {{ end }}
-  - _gce
-  - _jessie
-  - _debian_family
-  - _systemd
+{{ range $tag := .NodeUpTags }}
+  - {{ $tag }}
+{{ end }}
 
 Assets:
 {{ range $asset := .Assets }}

@@ -32,11 +32,11 @@ func TopologicalSort(tasks map[string]Task) [][]string {
 		}
 
 		edges[k] = dependencyKeys
-		glog.Infof("%s : %v", k, dependencyKeys)
+		glog.V(4).Infof("%s : %v", k, dependencyKeys)
 	}
 
 	ordered := toposort(edges)
-	glog.Infof("toposorted as %v", ordered)
+	glog.V(1).Infof("toposorted as %v", ordered)
 
 	return ordered
 }

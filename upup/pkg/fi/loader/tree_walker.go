@@ -22,6 +22,7 @@ type TreeWalkItem struct {
 	Path         string
 	RelativePath string
 	Meta         string
+	Tags         []string
 }
 
 func (i *TreeWalkItem) ReadString() (string, error) {
@@ -51,6 +52,7 @@ func (t *TreeWalker) Walk(basedir string) error {
 		Context:      "",
 		Path:         basedir,
 		RelativePath: "",
+		Tags:         nil,
 	}
 
 	return t.walkDirectory(i)
@@ -72,6 +74,7 @@ func (t *TreeWalker) walkDirectory(parent *TreeWalkItem) error {
 			Path:         path.Join(parent.Path, fileName),
 			RelativePath: path.Join(parent.RelativePath, fileName),
 			Name:         fileName,
+			Tags:         parent.Tags,
 		}
 
 		glog.V(4).Infof("visit %q", i.Path)
@@ -84,6 +87,7 @@ func (t *TreeWalker) walkDirectory(parent *TreeWalkItem) error {
 					glog.V(2).Infof("Skipping directory as tag not present: %q", i.Path)
 					continue
 				} else {
+					i.Tags = append(i.Tags, fileName)
 					glog.V(2).Infof("Descending into directory, as tag is present: %q", i.Path)
 					err = t.walkDirectory(i)
 				}

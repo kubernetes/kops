@@ -60,10 +60,10 @@ type KubeletConfig struct {
 	ReconcileCIDR       *bool  `flag:"reconcile-cidr"`
 	PodCIDR             string `flag:"pod-cidr"`
 
-	Certificate *fi.Certificate
-	Key         *fi.PrivateKey
+	Certificate *fi.Certificate `flag:"-"`
+	Key         *fi.PrivateKey  `flag:"-"`
 	// Allow override of CA Certificate
-	CACertificate *fi.Certificate
+	CACertificate *fi.Certificate `flag:"-"`
 }
 
 type KubeProxyConfig struct {
@@ -108,8 +108,8 @@ type APIServerConfig struct {
 	PathSrvSshproxy   string
 	Image             string
 
-	Certificate *fi.Certificate
-	Key         *fi.PrivateKey
+	Certificate *fi.Certificate `flag:"-"`
+	Key         *fi.PrivateKey  `flag:"-"`
 }
 
 type KubeControllerManagerConfig struct {

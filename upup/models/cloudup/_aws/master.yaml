@@ -1,0 +1,99 @@
+# TODO: Support multiple masters
+
+# IAM configuration
+# We create an instance role for the master
+iamRole/kubernetes-master-{{ .ClusterName }}:
+  rolePolicyDocument: resources/iam/kubernetes-master-role.json
+
+iamRolePolicy/kubernetes-master-{{ .ClusterName }}:
+  role: iamRole/kubernetes-master-{{ .ClusterName }}
+  policyDocument: resources/iam/kubernetes-master-policy.json
+
+iamInstanceProfile/kubernetes-master-{{ .ClusterName }}:
+  name: kubernetes-master-{{ .ClusterName }}
+
+iamInstanceProfileRole/kubernetes-master-{{ .ClusterName }}:
+  instanceProfile: iamInstanceProfile/kubernetes-master-{{ .ClusterName }}
+  role: iamRole/kubernetes-master-{{ .ClusterName }}
+
+# Security group for master
+securityGroup/kubernetes-master-{{ .ClusterName }}:
+  vpc: vpc/kubernetes-{{ .ClusterName }}
+  description: 'Security group for masters'
+
+# SSH is open to the world
+securityGroupIngress/ssh-external-to-master:
+  securityGroup: securityGroup/kubernetes-master-{{ .ClusterName }}
+  cidr: 0.0.0.0/0
+  protocol: tcp
+  fromPort: 22
+  toPort: 22
+
+# HTTPS to the master is allowed (for API access)
+securityGroupIngress/https-external-to-master:
+  securityGroup: securityGroup/kubernetes-master-{{ .ClusterName }}
+  cidr: 0.0.0.0/0
+  protocol: tcp
+  fromPort: 443
+  toPort: 443
+
+# Masters can talk to masters
+securityGroupIngress/all-master-to-master:
+  securityGroup: securityGroup/kubernetes-master-{{ .ClusterName }}
+  sourceGroup: securityGroup/kubernetes-master-{{ .ClusterName }}
+
+# Masters can talk to nodes
+securityGroupIngress/all-master-to-node:
+  securityGroup: securityGroup/kubernetes-node-{{ .ClusterName }}
+  sourceGroup: securityGroup/kubernetes-master-{{ .ClusterName }}
+
+# Master Elastic IP Address
+elasticIP/{{ .MasterName }}-ip:
+  publicIP: {{ .MasterPublicIP }}
+  tagOnResource: ebsVolume/{{ .MasterName }}-pd
+  tagUsingKey: kubernetes.io/master-ip
+
+# Attach master IP to master
+instanceElasticIPAttachment/master-ip-attachment:
+  instance: instance/master-{{ .ClusterName }}
+  elasticIP: elasticIP/{{ .MasterName }}-ip
+
+
+# Master EBS volume
+ebsVolume/{{ .MasterName }}-pd:
+  availabilityZone: {{ .Zone }}
+  sizeGB: {{ or .MasterVolumeSize 20 }}
+  volumeType: {{ or .MasterVolumeType "gp2" }}
+
+# Attach master EBS volume to master
+instanceVolumeAttachment/master-volume-attachment:
+  instance: instance/master-{{ .ClusterName }}
+  volume: ebsVolume/{{ .MasterName }}-pd
+  device: /dev/sdb
+
+# Master instance
+instance/master-{{ .ClusterName }}:
+  subnet: subnet/kubernetes-{{ .ClusterName }}-{{ .Zone }}
+  privateIpAddress: {{ .MasterInternalIP }}
+  tags:
+    k8s.io/role: master
+  sshKey: sshKey/kubernetes-{{ .ClusterName }}
+  securityGroups:
+    - securityGroup/kubernetes-master-{{ .ClusterName }}
+  iamInstanceProfile: iamInstanceProfile/kubernetes-master-{{ .ClusterName }}
+  imageId: {{ .MasterImage }}
+  instanceType: {{ .MasterMachineType }}
+  associatePublicIP: true
+  userData: resources/nodeup.sh _kubernetes_master
+  blockDeviceMappings:
+    # Map all the ephemeral devices
+    {{ range $d := (MachineTypeInfo .NodeMachineType).EphemeralDevices }}
+    - DeviceName: {{ $d.DeviceName }}
+      VirtualName: {{ $d.VirtualNmae }}
+    {{ end }}
+
+# Route for master
+route/master:
+  routeTable: routeTable/kubernetes-{{ .ClusterName }}
+  cidr: {{ .MasterIPRange }}
+  instance: instance/master-{{ .ClusterName }}
