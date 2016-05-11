@@ -8,7 +8,6 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
-	"k8s.io/kube-deploy/upup/pkg/fi/utils"
 )
 
 type IPAddress struct {
@@ -18,12 +17,12 @@ type IPAddress struct {
 	actual *IPAddress
 }
 
-func (d *IPAddress) String() string {
-	return utils.JsonString(d)
+func (e *IPAddress) String() string {
+	return fi.TaskAsString(e)
 }
 
-func (d *IPAddress) CompareWithID() *string {
-	return d.Name
+func (e *IPAddress) CompareWithID() *string {
+	return e.Name
 }
 
 func (e *IPAddress) Find(c *fi.Context) (*IPAddress, error) {
@@ -60,7 +59,7 @@ func (e *IPAddress) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
-func (s *IPAddress) CheckChanges(a, e, changes *IPAddress) error {
+func (_ *IPAddress) CheckChanges(a, e, changes *IPAddress) error {
 	if a != nil {
 		if changes.Name != nil {
 			return fi.CannotChangeField("Name")

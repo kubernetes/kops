@@ -8,7 +8,6 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
-	"k8s.io/kube-deploy/upup/pkg/fi/utils"
 )
 
 type Subnet struct {
@@ -18,12 +17,12 @@ type Subnet struct {
 	CIDR    *string
 }
 
-func (d *Subnet) String() string {
-	return utils.JsonString(d)
+func (e *Subnet) String() string {
+	return fi.TaskAsString(e)
 }
 
-func (d *Subnet) CompareWithID() *string {
-	return d.Name
+func (e *Subnet) CompareWithID() *string {
+	return e.Name
 }
 
 func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
@@ -50,7 +49,7 @@ func (e *Subnet) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
-func (s *Subnet) CheckChanges(a, e, changes *Subnet) error {
+func (_ *Subnet) CheckChanges(a, e, changes *Subnet) error {
 	return nil
 }
 

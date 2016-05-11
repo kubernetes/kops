@@ -1,0 +1,24 @@
+MasterImage: 282335181503/k8s-1.2-debian-jessie-amd64-hvm-2016-03-16-ebs
+{{ if gt .NodeCount 500 }}
+MasterMachineType: c4.8xlarge
+{{ else if gt .NodeCount 250 }}
+MasterMachineType: c4.4xlarge
+{{ else if gt .NodeCount 100 }}
+MasterMachineType: m3.2xlarge
+{{ else if gt .NodeCount 10 }}
+MasterMachineType: m3.xlarge
+{{ else if gt .NodeCount 5 }}
+MasterMachineType: m3.large
+{{ else }}
+MasterMachineType: m3.medium
+{{ end }}
+MasterVolumeType: gp2
+
+NodeImage: 282335181503/k8s-1.2-debian-jessie-amd64-hvm-2016-03-16-ebs
+{{ if gt .NodeCount 150 }}
+NodeMachineType: t2.medium
+{{ else if gt .NodeCount 50 }}
+NodeMachineType: t2.small
+{{ else }}
+NodeMachineType: t2.micro
+{{ end }}

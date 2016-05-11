@@ -1,10 +1,10 @@
 package fi
 
-type ProviderID string
+type CloudProviderID string
 
-const ProviderAWS ProviderID = "aws"
-const ProviderGCE ProviderID = "gce"
+const CloudProviderAWS CloudProviderID = "aws"
+const CloudProviderGCE CloudProviderID = "gce"
 
 type Cloud interface {
-	ProviderID() ProviderID
+	ProviderID() CloudProviderID
 }

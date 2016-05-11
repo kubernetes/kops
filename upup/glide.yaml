@@ -14,3 +14,11 @@ import:
   - googleapi
   - storage/v1
 - package: google.golang.org/grpc
+- package: github.com/aws/aws-sdk-go
+- package: google.golang.org/cloud
+  subpackages:
+  - compute/metadata
+- package: golang.org/x/crypto
+  subpackages:
+  - ssh
+- package: github.com/cloudfoundry-incubator/candiedyaml

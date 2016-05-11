@@ -1,16 +1,53 @@
-hash: 67b60195692c44c9e3be82ced106118324e5de46357a1c11a2942aef8675816e
-updated: 2016-05-06T15:48:38.735466083-04:00
+hash: 9864d4fe0b94042cab08d2e80910638776d3d1e655b5a3cb9006731ae0306761
+updated: 2016-05-09T11:48:29.232191357-04:00
 imports:
+- name: github.com/aws/aws-sdk-go
+  version: d85fa529a99a833067e11c0a838b9db7a5d5ea71
+  subpackages:
+  - aws
+  - aws/awserr
+  - service/autoscaling
+  - service/ec2
+  - service/iam
+  - aws/session
+  - service/elb
+  - aws/credentials
+  - aws/awsutil
+  - aws/client
+  - aws/client/metadata
+  - aws/request
+  - private/protocol
+  - private/protocol/query
+  - private/signer/v4
+  - private/waiter
+  - private/endpoints
+  - private/protocol/ec2query
+  - aws/corehandlers
+  - aws/defaults
+  - private/protocol/query/queryutil
+  - private/protocol/xml/xmlutil
+  - private/protocol/rest
+  - aws/credentials/ec2rolecreds
+  - aws/ec2metadata
 - name: github.com/cloudfoundry-incubator/candiedyaml
   version: 99c3df83b51532e3615f851d8c2dbb638f5313bf
 - name: github.com/ghodss/yaml
   version: e8e0db9016175449df0e9c4b6e6995a9433a395c
+- name: github.com/go-ini/ini
+  version: 12f418cc7edc5a618a51407b7ac1f1f512139df3
 - name: github.com/golang/glog
   version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
 - name: github.com/golang/protobuf
   version: 7cc19b78d562895b13596ddce7aafb59dd789318
   subpackages:
   - proto
+- name: github.com/jmespath/go-jmespath
+  version: 0b12d6b521d83fc7f755e7cfc1b1fbdd35a01a74
+- name: golang.org/x/crypto
+  version: 47ff8dfbc528fea3003fc0ce2d88ffbbfbc46a43
+  subpackages:
+  - ssh
+  - curve25519
 - name: golang.org/x/net
   version: 7e42c0e1329bb108f7376a7618a2871ab90f1c4d
   subpackages:

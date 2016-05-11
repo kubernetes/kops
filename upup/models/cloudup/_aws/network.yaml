@@ -1,0 +1,42 @@
+vpc/kubernetes-{{ .ClusterName }}:
+  cidr: 172.20.0.0/16
+  enableDnsSupport: true
+  enableDnsHostnames: true
+
+dhcpOptions/kubernetes-{{ .ClusterName }}:
+  domainNameServers: AmazonProvidedDNS
+{{ if eq .Region "us-east-1" }}
+  domainName: ec2.internal
+{{ else }}
+  domainName: {{ .Region }}.compute.internal
+{{ end }}
+
+vpcDHDCPOptionsAssociation/kubernetes-{{ .ClusterName }}:
+  vpc: vpc/kubernetes-{{ .ClusterName }}
+  dhcpOptions: dhcpOptions/kubernetes-{{ .ClusterName }}
+
+subnet/kubernetes-{{ .ClusterName }}-{{ .Zone }}:
+  vpc: vpc/kubernetes-{{ .ClusterName }}
+  availabilityZone: {{ .Zone}}
+  cidr: 172.20.0.0/24
+
+internetGateway/kubernetes-{{ .ClusterName }}:
+  # Just so we have something to set
+  name: kubernetes-{{ .ClusterName }}
+
+internetGatewayAttachment/kubernetes-{{ .ClusterName }}:
+  internetGateway: internetGateway/kubernetes-{{ .ClusterName }}
+  vpc: vpc/kubernetes-{{ .ClusterName }}
+
+routeTable/kubernetes-{{ .ClusterName }}:
+  vpc: vpc/kubernetes-{{ .ClusterName }}
+
+route/0.0.0.0/0:
+  routeTable: routeTable/kubernetes-{{ .ClusterName }}
+  cidr: 0.0.0.0/0
+  internetGateway: internetGateway/kubernetes-{{ .ClusterName }}
+
+routeTableAssociation/kubernetes-{{ .ClusterName }}:
+  routeTable: routeTable/kubernetes-{{ .ClusterName }}
+  subnet: subnet/kubernetes-{{ .ClusterName }}-{{ .Zone }}
+

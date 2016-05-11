@@ -9,7 +9,6 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/loader"
 	"k8s.io/kube-deploy/upup/pkg/fi/nodeup/nodetasks"
-	"k8s.io/kube-deploy/upup/pkg/fi/utils"
 	"strings"
 	"text/template"
 )
@@ -93,7 +92,7 @@ func (l *Loader) Build(baseDir string) (map[string]fi.Task, error) {
 		return nil, err
 	}
 	l.config = config.(*NodeConfig)
-	glog.Infof("options: %s", utils.JsonString(l.config))
+	glog.V(4).Infof("options: %s", fi.DebugAsJsonStringIndent(l.config))
 
 	// Second pass: load everything else
 	tw = &loader.TreeWalker{

@@ -1,10 +1,13 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"github.com/golang/glog"
 	"reflect"
 )
+
+var SkipReflection = errors.New("skip this value")
 
 // InvokeMethod calls the specified method by reflection
 func InvokeMethod(target interface{}, name string, args ...interface{}) ([]reflect.Value, error) {
@@ -19,7 +22,7 @@ func InvokeMethod(target interface{}, name string, args ...interface{}) ([]refle
 	for _, a := range args {
 		argValues = append(argValues, reflect.ValueOf(a))
 	}
-	glog.V(4).Infof("Calling method %s on %T", method.Name, target)
+	glog.V(8).Infof("Calling method %s on %T", method.Name, target)
 	m := v.MethodByName(method.Name)
 	rv := m.Call(argValues)
 	return rv, nil
@@ -75,12 +78,14 @@ func walkRecursive(path string, v reflect.Value, visitor visitorFunc) error {
 
 			childPath := path + "." + structField.Name
 			err := visitor(childPath, &structField, f)
-			if err != nil {
+			if err != nil && err != SkipReflection {
 				return err
 			}
-			err = walkRecursive(childPath, f, visitor)
-			if err != nil {
-				return err
+			if err == nil {
+				err = walkRecursive(childPath, f, visitor)
+				if err != nil {
+					return err
+				}
 			}
 		}
 		break
@@ -92,12 +97,14 @@ func walkRecursive(path string, v reflect.Value, visitor visitorFunc) error {
 
 			childPath := path + "[" + fmt.Sprintf("%s", mv.Interface()) + "]"
 			err := visitor(childPath, nil, mv)
-			if err != nil {
+			if err != nil && err != SkipReflection {
 				return err
 			}
-			err = walkRecursive(childPath, mv, visitor)
-			if err != nil {
-				return err
+			if err == nil {
+				err = walkRecursive(childPath, mv, visitor)
+				if err != nil {
+					return err
+				}
 			}
 		}
 		break
@@ -109,22 +116,24 @@ func walkRecursive(path string, v reflect.Value, visitor visitorFunc) error {
 
 			childPath := path + "[" + fmt.Sprintf("%d", i) + "]"
 			err := visitor(childPath, nil, av)
-			if err != nil {
+			if err != nil && err != SkipReflection {
 				return err
 			}
-			err = walkRecursive(childPath, av, visitor)
-			if err != nil {
-				return err
+			if err == nil {
+				err = walkRecursive(childPath, av, visitor)
+				if err != nil {
+					return err
+				}
 			}
 		}
 		break
 
 	case reflect.Ptr, reflect.Interface:
 		err := visitor(path, nil, v)
-		if err != nil {
+		if err != nil && err != SkipReflection {
 			return err
 		}
-		if !v.IsNil() {
+		if err == nil && !v.IsNil() {
 			e := v.Elem()
 			err = walkRecursive(path, e, visitor)
 			if err != nil {
@@ -135,7 +144,7 @@ func walkRecursive(path string, v reflect.Value, visitor visitorFunc) error {
 
 	default:
 		err := visitor(path, nil, v)
-		if err != nil {
+		if err != nil && err != SkipReflection {
 			return err
 		}
 	}

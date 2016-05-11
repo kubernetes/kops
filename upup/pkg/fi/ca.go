@@ -25,9 +25,9 @@ type Certificate struct {
 	PublicKey   crypto.PublicKey
 }
 
-func (c *Certificate) UnmarshalJSON(b []byte) (err error) {
+func (c *Certificate) UnmarshalJSON(b []byte) error {
 	s := ""
-	if err = json.Unmarshal(b, &s); err == nil {
+	if err := json.Unmarshal(b, &s); err == nil {
 		d, err := base64.StdEncoding.DecodeString(s)
 		if err != nil {
 			return fmt.Errorf("error decoding certificate base64 data: %q", string(b))
@@ -41,6 +41,15 @@ func (c *Certificate) UnmarshalJSON(b []byte) (err error) {
 		return nil
 	}
 	return fmt.Errorf("unknown format for Certificate: %q", string(b))
+}
+
+func (c *Certificate) MarshalJSON() ([]byte, error) {
+	var data bytes.Buffer
+	err := c.WriteCertificate(&data)
+	if err != nil {
+		return nil, fmt.Errorf("error writing SSL certificate: %v", err)
+	}
+	return json.Marshal(data.String())
 }
 
 type CAStore interface {
@@ -86,21 +95,30 @@ func (c *PrivateKey) AsString() (string, error) {
 	return data.String(), nil
 }
 
-func (c *PrivateKey) UnmarshalJSON(b []byte) (err error) {
+func (k *PrivateKey) UnmarshalJSON(b []byte) (err error) {
 	s := ""
 	if err = json.Unmarshal(b, &s); err == nil {
 		d, err := base64.StdEncoding.DecodeString(s)
 		if err != nil {
 			return fmt.Errorf("error decoding private key base64 data: %q", string(b))
 		}
-		k, err := parsePEMPrivateKey(d)
+		key, err := parsePEMPrivateKey(d)
 		if err != nil {
 			return fmt.Errorf("error parsing private key: %v", err)
 		}
-		c.Key = k
+		k.Key = key
 		return nil
 	}
 	return fmt.Errorf("unknown format for private key: %q", string(b))
+}
+
+func (k *PrivateKey) MarshalJSON() ([]byte, error) {
+	var data bytes.Buffer
+	err := WritePrivateKey(k.Key, &data)
+	if err != nil {
+		return nil, fmt.Errorf("error writing SSL private key: %v", err)
+	}
+	return json.Marshal(data.String())
 }
 
 func LoadPEMCertificate(pemData []byte) (*Certificate, error) {

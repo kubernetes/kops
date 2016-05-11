@@ -8,7 +8,6 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
-	"k8s.io/kube-deploy/upup/pkg/fi/utils"
 )
 
 type Network struct {
@@ -19,12 +18,12 @@ type Network struct {
 var _ fi.Task = &Network{}
 var _ fi.CompareWithID = &Network{}
 
-func (d *Network) String() string {
-	return utils.JsonString(d)
+func (e *Network) String() string {
+	return fi.TaskAsString(e)
 }
 
-func (d *Network) CompareWithID() *string {
-	return d.Name
+func (e *Network) CompareWithID() *string {
+	return e.Name
 }
 
 func (e *Network) Find(c *fi.Context) (*Network, error) {
@@ -63,7 +62,7 @@ func (e *Network) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
-func (s *Network) CheckChanges(a, e, changes *Network) error {
+func (_ *Network) CheckChanges(a, e, changes *Network) error {
 	return nil
 }
 

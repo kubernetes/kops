@@ -35,16 +35,15 @@ type Loader struct {
 	OptionsLoader *loader.OptionsLoader
 	NodeModelDir  string
 
-	Tags        map[string]struct{}
-	CAStore     fi.CAStore
-	SecretStore fi.SecretStore
+	Tags              map[string]struct{}
+	TemplateFunctions template.FuncMap
 
 	typeMap map[string]reflect.Type
 
 	templates []*template.Template
 	config    interface{}
 
-	resources map[string]fi.Resource
+	Resources map[string]fi.Resource
 	deferred  []*deferredBinding
 
 	tasks map[string]fi.Task
@@ -89,8 +88,9 @@ type deferredBinding struct {
 func (l *Loader) Init() {
 	l.tasks = make(map[string]fi.Task)
 	l.typeMap = make(map[string]reflect.Type)
-	l.unmarshaller.SpecialCases = l.unmarshallerSpecialCases
-	l.resources = make(map[string]fi.Resource)
+	l.unmarshaller.SpecialCases = l.unmarshalSpecialCases
+	l.Resources = make(map[string]fi.Resource)
+	l.TemplateFunctions = make(template.FuncMap)
 }
 
 func (l *Loader) AddTypes(types map[string]interface{}) {
@@ -115,17 +115,17 @@ func (l *Loader) executeTemplate(key string, d string, args []string) (string, e
 	funcMap["Base64Encode"] = func(s string) string {
 		return base64.StdEncoding.EncodeToString([]byte(s))
 	}
-	funcMap["CA"] = func() fi.CAStore {
-		return l.CAStore
-	}
-	funcMap["Secrets"] = func() fi.SecretStore {
-		return l.SecretStore
-	}
 	funcMap["Args"] = func() []string {
 		return args
 	}
 	funcMap["BuildNodeConfig"] = func(target string, configResourceName string, args []string) (string, error) {
 		return l.buildNodeConfig(target, configResourceName, args)
+	}
+	funcMap["RenderResource"] = func(resourceName string, args []string) (string, error) {
+		return l.renderResource(resourceName, args)
+	}
+	for k, fn := range l.TemplateFunctions {
+		funcMap[k] = fn
 	}
 	t.Funcs(funcMap)
 
@@ -173,7 +173,7 @@ func (l *Loader) Build(baseDir string) (map[string]fi.Task, error) {
 	if err != nil {
 		return nil, err
 	}
-	glog.Infof("options: %s", utils.JsonString(l.config))
+	glog.Infof("options: %s", fi.DebugAsJsonStringIndent(l.config))
 
 	// Second pass: load everything else
 	tw = &loader.TreeWalker{
@@ -234,11 +234,11 @@ func (l *Loader) processDeferrals() error {
 				args := tokens[1:]
 
 				match = strings.TrimPrefix(match, "resources/")
-				found := l.resources[match]
+				found := l.Resources[match]
 
 				if found == nil {
 					glog.Infof("Known resources:")
-					for k := range l.resources {
+					for k := range l.Resources {
 						glog.Infof("  %s", k)
 					}
 					return fmt.Errorf("cannot resolve resource link %q (at %q)", d.src, d.name)
@@ -281,7 +281,7 @@ func (l *Loader) resourceHandler(i *loader.TreeWalkItem) error {
 
 	}
 
-	l.resources[key] = a
+	l.Resources[key] = a
 	return nil
 }
 
@@ -410,10 +410,32 @@ func (l *Loader) loadObjectMap(key string, data map[string]interface{}) (map[str
 	return loaded, nil
 }
 
-func (l *Loader) unmarshallerSpecialCases(name string, dest utils.Settable, src interface{}, destTypeName string) (bool, error) {
-	switch destTypeName {
-	case "Resource":
-		{
+func (l *Loader) unmarshalSpecialCases(name string, dest utils.Settable, src interface{}) (bool, error) {
+	if dest.Type().Kind() == reflect.Slice {
+		switch src := src.(type) {
+		case []interface{}:
+			destValueArray := reflect.MakeSlice(dest.Type(), len(src), len(src))
+			for i, srcElem := range src {
+				done, err := l.unmarshalSpecialCases(fmt.Sprintf("%s[%d]", name, i),
+					utils.Settable{Value: destValueArray.Index(i)},
+					srcElem)
+				if err != nil {
+					return false, err
+				}
+				if !done {
+					return false, nil
+				}
+			}
+			dest.Set(destValueArray)
+			return true, nil
+		default:
+			return false, fmt.Errorf("unhandled conversion for %q: %T -> %s", name, src, dest.Value.Type().Name())
+		}
+	}
+
+	if dest.Type().Kind() == reflect.Ptr || dest.Type().Kind() == reflect.Interface {
+		resourceType := reflect.TypeOf((*fi.Resource)(nil)).Elem()
+		if dest.Value.Type().AssignableTo(resourceType) {
 			d := &deferredBinding{
 				name:         name,
 				dest:         dest,
@@ -423,14 +445,14 @@ func (l *Loader) unmarshallerSpecialCases(name string, dest utils.Settable, src 
 			case string:
 				d.src = src
 			default:
-				return false, fmt.Errorf("unhandled conversion for %q: %T -> %s", name, src, destTypeName)
+				return false, fmt.Errorf("unhandled conversion for %q: %T -> %s", name, src, dest.Value.Type().Name())
 			}
 			l.deferred = append(l.deferred, d)
 			return true, nil
 		}
 
-	default:
-		if _, ok := dest.Value.Interface().(fi.Task); ok {
+		taskType := reflect.TypeOf((*fi.Task)(nil)).Elem()
+		if dest.Value.Type().AssignableTo(taskType) {
 			d := &deferredBinding{
 				name:         name,
 				dest:         dest,
@@ -440,12 +462,11 @@ func (l *Loader) unmarshallerSpecialCases(name string, dest utils.Settable, src 
 			case string:
 				d.src = src
 			default:
-				return false, fmt.Errorf("unhandled conversion for %q: %T -> %s", name, src, destTypeName)
+				return false, fmt.Errorf("unhandled conversion for %q: %T -> %s", name, src, dest.Value.Type().Name())
 			}
 			l.deferred = append(l.deferred, d)
 			return true, nil
 		}
-
 	}
 
 	return false, nil
@@ -494,26 +515,13 @@ func (l *Loader) populateResource(name string, dest utils.Settable, src interfac
 func (l *Loader) buildNodeConfig(target string, configResourceName string, args []string) (string, error) {
 	assetDir := path.Join(l.StateDir, "node/assets")
 
-	resourceKey := strings.TrimSuffix(configResourceName, ".template")
-	resourceKey = strings.TrimPrefix(resourceKey, "resources/")
-	configResource := l.resources[resourceKey]
-	if configResource == nil {
-		return "", fmt.Errorf("cannot find resource %q", configResourceName)
-	}
-
-	if tr, ok := configResource.(fi.TemplateResource); ok {
-		configResource = tr.Curry(args)
-	} else if len(args) != 0 {
-		return "", fmt.Errorf("args passed when building node config, but config was not a template %q", configResourceName)
-	}
-
-	confData, err := fi.ResourceAsBytes(configResource)
+	confData, err := l.renderResource(configResourceName, args)
 	if err != nil {
-		return "", fmt.Errorf("error reading resource %q: %v", configResourceName, err)
+		return "", err
 	}
 
 	config := &nodeup.NodeConfig{}
-	err = utils.YamlUnmarshal(confData, config)
+	err = utils.YamlUnmarshal([]byte(confData), config)
 	if err != nil {
 		return "", fmt.Errorf("error parsing configuration %q: %v", configResourceName, err)
 	}
@@ -533,4 +541,26 @@ func (l *Loader) buildNodeConfig(target string, configResourceName string, args 
 	}
 
 	return buff.String(), nil
+}
+
+func (l *Loader) renderResource(resourceName string, args []string) (string, error) {
+	resourceKey := strings.TrimSuffix(resourceName, ".template")
+	resourceKey = strings.TrimPrefix(resourceKey, "resources/")
+	configResource := l.Resources[resourceKey]
+	if configResource == nil {
+		return "", fmt.Errorf("cannot find resource %q", resourceName)
+	}
+
+	if tr, ok := configResource.(fi.TemplateResource); ok {
+		configResource = tr.Curry(args)
+	} else if len(args) != 0 {
+		return "", fmt.Errorf("args passed when building node config, but config was not a template %q", resourceName)
+	}
+
+	data, err := fi.ResourceAsBytes(configResource)
+	if err != nil {
+		return "", fmt.Errorf("error reading resource %q: %v", resourceName, err)
+	}
+
+	return string(data), nil
 }

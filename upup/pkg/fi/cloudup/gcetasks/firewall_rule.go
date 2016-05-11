@@ -7,7 +7,6 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
-	"k8s.io/kube-deploy/upup/pkg/fi/utils"
 	"strings"
 )
 
@@ -20,12 +19,12 @@ type FirewallRule struct {
 	Allowed      []string
 }
 
-func (d *FirewallRule) String() string {
-	return utils.JsonString(d)
+func (e *FirewallRule) String() string {
+	return fi.TaskAsString(e)
 }
 
-func (d *FirewallRule) CompareWithID() *string {
-	return d.Name
+func (e *FirewallRule) CompareWithID() *string {
+	return e.Name
 }
 
 func (e *FirewallRule) Find(c *fi.Context) (*FirewallRule, error) {
@@ -56,7 +55,7 @@ func (e *FirewallRule) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
-func (s *FirewallRule) CheckChanges(a, e, changes *FirewallRule) error {
+func (_ *FirewallRule) CheckChanges(a, e, changes *FirewallRule) error {
 	return nil
 }
 

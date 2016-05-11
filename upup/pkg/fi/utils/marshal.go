@@ -21,7 +21,7 @@ type Unmarshaller struct {
 }
 
 // UnmarshallerSpecialCaseHandler is the function type that a handler for non-standard types must implement
-type UnmarshallerSpecialCaseHandler func(name string, dest Settable, src interface{}, destTypeName string) (bool, error)
+type UnmarshallerSpecialCaseHandler func(name string, dest Settable, src interface{}) (bool, error)
 
 // Settable is a workaround for the fact that map entries are not settable
 type Settable struct {
@@ -64,6 +64,18 @@ func (r *Unmarshaller) UnmarshalSettable(name string, dest Settable, src interfa
 			case string:
 				v := src
 				dest.Set(reflect.ValueOf(&v))
+				return nil
+			default:
+				return fmt.Errorf("unhandled conversion for %q: %T -> %s", name, src, destTypeName)
+			}
+		}
+
+	case "string":
+		{
+			switch src := src.(type) {
+			case string:
+				v := src
+				dest.Set(reflect.ValueOf(v))
 				return nil
 			default:
 				return fmt.Errorf("unhandled conversion for %q: %T -> %s", name, src, destTypeName)
@@ -120,7 +132,7 @@ func (r *Unmarshaller) UnmarshalSettable(name string, dest Settable, src interfa
 
 	default:
 		if r.SpecialCases != nil {
-			handled, err := r.SpecialCases(name, dest, src, destTypeName)
+			handled, err := r.SpecialCases(name, dest, src)
 			if err != nil {
 				return err
 			}
@@ -137,7 +149,7 @@ func (r *Unmarshaller) unmarshalMap(name string, dest Settable, src interface{})
 		return nil
 	}
 
-	glog.Infof("populateMap on type %s", BuildTypeName(dest.Type()))
+	glog.V(4).Infof("populateMap on type %s", BuildTypeName(dest.Type()))
 
 	destType := dest.Type()
 

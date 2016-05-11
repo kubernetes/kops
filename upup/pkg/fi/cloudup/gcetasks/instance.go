@@ -8,7 +8,6 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
-	"k8s.io/kube-deploy/upup/pkg/fi/utils"
 	"strings"
 )
 
@@ -33,12 +32,12 @@ type Instance struct {
 	MachineType *string
 }
 
-func (d *Instance) String() string {
-	return utils.JsonString(d)
+func (e *Instance) String() string {
+	return fi.TaskAsString(e)
 }
 
-func (d *Instance) CompareWithID() *string {
-	return d.Name
+func (e *Instance) CompareWithID() *string {
+	return e.Name
 }
 
 func (e *Instance) Find(c *fi.Context) (*Instance, error) {
@@ -126,7 +125,7 @@ func (e *Instance) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
-func (s *Instance) CheckChanges(a, e, changes *Instance) error {
+func (_ *Instance) CheckChanges(a, e, changes *Instance) error {
 	return nil
 }
 

@@ -20,11 +20,12 @@ type NodeUpCommand struct {
 
 func (c *NodeUpCommand) Run(out io.Writer) error {
 	if c.ConfigLocation != "" {
-		confData, err := utils.ReadLocation(c.ConfigLocation)
+		config, err := utils.ReadLocation(c.ConfigLocation)
 		if err != nil {
 			return fmt.Errorf("error loading configuration %q: %v", c.ConfigLocation, err)
 		}
-		err = utils.YamlUnmarshal(confData, c.Config)
+
+		err = utils.YamlUnmarshal(config, c.Config)
 		if err != nil {
 			return fmt.Errorf("error parsing configuration %q: %v", c.ConfigLocation, err)
 		}

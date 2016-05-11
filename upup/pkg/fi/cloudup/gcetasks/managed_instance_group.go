@@ -8,7 +8,6 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
-	"k8s.io/kube-deploy/upup/pkg/fi/utils"
 	"time"
 )
 
@@ -20,12 +19,12 @@ type ManagedInstanceGroup struct {
 	TargetSize       *int64
 }
 
-func (d *ManagedInstanceGroup) String() string {
-	return utils.JsonString(d)
+func (e *ManagedInstanceGroup) String() string {
+	return fi.TaskAsString(e)
 }
 
-func (d *ManagedInstanceGroup) CompareWithID() *string {
-	return d.Name
+func (e *ManagedInstanceGroup) CompareWithID() *string {
+	return e.Name
 }
 
 func (e *ManagedInstanceGroup) Find(c *fi.Context) (*ManagedInstanceGroup, error) {
@@ -53,7 +52,7 @@ func (e *ManagedInstanceGroup) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
-func (s *ManagedInstanceGroup) CheckChanges(a, e, changes *ManagedInstanceGroup) error {
+func (_ *ManagedInstanceGroup) CheckChanges(a, e, changes *ManagedInstanceGroup) error {
 	return nil
 }
 

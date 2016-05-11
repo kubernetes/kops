@@ -42,7 +42,7 @@ func (c *Context) RunTasks(taskMap map[string]Task) error {
 	for _, stage := range taskOrder {
 		for _, k := range stage {
 			task := taskMap[k]
-			glog.Infof("Executing %v\n", task)
+			glog.V(2).Infof("Executing task: %v\n", task)
 			err := task.Run(c)
 			if err != nil {
 				return fmt.Errorf("error running tasks (%s): %v", task, err)

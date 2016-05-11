@@ -20,6 +20,7 @@ type CloudConfig struct {
 	ClusterName       string
 	AllocateNodeCIDRs bool
 	Zone              string
+	Region            string
 	Project           string
 
 	Multizone bool
@@ -128,6 +129,8 @@ type CloudConfig struct {
 	KubeProxyTestLogLevel         string
 
 	Assets []string
+
+	NodeUpTags []string
 
 	NodeUp NodeUpConfig
 }

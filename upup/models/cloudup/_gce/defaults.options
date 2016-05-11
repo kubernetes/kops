@@ -1,33 +1,4 @@
-ClusterName: {{ .InstancePrefix }}
-InstancePrefix: kubernetes
-AllocateNodeCIDRs: true
-Multizone: true
-
-ServiceClusterIPRange: 10.0.0.0/16
-ClusterIPRange: 10.244.0.0/16
-MasterInternalIP: 172.20.0.9
-MasterIPRange: 10.246.0.0/24
-NetworkProvider: none
-
-AdmissionControl: NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota,PersistentVolumeLabel
-
-EnableClusterMonitoring: none
-EnableL7LoadBalancing: none
-EnableClusterUI: true
-
-EnableClusterDNS: true
-DNSReplicas: 1
-DNSServerIP: 10.0.0.10
-DNSDomain: cluster.local
-
-EnableClusterLogging: true
-EnableNodeLogging: true
-LoggingDestination: elasticsearch
-ElasticsearchLoggingReplicas: 1
-
 MasterImage: k8s-1-2-debian-jessie-amd64-2016-04-17
-MasterName: {{ .InstancePrefix }}-master
-MasterTag: {{ .InstancePrefix }}-master
 {{ if gt .NodeCount 500 }}
 MasterMachineType: n1-standard-32
 {{ else if gt .NodeCount 250 }}
@@ -42,12 +13,6 @@ MasterMachineType: n1-standard-2
 MasterMachineType: n1-standard-1
 {{ end }}
 MasterVolumeType: pd-ssd
-MasterVolumeSize: 20
 
 NodeImage: k8s-1-2-debian-jessie-amd64-2016-04-17
-NodeCount: 2
-NodeTag: {{ .InstancePrefix }}-minion
-NodeInstancePrefix: {{ .InstancePrefix }}-minion
 NodeMachineType: n1-standard-2
-
-KubeUser: admin
