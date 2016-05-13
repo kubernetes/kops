@@ -44,9 +44,9 @@ func (e *InstanceVolumeAttachment) Find(c *fi.Context) (*InstanceVolumeAttachmen
 		}
 
 		actual := &InstanceVolumeAttachment{
-			Device: bdm.DeviceName,
+			Device:   bdm.DeviceName,
 			Instance: &Instance{ID: instance.InstanceId},
-			Volume: &EBSVolume{ID: bdm.Ebs.VolumeId},
+			Volume:   &EBSVolume{ID: bdm.Ebs.VolumeId},
 		}
 
 		glog.V(2).Infof("found matching InstanceVolumeAttachmen")

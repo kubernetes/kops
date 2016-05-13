@@ -36,12 +36,13 @@ func (p *Service) GetDependencies(tasks map[string]fi.Task) []string {
 		// We assume that services depend on basically everything
 		typeName := utils.BuildTypeName(reflect.TypeOf(v))
 		switch typeName {
-		case "*CopyAssetTask", "*File", "*Package", "*Sysctl", "*UpdatePackages":
+		case "*CopyAssetTask", "*File", "*Package", "*Sysctl", "*UpdatePackages", "*User", "*Disk":
 			deps = append(deps, k)
 		case "*Service":
 		// ignore
 		default:
-			glog.Fatalf("Unhandled type name: %q", typeName)
+			glog.Warningf("Unhandled type name in Service::GetDependencies: %q", typeName)
+			deps = append(deps, k)
 		}
 	}
 	return deps

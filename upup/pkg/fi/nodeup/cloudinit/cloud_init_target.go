@@ -122,6 +122,10 @@ func (t *CloudInitTarget) WriteFile(destPath string, contents fi.Resource, fileM
 	return nil
 }
 
+func (t *CloudInitTarget) Chown(path string, user, group string) {
+	t.AddCommand(Always, "chown", user+":"+group, path)
+}
+
 func stringSlicesEquals(l, r []string) bool {
 	if len(l) != len(r) {
 		return false

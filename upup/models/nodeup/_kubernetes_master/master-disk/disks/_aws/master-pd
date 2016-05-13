@@ -1,0 +1,2 @@
+device: /dev/xvdb
+mountpoint: /mnt/master-pd
