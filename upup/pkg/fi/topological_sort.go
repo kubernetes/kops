@@ -111,14 +111,7 @@ func toposort(edges map[string][]string) [][]string {
 func getDependencies(v reflect.Value) []Task {
 	var dependencies []Task
 
-	err := utils.WalkRecursive(v, func(path string, f *reflect.StructField, v reflect.Value) error {
-		for v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface {
-			if v.IsNil() {
-				return nil
-			}
-			v = v.Elem()
-		}
-
+	err := utils.ReflectRecursive(v, func(path string, f *reflect.StructField, v reflect.Value) error {
 		if utils.IsPrimitiveValue(v) {
 			return nil
 		}
@@ -127,12 +120,16 @@ func getDependencies(v reflect.Value) []Task {
 		case reflect.String:
 			return nil
 
-		case reflect.Slice:
-		case reflect.Map:
-			// The recursive walk will descend into the slice/map; we can ignore here
+		case reflect.Interface, reflect.Ptr, reflect.Slice, reflect.Map:
+			// The recursive walk will descend into this; we can ignore here
 			return nil
 
-		case reflect.Interface, reflect.Struct:
+		case reflect.Struct:
+			if path == "" {
+				// Ignore self - we are a struct, but not our own dependency!
+				return nil
+			}
+
 			// TODO: Can we / should we use a type-switch statement
 			intf := v.Addr().Interface()
 			if dep, ok := intf.(Task); ok {
@@ -144,14 +141,12 @@ func getDependencies(v reflect.Value) []Task {
 			} else {
 				return fmt.Errorf("Unhandled type for %q: %T", path, v.Interface())
 			}
-			break
+			return utils.SkipReflection
 
 		default:
 			glog.Infof("Unhandled kind for %q: %T", path, v.Interface())
 			return fmt.Errorf("Unhandled kind for %q: %v", path, v.Kind())
 		}
-
-		return nil
 	})
 
 	if err != nil {

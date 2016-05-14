@@ -51,7 +51,7 @@ func buildFlags(options interface{}) (string, error) {
 		}
 		return nil
 	}
-	err := utils.WalkRecursive(reflect.ValueOf(options), walker)
+	err := utils.ReflectRecursive(reflect.ValueOf(options), walker)
 	if err != nil {
 		return "", err
 	}
