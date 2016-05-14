@@ -1,12 +1,19 @@
-subject:
-  CommonName: kubernetes-master
-type: server
-alternateNames:
-  - kubernetes
-  - kubernetes.default
-  - kubernetes.default.svc
-  - kubernetes.default.svc.{{ .DNSDomain }}
-  - {{ .MasterName }}
-  - {{ .MasterPublicIP }}
-  - {{ .MasterInternalIP }}
-  - {{ .WellKnownServiceIP 1 }}
+keypair/master:
+  subject: cn=kubernetes-master
+  type: server
+  alternateNames:
+    - kubernetes
+    - kubernetes.default
+    - kubernetes.default.svc
+    - kubernetes.default.svc.{{ .DNSDomain }}
+    - "{{ .MasterName }}"
+    - "{{ .MasterInternalIP }}"
+    - "{{ .WellKnownServiceIP 1 }}"
+    - "{{ .MasterPublicIP }}"
+{{ if eq .CloudProvider "aws" }}
+  alternateNameTasks:
+    - elasticIP/{{ .MasterName }}-ip
+{{ else if eq .CloudProvider "gce" }}
+  alternateNameTasks:
+    - ipAddress/{{ .MasterName }}-ip
+{{ end }}

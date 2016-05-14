@@ -12,6 +12,7 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/gcetasks"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kube-deploy/upup/pkg/fi/fitasks"
 	"k8s.io/kube-deploy/upup/pkg/fi/loader"
 	"k8s.io/kube-deploy/upup/pkg/fi/utils"
 	"os"
@@ -153,6 +154,10 @@ func (c *CreateClusterCmd) Run() error {
 	checkExisting := true
 
 	c.Config.NodeUpTags = append(c.Config.NodeUpTags, "_jessie", "_debian_family", "_systemd")
+
+	l.AddTypes(map[string]interface{}{
+		"keypair": &fitasks.Keypair{},
+	})
 
 	switch c.Config.CloudProvider {
 	case "gce":
