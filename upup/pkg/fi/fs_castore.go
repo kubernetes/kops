@@ -2,7 +2,6 @@ package fi
 
 import (
 	"bytes"
-	"crypto"
 	crypto_rand "crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -72,12 +71,14 @@ func (c *FilesystemCAStore) generateCACertificate() error {
 		IsCA: true,
 	}
 
-	caPrivateKey, err := rsa.GenerateKey(crypto_rand.Reader, 2048)
+	caRsaKey, err := rsa.GenerateKey(crypto_rand.Reader, 2048)
 	if err != nil {
 		return fmt.Errorf("error generating RSA private key: %v", err)
 	}
 
-	caCertificate, err := SignNewCertificate(&PrivateKey{Key: caPrivateKey}, template, nil, nil)
+	caPrivateKey := &PrivateKey{Key: caRsaKey}
+
+	caCertificate, err := SignNewCertificate(caPrivateKey, template, nil, nil)
 	if err != nil {
 		return err
 	}
@@ -100,7 +101,7 @@ func (c *FilesystemCAStore) generateCACertificate() error {
 		return err
 	}
 
-	c.caPrivateKey = &PrivateKey{Key: caPrivateKey}
+	c.caPrivateKey = caPrivateKey
 	c.caCertificate = caCertificate
 	return nil
 }
@@ -176,7 +177,7 @@ func (c *FilesystemCAStore) Cert(id string) (*Certificate, error) {
 
 func (c *FilesystemCAStore) FindCert(id string) (*Certificate, error) {
 	var cert *Certificate
-	if id == "ca" {
+	if id == CertificateId_CA {
 		cert = c.caCertificate
 	} else {
 		var err error
@@ -228,7 +229,7 @@ func (c *FilesystemCAStore) loadPrivateKey(p string) (*PrivateKey, error) {
 
 func (c *FilesystemCAStore) FindPrivateKey(id string) (*PrivateKey, error) {
 	var key *PrivateKey
-	if id == "ca" {
+	if id == CertificateId_CA {
 		key = c.caPrivateKey
 	} else {
 		var err error
@@ -253,22 +254,23 @@ func (c *FilesystemCAStore) PrivateKey(id string) (*PrivateKey, error) {
 func (c *FilesystemCAStore) CreatePrivateKey(id string) (*PrivateKey, error) {
 	p := c.buildPrivateKeyPath(id)
 
-	privateKey, err := rsa.GenerateKey(crypto_rand.Reader, 2048)
+	rsaKey, err := rsa.GenerateKey(crypto_rand.Reader, 2048)
 	if err != nil {
 		return nil, fmt.Errorf("error generating RSA private key: %v", err)
 	}
 
+	privateKey := &PrivateKey{Key: rsaKey}
 	err = c.storePrivateKey(privateKey, p)
 	if err != nil {
 		return nil, err
 	}
 
-	return &PrivateKey{Key: privateKey}, nil
+	return privateKey, nil
 }
 
-func (c *FilesystemCAStore) storePrivateKey(privateKey crypto.PrivateKey, p string) error {
+func (c *FilesystemCAStore) storePrivateKey(privateKey *PrivateKey, p string) error {
 	var data bytes.Buffer
-	err := WritePrivateKey(privateKey, &data)
+	_, err := privateKey.WriteTo(&data)
 	if err != nil {
 		return err
 	}
@@ -277,8 +279,9 @@ func (c *FilesystemCAStore) storePrivateKey(privateKey crypto.PrivateKey, p stri
 }
 
 func (c *FilesystemCAStore) storeCertificate(cert *Certificate, p string) error {
+	// TODO: replace storePrivateKey & storeCertificate with writeFile(io.WriterTo)?
 	var data bytes.Buffer
-	err := cert.WriteCertificate(&data)
+	_, err := cert.WriteTo(&data)
 	if err != nil {
 		return err
 	}
