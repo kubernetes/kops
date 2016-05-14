@@ -118,6 +118,17 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 		}
 	}
 
+	if r.Metadata != nil {
+		actual.Metadata = make(map[string]fi.Resource)
+		for _, i := range r.Metadata.Items {
+			if i.Value == nil {
+				glog.Warningf("ignoring GCE instance metadata entry with nil-value: %q", i.Key)
+				continue
+			}
+			actual.Metadata[i.Key] = fi.NewStringResource(*i.Value)
+		}
+	}
+
 	return actual, nil
 }
 
