@@ -59,7 +59,6 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	actual.Zone = fi.String(lastComponent(r.Zone))
 	actual.MachineType = fi.String(lastComponent(r.MachineType))
 	actual.CanIPForward = &r.CanIpForward
-	actual.Image = &r.Disks[0].Source
 
 	if r.Scheduling != nil {
 		actual.Preemptible = &r.Scheduling.Preemptible
@@ -101,13 +100,13 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 					return nil, fmt.Errorf("disk not found %q: %v", source, err)
 				}
 				return nil, fmt.Errorf("error querying for disk %q: %v", source, err)
-			} else {
-				imageURL, err := gce.ParseGoogleCloudURL(d.SourceImage)
-				if err != nil {
-					return nil, fmt.Errorf("unable to parse image URL: %q", d.SourceImage)
-				}
-				actual.Image = fi.String(imageURL.Project + "/" + imageURL.Name)
 			}
+
+			image, err := ShortenImageURL(cloud.Project, d.SourceImage)
+			if err != nil {
+				return nil, fmt.Errorf("error parsing source image URL: %v", err)
+			}
+			actual.Image = fi.String(image)
 		} else {
 			url, err := gce.ParseGoogleCloudURL(disk.Source)
 			if err != nil {
@@ -344,12 +343,16 @@ func BuildImageURL(defaultProject, nameSpec string) string {
 	return fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/global/images/%s", project, name)
 }
 
-func ShortenImageURL(imageURL string) (string, error) {
+func ShortenImageURL(defaultProject string, imageURL string) (string, error) {
 	u, err := gce.ParseGoogleCloudURL(imageURL)
 	if err != nil {
 		return "", err
 	}
-	return u.Project + "/" + u.Name, nil
+	if u.Project == defaultProject {
+		return u.Name, nil
+	} else {
+		return u.Project + "/" + u.Name, nil
+	}
 }
 
 func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Instance) error {
