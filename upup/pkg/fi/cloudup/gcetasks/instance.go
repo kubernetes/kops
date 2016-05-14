@@ -302,7 +302,7 @@ func (_ *Instance) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instance) error
 	project := t.Cloud.Project
 
 	ipAddressResolver := func(ip *IPAddress) (*string, error) {
-		return ip.FindAddress(t.Cloud)
+		return ip.Address, nil
 	}
 
 	i, err := e.mapToGCE(project, ipAddressResolver)

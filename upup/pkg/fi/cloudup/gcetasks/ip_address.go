@@ -13,8 +13,6 @@ import (
 type IPAddress struct {
 	Name    *string
 	Address *string
-
-	actual *IPAddress
 }
 
 func (e *IPAddress) String() string {
@@ -26,7 +24,13 @@ func (e *IPAddress) CompareWithID() *string {
 }
 
 func (e *IPAddress) Find(c *fi.Context) (*IPAddress, error) {
-	return e.find(c.Cloud.(*gce.GCECloud))
+	actual, err := e.find(c.Cloud.(*gce.GCECloud))
+	if actual != nil && err == nil {
+		if e.Address == nil {
+			e.Address = actual.Address
+		}
+	}
+	return actual, err
 }
 
 func (e *IPAddress) find(cloud *gce.GCECloud) (*IPAddress, error) {
@@ -46,11 +50,15 @@ func (e *IPAddress) find(cloud *gce.GCECloud) (*IPAddress, error) {
 	return actual, nil
 }
 
-func (e *IPAddress) FindAddress(cloud fi.Cloud) (*string, error) {
-	actual, err := e.find(cloud.(*gce.GCECloud))
+var _ fi.HasAddress = &IPAddress{}
+
+func (e *IPAddress) FindAddress(context *fi.Context) (*string, error) {
+	actual, err := e.find(context.Cloud.(*gce.GCECloud))
 	if err != nil {
-		// TODO: Race here if the address isn't immediately created?
 		return nil, fmt.Errorf("error querying for IPAddress: %v", err)
+	}
+	if actual == nil {
+		return nil, nil
 	}
 	return actual.Address, nil
 }
