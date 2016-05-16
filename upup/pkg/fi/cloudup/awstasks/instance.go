@@ -73,12 +73,35 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 
 	glog.V(2).Info("found existing instance")
 	i := instances[0]
+
+	if i.InstanceId == nil {
+		return nil, fmt.Errorf("found instance, but InstanceId was nil")
+	}
+
 	actual := &Instance{
 		ID:               i.InstanceId,
 		PrivateIPAddress: i.PrivateIpAddress,
 		InstanceType:     i.InstanceType,
 		ImageID:          i.ImageId,
 		Name:             findNameTag(i.Tags),
+	}
+
+	// Fetch instance UserData
+	{
+		request := &ec2.DescribeInstanceAttributeInput{}
+		request.InstanceId = i.InstanceId
+		request.Attribute = aws.String("userData")
+		response, err := cloud.EC2.DescribeInstanceAttribute(request)
+		if err != nil {
+			return nil, fmt.Errorf("error querying EC2 for user metadata for instance %q: %v", *i.InstanceId)
+		}
+		if response.UserData != nil {
+			b, err := base64.StdEncoding.DecodeString(aws.StringValue(response.UserData.Value))
+			if err != nil {
+				return nil, fmt.Errorf("error decoding EC2 UserData: %v", err)
+			}
+			actual.UserData = fi.NewBytesResource(b)
+		}
 	}
 
 	if i.SubnetId != nil {
