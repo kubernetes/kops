@@ -203,6 +203,7 @@ func (t *AWSCloud) DescribeVPC(vpcID string) (*ec2.Vpc, error) {
 // owner/name in which case we find the image with the specified name, owned by owner
 // name in which case we find the image with the specified name, with the current owner
 func (c *AWSCloud) ResolveImage(name string) (*ec2.Image, error) {
+	// TODO: Cache this result during a single execution (we get called multiple times)
 	glog.V(2).Infof("Calilng DescribeImages to resolve name %q", name)
 	request := &ec2.DescribeImagesInput{}
 

@@ -106,6 +106,19 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 
 	e.ID = actual.ID
 
+	// Avoid spurious changes on ImageId
+	if e.ImageID != nil && actual.ImageID != nil && *actual.ImageID != *e.ImageID {
+		image, err := cloud.ResolveImage(*e.ImageID)
+		if err != nil {
+			glog.Warningf("unable to resolve image: %q: %v", *e.ImageID, err)
+		} else if image == nil {
+			glog.Warningf("unable to resolve image: %q: not found", *e.ImageID)
+		} else if aws.StringValue(image.ImageId) == *actual.ImageID {
+			glog.V(4).Infof("Returning matching ImageId as expected name: %q -> %q", *actual.ImageID, *e.ImageID)
+			actual.ImageID = e.ImageID
+		}
+	}
+
 	return actual, nil
 }
 
