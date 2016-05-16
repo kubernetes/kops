@@ -4,7 +4,11 @@ import (
 	"fmt"
 
 	"bytes"
+	"crypto"
+	"crypto/dsa"
 	"crypto/md5"
+	"crypto/rsa"
+	"crypto/x509"
 	"encoding/base64"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -12,6 +16,8 @@ import (
 	"golang.org/x/crypto/ssh"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kube-deploy/upup/pkg/fi/utils"
+	"reflect"
 	"strings"
 )
 
@@ -63,6 +69,14 @@ func (e *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 		KeyFingerprint: k.KeyFingerprint,
 	}
 
+	// Avoid spurious changes
+	if fi.StringValue(actual.KeyFingerprint) == fi.StringValue(e.KeyFingerprint) {
+		glog.V(2).Infof("SSH key fingerprints match; assuming public keys match")
+		actual.PublicKey = e.PublicKey
+	} else {
+		glog.V(2).Infof("Computed SSH key fingerprint mismatch: %q %q", fi.StringValue(e.KeyFingerprint), fi.StringValue(actual.KeyFingerprint))
+	}
+
 	return actual, nil
 }
 
@@ -82,13 +96,16 @@ func computeAwsKeyFingerprint(publicKey fi.Resource) (string, error) {
 		return "", fmt.Errorf("error decoding SSH public key: %s", publicKeyString)
 	}
 
-	// We don't technically need to parse and remarshal it, but it ensures the key is valid
 	sshPublicKey, err := ssh.ParsePublicKey(sshPublicKeyBytes)
 	if err != nil {
 		return "", fmt.Errorf("error parsing SSH public key: %v", err)
 	}
 
-	h := md5.Sum(sshPublicKey.Marshal())
+	der, err := toDER(sshPublicKey)
+	if err != nil {
+		return "", fmt.Errorf("error computing fingerprint for SSH public key: %v", err)
+	}
+	h := md5.Sum(der)
 	sshKeyFingerprint := fmt.Sprintf("%x", h)
 
 	var colonSeparated bytes.Buffer
@@ -100,6 +117,37 @@ func computeAwsKeyFingerprint(publicKey fi.Resource) (string, error) {
 	}
 
 	return colonSeparated.String(), nil
+}
+
+// toDER gets the DER encoding of the SSH public key
+// Annoyingly, the ssh code wraps the actual crypto keys, so we have to use reflection tricks
+func toDER(pubkey ssh.PublicKey) ([]byte, error) {
+	pubkeyValue := reflect.ValueOf(pubkey)
+	typeName := utils.BuildTypeName(pubkeyValue.Type())
+
+	var cryptoKey crypto.PublicKey
+	switch typeName {
+	case "*rsaPublicKey":
+		var rsaPublicKey *rsa.PublicKey
+		targetType := reflect.ValueOf(rsaPublicKey).Type()
+		rsaPublicKey = pubkeyValue.Convert(targetType).Interface().(*rsa.PublicKey)
+		cryptoKey = rsaPublicKey
+
+	case "*dsaPublicKey":
+		var dsaPublicKey *dsa.PublicKey
+		targetType := reflect.ValueOf(dsaPublicKey).Type()
+		dsaPublicKey = pubkeyValue.Convert(targetType).Interface().(*dsa.PublicKey)
+		cryptoKey = dsaPublicKey
+
+	default:
+		return nil, fmt.Errorf("Unknown type for SSH PublicKey; cannot compute fingerprint: %q", typeName)
+	}
+
+	der, err := x509.MarshalPKIXPublicKey(cryptoKey)
+	if err != nil {
+		return nil, fmt.Errorf("error marshalling SSH public key: %v", err)
+	}
+	return der, nil
 }
 
 func (e *SSHKey) Run(c *fi.Context) error {
@@ -118,15 +166,6 @@ func (s *SSHKey) CheckChanges(a, e, changes *SSHKey) error {
 	if a != nil {
 		if changes.Name != nil {
 			return fi.CannotChangeField("Name")
-		}
-
-		if changes.KeyFingerprint == nil {
-			if e.PublicKey != nil && a.PublicKey == nil {
-				glog.V(2).Infof("SSH key fingerprints match; assuming public keys match")
-				changes.PublicKey = nil
-			}
-		} else {
-			glog.V(2).Infof("Computed SSH key fingerprint mismatch: %q %q", fi.StringValue(e.KeyFingerprint), fi.StringValue(a.KeyFingerprint))
 		}
 	}
 	return nil
