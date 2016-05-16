@@ -104,6 +104,13 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 		actual.IAMInstanceProfile = &IAMInstanceProfile{Name: nameFromIAMARN(i.IamInstanceProfile.Arn)}
 	}
 
+	if i.Tags != nil {
+		actual.Tags = make(map[string]string)
+		for _, t := range i.Tags {
+			actual.Tags[aws.StringValue(t.Key)] = aws.StringValue(t.Value)
+		}
+	}
+
 	e.ID = actual.ID
 
 	return actual, nil
