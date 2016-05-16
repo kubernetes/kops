@@ -22,3 +22,4 @@ import:
   subpackages:
   - ssh
 - package: github.com/cloudfoundry-incubator/candiedyaml
+- package: github.com/spf13/cobra
