@@ -71,6 +71,7 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 		}
 
 		fmt.Fprintf(b, "Changed resources:\n")
+		// We can't use our reflection helpers here - we want corresponding values from a,e,c
 		for _, r := range t.changes {
 			if r.aIsNil {
 				continue
@@ -93,8 +94,15 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 				for i := 0; i < valC.NumField(); i++ {
 					fieldValC := valC.Field(i)
 
-					if (fieldValC.Kind() == reflect.Ptr || fieldValC.Kind() == reflect.Slice || fieldValC.Kind() == reflect.Map) && fieldValC.IsNil() {
-						// No change
+					changed := true
+					switch fieldValC.Kind() {
+					case reflect.Ptr, reflect.Interface, reflect.Slice, reflect.Map:
+						changed = !fieldValC.IsNil()
+
+					case reflect.String:
+						changed = fieldValC.Interface().(string) != ""
+					}
+					if !changed {
 						continue
 					}
 
