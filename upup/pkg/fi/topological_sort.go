@@ -6,14 +6,14 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi/utils"
 	"reflect"
-	"sort"
 )
 
 type HasDependencies interface {
 	GetDependencies(tasks map[string]Task) []string
 }
 
-func TopologicalSort(tasks map[string]Task) [][]string {
+// FindTaskDependencies returns a map from each task's key to the discovered list of dependencies
+func FindTaskDependencies(tasks map[string]Task) map[string][]string {
 	taskToId := make(map[interface{}]string)
 	for k, t := range tasks {
 		taskToId[t] = k
@@ -39,13 +39,7 @@ func TopologicalSort(tasks map[string]Task) [][]string {
 		glog.V(4).Infof("\t%s:\t%v", k, v)
 	}
 
-	ordered := toposort(edges)
-	glog.V(1).Infof("toposorted as:")
-	for i, stage := range ordered {
-		glog.V(1).Infof("\t%d\t%v", i, stage)
-	}
-
-	return ordered
+	return edges
 }
 
 func reflectForDependencies(task Task, taskToId map[interface{}]string) []string {
@@ -62,57 +56,6 @@ func reflectForDependencies(task Task, taskToId map[interface{}]string) []string
 	}
 
 	return dependencyKeys
-}
-
-// Perform a topological sort
-// Note that we group them into stages, where each stage has no dependencies on other members of that stage
-// This could support parallelism but also pushes nodes with fewer dependencies earlier
-//
-// This is not a particularly efficient implementation, but is simple,
-// and likely good enough for the sizes we will be dealing with
-func toposort(edges map[string][]string) [][]string {
-	var stages [][]string
-
-	for {
-		if len(edges) == 0 {
-			break
-		}
-
-		var stage []string
-		for k, in := range edges {
-			if len(in) != 0 {
-				continue
-			}
-			stage = append(stage, k)
-		}
-
-		// For consistency
-		sort.Strings(stage)
-
-		if len(stage) == 0 {
-			glog.Fatalf("graph is circular")
-		}
-
-		stages = append(stages, stage)
-
-		stageSet := make(map[string]bool)
-		for _, k := range stage {
-			delete(edges, k)
-			stageSet[k] = true
-		}
-
-		for k, in := range edges {
-			var after []string
-			for _, v := range in {
-				if !stageSet[v] {
-					after = append(after, v)
-				}
-			}
-			edges[k] = after
-		}
-	}
-
-	return stages
 }
 
 func getDependencies(v reflect.Value) []Task {
