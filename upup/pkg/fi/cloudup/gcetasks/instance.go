@@ -8,7 +8,9 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
+	"reflect"
 	"strings"
+	"time"
 )
 
 var scopeAliases map[string]string
@@ -30,6 +32,8 @@ type Instance struct {
 	Metadata    map[string]fi.Resource
 	Zone        *string
 	MachineType *string
+
+	metadataFingerprint string
 }
 
 func (e *Instance) String() string {
@@ -115,6 +119,18 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 
 			actual.Disks[disk.DeviceName] = &PersistentDisk{Name: &url.Name}
 		}
+	}
+
+	if r.Metadata != nil {
+		actual.Metadata = make(map[string]fi.Resource)
+		for _, i := range r.Metadata.Items {
+			if i.Value == nil {
+				glog.Warningf("ignoring GCE instance metadata entry with nil-value: %q", i.Key)
+				continue
+			}
+			actual.Metadata[i.Key] = fi.NewStringResource(*i.Value)
+		}
+		actual.metadataFingerprint = r.Metadata.Fingerprint
 	}
 
 	return actual, nil
@@ -297,8 +313,15 @@ func (e *Instance) mapToGCE(project string, ipAddressResolver func(*IPAddress) (
 	return i, nil
 }
 
+func (i *Instance) isZero() bool {
+	zero := &Instance{}
+	return reflect.DeepEqual(zero, i)
+}
+
 func (_ *Instance) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instance) error {
-	project := t.Cloud.Project
+	cloud := t.Cloud
+	project := cloud.Project
+	zone := *e.Zone
 
 	ipAddressResolver := func(ip *IPAddress) (*string, error) {
 		return ip.FindAddress(t.Cloud)
@@ -310,14 +333,74 @@ func (_ *Instance) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instance) error
 	}
 
 	if a == nil {
-		_, err := t.Cloud.Compute.Instances.Insert(t.Cloud.Project, *e.Zone, i).Do()
+		glog.V(2).Infof("Creating instance %q", i.Name)
+		_, err := t.Cloud.Compute.Instances.Insert(project, zone, i).Do()
 		if err != nil {
 			return fmt.Errorf("error creating Instance: %v", err)
 		}
 	} else {
-		// TODO: Make error again
-		glog.Errorf("Cannot apply changes to Instance: %v", changes)
-		//		return fmt.Errorf("Cannot apply changes to Instance: %v", changes)
+		if changes.Metadata != nil {
+			glog.V(2).Infof("Updating instance metadata on %q", i.Name)
+
+			i.Metadata.Fingerprint = a.metadataFingerprint
+
+			op, err := cloud.Compute.Instances.SetMetadata(project, zone, i.Name, i.Metadata).Do()
+			if err != nil {
+				return fmt.Errorf("error setting metadata on instance: %v", err)
+			}
+
+			err = waitCompletion(cloud.Compute, project, op)
+			if err != nil {
+				return fmt.Errorf("error setting metadata on instance: %v", err)
+			}
+
+			changes.Metadata = nil
+		}
+
+		if !changes.isZero() {
+			glog.Errorf("Cannot apply changes to Instance: %v", changes)
+			return fmt.Errorf("Cannot apply changes to Instance: %v", changes)
+		}
+	}
+
+	return nil
+}
+
+func waitCompletion(c *compute.Service, project string, op *compute.Operation) error {
+	zone := lastComponent(op.Zone)
+	var status *compute.Operation
+	for {
+		var err error
+		status, err = c.ZoneOperations.Get(project, zone, op.Name).Do()
+		if err != nil {
+			return fmt.Errorf("error fetching operation status: %v", err)
+		}
+		done := false
+		switch status.Status {
+		case "DONE":
+			done = true
+		case "PENDING", "RUNNING":
+			glog.V(4).Infof("operation status=%v", status.Status)
+		}
+
+		if done {
+			break
+		}
+
+		// TODO: Exponential backoff or similar
+		time.Sleep(1 * time.Second)
+	}
+
+	if status.Error != nil {
+		for _, e := range status.Error.Errors {
+			glog.Warningf("operation failed with error: %v", e)
+		}
+
+		return fmt.Errorf("operation failed: %v", status.Error.Errors[0].Message)
+	}
+
+	if status.Warnings != nil {
+		glog.Warningf("operation completed with warnings: %v", status.Warnings)
 	}
 
 	return nil
