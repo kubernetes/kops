@@ -232,6 +232,19 @@ func (e *AutoscalingGroup) findLaunchConfiguration(c *fi.Context, name string, d
 	dest.IAMInstanceProfile = &IAMInstanceProfile{Name: i.IamInstanceProfile}
 	dest.AssociatePublicIP = i.AssociatePublicIpAddress
 
+	// Avoid spurious changes on ImageId
+	if e.ImageID != nil && dest.ImageID != nil && *dest.ImageID != *e.ImageID {
+		image, err := cloud.ResolveImage(*e.ImageID)
+		if err != nil {
+			glog.Warningf("unable to resolve image: %q: %v", *e.ImageID, err)
+		} else if image == nil {
+			glog.Warningf("unable to resolve image: %q: not found", *e.ImageID)
+		} else if aws.StringValue(image.ImageId) == *dest.ImageID {
+			glog.V(4).Infof("Returning matching ImageId as expected name: %q -> %q", *dest.ImageID, *e.ImageID)
+			dest.ImageID = e.ImageID
+		}
+	}
+
 	return true, nil
 }
 
