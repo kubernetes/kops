@@ -60,7 +60,7 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 	actual.MachineType = fi.String(lastComponent(p.MachineType))
 	actual.CanIPForward = &p.CanIpForward
 
-	bootDiskImage, err := ShortenImageURL(p.Disks[0].InitializeParams.SourceImage)
+	bootDiskImage, err := ShortenImageURL(cloud.Project, p.Disks[0].InitializeParams.SourceImage)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing source image URL: %v", err)
 	}
