@@ -9,6 +9,7 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/loader"
 	"k8s.io/kube-deploy/upup/pkg/fi/nodeup/nodetasks"
+	"os"
 	"strings"
 	"text/template"
 )
@@ -75,9 +76,11 @@ func (l *Loader) Build(baseDir string) (map[string]fi.Task, error) {
 		DefaultHandler: ignoreHandler,
 		Contexts: map[string]loader.Handler{
 			"options":  l.optionsLoader.HandleOptions,
+			"files":    ignoreHandler,
+			"disks":    ignoreHandler,
 			"packages": ignoreHandler,
 			"services": ignoreHandler,
-			"files":    ignoreHandler,
+			"users":    ignoreHandler,
 		},
 		Tags: tags,
 	}
@@ -99,9 +102,11 @@ func (l *Loader) Build(baseDir string) (map[string]fi.Task, error) {
 		DefaultHandler: l.handleFile,
 		Contexts: map[string]loader.Handler{
 			"options":  ignoreHandler,
+			"files":    l.handleFile,
+			"disks":    l.newTaskHandler("disk/", nodetasks.NewMountDiskTask),
 			"packages": l.newTaskHandler("package/", nodetasks.NewPackage),
 			"services": l.newTaskHandler("service/", nodetasks.NewService),
-			"files":    l.handleFile,
+			"users":    l.newTaskHandler("user/", nodetasks.NewUserTask),
 		},
 		Tags: tags,
 	}
@@ -143,7 +148,9 @@ func (r *Loader) newTaskHandler(prefix string, builder TaskBuilder) loader.Handl
 }
 
 func (r *Loader) handleFile(i *loader.TreeWalkItem) error {
-	var task fi.Task
+	var task *nodetasks.File
+	defaultFileType := nodetasks.FileType_File
+
 	var err error
 	if strings.HasSuffix(i.RelativePath, ".template") {
 		contents, err := i.ReadString()
@@ -185,7 +192,21 @@ func (r *Loader) handleFile(i *loader.TreeWalkItem) error {
 
 		task, err = nodetasks.NewFileTask(i.Name, asset, destPath, i.Meta)
 	} else {
-		task, err = nodetasks.NewFileTask(i.Name, fi.NewFileResource(i.Path), "/"+i.RelativePath, i.Meta)
+		stat, err := os.Stat(i.Path)
+		if err != nil {
+			return fmt.Errorf("error doing stat on %q: %v", i.Path, err)
+		}
+		var contents fi.Resource
+		if stat.IsDir() {
+			defaultFileType = nodetasks.FileType_Directory
+		} else {
+			contents = fi.NewFileResource(i.Path)
+		}
+		task, err = nodetasks.NewFileTask(i.Name, contents, "/"+i.RelativePath, i.Meta)
+	}
+
+	if task.Type == "" {
+		task.Type = defaultFileType
 	}
 
 	if err != nil {

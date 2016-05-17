@@ -79,6 +79,22 @@ func (t *TreeWalker) walkDirectory(parent *TreeWalkItem) error {
 
 		glog.V(4).Infof("visit %q", i.Path)
 
+		hasMeta := false
+		{
+			metaPath := i.Path + ".meta"
+			metaBytes, err := ioutil.ReadFile(metaPath)
+			if err != nil {
+				if !os.IsNotExist(err) {
+					return fmt.Errorf("error reading file %q: %v", metaPath, err)
+				}
+				metaBytes = nil
+			}
+			if metaBytes != nil {
+				hasMeta = true
+				i.Meta = string(metaBytes)
+			}
+		}
+
 		if f.IsDir() {
 			if IsTag(fileName) {
 				// Only descend into the tag directory if we have the tag
@@ -106,7 +122,13 @@ func (t *TreeWalker) walkDirectory(parent *TreeWalkItem) error {
 			if err != nil {
 				return err
 			}
-			continue
+
+			// So that we can manage directories, we do not ignore directories which have a .meta file
+			if hasMeta {
+				glog.V(4).Infof("Found .meta file for directory %q; will process", i.Path)
+			} else {
+				continue
+			}
 		}
 
 		if strings.HasSuffix(fileName, ".meta") {
@@ -120,24 +142,12 @@ func (t *TreeWalker) walkDirectory(parent *TreeWalkItem) error {
 			continue
 		}
 
-		{
-			metaPath := i.Path + ".meta"
-			metaBytes, err := ioutil.ReadFile(metaPath)
-			if err != nil {
-				if !os.IsNotExist(err) {
-					return fmt.Errorf("error reading file %q: %v", metaPath, err)
-				}
-				metaBytes = nil
-			}
-			if metaBytes != nil {
-				i.Meta = string(metaBytes)
-			}
-		}
-
 		var handler Handler
 		if i.Context != "" {
 			handler = t.Contexts[i.Context]
 		} else {
+			// TODO: Just remove extensions.... we barely use them!
+			// (or remove default handler and replace with lots of small files?)
 			extension := path.Ext(fileName)
 			handler = t.Extensions[extension]
 			if handler == nil {

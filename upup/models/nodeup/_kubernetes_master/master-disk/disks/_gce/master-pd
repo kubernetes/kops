@@ -1,0 +1,2 @@
+device: /dev/disk/by-id/google-master-pd
+mountpoint: /mnt/master-pd

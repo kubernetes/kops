@@ -1,5 +1,5 @@
 hash: 9864d4fe0b94042cab08d2e80910638776d3d1e655b5a3cb9006731ae0306761
-updated: 2016-05-09T11:48:29.232191357-04:00
+updated: 2016-05-13T09:50:25.860201305-04:00
 imports:
 - name: github.com/aws/aws-sdk-go
   version: d85fa529a99a833067e11c0a838b9db7a5d5ea71
@@ -87,4 +87,9 @@ imports:
   - internal
 - name: google.golang.org/grpc
   version: 9604a2bb7dd81d87c2873a9580258465f3c311c8
+- name: k8s.io/kubernetes
+  version: bb3f5b1768f3bf6c81914c5bb1d7e846561fdc31
+  subpackages:
+  - pkg/util/exec
+  - pkg/util/mount
 devImports: []
