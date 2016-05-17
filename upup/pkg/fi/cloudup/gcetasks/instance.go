@@ -324,7 +324,7 @@ func (_ *Instance) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instance) error
 	zone := *e.Zone
 
 	ipAddressResolver := func(ip *IPAddress) (*string, error) {
-		return ip.FindAddress(t.Cloud)
+		return ip.Address, nil
 	}
 
 	i, err := e.mapToGCE(project, ipAddressResolver)

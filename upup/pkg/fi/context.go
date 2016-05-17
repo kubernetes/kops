@@ -75,6 +75,8 @@ func (c *Context) NewTempDir(prefix string) (string, error) {
 	return t, nil
 }
 
+var typeContextPtr = reflect.TypeOf((*Context)(nil))
+
 func (c *Context) Render(a, e, changes Task) error {
 	if _, ok := c.Target.(*DryRunTarget); ok {
 		return c.Target.(*DryRunTarget).Render(a, e, changes)
@@ -86,18 +88,27 @@ func (c *Context) Render(a, e, changes Task) error {
 	targetType := reflect.ValueOf(c.Target).Type()
 
 	var renderer *reflect.Method
+	var rendererArgs []reflect.Value
+
 	for i := 0; i < vType.NumMethod(); i++ {
 		method := vType.Method(i)
 		if !strings.HasPrefix(method.Name, "Render") {
 			continue
 		}
 		match := true
+
+		var args []reflect.Value
 		for j := 0; j < method.Type.NumIn(); j++ {
 			arg := method.Type.In(j)
 			if arg.ConvertibleTo(vType) {
 				continue
 			}
+			if arg.ConvertibleTo(typeContextPtr) {
+				args = append(args, reflect.ValueOf(c))
+				continue
+			}
 			if arg.ConvertibleTo(targetType) {
+				args = append(args, reflect.ValueOf(c.Target))
 				continue
 			}
 			match = false
@@ -108,20 +119,19 @@ func (c *Context) Render(a, e, changes Task) error {
 				return fmt.Errorf("Found multiple Render methods that could be invokved on %T", e)
 			}
 			renderer = &method
+			rendererArgs = args
 		}
 
 	}
 	if renderer == nil {
 		return fmt.Errorf("Could not find Render method on type %T (target %T)", e, c.Target)
 	}
-	var args []reflect.Value
-	args = append(args, reflect.ValueOf(c.Target))
-	args = append(args, reflect.ValueOf(a))
-	args = append(args, reflect.ValueOf(e))
-	args = append(args, reflect.ValueOf(changes))
+	rendererArgs = append(rendererArgs, reflect.ValueOf(a))
+	rendererArgs = append(rendererArgs, reflect.ValueOf(e))
+	rendererArgs = append(rendererArgs, reflect.ValueOf(changes))
 	glog.V(4).Infof("Calling method %s on %T", renderer.Name, e)
 	m := v.MethodByName(renderer.Name)
-	rv := m.Call(args)
+	rv := m.Call(rendererArgs)
 	var rvErr error
 	if !rv[0].IsNil() {
 		rvErr = rv[0].Interface().(error)

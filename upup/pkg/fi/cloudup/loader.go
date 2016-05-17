@@ -7,7 +7,6 @@ import (
 	"github.com/golang/glog"
 	"io"
 	"k8s.io/kube-deploy/upup/pkg/fi"
-	"k8s.io/kube-deploy/upup/pkg/fi/fitasks"
 	"k8s.io/kube-deploy/upup/pkg/fi/loader"
 	"k8s.io/kube-deploy/upup/pkg/fi/nodeup"
 	"k8s.io/kube-deploy/upup/pkg/fi/utils"
@@ -129,14 +128,14 @@ func (l *Loader) executeTemplate(key string, d string, args []string) (string, e
 	}
 	t.Funcs(funcMap)
 
+	t.Option("missingkey=zero")
+
 	context := l.config
 
 	_, err := t.Parse(d)
 	if err != nil {
 		return "", fmt.Errorf("error parsing template %q: %v", key, err)
 	}
-
-	t.Option("missingkey=zero")
 
 	var buffer bytes.Buffer
 	err = t.ExecuteTemplate(&buffer, key, context)
@@ -157,7 +156,6 @@ func (l *Loader) Build(baseDir string) (map[string]fi.Task, error) {
 		DefaultHandler: ignoreHandler,
 		Contexts: map[string]loader.Handler{
 			"resources": ignoreHandler,
-			"pki":       ignoreHandler,
 		},
 		Extensions: map[string]loader.Handler{
 			".options": l.OptionsLoader.HandleOptions,
@@ -180,7 +178,6 @@ func (l *Loader) Build(baseDir string) (map[string]fi.Task, error) {
 		DefaultHandler: l.objectHandler,
 		Contexts: map[string]loader.Handler{
 			"resources": l.resourceHandler,
-			"pki":       l.pkiHandler,
 		},
 		Extensions: map[string]loader.Handler{
 			".options": ignoreHandler,
@@ -282,27 +279,6 @@ func (l *Loader) resourceHandler(i *loader.TreeWalkItem) error {
 	}
 
 	l.Resources[key] = a
-	return nil
-}
-
-func (l *Loader) pkiHandler(i *loader.TreeWalkItem) error {
-	contents, err := i.ReadString()
-	if err != nil {
-		return err
-	}
-
-	key := i.RelativePath
-
-	contents, err = l.executeTemplate(key, contents, nil)
-	if err != nil {
-		return err
-	}
-
-	task, err := fitasks.NewPKIKeyPairTask(key, contents, "")
-	if err != nil {
-		return err
-	}
-	l.tasks["pki/"+i.RelativePath] = task
 	return nil
 }
 

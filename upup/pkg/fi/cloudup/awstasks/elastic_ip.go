@@ -30,8 +30,10 @@ func (e *ElasticIP) String() string {
 	return fi.TaskAsString(e)
 }
 
-func (e *ElasticIP) FindAddress(c fi.Cloud) (*string, error) {
-	actual, err := e.find(c.(*awsup.AWSCloud))
+var _ fi.HasAddress = &ElasticIP{}
+
+func (e *ElasticIP) FindAddress(context *fi.Context) (*string, error) {
+	actual, err := e.find(context.Cloud.(*awsup.AWSCloud))
 	if err != nil {
 		return nil, fmt.Errorf("error querying for ElasticIP: %v", err)
 	}
