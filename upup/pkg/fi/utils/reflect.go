@@ -48,21 +48,20 @@ func BuildTypeName(t reflect.Type) string {
 
 type visitorFunc func(path string, field *reflect.StructField, v reflect.Value) error
 
-func WalkRecursive(v reflect.Value, visitor visitorFunc) error {
-	return walkRecursive("", v, visitor)
+// ReflectRecursive calls visitor with v and every recursive sub-value, skipping subtrees if SkipReflection is returned
+func ReflectRecursive(v reflect.Value, visitor visitorFunc) error {
+	return reflectRecursive("", v, visitor)
 }
 
-func walkRecursive(path string, v reflect.Value, visitor visitorFunc) error {
+func reflectRecursive(path string, v reflect.Value, visitor visitorFunc) error {
 	vType := v.Type()
 
-	if v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface {
-		if !v.IsNil() {
-			e := v.Elem()
-			if e.Kind() == reflect.Struct || e.Kind() == reflect.Map {
-				v = e
-				vType = v.Type()
-			}
+	err := visitor(path, nil, v)
+	if err != nil {
+		if err == SkipReflection {
+			return nil
 		}
+		return err
 	}
 
 	switch v.Kind() {
@@ -82,7 +81,7 @@ func walkRecursive(path string, v reflect.Value, visitor visitorFunc) error {
 				return err
 			}
 			if err == nil {
-				err = walkRecursive(childPath, f, visitor)
+				err = reflectRecursive(childPath, f, visitor)
 				if err != nil {
 					return err
 				}
@@ -95,13 +94,13 @@ func walkRecursive(path string, v reflect.Value, visitor visitorFunc) error {
 		for _, key := range keys {
 			mv := v.MapIndex(key)
 
-			childPath := path + "[" + fmt.Sprintf("%s", mv.Interface()) + "]"
+			childPath := path + "[" + fmt.Sprintf("%s", key.Interface()) + "]"
 			err := visitor(childPath, nil, mv)
 			if err != nil && err != SkipReflection {
 				return err
 			}
 			if err == nil {
-				err = walkRecursive(childPath, mv, visitor)
+				err = reflectRecursive(childPath, mv, visitor)
 				if err != nil {
 					return err
 				}
@@ -120,7 +119,7 @@ func walkRecursive(path string, v reflect.Value, visitor visitorFunc) error {
 				return err
 			}
 			if err == nil {
-				err = walkRecursive(childPath, av, visitor)
+				err = reflectRecursive(childPath, av, visitor)
 				if err != nil {
 					return err
 				}
@@ -129,24 +128,14 @@ func walkRecursive(path string, v reflect.Value, visitor visitorFunc) error {
 		break
 
 	case reflect.Ptr, reflect.Interface:
-		err := visitor(path, nil, v)
-		if err != nil && err != SkipReflection {
-			return err
-		}
-		if err == nil && !v.IsNil() {
+		if !v.IsNil() {
 			e := v.Elem()
-			err = walkRecursive(path, e, visitor)
+			err = reflectRecursive(path, e, visitor)
 			if err != nil {
 				return err
 			}
 		}
 		break
-
-	default:
-		err := visitor(path, nil, v)
-		if err != nil && err != SkipReflection {
-			return err
-		}
 	}
 
 	return nil

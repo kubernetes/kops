@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"github.com/golang/glog"
 	"io"
+	"k8s.io/kube-deploy/upup/pkg/fi/utils"
 	"reflect"
 )
 
@@ -98,6 +99,11 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 						continue
 					}
 
+					if fieldValC.Kind() == reflect.String && fieldValC.Interface().(string) == "" {
+						// No change
+						continue
+					}
+
 					fieldValE := valE.Field(i)
 
 					description := ""
@@ -138,40 +144,82 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 }
 
 // asString returns a human-readable string representation of the passed value
-func asString(v reflect.Value) string {
-	if v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface {
-		if v.IsNil() {
-			return "<nil>"
+func asString(value reflect.Value) string {
+	b := &bytes.Buffer{}
+
+	walker := func(path string, field *reflect.StructField, v reflect.Value) error {
+		if utils.IsPrimitiveValue(v) || v.Kind() == reflect.String {
+			fmt.Fprintf(b, "%v", v.Interface())
+			return utils.SkipReflection
 		}
-	}
-	if v.CanInterface() {
-		iv := v.Interface()
-		_, isResource := iv.(Resource)
-		if isResource {
-			return "<resource>"
-		}
-		_, isHasID := iv.(CompareWithID)
-		if isHasID {
-			id := iv.(CompareWithID).CompareWithID()
-			if id == nil {
-				return "id:<nil>"
-			} else {
-				return "id:" + *id
+
+		switch v.Kind() {
+		case reflect.Ptr, reflect.Interface, reflect.Slice, reflect.Map:
+			if v.IsNil() {
+				fmt.Fprintf(b, "<nil>")
+				return utils.SkipReflection
 			}
 		}
-		switch typed := iv.(type) {
-		case *string:
-			return *typed
-		case *bool:
-			return fmt.Sprintf("%v", *typed)
+
+		switch v.Kind() {
+		case reflect.Ptr, reflect.Interface:
+			return nil // descend into value
+
+		case reflect.Slice:
+			len := v.Len()
+			fmt.Fprintf(b, "[")
+			for i := 0; i < len; i++ {
+				av := v.Index(i)
+
+				if i != 0 {
+					fmt.Fprintf(b, ", ")
+				}
+				fmt.Fprintf(b, "%s", asString(av))
+			}
+			fmt.Fprintf(b, "]")
+			return utils.SkipReflection
+
+		case reflect.Map:
+			keys := v.MapKeys()
+			fmt.Fprintf(b, "{")
+			for i, key := range keys {
+				mv := v.MapIndex(key)
+
+				if i != 0 {
+					fmt.Fprintf(b, ", ")
+				}
+				fmt.Fprintf(b, "%s: %s", asString(key), asString(mv))
+			}
+			fmt.Fprintf(b, "}")
+			return utils.SkipReflection
+
+		case reflect.Struct:
+			intf := v.Addr().Interface()
+			if _, ok := intf.(Resource); ok {
+				fmt.Fprintf(b, "<resource>")
+			} else if compareWithID, ok := intf.(CompareWithID); ok {
+				id := compareWithID.CompareWithID()
+				if id == nil {
+					fmt.Fprintf(b, "id:<nil>")
+				} else {
+					fmt.Fprintf(b, "id:%s", *id)
+				}
+			} else {
+				return fmt.Errorf("Unhandled type for %q: %T", path, intf)
+			}
+			return utils.SkipReflection
+
 		default:
-			return fmt.Sprintf("%T (%v)", iv, iv)
+			glog.Infof("Unhandled kind for %q: %T", path, v.Interface())
+			return fmt.Errorf("Unhandled kind for %q: %v", path, v.Kind())
 		}
-
-	} else {
-		return fmt.Sprintf("Unhandled: %T", v.Type())
-
 	}
+
+	err := utils.ReflectRecursive(value, walker)
+	if err != nil {
+		glog.Fatalf("unexpected error during reflective walk: %v", err)
+	}
+	return b.String()
 }
 
 // Finish is called at the end of a run, and prints a list of changes to the configured Writer
