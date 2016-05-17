@@ -3,6 +3,7 @@ package awsup
 import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -11,7 +12,11 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"strings"
+	"time"
 )
+
+const MaxDescribeTagsAttempts = 10
+const MaxCreateTagsAttempts = 10
 
 type AWSCloud struct {
 	EC2         *ec2.EC2
@@ -64,6 +69,18 @@ func (c *AWSCloud) Tags() map[string]string {
 	return tags
 }
 
+// isTagsEventualConsistencyError checks if the error is one of the errors encountered when we try to create/get tags before the resource has fully 'propagated' in EC2
+func isTagsEventualConsistencyError(err error) bool {
+	if awsErr, ok := err.(awserr.Error); ok {
+		switch awsErr.Code() {
+		case "InvalidInstanceID.NotFound":
+			return true
+		}
+	}
+	return false
+}
+
+// GetTags will fetch the tags for the specified resource, retrying (up to MaxDescribeTagsAttempts) if it hits an eventual-consistency type error
 func (c *AWSCloud) GetTags(resourceId string) (map[string]string, error) {
 	tags := map[string]string{}
 
@@ -73,22 +90,38 @@ func (c *AWSCloud) GetTags(resourceId string) (map[string]string, error) {
 		},
 	}
 
-	response, err := c.EC2.DescribeTags(request)
-	if err != nil {
-		return nil, fmt.Errorf("error listing tags on %v: %v", resourceId, err)
-	}
+	attempt := 0
+	for {
+		attempt++
 
-	for _, tag := range response.Tags {
-		if tag == nil {
-			glog.Warning("unexpected nil tag")
-			continue
+		response, err := c.EC2.DescribeTags(request)
+		if err != nil {
+			if isTagsEventualConsistencyError(err) {
+				if attempt > MaxDescribeTagsAttempts {
+					return nil, fmt.Errorf("Got retryable error while getting tags on %q, but retried too many times without success: %v", resourceId, err)
+				}
+
+				glog.V(2).Infof("will retry after encountering error gettings tags on %q: %v", resourceId, err)
+				time.Sleep(1 * time.Second)
+				continue
+			}
+
+			return nil, fmt.Errorf("error listing tags on %v: %v", resourceId, err)
 		}
-		tags[aws.StringValue(tag.Key)] = aws.StringValue(tag.Value)
-	}
 
-	return tags, nil
+		for _, tag := range response.Tags {
+			if tag == nil {
+				glog.Warning("unexpected nil tag")
+				continue
+			}
+			tags[aws.StringValue(tag.Key)] = aws.StringValue(tag.Value)
+		}
+
+		return tags, nil
+	}
 }
 
+// CreateTags will add tags to the specified resource, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
 func (c *AWSCloud) CreateTags(resourceId string, tags map[string]string) error {
 	if len(tags) == 0 {
 		return nil
@@ -98,17 +131,33 @@ func (c *AWSCloud) CreateTags(resourceId string, tags map[string]string) error {
 	for k, v := range tags {
 		ec2Tags = append(ec2Tags, &ec2.Tag{Key: aws.String(k), Value: aws.String(v)})
 	}
-	request := &ec2.CreateTagsInput{
-		Tags:      ec2Tags,
-		Resources: []*string{&resourceId},
-	}
 
-	_, err := c.EC2.CreateTags(request)
-	if err != nil {
-		return fmt.Errorf("error creating tags on %v: %v", resourceId, err)
-	}
+	attempt := 0
+	for {
+		attempt++
 
-	return nil
+		request := &ec2.CreateTagsInput{
+			Tags:      ec2Tags,
+			Resources: []*string{&resourceId},
+		}
+
+		_, err := c.EC2.CreateTags(request)
+		if err != nil {
+			if isTagsEventualConsistencyError(err) {
+				if attempt > MaxCreateTagsAttempts {
+					return fmt.Errorf("Got retryable error while creating tags on %q, but retried too many times without success: %v", resourceId, err)
+				}
+
+				glog.V(2).Infof("will retry after encountering error creatings tags on %q: %v", resourceId, err)
+				time.Sleep(1 * time.Second)
+				continue
+			}
+
+			return fmt.Errorf("error creating tags on %v: %v", resourceId, err)
+		}
+
+		return nil
+	}
 }
 
 func (c *AWSCloud) BuildTags(name *string) map[string]string {
