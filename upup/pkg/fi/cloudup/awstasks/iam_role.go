@@ -3,6 +3,7 @@ package awstasks
 import (
 	"fmt"
 
+	"encoding/json"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -10,6 +11,7 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
 	"net/url"
+	"reflect"
 )
 
 type IAMRole struct {
@@ -49,12 +51,37 @@ func (e *IAMRole) Find(c *fi.Context) (*IAMRole, error) {
 	actual.Name = r.RoleName
 	if r.AssumeRolePolicyDocument != nil {
 		// The AssumeRolePolicyDocument is URI encoded (?)
-		policy := *r.AssumeRolePolicyDocument
-		policy, err = url.QueryUnescape(policy)
+		actualPolicy := *r.AssumeRolePolicyDocument
+		actualPolicy, err = url.QueryUnescape(actualPolicy)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing AssumeRolePolicyDocument for IAMRole %q: %v", e.Name, err)
 		}
-		actual.RolePolicyDocument = fi.NewStringResource(policy)
+
+		// The RolePolicyDocument is reformatted by AWS
+		// We parse both as JSON; if the json forms are equal we pretend the actual value is the expected value
+		if e.RolePolicyDocument != nil {
+			expectedPolicy, err := fi.ResourceAsString(e.RolePolicyDocument)
+			if err != nil {
+				return nil, fmt.Errorf("error reading expected RolePolicyDocument for IAMRole %q: %v", e.Name, err)
+			}
+			expectedJson := make(map[string]interface{})
+			err = json.Unmarshal([]byte(expectedPolicy), &expectedJson)
+			if err != nil {
+				return nil, fmt.Errorf("error parsing expected RolePolicyDocument for IAMRole %q: %v", e.Name, err)
+			}
+			actualJson := make(map[string]interface{})
+			err = json.Unmarshal([]byte(actualPolicy), &actualJson)
+			if err != nil {
+				return nil, fmt.Errorf("error parsing actual RolePolicyDocument for IAMRole %q: %v", e.Name, err)
+			}
+
+			if reflect.DeepEqual(actualJson, expectedJson) {
+				glog.V(2).Infof("actual RolePolicyDocument was json-equal to expected; returning expected value")
+				actualPolicy = expectedPolicy
+			}
+		}
+
+		actual.RolePolicyDocument = fi.NewStringResource(actualPolicy)
 	}
 
 	glog.V(2).Infof("found matching IAMRole %q", *actual.ID)
