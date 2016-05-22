@@ -37,20 +37,10 @@ func NewContext(target Target, cloud Cloud, castore CAStore, checkExisting bool)
 }
 
 func (c *Context) RunTasks(taskMap map[string]Task) error {
-	taskOrder := TopologicalSort(taskMap)
-
-	for _, stage := range taskOrder {
-		for _, k := range stage {
-			task := taskMap[k]
-			glog.V(2).Infof("Executing task: %v\n", task)
-			err := task.Run(c)
-			if err != nil {
-				return fmt.Errorf("error running tasks (%s): %v", task, err)
-			}
-		}
+	e := &executor{
+		context: c,
 	}
-
-	return nil
+	return e.RunTasks(taskMap)
 }
 
 func (c *Context) Close() {
