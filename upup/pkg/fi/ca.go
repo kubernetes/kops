@@ -17,6 +17,8 @@ import (
 	"time"
 )
 
+const CertificateId_CA = "ca"
+
 type Certificate struct {
 	Subject pkix.Name
 	IsCA    bool
@@ -45,7 +47,7 @@ func (c *Certificate) UnmarshalJSON(b []byte) error {
 
 func (c *Certificate) MarshalJSON() ([]byte, error) {
 	var data bytes.Buffer
-	err := c.WriteCertificate(&data)
+	_, err := c.WriteTo(&data)
 	if err != nil {
 		return nil, fmt.Errorf("error writing SSL certificate: %v", err)
 	}
@@ -70,7 +72,7 @@ func (c *Certificate) AsString() (string, error) {
 	}
 
 	var data bytes.Buffer
-	err := c.WriteCertificate(&data)
+	_, err := c.WriteTo(&data)
 	if err != nil {
 		return "", fmt.Errorf("error writing SSL certificate: %v", err)
 	}
@@ -88,7 +90,7 @@ func (c *PrivateKey) AsString() (string, error) {
 	}
 
 	var data bytes.Buffer
-	err := WritePrivateKey(c.Key, &data)
+	_, err := c.WriteTo(&data)
 	if err != nil {
 		return "", fmt.Errorf("error writing SSL private key: %v", err)
 	}
@@ -114,11 +116,31 @@ func (k *PrivateKey) UnmarshalJSON(b []byte) (err error) {
 
 func (k *PrivateKey) MarshalJSON() ([]byte, error) {
 	var data bytes.Buffer
-	err := WritePrivateKey(k.Key, &data)
+	_, err := k.WriteTo(&data)
 	if err != nil {
 		return nil, fmt.Errorf("error writing SSL private key: %v", err)
 	}
 	return json.Marshal(data.String())
+}
+
+var _ io.WriterTo = &PrivateKey{}
+
+func (k *PrivateKey) WriteTo(w io.Writer) (int64, error) {
+	var data bytes.Buffer
+	var err error
+
+	switch pk := k.Key.(type) {
+	case *rsa.PrivateKey:
+		err = pem.Encode(w, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(pk)})
+	default:
+		return 0, fmt.Errorf("unknown private key type: %T", k.Key)
+	}
+
+	if err != nil {
+		return 0, fmt.Errorf("error writing SSL private key: %v", err)
+	}
+
+	return data.WriteTo(w)
 }
 
 func LoadPEMCertificate(pemData []byte) (*Certificate, error) {
@@ -199,8 +221,15 @@ func SignNewCertificate(privateKey *PrivateKey, template *x509.Certificate, sign
 	return c, nil
 }
 
-func (c *Certificate) WriteCertificate(w io.Writer) error {
-	return pem.Encode(w, &pem.Block{Type: "CERTIFICATE", Bytes: c.Certificate.Raw})
+var _ io.WriterTo = &Certificate{}
+
+func (c *Certificate) WriteTo(w io.Writer) (int64, error) {
+	var b bytes.Buffer
+	err := pem.Encode(&b, &pem.Block{Type: "CERTIFICATE", Bytes: c.Certificate.Raw})
+	if err != nil {
+		return 0, err
+	}
+	return b.WriteTo(w)
 }
 
 func parsePEMCertificate(pemData []byte) (*x509.Certificate, error) {
@@ -219,15 +248,6 @@ func parsePEMCertificate(pemData []byte) (*x509.Certificate, error) {
 
 		pemData = rest
 	}
-}
-
-func WritePrivateKey(privateKey crypto.PrivateKey, w io.Writer) error {
-	rsaPrivateKey, ok := privateKey.(*rsa.PrivateKey)
-	if ok {
-		return pem.Encode(w, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(rsaPrivateKey)})
-	}
-
-	return fmt.Errorf("unknown private key type: %T", privateKey)
 }
 
 func parsePEMPrivateKey(pemData []byte) (crypto.PrivateKey, error) {
