@@ -127,12 +127,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 		actual.IAMInstanceProfile = &IAMInstanceProfile{Name: nameFromIAMARN(i.IamInstanceProfile.Arn)}
 	}
 
-	if i.Tags != nil {
-		actual.Tags = make(map[string]string)
-		for _, t := range i.Tags {
-			actual.Tags[aws.StringValue(t.Key)] = aws.StringValue(t.Value)
-		}
-	}
+	actual.Tags = mapEC2TagsToMap(i.Tags)
 
 	e.ID = actual.ID
 
@@ -178,17 +173,6 @@ func (_ *Instance) CheckChanges(a, e, changes *Instance) error {
 		}
 	}
 	return nil
-}
-
-func (e *Instance) buildTags(cloud *awsup.AWSCloud) map[string]string {
-	tags := make(map[string]string)
-	for k, v := range cloud.BuildTags(e.Name) {
-		tags[k] = v
-	}
-	for k, v := range e.Tags {
-		tags[k] = v
-	}
-	return tags
 }
 
 func (_ *Instance) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Instance) error {
@@ -265,5 +249,5 @@ func (_ *Instance) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Instance) err
 		e.ID = response.Instances[0].InstanceId
 	}
 
-	return t.AddAWSTags(*e.ID, e.buildTags(t.Cloud))
+	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name, e.Tags))
 }

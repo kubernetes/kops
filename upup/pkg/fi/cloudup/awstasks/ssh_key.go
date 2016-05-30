@@ -21,22 +21,17 @@ import (
 	"strings"
 )
 
+//go:generate fitask -type=SSHKey
 type SSHKey struct {
-	Name      *string
-	PublicKey fi.Resource
+	Name *string
+
+	PublicKey *fi.ResourceHolder
+
+	ID *string
 
 	KeyFingerprint *string
 }
 
-var _ fi.CompareWithID = &SecurityGroup{}
-
-func (e *SSHKey) CompareWithID() *string {
-	return e.Name
-}
-
-func (e *SSHKey) String() string {
-	return fi.TaskAsString(e)
-}
 func (e *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 	cloud := c.Cloud.(*awsup.AWSCloud)
 
@@ -66,6 +61,7 @@ func (e *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 
 	actual := &SSHKey{
 		Name:           k.KeyName,
+		ID:             k.KeyName,
 		KeyFingerprint: k.KeyFingerprint,
 	}
 
@@ -80,8 +76,8 @@ func (e *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 	return actual, nil
 }
 
-func computeAwsKeyFingerprint(publicKey fi.Resource) (string, error) {
-	publicKeyString, err := fi.ResourceAsString(publicKey)
+func computeAwsKeyFingerprint(publicKey *fi.ResourceHolder) (string, error) {
+	publicKeyString, err := publicKey.AsString()
 	if err != nil {
 		return "", fmt.Errorf("error reading SSH public key: %v", err)
 	}
@@ -180,7 +176,7 @@ func (_ *SSHKey) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SSHKey) error {
 		}
 
 		if e.PublicKey != nil {
-			d, err := fi.ResourceAsBytes(e.PublicKey)
+			d, err := e.PublicKey.AsBytes()
 			if err != nil {
 				return fmt.Errorf("error rendering SSHKey PublicKey: %v", err)
 			}

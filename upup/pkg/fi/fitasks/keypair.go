@@ -15,21 +15,23 @@ var wellKnownCertificateTypes = map[string]string{
 	"server": "ExtKeyUsageServerAuth,KeyUsageDigitalSignature,KeyUsageKeyEncipherment",
 }
 
+//go:generate fitask -type=Keypair
 type Keypair struct {
-	Name               string
+	Name               *string
 	Subject            string    `json:"subject"`
 	Type               string    `json:"type"`
 	AlternateNames     []string  `json:"alternateNames"`
 	AlternateNameTasks []fi.Task `json:"alternateNameTasks"`
 }
 
-func (e *Keypair) String() string {
-	return fi.TaskAsString(e)
-}
-
 func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
+	name := fi.StringValue(e.Name)
+	if name == "" {
+		return nil, nil
+	}
+
 	castore := c.CAStore
-	cert, err := castore.FindCert(e.Name)
+	cert, err := castore.FindCert(name)
 	if err != nil {
 		return nil, err
 	}
@@ -37,12 +39,12 @@ func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
 		return nil, nil
 	}
 
-	key, err := castore.FindPrivateKey(e.Name)
+	key, err := castore.FindPrivateKey(name)
 	if err != nil {
 		return nil, err
 	}
 	if key == nil {
-		return nil, fmt.Errorf("found cert in store, but did not find private key: %q", e.Name)
+		return nil, fmt.Errorf("found cert in store, but did not find private key: %q", name)
 	}
 
 	var alternateNames []string
@@ -54,7 +56,7 @@ func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
 	sort.Strings(alternateNames)
 
 	actual := &Keypair{
-		Name:           e.Name,
+		Name:           &name,
 		Subject:        pkixNameToString(&cert.Subject),
 		AlternateNames: alternateNames,
 		Type:           buildTypeDescription(cert.Certificate),
@@ -108,7 +110,7 @@ func (e *Keypair) normalize(c *fi.Context) error {
 
 func (s *Keypair) CheckChanges(a, e, changes *Keypair) error {
 	if a != nil {
-		if changes.Name != "" {
+		if changes.Name != nil {
 			return fi.CannotChangeField("Name")
 		}
 	}
@@ -116,6 +118,11 @@ func (s *Keypair) CheckChanges(a, e, changes *Keypair) error {
 }
 
 func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
+	name := fi.StringValue(e.Name)
+	if name == "" {
+		return fi.RequiredField("Name")
+	}
+
 	castore := c.CAStore
 
 	template, err := buildCertificateTempate(e.Type)
@@ -129,7 +136,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 	}
 
 	if len(subjectPkix.ToRDNSequence()) == 0 {
-		return fmt.Errorf("Subject name was empty for SSL keypair %q", e.Name)
+		return fmt.Errorf("Subject name was empty for SSL keypair %q", name)
 	}
 
 	template.Subject = *subjectPkix
@@ -161,15 +168,15 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 	}
 
 	if createCertificate {
-		glog.V(2).Infof("Creating PKI keypair %q", e.Name)
+		glog.V(2).Infof("Creating PKI keypair %q", name)
 
 		// TODO: Reuse private key if already exists?
-		privateKey, err := castore.CreatePrivateKey(e.Name)
+		privateKey, err := castore.CreatePrivateKey(name)
 		if err != nil {
 			return err
 		}
 
-		cert, err := castore.IssueCert(e.Name, privateKey, template)
+		cert, err := castore.IssueCert(name, privateKey, template)
 		if err != nil {
 			return err
 		}

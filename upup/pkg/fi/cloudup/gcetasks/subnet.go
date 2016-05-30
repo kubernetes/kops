@@ -10,6 +10,7 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
 )
 
+//go:generate fitask -type=Subnet
 type Subnet struct {
 	Name    *string
 	Network *Network
@@ -17,9 +18,7 @@ type Subnet struct {
 	CIDR    *string
 }
 
-func (e *Subnet) String() string {
-	return fi.TaskAsString(e)
-}
+var _ fi.CompareWithID = &Subnet{}
 
 func (e *Subnet) CompareWithID() *string {
 	return e.Name

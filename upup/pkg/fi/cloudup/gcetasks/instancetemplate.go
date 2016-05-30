@@ -11,6 +11,7 @@ import (
 	"strings"
 )
 
+//go:generate fitask -type=InstanceTemplate
 type InstanceTemplate struct {
 	Name        *string
 	Network     *Network
@@ -30,12 +31,10 @@ type InstanceTemplate struct {
 	MachineType *string
 }
 
+var _ fi.CompareWithID = &InstanceTemplate{}
+
 func (e *InstanceTemplate) CompareWithID() *string {
 	return e.Name
-}
-
-func (e *InstanceTemplate) String() string {
-	return fi.TaskAsString(e)
 }
 
 func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {

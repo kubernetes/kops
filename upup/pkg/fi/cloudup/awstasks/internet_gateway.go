@@ -3,26 +3,16 @@ package awstasks
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
 )
 
+//go:generate fitask -type=InternetGateway
 type InternetGateway struct {
 	Name *string
 	ID   *string
-}
-
-var _ fi.CompareWithID = &InternetGateway{}
-
-func (e *InternetGateway) CompareWithID() *string {
-	return e.ID
-}
-
-func (e *InternetGateway) String() string {
-	return fi.TaskAsString(e)
 }
 
 func (e *InternetGateway) Find(c *fi.Context) (*InternetGateway, error) {
@@ -83,14 +73,5 @@ func (_ *InternetGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Intern
 		e.ID = response.InternetGateway.InternetGatewayId
 	}
 
-	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name))
-}
-
-func findNameTag(tags []*ec2.Tag) *string {
-	for _, tag := range tags {
-		if aws.StringValue(tag.Key) == "Name" {
-			return tag.Value
-		}
-	}
-	return nil
+	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name, nil))
 }

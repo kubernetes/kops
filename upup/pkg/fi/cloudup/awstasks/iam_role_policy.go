@@ -12,15 +12,12 @@ import (
 	"net/url"
 )
 
+//go:generate fitask -type=IAMRolePolicy
 type IAMRolePolicy struct {
 	ID             *string
 	Name           *string
 	Role           *IAMRole
-	PolicyDocument fi.Resource
-}
-
-func (e *IAMRolePolicy) String() string {
-	return fi.TaskAsString(e)
+	PolicyDocument *fi.ResourceHolder
 }
 
 func (e *IAMRolePolicy) Find(c *fi.Context) (*IAMRolePolicy, error) {
@@ -51,7 +48,7 @@ func (e *IAMRolePolicy) Find(c *fi.Context) (*IAMRolePolicy, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error parsing PolicyDocument for IAMRolePolicy %q: %v", e.Name, err)
 		}
-		actual.PolicyDocument = fi.NewStringResource(policy)
+		actual.PolicyDocument = fi.WrapResource(fi.NewStringResource(policy))
 	}
 	actual.Name = p.PolicyName
 
@@ -77,7 +74,7 @@ func (_ *IAMRolePolicy) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRoleP
 	if a == nil {
 		glog.V(2).Infof("Creating IAMRolePolicy")
 
-		policy, err := fi.ResourceAsString(e.PolicyDocument)
+		policy, err := e.PolicyDocument.AsString()
 		if err != nil {
 			return fmt.Errorf("error rendering PolicyDocument: %v", err)
 		}

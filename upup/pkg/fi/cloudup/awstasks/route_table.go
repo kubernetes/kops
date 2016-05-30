@@ -9,18 +9,11 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
 )
 
+//go:generate fitask -type=RouteTable
 type RouteTable struct {
 	Name *string
 	ID   *string
 	VPC  *VPC
-}
-
-func (s *RouteTable) CompareWithID() *string {
-	return s.ID
-}
-
-func (e *RouteTable) String() string {
-	return fi.TaskAsString(e)
 }
 
 func (e *RouteTable) Find(c *fi.Context) (*RouteTable, error) {
@@ -97,5 +90,5 @@ func (_ *RouteTable) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *RouteTable)
 		e.ID = rt.RouteTableId
 	}
 
-	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name))
+	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name, nil))
 }

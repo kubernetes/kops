@@ -14,20 +14,11 @@ import (
 	"reflect"
 )
 
+//go:generate fitask -type=IAMRole
 type IAMRole struct {
 	ID                 *string
 	Name               *string
-	RolePolicyDocument fi.Resource // "inline" IAM policy
-}
-
-var _ fi.CompareWithID = &InternetGateway{}
-
-func (e *IAMRole) CompareWithID() *string {
-	return e.Name
-}
-
-func (e *IAMRole) String() string {
-	return fi.TaskAsString(e)
+	RolePolicyDocument *fi.ResourceHolder // "inline" IAM policy
 }
 
 func (e *IAMRole) Find(c *fi.Context) (*IAMRole, error) {
@@ -60,7 +51,7 @@ func (e *IAMRole) Find(c *fi.Context) (*IAMRole, error) {
 		// The RolePolicyDocument is reformatted by AWS
 		// We parse both as JSON; if the json forms are equal we pretend the actual value is the expected value
 		if e.RolePolicyDocument != nil {
-			expectedPolicy, err := fi.ResourceAsString(e.RolePolicyDocument)
+			expectedPolicy, err := e.RolePolicyDocument.AsString()
 			if err != nil {
 				return nil, fmt.Errorf("error reading expected RolePolicyDocument for IAMRole %q: %v", e.Name, err)
 			}
@@ -81,7 +72,7 @@ func (e *IAMRole) Find(c *fi.Context) (*IAMRole, error) {
 			}
 		}
 
-		actual.RolePolicyDocument = fi.NewStringResource(actualPolicy)
+		actual.RolePolicyDocument = fi.WrapResource(fi.NewStringResource(actualPolicy))
 	}
 
 	glog.V(2).Infof("found matching IAMRole %q", *actual.ID)
@@ -108,7 +99,7 @@ func (s *IAMRole) CheckChanges(a, e, changes *IAMRole) error {
 }
 
 func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error {
-	policy, err := fi.ResourceAsString(e.RolePolicyDocument)
+	policy, err := e.RolePolicyDocument.AsString()
 	if err != nil {
 		return fmt.Errorf("error rendering PolicyDocument: %v", err)
 	}

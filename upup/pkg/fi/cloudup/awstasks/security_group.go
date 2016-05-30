@@ -9,9 +9,11 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
 )
 
+//go:generate fitask -type=SecurityGroup
 type SecurityGroup struct {
+	Name *string
+
 	ID          *string
-	Name        *string
 	Description *string
 	VPC         *VPC
 }
@@ -20,10 +22,6 @@ var _ fi.CompareWithID = &SecurityGroup{}
 
 func (e *SecurityGroup) CompareWithID() *string {
 	return e.ID
-}
-
-func (e *SecurityGroup) String() string {
-	return fi.TaskAsString(e)
 }
 
 func (e *SecurityGroup) Find(c *fi.Context) (*SecurityGroup, error) {
@@ -108,5 +106,5 @@ func (_ *SecurityGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Security
 		e.ID = response.GroupId
 	}
 
-	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name))
+	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name, nil))
 }
