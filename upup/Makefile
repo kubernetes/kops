@@ -1,9 +1,20 @@
-gocode: godeps
+gocode: godeps codegen
 	go install k8s.io/kube-deploy/upup/cmd/...
+
+codegen:
+	go install k8s.io/kube-deploy/upup/tools/generators/...
+	go generate k8s.io/kube-deploy/upup/pkg/fi/cloudup/awstasks
+	go generate k8s.io/kube-deploy/upup/pkg/fi/cloudup/gcetasks
+	go generate k8s.io/kube-deploy/upup/pkg/fi/fitasks
 
 godeps:
 	# I think strip-vendor is the workaround for 25572
 	glide install --strip-vendor --strip-vcs
+
+gofmt:
+	gofmt -w -s cmd/
+	gofmt -w -s pkg/
+
 
 tar: gocode
 	rm -rf .build/tar
