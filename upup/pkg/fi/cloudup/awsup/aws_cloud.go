@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"strings"
@@ -23,6 +24,7 @@ type AWSCloud struct {
 	IAM         *iam.IAM
 	ELB         *elb.ELB
 	Autoscaling *autoscaling.AutoScaling
+	Route53     *route53.Route53
 
 	Region string
 
@@ -43,6 +45,7 @@ func NewAWSCloud(region string, tags map[string]string) (*AWSCloud, error) {
 	c.IAM = iam.New(session.New(), config)
 	c.ELB = elb.New(session.New(), config)
 	c.Autoscaling = autoscaling.New(session.New(), config)
+	c.Route53 = route53.New(session.New(), config)
 
 	c.tags = tags
 	return c, nil
@@ -226,7 +229,7 @@ func (t *AWSCloud) DescribeInstance(instanceID string) (*ec2.Instance, error) {
 
 // DescribeVPC is a helper that queries for the specified vpc by id
 func (t *AWSCloud) DescribeVPC(vpcID string) (*ec2.Vpc, error) {
-	glog.V(2).Infof("Calilng DescribeVPC for VPC %q", vpcID)
+	glog.V(2).Infof("Calling DescribeVPC for VPC %q", vpcID)
 	request := &ec2.DescribeVpcsInput{
 		VpcIds: []*string{&vpcID},
 	}
@@ -253,7 +256,7 @@ func (t *AWSCloud) DescribeVPC(vpcID string) (*ec2.Vpc, error) {
 // name in which case we find the image with the specified name, with the current owner
 func (c *AWSCloud) ResolveImage(name string) (*ec2.Image, error) {
 	// TODO: Cache this result during a single execution (we get called multiple times)
-	glog.V(2).Infof("Calilng DescribeImages to resolve name %q", name)
+	glog.V(2).Infof("Calling DescribeImages to resolve name %q", name)
 	request := &ec2.DescribeImagesInput{}
 
 	if strings.HasPrefix(name, "ami-") {
