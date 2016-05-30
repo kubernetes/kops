@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"time"
@@ -42,18 +41,37 @@ func (t *AWSAPITarget) AddAWSTags(id string, expected map[string]string) error {
 	}
 
 	if len(missing) != 0 {
-		request := &ec2.CreateTagsInput{}
-		request.Resources = []*string{&id}
-		for k, v := range missing {
-			request.Tags = append(request.Tags, &ec2.Tag{
-				Key:   aws.String(k),
-				Value: aws.String(v),
-			})
-		}
+		glog.V(4).Infof("adding tags to %q: %v", id, missing)
 
-		_, err := t.Cloud.EC2.CreateTags(request)
+		err := t.Cloud.CreateTags(id, missing)
 		if err != nil {
 			return fmt.Errorf("error adding tags to resource %q: %v", id, err)
+		}
+	}
+
+	return nil
+}
+
+func (t *AWSAPITarget) AddELBTags(loadBalancerName string, expected map[string]string) error {
+	actual, err := t.Cloud.GetELBTags(loadBalancerName)
+	if err != nil {
+		return fmt.Errorf("unexpected error fetching tags for resource: %v", err)
+	}
+
+	missing := map[string]string{}
+	for k, v := range expected {
+		actualValue, found := actual[k]
+		if found && actualValue == v {
+			continue
+		}
+		missing[k] = v
+	}
+
+	if len(missing) != 0 {
+		glog.V(4).Infof("adding tags to %q: %v", loadBalancerName, missing)
+		err := t.Cloud.CreateELBTags(loadBalancerName, missing)
+		if err != nil {
+			return fmt.Errorf("error adding tags to ELB %q: %v", loadBalancerName, err)
 		}
 	}
 

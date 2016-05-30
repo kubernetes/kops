@@ -160,7 +160,62 @@ func (c *AWSCloud) CreateTags(resourceId string, tags map[string]string) error {
 	}
 }
 
-func (c *AWSCloud) BuildTags(name *string) map[string]string {
+func (c *AWSCloud) GetELBTags(loadBalancerName string) (map[string]string, error) {
+	tags := map[string]string{}
+
+	request := &elb.DescribeTagsInput{
+		LoadBalancerNames: []*string{&loadBalancerName},
+	}
+
+	attempt := 0
+	for {
+		attempt++
+
+		response, err := c.ELB.DescribeTags(request)
+		if err != nil {
+			return nil, fmt.Errorf("error listing tags on %v: %v", loadBalancerName, err)
+		}
+
+		for _, tagset := range response.TagDescriptions {
+			for _, tag := range tagset.Tags {
+				tags[aws.StringValue(tag.Key)] = aws.StringValue(tag.Value)
+			}
+		}
+
+		return tags, nil
+	}
+}
+
+// CreateELBTags will add tags to the specified loadBalancer, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
+func (c *AWSCloud) CreateELBTags(loadBalancerName string, tags map[string]string) error {
+	if len(tags) == 0 {
+		return nil
+	}
+
+	elbTags := []*elb.Tag{}
+	for k, v := range tags {
+		elbTags = append(elbTags, &elb.Tag{Key: aws.String(k), Value: aws.String(v)})
+	}
+
+	attempt := 0
+	for {
+		attempt++
+
+		request := &elb.AddTagsInput{
+			Tags:              elbTags,
+			LoadBalancerNames: []*string{&loadBalancerName},
+		}
+
+		_, err := c.ELB.AddTags(request)
+		if err != nil {
+			return fmt.Errorf("error creating tags on %v: %v", loadBalancerName, err)
+		}
+
+		return nil
+	}
+}
+
+func (c *AWSCloud) BuildTags(name *string, itemTags map[string]string) map[string]string {
 	tags := make(map[string]string)
 	if name != nil {
 		tags["Name"] = *name
@@ -168,6 +223,9 @@ func (c *AWSCloud) BuildTags(name *string) map[string]string {
 		glog.Warningf("Name not set when filtering by name")
 	}
 	for k, v := range c.tags {
+		tags[k] = v
+	}
+	for k, v := range itemTags {
 		tags[k] = v
 	}
 	return tags
