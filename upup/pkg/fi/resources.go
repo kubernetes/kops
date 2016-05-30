@@ -3,6 +3,7 @@ package fi
 import (
 	"bytes"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"hash"
 	"io"
@@ -192,4 +193,37 @@ func (r *FileResource) Open() (io.ReadSeeker, error) {
 		return nil, fmt.Errorf("error opening file %q: %v", r.Path, err)
 	}
 	return in, err
+}
+
+type ResourceHolder struct {
+	Name     string
+	Resource Resource
+}
+
+func (o *ResourceHolder) UnmarshalJSON(data []byte) error {
+	var jsonName string
+	err := json.Unmarshal(data, &jsonName)
+	if err != nil {
+		return err
+	}
+	o.Name = jsonName
+	return nil
+}
+
+func (o *ResourceHolder) Unwrap() Resource {
+	return o.Resource
+}
+
+func (o *ResourceHolder) AsString() (string, error) {
+	return ResourceAsString(o.Unwrap())
+}
+
+func (o *ResourceHolder) AsBytes() ([]byte, error) {
+	return ResourceAsBytes(o.Unwrap())
+}
+
+func WrapResource(r Resource) *ResourceHolder {
+	return &ResourceHolder{
+		Resource: r,
+	}
 }

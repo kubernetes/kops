@@ -205,6 +205,8 @@ func asString(value reflect.Value) string {
 			intf := v.Addr().Interface()
 			if _, ok := intf.(Resource); ok {
 				fmt.Fprintf(b, "<resource>")
+			} else if _, ok := intf.(*ResourceHolder); ok {
+				fmt.Fprintf(b, "<resource>")
 			} else if compareWithID, ok := intf.(CompareWithID); ok {
 				id := compareWithID.CompareWithID()
 				if id == nil {
