@@ -275,6 +275,19 @@ func (c *CreateClusterCmd) Run() error {
 	l.TemplateFunctions["Secrets"] = func() fi.SecretStore {
 		return secretStore
 	}
+	l.TemplateFunctions["GetOrCreateSecret"] = func(id string) (string, error) {
+		secret, err := secretStore.FindSecret(id)
+		if err != nil {
+			return "", fmt.Errorf("error finding secret %q: %v", id, err)
+		}
+		if secret == nil {
+			secret, err = secretStore.CreateSecret(id)
+			if err != nil {
+				return "", fmt.Errorf("error creating secret %q: %v", id, err)
+			}
+		}
+		return secret.AsString()
+	}
 
 	if c.SSHPublicKey != "" {
 		authorized, err := ioutil.ReadFile(c.SSHPublicKey)

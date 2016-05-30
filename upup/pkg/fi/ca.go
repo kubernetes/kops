@@ -63,6 +63,8 @@ type CAStore interface {
 
 	IssueCert(id string, privateKey *PrivateKey, template *x509.Certificate) (*Certificate, error)
 	CreatePrivateKey(id string) (*PrivateKey, error)
+
+	List() ([]string, error)
 }
 
 func (c *Certificate) AsString() (string, error) {

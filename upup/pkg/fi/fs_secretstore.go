@@ -38,15 +38,26 @@ func (c *FilesystemSecretStore) FindSecret(id string) (*Secret, error) {
 	return s, nil
 }
 
+func (c *FilesystemSecretStore) ListSecrets() ([]string, error) {
+	files, err := ioutil.ReadDir(c.basedir)
+	if err != nil {
+		return nil, fmt.Errorf("error listing secrets directory: %v", err)
+	}
+	var ids []string
+	for _, f := range files {
+		id := f.Name()
+		ids = append(ids, id)
+	}
+	return ids, nil
+}
+
 func (c *FilesystemSecretStore) Secret(id string) (*Secret, error) {
 	s, err := c.FindSecret(id)
 	if err != nil {
 		return nil, err
 	}
 	if s == nil {
-		// For now, we auto-create the secret
-		return c.CreateSecret(id)
-		// return nil, fmt.Errorf("Secret not found: %q", id)
+		return nil, fmt.Errorf("Secret not found: %q", id)
 	}
 	return s, nil
 }

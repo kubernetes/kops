@@ -8,8 +8,14 @@ import (
 )
 
 type SecretStore interface {
+	// Get a secret.  Returns an error if not found
 	Secret(id string) (*Secret, error)
+	// Find a secret, if exists.  Returns nil,nil if not found
 	FindSecret(id string) (*Secret, error)
+	// Create or replace a secret
+	CreateSecret(id string) (*Secret, error)
+	// Lists the ids of all known secrets
+	ListSecrets() ([]string, error)
 }
 
 type Secret struct {

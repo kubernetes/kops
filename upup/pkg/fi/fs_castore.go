@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 )
 
 type FilesystemCAStore struct {
@@ -106,41 +107,6 @@ func (c *FilesystemCAStore) generateCACertificate() error {
 	return nil
 }
 
-func (c *FilesystemCAStore) getSubjectKey(subject *pkix.Name) string {
-	seq := subject.ToRDNSequence()
-	var s bytes.Buffer
-	for _, rdnSet := range seq {
-		for _, rdn := range rdnSet {
-			if s.Len() != 0 {
-				s.WriteString(",")
-			}
-			key := ""
-			t := rdn.Type
-			if len(t) == 4 && t[0] == 2 && t[1] == 5 && t[2] == 4 {
-				switch t[3] {
-				case 3:
-					key = "cn"
-				case 5:
-					key = "serial"
-				case 6:
-					key = "c"
-				case 7:
-					key = "l"
-				case 10:
-					key = "o"
-				case 11:
-					key = "ou"
-				}
-			}
-			if key == "" {
-				key = t.String()
-			}
-			s.WriteString(fmt.Sprintf("%v=%v", key, rdn.Value))
-		}
-	}
-	return s.String()
-}
-
 func (c *FilesystemCAStore) buildCertificatePath(id string) string {
 	return path.Join(c.basedir, "issued", id+".crt")
 }
@@ -188,6 +154,26 @@ func (c *FilesystemCAStore) FindCert(id string) (*Certificate, error) {
 		}
 	}
 	return cert, nil
+}
+
+func (c *FilesystemCAStore) List() ([]string, error) {
+	var ids []string
+	if c.caCertificate != nil {
+		ids = append(ids, "ca")
+	}
+
+	issuedDir := path.Join(c.basedir, "issued")
+	files, err := ioutil.ReadDir(issuedDir)
+	if err != nil {
+		return nil, fmt.Errorf("error reading directory %q: %v", issuedDir, err)
+	}
+
+	for _, f := range files {
+		name := f.Name()
+		name = strings.TrimSuffix(name, ".crt")
+		ids = append(ids, name)
+	}
+	return ids, nil
 }
 
 func (c *FilesystemCAStore) IssueCert(id string, privateKey *PrivateKey, template *x509.Certificate) (*Certificate, error) {

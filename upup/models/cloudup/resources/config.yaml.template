@@ -12,17 +12,17 @@ APIServer:
   Key: {{ Base64Encode (CA.PrivateKey "master").AsString }}
 
 KubeUser: {{ .KubeUser }}
-KubePassword: {{ (Secrets.Secret "kube").AsString }}
+KubePassword: {{ GetOrCreateSecret "kube" }}
 
 Tokens:
-  admin: {{ (Secrets.Secret "admin").AsString }}
-  kubelet: {{ (Secrets.Secret "kubelet").AsString }}
-  kube-proxy: {{ (Secrets.Secret "kube-proxy").AsString }}
-  "system:scheduler": {{ (Secrets.Secret "system:scheduler").AsString }}
-  "system:controller_manager": {{ (Secrets.Secret "system:controller_manager").AsString }}
-  "system:logging": {{ (Secrets.Secret "system:logging").AsString }}
-  "system:monitoring": {{ (Secrets.Secret "system:monitoring").AsString }}
-  "system:dns": {{ (Secrets.Secret "system:dns").AsString }}
+  admin: {{ GetOrCreateSecret "admin" }}
+  kubelet: {{ GetOrCreateSecret "kubelet" }}
+  kube-proxy: {{ GetOrCreateSecret "kube-proxy" }}
+  "system:scheduler": {{ GetOrCreateSecret "system:scheduler" }}
+  "system:controller_manager": {{ GetOrCreateSecret "system:controller_manager" }}
+  "system:logging": {{ GetOrCreateSecret "system:logging" }}
+  "system:monitoring": {{ GetOrCreateSecret "system:monitoring" }}
+  "system:dns": {{ GetOrCreateSecret "system:dns" }}
 
 Tags:
 {{ range $tag := Args }}
