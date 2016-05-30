@@ -126,18 +126,6 @@ func (t *CloudInitTarget) Chown(path string, user, group string) {
 	t.AddCommand(Always, "chown", user+":"+group, path)
 }
 
-func stringSlicesEquals(l, r []string) bool {
-	if len(l) != len(r) {
-		return false
-	}
-	for i, v := range l {
-		if r[i] != v {
-			return false
-		}
-	}
-	return true
-}
-
 func (t *CloudInitTarget) AddCommand(addBehaviour AddBehaviour, args ...string) {
 	switch addBehaviour {
 	case Always:
@@ -145,7 +133,7 @@ func (t *CloudInitTarget) AddCommand(addBehaviour AddBehaviour, args ...string) 
 
 	case Once:
 		for _, c := range t.Config.RunCommmands {
-			if stringSlicesEquals(args, c) {
+			if utils.StringSlicesEqual(args, c) {
 				glog.V(2).Infof("skipping pre-existing command because AddBehaviour=Once: %q", args)
 				return
 			}
