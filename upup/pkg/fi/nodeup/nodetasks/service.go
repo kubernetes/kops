@@ -30,19 +30,21 @@ type Service struct {
 	SmartRestart *bool `json:"smartRestart"`
 }
 
-func (p *Service) GetDependencies(tasks map[string]fi.Task) []string {
-	var deps []string
-	for k, v := range tasks {
+var _ fi.HasDependencies = &Service{}
+
+func (p *Service) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	var deps []fi.Task
+	for _, v := range tasks {
 		// We assume that services depend on basically everything
 		typeName := utils.BuildTypeName(reflect.TypeOf(v))
 		switch typeName {
 		case "*CopyAssetTask", "*File", "*Package", "*Sysctl", "*UpdatePackages", "*User", "*Disk":
-			deps = append(deps, k)
+			deps = append(deps, v)
 		case "*Service":
 		// ignore
 		default:
 			glog.Warningf("Unhandled type name in Service::GetDependencies: %q", typeName)
-			deps = append(deps, k)
+			deps = append(deps, v)
 		}
 	}
 	return deps

@@ -26,11 +26,13 @@ const (
 	localPackageDir = "/var/cache/nodeup/packages/"
 )
 
-func (p *Package) GetDependencies(tasks map[string]fi.Task) []string {
-	var deps []string
-	for k, v := range tasks {
+var _ fi.HasDependencies = &Package{}
+
+func (p *Package) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	var deps []fi.Task
+	for _, v := range tasks {
 		if _, ok := v.(*UpdatePackages); ok {
-			deps = append(deps, k)
+			deps = append(deps, v)
 		}
 	}
 	return deps
