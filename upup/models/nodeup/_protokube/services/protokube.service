@@ -1,0 +1,13 @@
+[Unit]
+Description=Kubernetes Protokube Service
+Documentation=https://github.com/kubernetes/kube-deploy/protokube
+
+[Service]
+EnvironmentFile=/etc/sysconfig/protokube
+ExecStart=/usr/local/bin/protokube "$DAEMON_ARGS"
+Restart=always
+RestartSec=2s
+StartLimitInterval=0
+
+[Install]
+WantedBy=multi-user.target
