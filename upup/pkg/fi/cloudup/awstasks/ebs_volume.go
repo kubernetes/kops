@@ -9,26 +9,18 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
 )
 
+//go:generate fitask -type=EBSVolume
 type EBSVolume struct {
 	ID               *string
 	AvailabilityZone *string
 	VolumeType       *string
 	SizeGB           *int64
 	Name             *string
+	Tags             map[string]string
 }
 
 type TaggableResource interface {
 	FindResourceID(c fi.Cloud) (*string, error)
-}
-
-func (e *EBSVolume) String() string {
-	return fi.TaskAsString(e)
-}
-
-var _ fi.CompareWithID = &Instance{}
-
-func (e *EBSVolume) CompareWithID() *string {
-	return e.ID
 }
 
 var _ TaggableResource = &EBSVolume{}
@@ -79,6 +71,9 @@ func (e *EBSVolume) find(cloud *awsup.AWSCloud) (*EBSVolume, error) {
 		SizeGB:           v.Size,
 		Name:             e.Name,
 	}
+
+	actual.Tags = mapEC2TagsToMap(v.Tags)
+
 	return actual, nil
 }
 
@@ -118,5 +113,5 @@ func (_ *EBSVolume) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EBSVolume) e
 		e.ID = response.VolumeId
 	}
 
-	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name))
+	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name, e.Tags))
 }

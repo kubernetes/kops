@@ -3,6 +3,7 @@ package cloudup
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"github.com/golang/glog"
 	"io"
@@ -17,16 +18,9 @@ import (
 	"text/template"
 )
 
-type deferredType int
-
 const (
 	KEY_NAME = "name"
 	KEY_TYPE = "_type"
-)
-
-const (
-	deferredUnit deferredType = iota
-	deferredResource
 )
 
 type Loader struct {
@@ -43,11 +37,9 @@ type Loader struct {
 	config    interface{}
 
 	Resources map[string]fi.Resource
-	deferred  []*deferredBinding
+	//deferred          []*deferredBinding
 
 	tasks map[string]fi.Task
-
-	unmarshaller utils.Unmarshaller
 }
 
 type templateResource struct {
@@ -77,17 +69,9 @@ func (a *templateResource) Curry(args []string) fi.TemplateResource {
 	return curried
 }
 
-type deferredBinding struct {
-	name         string
-	dest         utils.Settable
-	src          string
-	deferredType deferredType
-}
-
 func (l *Loader) Init() {
 	l.tasks = make(map[string]fi.Task)
 	l.typeMap = make(map[string]reflect.Type)
-	l.unmarshaller.SpecialCases = l.unmarshalSpecialCases
 	l.Resources = make(map[string]fi.Resource)
 	l.TemplateFunctions = make(template.FuncMap)
 }
@@ -122,6 +106,10 @@ func (l *Loader) executeTemplate(key string, d string, args []string) (string, e
 	}
 	funcMap["RenderResource"] = func(resourceName string, args []string) (string, error) {
 		return l.renderResource(resourceName, args)
+	}
+	funcMap["HasTag"] = func(tag string) bool {
+		_, found := l.Tags[tag]
+		return found
 	}
 	for k, fn := range l.TemplateFunctions {
 		funcMap[k] = fn
@@ -198,57 +186,72 @@ func (l *Loader) Build(baseDir string) (map[string]fi.Task, error) {
 }
 
 func (l *Loader) processDeferrals() error {
-	if len(l.deferred) != 0 {
-		unitMap := make(map[string]fi.Task)
+	for taskKey, task := range l.tasks {
+		taskValue := reflect.ValueOf(task)
 
-		for k, o := range l.tasks {
-			if unit, ok := o.(fi.Task); ok {
-				unitMap[k] = unit
+		err := utils.ReflectRecursive(taskValue, func(path string, f *reflect.StructField, v reflect.Value) error {
+			if utils.IsPrimitiveValue(v) {
+				return nil
 			}
-		}
 
-		for _, d := range l.deferred {
-			src := d.src
-
-			switch d.deferredType {
-			case deferredUnit:
-				unit, found := unitMap[src]
-				if !found {
-					glog.Infof("Known targets:")
-					for k := range unitMap {
-						glog.Infof("  %s", k)
-					}
-					return fmt.Errorf("cannot resolve link at %q to %q", d.name, d.src)
-				}
-
-				d.dest.Set(reflect.ValueOf(unit))
-
-			case deferredResource:
-				// Resources can contain template 'arguments', separated by spaces
-				// <resourcename> <arg1> <arg2>
-				tokens := strings.Split(src, " ")
-				match := tokens[0]
-				args := tokens[1:]
-
-				match = strings.TrimPrefix(match, "resources/")
-				found := l.Resources[match]
-
-				if found == nil {
-					glog.Infof("Known resources:")
-					for k := range l.Resources {
-						glog.Infof("  %s", k)
-					}
-					return fmt.Errorf("cannot resolve resource link %q (at %q)", d.src, d.name)
-				}
-
-				err := l.populateResource(d.name, d.dest, found, args)
-				if err != nil {
-					return fmt.Errorf("error setting resource value: %v", err)
-				}
-
-			default:
-				panic("unhandled deferred type")
+			if path == "" {
+				// Don't process top-level value
+				return nil
 			}
+
+			switch v.Kind() {
+			case reflect.Interface, reflect.Ptr:
+				if v.CanInterface() && !v.IsNil() {
+					// TODO: Can we / should we use a type-switch statement
+					intf := v.Interface()
+					if hn, ok := intf.(fi.HasName); ok {
+						name := hn.GetName()
+						if name != nil {
+							primary := l.tasks[*name]
+							if primary == nil {
+								glog.Infof("Known tasks:")
+								for k := range l.tasks {
+									glog.Infof("  %s", k)
+								}
+								return fmt.Errorf("Unable to find task %q, referenced from %s:%s", *name, taskKey, path)
+							}
+
+							glog.Infof("Replacing task %q at %s:%s", *name, taskKey, path)
+							v.Set(reflect.ValueOf(primary))
+						}
+						return utils.SkipReflection
+					} else if rh, ok := intf.(*fi.ResourceHolder); ok {
+						//Resources can contain template 'arguments', separated by spaces
+						// <resourcename> <arg1> <arg2>
+						tokens := strings.Split(rh.Name, " ")
+						match := tokens[0]
+						args := tokens[1:]
+
+						match = strings.TrimPrefix(match, "resources/")
+						resource := l.Resources[match]
+
+						if resource == nil {
+							glog.Infof("Known resources:")
+							for k := range l.Resources {
+								glog.Infof("  %s", k)
+							}
+							return fmt.Errorf("Unable to find resource %q, referenced from %s:%s", rh.Name, taskKey, path)
+						}
+
+						err := l.populateResource(rh, resource, args)
+						if err != nil {
+							return fmt.Errorf("error setting resource value: %v", err)
+						}
+						return utils.SkipReflection
+					}
+				}
+			}
+
+			return nil
+		})
+
+		if err != nil {
+			return fmt.Errorf("unexpected error resolving task %q: %v", taskKey, err)
 		}
 	}
 
@@ -366,19 +369,22 @@ func (l *Loader) loadObjectMap(key string, data map[string]interface{}) (map[str
 		}
 
 		o := reflect.New(t)
-		err := l.unmarshaller.UnmarshalStruct(key+":"+k, o, v)
+
+		glog.Warningf("replace with partial unmarshal...")
+		jsonValue, err := json.Marshal(v)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("error marshalling to json: %v", err)
 		}
-		//glog.Infof("Built %s:%s => %v", key, k, o.Interface())
+		err = json.Unmarshal(jsonValue, o.Interface())
+		if err != nil {
+			return nil, fmt.Errorf("error parsing %q: %v", key, err)
+		}
+		glog.Infof("Built %s:%s => %v", key, k, o.Interface())
 
 		if inferredName {
-			nameField := o.Elem().FieldByName("Name")
-			if nameField.IsValid() {
-				err := l.unmarshaller.UnmarshalSettable(k+":Name", utils.Settable{Value: nameField}, name)
-				if err != nil {
-					return nil, err
-				}
+			hn, ok := o.Interface().(fi.HasName)
+			if ok {
+				hn.SetName(name)
 			}
 		}
 		loaded[k] = o.Interface()
@@ -386,106 +392,21 @@ func (l *Loader) loadObjectMap(key string, data map[string]interface{}) (map[str
 	return loaded, nil
 }
 
-func (l *Loader) unmarshalSpecialCases(name string, dest utils.Settable, src interface{}) (bool, error) {
-	if dest.Type().Kind() == reflect.Slice {
-		switch src := src.(type) {
-		case []interface{}:
-			destValueArray := reflect.MakeSlice(dest.Type(), len(src), len(src))
-			for i, srcElem := range src {
-				done, err := l.unmarshalSpecialCases(fmt.Sprintf("%s[%d]", name, i),
-					utils.Settable{Value: destValueArray.Index(i)},
-					srcElem)
-				if err != nil {
-					return false, err
-				}
-				if !done {
-					return false, nil
-				}
-			}
-			dest.Set(destValueArray)
-			return true, nil
-		default:
-			return false, fmt.Errorf("unhandled conversion for %q: %T -> %s", name, src, dest.Value.Type().Name())
-		}
-	}
-
-	if dest.Type().Kind() == reflect.Ptr || dest.Type().Kind() == reflect.Interface {
-		resourceType := reflect.TypeOf((*fi.Resource)(nil)).Elem()
-		if dest.Value.Type().AssignableTo(resourceType) {
-			d := &deferredBinding{
-				name:         name,
-				dest:         dest,
-				deferredType: deferredResource,
-			}
-			switch src := src.(type) {
-			case string:
-				d.src = src
-			default:
-				return false, fmt.Errorf("unhandled conversion for %q: %T -> %s", name, src, dest.Value.Type().Name())
-			}
-			l.deferred = append(l.deferred, d)
-			return true, nil
-		}
-
-		taskType := reflect.TypeOf((*fi.Task)(nil)).Elem()
-		if dest.Value.Type().AssignableTo(taskType) {
-			d := &deferredBinding{
-				name:         name,
-				dest:         dest,
-				deferredType: deferredUnit,
-			}
-			switch src := src.(type) {
-			case string:
-				d.src = src
-			default:
-				return false, fmt.Errorf("unhandled conversion for %q: %T -> %s", name, src, dest.Value.Type().Name())
-			}
-			l.deferred = append(l.deferred, d)
-			return true, nil
-		}
-	}
-
-	return false, nil
-}
-
-func (l *Loader) populateResource(name string, dest utils.Settable, src interface{}, args []string) error {
-	if src == nil {
+func (l *Loader) populateResource(rh *fi.ResourceHolder, resource fi.Resource, args []string) error {
+	if resource == nil {
 		return nil
 	}
 
-	destTypeName := utils.BuildTypeName(dest.Type())
-
-	switch destTypeName {
-	case "Resource":
-		{
-			switch src := src.(type) {
-			case []byte:
-				if len(args) != 0 {
-					return fmt.Errorf("cannot have arguments with static resources")
-				}
-				dest.Set(reflect.ValueOf(fi.NewBytesResource(src)))
-
-			default:
-				if resource, ok := src.(fi.Resource); ok {
-					if len(args) != 0 {
-						templateResource, ok := resource.(fi.TemplateResource)
-						if !ok {
-							return fmt.Errorf("cannot have arguments with resources of type %T", resource)
-						}
-						resource = templateResource.Curry(args)
-					}
-					dest.Set(reflect.ValueOf(resource))
-				} else {
-					return fmt.Errorf("unhandled conversion for %q: %T -> %s", name, src, destTypeName)
-				}
-			}
-			return nil
+	if len(args) != 0 {
+		templateResource, ok := resource.(fi.TemplateResource)
+		if !ok {
+			return fmt.Errorf("cannot have arguments with resources of type %T", resource)
 		}
-
-	default:
-		return fmt.Errorf("unhandled destination type for %q: %s", name, destTypeName)
+		resource = templateResource.Curry(args)
 	}
+	rh.Resource = resource
 
+	return nil
 }
 
 func (l *Loader) buildNodeConfig(target string, configResourceName string, args []string) (string, error) {

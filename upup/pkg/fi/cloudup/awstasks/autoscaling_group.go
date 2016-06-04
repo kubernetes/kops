@@ -20,14 +20,15 @@ func buildTimestampString() string {
 
 // This one is a little weird because we can't update a launch configuration
 // So we have to create the launch configuration as part of the group
+//go:generate fitask -type=AutoscalingGroup
 type AutoscalingGroup struct {
 	Name *string
 
-	UserData fi.Resource
+	UserData *fi.ResourceHolder
 
 	MinSize *int64
 	MaxSize *int64
-	Subnet  *Subnet
+	Subnets []*Subnet
 	Tags    map[string]string
 
 	ImageID             *string
@@ -41,31 +42,56 @@ type AutoscalingGroup struct {
 	launchConfigurationName *string
 }
 
-func (s *AutoscalingGroup) CompareWithID() *string {
-	return s.Name
+var _ fi.CompareWithID = &AutoscalingGroup{}
+
+func (e *AutoscalingGroup) CompareWithID() *string {
+	return e.Name
+}
+
+func findAutoscalingGroup(cloud *awsup.AWSCloud, name string) (*autoscaling.Group, error) {
+	request := &autoscaling.DescribeAutoScalingGroupsInput{
+		AutoScalingGroupNames: []*string{&name},
+	}
+
+	var found []*autoscaling.Group
+	err := cloud.Autoscaling.DescribeAutoScalingGroupsPages(request, func(p *autoscaling.DescribeAutoScalingGroupsOutput, lastPage bool) (shouldContinue bool) {
+		for _, g := range p.AutoScalingGroups {
+			if aws.StringValue(g.AutoScalingGroupName) == name {
+				found = append(found, g)
+			} else {
+				glog.Warningf("Got ASG with unexpected name")
+			}
+		}
+
+		return true
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("error listing AutoscalingGroups: %v", err)
+	}
+
+	if len(found) == 0 {
+		return nil, nil
+	}
+
+	if len(found) != 1 {
+		return nil, fmt.Errorf("Found multiple AutoscalingGroups with name %q", name)
+	}
+
+	return found[0], nil
 }
 
 func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 	cloud := c.Cloud.(*awsup.AWSCloud)
 
-	request := &autoscaling.DescribeAutoScalingGroupsInput{
-		AutoScalingGroupNames: []*string{e.Name},
-	}
-
-	response, err := cloud.Autoscaling.DescribeAutoScalingGroups(request)
+	g, err := findAutoscalingGroup(cloud, *e.Name)
 	if err != nil {
-		return nil, fmt.Errorf("error listing AutoscalingGroups: %v", err)
+		return nil, err
 	}
-
-	if response == nil || len(response.AutoScalingGroups) == 0 {
+	if g == nil {
 		return nil, nil
 	}
 
-	if len(response.AutoScalingGroups) != 1 {
-		glog.Fatalf("found multiple AutoscalingGroups with name: %q", e.Name)
-	}
-
-	g := response.AutoScalingGroups[0]
 	actual := &AutoscalingGroup{}
 	actual.Name = g.AutoScalingGroupName
 	actual.MinSize = g.MinSize
@@ -73,11 +99,8 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 
 	if g.VPCZoneIdentifier != nil {
 		subnets := strings.Split(*g.VPCZoneIdentifier, ",")
-		if len(subnets) != 1 {
-			panic("Multiple subnets not implemented in AutoScalingGroup")
-		}
 		for _, subnet := range subnets {
-			actual.Subnet = &Subnet{ID: aws.String(subnet)}
+			actual.Subnets = append(actual.Subnets, &Subnet{ID: aws.String(subnet)})
 		}
 	}
 
@@ -101,6 +124,10 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 		return nil, fmt.Errorf("unable to find autoscaling LaunchConfiguration %q", *g.LaunchConfigurationName)
 	}
 
+	if subnetSlicesEqualIgnoreOrder(actual.Subnets, e.Subnets) {
+		actual.Subnets = e.Subnets
+	}
+
 	return actual, nil
 }
 
@@ -119,7 +146,7 @@ func (s *AutoscalingGroup) CheckChanges(a, e, changes *AutoscalingGroup) error {
 
 func (e *AutoscalingGroup) buildTags(cloud fi.Cloud) map[string]string {
 	tags := make(map[string]string)
-	for k, v := range cloud.(*awsup.AWSCloud).BuildTags(e.Name) {
+	for k, v := range cloud.(*awsup.AWSCloud).BuildTags(e.Name, nil) {
 		tags[k] = v
 	}
 	for k, v := range e.Tags {
@@ -145,7 +172,12 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		request.LaunchConfigurationName = &launchConfigurationName
 		request.MinSize = e.MinSize
 		request.MaxSize = e.MaxSize
-		request.VPCZoneIdentifier = e.Subnet.ID
+
+		var subnetIDs []string
+		for _, s := range e.Subnets {
+			subnetIDs = append(subnetIDs, *s.ID)
+		}
+		request.VPCZoneIdentifier = aws.String(strings.Join(subnetIDs, ","))
 
 		tags := []*autoscaling.Tag{}
 		for k, v := range e.buildTags(t.Cloud) {
@@ -228,7 +260,7 @@ func (e *AutoscalingGroup) findLaunchConfiguration(c *fi.Context, name string, d
 	if err != nil {
 		return false, fmt.Errorf("error decoding UserData: %v", err)
 	}
-	dest.UserData = fi.NewStringResource(string(userData))
+	dest.UserData = fi.WrapResource(fi.NewStringResource(string(userData)))
 	dest.IAMInstanceProfile = &IAMInstanceProfile{Name: i.IamInstanceProfile}
 	dest.AssociatePublicIP = i.AssociatePublicIpAddress
 
@@ -280,7 +312,7 @@ func renderAutoscalingLaunchConfigurationAWS(t *awsup.AWSAPITarget, name string,
 	}
 
 	if e.UserData != nil {
-		d, err := fi.ResourceAsBytes(e.UserData)
+		d, err := e.UserData.AsBytes()
 		if err != nil {
 			return fmt.Errorf("error rendering AutoScalingLaunchConfiguration UserData: %v", err)
 		}

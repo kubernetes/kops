@@ -9,7 +9,7 @@ import (
 )
 
 type HasDependencies interface {
-	GetDependencies(tasks map[string]Task) []string
+	GetDependencies(tasks map[string]Task) []Task
 }
 
 // FindTaskDependencies returns a map from each task's key to the discovered list of dependencies
@@ -23,12 +23,21 @@ func FindTaskDependencies(tasks map[string]Task) map[string][]string {
 
 	for k, t := range tasks {
 		task := t.(Task)
-		var dependencyKeys []string
 
+		var dependencies []Task
 		if hd, ok := task.(HasDependencies); ok {
-			dependencyKeys = hd.GetDependencies(tasks)
+			dependencies = hd.GetDependencies(tasks)
 		} else {
-			dependencyKeys = reflectForDependencies(task, taskToId)
+			dependencies = reflectForDependencies(tasks, task)
+		}
+
+		var dependencyKeys []string
+		for _, dep := range dependencies {
+			dependencyKey, found := taskToId[dep]
+			if !found {
+				glog.Fatalf("dependency not found: %v", dep)
+			}
+			dependencyKeys = append(dependencyKeys, dependencyKey)
 		}
 
 		edges[k] = dependencyKeys
@@ -42,23 +51,12 @@ func FindTaskDependencies(tasks map[string]Task) map[string][]string {
 	return edges
 }
 
-func reflectForDependencies(task Task, taskToId map[interface{}]string) []string {
+func reflectForDependencies(tasks map[string]Task, task Task) []Task {
 	v := reflect.ValueOf(task).Elem()
-	dependencies := getDependencies(v)
-
-	var dependencyKeys []string
-	for _, dep := range dependencies {
-		dependencyKey, found := taskToId[dep]
-		if !found {
-			glog.Fatalf("dependency not found: %v", dep)
-		}
-		dependencyKeys = append(dependencyKeys, dependencyKey)
-	}
-
-	return dependencyKeys
+	return getDependencies(tasks, v)
 }
 
-func getDependencies(v reflect.Value) []Task {
+func getDependencies(tasks map[string]Task, v reflect.Value) []Task {
 	var dependencies []Task
 
 	err := utils.ReflectRecursive(v, func(path string, f *reflect.StructField, v reflect.Value) error {
@@ -82,9 +80,14 @@ func getDependencies(v reflect.Value) []Task {
 
 			// TODO: Can we / should we use a type-switch statement
 			intf := v.Addr().Interface()
-			if dep, ok := intf.(Task); ok {
+			if hd, ok := intf.(HasDependencies); ok {
+				deps := hd.GetDependencies(tasks)
+				dependencies = append(dependencies, deps...)
+			} else if dep, ok := intf.(Task); ok {
 				dependencies = append(dependencies, dep)
 			} else if _, ok := intf.(Resource); ok {
+				// Ignore: not a dependency (?)
+			} else if _, ok := intf.(*ResourceHolder); ok {
 				// Ignore: not a dependency (?)
 			} else if _, ok := intf.(*pkix.Name); ok {
 				// Ignore: not a dependency

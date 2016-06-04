@@ -10,6 +10,7 @@ import (
 	"strings"
 )
 
+//go:generate fitask -type=FirewallRule
 type FirewallRule struct {
 	Name         *string
 	Network      *Network
@@ -19,9 +20,7 @@ type FirewallRule struct {
 	Allowed      []string
 }
 
-func (e *FirewallRule) String() string {
-	return fi.TaskAsString(e)
-}
+var _ fi.CompareWithID = &FirewallRule{}
 
 func (e *FirewallRule) CompareWithID() *string {
 	return e.Name

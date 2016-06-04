@@ -10,7 +10,10 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
 )
 
+//go:generate fitask -type=ElasticIP
 type ElasticIP struct {
+	Name *string
+
 	ID       *string
 	PublicIP *string
 
@@ -18,16 +21,6 @@ type ElasticIP struct {
 	// a different resource
 	TagUsingKey   *string
 	TagOnResource fi.Task
-}
-
-var _ fi.CompareWithID = &ElasticIP{}
-
-func (e *ElasticIP) CompareWithID() *string {
-	return e.ID
-}
-
-func (e *ElasticIP) String() string {
-	return fi.TaskAsString(e)
 }
 
 var _ fi.HasAddress = &ElasticIP{}

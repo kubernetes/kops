@@ -58,18 +58,22 @@ func NewFileTask(name string, src fi.Resource, destPath string, meta string) (*F
 	return f, nil
 }
 
-func (f *File) GetDependencies(tasks map[string]fi.Task) []string {
-	var deps []string
+func (f *File) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	var deps []fi.Task
 	if f.Owner != nil {
-		deps = append(deps, "user/"+*f.Owner)
+		ownerTask := tasks["user/"+*f.Owner]
+		if ownerTask == nil {
+			glog.Fatalf("Unable to find task %q", "user/"+*f.Owner)
+		}
+		deps = append(deps, ownerTask)
 	}
 
 	// Depend on disk mounts
 	// For simplicity, we just depend on _all_ disk mounts
 	// We could check the mountpath, but that feels excessive...
-	for k, v := range tasks {
+	for _, v := range tasks {
 		if _, ok := v.(*MountDiskTask); ok {
-			deps = append(deps, k)
+			deps = append(deps, v)
 		}
 	}
 

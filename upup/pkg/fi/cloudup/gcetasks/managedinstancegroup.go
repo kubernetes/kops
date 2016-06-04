@@ -11,17 +11,17 @@ import (
 	"time"
 )
 
+//go:generate fitask -type=ManagedInstanceGroup
 type ManagedInstanceGroup struct {
-	Name             *string
+	Name *string
+
 	Zone             *string
 	BaseInstanceName *string
 	InstanceTemplate *InstanceTemplate
 	TargetSize       *int64
 }
 
-func (e *ManagedInstanceGroup) String() string {
-	return fi.TaskAsString(e)
-}
+var _ fi.CompareWithID = &ManagedInstanceGroup{}
 
 func (e *ManagedInstanceGroup) CompareWithID() *string {
 	return e.Name

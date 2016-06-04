@@ -10,17 +10,13 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
 )
 
+//go:generate fitask -type=Network
 type Network struct {
 	Name *string
 	CIDR *string
 }
 
-var _ fi.Task = &Network{}
 var _ fi.CompareWithID = &Network{}
-
-func (e *Network) String() string {
-	return fi.TaskAsString(e)
-}
 
 func (e *Network) CompareWithID() *string {
 	return e.Name

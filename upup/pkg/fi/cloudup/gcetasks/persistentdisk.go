@@ -10,6 +10,7 @@ import (
 	"strings"
 )
 
+//go:generate fitask -type=PersistentDisk
 type PersistentDisk struct {
 	Name       *string
 	VolumeType *string
@@ -17,9 +18,7 @@ type PersistentDisk struct {
 	Zone       *string
 }
 
-func (e *PersistentDisk) String() string {
-	return fi.TaskAsString(e)
-}
+var _ fi.CompareWithID = &PersistentDisk{}
 
 func (e *PersistentDisk) CompareWithID() *string {
 	return e.Name

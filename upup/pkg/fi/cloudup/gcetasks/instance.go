@@ -15,6 +15,7 @@ import (
 
 var scopeAliases map[string]string
 
+//go:generate fitask -type=Instance
 type Instance struct {
 	Name        *string
 	Network     *Network
@@ -36,9 +37,7 @@ type Instance struct {
 	metadataFingerprint string
 }
 
-func (e *Instance) String() string {
-	return fi.TaskAsString(e)
-}
+var _ fi.CompareWithID = &Instance{}
 
 func (e *Instance) CompareWithID() *string {
 	return e.Name

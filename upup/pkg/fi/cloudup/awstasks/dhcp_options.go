@@ -10,19 +10,13 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
 )
 
+//go:generate fitask -type=DHCPOptions
 type DHCPOptions struct {
+	Name *string
+
 	ID                *string
-	Name              *string
 	DomainName        *string
 	DomainNameServers *string
-}
-
-func (s *DHCPOptions) CompareWithID() *string {
-	return s.ID
-}
-
-func (e *DHCPOptions) String() string {
-	return fi.TaskAsString(e)
 }
 
 func (e *DHCPOptions) Find(c *fi.Context) (*DHCPOptions, error) {
@@ -133,5 +127,5 @@ func (_ *DHCPOptions) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DHCPOption
 		e.ID = response.DhcpOptions.DhcpOptionsId
 	}
 
-	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name))
+	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name, nil))
 }

@@ -10,19 +10,10 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
 )
 
+//go:generate fitask -type=IAMInstanceProfile
 type IAMInstanceProfile struct {
 	ID   *string
 	Name *string
-}
-
-var _ fi.CompareWithID = &IAMInstanceProfile{}
-
-func (e *IAMInstanceProfile) CompareWithID() *string {
-	return e.Name
-}
-
-func (e *IAMInstanceProfile) String() string {
-	return fi.TaskAsString(e)
 }
 
 func (e *IAMInstanceProfile) Find(c *fi.Context) (*IAMInstanceProfile, error) {
@@ -59,7 +50,7 @@ func (e *IAMInstanceProfile) Run(c *fi.Context) error {
 
 func (s *IAMInstanceProfile) CheckChanges(a, e, changes *IAMInstanceProfile) error {
 	if a != nil {
-		if e.Name == nil {
+		if fi.StringValue(e.Name) == "" {
 			return fi.RequiredField("Name")
 		}
 	}

@@ -158,21 +158,35 @@ func (_ *SecurityGroupIngress) CheckChanges(a, e, changes *SecurityGroupIngress)
 func (_ *SecurityGroupIngress) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SecurityGroupIngress) error {
 	if a == nil {
 		request := &ec2.AuthorizeSecurityGroupIngressInput{
-			GroupId:    e.SecurityGroup.ID,
-			CidrIp:     e.CIDR,
-			IpProtocol: e.Protocol,
-			FromPort:   e.FromPort,
-			ToPort:     e.ToPort,
+			GroupId: e.SecurityGroup.ID,
+		}
+
+		protocol := e.Protocol
+		if protocol == nil {
+			protocol = aws.String("-1")
 		}
 
 		if e.SourceGroup != nil {
 			request.IpPermissions = []*ec2.IpPermission{
 				{
-					IpProtocol: aws.String("-1"),
+					IpProtocol: protocol,
 					UserIdGroupPairs: []*ec2.UserIdGroupPair{
 						{
 							GroupId: e.SourceGroup.ID,
 						},
+					},
+					FromPort: e.FromPort,
+					ToPort:   e.ToPort,
+				},
+			}
+		} else {
+			request.IpPermissions = []*ec2.IpPermission{
+				{
+					IpProtocol: protocol,
+					FromPort:   e.FromPort,
+					ToPort:     e.ToPort,
+					IpRanges: []*ec2.IpRange{
+						{CidrIp: e.CIDR},
 					},
 				},
 			}
@@ -185,5 +199,7 @@ func (_ *SecurityGroupIngress) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *S
 		}
 	}
 
-	return nil //return output.AddAWSTags(cloud.Tags(), v, "vpc")
+	// No tags on ingress rules (there are tags on the group though)
+
+	return nil
 }

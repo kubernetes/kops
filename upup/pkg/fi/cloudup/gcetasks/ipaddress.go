@@ -10,17 +10,10 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
 )
 
+//go:generate fitask -type=IPAddress
 type IPAddress struct {
 	Name    *string
 	Address *string
-}
-
-func (e *IPAddress) String() string {
-	return fi.TaskAsString(e)
-}
-
-func (e *IPAddress) CompareWithID() *string {
-	return e.Name
 }
 
 func (e *IPAddress) Find(c *fi.Context) (*IPAddress, error) {
