@@ -16,6 +16,8 @@ import (
 type LoadBalancer struct {
 	Name *string
 
+	// ID is the name in ELB, possibly different from our name
+	// (ELB is restricted as to names, so we have limited choices!)
 	ID *string
 
 	DNSName      *string
@@ -25,6 +27,12 @@ type LoadBalancer struct {
 	SecurityGroups []*SecurityGroup
 
 	Listeners map[string]*LoadBalancerListener
+}
+
+var _ fi.CompareWithID = &LoadBalancer{}
+
+func (e *LoadBalancer) CompareWithID() *string {
+	return e.ID
 }
 
 type LoadBalancerListener struct {
@@ -90,7 +98,12 @@ func findELB(cloud *awsup.AWSCloud, name string) (*elb.LoadBalancerDescription, 
 func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	cloud := c.Cloud.(*awsup.AWSCloud)
 
-	lb, err := findELB(cloud, fi.StringValue(e.Name))
+	elbName := fi.StringValue(e.ID)
+	if elbName == "" {
+		elbName = fi.StringValue(e.Name)
+	}
+
+	lb, err := findELB(cloud, elbName)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +113,7 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 
 	actual := &LoadBalancer{}
 	actual.Name = e.Name
-	actual.ID = e.DNSName
+	actual.ID = lb.LoadBalancerName
 	actual.DNSName = lb.DNSName
 	actual.HostedZoneId = lb.CanonicalHostedZoneNameID
 	for _, subnet := range lb.Subnets {
@@ -126,12 +139,14 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	if subnetSlicesEqualIgnoreOrder(actual.Subnets, e.Subnets) {
 		actual.Subnets = e.Subnets
 	}
-
 	if e.DNSName == nil {
 		e.DNSName = actual.DNSName
 	}
 	if e.HostedZoneId == nil {
 		e.HostedZoneId = actual.HostedZoneId
+	}
+	if e.ID == nil {
+		e.ID = actual.ID
 	}
 
 	return actual, nil
@@ -157,9 +172,18 @@ func (s *LoadBalancer) CheckChanges(a, e, changes *LoadBalancer) error {
 }
 
 func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalancer) error {
+	elbName := e.ID
+	if elbName == nil {
+		elbName = e.Name
+	}
+
+	if elbName == nil {
+		return fi.RequiredField("ID")
+	}
+
 	if a == nil {
 		request := &elb.CreateLoadBalancerInput{}
-		request.LoadBalancerName = e.Name
+		request.LoadBalancerName = elbName
 
 		for _, subnet := range e.Subnets {
 			request.Subnets = append(request.Subnets, subnet.ID)
@@ -180,7 +204,7 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 			request.Listeners = append(request.Listeners, awsListener)
 		}
 
-		glog.V(2).Infof("Creating ELB with Name:%q", *e.Name)
+		glog.V(2).Infof("Creating ELB with Name:%q", *e.ID)
 
 		response, err := t.Cloud.ELB.CreateLoadBalancer(request)
 		if err != nil {
@@ -188,9 +212,9 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 		}
 
 		e.DNSName = response.DNSName
-		e.ID = response.DNSName
+		e.ID = elbName
 
-		lb, err := findELB(t.Cloud, *e.Name)
+		lb, err := findELB(t.Cloud, *e.ID)
 		if err != nil {
 			return err
 		}
@@ -207,7 +231,7 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 
 		if changes.Listeners != nil {
 			request := &elb.CreateLoadBalancerListenersInput{}
-			request.LoadBalancerName = e.Name
+			request.LoadBalancerName = elbName
 
 			for loadBalancerPort, listener := range changes.Listeners {
 				loadBalancerPortInt, err := strconv.ParseInt(loadBalancerPort, 10, 64)
@@ -227,5 +251,5 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 		}
 	}
 
-	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name, nil))
+	return t.AddELBTags(*e.ID, t.Cloud.BuildTags(e.Name, nil))
 }

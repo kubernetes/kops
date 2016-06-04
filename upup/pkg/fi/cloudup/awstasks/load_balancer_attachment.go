@@ -32,7 +32,7 @@ func (e *LoadBalancerAttachment) Find(c *fi.Context) (*LoadBalancerAttachment, e
 		}
 
 		for _, name := range g.LoadBalancerNames {
-			if aws.StringValue(name) != *e.AutoscalingGroup.Name {
+			if aws.StringValue(name) != *e.LoadBalancer.ID {
 				continue
 			}
 
@@ -65,7 +65,7 @@ func (s *LoadBalancerAttachment) CheckChanges(a, e, changes *LoadBalancerAttachm
 func (_ *LoadBalancerAttachment) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalancerAttachment) error {
 	request := &autoscaling.AttachLoadBalancersInput{}
 	request.AutoScalingGroupName = e.AutoscalingGroup.Name
-	request.LoadBalancerNames = []*string{e.LoadBalancer.Name}
+	request.LoadBalancerNames = []*string{e.LoadBalancer.ID}
 
 	glog.V(2).Infof("Attaching autoscaling group %q to ELB %q", *e.AutoscalingGroup.Name, *e.LoadBalancer.Name)
 
