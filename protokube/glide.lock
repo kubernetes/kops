@@ -1,0 +1,39 @@
+hash: d51b01457dd5499bc488e3a367f00fd9e935cdf125296e9451bbf39458fe255a
+updated: 2016-05-29T08:36:17.761287445-04:00
+imports:
+- name: github.com/aws/aws-sdk-go
+  version: c924893c38ecc04b18d7aab8a7aa561cb8b4c4cc
+  subpackages:
+  - aws
+  - aws/ec2metadata
+  - aws/request
+  - aws/session
+  - service/ec2
+  - aws/awserr
+  - aws/credentials
+  - aws/client
+  - aws/client/metadata
+  - aws/awsutil
+  - aws/corehandlers
+  - aws/defaults
+  - private/endpoints
+  - private/protocol
+  - private/protocol/ec2query
+  - private/signer/v4
+  - private/waiter
+  - aws/credentials/ec2rolecreds
+  - private/protocol/query/queryutil
+  - private/protocol/xml/xmlutil
+  - private/protocol/rest
+- name: github.com/go-ini/ini
+  version: 2e44421e256d82ebbf3d4d4fcabe8930b905eff3
+- name: github.com/golang/glog
+  version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
+- name: github.com/jmespath/go-jmespath
+  version: 3433f3ea46d9f8019119e7dd41274e112a2359a9
+- name: k8s.io/kubernetes
+  version: a99e4ca79334cefd5fbdd0fd7f78a6b2595f2fde
+  subpackages:
+  - pkg/util/exec
+  - pkg/util/mount
+devImports: []

@@ -1,0 +1,14 @@
+package: k8s.io/kube-deploy/protokube
+import:
+- package: github.com/aws/aws-sdk-go
+  subpackages:
+  - aws
+  - aws/ec2metadata
+  - aws/request
+  - aws/session
+  - service/ec2
+- package: github.com/golang/glog
+- package: k8s.io/kubernetes
+  subpackages:
+  - pkg/util/exec
+  - pkg/util/mount
