@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kube-deploy/upup/pkg/kutil"
-	"time"
 )
 
 type DeleteClusterCmd struct {
@@ -66,46 +65,13 @@ func (c *DeleteClusterCmd) Run() error {
 		return err
 	}
 
-	for _, r := range resources {
-		fmt.Printf("%v\n", r)
+	for k := range resources {
+		fmt.Printf("%v\n", k)
 	}
 
 	if !c.Yes {
 		return fmt.Errorf("Must specify --yes to delete")
 	}
 
-	for {
-		// TODO: Parallel delete
-		// TODO: Some form of ordering?
-		// TODO: Give up eventually?
-
-		var failed []kutil.DeletableResource
-		for _, r := range resources {
-			fmt.Printf("Deleting resource %s:  ", r)
-			err := r.Delete(cloud)
-			if err != nil {
-				if kutil.IsDependencyViolation(err) {
-					fmt.Printf("still has dependencies, will retry\n")
-				} else {
-					fmt.Printf("error deleting resource, will retry: %v\n", err)
-				}
-				failed = append(failed, r)
-			} else {
-				fmt.Printf(" ok\n")
-			}
-		}
-
-		resources = failed
-		if len(resources) == 0 {
-			break
-		}
-
-		fmt.Printf("Not all resources deleted; waiting before reattempting deletion\n")
-		for _, r := range resources {
-			fmt.Printf("\t%s\n", r)
-		}
-		time.Sleep(10 * time.Second)
-	}
-
-	return nil
+	return d.DeleteResources(resources)
 }
