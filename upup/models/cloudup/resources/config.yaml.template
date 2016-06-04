@@ -10,6 +10,17 @@ CACertificate: {{ Base64Encode (CA.Cert "ca").AsString }}
 APIServer:
   Certificate: {{ Base64Encode (CA.Cert "master").AsString }}
   Key: {{ Base64Encode (CA.PrivateKey "master").AsString }}
+  Image: gcr.io/google_containers/kube-apiserver:v{{ .KubernetesVersion }}
+
+KubeControllerManager:
+  ClusterName: {{ .ClusterName }}
+  Image: gcr.io/google_containers/kube-controller-manager:v{{ .KubernetesVersion }}
+
+KubeScheduler:
+  Image: gcr.io/google_containers/kube-scheduler:v{{ .KubernetesVersion }}
+
+KubeProxy:
+  Image: gcr.io/google_containers/kube-proxy:v{{ .KubernetesVersion }}
 
 KubeUser: {{ .KubeUser }}
 KubePassword: {{ GetOrCreateSecret "kube" }}

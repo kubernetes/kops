@@ -1,4 +1,3 @@
 KubeScheduler:
-  Image: gcr.io/google_containers/kube-scheduler:v1.2.2
   Master: 127.0.0.1:8080
   LogLevel: 2
