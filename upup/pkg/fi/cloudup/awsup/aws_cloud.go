@@ -16,8 +16,8 @@ import (
 	"time"
 )
 
-const MaxDescribeTagsAttempts = 10
-const MaxCreateTagsAttempts = 10
+const MaxDescribeTagsAttempts = 30
+const MaxCreateTagsAttempts = 30
 
 type AWSCloud struct {
 	EC2         *ec2.EC2
@@ -76,8 +76,11 @@ func (c *AWSCloud) Tags() map[string]string {
 func isTagsEventualConsistencyError(err error) bool {
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch awsErr.Code() {
-		case "InvalidInstanceID.NotFound":
+		case "InvalidInstanceID.NotFound", "InvalidRouteTableID.NotFound", "InvalidVpcID.NotFound", "InvalidGroup.NotFound":
 			return true
+
+		default:
+			glog.Warningf("Uncategorized error in isTagsEventualConsistencyError: %v", awsErr.Code())
 		}
 	}
 	return false
@@ -105,7 +108,7 @@ func (c *AWSCloud) GetTags(resourceId string) (map[string]string, error) {
 				}
 
 				glog.V(2).Infof("will retry after encountering error gettings tags on %q: %v", resourceId, err)
-				time.Sleep(1 * time.Second)
+				time.Sleep(2 * time.Second)
 				continue
 			}
 
@@ -152,7 +155,7 @@ func (c *AWSCloud) CreateTags(resourceId string, tags map[string]string) error {
 				}
 
 				glog.V(2).Infof("will retry after encountering error creatings tags on %q: %v", resourceId, err)
-				time.Sleep(1 * time.Second)
+				time.Sleep(2 * time.Second)
 				continue
 			}
 
