@@ -8,6 +8,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"net"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -16,6 +19,10 @@ const TagNameKubernetesCluster = "KubernetesCluster"
 
 // The tag name we use for specifying that something is in the master role
 const TagNameRoleMaster = "k8s.io/role/master"
+
+const TagNameEtcdClusterPrefix = "k8s.io/etcd/"
+
+const TagNameMasterId = "k8s.io/master/id"
 
 const DefaultAttachDevice = "/dev/xvdb"
 
@@ -26,6 +33,7 @@ type AWSVolumes struct {
 	zone       string
 	clusterTag string
 	instanceId string
+	internalIP net.IP
 }
 
 var _ Volumes = &AWSVolumes{}
@@ -36,7 +44,7 @@ func NewAWSVolumes() (*AWSVolumes, error) {
 	s := session.New()
 	s.Handlers.Send.PushFront(func(r *request.Request) {
 		// Log requests
-		glog.V(4).Infof("AWS API Request: %s/%s", r.ClientInfo.ServiceName, r.Operation)
+		glog.V(4).Infof("AWS API Request: %s/%s", r.ClientInfo.ServiceName, r.Operation.Name)
 	})
 
 	config := aws.NewConfig()
@@ -67,6 +75,14 @@ func NewAWSVolumes() (*AWSVolumes, error) {
 	return a, nil
 }
 
+func (a *AWSVolumes) ClusterID() string {
+	return a.clusterTag
+}
+
+func (a *AWSVolumes) InternalIP() net.IP {
+	return a.internalIP
+}
+
 func (a *AWSVolumes) discoverTags() error {
 	instance, err := a.describeInstance()
 	if err != nil {
@@ -84,6 +100,11 @@ func (a *AWSVolumes) discoverTags() error {
 	}
 
 	a.clusterTag = clusterID
+
+	a.internalIP = net.ParseIP(aws.StringValue(instance.PrivateIpAddress))
+	if a.internalIP == nil {
+		return fmt.Errorf("Internal IP not found on this instance (%q)", a.instanceId)
+	}
 
 	return nil
 }
@@ -121,20 +142,23 @@ func newEc2Filter(name string, value string) *ec2.Filter {
 	return filter
 }
 
-func (a *AWSVolumes) FindMountedVolumes() ([]*Volume, error) {
-	request := &ec2.DescribeVolumesInput{}
-	request.Filters = []*ec2.Filter{
-		newEc2Filter("tag:"+TagNameKubernetesCluster, a.clusterTag),
-		newEc2Filter("tag-key", TagNameRoleMaster),
-		newEc2Filter("attachment.instance-id", a.instanceId),
-	}
-
+func (a *AWSVolumes) findVolumes(request *ec2.DescribeVolumesInput) ([]*Volume, error) {
 	var volumes []*Volume
 	err := a.ec2.DescribeVolumesPages(request, func(p *ec2.DescribeVolumesOutput, lastPage bool) (shouldContinue bool) {
 		for _, v := range p.Volumes {
+			name := aws.StringValue(v.VolumeId)
 			vol := &Volume{
-				Name:      aws.StringValue(v.VolumeId),
-				Available: false,
+				Name: name,
+				Info: VolumeInfo{
+					Name: name,
+				},
+			}
+			state := aws.StringValue(v.State)
+
+			switch state {
+			case "available":
+				vol.Available = true
+				break
 			}
 
 			var myAttachment *ec2.VolumeAttachment
@@ -145,13 +169,46 @@ func (a *AWSVolumes) FindMountedVolumes() ([]*Volume, error) {
 				}
 			}
 
-			if myAttachment == nil {
-				glog.Warningf("Requested volumes attached to this instance, but volume %q was returned that was not attached", a.instanceId)
-				continue
+			if myAttachment != nil {
+				vol.Device = aws.StringValue(myAttachment.Device)
 			}
 
-			vol.Device = aws.StringValue(myAttachment.Device)
-			volumes = append(volumes, vol)
+			skipVolume := false
+
+			for _, tag := range v.Tags {
+				k := aws.StringValue(tag.Key)
+				v := aws.StringValue(tag.Value)
+
+				switch k {
+				case TagNameKubernetesCluster, TagNameRoleMaster, "Name":
+				// Ignore
+				case TagNameMasterId:
+					id, err := strconv.Atoi(v)
+					if err != nil {
+						glog.Warningf("error parsing master-id tag on volume %q %s=%s; skipping volume", name, k, v)
+						skipVolume = true
+					} else {
+						vol.Info.MasterID = id
+					}
+				default:
+					if strings.HasPrefix(k, TagNameEtcdClusterPrefix) {
+						etcdClusterName := k[len(TagNameEtcdClusterPrefix):]
+						spec, err := ParseEtcdClusterSpec(etcdClusterName, v)
+						if err != nil {
+							// Fail safe
+							glog.Warningf("error parsing etcd cluster tag %q on volume %q; skipping volume: %v", v, name, err)
+							skipVolume = true
+						}
+						vol.Info.EtcdClusters = append(vol.Info.EtcdClusters, spec)
+					} else {
+						glog.Warningf("unknown tag on volume %q: %s=%s", name, k, v)
+					}
+				}
+			}
+
+			if !skipVolume {
+				volumes = append(volumes, vol)
+			}
 		}
 		return true
 	})
@@ -162,6 +219,17 @@ func (a *AWSVolumes) FindMountedVolumes() ([]*Volume, error) {
 	return volumes, nil
 }
 
+func (a *AWSVolumes) FindMountedVolumes() ([]*Volume, error) {
+	request := &ec2.DescribeVolumesInput{}
+	request.Filters = []*ec2.Filter{
+		newEc2Filter("tag:"+TagNameKubernetesCluster, a.clusterTag),
+		newEc2Filter("tag-key", TagNameRoleMaster),
+		newEc2Filter("attachment.instance-id", a.instanceId),
+	}
+
+	return a.findVolumes(request)
+}
+
 func (a *AWSVolumes) FindMountableVolumes() ([]*Volume, error) {
 	request := &ec2.DescribeVolumesInput{}
 	request.Filters = []*ec2.Filter{
@@ -170,29 +238,7 @@ func (a *AWSVolumes) FindMountableVolumes() ([]*Volume, error) {
 		newEc2Filter("availability-zone", a.zone),
 	}
 
-	var volumes []*Volume
-	err := a.ec2.DescribeVolumesPages(request, func(p *ec2.DescribeVolumesOutput, lastPage bool) (shouldContinue bool) {
-		for _, v := range p.Volumes {
-			vol := &Volume{
-				Name: aws.StringValue(v.VolumeId),
-			}
-			state := aws.StringValue(v.State)
-
-			switch state {
-			case "available":
-				vol.Available = true
-				break
-			}
-
-			volumes = append(volumes, vol)
-		}
-		return true
-	})
-
-	if err != nil {
-		return nil, fmt.Errorf("error querying for EC2 volumes: %v", err)
-	}
-	return volumes, nil
+	return a.findVolumes(request)
 }
 
 // AttachVolume attaches the specified volume to this instance, returning the mountpoint & nil if successful
@@ -219,8 +265,6 @@ func (a *AWSVolumes) AttachVolume(volume *Volume) (string, error) {
 
 	// Wait (forever) for volume to attach or reach a failure-to-attach condition
 	for {
-		time.Sleep(10 * time.Second)
-
 		request := &ec2.DescribeVolumesInput{
 			VolumeIds: []*string{&volumeID},
 		}
@@ -254,5 +298,7 @@ func (a *AWSVolumes) AttachVolume(volume *Volume) (string, error) {
 		default:
 			return "", fmt.Errorf("Observed unexpected volume state %q", attachmentState)
 		}
+
+		time.Sleep(10 * time.Second)
 	}
 }

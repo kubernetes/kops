@@ -1,0 +1,69 @@
+# etcd podspec
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ .PodName }}
+  namespace: kube-system
+spec:
+  hostNetwork: true
+  containers:
+  - name: etcd-container
+    image: gcr.io/google_containers/etcd:2.2.1
+    resources:
+      requests:
+        cpu: 200m
+    command:
+    - /bin/sh
+    - -c
+    - /usr/local/bin/etcd 1>>/var/log/etcd.log 2>&1
+    env:
+    - name: ETCD_NAME
+      value: {{ .Me.Name }}
+    - name: ETCD_DATA_DIR
+      value: /var/etcd/{{ .DataDirName}}
+    - name: ETCD_LISTEN_PEER_URLS
+      value: http://0.0.0.0:{{ .PeerPort }}
+    - name: ETCD_LISTEN_CLIENT_URLS
+      value: http://0.0.0.0:{{ .ClientPort }}
+    - name: ETCD_ADVERTISE_CLIENT_URLS
+      value: http://{{ .Me.InternalName }}:{{ .ClientPort }}
+    - name: ETCD_INITIAL_ADVERTISE_PEER_URLS
+      value: http://{{ .Me.InternalName }}:{{ .PeerPort }}
+    - name: ETCD_INITIAL_CLUSTER_STATE
+      value: new
+    - name: ETCD_INITIAL_CLUSTER_TOKEN
+      value: {{ .ClusterToken }}
+    - name: ETCD_INITIAL_CLUSTER
+      value: {{ range $index, $node := .Nodes -}}
+             {{- if $index }},{{ end -}}
+             {{ $node.Name }}=http://{{ $node.InternalName }}:{{ $.PeerPort }}
+             {{- end }}
+    livenessProbe:
+      httpGet:
+        host: 127.0.0.1
+        port: {{ .ClientPort }}
+        path: /health
+      initialDelaySeconds: 15
+      timeoutSeconds: 15
+    ports:
+    - name: serverport
+      containerPort: {{ .PeerPort }}
+      hostPort: {{ .PeerPort }}
+    - name: clientport
+      containerPort: {{ .ClientPort }}
+      hostPort: {{ .ClientPort }}
+    volumeMounts:
+    - mountPath: /var/etcd
+      name: varetcd
+      readOnly: false
+    - mountPath: /var/log/etcd.log
+      name: varlogetcd
+      readOnly: false
+  volumes:
+  - name: varetcd
+    hostPath:
+      path: /mnt/master-pd/var/{{ .DataDirName }}
+  - name: varlogetcd
+    hostPath:
+      path: {{ .LogFile }}
+

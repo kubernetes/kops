@@ -9,7 +9,9 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strings"
 	"sync"
+	"time"
 )
 
 const BootstrapDir = "/etc/kubernetes/bootstrap"
@@ -18,12 +20,32 @@ type BootstrapTask struct {
 	Command []string `json:"command"`
 }
 
+func (b *BootstrapTask) String() string {
+	return DebugString(b)
+}
+
 // RunKubelet runs the bootstrap tasks, and watches them until they exit
 // Currently only one task is supported / will work properly
 func (k *KubeBoot) RunBootstrapTasks() error {
-	dirs, err := ioutil.ReadDir(BootstrapDir)
-	if err != nil {
-		return fmt.Errorf("error listing %q: %v", BootstrapDir, err)
+	bootstrapDir := k.PathFor(BootstrapDir)
+
+	var dirs []os.FileInfo
+	var err error
+
+	for {
+		dirs, err = ioutil.ReadDir(bootstrapDir)
+		if err != nil {
+			if os.IsNotExist(err) {
+				dirs = nil
+			} else {
+				return fmt.Errorf("error listing %q: %v", bootstrapDir, err)
+			}
+		}
+		if len(dirs) != 0 {
+			break
+		}
+		glog.Infof("No entries found in %q", BootstrapDir)
+		time.Sleep(10 * time.Second)
 	}
 
 	for _, dir := range dirs {
@@ -31,7 +53,7 @@ func (k *KubeBoot) RunBootstrapTasks() error {
 			continue
 		}
 
-		p := path.Join(BootstrapDir, dir.Name())
+		p := path.Join(bootstrapDir, dir.Name())
 		files, err := ioutil.ReadDir(p)
 		if err != nil {
 			return fmt.Errorf("error listing %q: %v", p, err)
@@ -53,6 +75,7 @@ func (k *KubeBoot) RunBootstrapTasks() error {
 			return fmt.Errorf("error running bootstrap task %q: %v", fp, err)
 		}
 	}
+
 	return nil
 }
 
@@ -91,7 +114,7 @@ func (k *KubeBoot) runBootstrapTask(path string) error {
 
 	err = cmd.Start()
 	if err != nil {
-		return fmt.Errorf("error starting command %q: %v", task.Command, err)
+		return fmt.Errorf("error starting command %q: %v", strings.Join(task.Command, " "), err)
 	}
 
 	go copyStream(os.Stdout, stdout, wg)

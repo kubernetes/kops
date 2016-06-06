@@ -9,36 +9,38 @@ import (
 	"time"
 )
 
-const MasterMountpoint = "/master-pd"
+const MasterMountpoint = "/mnt/master-pd"
 
-func (k *KubeBoot) mountMasterVolume() (string, error) {
+func (k *KubeBoot) mountMasterVolume() (*VolumeInfo, string, error) {
 	// TODO: mount ephemeral volumes (particular on AWS)?
 
 	// Mount a master volume
-	device, err := k.attachMasterVolume()
+	volume, device, err := k.attachMasterVolume()
 	if err != nil {
-		return "", fmt.Errorf("unable to attach master volume: %q", err)
+		return nil, "", fmt.Errorf("unable to attach master volume: %q", err)
 	}
 
 	if device == "" {
-		return "", nil
+		return nil, "", nil
 	}
 
-	glog.V(2).Infof("Master volume is attached at %q", device)
+	glog.V(2).Infof("Master volume %q is attached at %q", volume.Name, device)
 
+	glog.Infof("Doing safe-format-and-mount of %s to %s", device, MasterMountpoint)
 	fstype := ""
 	err = k.safeFormatAndMount(device, MasterMountpoint, fstype)
 	if err != nil {
-		return "", fmt.Errorf("unable to mount master volume: %q", err)
+		return nil, "", fmt.Errorf("unable to mount master volume: %q", err)
 	}
 
-	return MasterMountpoint, nil
+	return volume, MasterMountpoint, nil
 }
 
 func (k *KubeBoot) safeFormatAndMount(device string, mountpoint string, fstype string) error {
 	// Wait for the device to show up
+
 	for {
-		_, err := os.Stat(device)
+		_, err := os.Stat(k.PathFor(device))
 		if err == nil {
 			break
 		}
@@ -50,21 +52,35 @@ func (k *KubeBoot) safeFormatAndMount(device string, mountpoint string, fstype s
 	}
 	glog.Infof("Found device %q", device)
 
-	// Mount the device
+	//// Mount the device
+	//var mounter mount.Interface
+	//runner := exec.New()
+	//if k.Containerized {
+	//	mounter = mount.NewNsenterMounter()
+	//	runner = NewChrootRunner(runner, "/rootfs")
+	//} else {
+	//	mounter = mount.New()
+	//}
 
-	mounter := &mount.SafeFormatAndMount{Interface: mount.New(), Runner: exec.New()}
+	// If we are containerized, we still first SafeFormatAndMount in our namespace
+	// This is because SafeFormatAndMount doesn't seem to work in a container
+	safeFormatAndMount := &mount.SafeFormatAndMount{Interface: mount.New(), Runner: exec.New()}
 
-	// Only mount the PD globally once.
-	notMnt, err := mounter.IsLikelyNotMountPoint(mountpoint)
+	// Check if it is already mounted
+	mounts, err := safeFormatAndMount.List()
 	if err != nil {
-		if os.IsNotExist(err) {
-			glog.Infof("Creating mount directory %q", mountpoint)
-			if err := os.MkdirAll(mountpoint, 0750); err != nil {
-				return err
-			}
-			notMnt = true
-		} else {
-			return err
+		return fmt.Errorf("error listing existing mounts: %v", err)
+	}
+
+	// Note: IsLikelyNotMountPoint is not containerized
+
+	findMountpoint := k.PathFor(mountpoint)
+	var existing []*mount.MountPoint
+	for i := range mounts {
+		m := &mounts[i]
+		glog.V(2).Infof("found existing mount: %v", m)
+		if m.Path == findMountpoint {
+			existing = append(existing, m)
 		}
 	}
 
@@ -72,29 +88,31 @@ func (k *KubeBoot) safeFormatAndMount(device string, mountpoint string, fstype s
 	//if readOnly {
 	//	options = append(options, "ro")
 	//}
-	if notMnt {
-		glog.Infof("Mounting device %q on %q", device, mountpoint)
+	if len(existing) == 0 {
+		glog.Infof("Creating mount directory %q", k.PathFor(mountpoint))
+		if err := os.MkdirAll(k.PathFor(mountpoint), 0750); err != nil {
+			return err
+		}
 
-		err = mounter.FormatAndMount(device, mountpoint, fstype, options)
+		glog.Infof("Mounting device %q on %q", k.PathFor(device), k.PathFor(mountpoint))
+
+		err = safeFormatAndMount.FormatAndMount(k.PathFor(device), k.PathFor(mountpoint), fstype, options)
 		if err != nil {
 			//os.Remove(mountpoint)
-			return fmt.Errorf("error formatting and mounting disk %q on %q: %v", device, mountpoint, err)
+			return fmt.Errorf("error formatting and mounting disk %q on %q: %v", k.PathFor(device), k.PathFor(mountpoint), err)
+		}
+
+		// If we are containerized, we then also mount it into the host
+		if k.Containerized {
+			hostMounter := mount.NewNsenterMounter()
+			err = hostMounter.Mount(device, mountpoint, fstype, options)
+			if err != nil {
+				//os.Remove(mountpoint)
+				return fmt.Errorf("error formatting and mounting disk %q on %q in host: %v", device, mountpoint, err)
+			}
 		}
 	} else {
 		glog.Infof("Device already mounted on : %q, verifying it is our device", mountpoint)
-
-		mounts, err := mounter.List()
-		if err != nil {
-			return fmt.Errorf("error listing existing mounts: %v", err)
-		}
-
-		var existing []*mount.MountPoint
-		for i := range mounts {
-			m := &mounts[i]
-			if m.Path == mountpoint {
-				existing = append(existing, m)
-			}
-		}
 
 		if len(existing) != 1 {
 			glog.Infof("Existing mounts unexpected")
@@ -103,11 +121,7 @@ func (k *KubeBoot) safeFormatAndMount(device string, mountpoint string, fstype s
 				m := &mounts[i]
 				glog.Infof("%s\t%s", m.Device, m.Path)
 			}
-		}
 
-		if len(existing) == 0 {
-			return fmt.Errorf("Unable to find existing mount of %q at %q", device, mountpoint)
-		} else if len(existing) != 1 {
 			return fmt.Errorf("Found multiple existing mounts of %q at %q", device, mountpoint)
 		} else {
 			glog.Infof("Found existing mount of %q and %q", device, mountpoint)
@@ -117,10 +131,10 @@ func (k *KubeBoot) safeFormatAndMount(device string, mountpoint string, fstype s
 	return nil
 }
 
-func (k *KubeBoot) attachMasterVolume() (string, error) {
-	volumes, err := k.volumes.FindMountedVolumes()
+func (k *KubeBoot) attachMasterVolume() (*VolumeInfo, string, error) {
+	volumes, err := k.Volumes.FindMountedVolumes()
 	if err != nil {
-		return "", err
+		return nil, "", err
 	}
 
 	if len(volumes) != 0 {
@@ -129,23 +143,25 @@ func (k *KubeBoot) attachMasterVolume() (string, error) {
 			glog.Warningf("Found multiple master volumes: %v", volumes)
 		}
 
-		glog.V(2).Infof("Found master volume already attached: %q", volumes[0].Name)
+		volume := volumes[0]
 
-		device, err := k.volumes.AttachVolume(volumes[0])
+		glog.V(2).Infof("Found master volume already attached: %q", volume.Name)
+
+		device, err := k.Volumes.AttachVolume(volume)
 		if err != nil {
-			return "", fmt.Errorf("Error attaching volume %q: %v", volumes[0].Name, err)
+			return nil, "", fmt.Errorf("Error attaching volume %q: %v", volume.Name, err)
 		}
-		return device, nil
+		return &volume.Info, device, nil
 	}
 
-	volumes, err = k.volumes.FindMountableVolumes()
+	volumes, err = k.Volumes.FindMountableVolumes()
 	if err != nil {
-		return "", err
+		return nil, "", err
 	}
 
 	if len(volumes) == 0 {
 		glog.Infof("No available master volumes")
-		return "", nil
+		return nil, "", nil
 	}
 
 	for _, volume := range volumes {
@@ -155,12 +171,12 @@ func (k *KubeBoot) attachMasterVolume() (string, error) {
 
 		glog.V(2).Infof("Trying to mount master volume: %q", volume.Name)
 
-		device, err := k.volumes.AttachVolume(volume)
+		device, err := k.Volumes.AttachVolume(volume)
 		if err != nil {
-			return "", fmt.Errorf("Error attaching volume %q: %v", volume.Name, err)
+			return nil, "", fmt.Errorf("Error attaching volume %q: %v", volume.Name, err)
 		}
-		return device, nil
+		return &volume.Info, device, nil
 	}
 
-	return "", nil
+	return nil, "", nil
 }
