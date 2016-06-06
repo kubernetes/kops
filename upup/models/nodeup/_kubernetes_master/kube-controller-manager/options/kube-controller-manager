@@ -1,6 +1,5 @@
 KubeControllerManager:
   PathSrvKubernetes: /srv/kubernetes
-  Image: gcr.io/google_containers/kube-controller-manager:v1.2.2
   Master: 127.0.0.1:8080
   ClusterName: kubernetes
   ClusterCIDR: 10.244.0.0/16

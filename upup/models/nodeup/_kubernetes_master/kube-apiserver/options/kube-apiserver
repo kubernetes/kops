@@ -2,7 +2,6 @@ APIServer:
   SecurePort: 443
   PathSrvKubernetes: /srv/kubernetes
   PathSrvSshproxy: /srv/sshproxy
-  Image: gcr.io/google_containers/kube-apiserver:v1.2.2
   Address: 127.0.0.1
   EtcdServers: http://127.0.0.1:4001
   EtcdServersOverrides: /events#http://127.0.0.1:4002
