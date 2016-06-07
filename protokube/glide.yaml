@@ -12,3 +12,4 @@ import:
   subpackages:
   - pkg/util/exec
   - pkg/util/mount
+- package: github.com/ghodss/yaml
