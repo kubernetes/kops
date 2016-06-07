@@ -10,6 +10,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kubernetes/pkg/util/diff"
 	"net/url"
 	"reflect"
 )
@@ -101,7 +102,7 @@ func (s *IAMRole) CheckChanges(a, e, changes *IAMRole) error {
 func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error {
 	policy, err := e.RolePolicyDocument.AsString()
 	if err != nil {
-		return fmt.Errorf("error rendering PolicyDocument: %v", err)
+		return fmt.Errorf("error rendering RolePolicyDocument: %v", err)
 	}
 
 	if a == nil {
@@ -119,13 +120,30 @@ func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error
 		e.ID = response.Role.RoleId
 	} else {
 		if changes.RolePolicyDocument != nil {
-			glog.V(2).Infof("Updating IAMRole AssumeRolePolicy  %q", *e.Name)
+			glog.V(2).Infof("Updating IAMRole AssumeRolePolicy %q", *e.Name)
+
+			var err error
+
+			actualPolicy := ""
+			if a.RolePolicyDocument != nil {
+				actualPolicy, err = a.RolePolicyDocument.AsString()
+				if err != nil {
+					return fmt.Errorf("error reading actual policy document: %v", err)
+				}
+			}
+
+			if actualPolicy == policy {
+				glog.Warning("Policies were actually the same")
+			} else {
+				d := diff.StringDiff(actualPolicy, policy)
+				glog.V(2).Infof("diff: %s", d)
+			}
 
 			request := &iam.UpdateAssumeRolePolicyInput{}
 			request.PolicyDocument = aws.String(policy)
 			request.RoleName = e.Name
 
-			_, err := t.Cloud.IAM.UpdateAssumeRolePolicy(request)
+			_, err = t.Cloud.IAM.UpdateAssumeRolePolicy(request)
 			if err != nil {
 				return fmt.Errorf("error updating IAMRole: %v", err)
 			}

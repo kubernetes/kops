@@ -9,6 +9,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kubernetes/pkg/util/diff"
 	"net/url"
 )
 
@@ -41,6 +42,9 @@ func (e *IAMRolePolicy) Find(c *fi.Context) (*IAMRolePolicy, error) {
 	p := response
 	actual := &IAMRolePolicy{}
 	actual.Role = &IAMRole{Name: p.RoleName}
+	if aws.StringValue(e.Role.Name) == aws.StringValue(p.RoleName) {
+		actual.Role.ID = e.Role.ID
+	}
 	if p.PolicyDocument != nil {
 		// The PolicyDocument is URI encoded (?)
 		policy := *p.PolicyDocument
@@ -71,14 +75,42 @@ func (s *IAMRolePolicy) CheckChanges(a, e, changes *IAMRolePolicy) error {
 }
 
 func (_ *IAMRolePolicy) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRolePolicy) error {
+	policy, err := e.PolicyDocument.AsString()
+	if err != nil {
+		return fmt.Errorf("error rendering PolicyDocument: %v", err)
+	}
+
+	doPut := false
+
 	if a == nil {
 		glog.V(2).Infof("Creating IAMRolePolicy")
+		doPut = true
+	} else if changes != nil {
+		if changes.PolicyDocument != nil {
+			glog.V(2).Infof("Applying changed role policy to %q:", *e.Name)
 
-		policy, err := e.PolicyDocument.AsString()
-		if err != nil {
-			return fmt.Errorf("error rendering PolicyDocument: %v", err)
+			var err error
+
+			actualPolicy := ""
+			if a.PolicyDocument != nil {
+				actualPolicy, err = a.PolicyDocument.AsString()
+				if err != nil {
+					return fmt.Errorf("error reading actual policy document: %v", err)
+				}
+			}
+
+			if actualPolicy == policy {
+				glog.Warning("Policies were actually the same")
+			} else {
+				d := diff.StringDiff(actualPolicy, policy)
+				glog.V(2).Infof("diff: %s", d)
+			}
+
+			doPut = true
 		}
+	}
 
+	if doPut {
 		request := &iam.PutRolePolicyInput{}
 		request.PolicyDocument = aws.String(policy)
 		request.RoleName = e.Name
@@ -86,7 +118,7 @@ func (_ *IAMRolePolicy) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRoleP
 
 		_, err = t.Cloud.IAM.PutRolePolicy(request)
 		if err != nil {
-			return fmt.Errorf("error creating IAMRolePolicy: %v", err)
+			return fmt.Errorf("error creating/updating IAMRolePolicy: %v", err)
 		}
 	}
 

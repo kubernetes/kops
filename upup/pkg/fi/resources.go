@@ -200,6 +200,12 @@ type ResourceHolder struct {
 	Resource Resource
 }
 
+var _ Resource = &ResourceHolder{}
+
+func (o *ResourceHolder) Open() (io.ReadSeeker, error) {
+	return o.Resource.Open()
+}
+
 func (o *ResourceHolder) UnmarshalJSON(data []byte) error {
 	var jsonName string
 	err := json.Unmarshal(data, &jsonName)
