@@ -204,7 +204,6 @@ func (c *CreateClusterCmd) Run() error {
 			c.Config.NodeUpTags = append(c.Config.NodeUpTags, "_aws")
 
 			l.AddTypes(map[string]interface{}{
-				"autoscalingGroup":            &awstasks.AutoscalingGroup{},
 				"dhcpOptions":                 &awstasks.DHCPOptions{},
 				"elasticIP":                   &awstasks.ElasticIP{},
 				"iamInstanceProfile":          &awstasks.IAMInstanceProfile{},
@@ -226,6 +225,18 @@ func (c *CreateClusterCmd) Run() error {
 				"subnet":                      &awstasks.Subnet{},
 				"vpc":                         &awstasks.VPC{},
 				"vpcDHDCPOptionsAssociation": &awstasks.VPCDHCPOptionsAssociation{},
+
+				// ELB
+				"loadBalancer":             &awstasks.LoadBalancer{},
+				"loadBalancerAttachment":   &awstasks.LoadBalancerAttachment{},
+				"loadBalancerHealthChecks": &awstasks.LoadBalancerHealthChecks{},
+
+				// Autoscaling
+				"autoscalingGroup": &awstasks.AutoscalingGroup{},
+
+				// Route53
+				"dnsName": &awstasks.DNSName{},
+				"dnsZone": &awstasks.DNSZone{},
 			})
 
 			// For now a zone to be specified...
