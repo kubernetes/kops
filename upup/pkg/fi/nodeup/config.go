@@ -120,10 +120,11 @@ type APIServerConfig struct {
 type KubeControllerManagerConfig struct {
 	CloudProvider string `flag:"cloud-provider"`
 
-	Master            string `flag:"master"`
-	ClusterName       string `flag:"cluster-name"`
-	ClusterCIDR       string `flag:"cluster-cidr"`
-	AllocateNodeCIDRs *bool  `flag:"allocate-node-cidrs"`
+	Master               string `flag:"master"`
+	ClusterName          string `flag:"cluster-name"`
+	ClusterCIDR          string `flag:"cluster-cidr"`
+	AllocateNodeCIDRs    *bool  `flag:"allocate-node-cidrs"`
+	ConfigureCloudRoutes *bool  `flag:"configure-cloud-routes"`
 	// TODO: Name verbosity or LogLevel
 	LogLevel    int   `flag:"v"`
 	LeaderElect *bool `flag:"leader-elect"`

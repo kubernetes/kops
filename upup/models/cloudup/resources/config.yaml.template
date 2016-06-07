@@ -37,6 +37,9 @@ Tokens:
   "system:logging": {{ GetOrCreateSecret "system:logging" }}
   "system:monitoring": {{ GetOrCreateSecret "system:monitoring" }}
   "system:dns": {{ GetOrCreateSecret "system:dns" }}
+{{ if HasTag "_kope_routing" }}
+  "kope-routing": {{ GetOrCreateSecret "kope-routing" }}
+{{ end }}
 
 Tags:
 {{ range $tag := Args }}
