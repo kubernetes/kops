@@ -22,6 +22,12 @@ type IAMRole struct {
 	RolePolicyDocument *fi.ResourceHolder // "inline" IAM policy
 }
 
+var _ fi.CompareWithID = &IAMRole{}
+
+func (e *IAMRole) CompareWithID() *string {
+	return e.ID
+}
+
 func (e *IAMRole) Find(c *fi.Context) (*IAMRole, error) {
 	cloud := c.Cloud.(*awsup.AWSCloud)
 

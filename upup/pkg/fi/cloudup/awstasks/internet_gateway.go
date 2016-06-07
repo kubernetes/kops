@@ -15,6 +15,12 @@ type InternetGateway struct {
 	ID   *string
 }
 
+var _ fi.CompareWithID = &InternetGateway{}
+
+func (e *InternetGateway) CompareWithID() *string {
+	return e.ID
+}
+
 func (e *InternetGateway) Find(c *fi.Context) (*InternetGateway, error) {
 	cloud := c.Cloud.(*awsup.AWSCloud)
 

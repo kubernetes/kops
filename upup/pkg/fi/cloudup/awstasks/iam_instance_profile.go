@@ -12,8 +12,14 @@ import (
 
 //go:generate fitask -type=IAMInstanceProfile
 type IAMInstanceProfile struct {
-	ID   *string
 	Name *string
+	ID   *string
+}
+
+var _ fi.CompareWithID = &IAMInstanceProfile{}
+
+func (e *IAMInstanceProfile) CompareWithID() *string {
+	return e.Name
 }
 
 func (e *IAMInstanceProfile) Find(c *fi.Context) (*IAMInstanceProfile, error) {

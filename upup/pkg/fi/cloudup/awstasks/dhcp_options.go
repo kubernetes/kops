@@ -19,6 +19,12 @@ type DHCPOptions struct {
 	DomainNameServers *string
 }
 
+var _ fi.CompareWithID = &DHCPOptions{}
+
+func (e *DHCPOptions) CompareWithID() *string {
+	return e.ID
+}
+
 func (e *DHCPOptions) Find(c *fi.Context) (*DHCPOptions, error) {
 	cloud := c.Cloud.(*awsup.AWSCloud)
 

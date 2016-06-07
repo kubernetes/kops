@@ -17,6 +17,12 @@ type DNSZone struct {
 	ID   *string
 }
 
+var _ fi.CompareWithID = &DNSZone{}
+
+func (e *DNSZone) CompareWithID() *string {
+	return e.Name
+}
+
 func (e *DNSZone) Find(c *fi.Context) (*DNSZone, error) {
 	cloud := c.Cloud.(*awsup.AWSCloud)
 

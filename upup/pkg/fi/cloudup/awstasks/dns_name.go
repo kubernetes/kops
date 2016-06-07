@@ -41,12 +41,14 @@ func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
 	err := cloud.Route53.ListResourceRecordSetsPages(request, func(p *route53.ListResourceRecordSetsOutput, lastPage bool) (shouldContinue bool) {
 		for _, rr := range p.ResourceRecordSets {
 			resourceType := aws.StringValue(rr.Type)
+			name := aws.StringValue(rr.Name)
+
+			glog.V(4).Infof("Found DNS resource %q %q", resourceType, name)
 
 			if findType != resourceType {
 				continue
 			}
 
-			name := aws.StringValue(rr.Name)
 			name = strings.TrimSuffix(name, ".")
 
 			if name == findName {
@@ -92,6 +94,7 @@ func (s *DNSName) CheckChanges(a, e, changes *DNSName) error {
 func (_ *DNSName) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSName) error {
 	rrs := &route53.ResourceRecordSet{
 		Name: e.Name,
+		Type: aws.String(e.ResourceType),
 	}
 
 	if e.TargetLoadBalancer != nil {
@@ -100,7 +103,6 @@ func (_ *DNSName) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSName) error
 			EvaluateTargetHealth: aws.Bool(false),
 			HostedZoneId:         e.TargetLoadBalancer.HostedZoneId,
 		}
-		rrs.Type = aws.String("A")
 	}
 
 	change := &route53.Change{
