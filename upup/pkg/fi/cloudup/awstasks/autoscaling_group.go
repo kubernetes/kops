@@ -10,13 +10,7 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
 	"strings"
-	"time"
 )
-
-func buildTimestampString() string {
-	now := time.Now()
-	return now.UTC().Format("20060102T150405Z")
-}
 
 // This one is a little weird because we can't update a launch configuration
 // So we have to create the launch configuration as part of the group
@@ -157,7 +151,7 @@ func (e *AutoscalingGroup) buildTags(cloud fi.Cloud) map[string]string {
 
 func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *AutoscalingGroup) error {
 	if a == nil {
-		launchConfigurationName := *e.Name + "-" + buildTimestampString()
+		launchConfigurationName := *e.Name + "-" + fi.BuildTimestampString()
 		glog.V(2).Infof("Creating autoscaling LaunchConfiguration with Name:%q", launchConfigurationName)
 
 		err := renderAutoscalingLaunchConfigurationAWS(t, launchConfigurationName, e)
@@ -196,7 +190,7 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		}
 	} else {
 		if changes.UserData != nil {
-			launchConfigurationName := *e.Name + "-" + buildTimestampString()
+			launchConfigurationName := *e.Name + "-" + fi.BuildTimestampString()
 			glog.V(2).Infof("Creating autoscaling LaunchConfiguration with Name:%q", launchConfigurationName)
 
 			err := renderAutoscalingLaunchConfigurationAWS(t, launchConfigurationName, e)

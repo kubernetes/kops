@@ -11,12 +11,18 @@ import (
 
 //go:generate fitask -type=EBSVolume
 type EBSVolume struct {
+	Name             *string
 	ID               *string
 	AvailabilityZone *string
 	VolumeType       *string
 	SizeGB           *int64
-	Name             *string
 	Tags             map[string]string
+}
+
+var _ fi.CompareWithID = &EBSVolume{}
+
+func (e *EBSVolume) CompareWithID() *string {
+	return e.ID
 }
 
 type TaggableResource interface {

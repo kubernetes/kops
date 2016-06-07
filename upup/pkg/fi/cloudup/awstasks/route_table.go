@@ -16,6 +16,12 @@ type RouteTable struct {
 	VPC  *VPC
 }
 
+var _ fi.CompareWithID = &RouteTable{}
+
+func (e *RouteTable) CompareWithID() *string {
+	return e.ID
+}
+
 func (e *RouteTable) Find(c *fi.Context) (*RouteTable, error) {
 	cloud := c.Cloud.(*awsup.AWSCloud)
 

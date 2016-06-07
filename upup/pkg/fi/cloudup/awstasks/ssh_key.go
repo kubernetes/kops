@@ -27,9 +27,13 @@ type SSHKey struct {
 
 	PublicKey *fi.ResourceHolder
 
-	ID *string
-
 	KeyFingerprint *string
+}
+
+var _ fi.CompareWithID = &SSHKey{}
+
+func (e *SSHKey) CompareWithID() *string {
+	return e.Name
 }
 
 func (e *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
@@ -61,7 +65,6 @@ func (e *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 
 	actual := &SSHKey{
 		Name:           k.KeyName,
-		ID:             k.KeyName,
 		KeyFingerprint: k.KeyFingerprint,
 	}
 
