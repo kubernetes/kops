@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"strings"
+	"sync"
 )
 
 type executor struct {
@@ -65,12 +66,15 @@ func (e *executor) RunTasks(taskMap map[string]Task) error {
 		}
 
 		progress := false
-		var errors []error
 
-		// TODO: Fork/join execution here
+		var tasks []*taskState
 		for _, ts := range canRun {
-			glog.V(2).Infof("Executing task %q: %v\n", ts.key, ts.task)
-			err := ts.task.Run(e.context)
+			tasks = append(tasks, ts)
+		}
+
+		errors := e.forkJoin(tasks)
+		for i, err := range errors {
+			ts := tasks[i]
 			if err != nil {
 				glog.Warningf("error running task %q: %v", ts.key, err)
 				errors = append(errors, err)
@@ -103,4 +107,28 @@ func (e *executor) RunTasks(taskMap map[string]Task) error {
 	}
 
 	return nil
+}
+
+type runnable func() error
+
+func (e *executor) forkJoin(tasks []*taskState) []error {
+	if len(tasks) == 0 {
+		return nil
+	}
+
+	var wg sync.WaitGroup
+	results := make([]error, len(tasks))
+	for i := 0; i < len(tasks); i++ {
+		wg.Add(1)
+		go func(ts *taskState, index int) {
+			results[index] = fmt.Errorf("function panic")
+			defer wg.Done()
+			glog.V(2).Infof("Executing task %q: %v\n", ts.key, ts.task)
+			results[index] = ts.task.Run(e.context)
+		}(tasks[i], i)
+	}
+
+	wg.Wait()
+
+	return results
 }

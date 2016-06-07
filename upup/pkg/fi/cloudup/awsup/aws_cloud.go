@@ -16,8 +16,8 @@ import (
 	"time"
 )
 
-const MaxDescribeTagsAttempts = 30
-const MaxCreateTagsAttempts = 30
+const MaxDescribeTagsAttempts = 60
+const MaxCreateTagsAttempts = 60
 
 type AWSCloud struct {
 	EC2         *ec2.EC2

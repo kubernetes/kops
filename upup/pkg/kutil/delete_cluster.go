@@ -12,6 +12,7 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -195,6 +196,8 @@ func (c *DeleteCluster) DeleteResources(resources map[string]DeletableResource) 
 
 	done := make(map[string]DeletableResource)
 
+	var mutex sync.Mutex
+
 	// Initial pass to check that resources actually exist
 	for k, r := range resources {
 		hs, ok := r.(HasStatus)
@@ -260,22 +263,39 @@ func (c *DeleteCluster) DeleteResources(resources map[string]DeletableResource) 
 				break
 			}
 
-			// TODO: Parallel delete?
+			var wg sync.WaitGroup
 			for k, r := range phase {
-				fmt.Printf("Deleting resource %s:  ", k)
-				err := r.Delete(c.Cloud)
-				if err != nil {
-					if IsDependencyViolation(err) {
-						fmt.Printf("still has dependencies, will retry\n")
-					} else {
-						fmt.Printf("error deleting resource, will retry: %v\n", err)
-					}
+				wg.Add(1)
+
+				go func(k string, r DeletableResource) {
+					mutex.Lock()
 					failed[k] = r
-				} else {
-					fmt.Printf(" ok\n")
-					done[k] = r
-				}
+					mutex.Unlock()
+
+					defer wg.Done()
+					glog.V(4).Infof("Deleting resource %s:  ", k)
+					err := r.Delete(c.Cloud)
+					if err != nil {
+						mutex.Lock()
+						if IsDependencyViolation(err) {
+							fmt.Printf("%s\tstill has dependencies, will retry\n", k)
+							glog.V(4).Infof("API call made when had dependency %s", k)
+						} else {
+							fmt.Printf("%s\terror deleting resource, will retry: %v\n", k, err)
+						}
+						failed[k] = r
+						mutex.Unlock()
+					} else {
+						mutex.Lock()
+						fmt.Printf("%s\tok\n", k)
+
+						delete(failed, k)
+						done[k] = r
+						mutex.Unlock()
+					}
+				}(k, r)
 			}
+			wg.Wait()
 		}
 
 		if len(resources) == len(done) {
@@ -696,6 +716,9 @@ func (r *DeletableInternetGateway) Delete(cloud fi.Cloud) error {
 		}
 		_, err := c.EC2.DetachInternetGateway(request)
 		if err != nil {
+			if IsDependencyViolation(err) {
+				return err
+			}
 			return fmt.Errorf("error detaching InternetGateway %q: %v", r.ID, err)
 		}
 	}
@@ -716,6 +739,7 @@ func (r *DeletableInternetGateway) Delete(cloud fi.Cloud) error {
 
 	return nil
 }
+
 func (r *DeletableInternetGateway) String() string {
 	return "InternetGateway:" + r.ID
 }
