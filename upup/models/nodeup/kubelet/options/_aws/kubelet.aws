@@ -2,4 +2,3 @@ Kubelet:
   CloudProvider: aws
   CgroupRoot: docker
   NonMasqueradeCdir: 10.0.0.0/8
-  APIServers: https://172.20.0.9

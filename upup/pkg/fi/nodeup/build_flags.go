@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// buildFlags is a template helper, which builds a string containing the flags to be passed to a command
 func buildFlags(options interface{}) (string, error) {
 	var flags []string
 

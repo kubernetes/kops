@@ -37,8 +37,11 @@ func main() {
 	// TODO: Replace all these with a direct binding to the CloudConfig
 	// (we have plenty of reflection helpers if one isn't already available!)
 	config := &cloudup.CloudConfig{}
+
+	zones := strings.Join(config.Zones, ",")
+
 	flag.StringVar(&config.CloudProvider, "cloud", config.CloudProvider, "Cloud provider to use - gce, aws")
-	flag.StringVar(&config.Zone, "zone", config.Zone, "Cloud zone to target (warning - will be replaced by region)")
+	flag.StringVar(&zones, "zone", zones, "Cloud zone to target (warning - will be replaced by region)")
 	flag.StringVar(&config.Project, "project", config.Project, "Project to use (must be set on GCE)")
 	flag.StringVar(&config.ClusterName, "name", config.ClusterName, "Name for cluster")
 	flag.StringVar(&config.KubernetesVersion, "kubernetes-version", config.KubernetesVersion, "Version of kubernetes to run")
@@ -48,6 +51,11 @@ func main() {
 	flag.StringVar(&sshPublicKey, "ssh-public-key", sshPublicKey, "SSH public key to use")
 
 	flag.Parse()
+
+	config.Zones = strings.Split(zones, ",")
+
+	config.MasterZones = config.Zones
+	config.NodeZones = config.Zones
 
 	if dryrun {
 		target = "dryrun"
@@ -108,7 +116,20 @@ func (c *CreateClusterCmd) LoadConfig(configFile string) error {
 }
 
 func (c *CreateClusterCmd) Run() error {
-	useProtokube := true
+	// TODO: Make these configurable?
+	useMasterASG := true
+	useMasterLB := false
+
+	// We (currently) have to use protokube with ASGs
+	useProtokube := useMasterASG
+
+	if c.Config.MasterPublicName == "" {
+		c.Config.MasterPublicName = "api." + c.Config.ClusterName
+	}
+	if c.Config.DNSZone == "" {
+		tokens := strings.Split(c.Config.MasterPublicName, ".")
+		c.Config.DNSZone = strings.Join(tokens[len(tokens)-2:], ".")
+	}
 
 	if c.StateDir == "" {
 		return fmt.Errorf("state dir is required")
@@ -171,6 +192,22 @@ func (c *CreateClusterCmd) Run() error {
 		c.Config.NodeUpTags = append(c.Config.NodeUpTags, "_not_protokube")
 	}
 
+	if useMasterASG {
+		tags["_master_asg"] = struct{}{}
+	} else {
+		tags["_master_single"] = struct{}{}
+	}
+
+	if useMasterLB {
+		tags["_master_lb"] = struct{}{}
+	} else {
+		tags["_not_master_lb"] = struct{}{}
+	}
+
+	if c.Config.MasterPublicName != "" {
+		tags["_master_dns"] = struct{}{}
+	}
+
 	l.AddTypes(map[string]interface{}{
 		"keypair": &fitasks.Keypair{},
 	})
@@ -193,7 +230,7 @@ func (c *CreateClusterCmd) Run() error {
 
 			// For now a zone to be specified...
 			// This will be replace with a region when we go full HA
-			zone := c.Config.Zone
+			zone := c.Config.Zones[0]
 			if zone == "" {
 				return fmt.Errorf("Must specify a zone (use -zone)")
 			}
@@ -260,22 +297,26 @@ func (c *CreateClusterCmd) Run() error {
 				"dnsZone": &awstasks.DNSZone{},
 			})
 
-			// For now a zone to be specified...
-			// This will be replace with a region when we go full HA
-			zone := c.Config.Zone
-			if zone == "" {
+			if len(c.Config.Zones) == 0 {
+				// TODO: Auto choose zones from region?
 				return fmt.Errorf("Must specify a zone (use -zone)")
 			}
-			if len(zone) <= 2 {
-				return fmt.Errorf("Invalid AWS zone: %v", zone)
+			for _, zone := range c.Config.Zones {
+				if len(zone) <= 2 {
+					return fmt.Errorf("Invalid AWS zone: %q", zone)
+				}
+
+				region = zone[:len(zone)-1]
+				if c.Config.Region != "" && c.Config.Region != region {
+					return fmt.Errorf("Clusters cannot span multiple regions")
+				}
+
+				c.Config.Region = region
 			}
 
 			if c.SSHPublicKey == "" {
 				return fmt.Errorf("SSH public key must be specified when running with AWS")
 			}
-
-			region := zone[:len(zone)-1]
-			c.Config.Region = region
 
 			if c.Config.ClusterName == "" {
 				return fmt.Errorf("ClusterName is required for AWS")
@@ -300,6 +341,14 @@ func (c *CreateClusterCmd) Run() error {
 	l.StateDir = c.StateDir
 	l.NodeModelDir = c.NodeModelDir
 	l.OptionsLoader = loader.NewOptionsLoader(c.Config)
+
+	l.TemplateFunctions["HasTag"] = func(tag string) bool {
+		_, found := l.Tags[tag]
+		return found
+	}
+
+	// TODO: Sort this out...
+	l.OptionsLoader.TemplateFunctions["HasTag"] = l.TemplateFunctions["HasTag"]
 
 	l.TemplateFunctions["CA"] = func() fi.CAStore {
 		return caStore
@@ -339,7 +388,7 @@ func (c *CreateClusterCmd) Run() error {
 		return fmt.Errorf("ClusterName is required")
 	}
 
-	if c.Config.Zone == "" {
+	if len(c.Config.Zones) == 0 {
 		return fmt.Errorf("Zone is required")
 	}
 

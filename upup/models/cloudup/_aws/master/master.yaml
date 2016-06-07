@@ -1,0 +1,51 @@
+# IAM configuration
+# We create an instance role for the master
+iamRole/kubernetes.master.{{ .ClusterName }}:
+  rolePolicyDocument: resources/iam/kubernetes-master-role.json
+
+iamRolePolicy/kubernetes.master.{{ .ClusterName }}:
+  role: iamRole/kubernetes.master.{{ .ClusterName }}
+  policyDocument: resources/iam/kubernetes-master-policy.json
+
+iamInstanceProfile/kubernetes.master.{{ .ClusterName }}: {}
+
+iamInstanceProfileRole/kubernetes.master.{{ .ClusterName }}:
+  instanceProfile: iamInstanceProfile/kubernetes.master.{{ .ClusterName }}
+  role: iamRole/kubernetes.master.{{ .ClusterName }}
+
+# Security group for master
+securityGroup/kubernetes.master.{{ .ClusterName }}:
+  vpc: vpc/kubernetes.{{ .ClusterName }}
+  description: 'Security group for masters'
+
+# SSH is open to the world
+securityGroupIngress/ssh-external-to-master:
+  securityGroup: securityGroup/kubernetes.master.{{ .ClusterName }}
+  cidr: 0.0.0.0/0
+  protocol: tcp
+  fromPort: 22
+  toPort: 22
+
+# Masters can talk to masters
+securityGroupIngress/all-master-to-master:
+  securityGroup: securityGroup/kubernetes.master.{{ .ClusterName }}
+  sourceGroup: securityGroup/kubernetes.master.{{ .ClusterName }}
+
+# Masters can talk to nodes
+securityGroupIngress/all-master-to-node:
+  securityGroup: securityGroup/kubernetes.node.{{ .ClusterName }}
+  sourceGroup: securityGroup/kubernetes.master.{{ .ClusterName }}
+
+{{ range $zone := .MasterZones }}
+
+# EBS volume
+ebsVolume/kubernetes.master.{{$zone}}.{{ $.ClusterName }}:
+  availabilityZone: {{ $zone }}
+  sizeGB: {{ or $.MasterVolumeSize 20 }}
+  volumeType: {{ or $.MasterVolumeType "gp2" }}
+  tags:
+    k8s.io/role/master: "1"
+    k8s.io/etcd/main: "{{ $zone }}/{{ join $.MasterZones "," }}"
+    k8s.io/etcd/events: "{{ $zone }}/{{ join $.MasterZones "," }}"
+
+{{ end }}

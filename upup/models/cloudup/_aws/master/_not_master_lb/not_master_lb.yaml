@@ -1,0 +1,11 @@
+# Configuration for the master, when not using a Loadbalancer (ELB)
+# We expect that either the IP address is published, or DNS is set up to point to the IPs
+# We need to open security groups directly to the master nodes (instead of via the ELB)
+
+# HTTPS to the master is allowed (for API access)
+securityGroupIngress/https-external-to-master:
+  securityGroup: securityGroup/kubernetes.master.{{ .ClusterName }}
+  cidr: 0.0.0.0/0
+  protocol: tcp
+  fromPort: 443
+  toPort: 443

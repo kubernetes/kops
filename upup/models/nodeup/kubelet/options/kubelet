@@ -7,4 +7,4 @@ Kubelet:
   ClusterDomain: cluster.local
   ConfigureCBR0: true
   BabysitDaemons: true
-
+  APIServers: https://{{ .MasterInternalName }}
