@@ -12,6 +12,7 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
 	"strings"
+	"time"
 )
 
 // DeleteCluster implements deletion of cluster cloud resources
@@ -26,10 +27,16 @@ type DeleteCluster struct {
 	Cloud     fi.Cloud
 }
 
-func (c *DeleteCluster) ListResources() ([]DeletableResource, error) {
+// HasStatus is implemented by resources where we want to hint the dependencies
+// (ideally we would implement for everything, but realistically there are only a few where it is worthwhile)
+type HasStatus interface {
+	Status(cloud fi.Cloud) (exists bool, blocks []string, err error)
+}
+
+func (c *DeleteCluster) ListResources() (map[string]DeletableResource, error) {
 	cloud := c.Cloud.(*awsup.AWSCloud)
 
-	var resources []DeletableResource
+	resources := make(map[string]DeletableResource)
 
 	filters := cloud.BuildFilters(nil)
 	tags := cloud.BuildTags(nil, nil)
@@ -77,7 +84,8 @@ func (c *DeleteCluster) ListResources() ([]DeletableResource, error) {
 				if !matchesAsgTags(tags, t.Tags) {
 					continue
 				}
-				resources = append(resources, &DeletableASG{Name: *t.AutoScalingGroupName})
+				r := &DeletableASG{Name: *t.AutoScalingGroupName}
+				resources["autoscaling-group:"+r.Name] = r
 			}
 		}
 	}
@@ -103,7 +111,8 @@ func (c *DeleteCluster) ListResources() ([]DeletableResource, error) {
 			}
 
 			if strings.Contains(string(userData), "\nINSTANCE_PREFIX: "+c.ClusterID+"\n") {
-				resources = append(resources, &DeletableAutoscalingLaunchConfiguration{Name: *t.LaunchConfigurationName})
+				r := &DeletableAutoscalingLaunchConfiguration{Name: *t.LaunchConfigurationName}
+				resources["autoscaling-launchconfiguration:"+r.Name] = r
 			}
 		}
 	}
@@ -131,7 +140,8 @@ func (c *DeleteCluster) ListResources() ([]DeletableResource, error) {
 				if !matchesElbTags(tags, t.Tags) {
 					continue
 				}
-				resources = append(resources, &DeletableELBLoadBalancer{Name: *t.LoadBalancerName})
+				r := &DeletableELBLoadBalancer{Name: *t.LoadBalancerName}
+				resources["elb:"+r.Name] = r
 			}
 		}
 	}
@@ -173,11 +183,115 @@ func (c *DeleteCluster) ListResources() ([]DeletableResource, error) {
 				continue
 			}
 
-			resources = append(resources, resource)
+			resources[*t.ResourceType+":"+*t.ResourceId] = resource
 		}
 	}
 
 	return resources, nil
+}
+
+func (c *DeleteCluster) DeleteResources(resources map[string]DeletableResource) error {
+	depMap := make(map[string][]string)
+
+	done := make(map[string]DeletableResource)
+
+	// Initial pass to check that resources actually exist
+	for k, r := range resources {
+		hs, ok := r.(HasStatus)
+		if !ok {
+			continue
+		}
+
+		fmt.Printf("Checking status of resource %s: ", k)
+		exists, blocks, err := hs.Status(c.Cloud)
+		if err != nil {
+			fmt.Printf("error (ignoring): %v\n", err)
+		} else if exists {
+			fmt.Printf("exists (gathered dependencies)\n")
+		} else {
+			fmt.Printf("already removed\n")
+			done[k] = r
+		}
+
+		for _, block := range blocks {
+			depMap[block] = append(depMap[block], k)
+		}
+	}
+
+	glog.Infof("Dependencies")
+	for k, v := range depMap {
+		glog.Infof("\t%s\t%v", k, v)
+	}
+
+	for {
+		// TODO: Some form of default ordering based on types?
+		// TODO: Give up eventually?
+
+		failed := make(map[string]DeletableResource)
+
+		for {
+			phase := make(map[string]DeletableResource)
+
+			for k, r := range resources {
+				if _, d := done[k]; d {
+					continue
+				}
+
+				if _, d := failed[k]; d {
+					// Only attempt each resource once per pass
+					continue
+				}
+
+				ready := true
+				for _, dep := range depMap[k] {
+					if _, d := done[dep]; !d {
+						glog.V(4).Infof("dependency %q of %q not deleted; skipping")
+						ready = false
+					}
+				}
+				if !ready {
+					continue
+				}
+
+				phase[k] = r
+			}
+
+			if len(phase) == 0 {
+				break
+			}
+
+			// TODO: Parallel delete?
+			for k, r := range phase {
+				fmt.Printf("Deleting resource %s:  ", k)
+				err := r.Delete(c.Cloud)
+				if err != nil {
+					if IsDependencyViolation(err) {
+						fmt.Printf("still has dependencies, will retry\n")
+					} else {
+						fmt.Printf("error deleting resource, will retry: %v\n", err)
+					}
+					failed[k] = r
+				} else {
+					fmt.Printf(" ok\n")
+					done[k] = r
+				}
+			}
+		}
+
+		if len(resources) == len(done) {
+			return nil
+		}
+
+		fmt.Printf("Not all resources deleted; waiting before reattempting deletion\n")
+		for k := range resources {
+			if _, d := done[k]; d {
+				continue
+			}
+
+			fmt.Printf("\t%s\n", k)
+		}
+		time.Sleep(10 * time.Second)
+	}
 }
 
 func matchesAsgTags(tags map[string]string, actual []*autoscaling.TagDescription) bool {
@@ -237,6 +351,65 @@ func (r *DeletableInstance) Delete(cloud fi.Cloud) error {
 	}
 	return nil
 }
+
+func (r *DeletableInstance) Status(cloud fi.Cloud) (bool, []string, error) {
+	c := cloud.(*awsup.AWSCloud)
+
+	glog.V(2).Infof("Querying EC2 instance %q", r.ID)
+	request := &ec2.DescribeInstancesInput{
+		InstanceIds: []*string{&r.ID},
+	}
+	response, err := c.EC2.DescribeInstances(request)
+	if err != nil {
+		return false, nil, fmt.Errorf("error describing instance %q: %v", r.ID, err)
+	}
+
+	var found []*ec2.Instance
+	for _, reservation := range response.Reservations {
+		for _, instance := range reservation.Instances {
+			if aws.StringValue(instance.InstanceId) == r.ID {
+				found = append(found, instance)
+			}
+		}
+	}
+	if len(found) == 0 {
+		return false, nil, nil
+	}
+	if len(found) != 1 {
+		return false, nil, fmt.Errorf("found multiple instances with id: %q", r.ID)
+	}
+	i := found[0]
+	if i.State != nil {
+		stateName := aws.StringValue(i.State.Name)
+		switch stateName {
+		case "terminated":
+			return false, nil, nil
+
+		case "running":
+			// Fine
+			glog.V(4).Infof("instance %q has state=%q", r.ID, stateName)
+
+		default:
+			glog.Infof("unknown instance state for %q: %q", r.ID, stateName)
+		}
+	}
+
+	var blocks []string
+	for _, volume := range i.BlockDeviceMappings {
+		if volume.Ebs == nil {
+			continue
+		}
+		blocks = append(blocks, "volume:"+aws.StringValue(volume.Ebs.VolumeId))
+	}
+	for _, sg := range i.SecurityGroups {
+		blocks = append(blocks, "security-group:"+aws.StringValue(sg.GroupId))
+	}
+	blocks = append(blocks, "subnet:"+aws.StringValue(i.SubnetId))
+	blocks = append(blocks, "vpc:"+aws.StringValue(i.VpcId))
+
+	return true, blocks, nil
+}
+
 func (r *DeletableInstance) String() string {
 	return "Instance:" + r.ID
 }
@@ -294,6 +467,7 @@ func (r *DeletableSecurityGroup) Delete(cloud fi.Cloud) error {
 	}
 	return nil
 }
+
 func (r *DeletableSecurityGroup) String() string {
 	return "SecurityGroup:" + r.ID
 }
@@ -311,30 +485,81 @@ func (r *DeletableVolume) Delete(cloud fi.Cloud) error {
 	}
 	_, err := c.EC2.DeleteVolume(request)
 	if err != nil {
-		if awsErr, ok := err.(awserr.Error); ok {
-			if awsErr.Code() == "InvalidVolume.NotFound" {
-				return nil
-			}
+		if IsDependencyViolation(err) {
+			// Don't wrap
+			return err
+		}
+		if AWSErrorCode(err) == "InvalidVolume.NotFound" {
+			// Concurrently deleted
+			return nil
 		}
 		return fmt.Errorf("error deleting volume %q: %v", r.ID, err)
 	}
 	return nil
 }
+
 func (r *DeletableVolume) String() string {
 	return "Volume:" + r.ID
+}
+
+func (r *DeletableVolume) Status(cloud fi.Cloud) (bool, []string, error) {
+	c := cloud.(*awsup.AWSCloud)
+
+	glog.V(2).Infof("Querying EC2 volume %q", r.ID)
+	request := &ec2.DescribeVolumesInput{
+		VolumeIds: []*string{&r.ID},
+	}
+	response, err := c.EC2.DescribeVolumes(request)
+	if err != nil {
+		if AWSErrorCode(err) == "InvalidVolume.NotFound" {
+			return false, nil, nil
+		}
+
+		return false, nil, fmt.Errorf("error describing volume %q: %v", r.ID, err)
+	}
+
+	var found []*ec2.Volume
+	for _, v := range response.Volumes {
+		if aws.StringValue(v.VolumeId) == r.ID {
+			found = append(found, v)
+		}
+	}
+	if len(found) == 0 {
+		return false, nil, nil
+	}
+	if len(found) != 1 {
+		return false, nil, fmt.Errorf("found multiple volumes with id: %q", r.ID)
+	}
+	//v := found[0]
+
+	var blocks []string
+
+	return true, blocks, nil
 }
 
 type DeletableSubnet struct {
 	ID string
 }
 
-func IsDependencyViolation(err error) bool {
+// AWSErrorCode extracts the
+func AWSErrorCode(err error) string {
 	if awsError, ok := err.(awserr.Error); ok {
-		if awsError.Code() == "DependencyViolation" {
-			return true
-		}
+		return awsError.Code()
 	}
-	return false
+	return ""
+}
+
+func IsDependencyViolation(err error) bool {
+	code := AWSErrorCode(err)
+	switch code {
+	case "":
+		return false
+	case "DependencyViolation", "VolumeInUse":
+		return true
+	default:
+		glog.Infof("unexpected aws error code: %q", code)
+		return false
+	}
 }
 
 func (r *DeletableSubnet) Delete(cloud fi.Cloud) error {
@@ -355,6 +580,38 @@ func (r *DeletableSubnet) Delete(cloud fi.Cloud) error {
 }
 func (r *DeletableSubnet) String() string {
 	return "Subnet:" + r.ID
+}
+
+func (r *DeletableSubnet) Status(cloud fi.Cloud) (bool, []string, error) {
+	c := cloud.(*awsup.AWSCloud)
+
+	glog.V(2).Infof("Querying EC2 subnet %q", r.ID)
+	request := &ec2.DescribeSubnetsInput{
+		SubnetIds: []*string{&r.ID},
+	}
+	response, err := c.EC2.DescribeSubnets(request)
+	if err != nil {
+		return false, nil, fmt.Errorf("error describing subnet %q: %v", r.ID, err)
+	}
+
+	var found []*ec2.Subnet
+	for _, v := range response.Subnets {
+		if aws.StringValue(v.SubnetId) == r.ID {
+			found = append(found, v)
+		}
+	}
+	if len(found) == 0 {
+		return false, nil, nil
+	}
+	if len(found) != 1 {
+		return false, nil, fmt.Errorf("found multiple subnets with id: %q", r.ID)
+	}
+	n := found[0]
+
+	var blocks []string
+	blocks = append(blocks, "vpc:"+aws.StringValue(n.VpcId))
+
+	return true, blocks, nil
 }
 
 type DeletableRouteTable struct {
@@ -401,6 +658,7 @@ func (r *DeletableDHCPOptions) Delete(cloud fi.Cloud) error {
 	}
 	return nil
 }
+
 func (r *DeletableDHCPOptions) String() string {
 	return "DHCPOptions:" + r.ID
 }
@@ -482,8 +740,40 @@ func (r *DeletableVPC) Delete(cloud fi.Cloud) error {
 	}
 	return nil
 }
+
 func (r *DeletableVPC) String() string {
 	return "VPC:" + r.ID
+}
+
+func (r *DeletableVPC) Status(cloud fi.Cloud) (bool, []string, error) {
+	c := cloud.(*awsup.AWSCloud)
+
+	glog.V(2).Infof("Querying EC2 VPC %q", r.ID)
+	request := &ec2.DescribeVpcsInput{
+		VpcIds: []*string{&r.ID},
+	}
+	response, err := c.EC2.DescribeVpcs(request)
+	if err != nil {
+		return false, nil, fmt.Errorf("error describing VPC %q: %v", r.ID, err)
+	}
+
+	var found []*ec2.Vpc
+	for _, v := range response.Vpcs {
+		if aws.StringValue(v.VpcId) == r.ID {
+			found = append(found, v)
+		}
+	}
+	if len(found) == 0 {
+		return false, nil, nil
+	}
+	if len(found) != 1 {
+		return false, nil, fmt.Errorf("found multiple VPCs with id: %q", r.ID)
+	}
+	v := found[0]
+
+	var blocks []string
+	blocks = append(blocks, "dhcp-options:"+aws.StringValue(v.DhcpOptionsId))
+	return true, blocks, nil
 }
 
 type DeletableASG struct {
@@ -556,4 +846,42 @@ func (r *DeletableELBLoadBalancer) Delete(cloud fi.Cloud) error {
 
 func (r *DeletableELBLoadBalancer) String() string {
 	return "LoadBalancer:" + r.Name
+}
+
+func (r *DeletableELBLoadBalancer) Status(cloud fi.Cloud) (bool, []string, error) {
+	c := cloud.(*awsup.AWSCloud)
+
+	glog.V(2).Infof("Querying LoadBalancer instance %q", r.Name)
+	request := &elb.DescribeLoadBalancersInput{
+		LoadBalancerNames: []*string{&r.Name},
+	}
+	response, err := c.ELB.DescribeLoadBalancers(request)
+	if err != nil {
+		return false, nil, fmt.Errorf("error describing LoadBalancer %q: %v", r.Name, err)
+	}
+
+	var found []*elb.LoadBalancerDescription
+	for _, l := range response.LoadBalancerDescriptions {
+		if aws.StringValue(l.LoadBalancerName) == r.Name {
+			found = append(found, l)
+		}
+	}
+	if len(found) == 0 {
+		return false, nil, nil
+	}
+	if len(found) != 1 {
+		return false, nil, fmt.Errorf("found multiple LoadBalancers with Name: %q", r.Name)
+	}
+	l := found[0]
+
+	var blocks []string
+	for _, sg := range l.SecurityGroups {
+		blocks = append(blocks, "security-group:"+aws.StringValue(sg))
+	}
+	for _, s := range l.Subnets {
+		blocks = append(blocks, "subnet:"+aws.StringValue(s))
+	}
+	blocks = append(blocks, "vpc:"+aws.StringValue(l.VPCId))
+
+	return true, blocks, nil
 }
