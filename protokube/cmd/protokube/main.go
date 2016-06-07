@@ -24,6 +24,9 @@ func main() {
 	//	target = "dryrun"
 	//}
 
+	master := false
+	flag.BoolVar(&master, "master", false, "Act as master")
+
 	flag.Set("logtostderr", "true")
 	flag.Parse()
 
@@ -37,7 +40,7 @@ func main() {
 	//	glog.Exitf("--conf is required")
 	//}
 
-	kubeboot := protokube.NewKubeBoot(volumes)
+	kubeboot := protokube.NewKubeBoot(master, volumes)
 	err = kubeboot.Bootstrap()
 	if err != nil {
 		glog.Errorf("Error during bootstrap: %q", err)

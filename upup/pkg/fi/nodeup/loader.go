@@ -21,6 +21,8 @@ type Loader struct {
 
 	assets *fi.AssetStore
 	tasks  map[string]fi.Task
+
+	tags map[string]struct{}
 }
 
 func NewLoader(config *NodeConfig, assets *fi.AssetStore) *Loader {
@@ -40,6 +42,10 @@ func (l *Loader) executeTemplate(key string, d string) (string, error) {
 	funcMap["BuildFlags"] = buildFlags
 	funcMap["Base64Encode"] = func(s string) string {
 		return base64.StdEncoding.EncodeToString([]byte(s))
+	}
+	funcMap["HasTag"] = func(tag string) bool {
+		_, found := l.tags[tag]
+		return found
 	}
 	t.Funcs(funcMap)
 
@@ -70,6 +76,8 @@ func (l *Loader) Build(baseDir string) (map[string]fi.Task, error) {
 	for _, tag := range l.config.Tags {
 		tags[tag] = struct{}{}
 	}
+
+	l.tags = tags
 
 	// First pass: load options
 	tw := &loader.TreeWalker{
