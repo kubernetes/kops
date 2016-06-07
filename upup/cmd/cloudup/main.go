@@ -108,6 +108,8 @@ func (c *CreateClusterCmd) LoadConfig(configFile string) error {
 }
 
 func (c *CreateClusterCmd) Run() error {
+	useProtokube := true
+
 	if c.StateDir == "" {
 		return fmt.Errorf("state dir is required")
 	}
@@ -146,6 +148,12 @@ func (c *CreateClusterCmd) Run() error {
 		c.Config.NodeUp.Location = location
 	}
 
+	if useProtokube {
+		location := "https://kubeupv2.s3.amazonaws.com/protokube/protokube.tar.gz"
+		glog.Infof("Using default protokube location: %q", location)
+		c.Config.Assets = append(c.Config.Assets, location)
+	}
+
 	var cloud fi.Cloud
 
 	var project string
@@ -154,6 +162,14 @@ func (c *CreateClusterCmd) Run() error {
 	checkExisting := true
 
 	c.Config.NodeUpTags = append(c.Config.NodeUpTags, "_jessie", "_debian_family", "_systemd")
+
+	if useProtokube {
+		tags["_protokube"] = struct{}{}
+		c.Config.NodeUpTags = append(c.Config.NodeUpTags, "_protokube")
+	} else {
+		tags["_not_protokube"] = struct{}{}
+		c.Config.NodeUpTags = append(c.Config.NodeUpTags, "_not_protokube")
+	}
 
 	l.AddTypes(map[string]interface{}{
 		"keypair": &fitasks.Keypair{},
@@ -204,26 +220,31 @@ func (c *CreateClusterCmd) Run() error {
 			c.Config.NodeUpTags = append(c.Config.NodeUpTags, "_aws")
 
 			l.AddTypes(map[string]interface{}{
-				"dhcpOptions":                 &awstasks.DHCPOptions{},
+				// EC2
 				"elasticIP":                   &awstasks.ElasticIP{},
-				"iamInstanceProfile":          &awstasks.IAMInstanceProfile{},
-				"iamInstanceProfileRole":      &awstasks.IAMInstanceProfileRole{},
-				"iamRole":                     &awstasks.IAMRole{},
-				"iamRolePolicy":               &awstasks.IAMRolePolicy{},
 				"instance":                    &awstasks.Instance{},
 				"instanceElasticIPAttachment": &awstasks.InstanceElasticIPAttachment{},
 				"instanceVolumeAttachment":    &awstasks.InstanceVolumeAttachment{},
-				"internetGateway":             &awstasks.InternetGateway{},
-				"internetGatewayAttachment":   &awstasks.InternetGatewayAttachment{},
 				"ebsVolume":                   &awstasks.EBSVolume{},
-				"route":                       &awstasks.Route{},
-				"routeTable":                  &awstasks.RouteTable{},
-				"routeTableAssociation":       &awstasks.RouteTableAssociation{},
-				"securityGroup":               &awstasks.SecurityGroup{},
-				"securityGroupIngress":        &awstasks.SecurityGroupIngress{},
 				"sshKey":                      &awstasks.SSHKey{},
-				"subnet":                      &awstasks.Subnet{},
-				"vpc":                         &awstasks.VPC{},
+
+				// IAM
+				"iamInstanceProfile":     &awstasks.IAMInstanceProfile{},
+				"iamInstanceProfileRole": &awstasks.IAMInstanceProfileRole{},
+				"iamRole":                &awstasks.IAMRole{},
+				"iamRolePolicy":          &awstasks.IAMRolePolicy{},
+
+				// VPC / Networking
+				"dhcpOptions":               &awstasks.DHCPOptions{},
+				"internetGateway":           &awstasks.InternetGateway{},
+				"internetGatewayAttachment": &awstasks.InternetGatewayAttachment{},
+				"route":                     &awstasks.Route{},
+				"routeTable":                &awstasks.RouteTable{},
+				"routeTableAssociation":     &awstasks.RouteTableAssociation{},
+				"securityGroup":             &awstasks.SecurityGroup{},
+				"securityGroupIngress":      &awstasks.SecurityGroupIngress{},
+				"subnet":                    &awstasks.Subnet{},
+				"vpc":                       &awstasks.VPC{},
 				"vpcDHDCPOptionsAssociation": &awstasks.VPCDHCPOptionsAssociation{},
 
 				// ELB

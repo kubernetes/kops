@@ -1,5 +1,5 @@
 {{ if HasTag "_kubernetes_master" }}
-DAEMON_ARGS="--master=true"
+DAEMON_ARGS="--master=true --containerized --v=8"
 {{ else }}
-DAEMON_ARGS="--master=false"
+DAEMON_ARGS="--master=false --containerized --v=8"
 {{ end }}
