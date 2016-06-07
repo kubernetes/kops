@@ -13,8 +13,10 @@ import (
 type UpdatePackages struct {
 }
 
-func (p *UpdatePackages) GetDependencies(tasks map[string]fi.Task) []string {
-	return []string{}
+var _ fi.HasDependencies = &UpdatePackages{}
+
+func (p *UpdatePackages) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	return []fi.Task{}
 }
 
 func (p *UpdatePackages) String() string {

@@ -58,6 +58,8 @@ func NewFileTask(name string, src fi.Resource, destPath string, meta string) (*F
 	return f, nil
 }
 
+var _ fi.HasDependencies = &File{}
+
 func (f *File) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	var deps []fi.Task
 	if f.Owner != nil {
