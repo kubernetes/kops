@@ -13,34 +13,52 @@ Some of the more interesting features:
 * Can produce configurations in other formats (currently Terraform & Cloud-Init), so that we can have working
   configurations for other tools also.
 
-## Bringing up a cluster
+## Installation
 
-Build the code:
+Install glide from [http://glide.sh/](http://glide.sh/)
+
+Build the code (make sure you have set GOPATH):
 ```
-cd upup
+go get -d k8s.io/kube-deploy
+cd ${GOPATH}/src/k8s.io/kube-deploy/upup
 make
 ```
 
-For GCE: Set `YOUR_GCE_PROJECT`, then:
-```
-${GOPATH}/bin/cloudup --v=0 --logtostderr -cloud=gce -zone=us-central1-f -project=$YOUR_GCE_PROJECT -name=kubernetes -kubernetes-version=1.2.2
-```
+## Bringing up a cluster on AWS
 
-For AWS: Set `AWS_PROFILE` (if you need to select a profile for the AWS CLI to work), then:
+* Ensure you have a DNS zone set up in Route 53, e.g. myzone.com  You can use any subdomain (or sub-subdomain) of this,
+e.g. kubernetes.myzone.com or dev.k8s.myzone.com  We'll call your subdomain `MYZONE`.
+
+* Set `AWS_PROFILE` (if you need to select a profile for the AWS CLI to work)
+
+* Execute:
 ```
-${GOPATH}/bin/cloudup --v=0 --logtostderr -cloud=aws -zone=us-east-1c -name=kubernetes -kubernetes-version=1.2.2
+export MYZONE=<kubernetes.myzone.com>
+${GOPATH}/bin/cloudup --v=0 --logtostderr -cloud=aws -zone=us-east-1c -name=${MYZONE} -kubernetes-version=1.2.2
 ```
 
 If you have problems, please set `--v=8 --logtostderr` and open an issue, and ping justinsb on slack!
 
-For now, we don't build a local kubectl file.  So just ssh to the master, and run kubectl from there:
+## Build a kubectl file
+
+The upup tool is a CLI for doing administrative tasks.  You can use it to generate the kubectl configuration:
 
 ```
-gcloud compute ssh kubernetes-master
-...
-kubectl get nodes
-kubectl get pods --all-namespaces
+export MYZONE=<kubernetes.myzone.com>
+${GOPATH}/bin/upup kubecfg generate --state=state --master=api.${MYZONE} --name=${MYZONE} --cloud=aws
 ```
+
+## Delete the cluster
+
+When you're done, you can also have upup delete the cluster.  It will delete all AWS resources tagged
+with the cluster name in the specified region.
+
+```
+export MYZONE=<kubernetes.myzone.com>
+${GOPATH}/bin/upup delete cluster --region=us-east-1 --cluster-id=${MYZONE} # --yes
+```
+
+You must pass --yes to actually delete resources (without the `#` comment!)
 
 ## Other interesting modes:
 

@@ -1,4 +1,4 @@
-gocode: godeps codegen
+gocode: godeps
 	go install k8s.io/kube-deploy/upup/cmd/...
 
 codegen:
