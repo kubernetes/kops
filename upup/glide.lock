@@ -1,16 +1,17 @@
 hash: a9f93fedfb45e32b891cdf1f53c475acff2dd80fc02577b7c1d4da4e099bc450
-updated: 2016-05-17T12:58:07.23069873-04:00
+updated: 2016-06-07T16:08:47.827037549-04:00
 imports:
 - name: github.com/aws/aws-sdk-go
-  version: bf2f8fe7f45e68017086d069498638893feddf64
+  version: 035c9cf82d27ec7e191fe9140158ab57f82cc0e3
   subpackages:
   - aws
   - aws/awserr
   - service/autoscaling
   - service/ec2
-  - service/iam
-  - aws/session
   - service/elb
+  - service/iam
+  - service/route53
+  - aws/session
   - aws/credentials
   - aws/awsutil
   - aws/client
@@ -22,6 +23,7 @@ imports:
   - private/waiter
   - private/endpoints
   - private/protocol/ec2query
+  - private/protocol/restxml
   - aws/corehandlers
   - aws/defaults
   - private/protocol/query/queryutil
@@ -33,20 +35,24 @@ imports:
   version: f0aeabca5a127c4078abb8c8d64298b147264b55
 - name: github.com/cloudfoundry-incubator/candiedyaml
   version: 99c3df83b51532e3615f851d8c2dbb638f5313bf
+- name: github.com/davecgh/go-spew
+  version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
+  subpackages:
+  - spew
 - name: github.com/fsnotify/fsnotify
   version: 30411dbcefb7a1da7e84f75530ad3abe4011b4f8
 - name: github.com/ghodss/yaml
-  version: e8e0db9016175449df0e9c4b6e6995a9433a395c
+  version: aa0c862057666179de291b67d9f093d12b5a8473
 - name: github.com/go-ini/ini
-  version: 2e44421e256d82ebbf3d4d4fcabe8930b905eff3
+  version: 72ba3e6b9e6b87e0c74c9a7a4dc86e8dd8ba4355
 - name: github.com/golang/glog
   version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
 - name: github.com/golang/protobuf
-  version: b982704f8bb716bb608144408cff30e15fbde841
+  version: 3b06fc7a4cad73efce5fe6217ab6c33e7231ab4a
   subpackages:
   - proto
 - name: github.com/hashicorp/hcl
-  version: 9a905a34e6280ce905da1a32344b25e81011197a
+  version: d7400db7143f8e869812e50a53acd6c8d92af3b8
   subpackages:
   - hcl/ast
   - hcl/parser
@@ -59,7 +65,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/jmespath/go-jmespath
-  version: 3433f3ea46d9f8019119e7dd41274e112a2359a9
+  version: 0b12d6b521d83fc7f755e7cfc1b1fbdd35a01a74
 - name: github.com/magiconair/properties
   version: c265cfa48dda6474e208715ca93e987829f572f8
 - name: github.com/mitchellh/mapstructure
@@ -67,38 +73,38 @@ imports:
 - name: github.com/spf13/cast
   version: 27b586b42e29bec072fe7379259cc719e1289da6
 - name: github.com/spf13/cobra
-  version: 0f866a6211e33cde2091d9290c08f6afd6c9ebbc
+  version: 1238ba19d24b0b9ceee2094e1cb31947d45c3e86
 - name: github.com/spf13/jwalterweatherman
   version: 33c24e77fb80341fe7130ee7c594256ff08ccc46
 - name: github.com/spf13/pflag
   version: cb88ea77998c3f024757528e3305022ab50b43be
 - name: github.com/spf13/viper
-  version: d8a428b8a30606e1d0b355d91edf282609ade1a6
+  version: c1ccc378a054ea8d4e38d8c67f6938d4760b53dd
 - name: golang.org/x/crypto
-  version: c84e1f8e3a7e322d497cd16c0e8a13c7e127baf3
+  version: 77f4136a99ffb5ecdbdd0226bd5cb146cf56bc0e
   subpackages:
   - ssh
   - curve25519
   - ed25519
   - ed25519/internal/edwards25519
 - name: golang.org/x/net
-  version: ef00b378c73f107bf44d5c9b69875255ce89b79a
+  version: 154d9f9ea81208afed560f4cf27b4860c8ed1904
   subpackages:
   - context
   - context/ctxhttp
 - name: golang.org/x/oauth2
-  version: e86e2718db89775a4604abc10a5d3a5672e7336e
+  version: 71d9edd725fe4ce4c692fcb20765be558df45ad3
   subpackages:
   - google
   - internal
   - jws
   - jwt
 - name: golang.org/x/sys
-  version: 833a04a10549a95dc34458c195cbad61bbb6cb4d
+  version: 076b546753157f758b316e59bcb51e6807c04057
   subpackages:
   - unix
 - name: google.golang.org/api
-  version: b34a26664e9b96e9d4aab8a6e8175ea07af5b8b6
+  version: 63ade871fd3aec1225809d496e81ec91ab76ea29
   subpackages:
   - compute/v1
   - googleapi
@@ -106,7 +112,7 @@ imports:
   - gensupport
   - googleapi/internal/uritemplates
 - name: google.golang.org/appengine
-  version: e234e71924d4aa52444bc76f2f831f13fa1eca60
+  version: 7f59a8c76b8594d06044bfe0bcbe475cb2020482
   subpackages:
   - urlfetch
   - internal
@@ -115,20 +121,22 @@ imports:
   - internal/urlfetch
   - internal/base
   - internal/datastore
-  - internal/log
   - internal/remote_api
 - name: google.golang.org/cloud
-  version: eb47ba841d53d93506cfbfbc03927daf9cc48f88
+  version: 20e786f4db50de279a834da101b142620cfb2a41
   subpackages:
   - compute/metadata
   - internal
 - name: google.golang.org/grpc
-  version: e802f420af1fde2c7e456cec047c51fbeff2d8fc
+  version: b60d3e9ed84da5710af43964e78bc44de74b72aa
 - name: gopkg.in/yaml.v2
   version: a83829b6f1293c91addabc89d0571c246397bbf4
 - name: k8s.io/kubernetes
-  version: a24f03c3c99bd305ace7745b7a5749790be060e3
+  version: 5b7e617abfff8c81921114e730f3fcbb47dfd1fd
   subpackages:
+  - pkg/util/diff
   - pkg/util/exec
   - pkg/util/mount
+  - pkg/util/validation/field
+  - pkg/util/errors
 devImports: []
