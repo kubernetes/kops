@@ -21,8 +21,6 @@ func main() {
 	target := "direct"
 	flag.StringVar(&target, "target", target, "Target - direct, cloudinit")
 
-	flag.Parse()
-
 	if dryrun {
 		target = "dryrun"
 	}
