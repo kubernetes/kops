@@ -1,0 +1,20 @@
+# kope-aws podspec
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kope-aws
+  namespace: kube-system
+spec:
+  hostNetwork: true
+  containers:
+  - name: kope-aws
+    image: kope/aws-controller
+    #resources:
+    #  requests:
+    #    cpu: {{ .KubeProxy.CPURequest }}
+    command:
+    - /usr/bin/aws-controller
+    - --healthz-port=10245
+    - --zone-name={{ .DNSZone }}
+    securityContext:
+      privileged: true

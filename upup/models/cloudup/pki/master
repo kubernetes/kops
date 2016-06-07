@@ -6,14 +6,15 @@ keypair/master:
     - kubernetes.default
     - kubernetes.default.svc
     - kubernetes.default.svc.{{ .DNSDomain }}
-    - "{{ .MasterName }}"
-    - "{{ .MasterInternalIP }}"
+    - "{{ .MasterPublicName }}"
+    - "{{ .MasterInternalName }}"
     - "{{ .WellKnownServiceIP 1 }}"
-    - "{{ .MasterPublicIP }}"
+{{ if not (HasTag "_master_dns") }}
 {{ if eq .CloudProvider "aws" }}
   alternateNameTasks:
-    - elasticIP/{{ .MasterName }}-ip
+    - elasticIP/kubernetes-master-{{ .ClusterName }}
 {{ else if eq .CloudProvider "gce" }}
   alternateNameTasks:
-    - ipAddress/{{ .MasterName }}-ip
+    - ipAddress/kubernetes-master-{{ .ClusterName }}
+{{ end }}
 {{ end }}

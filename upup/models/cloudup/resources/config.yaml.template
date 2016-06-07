@@ -22,6 +22,9 @@ KubeScheduler:
 KubeProxy:
   Image: gcr.io/google_containers/kube-proxy:v{{ .KubernetesVersion }}
 
+MasterInternalName: {{ .MasterInternalName }}
+DNSZone: {{ .DNSZone }}
+
 KubeUser: {{ .KubeUser }}
 KubePassword: {{ GetOrCreateSecret "kube" }}
 

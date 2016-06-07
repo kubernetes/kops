@@ -1,11 +1,11 @@
-ClusterName: {{ .InstancePrefix }}
 InstancePrefix: kubernetes
 AllocateNodeCIDRs: true
 Multizone: true
 
+NetworkCIDR: 172.20.0.0/16
+
 ServiceClusterIPRange: 10.0.0.0/16
 ClusterIPRange: 10.244.0.0/16
-MasterInternalIP: 172.20.0.9
 MasterIPRange: 10.246.0.0/24
 NetworkProvider: none
 

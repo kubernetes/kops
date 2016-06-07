@@ -12,8 +12,7 @@ type NodeConfig struct {
 	APIServer             APIServerConfig
 	CACertificate         *fi.Certificate
 
-	DNS DNSConfig
-
+	DNS          DNSConfig
 	KubeUser     string
 	KubePassword string
 
@@ -21,6 +20,11 @@ type NodeConfig struct {
 
 	Tags   []string
 	Assets []string
+
+	MasterInternalName string
+
+	// The DNS zone to use if configuring a cloud provided DNS zone
+	DNSZone string
 }
 
 // A helper so that templates can get tokens which are not valid identifiers
@@ -67,14 +71,15 @@ type KubeletConfig struct {
 }
 
 type KubeProxyConfig struct {
-	Master string `flag:"master"`
-	// TODO: Name verbosity or LogLevel
-	LogLevel int `flag:"v"`
-
+	Image string
 	// TODO: Better type ?
 	CPURequest string // e.g. "20m"
 
-	Image string
+	// TODO: Name verbosity or LogLevel
+	LogLevel int `flag:"v"`
+
+	// Configuration flags
+	Master string `flag:"master"`
 }
 
 type DockerConfig struct {
@@ -120,7 +125,8 @@ type KubeControllerManagerConfig struct {
 	ClusterCIDR       string `flag:"cluster-cidr"`
 	AllocateNodeCIDRs *bool  `flag:"allocate-node-cidrs"`
 	// TODO: Name verbosity or LogLevel
-	LogLevel int `flag:"v"`
+	LogLevel    int   `flag:"v"`
+	LeaderElect *bool `flag:"leader-elect"`
 
 	ServiceAccountPrivateKeyFile string `flag:"service-account-private-key-file"`
 	RootCAFile                   string `flag:"root-ca-file"`
@@ -131,5 +137,7 @@ type KubeControllerManagerConfig struct {
 }
 
 type KubeSchedulerConfig struct {
+	LeaderElect *bool `flag:"leader-elect"`
+
 	Image string
 }

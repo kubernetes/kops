@@ -1,0 +1,60 @@
+# Master Elastic IP Address
+elasticIP/kubernetes.master.{{ .ClusterName }}:
+  publicIP: {{ .MasterPublicIP }}
+  tagOnResource: ebsVolume/kubernetes.master.{{ .ClusterName }}
+  tagUsingKey: kubernetes.io/master-ip
+
+# Attach master IP to master
+instanceElasticIPAttachment/master-ip-attachment:
+  instance: instance/master.{{ .ClusterName }}
+  elasticIP: elasticIP/master.{{ .ClusterName }}
+
+# Attach master EBS volume to master
+instanceVolumeAttachment/master-volume-attachment:
+  instance: instance/kubernetes.master.{{ .ClusterName }}
+  volume: ebsVolume/kubernetes.master.{{ .ClusterName }}
+  device: /dev/sdb
+
+# We only expect one zone..
+{{ range $zone := .MasterZones }}
+
+# Master instance
+instance/kubernetes.master.{{ $.ClusterName }}:
+  subnet: subnet/kubernetes.{{ $zone }}.{{ $.ClusterName }}
+  privateIpAddress: {{ $.MasterInternalIP }}
+  tags:
+    k8s.io/role/master: "1"
+    k8s.io/dns/internal: "api.internal.{{ $.ClusterName }}"
+{{ if not (HasTag "_master_lb") }}
+    k8s.io/dns/public: "api.{{ $.ClusterName }}"
+{{ end }}
+  sshKey: sshKey/kubernetes.{{ $.ClusterName }}
+  securityGroups:
+    - securityGroup/kubernetes.master.{{ $.ClusterName }}
+  iamInstanceProfile: iamInstanceProfile/kubernetes.master.{{ $.ClusterName }}
+  imageId: {{ $.MasterImage }}
+  instanceType: {{ $.MasterMachineType }}
+  associatePublicIP: true
+  userData: resources/nodeup.sh _kubernetes_master
+  blockDeviceMappings:
+    # Map all the ephemeral devices
+    {{ range $d := (MachineTypeInfo $.NodeMachineType).EphemeralDevices }}
+    - DeviceName: {{ $d.DeviceName }}
+      VirtualName: {{ $d.VirtualName }}
+    {{ end }}
+
+{{ end }}
+
+
+# Route for master
+route/master:
+  routeTable: routeTable/kubernetes.{{ .ClusterName }}
+  cidr: {{ .MasterIPRange }}
+  instance: instance/kubernetes.master.{{ .ClusterName }}
+
+{{ if hasTag _master_lb }}
+# Attach instance to ELB
+loadBalancerAttachment/master-{{ $zone }}-{{ .ClusterName }}:
+  loadBalancer: loadBalancer/api.{{ .ClusterName }}
+  instance: instance/kubernetes.master.{{ .ClusterName }}
+{{ end }}

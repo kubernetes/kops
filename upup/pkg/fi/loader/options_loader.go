@@ -24,6 +24,8 @@ type OptionsTemplate struct {
 type OptionsLoader struct {
 	config    interface{}
 	templates OptionsTemplateList
+
+	TemplateFunctions template.FuncMap
 }
 
 type OptionsTemplateList []*OptionsTemplate
@@ -52,6 +54,7 @@ func (a OptionsTemplateList) Less(i, j int) bool {
 func NewOptionsLoader(config interface{}) *OptionsLoader {
 	l := &OptionsLoader{}
 	l.config = config
+	l.TemplateFunctions = make(template.FuncMap)
 	return l
 }
 
@@ -140,6 +143,8 @@ func (l *OptionsLoader) HandleOptions(i *TreeWalkItem) error {
 	}
 
 	t := template.New(i.RelativePath)
+	t.Funcs(l.TemplateFunctions)
+
 	_, err = t.Parse(contents)
 	if err != nil {
 		return fmt.Errorf("error parsing options template %q: %v", i.Path, err)

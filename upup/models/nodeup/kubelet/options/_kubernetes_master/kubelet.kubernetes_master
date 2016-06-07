@@ -1,7 +1,7 @@
 Kubelet:
   RegisterSchedulable: false
   ReconcileCIDR: false
-  EnableDebugginHandlers: false
+  EnableDebuggingHandlers: false
   HairpinMode: none
   PodCIDR: 10.123.45.0/30
 

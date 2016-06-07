@@ -1,6 +1,4 @@
 KubeProxy:
-  Image: gcr.io/google_containers/kube-proxy:v1.2.2
-  Master: https://kubernetes-master
   LogLevel: 2
   # 20m might cause kube-proxy CPU starvation on full nodes, resulting in
   # delayed service updates. But, giving it more would be a breaking change
@@ -8,3 +6,5 @@ KubeProxy:
   # Any change here should be accompanied by a proportional change in CPU
   # requests of other per-node add-ons (e.g. fluentd).
   CPURequest: 20m
+
+  Master: https://{{ .MasterInternalName }}

@@ -107,9 +107,11 @@ func (l *Loader) executeTemplate(key string, d string, args []string) (string, e
 	funcMap["RenderResource"] = func(resourceName string, args []string) (string, error) {
 		return l.renderResource(resourceName, args)
 	}
-	funcMap["HasTag"] = func(tag string) bool {
-		_, found := l.Tags[tag]
-		return found
+	funcMap["replace"] = func(s, find, replace string) string {
+		return strings.Replace(s, find, replace, -1)
+	}
+	funcMap["join"] = func(a []string, sep string) string {
+		return strings.Join(a, sep)
 	}
 	for k, fn := range l.TemplateFunctions {
 		funcMap[k] = fn
