@@ -49,8 +49,10 @@ func (e *executor) RunTasks(taskMap map[string]Task) error {
 	noProgressCount := 0
 	for {
 		var canRun []*taskState
+		doneCount := 0
 		for _, ts := range taskStates {
 			if ts.done {
+				doneCount++
 				continue
 			}
 			ready := true
@@ -65,6 +67,7 @@ func (e *executor) RunTasks(taskMap map[string]Task) error {
 			}
 		}
 
+		glog.Infof("Tasks: %d done / %d total; %d can run", doneCount, len(taskStates), len(canRun))
 		if len(canRun) == 0 {
 			break
 		}
