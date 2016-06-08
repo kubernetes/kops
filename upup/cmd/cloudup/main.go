@@ -177,12 +177,6 @@ func (c *CreateClusterCmd) Run() error {
 		c.Config.NodeUp.Location = location
 	}
 
-	if useProtokube {
-		location := "https://kubeupv2.s3.amazonaws.com/protokube/protokube.tar.gz"
-		glog.Infof("Using default protokube location: %q", location)
-		c.Config.Assets = append(c.Config.Assets, location)
-	}
-
 	var cloud fi.Cloud
 
 	var project string
