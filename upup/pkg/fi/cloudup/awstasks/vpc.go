@@ -8,6 +8,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
 )
 
 //go:generate fitask -type=VPC
@@ -139,4 +140,28 @@ func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 	}
 
 	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name, nil))
+}
+
+type terraformVPC struct {
+	CIDR               *string           `json:"cidr_block,omitempty"`
+	EnableDNSHostnames *bool             `json:"enable_dns_hostnames,omitempty"`
+	EnableDNSSupport   *bool             `json:"enable_dns_support,omitempty"`
+	Tags               map[string]string `json:"tags,omitempty"`
+}
+
+func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) error {
+	cloud := t.Cloud.(*awsup.AWSCloud)
+
+	tf := &terraformVPC{
+		CIDR:               e.CIDR,
+		Tags:               cloud.BuildTags(e.Name, nil),
+		EnableDNSHostnames: e.EnableDNSHostnames,
+		EnableDNSSupport:   e.EnableDNSSupport,
+	}
+
+	return t.RenderResource("aws_vpc", *e.Name, tf)
+}
+
+func (e *VPC) TerraformLink() *terraform.Literal {
+	return terraform.LiteralProperty("aws_vpc", *e.Name, "id")
 }

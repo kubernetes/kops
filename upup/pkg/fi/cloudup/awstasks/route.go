@@ -8,17 +8,17 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
 )
 
+//go:generate fitask -type=Route
 type Route struct {
+	Name *string
+
 	RouteTable      *RouteTable
 	InternetGateway *InternetGateway
 	Instance        *Instance
 	CIDR            *string
-}
-
-func (e *Route) String() string {
-	return fi.TaskAsString(e)
 }
 
 func (e *Route) Find(c *fi.Context) (*Route, error) {
@@ -169,4 +169,28 @@ func checkNotNil(s *string) *string {
 		glog.Fatal("string pointer was unexpectedly nil")
 	}
 	return s
+}
+
+type terraformRoute struct {
+	RouteTableID      *terraform.Literal `json:"route_table_id"`
+	CIDR              *string            `json:"destination_cidr_block,omitempty"`
+	InternetGatewayID *terraform.Literal `json:"gateway_id,omitempty"`
+	InstanceID        *terraform.Literal `json:"instance_id,omitempty"`
+}
+
+func (_ *Route) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Route) error {
+	tf := &terraformRoute{
+		CIDR:         e.CIDR,
+		RouteTableID: e.RouteTable.TerraformLink(),
+	}
+
+	if e.InternetGateway != nil {
+		tf.InternetGatewayID = e.InternetGateway.TerraformLink()
+	}
+
+	if e.Instance != nil {
+		tf.InstanceID = e.Instance.TerraformLink()
+	}
+
+	return t.RenderResource("aws_route", *e.Name, tf)
 }

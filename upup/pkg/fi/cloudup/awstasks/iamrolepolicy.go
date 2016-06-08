@@ -9,6 +9,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kubernetes/pkg/util/diff"
 	"net/url"
 )
@@ -122,5 +123,31 @@ func (_ *IAMRolePolicy) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRoleP
 		}
 	}
 
-	return nil //return output.AddAWSTags(cloud.Tags(), v, "vpc")
+	// TODO: Should we use path as our tag?
+	return nil // No tags in IAM
+}
+
+type terraformIAMRolePolicy struct {
+	Name           *string            `json:"name"`
+	Role           *terraform.Literal `json:"role"`
+	PolicyDocument *terraform.Literal `json:"policy"`
+}
+
+func (_ *IAMRolePolicy) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMRolePolicy) error {
+	policy, err := t.AddFile("aws_iam_role_policy", *e.Name, "policy", e.PolicyDocument)
+	if err != nil {
+		return fmt.Errorf("error rendering PolicyDocument: %v", err)
+	}
+
+	tf := &terraformIAMRolePolicy{
+		Name:           e.Name,
+		Role:           e.Role.TerraformLink(),
+		PolicyDocument: policy,
+	}
+
+	return t.RenderResource("aws_iam_role_policy", *e.Name, tf)
+}
+
+func (e *IAMRolePolicy) TerraformLink() *terraform.Literal {
+	return terraform.LiteralSelfLink("aws_iam_role_policy", *e.Name)
 }

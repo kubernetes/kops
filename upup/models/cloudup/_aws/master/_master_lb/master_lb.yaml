@@ -26,8 +26,14 @@ securityGroup/api.{{ .ClusterName }}:
   vpc: vpc/kubernetes-{{ .ClusterName }}
   description: 'Security group for ELB in front of masters'
 
+# Allow full egress
+securityGroupRule/egress-api-lb:
+  securityGroup: securityGroup/api.{{ .ClusterName}
+  egress: true
+  cidr: 0.0.0.0/0
+
 # HTTPS to the master ELB is allowed (for API access)
-securityGroupIngress/https-external-to-api:
+securityGroupRule/https-external-to-api:
   securityGroup: securityGroup/api.{{ .ClusterName }}
   cidr: 0.0.0.0/0
   protocol: tcp
@@ -35,7 +41,7 @@ securityGroupIngress/https-external-to-api:
   toPort: 443
 
 # Allow HTTPS to the master from the master ELB
-securityGroupIngress/https-elb-to-master:
+securityGroupRule/https-elb-to-master:
   securityGroup: securityGroup/kubernetes.master.{{ .ClusterName }}
   sourceGroup: securityGroup/api.{{ .ClusterName }}
   protocol: tcp

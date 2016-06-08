@@ -7,6 +7,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
 )
 
 //go:generate fitask -type=EBSVolume
@@ -120,4 +121,28 @@ func (_ *EBSVolume) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EBSVolume) e
 	}
 
 	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name, e.Tags))
+}
+
+type terraformVolume struct {
+	AvailabilityZone *string           `json:"availability_zone"`
+	Size             *int64            `json:"size"`
+	Type             *string           `json:"type"`
+	Tags             map[string]string `json:"tags,omitempty"`
+}
+
+func (_ *EBSVolume) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *EBSVolume) error {
+	cloud := t.Cloud.(*awsup.AWSCloud)
+
+	tf := &terraformVolume{
+		AvailabilityZone: e.AvailabilityZone,
+		Size:             e.SizeGB,
+		Type:             e.VolumeType,
+		Tags:             cloud.BuildTags(e.Name, e.Tags),
+	}
+
+	return t.RenderResource("aws_ebs_volume", *e.Name, tf)
+}
+
+func (e *EBSVolume) TerraformLink() *terraform.Literal {
+	return terraform.LiteralSelfLink("aws_ebs_volume", *e.Name)
 }

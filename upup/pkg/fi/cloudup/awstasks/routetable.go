@@ -7,6 +7,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
 )
 
 //go:generate fitask -type=RouteTable
@@ -97,4 +98,24 @@ func (_ *RouteTable) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *RouteTable)
 	}
 
 	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name, nil))
+}
+
+type terraformRouteTable struct {
+	VPCID *terraform.Literal `json:"vpc_id"`
+	Tags  map[string]string  `json:"tags,omitempty"`
+}
+
+func (_ *RouteTable) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *RouteTable) error {
+	cloud := t.Cloud.(*awsup.AWSCloud)
+
+	tf := &terraformRouteTable{
+		VPCID: e.VPC.TerraformLink(),
+		Tags:  cloud.BuildTags(e.Name, nil),
+	}
+
+	return t.RenderResource("aws_route_table", *e.Name, tf)
+}
+
+func (e *RouteTable) TerraformLink() *terraform.Literal {
+	return terraform.LiteralProperty("aws_route_table", *e.Name, "id")
 }

@@ -8,9 +8,13 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
 )
 
+//go:generate fitask -type=RouteTableAssociation
 type RouteTableAssociation struct {
+	Name *string
+
 	ID         *string
 	RouteTable *RouteTable
 	Subnet     *Subnet
@@ -18,10 +22,6 @@ type RouteTableAssociation struct {
 
 func (s *RouteTableAssociation) CompareWithID() *string {
 	return s.ID
-}
-
-func (e *RouteTableAssociation) String() string {
-	return fi.TaskAsString(e)
 }
 
 func (e *RouteTableAssociation) Find(c *fi.Context) (*RouteTableAssociation, error) {
@@ -109,4 +109,22 @@ func (_ *RouteTableAssociation) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *
 	}
 
 	return nil // no tags
+}
+
+type terraformRouteTableAssociation struct {
+	SubnetID     *terraform.Literal `json:"subnet_id"`
+	RouteTableID *terraform.Literal `json:"route_table_id"`
+}
+
+func (_ *RouteTableAssociation) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *RouteTableAssociation) error {
+	tf := &terraformRouteTableAssociation{
+		SubnetID:     e.Subnet.TerraformLink(),
+		RouteTableID: e.RouteTable.TerraformLink(),
+	}
+
+	return t.RenderResource("aws_route_table_association", *e.Name, tf)
+}
+
+func (e *RouteTableAssociation) TerraformLink() *terraform.Literal {
+	return terraform.LiteralSelfLink("aws_route_table_association", *e.Name)
 }

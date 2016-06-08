@@ -9,6 +9,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
 )
 
 type IAMInstanceProfileRole struct {
@@ -84,5 +85,20 @@ func (_ *IAMInstanceProfileRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes 
 		}
 	}
 
-	return nil //return output.AddAWSTags(cloud.Tags(), v, "vpc")
+	// TODO: Should we use path as our tag?
+	return nil // No tags in IAM
+}
+
+type terraformIAMInstanceProfile struct {
+	Name  *string              `json:"name"`
+	Roles []*terraform.Literal `json:"roles"`
+}
+
+func (_ *IAMInstanceProfileRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMInstanceProfileRole) error {
+	tf := &terraformIAMInstanceProfile{
+		Name:  e.InstanceProfile.Name,
+		Roles: []*terraform.Literal{e.Role.TerraformLink()},
+	}
+
+	return t.RenderResource("aws_iam_instance_profile", *e.InstanceProfile.Name, tf)
 }

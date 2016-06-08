@@ -16,6 +16,7 @@ import (
 	"golang.org/x/crypto/ssh"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kube-deploy/upup/pkg/fi/utils"
 	"reflect"
 	"strings"
@@ -195,4 +196,27 @@ func (_ *SSHKey) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SSHKey) error {
 	}
 
 	return nil //return output.AddAWSTags(cloud.Tags(), v, "vpc")
+}
+
+type terraformSSHKey struct {
+	Name      *string            `json:"key_name"`
+	PublicKey *terraform.Literal `json:"public_key"`
+}
+
+func (_ *SSHKey) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SSHKey) error {
+	publicKey, err := t.AddFile("aws_key_pair", *e.Name, "public_key", e.PublicKey)
+	if err != nil {
+		return fmt.Errorf("error rendering PublicKey: %v", err)
+	}
+
+	tf := &terraformSSHKey{
+		Name:      e.Name,
+		PublicKey: publicKey,
+	}
+
+	return t.RenderResource("aws_key_pair", *e.Name, tf)
+}
+
+func (e *SSHKey) TerraformLink() *terraform.Literal {
+	return terraform.LiteralProperty("aws_key_pair", *e.Name, "id")
 }

@@ -14,3 +14,7 @@ type Task interface {
 func TaskAsString(t Task) string {
 	return fmt.Sprintf("%T %s", t, DebugAsJsonString(t))
 }
+
+type HasCheckExisting interface {
+	CheckExisting(c *Context) bool
+}

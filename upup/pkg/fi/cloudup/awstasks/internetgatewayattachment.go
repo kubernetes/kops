@@ -8,6 +8,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
 )
 
 type InternetGatewayAttachment struct {
@@ -96,4 +97,20 @@ func (_ *InternetGatewayAttachment) RenderAWS(t *awsup.AWSAPITarget, a, e, chang
 	}
 
 	return nil // No tags
+}
+
+type terraformInternetGateway struct {
+	VPCID *terraform.Literal `json:"vpc_id"`
+	Tags  map[string]string  `json:"tags,omitempty"`
+}
+
+func (_ *InternetGatewayAttachment) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *InternetGatewayAttachment) error {
+	cloud := t.Cloud.(*awsup.AWSCloud)
+
+	tf := &terraformInternetGateway{
+		VPCID: e.VPC.TerraformLink(),
+		Tags:  cloud.BuildTags(e.InternetGateway.Name, nil),
+	}
+
+	return t.RenderResource("aws_internet_gateway", *e.InternetGateway.Name, tf)
 }

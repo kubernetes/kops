@@ -8,6 +8,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
 )
 
 //go:generate fitask -type=IAMInstanceProfile
@@ -80,5 +81,15 @@ func (_ *IAMInstanceProfile) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAM
 		e.Name = response.InstanceProfile.InstanceProfileName
 	}
 
-	return nil //return output.AddAWSTags(cloud.Tags(), v, "vpc")
+	// TODO: Should we use path as our tag?
+	return nil // No tags in IAM
+}
+
+func (_ *IAMInstanceProfile) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMInstanceProfile) error {
+	// Done on IAMInstanceProfileRole
+	return nil
+}
+
+func (e *IAMInstanceProfile) TerraformLink() *terraform.Literal {
+	return terraform.LiteralProperty("aws_iam_instance_profile", *e.Name, "id")
 }

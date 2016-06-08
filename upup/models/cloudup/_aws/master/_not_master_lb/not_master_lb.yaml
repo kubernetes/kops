@@ -3,7 +3,7 @@
 # We need to open security groups directly to the master nodes (instead of via the ELB)
 
 # HTTPS to the master is allowed (for API access)
-securityGroupIngress/https-external-to-master:
+securityGroupRule/https-external-to-master:
   securityGroup: securityGroup/kubernetes.master.{{ .ClusterName }}
   cidr: 0.0.0.0/0
   protocol: tcp
