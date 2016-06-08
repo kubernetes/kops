@@ -161,7 +161,7 @@ func (l *Loader) Build(baseDir string) (map[string]fi.Task, error) {
 	if err != nil {
 		return nil, err
 	}
-	glog.Infof("options: %s", fi.DebugAsJsonStringIndent(l.config))
+	glog.V(1).Infof("options: %s", fi.DebugAsJsonStringIndent(l.config))
 
 	// Second pass: load everything else
 	tw = &loader.TreeWalker{

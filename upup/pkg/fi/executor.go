@@ -5,7 +5,10 @@ import (
 	"github.com/golang/glog"
 	"strings"
 	"sync"
+	"time"
 )
+
+const MaxAttemptsWithNoProgress = 3
 
 type executor struct {
 	context *Context
@@ -43,6 +46,7 @@ func (e *executor) RunTasks(taskMap map[string]Task) error {
 		}
 	}
 
+	noProgressCount := 0
 	for {
 		var canRun []*taskState
 		for _, ts := range taskStates {
@@ -86,12 +90,19 @@ func (e *executor) RunTasks(taskMap map[string]Task) error {
 
 		if !progress {
 			if len(errors) != 0 {
-				// TODO: Sleep and re-attempt?
-				return fmt.Errorf("did not make any progress executing task.  Example error: %v", errors[0])
+				noProgressCount++
+				if noProgressCount == MaxAttemptsWithNoProgress {
+					return fmt.Errorf("did not make any progress executing task.  Example error: %v", errors[0])
+				} else {
+					glog.Infof("No progress made, sleeping before retrying failed tasks")
+					time.Sleep(10 * time.Second)
+				}
 			} else {
 				// Logic error!
 				panic("did not make progress executing tasks; but no errors reported")
 			}
+		} else {
+			noProgressCount = 0
 		}
 	}
 
