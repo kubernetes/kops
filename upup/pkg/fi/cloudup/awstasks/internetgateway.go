@@ -7,6 +7,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
 )
 
 //go:generate fitask -type=InternetGateway
@@ -80,4 +81,13 @@ func (_ *InternetGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Intern
 	}
 
 	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name, nil))
+}
+
+func (_ *InternetGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *InternetGateway) error {
+	// Rendered in the InternetGatewayAttachment instead
+	return nil
+}
+
+func (e *InternetGateway) TerraformLink() *terraform.Literal {
+	return terraform.LiteralProperty("aws_internet_gateway", *e.Name, "id")
 }

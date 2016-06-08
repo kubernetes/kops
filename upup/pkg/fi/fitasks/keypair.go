@@ -24,13 +24,21 @@ type Keypair struct {
 	AlternateNameTasks []fi.Task `json:"alternateNameTasks"`
 }
 
+var _ fi.HasCheckExisting = &Keypair{}
+
+// It's important always to check for the existing key, so we don't regenerate keys e.g. on terraform
+func (e *Keypair) CheckExisting(c *fi.Context) bool {
+	return true
+}
+
 func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
+	castore := c.CAStore
+
 	name := fi.StringValue(e.Name)
 	if name == "" {
 		return nil, nil
 	}
 
-	castore := c.CAStore
 	cert, err := castore.FindCert(name)
 	if err != nil {
 		return nil, err

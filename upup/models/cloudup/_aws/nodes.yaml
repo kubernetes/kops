@@ -18,8 +18,14 @@ securityGroup/kubernetes.node.{{.ClusterName}}:
   vpc: vpc/kubernetes.{{ .ClusterName }}
   description: 'Security group for nodes'
 
+# Allow full egress
+securityGroupRule/node-egress:
+  securityGroup: securityGroup/kubernetes.node.{{.ClusterName}}
+  egress: true
+  cidr: 0.0.0.0/0
+
 # SSH is open to the world
-securityGroupIngress/ssh-external-to-node:
+securityGroupRule/ssh-external-to-node:
   securityGroup: securityGroup/kubernetes.node.{{.ClusterName}}
   cidr: 0.0.0.0/0
   protocol: tcp
@@ -27,12 +33,12 @@ securityGroupIngress/ssh-external-to-node:
   toPort: 22
 
 # Nodes can talk to nodes
-securityGroupIngress/all-node-to-node:
+securityGroupRule/all-node-to-node:
   securityGroup: securityGroup/kubernetes.node.{{.ClusterName}}
   sourceGroup: securityGroup/kubernetes.node.{{.ClusterName}}
 
 # Nodes can talk masters nodes
-securityGroupIngress/all-node-to-master:
+securityGroupRule/all-node-to-master:
   securityGroup: securityGroup/kubernetes.master.{{ .ClusterName }}
   sourceGroup: securityGroup/kubernetes.node.{{.ClusterName}}
 

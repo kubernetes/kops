@@ -8,6 +8,8 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
+	"strings"
 )
 
 //go:generate fitask -type=DHCPOptions
@@ -134,4 +136,29 @@ func (_ *DHCPOptions) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DHCPOption
 	}
 
 	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name, nil))
+}
+
+type terraformDHCPOptions struct {
+	DomainName        *string           `json:"domain_name,omitempty"`
+	DomainNameServers []string          `json:"domain_name_servers,omitempty"`
+	Tags              map[string]string `json:"tags,omitempty"`
+}
+
+func (_ *DHCPOptions) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *DHCPOptions) error {
+	cloud := t.Cloud.(*awsup.AWSCloud)
+
+	tf := &terraformDHCPOptions{
+		DomainName: e.DomainName,
+		Tags:       cloud.BuildTags(e.Name, nil),
+	}
+
+	if e.DomainNameServers != nil {
+		tf.DomainNameServers = strings.Split(*e.DomainNameServers, ",")
+	}
+
+	return t.RenderResource("aws_vpc_dhcp_options", *e.Name, tf)
+}
+
+func (e *DHCPOptions) TerraformLink() *terraform.Literal {
+	return terraform.LiteralProperty("aws_vpc_dhcp_options", *e.Name, "id")
 }

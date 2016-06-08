@@ -8,6 +8,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
 	"strings"
 )
 
@@ -16,7 +17,7 @@ type DNSName struct {
 	Name         *string
 	ID           *string
 	Zone         *DNSZone
-	ResourceType string
+	ResourceType *string
 
 	TargetLoadBalancer *LoadBalancer
 }
@@ -29,7 +30,11 @@ func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
 		return nil, nil
 	}
 	findName = strings.TrimSuffix(findName, ".")
-	findType := e.ResourceType
+
+	findType := fi.StringValue(e.ResourceType)
+	if findType == "" {
+		return nil, nil
+	}
 
 	request := &route53.ListResourceRecordSetsInput{
 		HostedZoneId: e.Zone.ID,
@@ -94,7 +99,7 @@ func (s *DNSName) CheckChanges(a, e, changes *DNSName) error {
 func (_ *DNSName) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSName) error {
 	rrs := &route53.ResourceRecordSet{
 		Name: e.Name,
-		Type: aws.String(e.ResourceType),
+		Type: e.ResourceType,
 	}
 
 	if e.TargetLoadBalancer != nil {
@@ -127,4 +132,42 @@ func (_ *DNSName) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSName) error
 	glog.V(2).Infof("Change id is %q", aws.StringValue(response.ChangeInfo.Id))
 
 	return nil
+}
+
+type terraformRoute53Record struct {
+	Name    *string  `json:"name"`
+	Type    *string  `json:"type"`
+	TTL     *string  `json:"ttl"`
+	Records []string `json:"records"`
+
+	Alias  *terraformAlias    `json:"alias"`
+	ZoneID *terraform.Literal `json:"zone_id"`
+}
+
+type terraformAlias struct {
+	Name                 *string `json:"name"`
+	HostedZoneId         *string `json:"zone_id"`
+	EvaluateTargetHealth *bool   `json:"evaluate_target_health"`
+}
+
+func (_ *DNSName) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *DNSName) error {
+	tf := &terraformRoute53Record{
+		Name:   e.Name,
+		ZoneID: e.Zone.TerraformLink(),
+		Type:   e.ResourceType,
+	}
+
+	if e.TargetLoadBalancer != nil {
+		tf.Alias = &terraformAlias{
+			Name:                 e.TargetLoadBalancer.DNSName,
+			EvaluateTargetHealth: aws.Bool(false),
+			HostedZoneId:         e.TargetLoadBalancer.HostedZoneId,
+		}
+	}
+
+	return t.RenderResource("aws_route53_record", *e.Name, tf)
+}
+
+func (e *DNSName) TerraformLink() *terraform.Literal {
+	return terraform.LiteralSelfLink("aws_route53_record", *e.Name)
 }

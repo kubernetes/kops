@@ -18,8 +18,14 @@ securityGroup/kubernetes.master.{{ .ClusterName }}:
   vpc: vpc/kubernetes.{{ .ClusterName }}
   description: 'Security group for masters'
 
+# Allow full egress
+securityGroupRule/master-egress:
+  securityGroup: securityGroup/kubernetes.master.{{.ClusterName}}
+  egress: true
+  cidr: 0.0.0.0/0
+
 # SSH is open to the world
-securityGroupIngress/ssh-external-to-master:
+securityGroupRule/ssh-external-to-master:
   securityGroup: securityGroup/kubernetes.master.{{ .ClusterName }}
   cidr: 0.0.0.0/0
   protocol: tcp
@@ -27,12 +33,12 @@ securityGroupIngress/ssh-external-to-master:
   toPort: 22
 
 # Masters can talk to masters
-securityGroupIngress/all-master-to-master:
+securityGroupRule/all-master-to-master:
   securityGroup: securityGroup/kubernetes.master.{{ .ClusterName }}
   sourceGroup: securityGroup/kubernetes.master.{{ .ClusterName }}
 
 # Masters can talk to nodes
-securityGroupIngress/all-master-to-node:
+securityGroupRule/all-master-to-node:
   securityGroup: securityGroup/kubernetes.node.{{ .ClusterName }}
   sourceGroup: securityGroup/kubernetes.master.{{ .ClusterName }}
 

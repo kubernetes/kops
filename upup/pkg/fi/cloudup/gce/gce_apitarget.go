@@ -1,6 +1,8 @@
 package gce
 
-import "k8s.io/kube-deploy/upup/pkg/fi"
+import (
+	"k8s.io/kube-deploy/upup/pkg/fi"
+)
 
 type GCEAPITarget struct {
 	Cloud *GCECloud

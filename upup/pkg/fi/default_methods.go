@@ -11,7 +11,12 @@ func DefaultDeltaRunMethod(e Task, c *Context) error {
 	var a Task
 	var err error
 
-	if c.CheckExisting {
+	checkExisting := c.CheckExisting
+	if hce, ok := e.(HasCheckExisting); ok {
+		checkExisting = hce.CheckExisting(c)
+	}
+
+	if checkExisting {
 		a, err = invokeFind(e, c)
 		if err != nil {
 			return err

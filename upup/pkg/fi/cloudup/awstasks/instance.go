@@ -9,6 +9,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
 	"strings"
 )
 
@@ -250,4 +251,8 @@ func (_ *Instance) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Instance) err
 	}
 
 	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name, e.Tags))
+}
+
+func (e *Instance) TerraformLink() *terraform.Literal {
+	return terraform.LiteralSelfLink("aws_instance", *e.Name)
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
 )
 
 //go:generate fitask -type=SecurityGroup
@@ -107,4 +108,28 @@ func (_ *SecurityGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Security
 	}
 
 	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name, nil))
+}
+
+type terraformSecurityGroup struct {
+	Name        *string            `json:"name"`
+	VPCID       *terraform.Literal `json:"vpc_id"`
+	Description *string            `json:"description"`
+	Tags        map[string]string  `json:"tags,omitempty"`
+}
+
+func (_ *SecurityGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SecurityGroup) error {
+	cloud := t.Cloud.(*awsup.AWSCloud)
+
+	tf := &terraformSecurityGroup{
+		Name:        e.Name,
+		VPCID:       e.VPC.TerraformLink(),
+		Description: e.Description,
+		Tags:        cloud.BuildTags(e.Name, nil),
+	}
+
+	return t.RenderResource("aws_security_group", *e.Name, tf)
+}
+
+func (e *SecurityGroup) TerraformLink() *terraform.Literal {
+	return terraform.LiteralProperty("aws_security_group", *e.Name, "id")
 }

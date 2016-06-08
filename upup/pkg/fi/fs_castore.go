@@ -177,6 +177,8 @@ func (c *FilesystemCAStore) List() ([]string, error) {
 }
 
 func (c *FilesystemCAStore) IssueCert(id string, privateKey *PrivateKey, template *x509.Certificate) (*Certificate, error) {
+	glog.Infof("Issuing new certificate: %q", id)
+
 	p := c.buildCertificatePath(id)
 
 	if c.caPrivateKey == nil {

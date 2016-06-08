@@ -9,6 +9,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
 	"strings"
 )
 
@@ -209,6 +210,8 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		}
 	}
 
+	// TODO: Use PropagateAtLaunch = false for tagging?
+
 	return nil //return output.AddAWSTags(cloud.Tags(), v, "vpc")
 }
 
@@ -322,4 +325,124 @@ func renderAutoscalingLaunchConfigurationAWS(t *awsup.AWSAPITarget, name string,
 	}
 
 	return nil //return output.AddAWSTags(cloud.Tags(), v, "vpc")
+}
+
+type terraformASGTag struct {
+	Key               *string `json:"key"`
+	Value             *string `json:"value"`
+	PropagateAtLaunch *bool   `json:"propagate_at_launch"`
+}
+type terraformAutoscalingGroup struct {
+	Name                    *string              `json:"name,omitempty"`
+	LaunchConfigurationName *terraform.Literal   `json:"launch_configuration,omitempty"`
+	MaxSize                 *int64               `json:"max_size,omitempty"`
+	MinSize                 *int64               `json:"min_size,omitempty"`
+	VPCZoneIdentifier       []*terraform.Literal `json:"vpc_zone_identifier,omitempty"`
+	Tags                    []*terraformASGTag   `json:"tag,omitempty"`
+}
+
+type terraformBlockDevice struct {
+	DeviceName  *string `json:"device_name"`
+	VirtualName *string `json:"virtual_name"`
+}
+
+type terraformLaunchConfiguration struct {
+	NamePrefix               *string                 `json:"name_prefix,omitempty"`
+	ImageID                  *string                 `json:"image_id,omitempty"`
+	InstanceType             *string                 `json:"instance_type,omitempty"`
+	KeyName                  *terraform.Literal      `json:"key_name,omitempty"`
+	IAMInstanceProfile       *terraform.Literal      `json:"iam_instance_profile,omitempty"`
+	SecurityGroups           []*terraform.Literal    `json:"security_groups,omitempty"`
+	AssociatePublicIpAddress *bool                   `json:"associate_public_ip_address,omitempty"`
+	UserData                 *terraform.Literal      `json:"user_data,omitempty"`
+	EphemeralBlockDevice     []*terraformBlockDevice `json:"ephemeral_block_device,omitempty"`
+	Lifecycle                *terraformLifecycle     `json:"lifecycle,omitempty"`
+}
+
+type terraformLifecycle struct {
+	CreateBeforeDestroy *bool `json:"create_before_destroy,omitempty"`
+}
+
+func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *AutoscalingGroup) error {
+	err := renderAutoscalingLaunchConfigurationTerraform(t, *e.Name, e)
+	if err != nil {
+		return err
+	}
+
+	tf := &terraformAutoscalingGroup{
+		Name:                    e.Name,
+		MinSize:                 e.MinSize,
+		MaxSize:                 e.MaxSize,
+		LaunchConfigurationName: terraform.LiteralProperty("aws_launch_configuration", *e.Name, "id"),
+	}
+
+	for _, s := range e.Subnets {
+		tf.VPCZoneIdentifier = append(tf.VPCZoneIdentifier, s.TerraformLink())
+	}
+
+	for k, v := range e.buildTags(t.Cloud) {
+		tf.Tags = append(tf.Tags, &terraformASGTag{
+			Key:               fi.String(k),
+			Value:             fi.String(v),
+			PropagateAtLaunch: fi.Bool(true),
+		})
+	}
+
+	return t.RenderResource("aws_autoscaling_group", *e.Name, tf)
+}
+
+func (e *AutoscalingGroup) TerraformLink() *terraform.Literal {
+	return terraform.LiteralProperty("aws_autoscaling_group", *e.Name, "id")
+}
+
+func renderAutoscalingLaunchConfigurationTerraform(t *terraform.TerraformTarget, namePrefix string, e *AutoscalingGroup) error {
+	cloud := t.Cloud.(*awsup.AWSCloud)
+
+	if e.ImageID == nil {
+		return fi.RequiredField("ImageID")
+	}
+	image, err := cloud.ResolveImage(*e.ImageID)
+	if err != nil {
+		return err
+	}
+
+	tf := &terraformLaunchConfiguration{
+		NamePrefix:   &namePrefix,
+		ImageID:      image.ImageId,
+		InstanceType: e.InstanceType,
+	}
+
+	if e.SSHKey != nil {
+		tf.KeyName = e.SSHKey.TerraformLink()
+	}
+
+	for _, sg := range e.SecurityGroups {
+		tf.SecurityGroups = append(tf.SecurityGroups, sg.TerraformLink())
+	}
+	tf.AssociatePublicIpAddress = e.AssociatePublicIP
+
+	if e.BlockDeviceMappings != nil {
+		tf.EphemeralBlockDevice = []*terraformBlockDevice{}
+		for _, b := range e.BlockDeviceMappings {
+			tf.EphemeralBlockDevice = append(tf.EphemeralBlockDevice, &terraformBlockDevice{
+				VirtualName: b.VirtualName,
+				DeviceName:  b.DeviceName,
+			})
+		}
+	}
+
+	if e.UserData != nil {
+		tf.UserData, err = t.AddFile("aws_launch_configuration", *e.Name, "user_data", e.UserData)
+		if err != nil {
+			return err
+		}
+	}
+	if e.IAMInstanceProfile != nil {
+		tf.IAMInstanceProfile = e.IAMInstanceProfile.TerraformLink()
+	}
+
+	// So that we can update configurations
+	tf.Lifecycle = &terraformLifecycle{CreateBeforeDestroy: fi.Bool(true)}
+
+	return t.RenderResource("aws_launch_configuration", *e.Name, tf)
 }

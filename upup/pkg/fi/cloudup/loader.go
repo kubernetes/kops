@@ -349,8 +349,8 @@ func (l *Loader) loadObjectMap(key string, data map[string]interface{}) (map[str
 		inferredName := false
 
 		if name == "" {
-			lastSlash := strings.LastIndex(k, "/")
-			name = k[lastSlash+1:]
+			firstSlash := strings.Index(k, "/")
+			name = k[firstSlash+1:]
 			inferredName = true
 		}
 

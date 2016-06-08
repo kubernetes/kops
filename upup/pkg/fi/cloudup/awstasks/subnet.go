@@ -7,6 +7,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kube-deploy/upup/pkg/fi/utils"
 )
 
@@ -126,4 +127,28 @@ func subnetSlicesEqualIgnoreOrder(l, r []*Subnet) bool {
 		rIDs = append(rIDs, *s.ID)
 	}
 	return utils.StringSlicesEqualIgnoreOrder(lIDs, rIDs)
+}
+
+type terraformSubnet struct {
+	VPCID            *terraform.Literal `json:"vpc_id"`
+	CIDR             *string            `json:"cidr_block"`
+	AvailabilityZone *string            `json:"availability_zone"`
+	Tags             map[string]string  `json:"tags,omitempty"`
+}
+
+func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Subnet) error {
+	cloud := t.Cloud.(*awsup.AWSCloud)
+
+	tf := &terraformSubnet{
+		VPCID:            e.VPC.TerraformLink(),
+		CIDR:             e.CIDR,
+		AvailabilityZone: e.AvailabilityZone,
+		Tags:             cloud.BuildTags(e.Name, nil),
+	}
+
+	return t.RenderResource("aws_subnet", *e.Name, tf)
+}
+
+func (e *Subnet) TerraformLink() *terraform.Literal {
+	return terraform.LiteralProperty("aws_subnet", *e.Name, "id")
 }

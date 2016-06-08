@@ -7,6 +7,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
 )
 
 type VPCDHCPOptionsAssociation struct {
@@ -76,4 +77,18 @@ func (_ *VPCDHCPOptionsAssociation) RenderAWS(t *awsup.AWSAPITarget, a, e, chang
 	}
 
 	return nil // no tags
+}
+
+type terraformVPCDHCPOptionsAssociation struct {
+	VPCID         *terraform.Literal `json:"vpc_id"`
+	DHCPOptionsID *terraform.Literal `json:"dhcp_options_id"`
+}
+
+func (_ *VPCDHCPOptionsAssociation) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPCDHCPOptionsAssociation) error {
+	tf := &terraformVPCDHCPOptionsAssociation{
+		VPCID:         e.VPC.TerraformLink(),
+		DHCPOptionsID: e.DHCPOptions.TerraformLink(),
+	}
+
+	return t.RenderResource("aws_vpc_dhcp_options_association", *e.VPC.Name, tf)
 }

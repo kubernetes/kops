@@ -281,7 +281,7 @@ func (c *CreateClusterCmd) Run() error {
 				"routeTable":                &awstasks.RouteTable{},
 				"routeTableAssociation":     &awstasks.RouteTableAssociation{},
 				"securityGroup":             &awstasks.SecurityGroup{},
-				"securityGroupIngress":      &awstasks.SecurityGroupIngress{},
+				"securityGroupRule":         &awstasks.SecurityGroupRule{},
 				"subnet":                    &awstasks.Subnet{},
 				"vpc":                       &awstasks.VPC{},
 				"vpcDHDCPOptionsAssociation": &awstasks.VPCDHCPOptionsAssociation{},
@@ -409,7 +409,8 @@ func (c *CreateClusterCmd) Run() error {
 
 	case "terraform":
 		checkExisting = false
-		target = terraform.NewTerraformTarget(region, project, os.Stdout)
+		outDir := path.Join(c.StateDir, "terraform")
+		target = terraform.NewTerraformTarget(cloud, region, project, outDir)
 
 	case "dryrun":
 		target = fi.NewDryRunTarget(os.Stdout)
