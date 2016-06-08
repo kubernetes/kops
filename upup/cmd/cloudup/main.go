@@ -157,10 +157,18 @@ func (c *CreateClusterCmd) Run() error {
 		if c.Config.KubernetesVersion == "" {
 			return fmt.Errorf("Must either specify a KubernetesVersion (-kubernetes-version) or provide an asset with the release bundle")
 		}
-		defaultReleaseAsset := fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/v%s/kubernetes-server-linux-amd64.tar.gz", c.Config.KubernetesVersion)
-		glog.Infof("Adding default kubernetes release asset: %s", defaultReleaseAsset)
-		// TODO: Verify it exists, get the hash (that will check that KubernetesVersion is valid)
-		c.Config.Assets = append(c.Config.Assets, defaultReleaseAsset)
+		//defaultReleaseAsset := fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/v%s/kubernetes-server-linux-amd64.tar.gz", c.Config.KubernetesVersion)
+		//glog.Infof("Adding default kubernetes release asset: %s", defaultReleaseAsset)
+
+		defaultKubeletAsset := fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/v%s/bin/linux/amd64/kubelet", c.Config.KubernetesVersion)
+		glog.Infof("Adding default kubelet release asset: %s", defaultKubeletAsset)
+
+		defaultKubectlAsset := fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/v%s/bin/linux/amd64/kubectl", c.Config.KubernetesVersion)
+		glog.Infof("Adding default kubelet release asset: %s", defaultKubectlAsset)
+
+		// TODO: Verify assets exist, get the hash (that will check that KubernetesVersion is valid)
+
+		c.Config.Assets = append(c.Config.Assets, defaultKubeletAsset, defaultKubectlAsset)
 	}
 
 	if c.Config.NodeUp.Location == "" {
