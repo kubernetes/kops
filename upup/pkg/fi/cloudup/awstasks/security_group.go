@@ -36,7 +36,7 @@ func (e *SecurityGroup) Find(c *fi.Context) (*SecurityGroup, error) {
 		return nil, nil
 	}
 
-	filters := cloud.BuildFilters(nil) // TODO: Do we need any filters here - done by group-name
+	filters := cloud.BuildFilters(e.Name)
 	filters = append(filters, awsup.NewEC2Filter("vpc-id", *vpcID))
 	filters = append(filters, awsup.NewEC2Filter("group-name", *e.Name))
 

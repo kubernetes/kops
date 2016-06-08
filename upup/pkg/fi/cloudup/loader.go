@@ -161,7 +161,7 @@ func (l *Loader) Build(baseDir string) (map[string]fi.Task, error) {
 	if err != nil {
 		return nil, err
 	}
-	glog.Infof("options: %s", fi.DebugAsJsonStringIndent(l.config))
+	glog.V(1).Infof("options: %s", fi.DebugAsJsonStringIndent(l.config))
 
 	// Second pass: load everything else
 	tw = &loader.TreeWalker{
@@ -218,7 +218,7 @@ func (l *Loader) processDeferrals() error {
 								return fmt.Errorf("Unable to find task %q, referenced from %s:%s", *name, taskKey, path)
 							}
 
-							glog.Infof("Replacing task %q at %s:%s", *name, taskKey, path)
+							glog.V(4).Infof("Replacing task %q at %s:%s", *name, taskKey, path)
 							v.Set(reflect.ValueOf(primary))
 						}
 						return utils.SkipReflection
@@ -372,7 +372,7 @@ func (l *Loader) loadObjectMap(key string, data map[string]interface{}) (map[str
 
 		o := reflect.New(t)
 
-		glog.Warningf("replace with partial unmarshal...")
+		// TODO replace with partial unmarshal...
 		jsonValue, err := json.Marshal(v)
 		if err != nil {
 			return nil, fmt.Errorf("error marshalling to json: %v", err)
@@ -381,7 +381,7 @@ func (l *Loader) loadObjectMap(key string, data map[string]interface{}) (map[str
 		if err != nil {
 			return nil, fmt.Errorf("error parsing %q: %v", key, err)
 		}
-		glog.Infof("Built %s:%s => %v", key, k, o.Interface())
+		glog.V(4).Infof("Built %s:%s => %v", key, k, o.Interface())
 
 		if inferredName {
 			hn, ok := o.Interface().(fi.HasName)

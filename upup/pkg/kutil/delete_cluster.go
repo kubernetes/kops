@@ -39,8 +39,13 @@ func (c *DeleteCluster) ListResources() (map[string]DeletableResource, error) {
 
 	resources := make(map[string]DeletableResource)
 
-	filters := cloud.BuildFilters(nil)
 	tags := cloud.BuildTags(nil, nil)
+
+	var filters []*ec2.Filter
+	for k, v := range tags {
+		filter := awsup.NewEC2Filter("tag:"+k, v)
+		filters = append(filters, filter)
+	}
 
 	{
 		glog.V(2).Infof("Listing all Autoscaling groups matching cluster tags")
