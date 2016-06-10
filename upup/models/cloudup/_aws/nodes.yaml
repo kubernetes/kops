@@ -42,15 +42,8 @@ securityGroupRule/all-node-to-master:
   securityGroup: securityGroup/kubernetes.master.{{ .ClusterName }}
   sourceGroup: securityGroup/kubernetes.node.{{.ClusterName}}
 
-autoscalingGroup/kubernetes.nodes.{{ .ClusterName }}:
-  minSize: {{ .NodeCount }}
-  maxSize: {{ .NodeCount }}
-  subnets:
-{{ range $zone := .NodeZones }}
-    - subnet/kubernetes.{{ $zone }}.{{ $.ClusterName }}
-{{ end }}
-  tags:
-    k8s.io/role: node
+# LaunchConfiguration & ASG for nodes
+launchConfiguration/kubernetes.nodes.{{ .ClusterName }}:
   sshKey: sshKey/kubernetes.{{ .ClusterName }}
   securityGroups:
     - securityGroup/kubernetes.node.{{ .ClusterName }}
@@ -59,9 +52,14 @@ autoscalingGroup/kubernetes.nodes.{{ .ClusterName }}:
   instanceType: {{ .NodeMachineType }}
   associatePublicIP: true
   userData: resources/nodeup.sh _kubernetes_pool
-  blockDeviceMappings:
-    # Map all the ephemeral devices
-    {{ range $d := (MachineTypeInfo .NodeMachineType).EphemeralDevices }}
-    - DeviceName: {{ $d.DeviceName }}
-      VirtualName: {{ $d.VirtualName }}
-    {{ end }}
+
+autoscalingGroup/kubernetes.nodes.{{ .ClusterName }}:
+  launchConfiguration: launchConfiguration/kubernetes.nodes.{{ .ClusterName }}
+  minSize: {{ .NodeCount }}
+  maxSize: {{ .NodeCount }}
+  subnets:
+{{ range $zone := .NodeZones }}
+    - subnet/kubernetes.{{ $zone }}.{{ $.ClusterName }}
+{{ end }}
+  tags:
+    k8s.io/role: node

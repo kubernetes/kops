@@ -327,6 +327,7 @@ func (c *CreateClusterCmd) Run() error {
 
 				// Autoscaling
 				"autoscalingGroup": &awstasks.AutoscalingGroup{},
+				"launchConfiguration": &awstasks.LaunchConfiguration{},
 
 				// Route53
 				"dnsName": &awstasks.DNSName{},

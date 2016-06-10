@@ -1,17 +1,7 @@
 {{ range $zone := .MasterZones }}
 
 # ASG for master
-autoscalingGroup/kubernetes.master.{{ $zone }}.{{ $.ClusterName }}:
-  minSize: 1
-  maxSize: 1
-  subnets:
-    - subnet/kubernetes.{{ $zone }}.{{ $.ClusterName }}
-  tags:
-    k8s.io/role/master: "1"
-    k8s.io/dns/internal: "api.internal.{{ $.ClusterName }}"
-{{ if not (HasTag "_master_lb") }}
-    k8s.io/dns/public: "api.{{ $.ClusterName }}"
-{{ end }}
+launchConfiguration/kubernetes.master.{{ $zone }}.{{ $.ClusterName }}:
   sshKey: sshKey/kubernetes.{{ $.ClusterName }}
   securityGroups:
     - securityGroup/kubernetes.master.{{ $.ClusterName }}
@@ -20,12 +10,19 @@ autoscalingGroup/kubernetes.master.{{ $zone }}.{{ $.ClusterName }}:
   instanceType: {{ $.MasterMachineType }}
   associatePublicIP: true
   userData: resources/nodeup.sh _kubernetes_master
-  blockDeviceMappings:
-    # Map all the ephemeral devices
-    {{ range $d := (MachineTypeInfo $.MasterMachineType).EphemeralDevices }}
-    - DeviceName: {{ $d.DeviceName }}
-      VirtualName: {{ $d.VirtualName }}
-    {{ end }}
+
+autoscalingGroup/kubernetes.master.{{ $zone }}.{{ $.ClusterName }}:
+  minSize: 1
+  maxSize: 1
+  subnets:
+    - subnet/kubernetes.{{ $zone }}.{{ $.ClusterName }}
+  launchConfiguration: launchConfiguration/kubernetes.master.{{ $zone }}.{{ $.ClusterName }}
+  tags:
+    k8s.io/role/master: "1"
+    k8s.io/dns/internal: "api.internal.{{ $.ClusterName }}"
+{{ if not (HasTag "_master_lb") }}
+    k8s.io/dns/public: "api.{{ $.ClusterName }}"
+{{ end }}
 
 {{ if HasTag "_master_lb" }}
 # Attach ASG to ELB
