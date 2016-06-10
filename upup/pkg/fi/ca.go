@@ -30,14 +30,24 @@ type Certificate struct {
 func (c *Certificate) UnmarshalJSON(b []byte) error {
 	s := ""
 	if err := json.Unmarshal(b, &s); err == nil {
-		d, err := base64.StdEncoding.DecodeString(s)
+		r, err := LoadPEMCertificate([]byte(s))
 		if err != nil {
-			return fmt.Errorf("error decoding certificate base64 data: %q", string(b))
-		}
-		r, err := LoadPEMCertificate(d)
-		if err != nil {
-			glog.Infof("Invalid certificate data: %q", string(b))
-			return fmt.Errorf("error parsing certificate: %v", err)
+			// Alternative form: Check if base64 encoded
+			// TODO: Do we need this?  I think we need this only on nodeup, but maybe we could just not base64-it?
+			d, err2 := base64.StdEncoding.DecodeString(s)
+			if err2 == nil {
+				r2, err2 := LoadPEMCertificate(d)
+				if err2 == nil {
+					glog.Warningf("used base64 decode of certificate")
+					r = r2
+					err = nil
+				}
+			}
+
+			if err != nil {
+				glog.Infof("Invalid certificate data: %q", string(b))
+				return fmt.Errorf("error parsing certificate: %v", err)
+			}
 		}
 		*c = *r
 		return nil
@@ -101,18 +111,30 @@ func (c *PrivateKey) AsString() (string, error) {
 
 func (k *PrivateKey) UnmarshalJSON(b []byte) (err error) {
 	s := ""
-	if err = json.Unmarshal(b, &s); err == nil {
-		d, err := base64.StdEncoding.DecodeString(s)
+	if err := json.Unmarshal(b, &s); err == nil {
+		r, err := parsePEMPrivateKey([]byte(s))
 		if err != nil {
-			return fmt.Errorf("error decoding private key base64 data: %q", string(b))
+			// Alternative form: Check if base64 encoded
+			// TODO: Do we need this?  I think we need this only on nodeup, but maybe we could just not base64-it?
+			d, err2 := base64.StdEncoding.DecodeString(s)
+			if err2 == nil {
+				r2, err2 := parsePEMPrivateKey(d)
+				if err2 == nil {
+					glog.Warningf("used base64 decode of PrivateKey")
+					r = r2
+					err = nil
+				}
+			}
+
+			if err != nil {
+				return fmt.Errorf("error parsing private key: %v", err)
+			}
 		}
-		key, err := parsePEMPrivateKey(d)
-		if err != nil {
-			return fmt.Errorf("error parsing private key: %v", err)
-		}
-		k.Key = key
+		k.Key = r
 		return nil
 	}
+
+
 	return fmt.Errorf("unknown format for private key: %q", string(b))
 }
 
