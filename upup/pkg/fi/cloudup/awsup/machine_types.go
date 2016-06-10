@@ -23,7 +23,7 @@ type EphemeralDevice struct {
 	SizeGB      int
 }
 
-func (m *AWSMachineTypeInfo) EphemeralDevices() ([]*EphemeralDevice) {
+func (m *AWSMachineTypeInfo) EphemeralDevices() []*EphemeralDevice {
 	var disks []*EphemeralDevice
 	for i, sizeGB := range m.EphemeralDisks {
 		d := &EphemeralDevice{

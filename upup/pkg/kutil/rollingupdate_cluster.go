@@ -1,15 +1,15 @@
 package kutil
 
 import (
+	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
-	"github.com/golang/glog"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"fmt"
-	"time"
 	"sync"
+	"time"
 )
 
 // RollingUpdateCluster restarts cluster nodes
@@ -112,7 +112,7 @@ func (n *Nodeset) RollingUpdate(cloud fi.Cloud) error {
 		// TODO: Evacuate through k8s first?
 
 		// TODO: Temporarily increase size of ASG?
-		
+
 		// TODO: Remove from ASG first so status is immediately updated?
 
 		// TODO: Batch termination, like a rolling-update
@@ -124,7 +124,6 @@ func (n *Nodeset) RollingUpdate(cloud fi.Cloud) error {
 		if err != nil {
 			return fmt.Errorf("error deleting instance %q: %v", i.InstanceId, err)
 		}
-
 
 		// TODO: Wait for node to appear back in k8s
 		time.Sleep(time.Minute)
