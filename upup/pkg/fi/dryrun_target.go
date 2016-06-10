@@ -215,12 +215,13 @@ func asString(value reflect.Value) string {
 					fmt.Fprintf(b, "id:%s", *id)
 				}
 			} else {
-				return fmt.Errorf("Unhandled type for %q: %T", path, intf)
+				glog.V(4).Infof("Unhandled kind in asString for %q: %T", path, v.Interface())
+				fmt.Fprint(b, DebugAsJsonString(intf))
 			}
 			return utils.SkipReflection
 
 		default:
-			glog.Infof("Unhandled kind for %q: %T", path, v.Interface())
+			glog.Infof("Unhandled kind in asString for %q: %T", path, v.Interface())
 			return fmt.Errorf("Unhandled kind for %q: %v", path, v.Kind())
 		}
 	}
