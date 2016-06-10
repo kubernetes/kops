@@ -38,11 +38,15 @@ func buildFlags(options interface{}) (string, error) {
 
 		var flag string
 		switch v := val.Interface().(type) {
-		case string, int, bool, float32, float64:
+		case string:
 			vString := fmt.Sprintf("%v", v)
 			if vString != "" {
 				flag = fmt.Sprintf("--%s=%s", flagName, vString)
 			}
+
+		case bool, int, float32, float64:
+			vString := fmt.Sprintf("%v", v)
+			flag = fmt.Sprintf("--%s=%s", flagName, vString)
 
 		default:
 			return fmt.Errorf("BuildFlags of value type not handled: %T %s=%v", v, path, v)
