@@ -34,7 +34,7 @@ e.g. kubernetes.myzone.com or dev.k8s.myzone.com  We'll call your subdomain `MYZ
 * Execute:
 ```
 export MYZONE=<kubernetes.myzone.com>
-${GOPATH}/bin/cloudup --v=0 --logtostderr -cloud=aws -zone=us-east-1c -name=${MYZONE} -kubernetes-version=1.2.2
+${GOPATH}/bin/cloudup --v=0 --logtostderr -cloud=aws -zone=us-east-1c -name=${MYZONE}
 ```
 
 If you have problems, please set `--v=8 --logtostderr` and open an issue, and ping justinsb on slack!
@@ -62,9 +62,13 @@ You must pass --yes to actually delete resources (without the `#` comment!)
 
 ## Other interesting modes:
 
-See changes that would be applied: `${GOPATH}/bin/cloudup --dryrun`
+* See changes that would be applied: `${GOPATH}/bin/cloudup --dryrun`
 
 Build a terrform model: `${GOPATH}/bin/cloudup $NORMAL_ARGS --target=terraform > tf/k8s.tf.json`
+
+* Specify the k8s build to run: `-kubernetes-version=1.2.2`
+
+* Try HA mode: `-zone=us-east-1b,us-east-1b,us-east-1d`
 
 # How it works
 
