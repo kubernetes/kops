@@ -12,11 +12,11 @@ import (
 const safeChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
 
 // sanitizer fixes up an invalid HCL AST, as produced by the HCL parser for JSON
-type sanitizer struct {
+type astSanitizer struct {
 }
 
 // output prints creates b printable HCL output and returns it.
-func (v *sanitizer) visit(n interface{}) {
+func (v *astSanitizer) visit(n interface{}) {
 	switch t := n.(type) {
 	case *ast.File:
 		v.visit(t.Node)
@@ -43,7 +43,7 @@ func (v *sanitizer) visit(n interface{}) {
 
 }
 
-func (v *sanitizer) visitObjectItem(o *ast.ObjectItem) {
+func (v *astSanitizer) visitObjectItem(o *ast.ObjectItem) {
 	for i, k := range o.Keys {
 		if i == 0 {
 			text := k.Token.Text
@@ -71,13 +71,20 @@ func (v *sanitizer) visitObjectItem(o *ast.ObjectItem) {
 }
 
 func hclPrint(node ast.Node) ([]byte, error) {
-	var s sanitizer
-	s.visit(node)
+	var sanitizer astSanitizer
+	sanitizer.visit(node)
 
 	var b bytes.Buffer
 	err := hcl_printer.Fprint(&b, node)
 	if err != nil {
 		return nil, fmt.Errorf("error writing HCL: %v", err)
 	}
-	return b.Bytes(), nil
+	s := b.String()
+
+	// Remove extra whitespace...
+	s = strings.Replace(s, "\n\n", "\n", -1)
+	// ...but leave whitespace between resources
+	s = strings.Replace(s, "}\nresource", "}\n\nresource", -1)
+
+	return []byte(s), nil
 }
