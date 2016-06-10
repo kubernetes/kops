@@ -108,6 +108,7 @@ func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 
 	if foundRule != nil {
 		actual := &SecurityGroupRule{
+			Name:          e.Name,
 			SecurityGroup: &SecurityGroup{ID: e.SecurityGroup.ID},
 			FromPort:      foundRule.FromPort,
 			ToPort:        foundRule.ToPort,

@@ -55,6 +55,7 @@ func (e *RouteTableAssociation) Find(c *fi.Context) (*RouteTableAssociation, err
 			continue
 		}
 		actual := &RouteTableAssociation{
+			Name:       e.Name,
 			ID:         rta.RouteTableAssociationId,
 			RouteTable: &RouteTable{ID: rta.RouteTableId},
 			Subnet:     &Subnet{ID: rta.SubnetId},
