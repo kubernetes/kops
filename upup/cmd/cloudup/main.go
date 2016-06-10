@@ -45,7 +45,7 @@ func main() {
 	flag.StringVar(&zones, "zone", zones, "Cloud zone to target (warning - will be replaced by region)")
 	flag.StringVar(&config.Project, "project", config.Project, "Project to use (must be set on GCE)")
 	flag.StringVar(&config.ClusterName, "name", config.ClusterName, "Name for cluster")
-	flag.StringVar(&config.KubernetesVersion, "kubernetes-version", config.KubernetesVersion, "Version of kubernetes to run")
+	flag.StringVar(&config.KubernetesVersion, "kubernetes-version", config.KubernetesVersion, "Version of kubernetes to run (defaults to latest)")
 	//flag.StringVar(&config.Region, "region", config.Region, "Cloud region to target")
 
 	sshPublicKey := path.Join(os.Getenv("HOME"), ".ssh", "id_rsa.pub")
@@ -160,10 +160,30 @@ func (c *CreateClusterCmd) Run() error {
 	caStore := c.StateStore.CA()
 	secrets := c.StateStore.Secrets()
 
-	if len(c.Config.Assets) == 0 {
-		if c.Config.KubernetesVersion == "" {
-			return fmt.Errorf("Must either specify a KubernetesVersion (-kubernetes-version) or provide an asset with the release bundle")
+	if c.Config.KubernetesVersion == "" {
+		stableURL := "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
+		b, err := utils.ReadLocation(stableURL)
+		if err != nil {
+			return fmt.Errorf("-kubernetes-version not specified, and unable to download latest version from %q: %v", stableURL, err)
 		}
+		latestVersion := strings.TrimSpace(string(b))
+		glog.Infof("Using kubernetes latest stable version: %s", latestVersion)
+
+		c.Config.KubernetesVersion = latestVersion
+		//return fmt.Errorf("Must either specify a KubernetesVersion (-kubernetes-version) or provide an asset with the release bundle")
+	}
+
+	// Normalize k8s version
+	versionWithoutV := strings.TrimSpace(c.Config.KubernetesVersion)
+	if strings.HasPrefix(versionWithoutV, "v") {
+		versionWithoutV = versionWithoutV[1:]
+	}
+	if c.Config.KubernetesVersion != versionWithoutV {
+		glog.Warningf("Normalizing kubernetes version: %q -> %q", c.Config.KubernetesVersion, versionWithoutV)
+		c.Config.KubernetesVersion = versionWithoutV
+	}
+
+	if len(c.Config.Assets) == 0 {
 		//defaultReleaseAsset := fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/v%s/kubernetes-server-linux-amd64.tar.gz", c.Config.KubernetesVersion)
 		//glog.Infof("Adding default kubernetes release asset: %s", defaultReleaseAsset)
 
