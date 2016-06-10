@@ -54,6 +54,9 @@ func main() {
 	nodeSize := ""
 	flag.StringVar(&nodeSize, "node-size", nodeSize, "Set instance size for nodes")
 
+	nodeCount := 0
+	flag.IntVar(&nodeCount, "node-count", nodeCount, "Set the number of nodes")
+
 	flag.Parse()
 
 	config.Zones = strings.Split(zones, ",")
@@ -63,6 +66,9 @@ func main() {
 
 	if nodeSize != "" {
 		config.NodeMachineType = nodeSize
+	}
+	if nodeCount != 0 {
+		config.NodeCount = nodeCount
 	}
 
 	if dryrun {
