@@ -65,7 +65,7 @@ You must pass --yes to actually delete resources (without the `#` comment!)
 
 * See changes that would be applied: `${GOPATH}/bin/cloudup --dryrun`
 
-Build a terrform model: `${GOPATH}/bin/cloudup $NORMAL_ARGS --target=terraform > tf/k8s.tf.json`
+* Build a terraform model: `${GOPATH}/bin/cloudup $NORMAL_ARGS --target=terraform`  The terraform model will be built in `state/terraform`
 
 * Specify the k8s build to run: `-kubernetes-version=1.2.2`
 
@@ -80,3 +80,36 @@ Each file in the tree describes a Task.
 
 On the nodeup side, Tasks can manage files, systemd services, packages etc.
 On the cloudup side, Tasks manage cloud resources: instances, networks, disks etc.
+
+## Workaround for terraform bug
+
+Terraform currently has a bug where it can't create AWS tags containing a dot.  Until this is fixed,
+you can't use terraform to build EC2 resources that are tagged with `k8s.io/...` tags.  Thankfully this is only
+the volumes, and it isn't the worst idea to build these separately anyway.
+
+We divide the 'cloudup' model into two parts: 
+* models/proto which sets up the volumes and other data which would be hard to recover (e.g. likely keys & secrets in the near future)
+* models/cloudup which is the main cloudup model for configuration everything else
+
+So you don't use terraform for the 'proto' phase (you can't anyway, because of the bug!):
+
+```
+export MYZONE=<kubernetes.myzone.com>
+${GOPATH}/bin/cloudup --v=0 --logtostderr -cloud=aws -zone=us-east-1c -name=${MYZONE} -kubernetes-version=1.2.2 --model=models/proto
+```
+
+And then you can use terraform to do the full installation:
+
+```
+export MYZONE=<kubernetes.myzone.com>
+${GOPATH}/bin/cloudup --v=0 --logtostderr -cloud=aws -zone=us-east-1c -name=${MYZONE} -kubernetes-version=1.2.2 --model=models/cloudup --target=terraform
+```
+
+Then, to apply using terraform:
+
+```
+cd state/terraform
+
+terraform plan
+terraform apply
+```

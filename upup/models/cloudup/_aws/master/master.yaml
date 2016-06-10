@@ -41,17 +41,3 @@ securityGroupRule/all-master-to-master:
 securityGroupRule/all-master-to-node:
   securityGroup: securityGroup/kubernetes.node.{{ .ClusterName }}
   sourceGroup: securityGroup/kubernetes.master.{{ .ClusterName }}
-
-{{ range $zone := .MasterZones }}
-
-# EBS volume
-ebsVolume/kubernetes.master.{{$zone}}.{{ $.ClusterName }}:
-  availabilityZone: {{ $zone }}
-  sizeGB: {{ or $.MasterVolumeSize 20 }}
-  volumeType: {{ or $.MasterVolumeType "gp2" }}
-  tags:
-    k8s.io/role/master: "1"
-    k8s.io/etcd/main: "{{ $zone }}/{{ join $.MasterZones "," }}"
-    k8s.io/etcd/events: "{{ $zone }}/{{ join $.MasterZones "," }}"
-
-{{ end }}
