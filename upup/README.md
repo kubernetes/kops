@@ -71,6 +71,10 @@ You must pass --yes to actually delete resources (without the `#` comment!)
 
 * Try HA mode: `-zone=us-east-1b,us-east-1b,us-east-1d`
 
+* Specify the node size: `-node-size=m4.large`
+
+* Specify the number of nodes: `-node-count=4`
+
 # How it works
 
 Everything is driven by a local configuration directory tree, called the "model".  The model represents
@@ -95,14 +99,14 @@ So you don't use terraform for the 'proto' phase (you can't anyway, because of t
 
 ```
 export MYZONE=<kubernetes.myzone.com>
-${GOPATH}/bin/cloudup --v=0 --logtostderr -cloud=aws -zone=us-east-1c -name=${MYZONE} -kubernetes-version=1.2.2 --model=models/proto
+${GOPATH}/bin/cloudup --v=0 --logtostderr -cloud=aws -zone=us-east-1c -name=${MYZONE} --model=models/proto
 ```
 
 And then you can use terraform to do the full installation:
 
 ```
 export MYZONE=<kubernetes.myzone.com>
-${GOPATH}/bin/cloudup --v=0 --logtostderr -cloud=aws -zone=us-east-1c -name=${MYZONE} -kubernetes-version=1.2.2 --model=models/cloudup --target=terraform
+${GOPATH}/bin/cloudup --v=0 --logtostderr -cloud=aws -zone=us-east-1c -name=${MYZONE} --model=models/cloudup --target=terraform
 ```
 
 Then, to apply using terraform:

@@ -177,7 +177,7 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			changes.MaxSize = nil
 		}
 
-		empty := &LaunchConfiguration{}
+		empty := &AutoscalingGroup{}
 		if !reflect.DeepEqual(empty, changes) {
 			glog.Warningf("cannot apply changes to AutoScalingGroup: %v", changes)
 		}

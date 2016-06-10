@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"github.com/golang/glog"
 )
 
 type TerraformTarget struct {
@@ -145,6 +146,8 @@ func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 			return fmt.Errorf("error writing terraform data to output file %q: %v", p, err)
 		}
 	}
+
+	glog.Infof("Terraform output is in %s", t.outDir)
 
 	return nil
 }

@@ -10,7 +10,6 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
-	"strconv"
 	"strings"
 )
 
@@ -44,18 +43,13 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 
 	prefix := *e.Name + "-"
 
-	configurations := map[int64]*autoscaling.LaunchConfiguration{}
+	configurations := map[string]*autoscaling.LaunchConfiguration{}
 	err := cloud.Autoscaling.DescribeLaunchConfigurationsPages(request, func(page *autoscaling.DescribeLaunchConfigurationsOutput, lastPage bool) bool {
 		for _, l := range page.LaunchConfigurations {
 			name := aws.StringValue(l.LaunchConfigurationName)
 			if strings.HasPrefix(name, prefix) {
 				suffix := name[len(prefix):]
-				t, err := strconv.ParseInt(suffix, 10, 64)
-				if err != nil {
-					glog.Infof("skipping launch configuration with unexpected name: %q", name)
-					continue
-				}
-				configurations[t] = l
+				configurations[suffix] = l
 			}
 		}
 		return true
@@ -65,14 +59,17 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 		return nil, nil
 	}
 
+	var newest *autoscaling.LaunchConfiguration
 	var newestTime int64
-	for t := range configurations {
+	for _, lc := range configurations {
+		t := lc.CreatedTime.UnixNano()
 		if t > newestTime {
 			newestTime = t
+			newest = lc
 		}
 	}
 
-	lc := configurations[newestTime]
+	lc := newest
 
 	glog.V(2).Info("found existing AutoscalingLaunchConfiguration: %q", *lc.LaunchConfigurationName)
 
@@ -254,7 +251,7 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 	}
 
 	tf := &terraformLaunchConfiguration{
-		NamePrefix:   e.Name,
+		NamePrefix:   fi.String(*e.Name + "-"),
 		ImageID:      image.ImageId,
 		InstanceType: e.InstanceType,
 	}
