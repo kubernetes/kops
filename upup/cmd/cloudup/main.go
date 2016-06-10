@@ -326,7 +326,7 @@ func (c *CreateClusterCmd) Run() error {
 				"loadBalancerHealthChecks": &awstasks.LoadBalancerHealthChecks{},
 
 				// Autoscaling
-				"autoscalingGroup": &awstasks.AutoscalingGroup{},
+				"autoscalingGroup":    &awstasks.AutoscalingGroup{},
 				"launchConfiguration": &awstasks.LaunchConfiguration{},
 
 				// Route53

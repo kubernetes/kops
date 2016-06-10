@@ -16,9 +16,9 @@ import (
 
 //go:generate fitask -type=LaunchConfiguration
 type LaunchConfiguration struct {
-	Name                *string
+	Name *string
 
-	UserData            *fi.ResourceHolder
+	UserData *fi.ResourceHolder
 
 	ImageID             *string
 	InstanceType        *string
@@ -28,7 +28,7 @@ type LaunchConfiguration struct {
 	BlockDeviceMappings map[string]*BlockDeviceMapping
 	IAMInstanceProfile  *IAMInstanceProfile
 
-	ID                  *string
+	ID *string
 }
 
 var _ fi.CompareWithID = &LaunchConfiguration{}
@@ -77,12 +77,12 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 	glog.V(2).Info("found existing AutoscalingLaunchConfiguration: %q", *lc.LaunchConfigurationName)
 
 	actual := &LaunchConfiguration{
-		Name: e.Name,
-		ID: lc.LaunchConfigurationName,
-		ImageID: lc.ImageId,
-		InstanceType: lc.InstanceType,
-		SSHKey: &SSHKey{Name: lc.KeyName},
-		AssociatePublicIP: lc.AssociatePublicIpAddress,
+		Name:               e.Name,
+		ID:                 lc.LaunchConfigurationName,
+		ImageID:            lc.ImageId,
+		InstanceType:       lc.InstanceType,
+		SSHKey:             &SSHKey{Name: lc.KeyName},
+		AssociatePublicIP:  lc.AssociatePublicIpAddress,
 		IAMInstanceProfile: &IAMInstanceProfile{Name: lc.IamInstanceProfile},
 	}
 
@@ -140,7 +140,7 @@ func addEphemeralDevices(instanceTypeName *string, blockDeviceMappings map[strin
 			glog.Warningf("not attach ephemeral device - found duplicate device mapping: %q", ed.DeviceName)
 			continue
 		}
-		blockDeviceMappings[ed.DeviceName] = &BlockDeviceMapping{VirtualName: fi.String(ed.VirtualName) }
+		blockDeviceMappings[ed.DeviceName] = &BlockDeviceMapping{VirtualName: fi.String(ed.VirtualName)}
 	}
 	return blockDeviceMappings, nil
 }
