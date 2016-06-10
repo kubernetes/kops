@@ -10,86 +10,86 @@ import (
 )
 
 type CloudConfig struct {
-	CloudProvider string
+	CloudProvider string `json:",omitempty"`
 
 	// The version of kubernetes to install
-	KubernetesVersion string
+	KubernetesVersion string `json:",omitempty"`
 
 	// The Node initializer technique to use: cloudinit or nodeup
-	NodeInit string
+	NodeInit string `json:",omitempty"`
 
 	// Configuration of zones we are targeting
-	Zones       []string
-	MasterZones []string
-	NodeZones   []string
-	Region      string
-	Project     string
+	Zones       []string `json:",omitempty"`
+	MasterZones []string `json:",omitempty"`
+	NodeZones   []string `json:",omitempty"`
+	Region      string   `json:",omitempty"`
+	Project     string   `json:",omitempty"`
 
 	// The internal and external names for the master nodes
-	MasterPublicName   string
-	MasterInternalName string
+	MasterPublicName   string `json:",omitempty"`
+	MasterInternalName string `json:",omitempty"`
 
 	// The CIDR used for the AWS VPC / GCE Network, or otherwise allocated to k8s
 	// This is a real CIDR, not the internal k8s overlay
-	NetworkCIDR string
+	NetworkCIDR string `json:",omitempty"`
 
 	// The DNS zone we should use when configuring DNS
-	DNSZone string
+	DNSZone string `json:",omitempty"`
 
-	InstancePrefix    string
-	ClusterName       string
-	AllocateNodeCIDRs bool
+	InstancePrefix    string `json:",omitempty"`
+	ClusterName       string `json:",omitempty"`
+	AllocateNodeCIDRs *bool  `json:",omitempty"`
 
-	Multizone bool
+	Multizone bool `json:",omitempty"`
 
-	ClusterIPRange        string
-	ServiceClusterIPRange string
-	MasterIPRange         string
-	NonMasqueradeCidr     string
+	ClusterIPRange        string `json:",omitempty"`
+	ServiceClusterIPRange string `json:",omitempty"`
+	MasterIPRange         string `json:",omitempty"`
+	NonMasqueradeCidr     string `json:",omitempty"`
 
-	NetworkProvider string
+	NetworkProvider string `json:",omitempty"`
 
-	HairpinMode string
+	HairpinMode string `json:",omitempty"`
 
-	OpencontrailTag           string
-	OpencontrailKubernetesTag string
-	OpencontrailPublicSubnet  string
+	OpencontrailTag           string `json:",omitempty"`
+	OpencontrailKubernetesTag string `json:",omitempty"`
+	OpencontrailPublicSubnet  string `json:",omitempty"`
 
-	EnableClusterMonitoring string
-	EnableL7LoadBalancing   string
-	EnableClusterUI         bool
+	EnableClusterMonitoring string `json:",omitempty"`
+	EnableL7LoadBalancing   string `json:",omitempty"`
+	EnableClusterUI         *bool  `json:",omitempty"`
 
-	EnableClusterDNS bool
-	DNSReplicas      int
-	DNSServerIP      string
-	DNSDomain        string
+	EnableClusterDNS *bool  `json:",omitempty"`
+	DNSReplicas      int    `json:",omitempty"`
+	DNSServerIP      string `json:",omitempty"`
+	DNSDomain        string `json:",omitempty"`
 
-	EnableClusterLogging         bool
-	EnableNodeLogging            bool
-	LoggingDestination           string
-	ElasticsearchLoggingReplicas int
+	EnableClusterLogging         *bool  `json:",omitempty"`
+	EnableNodeLogging            *bool  `json:",omitempty"`
+	LoggingDestination           string `json:",omitempty"`
+	ElasticsearchLoggingReplicas int    `json:",omitempty"`
 
-	EnableClusterRegistry   bool
-	ClusterRegistryDisk     string
-	ClusterRegistryDiskSize int
+	EnableClusterRegistry   *bool  `json:",omitempty"`
+	ClusterRegistryDisk     string `json:",omitempty"`
+	ClusterRegistryDiskSize int    `json:",omitempty"`
 
-	EnableCustomMetrics bool
+	EnableCustomMetrics *bool `json:",omitempty"`
 
-	RegisterMasterKubelet bool
-	MasterVolumeType      string
-	MasterVolumeSize      int
-	MasterTag             string
-	MasterMachineType     string
-	MasterImage           string
+	RegisterMasterKubelet *bool  `json:",omitempty"`
+	MasterVolumeType      string `json:",omitempty"`
+	MasterVolumeSize      int    `json:",omitempty"`
+	MasterTag             string `json:",omitempty"`
+	MasterMachineType     string `json:",omitempty"`
+	MasterImage           string `json:",omitempty"`
 
-	NodeImage          string
-	NodeCount          int
-	NodeInstancePrefix string
-	NodeLabels         string
-	NodeMachineType    string
-	NodeTag            string
+	NodeImage          string `json:",omitempty"`
+	NodeCount          int    `json:",omitempty"`
+	NodeInstancePrefix string `json:",omitempty"`
+	NodeLabels         string `json:",omitempty"`
+	NodeMachineType    string `json:",omitempty"`
+	NodeTag            string `json:",omitempty"`
 
-	KubeUser string
+	KubeUser string `json:",omitempty"`
 
 	// These are moved to CAStore / SecretStore
 	//KubePassword			string
@@ -105,53 +105,53 @@ type CloudConfig struct {
 	//KubecfgCert                   []byte
 	//KubecfgKey                    []byte
 
-	AdmissionControl string
-	RuntimeConfig    string
+	AdmissionControl string `json:",omitempty"`
+	RuntimeConfig    string `json:",omitempty"`
 
-	KubeImageTag       string
-	KubeDockerRegistry string
-	KubeAddonRegistry  string
+	KubeImageTag       string `json:",omitempty"`
+	KubeDockerRegistry string `json:",omitempty"`
+	KubeAddonRegistry  string `json:",omitempty"`
 
-	KubeletPort int
+	KubeletPort int `json:",omitempty"`
 
-	KubeApiserverRequestTimeout int
+	KubeApiserverRequestTimeout int `json:",omitempty"`
 
-	TerminatedPodGcThreshold string
+	TerminatedPodGcThreshold string `json:",omitempty"`
 
-	EnableManifestURL bool
-	ManifestURL       string
-	ManifestURLHeader string
+	EnableManifestURL *bool  `json:",omitempty"`
+	ManifestURL       string `json:",omitempty"`
+	ManifestURLHeader string `json:",omitempty"`
 
-	TestCluster string
+	TestCluster string `json:",omitempty"`
 
-	DockerOptions   string
-	DockerStorage   string
-	ExtraDockerOpts string
+	DockerOptions   string `json:",omitempty"`
+	DockerStorage   string `json:",omitempty"`
+	ExtraDockerOpts string `json:",omitempty"`
 
-	E2EStorageTestEnvironment     string
-	KubeletTestArgs               string
-	KubeletTestLogLevel           string
-	DockerTestArgs                string
-	DockerTestLogLevel            string
-	ApiserverTestArgs             string
-	ApiserverTestLogLevel         string
-	ControllerManagerTestArgs     string
-	ControllerManagerTestLogLevel string
-	SchedulerTestArgs             string
-	SchedulerTestLogLevel         string
-	KubeProxyTestArgs             string
-	KubeProxyTestLogLevel         string
+	E2EStorageTestEnvironment     string `json:",omitempty"`
+	KubeletTestArgs               string `json:",omitempty"`
+	KubeletTestLogLevel           string `json:",omitempty"`
+	DockerTestArgs                string `json:",omitempty"`
+	DockerTestLogLevel            string `json:",omitempty"`
+	ApiserverTestArgs             string `json:",omitempty"`
+	ApiserverTestLogLevel         string `json:",omitempty"`
+	ControllerManagerTestArgs     string `json:",omitempty"`
+	ControllerManagerTestLogLevel string `json:",omitempty"`
+	SchedulerTestArgs             string `json:",omitempty"`
+	SchedulerTestLogLevel         string `json:",omitempty"`
+	KubeProxyTestArgs             string `json:",omitempty"`
+	KubeProxyTestLogLevel         string `json:",omitempty"`
 
-	Assets []string
+	Assets []string `json:",omitempty"`
 
-	NodeUpTags []string
+	NodeUpTags []string `json:",omitempty"`
 
 	NodeUp NodeUpConfig
 }
 
 type NodeUpConfig struct {
-	Location string
-	Hash     string
+	Location string `json:",omitempty"`
+	Hash     string `json:",omitempty"`
 }
 
 func (c *CloudConfig) WellKnownServiceIP(id int) (net.IP, error) {
