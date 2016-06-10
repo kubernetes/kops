@@ -62,13 +62,17 @@ func (l *OptionsLoader) AddTemplate(t *OptionsTemplate) {
 	l.templates = append(l.templates, t)
 }
 
-func copyStruct(dest, src interface{}) {
-	vDest := reflect.ValueOf(dest).Elem()
-	vSrc := reflect.ValueOf(src).Elem()
-
-	for i := 0; i < vSrc.NumField(); i++ {
-		fv := vSrc.Field(i)
-		vDest.Field(i).Set(fv)
+// copyFromStruct merges src into dest
+// It uses a JSON marshal & unmarshal, so only fields that are JSON-visible will be copied
+func copyFromStruct(dest, src interface{}) {
+	// Not the most efficient approach, but simple & relatively well defined
+	j, err := json.Marshal(src)
+	if err != nil {
+		glog.Fatalf("error marshalling config: %v", err)
+	}
+	err = json.Unmarshal(j, dest)
+	if err != nil {
+		glog.Fatalf("error unmarshalling config: %v", err)
 	}
 }
 
@@ -79,7 +83,10 @@ func (l *OptionsLoader) iterate(inConfig interface{}) (interface{}, error) {
 	t := reflect.TypeOf(inConfig).Elem()
 
 	options := reflect.New(t).Interface()
-	copyStruct(options, inConfig)
+
+	// Copy the provided values before applying rules; they act as defaults (and overrides below)
+	copyFromStruct(options, inConfig)
+
 	for _, t := range l.templates {
 		glog.V(2).Infof("executing template %s (tags=%s)", t.Name, t.Tags)
 
@@ -106,6 +113,9 @@ func (l *OptionsLoader) iterate(inConfig interface{}) (interface{}, error) {
 			return nil, fmt.Errorf("error parsing yaml (converted to JSON) %q: %v", t.Name, err)
 		}
 	}
+
+	// Also copy the provided values after applying rules; they act as overrides now
+	copyFromStruct(options, inConfig)
 
 	return options, nil
 }
