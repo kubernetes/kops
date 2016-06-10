@@ -51,12 +51,19 @@ func main() {
 	sshPublicKey := path.Join(os.Getenv("HOME"), ".ssh", "id_rsa.pub")
 	flag.StringVar(&sshPublicKey, "ssh-public-key", sshPublicKey, "SSH public key to use")
 
+	nodeSize := ""
+	flag.StringVar(&nodeSize, "node-size", nodeSize, "Set instance size for nodes")
+
 	flag.Parse()
 
 	config.Zones = strings.Split(zones, ",")
 
 	config.MasterZones = config.Zones
 	config.NodeZones = config.Zones
+
+	if nodeSize != "" {
+		config.NodeMachineType = nodeSize
+	}
 
 	if dryrun {
 		target = "dryrun"
