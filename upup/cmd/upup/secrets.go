@@ -17,7 +17,7 @@ var secretsCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.AddCommand(secretsCmd)
+	rootCommand.AddCommand(secretsCmd)
 
 	// Here you will define your flags and configuration settings.
 

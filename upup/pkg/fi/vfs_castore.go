@@ -8,39 +8,38 @@ import (
 	"crypto/x509/pkix"
 	"fmt"
 	"github.com/golang/glog"
-	"io/ioutil"
+	"k8s.io/kube-deploy/upup/pkg/fi/vfs"
 	"os"
-	"path"
 	"strings"
 )
 
-type FilesystemCAStore struct {
-	basedir       string
+type VFSCAStore struct {
+	basedir       vfs.Path
 	caCertificate *Certificate
 	caPrivateKey  *PrivateKey
 }
 
-var _ CAStore = &FilesystemCAStore{}
+var _ CAStore = &VFSCAStore{}
 
-func NewFilesystemCAStore(basedir string) (CAStore, error) {
-	c := &FilesystemCAStore{
+func NewVFSCAStore(basedir vfs.Path) (CAStore, error) {
+	c := &VFSCAStore{
 		basedir: basedir,
 	}
-	err := os.MkdirAll(path.Join(basedir, "private"), 0700)
-	if err != nil {
-		return nil, fmt.Errorf("error creating directory: %v", err)
-	}
-	err = os.MkdirAll(path.Join(basedir, "issued"), 0700)
-	if err != nil {
-		return nil, fmt.Errorf("error creating directory: %v", err)
-	}
-	caCertificate, err := c.loadCertificate(path.Join(basedir, "ca.crt"))
+	//err := os.MkdirAll(path.Join(basedir, "private"), 0700)
+	//if err != nil {
+	//	return nil, fmt.Errorf("error creating directory: %v", err)
+	//}
+	//err = os.MkdirAll(path.Join(basedir, "issued"), 0700)
+	//if err != nil {
+	//	return nil, fmt.Errorf("error creating directory: %v", err)
+	//}
+	caCertificate, err := c.loadCertificate(basedir.Join("ca.crt"))
 	if err != nil {
 		return nil, err
 	}
 
 	if caCertificate != nil {
-		privateKeyPath := path.Join(basedir, "private", "ca.key")
+		privateKeyPath := basedir.Join("private", "ca.key")
 		caPrivateKey, err := c.loadPrivateKey(privateKeyPath)
 		if err != nil {
 			return nil, err
@@ -60,7 +59,7 @@ func NewFilesystemCAStore(basedir string) (CAStore, error) {
 	return c, nil
 }
 
-func (c *FilesystemCAStore) generateCACertificate() error {
+func (c *VFSCAStore) generateCACertificate() error {
 	subject := &pkix.Name{
 		CommonName: "kubernetes",
 	}
@@ -84,13 +83,13 @@ func (c *FilesystemCAStore) generateCACertificate() error {
 		return err
 	}
 
-	keyPath := path.Join(c.basedir, "private", "ca.key")
+	keyPath := c.basedir.Join("private", "ca.key")
 	err = c.storePrivateKey(caPrivateKey, keyPath)
 	if err != nil {
 		return err
 	}
 
-	certPath := path.Join(c.basedir, "ca.crt")
+	certPath := c.basedir.Join("ca.crt")
 	err = c.storeCertificate(caCertificate, certPath)
 	if err != nil {
 		return err
@@ -107,16 +106,16 @@ func (c *FilesystemCAStore) generateCACertificate() error {
 	return nil
 }
 
-func (c *FilesystemCAStore) buildCertificatePath(id string) string {
-	return path.Join(c.basedir, "issued", id+".crt")
+func (c *VFSCAStore) buildCertificatePath(id string) vfs.Path {
+	return c.basedir.Join("issued", id+".crt")
 }
 
-func (c *FilesystemCAStore) buildPrivateKeyPath(id string) string {
-	return path.Join(c.basedir, "private", id+".key")
+func (c *VFSCAStore) buildPrivateKeyPath(id string) vfs.Path {
+	return c.basedir.Join("private", id+".key")
 }
 
-func (c *FilesystemCAStore) loadCertificate(p string) (*Certificate, error) {
-	data, err := ioutil.ReadFile(p)
+func (c *VFSCAStore) loadCertificate(p vfs.Path) (*Certificate, error) {
+	data, err := p.ReadFile()
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil
@@ -132,7 +131,7 @@ func (c *FilesystemCAStore) loadCertificate(p string) (*Certificate, error) {
 	return cert, nil
 }
 
-func (c *FilesystemCAStore) Cert(id string) (*Certificate, error) {
+func (c *VFSCAStore) Cert(id string) (*Certificate, error) {
 	cert, err := c.FindCert(id)
 	if err == nil && cert == nil {
 		return nil, fmt.Errorf("cannot find cert %q", id)
@@ -141,7 +140,7 @@ func (c *FilesystemCAStore) Cert(id string) (*Certificate, error) {
 
 }
 
-func (c *FilesystemCAStore) FindCert(id string) (*Certificate, error) {
+func (c *VFSCAStore) FindCert(id string) (*Certificate, error) {
 	var cert *Certificate
 	if id == CertificateId_CA {
 		cert = c.caCertificate
@@ -156,27 +155,27 @@ func (c *FilesystemCAStore) FindCert(id string) (*Certificate, error) {
 	return cert, nil
 }
 
-func (c *FilesystemCAStore) List() ([]string, error) {
+func (c *VFSCAStore) List() ([]string, error) {
 	var ids []string
 	if c.caCertificate != nil {
 		ids = append(ids, "ca")
 	}
 
-	issuedDir := path.Join(c.basedir, "issued")
-	files, err := ioutil.ReadDir(issuedDir)
+	issuedDir := c.basedir.Join("issued")
+	files, err := issuedDir.ReadDir()
 	if err != nil {
 		return nil, fmt.Errorf("error reading directory %q: %v", issuedDir, err)
 	}
 
 	for _, f := range files {
-		name := f.Name()
+		name := f.Base()
 		name = strings.TrimSuffix(name, ".crt")
 		ids = append(ids, name)
 	}
 	return ids, nil
 }
 
-func (c *FilesystemCAStore) IssueCert(id string, privateKey *PrivateKey, template *x509.Certificate) (*Certificate, error) {
+func (c *VFSCAStore) IssueCert(id string, privateKey *PrivateKey, template *x509.Certificate) (*Certificate, error) {
 	glog.Infof("Issuing new certificate: %q", id)
 
 	p := c.buildCertificatePath(id)
@@ -198,8 +197,8 @@ func (c *FilesystemCAStore) IssueCert(id string, privateKey *PrivateKey, templat
 	return c.loadCertificate(p)
 }
 
-func (c *FilesystemCAStore) loadPrivateKey(p string) (*PrivateKey, error) {
-	data, err := ioutil.ReadFile(p)
+func (c *VFSCAStore) loadPrivateKey(p vfs.Path) (*PrivateKey, error) {
+	data, err := p.ReadFile()
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil
@@ -215,7 +214,7 @@ func (c *FilesystemCAStore) loadPrivateKey(p string) (*PrivateKey, error) {
 	return &PrivateKey{Key: k}, nil
 }
 
-func (c *FilesystemCAStore) FindPrivateKey(id string) (*PrivateKey, error) {
+func (c *VFSCAStore) FindPrivateKey(id string) (*PrivateKey, error) {
 	var key *PrivateKey
 	if id == CertificateId_CA {
 		key = c.caPrivateKey
@@ -230,7 +229,7 @@ func (c *FilesystemCAStore) FindPrivateKey(id string) (*PrivateKey, error) {
 	return key, nil
 }
 
-func (c *FilesystemCAStore) PrivateKey(id string) (*PrivateKey, error) {
+func (c *VFSCAStore) PrivateKey(id string) (*PrivateKey, error) {
 	key, err := c.FindPrivateKey(id)
 	if err == nil && key == nil {
 		return nil, fmt.Errorf("cannot find SSL key %q", id)
@@ -239,7 +238,7 @@ func (c *FilesystemCAStore) PrivateKey(id string) (*PrivateKey, error) {
 
 }
 
-func (c *FilesystemCAStore) CreatePrivateKey(id string) (*PrivateKey, error) {
+func (c *VFSCAStore) CreatePrivateKey(id string) (*PrivateKey, error) {
 	p := c.buildPrivateKeyPath(id)
 
 	rsaKey, err := rsa.GenerateKey(crypto_rand.Reader, 2048)
@@ -256,17 +255,17 @@ func (c *FilesystemCAStore) CreatePrivateKey(id string) (*PrivateKey, error) {
 	return privateKey, nil
 }
 
-func (c *FilesystemCAStore) storePrivateKey(privateKey *PrivateKey, p string) error {
+func (c *VFSCAStore) storePrivateKey(privateKey *PrivateKey, p vfs.Path) error {
 	var data bytes.Buffer
 	_, err := privateKey.WriteTo(&data)
 	if err != nil {
 		return err
 	}
 
-	return c.writeFile(data.Bytes(), p)
+	return p.WriteFile(data.Bytes())
 }
 
-func (c *FilesystemCAStore) storeCertificate(cert *Certificate, p string) error {
+func (c *VFSCAStore) storeCertificate(cert *Certificate, p vfs.Path) error {
 	// TODO: replace storePrivateKey & storeCertificate with writeFile(io.WriterTo)?
 	var data bytes.Buffer
 	_, err := cert.WriteTo(&data)
@@ -274,15 +273,5 @@ func (c *FilesystemCAStore) storeCertificate(cert *Certificate, p string) error 
 		return err
 	}
 
-	return c.writeFile(data.Bytes(), p)
-}
-
-func (c *FilesystemCAStore) writeFile(data []byte, p string) error {
-	// TODO: concurrency?
-	err := ioutil.WriteFile(p, data, 0600)
-	if err != nil {
-		// TODO: Delete file on disk?  Write a temp file and move it atomically?
-		return fmt.Errorf("error writing certificate/key data to path %q: %v", p, err)
-	}
-	return nil
+	return p.WriteFile(data.Bytes())
 }

@@ -6,14 +6,11 @@ import (
 	"bytes"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"k8s.io/kube-deploy/upup/pkg/fi"
 	"os"
-	"path"
 	"text/tabwriter"
 )
 
 type GetSecretsCommand struct {
-	StateDir string
 }
 
 var getSecretsCommand GetSecretsCommand
@@ -32,8 +29,6 @@ func init() {
 	}
 
 	secretsCmd.AddCommand(cmd)
-
-	cmd.Flags().StringVarP(&getSecretsCommand.StateDir, "state", "", "", "Directory in which to store state")
 }
 
 type SecretInfo struct {
@@ -42,15 +37,11 @@ type SecretInfo struct {
 }
 
 func (c *GetSecretsCommand) Run() error {
-	if c.StateDir == "" {
-		return fmt.Errorf("state dir is required")
-	}
-
 	var infos []*SecretInfo
 	{
-		caStore, err := fi.NewFilesystemCAStore(path.Join(c.StateDir, "pki"))
+		caStore, err := rootCommand.CA()
 		if err != nil {
-			return fmt.Errorf("error building CA store: %v", err)
+			return err
 		}
 		ids, err := caStore.List()
 		if err != nil {
@@ -67,9 +58,9 @@ func (c *GetSecretsCommand) Run() error {
 	}
 
 	{
-		secretStore, err := fi.NewFilesystemSecretStore(path.Join(c.StateDir, "secrets"))
+		secretStore, err := rootCommand.Secrets()
 		if err != nil {
-			return fmt.Errorf("error building secret store: %v", err)
+			return err
 		}
 		ids, err := secretStore.ListSecrets()
 		if err != nil {

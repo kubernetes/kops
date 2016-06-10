@@ -26,8 +26,9 @@ make
 
 ## Bringing up a cluster on AWS
 
-* Ensure you have a DNS zone set up in Route 53, e.g. myzone.com  You can use any subdomain (or sub-subdomain) of this,
-e.g. kubernetes.myzone.com or dev.k8s.myzone.com  We'll call your subdomain `MYZONE`.
+* Ensure you have a DNS hosted zone set up in Route 53, e.g. myzone.com
+
+* Pick a subdomain (or sub-subdomain) of this hosted zone, e.g. kubernetes.myzone.com or dev.k8s.myzone.com  We'll call your subdomain `MYZONE`.
 
 * Set `AWS_PROFILE` (if you need to select a profile for the AWS CLI to work)
 

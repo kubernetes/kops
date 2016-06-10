@@ -13,7 +13,7 @@ type SecretStore interface {
 	// Find a secret, if exists.  Returns nil,nil if not found
 	FindSecret(id string) (*Secret, error)
 	// Create or replace a secret
-	CreateSecret(id string) (*Secret, error)
+	GetOrCreateSecret(id string) (secret *Secret, created bool, err error)
 	// Lists the ids of all known secrets
 	ListSecrets() ([]string, error)
 }

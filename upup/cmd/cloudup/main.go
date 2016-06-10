@@ -15,6 +15,7 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi/fitasks"
 	"k8s.io/kube-deploy/upup/pkg/fi/loader"
 	"k8s.io/kube-deploy/upup/pkg/fi/utils"
+	"k8s.io/kube-deploy/upup/pkg/fi/vfs"
 	"os"
 	"path"
 	"strings"
@@ -29,8 +30,8 @@ func main() {
 	flag.StringVar(&configFile, "conf", configFile, "Configuration file to load")
 	modelDir := "models/cloudup"
 	flag.StringVar(&modelDir, "model", modelDir, "Source directory to use as model")
-	stateDir := "./state"
-	flag.StringVar(&stateDir, "state", stateDir, "Directory to use to store local state")
+	stateLocation := "./state"
+	flag.StringVar(&stateLocation, "state", stateLocation, "Location to use to store configuration state")
 	nodeModelDir := "models/nodeup"
 	flag.StringVar(&nodeModelDir, "nodemodel", nodeModelDir, "Source directory to use as model for node configuration")
 
@@ -61,13 +62,23 @@ func main() {
 		target = "dryrun"
 	}
 
+	statePath := vfs.NewFSPath(stateLocation)
+	workDir := stateLocation
+
+	stateStore, err := fi.NewVFSStateStore(statePath)
+	if err != nil {
+		glog.Errorf("error building state store: %v", err)
+		os.Exit(1)
+	}
+
 	cmd := &CreateClusterCmd{
 		Config:       config,
 		ModelDir:     modelDir,
-		StateDir:     stateDir,
+		StateStore:   stateStore,
 		Target:       target,
 		NodeModelDir: nodeModelDir,
 		SSHPublicKey: sshPublicKey,
+		WorkDir:      workDir,
 	}
 
 	if configFile != "" {
@@ -79,7 +90,7 @@ func main() {
 		}
 	}
 
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		glog.Errorf("error running command: %v", err)
 		os.Exit(1)
@@ -93,14 +104,16 @@ type CreateClusterCmd struct {
 	Config *cloudup.CloudConfig
 	// ModelDir is the directory in which the cloudup model is found
 	ModelDir string
-	// StateDir is a directory in which we store state (such as the PKI tree)
-	StateDir string
+	// StateStore is a StateStore in which we store state (such as the PKI tree)
+	StateStore fi.StateStore
 	// Target specifies how we are operating e.g. direct to GCE, or AWS, or dry-run, or terraform
 	Target string
 	// The directory in which the node model is found
 	NodeModelDir string
 	// The SSH public key (file) to use
 	SSHPublicKey string
+	// WorkDir is a local directory in which we place output, can cache files etc
+	WorkDir string
 }
 
 func (c *CreateClusterCmd) LoadConfig(configFile string) error {
@@ -131,8 +144,8 @@ func (c *CreateClusterCmd) Run() error {
 		c.Config.DNSZone = strings.Join(tokens[len(tokens)-2:], ".")
 	}
 
-	if c.StateDir == "" {
-		return fmt.Errorf("state dir is required")
+	if c.StateStore == nil {
+		return fmt.Errorf("StateStore is required")
 	}
 
 	if c.Config.CloudProvider == "" {
@@ -144,14 +157,8 @@ func (c *CreateClusterCmd) Run() error {
 	l := &cloudup.Loader{}
 	l.Init()
 
-	caStore, err := fi.NewFilesystemCAStore(path.Join(c.StateDir, "pki"))
-	if err != nil {
-		return fmt.Errorf("error building CA store: %v", err)
-	}
-	secretStore, err := fi.NewFilesystemSecretStore(path.Join(c.StateDir, "secrets"))
-	if err != nil {
-		return fmt.Errorf("error building secret store: %v", err)
-	}
+	caStore := c.StateStore.CA()
+	secrets := c.StateStore.Secrets()
 
 	if len(c.Config.Assets) == 0 {
 		if c.Config.KubernetesVersion == "" {
@@ -340,7 +347,7 @@ func (c *CreateClusterCmd) Run() error {
 	}
 
 	l.Tags = tags
-	l.StateDir = c.StateDir
+	l.WorkDir = c.WorkDir
 	l.NodeModelDir = c.NodeModelDir
 	l.OptionsLoader = loader.NewOptionsLoader(c.Config)
 
@@ -356,19 +363,14 @@ func (c *CreateClusterCmd) Run() error {
 		return caStore
 	}
 	l.TemplateFunctions["Secrets"] = func() fi.SecretStore {
-		return secretStore
+		return secrets
 	}
 	l.TemplateFunctions["GetOrCreateSecret"] = func(id string) (string, error) {
-		secret, err := secretStore.FindSecret(id)
+		secret, _, err := secrets.GetOrCreateSecret(id)
 		if err != nil {
-			return "", fmt.Errorf("error finding secret %q: %v", id, err)
+			return "", fmt.Errorf("error creating secret %q: %v", id, err)
 		}
-		if secret == nil {
-			secret, err = secretStore.CreateSecret(id)
-			if err != nil {
-				return "", fmt.Errorf("error creating secret %q: %v", id, err)
-			}
-		}
+
 		return secret.AsString()
 	}
 
@@ -409,7 +411,7 @@ func (c *CreateClusterCmd) Run() error {
 
 	case "terraform":
 		checkExisting = false
-		outDir := path.Join(c.StateDir, "terraform")
+		outDir := path.Join(c.WorkDir, "terraform")
 		target = terraform.NewTerraformTarget(cloud, region, project, outDir)
 
 	case "dryrun":
