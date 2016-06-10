@@ -109,7 +109,7 @@ func (_ *InternetGatewayAttachment) RenderTerraform(t *terraform.TerraformTarget
 
 	tf := &terraformInternetGateway{
 		VPCID: e.VPC.TerraformLink(),
-		Tags:  cloud.BuildTags(e.InternetGateway.Name, nil),
+		Tags:  cloud.BuildTags(e.InternetGateway.Name),
 	}
 
 	return t.RenderResource("aws_internet_gateway", *e.InternetGateway.Name, tf)

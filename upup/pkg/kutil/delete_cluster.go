@@ -39,7 +39,7 @@ func (c *DeleteCluster) ListResources() (map[string]DeletableResource, error) {
 
 	resources := make(map[string]DeletableResource)
 
-	tags := cloud.BuildTags(nil, nil)
+	tags := cloud.BuildTags(nil)
 
 	var filters []*ec2.Filter
 	for k, v := range tags {

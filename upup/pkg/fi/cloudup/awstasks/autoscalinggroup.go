@@ -127,6 +127,7 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 }
 
 func (e *AutoscalingGroup) Run(c *fi.Context) error {
+	c.Cloud.(*awsup.AWSCloud).AddTags(e.Name, e.Tags)
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
@@ -141,9 +142,6 @@ func (s *AutoscalingGroup) CheckChanges(a, e, changes *AutoscalingGroup) error {
 
 func (e *AutoscalingGroup) buildTags(cloud fi.Cloud) map[string]string {
 	tags := make(map[string]string)
-	for k, v := range cloud.(*awsup.AWSCloud).BuildTags(e.Name, nil) {
-		tags[k] = v
-	}
 	for k, v := range e.Tags {
 		tags[k] = v
 	}

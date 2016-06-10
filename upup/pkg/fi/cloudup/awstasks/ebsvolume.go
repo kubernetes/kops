@@ -85,6 +85,7 @@ func (e *EBSVolume) find(cloud *awsup.AWSCloud) (*EBSVolume, error) {
 }
 
 func (e *EBSVolume) Run(c *fi.Context) error {
+	c.Cloud.(*awsup.AWSCloud).AddTags(e.Name, e.Tags)
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
@@ -120,7 +121,7 @@ func (_ *EBSVolume) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EBSVolume) e
 		e.ID = response.VolumeId
 	}
 
-	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name, e.Tags))
+	return t.AddAWSTags(*e.ID, e.Tags)
 }
 
 type terraformVolume struct {
@@ -131,13 +132,11 @@ type terraformVolume struct {
 }
 
 func (_ *EBSVolume) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *EBSVolume) error {
-	cloud := t.Cloud.(*awsup.AWSCloud)
-
 	tf := &terraformVolume{
 		AvailabilityZone: e.AvailabilityZone,
 		Size:             e.SizeGB,
 		Type:             e.VolumeType,
-		Tags:             cloud.BuildTags(e.Name, e.Tags),
+		Tags:             e.Tags,
 	}
 
 	return t.RenderResource("aws_ebs_volume", *e.Name, tf)
