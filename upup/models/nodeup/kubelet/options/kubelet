@@ -2,7 +2,7 @@ Kubelet:
   EnableDebuggingHandlers: true
   Config: /etc/kubernetes/manifests
   AllowPrivileged: true
-  Verbosity: 2
+  LogLevel: 2
   ClusterDNS: 10.0.0.10
   ClusterDomain: cluster.local
   ConfigureCBR0: true

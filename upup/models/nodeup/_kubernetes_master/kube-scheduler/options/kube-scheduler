@@ -2,4 +2,5 @@ KubeScheduler:
   Master: 127.0.0.1:8080
   LogLevel: 2
   # Doesn't seem to be any real downside to always doing a leader election
-  LeaderElect: true
+  LeaderElection:
+    LeaderElect: true
