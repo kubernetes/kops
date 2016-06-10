@@ -135,7 +135,7 @@ func (_ *DHCPOptions) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DHCPOption
 		e.ID = response.DhcpOptions.DhcpOptionsId
 	}
 
-	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name, nil))
+	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name))
 }
 
 type terraformDHCPOptions struct {
@@ -149,7 +149,7 @@ func (_ *DHCPOptions) RenderTerraform(t *terraform.TerraformTarget, a, e, change
 
 	tf := &terraformDHCPOptions{
 		DomainName: e.DomainName,
-		Tags:       cloud.BuildTags(e.Name, nil),
+		Tags:       cloud.BuildTags(e.Name),
 	}
 
 	if e.DomainNameServers != nil {

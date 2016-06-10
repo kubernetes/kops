@@ -139,7 +139,7 @@ func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 		}
 	}
 
-	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name, nil))
+	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name))
 }
 
 type terraformVPC struct {
@@ -154,7 +154,7 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 
 	tf := &terraformVPC{
 		CIDR:               e.CIDR,
-		Tags:               cloud.BuildTags(e.Name, nil),
+		Tags:               cloud.BuildTags(e.Name),
 		EnableDNSHostnames: e.EnableDNSHostnames,
 		EnableDNSSupport:   e.EnableDNSSupport,
 	}

@@ -52,9 +52,11 @@ func (e *Route) Find(c *fi.Context) (*Route, error) {
 			if aws.StringValue(r.DestinationCidrBlock) != *e.CIDR {
 				continue
 			}
-			actual := &Route{}
-			actual.RouteTable = &RouteTable{ID: rt.RouteTableId}
-			actual.CIDR = r.DestinationCidrBlock
+			actual := &Route{
+				Name:       e.Name,
+				RouteTable: &RouteTable{ID: rt.RouteTableId},
+				CIDR:       r.DestinationCidrBlock,
+			}
 			if r.GatewayId != nil {
 				actual.InternetGateway = &InternetGateway{ID: r.GatewayId}
 			}

@@ -97,7 +97,7 @@ func (_ *RouteTable) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *RouteTable)
 		e.ID = rt.RouteTableId
 	}
 
-	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name, nil))
+	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name))
 }
 
 type terraformRouteTable struct {
@@ -110,7 +110,7 @@ func (_ *RouteTable) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 
 	tf := &terraformRouteTable{
 		VPCID: e.VPC.TerraformLink(),
-		Tags:  cloud.BuildTags(e.Name, nil),
+		Tags:  cloud.BuildTags(e.Name),
 	}
 
 	return t.RenderResource("aws_route_table", *e.Name, tf)

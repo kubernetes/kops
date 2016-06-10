@@ -114,7 +114,7 @@ func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 		e.ID = response.Subnet.SubnetId
 	}
 
-	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name, nil))
+	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name))
 }
 
 func subnetSlicesEqualIgnoreOrder(l, r []*Subnet) bool {
@@ -143,7 +143,7 @@ func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Su
 		VPCID:            e.VPC.TerraformLink(),
 		CIDR:             e.CIDR,
 		AvailabilityZone: e.AvailabilityZone,
-		Tags:             cloud.BuildTags(e.Name, nil),
+		Tags:             cloud.BuildTags(e.Name),
 	}
 
 	return t.RenderResource("aws_subnet", *e.Name, tf)

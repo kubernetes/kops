@@ -251,5 +251,5 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 		}
 	}
 
-	return t.AddELBTags(*e.ID, t.Cloud.BuildTags(e.Name, nil))
+	return t.AddELBTags(*e.ID, t.Cloud.BuildTags(e.Name))
 }

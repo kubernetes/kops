@@ -221,7 +221,7 @@ func (c *AWSCloud) CreateELBTags(loadBalancerName string, tags map[string]string
 	}
 }
 
-func (c *AWSCloud) BuildTags(name *string, itemTags map[string]string) map[string]string {
+func (c *AWSCloud) BuildTags(name *string) map[string]string {
 	tags := make(map[string]string)
 	if name != nil {
 		tags["Name"] = *name
@@ -231,10 +231,16 @@ func (c *AWSCloud) BuildTags(name *string, itemTags map[string]string) map[strin
 	for k, v := range c.tags {
 		tags[k] = v
 	}
-	for k, v := range itemTags {
+	return tags
+}
+
+func (c *AWSCloud) AddTags(name *string, tags map[string]string) {
+	if name != nil {
+		tags["Name"] = *name
+	}
+	for k, v := range c.tags {
 		tags[k] = v
 	}
-	return tags
 }
 
 func (c *AWSCloud) BuildFilters(name *string) []*ec2.Filter {

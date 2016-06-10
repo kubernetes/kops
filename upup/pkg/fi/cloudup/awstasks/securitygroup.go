@@ -107,7 +107,7 @@ func (_ *SecurityGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Security
 		e.ID = response.GroupId
 	}
 
-	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name, nil))
+	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name))
 }
 
 type terraformSecurityGroup struct {
@@ -124,7 +124,7 @@ func (_ *SecurityGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, chan
 		Name:        e.Name,
 		VPCID:       e.VPC.TerraformLink(),
 		Description: e.Description,
-		Tags:        cloud.BuildTags(e.Name, nil),
+		Tags:        cloud.BuildTags(e.Name),
 	}
 
 	return t.RenderResource("aws_security_group", *e.Name, tf)

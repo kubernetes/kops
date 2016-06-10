@@ -164,6 +164,7 @@ func nameFromIAMARN(arn *string) *string {
 }
 
 func (e *Instance) Run(c *fi.Context) error {
+	c.Cloud.(*awsup.AWSCloud).AddTags(e.Name, e.Tags)
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
@@ -250,7 +251,7 @@ func (_ *Instance) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Instance) err
 		e.ID = response.Instances[0].InstanceId
 	}
 
-	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name, e.Tags))
+	return t.AddAWSTags(*e.ID, e.Tags)
 }
 
 func (e *Instance) TerraformLink() *terraform.Literal {

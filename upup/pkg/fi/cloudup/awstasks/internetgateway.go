@@ -80,7 +80,7 @@ func (_ *InternetGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Intern
 		e.ID = response.InternetGateway.InternetGatewayId
 	}
 
-	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name, nil))
+	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name))
 }
 
 func (_ *InternetGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *InternetGateway) error {
