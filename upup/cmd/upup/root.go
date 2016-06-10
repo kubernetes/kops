@@ -6,20 +6,23 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"k8s.io/kube-deploy/upup/pkg/fi"
+	"k8s.io/kube-deploy/upup/pkg/fi/vfs"
 )
 
-var cfgFile string
+type RootCmd struct {
+	configFile string
 
-// This represents the base command when called without any subcommands
-var RootCmd = &cobra.Command{
-	Use:   "upup",
-	Short: "upup manages kubernetes clusters",
-	Long: `upup manages kubernetes clusters.
-It allows you to create, destroy, upgrade and maintain them.`,
+	stateStore    fi.StateStore
+	stateLocation string
+
+	cobraCommand *cobra.Command
 }
 
+var rootCommand RootCmd
+
 func Execute() {
-	if err := RootCmd.Execute(); err != nil {
+	if err := rootCommand.cobraCommand.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(-1)
 	}
@@ -28,13 +31,24 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.upup.yaml)")
+	cmd := &cobra.Command{
+		Use:   "upup",
+		Short: "upup manages kubernetes clusters",
+		Long: `upup manages kubernetes clusters.
+It allows you to create, destroy, upgrade and maintain them.`,
+	}
+
+	rootCommand.cobraCommand = cmd
+
+	cmd.PersistentFlags().StringVar(&rootCommand.configFile, "config", "", "config file (default is $HOME/.upup.yaml)")
+	cmd.PersistentFlags().StringVarP(&rootCommand.stateLocation, "state", "", "", "Location of state storage")
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	if cfgFile != "" { // enable ability to specify config file via flag
-		viper.SetConfigFile(cfgFile)
+	if rootCommand.configFile != "" {
+		// enable ability to specify config file via flag
+		viper.SetConfigFile(rootCommand.configFile)
 	}
 
 	viper.SetConfigName(".upup") // name of config file (without extension)
@@ -45,4 +59,41 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
+}
+
+func (c *RootCmd) AddCommand(cmd *cobra.Command) {
+	c.cobraCommand.AddCommand(cmd)
+}
+
+func (c *RootCmd) StateStore() (fi.StateStore, error) {
+	if c.stateStore != nil {
+		return c.stateStore, nil
+	}
+	if c.stateLocation == "" {
+		return nil, fmt.Errorf("--state is required")
+	}
+
+	statePath := vfs.NewFSPath(c.stateLocation)
+
+	stateStore, err := fi.NewVFSStateStore(statePath)
+	if err != nil {
+		return nil, fmt.Errorf("error building state store: %v", err)
+	}
+	c.stateStore = stateStore
+	return stateStore, nil
+}
+func (c *RootCmd) Secrets() (fi.SecretStore, error) {
+	s, err := c.StateStore()
+	if err != nil {
+		return nil, err
+	}
+	return s.Secrets(), nil
+}
+
+func (c *RootCmd) CA() (fi.CAStore, error) {
+	s, err := c.StateStore()
+	if err != nil {
+		return nil, err
+	}
+	return s.CA(), nil
 }

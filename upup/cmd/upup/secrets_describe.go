@@ -9,14 +9,12 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"os"
-	"path"
 	"sort"
 	"strings"
 	"text/tabwriter"
 )
 
 type DescribeSecretsCommand struct {
-	StateDir string
 }
 
 var describeSecretsCommand DescribeSecretsCommand
@@ -35,14 +33,9 @@ func init() {
 	}
 
 	secretsCmd.AddCommand(cmd)
-
-	cmd.Flags().StringVarP(&describeSecretsCommand.StateDir, "state", "", "", "Directory in which to store state")
 }
 
 func (c *DescribeSecretsCommand) Run() error {
-	if c.StateDir == "" {
-		return fmt.Errorf("state dir is required")
-	}
 
 	w := new(tabwriter.Writer)
 	var b bytes.Buffer
@@ -51,9 +44,9 @@ func (c *DescribeSecretsCommand) Run() error {
 	w.Init(os.Stdout, 0, 8, 0, '\t', tabwriter.StripEscape)
 
 	{
-		caStore, err := fi.NewFilesystemCAStore(path.Join(c.StateDir, "pki"))
+		caStore, err := rootCommand.CA()
 		if err != nil {
-			return fmt.Errorf("error building CA store: %v", err)
+			return err
 		}
 		ids, err := caStore.List()
 		if err != nil {
@@ -93,9 +86,9 @@ func (c *DescribeSecretsCommand) Run() error {
 	}
 
 	{
-		secretStore, err := fi.NewFilesystemSecretStore(path.Join(c.StateDir, "secrets"))
+		secretStore, err := rootCommand.Secrets()
 		if err != nil {
-			return fmt.Errorf("error building secret store: %v", err)
+			return err
 		}
 		ids, err := secretStore.ListSecrets()
 		if err != nil {

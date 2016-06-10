@@ -17,5 +17,5 @@ var kubecfgCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.AddCommand(kubecfgCmd)
+	rootCommand.AddCommand(kubecfgCmd)
 }

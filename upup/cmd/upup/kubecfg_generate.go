@@ -13,7 +13,6 @@ import (
 )
 
 type KubecfgGenerateCommand struct {
-	StateDir      string
 	ClusterName   string
 	CloudProvider string
 	Project       string
@@ -47,15 +46,9 @@ func init() {
 	cmd.Flags().StringVarP(&kubecfgGenerateCommand.Project, "project", "", kubecfgGenerateCommand.Project, "Project to use (must be set on GCE)")
 
 	cmd.Flags().StringVarP(&kubecfgGenerateCommand.Master, "master", "", kubecfgGenerateCommand.Master, "IP adddress or host of API server")
-
-	cmd.Flags().StringVarP(&kubecfgGenerateCommand.StateDir, "state", "", "", "State directory")
 }
 
 func (c *KubecfgGenerateCommand) Run() error {
-	if c.StateDir == "" {
-		return fmt.Errorf("state must be specified")
-	}
-
 	if c.Master == "" {
 		return fmt.Errorf("master must be specified")
 	}
@@ -91,9 +84,9 @@ func (c *KubecfgGenerateCommand) Run() error {
 		return fmt.Errorf("Unknown cloud provider %q", c.CloudProvider)
 	}
 
-	c.caStore, err = fi.NewFilesystemCAStore(path.Join(c.StateDir, "pki"))
+	c.caStore, err = rootCommand.CA()
 	if err != nil {
-		return fmt.Errorf("error building CA store: %v", err)
+		return err
 	}
 
 	if b.CACert, err = c.copyCertificate(fi.CertificateId_CA); err != nil {

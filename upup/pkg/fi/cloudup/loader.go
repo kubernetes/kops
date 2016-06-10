@@ -24,7 +24,8 @@ const (
 )
 
 type Loader struct {
-	StateDir      string
+	WorkDir string
+
 	OptionsLoader *loader.OptionsLoader
 	NodeModelDir  string
 
@@ -412,7 +413,7 @@ func (l *Loader) populateResource(rh *fi.ResourceHolder, resource fi.Resource, a
 }
 
 func (l *Loader) buildNodeConfig(target string, configResourceName string, args []string) (string, error) {
-	assetDir := path.Join(l.StateDir, "node/assets")
+	assetDir := path.Join(l.WorkDir, "node/assets")
 
 	confData, err := l.renderResource(configResourceName, args)
 	if err != nil {

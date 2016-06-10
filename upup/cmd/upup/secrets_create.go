@@ -6,15 +6,11 @@ import (
 	"crypto/x509"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"k8s.io/kube-deploy/upup/pkg/fi"
 	"net"
-	"path"
 	"strings"
 )
 
 type CreateSecretsCommand struct {
-	StateDir string
-
 	Id   string
 	Type string
 
@@ -40,7 +36,6 @@ func init() {
 
 	secretsCmd.AddCommand(cmd)
 
-	cmd.Flags().StringVarP(&createSecretsCommand.StateDir, "state", "", "", "Directory in which to store state")
 	cmd.Flags().StringVarP(&createSecretsCommand.Type, "type", "", "", "Type of secret to create")
 	cmd.Flags().StringVarP(&createSecretsCommand.Id, "id", "", "", "Id of secret to create")
 	cmd.Flags().StringVarP(&createSecretsCommand.Usage, "usage", "", "", "Usage of secret (for SSL certificate)")
@@ -49,10 +44,6 @@ func init() {
 }
 
 func (cmd *CreateSecretsCommand) Run() error {
-	if cmd.StateDir == "" {
-		return fmt.Errorf("state dir is required")
-	}
-
 	if cmd.Id == "" {
 		return fmt.Errorf("id is required")
 	}
@@ -67,13 +58,16 @@ func (cmd *CreateSecretsCommand) Run() error {
 	switch cmd.Type {
 	case "secret":
 		{
-			secretStore, err := fi.NewFilesystemSecretStore(path.Join(cmd.StateDir, "secrets"))
+			secretStore, err := rootCommand.Secrets()
 			if err != nil {
-				return fmt.Errorf("error building secret store: %v", err)
+				return err
 			}
-			_, err = secretStore.CreateSecret(cmd.Id)
+			_, created, err := secretStore.GetOrCreateSecret(cmd.Id)
 			if err != nil {
 				return fmt.Errorf("error creating secrets %v", err)
+			}
+			if !created {
+				return fmt.Errorf("secret already exists")
 			}
 			return nil
 		}
@@ -128,9 +122,9 @@ func (cmd *CreateSecretsCommand) Run() error {
 				}
 			}
 
-			caStore, err := fi.NewFilesystemCAStore(path.Join(cmd.StateDir, "pki"))
+			caStore, err := rootCommand.CA()
 			if err != nil {
-				return fmt.Errorf("error building CA store: %v", err)
+				return err
 			}
 
 			// TODO: Allow resigning of the existing private key?

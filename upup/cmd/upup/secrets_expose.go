@@ -5,14 +5,10 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"k8s.io/kube-deploy/upup/pkg/fi"
 	"os"
-	"path"
 )
 
 type ExposeSecretsCommand struct {
-	StateDir string
-
 	ID   string
 	Type string
 }
@@ -34,16 +30,11 @@ func init() {
 
 	secretsCmd.AddCommand(cmd)
 
-	cmd.Flags().StringVarP(&exposeSecretsCommand.StateDir, "state", "", "", "Directory in which to store state")
 	cmd.Flags().StringVarP(&exposeSecretsCommand.Type, "type", "", "", "Type of secret to create")
 	cmd.Flags().StringVarP(&exposeSecretsCommand.ID, "id", "", "", "Id of secret to create")
 }
 
 func (cmd *ExposeSecretsCommand) Run() error {
-	if cmd.StateDir == "" {
-		return fmt.Errorf("state dir is required")
-	}
-
 	id := cmd.ID
 	if id == "" {
 		return fmt.Errorf("id is required")
@@ -57,9 +48,9 @@ func (cmd *ExposeSecretsCommand) Run() error {
 	switch cmd.Type {
 	case "secret":
 		{
-			secretStore, err := fi.NewFilesystemSecretStore(path.Join(cmd.StateDir, "secrets"))
+			secretStore, err := rootCommand.Secrets()
 			if err != nil {
-				return fmt.Errorf("error building secret store: %v", err)
+				return err
 			}
 			secret, err := secretStore.FindSecret(id)
 			if err != nil {
@@ -73,7 +64,7 @@ func (cmd *ExposeSecretsCommand) Run() error {
 
 	case "certificate", "privatekey":
 		{
-			caStore, err := fi.NewFilesystemCAStore(path.Join(cmd.StateDir, "pki"))
+			caStore, err := rootCommand.CA()
 			if err != nil {
 				return fmt.Errorf("error building CA store: %v", err)
 			}
