@@ -48,51 +48,14 @@ func (c *DeleteCluster) ListResources() (map[string]DeletableResource, error) {
 	}
 
 	{
-		glog.V(2).Infof("Listing all Autoscaling groups matching cluster tags")
-		var asgNames []*string
-		{
-			var asFilters []*autoscaling.Filter
-			for _, f := range filters {
-				asFilters = append(asFilters, &autoscaling.Filter{
-					Name:   aws.String("value"),
-					Values: f.Values,
-				})
-			}
-			request := &autoscaling.DescribeTagsInput{
-				Filters: asFilters,
-			}
-			response, err := cloud.Autoscaling.DescribeTags(request)
-			if err != nil {
-				return nil, fmt.Errorf("error listing autoscaling cluster tags: %v", err)
-			}
-
-			for _, t := range response.Tags {
-				switch *t.ResourceType {
-				case "auto-scaling-group":
-					asgNames = append(asgNames, t.ResourceId)
-				default:
-					glog.Warningf("Unknown resource type: %v", *t.ResourceType)
-
-				}
-			}
+		asgs, err := findAutoscalingGroups(cloud, tags)
+		if err != nil {
+			return nil, err
 		}
 
-		if len(asgNames) != 0 {
-			request := &autoscaling.DescribeAutoScalingGroupsInput{
-				AutoScalingGroupNames: asgNames,
-			}
-			response, err := cloud.Autoscaling.DescribeAutoScalingGroups(request)
-			if err != nil {
-				return nil, fmt.Errorf("error listing autoscaling groups: %v", err)
-			}
-
-			for _, t := range response.AutoScalingGroups {
-				if !matchesAsgTags(tags, t.Tags) {
-					continue
-				}
-				r := &DeletableASG{Name: *t.AutoScalingGroupName}
-				resources["autoscaling-group:"+r.Name] = r
-			}
+		for _, asg := range asgs {
+			r := &DeletableASG{Name: *asg.AutoScalingGroupName}
+			resources["autoscaling-group:"+r.Name] = r
 		}
 	}
 
