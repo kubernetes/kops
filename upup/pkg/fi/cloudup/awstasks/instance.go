@@ -31,7 +31,7 @@ type Instance struct {
 	SSHKey              *SSHKey
 	SecurityGroups      []*SecurityGroup
 	AssociatePublicIP   *bool
-	BlockDeviceMappings []*BlockDeviceMapping
+	BlockDeviceMappings map[string]*BlockDeviceMapping
 	IAMInstanceProfile  *IAMInstanceProfile
 }
 
@@ -165,6 +165,13 @@ func nameFromIAMARN(arn *string) *string {
 
 func (e *Instance) Run(c *fi.Context) error {
 	c.Cloud.(*awsup.AWSCloud).AddTags(e.Name, e.Tags)
+
+	blockDeviceMappings, err := addEphemeralDevices(e.InstanceType, e.BlockDeviceMappings)
+	if err != nil {
+		return err
+	}
+	e.BlockDeviceMappings = blockDeviceMappings
+
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
@@ -215,8 +222,8 @@ func (_ *Instance) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Instance) err
 
 		if e.BlockDeviceMappings != nil {
 			request.BlockDeviceMappings = []*ec2.BlockDeviceMapping{}
-			for _, b := range e.BlockDeviceMappings {
-				request.BlockDeviceMappings = append(request.BlockDeviceMappings, b.ToEC2())
+			for deviceName, bdm := range e.BlockDeviceMappings {
+				request.BlockDeviceMappings = append(request.BlockDeviceMappings, bdm.ToEC2(deviceName))
 			}
 		}
 

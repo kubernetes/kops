@@ -23,7 +23,7 @@ type EphemeralDevice struct {
 	SizeGB      int
 }
 
-func (m *AWSMachineTypeInfo) EphemeralDevices() ([]*EphemeralDevice, error) {
+func (m *AWSMachineTypeInfo) EphemeralDevices() ([]*EphemeralDevice) {
 	var disks []*EphemeralDevice
 	for i, sizeGB := range m.EphemeralDisks {
 		d := &EphemeralDevice{
@@ -39,7 +39,7 @@ func (m *AWSMachineTypeInfo) EphemeralDevices() ([]*EphemeralDevice, error) {
 
 		disks = append(disks, d)
 	}
-	return disks, nil
+	return disks
 }
 
 func GetMachineTypeInfo(machineType string) (*AWSMachineTypeInfo, error) {
