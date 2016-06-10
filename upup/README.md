@@ -69,7 +69,7 @@ You must pass --yes to actually delete resources (without the `#` comment!)
 
 * Specify the k8s build to run: `-kubernetes-version=1.2.2`
 
-* Try HA mode: `-zone=us-east-1b,us-east-1b,us-east-1d`
+* Try HA mode: `-zone=us-east-1b,us-east-1c,us-east-1d`
 
 * Specify the node size: `-node-size=m4.large`
 
