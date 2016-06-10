@@ -6,27 +6,27 @@ import "k8s.io/kube-deploy/upup/pkg/fi"
 // Wherever possible, we try to use the types & names in https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
 
 type NodeConfig struct {
-	Kubelet               KubeletConfig
-	KubeProxy             KubeProxyConfig
-	KubeControllerManager KubeControllerManagerConfig
-	KubeScheduler         KubeSchedulerConfig
-	Docker                DockerConfig
-	APIServer             APIServerConfig
-	CACertificate         *fi.Certificate
+	Kubelet               *KubeletConfig`json:",omitempty"`
+	KubeProxy             *KubeProxyConfig`json:",omitempty"`
+	KubeControllerManager *KubeControllerManagerConfig`json:",omitempty"`
+	KubeScheduler         *KubeSchedulerConfig`json:",omitempty"`
+	Docker                *DockerConfig`json:",omitempty"`
+	APIServer             *APIServerConfig`json:",omitempty"`
+	CACertificate         *fi.Certificate`json:",omitempty"`
 
-	DNS          DNSConfig
-	KubeUser     string
-	KubePassword string
+	DNS          *DNSConfig `json:",omitempty"`
+	KubeUser     string `json:",omitempty"`
+	KubePassword string `json:",omitempty"`
 
-	Tokens map[string]string
+	Tokens map[string]string `json:",omitempty"`
 
-	Tags   []string
-	Assets []string
+	Tags   []string `json:",omitempty"`
+	Assets []string `json:",omitempty"`
 
-	MasterInternalName string
+	MasterInternalName string `json:",omitempty"`
 
 	// The DNS zone to use if configuring a cloud provided DNS zone
-	DNSZone string
+	DNSZone string `json:",omitempty"`
 }
 
 // A helper so that templates can get tokens which are not valid identifiers
@@ -35,25 +35,25 @@ func (n *NodeConfig) GetToken(key string) string {
 }
 
 type DNSConfig struct {
-	Replicas int
-	Domain   string
-	ServerIP string
+	Replicas int `json:",omitempty"`
+	Domain   string `json:",omitempty"`
+	ServerIP string `json:",omitempty"`
 }
 
 type KubeletConfig struct {
-	APIServers string `flag:"api-servers"`
+	APIServers string `json:",omitempty" flag:"api-servers"`
 
-	LogLevel *int `flag:"v"`
+	LogLevel *int `json:",omitempty" flag:"v"`
 
-	Certificate *fi.Certificate `flag:"-"`
-	Key         *fi.PrivateKey  `flag:"-"`
+	Certificate *fi.Certificate `json:",omitempty" flag:"-"`
+	Key         *fi.PrivateKey  `json:",omitempty" flag:"-"`
 	// Allow override of CA Certificate
-	CACertificate *fi.Certificate `flag:"-"`
+	CACertificate *fi.Certificate `json:",omitempty" flag:"-"`
 
 	// Configuration flags - a subset of https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
 
 	// config is the path to the config file or directory of files
-	Config string `json:"config" flag:"config"`
+	Config string `json:"config,omitempty" flag:"config"`
 	//// syncFrequency is the max period between synchronizing running
 	//// containers and config
 	//SyncFrequency unversioned.Duration `json:"syncFrequency"`
@@ -105,7 +105,7 @@ type KubeletConfig struct {
 	//SeccompProfileRoot string `json:"seccompProfileRoot"`
 	// allowPrivileged enables containers to request privileged mode.
 	// Defaults to false.
-	AllowPrivileged *bool `json:"allowPrivileged" flag:"allow-privileged"`
+	AllowPrivileged *bool `json:"allowPrivileged,omitempty" flag:"allow-privileged"`
 	//// hostNetworkSources is a comma-separated list of sources from which the
 	//// Kubelet allows pods to use of host network. Defaults to "*".
 	//HostNetworkSources string `json:"hostNetworkSources"`
@@ -131,7 +131,7 @@ type KubeletConfig struct {
 	//EventBurst int32 `json:"eventBurst"`
 	// enableDebuggingHandlers enables server endpoints for log collection
 	// and local running of containers and commands
-	EnableDebuggingHandlers *bool `json:"enableDebuggingHandlers" flag:"enable-debugging-handlers"`
+	EnableDebuggingHandlers *bool `json:"enableDebuggingHandlers,omitempty" flag:"enable-debugging-handlers"`
 	//// minimumGCAge is the minimum age for a finished container before it is
 	//// garbage collected.
 	//MinimumGCAge unversioned.Duration `json:"minimumGCAge"`
@@ -156,14 +156,14 @@ type KubeletConfig struct {
 	// clusterDomain is the DNS domain for this cluster. If set, kubelet will
 	// configure all containers to search this domain in addition to the
 	// host's search domains.
-	ClusterDomain string `json:"clusterDomain" flag:"cluster-domain"`
+	ClusterDomain string `json:"clusterDomain,omitempty" flag:"cluster-domain"`
 	//// masterServiceNamespace is The namespace from which the kubernetes
 	//// master services should be injected into pods.
 	//MasterServiceNamespace string `json:"masterServiceNamespace"`
 	// clusterDNS is the IP address for a cluster DNS server.  If set, kubelet
 	// will configure all containers to use this for DNS resolution in
 	// addition to the host's DNS servers
-	ClusterDNS string `json:"clusterDNS" flag:"cluster-dns"`
+	ClusterDNS string `json:"clusterDNS,omitempty" flag:"cluster-dns"`
 	//// streamingConnectionIdleTimeout is the maximum time a streaming connection
 	//// can be idle before the connection is automatically closed.
 	//StreamingConnectionIdleTimeout unversioned.Duration `json:"streamingConnectionIdleTimeout"`
@@ -232,7 +232,7 @@ type KubeletConfig struct {
 	//ExitOnLockContention bool `json:"exitOnLockContention"`
 	// configureCBR0 enables the kublet to configure cbr0 based on
 	// Node.Spec.PodCIDR.
-	ConfigureCBR0 *bool `json:"configureCbr0" flag:"configure-cbr0"`
+	ConfigureCBR0 *bool `json:"configureCbr0,omitempty" flag:"configure-cbr0"`
 	// How should the kubelet configure the container bridge for hairpin packets.
 	// Setting this flag allows endpoints in a Service to loadbalance back to
 	// themselves if they should try to access their own Service. Values:
@@ -242,9 +242,9 @@ type KubeletConfig struct {
 	// Setting --configure-cbr0 to false implies that to achieve hairpin NAT
 	// one must set --hairpin-mode=veth-flag, because bridge assumes the
 	// existence of a container bridge named cbr0.
-	HairpinMode string `json:"hairpinMode" flag:"hairpin-mode"`
+	HairpinMode string `json:"hairpinMode,omitempty" flag:"hairpin-mode"`
 	// The node has babysitter process monitoring docker and kubelet.
-	BabysitDaemons *bool `json:"babysitDaemons" flag:"babysit-daemons"`
+	BabysitDaemons *bool `json:"babysitDaemons,omitempty" flag:"babysit-daemons"`
 	//// maxPods is the number of pods that can run on this Kubelet.
 	//MaxPods int32 `json:"maxPods"`
 	//// nvidiaGPUs is the number of NVIDIA GPU devices on this node.
@@ -255,7 +255,7 @@ type KubeletConfig struct {
 	//DockerExecHandlerName string `json:"dockerExecHandlerName"`
 	// The CIDR to use for pod IP addresses, only used in standalone mode.
 	// In cluster mode, this is obtained from the master.
-	PodCIDR string `json:"podCIDR" flag:"pod-cidr"`
+	PodCIDR string `json:"podCIDR,omitempty" flag:"pod-cidr"`
 	//// ResolverConfig is the resolver configuration file used as the basis
 	//// for the container DNS resolution configuration."), []
 	//ResolverConfig string `json:"resolvConf"`
@@ -268,10 +268,10 @@ type KubeletConfig struct {
 	//MaxOpenFiles uint64 `json:"maxOpenFiles"`
 	// reconcileCIDR is Reconcile node CIDR with the CIDR specified by the
 	// API server. No-op if register-node or configure-cbr0 is false.
-	ReconcileCIDR *bool `json:"reconcileCIDR" flag:"reconcile-cidr"`
+	ReconcileCIDR *bool `json:"reconcileCIDR,omitempty" flag:"reconcile-cidr"`
 	// registerSchedulable tells the kubelet to register the node as
 	// schedulable. No-op if register-node is false.
-	RegisterSchedulable *bool `json:"registerSchedulable" flag:"register-schedulable"`
+	RegisterSchedulable *bool `json:"registerSchedulable,omitempty" flag:"register-schedulable"`
 	//// contentType is contentType of requests sent to apiserver.
 	//ContentType string `json:"contentType"`
 	//// kubeAPIQPS is the QPS to use while talking with kubernetes apiserver
@@ -297,7 +297,7 @@ type KubeletConfig struct {
 	//// nodeLabels to add when registering the node in the cluster.
 	//NodeLabels map[string]string `json:"nodeLabels"`
 	// nonMasqueradeCIDR configures masquerading: traffic to IPs outside this range will use IP masquerade.
-	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR" flag:"non-masquerade-cidr"`
+	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty" flag:"non-masquerade-cidr"`
 	//// enable gathering custom metrics.
 	//EnableCustomMetrics bool `json:"enableCustomMetrics"`
 	//// Comma-delimited list of hard eviction expressions.  For example, 'memory.available<300Mi'.
@@ -320,11 +320,11 @@ type KubeletConfig struct {
 }
 
 type KubeProxyConfig struct {
-	Image string
+	Image string `json:",omitempty"`
 	// TODO: Better type ?
-	CPURequest string // e.g. "20m"
+	CPURequest string  `json:",omitempty"`// e.g. "20m"
 
-	LogLevel int `flag:"v"`
+	LogLevel int  `json:",omitempty" flag:"v"`
 
 	// Configuration flags - a subset of https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
 
@@ -354,7 +354,7 @@ type KubeProxyConfig struct {
 	//// masqueradeAll tells kube-proxy to SNAT everything if using the pure iptables proxy mode.
 	//MasqueradeAll bool `json:"masqueradeAll"`
 	// master is the address of the Kubernetes API server (overrides any value in kubeconfig)
-	Master string `json:"master" flag:"master"`
+	Master string `json:"master,omitempty" flag:"master"`
 	//// oomScoreAdj is the oom-score-adj value for kube-proxy process. Values must be within
 	//// the range [-1000, 1000]
 	//OOMScoreAdj *int32 `json:"oomScoreAdj"`
@@ -377,48 +377,48 @@ type KubeProxyConfig struct {
 }
 
 type DockerConfig struct {
-	Bridge   string `flag:"bridge"`
-	LogLevel string `flag:"log-level"`
-	IPTables bool   `flag:"iptables"`
-	IPMasq   bool   `flag:"ip-masq"`
-	Storage  string `flag:"s"`
+	Bridge   string `json:",omitempty" flag:"bridge"`
+	LogLevel string `json:",omitempty" flag:"log-level"`
+	IPTables bool   `json:",omitempty" flag:"iptables"`
+	IPMasq   bool   `json:",omitempty" flag:"ip-masq"`
+	Storage  string `json:",omitempty" flag:"s"`
 }
 
 type APIServerConfig struct {
-	PathSrvKubernetes string
-	PathSrvSshproxy   string
-	Image             string
+	PathSrvKubernetes string `json:",omitempty"`
+	PathSrvSshproxy   string `json:",omitempty"`
+	Image             string `json:",omitempty"`
 
-	Certificate *fi.Certificate `flag:"-"`
-	Key         *fi.PrivateKey  `flag:"-"`
+	Certificate *fi.Certificate  `json:",omitempty" flag:"-"`
+	Key         *fi.PrivateKey  `json:",omitempty" flag:"-"`
 
-	LogLevel int `flag:"v"`
+	LogLevel int `json:",omitempty" flag:"v"`
 
-	CloudProvider        string `flag:"cloud-provider"`
-	SecurePort           int    `flag:"secure-port"`
-	Address              string `flag:"address"`
-	EtcdServers          string `flag:"etcd-servers"`
-	EtcdServersOverrides string `flag:"etcd-servers-overrides"`
+	CloudProvider        string `json:",omitempty" flag:"cloud-provider"`
+	SecurePort           int    `json:",omitempty" flag:"secure-port"`
+	Address              string `json:",omitempty" flag:"address"`
+	EtcdServers          string `json:",omitempty" flag:"etcd-servers"`
+	EtcdServersOverrides string `json:",omitempty" flag:"etcd-servers-overrides"`
 	// TODO: []string and join with commas?
-	AdmissionControl      string `flag:"admission-control"`
-	ServiceClusterIPRange string `flag:"service-cluster-ip-range"`
-	ClientCAFile          string `flag:"client-ca-file"`
-	BasicAuthFile         string `flag:"basic-auth-file"`
-	TLSCertFile           string `flag:"tls-cert-file"`
-	TLSPrivateKeyFile     string `flag:"tls-private-key-file"`
-	TokenAuthFile         string `flag:"token-auth-file"`
-	AllowPrivileged       *bool  `flag:"allow-privileged"`
+	AdmissionControl      string `json:",omitempty" flag:"admission-control"`
+	ServiceClusterIPRange string `json:",omitempty" flag:"service-cluster-ip-range"`
+	ClientCAFile          string `json:",omitempty" flag:"client-ca-file"`
+	BasicAuthFile         string `json:",omitempty" flag:"basic-auth-file"`
+	TLSCertFile           string `json:",omitempty" flag:"tls-cert-file"`
+	TLSPrivateKeyFile     string `json:",omitempty" flag:"tls-private-key-file"`
+	TokenAuthFile         string `json:",omitempty" flag:"token-auth-file"`
+	AllowPrivileged       *bool  `json:",omitempty" flag:"allow-privileged"`
 }
 
 type KubeControllerManagerConfig struct {
-	Master   string `flag:"master"`
-	LogLevel int    `flag:"v"`
+	Master   string `json:",omitempty" flag:"master"`
+	LogLevel int    `json:",omitempty" flag:"v"`
 
-	ServiceAccountPrivateKeyFile string `flag:"service-account-private-key-file"`
+	ServiceAccountPrivateKeyFile string `json:",omitempty" flag:"service-account-private-key-file"`
 
-	Image string
+	Image string `json:",omitempty"`
 
-	PathSrvKubernetes string
+	PathSrvKubernetes string `json:",omitempty"`
 
 	// Configuration flags - a subset of https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
 
@@ -427,7 +427,7 @@ type KubeControllerManagerConfig struct {
 	//// address is the IP address to serve on (set to 0.0.0.0 for all interfaces).
 	//Address string `json:"address"`
 	// cloudProvider is the provider for cloud services.
-	CloudProvider string `json:"cloudProvider" flag:"cloud-provider"`
+	CloudProvider string `json:"cloudProvider,omitempty" flag:"cloud-provider"`
 	//// cloudConfigFile is the path to the cloud provider configuration file.
 	//CloudConfigFile string `json:"cloudConfigFile"`
 	//// concurrentEndpointSyncs is the number of endpoint syncing operations
@@ -525,22 +525,22 @@ type KubeControllerManagerConfig struct {
 	//// enableProfiling enables profiling via web interface host:port/debug/pprof/
 	//EnableProfiling bool `json:"enableProfiling"`
 	// clusterName is the instance prefix for the cluster.
-	ClusterName string `json:"clusterName" flag:"cluster-name"`
+	ClusterName string `json:"clusterName,omitempty" flag:"cluster-name"`
 	// clusterCIDR is CIDR Range for Pods in cluster.
-	ClusterCIDR string `json:"clusterCIDR" flag:"cluster-cidr"`
+	ClusterCIDR string `json:"clusterCIDR,omitempty" flag:"cluster-cidr"`
 	//// serviceCIDR is CIDR Range for Services in cluster.
 	//ServiceCIDR string `json:"serviceCIDR"`
 	//// NodeCIDRMaskSize is the mask size for node cidr in cluster.
 	//NodeCIDRMaskSize int32 `json:"nodeCIDRMaskSize"`
 	// allocateNodeCIDRs enables CIDRs for Pods to be allocated and, if
 	// ConfigureCloudRoutes is true, to be set on the cloud provider.
-	AllocateNodeCIDRs *bool `json:"allocateNodeCIDRs" flag:"allocate-node-cidrs"`
+	AllocateNodeCIDRs *bool `json:"allocateNodeCIDRs,omitempty" flag:"allocate-node-cidrs"`
 	// configureCloudRoutes enables CIDRs allocated with allocateNodeCIDRs
 	// to be configured on the cloud provider.
-	ConfigureCloudRoutes *bool `json:"configureCloudRoutes" flag:"configure-cloud-routes"`
+	ConfigureCloudRoutes *bool `json:"configureCloudRoutes,omitempty" flag:"configure-cloud-routes"`
 	// rootCAFile is the root certificate authority will be included in service
 	// account's token secret. This must be a valid PEM-encoded CA bundle.
-	RootCAFile string `json:"rootCAFile" flag:"root-ca-file"`
+	RootCAFile string `json:"rootCAFile,omitempty" flag:"root-ca-file"`
 	//// contentType is contentType of requests sent to apiserver.
 	//ContentType string `json:"contentType"`
 	//// kubeAPIQPS is the QPS to use while talking with kubernetes apiserver.
@@ -548,7 +548,7 @@ type KubeControllerManagerConfig struct {
 	//// kubeAPIBurst is the burst to use while talking with kubernetes apiserver.
 	//KubeAPIBurst int32 `json:"kubeAPIBurst"`
 	// leaderElection defines the configuration of leader election client.
-	LeaderElection LeaderElectionConfiguration `json:"leaderElection"`
+	LeaderElection *LeaderElectionConfiguration `json:"leaderElection,omitempty"`
 	//// volumeConfiguration holds configuration for volume related features.
 	//VolumeConfiguration VolumeConfiguration `json:"volumeConfiguration"`
 	//// How long to wait between starting controller managers
@@ -560,7 +560,7 @@ type KubeControllerManagerConfig struct {
 }
 
 type KubeSchedulerConfig struct {
-	Image string
+	Image string `json:",omitempty"`
 
 	// Configuration flags - a subset of https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
 
@@ -591,7 +591,7 @@ type KubeSchedulerConfig struct {
 	//// Indicate the "all topologies" set for empty topologyKey when it's used for PreferredDuringScheduling pod anti-affinity.
 	//FailureDomains string `json:"failureDomains"`
 	// leaderElection defines the configuration of leader election client.
-	LeaderElection LeaderElectionConfiguration `json:"leaderElection"`
+	LeaderElection *LeaderElectionConfiguration `json:"leaderElection,omitempty"`
 }
 
 // LeaderElectionConfiguration defines the configuration of leader election
@@ -600,7 +600,7 @@ type LeaderElectionConfiguration struct {
 	// leaderElect enables a leader election client to gain leadership
 	// before executing the main loop. Enable this when running replicated
 	// components for high availability.
-	LeaderElect *bool `json:"leaderElect" flag:"leader-elect"`
+	LeaderElect *bool `json:"leaderElect,omitempty" flag:"leader-elect"`
 	//// leaseDuration is the duration that non-leader candidates will wait
 	//// after observing a leadership renewal until attempting to acquire
 	//// leadership of a led but unrenewed leader slot. This is effectively the
