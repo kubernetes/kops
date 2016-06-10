@@ -127,4 +127,115 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          8,
 		EphemeralDisks: []int{80, 80},
 	},
+
+	// m4 family
+	{
+		Name:           "m4.large",
+		MemoryGB:       8,
+		ECU:            6.5,
+		Cores:          2,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "m4.xlarge",
+		MemoryGB:       16,
+		ECU:            13,
+		Cores:          4,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "m4.2xlarge",
+		MemoryGB:       32,
+		ECU:            26,
+		Cores:          8,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "m4.4xlarge",
+		MemoryGB:       64,
+		ECU:            53.5,
+		Cores:          16,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "m4.10xlarge",
+		MemoryGB:       160,
+		ECU:            124.5,
+		Cores:          40,
+		EphemeralDisks: nil,
+	},
+
+	// c3 family
+	{
+		Name:           "c3.large",
+		MemoryGB:       3.75,
+		ECU:            7,
+		Cores:          2,
+		EphemeralDisks: []int{16, 16},
+	},
+	{
+		Name:           "c3.xlarge",
+		MemoryGB:       7.5,
+		ECU:            14,
+		Cores:          4,
+		EphemeralDisks: []int{40, 40},
+	},
+	{
+		Name:           "c3.2xlarge",
+		MemoryGB:       15,
+		ECU:            28,
+		Cores:          8,
+		EphemeralDisks: []int{80, 80},
+	},
+	{
+		Name:           "c3.4xlarge",
+		MemoryGB:       30,
+		ECU:            55,
+		Cores:          16,
+		EphemeralDisks: []int{160, 160},
+	},
+	{
+		Name:           "c3.8xlarge",
+		MemoryGB:       60,
+		ECU:            108,
+		Cores:          32,
+		EphemeralDisks: []int{320, 320},
+	},
+
+	// c4 family
+	{
+		Name:           "c4.large",
+		MemoryGB:       3.75,
+		ECU:            8,
+		Cores:          2,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "c4.xlarge",
+		MemoryGB:       7.5,
+		ECU:            16,
+		Cores:          4,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "c4.2xlarge",
+		MemoryGB:       15,
+		ECU:            31,
+		Cores:          8,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "c4.4xlarge",
+		MemoryGB:       30,
+		ECU:            62,
+		Cores:          16,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "c4.8xlarge",
+		MemoryGB:       60,
+		ECU:            132,
+		Cores:          32,
+		EphemeralDisks: nil,
+	},
 }
