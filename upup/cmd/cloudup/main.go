@@ -28,8 +28,8 @@ func main() {
 	flag.StringVar(&target, "target", target, "Target - direct, terraform")
 	configFile := ""
 	flag.StringVar(&configFile, "conf", configFile, "Configuration file to load")
-	modelDir := "models/cloudup"
-	flag.StringVar(&modelDir, "model", modelDir, "Source directory to use as model")
+	modelDirs := "models/proto,models/cloudup"
+	flag.StringVar(&modelDirs, "model", modelDirs, "Source directory to use as model (separate multiple models with commas)")
 	stateLocation := "./state"
 	flag.StringVar(&stateLocation, "state", stateLocation, "Location to use to store configuration state")
 	nodeModelDir := "models/nodeup"
@@ -73,7 +73,7 @@ func main() {
 
 	cmd := &CreateClusterCmd{
 		Config:       config,
-		ModelDir:     modelDir,
+		ModelDirs:    strings.Split(modelDirs, ","),
 		StateStore:   stateStore,
 		Target:       target,
 		NodeModelDir: nodeModelDir,
@@ -102,8 +102,8 @@ func main() {
 type CreateClusterCmd struct {
 	// Config is the cluster configuration
 	Config *cloudup.CloudConfig
-	// ModelDir is the directory in which the cloudup model is found
-	ModelDir string
+	// ModelDir is a list of directories in which the cloudup model are found
+	ModelDirs []string
 	// StateStore is a StateStore in which we store state (such as the PKI tree)
 	StateStore fi.StateStore
 	// Target specifies how we are operating e.g. direct to GCE, or AWS, or dry-run, or terraform
@@ -403,7 +403,7 @@ func (c *CreateClusterCmd) Run() error {
 		l.Resources["ssh-public-key"] = fi.NewStringResource(string(authorized))
 	}
 
-	taskMap, err := l.Build(c.ModelDir)
+	taskMap, err := l.Build(c.ModelDirs)
 	if err != nil {
 		glog.Exitf("error building: %v", err)
 	}

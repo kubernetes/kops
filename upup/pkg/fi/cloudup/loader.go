@@ -141,7 +141,7 @@ func ignoreHandler(i *loader.TreeWalkItem) error {
 	return nil
 }
 
-func (l *Loader) Build(baseDir string) (map[string]fi.Task, error) {
+func (l *Loader) Build(modelDirs []string) (map[string]fi.Task, error) {
 	// First pass: load options
 	tw := &loader.TreeWalker{
 		DefaultHandler: ignoreHandler,
@@ -153,11 +153,14 @@ func (l *Loader) Build(baseDir string) (map[string]fi.Task, error) {
 		},
 		Tags: l.Tags,
 	}
-	err := tw.Walk(baseDir)
-	if err != nil {
-		return nil, err
+	for _, modelDir := range modelDirs {
+		err := tw.Walk(modelDir)
+		if err != nil {
+			return nil, err
+		}
 	}
 
+	var err error
 	l.config, err = l.OptionsLoader.Build()
 	if err != nil {
 		return nil, err
@@ -176,9 +179,11 @@ func (l *Loader) Build(baseDir string) (map[string]fi.Task, error) {
 		Tags: l.Tags,
 	}
 
-	err = tw.Walk(baseDir)
-	if err != nil {
-		return nil, err
+	for _, modelDir := range modelDirs {
+		err = tw.Walk(modelDir)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	err = l.processDeferrals()

@@ -19,7 +19,14 @@ type RootCmd struct {
 	cobraCommand *cobra.Command
 }
 
-var rootCommand RootCmd
+var rootCommand = RootCmd{
+	cobraCommand: &cobra.Command{
+		Use:   "upup",
+		Short: "upup manages kubernetes clusters",
+		Long: `upup manages kubernetes clusters.
+It allows you to create, destroy, upgrade and maintain them.`,
+	},
+}
 
 func Execute() {
 	if err := rootCommand.cobraCommand.Execute(); err != nil {
@@ -31,14 +38,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	cmd := &cobra.Command{
-		Use:   "upup",
-		Short: "upup manages kubernetes clusters",
-		Long: `upup manages kubernetes clusters.
-It allows you to create, destroy, upgrade and maintain them.`,
-	}
-
-	rootCommand.cobraCommand = cmd
+	cmd := rootCommand.cobraCommand
 
 	cmd.PersistentFlags().StringVar(&rootCommand.configFile, "config", "", "config file (default is $HOME/.upup.yaml)")
 	cmd.PersistentFlags().StringVarP(&rootCommand.stateLocation, "state", "", "", "Location of state storage")
