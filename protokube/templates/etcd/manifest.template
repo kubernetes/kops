@@ -43,7 +43,7 @@ spec:
         host: 127.0.0.1
         port: {{ .ClientPort }}
         path: /health
-      initialDelaySeconds: 15
+      initialDelaySeconds: 600
       timeoutSeconds: 15
     ports:
     - name: serverport
