@@ -63,30 +63,40 @@ func (c *VFSSecretStore) Secret(id string) (*Secret, error) {
 }
 
 func (c *VFSSecretStore) GetOrCreateSecret(id string) (*Secret, bool, error) {
-	s, err := c.FindSecret(id)
-	if err != nil {
-		return nil, false, err
-	}
-
-	if s != nil {
-		return s, false, nil
-	}
-
 	p := c.buildSecretPath(id)
 
-	s, err = CreateSecret()
-	if err != nil {
-		return nil, false, err
-	}
+	for i := 0; i < 2; i++ {
+		s, err := c.FindSecret(id)
+		if err != nil {
+			return nil, false, err
+		}
 
-	// TODO: Handle already-exists error
-	err = c.createSecret(s, p)
-	if err != nil {
-		return nil, false, err
+		if s != nil {
+			return s, false, nil
+		}
+
+		s, err = CreateSecret()
+		if err != nil {
+			return nil, false, err
+		}
+
+		err = c.createSecret(s, p)
+		if err != nil {
+			if os.IsExist(err) && i == 0 {
+				glog.Infof("Got already-exists error when writing secret; likely due to concurrent creation.  Will retry")
+				continue
+			} else {
+				return nil, false, err
+			}
+		}
+
+		if err == nil {
+			break
+		}
 	}
 
 	// Make double-sure it round-trips
-	s, err = c.loadSecret(p)
+	s, err := c.loadSecret(p)
 	if err != nil {
 		glog.Fatalf("unable to load secret immmediately after creation %v: %v", p, err)
 		return nil, false, err
