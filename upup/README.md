@@ -46,7 +46,7 @@ The upup tool is a CLI for doing administrative tasks.  You can use it to genera
 
 ```
 export MYZONE=<kubernetes.myzone.com>
-${GOPATH}/bin/upup kubecfg generate --state=state --master=api.${MYZONE} --name=${MYZONE} --cloud=aws
+${GOPATH}/bin/upup kubecfg generate --state=state --name=${MYZONE} --cloud=aws
 ```
 
 ## Delete the cluster
