@@ -194,6 +194,7 @@ func (c *DeleteCluster) DeleteResources(resources map[string]DeletableResource) 
 		glog.Infof("\t%s\t%v", k, v)
 	}
 
+	iterationsWithNoProgress := 0
 	for {
 		// TODO: Some form of default ordering based on types?
 		// TODO: Give up eventually?
@@ -258,6 +259,7 @@ func (c *DeleteCluster) DeleteResources(resources map[string]DeletableResource) 
 						fmt.Printf("%s\tok\n", k)
 
 						delete(failed, k)
+						iterationsWithNoProgress = 0
 						done[k] = r
 						mutex.Unlock()
 					}
@@ -278,6 +280,12 @@ func (c *DeleteCluster) DeleteResources(resources map[string]DeletableResource) 
 
 			fmt.Printf("\t%s\n", k)
 		}
+
+		iterationsWithNoProgress++
+		if iterationsWithNoProgress > 30 {
+			return fmt.Errorf("Not making progress deleting resources; giving up")
+		}
+
 		time.Sleep(10 * time.Second)
 	}
 }
@@ -789,6 +797,41 @@ func (r *DeletableASG) Delete(cloud fi.Cloud) error {
 	}
 	return nil
 }
+
+var _ HasStatus = &DeletableASG{}
+
+func (r *DeletableASG) Status(cloud fi.Cloud) (bool, []string, error) {
+	c := cloud.(*awsup.AWSCloud)
+
+	glog.V(2).Infof("Querying autoscaling group %q", r.Name)
+	request := &autoscaling.DescribeAutoScalingGroupsInput{
+		AutoScalingGroupNames: []*string{aws.String(r.Name)},
+	}
+	response, err := c.Autoscaling.DescribeAutoScalingGroups(request)
+	if err != nil {
+		return false, nil, fmt.Errorf("error describing autoscaling group %q: %v", r.Name, err)
+	}
+
+	if len(response.AutoScalingGroups) == 0 {
+		return false, nil, nil
+	}
+	if len(response.AutoScalingGroups) != 1 {
+		return false, nil, fmt.Errorf("found multiple ASGs with name: %q", r.Name)
+	}
+	g := response.AutoScalingGroups[0]
+
+	var blocks []string
+	subnets := aws.StringValue(g.VPCZoneIdentifier)
+	for _, subnet := range strings.Split(subnets, ",") {
+		if subnet == "" {
+			continue
+		}
+		blocks = append(blocks, "subnet:"+subnet)
+	}
+	blocks = append(blocks, "autoscaling-launchconfiguration:"+aws.StringValue(g.LaunchConfigurationName))
+	return true, blocks, nil
+}
+
 func (r *DeletableASG) String() string {
 	return "autoscaling-group:" + r.Name
 }
