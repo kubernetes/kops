@@ -6,17 +6,17 @@ import "k8s.io/kube-deploy/upup/pkg/fi"
 // Wherever possible, we try to use the types & names in https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
 
 type NodeConfig struct {
-	Kubelet               *KubeletConfig`json:",omitempty"`
-	KubeProxy             *KubeProxyConfig`json:",omitempty"`
-	KubeControllerManager *KubeControllerManagerConfig`json:",omitempty"`
-	KubeScheduler         *KubeSchedulerConfig`json:",omitempty"`
-	Docker                *DockerConfig`json:",omitempty"`
-	APIServer             *APIServerConfig`json:",omitempty"`
-	CACertificate         *fi.Certificate`json:",omitempty"`
+	Kubelet               *KubeletConfig               `json:",omitempty"`
+	KubeProxy             *KubeProxyConfig             `json:",omitempty"`
+	KubeControllerManager *KubeControllerManagerConfig `json:",omitempty"`
+	KubeScheduler         *KubeSchedulerConfig         `json:",omitempty"`
+	Docker                *DockerConfig                `json:",omitempty"`
+	APIServer             *APIServerConfig             `json:",omitempty"`
+	CACertificate         *fi.Certificate              `json:",omitempty"`
 
 	DNS          *DNSConfig `json:",omitempty"`
-	KubeUser     string `json:",omitempty"`
-	KubePassword string `json:",omitempty"`
+	KubeUser     string     `json:",omitempty"`
+	KubePassword string     `json:",omitempty"`
 
 	Tokens map[string]string `json:",omitempty"`
 
@@ -35,7 +35,7 @@ func (n *NodeConfig) GetToken(key string) string {
 }
 
 type DNSConfig struct {
-	Replicas int `json:",omitempty"`
+	Replicas int    `json:",omitempty"`
 	Domain   string `json:",omitempty"`
 	ServerIP string `json:",omitempty"`
 }
@@ -322,9 +322,9 @@ type KubeletConfig struct {
 type KubeProxyConfig struct {
 	Image string `json:",omitempty"`
 	// TODO: Better type ?
-	CPURequest string  `json:",omitempty"`// e.g. "20m"
+	CPURequest string `json:",omitempty"` // e.g. "20m"
 
-	LogLevel int  `json:",omitempty" flag:"v"`
+	LogLevel int `json:",omitempty" flag:"v"`
 
 	// Configuration flags - a subset of https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
 
@@ -389,7 +389,7 @@ type APIServerConfig struct {
 	PathSrvSshproxy   string `json:",omitempty"`
 	Image             string `json:",omitempty"`
 
-	Certificate *fi.Certificate  `json:",omitempty" flag:"-"`
+	Certificate *fi.Certificate `json:",omitempty" flag:"-"`
 	Key         *fi.PrivateKey  `json:",omitempty" flag:"-"`
 
 	LogLevel int `json:",omitempty" flag:"v"`
