@@ -19,7 +19,6 @@ type CloudConfig struct {
 	NodeInit string `json:",omitempty"`
 
 	// Configuration of zones we are targeting
-	Zones       []string `json:",omitempty"`
 	MasterZones []string `json:",omitempty"`
 	NodeZones   []string `json:",omitempty"`
 	Region      string   `json:",omitempty"`
@@ -184,12 +183,11 @@ func (c *CloudConfig) WellKnownServiceIP(id int) (net.IP, error) {
 	}
 
 	return nil, fmt.Errorf("Unexpected IP address type for ServiceClusterIPRange: %s", c.ServiceClusterIPRange)
-
 }
 
 func (c *CloudConfig) SubnetCIDR(zone string) (string, error) {
 	index := -1
-	for i, z := range c.Zones {
+	for i, z := range c.NodeZones {
 		if z == zone {
 			index = i
 			break
