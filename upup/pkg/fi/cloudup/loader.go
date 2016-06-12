@@ -228,7 +228,7 @@ func (l *Loader) processDeferrals() error {
 								return fmt.Errorf("Unable to find task %q, referenced from %s:%s", *name, taskKey, path)
 							}
 
-							glog.V(4).Infof("Replacing task %q at %s:%s", *name, taskKey, path)
+							glog.V(11).Infof("Replacing task %q at %s:%s", *name, taskKey, path)
 							v.Set(reflect.ValueOf(primary))
 						}
 						return utils.SkipReflection

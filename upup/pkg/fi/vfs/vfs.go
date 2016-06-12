@@ -14,6 +14,7 @@ type Path interface {
 	// CreateFile writes the file contents, but only if the file does not already exist
 	CreateFile(data []byte) error
 
+	// Base returns the base name (last element)
 	Base() string
 
 	ReadDir() ([]Path, error)
