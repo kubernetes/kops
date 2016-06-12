@@ -71,7 +71,7 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 
 	lc := newest
 
-	glog.V(2).Info("found existing AutoscalingLaunchConfiguration: %q", *lc.LaunchConfigurationName)
+	glog.V(2).Infof("found existing AutoscalingLaunchConfiguration: %q", *lc.LaunchConfigurationName)
 
 	actual := &LaunchConfiguration{
 		Name:               e.Name,
