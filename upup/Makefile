@@ -1,11 +1,15 @@
 gocode: godeps
-	go install k8s.io/kube-deploy/upup/cmd/...
+	GO15VENDOREXPERIMENT=1 go install k8s.io/kube-deploy/upup/cmd/...
 
 codegen:
-	go install k8s.io/kube-deploy/upup/tools/generators/...
-	go generate k8s.io/kube-deploy/upup/pkg/fi/cloudup/awstasks
-	go generate k8s.io/kube-deploy/upup/pkg/fi/cloudup/gcetasks
-	go generate k8s.io/kube-deploy/upup/pkg/fi/fitasks
+	GO15VENDOREXPERIMENT=1 go install k8s.io/kube-deploy/upup/tools/generators/...
+	GO15VENDOREXPERIMENT=1 go generate k8s.io/kube-deploy/upup/pkg/fi/cloudup/awstasks
+	GO15VENDOREXPERIMENT=1 go generate k8s.io/kube-deploy/upup/pkg/fi/cloudup/gcetasks
+	GO15VENDOREXPERIMENT=1 go generate k8s.io/kube-deploy/upup/pkg/fi/fitasks
+
+test:
+	GO15VENDOREXPERIMENT=1 go test k8s.io/kube-deploy/upup/cmd/...
+	GO15VENDOREXPERIMENT=1 go test k8s.io/kube-deploy/upup/pkg/...
 
 godeps:
 	# I think strip-vendor is the workaround for 25572

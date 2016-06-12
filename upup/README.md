@@ -24,6 +24,11 @@ cd ${GOPATH}/src/k8s.io/kube-deploy/upup
 make
 ```
 
+(Note that the code uses the relatively new Go vendoring, so building requires Go 1.6 or later,
+or you must export GO15VENDOREXPERIMENT=1 when building with Go 1.5.  The makefile sets
+GO15VENDOREXPERIMENT for you.  Go code generation does not honor the env var in 1.5, so for development
+you should use Go 1.6 or later)
+
 ## Bringing up a cluster on AWS
 
 * Ensure you have a DNS hosted zone set up in Route 53, e.g. myzone.com
