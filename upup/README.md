@@ -40,7 +40,7 @@ you should use Go 1.6 or later)
 * Execute:
 ```
 export MYZONE=<kubernetes.myzone.com>
-${GOPATH}/bin/cloudup --v=0 --logtostderr -cloud=aws -zone=us-east-1c -name=${MYZONE}
+${GOPATH}/bin/cloudup --v=0 --logtostderr -cloud=aws -zones=us-east-1c -name=${MYZONE}
 ```
 
 If you have problems, please set `--v=8 --logtostderr` and open an issue, and ping justinsb on slack!
@@ -74,7 +74,7 @@ You must pass --yes to actually delete resources (without the `#` comment!)
 
 * Specify the k8s build to run: `-kubernetes-version=1.2.2`
 
-* Try HA mode: `-zone=us-east-1b,us-east-1c,us-east-1d`
+* Try HA mode: `-zones=us-east-1b,us-east-1c,us-east-1d`
 
 * Specify the number of nodes: `-node-count=4`
 
@@ -108,14 +108,14 @@ So you don't use terraform for the 'proto' phase (you can't anyway, because of t
 
 ```
 export MYZONE=<kubernetes.myzone.com>
-${GOPATH}/bin/cloudup --v=0 --logtostderr -cloud=aws -zone=us-east-1c -name=${MYZONE} --model=models/proto
+${GOPATH}/bin/cloudup --v=0 --logtostderr -cloud=aws -zones=us-east-1c -name=${MYZONE} --model=models/proto
 ```
 
 And then you can use terraform to do the full installation:
 
 ```
 export MYZONE=<kubernetes.myzone.com>
-${GOPATH}/bin/cloudup --v=0 --logtostderr -cloud=aws -zone=us-east-1c -name=${MYZONE} --model=models/cloudup --target=terraform
+${GOPATH}/bin/cloudup --v=0 --logtostderr -cloud=aws -zones=us-east-1c -name=${MYZONE} --model=models/cloudup --target=terraform
 ```
 
 Then, to apply using terraform:
