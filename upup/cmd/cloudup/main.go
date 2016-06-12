@@ -39,10 +39,13 @@ func main() {
 	// (we have plenty of reflection helpers if one isn't already available!)
 	config := &cloudup.CloudConfig{}
 
-	zones := strings.Join(config.Zones, ",")
-
 	flag.StringVar(&config.CloudProvider, "cloud", config.CloudProvider, "Cloud provider to use - gce, aws")
-	flag.StringVar(&zones, "zone", zones, "Cloud zone to target (warning - will be replaced by region)")
+
+	zones := ""
+	flag.StringVar(&zones, "zones", "", "Zones in which to run nodes")
+	masterZones := ""
+	flag.StringVar(&zones, "master-zones", masterZones, "Zones in which to run masters (must be an odd number)")
+
 	flag.StringVar(&config.Project, "project", config.Project, "Project to use (must be set on GCE)")
 	flag.StringVar(&config.ClusterName, "name", config.ClusterName, "Name for cluster")
 	flag.StringVar(&config.KubernetesVersion, "kubernetes-version", config.KubernetesVersion, "Version of kubernetes to run (defaults to latest)")
@@ -59,10 +62,12 @@ func main() {
 
 	flag.Parse()
 
-	config.Zones = strings.Split(zones, ",")
-
-	config.MasterZones = config.Zones
-	config.NodeZones = config.Zones
+	config.NodeZones = parseZoneList(zones)
+	if masterZones == "" {
+		config.MasterZones = config.NodeZones
+	} else {
+		config.MasterZones = parseZoneList(masterZones)
+	}
 
 	if nodeSize != "" {
 		config.NodeMachineType = nodeSize
@@ -112,6 +117,19 @@ func main() {
 	glog.Infof("Completed successfully")
 }
 
+func parseZoneList(s string) []string {
+	var filtered []string
+	for _, v := range strings.Split(s, ",") {
+		v = strings.TrimSpace(v)
+		if v == "" {
+			continue
+		}
+		v = strings.ToLower(v)
+		filtered = append(filtered, v)
+	}
+	return filtered
+}
+
 type CreateClusterCmd struct {
 	// Config is the cluster configuration
 	Config *cloudup.CloudConfig
@@ -149,6 +167,10 @@ func (c *CreateClusterCmd) Run() error {
 	// We (currently) have to use protokube with ASGs
 	useProtokube := useMasterASG
 
+	if c.Config.ClusterName == "" {
+		return fmt.Errorf("-name is required (e.g. mycluster.myzone.com)")
+	}
+
 	if c.Config.MasterPublicName == "" {
 		c.Config.MasterPublicName = "api." + c.Config.ClusterName
 	}
@@ -157,12 +179,47 @@ func (c *CreateClusterCmd) Run() error {
 		c.Config.DNSZone = strings.Join(tokens[len(tokens)-2:], ".")
 	}
 
+	if len(c.Config.NodeZones) == 0 {
+		return fmt.Errorf("must specify at least one NodeZone")
+	}
+
+	if len(c.Config.MasterZones) == 0 {
+		return fmt.Errorf("must specify at least one MasterZone")
+	}
+
+	// Check for master zone duplicates
+	{
+		masterZones := make(map[string]bool)
+		for _, z := range c.Config.MasterZones {
+			if masterZones[z] {
+				return fmt.Errorf("MasterZones contained a duplicate value:  %v", z)
+			}
+			masterZones[z] = true
+		}
+	}
+
+	// Check for node zone duplicates
+	{
+		nodeZones := make(map[string]bool)
+		for _, z := range c.Config.NodeZones {
+			if nodeZones[z] {
+				return fmt.Errorf("NodeZones contained a duplicate value:  %v", z)
+			}
+			nodeZones[z] = true
+		}
+	}
+
+	if (len(c.Config.MasterZones) % 2) == 0 {
+		// Not technically a requirement, but doesn't really make sense to allow
+		return fmt.Errorf("There should be an odd number of master-zones, for etcd's quorum.  Hint: Use -zone and -master-zone to declare node zones and master zones separately.")
+	}
+
 	if c.StateStore == nil {
 		return fmt.Errorf("StateStore is required")
 	}
 
 	if c.Config.CloudProvider == "" {
-		return fmt.Errorf("must specify CloudProvider.  Specify with -cloud")
+		return fmt.Errorf("-cloud is required (e.g. aws, gce)")
 	}
 
 	tags := make(map[string]struct{})
@@ -272,7 +329,7 @@ func (c *CreateClusterCmd) Run() error {
 
 			// For now a zone to be specified...
 			// This will be replace with a region when we go full HA
-			zone := c.Config.Zones[0]
+			zone := c.Config.NodeZones[0]
 			if zone == "" {
 				return fmt.Errorf("Must specify a zone (use -zone)")
 			}
@@ -340,14 +397,21 @@ func (c *CreateClusterCmd) Run() error {
 				"dnsZone": &awstasks.DNSZone{},
 			})
 
-			if len(c.Config.Zones) == 0 {
+			if len(c.Config.NodeZones) == 0 {
 				// TODO: Auto choose zones from region?
 				return fmt.Errorf("Must specify a zone (use -zone)")
 			}
-			for _, zone := range c.Config.Zones {
+			if len(c.Config.MasterZones) == 0 {
+				return fmt.Errorf("Must specify a master zones")
+			}
+
+			nodeZones := make(map[string]bool)
+			for _, zone := range c.Config.NodeZones {
 				if len(zone) <= 2 {
 					return fmt.Errorf("Invalid AWS zone: %q", zone)
 				}
+
+				nodeZones[zone] = true
 
 				region = zone[:len(zone)-1]
 				if c.Config.Region != "" && c.Config.Region != region {
@@ -357,17 +421,30 @@ func (c *CreateClusterCmd) Run() error {
 				c.Config.Region = region
 			}
 
-			if c.SSHPublicKey == "" {
-				return fmt.Errorf("SSH public key must be specified when running with AWS")
+			for _, zone := range c.Config.MasterZones {
+				if !nodeZones[zone] {
+					// We could relax this, but this seems like a reasonable constraint
+					return fmt.Errorf("All MasterZones must (currently) also be NodeZones")
+				}
 			}
 
-			if c.Config.ClusterName == "" {
-				return fmt.Errorf("ClusterName is required for AWS")
+			err := awsup.ValidateRegion(region)
+			if err != nil {
+				return err
+			}
+
+			if c.SSHPublicKey == "" {
+				return fmt.Errorf("SSH public key must be specified when running with AWS")
 			}
 
 			cloudTags := map[string]string{"KubernetesCluster": c.Config.ClusterName}
 
 			awsCloud, err := awsup.NewAWSCloud(region, cloudTags)
+			if err != nil {
+				return err
+			}
+
+			err = awsCloud.ValidateZones(c.Config.NodeZones)
 			if err != nil {
 				return err
 			}
@@ -420,14 +497,6 @@ func (c *CreateClusterCmd) Run() error {
 	taskMap, err := l.Build(c.ModelDirs)
 	if err != nil {
 		glog.Exitf("error building: %v", err)
-	}
-
-	if c.Config.ClusterName == "" {
-		return fmt.Errorf("ClusterName is required")
-	}
-
-	if len(c.Config.Zones) == 0 {
-		return fmt.Errorf("Zone is required")
 	}
 
 	var target fi.Target

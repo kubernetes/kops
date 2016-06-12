@@ -25,7 +25,7 @@ routeTable/kubernetes.{{ .ClusterName }}:
   vpc: vpc/kubernetes.{{ .ClusterName }}
 
 
-{{ range $zone := .Zones }}
+{{ range $zone := .NodeZones }}
 
 subnet/kubernetes.{{ $zone }}.{{ $.ClusterName }}:
   vpc: vpc/kubernetes.{{ $.ClusterName }}
