@@ -797,6 +797,41 @@ func (r *DeletableASG) Delete(cloud fi.Cloud) error {
 	}
 	return nil
 }
+
+var _ HasStatus = &DeletableASG{}
+
+func (r *DeletableASG) Status(cloud fi.Cloud) (bool, []string, error) {
+	c := cloud.(*awsup.AWSCloud)
+
+	glog.V(2).Infof("Querying autoscaling group %q", r.Name)
+	request := &autoscaling.DescribeAutoScalingGroupsInput{
+		AutoScalingGroupNames: []*string{aws.String(r.Name)},
+	}
+	response, err := c.Autoscaling.DescribeAutoScalingGroups(request)
+	if err != nil {
+		return false, nil, fmt.Errorf("error describing autoscaling group %q: %v", r.Name, err)
+	}
+
+	if len(response.AutoScalingGroups) == 0 {
+		return false, nil, nil
+	}
+	if len(response.AutoScalingGroups) != 1 {
+		return false, nil, fmt.Errorf("found multiple ASGs with name: %q", r.Name)
+	}
+	g := response.AutoScalingGroups[0]
+
+	var blocks []string
+	subnets := aws.StringValue(g.VPCZoneIdentifier)
+	for _, subnet := range strings.Split(subnets, ",") {
+		if subnet == "" {
+			continue
+		}
+		blocks = append(blocks, "subnet:"+subnet)
+	}
+	blocks = append(blocks, "autoscaling-launchconfiguration:"+aws.StringValue(g.LaunchConfigurationName))
+	return true, blocks, nil
+}
+
 func (r *DeletableASG) String() string {
 	return "autoscaling-group:" + r.Name
 }
