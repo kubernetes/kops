@@ -194,6 +194,7 @@ func (c *DeleteCluster) DeleteResources(resources map[string]DeletableResource) 
 		glog.Infof("\t%s\t%v", k, v)
 	}
 
+	iterationsWithNoProgress := 0
 	for {
 		// TODO: Some form of default ordering based on types?
 		// TODO: Give up eventually?
@@ -258,6 +259,7 @@ func (c *DeleteCluster) DeleteResources(resources map[string]DeletableResource) 
 						fmt.Printf("%s\tok\n", k)
 
 						delete(failed, k)
+						iterationsWithNoProgress = 0
 						done[k] = r
 						mutex.Unlock()
 					}
@@ -278,6 +280,12 @@ func (c *DeleteCluster) DeleteResources(resources map[string]DeletableResource) 
 
 			fmt.Printf("\t%s\n", k)
 		}
+
+		iterationsWithNoProgress++
+		if iterationsWithNoProgress > 30 {
+			return fmt.Errorf("Not making progress deleting resources; giving up")
+		}
+
 		time.Sleep(10 * time.Second)
 	}
 }
