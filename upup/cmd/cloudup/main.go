@@ -57,6 +57,9 @@ func main() {
 	nodeCount := 0
 	flag.IntVar(&nodeCount, "node-count", nodeCount, "Set the number of nodes")
 
+	dnsZone := ""
+	flag.StringVar(&dnsZone, "dns-zone", dnsZone, "DNS hosted zone to use (defaults to last two components of cluster name)")
+
 	flag.Parse()
 
 	config.Zones = strings.Split(zones, ",")
@@ -69,6 +72,10 @@ func main() {
 	}
 	if nodeCount != 0 {
 		config.NodeCount = nodeCount
+	}
+
+	if dnsZone != "" {
+		config.DNSZone = dnsZone
 	}
 
 	if dryrun {
@@ -155,6 +162,7 @@ func (c *CreateClusterCmd) Run() error {
 	if c.Config.DNSZone == "" {
 		tokens := strings.Split(c.Config.MasterPublicName, ".")
 		c.Config.DNSZone = strings.Join(tokens[len(tokens)-2:], ".")
+		glog.Infof("Defaulting DNS zone to: %s", c.Config.DNSZone)
 	}
 
 	if c.StateStore == nil {

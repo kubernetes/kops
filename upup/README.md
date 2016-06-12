@@ -71,9 +71,13 @@ You must pass --yes to actually delete resources (without the `#` comment!)
 
 * Try HA mode: `-zone=us-east-1b,us-east-1c,us-east-1d`
 
+* Specify the number of nodes: `-node-count=4`
+
 * Specify the node size: `-node-size=m4.large`
 
-* Specify the number of nodes: `-node-count=4`
+* Specify the master size: `-master-size=m4.large`
+
+* Override the default DNS zone: `-dns-zone=<my.hosted.zone>`
 
 # How it works
 
