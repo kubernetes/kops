@@ -3,13 +3,13 @@ package terraform
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/golang/glog"
 	hcl_parser "github.com/hashicorp/hcl/json/parser"
 	"io/ioutil"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"os"
 	"path"
 	"strings"
-	"github.com/golang/glog"
 )
 
 type TerraformTarget struct {

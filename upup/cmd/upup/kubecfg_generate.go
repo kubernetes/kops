@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"io"
 	"io/ioutil"
@@ -49,12 +50,12 @@ func init() {
 }
 
 func (c *KubecfgGenerateCommand) Run() error {
-	if c.Master == "" {
-		return fmt.Errorf("master must be specified")
-	}
-
 	if c.ClusterName == "" {
 		return fmt.Errorf("name must be specified")
+	}
+	if c.Master == "" {
+		c.Master = "api." + c.ClusterName
+		glog.Infof("Connecting to master at %s", c.Master)
 	}
 	if c.CloudProvider == "" {
 		return fmt.Errorf("cloud must be specified")

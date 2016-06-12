@@ -24,6 +24,11 @@ cd ${GOPATH}/src/k8s.io/kube-deploy/upup
 make
 ```
 
+(Note that the code uses the relatively new Go vendoring, so building requires Go 1.6 or later,
+or you must export GO15VENDOREXPERIMENT=1 when building with Go 1.5.  The makefile sets
+GO15VENDOREXPERIMENT for you.  Go code generation does not honor the env var in 1.5, so for development
+you should use Go 1.6 or later)
+
 ## Bringing up a cluster on AWS
 
 * Ensure you have a DNS hosted zone set up in Route 53, e.g. myzone.com
@@ -35,7 +40,7 @@ make
 * Execute:
 ```
 export MYZONE=<kubernetes.myzone.com>
-${GOPATH}/bin/cloudup --v=0 --logtostderr -cloud=aws -zone=us-east-1c -name=${MYZONE}
+${GOPATH}/bin/cloudup --v=0 --logtostderr -cloud=aws -zones=us-east-1c -name=${MYZONE}
 ```
 
 If you have problems, please set `--v=8 --logtostderr` and open an issue, and ping justinsb on slack!
@@ -46,7 +51,7 @@ The upup tool is a CLI for doing administrative tasks.  You can use it to genera
 
 ```
 export MYZONE=<kubernetes.myzone.com>
-${GOPATH}/bin/upup kubecfg generate --state=state --master=api.${MYZONE} --name=${MYZONE} --cloud=aws
+${GOPATH}/bin/upup kubecfg generate --state=state --name=${MYZONE} --cloud=aws
 ```
 
 ## Delete the cluster
@@ -56,7 +61,7 @@ with the cluster name in the specified region.
 
 ```
 export MYZONE=<kubernetes.myzone.com>
-${GOPATH}/bin/upup delete cluster --region=us-east-1 --cluster-id=${MYZONE} # --yes
+${GOPATH}/bin/upup delete cluster --region=us-east-1 --name=${MYZONE} # --yes
 ```
 
 You must pass --yes to actually delete resources (without the `#` comment!)
@@ -69,7 +74,7 @@ You must pass --yes to actually delete resources (without the `#` comment!)
 
 * Specify the k8s build to run: `-kubernetes-version=1.2.2`
 
-* Try HA mode: `-zone=us-east-1b,us-east-1c,us-east-1d`
+* Try HA mode: `-zones=us-east-1b,us-east-1c,us-east-1d`
 
 * Specify the number of nodes: `-node-count=4`
 
@@ -103,14 +108,14 @@ So you don't use terraform for the 'proto' phase (you can't anyway, because of t
 
 ```
 export MYZONE=<kubernetes.myzone.com>
-${GOPATH}/bin/cloudup --v=0 --logtostderr -cloud=aws -zone=us-east-1c -name=${MYZONE} --model=models/proto
+${GOPATH}/bin/cloudup --v=0 --logtostderr -cloud=aws -zones=us-east-1c -name=${MYZONE} --model=models/proto
 ```
 
 And then you can use terraform to do the full installation:
 
 ```
 export MYZONE=<kubernetes.myzone.com>
-${GOPATH}/bin/cloudup --v=0 --logtostderr -cloud=aws -zone=us-east-1c -name=${MYZONE} --model=models/cloudup --target=terraform
+${GOPATH}/bin/cloudup --v=0 --logtostderr -cloud=aws -zones=us-east-1c -name=${MYZONE} --model=models/cloudup --target=terraform
 ```
 
 Then, to apply using terraform:

@@ -57,6 +57,9 @@ func main() {
 	nodeSize := ""
 	flag.StringVar(&nodeSize, "node-size", nodeSize, "Set instance size for nodes")
 
+	masterSize := ""
+	flag.StringVar(&masterSize, "master-size", masterSize, "Set instance size for masters")
+
 	nodeCount := 0
 	flag.IntVar(&nodeCount, "node-count", nodeCount, "Set the number of nodes")
 
@@ -77,6 +80,10 @@ func main() {
 	}
 	if nodeCount != 0 {
 		config.NodeCount = nodeCount
+	}
+
+	if masterSize != "" {
+		config.MasterMachineType = masterSize
 	}
 
 	if dnsZone != "" {

@@ -134,7 +134,6 @@ func (k *PrivateKey) UnmarshalJSON(b []byte) (err error) {
 		return nil
 	}
 
-
 	return fmt.Errorf("unknown format for private key: %q", string(b))
 }
 
