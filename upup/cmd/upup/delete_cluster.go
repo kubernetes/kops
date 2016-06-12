@@ -10,9 +10,9 @@ import (
 )
 
 type DeleteClusterCmd struct {
-	ClusterID string
-	Yes       bool
-	Region    string
+	ClusterName string
+	Yes         bool
+	Region      string
 }
 
 var deleteCluster DeleteClusterCmd
@@ -34,7 +34,7 @@ func init() {
 
 	cmd.Flags().BoolVar(&deleteCluster.Yes, "yes", false, "Delete without confirmation")
 
-	cmd.Flags().StringVar(&deleteCluster.ClusterID, "cluster-id", "", "cluster id")
+	cmd.Flags().StringVar(&deleteCluster.ClusterName, "name", "", "cluster name")
 	cmd.Flags().StringVar(&deleteCluster.Region, "region", "", "region")
 }
 
@@ -42,11 +42,11 @@ func (c *DeleteClusterCmd) Run() error {
 	if c.Region == "" {
 		return fmt.Errorf("--region is required")
 	}
-	if c.ClusterID == "" {
-		return fmt.Errorf("--cluster-id is required")
+	if c.ClusterName == "" {
+		return fmt.Errorf("--name is required")
 	}
 
-	tags := map[string]string{"KubernetesCluster": c.ClusterID}
+	tags := map[string]string{"KubernetesCluster": c.ClusterName}
 	cloud, err := awsup.NewAWSCloud(c.Region, tags)
 	if err != nil {
 		return fmt.Errorf("error initializing AWS client: %v", err)
@@ -54,7 +54,7 @@ func (c *DeleteClusterCmd) Run() error {
 
 	d := &kutil.DeleteCluster{}
 
-	d.ClusterID = c.ClusterID
+	d.ClusterName = c.ClusterName
 	d.Region = c.Region
 	d.Cloud = cloud
 

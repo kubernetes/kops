@@ -56,7 +56,7 @@ with the cluster name in the specified region.
 
 ```
 export MYZONE=<kubernetes.myzone.com>
-${GOPATH}/bin/upup delete cluster --region=us-east-1 --cluster-id=${MYZONE} # --yes
+${GOPATH}/bin/upup delete cluster --region=us-east-1 --name=${MYZONE} # --yes
 ```
 
 You must pass --yes to actually delete resources (without the `#` comment!)

@@ -23,9 +23,9 @@ import (
 // smarter.  Cluster deletion is a fairly rare operation anyway, and also some dependencies are invisible
 // (e.g. ELB dependencies).
 type DeleteCluster struct {
-	ClusterID string
-	Region    string
-	Cloud     fi.Cloud
+	ClusterName string
+	Region      string
+	Cloud       fi.Cloud
 }
 
 // HasStatus is implemented by resources where we want to hint the dependencies
@@ -79,7 +79,7 @@ func (c *DeleteCluster) ListResources() (map[string]DeletableResource, error) {
 				continue
 			}
 
-			if strings.Contains(string(userData), "\nINSTANCE_PREFIX: "+c.ClusterID+"\n") {
+			if strings.Contains(string(userData), "\nINSTANCE_PREFIX: "+c.ClusterName+"\n") {
 				r := &DeletableAutoscalingLaunchConfiguration{Name: *t.LaunchConfigurationName}
 				resources["autoscaling-launchconfiguration:"+r.Name] = r
 			}
