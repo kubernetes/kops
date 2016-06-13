@@ -12,7 +12,7 @@ import (
 )
 
 type AddonsGetCmd struct {
-	ClusterName  string
+	ClusterName string
 
 	cobraCommand *cobra.Command
 }
@@ -43,12 +43,6 @@ func (c *AddonsGetCmd) Run() error {
 	k, err := addonsCmd.buildClusterAddons()
 	if err != nil {
 		return err
-	}
-
-	privateKeyFile := expandPath("~/.ssh/id_rsa")
-	err = kutil.AddSSHIdentity(&k.SSHConfig, privateKeyFile)
-	if err != nil {
-		return fmt.Errorf("error adding SSH private key %q: %v", err)
 	}
 
 	addons, err := k.ListAddons()

@@ -14,6 +14,7 @@ import (
 )
 
 type VFSCAStore struct {
+	dryrun        bool
 	basedir       vfs.Path
 	caCertificate *Certificate
 	caPrivateKey  *PrivateKey
@@ -21,8 +22,9 @@ type VFSCAStore struct {
 
 var _ CAStore = &VFSCAStore{}
 
-func NewVFSCAStore(basedir vfs.Path) (CAStore, error) {
+func NewVFSCAStore(basedir vfs.Path, dryrun bool) (CAStore, error) {
 	c := &VFSCAStore{
+		dryrun:  dryrun,
 		basedir: basedir,
 	}
 	//err := os.MkdirAll(path.Join(basedir, "private"), 0700)
@@ -134,6 +136,10 @@ func (c *VFSCAStore) loadCertificate(p vfs.Path) (*Certificate, error) {
 func (c *VFSCAStore) Cert(id string) (*Certificate, error) {
 	cert, err := c.FindCert(id)
 	if err == nil && cert == nil {
+		if c.dryrun {
+			glog.Warningf("using empty certificate, because --dryrun specified")
+			return &Certificate{}, err
+		}
 		return nil, fmt.Errorf("cannot find cert %q", id)
 	}
 	return cert, err
@@ -232,6 +238,10 @@ func (c *VFSCAStore) FindPrivateKey(id string) (*PrivateKey, error) {
 func (c *VFSCAStore) PrivateKey(id string) (*PrivateKey, error) {
 	key, err := c.FindPrivateKey(id)
 	if err == nil && key == nil {
+		if c.dryrun {
+			glog.Warningf("using empty certificate, because --dryrun specified")
+			return &PrivateKey{}, err
+		}
 		return nil, fmt.Errorf("cannot find SSL key %q", id)
 	}
 	return key, err

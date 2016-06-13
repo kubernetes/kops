@@ -149,6 +149,11 @@ func (k *PrivateKey) MarshalJSON() ([]byte, error) {
 var _ io.WriterTo = &PrivateKey{}
 
 func (k *PrivateKey) WriteTo(w io.Writer) (int64, error) {
+	if k.Key == nil {
+		// For the dry-run case
+		return 0, nil
+	}
+
 	var data bytes.Buffer
 	var err error
 
@@ -247,6 +252,11 @@ func SignNewCertificate(privateKey *PrivateKey, template *x509.Certificate, sign
 var _ io.WriterTo = &Certificate{}
 
 func (c *Certificate) WriteTo(w io.Writer) (int64, error) {
+	// For the dry-run case
+	if c.Certificate == nil {
+		return 0, nil
+	}
+
 	var b bytes.Buffer
 	err := pem.Encode(&b, &pem.Block{Type: "CERTIFICATE", Bytes: c.Certificate.Raw})
 	if err != nil {

@@ -59,7 +59,7 @@ autoscalingGroup/kubernetes.nodes.{{ .ClusterName }}:
   maxSize: {{ .NodeCount }}
   subnets:
 {{ range $zone := .NodeZones }}
-    - subnet/kubernetes.{{ $zone }}.{{ $.ClusterName }}
+    - subnet/kubernetes.{{ $zone.Name }}.{{ $.ClusterName }}
 {{ end }}
   tags:
     k8s.io/role: node

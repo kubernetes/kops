@@ -1,16 +1,16 @@
 package vfs
 
 import (
-	"golang.org/x/crypto/ssh"
-	"path"
-	"github.com/pkg/sftp"
-	"github.com/golang/glog"
-	"fmt"
-	"os"
 	"bytes"
-	"sync"
-	"math/rand"
+	"fmt"
+	"github.com/golang/glog"
+	"github.com/pkg/sftp"
+	"golang.org/x/crypto/ssh"
 	"io"
+	"math/rand"
+	"os"
+	"path"
+	"sync"
 )
 
 type SSHPath struct {
@@ -26,12 +26,12 @@ func NewSSHPath(client *ssh.Client, server string, path string, sudo bool) *SSHP
 	return &SSHPath{
 		client: client,
 		server: server,
-		path:    path,
-		sudo: sudo,
+		path:   path,
+		sudo:   sudo,
 	}
 }
 
-func (p*SSHPath) newClient() (*sftp.Client, error) {
+func (p *SSHPath) newClient() (*sftp.Client, error) {
 	if !p.sudo {
 		sftpClient, err := sftp.NewClient(p.client)
 		if err != nil {
@@ -222,7 +222,6 @@ func (p *SSHPath) ReadDir() ([]Path, error) {
 func (p *SSHPath) Base() string {
 	return path.Base(p.path)
 }
-
 
 //
 //// scpMkdir executes a mkdir against the SSH target, using SCP

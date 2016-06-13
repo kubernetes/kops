@@ -1,9 +1,10 @@
 package main
 
 import (
-	"flag"
+	goflag "flag"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/spf13/pflag"
 	"io/ioutil"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup"
@@ -17,110 +18,166 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi/utils"
 	"k8s.io/kube-deploy/upup/pkg/fi/vfs"
 	"os"
+	"os/exec"
 	"path"
 	"strings"
 )
 
 func main() {
-	dryrun := false
-	flag.BoolVar(&dryrun, "dryrun", false, "Don't create cloud resources; just show what would be done")
-	target := "direct"
-	flag.StringVar(&target, "target", target, "Target - direct, terraform")
-	configFile := ""
-	flag.StringVar(&configFile, "conf", configFile, "Configuration file to load")
-	modelDirs := "models/proto,models/cloudup"
-	flag.StringVar(&modelDirs, "model", modelDirs, "Source directory to use as model (separate multiple models with commas)")
-	stateLocation := "./state"
-	flag.StringVar(&stateLocation, "state", stateLocation, "Location to use to store configuration state")
-	nodeModelDir := "models/nodeup"
-	flag.StringVar(&nodeModelDir, "nodemodel", nodeModelDir, "Source directory to use as model for node configuration")
-
-	// TODO: Replace all these with a direct binding to the CloudConfig
-	// (we have plenty of reflection helpers if one isn't already available!)
-	config := &cloudup.CloudConfig{}
-
-	flag.StringVar(&config.CloudProvider, "cloud", config.CloudProvider, "Cloud provider to use - gce, aws")
-
-	zones := ""
-	flag.StringVar(&zones, "zones", "", "Zones in which to run nodes")
-	masterZones := ""
-	flag.StringVar(&zones, "master-zones", masterZones, "Zones in which to run masters (must be an odd number)")
-
-	flag.StringVar(&config.Project, "project", config.Project, "Project to use (must be set on GCE)")
-	flag.StringVar(&config.ClusterName, "name", config.ClusterName, "Name for cluster")
-	flag.StringVar(&config.KubernetesVersion, "kubernetes-version", config.KubernetesVersion, "Version of kubernetes to run (defaults to latest)")
-	//flag.StringVar(&config.Region, "region", config.Region, "Cloud region to target")
-
-	sshPublicKey := path.Join(os.Getenv("HOME"), ".ssh", "id_rsa.pub")
-	flag.StringVar(&sshPublicKey, "ssh-public-key", sshPublicKey, "SSH public key to use")
-
-	nodeSize := ""
-	flag.StringVar(&nodeSize, "node-size", nodeSize, "Set instance size for nodes")
-
-	masterSize := ""
-	flag.StringVar(&masterSize, "master-size", masterSize, "Set instance size for masters")
-
-	nodeCount := 0
-	flag.IntVar(&nodeCount, "node-count", nodeCount, "Set the number of nodes")
-
-	dnsZone := ""
-	flag.StringVar(&dnsZone, "dns-zone", dnsZone, "DNS hosted zone to use (defaults to last two components of cluster name)")
-
-	flag.Parse()
-
-	config.NodeZones = parseZoneList(zones)
-	if masterZones == "" {
-		config.MasterZones = config.NodeZones
-	} else {
-		config.MasterZones = parseZoneList(masterZones)
+	executableLocation, err := exec.LookPath(os.Args[0])
+	if err != nil {
+		glog.Fatalf("Cannot determine location of cloudup tool: %q.  Please report this problem!", os.Args[0])
 	}
 
-	if nodeSize != "" {
-		config.NodeMachineType = nodeSize
-	}
-	if nodeCount != 0 {
-		config.NodeCount = nodeCount
+	modelsBaseDirDefault := path.Join(path.Dir(executableLocation), "models")
+
+	dryrun := pflag.Bool("dryrun", false, "Don't create cloud resources; just show what would be done")
+	target := pflag.String("target", "direct", "Target - direct, terraform")
+	//configFile := pflag.String("conf", "", "Configuration file to load")
+	modelsBaseDir := pflag.String("modelstore", modelsBaseDirDefault, "Source directory where models are stored")
+	models := pflag.String("model", "proto,cloudup", "Models to apply (separate multiple models with commas)")
+	nodeModel := pflag.String("nodemodel", "nodeup", "Model to use for node configuration")
+	stateLocation := pflag.String("state", "./state", "Location to use to store configuration state")
+
+	cloudProvider := pflag.String("cloud", "", "Cloud provider to use - gce, aws")
+
+	zones := pflag.String("zones", "", "Zones in which to run nodes")
+	masterZones := pflag.String("master-zones", "", "Zones in which to run masters (must be an odd number)")
+
+	project := pflag.String("project", "", "Project to use (must be set on GCE)")
+	clusterName := pflag.String("name", "", "Name for cluster")
+	kubernetesVersion := pflag.String("kubernetes-version", "", "Version of kubernetes to run (defaults to latest)")
+
+	sshPublicKey := pflag.String("ssh-public-key", "~/.ssh/id_rsa.pub", "SSH public key to use")
+
+	nodeSize := pflag.String("node-size", "", "Set instance size for nodes")
+
+	masterSize := pflag.String("master-size", "", "Set instance size for masters")
+
+	nodeCount := pflag.Int("node-count", 0, "Set the number of nodes")
+
+	dnsZone := pflag.String("dns-zone", "", "DNS hosted zone to use (defaults to last two components of cluster name)")
+
+	pflag.CommandLine.AddGoFlagSet(goflag.CommandLine)
+	pflag.Parse()
+
+	goflag.CommandLine.Parse([]string{})
+
+	isDryrun := false
+	if *dryrun {
+		isDryrun = true
+		*target = "dryrun"
 	}
 
-	if masterSize != "" {
-		config.MasterMachineType = masterSize
-	}
-
-	if dnsZone != "" {
-		config.DNSZone = dnsZone
-	}
-
-	if dryrun {
-		target = "dryrun"
-	}
-
-	statePath := vfs.NewFSPath(stateLocation)
+	statePath := vfs.NewFSPath(*stateLocation)
 	workDir := stateLocation
 
-	stateStore, err := fi.NewVFSStateStore(statePath)
+	stateStore, err := fi.NewVFSStateStore(statePath, isDryrun)
 	if err != nil {
 		glog.Errorf("error building state store: %v", err)
 		os.Exit(1)
 	}
 
-	cmd := &CreateClusterCmd{
-		Config:       config,
-		ModelDirs:    strings.Split(modelDirs, ","),
-		StateStore:   stateStore,
-		Target:       target,
-		NodeModelDir: nodeModelDir,
-		SSHPublicKey: sshPublicKey,
-		WorkDir:      workDir,
+	// TODO: Replace all these with a direct binding to the CloudConfig
+	// (we have plenty of reflection helpers if one isn't already available!)
+	config := &cloudup.CloudConfig{}
+	err = stateStore.ReadConfig(config)
+	if err != nil {
+		glog.Errorf("error loading configuration: %v", err)
+		os.Exit(1)
 	}
 
-	if configFile != "" {
-		//confFile := path.Join(cmd.StateDir, "kubernetes.yaml")
-		err := cmd.LoadConfig(configFile)
-		if err != nil {
-			glog.Errorf("error loading config: %v", err)
-			os.Exit(1)
+	if *zones != "" {
+		existingZones := make(map[string]*cloudup.ZoneConfig)
+		for _, zone := range config.NodeZones {
+			existingZones[zone.Name] = zone
+		}
+
+		for _, zone := range parseZoneList(*zones) {
+			if existingZones[zone] == nil {
+				config.NodeZones = append(config.NodeZones, &cloudup.ZoneConfig{
+					Name: zone,
+				})
+			}
 		}
 	}
+
+	if *masterZones == "" {
+		if len(config.MasterZones) == 0 {
+			for _, nodeZone := range config.NodeZones {
+				config.MasterZones = append(config.MasterZones, nodeZone.Name)
+			}
+		}
+	} else {
+		config.MasterZones = parseZoneList(*masterZones)
+	}
+
+	if *nodeSize != "" {
+		config.NodeMachineType = *nodeSize
+	}
+	if *nodeCount != 0 {
+		config.NodeCount = *nodeCount
+	}
+
+	if *masterSize != "" {
+		config.MasterMachineType = *masterSize
+	}
+
+	if *dnsZone != "" {
+		config.DNSZone = *dnsZone
+	}
+
+	if *cloudProvider != "" {
+		config.CloudProvider = *cloudProvider
+	}
+
+	if *project != "" {
+		config.Project = *project
+	}
+
+	if *clusterName != "" {
+		config.ClusterName = *clusterName
+	}
+
+	if *kubernetesVersion != "" {
+		config.KubernetesVersion = *kubernetesVersion
+	}
+
+	err = config.PerformAssignments()
+	if err != nil {
+		glog.Errorf("error populating configuration: %v", err)
+		os.Exit(1)
+	}
+
+	err = stateStore.WriteConfig(config)
+	if err != nil {
+		glog.Errorf("error writing updated configuration: %v", err)
+		os.Exit(1)
+	}
+
+	if *sshPublicKey != "" {
+		*sshPublicKey = utils.ExpandPath(*sshPublicKey)
+	}
+
+	cmd := &CreateClusterCmd{
+		Config:       config,
+		ModelStore:   *modelsBaseDir,
+		Models:       strings.Split(*models, ","),
+		StateStore:   stateStore,
+		Target:       *target,
+		NodeModel:    *nodeModel,
+		SSHPublicKey: *sshPublicKey,
+		WorkDir:      *workDir,
+	}
+
+	//if *configFile != "" {
+	//	//confFile := path.Join(cmd.StateDir, "kubernetes.yaml")
+	//	err := cmd.LoadConfig(configFile)
+	//	if err != nil {
+	//		glog.Errorf("error loading config: %v", err)
+	//		os.Exit(1)
+	//	}
+	//}
 
 	err = cmd.Run()
 	if err != nil {
@@ -147,14 +204,16 @@ func parseZoneList(s string) []string {
 type CreateClusterCmd struct {
 	// Config is the cluster configuration
 	Config *cloudup.CloudConfig
-	// ModelDir is a list of directories in which the cloudup model are found
-	ModelDirs []string
+	// ModelStore is the location where models are found
+	ModelStore string
+	// Models is a list of cloudup models to apply
+	Models []string
 	// StateStore is a StateStore in which we store state (such as the PKI tree)
 	StateStore fi.StateStore
 	// Target specifies how we are operating e.g. direct to GCE, or AWS, or dry-run, or terraform
 	Target string
-	// The directory in which the node model is found
-	NodeModelDir string
+	// The node model to use
+	NodeModel string
 	// The SSH public key (file) to use
 	SSHPublicKey string
 	// WorkDir is a local directory in which we place output, can cache files etc
@@ -181,8 +240,12 @@ func (c *CreateClusterCmd) Run() error {
 	// We (currently) have to use protokube with ASGs
 	useProtokube := useMasterASG
 
+	if c.Config.NodeUp == nil {
+		c.Config.NodeUp = &cloudup.NodeUpConfig{}
+	}
+
 	if c.Config.ClusterName == "" {
-		return fmt.Errorf("-name is required (e.g. mycluster.myzone.com)")
+		return fmt.Errorf("--name is required (e.g. mycluster.myzone.com)")
 	}
 
 	if c.Config.MasterPublicName == "" {
@@ -217,10 +280,10 @@ func (c *CreateClusterCmd) Run() error {
 	{
 		nodeZones := make(map[string]bool)
 		for _, z := range c.Config.NodeZones {
-			if nodeZones[z] {
+			if nodeZones[z.Name] {
 				return fmt.Errorf("NodeZones contained a duplicate value:  %v", z)
 			}
-			nodeZones[z] = true
+			nodeZones[z.Name] = true
 		}
 	}
 
@@ -234,7 +297,7 @@ func (c *CreateClusterCmd) Run() error {
 	}
 
 	if c.Config.CloudProvider == "" {
-		return fmt.Errorf("-cloud is required (e.g. aws, gce)")
+		return fmt.Errorf("--cloud is required (e.g. aws, gce)")
 	}
 
 	tags := make(map[string]struct{})
@@ -249,7 +312,7 @@ func (c *CreateClusterCmd) Run() error {
 		stableURL := "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
 		b, err := utils.ReadLocation(stableURL)
 		if err != nil {
-			return fmt.Errorf("-kubernetes-version not specified, and unable to download latest version from %q: %v", stableURL, err)
+			return fmt.Errorf("--kubernetes-version not specified, and unable to download latest version from %q: %v", stableURL, err)
 		}
 		latestVersion := strings.TrimSpace(string(b))
 		glog.Infof("Using kubernetes latest stable version: %s", latestVersion)
@@ -292,7 +355,6 @@ func (c *CreateClusterCmd) Run() error {
 	var cloud fi.Cloud
 
 	var project string
-	var region string
 
 	checkExisting := true
 
@@ -345,14 +407,19 @@ func (c *CreateClusterCmd) Run() error {
 			// For now a zone to be specified...
 			// This will be replace with a region when we go full HA
 			zone := c.Config.NodeZones[0]
-			if zone == "" {
+			if zone.Name == "" {
 				return fmt.Errorf("Must specify a zone (use -zone)")
 			}
-			tokens := strings.Split(zone, "-")
+			tokens := strings.Split(zone.Name, "-")
 			if len(tokens) <= 2 {
-				return fmt.Errorf("Invalid Zone: %v", zone)
+				return fmt.Errorf("Invalid Zone: %v", zone.Name)
 			}
-			region = tokens[0] + "-" + tokens[1]
+			region := tokens[0] + "-" + tokens[1]
+
+			if c.Config.Region != "" && region != c.Config.Region {
+				return fmt.Errorf("zone %q is not in region %q", zone, c.Config.Region)
+			}
+			c.Config.Region = region
 
 			project = c.Config.Project
 			if project == "" {
@@ -386,16 +453,15 @@ func (c *CreateClusterCmd) Run() error {
 				"iamRolePolicy":          &awstasks.IAMRolePolicy{},
 
 				// VPC / Networking
-				"dhcpOptions":               &awstasks.DHCPOptions{},
-				"internetGateway":           &awstasks.InternetGateway{},
-				"internetGatewayAttachment": &awstasks.InternetGatewayAttachment{},
-				"route":                     &awstasks.Route{},
-				"routeTable":                &awstasks.RouteTable{},
-				"routeTableAssociation":     &awstasks.RouteTableAssociation{},
-				"securityGroup":             &awstasks.SecurityGroup{},
-				"securityGroupRule":         &awstasks.SecurityGroupRule{},
-				"subnet":                    &awstasks.Subnet{},
-				"vpc":                       &awstasks.VPC{},
+				"dhcpOptions":           &awstasks.DHCPOptions{},
+				"internetGateway":       &awstasks.InternetGateway{},
+				"route":                 &awstasks.Route{},
+				"routeTable":            &awstasks.RouteTable{},
+				"routeTableAssociation": &awstasks.RouteTableAssociation{},
+				"securityGroup":         &awstasks.SecurityGroup{},
+				"securityGroupRule":     &awstasks.SecurityGroupRule{},
+				"subnet":                &awstasks.Subnet{},
+				"vpc":                   &awstasks.VPC{},
 				"vpcDHDCPOptionsAssociation": &awstasks.VPCDHCPOptionsAssociation{},
 
 				// ELB
@@ -422,18 +488,18 @@ func (c *CreateClusterCmd) Run() error {
 
 			nodeZones := make(map[string]bool)
 			for _, zone := range c.Config.NodeZones {
-				if len(zone) <= 2 {
-					return fmt.Errorf("Invalid AWS zone: %q", zone)
+				if len(zone.Name) <= 2 {
+					return fmt.Errorf("Invalid AWS zone: %q", zone.Name)
 				}
 
-				nodeZones[zone] = true
+				nodeZones[zone.Name] = true
 
-				region = zone[:len(zone)-1]
-				if c.Config.Region != "" && c.Config.Region != region {
+				zoneRegion := zone.Name[:len(zone.Name)-1]
+				if c.Config.Region != "" && zoneRegion != c.Config.Region {
 					return fmt.Errorf("Clusters cannot span multiple regions")
 				}
 
-				c.Config.Region = region
+				c.Config.Region = zoneRegion
 			}
 
 			for _, zone := range c.Config.MasterZones {
@@ -443,7 +509,7 @@ func (c *CreateClusterCmd) Run() error {
 				}
 			}
 
-			err := awsup.ValidateRegion(region)
+			err := awsup.ValidateRegion(c.Config.Region)
 			if err != nil {
 				return err
 			}
@@ -454,12 +520,16 @@ func (c *CreateClusterCmd) Run() error {
 
 			cloudTags := map[string]string{"KubernetesCluster": c.Config.ClusterName}
 
-			awsCloud, err := awsup.NewAWSCloud(region, cloudTags)
+			awsCloud, err := awsup.NewAWSCloud(c.Config.Region, cloudTags)
 			if err != nil {
 				return err
 			}
 
-			err = awsCloud.ValidateZones(c.Config.NodeZones)
+			var nodeZoneNames []string
+			for _, z := range c.Config.NodeZones {
+				nodeZoneNames = append(nodeZoneNames, z.Name)
+			}
+			err = awsCloud.ValidateZones(nodeZoneNames)
 			if err != nil {
 				return err
 			}
@@ -474,7 +544,8 @@ func (c *CreateClusterCmd) Run() error {
 
 	l.Tags = tags
 	l.WorkDir = c.WorkDir
-	l.NodeModelDir = c.NodeModelDir
+	l.ModelStore = c.ModelStore
+	l.NodeModel = c.NodeModel
 	l.OptionsLoader = loader.NewOptionsLoader(c.Config)
 
 	l.TemplateFunctions["HasTag"] = func(tag string) bool {
@@ -509,7 +580,7 @@ func (c *CreateClusterCmd) Run() error {
 		l.Resources["ssh-public-key"] = fi.NewStringResource(string(authorized))
 	}
 
-	taskMap, err := l.Build(c.ModelDirs)
+	taskMap, err := l.Build(c.ModelStore, c.Models)
 	if err != nil {
 		glog.Exitf("error building: %v", err)
 	}
@@ -530,7 +601,7 @@ func (c *CreateClusterCmd) Run() error {
 	case "terraform":
 		checkExisting = false
 		outDir := path.Join(c.WorkDir, "terraform")
-		target = terraform.NewTerraformTarget(cloud, region, project, outDir)
+		target = terraform.NewTerraformTarget(cloud, c.Config.Region, project, outDir)
 
 	case "dryrun":
 		target = fi.NewDryRunTarget(os.Stdout)

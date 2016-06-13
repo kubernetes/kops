@@ -3,17 +3,17 @@ package main
 import (
 	"fmt"
 
+	"encoding/json"
+	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	"k8s.io/kube-deploy/upup/pkg/fi/utils"
 	"k8s.io/kube-deploy/upup/pkg/kutil"
 	"strings"
-	"github.com/golang/glog"
-	"encoding/json"
 )
 
 // AddonsCmd represents the addons command
 type AddonsCmd struct {
 	//ClusterName  string
-
 
 	cobraCommand *cobra.Command
 }
@@ -37,13 +37,13 @@ func init() {
 }
 
 type kubectlConfig struct {
-	Kind       string `json:"kind`
-	ApiVersion string `json:"apiVersion`
+	Kind       string                    `json:"kind`
+	ApiVersion string                    `json:"apiVersion`
 	Clusters   []*kubectlClusterWithName `json:"clusters`
 }
 
 type kubectlClusterWithName struct {
-	Name    string `json:"name`
+	Name    string         `json:"name`
 	Cluster kubectlCluster `json:"cluster`
 }
 type kubectlCluster struct {
@@ -88,6 +88,12 @@ func (c *AddonsCmd) buildClusterAddons() (*kutil.ClusterAddons, error) {
 
 	k := &kutil.ClusterAddons{
 		APIEndpoint: server,
+	}
+
+	privateKeyFile := utils.ExpandPath("~/.ssh/id_rsa")
+	err = kutil.AddSSHIdentity(&k.SSHConfig, privateKeyFile)
+	if err != nil {
+		return nil, fmt.Errorf("error adding SSH private key %q: %v", err)
 	}
 
 	return k, nil
