@@ -119,7 +119,7 @@ func (c *Context) Render(a, e, changes Task) error {
 	rendererArgs = append(rendererArgs, reflect.ValueOf(a))
 	rendererArgs = append(rendererArgs, reflect.ValueOf(e))
 	rendererArgs = append(rendererArgs, reflect.ValueOf(changes))
-	glog.V(4).Infof("Calling method %s on %T", renderer.Name, e)
+	glog.V(11).Infof("Calling method %s on %T", renderer.Name, e)
 	m := v.MethodByName(renderer.Name)
 	rv := m.Call(rendererArgs)
 	var rvErr error
