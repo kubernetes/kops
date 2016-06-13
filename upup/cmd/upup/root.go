@@ -1,6 +1,7 @@
 package main
 
 import (
+	goflag "flag"
 	"fmt"
 	"os"
 
@@ -29,6 +30,7 @@ It allows you to create, destroy, upgrade and maintain them.`,
 }
 
 func Execute() {
+	goflag.CommandLine.Parse([]string{})
 	if err := rootCommand.cobraCommand.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(-1)
@@ -39,6 +41,8 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	cmd := rootCommand.cobraCommand
+
+	cmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
 
 	cmd.PersistentFlags().StringVar(&rootCommand.configFile, "config", "", "config file (default is $HOME/.upup.yaml)")
 	cmd.PersistentFlags().StringVarP(&rootCommand.stateLocation, "state", "", "", "Location of state storage")
