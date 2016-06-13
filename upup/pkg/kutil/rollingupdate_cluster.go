@@ -14,7 +14,7 @@ import (
 
 // RollingUpdateCluster restarts cluster nodes
 type RollingUpdateCluster struct {
-	ClusterID string
+	ClusterName string
 	Region    string
 	Cloud     fi.Cloud
 }

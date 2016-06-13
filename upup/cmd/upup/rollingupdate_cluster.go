@@ -13,7 +13,7 @@ import (
 )
 
 type RollingUpdateClusterCmd struct {
-	ClusterID string
+	ClusterName string
 	Yes       bool
 	Region    string
 
@@ -34,7 +34,7 @@ func init() {
 
 	cmd.Flags().BoolVar(&rollingupdateCluster.Yes, "yes", false, "Rollingupdate without confirmation")
 
-	cmd.Flags().StringVar(&rollingupdateCluster.ClusterID, "cluster-id", "", "cluster id")
+	cmd.Flags().StringVar(&rollingupdateCluster.ClusterName, "name", "", "cluster name")
 	cmd.Flags().StringVar(&rollingupdateCluster.Region, "region", "", "region")
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
@@ -49,11 +49,11 @@ func (c *RollingUpdateClusterCmd) Run() error {
 	if c.Region == "" {
 		return fmt.Errorf("--region is required")
 	}
-	if c.ClusterID == "" {
-		return fmt.Errorf("--cluster-id is required")
+	if c.ClusterName == "" {
+		return fmt.Errorf("--name is required")
 	}
 
-	tags := map[string]string{"KubernetesCluster": c.ClusterID}
+	tags := map[string]string{"KubernetesCluster": c.ClusterName}
 	cloud, err := awsup.NewAWSCloud(c.Region, tags)
 	if err != nil {
 		return fmt.Errorf("error initializing AWS client: %v", err)
@@ -61,7 +61,7 @@ func (c *RollingUpdateClusterCmd) Run() error {
 
 	d := &kutil.RollingUpdateCluster{}
 
-	d.ClusterID = c.ClusterID
+	d.ClusterName = c.ClusterName
 	d.Region = c.Region
 	d.Cloud = cloud
 
