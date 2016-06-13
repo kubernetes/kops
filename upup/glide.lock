@@ -1,8 +1,8 @@
-hash: a9f93fedfb45e32b891cdf1f53c475acff2dd80fc02577b7c1d4da4e099bc450
-updated: 2016-06-07T16:08:47.827037549-04:00
+hash: 42a551da194c2a8dfcaff364d22c71359cac802ad0ede68b4cd574b7fdebb9e1
+updated: 2016-06-13T00:14:13.556460446-04:00
 imports:
 - name: github.com/aws/aws-sdk-go
-  version: 035c9cf82d27ec7e191fe9140158ab57f82cc0e3
+  version: 64c371362a7b5ecafa2d7cdf90d19aba7343ae02
   subpackages:
   - aws
   - aws/awserr
@@ -12,6 +12,7 @@ imports:
   - service/iam
   - service/route53
   - aws/session
+  - service/s3
   - aws/credentials
   - aws/awsutil
   - aws/client
@@ -48,28 +49,35 @@ imports:
 - name: github.com/golang/glog
   version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
 - name: github.com/golang/protobuf
-  version: 3b06fc7a4cad73efce5fe6217ab6c33e7231ab4a
+  version: 8616e8ee5e20a1704615e6c8d7afcdac06087a67
   subpackages:
   - proto
 - name: github.com/hashicorp/hcl
   version: d7400db7143f8e869812e50a53acd6c8d92af3b8
   subpackages:
   - hcl/ast
+  - hcl/printer
+  - json/parser
   - hcl/parser
   - hcl/token
-  - json/parser
-  - hcl/scanner
-  - hcl/strconv
   - json/scanner
   - json/token
+  - hcl/scanner
+  - hcl/strconv
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/jmespath/go-jmespath
   version: 0b12d6b521d83fc7f755e7cfc1b1fbdd35a01a74
+- name: github.com/kr/fs
+  version: 2788f0dbd16903de03cb8186e5c7d97b69ad387b
 - name: github.com/magiconair/properties
   version: c265cfa48dda6474e208715ca93e987829f572f8
 - name: github.com/mitchellh/mapstructure
   version: d2dd0262208475919e1a362f675cfc0e7c10e905
+- name: github.com/pkg/errors
+  version: 01fa4104b9c248c8945d14d9f128454d5b28d595
+- name: github.com/pkg/sftp
+  version: 8ceba579e780069dc5b5c866c0b9fa88fb736a4a
 - name: github.com/spf13/cast
   version: 27b586b42e29bec072fe7379259cc719e1289da6
 - name: github.com/spf13/cobra
@@ -77,30 +85,30 @@ imports:
 - name: github.com/spf13/jwalterweatherman
   version: 33c24e77fb80341fe7130ee7c594256ff08ccc46
 - name: github.com/spf13/pflag
-  version: cb88ea77998c3f024757528e3305022ab50b43be
+  version: 367864438f1b1a3c7db4da06a2f55b144e6784e0
 - name: github.com/spf13/viper
   version: c1ccc378a054ea8d4e38d8c67f6938d4760b53dd
 - name: golang.org/x/crypto
-  version: 77f4136a99ffb5ecdbdd0226bd5cb146cf56bc0e
+  version: f3241ce8505855877cc8a9717bd61a0f7c4ea83c
   subpackages:
   - ssh
   - curve25519
   - ed25519
   - ed25519/internal/edwards25519
 - name: golang.org/x/net
-  version: 154d9f9ea81208afed560f4cf27b4860c8ed1904
+  version: 3f122ce3dbbe488b7e6a8bdb26f41edec852a40b
   subpackages:
   - context
   - context/ctxhttp
 - name: golang.org/x/oauth2
-  version: 71d9edd725fe4ce4c692fcb20765be558df45ad3
+  version: 65a8d08c6292395d47053be10b3c5e91960def76
   subpackages:
   - google
   - internal
   - jws
   - jwt
 - name: golang.org/x/sys
-  version: 076b546753157f758b316e59bcb51e6807c04057
+  version: 7f918dd405547ecb864d14a8ecbbfe205b5f930f
   subpackages:
   - unix
 - name: google.golang.org/api
@@ -123,16 +131,16 @@ imports:
   - internal/datastore
   - internal/remote_api
 - name: google.golang.org/cloud
-  version: 20e786f4db50de279a834da101b142620cfb2a41
+  version: 4a23f97e60c9a14de1269e78812e59ca94033d85
   subpackages:
   - compute/metadata
   - internal
 - name: google.golang.org/grpc
-  version: b60d3e9ed84da5710af43964e78bc44de74b72aa
+  version: 88aeffff979aa77aa502cb011423d0a08fa12c5a
 - name: gopkg.in/yaml.v2
   version: a83829b6f1293c91addabc89d0571c246397bbf4
 - name: k8s.io/kubernetes
-  version: 5b7e617abfff8c81921114e730f3fcbb47dfd1fd
+  version: 5d6397e9ee610664387fd9a45238f9af6fa9a18e
   subpackages:
   - pkg/util/diff
   - pkg/util/exec
