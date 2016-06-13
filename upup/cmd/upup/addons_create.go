@@ -5,7 +5,6 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"k8s.io/kube-deploy/upup/pkg/kutil"
 	"k8s.io/kube-deploy/upup/pkg/fi/vfs"
 )
 
@@ -37,12 +36,6 @@ func (c *AddonsCreateCmd) Run(args []string) error {
 	k, err := addonsCmd.buildClusterAddons()
 	if err != nil {
 		return err
-	}
-
-	privateKeyFile := expandPath("~/.ssh/id_rsa")
-	err = kutil.AddSSHIdentity(&k.SSHConfig, privateKeyFile)
-	if err != nil {
-		return fmt.Errorf("error adding SSH private key %q: %v", err)
 	}
 
 	addonFiles := make(map[string][]vfs.Path)

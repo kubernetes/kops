@@ -1,8 +1,12 @@
 vpc/kubernetes.{{ .ClusterName }}:
+  id: {{ .NetworkID }}
+  shared: {{ .SharedVPC }}
   cidr: {{ .NetworkCIDR }}
   enableDnsSupport: true
   enableDnsHostnames: true
 
+{{ if not .SharedVPC }}
+# TODO: would be good to create these as shared, to verify them
 dhcpOptions/kubernetes.{{ .ClusterName }}:
   domainNameServers: AmazonProvidedDNS
 {{ if eq .Region "us-east-1" }}
@@ -14,32 +18,30 @@ dhcpOptions/kubernetes.{{ .ClusterName }}:
 vpcDHDCPOptionsAssociation/kubernetes.{{ .ClusterName }}:
   vpc: vpc/kubernetes.{{ .ClusterName }}
   dhcpOptions: dhcpOptions/kubernetes.{{ .ClusterName }}
+{{ end }}
 
-internetGateway/kubernetes.{{ .ClusterName }}: {}
-
-internetGatewayAttachment/kubernetes.{{ .ClusterName }}:
-  internetGateway: internetGateway/kubernetes.{{ .ClusterName }}
+internetGateway/kubernetes.{{ .ClusterName }}:
+  shared: {{ .SharedVPC }}
   vpc: vpc/kubernetes.{{ .ClusterName }}
 
 routeTable/kubernetes.{{ .ClusterName }}:
   vpc: vpc/kubernetes.{{ .ClusterName }}
 
-
-{{ range $zone := .NodeZones }}
-
-subnet/kubernetes.{{ $zone }}.{{ $.ClusterName }}:
-  vpc: vpc/kubernetes.{{ $.ClusterName }}
-  availabilityZone: {{ $zone}}
-  cidr: {{ $.SubnetCIDR $zone }} #172.20.0.0/24
-
-routeTableAssociation/kubernetes.{{ $zone }}.{{ $.ClusterName }}:
-  routeTable: routeTable/kubernetes.{{ $.ClusterName }}
-  subnet: subnet/kubernetes.{{ $zone }}.{{ $.ClusterName }}
-
-{{ end }}
-
-
 route/0.0.0.0/0:
   routeTable: routeTable/kubernetes.{{ .ClusterName }}
   cidr: 0.0.0.0/0
   internetGateway: internetGateway/kubernetes.{{ .ClusterName }}
+  vpc: vpc/kubernetes.{{ .ClusterName }}
+
+{{ range $zone := .NodeZones }}
+
+subnet/kubernetes.{{ $zone.Name }}.{{ $.ClusterName }}:
+  vpc: vpc/kubernetes.{{ $.ClusterName }}
+  availabilityZone: {{ $zone.Name }}
+  cidr: {{ $zone.CIDR }}
+
+routeTableAssociation/kubernetes.{{ $zone.Name }}.{{ $.ClusterName }}:
+  routeTable: routeTable/kubernetes.{{ $.ClusterName }}
+  subnet: subnet/kubernetes.{{ $zone.Name }}.{{ $.ClusterName }}
+
+{{ end }}

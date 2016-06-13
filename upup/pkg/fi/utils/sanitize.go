@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"os"
 	"strings"
 )
 
@@ -16,4 +17,12 @@ func SanitizeString(s string) string {
 		}
 	}
 	return string(out.Bytes())
+}
+
+// ExpandPath replaces common path aliases: ~ -> $HOME
+func ExpandPath(p string) string {
+	if strings.HasPrefix(p, "~/") {
+		p = os.Getenv("HOME") + p[1:]
+	}
+	return p
 }

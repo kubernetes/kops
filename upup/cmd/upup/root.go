@@ -75,7 +75,8 @@ func (c *RootCmd) StateStore() (fi.StateStore, error) {
 
 	statePath := vfs.NewFSPath(c.stateLocation)
 
-	stateStore, err := fi.NewVFSStateStore(statePath)
+	isDryrun := false
+	stateStore, err := fi.NewVFSStateStore(statePath, isDryrun)
 	if err != nil {
 		return nil, fmt.Errorf("error building state store: %v", err)
 	}

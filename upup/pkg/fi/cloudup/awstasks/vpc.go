@@ -18,6 +18,9 @@ type VPC struct {
 	CIDR               *string
 	EnableDNSHostnames *bool
 	EnableDNSSupport   *bool
+
+	// Shared is set if this is a shared VPC
+	Shared *bool
 }
 
 var _ fi.CompareWithID = &VPC{}
@@ -31,7 +34,7 @@ func (e *VPC) Find(c *fi.Context) (*VPC, error) {
 
 	request := &ec2.DescribeVpcsInput{}
 
-	if e.ID != nil {
+	if fi.StringValue(e.ID) != "" {
 		request.VpcIds = []*string{e.ID}
 	} else {
 		request.Filters = cloud.BuildFilters(e.Name)
@@ -46,7 +49,7 @@ func (e *VPC) Find(c *fi.Context) (*VPC, error) {
 	}
 
 	if len(response.Vpcs) != 1 {
-		glog.Fatalf("found multiple VPCs matching tags")
+		return nil, fmt.Errorf("found multiple VPCs matching tags")
 	}
 	vpc := response.Vpcs[0]
 	actual := &VPC{
@@ -100,6 +103,24 @@ func (e *VPC) Run(c *fi.Context) error {
 }
 
 func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		// Verify the VPC was found and matches our required settings
+		if a == nil {
+			return fmt.Errorf("VPC with id %q not found", fi.StringValue(e.ID))
+		}
+
+		if changes != nil && changes.EnableDNSSupport != nil {
+			return fmt.Errorf("VPC with id %q was set to be shared, but did not have EnableDNSSupport=true", fi.StringValue(e.ID))
+		}
+
+		if changes != nil && changes.EnableDNSHostnames != nil {
+			return fmt.Errorf("VPC with id %q was set to be shared, but did not have EnableDNSHostnames=true", fi.StringValue(e.ID))
+		}
+
+		return nil
+	}
+
 	if a == nil {
 		glog.V(2).Infof("Creating VPC with CIDR: %q", *e.CIDR)
 
@@ -152,6 +173,12 @@ type terraformVPC struct {
 func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) error {
 	cloud := t.Cloud.(*awsup.AWSCloud)
 
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		// Not terraform owned / managed
+		return nil
+	}
+
 	tf := &terraformVPC{
 		CIDR:               e.CIDR,
 		Tags:               cloud.BuildTags(e.Name),
@@ -163,5 +190,15 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 }
 
 func (e *VPC) TerraformLink() *terraform.Literal {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		if e.ID == nil {
+			glog.Fatalf("ID must be set, if VPC is shared: %s", e)
+		}
+
+		glog.V(4).Infof("reusing existing VPC with id %q", *e.ID)
+		return terraform.LiteralFromStringValue(*e.ID)
+	}
+
 	return terraform.LiteralProperty("aws_vpc", *e.Name, "id")
 }

@@ -1,11 +1,11 @@
 package kutil
 
 import (
+	"fmt"
+	"github.com/golang/glog"
 	"os"
 	"os/exec"
-	"github.com/golang/glog"
 	"strings"
-	"fmt"
 )
 
 type Kubectl struct {

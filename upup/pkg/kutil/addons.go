@@ -17,7 +17,7 @@ type ClusterAddon struct {
 	Path string
 }
 
-func (c*ClusterAddons) AddonsPath() (vfs.Path, error) {
+func (c *ClusterAddons) AddonsPath() (vfs.Path, error) {
 	// TODO: Close NodeSSH
 
 	// TODO: What if endpoint is a load balancer?  Query cloud and try to find actual hosts?
@@ -66,7 +66,7 @@ func (c *ClusterAddons) ListAddons() (map[string]*ClusterAddon, error) {
 	return addons, nil
 }
 
-func (c *ClusterAddons) CreateAddon(key string, files []vfs.Path) (error) {
+func (c *ClusterAddons) CreateAddon(key string, files []vfs.Path) error {
 	addonsPath, err := c.AddonsPath()
 	if err != nil {
 		return err

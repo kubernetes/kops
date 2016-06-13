@@ -27,7 +27,9 @@ type Loader struct {
 	WorkDir string
 
 	OptionsLoader *loader.OptionsLoader
-	NodeModelDir  string
+
+	ModelStore string
+	NodeModel  string
 
 	Tags              map[string]struct{}
 	TemplateFunctions template.FuncMap
@@ -141,7 +143,7 @@ func ignoreHandler(i *loader.TreeWalkItem) error {
 	return nil
 }
 
-func (l *Loader) Build(modelDirs []string) (map[string]fi.Task, error) {
+func (l *Loader) Build(modelStore string, models []string) (map[string]fi.Task, error) {
 	// First pass: load options
 	tw := &loader.TreeWalker{
 		DefaultHandler: ignoreHandler,
@@ -153,7 +155,8 @@ func (l *Loader) Build(modelDirs []string) (map[string]fi.Task, error) {
 		},
 		Tags: l.Tags,
 	}
-	for _, modelDir := range modelDirs {
+	for _, model := range models {
+		modelDir := path.Join(modelStore, model)
 		err := tw.Walk(modelDir)
 		if err != nil {
 			return nil, err
@@ -179,7 +182,8 @@ func (l *Loader) Build(modelDirs []string) (map[string]fi.Task, error) {
 		Tags: l.Tags,
 	}
 
-	for _, modelDir := range modelDirs {
+	for _, model := range models {
+		modelDir := path.Join(modelStore, model)
 		err = tw.Walk(modelDir)
 		if err != nil {
 			return nil, err
@@ -434,7 +438,7 @@ func (l *Loader) buildNodeConfig(target string, configResourceName string, args 
 	cmd := &nodeup.NodeUpCommand{
 		Config:         config,
 		ConfigLocation: "",
-		ModelDir:       l.NodeModelDir,
+		ModelDir:       path.Join(l.ModelStore, l.NodeModel),
 		Target:         target,
 		AssetDir:       assetDir,
 	}

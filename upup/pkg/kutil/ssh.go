@@ -1,19 +1,19 @@
 package kutil
 
 import (
-	"golang.org/x/crypto/ssh"
 	"fmt"
+	"golang.org/x/crypto/ssh"
 	"io/ioutil"
 	"k8s.io/kube-deploy/upup/pkg/fi/vfs"
 )
 
 type NodeSSH struct {
-	Hostname        string
+	Hostname  string
 	SSHConfig ssh.ClientConfig
 	sshClient *ssh.Client
 }
 
-func (m*NodeSSH) Root() (*vfs.SSHPath, error) {
+func (m *NodeSSH) Root() (*vfs.SSHPath, error) {
 	client, err := m.GetSSHClient()
 	if err != nil {
 		return nil, err
@@ -100,4 +100,3 @@ func parsePrivateKeyFile(p string) (ssh.AuthMethod, error) {
 	}
 	return ssh.PublicKeys(key), nil
 }
-

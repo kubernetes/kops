@@ -19,10 +19,10 @@ type CloudConfig struct {
 	NodeInit string `json:",omitempty"`
 
 	// Configuration of zones we are targeting
-	MasterZones []string `json:",omitempty"`
-	NodeZones   []string `json:",omitempty"`
-	Region      string   `json:",omitempty"`
-	Project     string   `json:",omitempty"`
+	MasterZones []string      `json:",omitempty"`
+	NodeZones   []*ZoneConfig `json:",omitempty"`
+	Region      string        `json:",omitempty"`
+	Project     string        `json:",omitempty"`
 
 	// The internal and external names for the master nodes
 	MasterPublicName   string `json:",omitempty"`
@@ -31,6 +31,7 @@ type CloudConfig struct {
 	// The CIDR used for the AWS VPC / GCE Network, or otherwise allocated to k8s
 	// This is a real CIDR, not the internal k8s overlay
 	NetworkCIDR string `json:",omitempty"`
+	NetworkID   string `json:",omitempty"`
 
 	// The DNS zone we should use when configuring DNS
 	DNSZone string `json:",omitempty"`
@@ -145,7 +146,12 @@ type CloudConfig struct {
 
 	NodeUpTags []string `json:",omitempty"`
 
-	NodeUp NodeUpConfig
+	NodeUp *NodeUpConfig `json:",omitempty"`
+}
+
+type ZoneConfig struct {
+	Name string `json:"name"`
+	CIDR string `json:"cidr,omitempty"`
 }
 
 type NodeUpConfig struct {
@@ -185,23 +191,52 @@ func (c *CloudConfig) WellKnownServiceIP(id int) (net.IP, error) {
 	return nil, fmt.Errorf("Unexpected IP address type for ServiceClusterIPRange: %s", c.ServiceClusterIPRange)
 }
 
-func (c *CloudConfig) SubnetCIDR(zone string) (string, error) {
+func (c *CloudConfig) PerformAssignments() error {
+	if c.NetworkCIDR == "" {
+		// TODO: Choose non-overlapping networking CIDRs for VPCs?
+		c.NetworkCIDR = "172.20.0.0/16"
+	}
+
+	for _, zone := range c.NodeZones {
+		err := zone.performAssignments(c)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (z *ZoneConfig) performAssignments(c *CloudConfig) error {
+	if z.CIDR == "" {
+		cidr, err := z.assignCIDR(c)
+		if err != nil {
+			return err
+		}
+		glog.Infof("Assigned CIDR %s to zone %s", cidr, z.Name)
+		z.CIDR = cidr
+	}
+
+	return nil
+}
+
+func (z *ZoneConfig) assignCIDR(c *CloudConfig) (string, error) {
+	// TODO: We probably could query for the existing subnets & allocate appropriately
+	// for now we'll require users to set CIDRs themselves
 	index := -1
 	for i, z := range c.NodeZones {
-		if z == zone {
+		if z.Name == z.Name {
 			index = i
 			break
 		}
 	}
 	if index == -1 {
-		return "", fmt.Errorf("zone not configured: %q", zone)
+		return "", fmt.Errorf("zone not configured: %q", z.Name)
 	}
 
 	_, cidr, err := net.ParseCIDR(c.NetworkCIDR)
 	if err != nil {
 		return "", fmt.Errorf("Invalid NetworkCIDR: %q", c.NetworkCIDR)
 	}
-
 	networkLength, _ := cidr.Mask.Size()
 
 	// We assume a maximum of 8 subnets per network
@@ -215,9 +250,14 @@ func (c *CloudConfig) SubnetCIDR(zone string) (string, error) {
 		subnetIP := make(net.IP, len(ip4))
 		binary.BigEndian.PutUint32(subnetIP, n)
 		subnetCIDR := subnetIP.String() + "/" + strconv.Itoa(networkLength)
-		glog.V(2).Infof("Computed CIDR for subnet in zone %q as %q", zone, subnetCIDR)
+		glog.V(2).Infof("Computed CIDR for subnet in zone %q as %q", z.Name, subnetCIDR)
 		return subnetCIDR, nil
 	}
 
 	return "", fmt.Errorf("Unexpected IP address type for NetworkCIDR: %s", c.NetworkCIDR)
+}
+
+// SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
+func (c *CloudConfig) SharedVPC() bool {
+	return c.NetworkID != ""
 }
