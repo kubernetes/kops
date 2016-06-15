@@ -67,7 +67,11 @@ func (e *InternetGateway) Find(c *fi.Context) (*InternetGateway, error) {
 		actual.VPC = &VPC{ID: attachment.VpcId}
 	}
 
-	e.ID = actual.ID
+	// Prevent spurious comparison failures
+	actual.Shared = e.Shared
+	if e.ID == nil {
+		e.ID = actual.ID
+	}
 
 	return actual, nil
 }
