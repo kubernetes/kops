@@ -124,6 +124,10 @@ func subnetSlicesEqualIgnoreOrder(l, r []*Subnet) bool {
 	}
 	var rIDs []string
 	for _, s := range r {
+		if s.ID == nil {
+			glog.V(4).Infof("Subnet ID not set; returning not-equal: %v", s)
+			return false
+		}
 		rIDs = append(rIDs, *s.ID)
 	}
 	return utils.StringSlicesEqualIgnoreOrder(lIDs, rIDs)
