@@ -59,7 +59,6 @@ func (e *VPC) Find(c *fi.Context) (*VPC, error) {
 	}
 
 	glog.V(4).Infof("found matching VPC %v", actual)
-	e.ID = actual.ID
 
 	if actual.ID != nil {
 		request := &ec2.DescribeVpcAttributeInput{VpcId: actual.ID, Attribute: aws.String(ec2.VpcAttributeNameEnableDnsSupport)}
@@ -77,6 +76,12 @@ func (e *VPC) Find(c *fi.Context) (*VPC, error) {
 			return nil, fmt.Errorf("error querying for dns support: %v", err)
 		}
 		actual.EnableDNSHostnames = response.EnableDnsHostnames.Value
+	}
+
+	// Prevent spurious comparison failures
+	actual.Shared = e.Shared
+	if e.ID == nil {
+		e.ID = actual.ID
 	}
 
 	return actual, nil

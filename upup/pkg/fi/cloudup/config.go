@@ -222,15 +222,32 @@ func (z *ZoneConfig) performAssignments(c *CloudConfig) error {
 func (z *ZoneConfig) assignCIDR(c *CloudConfig) (string, error) {
 	// TODO: We probably could query for the existing subnets & allocate appropriately
 	// for now we'll require users to set CIDRs themselves
-	index := -1
-	for i, z := range c.NodeZones {
-		if z.Name == z.Name {
-			index = i
-			break
-		}
+
+	lastCharMap := make(map[byte]bool)
+	for _, nodeZone := range c.NodeZones {
+		lastChar := nodeZone.Name[len(nodeZone.Name)-1]
+		lastCharMap[lastChar] = true
 	}
-	if index == -1 {
-		return "", fmt.Errorf("zone not configured: %q", z.Name)
+
+	index := -1
+
+	if len(lastCharMap) == len(c.NodeZones) {
+		// Last char of zones are unique (GCE, AWS)
+		// At least on AWS, we also want 'a' to be 1, so that we don't collide with the lowest range,
+		// because kube-up uses that range
+		index = int(z.Name[len(z.Name)-1])
+	} else {
+		glog.Warningf("Last char of zone names not unique")
+
+		for i, nodeZone := range c.NodeZones {
+			if nodeZone.Name == z.Name {
+				index = i
+				break
+			}
+		}
+		if index == -1 {
+			return "", fmt.Errorf("zone not configured: %q", z.Name)
+		}
 	}
 
 	_, cidr, err := net.ParseCIDR(c.NetworkCIDR)
@@ -241,6 +258,8 @@ func (z *ZoneConfig) assignCIDR(c *CloudConfig) (string, error) {
 
 	// We assume a maximum of 8 subnets per network
 	// TODO: Does this make sense on GCE?
+	// TODO: Should we limit this to say 1000 IPs per subnet? (any reason to?)
+	index = index % 8
 	networkLength += 3
 
 	ip4 := cidr.IP.To4()
