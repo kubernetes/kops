@@ -53,16 +53,16 @@ spec:
       containerPort: {{ .ClientPort }}
       hostPort: {{ .ClientPort }}
     volumeMounts:
-    - mountPath: /var/etcd
-      name: varetcd
+    - mountPath: /var/etcd/{{ .DataDirName }}
+      name: varetcddata
       readOnly: false
     - mountPath: /var/log/etcd.log
       name: varlogetcd
       readOnly: false
   volumes:
-  - name: varetcd
+  - name: varetcddata
     hostPath:
-      path: /mnt/master-pd/var/{{ .DataDirName }}
+      path: /mnt/master-pd/var/etcd/{{ .DataDirName }}
   - name: varlogetcd
     hostPath:
       path: {{ .LogFile }}
