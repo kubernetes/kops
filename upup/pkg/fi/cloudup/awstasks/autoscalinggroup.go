@@ -176,6 +176,14 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			request.MaxSize = e.MaxSize
 			changes.MaxSize = nil
 		}
+		if changes.Subnets != nil {
+			var subnetIDs []string
+			for _, s := range e.Subnets {
+				subnetIDs = append(subnetIDs, *s.ID)
+			}
+			request.VPCZoneIdentifier = aws.String(strings.Join(subnetIDs, ","))
+			changes.Subnets = nil
+		}
 
 		empty := &AutoscalingGroup{}
 		if !reflect.DeepEqual(empty, changes) {
