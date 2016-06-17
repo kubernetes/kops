@@ -183,6 +183,32 @@ func (c *DeleteCluster) ListResources() (map[string]DeletableResource, error) {
 		}
 	}
 
+	{
+		glog.V(2).Infof("Listing all Internet Gateways")
+
+		request := &ec2.DescribeInternetGatewaysInput{}
+		response, err := cloud.EC2.DescribeInternetGateways(request)
+		if err != nil {
+			return nil, fmt.Errorf("error listing InternetGateways: %v", err)
+		}
+
+		for _, igw := range response.InternetGateways {
+			for _, attachment := range igw.Attachments {
+				vpcID := aws.StringValue(attachment.VpcId)
+				if vpcID == "" {
+					continue
+				}
+				if resources["vpc:"+vpcID] != nil {
+					r := &DetachableInternetGateway{
+						ID:    aws.StringValue(igw.InternetGatewayId),
+						VPCID: vpcID,
+					}
+					resources["detach-igw:"+aws.StringValue(igw.InternetGatewayId)] = r
+				}
+			}
+		}
+	}
+
 	return resources, nil
 }
 
@@ -745,6 +771,34 @@ func (r *DeletableInternetGateway) Delete(cloud fi.Cloud) error {
 
 func (r *DeletableInternetGateway) String() string {
 	return "InternetGateway:" + r.ID
+}
+
+type DetachableInternetGateway struct {
+	ID    string
+	VPCID string
+}
+
+func (r *DetachableInternetGateway) Delete(cloud fi.Cloud) error {
+	c := cloud.(*awsup.AWSCloud)
+
+	glog.V(2).Infof("Detaching EC2 InternetGateway %q", r.ID)
+	request := &ec2.DetachInternetGatewayInput{
+		InternetGatewayId: &r.ID,
+		VpcId:             &r.VPCID,
+	}
+	_, err := c.EC2.DetachInternetGateway(request)
+	if err != nil {
+		if IsDependencyViolation(err) {
+			return err
+		}
+		return fmt.Errorf("error detaching InternetGateway %q: %v", r.ID, err)
+	}
+
+	return nil
+}
+
+func (r *DetachableInternetGateway) String() string {
+	return "DetachInternetGateway:" + r.ID
 }
 
 type DeletableVPC struct {
