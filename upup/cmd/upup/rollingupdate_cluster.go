@@ -14,8 +14,8 @@ import (
 
 type RollingUpdateClusterCmd struct {
 	ClusterName string
-	Yes       bool
-	Region    string
+	Yes         bool
+	Region      string
 
 	cobraCommand *cobra.Command
 }

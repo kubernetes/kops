@@ -1,5 +1,6 @@
 gocode: godeps
 	GO15VENDOREXPERIMENT=1 go install k8s.io/kube-deploy/upup/cmd/...
+	ln -sfn ${GOPATH}/src/k8s.io/kube-deploy/upup/models/ ${GOPATH}/bin/models
 
 codegen:
 	GO15VENDOREXPERIMENT=1 go install k8s.io/kube-deploy/upup/tools/generators/...
