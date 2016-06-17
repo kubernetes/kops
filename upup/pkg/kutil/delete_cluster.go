@@ -1,6 +1,8 @@
 package kutil
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/base64"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
@@ -9,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/golang/glog"
+	"io"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
 	"strings"
@@ -32,6 +35,21 @@ type DeleteCluster struct {
 // (ideally we would implement for everything, but realistically there are only a few where it is worthwhile)
 type HasStatus interface {
 	Status(cloud fi.Cloud) (exists bool, blocks []string, err error)
+}
+
+func gunzipBytes(d []byte) ([]byte, error) {
+	var out bytes.Buffer
+	in := bytes.NewReader(d)
+	r, err := gzip.NewReader(in)
+	if err != nil {
+		return nil, fmt.Errorf("error building gunzip reader: %v", err)
+	}
+	defer r.Close()
+	_, err = io.Copy(&out, r)
+	if err != nil {
+		return nil, fmt.Errorf("error decompressing data: %v", err)
+	}
+	return out.Bytes(), nil
 }
 
 func (c *DeleteCluster) ListResources() (map[string]DeletableResource, error) {
@@ -79,7 +97,16 @@ func (c *DeleteCluster) ListResources() (map[string]DeletableResource, error) {
 				continue
 			}
 
-			if strings.Contains(string(userData), "\nINSTANCE_PREFIX: "+c.ClusterName+"\n") {
+			unzipped, err := gunzipBytes(userData)
+			if err == nil {
+				glog.V(4).Infof("Detected gzip data")
+				userData = unzipped
+			}
+			glog.V(8).Infof("UserData: %s", string(userData))
+
+			isNodeupConfig := strings.Contains(string(userData), "ClusterName: "+c.ClusterName+"\n")
+			isKubeupV1Config := strings.Contains(string(userData), "\nINSTANCE_PREFIX: "+c.ClusterName+"\n") || strings.Contains(string(userData), "\nINSTANCE_PREFIX: '"+c.ClusterName+"'\n")
+			if isNodeupConfig || isKubeupV1Config {
 				r := &DeletableAutoscalingLaunchConfiguration{Name: *t.LaunchConfigurationName}
 				resources["autoscaling-launchconfiguration:"+r.Name] = r
 			}
@@ -217,7 +244,7 @@ func (c *DeleteCluster) DeleteResources(resources map[string]DeletableResource) 
 				ready := true
 				for _, dep := range depMap[k] {
 					if _, d := done[dep]; !d {
-						glog.V(4).Infof("dependency %q of %q not deleted; skipping")
+						glog.V(4).Infof("dependency %q of %q not deleted; skipping", dep, k)
 						ready = false
 					}
 				}

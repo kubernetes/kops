@@ -15,8 +15,8 @@ import (
 // RollingUpdateCluster restarts cluster nodes
 type RollingUpdateCluster struct {
 	ClusterName string
-	Region    string
-	Cloud     fi.Cloud
+	Region      string
+	Cloud       fi.Cloud
 }
 
 func (c *RollingUpdateCluster) ListNodesets() (map[string]*Nodeset, error) {
