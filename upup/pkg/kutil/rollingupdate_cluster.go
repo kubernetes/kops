@@ -51,13 +51,16 @@ func (c *RollingUpdateCluster) RollingUpdateNodesets(nodesets map[string]*Nodese
 	for k, nodeset := range nodesets {
 		wg.Add(1)
 		go func(k string, nodeset *Nodeset) {
+			resultsMutex.Lock()
 			results[k] = fmt.Errorf("function panic")
+			resultsMutex.Unlock()
+
 			defer wg.Done()
 			err := nodeset.RollingUpdate(c.Cloud)
 
 			resultsMutex.Lock()
-			defer resultsMutex.Unlock()
 			results[k] = err
+			resultsMutex.Unlock()
 		}(k, nodeset)
 	}
 
