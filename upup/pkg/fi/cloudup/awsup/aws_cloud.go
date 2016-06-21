@@ -19,6 +19,8 @@ import (
 const MaxDescribeTagsAttempts = 60
 const MaxCreateTagsAttempts = 60
 
+const TagClusterName = "KubernetesCluster"
+
 type AWSCloud struct {
 	EC2         *ec2.EC2
 	IAM         *iam.IAM
@@ -107,7 +109,7 @@ func (c *AWSCloud) GetTags(resourceId string) (map[string]string, error) {
 					return nil, fmt.Errorf("Got retryable error while getting tags on %q, but retried too many times without success: %v", resourceId, err)
 				}
 
-				glog.V(2).Infof("will retry after encountering error gettings tags on %q: %v", resourceId, err)
+				glog.V(2).Infof("will retry after encountering error getting tags on %q: %v", resourceId, err)
 				time.Sleep(2 * time.Second)
 				continue
 			}
@@ -154,7 +156,7 @@ func (c *AWSCloud) CreateTags(resourceId string, tags map[string]string) error {
 					return fmt.Errorf("Got retryable error while creating tags on %q, but retried too many times without success: %v", resourceId, err)
 				}
 
-				glog.V(2).Infof("will retry after encountering error creatings tags on %q: %v", resourceId, err)
+				glog.V(2).Infof("will retry after encountering error creating tags on %q: %v", resourceId, err)
 				time.Sleep(2 * time.Second)
 				continue
 			}

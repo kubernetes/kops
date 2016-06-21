@@ -2,10 +2,8 @@ package fi
 
 import (
 	"bytes"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"hash"
 	"io"
 	"os"
 )
@@ -17,45 +15,6 @@ type Resource interface {
 type TemplateResource interface {
 	Resource
 	Curry(args []string) TemplateResource
-}
-
-func HashForResource(r Resource, hashAlgorithm HashAlgorithm) (string, error) {
-	hasher := NewHasher(hashAlgorithm)
-	_, err := CopyResource(hasher, r)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return "", err
-		}
-		return "", fmt.Errorf("error while hashing resource: %v", err)
-	}
-	return hex.EncodeToString(hasher.Sum(nil)), nil
-}
-
-func HashesForResource(r Resource, hashAlgorithms []HashAlgorithm) (map[HashAlgorithm]string, error) {
-	hashers := make(map[HashAlgorithm]hash.Hash)
-	var writers []io.Writer
-	for _, hashAlgorithm := range hashAlgorithms {
-		if hashers[hashAlgorithm] != nil {
-			continue
-		}
-		hasher := NewHasher(hashAlgorithm)
-		hashers[hashAlgorithm] = hasher
-		writers = append(writers, hasher)
-	}
-
-	w := io.MultiWriter(writers...)
-
-	_, err := CopyResource(w, r)
-	if err != nil {
-		return nil, fmt.Errorf("error while hashing resource: %v", err)
-	}
-
-	hashes := make(map[HashAlgorithm]string)
-	for k, hasher := range hashers {
-		hashes[k] = hex.EncodeToString(hasher.Sum(nil))
-	}
-
-	return hashes, nil
 }
 
 func ResourcesMatch(a, b Resource) (bool, error) {

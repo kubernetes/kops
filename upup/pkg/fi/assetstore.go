@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"io"
+	"k8s.io/kube-deploy/upup/pkg/fi/hashing"
 	"k8s.io/kube-deploy/upup/pkg/fi/utils"
 	"net/http"
 	"os"
@@ -23,7 +24,7 @@ type asset struct {
 type Source struct {
 	Parent             *Source
 	URL                string
-	Hash               string
+	Hash               *hashing.Hash
 	ExtractFromArchive string
 }
 
@@ -109,11 +110,11 @@ func (a *AssetStore) Find(key string, assetPath string) (Resource, error) {
 	return nil, fmt.Errorf("found multiple matching assets for key: %q", key)
 }
 
-func hashFromHttpHeader(url string) (string, error) {
+func hashFromHttpHeader(url string) (*hashing.Hash, error) {
 	glog.Infof("Doing HTTP HEAD on %q", url)
 	response, err := http.Head(url)
 	if err != nil {
-		return "", fmt.Errorf("error doing HEAD on %q: %v", url, err)
+		return nil, fmt.Errorf("error doing HEAD on %q: %v", url, err)
 	}
 	defer response.Body.Close()
 
@@ -124,32 +125,32 @@ func hashFromHttpHeader(url string) (string, error) {
 	if etag != "" {
 		if len(etag) == 32 {
 			// Likely md5
-			return etag, nil
+			return hashing.HashAlgorithmMD5.FromString(etag)
 		}
 	}
 
-	return "", fmt.Errorf("unable to determine hash from HTTP HEAD: %q", url)
+	return nil, fmt.Errorf("unable to determine hash from HTTP HEAD: %q", url)
 }
 
 func (a *AssetStore) Add(id string) error {
 	if strings.HasSuffix(id, "http://") || strings.HasPrefix(id, "https://") {
-		return a.addURL(id, "")
+		return a.addURL(id, nil)
 	}
 	// TODO: local files!
 	return fmt.Errorf("unknown asset format: %q", id)
 }
 
-func (a *AssetStore) addURL(url string, hash string) error {
+func (a *AssetStore) addURL(url string, hash *hashing.Hash) error {
 	var err error
 
-	if hash == "" {
+	if hash == nil {
 		hash, err = hashFromHttpHeader(url)
 		if err != nil {
 			return err
 		}
 	}
 
-	localFile := path.Join(a.assetDir, hash+"_"+utils.SanitizeString(url))
+	localFile := path.Join(a.assetDir, hash.String()+"_"+utils.SanitizeString(url))
 	_, err = DownloadURL(url, localFile, hash)
 	if err != nil {
 		return err

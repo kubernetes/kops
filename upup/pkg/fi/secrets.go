@@ -4,6 +4,7 @@ import (
 	crypto_rand "crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"k8s.io/kube-deploy/upup/pkg/fi/vfs"
 	"strings"
 )
 
@@ -16,6 +17,9 @@ type SecretStore interface {
 	GetOrCreateSecret(id string) (secret *Secret, created bool, err error)
 	// Lists the ids of all known secrets
 	ListSecrets() ([]string, error)
+
+	// VFSPath returns the path where the SecretStore is stored
+	VFSPath() vfs.Path
 }
 
 type Secret struct {

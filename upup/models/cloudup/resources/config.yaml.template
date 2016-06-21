@@ -1,15 +1,7 @@
-Kubelet:
-  Certificate: {{ Base64Encode (CA.Cert "kubelet").AsString }}
-  Key: {{ Base64Encode (CA.PrivateKey "kubelet").AsString }}
-
 NodeUp:
   Location: https://kubeupv2.s3.amazonaws.com/nodeup/nodeup.tar.gz
 
-CACertificate: {{ Base64Encode (CA.Cert "ca").AsString }}
-
 APIServer:
-  Certificate: {{ Base64Encode (CA.Cert "master").AsString }}
-  Key: {{ Base64Encode (CA.PrivateKey "master").AsString }}
   Image: gcr.io/google_containers/kube-apiserver:v{{ .KubernetesVersion }}
 
 KubeControllerManager:
@@ -26,20 +18,6 @@ MasterInternalName: {{ .MasterInternalName }}
 DNSZone: {{ .DNSZone }}
 
 KubeUser: {{ .KubeUser }}
-KubePassword: {{ GetOrCreateSecret "kube" }}
-
-Tokens:
-  admin: {{ GetOrCreateSecret "admin" }}
-  kubelet: {{ GetOrCreateSecret "kubelet" }}
-  kube-proxy: {{ GetOrCreateSecret "kube-proxy" }}
-  "system:scheduler": {{ GetOrCreateSecret "system:scheduler" }}
-  "system:controller_manager": {{ GetOrCreateSecret "system:controller_manager" }}
-  "system:logging": {{ GetOrCreateSecret "system:logging" }}
-  "system:monitoring": {{ GetOrCreateSecret "system:monitoring" }}
-  "system:dns": {{ GetOrCreateSecret "system:dns" }}
-{{ if HasTag "_kope_routing" }}
-  "kope-routing": {{ GetOrCreateSecret "kope-routing" }}
-{{ end }}
 
 Tags:
 {{ range $tag := Args }}
@@ -53,3 +31,7 @@ Assets:
 {{ range $asset := .Assets }}
   - {{ $asset }}
 {{ end }}
+
+KeyStore: {{ .KeyStore }}
+SecretStore: {{ .SecretStore }}
+ConfigStore: {{ .ConfigStore }}

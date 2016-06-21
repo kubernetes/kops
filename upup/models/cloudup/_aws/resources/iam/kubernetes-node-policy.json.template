@@ -25,6 +25,11 @@
     },
     {
       "Effect": "Allow",
+      "Action": ["route53:*"],
+      "Resource": ["*"]
+    },
+    {
+      "Effect": "Allow",
       "Action": [
         "ecr:GetAuthorizationToken",
         "ecr:BatchCheckLayerAvailability",
@@ -36,5 +41,28 @@
       ],
       "Resource": "*"
     }
+{{- if .NodePermissions.S3Buckets -}}
+    ,
+    {
+      "Effect": "Allow",
+      "Action": "s3:*",
+      "Resource": [
+        {{ range $i, $b := .NodePermissions.S3Buckets }}
+        {{if $i}},{{end}}
+        "arn:aws:s3:::{{ $b }}/*"
+        {{ end }}
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [ "s3:GetBucketLocation", "s3:ListBucket" ],
+      "Resource": [
+        {{ range $i, $b := .NodePermissions.S3Buckets }}
+        {{if $i}},{{end}}
+        "arn:aws:s3:::{{ $b }}"
+        {{ end }}
+      ]
+    }
+{{ end }}
   ]
 }

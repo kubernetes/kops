@@ -1,6 +1,8 @@
 package nodeup
 
-import "k8s.io/kube-deploy/upup/pkg/fi"
+import (
+	"k8s.io/kube-deploy/upup/pkg/fi"
+)
 
 // Our client configuration structure
 // Wherever possible, we try to use the types & names in https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
@@ -12,13 +14,17 @@ type NodeConfig struct {
 	KubeScheduler         *KubeSchedulerConfig         `json:",omitempty"`
 	Docker                *DockerConfig                `json:",omitempty"`
 	APIServer             *APIServerConfig             `json:",omitempty"`
-	CACertificate         *fi.Certificate              `json:",omitempty"`
 
-	DNS          *DNSConfig `json:",omitempty"`
-	KubeUser     string     `json:",omitempty"`
-	KubePassword string     `json:",omitempty"`
+	DNS *DNSConfig `json:",omitempty"`
 
-	Tokens map[string]string `json:",omitempty"`
+	// NodeConfig can directly access a store of secrets, keys or configuration
+	// (for example on S3) and then configure based on that
+	// This supports (limited) dynamic reconfiguration also
+	SecretStore string `json:",omitempty"`
+	KeyStore    string `json:",omitempty"`
+	ConfigStore string `json:",omitempty"`
+
+	KubeUser string `json:",omitempty"`
 
 	Tags   []string `json:",omitempty"`
 	Assets []string `json:",omitempty"`
@@ -27,11 +33,11 @@ type NodeConfig struct {
 
 	// The DNS zone to use if configuring a cloud provided DNS zone
 	DNSZone string `json:",omitempty"`
-}
 
-// A helper so that templates can get tokens which are not valid identifiers
-func (n *NodeConfig) GetToken(key string) string {
-	return n.Tokens[key]
+	// Deprecated in favor of KeyStore / SecretStore
+	Tokens       map[string]string          `json:",omitempty"`
+	Certificates map[string]*fi.Certificate `json:",omitempty"`
+	PrivateKeys  map[string]*fi.PrivateKey  `json:",omitempty"`
 }
 
 type DNSConfig struct {
@@ -44,11 +50,6 @@ type KubeletConfig struct {
 	APIServers string `json:",omitempty" flag:"api-servers"`
 
 	LogLevel *int `json:",omitempty" flag:"v"`
-
-	Certificate *fi.Certificate `json:",omitempty" flag:"-"`
-	Key         *fi.PrivateKey  `json:",omitempty" flag:"-"`
-	// Allow override of CA Certificate
-	CACertificate *fi.Certificate `json:",omitempty" flag:"-"`
 
 	// Configuration flags - a subset of https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
 
@@ -388,9 +389,6 @@ type APIServerConfig struct {
 	PathSrvKubernetes string `json:",omitempty"`
 	PathSrvSshproxy   string `json:",omitempty"`
 	Image             string `json:",omitempty"`
-
-	Certificate *fi.Certificate `json:",omitempty" flag:"-"`
-	Key         *fi.PrivateKey  `json:",omitempty" flag:"-"`
 
 	LogLevel int `json:",omitempty" flag:"v"`
 

@@ -129,13 +129,9 @@ func (cmd *CreateSecretsCommand) Run() error {
 
 			// TODO: Allow resigning of the existing private key?
 
-			key, err := caStore.CreatePrivateKey(cmd.Id)
+			_, _, err = caStore.CreateKeypair(cmd.Id, template)
 			if err != nil {
-				return fmt.Errorf("error creating privatekey %v", err)
-			}
-			_, err = caStore.IssueCert(cmd.Id, key, template)
-			if err != nil {
-				return fmt.Errorf("error creating certificate %v", err)
+				return fmt.Errorf("error creating keypair %v", err)
 			}
 			return nil
 		}

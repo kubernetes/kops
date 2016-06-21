@@ -37,7 +37,7 @@ func main() {
 	modelsBaseDir := pflag.String("modelstore", modelsBaseDirDefault, "Source directory where models are stored")
 	models := pflag.String("model", "proto,cloudup", "Models to apply (separate multiple models with commas)")
 	nodeModel := pflag.String("nodemodel", "nodeup", "Model to use for node configuration")
-	stateLocation := pflag.String("state", "./state", "Location to use to store configuration state")
+	stateLocation := pflag.String("state", "", "Location to use to store configuration state")
 
 	cloudProvider := pflag.String("cloud", "", "Cloud provider to use - gce, aws")
 
@@ -57,6 +57,7 @@ func main() {
 	nodeCount := pflag.Int("node-count", 0, "Set the number of nodes")
 
 	dnsZone := pflag.String("dns-zone", "", "DNS hosted zone to use (defaults to last two components of cluster name)")
+	outDir := pflag.String("out", "", "Path to write any local output")
 
 	pflag.CommandLine.AddGoFlagSet(goflag.CommandLine)
 	pflag.Parse()
@@ -68,8 +69,20 @@ func main() {
 		*target = "dryrun"
 	}
 
-	statePath := vfs.NewFSPath(*stateLocation)
-	workDir := stateLocation
+	if *stateLocation == "" {
+		glog.Errorf("--state is required")
+		os.Exit(1)
+	}
+
+	statePath, err := fi.BuildVfsPath(*stateLocation)
+	if err != nil {
+		glog.Errorf("error building state location: %v", err)
+		os.Exit(1)
+	}
+
+	if *outDir == "" {
+		*outDir = "out"
+	}
 
 	stateStore, err := fi.NewVFSStateStore(statePath, isDryrun)
 	if err != nil {
@@ -166,7 +179,7 @@ func main() {
 		Target:       *target,
 		NodeModel:    *nodeModel,
 		SSHPublicKey: *sshPublicKey,
-		WorkDir:      *workDir,
+		OutDir:       *outDir,
 	}
 
 	//if *configFile != "" {
@@ -215,8 +228,8 @@ type CreateClusterCmd struct {
 	NodeModel string
 	// The SSH public key (file) to use
 	SSHPublicKey string
-	// WorkDir is a local directory in which we place output, can cache files etc
-	WorkDir string
+	// OutDir is a local directory in which we place output, can cache files etc
+	OutDir string
 }
 
 func (c *CreateClusterCmd) LoadConfig(configFile string) error {
@@ -304,8 +317,50 @@ func (c *CreateClusterCmd) Run() error {
 	l := &cloudup.Loader{}
 	l.Init()
 
-	caStore := c.StateStore.CA()
-	secrets := c.StateStore.Secrets()
+	keyStore := c.StateStore.CA()
+	secretStore := c.StateStore.Secrets()
+
+	if vfs.IsClusterReadable(secretStore.VFSPath()) {
+		vfsPath := secretStore.VFSPath()
+		c.Config.SecretStore = vfsPath.Path()
+		if s3Path, ok := vfsPath.(*vfs.S3Path); ok {
+			if c.Config.MasterPermissions == nil {
+				c.Config.MasterPermissions = &cloudup.CloudPermissions{}
+			}
+			c.Config.MasterPermissions.AddS3Bucket(s3Path.Bucket())
+			if c.Config.NodePermissions == nil {
+				c.Config.NodePermissions = &cloudup.CloudPermissions{}
+			}
+			c.Config.NodePermissions.AddS3Bucket(s3Path.Bucket())
+		}
+	} else {
+		// We could implement this approach, but it seems better to get all clouds using cluster-readable storage
+		return fmt.Errorf("secrets path is not cluster readable: %v", secretStore.VFSPath())
+	}
+
+	if vfs.IsClusterReadable(keyStore.VFSPath()) {
+		vfsPath := keyStore.VFSPath()
+		c.Config.KeyStore = vfsPath.Path()
+		if s3Path, ok := vfsPath.(*vfs.S3Path); ok {
+			if c.Config.MasterPermissions == nil {
+				c.Config.MasterPermissions = &cloudup.CloudPermissions{}
+			}
+			c.Config.MasterPermissions.AddS3Bucket(s3Path.Bucket())
+			if c.Config.NodePermissions == nil {
+				c.Config.NodePermissions = &cloudup.CloudPermissions{}
+			}
+			c.Config.NodePermissions.AddS3Bucket(s3Path.Bucket())
+		}
+	} else {
+		// We could implement this approach, but it seems better to get all clouds using cluster-readable storage
+		return fmt.Errorf("keyStore path is not cluster readable: %v", keyStore.VFSPath())
+	}
+
+	if vfs.IsClusterReadable(c.StateStore.VFSPath()) {
+		c.Config.ConfigStore = c.StateStore.VFSPath().Path()
+	} else {
+		// We do support this...
+	}
 
 	if c.Config.KubernetesVersion == "" {
 		stableURL := "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
@@ -385,6 +440,7 @@ func (c *CreateClusterCmd) Run() error {
 
 	l.AddTypes(map[string]interface{}{
 		"keypair": &fitasks.Keypair{},
+		"secret":  &fitasks.Secret{},
 	})
 
 	switch c.Config.CloudProvider {
@@ -517,7 +573,7 @@ func (c *CreateClusterCmd) Run() error {
 				return fmt.Errorf("SSH public key must be specified when running with AWS")
 			}
 
-			cloudTags := map[string]string{"KubernetesCluster": c.Config.ClusterName}
+			cloudTags := map[string]string{awsup.TagClusterName: c.Config.ClusterName}
 
 			awsCloud, err := awsup.NewAWSCloud(c.Config.Region, cloudTags)
 			if err != nil {
@@ -542,7 +598,7 @@ func (c *CreateClusterCmd) Run() error {
 	}
 
 	l.Tags = tags
-	l.WorkDir = c.WorkDir
+	l.WorkDir = c.OutDir
 	l.ModelStore = c.ModelStore
 	l.NodeModel = c.NodeModel
 	l.OptionsLoader = loader.NewOptionsLoader(c.Config)
@@ -556,18 +612,10 @@ func (c *CreateClusterCmd) Run() error {
 	l.OptionsLoader.TemplateFunctions["HasTag"] = l.TemplateFunctions["HasTag"]
 
 	l.TemplateFunctions["CA"] = func() fi.CAStore {
-		return caStore
+		return keyStore
 	}
 	l.TemplateFunctions["Secrets"] = func() fi.SecretStore {
-		return secrets
-	}
-	l.TemplateFunctions["GetOrCreateSecret"] = func(id string) (string, error) {
-		secret, _, err := secrets.GetOrCreateSecret(id)
-		if err != nil {
-			return "", fmt.Errorf("error creating secret %q: %v", id, err)
-		}
-
-		return secret.AsString()
+		return secretStore
 	}
 
 	if c.SSHPublicKey != "" {
@@ -599,7 +647,7 @@ func (c *CreateClusterCmd) Run() error {
 
 	case "terraform":
 		checkExisting = false
-		outDir := path.Join(c.WorkDir, "terraform")
+		outDir := path.Join(c.OutDir, "terraform")
 		target = terraform.NewTerraformTarget(cloud, c.Config.Region, project, outDir)
 
 	case "dryrun":
@@ -608,7 +656,7 @@ func (c *CreateClusterCmd) Run() error {
 		return fmt.Errorf("unsupported target type %q", c.Target)
 	}
 
-	context, err := fi.NewContext(target, cloud, caStore, checkExisting)
+	context, err := fi.NewContext(target, cloud, keyStore, secretStore, checkExisting)
 	if err != nil {
 		glog.Exitf("error building context: %v", err)
 	}

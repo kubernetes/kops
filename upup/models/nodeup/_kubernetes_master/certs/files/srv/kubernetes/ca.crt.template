@@ -1,1 +1,1 @@
-{{ .CACertificate.AsString }}
+{{ CACertificatePool.AsString }}

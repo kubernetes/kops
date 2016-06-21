@@ -24,7 +24,8 @@ func buildDefaultCreateCluster() *CreateClusterCmd {
 
 	c.Config.CloudProvider = "aws"
 
-	c.StateStore, err = fi.NewVFSStateStore(vfs.NewFSPath("test-state"))
+	dryrun := false
+	c.StateStore, err = fi.NewVFSStateStore(vfs.NewFSPath("test-state"), dryrun)
 	if err != nil {
 		glog.Fatalf("error building state store: %v", err)
 	}

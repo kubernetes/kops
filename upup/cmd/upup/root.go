@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"k8s.io/kube-deploy/upup/pkg/fi"
-	"k8s.io/kube-deploy/upup/pkg/fi/vfs"
 )
 
 type RootCmd struct {
@@ -77,7 +76,10 @@ func (c *RootCmd) StateStore() (fi.StateStore, error) {
 		return nil, fmt.Errorf("--state is required")
 	}
 
-	statePath := vfs.NewFSPath(c.stateLocation)
+	statePath, err := fi.BuildVfsPath(c.stateLocation)
+	if err != nil {
+		return nil, fmt.Errorf("error building state store path: %v", err)
+	}
 
 	isDryrun := false
 	stateStore, err := fi.NewVFSStateStore(statePath, isDryrun)
