@@ -123,7 +123,7 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 						//case SimpleUnit:
 						//	ignored = true
 						default:
-							description = fmt.Sprintf(" %v -> %v", asString(fieldValA), asString(fieldValE))
+							description = fmt.Sprintf(" %v -> %v", ValueAsString(fieldValA), ValueAsString(fieldValE))
 						}
 					}
 					if ignored {
@@ -152,7 +152,7 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 }
 
 // asString returns a human-readable string representation of the passed value
-func asString(value reflect.Value) string {
+func ValueAsString(value reflect.Value) string {
 	b := &bytes.Buffer{}
 
 	walker := func(path string, field *reflect.StructField, v reflect.Value) error {
@@ -182,7 +182,7 @@ func asString(value reflect.Value) string {
 				if i != 0 {
 					fmt.Fprintf(b, ", ")
 				}
-				fmt.Fprintf(b, "%s", asString(av))
+				fmt.Fprintf(b, "%s", ValueAsString(av))
 			}
 			fmt.Fprintf(b, "]")
 			return utils.SkipReflection
@@ -196,7 +196,7 @@ func asString(value reflect.Value) string {
 				if i != 0 {
 					fmt.Fprintf(b, ", ")
 				}
-				fmt.Fprintf(b, "%s: %s", asString(key), asString(mv))
+				fmt.Fprintf(b, "%s: %s", ValueAsString(key), ValueAsString(mv))
 			}
 			fmt.Fprintf(b, "}")
 			return utils.SkipReflection

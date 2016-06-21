@@ -26,30 +26,7 @@ func (t *AWSAPITarget) Finish(taskMap map[string]fi.Task) error {
 }
 
 func (t *AWSAPITarget) AddAWSTags(id string, expected map[string]string) error {
-	actual, err := t.Cloud.GetTags(id)
-	if err != nil {
-		return fmt.Errorf("unexpected error fetching tags for resource: %v", err)
-	}
-
-	missing := map[string]string{}
-	for k, v := range expected {
-		actualValue, found := actual[k]
-		if found && actualValue == v {
-			continue
-		}
-		missing[k] = v
-	}
-
-	if len(missing) != 0 {
-		glog.V(4).Infof("adding tags to %q: %v", id, missing)
-
-		err := t.Cloud.CreateTags(id, missing)
-		if err != nil {
-			return fmt.Errorf("error adding tags to resource %q: %v", id, err)
-		}
-	}
-
-	return nil
+	return t.Cloud.AddAWSTags(id, expected)
 }
 
 func (t *AWSAPITarget) AddELBTags(loadBalancerName string, expected map[string]string) error {

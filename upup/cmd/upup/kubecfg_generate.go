@@ -3,22 +3,17 @@ package main
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"io"
 	"io/ioutil"
 	"k8s.io/kube-deploy/upup/pkg/fi"
+	"k8s.io/kube-deploy/upup/pkg/fi/cloudup"
 	"k8s.io/kube-deploy/upup/pkg/kubecfg"
 	"os"
 	"path"
 )
 
 type KubecfgGenerateCommand struct {
-	ClusterName   string
-	CloudProvider string
-	Project       string
-	Master        string
-
 	tmpdir  string
 	caStore fi.CAStore
 }
@@ -40,28 +35,35 @@ func init() {
 	}
 
 	kubecfgCmd.AddCommand(cmd)
-
-	// TODO: We need to store this in the persistent state dir
-	cmd.Flags().StringVarP(&kubecfgGenerateCommand.ClusterName, "name", "", kubecfgGenerateCommand.ClusterName, "Name for cluster")
-	cmd.Flags().StringVarP(&kubecfgGenerateCommand.CloudProvider, "cloud", "", kubecfgGenerateCommand.CloudProvider, "Cloud provider to use - gce, aws")
-	cmd.Flags().StringVarP(&kubecfgGenerateCommand.Project, "project", "", kubecfgGenerateCommand.Project, "Project to use (must be set on GCE)")
-
-	cmd.Flags().StringVarP(&kubecfgGenerateCommand.Master, "master", "", kubecfgGenerateCommand.Master, "IP adddress or host of API server")
 }
 
 func (c *KubecfgGenerateCommand) Run() error {
-	if c.ClusterName == "" {
-		return fmt.Errorf("name must be specified")
-	}
-	if c.Master == "" {
-		c.Master = "api." + c.ClusterName
-		glog.Infof("Connecting to master at %s", c.Master)
-	}
-	if c.CloudProvider == "" {
-		return fmt.Errorf("cloud must be specified")
+	stateStore, err := rootCommand.StateStore()
+	if err != nil {
+		return fmt.Errorf("error state store: %v", err)
 	}
 
-	var err error
+	config := &cloudup.CloudConfig{}
+	err = stateStore.ReadConfig(config)
+	if err != nil {
+		return fmt.Errorf("error reading configuration: %v", err)
+	}
+
+	clusterName := config.ClusterName
+	if clusterName == "" {
+		return fmt.Errorf("ClusterName must be set in config")
+	}
+
+	master := config.MasterPublicName
+	if master == "" {
+		master = "api." + clusterName
+	}
+
+	//cloudProvider := config.CloudProvider
+	//if cloudProvider == "" {
+	//	return fmt.Errorf("cloud must be specified")
+	//}
+
 	c.tmpdir, err = ioutil.TempDir("", "k8s")
 	if err != nil {
 		return fmt.Errorf("error creating temporary directory: %v", err)
@@ -71,19 +73,20 @@ func (c *KubecfgGenerateCommand) Run() error {
 	b := &kubecfg.KubeconfigBuilder{}
 	b.Init()
 
-	switch c.CloudProvider {
-	case "aws":
-		b.Context = "aws_" + c.ClusterName
-
-	case "gce":
-		if c.Project == "" {
-			return fmt.Errorf("--project must be specified (for GCE)")
-		}
-		b.Context = c.Project + "_" + c.ClusterName
-
-	default:
-		return fmt.Errorf("Unknown cloud provider %q", c.CloudProvider)
-	}
+	b.Context = clusterName
+	//switch cloudProvider {
+	//case "aws":
+	//	b.Context = "aws_" + clusterName
+	//
+	//case "gce":
+	//	if config.Project == "" {
+	//		return fmt.Errorf("Project must be configured (for GCE)")
+	//	}
+	//	b.Context = config.Project + "_" + clusterName
+	//
+	//default:
+	//	return fmt.Errorf("Unknown cloud provider %q", cloudProvider)
+	//}
 
 	c.caStore, err = rootCommand.CA()
 	if err != nil {
@@ -102,7 +105,7 @@ func (c *KubecfgGenerateCommand) Run() error {
 		return err
 	}
 
-	b.KubeMasterIP = c.Master
+	b.KubeMasterIP = master
 
 	err = b.CreateKubeconfig()
 	if err != nil {

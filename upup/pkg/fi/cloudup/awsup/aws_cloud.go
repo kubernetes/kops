@@ -166,6 +166,72 @@ func (c *AWSCloud) CreateTags(resourceId string, tags map[string]string) error {
 	}
 }
 
+// DeleteTags will remove tags from the specified resource, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
+func (c *AWSCloud) DeleteTags(resourceId string, tags map[string]string) error {
+	if len(tags) == 0 {
+		return nil
+	}
+
+	ec2Tags := []*ec2.Tag{}
+	for k, v := range tags {
+		ec2Tags = append(ec2Tags, &ec2.Tag{Key: aws.String(k), Value: aws.String(v)})
+	}
+
+	attempt := 0
+	for {
+		attempt++
+
+		request := &ec2.DeleteTagsInput{
+			Tags:      ec2Tags,
+			Resources: []*string{&resourceId},
+		}
+
+		_, err := c.EC2.DeleteTags(request)
+		if err != nil {
+			if isTagsEventualConsistencyError(err) {
+				if attempt > MaxCreateTagsAttempts {
+					return fmt.Errorf("Got retryable error while deleting tags on %q, but retried too many times without success: %v", resourceId, err)
+				}
+
+				glog.V(2).Infof("will retry after encountering error deleting tags on %q: %v", resourceId, err)
+				time.Sleep(2 * time.Second)
+				continue
+			}
+
+			return fmt.Errorf("error deleting tags on %v: %v", resourceId, err)
+		}
+
+		return nil
+	}
+}
+
+func (c *AWSCloud) AddAWSTags(id string, expected map[string]string) error {
+	actual, err := c.GetTags(id)
+	if err != nil {
+		return fmt.Errorf("unexpected error fetching tags for resource: %v", err)
+	}
+
+	missing := map[string]string{}
+	for k, v := range expected {
+		actualValue, found := actual[k]
+		if found && actualValue == v {
+			continue
+		}
+		missing[k] = v
+	}
+
+	if len(missing) != 0 {
+		glog.V(4).Infof("adding tags to %q: %v", id, missing)
+
+		err := c.CreateTags(id, missing)
+		if err != nil {
+			return fmt.Errorf("error adding tags to resource %q: %v", id, err)
+		}
+	}
+
+	return nil
+}
+
 func (c *AWSCloud) GetELBTags(loadBalancerName string) (map[string]string, error) {
 	tags := map[string]string{}
 
