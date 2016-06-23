@@ -56,7 +56,9 @@ func NewPackage(name string, contents string, meta string) (fi.Task, error) {
 
 func (e *Package) Find(c *fi.Context) (*Package, error) {
 	args := []string{"dpkg-query", "-f", "${db:Status-Abbrev}${Version}\\n", "-W", e.Name}
-	glog.V(2).Infof("Listing installed packages: %q", args)
+	human := strings.Join(args, " ")
+
+	glog.V(2).Infof("Listing installed packages: %s", human)
 	cmd := exec.Command(args[0], args[1:]...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {

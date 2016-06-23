@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/golang/glog"
 	"os"
 )
@@ -35,4 +37,34 @@ func ValidateRegion(region string) error {
 	}
 
 	return fmt.Errorf("Region is not a recognized EC2 region: %q (check you have specified valid zones?)", region)
+}
+
+// FindEC2Tag find the value of the tag with the specified key
+func FindEC2Tag(tags []*ec2.Tag, key string) (string, bool) {
+	for _, tag := range tags {
+		if key == aws.StringValue(tag.Key) {
+			return aws.StringValue(tag.Value), true
+		}
+	}
+	return "", false
+}
+
+// FindASGTag find the value of the tag with the specified key
+func FindASGTag(tags []*autoscaling.TagDescription, key string) (string, bool) {
+	for _, tag := range tags {
+		if key == aws.StringValue(tag.Key) {
+			return aws.StringValue(tag.Value), true
+		}
+	}
+	return "", false
+}
+
+// FindELBTag find the value of the tag with the specified key
+func FindELBTag(tags []*elb.Tag, key string) (string, bool) {
+	for _, tag := range tags {
+		if key == aws.StringValue(tag.Key) {
+			return aws.StringValue(tag.Value), true
+		}
+	}
+	return "", false
 }

@@ -3,10 +3,15 @@ package main
 import (
 	"fmt"
 
+	"bytes"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kube-deploy/upup/pkg/kutil"
+	"os"
+	"reflect"
+	"text/tabwriter"
 )
 
 type DeleteClusterCmd struct {
@@ -38,6 +43,8 @@ func init() {
 	cmd.Flags().StringVar(&deleteCluster.Region, "region", "", "region")
 }
 
+type getter func(o interface{}) interface{}
+
 func (c *DeleteClusterCmd) Run() error {
 	if c.Region == "" {
 		return fmt.Errorf("--region is required")
@@ -65,8 +72,65 @@ func (c *DeleteClusterCmd) Run() error {
 		return err
 	}
 
-	for k := range resources {
-		fmt.Printf("%v\n", k)
+	columns := []string{"TYPE", "ID", "NAME"}
+	fields := []string{"Type", "ID", "Name"}
+
+	var b bytes.Buffer
+	w := new(tabwriter.Writer)
+
+	// Format in tab-separated columns with a tab stop of 8.
+	w.Init(os.Stdout, 0, 8, 0, '\t', tabwriter.StripEscape)
+
+	writeHeader := true
+	if writeHeader {
+		for i, c := range columns {
+			if i != 0 {
+				b.WriteByte('\t')
+			}
+			b.WriteByte(tabwriter.Escape)
+			b.WriteString(c)
+			b.WriteByte(tabwriter.Escape)
+		}
+		b.WriteByte('\n')
+
+		_, err := w.Write(b.Bytes())
+		if err != nil {
+			return fmt.Errorf("error writing to output: %v", err)
+		}
+		b.Reset()
+	}
+
+	for _, t := range resources {
+		for i := range columns {
+			if i != 0 {
+				b.WriteByte('\t')
+			}
+
+			v := reflect.ValueOf(t)
+			if v.Kind() == reflect.Ptr {
+				v = v.Elem()
+			}
+			fv := v.FieldByName(fields[i])
+
+			s := fi.ValueAsString(fv)
+
+			b.WriteByte(tabwriter.Escape)
+			b.WriteString(s)
+			b.WriteByte(tabwriter.Escape)
+		}
+		b.WriteByte('\n')
+
+		_, err := w.Write(b.Bytes())
+		if err != nil {
+			return fmt.Errorf("error writing to output: %v", err)
+		}
+		b.Reset()
+	}
+	w.Flush()
+
+	if len(resources) == 0 {
+		fmt.Printf("Nothing to delete\n")
+		return nil
 	}
 
 	if !c.Yes {

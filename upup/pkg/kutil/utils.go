@@ -25,38 +25,43 @@ func findAutoscalingGroups(cloud *awsup.AWSCloud, tags map[string]string) ([]*au
 		request := &autoscaling.DescribeTagsInput{
 			Filters: asFilters,
 		}
-		response, err := cloud.Autoscaling.DescribeTags(request)
+
+		err := cloud.Autoscaling.DescribeTagsPages(request, func(p *autoscaling.DescribeTagsOutput, lastPage bool) bool {
+			for _, t := range p.Tags {
+				switch *t.ResourceType {
+				case "auto-scaling-group":
+					asgNames = append(asgNames, t.ResourceId)
+				default:
+					glog.Warningf("Unknown resource type: %v", *t.ResourceType)
+
+				}
+			}
+			return true
+		})
 		if err != nil {
 			return nil, fmt.Errorf("error listing autoscaling cluster tags: %v", err)
 		}
 
-		for _, t := range response.Tags {
-			switch *t.ResourceType {
-			case "auto-scaling-group":
-				asgNames = append(asgNames, t.ResourceId)
-			default:
-				glog.Warningf("Unknown resource type: %v", *t.ResourceType)
-
-			}
-		}
 	}
 
 	if len(asgNames) != 0 {
 		request := &autoscaling.DescribeAutoScalingGroupsInput{
 			AutoScalingGroupNames: asgNames,
 		}
-		response, err := cloud.Autoscaling.DescribeAutoScalingGroups(request)
+		err := cloud.Autoscaling.DescribeAutoScalingGroupsPages(request, func(p *autoscaling.DescribeAutoScalingGroupsOutput, lastPage bool) bool {
+			for _, asg := range p.AutoScalingGroups {
+				if !matchesAsgTags(tags, asg.Tags) {
+					// We used an inexact filter above
+					continue
+				}
+				asgs = append(asgs, asg)
+			}
+			return true
+		})
 		if err != nil {
 			return nil, fmt.Errorf("error listing autoscaling groups: %v", err)
 		}
 
-		for _, asg := range response.AutoScalingGroups {
-			if !matchesAsgTags(tags, asg.Tags) {
-				// We used an inexact filter above
-				continue
-			}
-			asgs = append(asgs, asg)
-		}
 	}
 
 	return asgs, nil

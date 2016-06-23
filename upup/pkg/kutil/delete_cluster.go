@@ -31,11 +31,18 @@ type DeleteCluster struct {
 	Cloud       fi.Cloud
 }
 
-// HasStatus is implemented by resources where we want to hint the dependencies
-// (ideally we would implement for everything, but realistically there are only a few where it is worthwhile)
-type HasStatus interface {
-	Status(cloud fi.Cloud) (exists bool, blocks []string, err error)
+type ResourceTracker struct {
+	Name string
+	Type string
+	ID   string
+
+	blocks []string
+	done   bool
+
+	deleter func(cloud fi.Cloud, tracker *ResourceTracker) error
 }
+
+type listFn func(fi.Cloud, string) ([]*ResourceTracker, error)
 
 func gunzipBytes(d []byte) ([]byte, error) {
 	var out bytes.Buffer
@@ -52,138 +59,47 @@ func gunzipBytes(d []byte) ([]byte, error) {
 	return out.Bytes(), nil
 }
 
-func (c *DeleteCluster) ListResources() (map[string]DeletableResource, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
-
-	resources := make(map[string]DeletableResource)
-
-	tags := cloud.BuildTags(nil)
+func buildEC2Filters(cloud fi.Cloud) []*ec2.Filter {
+	awsCloud := cloud.(*awsup.AWSCloud)
+	tags := awsCloud.Tags()
 
 	var filters []*ec2.Filter
 	for k, v := range tags {
 		filter := awsup.NewEC2Filter("tag:"+k, v)
 		filters = append(filters, filter)
 	}
+	return filters
+}
 
-	{
-		asgs, err := findAutoscalingGroups(cloud, tags)
+func (c *DeleteCluster) ListResources() (map[string]*ResourceTracker, error) {
+	cloud := c.Cloud.(*awsup.AWSCloud)
+
+	resources := make(map[string]*ResourceTracker)
+
+	listFunctions := []listFn{
+		ListSubnets, ListRouteTables, ListSecurityGroups,
+		ListInstances, ListDhcpOptions, ListInternetGateways, ListVPCs, ListVolumes,
+		// ELBs
+		ListELBs,
+		// ASG
+		ListAutoScalingGroups,
+		ListAutoScalingLaunchConfigurations,
+	}
+	for _, fn := range listFunctions {
+		trackers, err := fn(cloud, c.ClusterName)
 		if err != nil {
 			return nil, err
 		}
-
-		for _, asg := range asgs {
-			r := &DeletableASG{Name: *asg.AutoScalingGroupName}
-			resources["autoscaling-group:"+r.Name] = r
+		for _, t := range trackers {
+			resources[t.Type+":"+t.ID] = t
 		}
 	}
 
+	// TODO: Move to ListUntaggedInternetGateways?
 	{
-		glog.V(2).Infof("Listing all Autoscaling LaunchConfigurations")
-
-		request := &autoscaling.DescribeLaunchConfigurationsInput{}
-		response, err := cloud.Autoscaling.DescribeLaunchConfigurations(request)
-		if err != nil {
-			return nil, fmt.Errorf("error listing autoscaling LaunchConfigurations: %v", err)
-		}
-
-		for _, t := range response.LaunchConfigurations {
-			if t.UserData == nil {
-				continue
-			}
-
-			userData, err := base64.StdEncoding.DecodeString(*t.UserData)
-			if err != nil {
-				glog.Infof("Ignoring autoscaling LaunchConfiguration with invalid UserData: %v", *t.LaunchConfigurationName)
-				continue
-			}
-
-			unzipped, err := gunzipBytes(userData)
-			if err == nil {
-				glog.V(4).Infof("Detected gzip data")
-				userData = unzipped
-			}
-			glog.V(8).Infof("UserData: %s", string(userData))
-
-			isNodeupConfig := strings.Contains(string(userData), "ClusterName: "+c.ClusterName+"\n")
-			isKubeupV1Config := strings.Contains(string(userData), "\nINSTANCE_PREFIX: "+c.ClusterName+"\n") || strings.Contains(string(userData), "\nINSTANCE_PREFIX: '"+c.ClusterName+"'\n")
-			if isNodeupConfig || isKubeupV1Config {
-				r := &DeletableAutoscalingLaunchConfiguration{Name: *t.LaunchConfigurationName}
-				resources["autoscaling-launchconfiguration:"+r.Name] = r
-			}
-		}
-	}
-
-	{
-		glog.V(2).Infof("Listing all ELB tags")
-
-		request := &elb.DescribeLoadBalancersInput{}
-		response, err := cloud.ELB.DescribeLoadBalancers(request)
-		if err != nil {
-			return nil, fmt.Errorf("error listing elb LoadBalancers: %v", err)
-		}
-
-		for _, lb := range response.LoadBalancerDescriptions {
-			// TODO: batch?
-			request := &elb.DescribeTagsInput{
-				LoadBalancerNames: []*string{lb.LoadBalancerName},
-			}
-			response, err := cloud.ELB.DescribeTags(request)
-			if err != nil {
-				return nil, fmt.Errorf("error listing elb Tags: %v", err)
-			}
-
-			for _, t := range response.TagDescriptions {
-				if !matchesElbTags(tags, t.Tags) {
-					continue
-				}
-				r := &DeletableELBLoadBalancer{Name: *t.LoadBalancerName}
-				resources["elb:"+r.Name] = r
-			}
-		}
-	}
-
-	{
-
-		glog.V(2).Infof("Listing all EC2 tags matching cluster tags")
-		request := &ec2.DescribeTagsInput{
-			Filters: filters,
-		}
-		response, err := cloud.EC2.DescribeTags(request)
-		if err != nil {
-			return nil, fmt.Errorf("error listing cluster tags: %v", err)
-		}
-
-		for _, t := range response.Tags {
-			var resource DeletableResource
-			switch *t.ResourceType {
-			case "dhcp-options":
-				resource = &DeletableDHCPOptions{ID: *t.ResourceId}
-			case "instance":
-				resource = &DeletableInstance{ID: *t.ResourceId}
-			case "volume":
-				resource = &DeletableVolume{ID: *t.ResourceId}
-			case "subnet":
-				resource = &DeletableSubnet{ID: *t.ResourceId}
-			case "security-group":
-				resource = &DeletableSecurityGroup{ID: *t.ResourceId}
-			case "internet-gateway":
-				resource = &DeletableInternetGateway{ID: *t.ResourceId}
-			case "route-table":
-				resource = &DeletableRouteTable{ID: *t.ResourceId}
-			case "vpc":
-				resource = &DeletableVPC{ID: *t.ResourceId}
-			}
-
-			if resource == nil {
-				glog.Warningf("Unknown resource type: %v", *t.ResourceType)
-				continue
-			}
-
-			resources[*t.ResourceType+":"+*t.ResourceId] = resource
-		}
-	}
-
-	{
+		// Gateways weren't tagged in kube-up
+		// If we are deleting the VPC, we should delete the attached gateway
+		// (no real reason not to; easy to recreate; no real state etc)
 		glog.V(2).Infof("Listing all Internet Gateways")
 
 		request := &ec2.DescribeInternetGatewaysInput{}
@@ -195,50 +111,44 @@ func (c *DeleteCluster) ListResources() (map[string]DeletableResource, error) {
 		for _, igw := range response.InternetGateways {
 			for _, attachment := range igw.Attachments {
 				vpcID := aws.StringValue(attachment.VpcId)
-				if vpcID == "" {
+				igwID := aws.StringValue(igw.InternetGatewayId)
+				if vpcID == "" || igwID == "" {
 					continue
 				}
-				if resources["vpc:"+vpcID] != nil {
-					r := &DetachableInternetGateway{
-						ID:    aws.StringValue(igw.InternetGatewayId),
-						VPCID: vpcID,
+				if resources["vpc:"+vpcID] != nil && resources["internet-gateway:"+igwID] == nil {
+					resources["internet-gateway:"+igwID] = &ResourceTracker{
+						Name:    FindName(igw.Tags),
+						ID:      igwID,
+						Type:    "internet-gateway",
+						deleter: DeleteInternetGateway,
 					}
-					resources["detach-igw:"+aws.StringValue(igw.InternetGatewayId)] = r
 				}
 			}
 		}
 	}
 
+	for k, t := range resources {
+		if t.done {
+			delete(resources, k)
+		}
+	}
 	return resources, nil
 }
 
-func (c *DeleteCluster) DeleteResources(resources map[string]DeletableResource) error {
+func (c *DeleteCluster) DeleteResources(resources map[string]*ResourceTracker) error {
 	depMap := make(map[string][]string)
 
-	done := make(map[string]DeletableResource)
+	done := make(map[string]*ResourceTracker)
 
 	var mutex sync.Mutex
 
-	// Initial pass to check that resources actually exist
-	for k, r := range resources {
-		hs, ok := r.(HasStatus)
-		if !ok {
-			continue
-		}
-
-		fmt.Printf("Checking status of resource %s: ", k)
-		exists, blocks, err := hs.Status(c.Cloud)
-		if err != nil {
-			fmt.Printf("error (ignoring): %v\n", err)
-		} else if exists {
-			fmt.Printf("exists (gathered dependencies)\n")
-		} else {
-			fmt.Printf("already removed\n")
-			done[k] = r
-		}
-
-		for _, block := range blocks {
+	for k, t := range resources {
+		for _, block := range t.blocks {
 			depMap[block] = append(depMap[block], k)
+		}
+
+		if t.done {
+			done[k] = t
 		}
 	}
 
@@ -252,10 +162,10 @@ func (c *DeleteCluster) DeleteResources(resources map[string]DeletableResource) 
 		// TODO: Some form of default ordering based on types?
 		// TODO: Give up eventually?
 
-		failed := make(map[string]DeletableResource)
+		failed := make(map[string]*ResourceTracker)
 
 		for {
-			phase := make(map[string]DeletableResource)
+			phase := make(map[string]*ResourceTracker)
 
 			for k, r := range resources {
 				if _, d := done[k]; d {
@@ -286,17 +196,18 @@ func (c *DeleteCluster) DeleteResources(resources map[string]DeletableResource) 
 			}
 
 			var wg sync.WaitGroup
-			for k, r := range phase {
+			for k, t := range phase {
 				wg.Add(1)
 
-				go func(k string, r DeletableResource) {
+				go func(k string, t *ResourceTracker) {
 					mutex.Lock()
-					failed[k] = r
+					failed[k] = t
 					mutex.Unlock()
 
 					defer wg.Done()
 					glog.V(4).Infof("Deleting resource %s:  ", k)
-					err := r.Delete(c.Cloud)
+
+					err := t.deleter(c.Cloud, t)
 					if err != nil {
 						mutex.Lock()
 						if IsDependencyViolation(err) {
@@ -305,7 +216,7 @@ func (c *DeleteCluster) DeleteResources(resources map[string]DeletableResource) 
 						} else {
 							fmt.Printf("%s\terror deleting resource, will retry: %v\n", k, err)
 						}
-						failed[k] = r
+						failed[k] = t
 						mutex.Unlock()
 					} else {
 						mutex.Lock()
@@ -313,10 +224,10 @@ func (c *DeleteCluster) DeleteResources(resources map[string]DeletableResource) 
 
 						delete(failed, k)
 						iterationsWithNoProgress = 0
-						done[k] = r
+						done[k] = t
 						mutex.Unlock()
 					}
-				}(k, r)
+				}(k, t)
 			}
 			wg.Wait()
 		}
@@ -379,218 +290,293 @@ func matchesElbTags(tags map[string]string, actual []*elb.Tag) bool {
 	return true
 }
 
-type DeletableResource interface {
-	Delete(cloud fi.Cloud) error
-}
+//type DeletableResource interface {
+//	Delete(cloud fi.Cloud) error
+//}
 
-type DeletableInstance struct {
-	ID string
-}
-
-func (r *DeletableInstance) Delete(cloud fi.Cloud) error {
+func DeleteInstance(cloud fi.Cloud, t *ResourceTracker) error {
 	c := cloud.(*awsup.AWSCloud)
 
-	glog.V(2).Infof("Deleting EC2 instance %q", r.ID)
+	id := t.ID
+	glog.V(2).Infof("Deleting EC2 instance %q", id)
 	request := &ec2.TerminateInstancesInput{
-		InstanceIds: []*string{&r.ID},
+		InstanceIds: []*string{&id},
 	}
 	_, err := c.EC2.TerminateInstances(request)
 	if err != nil {
-		return fmt.Errorf("error deleting instance %q: %v", r.ID, err)
+		return fmt.Errorf("error deleting instance %q: %v", id, err)
 	}
 	return nil
 }
 
-func (r *DeletableInstance) Status(cloud fi.Cloud) (bool, []string, error) {
+func ListInstances(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
 	c := cloud.(*awsup.AWSCloud)
 
-	glog.V(2).Infof("Querying EC2 instance %q", r.ID)
+	glog.V(2).Infof("Querying EC2 instances")
 	request := &ec2.DescribeInstancesInput{
-		InstanceIds: []*string{&r.ID},
-	}
-	response, err := c.EC2.DescribeInstances(request)
-	if err != nil {
-		return false, nil, fmt.Errorf("error describing instance %q: %v", r.ID, err)
+		Filters: c.BuildFilters(nil),
 	}
 
-	var found []*ec2.Instance
-	for _, reservation := range response.Reservations {
-		for _, instance := range reservation.Instances {
-			if aws.StringValue(instance.InstanceId) == r.ID {
-				found = append(found, instance)
+	var trackers []*ResourceTracker
+
+	err := c.EC2.DescribeInstancesPages(request, func(p *ec2.DescribeInstancesOutput, lastPage bool) bool {
+		for _, reservation := range p.Reservations {
+			for _, instance := range reservation.Instances {
+				id := aws.StringValue(instance.InstanceId)
+
+				if instance.State != nil {
+					stateName := aws.StringValue(instance.State.Name)
+					switch stateName {
+					case "terminated":
+						continue
+
+					case "running":
+						// Fine
+						glog.V(4).Infof("instance %q has state=%q", id, stateName)
+
+					default:
+						glog.Infof("unknown instance state for %q: %q", id, stateName)
+					}
+				}
+
+				tracker := &ResourceTracker{
+					Name:    FindName(instance.Tags),
+					ID:      id,
+					Type:    "instance",
+					deleter: DeleteInstance,
+				}
+
+				var blocks []string
+				blocks = append(blocks, "vpc:"+aws.StringValue(instance.VpcId))
+
+				for _, volume := range instance.BlockDeviceMappings {
+					if volume.Ebs == nil {
+						continue
+					}
+					blocks = append(blocks, "volume:"+aws.StringValue(volume.Ebs.VolumeId))
+				}
+				for _, sg := range instance.SecurityGroups {
+					blocks = append(blocks, "security-group:"+aws.StringValue(sg.GroupId))
+				}
+				blocks = append(blocks, "subnet:"+aws.StringValue(instance.SubnetId))
+				blocks = append(blocks, "vpc:"+aws.StringValue(instance.VpcId))
+
+				tracker.blocks = blocks
+
+				trackers = append(trackers, tracker)
+
 			}
 		}
-	}
-	if len(found) == 0 {
-		return false, nil, nil
-	}
-	if len(found) != 1 {
-		return false, nil, fmt.Errorf("found multiple instances with id: %q", r.ID)
-	}
-	i := found[0]
-	if i.State != nil {
-		stateName := aws.StringValue(i.State.Name)
-		switch stateName {
-		case "terminated":
-			return false, nil, nil
-
-		case "running":
-			// Fine
-			glog.V(4).Infof("instance %q has state=%q", r.ID, stateName)
-
-		default:
-			glog.Infof("unknown instance state for %q: %q", r.ID, stateName)
-		}
+		return true
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error describing instances: %v", err)
 	}
 
-	var blocks []string
-	for _, volume := range i.BlockDeviceMappings {
-		if volume.Ebs == nil {
-			continue
-		}
-		blocks = append(blocks, "volume:"+aws.StringValue(volume.Ebs.VolumeId))
-	}
-	for _, sg := range i.SecurityGroups {
-		blocks = append(blocks, "security-group:"+aws.StringValue(sg.GroupId))
-	}
-	blocks = append(blocks, "subnet:"+aws.StringValue(i.SubnetId))
-	blocks = append(blocks, "vpc:"+aws.StringValue(i.VpcId))
-
-	return true, blocks, nil
+	return trackers, nil
 }
 
-func (r *DeletableInstance) String() string {
-	return "Instance:" + r.ID
-}
-
-type DeletableSecurityGroup struct {
-	ID string
-}
-
-func (r *DeletableSecurityGroup) Delete(cloud fi.Cloud) error {
+func DeleteSecurityGroup(cloud fi.Cloud, t *ResourceTracker) error {
 	c := cloud.(*awsup.AWSCloud)
 
+	id := t.ID
 	// First clear all inter-dependent rules
 	// TODO: Move to a "pre-execute" phase?
 	{
 		request := &ec2.DescribeSecurityGroupsInput{
-			GroupIds: []*string{&r.ID},
+			GroupIds: []*string{&id},
 		}
 		response, err := c.EC2.DescribeSecurityGroups(request)
 		if err != nil {
-			return fmt.Errorf("error describing SecurityGroup %q: %v", r.ID, err)
+			return fmt.Errorf("error describing SecurityGroup %q: %v", id, err)
 		}
 
 		if len(response.SecurityGroups) == 0 {
 			return nil
 		}
 		if len(response.SecurityGroups) != 1 {
-			return fmt.Errorf("found mutiple SecurityGroups with ID %q", r.ID)
+			return fmt.Errorf("found mutiple SecurityGroups with ID %q", id)
 		}
 		sg := response.SecurityGroups[0]
 
 		if len(sg.IpPermissions) != 0 {
 			revoke := &ec2.RevokeSecurityGroupIngressInput{
-				GroupId:       &r.ID,
+				GroupId:       &id,
 				IpPermissions: sg.IpPermissions,
 			}
 			_, err = c.EC2.RevokeSecurityGroupIngress(revoke)
 			if err != nil {
-				return fmt.Errorf("cannot revoke ingress for ID %q: %v", r.ID, err)
+				return fmt.Errorf("cannot revoke ingress for ID %q: %v", id, err)
 			}
 		}
 	}
 
 	{
-		glog.V(2).Infof("Deleting EC2 SecurityGroup %q", r.ID)
+		glog.V(2).Infof("Deleting EC2 SecurityGroup %q", id)
 		request := &ec2.DeleteSecurityGroupInput{
-			GroupId: &r.ID,
+			GroupId: &id,
 		}
 		_, err := c.EC2.DeleteSecurityGroup(request)
 		if err != nil {
 			if IsDependencyViolation(err) {
 				return err
 			}
-			return fmt.Errorf("error deleting SecurityGroup %q: %v", r.ID, err)
+			return fmt.Errorf("error deleting SecurityGroup %q: %v", id, err)
 		}
 	}
 	return nil
 }
 
-func (r *DeletableSecurityGroup) String() string {
-	return "SecurityGroup:" + r.ID
-}
-
-type DeletableVolume struct {
-	ID string
-}
-
-func (r *DeletableVolume) Delete(cloud fi.Cloud) error {
+func ListSecurityGroups(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
 	c := cloud.(*awsup.AWSCloud)
 
-	glog.V(2).Infof("Deleting EC2 volume %q", r.ID)
+	glog.V(2).Infof("Listing EC2 SecurityGroups")
+	request := &ec2.DescribeSecurityGroupsInput{
+		Filters: c.BuildFilters(nil),
+	}
+	response, err := c.EC2.DescribeSecurityGroups(request)
+	if err != nil {
+		return nil, fmt.Errorf("error listing SecurityGroups: %v", err)
+	}
+
+	var trackers []*ResourceTracker
+
+	for _, sg := range response.SecurityGroups {
+		tracker := &ResourceTracker{
+			Name:    FindName(sg.Tags),
+			ID:      aws.StringValue(sg.GroupId),
+			Type:    "security-group",
+			deleter: DeleteSecurityGroup,
+		}
+
+		var blocks []string
+		blocks = append(blocks, "vpc:"+aws.StringValue(sg.VpcId))
+
+		tracker.blocks = blocks
+
+		trackers = append(trackers, tracker)
+	}
+
+	return trackers, nil
+}
+
+func DeleteVolume(cloud fi.Cloud, r *ResourceTracker) error {
+	c := cloud.(*awsup.AWSCloud)
+
+	id := r.ID
+
+	glog.V(2).Infof("Deleting EC2 Volume %q", id)
 	request := &ec2.DeleteVolumeInput{
-		VolumeId: &r.ID,
+		VolumeId: &id,
 	}
 	_, err := c.EC2.DeleteVolume(request)
 	if err != nil {
 		if IsDependencyViolation(err) {
-			// Don't wrap
 			return err
 		}
 		if AWSErrorCode(err) == "InvalidVolume.NotFound" {
 			// Concurrently deleted
 			return nil
 		}
-		return fmt.Errorf("error deleting volume %q: %v", r.ID, err)
+		return fmt.Errorf("error deleting Volume %q: %v", id, err)
 	}
 	return nil
 }
 
-func (r *DeletableVolume) String() string {
-	return "Volume:" + r.ID
-}
-
-func (r *DeletableVolume) Status(cloud fi.Cloud) (bool, []string, error) {
+func ListVolumes(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
 	c := cloud.(*awsup.AWSCloud)
 
-	glog.V(2).Infof("Querying EC2 volume %q", r.ID)
-	request := &ec2.DescribeVolumesInput{
-		VolumeIds: []*string{&r.ID},
-	}
-	response, err := c.EC2.DescribeVolumes(request)
+	volumes, err := DescribeVolumes(cloud)
 	if err != nil {
-		if AWSErrorCode(err) == "InvalidVolume.NotFound" {
-			return false, nil, nil
+		return nil, err
+	}
+	var trackers []*ResourceTracker
+
+	elasticIPs := make(map[string]bool)
+	for _, volume := range volumes {
+		id := aws.StringValue(volume.VolumeId)
+
+		tracker := &ResourceTracker{
+			Name:    FindName(volume.Tags),
+			ID:      id,
+			Type:    "volume",
+			deleter: DeleteVolume,
 		}
 
-		return false, nil, fmt.Errorf("error describing volume %q: %v", r.ID, err)
+		var blocks []string
+		//blocks = append(blocks, "vpc:" + aws.StringValue(rt.VpcId))
+
+		tracker.blocks = blocks
+
+		trackers = append(trackers, tracker)
+
+		// Check for an elastic IP tag
+		for _, tag := range volume.Tags {
+			name := aws.StringValue(tag.Key)
+			ip := ""
+			if name == "kubernetes.io/master-ip" {
+				ip = aws.StringValue(tag.Value)
+			}
+			if ip != "" {
+				elasticIPs[ip] = true
+			}
+		}
+
 	}
 
-	var found []*ec2.Volume
-	for _, v := range response.Volumes {
-		if aws.StringValue(v.VolumeId) == r.ID {
-			found = append(found, v)
+	if len(elasticIPs) != 0 {
+		glog.V(2).Infof("Querying EC2 Elastic IPs")
+		request := &ec2.DescribeAddressesInput{}
+		response, err := c.EC2.DescribeAddresses(request)
+		if err != nil {
+			return nil, fmt.Errorf("error describing addresses: %v", err)
+		}
+
+		for _, address := range response.Addresses {
+			ip := aws.StringValue(address.PublicIp)
+			if !elasticIPs[ip] {
+				continue
+			}
+
+			tracker := &ResourceTracker{
+				Name:    ip,
+				ID:      aws.StringValue(address.AllocationId),
+				Type:    "elastic-ip",
+				deleter: DeleteElasticIP,
+			}
+
+			trackers = append(trackers, tracker)
+
 		}
 	}
-	if len(found) == 0 {
-		return false, nil, nil
-	}
-	if len(found) != 1 {
-		return false, nil, fmt.Errorf("found multiple volumes with id: %q", r.ID)
-	}
-	//v := found[0]
 
-	var blocks []string
-
-	return true, blocks, nil
+	return trackers, nil
 }
 
-type DeletableSubnet struct {
-	ID string
+func DescribeVolumes(cloud fi.Cloud) ([]*ec2.Volume, error) {
+	c := cloud.(*awsup.AWSCloud)
+
+	var volumes []*ec2.Volume
+
+	glog.V(2).Infof("Listing EC2 Volumes")
+	request := &ec2.DescribeVolumesInput{
+		Filters: buildEC2Filters(c),
+	}
+
+	err := c.EC2.DescribeVolumesPages(request, func(p *ec2.DescribeVolumesOutput, lastPage bool) bool {
+		for _, volume := range p.Volumes {
+			volumes = append(volumes, volume)
+		}
+		return true
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error describing volumes: %v", err)
+	}
+
+	return volumes, nil
 }
 
-// AWSErrorCode extracts the
+// AWSErrorCode returns the aws error code, if it is an awserr.Error, otherwise ""
 func AWSErrorCode(err error) string {
 	if awsError, ok := err.(awserr.Error); ok {
 		return awsError.Code()
@@ -603,7 +589,7 @@ func IsDependencyViolation(err error) bool {
 	switch code {
 	case "":
 		return false
-	case "DependencyViolation", "VolumeInUse":
+	case "DependencyViolation", "VolumeInUse", "InvalidIPAddress.InUse":
 		return true
 	default:
 		glog.Infof("unexpected aws error code: %q", code)
@@ -611,136 +597,211 @@ func IsDependencyViolation(err error) bool {
 	}
 }
 
-func (r *DeletableSubnet) Delete(cloud fi.Cloud) error {
+func DeleteSubnet(cloud fi.Cloud, tracker *ResourceTracker) error {
 	c := cloud.(*awsup.AWSCloud)
 
-	glog.V(2).Infof("Deleting EC2 Subnet %q", r.ID)
+	id := tracker.ID
+
+	glog.V(2).Infof("Deleting EC2 Subnet %q", id)
 	request := &ec2.DeleteSubnetInput{
-		SubnetId: &r.ID,
+		SubnetId: &id,
 	}
 	_, err := c.EC2.DeleteSubnet(request)
 	if err != nil {
 		if IsDependencyViolation(err) {
 			return err
 		}
-		return fmt.Errorf("error deleting Subnet %q: %v", r.ID, err)
+		return fmt.Errorf("error deleting Subnet %q: %v", id, err)
 	}
 	return nil
 }
-func (r *DeletableSubnet) String() string {
-	return "Subnet:" + r.ID
+
+func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
+	subnets, err := DescribeSubnets(cloud)
+	if err != nil {
+		return nil, fmt.Errorf("error listing subnets: %v", err)
+	}
+
+	var trackers []*ResourceTracker
+
+	for _, subnet := range subnets {
+		tracker := &ResourceTracker{
+			Name:    FindName(subnet.Tags),
+			ID:      aws.StringValue(subnet.SubnetId),
+			Type:    "subnet",
+			deleter: DeleteSubnet,
+		}
+
+		var blocks []string
+		blocks = append(blocks, "vpc:"+aws.StringValue(subnet.VpcId))
+
+		tracker.blocks = blocks
+
+		trackers = append(trackers, tracker)
+	}
+
+	return trackers, nil
 }
 
-func (r *DeletableSubnet) Status(cloud fi.Cloud) (bool, []string, error) {
+func DescribeSubnets(cloud fi.Cloud) ([]*ec2.Subnet, error) {
 	c := cloud.(*awsup.AWSCloud)
 
-	glog.V(2).Infof("Querying EC2 subnet %q", r.ID)
+	glog.V(2).Infof("Listing EC2 subnets")
 	request := &ec2.DescribeSubnetsInput{
-		SubnetIds: []*string{&r.ID},
+		Filters: c.BuildFilters(nil),
 	}
 	response, err := c.EC2.DescribeSubnets(request)
 	if err != nil {
-		return false, nil, fmt.Errorf("error describing subnet %q: %v", r.ID, err)
+		return nil, fmt.Errorf("error listing subnets: %v", err)
 	}
 
-	var found []*ec2.Subnet
-	for _, v := range response.Subnets {
-		if aws.StringValue(v.SubnetId) == r.ID {
-			found = append(found, v)
-		}
-	}
-	if len(found) == 0 {
-		return false, nil, nil
-	}
-	if len(found) != 1 {
-		return false, nil, fmt.Errorf("found multiple subnets with id: %q", r.ID)
-	}
-	n := found[0]
-
-	var blocks []string
-	blocks = append(blocks, "vpc:"+aws.StringValue(n.VpcId))
-
-	return true, blocks, nil
+	return response.Subnets, nil
 }
 
-type DeletableRouteTable struct {
-	ID string
-}
-
-func (r *DeletableRouteTable) Delete(cloud fi.Cloud) error {
+func DeleteRouteTable(cloud fi.Cloud, r *ResourceTracker) error {
 	c := cloud.(*awsup.AWSCloud)
 
-	glog.V(2).Infof("Deleting EC2 RouteTable %q", r.ID)
+	id := r.ID
+
+	glog.V(2).Infof("Deleting EC2 RouteTable %q", id)
 	request := &ec2.DeleteRouteTableInput{
-		RouteTableId: &r.ID,
+		RouteTableId: &id,
 	}
 	_, err := c.EC2.DeleteRouteTable(request)
 	if err != nil {
 		if IsDependencyViolation(err) {
 			return err
 		}
-		return fmt.Errorf("error deleting RouteTable %q: %v", r.ID, err)
+		return fmt.Errorf("error deleting RouteTable %q: %v", id, err)
 	}
 	return nil
 }
-func (r *DeletableRouteTable) String() string {
-	return "RouteTable:" + r.ID
-}
 
-type DeletableDHCPOptions struct {
-	ID string
-}
-
-func (r *DeletableDHCPOptions) Delete(cloud fi.Cloud) error {
+func ListRouteTables(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
 	c := cloud.(*awsup.AWSCloud)
 
-	glog.V(2).Infof("Deleting EC2 DHCPOptions %q", r.ID)
+	glog.V(2).Infof("Listing EC2 RouteTables")
+	request := &ec2.DescribeRouteTablesInput{
+		Filters: c.BuildFilters(nil),
+	}
+	response, err := c.EC2.DescribeRouteTables(request)
+	if err != nil {
+		return nil, fmt.Errorf("error listing RouteTables: %v", err)
+	}
+
+	var trackers []*ResourceTracker
+
+	for _, rt := range response.RouteTables {
+		tracker := &ResourceTracker{
+			Name:    FindName(rt.Tags),
+			ID:      aws.StringValue(rt.RouteTableId),
+			Type:    "route-table",
+			deleter: DeleteRouteTable,
+		}
+
+		var blocks []string
+		blocks = append(blocks, "vpc:"+aws.StringValue(rt.VpcId))
+
+		tracker.blocks = blocks
+
+		trackers = append(trackers, tracker)
+	}
+
+	return trackers, nil
+}
+
+func DeleteDhcpOptions(cloud fi.Cloud, r *ResourceTracker) error {
+	c := cloud.(*awsup.AWSCloud)
+
+	id := r.ID
+
+	glog.V(2).Infof("Deleting EC2 DhcpOptions %q", id)
 	request := &ec2.DeleteDhcpOptionsInput{
-		DhcpOptionsId: &r.ID,
+		DhcpOptionsId: &id,
 	}
 	_, err := c.EC2.DeleteDhcpOptions(request)
 	if err != nil {
 		if IsDependencyViolation(err) {
 			return err
 		}
-		return fmt.Errorf("error deleting %q: %v", r.ID, err)
+		return fmt.Errorf("error deleting DhcpOptions %q: %v", id, err)
 	}
 	return nil
 }
 
-func (r *DeletableDHCPOptions) String() string {
-	return "DHCPOptions:" + r.ID
+func ListDhcpOptions(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
+	dhcpOptions, err := DescribeDhcpOptions(cloud)
+	if err != nil {
+		return nil, err
+	}
+
+	var trackers []*ResourceTracker
+
+	for _, o := range dhcpOptions {
+		tracker := &ResourceTracker{
+			Name:    FindName(o.Tags),
+			ID:      aws.StringValue(o.DhcpOptionsId),
+			Type:    "dhcp-options",
+			deleter: DeleteDhcpOptions,
+		}
+
+		var blocks []string
+
+		tracker.blocks = blocks
+
+		trackers = append(trackers, tracker)
+	}
+
+	return trackers, nil
 }
 
-type DeletableInternetGateway struct {
-	ID string
-}
-
-func (r *DeletableInternetGateway) Delete(cloud fi.Cloud) error {
+func DescribeDhcpOptions(cloud fi.Cloud) ([]*ec2.DhcpOptions, error) {
 	c := cloud.(*awsup.AWSCloud)
+
+	glog.V(2).Infof("Listing EC2 DhcpOptions")
+	request := &ec2.DescribeDhcpOptionsInput{
+		Filters: c.BuildFilters(nil),
+	}
+	response, err := c.EC2.DescribeDhcpOptions(request)
+	if err != nil {
+		return nil, fmt.Errorf("error listing DhcpOptions: %v", err)
+	}
+
+	return response.DhcpOptions, nil
+}
+
+func DeleteInternetGateway(cloud fi.Cloud, r *ResourceTracker) error {
+	c := cloud.(*awsup.AWSCloud)
+
+	id := r.ID
 
 	var igw *ec2.InternetGateway
 	{
 		request := &ec2.DescribeInternetGatewaysInput{
-			InternetGatewayIds: []*string{&r.ID},
+			InternetGatewayIds: []*string{&id},
 		}
 		response, err := c.EC2.DescribeInternetGateways(request)
 		if err != nil {
-			return fmt.Errorf("error describing InternetGateway %q: %v", r.ID, err)
+			if AWSErrorCode(err) == "InvalidInternetGatewayID.NotFound" {
+				glog.Infof("Internet gateway %q not found; assuming already deleted", id)
+				return nil
+			}
+
+			return fmt.Errorf("error describing InternetGateway %q: %v", id, err)
 		}
 		if response == nil || len(response.InternetGateways) == 0 {
 			return nil
 		}
 		if len(response.InternetGateways) != 1 {
-			return fmt.Errorf("found multiple InternetGateways with id %q", r.ID)
+			return fmt.Errorf("found multiple InternetGateways with id %q", id)
 		}
 		igw = response.InternetGateways[0]
 	}
 
 	for _, a := range igw.Attachments {
-		glog.V(2).Infof("Detaching EC2 InternetGateway %q", r.ID)
+		glog.V(2).Infof("Detaching EC2 InternetGateway %q", id)
 		request := &ec2.DetachInternetGatewayInput{
-			InternetGatewayId: &r.ID,
+			InternetGatewayId: &id,
 			VpcId:             a.VpcId,
 		}
 		_, err := c.EC2.DetachInternetGateway(request)
@@ -748,125 +809,127 @@ func (r *DeletableInternetGateway) Delete(cloud fi.Cloud) error {
 			if IsDependencyViolation(err) {
 				return err
 			}
-			return fmt.Errorf("error detaching InternetGateway %q: %v", r.ID, err)
+			return fmt.Errorf("error detaching InternetGateway %q: %v", id, err)
 		}
 	}
 
 	{
-		glog.V(2).Infof("Deleting EC2 InternetGateway %q", r.ID)
+		glog.V(2).Infof("Deleting EC2 InternetGateway %q", id)
 		request := &ec2.DeleteInternetGatewayInput{
-			InternetGatewayId: &r.ID,
+			InternetGatewayId: &id,
 		}
 		_, err := c.EC2.DeleteInternetGateway(request)
 		if err != nil {
 			if IsDependencyViolation(err) {
 				return err
 			}
-			return fmt.Errorf("error deleting InternetGateway %q: %v", r.ID, err)
+			if AWSErrorCode(err) == "InvalidInternetGatewayID.NotFound" {
+				glog.Infof("Internet gateway %q not found; assuming already deleted", id)
+				return nil
+			}
+			return fmt.Errorf("error deleting InternetGateway %q: %v", id, err)
 		}
 	}
 
 	return nil
 }
 
-func (r *DeletableInternetGateway) String() string {
-	return "InternetGateway:" + r.ID
-}
-
-type DetachableInternetGateway struct {
-	ID    string
-	VPCID string
-}
-
-func (r *DetachableInternetGateway) Delete(cloud fi.Cloud) error {
+func ListInternetGateways(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
 	c := cloud.(*awsup.AWSCloud)
 
-	glog.V(2).Infof("Detaching EC2 InternetGateway %q", r.ID)
-	request := &ec2.DetachInternetGatewayInput{
-		InternetGatewayId: &r.ID,
-		VpcId:             &r.VPCID,
+	glog.V(2).Infof("Listing EC2 InternetGateways")
+	request := &ec2.DescribeInternetGatewaysInput{
+		Filters: c.BuildFilters(nil),
 	}
-	_, err := c.EC2.DetachInternetGateway(request)
+	response, err := c.EC2.DescribeInternetGateways(request)
 	if err != nil {
-		if IsDependencyViolation(err) {
-			return err
-		}
-		return fmt.Errorf("error detaching InternetGateway %q: %v", r.ID, err)
+		return nil, fmt.Errorf("error listing InternetGateway: %v", err)
 	}
 
-	return nil
+	var trackers []*ResourceTracker
+
+	for _, o := range response.InternetGateways {
+		tracker := &ResourceTracker{
+			Name:    FindName(o.Tags),
+			ID:      aws.StringValue(o.InternetGatewayId),
+			Type:    "internet-gateway",
+			deleter: DeleteInternetGateway,
+		}
+
+		var blocks []string
+		for _, a := range o.Attachments {
+			if aws.StringValue(a.VpcId) != "" {
+				blocks = append(blocks, "vpc:"+aws.StringValue(a.VpcId))
+			}
+		}
+		tracker.blocks = blocks
+
+		trackers = append(trackers, tracker)
+	}
+
+	return trackers, nil
 }
 
-func (r *DetachableInternetGateway) String() string {
-	return "DetachInternetGateway:" + r.ID
-}
-
-type DeletableVPC struct {
-	ID string
-}
-
-func (r *DeletableVPC) Delete(cloud fi.Cloud) error {
+func DeleteVPC(cloud fi.Cloud, r *ResourceTracker) error {
 	c := cloud.(*awsup.AWSCloud)
 
-	glog.V(2).Infof("Deleting EC2 VPC %q", r.ID)
+	id := r.ID
+
+	glog.V(2).Infof("Deleting EC2 VPC %q", id)
 	request := &ec2.DeleteVpcInput{
-		VpcId: &r.ID,
+		VpcId: &id,
 	}
 	_, err := c.EC2.DeleteVpc(request)
 	if err != nil {
 		if IsDependencyViolation(err) {
 			return err
 		}
-		return fmt.Errorf("error deleting VPC %q: %v", r.ID, err)
+		return fmt.Errorf("error deleting VPC %q: %v", id, err)
 	}
 	return nil
 }
 
-func (r *DeletableVPC) String() string {
-	return "VPC:" + r.ID
-}
-
-func (r *DeletableVPC) Status(cloud fi.Cloud) (bool, []string, error) {
+func ListVPCs(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
 	c := cloud.(*awsup.AWSCloud)
 
-	glog.V(2).Infof("Querying EC2 VPC %q", r.ID)
+	glog.V(2).Infof("Listing EC2 VPC")
 	request := &ec2.DescribeVpcsInput{
-		VpcIds: []*string{&r.ID},
+		Filters: c.BuildFilters(nil),
 	}
 	response, err := c.EC2.DescribeVpcs(request)
 	if err != nil {
-		return false, nil, fmt.Errorf("error describing VPC %q: %v", r.ID, err)
+		return nil, fmt.Errorf("error listing VPCs: %v", err)
 	}
 
-	var found []*ec2.Vpc
+	var trackers []*ResourceTracker
+
 	for _, v := range response.Vpcs {
-		if aws.StringValue(v.VpcId) == r.ID {
-			found = append(found, v)
+		tracker := &ResourceTracker{
+			Name:    FindName(v.Tags),
+			ID:      aws.StringValue(v.VpcId),
+			Type:    "vpc",
+			deleter: DeleteVPC,
 		}
-	}
-	if len(found) == 0 {
-		return false, nil, nil
-	}
-	if len(found) != 1 {
-		return false, nil, fmt.Errorf("found multiple VPCs with id: %q", r.ID)
-	}
-	v := found[0]
 
-	var blocks []string
-	blocks = append(blocks, "dhcp-options:"+aws.StringValue(v.DhcpOptionsId))
-	return true, blocks, nil
+		var blocks []string
+		blocks = append(blocks, "dhcp-options:"+aws.StringValue(v.DhcpOptionsId))
+
+		tracker.blocks = blocks
+
+		trackers = append(trackers, tracker)
+	}
+
+	return trackers, nil
 }
 
-type DeletableASG struct {
-	Name string
-}
-
-func (r *DeletableASG) Delete(cloud fi.Cloud) error {
+func DeleteAutoScalingGroup(cloud fi.Cloud, r *ResourceTracker) error {
 	c := cloud.(*awsup.AWSCloud)
 
-	glog.V(2).Infof("Deleting autoscaling group %q", r.Name)
+	id := r.ID
+
+	glog.V(2).Infof("Deleting autoscaling group %q", id)
 	request := &autoscaling.DeleteAutoScalingGroupInput{
-		AutoScalingGroupName: &r.Name,
+		AutoScalingGroupName: &id,
 		ForceDelete:          aws.Bool(true),
 	}
 	_, err := c.Autoscaling.DeleteAutoScalingGroup(request)
@@ -874,130 +937,246 @@ func (r *DeletableASG) Delete(cloud fi.Cloud) error {
 		if IsDependencyViolation(err) {
 			return err
 		}
-		return fmt.Errorf("error deleting autoscaling group %q: %v", r.Name, err)
+		return fmt.Errorf("error deleting autoscaling group %q: %v", id, err)
 	}
 	return nil
 }
 
-var _ HasStatus = &DeletableASG{}
-
-func (r *DeletableASG) Status(cloud fi.Cloud) (bool, []string, error) {
+func ListAutoScalingGroups(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
 	c := cloud.(*awsup.AWSCloud)
 
-	glog.V(2).Infof("Querying autoscaling group %q", r.Name)
-	request := &autoscaling.DescribeAutoScalingGroupsInput{
-		AutoScalingGroupNames: []*string{aws.String(r.Name)},
-	}
-	response, err := c.Autoscaling.DescribeAutoScalingGroups(request)
+	tags := c.Tags()
+
+	asgs, err := findAutoscalingGroups(c, tags)
 	if err != nil {
-		return false, nil, fmt.Errorf("error describing autoscaling group %q: %v", r.Name, err)
+		return nil, err
 	}
 
-	if len(response.AutoScalingGroups) == 0 {
-		return false, nil, nil
-	}
-	if len(response.AutoScalingGroups) != 1 {
-		return false, nil, fmt.Errorf("found multiple ASGs with name: %q", r.Name)
-	}
-	g := response.AutoScalingGroups[0]
+	var trackers []*ResourceTracker
 
-	var blocks []string
-	subnets := aws.StringValue(g.VPCZoneIdentifier)
-	for _, subnet := range strings.Split(subnets, ",") {
-		if subnet == "" {
-			continue
+	for _, asg := range asgs {
+		tracker := &ResourceTracker{
+			Name:    FindASGName(asg.Tags),
+			ID:      aws.StringValue(asg.AutoScalingGroupName),
+			Type:    "autoscaling-group",
+			deleter: DeleteAutoScalingGroup,
 		}
-		blocks = append(blocks, "subnet:"+subnet)
+
+		var blocks []string
+		subnets := aws.StringValue(asg.VPCZoneIdentifier)
+		for _, subnet := range strings.Split(subnets, ",") {
+			if subnet == "" {
+				continue
+			}
+			blocks = append(blocks, "subnet:"+subnet)
+		}
+		blocks = append(blocks, "autoscaling-launchconfiguration:"+aws.StringValue(asg.LaunchConfigurationName))
+
+		tracker.blocks = blocks
+
+		trackers = append(trackers, tracker)
 	}
-	blocks = append(blocks, "autoscaling-launchconfiguration:"+aws.StringValue(g.LaunchConfigurationName))
-	return true, blocks, nil
+
+	return trackers, nil
 }
 
-func (r *DeletableASG) String() string {
-	return "autoscaling-group:" + r.Name
-}
-
-type DeletableAutoscalingLaunchConfiguration struct {
-	Name string
-}
-
-func (r *DeletableAutoscalingLaunchConfiguration) Delete(cloud fi.Cloud) error {
+func ListAutoScalingLaunchConfigurations(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
 	c := cloud.(*awsup.AWSCloud)
 
-	glog.V(2).Infof("Deleting autoscaling LaunchConfiguration %q", r.Name)
+	glog.V(2).Infof("Listing all Autoscaling LaunchConfigurations")
+
+	var trackers []*ResourceTracker
+
+	request := &autoscaling.DescribeLaunchConfigurationsInput{}
+	err := c.Autoscaling.DescribeLaunchConfigurationsPages(request, func(p *autoscaling.DescribeLaunchConfigurationsOutput, lastPage bool) bool {
+		for _, t := range p.LaunchConfigurations {
+			if t.UserData == nil {
+				continue
+			}
+
+			b, err := base64.StdEncoding.DecodeString(aws.StringValue(t.UserData))
+			if err != nil {
+				glog.Infof("Ignoring autoscaling LaunchConfiguration with invalid UserData: %v", *t.LaunchConfigurationName)
+				continue
+			}
+
+			userData, err := UserDataToString(b)
+			if err != nil {
+				glog.Infof("Ignoring autoscaling LaunchConfiguration with invalid UserData: %v", *t.LaunchConfigurationName)
+				continue
+			}
+
+			glog.V(8).Infof("UserData: %s", string(userData))
+
+			isNodeupConfig := strings.Contains(string(userData), "ClusterName: "+clusterName+"\n")
+			isKubeupV1Config := strings.Contains(string(userData), "\nINSTANCE_PREFIX: "+clusterName+"\n") || strings.Contains(string(userData), "\nINSTANCE_PREFIX: '"+clusterName+"'\n")
+			if isNodeupConfig || isKubeupV1Config {
+				tracker := &ResourceTracker{
+					Name:    aws.StringValue(t.LaunchConfigurationName),
+					ID:      aws.StringValue(t.LaunchConfigurationName),
+					Type:    "autoscaling-launchconfiguration",
+					deleter: DeleteAutoscalingLaunchConfiguration,
+				}
+
+				var blocks []string
+				//blocks = append(blocks, "autoscaling-launchconfiguration:" + aws.StringValue(asg.LaunchConfigurationName))
+
+				tracker.blocks = blocks
+
+				trackers = append(trackers, tracker)
+			}
+		}
+		return true
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error listing autoscaling LaunchConfigurations: %v", err)
+	}
+
+	return trackers, nil
+}
+
+func DeleteAutoscalingLaunchConfiguration(cloud fi.Cloud, r *ResourceTracker) error {
+	c := cloud.(*awsup.AWSCloud)
+
+	id := r.ID
+	glog.V(2).Infof("Deleting autoscaling LaunchConfiguration %q", id)
 	request := &autoscaling.DeleteLaunchConfigurationInput{
-		LaunchConfigurationName: &r.Name,
+		LaunchConfigurationName: &id,
 	}
 	_, err := c.Autoscaling.DeleteLaunchConfiguration(request)
 	if err != nil {
-		return fmt.Errorf("error deleting autoscaling LaunchConfiguration %q: %v", r.Name, err)
+		return fmt.Errorf("error deleting autoscaling LaunchConfiguration %q: %v", id, err)
 	}
 	return nil
 }
 
-func (r *DeletableAutoscalingLaunchConfiguration) String() string {
-	return "autoscaling-launchconfiguration:" + r.Name
-}
-
-type DeletableELBLoadBalancer struct {
-	Name string
-}
-
-func (r *DeletableELBLoadBalancer) Delete(cloud fi.Cloud) error {
+func DeleteELB(cloud fi.Cloud, r *ResourceTracker) error {
 	c := cloud.(*awsup.AWSCloud)
 
-	glog.V(2).Infof("Deleting LoadBalancer %q", r.Name)
+	id := r.ID
+
+	glog.V(2).Infof("Deleting ELB %q", id)
 	request := &elb.DeleteLoadBalancerInput{
-		LoadBalancerName: &r.Name,
+		LoadBalancerName: &id,
 	}
 	_, err := c.ELB.DeleteLoadBalancer(request)
 	if err != nil {
 		if IsDependencyViolation(err) {
 			return err
 		}
-		return fmt.Errorf("error deleting LoadBalancer %q: %v", r.Name, err)
+		return fmt.Errorf("error deleting LoadBalancer %q: %v", id, err)
 	}
 	return nil
 }
 
-func (r *DeletableELBLoadBalancer) String() string {
-	return "LoadBalancer:" + r.Name
+func ListELBs(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
+	c := cloud.(*awsup.AWSCloud)
+	tags := c.Tags()
+
+	var trackers []*ResourceTracker
+
+	glog.V(2).Infof("Listing all ELBs")
+
+	request := &elb.DescribeLoadBalancersInput{}
+
+	var innerError error
+	err := c.ELB.DescribeLoadBalancersPages(request, func(p *elb.DescribeLoadBalancersOutput, lastPage bool) bool {
+		if len(p.LoadBalancerDescriptions) == 0 {
+			return true
+		}
+
+		tagRequest := &elb.DescribeTagsInput{}
+
+		nameToELB := make(map[string]*elb.LoadBalancerDescription)
+		for _, elb := range p.LoadBalancerDescriptions {
+			name := aws.StringValue(elb.LoadBalancerName)
+			nameToELB[name] = elb
+
+			tagRequest.LoadBalancerNames = append(tagRequest.LoadBalancerNames, elb.LoadBalancerName)
+		}
+
+		tagResponse, err := c.ELB.DescribeTags(tagRequest)
+		if err != nil {
+			innerError = fmt.Errorf("error listing elb Tags: %v", err)
+			return false
+		}
+
+		for _, t := range tagResponse.TagDescriptions {
+			elbName := aws.StringValue(t.LoadBalancerName)
+
+			if !matchesElbTags(tags, t.Tags) {
+				continue
+			}
+
+			tracker := &ResourceTracker{
+				Name:    FindELBName(t.Tags),
+				ID:      elbName,
+				Type:    "load-balancer",
+				deleter: DeleteELB,
+			}
+
+			elb := nameToELB[elbName]
+			var blocks []string
+			for _, sg := range elb.SecurityGroups {
+				blocks = append(blocks, "security-group:"+aws.StringValue(sg))
+			}
+			for _, s := range elb.Subnets {
+				blocks = append(blocks, "subnet:"+aws.StringValue(s))
+			}
+			blocks = append(blocks, "vpc:"+aws.StringValue(elb.VPCId))
+
+			tracker.blocks = blocks
+
+			trackers = append(trackers, tracker)
+		}
+		return true
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error describing LoadBalances: %v", err)
+	}
+	if innerError != nil {
+		return nil, fmt.Errorf("error describing LoadBalancers: %v", innerError)
+	}
+
+	return trackers, nil
 }
 
-func (r *DeletableELBLoadBalancer) Status(cloud fi.Cloud) (bool, []string, error) {
+func DeleteElasticIP(cloud fi.Cloud, t *ResourceTracker) error {
 	c := cloud.(*awsup.AWSCloud)
 
-	glog.V(2).Infof("Querying LoadBalancer instance %q", r.Name)
-	request := &elb.DescribeLoadBalancersInput{
-		LoadBalancerNames: []*string{&r.Name},
+	id := t.ID
+
+	glog.V(2).Infof("Releasing IP %s", t.Name)
+	request := &ec2.ReleaseAddressInput{
+		AllocationId: &id,
 	}
-	response, err := c.ELB.DescribeLoadBalancers(request)
+	_, err := c.EC2.ReleaseAddress(request)
 	if err != nil {
-		return false, nil, fmt.Errorf("error describing LoadBalancer %q: %v", r.Name, err)
-	}
-
-	var found []*elb.LoadBalancerDescription
-	for _, l := range response.LoadBalancerDescriptions {
-		if aws.StringValue(l.LoadBalancerName) == r.Name {
-			found = append(found, l)
+		if IsDependencyViolation(err) {
+			return err
 		}
+		return fmt.Errorf("error deleting elastic ip %q: %v", t.Name, err)
 	}
-	if len(found) == 0 {
-		return false, nil, nil
-	}
-	if len(found) != 1 {
-		return false, nil, fmt.Errorf("found multiple LoadBalancers with Name: %q", r.Name)
-	}
-	l := found[0]
+	return nil
+}
 
-	var blocks []string
-	for _, sg := range l.SecurityGroups {
-		blocks = append(blocks, "security-group:"+aws.StringValue(sg))
+func FindName(tags []*ec2.Tag) string {
+	if name, found := awsup.FindEC2Tag(tags, "Name"); found {
+		return name
 	}
-	for _, s := range l.Subnets {
-		blocks = append(blocks, "subnet:"+aws.StringValue(s))
-	}
-	blocks = append(blocks, "vpc:"+aws.StringValue(l.VPCId))
+	return ""
+}
 
-	return true, blocks, nil
+func FindASGName(tags []*autoscaling.TagDescription) string {
+	if name, found := awsup.FindASGTag(tags, "Name"); found {
+		return name
+	}
+	return ""
+}
+
+func FindELBName(tags []*elb.Tag) string {
+	if name, found := awsup.FindELBTag(tags, "Name"); found {
+		return name
+	}
+	return ""
 }
