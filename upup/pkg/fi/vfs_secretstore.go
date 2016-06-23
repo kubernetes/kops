@@ -25,6 +25,10 @@ func NewVFSSecretStore(basedir vfs.Path) (SecretStore, error) {
 	return c, nil
 }
 
+func (s *VFSSecretStore) VFSPath() vfs.Path {
+	return s.basedir
+}
+
 func (c *VFSSecretStore) buildSecretPath(id string) vfs.Path {
 	return c.basedir.Join(id)
 }

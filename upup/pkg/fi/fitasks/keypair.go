@@ -133,7 +133,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 
 	castore := c.CAStore
 
-	template, err := buildCertificateTempate(e.Type)
+	template, err := buildCertificateTemplate(e.Type)
 	if err != nil {
 		return err
 	}
@@ -179,15 +179,11 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		glog.V(2).Infof("Creating PKI keypair %q", name)
 
 		// TODO: Reuse private key if already exists?
-		privateKey, err := castore.CreatePrivateKey(name)
+		cert, _, err := castore.CreateKeypair(name, template)
 		if err != nil {
 			return err
 		}
 
-		cert, err := castore.IssueCert(name, privateKey, template)
-		if err != nil {
-			return err
-		}
 		glog.V(8).Infof("created certificate %v", cert)
 	}
 
@@ -196,7 +192,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 	return nil
 }
 
-func buildCertificateTempate(certificateType string) (*x509.Certificate, error) {
+func buildCertificateTemplate(certificateType string) (*x509.Certificate, error) {
 	if expanded, found := wellKnownCertificateTypes[certificateType]; found {
 		certificateType = expanded
 	}

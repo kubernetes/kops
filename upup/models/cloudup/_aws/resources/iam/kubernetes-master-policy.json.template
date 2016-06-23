@@ -1,0 +1,43 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["ec2:*"],
+      "Resource": ["*"]
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["route53:*"],
+      "Resource": ["*"]
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["elasticloadbalancing:*"],
+      "Resource": ["*"]
+    }
+{{- if .MasterPermissions.S3Buckets -}}
+    ,
+    {
+      "Effect": "Allow",
+      "Action": "s3:*",
+      "Resource": [
+        {{ range $i, $b := .MasterPermissions.S3Buckets }}
+        {{if $i}},{{end}}
+        "arn:aws:s3:::{{ $b }}/*"
+        {{ end }}
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [ "s3:GetBucketLocation", "s3:ListBucket" ],
+      "Resource": [
+        {{ range $i, $b := .MasterPermissions.S3Buckets }}
+        {{if $i}},{{end}}
+        "arn:aws:s3:::{{ $b }}"
+        {{ end }}
+      ]
+    }
+{{ end }}
+  ]
+}

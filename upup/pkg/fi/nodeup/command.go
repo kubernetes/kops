@@ -42,15 +42,41 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		}
 	}
 
+	//if c.Config.ConfigurationStore != "" {
+	//	// TODO: If we ever delete local files, we need to filter so we only copy
+	//	// certain directories (i.e. not secrets / keys), because dest is a parent dir!
+	//	p, err := c.buildPath(c.Config.ConfigurationStore)
+	//	if err != nil {
+	//		return fmt.Errorf("error building config store: %v", err)
+	//	}
+	//
+	//	dest := vfs.NewFSPath("/etc/kubernetes")
+	//	scanner := vfs.NewVFSScan(p)
+	//	err = vfs.SyncDir(scanner, dest)
+	//	if err != nil {
+	//		return fmt.Errorf("error copying config store: %v", err)
+	//	}
+	//
+	//	c.Config.Tags = append(c.Config.Tags, "_config_store")
+	//} else {
+	//	c.Config.Tags = append(c.Config.Tags, "_not_config_store")
+	//}
+
 	loader := NewLoader(c.Config, assets)
+
+	err := buildTemplateFunctions(c.Config, loader.TemplateFunctions)
+	if err != nil {
+		return fmt.Errorf("error initializing: %v", err)
+	}
 
 	taskMap, err := loader.Build(c.ModelDir)
 	if err != nil {
-		glog.Exitf("error building: %v", err)
+		return fmt.Errorf("error building loader: %v", err)
 	}
 
 	var cloud fi.Cloud
 	var caStore fi.CAStore
+	var secretStore fi.SecretStore
 	var target fi.Target
 	checkExisting := true
 
@@ -66,7 +92,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("unsupported target type %q", c.Target)
 	}
 
-	context, err := fi.NewContext(target, cloud, caStore, checkExisting)
+	context, err := fi.NewContext(target, cloud, caStore, secretStore, checkExisting)
 	if err != nil {
 		glog.Exitf("error building context: %v", err)
 	}

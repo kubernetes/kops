@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
+	"k8s.io/kube-deploy/upup/pkg/fi/hashing"
 	"k8s.io/kube-deploy/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kube-deploy/upup/pkg/fi/nodeup/local"
 	"os"
@@ -124,7 +125,15 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 				return fmt.Errorf("error creating directories %q: %v", path.Dir(local), err)
 			}
 
-			_, err = fi.DownloadURL(fi.StringValue(e.Source), local, fi.StringValue(e.Hash))
+			var hash *hashing.Hash
+			if fi.StringValue(e.Hash) != "" {
+				parsed, err := hashing.FromString(fi.StringValue(e.Hash))
+				if err != nil {
+					return fmt.Errorf("error paring hash: %v", err)
+				}
+				hash = parsed
+			}
+			_, err = fi.DownloadURL(fi.StringValue(e.Source), local, hash)
 			if err != nil {
 				return err
 			}

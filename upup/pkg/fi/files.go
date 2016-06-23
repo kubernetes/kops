@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"io"
+	"k8s.io/kube-deploy/upup/pkg/fi/hashing"
 	"os"
 	"path"
 	"strconv"
@@ -101,13 +102,8 @@ func EnsureFileOwner(destPath string, owner string, groupName string) (bool, err
 	return changed, nil
 }
 
-func fileHasHash(f string, expected string) (bool, error) {
-	hashAlgorithm, err := determineHashAlgorithm(expected)
-	if err != nil {
-		return false, nil
-	}
-
-	actual, err := HashFile(f, hashAlgorithm)
+func fileHasHash(f string, expected *hashing.Hash) (bool, error) {
+	actual, err := expected.Algorithm.HashFile(f)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return false, nil
@@ -115,25 +111,13 @@ func fileHasHash(f string, expected string) (bool, error) {
 		return false, err
 	}
 
-	if actual == expected {
+	if actual.Equal(expected) {
 		glog.V(2).Infof("Hash matched for %q: %v", f, expected)
 		return true, nil
 	} else {
 		glog.V(2).Infof("Hash did not match for %q: actual=%v vs expected=%v", f, actual, expected)
 		return false, nil
 	}
-}
-
-func HashFile(f string, hashAlgorithm HashAlgorithm) (string, error) {
-	glog.V(2).Infof("hashing file %q", f)
-
-	fileAsset := NewFileResource(f)
-	hash, err := HashForResource(fileAsset, hashAlgorithm)
-	if err != nil {
-		return "", err
-	}
-
-	return hash, nil
 }
 
 func ParseFileMode(s string, defaultMode os.FileMode) (os.FileMode, error) {

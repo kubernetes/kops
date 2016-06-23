@@ -23,6 +23,8 @@ type Loader struct {
 	tasks  map[string]fi.Task
 
 	tags map[string]struct{}
+
+	TemplateFunctions template.FuncMap
 }
 
 func NewLoader(config *NodeConfig, assets *fi.AssetStore) *Loader {
@@ -31,6 +33,7 @@ func NewLoader(config *NodeConfig, assets *fi.AssetStore) *Loader {
 	l.tasks = make(map[string]fi.Task)
 	l.optionsLoader = loader.NewOptionsLoader(config)
 	l.config = config
+	l.TemplateFunctions = make(template.FuncMap)
 
 	return l
 }
@@ -46,6 +49,9 @@ func (l *Loader) executeTemplate(key string, d string) (string, error) {
 	funcMap["HasTag"] = func(tag string) bool {
 		_, found := l.tags[tag]
 		return found
+	}
+	for k, fn := range l.TemplateFunctions {
+		funcMap[k] = fn
 	}
 	t.Funcs(funcMap)
 

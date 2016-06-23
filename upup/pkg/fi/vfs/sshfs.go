@@ -66,8 +66,30 @@ func (p *SSHPath) newClient() (*sftp.Client, error) {
 	}
 
 }
-func (p *SSHPath) String() string {
+func (p *SSHPath) Path() string {
 	return "ssh://" + p.server + p.path
+}
+
+func (p *SSHPath) String() string {
+	return p.Path()
+}
+
+func (p *SSHPath) Remove() error {
+	sftpClient, err := p.newClient()
+	if err != nil {
+		return err
+	}
+	defer sftpClient.Close()
+
+	err = sftpClient.Remove(p.path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return err
+		}
+		return fmt.Errorf("error deleting %s: %v", p, err)
+	}
+
+	return nil
 }
 
 func (p *SSHPath) Join(relativePath ...string) Path {
@@ -216,7 +238,41 @@ func (p *SSHPath) ReadDir() ([]Path, error) {
 		children = append(children, child)
 	}
 	return children, nil
+}
 
+func (p *SSHPath) ReadTree() ([]Path, error) {
+	sftpClient, err := p.newClient()
+	if err != nil {
+		return nil, err
+	}
+	defer sftpClient.Close()
+
+	var paths []Path
+	err = readSFTPTree(sftpClient, p, &paths)
+	if err != nil {
+		return nil, err
+	}
+	return paths, nil
+}
+
+func readSFTPTree(sftpClient *sftp.Client, p *SSHPath, dest *[]Path) error {
+	files, err := sftpClient.ReadDir(p.path)
+	if err != nil {
+		return err
+	}
+	for _, f := range files {
+		child := NewSSHPath(p.client, p.server, path.Join(p.path, f.Name()), p.sudo)
+
+		*dest = append(*dest, child)
+
+		if f.IsDir() {
+			err = readSFTPTree(sftpClient, child, dest)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func (p *SSHPath) Base() string {

@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"io"
+	"k8s.io/kube-deploy/upup/pkg/fi/vfs"
 	"math/big"
 	"time"
 )
@@ -65,16 +66,27 @@ func (c *Certificate) MarshalJSON() ([]byte, error) {
 }
 
 type CAStore interface {
+	// Cert returns the primary specified certificate
 	Cert(id string) (*Certificate, error)
+	// CertificatePool returns all active certificates with the specified id
+	CertificatePool(id string) (*CertificatePool, error)
 	PrivateKey(id string) (*PrivateKey, error)
 
 	FindCert(id string) (*Certificate, error)
 	FindPrivateKey(id string) (*PrivateKey, error)
 
-	IssueCert(id string, privateKey *PrivateKey, template *x509.Certificate) (*Certificate, error)
-	CreatePrivateKey(id string) (*PrivateKey, error)
+	//IssueCert(id string, privateKey *PrivateKey, template *x509.Certificate) (*Certificate, error)
+	//CreatePrivateKey(id string) (*PrivateKey, error)
+
+	CreateKeypair(id string, template *x509.Certificate) (*Certificate, *PrivateKey, error)
 
 	List() ([]string, error)
+
+	// VFSPath returns the path where the CAStore is stored
+	VFSPath() vfs.Path
+
+	// AddCert adds an alternative certificate to the pool (primarily useful for CAs)
+	AddCert(id string, cert *Certificate) error
 }
 
 func (c *Certificate) AsString() (string, error) {
@@ -306,4 +318,31 @@ func parsePEMPrivateKey(pemData []byte) (crypto.PrivateKey, error) {
 
 		pemData = rest
 	}
+}
+
+type CertificatePool struct {
+	Secondary []*Certificate
+	Primary   *Certificate
+}
+
+func (c *CertificatePool) AsString() (string, error) {
+	// Nicer behaviour because this is called from templates
+	if c == nil {
+		return "", fmt.Errorf("AsString called on nil CertificatePool")
+	}
+
+	var data bytes.Buffer
+	if c.Primary != nil {
+		_, err := c.Primary.WriteTo(&data)
+		if err != nil {
+			return "", fmt.Errorf("error writing SSL certificate: %v", err)
+		}
+	}
+	for _, cert := range c.Secondary {
+		_, err := cert.WriteTo(&data)
+		if err != nil {
+			return "", fmt.Errorf("error writing SSL certificate: %v", err)
+		}
+	}
+	return data.String(), nil
 }

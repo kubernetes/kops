@@ -24,6 +24,10 @@ type CloudConfig struct {
 	Region      string        `json:",omitempty"`
 	Project     string        `json:",omitempty"`
 
+	// Permissions to configure in IAM or GCE
+	MasterPermissions *CloudPermissions `json:",omitempty"`
+	NodePermissions   *CloudPermissions `json:",omitempty"`
+
 	// The internal and external names for the master nodes
 	MasterPublicName   string `json:",omitempty"`
 	MasterInternalName string `json:",omitempty"`
@@ -32,6 +36,10 @@ type CloudConfig struct {
 	// This is a real CIDR, not the internal k8s overlay
 	NetworkCIDR string `json:",omitempty"`
 	NetworkID   string `json:",omitempty"`
+
+	SecretStore string `json:",omitempty"`
+	KeyStore    string `json:",omitempty"`
+	ConfigStore string `json:",omitempty"`
 
 	// The DNS zone we should use when configuring DNS
 	DNSZone string `json:",omitempty"`
@@ -279,4 +287,20 @@ func (z *ZoneConfig) assignCIDR(c *CloudConfig) (string, error) {
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
 func (c *CloudConfig) SharedVPC() bool {
 	return c.NetworkID != ""
+}
+
+// CloudPermissions holds IAM-style permissions
+type CloudPermissions struct {
+	S3Buckets []string `json:",omitempty"`
+}
+
+// AddS3Bucket adds a bucket if it does not already exist
+func (p *CloudPermissions) AddS3Bucket(bucket string) {
+	for _, b := range p.S3Buckets {
+		if b == bucket {
+			return
+		}
+	}
+
+	p.S3Buckets = append(p.S3Buckets, bucket)
 }

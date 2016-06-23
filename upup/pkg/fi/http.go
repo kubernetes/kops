@@ -4,16 +4,17 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"io"
+	"k8s.io/kube-deploy/upup/pkg/fi/hashing"
 	"net/http"
 	"os"
 	"path"
 )
 
-func DownloadURL(url string, dest string, hash string) (string, error) {
-	if hash != "" {
+func DownloadURL(url string, dest string, hash *hashing.Hash) (*hashing.Hash, error) {
+	if hash != nil {
 		match, err := fileHasHash(dest, hash)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		if match {
 			return hash, nil
@@ -23,21 +24,21 @@ func DownloadURL(url string, dest string, hash string) (string, error) {
 	dirMode := os.FileMode(0755)
 	err := downloadURLAlways(url, dest, dirMode)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	if hash != "" {
+	if hash != nil {
 		match, err := fileHasHash(dest, hash)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		if !match {
-			return "", fmt.Errorf("downloaded from %q but hash did not match expected %q", url, hash)
+			return nil, fmt.Errorf("downloaded from %q but hash did not match expected %q", url, hash)
 		}
 	} else {
-		hash, err = HashFile(dest, HashAlgorithmSHA256)
+		hash, err = hashing.HashAlgorithmSHA256.HashFile(dest)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 	}
 

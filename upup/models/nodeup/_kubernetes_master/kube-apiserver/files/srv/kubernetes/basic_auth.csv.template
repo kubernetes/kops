@@ -1,1 +1,1 @@
-{{ .KubePassword }},{{ .KubeUser }},admin
+{{ GetToken "kube" }},{{ .KubeUser }},admin

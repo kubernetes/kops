@@ -1,1 +1,1 @@
-{{ .APIServer.Certificate.AsString }}
+{{ (Certificate "master").AsString }}

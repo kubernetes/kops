@@ -12,18 +12,20 @@ import (
 type Context struct {
 	Tmpdir string
 
-	Target  Target
-	Cloud   Cloud
-	CAStore CAStore
+	Target      Target
+	Cloud       Cloud
+	CAStore     CAStore
+	SecretStore SecretStore
 
 	CheckExisting bool
 }
 
-func NewContext(target Target, cloud Cloud, castore CAStore, checkExisting bool) (*Context, error) {
+func NewContext(target Target, cloud Cloud, castore CAStore, secretStore SecretStore, checkExisting bool) (*Context, error) {
 	c := &Context{
 		Cloud:         cloud,
 		Target:        target,
 		CAStore:       castore,
+		SecretStore:   secretStore,
 		CheckExisting: checkExisting,
 	}
 

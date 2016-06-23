@@ -5,6 +5,7 @@ import (
 	"github.com/golang/glog"
 	"io"
 	"io/ioutil"
+	"k8s.io/kube-deploy/upup/pkg/fi/hashing"
 	"os"
 	"path"
 	"sync"
@@ -15,6 +16,7 @@ type FSPath struct {
 }
 
 var _ Path = &FSPath{}
+var _ HasHash = &FSPath{}
 
 func NewFSPath(location string) *FSPath {
 	return &FSPath{location: location}
@@ -100,6 +102,9 @@ func (p *FSPath) ReadFile() ([]byte, error) {
 func (p *FSPath) ReadDir() ([]Path, error) {
 	files, err := ioutil.ReadDir(p.location)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, err
+		}
 		return nil, err
 	}
 	var paths []Path
@@ -109,6 +114,55 @@ func (p *FSPath) ReadDir() ([]Path, error) {
 	return paths, nil
 }
 
+func (p *FSPath) ReadTree() ([]Path, error) {
+	var paths []Path
+	err := readTree(p.location, &paths)
+	if err != nil {
+		return nil, err
+	}
+	return paths, nil
+}
+
+func readTree(base string, dest *[]Path) error {
+	files, err := ioutil.ReadDir(base)
+	if err != nil {
+		return err
+	}
+	for _, f := range files {
+		p := path.Join(base, f.Name())
+		*dest = append(*dest, NewFSPath(p))
+		if f.IsDir() {
+			err = readTree(p, dest)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 func (p *FSPath) Base() string {
 	return path.Base(p.location)
+}
+
+func (p *FSPath) Path() string {
+	return p.location
+}
+
+func (p *FSPath) String() string {
+	return p.Path()
+}
+
+func (p *FSPath) Remove() error {
+	return os.Remove(p.location)
+}
+
+func (p *FSPath) PreferredHash() (*hashing.Hash, error) {
+	return p.Hash(hashing.HashAlgorithmSHA256)
+}
+
+func (p *FSPath) Hash(a hashing.HashAlgorithm) (*hashing.Hash, error) {
+	glog.V(2).Infof("hashing file %q", p.location)
+
+	return a.HashFile(p.location)
 }
