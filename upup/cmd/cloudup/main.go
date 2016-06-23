@@ -74,7 +74,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	statePath, err := fi.BuildVfsPath(*stateLocation)
+	statePath, err := vfs.Context.BuildVfsPath(*stateLocation)
 	if err != nil {
 		glog.Errorf("error building state location: %v", err)
 		os.Exit(1)
@@ -364,7 +364,7 @@ func (c *CreateClusterCmd) Run() error {
 
 	if c.Config.KubernetesVersion == "" {
 		stableURL := "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
-		b, err := utils.ReadLocation(stableURL)
+		b, err := vfs.Context.ReadFile(stableURL)
 		if err != nil {
 			return fmt.Errorf("--kubernetes-version not specified, and unable to download latest version from %q: %v", stableURL, err)
 		}

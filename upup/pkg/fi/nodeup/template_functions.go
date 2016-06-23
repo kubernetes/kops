@@ -5,6 +5,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"text/template"
+	"k8s.io/kube-deploy/upup/pkg/fi/vfs"
 )
 
 type templateFunctions struct {
@@ -22,7 +23,7 @@ func buildTemplateFunctions(config *NodeConfig, dest template.FuncMap) error {
 
 	if config.SecretStore != "" {
 		glog.Infof("Building SecretStore at %q", config.SecretStore)
-		p, err := fi.BuildVfsPath(config.SecretStore)
+		p, err := vfs.Context.BuildVfsPath(config.SecretStore)
 		if err != nil {
 			return fmt.Errorf("error building secret store path: %v", err)
 		}
@@ -37,7 +38,7 @@ func buildTemplateFunctions(config *NodeConfig, dest template.FuncMap) error {
 
 	if config.KeyStore != "" {
 		glog.Infof("Building KeyStore at %q", config.KeyStore)
-		p, err := fi.BuildVfsPath(config.KeyStore)
+		p, err := vfs.Context.BuildVfsPath(config.KeyStore)
 		if err != nil {
 			return fmt.Errorf("error building key store path: %v", err)
 		}

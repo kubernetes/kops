@@ -2,13 +2,8 @@ package fi
 
 import (
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi/utils"
 	"k8s.io/kube-deploy/upup/pkg/fi/vfs"
-	"net/url"
 	"os"
 	"strings"
 )
@@ -98,52 +93,4 @@ func (s *VFSStateStore) WriteConfig(config interface{}) error {
 		return fmt.Errorf("error writing configuration file %s: %v", configPath, err)
 	}
 	return nil
-}
-
-func BuildVfsPath(p string) (vfs.Path, error) {
-	if strings.HasPrefix(p, "s3://") {
-		u, err := url.Parse(p)
-		if err != nil {
-			return nil, fmt.Errorf("invalid s3 path: %q", err)
-		}
-
-		var region string
-		{
-			config := aws.NewConfig().WithRegion("us-east-1")
-			session := session.New()
-			s3Client := s3.New(session, config)
-
-			bucket := strings.TrimSuffix(u.Host, "/")
-			request := &s3.GetBucketLocationInput{}
-			request.Bucket = aws.String(bucket)
-
-			response, err := s3Client.GetBucketLocation(request)
-			if err != nil {
-				// TODO: Auto-create bucket?
-				return nil, fmt.Errorf("error getting location for S3 bucket %q: %v", bucket, err)
-			}
-			if response.LocationConstraint == nil {
-				// US Classic does not return a region
-				region = "us-east-1"
-			} else {
-				region = *response.LocationConstraint
-				// Another special case: "EU" can mean eu-west-1
-				if region == "EU" {
-					region = "eu-west-1"
-				}
-			}
-			glog.V(2).Infof("Found bucket %q in region %q", bucket, region)
-		}
-
-		{
-			config := aws.NewConfig().WithRegion(region)
-			session := session.New()
-			s3Client := s3.New(session, config)
-
-			s3path := vfs.NewS3Path(s3Client, u.Host, u.Path)
-			return s3path, nil
-		}
-	}
-
-	return nil, fmt.Errorf("unknown / unhandled path type: %q", p)
 }
