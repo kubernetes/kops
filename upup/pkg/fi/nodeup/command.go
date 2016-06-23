@@ -8,6 +8,7 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kube-deploy/upup/pkg/fi/nodeup/local"
 	"k8s.io/kube-deploy/upup/pkg/fi/utils"
+	"k8s.io/kube-deploy/upup/pkg/fi/vfs"
 )
 
 type NodeUpCommand struct {
@@ -20,7 +21,7 @@ type NodeUpCommand struct {
 
 func (c *NodeUpCommand) Run(out io.Writer) error {
 	if c.ConfigLocation != "" {
-		config, err := utils.ReadLocation(c.ConfigLocation)
+		config, err := vfs.Context.ReadFile(c.ConfigLocation)
 		if err != nil {
 			return fmt.Errorf("error loading configuration %q: %v", c.ConfigLocation, err)
 		}
