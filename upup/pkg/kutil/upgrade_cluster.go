@@ -51,7 +51,7 @@ func (x *UpgradeCluster) Upgrade() error {
 
 	dhcpOptions, err := DescribeDhcpOptions(x.Cloud)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Find masters
@@ -124,7 +124,7 @@ func (x *UpgradeCluster) Upgrade() error {
 	// Retag DHCP options
 	// We have to be careful because DHCP options can be shared
 	for _, dhcpOption := range dhcpOptions {
-		clusterTag := dhcpOption.Tags[awsup.TagClusterName]
+		clusterTag, _ := awsup.FindEC2Tag(dhcpOption.Tags, awsup.TagClusterName)
 		if clusterTag != "" {
 			if clusterTag != oldClusterName {
 				return fmt.Errorf("DHCP options are tagged with a different cluster: %v", clusterTag)

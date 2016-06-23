@@ -446,6 +446,7 @@ func (c *CreateClusterCmd) Run() error {
 	switch c.Config.CloudProvider {
 	case "gce":
 		{
+			glog.Fatalf("GCE is (probably) not working currently - please ping @justinsb for cleanup")
 			tags["_gce"] = struct{}{}
 			c.Config.NodeUpTags = append(c.Config.NodeUpTags, "_gce")
 
