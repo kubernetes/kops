@@ -90,7 +90,7 @@ function try-download-release() {
   download-or-bust "${nodeup_tar_hash}" "${nodeup_tar_urls[@]}"
 
   echo "Unpacking and checking integrity of nodeup"
-  rm -rf nodeupcurl https://kubeupv2.s3.amazonaws.com/nodeup/nodeup.tar.gz
+  rm -rf nodeupcurl ${nodeup_tar_urls[@]}
 
   tar xzf "${nodeup_tar}" && tar tzf "${nodeup_tar}" > /dev/null
 }
