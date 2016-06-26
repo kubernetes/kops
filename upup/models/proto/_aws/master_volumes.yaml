@@ -1,13 +1,14 @@
-{{ range $zone := .MasterZones }}
+{{ range $vol := .MasterVolumes }}
 
 # EBS volume per zone, for etcd
-ebsVolume/kubernetes.master.{{$zone}}.{{ $.ClusterName }}:
-  availabilityZone: {{ $zone }}
-  sizeGB: {{ or $.MasterVolumeSize 20 }}
-  volumeType: {{ or $.MasterVolumeType "gp2" }}
+ebsVolume/{{$vol.Name}}.{{ $.ClusterName }}:
+  availabilityZone: {{ $vol.Zone }}
+  sizeGB: {{ or $vol.Size 20 }}
+  volumeType: {{ or $vol.Type "gp2" }}
   tags:
     k8s.io/role/master: "1"
-    k8s.io/etcd/main: "{{ $zone }}/{{ join $.MasterZones "," }}"
-    k8s.io/etcd/events: "{{ $zone }}/{{ join $.MasterZones "," }}"
+    {{ range $k, $v := $vol.Roles }}
+    k8s.io/{{$k}}: "{{$v}}"
+    {{ end }}
 
 {{ end }}

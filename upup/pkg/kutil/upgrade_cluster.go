@@ -18,13 +18,14 @@ type UpgradeCluster struct {
 
 	StateStore fi.StateStore
 
-	Config *cloudup.CloudConfig
+	ClusterConfig *cloudup.ClusterConfig
+	NodeSets      []*cloudup.NodeSetConfig
 }
 
 func (x *UpgradeCluster) Upgrade() error {
 	awsCloud := x.Cloud.(*awsup.AWSCloud)
 
-	config := x.Config
+	clusterConfig := x.ClusterConfig
 
 	newClusterName := x.NewClusterName
 	if newClusterName == "" {
@@ -98,7 +99,7 @@ func (x *UpgradeCluster) Upgrade() error {
 	// Retag VPC
 	// We have to be careful because VPCs can be shared
 	{
-		vpcID := config.NetworkID
+		vpcID := clusterConfig.NetworkID
 		if vpcID != "" {
 			tags, err := awsCloud.GetTags(vpcID)
 			if err != nil {
@@ -163,8 +164,8 @@ func (x *UpgradeCluster) Upgrade() error {
 		}
 	}
 
-	config.ClusterName = newClusterName
-	err = x.StateStore.WriteConfig(config)
+	clusterConfig.ClusterName = newClusterName
+	err = cloudup.WriteConfig(x.StateStore, clusterConfig, x.NodeSets)
 	if err != nil {
 		return fmt.Errorf("error writing updated configuration: %v", err)
 	}

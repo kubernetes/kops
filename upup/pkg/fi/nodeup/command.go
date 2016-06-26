@@ -5,6 +5,7 @@ import (
 	"github.com/golang/glog"
 	"io"
 	"k8s.io/kube-deploy/upup/pkg/fi"
+	"k8s.io/kube-deploy/upup/pkg/fi/cloudup"
 	"k8s.io/kube-deploy/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kube-deploy/upup/pkg/fi/nodeup/local"
 	"k8s.io/kube-deploy/upup/pkg/fi/utils"
@@ -12,35 +13,74 @@ import (
 )
 
 type NodeUpCommand struct {
-	Config         *NodeConfig
+	config         *NodeUpConfig
+	cluster        *cloudup.ClusterConfig
 	ConfigLocation string
 	ModelDir       string
 	AssetDir       string
 	Target         string
+	FSRoot         string
 }
 
 func (c *NodeUpCommand) Run(out io.Writer) error {
+	if c.FSRoot == "" {
+		return fmt.Errorf("FSRoot is required")
+	}
+
 	if c.ConfigLocation != "" {
 		config, err := vfs.Context.ReadFile(c.ConfigLocation)
 		if err != nil {
 			return fmt.Errorf("error loading configuration %q: %v", c.ConfigLocation, err)
 		}
 
-		err = utils.YamlUnmarshal(config, c.Config)
+		err = utils.YamlUnmarshal(config, &c.config)
 		if err != nil {
 			return fmt.Errorf("error parsing configuration %q: %v", c.ConfigLocation, err)
 		}
+	} else {
+		return fmt.Errorf("ConfigLocation is required")
 	}
 
 	if c.AssetDir == "" {
 		return fmt.Errorf("AssetDir is required")
 	}
 	assets := fi.NewAssetStore(c.AssetDir)
-	for _, asset := range c.Config.Assets {
+	for _, asset := range c.config.Assets {
 		err := assets.Add(asset)
 		if err != nil {
 			return fmt.Errorf("error adding asset %q: %v", asset, err)
 		}
+	}
+
+	//c.nodeset = &cloudup.NodeSetConfig{}
+	//if c.config.NodeSetLocation != "" {
+	//	b, err := vfs.Context.ReadFile(c.config.NodeSetLocation)
+	//	if err != nil {
+	//		return fmt.Errorf("error loading NodeSet %q: %v", c.config.NodeSetLocation, err)
+	//	}
+	//
+	//	err = utils.YamlUnmarshal(b, c.nodeset)
+	//	if err != nil {
+	//		return fmt.Errorf("error parsing NodeSet %q: %v", c.config.NodeSetLocation, err)
+	//	}
+	//} else {
+	//	return fmt.Errorf("NodeSetLocation is required")
+	//}
+
+	c.cluster = &cloudup.ClusterConfig{}
+	if c.config.ClusterLocation != "" {
+		b, err := vfs.Context.ReadFile(c.config.ClusterLocation)
+		if err != nil {
+			return fmt.Errorf("error loading Cluster %q: %v", c.config.ClusterLocation, err)
+		}
+
+		err = utils.YamlUnmarshal(b, c.cluster)
+		if err != nil {
+			return fmt.Errorf("error parsing Cluster %q: %v", c.config.ClusterLocation, err)
+		}
+	} else {
+		// TODO Infer this from NodeSetLocation?
+		return fmt.Errorf("ClusterLocation is required")
 	}
 
 	//if c.Config.ConfigurationStore != "" {
@@ -63,12 +103,26 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	//	c.Config.Tags = append(c.Config.Tags, "_not_config_store")
 	//}
 
-	loader := NewLoader(c.Config, assets)
+	osTags, err := FindOSTags(c.FSRoot)
+	if err != nil {
+		return fmt.Errorf("error determining OS tags: %v", err)
+	}
 
-	err := buildTemplateFunctions(c.Config, loader.TemplateFunctions)
+	tags := make(map[string]struct{})
+	for _, tag := range osTags {
+		tags[tag] = struct{}{}
+	}
+	for _, tag := range c.config.Tags {
+		tags[tag] = struct{}{}
+	}
+
+	loader := NewLoader(c.config, c.cluster, assets, tags)
+
+	tf, err := newTemplateFunctions(c.config, c.cluster, tags)
 	if err != nil {
 		return fmt.Errorf("error initializing: %v", err)
 	}
+	tf.populate(loader.TemplateFunctions)
 
 	taskMap, err := loader.Build(c.ModelDir)
 	if err != nil {

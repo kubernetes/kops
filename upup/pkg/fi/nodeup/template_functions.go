@@ -1,55 +1,74 @@
 package nodeup
 
 import (
+	"encoding/base64"
 	"fmt"
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
-	"text/template"
+	"k8s.io/kube-deploy/upup/pkg/fi/cloudup"
 	"k8s.io/kube-deploy/upup/pkg/fi/vfs"
+	"text/template"
 )
 
+const TagMaster = "_kubernetes_master"
+
+// templateFunctions is a simple helper-class for the functions accessible to templates
 type templateFunctions struct {
-	config *NodeConfig
+	nodeupConfig *NodeUpConfig
+	cluster      *cloudup.ClusterConfig
 	// keyStore is populated with a KeyStore, if KeyStore is set
 	keyStore fi.CAStore
 	// secretStore is populated with a SecretStore, if SecretStore is set
 	secretStore fi.SecretStore
+
+	tags map[string]struct{}
 }
 
-func buildTemplateFunctions(config *NodeConfig, dest template.FuncMap) error {
+// newTemplateFunctions is the constructor for templateFunctions
+func newTemplateFunctions(nodeupConfig *NodeUpConfig, cluster *cloudup.ClusterConfig, tags map[string]struct{}) (*templateFunctions, error) {
 	t := &templateFunctions{
-		config: config,
+		nodeupConfig: nodeupConfig,
+		cluster:      cluster,
+		tags:         tags,
 	}
 
-	if config.SecretStore != "" {
-		glog.Infof("Building SecretStore at %q", config.SecretStore)
-		p, err := vfs.Context.BuildVfsPath(config.SecretStore)
+	if cluster.SecretStore != "" {
+		glog.Infof("Building SecretStore at %q", cluster.SecretStore)
+		p, err := vfs.Context.BuildVfsPath(cluster.SecretStore)
 		if err != nil {
-			return fmt.Errorf("error building secret store path: %v", err)
+			return nil, fmt.Errorf("error building secret store path: %v", err)
 		}
 
 		secretStore, err := fi.NewVFSSecretStore(p)
 		if err != nil {
-			return fmt.Errorf("error building secret store: %v", err)
+			return nil, fmt.Errorf("error building secret store: %v", err)
 		}
 
 		t.secretStore = secretStore
+	} else {
+		return nil, fmt.Errorf("SecretStore not set")
 	}
 
-	if config.KeyStore != "" {
-		glog.Infof("Building KeyStore at %q", config.KeyStore)
-		p, err := vfs.Context.BuildVfsPath(config.KeyStore)
+	if cluster.KeyStore != "" {
+		glog.Infof("Building KeyStore at %q", cluster.KeyStore)
+		p, err := vfs.Context.BuildVfsPath(cluster.KeyStore)
 		if err != nil {
-			return fmt.Errorf("error building key store path: %v", err)
+			return nil, fmt.Errorf("error building key store path: %v", err)
 		}
 
 		keyStore, err := fi.NewVFSCAStore(p, false)
 		if err != nil {
-			return fmt.Errorf("error building key store: %v", err)
+			return nil, fmt.Errorf("error building key store: %v", err)
 		}
 		t.keyStore = keyStore
+	} else {
+		return nil, fmt.Errorf("KeyStore not set")
 	}
 
+	return t, nil
+}
+
+func (t *templateFunctions) populate(dest template.FuncMap) {
 	dest["CACertificatePool"] = t.CACertificatePool
 	dest["CACertificate"] = t.CACertificate
 	dest["PrivateKey"] = t.PrivateKey
@@ -57,18 +76,58 @@ func buildTemplateFunctions(config *NodeConfig, dest template.FuncMap) error {
 	dest["AllTokens"] = t.AllTokens
 	dest["GetToken"] = t.GetToken
 
-	return nil
+	dest["BuildFlags"] = buildFlags
+	dest["Base64Encode"] = func(s string) string {
+		return base64.StdEncoding.EncodeToString([]byte(s))
+	}
+	dest["HasTag"] = t.HasTag
+	dest["IsMaster"] = t.IsMaster
+
+	// TODO: We may want to move these to a nodeset / masterset specific thing
+	dest["KubeDNS"] = func() *cloudup.KubeDNSConfig {
+		return t.cluster.KubeDNS
+	}
+	dest["KubeScheduler"] = func() *cloudup.KubeSchedulerConfig {
+		return t.cluster.KubeScheduler
+	}
+	dest["APIServer"] = func() *cloudup.APIServerConfig {
+		return t.cluster.APIServer
+	}
+	dest["KubeControllerManager"] = func() *cloudup.KubeControllerManagerConfig {
+		return t.cluster.KubeControllerManager
+	}
+	dest["KubeProxy"] = func() *cloudup.KubeProxyConfig {
+		return t.cluster.KubeProxy
+	}
+	dest["Kubelet"] = func() *cloudup.KubeletConfig {
+		if t.IsMaster() {
+			return t.cluster.MasterKubelet
+		} else {
+			return t.cluster.Kubelet
+		}
+	}
+}
+
+// IsMaster returns true if we are tagged as a master
+func (t *templateFunctions) IsMaster() bool {
+	return t.HasTag(TagMaster)
+}
+
+// Tag returns true if we are tagged with the specified tag
+func (t *templateFunctions) HasTag(tag string) bool {
+	_, found := t.tags[tag]
+	return found
 }
 
 // CACertificatePool returns the set of valid CA certificates for the cluster
-func (c *templateFunctions) CACertificatePool() (*fi.CertificatePool, error) {
-	if c.keyStore != nil {
-		return c.keyStore.CertificatePool(fi.CertificateId_CA)
+func (t *templateFunctions) CACertificatePool() (*fi.CertificatePool, error) {
+	if t.keyStore != nil {
+		return t.keyStore.CertificatePool(fi.CertificateId_CA)
 	}
 
 	// Fallback to direct properties
 	glog.Infof("Falling back to direct configuration for keystore")
-	cert, err := c.CACertificate()
+	cert, err := t.CACertificate()
 	if err != nil {
 		return nil, err
 	}
@@ -81,86 +140,45 @@ func (c *templateFunctions) CACertificatePool() (*fi.CertificatePool, error) {
 }
 
 // CACertificate returns the primary CA certificate for the cluster
-func (c *templateFunctions) CACertificate() (*fi.Certificate, error) {
-	if c.keyStore != nil {
-		return c.keyStore.Cert(fi.CertificateId_CA)
-	}
-
-	// Fallback to direct properties
-	return c.Certificate(fi.CertificateId_CA)
+func (t *templateFunctions) CACertificate() (*fi.Certificate, error) {
+	return t.keyStore.Cert(fi.CertificateId_CA)
 }
 
 // PrivateKey returns the specified private key
-func (c *templateFunctions) PrivateKey(id string) (*fi.PrivateKey, error) {
-	if c.keyStore != nil {
-		return c.keyStore.PrivateKey(id)
-	}
-
-	// Fallback to direct properties
-	glog.Infof("Falling back to direct configuration for keystore")
-	k := c.config.PrivateKeys[id]
-	if k == nil {
-		return nil, fmt.Errorf("private key not found: %q (with fallback)", id)
-	}
-	return k, nil
+func (t *templateFunctions) PrivateKey(id string) (*fi.PrivateKey, error) {
+	return t.keyStore.PrivateKey(id)
 }
 
 // Certificate returns the specified private key
-func (c *templateFunctions) Certificate(id string) (*fi.Certificate, error) {
-	if c.keyStore != nil {
-		return c.keyStore.Cert(id)
-	}
-
-	// Fallback to direct properties
-	glog.Infof("Falling back to direct configuration for keystore")
-	cert := c.config.Certificates[id]
-	if cert == nil {
-		return nil, fmt.Errorf("certificate not found: %q (with fallback)", id)
-	}
-	return cert, nil
+func (t *templateFunctions) Certificate(id string) (*fi.Certificate, error) {
+	return t.keyStore.Cert(id)
 }
 
 // AllTokens returns a map of all tokens
-func (n *templateFunctions) AllTokens() (map[string]string, error) {
-	if n.secretStore != nil {
-		tokens := make(map[string]string)
-		ids, err := n.secretStore.ListSecrets()
+func (t *templateFunctions) AllTokens() (map[string]string, error) {
+	tokens := make(map[string]string)
+	ids, err := t.secretStore.ListSecrets()
+	if err != nil {
+		return nil, err
+	}
+	for _, id := range ids {
+		token, err := t.secretStore.FindSecret(id)
 		if err != nil {
 			return nil, err
 		}
-		for _, id := range ids {
-			token, err := n.secretStore.FindSecret(id)
-			if err != nil {
-				return nil, err
-			}
-			tokens[id] = string(token.Data)
-		}
-		return tokens, nil
+		tokens[id] = string(token.Data)
 	}
-
-	// Fallback to direct configuration
-	glog.Infof("Falling back to direct configuration for secrets")
-	return n.config.Tokens, nil
+	return tokens, nil
 }
 
 // GetToken returns the specified token
-func (n *templateFunctions) GetToken(key string) (string, error) {
-	if n.secretStore != nil {
-		token, err := n.secretStore.FindSecret(key)
-		if err != nil {
-			return "", err
-		}
-		if token == nil {
-			return "", fmt.Errorf("token not found: %q", key)
-		}
-		return string(token.Data), nil
+func (t *templateFunctions) GetToken(key string) (string, error) {
+	token, err := t.secretStore.FindSecret(key)
+	if err != nil {
+		return "", err
 	}
-
-	// Fallback to direct configuration
-	glog.Infof("Falling back to direct configuration for secrets")
-	token := n.config.Tokens[key]
-	if token == "" {
+	if token == nil {
 		return "", fmt.Errorf("token not found: %q", key)
 	}
-	return token, nil
+	return string(token.Data), nil
 }

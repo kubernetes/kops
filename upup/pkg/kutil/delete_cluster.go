@@ -36,8 +36,9 @@ type ResourceTracker struct {
 	Type string
 	ID   string
 
-	blocks []string
-	done   bool
+	blocks  []string
+	blocked []string
+	done    bool
 
 	deleter func(cloud fi.Cloud, tracker *ResourceTracker) error
 }
@@ -145,6 +146,10 @@ func (c *DeleteCluster) DeleteResources(resources map[string]*ResourceTracker) e
 	for k, t := range resources {
 		for _, block := range t.blocks {
 			depMap[block] = append(depMap[block], k)
+		}
+
+		for _, blocked := range t.blocked {
+			depMap[k] = append(depMap[k], blocked)
 		}
 
 		if t.done {
@@ -700,9 +705,16 @@ func ListRouteTables(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, er
 		}
 
 		var blocks []string
+		var blocked []string
+
 		blocks = append(blocks, "vpc:"+aws.StringValue(rt.VpcId))
 
+		for _, a := range rt.Associations {
+			blocked = append(blocked, "subnet:"+aws.StringValue(a.SubnetId))
+		}
+
 		tracker.blocks = blocks
+		tracker.blocked = blocked
 
 		trackers = append(trackers, tracker)
 	}
@@ -970,7 +982,7 @@ func ListAutoScalingGroups(cloud fi.Cloud, clusterName string) ([]*ResourceTrack
 			}
 			blocks = append(blocks, "subnet:"+subnet)
 		}
-		blocks = append(blocks, "autoscaling-launchconfiguration:"+aws.StringValue(asg.LaunchConfigurationName))
+		blocks = append(blocks, "launchconfig:"+aws.StringValue(asg.LaunchConfigurationName))
 
 		tracker.blocks = blocks
 
@@ -1014,12 +1026,12 @@ func ListAutoScalingLaunchConfigurations(cloud fi.Cloud, clusterName string) ([]
 				tracker := &ResourceTracker{
 					Name:    aws.StringValue(t.LaunchConfigurationName),
 					ID:      aws.StringValue(t.LaunchConfigurationName),
-					Type:    "autoscaling-launchconfiguration",
+					Type:    "launchconfig",
 					deleter: DeleteAutoscalingLaunchConfiguration,
 				}
 
 				var blocks []string
-				//blocks = append(blocks, "autoscaling-launchconfiguration:" + aws.StringValue(asg.LaunchConfigurationName))
+				//blocks = append(blocks, "launchconfig:" + aws.StringValue(asg.LaunchConfigurationName))
 
 				tracker.blocks = blocks
 

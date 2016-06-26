@@ -44,23 +44,22 @@ func (c *UpgradeClusterCmd) Run() error {
 		return fmt.Errorf("error state store: %v", err)
 	}
 
-	config := &cloudup.CloudConfig{}
-	err = stateStore.ReadConfig(config)
+	cluster, nodeSets, err := cloudup.ReadConfig(stateStore)
 	if err != nil {
 		return fmt.Errorf("error reading configuration: %v", err)
 	}
 
-	oldClusterName := config.ClusterName
+	oldClusterName := cluster.ClusterName
 	if oldClusterName == "" {
 		return fmt.Errorf("(Old) ClusterName must be set in configuration")
 	}
 
-	if len(config.NodeZones) == 0 {
-		return fmt.Errorf("Configuration must include NodeZones")
+	if len(cluster.Zones) == 0 {
+		return fmt.Errorf("Configuration must include Zones")
 	}
 
 	region := ""
-	for _, zone := range config.NodeZones {
+	for _, zone := range cluster.Zones {
 		if len(zone.Name) <= 2 {
 			return fmt.Errorf("Invalid AWS zone: %q", zone.Name)
 		}
@@ -83,7 +82,8 @@ func (c *UpgradeClusterCmd) Run() error {
 	d.NewClusterName = c.NewClusterName
 	d.OldClusterName = oldClusterName
 	d.Cloud = cloud
-	d.Config = config
+	d.ClusterConfig = cluster
+	d.NodeSets = nodeSets
 	d.StateStore = stateStore
 
 	err = d.Upgrade()

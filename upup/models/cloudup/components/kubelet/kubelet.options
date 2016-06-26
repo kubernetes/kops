@@ -1,0 +1,17 @@
+Kubelet:
+  EnableDebuggingHandlers: true
+  Config: /etc/kubernetes/manifests
+  AllowPrivileged: true
+  LogLevel: 2
+  ClusterDNS: 10.0.0.10
+  ClusterDomain: cluster.local
+  ConfigureCBR0: true
+  BabysitDaemons: true
+  APIServers: https://{{ .MasterInternalName }}
+
+MasterKubelet:
+  RegisterSchedulable: false
+  ReconcileCIDR: false
+  EnableDebuggingHandlers: false
+  HairpinMode: none
+  PodCIDR: 10.123.45.0/30

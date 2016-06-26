@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
@@ -8,6 +9,20 @@ import (
 )
 
 var SkipReflection = errors.New("skip this value")
+
+// JsonMergeStruct merges src into dest
+// It uses a JSON marshal & unmarshal, so only fields that are JSON-visible will be copied
+func JsonMergeStruct(dest, src interface{}) {
+	// Not the most efficient approach, but simple & relatively well defined
+	j, err := json.Marshal(src)
+	if err != nil {
+		glog.Fatalf("error marshalling config: %v", err)
+	}
+	err = json.Unmarshal(j, dest)
+	if err != nil {
+		glog.Fatalf("error unmarshalling config: %v", err)
+	}
+}
 
 // InvokeMethod calls the specified method by reflection
 func InvokeMethod(target interface{}, name string, args ...interface{}) ([]reflect.Value, error) {

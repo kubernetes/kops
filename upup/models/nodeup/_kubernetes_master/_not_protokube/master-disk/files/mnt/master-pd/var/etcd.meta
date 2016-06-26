@@ -1,4 +1,0 @@
-owner: etcd
-group: etcd
-directory: true
-mode: "0700"

@@ -1,13 +1,13 @@
 MasterImage: k8s-1-2-debian-jessie-amd64-2016-04-17
-{{ if gt .NodeCount 500 }}
+{{ if gt .TotalNodeCount 500 }}
 MasterMachineType: n1-standard-32
-{{ else if gt .NodeCount 250 }}
+{{ else if gt .TotalNodeCount 250 }}
 MasterMachineType: n1-standard-16
-{{ else if gt .NodeCount 100 }}
+{{ else if gt .TotalNodeCount 100 }}
 MasterMachineType: n1-standard-8
-{{ else if gt .NodeCount 10 }}
+{{ else if gt .TotalNodeCount 10 }}
 MasterMachineType: n1-standard-4
-{{ else if gt .NodeCount 5 }}
+{{ else if gt .TotalNodeCount 5 }}
 MasterMachineType: n1-standard-2
 {{ else }}
 MasterMachineType: n1-standard-1
@@ -15,4 +15,3 @@ MasterMachineType: n1-standard-1
 MasterVolumeType: pd-ssd
 
 NodeImage: k8s-1-2-debian-jessie-amd64-2016-04-17
-NodeMachineType: n1-standard-2

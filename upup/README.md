@@ -40,7 +40,7 @@ you should use Go 1.6 or later)
 * Execute:
 ```
 export MYZONE=<kubernetes.myzone.com>
-${GOPATH}/bin/cloudup --v=0 --logtostderr --cloud=aws --zones=us-east-1c --name=${MYZONE}
+${GOPATH}/bin/cloudup --v=0 --logtostderr --cloud=aws --zones=us-east-1c --name=${MYZONE} --state s3://<mybucket>/${MYZONE}
 ```
 
 If you have problems, please set `--v=8 --logtostderr` and open an issue, and ping justinsb on slack!
@@ -51,7 +51,7 @@ The upup tool is a CLI for doing administrative tasks.  You can use it to genera
 
 ```
 export MYZONE=<kubernetes.myzone.com>
-${GOPATH}/bin/upup kubecfg generate --state=state --name=${MYZONE} --cloud=aws
+${GOPATH}/bin/upup kubecfg generate  --state s3://<mybucket>/${MYZONE} 
 ```
 
 ## Delete the cluster

@@ -29,34 +29,37 @@ func (x *ExportCluster) ReverseAWS() error {
 		return fmt.Errorf("ClusterName must be specified")
 	}
 
-	k8s := &cloudup.CloudConfig{}
-	k8s.CloudProvider = "aws"
-	k8s.ClusterName = clusterName
+	clusterConfig := &cloudup.ClusterConfig{}
+	clusterConfig.CloudProvider = "aws"
+	clusterConfig.ClusterName = clusterName
+
+	masterConfig := &cloudup.MasterConfig{}
+	clusterConfig.Masters = append(clusterConfig.Masters, masterConfig)
 
 	instances, err := findInstances(awsCloud)
 	if err != nil {
 		return fmt.Errorf("error finding instances: %v", err)
 	}
 
-	var master *ec2.Instance
+	var masterInstance *ec2.Instance
 	for _, instance := range instances {
 		role, _ := awsup.FindEC2Tag(instance.Tags, "Role")
 		if role == clusterName+"-master" {
-			if master != nil {
+			if masterInstance != nil {
 				return fmt.Errorf("found multiple masters")
 			}
-			master = instance
+			masterInstance = instance
 		}
 	}
-	if master == nil {
+	if masterInstance == nil {
 		return fmt.Errorf("could not find master node")
 	}
-	masterInstanceID := aws.StringValue(master.InstanceId)
+	masterInstanceID := aws.StringValue(masterInstance.InstanceId)
 	glog.Infof("Found master: %q", masterInstanceID)
 
-	k8s.MasterMachineType = aws.StringValue(master.InstanceType)
+	masterConfig.MachineType = aws.StringValue(masterInstance.InstanceType)
 
-	masterSubnetID := aws.StringValue(master.SubnetId)
+	masterSubnetID := aws.StringValue(masterInstance.SubnetId)
 
 	subnets, err := DescribeSubnets(x.Cloud)
 	if err != nil {
@@ -75,17 +78,19 @@ func (x *ExportCluster) ReverseAWS() error {
 		return fmt.Errorf("cannot find subnet %q", masterSubnetID)
 	}
 
-	vpcID := aws.StringValue(master.VpcId)
-	k8s.NetworkID = vpcID
+	vpcID := aws.StringValue(masterInstance.VpcId)
+	clusterConfig.NetworkID = vpcID
 
 	az := aws.StringValue(masterSubnet.AvailabilityZone)
-	k8s.MasterZones = []string{az}
-	k8s.NodeZones = append(k8s.NodeZones, &cloudup.ZoneConfig{
+	masterConfig.Zone = az
+	clusterConfig.Zones = append(clusterConfig.Zones, &cloudup.ZoneConfig{
 		Name: az,
+
+		// We will allocate a new CIDR
 		//CIDR: aws.StringValue(masterSubnet.CidrBlock),
 	})
 
-	userData, err := GetInstanceUserData(awsCloud, aws.StringValue(master.InstanceId))
+	userData, err := GetInstanceUserData(awsCloud, aws.StringValue(masterInstance.InstanceId))
 	if err != nil {
 		return fmt.Errorf("error getting master user-data: %v", err)
 	}
@@ -122,8 +127,6 @@ func (x *ExportCluster) ReverseAWS() error {
 		return fmt.Errorf("INSTANCE_PREFIX %q did not match cluster name %q", instancePrefix, clusterName)
 	}
 
-	k8s.NodeMachineType = k8s.MasterMachineType
-
 	//k8s.NodeMachineType, err = InstanceType(node)
 	//if err != nil {
 	//	return fmt.Errorf("cannot determine node instance type: %v", err)
@@ -132,57 +135,62 @@ func (x *ExportCluster) ReverseAWS() error {
 	// We want to upgrade!
 	// k8s.ImageId = ""
 
-	k8s.ClusterIPRange = conf.Settings["CLUSTER_IP_RANGE"]
-	k8s.AllocateNodeCIDRs = conf.ParseBool("ALLOCATE_NODE_CIDRS")
-	k8s.KubeUser = conf.Settings["KUBE_USER"]
-	k8s.ServiceClusterIPRange = conf.Settings["SERVICE_CLUSTER_IP_RANGE"]
-	k8s.EnableClusterMonitoring = conf.Settings["ENABLE_CLUSTER_MONITORING"]
-	k8s.EnableClusterLogging = conf.ParseBool("ENABLE_CLUSTER_LOGGING")
-	k8s.EnableNodeLogging = conf.ParseBool("ENABLE_NODE_LOGGING")
-	k8s.LoggingDestination = conf.Settings["LOGGING_DESTINATION"]
-	k8s.ElasticsearchLoggingReplicas, err = parseInt(conf.Settings["ELASTICSEARCH_LOGGING_REPLICAS"])
-	if err != nil {
-		return fmt.Errorf("cannot parse ELASTICSEARCH_LOGGING_REPLICAS=%q: %v", conf.Settings["ELASTICSEARCH_LOGGING_REPLICAS"], err)
-	}
-	k8s.EnableClusterDNS = conf.ParseBool("ENABLE_CLUSTER_DNS")
-	k8s.EnableClusterUI = conf.ParseBool("ENABLE_CLUSTER_UI")
-	k8s.DNSReplicas, err = parseInt(conf.Settings["DNS_REPLICAS"])
-	if err != nil {
-		return fmt.Errorf("cannot parse DNS_REPLICAS=%q: %v", conf.Settings["DNS_REPLICAS"], err)
-	}
-	k8s.DNSServerIP = conf.Settings["DNS_SERVER_IP"]
-	k8s.DNSDomain = conf.Settings["DNS_DOMAIN"]
-	k8s.AdmissionControl = conf.Settings["ADMISSION_CONTROL"]
-	k8s.MasterIPRange = conf.Settings["MASTER_IP_RANGE"]
-	k8s.DNSServerIP = conf.Settings["DNS_SERVER_IP"]
-	k8s.DockerStorage = conf.Settings["DOCKER_STORAGE"]
+	//clusterConfig.ClusterIPRange = conf.Settings["CLUSTER_IP_RANGE"]
+	clusterConfig.AllocateNodeCIDRs = conf.ParseBool("ALLOCATE_NODE_CIDRS")
+	//clusterConfig.KubeUser = conf.Settings["KUBE_USER"]
+	clusterConfig.ServiceClusterIPRange = conf.Settings["SERVICE_CLUSTER_IP_RANGE"]
+	//clusterConfig.EnableClusterMonitoring = conf.Settings["ENABLE_CLUSTER_MONITORING"]
+	//clusterConfig.EnableClusterLogging = conf.ParseBool("ENABLE_CLUSTER_LOGGING")
+	//clusterConfig.EnableNodeLogging = conf.ParseBool("ENABLE_NODE_LOGGING")
+	//clusterConfig.LoggingDestination = conf.Settings["LOGGING_DESTINATION"]
+	//clusterConfig.ElasticsearchLoggingReplicas, err = parseInt(conf.Settings["ELASTICSEARCH_LOGGING_REPLICAS"])
+	//if err != nil {
+	//	return fmt.Errorf("cannot parse ELASTICSEARCH_LOGGING_REPLICAS=%q: %v", conf.Settings["ELASTICSEARCH_LOGGING_REPLICAS"], err)
+	//}
+	//clusterConfig.EnableClusterDNS = conf.ParseBool("ENABLE_CLUSTER_DNS")
+	//clusterConfig.EnableClusterUI = conf.ParseBool("ENABLE_CLUSTER_UI")
+	//clusterConfig.DNSReplicas, err = parseInt(conf.Settings["DNS_REPLICAS"])
+	//if err != nil {
+	//	return fmt.Errorf("cannot parse DNS_REPLICAS=%q: %v", conf.Settings["DNS_REPLICAS"], err)
+	//}
+	//clusterConfig.DNSServerIP = conf.Settings["DNS_SERVER_IP"]
+	clusterConfig.DNSDomain = conf.Settings["DNS_DOMAIN"]
+	//clusterConfig.AdmissionControl = conf.Settings["ADMISSION_CONTROL"]
+	//clusterConfig.MasterIPRange = conf.Settings["MASTER_IP_RANGE"]
+	//clusterConfig.DNSServerIP = conf.Settings["DNS_SERVER_IP"]
+	//clusterConfig.DockerStorage = conf.Settings["DOCKER_STORAGE"]
 	//k8s.MasterExtraSans = conf.Settings["MASTER_EXTRA_SANS"] // Not user set
-	k8s.NodeCount, err = parseInt(conf.Settings["NUM_MINIONS"])
+
+	primaryNodeSet := &cloudup.NodeSetConfig{}
+	nodeSets := []*cloudup.NodeSetConfig{primaryNodeSet}
+	primaryNodeSet.MinSize, err = conf.ParseInt("NUM_MINIONS")
 	if err != nil {
 		return fmt.Errorf("cannot parse NUM_MINIONS=%q: %v", conf.Settings["NUM_MINIONS"], err)
 	}
+	primaryNodeSet.MaxSize = primaryNodeSet.MinSize
+	//primaryNodeSet.NodeMachineType = k8s.MasterMachineType
 
 	if conf.Version == "1.1" {
 		// If users went with defaults on some things, clear them out so they get the new defaults
-		if k8s.AdmissionControl == "NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota" {
-			// More admission controllers in 1.2
-			k8s.AdmissionControl = ""
-		}
-		if k8s.MasterMachineType == "t2.micro" {
+		//if clusterConfig.AdmissionControl == "NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota" {
+		//	// More admission controllers in 1.2
+		//	clusterConfig.AdmissionControl = ""
+		//}
+		if masterConfig.MachineType == "t2.micro" {
 			// Different defaults in 1.2
-			k8s.MasterMachineType = ""
+			masterConfig.MachineType = ""
 		}
-		if k8s.NodeMachineType == "t2.micro" {
+		if primaryNodeSet.MachineType == "t2.micro" {
 			// Encourage users to pick something better...
-			k8s.NodeMachineType = ""
+			primaryNodeSet.MachineType = ""
 		}
 	}
 	if conf.Version == "1.2" {
 		// If users went with defaults on some things, clear them out so they get the new defaults
-		if k8s.AdmissionControl == "NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,ResourceQuota" {
-			// More admission controllers in 1.2
-			k8s.AdmissionControl = ""
-		}
+		//if clusterConfig.AdmissionControl == "NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,ResourceQuota" {
+		//	// More admission controllers in 1.2
+		//	clusterConfig.AdmissionControl = ""
+		//}
 	}
 
 	//if masterInstance.PublicIpAddress != nil {
@@ -283,7 +291,7 @@ func (x *ExportCluster) ReverseAWS() error {
 	//kubeletToken = conf.Settings["KUBELET_TOKEN"]
 	//kubeProxyToken = conf.Settings["KUBE_PROXY_TOKEN"]
 
-	err = x.StateStore.WriteConfig(k8s)
+	err = cloudup.WriteConfig(x.StateStore, clusterConfig, nodeSets)
 	if err != nil {
 		return err
 	}
@@ -497,6 +505,20 @@ func (u *UserDataConfiguration) ParseBool(key string) *bool {
 		return fi.Bool(true)
 	}
 	return fi.Bool(false)
+}
+
+func (u *UserDataConfiguration) ParseInt(key string) (*int, error) {
+	s := u.Settings[key]
+	if s == "" {
+		return nil, nil
+	}
+
+	n, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing key %q=%q", key, s)
+	}
+
+	return fi.Int(int(n)), nil
 }
 
 func (u *UserDataConfiguration) ParseCert(key string) (*fi.Certificate, error) {

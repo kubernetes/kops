@@ -62,36 +62,22 @@ func (l *OptionsLoader) AddTemplate(t *OptionsTemplate) {
 	l.templates = append(l.templates, t)
 }
 
-// copyFromStruct merges src into dest
-// It uses a JSON marshal & unmarshal, so only fields that are JSON-visible will be copied
-func copyFromStruct(dest, src interface{}) {
-	// Not the most efficient approach, but simple & relatively well defined
-	j, err := json.Marshal(src)
-	if err != nil {
-		glog.Fatalf("error marshalling config: %v", err)
-	}
-	err = json.Unmarshal(j, dest)
-	if err != nil {
-		glog.Fatalf("error unmarshalling config: %v", err)
-	}
-}
-
 // iterate performs a single iteration of all the templates, executing each template in order
-func (l *OptionsLoader) iterate(inConfig interface{}) (interface{}, error) {
+func (l *OptionsLoader) iterate(userConfig interface{}, current interface{}) (interface{}, error) {
 	sort.Sort(l.templates)
 
-	t := reflect.TypeOf(inConfig).Elem()
+	t := reflect.TypeOf(current).Elem()
 
-	options := reflect.New(t).Interface()
+	next := reflect.New(t).Interface()
 
-	// Copy the provided values before applying rules; they act as defaults (and overrides below)
-	copyFromStruct(options, inConfig)
+	// Copy the current state before applying rules; they act as defaults
+	utils.JsonMergeStruct(next, current)
 
 	for _, t := range l.templates {
 		glog.V(2).Infof("executing template %s (tags=%s)", t.Name, t.Tags)
 
 		var buffer bytes.Buffer
-		err := t.Template.ExecuteTemplate(&buffer, t.Name, inConfig)
+		err := t.Template.ExecuteTemplate(&buffer, t.Name, current)
 		if err != nil {
 			return nil, fmt.Errorf("error executing template %q: %v", t.Name, err)
 		}
@@ -108,16 +94,16 @@ func (l *OptionsLoader) iterate(inConfig interface{}) (interface{}, error) {
 			return nil, fmt.Errorf("error parsing yaml %q: %v", t.Name, err)
 		}
 
-		err = json.Unmarshal(jsonBytes, options)
+		err = json.Unmarshal(jsonBytes, next)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing yaml (converted to JSON) %q: %v", t.Name, err)
 		}
 	}
 
-	// Also copy the provided values after applying rules; they act as overrides now
-	copyFromStruct(options, inConfig)
+	// Also copy the user-provided values after applying rules; they act as overrides now
+	utils.JsonMergeStruct(next, userConfig)
 
-	return options, nil
+	return next, nil
 }
 
 // Build executes the options configuration templates, until they converge
@@ -126,7 +112,7 @@ func (l *OptionsLoader) Build() (interface{}, error) {
 	options := l.config
 	iteration := 0
 	for {
-		nextOptions, err := l.iterate(options)
+		nextOptions, err := l.iterate(l.config, options)
 		if err != nil {
 			return nil, err
 		}

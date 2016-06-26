@@ -43,18 +43,17 @@ func (c *KubecfgGenerateCommand) Run() error {
 		return fmt.Errorf("error state store: %v", err)
 	}
 
-	config := &cloudup.CloudConfig{}
-	err = stateStore.ReadConfig(config)
+	cluster, _, err := cloudup.ReadConfig(stateStore)
 	if err != nil {
 		return fmt.Errorf("error reading configuration: %v", err)
 	}
 
-	clusterName := config.ClusterName
+	clusterName := cluster.ClusterName
 	if clusterName == "" {
 		return fmt.Errorf("ClusterName must be set in config")
 	}
 
-	master := config.MasterPublicName
+	master := cluster.MasterPublicName
 	if master == "" {
 		master = "api." + clusterName
 	}

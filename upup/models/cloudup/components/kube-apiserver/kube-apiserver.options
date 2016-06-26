@@ -1,0 +1,17 @@
+APIServer:
+  SecurePort: 443
+  PathSrvKubernetes: /srv/kubernetes
+  PathSrvSshproxy: /srv/sshproxy
+  Address: 127.0.0.1
+  EtcdServers: http://127.0.0.1:4001
+  EtcdServersOverrides: /events#http://127.0.0.1:4002
+  AdmissionControl: NamespaceLifecycle,LimitRanger,ServiceAccount,ResourceQuota,PersistentVolumeLabel
+  ServiceClusterIPRange: 10.0.0.0/16
+  ClientCAFile: /srv/kubernetes/ca.crt
+  BasicAuthFile: /srv/kubernetes/basic_auth.csv
+  TLSCertFile: /srv/kubernetes/server.cert
+  TLSPrivateKeyFile: /srv/kubernetes/server.key
+  TokenAuthFile: /srv/kubernetes/known_tokens.csv
+  LogLevel: 2
+  AllowPrivileged: true
+  Image: gcr.io/google_containers/kube-apiserver:v{{ .KubernetesVersion }}

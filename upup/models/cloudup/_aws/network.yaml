@@ -1,4 +1,4 @@
-vpc/kubernetes.{{ .ClusterName }}:
+vpc/{{ .ClusterName }}:
   id: {{ .NetworkID }}
   shared: {{ .SharedVPC }}
   cidr: {{ .NetworkCIDR }}
@@ -7,41 +7,41 @@ vpc/kubernetes.{{ .ClusterName }}:
 
 {{ if not .SharedVPC }}
 # TODO: would be good to create these as shared, to verify them
-dhcpOptions/kubernetes.{{ .ClusterName }}:
+dhcpOptions/{{ .ClusterName }}:
   domainNameServers: AmazonProvidedDNS
-{{ if eq .Region "us-east-1" }}
+{{ if eq Region "us-east-1" }}
   domainName: ec2.internal
 {{ else }}
-  domainName: {{ .Region }}.compute.internal
+  domainName: {{ Region }}.compute.internal
 {{ end }}
 
-vpcDHDCPOptionsAssociation/kubernetes.{{ .ClusterName }}:
-  vpc: vpc/kubernetes.{{ .ClusterName }}
-  dhcpOptions: dhcpOptions/kubernetes.{{ .ClusterName }}
+vpcDHDCPOptionsAssociation/{{ .ClusterName }}:
+  vpc: vpc/{{ .ClusterName }}
+  dhcpOptions: dhcpOptions/{{ .ClusterName }}
 {{ end }}
 
-internetGateway/kubernetes.{{ .ClusterName }}:
+internetGateway/{{ .ClusterName }}:
   shared: {{ .SharedVPC }}
-  vpc: vpc/kubernetes.{{ .ClusterName }}
+  vpc: vpc/{{ .ClusterName }}
 
-routeTable/kubernetes.{{ .ClusterName }}:
-  vpc: vpc/kubernetes.{{ .ClusterName }}
+routeTable/{{ .ClusterName }}:
+  vpc: vpc/{{ .ClusterName }}
 
 route/0.0.0.0/0:
-  routeTable: routeTable/kubernetes.{{ .ClusterName }}
+  routeTable: routeTable/{{ .ClusterName }}
   cidr: 0.0.0.0/0
-  internetGateway: internetGateway/kubernetes.{{ .ClusterName }}
-  vpc: vpc/kubernetes.{{ .ClusterName }}
+  internetGateway: internetGateway/{{ .ClusterName }}
+  vpc: vpc/{{ .ClusterName }}
 
-{{ range $zone := .NodeZones }}
+{{ range $zone := .Zones }}
 
-subnet/kubernetes.{{ $zone.Name }}.{{ $.ClusterName }}:
-  vpc: vpc/kubernetes.{{ $.ClusterName }}
+subnet/{{ $zone.Name }}.{{ $.ClusterName }}:
+  vpc: vpc/{{ $.ClusterName }}
   availabilityZone: {{ $zone.Name }}
   cidr: {{ $zone.CIDR }}
 
-routeTableAssociation/kubernetes.{{ $zone.Name }}.{{ $.ClusterName }}:
-  routeTable: routeTable/kubernetes.{{ $.ClusterName }}
-  subnet: subnet/kubernetes.{{ $zone.Name }}.{{ $.ClusterName }}
+routeTableAssociation/{{ $zone.Name }}.{{ $.ClusterName }}:
+  routeTable: routeTable/{{ $.ClusterName }}
+  subnet: subnet/{{ $zone.Name }}.{{ $.ClusterName }}
 
 {{ end }}

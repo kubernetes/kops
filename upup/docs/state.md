@@ -13,7 +13,7 @@ is supported, but support for GCS is coming soon, along with encrypted storage.
 The state store is just files; you can copy the files down and put them into git (or your preferred version
 control system).
 
-## <statestore>/config
+## {statestore}/config
 
 One of the most important files in the state store is the top-level config file.  This file stores the main
 configuration for your cluster (instance types, zones, etc)\

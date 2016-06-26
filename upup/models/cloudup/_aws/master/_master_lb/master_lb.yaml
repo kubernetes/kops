@@ -7,7 +7,7 @@ loadBalancer/api.{{ .ClusterName }}:
     - securityGroup/api.{{ .ClusterName }}
   subnets:
 {{ range $zone := .MasterZones }}
-    - subnet/kubernetes-{{ $zone }}-{{ $.ClusterName }}
+    - subnet/{{ $zone }}-{{ $.ClusterName }}
 {{ end }}
   listeners:
     443: { instancePort: 443 }
@@ -23,7 +23,7 @@ loadBalancerHealthChecks/api.{{ .ClusterName }}:
 
 # Security group for master ELB
 securityGroup/api.{{ .ClusterName }}:
-  vpc: vpc/kubernetes-{{ .ClusterName }}
+  vpc: vpc/{{ .ClusterName }}
   description: 'Security group for ELB in front of masters'
 
 # Allow full egress
@@ -42,7 +42,7 @@ securityGroupRule/https-external-to-api:
 
 # Allow HTTPS to the master from the master ELB
 securityGroupRule/https-elb-to-master:
-  securityGroup: securityGroup/kubernetes.master.{{ .ClusterName }}
+  securityGroup: securityGroup/masters.{{ .ClusterName }}
   sourceGroup: securityGroup/api.{{ .ClusterName }}
   protocol: tcp
   fromPort: 443
