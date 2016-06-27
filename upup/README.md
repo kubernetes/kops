@@ -108,15 +108,15 @@ We divide the 'cloudup' model into two parts:
 So you don't use terraform for the 'proto' phase (you can't anyway, because of the bug!):
 
 ```
-export MYZONE=<kubernetes.myzone.com>
-${GOPATH}/bin/cloudup --v=0 --logtostderr --cloud=aws --zones=us-east-1c --name=${MYZONE} --model=proto
+export CLUSTER_NAME=<kubernetes.myzone.com>
+${GOPATH}/bin/cloudup --v=0 --logtostderr --cloud=aws --zones=us-east-1c --name=${CLUSTER_NAME} --model=config,proto
 ```
 
 And then you can use terraform to do the full installation:
 
 ```
-export MYZONE=<kubernetes.myzone.com>
-${GOPATH}/bin/cloudup --v=0 --logtostderr --cloud=aws --zones=us-east-1c --name=${MYZONE} --model=cloudup --target=terraform
+export CLUSTER_NAME=<kubernetes.myzone.com>
+${GOPATH}/bin/cloudup --v=0 --logtostderr --cloud=aws --zones=us-east-1c --name=${CLUSTER_NAME} --model=config,cloudup --target=terraform
 ```
 
 Then, to apply using terraform:
