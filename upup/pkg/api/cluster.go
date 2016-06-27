@@ -67,7 +67,7 @@ type ClusterSpec struct {
 	// ClusterName is a unique identifier for the cluster, and currently must be a DNS name
 	//ClusterName       string `json:",omitempty"`
 
-	AllocateNodeCIDRs *bool `json:"allocateNodeCIDRs,omitempty"`
+	//AllocateNodeCIDRs *bool `json:"allocateNodeCIDRs,omitempty"`
 
 	Multizone *bool `json:"mutlizone,omitempty"`
 

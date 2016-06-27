@@ -1,5 +1,4 @@
 #InstancePrefix: kubernetes
-AllocateNodeCIDRs: true
 Multizone: true
 
 ServiceClusterIPRange: 10.0.0.0/16

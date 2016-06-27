@@ -30,6 +30,9 @@ func WriteConfig(stateStore fi.StateStore, cluster *Cluster, groups []*InstanceG
 	}
 
 	for _, ns := range groups {
+		if ns.CreationTimestamp.IsZero() {
+			ns.CreationTimestamp = unversioned.NewTime(time.Now().UTC())
+		}
 		err = stateStore.WriteConfig("instancegroup/"+ns.Name, ns)
 		if err != nil {
 			return fmt.Errorf("error writing updated instancegroup configuration: %v", err)

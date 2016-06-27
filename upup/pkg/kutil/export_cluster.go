@@ -142,7 +142,7 @@ func (x *ExportCluster) ReverseAWS() error {
 	// k8s.ImageId = ""
 
 	//clusterConfig.ClusterIPRange = conf.Settings["CLUSTER_IP_RANGE"]
-	cluster.Spec.AllocateNodeCIDRs = conf.ParseBool("ALLOCATE_NODE_CIDRS")
+	cluster.Spec.KubeControllerManager.AllocateNodeCIDRs = conf.ParseBool("ALLOCATE_NODE_CIDRS")
 	//clusterConfig.KubeUser = conf.Settings["KUBE_USER"]
 	cluster.Spec.ServiceClusterIPRange = conf.Settings["SERVICE_CLUSTER_IP_RANGE"]
 	//clusterConfig.EnableClusterMonitoring = conf.Settings["ENABLE_CLUSTER_MONITORING"]
