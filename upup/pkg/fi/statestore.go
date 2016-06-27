@@ -15,8 +15,12 @@ type StateStore interface {
 	CA() CAStore
 	Secrets() SecretStore
 
-	ReadConfig(config interface{}) error
-	WriteConfig(config interface{}) error
+	ReadConfig(path string, config interface{}) error
+	WriteConfig(path string, config interface{}) error
+
+	// ListChildren returns a list of all (direct) children of the specified path
+	// It only returns the raw names, not the prefixes
+	ListChildren(pathPrefix string) ([]string, error)
 }
 
 type VFSStateStore struct {
@@ -56,8 +60,25 @@ func (s *VFSStateStore) Secrets() SecretStore {
 	return s.secrets
 }
 
-func (s *VFSStateStore) ReadConfig(config interface{}) error {
-	configPath := s.location.Join("config")
+func (s *VFSStateStore) ListChildren(pathPrefix string) ([]string, error) {
+	vfsPath := s.location.Join(pathPrefix)
+	children, err := vfsPath.ReadDir()
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("error listing children of %s: %v", pathPrefix, err)
+	}
+
+	var names []string
+	for _, child := range children {
+		names = append(names, child.Base())
+	}
+	return names, nil
+}
+
+func (s *VFSStateStore) ReadConfig(path string, config interface{}) error {
+	configPath := s.location.Join(path)
 	data, err := configPath.ReadFile()
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -80,8 +101,8 @@ func (s *VFSStateStore) ReadConfig(config interface{}) error {
 	return nil
 }
 
-func (s *VFSStateStore) WriteConfig(config interface{}) error {
-	configPath := s.location.Join("config")
+func (s *VFSStateStore) WriteConfig(path string, config interface{}) error {
+	configPath := s.location.Join(path)
 
 	data, err := utils.YamlMarshal(config)
 	if err != nil {

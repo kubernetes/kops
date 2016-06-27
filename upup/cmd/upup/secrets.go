@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -11,9 +9,6 @@ var secretsCmd = &cobra.Command{
 	Use:   "secrets",
 	Short: "Manage secrets & keys",
 	Long:  `Manage secrets & keys`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("syntax: create describe expose get")
-	},
 }
 
 func init() {

@@ -10,7 +10,7 @@
 "containers":[
     {
     "name": "kube-apiserver",
-    "image": "{{ .APIServer.Image }}",
+    "image": "{{ KubeAPIServer.Image }}",
     "resources": {
       "requests": {
         "cpu": "250m"
@@ -19,7 +19,7 @@
     "command": [
                  "/bin/sh",
                  "-c",
-                 "/usr/local/bin/kube-apiserver {{ BuildFlags .APIServer }} 1>>/var/log/kube-apiserver.log 2>&1"
+                 "/usr/local/bin/kube-apiserver {{ BuildFlags KubeAPIServer }} 1>>/var/log/kube-apiserver.log 2>&1"
                ],
     "livenessProbe": {
       "httpGet": {
@@ -32,8 +32,8 @@
     },
     "ports":[
       { "name": "https",
-        "containerPort": {{ .APIServer.SecurePort }},
-        "hostPort": {{ .APIServer.SecurePort }} },{
+        "containerPort": {{ KubeAPIServer.SecurePort }},
+        "hostPort": {{ KubeAPIServer.SecurePort }} },{
        "name": "local",
         "containerPort": 8080,
         "hostPort": 8080}
@@ -42,7 +42,7 @@
         {"name": "usrsharessl","mountPath": "/usr/share/ssl", "readOnly": true}, {"name": "usrssl","mountPath": "/usr/ssl", "readOnly": true}, {"name": "usrlibssl","mountPath": "/usr/lib/ssl", "readOnly": true}, {"name": "usrlocalopenssl","mountPath": "/usr/local/openssl", "readOnly": true},
 
         { "name": "srvkube",
-        "mountPath": "{{ .APIServer.PathSrvKubernetes }}",
+        "mountPath": "{{ KubeAPIServer.PathSrvKubernetes }}",
         "readOnly": true},
         { "name": "logfile",
         "mountPath": "/var/log/kube-apiserver.log",
@@ -60,7 +60,7 @@
         "mountPath": "/etc/pki/tls",
         "readOnly": true},
         { "name": "srvsshproxy",
-        "mountPath": "{{ .APIServer.PathSrvSshproxy }}",
+        "mountPath": "{{ KubeAPIServer.PathSrvSshproxy }}",
         "readOnly": false}
       ]
     }
@@ -70,7 +70,7 @@
 
   { "name": "srvkube",
     "hostPath": {
-        "path": "{{ .APIServer.PathSrvKubernetes }}"}
+        "path": "{{ KubeAPIServer.PathSrvKubernetes }}"}
   },
   { "name": "logfile",
     "hostPath": {
@@ -94,7 +94,7 @@
   },
   { "name": "srvsshproxy",
     "hostPath": {
-        "path": "{{ .APIServer.PathSrvSshproxy }}"}
+        "path": "{{ KubeAPIServer.PathSrvSshproxy }}"}
   }
 ]
 }}

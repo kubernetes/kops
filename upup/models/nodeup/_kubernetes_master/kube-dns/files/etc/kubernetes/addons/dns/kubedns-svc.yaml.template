@@ -26,7 +26,7 @@ metadata:
 spec:
   selector:
     k8s-app: kube-dns
-  clusterIP: {{ .DNS.ServerIP }}
+  clusterIP: {{ KubeDNS.ServerIP }}
   ports:
   - name: dns
     port: 53

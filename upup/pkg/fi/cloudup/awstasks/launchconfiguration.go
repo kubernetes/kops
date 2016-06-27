@@ -153,10 +153,14 @@ func (e *LaunchConfiguration) Run(c *fi.Context) error {
 }
 
 func (s *LaunchConfiguration) CheckChanges(a, e, changes *LaunchConfiguration) error {
+	if e.ImageID == nil {
+		return fi.RequiredField("ImageID")
+	}
+	if e.InstanceType == nil {
+		return fi.RequiredField("InstanceType")
+	}
+
 	if a != nil {
-		if e.InstanceType == nil {
-			return fi.RequiredField("InstanceType")
-		}
 		if e.Name == nil {
 			return fi.RequiredField("Name")
 		}

@@ -17,8 +17,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-NODEUP_TAR_URL={{ .NodeUp.Location }}
-NODEUP_TAR_HASH={{ .NodeUp.Hash }}
+NODEUP_TAR_URL={{ NodeUpSource }}
+NODEUP_TAR_HASH={{ NodeUpSourceHash }}
 
 function ensure-basic-networking() {
   # Deal with GCE networking bring-up race. (We rely on DNS for a lot,

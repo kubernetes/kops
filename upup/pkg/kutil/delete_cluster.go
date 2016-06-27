@@ -36,8 +36,9 @@ type ResourceTracker struct {
 	Type string
 	ID   string
 
-	blocks []string
-	done   bool
+	blocks  []string
+	blocked []string
+	done    bool
 
 	deleter func(cloud fi.Cloud, tracker *ResourceTracker) error
 }
@@ -145,6 +146,10 @@ func (c *DeleteCluster) DeleteResources(resources map[string]*ResourceTracker) e
 	for k, t := range resources {
 		for _, block := range t.blocks {
 			depMap[block] = append(depMap[block], k)
+		}
+
+		for _, blocked := range t.blocked {
+			depMap[k] = append(depMap[k], blocked)
 		}
 
 		if t.done {
@@ -314,7 +319,7 @@ func ListInstances(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, erro
 
 	glog.V(2).Infof("Querying EC2 instances")
 	request := &ec2.DescribeInstancesInput{
-		Filters: c.BuildFilters(nil),
+		Filters: buildEC2Filters(cloud),
 	}
 
 	var trackers []*ResourceTracker
@@ -432,7 +437,7 @@ func ListSecurityGroups(cloud fi.Cloud, clusterName string) ([]*ResourceTracker,
 
 	glog.V(2).Infof("Listing EC2 SecurityGroups")
 	request := &ec2.DescribeSecurityGroupsInput{
-		Filters: c.BuildFilters(nil),
+		Filters: buildEC2Filters(cloud),
 	}
 	response, err := c.EC2.DescribeSecurityGroups(request)
 	if err != nil {
@@ -648,7 +653,7 @@ func DescribeSubnets(cloud fi.Cloud) ([]*ec2.Subnet, error) {
 
 	glog.V(2).Infof("Listing EC2 subnets")
 	request := &ec2.DescribeSubnetsInput{
-		Filters: c.BuildFilters(nil),
+		Filters: buildEC2Filters(cloud),
 	}
 	response, err := c.EC2.DescribeSubnets(request)
 	if err != nil {
@@ -682,7 +687,7 @@ func ListRouteTables(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, er
 
 	glog.V(2).Infof("Listing EC2 RouteTables")
 	request := &ec2.DescribeRouteTablesInput{
-		Filters: c.BuildFilters(nil),
+		Filters: buildEC2Filters(cloud),
 	}
 	response, err := c.EC2.DescribeRouteTables(request)
 	if err != nil {
@@ -700,9 +705,16 @@ func ListRouteTables(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, er
 		}
 
 		var blocks []string
+		var blocked []string
+
 		blocks = append(blocks, "vpc:"+aws.StringValue(rt.VpcId))
 
+		for _, a := range rt.Associations {
+			blocked = append(blocked, "subnet:"+aws.StringValue(a.SubnetId))
+		}
+
 		tracker.blocks = blocks
+		tracker.blocked = blocked
 
 		trackers = append(trackers, tracker)
 	}
@@ -760,7 +772,7 @@ func DescribeDhcpOptions(cloud fi.Cloud) ([]*ec2.DhcpOptions, error) {
 
 	glog.V(2).Infof("Listing EC2 DhcpOptions")
 	request := &ec2.DescribeDhcpOptionsInput{
-		Filters: c.BuildFilters(nil),
+		Filters: buildEC2Filters(cloud),
 	}
 	response, err := c.EC2.DescribeDhcpOptions(request)
 	if err != nil {
@@ -839,7 +851,7 @@ func ListInternetGateways(cloud fi.Cloud, clusterName string) ([]*ResourceTracke
 
 	glog.V(2).Infof("Listing EC2 InternetGateways")
 	request := &ec2.DescribeInternetGatewaysInput{
-		Filters: c.BuildFilters(nil),
+		Filters: buildEC2Filters(cloud),
 	}
 	response, err := c.EC2.DescribeInternetGateways(request)
 	if err != nil {
@@ -894,7 +906,7 @@ func ListVPCs(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
 
 	glog.V(2).Infof("Listing EC2 VPC")
 	request := &ec2.DescribeVpcsInput{
-		Filters: c.BuildFilters(nil),
+		Filters: buildEC2Filters(cloud),
 	}
 	response, err := c.EC2.DescribeVpcs(request)
 	if err != nil {
@@ -970,7 +982,7 @@ func ListAutoScalingGroups(cloud fi.Cloud, clusterName string) ([]*ResourceTrack
 			}
 			blocks = append(blocks, "subnet:"+subnet)
 		}
-		blocks = append(blocks, "autoscaling-launchconfiguration:"+aws.StringValue(asg.LaunchConfigurationName))
+		blocks = append(blocks, "launchconfig:"+aws.StringValue(asg.LaunchConfigurationName))
 
 		tracker.blocks = blocks
 
@@ -1014,12 +1026,12 @@ func ListAutoScalingLaunchConfigurations(cloud fi.Cloud, clusterName string) ([]
 				tracker := &ResourceTracker{
 					Name:    aws.StringValue(t.LaunchConfigurationName),
 					ID:      aws.StringValue(t.LaunchConfigurationName),
-					Type:    "autoscaling-launchconfiguration",
+					Type:    "launchconfig",
 					deleter: DeleteAutoscalingLaunchConfiguration,
 				}
 
 				var blocks []string
-				//blocks = append(blocks, "autoscaling-launchconfiguration:" + aws.StringValue(asg.LaunchConfigurationName))
+				//blocks = append(blocks, "launchconfig:" + aws.StringValue(asg.LaunchConfigurationName))
 
 				tracker.blocks = blocks
 

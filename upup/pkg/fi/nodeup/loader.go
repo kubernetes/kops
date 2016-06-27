@@ -2,10 +2,10 @@ package nodeup
 
 import (
 	"bytes"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/kube-deploy/upup/pkg/api"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/loader"
 	"k8s.io/kube-deploy/upup/pkg/fi/nodeup/nodetasks"
@@ -15,25 +15,25 @@ import (
 )
 
 type Loader struct {
-	templates     []*template.Template
-	optionsLoader *loader.OptionsLoader
-	config        *NodeConfig
+	templates []*template.Template
+	config    *NodeUpConfig
+	cluster   *api.Cluster
 
 	assets *fi.AssetStore
 	tasks  map[string]fi.Task
 
-	tags map[string]struct{}
-
+	tags              map[string]struct{}
 	TemplateFunctions template.FuncMap
 }
 
-func NewLoader(config *NodeConfig, assets *fi.AssetStore) *Loader {
+func NewLoader(config *NodeUpConfig, cluster *api.Cluster, assets *fi.AssetStore, tags map[string]struct{}) *Loader {
 	l := &Loader{}
 	l.assets = assets
 	l.tasks = make(map[string]fi.Task)
-	l.optionsLoader = loader.NewOptionsLoader(config)
 	l.config = config
+	l.cluster = cluster
 	l.TemplateFunctions = make(template.FuncMap)
+	l.tags = tags
 
 	return l
 }
@@ -42,20 +42,12 @@ func (l *Loader) executeTemplate(key string, d string) (string, error) {
 	t := template.New(key)
 
 	funcMap := make(template.FuncMap)
-	funcMap["BuildFlags"] = buildFlags
-	funcMap["Base64Encode"] = func(s string) string {
-		return base64.StdEncoding.EncodeToString([]byte(s))
-	}
-	funcMap["HasTag"] = func(tag string) bool {
-		_, found := l.tags[tag]
-		return found
-	}
 	for k, fn := range l.TemplateFunctions {
 		funcMap[k] = fn
 	}
 	t.Funcs(funcMap)
 
-	context := l.config
+	context := l.cluster.Spec
 
 	_, err := t.Parse(d)
 	if err != nil {
@@ -78,25 +70,17 @@ func ignoreHandler(i *loader.TreeWalkItem) error {
 }
 
 func (l *Loader) Build(baseDir string) (map[string]fi.Task, error) {
-	tags := make(map[string]struct{})
-	for _, tag := range l.config.Tags {
-		tags[tag] = struct{}{}
-	}
-
-	l.tags = tags
-
 	// First pass: load options
 	tw := &loader.TreeWalker{
 		DefaultHandler: ignoreHandler,
 		Contexts: map[string]loader.Handler{
-			"options":  l.optionsLoader.HandleOptions,
 			"files":    ignoreHandler,
 			"disks":    ignoreHandler,
 			"packages": ignoreHandler,
 			"services": ignoreHandler,
 			"users":    ignoreHandler,
 		},
-		Tags: tags,
+		Tags: l.tags,
 	}
 
 	err := tw.Walk(baseDir)
@@ -104,25 +88,17 @@ func (l *Loader) Build(baseDir string) (map[string]fi.Task, error) {
 		return nil, err
 	}
 
-	config, err := l.optionsLoader.Build()
-	if err != nil {
-		return nil, err
-	}
-	l.config = config.(*NodeConfig)
-	glog.V(4).Infof("options: %s", fi.DebugAsJsonStringIndent(l.config))
-
 	// Second pass: load everything else
 	tw = &loader.TreeWalker{
 		DefaultHandler: l.handleFile,
 		Contexts: map[string]loader.Handler{
-			"options":  ignoreHandler,
 			"files":    l.handleFile,
 			"disks":    l.newTaskHandler("disk/", nodetasks.NewMountDiskTask),
 			"packages": l.newTaskHandler("package/", nodetasks.NewPackage),
 			"services": l.newTaskHandler("service/", nodetasks.NewService),
 			"users":    l.newTaskHandler("user/", nodetasks.NewUserTask),
 		},
-		Tags: tags,
+		Tags: l.tags,
 	}
 
 	err = tw.Walk(baseDir)

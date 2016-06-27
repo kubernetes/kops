@@ -40,18 +40,19 @@ you should use Go 1.6 or later)
 * Execute:
 ```
 export MYZONE=<kubernetes.myzone.com>
-${GOPATH}/bin/cloudup --v=0 --logtostderr --cloud=aws --zones=us-east-1c --name=${MYZONE}
+${GOPATH}/bin/cloudup --v=0 --logtostderr --cloud=aws --zones=us-east-1c --name=${MYZONE} --state s3://<mybucket>/${MYZONE}
 ```
 
 If you have problems, please set `--v=8 --logtostderr` and open an issue, and ping justinsb on slack!
 
 ## Build a kubectl file
 
-The upup tool is a CLI for doing administrative tasks.  You can use it to generate the kubectl configuration:
+The upup tool is a CLI for doing administrative tasks.  You can use it to create the kubecfg configuration,
+for use with kubectl:
 
 ```
 export MYZONE=<kubernetes.myzone.com>
-${GOPATH}/bin/upup kubecfg generate --state=state --name=${MYZONE} --cloud=aws
+${GOPATH}/bin/upup export kubecfg --state s3://<mybucket>/${MYZONE}
 ```
 
 ## Delete the cluster

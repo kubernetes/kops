@@ -1,24 +1,24 @@
 # TODO: Support multiple masters
 
-persistentDisk/kubernetes-master-{{ .ClusterName }}:
+persistentDisk/kubernetes-master-{{ ClusterName }}:
   zone: {{ .Zone }}
   sizeGB: {{ or .MasterVolumeSize 20 }}
   volumeType: {{ or .MasterVolumeType "pd-ssd" }}
 
 # Open master HTTPS
-firewallRule/kubernetes-master-https-{{ .ClusterName }}:
+firewallRule/kubernetes-master-https-{{ ClusterName }}:
   network: network/default
   sourceRanges: 0.0.0.0/0
   targetTags: {{ .MasterTag }}
   allowed: tcp:443
 
 # Allocate master IP
-ipAddress/kubernetes-master-{{ .ClusterName }}:
+ipAddress/kubernetes-master-{{ ClusterName }}:
   address: {{ .MasterPublicIP }}
 
 # Master instance
 instance/{{ .MasterName }}:
-  ipaddress: ipAddress/kubernetes-master-{{ .ClusterName }}
+  ipaddress: ipAddress/kubernetes-master-{{ ClusterName }}
   zone: {{ .Zone }}
   machineType: {{ .MasterMachineType }}
   image: {{ .MasterImage }}
@@ -31,7 +31,7 @@ instance/{{ .MasterName }}:
     - logging-write
   canIpForward: true
   disks:
-    master-pd: persistentDisk/kubernetes-master-{{ .ClusterName }}
+    master-pd: persistentDisk/kubernetes-master-{{ ClusterName }}
   metadata:
     #kube-env: resources/kube-env
 {{ if eq .NodeInit "cloudinit" }}

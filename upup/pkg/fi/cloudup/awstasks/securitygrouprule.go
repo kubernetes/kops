@@ -18,9 +18,12 @@ type SecurityGroupRule struct {
 	SecurityGroup *SecurityGroup
 	CIDR          *string
 	Protocol      *string
-	FromPort      *int64
-	ToPort        *int64
-	SourceGroup   *SecurityGroup
+
+	// FromPort is the lower-bound (inclusive) of the port-range
+	FromPort *int64
+	// ToPort is the upper-bound (inclusive) of the port-range
+	ToPort      *int64
+	SourceGroup *SecurityGroup
 
 	Egress *bool
 }

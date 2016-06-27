@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"sync"
 )
 
 // The tag name we use to differentiate multiple logically independent clusters running in the same region
@@ -24,22 +25,29 @@ const TagNameEtcdClusterPrefix = "k8s.io/etcd/"
 
 const TagNameMasterId = "k8s.io/master/id"
 
-const DefaultAttachDevice = "/dev/xvdb"
+//const DefaultAttachDevice = "/dev/xvdb"
+
+var devices = []string{"/dev/xvdu", "/dev/xvdv", "/dev/xvdx", "/dev/xvdx", "/dev/xvdy", "/dev/xvdz"}
 
 type AWSVolumes struct {
-	ec2      *ec2.EC2
-	metadata *ec2metadata.EC2Metadata
+	ec2        *ec2.EC2
+	metadata   *ec2metadata.EC2Metadata
 
 	zone       string
 	clusterTag string
 	instanceId string
 	internalIP net.IP
+
+	mutex      sync.Mutex
+	deviceMap  map[string]string
 }
 
 var _ Volumes = &AWSVolumes{}
 
 func NewAWSVolumes() (*AWSVolumes, error) {
-	a := &AWSVolumes{}
+	a := &AWSVolumes{
+		deviceMap: make(map[string]string),
+	}
 
 	s := session.New()
 	s.Handlers.Send.PushFront(func(r *request.Request) {
@@ -146,31 +154,22 @@ func (a *AWSVolumes) findVolumes(request *ec2.DescribeVolumesInput) ([]*Volume, 
 	var volumes []*Volume
 	err := a.ec2.DescribeVolumesPages(request, func(p *ec2.DescribeVolumesOutput, lastPage bool) (shouldContinue bool) {
 		for _, v := range p.Volumes {
-			name := aws.StringValue(v.VolumeId)
+			volumeID := aws.StringValue(v.VolumeId)
 			vol := &Volume{
-				Name: name,
+				ID: volumeID,
 				Info: VolumeInfo{
-					Name: name,
+					Description: volumeID,
 				},
 			}
 			state := aws.StringValue(v.State)
 
-			switch state {
-			case "available":
-				vol.Available = true
-				break
-			}
-
-			var myAttachment *ec2.VolumeAttachment
+			vol.Status = state
 
 			for _, attachment := range v.Attachments {
+				vol.AttachedTo = aws.StringValue(attachment.InstanceId)
 				if aws.StringValue(attachment.InstanceId) == a.instanceId {
-					myAttachment = attachment
+					vol.LocalDevice = aws.StringValue(attachment.Device)
 				}
-			}
-
-			if myAttachment != nil {
-				vol.Device = aws.StringValue(myAttachment.Device)
 			}
 
 			skipVolume := false
@@ -185,7 +184,7 @@ func (a *AWSVolumes) findVolumes(request *ec2.DescribeVolumesInput) ([]*Volume, 
 				case TagNameMasterId:
 					id, err := strconv.Atoi(v)
 					if err != nil {
-						glog.Warningf("error parsing master-id tag on volume %q %s=%s; skipping volume", name, k, v)
+						glog.Warningf("error parsing master-id tag on volume %q %s=%s; skipping volume", volumeID, k, v)
 						skipVolume = true
 					} else {
 						vol.Info.MasterID = id
@@ -196,12 +195,12 @@ func (a *AWSVolumes) findVolumes(request *ec2.DescribeVolumesInput) ([]*Volume, 
 						spec, err := ParseEtcdClusterSpec(etcdClusterName, v)
 						if err != nil {
 							// Fail safe
-							glog.Warningf("error parsing etcd cluster tag %q on volume %q; skipping volume: %v", v, name, err)
+							glog.Warningf("error parsing etcd cluster tag %q on volume %q; skipping volume: %v", v, volumeID, err)
 							skipVolume = true
 						}
 						vol.Info.EtcdClusters = append(vol.Info.EtcdClusters, spec)
 					} else {
-						glog.Warningf("unknown tag on volume %q: %s=%s", name, k, v)
+						glog.Warningf("unknown tag on volume %q: %s=%s", volumeID, k, v)
 					}
 				}
 			}
@@ -219,21 +218,33 @@ func (a *AWSVolumes) findVolumes(request *ec2.DescribeVolumesInput) ([]*Volume, 
 	return volumes, nil
 }
 
-func (a *AWSVolumes) FindMountedVolumes() ([]*Volume, error) {
+//func (a *AWSVolumes) FindMountedVolumes() ([]*Volume, error) {
+//	request := &ec2.DescribeVolumesInput{}
+//	request.Filters = []*ec2.Filter{
+//		newEc2Filter("tag:"+TagNameKubernetesCluster, a.clusterTag),
+//		newEc2Filter("tag-key", TagNameRoleMaster),
+//		newEc2Filter("attachment.instance-id", a.instanceId),
+//	}
+//
+//	return a.findVolumes(request)
+//}
+//
+//func (a *AWSVolumes) FindMountableVolumes() ([]*Volume, error) {
+//	request := &ec2.DescribeVolumesInput{}
+//	request.Filters = []*ec2.Filter{
+//		newEc2Filter("tag:"+TagNameKubernetesCluster, a.clusterTag),
+//		newEc2Filter("tag-key", TagNameRoleMaster),
+//		newEc2Filter("availability-zone", a.zone),
+//	}
+//
+//	return a.findVolumes(request)
+//}
+
+
+func (a *AWSVolumes) FindVolumes() ([]*Volume, error) {
 	request := &ec2.DescribeVolumesInput{}
 	request.Filters = []*ec2.Filter{
-		newEc2Filter("tag:"+TagNameKubernetesCluster, a.clusterTag),
-		newEc2Filter("tag-key", TagNameRoleMaster),
-		newEc2Filter("attachment.instance-id", a.instanceId),
-	}
-
-	return a.findVolumes(request)
-}
-
-func (a *AWSVolumes) FindMountableVolumes() ([]*Volume, error) {
-	request := &ec2.DescribeVolumesInput{}
-	request.Filters = []*ec2.Filter{
-		newEc2Filter("tag:"+TagNameKubernetesCluster, a.clusterTag),
+		newEc2Filter("tag:" + TagNameKubernetesCluster, a.clusterTag),
 		newEc2Filter("tag-key", TagNameRoleMaster),
 		newEc2Filter("availability-zone", a.zone),
 	}
@@ -241,13 +252,44 @@ func (a *AWSVolumes) FindMountableVolumes() ([]*Volume, error) {
 	return a.findVolumes(request)
 }
 
-// AttachVolume attaches the specified volume to this instance, returning the mountpoint & nil if successful
-func (a *AWSVolumes) AttachVolume(volume *Volume) (string, error) {
-	volumeID := volume.Name
+// assignDevice picks a hopefully unused device and reserves it for the volume attachment
+func (a *AWSVolumes) assignDevice(volumeID string) (string, error) {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
 
-	device := volume.Device
+	// TODO: Check for actual devices in use (like cloudprovider does)
+	for _, d := range devices {
+		if a.deviceMap[d] == "" {
+			a.deviceMap[d] = volumeID
+			return d, nil
+		}
+	}
+	return "", fmt.Errorf("All devices in use")
+}
+
+// releaseDevice releases the volume mapping lock; used when an attach was known to fail
+func (a *AWSVolumes) releaseDevice(d string, volumeID string) {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
+
+	if a.deviceMap[d] != volumeID {
+		glog.Fatalf("deviceMap logic error: %q -> %q, not %q", d, a.deviceMap[d], volumeID)
+	}
+	a.deviceMap[d] = ""
+}
+
+
+// AttachVolume attaches the specified volume to this instance, returning the mountpoint & nil if successful
+func (a *AWSVolumes) AttachVolume(volume *Volume) (error) {
+	volumeID := volume.ID
+
+	device := volume.LocalDevice
 	if device == "" {
-		device = DefaultAttachDevice
+		d, err := a.assignDevice(volumeID)
+		if err != nil {
+			return err
+		}
+		device = d
 
 		request := &ec2.AttachVolumeInput{
 			Device:     aws.String(device),
@@ -257,7 +299,7 @@ func (a *AWSVolumes) AttachVolume(volume *Volume) (string, error) {
 
 		attachResponse, err := a.ec2.AttachVolume(request)
 		if err != nil {
-			return "", fmt.Errorf("Error attaching EBS volume %q: %v", volumeID, err)
+			return fmt.Errorf("Error attaching EBS volume %q: %v", volumeID, err)
 		}
 
 		glog.V(2).Infof("AttachVolume request returned %v", attachResponse)
@@ -269,34 +311,37 @@ func (a *AWSVolumes) AttachVolume(volume *Volume) (string, error) {
 			VolumeIds: []*string{&volumeID},
 		}
 
-		response, err := a.ec2.DescribeVolumes(request)
+		volumes, err := a.findVolumes(request)
 		if err != nil {
-			return "", fmt.Errorf("Error describing EBS volume %q: %v", volumeID, err)
+			return fmt.Errorf("Error describing EBS volume %q: %v", volumeID, err)
 		}
 
-		attachmentState := ""
-		for _, v := range response.Volumes {
-			for _, a := range v.Attachments {
-				attachmentState = aws.StringValue(a.State)
+		if len(volumes) == 0 {
+			return fmt.Errorf("EBS volume %q disappeared during attach", volumeID)
+		}
+		if len(volumes) != 1 {
+			return fmt.Errorf("Multiple volumes found with id %q", volumeID)
+		}
+
+		v := volumes[0]
+		if v.AttachedTo != "" {
+			if v.AttachedTo == a.instanceId {
+				volume.LocalDevice = device
+				return nil
+			} else {
+				a.releaseDevice(device, volumeID)
+
+				return fmt.Errorf("Unable to attach volume %q, was attached to %q", volumeID, v.AttachedTo)
 			}
 		}
 
-		if attachmentState == "" {
-			// TODO: retry?
-			// Not attached
-			return "", fmt.Errorf("Attach was requested, but volume %q was not seen as attaching", volumeID)
-		}
-
-		switch attachmentState {
-		case "attached":
-			return device, nil
-
+		switch v.Status {
 		case "attaching":
-			glog.V(2).Infof("Waiting for volume %q to be attached (currently %q)", volumeID, attachmentState)
+			glog.V(2).Infof("Waiting for volume %q to be attached (currently %q)", volumeID, v.Status)
 		// continue looping
 
 		default:
-			return "", fmt.Errorf("Observed unexpected volume state %q", attachmentState)
+			return fmt.Errorf("Observed unexpected volume state %q", v.Status)
 		}
 
 		time.Sleep(10 * time.Second)

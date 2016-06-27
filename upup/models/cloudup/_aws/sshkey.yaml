@@ -1,2 +1,3 @@
-sshKey/kubernetes.{{ .ClusterName }}:
+sshKey/{{ ClusterName }}:
+  name: kubernetes.{{ClusterName}}
   publicKey: resources/ssh-public-key

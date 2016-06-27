@@ -7,6 +7,8 @@ import (
 	"os"
 	"path"
 	"strings"
+	"github.com/golang/glog"
+	"time"
 )
 
 type EtcdCluster struct {
@@ -20,7 +22,9 @@ type EtcdCluster struct {
 	Nodes        []*EtcdNode
 	PodName      string
 
-	Spec *EtcdClusterSpec
+	Spec         *EtcdClusterSpec
+
+	VolumeMountPath string
 }
 
 func (e *EtcdCluster) String() string {
@@ -36,33 +40,56 @@ func (e *EtcdNode) String() string {
 	return DebugString(e)
 }
 
-func (k *KubeBoot) BuildEtcdClusters(modelDir string) ([]*EtcdCluster, error) {
-	var clusters []*EtcdCluster
+type EtcdController struct {
+	kubeBoot *KubeBoot
 
-	for _, spec := range k.EtcdClusters {
-		modelTemplatePath := path.Join(modelDir, spec.ClusterKey+".config")
-		modelTemplate, err := ioutil.ReadFile(modelTemplatePath)
-		if err != nil {
-			return nil, fmt.Errorf("error reading model template %q: %v", modelTemplatePath, err)
-		}
+	volume *Volume
+	volumeSpec *EtcdClusterSpec
+	cluster *EtcdCluster
+}
 
-		cluster := &EtcdCluster{}
-		cluster.Spec = spec
-
-		model, err := ExecuteTemplate("model-etcd-"+spec.ClusterKey, string(modelTemplate), cluster)
-		if err != nil {
-			return nil, fmt.Errorf("error executing etcd model template %q: %v", modelTemplatePath, err)
-		}
-
-		err = yaml.Unmarshal([]byte(model), cluster)
-		if err != nil {
-			return nil, fmt.Errorf("error parsing etcd model template %q: %v", modelTemplatePath, err)
-		}
-
-		clusters = append(clusters, cluster)
+func newEtcdController(kubeBoot *KubeBoot, v *Volume, spec *EtcdClusterSpec) (*EtcdController, error) {
+	k := &EtcdController{
+		kubeBoot: kubeBoot,
 	}
 
-	return clusters, nil
+	modelTemplatePath := path.Join(kubeBoot.ModelDir, spec.ClusterKey + ".config")
+	modelTemplate, err := ioutil.ReadFile(modelTemplatePath)
+	if err != nil {
+		return nil, fmt.Errorf("error reading model template %q: %v", modelTemplatePath, err)
+	}
+
+	cluster := &EtcdCluster{}
+	cluster.Spec = spec
+	cluster.VolumeMountPath = v.Mountpoint
+
+	model, err := ExecuteTemplate("model-etcd-" + spec.ClusterKey, string(modelTemplate), cluster)
+	if err != nil {
+		return nil, fmt.Errorf("error executing etcd model template %q: %v", modelTemplatePath, err)
+	}
+
+	err = yaml.Unmarshal([]byte(model), cluster)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing etcd model template %q: %v", modelTemplatePath, err)
+	}
+	k.cluster = cluster
+
+	return k, nil
+}
+
+func (k*EtcdController) RunSyncLoop() {
+	for {
+		err := k.syncOnce()
+		if err != nil {
+			glog.Warningf("error during attempt to bootstrap (will sleep and retry): %v", err)
+		}
+
+		time.Sleep(1 * time.Minute)
+	}
+}
+
+func (k*EtcdController) syncOnce() error {
+	return k.cluster.configure(k.kubeBoot)
 }
 
 func (c *EtcdCluster) configure(k *KubeBoot) error {
@@ -79,7 +106,7 @@ func (c *EtcdCluster) configure(k *KubeBoot) error {
 		c.PodName = c.ClusterName
 	}
 
-	err := touchFile(k.PathFor(c.LogFile))
+	err := touchFile(PathFor(c.LogFile))
 	if err != nil {
 		return fmt.Errorf("error touching log-file %q: %v", c.LogFile, err)
 	}
@@ -88,6 +115,7 @@ func (c *EtcdCluster) configure(k *KubeBoot) error {
 		c.ClusterToken = "etcd-cluster-token-" + name
 	}
 
+	var nodes []*EtcdNode
 	for _, nodeName := range c.Spec.NodeNames {
 		name := name + "-" + nodeName
 		fqdn := k.BuildInternalDNSName(name)
@@ -96,17 +124,18 @@ func (c *EtcdCluster) configure(k *KubeBoot) error {
 			Name:         name,
 			InternalName: fqdn,
 		}
-		c.Nodes = append(c.Nodes, node)
+		nodes = append(nodes, node)
 
 		if nodeName == c.Spec.NodeName {
 			c.Me = node
 
-			err := k.MapInternalDNSName(fqdn)
+			err := k.CreateInternalDNSNameRecord(fqdn)
 			if err != nil {
 				return fmt.Errorf("error mapping internal dns name for %q: %v", name, err)
 			}
 		}
 	}
+	c.Nodes = nodes
 
 	if c.Me == nil {
 		return fmt.Errorf("my node name %s not found in cluster %v", c.Spec.NodeName, strings.Join(c.Spec.NodeNames, ","))
@@ -123,7 +152,7 @@ func (c *EtcdCluster) configure(k *KubeBoot) error {
 	}
 
 	manifestPath := "/etc/kubernetes/manifests/" + name + ".manifest"
-	err = ioutil.WriteFile(k.PathFor(manifestPath), []byte(manifest), 0644)
+	err = ioutil.WriteFile(PathFor(manifestPath), []byte(manifest), 0644)
 	if err != nil {
 		return fmt.Errorf("error writing etcd manifest %q: %v", manifestPath, err)
 	}

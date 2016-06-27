@@ -24,7 +24,7 @@ metadata:
     version: v14
     kubernetes.io/cluster-service: "true"
 spec:
-  replicas: {{ .DNS.Replicas }}
+  replicas: {{ KubeDNS.Replicas }}
   selector:
     k8s-app: kube-dns
     version: v14
@@ -69,7 +69,7 @@ spec:
           timeoutSeconds: 5
         args:
         # command = "/kube-dns"
-        - --domain={{ .DNS.Domain }}.
+        - --domain={{ KubeDNS.Domain }}.
         - --dns-port=10053
         ports:
         - containerPort: 10053
@@ -102,7 +102,7 @@ spec:
             cpu: 10m
             memory: 20Mi
         args:
-        - -cmd=nslookup kubernetes.default.svc.{{ .DNS.Domain }} 127.0.0.1 >/dev/null
+        - -cmd=nslookup kubernetes.default.svc.{{ KubeDNS.Domain }} 127.0.0.1 >/dev/null
         - -port=8080
         ports:
         - containerPort: 8080

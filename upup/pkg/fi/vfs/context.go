@@ -1,21 +1,20 @@
 package vfs
 
 import (
-	"strings"
-	"io/ioutil"
-	"net/url"
 	"fmt"
-	"net/http"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/golang/glog"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"strings"
 )
 
 // VFSContext is a 'context' for VFS, that is normally a singleton
 // but allows us to configure S3 credentials, for example
 type VFSContext struct {
-
 }
 
 var Context VFSContext
@@ -24,7 +23,7 @@ var Context VFSContext
 // It supports additional schemes which don't (yet) have full VFS implementations:
 //   metadata: reads from instance metadata on GCE/AWS
 //   http / https: reads from HTTP
-func (c*VFSContext) ReadFile(location string) ([]byte, error) {
+func (c *VFSContext) ReadFile(location string) ([]byte, error) {
 	if strings.Contains(location, "://") {
 		// Handle our special case schemas
 		u, err := url.Parse(location)
@@ -61,7 +60,7 @@ func (c*VFSContext) ReadFile(location string) ([]byte, error) {
 	return p.ReadFile()
 }
 
-func (c*VFSContext) BuildVfsPath(p string) (Path, error) {
+func (c *VFSContext) BuildVfsPath(p string) (Path, error) {
 	if !strings.Contains(p, "://") {
 		return NewFSPath(p), nil
 	}
@@ -73,7 +72,7 @@ func (c*VFSContext) BuildVfsPath(p string) (Path, error) {
 	return nil, fmt.Errorf("unknown / unhandled path type: %q", p)
 }
 
-func (c*VFSContext) readHttpLocation(httpURL string, httpHeaders map[string]string) ([]byte, error) {
+func (c *VFSContext) readHttpLocation(httpURL string, httpHeaders map[string]string) ([]byte, error) {
 	req, err := http.NewRequest("GET", httpURL, nil)
 	if err != nil {
 		return nil, err
@@ -95,7 +94,7 @@ func (c*VFSContext) readHttpLocation(httpURL string, httpHeaders map[string]stri
 	return body, nil
 }
 
-func (c*VFSContext) buildS3Path(p string) (*S3Path, error) {
+func (c *VFSContext) buildS3Path(p string) (*S3Path, error) {
 	u, err := url.Parse(p)
 	if err != nil {
 		return nil, fmt.Errorf("invalid s3 path: %q", err)

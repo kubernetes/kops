@@ -1,5 +1,4 @@
-InstancePrefix: kubernetes
-AllocateNodeCIDRs: true
+#InstancePrefix: kubernetes
 Multizone: true
 
 ServiceClusterIPRange: 10.0.0.0/16
@@ -9,26 +8,21 @@ NetworkProvider: none
 
 AdmissionControl: NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota,PersistentVolumeLabel
 
-EnableClusterMonitoring: none
-EnableL7LoadBalancing: none
-EnableClusterUI: true
+#EnableClusterMonitoring: none
+#EnableL7LoadBalancing: none
+#EnableClusterUI: true
 
-EnableClusterDNS: true
-DNSReplicas: 1
-DNSServerIP: 10.0.0.10
+#EnableClusterDNS: true
+#DNSReplicas: 1
+#DNSServerIP: 100.64.0.10
 DNSDomain: cluster.local
 
-EnableClusterLogging: true
-EnableNodeLogging: true
-LoggingDestination: elasticsearch
-ElasticsearchLoggingReplicas: 1
+#EnableClusterLogging: true
+#EnableNodeLogging: true
+#LoggingDestination: elasticsearch
+#ElasticsearchLoggingReplicas: 1
 
-MasterName: {{ .InstancePrefix }}-master
-MasterTag: {{ .InstancePrefix }}-master
-MasterVolumeSize: 20
+#MasterVolumeSize: 20
 
-NodeCount: 2
-NodeTag: {{ .InstancePrefix }}-minion
-NodeInstancePrefix: {{ .InstancePrefix }}-minion
 
 KubeUser: admin

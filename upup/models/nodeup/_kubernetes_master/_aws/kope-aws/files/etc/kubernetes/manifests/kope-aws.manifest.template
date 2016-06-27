@@ -9,9 +9,6 @@ spec:
   containers:
   - name: kope-aws
     image: kope/aws-controller
-    #resources:
-    #  requests:
-    #    cpu: {{ .KubeProxy.CPURequest }}
     command:
     - /usr/bin/aws-controller
     - --healthz-port=10245

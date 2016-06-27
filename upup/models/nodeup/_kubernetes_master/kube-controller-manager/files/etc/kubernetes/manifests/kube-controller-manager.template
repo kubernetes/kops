@@ -10,7 +10,7 @@
 "containers":[
     {
     "name": "kube-controller-manager",
-    "image": "{{ .KubeControllerManager.Image }}",
+    "image": "{{ KubeControllerManager.Image }}",
     "resources": {
       "requests": {
         "cpu": "200m"
@@ -19,7 +19,7 @@
     "command": [
                  "/bin/sh",
                  "-c",
-                 "/usr/local/bin/kube-controller-manager {{ BuildFlags .KubeControllerManager }} 1>>/var/log/kube-controller-manager.log 2>&1"
+                 "/usr/local/bin/kube-controller-manager {{ BuildFlags KubeControllerManager }} 1>>/var/log/kube-controller-manager.log 2>&1"
                ],
     "livenessProbe": {
       "httpGet": {
@@ -33,7 +33,7 @@
     "volumeMounts": [
         {"name": "usrsharessl","mountPath": "/usr/share/ssl", "readOnly": true}, {"name": "usrssl","mountPath": "/usr/ssl", "readOnly": true}, {"name": "usrlibssl","mountPath": "/usr/lib/ssl", "readOnly": true}, {"name": "usrlocalopenssl","mountPath": "/usr/local/openssl", "readOnly": true},
         { "name": "srvkube",
-        "mountPath": "{{ .KubeControllerManager.PathSrvKubernetes }}",
+        "mountPath": "{{ KubeControllerManager.PathSrvKubernetes }}",
         "readOnly": true},
         { "name": "logfile",
         "mountPath": "/var/log/kube-controller-manager.log",
@@ -58,7 +58,7 @@
 
   { "name": "srvkube",
     "hostPath": {
-        "path": "{{ .KubeControllerManager.PathSrvKubernetes }}"}
+        "path": "{{ KubeControllerManager.PathSrvKubernetes }}"}
   },
   { "name": "logfile",
     "hostPath": {

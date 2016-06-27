@@ -65,11 +65,14 @@ func (c *DeleteClusterCmd) Run() error {
 	d.Region = c.Region
 	d.Cloud = cloud
 
-	glog.Infof("TODO: S3 bucket removal")
-
 	resources, err := d.ListResources()
 	if err != nil {
 		return err
+	}
+
+	if len(resources) == 0 {
+		fmt.Printf("Nothing to delete\n")
+		return nil
 	}
 
 	columns := []string{"TYPE", "ID", "NAME"}
@@ -127,11 +130,6 @@ func (c *DeleteClusterCmd) Run() error {
 		b.Reset()
 	}
 	w.Flush()
-
-	if len(resources) == 0 {
-		fmt.Printf("Nothing to delete\n")
-		return nil
-	}
 
 	if !c.Yes {
 		return fmt.Errorf("Must specify --yes to delete")

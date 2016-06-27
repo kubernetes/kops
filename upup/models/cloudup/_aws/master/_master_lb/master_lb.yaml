@@ -1,20 +1,20 @@
 # Configuration where an ELB fronts the master (apiservers in particular)
 
 # Master ELB
-loadBalancer/api.{{ .ClusterName }}:
+loadBalancer/api.{{ ClusterName }}:
   id: master-{{ replace .ClusterName "." "-" }}
   securityGroups:
-    - securityGroup/api.{{ .ClusterName }}
+    - securityGroup/api.{{ ClusterName }}
   subnets:
 {{ range $zone := .MasterZones }}
-    - subnet/kubernetes-{{ $zone }}-{{ $.ClusterName }}
+    - subnet/{{ $zone }}-{{ ClusterName }}
 {{ end }}
   listeners:
     443: { instancePort: 443 }
 
 # Configure fast-recovery health-checks
-loadBalancerHealthChecks/api.{{ .ClusterName }}:
-  loadBalancer: loadBalancer/api.{{ .ClusterName }}
+loadBalancerHealthChecks/api.{{ ClusterName }}:
+  loadBalancer: loadBalancer/api.{{ ClusterName }}
   target: "TCP:443"
   timeout: 5
   interval: 10
@@ -22,8 +22,8 @@ loadBalancerHealthChecks/api.{{ .ClusterName }}:
   unhealthyThreshold: 3
 
 # Security group for master ELB
-securityGroup/api.{{ .ClusterName }}:
-  vpc: vpc/kubernetes-{{ .ClusterName }}
+securityGroup/api.{{ ClusterName }}:
+  vpc: vpc/{{ ClusterName }}
   description: 'Security group for ELB in front of masters'
 
 # Allow full egress
@@ -34,7 +34,7 @@ securityGroupRule/egress-api-lb:
 
 # HTTPS to the master ELB is allowed (for API access)
 securityGroupRule/https-external-to-api:
-  securityGroup: securityGroup/api.{{ .ClusterName }}
+  securityGroup: securityGroup/api.{{ ClusterName }}
   cidr: 0.0.0.0/0
   protocol: tcp
   fromPort: 443
@@ -42,8 +42,8 @@ securityGroupRule/https-external-to-api:
 
 # Allow HTTPS to the master from the master ELB
 securityGroupRule/https-elb-to-master:
-  securityGroup: securityGroup/kubernetes.master.{{ .ClusterName }}
-  sourceGroup: securityGroup/api.{{ .ClusterName }}
+  securityGroup: securityGroup/masters.{{ ClusterName }}
+  sourceGroup: securityGroup/api.{{ ClusterName }}
   protocol: tcp
   fromPort: 443
   toPort: 443
@@ -55,7 +55,7 @@ securityGroupRule/https-elb-to-master:
 dnsName/{{ .MasterPublicName }}:
   Zone: dnsZone/{{ .DNSZone }}
   ResourceType: "A"
-  TargetLoadBalancer: loadBalancer/api.{{ .ClusterName }}
+  TargetLoadBalancer: loadBalancer/api.{{ ClusterName }}
 
 {{ end }}
 

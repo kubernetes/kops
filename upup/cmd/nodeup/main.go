@@ -15,6 +15,8 @@ func main() {
 	flag.StringVar(&flagConf, "conf", "node.yaml", "configuration location")
 	var flagAssetDir string
 	flag.StringVar(&flagAssetDir, "assets", "/var/cache/nodeup", "the location for the local asset cache")
+	var flagRootFS string
+	flag.StringVar(&flagRootFS, "rootfs", "/", "the location of the machine root (for running in a container)")
 
 	dryrun := false
 	flag.BoolVar(&dryrun, "dryrun", false, "Don't create cloud resources; just show what would be done")
@@ -32,13 +34,12 @@ func main() {
 		glog.Exitf("--conf is required")
 	}
 
-	config := &nodeup.NodeConfig{}
 	cmd := &nodeup.NodeUpCommand{
-		Config:         config,
 		ConfigLocation: flagConf,
 		ModelDir:       flagModel,
 		Target:         target,
 		AssetDir:       flagAssetDir,
+		FSRoot:         flagRootFS,
 	}
 	err := cmd.Run(os.Stdout)
 	if err != nil {

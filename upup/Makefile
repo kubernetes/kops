@@ -42,16 +42,14 @@ nodeup-tar: gocode
 upload: nodeup-tar upup-tar
 	rm -rf .build/s3
 	mkdir -p .build/s3/nodeup
-	cp .build/nodeup.tar.gz .build/s3/nodeup/
-	cp .build/nodeup.tar.gz.sha1 .build/s3/nodeup/
+	cp .build/nodeup.tar.gz .build/s3/nodeup/nodeup-1.3.tar.gz
+	cp .build/nodeup.tar.gz.sha1 .build/s3/nodeup/nodeup-1.3.tar.gz.sha1
 	mkdir -p .build/s3/upup
-	cp .build/upup.tar.gz .build/s3/upup/
-	cp .build/upup.tar.gz.sha1 .build/s3/upup/
+	cp .build/upup.tar.gz .build/s3/upup/upup-1.3.tar.gz
+	cp .build/upup.tar.gz.sha1 .build/s3/upup/upup-1.3.tar.gz.sha1
 	aws s3 sync --acl public-read .build/s3/ s3://kubeupv2/
-	#aws s3api put-object-acl --bucket kubeupv2 --key nodeup/nodeup.tar.gz --acl public-read
-	#aws s3api put-object-acl --bucket kubeupv2 --key nodeup/nodeup.tar.gz.sha1 --acl public-read
 
-push: tar
+push: nodeup-tar
 	scp .build/nodeup.tar.gz ${TARGET}:/tmp/
 	ssh ${TARGET} sudo tar zxf /tmp/nodeup.tar.gz -C /var/cache/kubernetes-install
 

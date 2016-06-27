@@ -2,14 +2,13 @@ package cloudup
 
 import (
 	"bytes"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/golang/glog"
 	"io"
+	"k8s.io/kube-deploy/upup/pkg/api"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/loader"
-	"k8s.io/kube-deploy/upup/pkg/fi/nodeup"
 	"k8s.io/kube-deploy/upup/pkg/fi/utils"
 	"os"
 	"path"
@@ -37,7 +36,7 @@ type Loader struct {
 	typeMap map[string]reflect.Type
 
 	templates []*template.Template
-	config    interface{}
+	cluster   *api.Cluster
 
 	Resources map[string]fi.Resource
 	//deferred          []*deferredBinding
@@ -98,23 +97,14 @@ func (l *Loader) executeTemplate(key string, d string, args []string) (string, e
 	t := template.New(key)
 
 	funcMap := make(template.FuncMap)
-	funcMap["Base64Encode"] = func(s string) string {
-		return base64.StdEncoding.EncodeToString([]byte(s))
-	}
 	funcMap["Args"] = func() []string {
 		return args
 	}
-	funcMap["BuildNodeConfig"] = func(target string, configResourceName string, args []string) (string, error) {
-		return l.buildNodeConfig(target, configResourceName, args)
-	}
+	//funcMap["BuildNodeConfig"] = func(target string, configResourceName string, args []string) (string, error) {
+	//	return l.buildNodeConfig(target, configResourceName, args)
+	//}
 	funcMap["RenderResource"] = func(resourceName string, args []string) (string, error) {
 		return l.renderResource(resourceName, args)
-	}
-	funcMap["replace"] = func(s, find, replace string) string {
-		return strings.Replace(s, find, replace, -1)
-	}
-	funcMap["join"] = func(a []string, sep string) string {
-		return strings.Join(a, sep)
 	}
 	for k, fn := range l.TemplateFunctions {
 		funcMap[k] = fn
@@ -123,7 +113,7 @@ func (l *Loader) executeTemplate(key string, d string, args []string) (string, e
 
 	t.Option("missingkey=zero")
 
-	context := l.config
+	spec := l.cluster.Spec
 
 	_, err := t.Parse(d)
 	if err != nil {
@@ -131,7 +121,7 @@ func (l *Loader) executeTemplate(key string, d string, args []string) (string, e
 	}
 
 	var buffer bytes.Buffer
-	err = t.ExecuteTemplate(&buffer, key, context)
+	err = t.ExecuteTemplate(&buffer, key, spec)
 	if err != nil {
 		return "", fmt.Errorf("error executing template %q: %v", key, err)
 	}
@@ -143,7 +133,7 @@ func ignoreHandler(i *loader.TreeWalkItem) error {
 	return nil
 }
 
-func (l *Loader) Build(modelStore string, models []string) (map[string]fi.Task, error) {
+func (l *Loader) BuildCompleteSpec(clusterSpec *api.ClusterSpec, modelStore string, models []string) (*api.ClusterSpec, error) {
 	// First pass: load options
 	tw := &loader.TreeWalker{
 		DefaultHandler: ignoreHandler,
@@ -163,15 +153,26 @@ func (l *Loader) Build(modelStore string, models []string) (map[string]fi.Task, 
 		}
 	}
 
-	var err error
-	l.config, err = l.OptionsLoader.Build()
+	loaded, err := l.OptionsLoader.Build(clusterSpec)
 	if err != nil {
 		return nil, err
 	}
-	glog.V(1).Infof("options: %s", fi.DebugAsJsonStringIndent(l.config))
+	completed := &api.ClusterSpec{}
+	*completed = *(loaded.(*api.ClusterSpec))
 
+	// Master kubelet config = (base kubelet config + master kubelet config)
+	masterKubelet := &api.KubeletConfig{}
+	utils.JsonMergeStruct(masterKubelet, completed.Kubelet)
+	utils.JsonMergeStruct(masterKubelet, completed.MasterKubelet)
+	completed.MasterKubelet = masterKubelet
+
+	glog.V(1).Infof("options: %s", fi.DebugAsJsonStringIndent(completed))
+	return completed, nil
+}
+
+func (l *Loader) BuildTasks(modelStore string, models []string) (map[string]fi.Task, error) {
 	// Second pass: load everything else
-	tw = &loader.TreeWalker{
+	tw := &loader.TreeWalker{
 		DefaultHandler: l.objectHandler,
 		Contexts: map[string]loader.Handler{
 			"resources": l.resourceHandler,
@@ -184,13 +185,13 @@ func (l *Loader) Build(modelStore string, models []string) (map[string]fi.Task, 
 
 	for _, model := range models {
 		modelDir := path.Join(modelStore, model)
-		err = tw.Walk(modelDir)
+		err := tw.Walk(modelDir)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	err = l.processDeferrals()
+	err := l.processDeferrals()
 	if err != nil {
 		return nil, err
 	}
@@ -325,14 +326,16 @@ func (l *Loader) objectHandler(i *loader.TreeWalkItem) error {
 
 func (l *Loader) loadYamlObjects(key string, data string) (map[string]interface{}, error) {
 	var o map[string]interface{}
-	err := utils.YamlUnmarshal([]byte(data), &o)
-	if err != nil {
-		// TODO: It would be nice if yaml returned us the line number here
-		glog.Infof("error parsing yaml.  yaml follows:")
-		for i, line := range strings.Split(string(data), "\n") {
-			fmt.Fprintf(os.Stderr, "%3d: %s\n", i, line)
+	if strings.TrimSpace(data) != "" {
+		err := utils.YamlUnmarshal([]byte(data), &o)
+		if err != nil {
+			// TODO: It would be nice if yaml returned us the line number here
+			glog.Infof("error parsing yaml.  yaml follows:")
+			for i, line := range strings.Split(string(data), "\n") {
+				fmt.Fprintf(os.Stderr, "%3d: %s\n", i, line)
+			}
+			return nil, fmt.Errorf("error parsing yaml %q: %v", key, err)
 		}
-		return nil, fmt.Errorf("error parsing yaml %q: %v", key, err)
 	}
 
 	return l.loadObjectMap(key, o)
@@ -421,36 +424,36 @@ func (l *Loader) populateResource(rh *fi.ResourceHolder, resource fi.Resource, a
 	return nil
 }
 
-func (l *Loader) buildNodeConfig(target string, configResourceName string, args []string) (string, error) {
-	assetDir := path.Join(l.WorkDir, "node/assets")
-
-	confData, err := l.renderResource(configResourceName, args)
-	if err != nil {
-		return "", err
-	}
-
-	config := &nodeup.NodeConfig{}
-	err = utils.YamlUnmarshal([]byte(confData), config)
-	if err != nil {
-		return "", fmt.Errorf("error parsing configuration %q: %v", configResourceName, err)
-	}
-
-	cmd := &nodeup.NodeUpCommand{
-		Config:         config,
-		ConfigLocation: "",
-		ModelDir:       path.Join(l.ModelStore, l.NodeModel),
-		Target:         target,
-		AssetDir:       assetDir,
-	}
-
-	var buff bytes.Buffer
-	err = cmd.Run(&buff)
-	if err != nil {
-		return "", fmt.Errorf("error building node configuration: %v", err)
-	}
-
-	return buff.String(), nil
-}
+//func (l *Loader) buildNodeConfig(target string, configResourceName string, args []string) (string, error) {
+//	assetDir := path.Join(l.WorkDir, "node/assets")
+//
+//	confData, err := l.renderResource(configResourceName, args)
+//	if err != nil {
+//		return "", err
+//	}
+//
+//	config := &nodeup.NodeConfig{}
+//	err = utils.YamlUnmarshal([]byte(confData), config)
+//	if err != nil {
+//		return "", fmt.Errorf("error parsing configuration %q: %v", configResourceName, err)
+//	}
+//
+//	cmd := &nodeup.NodeUpCommand{
+//		Config:         config,
+//		ConfigLocation: "",
+//		ModelDir:       path.Join(l.ModelStore, l.NodeModel),
+//		Target:         target,
+//		AssetDir:       assetDir,
+//	}
+//
+//	var buff bytes.Buffer
+//	err = cmd.Run(&buff)
+//	if err != nil {
+//		return "", fmt.Errorf("error building node configuration: %v", err)
+//	}
+//
+//	return buff.String(), nil
+//}
 
 func (l *Loader) renderResource(resourceName string, args []string) (string, error) {
 	resourceKey := strings.TrimSuffix(resourceName, ".template")

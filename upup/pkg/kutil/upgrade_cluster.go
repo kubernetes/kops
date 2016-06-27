@@ -5,8 +5,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"k8s.io/kube-deploy/upup/pkg/api"
 	"k8s.io/kube-deploy/upup/pkg/fi"
-	"k8s.io/kube-deploy/upup/pkg/fi/cloudup"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
 )
 
@@ -18,13 +18,14 @@ type UpgradeCluster struct {
 
 	StateStore fi.StateStore
 
-	Config *cloudup.CloudConfig
+	ClusterConfig  *api.Cluster
+	InstanceGroups []*api.InstanceGroup
 }
 
 func (x *UpgradeCluster) Upgrade() error {
 	awsCloud := x.Cloud.(*awsup.AWSCloud)
 
-	config := x.Config
+	cluster := x.ClusterConfig
 
 	newClusterName := x.NewClusterName
 	if newClusterName == "" {
@@ -98,7 +99,7 @@ func (x *UpgradeCluster) Upgrade() error {
 	// Retag VPC
 	// We have to be careful because VPCs can be shared
 	{
-		vpcID := config.NetworkID
+		vpcID := cluster.Spec.NetworkID
 		if vpcID != "" {
 			tags, err := awsCloud.GetTags(vpcID)
 			if err != nil {
@@ -163,8 +164,8 @@ func (x *UpgradeCluster) Upgrade() error {
 		}
 	}
 
-	config.ClusterName = newClusterName
-	err = x.StateStore.WriteConfig(config)
+	cluster.Name = newClusterName
+	err = api.WriteConfig(x.StateStore, cluster, x.InstanceGroups)
 	if err != nil {
 		return fmt.Errorf("error writing updated configuration: %v", err)
 	}

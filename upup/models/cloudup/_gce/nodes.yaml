@@ -1,12 +1,12 @@
-# TODO: Support multiple instance groups
+{{ range $nodeset := .NodeSets }}
 
-instanceTemplate/{{ .NodeInstancePrefix }}-template:
+instanceTemplate/{{ $nodeset.Key }}-{{ $.NodeInstancePrefix }}-template:
   network: network/default
-  machineType: {{ .NodeMachineType }}
+  machineType: {{ $nodeset.NodeMachineType }}
   # TODO: Make configurable
   bootDiskType: pd-standard
   bootDiskSizeGB: 100
-  bootDiskImage: {{ .NodeImage }}
+  bootDiskImage: {{ $nodeset.NodeImage }}
   canIpForward: true
   # TODO: Support preemptible nodes?
   preemptible: false
@@ -17,7 +17,7 @@ instanceTemplate/{{ .NodeInstancePrefix }}-template:
     - storage-ro
   metadata:
     # kube-env: resources/kube-env
-{{ if eq .NodeInit "cloudinit" }}
+{{ if eq $.NodeInit "cloudinit" }}
     # TODO: we should probably always store the config somewhere
     config: resources/cloudinit.yaml _kubernetes_master
 {{ else }}
@@ -26,13 +26,15 @@ instanceTemplate/{{ .NodeInstancePrefix }}-template:
 {{ end }}
     cluster-name: resources/cluster-name
   tags:
-    - {{ .NodeTag }}
+    - {{ $.NodeTag }}
 
-managedInstanceGroup/{{ .NodeInstancePrefix }}-group:
-  zone: {{ .Zone }}
-  baseInstanceName: {{ .NodeInstancePrefix }}
-  targetSize: {{ .NodeCount }}
-  instanceTemplate: instanceTemplate/{{ .NodeInstancePrefix }}-template
+managedInstanceGroup/{{ $nodeset.Key}}-{{ .NodeInstancePrefix }}-group:
+  zone: {{ $.Zone }}
+  baseInstanceName: {{ $nodeset.InstancePrefix }}
+  targetSize: {{ $nodeset.Count }}
+  instanceTemplate: instanceTemplate/{{ $nodeset.Key }}-{{ $nodeset.InstancePrefix }}-template
+
+{{ end }}
 
 # Allow traffic from nodes -> nodes
 firewallRule/{{ .NodeTag }}-all:
