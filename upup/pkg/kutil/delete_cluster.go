@@ -157,9 +157,9 @@ func (c *DeleteCluster) DeleteResources(resources map[string]*ResourceTracker) e
 		}
 	}
 
-	glog.Infof("Dependencies")
+	glog.V(2).Infof("Dependencies")
 	for k, v := range depMap {
-		glog.Infof("\t%s\t%v", k, v)
+		glog.V(2).Infof("\t%s\t%v", k, v)
 	}
 
 	iterationsWithNoProgress := 0
