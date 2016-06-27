@@ -13,20 +13,20 @@ import (
 	"path"
 )
 
-type KubecfgGenerateCommand struct {
+type ExportKubecfgCommand struct {
 	tmpdir  string
 	caStore fi.CAStore
 }
 
-var kubecfgGenerateCommand KubecfgGenerateCommand
+var exportKubecfgCommand ExportKubecfgCommand
 
 func init() {
 	cmd := &cobra.Command{
-		Use:   "generate",
+		Use:   "kubecfg",
 		Short: "Generate a kubecfg file for a cluster",
 		Long:  `Creates a kubecfg file for a cluster, based on the state`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := kubecfgGenerateCommand.Run()
+			err := exportKubecfgCommand.Run()
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "%v\n", err)
 				os.Exit(1)
@@ -34,13 +34,13 @@ func init() {
 		},
 	}
 
-	kubecfgCmd.AddCommand(cmd)
+	exportCmd.AddCommand(cmd)
 }
 
-func (c *KubecfgGenerateCommand) Run() error {
+func (c *ExportKubecfgCommand) Run() error {
 	stateStore, err := rootCommand.StateStore()
 	if err != nil {
-		return fmt.Errorf("error state store: %v", err)
+		return err
 	}
 
 	cluster, _, err := api.ReadConfig(stateStore)
@@ -114,7 +114,7 @@ func (c *KubecfgGenerateCommand) Run() error {
 	return nil
 }
 
-func (c *KubecfgGenerateCommand) copyCertificate(id string) (string, error) {
+func (c *ExportKubecfgCommand) copyCertificate(id string) (string, error) {
 	p := path.Join(c.tmpdir, id+".crt")
 	cert, err := c.caStore.Cert(id)
 	if err != nil {
@@ -129,7 +129,7 @@ func (c *KubecfgGenerateCommand) copyCertificate(id string) (string, error) {
 	return p, nil
 }
 
-func (c *KubecfgGenerateCommand) copyPrivateKey(id string) (string, error) {
+func (c *ExportKubecfgCommand) copyPrivateKey(id string) (string, error) {
 	p := path.Join(c.tmpdir, id+".key")
 	cert, err := c.caStore.PrivateKey(id)
 	if err != nil {

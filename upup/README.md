@@ -47,11 +47,12 @@ If you have problems, please set `--v=8 --logtostderr` and open an issue, and pi
 
 ## Build a kubectl file
 
-The upup tool is a CLI for doing administrative tasks.  You can use it to generate the kubectl configuration:
+The upup tool is a CLI for doing administrative tasks.  You can use it to create the kubecfg configuration,
+for use with kubectl:
 
 ```
 export MYZONE=<kubernetes.myzone.com>
-${GOPATH}/bin/upup kubecfg generate  --state s3://<mybucket>/${MYZONE} 
+${GOPATH}/bin/upup export kubecfg --state s3://<mybucket>/${MYZONE}
 ```
 
 ## Delete the cluster
