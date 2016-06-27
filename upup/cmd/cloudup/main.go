@@ -229,7 +229,7 @@ func main() {
 		etcdZones := zones.List()
 		if (len(etcdZones) % 2) == 0 {
 			// Not technically a requirement, but doesn't really make sense to allow
-			glog.Errorf("There should be an odd number of master-zones, for etcd's quorum.  Hint: Use --zone and --master-zone to declare node zones and master zones separately.")
+			glog.Errorf("There should be an odd number of master-zones, for etcd's quorum.  Hint: Use --zones and --master-zones to declare node zones and master zones separately.")
 			os.Exit(1)
 		}
 
