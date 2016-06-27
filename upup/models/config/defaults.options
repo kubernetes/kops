@@ -1,7 +1,5 @@
 Multizone: true
 
-AdmissionControl: NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota,PersistentVolumeLabel
-
 ClusterDNSDomain: cluster.local
 
 KubeUser: admin
