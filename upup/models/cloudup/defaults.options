@@ -1,9 +1,6 @@
 #InstancePrefix: kubernetes
 Multizone: true
 
-ServiceClusterIPRange: 10.0.0.0/16
-ClusterIPRange: 10.244.0.0/16
-MasterIPRange: 10.246.0.0/24
 NetworkProvider: none
 
 AdmissionControl: NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota,PersistentVolumeLabel
@@ -26,3 +23,4 @@ DNSDomain: cluster.local
 
 
 KubeUser: admin
+

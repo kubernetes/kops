@@ -3,11 +3,12 @@ Kubelet:
   Config: /etc/kubernetes/manifests
   AllowPrivileged: true
   LogLevel: 2
-  ClusterDNS: 10.0.0.10
+  ClusterDNS: {{ WellKnownServiceIP 10 }}
   ClusterDomain: cluster.local
   ConfigureCBR0: true
   BabysitDaemons: true
   APIServers: https://{{ .MasterInternalName }}
+  NonMasqueradeCIDR: {{ .NonMasqueradeCIDR }}
 
 MasterKubelet:
   RegisterSchedulable: false

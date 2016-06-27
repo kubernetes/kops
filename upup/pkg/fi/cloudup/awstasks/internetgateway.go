@@ -96,7 +96,7 @@ func (_ *InternetGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Intern
 	if shared {
 		// Verify the InternetGateway was found and matches our required settings
 		if a == nil {
-			return fmt.Errorf("InternetGateway with id %q not found", fi.StringValue(e.ID))
+			return fmt.Errorf("InternetGateway for shared VPC was not found")
 		}
 
 		return nil

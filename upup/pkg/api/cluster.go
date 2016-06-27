@@ -82,8 +82,11 @@ type ClusterSpec struct {
 	// ServiceClusterIPRange is the CIDR, from the internal network, where we allocate IPs for services
 	ServiceClusterIPRange string `json:"serviceClusterIPRange,omitempty"`
 	//MasterIPRange                 string `json:",omitempty"`
-	//NonMasqueradeCidr             string `json:",omitempty"`
-	//
+
+	// NonMasqueradeCIDR is the CIDR for the internal k8s network (on which pods & services live)
+	// It cannot overlap ServiceClusterIPRange
+	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty"`
+
 	//NetworkProvider               string `json:",omitempty"`
 	//
 	//HairpinMode                   string `json:",omitempty"`
@@ -244,9 +247,13 @@ type ClusterZoneSpec struct {
 // For example, it assigns stable Keys to NodeSets & Masters, and
 // it assigns CIDRs to subnets
 func (c *Cluster) PerformAssignments() error {
-	if c.Spec.NetworkCIDR == "" {
+	if c.Spec.NetworkCIDR == "" && !c.SharedVPC() {
 		// TODO: Choose non-overlapping networking CIDRs for VPCs?
 		c.Spec.NetworkCIDR = "172.20.0.0/16"
+	}
+
+	if c.Spec.NonMasqueradeCIDR == "" {
+		c.Spec.NonMasqueradeCIDR = "100.64.0.0/10"
 	}
 
 	for _, zone := range c.Spec.Zones {

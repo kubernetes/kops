@@ -11,10 +11,14 @@ import (
 	"text/template"
 )
 
+type TemplateFunctions struct {
+	cluster *api.Cluster
+}
+
 func (tf *TemplateFunctions) WellKnownServiceIP(id int) (net.IP, error) {
 	_, cidr, err := net.ParseCIDR(tf.cluster.Spec.ServiceClusterIPRange)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing ServiceClusterIPRange: %v", err)
+		return nil, fmt.Errorf("error parsing ServiceClusterIPRange %q: %v", tf.cluster.Spec.ServiceClusterIPRange, err)
 	}
 
 	ip4 := cidr.IP.To4()
@@ -41,10 +45,6 @@ func (tf *TemplateFunctions) WellKnownServiceIP(id int) (net.IP, error) {
 	}
 
 	return nil, fmt.Errorf("Unexpected IP address type for ServiceClusterIPRange: %s", tf.cluster.Spec.ServiceClusterIPRange)
-}
-
-type TemplateFunctions struct {
-	cluster *api.Cluster
 }
 
 func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {

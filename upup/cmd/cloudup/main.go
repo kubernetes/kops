@@ -113,6 +113,9 @@ func main() {
 
 	masterSize := pflag.String("master-size", "", "Set instance size for masters")
 
+	vpcID := pflag.String("vpc", "", "Set to use a shared VPC")
+	networkCIDR := pflag.String("network-cidr", "", "Set to override the default network CIDR")
+
 	nodeCount := pflag.Int("node-count", 0, "Set the number of nodes")
 
 	image := pflag.String("image", "", "Image to use")
@@ -182,7 +185,7 @@ func main() {
 			nodes = append(nodes, group)
 		}
 	}
-	createEtcdCluster := false
+
 	if *masterZones == "" {
 		if len(masters) == 0 {
 			// Default to putting into every zone
@@ -197,7 +200,6 @@ func main() {
 				instanceGroups = append(instanceGroups, g)
 				masters = append(masters, g)
 			}
-			createEtcdCluster = true
 		}
 	} else {
 		if len(masters) == 0 {
@@ -211,7 +213,6 @@ func main() {
 				instanceGroups = append(instanceGroups, g)
 				masters = append(masters, g)
 			}
-			createEtcdCluster = true
 		} else {
 			// This is hard, because of the etcd cluster
 			glog.Errorf("Cannot change master-zones from the CLI")
@@ -219,7 +220,7 @@ func main() {
 		}
 	}
 
-	if createEtcdCluster {
+	if len(cluster.Spec.EtcdClusters) == 0 {
 		zones := sets.NewString()
 		for _, group := range instanceGroups {
 			for _, zone := range group.Spec.Zones {
@@ -299,6 +300,19 @@ func main() {
 		cluster.Spec.KubernetesVersion = *kubernetesVersion
 	}
 
+	if *vpcID != "" {
+		cluster.Spec.NetworkID = *vpcID
+	}
+
+	if *networkCIDR != "" {
+		cluster.Spec.NetworkCIDR = *networkCIDR
+	}
+
+	if cluster.SharedVPC() && cluster.Spec.NetworkCIDR == "" {
+		glog.Errorf("Must specify NetworkCIDR when VPC is set")
+		os.Exit(1)
+	}
+
 	if cluster.Spec.CloudProvider == "" {
 		for _, zone := range cluster.Spec.Zones {
 			cloud := zonesToCloud[zone.Name]
@@ -308,6 +322,10 @@ func main() {
 				break
 			}
 		}
+	}
+
+	if *sshPublicKey != "" {
+		*sshPublicKey = utils.ExpandPath(*sshPublicKey)
 	}
 
 	err = cluster.PerformAssignments()
@@ -327,10 +345,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	if *sshPublicKey != "" {
-		*sshPublicKey = utils.ExpandPath(*sshPublicKey)
-	}
-
 	cmd := &cloudup.CreateClusterCmd{
 		Cluster:        cluster,
 		InstanceGroups: instanceGroups,
@@ -342,7 +356,6 @@ func main() {
 		SSHPublicKey:   *sshPublicKey,
 		OutDir:         *outDir,
 	}
-
 	//if *configFile != "" {
 	//	//confFile := path.Join(cmd.StateDir, "kubernetes.yaml")
 	//	err := cmd.LoadConfig(configFile)

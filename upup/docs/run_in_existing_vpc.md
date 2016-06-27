@@ -1,67 +1,56 @@
 ## Running in a shared VPC
 
-CloudUp is actually driven by a configuration file, stored in your state directory (`./state/config`) by default.
-
-To build a cluster in an existing VPC, you'll need to configure the config file with the extra information
-(the CLI flags just act as shortcuts to configuring the config file manually, editing the config file is "expert mode").
-
 When launching into a shared VPC, the VPC & the Internet Gateway will be reused, but we create a new subnet per zone,
 and a new route table.
 
-Use cloudup in `--dryrun` mode to create a base configuration file:
+Use cloudup with the `--vpc` and `--network-cidr` arguments for your existing VPC, with --dryrun so we can see the
+config before we apply it.
+
 
 ```
-cloudup --cloud=aws --zones=us-east-1b --name=<mycluster.mydomain.com> --node-size=t2.medium --master-size=t2.medium --node-count=2 --dryrun
+export CLUSTER_NAME=<sharedvpc.mydomain.com>
+cloudup --zones=us-east-1b --state s3://clusters.awsdata.com/${CLUSTER_NAME}  --name=${CLUSTER_NAME} \
+  --vpc=vpc-a80734c1 --network-cidr=10.100.0.0/16 --dryrun
 ```
 
-Now edit your `./state/config' file.  It will probably look like this:
+Then `upup edit cluster  --state s3://clusters.awsdata.com/${CLUSTER_NAME}` should show you something like:
 
 ```
-CloudProvider: aws
-ClusterName: <mycluster.mydomain.com>
-MasterMachineType: t2.medium
-MasterZones:
-- us-east-1b
-NetworkCIDR: 172.22.0.0/16
-NodeCount: 2
-NodeMachineType: t2.medium
-NodeZones:
-- cidr: 172.22.0.0/19
-  name: us-east-1b
+metadata:
+  creationTimestamp: "2016-06-27T14:23:34Z"
+  name: ${CLUSTER_NAME}
+spec:
+  cloudProvider: aws
+  networkCIDR: 10.100.0.0/16
+  networkID: vpc-a80734c1
+  nonMasqueradeCIDR: 100.64.0.0/10
+  zones:
+  - cidr: 10.100.32.0/19
+    name: eu-central-1a
 ```
 
-You need to specify your VPC id, which is called NetworkID.  You likely also need to update NetworkCIDR to match whatever value your existing VPC is using,
-and you likely need to set the CIDR on each of the NodeZones, because subnets in a VPC cannot overlap.  For example:
+
+Verify that networkCIDR & networkID match your VPC CIDR & ID.  You likely need to set the CIDR on each of the Zones,
+because subnets in a VPC cannot overlap.
+
+
+You can then run cloudup again in dryrun mode (you don't need any arguments, because they're all in the config file):
 
 ```
-CloudProvider: aws
-ClusterName: cluster2.awsdata.com
-MasterMachineType: t2.medium
-MasterZones:
-- us-east-1b
-NetworkID: vpc-10f95a77
-NetworkCIDR: 172.22.0.0/16
-NodeCount: 2
-NodeMachineType: t2.medium
-NodeZones:
-- cidr: 172.22.224.0/19
-  name: us-east-1b
+cloudup --dryrun --state s3://clusters.awsdata.com/${CLUSTER_NAME}
 ```
 
-You can then run cloudup in dryrun mode (you don't need any arguments, because they're all in the config file):
-
-```
-cloudup --dryrun
-```
-
-You should see that your VPC changes from `Shared <nil> -> true`, and you should review them to make sure
-that the changes are OK - the Kubernetes settings might not be ones you want on a shared VPC (in which case,
+Review the changes to make sure they are OK -  the Kubernetes settings might not be ones you want on a shared VPC (in which case,
 open an issue!)
+
+Note also the Kubernetes VPCs (currently) require `EnableDNSHostnames=true`.  Cloudup will detect the required change,
+ but refuse to make it automatically because it is a shared VPC.  Please review the implications and make the change
+ to the VPC manually.
 
 Once you're happy, you can create the cluster using:
 
 ```
-cloudup
+cloudup --state s3://clusters.awsdata.com/${CLUSTER_NAME}
 ```
 
 
