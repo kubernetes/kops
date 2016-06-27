@@ -12,8 +12,6 @@ import (
 )
 
 type AddonsGetCmd struct {
-	ClusterName string
-
 	cobraCommand *cobra.Command
 }
 
@@ -28,8 +26,6 @@ var addonsGetCmd = AddonsGetCmd{
 func init() {
 	cmd := addonsGetCmd.cobraCommand
 	addonsCmd.cobraCommand.AddCommand(cmd)
-
-	cmd.Flags().StringVar(&addonsGetCmd.ClusterName, "name", "", "cluster name")
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		err := addonsGetCmd.Run()

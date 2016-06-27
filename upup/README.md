@@ -37,10 +37,13 @@ you should use Go 1.6 or later)
 
 * Set `AWS_PROFILE` (if you need to select a profile for the AWS CLI to work)
 
+* Pick an S3 bucket that you'll use to store your cluster configuration - this is called your state store.
+
 * Execute:
 ```
 export MYZONE=<kubernetes.myzone.com>
-${GOPATH}/bin/cloudup --v=0 --logtostderr --cloud=aws --zones=us-east-1c --name=${MYZONE} --state s3://<mybucket>/${MYZONE}
+export KOPS_STATE_STORE=s3://<somes3bucket>
+${GOPATH}/bin/cloudup --v=0 --logtostderr --cloud=aws --zones=us-east-1c --name=${MYZONE}
 ```
 
 If you have problems, please set `--v=8 --logtostderr` and open an issue, and ping justinsb on slack!
@@ -52,7 +55,8 @@ for use with kubectl:
 
 ```
 export MYZONE=<kubernetes.myzone.com>
-${GOPATH}/bin/upup export kubecfg --state s3://<mybucket>/${MYZONE}
+export KOPS_STATE_STORE=s3://<somes3bucket>
+${GOPATH}/bin/upup export kubecfg --name=${MYZONE}
 ```
 
 ## Delete the cluster
@@ -69,9 +73,9 @@ You must pass --yes to actually delete resources (without the `#` comment!)
 
 ## Other interesting modes:
 
-* See changes that would be applied: `${GOPATH}/bin/cloudup --dryrun`
+* See changes that would be applied: `--dryrun`
 
-* Build a terraform model: `${GOPATH}/bin/cloudup $NORMAL_ARGS --target=terraform`  The terraform model will be built in `state/terraform`
+* Build a terraform model: `--target=terraform`  The terraform model will be built in `out/terraform`
 
 * Specify the k8s build to run: `--kubernetes-version=1.2.2`
 
@@ -101,13 +105,15 @@ Terraform currently has a bug where it can't create AWS tags containing a dot.  
 you can't use terraform to build EC2 resources that are tagged with `k8s.io/...` tags.  Thankfully this is only
 the volumes, and it isn't the worst idea to build these separately anyway.
 
-We divide the 'cloudup' model into two parts: 
+We divide the 'cloudup' model into three parts:
+* models/config which contains all the options
 * models/proto which sets up the volumes and other data which would be hard to recover (e.g. likely keys & secrets in the near future)
 * models/cloudup which is the main cloudup model for configuration everything else
 
 So you don't use terraform for the 'proto' phase (you can't anyway, because of the bug!):
 
 ```
+export KOPS_STATE_STORE=s3://<somes3bucket>
 export CLUSTER_NAME=<kubernetes.myzone.com>
 ${GOPATH}/bin/cloudup --v=0 --logtostderr --cloud=aws --zones=us-east-1c --name=${CLUSTER_NAME} --model=config,proto
 ```

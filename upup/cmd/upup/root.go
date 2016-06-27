@@ -16,6 +16,7 @@ type RootCmd struct {
 
 	stateStore    fi.StateStore
 	stateLocation string
+	clusterName   string
 
 	cobraCommand *cobra.Command
 }
@@ -45,7 +46,11 @@ func init() {
 	cmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
 
 	cmd.PersistentFlags().StringVar(&rootCommand.configFile, "config", "", "config file (default is $HOME/.upup.yaml)")
-	cmd.PersistentFlags().StringVarP(&rootCommand.stateLocation, "state", "", "", "Location of state storage")
+
+	defaultStateStore := os.Getenv("KOPS_STATE_STORE")
+	cmd.PersistentFlags().StringVarP(&rootCommand.stateLocation, "state", "", defaultStateStore, "Location of state storage")
+
+	cmd.PersistentFlags().StringVarP(&rootCommand.clusterName, "name", "", "", "Name of cluster")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -76,6 +81,9 @@ func (c *RootCmd) StateStore() (fi.StateStore, error) {
 	if c.stateLocation == "" {
 		return nil, fmt.Errorf("--state is required")
 	}
+	if c.clusterName == "" {
+		return nil, fmt.Errorf("--name is required")
+	}
 
 	statePath, err := vfs.Context.BuildVfsPath(c.stateLocation)
 	if err != nil {
@@ -83,7 +91,7 @@ func (c *RootCmd) StateStore() (fi.StateStore, error) {
 	}
 
 	isDryrun := false
-	stateStore, err := fi.NewVFSStateStore(statePath, isDryrun)
+	stateStore, err := fi.NewVFSStateStore(statePath, c.clusterName, isDryrun)
 	if err != nil {
 		return nil, fmt.Errorf("error building state store: %v", err)
 	}

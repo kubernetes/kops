@@ -8,6 +8,31 @@ import (
 func (c *Cluster) Validate() error {
 	var err error
 
+	if c.Spec.Kubelet == nil {
+		return fmt.Errorf("Kubelet not configured")
+	}
+	if c.Spec.MasterKubelet == nil {
+		return fmt.Errorf("MasterKubelet not configured")
+	}
+	if c.Spec.KubeControllerManager == nil {
+		return fmt.Errorf("KubeControllerManager not configured")
+	}
+	if c.Spec.KubeDNS == nil {
+		return fmt.Errorf("KubeDNS not configured")
+	}
+	if c.Spec.Kubelet == nil {
+		return fmt.Errorf("Kubelet not configured")
+	}
+	if c.Spec.KubeAPIServer == nil {
+		return fmt.Errorf("KubeAPIServer not configured")
+	}
+	if c.Spec.KubeProxy == nil {
+		return fmt.Errorf("KubeProxy not configured")
+	}
+	if c.Spec.Docker == nil {
+		return fmt.Errorf("Docker not configured")
+	}
+
 	// Check NetworkCIDR
 	var networkCIDR *net.IPNet
 	{

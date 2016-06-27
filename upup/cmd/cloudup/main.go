@@ -94,9 +94,11 @@ func main() {
 	target := pflag.String("target", "direct", "Target - direct, terraform")
 	//configFile := pflag.String("conf", "", "Configuration file to load")
 	modelsBaseDir := pflag.String("modelstore", modelsBaseDirDefault, "Source directory where models are stored")
-	models := pflag.String("model", "proto,cloudup", "Models to apply (separate multiple models with commas)")
+	models := pflag.String("model", "config,proto,cloudup", "Models to apply (separate multiple models with commas)")
 	nodeModel := pflag.String("nodemodel", "nodeup", "Model to use for node configuration")
-	stateLocation := pflag.String("state", "", "Location to use to store configuration state")
+
+	defaultStateStore := os.Getenv("KOPS_STATE_STORE")
+	stateLocation := pflag.String("state", defaultStateStore, "Location to use to store configuration state")
 
 	cloudProvider := pflag.String("cloud", "", "Cloud provider to use - gce, aws")
 
@@ -138,6 +140,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if *clusterName == "" {
+		glog.Errorf("--name is required")
+		os.Exit(1)
+	}
+
 	statePath, err := vfs.Context.BuildVfsPath(*stateLocation)
 	if err != nil {
 		glog.Errorf("error building state location: %v", err)
@@ -148,7 +155,7 @@ func main() {
 		*outDir = "out"
 	}
 
-	stateStore, err := fi.NewVFSStateStore(statePath, isDryrun)
+	stateStore, err := fi.NewVFSStateStore(statePath, *clusterName, isDryrun)
 	if err != nil {
 		glog.Errorf("error building state store: %v", err)
 		os.Exit(1)
