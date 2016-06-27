@@ -1,8 +1,8 @@
 hash: 42a551da194c2a8dfcaff364d22c71359cac802ad0ede68b4cd574b7fdebb9e1
-updated: 2016-06-26T23:47:10.214438512-04:00
+updated: 2016-06-27T16:33:37.454069668-04:00
 imports:
 - name: github.com/aws/aws-sdk-go
-  version: b85eaebe3c12e8db01a7c26882457c5c51100471
+  version: 68d840c69c0b75ca088ce73cef39962df02a950b
   subpackages:
   - aws
   - aws/awserr
@@ -32,6 +32,10 @@ imports:
   - private/protocol/xml/xmlutil
   - aws/credentials/ec2rolecreds
   - aws/ec2metadata
+- name: github.com/Azure/go-ansiterm
+  version: fa152c58bc15761d0200cb75fe958b89a9d4888e
+  subpackages:
+  - winterm
 - name: github.com/BurntSushi/toml
   version: f0aeabca5a127c4078abb8c8d64298b147264b55
 - name: github.com/cloudfoundry-incubator/candiedyaml
@@ -40,6 +44,12 @@ imports:
   version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
   subpackages:
   - spew
+- name: github.com/docker/docker
+  version: 48eba0bfe6fcdd4c90740831e6a8b5aff6e0a5c0
+  subpackages:
+  - pkg/term
+  - pkg/system
+  - pkg/term/windows
 - name: github.com/docker/go-units
   version: 9b001659dd36225e356b4467c465d732e745f53d
 - name: github.com/fsnotify/fsnotify
@@ -47,7 +57,7 @@ imports:
 - name: github.com/ghodss/yaml
   version: aa0c862057666179de291b67d9f093d12b5a8473
 - name: github.com/go-ini/ini
-  version: 1dc62999c16b9f8596d9cdf76f1f41dd4e1fa662
+  version: 81d957713547172ed2e08bb075c6a0f2d1ecf6d9
 - name: github.com/gogo/protobuf
   version: 2752d97bbd91927dd1c43296dbf8700e50e2708c
   subpackages:
@@ -136,7 +146,7 @@ imports:
   subpackages:
   - unix
 - name: google.golang.org/api
-  version: 63ade871fd3aec1225809d496e81ec91ab76ea29
+  version: 7a1b48a03240285fcdb91f7890f647cd90358f84
   subpackages:
   - compute/v1
   - googleapi
@@ -167,14 +177,16 @@ imports:
 - name: gopkg.in/yaml.v2
   version: a83829b6f1293c91addabc89d0571c246397bbf4
 - name: k8s.io/kubernetes
-  version: d744fd411f663351ab660a5ecaa9e04d3334db30
+  version: 7d57beac62df746bbb48bc2c05b7b48a1cc3b53f
   subpackages:
   - pkg/util/sets
+  - pkg/kubectl/cmd/util/editor
   - pkg/api
   - pkg/api/unversioned
   - pkg/util/diff
   - pkg/util/exec
   - pkg/util/mount
+  - pkg/util/term
   - pkg/api/meta
   - pkg/api/meta/metatypes
   - pkg/api/resource
@@ -189,6 +201,7 @@ imports:
   - pkg/util/intstr
   - pkg/util/rand
   - pkg/util/validation/field
+  - pkg/util/interrupt
   - pkg/util/errors
   - third_party/forked/reflect
   - pkg/util/validation
