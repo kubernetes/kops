@@ -9,9 +9,6 @@ spec:
   containers:
   - name: kope-routing
     image: kope/route-controller
-    #resources:
-    #  requests:
-    #    cpu: {{ .KubeProxy.CPURequest }}
     command:
     - /bin/sh
     - -c

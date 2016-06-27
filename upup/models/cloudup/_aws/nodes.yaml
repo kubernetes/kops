@@ -1,32 +1,32 @@
 # IAM configuration
 # We create an instance role for the nodes
-iamRole/nodes.{{ .ClusterName }}:
+iamRole/nodes.{{ ClusterName }}:
   rolePolicyDocument: resources/iam/kubernetes-node-role.json
 
-iamRolePolicy/nodes.{{ .ClusterName }}:
-  role: iamRole/nodes.{{ .ClusterName }}
+iamRolePolicy/nodes.{{ ClusterName }}:
+  role: iamRole/nodes.{{ ClusterName }}
   policyDocument: resources/iam/kubernetes-node-policy.json
 
-iamInstanceProfile/nodes.{{ .ClusterName }}: {}
+iamInstanceProfile/nodes.{{ ClusterName }}: {}
 
-iamInstanceProfileRole/nodes.{{ .ClusterName }}:
-  instanceProfile: iamInstanceProfile/nodes.{{ .ClusterName }}
-  role: iamRole/nodes.{{ .ClusterName }}
+iamInstanceProfileRole/nodes.{{ ClusterName }}:
+  instanceProfile: iamInstanceProfile/nodes.{{ ClusterName }}
+  role: iamRole/nodes.{{ ClusterName }}
 
 # Create security group for nodes
-securityGroup/nodes.{{.ClusterName}}:
-  vpc: vpc/{{ .ClusterName }}
+securityGroup/nodes.{{ ClusterName }}:
+  vpc: vpc/{{ ClusterName }}
   description: 'Security group for nodes'
 
 # Allow full egress
 securityGroupRule/node-egress:
-  securityGroup: securityGroup/nodes.{{.ClusterName}}
+  securityGroup: securityGroup/nodes.{{ ClusterName }}
   egress: true
   cidr: 0.0.0.0/0
 
 # SSH is open to the world
 securityGroupRule/ssh-external-to-node:
-  securityGroup: securityGroup/nodes.{{.ClusterName}}
+  securityGroup: securityGroup/nodes.{{ ClusterName }}
   cidr: 0.0.0.0/0
   protocol: tcp
   fromPort: 22
@@ -34,34 +34,34 @@ securityGroupRule/ssh-external-to-node:
 
 # Nodes can talk to nodes
 securityGroupRule/all-node-to-node:
-  securityGroup: securityGroup/nodes.{{.ClusterName}}
-  sourceGroup: securityGroup/nodes.{{.ClusterName}}
+  securityGroup: securityGroup/nodes.{{ ClusterName }}
+  sourceGroup: securityGroup/nodes.{{ ClusterName }}
 
 # Nodes can talk masters nodes
 securityGroupRule/all-node-to-master:
-  securityGroup: securityGroup/masters.{{ .ClusterName }}
-  sourceGroup: securityGroup/nodes.{{.ClusterName}}
+  securityGroup: securityGroup/masters.{{ ClusterName }}
+  sourceGroup: securityGroup/nodes.{{ ClusterName }}
 
 {{ range $nodeset := NodeSets }}
 
 # LaunchConfiguration & ASG for nodes
-launchConfiguration/{{ $nodeset.Name }}.{{ $.ClusterName }}:
-  sshKey: sshKey/{{ $.ClusterName }}
+launchConfiguration/{{ $nodeset.Name }}.{{ ClusterName }}:
+  sshKey: sshKey/{{ ClusterName }}
   securityGroups:
-    - securityGroup/nodes.{{ $.ClusterName }}
-  iamInstanceProfile: iamInstanceProfile/nodes.{{ $.ClusterName }}
-  imageId: {{ $nodeset.Image }}
-  instanceType: {{ $nodeset.MachineType }}
+    - securityGroup/nodes.{{ ClusterName }}
+  iamInstanceProfile: iamInstanceProfile/nodes.{{ ClusterName }}
+  imageId: {{ $nodeset.Spec.Image }}
+  instanceType: {{ $nodeset.Spec.MachineType }}
   associatePublicIP: true
   userData: resources/nodeup.sh _kubernetes_pool
 
-autoscalingGroup/{{ $nodeset.Name }}.{{ $.ClusterName }}:
-  launchConfiguration: launchConfiguration/{{ $nodeset.Name }}.{{ $.ClusterName }}
-  minSize: {{ or $nodeset.MinSize 2 }}
-  maxSize: {{ or $nodeset.MaxSize 2 }}
+autoscalingGroup/{{ $nodeset.Name }}.{{ ClusterName }}:
+  launchConfiguration: launchConfiguration/{{ $nodeset.Name }}.{{ ClusterName }}
+  minSize: {{ or $nodeset.Spec.MinSize 2 }}
+  maxSize: {{ or $nodeset.Spec.MaxSize 2 }}
   subnets:
-{{ range $zone := $.Zones }}
-    - subnet/{{ $zone.Name }}.{{ $.ClusterName }}
+{{ range $zone := $nodeset.Spec.Zones }}
+    - subnet/{{ $zone }}.{{ ClusterName }}
 {{ end }}
   tags:
     k8s.io/role: node

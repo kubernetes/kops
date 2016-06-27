@@ -1,74 +1,80 @@
-package cloudup
+package api
 
 import (
 	"encoding/binary"
 	"fmt"
 	"github.com/golang/glog"
-	"math/big"
 	"net"
 	"strconv"
-	//"k8s.io/kube-deploy/upup/pkg/fi"
-	//"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kube-deploy/upup/pkg/fi"
+	"k8s.io/kubernetes/pkg/api/unversioned"
+	k8sapi "k8s.io/kubernetes/pkg/api"
 )
 
-type ClusterConfig struct {
+type Cluster struct {
+	unversioned.TypeMeta `json:",inline"`
+	k8sapi.ObjectMeta           `json:"metadata,omitempty"`
+
+	Spec ClusterSpec `json:"spec,omitempty"`
+}
+
+type ClusterSpec struct {
 	// The CloudProvider to use (aws or gce)
-	CloudProvider string `json:",omitempty"`
+	CloudProvider string `json:"cloudProvider,omitempty"`
 
 	// The version of kubernetes to install (optional, and can be a "spec" like stable)
-	KubernetesVersion string `json:",omitempty"`
+	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
 
 	//
 	//// The Node initializer technique to use: cloudinit or nodeup
 	//NodeInit                      string `json:",omitempty"`
 
 	// Configuration of zones we are targeting
-	Zones []*ZoneConfig `json:",omitempty"`
+	Zones []*ClusterZoneSpec `json:"zones,omitempty"`
 	//Region                        string        `json:",omitempty"`
 
 	// Project is the cloud project we should use, required on GCE
-	Project string `json:",omitempty"`
+	Project string `json:"project,omitempty"`
 
 	// MasterPermissions contains the IAM permissions for the masters
-	MasterPermissions *CloudPermissions `json:",omitempty"`
+	MasterPermissions *CloudPermissions `json:"masterPermissions,omitempty"`
 	// NodePermissions contains the IAM permissions for the nodes
-	NodePermissions *CloudPermissions `json:",omitempty"`
+	NodePermissions *CloudPermissions `json:"nodePermissions,omitempty"`
 
 	// MasterPublicName is the external DNS name for the master nodes
-	MasterPublicName string `json:",omitempty"`
+	MasterPublicName string `json:"masterPublicName,omitempty"`
 	// MasterInternalName is the internal DNS name for the master nodes
-	MasterInternalName string `json:",omitempty"`
+	MasterInternalName string `json:"masterInternalName,omitempty"`
 
 	// The CIDR used for the AWS VPC / GCE Network, or otherwise allocated to k8s
 	// This is a real CIDR, not the internal k8s network
-	NetworkCIDR string `json:",omitempty"`
+	NetworkCIDR string `json:"networkCIDR,omitempty"`
 
 	// NetworkID is an identifier of a network, if we want to reuse/share an existing network (e.g. an AWS VPC)
-	NetworkID string `json:",omitempty"`
+	NetworkID string `json:"networkID,omitempty"`
 
 	// SecretStore is the VFS path to where secrets are stored
-	SecretStore string `json:",omitempty"`
+	SecretStore string `json:"secretStore,omitempty"`
 	// KeyStore is the VFS path to where SSL keys and certificates are stored
-	KeyStore string `json:",omitempty"`
+	KeyStore string `json:"keyStore,omitempty"`
 	// ConfigStore is the VFS path to where the configuration (CloudConfig, NodeSetConfig etc) is stored
-	ConfigStore string `json:",omitempty"`
+	ConfigStore string `json:"configStore,omitempty"`
 
 	// DNSZone is the DNS zone we should use when configuring DNS
-	DNSZone string `json:",omitempty"`
+	DNSZone string `json:"dnsZone,omitempty"`
 
 	//InstancePrefix                string `json:",omitempty"`
 
 	// ClusterName is a unique identifier for the cluster, and currently must be a DNS name
-	ClusterName       string `json:",omitempty"`
-	AllocateNodeCIDRs *bool  `json:",omitempty"`
+	//ClusterName       string `json:",omitempty"`
 
-	Multizone *bool `json:",omitempty"`
+	AllocateNodeCIDRs *bool  `json:"allocateNodeCIDRs,omitempty"`
+
+	Multizone *bool `json:"mutlizone,omitempty"`
 
 	//ClusterIPRange                string `json:",omitempty"`
 
 	// ServiceClusterIPRange is the CIDR, from the internal network, where we allocate IPs for services
-	ServiceClusterIPRange string `json:",omitempty"`
+	ServiceClusterIPRange string `json:"serviceClusterIPRange,omitempty"`
 	//MasterIPRange                 string `json:",omitempty"`
 	//NonMasqueradeCidr             string `json:",omitempty"`
 	//
@@ -89,7 +95,7 @@ type ClusterConfig struct {
 	//DNSServerIP                   string `json:",omitempty"`
 
 	// DNSDomain is the suffix we use for internal DNS names (normally cluster.local)
-	DNSDomain string `json:",omitempty"`
+	DNSDomain string `json:"dnsDomain,omitempty"`
 
 	//EnableClusterLogging          *bool  `json:",omitempty"`
 	//EnableNodeLogging             *bool  `json:",omitempty"`
@@ -166,61 +172,57 @@ type ClusterConfig struct {
 	// It is not exported: we populate it from other files
 	//nodeSets                      []*NodeSetConfig `json:",omitempty"`
 
-	// Masters is the configuration for each master in the cluster
-	Masters []*MasterConfig `json:",omitempty"`
+	//// Masters is the configuration for each master in the cluster
+	//Masters []*MasterConfig `json:",omitempty"`
 
-	// MasterVolumes stores the configurations for each master data volume
-	MasterVolumes []*VolumeConfig `json:",omitempty"`
+	// EtcdClusters stores the configuration for each cluster
+	EtcdClusters []*EtcdClusterSpec `json:"etcdClusters,omitempty"`
 
 	// Component configurations
-	Docker                *DockerConfig                `json:",omitempty"`
-	KubeDNS               *KubeDNSConfig               `json:",omitempty"`
-	APIServer             *APIServerConfig             `json:",omitempty"`
-	KubeControllerManager *KubeControllerManagerConfig `json:",omitempty"`
-	KubeScheduler         *KubeSchedulerConfig         `json:",omitempty"`
-	KubeProxy             *KubeProxyConfig             `json:",omitempty"`
-	Kubelet               *KubeletConfig               `json:",omitempty"`
-	MasterKubelet         *KubeletConfig               `json:",omitempty"`
+	Docker                *DockerConfig                `json:"docker,omitempty"`
+	KubeDNS               *KubeDNSConfig               `json:"kubeDNS,omitempty"`
+	KubeAPIServer             *KubeAPIServerConfig         `json:"kubeAPIServer,omitempty"`
+	KubeControllerManager *KubeControllerManagerConfig `json:"kubeControllerManager,omitempty"`
+	KubeScheduler         *KubeSchedulerConfig         `json:"kubeScheduler,omitempty"`
+	KubeProxy             *KubeProxyConfig             `json:"kubeProxy,omitempty"`
+	Kubelet               *KubeletConfig               `json:"kubelet,omitempty"`
+	MasterKubelet         *KubeletConfig               `json:"masterKubelet,omitempty"`
 }
 
 type KubeDNSConfig struct {
-	Replicas int    `json:",omitempty"`
-	Domain   string `json:",omitempty"`
-	ServerIP string `json:",omitempty"`
+	Replicas int    `json:"replicas,omitempty"`
+	Domain   string `json:"domain,omitempty"`
+	ServerIP string `json:"serverIP,omitempty"`
+}
+//
+//type MasterConfig struct {
+//	Name string `json:",omitempty"`
+//
+//	Image       string `json:",omitempty"`
+//	Zone        string `json:",omitempty"`
+//	MachineType string `json:",omitempty"`
+//}
+//
+
+type EtcdClusterSpec struct {
+	// Name is the name of the etcd cluster (main, events etc)
+	Name    string `json:"name,omitempty"`
+
+	// EtcdMember stores the configurations for each member of the cluster (including the data volume)
+	Members []*EtcdMemberSpec `json:"etcdMembers,omitempty"`
 }
 
-type MasterConfig struct {
-	Name string `json:",omitempty"`
+type EtcdMemberSpec struct {
+	// Name is the name of the member within the etcd cluster
+	Name string `json:"name,omitempty"`
+	Zone string `json:"zone,omitempty"`
 
-	Image       string `json:",omitempty"`
-	Zone        string `json:",omitempty"`
-	MachineType string `json:",omitempty"`
+	VolumeType string `json:"volumeType,omitempty"`
+	VolumeSize int    `json:"volumeSize,omitempty"`
 }
 
-type VolumeConfig struct {
-	Name string `json:",omitempty"`
-	Type string `json:",omitempty"`
-	Size int    `json:",omitempty"`
-
-	Zone string `json:",omitempty"`
-
-	Roles map[string]string `json:",omitempty"`
-}
-
-type NodeSetConfig struct {
-	Name string `json:",omitempty"`
-
-	Image   string `json:",omitempty"`
-	MinSize *int   `json:",omitempty"`
-	MaxSize *int   `json:",omitempty"`
-	//NodeInstancePrefix string `json:",omitempty"`
-	//NodeLabels         string `json:",omitempty"`
-	MachineType string `json:",omitempty"`
-	//NodeTag            string `json:",omitempty"`
-}
-
-type ZoneConfig struct {
-	Name string `json:"name"`
+type ClusterZoneSpec struct {
+	Name string `json:"name,omitempty"`
 	CIDR string `json:"cidr,omitempty"`
 }
 
@@ -234,48 +236,16 @@ type ZoneConfig struct {
 //	Assets     []string `json:",omitempty"`
 //}
 
-func (c *ClusterConfig) WellKnownServiceIP(id int) (net.IP, error) {
-	_, cidr, err := net.ParseCIDR(c.ServiceClusterIPRange)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing ServiceClusterIPRange: %v", err)
-	}
-
-	ip4 := cidr.IP.To4()
-	if ip4 != nil {
-		n := binary.BigEndian.Uint32(ip4)
-		n += uint32(id)
-		serviceIP := make(net.IP, len(ip4))
-		binary.BigEndian.PutUint32(serviceIP, n)
-		return serviceIP, nil
-	}
-
-	ip6 := cidr.IP.To16()
-	if ip6 != nil {
-		baseIPInt := big.NewInt(0)
-		baseIPInt.SetBytes(ip6)
-		serviceIPInt := big.NewInt(0)
-		serviceIPInt.Add(big.NewInt(int64(id)), baseIPInt)
-		serviceIP := make(net.IP, len(ip6))
-		serviceIPBytes := serviceIPInt.Bytes()
-		for i := range serviceIPBytes {
-			serviceIP[len(serviceIP)-len(serviceIPBytes)+i] = serviceIPBytes[i]
-		}
-		return serviceIP, nil
-	}
-
-	return nil, fmt.Errorf("Unexpected IP address type for ServiceClusterIPRange: %s", c.ServiceClusterIPRange)
-}
-
 // PerformAssignments populates values that are required and immutable
 // For example, it assigns stable Keys to NodeSets & Masters, and
 // it assigns CIDRs to subnets
-func (c *ClusterConfig) PerformAssignments() error {
-	if c.NetworkCIDR == "" {
+func (c *Cluster) PerformAssignments() error {
+	if c.Spec.NetworkCIDR == "" {
 		// TODO: Choose non-overlapping networking CIDRs for VPCs?
-		c.NetworkCIDR = "172.20.0.0/16"
+		c.Spec.NetworkCIDR = "172.20.0.0/16"
 	}
 
-	for _, zone := range c.Zones {
+	for _, zone := range c.Spec.Zones {
 		err := zone.performAssignments(c)
 		if err != nil {
 			return err
@@ -285,34 +255,7 @@ func (c *ClusterConfig) PerformAssignments() error {
 	return nil
 }
 
-// performAssignmentsNodesets populates NodeSets with default values
-func PerformAssignmentsNodesets(nodeSets []*NodeSetConfig) error {
-	keys := map[string]bool{}
-	for _, n := range nodeSets {
-		keys[n.Name] = true
-	}
-
-	for _, n := range nodeSets {
-		// We want to give them a stable Key as soon as possible
-		if n.Name == "" {
-			// Loop to find the first unassigned name like `nodes-%d`
-			i := 0
-			for {
-				key := fmt.Sprintf("nodes-%d", i)
-				if !keys[key] {
-					n.Name = key
-					keys[key] = true
-					break
-				}
-				i++
-			}
-		}
-	}
-
-	return nil
-}
-
-func (z *ZoneConfig) performAssignments(c *ClusterConfig) error {
+func (z *ClusterZoneSpec) performAssignments(c *Cluster) error {
 	if z.CIDR == "" {
 		cidr, err := z.assignCIDR(c)
 		if err != nil {
@@ -325,19 +268,19 @@ func (z *ZoneConfig) performAssignments(c *ClusterConfig) error {
 	return nil
 }
 
-func (z *ZoneConfig) assignCIDR(c *ClusterConfig) (string, error) {
+func (z *ClusterZoneSpec) assignCIDR(c *Cluster) (string, error) {
 	// TODO: We probably could query for the existing subnets & allocate appropriately
 	// for now we'll require users to set CIDRs themselves
 
 	lastCharMap := make(map[byte]bool)
-	for _, nodeZone := range c.Zones {
+	for _, nodeZone := range c.Spec.Zones {
 		lastChar := nodeZone.Name[len(nodeZone.Name)-1]
 		lastCharMap[lastChar] = true
 	}
 
 	index := -1
 
-	if len(lastCharMap) == len(c.Zones) {
+	if len(lastCharMap) == len(c.Spec.Zones) {
 		// Last char of zones are unique (GCE, AWS)
 		// At least on AWS, we also want 'a' to be 1, so that we don't collide with the lowest range,
 		// because kube-up uses that range
@@ -345,7 +288,7 @@ func (z *ZoneConfig) assignCIDR(c *ClusterConfig) (string, error) {
 	} else {
 		glog.Warningf("Last char of zone names not unique")
 
-		for i, nodeZone := range c.Zones {
+		for i, nodeZone := range c.Spec.Zones {
 			if nodeZone.Name == z.Name {
 				index = i
 				break
@@ -356,9 +299,9 @@ func (z *ZoneConfig) assignCIDR(c *ClusterConfig) (string, error) {
 		}
 	}
 
-	_, cidr, err := net.ParseCIDR(c.NetworkCIDR)
+	_, cidr, err := net.ParseCIDR(c.Spec.NetworkCIDR)
 	if err != nil {
-		return "", fmt.Errorf("Invalid NetworkCIDR: %q", c.NetworkCIDR)
+		return "", fmt.Errorf("Invalid NetworkCIDR: %q", c.Spec.NetworkCIDR)
 	}
 	networkLength, _ := cidr.Mask.Size()
 
@@ -379,17 +322,17 @@ func (z *ZoneConfig) assignCIDR(c *ClusterConfig) (string, error) {
 		return subnetCIDR, nil
 	}
 
-	return "", fmt.Errorf("Unexpected IP address type for NetworkCIDR: %s", c.NetworkCIDR)
+	return "", fmt.Errorf("Unexpected IP address type for NetworkCIDR: %s", c.Spec.NetworkCIDR)
 }
 
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
-func (c *ClusterConfig) SharedVPC() bool {
-	return c.NetworkID != ""
+func (c *Cluster) SharedVPC() bool {
+	return c.Spec.NetworkID != ""
 }
 
 // CloudPermissions holds IAM-style permissions
 type CloudPermissions struct {
-	S3Buckets []string `json:",omitempty"`
+	S3Buckets []string `json:"s3Buckets,omitempty"`
 }
 
 // AddS3Bucket adds a bucket if it does not already exist
@@ -422,56 +365,3 @@ func (p *CloudPermissions) AddS3Bucket(bucket string) {
 //
 //	return nil
 //}
-
-func WriteConfig(stateStore fi.StateStore, cluster *ClusterConfig, nodeSets []*NodeSetConfig) error {
-	// Check for nodeset Name duplicates before writing
-	{
-		names := map[string]bool{}
-		for i, ns := range nodeSets {
-			if ns.Name == "" {
-				return fmt.Errorf("NodeSet #%d did not have Name set", i+1)
-			}
-			if names[ns.Name] {
-				return fmt.Errorf("Duplicate NodeSet Name found: %q", ns.Name)
-			}
-			names[ns.Name] = true
-		}
-	}
-	err := stateStore.WriteConfig("config", cluster)
-	if err != nil {
-		return fmt.Errorf("error writing updated cluster configuration: %v", err)
-	}
-
-	for _, ns := range nodeSets {
-		err = stateStore.WriteConfig("nodeset/"+ns.Name, ns)
-		if err != nil {
-			return fmt.Errorf("error writing updated nodeset configuration: %v", err)
-		}
-	}
-
-	return nil
-}
-
-func ReadConfig(stateStore fi.StateStore) (*ClusterConfig, []*NodeSetConfig, error) {
-	cluster := &ClusterConfig{}
-	err := stateStore.ReadConfig("config", cluster)
-	if err != nil {
-		return nil, nil, fmt.Errorf("error reading cluster configuration: %v", err)
-	}
-
-	var nodeSets []*NodeSetConfig
-	keys, err := stateStore.ListChildren("nodeset")
-	if err != nil {
-		return nil, nil, fmt.Errorf("error listing nodesets in state store: %v", err)
-	}
-	for _, key := range keys {
-		ns := &NodeSetConfig{}
-		err = stateStore.ReadConfig("nodeset/"+key, ns)
-		if err != nil {
-			return nil, nil, fmt.Errorf("error reading nodeset configuration %q: %v", key, err)
-		}
-		nodeSets = append(nodeSets, ns)
-	}
-
-	return cluster, nodeSets, nil
-}

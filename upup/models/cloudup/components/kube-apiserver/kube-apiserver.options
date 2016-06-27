@@ -1,4 +1,4 @@
-APIServer:
+KubeAPIServer:
   SecurePort: 443
   PathSrvKubernetes: /srv/kubernetes
   PathSrvSshproxy: /srv/sshproxy

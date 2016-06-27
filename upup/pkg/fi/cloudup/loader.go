@@ -2,7 +2,6 @@ package cloudup
 
 import (
 	"bytes"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/golang/glog"
@@ -15,6 +14,7 @@ import (
 	"reflect"
 	"strings"
 	"text/template"
+	"k8s.io/kube-deploy/upup/pkg/api"
 )
 
 const (
@@ -36,7 +36,7 @@ type Loader struct {
 	typeMap map[string]reflect.Type
 
 	templates []*template.Template
-	config    *ClusterConfig
+	cluster    *api.Cluster
 
 	Resources map[string]fi.Resource
 	//deferred          []*deferredBinding
@@ -97,9 +97,6 @@ func (l *Loader) executeTemplate(key string, d string, args []string) (string, e
 	t := template.New(key)
 
 	funcMap := make(template.FuncMap)
-	funcMap["Base64Encode"] = func(s string) string {
-		return base64.StdEncoding.EncodeToString([]byte(s))
-	}
 	funcMap["Args"] = func() []string {
 		return args
 	}
@@ -109,12 +106,6 @@ func (l *Loader) executeTemplate(key string, d string, args []string) (string, e
 	funcMap["RenderResource"] = func(resourceName string, args []string) (string, error) {
 		return l.renderResource(resourceName, args)
 	}
-	funcMap["replace"] = func(s, find, replace string) string {
-		return strings.Replace(s, find, replace, -1)
-	}
-	funcMap["join"] = func(a []string, sep string) string {
-		return strings.Join(a, sep)
-	}
 	for k, fn := range l.TemplateFunctions {
 		funcMap[k] = fn
 	}
@@ -122,7 +113,7 @@ func (l *Loader) executeTemplate(key string, d string, args []string) (string, e
 
 	t.Option("missingkey=zero")
 
-	context := l.config
+	spec := l.cluster.Spec
 
 	_, err := t.Parse(d)
 	if err != nil {
@@ -130,7 +121,7 @@ func (l *Loader) executeTemplate(key string, d string, args []string) (string, e
 	}
 
 	var buffer bytes.Buffer
-	err = t.ExecuteTemplate(&buffer, key, context)
+	err = t.ExecuteTemplate(&buffer, key, spec)
 	if err != nil {
 		return "", fmt.Errorf("error executing template %q: %v", key, err)
 	}
@@ -142,7 +133,7 @@ func ignoreHandler(i *loader.TreeWalkItem) error {
 	return nil
 }
 
-func (l *Loader) BuildCompleteSpec(modelStore string, models []string) (*ClusterConfig, error) {
+func (l *Loader) BuildCompleteSpec(clusterSpec *api.ClusterSpec, modelStore string, models []string) (*api.ClusterSpec, error) {
 	// First pass: load options
 	tw := &loader.TreeWalker{
 		DefaultHandler: ignoreHandler,
@@ -162,20 +153,21 @@ func (l *Loader) BuildCompleteSpec(modelStore string, models []string) (*Cluster
 		}
 	}
 
-	loaded, err := l.OptionsLoader.Build()
+	loaded, err := l.OptionsLoader.Build(clusterSpec)
 	if err != nil {
 		return nil, err
 	}
-	l.config = loaded.(*ClusterConfig)
+	completed := &api.ClusterSpec{}
+	*completed = *(loaded.(*api.ClusterSpec))
 
 	// Master kubelet config = (base kubelet config + master kubelet config)
-	masterKubelet := &KubeletConfig{}
-	utils.JsonMergeStruct(masterKubelet, l.config.Kubelet)
-	utils.JsonMergeStruct(masterKubelet, l.config.MasterKubelet)
-	l.config.MasterKubelet = masterKubelet
+	masterKubelet := &api.KubeletConfig{}
+	utils.JsonMergeStruct(masterKubelet, completed.Kubelet)
+	utils.JsonMergeStruct(masterKubelet, completed.MasterKubelet)
+	completed.MasterKubelet = masterKubelet
 
-	glog.V(1).Infof("options: %s", fi.DebugAsJsonStringIndent(l.config))
-	return l.config, nil
+	glog.V(1).Infof("options: %s", fi.DebugAsJsonStringIndent(completed))
+	return completed, nil
 }
 
 func (l *Loader) BuildTasks(modelStore string, models []string) (map[string]fi.Task, error) {

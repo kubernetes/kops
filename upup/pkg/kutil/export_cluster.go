@@ -7,10 +7,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
-	"k8s.io/kube-deploy/upup/pkg/fi/cloudup"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
 	"strconv"
 	"strings"
+	"k8s.io/kube-deploy/upup/pkg/api"
 )
 
 // ExportCluster tries to reverse engineer an existing k8s cluster
@@ -29,12 +29,18 @@ func (x *ExportCluster) ReverseAWS() error {
 		return fmt.Errorf("ClusterName must be specified")
 	}
 
-	clusterConfig := &cloudup.ClusterConfig{}
-	clusterConfig.CloudProvider = "aws"
-	clusterConfig.ClusterName = clusterName
+	var instanceGroups []*api.InstanceGroup
 
-	masterConfig := &cloudup.MasterConfig{}
-	clusterConfig.Masters = append(clusterConfig.Masters, masterConfig)
+	cluster := &api.Cluster{}
+	cluster.Spec.CloudProvider = "aws"
+	cluster.Name = clusterName
+
+	masterGroup := &api.InstanceGroup{}
+	masterGroup.Spec.Role = api.InstanceGroupRoleMaster
+	masterGroup.Name =  "masters"
+	masterGroup.Spec.MinSize = fi.Int(1)
+	masterGroup.Spec.MaxSize = fi.Int(1)
+	instanceGroups = append(instanceGroups, masterGroup)
 
 	instances, err := findInstances(awsCloud)
 	if err != nil {
@@ -57,7 +63,7 @@ func (x *ExportCluster) ReverseAWS() error {
 	masterInstanceID := aws.StringValue(masterInstance.InstanceId)
 	glog.Infof("Found master: %q", masterInstanceID)
 
-	masterConfig.MachineType = aws.StringValue(masterInstance.InstanceType)
+	masterGroup.Spec.MachineType = aws.StringValue(masterInstance.InstanceType)
 
 	masterSubnetID := aws.StringValue(masterInstance.SubnetId)
 
@@ -79,11 +85,11 @@ func (x *ExportCluster) ReverseAWS() error {
 	}
 
 	vpcID := aws.StringValue(masterInstance.VpcId)
-	clusterConfig.NetworkID = vpcID
+	cluster.Spec.NetworkID = vpcID
 
 	az := aws.StringValue(masterSubnet.AvailabilityZone)
-	masterConfig.Zone = az
-	clusterConfig.Zones = append(clusterConfig.Zones, &cloudup.ZoneConfig{
+	masterGroup.Spec.Zones = []string { az }
+	cluster.Spec.Zones = append(cluster.Spec.Zones, &api.ClusterZoneSpec{
 		Name: az,
 
 		// We will allocate a new CIDR
@@ -136,9 +142,9 @@ func (x *ExportCluster) ReverseAWS() error {
 	// k8s.ImageId = ""
 
 	//clusterConfig.ClusterIPRange = conf.Settings["CLUSTER_IP_RANGE"]
-	clusterConfig.AllocateNodeCIDRs = conf.ParseBool("ALLOCATE_NODE_CIDRS")
+	cluster.Spec.AllocateNodeCIDRs = conf.ParseBool("ALLOCATE_NODE_CIDRS")
 	//clusterConfig.KubeUser = conf.Settings["KUBE_USER"]
-	clusterConfig.ServiceClusterIPRange = conf.Settings["SERVICE_CLUSTER_IP_RANGE"]
+	cluster.Spec.ServiceClusterIPRange = conf.Settings["SERVICE_CLUSTER_IP_RANGE"]
 	//clusterConfig.EnableClusterMonitoring = conf.Settings["ENABLE_CLUSTER_MONITORING"]
 	//clusterConfig.EnableClusterLogging = conf.ParseBool("ENABLE_CLUSTER_LOGGING")
 	//clusterConfig.EnableNodeLogging = conf.ParseBool("ENABLE_NODE_LOGGING")
@@ -154,20 +160,23 @@ func (x *ExportCluster) ReverseAWS() error {
 	//	return fmt.Errorf("cannot parse DNS_REPLICAS=%q: %v", conf.Settings["DNS_REPLICAS"], err)
 	//}
 	//clusterConfig.DNSServerIP = conf.Settings["DNS_SERVER_IP"]
-	clusterConfig.DNSDomain = conf.Settings["DNS_DOMAIN"]
+	cluster.Spec.DNSDomain = conf.Settings["DNS_DOMAIN"]
 	//clusterConfig.AdmissionControl = conf.Settings["ADMISSION_CONTROL"]
 	//clusterConfig.MasterIPRange = conf.Settings["MASTER_IP_RANGE"]
 	//clusterConfig.DNSServerIP = conf.Settings["DNS_SERVER_IP"]
 	//clusterConfig.DockerStorage = conf.Settings["DOCKER_STORAGE"]
 	//k8s.MasterExtraSans = conf.Settings["MASTER_EXTRA_SANS"] // Not user set
 
-	primaryNodeSet := &cloudup.NodeSetConfig{}
-	nodeSets := []*cloudup.NodeSetConfig{primaryNodeSet}
-	primaryNodeSet.MinSize, err = conf.ParseInt("NUM_MINIONS")
+	primaryNodeSet := &api.InstanceGroup{}
+	primaryNodeSet.Spec.Role = api.InstanceGroupRoleNode
+	primaryNodeSet.Name =  "nodes"
+
+	instanceGroups = append(instanceGroups, primaryNodeSet)
+	primaryNodeSet.Spec.MinSize, err = conf.ParseInt("NUM_MINIONS")
 	if err != nil {
 		return fmt.Errorf("cannot parse NUM_MINIONS=%q: %v", conf.Settings["NUM_MINIONS"], err)
 	}
-	primaryNodeSet.MaxSize = primaryNodeSet.MinSize
+	primaryNodeSet.Spec.MaxSize = primaryNodeSet.Spec.MinSize
 	//primaryNodeSet.NodeMachineType = k8s.MasterMachineType
 
 	if conf.Version == "1.1" {
@@ -176,13 +185,13 @@ func (x *ExportCluster) ReverseAWS() error {
 		//	// More admission controllers in 1.2
 		//	clusterConfig.AdmissionControl = ""
 		//}
-		if masterConfig.MachineType == "t2.micro" {
+		if masterGroup.Spec.MachineType == "t2.micro" {
 			// Different defaults in 1.2
-			masterConfig.MachineType = ""
+			masterGroup.Spec.MachineType = ""
 		}
-		if primaryNodeSet.MachineType == "t2.micro" {
+		if primaryNodeSet.Spec.MachineType == "t2.micro" {
 			// Encourage users to pick something better...
-			primaryNodeSet.MachineType = ""
+			primaryNodeSet.Spec.MachineType = ""
 		}
 	}
 	if conf.Version == "1.2" {
@@ -291,7 +300,7 @@ func (x *ExportCluster) ReverseAWS() error {
 	//kubeletToken = conf.Settings["KUBELET_TOKEN"]
 	//kubeProxyToken = conf.Settings["KUBE_PROXY_TOKEN"]
 
-	err = cloudup.WriteConfig(x.StateStore, clusterConfig, nodeSets)
+	err = api.WriteConfig(x.StateStore, cluster, instanceGroups)
 	if err != nil {
 		return err
 	}

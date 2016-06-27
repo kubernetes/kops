@@ -1,34 +1,36 @@
 {{ range $m := Masters }}
 
 # ASG for master
-launchConfiguration/{{ $m.Name }}.masters.{{ $.ClusterName }}:
-  sshKey: sshKey/{{ $.ClusterName }}
+launchConfiguration/{{ $m.Name }}.masters.{{ ClusterName }}:
+  sshKey: sshKey/{{ ClusterName }}
   securityGroups:
-    - securityGroup/masters.{{ $.ClusterName }}
-  iamInstanceProfile: iamInstanceProfile/masters.{{ $.ClusterName }}
-  imageId: {{ $m.Image }}
-  instanceType: {{ $m.MachineType }}
+    - securityGroup/masters.{{ ClusterName }}
+  iamInstanceProfile: iamInstanceProfile/masters.{{ ClusterName }}
+  imageId: {{ $m.Spec.Image }}
+  instanceType: {{ $m.Spec.MachineType }}
   associatePublicIP: true
   userData: resources/nodeup.sh _kubernetes_master
 
-autoscalingGroup/{{ $m.Name}}.masters.{{ $.ClusterName }}:
+autoscalingGroup/{{ $m.Name}}.masters.{{ ClusterName }}:
   minSize: 1
   maxSize: 1
   subnets:
-    - subnet/{{ $m.Zone }}.{{ $.ClusterName }}
-  launchConfiguration: launchConfiguration/{{ $m.Name }}.masters.{{ $.ClusterName }}
+  {{ range $z := $m.Spec.Zones }}
+    - subnet/{{ $z }}.{{ ClusterName }}
+  {{ end }}
+  launchConfiguration: launchConfiguration/{{ $m.Name }}.masters.{{ ClusterName }}
   tags:
     k8s.io/role/master: "1"
-    k8s.io/dns/internal: "api.internal.{{ $.ClusterName }}"
+    k8s.io/dns/internal: "api.internal.{{ ClusterName }}"
 {{ if not (HasTag "_master_lb") }}
-    k8s.io/dns/public: "api.{{ $.ClusterName }}"
+    k8s.io/dns/public: "api.{{ ClusterName }}"
 {{ end }}
 
 {{ if HasTag "_master_lb" }}
 # Attach ASG to ELB
-loadBalancerAttachment/masters.{{ $m.Name }}.{{ $.ClusterName }}:
-  loadBalancer: loadBalancer/api.{{ $.ClusterName }}
-  autoscalingGroup: autoscalingGroup/{{ $m.Name }}.{{ $.ClusterName }}
+loadBalancerAttachment/masters.{{ $m.Name }}.{{ ClusterName }}:
+  loadBalancer: loadBalancer/api.{{ ClusterName }}
+  autoscalingGroup: autoscalingGroup/{{ $m.Name }}.{{ ClusterName }}
 {{ end }}
 
 {{ end }}

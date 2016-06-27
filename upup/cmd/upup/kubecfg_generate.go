@@ -7,10 +7,10 @@ import (
 	"io"
 	"io/ioutil"
 	"k8s.io/kube-deploy/upup/pkg/fi"
-	"k8s.io/kube-deploy/upup/pkg/fi/cloudup"
 	"k8s.io/kube-deploy/upup/pkg/kubecfg"
 	"os"
 	"path"
+	"k8s.io/kube-deploy/upup/pkg/api"
 )
 
 type KubecfgGenerateCommand struct {
@@ -43,17 +43,17 @@ func (c *KubecfgGenerateCommand) Run() error {
 		return fmt.Errorf("error state store: %v", err)
 	}
 
-	cluster, _, err := cloudup.ReadConfig(stateStore)
+	cluster, _, err := api.ReadConfig(stateStore)
 	if err != nil {
 		return fmt.Errorf("error reading configuration: %v", err)
 	}
 
-	clusterName := cluster.ClusterName
+	clusterName := cluster.Name
 	if clusterName == "" {
 		return fmt.Errorf("ClusterName must be set in config")
 	}
 
-	master := cluster.MasterPublicName
+	master := cluster.Spec.MasterPublicName
 	if master == "" {
 		master = "api." + clusterName
 	}

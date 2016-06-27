@@ -22,7 +22,6 @@ type OptionsTemplate struct {
 }
 
 type OptionsLoader struct {
-	config    interface{}
 	templates OptionsTemplateList
 
 	TemplateFunctions template.FuncMap
@@ -51,10 +50,12 @@ func (a OptionsTemplateList) Less(i, j int) bool {
 	return l.Name < r.Name
 }
 
-func NewOptionsLoader(config interface{}) *OptionsLoader {
+func NewOptionsLoader(templateFunctions template.FuncMap) *OptionsLoader {
 	l := &OptionsLoader{}
-	l.config = config
 	l.TemplateFunctions = make(template.FuncMap)
+	for k, v := range templateFunctions {
+		l.TemplateFunctions[k] = v
+	}
 	return l
 }
 
@@ -108,11 +109,11 @@ func (l *OptionsLoader) iterate(userConfig interface{}, current interface{}) (in
 
 // Build executes the options configuration templates, until they converge
 // It bails out after maxIterations
-func (l *OptionsLoader) Build() (interface{}, error) {
-	options := l.config
+func (l *OptionsLoader) Build(userConfig interface{}) (interface{}, error) {
+	options := userConfig
 	iteration := 0
 	for {
-		nextOptions, err := l.iterate(l.config, options)
+		nextOptions, err := l.iterate(userConfig, options)
 		if err != nil {
 			return nil, err
 		}

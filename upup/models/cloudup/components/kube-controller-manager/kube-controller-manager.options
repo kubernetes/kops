@@ -6,7 +6,7 @@ KubeControllerManager:
   ServiceAccountPrivateKeyFile: /srv/kubernetes/server.key
   LogLevel: 2
   RootCAFile: /srv/kubernetes/ca.crt
-  ClusterName: {{ .ClusterName }}
+  ClusterName: {{ ClusterName }}
   Image: gcr.io/google_containers/kube-controller-manager:v{{ .KubernetesVersion }}
   # Doesn't seem to be any real downside to always doing a leader election
   LeaderElection:

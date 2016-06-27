@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
-	"k8s.io/kube-deploy/upup/pkg/fi/cloudup"
 	"k8s.io/kube-deploy/upup/pkg/fi/vfs"
 	"text/template"
+	"k8s.io/kube-deploy/upup/pkg/api"
 )
 
 const TagMaster = "_kubernetes_master"
@@ -15,7 +15,7 @@ const TagMaster = "_kubernetes_master"
 // templateFunctions is a simple helper-class for the functions accessible to templates
 type templateFunctions struct {
 	nodeupConfig *NodeUpConfig
-	cluster      *cloudup.ClusterConfig
+	cluster      *api.Cluster
 	// keyStore is populated with a KeyStore, if KeyStore is set
 	keyStore fi.CAStore
 	// secretStore is populated with a SecretStore, if SecretStore is set
@@ -25,16 +25,16 @@ type templateFunctions struct {
 }
 
 // newTemplateFunctions is the constructor for templateFunctions
-func newTemplateFunctions(nodeupConfig *NodeUpConfig, cluster *cloudup.ClusterConfig, tags map[string]struct{}) (*templateFunctions, error) {
+func newTemplateFunctions(nodeupConfig *NodeUpConfig, cluster *api.Cluster, tags map[string]struct{}) (*templateFunctions, error) {
 	t := &templateFunctions{
 		nodeupConfig: nodeupConfig,
 		cluster:      cluster,
 		tags:         tags,
 	}
 
-	if cluster.SecretStore != "" {
-		glog.Infof("Building SecretStore at %q", cluster.SecretStore)
-		p, err := vfs.Context.BuildVfsPath(cluster.SecretStore)
+	if cluster.Spec.SecretStore != "" {
+		glog.Infof("Building SecretStore at %q", cluster.Spec.SecretStore)
+		p, err := vfs.Context.BuildVfsPath(cluster.Spec.SecretStore)
 		if err != nil {
 			return nil, fmt.Errorf("error building secret store path: %v", err)
 		}
@@ -49,9 +49,9 @@ func newTemplateFunctions(nodeupConfig *NodeUpConfig, cluster *cloudup.ClusterCo
 		return nil, fmt.Errorf("SecretStore not set")
 	}
 
-	if cluster.KeyStore != "" {
-		glog.Infof("Building KeyStore at %q", cluster.KeyStore)
-		p, err := vfs.Context.BuildVfsPath(cluster.KeyStore)
+	if cluster.Spec.KeyStore != "" {
+		glog.Infof("Building KeyStore at %q", cluster.Spec.KeyStore)
+		p, err := vfs.Context.BuildVfsPath(cluster.Spec.KeyStore)
 		if err != nil {
 			return nil, fmt.Errorf("error building key store path: %v", err)
 		}
@@ -84,28 +84,29 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 	dest["IsMaster"] = t.IsMaster
 
 	// TODO: We may want to move these to a nodeset / masterset specific thing
-	dest["KubeDNS"] = func() *cloudup.KubeDNSConfig {
-		return t.cluster.KubeDNS
+	dest["KubeDNS"] = func() *api.KubeDNSConfig {
+		return t.cluster.Spec.KubeDNS
 	}
-	dest["KubeScheduler"] = func() *cloudup.KubeSchedulerConfig {
-		return t.cluster.KubeScheduler
+	dest["KubeScheduler"] = func() *api.KubeSchedulerConfig {
+		return t.cluster.Spec.KubeScheduler
 	}
-	dest["APIServer"] = func() *cloudup.APIServerConfig {
-		return t.cluster.APIServer
+	dest["KubeAPIServer"] = func() *api.KubeAPIServerConfig {
+		return t.cluster.Spec.KubeAPIServer
 	}
-	dest["KubeControllerManager"] = func() *cloudup.KubeControllerManagerConfig {
-		return t.cluster.KubeControllerManager
+	dest["KubeControllerManager"] = func() *api.KubeControllerManagerConfig {
+		return t.cluster.Spec.KubeControllerManager
 	}
-	dest["KubeProxy"] = func() *cloudup.KubeProxyConfig {
-		return t.cluster.KubeProxy
+	dest["KubeProxy"] = func() *api.KubeProxyConfig {
+		return t.cluster.Spec.KubeProxy
 	}
-	dest["Kubelet"] = func() *cloudup.KubeletConfig {
+	dest["Kubelet"] = func() *api.KubeletConfig {
 		if t.IsMaster() {
-			return t.cluster.MasterKubelet
+			return t.cluster.Spec.MasterKubelet
 		} else {
-			return t.cluster.Kubelet
+			return t.cluster.Spec.Kubelet
 		}
 	}
+	dest["ClusterName"] = func() string { return t.cluster.Name}
 }
 
 // IsMaster returns true if we are tagged as a master

@@ -5,9 +5,9 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"k8s.io/kube-deploy/upup/pkg/fi/cloudup"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kube-deploy/upup/pkg/kutil"
+	"k8s.io/kube-deploy/upup/pkg/api"
 )
 
 type UpgradeClusterCmd struct {
@@ -44,22 +44,22 @@ func (c *UpgradeClusterCmd) Run() error {
 		return fmt.Errorf("error state store: %v", err)
 	}
 
-	cluster, nodeSets, err := cloudup.ReadConfig(stateStore)
+	cluster, instanceGroups, err := api.ReadConfig(stateStore)
 	if err != nil {
 		return fmt.Errorf("error reading configuration: %v", err)
 	}
 
-	oldClusterName := cluster.ClusterName
+	oldClusterName := cluster.Name
 	if oldClusterName == "" {
 		return fmt.Errorf("(Old) ClusterName must be set in configuration")
 	}
 
-	if len(cluster.Zones) == 0 {
+	if len(cluster.Spec.Zones) == 0 {
 		return fmt.Errorf("Configuration must include Zones")
 	}
 
 	region := ""
-	for _, zone := range cluster.Zones {
+	for _, zone := range cluster.Spec.Zones {
 		if len(zone.Name) <= 2 {
 			return fmt.Errorf("Invalid AWS zone: %q", zone.Name)
 		}
@@ -83,7 +83,7 @@ func (c *UpgradeClusterCmd) Run() error {
 	d.OldClusterName = oldClusterName
 	d.Cloud = cloud
 	d.ClusterConfig = cluster
-	d.NodeSets = nodeSets
+	d.InstanceGroups = instanceGroups
 	d.StateStore = stateStore
 
 	err = d.Upgrade()

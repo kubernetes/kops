@@ -13,7 +13,10 @@ import (
 	"os/exec"
 	"path"
 	"strings"
+	"k8s.io/kube-deploy/upup/pkg/api"
 )
+
+var EtcdClusters = []string{"main", "events"}
 
 func main() {
 	executableLocation, err := exec.LookPath(os.Args[0])
@@ -84,49 +87,67 @@ func main() {
 		os.Exit(1)
 	}
 
-	cluster, nodeSets, err := cloudup.ReadConfig(stateStore)
+	cluster, instanceGroups, err := api.ReadConfig(stateStore)
 	if err != nil {
 		glog.Errorf("error loading configuration: %v", err)
 		os.Exit(1)
 	}
 
 	if *zones != "" {
-		existingZones := make(map[string]*cloudup.ZoneConfig)
-		for _, zone := range cluster.Zones {
+		existingZones := make(map[string]*api.ClusterZoneSpec)
+		for _, zone := range cluster.Spec.Zones {
 			existingZones[zone.Name] = zone
 		}
 
 		for _, zone := range parseZoneList(*zones) {
 			if existingZones[zone] == nil {
-				cluster.Zones = append(cluster.Zones, &cloudup.ZoneConfig{
+				cluster.Spec.Zones = append(cluster.Spec.Zones, &api.ClusterZoneSpec{
 					Name: zone,
 				})
 			}
 		}
 	}
 
-	createMasterVolumes := false
+	var masters []*api.InstanceGroup
+	var nodes []*api.InstanceGroup
+
+	for _, group := range instanceGroups {
+		if group.IsMaster() {
+			masters = append(masters, group)
+		} else {
+			nodes = append(nodes, group)
+		}
+	}
+	createEtcdCluster := false
 	if *masterZones == "" {
-		if len(cluster.Masters) == 0 {
+		if len(masters) == 0 {
 			// Default to putting into every zone
 			// TODO: just the first 1 or 3 zones; or should we force users to declare?
-			for _, zone := range cluster.Zones {
-				m := &cloudup.MasterConfig{}
-				m.Zone = zone.Name
-				m.Name = zone.Name // Subsequent masters (if we support that) could be <zone>-1, <zone>-2
-				cluster.Masters = append(cluster.Masters, m)
+			for _, zone := range cluster.Spec.Zones {
+				g := &api.InstanceGroup{}
+				g.Spec.Role = api.InstanceGroupRoleMaster
+				g.Spec.Zones = []string { zone.Name }
+				g.Spec.MinSize = fi.Int(1)
+				g.Spec.MaxSize = fi.Int(1)
+				g.Name = "master-" + zone.Name // Subsequent masters (if we support that) could be <zone>-1, <zone>-2
+				instanceGroups  = append(instanceGroups, g)
+				masters  = append(masters, g)
 			}
-			createMasterVolumes = true
+			createEtcdCluster = true
 		}
 	} else {
-		if len(cluster.Masters) == 0 {
+		if len(masters) == 0 {
 			for _, zone := range parseZoneList(*masterZones) {
-				m := &cloudup.MasterConfig{}
-				m.Zone = zone
-				m.Name = zone
-				cluster.Masters = append(cluster.Masters, m)
+				g := &api.InstanceGroup{}
+				g.Spec.Role = api.InstanceGroupRoleMaster
+				g.Spec.Zones = []string { zone }
+				g.Spec.MinSize = fi.Int(1)
+				g.Spec.MaxSize = fi.Int(1)
+				g.Name = "master-" + zone
+				instanceGroups  = append(instanceGroups, g)
+				masters  = append(masters, g)
 			}
-			createMasterVolumes = true
+			createEtcdCluster = true
 		} else {
 			// This is hard, because of the etcd cluster
 			glog.Errorf("Cannot change master-zones from the CLI")
@@ -134,10 +155,12 @@ func main() {
 		}
 	}
 
-	if createMasterVolumes {
+	if createEtcdCluster {
 		zones := sets.NewString()
-		for _, m := range cluster.Masters {
-			zones.Insert(m.Zone)
+		for _, group := range instanceGroups {
+			for _, zone := range group.Spec.Zones {
+				zones.Insert(zone)
+			}
 		}
 		etcdZones := zones.List()
 		if (len(etcdZones) % 2) == 0 {
@@ -146,67 +169,70 @@ func main() {
 			os.Exit(1)
 		}
 
-		for _, zone := range etcdZones {
-			vol := &cloudup.VolumeConfig{}
-			vol.Name = "etcd." + zone
-			vol.Zone = zone
-			vol.Roles = make(map[string]string)
-			vol.Roles["etcd/main"] = zone + "/" + strings.Join(etcdZones, ",")
-			vol.Roles["etcd/events"] = zone + "/" + strings.Join(etcdZones, ",")
-			cluster.MasterVolumes = append(cluster.MasterVolumes, vol)
+		for _, etcdCluster := range EtcdClusters {
+			etcd := &api.EtcdClusterSpec{}
+			etcd.Name = etcdCluster
+			for _, zone := range etcdZones {
+				m := &api.EtcdMemberSpec{}
+				m.Name = zone
+				m.Zone = zone
+				etcd.Members = append(etcd.Members, m)
+			}
+			cluster.Spec.EtcdClusters = append(cluster.Spec.EtcdClusters, etcd)
 		}
 	}
 
-	if len(nodeSets) == 0 {
-		nodeSets = append(nodeSets, &cloudup.NodeSetConfig{})
+	if len(nodes) == 0 {
+		g := &api.InstanceGroup{}
+		g.Spec.Role = api.InstanceGroupRoleNode
+		g.Name = "nodes"
+		instanceGroups = append(instanceGroups,g)
+		nodes = append(nodes, g)
 	}
 
 	if *nodeSize != "" {
-		for _, ns := range nodeSets {
-			ns.MachineType = *nodeSize
+		for _, group := range nodes {
+			group.Spec.MachineType = *nodeSize
 		}
 	}
 
 	if *image != "" {
-		for _, ns := range nodeSets {
-			ns.Image = *image
-		}
-		for _, master := range cluster.Masters {
-			master.Image = *image
+		for _, group := range instanceGroups {
+			group.Spec.Image = *image
 		}
 	}
 
 	if *nodeCount != 0 {
-		for _, ns := range nodeSets {
-			ns.MinSize = nodeCount
-			ns.MaxSize = nodeCount
+		for _, group := range nodes {
+			group.Spec.MinSize = nodeCount
+			group.Spec.MaxSize = nodeCount
 		}
 	}
 
 	if *masterSize != "" {
-		for _, master := range cluster.Masters {
-			master.MachineType = *masterSize
+		for _, group := range masters {
+			group.Spec.MachineType = *masterSize
 		}
 	}
 
 	if *dnsZone != "" {
-		cluster.DNSZone = *dnsZone
+		cluster.Spec.DNSZone = *dnsZone
 	}
 
 	if *cloudProvider != "" {
-		cluster.CloudProvider = *cloudProvider
+		cluster.Spec.CloudProvider = *cloudProvider
 	}
 
 	if *project != "" {
-		cluster.Project = *project
+		cluster.Spec.Project = *project
 	}
 
 	if *clusterName != "" {
-		cluster.ClusterName = *clusterName
+		cluster.Name = *clusterName
 	}
 
 	if *kubernetesVersion != "" {
-		cluster.KubernetesVersion = *kubernetesVersion
+		cluster.Spec.KubernetesVersion = *kubernetesVersion
 	}
 
 	err = cluster.PerformAssignments()
@@ -214,13 +240,13 @@ func main() {
 		glog.Errorf("error populating configuration: %v", err)
 		os.Exit(1)
 	}
-	err = cloudup.PerformAssignmentsNodesets(nodeSets)
+	err = api.PerformAssignmentsInstanceGroups(instanceGroups)
 	if err != nil {
 		glog.Errorf("error populating configuration: %v", err)
 		os.Exit(1)
 	}
 
-	err = cloudup.WriteConfig(stateStore, cluster, nodeSets)
+	err = api.WriteConfig(stateStore, cluster, instanceGroups)
 	if err != nil {
 		glog.Errorf("error writing updated configuration: %v", err)
 		os.Exit(1)
@@ -231,8 +257,8 @@ func main() {
 	}
 
 	cmd := &cloudup.CreateClusterCmd{
-		ClusterConfig: cluster,
-		NodeSets:      nodeSets,
+		Cluster: cluster,
+		InstanceGroups:      instanceGroups,
 		ModelStore:    *modelsBaseDir,
 		Models:        strings.Split(*models, ","),
 		StateStore:    stateStore,

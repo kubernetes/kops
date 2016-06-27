@@ -5,16 +5,16 @@ import (
 	"github.com/golang/glog"
 	"io"
 	"k8s.io/kube-deploy/upup/pkg/fi"
-	"k8s.io/kube-deploy/upup/pkg/fi/cloudup"
 	"k8s.io/kube-deploy/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kube-deploy/upup/pkg/fi/nodeup/local"
 	"k8s.io/kube-deploy/upup/pkg/fi/utils"
 	"k8s.io/kube-deploy/upup/pkg/fi/vfs"
+	"k8s.io/kube-deploy/upup/pkg/api"
 )
 
 type NodeUpCommand struct {
 	config         *NodeUpConfig
-	cluster        *cloudup.ClusterConfig
+	cluster        *api.Cluster
 	ConfigLocation string
 	ModelDir       string
 	AssetDir       string
@@ -67,7 +67,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	//	return fmt.Errorf("NodeSetLocation is required")
 	//}
 
-	c.cluster = &cloudup.ClusterConfig{}
+	c.cluster = &api.Cluster{}
 	if c.config.ClusterLocation != "" {
 		b, err := vfs.Context.ReadFile(c.config.ClusterLocation)
 		if err != nil {

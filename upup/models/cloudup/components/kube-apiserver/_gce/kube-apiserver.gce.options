@@ -1,2 +1,2 @@
-APIServer:
+KubeAPIServer:
   CloudProvider: gce

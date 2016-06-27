@@ -1,12 +1,12 @@
-package cloudup
+package api
 
 // Configuration for each component
 // Wherever possible, we try to use the types & names in https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
 
 type KubeletConfig struct {
-	APIServers string `json:",omitempty" flag:"api-servers"`
+	APIServers string `json:"apiServers,omitempty" flag:"api-servers"`
 
-	LogLevel *int `json:",omitempty" flag:"v"`
+	LogLevel *int `json:"logLevel,omitempty" flag:"v"`
 
 	// Configuration flags - a subset of https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
 
@@ -278,11 +278,11 @@ type KubeletConfig struct {
 }
 
 type KubeProxyConfig struct {
-	Image string `json:",omitempty"`
+	Image string `json:"image,omitempty"`
 	// TODO: Better type ?
-	CPURequest string `json:",omitempty"` // e.g. "20m"
+	CPURequest string `json:"cpuRequest,omitempty"` // e.g. "20m"
 
-	LogLevel int `json:",omitempty" flag:"v"`
+	LogLevel int `json:"logLevel,omitempty" flag:"v"`
 
 	// Configuration flags - a subset of https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
 
@@ -335,45 +335,45 @@ type KubeProxyConfig struct {
 }
 
 type DockerConfig struct {
-	Bridge   string `json:",omitempty" flag:"bridge"`
-	LogLevel string `json:",omitempty" flag:"log-level"`
-	IPTables bool   `json:",omitempty" flag:"iptables"`
-	IPMasq   bool   `json:",omitempty" flag:"ip-masq"`
-	Storage  string `json:",omitempty" flag:"s"`
+	Bridge   string `json:"bridge,omitempty" flag:"bridge"`
+	LogLevel string `json:"logLevel,omitempty" flag:"log-level"`
+	IPTables bool   `json:"ipTables,omitempty" flag:"iptables"`
+	IPMasq   bool   `json:"ipMasq,omitempty" flag:"ip-masq"`
+	Storage  string `json:"storage,omitempty" flag:"s"`
 }
 
-type APIServerConfig struct {
-	PathSrvKubernetes string `json:",omitempty"`
-	PathSrvSshproxy   string `json:",omitempty"`
-	Image             string `json:",omitempty"`
+type KubeAPIServerConfig struct {
+	PathSrvKubernetes string `json:"pathSrvKubernetes,omitempty"`
+	PathSrvSshproxy   string `json:"pathSrvSshproxy,omitempty"`
+	Image             string `json:"image,omitempty"`
 
-	LogLevel int `json:",omitempty" flag:"v"`
+	LogLevel int `json:"logLevel,omitempty" flag:"v"`
 
-	CloudProvider        string `json:",omitempty" flag:"cloud-provider"`
-	SecurePort           int    `json:",omitempty" flag:"secure-port"`
-	Address              string `json:",omitempty" flag:"address"`
-	EtcdServers          string `json:",omitempty" flag:"etcd-servers"`
-	EtcdServersOverrides string `json:",omitempty" flag:"etcd-servers-overrides"`
+	CloudProvider        string `json:"cloudProvider,omitempty" flag:"cloud-provider"`
+	SecurePort           int    `json:"securePort,omitempty" flag:"secure-port"`
+	Address              string `json:"address,omitempty" flag:"address"`
+	EtcdServers          string `json:"etcdServers,omitempty" flag:"etcd-servers"`
+	EtcdServersOverrides string `json:"etcdServersOverrides,omitempty" flag:"etcd-servers-overrides"`
 	// TODO: []string and join with commas?
-	AdmissionControl      string `json:",omitempty" flag:"admission-control"`
-	ServiceClusterIPRange string `json:",omitempty" flag:"service-cluster-ip-range"`
-	ClientCAFile          string `json:",omitempty" flag:"client-ca-file"`
-	BasicAuthFile         string `json:",omitempty" flag:"basic-auth-file"`
-	TLSCertFile           string `json:",omitempty" flag:"tls-cert-file"`
-	TLSPrivateKeyFile     string `json:",omitempty" flag:"tls-private-key-file"`
-	TokenAuthFile         string `json:",omitempty" flag:"token-auth-file"`
-	AllowPrivileged       *bool  `json:",omitempty" flag:"allow-privileged"`
+	AdmissionControl      string `json:"admissionControl,omitempty" flag:"admission-control"`
+	ServiceClusterIPRange string `json:"serviceClusterIPRange,omitempty" flag:"service-cluster-ip-range"`
+	ClientCAFile          string `json:"clientCAFile,omitempty" flag:"client-ca-file"`
+	BasicAuthFile         string `json:"basicAuthFile,omitempty" flag:"basic-auth-file"`
+	TLSCertFile           string `json:"tlsCertFile,omitempty" flag:"tls-cert-file"`
+	TLSPrivateKeyFile     string `json:"tlsPrivateKeyFile,omitempty" flag:"tls-private-key-file"`
+	TokenAuthFile         string `json:"tokenAuthFile,omitempty" flag:"token-auth-file"`
+	AllowPrivileged       *bool  `json:"allowPrivileged,omitempty" flag:"allow-privileged"`
 }
 
 type KubeControllerManagerConfig struct {
-	Master   string `json:",omitempty" flag:"master"`
-	LogLevel int    `json:",omitempty" flag:"v"`
+	Master   string `json:"master,omitempty" flag:"master"`
+	LogLevel int    `json:"logLevel,omitempty" flag:"v"`
 
-	ServiceAccountPrivateKeyFile string `json:",omitempty" flag:"service-account-private-key-file"`
+	ServiceAccountPrivateKeyFile string `json:"serviceAccountPrivateKeyFile,omitempty" flag:"service-account-private-key-file"`
 
-	Image string `json:",omitempty"`
+	Image string `json:"image,omitempty"`
 
-	PathSrvKubernetes string `json:",omitempty"`
+	PathSrvKubernetes string `json:"pathSrvKubernetes,omitempty"`
 
 	// Configuration flags - a subset of https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
 
@@ -515,7 +515,7 @@ type KubeControllerManagerConfig struct {
 }
 
 type KubeSchedulerConfig struct {
-	Image string `json:",omitempty"`
+	Image string `json:"image,omitempty"`
 
 	// Configuration flags - a subset of https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
 

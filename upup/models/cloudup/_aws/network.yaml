@@ -1,13 +1,13 @@
-vpc/{{ .ClusterName }}:
+vpc/{{ ClusterName }}:
   id: {{ .NetworkID }}
-  shared: {{ .SharedVPC }}
+  shared: {{ SharedVPC }}
   cidr: {{ .NetworkCIDR }}
   enableDnsSupport: true
   enableDnsHostnames: true
 
-{{ if not .SharedVPC }}
+{{ if not SharedVPC }}
 # TODO: would be good to create these as shared, to verify them
-dhcpOptions/{{ .ClusterName }}:
+dhcpOptions/{{ ClusterName }}:
   domainNameServers: AmazonProvidedDNS
 {{ if eq Region "us-east-1" }}
   domainName: ec2.internal
@@ -15,33 +15,33 @@ dhcpOptions/{{ .ClusterName }}:
   domainName: {{ Region }}.compute.internal
 {{ end }}
 
-vpcDHDCPOptionsAssociation/{{ .ClusterName }}:
-  vpc: vpc/{{ .ClusterName }}
-  dhcpOptions: dhcpOptions/{{ .ClusterName }}
+vpcDHDCPOptionsAssociation/{{ ClusterName }}:
+  vpc: vpc/{{ ClusterName }}
+  dhcpOptions: dhcpOptions/{{ ClusterName }}
 {{ end }}
 
-internetGateway/{{ .ClusterName }}:
-  shared: {{ .SharedVPC }}
-  vpc: vpc/{{ .ClusterName }}
+internetGateway/{{ ClusterName }}:
+  shared: {{ SharedVPC }}
+  vpc: vpc/{{ ClusterName }}
 
-routeTable/{{ .ClusterName }}:
-  vpc: vpc/{{ .ClusterName }}
+routeTable/{{ ClusterName }}:
+  vpc: vpc/{{ ClusterName }}
 
 route/0.0.0.0/0:
-  routeTable: routeTable/{{ .ClusterName }}
+  routeTable: routeTable/{{ ClusterName }}
   cidr: 0.0.0.0/0
-  internetGateway: internetGateway/{{ .ClusterName }}
-  vpc: vpc/{{ .ClusterName }}
+  internetGateway: internetGateway/{{ ClusterName }}
+  vpc: vpc/{{ ClusterName }}
 
 {{ range $zone := .Zones }}
 
-subnet/{{ $zone.Name }}.{{ $.ClusterName }}:
-  vpc: vpc/{{ $.ClusterName }}
+subnet/{{ $zone.Name }}.{{ ClusterName }}:
+  vpc: vpc/{{ ClusterName }}
   availabilityZone: {{ $zone.Name }}
   cidr: {{ $zone.CIDR }}
 
-routeTableAssociation/{{ $zone.Name }}.{{ $.ClusterName }}:
-  routeTable: routeTable/{{ $.ClusterName }}
-  subnet: subnet/{{ $zone.Name }}.{{ $.ClusterName }}
+routeTableAssociation/{{ $zone.Name }}.{{ ClusterName }}:
+  routeTable: routeTable/{{ ClusterName }}
+  subnet: subnet/{{ $zone.Name }}.{{ ClusterName }}
 
 {{ end }}

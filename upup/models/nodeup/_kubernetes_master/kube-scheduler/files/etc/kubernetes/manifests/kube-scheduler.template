@@ -10,7 +10,7 @@
 "containers":[
     {
     "name": "kube-scheduler",
-    "image": "{{ .KubeScheduler.Image }}",
+    "image": "{{ KubeScheduler.Image }}",
     "resources": {
       "requests": {
         "cpu": "100m"
@@ -19,7 +19,7 @@
     "command": [
                  "/bin/sh",
                  "-c",
-                 "/usr/local/bin/kube-scheduler {{ BuildFlags .KubeScheduler }} 1>>/var/log/kube-scheduler.log 2>&1"
+                 "/usr/local/bin/kube-scheduler {{ BuildFlags KubeScheduler }} 1>>/var/log/kube-scheduler.log 2>&1"
                ],
     "livenessProbe": {
       "httpGet": {

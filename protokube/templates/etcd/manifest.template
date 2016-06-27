@@ -62,7 +62,7 @@ spec:
   volumes:
   - name: varetcddata
     hostPath:
-      path: /mnt/master-pd/var/etcd/{{ .DataDirName }}
+      path: {{ .VolumeMountPath }}/var/etcd/{{ .DataDirName }}
   - name: varlogetcd
     hostPath:
       path: {{ .LogFile }}

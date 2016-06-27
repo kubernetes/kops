@@ -58,7 +58,7 @@ func main() {
 
 	if dnsZoneName == "" {
 		tokens := strings.Split(dnsInternalSuffix, ".")
-		dnsZoneName = strings.Join(tokens[len(tokens)-2:], ".")
+		dnsZoneName = strings.Join(tokens[len(tokens) - 2:], ".")
 	}
 
 	// Get internal IP from cloud, to avoid problems if we're in a container
@@ -80,41 +80,26 @@ func main() {
 	if containerized {
 		rootfs = "/rootfs/"
 	}
-	k := &protokube.KubeBoot{
-		Containerized: containerized,
-		RootFS:        rootfs,
+	protokube.RootFS = rootfs
+	protokube.Containerized = containerized
 
+	modelDir := "model/etcd"
+
+	k := &protokube.KubeBoot{
 		Master:            master,
 		InternalDNSSuffix: dnsInternalSuffix,
 		InternalIP:        internalIP,
 		//MasterID          : fromVolume
 		//EtcdClusters   : fromVolume
 
-		Volumes: volumes,
+		ModelDir: modelDir,
 		DNS:     dns,
 	}
+	k.Init(volumes)
 
-	err = k.Bootstrap()
-	if err != nil {
-		glog.Errorf("Error during bootstrap: %q", err)
-		os.Exit(1)
-	}
+	k.RunSyncLoop()
 
-	glog.Infof("Bootstrap complete; applying configuration")
-	err = k.ApplyModel()
-	if err != nil {
-		glog.Errorf("Error during configuration: %q", err)
-		os.Exit(1)
-	}
-
-	glog.Infof("Bootstrap complete; starting kubelet")
-	err = k.RunBootstrapTasks()
-	if err != nil {
-		glog.Errorf("Error during bootstrap: %q", err)
-		os.Exit(1)
-	}
-
-	glog.Infof("Unexpected exited from kubelet run")
+	glog.Infof("Unexpected exit")
 	os.Exit(1)
 }
 

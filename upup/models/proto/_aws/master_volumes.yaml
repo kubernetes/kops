@@ -1,14 +1,15 @@
-{{ range $vol := .MasterVolumes }}
+{{ range $etcd := .EtcdClusters }}
+{{ range $m := $etcd.Members }}
 
-# EBS volume per zone, for etcd
-ebsVolume/{{$vol.Name}}.{{ $.ClusterName }}:
-  availabilityZone: {{ $vol.Zone }}
-  sizeGB: {{ or $vol.Size 20 }}
-  volumeType: {{ or $vol.Type "gp2" }}
+# EBS volume for each member of the each etcd cluster
+ebsVolume/{{$m.Name}}.{{$etcd.Name}}.{{ ClusterName }}:
+  availabilityZone: {{ $m.Zone }}
+  sizeGB: {{ or $m.VolumeSize 20 }}
+  volumeType: {{ or $m.VolumeType "gp2" }}
   tags:
-    k8s.io/role/master: "1"
-    {{ range $k, $v := $vol.Roles }}
-    k8s.io/{{$k}}: "{{$v}}"
-    {{ end }}
+  {{ range $k, $v := EtcdClusterMemberTags $etcd $m }}
+    {{ $k }}: "{{ $v }}"
+  {{ end }}
 
+{{ end }}
 {{ end }}

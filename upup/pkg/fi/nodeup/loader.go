@@ -6,18 +6,18 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/fi"
-	"k8s.io/kube-deploy/upup/pkg/fi/cloudup"
 	"k8s.io/kube-deploy/upup/pkg/fi/loader"
 	"k8s.io/kube-deploy/upup/pkg/fi/nodeup/nodetasks"
 	"os"
 	"strings"
 	"text/template"
+	"k8s.io/kube-deploy/upup/pkg/api"
 )
 
 type Loader struct {
 	templates []*template.Template
 	config    *NodeUpConfig
-	cluster   *cloudup.ClusterConfig
+	cluster   *api.Cluster
 
 	assets *fi.AssetStore
 	tasks  map[string]fi.Task
@@ -26,7 +26,7 @@ type Loader struct {
 	TemplateFunctions template.FuncMap
 }
 
-func NewLoader(config *NodeUpConfig, cluster *cloudup.ClusterConfig, assets *fi.AssetStore, tags map[string]struct{}) *Loader {
+func NewLoader(config *NodeUpConfig, cluster *api.Cluster, assets *fi.AssetStore, tags map[string]struct{}) *Loader {
 	l := &Loader{}
 	l.assets = assets
 	l.tasks = make(map[string]fi.Task)
@@ -47,7 +47,7 @@ func (l *Loader) executeTemplate(key string, d string) (string, error) {
 	}
 	t.Funcs(funcMap)
 
-	context := l.cluster
+	context := l.cluster.Spec
 
 	_, err := t.Parse(d)
 	if err != nil {
