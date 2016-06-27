@@ -86,5 +86,10 @@ func hclPrint(node ast.Node) ([]byte, error) {
 	// ...but leave whitespace between resources
 	s = strings.Replace(s, "}\nresource", "}\n\nresource", -1)
 
+	// Workaround HCL insanity #6359: quotes are _not_ escaped in quotes (huh?)
+	// This hits the file function
+	s = strings.Replace(s, "(\\\"", "(\"", -1)
+	s = strings.Replace(s, "\\\")", "\")", -1)
+
 	return []byte(s), nil
 }

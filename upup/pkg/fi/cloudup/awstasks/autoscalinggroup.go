@@ -10,6 +10,7 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
 	"reflect"
+	"sort"
 	"strings"
 )
 
@@ -229,7 +230,15 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 		tf.VPCZoneIdentifier = append(tf.VPCZoneIdentifier, s.TerraformLink())
 	}
 
-	for k, v := range e.buildTags(t.Cloud) {
+	tags := e.buildTags(t.Cloud)
+	// Make sure we output in a stable order
+	var tagKeys []string
+	for k := range tags {
+		tagKeys = append(tagKeys, k)
+	}
+	sort.Strings(tagKeys)
+	for _, k := range tagKeys {
+		v := tags[k]
 		tf.Tags = append(tf.Tags, &terraformASGTag{
 			Key:               fi.String(k),
 			Value:             fi.String(v),

@@ -1,8 +1,8 @@
 hash: 42a551da194c2a8dfcaff364d22c71359cac802ad0ede68b4cd574b7fdebb9e1
-updated: 2016-06-13T00:14:13.556460446-04:00
+updated: 2016-06-26T23:47:10.214438512-04:00
 imports:
 - name: github.com/aws/aws-sdk-go
-  version: 64c371362a7b5ecafa2d7cdf90d19aba7343ae02
+  version: b85eaebe3c12e8db01a7c26882457c5c51100471
   subpackages:
   - aws
   - aws/awserr
@@ -18,18 +18,18 @@ imports:
   - aws/client
   - aws/client/metadata
   - aws/request
+  - aws/signer/v4
   - private/protocol
   - private/protocol/query
-  - private/signer/v4
   - private/waiter
   - private/endpoints
   - private/protocol/ec2query
   - private/protocol/restxml
   - aws/corehandlers
   - aws/defaults
+  - private/protocol/rest
   - private/protocol/query/queryutil
   - private/protocol/xml/xmlutil
-  - private/protocol/rest
   - aws/credentials/ec2rolecreds
   - aws/ec2metadata
 - name: github.com/BurntSushi/toml
@@ -40,20 +40,28 @@ imports:
   version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
   subpackages:
   - spew
+- name: github.com/docker/go-units
+  version: 9b001659dd36225e356b4467c465d732e745f53d
 - name: github.com/fsnotify/fsnotify
   version: 30411dbcefb7a1da7e84f75530ad3abe4011b4f8
 - name: github.com/ghodss/yaml
   version: aa0c862057666179de291b67d9f093d12b5a8473
 - name: github.com/go-ini/ini
-  version: 72ba3e6b9e6b87e0c74c9a7a4dc86e8dd8ba4355
+  version: 1dc62999c16b9f8596d9cdf76f1f41dd4e1fa662
+- name: github.com/gogo/protobuf
+  version: 2752d97bbd91927dd1c43296dbf8700e50e2708c
+  subpackages:
+  - proto
 - name: github.com/golang/glog
   version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
 - name: github.com/golang/protobuf
-  version: 8616e8ee5e20a1704615e6c8d7afcdac06087a67
+  version: 0c1f6d65b5a189c2250d10e71a5506f06f9fa0a0
   subpackages:
   - proto
+- name: github.com/google/gofuzz
+  version: fd52762d25a41827db7ef64c43756fd4b9f7e382
 - name: github.com/hashicorp/hcl
-  version: d7400db7143f8e869812e50a53acd6c8d92af3b8
+  version: 61f5143284c041681f76a5b63efcb232aaa94737
   subpackages:
   - hcl/ast
   - hcl/printer
@@ -74,29 +82,45 @@ imports:
   version: c265cfa48dda6474e208715ca93e987829f572f8
 - name: github.com/mitchellh/mapstructure
   version: d2dd0262208475919e1a362f675cfc0e7c10e905
+- name: github.com/opencontainers/runc
+  version: 629e35666d31f743090452416c8df207d9fdbd34
+  subpackages:
+  - libcontainer/cgroups/fs
+  - libcontainer/configs
+  - libcontainer/cgroups
+  - libcontainer/system
+  - libcontainer/utils
+- name: github.com/pborman/uuid
+  version: c55201b036063326c5b1b89ccfe45a184973d073
 - name: github.com/pkg/errors
-  version: 01fa4104b9c248c8945d14d9f128454d5b28d595
+  version: d62207b3dc916c342cd6a7180fa861d898cf42ee
 - name: github.com/pkg/sftp
-  version: 8ceba579e780069dc5b5c866c0b9fa88fb736a4a
+  version: 57fcf4a640a942eb05181f929601f8f4409eda3e
+- name: github.com/Sirupsen/logrus
+  version: 26709e2714106fb8ad40b773b711ebce25b78914
 - name: github.com/spf13/cast
   version: 27b586b42e29bec072fe7379259cc719e1289da6
 - name: github.com/spf13/cobra
-  version: 1238ba19d24b0b9ceee2094e1cb31947d45c3e86
+  version: 6a8bd97bdb1fc0d08a83459940498ea49d3e8c93
 - name: github.com/spf13/jwalterweatherman
   version: 33c24e77fb80341fe7130ee7c594256ff08ccc46
 - name: github.com/spf13/pflag
   version: 367864438f1b1a3c7db4da06a2f55b144e6784e0
 - name: github.com/spf13/viper
   version: c1ccc378a054ea8d4e38d8c67f6938d4760b53dd
+- name: github.com/ugorji/go
+  version: b94837a2404ab90efe9289e77a70694c355739cb
+  subpackages:
+  - codec
 - name: golang.org/x/crypto
-  version: f3241ce8505855877cc8a9717bd61a0f7c4ea83c
+  version: 811831de4c4dd03a0b8737233af3b36852386373
   subpackages:
   - ssh
   - curve25519
   - ed25519
   - ed25519/internal/edwards25519
 - name: golang.org/x/net
-  version: 3f122ce3dbbe488b7e6a8bdb26f41edec852a40b
+  version: e445b19913b9d40fdbdfe19ac5e3d314aafd6f63
   subpackages:
   - context
   - context/ctxhttp
@@ -108,7 +132,7 @@ imports:
   - jws
   - jwt
 - name: golang.org/x/sys
-  version: 7f918dd405547ecb864d14a8ecbbfe205b5f930f
+  version: 62bee037599929a6e9146f29d10dd5208c43507d
   subpackages:
   - unix
 - name: google.golang.org/api
@@ -120,7 +144,7 @@ imports:
   - gensupport
   - googleapi/internal/uritemplates
 - name: google.golang.org/appengine
-  version: 7f59a8c76b8594d06044bfe0bcbe475cb2020482
+  version: 267c27e7492265b84fc6719503b14a1e17975d79
   subpackages:
   - urlfetch
   - internal
@@ -129,22 +153,53 @@ imports:
   - internal/urlfetch
   - internal/base
   - internal/datastore
+  - internal/log
   - internal/remote_api
 - name: google.golang.org/cloud
-  version: 4a23f97e60c9a14de1269e78812e59ca94033d85
+  version: a4c7c3139dc2772ad6c3bb73d0a9236a79063f8c
   subpackages:
   - compute/metadata
   - internal
 - name: google.golang.org/grpc
-  version: 88aeffff979aa77aa502cb011423d0a08fa12c5a
+  version: 0eb7c5dcd059d77bde1eb5bc7d953940170d0d18
+- name: gopkg.in/inf.v0
+  version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/yaml.v2
   version: a83829b6f1293c91addabc89d0571c246397bbf4
 - name: k8s.io/kubernetes
-  version: 5d6397e9ee610664387fd9a45238f9af6fa9a18e
+  version: d744fd411f663351ab660a5ecaa9e04d3334db30
   subpackages:
+  - pkg/util/sets
+  - pkg/api
+  - pkg/api/unversioned
   - pkg/util/diff
   - pkg/util/exec
   - pkg/util/mount
+  - pkg/api/meta
+  - pkg/api/meta/metatypes
+  - pkg/api/resource
+  - pkg/auth/user
+  - pkg/conversion
+  - pkg/fields
+  - pkg/labels
+  - pkg/runtime
+  - pkg/runtime/serializer
+  - pkg/types
+  - pkg/util
+  - pkg/util/intstr
+  - pkg/util/rand
   - pkg/util/validation/field
   - pkg/util/errors
+  - third_party/forked/reflect
+  - pkg/util/validation
+  - pkg/conversion/queryparams
+  - pkg/util/json
+  - pkg/runtime/serializer/json
+  - pkg/runtime/serializer/protobuf
+  - pkg/runtime/serializer/recognizer
+  - pkg/runtime/serializer/versioning
+  - pkg/util/wait
+  - pkg/util/framer
+  - pkg/util/yaml
+  - pkg/util/runtime
 devImports: []
