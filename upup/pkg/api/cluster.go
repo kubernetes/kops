@@ -8,6 +8,7 @@ import (
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"net"
 	"strconv"
+	"strings"
 )
 
 type Cluster struct {
@@ -343,18 +344,38 @@ func (c *Cluster) SharedVPC() bool {
 
 // CloudPermissions holds IAM-style permissions
 type CloudPermissions struct {
-	S3Buckets []string `json:"s3Buckets,omitempty"`
+	Permissions []*CloudPermission `json:"permissions,omitempty"`
+}
+
+// CloudPermission holds a single IAM-style permission
+type CloudPermission struct {
+	Resource string `json:"resource,omitempty"`
 }
 
 // AddS3Bucket adds a bucket if it does not already exist
 func (p *CloudPermissions) AddS3Bucket(bucket string) {
-	for _, b := range p.S3Buckets {
-		if b == bucket {
+	for _, p := range p.Permissions {
+		if p.Resource == "s3://"+bucket {
 			return
 		}
 	}
 
-	p.S3Buckets = append(p.S3Buckets, bucket)
+	p.Permissions = append(p.Permissions, &CloudPermission{
+		Resource: "s3://" + bucket,
+	})
+}
+
+// S3Buckets returns each of the S3 buckets in the permission
+// TODO: Replace with something generic (probably we should just generate the permission)
+func (p *CloudPermissions) S3Buckets() []string {
+	var buckets []string
+	for _, p := range p.Permissions {
+		if strings.HasPrefix(p.Resource, "s3://") {
+			buckets = append(buckets, strings.TrimPrefix(p.Resource, "s3://"))
+		}
+	}
+
+	return buckets
 }
 
 //
