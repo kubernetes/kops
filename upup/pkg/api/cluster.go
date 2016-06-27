@@ -8,6 +8,7 @@ import (
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"net"
 	"strconv"
+	"strings"
 )
 
 type Cluster struct {
@@ -60,7 +61,13 @@ type ClusterSpec struct {
 	ConfigStore string `json:"configStore,omitempty"`
 
 	// DNSZone is the DNS zone we should use when configuring DNS
+	// This is because some clouds let us define a managed zone foo.bar, and then have
+	// kubernetes.dev.foo.bar, without needing to define dev.foo.bar as a hosted zone.
+	// DNSZone will probably be a suffix of the MasterPublicName and MasterInternalName
 	DNSZone string `json:"dnsZone,omitempty"`
+
+	// ClusterDNSDomain is the suffix we use for internal DNS names (normally cluster.local)
+	ClusterDNSDomain string `json:"clusterDNSDomain,omitempty"`
 
 	//InstancePrefix                string `json:",omitempty"`
 
@@ -69,15 +76,18 @@ type ClusterSpec struct {
 
 	//AllocateNodeCIDRs *bool `json:"allocateNodeCIDRs,omitempty"`
 
-	Multizone *bool `json:"mutlizone,omitempty"`
+	Multizone *bool `json:"multizone,omitempty"`
 
 	//ClusterIPRange                string `json:",omitempty"`
 
 	// ServiceClusterIPRange is the CIDR, from the internal network, where we allocate IPs for services
 	ServiceClusterIPRange string `json:"serviceClusterIPRange,omitempty"`
 	//MasterIPRange                 string `json:",omitempty"`
-	//NonMasqueradeCidr             string `json:",omitempty"`
-	//
+
+	// NonMasqueradeCIDR is the CIDR for the internal k8s network (on which pods & services live)
+	// It cannot overlap ServiceClusterIPRange
+	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty"`
+
 	//NetworkProvider               string `json:",omitempty"`
 	//
 	//HairpinMode                   string `json:",omitempty"`
@@ -93,9 +103,6 @@ type ClusterSpec struct {
 	//EnableClusterDNS              *bool  `json:",omitempty"`
 	//DNSReplicas                   int    `json:",omitempty"`
 	//DNSServerIP                   string `json:",omitempty"`
-
-	// DNSDomain is the suffix we use for internal DNS names (normally cluster.local)
-	DNSDomain string `json:"dnsDomain,omitempty"`
 
 	//EnableClusterLogging          *bool  `json:",omitempty"`
 	//EnableNodeLogging             *bool  `json:",omitempty"`
@@ -241,9 +248,13 @@ type ClusterZoneSpec struct {
 // For example, it assigns stable Keys to NodeSets & Masters, and
 // it assigns CIDRs to subnets
 func (c *Cluster) PerformAssignments() error {
-	if c.Spec.NetworkCIDR == "" {
+	if c.Spec.NetworkCIDR == "" && !c.SharedVPC() {
 		// TODO: Choose non-overlapping networking CIDRs for VPCs?
 		c.Spec.NetworkCIDR = "172.20.0.0/16"
+	}
+
+	if c.Spec.NonMasqueradeCIDR == "" {
+		c.Spec.NonMasqueradeCIDR = "100.64.0.0/10"
 	}
 
 	for _, zone := range c.Spec.Zones {
@@ -333,18 +344,38 @@ func (c *Cluster) SharedVPC() bool {
 
 // CloudPermissions holds IAM-style permissions
 type CloudPermissions struct {
-	S3Buckets []string `json:"s3Buckets,omitempty"`
+	Permissions []*CloudPermission `json:"permissions,omitempty"`
+}
+
+// CloudPermission holds a single IAM-style permission
+type CloudPermission struct {
+	Resource string `json:"resource,omitempty"`
 }
 
 // AddS3Bucket adds a bucket if it does not already exist
 func (p *CloudPermissions) AddS3Bucket(bucket string) {
-	for _, b := range p.S3Buckets {
-		if b == bucket {
+	for _, p := range p.Permissions {
+		if p.Resource == "s3://"+bucket {
 			return
 		}
 	}
 
-	p.S3Buckets = append(p.S3Buckets, bucket)
+	p.Permissions = append(p.Permissions, &CloudPermission{
+		Resource: "s3://" + bucket,
+	})
+}
+
+// S3Buckets returns each of the S3 buckets in the permission
+// TODO: Replace with something generic (probably we should just generate the permission)
+func (p *CloudPermissions) S3Buckets() []string {
+	var buckets []string
+	for _, p := range p.Permissions {
+		if strings.HasPrefix(p.Resource, "s3://") {
+			buckets = append(buckets, strings.TrimPrefix(p.Resource, "s3://"))
+		}
+	}
+
+	return buckets
 }
 
 //

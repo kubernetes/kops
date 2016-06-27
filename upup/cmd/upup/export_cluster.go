@@ -10,8 +10,7 @@ import (
 )
 
 type ExportClusterCmd struct {
-	ClusterName string
-	Region      string
+	Region string
 }
 
 var exportCluster ExportClusterCmd
@@ -31,7 +30,6 @@ func init() {
 
 	exportCmd.AddCommand(cmd)
 
-	cmd.Flags().StringVar(&exportCluster.ClusterName, "name", "", "cluster name")
 	cmd.Flags().StringVar(&exportCluster.Region, "region", "", "region")
 }
 
@@ -39,11 +37,12 @@ func (c *ExportClusterCmd) Run() error {
 	if c.Region == "" {
 		return fmt.Errorf("--region is required")
 	}
-	if c.ClusterName == "" {
+	clusterName := rootCommand.clusterName
+	if clusterName == "" {
 		return fmt.Errorf("--name is required")
 	}
 
-	tags := map[string]string{"KubernetesCluster": c.ClusterName}
+	tags := map[string]string{"KubernetesCluster": clusterName}
 	cloud, err := awsup.NewAWSCloud(c.Region, tags)
 	if err != nil {
 		return fmt.Errorf("error initializing AWS client: %v", err)
@@ -55,7 +54,7 @@ func (c *ExportClusterCmd) Run() error {
 	}
 
 	d := &kutil.ExportCluster{}
-	d.ClusterName = c.ClusterName
+	d.ClusterName = clusterName
 	d.Cloud = cloud
 	d.StateStore = stateStore
 

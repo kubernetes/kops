@@ -31,7 +31,8 @@ type VFSStateStore struct {
 
 var _ StateStore = &VFSStateStore{}
 
-func NewVFSStateStore(location vfs.Path, dryrun bool) (*VFSStateStore, error) {
+func NewVFSStateStore(base vfs.Path, clusterName string, dryrun bool) (*VFSStateStore, error) {
+	location := base.Join(clusterName)
 	s := &VFSStateStore{
 		location: location,
 	}

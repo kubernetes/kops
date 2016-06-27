@@ -160,7 +160,7 @@ func (x *ExportCluster) ReverseAWS() error {
 	//	return fmt.Errorf("cannot parse DNS_REPLICAS=%q: %v", conf.Settings["DNS_REPLICAS"], err)
 	//}
 	//clusterConfig.DNSServerIP = conf.Settings["DNS_SERVER_IP"]
-	cluster.Spec.DNSDomain = conf.Settings["DNS_DOMAIN"]
+	cluster.Spec.ClusterDNSDomain = conf.Settings["DNS_DOMAIN"]
 	//clusterConfig.AdmissionControl = conf.Settings["ADMISSION_CONTROL"]
 	//clusterConfig.MasterIPRange = conf.Settings["MASTER_IP_RANGE"]
 	//clusterConfig.DNSServerIP = conf.Settings["DNS_SERVER_IP"]

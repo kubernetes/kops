@@ -2,6 +2,7 @@ package cloudup
 
 import (
 	"encoding/base64"
+	"encoding/binary"
 	"fmt"
 	"github.com/golang/glog"
 	"io/ioutil"
@@ -16,6 +17,7 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi/loader"
 	"k8s.io/kube-deploy/upup/pkg/fi/utils"
 	"k8s.io/kube-deploy/upup/pkg/fi/vfs"
+	"net"
 	"os"
 	"path"
 	"strings"
@@ -142,6 +144,11 @@ func (c *CreateClusterCmd) Run() error {
 	c.nodes = nodes
 	if len(c.nodes) == 0 {
 		return fmt.Errorf("must configure at least one Node InstanceGroup")
+	}
+
+	err = c.assignSubnets()
+	if err != nil {
+		return err
 	}
 
 	// Check that instance groups are defined in valid zones
@@ -598,6 +605,11 @@ func (c *CreateClusterCmd) Run() error {
 	l.cluster.Spec = *completed
 	tf.cluster = l.cluster
 
+	err = l.cluster.Validate()
+	if err != nil {
+		return fmt.Errorf("Completed cluster failed validation: %v", err)
+	}
+
 	taskMap, err := l.BuildTasks(c.ModelStore, c.Models)
 	if err != nil {
 		return fmt.Errorf("error building tasks: %v", err)
@@ -740,4 +752,50 @@ func (c *CreateClusterCmd) defaultImage() string {
 		glog.V(2).Infof("Cannot set default Image for CloudProvider=%q", cluster.Spec.CloudProvider)
 		return ""
 	}
+}
+
+func (c *CreateClusterCmd) assignSubnets() error {
+	cluster := c.Cluster
+	if cluster.Spec.NonMasqueradeCIDR == "" {
+		glog.Warningf("NonMasqueradeCIDR not set; can't auto-assign dependent subnets")
+		return nil
+	}
+
+	_, nonMasqueradeCIDR, err := net.ParseCIDR(cluster.Spec.NonMasqueradeCIDR)
+	if err != nil {
+		return fmt.Errorf("error parsing NonMasqueradeCIDR %q: %v", cluster.Spec.NonMasqueradeCIDR, err)
+	}
+	nmOnes, nmBits := nonMasqueradeCIDR.Mask.Size()
+
+	if cluster.Spec.KubeControllerManager == nil {
+		cluster.Spec.KubeControllerManager = &api.KubeControllerManagerConfig{}
+	}
+
+	if cluster.Spec.KubeControllerManager.ClusterCIDR == "" {
+		// Allocate as big a range as possible: the NonMasqueradeCIDR mask + 1, with a '1' in the extra bit
+		ip := nonMasqueradeCIDR.IP.Mask(nonMasqueradeCIDR.Mask)
+
+		ip4 := ip.To4()
+		if ip4 != nil {
+			n := binary.BigEndian.Uint32(ip4)
+			n += uint32(1 << uint(nmBits-nmOnes-1))
+			ip = make(net.IP, len(ip4))
+			binary.BigEndian.PutUint32(ip, n)
+		} else {
+			return fmt.Errorf("IPV6 subnet computations not yet implements")
+		}
+
+		cidr := net.IPNet{IP: ip, Mask: net.CIDRMask(nmOnes+1, nmBits)}
+		cluster.Spec.KubeControllerManager.ClusterCIDR = cidr.String()
+		glog.V(2).Infof("Defaulted KubeControllerManager.ClusterCIDR to %v", cluster.Spec.KubeControllerManager.ClusterCIDR)
+	}
+
+	if cluster.Spec.ServiceClusterIPRange == "" {
+		// Allocate from the '0' subnet; but only carve off 1/4 of that (i.e. add 1 + 2 bits to the netmask)
+		cidr := net.IPNet{IP: nonMasqueradeCIDR.IP.Mask(nonMasqueradeCIDR.Mask), Mask: net.CIDRMask(nmOnes+3, nmBits)}
+		cluster.Spec.ServiceClusterIPRange = cidr.String()
+		glog.V(2).Infof("Defaulted ServiceClusterIPRange to %v", cluster.Spec.ServiceClusterIPRange)
+	}
+
+	return nil
 }

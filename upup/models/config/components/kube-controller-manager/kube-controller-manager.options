@@ -1,7 +1,6 @@
 KubeControllerManager:
   PathSrvKubernetes: /srv/kubernetes
   Master: 127.0.0.1:8080
-  ClusterCIDR: 10.244.0.0/16
   AllocateNodeCIDRs: true
   ServiceAccountPrivateKeyFile: /srv/kubernetes/server.key
   LogLevel: 2

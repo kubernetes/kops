@@ -62,7 +62,7 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 	b := &bytes.Buffer{}
 
 	if len(t.changes) != 0 {
-		fmt.Fprintf(b, "Created resources:\n")
+		fmt.Fprintf(b, "Will create resources:\n")
 		for _, r := range t.changes {
 			if !r.aIsNil {
 				continue
@@ -71,7 +71,7 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 			fmt.Fprintf(b, "  %T\t%s\n", r.changes, IdForTask(taskMap, r.e))
 		}
 
-		fmt.Fprintf(b, "Changed resources:\n")
+		fmt.Fprintf(b, "Will modify resources:\n")
 		// We can't use our reflection helpers here - we want corresponding values from a,e,c
 		for _, r := range t.changes {
 			if r.aIsNil {

@@ -101,6 +101,10 @@ func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 		providerGoogle["project"] = t.Project
 		providerGoogle["region"] = t.Region
 		providersByName["google"] = providerGoogle
+	} else if t.Cloud.ProviderID() == fi.CloudProviderAWS {
+		providerAWS := make(map[string]interface{})
+		providerAWS["region"] = t.Region
+		providersByName["aws"] = providerAWS
 	}
 
 	data := make(map[string]interface{})

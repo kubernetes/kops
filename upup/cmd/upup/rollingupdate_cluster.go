@@ -13,9 +13,8 @@ import (
 )
 
 type RollingUpdateClusterCmd struct {
-	ClusterName string
-	Yes         bool
-	Region      string
+	Yes    bool
+	Region string
 
 	cobraCommand *cobra.Command
 }
@@ -34,7 +33,6 @@ func init() {
 
 	cmd.Flags().BoolVar(&rollingupdateCluster.Yes, "yes", false, "Rollingupdate without confirmation")
 
-	cmd.Flags().StringVar(&rollingupdateCluster.ClusterName, "name", "", "cluster name")
 	cmd.Flags().StringVar(&rollingupdateCluster.Region, "region", "", "region")
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
@@ -49,11 +47,12 @@ func (c *RollingUpdateClusterCmd) Run() error {
 	if c.Region == "" {
 		return fmt.Errorf("--region is required")
 	}
-	if c.ClusterName == "" {
+	clusterName := rootCommand.clusterName
+	if clusterName == "" {
 		return fmt.Errorf("--name is required")
 	}
 
-	tags := map[string]string{"KubernetesCluster": c.ClusterName}
+	tags := map[string]string{"KubernetesCluster": clusterName}
 	cloud, err := awsup.NewAWSCloud(c.Region, tags)
 	if err != nil {
 		return fmt.Errorf("error initializing AWS client: %v", err)
@@ -61,7 +60,7 @@ func (c *RollingUpdateClusterCmd) Run() error {
 
 	d := &kutil.RollingUpdateCluster{}
 
-	d.ClusterName = c.ClusterName
+	d.ClusterName = clusterName
 	d.Region = c.Region
 	d.Cloud = cloud
 

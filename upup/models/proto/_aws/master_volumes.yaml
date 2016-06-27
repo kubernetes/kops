@@ -2,7 +2,7 @@
 {{ range $m := $etcd.Members }}
 
 # EBS volume for each member of the each etcd cluster
-ebsVolume/{{$m.Name}}.{{$etcd.Name}}.{{ ClusterName }}:
+ebsVolume/{{$m.Name}}.etcd-{{$etcd.Name}}.{{ ClusterName }}:
   availabilityZone: {{ $m.Zone }}
   sizeGB: {{ or $m.VolumeSize 20 }}
   volumeType: {{ or $m.VolumeType "gp2" }}

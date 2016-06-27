@@ -107,5 +107,5 @@ func TestCreateCluster_EvenEtcdClusterSize(t *testing.T) {
 	c := buildDefaultCreateCluster()
 	c.ClusterConfig.NodeZones = []string{"us-east-1a", "us-east-1b", "us-east-1c", "us-east-1d"}
 	c.ClusterConfig.MasterZones = c.ClusterConfig.NodeZones
-	expectErrorFromRun(t, c, "There should be an odd number of master-zones, for etcd's quorum.  Hint: Use -zone and -master-zone to declare node zones and master zones separately.")
+	expectErrorFromRun(t, c, "There should be an odd number of master-zones, for etcd's quorum.  Hint: Use -zones and -master-zones to declare node zones and master zones separately.")
 }

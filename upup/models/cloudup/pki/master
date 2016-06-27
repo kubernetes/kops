@@ -5,7 +5,7 @@ keypair/master:
     - kubernetes
     - kubernetes.default
     - kubernetes.default.svc
-    - kubernetes.default.svc.{{ .DNSDomain }}
+    - kubernetes.default.svc.{{ .ClusterDNSDomain }}
     - "{{ .MasterPublicName }}"
     - "{{ .MasterInternalName }}"
     - "{{ WellKnownServiceIP 1 }}"

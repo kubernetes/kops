@@ -18,6 +18,70 @@ import (
 
 var EtcdClusters = []string{"main", "events"}
 
+// zonesToCloud allows us to infer from certain well-known zones to a cloud
+// Note it is safe to "overmap" zones that don't exist: we'll check later if the zones actually exist
+var zonesToCloud = map[string]fi.CloudProviderID{
+	"us-east-1a": fi.CloudProviderAWS,
+	"us-east-1b": fi.CloudProviderAWS,
+	"us-east-1c": fi.CloudProviderAWS,
+	"us-east-1d": fi.CloudProviderAWS,
+	"us-east-1e": fi.CloudProviderAWS,
+
+	"us-west-1a": fi.CloudProviderAWS,
+	"us-west-1b": fi.CloudProviderAWS,
+	"us-west-1c": fi.CloudProviderAWS,
+	"us-west-1d": fi.CloudProviderAWS,
+	"us-west-1e": fi.CloudProviderAWS,
+
+	"us-west-2a": fi.CloudProviderAWS,
+	"us-west-2b": fi.CloudProviderAWS,
+	"us-west-2c": fi.CloudProviderAWS,
+	"us-west-2d": fi.CloudProviderAWS,
+	"us-west-2e": fi.CloudProviderAWS,
+
+	"eu-west-1a": fi.CloudProviderAWS,
+	"eu-west-1b": fi.CloudProviderAWS,
+	"eu-west-1c": fi.CloudProviderAWS,
+	"eu-west-1d": fi.CloudProviderAWS,
+	"eu-west-1e": fi.CloudProviderAWS,
+
+	"eu-central-1a": fi.CloudProviderAWS,
+	"eu-central-1b": fi.CloudProviderAWS,
+	"eu-central-1c": fi.CloudProviderAWS,
+	"eu-central-1d": fi.CloudProviderAWS,
+	"eu-central-1e": fi.CloudProviderAWS,
+
+	"ap-southeast-1a": fi.CloudProviderAWS,
+	"ap-southeast-1b": fi.CloudProviderAWS,
+	"ap-southeast-1c": fi.CloudProviderAWS,
+	"ap-southeast-1d": fi.CloudProviderAWS,
+	"ap-southeast-1e": fi.CloudProviderAWS,
+
+	"ap-southeast-2a": fi.CloudProviderAWS,
+	"ap-southeast-2b": fi.CloudProviderAWS,
+	"ap-southeast-2c": fi.CloudProviderAWS,
+	"ap-southeast-2d": fi.CloudProviderAWS,
+	"ap-southeast-2e": fi.CloudProviderAWS,
+
+	"ap-northeast-1a": fi.CloudProviderAWS,
+	"ap-northeast-1b": fi.CloudProviderAWS,
+	"ap-northeast-1c": fi.CloudProviderAWS,
+	"ap-northeast-1d": fi.CloudProviderAWS,
+	"ap-northeast-1e": fi.CloudProviderAWS,
+
+	"ap-northeast-2a": fi.CloudProviderAWS,
+	"ap-northeast-2b": fi.CloudProviderAWS,
+	"ap-northeast-2c": fi.CloudProviderAWS,
+	"ap-northeast-2d": fi.CloudProviderAWS,
+	"ap-northeast-2e": fi.CloudProviderAWS,
+
+	"sa-east-1a": fi.CloudProviderAWS,
+	"sa-east-1b": fi.CloudProviderAWS,
+	"sa-east-1c": fi.CloudProviderAWS,
+	"sa-east-1d": fi.CloudProviderAWS,
+	"sa-east-1e": fi.CloudProviderAWS,
+}
+
 func main() {
 	executableLocation, err := exec.LookPath(os.Args[0])
 	if err != nil {
@@ -30,9 +94,11 @@ func main() {
 	target := pflag.String("target", "direct", "Target - direct, terraform")
 	//configFile := pflag.String("conf", "", "Configuration file to load")
 	modelsBaseDir := pflag.String("modelstore", modelsBaseDirDefault, "Source directory where models are stored")
-	models := pflag.String("model", "proto,cloudup", "Models to apply (separate multiple models with commas)")
+	models := pflag.String("model", "config,proto,cloudup", "Models to apply (separate multiple models with commas)")
 	nodeModel := pflag.String("nodemodel", "nodeup", "Model to use for node configuration")
-	stateLocation := pflag.String("state", "", "Location to use to store configuration state")
+
+	defaultStateStore := os.Getenv("KOPS_STATE_STORE")
+	stateLocation := pflag.String("state", defaultStateStore, "Location to use to store configuration state")
 
 	cloudProvider := pflag.String("cloud", "", "Cloud provider to use - gce, aws")
 
@@ -48,6 +114,9 @@ func main() {
 	nodeSize := pflag.String("node-size", "", "Set instance size for nodes")
 
 	masterSize := pflag.String("master-size", "", "Set instance size for masters")
+
+	vpcID := pflag.String("vpc", "", "Set to use a shared VPC")
+	networkCIDR := pflag.String("network-cidr", "", "Set to override the default network CIDR")
 
 	nodeCount := pflag.Int("node-count", 0, "Set the number of nodes")
 
@@ -71,6 +140,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if *clusterName == "" {
+		glog.Errorf("--name is required")
+		os.Exit(1)
+	}
+
 	statePath, err := vfs.Context.BuildVfsPath(*stateLocation)
 	if err != nil {
 		glog.Errorf("error building state location: %v", err)
@@ -81,7 +155,7 @@ func main() {
 		*outDir = "out"
 	}
 
-	stateStore, err := fi.NewVFSStateStore(statePath, isDryrun)
+	stateStore, err := fi.NewVFSStateStore(statePath, *clusterName, isDryrun)
 	if err != nil {
 		glog.Errorf("error building state store: %v", err)
 		os.Exit(1)
@@ -118,7 +192,7 @@ func main() {
 			nodes = append(nodes, group)
 		}
 	}
-	createEtcdCluster := false
+
 	if *masterZones == "" {
 		if len(masters) == 0 {
 			// Default to putting into every zone
@@ -133,7 +207,6 @@ func main() {
 				instanceGroups = append(instanceGroups, g)
 				masters = append(masters, g)
 			}
-			createEtcdCluster = true
 		}
 	} else {
 		if len(masters) == 0 {
@@ -147,7 +220,6 @@ func main() {
 				instanceGroups = append(instanceGroups, g)
 				masters = append(masters, g)
 			}
-			createEtcdCluster = true
 		} else {
 			// This is hard, because of the etcd cluster
 			glog.Errorf("Cannot change master-zones from the CLI")
@@ -155,7 +227,7 @@ func main() {
 		}
 	}
 
-	if createEtcdCluster {
+	if len(cluster.Spec.EtcdClusters) == 0 {
 		zones := sets.NewString()
 		for _, group := range instanceGroups {
 			for _, zone := range group.Spec.Zones {
@@ -165,7 +237,7 @@ func main() {
 		etcdZones := zones.List()
 		if (len(etcdZones) % 2) == 0 {
 			// Not technically a requirement, but doesn't really make sense to allow
-			glog.Errorf("There should be an odd number of master-zones, for etcd's quorum.  Hint: Use --zone and --master-zone to declare node zones and master zones separately.")
+			glog.Errorf("There should be an odd number of master-zones, for etcd's quorum.  Hint: Use --zones and --master-zones to declare node zones and master zones separately.")
 			os.Exit(1)
 		}
 
@@ -235,6 +307,34 @@ func main() {
 		cluster.Spec.KubernetesVersion = *kubernetesVersion
 	}
 
+	if *vpcID != "" {
+		cluster.Spec.NetworkID = *vpcID
+	}
+
+	if *networkCIDR != "" {
+		cluster.Spec.NetworkCIDR = *networkCIDR
+	}
+
+	if cluster.SharedVPC() && cluster.Spec.NetworkCIDR == "" {
+		glog.Errorf("Must specify NetworkCIDR when VPC is set")
+		os.Exit(1)
+	}
+
+	if cluster.Spec.CloudProvider == "" {
+		for _, zone := range cluster.Spec.Zones {
+			cloud := zonesToCloud[zone.Name]
+			if cloud != "" {
+				glog.Infof("Inferred --cloud=%s from zone %q", cloud, zone.Name)
+				cluster.Spec.CloudProvider = string(cloud)
+				break
+			}
+		}
+	}
+
+	if *sshPublicKey != "" {
+		*sshPublicKey = utils.ExpandPath(*sshPublicKey)
+	}
+
 	err = cluster.PerformAssignments()
 	if err != nil {
 		glog.Errorf("error populating configuration: %v", err)
@@ -252,10 +352,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	if *sshPublicKey != "" {
-		*sshPublicKey = utils.ExpandPath(*sshPublicKey)
-	}
-
 	cmd := &cloudup.CreateClusterCmd{
 		Cluster:        cluster,
 		InstanceGroups: instanceGroups,
@@ -267,7 +363,6 @@ func main() {
 		SSHPublicKey:   *sshPublicKey,
 		OutDir:         *outDir,
 	}
-
 	//if *configFile != "" {
 	//	//confFile := path.Join(cmd.StateDir, "kubernetes.yaml")
 	//	err := cmd.LoadConfig(configFile)
