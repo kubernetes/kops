@@ -6,11 +6,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"k8s.io/kube-deploy/upup/pkg/api"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
 	"strconv"
 	"strings"
-	"k8s.io/kube-deploy/upup/pkg/api"
 )
 
 // ExportCluster tries to reverse engineer an existing k8s cluster
@@ -37,7 +37,7 @@ func (x *ExportCluster) ReverseAWS() error {
 
 	masterGroup := &api.InstanceGroup{}
 	masterGroup.Spec.Role = api.InstanceGroupRoleMaster
-	masterGroup.Name =  "masters"
+	masterGroup.Name = "masters"
 	masterGroup.Spec.MinSize = fi.Int(1)
 	masterGroup.Spec.MaxSize = fi.Int(1)
 	instanceGroups = append(instanceGroups, masterGroup)
@@ -88,7 +88,7 @@ func (x *ExportCluster) ReverseAWS() error {
 	cluster.Spec.NetworkID = vpcID
 
 	az := aws.StringValue(masterSubnet.AvailabilityZone)
-	masterGroup.Spec.Zones = []string { az }
+	masterGroup.Spec.Zones = []string{az}
 	cluster.Spec.Zones = append(cluster.Spec.Zones, &api.ClusterZoneSpec{
 		Name: az,
 
@@ -169,7 +169,7 @@ func (x *ExportCluster) ReverseAWS() error {
 
 	primaryNodeSet := &api.InstanceGroup{}
 	primaryNodeSet.Spec.Role = api.InstanceGroupRoleNode
-	primaryNodeSet.Name =  "nodes"
+	primaryNodeSet.Name = "nodes"
 
 	instanceGroups = append(instanceGroups, primaryNodeSet)
 	primaryNodeSet.Spec.MinSize, err = conf.ParseInt("NUM_MINIONS")

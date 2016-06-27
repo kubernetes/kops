@@ -1,9 +1,11 @@
 package cloudup
 
 import (
+	"encoding/base64"
 	"fmt"
 	"github.com/golang/glog"
 	"io/ioutil"
+	"k8s.io/kube-deploy/upup/pkg/api"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
@@ -17,8 +19,6 @@ import (
 	"os"
 	"path"
 	"strings"
-	"k8s.io/kube-deploy/upup/pkg/api"
-	"encoding/base64"
 )
 
 const DefaultNodeTypeAWS = "t2.medium"
@@ -29,7 +29,7 @@ const PathClusterCompleted = "cluster.spec"
 
 type CreateClusterCmd struct {
 	// Cluster is the api object representing the whole cluster
-	Cluster        *api.Cluster
+	Cluster *api.Cluster
 
 	// InstanceGroups is the configuration for each InstanceGroup
 	// These are the groups for both master & nodes
@@ -38,36 +38,36 @@ type CreateClusterCmd struct {
 	InstanceGroups []*api.InstanceGroup
 
 	// nodes is the set of InstanceGroups for the nodes
-	nodes          []*api.InstanceGroup
+	nodes []*api.InstanceGroup
 	// masters is the set of InstanceGroups for the masters
-	masters        []*api.InstanceGroup
+	masters []*api.InstanceGroup
 
 	//// NodeUp stores the configuration we are going to pass to nodeup
 	//NodeUpConfig  *nodeup.NodeConfig
 
 	// NodeUpSource is the location from which we download nodeup
-	NodeUpSource   string
+	NodeUpSource string
 
 	// Tags to pass to NodeUp
-	NodeUpTags     []string
+	NodeUpTags []string
 
 	// ModelStore is the location where models are found
-	ModelStore     string
+	ModelStore string
 	// Models is a list of cloudup models to apply
-	Models         []string
+	Models []string
 	// StateStore is a StateStore in which we store state (such as the PKI tree)
-	StateStore     fi.StateStore
+	StateStore fi.StateStore
 	// Target specifies how we are operating e.g. direct to GCE, or AWS, or dry-run, or terraform
-	Target         string
+	Target string
 	// The node model to use
-	NodeModel      string
+	NodeModel string
 	// The SSH public key (file) to use
-	SSHPublicKey   string
+	SSHPublicKey string
 	// OutDir is a local directory in which we place output, can cache files etc
-	OutDir         string
+	OutDir string
 
 	// Assets is a list of sources for files (primarily when not using everything containerized)
-	Assets         []string
+	Assets []string
 }
 
 func (c *CreateClusterCmd) LoadConfig(configFile string) error {
@@ -104,7 +104,7 @@ func (c *CreateClusterCmd) Run() error {
 	}
 	if c.Cluster.Spec.DNSZone == "" {
 		tokens := strings.Split(c.Cluster.Spec.MasterPublicName, ".")
-		c.Cluster.Spec.DNSZone = strings.Join(tokens[len(tokens) - 2:], ".")
+		c.Cluster.Spec.DNSZone = strings.Join(tokens[len(tokens)-2:], ".")
 		glog.Infof("Defaulting DNS zone to: %s", c.Cluster.Spec.DNSZone)
 	}
 
@@ -162,7 +162,6 @@ func (c *CreateClusterCmd) Run() error {
 			}
 		}
 
-
 		// Check etcd configuration
 		{
 			for i, etcd := range c.Cluster.Spec.EtcdClusters {
@@ -170,7 +169,7 @@ func (c *CreateClusterCmd) Run() error {
 					return fmt.Errorf("EtcdClusters #%d did not specify a Name", i)
 				}
 
-				for i , m := range etcd.Members {
+				for i, m := range etcd.Members {
 					if m.Name == "" {
 						return fmt.Errorf("EtcdMember #%d of etcd-cluster %s did not specify a Name", i, etcd.Name)
 					}
@@ -464,7 +463,7 @@ func (c *CreateClusterCmd) Run() error {
 
 				nodeZones[zone.Name] = true
 
-				zoneRegion := zone.Name[:len(zone.Name) - 1]
+				zoneRegion := zone.Name[:len(zone.Name)-1]
 				if region != "" && zoneRegion != region {
 					return fmt.Errorf("Clusters cannot span multiple regions")
 				}

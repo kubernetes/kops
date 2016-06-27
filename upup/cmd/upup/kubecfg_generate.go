@@ -6,11 +6,11 @@ import (
 	"github.com/spf13/cobra"
 	"io"
 	"io/ioutil"
+	"k8s.io/kube-deploy/upup/pkg/api"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/kubecfg"
 	"os"
 	"path"
-	"k8s.io/kube-deploy/upup/pkg/api"
 )
 
 type KubecfgGenerateCommand struct {

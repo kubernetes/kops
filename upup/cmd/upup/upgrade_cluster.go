@@ -5,9 +5,9 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	"k8s.io/kube-deploy/upup/pkg/api"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kube-deploy/upup/pkg/kutil"
-	"k8s.io/kube-deploy/upup/pkg/api"
 )
 
 type UpgradeClusterCmd struct {

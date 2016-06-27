@@ -4,10 +4,10 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/kube-deploy/upup/pkg/api"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/vfs"
 	"text/template"
-	"k8s.io/kube-deploy/upup/pkg/api"
 )
 
 const TagMaster = "_kubernetes_master"
@@ -106,7 +106,7 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 			return t.cluster.Spec.Kubelet
 		}
 	}
-	dest["ClusterName"] = func() string { return t.cluster.Name}
+	dest["ClusterName"] = func() string { return t.cluster.Name }
 }
 
 // IsMaster returns true if we are tagged as a master

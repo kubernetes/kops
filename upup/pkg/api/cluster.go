@@ -4,15 +4,15 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/golang/glog"
+	k8sapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/unversioned"
 	"net"
 	"strconv"
-	"k8s.io/kubernetes/pkg/api/unversioned"
-	k8sapi "k8s.io/kubernetes/pkg/api"
 )
 
 type Cluster struct {
 	unversioned.TypeMeta `json:",inline"`
-	k8sapi.ObjectMeta           `json:"metadata,omitempty"`
+	k8sapi.ObjectMeta    `json:"metadata,omitempty"`
 
 	Spec ClusterSpec `json:"spec,omitempty"`
 }
@@ -67,7 +67,7 @@ type ClusterSpec struct {
 	// ClusterName is a unique identifier for the cluster, and currently must be a DNS name
 	//ClusterName       string `json:",omitempty"`
 
-	AllocateNodeCIDRs *bool  `json:"allocateNodeCIDRs,omitempty"`
+	AllocateNodeCIDRs *bool `json:"allocateNodeCIDRs,omitempty"`
 
 	Multizone *bool `json:"mutlizone,omitempty"`
 
@@ -181,7 +181,7 @@ type ClusterSpec struct {
 	// Component configurations
 	Docker                *DockerConfig                `json:"docker,omitempty"`
 	KubeDNS               *KubeDNSConfig               `json:"kubeDNS,omitempty"`
-	KubeAPIServer             *KubeAPIServerConfig         `json:"kubeAPIServer,omitempty"`
+	KubeAPIServer         *KubeAPIServerConfig         `json:"kubeAPIServer,omitempty"`
 	KubeControllerManager *KubeControllerManagerConfig `json:"kubeControllerManager,omitempty"`
 	KubeScheduler         *KubeSchedulerConfig         `json:"kubeScheduler,omitempty"`
 	KubeProxy             *KubeProxyConfig             `json:"kubeProxy,omitempty"`
@@ -194,6 +194,7 @@ type KubeDNSConfig struct {
 	Domain   string `json:"domain,omitempty"`
 	ServerIP string `json:"serverIP,omitempty"`
 }
+
 //
 //type MasterConfig struct {
 //	Name string `json:",omitempty"`
@@ -206,7 +207,7 @@ type KubeDNSConfig struct {
 
 type EtcdClusterSpec struct {
 	// Name is the name of the etcd cluster (main, events etc)
-	Name    string `json:"name,omitempty"`
+	Name string `json:"name,omitempty"`
 
 	// EtcdMember stores the configurations for each member of the cluster (including the data volume)
 	Members []*EtcdMemberSpec `json:"etcdMembers,omitempty"`

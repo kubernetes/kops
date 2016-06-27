@@ -4,6 +4,7 @@ import (
 	goflag "flag"
 	"github.com/golang/glog"
 	"github.com/spf13/pflag"
+	"k8s.io/kube-deploy/upup/pkg/api"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup"
 	"k8s.io/kube-deploy/upup/pkg/fi/utils"
@@ -13,7 +14,6 @@ import (
 	"os/exec"
 	"path"
 	"strings"
-	"k8s.io/kube-deploy/upup/pkg/api"
 )
 
 var EtcdClusters = []string{"main", "events"}
@@ -126,12 +126,12 @@ func main() {
 			for _, zone := range cluster.Spec.Zones {
 				g := &api.InstanceGroup{}
 				g.Spec.Role = api.InstanceGroupRoleMaster
-				g.Spec.Zones = []string { zone.Name }
+				g.Spec.Zones = []string{zone.Name}
 				g.Spec.MinSize = fi.Int(1)
 				g.Spec.MaxSize = fi.Int(1)
 				g.Name = "master-" + zone.Name // Subsequent masters (if we support that) could be <zone>-1, <zone>-2
-				instanceGroups  = append(instanceGroups, g)
-				masters  = append(masters, g)
+				instanceGroups = append(instanceGroups, g)
+				masters = append(masters, g)
 			}
 			createEtcdCluster = true
 		}
@@ -140,12 +140,12 @@ func main() {
 			for _, zone := range parseZoneList(*masterZones) {
 				g := &api.InstanceGroup{}
 				g.Spec.Role = api.InstanceGroupRoleMaster
-				g.Spec.Zones = []string { zone }
+				g.Spec.Zones = []string{zone}
 				g.Spec.MinSize = fi.Int(1)
 				g.Spec.MaxSize = fi.Int(1)
 				g.Name = "master-" + zone
-				instanceGroups  = append(instanceGroups, g)
-				masters  = append(masters, g)
+				instanceGroups = append(instanceGroups, g)
+				masters = append(masters, g)
 			}
 			createEtcdCluster = true
 		} else {
@@ -186,7 +186,7 @@ func main() {
 		g := &api.InstanceGroup{}
 		g.Spec.Role = api.InstanceGroupRoleNode
 		g.Name = "nodes"
-		instanceGroups = append(instanceGroups,g)
+		instanceGroups = append(instanceGroups, g)
 		nodes = append(nodes, g)
 	}
 
@@ -257,15 +257,15 @@ func main() {
 	}
 
 	cmd := &cloudup.CreateClusterCmd{
-		Cluster: cluster,
-		InstanceGroups:      instanceGroups,
-		ModelStore:    *modelsBaseDir,
-		Models:        strings.Split(*models, ","),
-		StateStore:    stateStore,
-		Target:        *target,
-		NodeModel:     *nodeModel,
-		SSHPublicKey:  *sshPublicKey,
-		OutDir:        *outDir,
+		Cluster:        cluster,
+		InstanceGroups: instanceGroups,
+		ModelStore:     *modelsBaseDir,
+		Models:         strings.Split(*models, ","),
+		StateStore:     stateStore,
+		Target:         *target,
+		NodeModel:      *nodeModel,
+		SSHPublicKey:   *sshPublicKey,
+		OutDir:         *outDir,
 	}
 
 	//if *configFile != "" {

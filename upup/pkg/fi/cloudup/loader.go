@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"io"
+	"k8s.io/kube-deploy/upup/pkg/api"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/loader"
 	"k8s.io/kube-deploy/upup/pkg/fi/utils"
@@ -14,7 +15,6 @@ import (
 	"reflect"
 	"strings"
 	"text/template"
-	"k8s.io/kube-deploy/upup/pkg/api"
 )
 
 const (
@@ -36,7 +36,7 @@ type Loader struct {
 	typeMap map[string]reflect.Type
 
 	templates []*template.Template
-	cluster    *api.Cluster
+	cluster   *api.Cluster
 
 	Resources map[string]fi.Resource
 	//deferred          []*deferredBinding

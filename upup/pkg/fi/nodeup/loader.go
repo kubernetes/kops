@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/kube-deploy/upup/pkg/api"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/loader"
 	"k8s.io/kube-deploy/upup/pkg/fi/nodeup/nodetasks"
 	"os"
 	"strings"
 	"text/template"
-	"k8s.io/kube-deploy/upup/pkg/api"
 )
 
 type Loader struct {

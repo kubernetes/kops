@@ -1,10 +1,10 @@
 package api
 
 import (
-	"k8s.io/kube-deploy/upup/pkg/fi"
 	"fmt"
-	"time"
+	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/api/unversioned"
+	"time"
 )
 
 func WriteConfig(stateStore fi.StateStore, cluster *Cluster, groups []*InstanceGroup) error {
@@ -13,7 +13,7 @@ func WriteConfig(stateStore fi.StateStore, cluster *Cluster, groups []*InstanceG
 		names := map[string]bool{}
 		for i, ns := range groups {
 			if ns.Name == "" {
-				return fmt.Errorf("InstanceGroup #%d did not have a Name", i + 1)
+				return fmt.Errorf("InstanceGroup #%d did not have a Name", i+1)
 			}
 			if names[ns.Name] {
 				return fmt.Errorf("Duplicate InstanceGroup Name found: %q", ns.Name)
@@ -30,7 +30,7 @@ func WriteConfig(stateStore fi.StateStore, cluster *Cluster, groups []*InstanceG
 	}
 
 	for _, ns := range groups {
-		err = stateStore.WriteConfig("instancegroup/" + ns.Name, ns)
+		err = stateStore.WriteConfig("instancegroup/"+ns.Name, ns)
 		if err != nil {
 			return fmt.Errorf("error writing updated instancegroup configuration: %v", err)
 		}
@@ -53,7 +53,7 @@ func ReadConfig(stateStore fi.StateStore) (*Cluster, []*InstanceGroup, error) {
 	}
 	for _, key := range keys {
 		group := &InstanceGroup{}
-		err = stateStore.ReadConfig("instancegroup/" + key, group)
+		err = stateStore.ReadConfig("instancegroup/"+key, group)
 		if err != nil {
 			return nil, nil, fmt.Errorf("error reading instancegroup configuration %q: %v", key, err)
 		}
@@ -62,4 +62,3 @@ func ReadConfig(stateStore fi.StateStore) (*Cluster, []*InstanceGroup, error) {
 
 	return cluster, instanceGroups, nil
 }
-

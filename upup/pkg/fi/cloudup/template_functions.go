@@ -1,11 +1,11 @@
 package cloudup
 
 import (
-	"k8s.io/kube-deploy/upup/pkg/api"
-	"net"
-	"fmt"
 	"encoding/binary"
+	"fmt"
+	"k8s.io/kube-deploy/upup/pkg/api"
 	"math/big"
+	"net"
 	"sort"
 	"strings"
 	"text/template"
@@ -35,7 +35,7 @@ func (tf *TemplateFunctions) WellKnownServiceIP(id int) (net.IP, error) {
 		serviceIP := make(net.IP, len(ip6))
 		serviceIPBytes := serviceIPInt.Bytes()
 		for i := range serviceIPBytes {
-			serviceIP[len(serviceIP) - len(serviceIPBytes) + i] = serviceIPBytes[i]
+			serviceIP[len(serviceIP)-len(serviceIPBytes)+i] = serviceIPBytes[i]
 		}
 		return serviceIP, nil
 	}
@@ -65,7 +65,7 @@ func (tf *TemplateFunctions) EtcdClusterMemberTags(etcd *api.EtcdClusterSpec, m 
 	sort.Strings(allMembers)
 
 	// This is the configuration of the etcd cluster
-	tags["k8s.io/etcd/" + etcd.Name] = m.Name + "/" + strings.Join(allMembers, ",")
+	tags["k8s.io/etcd/"+etcd.Name] = m.Name + "/" + strings.Join(allMembers, ",")
 
 	// This says "only mount on a master"
 	tags["k8s.io/role/master"] = "1"
