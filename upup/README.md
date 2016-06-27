@@ -118,7 +118,7 @@ export CLUSTER_NAME=<kubernetes.myzone.com>
 ${GOPATH}/bin/cloudup --v=0 --logtostderr --cloud=aws --zones=us-east-1c --name=${CLUSTER_NAME} --model=config,proto
 ```
 
-And then you can use terraform to do the full installation:
+And then you can use terraform to do the remainder of the installation:
 
 ```
 export CLUSTER_NAME=<kubernetes.myzone.com>
@@ -128,7 +128,7 @@ ${GOPATH}/bin/cloudup --v=0 --logtostderr --cloud=aws --zones=us-east-1c --name=
 Then, to apply using terraform:
 
 ```
-cd state/terraform
+cd out/terraform
 
 terraform plan
 terraform apply
