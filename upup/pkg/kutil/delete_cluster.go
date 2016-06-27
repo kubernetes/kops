@@ -319,7 +319,7 @@ func ListInstances(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, erro
 
 	glog.V(2).Infof("Querying EC2 instances")
 	request := &ec2.DescribeInstancesInput{
-		Filters: c.BuildFilters(nil),
+		Filters: buildEC2Filters(cloud),
 	}
 
 	var trackers []*ResourceTracker
@@ -437,7 +437,7 @@ func ListSecurityGroups(cloud fi.Cloud, clusterName string) ([]*ResourceTracker,
 
 	glog.V(2).Infof("Listing EC2 SecurityGroups")
 	request := &ec2.DescribeSecurityGroupsInput{
-		Filters: c.BuildFilters(nil),
+		Filters: buildEC2Filters(cloud),
 	}
 	response, err := c.EC2.DescribeSecurityGroups(request)
 	if err != nil {
@@ -653,7 +653,7 @@ func DescribeSubnets(cloud fi.Cloud) ([]*ec2.Subnet, error) {
 
 	glog.V(2).Infof("Listing EC2 subnets")
 	request := &ec2.DescribeSubnetsInput{
-		Filters: c.BuildFilters(nil),
+		Filters: buildEC2Filters(cloud),
 	}
 	response, err := c.EC2.DescribeSubnets(request)
 	if err != nil {
@@ -687,7 +687,7 @@ func ListRouteTables(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, er
 
 	glog.V(2).Infof("Listing EC2 RouteTables")
 	request := &ec2.DescribeRouteTablesInput{
-		Filters: c.BuildFilters(nil),
+		Filters: buildEC2Filters(cloud),
 	}
 	response, err := c.EC2.DescribeRouteTables(request)
 	if err != nil {
@@ -772,7 +772,7 @@ func DescribeDhcpOptions(cloud fi.Cloud) ([]*ec2.DhcpOptions, error) {
 
 	glog.V(2).Infof("Listing EC2 DhcpOptions")
 	request := &ec2.DescribeDhcpOptionsInput{
-		Filters: c.BuildFilters(nil),
+		Filters: buildEC2Filters(cloud),
 	}
 	response, err := c.EC2.DescribeDhcpOptions(request)
 	if err != nil {
@@ -851,7 +851,7 @@ func ListInternetGateways(cloud fi.Cloud, clusterName string) ([]*ResourceTracke
 
 	glog.V(2).Infof("Listing EC2 InternetGateways")
 	request := &ec2.DescribeInternetGatewaysInput{
-		Filters: c.BuildFilters(nil),
+		Filters: buildEC2Filters(cloud),
 	}
 	response, err := c.EC2.DescribeInternetGateways(request)
 	if err != nil {
@@ -906,7 +906,7 @@ func ListVPCs(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
 
 	glog.V(2).Infof("Listing EC2 VPC")
 	request := &ec2.DescribeVpcsInput{
-		Filters: c.BuildFilters(nil),
+		Filters: buildEC2Filters(cloud),
 	}
 	response, err := c.EC2.DescribeVpcs(request)
 	if err != nil {
