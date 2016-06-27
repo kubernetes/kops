@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -16,9 +14,6 @@ var rollingUpdateCommand = RollingUpdateCmd{
 		Use:   "rolling-update",
 		Short: "rolling update clusters",
 		Long:  `rolling update clusters`,
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("Usage: cluster")
-		},
 	},
 }
 

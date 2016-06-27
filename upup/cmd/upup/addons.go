@@ -23,9 +23,6 @@ var addonsCmd = AddonsCmd{
 		Use:   "addons",
 		Short: "manage cluster addons",
 		Long:  `manage cluster addons`,
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("Usage: addons get")
-		},
 	},
 }
 
