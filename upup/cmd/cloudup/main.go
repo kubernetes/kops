@@ -18,6 +18,70 @@ import (
 
 var EtcdClusters = []string{"main", "events"}
 
+// zonesToCloud allows us to infer from certain well-known zones to a cloud
+// Note it is safe to "overmap" zones that don't exist: we'll check later if the zones actually exist
+var zonesToCloud = map[string]fi.CloudProviderID{
+	"us-east-1a": fi.CloudProviderAWS,
+	"us-east-1b": fi.CloudProviderAWS,
+	"us-east-1c": fi.CloudProviderAWS,
+	"us-east-1d": fi.CloudProviderAWS,
+	"us-east-1e": fi.CloudProviderAWS,
+
+	"us-west-1a": fi.CloudProviderAWS,
+	"us-west-1b": fi.CloudProviderAWS,
+	"us-west-1c": fi.CloudProviderAWS,
+	"us-west-1d": fi.CloudProviderAWS,
+	"us-west-1e": fi.CloudProviderAWS,
+
+	"us-west-2a": fi.CloudProviderAWS,
+	"us-west-2b": fi.CloudProviderAWS,
+	"us-west-2c": fi.CloudProviderAWS,
+	"us-west-2d": fi.CloudProviderAWS,
+	"us-west-2e": fi.CloudProviderAWS,
+
+	"eu-west-1a": fi.CloudProviderAWS,
+	"eu-west-1b": fi.CloudProviderAWS,
+	"eu-west-1c": fi.CloudProviderAWS,
+	"eu-west-1d": fi.CloudProviderAWS,
+	"eu-west-1e": fi.CloudProviderAWS,
+
+	"eu-central-1a": fi.CloudProviderAWS,
+	"eu-central-1b": fi.CloudProviderAWS,
+	"eu-central-1c": fi.CloudProviderAWS,
+	"eu-central-1d": fi.CloudProviderAWS,
+	"eu-central-1e": fi.CloudProviderAWS,
+
+	"ap-southeast-1a": fi.CloudProviderAWS,
+	"ap-southeast-1b": fi.CloudProviderAWS,
+	"ap-southeast-1c": fi.CloudProviderAWS,
+	"ap-southeast-1d": fi.CloudProviderAWS,
+	"ap-southeast-1e": fi.CloudProviderAWS,
+
+	"ap-southeast-2a": fi.CloudProviderAWS,
+	"ap-southeast-2b": fi.CloudProviderAWS,
+	"ap-southeast-2c": fi.CloudProviderAWS,
+	"ap-southeast-2d": fi.CloudProviderAWS,
+	"ap-southeast-2e": fi.CloudProviderAWS,
+
+	"ap-northeast-1a": fi.CloudProviderAWS,
+	"ap-northeast-1b": fi.CloudProviderAWS,
+	"ap-northeast-1c": fi.CloudProviderAWS,
+	"ap-northeast-1d": fi.CloudProviderAWS,
+	"ap-northeast-1e": fi.CloudProviderAWS,
+
+	"ap-northeast-2a": fi.CloudProviderAWS,
+	"ap-northeast-2b": fi.CloudProviderAWS,
+	"ap-northeast-2c": fi.CloudProviderAWS,
+	"ap-northeast-2d": fi.CloudProviderAWS,
+	"ap-northeast-2e": fi.CloudProviderAWS,
+
+	"sa-east-1a": fi.CloudProviderAWS,
+	"sa-east-1b": fi.CloudProviderAWS,
+	"sa-east-1c": fi.CloudProviderAWS,
+	"sa-east-1d": fi.CloudProviderAWS,
+	"sa-east-1e": fi.CloudProviderAWS,
+}
+
 func main() {
 	executableLocation, err := exec.LookPath(os.Args[0])
 	if err != nil {
@@ -233,6 +297,17 @@ func main() {
 
 	if *kubernetesVersion != "" {
 		cluster.Spec.KubernetesVersion = *kubernetesVersion
+	}
+
+	if cluster.Spec.CloudProvider == "" {
+		for _, zone := range cluster.Spec.Zones {
+			cloud := zonesToCloud[zone.Name]
+			if cloud != "" {
+				glog.Infof("Inferred --cloud=%s from zone %q", cloud, zone.Name)
+				cluster.Spec.CloudProvider = string(cloud)
+				break
+			}
+		}
 	}
 
 	err = cluster.PerformAssignments()
