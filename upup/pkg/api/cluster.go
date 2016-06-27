@@ -60,7 +60,13 @@ type ClusterSpec struct {
 	ConfigStore string `json:"configStore,omitempty"`
 
 	// DNSZone is the DNS zone we should use when configuring DNS
+	// This is because some clouds let us define a managed zone foo.bar, and then have
+	// kubernetes.dev.foo.bar, without needing to define dev.foo.bar as a hosted zone.
+	// DNSZone will probably be a suffix of DNSDomain
 	DNSZone string `json:"dnsZone,omitempty"`
+
+	// DNSDomain is the suffix we use for internal DNS names (normally cluster.local)
+	DNSDomain string `json:"dnsDomain,omitempty"`
 
 	//InstancePrefix                string `json:",omitempty"`
 
@@ -93,9 +99,6 @@ type ClusterSpec struct {
 	//EnableClusterDNS              *bool  `json:",omitempty"`
 	//DNSReplicas                   int    `json:",omitempty"`
 	//DNSServerIP                   string `json:",omitempty"`
-
-	// DNSDomain is the suffix we use for internal DNS names (normally cluster.local)
-	DNSDomain string `json:"dnsDomain,omitempty"`
 
 	//EnableClusterLogging          *bool  `json:",omitempty"`
 	//EnableNodeLogging             *bool  `json:",omitempty"`
