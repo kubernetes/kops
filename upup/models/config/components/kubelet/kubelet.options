@@ -4,7 +4,7 @@ Kubelet:
   AllowPrivileged: true
   LogLevel: 2
   ClusterDNS: {{ WellKnownServiceIP 10 }}
-  ClusterDomain: cluster.local
+  ClusterDomain: {{ .ClusterDNSDomain }}
   ConfigureCBR0: true
   BabysitDaemons: true
   APIServers: https://{{ .MasterInternalName }}
