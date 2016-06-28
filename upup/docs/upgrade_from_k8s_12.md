@@ -92,6 +92,56 @@ upup export kubecfg --name ${NEW_NAME}
 
 Within a few minutes the new cluster should be running.  Try `kubectl get nodes --show-labels`, `kubectl get pods` etc until you are sure that all is well.
 
+## Workaround for secret import failure
+
+The import procedure tries to preserve the CA certificates, but it doesn't seem to be working right now.
+
+So you will need to delete the service-account-tokens - they will be recreated with the correct keys.
+
+Otherwise some services (most notably DNS) will not work
+
+
+```
+kubectl get secrets --all-namespaces
+NAMESPACE     NAME                              TYPE                                  DATA      AGE
+default       default-token-4dgib               kubernetes.io/service-account-token   3         53m
+kube-system   default-token-lhfkx               kubernetes.io/service-account-token   3         53m
+kube-system   token-admin                       Opaque                                1         53m
+kube-system   token-kube-proxy                  Opaque                                1         53m
+kube-system   token-kubelet                     Opaque                                1         53m
+kube-system   token-system-controller-manager   Opaque                                1         53m
+kube-system   token-system-dns                  Opaque                                1         53m
+kube-system   token-system-logging              Opaque                                1         53m
+kube-system   token-system-monitoring           Opaque                                1         53m
+kube-system   token-system-scheduler            Opaque                                1         53m
+```
+
+```
+kubectl delete secret default-token-4dgib
+kubectl delete secret --namespace kube-system default-token-lhfkx
+```
+
+Then restart the kube-dns pod so it picks up a valid secret:
+
+```
+kubectl get pods --namespace kube-system
+NAME                                                                  READY     STATUS             RESTARTS   AGE
+etcd-server-events-ip-172-20-59-170.us-west-2.compute.internal        1/1       Running            0          8m
+etcd-server-ip-172-20-59-170.us-west-2.compute.internal               1/1       Running            0          7m
+kope-aws-ip-172-20-59-170.us-west-2.compute.internal                  1/1       Running            0          8m
+kube-apiserver-ip-172-20-59-170.us-west-2.compute.internal            1/1       Running            3          8m
+kube-controller-manager-ip-172-20-59-170.us-west-2.compute.internal   1/1       Running            0          8m
+kube-dns-v14-4ygfz                                                    2/3       CrashLoopBackOff   5          8m
+kube-proxy-ip-172-20-56-231.us-west-2.compute.internal                1/1       Running            0          8m
+kube-proxy-ip-172-20-56-232.us-west-2.compute.internal                1/1       Running            0          8m
+kube-proxy-ip-172-20-56-233.us-west-2.compute.internal                1/1       Running            0          8m
+kube-scheduler-ip-172-20-59-170.us-west-2.compute.internal            1/1       Running            0          8m
+```
+
+```
+kubectl delete pod --namespace=kube-system kube-dns-v14-4ygfz
+```
+
 ## Workaround to re-enable ELBs
 
 Due to a limitation in ELBs (you can't replace all the subnets), if you have ELBs you must do the following:

@@ -84,6 +84,7 @@ func (c *DeleteClusterCmd) Run() error {
 		if rootCommand.clusterName != cluster.Name {
 			return fmt.Errorf("sanity check failed: cluster name mismatch")
 		}
+		clusterName = cluster.Name
 
 		cloud, err = cloudup.BuildCloud(cluster)
 		if err != nil {

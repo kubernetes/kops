@@ -1029,7 +1029,7 @@ func ListAutoScalingGroups(cloud fi.Cloud, clusterName string) ([]*ResourceTrack
 func ListAutoScalingLaunchConfigurations(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
 	c := cloud.(*awsup.AWSCloud)
 
-	glog.V(2).Infof("Listing all Autoscaling LaunchConfigurations")
+	glog.V(2).Infof("Listing all Autoscaling LaunchConfigurations for cluster %q", clusterName)
 
 	var trackers []*ResourceTracker
 
@@ -1054,9 +1054,23 @@ func ListAutoScalingLaunchConfigurations(cloud fi.Cloud, clusterName string) ([]
 
 			glog.V(8).Infof("UserData: %s", string(userData))
 
-			isNodeupConfig := strings.Contains(string(userData), "ClusterName: "+clusterName+"\n")
-			isKubeupV1Config := strings.Contains(string(userData), "\nINSTANCE_PREFIX: "+clusterName+"\n") || strings.Contains(string(userData), "\nINSTANCE_PREFIX: '"+clusterName+"'\n")
-			if isNodeupConfig || isKubeupV1Config {
+			var matchStrings []string
+
+			// TODO: reintroduce
+			//clusterLocationLine := "ClusterLocation: s3://clusters.awsdata.com/upgraded.awsdata.com/cluster.spec\n"
+			//isNodeupConfig := strings.Contains(string(userData), clusterLocationLine)
+
+			// V1
+			matchStrings = append(matchStrings, "\nINSTANCE_PREFIX: "+clusterName+"\n")
+			matchStrings = append(matchStrings, "\nINSTANCE_PREFIX: '"+clusterName+"'\n")
+
+			match := false
+			for _, m := range matchStrings {
+				if strings.Contains(string(userData), m) {
+					match = true
+				}
+			}
+			if match {
 				tracker := &ResourceTracker{
 					Name:    aws.StringValue(t.LaunchConfigurationName),
 					ID:      aws.StringValue(t.LaunchConfigurationName),
