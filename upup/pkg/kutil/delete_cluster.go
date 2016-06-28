@@ -96,20 +96,17 @@ func (c *DeleteCluster) ListResources() (map[string]*ResourceTracker, error) {
 		}
 	}
 
-	// TODO: Move to ListUntaggedInternetGateways?
 	{
 		// Gateways weren't tagged in kube-up
 		// If we are deleting the VPC, we should delete the attached gateway
 		// (no real reason not to; easy to recreate; no real state etc)
-		glog.V(2).Infof("Listing all Internet Gateways")
 
-		request := &ec2.DescribeInternetGatewaysInput{}
-		response, err := cloud.EC2.DescribeInternetGateways(request)
+		gateways, err := DescribeInternetGatewaysIgnoreTags(cloud)
 		if err != nil {
-			return nil, fmt.Errorf("error listing InternetGateways: %v", err)
+			return nil, err
 		}
 
-		for _, igw := range response.InternetGateways {
+		for _, igw := range gateways {
 			for _, attachment := range igw.Attachments {
 				vpcID := aws.StringValue(attachment.VpcId)
 				igwID := aws.StringValue(igw.InternetGatewayId)
@@ -336,7 +333,8 @@ func ListInstances(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, erro
 						continue
 
 					case "running":
-						// Fine
+					case "stopped":
+						// We need to delete
 						glog.V(4).Infof("instance %q has state=%q", id, stateName)
 
 					default:
@@ -847,20 +845,14 @@ func DeleteInternetGateway(cloud fi.Cloud, r *ResourceTracker) error {
 }
 
 func ListInternetGateways(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
-	c := cloud.(*awsup.AWSCloud)
-
-	glog.V(2).Infof("Listing EC2 InternetGateways")
-	request := &ec2.DescribeInternetGatewaysInput{
-		Filters: buildEC2Filters(cloud),
-	}
-	response, err := c.EC2.DescribeInternetGateways(request)
+	gateways, err := DescribeInternetGateways(cloud)
 	if err != nil {
-		return nil, fmt.Errorf("error listing InternetGateway: %v", err)
+		return nil, err
 	}
 
 	var trackers []*ResourceTracker
 
-	for _, o := range response.InternetGateways {
+	for _, o := range gateways {
 		tracker := &ResourceTracker{
 			Name:    FindName(o.Tags),
 			ID:      aws.StringValue(o.InternetGatewayId),
@@ -880,6 +872,48 @@ func ListInternetGateways(cloud fi.Cloud, clusterName string) ([]*ResourceTracke
 	}
 
 	return trackers, nil
+}
+
+func DescribeInternetGateways(cloud fi.Cloud) ([]*ec2.InternetGateway, error) {
+	c := cloud.(*awsup.AWSCloud)
+
+	glog.V(2).Infof("Listing EC2 InternetGateways")
+	request := &ec2.DescribeInternetGatewaysInput{
+		Filters: buildEC2Filters(cloud),
+	}
+	response, err := c.EC2.DescribeInternetGateways(request)
+	if err != nil {
+		return nil, fmt.Errorf("error listing InternetGateway: %v", err)
+	}
+
+	var gateways []*ec2.InternetGateway
+	for _, o := range response.InternetGateways {
+		gateways = append(gateways, o)
+	}
+
+	return gateways, nil
+}
+
+// DescribeInternetGatewaysIgnoreTags returns all ec2.InternetGateways, ignoring tags
+// (gateways were not always tagged in kube-up)
+func DescribeInternetGatewaysIgnoreTags(cloud fi.Cloud) ([]*ec2.InternetGateway, error) {
+	c := cloud.(*awsup.AWSCloud)
+
+	glog.V(2).Infof("Listing all Internet Gateways")
+
+	request := &ec2.DescribeInternetGatewaysInput{}
+	response, err := c.EC2.DescribeInternetGateways(request)
+	if err != nil {
+		return nil, fmt.Errorf("error listing (all) InternetGateways: %v", err)
+	}
+
+	var gateways []*ec2.InternetGateway
+
+	for _, igw := range response.InternetGateways {
+		gateways = append(gateways, igw)
+	}
+
+	return gateways, nil
 }
 
 func DeleteVPC(cloud fi.Cloud, r *ResourceTracker) error {
@@ -1082,14 +1116,48 @@ func DeleteELB(cloud fi.Cloud, r *ResourceTracker) error {
 }
 
 func ListELBs(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
-	c := cloud.(*awsup.AWSCloud)
-	tags := c.Tags()
+	elbs, elbTags, err := DescribeELBs(cloud)
+	if err != nil {
+		return nil, err
+	}
 
 	var trackers []*ResourceTracker
+	for _, elb := range elbs {
+		id := aws.StringValue(elb.LoadBalancerName)
+		tracker := &ResourceTracker{
+			Name:    FindELBName(elbTags[id]),
+			ID:      id,
+			Type:    "load-balancer",
+			deleter: DeleteELB,
+		}
+
+		var blocks []string
+		for _, sg := range elb.SecurityGroups {
+			blocks = append(blocks, "security-group:"+aws.StringValue(sg))
+		}
+		for _, s := range elb.Subnets {
+			blocks = append(blocks, "subnet:"+aws.StringValue(s))
+		}
+		blocks = append(blocks, "vpc:"+aws.StringValue(elb.VPCId))
+
+		tracker.blocks = blocks
+
+		trackers = append(trackers, tracker)
+	}
+
+	return trackers, nil
+}
+
+func DescribeELBs(cloud fi.Cloud) ([]*elb.LoadBalancerDescription, map[string][]*elb.Tag, error) {
+	c := cloud.(*awsup.AWSCloud)
+	tags := c.Tags()
 
 	glog.V(2).Infof("Listing all ELBs")
 
 	request := &elb.DescribeLoadBalancersInput{}
+
+	var elbs []*elb.LoadBalancerDescription
+	elbTags := make(map[string][]*elb.Tag)
 
 	var innerError error
 	err := c.ELB.DescribeLoadBalancersPages(request, func(p *elb.DescribeLoadBalancersOutput, lastPage bool) bool {
@@ -1120,37 +1188,21 @@ func ListELBs(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
 				continue
 			}
 
-			tracker := &ResourceTracker{
-				Name:    FindELBName(t.Tags),
-				ID:      elbName,
-				Type:    "load-balancer",
-				deleter: DeleteELB,
-			}
+			elbTags[elbName] = t.Tags
 
 			elb := nameToELB[elbName]
-			var blocks []string
-			for _, sg := range elb.SecurityGroups {
-				blocks = append(blocks, "security-group:"+aws.StringValue(sg))
-			}
-			for _, s := range elb.Subnets {
-				blocks = append(blocks, "subnet:"+aws.StringValue(s))
-			}
-			blocks = append(blocks, "vpc:"+aws.StringValue(elb.VPCId))
-
-			tracker.blocks = blocks
-
-			trackers = append(trackers, tracker)
+			elbs = append(elbs, elb)
 		}
 		return true
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error describing LoadBalances: %v", err)
+		return nil, nil, fmt.Errorf("error describing LoadBalancers: %v", err)
 	}
 	if innerError != nil {
-		return nil, fmt.Errorf("error describing LoadBalancers: %v", innerError)
+		return nil, nil, fmt.Errorf("error describing LoadBalancers: %v", innerError)
 	}
 
-	return trackers, nil
+	return elbs, elbTags, nil
 }
 
 func DeleteElasticIP(cloud fi.Cloud, t *ResourceTracker) error {
