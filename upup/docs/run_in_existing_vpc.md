@@ -8,12 +8,14 @@ config before we apply it.
 
 
 ```
+export KOPS_STATE_STORE=s3://<somes3bucket>
 export CLUSTER_NAME=<sharedvpc.mydomain.com>
-cloudup --zones=us-east-1b --state s3://clusters.awsdata.com/${CLUSTER_NAME}  --name=${CLUSTER_NAME} \
+
+cloudup --zones=us-east-1b --name=${CLUSTER_NAME} \
   --vpc=vpc-a80734c1 --network-cidr=10.100.0.0/16 --dryrun
 ```
 
-Then `upup edit cluster  --state s3://clusters.awsdata.com/${CLUSTER_NAME}` should show you something like:
+Then `upup edit cluster  --name=${CLUSTER_NAME}` should show you something like:
 
 ```
 metadata:
@@ -37,7 +39,7 @@ because subnets in a VPC cannot overlap.
 You can then run cloudup again in dryrun mode (you don't need any arguments, because they're all in the config file):
 
 ```
-cloudup --dryrun --state s3://clusters.awsdata.com/${CLUSTER_NAME}
+cloudup --dryrun --name=${CLUSTER_NAME}
 ```
 
 Review the changes to make sure they are OK -  the Kubernetes settings might not be ones you want on a shared VPC (in which case,
@@ -50,7 +52,7 @@ Note also the Kubernetes VPCs (currently) require `EnableDNSHostnames=true`.  Cl
 Once you're happy, you can create the cluster using:
 
 ```
-cloudup --state s3://clusters.awsdata.com/${CLUSTER_NAME}
+cloudup --name=${CLUSTER_NAME}
 ```
 
 
