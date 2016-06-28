@@ -50,7 +50,6 @@ func (k *VolumeMountController) mountMasterVolumes() ([]*Volume, error) {
 			continue
 		}
 
-
 		glog.Infof("mounted master volume %q on %s", v.ID, mountpoint)
 
 		v.Mountpoint = mountpoint
@@ -162,7 +161,7 @@ func (k *VolumeMountController) safeFormatAndMount(device string, mountpoint str
 func (k *VolumeMountController) attachMasterVolumes() ([]*Volume, error) {
 	volumes, err := k.provider.FindVolumes()
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	// TODO: Only mount one of e.g. an etcd cluster?

@@ -6,16 +6,16 @@ import (
 )
 
 type Volumes interface {
-	AttachVolume(volume *Volume) (error)
+	AttachVolume(volume *Volume) error
 	FindVolumes() ([]*Volume, error)
 }
 
 type Volume struct {
 	// ID is the cloud-provider identifier for the volume
-	ID      string
+	ID string
 
 	// Device is set if the volume is attached to the local machine
-	LocalDevice    string
+	LocalDevice string
 
 	// AttachedTo is set to the ID of the machine the volume is attached to, or "" if not attached
 	AttachedTo string
@@ -34,8 +34,8 @@ func (v *Volume) String() string {
 }
 
 type VolumeInfo struct {
-	Description     string
-	MasterID int
+	Description string
+	MasterID    int
 	// TODO: Maybe the events cluster can just be a PetSet - do we need it for boot?
 	EtcdClusters []*EtcdClusterSpec
 }

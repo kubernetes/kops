@@ -14,14 +14,14 @@ import (
 )
 
 // ExportCluster tries to reverse engineer an existing k8s cluster
-type ExportCluster struct {
+type ImportCluster struct {
 	ClusterName string
 	Cloud       fi.Cloud
 
 	StateStore fi.StateStore
 }
 
-func (x *ExportCluster) ReverseAWS() error {
+func (x *ImportCluster) ImportAWSCluster() error {
 	awsCloud := x.Cloud.(*awsup.AWSCloud)
 	clusterName := x.ClusterName
 
@@ -34,6 +34,8 @@ func (x *ExportCluster) ReverseAWS() error {
 	cluster := &api.Cluster{}
 	cluster.Spec.CloudProvider = "aws"
 	cluster.Name = clusterName
+
+	cluster.Spec.KubeControllerManager = &api.KubeControllerManagerConfig{}
 
 	masterGroup := &api.InstanceGroup{}
 	masterGroup.Spec.Role = api.InstanceGroupRoleMaster
@@ -52,7 +54,19 @@ func (x *ExportCluster) ReverseAWS() error {
 		role, _ := awsup.FindEC2Tag(instance.Tags, "Role")
 		if role == clusterName+"-master" {
 			if masterInstance != nil {
-				return fmt.Errorf("found multiple masters")
+				masterState := aws.StringValue(masterInstance.State.Name)
+				thisState := aws.StringValue(instance.State.Name)
+
+				glog.Infof("Found multiple masters: %s and %s", masterState, thisState)
+
+				if masterState == "terminated" && thisState != "terminated" {
+					// OK
+				} else if thisState == "terminated" && masterState != "terminated" {
+					// Ignore this one
+					continue
+				} else {
+					return fmt.Errorf("found multiple masters")
+				}
 			}
 			masterInstance = instance
 		}
@@ -85,7 +99,19 @@ func (x *ExportCluster) ReverseAWS() error {
 	}
 
 	vpcID := aws.StringValue(masterInstance.VpcId)
+	var vpc *ec2.Vpc
+	{
+		vpc, err = awsCloud.DescribeVPC(vpcID)
+		if err != nil {
+			return err
+		}
+		if vpc == nil {
+			return fmt.Errorf("cannot find vpc %q", vpcID)
+		}
+	}
+
 	cluster.Spec.NetworkID = vpcID
+	cluster.Spec.NetworkCIDR = aws.StringValue(vpc.CidrBlock)
 
 	az := aws.StringValue(masterSubnet.AvailabilityZone)
 	masterGroup.Spec.Zones = []string{az}
@@ -145,6 +171,7 @@ func (x *ExportCluster) ReverseAWS() error {
 	cluster.Spec.KubeControllerManager.AllocateNodeCIDRs = conf.ParseBool("ALLOCATE_NODE_CIDRS")
 	//clusterConfig.KubeUser = conf.Settings["KUBE_USER"]
 	cluster.Spec.ServiceClusterIPRange = conf.Settings["SERVICE_CLUSTER_IP_RANGE"]
+	cluster.Spec.NonMasqueradeCIDR = conf.Settings["NON_MASQUERADE_CIDR"]
 	//clusterConfig.EnableClusterMonitoring = conf.Settings["ENABLE_CLUSTER_MONITORING"]
 	//clusterConfig.EnableClusterLogging = conf.ParseBool("ENABLE_CLUSTER_LOGGING")
 	//clusterConfig.EnableNodeLogging = conf.ParseBool("ENABLE_NODE_LOGGING")
@@ -170,14 +197,40 @@ func (x *ExportCluster) ReverseAWS() error {
 	primaryNodeSet := &api.InstanceGroup{}
 	primaryNodeSet.Spec.Role = api.InstanceGroupRoleNode
 	primaryNodeSet.Name = "nodes"
-
 	instanceGroups = append(instanceGroups, primaryNodeSet)
-	primaryNodeSet.Spec.MinSize, err = conf.ParseInt("NUM_MINIONS")
-	if err != nil {
-		return fmt.Errorf("cannot parse NUM_MINIONS=%q: %v", conf.Settings["NUM_MINIONS"], err)
+
+	//primaryNodeSet.Spec.MinSize, err = conf.ParseInt("NUM_MINIONS")
+	//if err != nil {
+	//	return fmt.Errorf("cannot parse NUM_MINIONS=%q: %v", conf.Settings["NUM_MINIONS"], err)
+	//}
+
+	{
+		groups, err := findAutoscalingGroups(awsCloud, awsCloud.Tags())
+		if err != nil {
+			return fmt.Errorf("error listing autoscaling groups: %v", err)
+		}
+		if len(groups) == 0 {
+			glog.Warningf("No Autoscaling group found")
+		}
+		if len(groups) == 1 {
+			glog.Warningf("Multiple Autoscaling groups found")
+		}
+		minSize := 0
+		maxSize := 0
+		for _, group := range groups {
+			minSize += int(aws.Int64Value(group.MinSize))
+			maxSize += int(aws.Int64Value(group.MaxSize))
+		}
+		if minSize != 0 {
+			primaryNodeSet.Spec.MinSize = fi.Int(minSize)
+		}
+		if maxSize != 0 {
+			primaryNodeSet.Spec.MaxSize = fi.Int(maxSize)
+		}
+
+		// TODO: machine types
+		//primaryNodeSet.NodeMachineType = k8s.MasterMachineType
 	}
-	primaryNodeSet.Spec.MaxSize = primaryNodeSet.Spec.MinSize
-	//primaryNodeSet.NodeMachineType = k8s.MasterMachineType
 
 	if conf.Version == "1.1" {
 		// If users went with defaults on some things, clear them out so they get the new defaults
@@ -200,6 +253,19 @@ func (x *ExportCluster) ReverseAWS() error {
 		//	// More admission controllers in 1.2
 		//	clusterConfig.AdmissionControl = ""
 		//}
+	}
+
+	for _, etcdClusterName := range []string{"main", "events"} {
+		etcdCluster := &api.EtcdClusterSpec{
+			Name: etcdClusterName,
+		}
+		for _, az := range masterGroup.Spec.Zones {
+			etcdCluster.Members = append(etcdCluster.Members, &api.EtcdMemberSpec{
+				Name: az,
+				Zone: az,
+			})
+		}
+		cluster.Spec.EtcdClusters = append(cluster.Spec.EtcdClusters, etcdCluster)
 	}
 
 	//if masterInstance.PublicIpAddress != nil {
@@ -238,14 +304,14 @@ func (x *ExportCluster) ReverseAWS() error {
 
 	//b.Context = "aws_" + instancePrefix
 
-	keyStore := x.StateStore.CA()
+	newKeyStore := x.StateStore.CA()
 
 	//caCert, err := masterSSH.Join("ca.crt").ReadFile()
 	caCert, err := conf.ParseCert("CA_CERT")
 	if err != nil {
 		return err
 	}
-	err = keyStore.AddCert(fi.CertificateId_CA, caCert)
+	err = newKeyStore.AddCert(fi.CertificateId_CA, caCert)
 	if err != nil {
 		return err
 	}
@@ -294,7 +360,7 @@ func (x *ExportCluster) ReverseAWS() error {
 	//	return err
 	//}
 
-	// We will generate new tokens...
+	//// We will generate new tokens, but some of these are in existing API objects
 	//secretStore := x.StateStore.Secrets()
 	//kubePassword := conf.Settings["KUBE_PASSWORD"]
 	//kubeletToken = conf.Settings["KUBELET_TOKEN"]
@@ -424,7 +490,7 @@ func parseInt(s string) (int, error) {
 //}
 
 func findInstances(c *awsup.AWSCloud) ([]*ec2.Instance, error) {
-	filters := c.BuildFilters(nil)
+	filters := buildEC2Filters(c)
 
 	request := &ec2.DescribeInstancesInput{
 		Filters: filters,

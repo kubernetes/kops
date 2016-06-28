@@ -52,7 +52,7 @@ func RelativePath(base Path, child Path) (string, error) {
 		basePath += "/"
 	}
 
-	if !strings.HasPrefix(basePath, childPath) {
+	if !strings.HasPrefix(childPath, basePath) {
 		return "", fmt.Errorf("Path %q is not a child of %q", child, base)
 	}
 

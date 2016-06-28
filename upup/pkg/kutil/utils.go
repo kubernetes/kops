@@ -8,6 +8,8 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
 )
 
+// findAutoscalingGroups finds autoscaling groups matching the specified tags
+// This isn't entirely trivial because autoscaling doesn't let us filter with as much precision as we wouldlike
 func findAutoscalingGroups(cloud *awsup.AWSCloud, tags map[string]string) ([]*autoscaling.Group, error) {
 	var asgs []*autoscaling.Group
 

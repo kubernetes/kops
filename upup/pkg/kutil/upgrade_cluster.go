@@ -3,11 +3,13 @@ package kutil
 import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 	"k8s.io/kube-deploy/upup/pkg/api"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
+	"time"
 )
 
 // UpgradeCluster performs an upgrade of a k8s cluster
@@ -16,7 +18,8 @@ type UpgradeCluster struct {
 	NewClusterName string
 	Cloud          fi.Cloud
 
-	StateStore fi.StateStore
+	OldStateStore fi.StateStore
+	NewStateStore fi.StateStore
 
 	ClusterConfig  *api.Cluster
 	InstanceGroups []*api.InstanceGroup
@@ -35,6 +38,8 @@ func (x *UpgradeCluster) Upgrade() error {
 	if oldClusterName == "" {
 		return fmt.Errorf("OldClusterName must be specified")
 	}
+
+	oldTags := awsCloud.Tags()
 
 	newTags := awsCloud.Tags()
 	newTags["KubernetesCluster"] = newClusterName
@@ -55,6 +60,16 @@ func (x *UpgradeCluster) Upgrade() error {
 		return err
 	}
 
+	autoscalingGroups, err := findAutoscalingGroups(awsCloud, oldTags)
+	if err != nil {
+		return err
+	}
+
+	elbs, _, err := DescribeELBs(x.Cloud)
+	if err != nil {
+		return err
+	}
+
 	// Find masters
 	var masters []*ec2.Instance
 	for _, instance := range instances {
@@ -67,9 +82,34 @@ func (x *UpgradeCluster) Upgrade() error {
 		return fmt.Errorf("could not find masters")
 	}
 
+	// Stop autoscalingGroups
+	for _, group := range autoscalingGroups {
+		name := aws.StringValue(group.AutoScalingGroupName)
+		glog.Infof("Stopping instances in autoscaling group %q", name)
+
+		request := &autoscaling.UpdateAutoScalingGroupInput{
+			AutoScalingGroupName: group.AutoScalingGroupName,
+			DesiredCapacity:      aws.Int64(0),
+			MinSize:              aws.Int64(0),
+			MaxSize:              aws.Int64(0),
+		}
+
+		_, err := awsCloud.Autoscaling.UpdateAutoScalingGroup(request)
+		if err != nil {
+			return fmt.Errorf("error updating autoscaling group %q: %v", name, err)
+		}
+	}
+
 	// Stop masters
 	for _, master := range masters {
 		masterInstanceID := aws.StringValue(master.InstanceId)
+
+		masterState := aws.StringValue(master.State.Name)
+		if masterState == "terminated" {
+			glog.Infof("master already terminated: %q", masterInstanceID)
+			continue
+		}
+
 		glog.Infof("Stopping master: %q", masterInstanceID)
 
 		request := &ec2.StopInstancesInput{
@@ -82,7 +122,36 @@ func (x *UpgradeCluster) Upgrade() error {
 		}
 	}
 
-	// TODO: Wait for master to stop & detach volumes?
+	// Detach volumes from masters
+	for _, master := range masters {
+		for _, bdm := range master.BlockDeviceMappings {
+			if bdm.Ebs == nil || bdm.Ebs.VolumeId == nil {
+				continue
+			}
+			volumeID := aws.StringValue(bdm.Ebs.VolumeId)
+			masterInstanceID := aws.StringValue(master.InstanceId)
+			glog.Infof("Detaching volume %q from instance %q", volumeID, masterInstanceID)
+
+			request := &ec2.DetachVolumeInput{
+				VolumeId:   bdm.Ebs.VolumeId,
+				InstanceId: master.InstanceId,
+			}
+
+			for {
+				_, err := awsCloud.EC2.DetachVolume(request)
+				if err != nil {
+					if AWSErrorCode(err) == "IncorrectState" {
+						glog.Infof("retrying to detach volume (master has probably not stopped yet): %q", err)
+						time.Sleep(5 * time.Second)
+						continue
+					}
+					return fmt.Errorf("error detaching volume %q from master instance %q: %v", volumeID, masterInstanceID, err)
+				} else {
+					break
+				}
+			}
+		}
+	}
 
 	//subnets, err := DescribeSubnets(x.Cloud)
 	//if err != nil {
@@ -100,6 +169,8 @@ func (x *UpgradeCluster) Upgrade() error {
 	// We have to be careful because VPCs can be shared
 	{
 		vpcID := cluster.Spec.NetworkID
+		retagGateway := false
+
 		if vpcID != "" {
 			tags, err := awsCloud.GetTags(vpcID)
 			if err != nil {
@@ -113,18 +184,58 @@ func (x *UpgradeCluster) Upgrade() error {
 				}
 				replaceTags := make(map[string]string)
 				replaceTags[awsup.TagClusterName] = newClusterName
+
+				glog.Infof("Retagging VPC %q", vpcID)
+
 				err := awsCloud.CreateTags(vpcID, replaceTags)
 				if err != nil {
 					return fmt.Errorf("error re-tagging VPC: %v", err)
 				}
-			}
 
+				// The VPC was tagged as ours, so make sure the gateway is consistently retagged
+				retagGateway = true
+			}
+		}
+
+		if retagGateway {
+			gateways, err := DescribeInternetGatewaysIgnoreTags(x.Cloud)
+			if err != nil {
+				return fmt.Errorf("error listing gateways: %v", err)
+			}
+			for _, igw := range gateways {
+				match := false
+				for _, a := range igw.Attachments {
+					if vpcID == aws.StringValue(a.VpcId) {
+						match = true
+					}
+				}
+				if !match {
+					continue
+				}
+
+				id := aws.StringValue(igw.InternetGatewayId)
+
+				clusterTag, _ := awsup.FindEC2Tag(igw.Tags, awsup.TagClusterName)
+				if clusterTag == "" || clusterTag == oldClusterName {
+					replaceTags := make(map[string]string)
+					replaceTags[awsup.TagClusterName] = newClusterName
+
+					glog.Infof("Retagging InternetGateway %q", id)
+
+					err := awsCloud.CreateTags(id, replaceTags)
+					if err != nil {
+						return fmt.Errorf("error re-tagging InternetGateway: %v", err)
+					}
+				}
+			}
 		}
 	}
 
 	// Retag DHCP options
 	// We have to be careful because DHCP options can be shared
 	for _, dhcpOption := range dhcpOptions {
+		id := aws.StringValue(dhcpOption.DhcpOptionsId)
+
 		clusterTag, _ := awsup.FindEC2Tag(dhcpOption.Tags, awsup.TagClusterName)
 		if clusterTag != "" {
 			if clusterTag != oldClusterName {
@@ -132,7 +243,10 @@ func (x *UpgradeCluster) Upgrade() error {
 			}
 			replaceTags := make(map[string]string)
 			replaceTags[awsup.TagClusterName] = newClusterName
-			err := awsCloud.CreateTags(*dhcpOption.DhcpOptionsId, replaceTags)
+
+			glog.Infof("Retagging DHCPOptions %q", id)
+
+			err := awsCloud.CreateTags(id, replaceTags)
 			if err != nil {
 				return fmt.Errorf("error re-tagging DHCP options: %v", err)
 			}
@@ -140,10 +254,38 @@ func (x *UpgradeCluster) Upgrade() error {
 
 	}
 
-	// TODO: Retag internet gateway (may not be tagged at all though...)
-	// TODO: Share more code with cluste deletion?
+	// Adopt LoadBalancers & LoadBalancer Security Groups
+	for _, elb := range elbs {
+		id := aws.StringValue(elb.LoadBalancerName)
 
-	// TODO: Adopt LoadBalancers & LoadBalancer Security Groups
+		// TODO: Batch re-tag?
+		replaceTags := make(map[string]string)
+		replaceTags[awsup.TagClusterName] = newClusterName
+
+		glog.Infof("Retagging ELB %q", id)
+		err := awsCloud.CreateELBTags(id, replaceTags)
+		if err != nil {
+			return fmt.Errorf("error re-tagging ELB %q: %v", id, err)
+		}
+
+	}
+
+	for _, elb := range elbs {
+		for _, sg := range elb.SecurityGroups {
+			id := aws.StringValue(sg)
+
+			// TODO: Batch re-tag?
+			replaceTags := make(map[string]string)
+			replaceTags[awsup.TagClusterName] = newClusterName
+
+			glog.Infof("Retagging ELB security group %q", id)
+			err := awsCloud.CreateTags(id, replaceTags)
+			if err != nil {
+				return fmt.Errorf("error re-tagging ELB security group %q: %v", id, err)
+			}
+		}
+
+	}
 
 	// Adopt Volumes
 	for _, volume := range volumes {
@@ -156,8 +298,11 @@ func (x *UpgradeCluster) Upgrade() error {
 		name, _ := awsup.FindEC2Tag(volume.Tags, "Name")
 		if name == oldClusterName+"-master-pd" {
 			glog.Infof("Found master volume %q: %s", id, name)
-			replaceTags["Name"] = "kubernetes.master." + aws.StringValue(volume.AvailabilityZone) + "." + newClusterName
+
+			az := aws.StringValue(volume.AvailabilityZone)
+			replaceTags["Name"] = az + ".etcd-main." + newClusterName
 		}
+		glog.Infof("Retagging volume %q", id)
 		err := awsCloud.CreateTags(id, replaceTags)
 		if err != nil {
 			return fmt.Errorf("error re-tagging volume %q: %v", id, err)
@@ -165,9 +310,26 @@ func (x *UpgradeCluster) Upgrade() error {
 	}
 
 	cluster.Name = newClusterName
-	err = api.WriteConfig(x.StateStore, cluster, x.InstanceGroups)
+	err = api.WriteConfig(x.NewStateStore, cluster, x.InstanceGroups)
 	if err != nil {
 		return fmt.Errorf("error writing updated configuration: %v", err)
+	}
+
+	oldCACertPool, err := x.OldStateStore.CA().CertificatePool(fi.CertificateId_CA)
+	if err != nil {
+		return fmt.Errorf("error reading old CA certs: %v", err)
+	}
+	for _, ca := range oldCACertPool.Secondary {
+		err := x.NewStateStore.CA().AddCert(fi.CertificateId_CA, ca)
+		if err != nil {
+			return fmt.Errorf("error importing old CA certs: %v", err)
+		}
+	}
+	if oldCACertPool.Primary != nil {
+		err := x.NewStateStore.CA().AddCert(fi.CertificateId_CA, oldCACertPool.Primary)
+		if err != nil {
+			return fmt.Errorf("error importing old CA certs: %v", err)
+		}
 	}
 
 	return nil

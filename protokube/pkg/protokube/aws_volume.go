@@ -11,8 +11,8 @@ import (
 	"net"
 	"strconv"
 	"strings"
-	"time"
 	"sync"
+	"time"
 )
 
 // The tag name we use to differentiate multiple logically independent clusters running in the same region
@@ -30,16 +30,16 @@ const TagNameMasterId = "k8s.io/master/id"
 var devices = []string{"/dev/xvdu", "/dev/xvdv", "/dev/xvdx", "/dev/xvdx", "/dev/xvdy", "/dev/xvdz"}
 
 type AWSVolumes struct {
-	ec2        *ec2.EC2
-	metadata   *ec2metadata.EC2Metadata
+	ec2      *ec2.EC2
+	metadata *ec2metadata.EC2Metadata
 
 	zone       string
 	clusterTag string
 	instanceId string
 	internalIP net.IP
 
-	mutex      sync.Mutex
-	deviceMap  map[string]string
+	mutex     sync.Mutex
+	deviceMap map[string]string
 }
 
 var _ Volumes = &AWSVolumes{}
@@ -240,11 +240,10 @@ func (a *AWSVolumes) findVolumes(request *ec2.DescribeVolumesInput) ([]*Volume, 
 //	return a.findVolumes(request)
 //}
 
-
 func (a *AWSVolumes) FindVolumes() ([]*Volume, error) {
 	request := &ec2.DescribeVolumesInput{}
 	request.Filters = []*ec2.Filter{
-		newEc2Filter("tag:" + TagNameKubernetesCluster, a.clusterTag),
+		newEc2Filter("tag:"+TagNameKubernetesCluster, a.clusterTag),
 		newEc2Filter("tag-key", TagNameRoleMaster),
 		newEc2Filter("availability-zone", a.zone),
 	}
@@ -278,9 +277,8 @@ func (a *AWSVolumes) releaseDevice(d string, volumeID string) {
 	a.deviceMap[d] = ""
 }
 
-
 // AttachVolume attaches the specified volume to this instance, returning the mountpoint & nil if successful
-func (a *AWSVolumes) AttachVolume(volume *Volume) (error) {
+func (a *AWSVolumes) AttachVolume(volume *Volume) error {
 	volumeID := volume.ID
 
 	device := volume.LocalDevice

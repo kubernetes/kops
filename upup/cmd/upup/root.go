@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/viper"
 	"k8s.io/kube-deploy/upup/pkg/fi"
 	"k8s.io/kube-deploy/upup/pkg/fi/vfs"
+	"strings"
 )
 
 type RootCmd struct {
@@ -75,14 +76,27 @@ func (c *RootCmd) AddCommand(cmd *cobra.Command) {
 }
 
 func (c *RootCmd) StateStore() (fi.StateStore, error) {
+	if c.clusterName == "" {
+		return nil, fmt.Errorf("--name is required")
+	}
+
 	if c.stateStore != nil {
 		return c.stateStore, nil
 	}
+	stateStore, err := c.StateStoreForCluster(c.clusterName)
+	if err != nil {
+		return nil, err
+	}
+	c.stateStore = stateStore
+	return stateStore, nil
+}
+
+func (c *RootCmd) StateStoreForCluster(clusterName string) (fi.StateStore, error) {
 	if c.stateLocation == "" {
 		return nil, fmt.Errorf("--state is required")
 	}
-	if c.clusterName == "" {
-		return nil, fmt.Errorf("--name is required")
+	if clusterName == "" {
+		return nil, fmt.Errorf("clusterName is required")
 	}
 
 	statePath, err := vfs.Context.BuildVfsPath(c.stateLocation)
@@ -91,13 +105,43 @@ func (c *RootCmd) StateStore() (fi.StateStore, error) {
 	}
 
 	isDryrun := false
-	stateStore, err := fi.NewVFSStateStore(statePath, c.clusterName, isDryrun)
+	stateStore, err := fi.NewVFSStateStore(statePath, clusterName, isDryrun)
 	if err != nil {
 		return nil, fmt.Errorf("error building state store: %v", err)
 	}
-	c.stateStore = stateStore
 	return stateStore, nil
 }
+
+func (c *RootCmd) ListClusters() ([]string, error) {
+	if c.stateLocation == "" {
+		return nil, fmt.Errorf("--state is required")
+	}
+
+	statePath, err := vfs.Context.BuildVfsPath(c.stateLocation)
+	if err != nil {
+		return nil, fmt.Errorf("error building state store path: %v", err)
+	}
+
+	paths, err := statePath.ReadTree()
+	if err != nil {
+		return nil, fmt.Errorf("error reading state store: %v", err)
+	}
+
+	var keys []string
+	for _, p := range paths {
+		relativePath, err := vfs.RelativePath(statePath, p)
+		if err != nil {
+			return nil, err
+		}
+		if !strings.HasSuffix(relativePath, "/config") {
+			continue
+		}
+		key := strings.TrimSuffix(relativePath, "/config")
+		keys = append(keys, key)
+	}
+	return keys, nil
+}
+
 func (c *RootCmd) Secrets() (fi.SecretStore, error) {
 	s, err := c.StateStore()
 	if err != nil {
