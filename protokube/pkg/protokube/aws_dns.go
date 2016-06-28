@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -76,8 +77,59 @@ func (p *Route53DNSProvider) getZone() (*route53.HostedZone, error) {
 	return p.zone, nil
 }
 
+func (p *Route53DNSProvider) findResourceRecord(hostedZoneID string, name string, resourceType string) (*route53.ResourceRecordSet, error) {
+	name = strings.TrimSuffix(name, ".")
+
+	request := &route53.ListResourceRecordSetsInput{
+		HostedZoneId: aws.String(hostedZoneID),
+		// TODO: Start at correct name?
+	}
+
+	var found *route53.ResourceRecordSet
+
+	err := p.client.ListResourceRecordSetsPages(request, func(p *route53.ListResourceRecordSetsOutput, lastPage bool) (shouldContinue bool) {
+		for _, rr := range p.ResourceRecordSets {
+			if aws.StringValue(rr.Type) != resourceType {
+				continue
+			}
+
+			rrName := aws.StringValue(rr.Name)
+			rrName = strings.TrimSuffix(rrName, ".")
+
+			if name == rrName {
+				found = rr
+				break
+			}
+		}
+
+		// TODO: Also exit if we are on the 'next' name?
+
+		return found == nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("error listing DNS ResourceRecords: %v", err)
+	}
+
+	if found == nil {
+		return nil, nil
+	}
+
+	return found, nil
+}
+
 func (p *Route53DNSProvider) Set(fqdn string, recordType string, value string, ttl time.Duration) error {
 	zone, err := p.getZone()
+	if err != nil {
+		return err
+	}
+
+	// More correct, and makes the simple comparisons later on work correctly
+	if !strings.HasSuffix(fqdn, ".") {
+		fqdn += "."
+	}
+
+	existing, err := p.findResourceRecord(aws.StringValue(zone.Id), fqdn, recordType)
 	if err != nil {
 		return err
 	}
@@ -89,6 +141,17 @@ func (p *Route53DNSProvider) Set(fqdn string, recordType string, value string, t
 		ResourceRecords: []*route53.ResourceRecord{
 			{Value: aws.String(value)},
 		},
+	}
+
+	if existing != nil {
+		if reflect.DeepEqual(rrs, existing) {
+			glog.V(2).Infof("DNS %q %s record already set to %q", fqdn, recordType, value)
+			return nil
+		} else {
+			glog.Infof("ResourceRecordSet change:")
+			glog.Infof("Existing: %v", DebugString(existing))
+			glog.Infof("Desired:  %v", DebugString(rrs))
+		}
 	}
 
 	change := &route53.Change{
