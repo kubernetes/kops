@@ -3,11 +3,11 @@ package protokube
 import (
 	"fmt"
 	"github.com/ghodss/yaml"
+	"github.com/golang/glog"
 	"io/ioutil"
 	"os"
 	"path"
 	"strings"
-	"github.com/golang/glog"
 	"time"
 )
 
@@ -22,7 +22,7 @@ type EtcdCluster struct {
 	Nodes        []*EtcdNode
 	PodName      string
 
-	Spec         *EtcdClusterSpec
+	Spec *EtcdClusterSpec
 
 	VolumeMountPath string
 }
@@ -43,9 +43,9 @@ func (e *EtcdNode) String() string {
 type EtcdController struct {
 	kubeBoot *KubeBoot
 
-	volume *Volume
+	volume     *Volume
 	volumeSpec *EtcdClusterSpec
-	cluster *EtcdCluster
+	cluster    *EtcdCluster
 }
 
 func newEtcdController(kubeBoot *KubeBoot, v *Volume, spec *EtcdClusterSpec) (*EtcdController, error) {
@@ -53,7 +53,7 @@ func newEtcdController(kubeBoot *KubeBoot, v *Volume, spec *EtcdClusterSpec) (*E
 		kubeBoot: kubeBoot,
 	}
 
-	modelTemplatePath := path.Join(kubeBoot.ModelDir, spec.ClusterKey + ".config")
+	modelTemplatePath := path.Join(kubeBoot.ModelDir, spec.ClusterKey+".config")
 	modelTemplate, err := ioutil.ReadFile(modelTemplatePath)
 	if err != nil {
 		return nil, fmt.Errorf("error reading model template %q: %v", modelTemplatePath, err)
@@ -63,7 +63,7 @@ func newEtcdController(kubeBoot *KubeBoot, v *Volume, spec *EtcdClusterSpec) (*E
 	cluster.Spec = spec
 	cluster.VolumeMountPath = v.Mountpoint
 
-	model, err := ExecuteTemplate("model-etcd-" + spec.ClusterKey, string(modelTemplate), cluster)
+	model, err := ExecuteTemplate("model-etcd-"+spec.ClusterKey, string(modelTemplate), cluster)
 	if err != nil {
 		return nil, fmt.Errorf("error executing etcd model template %q: %v", modelTemplatePath, err)
 	}
@@ -77,7 +77,7 @@ func newEtcdController(kubeBoot *KubeBoot, v *Volume, spec *EtcdClusterSpec) (*E
 	return k, nil
 }
 
-func (k*EtcdController) RunSyncLoop() {
+func (k *EtcdController) RunSyncLoop() {
 	for {
 		err := k.syncOnce()
 		if err != nil {
@@ -88,7 +88,7 @@ func (k*EtcdController) RunSyncLoop() {
 	}
 }
 
-func (k*EtcdController) syncOnce() error {
+func (k *EtcdController) syncOnce() error {
 	return k.cluster.configure(k.kubeBoot)
 }
 

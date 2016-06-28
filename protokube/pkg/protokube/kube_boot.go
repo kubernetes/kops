@@ -13,15 +13,15 @@ type KubeBoot struct {
 	//MasterID          int
 	//EtcdClusters      []*EtcdClusterSpec
 
-	volumeMounter     *VolumeMountController
-	etcdControllers   map[string]*EtcdController
+	volumeMounter   *VolumeMountController
+	etcdControllers map[string]*EtcdController
 
-	DNS               DNSProvider
+	DNS DNSProvider
 
 	ModelDir string
 }
 
-func (k*KubeBoot) Init(volumesProvider Volumes) {
+func (k *KubeBoot) Init(volumesProvider Volumes) {
 	k.volumeMounter = newVolumeMountController(volumesProvider)
 	k.etcdControllers = make(map[string]*EtcdController)
 }
@@ -51,7 +51,7 @@ func (k *KubeBoot) RunSyncLoop() {
 	}
 }
 
-func (k *KubeBoot) syncOnce() (error) {
+func (k *KubeBoot) syncOnce() error {
 	if k.Master {
 		volumes, err := k.volumeMounter.mountMasterVolumes()
 		if err != nil {

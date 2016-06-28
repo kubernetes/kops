@@ -58,7 +58,7 @@ func main() {
 
 	if dnsZoneName == "" {
 		tokens := strings.Split(dnsInternalSuffix, ".")
-		dnsZoneName = strings.Join(tokens[len(tokens) - 2:], ".")
+		dnsZoneName = strings.Join(tokens[len(tokens)-2:], ".")
 	}
 
 	// Get internal IP from cloud, to avoid problems if we're in a container
@@ -93,7 +93,7 @@ func main() {
 		//EtcdClusters   : fromVolume
 
 		ModelDir: modelDir,
-		DNS:     dns,
+		DNS:      dns,
 	}
 	k.Init(volumes)
 
