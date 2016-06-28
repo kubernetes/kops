@@ -9,31 +9,31 @@ import (
 	"k8s.io/kube-deploy/upup/pkg/kutil"
 )
 
-type ExportClusterCmd struct {
+type ImportClusterCmd struct {
 	Region string
 }
 
-var exportCluster ExportClusterCmd
+var importCluster ImportClusterCmd
 
 func init() {
 	cmd := &cobra.Command{
 		Use:   "cluster",
-		Short: "Export cluster",
-		Long:  `Exports a k8s cluster.`,
+		Short: "Import existing cluster into the state store",
+		Long:  `Imports the settings of an existing k8s cluster.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := exportCluster.Run()
+			err := importCluster.Run()
 			if err != nil {
 				glog.Exitf("%v", err)
 			}
 		},
 	}
 
-	exportCmd.AddCommand(cmd)
+	importCmd.AddCommand(cmd)
 
-	cmd.Flags().StringVar(&exportCluster.Region, "region", "", "region")
+	cmd.Flags().StringVar(&importCluster.Region, "region", "", "region")
 }
 
-func (c *ExportClusterCmd) Run() error {
+func (c *ImportClusterCmd) Run() error {
 	if c.Region == "" {
 		return fmt.Errorf("--region is required")
 	}
@@ -53,15 +53,17 @@ func (c *ExportClusterCmd) Run() error {
 		return fmt.Errorf("error state store: %v", err)
 	}
 
-	d := &kutil.ExportCluster{}
+	d := &kutil.ImportCluster{}
 	d.ClusterName = clusterName
 	d.Cloud = cloud
 	d.StateStore = stateStore
 
-	err = d.ReverseAWS()
+	err = d.ImportAWSCluster()
 	if err != nil {
 		return err
 	}
+
+	fmt.Printf("\nImported settings for cluster %q\n", clusterName)
 
 	return nil
 }

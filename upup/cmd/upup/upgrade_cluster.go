@@ -39,12 +39,17 @@ func (c *UpgradeClusterCmd) Run() error {
 		return fmt.Errorf("--newname is required")
 	}
 
-	stateStore, err := rootCommand.StateStore()
+	oldStateStore, err := rootCommand.StateStore()
 	if err != nil {
-		return fmt.Errorf("error state store: %v", err)
+		return err
 	}
 
-	cluster, instanceGroups, err := api.ReadConfig(stateStore)
+	newStateStore, err := rootCommand.StateStoreForCluster(c.NewClusterName)
+	if err != nil {
+		return err
+	}
+
+	cluster, instanceGroups, err := api.ReadConfig(oldStateStore)
 	if err != nil {
 		return fmt.Errorf("error reading configuration: %v", err)
 	}
@@ -84,7 +89,8 @@ func (c *UpgradeClusterCmd) Run() error {
 	d.Cloud = cloud
 	d.ClusterConfig = cluster
 	d.InstanceGroups = instanceGroups
-	d.StateStore = stateStore
+	d.OldStateStore = oldStateStore
+	d.NewStateStore = newStateStore
 
 	err = d.Upgrade()
 	if err != nil {

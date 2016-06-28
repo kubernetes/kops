@@ -316,10 +316,6 @@ func (c *CreateClusterCmd) Run() error {
 		c.NodeUpSource = location
 	}
 
-	var cloud fi.Cloud
-
-	var project string
-
 	checkExisting := true
 
 	//c.NodeUpConfig.Tags = append(c.NodeUpConfig.Tags, "_jessie", "_debian_family", "_systemd")
@@ -355,11 +351,21 @@ func (c *CreateClusterCmd) Run() error {
 		"secret":  &fitasks.Secret{},
 	})
 
+	cloud, err := BuildCloud(c.Cluster)
+	if err != nil {
+		return err
+	}
+
 	region := ""
+	project := ""
 
 	switch c.Cluster.Spec.CloudProvider {
 	case "gce":
 		{
+			gceCloud := cloud.(*gce.GCECloud)
+			region = gceCloud.Region
+			project = gceCloud.Project
+
 			glog.Fatalf("GCE is (probably) not working currently - please ping @justinsb for cleanup")
 			tags["_gce"] = struct{}{}
 			c.NodeUpTags = append(c.NodeUpTags, "_gce")
@@ -373,47 +379,6 @@ func (c *CreateClusterCmd) Run() error {
 				"firewallRule":         &gcetasks.FirewallRule{},
 				"ipAddress":            &gcetasks.IPAddress{},
 			})
-
-			nodeZones := make(map[string]bool)
-			for _, zone := range c.Cluster.Spec.Zones {
-				nodeZones[zone.Name] = true
-
-				tokens := strings.Split(zone.Name, "-")
-				if len(tokens) <= 2 {
-					return fmt.Errorf("Invalid GCE Zone: %v", zone.Name)
-				}
-				zoneRegion := tokens[0] + "-" + tokens[1]
-				if region != "" && zoneRegion != region {
-					return fmt.Errorf("Clusters cannot span multiple regions")
-				}
-
-				region = zoneRegion
-			}
-
-			//err := awsup.ValidateRegion(region)
-			//if err != nil {
-			//	return err
-			//}
-
-			project = c.Cluster.Spec.Project
-			if project == "" {
-				return fmt.Errorf("project is required for GCE")
-			}
-			gceCloud, err := gce.NewGCECloud(region, project)
-			if err != nil {
-				return err
-			}
-
-			//var zoneNames []string
-			//for _, z := range c.Config.Zones {
-			//	zoneNames = append(zoneNames, z.Name)
-			//}
-			//err = gceCloud.ValidateZones(zoneNames)
-			//if err != nil {
-			//	return err
-			//}
-
-			cloud = gceCloud
 		}
 
 	case "aws":
@@ -462,47 +427,9 @@ func (c *CreateClusterCmd) Run() error {
 				"dnsZone": &awstasks.DNSZone{},
 			})
 
-			nodeZones := make(map[string]bool)
-			for _, zone := range c.Cluster.Spec.Zones {
-				if len(zone.Name) <= 2 {
-					return fmt.Errorf("Invalid AWS zone: %q", zone.Name)
-				}
-
-				nodeZones[zone.Name] = true
-
-				zoneRegion := zone.Name[:len(zone.Name)-1]
-				if region != "" && zoneRegion != region {
-					return fmt.Errorf("Clusters cannot span multiple regions")
-				}
-
-				region = zoneRegion
-			}
-
-			err := awsup.ValidateRegion(region)
-			if err != nil {
-				return err
-			}
-
 			if c.SSHPublicKey == "" {
 				return fmt.Errorf("SSH public key must be specified when running with AWS")
 			}
-
-			cloudTags := map[string]string{awsup.TagClusterName: c.Cluster.Name}
-
-			awsCloud, err := awsup.NewAWSCloud(region, cloudTags)
-			if err != nil {
-				return err
-			}
-
-			var zoneNames []string
-			for _, z := range c.Cluster.Spec.Zones {
-				zoneNames = append(zoneNames, z.Name)
-			}
-			err = awsCloud.ValidateZones(zoneNames)
-			if err != nil {
-				return err
-			}
-			cloud = awsCloud
 
 			l.TemplateFunctions["MachineTypeInfo"] = awsup.GetMachineTypeInfo
 		}
