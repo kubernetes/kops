@@ -1,19 +1,56 @@
-There is a schema-ed object ClusterConfiguration
+kops: Operate Kubernetes the Kubernetes Way
 
-Users tweak values in the "specified" ClusterConfiguration
+kops (Kubernetes-Ops) is a set of tools for installing, operating and deleting Kubernetes clusters.
 
-We compute the "complete" ClusterConfiguration by populating defaults and inferring values
-  * We try to remove any logic from downstream pieces
-  * This also means that there is one source of truth
+It follows the Kubernetes design philosophy: the user creates a Cluster configuration object in JSON/YAML,
+and then controllers create the Cluster.
 
-Note this is a little different to how kubernetes specs normally work, k8s has a
-separation between spec and status, but this is all spec.  k8s will auto-populate the spec
-and not retain the "user-specified" spec, and this sometimes causes a few problems when it comes to
-exports & updates (e.g. ClusterIP).  By storing the complete spec separately we ensure that the spec
-has all the information - so dependent steps don't have inference logic - but we still only keep the
-values that are specified.  As a concrete example, we only store the kubernetes version if the user specifies
-it, if not we will follow k8s versions as they come out.  (TODO: Not the best example.  Maybe instance type?)
+Each component (kubelet, kube-apiserver...) is explictly configured: We reuse the k8s componentconfig types
+where we can, and we create additional types for the configuration of additional components.
 
-The way we store the ClusterConfiguration is an implementation detail, in terms of how it is broken
-into files.  This might well change in future.  For example, we might put NodeSet configuration storage into the
-kubernetes API.
+kops can:
+* create a cluster
+* upgrade a cluster
+* reconfigure the components
+* add, remove or reconfigure groups of machines (NodeSets)
+* manage cluster add-ons
+* delete a cluster
+
+Some users will need or prefer to use tools like Terraform for cluster configuration,
+so kops can also output the equivalent configuration for those tools also (currently just Terraform, others
+planned).  After creation with your preferred tool, you can still use the rest of the kops tooling to operate
+your cluster.
+
+## Primary API types
+
+There are two primary types:
+
+* Cluster represents the overall cluster configuration (such as the version of kubernetes we are running), and contains default values for the individual nodes.
+
+* InstanceGroup is a group of instances with similar configuration that are managed together.
+  Typically this is a group of Nodes or a single master instance.  On AWS, it is currently implemented by an AutoScalingGroup.
+
+## State Store
+
+The API objects are currently stored in an abstraction called a "state store", and currently the only implemented
+storage is an S3 bucket.  The storage of files in the S3 bucket is an implementation detail.  Expect more state
+stores soon.  For example, it might be convenient to put the InstanceGroup into the kubernetes API itself.
+
+## Configuration inference
+
+Configuration of a kubernetes cluster is actually relatively complicated: there are a lot of options, and many combinations
+must be configured consistently with each other.
+
+Similar to the way creating a Kubernetes object populates other spec values, the `kops create cluster` command will infer other values
+that are not set, so that you can specify a minimal set of values (but if you don't want to override the default value, you simply specify the fields!).
+
+Because more values are inferred than with simpler k8s objects, we record the user-created spec separately from the
+complete inferred specification.  This means we can keep track of which values were actually set by the user, vs just being
+default values; this lets us avoid some of the problems e.g. with ClusterIP on a Service.
+
+We aim to remove any computation logic from the downstream pieces (i.e. nodeup & protokube); this means there is a
+single source of truth and it is practical to implement alternatives to nodeup & protokube.  For example, components
+such as kubelet might read their configuration directly from the state store in future, eliminating the need to
+have a management process that copies values around.
+
+Currently the 'completed' cluster specification is stored in the state store in a file called `cluster.spec`
