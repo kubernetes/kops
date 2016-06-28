@@ -3,7 +3,9 @@ package api
 import (
 	"fmt"
 	"k8s.io/kube-deploy/upup/pkg/fi"
+	"k8s.io/kube-deploy/upup/pkg/fi/vfs"
 	"k8s.io/kubernetes/pkg/api/unversioned"
+	"strings"
 	"time"
 )
 
@@ -64,4 +66,41 @@ func ReadConfig(stateStore fi.StateStore) (*Cluster, []*InstanceGroup, error) {
 	}
 
 	return cluster, instanceGroups, nil
+}
+
+func DeleteConfig(stateStore fi.StateStore) error {
+	paths, err := stateStore.VFSPath().ReadTree()
+	if err != nil {
+		return fmt.Errorf("error listing files in state store: %v", err)
+	}
+
+	for _, path := range paths {
+		relativePath, err := vfs.RelativePath(stateStore.VFSPath(), path)
+		if err != nil {
+			return err
+		}
+		if relativePath == "config" || relativePath == "cluster.spec" {
+			continue
+		}
+		if strings.HasPrefix(relativePath, "pki/") {
+			continue
+		}
+		if strings.HasPrefix(relativePath, "secrets/") {
+			continue
+		}
+		if strings.HasPrefix(relativePath, "instancegroup/") {
+			continue
+		}
+
+		return fmt.Errorf("refusing to delete: unknown file found: %s", path)
+	}
+
+	for _, path := range paths {
+		err = path.Remove()
+		if err != nil {
+			return fmt.Errorf("error deleting cluster file %s: %v", path, err)
+		}
+	}
+
+	return nil
 }
