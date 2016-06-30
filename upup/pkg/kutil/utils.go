@@ -5,7 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/golang/glog"
-	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
 // findAutoscalingGroups finds autoscaling groups matching the specified tags

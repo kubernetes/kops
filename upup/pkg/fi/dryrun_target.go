@@ -6,7 +6,7 @@ import (
 	"bytes"
 	"github.com/golang/glog"
 	"io"
-	"k8s.io/kube-deploy/upup/pkg/fi/utils"
+	"k8s.io/kops/upup/pkg/fi/utils"
 	"reflect"
 )
 

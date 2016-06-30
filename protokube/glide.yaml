@@ -1,4 +1,4 @@
-package: k8s.io/kube-deploy/protokube
+package: k8s.io/kops/protokube
 import:
 - package: github.com/aws/aws-sdk-go
   subpackages:

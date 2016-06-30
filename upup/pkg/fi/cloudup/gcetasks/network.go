@@ -5,9 +5,9 @@ import (
 
 	"github.com/golang/glog"
 	"google.golang.org/api/compute/v1"
-	"k8s.io/kube-deploy/upup/pkg/fi"
-	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/gce"
-	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
 //go:generate fitask -type=Network

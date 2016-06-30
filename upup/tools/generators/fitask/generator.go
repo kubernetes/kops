@@ -2,7 +2,7 @@ package main
 
 import (
 	"io"
-	"k8s.io/kube-deploy/upup/tools/generators/pkg/codegen"
+	"k8s.io/kops/upup/tools/generators/pkg/codegen"
 	"text/template"
 )
 
@@ -18,7 +18,7 @@ package {{.Package}}
 import (
 	"encoding/json"
 
-	"k8s.io/kube-deploy/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi"
 )
 `
 

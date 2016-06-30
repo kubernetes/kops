@@ -1,5 +1,5 @@
 gocode: godeps
-	go install k8s.io/kube-deploy/protokube/cmd/protokube
+	go install k8s.io/kops/protokube/cmd/protokube
 
 godeps:
 	# I think strip-vendor is the workaround for 25572

@@ -7,8 +7,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"k8s.io/kube-deploy/upup/pkg/fi"
-	"k8s.io/kube-deploy/upup/pkg/fi/vfs"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/vfs"
 	"strings"
 )
 
@@ -24,10 +24,10 @@ type RootCmd struct {
 
 var rootCommand = RootCmd{
 	cobraCommand: &cobra.Command{
-		Use:   "upup",
-		Short: "upup manages kubernetes clusters",
-		Long: `upup manages kubernetes clusters.
-It allows you to create, destroy, upgrade and maintain them.`,
+		Use:   "kops",
+		Short: "kops is kubernetes ops",
+		Long: `kops is kubernetes ops.
+It allows you to create, destroy, upgrade and maintain clusters.`,
 	},
 }
 
@@ -46,7 +46,7 @@ func init() {
 
 	cmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
 
-	cmd.PersistentFlags().StringVar(&rootCommand.configFile, "config", "", "config file (default is $HOME/.upup.yaml)")
+	cmd.PersistentFlags().StringVar(&rootCommand.configFile, "config", "", "config file (default is $HOME/.kops.yaml)")
 
 	defaultStateStore := os.Getenv("KOPS_STATE_STORE")
 	cmd.PersistentFlags().StringVarP(&rootCommand.stateLocation, "state", "", defaultStateStore, "Location of state storage")
@@ -61,7 +61,7 @@ func initConfig() {
 		viper.SetConfigFile(rootCommand.configFile)
 	}
 
-	viper.SetConfigName(".upup") // name of config file (without extension)
+	viper.SetConfigName(".kops") // name of config file (without extension)
 	viper.AddConfigPath("$HOME") // adding home directory as first search path
 	viper.AutomaticEnv()         // read in environment variables that match
 

@@ -2,7 +2,7 @@ package fitasks
 
 import (
 	"fmt"
-	"k8s.io/kube-deploy/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 //go:generate fitask -type=Secret

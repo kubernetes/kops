@@ -5,7 +5,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"k8s.io/kube-deploy/upup/pkg/fi/vfs"
+	"k8s.io/kops/upup/pkg/fi/vfs"
 )
 
 type AddonsCreateCmd struct {

@@ -33,7 +33,7 @@ of the old cluster name, you can find it by looking at the `KubernetesCluster` t
 ```
 export OLD_NAME=kubernetes
 export REGION=us-west-2
-upup import cluster --region ${REGION} --name ${OLD_NAME}
+kops import cluster --region ${REGION} --name ${OLD_NAME}
 ```
 
 ## Verify the cluster configuration
@@ -42,7 +42,7 @@ Now have a look at the cluster configuration, to make sure it looks right.  If i
 open an issue.
 
 ```
-upup edit cluster --name ${OLD_NAME}
+kops edit cluster --name ${OLD_NAME}
 ````
 
 ## Move resources to a new cluster
@@ -60,12 +60,12 @@ The upgrade procedure forces you to choose a new cluster name (e.g. `k8s.mydomai
 
 ```
 export NEW_NAME=k8s.mydomain.com
-upup upgrade cluster --newname ${NEW_NAME} --name ${OLD_NAME}
+kops upgrade cluster --newname ${NEW_NAME} --name ${OLD_NAME}
 ```
 
 If you now list the clusters, you should see both the old cluster & the new cluster
 
-```upup get clusters```
+```kops get clusters```
 
 ## Bring up the new cluster
 
@@ -87,7 +87,7 @@ cloudup --name ${NEW_NAME}
 ## Export kubecfg settings to access the new cluster
 
 ```
-upup export kubecfg --name ${NEW_NAME}
+kops export kubecfg --name ${NEW_NAME}
 ```
 
 Within a few minutes the new cluster should be running.  Try `kubectl get nodes --show-labels`, `kubectl get pods` etc until you are sure that all is well.
@@ -146,9 +146,9 @@ kubectl delete pod --namespace=kube-system kube-dns-v14-4ygfz
 
 Due to a limitation in ELBs (you can't replace all the subnets), if you have ELBs you must do the following:
 
-* `upup edit cluster --name ${NEW_NAME}`
+* `kops edit cluster --name ${NEW_NAME}`
 * Add a zone to the `zones` section and save the file (it normally suffices to just add `- name: us-west-2b` or whatever
-  zone you are adding; upup will auto-populate the CIDR.
+  zone you are adding; kops will auto-populate the CIDR.
 * cloudup --name ${NEW_NAME}
 
 
@@ -163,7 +163,7 @@ You should now have an ELB in your new zones; within a few minutes k8s should re
 ## Delete remaining resources of the old cluster
 
 ```
-upup delete cluster --name ${OLD_NAME}
+kops delete cluster --name ${OLD_NAME}
 ```
 
 And once you've confirmed it looks right, run with `--yes`

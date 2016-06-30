@@ -3,7 +3,7 @@ package cloudup
 import (
 	"encoding/binary"
 	"fmt"
-	"k8s.io/kube-deploy/upup/pkg/api"
+	"k8s.io/kops/upup/pkg/api"
 	"math/big"
 	"net"
 	"sort"

@@ -6,7 +6,7 @@ import (
 	"github.com/golang/glog"
 	hcl_parser "github.com/hashicorp/hcl/json/parser"
 	"io/ioutil"
-	"k8s.io/kube-deploy/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi"
 	"os"
 	"path"
 	"strings"

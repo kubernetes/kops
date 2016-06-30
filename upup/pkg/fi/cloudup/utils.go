@@ -2,10 +2,10 @@ package cloudup
 
 import (
 	"fmt"
-	"k8s.io/kube-deploy/upup/pkg/api"
-	"k8s.io/kube-deploy/upup/pkg/fi"
-	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kube-deploy/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/api"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"strings"
 )
 

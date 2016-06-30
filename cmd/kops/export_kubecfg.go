@@ -6,9 +6,9 @@ import (
 	"github.com/spf13/cobra"
 	"io"
 	"io/ioutil"
-	"k8s.io/kube-deploy/upup/pkg/api"
-	"k8s.io/kube-deploy/upup/pkg/fi"
-	"k8s.io/kube-deploy/upup/pkg/kubecfg"
+	"k8s.io/kops/upup/pkg/api"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/kubecfg"
 	"os"
 	"path"
 )

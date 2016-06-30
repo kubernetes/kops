@@ -1,13 +1,13 @@
 # The State Store
 
-upup has the notion of a 'state store'; a location where we store the configuration of your cluster.  State is stored
+kops has the notion of a 'state store'; a location where we store the configuration of your cluster.  State is stored
 here not only when you first create a cluster, but also you can change the state and apply changes to a running cluster.
 
 Eventually, kubernetes services will also pull from the state store, so that we don't need to marshal all our
 configuration through a channel like user-data.  (This is currently done for secrets and SSL keys, for example,
 though we have to copy the data from the state store to a file where components like kubelet can read them).
 
-The state store uses upup's VFS implementation, so can in theory be stored anywhere.  Currently storage on S3
+The state store uses kops's VFS implementation, so can in theory be stored anywhere.  Currently storage on S3
 is supported, but support for GCS is coming soon, along with encrypted storage.
 
 The state store is just files; you can copy the files down and put them into git (or your preferred version

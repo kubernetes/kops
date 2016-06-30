@@ -1,7 +1,7 @@
 package main
 
 import (
-	"k8s.io/kube-deploy/upup/tools/generators/pkg/codegen"
+	"k8s.io/kops/upup/tools/generators/pkg/codegen"
 )
 
 func main() {

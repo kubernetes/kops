@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/golang/glog"
-	"k8s.io/kube-deploy/protokube/pkg/protokube"
+	"k8s.io/kops/protokube/pkg/protokube"
 	"net"
 	"os"
 	"strings"
