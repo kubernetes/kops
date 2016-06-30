@@ -72,7 +72,7 @@ If you now list the clusters, you should see both the old cluster & the new clus
 Use the normal tool to bring up the new cluster:
 
 ```
-cloudup --name ${NEW_NAME} --dryrun
+kops create cluster --name ${NEW_NAME} --dryrun
 ```
 
 Things to check are that it is reusing the existing volume for the _main_ etcd cluster (but not the events clusters).
@@ -80,7 +80,7 @@ Things to check are that it is reusing the existing volume for the _main_ etcd c
 And then when you are happy:
 
 ```
-cloudup --name ${NEW_NAME}
+kops create cluster --name ${NEW_NAME}
 ```
 
 
@@ -149,7 +149,7 @@ Due to a limitation in ELBs (you can't replace all the subnets), if you have ELB
 * `kops edit cluster --name ${NEW_NAME}`
 * Add a zone to the `zones` section and save the file (it normally suffices to just add `- name: us-west-2b` or whatever
   zone you are adding; kops will auto-populate the CIDR.
-* cloudup --name ${NEW_NAME}
+* kops create cluster --name ${NEW_NAME}
 
 
 In the AWS control panel open the "Load Balancers" section, and for each ELB: 
