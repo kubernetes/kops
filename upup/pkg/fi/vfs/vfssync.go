@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/golang/glog"
-	"k8s.io/kube-deploy/upup/pkg/fi/hashing"
+	"k8s.io/kops/upup/pkg/fi/hashing"
 	"os"
 )
 

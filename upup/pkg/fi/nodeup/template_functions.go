@@ -4,9 +4,9 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/golang/glog"
-	"k8s.io/kube-deploy/upup/pkg/api"
-	"k8s.io/kube-deploy/upup/pkg/fi"
-	"k8s.io/kube-deploy/upup/pkg/fi/vfs"
+	"k8s.io/kops/upup/pkg/api"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/vfs"
 	"text/template"
 )
 

@@ -2,8 +2,8 @@ package fi
 
 import (
 	"fmt"
-	"k8s.io/kube-deploy/upup/pkg/fi/utils"
-	"k8s.io/kube-deploy/upup/pkg/fi/vfs"
+	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kops/upup/pkg/fi/vfs"
 	"os"
 	"strings"
 )

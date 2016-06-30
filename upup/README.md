@@ -1,7 +1,6 @@
-## UpUp - CloudUp & NodeUp
+## Kops - Kubernetes Ops
 
-CloudUp and NodeUp are two tools that are aiming to replace kube-up:
-the easiest way to get a production Kubernetes up and running.
+kops is the easiest way to get a production Kubernetes up and running.
 
 (Currently work in progress, but working.  Some of these statements are forward-looking.)
 
@@ -19,8 +18,8 @@ Install glide from [http://glide.sh/](http://glide.sh/)
 
 Build the code (make sure you have set GOPATH):
 ```
-go get -d k8s.io/kube-deploy
-cd ${GOPATH}/src/k8s.io/kube-deploy/upup
+go get -d k8s.io/kops
+cd ${GOPATH}/src/k8s.io/kops/cmd/...
 make
 ```
 
@@ -50,23 +49,23 @@ If you have problems, please set `--v=8 --logtostderr` and open an issue, and pi
 
 ## Build a kubectl file
 
-The upup tool is a CLI for doing administrative tasks.  You can use it to create the kubecfg configuration,
+The kops tool is a CLI for doing administrative tasks.  You can use it to create the kubecfg configuration,
 for use with kubectl:
 
 ```
 export MYZONE=<kubernetes.myzone.com>
 export KOPS_STATE_STORE=s3://<somes3bucket>
-${GOPATH}/bin/upup export kubecfg --name=${MYZONE}
+${GOPATH}/bin/kops export kubecfg --name=${MYZONE}
 ```
 
 ## Delete the cluster
 
-When you're done, you can also have upup delete the cluster.  It will delete all AWS resources tagged
+When you're done, you can also have kops delete the cluster.  It will delete all AWS resources tagged
 with the cluster name in the specified region.
 
 ```
 export MYZONE=<kubernetes.myzone.com>
-${GOPATH}/bin/upup delete cluster --region=us-east-1 --name=${MYZONE} # --yes
+${GOPATH}/bin/kops delete cluster --region=us-east-1 --name=${MYZONE} # --yes
 ```
 
 You must pass --yes to actually delete resources (without the `#` comment!)

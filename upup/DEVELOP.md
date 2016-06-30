@@ -6,7 +6,7 @@ Random scribblings useful for development...
 ssh ${HOST} sudo mkdir -p /opt/nodeup/state
 ssh ${HOST} sudo chown -R ${USER} /opt/nodeup
 
-go install k8s.io/kube-deploy/upup/... && rsync ~/k8s/bin/nodeup ${HOST}:/opt/nodeup/nodeup && rsync --delete -avz trees/ ${HOST}:/opt/nodeup/trees/ \
+go install k8s.io/kops/upup/... && rsync ~/k8s/bin/nodeup ${HOST}:/opt/nodeup/nodeup && rsync --delete -avz trees/ ${HOST}:/opt/nodeup/trees/ \
 && rsync state/node.yaml ${HOST}:/opt/nodeup/state/node.yaml \
 && ssh ${HOST} sudo /opt/nodeup/nodeup --v=2  --template=/opt/nodeup/trees/nodeup --state=/opt/nodeup/state --tags=kubernetes_pool,debian_family,gce,systemd
 

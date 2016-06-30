@@ -6,7 +6,7 @@ import (
 	"bytes"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"k8s.io/kube-deploy/upup/pkg/kutil"
+	"k8s.io/kops/upup/pkg/kutil"
 	"os"
 	"text/tabwriter"
 )

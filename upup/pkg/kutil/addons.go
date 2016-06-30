@@ -3,7 +3,7 @@ package kutil
 import (
 	"fmt"
 	"golang.org/x/crypto/ssh"
-	"k8s.io/kube-deploy/upup/pkg/fi/vfs"
+	"k8s.io/kops/upup/pkg/fi/vfs"
 	"strings"
 )
 

@@ -7,7 +7,7 @@ import (
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/compute/v1"
 	"google.golang.org/api/storage/v1"
-	"k8s.io/kube-deploy/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 type GCECloud struct {

@@ -15,7 +15,7 @@ cloudup --zones=us-east-1b --name=${CLUSTER_NAME} \
   --vpc=vpc-a80734c1 --network-cidr=10.100.0.0/16 --dryrun
 ```
 
-Then `upup edit cluster  --name=${CLUSTER_NAME}` should show you something like:
+Then `kops edit cluster  --name=${CLUSTER_NAME}` should show you something like:
 
 ```
 metadata:

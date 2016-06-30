@@ -1,6 +1,6 @@
 package local
 
-import "k8s.io/kube-deploy/upup/pkg/fi"
+import "k8s.io/kops/upup/pkg/fi"
 
 type LocalTarget struct {
 }

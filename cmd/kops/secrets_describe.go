@@ -7,7 +7,7 @@ import (
 	"crypto/rsa"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"k8s.io/kube-deploy/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi"
 	"os"
 	"sort"
 	"strings"

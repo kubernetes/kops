@@ -1,16 +1,16 @@
 gocode: godeps
-	GO15VENDOREXPERIMENT=1 go install k8s.io/kube-deploy/upup/cmd/...
-	ln -sfn ${GOPATH}/src/k8s.io/kube-deploy/upup/models/ ${GOPATH}/bin/models
+	GO15VENDOREXPERIMENT=1 go install k8s.io/kops/cmd/...
+	ln -sfn ${GOPATH}/src/k8s.io/kops/upup/models/ ${GOPATH}/bin/models
 
 codegen:
-	GO15VENDOREXPERIMENT=1 go install k8s.io/kube-deploy/upup/tools/generators/...
-	GO15VENDOREXPERIMENT=1 go generate k8s.io/kube-deploy/upup/pkg/fi/cloudup/awstasks
-	GO15VENDOREXPERIMENT=1 go generate k8s.io/kube-deploy/upup/pkg/fi/cloudup/gcetasks
-	GO15VENDOREXPERIMENT=1 go generate k8s.io/kube-deploy/upup/pkg/fi/fitasks
+	GO15VENDOREXPERIMENT=1 go install k8s.io/kops/upup/tools/generators/...
+	GO15VENDOREXPERIMENT=1 go generate k8s.io/kops/upup/pkg/fi/cloudup/awstasks
+	GO15VENDOREXPERIMENT=1 go generate k8s.io/kops/upup/pkg/fi/cloudup/gcetasks
+	GO15VENDOREXPERIMENT=1 go generate k8s.io/kops/upup/pkg/fi/fitasks
 
 test:
-	GO15VENDOREXPERIMENT=1 go test k8s.io/kube-deploy/upup/cmd/...
-	GO15VENDOREXPERIMENT=1 go test k8s.io/kube-deploy/upup/pkg/...
+	GO15VENDOREXPERIMENT=1 go test k8s.io/kops/cmd/...
+	GO15VENDOREXPERIMENT=1 go test k8s.io/kops/upup/pkg/...
 
 godeps:
 	# I think strip-vendor is the workaround for 25572
@@ -20,15 +20,15 @@ gofmt:
 	gofmt -w -s cmd/
 	gofmt -w -s pkg/
 
-upup-tar: gocode
-	rm -rf .build/upup/tar
-	mkdir -p .build/upup/tar/upup/
-	cp ${GOPATH}/bin/cloudup .build/upup/tar/upup/cloudup
-	cp ${GOPATH}/bin/upup .build/upup/tar/upup/upup
-	cp -r models/ .build/upup/tar/upup/models/
-	tar czvf .build/upup.tar.gz -C .build/upup/tar/ .
-	tar tvf .build/upup.tar.gz
-	(sha1sum .build/upup.tar.gz | cut -d' ' -f1) > .build/upup.tar.gz.sha1
+kops-tar: gocode
+	rm -rf .build/kops/tar
+	mkdir -p .build/kops/tar/kops/
+	cp ${GOPATH}/bin/cloudup .build/kops/tar/kops/cloudup
+	cp ${GOPATH}/bin/kops .build/kops/tar/kops/kops
+	cp -r models/ .build/kops/tar/kops/models/
+	tar czvf .build/kops.tar.gz -C .build/kops/tar/ .
+	tar tvf .build/kops.tar.gz
+	(sha1sum .build/kops.tar.gz | cut -d' ' -f1) > .build/kops.tar.gz.sha1
 
 nodeup-tar: gocode
 	rm -rf .build/nodeup/tar
@@ -39,14 +39,14 @@ nodeup-tar: gocode
 	tar tvf .build/nodeup.tar.gz
 	(sha1sum .build/nodeup.tar.gz | cut -d' ' -f1) > .build/nodeup.tar.gz.sha1 
 
-upload: nodeup-tar upup-tar
+upload: nodeup-tar kops-tar
 	rm -rf .build/s3
 	mkdir -p .build/s3/nodeup
 	cp .build/nodeup.tar.gz .build/s3/nodeup/nodeup-1.3.tar.gz
 	cp .build/nodeup.tar.gz.sha1 .build/s3/nodeup/nodeup-1.3.tar.gz.sha1
-	mkdir -p .build/s3/upup
-	cp .build/upup.tar.gz .build/s3/upup/upup-1.3.tar.gz
-	cp .build/upup.tar.gz.sha1 .build/s3/upup/upup-1.3.tar.gz.sha1
+	mkdir -p .build/s3/kops
+	cp .build/kops.tar.gz .build/s3/kops/kops-1.3.tar.gz
+	cp .build/kops.tar.gz.sha1 .build/s3/kops/kops-1.3.tar.gz.sha1
 	aws s3 sync --acl public-read .build/s3/ s3://kubeupv2/
 
 push: nodeup-tar

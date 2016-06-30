@@ -4,7 +4,7 @@ import (
 	"crypto/x509"
 	"fmt"
 	"github.com/golang/glog"
-	"k8s.io/kube-deploy/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi"
 	"net"
 	"sort"
 	"strings"
