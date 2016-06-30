@@ -42,10 +42,12 @@ you should use Go 1.6 or later)
 ```
 export MYZONE=<kubernetes.myzone.com>
 export KOPS_STATE_STORE=s3://<somes3bucket>
-${GOPATH}/bin/kops create cluster --v=0 --logtostderr --cloud=aws --zones=us-east-1c --name=${MYZONE}
+${GOPATH}/bin/kops create cluster --v=0 --cloud=aws --zones=us-east-1c --name=${MYZONE}
 ```
 
-If you have problems, please set `--v=8 --logtostderr` and open an issue, and ping justinsb on slack!
+(protip: the --cloud=aws argument is optional if the cloud can be inferred from the zones)
+
+If you have problems, please set `--v=8` and open an issue, and ping justinsb on slack!
 
 ## Build a kubectl file
 
@@ -114,14 +116,14 @@ So you don't use terraform for the 'proto' phase (you can't anyway, because of t
 ```
 export KOPS_STATE_STORE=s3://<somes3bucket>
 export CLUSTER_NAME=<kubernetes.myzone.com>
-${GOPATH}/bin/kops create cluster --v=0 --logtostderr --cloud=aws --zones=us-east-1c --name=${CLUSTER_NAME} --model=config,proto
+${GOPATH}/bin/kops create cluster --v=0 --zones=us-east-1c --name=${CLUSTER_NAME} --model=config,proto
 ```
 
 And then you can use terraform to do the remainder of the installation:
 
 ```
 export CLUSTER_NAME=<kubernetes.myzone.com>
-${GOPATH}/bin/kops create cluster --v=0 --logtostderr --cloud=aws --zones=us-east-1c --name=${CLUSTER_NAME} --model=config,cloudup --target=terraform
+${GOPATH}/bin/kops create cluster --v=0 --zones=us-east-1c --name=${CLUSTER_NAME} --model=config,cloudup --target=terraform
 ```
 
 Then, to apply using terraform:
