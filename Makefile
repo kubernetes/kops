@@ -23,7 +23,6 @@ gofmt:
 kops-tar: gocode
 	rm -rf .build/kops/tar
 	mkdir -p .build/kops/tar/kops/
-	cp ${GOPATH}/bin/cloudup .build/kops/tar/kops/cloudup
 	cp ${GOPATH}/bin/kops .build/kops/tar/kops/kops
 	cp -r models/ .build/kops/tar/kops/models/
 	tar czvf .build/kops.tar.gz -C .build/kops/tar/ .

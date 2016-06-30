@@ -18,14 +18,14 @@ control system).
 One of the most important files in the state store is the top-level config file.  This file stores the main
 configuration for your cluster (instance types, zones, etc)\
 
-When you run cloudup, we create a config file for you based on the command line options you specify. 
-For example, when you run with `--node-size=m4.large`, we actually set a line in the config file
+When you run `kops create cluster`, we create a state store entry for you based on the command line options you specify. 
+For example, when you run with `--node-size=m4.large`, we actually set a line in the configuration
 that looks like `NodeMachineType: m4.large`.
 
 The configuration you specify on the command line is actually just a convenient short-cut to
-manually editing the config file.  Options you specify on the command line are merged into the existing
+manually editing the configuration.  Options you specify on the command line are merged into the existing
 configuration. If you want to configure advanced options, or prefer a text-based configuration, you
-may prefer to just edit the config file.
+may prefer to just edit the config file with `kops edit cluster`.
 
 Because the configuration is merged, this is how you can just specify the changed arguments when
-reconfiguring your cluster - for example just `cloudup` after a dry-run.
+reconfiguring your cluster - for example just `kops create cluster` after a dry-run.

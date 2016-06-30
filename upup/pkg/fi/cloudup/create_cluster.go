@@ -383,6 +383,9 @@ func (c *CreateClusterCmd) Run() error {
 
 	case "aws":
 		{
+			awsCloud := cloud.(*awsup.AWSCloud)
+			region = awsCloud.Region
+
 			tags["_aws"] = struct{}{}
 			c.NodeUpTags = append(c.NodeUpTags, "_aws")
 
