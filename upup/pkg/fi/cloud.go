@@ -9,8 +9,6 @@ type Cloud interface {
 	ProviderID() CloudProviderID
 }
 
-
-
 // zonesToCloud allows us to infer from certain well-known zones to a cloud
 // Note it is safe to "overmap" zones that don't exist: we'll check later if the zones actually exist
 var zonesToCloud = map[string]CloudProviderID{
