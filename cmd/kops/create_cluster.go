@@ -1,19 +1,19 @@
 package main
 
 import (
+	"fmt"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kops/upup/pkg/fi/vfs"
+	"k8s.io/kubernetes/pkg/util/sets"
 	"os"
 	"os/exec"
 	"path"
 	"strings"
-	"k8s.io/kops/upup/pkg/fi/vfs"
-	"k8s.io/kubernetes/pkg/util/sets"
-	"k8s.io/kops/upup/pkg/fi/utils"
-	"fmt"
 )
 
 type CreateClusterCmd struct {
@@ -22,9 +22,7 @@ type CreateClusterCmd struct {
 	ModelsBaseDir     string
 	Models            string
 	NodeModel         string
-	//StateStore        string
 	Cloud             string
-	//Region            string
 	Zones             string
 	MasterZones       string
 	NodeSize          string

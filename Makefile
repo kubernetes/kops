@@ -18,7 +18,9 @@ godeps:
 
 gofmt:
 	gofmt -w -s cmd/
-	gofmt -w -s pkg/
+	gofmt -w -s upup/pkg/
+	gofmt -w -s protokube/cmd
+	gofmt -w -s protokube/pkg
 
 kops-tar: gocode
 	rm -rf .build/kops/tar
