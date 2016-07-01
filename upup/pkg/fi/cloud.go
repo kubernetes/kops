@@ -42,6 +42,12 @@ var zonesToCloud = map[string]CloudProviderID{
 	"eu-central-1d": CloudProviderAWS,
 	"eu-central-1e": CloudProviderAWS,
 
+	"ap-south-1a": CloudProviderAWS,
+	"ap-south-1b": CloudProviderAWS,
+	"ap-south-1c": CloudProviderAWS,
+	"ap-south-1d": CloudProviderAWS,
+	"ap-south-1e": CloudProviderAWS,
+
 	"ap-southeast-1a": CloudProviderAWS,
 	"ap-southeast-1b": CloudProviderAWS,
 	"ap-southeast-1c": CloudProviderAWS,

@@ -429,24 +429,27 @@ func (c *AWSCloud) ResolveImage(name string) (*ec2.Image, error) {
 
 // ValidateZones checks that every zone in the sliced passed is recognized
 func (c *AWSCloud) ValidateZones(zones []string) error {
-	glog.V(2).Infof("Querying EC2 for all valid zones in region")
+	glog.V(2).Infof("Querying EC2 for all valid zones in region %q", c.Region)
 
 	request := &ec2.DescribeAvailabilityZonesInput{}
 	response, err := c.EC2.DescribeAvailabilityZones(request)
 
 	if err != nil {
-		return fmt.Errorf("Got an error while querying for valid AZs (verify your AWS credentials?)")
+		return fmt.Errorf("Got an error while querying for valid AZs in %q (verify your AWS credentials?)", c.Region)
 	}
 
 	zoneMap := make(map[string]*ec2.AvailabilityZone)
+	var knownZones []string
 	for _, z := range response.AvailabilityZones {
 		name := aws.StringValue(z.ZoneName)
 		zoneMap[name] = z
+		knownZones = append(knownZones, name)
 	}
 
 	for _, zone := range zones {
 		z := zoneMap[zone]
 		if z == nil {
+			glog.Infof("Known zones: %q", strings.Join(knownZones, ","))
 			return fmt.Errorf("Zone is not a recognized AZ: %q (check you have specified a valid zone?)", zone)
 		}
 
