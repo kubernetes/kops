@@ -19,7 +19,7 @@ Install glide from [http://glide.sh/](http://glide.sh/)
 Build the code (make sure you have set GOPATH):
 ```
 go get -d k8s.io/kops
-cd ${GOPATH}/src/k8s.io/kops/cmd/...
+cd ${GOPATH}/src/k8s.io/kops/
 make
 ```
 
