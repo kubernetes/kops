@@ -40,10 +40,10 @@ type KubeletConfig struct {
 	//// tlsPrivateKeyFile are not provided, a self-signed certificate
 	//// and key are generated for the public address and saved to the directory
 	//// passed to certDir.
-	//TLSCertFile string `json:"tLSCertFile"`
+	//TLSCertFile string `json:"tlsCertFile"`
 	//// tLSPrivateKeyFile is the ile containing x509 private key matching
 	//// tlsCertFile.
-	//TLSPrivateKeyFile string `json:"tLSPrivateKeyFile"`
+	//TLSPrivateKeyFile string `json:"tlsPrivateKeyFile"`
 	//// certDirectory is the directory where the TLS certs are located (by
 	//// default /var/run/kubernetes). If tlsCertFile and tlsPrivateKeyFile
 	//// are provided, this flag will be ignored.
@@ -66,13 +66,13 @@ type KubeletConfig struct {
 	AllowPrivileged *bool `json:"allowPrivileged,omitempty" flag:"allow-privileged"`
 	//// hostNetworkSources is a comma-separated list of sources from which the
 	//// Kubelet allows pods to use of host network. Defaults to "*".
-	//HostNetworkSources string `json:"hostNetworkSources"`
+	//HostNetworkSources []string `json:"hostNetworkSources"`
 	//// hostPIDSources is a comma-separated list of sources from which the
 	//// Kubelet allows pods to use the host pid namespace. Defaults to "*".
-	//HostPIDSources string `json:"hostPIDSources"`
+	//HostPIDSources []string `json:"hostPIDSources"`
 	//// hostIPCSources is a comma-separated list of sources from which the
 	//// Kubelet allows pods to use the host ipc namespace. Defaults to "*".
-	//HostIPCSources string `json:"hostIPCSources"`
+	//HostIPCSources []string `json:"hostIPCSources"`
 	//// registryPullQPS is the limit of registry pulls per second. If 0,
 	//// unlimited. Set to 0 for no limit. Defaults to 5.0.
 	//RegistryPullQPS float64 `json:"registryPullQPS"`
@@ -165,7 +165,7 @@ type KubeletConfig struct {
 	// SystemCgroups is absolute name of cgroups in which to place
 	// all non-kernel processes that are not already in a container. Empty
 	// for no container. Rolling back the flag requires a reboot.
-	SystemCgroups string `json:"systemContainer,omitempty" flag:"system-cgroups"`
+	SystemCgroups string `json:"systemCgroups,omitempty" flag:"system-cgroups"`
 	// cgroupRoot is the root cgroup to use for pods. This is handled by the
 	// container runtime on a best effort basis.
 	CgroupRoot string `json:"cgroupRoot,omitempty" flag:"cgroup-root"`
