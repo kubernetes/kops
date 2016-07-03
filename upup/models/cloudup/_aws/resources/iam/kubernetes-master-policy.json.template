@@ -8,6 +8,11 @@
     },
     {
       "Effect": "Allow",
+      "Action": ["elasticloadbalancing:*"],
+      "Resource": ["*"]
+    },
+    {
+      "Effect": "Allow",
       "Action": ["route53:*"],
       "Resource": ["*"]
     },
