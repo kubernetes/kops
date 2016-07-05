@@ -10,6 +10,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/upup/pkg/fi/vfs"
+	"strings"
 )
 
 type NodeUpCommand struct {
@@ -81,6 +82,11 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	} else {
 		// TODO Infer this from NodeSetLocation?
 		return fmt.Errorf("ClusterLocation is required")
+	}
+
+	err := evaluateSpec(c.cluster)
+	if err != nil {
+		return err
 	}
 
 	//if c.Config.ConfigurationStore != "" {
@@ -164,4 +170,42 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 
 	return nil
+}
+
+func evaluateSpec(c *api.Cluster) error {
+	var err error
+
+	c.Spec.Kubelet.HostnameOverride, err = evaluateHostnameOverride(c.Spec.Kubelet.HostnameOverride)
+	if err != nil {
+		return err
+	}
+
+	c.Spec.MasterKubelet.HostnameOverride, err = evaluateHostnameOverride(c.Spec.MasterKubelet.HostnameOverride)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func evaluateHostnameOverride(hostnameOverride string) (string, error) {
+	k := strings.TrimSpace(hostnameOverride)
+	k = strings.ToLower(k)
+
+	if hostnameOverride != "@aws" {
+		return hostnameOverride, nil
+	}
+
+	// We recognize @aws as meaning "the local-hostname from the aws metadata service"
+	vBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/local-hostname")
+	if err != nil {
+		return "", fmt.Errorf("error reading local hostname from AWS metadata: %v", err)
+	}
+	v := strings.TrimSpace(string(vBytes))
+	if v == "" {
+		glog.Warningf("Local hostname from AWS metadata service was empty")
+	} else {
+		glog.Infof("Using hostname from AWS metadata service: %s", v)
+	}
+	return v, nil
 }
