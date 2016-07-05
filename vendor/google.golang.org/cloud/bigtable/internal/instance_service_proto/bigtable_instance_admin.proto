@@ -1,0 +1,195 @@
+// Copyright 2016 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package google.bigtable.admin.v2;
+
+import "google.golang.org/cloud/bigtable/internal/common_proto/common.proto";
+import "google.golang.org/cloud/bigtable/internal/instance_data_proto/instance.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option java_multiple_files = true;
+option java_outer_classname = "BigtableInstanceAdminProto";
+option java_package = "com.google.bigtable.admin.v2";
+
+
+// Service for creating, configuring, and deleting Cloud Bigtable Instances and
+// Clusters. Provides access to the Instance and Cluster schemas only, not the
+// tables metadata or data stored in those tables.
+//
+// Caution: This service is experimental. The details can change and the rpcs
+// may or may not be active.
+service BigtableInstanceAdmin {
+  // Create an instance within a project.
+  //
+  // Caution: This rpc is experimental. The details can change and the rpc
+  // may or may not be active.
+
+  // Gets information about an instance.
+  //
+  // Caution: This rpc is experimental. The details can change and the rpc
+  // may or may not be active.
+  rpc GetInstance(GetInstanceRequest) returns (Instance) {
+  }
+
+  // Lists information about instances in a project.
+  //
+  // Caution: This rpc is experimental. The details can change and the rpc
+  // may or may not be active.
+  rpc ListInstances(ListInstancesRequest) returns (ListInstancesResponse) {
+  }
+
+  // Updates an instance within a project.
+  //
+  // Caution: This rpc is experimental. The details can change and the rpc
+  // may or may not be active.
+  rpc UpdateInstance(Instance) returns (Instance) {
+  }
+
+  // Delete an instance from a project.
+  //
+  // Caution: This rpc is experimental. The details can change and the rpc
+  // may or may not be active.
+  rpc DeleteInstance(DeleteInstanceRequest) returns (google.protobuf.Empty) {
+  }
+
+  // Creates a cluster within an instance.
+  //
+  // Caution: This rpc is experimental. The details can change and the rpc
+  // may or may not be active.
+
+  // Gets information about a cluster.
+  //
+  // Caution: This rpc is experimental. The details can change and the rpc
+  // may or may not be active.
+  rpc GetCluster(GetClusterRequest) returns (Cluster) {
+  }
+
+  // Lists information about clusters in an instance.
+  //
+  // Caution: This rpc is experimental. The details can change and the rpc
+  // may or may not be active.
+  rpc ListClusters(ListClustersRequest) returns (ListClustersResponse) {
+  }
+
+  // Updates a cluster within an instance.
+  //
+  // Caution: This rpc is experimental. The details can change and the rpc
+  // may or may not be active.
+
+  // Deletes a cluster from an instance.
+  //
+  // Caution: This rpc is experimental. The details can change and the rpc
+  // may or may not be active.
+  rpc DeleteCluster(DeleteClusterRequest) returns (google.protobuf.Empty) {
+  }
+}
+
+// Request message for BigtableInstanceAdmin.CreateInstance.
+message CreateInstanceRequest {
+  string name = 1;
+
+  string instance_id = 2;
+
+  Instance instance = 3;
+
+  map<string, Cluster> clusters = 4;
+}
+
+// Request message for BigtableInstanceAdmin.GetInstance.
+message GetInstanceRequest {
+  string name = 1;
+}
+
+// Request message for BigtableInstanceAdmin.ListInstances.
+message ListInstancesRequest {
+  string name = 1;
+
+  // Locations from which Instance information could not be retrieved,
+  // due to an outage or some other transient condition.
+  // Instances whose Clusters are all in one of the failed locations
+  // may be missing from 'instances', and Instances with at least one
+  // Cluster in a failed location may only have partial information returned.
+  repeated string failed_locations = 2;
+
+  string page_token = 3;
+}
+
+// Response message for BigtableInstanceAdmin.ListInstances.
+message ListInstancesResponse {
+  repeated Instance instances = 1;
+
+  string next_page_token = 2;
+}
+
+// Request message for BigtableInstanceAdmin.DeleteInstance.
+message DeleteInstanceRequest {
+  string name = 1;
+}
+
+// Request message for BigtableInstanceAdmin.CreateCluster.
+message CreateClusterRequest {
+  string name = 1;
+
+  string cluster_id = 2;
+
+  Cluster cluster = 3;
+}
+
+// Request message for BigtableInstanceAdmin.GetCluster.
+message GetClusterRequest {
+  string name = 1;
+}
+
+// Request message for BigtableInstanceAdmin.ListClusters.
+message ListClustersRequest {
+  // Values are of the form projects/<project id>/instances/<instance id>
+  // Use <instance id> = '-' to list Clusters for all Instances in a project,
+  // for example "projects/myproject/instances/-"
+  string name = 1;
+
+  string page_token = 2;
+}
+
+// Response message for BigtableInstanceAdmin.ListClusters.
+message ListClustersResponse {
+  repeated Cluster clusters = 1;
+
+  // Locations from which Cluster information could not be retrieved,
+  // due to an outage or some other transient condition.
+  // Clusters from these locations may be missing from 'clusters',
+  // or may only have partial information returned.
+  repeated string failed_locations = 2;
+
+  string next_page_token = 3;
+}
+
+// Request message for BigtableInstanceAdmin.DeleteCluster.
+message DeleteClusterRequest {
+  string name = 1;
+}
+
+// The metadata for the Operation returned by CreateInstance.
+message CreateInstanceMetadata {
+  // The request that prompted the initiation of this CreateInstance operation.
+  CreateInstanceRequest original_request = 1;
+
+  // The time at which the original request was received.
+  google.protobuf.Timestamp request_time = 2;
+
+  // The time at which the operation failed or was completed successfully.
+  google.protobuf.Timestamp finish_time = 3;
+}
