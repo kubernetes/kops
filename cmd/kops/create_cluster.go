@@ -170,8 +170,9 @@ func (c *CreateClusterCmd) Run() error {
 
 	if c.MasterZones == "" {
 		if len(masters) == 0 {
-			// Default to putting into every zone
-			// TODO: just the first 1 or 3 zones; or should we force users to declare?
+			// We default to single-master (not HA), unless the user explicitly specifies it
+			// HA master is a little slower, not as well tested yet, and requires more resources
+			// Probably best not to make it the silent default!
 			for _, zone := range cluster.Spec.Zones {
 				g := &api.InstanceGroup{}
 				g.Spec.Role = api.InstanceGroupRoleMaster
@@ -181,10 +182,14 @@ func (c *CreateClusterCmd) Run() error {
 				g.Name = "master-" + zone.Name // Subsequent masters (if we support that) could be <zone>-1, <zone>-2
 				instanceGroups = append(instanceGroups, g)
 				masters = append(masters, g)
+
+				// Don't force HA master
+				break
 			}
 		}
 	} else {
 		if len(masters) == 0 {
+			// Use the specified master zones (this is how the user gets HA master)
 			for _, zone := range parseZoneList(c.MasterZones) {
 				g := &api.InstanceGroup{}
 				g.Spec.Role = api.InstanceGroupRoleMaster
