@@ -1,0 +1,77 @@
+// Copyright 2016 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package google.bigtable.admin.v2;
+
+import "google.golang.org/cloud/bigtable/internal/common_proto/common.proto";
+
+option java_multiple_files = true;
+option java_outer_classname = "InstanceProto";
+option java_package = "com.google.bigtable.admin.v2";
+
+
+message Instance {
+  enum State {
+    STATE_NOT_KNOWN = 0;
+
+    READY = 1;
+
+    // The instance is currently being created, and may be destroyed
+    // if the creation process encounters an error.
+    CREATING = 2;
+  }
+
+  // @OutputOnly
+  string name = 1;
+
+  string display_name = 2;
+
+  // @OutputOnly
+  State state = 3;
+}
+
+message Cluster {
+  enum State {
+    STATE_NOT_KNOWN = 0;
+
+    READY = 1;
+
+    // The cluster is currently being created, and may be destroyed
+    // if the creation process encounters an error.
+    CREATING = 2;
+
+    RESIZING = 3;
+
+    // The cluster has no backing nodes.  The data (tables) still
+    // exist, but no operations can be performed on the cluster.
+    DISABLED = 4;
+  }
+
+  // @OutputOnly
+  string name = 1;
+
+  // @CreationOnly
+  // Currently only zones are supported, e.g. projects/*/locations/us-central1-b
+  string location = 2;
+
+  // @OutputOnly
+  State state = 3;
+
+  int32 serve_nodes = 4;
+
+  // @CreationOnly
+  StorageType default_storage_type = 5;
+}
