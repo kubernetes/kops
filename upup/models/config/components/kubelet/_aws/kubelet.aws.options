@@ -1,3 +1,5 @@
 Kubelet:
   CloudProvider: aws
   CgroupRoot: docker
+  # Use the hostname from the AWS metadata service
+  HostnameOverride: "@aws"
