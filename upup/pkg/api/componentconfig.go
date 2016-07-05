@@ -48,9 +48,11 @@ type KubeletConfig struct {
 	//// default /var/run/kubernetes). If tlsCertFile and tlsPrivateKeyFile
 	//// are provided, this flag will be ignored.
 	//CertDirectory string `json:"certDirectory"`
-	//// hostnameOverride is the hostname used to identify the kubelet instead
-	//// of the actual hostname.
-	//HostnameOverride string `json:"hostnameOverride"`
+	// hostnameOverride is the hostname used to identify the kubelet instead
+	// of the actual hostname.
+	// Note: We recognize some additional values:
+	//  @aws uses the hostname from the AWS metadata service
+	HostnameOverride string `json:"hostnameOverride" flag:"hostname-override"`
 	//// podInfraContainerImage is the image whose network/ipc namespaces
 	//// containers in each pod will use.
 	//PodInfraContainerImage string `json:"podInfraContainerImage"`
