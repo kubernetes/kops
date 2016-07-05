@@ -1,4 +1,9 @@
-gocode: godeps
+all: gocode
+
+DOCKER_REGISTRY=gcr.io/must-override/
+S3_BUCKET=s3://must-override/
+
+gocode:
 	GO15VENDOREXPERIMENT=1 go install k8s.io/kops/cmd/...
 	ln -sfn ${GOPATH}/src/k8s.io/kops/upup/models/ ${GOPATH}/bin/models
 
@@ -26,7 +31,7 @@ kops-tar: gocode
 	rm -rf .build/kops/tar
 	mkdir -p .build/kops/tar/kops/
 	cp ${GOPATH}/bin/kops .build/kops/tar/kops/kops
-	cp -r models/ .build/kops/tar/kops/models/
+	cp -r upup/models/ .build/kops/tar/kops/models/
 	tar czvf .build/kops.tar.gz -C .build/kops/tar/ .
 	tar tvf .build/kops.tar.gz
 	(sha1sum .build/kops.tar.gz | cut -d' ' -f1) > .build/kops.tar.gz.sha1
@@ -35,7 +40,7 @@ nodeup-tar: gocode
 	rm -rf .build/nodeup/tar
 	mkdir -p .build/nodeup/tar/nodeup/root
 	cp ${GOPATH}/bin/nodeup .build/nodeup/tar/nodeup/root
-	cp -r models/nodeup/ .build/nodeup/tar/nodeup/root/model/
+	cp -r upup/models/nodeup/ .build/nodeup/tar/nodeup/root/model/
 	tar czvf .build/nodeup.tar.gz -C .build/nodeup/tar/ .
 	tar tvf .build/nodeup.tar.gz
 	(sha1sum .build/nodeup.tar.gz | cut -d' ' -f1) > .build/nodeup.tar.gz.sha1 
@@ -48,7 +53,7 @@ upload: nodeup-tar kops-tar
 	mkdir -p .build/s3/kops
 	cp .build/kops.tar.gz .build/s3/kops/kops-1.3.tar.gz
 	cp .build/kops.tar.gz.sha1 .build/s3/kops/kops-1.3.tar.gz.sha1
-	aws s3 sync --acl public-read .build/s3/ s3://kubeupv2/
+	aws s3 sync --acl public-read .build/s3/ ${S3_BUCKET}
 
 push: nodeup-tar
 	scp .build/nodeup.tar.gz ${TARGET}:/tmp/
@@ -65,3 +70,23 @@ push-gce-run: push
 
 push-aws-run: push
 	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /var/cache/kubernetes-install/nodeup/root/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8 --model=/var/cache/kubernetes-install/nodeup/root/model
+
+
+
+protokube-gocode:
+	go install k8s.io/kops/protokube/cmd/protokube
+
+protokube-builder-image:
+	docker build -f images/protokube-builder/Dockerfile -t protokube-builder .
+
+protokube-build-in-docker: protokube-builder-image
+	docker run -it -v `pwd`:/src protokube-builder /onbuild.sh
+
+protokube-image: protokube-build-in-docker
+	docker build -t ${DOCKER_REGISTRY}/protokube:1.3  -f images/protokube/Dockerfile .
+
+protokube-push: protokube-image
+	docker push ${DOCKER_REGISTRY}/protokube:1.3
+
+
+
