@@ -90,7 +90,7 @@ func (c *AddonsCmd) buildClusterAddons() (*kutil.ClusterAddons, error) {
 	privateKeyFile := utils.ExpandPath("~/.ssh/id_rsa")
 	err = kutil.AddSSHIdentity(&k.SSHConfig, privateKeyFile)
 	if err != nil {
-		return nil, fmt.Errorf("error adding SSH private key %q: %v", err)
+		return nil, fmt.Errorf("error adding SSH private key %q: %v", privateKeyFile, err)
 	}
 
 	return k, nil
