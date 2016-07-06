@@ -14,8 +14,6 @@ Some of the more interesting features:
 
 ## Installation
 
-Install glide from [http://glide.sh/](http://glide.sh/)
-
 Build the code (make sure you have set GOPATH):
 ```
 go get -d k8s.io/kops
