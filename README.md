@@ -37,7 +37,8 @@ can be reached on this name.  For example, if your zone was `mydomain.com`, a go
 
 * Set `AWS_PROFILE` (if you need to select a profile for the AWS CLI to work)
 
-* Pick an S3 bucket that you'll use to store your cluster configuration - this is called your state store.
+* Pick an S3 bucket that you'll use to store your cluster configuration - this is called your state store.  You
+ can `export KOPS_STATE_STORE=s3://<mystatestorebucket>` and then kops will use this location by default.
 
 * Execute:
 ```
