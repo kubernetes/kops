@@ -162,6 +162,9 @@ type ResourceHolder struct {
 var _ Resource = &ResourceHolder{}
 
 func (o *ResourceHolder) Open() (io.ReadSeeker, error) {
+	if o.Resource == nil {
+		return nil, fmt.Errorf("ResourceHolder %q is not bound", o.Name)
+	}
 	return o.Resource.Open()
 }
 
