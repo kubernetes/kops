@@ -10,6 +10,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"reflect"
 	"strings"
 )
 
@@ -133,16 +134,24 @@ func addEphemeralDevices(instanceTypeName *string, blockDeviceMappings map[strin
 		blockDeviceMappings = make(map[string]*BlockDeviceMapping)
 	}
 	for _, ed := range instanceType.EphemeralDevices() {
-		if _, found := blockDeviceMappings[ed.DeviceName]; found {
-			glog.Warningf("not attach ephemeral device - found duplicate device mapping: %q", ed.DeviceName)
-			continue
+		m := &BlockDeviceMapping{VirtualName: fi.String(ed.VirtualName)}
+
+		existing := blockDeviceMappings[ed.DeviceName]
+
+		if existing == nil {
+			blockDeviceMappings[ed.DeviceName] = m
+		} else {
+			if !reflect.DeepEqual(existing, m) {
+				// We might actually be calling Run again, if we are retrying the operation
+				glog.Warningf("not attaching ephemeral device - found duplicate device mapping: %q", ed.DeviceName)
+			}
 		}
-		blockDeviceMappings[ed.DeviceName] = &BlockDeviceMapping{VirtualName: fi.String(ed.VirtualName)}
 	}
 	return blockDeviceMappings, nil
 }
 
 func (e *LaunchConfiguration) Run(c *fi.Context) error {
+	// TODO: Only on first creation (i.e. we need stricter phases)
 	blockDeviceMappings, err := addEphemeralDevices(e.InstanceType, e.BlockDeviceMappings)
 	if err != nil {
 		return err
