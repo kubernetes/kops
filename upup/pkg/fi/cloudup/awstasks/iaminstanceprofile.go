@@ -2,7 +2,9 @@ package awstasks
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/golang/glog"
@@ -23,10 +25,10 @@ func (e *IAMInstanceProfile) CompareWithID() *string {
 	return e.Name
 }
 
-func (e *IAMInstanceProfile) Find(c *fi.Context) (*IAMInstanceProfile, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
-
-	request := &iam.GetInstanceProfileInput{InstanceProfileName: e.Name}
+// findIAMInstanceProfile retrieves the InstanceProfile with specified name
+// It returns nil,nil if not found
+func findIAMInstanceProfile(cloud *awsup.AWSCloud, name string) (*iam.InstanceProfile, error) {
+	request := &iam.GetInstanceProfileInput{InstanceProfileName: aws.String(name)}
 
 	response, err := cloud.IAM.GetInstanceProfile(request)
 	if awsErr, ok := err.(awserr.Error); ok {
@@ -39,10 +41,20 @@ func (e *IAMInstanceProfile) Find(c *fi.Context) (*IAMInstanceProfile, error) {
 		return nil, fmt.Errorf("error getting IAMInstanceProfile: %v", err)
 	}
 
-	ip := response.InstanceProfile
+	return response.InstanceProfile, nil
+}
+
+func (e *IAMInstanceProfile) Find(c *fi.Context) (*IAMInstanceProfile, error) {
+	cloud := c.Cloud.(*awsup.AWSCloud)
+
+	p, err := findIAMInstanceProfile(cloud, *e.Name)
+	if err != nil {
+		return nil, err
+	}
+
 	actual := &IAMInstanceProfile{
-		ID:   ip.InstanceProfileId,
-		Name: ip.InstanceProfileName,
+		ID:   p.InstanceProfileId,
+		Name: p.InstanceProfileName,
 	}
 
 	e.ID = actual.ID
@@ -79,6 +91,31 @@ func (_ *IAMInstanceProfile) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAM
 
 		e.ID = response.InstanceProfile.InstanceProfileId
 		e.Name = response.InstanceProfile.InstanceProfileName
+
+		// IAM instance profile seems to be highly asynchronous
+		// and if we don't wait creating dependent resources fail
+		attempt := 0
+		for {
+			if attempt > 10 {
+				glog.Warningf("unable to retrieve newly-created IAM instance profile %q; timed out", *e.Name)
+				break
+			}
+
+			ip, err := findIAMInstanceProfile(t.Cloud, *e.Name)
+			if err != nil {
+				glog.Warningf("ignoring error while retrieving newly-created IAM instance profile %q: %v", *e.Name, err)
+			}
+
+			if ip != nil {
+				// Found
+				glog.V(4).Infof("Found IAM instance profile %q", *e.Name)
+				break
+			}
+
+			// TODO: Use a real backoff algorithm
+			time.Sleep(3 * time.Second)
+			attempt++
+		}
 	}
 
 	// TODO: Should we use path as our tag?
