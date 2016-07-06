@@ -1,6 +1,7 @@
 ## Kops - Kubernetes Ops
 
-kops is the easiest way to get a production Kubernetes up and running.
+kops is the easiest way to get a production Kubernetes up and running.  We like to think
+of it as "kubectl for clusters".
 
 (Currently work in progress, but working.  Some of these statements are forward-looking.)
 
@@ -30,9 +31,11 @@ you should use Go 1.6 or later)
 
 ## Bringing up a cluster on AWS
 
-* Ensure you have a DNS hosted zone set up in Route 53, e.g. myzone.com
+* Ensure you have a DNS hosted zone set up in Route 53, e.g. `mydomain.com`
 
-* Pick a subdomain (or sub-subdomain) of this hosted zone, e.g. kubernetes.myzone.com or dev.k8s.myzone.com  We'll call your subdomain `MYZONE`.
+* Pick a DNS name under this zone to be the name of your cluster.  kops will set up DNS so your cluster
+can be reached on this name.  For example, if your zone was `mydomain.com`, a good name would be
+`kubernetes.mydomain.com`, or `dev.k8s.mydomain.com`, or even `dev.k8s.myproject.mydomain.com`. We'll call this `NAME`.
 
 * Set `AWS_PROFILE` (if you need to select a profile for the AWS CLI to work)
 
@@ -40,9 +43,9 @@ you should use Go 1.6 or later)
 
 * Execute:
 ```
-export MYZONE=<kubernetes.myzone.com>
+export NAME=<kubernetes.mydomain.com>
 export KOPS_STATE_STORE=s3://<somes3bucket>
-${GOPATH}/bin/kops create cluster --v=0 --cloud=aws --zones=us-east-1c --name=${MYZONE}
+${GOPATH}/bin/kops create cluster --v=0 --cloud=aws --zones=us-east-1c --name=${NAME}
 ```
 
 (protip: the --cloud=aws argument is optional if the cloud can be inferred from the zones)
@@ -55,9 +58,9 @@ The kops tool is a CLI for doing administrative tasks.  You can use it to create
 for use with kubectl:
 
 ```
-export MYZONE=<kubernetes.myzone.com>
+export NAME=<kubernetes.mydomain.com>
 export KOPS_STATE_STORE=s3://<somes3bucket>
-${GOPATH}/bin/kops export kubecfg --name=${MYZONE}
+${GOPATH}/bin/kops export kubecfg --name=${NAME}
 ```
 
 ## Delete the cluster
@@ -66,8 +69,8 @@ When you're done, you can also have kops delete the cluster.  It will delete all
 with the cluster name in the specified region.
 
 ```
-export MYZONE=<kubernetes.myzone.com>
-${GOPATH}/bin/kops delete cluster --region=us-east-1 --name=${MYZONE} # --yes
+export NAME=<kubernetes.mydomain.com>
+${GOPATH}/bin/kops delete cluster --region=us-east-1 --name=${NAME} # --yes
 ```
 
 You must pass --yes to actually delete resources (without the `#` comment!)
@@ -117,14 +120,14 @@ So you don't use terraform for the 'proto' phase (you can't anyway, because of t
 
 ```
 export KOPS_STATE_STORE=s3://<somes3bucket>
-export CLUSTER_NAME=<kubernetes.myzone.com>
+export CLUSTER_NAME=<kubernetes.mydomain.com>
 ${GOPATH}/bin/kops create cluster --v=0 --zones=us-east-1c --name=${CLUSTER_NAME} --model=config,proto
 ```
 
 And then you can use terraform to do the remainder of the installation:
 
 ```
-export CLUSTER_NAME=<kubernetes.myzone.com>
+export CLUSTER_NAME=<kubernetes.mydomain.com>
 ${GOPATH}/bin/kops create cluster --v=0 --zones=us-east-1c --name=${CLUSTER_NAME} --model=config,cloudup --target=terraform
 ```
 
