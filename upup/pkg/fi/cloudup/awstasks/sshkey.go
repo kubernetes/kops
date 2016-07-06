@@ -81,7 +81,7 @@ func (e *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 
 // computeAWSKeyFingerprint computes the AWS-specific fingerprint of the SSH public key
 func computeAWSKeyFingerprint(publicKey string) (string, error) {
-	tokens := strings.Split(publicKey, " ")
+	tokens := strings.Fields(publicKey)
 	if len(tokens) < 2 {
 		return "", fmt.Errorf("error parsing SSH public key: %q", publicKey)
 	}
