@@ -112,7 +112,7 @@ func (c *CreateClusterCmd) Run() error {
 
 	if len(c.Cluster.Spec.Zones) == 0 {
 		// TODO: Auto choose zones from region?
-		return fmt.Errorf("must configuration at least one Zone (use --zones)")
+		return fmt.Errorf("must configure at least one Zone (use --zones)")
 	}
 
 	if len(c.InstanceGroups) == 0 {
@@ -208,7 +208,7 @@ func (c *CreateClusterCmd) Run() error {
 
 				if (len(etcdZones) % 2) == 0 {
 					// Not technically a requirement, but doesn't really make sense to allow
-					return fmt.Errorf("There should be an odd number of master-zones, for etcd's quorum.  Hint: Use --zone and --master-zone to declare node zones and master zones separately.")
+					return fmt.Errorf("There should be an odd number of master-zones, for etcd's quorum.  Hint: Use --zones and --master-zones to declare node zones and master zones separately.")
 				}
 			}
 		}

@@ -61,6 +61,10 @@ func RelativePath(base Path, child Path) (string, error) {
 }
 
 func IsClusterReadable(p Path) bool {
+	if hcr, ok := p.(HasClusterReadable); ok {
+		return hcr.IsClusterReadable()
+	}
+
 	switch p.(type) {
 	case *S3Path:
 		return true
@@ -75,4 +79,8 @@ func IsClusterReadable(p Path) bool {
 		glog.Fatalf("IsClusterReadable not implemented for type %T", p)
 		return false
 	}
+}
+
+type HasClusterReadable interface {
+	IsClusterReadable() bool
 }
