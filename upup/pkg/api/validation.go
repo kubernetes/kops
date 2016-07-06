@@ -138,7 +138,7 @@ func (c *Cluster) Validate() error {
 				return fmt.Errorf("MasterKubelet CloudProvider did not match cluster CloudProvider")
 			}
 			if c.Spec.KubeAPIServer.CloudProvider != c.Spec.CloudProvider {
-				return fmt.Errorf("Errorf CloudProvider did not match cluster CloudProvider")
+				return fmt.Errorf("KubeAPIServer CloudProvider did not match cluster CloudProvider")
 			}
 			if c.Spec.KubeControllerManager.CloudProvider != c.Spec.CloudProvider {
 				return fmt.Errorf("KubeControllerManager CloudProvider did not match cluster CloudProvider")
