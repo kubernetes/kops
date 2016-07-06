@@ -154,7 +154,7 @@ func (e *SSHKey) Run(c *fi.Context) error {
 
 		keyFingerprint, err := computeAWSKeyFingerprint(publicKey)
 		if err != nil {
-			return fmt.Errorf("error computing key fingerpring for SSH key: %v", err)
+			return fmt.Errorf("error computing key fingerprint for SSH key: %v", err)
 		}
 		glog.V(2).Infof("Computed SSH key fingerprint as %q", keyFingerprint)
 		e.KeyFingerprint = &keyFingerprint
