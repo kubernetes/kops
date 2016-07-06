@@ -1169,6 +1169,8 @@ func DescribeELBs(cloud fi.Cloud) ([]*elb.LoadBalancerDescription, map[string][]
 	glog.V(2).Infof("Listing all ELBs")
 
 	request := &elb.DescribeLoadBalancersInput{}
+	// ELB DescribeTags has a limit of 20 names, so we set the page size here to 20 also
+	request.PageSize = aws.Int64(20)
 
 	var elbs []*elb.LoadBalancerDescription
 	elbTags := make(map[string][]*elb.Tag)
