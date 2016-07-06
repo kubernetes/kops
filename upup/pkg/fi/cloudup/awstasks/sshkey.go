@@ -1,15 +1,16 @@
 package awstasks
 
 import (
-	"fmt"
-
 	"bytes"
 	"crypto"
-	"crypto/dsa"
 	"crypto/md5"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
+	"fmt"
+	"reflect"
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
@@ -18,8 +19,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/utils"
-	"reflect"
-	"strings"
 )
 
 //go:generate fitask -type=SSHKey
@@ -81,20 +80,15 @@ func (e *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 }
 
 // computeAWSKeyFingerprint computes the AWS-specific fingerprint of the SSH public key
-func computeAWSKeyFingerprint(publicKey *fi.ResourceHolder) (string, error) {
-	publicKeyString, err := publicKey.AsString()
-	if err != nil {
-		return "", fmt.Errorf("error reading SSH public key: %v", err)
-	}
-
-	tokens := strings.Split(publicKeyString, " ")
+func computeAWSKeyFingerprint(publicKey string) (string, error) {
+	tokens := strings.Split(publicKey, " ")
 	if len(tokens) < 2 {
-		return "", fmt.Errorf("error parsing SSH public key: %q", publicKeyString)
+		return "", fmt.Errorf("error parsing SSH public key: %q", publicKey)
 	}
 
 	sshPublicKeyBytes, err := base64.StdEncoding.DecodeString(tokens[1])
 	if len(tokens) < 2 {
-		return "", fmt.Errorf("error decoding SSH public key: %q", publicKeyString)
+		return "", fmt.Errorf("error decoding SSH public key: %q", publicKey)
 	}
 
 	sshPublicKey, err := ssh.ParsePublicKey(sshPublicKeyBytes)
@@ -134,14 +128,14 @@ func toDER(pubkey ssh.PublicKey) ([]byte, error) {
 		rsaPublicKey = pubkeyValue.Convert(targetType).Interface().(*rsa.PublicKey)
 		cryptoKey = rsaPublicKey
 
-	case "*dsaPublicKey":
-		var dsaPublicKey *dsa.PublicKey
-		targetType := reflect.ValueOf(dsaPublicKey).Type()
-		dsaPublicKey = pubkeyValue.Convert(targetType).Interface().(*dsa.PublicKey)
-		cryptoKey = dsaPublicKey
+	//case "*dsaPublicKey":
+	//	var dsaPublicKey *dsa.PublicKey
+	//	targetType := reflect.ValueOf(dsaPublicKey).Type()
+	//	dsaPublicKey = pubkeyValue.Convert(targetType).Interface().(*dsa.PublicKey)
+	//	cryptoKey = dsaPublicKey
 
 	default:
-		return nil, fmt.Errorf("Unknown type for SSH PublicKey; cannot compute fingerprint: %q", typeName)
+		return nil, fmt.Errorf("Unexpected type of SSH key (%q); AWS can only import RSA keys", typeName)
 	}
 
 	der, err := x509.MarshalPKIXPublicKey(cryptoKey)
@@ -153,7 +147,12 @@ func toDER(pubkey ssh.PublicKey) ([]byte, error) {
 
 func (e *SSHKey) Run(c *fi.Context) error {
 	if e.KeyFingerprint == nil && e.PublicKey != nil {
-		keyFingerprint, err := computeAWSKeyFingerprint(e.PublicKey)
+		publicKey, err := e.PublicKey.AsString()
+		if err != nil {
+			return fmt.Errorf("error reading SSH public key: %v", err)
+		}
+
+		keyFingerprint, err := computeAWSKeyFingerprint(publicKey)
 		if err != nil {
 			return fmt.Errorf("error computing key fingerpring for SSH key: %v", err)
 		}
