@@ -40,6 +40,11 @@ func DebugPrint(o interface{}) string {
 	if o == nil {
 		return "<nil>"
 	}
+	if rh, ok := o.(*ResourceHolder); ok {
+		if rh.Resource == nil {
+			return fmt.Sprintf("unknown resource %q", rh.Name)
+		}
+	}
 	if resource, ok := o.(Resource); ok {
 		s, err := ResourceAsString(resource)
 		if err != nil {
