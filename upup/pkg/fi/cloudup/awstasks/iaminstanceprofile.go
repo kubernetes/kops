@@ -52,6 +52,10 @@ func (e *IAMInstanceProfile) Find(c *fi.Context) (*IAMInstanceProfile, error) {
 		return nil, err
 	}
 
+	if p == nil {
+		return nil, nil
+	}
+
 	actual := &IAMInstanceProfile{
 		ID:   p.InstanceProfileId,
 		Name: p.InstanceProfileName,
