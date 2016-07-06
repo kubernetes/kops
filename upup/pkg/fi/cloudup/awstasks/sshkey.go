@@ -80,7 +80,8 @@ func (e *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 	return actual, nil
 }
 
-func computeAwsKeyFingerprint(publicKey *fi.ResourceHolder) (string, error) {
+// computeAWSKeyFingerprint computes the AWS-specific fingerprint of the SSH public key
+func computeAWSKeyFingerprint(publicKey *fi.ResourceHolder) (string, error) {
 	publicKeyString, err := publicKey.AsString()
 	if err != nil {
 		return "", fmt.Errorf("error reading SSH public key: %v", err)
@@ -88,12 +89,12 @@ func computeAwsKeyFingerprint(publicKey *fi.ResourceHolder) (string, error) {
 
 	tokens := strings.Split(publicKeyString, " ")
 	if len(tokens) < 2 {
-		return "", fmt.Errorf("error parsing SSH public key: %s", publicKeyString)
+		return "", fmt.Errorf("error parsing SSH public key: %q", publicKeyString)
 	}
 
 	sshPublicKeyBytes, err := base64.StdEncoding.DecodeString(tokens[1])
 	if len(tokens) < 2 {
-		return "", fmt.Errorf("error decoding SSH public key: %s", publicKeyString)
+		return "", fmt.Errorf("error decoding SSH public key: %q", publicKeyString)
 	}
 
 	sshPublicKey, err := ssh.ParsePublicKey(sshPublicKeyBytes)
@@ -152,7 +153,7 @@ func toDER(pubkey ssh.PublicKey) ([]byte, error) {
 
 func (e *SSHKey) Run(c *fi.Context) error {
 	if e.KeyFingerprint == nil && e.PublicKey != nil {
-		keyFingerprint, err := computeAwsKeyFingerprint(e.PublicKey)
+		keyFingerprint, err := computeAWSKeyFingerprint(e.PublicKey)
 		if err != nil {
 			return fmt.Errorf("error computing key fingerpring for SSH key: %v", err)
 		}
