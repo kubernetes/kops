@@ -238,4 +238,41 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          32,
 		EphemeralDisks: nil,
 	},
+
+	// r3 family
+	{
+		Name:           "r3.large",
+		MemoryGB:       15.25,
+		ECU:            6.5,
+		Cores:          2,
+		EphemeralDisks: []int{32},
+	},
+	{
+		Name:           "r3.xlarge",
+		MemoryGB:       30.5,
+		ECU:            13,
+		Cores:          4,
+		EphemeralDisks: []int{80},
+	},
+	{
+		Name:           "r3.2xlarge",
+		MemoryGB:       61,
+		ECU:            26,
+		Cores:          8,
+		EphemeralDisks: []int{160},
+	},
+	{
+		Name:           "r3.4xlarge",
+		MemoryGB:       122,
+		ECU:            52,
+		Cores:          16,
+		EphemeralDisks: []int{320},
+	},
+	{
+		Name:           "r3.8xlarge",
+		MemoryGB:       244,
+		ECU:            104,
+		Cores:          32,
+		EphemeralDisks: []int{320, 320},
+	},
 }
