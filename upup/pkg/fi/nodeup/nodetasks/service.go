@@ -26,6 +26,9 @@ type Service struct {
 	Definition *string
 	Running    *bool
 
+	// Enabled configures the service to start at boot (or not start at boot)
+	Enabled *bool
+
 	ManageState  *bool `json:"manageState"`
 	SmartRestart *bool `json:"smartRestart"`
 }
@@ -74,6 +77,11 @@ func NewService(name string, contents string, meta string) (fi.Task, error) {
 	}
 	if s.ManageState == nil {
 		s.ManageState = fi.Bool(true)
+	}
+
+	// Default Enabled to be the same as running
+	if s.Enabled == nil {
+		s.Enabled = s.Running
 	}
 
 	return s, nil
@@ -131,6 +139,7 @@ func (e *Service) Find(c *fi.Context) (*Service, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	activeState := properties["ActiveState"]
 	switch activeState {
 	case "active":
@@ -141,6 +150,20 @@ func (e *Service) Find(c *fi.Context) (*Service, error) {
 	default:
 		glog.Warningf("Unknown ActiveState=%q; will treat as not running", activeState)
 		actual.Running = fi.Bool(false)
+	}
+
+	wantedBy := properties["WantedBy"]
+	switch wantedBy {
+	case "":
+		actual.Enabled = fi.Bool(false)
+
+	// TODO: Can probably do better here!
+	case "multi-user.target", "graphical.target multi-user.target":
+		actual.Enabled = fi.Bool(true)
+
+	default:
+		glog.Warningf("Unknown WantedBy=%q; will treat as not enabled", wantedBy)
+		actual.Enabled = fi.Bool(false)
 	}
 
 	return actual, nil
@@ -264,6 +287,23 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 		output, err := cmd.CombinedOutput()
 		if err != nil {
 			return fmt.Errorf("error doing systemd %s %s: %v\nOutput: %s", action, serviceName, err, output)
+		}
+	}
+
+	if changes.Enabled != nil && fi.BoolValue(e.ManageState) {
+		var args []string
+		if fi.BoolValue(e.Enabled) {
+			glog.Infof("Enabling service %q", serviceName)
+			args = []string{"enable", serviceName}
+		} else {
+			glog.Infof("Disabling service %q", serviceName)
+			args = []string{"disable", serviceName}
+		}
+		cmd := exec.Command("systemctl", args...)
+
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("error doing 'systemctl %v': %v\nOutput: %s", args, err, output)
 		}
 	}
 
