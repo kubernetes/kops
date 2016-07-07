@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
@@ -477,7 +476,7 @@ func DeleteVolume(cloud fi.Cloud, r *ResourceTracker) error {
 		if IsDependencyViolation(err) {
 			return err
 		}
-		if AWSErrorCode(err) == "InvalidVolume.NotFound" {
+		if awsup.AWSErrorCode(err) == "InvalidVolume.NotFound" {
 			// Concurrently deleted
 			return nil
 		}
@@ -579,16 +578,8 @@ func DescribeVolumes(cloud fi.Cloud) ([]*ec2.Volume, error) {
 	return volumes, nil
 }
 
-// AWSErrorCode returns the aws error code, if it is an awserr.Error, otherwise ""
-func AWSErrorCode(err error) string {
-	if awsError, ok := err.(awserr.Error); ok {
-		return awsError.Code()
-	}
-	return ""
-}
-
 func IsDependencyViolation(err error) bool {
-	code := AWSErrorCode(err)
+	code := awsup.AWSErrorCode(err)
 	switch code {
 	case "":
 		return false
@@ -792,7 +783,7 @@ func DeleteInternetGateway(cloud fi.Cloud, r *ResourceTracker) error {
 		}
 		response, err := c.EC2.DescribeInternetGateways(request)
 		if err != nil {
-			if AWSErrorCode(err) == "InvalidInternetGatewayID.NotFound" {
+			if awsup.AWSErrorCode(err) == "InvalidInternetGatewayID.NotFound" {
 				glog.Infof("Internet gateway %q not found; assuming already deleted", id)
 				return nil
 			}
@@ -833,7 +824,7 @@ func DeleteInternetGateway(cloud fi.Cloud, r *ResourceTracker) error {
 			if IsDependencyViolation(err) {
 				return err
 			}
-			if AWSErrorCode(err) == "InvalidInternetGatewayID.NotFound" {
+			if awsup.AWSErrorCode(err) == "InvalidInternetGatewayID.NotFound" {
 				glog.Infof("Internet gateway %q not found; assuming already deleted", id)
 				return nil
 			}
