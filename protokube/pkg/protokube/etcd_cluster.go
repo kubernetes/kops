@@ -1,6 +1,7 @@
 package protokube
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/ghodss/yaml"
 	"github.com/golang/glog"
@@ -151,10 +152,79 @@ func (c *EtcdCluster) configure(k *KubeBoot) error {
 		return fmt.Errorf("error executing etcd manifest template: %v", err)
 	}
 
-	manifestPath := "/etc/kubernetes/manifests/" + name + ".manifest"
-	err = ioutil.WriteFile(PathFor(manifestPath), []byte(manifest), 0644)
-	if err != nil {
-		return fmt.Errorf("error writing etcd manifest %q: %v", manifestPath, err)
+	// Time to write the manifest!
+
+	// To avoid a possible race condition where the manifest survives a reboot but the volume
+	// is not mounted or not yet mounted, we use a symlink from /etc/kubernetes/manifests/<name>.manifest
+	// to a file on the volume itself.  Thus kubelet cannot launch the manifest unless the volume is mounted.
+
+	manifestSource := "/etc/kubernetes/manifests/" + name + ".manifest"
+	manifestTargetDir := path.Join(c.VolumeMountPath, "k8s.io", "manifests")
+	manifestTarget := path.Join(manifestTargetDir, name+".manifest")
+
+	writeManifest := true
+	{
+		// See if the manifest has changed
+		existingManifest, err := ioutil.ReadFile(PathFor(manifestTarget))
+		if err != nil {
+			if !os.IsNotExist(err) {
+				return fmt.Errorf("error reading manifest file %q: %v", manifestTarget, err)
+			}
+		} else if bytes.Equal(existingManifest, manifest) {
+			writeManifest = false
+		} else {
+			glog.Infof("Need to update manifest file: %q", manifestTarget)
+		}
+	}
+
+	createSymlink := true
+	{
+		// See if the symlink is correct
+		stat, err := os.Lstat(PathFor(manifestSource))
+		if err != nil {
+			if !os.IsNotExist(err) {
+				return fmt.Errorf("error reading manifest symlink %q: %v", manifestSource, err)
+			}
+		} else if (stat.Mode() & os.ModeSymlink) != 0 {
+			// It's a symlink, make sure the target matches
+			target, err := os.Readlink(PathFor(manifestSource))
+			if err != nil {
+				return fmt.Errorf("error reading manifest symlink %q: %v", manifestSource, err)
+			}
+
+			if target == manifestTarget {
+				createSymlink = false
+			} else {
+				glog.Infof("Need to update manifest symlink (wrong target %q): %q", target, manifestSource)
+			}
+		} else {
+			glog.Infof("Need to update manifest symlink (not a symlink): %q", manifestSource)
+		}
+	}
+
+	if createSymlink || writeManifest {
+		err = os.Remove(PathFor(manifestSource))
+		if err != nil && !os.IsNotExist(err) {
+			return fmt.Errorf("error removing etcd manifest symlink (for strict creation) %q: %v", manifestSource, err)
+		}
+
+		err = os.MkdirAll(PathFor(manifestTargetDir), 0755)
+		if err != nil {
+			return fmt.Errorf("error creating directories for etcd manifest %q: %v", manifestTargetDir, err)
+		}
+
+		err = ioutil.WriteFile(PathFor(manifestTarget), manifest, 0644)
+		if err != nil {
+			return fmt.Errorf("error writing etcd manifest %q: %v", manifestTarget, err)
+		}
+
+		// Note: no PathFor on the target, because it's a symlink and we want it to evaluate on the host
+		err = os.Symlink(manifestTarget, PathFor(manifestSource))
+		if err != nil {
+			return fmt.Errorf("error creating etcd manifest symlink %q -> %q: %v", manifestSource, manifestTarget, err)
+		}
+
+		glog.Infof("Updated etcd manifest: %s", manifestSource)
 	}
 
 	return nil

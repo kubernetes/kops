@@ -21,6 +21,7 @@ type Volume struct {
 	AttachedTo string
 
 	// Mountpoint is the path on which the volume is mounted, if mounted
+	// It will likely be "/mnt/master-" + ID
 	Mountpoint string
 
 	// Status is a volume provider specific Status string; it makes it easier for the volume provider
