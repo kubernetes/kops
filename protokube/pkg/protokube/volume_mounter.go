@@ -9,8 +9,6 @@ import (
 	"time"
 )
 
-//const MasterMountpoint = "/mnt/master-pd"
-
 type VolumeMountController struct {
 	mounted map[string]*Volume
 
