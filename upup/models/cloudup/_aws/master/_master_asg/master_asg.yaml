@@ -10,6 +10,8 @@ launchConfiguration/{{ $m.Name }}.masters.{{ ClusterName }}:
   instanceType: {{ $m.Spec.MachineType }}
   associatePublicIP: true
   userData: resources/nodeup.sh _kubernetes_master
+  rootVolumeSize: {{ or $m.Spec.RootVolumeSize "20" }}
+  rootVolumeType: {{ or $m.Spec.RootVolumeType "gp2" }}
 
 autoscalingGroup/{{ $m.Name}}.masters.{{ ClusterName }}:
   minSize: 1
