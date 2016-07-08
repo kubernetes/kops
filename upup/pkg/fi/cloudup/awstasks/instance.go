@@ -26,13 +26,12 @@ type Instance struct {
 	Name *string
 	Tags map[string]string
 
-	ImageID             *string
-	InstanceType        *string
-	SSHKey              *SSHKey
-	SecurityGroups      []*SecurityGroup
-	AssociatePublicIP   *bool
-	BlockDeviceMappings map[string]*BlockDeviceMapping
-	IAMInstanceProfile  *IAMInstanceProfile
+	ImageID            *string
+	InstanceType       *string
+	SSHKey             *SSHKey
+	SecurityGroups     []*SecurityGroup
+	AssociatePublicIP  *bool
+	IAMInstanceProfile *IAMInstanceProfile
 }
 
 var _ fi.CompareWithID = &Instance{}
@@ -164,13 +163,9 @@ func nameFromIAMARN(arn *string) *string {
 }
 
 func (e *Instance) Run(c *fi.Context) error {
-	c.Cloud.(*awsup.AWSCloud).AddTags(e.Name, e.Tags)
+	cloud := c.Cloud.(*awsup.AWSCloud)
 
-	blockDeviceMappings, err := addEphemeralDevices(e.InstanceType, e.BlockDeviceMappings)
-	if err != nil {
-		return err
-	}
-	e.BlockDeviceMappings = blockDeviceMappings
+	cloud.AddTags(e.Name, e.Tags)
 
 	return fi.DefaultDeltaRunMethod(e, c)
 }
@@ -220,9 +215,16 @@ func (_ *Instance) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Instance) err
 			},
 		}
 
-		if e.BlockDeviceMappings != nil {
+		// Build up the actual block device mappings
+		// TODO: Support RootVolumeType & RootVolumeSize (see launchconfiguration)
+		blockDeviceMappings, err := buildEphemeralDevices(e.InstanceType)
+		if err != nil {
+			return err
+		}
+
+		if len(blockDeviceMappings) != 0 {
 			request.BlockDeviceMappings = []*ec2.BlockDeviceMapping{}
-			for deviceName, bdm := range e.BlockDeviceMappings {
+			for deviceName, bdm := range blockDeviceMappings {
 				request.BlockDeviceMappings = append(request.BlockDeviceMappings, bdm.ToEC2(deviceName))
 			}
 		}
