@@ -10,7 +10,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
-	"reflect"
 	"strings"
 )
 
@@ -20,13 +19,17 @@ type LaunchConfiguration struct {
 
 	UserData *fi.ResourceHolder
 
-	ImageID             *string
-	InstanceType        *string
-	SSHKey              *SSHKey
-	SecurityGroups      []*SecurityGroup
-	AssociatePublicIP   *bool
-	BlockDeviceMappings map[string]*BlockDeviceMapping
-	IAMInstanceProfile  *IAMInstanceProfile
+	ImageID            *string
+	InstanceType       *string
+	SSHKey             *SSHKey
+	SecurityGroups     []*SecurityGroup
+	AssociatePublicIP  *bool
+	IAMInstanceProfile *IAMInstanceProfile
+
+	// RootVolumeSize is the size of the EBS root volume to use, in GB
+	RootVolumeSize *int64
+	// RootVolumeType is the type of the EBS root volume to use (e.g. gp2)
+	RootVolumeType *string
 
 	ID *string
 }
@@ -90,11 +93,16 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 	}
 	actual.SecurityGroups = securityGroups
 
-	actual.BlockDeviceMappings = make(map[string]*BlockDeviceMapping)
+	// Find the root volume
 	for _, b := range lc.BlockDeviceMappings {
-		deviceName, bdm := BlockDeviceMappingFromAutoscaling(b)
-		actual.BlockDeviceMappings[deviceName] = bdm
+		if b.Ebs == nil || b.Ebs.SnapshotId != nil {
+			// Not the root
+			continue
+		}
+		actual.RootVolumeSize = b.Ebs.VolumeSize
+		actual.RootVolumeType = b.Ebs.VolumeType
 	}
+
 	userData, err := base64.StdEncoding.DecodeString(*lc.UserData)
 	if err != nil {
 		return nil, fmt.Errorf("error decoding UserData: %v", err)
@@ -121,7 +129,7 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 	return actual, nil
 }
 
-func addEphemeralDevices(instanceTypeName *string, blockDeviceMappings map[string]*BlockDeviceMapping) (map[string]*BlockDeviceMapping, error) {
+func buildEphemeralDevices(instanceTypeName *string) (map[string]*BlockDeviceMapping, error) {
 	// TODO: Any reason not to always attach the ephemeral devices?
 	if instanceTypeName == nil {
 		return nil, fi.RequiredField("InstanceType")
@@ -130,34 +138,39 @@ func addEphemeralDevices(instanceTypeName *string, blockDeviceMappings map[strin
 	if err != nil {
 		return nil, err
 	}
-	if blockDeviceMappings == nil {
-		blockDeviceMappings = make(map[string]*BlockDeviceMapping)
-	}
+	blockDeviceMappings := make(map[string]*BlockDeviceMapping)
 	for _, ed := range instanceType.EphemeralDevices() {
 		m := &BlockDeviceMapping{VirtualName: fi.String(ed.VirtualName)}
-
-		existing := blockDeviceMappings[ed.DeviceName]
-
-		if existing == nil {
-			blockDeviceMappings[ed.DeviceName] = m
-		} else {
-			if !reflect.DeepEqual(existing, m) {
-				// We might actually be calling Run again, if we are retrying the operation
-				glog.Warningf("not attaching ephemeral device - found duplicate device mapping: %q", ed.DeviceName)
-			}
-		}
+		blockDeviceMappings[ed.DeviceName] = m
 	}
 	return blockDeviceMappings, nil
 }
 
-func (e *LaunchConfiguration) Run(c *fi.Context) error {
-	// TODO: Only on first creation (i.e. we need stricter phases)
-	blockDeviceMappings, err := addEphemeralDevices(e.InstanceType, e.BlockDeviceMappings)
+func (e *LaunchConfiguration) buildRootDevice(cloud *awsup.AWSCloud) (map[string]*BlockDeviceMapping, error) {
+	imageID := fi.StringValue(e.ImageID)
+	image, err := cloud.ResolveImage(imageID)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("unable to resolve image: %q: %v", imageID, err)
+	} else if image == nil {
+		return nil, fmt.Errorf("unable to resolve image: %q: not found", imageID)
 	}
-	e.BlockDeviceMappings = blockDeviceMappings
 
+	rootDeviceName := aws.StringValue(image.RootDeviceName)
+
+	blockDeviceMappings := make(map[string]*BlockDeviceMapping)
+
+	rootDeviceMapping := &BlockDeviceMapping{
+		EbsDeleteOnTermination: aws.Bool(true),
+		EbsVolumeSize:          e.RootVolumeSize,
+		EbsVolumeType:          e.RootVolumeType,
+	}
+
+	blockDeviceMappings[rootDeviceName] = rootDeviceMapping
+
+	return blockDeviceMappings, nil
+}
+
+func (e *LaunchConfiguration) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
@@ -202,10 +215,27 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 	}
 	request.SecurityGroups = securityGroupIDs
 	request.AssociatePublicIpAddress = e.AssociatePublicIP
-	if e.BlockDeviceMappings != nil {
-		request.BlockDeviceMappings = []*autoscaling.BlockDeviceMapping{}
-		for device, bdm := range e.BlockDeviceMappings {
-			request.BlockDeviceMappings = append(request.BlockDeviceMappings, bdm.ToAutoscaling(device))
+
+	// Build up the actual block device mappings
+	{
+		rootDevices, err := e.buildRootDevice(t.Cloud)
+		if err != nil {
+			return err
+		}
+
+		ephemeralDevices, err := buildEphemeralDevices(e.InstanceType)
+		if err != nil {
+			return err
+		}
+
+		if len(rootDevices) != 0 || len(ephemeralDevices) != 0 {
+			request.BlockDeviceMappings = []*autoscaling.BlockDeviceMapping{}
+			for device, bdm := range rootDevices {
+				request.BlockDeviceMappings = append(request.BlockDeviceMappings, bdm.ToAutoscaling(device))
+			}
+			for device, bdm := range ephemeralDevices {
+				request.BlockDeviceMappings = append(request.BlockDeviceMappings, bdm.ToAutoscaling(device))
+			}
 		}
 	}
 
@@ -239,13 +269,20 @@ type terraformLaunchConfiguration struct {
 	SecurityGroups           []*terraform.Literal    `json:"security_groups,omitempty"`
 	AssociatePublicIpAddress *bool                   `json:"associate_public_ip_address,omitempty"`
 	UserData                 *terraform.Literal      `json:"user_data,omitempty"`
+	RootBlockDevice          *terraformBlockDevice   `json:"root_block_device,omitempty"`
 	EphemeralBlockDevice     []*terraformBlockDevice `json:"ephemeral_block_device,omitempty"`
 	Lifecycle                *terraformLifecycle     `json:"lifecycle,omitempty"`
 }
 
 type terraformBlockDevice struct {
+	// For ephemeral devices
 	DeviceName  *string `json:"device_name"`
 	VirtualName *string `json:"virtual_name"`
+
+	// For root
+	VolumeType          *string `json:"volume_type"`
+	VolumeSize          *int64  `json:"volume_size"`
+	DeleteOnTermination *bool   `json:"delete_on_termination"`
 }
 
 type terraformLifecycle struct {
@@ -278,13 +315,39 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 	}
 	tf.AssociatePublicIpAddress = e.AssociatePublicIP
 
-	if e.BlockDeviceMappings != nil {
-		tf.EphemeralBlockDevice = []*terraformBlockDevice{}
-		for deviceName, bdm := range e.BlockDeviceMappings {
-			tf.EphemeralBlockDevice = append(tf.EphemeralBlockDevice, &terraformBlockDevice{
-				VirtualName: bdm.VirtualName,
-				DeviceName:  fi.String(deviceName),
-			})
+	{
+		rootDevices, err := e.buildRootDevice(cloud)
+		if err != nil {
+			return err
+		}
+
+		ephemeralDevices, err := buildEphemeralDevices(e.InstanceType)
+		if err != nil {
+			return err
+		}
+
+		if len(rootDevices) != 0 {
+			if len(rootDevices) != 1 {
+				return fmt.Errorf("unexpectedly found multiple root devices")
+			}
+
+			for _, bdm := range rootDevices {
+				tf.RootBlockDevice = &terraformBlockDevice{
+					VolumeType:          bdm.EbsVolumeType,
+					VolumeSize:          bdm.EbsVolumeSize,
+					DeleteOnTermination: fi.Bool(true),
+				}
+			}
+		}
+
+		if len(ephemeralDevices) != 0 {
+			tf.EphemeralBlockDevice = []*terraformBlockDevice{}
+			for deviceName, bdm := range ephemeralDevices {
+				tf.EphemeralBlockDevice = append(tf.EphemeralBlockDevice, &terraformBlockDevice{
+					VirtualName: bdm.VirtualName,
+					DeviceName:  fi.String(deviceName),
+				})
+			}
 		}
 	}
 
