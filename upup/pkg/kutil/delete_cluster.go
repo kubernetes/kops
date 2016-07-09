@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
+	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
 	"io"
 	"k8s.io/kops/upup/pkg/fi"
@@ -39,7 +40,11 @@ type ResourceTracker struct {
 	blocked []string
 	done    bool
 
-	deleter func(cloud fi.Cloud, tracker *ResourceTracker) error
+	deleter      func(cloud fi.Cloud, tracker *ResourceTracker) error
+	groupKey     string
+	groupDeleter func(cloud fi.Cloud, trackers []*ResourceTracker) error
+
+	obj interface{}
 }
 
 type listFn func(fi.Cloud, string) ([]*ResourceTracker, error)
@@ -84,6 +89,8 @@ func (c *DeleteCluster) ListResources() (map[string]*ResourceTracker, error) {
 		// ASG
 		ListAutoScalingGroups,
 		ListAutoScalingLaunchConfigurations,
+		// Route 53
+		ListRoute53Records,
 	}
 	for _, fn := range listFunctions {
 		trackers, err := fn(cloud, c.ClusterName)
@@ -196,39 +203,66 @@ func (c *DeleteCluster) DeleteResources(resources map[string]*ResourceTracker) e
 				break
 			}
 
-			var wg sync.WaitGroup
+			groups := make(map[string][]*ResourceTracker)
 			for k, t := range phase {
+				groupKey := t.groupKey
+				if groupKey == "" {
+					groupKey = "_" + k
+				}
+				groups[groupKey] = append(groups[groupKey], t)
+			}
+
+			var wg sync.WaitGroup
+			for _, trackers := range groups {
 				wg.Add(1)
 
-				go func(k string, t *ResourceTracker) {
+				go func(trackers []*ResourceTracker) {
 					mutex.Lock()
-					failed[k] = t
+					for _, t := range trackers {
+						k := t.Type + ":" + t.ID
+						failed[k] = t
+					}
 					mutex.Unlock()
 
 					defer wg.Done()
-					glog.V(4).Infof("Deleting resource %s:  ", k)
 
-					err := t.deleter(c.Cloud, t)
+					human := trackers[0].Type + ":" + trackers[0].ID
+
+					var err error
+					if trackers[0].groupDeleter != nil {
+						err = trackers[0].groupDeleter(c.Cloud, trackers)
+					} else {
+						if len(trackers) != 1 {
+							glog.Fatalf("found group without groupKey")
+						}
+						err = trackers[0].deleter(c.Cloud, trackers[0])
+					}
 					if err != nil {
 						mutex.Lock()
 						if IsDependencyViolation(err) {
-							fmt.Printf("%s\tstill has dependencies, will retry\n", k)
-							glog.V(4).Infof("API call made when had dependency %s", k)
+							fmt.Printf("%s\tstill has dependencies, will retry\n", human)
+							glog.V(4).Infof("API call made when had dependency: %s", human)
 						} else {
-							fmt.Printf("%s\terror deleting resource, will retry: %v\n", k, err)
+							fmt.Printf("%s\terror deleting resource, will retry: %v\n", human, err)
 						}
-						failed[k] = t
+						for _, t := range trackers {
+							k := t.Type + ":" + t.ID
+							failed[k] = t
+						}
 						mutex.Unlock()
 					} else {
 						mutex.Lock()
-						fmt.Printf("%s\tok\n", k)
+						fmt.Printf("%s\tok\n", human)
 
-						delete(failed, k)
 						iterationsWithNoProgress = 0
-						done[k] = t
+						for _, t := range trackers {
+							k := t.Type + ":" + t.ID
+							delete(failed, k)
+							done[k] = t
+						}
 						mutex.Unlock()
 					}
-				}(k, t)
+				}(trackers)
 			}
 			wg.Wait()
 		}
@@ -1229,6 +1263,120 @@ func DeleteElasticIP(cloud fi.Cloud, t *ResourceTracker) error {
 		return fmt.Errorf("error deleting elastic ip %q: %v", t.Name, err)
 	}
 	return nil
+}
+
+func deleteRoute53Records(cloud fi.Cloud, zone *route53.HostedZone, trackers []*ResourceTracker) error {
+	c := cloud.(*awsup.AWSCloud)
+
+	var changes []*route53.Change
+	var names []string
+	for _, tracker := range trackers {
+		names = append(names, tracker.Name)
+		changes = append(changes, &route53.Change{
+			Action:            aws.String("DELETE"),
+			ResourceRecordSet: tracker.obj.(*route53.ResourceRecordSet),
+		})
+	}
+	human := strings.Join(names, ",")
+	glog.V(2).Infof("Deleting route53 records %q", human)
+
+	changeBatch := &route53.ChangeBatch{
+		Changes: changes,
+	}
+	request := &route53.ChangeResourceRecordSetsInput{
+		HostedZoneId: zone.Id,
+		ChangeBatch:  changeBatch,
+	}
+	_, err := c.Route53.ChangeResourceRecordSets(request)
+	if err != nil {
+		return fmt.Errorf("error deleting route53 record %q: %v", human, err)
+	}
+	return nil
+}
+
+func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
+	c := cloud.(*awsup.AWSCloud)
+
+	// Normalize cluster name, with leading "."
+	clusterName = "." + strings.TrimSuffix(clusterName, ".")
+
+	// TODO: If we have the zone id in the cluster spec, use it!
+	var zones []*route53.HostedZone
+	{
+		glog.V(2).Infof("Querying for all route53 zones")
+
+		request := &route53.ListHostedZonesInput{}
+		err := c.Route53.ListHostedZonesPages(request, func(p *route53.ListHostedZonesOutput, lastPage bool) bool {
+			for _, zone := range p.HostedZones {
+				zoneName := aws.StringValue(zone.Name)
+				zoneName = "." + strings.TrimSuffix(zoneName, ".")
+
+				if strings.HasSuffix(clusterName, zoneName) {
+					zones = append(zones, zone)
+				}
+			}
+			return true
+		})
+		if err != nil {
+			return nil, fmt.Errorf("error querying for route53 zones: %v", err)
+		}
+	}
+
+	var trackers []*ResourceTracker
+
+	for _, zone := range zones {
+		hostedZoneID := strings.TrimPrefix(aws.StringValue(zone.Id), "/hostedzone/")
+
+		glog.V(2).Infof("Querying for records in zone: %q", aws.StringValue(zone.Name))
+		request := &route53.ListResourceRecordSetsInput{
+			HostedZoneId: zone.Id,
+		}
+		err := c.Route53.ListResourceRecordSetsPages(request, func(p *route53.ListResourceRecordSetsOutput, lastPage bool) bool {
+			for _, rrs := range p.ResourceRecordSets {
+				if aws.StringValue(rrs.Type) != "A" {
+					continue
+				}
+
+				name := aws.StringValue(rrs.Name)
+				name = "." + strings.TrimSuffix(name, ".")
+
+				if !strings.HasSuffix(name, clusterName) {
+					continue
+				}
+				prefix := strings.TrimSuffix(name, clusterName)
+
+				remove := false
+				// TODO: Compute the actual set of names?
+				if prefix == ".api" || prefix == ".api.internal" {
+					remove = true
+				} else if strings.HasPrefix(prefix, ".etcd-") {
+					remove = true
+				}
+
+				if !remove {
+					continue
+				}
+
+				tracker := &ResourceTracker{
+					Name:     aws.StringValue(rrs.Name),
+					ID:       hostedZoneID + "/" + aws.StringValue(rrs.Name),
+					Type:     "route53-record",
+					groupKey: hostedZoneID,
+					groupDeleter: func(cloud fi.Cloud, trackers []*ResourceTracker) error {
+						return deleteRoute53Records(cloud, zone, trackers)
+					},
+					obj: rrs,
+				}
+				trackers = append(trackers, tracker)
+			}
+			return true
+		})
+		if err != nil {
+			return nil, fmt.Errorf("error querying for route53 records for zone %q: %v", aws.StringValue(zone.Name), err)
+		}
+	}
+
+	return trackers, nil
 }
 
 func FindName(tags []*ec2.Tag) string {
