@@ -64,6 +64,6 @@ autoscalingGroup/{{ $nodeset.Name }}.{{ ClusterName }}:
     - subnet/{{ $zone }}.{{ ClusterName }}
 {{ end }}
   tags:
-    k8s.io/role: node
+    k8s.io/role/node: 1
 
 {{ end }}
