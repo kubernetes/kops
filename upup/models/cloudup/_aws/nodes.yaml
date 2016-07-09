@@ -54,6 +54,8 @@ launchConfiguration/{{ $nodeset.Name }}.{{ ClusterName }}:
   instanceType: {{ $nodeset.Spec.MachineType }}
   associatePublicIP: true
   userData: resources/nodeup.sh _kubernetes_pool
+  rootVolumeSize: {{ or $nodeset.Spec.RootVolumeSize "20" }}
+  rootVolumeType: {{ or $nodeset.Spec.RootVolumeType "gp2" }}
 
 autoscalingGroup/{{ $nodeset.Name }}.{{ ClusterName }}:
   launchConfiguration: launchConfiguration/{{ $nodeset.Name }}.{{ ClusterName }}
