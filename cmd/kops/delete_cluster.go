@@ -116,7 +116,8 @@ func (c *DeleteClusterCmd) Run() error {
 		for _, v := range resources {
 			l = append(l, v)
 		}
-		err := t.Render(l, os.Stdout)
+
+		err := t.Render(l, os.Stdout, "TYPE", "NAME", "ID")
 		if err != nil {
 			return err
 		}
