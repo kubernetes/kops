@@ -35,6 +35,11 @@ type InstanceGroupSpec struct {
 	MachineType string `json:"machineType,omitempty"`
 	//NodeTag            string `json:",omitempty"`
 
+	// RootVolumeSize is the size of the EBS root volume to use, in GB
+	RootVolumeSize *int `json:"rootVolumeSize",omitempty`
+	// RootVolumeType is the type of the EBS root volume to use (e.g. gp2)
+	RootVolumeType *string `json:"rootVolumeType",omitempty`
+
 	Zones []string `json:"zones,omitempty"`
 }
 
