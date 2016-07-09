@@ -1,7 +1,7 @@
 all: gocode
 
-DOCKER_REGISTRY=gcr.io/must-override/
-S3_BUCKET=s3://must-override/
+DOCKER_REGISTRY=justinsb
+S3_BUCKET=s3://development-justinsb/
 
 ifndef VERSION
   VERSION := git-$(shell git rev-parse --short HEAD)

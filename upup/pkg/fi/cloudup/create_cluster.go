@@ -302,7 +302,8 @@ func (c *CreateClusterCmd) Run() error {
 	}
 
 	if c.NodeUpSource == "" {
-		location := "https://kubeupv2.s3.amazonaws.com/nodeup/nodeup-1.3.tar.gz"
+		location := "https://development-justinsb.s3.amazonaws.com/nodeup/nodeup-1.3.tar.gz"
+		//location := "https://kubeupv2.s3.amazonaws.com/nodeup/nodeup-1.3.tar.gz"
 		glog.Infof("Using default nodeup location: %q", location)
 		c.NodeUpSource = location
 	}
