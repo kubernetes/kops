@@ -3,6 +3,7 @@ package awsup
 import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -67,4 +68,20 @@ func FindELBTag(tags []*elb.Tag, key string) (string, bool) {
 		}
 	}
 	return "", false
+}
+
+// AWSErrorCode returns the aws error code, if it is an awserr.Error, otherwise ""
+func AWSErrorCode(err error) string {
+	if awsError, ok := err.(awserr.Error); ok {
+		return awsError.Code()
+	}
+	return ""
+}
+
+// AWSErrorMessage returns the aws error message, if it is an awserr.Error, otherwise ""
+func AWSErrorMessage(err error) string {
+	if awsError, ok := err.(awserr.Error); ok {
+		return awsError.Message()
+	}
+	return ""
 }

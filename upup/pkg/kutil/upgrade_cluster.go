@@ -140,7 +140,7 @@ func (x *UpgradeCluster) Upgrade() error {
 			for {
 				_, err := awsCloud.EC2.DetachVolume(request)
 				if err != nil {
-					if AWSErrorCode(err) == "IncorrectState" {
+					if awsup.AWSErrorCode(err) == "IncorrectState" {
 						glog.Infof("retrying to detach volume (master has probably not stopped yet): %q", err)
 						time.Sleep(5 * time.Second)
 						continue
