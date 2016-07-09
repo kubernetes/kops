@@ -329,6 +329,7 @@ func ListInstances(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, erro
 					stateName := aws.StringValue(instance.State.Name)
 					switch stateName {
 					case "terminated":
+					case "shutting-down":
 						continue
 
 					case "running":
