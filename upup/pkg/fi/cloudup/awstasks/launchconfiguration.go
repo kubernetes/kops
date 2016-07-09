@@ -253,10 +253,14 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 	_, err = t.Cloud.Autoscaling.CreateLaunchConfiguration(request)
 
 	if err != nil {
-		if awsup.AWSErrorCode(err) == "ValidationError" && strings.Contains(awsup.AWSErrorMessage(err), "Invalid IamInstanceProfile") {
-			// IAM instance profile creation is notoriously async
-			return fmt.Errorf("IAM instance profile %q not yet created/propagated", err)
+		if awsup.AWSErrorCode(err) == "ValidationError" {
+			message := awsup.AWSErrorMessage(err)
+			if strings.Contains(message, "not authorized") || strings.Contains(message, "Invalid IamInstance") {
+				// IAM instance profile creation is notoriously async
+				return fmt.Errorf("IAM instance profile not yet created/propagated")
+			}
 		}
+		glog.V(4).Infof("ErrorCode=%q, Message=%q", awsup.AWSErrorCode(err), awsup.AWSErrorMessage(err))
 		return fmt.Errorf("error creating AutoscalingLaunchConfiguration: %v", err)
 	}
 
