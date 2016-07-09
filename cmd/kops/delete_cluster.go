@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	"bytes"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/api"
@@ -12,8 +11,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/kutil"
 	"os"
-	"reflect"
-	"text/tabwriter"
 )
 
 type DeleteClusterCmd struct {
@@ -105,67 +102,30 @@ func (c *DeleteClusterCmd) Run() error {
 	if len(resources) == 0 {
 		fmt.Printf("Nothing to delete\n")
 	} else {
-		columns := []string{"TYPE", "ID", "NAME"}
-		fields := []string{"Type", "ID", "Name"}
-
-		var b bytes.Buffer
-		w := new(tabwriter.Writer)
-
-		// Format in tab-separated columns with a tab stop of 8.
-		w.Init(os.Stdout, 0, 8, 0, '\t', tabwriter.StripEscape)
-
-		writeHeader := true
-		if writeHeader {
-			for i, c := range columns {
-				if i != 0 {
-					b.WriteByte('\t')
-				}
-				b.WriteByte(tabwriter.Escape)
-				b.WriteString(c)
-				b.WriteByte(tabwriter.Escape)
-			}
-			b.WriteByte('\n')
-
-			_, err := w.Write(b.Bytes())
-			if err != nil {
-				return fmt.Errorf("error writing to output: %v", err)
-			}
-			b.Reset()
+		t := &Table{}
+		t.AddColumn("TYPE", func(r *kutil.ResourceTracker) string {
+			return r.Type
+		})
+		t.AddColumn("ID", func(r *kutil.ResourceTracker) string {
+			return r.ID
+		})
+		t.AddColumn("NAME", func(r *kutil.ResourceTracker) string {
+			return r.Name
+		})
+		var l []*kutil.ResourceTracker
+		for _, v := range resources {
+			l = append(l, v)
 		}
-
-		for _, t := range resources {
-			for i := range columns {
-				if i != 0 {
-					b.WriteByte('\t')
-				}
-
-				v := reflect.ValueOf(t)
-				if v.Kind() == reflect.Ptr {
-					v = v.Elem()
-				}
-				fv := v.FieldByName(fields[i])
-
-				s := fi.ValueAsString(fv)
-
-				b.WriteByte(tabwriter.Escape)
-				b.WriteString(s)
-				b.WriteByte(tabwriter.Escape)
-			}
-			b.WriteByte('\n')
-
-			_, err := w.Write(b.Bytes())
-			if err != nil {
-				return fmt.Errorf("error writing to output: %v", err)
-			}
-			b.Reset()
+		err := t.Render(l, os.Stdout)
+		if err != nil {
+			return err
 		}
-		w.Flush()
 
 		if !c.Yes {
 			return fmt.Errorf("Must specify --yes to delete")
 		}
 
-		err := d.DeleteResources(resources)
+		err = d.DeleteResources(resources)
 		if err != nil {
 			return err
 		}
