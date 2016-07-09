@@ -57,7 +57,7 @@ func (c *DeleteClusterCmd) Run() error {
 		if region == "" {
 			return fmt.Errorf("--region is required")
 		}
-		clusterName := rootCommand.clusterName
+		clusterName = rootCommand.clusterName
 		if clusterName == "" {
 			return fmt.Errorf("--name is required (when --external)")
 		}
