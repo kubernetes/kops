@@ -11,18 +11,25 @@ import (
 	"path/filepath"
 )
 
-type EditClusterCmd struct {
+type EditInstanceGroupCmd struct {
 }
 
-var editClusterCmd EditClusterCmd
+var editInstanceGroupCmd EditInstanceGroupCmd
 
 func init() {
 	cmd := &cobra.Command{
-		Use:   "cluster",
-		Short: "Edit cluster",
-		Long:  `Edit a cluster configuration.`,
+		Use:     "instancegroup",
+		Aliases: []string{"instancegroups", "ig"},
+		Short:   "Edit instancegroup",
+		Long:    `Edit an instancegroup configuration.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := editClusterCmd.Run()
+			if len(args) == 0 {
+				glog.Exitf("Specify name of instance group to edit")
+			}
+			if len(args) != 1 {
+				glog.Exitf("Can only edit one instance group at a time!")
+			}
+			err := editInstanceGroupCmd.Run(args[0])
 			if err != nil {
 				glog.Exitf("%v", err)
 			}
@@ -32,16 +39,11 @@ func init() {
 	editCmd.AddCommand(cmd)
 }
 
-func (c *EditClusterCmd) Run() error {
+func (c *EditInstanceGroupCmd) Run(groupName string) error {
 	stateStore, err := rootCommand.StateStore()
 	if err != nil {
 		return err
 	}
-
-	//cluster, _, err := api.ReadConfig(stateStore)
-	//if err != nil {
-	//	return fmt.Errorf("error reading configuration: %v", err)
-	//}
 
 	var (
 		edit = editor.NewDefaultEditor(editorEnvs)
@@ -49,9 +51,9 @@ func (c *EditClusterCmd) Run() error {
 
 	ext := "yaml"
 
-	raw, err := stateStore.VFSPath().Join("config").ReadFile()
+	raw, err := stateStore.VFSPath().Join("instancegroup", groupName).ReadFile()
 	if err != nil {
-		return fmt.Errorf("error reading config file: %v", err)
+		return fmt.Errorf("error reading instancegroup file: %v", err)
 	}
 
 	// launch the editor
@@ -70,9 +72,9 @@ func (c *EditClusterCmd) Run() error {
 		return nil
 	}
 
-	err = stateStore.VFSPath().Join("config").WriteFile(edited)
+	err = stateStore.VFSPath().Join("instancegroup", groupName).WriteFile(edited)
 	if err != nil {
-		return fmt.Errorf("error writing config file: %v", err)
+		return fmt.Errorf("error writing instancegroup file: %v", err)
 	}
 
 	return nil
