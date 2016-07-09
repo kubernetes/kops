@@ -57,5 +57,5 @@ func (c *GetClustersCmd) Run() error {
 	t.AddColumn("NAME", func(c *api.Cluster) string {
 		return c.Name
 	})
-	return t.Render(clusters, os.Stdout)
+	return t.Render(clusters, os.Stdout, "NAME")
 }
