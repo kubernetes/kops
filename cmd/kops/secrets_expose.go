@@ -100,7 +100,7 @@ func (cmd *ExposeSecretsCommand) Run() error {
 		return fmt.Errorf("secret type not known: %q", cmd.Type)
 	}
 
-	_, err := fmt.Fprint(os.Stdout, value + "\n")
+	_, err := fmt.Fprint(os.Stdout, value+"\n")
 	if err != nil {
 		return fmt.Errorf("error writing to output: %v", err)
 	}

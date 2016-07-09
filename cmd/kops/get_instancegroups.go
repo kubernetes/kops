@@ -49,5 +49,5 @@ func (c *GetInstanceGroupsCmd) Run() error {
 	t.AddColumn("NAME", func(c *api.InstanceGroup) string {
 		return c.Name
 	})
-	return t.Render(instancegroups, os.Stdout)
+	return t.Render(instancegroups, os.Stdout, "NAME")
 }
