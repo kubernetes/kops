@@ -83,8 +83,17 @@ func (c *DeleteCluster) ListResources() (map[string]*ResourceTracker, error) {
 	resources := make(map[string]*ResourceTracker)
 
 	listFunctions := []listFn{
-		ListSubnets, ListRouteTables, ListSecurityGroups,
-		ListInstances, ListDhcpOptions, ListInternetGateways, ListVPCs, ListVolumes,
+		// EC2
+		ListInstances,
+		ListKeypairs,
+		ListSecurityGroups,
+		ListVolumes,
+		// EC2 VPC
+		ListDhcpOptions,
+		ListInternetGateways,
+		ListRouteTables,
+		ListSubnets,
+		ListVPCs,
 		// ELBs
 		ListELBs,
 		// ASG
@@ -614,6 +623,53 @@ func DescribeVolumes(cloud fi.Cloud) ([]*ec2.Volume, error) {
 	}
 
 	return volumes, nil
+}
+
+func DeleteKeypair(cloud fi.Cloud, r *ResourceTracker) error {
+	c := cloud.(*awsup.AWSCloud)
+
+	name := r.Name
+
+	glog.V(2).Infof("Deleting EC2 Keypair %q", name)
+	request := &ec2.DeleteKeyPairInput{
+		KeyName: &name,
+	}
+	_, err := c.EC2.DeleteKeyPair(request)
+	if err != nil {
+		return fmt.Errorf("error deleting KeyPair %q: %v", name, err)
+	}
+	return nil
+}
+
+func ListKeypairs(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
+	c := cloud.(*awsup.AWSCloud)
+
+	keypairName := "kubernetes." + clusterName
+
+	glog.V(2).Infof("Listing EC2 Keypairs")
+	request := &ec2.DescribeKeyPairsInput{
+		Filters: []*ec2.Filter{awsup.NewEC2Filter("key-name", keypairName)},
+	}
+	response, err := c.EC2.DescribeKeyPairs(request)
+	if err != nil {
+		return nil, fmt.Errorf("error listing KeyPairs: %v", err)
+	}
+
+	var trackers []*ResourceTracker
+
+	for _, keypair := range response.KeyPairs {
+		name := aws.StringValue(keypair.KeyName)
+		tracker := &ResourceTracker{
+			Name:    name,
+			ID:      name,
+			Type:    "keypair",
+			deleter: DeleteKeypair,
+		}
+
+		trackers = append(trackers, tracker)
+	}
+
+	return trackers, nil
 }
 
 func IsDependencyViolation(err error) bool {
