@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cobra"
 	"io"
 	"io/ioutil"
-	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/kubecfg"
 	"os"
@@ -14,8 +13,8 @@ import (
 )
 
 type ExportKubecfgCommand struct {
-	tmpdir  string
-	caStore fi.CAStore
+	tmpdir   string
+	keyStore fi.CAStore
 }
 
 var exportKubecfgCommand ExportKubecfgCommand
@@ -38,20 +37,12 @@ func init() {
 }
 
 func (c *ExportKubecfgCommand) Run() error {
-	stateStore, err := rootCommand.StateStore()
+	clusterRegistry, cluster, err := rootCommand.Cluster()
 	if err != nil {
 		return err
 	}
 
-	cluster, _, err := api.ReadConfig(stateStore)
-	if err != nil {
-		return fmt.Errorf("error reading configuration: %v", err)
-	}
-
 	clusterName := cluster.Name
-	if clusterName == "" {
-		return fmt.Errorf("ClusterName must be set in config")
-	}
 
 	master := cluster.Spec.MasterPublicName
 	if master == "" {
@@ -87,10 +78,7 @@ func (c *ExportKubecfgCommand) Run() error {
 	//	return fmt.Errorf("Unknown cloud provider %q", cloudProvider)
 	//}
 
-	c.caStore, err = rootCommand.CA()
-	if err != nil {
-		return err
-	}
+	c.keyStore = clusterRegistry.KeyStore(clusterName)
 
 	if b.CACert, err = c.copyCertificate(fi.CertificateId_CA); err != nil {
 		return err
@@ -116,7 +104,7 @@ func (c *ExportKubecfgCommand) Run() error {
 
 func (c *ExportKubecfgCommand) copyCertificate(id string) (string, error) {
 	p := path.Join(c.tmpdir, id+".crt")
-	cert, err := c.caStore.Cert(id)
+	cert, err := c.keyStore.Cert(id)
 	if err != nil {
 		return "", fmt.Errorf("error fetching certificate %q: %v", id, err)
 	}
@@ -131,7 +119,7 @@ func (c *ExportKubecfgCommand) copyCertificate(id string) (string, error) {
 
 func (c *ExportKubecfgCommand) copyPrivateKey(id string) (string, error) {
 	p := path.Join(c.tmpdir, id+".key")
-	cert, err := c.caStore.PrivateKey(id)
+	cert, err := c.keyStore.PrivateKey(id)
 	if err != nil {
 		return "", fmt.Errorf("error fetching private key %q: %v", id, err)
 	}

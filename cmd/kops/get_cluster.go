@@ -6,6 +6,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/api"
+	"strings"
 )
 
 type GetClustersCmd struct {
@@ -31,22 +32,27 @@ func init() {
 }
 
 func (c *GetClustersCmd) Run() error {
-	clusterNames, err := rootCommand.ListClusters()
+	clusterRegistry, err := rootCommand.ClusterRegistry()
+	if err != nil {
+		return err
+	}
+
+	clusterNames, err := clusterRegistry.List()
 	if err != nil {
 		return err
 	}
 
 	var clusters []*api.Cluster
-
 	for _, clusterName := range clusterNames {
-		stateStore, err := rootCommand.StateStoreForCluster(clusterName)
+		cluster, err := clusterRegistry.Find(clusterName)
 		if err != nil {
 			return err
 		}
 
-		// TODO: Faster if we don't read groups...
-		// We probably can just have a command which directly reads all cluster config files
-		cluster, _, err := api.ReadConfig(stateStore)
+		if cluster == nil {
+			glog.Warningf("cluster was listed, but then not found %q", clusterName)
+		}
+
 		clusters = append(clusters, cluster)
 	}
 	if len(clusters) == 0 {
@@ -57,5 +63,15 @@ func (c *GetClustersCmd) Run() error {
 	t.AddColumn("NAME", func(c *api.Cluster) string {
 		return c.Name
 	})
-	return t.Render(clusters, os.Stdout, "NAME")
+	t.AddColumn("CLOUD", func(c *api.Cluster) string {
+		return c.Spec.CloudProvider
+	})
+	t.AddColumn("ZONES", func(c *api.Cluster) string {
+		var zoneNames []string
+		for _, z := range c.Spec.Zones {
+			zoneNames = append(zoneNames, z.Name)
+		}
+		return strings.Join(zoneNames, ",")
+	})
+	return t.Render(clusters, os.Stdout, "NAME", "CLOUD", "ZONES")
 }

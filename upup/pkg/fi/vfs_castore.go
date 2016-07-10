@@ -12,61 +12,73 @@ import (
 	"math/big"
 	"os"
 	"strings"
+	"sync"
 	"time"
 )
 
 type VFSCAStore struct {
-	dryrun         bool
-	basedir        vfs.Path
-	caCertificates *certificates
-	caPrivateKeys  *privateKeys
+	DryRun  bool
+	basedir vfs.Path
+
+	mutex               sync.Mutex
+	cacheCaCertificates *certificates
+	cacheCaPrivateKeys  *privateKeys
 }
 
 var _ CAStore = &VFSCAStore{}
 
-func NewVFSCAStore(basedir vfs.Path, dryrun bool) (CAStore, error) {
+func NewVFSCAStore(basedir vfs.Path) CAStore {
 	c := &VFSCAStore{
-		dryrun:  dryrun,
 		basedir: basedir,
 	}
-	//err := os.MkdirAll(path.Join(basedir, "private"), 0700)
-	//if err != nil {
-	//	return nil, fmt.Errorf("error creating directory: %v", err)
-	//}
-	//err = os.MkdirAll(path.Join(basedir, "issued"), 0700)
-	//if err != nil {
-	//	return nil, fmt.Errorf("error creating directory: %v", err)
-	//}
-	caCertificates, err := c.loadCertificates(c.buildCertificatePoolPath(CertificateId_CA))
-	if err != nil {
-		return nil, err
-	}
 
-	if caCertificates != nil {
-		caPrivateKeys, err := c.loadPrivateKeys(c.buildPrivateKeyPoolPath(CertificateId_CA))
-		if err != nil {
-			return nil, err
-		}
-		if caPrivateKeys == nil {
-			glog.Warningf("CA private key was not found")
-			//return nil, fmt.Errorf("error loading CA private key - key not found")
-		}
-		c.caCertificates = caCertificates
-		c.caPrivateKeys = caPrivateKeys
-	} else {
-		err := c.generateCACertificate()
-		if err != nil {
-			return nil, err
-		}
-	}
-	return c, nil
+	return c
 }
 
 func (s *VFSCAStore) VFSPath() vfs.Path {
 	return s.basedir
 }
 
-func (c *VFSCAStore) generateCACertificate() error {
+// Retrieves the CA keypair, generating a new keypair if not found
+func (s *VFSCAStore) readCAKeypairs() (*certificates, *privateKeys, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	if s.cacheCaCertificates != nil {
+		return s.cacheCaCertificates, s.cacheCaPrivateKeys, nil
+	}
+
+	caCertificates, err := s.loadCertificates(s.buildCertificatePoolPath(CertificateId_CA))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if caCertificates != nil {
+		caPrivateKeys, err := s.loadPrivateKeys(s.buildPrivateKeyPoolPath(CertificateId_CA))
+		if err != nil {
+			return nil, nil, err
+		}
+		if caPrivateKeys == nil {
+			glog.Warningf("CA private key was not found")
+			//return nil, fmt.Errorf("error loading CA private key - key not found")
+		}
+		s.cacheCaCertificates = caCertificates
+		s.cacheCaPrivateKeys = caPrivateKeys
+	} else {
+		caCertificates, caPrivateKeys, err := s.generateCACertificate()
+		if err != nil {
+			return nil, nil, err
+		}
+
+		s.cacheCaCertificates = caCertificates
+		s.cacheCaPrivateKeys = caPrivateKeys
+	}
+	return s.cacheCaCertificates, s.cacheCaPrivateKeys, nil
+}
+
+// Creates and stores CA keypair
+// Should be called with the mutex held, to prevent concurrent creation of different keys
+func (c *VFSCAStore) generateCACertificate() (*certificates, *privateKeys, error) {
 	subject := &pkix.Name{
 		CommonName: "kubernetes",
 	}
@@ -81,50 +93,48 @@ func (c *VFSCAStore) generateCACertificate() error {
 
 	caRsaKey, err := rsa.GenerateKey(crypto_rand.Reader, 2048)
 	if err != nil {
-		return fmt.Errorf("error generating RSA private key: %v", err)
+		return nil, nil, fmt.Errorf("error generating RSA private key: %v", err)
 	}
 
 	caPrivateKey := &PrivateKey{Key: caRsaKey}
 
 	caCertificate, err := SignNewCertificate(caPrivateKey, template, nil, nil)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	keyPath := c.buildPrivateKeyPath(CertificateId_CA, serial)
 	err = c.storePrivateKey(caPrivateKey, keyPath)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	// Make double-sure it round-trips
 	privateKeys, err := c.loadPrivateKeys(c.buildPrivateKeyPoolPath(CertificateId_CA))
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 	if privateKeys == nil || privateKeys.primary != serial.Text(10) {
-		return fmt.Errorf("failed to round-trip CA private key")
+		return nil, nil, fmt.Errorf("failed to round-trip CA private key")
 	}
 
 	certPath := c.buildCertificatePath(CertificateId_CA, serial)
 	err = c.storeCertificate(caCertificate, certPath)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	// Make double-sure it round-trips
 	certificates, err := c.loadCertificates(c.buildCertificatePoolPath(CertificateId_CA))
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	if certificates == nil || certificates.primary != serial.Text(10) {
-		return fmt.Errorf("failed to round-trip CA certifiacate")
+		return nil, nil, fmt.Errorf("failed to round-trip CA certifiacate")
 	}
 
-	c.caPrivateKeys = privateKeys
-	c.caCertificates = certificates
-	return nil
+	return certificates, privateKeys, nil
 }
 
 func (c *VFSCAStore) buildCertificatePoolPath(id string) vfs.Path {
@@ -220,7 +230,7 @@ func (c *VFSCAStore) loadOneCertificate(p vfs.Path) (*Certificate, error) {
 func (c *VFSCAStore) Cert(id string) (*Certificate, error) {
 	cert, err := c.FindCert(id)
 	if err == nil && cert == nil {
-		if c.dryrun {
+		if c.DryRun {
 			glog.Warningf("using empty certificate, because --dryrun specified")
 			return &Certificate{}, err
 		}
@@ -233,7 +243,7 @@ func (c *VFSCAStore) Cert(id string) (*Certificate, error) {
 func (c *VFSCAStore) CertificatePool(id string) (*CertificatePool, error) {
 	cert, err := c.FindCertificatePool(id)
 	if err == nil && cert == nil {
-		if c.dryrun {
+		if c.DryRun {
 			glog.Warningf("using empty certificate, because --dryrun specified")
 			return &CertificatePool{}, err
 		}
@@ -247,7 +257,11 @@ func (c *VFSCAStore) FindCert(id string) (*Certificate, error) {
 	var certs *certificates
 
 	if id == CertificateId_CA {
-		certs = c.caCertificates
+		caCertificates, _, err := c.readCAKeypairs()
+		if err != nil {
+			return nil, err
+		}
+		certs = caCertificates
 	} else {
 		var err error
 		p := c.buildCertificatePoolPath(id)
@@ -269,7 +283,11 @@ func (c *VFSCAStore) FindCertificatePool(id string) (*CertificatePool, error) {
 	var certs *certificates
 
 	if id == CertificateId_CA {
-		certs = c.caCertificates
+		caCertificates, _, err := c.readCAKeypairs()
+		if err != nil {
+			return nil, err
+		}
+		certs = caCertificates
 	} else {
 		var err error
 		p := c.buildCertificatePoolPath(id)
@@ -317,10 +335,15 @@ func (c *VFSCAStore) IssueCert(id string, serial *big.Int, privateKey *PrivateKe
 
 	p := c.buildCertificatePath(id, serial)
 
-	if c.caPrivateKeys == nil || c.caPrivateKeys.Primary() == nil {
+	caCertificates, caPrivateKeys, err := c.readCAKeypairs()
+	if err != nil {
+		return nil, err
+	}
+
+	if caPrivateKeys == nil || caPrivateKeys.Primary() == nil {
 		return nil, fmt.Errorf("ca.key was not found; cannot issue certificates")
 	}
-	cert, err := SignNewCertificate(privateKey, template, c.caCertificates.Primary().Certificate, c.caPrivateKeys.Primary())
+	cert, err := SignNewCertificate(privateKey, template, caCertificates.Primary().Certificate, caPrivateKeys.Primary())
 	if err != nil {
 		return nil, err
 	}
@@ -437,7 +460,11 @@ func ParsePEMPrivateKey(data []byte) (*PrivateKey, error) {
 func (c *VFSCAStore) FindPrivateKey(id string) (*PrivateKey, error) {
 	var keys *privateKeys
 	if id == CertificateId_CA {
-		keys = c.caPrivateKeys
+		_, caPrivateKeys, err := c.readCAKeypairs()
+		if err != nil {
+			return nil, err
+		}
+		keys = caPrivateKeys
 	} else {
 		var err error
 		p := c.buildPrivateKeyPoolPath(id)
@@ -458,7 +485,7 @@ func (c *VFSCAStore) FindPrivateKey(id string) (*PrivateKey, error) {
 func (c *VFSCAStore) PrivateKey(id string) (*PrivateKey, error) {
 	key, err := c.FindPrivateKey(id)
 	if err == nil && key == nil {
-		if c.dryrun {
+		if c.DryRun {
 			glog.Warningf("using empty certificate, because --dryrun specified")
 			return &PrivateKey{}, err
 		}

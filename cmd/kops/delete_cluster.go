@@ -46,7 +46,7 @@ func init() {
 type getter func(o interface{}) interface{}
 
 func (c *DeleteClusterCmd) Run() error {
-	var stateStore fi.StateStore
+	var clusterRegistry *api.ClusterRegistry
 	var err error
 
 	var cloud fi.Cloud
@@ -68,20 +68,25 @@ func (c *DeleteClusterCmd) Run() error {
 			return fmt.Errorf("error initializing AWS client: %v", err)
 		}
 	} else {
-		stateStore, err = rootCommand.StateStore()
+		clusterName = rootCommand.clusterName
+
+		clusterRegistry, err = rootCommand.ClusterRegistry()
 		if err != nil {
 			return err
 		}
 
-		cluster, _, err := api.ReadConfig(stateStore)
+		cluster, err := clusterRegistry.Find(clusterName)
 		if err != nil {
 			return err
 		}
 
-		if rootCommand.clusterName != cluster.Name {
+		if cluster == nil {
+			return fmt.Errorf("cluster %q not found", clusterName)
+		}
+
+		if clusterName != cluster.Name {
 			return fmt.Errorf("sanity check failed: cluster name mismatch")
 		}
-		clusterName = cluster.Name
 
 		cloud, err = cloudup.BuildCloud(cluster)
 		if err != nil {
@@ -100,7 +105,7 @@ func (c *DeleteClusterCmd) Run() error {
 	}
 
 	if len(resources) == 0 {
-		fmt.Printf("Nothing to delete\n")
+		fmt.Printf("No resources to delete\n")
 	} else {
 		t := &Table{}
 		t.AddColumn("TYPE", func(r *kutil.ResourceTracker) string {
@@ -132,11 +137,11 @@ func (c *DeleteClusterCmd) Run() error {
 		}
 	}
 
-	if stateStore != nil {
+	if clusterRegistry != nil {
 		if !c.Yes {
 			return fmt.Errorf("Must specify --yes to delete")
 		}
-		err := api.DeleteConfig(stateStore)
+		err := clusterRegistry.DeleteAllClusterState(clusterName)
 		if err != nil {
 			return fmt.Errorf("error removing cluster from state store: %v", err)
 		}

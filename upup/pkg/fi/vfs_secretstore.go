@@ -14,15 +14,11 @@ type VFSSecretStore struct {
 
 var _ SecretStore = &VFSSecretStore{}
 
-func NewVFSSecretStore(basedir vfs.Path) (SecretStore, error) {
+func NewVFSSecretStore(basedir vfs.Path) SecretStore {
 	c := &VFSSecretStore{
 		basedir: basedir,
 	}
-	//err := os.MkdirAll(path.Join(basedir), 0700)
-	//if err != nil {
-	//	return nil, fmt.Errorf("error creating directory: %v", err)
-	//}
-	return c, nil
+	return c
 }
 
 func (s *VFSSecretStore) VFSPath() vfs.Path {
