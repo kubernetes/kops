@@ -47,7 +47,7 @@ func (c *RollingUpdateClusterCmd) Run() error {
 	if c.Region == "" {
 		return fmt.Errorf("--region is required")
 	}
-	clusterName := rootCommand.clusterName
+	clusterName := rootCommand.ClusterName()
 	if clusterName == "" {
 		return fmt.Errorf("--name is required")
 	}

@@ -5,17 +5,21 @@ import (
 	"fmt"
 	"os"
 
+	"encoding/json"
+	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/vfs"
-	"strings"
+	"k8s.io/kops/upup/pkg/kutil"
 )
 
 type RootCmd struct {
 	configFile string
 
-	stateStore    fi.StateStore
+	clusterRegistry *api.ClusterRegistry
+
 	stateLocation string
 	clusterName   string
 
@@ -75,85 +79,130 @@ func (c *RootCmd) AddCommand(cmd *cobra.Command) {
 	c.cobraCommand.AddCommand(cmd)
 }
 
-func (c *RootCmd) StateStore() (fi.StateStore, error) {
-	if c.clusterName == "" {
+func (c *RootCmd) ClusterName() string {
+	if c.clusterName != "" {
+		return c.clusterName
+	}
+
+	config, err := readKubectlClusterConfig()
+	if err != nil {
+		glog.Warningf("error reading kubecfg: %v", err)
+	} else if config != nil && config.Name != "" {
+		glog.V(2).Infof("Got cluster name from current kubectl context: %s", config.Name)
+		c.clusterName = config.Name
+	}
+	return c.clusterName
+}
+
+func readKubectlClusterConfig() (*kubectlClusterWithName, error) {
+	kubectl := &kutil.Kubectl{}
+	context, err := kubectl.GetCurrentContext()
+	if err != nil {
+		return nil, fmt.Errorf("error getting current context from kubectl: %v", err)
+	}
+	glog.V(4).Infof("context = %q", context)
+
+	configString, err := kubectl.GetConfig(true, "json")
+	if err != nil {
+		return nil, fmt.Errorf("error getting current config from kubectl: %v", err)
+	}
+	glog.V(8).Infof("config = %q", configString)
+
+	config := &kubectlConfig{}
+	err = json.Unmarshal([]byte(configString), config)
+	if err != nil {
+		return nil, fmt.Errorf("cannot parse current config from kubectl: %v", err)
+	}
+
+	if len(config.Clusters) != 1 {
+		return nil, fmt.Errorf("expected exactly one cluster in kubectl config, found %d", len(config.Clusters))
+	}
+
+	return config.Clusters[0], nil
+}
+
+func (c *RootCmd) ClusterRegistry() (*api.ClusterRegistry, error) {
+	if c.clusterRegistry != nil {
+		return c.clusterRegistry, nil
+	}
+
+	if c.stateLocation == "" {
+		return nil, fmt.Errorf("--state is required (or export KOPS_STATE_STORE)")
+	}
+
+	basePath, err := vfs.Context.BuildVfsPath(c.stateLocation)
+	if err != nil {
+		return nil, fmt.Errorf("error building state store path for %q: %v", c.stateLocation, err)
+	}
+
+	clusterRegistry := api.NewClusterRegistry(basePath)
+	c.clusterRegistry = clusterRegistry
+	return clusterRegistry, nil
+}
+
+func (c *RootCmd) Cluster() (*api.ClusterRegistry, *api.Cluster, error) {
+	clusterRegistry, err := c.ClusterRegistry()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	clusterName := c.ClusterName()
+	if clusterName == "" {
+		return nil, nil, fmt.Errorf("--name is required")
+	}
+
+	cluster, err := clusterRegistry.Find(clusterName)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error reading cluster configuration: %v", err)
+	}
+	if cluster == nil {
+		return nil, nil, fmt.Errorf("cluster %q not found", clusterName)
+	}
+
+	if clusterName != cluster.Name {
+		return nil, nil, fmt.Errorf("cluster name did not match expected name: %v vs %v", clusterName, cluster.Name)
+	}
+	return clusterRegistry, cluster, nil
+}
+
+func (c *RootCmd) InstanceGroupRegistry() (*api.InstanceGroupRegistry, error) {
+	clusterStore, err := c.ClusterRegistry()
+	if err != nil {
+		return nil, err
+	}
+
+	clusterName := c.ClusterName()
+	if clusterName == "" {
 		return nil, fmt.Errorf("--name is required")
 	}
 
-	if c.stateStore != nil {
-		return c.stateStore, nil
-	}
-	stateStore, err := c.StateStoreForCluster(c.clusterName)
+	return clusterStore.InstanceGroups(clusterName)
+}
+
+func (c *RootCmd) SecretStore() (fi.SecretStore, error) {
+	clusterStore, err := c.ClusterRegistry()
 	if err != nil {
 		return nil, err
 	}
-	c.stateStore = stateStore
-	return stateStore, nil
-}
 
-func (c *RootCmd) StateStoreForCluster(clusterName string) (fi.StateStore, error) {
-	if c.stateLocation == "" {
-		return nil, fmt.Errorf("--state is required")
-	}
+	clusterName := c.ClusterName()
 	if clusterName == "" {
-		return nil, fmt.Errorf("clusterName is required")
+		return nil, fmt.Errorf("--name is required")
 	}
 
-	statePath, err := vfs.Context.BuildVfsPath(c.stateLocation)
-	if err != nil {
-		return nil, fmt.Errorf("error building state store path: %v", err)
-	}
-
-	isDryrun := false
-	stateStore, err := fi.NewVFSStateStore(statePath, clusterName, isDryrun)
-	if err != nil {
-		return nil, fmt.Errorf("error building state store: %v", err)
-	}
-	return stateStore, nil
+	return clusterStore.SecretStore(clusterName), nil
 }
 
-func (c *RootCmd) ListClusters() ([]string, error) {
-	if c.stateLocation == "" {
-		return nil, fmt.Errorf("--state is required")
-	}
-
-	statePath, err := vfs.Context.BuildVfsPath(c.stateLocation)
-	if err != nil {
-		return nil, fmt.Errorf("error building state store path: %v", err)
-	}
-
-	paths, err := statePath.ReadTree()
-	if err != nil {
-		return nil, fmt.Errorf("error reading state store: %v", err)
-	}
-
-	var keys []string
-	for _, p := range paths {
-		relativePath, err := vfs.RelativePath(statePath, p)
-		if err != nil {
-			return nil, err
-		}
-		if !strings.HasSuffix(relativePath, "/config") {
-			continue
-		}
-		key := strings.TrimSuffix(relativePath, "/config")
-		keys = append(keys, key)
-	}
-	return keys, nil
-}
-
-func (c *RootCmd) Secrets() (fi.SecretStore, error) {
-	s, err := c.StateStore()
+func (c *RootCmd) KeyStore() (fi.CAStore, error) {
+	clusterStore, err := c.ClusterRegistry()
 	if err != nil {
 		return nil, err
 	}
-	return s.Secrets(), nil
-}
 
-func (c *RootCmd) CA() (fi.CAStore, error) {
-	s, err := c.StateStore()
-	if err != nil {
-		return nil, err
+	clusterName := c.ClusterName()
+	if clusterName == "" {
+		return nil, fmt.Errorf("--name is required")
 	}
-	return s.CA(), nil
+
+	return clusterStore.KeyStore(clusterName), nil
 }

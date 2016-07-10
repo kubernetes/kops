@@ -6,6 +6,8 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/api"
+	"strconv"
+	"strings"
 )
 
 type GetInstanceGroupsCmd struct {
@@ -31,12 +33,12 @@ func init() {
 }
 
 func (c *GetInstanceGroupsCmd) Run() error {
-	stateStore, err := rootCommand.StateStore()
+	registry, err := rootCommand.InstanceGroupRegistry()
 	if err != nil {
 		return err
 	}
 
-	_, instancegroups, err := api.ReadConfig(stateStore)
+	instancegroups, err := registry.ReadAll()
 	if err != nil {
 		return err
 	}
@@ -49,5 +51,27 @@ func (c *GetInstanceGroupsCmd) Run() error {
 	t.AddColumn("NAME", func(c *api.InstanceGroup) string {
 		return c.Name
 	})
-	return t.Render(instancegroups, os.Stdout, "NAME")
+	t.AddColumn("ROLE", func(c *api.InstanceGroup) string {
+		return string(c.Spec.Role)
+	})
+	t.AddColumn("MACHINETYPE", func(c *api.InstanceGroup) string {
+		return c.Spec.MachineType
+	})
+	t.AddColumn("ZONES", func(c *api.InstanceGroup) string {
+		return strings.Join(c.Spec.Zones, ",")
+	})
+	t.AddColumn("MIN", func(c *api.InstanceGroup) string {
+		return intPointerToString(c.Spec.MinSize)
+	})
+	t.AddColumn("MAX", func(c *api.InstanceGroup) string {
+		return intPointerToString(c.Spec.MinSize)
+	})
+	return t.Render(instancegroups, os.Stdout, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "ZONES")
+}
+
+func intPointerToString(v *int) string {
+	if v == nil {
+		return "-"
+	}
+	return strconv.Itoa(*v)
 }

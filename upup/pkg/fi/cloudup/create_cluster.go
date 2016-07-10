@@ -15,7 +15,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/loader"
-	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/upup/pkg/fi/vfs"
 	"net"
 	"os"
@@ -25,9 +24,6 @@ import (
 
 const DefaultNodeTypeAWS = "t2.medium"
 const DefaultNodeTypeGCE = "n1-standard-2"
-
-// Path for completed cluster spec in the state store
-const PathClusterCompleted = "cluster.spec"
 
 type CreateClusterCmd struct {
 	// Cluster is the api object representing the whole cluster
@@ -57,8 +53,7 @@ type CreateClusterCmd struct {
 	ModelStore string
 	// Models is a list of cloudup models to apply
 	Models []string
-	// StateStore is a StateStore in which we store state (such as the PKI tree)
-	StateStore fi.StateStore
+
 	// Target specifies how we are operating e.g. direct to GCE, or AWS, or dry-run, or terraform
 	Target string
 	// The node model to use
@@ -70,18 +65,12 @@ type CreateClusterCmd struct {
 
 	// Assets is a list of sources for files (primarily when not using everything containerized)
 	Assets []string
-}
 
-func (c *CreateClusterCmd) LoadConfig(configFile string) error {
-	conf, err := ioutil.ReadFile(configFile)
-	if err != nil {
-		return fmt.Errorf("error loading configuration file %q: %v", configFile, err)
-	}
-	err = utils.YamlUnmarshal(conf, c.Cluster)
-	if err != nil {
-		return fmt.Errorf("error parsing configuration file %q: %v", configFile, err)
-	}
-	return nil
+	// ClusterRegistry manages the cluster configuration storage
+	ClusterRegistry *api.ClusterRegistry
+
+	// DryRun is true if this is only a dry run
+	DryRun bool
 }
 
 func (c *CreateClusterCmd) Run() error {
@@ -214,8 +203,8 @@ func (c *CreateClusterCmd) Run() error {
 		}
 	}
 
-	if c.StateStore == nil {
-		return fmt.Errorf("StateStore is required")
+	if c.ClusterRegistry == nil {
+		return fmt.Errorf("ClusterRegistry is required")
 	}
 
 	if c.Cluster.Spec.CloudProvider == "" {
@@ -227,8 +216,11 @@ func (c *CreateClusterCmd) Run() error {
 	l := &Loader{}
 	l.Init()
 
-	keyStore := c.StateStore.CA()
-	secretStore := c.StateStore.Secrets()
+	keyStore := c.ClusterRegistry.KeyStore(clusterName)
+	if c.DryRun {
+		keyStore.(*fi.VFSCAStore).DryRun = true
+	}
+	secretStore := c.ClusterRegistry.SecretStore(clusterName)
 
 	if vfs.IsClusterReadable(secretStore.VFSPath()) {
 		vfsPath := secretStore.VFSPath()
@@ -266,8 +258,12 @@ func (c *CreateClusterCmd) Run() error {
 		return fmt.Errorf("keyStore path is not cluster readable: %v", keyStore.VFSPath())
 	}
 
-	if vfs.IsClusterReadable(c.StateStore.VFSPath()) {
-		c.Cluster.Spec.ConfigStore = c.StateStore.VFSPath().Path()
+	configPath, err := c.ClusterRegistry.ConfigurationPath(clusterName)
+	if err != nil {
+		return err
+	}
+	if vfs.IsClusterReadable(configPath) {
+		c.Cluster.Spec.ConfigStore = configPath.Path()
 	} else {
 		// We do support this...
 	}
@@ -493,8 +489,12 @@ func (c *CreateClusterCmd) Run() error {
 	l.TemplateFunctions["NodeUpSourceHash"] = func() string {
 		return ""
 	}
-	l.TemplateFunctions["ClusterLocation"] = func() string {
-		return c.StateStore.VFSPath().Join(PathClusterCompleted).Path()
+	l.TemplateFunctions["ClusterLocation"] = func() (string, error) {
+		configPath, err := c.ClusterRegistry.ConfigurationPath(clusterName)
+		if err != nil {
+			return "", err
+		}
+		return configPath.Path(), nil
 	}
 	l.TemplateFunctions["Assets"] = func() []string {
 		return c.Assets
@@ -545,7 +545,7 @@ func (c *CreateClusterCmd) Run() error {
 		return fmt.Errorf("error building tasks: %v", err)
 	}
 
-	err = c.StateStore.WriteConfig(PathClusterCompleted, l.cluster)
+	err = c.ClusterRegistry.WriteCompletedConfig(l.cluster)
 	if err != nil {
 		return fmt.Errorf("error writing completed cluster spec: %v", err)
 	}

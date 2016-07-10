@@ -13,12 +13,12 @@ import (
 	"strings"
 )
 
-// ExportCluster tries to reverse engineer an existing k8s cluster
+// ImportCluster tries to reverse engineer an existing k8s cluster, adding it to the cluster registry
 type ImportCluster struct {
 	ClusterName string
 	Cloud       fi.Cloud
 
-	StateStore fi.StateStore
+	ClusterRegistry *api.ClusterRegistry
 }
 
 func (x *ImportCluster) ImportAWSCluster() error {
@@ -304,14 +304,14 @@ func (x *ImportCluster) ImportAWSCluster() error {
 
 	//b.Context = "aws_" + instancePrefix
 
-	newKeyStore := x.StateStore.CA()
+	keyStore := x.ClusterRegistry.KeyStore(clusterName)
 
 	//caCert, err := masterSSH.Join("ca.crt").ReadFile()
 	caCert, err := conf.ParseCert("CA_CERT")
 	if err != nil {
 		return err
 	}
-	err = newKeyStore.AddCert(fi.CertificateId_CA, caCert)
+	err = keyStore.AddCert(fi.CertificateId_CA, caCert)
 	if err != nil {
 		return err
 	}
@@ -366,7 +366,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	//kubeletToken = conf.Settings["KUBELET_TOKEN"]
 	//kubeProxyToken = conf.Settings["KUBE_PROXY_TOKEN"]
 
-	err = api.WriteConfig(x.StateStore, cluster, instanceGroups)
+	err = api.CreateClusterConfig(x.ClusterRegistry, cluster, instanceGroups)
 	if err != nil {
 		return err
 	}
