@@ -61,11 +61,10 @@ func (c *RollingUpdateClusterCmd) Run() error {
 	}
 
 	d := &kutil.RollingUpdateCluster{}
-
-	d.Cluster = cluster
 	d.Cloud = cloud
 
-	groups, err := d.ListInstanceGroups(instancegroups)
+	warnUnmatched := true
+	groups, err := kutil.FindCloudInstanceGroups(cloud, cluster, instancegroups, warnUnmatched)
 	if err != nil {
 		return err
 	}
@@ -84,12 +83,18 @@ func (c *RollingUpdateClusterCmd) Run() error {
 		t.AddColumn("READY", func(r *kutil.CloudInstanceGroup) string {
 			return strconv.Itoa(len(r.Ready))
 		})
+		t.AddColumn("MIN", func(r *kutil.CloudInstanceGroup) string {
+			return strconv.Itoa(r.MinSize())
+		})
+		t.AddColumn("MAX", func(r *kutil.CloudInstanceGroup) string {
+			return strconv.Itoa(r.MaxSize())
+		})
 		var l []*kutil.CloudInstanceGroup
 		for _, v := range groups {
 			l = append(l, v)
 		}
 
-		err := t.Render(l, os.Stdout, "NAME", "STATUS", "NEEDUPDATE", "READY")
+		err := t.Render(l, os.Stdout, "NAME", "STATUS", "NEEDUPDATE", "READY", "MIN", "MAX")
 		if err != nil {
 			return err
 		}
