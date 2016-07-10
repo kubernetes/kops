@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
+	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
 	"io"
@@ -91,6 +92,9 @@ func (c *DeleteCluster) ListResources() (map[string]*ResourceTracker, error) {
 		ListAutoScalingLaunchConfigurations,
 		// Route 53
 		ListRoute53Records,
+		// IAM
+		ListIAMInstanceProfiles,
+		ListIAMRoles,
 	}
 	for _, fn := range listFunctions {
 		trackers, err := fn(cloud, c.ClusterName)
@@ -1374,6 +1378,171 @@ func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*ResourceTracker,
 		if err != nil {
 			return nil, fmt.Errorf("error querying for route53 records for zone %q: %v", aws.StringValue(zone.Name), err)
 		}
+	}
+
+	return trackers, nil
+}
+
+func DeleteIAMRole(cloud fi.Cloud, r *ResourceTracker) error {
+	c := cloud.(*awsup.AWSCloud)
+
+	roleName := r.Name
+
+	var policyNames []string
+	{
+		request := &iam.ListRolePoliciesInput{
+			RoleName: aws.String(roleName),
+		}
+		err := c.IAM.ListRolePoliciesPages(request, func(page *iam.ListRolePoliciesOutput, lastPage bool) bool {
+			for _, policy := range page.PolicyNames {
+				policyNames = append(policyNames, aws.StringValue(policy))
+			}
+			return true
+		})
+		if err != nil {
+			return fmt.Errorf("error listing IAM role policies for %q: %v", roleName, err)
+		}
+	}
+
+	for _, policyName := range policyNames {
+		glog.V(2).Infof("Deleting IAM role policy %q %q", roleName, policyName)
+		request := &iam.DeleteRolePolicyInput{
+			RoleName:   aws.String(r.Name),
+			PolicyName: aws.String(policyName),
+		}
+		_, err := c.IAM.DeleteRolePolicy(request)
+		if err != nil {
+			return fmt.Errorf("error deleting IAM role policy %q %q", roleName, policyName, err)
+		}
+	}
+
+	{
+		glog.V(2).Infof("Deleting IAM role %q", r.Name)
+		request := &iam.DeleteRoleInput{
+			RoleName: aws.String(r.Name),
+		}
+		_, err := c.IAM.DeleteRole(request)
+		if err != nil {
+			return fmt.Errorf("error deleting IAM role %q: %v", r.Name, err)
+		}
+	}
+
+	return nil
+}
+
+func ListIAMRoles(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
+	c := cloud.(*awsup.AWSCloud)
+
+	remove := make(map[string]bool)
+	remove["masters."+clusterName] = true
+	remove["nodes."+clusterName] = true
+
+	var roles []*iam.Role
+	// Find roles matching remove map
+	{
+		request := &iam.ListRolesInput{}
+		err := c.IAM.ListRolesPages(request, func(p *iam.ListRolesOutput, lastPage bool) bool {
+			for _, r := range p.Roles {
+				name := aws.StringValue(r.RoleName)
+				if remove[name] {
+					roles = append(roles, r)
+				}
+			}
+			return true
+		})
+		if err != nil {
+			return nil, fmt.Errorf("error listing IAM roles: %v", err)
+		}
+	}
+
+	var trackers []*ResourceTracker
+
+	for _, role := range roles {
+		name := aws.StringValue(role.RoleName)
+		tracker := &ResourceTracker{
+			Name:    name,
+			ID:      name,
+			Type:    "iam-role",
+			deleter: DeleteIAMRole,
+		}
+		trackers = append(trackers, tracker)
+	}
+
+	return trackers, nil
+}
+
+func DeleteIAMInstanceProfile(cloud fi.Cloud, r *ResourceTracker) error {
+	c := cloud.(*awsup.AWSCloud)
+
+	profile := r.obj.(*iam.InstanceProfile)
+	name := aws.StringValue(profile.InstanceProfileName)
+
+	// Remove roles
+	{
+		for _, role := range profile.Roles {
+			glog.V(2).Infof("Removing role %q from IAM instance profile %q", aws.StringValue(role.RoleName), name)
+			request := &iam.RemoveRoleFromInstanceProfileInput{
+				InstanceProfileName: profile.InstanceProfileName,
+				RoleName:            role.RoleName,
+			}
+			_, err := c.IAM.RemoveRoleFromInstanceProfile(request)
+			if err != nil {
+				return fmt.Errorf("error removing role %q from IAM instance profile %q: %v", aws.StringValue(role.RoleName), name, err)
+			}
+		}
+	}
+
+	// Delete the instance profile
+	{
+		glog.V(2).Infof("Deleting IAM instance profile %q", name)
+		request := &iam.DeleteInstanceProfileInput{
+			InstanceProfileName: profile.InstanceProfileName,
+		}
+		_, err := c.IAM.DeleteInstanceProfile(request)
+		if err != nil {
+			return fmt.Errorf("error deleting IAM instance profile %q: %v", name, err)
+		}
+	}
+
+	return nil
+}
+
+func ListIAMInstanceProfiles(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
+	c := cloud.(*awsup.AWSCloud)
+
+	remove := make(map[string]bool)
+	remove["masters."+clusterName] = true
+	remove["nodes."+clusterName] = true
+
+	var profiles []*iam.InstanceProfile
+
+	request := &iam.ListInstanceProfilesInput{}
+	err := c.IAM.ListInstanceProfilesPages(request, func(p *iam.ListInstanceProfilesOutput, lastPage bool) bool {
+		for _, p := range p.InstanceProfiles {
+			name := aws.StringValue(p.InstanceProfileName)
+			if remove[name] {
+				profiles = append(profiles, p)
+			}
+		}
+		return true
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error listing IAM instance profiles: %v", err)
+	}
+
+	var trackers []*ResourceTracker
+
+	for _, profile := range profiles {
+		name := aws.StringValue(profile.InstanceProfileName)
+		tracker := &ResourceTracker{
+			Name:    name,
+			ID:      name,
+			Type:    "iam-instance-profile",
+			deleter: DeleteIAMInstanceProfile,
+			obj:     profile,
+		}
+
+		trackers = append(trackers, tracker)
 	}
 
 	return trackers, nil
