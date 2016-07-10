@@ -8,7 +8,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
-	"k8s.io/kops/upup/pkg/fi/vfs"
 	"k8s.io/kubernetes/pkg/util/sets"
 	"os"
 	"os/exec"
@@ -69,9 +68,6 @@ func init() {
 	cmd.Flags().StringVar(&createCluster.Models, "model", "config,proto,cloudup", "Models to apply (separate multiple models with commas)")
 	cmd.Flags().StringVar(&createCluster.NodeModel, "nodemodel", "nodeup", "Model to use for node configuration")
 
-	//defaultStateStore := os.Getenv("KOPS_STATE_STORE")
-	//cmd.Flags().StringVar(&createCluster.StateStore, "state", defaultStateStore, "Location to use to store configuration state")
-
 	cmd.Flags().StringVar(&createCluster.Cloud, "cloud", "", "Cloud provider to use - gce, aws")
 
 	cmd.Flags().StringVar(&createCluster.Zones, "zones", "", "Zones in which to run the cluster")
@@ -107,11 +103,6 @@ func (c *CreateClusterCmd) Run() error {
 		c.Target = "dryrun"
 	}
 
-	stateStoreLocation := rootCommand.stateLocation
-	if stateStoreLocation == "" {
-		return fmt.Errorf("--state is required")
-	}
-
 	clusterName := rootCommand.clusterName
 	if clusterName == "" {
 		return fmt.Errorf("--name is required")
@@ -119,23 +110,48 @@ func (c *CreateClusterCmd) Run() error {
 
 	// TODO: Reuse rootCommand stateStore logic?
 
-	statePath, err := vfs.Context.BuildVfsPath(stateStoreLocation)
-	if err != nil {
-		return fmt.Errorf("error building state location: %v", err)
-	}
-
 	if c.OutDir == "" {
 		c.OutDir = "out"
 	}
 
-	stateStore, err := fi.NewVFSStateStore(statePath, clusterName, isDryrun)
+	clusterRegistry, err := rootCommand.ClusterRegistry()
 	if err != nil {
-		return fmt.Errorf("error building state store: %v", err)
+		return err
 	}
 
-	cluster, instanceGroups, err := api.ReadConfig(stateStore)
+	cluster, err := clusterRegistry.Find(clusterName)
 	if err != nil {
-		return fmt.Errorf("error loading configuration: %v", err)
+		return err
+	}
+	instanceGroupRegistry, err := clusterRegistry.InstanceGroups(clusterName)
+	if err != nil {
+		return err
+	}
+
+	var instanceGroups []*api.InstanceGroup
+
+	// TODO: Rationalize this!
+	creatingNewCluster := false
+
+	if cluster == nil {
+		cluster = &api.Cluster{}
+		creatingNewCluster = true
+	} else {
+		groupNames, err := instanceGroupRegistry.List()
+		if err != nil {
+			return err
+		}
+
+		for _, groupName := range groupNames {
+			instanceGroup, err := instanceGroupRegistry.Find(groupName)
+			if err != nil {
+				return err
+			}
+			if instanceGroup == nil {
+				return fmt.Errorf("InstanceGroup %q was listed, but then could not be found", groupName)
+			}
+			instanceGroups = append(instanceGroups, instanceGroup)
+		}
 	}
 
 	if c.Zones != "" {
@@ -324,30 +340,27 @@ func (c *CreateClusterCmd) Run() error {
 		return fmt.Errorf("error populating configuration: %v", err)
 	}
 
-	err = api.WriteConfig(stateStore, cluster, instanceGroups)
+	if creatingNewCluster {
+		err = api.CreateClusterConfig(clusterRegistry, cluster, instanceGroups)
+	} else {
+		err = api.UpdateClusterConfig(clusterRegistry, cluster, instanceGroups)
+	}
 	if err != nil {
 		return fmt.Errorf("error writing updated configuration: %v", err)
 	}
 
 	cmd := &cloudup.CreateClusterCmd{
-		Cluster:        cluster,
-		InstanceGroups: instanceGroups,
-		ModelStore:     c.ModelsBaseDir,
-		Models:         strings.Split(c.Models, ","),
-		StateStore:     stateStore,
-		Target:         c.Target,
-		NodeModel:      c.NodeModel,
-		SSHPublicKey:   c.SSHPublicKey,
-		OutDir:         c.OutDir,
+		Cluster:         cluster,
+		InstanceGroups:  instanceGroups,
+		ModelStore:      c.ModelsBaseDir,
+		Models:          strings.Split(c.Models, ","),
+		ClusterRegistry: clusterRegistry,
+		Target:          c.Target,
+		NodeModel:       c.NodeModel,
+		SSHPublicKey:    c.SSHPublicKey,
+		OutDir:          c.OutDir,
+		DryRun:          isDryrun,
 	}
-	//if *configFile != "" {
-	//	//confFile := path.Join(cmd.StateDir, "kubernetes.yaml")
-	//	err := cmd.LoadConfig(configFile)
-	//	if err != nil {
-	//		glog.Errorf("error loading config: %v", err)
-	//		os.Exit(1)
-	//	}
-	//}
 
 	return cmd.Run()
 }

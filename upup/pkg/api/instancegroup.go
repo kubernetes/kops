@@ -36,9 +36,9 @@ type InstanceGroupSpec struct {
 	//NodeTag            string `json:",omitempty"`
 
 	// RootVolumeSize is the size of the EBS root volume to use, in GB
-	RootVolumeSize *int `json:"rootVolumeSize",omitempty`
+	RootVolumeSize *int `json:"rootVolumeSize,omitempty"`
 	// RootVolumeType is the type of the EBS root volume to use (e.g. gp2)
-	RootVolumeType *string `json:"rootVolumeType",omitempty`
+	RootVolumeType *string `json:"rootVolumeType,omitempty"`
 
 	Zones []string `json:"zones,omitempty"`
 
@@ -84,4 +84,20 @@ func (g *InstanceGroup) IsMaster() bool {
 		glog.Fatalf("Role not set in group %v", g)
 		return false
 	}
+}
+
+func (g *InstanceGroup) Validate() error {
+	if g.Name == "" {
+		return fmt.Errorf("Name is required")
+	}
+
+	switch g.Spec.Role {
+	case InstanceGroupRoleMaster:
+	case InstanceGroupRoleNode:
+
+	default:
+		return fmt.Errorf("Unknown Role: %q", g.Spec.Role)
+	}
+
+	return nil
 }

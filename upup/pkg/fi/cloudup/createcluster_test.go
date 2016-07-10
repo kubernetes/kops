@@ -2,9 +2,7 @@ package cloudup
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/api"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/vfs"
 	k8sapi "k8s.io/kubernetes/pkg/api"
 	"os"
@@ -14,8 +12,6 @@ import (
 )
 
 func buildDefaultCreateCluster() *CreateClusterCmd {
-	var err error
-
 	memfs := vfs.NewMemFSContext()
 	memfs.MarkClusterReadable()
 
@@ -59,11 +55,8 @@ func buildDefaultCreateCluster() *CreateClusterCmd {
 
 	c.Target = "dryrun"
 
-	dryrun := false
-	c.StateStore, err = fi.NewVFSStateStore(vfs.NewMemFSPath(memfs, "test-statestore"), c.Cluster.Name, dryrun)
-	if err != nil {
-		glog.Fatalf("error building state store: %v", err)
-	}
+	basePath := vfs.NewMemFSPath(memfs, "test-statestore")
+	c.ClusterRegistry = api.NewClusterRegistry(basePath)
 
 	return c
 }
