@@ -12,4 +12,5 @@ Assets:
   - {{ $asset }}
 {{ end }}
 
+ClusterName: {{ ClusterName }}
 ClusterLocation: {{ ClusterLocation }}
