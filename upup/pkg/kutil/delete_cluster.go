@@ -1,6 +1,7 @@
 package kutil
 
 import (
+	"bufio"
 	"bytes"
 	"compress/gzip"
 	"encoding/base64"
@@ -18,6 +19,10 @@ import (
 	"strings"
 	"sync"
 	"time"
+)
+
+const (
+	TypeAutoscalingLaunchConfig = "autoscaling-config"
 )
 
 // DeleteCluster implements deletion of cluster cloud resources
@@ -1101,7 +1106,7 @@ func ListAutoScalingGroups(cloud fi.Cloud, clusterName string) ([]*ResourceTrack
 			}
 			blocks = append(blocks, "subnet:"+subnet)
 		}
-		blocks = append(blocks, "launchconfig:"+aws.StringValue(asg.LaunchConfigurationName))
+		blocks = append(blocks, TypeAutoscalingLaunchConfig+":"+aws.StringValue(asg.LaunchConfigurationName))
 
 		tracker.blocks = blocks
 
@@ -1139,32 +1144,16 @@ func ListAutoScalingLaunchConfigurations(cloud fi.Cloud, clusterName string) ([]
 
 			glog.V(8).Infof("UserData: %s", string(userData))
 
-			var matchStrings []string
-
-			// TODO: reintroduce
-			//clusterLocationLine := "ClusterLocation: s3://clusters.awsdata.com/upgraded.awsdata.com/cluster.spec\n"
-			//isNodeupConfig := strings.Contains(string(userData), clusterLocationLine)
-
-			// V1
-			matchStrings = append(matchStrings, "\nINSTANCE_PREFIX: "+clusterName+"\n")
-			matchStrings = append(matchStrings, "\nINSTANCE_PREFIX: '"+clusterName+"'\n")
-
-			match := false
-			for _, m := range matchStrings {
-				if strings.Contains(string(userData), m) {
-					match = true
-				}
-			}
-			if match {
+			if extractClusterName(userData) == clusterName {
 				tracker := &ResourceTracker{
 					Name:    aws.StringValue(t.LaunchConfigurationName),
 					ID:      aws.StringValue(t.LaunchConfigurationName),
-					Type:    "launchconfig",
+					Type:    TypeAutoscalingLaunchConfig,
 					deleter: DeleteAutoscalingLaunchConfiguration,
 				}
 
 				var blocks []string
-				//blocks = append(blocks, "launchconfig:" + aws.StringValue(asg.LaunchConfigurationName))
+				//blocks = append(blocks, TypeAutoscalingLaunchConfig + ":" + aws.StringValue(asg.LaunchConfigurationName))
 
 				tracker.blocks = blocks
 
@@ -1180,6 +1169,53 @@ func ListAutoScalingLaunchConfigurations(cloud fi.Cloud, clusterName string) ([]
 	return trackers, nil
 }
 
+// extractClusterName performs string-matching / parsing to determine the ClusterName in some instance-data
+// It returns "" if it could not be (uniquely) determined
+func extractClusterName(userData string) string {
+	clusterName := ""
+
+	scanner := bufio.NewScanner(bytes.NewReader([]byte(userData)))
+	scanner.Split(bufio.ScanLines)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		line = strings.TrimSpace(line)
+
+		if strings.HasPrefix(line, "INSTANCE_PREFIX:") {
+			// kube-up
+			// Match:
+			// INSTANCE_PREFIX: 'clustername'
+			// INSTANCE_PREFIX: "clustername"
+			// INSTANCE_PREFIX: clustername
+			line = strings.TrimPrefix(line, "INSTANCE_PREFIX:")
+		} else if strings.HasPrefix(line, "ClusterName:") {
+			// kops
+			// Match:
+			// ClusterName: 'clustername'
+			// ClusterName: "clustername"
+			// ClusterName: clustername
+			line = strings.TrimPrefix(line, "ClusterName:")
+		} else {
+			continue
+		}
+
+		line = strings.TrimSpace(line)
+		line = strings.Trim(line, "'\"")
+		if clusterName != "" && clusterName != line {
+			glog.Warning("cannot uniquely determine cluster-name, found %q and %q", line, clusterName)
+			return ""
+		}
+		clusterName = line
+
+	}
+	if err := scanner.Err(); err != nil {
+		glog.Warning("error scanning UserData: %v", err)
+		return ""
+	}
+
+	return clusterName
+
+}
 func DeleteAutoscalingLaunchConfiguration(cloud fi.Cloud, r *ResourceTracker) error {
 	c := cloud.(*awsup.AWSCloud)
 
