@@ -13,6 +13,11 @@ type NodeUpConfig struct {
 
 	// ClusterLocation is the VFS path to the cluster spec
 	ClusterLocation string `json:",omitempty"`
+
+	// ClusterName is the name of the cluster
+	// Technically this is redundant - it is in ClusterLocation, but this can serve as a cross-check,
+	// and it allows us to more easily identify the cluster, for example when we are deleting resources.
+	ClusterName string `json:",omitempty"`
 }
 
 // Our client configuration structure
