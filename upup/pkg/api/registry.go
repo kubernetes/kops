@@ -182,6 +182,18 @@ func (r *InstanceGroupRegistry) Find(name string) (*InstanceGroup, error) {
 	return group, nil
 }
 
+func (r *InstanceGroupRegistry) Delete(name string) (bool, error) {
+	p := r.stateStore.VFSPath().Join("instancegroup", name)
+	err := p.Remove()
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		}
+		return false, fmt.Errorf("error deleting instancegroup configuration %q: %v", name, err)
+	}
+	return true, nil
+}
+
 func (r *InstanceGroupRegistry) ReadAll() ([]*InstanceGroup, error) {
 	names, err := r.List()
 	if err != nil {

@@ -15,18 +15,17 @@ import (
 
 // RollingUpdateCluster restarts cluster nodes
 type RollingUpdateCluster struct {
-	Cluster *api.Cluster
-	Cloud   fi.Cloud
+	Cloud fi.Cloud
 }
 
-func (c *RollingUpdateCluster) ListInstanceGroups(instancegroups []*api.InstanceGroup) (map[string]*CloudInstanceGroup, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroups []*api.InstanceGroup, warnUnmatched bool) (map[string]*CloudInstanceGroup, error) {
+	awsCloud := cloud.(*awsup.AWSCloud)
 
 	groups := make(map[string]*CloudInstanceGroup)
 
-	tags := cloud.Tags()
+	tags := awsCloud.Tags()
 
-	asgs, err := findAutoscalingGroups(cloud, tags)
+	asgs, err := findAutoscalingGroups(awsCloud, tags)
 	if err != nil {
 		return nil, err
 	}
@@ -38,9 +37,9 @@ func (c *RollingUpdateCluster) ListInstanceGroups(instancegroups []*api.Instance
 			var asgName string
 			switch g.Spec.Role {
 			case api.InstanceGroupRoleMaster:
-				asgName = g.Name + ".masters." + c.Cluster.Name
+				asgName = g.Name + ".masters." + cluster.Name
 			case api.InstanceGroupRoleNode:
-				asgName = g.Name + "." + c.Cluster.Name
+				asgName = g.Name + "." + cluster.Name
 			default:
 				glog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)
 				continue
@@ -54,7 +53,9 @@ func (c *RollingUpdateCluster) ListInstanceGroups(instancegroups []*api.Instance
 			}
 		}
 		if instancegroup == nil {
-			glog.Warningf("Found ASG with no corresponding instance group: %q", name)
+			if warnUnmatched {
+				glog.Warningf("Found ASG with no corresponding instance group: %q", name)
+			}
 			continue
 		}
 		group := buildCloudInstanceGroup(instancegroup, asg)
@@ -107,12 +108,23 @@ type CloudInstanceGroup struct {
 	Status        string
 	Ready         []*autoscaling.Instance
 	NeedUpdate    []*autoscaling.Instance
+
+	asg *autoscaling.Group
+}
+
+func (c *CloudInstanceGroup) MinSize() int {
+	return int(aws.Int64Value(c.asg.MinSize))
+}
+
+func (c *CloudInstanceGroup) MaxSize() int {
+	return int(aws.Int64Value(c.asg.MaxSize))
 }
 
 func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group) *CloudInstanceGroup {
 	n := &CloudInstanceGroup{
 		ASGName:       aws.StringValue(g.AutoScalingGroupName),
 		InstanceGroup: ig,
+		asg:           g,
 	}
 
 	findLaunchConfigurationName := aws.StringValue(g.LaunchConfigurationName)
@@ -158,6 +170,41 @@ func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud) error {
 
 		// TODO: Wait for node to appear back in k8s
 		time.Sleep(time.Minute)
+	}
+
+	return nil
+}
+
+func (g *CloudInstanceGroup) Delete(cloud fi.Cloud) error {
+	c := cloud.(*awsup.AWSCloud)
+
+	// TODO: Graceful?
+
+	// Delete ASG
+	{
+		asgName := aws.StringValue(g.asg.AutoScalingGroupName)
+		glog.V(2).Infof("Deleting autoscaling group %q", asgName)
+		request := &autoscaling.DeleteAutoScalingGroupInput{
+			AutoScalingGroupName: g.asg.AutoScalingGroupName,
+			ForceDelete:          aws.Bool(true),
+		}
+		_, err := c.Autoscaling.DeleteAutoScalingGroup(request)
+		if err != nil {
+			return fmt.Errorf("error deleting autoscaling group %q: %v", asgName, err)
+		}
+	}
+
+	// Delete LaunchConfig
+	{
+		lcName := aws.StringValue(g.asg.LaunchConfigurationName)
+		glog.V(2).Infof("Deleting autoscaling launch configuration %q", lcName)
+		request := &autoscaling.DeleteLaunchConfigurationInput{
+			LaunchConfigurationName: g.asg.LaunchConfigurationName,
+		}
+		_, err := c.Autoscaling.DeleteLaunchConfiguration(request)
+		if err != nil {
+			return fmt.Errorf("error deleting autoscaling launch configuration %q: %v", lcName, err)
+		}
 	}
 
 	return nil
