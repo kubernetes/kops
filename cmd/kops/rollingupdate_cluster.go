@@ -2,19 +2,17 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 
-	"bytes"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/kutil"
-	"os"
-	"text/tabwriter"
 )
 
 type RollingUpdateClusterCmd struct {
-	Yes    bool
-	Region string
+	Yes bool
 
 	cobraCommand *cobra.Command
 }
@@ -33,8 +31,6 @@ func init() {
 
 	cmd.Flags().BoolVar(&rollingupdateCluster.Yes, "yes", false, "Rollingupdate without confirmation")
 
-	cmd.Flags().StringVar(&rollingupdateCluster.Region, "region", "", "region")
-
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		err := rollingupdateCluster.Run()
 		if err != nil {
@@ -44,73 +40,82 @@ func init() {
 }
 
 func (c *RollingUpdateClusterCmd) Run() error {
-	if c.Region == "" {
-		return fmt.Errorf("--region is required")
-	}
-	clusterName := rootCommand.clusterName
-	if clusterName == "" {
-		return fmt.Errorf("--name is required")
+	_, cluster, err := rootCommand.Cluster()
+	if err != nil {
+		return err
 	}
 
-	tags := map[string]string{"KubernetesCluster": clusterName}
-	cloud, err := awsup.NewAWSCloud(c.Region, tags)
+	instanceGroupRegistry, err := rootCommand.InstanceGroupRegistry()
 	if err != nil {
-		return fmt.Errorf("error initializing AWS client: %v", err)
+		return err
+	}
+
+	instancegroups, err := instanceGroupRegistry.ReadAll()
+	if err != nil {
+		return err
+	}
+
+	cloud, err := cloudup.BuildCloud(cluster)
+	if err != nil {
+		return err
 	}
 
 	d := &kutil.RollingUpdateCluster{}
-
-	d.ClusterName = clusterName
-	d.Region = c.Region
 	d.Cloud = cloud
 
-	nodesets, err := d.ListNodesets()
+	warnUnmatched := true
+	groups, err := kutil.FindCloudInstanceGroups(cloud, cluster, instancegroups, warnUnmatched)
 	if err != nil {
 		return err
 	}
 
-	err = c.printNodesets(nodesets)
-	if err != nil {
-		return err
+	{
+		t := &Table{}
+		t.AddColumn("NAME", func(r *kutil.CloudInstanceGroup) string {
+			return r.InstanceGroup.Name
+		})
+		t.AddColumn("STATUS", func(r *kutil.CloudInstanceGroup) string {
+			return r.Status
+		})
+		t.AddColumn("NEEDUPDATE", func(r *kutil.CloudInstanceGroup) string {
+			return strconv.Itoa(len(r.NeedUpdate))
+		})
+		t.AddColumn("READY", func(r *kutil.CloudInstanceGroup) string {
+			return strconv.Itoa(len(r.Ready))
+		})
+		t.AddColumn("MIN", func(r *kutil.CloudInstanceGroup) string {
+			return strconv.Itoa(r.MinSize())
+		})
+		t.AddColumn("MAX", func(r *kutil.CloudInstanceGroup) string {
+			return strconv.Itoa(r.MaxSize())
+		})
+		var l []*kutil.CloudInstanceGroup
+		for _, v := range groups {
+			l = append(l, v)
+		}
+
+		err := t.Render(l, os.Stdout, "NAME", "STATUS", "NEEDUPDATE", "READY", "MIN", "MAX")
+		if err != nil {
+			return err
+		}
+	}
+
+	needUpdate := false
+	for _, group := range groups {
+		if len(group.NeedUpdate) != 0 {
+			needUpdate = true
+		}
+	}
+
+	if !needUpdate {
+		// TODO: Allow --force option to force even if not needed?
+		fmt.Printf("\nNo rolling-update required\n")
+		return nil
 	}
 
 	if !c.Yes {
 		return fmt.Errorf("Must specify --yes to rolling-update")
 	}
 
-	return d.RollingUpdateNodesets(nodesets)
-}
-
-func (c *RollingUpdateClusterCmd) printNodesets(nodesets map[string]*kutil.Nodeset) error {
-	w := new(tabwriter.Writer)
-	var b bytes.Buffer
-
-	// Format in tab-separated columns with a tab stop of 8.
-	w.Init(os.Stdout, 0, 8, 0, '\t', tabwriter.StripEscape)
-	for _, n := range nodesets {
-		b.WriteByte(tabwriter.Escape)
-		b.WriteString(n.Name)
-		b.WriteByte(tabwriter.Escape)
-		b.WriteByte('\t')
-		b.WriteByte(tabwriter.Escape)
-		b.WriteString(n.Status)
-		b.WriteByte(tabwriter.Escape)
-		b.WriteByte('\t')
-		b.WriteByte(tabwriter.Escape)
-		b.WriteString(fmt.Sprintf("%d", len(n.NeedUpdate)))
-		b.WriteByte(tabwriter.Escape)
-		b.WriteByte('\t')
-		b.WriteByte(tabwriter.Escape)
-		b.WriteString(fmt.Sprintf("%d", len(n.Ready)))
-		b.WriteByte(tabwriter.Escape)
-		b.WriteByte('\n')
-
-		_, err := w.Write(b.Bytes())
-		if err != nil {
-			return fmt.Errorf("error writing to output: %v", err)
-		}
-		b.Reset()
-	}
-
-	return w.Flush()
+	return d.RollingUpdate(groups)
 }
