@@ -44,7 +44,7 @@ func (c *DescribeSecretsCommand) Run() error {
 	w.Init(os.Stdout, 0, 8, 0, '\t', tabwriter.StripEscape)
 
 	{
-		caStore, err := rootCommand.CA()
+		caStore, err := rootCommand.KeyStore()
 		if err != nil {
 			return err
 		}
@@ -86,7 +86,7 @@ func (c *DescribeSecretsCommand) Run() error {
 	}
 
 	{
-		secretStore, err := rootCommand.Secrets()
+		secretStore, err := rootCommand.SecretStore()
 		if err != nil {
 			return err
 		}

@@ -58,7 +58,7 @@ func (cmd *CreateSecretsCommand) Run() error {
 	switch cmd.Type {
 	case "secret":
 		{
-			secretStore, err := rootCommand.Secrets()
+			secretStore, err := rootCommand.SecretStore()
 			if err != nil {
 				return err
 			}
@@ -122,7 +122,7 @@ func (cmd *CreateSecretsCommand) Run() error {
 				}
 			}
 
-			caStore, err := rootCommand.CA()
+			caStore, err := rootCommand.KeyStore()
 			if err != nil {
 				return err
 			}

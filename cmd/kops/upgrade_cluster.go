@@ -5,7 +5,6 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/kutil"
 )
@@ -39,20 +38,17 @@ func (c *UpgradeClusterCmd) Run() error {
 		return fmt.Errorf("--newname is required")
 	}
 
-	oldStateStore, err := rootCommand.StateStore()
+	clusterRegistry, cluster, err := rootCommand.Cluster()
 	if err != nil {
 		return err
 	}
 
-	newStateStore, err := rootCommand.StateStoreForCluster(c.NewClusterName)
+	instanceGroupRegistry, err := rootCommand.InstanceGroupRegistry()
 	if err != nil {
 		return err
 	}
 
-	cluster, instanceGroups, err := api.ReadConfig(oldStateStore)
-	if err != nil {
-		return fmt.Errorf("error reading configuration: %v", err)
-	}
+	instanceGroups, err := instanceGroupRegistry.ReadAll()
 
 	oldClusterName := cluster.Name
 	if oldClusterName == "" {
@@ -89,8 +85,7 @@ func (c *UpgradeClusterCmd) Run() error {
 	d.Cloud = cloud
 	d.ClusterConfig = cluster
 	d.InstanceGroups = instanceGroups
-	d.OldStateStore = oldStateStore
-	d.NewStateStore = newStateStore
+	d.ClusterRegistry = clusterRegistry
 
 	err = d.Upgrade()
 	if err != nil {

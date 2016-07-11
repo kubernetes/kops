@@ -39,7 +39,7 @@ type SecretInfo struct {
 func (c *GetSecretsCommand) Run() error {
 	var infos []*SecretInfo
 	{
-		caStore, err := rootCommand.CA()
+		caStore, err := rootCommand.KeyStore()
 		if err != nil {
 			return err
 		}
@@ -58,7 +58,7 @@ func (c *GetSecretsCommand) Run() error {
 	}
 
 	{
-		secretStore, err := rootCommand.Secrets()
+		secretStore, err := rootCommand.SecretStore()
 		if err != nil {
 			return err
 		}

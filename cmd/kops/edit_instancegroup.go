@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
 	"os"
 	"path/filepath"
@@ -40,9 +41,21 @@ func init() {
 }
 
 func (c *EditInstanceGroupCmd) Run(groupName string) error {
-	stateStore, err := rootCommand.StateStore()
+	registry, err := rootCommand.InstanceGroupRegistry()
 	if err != nil {
 		return err
+	}
+
+	if groupName == "" {
+		return fmt.Errorf("name is required")
+	}
+
+	group, err := registry.Find(groupName)
+	if err != nil {
+		return fmt.Errorf("error reading InstanceGroup %q: %v", groupName, err)
+	}
+	if group == nil {
+		return fmt.Errorf("InstanceGroup %q not found", groupName)
 	}
 
 	var (
@@ -50,10 +63,9 @@ func (c *EditInstanceGroupCmd) Run(groupName string) error {
 	)
 
 	ext := "yaml"
-
-	raw, err := stateStore.VFSPath().Join("instancegroup", groupName).ReadFile()
+	raw, err := api.ToYaml(group)
 	if err != nil {
-		return fmt.Errorf("error reading instancegroup file: %v", err)
+		return fmt.Errorf("error parsing InstanceGroup: %v", err)
 	}
 
 	// launch the editor
@@ -72,9 +84,20 @@ func (c *EditInstanceGroupCmd) Run(groupName string) error {
 		return nil
 	}
 
-	err = stateStore.VFSPath().Join("instancegroup", groupName).WriteFile(edited)
+	newGroup := &api.InstanceGroup{}
+	err = api.ParseYaml(edited, newGroup)
 	if err != nil {
-		return fmt.Errorf("error writing instancegroup file: %v", err)
+		return fmt.Errorf("error parsing config: %v", err)
+	}
+
+	err = newGroup.Validate()
+	if err != nil {
+		return err
+	}
+
+	err = registry.Update(newGroup)
+	if err != nil {
+		return err
 	}
 
 	return nil

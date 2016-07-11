@@ -18,8 +18,7 @@ type UpgradeCluster struct {
 	NewClusterName string
 	Cloud          fi.Cloud
 
-	OldStateStore fi.StateStore
-	NewStateStore fi.StateStore
+	ClusterRegistry *api.ClusterRegistry
 
 	ClusterConfig  *api.Cluster
 	InstanceGroups []*api.InstanceGroup
@@ -38,6 +37,9 @@ func (x *UpgradeCluster) Upgrade() error {
 	if oldClusterName == "" {
 		return fmt.Errorf("OldClusterName must be specified")
 	}
+
+	newKeyStore := x.ClusterRegistry.KeyStore(newClusterName)
+	oldKeyStore := x.ClusterRegistry.KeyStore(oldClusterName)
 
 	oldTags := awsCloud.Tags()
 
@@ -310,23 +312,23 @@ func (x *UpgradeCluster) Upgrade() error {
 	}
 
 	cluster.Name = newClusterName
-	err = api.WriteConfig(x.NewStateStore, cluster, x.InstanceGroups)
+	err = api.CreateClusterConfig(x.ClusterRegistry, cluster, x.InstanceGroups)
 	if err != nil {
 		return fmt.Errorf("error writing updated configuration: %v", err)
 	}
 
-	oldCACertPool, err := x.OldStateStore.CA().CertificatePool(fi.CertificateId_CA)
+	oldCACertPool, err := oldKeyStore.CertificatePool(fi.CertificateId_CA)
 	if err != nil {
 		return fmt.Errorf("error reading old CA certs: %v", err)
 	}
 	for _, ca := range oldCACertPool.Secondary {
-		err := x.NewStateStore.CA().AddCert(fi.CertificateId_CA, ca)
+		err := newKeyStore.AddCert(fi.CertificateId_CA, ca)
 		if err != nil {
 			return fmt.Errorf("error importing old CA certs: %v", err)
 		}
 	}
 	if oldCACertPool.Primary != nil {
-		err := x.NewStateStore.CA().AddCert(fi.CertificateId_CA, oldCACertPool.Primary)
+		err := newKeyStore.AddCert(fi.CertificateId_CA, oldCACertPool.Primary)
 		if err != nil {
 			return fmt.Errorf("error importing old CA certs: %v", err)
 		}

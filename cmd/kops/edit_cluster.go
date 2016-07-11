@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
 	"os"
 	"path/filepath"
@@ -33,23 +34,17 @@ func init() {
 }
 
 func (c *EditClusterCmd) Run() error {
-	stateStore, err := rootCommand.StateStore()
+	clusterRegistry, cluster, err := rootCommand.Cluster()
 	if err != nil {
 		return err
 	}
-
-	//cluster, _, err := api.ReadConfig(stateStore)
-	//if err != nil {
-	//	return fmt.Errorf("error reading configuration: %v", err)
-	//}
 
 	var (
 		edit = editor.NewDefaultEditor(editorEnvs)
 	)
 
 	ext := "yaml"
-
-	raw, err := stateStore.VFSPath().Join("config").ReadFile()
+	raw, err := api.ToYaml(cluster)
 	if err != nil {
 		return fmt.Errorf("error reading config file: %v", err)
 	}
@@ -70,9 +65,20 @@ func (c *EditClusterCmd) Run() error {
 		return nil
 	}
 
-	err = stateStore.VFSPath().Join("config").WriteFile(edited)
+	newCluster := &api.Cluster{}
+	err = api.ParseYaml(edited, newCluster)
 	if err != nil {
-		return fmt.Errorf("error writing config file: %v", err)
+		return fmt.Errorf("error parsing config: %v", err)
+	}
+
+	err = newCluster.Validate()
+	if err != nil {
+		return err
+	}
+
+	err = clusterRegistry.Update(newCluster)
+	if err != nil {
+		return err
 	}
 
 	return nil

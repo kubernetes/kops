@@ -43,7 +43,6 @@ func findAutoscalingGroups(cloud *awsup.AWSCloud, tags map[string]string) ([]*au
 		if err != nil {
 			return nil, fmt.Errorf("error listing autoscaling cluster tags: %v", err)
 		}
-
 	}
 
 	if len(asgNames) != 0 {

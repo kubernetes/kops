@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"sync"
@@ -14,33 +15,58 @@ import (
 
 // RollingUpdateCluster restarts cluster nodes
 type RollingUpdateCluster struct {
-	ClusterName string
-	Region      string
-	Cloud       fi.Cloud
+	Cloud fi.Cloud
 }
 
-func (c *RollingUpdateCluster) ListNodesets() (map[string]*Nodeset, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroups []*api.InstanceGroup, warnUnmatched bool) (map[string]*CloudInstanceGroup, error) {
+	awsCloud := cloud.(*awsup.AWSCloud)
 
-	nodesets := make(map[string]*Nodeset)
+	groups := make(map[string]*CloudInstanceGroup)
 
-	tags := cloud.BuildTags(nil)
+	tags := awsCloud.Tags()
 
-	asgs, err := findAutoscalingGroups(cloud, tags)
+	asgs, err := findAutoscalingGroups(awsCloud, tags)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, asg := range asgs {
-		nodeset := buildNodeset(asg)
-		nodesets[nodeset.Name] = nodeset
+		name := aws.StringValue(asg.AutoScalingGroupName)
+		var instancegroup *api.InstanceGroup
+		for _, g := range instancegroups {
+			var asgName string
+			switch g.Spec.Role {
+			case api.InstanceGroupRoleMaster:
+				asgName = g.Name + ".masters." + cluster.Name
+			case api.InstanceGroupRoleNode:
+				asgName = g.Name + "." + cluster.Name
+			default:
+				glog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)
+				continue
+			}
+
+			if name == asgName {
+				if instancegroup != nil {
+					return nil, fmt.Errorf("Found multiple instance groups matching ASG %q", asgName)
+				}
+				instancegroup = g
+			}
+		}
+		if instancegroup == nil {
+			if warnUnmatched {
+				glog.Warningf("Found ASG with no corresponding instance group: %q", name)
+			}
+			continue
+		}
+		group := buildCloudInstanceGroup(instancegroup, asg)
+		groups[instancegroup.Name] = group
 	}
 
-	return nodesets, nil
+	return groups, nil
 }
 
-func (c *RollingUpdateCluster) RollingUpdateNodesets(nodesets map[string]*Nodeset) error {
-	if len(nodesets) == 0 {
+func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup) error {
+	if len(groups) == 0 {
 		return nil
 	}
 
@@ -48,20 +74,20 @@ func (c *RollingUpdateCluster) RollingUpdateNodesets(nodesets map[string]*Nodese
 	var resultsMutex sync.Mutex
 	results := make(map[string]error)
 
-	for k, nodeset := range nodesets {
+	for k, group := range groups {
 		wg.Add(1)
-		go func(k string, nodeset *Nodeset) {
+		go func(k string, group *CloudInstanceGroup) {
 			resultsMutex.Lock()
 			results[k] = fmt.Errorf("function panic")
 			resultsMutex.Unlock()
 
 			defer wg.Done()
-			err := nodeset.RollingUpdate(c.Cloud)
+			err := group.RollingUpdate(c.Cloud)
 
 			resultsMutex.Lock()
 			results[k] = err
 			resultsMutex.Unlock()
-		}(k, nodeset)
+		}(k, group)
 	}
 
 	wg.Wait()
@@ -75,16 +101,30 @@ func (c *RollingUpdateCluster) RollingUpdateNodesets(nodesets map[string]*Nodese
 	return nil
 }
 
-type Nodeset struct {
-	Name       string
-	Status     string
-	Ready      []*autoscaling.Instance
-	NeedUpdate []*autoscaling.Instance
+// CloudInstanceGroup is the AWS ASG backing an InstanceGroup
+type CloudInstanceGroup struct {
+	InstanceGroup *api.InstanceGroup
+	ASGName       string
+	Status        string
+	Ready         []*autoscaling.Instance
+	NeedUpdate    []*autoscaling.Instance
+
+	asg *autoscaling.Group
 }
 
-func buildNodeset(g *autoscaling.Group) *Nodeset {
-	n := &Nodeset{
-		Name: aws.StringValue(g.AutoScalingGroupName),
+func (c *CloudInstanceGroup) MinSize() int {
+	return int(aws.Int64Value(c.asg.MinSize))
+}
+
+func (c *CloudInstanceGroup) MaxSize() int {
+	return int(aws.Int64Value(c.asg.MaxSize))
+}
+
+func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group) *CloudInstanceGroup {
+	n := &CloudInstanceGroup{
+		ASGName:       aws.StringValue(g.AutoScalingGroupName),
+		InstanceGroup: ig,
+		asg:           g,
 	}
 
 	findLaunchConfigurationName := aws.StringValue(g.LaunchConfigurationName)
@@ -106,11 +146,11 @@ func buildNodeset(g *autoscaling.Group) *Nodeset {
 	return n
 }
 
-func (n *Nodeset) RollingUpdate(cloud fi.Cloud) error {
+func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud) error {
 	c := cloud.(*awsup.AWSCloud)
 
 	for _, i := range n.NeedUpdate {
-		glog.Infof("Stopping instance %q in nodeset %q", *i.InstanceId, n.Name)
+		glog.Infof("Stopping instance %q in AWS ASG %q", *i.InstanceId, n.ASGName)
 
 		// TODO: Evacuate through k8s first?
 
@@ -135,6 +175,41 @@ func (n *Nodeset) RollingUpdate(cloud fi.Cloud) error {
 	return nil
 }
 
-func (n *Nodeset) String() string {
-	return "nodeset:" + n.Name
+func (g *CloudInstanceGroup) Delete(cloud fi.Cloud) error {
+	c := cloud.(*awsup.AWSCloud)
+
+	// TODO: Graceful?
+
+	// Delete ASG
+	{
+		asgName := aws.StringValue(g.asg.AutoScalingGroupName)
+		glog.V(2).Infof("Deleting autoscaling group %q", asgName)
+		request := &autoscaling.DeleteAutoScalingGroupInput{
+			AutoScalingGroupName: g.asg.AutoScalingGroupName,
+			ForceDelete:          aws.Bool(true),
+		}
+		_, err := c.Autoscaling.DeleteAutoScalingGroup(request)
+		if err != nil {
+			return fmt.Errorf("error deleting autoscaling group %q: %v", asgName, err)
+		}
+	}
+
+	// Delete LaunchConfig
+	{
+		lcName := aws.StringValue(g.asg.LaunchConfigurationName)
+		glog.V(2).Infof("Deleting autoscaling launch configuration %q", lcName)
+		request := &autoscaling.DeleteLaunchConfigurationInput{
+			LaunchConfigurationName: g.asg.LaunchConfigurationName,
+		}
+		_, err := c.Autoscaling.DeleteLaunchConfiguration(request)
+		if err != nil {
+			return fmt.Errorf("error deleting autoscaling launch configuration %q: %v", lcName, err)
+		}
+	}
+
+	return nil
+}
+
+func (n *CloudInstanceGroup) String() string {
+	return "CloudInstanceGroup:" + n.ASGName
 }
