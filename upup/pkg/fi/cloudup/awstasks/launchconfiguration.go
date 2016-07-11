@@ -31,6 +31,9 @@ type LaunchConfiguration struct {
 	// RootVolumeType is the type of the EBS root volume to use (e.g. gp2)
 	RootVolumeType *string
 
+	// SpotPrice is set to the spot-price bid if this is a spot pricing request
+	SpotPrice *string
+
 	ID *string
 }
 
@@ -85,6 +88,7 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 		SSHKey:             &SSHKey{Name: lc.KeyName},
 		AssociatePublicIP:  lc.AssociatePublicIpAddress,
 		IAMInstanceProfile: &IAMInstanceProfile{Name: lc.IamInstanceProfile},
+		SpotPrice:          lc.SpotPrice,
 	}
 
 	securityGroups := []*SecurityGroup{}
@@ -215,6 +219,7 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 	}
 	request.SecurityGroups = securityGroupIDs
 	request.AssociatePublicIpAddress = e.AssociatePublicIP
+	request.SpotPrice = e.SpotPrice
 
 	// Build up the actual block device mappings
 	{
@@ -281,6 +286,7 @@ type terraformLaunchConfiguration struct {
 	RootBlockDevice          *terraformBlockDevice   `json:"root_block_device,omitempty"`
 	EphemeralBlockDevice     []*terraformBlockDevice `json:"ephemeral_block_device,omitempty"`
 	Lifecycle                *terraformLifecycle     `json:"lifecycle,omitempty"`
+	SpotPrice                *string                 `json:"spot_price,omitempty"`
 }
 
 type terraformBlockDevice struct {
@@ -313,6 +319,7 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 		NamePrefix:   fi.String(*e.Name + "-"),
 		ImageID:      image.ImageId,
 		InstanceType: e.InstanceType,
+		SpotPrice:    e.SpotPrice,
 	}
 
 	if e.SSHKey != nil {
