@@ -41,6 +41,9 @@ type InstanceGroupSpec struct {
 	RootVolumeType *string `json:"rootVolumeType",omitempty`
 
 	Zones []string `json:"zones,omitempty"`
+
+	// MaxPrice indicates this is a spot-pricing group, with the specified value as our max-price bid
+	MaxPrice *string `json:"maxPrice,omitempty"`
 }
 
 // PerformAssignmentsInstanceGroups populates InstanceGroups with default values

@@ -56,6 +56,9 @@ launchConfiguration/{{ $nodeset.Name }}.{{ ClusterName }}:
   userData: resources/nodeup.sh _kubernetes_pool
   rootVolumeSize: {{ or $nodeset.Spec.RootVolumeSize "20" }}
   rootVolumeType: {{ or $nodeset.Spec.RootVolumeType "gp2" }}
+{{ if $nodeset.Spec.MaxPrice }}
+  spotPrice: "{{ $nodeset.Spec.MaxPrice }}"
+{{ end }}
 
 autoscalingGroup/{{ $nodeset.Name }}.{{ ClusterName }}:
   launchConfiguration: launchConfiguration/{{ $nodeset.Name }}.{{ ClusterName }}
