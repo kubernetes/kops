@@ -39,7 +39,6 @@ func (x *ImportCluster) ImportAWSCluster() error {
 
 	masterGroup := &api.InstanceGroup{}
 	masterGroup.Spec.Role = api.InstanceGroupRoleMaster
-	masterGroup.Name = "masters"
 	masterGroup.Spec.MinSize = fi.Int(1)
 	masterGroup.Spec.MaxSize = fi.Int(1)
 	instanceGroups = append(instanceGroups, masterGroup)
@@ -115,6 +114,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 
 	az := aws.StringValue(masterSubnet.AvailabilityZone)
 	masterGroup.Spec.Zones = []string{az}
+	masterGroup.Name = "master-" + az
 	cluster.Spec.Zones = append(cluster.Spec.Zones, &api.ClusterZoneSpec{
 		Name: az,
 
