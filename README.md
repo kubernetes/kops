@@ -62,6 +62,14 @@ export KOPS_STATE_STORE=s3://<somes3bucket>
 ${GOPATH}/bin/kops export kubecfg --name=${NAME}
 ```
 
+You can now use kubernets using the kubectl tool (after allowing a few minutes for the cluster to come up):
+
+```kubectl get nodes```
+
+## Cluster management
+
+* Learn about [InstanceGroups](docs/instance_groups.md), which let you change instance types, cluster sizes etc.
+
 ## Delete the cluster
 
 When you're done, you can also have kops delete the cluster.  It will delete all AWS resources tagged
