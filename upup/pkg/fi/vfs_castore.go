@@ -44,7 +44,7 @@ func (s *VFSCAStore) readCAKeypairs() (*certificates, *privateKeys, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	if s.cacheCaCertificates != nil {
+	if s.cacheCaPrivateKeys != nil {
 		return s.cacheCaCertificates, s.cacheCaPrivateKeys, nil
 	}
 
@@ -53,26 +53,30 @@ func (s *VFSCAStore) readCAKeypairs() (*certificates, *privateKeys, error) {
 		return nil, nil, err
 	}
 
+	var caPrivateKeys *privateKeys
+
 	if caCertificates != nil {
-		caPrivateKeys, err := s.loadPrivateKeys(s.buildPrivateKeyPoolPath(CertificateId_CA))
-		if err != nil {
-			return nil, nil, err
-		}
-		if caPrivateKeys == nil {
-			glog.Warningf("CA private key was not found")
-			//return nil, fmt.Errorf("error loading CA private key - key not found")
-		}
-		s.cacheCaCertificates = caCertificates
-		s.cacheCaPrivateKeys = caPrivateKeys
-	} else {
-		caCertificates, caPrivateKeys, err := s.generateCACertificate()
+		caPrivateKeys, err = s.loadPrivateKeys(s.buildPrivateKeyPoolPath(CertificateId_CA))
 		if err != nil {
 			return nil, nil, err
 		}
 
-		s.cacheCaCertificates = caCertificates
-		s.cacheCaPrivateKeys = caPrivateKeys
+		if caPrivateKeys == nil {
+			glog.Warningf("CA private key was not found; will generate new key")
+			//return nil, fmt.Errorf("error loading CA private key - key not found")
+		}
 	}
+
+	if caPrivateKeys == nil {
+		caCertificates, caPrivateKeys, err = s.generateCACertificate()
+		if err != nil {
+			return nil, nil, err
+		}
+
+	}
+	s.cacheCaCertificates = caCertificates
+	s.cacheCaPrivateKeys = caPrivateKeys
+
 	return s.cacheCaCertificates, s.cacheCaPrivateKeys, nil
 }
 
