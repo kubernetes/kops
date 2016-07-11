@@ -14,8 +14,8 @@ By default, a cluster has:
 
 ## Listing instance groups
 
-> `kops get instancegroups`
-```
+`kops get instancegroups`
+> ```
 NAME                    ROLE    MACHINETYPE     MIN     MAX     ZONES
 master-us-east-1c       Master                  1       1       us-east-1c
 nodes                   Node    t2.medium       2       2
@@ -31,27 +31,22 @@ have not yet been applied (this may change soon though!).
 
 To preview the change:
 
-> `kops create cluster --name <clustername> --dryrun`
-```
+`kops create cluster --name <clustername> --dryrun`
+> ```
 ...
 Will modify resources:
   *awstasks.LaunchConfiguration launchConfiguration/mycluster.mydomain.com
     InstanceType t2.medium -> t2.large
 ```
 
-Presuming you're happy with the change, go ahead and apply it:
+Presuming you're happy with the change, go ahead and apply it: `kops create cluster --name <clustername>`
 
-> `kops create cluster --name <clustername>`
+This change will apply to new instances only; if you'd like to roll it out immediately to all the instances
+you have to perform a rolling update.
 
-This change will apply to new instances only; if you'd like to roll it out immediately:
+See a preview with: `kops rolling-update cluster`
 
-See a preview with:
-
-> `kops rolling-update cluster`
-
-Then restart the machines with:
-
-> `kops rolling-update cluster --yes`
+Then restart the machines with: `kops rolling-update cluster --yes`
 
 NOTE: rolling-update does not yet perform a real rolling update - it just shuts down machines in sequence with a delay;
  there will be downtime [Issue #37](https://github.com/kubernetes/kops/issues/37)
