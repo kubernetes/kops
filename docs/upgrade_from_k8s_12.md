@@ -144,13 +144,19 @@ kubectl delete pod --namespace=kube-system kube-dns-v14-4ygfz
 
 ## Workaround to re-enable ELBs
 
-Due to a limitation in ELBs (you can't replace all the subnets), if you have ELBs you must do the following:
+Due to a limitation in ELBs (you can't replace all the subnets), if you are using ELBs you have to follow a
+workaround procedure to get them to bind to the new subnet.   If you aren't using any services with Type
+LoadBalancer, you likely aren't using ELBs and can skip this section!
 
 * `kops edit cluster --name ${NEW_NAME}`
 * Add a zone to the `zones` section and save the file (it normally suffices to just add `- name: us-west-2b` or whatever
   zone you are adding; kops will auto-populate the CIDR.
-* kops create cluster --name ${NEW_NAME}
-
+* Preview: `kops create cluster --name ${NEW_NAME} --dryrun`.  You expect to see something like:
+```
+    *awstasks.AutoscalingGroup    autoscalingGroup/nodes.upgraded.awsdata.com
+      Subnets [id:subnet-e3b3d987] -> [id:subnet-e3b3d987, id:<nil>]
+```
+* Apply changes: `kops create cluster --name ${NEW_NAME}`
 
 In the AWS control panel open the "Load Balancers" section, and for each ELB: 
 * On the "Actions" menu click "Edit subnets"
