@@ -65,6 +65,31 @@ The procedure to resize an instance group works the same way:
 * Apply changes: `kops create cluster --name <clustername>`
 * (you do not need a `rolling-update` when changing instancegroup sizes)
 
+
+## Changing the root volume size or type
+
+The procedure to resize the root volume works the same way:
+
+* Edit the instance group, set `rootVolumeSize` and/or `rootVolumeType` to the desired values: `kops edit ig nodes`
+* Preview changes: `kops create cluster --name <clustername> --dryrun`
+* Apply changes: `kops create cluster --name <clustername>`
+* Rolling update to update existing instances: `kops rolling-update cluster --yes`
+
+For example, to set up a 100GB gp2 root volume, your InstanceGroup spec might look like:
+
+```
+metadata:
+  creationTimestamp: "2016-07-11T04:14:00Z"
+  name: nodes
+spec:
+  machineType: t2.medium
+  maxSize: 2
+  minSize: 2
+  role: Node
+  rootVolumeSize: 100
+  rootVolumeType: gp2
+```
+
 ## Creating a new instance group
 
 Suppose you want to add a new group of nodes, perhaps with a different instance type.  You do this using
