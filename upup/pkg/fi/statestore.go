@@ -8,6 +8,13 @@ import (
 	"strings"
 )
 
+type WriteOption string
+
+const (
+	WriteOptionCreate       WriteOption = "Create"
+	WriteOptionOnlyIfExists WriteOption = "IfExists"
+)
+
 type StateStore interface {
 	// VFSPath returns the path where the StateStore is stored
 	VFSPath() vfs.Path
@@ -16,7 +23,7 @@ type StateStore interface {
 	Secrets() SecretStore
 
 	ReadConfig(path string, config interface{}) error
-	WriteConfig(path string, config interface{}) error
+	WriteConfig(path string, config interface{}, options ...WriteOption) error
 
 	// ListChildren returns a list of all (direct) children of the specified path
 	// It only returns the raw names, not the prefixes
@@ -25,32 +32,24 @@ type StateStore interface {
 
 type VFSStateStore struct {
 	location vfs.Path
-	ca       CAStore
+	keystore CAStore
 	secrets  SecretStore
 }
 
 var _ StateStore = &VFSStateStore{}
 
-func NewVFSStateStore(base vfs.Path, clusterName string, dryrun bool) (*VFSStateStore, error) {
+func NewVFSStateStore(base vfs.Path, clusterName string) *VFSStateStore {
 	location := base.Join(clusterName)
 	s := &VFSStateStore{
 		location: location,
 	}
-	var err error
-	s.ca, err = NewVFSCAStore(location.Join("pki"), dryrun)
-	if err != nil {
-		return nil, fmt.Errorf("error building CA store: %v", err)
-	}
-	s.secrets, err = NewVFSSecretStore(location.Join("secrets"))
-	if err != nil {
-		return nil, fmt.Errorf("error building secret store: %v", err)
-	}
-
-	return s, nil
+	s.keystore = NewVFSCAStore(location.Join("pki"))
+	s.secrets = NewVFSSecretStore(location.Join("secrets"))
+	return s
 }
 
 func (s *VFSStateStore) CA() CAStore {
-	return s.ca
+	return s.keystore
 }
 
 func (s *VFSStateStore) VFSPath() vfs.Path {
@@ -79,11 +78,15 @@ func (s *VFSStateStore) ListChildren(pathPrefix string) ([]string, error) {
 }
 
 func (s *VFSStateStore) ReadConfig(path string, config interface{}) error {
+	if path == "" {
+		return fmt.Errorf("path is required")
+	}
+
 	configPath := s.location.Join(path)
 	data, err := configPath.ReadFile()
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil
+			return err
 		}
 		return fmt.Errorf("error reading configuration file %s: %v", configPath, err)
 	}
@@ -102,7 +105,7 @@ func (s *VFSStateStore) ReadConfig(path string, config interface{}) error {
 	return nil
 }
 
-func (s *VFSStateStore) WriteConfig(path string, config interface{}) error {
+func (s *VFSStateStore) WriteConfig(path string, config interface{}, writeOptions ...WriteOption) error {
 	configPath := s.location.Join(path)
 
 	data, err := utils.YamlMarshal(config)
@@ -110,7 +113,29 @@ func (s *VFSStateStore) WriteConfig(path string, config interface{}) error {
 		return fmt.Errorf("error marshalling configuration: %v", err)
 	}
 
-	err = configPath.WriteFile(data)
+	create := false
+	for _, writeOption := range writeOptions {
+		switch writeOption {
+		case WriteOptionCreate:
+			create = true
+		case WriteOptionOnlyIfExists:
+			_, err = configPath.ReadFile()
+			if err != nil {
+				if os.IsNotExist(err) {
+					return fmt.Errorf("cannot update configuration file %s: does not exist", configPath)
+				}
+				return fmt.Errorf("error checking if configuration file %s exists already: %v", configPath, err)
+			}
+		default:
+			return fmt.Errorf("unknown write option: %q", writeOption)
+		}
+	}
+
+	if create {
+		err = configPath.CreateFile(data)
+	} else {
+		err = configPath.WriteFile(data)
+	}
 	if err != nil {
 		return fmt.Errorf("error writing configuration file %s: %v", configPath, err)
 	}

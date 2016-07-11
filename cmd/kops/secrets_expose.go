@@ -48,7 +48,7 @@ func (cmd *ExposeSecretsCommand) Run() error {
 	switch cmd.Type {
 	case "secret":
 		{
-			secretStore, err := rootCommand.Secrets()
+			secretStore, err := rootCommand.SecretStore()
 			if err != nil {
 				return err
 			}
@@ -64,7 +64,7 @@ func (cmd *ExposeSecretsCommand) Run() error {
 
 	case "certificate", "privatekey":
 		{
-			caStore, err := rootCommand.CA()
+			caStore, err := rootCommand.KeyStore()
 			if err != nil {
 				return fmt.Errorf("error building CA store: %v", err)
 			}

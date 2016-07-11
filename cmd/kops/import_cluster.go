@@ -48,15 +48,15 @@ func (c *ImportClusterCmd) Run() error {
 		return fmt.Errorf("error initializing AWS client: %v", err)
 	}
 
-	stateStore, err := rootCommand.StateStore()
+	clusterRegistry, err := rootCommand.ClusterRegistry()
 	if err != nil {
-		return fmt.Errorf("error state store: %v", err)
+		return err
 	}
 
 	d := &kutil.ImportCluster{}
 	d.ClusterName = clusterName
 	d.Cloud = cloud
-	d.StateStore = stateStore
+	d.ClusterRegistry = clusterRegistry
 
 	err = d.ImportAWSCluster()
 	if err != nil {
