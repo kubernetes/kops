@@ -55,10 +55,13 @@ ${GOPATH}/bin/kops create cluster --v=0 --cloud=aws --zones=us-east-1c --name=${
 
 If you have problems, please set `--v=8` and open an issue, and ping justinsb on slack!
 
-## Build a kubectl file
+## Create kubecfg settings for kubectl
 
-The kops tool is a CLI for doing administrative tasks.  You can use it to create the kubecfg configuration,
-for use with kubectl:
+(This step is actually optional; `create cluster` will do it automatically after cluster creation.
+ But we expect that if you're part of a team you might share the KOPS_STATE_STORE, and then you can do
+ this on different machines instead of having to share kubecfg files)
+
+To create the kubecfg configuration settings for use with kubectl:
 
 ```
 export NAME=<kubernetes.mydomain.com>
