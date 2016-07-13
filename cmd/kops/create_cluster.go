@@ -8,6 +8,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kubernetes/pkg/util/sets"
 	"os"
 	"os/exec"
@@ -362,7 +363,26 @@ func (c *CreateClusterCmd) Run() error {
 		DryRun:          isDryrun,
 	}
 
-	return cmd.Run()
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	glog.Infof("Exporting kubecfg for cluster")
+
+	x := &kutil.CreateKubecfg{
+		ClusterName:      cluster.Name,
+		KeyStore:         clusterRegistry.KeyStore(cluster.Name),
+		MasterPublicName: cluster.Spec.MasterPublicName,
+	}
+	defer x.Close()
+
+	err = x.WriteKubecfg()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func parseZoneList(s string) []string {
