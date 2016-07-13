@@ -368,18 +368,20 @@ func (c *CreateClusterCmd) Run() error {
 		return err
 	}
 
-	glog.Infof("Exporting kubecfg for cluster")
+	if !isDryrun {
+		glog.Infof("Exporting kubecfg for cluster")
 
-	x := &kutil.CreateKubecfg{
-		ClusterName:      cluster.Name,
-		KeyStore:         clusterRegistry.KeyStore(cluster.Name),
-		MasterPublicName: cluster.Spec.MasterPublicName,
-	}
-	defer x.Close()
+		x := &kutil.CreateKubecfg{
+			ClusterName:      cluster.Name,
+			KeyStore:         clusterRegistry.KeyStore(cluster.Name),
+			MasterPublicName: cluster.Spec.MasterPublicName,
+		}
+		defer x.Close()
 
-	err = x.WriteKubecfg()
-	if err != nil {
-		return err
+		err = x.WriteKubecfg()
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
