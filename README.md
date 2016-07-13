@@ -29,11 +29,15 @@ you should use Go 1.6 or later)
 
 ## Bringing up a cluster on AWS
 
-* Ensure you have a DNS hosted zone set up in Route 53, e.g. `mydomain.com`
+* Set up a DNS hosted zone in Route 53, e.g. `mydomain.com`, and set up the DNS nameservers as normal
+  so that domains will resolve.  You can reuse an existing domain name (e.g. `mydomain.com`), or you can create
+  a "child" hosted zone (e.g. `myclusters.mydomain.com`) if you want to isolate them.  Note that with AWS Route53,
+  you can have subdomains in a single hosted zone, so you can have `cluster1.testclusters.mydomain.com` under
+  `mydomain.com`.
 
 * Pick a DNS name under this zone to be the name of your cluster.  kops will set up DNS so your cluster
-can be reached on this name.  For example, if your zone was `mydomain.com`, a good name would be
-`kubernetes.mydomain.com`, or `dev.k8s.mydomain.com`, or even `dev.k8s.myproject.mydomain.com`. We'll call this `NAME`.
+  can be reached on this name.  For example, if your zone was `mydomain.com`, a good name would be
+  `kubernetes.mydomain.com`, or `dev.k8s.mydomain.com`, or even `dev.k8s.myproject.mydomain.com`. We'll call this `NAME`.
 
 * Set `AWS_PROFILE` (if you need to select a profile for the AWS CLI to work)
 

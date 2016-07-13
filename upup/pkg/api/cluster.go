@@ -64,6 +64,8 @@ type ClusterSpec struct {
 	// This is because some clouds let us define a managed zone foo.bar, and then have
 	// kubernetes.dev.foo.bar, without needing to define dev.foo.bar as a hosted zone.
 	// DNSZone will probably be a suffix of the MasterPublicName and MasterInternalName
+	// Note that DNSZone can either by the host name of the zone (containing dots),
+	// or can be an identifier for the zone.
 	DNSZone string `json:"dnsZone,omitempty"`
 
 	// ClusterDNSDomain is the suffix we use for internal DNS names (normally cluster.local)

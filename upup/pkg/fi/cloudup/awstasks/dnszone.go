@@ -9,6 +9,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"math/rand"
+	"strconv"
 	"strings"
 )
 
@@ -48,6 +50,33 @@ func (e *DNSZone) Find(c *fi.Context) (*DNSZone, error) {
 }
 
 func (e *DNSZone) findExisting(cloud *awsup.AWSCloud) (*route53.HostedZone, error) {
+	findID := ""
+	if e.ID != nil {
+		findID = *e.ID
+	} else if e.Name != nil && !strings.Contains(*e.Name, ".") {
+		// Looks like a hosted zone ID
+		findID = *e.Name
+	}
+	if findID != "" {
+		request := &route53.GetHostedZoneInput{
+			Id: aws.String(findID),
+		}
+
+		response, err := cloud.Route53.GetHostedZone(request)
+		if err != nil {
+			if awsup.AWSErrorCode(err) == "NoSuchHostedZone" {
+				if e.ID != nil {
+					return nil, nil
+				}
+				// Otherwise continue ... maybe the name was not an id after all...
+			} else {
+				return nil, fmt.Errorf("error fetching DNS HostedZone %q: %v", *e.ID, err)
+			}
+		} else {
+			return response.HostedZone, nil
+		}
+	}
+
 	findName := fi.StringValue(e.Name)
 	if findName == "" {
 		return nil, nil
@@ -95,6 +124,8 @@ func (_ *DNSZone) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSZone) error
 	if a == nil {
 		request := &route53.CreateHostedZoneInput{}
 		request.Name = e.Name
+		nonce := rand.Int63()
+		request.CallerReference = aws.String(strconv.FormatInt(nonce, 10))
 
 		glog.V(2).Infof("Creating Route53 HostedZone with Name %q", e.Name)
 

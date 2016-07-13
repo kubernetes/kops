@@ -93,11 +93,6 @@ func (c *CreateClusterCmd) Run() error {
 	if c.Cluster.Spec.MasterPublicName == "" {
 		c.Cluster.Spec.MasterPublicName = "api." + c.Cluster.Name
 	}
-	if c.Cluster.Spec.DNSZone == "" {
-		tokens := strings.Split(c.Cluster.Spec.MasterPublicName, ".")
-		c.Cluster.Spec.DNSZone = strings.Join(tokens[len(tokens)-2:], ".")
-		glog.Infof("Defaulting DNS zone to: %s", c.Cluster.Spec.DNSZone)
-	}
 
 	if len(c.Cluster.Spec.Zones) == 0 {
 		// TODO: Auto choose zones from region?
@@ -435,6 +430,15 @@ func (c *CreateClusterCmd) Run() error {
 
 	default:
 		return fmt.Errorf("unknown CloudProvider %q", c.Cluster.Spec.CloudProvider)
+	}
+
+	if c.Cluster.Spec.DNSZone == "" {
+		dnsZone, err := cloud.FindDNSHostedZone(c.Cluster.Name)
+		if err != nil {
+			return fmt.Errorf("Error determining default DNS zone; please specify --zone-name: %v", err)
+		}
+		glog.Infof("Defaulting DNS zone to: %s", dnsZone)
+		c.Cluster.Spec.DNSZone = dnsZone
 	}
 
 	tf := &TemplateFunctions{

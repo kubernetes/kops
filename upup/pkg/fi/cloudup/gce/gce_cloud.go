@@ -49,3 +49,7 @@ func NewGCECloud(region string, project string) (*GCECloud, error) {
 
 	return c, nil
 }
+
+func (c *GCECloud) FindDNSHostedZone(clusterDNSName string) (string, error) {
+	return "", fmt.Errorf("FindDNSHostedZone not yet implemented on GCE")
+}
