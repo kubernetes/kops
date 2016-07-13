@@ -7,6 +7,8 @@ const CloudProviderGCE CloudProviderID = "gce"
 
 type Cloud interface {
 	ProviderID() CloudProviderID
+
+	FindDNSHostedZone(dnsName string) (string, error)
 }
 
 // zonesToCloud allows us to infer from certain well-known zones to a cloud
