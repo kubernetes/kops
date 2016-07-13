@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/spf13/cobra"
-	"github.com/golang/glog"
 	"fmt"
+	"github.com/golang/glog"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -39,4 +39,3 @@ func (c *VersionCmd) Run() error {
 
 	return nil
 }
-
