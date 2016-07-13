@@ -1,4 +1,4 @@
-package kubecfg
+package kutil
 
 import (
 	"fmt"
@@ -39,7 +39,7 @@ func (c *KubeconfigBuilder) Init() {
 	c.KubeconfigPath = kubeconfig
 }
 
-func (c *KubeconfigBuilder) CreateKubeconfig() error {
+func (c *KubeconfigBuilder) WriteKubecfg() error {
 	if _, err := os.Stat(c.KubeconfigPath); os.IsNotExist(err) {
 		err := os.MkdirAll(path.Dir(c.KubeconfigPath), 0700)
 		if err != nil {
