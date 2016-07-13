@@ -5,8 +5,8 @@ After=docker.service
 
 [Service]
 EnvironmentFile=/etc/sysconfig/protokube
-ExecStartPre=/usr/bin/docker pull kope/protokube:1.3
-ExecStart=/usr/bin/docker run -v /:/rootfs/ --privileged kope/protokube:1.3 /usr/bin/protokube "$DAEMON_ARGS"
+ExecStartPre=/usr/bin/docker pull justinsb/protokube:1.3
+ExecStart=/usr/bin/docker run -v /:/rootfs/ --privileged justinsb/protokube:1.3 /usr/bin/protokube "$DAEMON_ARGS"
 Restart=always
 RestartSec=2s
 StartLimitInterval=0
