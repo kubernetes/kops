@@ -9,6 +9,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"math/rand"
+	"strconv"
 	"strings"
 )
 
@@ -122,6 +124,8 @@ func (_ *DNSZone) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSZone) error
 	if a == nil {
 		request := &route53.CreateHostedZoneInput{}
 		request.Name = e.Name
+		nonce := rand.Int63()
+		request.CallerReference = aws.String(strconv.FormatInt(nonce, 10))
 
 		glog.V(2).Infof("Creating Route53 HostedZone with Name %q", e.Name)
 
