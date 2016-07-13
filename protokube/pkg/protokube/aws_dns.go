@@ -3,6 +3,7 @@ package protokube
 import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
@@ -45,6 +46,30 @@ func (p *Route53DNSProvider) getZone() (*route53.HostedZone, error) {
 	if p.zone != nil {
 		return p.zone, nil
 	}
+
+	if !strings.Contains(p.zoneName, ".") {
+		// Looks like a zone ID
+		zoneID := p.zoneName
+		glog.Infof("Querying for hosted zone by id: %q", zoneID)
+
+		request := &route53.GetHostedZoneInput{
+			Id: aws.String(zoneID),
+		}
+
+		response, err := p.client.GetHostedZone(request)
+		if err != nil {
+			if AWSErrorCode(err) == "NoSuchHostedZone" {
+				glog.Infof("Zone not found with id %q; will reattempt by name", zoneID)
+			} else {
+				return nil, fmt.Errorf("error querying for DNS HostedZones %q: %v", zoneID, err)
+			}
+		} else {
+			p.zone = response.HostedZone
+			return p.zone, nil
+		}
+	}
+
+	glog.Infof("Querying for hosted zone by name: %q", p.zoneName)
 
 	findZone := p.zoneName
 	if !strings.HasSuffix(findZone, ".") {
@@ -177,4 +202,12 @@ func (p *Route53DNSProvider) Set(fqdn string, recordType string, value string, t
 	glog.V(2).Infof("Change id is %q", aws.StringValue(response.ChangeInfo.Id))
 
 	return nil
+}
+
+// AWSErrorCode returns the aws error code, if it is an awserr.Error, otherwise ""
+func AWSErrorCode(err error) string {
+	if awsError, ok := err.(awserr.Error); ok {
+		return awsError.Code()
+	}
+	return ""
 }
