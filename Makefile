@@ -3,8 +3,12 @@ all: gocode
 DOCKER_REGISTRY=gcr.io/must-override/
 S3_BUCKET=s3://must-override/
 
+ifndef VERSION
+  VERSION := git-$(shell git rev-parse --short HEAD)
+endif
+
 gocode:
-	GO15VENDOREXPERIMENT=1 go install k8s.io/kops/cmd/...
+	GO15VENDOREXPERIMENT=1 go install -ldflags "-X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/...
 	ln -sfn ${GOPATH}/src/k8s.io/kops/upup/models/ ${GOPATH}/bin/models
 
 codegen:
