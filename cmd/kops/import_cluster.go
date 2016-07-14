@@ -42,7 +42,7 @@ func (c *ImportClusterCmd) Run() error {
 		return fmt.Errorf("--name is required")
 	}
 
-	tags := map[string]string{"KubernetesCluster": clusterName}
+	tags := map[string]string{awsup.TagClusterName: clusterName}
 	cloud, err := awsup.NewAWSCloud(c.Region, tags)
 	if err != nil {
 		return fmt.Errorf("error initializing AWS client: %v", err)
