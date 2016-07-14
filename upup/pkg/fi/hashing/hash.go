@@ -11,6 +11,7 @@ import (
 	"hash"
 	"io"
 	"os"
+	"strings"
 )
 
 type HashAlgorithm string
@@ -27,7 +28,11 @@ type Hash struct {
 }
 
 func (h *Hash) String() string {
-	return fmt.Sprintf("%s:%s", h.Algorithm, hex.EncodeToString(h.HashValue))
+	return string(h.Algorithm) + ":" + h.Hex()
+}
+
+func (h *Hash) Hex() string {
+	return hex.EncodeToString(h.HashValue)
 }
 
 func (ha HashAlgorithm) NewHasher() hash.Hash {
@@ -71,6 +76,13 @@ func (ha HashAlgorithm) FromString(s string) (*Hash, error) {
 }
 
 func FromString(s string) (*Hash, error) {
+	for _, ha := range []HashAlgorithm{HashAlgorithmMD5, HashAlgorithmSHA1, HashAlgorithmSHA256} {
+		prefix := fmt.Sprintf("%s:", ha)
+		if strings.HasPrefix(s, prefix) {
+			return ha.FromString(s[len(prefix):])
+		}
+	}
+
 	var ha HashAlgorithm
 	switch len(s) {
 	case 32:
@@ -80,7 +92,7 @@ func FromString(s string) (*Hash, error) {
 	case 64:
 		ha = HashAlgorithmSHA256
 	default:
-		return nil, fmt.Errorf("cannot determine algorithm for hash: %d", len(s))
+		return nil, fmt.Errorf("cannot determine algorithm for hash length: %d", len(s))
 	}
 
 	return ha.FromString(s)

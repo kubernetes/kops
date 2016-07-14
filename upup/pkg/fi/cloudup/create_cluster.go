@@ -14,6 +14,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
+	"k8s.io/kops/upup/pkg/fi/hashing"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/vfs"
 	"net"
@@ -64,6 +65,9 @@ type CreateClusterCmd struct {
 	OutDir string
 
 	// Assets is a list of sources for files (primarily when not using everything containerized)
+	// Formats:
+	//  raw url: http://... or https://...
+	//  url with hash: <hex>@http://... or <hex>@https://...
 	Assets []string
 
 	// ClusterRegistry manages the cluster configuration storage
@@ -287,18 +291,27 @@ func (c *CreateClusterCmd) Run() error {
 	}
 
 	if len(c.Assets) == 0 {
-		//defaultReleaseAsset := fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/v%s/kubernetes-server-linux-amd64.tar.gz", c.Config.KubernetesVersion)
-		//glog.Infof("Adding default kubernetes release asset: %s", defaultReleaseAsset)
+		{
+			defaultKubeletAsset := fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/v%s/bin/linux/amd64/kubelet", c.Cluster.Spec.KubernetesVersion)
+			glog.Infof("Adding default kubelet release asset: %s", defaultKubeletAsset)
 
-		defaultKubeletAsset := fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/v%s/bin/linux/amd64/kubelet", c.Cluster.Spec.KubernetesVersion)
-		glog.Infof("Adding default kubelet release asset: %s", defaultKubeletAsset)
+			hash, err := findHash(defaultKubeletAsset)
+			if err != nil {
+				return err
+			}
+			c.Assets = append(c.Assets, hash.Hex()+"@"+defaultKubeletAsset)
+		}
 
-		defaultKubectlAsset := fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/v%s/bin/linux/amd64/kubectl", c.Cluster.Spec.KubernetesVersion)
-		glog.Infof("Adding default kubelet release asset: %s", defaultKubectlAsset)
+		{
+			defaultKubectlAsset := fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/v%s/bin/linux/amd64/kubectl", c.Cluster.Spec.KubernetesVersion)
+			glog.Infof("Adding default kubectl release asset: %s", defaultKubectlAsset)
 
-		// TODO: Verify assets exist, get the hash (that will check that KubernetesVersion is valid)
-
-		c.Assets = append(c.Assets, defaultKubeletAsset, defaultKubectlAsset)
+			hash, err := findHash(defaultKubectlAsset)
+			if err != nil {
+				return err
+			}
+			c.Assets = append(c.Assets, hash.Hex()+"@"+defaultKubectlAsset)
+		}
 	}
 
 	if c.NodeUpSource == "" {
@@ -595,6 +608,22 @@ func (c *CreateClusterCmd) Run() error {
 	}
 
 	return nil
+}
+
+func findHash(url string) (*hashing.Hash, error) {
+	for _, ext := range []string{".sha1"} {
+		hashURL := url + ext
+		b, err := vfs.Context.ReadFile(hashURL)
+		if err != nil {
+			glog.Infof("error reading hash file %q: %v", hashURL, err)
+			continue
+		}
+		hashString := strings.TrimSpace(string(b))
+		glog.Infof("Found hash %q for %q", hashString, url)
+
+		return hashing.FromString(hashString)
+	}
+	return nil, fmt.Errorf("cannot determine hash for %v (have you specified a valid KubernetesVersion?)", url)
 }
 
 // populateNodeSets returns the NodeSets with values populated from defaults or top-level config
