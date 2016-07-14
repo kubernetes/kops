@@ -16,6 +16,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/hashing"
 	"k8s.io/kops/upup/pkg/fi/loader"
+	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/upup/pkg/fi/vfs"
 	"net"
 	"os"
@@ -27,19 +28,23 @@ const DefaultNodeTypeAWS = "t2.medium"
 const DefaultNodeTypeGCE = "n1-standard-2"
 
 type CreateClusterCmd struct {
-	// Cluster is the api object representing the whole cluster
-	Cluster *api.Cluster
+	// CreateNewCluster is true iff this is an initial cluster creation (vs an update)
+	CreateNewCluster bool
 
-	// InstanceGroups is the configuration for each InstanceGroup
+	// InputCluster is the api object representing the whole cluster, as input by the user
+	// We build it up into a complete config, but we write the values as input
+	InputCluster *api.Cluster
+
+	// InputInstanceGroups is the configuration for each InstanceGroup, as input by the user
 	// These are the groups for both master & nodes
 	// We normally expect most Master NodeSets to be MinSize=MaxSize=1,
 	// but they don't have to be.
-	InstanceGroups []*api.InstanceGroup
+	InputInstanceGroups []*api.InstanceGroup
 
 	// nodes is the set of InstanceGroups for the nodes
-	nodes []*api.InstanceGroup
+	nodeInstanceGroups []*api.InstanceGroup
 	// masters is the set of InstanceGroups for the masters
-	masters []*api.InstanceGroup
+	masterInstanceGroups []*api.InstanceGroup
 
 	//// NodeUp stores the configuration we are going to pass to nodeup
 	//NodeUpConfig  *nodeup.NodeConfig
@@ -85,56 +90,59 @@ func (c *CreateClusterCmd) Run() error {
 	//// We (currently) have to use protokube with ASGs
 	//useProtokube := useMasterASG
 
-	//if c.NodeUpConfig == nil {
-	//	c.NodeUpConfig = &nodeup.NodeConfig{}
-	//}
-
-	clusterName := c.Cluster.Name
-	if clusterName == "" {
-		return fmt.Errorf("ClusterName is required (e.g. --name=mycluster.myzone.com)")
-	}
-
-	if c.Cluster.Spec.MasterPublicName == "" {
-		c.Cluster.Spec.MasterPublicName = "api." + c.Cluster.Name
-	}
-
-	if len(c.Cluster.Spec.Zones) == 0 {
-		// TODO: Auto choose zones from region?
-		return fmt.Errorf("must configure at least one Zone (use --zones)")
-	}
-
-	if len(c.InstanceGroups) == 0 {
-		return fmt.Errorf("must configure at least one InstanceGroup")
-	}
-
-	for i, g := range c.InstanceGroups {
-		if g.Name == "" {
-			return fmt.Errorf("InstanceGroup #%d Name not set", i)
-		}
-		if g.Spec.Role == "" {
-			return fmt.Errorf("InstanceGroup %q Role not set", g.Name)
-		}
-	}
-
-	masters, err := c.populateMasters()
+	err := api.DeepValidate(c.InputCluster, c.InputInstanceGroups, false)
 	if err != nil {
 		return err
 	}
-	c.masters = masters
-	if len(c.masters) == 0 {
+
+	// Copy cluster & instance groups, so we can modify them freely
+	cluster := &api.Cluster{}
+	utils.JsonMergeStruct(cluster, c.InputCluster)
+	var masterInstanceGroups []*api.InstanceGroup
+	var nodeInstanceGroups []*api.InstanceGroup
+	var instanceGroups []*api.InstanceGroup
+	{
+		for _, src := range c.InputInstanceGroups {
+			ig := &api.InstanceGroup{}
+			utils.JsonMergeStruct(ig, src)
+
+			if ig.Spec.MachineType == "" {
+				ig.Spec.MachineType = c.defaultMachineType(cluster)
+			}
+
+			if ig.Spec.Image == "" {
+				ig.Spec.Image = c.defaultImage(cluster)
+			}
+
+			if ig.IsMaster() {
+				if len(ig.Spec.Zones) == 0 {
+					return fmt.Errorf("Master InstanceGroup %s did not specify any Zones", ig.Name)
+				}
+
+				masterInstanceGroups = append(masterInstanceGroups, ig)
+			} else {
+				if len(ig.Spec.Zones) == 0 {
+					for _, z := range cluster.Spec.Zones {
+						ig.Spec.Zones = append(ig.Spec.Zones, z.Name)
+					}
+				}
+				nodeInstanceGroups = append(nodeInstanceGroups, ig)
+			}
+
+			instanceGroups = append(instanceGroups, ig)
+		}
+	}
+	c.masterInstanceGroups = masterInstanceGroups
+	if len(c.masterInstanceGroups) == 0 {
 		return fmt.Errorf("must configure at least one Master InstanceGroup")
 	}
 
-	nodes, err := c.populateNodeSets()
-	if err != nil {
-		return err
-	}
-	c.nodes = nodes
-	if len(c.nodes) == 0 {
+	c.nodeInstanceGroups = nodeInstanceGroups
+	if len(c.nodeInstanceGroups) == 0 {
 		return fmt.Errorf("must configure at least one Node InstanceGroup")
 	}
 
-	err = c.assignSubnets()
+	err = c.assignSubnets(cluster)
 	if err != nil {
 		return err
 	}
@@ -142,14 +150,14 @@ func (c *CreateClusterCmd) Run() error {
 	// Check that instance groups are defined in valid zones
 	{
 		clusterZones := make(map[string]*api.ClusterZoneSpec)
-		for _, z := range c.Cluster.Spec.Zones {
+		for _, z := range cluster.Spec.Zones {
 			if clusterZones[z.Name] != nil {
 				return fmt.Errorf("Zones contained a duplicate value: %v", z.Name)
 			}
 			clusterZones[z.Name] = z
 		}
 
-		for _, group := range c.InstanceGroups {
+		for _, group := range instanceGroups {
 			for _, z := range group.Spec.Zones {
 				if clusterZones[z] == nil {
 					return fmt.Errorf("InstanceGroup %q is configured in %q, but this is not configured as a Zone in the cluster", group.Name, z)
@@ -159,7 +167,7 @@ func (c *CreateClusterCmd) Run() error {
 
 		// Check etcd configuration
 		{
-			for i, etcd := range c.Cluster.Spec.EtcdClusters {
+			for i, etcd := range cluster.Spec.EtcdClusters {
 				if etcd.Name == "" {
 					return fmt.Errorf("EtcdClusters #%d did not specify a Name", i)
 				}
@@ -206,33 +214,29 @@ func (c *CreateClusterCmd) Run() error {
 		return fmt.Errorf("ClusterRegistry is required")
 	}
 
-	if c.Cluster.Spec.CloudProvider == "" {
-		return fmt.Errorf("--cloud is required (e.g. aws, gce)")
-	}
-
 	tags := make(map[string]struct{})
 
 	l := &Loader{}
 	l.Init()
 
-	keyStore := c.ClusterRegistry.KeyStore(clusterName)
+	keyStore := c.ClusterRegistry.KeyStore(cluster.Name)
 	if c.DryRun {
 		keyStore.(*fi.VFSCAStore).DryRun = true
 	}
-	secretStore := c.ClusterRegistry.SecretStore(clusterName)
+	secretStore := c.ClusterRegistry.SecretStore(cluster.Name)
 
 	if vfs.IsClusterReadable(secretStore.VFSPath()) {
 		vfsPath := secretStore.VFSPath()
-		c.Cluster.Spec.SecretStore = vfsPath.Path()
+		cluster.Spec.SecretStore = vfsPath.Path()
 		if s3Path, ok := vfsPath.(*vfs.S3Path); ok {
-			if c.Cluster.Spec.MasterPermissions == nil {
-				c.Cluster.Spec.MasterPermissions = &api.CloudPermissions{}
+			if cluster.Spec.MasterPermissions == nil {
+				cluster.Spec.MasterPermissions = &api.CloudPermissions{}
 			}
-			c.Cluster.Spec.MasterPermissions.AddS3Bucket(s3Path.Bucket())
-			if c.Cluster.Spec.NodePermissions == nil {
-				c.Cluster.Spec.NodePermissions = &api.CloudPermissions{}
+			cluster.Spec.MasterPermissions.AddS3Bucket(s3Path.Bucket())
+			if cluster.Spec.NodePermissions == nil {
+				cluster.Spec.NodePermissions = &api.CloudPermissions{}
 			}
-			c.Cluster.Spec.NodePermissions.AddS3Bucket(s3Path.Bucket())
+			cluster.Spec.NodePermissions.AddS3Bucket(s3Path.Bucket())
 		}
 	} else {
 		// We could implement this approach, but it seems better to get all clouds using cluster-readable storage
@@ -241,33 +245,33 @@ func (c *CreateClusterCmd) Run() error {
 
 	if vfs.IsClusterReadable(keyStore.VFSPath()) {
 		vfsPath := keyStore.VFSPath()
-		c.Cluster.Spec.KeyStore = vfsPath.Path()
+		cluster.Spec.KeyStore = vfsPath.Path()
 		if s3Path, ok := vfsPath.(*vfs.S3Path); ok {
-			if c.Cluster.Spec.MasterPermissions == nil {
-				c.Cluster.Spec.MasterPermissions = &api.CloudPermissions{}
+			if cluster.Spec.MasterPermissions == nil {
+				cluster.Spec.MasterPermissions = &api.CloudPermissions{}
 			}
-			c.Cluster.Spec.MasterPermissions.AddS3Bucket(s3Path.Bucket())
-			if c.Cluster.Spec.NodePermissions == nil {
-				c.Cluster.Spec.NodePermissions = &api.CloudPermissions{}
+			cluster.Spec.MasterPermissions.AddS3Bucket(s3Path.Bucket())
+			if cluster.Spec.NodePermissions == nil {
+				cluster.Spec.NodePermissions = &api.CloudPermissions{}
 			}
-			c.Cluster.Spec.NodePermissions.AddS3Bucket(s3Path.Bucket())
+			cluster.Spec.NodePermissions.AddS3Bucket(s3Path.Bucket())
 		}
 	} else {
 		// We could implement this approach, but it seems better to get all clouds using cluster-readable storage
 		return fmt.Errorf("keyStore path is not cluster readable: %v", keyStore.VFSPath())
 	}
 
-	configPath, err := c.ClusterRegistry.ConfigurationPath(clusterName)
+	configPath, err := c.ClusterRegistry.ConfigurationPath(cluster.Name)
 	if err != nil {
 		return err
 	}
 	if vfs.IsClusterReadable(configPath) {
-		c.Cluster.Spec.ConfigStore = configPath.Path()
+		cluster.Spec.ConfigStore = configPath.Path()
 	} else {
 		// We do support this...
 	}
 
-	if c.Cluster.Spec.KubernetesVersion == "" {
+	if cluster.Spec.KubernetesVersion == "" {
 		stableURL := "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
 		b, err := vfs.Context.ReadFile(stableURL)
 		if err != nil {
@@ -276,23 +280,23 @@ func (c *CreateClusterCmd) Run() error {
 		latestVersion := strings.TrimSpace(string(b))
 		glog.Infof("Using kubernetes latest stable version: %s", latestVersion)
 
-		c.Cluster.Spec.KubernetesVersion = latestVersion
+		cluster.Spec.KubernetesVersion = latestVersion
 		//return fmt.Errorf("Must either specify a KubernetesVersion (-kubernetes-version) or provide an asset with the release bundle")
 	}
 
 	// Normalize k8s version
-	versionWithoutV := strings.TrimSpace(c.Cluster.Spec.KubernetesVersion)
+	versionWithoutV := strings.TrimSpace(cluster.Spec.KubernetesVersion)
 	if strings.HasPrefix(versionWithoutV, "v") {
 		versionWithoutV = versionWithoutV[1:]
 	}
-	if c.Cluster.Spec.KubernetesVersion != versionWithoutV {
-		glog.Warningf("Normalizing kubernetes version: %q -> %q", c.Cluster.Spec.KubernetesVersion, versionWithoutV)
-		c.Cluster.Spec.KubernetesVersion = versionWithoutV
+	if cluster.Spec.KubernetesVersion != versionWithoutV {
+		glog.Warningf("Normalizing kubernetes version: %q -> %q", cluster.Spec.KubernetesVersion, versionWithoutV)
+		cluster.Spec.KubernetesVersion = versionWithoutV
 	}
 
 	if len(c.Assets) == 0 {
 		{
-			defaultKubeletAsset := fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/v%s/bin/linux/amd64/kubelet", c.Cluster.Spec.KubernetesVersion)
+			defaultKubeletAsset := fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/v%s/bin/linux/amd64/kubelet", cluster.Spec.KubernetesVersion)
 			glog.Infof("Adding default kubelet release asset: %s", defaultKubeletAsset)
 
 			hash, err := findHash(defaultKubeletAsset)
@@ -303,7 +307,7 @@ func (c *CreateClusterCmd) Run() error {
 		}
 
 		{
-			defaultKubectlAsset := fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/v%s/bin/linux/amd64/kubectl", c.Cluster.Spec.KubernetesVersion)
+			defaultKubectlAsset := fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/v%s/bin/linux/amd64/kubectl", cluster.Spec.KubernetesVersion)
 			glog.Infof("Adding default kubectl release asset: %s", defaultKubectlAsset)
 
 			hash, err := findHash(defaultKubectlAsset)
@@ -346,7 +350,7 @@ func (c *CreateClusterCmd) Run() error {
 		tags["_not_master_lb"] = struct{}{}
 	}
 
-	if c.Cluster.Spec.MasterPublicName != "" {
+	if cluster.Spec.MasterPublicName != "" {
 		tags["_master_dns"] = struct{}{}
 	}
 
@@ -355,7 +359,7 @@ func (c *CreateClusterCmd) Run() error {
 		"secret":  &fitasks.Secret{},
 	})
 
-	cloud, err := BuildCloud(c.Cluster)
+	cloud, err := BuildCloud(cluster)
 	if err != nil {
 		return err
 	}
@@ -363,7 +367,7 @@ func (c *CreateClusterCmd) Run() error {
 	region := ""
 	project := ""
 
-	switch c.Cluster.Spec.CloudProvider {
+	switch cluster.Spec.CloudProvider {
 	case "gce":
 		{
 			gceCloud := cloud.(*gce.GCECloud)
@@ -442,20 +446,20 @@ func (c *CreateClusterCmd) Run() error {
 		}
 
 	default:
-		return fmt.Errorf("unknown CloudProvider %q", c.Cluster.Spec.CloudProvider)
+		return fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
 	}
 
-	if c.Cluster.Spec.DNSZone == "" {
-		dnsZone, err := cloud.FindDNSHostedZone(c.Cluster.Name)
+	if cluster.Spec.DNSZone == "" {
+		dnsZone, err := cloud.FindDNSHostedZone(cluster.Name)
 		if err != nil {
 			return fmt.Errorf("Error determining default DNS zone; please specify --zone-name: %v", err)
 		}
 		glog.Infof("Defaulting DNS zone to: %s", dnsZone)
-		c.Cluster.Spec.DNSZone = dnsZone
+		cluster.Spec.DNSZone = dnsZone
 	}
 
 	tf := &TemplateFunctions{
-		cluster: c.Cluster,
+		cluster: cluster,
 	}
 
 	l.Tags = tags
@@ -482,7 +486,7 @@ func (c *CreateClusterCmd) Run() error {
 	// TotalNodeCount computes the total count of nodes
 	l.TemplateFunctions["TotalNodeCount"] = func() (int, error) {
 		count := 0
-		for _, group := range c.nodes {
+		for _, group := range c.nodeInstanceGroups {
 			if group.Spec.MaxSize != nil {
 				count += *group.Spec.MaxSize
 			} else if group.Spec.MinSize != nil {
@@ -497,8 +501,12 @@ func (c *CreateClusterCmd) Run() error {
 	l.TemplateFunctions["Region"] = func() string {
 		return region
 	}
-	l.TemplateFunctions["NodeSets"] = c.populateNodeSets
-	l.TemplateFunctions["Masters"] = c.populateMasters
+	l.TemplateFunctions["NodeSets"] = func() []*api.InstanceGroup {
+		return nodeInstanceGroups
+	}
+	l.TemplateFunctions["Masters"] = func() []*api.InstanceGroup {
+		return masterInstanceGroups
+	}
 	//l.TemplateFunctions["NodeUp"] = c.populateNodeUpConfig
 	l.TemplateFunctions["NodeUpSource"] = func() string {
 		return c.NodeUpSource
@@ -507,7 +515,7 @@ func (c *CreateClusterCmd) Run() error {
 		return ""
 	}
 	l.TemplateFunctions["ClusterLocation"] = func() (string, error) {
-		configPath, err := c.ClusterRegistry.ConfigurationPath(clusterName)
+		configPath, err := c.ClusterRegistry.ConfigurationPath(cluster.Name)
 		if err != nil {
 			return "", err
 		}
@@ -521,7 +529,7 @@ func (c *CreateClusterCmd) Run() error {
 		return base64.StdEncoding.EncodeToString([]byte(s))
 	}
 	l.TemplateFunctions["ClusterName"] = func() string {
-		return clusterName
+		return cluster.Name
 	}
 	l.TemplateFunctions["replace"] = func(s, find, replace string) string {
 		return strings.Replace(s, find, replace, -1)
@@ -543,18 +551,28 @@ func (c *CreateClusterCmd) Run() error {
 		l.Resources["ssh-public-key"] = fi.NewStringResource(string(authorized))
 	}
 
-	completed, err := l.BuildCompleteSpec(&c.Cluster.Spec, c.ModelStore, c.Models)
+	completed, err := l.BuildCompleteSpec(&cluster.Spec, c.ModelStore, c.Models)
 	if err != nil {
 		return fmt.Errorf("error building complete spec: %v", err)
 	}
 	l.cluster = &api.Cluster{}
-	*l.cluster = *c.Cluster
+	*l.cluster = *cluster
 	l.cluster.Spec = *completed
 	tf.cluster = l.cluster
 
-	err = l.cluster.Validate()
+	err = l.cluster.Validate(true)
 	if err != nil {
 		return fmt.Errorf("Completed cluster failed validation: %v", err)
+	}
+
+	// Note we perform as much validation as we can, before writing a bad config
+	if c.CreateNewCluster {
+		err = api.CreateClusterConfig(c.ClusterRegistry, c.InputCluster, c.InputInstanceGroups)
+	} else {
+		err = api.UpdateClusterConfig(c.ClusterRegistry, c.InputCluster, c.InputInstanceGroups)
+	}
+	if err != nil {
+		return fmt.Errorf("error writing updated configuration: %v", err)
 	}
 
 	taskMap, err := l.BuildTasks(c.ModelStore, c.Models)
@@ -571,13 +589,13 @@ func (c *CreateClusterCmd) Run() error {
 
 	switch c.Target {
 	case "direct":
-		switch c.Cluster.Spec.CloudProvider {
+		switch cluster.Spec.CloudProvider {
 		case "gce":
 			target = gce.NewGCEAPITarget(cloud.(*gce.GCECloud))
 		case "aws":
 			target = awsup.NewAWSAPITarget(cloud.(*awsup.AWSCloud))
 		default:
-			return fmt.Errorf("direct configuration not supported with CloudProvider:%q", c.Cluster.Spec.CloudProvider)
+			return fmt.Errorf("direct configuration not supported with CloudProvider:%q", cluster.Spec.CloudProvider)
 		}
 
 	case "terraform":
@@ -626,73 +644,8 @@ func findHash(url string) (*hashing.Hash, error) {
 	return nil, fmt.Errorf("cannot determine hash for %v (have you specified a valid KubernetesVersion?)", url)
 }
 
-// populateNodeSets returns the NodeSets with values populated from defaults or top-level config
-func (c *CreateClusterCmd) populateNodeSets() ([]*api.InstanceGroup, error) {
-	var results []*api.InstanceGroup
-	for _, src := range c.InstanceGroups {
-		if src.IsMaster() {
-			continue
-		}
-		n := &api.InstanceGroup{}
-		*n = *src
-
-		if n.Spec.MachineType == "" {
-			n.Spec.MachineType = c.defaultMachineType()
-		}
-
-		if n.Spec.Image == "" {
-			n.Spec.Image = c.defaultImage()
-		}
-
-		if len(n.Spec.Zones) == 0 {
-			for _, z := range c.Cluster.Spec.Zones {
-				n.Spec.Zones = append(n.Spec.Zones, z.Name)
-			}
-		}
-		results = append(results, n)
-	}
-	return results, nil
-}
-
-// populateMasters returns the Masters with values populated from defaults or top-level config
-func (c *CreateClusterCmd) populateMasters() ([]*api.InstanceGroup, error) {
-	var results []*api.InstanceGroup
-	for _, src := range c.InstanceGroups {
-		if !src.IsMaster() {
-			continue
-		}
-
-		m := &api.InstanceGroup{}
-		*m = *src
-
-		if len(src.Spec.Zones) == 0 {
-			return nil, fmt.Errorf("Master InstanceGroup %s did not specify any Zones", src.Name)
-		}
-
-		if m.Spec.MachineType == "" {
-			m.Spec.MachineType = c.defaultMachineType()
-		}
-
-		if m.Spec.Image == "" {
-			m.Spec.Image = c.defaultImage()
-		}
-
-		results = append(results, m)
-	}
-	return results, nil
-}
-
-//// populateNodeUpConfig returns the NodeUpConfig with values populated from defaults or top-level config
-//func (c*CreateClusterCmd) populateNodeUpConfig() (*nodeup.NodeConfig, error) {
-//	conf := &nodeup.NodeConfig{}
-//	*conf = *c.NodeUpConfig
-//
-//	return conf, nil
-//}
-
 // defaultMachineType returns the default MachineType, based on the cloudprovider
-func (c *CreateClusterCmd) defaultMachineType() string {
-	cluster := c.Cluster
+func (c *CreateClusterCmd) defaultMachineType(cluster *api.Cluster) string {
 	switch cluster.Spec.CloudProvider {
 	case "aws":
 		return DefaultNodeTypeAWS
@@ -705,9 +658,8 @@ func (c *CreateClusterCmd) defaultMachineType() string {
 }
 
 // defaultImage returns the default Image, based on the cloudprovider
-func (c *CreateClusterCmd) defaultImage() string {
-	// TODO: Use spec
-	cluster := c.Cluster
+func (c *CreateClusterCmd) defaultImage(cluster *api.Cluster) string {
+	// TODO: Use spec?
 	switch cluster.Spec.CloudProvider {
 	case "aws":
 		return "282335181503/k8s-1.3-debian-jessie-amd64-hvm-ebs-2016-06-18"
@@ -717,8 +669,7 @@ func (c *CreateClusterCmd) defaultImage() string {
 	}
 }
 
-func (c *CreateClusterCmd) assignSubnets() error {
-	cluster := c.Cluster
+func (c *CreateClusterCmd) assignSubnets(cluster *api.Cluster) error {
 	if cluster.Spec.NonMasqueradeCIDR == "" {
 		glog.Warningf("NonMasqueradeCIDR not set; can't auto-assign dependent subnets")
 		return nil

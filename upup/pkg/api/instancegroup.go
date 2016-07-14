@@ -86,9 +86,13 @@ func (g *InstanceGroup) IsMaster() bool {
 	}
 }
 
-func (g *InstanceGroup) Validate() error {
+func (g *InstanceGroup) Validate(strict bool) error {
 	if g.Name == "" {
 		return fmt.Errorf("Name is required")
+	}
+
+	if g.Spec.Role == "" {
+		return fmt.Errorf("InstanceGroup %q Role not set", g.Name)
 	}
 
 	switch g.Spec.Role {
