@@ -32,7 +32,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	var instanceGroups []*api.InstanceGroup
 
 	cluster := &api.Cluster{}
-	cluster.Spec.CloudProvider = "aws"
+	cluster.Spec.CloudProvider = fi.CloudProviderAWS
 	cluster.Name = clusterName
 
 	cluster.Spec.KubeControllerManager = &api.KubeControllerManagerConfig{}
@@ -94,7 +94,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 		}
 	}
 	if masterSubnet == nil {
-		return fmt.Errorf("cannot find subnet %q", masterSubnetID)
+		return fmt.Errorf("cannot find subnet %q.  If you used an existing subnet, please tag it with %s=%s and retry the import", masterSubnetID, awsup.TagClusterName, clusterName)
 	}
 
 	vpcID := aws.StringValue(masterInstance.VpcId)
