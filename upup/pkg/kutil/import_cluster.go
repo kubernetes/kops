@@ -32,7 +32,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	var instanceGroups []*api.InstanceGroup
 
 	cluster := &api.Cluster{}
-	cluster.Spec.CloudProvider = fi.CloudProviderAWS
+	cluster.Spec.CloudProvider = string(fi.CloudProviderAWS)
 	cluster.Name = clusterName
 
 	cluster.Spec.KubeControllerManager = &api.KubeControllerManagerConfig{}
