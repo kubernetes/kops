@@ -259,6 +259,10 @@ func (c *Cluster) PerformAssignments() error {
 		c.Spec.NonMasqueradeCIDR = "100.64.0.0/10"
 	}
 
+	if c.Spec.MasterPublicName == "" && c.Name != "" {
+		c.Spec.MasterPublicName = "api." + c.Name
+	}
+
 	for _, zone := range c.Spec.Zones {
 		err := zone.performAssignments(c)
 		if err != nil {

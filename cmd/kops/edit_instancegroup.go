@@ -90,7 +90,7 @@ func (c *EditInstanceGroupCmd) Run(groupName string) error {
 		return fmt.Errorf("error parsing config: %v", err)
 	}
 
-	err = newGroup.Validate()
+	err = newGroup.Validate(false)
 	if err != nil {
 		return err
 	}
