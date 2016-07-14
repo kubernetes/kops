@@ -147,6 +147,11 @@ func (c *CreateClusterCmd) Run() error {
 		return err
 	}
 
+	err = cluster.FillDefaults()
+	if err != nil {
+		return err
+	}
+
 	// Check that instance groups are defined in valid zones
 	{
 		clusterZones := make(map[string]*api.ClusterZoneSpec)

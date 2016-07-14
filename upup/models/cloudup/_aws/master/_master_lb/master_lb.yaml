@@ -35,7 +35,7 @@ securityGroupRule/egress-api-lb:
 # HTTPS to the master ELB is allowed (for API access)
 securityGroupRule/https-external-to-api:
   securityGroup: securityGroup/api.{{ ClusterName }}
-  cidr: 0.0.0.0/0
+  cidr: {{ AdminCIDR }}
   protocol: tcp
   fromPort: 443
   toPort: 443
