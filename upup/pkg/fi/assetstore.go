@@ -132,9 +132,22 @@ func hashFromHttpHeader(url string) (*hashing.Hash, error) {
 	return nil, fmt.Errorf("unable to determine hash from HTTP HEAD: %q", url)
 }
 
+// Add an asset into the store, in one of the recognized formats (see Assets in types package)
 func (a *AssetStore) Add(id string) error {
-	if strings.HasSuffix(id, "http://") || strings.HasPrefix(id, "https://") {
+	if strings.HasPrefix(id, "http://") || strings.HasPrefix(id, "https://") {
 		return a.addURL(id, nil)
+	}
+	i := strings.Index(id, "@http://")
+	if i == -1 {
+		i = strings.Index(id, "@https://")
+	}
+	if i != -1 {
+		url := id[i+1:]
+		hash, err := hashing.FromString(id[:i])
+		if err != nil {
+			return err
+		}
+		return a.addURL(url, hash)
 	}
 	// TODO: local files!
 	return fmt.Errorf("unknown asset format: %q", id)

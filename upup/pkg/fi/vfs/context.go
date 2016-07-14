@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 )
 
@@ -72,6 +73,8 @@ func (c *VFSContext) BuildVfsPath(p string) (Path, error) {
 	return nil, fmt.Errorf("unknown / unhandled path type: %q", p)
 }
 
+// readHttpLocation reads an http (or https) url.
+// It returns the contents, or an error on any non-200 response.  On a 404, it will return os.ErrNotExist
 func (c *VFSContext) readHttpLocation(httpURL string, httpHeaders map[string]string) ([]byte, error) {
 	req, err := http.NewRequest("GET", httpURL, nil)
 	if err != nil {
@@ -90,6 +93,12 @@ func (c *VFSContext) readHttpLocation(httpURL string, httpHeaders map[string]str
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return nil, fmt.Errorf("error reading response for %q: %v", httpURL, err)
+	}
+	if response.StatusCode == 404 {
+		return nil, os.ErrNotExist
+	}
+	if response.StatusCode != 200 {
+		return nil, fmt.Errorf("unexpected response code %q for %q: %v", response.Status, httpURL, string(body))
 	}
 	return body, nil
 }
