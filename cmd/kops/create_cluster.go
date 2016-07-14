@@ -36,6 +36,7 @@ type CreateClusterCmd struct {
 	VPCID             string
 	NetworkCIDR       string
 	DNSZone           string
+	AdminAccess       string
 }
 
 var createCluster CreateClusterCmd
@@ -93,6 +94,7 @@ func init() {
 
 	cmd.Flags().StringVar(&createCluster.DNSZone, "dns-zone", "", "DNS hosted zone to use (defaults to last two components of cluster name)")
 	cmd.Flags().StringVar(&createCluster.OutDir, "out", "", "Path to write any local output")
+	cmd.Flags().StringVar(&createCluster.AdminAccess, "admin-access", "", "Restrict access to admin endpoints (SSH, HTTPS) to this CIDR.  If not set, access will not be restricted by IP.")
 }
 
 var EtcdClusters = []string{"main", "events"}
@@ -330,6 +332,10 @@ func (c *CreateClusterCmd) Run() error {
 
 	if c.SSHPublicKey != "" {
 		c.SSHPublicKey = utils.ExpandPath(c.SSHPublicKey)
+	}
+
+	if c.AdminAccess != "" {
+		cluster.Spec.AdminAccess = []string{c.AdminAccess}
 	}
 
 	err = cluster.PerformAssignments()
