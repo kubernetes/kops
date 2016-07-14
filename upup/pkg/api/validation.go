@@ -5,33 +5,42 @@ import (
 	"net"
 )
 
-func (c *Cluster) Validate() error {
+func (c *Cluster) Validate(strict bool) error {
 	var err error
 
-	//if c.Spec.Kubelet == nil {
-	//	return fmt.Errorf("Kubelet not configured")
-	//}
-	//if c.Spec.MasterKubelet == nil {
-	//	return fmt.Errorf("MasterKubelet not configured")
-	//}
-	//if c.Spec.KubeControllerManager == nil {
-	//	return fmt.Errorf("KubeControllerManager not configured")
-	//}
-	//if c.Spec.KubeDNS == nil {
-	//	return fmt.Errorf("KubeDNS not configured")
-	//}
-	//if c.Spec.Kubelet == nil {
-	//	return fmt.Errorf("Kubelet not configured")
-	//}
-	//if c.Spec.KubeAPIServer == nil {
-	//	return fmt.Errorf("KubeAPIServer not configured")
-	//}
-	//if c.Spec.KubeProxy == nil {
-	//	return fmt.Errorf("KubeProxy not configured")
-	//}
-	//if c.Spec.Docker == nil {
-	//	return fmt.Errorf("Docker not configured")
-	//}
+	if c.Name == "" {
+		return fmt.Errorf("Cluster Name is required (e.g. --name=mycluster.myzone.com)")
+	}
+
+	if len(c.Spec.Zones) == 0 {
+		// TODO: Auto choose zones from region?
+		return fmt.Errorf("must configure at least one Zone (use --zones)")
+	}
+
+	if strict && c.Spec.Kubelet == nil {
+		return fmt.Errorf("Kubelet not configured")
+	}
+	if strict && c.Spec.MasterKubelet == nil {
+		return fmt.Errorf("MasterKubelet not configured")
+	}
+	if strict && c.Spec.KubeControllerManager == nil {
+		return fmt.Errorf("KubeControllerManager not configured")
+	}
+	if strict && c.Spec.KubeDNS == nil {
+		return fmt.Errorf("KubeDNS not configured")
+	}
+	if strict && c.Spec.Kubelet == nil {
+		return fmt.Errorf("Kubelet not configured")
+	}
+	if strict && c.Spec.KubeAPIServer == nil {
+		return fmt.Errorf("KubeAPIServer not configured")
+	}
+	if strict && c.Spec.KubeProxy == nil {
+		return fmt.Errorf("KubeProxy not configured")
+	}
+	if strict && c.Spec.Docker == nil {
+		return fmt.Errorf("Docker not configured")
+	}
 
 	// Check NetworkCIDR
 	var networkCIDR *net.IPNet
@@ -72,21 +81,23 @@ func (c *Cluster) Validate() error {
 	var serviceClusterIPRange *net.IPNet
 	{
 		if c.Spec.ServiceClusterIPRange == "" {
-			return fmt.Errorf("Cluster did not have ServiceClusterIPRange set")
-		}
-		_, serviceClusterIPRange, err = net.ParseCIDR(c.Spec.ServiceClusterIPRange)
-		if err != nil {
-			return fmt.Errorf("Cluster had an invalid ServiceClusterIPRange: %q", c.Spec.ServiceClusterIPRange)
-		}
+			if strict {
+				return fmt.Errorf("Cluster did not have ServiceClusterIPRange set")
+			}
+		} else {
+			_, serviceClusterIPRange, err = net.ParseCIDR(c.Spec.ServiceClusterIPRange)
+			if err != nil {
+				return fmt.Errorf("Cluster had an invalid ServiceClusterIPRange: %q", c.Spec.ServiceClusterIPRange)
+			}
 
-		if !isSubnet(nonMasqueradeCIDR, serviceClusterIPRange) {
-			return fmt.Errorf("ServiceClusterIPRange %q must be a subnet of NonMasqueradeCIDR %q", c.Spec.ServiceClusterIPRange, c.Spec.NonMasqueradeCIDR)
-		}
+			if !isSubnet(nonMasqueradeCIDR, serviceClusterIPRange) {
+				return fmt.Errorf("ServiceClusterIPRange %q must be a subnet of NonMasqueradeCIDR %q", c.Spec.ServiceClusterIPRange, c.Spec.NonMasqueradeCIDR)
+			}
 
-		if c.Spec.KubeAPIServer != nil && c.Spec.KubeAPIServer.ServiceClusterIPRange != c.Spec.ServiceClusterIPRange {
-			return fmt.Errorf("KubeAPIServer ServiceClusterIPRange did not match cluster ServiceClusterIPRange")
+			if c.Spec.KubeAPIServer != nil && c.Spec.KubeAPIServer.ServiceClusterIPRange != c.Spec.ServiceClusterIPRange {
+				return fmt.Errorf("KubeAPIServer ServiceClusterIPRange did not match cluster ServiceClusterIPRange")
+			}
 		}
-
 	}
 
 	// Check ClusterCIDR
@@ -129,19 +140,20 @@ func (c *Cluster) Validate() error {
 
 	// Check CloudProvider
 	{
-		if c.Spec.CloudProvider != "" {
-			if c.Spec.Kubelet != nil && c.Spec.Kubelet.CloudProvider != "" && c.Spec.Kubelet.CloudProvider != c.Spec.CloudProvider {
-				return fmt.Errorf("Kubelet CloudProvider did not match cluster CloudProvider")
-			}
-			if c.Spec.MasterKubelet != nil && c.Spec.MasterKubelet.CloudProvider != "" && c.Spec.MasterKubelet.CloudProvider != c.Spec.CloudProvider {
-				return fmt.Errorf("MasterKubelet CloudProvider did not match cluster CloudProvider")
-			}
-			if c.Spec.KubeAPIServer != nil && c.Spec.KubeAPIServer.CloudProvider != "" && c.Spec.KubeAPIServer.CloudProvider != c.Spec.CloudProvider {
-				return fmt.Errorf("KubeAPIServer CloudProvider did not match cluster CloudProvider")
-			}
-			if c.Spec.KubeControllerManager != nil && c.Spec.KubeControllerManager.CloudProvider != "" && c.Spec.KubeControllerManager.CloudProvider != c.Spec.CloudProvider {
-				return fmt.Errorf("KubeControllerManager CloudProvider did not match cluster CloudProvider")
-			}
+		if c.Spec.CloudProvider == "" {
+			return fmt.Errorf("CloudProvider is not set")
+		}
+		if c.Spec.Kubelet != nil && c.Spec.Kubelet.CloudProvider != "" && c.Spec.Kubelet.CloudProvider != c.Spec.CloudProvider {
+			return fmt.Errorf("Kubelet CloudProvider did not match cluster CloudProvider")
+		}
+		if c.Spec.MasterKubelet != nil && c.Spec.MasterKubelet.CloudProvider != "" && c.Spec.MasterKubelet.CloudProvider != c.Spec.CloudProvider {
+			return fmt.Errorf("MasterKubelet CloudProvider did not match cluster CloudProvider")
+		}
+		if c.Spec.KubeAPIServer != nil && c.Spec.KubeAPIServer.CloudProvider != "" && c.Spec.KubeAPIServer.CloudProvider != c.Spec.CloudProvider {
+			return fmt.Errorf("KubeAPIServer CloudProvider did not match cluster CloudProvider")
+		}
+		if c.Spec.KubeControllerManager != nil && c.Spec.KubeControllerManager.CloudProvider != "" && c.Spec.KubeControllerManager.CloudProvider != c.Spec.CloudProvider {
+			return fmt.Errorf("KubeControllerManager CloudProvider did not match cluster CloudProvider")
 		}
 	}
 
@@ -150,18 +162,39 @@ func (c *Cluster) Validate() error {
 
 		for _, z := range c.Spec.Zones {
 			if z.CIDR == "" {
-				continue
-				//return fmt.Errorf("Zone %q did not have a CIDR set", z.Name)
-			}
+				if strict {
+					return fmt.Errorf("Zone %q did not have a CIDR set", z.Name)
+				}
+			} else {
+				_, zoneCIDR, err := net.ParseCIDR(z.CIDR)
+				if err != nil {
+					return fmt.Errorf("Zone %q had an invalid CIDR: %q", z.Name, z.CIDR)
+				}
 
-			_, zoneCIDR, err := net.ParseCIDR(z.CIDR)
-			if err != nil {
-				return fmt.Errorf("Zone %q had an invalid CIDR: %q", z.Name, z.CIDR)
+				if !isSubnet(networkCIDR, zoneCIDR) {
+					return fmt.Errorf("Zone %q had a CIDR %q that was not a subnet of the NetworkCIDR %q", z.Name, z.CIDR, c.Spec.NetworkCIDR)
+				}
 			}
+		}
+	}
 
-			if !isSubnet(networkCIDR, zoneCIDR) {
-				return fmt.Errorf("Zone %q had a CIDR %q that was not a subnet of the NetworkCIDR %q", z.Name, z.CIDR, c.Spec.NetworkCIDR)
-			}
+	return nil
+}
+
+func DeepValidate(c *Cluster, groups []*InstanceGroup, strict bool) error {
+	err := c.Validate(strict)
+	if err != nil {
+		return err
+	}
+
+	if len(groups) == 0 {
+		return fmt.Errorf("must configure at least one InstanceGroup")
+	}
+
+	for _, g := range groups {
+		err := g.Validate(strict)
+		if err != nil {
+			return err
 		}
 	}
 
