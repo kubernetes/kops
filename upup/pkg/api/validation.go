@@ -178,6 +178,17 @@ func (c *Cluster) Validate(strict bool) error {
 		}
 	}
 
+	if strict && len(c.Spec.AdminAccess) == 0 {
+		return fmt.Errorf("AdminAccess not configured")
+	}
+
+	for _, adminAccess := range c.Spec.AdminAccess {
+		_, _, err := net.ParseCIDR(adminAccess)
+		if err != nil {
+			return fmt.Errorf("AdminAccess rule %q could not be parsed (invalid CIDR)", adminAccess)
+		}
+	}
+
 	return nil
 }
 

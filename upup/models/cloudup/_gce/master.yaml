@@ -6,9 +6,9 @@ persistentDisk/kubernetes-master-{{ ClusterName }}:
   volumeType: {{ or .MasterVolumeType "pd-ssd" }}
 
 # Open master HTTPS
-firewallRule/kubernetes-master-https-{{ ClusterName }}:
+firewallRule/kubernetes-master-https-{{ ClusterName }}-{{ AdminCIDR }}:
   network: network/default
-  sourceRanges: 0.0.0.0/0
+  sourceRanges: {{ AdminCIDR }}
   targetTags: {{ .MasterTag }}
   allowed: tcp:443
 
