@@ -424,6 +424,7 @@ func (c *AWSCloud) ResolveImage(name string) (*ec2.Image, error) {
 	}
 
 	image := response.Images[0]
+	glog.V(4).Infof("Resolved image %q", aws.StringValue(image.ImageId))
 	return image, nil
 }
 

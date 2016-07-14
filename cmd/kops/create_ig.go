@@ -91,7 +91,7 @@ func (c *CreateInstanceanceGroupCmd) Run(groupName string) error {
 		return fmt.Errorf("error parsing yaml: %v", err)
 	}
 
-	err = group.Validate()
+	err = group.Validate(false)
 	if err != nil {
 		return err
 	}
