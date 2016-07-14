@@ -90,6 +90,10 @@ type ClusterSpec struct {
 	// It cannot overlap ServiceClusterIPRange
 	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty"`
 
+	// AdminAccess determines the permitted access to the admin endpoints (SSH & master HTTPS)
+	// Currently only a single CIDR is supported (though a richer grammar could be added in future)
+	AdminAccess []string `json:"adminAccess,omitempty"`
+
 	//NetworkProvider               string `json:",omitempty"`
 	//
 	//HairpinMode                   string `json:",omitempty"`
@@ -268,6 +272,17 @@ func (c *Cluster) PerformAssignments() error {
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+// FillDefaults populates default values.
+// This is different from PerformAssignments, because these values are changeable, and thus we don't need to
+// store them (i.e. we don't need to 'lock them')
+func (c *Cluster) FillDefaults() error {
+	if len(c.Spec.AdminAccess) == 0 {
+		c.Spec.AdminAccess = append(c.Spec.AdminAccess, "0.0.0.0/0")
 	}
 
 	return nil

@@ -24,10 +24,10 @@ securityGroupRule/master-egress:
   egress: true
   cidr: 0.0.0.0/0
 
-# SSH is open to the world
+# SSH is open to AdminCIDR
 securityGroupRule/ssh-external-to-master:
   securityGroup: securityGroup/masters.{{ ClusterName }}
-  cidr: 0.0.0.0/0
+  cidr: {{ AdminCIDR }}
   protocol: tcp
   fromPort: 22
   toPort: 22

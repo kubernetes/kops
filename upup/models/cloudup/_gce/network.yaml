@@ -13,8 +13,8 @@ firewallRule/{{ $networkName }}-default-internal:
     - icmp
 
 # SSH is open to the world
-firewallRule/{{ $networkName }}-default-ssh:
+firewallRule/{{ $networkName }}-default-ssh-{{ AdminCIDR }}:
   network: network/default
-  sourceRanges: 0.0.0.0/0
+  sourceRanges: {{ AdminCIDR }}
   allowed: tcp:22
 
