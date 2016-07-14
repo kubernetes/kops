@@ -67,3 +67,30 @@ func findAutoscalingGroups(cloud *awsup.AWSCloud, tags map[string]string) ([]*au
 
 	return asgs, nil
 }
+
+func findAutoscalingLaunchConfiguration(cloud *awsup.AWSCloud, name string) (*autoscaling.LaunchConfiguration, error) {
+	glog.V(2).Infof("Retrieving Autoscaling LaunchConfigurations %q", name)
+
+	var results []*autoscaling.LaunchConfiguration
+
+	request := &autoscaling.DescribeLaunchConfigurationsInput{
+		LaunchConfigurationNames: []*string{&name},
+	}
+	err := cloud.Autoscaling.DescribeLaunchConfigurationsPages(request, func(p *autoscaling.DescribeLaunchConfigurationsOutput, lastPage bool) bool {
+		for _, t := range p.LaunchConfigurations {
+			results = append(results, t)
+		}
+		return true
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error listing autoscaling LaunchConfigurations: %v", err)
+	}
+
+	if len(results) == 0 {
+		return nil, nil
+	}
+	if len(results) != 1 {
+		return nil, fmt.Errorf("Found multiple LaunchConfigurations with name %q", name)
+	}
+	return results[0], nil
+}

@@ -209,6 +209,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 		if err != nil {
 			return fmt.Errorf("error listing autoscaling groups: %v", err)
 		}
+
 		if len(groups) == 0 {
 			glog.Warningf("No Autoscaling group found")
 		}
@@ -228,8 +229,22 @@ func (x *ImportCluster) ImportAWSCluster() error {
 			primaryNodeSet.Spec.MaxSize = fi.Int(maxSize)
 		}
 
-		// TODO: machine types
-		//primaryNodeSet.NodeMachineType = k8s.MasterMachineType
+		// Determine the machine type
+		for _, group := range groups {
+			name := aws.StringValue(group.LaunchConfigurationName)
+			launchConfiguration, err := findAutoscalingLaunchConfiguration(awsCloud, name)
+			if err != nil {
+				return fmt.Errorf("error finding autoscaling LaunchConfiguration %q: %v", name, err)
+			}
+
+			if launchConfiguration == nil {
+				glog.Warningf("LaunchConfiguration %q not found; ignoring", name)
+				continue
+			}
+
+			primaryNodeSet.Spec.MachineType = aws.StringValue(launchConfiguration.InstanceType)
+			break
+		}
 	}
 
 	if conf.Version == "1.1" {
