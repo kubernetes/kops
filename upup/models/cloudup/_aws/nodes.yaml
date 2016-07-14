@@ -27,7 +27,7 @@ securityGroupRule/node-egress:
 # SSH is open to the world
 securityGroupRule/ssh-external-to-node:
   securityGroup: securityGroup/nodes.{{ ClusterName }}
-  cidr: 0.0.0.0/0
+  cidr: {{ AdminCIDR }}
   protocol: tcp
   fromPort: 22
   toPort: 22

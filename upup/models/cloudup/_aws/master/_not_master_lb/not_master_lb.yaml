@@ -5,7 +5,7 @@
 # HTTPS to the master is allowed (for API access)
 securityGroupRule/https-external-to-master:
   securityGroup: securityGroup/masters.{{ ClusterName }}
-  cidr: 0.0.0.0/0
+  cidr: {{ AdminCIDR }}
   protocol: tcp
   fromPort: 443
   toPort: 443
