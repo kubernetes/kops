@@ -341,26 +341,24 @@ func (c *CreateClusterCmd) Run() error {
 		return fmt.Errorf("error populating configuration: %v", err)
 	}
 
-	if creatingNewCluster {
-		err = api.CreateClusterConfig(clusterRegistry, cluster, instanceGroups)
-	} else {
-		err = api.UpdateClusterConfig(clusterRegistry, cluster, instanceGroups)
-	}
+	strict := false
+	err = api.DeepValidate(cluster, instanceGroups, strict)
 	if err != nil {
-		return fmt.Errorf("error writing updated configuration: %v", err)
+		return err
 	}
 
 	cmd := &cloudup.CreateClusterCmd{
-		Cluster:         cluster,
-		InstanceGroups:  instanceGroups,
-		ModelStore:      c.ModelsBaseDir,
-		Models:          strings.Split(c.Models, ","),
-		ClusterRegistry: clusterRegistry,
-		Target:          c.Target,
-		NodeModel:       c.NodeModel,
-		SSHPublicKey:    c.SSHPublicKey,
-		OutDir:          c.OutDir,
-		DryRun:          isDryrun,
+		CreateNewCluster:    creatingNewCluster,
+		InputCluster:        cluster,
+		InputInstanceGroups: instanceGroups,
+		ModelStore:          c.ModelsBaseDir,
+		Models:              strings.Split(c.Models, ","),
+		ClusterRegistry:     clusterRegistry,
+		Target:              c.Target,
+		NodeModel:           c.NodeModel,
+		SSHPublicKey:        c.SSHPublicKey,
+		OutDir:              c.OutDir,
+		DryRun:              isDryrun,
 	}
 
 	err = cmd.Run()

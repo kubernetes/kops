@@ -71,7 +71,7 @@ func (c *EditClusterCmd) Run() error {
 		return fmt.Errorf("error parsing config: %v", err)
 	}
 
-	err = newCluster.Validate()
+	err = newCluster.Validate(false)
 	if err != nil {
 		return err
 	}
