@@ -13,8 +13,16 @@ Currently this can only be a single CIDR.
 
 Examples:
 
+CLI:
 `--admin-access=18.0.0.0/8` to restrict to IPs in the 18.0.0.0/8 CIDR
 
+YAML:
+
+```
+spec:
+  adminAccess:
+  - 18.0.0.0/8
+```
 
 ## dns-zone
 
