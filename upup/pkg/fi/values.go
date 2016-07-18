@@ -41,11 +41,21 @@ func DebugPrint(o interface{}) string {
 		return "<nil>"
 	}
 	if rh, ok := o.(*ResourceHolder); ok {
-		if rh == nil || rh.Resource == nil {
+		if rh == nil {
+			// Avoid go nil vs interface problems
+			return "<nil>"
+		}
+
+		if rh.Resource == nil {
 			return fmt.Sprintf("unknown resource %q", rh.Name)
 		}
 	}
 	if resource, ok := o.(Resource); ok {
+		if resource == nil {
+			// Avoid go nil vs interface problems
+			return "<nil>"
+		}
+
 		s, err := ResourceAsString(resource)
 		if err != nil {
 			return fmt.Sprintf("error converting resource to string: %v", err)
@@ -68,6 +78,10 @@ func DebugPrint(o interface{}) string {
 	}
 	o = v.Interface()
 	if stringer, ok := o.(fmt.Stringer); ok {
+		if stringer == nil {
+			// Avoid go nil vs interface problems
+			return "<nil>"
+		}
 		return stringer.String()
 	}
 
