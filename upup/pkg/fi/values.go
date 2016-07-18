@@ -41,7 +41,7 @@ func DebugPrint(o interface{}) string {
 		return "<nil>"
 	}
 	if rh, ok := o.(*ResourceHolder); ok {
-		if rh.Resource == nil {
+		if rh == nil || rh.Resource == nil {
 			return fmt.Sprintf("unknown resource %q", rh.Name)
 		}
 	}
