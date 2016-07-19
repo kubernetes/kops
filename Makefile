@@ -2,6 +2,7 @@ all: gocode
 
 DOCKER_REGISTRY=gcr.io/must-override/
 S3_BUCKET=s3://must-override/
+GOPATH_1ST=$(shell echo ${GOPATH} | cut -d : -f 1)
 
 ifndef VERSION
   VERSION := git-$(shell git rev-parse --short HEAD)
@@ -9,7 +10,7 @@ endif
 
 gocode:
 	GO15VENDOREXPERIMENT=1 go install -ldflags "-X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/...
-	ln -sfn ${GOPATH}/src/k8s.io/kops/upup/models/ ${GOPATH}/bin/models
+	ln -sfn ${GOPATH_1ST}/src/k8s.io/kops/upup/models/ ${GOPATH_1ST}/bin/models
 
 codegen:
 	GO15VENDOREXPERIMENT=1 go install k8s.io/kops/upup/tools/generators/...
@@ -33,7 +34,7 @@ gofmt:
 kops-tar: gocode
 	rm -rf .build/kops/tar
 	mkdir -p .build/kops/tar/kops/
-	cp ${GOPATH}/bin/kops .build/kops/tar/kops/kops
+	cp ${GOPATH_1ST}/bin/kops .build/kops/tar/kops/kops
 	cp -r upup/models/ .build/kops/tar/kops/models/
 	tar czvf .build/kops.tar.gz -C .build/kops/tar/ .
 	tar tvf .build/kops.tar.gz
@@ -42,7 +43,7 @@ kops-tar: gocode
 nodeup-tar: gocode
 	rm -rf .build/nodeup/tar
 	mkdir -p .build/nodeup/tar/nodeup/root
-	cp ${GOPATH}/bin/nodeup .build/nodeup/tar/nodeup/root
+	cp ${GOPATH_1ST}/bin/nodeup .build/nodeup/tar/nodeup/root
 	cp -r upup/models/nodeup/ .build/nodeup/tar/nodeup/root/model/
 	tar czvf .build/nodeup.tar.gz -C .build/nodeup/tar/ .
 	tar tvf .build/nodeup.tar.gz
