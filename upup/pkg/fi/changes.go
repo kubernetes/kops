@@ -72,6 +72,10 @@ func BuildChanges(a, e, changes interface{}) bool {
 
 // equalFieldValues implements our equality checking, with special cases for resources and tasks
 func equalFieldValues(a, e reflect.Value) bool {
+	if !a.IsValid() || !e.IsValid() {
+		return a.IsValid() == e.IsValid()
+	}
+
 	if a.Kind() == reflect.Map {
 		return equalMapValues(a, e)
 	}
