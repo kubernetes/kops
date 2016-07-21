@@ -18,11 +18,11 @@ var exportKubecfgCommand ExportKubecfgCommand
 
 func init() {
 	cmd := &cobra.Command{
-		Use:   "kubecfg",
+		Use:   "kubecfg CLUSTERNAME",
 		Short: "Generate a kubecfg file for a cluster",
 		Long:  `Creates a kubecfg file for a cluster, based on the state`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := exportKubecfgCommand.Run()
+			err := exportKubecfgCommand.Run(args)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "%v\n", err)
 				os.Exit(1)
@@ -33,7 +33,12 @@ func init() {
 	exportCmd.AddCommand(cmd)
 }
 
-func (c *ExportKubecfgCommand) Run() error {
+func (c *ExportKubecfgCommand) Run(args []string) error {
+	err := rootCommand.ProcessArgs(args)
+	if err != nil {
+		return err
+	}
+
 	clusterRegistry, cluster, err := rootCommand.Cluster()
 	if err != nil {
 		return err
