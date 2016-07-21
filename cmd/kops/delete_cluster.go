@@ -23,11 +23,11 @@ var deleteCluster DeleteClusterCmd
 
 func init() {
 	cmd := &cobra.Command{
-		Use:   "cluster",
+		Use:   "cluster CLUSTERNAME [--yes]",
 		Short: "Delete cluster",
 		Long:  `Deletes a k8s cluster.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := deleteCluster.Run()
+			err := deleteCluster.Run(args)
 			if err != nil {
 				glog.Exitf("%v", err)
 			}
@@ -45,9 +45,13 @@ func init() {
 
 type getter func(o interface{}) interface{}
 
-func (c *DeleteClusterCmd) Run() error {
+func (c *DeleteClusterCmd) Run(args []string) error {
 	var clusterRegistry *api.ClusterRegistry
-	var err error
+
+	err := rootCommand.ProcessArgs(args)
+	if err != nil {
+		return err
+	}
 
 	var cloud fi.Cloud
 	clusterName := ""
@@ -55,7 +59,7 @@ func (c *DeleteClusterCmd) Run() error {
 	if c.External {
 		region = c.Region
 		if region == "" {
-			return fmt.Errorf("--region is required")
+			return fmt.Errorf("--region is required (when --external)")
 		}
 		clusterName = rootCommand.clusterName
 		if clusterName == "" {

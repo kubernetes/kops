@@ -79,6 +79,26 @@ func (c *RootCmd) AddCommand(cmd *cobra.Command) {
 	c.cobraCommand.AddCommand(cmd)
 }
 
+// ProcessArgs will parse the positional args.  It assumes one of these formats:
+//  * <no arguments at all>
+//  * <clustername> (and --name not specified)
+// Everything else is an error.
+func (c *RootCmd) ProcessArgs(args []string) error {
+	if len(args) == 0 {
+		return nil
+	}
+	if len(args) == 1 {
+		// Assume <clustername>
+		if c.clusterName != "" {
+			return fmt.Errorf("Cannot specify cluster via --name and positional argument")
+		}
+		c.clusterName = args[0]
+		return nil
+	}
+
+	return fmt.Errorf("expected a single <clustername> to be passed as an argument")
+}
+
 func (c *RootCmd) ClusterName() string {
 	if c.clusterName != "" {
 		return c.clusterName
