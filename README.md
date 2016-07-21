@@ -66,7 +66,7 @@ To create the kubecfg configuration settings for use with kubectl:
 ```
 export NAME=<kubernetes.mydomain.com>
 export KOPS_STATE_STORE=s3://<somes3bucket>
-${GOPATH}/bin/kops export kubecfg --name=${NAME}
+${GOPATH}/bin/kops export kubecfg ${NAME}
 ```
 
 You can now use kubernets using the kubectl tool (after allowing a few minutes for the cluster to come up):
