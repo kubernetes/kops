@@ -87,7 +87,7 @@ kops create cluster --name ${NEW_NAME}
 ## Export kubecfg settings to access the new cluster
 
 ```
-kops export kubecfg --name ${NEW_NAME}
+kops export kubecfg ${NEW_NAME}
 ```
 
 Within a few minutes the new cluster should be running.  Try `kubectl get nodes --show-labels`, `kubectl get pods` etc until you are sure that all is well.
