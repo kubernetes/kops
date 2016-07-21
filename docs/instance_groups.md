@@ -31,7 +31,7 @@ have not yet been applied (this may change soon though!).
 
 To preview the change:
 
-`kops create cluster --name <clustername> --dryrun`
+`kops update cluster <clustername>`
 > ```
 ...
 Will modify resources:
@@ -39,7 +39,7 @@ Will modify resources:
     InstanceType t2.medium -> t2.large
 ```
 
-Presuming you're happy with the change, go ahead and apply it: `kops create cluster --name <clustername>`
+Presuming you're happy with the change, go ahead and apply it: `kops update cluster <clustername> --yes`
 
 This change will apply to new instances only; if you'd like to roll it out immediately to all the instances
 you have to perform a rolling update.
@@ -56,8 +56,8 @@ NOTE: rolling-update does not yet perform a real rolling update - it just shuts 
 The procedure to resize an instance group works the same way:
 
 * Edit the instance group, set minSize and maxSize to the desired size: `kops edit ig nodes`
-* Preview changes: `kops create cluster --name <clustername> --dryrun`
-* Apply changes: `kops create cluster --name <clustername>`
+* Preview changes: `kops update cluster <clustername>`
+* Apply changes: `kops update cluster <clustername>  --yes`
 * (you do not need a `rolling-update` when changing instancegroup sizes)
 
 
@@ -66,8 +66,8 @@ The procedure to resize an instance group works the same way:
 The procedure to resize the root volume works the same way:
 
 * Edit the instance group, set `rootVolumeSize` and/or `rootVolumeType` to the desired values: `kops edit ig nodes`
-* Preview changes: `kops create cluster --name <clustername> --dryrun`
-* Apply changes: `kops create cluster --name <clustername>`
+* Preview changes: `kops update cluster <clustername>`
+* Apply changes: `kops update cluster <clustername> --yes`
 * Rolling update to update existing instances: `kops rolling-update cluster --yes`
 
 For example, to set up a 100GB gp2 root volume, your InstanceGroup spec might look like:
@@ -94,8 +94,8 @@ you to edit it before creation.
 So the procedure is:
 
 * `kops create ig morenodes`, edit and save
-* Preview: `kops create cluster --name <clustername> --dryrun`
-* Apply: `kops create cluster --name <clustername>`
+* Preview: `kops update cluster <clustername>`
+* Apply: `kops update cluster <clustername> --yes`
 * (no instances need to be relaunched, so no rolling-update is needed)
 
 ## Converting an instance group to use spot instances
@@ -125,8 +125,8 @@ spec:
 So the procedure is:
 
 * Edit: `kops edit ig nodes`
-* Preview: `kops create cluster --name <clustername> --dryrun`
-* Apply: `kops create cluster --name <clustername>`
+* Preview: `kops update cluster <clustername>`
+* Apply: `kops update cluster <clustername> --yes`
 * Rolling-update, only if you want to apply changes immediately: `kops rolling-update cluster`
 
 
@@ -145,9 +145,9 @@ spec:
   machineType: m3.large
 ```
 
-* Preview changes: `kops create cluster --name <clustername> --dryrun`
+* Preview changes: `kops update cluster <clustername>`
 
-* Apply changes: `kops create cluster --name <clustername>`
+* Apply changes: `kops update cluster <clustername> --yes`
 
 * Rolling-update, only if you want to apply changes immediately: `kops rolling-update cluster`
 

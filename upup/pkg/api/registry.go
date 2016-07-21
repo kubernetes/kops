@@ -94,6 +94,21 @@ func (r *ClusterRegistry) WriteCompletedConfig(config *Cluster, writeOptions ...
 	return stateStore.WriteConfig(PathClusterCompleted, config, writeOptions...)
 }
 
+// ReadCompletedConfig reads the "full" cluster spec for the given cluster
+func (r *ClusterRegistry) ReadCompletedConfig(clusterName string) (*Cluster, error) {
+	if clusterName == "" {
+		return nil, fmt.Errorf("clusterName is required")
+	}
+	stateStore := r.stateStore(clusterName)
+
+	cluster := &Cluster{}
+	err := stateStore.ReadConfig(PathClusterCompleted, cluster)
+	if err != nil {
+		return nil, err
+	}
+	return cluster, nil
+}
+
 func (r *ClusterRegistry) ConfigurationPath(clusterName string) (vfs.Path, error) {
 	if clusterName == "" {
 		return nil, fmt.Errorf("clusterName is required")

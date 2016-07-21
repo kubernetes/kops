@@ -202,8 +202,26 @@ func DeepValidate(c *Cluster, groups []*InstanceGroup, strict bool) error {
 		return fmt.Errorf("must configure at least one InstanceGroup")
 	}
 
+	masterGroupCount := 0
+	nodeGroupCount := 0
 	for _, g := range groups {
-		err := g.Validate(strict)
+		if g.IsMaster() {
+			masterGroupCount++
+		} else {
+			nodeGroupCount++
+		}
+	}
+
+	if masterGroupCount == 0 {
+		return fmt.Errorf("must configure at least one Master InstanceGroup")
+	}
+
+	if nodeGroupCount == 0 {
+		return fmt.Errorf("must configure at least one Node InstanceGroup")
+	}
+
+	for _, g := range groups {
+		err := g.CrossValidate(c, strict)
 		if err != nil {
 			return err
 		}

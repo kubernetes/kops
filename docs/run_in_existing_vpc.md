@@ -12,10 +12,10 @@ export KOPS_STATE_STORE=s3://<somes3bucket>
 export CLUSTER_NAME=<sharedvpc.mydomain.com>
 
 kops create cluster --zones=us-east-1b --name=${CLUSTER_NAME} \
-  --vpc=vpc-a80734c1 --network-cidr=10.100.0.0/16 --dryrun
+  --vpc=vpc-a80734c1 --network-cidr=10.100.0.0/16
 ```
 
-Then `kops edit cluster  --name=${CLUSTER_NAME}` should show you something like:
+Then `kops edit cluster ${CLUSTER_NAME}` should show you something like:
 
 ```
 metadata:
@@ -36,10 +36,11 @@ Verify that networkCIDR & networkID match your VPC CIDR & ID.  You likely need t
 because subnets in a VPC cannot overlap.
 
 
-You can then run `kops create cluster` again in dryrun mode (you don't need any arguments, because they're all in the config file):
+You can then run `kops update cluster` in preview mode (without --yes).  You don't need any arguments,
+because they're all in the cluster spec:
 
 ```
-kops create cluster --dryrun --name=${CLUSTER_NAME}
+kops update cluster ${CLUSTER_NAME}
 ```
 
 Review the changes to make sure they are OK -  the Kubernetes settings might not be ones you want on a shared VPC (in which case,
@@ -52,7 +53,7 @@ Note also the Kubernetes VPCs (currently) require `EnableDNSHostnames=true`.  ko
 Once you're happy, you can create the cluster using:
 
 ```
-kops create cluster --name=${CLUSTER_NAME}
+kops update cluster ${CLUSTER_NAME} --yes
 ```
 
 

@@ -1,6 +1,7 @@
 package cloudup
 
 import (
+	"encoding/base64"
 	"encoding/binary"
 	"fmt"
 	"k8s.io/kops/upup/pkg/api"
@@ -13,6 +14,7 @@ import (
 
 type TemplateFunctions struct {
 	cluster *api.Cluster
+	tags    map[string]struct{}
 }
 
 func (tf *TemplateFunctions) WellKnownServiceIP(id int) (net.IP, error) {
@@ -52,6 +54,26 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["SharedVPC"] = tf.SharedVPC
 	dest["WellKnownServiceIP"] = tf.WellKnownServiceIP
 	dest["AdminCIDR"] = tf.AdminCIDR
+
+	dest["Base64Encode"] = func(s string) string {
+		return base64.StdEncoding.EncodeToString([]byte(s))
+	}
+	dest["replace"] = func(s, find, replace string) string {
+		return strings.Replace(s, find, replace, -1)
+	}
+	dest["join"] = func(a []string, sep string) string {
+		return strings.Join(a, sep)
+	}
+
+	dest["ClusterName"] = func() string {
+		return tf.cluster.Name
+	}
+
+	dest["HasTag"] = func(tag string) bool {
+		_, found := tf.tags[tag]
+		return found
+	}
+
 }
 
 func (tf *TemplateFunctions) EtcdClusterMemberTags(etcd *api.EtcdClusterSpec, m *api.EtcdMemberSpec) map[string]string {
