@@ -130,6 +130,32 @@ So the procedure is:
 * Rolling-update, only if you want to apply changes immediately: `kops rolling-update cluster`
 
 
+## Resizing the master
+
+(This procedure should be pretty familiar by now!)
+
+Your master instance group will probably be called `master-us-west-1c` or something similar.
+
+`kops edit ig master-us-west-1c`
+
+Add or set the machineType:
+
+```
+spec:
+  machineType: m3.large
+```
+
+* Preview changes: `kops create cluster --name <clustername> --dryrun`
+
+* Apply changes: `kops create cluster --name <clustername>`
+
+* Rolling-update, only if you want to apply changes immediately: `kops rolling-update cluster`
+
+If you want to minimize downtime, scale the master ASG up to size 2, then wait for that new master to
+be Ready in `kubectl get nodes`, then delete the old master instance, and scale the ASG back down to size 1.  (A
+future of rolling-update will probably do this automatically)
+
+
 ## Deleting an instance group
 
 If you decide you don't need an InstanceGroup any more, you delete it using: `kops delete ig <name>`
