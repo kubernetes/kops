@@ -7,7 +7,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/api"
-	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
 	"os"
 	"path/filepath"
@@ -42,6 +42,8 @@ func init() {
 }
 
 func (c *CreateInstanceanceGroupCmd) Run(groupName string) error {
+	_, cluster, err := rootCommand.Cluster()
+
 	instanceGroupStore, err := rootCommand.InstanceGroupRegistry()
 	if err != nil {
 		return err
@@ -59,10 +61,12 @@ func (c *CreateInstanceanceGroupCmd) Run(groupName string) error {
 	// Populate some defaults
 	ig := &api.InstanceGroup{}
 	ig.Name = groupName
-	ig.Spec.MinSize = fi.Int(2)
-	ig.Spec.MaxSize = fi.Int(2)
-	ig.Spec.MachineType = "t2.medium"
 	ig.Spec.Role = api.InstanceGroupRoleNode
+
+	ig, err = cloudup.PopulateInstanceGroupSpec(cluster, ig)
+	if err != nil {
+		return err
+	}
 
 	var (
 		edit = editor.NewDefaultEditor(editorEnvs)

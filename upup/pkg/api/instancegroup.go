@@ -103,5 +103,39 @@ func (g *InstanceGroup) Validate(strict bool) error {
 		return fmt.Errorf("Unknown Role: %q", g.Spec.Role)
 	}
 
+	if g.IsMaster() {
+		if len(g.Spec.Zones) == 0 {
+			return fmt.Errorf("Master InstanceGroup %s did not specify any Zones", g.Name)
+		}
+	}
+
+	return nil
+}
+
+// CrossValidate performs validation of the instance group, including that it is consistent with the Cluster
+// It calls Validate, so all that validation is included.
+func (g *InstanceGroup) CrossValidate(cluster *Cluster, strict bool) error {
+	err := g.Validate(strict)
+	if err != nil {
+		return err
+	}
+
+	// Check that instance groups are defined in valid zones
+	{
+		clusterZones := make(map[string]*ClusterZoneSpec)
+		for _, z := range cluster.Spec.Zones {
+			if clusterZones[z.Name] != nil {
+				return fmt.Errorf("Zones contained a duplicate value: %v", z.Name)
+			}
+			clusterZones[z.Name] = z
+		}
+
+		for _, z := range g.Spec.Zones {
+			if clusterZones[z] == nil {
+				return fmt.Errorf("InstanceGroup %q is configured in %q, but this is not configured as a Zone in the cluster", g.Name, z)
+			}
+		}
+	}
+
 	return nil
 }

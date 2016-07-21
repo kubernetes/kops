@@ -7,6 +7,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/api"
+	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
 	"os"
 	"path/filepath"
@@ -41,6 +42,16 @@ func init() {
 }
 
 func (c *EditInstanceGroupCmd) Run(groupName string) error {
+	clusterRegistry, cluster, err := rootCommand.Cluster()
+	if err != nil {
+		return err
+	}
+
+	fullCluster, err := clusterRegistry.ReadCompletedConfig(cluster.Name)
+	if err != nil {
+		return err
+	}
+
 	registry, err := rootCommand.InstanceGroupRegistry()
 	if err != nil {
 		return err
@@ -95,7 +106,18 @@ func (c *EditInstanceGroupCmd) Run(groupName string) error {
 		return err
 	}
 
-	err = registry.Update(newGroup)
+	fullGroup, err := cloudup.PopulateInstanceGroupSpec(cluster, newGroup)
+	if err != nil {
+		return err
+	}
+
+	err = fullGroup.CrossValidate(fullCluster, true)
+	if err != nil {
+		return err
+	}
+
+	// Note we perform as much validation as we can, before writing a bad config
+	err = registry.Update(fullGroup)
 	if err != nil {
 		return err
 	}
