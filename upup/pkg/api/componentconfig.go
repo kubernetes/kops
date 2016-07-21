@@ -365,6 +365,7 @@ type KubeAPIServerConfig struct {
 	TLSPrivateKeyFile     string `json:"tlsPrivateKeyFile,omitempty" flag:"tls-private-key-file"`
 	TokenAuthFile         string `json:"tokenAuthFile,omitempty" flag:"token-auth-file"`
 	AllowPrivileged       *bool  `json:"allowPrivileged,omitempty" flag:"allow-privileged"`
+	APIServerCount        *int   `json:"apiServerCount,omitempty" flag:"apiserver-count"`
 }
 
 type KubeControllerManagerConfig struct {

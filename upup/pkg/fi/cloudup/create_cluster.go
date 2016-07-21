@@ -152,6 +152,25 @@ func (c *CreateClusterCmd) Run() error {
 		return err
 	}
 
+	// Compute apiserver-count (which will hopefully be replaced by something better soon - see #26915)
+	if cluster.Spec.KubeAPIServer == nil {
+		cluster.Spec.KubeAPIServer = &api.KubeAPIServerConfig{}
+	}
+
+	if cluster.Spec.KubeAPIServer.APIServerCount == nil {
+		count := 0
+		for _, ig := range masterInstanceGroups {
+			if ig.Spec.MaxSize != nil {
+				count = count + *ig.Spec.MaxSize
+			} else if ig.Spec.MinSize != nil {
+				count = count + *ig.Spec.MinSize
+			}
+		}
+		if count > 1 {
+			cluster.Spec.KubeAPIServer.APIServerCount = fi.Int(count)
+		}
+	}
+
 	// Check that instance groups are defined in valid zones
 	{
 		clusterZones := make(map[string]*api.ClusterZoneSpec)
