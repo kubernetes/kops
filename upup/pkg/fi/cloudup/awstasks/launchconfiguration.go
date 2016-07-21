@@ -291,13 +291,13 @@ type terraformLaunchConfiguration struct {
 
 type terraformBlockDevice struct {
 	// For ephemeral devices
-	DeviceName  *string `json:"device_name"`
-	VirtualName *string `json:"virtual_name"`
+	DeviceName  *string `json:"device_name,omitempty"`
+	VirtualName *string `json:"virtual_name,omitempty"`
 
 	// For root
-	VolumeType          *string `json:"volume_type"`
-	VolumeSize          *int64  `json:"volume_size"`
-	DeleteOnTermination *bool   `json:"delete_on_termination"`
+	VolumeType          *string `json:"volume_type,omitempty"`
+	VolumeSize          *int64  `json:"volume_size,omitempty"`
+	DeleteOnTermination *bool   `json:"delete_on_termination,omitempty"`
 }
 
 type terraformLifecycle struct {
