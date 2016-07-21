@@ -8,6 +8,7 @@ import (
 	"io"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"reflect"
+	"strings"
 )
 
 // DryRunTarget is a special Target that does not execute anything, but instead tracks all changes.
@@ -62,93 +63,112 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 	b := &bytes.Buffer{}
 
 	if len(t.changes) != 0 {
-		fmt.Fprintf(b, "Will create resources:\n")
-		for _, r := range t.changes {
-			if !r.aIsNil {
-				continue
-			}
+		var creates []*render
+		var updates []*render
 
-			fmt.Fprintf(b, "  %T\t%s\n", r.changes, IdForTask(taskMap, r.e))
-		}
-
-		fmt.Fprintf(b, "Will modify resources:\n")
-		// We can't use our reflection helpers here - we want corresponding values from a,e,c
 		for _, r := range t.changes {
 			if r.aIsNil {
-				continue
-			}
-			var changeList []string
-
-			valC := reflect.ValueOf(r.changes)
-			valA := reflect.ValueOf(r.a)
-			valE := reflect.ValueOf(r.e)
-			if valC.Kind() == reflect.Ptr && !valC.IsNil() {
-				valC = valC.Elem()
-			}
-			if valA.Kind() == reflect.Ptr && !valA.IsNil() {
-				valA = valA.Elem()
-			}
-			if valE.Kind() == reflect.Ptr && !valE.IsNil() {
-				valE = valE.Elem()
-			}
-			if valC.Kind() == reflect.Struct {
-				for i := 0; i < valC.NumField(); i++ {
-					fieldValC := valC.Field(i)
-
-					changed := true
-					switch fieldValC.Kind() {
-					case reflect.Ptr, reflect.Interface, reflect.Slice, reflect.Map:
-						changed = !fieldValC.IsNil()
-
-					case reflect.String:
-						changed = fieldValC.Interface().(string) != ""
-					}
-					if !changed {
-						continue
-					}
-
-					if fieldValC.Kind() == reflect.String && fieldValC.Interface().(string) == "" {
-						// No change
-						continue
-					}
-
-					fieldValE := valE.Field(i)
-
-					description := ""
-					ignored := false
-					if fieldValE.CanInterface() {
-						fieldValA := valA.Field(i)
-
-						switch fieldValE.Interface().(type) {
-						//case SimpleUnit:
-						//	ignored = true
-						default:
-							description = fmt.Sprintf(" %v -> %v", ValueAsString(fieldValA), ValueAsString(fieldValE))
-						}
-					}
-					if ignored {
-						continue
-					}
-					changeList = append(changeList, valC.Type().Field(i).Name+description)
-				}
+				creates = append(creates, r)
 			} else {
-				return fmt.Errorf("unhandled change type: %v", valC.Type())
+				updates = append(updates, r)
 			}
+		}
 
-			if len(changeList) == 0 {
-				continue
+		if len(creates) != 0 {
+			fmt.Fprintf(b, "Will create resources:\n")
+			for _, r := range creates {
+				taskName := getTaskName(r.changes)
+				fmt.Fprintf(b, "  %s\t%s\n", taskName, IdForTask(taskMap, r.e))
 			}
+		}
 
-			fmt.Fprintf(b, "  %T\t%s\n", r.changes, IdForTask(taskMap, r.e))
-			for _, f := range changeList {
-				fmt.Fprintf(b, "    %s\n", f)
+		if len(updates) != 0 {
+			fmt.Fprintf(b, "Will modify resources:\n")
+			// We can't use our reflection helpers here - we want corresponding values from a,e,c
+			for _, r := range updates {
+				var changeList []string
+
+				valC := reflect.ValueOf(r.changes)
+				valA := reflect.ValueOf(r.a)
+				valE := reflect.ValueOf(r.e)
+				if valC.Kind() == reflect.Ptr && !valC.IsNil() {
+					valC = valC.Elem()
+				}
+				if valA.Kind() == reflect.Ptr && !valA.IsNil() {
+					valA = valA.Elem()
+				}
+				if valE.Kind() == reflect.Ptr && !valE.IsNil() {
+					valE = valE.Elem()
+				}
+				if valC.Kind() == reflect.Struct {
+					for i := 0; i < valC.NumField(); i++ {
+						fieldValC := valC.Field(i)
+
+						changed := true
+						switch fieldValC.Kind() {
+						case reflect.Ptr, reflect.Interface, reflect.Slice, reflect.Map:
+							changed = !fieldValC.IsNil()
+
+						case reflect.String:
+							changed = fieldValC.Interface().(string) != ""
+						}
+						if !changed {
+							continue
+						}
+
+						if fieldValC.Kind() == reflect.String && fieldValC.Interface().(string) == "" {
+							// No change
+							continue
+						}
+
+						fieldValE := valE.Field(i)
+
+						description := ""
+						ignored := false
+						if fieldValE.CanInterface() {
+							fieldValA := valA.Field(i)
+
+							switch fieldValE.Interface().(type) {
+							//case SimpleUnit:
+							//	ignored = true
+							default:
+								description = fmt.Sprintf(" %v -> %v", ValueAsString(fieldValA), ValueAsString(fieldValE))
+							}
+						}
+						if ignored {
+							continue
+						}
+						changeList = append(changeList, valC.Type().Field(i).Name+description)
+					}
+				} else {
+					return fmt.Errorf("unhandled change type: %v", valC.Type())
+				}
+
+				if len(changeList) == 0 {
+					continue
+				}
+
+				taskName := getTaskName(r.changes)
+				fmt.Fprintf(b, "  %s\t%s\n", taskName, IdForTask(taskMap, r.e))
+				for _, f := range changeList {
+					fmt.Fprintf(b, "    %s\n", f)
+				}
+				fmt.Fprintf(b, "\n")
 			}
-			fmt.Fprintf(b, "\n")
 		}
 	}
 
 	_, err := out.Write(b.Bytes())
 	return err
+}
+
+func getTaskName(t Task) string {
+	s := fmt.Sprintf("%T", t)
+	lastDot := strings.LastIndexByte(s, '.')
+	if lastDot != -1 {
+		s = s[lastDot+1:]
+	}
+	return s
 }
 
 // asString returns a human-readable string representation of the passed value
