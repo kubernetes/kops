@@ -82,8 +82,6 @@ func init() {
 	cmd.Flags().StringVar(&createCluster.AdminAccess, "admin-access", "", "Restrict access to admin endpoints (SSH, HTTPS) to this CIDR.  If not set, access will not be restricted by IP.")
 }
 
-var EtcdClusters = []string{"main", "events"}
-
 func (c *CreateClusterCmd) Run(args []string) error {
 	err := rootCommand.ProcessArgs(args)
 	if err != nil {
@@ -208,11 +206,6 @@ func (c *CreateClusterCmd) Run(args []string) error {
 			}
 		}
 		etcdZones := zones.List()
-		if (len(etcdZones) % 2) == 0 {
-			// Not technically a requirement, but doesn't really make sense to allow
-			glog.Errorf("There should be an odd number of master-zones, for etcd's quorum.  Hint: Use --zones and --master-zones to declare node zones and master zones separately.")
-			os.Exit(1)
-		}
 
 		for _, etcdCluster := range EtcdClusters {
 			etcd := &api.EtcdClusterSpec{}

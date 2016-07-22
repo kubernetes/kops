@@ -312,6 +312,11 @@ func (x *UpgradeCluster) Upgrade() error {
 	}
 
 	cluster.Name = newClusterName
+	err = cluster.PerformAssignments()
+	if err != nil {
+		return fmt.Errorf("error populating cluster defaults: %v", err)
+	}
+
 	err = api.CreateClusterConfig(x.ClusterRegistry, cluster, x.InstanceGroups)
 	if err != nil {
 		return fmt.Errorf("error writing updated configuration: %v", err)
