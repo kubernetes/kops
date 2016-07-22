@@ -24,7 +24,7 @@
       "Resource": [
         {{ range $i, $b := .MasterPermissions.S3Buckets }}
         {{if $i}},{{end}}
-        "arn:aws:s3:::{{ $b }}/*"
+        "{{ IAMPrefix }}:s3:::{{ $b }}/*"
         {{ end }}
       ]
     },
@@ -34,7 +34,7 @@
       "Resource": [
         {{ range $i, $b := .MasterPermissions.S3Buckets }}
         {{if $i}},{{end}}
-        "arn:aws:s3:::{{ $b }}"
+        "{{ IAMPrefix }}:s3:::{{ $b }}"
         {{ end }}
       ]
     }

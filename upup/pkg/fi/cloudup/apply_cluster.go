@@ -249,6 +249,7 @@ func (c *ApplyClusterCmd) Run() error {
 	tf := &TemplateFunctions{
 		cluster: cluster,
 		tags:    tags,
+		region:  region,
 	}
 
 	l.Tags = tags
