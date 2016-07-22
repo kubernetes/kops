@@ -33,16 +33,20 @@ func (e *SecurityGroup) Find(c *fi.Context) (*SecurityGroup, error) {
 		vpcID = e.VPC.ID
 	}
 
-	if vpcID == nil || e.Name == nil {
+	if vpcID == nil {
 		return nil, nil
 	}
 
-	filters := cloud.BuildFilters(e.Name)
-	filters = append(filters, awsup.NewEC2Filter("vpc-id", *vpcID))
-	filters = append(filters, awsup.NewEC2Filter("group-name", *e.Name))
+	request := &ec2.DescribeSecurityGroupsInput{}
 
-	request := &ec2.DescribeSecurityGroupsInput{
-		Filters: filters,
+	if fi.StringValue(e.ID) != "" {
+		request.GroupIds = []*string{e.ID}
+	} else {
+		filters := cloud.BuildFilters(e.Name)
+		filters = append(filters, awsup.NewEC2Filter("vpc-id", *vpcID))
+		filters = append(filters, awsup.NewEC2Filter("group-name", *e.Name))
+
+		request.Filters = cloud.BuildFilters(e.Name)
 	}
 
 	response, err := cloud.EC2.DescribeSecurityGroups(request)

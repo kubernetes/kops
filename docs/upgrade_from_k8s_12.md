@@ -17,7 +17,6 @@ There are a few steps:
 * You verify the cluster configuration
 * You move existing AWS resources to your new cluster
 * You bring up the new cluster
-* You probably need to do a little manual cleanup (for example of ELBs)
 * You can then delete the old cluster
 
 ## Importing the existing cluster
@@ -65,7 +64,11 @@ kops upgrade cluster --newname ${NEW_NAME} --name ${OLD_NAME}
 
 If you now list the clusters, you should see both the old cluster & the new cluster
 
-```kops get clusters```
+```
+kops get clusters
+```
+
+You can also list the instance groups: `kops get ig --name ${NEW_NAME}`
 
 ## Bring up the new cluster
 
@@ -86,11 +89,11 @@ kops update cluster ${NEW_NAME} --yes
 
 ## Export kubecfg settings to access the new cluster
 
-```
-kops export kubecfg ${NEW_NAME}
-```
+You can export a kubecfg (although update cluster did this automatically): `kops export kubecfg ${NEW_NAME}`
 
-Within a few minutes the new cluster should be running.  Try `kubectl get nodes --show-labels`, `kubectl get pods` etc until you are sure that all is well.
+Within a few minutes the new cluster should be running. 
+
+Try `kubectl get nodes --show-labels`, `kubectl get pods` etc until you are sure that all is well.
 
 ## Workaround for secret import failure
 
@@ -101,8 +104,8 @@ So you will need to delete the service-account-tokens - they will be recreated w
 Otherwise some services (most notably DNS) will not work
 
 
-```
-kubectl get secrets --all-namespaces
+`kubectl get secrets --all-namespaces`
+> ```
 NAMESPACE     NAME                              TYPE                                  DATA      AGE
 default       default-token-4dgib               kubernetes.io/service-account-token   3         53m
 kube-system   default-token-lhfkx               kubernetes.io/service-account-token   3         53m
@@ -116,60 +119,25 @@ kube-system   token-system-monitoring           Opaque                          
 kube-system   token-system-scheduler            Opaque                                1         53m
 ```
 
+Delete the tokens of type `kubernetes.io/service-account-token`:
+
 ```
 kubectl delete secret default-token-4dgib
 kubectl delete secret --namespace kube-system default-token-lhfkx
 ```
 
 Then restart the kube-dns pod so it picks up a valid secret:
+`kubectl delete pods --namespace kube-system --selector "k8s-app=kube-dns"`
 
-```
-kubectl get pods --namespace kube-system
-NAME                                                                  READY     STATUS             RESTARTS   AGE
-etcd-server-events-ip-172-20-59-170.us-west-2.compute.internal        1/1       Running            0          8m
-etcd-server-ip-172-20-59-170.us-west-2.compute.internal               1/1       Running            0          7m
-kope-aws-ip-172-20-59-170.us-west-2.compute.internal                  1/1       Running            0          8m
-kube-apiserver-ip-172-20-59-170.us-west-2.compute.internal            1/1       Running            3          8m
-kube-controller-manager-ip-172-20-59-170.us-west-2.compute.internal   1/1       Running            0          8m
-kube-dns-v14-4ygfz                                                    2/3       CrashLoopBackOff   5          8m
-kube-proxy-ip-172-20-56-231.us-west-2.compute.internal                1/1       Running            0          8m
-kube-proxy-ip-172-20-56-232.us-west-2.compute.internal                1/1       Running            0          8m
-kube-proxy-ip-172-20-56-233.us-west-2.compute.internal                1/1       Running            0          8m
-kube-scheduler-ip-172-20-59-170.us-west-2.compute.internal            1/1       Running            0          8m
-```
-
-```
-kubectl delete pod --namespace=kube-system kube-dns-v14-4ygfz
-```
-
-## Workaround to re-enable ELBs
-
-Due to a limitation in ELBs (you can't replace all the subnets), if you are using ELBs you have to follow a
-workaround procedure to get them to bind to the new subnet.   If you aren't using any services with Type
-LoadBalancer, you likely aren't using ELBs and can skip this section!
-
-* `kops edit cluster --name ${NEW_NAME}`
-* Add a zone to the `zones` section and save the file (it normally suffices to just add `- name: us-west-2b` or whatever
-  zone you are adding; kops will auto-populate the CIDR.
-* Preview: `kops create cluster --name ${NEW_NAME} --dryrun`.  You expect to see something like:
-```
-    AutoscalingGroup    autoscalingGroup/nodes.upgraded.awsdata.com
-      Subnets [id:subnet-e3b3d987] -> [id:subnet-e3b3d987, id:<nil>]
-```
-* Apply changes: `kops create cluster --name ${NEW_NAME}`
-
-In the AWS control panel open the "Load Balancers" section, and for each ELB: 
-* On the "Actions" menu click "Edit subnets"
-* Add the newly created zone's subnet, then save
-* On the "Actions" menu click "Edit subnets" (again)
-* Add the other zone's subnet (which will replace the old subnet with the new subnet), and Save
-
-You should now have an ELB in your new zones; within a few minutes k8s should reconcile it and attach the new instances.
 
 ## Delete remaining resources of the old cluster
 
-```
-kops delete cluster ${OLD_NAME}
+`kops delete cluster ${OLD_NAME}`
+> ```
+TYPE                    NAME                                    ID
+autoscaling-config      kubernetes-minion-group-us-west-2a      kubernetes-minion-group-us-west-2a
+autoscaling-group       kubernetes-minion                       kubernetes-minion-group-us-west-2a
+instance                kubernetes-master                       i-67af2ec8
 ```
 
 And once you've confirmed it looks right, run with `--yes`

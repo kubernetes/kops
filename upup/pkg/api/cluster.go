@@ -238,6 +238,9 @@ type EtcdMemberSpec struct {
 type ClusterZoneSpec struct {
 	Name string `json:"name,omitempty"`
 	CIDR string `json:"cidr,omitempty"`
+
+	// ProviderID is the cloud provider id for the objects associated with the zone (the subnet on AWS)
+	ProviderID string `json:"id,omitempty"`
 }
 
 //type NodeUpConfig struct {
