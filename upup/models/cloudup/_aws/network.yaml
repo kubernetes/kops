@@ -39,6 +39,7 @@ subnet/{{ $zone.Name }}.{{ ClusterName }}:
   vpc: vpc/{{ ClusterName }}
   availabilityZone: {{ $zone.Name }}
   cidr: {{ $zone.CIDR }}
+  id: {{ $zone.ProviderID }}
 
 routeTableAssociation/{{ $zone.Name }}.{{ ClusterName }}:
   routeTable: routeTable/{{ ClusterName }}

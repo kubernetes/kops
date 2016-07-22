@@ -483,20 +483,14 @@ func DeleteSecurityGroup(cloud fi.Cloud, t *ResourceTracker) error {
 }
 
 func ListSecurityGroups(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
-	c := cloud.(*awsup.AWSCloud)
-
-	glog.V(2).Infof("Listing EC2 SecurityGroups")
-	request := &ec2.DescribeSecurityGroupsInput{
-		Filters: buildEC2Filters(cloud),
-	}
-	response, err := c.EC2.DescribeSecurityGroups(request)
+	groups, err := DescribeSecurityGroups(cloud)
 	if err != nil {
-		return nil, fmt.Errorf("error listing SecurityGroups: %v", err)
+		return nil, err
 	}
 
 	var trackers []*ResourceTracker
 
-	for _, sg := range response.SecurityGroups {
+	for _, sg := range groups {
 		tracker := &ResourceTracker{
 			Name:    FindName(sg.Tags),
 			ID:      aws.StringValue(sg.GroupId),
@@ -513,6 +507,21 @@ func ListSecurityGroups(cloud fi.Cloud, clusterName string) ([]*ResourceTracker,
 	}
 
 	return trackers, nil
+}
+
+func DescribeSecurityGroups(cloud fi.Cloud) ([]*ec2.SecurityGroup, error) {
+	c := cloud.(*awsup.AWSCloud)
+
+	glog.V(2).Infof("Listing EC2 SecurityGroups")
+	request := &ec2.DescribeSecurityGroupsInput{
+		Filters: buildEC2Filters(cloud),
+	}
+	response, err := c.EC2.DescribeSecurityGroups(request)
+	if err != nil {
+		return nil, fmt.Errorf("error listing SecurityGroups: %v", err)
+	}
+
+	return response.SecurityGroups, nil
 }
 
 func DeleteVolume(cloud fi.Cloud, r *ResourceTracker) error {
