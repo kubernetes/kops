@@ -19,7 +19,7 @@ codegen:
 	GO15VENDOREXPERIMENT=1 go generate k8s.io/kops/upup/pkg/fi/fitasks
 
 test:
-	GO15VENDOREXPERIMENT=1 go test k8s.io/kops/upup/pkg/...
+	GO15VENDOREXPERIMENT=1 go test k8s.io/kops/upup/pkg/... -args -v=1 -logtostderr
 
 godeps:
 	# I think strip-vendor is the workaround for 25572
