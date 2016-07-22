@@ -40,7 +40,7 @@ func (c *EditClusterCmd) Run(args []string) error {
 		return err
 	}
 
-	clusterRegistry, cluster, err := rootCommand.Cluster()
+	clusterRegistry, oldCluster, err := rootCommand.Cluster()
 	if err != nil {
 		return err
 	}
@@ -60,7 +60,7 @@ func (c *EditClusterCmd) Run(args []string) error {
 	)
 
 	ext := "yaml"
-	raw, err := api.ToYaml(cluster)
+	raw, err := api.ToYaml(oldCluster)
 	if err != nil {
 		return fmt.Errorf("error reading config file: %v", err)
 	}
@@ -92,7 +92,7 @@ func (c *EditClusterCmd) Run(args []string) error {
 		return fmt.Errorf("error populating configuration: %v", err)
 	}
 
-	fullCluster, err := cloudup.PopulateClusterSpec(cluster, clusterRegistry)
+	fullCluster, err := cloudup.PopulateClusterSpec(newCluster, clusterRegistry)
 	if err != nil {
 		return err
 	}
