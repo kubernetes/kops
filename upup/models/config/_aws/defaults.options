@@ -1,16 +1,3 @@
-{{ if gt TotalNodeCount 500 }}
-MasterMachineType: c4.8xlarge
-{{ else if gt TotalNodeCount 250 }}
-MasterMachineType: c4.4xlarge
-{{ else if gt TotalNodeCount 100 }}
-MasterMachineType: m3.2xlarge
-{{ else if gt TotalNodeCount 10 }}
-MasterMachineType: m3.xlarge
-{{ else if gt TotalNodeCount 5 }}
-MasterMachineType: m3.large
-{{ else }}
-MasterMachineType: m3.medium
-{{ end }}
 MasterVolumeType: gp2
 
 # We just always use a t2.medium by default for the nodes

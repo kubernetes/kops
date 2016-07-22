@@ -23,12 +23,11 @@ const (
 )
 
 type Loader struct {
+	Cluster *api.Cluster
+
 	WorkDir string
 
-	OptionsLoader *loader.OptionsLoader
-
 	ModelStore string
-	NodeModel  string
 
 	Tags              map[string]struct{}
 	TemplateFunctions template.FuncMap
@@ -36,10 +35,8 @@ type Loader struct {
 	typeMap map[string]reflect.Type
 
 	templates []*template.Template
-	cluster   *api.Cluster
 
 	Resources map[string]fi.Resource
-	//deferred          []*deferredBinding
 
 	tasks map[string]fi.Task
 }
@@ -100,9 +97,6 @@ func (l *Loader) executeTemplate(key string, d string, args []string) (string, e
 	funcMap["Args"] = func() []string {
 		return args
 	}
-	//funcMap["BuildNodeConfig"] = func(target string, configResourceName string, args []string) (string, error) {
-	//	return l.buildNodeConfig(target, configResourceName, args)
-	//}
 	funcMap["RenderResource"] = func(resourceName string, args []string) (string, error) {
 		return l.renderResource(resourceName, args)
 	}
@@ -113,7 +107,7 @@ func (l *Loader) executeTemplate(key string, d string, args []string) (string, e
 
 	t.Option("missingkey=zero")
 
-	spec := l.cluster.Spec
+	spec := l.Cluster.Spec
 
 	_, err := t.Parse(d)
 	if err != nil {
@@ -131,43 +125,6 @@ func (l *Loader) executeTemplate(key string, d string, args []string) (string, e
 
 func ignoreHandler(i *loader.TreeWalkItem) error {
 	return nil
-}
-
-func (l *Loader) BuildCompleteSpec(clusterSpec *api.ClusterSpec, modelStore string, models []string) (*api.ClusterSpec, error) {
-	// First pass: load options
-	tw := &loader.TreeWalker{
-		DefaultHandler: ignoreHandler,
-		Contexts: map[string]loader.Handler{
-			"resources": ignoreHandler,
-		},
-		Extensions: map[string]loader.Handler{
-			".options": l.OptionsLoader.HandleOptions,
-		},
-		Tags: l.Tags,
-	}
-	for _, model := range models {
-		modelDir := path.Join(modelStore, model)
-		err := tw.Walk(modelDir)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	loaded, err := l.OptionsLoader.Build(clusterSpec)
-	if err != nil {
-		return nil, err
-	}
-	completed := &api.ClusterSpec{}
-	*completed = *(loaded.(*api.ClusterSpec))
-
-	// Master kubelet config = (base kubelet config + master kubelet config)
-	masterKubelet := &api.KubeletConfig{}
-	utils.JsonMergeStruct(masterKubelet, completed.Kubelet)
-	utils.JsonMergeStruct(masterKubelet, completed.MasterKubelet)
-	completed.MasterKubelet = masterKubelet
-
-	glog.V(1).Infof("options: %s", fi.DebugAsJsonStringIndent(completed))
-	return completed, nil
 }
 
 func (l *Loader) BuildTasks(modelStore string, models []string) (map[string]fi.Task, error) {
@@ -299,6 +256,7 @@ func (l *Loader) resourceHandler(i *loader.TreeWalkItem) error {
 }
 
 func (l *Loader) objectHandler(i *loader.TreeWalkItem) error {
+	glog.V(8).Infof("Reading %s", i.Path)
 	contents, err := i.ReadString()
 	if err != nil {
 		return err
@@ -423,37 +381,6 @@ func (l *Loader) populateResource(rh *fi.ResourceHolder, resource fi.Resource, a
 
 	return nil
 }
-
-//func (l *Loader) buildNodeConfig(target string, configResourceName string, args []string) (string, error) {
-//	assetDir := path.Join(l.WorkDir, "node/assets")
-//
-//	confData, err := l.renderResource(configResourceName, args)
-//	if err != nil {
-//		return "", err
-//	}
-//
-//	config := &nodeup.NodeConfig{}
-//	err = utils.YamlUnmarshal([]byte(confData), config)
-//	if err != nil {
-//		return "", fmt.Errorf("error parsing configuration %q: %v", configResourceName, err)
-//	}
-//
-//	cmd := &nodeup.NodeUpCommand{
-//		Config:         config,
-//		ConfigLocation: "",
-//		ModelDir:       path.Join(l.ModelStore, l.NodeModel),
-//		Target:         target,
-//		AssetDir:       assetDir,
-//	}
-//
-//	var buff bytes.Buffer
-//	err = cmd.Run(&buff)
-//	if err != nil {
-//		return "", fmt.Errorf("error building node configuration: %v", err)
-//	}
-//
-//	return buff.String(), nil
-//}
 
 func (l *Loader) renderResource(resourceName string, args []string) (string, error) {
 	resourceKey := strings.TrimSuffix(resourceName, ".template")

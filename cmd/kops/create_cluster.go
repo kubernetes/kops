@@ -11,17 +11,13 @@ import (
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kubernetes/pkg/util/sets"
 	"os"
-	"os/exec"
-	"path"
 	"strings"
 )
 
 type CreateClusterCmd struct {
-	DryRun            bool
+	Yes               bool
 	Target            string
-	ModelsBaseDir     string
 	Models            string
-	NodeModel         string
 	Cloud             string
 	Zones             string
 	MasterZones       string
@@ -47,7 +43,7 @@ func init() {
 		Short: "Create cluster",
 		Long:  `Creates a k8s cluster.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := createCluster.Run()
+			err := createCluster.Run(args)
 			if err != nil {
 				glog.Exitf("%v", err)
 			}
@@ -56,19 +52,9 @@ func init() {
 
 	createCmd.AddCommand(cmd)
 
-	executableLocation, err := exec.LookPath(os.Args[0])
-	if err != nil {
-		glog.Fatalf("Cannot determine location of kops tool: %q.  Please report this problem!", os.Args[0])
-	}
-
-	modelsBaseDirDefault := path.Join(path.Dir(executableLocation), "models")
-
-	cmd.Flags().BoolVar(&createCluster.DryRun, "dryrun", false, "Don't create cloud resources; just show what would be done")
-	cmd.Flags().StringVar(&createCluster.Target, "target", "direct", "Target - direct, terraform")
-	//configFile := cmd.Flags().StringVar(&createCluster., "conf", "", "Configuration file to load")
-	cmd.Flags().StringVar(&createCluster.ModelsBaseDir, "modeldir", modelsBaseDirDefault, "Source directory where models are stored")
+	cmd.Flags().BoolVar(&createCluster.Yes, "yes", false, "Specify --yes to immediately create the cluster")
+	cmd.Flags().StringVar(&createCluster.Target, "target", cloudup.TargetDirect, "Target - direct, terraform")
 	cmd.Flags().StringVar(&createCluster.Models, "model", "config,proto,cloudup", "Models to apply (separate multiple models with commas)")
-	cmd.Flags().StringVar(&createCluster.NodeModel, "nodemodel", "nodeup", "Model to use for node configuration")
 
 	cmd.Flags().StringVar(&createCluster.Cloud, "cloud", "", "Cloud provider to use - gce, aws")
 
@@ -76,7 +62,6 @@ func init() {
 	cmd.Flags().StringVar(&createCluster.MasterZones, "master-zones", "", "Zones in which to run masters (must be an odd number)")
 
 	cmd.Flags().StringVar(&createCluster.Project, "project", "", "Project to use (must be set on GCE)")
-	//cmd.Flags().StringVar(&createCluster.Name, "name", "", "Name for cluster")
 	cmd.Flags().StringVar(&createCluster.KubernetesVersion, "kubernetes-version", "", "Version of kubernetes to run (defaults to latest)")
 
 	cmd.Flags().StringVar(&createCluster.SSHPublicKey, "ssh-public-key", "~/.ssh/id_rsa.pub", "SSH public key to use")
@@ -99,11 +84,23 @@ func init() {
 
 var EtcdClusters = []string{"main", "events"}
 
-func (c *CreateClusterCmd) Run() error {
+func (c *CreateClusterCmd) Run(args []string) error {
+	err := rootCommand.ProcessArgs(args)
+	if err != nil {
+		return err
+	}
+
 	isDryrun := false
-	if c.DryRun {
+	// direct requires --yes (others do not, because they don't make changes)
+	if c.Target == cloudup.TargetDirect {
+		if !c.Yes {
+			isDryrun = true
+			c.Target = cloudup.TargetDryRun
+		}
+	}
+	if c.Target == cloudup.TargetDryRun {
 		isDryrun = true
-		c.Target = "dryrun"
+		c.Target = cloudup.TargetDryRun
 	}
 
 	clusterName := rootCommand.clusterName
@@ -126,36 +123,13 @@ func (c *CreateClusterCmd) Run() error {
 	if err != nil {
 		return err
 	}
-	instanceGroupRegistry, err := clusterRegistry.InstanceGroups(clusterName)
-	if err != nil {
-		return err
+
+	if cluster != nil {
+		return fmt.Errorf("cluster %q already exists; use 'kops update cluster' to apply changes", clusterName)
 	}
 
+	cluster = &api.Cluster{}
 	var instanceGroups []*api.InstanceGroup
-
-	// TODO: Rationalize this!
-	creatingNewCluster := false
-
-	if cluster == nil {
-		cluster = &api.Cluster{}
-		creatingNewCluster = true
-	} else {
-		groupNames, err := instanceGroupRegistry.List()
-		if err != nil {
-			return err
-		}
-
-		for _, groupName := range groupNames {
-			instanceGroup, err := instanceGroupRegistry.Find(groupName)
-			if err != nil {
-				return err
-			}
-			if instanceGroup == nil {
-				return fmt.Errorf("InstanceGroup %q was listed, but then could not be found", groupName)
-			}
-			instanceGroups = append(instanceGroups, instanceGroup)
-		}
-	}
 
 	if c.Zones != "" {
 		existingZones := make(map[string]*api.ClusterZoneSpec)
@@ -353,26 +327,73 @@ func (c *CreateClusterCmd) Run() error {
 		return err
 	}
 
-	cmd := &cloudup.CreateClusterCmd{
-		CreateNewCluster:    creatingNewCluster,
-		InputCluster:        cluster,
-		InputInstanceGroups: instanceGroups,
-		ModelStore:          c.ModelsBaseDir,
-		Models:              strings.Split(c.Models, ","),
-		ClusterRegistry:     clusterRegistry,
-		Target:              c.Target,
-		NodeModel:           c.NodeModel,
-		SSHPublicKey:        c.SSHPublicKey,
-		OutDir:              c.OutDir,
-		DryRun:              isDryrun,
-	}
-
-	err = cmd.Run()
+	fullCluster, err := cloudup.PopulateClusterSpec(cluster, clusterRegistry)
 	if err != nil {
 		return err
 	}
 
-	if !isDryrun {
+	var fullInstanceGroups []*api.InstanceGroup
+	for _, group := range instanceGroups {
+		fullGroup, err := cloudup.PopulateInstanceGroupSpec(fullCluster, group)
+		if err != nil {
+			return err
+		}
+		fullInstanceGroups = append(fullInstanceGroups, fullGroup)
+	}
+
+	err = api.DeepValidate(fullCluster, fullInstanceGroups, true)
+	if err != nil {
+		return err
+	}
+
+	// Note we perform as much validation as we can, before writing a bad config
+	err = api.CreateClusterConfig(clusterRegistry, cluster, fullInstanceGroups)
+	if err != nil {
+		return fmt.Errorf("error writing updated configuration: %v", err)
+	}
+
+	err = clusterRegistry.WriteCompletedConfig(fullCluster)
+	if err != nil {
+		return fmt.Errorf("error writing completed cluster spec: %v", err)
+	}
+
+	if isDryrun {
+		fmt.Println("Previewing changes that will be made:\n")
+	}
+
+	applyCmd := &cloudup.ApplyClusterCmd{
+		Cluster:         fullCluster,
+		InstanceGroups:  fullInstanceGroups,
+		Models:          strings.Split(c.Models, ","),
+		ClusterRegistry: clusterRegistry,
+		Target:          c.Target,
+		SSHPublicKey:    c.SSHPublicKey,
+		OutDir:          c.OutDir,
+		DryRun:          isDryrun,
+	}
+
+	err = applyCmd.Run()
+	if err != nil {
+		return err
+	}
+
+	if isDryrun {
+		fmt.Printf("\n")
+		fmt.Printf("Cluster configuration has been created.\n")
+		fmt.Printf("\n")
+		fmt.Printf("Suggestions:\n")
+		fmt.Printf(" * list clusters with: kops get cluster\n")
+		fmt.Printf(" * edit this cluster with: kops edit cluster %s\n", clusterName)
+		if len(nodes) > 0 {
+			fmt.Printf(" * edit your node instance group: kops edit ig --name=%s %s\n", clusterName, nodes[0].Name)
+		}
+		if len(masters) > 0 {
+			fmt.Printf(" * edit your master istance group: kops edit ig --name=%s %s\n", clusterName, masters[0].Name)
+		}
+		fmt.Printf("\n")
+		fmt.Printf("Finally configure your cluster with: kops update cluster %s --yes\n", clusterName)
+		fmt.Printf("\n")
+	} else {
 		glog.Infof("Exporting kubecfg for cluster")
 
 		x := &kutil.CreateKubecfg{
