@@ -49,7 +49,11 @@ func (c *EditInstanceGroupCmd) Run(groupName string) error {
 
 	fullCluster, err := clusterRegistry.ReadCompletedConfig(cluster.Name)
 	if err != nil {
-		return err
+		if os.IsNotExist(err) {
+			glog.Warning("cluster config not found; will not do full validation")
+		} else {
+			return err
+		}
 	}
 
 	registry, err := rootCommand.InstanceGroupRegistry()
@@ -111,9 +115,16 @@ func (c *EditInstanceGroupCmd) Run(groupName string) error {
 		return err
 	}
 
-	err = fullGroup.CrossValidate(fullCluster, true)
-	if err != nil {
-		return err
+	if fullCluster != nil {
+		err = fullGroup.CrossValidate(fullCluster, true)
+		if err != nil {
+			return err
+		}
+	} else {
+		err = fullGroup.Validate(true)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Note we perform as much validation as we can, before writing a bad config

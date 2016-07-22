@@ -129,7 +129,12 @@ func (_ *InternetGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Intern
 		}
 	}
 
-	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name))
+	tags := t.Cloud.BuildTags(e.Name)
+	if shared {
+		// Don't tag shared resources
+		tags = nil
+	}
+	return t.AddAWSTags(*e.ID, tags)
 }
 
 type terraformInternetGateway struct {

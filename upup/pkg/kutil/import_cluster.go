@@ -8,6 +8,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"strconv"
 	"strings"
@@ -109,18 +110,18 @@ func (x *ImportCluster) ImportAWSCluster() error {
 		}
 	}
 
+	az := aws.StringValue(masterSubnet.AvailabilityZone)
+
 	cluster.Spec.NetworkID = vpcID
 	cluster.Spec.NetworkCIDR = aws.StringValue(vpc.CidrBlock)
+	cluster.Spec.Zones = append(cluster.Spec.Zones, &api.ClusterZoneSpec{
+		Name:       az,
+		CIDR:       aws.StringValue(masterSubnet.CidrBlock),
+		ProviderID: aws.StringValue(masterSubnet.SubnetId),
+	})
 
-	az := aws.StringValue(masterSubnet.AvailabilityZone)
 	masterGroup.Spec.Zones = []string{az}
 	masterGroup.Name = "master-" + az
-	cluster.Spec.Zones = append(cluster.Spec.Zones, &api.ClusterZoneSpec{
-		Name: az,
-
-		// We will allocate a new CIDR
-		//CIDR: aws.StringValue(masterSubnet.CidrBlock),
-	})
 
 	userData, err := GetInstanceUserData(awsCloud, aws.StringValue(masterInstance.InstanceId))
 	if err != nil {
@@ -194,10 +195,11 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	//clusterConfig.DockerStorage = conf.Settings["DOCKER_STORAGE"]
 	//k8s.MasterExtraSans = conf.Settings["MASTER_EXTRA_SANS"] // Not user set
 
-	primaryNodeSet := &api.InstanceGroup{}
-	primaryNodeSet.Spec.Role = api.InstanceGroupRoleNode
-	primaryNodeSet.Name = "nodes"
-	instanceGroups = append(instanceGroups, primaryNodeSet)
+	nodeGroup := &api.InstanceGroup{}
+	nodeGroup.Spec.Role = api.InstanceGroupRoleNode
+	nodeGroup.Name = "nodes"
+	nodeGroup.Spec.Zones = []string{az}
+	instanceGroups = append(instanceGroups, nodeGroup)
 
 	//primaryNodeSet.Spec.MinSize, err = conf.ParseInt("NUM_MINIONS")
 	//if err != nil {
@@ -223,10 +225,10 @@ func (x *ImportCluster) ImportAWSCluster() error {
 			maxSize += int(aws.Int64Value(group.MaxSize))
 		}
 		if minSize != 0 {
-			primaryNodeSet.Spec.MinSize = fi.Int(minSize)
+			nodeGroup.Spec.MinSize = fi.Int(minSize)
 		}
 		if maxSize != 0 {
-			primaryNodeSet.Spec.MaxSize = fi.Int(maxSize)
+			nodeGroup.Spec.MaxSize = fi.Int(maxSize)
 		}
 
 		// Determine the machine type
@@ -242,7 +244,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 				continue
 			}
 
-			primaryNodeSet.Spec.MachineType = aws.StringValue(launchConfiguration.InstanceType)
+			nodeGroup.Spec.MachineType = aws.StringValue(launchConfiguration.InstanceType)
 			break
 		}
 	}
@@ -257,9 +259,9 @@ func (x *ImportCluster) ImportAWSCluster() error {
 			// Different defaults in 1.2
 			masterGroup.Spec.MachineType = ""
 		}
-		if primaryNodeSet.Spec.MachineType == "t2.micro" {
+		if nodeGroup.Spec.MachineType == "t2.micro" {
 			// Encourage users to pick something better...
-			primaryNodeSet.Spec.MachineType = ""
+			nodeGroup.Spec.MachineType = ""
 		}
 	}
 	if conf.Version == "1.2" {
@@ -381,10 +383,30 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	//kubeletToken = conf.Settings["KUBELET_TOKEN"]
 	//kubeProxyToken = conf.Settings["KUBE_PROXY_TOKEN"]
 
-	err = api.CreateClusterConfig(x.ClusterRegistry, cluster, instanceGroups)
+	var fullInstanceGroups []*api.InstanceGroup
+	for _, ig := range instanceGroups {
+		full, err := cloudup.PopulateInstanceGroupSpec(cluster, ig)
+		if err != nil {
+			return err
+		}
+		fullInstanceGroups = append(fullInstanceGroups, full)
+	}
+
+	err = api.CreateClusterConfig(x.ClusterRegistry, cluster, fullInstanceGroups)
 	if err != nil {
 		return err
 	}
+
+	// Note - we can't PopulateClusterSpec & WriteCompletedConfig, because the cluster doesn't have a valid DNS Name
+	//fullCluster, err := cloudup.PopulateClusterSpec(cluster, x.ClusterRegistry)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//err = x.ClusterRegistry.WriteCompletedConfig(fullCluster)
+	//if err != nil {
+	//	return fmt.Errorf("error writing completed cluster spec: %v", err)
+	//}
 
 	return nil
 }

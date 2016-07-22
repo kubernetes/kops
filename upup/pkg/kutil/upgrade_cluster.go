@@ -8,6 +8,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"time"
 )
@@ -46,10 +47,32 @@ func (x *UpgradeCluster) Upgrade() error {
 	newTags := awsCloud.Tags()
 	newTags["KubernetesCluster"] = newClusterName
 
+	// Build completed cluster (force errors asap)
+	cluster.Name = newClusterName
+	err := cluster.PerformAssignments()
+	if err != nil {
+		return fmt.Errorf("error populating cluster defaults: %v", err)
+	}
+
+	fullCluster, err := cloudup.PopulateClusterSpec(cluster, x.ClusterRegistry)
+	if err != nil {
+		return err
+	}
+
 	// Try to pre-query as much as possible before doing anything destructive
 	instances, err := findInstances(awsCloud)
 	if err != nil {
 		return fmt.Errorf("error finding instances: %v", err)
+	}
+
+	subnets, err := DescribeSubnets(x.Cloud)
+	if err != nil {
+		return fmt.Errorf("error finding subnets: %v", err)
+	}
+
+	securityGroups, err := DescribeSecurityGroups(x.Cloud)
+	if err != nil {
+		return fmt.Errorf("error finding security groups: %v", err)
 	}
 
 	volumes, err := DescribeVolumes(x.Cloud)
@@ -102,6 +125,8 @@ func (x *UpgradeCluster) Upgrade() error {
 		}
 	}
 
+	var waitStopped []string
+
 	// Stop masters
 	for _, master := range masters {
 		masterInstanceID := aws.StringValue(master.InstanceId)
@@ -121,6 +146,41 @@ func (x *UpgradeCluster) Upgrade() error {
 		_, err := awsCloud.EC2.StopInstances(request)
 		if err != nil {
 			return fmt.Errorf("error stopping master instance: %v", err)
+		}
+		waitStopped = append(waitStopped, aws.StringValue(master.InstanceId))
+	}
+
+	if len(waitStopped) != 0 {
+		for {
+			instances, err := findInstances(awsCloud)
+			if err != nil {
+				return fmt.Errorf("error finding instances: %v", err)
+			}
+
+			instanceMap := make(map[string]*ec2.Instance)
+			for _, i := range instances {
+				instanceMap[aws.StringValue(i.InstanceId)] = i
+			}
+
+			allStopped := true
+			for _, id := range waitStopped {
+				instance := instanceMap[id]
+				if instance != nil {
+					state := aws.StringValue(instance.State.Name)
+					switch state {
+					case "terminated", "stopped":
+						glog.Infof("instance %v no longer running (%v)", id, state)
+					default:
+						glog.Infof("waiting for instance %v to stop (currently %v)", id, state)
+						allStopped = false
+					}
+				}
+			}
+
+			if allStopped {
+				break
+			}
+			time.Sleep(5 * time.Second)
 		}
 	}
 
@@ -143,7 +203,7 @@ func (x *UpgradeCluster) Upgrade() error {
 				_, err := awsCloud.EC2.DetachVolume(request)
 				if err != nil {
 					if awsup.AWSErrorCode(err) == "IncorrectState" {
-						glog.Infof("retrying to detach volume (master has probably not stopped yet): %q", err)
+						glog.Infof("will retry volume detach (master has probably not stopped yet): %q", err)
 						time.Sleep(5 * time.Second)
 						continue
 					}
@@ -154,18 +214,6 @@ func (x *UpgradeCluster) Upgrade() error {
 			}
 		}
 	}
-
-	//subnets, err := DescribeSubnets(x.Cloud)
-	//if err != nil {
-	//	return fmt.Errorf("error finding subnets: %v", err)
-	//}
-	//for _, s := range subnets {
-	//	id := aws.StringValue(s.SubnetId)
-	//	err := awsCloud.AddAWSTags(id, newTags)
-	//	if err != nil {
-	//		return fmt.Errorf("error re-tagging subnet %q: %v", id, err)
-	//	}
-	//}
 
 	// Retag VPC
 	// We have to be careful because VPCs can be shared
@@ -230,6 +278,30 @@ func (x *UpgradeCluster) Upgrade() error {
 					}
 				}
 			}
+		}
+	}
+
+	// Retag subnets
+	for _, s := range subnets {
+		id := aws.StringValue(s.SubnetId)
+
+		glog.Infof("Retagging Subnet %q", id)
+
+		err := awsCloud.AddAWSTags(id, newTags)
+		if err != nil {
+			return fmt.Errorf("error re-tagging Subnet %q: %v", id, err)
+		}
+	}
+
+	// Retag security groups
+	for _, s := range securityGroups {
+		id := aws.StringValue(s.GroupId)
+
+		glog.Infof("Retagging SecurityGroup %q", id)
+
+		err := awsCloud.AddAWSTags(id, newTags)
+		if err != nil {
+			return fmt.Errorf("error re-tagging SecurityGroup %q: %v", id, err)
 		}
 	}
 
@@ -311,15 +383,14 @@ func (x *UpgradeCluster) Upgrade() error {
 		}
 	}
 
-	cluster.Name = newClusterName
-	err = cluster.PerformAssignments()
-	if err != nil {
-		return fmt.Errorf("error populating cluster defaults: %v", err)
-	}
-
 	err = api.CreateClusterConfig(x.ClusterRegistry, cluster, x.InstanceGroups)
 	if err != nil {
 		return fmt.Errorf("error writing updated configuration: %v", err)
+	}
+
+	err = x.ClusterRegistry.WriteCompletedConfig(fullCluster)
+	if err != nil {
+		return fmt.Errorf("error writing completed cluster spec: %v", err)
 	}
 
 	oldCACertPool, err := oldKeyStore.CertificatePool(fi.CertificateId_CA)
