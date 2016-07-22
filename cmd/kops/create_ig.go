@@ -13,10 +13,10 @@ import (
 	"path/filepath"
 )
 
-type CreateInstanceanceGroupCmd struct {
+type CreateInstanceGroupCmd struct {
 }
 
-var createInstanceanceGroupCmd CreateInstanceanceGroupCmd
+var createInstanceGroupCmd CreateInstanceGroupCmd
 
 func init() {
 	cmd := &cobra.Command{
@@ -31,7 +31,7 @@ func init() {
 			if len(args) != 1 {
 				glog.Exitf("Can only create one instance group at a time!")
 			}
-			err := createInstanceanceGroupCmd.Run(args[0])
+			err := createInstanceGroupCmd.Run(args[0])
 			if err != nil {
 				glog.Exitf("%v", err)
 			}
@@ -41,7 +41,7 @@ func init() {
 	createCmd.AddCommand(cmd)
 }
 
-func (c *CreateInstanceanceGroupCmd) Run(groupName string) error {
+func (c *CreateInstanceGroupCmd) Run(groupName string) error {
 	_, cluster, err := rootCommand.Cluster()
 
 	instanceGroupStore, err := rootCommand.InstanceGroupRegistry()
