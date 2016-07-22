@@ -65,11 +65,11 @@ func (c *EditInstanceGroupCmd) Run(groupName string) error {
 		return fmt.Errorf("name is required")
 	}
 
-	group, err := registry.Find(groupName)
+	oldGroup, err := registry.Find(groupName)
 	if err != nil {
 		return fmt.Errorf("error reading InstanceGroup %q: %v", groupName, err)
 	}
-	if group == nil {
+	if oldGroup == nil {
 		return fmt.Errorf("InstanceGroup %q not found", groupName)
 	}
 
@@ -78,7 +78,7 @@ func (c *EditInstanceGroupCmd) Run(groupName string) error {
 	)
 
 	ext := "yaml"
-	raw, err := api.ToYaml(group)
+	raw, err := api.ToYaml(oldGroup)
 	if err != nil {
 		return fmt.Errorf("error parsing InstanceGroup: %v", err)
 	}
