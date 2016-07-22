@@ -24,6 +24,22 @@ func (e *InternetGateway) CompareWithID() *string {
 	return e.ID
 }
 
+func findInternetGateway(cloud *awsup.AWSCloud, request *ec2.DescribeInternetGatewaysInput) (*ec2.InternetGateway, error) {
+	response, err := cloud.EC2.DescribeInternetGateways(request)
+	if err != nil {
+		return nil, fmt.Errorf("error listing InternetGateways: %v", err)
+	}
+	if response == nil || len(response.InternetGateways) == 0 {
+		return nil, nil
+	}
+
+	if len(response.InternetGateways) != 1 {
+		return nil, fmt.Errorf("found multiple InternetGateways matching tags")
+	}
+	igw := response.InternetGateways[0]
+	return igw, nil
+}
+
 func (e *InternetGateway) Find(c *fi.Context) (*InternetGateway, error) {
 	cloud := c.Cloud.(*awsup.AWSCloud)
 
@@ -44,18 +60,13 @@ func (e *InternetGateway) Find(c *fi.Context) (*InternetGateway, error) {
 		}
 	}
 
-	response, err := cloud.EC2.DescribeInternetGateways(request)
+	igw, err := findInternetGateway(cloud, request)
 	if err != nil {
-		return nil, fmt.Errorf("error listing InternetGateways: %v", err)
+		return nil, err
 	}
-	if response == nil || len(response.InternetGateways) == 0 {
+	if igw == nil {
 		return nil, nil
 	}
-
-	if len(response.InternetGateways) != 1 {
-		return nil, fmt.Errorf("found multiple InternetGateways matching tags")
-	}
-	igw := response.InternetGateways[0]
 	actual := &InternetGateway{
 		ID:   igw.InternetGatewayId,
 		Name: findNameTag(igw.Tags),
@@ -146,6 +157,26 @@ func (_ *InternetGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, ch
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		// Not terraform owned / managed
+
+		// But ... attempt to discover the ID so TerraformLink works
+		if e.ID == nil {
+			request := &ec2.DescribeInternetGatewaysInput{}
+			vpcID := fi.StringValue(e.VPC.ID)
+			if vpcID == "" {
+				return fmt.Errorf("VPC ID is required when InternetGateway is shared")
+			}
+			request.Filters = []*ec2.Filter{awsup.NewEC2Filter("attachment.vpc-id", vpcID)}
+			igw, err := findInternetGateway(t.Cloud.(*awsup.AWSCloud), request)
+			if err != nil {
+				return err
+			}
+			if igw == nil {
+				glog.Warningf("Cannot find internet gateway for VPC %q", vpcID)
+			} else {
+				e.ID = igw.InternetGatewayId
+			}
+		}
+
 		return nil
 	}
 
