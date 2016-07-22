@@ -15,6 +15,7 @@ import (
 type TemplateFunctions struct {
 	cluster *api.Cluster
 	tags    map[string]struct{}
+	region  string
 }
 
 func (tf *TemplateFunctions) WellKnownServiceIP(id int) (net.IP, error) {
@@ -74,6 +75,8 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 		return found
 	}
 
+	dest["IAMPrefix"] = tf.IAMPrefix
+	dest["IAMServiceEC2"] = tf.IAMServiceEC2
 }
 
 func (tf *TemplateFunctions) EtcdClusterMemberTags(etcd *api.EtcdClusterSpec, m *api.EtcdMemberSpec) map[string]string {
@@ -110,4 +113,26 @@ func (tf *TemplateFunctions) AdminCIDR() (string, error) {
 		return tf.cluster.Spec.AdminAccess[0], nil
 	}
 	return "", fmt.Errorf("Multiple AdminAccess rules are not (currently) supported")
+}
+
+// IAMServiceEC2 returns the name of the IAM service for EC2 in the current region
+// it is ec2.amazonaws.com everywhere but in cn-north, where it is ec2.amazonaws.com.cn
+func (tf *TemplateFunctions) IAMServiceEC2() string {
+	switch tf.region {
+	case "cn-north-1":
+		return "ec2.amazonaws.com.cn"
+	default:
+		return "ec2.amazonaws.com"
+	}
+}
+
+// IAMPrefix returns the prefix for AWS ARNs in the current region, for use with IAM
+// it is arn:aws everywhere but in cn-north, where it is arn:aws-cn
+func (tf *TemplateFunctions) IAMPrefix() string {
+	switch tf.region {
+	case "cn-north-1":
+		return "arn:aws-cn"
+	default:
+		return "arn:aws"
+	}
 }

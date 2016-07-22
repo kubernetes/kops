@@ -3,13 +3,6 @@
   "Statement": [
     {
       "Effect": "Allow",
-      "Action": "s3:*",
-      "Resource": [
-        "arn:aws:s3:::kubernetes-*"
-      ]
-    },
-    {
-      "Effect": "Allow",
       "Action": "ec2:Describe*",
       "Resource": "*"
     },
@@ -49,7 +42,7 @@
       "Resource": [
         {{ range $i, $b := .NodePermissions.S3Buckets }}
         {{if $i}},{{end}}
-        "arn:aws:s3:::{{ $b }}/*"
+        "{{ IAMPrefix }}:s3:::{{ $b }}/*"
         {{ end }}
       ]
     },
@@ -59,7 +52,7 @@
       "Resource": [
         {{ range $i, $b := .NodePermissions.S3Buckets }}
         {{if $i}},{{end}}
-        "arn:aws:s3:::{{ $b }}"
+        "{{ IAMPrefix }}:s3:::{{ $b }}"
         {{ end }}
       ]
     }
