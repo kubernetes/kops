@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"net"
+	"net/url"
 )
 
 func (c *Cluster) Validate(strict bool) error {
@@ -178,6 +179,7 @@ func (c *Cluster) Validate(strict bool) error {
 		}
 	}
 
+	// AdminAccess
 	if strict && len(c.Spec.AdminAccess) == 0 {
 		return fmt.Errorf("AdminAccess not configured")
 	}
@@ -189,7 +191,75 @@ func (c *Cluster) Validate(strict bool) error {
 		}
 	}
 
+	// KubeProxy
+	if c.Spec.KubeProxy != nil {
+		if strict && c.Spec.KubeProxy.Master == "" {
+			return fmt.Errorf("KubeProxy.Master not set")
+		}
+		if c.Spec.KubeProxy.Master != "" && !isValidAPIServersURL(c.Spec.KubeProxy.Master) {
+			return fmt.Errorf("KubeProxy.Master not valid")
+		}
+	}
+
+	// Kubelet
+	if c.Spec.Kubelet != nil {
+		if strict && c.Spec.Kubelet.APIServers == "" {
+			return fmt.Errorf("Kubelet.APIServers not set")
+		}
+		if c.Spec.Kubelet.APIServers != "" && !isValidAPIServersURL(c.Spec.Kubelet.APIServers) {
+			return fmt.Errorf("Kubelet.APIServers not valid")
+		}
+	}
+
+	// MasterKubelet
+	if c.Spec.MasterKubelet != nil {
+		if strict && c.Spec.MasterKubelet.APIServers == "" {
+			return fmt.Errorf("MasterKubelet.APIServers not set")
+		}
+		if c.Spec.MasterKubelet.APIServers != "" && !isValidAPIServersURL(c.Spec.MasterKubelet.APIServers) {
+			return fmt.Errorf("MasterKubelet.APIServers not valid")
+		}
+	}
+
+	// Etcd
+	{
+		if strict && len(c.Spec.EtcdClusters) == 0 {
+			return fmt.Errorf("EtcdClusters not configured")
+		}
+		for _, etcd := range c.Spec.EtcdClusters {
+			if etcd.Name == "" {
+				return fmt.Errorf("EtcdCluster did not have name")
+			}
+			if len(etcd.Members) == 0 {
+				return fmt.Errorf("No members defined in etcd cluster %q", etcd.Name)
+			}
+			if (len(etcd.Members) % 2) == 0 {
+				// Not technically a requirement, but doesn't really make sense to allow
+				return fmt.Errorf("There should be an odd number of master-zones, for etcd's quorum.  Hint: Use --zones and --master-zones to declare node zones and master zones separately.")
+			}
+			for _, m := range etcd.Members {
+				if m.Name == "" {
+					return fmt.Errorf("EtcdMember did not have Name in cluster %q", etcd.Name)
+				}
+				if m.Zone == "" {
+					return fmt.Errorf("EtcdMember did not have Zone in cluster %q", etcd.Name)
+				}
+			}
+		}
+	}
+
 	return nil
+}
+
+func isValidAPIServersURL(s string) bool {
+	u, err := url.Parse(s)
+	if err != nil {
+		return false
+	}
+	if u.Host == "" || u.Scheme == "" {
+		return false
+	}
+	return true
 }
 
 func DeepValidate(c *Cluster, groups []*InstanceGroup, strict bool) error {
