@@ -34,6 +34,8 @@ func init() {
 		},
 	}
 
+	updateCmd.AddCommand(cmd)
+
 	cmd.Flags().BoolVar(&updateCluster.Yes, "yes", false, "Actually create cloud resources")
 	cmd.Flags().StringVar(&updateCluster.Target, "target", "direct", "Target - direct, terraform")
 	cmd.Flags().StringVar(&updateCluster.Models, "model", "config,proto,cloudup", "Models to apply (separate multiple models with commas)")
