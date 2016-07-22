@@ -13,8 +13,7 @@ import (
 
 //go:generate fitask -type=RouteTableAssociation
 type RouteTableAssociation struct {
-	Name *string
-
+	Name       *string
 	ID         *string
 	RouteTable *RouteTable
 	Subnet     *Subnet
@@ -92,10 +91,60 @@ func (s *RouteTableAssociation) CheckChanges(a, e, changes *RouteTableAssociatio
 	return nil
 }
 
+func findExistingRouteTableForSubnet(cloud *awsup.AWSCloud, subnet *Subnet) (*ec2.RouteTable, error) {
+	if subnet == nil {
+		return nil, fmt.Errorf("subnet not set")
+	}
+	if subnet.ID == nil {
+		return nil, fmt.Errorf("subnet ID not set")
+	}
+
+	request := &ec2.DescribeRouteTablesInput{
+		Filters: []*ec2.Filter{awsup.NewEC2Filter("association.subnet-id", fi.StringValue(subnet.ID))},
+	}
+	response, err := cloud.EC2.DescribeRouteTables(request)
+	if err != nil {
+		return nil, fmt.Errorf("error listing RouteTables: %v", err)
+	}
+	if response == nil || len(response.RouteTables) == 0 {
+		return nil, nil
+	}
+
+	if len(response.RouteTables) != 1 {
+		return nil, fmt.Errorf("found multiple RouteTables attached to subnet")
+	}
+	rt := response.RouteTables[0]
+	return rt, nil
+}
+
 func (_ *RouteTableAssociation) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *RouteTableAssociation) error {
 	if a == nil {
-		glog.V(2).Infof("Creating RouteTableAssociation")
+		// TODO: We might do better just to make the subnet the primary key here
 
+		glog.V(2).Infof("Checking for existing RouteTableAssociation to subnet")
+		existing, err := findExistingRouteTableForSubnet(t.Cloud, e.Subnet)
+		if err != nil {
+			return fmt.Errorf("error checking for existing RouteTableAssociation: %v", err)
+		}
+
+		if existing != nil {
+			for _, a := range existing.Associations {
+				if aws.StringValue(a.SubnetId) != aws.StringValue(e.Subnet.ID) {
+					continue
+				}
+				glog.V(2).Infof("Creating RouteTableAssociation")
+				request := &ec2.DisassociateRouteTableInput{
+					AssociationId: a.RouteTableAssociationId,
+				}
+
+				_, err := t.Cloud.EC2.DisassociateRouteTable(request)
+				if err != nil {
+					return fmt.Errorf("error disassociating existing RouteTable from subnet: %v", err)
+				}
+			}
+		}
+
+		glog.V(2).Infof("Creating RouteTableAssociation")
 		request := &ec2.AssociateRouteTableInput{
 			SubnetId:     e.Subnet.ID,
 			RouteTableId: e.RouteTable.ID,
