@@ -207,7 +207,7 @@ func (c *CreateClusterCmd) Run(args []string) error {
 		}
 		etcdZones := zones.List()
 
-		for _, etcdCluster := range EtcdClusters {
+		for _, etcdCluster := range cloudup.EtcdClusters {
 			etcd := &api.EtcdClusterSpec{}
 			etcd.Name = etcdCluster
 			for _, zone := range etcdZones {
