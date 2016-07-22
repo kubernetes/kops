@@ -18,6 +18,8 @@ import (
 	"text/template"
 )
 
+var EtcdClusters = []string{"main", "events"}
+
 type populateClusterSpec struct {
 	// InputCluster is the api object representing the whole cluster, as input by the user
 	// We build it up into a complete config, but we write the values as input
@@ -41,16 +43,26 @@ func findModelStore() (string, error) {
 		return "", fmt.Errorf("Cannot determine location of kops tool: %q.  Please report this problem!", os.Args[0])
 	}
 
-	modelStore := path.Join(path.Dir(executableLocation), "models")
-	_, err = os.Stat(modelStore)
-	if err != nil {
+	var locations []string
+	locations = append(locations, path.Join(path.Dir(executableLocation), "models"))
+
+	gopath := os.Getenv("GOPATH")
+	locations = append(locations, path.Join(gopath, "src/k8s.io/kops/upup/models"))
+
+	for _, location := range locations {
+		_, err = os.Stat(location)
+		if err == nil {
+			return location, nil
+		}
+
 		if os.IsNotExist(err) {
-			return "", fmt.Errorf("models directory not found at %q.  Please report this problem!", modelStore)
+			continue
 		} else {
-			return "", fmt.Errorf("error accessing models directory %q: %v", modelStore, err)
+			glog.Warningf("error accessing models directory %q: %v", location, err)
 		}
 	}
-	return modelStore, nil
+
+	return "", fmt.Errorf("models directory not found at %q.  Please report this problem!", strings.Join(locations, ","))
 }
 
 // PopulateClusterSpec takes a user-specified cluster spec, and computes the full specification that should be set on the cluster.
