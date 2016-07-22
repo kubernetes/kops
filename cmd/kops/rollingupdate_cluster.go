@@ -114,7 +114,8 @@ func (c *RollingUpdateClusterCmd) Run() error {
 	}
 
 	if !c.Yes {
-		return fmt.Errorf("Must specify --yes to rolling-update")
+		fmt.Printf("\nMust specify --yes to rolling-update\n")
+		return nil
 	}
 
 	return d.RollingUpdate(groups)

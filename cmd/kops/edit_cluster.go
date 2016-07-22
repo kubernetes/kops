@@ -7,6 +7,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/api"
+	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
 	"os"
 	"path/filepath"
@@ -23,7 +24,7 @@ func init() {
 		Short: "Edit cluster",
 		Long:  `Edit a cluster configuration.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := editClusterCmd.Run()
+			err := editClusterCmd.Run(args)
 			if err != nil {
 				glog.Exitf("%v", err)
 			}
@@ -33,8 +34,23 @@ func init() {
 	editCmd.AddCommand(cmd)
 }
 
-func (c *EditClusterCmd) Run() error {
+func (c *EditClusterCmd) Run(args []string) error {
+	err := rootCommand.ProcessArgs(args)
+	if err != nil {
+		return err
+	}
+
 	clusterRegistry, cluster, err := rootCommand.Cluster()
+	if err != nil {
+		return err
+	}
+
+	instanceGroupRegistry, err := rootCommand.InstanceGroupRegistry()
+	if err != nil {
+		return err
+	}
+
+	instancegroups, err := instanceGroupRegistry.ReadAll()
 	if err != nil {
 		return err
 	}
@@ -71,14 +87,30 @@ func (c *EditClusterCmd) Run() error {
 		return fmt.Errorf("error parsing config: %v", err)
 	}
 
-	err = newCluster.Validate(false)
+	err = newCluster.PerformAssignments()
+	if err != nil {
+		return fmt.Errorf("error populating configuration: %v", err)
+	}
+
+	fullCluster, err := cloudup.PopulateClusterSpec(cluster, clusterRegistry)
 	if err != nil {
 		return err
 	}
 
+	err = api.DeepValidate(fullCluster, instancegroups, true)
+	if err != nil {
+		return err
+	}
+
+	// Note we perform as much validation as we can, before writing a bad config
 	err = clusterRegistry.Update(newCluster)
 	if err != nil {
 		return err
+	}
+
+	err = clusterRegistry.WriteCompletedConfig(fullCluster)
+	if err != nil {
+		return fmt.Errorf("error writing completed cluster spec: %v", err)
 	}
 
 	return nil

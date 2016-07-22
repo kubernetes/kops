@@ -143,7 +143,8 @@ func (c *DeleteClusterCmd) Run(args []string) error {
 
 	if clusterRegistry != nil {
 		if !c.Yes {
-			return fmt.Errorf("Must specify --yes to delete")
+			fmt.Printf("\nMust specify --yes to delete\n")
+			return nil
 		}
 		err := clusterRegistry.DeleteAllClusterState(clusterName)
 		if err != nil {
@@ -152,6 +153,5 @@ func (c *DeleteClusterCmd) Run(args []string) error {
 	}
 
 	fmt.Printf("\nCluster deleted\n")
-
 	return nil
 }
