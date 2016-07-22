@@ -42,7 +42,7 @@ Now have a look at the cluster configuration, to make sure it looks right.  If i
 open an issue.
 
 ```
-kops edit cluster --name ${OLD_NAME}
+kops edit cluster ${OLD_NAME}
 ````
 
 ## Move resources to a new cluster
@@ -69,10 +69,10 @@ If you now list the clusters, you should see both the old cluster & the new clus
 
 ## Bring up the new cluster
 
-Use the normal tool to bring up the new cluster:
+Use the update command to bring up the new cluster:
 
 ```
-kops create cluster --name ${NEW_NAME} --dryrun
+kops update cluster ${NEW_NAME}
 ```
 
 Things to check are that it is reusing the existing volume for the _main_ etcd cluster (but not the events clusters).
@@ -80,7 +80,7 @@ Things to check are that it is reusing the existing volume for the _main_ etcd c
 And then when you are happy:
 
 ```
-kops create cluster --name ${NEW_NAME}
+kops update cluster ${NEW_NAME} --yes
 ```
 
 
@@ -153,7 +153,7 @@ LoadBalancer, you likely aren't using ELBs and can skip this section!
   zone you are adding; kops will auto-populate the CIDR.
 * Preview: `kops create cluster --name ${NEW_NAME} --dryrun`.  You expect to see something like:
 ```
-    *awstasks.AutoscalingGroup    autoscalingGroup/nodes.upgraded.awsdata.com
+    AutoscalingGroup    autoscalingGroup/nodes.upgraded.awsdata.com
       Subnets [id:subnet-e3b3d987] -> [id:subnet-e3b3d987, id:<nil>]
 ```
 * Apply changes: `kops create cluster --name ${NEW_NAME}`
@@ -169,7 +169,7 @@ You should now have an ELB in your new zones; within a few minutes k8s should re
 ## Delete remaining resources of the old cluster
 
 ```
-kops delete cluster --name ${OLD_NAME}
+kops delete cluster ${OLD_NAME}
 ```
 
 And once you've confirmed it looks right, run with `--yes`

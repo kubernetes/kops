@@ -13,6 +13,10 @@ Some of the more interesting features:
 * Can produce configurations in other formats (currently Terraform & Cloud-Init), so that we can have working
   configurations for other tools also.
 
+## Recent changes
+
+* Create command was split into create and update [Jul 21 2016](CHANGES.md#jul-21-2016)
+
 ## Installation
 
 Build the code (make sure you have set GOPATH):
@@ -42,34 +46,38 @@ you should use Go 1.6 or later)
 * Set `AWS_PROFILE` (if you need to select a profile for the AWS CLI to work)
 
 * Pick an S3 bucket that you'll use to store your cluster configuration - this is called your state store.  You
- can `export KOPS_STATE_STORE=s3://<mystatestorebucket>` and then kops will use this location by default.
+  can `export KOPS_STATE_STORE=s3://<mystatestorebucket>` and then kops will use this location by default.  We
+  suggest putting this in your bash profile or similar.  A single registry can hold multiple clusters, and it
+  can also be shared amongst your ops team (which is much easier than passing around kubecfg files!)
 
-* Execute:
+* Run "kops create cluster" to create your cluster configuration:
 ```
-export NAME=<kubernetes.mydomain.com>
-export KOPS_STATE_STORE=s3://<somes3bucket>
-${GOPATH}/bin/kops create cluster --v=0 --cloud=aws --zones=us-east-1c --name=${NAME}
+${GOPATH}/bin/kops create cluster --cloud=aws --zones=us-east-1c ${NAME}
 ```
-
 (protip: the --cloud=aws argument is optional if the cloud can be inferred from the zones)
+
+* Run "kops update cluster" to build your cluster:
+```
+${GOPATH}/bin/kops update cluster ${NAME} --yes
+```
 
 If you have problems, please set `--v=8` and open an issue, and ping justinsb on slack!
 
 ## Create kubecfg settings for kubectl
 
-(This step is actually optional; `create cluster` will do it automatically after cluster creation.
+(This step is actually optional; `update cluster` will do it automatically after cluster creation.
  But we expect that if you're part of a team you might share the KOPS_STATE_STORE, and then you can do
  this on different machines instead of having to share kubecfg files)
 
 To create the kubecfg configuration settings for use with kubectl:
 
 ```
-export NAME=<kubernetes.mydomain.com>
 export KOPS_STATE_STORE=s3://<somes3bucket>
+# NAME=<kubernetes.mydomain.com>
 ${GOPATH}/bin/kops export kubecfg ${NAME}
 ```
 
-You can now use kubernets using the kubectl tool (after allowing a few minutes for the cluster to come up):
+You can now use kubernetes using the kubectl tool (after allowing a few minutes for the cluster to come up):
 
 ```kubectl get nodes```
 
@@ -83,15 +91,13 @@ When you're done, you can also have kops delete the cluster.  It will delete all
 with the cluster name in the specified region.
 
 ```
-export NAME=<kubernetes.mydomain.com>
-${GOPATH}/bin/kops delete cluster --region=us-east-1 --name=${NAME} # --yes
+# NAME=<kubernetes.mydomain.com>
+${GOPATH}/bin/kops delete cluster ${NAME} # --yes
 ```
 
 You must pass --yes to actually delete resources (without the `#` comment!)
 
 ## Other interesting modes:
-
-* See changes that would be applied: `--dryrun`
 
 * Build a terraform model: `--target=terraform`  The terraform model will be built in `out/terraform`
 
@@ -117,7 +123,7 @@ the desired state of the world.
 Each file in the tree describes a Task.
 
 On the nodeup side, Tasks can manage files, systemd services, packages etc.
-On the `kops create cluster` side, Tasks manage cloud resources: instances, networks, disks etc.
+On the `kops update cluster` side, Tasks manage cloud resources: instances, networks, disks etc.
 
 ## Workaround for terraform bug
 
@@ -125,8 +131,8 @@ Terraform currently has a bug where it can't create AWS tags containing a dot.  
 you can't use terraform to build EC2 resources that are tagged with `k8s.io/...` tags.  Thankfully this is only
 the volumes, and it isn't the worst idea to build these separately anyway.
 
-We divide the 'kops create cluster' model into three parts:
-* models/config which contains all the options
+We divide the cloudup model into three parts:
+* models/config which contains all the options - this is run automatically by "create cluster"
 * models/proto which sets up the volumes and other data which would be hard to recover (e.g. likely keys & secrets in the near future)
 * models/cloudup which is the main cloud model for configuring everything else
 
@@ -134,15 +140,16 @@ So you don't use terraform for the 'proto' phase (you can't anyway, because of t
 
 ```
 export KOPS_STATE_STORE=s3://<somes3bucket>
-export CLUSTER_NAME=<kubernetes.mydomain.com>
-${GOPATH}/bin/kops create cluster --v=0 --zones=us-east-1c --name=${CLUSTER_NAME} --model=config,proto
+export NAME=<kubernetes.mydomain.com>
+${GOPATH}/bin/kops create cluster --v=0 --zones=us-east-1c ${NAME}
+${GOPATH}/bin/kops update cluster --v=0 ${NAME} --model=proto --yes
 ```
 
 And then you can use terraform to do the remainder of the installation:
 
 ```
 export CLUSTER_NAME=<kubernetes.mydomain.com>
-${GOPATH}/bin/kops create cluster --v=0 --zones=us-east-1c --name=${CLUSTER_NAME} --model=config,cloudup --target=terraform
+${GOPATH}/bin/kops update cluster --v=0 ${NAME} --model=cloudup --target=terraform
 ```
 
 Then, to apply using terraform:

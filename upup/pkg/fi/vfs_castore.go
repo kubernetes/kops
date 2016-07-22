@@ -235,7 +235,7 @@ func (c *VFSCAStore) Cert(id string) (*Certificate, error) {
 	cert, err := c.FindCert(id)
 	if err == nil && cert == nil {
 		if c.DryRun {
-			glog.Warningf("using empty certificate, because --dryrun specified")
+			glog.Warningf("using empty certificate, because running with DryRun")
 			return &Certificate{}, err
 		}
 		return nil, fmt.Errorf("cannot find certificate %q", id)
@@ -248,7 +248,7 @@ func (c *VFSCAStore) CertificatePool(id string) (*CertificatePool, error) {
 	cert, err := c.FindCertificatePool(id)
 	if err == nil && cert == nil {
 		if c.DryRun {
-			glog.Warningf("using empty certificate, because --dryrun specified")
+			glog.Warningf("using empty certificate, because running with DryRun")
 			return &CertificatePool{}, err
 		}
 		return nil, fmt.Errorf("cannot find certificate pool %q", id)
@@ -490,7 +490,7 @@ func (c *VFSCAStore) PrivateKey(id string) (*PrivateKey, error) {
 	key, err := c.FindPrivateKey(id)
 	if err == nil && key == nil {
 		if c.DryRun {
-			glog.Warningf("using empty certificate, because --dryrun specified")
+			glog.Warningf("using empty certificate, because running with DryRun")
 			return &PrivateKey{}, err
 		}
 		return nil, fmt.Errorf("cannot find SSL key %q", id)
