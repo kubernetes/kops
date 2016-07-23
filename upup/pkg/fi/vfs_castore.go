@@ -118,7 +118,7 @@ func (c *VFSCAStore) generateCACertificate() (*certificates, *privateKeys, error
 	if err != nil {
 		return nil, nil, err
 	}
-	if privateKeys == nil || privateKeys.primary != serial.Text(10) {
+	if privateKeys == nil || privateKeys.primary != serial.String() {
 		return nil, nil, fmt.Errorf("failed to round-trip CA private key")
 	}
 
@@ -134,7 +134,7 @@ func (c *VFSCAStore) generateCACertificate() (*certificates, *privateKeys, error
 		return nil, nil, err
 	}
 
-	if certificates == nil || certificates.primary != serial.Text(10) {
+	if certificates == nil || certificates.primary != serial.String() {
 		return nil, nil, fmt.Errorf("failed to round-trip CA certifiacate")
 	}
 
@@ -146,7 +146,7 @@ func (c *VFSCAStore) buildCertificatePoolPath(id string) vfs.Path {
 }
 
 func (c *VFSCAStore) buildCertificatePath(id string, serial *big.Int) vfs.Path {
-	return c.basedir.Join("issued", id, serial.Text(10)+".crt")
+	return c.basedir.Join("issued", id, serial.String()+".crt")
 }
 
 func (c *VFSCAStore) buildPrivateKeyPoolPath(id string) vfs.Path {
@@ -154,7 +154,7 @@ func (c *VFSCAStore) buildPrivateKeyPoolPath(id string) vfs.Path {
 }
 
 func (c *VFSCAStore) buildPrivateKeyPath(id string, serial *big.Int) vfs.Path {
-	return c.basedir.Join("private", id, serial.Text(10)+".key")
+	return c.basedir.Join("private", id, serial.String()+".key")
 }
 
 type certificates struct {
