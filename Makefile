@@ -12,6 +12,11 @@ gocode:
 	GO15VENDOREXPERIMENT=1 go install -ldflags "-X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/...
 	ln -sfn ${GOPATH_1ST}/src/k8s.io/kops/upup/models/ ${GOPATH_1ST}/bin/models
 
+# Build in a docker container with golang 1.5
+# Used to test we have not broken 1.5
+check-builds-in-go15:
+	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.5 make -f /go/src/k8s.io/kops/Makefile gocode
+
 codegen:
 	GO15VENDOREXPERIMENT=1 go install k8s.io/kops/upup/tools/generators/...
 	GO15VENDOREXPERIMENT=1 go generate k8s.io/kops/upup/pkg/fi/cloudup/awstasks
