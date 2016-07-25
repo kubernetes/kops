@@ -30,6 +30,10 @@ type DatabaseMigrationServiceAPI interface {
 
 	CreateReplicationTask(*databasemigrationservice.CreateReplicationTaskInput) (*databasemigrationservice.CreateReplicationTaskOutput, error)
 
+	DeleteCertificateRequest(*databasemigrationservice.DeleteCertificateInput) (*request.Request, *databasemigrationservice.DeleteCertificateOutput)
+
+	DeleteCertificate(*databasemigrationservice.DeleteCertificateInput) (*databasemigrationservice.DeleteCertificateOutput, error)
+
 	DeleteEndpointRequest(*databasemigrationservice.DeleteEndpointInput) (*request.Request, *databasemigrationservice.DeleteEndpointOutput)
 
 	DeleteEndpoint(*databasemigrationservice.DeleteEndpointInput) (*databasemigrationservice.DeleteEndpointOutput, error)
@@ -49,6 +53,10 @@ type DatabaseMigrationServiceAPI interface {
 	DescribeAccountAttributesRequest(*databasemigrationservice.DescribeAccountAttributesInput) (*request.Request, *databasemigrationservice.DescribeAccountAttributesOutput)
 
 	DescribeAccountAttributes(*databasemigrationservice.DescribeAccountAttributesInput) (*databasemigrationservice.DescribeAccountAttributesOutput, error)
+
+	DescribeCertificatesRequest(*databasemigrationservice.DescribeCertificatesInput) (*request.Request, *databasemigrationservice.DescribeCertificatesOutput)
+
+	DescribeCertificates(*databasemigrationservice.DescribeCertificatesInput) (*databasemigrationservice.DescribeCertificatesOutput, error)
 
 	DescribeConnectionsRequest(*databasemigrationservice.DescribeConnectionsInput) (*request.Request, *databasemigrationservice.DescribeConnectionsOutput)
 
@@ -89,6 +97,10 @@ type DatabaseMigrationServiceAPI interface {
 	DescribeTableStatisticsRequest(*databasemigrationservice.DescribeTableStatisticsInput) (*request.Request, *databasemigrationservice.DescribeTableStatisticsOutput)
 
 	DescribeTableStatistics(*databasemigrationservice.DescribeTableStatisticsInput) (*databasemigrationservice.DescribeTableStatisticsOutput, error)
+
+	ImportCertificateRequest(*databasemigrationservice.ImportCertificateInput) (*request.Request, *databasemigrationservice.ImportCertificateOutput)
+
+	ImportCertificate(*databasemigrationservice.ImportCertificateInput) (*databasemigrationservice.ImportCertificateOutput, error)
 
 	ListTagsForResourceRequest(*databasemigrationservice.ListTagsForResourceInput) (*request.Request, *databasemigrationservice.ListTagsForResourceOutput)
 

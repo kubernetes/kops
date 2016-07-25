@@ -47,7 +47,9 @@ var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
-const _ = proto.GoGoProtoPackageIsVersion1
+// A compilation error at this line likely means your copy of the
+// proto package needs to be updated.
+const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 
 type A struct {
 	Description      string                             `protobuf:"bytes,1,opt,name=Description,json=description" json:"Description"`
@@ -1093,11 +1095,12 @@ func valueToGoStringExample(v interface{}, typ string) string {
 	pv := reflect.Indirect(rv).Interface()
 	return fmt.Sprintf("func(v %v) *%v { return &v } ( %#v )", typ, typ, pv)
 }
-func extensionToGoStringExample(e map[int32]github_com_gogo_protobuf_proto.Extension) string {
+func extensionToGoStringExample(m github_com_gogo_protobuf_proto.Message) string {
+	e := github_com_gogo_protobuf_proto.GetUnsafeExtensionsMap(m)
 	if e == nil {
 		return "nil"
 	}
-	s := "map[int32]proto.Extension{"
+	s := "proto.NewUnsafeXXX_InternalExtensions(map[int32]proto.Extension{"
 	keys := make([]int, 0, len(e))
 	for k := range e {
 		keys = append(keys, int(k))
@@ -1107,7 +1110,7 @@ func extensionToGoStringExample(e map[int32]github_com_gogo_protobuf_proto.Exten
 	for _, k := range keys {
 		ss = append(ss, strconv.Itoa(k)+": "+e[int32(k)].GoString())
 	}
-	s += strings.Join(ss, ",") + "}"
+	s += strings.Join(ss, ",") + "})"
 	return s
 }
 func (m *A) Marshal() (data []byte, err error) {
@@ -1688,7 +1691,7 @@ func (this *E) String() string {
 		return "nil"
 	}
 	s := strings.Join([]string{`&E{`,
-		`XXX_extensions:` + proto.StringFromExtensionsBytes(this.XXX_extensions) + `,`,
+		`XXX_extensions:` + github_com_gogo_protobuf_proto.StringFromExtensionsBytes(this.XXX_extensions) + `,`,
 		`XXX_unrecognized:` + fmt.Sprintf("%v", this.XXX_unrecognized) + `,`,
 		`}`,
 	}, "")
@@ -2494,6 +2497,8 @@ var (
 	ErrInvalidLengthExample = fmt.Errorf("proto: negative length found during unmarshaling")
 	ErrIntOverflowExample   = fmt.Errorf("proto: integer overflow")
 )
+
+func init() { proto.RegisterFile("example.proto", fileDescriptorExample) }
 
 var fileDescriptorExample = []byte{
 	// 415 bytes of a gzipped FileDescriptorProto

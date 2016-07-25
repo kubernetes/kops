@@ -23,10 +23,17 @@ source "${KUBE_ROOT}/cluster/gce/${KUBE_CONFIG_FILE-"config-default.sh"}"
 source "${KUBE_ROOT}/cluster/common.sh"
 source "${KUBE_ROOT}/cluster/lib/util.sh"
 
-if [[ "${OS_DISTRIBUTION}" == "debian" || "${OS_DISTRIBUTION}" == "coreos" || "${OS_DISTRIBUTION}" == "trusty" || "${OS_DISTRIBUTION}" == "gci" ]]; then
-  source "${KUBE_ROOT}/cluster/gce/${OS_DISTRIBUTION}/helper.sh"
+if [[ "${NODE_OS_DISTRIBUTION}" == "debian" || "${NODE_OS_DISTRIBUTION}" == "coreos" || "${NODE_OS_DISTRIBUTION}" == "trusty" || "${NODE_OS_DISTRIBUTION}" == "gci" ]]; then
+  source "${KUBE_ROOT}/cluster/gce/${NODE_OS_DISTRIBUTION}/node-helper.sh"
 else
-  echo "Cannot operate on cluster using os distro: ${OS_DISTRIBUTION}" >&2
+  echo "Cannot operate on cluster using node os distro: ${NODE_OS_DISTRIBUTION}" >&2
+  exit 1
+fi
+
+if [[ "${MASTER_OS_DISTRIBUTION}" == "debian" || "${MASTER_OS_DISTRIBUTION}" == "coreos" || "${MASTER_OS_DISTRIBUTION}" == "trusty" || "${MASTER_OS_DISTRIBUTION}" == "gci" ]]; then
+  source "${KUBE_ROOT}/cluster/gce/${MASTER_OS_DISTRIBUTION}/master-helper.sh"
+else
+  echo "Cannot operate on cluster using master os distro: ${MASTER_OS_DISTRIBUTION}" >&2
   exit 1
 fi
 
@@ -49,13 +56,22 @@ function get_latest_gci_image() {
   echo "${gci_images[0]}"
 }
 
-if [[ "${OS_DISTRIBUTION}" == "gci" ]]; then
-  # If the master image is not set, we use the pinned GCI image.
+if [[ "${MASTER_OS_DISTRIBUTION}" == "gci" ]]; then
+  # If the master image is not set, we use the latest GCI image.
   # Otherwise, we respect whatever is set by the user.
   MASTER_IMAGE=${KUBE_GCE_MASTER_IMAGE:-"$(get_latest_gci_image)"}
   MASTER_IMAGE_PROJECT=${KUBE_GCE_MASTER_PROJECT:-google-containers}
-  # The default node image when using GCI is still the Debian based ContainerVM
-  # until GCI gets validated for node usage.
+elif [[ "${MASTER_OS_DISTRIBUTION}" == "debian" ]]; then
+  MASTER_IMAGE=${KUBE_GCE_MASTER_IMAGE:-${CVM_VERSION}}
+  MASTER_IMAGE_PROJECT=${KUBE_GCE_MASTER_PROJECT:-google-containers}
+fi
+
+if [[ "${NODE_OS_DISTRIBUTION}" == "gci" ]]; then
+  # If the node image is not set, we use the latest GCI image.
+  # Otherwise, we respect whatever is set by the user.
+  NODE_IMAGE=${KUBE_GCE_NODE_IMAGE:-"$(get_latest_gci_image)"}
+  NODE_IMAGE_PROJECT=${KUBE_GCE_NODE_PROJECT:-google-containers}
+elif [[ "${NODE_OS_DISTRIBUTION}" == "debian" ]]; then
   NODE_IMAGE=${KUBE_GCE_NODE_IMAGE:-${CVM_VERSION}}
   NODE_IMAGE_PROJECT=${KUBE_GCE_NODE_PROJECT:-google-containers}
 fi
@@ -73,6 +89,7 @@ if [[ "${ENABLE_CLUSTER_AUTOSCALER}" == "true" ]]; then
 fi
 
 NODE_INSTANCE_PREFIX="${INSTANCE_PREFIX}-minion"
+NODE_TAGS="${NODE_TAG}"
 
 ALLOCATE_NODE_CIDRS=true
 
@@ -83,6 +100,11 @@ KUBE_CLUSTER_INITIALIZATION_TIMEOUT=${KUBE_CLUSTER_INITIALIZATION_TIMEOUT:-300}
 
 function join_csv {
   local IFS=','; echo "$*";
+}
+
+# This function returns the first string before the comma
+function split_csv {
+  echo "$*" | cut -d',' -f1
 }
 
 # Verify prereqs
@@ -252,7 +274,7 @@ function upload-server-tars() {
 
   SERVER_BINARY_TAR_HASH=$(sha1sum-file "${SERVER_BINARY_TAR}")
   SALT_TAR_HASH=$(sha1sum-file "${SALT_TAR}")
-  if [[ "${OS_DISTRIBUTION}" == "trusty" || "${OS_DISTRIBUTION}" == "gci" || "${OS_DISTRIBUTION}" == "coreos" ]]; then
+  if [[ -n "${KUBE_MANIFESTS_TAR:-}" ]]; then
     KUBE_MANIFESTS_TAR_HASH=$(sha1sum-file "${KUBE_MANIFESTS_TAR}")
   fi
 
@@ -284,8 +306,7 @@ function upload-server-tars() {
     # Convert from gs:// URL to an https:// URL
     server_binary_tar_urls+=("${server_binary_gs_url/gs:\/\//https://storage.googleapis.com/}")
     salt_tar_urls+=("${salt_gs_url/gs:\/\//https://storage.googleapis.com/}")
-
-    if [[ "${OS_DISTRIBUTION}" == "trusty" || "${OS_DISTRIBUTION}" == "gci" || "${OS_DISTRIBUTION}" == "coreos" ]]; then
+    if [[ -n "${KUBE_MANIFESTS_TAR:-}" ]]; then
       local kube_manifests_gs_url="${staging_path}/${KUBE_MANIFESTS_TAR##*/}"
       copy-to-staging "${staging_path}" "${kube_manifests_gs_url}" "${KUBE_MANIFESTS_TAR}" "${KUBE_MANIFESTS_TAR_HASH}"
       # Convert from gs:// URL to an https:// URL
@@ -293,17 +314,10 @@ function upload-server-tars() {
     fi
   done
 
-  if [[ "${OS_DISTRIBUTION}" == "coreos" ]]; then
-    # TODO: Support fallback .tar.gz settings on CoreOS
-    SERVER_BINARY_TAR_URL="${server_binary_tar_urls[0]}"
-    SALT_TAR_URL="${salt_tar_urls[0]}"
-    KUBE_MANIFESTS_TAR_URL="${kube_manifests_tar_urls[0]}"
-  else
-    SERVER_BINARY_TAR_URL=$(join_csv "${server_binary_tar_urls[@]}")
-    SALT_TAR_URL=$(join_csv "${salt_tar_urls[@]}")
-    if [[ "${OS_DISTRIBUTION}" == "trusty" || "${OS_DISTRIBUTION}" == "gci" ]]; then
-      KUBE_MANIFESTS_TAR_URL=$(join_csv "${kube_manifests_tar_urls[@]}")
-    fi
+  SERVER_BINARY_TAR_URL=$(join_csv "${server_binary_tar_urls[@]}")
+  SALT_TAR_URL=$(join_csv "${salt_tar_urls[@]}")
+  if [[ -n "${KUBE_MANIFESTS_TAR:-}" ]]; then
+    KUBE_MANIFESTS_TAR_URL=$(join_csv "${kube_manifests_tar_urls[@]}")
   fi
 }
 
@@ -365,6 +379,7 @@ function detect-nodes () {
 # Assumed vars:
 #   MASTER_NAME
 #   ZONE
+#   REGION
 # Vars set:
 #   KUBE_MASTER
 #   KUBE_MASTER_IP
@@ -372,8 +387,8 @@ function detect-master () {
   detect-project
   KUBE_MASTER=${MASTER_NAME}
   if [[ -z "${KUBE_MASTER_IP-}" ]]; then
-    KUBE_MASTER_IP=$(gcloud compute instances describe --project "${PROJECT}" --zone "${ZONE}" \
-      "${MASTER_NAME}" --format='value(networkInterfaces[0].accessConfigs[0].natIP)')
+    KUBE_MASTER_IP=$(gcloud compute addresses describe "${MASTER_NAME}-ip" \
+      --project "${PROJECT}" --region "${REGION}" -q --format='value(address)')
   fi
   if [[ -z "${KUBE_MASTER_IP-}" ]]; then
     echo "Could not detect Kubernetes master node.  Make sure you've launched a cluster with 'kube-up.sh'" >&2
@@ -595,6 +610,9 @@ function kube-up {
   if [[ ${KUBE_USE_EXISTING_MASTER:-} == "true" ]]; then
     parse-master-env
     create-nodes
+  elif [[ ${KUBE_REPLICATE_EXISTING_MASTER:-} == "true" ]]; then
+    create-loadbalancer
+    # TODO: Add logic for copying an existing master.
   else
     check-existing
     create-network
@@ -709,10 +727,7 @@ function create-master() {
   KUBE_PROXY_TOKEN=$(dd if=/dev/urandom bs=128 count=1 2>/dev/null | base64 | tr -d "=+/" | dd bs=32 count=1 2>/dev/null)
 
   # Reserve the master's IP so that it can later be transferred to another VM
-  # without disrupting the kubelets. IPs are associated with regions, not zones,
-  # so extract the region name, which is the same as the zone but with the final
-  # dash and characters trailing the dash removed.
-  local REGION=${ZONE%-*}
+  # without disrupting the kubelets.
   create-static-ip "${MASTER_NAME}-ip" "${REGION}"
   MASTER_RESERVED_IP=$(gcloud compute addresses describe "${MASTER_NAME}-ip" \
     --project "${PROJECT}" --region "${REGION}" -q --format='value(address)')
@@ -723,6 +738,83 @@ function create-master() {
   get-master-root-disk-size
 
   create-master-instance "${MASTER_RESERVED_IP}" &
+}
+
+# Detaches old and ataches new external IP to a VM.
+#
+# Arguments:
+#   $1 - VM name
+#   $2 - VM zone
+#   $3 - external static IP; if empty will use an ephemeral IP address.
+function attach-external-ip() {
+  local NAME=${1}
+  local ZONE=${2}
+  local IP_ADDR=${3:-}
+  local ACCESS_CONFIG_NAME=$(gcloud compute instances describe "${NAME}" \
+    --project "${PROJECT}" --zone "${ZONE}" \
+    --format="value(networkInterfaces[0].accessConfigs[0].name)")
+  gcloud compute instances delete-access-config "${NAME}" \
+    --project "${PROJECT}" --zone "${ZONE}" \
+    --access-config-name "${ACCESS_CONFIG_NAME}"
+  if [[ -z ${IP_ADDR} ]]; then
+    gcloud compute instances add-access-config "${NAME}" \
+      --project "${PROJECT}" --zone "${ZONE}" \
+      --access-config-name "${ACCESS_CONFIG_NAME}"
+  else
+    gcloud compute instances add-access-config "${NAME}" \
+      --project "${PROJECT}" --zone "${ZONE}" \
+      --access-config-name "${ACCESS_CONFIG_NAME}" \
+      --address "${IP_ADDR}"
+  fi
+}
+
+# Creates load balancer in front of apiserver if it doesn't exists already. Assumes there's only one
+# existing master replica.
+#
+# Assumes:
+#   PROJECT
+#   MASTER_NAME
+#   ZONE
+#   REGION
+function create-loadbalancer() {
+  detect-master
+
+  # Step 0: Return early if LB is already configured.
+  if gcloud compute forwarding-rules describe ${MASTER_NAME} \
+    --project "${PROJECT}" --region ${REGION} > /dev/null 2>&1; then
+    echo "Load balancer already exists"
+    return
+  fi
+  local EXISTING_MASTER_ZONE=$(gcloud compute instances list "${MASTER_NAME}" \
+    --project "${PROJECT}" --format="value(zone)")
+  echo "Creating load balancer in front of an already existing master in ${EXISTING_MASTER_ZONE}"
+
+  # Step 1: Detach master IP address and attach ephemeral address to the existing master
+  attach-external-ip ${MASTER_NAME} ${EXISTING_MASTER_ZONE}
+
+  # Step 2: Create target pool.
+  gcloud compute target-pools create "${MASTER_NAME}" --region "${REGION}"
+  # TODO: We should also add master instances with suffixes
+  gcloud compute target-pools add-instances ${MASTER_NAME} --instances ${MASTER_NAME} --zone ${EXISTING_MASTER_ZONE}
+
+  # Step 3: Create forwarding rule.
+  # TODO: This step can take up to 20 min. We need to speed this up...
+  gcloud compute forwarding-rules create ${MASTER_NAME} \
+    --project "${PROJECT}" --region ${REGION} \
+    --target-pool ${MASTER_NAME} --address=${KUBE_MASTER_IP} --ports=443
+
+  echo -n "Waiting for the load balancer configuration to propagate..."
+  local counter=0
+  until $(curl -k -m1 https://${KUBE_MASTER_IP} &> /dev/null); do
+    counter=$((counter+1))
+    echo -n .
+    if [[ ${counter} -ge 1800 ]]; then
+      echo -e "${color_red}TIMEOUT${color_norm}" >&2
+      echo -e "${color_red}Load balancer failed to initialize within ${counter} seconds.${color_norm}" >&2
+      exit 2
+    fi
+  done
+  echo "DONE"
 }
 
 function create-nodes-firewall() {
@@ -755,11 +847,6 @@ function create-nodes-template() {
 
   local template_name="${NODE_INSTANCE_PREFIX}-template"
 
-  # For master on GCI or trusty, we support the hybrid mode with nodes on ContainerVM.
-  if [[ "${OS_DISTRIBUTION}" == "trusty" || "${OS_DISTRIBUTION}" == "gci" ]] && \
-     [[ "${NODE_IMAGE}" == container* ]]; then
-    source "${KUBE_ROOT}/cluster/gce/debian/helper.sh"
-  fi
   create-node-instance-template $template_name
 }
 
@@ -800,7 +887,7 @@ function create-nodes() {
     # Spread the remaining number of nodes evenly
     this_mig_size=$((${instances_left} / (${NUM_MIGS}-${i}+1)))
     instances_left=$((instances_left-${this_mig_size}))
-    
+
     gcloud compute instance-groups managed \
         create "${group_name}" \
         --project "${PROJECT}" \
@@ -827,20 +914,20 @@ function create-nodes() {
 function create-cluster-autoscaler-mig-config() {
 
   # Each MIG must have at least one node, so the min number of nodes
-  # must be greater or equal to the number of migs. 
+  # must be greater or equal to the number of migs.
   if [[ ${AUTOSCALER_MIN_NODES} < ${NUM_MIGS} ]]; then
     echo "AUTOSCALER_MIN_NODES must be greater or equal ${NUM_MIGS}"
     exit 2
   fi
 
   # Each MIG must have at least one node, so the min number of nodes
-  # must be greater or equal to the number of migs. 
+  # must be greater or equal to the number of migs.
   if [[ ${AUTOSCALER_MAX_NODES} < ${NUM_MIGS} ]]; then
     echo "AUTOSCALER_MAX_NODES must be greater or equal ${NUM_MIGS}"
     exit 2
   fi
 
-  # The code assumes that the migs were created with create-nodes 
+  # The code assumes that the migs were created with create-nodes
   # function which tries to evenly spread nodes across the migs.
   AUTOSCALER_MIG_CONFIG=""
 
@@ -1020,6 +1107,58 @@ function kube-down {
     fi
   fi
 
+  # Check if this are any remaining master replicas.
+  local REMAINING_MASTER_COUNT=$(gcloud compute instances list \
+    --project "${PROJECT}" \
+    --regexp "${MASTER_NAME}(-...)?" \
+    --format "value(zone)" | wc -l)
+
+  # In the replicated scenario, if there's only a single master left, we should also delete load balancer in front of it.
+  if [[ "${REMAINING_MASTER_COUNT}" == "1" ]]; then
+    if gcloud compute forwarding-rules describe "${MASTER_NAME}" --region "${REGION}" --project "${PROJECT}" &>/dev/null; then
+      detect-master
+      local EXISTING_MASTER_ZONE=$(gcloud compute instances list "${MASTER_NAME}" \
+        --project "${PROJECT}" --format="value(zone)")
+      gcloud compute forwarding-rules delete \
+        --project "${PROJECT}" \
+        --region "${REGION}" \
+        --quiet \
+        "${MASTER_NAME}"
+      attach-external-ip "${MASTER_NAME}" "${EXISTING_MASTER_ZONE}" "${KUBE_MASTER_IP}"
+      gcloud compute target-pools delete \
+        --project "${PROJECT}" \
+        --region "${REGION}" \
+        --quiet \
+        "${MASTER_NAME}"
+    fi
+  fi
+
+  # If there are no more remaining master replicas, we should delete all remaining network resources.
+  if [[ "${REMAINING_MASTER_COUNT}" == "0" ]]; then
+    # Delete firewall rule for the master.
+    if gcloud compute firewall-rules describe --project "${PROJECT}" "${MASTER_NAME}-https" &>/dev/null; then
+      gcloud compute firewall-rules delete  \
+        --project "${PROJECT}" \
+        --quiet \
+        "${MASTER_NAME}-https"
+    fi
+    # Delete the master's reserved IP
+    if gcloud compute addresses describe "${MASTER_NAME}-ip" --region "${REGION}" --project "${PROJECT}" &>/dev/null; then
+      gcloud compute addresses delete \
+        --project "${PROJECT}" \
+        --region "${REGION}" \
+        --quiet \
+        "${MASTER_NAME}-ip"
+    fi
+    # Delete firewall rule for minions.
+    if gcloud compute firewall-rules describe --project "${PROJECT}" "${NODE_TAG}-all" &>/dev/null; then
+      gcloud compute firewall-rules delete  \
+        --project "${PROJECT}" \
+        --quiet \
+        "${NODE_TAG}-all"
+    fi
+  fi
+
   # Find out what minions are running.
   local -a minions
   minions=( $(gcloud compute instances list \
@@ -1037,22 +1176,6 @@ function kube-down {
       "${minions[@]::${batch}}"
     minions=( "${minions[@]:${batch}}" )
   done
-
-  # Delete firewall rule for the master.
-  if gcloud compute firewall-rules describe --project "${PROJECT}" "${MASTER_NAME}-https" &>/dev/null; then
-    gcloud compute firewall-rules delete  \
-      --project "${PROJECT}" \
-      --quiet \
-      "${MASTER_NAME}-https"
-  fi
-
-  # Delete firewall rule for minions.
-  if gcloud compute firewall-rules describe --project "${PROJECT}" "${NODE_TAG}-all" &>/dev/null; then
-    gcloud compute firewall-rules delete  \
-      --project "${PROJECT}" \
-      --quiet \
-      "${NODE_TAG}-all"
-  fi
 
   # Delete routes.
   local -a routes
@@ -1074,16 +1197,6 @@ function kube-down {
     routes=( "${routes[@]:${batch}}" )
   done
 
-  # Delete the master's reserved IP
-  local REGION=${ZONE%-*}
-  if gcloud compute addresses describe "${MASTER_NAME}-ip" --region "${REGION}" --project "${PROJECT}" &>/dev/null; then
-    gcloud compute addresses delete \
-      --project "${PROJECT}" \
-      --region "${REGION}" \
-      --quiet \
-      "${MASTER_NAME}-ip"
-  fi
-
   # Delete persistent disk for influx-db.
   if gcloud compute disks describe "${INSTANCE_PREFIX}"-influxdb-pd --zone "${ZONE}" --project "${PROJECT}" &>/dev/null; then
     gcloud compute disks delete \
@@ -1093,8 +1206,11 @@ function kube-down {
       "${INSTANCE_PREFIX}"-influxdb-pd
   fi
 
-  export CONTEXT="${PROJECT}_${INSTANCE_PREFIX}"
-  clear-kubeconfig
+  # If there are no more remaining master replicas, we should update kubeconfig.
+  if [[ "${REMAINING_MASTER_COUNT}" == "0" ]]; then
+    export CONTEXT="${PROJECT}_${INSTANCE_PREFIX}"
+    clear-kubeconfig
+  fi
   set -e
 }
 
@@ -1115,6 +1231,7 @@ function get-template {
 #   MASTER_NAME
 #   NODE_INSTANCE_PREFIX
 #   ZONE
+#   REGION
 # Vars set:
 #   KUBE_RESOURCE_FOUND
 function check-resources {
@@ -1183,7 +1300,6 @@ function check-resources {
     return 1
   fi
 
-  local REGION=${ZONE%-*}
   if gcloud compute addresses describe --project "${PROJECT}" "${MASTER_NAME}-ip" --region "${REGION}" &>/dev/null; then
     KUBE_RESOURCE_FOUND="Master's reserved IP"
     return 1
@@ -1196,9 +1312,14 @@ function check-resources {
 # Prepare to push new binaries to kubernetes cluster
 #  $1 - whether prepare push to node
 function prepare-push() {
+  local node="${1-}"
   #TODO(dawnchen): figure out how to upgrade coreos node
-  if [[ "${OS_DISTRIBUTION}" != "debian" ]]; then
-    echo "Updating a kubernetes cluster with ${OS_DISTRIBUTION} is not supported yet." >&2
+  if [[ "${node}" == "true" && "${NODE_OS_DISTRIBUTION}" != "debian" ]]; then
+    echo "Updating nodes in a kubernetes cluster with ${NODE_OS_DISTRIBUTION} is not supported yet." >&2
+    exit 1
+  fi
+  if [[ "${node}" != "true" && "${MASTER_OS_DISTRIBUTION}" != "debian" ]]; then
+    echo "Updating the master in a kubernetes cluster with ${MASTER_OS_DISTRIBUTION} is not supported yet." >&2
     exit 1
   fi
 
@@ -1216,7 +1337,7 @@ function prepare-push() {
   tars_from_version
 
   # Prepare node env vars and update MIG template
-  if [[ "${1-}" == "true" ]]; then
+  if [[ "${node}" == "true" ]]; then
     write-node-env
 
     # TODO(zmerlynn): Refactor setting scope flags.

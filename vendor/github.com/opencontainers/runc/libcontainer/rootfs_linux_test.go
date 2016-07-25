@@ -2,7 +2,11 @@
 
 package libcontainer
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/opencontainers/runc/libcontainer/configs"
+)
 
 func TestCheckMountDestOnProc(t *testing.T) {
 	dest := "/rootfs/proc/"
@@ -33,5 +37,65 @@ func TestCheckMountRoot(t *testing.T) {
 	err := checkMountDestination("/rootfs", dest)
 	if err == nil {
 		t.Fatal(err)
+	}
+}
+
+func TestNeedsSetupDev(t *testing.T) {
+	config := &configs.Config{
+		Mounts: []*configs.Mount{
+			{
+				Device:      "bind",
+				Source:      "/dev",
+				Destination: "/dev",
+			},
+		},
+	}
+	if needsSetupDev(config) {
+		t.Fatal("expected needsSetupDev to be false, got true")
+	}
+}
+
+func TestNeedsSetupDevStrangeSource(t *testing.T) {
+	config := &configs.Config{
+		Mounts: []*configs.Mount{
+			{
+				Device:      "bind",
+				Source:      "/devx",
+				Destination: "/dev",
+			},
+		},
+	}
+	if needsSetupDev(config) {
+		t.Fatal("expected needsSetupDev to be false, got true")
+	}
+}
+
+func TestNeedsSetupDevStrangeDest(t *testing.T) {
+	config := &configs.Config{
+		Mounts: []*configs.Mount{
+			{
+				Device:      "bind",
+				Source:      "/dev",
+				Destination: "/devx",
+			},
+		},
+	}
+	if !needsSetupDev(config) {
+		t.Fatal("expected needsSetupDev to be true, got false")
+	}
+}
+
+func TestNeedsSetupDevStrangeSourceDest(t *testing.T) {
+	config := &configs.Config{
+		Mounts: []*configs.Mount{
+			{
+				Device:      "bind",
+				Source:      "/devx",
+				Destination: "/devx",
+			},
+		},
+	}
+	if !needsSetupDev(config) {
+		t.Fatal("expected needsSetupDev to be true, got false")
 	}
 }

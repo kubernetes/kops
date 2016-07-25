@@ -52,7 +52,16 @@ const (
 	noDialOnMiss = false
 )
 
-func (p *clientConnPool) getClientConn(_ *http.Request, addr string, dialOnMiss bool) (*ClientConn, error) {
+func (p *clientConnPool) getClientConn(req *http.Request, addr string, dialOnMiss bool) (*ClientConn, error) {
+	if isConnectionCloseRequest(req) && dialOnMiss {
+		// It gets its own connection.
+		cc, err := p.t.dialClientConn(addr)
+		if err != nil {
+			return nil, err
+		}
+		cc.singleUse = true
+		return cc, nil
+	}
 	p.mu.Lock()
 	for _, cc := range p.conns[addr] {
 		if cc.CanTakeNewRequest() {

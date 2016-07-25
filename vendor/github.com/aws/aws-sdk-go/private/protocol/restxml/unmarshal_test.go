@@ -123,7 +123,8 @@ const opOutputService1TestCaseOperation1 = "OperationName"
 //
 func (c *OutputService1ProtocolTest) OutputService1TestCaseOperation1Request(input *OutputService1TestShapeOutputService1TestCaseOperation1Input) (req *request.Request, output *OutputService1TestShapeOutputShape) {
 	op := &request.Operation{
-		Name: opOutputService1TestCaseOperation1,
+		Name:     opOutputService1TestCaseOperation1,
+		HTTPPath: "/",
 	}
 
 	if input == nil {
@@ -168,7 +169,8 @@ const opOutputService1TestCaseOperation2 = "OperationName"
 //
 func (c *OutputService1ProtocolTest) OutputService1TestCaseOperation2Request(input *OutputService1TestShapeOutputService1TestCaseOperation2Input) (req *request.Request, output *OutputService1TestShapeOutputShape) {
 	op := &request.Operation{
-		Name: opOutputService1TestCaseOperation2,
+		Name:     opOutputService1TestCaseOperation2,
+		HTTPPath: "/",
 	}
 
 	if input == nil {
@@ -301,7 +303,8 @@ const opOutputService2TestCaseOperation1 = "OperationName"
 //
 func (c *OutputService2ProtocolTest) OutputService2TestCaseOperation1Request(input *OutputService2TestShapeOutputService2TestCaseOperation1Input) (req *request.Request, output *OutputService2TestShapeOutputService2TestCaseOperation1Output) {
 	op := &request.Operation{
-		Name: opOutputService2TestCaseOperation1,
+		Name:     opOutputService2TestCaseOperation1,
+		HTTPPath: "/",
 	}
 
 	if input == nil {
@@ -411,7 +414,8 @@ const opOutputService3TestCaseOperation1 = "OperationName"
 //
 func (c *OutputService3ProtocolTest) OutputService3TestCaseOperation1Request(input *OutputService3TestShapeOutputService3TestCaseOperation1Input) (req *request.Request, output *OutputService3TestShapeOutputService3TestCaseOperation1Output) {
 	op := &request.Operation{
-		Name: opOutputService3TestCaseOperation1,
+		Name:     opOutputService3TestCaseOperation1,
+		HTTPPath: "/",
 	}
 
 	if input == nil {
@@ -520,7 +524,8 @@ const opOutputService4TestCaseOperation1 = "OperationName"
 //
 func (c *OutputService4ProtocolTest) OutputService4TestCaseOperation1Request(input *OutputService4TestShapeOutputService4TestCaseOperation1Input) (req *request.Request, output *OutputService4TestShapeOutputService4TestCaseOperation1Output) {
 	op := &request.Operation{
-		Name: opOutputService4TestCaseOperation1,
+		Name:     opOutputService4TestCaseOperation1,
+		HTTPPath: "/",
 	}
 
 	if input == nil {
@@ -629,7 +634,8 @@ const opOutputService5TestCaseOperation1 = "OperationName"
 //
 func (c *OutputService5ProtocolTest) OutputService5TestCaseOperation1Request(input *OutputService5TestShapeOutputService5TestCaseOperation1Input) (req *request.Request, output *OutputService5TestShapeOutputService5TestCaseOperation1Output) {
 	op := &request.Operation{
-		Name: opOutputService5TestCaseOperation1,
+		Name:     opOutputService5TestCaseOperation1,
+		HTTPPath: "/",
 	}
 
 	if input == nil {
@@ -738,7 +744,8 @@ const opOutputService6TestCaseOperation1 = "OperationName"
 //
 func (c *OutputService6ProtocolTest) OutputService6TestCaseOperation1Request(input *OutputService6TestShapeOutputService6TestCaseOperation1Input) (req *request.Request, output *OutputService6TestShapeOutputService6TestCaseOperation1Output) {
 	op := &request.Operation{
-		Name: opOutputService6TestCaseOperation1,
+		Name:     opOutputService6TestCaseOperation1,
+		HTTPPath: "/",
 	}
 
 	if input == nil {
@@ -853,7 +860,8 @@ const opOutputService7TestCaseOperation1 = "OperationName"
 //
 func (c *OutputService7ProtocolTest) OutputService7TestCaseOperation1Request(input *OutputService7TestShapeOutputService7TestCaseOperation1Input) (req *request.Request, output *OutputService7TestShapeOutputService7TestCaseOperation1Output) {
 	op := &request.Operation{
-		Name: opOutputService7TestCaseOperation1,
+		Name:     opOutputService7TestCaseOperation1,
+		HTTPPath: "/",
 	}
 
 	if input == nil {
@@ -962,7 +970,8 @@ const opOutputService8TestCaseOperation1 = "OperationName"
 //
 func (c *OutputService8ProtocolTest) OutputService8TestCaseOperation1Request(input *OutputService8TestShapeOutputService8TestCaseOperation1Input) (req *request.Request, output *OutputService8TestShapeOutputService8TestCaseOperation1Output) {
 	op := &request.Operation{
-		Name: opOutputService8TestCaseOperation1,
+		Name:     opOutputService8TestCaseOperation1,
+		HTTPPath: "/",
 	}
 
 	if input == nil {
@@ -1071,7 +1080,8 @@ const opOutputService9TestCaseOperation1 = "OperationName"
 //
 func (c *OutputService9ProtocolTest) OutputService9TestCaseOperation1Request(input *OutputService9TestShapeOutputService9TestCaseOperation1Input) (req *request.Request, output *OutputService9TestShapeOutputService9TestCaseOperation1Output) {
 	op := &request.Operation{
-		Name: opOutputService9TestCaseOperation1,
+		Name:     opOutputService9TestCaseOperation1,
+		HTTPPath: "/",
 	}
 
 	if input == nil {
@@ -1188,7 +1198,8 @@ const opOutputService10TestCaseOperation1 = "OperationName"
 //
 func (c *OutputService10ProtocolTest) OutputService10TestCaseOperation1Request(input *OutputService10TestShapeOutputService10TestCaseOperation1Input) (req *request.Request, output *OutputService10TestShapeOutputService10TestCaseOperation1Output) {
 	op := &request.Operation{
-		Name: opOutputService10TestCaseOperation1,
+		Name:     opOutputService10TestCaseOperation1,
+		HTTPPath: "/",
 	}
 
 	if input == nil {
@@ -1297,7 +1308,8 @@ const opOutputService11TestCaseOperation1 = "OperationName"
 //
 func (c *OutputService11ProtocolTest) OutputService11TestCaseOperation1Request(input *OutputService11TestShapeOutputService11TestCaseOperation1Input) (req *request.Request, output *OutputService11TestShapeOutputService11TestCaseOperation1Output) {
 	op := &request.Operation{
-		Name: opOutputService11TestCaseOperation1,
+		Name:     opOutputService11TestCaseOperation1,
+		HTTPPath: "/",
 	}
 
 	if input == nil {
@@ -1422,7 +1434,8 @@ const opOutputService12TestCaseOperation1 = "OperationName"
 //
 func (c *OutputService12ProtocolTest) OutputService12TestCaseOperation1Request(input *OutputService12TestShapeOutputService12TestCaseOperation1Input) (req *request.Request, output *OutputService12TestShapeOutputService12TestCaseOperation1Output) {
 	op := &request.Operation{
-		Name: opOutputService12TestCaseOperation1,
+		Name:     opOutputService12TestCaseOperation1,
+		HTTPPath: "/",
 	}
 
 	if input == nil {

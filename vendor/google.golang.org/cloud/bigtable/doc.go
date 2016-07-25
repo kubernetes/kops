@@ -106,3 +106,7 @@ const (
 // clientUserAgent identifies the version of this package.
 // It should be bumped upon significant changes only.
 const clientUserAgent = "cbt-go/20160628"
+
+// resourcePrefixHeader is the name of the metadata header used to indicate
+// the resource being operated on.
+const resourcePrefixHeader = "google-cloud-resource-prefix"

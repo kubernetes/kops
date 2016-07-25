@@ -71,6 +71,23 @@
         {"shape":"AuthorizationQuotaExceededFault"}
       ]
     },
+    "CopyDBClusterParameterGroup":{
+      "name":"CopyDBClusterParameterGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CopyDBClusterParameterGroupMessage"},
+      "output":{
+        "shape":"CopyDBClusterParameterGroupResult",
+        "resultWrapper":"CopyDBClusterParameterGroupResult"
+      },
+      "errors":[
+        {"shape":"DBParameterGroupNotFoundFault"},
+        {"shape":"DBParameterGroupQuotaExceededFault"},
+        {"shape":"DBParameterGroupAlreadyExistsFault"}
+      ]
+    },
     "CopyDBClusterSnapshot":{
       "name":"CopyDBClusterSnapshot",
       "http":{
@@ -930,7 +947,8 @@
       },
       "errors":[
         {"shape":"DBClusterNotFoundFault"},
-        {"shape":"InvalidDBClusterStateFault"}
+        {"shape":"InvalidDBClusterStateFault"},
+        {"shape":"InvalidDBInstanceStateFault"}
       ]
     },
     "ListTagsForResource":{
@@ -1594,6 +1612,26 @@
         "CharacterSetDescription":{"shape":"String"}
       }
     },
+    "CopyDBClusterParameterGroupMessage":{
+      "type":"structure",
+      "required":[
+        "SourceDBClusterParameterGroupIdentifier",
+        "TargetDBClusterParameterGroupIdentifier",
+        "TargetDBClusterParameterGroupDescription"
+      ],
+      "members":{
+        "SourceDBClusterParameterGroupIdentifier":{"shape":"String"},
+        "TargetDBClusterParameterGroupIdentifier":{"shape":"String"},
+        "TargetDBClusterParameterGroupDescription":{"shape":"String"},
+        "Tags":{"shape":"TagList"}
+      }
+    },
+    "CopyDBClusterParameterGroupResult":{
+      "type":"structure",
+      "members":{
+        "DBClusterParameterGroup":{"shape":"DBClusterParameterGroup"}
+      }
+    },
     "CopyDBClusterSnapshotMessage":{
       "type":"structure",
       "required":[
@@ -1676,9 +1714,7 @@
       "type":"structure",
       "required":[
         "DBClusterIdentifier",
-        "Engine",
-        "MasterUsername",
-        "MasterUserPassword"
+        "Engine"
       ],
       "members":{
         "AvailabilityZones":{"shape":"AvailabilityZones"},
@@ -3302,7 +3338,8 @@
     "FailoverDBClusterMessage":{
       "type":"structure",
       "members":{
-        "DBClusterIdentifier":{"shape":"String"}
+        "DBClusterIdentifier":{"shape":"String"},
+        "TargetDBInstanceIdentifier":{"shape":"String"}
       }
     },
     "FailoverDBClusterResult":{

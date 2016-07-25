@@ -29,6 +29,9 @@ KUBE_OUTPUT_BINPATH="${KUBE_OUTPUT}/bin"
 # the connections to localhost in scripts will time out
 export no_proxy=127.0.0.1,localhost
 
+# This is a symlink to binaries for "this platform", e.g. build tools.
+THIS_PLATFORM_BIN="${KUBE_ROOT}/_output/bin"
+
 source "${KUBE_ROOT}/hack/lib/util.sh"
 source "${KUBE_ROOT}/cluster/lib/util.sh"
 source "${KUBE_ROOT}/cluster/lib/logging.sh"
@@ -38,8 +41,6 @@ kube::log::install_errexit
 source "${KUBE_ROOT}/hack/lib/version.sh"
 source "${KUBE_ROOT}/hack/lib/golang.sh"
 source "${KUBE_ROOT}/hack/lib/etcd.sh"
-
-KUBE_GIT_UPSTREAM="${KUBE_GIT_UPSTREAM:-upstream}"
 
 KUBE_OUTPUT_HOSTBIN="${KUBE_OUTPUT_BINPATH}/$(kube::util::host_platform)"
 

@@ -21,7 +21,6 @@ import (
 	"testing"
 
 	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm"
 	schedulerapi "k8s.io/kubernetes/plugin/pkg/scheduler/api"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
@@ -93,7 +92,7 @@ func TestNodeAffinityPriority(t *testing.T) {
 
 	tests := []struct {
 		pod          *api.Pod
-		nodes        []api.Node
+		nodes        []*api.Node
 		expectedList schedulerapi.HostPriorityList
 		test         string
 	}{
@@ -103,7 +102,7 @@ func TestNodeAffinityPriority(t *testing.T) {
 					Annotations: map[string]string{},
 				},
 			},
-			nodes: []api.Node{
+			nodes: []*api.Node{
 				{ObjectMeta: api.ObjectMeta{Name: "machine1", Labels: label1}},
 				{ObjectMeta: api.ObjectMeta{Name: "machine2", Labels: label2}},
 				{ObjectMeta: api.ObjectMeta{Name: "machine3", Labels: label3}},
@@ -117,7 +116,7 @@ func TestNodeAffinityPriority(t *testing.T) {
 					Annotations: affinity1,
 				},
 			},
-			nodes: []api.Node{
+			nodes: []*api.Node{
 				{ObjectMeta: api.ObjectMeta{Name: "machine1", Labels: label4}},
 				{ObjectMeta: api.ObjectMeta{Name: "machine2", Labels: label2}},
 				{ObjectMeta: api.ObjectMeta{Name: "machine3", Labels: label3}},
@@ -131,7 +130,7 @@ func TestNodeAffinityPriority(t *testing.T) {
 					Annotations: affinity1,
 				},
 			},
-			nodes: []api.Node{
+			nodes: []*api.Node{
 				{ObjectMeta: api.ObjectMeta{Name: "machine1", Labels: label1}},
 				{ObjectMeta: api.ObjectMeta{Name: "machine2", Labels: label2}},
 				{ObjectMeta: api.ObjectMeta{Name: "machine3", Labels: label3}},
@@ -145,7 +144,7 @@ func TestNodeAffinityPriority(t *testing.T) {
 					Annotations: affinity2,
 				},
 			},
-			nodes: []api.Node{
+			nodes: []*api.Node{
 				{ObjectMeta: api.ObjectMeta{Name: "machine1", Labels: label1}},
 				{ObjectMeta: api.ObjectMeta{Name: "machine5", Labels: label5}},
 				{ObjectMeta: api.ObjectMeta{Name: "machine2", Labels: label2}},
@@ -156,8 +155,7 @@ func TestNodeAffinityPriority(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		nodeAffinity := NodeAffinity{nodeLister: algorithm.FakeNodeLister(api.NodeList{Items: test.nodes})}
-		list, err := nodeAffinity.CalculateNodeAffinityPriority(test.pod, schedulercache.CreateNodeNameToInfoMap(nil), algorithm.FakeNodeLister(api.NodeList{Items: test.nodes}))
+		list, err := CalculateNodeAffinityPriority(test.pod, schedulercache.CreateNodeNameToInfoMap(nil), test.nodes)
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}

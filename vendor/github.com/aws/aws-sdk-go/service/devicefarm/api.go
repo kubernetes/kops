@@ -106,6 +106,54 @@ func (c *DeviceFarm) CreateProject(input *CreateProjectInput) (*CreateProjectOut
 	return out, err
 }
 
+const opCreateRemoteAccessSession = "CreateRemoteAccessSession"
+
+// CreateRemoteAccessSessionRequest generates a "aws/request.Request" representing the
+// client's request for the CreateRemoteAccessSession operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the CreateRemoteAccessSession method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the CreateRemoteAccessSessionRequest method.
+//    req, resp := client.CreateRemoteAccessSessionRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+func (c *DeviceFarm) CreateRemoteAccessSessionRequest(input *CreateRemoteAccessSessionInput) (req *request.Request, output *CreateRemoteAccessSessionOutput) {
+	op := &request.Operation{
+		Name:       opCreateRemoteAccessSession,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateRemoteAccessSessionInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &CreateRemoteAccessSessionOutput{}
+	req.Data = output
+	return
+}
+
+// Specifies and starts a remote access session.
+func (c *DeviceFarm) CreateRemoteAccessSession(input *CreateRemoteAccessSessionInput) (*CreateRemoteAccessSessionOutput, error) {
+	req, out := c.CreateRemoteAccessSessionRequest(input)
+	err := req.Send()
+	return out, err
+}
+
 const opCreateUpload = "CreateUpload"
 
 // CreateUploadRequest generates a "aws/request.Request" representing the
@@ -249,6 +297,54 @@ func (c *DeviceFarm) DeleteProjectRequest(input *DeleteProjectInput) (req *reque
 // Note Deleting this resource does not stop an in-progress run.
 func (c *DeviceFarm) DeleteProject(input *DeleteProjectInput) (*DeleteProjectOutput, error) {
 	req, out := c.DeleteProjectRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opDeleteRemoteAccessSession = "DeleteRemoteAccessSession"
+
+// DeleteRemoteAccessSessionRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteRemoteAccessSession operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the DeleteRemoteAccessSession method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the DeleteRemoteAccessSessionRequest method.
+//    req, resp := client.DeleteRemoteAccessSessionRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+func (c *DeviceFarm) DeleteRemoteAccessSessionRequest(input *DeleteRemoteAccessSessionInput) (req *request.Request, output *DeleteRemoteAccessSessionOutput) {
+	op := &request.Operation{
+		Name:       opDeleteRemoteAccessSession,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteRemoteAccessSessionInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &DeleteRemoteAccessSessionOutput{}
+	req.Data = output
+	return
+}
+
+// Deletes a completed remote access session and its results.
+func (c *DeviceFarm) DeleteRemoteAccessSession(input *DeleteRemoteAccessSessionInput) (*DeleteRemoteAccessSessionOutput, error) {
+	req, out := c.DeleteRemoteAccessSessionRequest(input)
 	err := req.Send()
 	return out, err
 }
@@ -724,6 +820,54 @@ func (c *DeviceFarm) GetProject(input *GetProjectInput) (*GetProjectOutput, erro
 	return out, err
 }
 
+const opGetRemoteAccessSession = "GetRemoteAccessSession"
+
+// GetRemoteAccessSessionRequest generates a "aws/request.Request" representing the
+// client's request for the GetRemoteAccessSession operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the GetRemoteAccessSession method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the GetRemoteAccessSessionRequest method.
+//    req, resp := client.GetRemoteAccessSessionRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+func (c *DeviceFarm) GetRemoteAccessSessionRequest(input *GetRemoteAccessSessionInput) (req *request.Request, output *GetRemoteAccessSessionOutput) {
+	op := &request.Operation{
+		Name:       opGetRemoteAccessSession,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetRemoteAccessSessionInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &GetRemoteAccessSessionOutput{}
+	req.Data = output
+	return
+}
+
+// Returns a link to a currently running remote access session.
+func (c *DeviceFarm) GetRemoteAccessSession(input *GetRemoteAccessSessionInput) (*GetRemoteAccessSessionOutput, error) {
+	req, out := c.GetRemoteAccessSessionRequest(input)
+	err := req.Send()
+	return out, err
+}
+
 const opGetRun = "GetRun"
 
 // GetRunRequest generates a "aws/request.Request" representing the
@@ -912,6 +1056,56 @@ func (c *DeviceFarm) GetUploadRequest(input *GetUploadInput) (req *request.Reque
 // Gets information about an upload.
 func (c *DeviceFarm) GetUpload(input *GetUploadInput) (*GetUploadOutput, error) {
 	req, out := c.GetUploadRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opInstallToRemoteAccessSession = "InstallToRemoteAccessSession"
+
+// InstallToRemoteAccessSessionRequest generates a "aws/request.Request" representing the
+// client's request for the InstallToRemoteAccessSession operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the InstallToRemoteAccessSession method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the InstallToRemoteAccessSessionRequest method.
+//    req, resp := client.InstallToRemoteAccessSessionRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+func (c *DeviceFarm) InstallToRemoteAccessSessionRequest(input *InstallToRemoteAccessSessionInput) (req *request.Request, output *InstallToRemoteAccessSessionOutput) {
+	op := &request.Operation{
+		Name:       opInstallToRemoteAccessSession,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &InstallToRemoteAccessSessionInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &InstallToRemoteAccessSessionOutput{}
+	req.Data = output
+	return
+}
+
+// Installs an application to the device in a remote access session. For Android
+// applications, the file must be in .apk format. For iOS applications, the
+// file must be in .ipa format.
+func (c *DeviceFarm) InstallToRemoteAccessSession(input *InstallToRemoteAccessSessionInput) (*InstallToRemoteAccessSessionOutput, error) {
+	req, out := c.InstallToRemoteAccessSessionRequest(input)
 	err := req.Send()
 	return out, err
 }
@@ -1477,6 +1671,54 @@ func (c *DeviceFarm) ListProjectsPages(input *ListProjectsInput, fn func(p *List
 	return page.EachPage(func(p interface{}, lastPage bool) bool {
 		return fn(p.(*ListProjectsOutput), lastPage)
 	})
+}
+
+const opListRemoteAccessSessions = "ListRemoteAccessSessions"
+
+// ListRemoteAccessSessionsRequest generates a "aws/request.Request" representing the
+// client's request for the ListRemoteAccessSessions operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the ListRemoteAccessSessions method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the ListRemoteAccessSessionsRequest method.
+//    req, resp := client.ListRemoteAccessSessionsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+func (c *DeviceFarm) ListRemoteAccessSessionsRequest(input *ListRemoteAccessSessionsInput) (req *request.Request, output *ListRemoteAccessSessionsOutput) {
+	op := &request.Operation{
+		Name:       opListRemoteAccessSessions,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ListRemoteAccessSessionsInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &ListRemoteAccessSessionsOutput{}
+	req.Data = output
+	return
+}
+
+// Returns a list of all currently running remote access sessions.
+func (c *DeviceFarm) ListRemoteAccessSessions(input *ListRemoteAccessSessionsInput) (*ListRemoteAccessSessionsOutput, error) {
+	req, out := c.ListRemoteAccessSessionsRequest(input)
+	err := req.Send()
+	return out, err
 }
 
 const opListRuns = "ListRuns"
@@ -2106,6 +2348,54 @@ func (c *DeviceFarm) ScheduleRun(input *ScheduleRunInput) (*ScheduleRunOutput, e
 	return out, err
 }
 
+const opStopRemoteAccessSession = "StopRemoteAccessSession"
+
+// StopRemoteAccessSessionRequest generates a "aws/request.Request" representing the
+// client's request for the StopRemoteAccessSession operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the StopRemoteAccessSession method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the StopRemoteAccessSessionRequest method.
+//    req, resp := client.StopRemoteAccessSessionRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+func (c *DeviceFarm) StopRemoteAccessSessionRequest(input *StopRemoteAccessSessionInput) (req *request.Request, output *StopRemoteAccessSessionOutput) {
+	op := &request.Operation{
+		Name:       opStopRemoteAccessSession,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &StopRemoteAccessSessionInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &StopRemoteAccessSessionOutput{}
+	req.Data = output
+	return
+}
+
+// Ends a specified remote access session.
+func (c *DeviceFarm) StopRemoteAccessSession(input *StopRemoteAccessSessionInput) (*StopRemoteAccessSessionOutput, error) {
+	req, out := c.StopRemoteAccessSessionRequest(input)
+	err := req.Send()
+	return out, err
+}
+
 const opStopRun = "StopRun"
 
 // StopRunRequest generates a "aws/request.Request" representing the
@@ -2541,6 +2831,95 @@ func (s CreateProjectOutput) GoString() string {
 	return s.String()
 }
 
+// Creates the configuration settings for a remote access session, including
+// the device model and type.
+type CreateRemoteAccessSessionConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// Returns the billing method for purposes of configuring a remote access session.
+	BillingMethod *string `locationName:"billingMethod" type:"string" enum:"BillingMethod"`
+}
+
+// String returns the string representation
+func (s CreateRemoteAccessSessionConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateRemoteAccessSessionConfiguration) GoString() string {
+	return s.String()
+}
+
+// Creates and submits a request to start a remote access session.
+type CreateRemoteAccessSessionInput struct {
+	_ struct{} `type:"structure"`
+
+	// The configuration information for the remote access session request.
+	Configuration *CreateRemoteAccessSessionConfiguration `locationName:"configuration" type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the device for which you want to create
+	// a remote access session.
+	DeviceArn *string `locationName:"deviceArn" min:"32" type:"string" required:"true"`
+
+	// The name of the remote access session that you wish to create.
+	Name *string `locationName:"name" type:"string"`
+
+	// The Amazon Resource Name (ARN) of the project for which you want to create
+	// a remote access session.
+	ProjectArn *string `locationName:"projectArn" min:"32" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s CreateRemoteAccessSessionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateRemoteAccessSessionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateRemoteAccessSessionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateRemoteAccessSessionInput"}
+	if s.DeviceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("DeviceArn"))
+	}
+	if s.DeviceArn != nil && len(*s.DeviceArn) < 32 {
+		invalidParams.Add(request.NewErrParamMinLen("DeviceArn", 32))
+	}
+	if s.ProjectArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ProjectArn"))
+	}
+	if s.ProjectArn != nil && len(*s.ProjectArn) < 32 {
+		invalidParams.Add(request.NewErrParamMinLen("ProjectArn", 32))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// Represents the server response from a request to create a remote access session.
+type CreateRemoteAccessSessionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A container that describes the remote access session when the request to
+	// create a remote access session is sent.
+	RemoteAccessSession *RemoteAccessSession `locationName:"remoteAccessSession" type:"structure"`
+}
+
+// String returns the string representation
+func (s CreateRemoteAccessSessionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateRemoteAccessSessionOutput) GoString() string {
+	return s.String()
+}
+
 // Represents a request to the create upload operation.
 type CreateUploadInput struct {
 	_ struct{} `type:"structure"`
@@ -2548,7 +2927,7 @@ type CreateUploadInput struct {
 	// The upload's content type (for example, "application/octet-stream").
 	ContentType *string `locationName:"contentType" type:"string"`
 
-	// The upload's file name.
+	// The upload's file name. The name should not contain the '/' character.
 	Name *string `locationName:"name" type:"string" required:"true"`
 
 	// The ARN of the project for the upload.
@@ -2746,6 +3125,57 @@ func (s DeleteProjectOutput) GoString() string {
 	return s.String()
 }
 
+// Represents the request to delete the specified remote access session.
+type DeleteRemoteAccessSessionInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the sesssion for which you want to delete
+	// remote access.
+	Arn *string `locationName:"arn" min:"32" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteRemoteAccessSessionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteRemoteAccessSessionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteRemoteAccessSessionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteRemoteAccessSessionInput"}
+	if s.Arn == nil {
+		invalidParams.Add(request.NewErrParamRequired("Arn"))
+	}
+	if s.Arn != nil && len(*s.Arn) < 32 {
+		invalidParams.Add(request.NewErrParamMinLen("Arn", 32))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// The response from the server when a request is made to delete the remote
+// access session.
+type DeleteRemoteAccessSessionOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteRemoteAccessSessionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteRemoteAccessSessionOutput) GoString() string {
+	return s.String()
+}
+
 // Represents a request to the delete run operation.
 type DeleteRunInput struct {
 	_ struct{} `type:"structure"`
@@ -2858,6 +3288,13 @@ type Device struct {
 	// Information about the device's CPU.
 	Cpu *CPU `locationName:"cpu" type:"structure"`
 
+	// The name of the fleet to which this device belongs.
+	FleetName *string `locationName:"fleetName" type:"string"`
+
+	// The type of fleet to which this device belongs. Possible values for fleet
+	// type are PRIVATE and PUBLIC.
+	FleetType *string `locationName:"fleetType" type:"string"`
+
 	// The device's form factor.
 	//
 	// Allowed values include:
@@ -2899,6 +3336,9 @@ type Device struct {
 
 	// The device's radio.
 	Radio *string `locationName:"radio" type:"string"`
+
+	// Specifies whether remote access has been enabled for the specified device.
+	RemoteAccessEnabled *bool `locationName:"remoteAccessEnabled" type:"boolean"`
 
 	// Represents the screen resolution of a device in height and width, expressed
 	// in pixels.
@@ -3399,6 +3839,61 @@ func (s GetProjectOutput) GoString() string {
 	return s.String()
 }
 
+// Represents the request to get information about the specified remote access
+// session.
+type GetRemoteAccessSessionInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the remote access session about which you
+	// want to get session information.
+	Arn *string `locationName:"arn" min:"32" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s GetRemoteAccessSessionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetRemoteAccessSessionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetRemoteAccessSessionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetRemoteAccessSessionInput"}
+	if s.Arn == nil {
+		invalidParams.Add(request.NewErrParamRequired("Arn"))
+	}
+	if s.Arn != nil && len(*s.Arn) < 32 {
+		invalidParams.Add(request.NewErrParamMinLen("Arn", 32))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// Represents the response from the server that lists detailed information about
+// the remote access session.
+type GetRemoteAccessSessionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A container that lists detailed information about the remote access session.
+	RemoteAccessSession *RemoteAccessSession `locationName:"remoteAccessSession" type:"structure"`
+}
+
+// String returns the string representation
+func (s GetRemoteAccessSessionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetRemoteAccessSessionOutput) GoString() string {
+	return s.String()
+}
+
 // Represents a request to the get run operation.
 type GetRunInput struct {
 	_ struct{} `type:"structure"`
@@ -3635,6 +4130,71 @@ func (s IncompatibilityMessage) String() string {
 
 // GoString returns the string representation
 func (s IncompatibilityMessage) GoString() string {
+	return s.String()
+}
+
+// Represents the request to install an Android application (in .apk format)
+// or an iOS application (in .ipa format) as part of a remote access session.
+type InstallToRemoteAccessSessionInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the app about which you are requesting
+	// information.
+	AppArn *string `locationName:"appArn" min:"32" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the remote access session about which you
+	// are requesting information.
+	RemoteAccessSessionArn *string `locationName:"remoteAccessSessionArn" min:"32" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s InstallToRemoteAccessSessionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s InstallToRemoteAccessSessionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *InstallToRemoteAccessSessionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "InstallToRemoteAccessSessionInput"}
+	if s.AppArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppArn"))
+	}
+	if s.AppArn != nil && len(*s.AppArn) < 32 {
+		invalidParams.Add(request.NewErrParamMinLen("AppArn", 32))
+	}
+	if s.RemoteAccessSessionArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("RemoteAccessSessionArn"))
+	}
+	if s.RemoteAccessSessionArn != nil && len(*s.RemoteAccessSessionArn) < 32 {
+		invalidParams.Add(request.NewErrParamMinLen("RemoteAccessSessionArn", 32))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// Represents the response from the server after AWS Device Farm makes a request
+// to install to a remote access session.
+type InstallToRemoteAccessSessionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// An app or a set of one or more tests to upload or that have been uploaded.
+	AppUpload *Upload `locationName:"appUpload" type:"structure"`
+}
+
+// String returns the string representation
+func (s InstallToRemoteAccessSessionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s InstallToRemoteAccessSessionOutput) GoString() string {
 	return s.String()
 }
 
@@ -4196,6 +4756,72 @@ func (s ListProjectsOutput) String() string {
 
 // GoString returns the string representation
 func (s ListProjectsOutput) GoString() string {
+	return s.String()
+}
+
+// Represents the request to return information about the remote access session.
+type ListRemoteAccessSessionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the remote access session about which you
+	// are requesting information.
+	Arn *string `locationName:"arn" min:"32" type:"string" required:"true"`
+
+	// An identifier that was returned from the previous call to this operation,
+	// which can be used to return the next set of items in the list.
+	NextToken *string `locationName:"nextToken" min:"4" type:"string"`
+}
+
+// String returns the string representation
+func (s ListRemoteAccessSessionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ListRemoteAccessSessionsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListRemoteAccessSessionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListRemoteAccessSessionsInput"}
+	if s.Arn == nil {
+		invalidParams.Add(request.NewErrParamRequired("Arn"))
+	}
+	if s.Arn != nil && len(*s.Arn) < 32 {
+		invalidParams.Add(request.NewErrParamMinLen("Arn", 32))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 4 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 4))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// Represents the response from the server after AWS Device Farm makes a request
+// to return information about the remote access session.
+type ListRemoteAccessSessionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// An identifier that was returned from the previous call to this operation,
+	// which can be used to return the next set of items in the list.
+	NextToken *string `locationName:"nextToken" min:"4" type:"string"`
+
+	// A container representing the metadata from the service about each remote
+	// access session you are requesting.
+	RemoteAccessSessions []*RemoteAccessSession `locationName:"remoteAccessSessions" type:"list"`
+}
+
+// String returns the string representation
+func (s ListRemoteAccessSessionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ListRemoteAccessSessionsOutput) GoString() string {
 	return s.String()
 }
 
@@ -4943,6 +5569,92 @@ func (s RecurringCharge) GoString() string {
 	return s.String()
 }
 
+// Represents information about the remote access session.
+type RemoteAccessSession struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the remote access session.
+	Arn *string `locationName:"arn" min:"32" type:"string"`
+
+	// The billing method of the remote access session. Possible values include
+	// METERED or UNMETERED. For more information about metered devices, see AWS
+	// Device Farm terminology (http://docs.aws.amazon.com/devicefarm/latest/developerguide/welcome.html#welcome-terminology)."
+	BillingMethod *string `locationName:"billingMethod" type:"string" enum:"BillingMethod"`
+
+	// The date and time the remote access session was created.
+	Created *time.Time `locationName:"created" type:"timestamp" timestampFormat:"unix"`
+
+	// Represents a device type that an app is tested against.
+	Device *Device `locationName:"device" type:"structure"`
+
+	// Represents the total (metered or unmetered) minutes used by the resource
+	// to run tests. Contains the sum of minutes consumed by all children.
+	DeviceMinutes *DeviceMinutes `locationName:"deviceMinutes" type:"structure"`
+
+	// The endpoint for the remote access sesssion.
+	Endpoint *string `locationName:"endpoint" type:"string"`
+
+	// A message about the remote access session.
+	Message *string `locationName:"message" type:"string"`
+
+	// The name of the remote access session.
+	Name *string `locationName:"name" type:"string"`
+
+	// The result of the remote access session. Can be any of the following:
+	//
+	//  PENDING: A pending condition.
+	//
+	// PASSED: A passing condition.
+	//
+	// WARNED: A warning condition.
+	//
+	// FAILED: A failed condition.
+	//
+	// SKIPPED: A skipped condition.
+	//
+	// ERRORED: An error condition.
+	//
+	// STOPPED: A stopped condition.
+	Result *string `locationName:"result" type:"string" enum:"ExecutionResult"`
+
+	// The date and time the remote access session was started.
+	Started *time.Time `locationName:"started" type:"timestamp" timestampFormat:"unix"`
+
+	// The status of the remote access session. Can be any of the following:
+	//
+	//  PENDING: A pending status.
+	//
+	// PENDING_CONCURRENCY: A pending concurrency status.
+	//
+	// PENDING_DEVICE: A pending device status.
+	//
+	// PROCESSING: A processing status.
+	//
+	// SCHEDULING: A scheduling status.
+	//
+	// PREPARING: A preparing status.
+	//
+	// RUNNING: A running status.
+	//
+	// COMPLETED: A completed status.
+	//
+	// STOPPING: A stopping status.
+	Status *string `locationName:"status" type:"string" enum:"ExecutionStatus"`
+
+	// The date and time the remote access session was stopped.
+	Stopped *time.Time `locationName:"stopped" type:"timestamp" timestampFormat:"unix"`
+}
+
+// String returns the string representation
+func (s RemoteAccessSession) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s RemoteAccessSession) GoString() string {
+	return s.String()
+}
+
 // A request representing an offering renewal.
 type RenewOfferingInput struct {
 	_ struct{} `type:"structure"`
@@ -5485,6 +6197,60 @@ func (s *ScheduleRunTest) Validate() error {
 	return nil
 }
 
+// Represents the request to stop the remote access session.
+type StopRemoteAccessSessionInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the remote access session you wish to stop.
+	Arn *string `locationName:"arn" min:"32" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s StopRemoteAccessSessionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s StopRemoteAccessSessionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *StopRemoteAccessSessionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "StopRemoteAccessSessionInput"}
+	if s.Arn == nil {
+		invalidParams.Add(request.NewErrParamRequired("Arn"))
+	}
+	if s.Arn != nil && len(*s.Arn) < 32 {
+		invalidParams.Add(request.NewErrParamMinLen("Arn", 32))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// Represents the response from the server that describes the remote access
+// session when AWS Device Farm stops the session.
+type StopRemoteAccessSessionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A container representing the metadata from the service about the remote access
+	// session you are stopping.
+	RemoteAccessSession *RemoteAccessSession `locationName:"remoteAccessSession" type:"structure"`
+}
+
+// String returns the string representation
+func (s StopRemoteAccessSessionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s StopRemoteAccessSessionOutput) GoString() string {
+	return s.String()
+}
+
 // Represents the request to stop a specific run.
 type StopRunInput struct {
 	_ struct{} `type:"structure"`
@@ -6018,6 +6784,8 @@ const (
 	// @enum ArtifactType
 	ArtifactTypeMessageLog = "MESSAGE_LOG"
 	// @enum ArtifactType
+	ArtifactTypeVideoLog = "VIDEO_LOG"
+	// @enum ArtifactType
 	ArtifactTypeResultLog = "RESULT_LOG"
 	// @enum ArtifactType
 	ArtifactTypeServiceLog = "SERVICE_LOG"
@@ -6080,6 +6848,8 @@ const (
 	DeviceAttributeFormFactor = "FORM_FACTOR"
 	// @enum DeviceAttribute
 	DeviceAttributeManufacturer = "MANUFACTURER"
+	// @enum DeviceAttribute
+	DeviceAttributeRemoteAccessEnabled = "REMOTE_ACCESS_ENABLED"
 )
 
 const (

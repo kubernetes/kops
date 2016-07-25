@@ -24,7 +24,7 @@ import (
 	"k8s.io/kubernetes/pkg/util/intstr"
 )
 
-// The comments for the structs and fields can be used from go-resful to
+// The comments for the structs and fields can be used from go-restful to
 // generate Swagger API documentation for its models. Please read this PR for more
 // information on the implementation: https://github.com/emicklei/go-restful/pull/215
 //
@@ -241,17 +241,17 @@ type VolumeSource struct {
 	NFS *NFSVolumeSource `json:"nfs,omitempty" protobuf:"bytes,7,opt,name=nfs"`
 	// ISCSI represents an ISCSI Disk resource that is attached to a
 	// kubelet's host machine and then exposed to the pod.
-	// More info: http://releases.k8s.io/HEAD/examples/iscsi/README.md
+	// More info: http://releases.k8s.io/HEAD/examples/volumes/iscsi/README.md
 	ISCSI *ISCSIVolumeSource `json:"iscsi,omitempty" protobuf:"bytes,8,opt,name=iscsi"`
 	// Glusterfs represents a Glusterfs mount on the host that shares a pod's lifetime.
-	// More info: http://releases.k8s.io/HEAD/examples/glusterfs/README.md
+	// More info: http://releases.k8s.io/HEAD/examples/volumes/glusterfs/README.md
 	Glusterfs *GlusterfsVolumeSource `json:"glusterfs,omitempty" protobuf:"bytes,9,opt,name=glusterfs"`
 	// PersistentVolumeClaimVolumeSource represents a reference to a
 	// PersistentVolumeClaim in the same namespace.
 	// More info: http://releases.k8s.io/HEAD/docs/user-guide/persistent-volumes.md#persistentvolumeclaims
 	PersistentVolumeClaim *PersistentVolumeClaimVolumeSource `json:"persistentVolumeClaim,omitempty" protobuf:"bytes,10,opt,name=persistentVolumeClaim"`
 	// RBD represents a Rados Block Device mount on the host that shares a pod's lifetime.
-	// More info: http://releases.k8s.io/HEAD/examples/rbd/README.md
+	// More info: http://releases.k8s.io/HEAD/examples/volumes/rbd/README.md
 	RBD *RBDVolumeSource `json:"rbd,omitempty" protobuf:"bytes,11,opt,name=rbd"`
 	// FlexVolume represents a generic volume resource that is
 	// provisioned/attached using a exec based plugin. This is an
@@ -311,13 +311,13 @@ type PersistentVolumeSource struct {
 	HostPath *HostPathVolumeSource `json:"hostPath,omitempty" protobuf:"bytes,3,opt,name=hostPath"`
 	// Glusterfs represents a Glusterfs volume that is attached to a host and
 	// exposed to the pod. Provisioned by an admin.
-	// More info: http://releases.k8s.io/HEAD/examples/glusterfs/README.md
+	// More info: http://releases.k8s.io/HEAD/examples/volumes/glusterfs/README.md
 	Glusterfs *GlusterfsVolumeSource `json:"glusterfs,omitempty" protobuf:"bytes,4,opt,name=glusterfs"`
 	// NFS represents an NFS mount on the host. Provisioned by an admin.
 	// More info: http://releases.k8s.io/HEAD/docs/user-guide/volumes.md#nfs
 	NFS *NFSVolumeSource `json:"nfs,omitempty" protobuf:"bytes,5,opt,name=nfs"`
 	// RBD represents a Rados Block Device mount on the host that shares a pod's lifetime.
-	// More info: http://releases.k8s.io/HEAD/examples/rbd/README.md
+	// More info: http://releases.k8s.io/HEAD/examples/volumes/rbd/README.md
 	RBD *RBDVolumeSource `json:"rbd,omitempty" protobuf:"bytes,6,opt,name=rbd"`
 	// ISCSI represents an ISCSI Disk resource that is attached to a
 	// kubelet's host machine and then exposed to the pod. Provisioned by an admin.
@@ -341,7 +341,8 @@ type PersistentVolumeSource struct {
 	VsphereVolume *VsphereVirtualDiskVolumeSource `json:"vsphereVolume,omitempty" protobuf:"bytes,14,opt,name=vsphereVolume"`
 }
 
-// +genclient=true,nonNamespaced=true
+// +genclient=true
+// +nonNamespaced=true
 
 // PersistentVolume (PV) is a storage resource provisioned by an administrator.
 // It is analogous to a node.
@@ -542,16 +543,16 @@ type EmptyDirVolumeSource struct {
 // Glusterfs volumes do not support ownership management or SELinux relabeling.
 type GlusterfsVolumeSource struct {
 	// EndpointsName is the endpoint name that details Glusterfs topology.
-	// More info: http://releases.k8s.io/HEAD/examples/glusterfs/README.md#create-a-pod
+	// More info: http://releases.k8s.io/HEAD/examples/volumes/glusterfs/README.md#create-a-pod
 	EndpointsName string `json:"endpoints" protobuf:"bytes,1,opt,name=endpoints"`
 
 	// Path is the Glusterfs volume path.
-	// More info: http://releases.k8s.io/HEAD/examples/glusterfs/README.md#create-a-pod
+	// More info: http://releases.k8s.io/HEAD/examples/volumes/glusterfs/README.md#create-a-pod
 	Path string `json:"path" protobuf:"bytes,2,opt,name=path"`
 
 	// ReadOnly here will force the Glusterfs volume to be mounted with read-only permissions.
 	// Defaults to false.
-	// More info: http://releases.k8s.io/HEAD/examples/glusterfs/README.md#create-a-pod
+	// More info: http://releases.k8s.io/HEAD/examples/volumes/glusterfs/README.md#create-a-pod
 	ReadOnly bool `json:"readOnly,omitempty" protobuf:"varint,3,opt,name=readOnly"`
 }
 
@@ -559,10 +560,10 @@ type GlusterfsVolumeSource struct {
 // RBD volumes support ownership management and SELinux relabeling.
 type RBDVolumeSource struct {
 	// A collection of Ceph monitors.
-	// More info: http://releases.k8s.io/HEAD/examples/rbd/README.md#how-to-use-it
+	// More info: http://releases.k8s.io/HEAD/examples/volumes/rbd/README.md#how-to-use-it
 	CephMonitors []string `json:"monitors" protobuf:"bytes,1,rep,name=monitors"`
 	// The rados image name.
-	// More info: http://releases.k8s.io/HEAD/examples/rbd/README.md#how-to-use-it
+	// More info: http://releases.k8s.io/HEAD/examples/volumes/rbd/README.md#how-to-use-it
 	RBDImage string `json:"image" protobuf:"bytes,2,opt,name=image"`
 	// Filesystem type of the volume that you want to mount.
 	// Tip: Ensure that the filesystem type is supported by the host operating system.
@@ -572,24 +573,24 @@ type RBDVolumeSource struct {
 	FSType string `json:"fsType,omitempty" protobuf:"bytes,3,opt,name=fsType"`
 	// The rados pool name.
 	// Default is rbd.
-	// More info: http://releases.k8s.io/HEAD/examples/rbd/README.md#how-to-use-it.
+	// More info: http://releases.k8s.io/HEAD/examples/volumes/rbd/README.md#how-to-use-it.
 	RBDPool string `json:"pool,omitempty" protobuf:"bytes,4,opt,name=pool"`
 	// The rados user name.
 	// Default is admin.
-	// More info: http://releases.k8s.io/HEAD/examples/rbd/README.md#how-to-use-it
+	// More info: http://releases.k8s.io/HEAD/examples/volumes/rbd/README.md#how-to-use-it
 	RadosUser string `json:"user,omitempty" protobuf:"bytes,5,opt,name=user"`
 	// Keyring is the path to key ring for RBDUser.
 	// Default is /etc/ceph/keyring.
-	// More info: http://releases.k8s.io/HEAD/examples/rbd/README.md#how-to-use-it
+	// More info: http://releases.k8s.io/HEAD/examples/volumes/rbd/README.md#how-to-use-it
 	Keyring string `json:"keyring,omitempty" protobuf:"bytes,6,opt,name=keyring"`
 	// SecretRef is name of the authentication secret for RBDUser. If provided
 	// overrides keyring.
 	// Default is nil.
-	// More info: http://releases.k8s.io/HEAD/examples/rbd/README.md#how-to-use-it
+	// More info: http://releases.k8s.io/HEAD/examples/volumes/rbd/README.md#how-to-use-it
 	SecretRef *LocalObjectReference `json:"secretRef,omitempty" protobuf:"bytes,7,opt,name=secretRef"`
 	// ReadOnly here will force the ReadOnly setting in VolumeMounts.
 	// Defaults to false.
-	// More info: http://releases.k8s.io/HEAD/examples/rbd/README.md#how-to-use-it
+	// More info: http://releases.k8s.io/HEAD/examples/volumes/rbd/README.md#how-to-use-it
 	ReadOnly bool `json:"readOnly,omitempty" protobuf:"varint,8,opt,name=readOnly"`
 }
 
@@ -616,22 +617,22 @@ type CinderVolumeSource struct {
 // Cephfs volumes do not support ownership management or SELinux relabeling.
 type CephFSVolumeSource struct {
 	// Required: Monitors is a collection of Ceph monitors
-	// More info: http://releases.k8s.io/HEAD/examples/cephfs/README.md#how-to-use-it
+	// More info: http://releases.k8s.io/HEAD/examples/volumes/cephfs/README.md#how-to-use-it
 	Monitors []string `json:"monitors" protobuf:"bytes,1,rep,name=monitors"`
 	// Optional: Used as the mounted root, rather than the full Ceph tree, default is /
 	Path string `json:"path,omitempty" protobuf:"bytes,2,opt,name=path"`
 	// Optional: User is the rados user name, default is admin
-	// More info: http://releases.k8s.io/HEAD/examples/cephfs/README.md#how-to-use-it
+	// More info: http://releases.k8s.io/HEAD/examples/volumes/cephfs/README.md#how-to-use-it
 	User string `json:"user,omitempty" protobuf:"bytes,3,opt,name=user"`
 	// Optional: SecretFile is the path to key ring for User, default is /etc/ceph/user.secret
-	// More info: http://releases.k8s.io/HEAD/examples/cephfs/README.md#how-to-use-it
+	// More info: http://releases.k8s.io/HEAD/examples/volumes/cephfs/README.md#how-to-use-it
 	SecretFile string `json:"secretFile,omitempty" protobuf:"bytes,4,opt,name=secretFile"`
 	// Optional: SecretRef is reference to the authentication secret for User, default is empty.
-	// More info: http://releases.k8s.io/HEAD/examples/cephfs/README.md#how-to-use-it
+	// More info: http://releases.k8s.io/HEAD/examples/volumes/cephfs/README.md#how-to-use-it
 	SecretRef *LocalObjectReference `json:"secretRef,omitempty" protobuf:"bytes,5,opt,name=secretRef"`
 	// Optional: Defaults to false (read/write). ReadOnly here will force
 	// the ReadOnly setting in VolumeMounts.
-	// More info: http://releases.k8s.io/HEAD/examples/cephfs/README.md#how-to-use-it
+	// More info: http://releases.k8s.io/HEAD/examples/volumes/cephfs/README.md#how-to-use-it
 	ReadOnly bool `json:"readOnly,omitempty" protobuf:"varint,6,opt,name=readOnly"`
 }
 
@@ -1718,6 +1719,7 @@ type PodSpec struct {
 	ServiceAccountName string `json:"serviceAccountName,omitempty" protobuf:"bytes,8,opt,name=serviceAccountName"`
 	// DeprecatedServiceAccount is a depreciated alias for ServiceAccountName.
 	// Deprecated: Use serviceAccountName instead.
+	// +k8s:conversion-gen=false
 	DeprecatedServiceAccount string `json:"serviceAccount,omitempty" protobuf:"bytes,9,opt,name=serviceAccount"`
 
 	// NodeName is a request to schedule this pod onto a specific node. If it is non-empty,
@@ -1727,12 +1729,15 @@ type PodSpec struct {
 	// Host networking requested for this pod. Use the host's network namespace.
 	// If this option is set, the ports that will be used must be specified.
 	// Default to false.
+	// +k8s:conversion-gen=false
 	HostNetwork bool `json:"hostNetwork,omitempty" protobuf:"varint,11,opt,name=hostNetwork"`
 	// Use the host's pid namespace.
 	// Optional: Default to false.
+	// +k8s:conversion-gen=false
 	HostPID bool `json:"hostPID,omitempty" protobuf:"varint,12,opt,name=hostPID"`
 	// Use the host's ipc namespace.
 	// Optional: Default to false.
+	// +k8s:conversion-gen=false
 	HostIPC bool `json:"hostIPC,omitempty" protobuf:"varint,13,opt,name=hostIPC"`
 	// SecurityContext holds pod-level security attributes and common container settings.
 	// Optional: Defaults to empty.  See type description for default values of each field.
@@ -2080,7 +2085,7 @@ type ServiceSpec struct {
 	// API for compatibility until at least 8/20/2016.  It will be removed from
 	// any new API revisions.  If both deprecatedPublicIPs *and* externalIPs are
 	// set, deprecatedPublicIPs is used.
-	// +genconversion=false
+	// +k8s:conversion-gen=false
 	DeprecatedPublicIPs []string `json:"deprecatedPublicIPs,omitempty" protobuf:"bytes,6,rep,name=deprecatedPublicIPs"`
 
 	// Supports "ClientIP" and "None". Used to maintain session affinity.
@@ -2403,6 +2408,34 @@ type AttachedVolume struct {
 	DevicePath string `json:"devicePath" protobuf:"bytes,2,rep,name=devicePath"`
 }
 
+// AvoidPods describes pods that should avoid this node. This is the value for a
+// Node annotation with key scheduler.alpha.kubernetes.io/preferAvoidPods and
+// will eventually become a field of NodeStatus.
+type AvoidPods struct {
+	// Bounded-sized list of signatures of pods that should avoid this node, sorted
+	// in timestamp order from oldest to newest. Size of the slice is unspecified.
+	PreferAvoidPods []PreferAvoidPodsEntry `json:"preferAvoidPods,omitempty" protobuf:"bytes,1,rep,name=preferAvoidPods"`
+}
+
+// Describes a class of pods that should avoid this node.
+type PreferAvoidPodsEntry struct {
+	// The class of pods.
+	PodSignature PodSignature `json:"podSignature" protobuf:"bytes,1,opt,name=podSignature"`
+	// Time at which this entry was added to the list.
+	EvictionTime unversioned.Time `json:"evictionTime,omitempty" protobuf:"bytes,2,opt,name=evictionTime"`
+	// (brief) reason why this entry was added to the list.
+	Reason string `json:"reason,omitempty" protobuf:"bytes,3,opt,name=reason"`
+	// Human readable message indicating why this entry was added to the list.
+	Message string `json:"message,omitempty" protobuf:"bytes,4,opt,name=message"`
+}
+
+// Describes the class of pods that should avoid this node.
+// Exactly one field should be set.
+type PodSignature struct {
+	// Reference to controller whose pods should avoid this node.
+	PodController *OwnerReference `json:"podController,omitempty" protobuf:"bytes,1,opt,name=podController"`
+}
+
 // Describe a container image
 type ContainerImage struct {
 	// Names by which this image is known.
@@ -2497,7 +2530,8 @@ const (
 // ResourceList is a set of (resource name, quantity) pairs.
 type ResourceList map[ResourceName]resource.Quantity
 
-// +genclient=true,nonNamespaced=true
+// +genclient=true
+// +nonNamespaced=true
 
 // Node is a worker node in Kubernetes, formerly known as minion.
 // Each node will have a unique identifier in the cache (i.e. in etcd).
@@ -2560,7 +2594,8 @@ const (
 	NamespaceTerminating NamespacePhase = "Terminating"
 )
 
-// +genclient=true,nonNamespaced=true
+// +genclient=true
+// +nonNamespaced=true
 
 // Namespace provides a scope for Names.
 // Use of multiple namespaces is optional.
@@ -3093,7 +3128,7 @@ type Secret struct {
 	// It is provided as a write-only convenience method.
 	// All keys and values are merged into the data field on write, overwriting any existing values.
 	// It is never output when reading from the API.
-	// +genconversion=false
+	// +k8s:conversion-gen=false
 	StringData map[string]string `json:"stringData,omitempty" protobuf:"bytes,4,rep,name=stringData"`
 
 	// Used to facilitate programmatic handling of secret data.
@@ -3215,7 +3250,8 @@ type ComponentCondition struct {
 	Error string `json:"error,omitempty" protobuf:"bytes,4,opt,name=error"`
 }
 
-// +genclient=true,nonNamespaced=true
+// +genclient=true
+// +nonNamespaced=true
 
 // ComponentStatus (and ComponentStatusList) holds the cluster validation info.
 type ComponentStatus struct {

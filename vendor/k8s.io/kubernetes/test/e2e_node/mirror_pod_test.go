@@ -17,6 +17,7 @@ limitations under the License.
 package e2e_node
 
 import (
+	goerrors "errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -34,7 +35,7 @@ import (
 )
 
 var _ = framework.KubeDescribe("MirrorPod", func() {
-	f := NewDefaultFramework("mirror-pod")
+	f := framework.NewDefaultFramework("mirror-pod")
 	Context("when create a mirror pod ", func() {
 		var staticPodName, mirrorPodName string
 		BeforeEach(func() {
@@ -160,7 +161,7 @@ func checkMirrorPodDisappear(cl *client.Client, name, namespace string) error {
 	if errors.IsNotFound(err) {
 		return nil
 	}
-	return err
+	return goerrors.New("pod not disappear")
 }
 
 func checkMirrorPodRunning(cl *client.Client, name, namespace string) error {

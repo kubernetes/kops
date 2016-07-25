@@ -36,6 +36,7 @@ import (
 	gcecloud "k8s.io/kubernetes/pkg/cloudprovider/providers/gce"
 	"k8s.io/kubernetes/pkg/util"
 	"k8s.io/kubernetes/pkg/util/runtime"
+	commontest "k8s.io/kubernetes/test/e2e/common"
 	"k8s.io/kubernetes/test/e2e/framework"
 )
 
@@ -125,7 +126,7 @@ var _ = ginkgo.SynchronizedBeforeSuite(func() []byte {
 	// test pods from running, and tests that ensure all pods are running and
 	// ready will fail).
 	podStartupTimeout := framework.TestContext.SystemPodsStartupTimeout
-	if err := framework.WaitForPodsRunningReady(c, api.NamespaceSystem, int32(framework.TestContext.MinStartupPods), podStartupTimeout, framework.ImagePullerLabels, true); err != nil {
+	if err := framework.WaitForPodsRunningReady(c, api.NamespaceSystem, int32(framework.TestContext.MinStartupPods), podStartupTimeout, framework.ImagePullerLabels); err != nil {
 		framework.DumpAllNamespaceInfo(c, api.NamespaceSystem)
 		framework.LogFailedContainers(c, api.NamespaceSystem)
 		framework.RunKubernetesServiceTestContainer(c, framework.TestContext.RepoRoot, api.NamespaceDefault)
@@ -145,6 +146,9 @@ var _ = ginkgo.SynchronizedBeforeSuite(func() []byte {
 		framework.Logf("Dumping network health container logs from all nodes")
 		framework.LogContainersInPodsWithLabels(c, api.NamespaceSystem, framework.ImagePullerLabels, "nethealth")
 	}
+
+	// Reference common test to make the import valid.
+	commontest.CurrentSuite = commontest.E2E
 
 	return nil
 

@@ -60,6 +60,15 @@ func (AttachedVolume) SwaggerDoc() map[string]string {
 	return map_AttachedVolume
 }
 
+var map_AvoidPods = map[string]string{
+	"":                "AvoidPods describes pods that should avoid this node. This is the value for a Node annotation with key scheduler.alpha.kubernetes.io/preferAvoidPods and will eventually become a field of NodeStatus.",
+	"preferAvoidPods": "Bounded-sized list of signatures of pods that should avoid this node, sorted in timestamp order from oldest to newest. Size of the slice is unspecified.",
+}
+
+func (AvoidPods) SwaggerDoc() map[string]string {
+	return map_AvoidPods
+}
+
 var map_AzureFileVolumeSource = map[string]string{
 	"":           "AzureFile represents an Azure File Service mount on the host and bind mount to the pod.",
 	"secretName": "the name of secret that contains Azure Storage Account Name and Key",
@@ -93,12 +102,12 @@ func (Capabilities) SwaggerDoc() map[string]string {
 
 var map_CephFSVolumeSource = map[string]string{
 	"":           "Represents a Ceph Filesystem mount that lasts the lifetime of a pod Cephfs volumes do not support ownership management or SELinux relabeling.",
-	"monitors":   "Required: Monitors is a collection of Ceph monitors More info: http://releases.k8s.io/HEAD/examples/cephfs/README.md#how-to-use-it",
+	"monitors":   "Required: Monitors is a collection of Ceph monitors More info: http://releases.k8s.io/HEAD/examples/volumes/cephfs/README.md#how-to-use-it",
 	"path":       "Optional: Used as the mounted root, rather than the full Ceph tree, default is /",
-	"user":       "Optional: User is the rados user name, default is admin More info: http://releases.k8s.io/HEAD/examples/cephfs/README.md#how-to-use-it",
-	"secretFile": "Optional: SecretFile is the path to key ring for User, default is /etc/ceph/user.secret More info: http://releases.k8s.io/HEAD/examples/cephfs/README.md#how-to-use-it",
-	"secretRef":  "Optional: SecretRef is reference to the authentication secret for User, default is empty. More info: http://releases.k8s.io/HEAD/examples/cephfs/README.md#how-to-use-it",
-	"readOnly":   "Optional: Defaults to false (read/write). ReadOnly here will force the ReadOnly setting in VolumeMounts. More info: http://releases.k8s.io/HEAD/examples/cephfs/README.md#how-to-use-it",
+	"user":       "Optional: User is the rados user name, default is admin More info: http://releases.k8s.io/HEAD/examples/volumes/cephfs/README.md#how-to-use-it",
+	"secretFile": "Optional: SecretFile is the path to key ring for User, default is /etc/ceph/user.secret More info: http://releases.k8s.io/HEAD/examples/volumes/cephfs/README.md#how-to-use-it",
+	"secretRef":  "Optional: SecretRef is reference to the authentication secret for User, default is empty. More info: http://releases.k8s.io/HEAD/examples/volumes/cephfs/README.md#how-to-use-it",
+	"readOnly":   "Optional: Defaults to false (read/write). ReadOnly here will force the ReadOnly setting in VolumeMounts. More info: http://releases.k8s.io/HEAD/examples/volumes/cephfs/README.md#how-to-use-it",
 }
 
 func (CephFSVolumeSource) SwaggerDoc() map[string]string {
@@ -536,9 +545,9 @@ func (GitRepoVolumeSource) SwaggerDoc() map[string]string {
 
 var map_GlusterfsVolumeSource = map[string]string{
 	"":          "Represents a Glusterfs mount that lasts the lifetime of a pod. Glusterfs volumes do not support ownership management or SELinux relabeling.",
-	"endpoints": "EndpointsName is the endpoint name that details Glusterfs topology. More info: http://releases.k8s.io/HEAD/examples/glusterfs/README.md#create-a-pod",
-	"path":      "Path is the Glusterfs volume path. More info: http://releases.k8s.io/HEAD/examples/glusterfs/README.md#create-a-pod",
-	"readOnly":  "ReadOnly here will force the Glusterfs volume to be mounted with read-only permissions. Defaults to false. More info: http://releases.k8s.io/HEAD/examples/glusterfs/README.md#create-a-pod",
+	"endpoints": "EndpointsName is the endpoint name that details Glusterfs topology. More info: http://releases.k8s.io/HEAD/examples/volumes/glusterfs/README.md#create-a-pod",
+	"path":      "Path is the Glusterfs volume path. More info: http://releases.k8s.io/HEAD/examples/volumes/glusterfs/README.md#create-a-pod",
+	"readOnly":  "ReadOnly here will force the Glusterfs volume to be mounted with read-only permissions. Defaults to false. More info: http://releases.k8s.io/HEAD/examples/volumes/glusterfs/README.md#create-a-pod",
 }
 
 func (GlusterfsVolumeSource) SwaggerDoc() map[string]string {
@@ -1056,9 +1065,9 @@ var map_PersistentVolumeSource = map[string]string{
 	"gcePersistentDisk":    "GCEPersistentDisk represents a GCE Disk resource that is attached to a kubelet's host machine and then exposed to the pod. Provisioned by an admin. More info: http://releases.k8s.io/HEAD/docs/user-guide/volumes.md#gcepersistentdisk",
 	"awsElasticBlockStore": "AWSElasticBlockStore represents an AWS Disk resource that is attached to a kubelet's host machine and then exposed to the pod. More info: http://releases.k8s.io/HEAD/docs/user-guide/volumes.md#awselasticblockstore",
 	"hostPath":             "HostPath represents a directory on the host. Provisioned by a developer or tester. This is useful for single-node development and testing only! On-host storage is not supported in any way and WILL NOT WORK in a multi-node cluster. More info: http://releases.k8s.io/HEAD/docs/user-guide/volumes.md#hostpath",
-	"glusterfs":            "Glusterfs represents a Glusterfs volume that is attached to a host and exposed to the pod. Provisioned by an admin. More info: http://releases.k8s.io/HEAD/examples/glusterfs/README.md",
+	"glusterfs":            "Glusterfs represents a Glusterfs volume that is attached to a host and exposed to the pod. Provisioned by an admin. More info: http://releases.k8s.io/HEAD/examples/volumes/glusterfs/README.md",
 	"nfs":                  "NFS represents an NFS mount on the host. Provisioned by an admin. More info: http://releases.k8s.io/HEAD/docs/user-guide/volumes.md#nfs",
-	"rbd":                  "RBD represents a Rados Block Device mount on the host that shares a pod's lifetime. More info: http://releases.k8s.io/HEAD/examples/rbd/README.md",
+	"rbd":                  "RBD represents a Rados Block Device mount on the host that shares a pod's lifetime. More info: http://releases.k8s.io/HEAD/examples/volumes/rbd/README.md",
 	"iscsi":                "ISCSI represents an ISCSI Disk resource that is attached to a kubelet's host machine and then exposed to the pod. Provisioned by an admin.",
 	"cinder":               "Cinder represents a cinder volume attached and mounted on kubelets host machine More info: http://releases.k8s.io/HEAD/examples/mysql-cinder-pd/README.md",
 	"cephfs":               "CephFS represents a Ceph FS mount on the host that shares a pod's lifetime",
@@ -1227,6 +1236,15 @@ func (PodSecurityContext) SwaggerDoc() map[string]string {
 	return map_PodSecurityContext
 }
 
+var map_PodSignature = map[string]string{
+	"":              "Describes the class of pods that should avoid this node. Exactly one field should be set.",
+	"podController": "Reference to controller whose pods should avoid this node.",
+}
+
+func (PodSignature) SwaggerDoc() map[string]string {
+	return map_PodSignature
+}
+
 var map_PodSpec = map[string]string{
 	"":                              "PodSpec is a description of a pod.",
 	"volumes":                       "List of volumes that can be mounted by containers belonging to the pod. More info: http://releases.k8s.io/HEAD/docs/user-guide/volumes.md",
@@ -1317,6 +1335,18 @@ func (Preconditions) SwaggerDoc() map[string]string {
 	return map_Preconditions
 }
 
+var map_PreferAvoidPodsEntry = map[string]string{
+	"":             "Describes a class of pods that should avoid this node.",
+	"podSignature": "The class of pods.",
+	"evictionTime": "Time at which this entry was added to the list.",
+	"reason":       "(brief) reason why this entry was added to the list.",
+	"message":      "Human readable message indicating why this entry was added to the list.",
+}
+
+func (PreferAvoidPodsEntry) SwaggerDoc() map[string]string {
+	return map_PreferAvoidPodsEntry
+}
+
 var map_PreferredSchedulingTerm = map[string]string{
 	"":           "An empty preferred scheduling term matches all objects with implicit weight 0 (i.e. it's a no-op). A null preferred scheduling term matches no objects (i.e. is also a no-op).",
 	"weight":     "Weight associated with matching the corresponding nodeSelectorTerm, in the range 1-100.",
@@ -1342,14 +1372,14 @@ func (Probe) SwaggerDoc() map[string]string {
 
 var map_RBDVolumeSource = map[string]string{
 	"":          "Represents a Rados Block Device mount that lasts the lifetime of a pod. RBD volumes support ownership management and SELinux relabeling.",
-	"monitors":  "A collection of Ceph monitors. More info: http://releases.k8s.io/HEAD/examples/rbd/README.md#how-to-use-it",
-	"image":     "The rados image name. More info: http://releases.k8s.io/HEAD/examples/rbd/README.md#how-to-use-it",
+	"monitors":  "A collection of Ceph monitors. More info: http://releases.k8s.io/HEAD/examples/volumes/rbd/README.md#how-to-use-it",
+	"image":     "The rados image name. More info: http://releases.k8s.io/HEAD/examples/volumes/rbd/README.md#how-to-use-it",
 	"fsType":    "Filesystem type of the volume that you want to mount. Tip: Ensure that the filesystem type is supported by the host operating system. Examples: \"ext4\", \"xfs\", \"ntfs\". Implicitly inferred to be \"ext4\" if unspecified. More info: http://releases.k8s.io/HEAD/docs/user-guide/volumes.md#rbd",
-	"pool":      "The rados pool name. Default is rbd. More info: http://releases.k8s.io/HEAD/examples/rbd/README.md#how-to-use-it.",
-	"user":      "The rados user name. Default is admin. More info: http://releases.k8s.io/HEAD/examples/rbd/README.md#how-to-use-it",
-	"keyring":   "Keyring is the path to key ring for RBDUser. Default is /etc/ceph/keyring. More info: http://releases.k8s.io/HEAD/examples/rbd/README.md#how-to-use-it",
-	"secretRef": "SecretRef is name of the authentication secret for RBDUser. If provided overrides keyring. Default is nil. More info: http://releases.k8s.io/HEAD/examples/rbd/README.md#how-to-use-it",
-	"readOnly":  "ReadOnly here will force the ReadOnly setting in VolumeMounts. Defaults to false. More info: http://releases.k8s.io/HEAD/examples/rbd/README.md#how-to-use-it",
+	"pool":      "The rados pool name. Default is rbd. More info: http://releases.k8s.io/HEAD/examples/volumes/rbd/README.md#how-to-use-it.",
+	"user":      "The rados user name. Default is admin. More info: http://releases.k8s.io/HEAD/examples/volumes/rbd/README.md#how-to-use-it",
+	"keyring":   "Keyring is the path to key ring for RBDUser. Default is /etc/ceph/keyring. More info: http://releases.k8s.io/HEAD/examples/volumes/rbd/README.md#how-to-use-it",
+	"secretRef": "SecretRef is name of the authentication secret for RBDUser. If provided overrides keyring. Default is nil. More info: http://releases.k8s.io/HEAD/examples/volumes/rbd/README.md#how-to-use-it",
+	"readOnly":  "ReadOnly here will force the ReadOnly setting in VolumeMounts. Defaults to false. More info: http://releases.k8s.io/HEAD/examples/volumes/rbd/README.md#how-to-use-it",
 }
 
 func (RBDVolumeSource) SwaggerDoc() map[string]string {
@@ -1700,10 +1730,10 @@ var map_VolumeSource = map[string]string{
 	"gitRepo":               "GitRepo represents a git repository at a particular revision.",
 	"secret":                "Secret represents a secret that should populate this volume. More info: http://releases.k8s.io/HEAD/docs/user-guide/volumes.md#secrets",
 	"nfs":                   "NFS represents an NFS mount on the host that shares a pod's lifetime More info: http://releases.k8s.io/HEAD/docs/user-guide/volumes.md#nfs",
-	"iscsi":                 "ISCSI represents an ISCSI Disk resource that is attached to a kubelet's host machine and then exposed to the pod. More info: http://releases.k8s.io/HEAD/examples/iscsi/README.md",
-	"glusterfs":             "Glusterfs represents a Glusterfs mount on the host that shares a pod's lifetime. More info: http://releases.k8s.io/HEAD/examples/glusterfs/README.md",
+	"iscsi":                 "ISCSI represents an ISCSI Disk resource that is attached to a kubelet's host machine and then exposed to the pod. More info: http://releases.k8s.io/HEAD/examples/volumes/iscsi/README.md",
+	"glusterfs":             "Glusterfs represents a Glusterfs mount on the host that shares a pod's lifetime. More info: http://releases.k8s.io/HEAD/examples/volumes/glusterfs/README.md",
 	"persistentVolumeClaim": "PersistentVolumeClaimVolumeSource represents a reference to a PersistentVolumeClaim in the same namespace. More info: http://releases.k8s.io/HEAD/docs/user-guide/persistent-volumes.md#persistentvolumeclaims",
-	"rbd":           "RBD represents a Rados Block Device mount on the host that shares a pod's lifetime. More info: http://releases.k8s.io/HEAD/examples/rbd/README.md",
+	"rbd":           "RBD represents a Rados Block Device mount on the host that shares a pod's lifetime. More info: http://releases.k8s.io/HEAD/examples/volumes/rbd/README.md",
 	"flexVolume":    "FlexVolume represents a generic volume resource that is provisioned/attached using a exec based plugin. This is an alpha feature and may change in future.",
 	"cinder":        "Cinder represents a cinder volume attached and mounted on kubelets host machine More info: http://releases.k8s.io/HEAD/examples/mysql-cinder-pd/README.md",
 	"cephfs":        "CephFS represents a Ceph FS mount on the host that shares a pod's lifetime",

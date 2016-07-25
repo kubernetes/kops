@@ -310,7 +310,7 @@ func TestLabelErrors(t *testing.T) {
 	}
 
 	for k, testCase := range testCases {
-		f, tf, _ := NewAPIFactory()
+		f, tf, _, _ := NewAPIFactory()
 		tf.Printer = &testPrinter{}
 		tf.Namespace = "test"
 		tf.ClientConfig = &restclient.Config{ContentConfig: restclient.ContentConfig{GroupVersion: testapi.Default.GroupVersion()}}
@@ -338,9 +338,9 @@ func TestLabelErrors(t *testing.T) {
 
 func TestLabelForResourceFromFile(t *testing.T) {
 	pods, _, _ := testData()
-	f, tf, codec := NewAPIFactory()
+	f, tf, codec, ns := NewAPIFactory()
 	tf.Client = &fake.RESTClient{
-		Codec: codec,
+		NegotiatedSerializer: ns,
 		Client: fake.CreateHTTPClient(func(req *http.Request) (*http.Response, error) {
 			switch req.Method {
 			case "GET":
@@ -371,7 +371,7 @@ func TestLabelForResourceFromFile(t *testing.T) {
 	buf := bytes.NewBuffer([]byte{})
 	cmd := NewCmdLabel(f, buf)
 	options := &LabelOptions{
-		Filenames: []string{"../../../examples/cassandra/cassandra-controller.yaml"},
+		Filenames: []string{"../../../examples/storage/cassandra/cassandra-controller.yaml"},
 	}
 
 	err := RunLabel(f, buf, cmd, []string{"a=b"}, options)
@@ -385,9 +385,9 @@ func TestLabelForResourceFromFile(t *testing.T) {
 
 func TestLabelMultipleObjects(t *testing.T) {
 	pods, _, _ := testData()
-	f, tf, codec := NewAPIFactory()
+	f, tf, codec, ns := NewAPIFactory()
 	tf.Client = &fake.RESTClient{
-		Codec: codec,
+		NegotiatedSerializer: ns,
 		Client: fake.CreateHTTPClient(func(req *http.Request) (*http.Response, error) {
 			switch req.Method {
 			case "GET":

@@ -330,6 +330,49 @@ func TestValidateObjectMetaUpdatePreventsDeletionFieldMutation(t *testing.T) {
 	}
 }
 
+func TestObjectMetaGenerationUpdate(t *testing.T) {
+	testcases := map[string]struct {
+		Old          api.ObjectMeta
+		New          api.ObjectMeta
+		ExpectedErrs []string
+	}{
+		"invalid generation change - decremented": {
+			Old:          api.ObjectMeta{Name: "test", ResourceVersion: "1", Generation: 5},
+			New:          api.ObjectMeta{Name: "test", ResourceVersion: "1", Generation: 4},
+			ExpectedErrs: []string{"field.generation: Invalid value: 4: must not be decremented"},
+		},
+		"valid generation change - incremented by one": {
+			Old:          api.ObjectMeta{Name: "test", ResourceVersion: "1", Generation: 1},
+			New:          api.ObjectMeta{Name: "test", ResourceVersion: "1", Generation: 2},
+			ExpectedErrs: []string{},
+		},
+		"valid generation field - not updated": {
+			Old:          api.ObjectMeta{Name: "test", ResourceVersion: "1", Generation: 5},
+			New:          api.ObjectMeta{Name: "test", ResourceVersion: "1", Generation: 5},
+			ExpectedErrs: []string{},
+		},
+	}
+
+	for k, tc := range testcases {
+		errList := []string{}
+		errs := ValidateObjectMetaUpdate(&tc.New, &tc.Old, field.NewPath("field"))
+		if len(errs) != len(tc.ExpectedErrs) {
+			t.Logf("%s: Expected: %#v", k, tc.ExpectedErrs)
+			for _, err := range errs {
+				errList = append(errList, err.Error())
+			}
+			t.Logf("%s: Got: %#v", k, errList)
+			t.Errorf("%s: expected %d errors, got %d", k, len(tc.ExpectedErrs), len(errs))
+			continue
+		}
+		for i := range errList {
+			if errList[i] != tc.ExpectedErrs[i] {
+				t.Errorf("%s: error #%d: expected %q, got %q", k, i, tc.ExpectedErrs[i], errList[i])
+			}
+		}
+	}
+}
+
 // Ensure trailing slash is allowed in generate name
 func TestValidateObjectMetaTrimsTrailingSlash(t *testing.T) {
 	errs := ValidateObjectMeta(
@@ -697,9 +740,14 @@ func TestValidatePersistentVolumeClaimUpdate(t *testing.T) {
 		oldClaim          *api.PersistentVolumeClaim
 		newClaim          *api.PersistentVolumeClaim
 	}{
-		"valid-update": {
+		"valid-update-volumeName-only": {
 			isExpectedFailure: false,
 			oldClaim:          validClaim,
+			newClaim:          validUpdateClaim,
+		},
+		"valid-no-op-update": {
+			isExpectedFailure: false,
+			oldClaim:          validUpdateClaim,
 			newClaim:          validUpdateClaim,
 		},
 		"invalid-update-change-resources-on-bound-claim": {
@@ -1503,7 +1551,24 @@ func TestValidateContainers(t *testing.T) {
 			ImagePullPolicy: "IfNotPresent",
 		},
 		{
-			Name:  "resources-test-with-gpu",
+			Name:  "resources-test-with-gpu-with-request",
+			Image: "image",
+			Resources: api.ResourceRequirements{
+				Requests: api.ResourceList{
+					api.ResourceName(api.ResourceCPU):       resource.MustParse("10"),
+					api.ResourceName(api.ResourceMemory):    resource.MustParse("10G"),
+					api.ResourceName(api.ResourceNvidiaGPU): resource.MustParse("1"),
+				},
+				Limits: api.ResourceList{
+					api.ResourceName(api.ResourceCPU):       resource.MustParse("10"),
+					api.ResourceName(api.ResourceMemory):    resource.MustParse("10G"),
+					api.ResourceName(api.ResourceNvidiaGPU): resource.MustParse("1"),
+				},
+			},
+			ImagePullPolicy: "IfNotPresent",
+		},
+		{
+			Name:  "resources-test-with-gpu-without-request",
 			Image: "image",
 			Resources: api.ResourceRequirements{
 				Requests: api.ResourceList{
@@ -1741,15 +1806,15 @@ func TestValidateContainers(t *testing.T) {
 				ImagePullPolicy: "IfNotPresent",
 			},
 		},
-		"Resource can only have GPU limit": {
+		"Resource GPU limit must match request": {
 			{
-				Name:  "resources-request-limit-edge",
+				Name:  "gpu-resource-request-limit",
 				Image: "image",
 				Resources: api.ResourceRequirements{
 					Requests: api.ResourceList{
 						api.ResourceName(api.ResourceCPU):       resource.MustParse("10"),
 						api.ResourceName(api.ResourceMemory):    resource.MustParse("10G"),
-						api.ResourceName(api.ResourceNvidiaGPU): resource.MustParse("1"),
+						api.ResourceName(api.ResourceNvidiaGPU): resource.MustParse("0"),
 					},
 					Limits: api.ResourceList{
 						api.ResourceName(api.ResourceCPU):       resource.MustParse("10"),
@@ -1842,8 +1907,9 @@ func TestValidatePodSpec(t *testing.T) {
 			Volumes: []api.Volume{
 				{Name: "vol", VolumeSource: api.VolumeSource{EmptyDir: &api.EmptyDirVolumeSource{}}},
 			},
-			Containers:    []api.Container{{Name: "ctr", Image: "image", ImagePullPolicy: "IfNotPresent"}},
-			RestartPolicy: api.RestartPolicyAlways,
+			Containers:     []api.Container{{Name: "ctr", Image: "image", ImagePullPolicy: "IfNotPresent"}},
+			InitContainers: []api.Container{{Name: "ictr", Image: "iimage", ImagePullPolicy: "IfNotPresent"}},
+			RestartPolicy:  api.RestartPolicyAlways,
 			NodeSelector: map[string]string{
 				"key": "value",
 			},
@@ -1933,6 +1999,12 @@ func TestValidatePodSpec(t *testing.T) {
 			Containers:    []api.Container{{}},
 			RestartPolicy: api.RestartPolicyAlways,
 			DNSPolicy:     api.DNSClusterFirst,
+		},
+		"bad init container": {
+			Containers:     []api.Container{{Name: "ctr", Image: "image", ImagePullPolicy: "IfNotPresent"}},
+			InitContainers: []api.Container{{}},
+			RestartPolicy:  api.RestartPolicyAlways,
+			DNSPolicy:      api.DNSClusterFirst,
 		},
 		"bad DNS policy": {
 			DNSPolicy:     api.DNSPolicy("invalid"),
@@ -2959,6 +3031,35 @@ func TestValidatePodUpdate(t *testing.T) {
 		},
 		{
 			api.Pod{
+				ObjectMeta: api.ObjectMeta{
+					Name: "foo",
+				},
+				Spec: api.PodSpec{
+					InitContainers: []api.Container{
+						{
+							Image: "foo:V1",
+						},
+					},
+				},
+			},
+			api.Pod{
+				ObjectMeta: api.ObjectMeta{Name: "foo"},
+				Spec: api.PodSpec{
+					InitContainers: []api.Container{
+						{
+							Image: "foo:V2",
+						},
+						{
+							Image: "bar:V2",
+						},
+					},
+				},
+			},
+			false,
+			"more init containers",
+		},
+		{
+			api.Pod{
 				ObjectMeta: api.ObjectMeta{Name: "foo"},
 				Spec:       api.PodSpec{Containers: []api.Container{{Image: "foo:V1"}}},
 			},
@@ -3009,6 +3110,30 @@ func TestValidatePodUpdate(t *testing.T) {
 			api.Pod{
 				ObjectMeta: api.ObjectMeta{Name: "foo"},
 				Spec: api.PodSpec{
+					InitContainers: []api.Container{
+						{
+							Image: "foo:V1",
+						},
+					},
+				},
+			},
+			api.Pod{
+				ObjectMeta: api.ObjectMeta{Name: "foo"},
+				Spec: api.PodSpec{
+					InitContainers: []api.Container{
+						{
+							Image: "foo:V2",
+						},
+					},
+				},
+			},
+			true,
+			"init container image change",
+		},
+		{
+			api.Pod{
+				ObjectMeta: api.ObjectMeta{Name: "foo"},
+				Spec: api.PodSpec{
 					Containers: []api.Container{
 						{},
 					},
@@ -3026,6 +3151,28 @@ func TestValidatePodUpdate(t *testing.T) {
 			},
 			false,
 			"image change to empty",
+		},
+		{
+			api.Pod{
+				ObjectMeta: api.ObjectMeta{Name: "foo"},
+				Spec: api.PodSpec{
+					InitContainers: []api.Container{
+						{},
+					},
+				},
+			},
+			api.Pod{
+				ObjectMeta: api.ObjectMeta{Name: "foo"},
+				Spec: api.PodSpec{
+					InitContainers: []api.Container{
+						{
+							Image: "foo:V2",
+						},
+					},
+				},
+			},
+			false,
+			"init container image change to empty",
 		},
 		{
 			api.Pod{
@@ -4327,6 +4474,43 @@ func TestValidateNode(t *testing.T) {
 				ExternalID: "external",
 			},
 		},
+		{
+			ObjectMeta: api.ObjectMeta{
+				Name: "abc",
+				Annotations: map[string]string{
+					api.PreferAvoidPodsAnnotationKey: `
+							{
+							    "preferAvoidPods": [
+							        {
+							            "podSignature": {
+							                "podController": {
+							                    "apiVersion": "v1",
+							                    "kind": "ReplicationController",
+							                    "name": "foo",
+							                    "uid": "abcdef123456",
+							                    "controller": true
+							                }
+							            },
+							            "reason": "some reason",
+							            "message": "some message"
+							        }
+							    ]
+							}`,
+				},
+			},
+			Status: api.NodeStatus{
+				Addresses: []api.NodeAddress{
+					{Type: api.NodeLegacyHostIP, Address: "something"},
+				},
+				Capacity: api.ResourceList{
+					api.ResourceName(api.ResourceCPU):    resource.MustParse("10"),
+					api.ResourceName(api.ResourceMemory): resource.MustParse("0"),
+				},
+			},
+			Spec: api.NodeSpec{
+				ExternalID: "external",
+			},
+		},
 	}
 	for _, successCase := range successCases {
 		if errs := ValidateNode(&successCase); len(errs) != 0 {
@@ -4491,6 +4675,67 @@ func TestValidateNode(t *testing.T) {
 				ExternalID: "external",
 			},
 		},
+		"missing-podSignature": {
+			ObjectMeta: api.ObjectMeta{
+				Name: "abc-123",
+				Annotations: map[string]string{
+					api.PreferAvoidPodsAnnotationKey: `
+							{
+							    "preferAvoidPods": [
+							        {
+							            "reason": "some reason",
+							            "message": "some message"
+							        }
+							    ]
+							}`,
+				},
+			},
+			Status: api.NodeStatus{
+				Addresses: []api.NodeAddress{},
+				Capacity: api.ResourceList{
+					api.ResourceName(api.ResourceCPU):    resource.MustParse("10"),
+					api.ResourceName(api.ResourceMemory): resource.MustParse("0"),
+				},
+			},
+			Spec: api.NodeSpec{
+				ExternalID: "external",
+			},
+		},
+		"invalid-podController": {
+			ObjectMeta: api.ObjectMeta{
+				Name: "abc-123",
+				Annotations: map[string]string{
+					api.PreferAvoidPodsAnnotationKey: `
+							{
+							    "preferAvoidPods": [
+							        {
+							            "podSignature": {
+							                "podController": {
+							                    "apiVersion": "v1",
+							                    "kind": "ReplicationController",
+							                    "name": "foo",
+                                                                           "uid": "abcdef123456",
+                                                                           "controller": false
+							                }
+							            },
+							            "reason": "some reason",
+							            "message": "some message"
+							        }
+							    ]
+							}`,
+				},
+			},
+			Status: api.NodeStatus{
+				Addresses: []api.NodeAddress{},
+				Capacity: api.ResourceList{
+					api.ResourceName(api.ResourceCPU):    resource.MustParse("10"),
+					api.ResourceName(api.ResourceMemory): resource.MustParse("0"),
+				},
+			},
+			Spec: api.NodeSpec{
+				ExternalID: "external",
+			},
+		},
 	}
 	for k, v := range errorCases {
 		errs := ValidateNode(&v)
@@ -4500,14 +4745,16 @@ func TestValidateNode(t *testing.T) {
 		for i := range errs {
 			field := errs[i].Field
 			expectedFields := map[string]bool{
-				"metadata.name":                                                       true,
-				"metadata.labels":                                                     true,
-				"metadata.annotations":                                                true,
-				"metadata.namespace":                                                  true,
-				"spec.externalID":                                                     true,
-				"metadata.annotations.scheduler.alpha.kubernetes.io/taints[0].key":    true,
-				"metadata.annotations.scheduler.alpha.kubernetes.io/taints[0].value":  true,
-				"metadata.annotations.scheduler.alpha.kubernetes.io/taints[0].effect": true,
+				"metadata.name":                                                                                               true,
+				"metadata.labels":                                                                                             true,
+				"metadata.annotations":                                                                                        true,
+				"metadata.namespace":                                                                                          true,
+				"spec.externalID":                                                                                             true,
+				"metadata.annotations.scheduler.alpha.kubernetes.io/taints[0].key":                                            true,
+				"metadata.annotations.scheduler.alpha.kubernetes.io/taints[0].value":                                          true,
+				"metadata.annotations.scheduler.alpha.kubernetes.io/taints[0].effect":                                         true,
+				"metadata.annotations.scheduler.alpha.kubernetes.io/preferAvoidPods[0].PodSignature":                          true,
+				"metadata.annotations.scheduler.alpha.kubernetes.io/preferAvoidPods[0].PodSignature.PodController.Controller": true,
 			}
 			if val, ok := expectedFields[field]; ok {
 				if !val {
@@ -4716,6 +4963,87 @@ func TestValidateNodeUpdate(t *testing.T) {
 				},
 			},
 		}, true},
+		{api.Node{
+			ObjectMeta: api.ObjectMeta{
+				Name: "foo",
+			},
+		}, api.Node{
+			ObjectMeta: api.ObjectMeta{
+				Name: "foo",
+				Annotations: map[string]string{
+					api.PreferAvoidPodsAnnotationKey: `
+							{
+							    "preferAvoidPods": [
+							        {
+							            "podSignature": {
+							                "podController": {
+							                    "apiVersion": "v1",
+							                    "kind": "ReplicationController",
+							                    "name": "foo",
+                                                                           "uid": "abcdef123456",
+                                                                           "controller": true
+							                }
+							            },
+							            "reason": "some reason",
+							            "message": "some message"
+							        }
+							    ]
+							}`,
+				},
+			},
+			Spec: api.NodeSpec{
+				Unschedulable: false,
+			},
+		}, true},
+		{api.Node{
+			ObjectMeta: api.ObjectMeta{
+				Name: "foo",
+			},
+		}, api.Node{
+			ObjectMeta: api.ObjectMeta{
+				Name: "foo",
+				Annotations: map[string]string{
+					api.PreferAvoidPodsAnnotationKey: `
+							{
+							    "preferAvoidPods": [
+							        {
+							            "reason": "some reason",
+							            "message": "some message"
+							        }
+							    ]
+							}`,
+				},
+			},
+		}, false},
+		{api.Node{
+			ObjectMeta: api.ObjectMeta{
+				Name: "foo",
+			},
+		}, api.Node{
+			ObjectMeta: api.ObjectMeta{
+				Name: "foo",
+				Annotations: map[string]string{
+					api.PreferAvoidPodsAnnotationKey: `
+							{
+							    "preferAvoidPods": [
+							        {
+							            "podSignature": {
+							                "podController": {
+							                    "apiVersion": "v1",
+							                    "kind": "ReplicationController",
+							                    "name": "foo",
+							                    "uid": "abcdef123456",
+							                    "controller": false
+							                }
+							            },
+							            "reason": "some reason",
+							            "message": "some message"
+							        }
+							    ]
+							}`,
+				},
+			},
+		}, false},
 	}
 	for i, test := range tests {
 		test.oldNode.ObjectMeta.ResourceVersion = "1"

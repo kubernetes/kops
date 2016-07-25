@@ -26,7 +26,9 @@ var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
-const _ = proto.GoGoProtoPackageIsVersion1
+// A compilation error at this line likely means your copy of the
+// proto package needs to be updated.
+const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 
 type Aproto3 struct {
 	B string `protobuf:"bytes,1,opt,name=B,json=b,proto3" json:"B,omitempty"`
@@ -297,6 +299,8 @@ var (
 	ErrInvalidLengthProto3 = fmt.Errorf("proto: negative length found during unmarshaling")
 	ErrIntOverflowProto3   = fmt.Errorf("proto: integer overflow")
 )
+
+func init() { proto.RegisterFile("proto3.proto", fileDescriptorProto3) }
 
 var fileDescriptorProto3 = []byte{
 	// 83 bytes of a gzipped FileDescriptorProto

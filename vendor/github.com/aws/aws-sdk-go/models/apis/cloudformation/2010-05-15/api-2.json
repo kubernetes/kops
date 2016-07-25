@@ -347,7 +347,10 @@
     "CapabilitiesReason":{"type":"string"},
     "Capability":{
       "type":"string",
-      "enum":["CAPABILITY_IAM"]
+      "enum":[
+        "CAPABILITY_IAM",
+        "CAPABILITY_NAMED_IAM"
+      ]
     },
     "CausingEntity":{"type":"string"},
     "Change":{

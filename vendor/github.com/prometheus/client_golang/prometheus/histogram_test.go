@@ -127,7 +127,7 @@ func TestHistogramConcurrency(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping test in short mode.")
 	}
-	
+
 	rand.Seed(42)
 
 	it := func(n uint32) bool {

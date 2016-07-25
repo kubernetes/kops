@@ -20,13 +20,12 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/rest"
 	"k8s.io/kubernetes/pkg/apis/extensions"
-	"k8s.io/kubernetes/pkg/fields"
-	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/registry/cachesize"
 	"k8s.io/kubernetes/pkg/registry/generic"
 	"k8s.io/kubernetes/pkg/registry/generic/registry"
 	ingress "k8s.io/kubernetes/pkg/registry/ingress"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/storage"
 )
 
 // rest implements a RESTStorage for replication controllers against etcd
@@ -40,7 +39,14 @@ func NewREST(opts generic.RESTOptions) (*REST, *StatusREST) {
 
 	newListFunc := func() runtime.Object { return &extensions.IngressList{} }
 	storageInterface := opts.Decorator(
-		opts.Storage, cachesize.GetWatchCacheSizeByResource(cachesize.Ingress), &extensions.Ingress{}, prefix, ingress.Strategy, newListFunc)
+		opts.Storage,
+		cachesize.GetWatchCacheSizeByResource(cachesize.Ingress),
+		&extensions.Ingress{},
+		prefix,
+		ingress.Strategy,
+		newListFunc,
+		storage.NoTriggerPublisher,
+	)
 
 	store := &registry.Store{
 		NewFunc: func() runtime.Object { return &extensions.Ingress{} },
@@ -62,9 +68,7 @@ func NewREST(opts generic.RESTOptions) (*REST, *StatusREST) {
 			return obj.(*extensions.Ingress).Name, nil
 		},
 		// Used to match objects based on labels/fields for list and watch
-		PredicateFunc: func(label labels.Selector, field fields.Selector) generic.Matcher {
-			return ingress.MatchIngress(label, field)
-		},
+		PredicateFunc:           ingress.MatchIngress,
 		QualifiedResource:       extensions.Resource("ingresses"),
 		DeleteCollectionWorkers: opts.DeleteCollectionWorkers,
 

@@ -160,7 +160,7 @@ __custom_func() {
    * componentstatuses (aka 'cs')
    * configmaps
    * daemonsets (aka 'ds')
-   * deployments
+   * deployments (aka 'deploy')
    * events (aka 'ev')
    * endpoints (aka 'ep')
    * horizontalpodautoscalers (aka 'hpa')
@@ -169,6 +169,7 @@ __custom_func() {
    * limitranges (aka 'limits')
    * nodes (aka 'no')
    * namespaces (aka 'ns')
+   * petsets (alpha feature, may be unstable)
    * pods (aka 'po')
    * persistentvolumes (aka 'pv')
    * persistentvolumeclaims (aka 'pvc')
@@ -180,6 +181,33 @@ __custom_func() {
    * serviceaccounts (aka 'sa')
    * services (aka 'svc')
 `
+	usage_template = `{{if gt .Aliases 0}}
+
+Aliases:
+  {{.NameAndAliases}}{{end}}{{if .HasExample}}
+
+Examples:
+{{ .Example }}{{end}}{{ if .HasAvailableSubCommands}}
+
+Available Sub-commands:{{range .Commands}}{{if .IsAvailableCommand}}
+  {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}{{end}}{{ if .HasLocalFlags}}
+
+Flags:
+{{.LocalFlags.FlagUsages | trimRightSpace}}{{end}}{{ if .HasInheritedFlags}}
+
+Global Flags:
+{{.InheritedFlags.FlagUsages | trimRightSpace}}{{end}}{{if .HasHelpSubCommands}}
+
+Additional help topics:{{range .Commands}}{{if .IsHelpCommand}}
+  {{rpad .CommandPath .CommandPathPadding}} {{.Short}}{{end}}{{end}}{{end}}
+
+Usage:{{if .Runnable}}
+  {{if .HasFlags}}{{appendIfNotPresent .UseLine "[flags]"}}{{else}}{{.UseLine}}{{end}}{{end}}{{ if .HasSubCommands }}
+  {{ .CommandPath}} [command]
+
+Use "{{.CommandPath}} [command] --help" for more information about a command.{{end}}
+`
+	help_template = `{{with or .Long .Short }}{{. | trim}}{{end}}{{if or .Runnable .HasSubCommands}}{{.UsageString}}{{end}}`
 )
 
 // NewKubectlCommand creates the `kubectl` command and its nested children.
@@ -194,6 +222,8 @@ Find more information at https://github.com/kubernetes/kubernetes.`,
 		Run: runHelp,
 		BashCompletionFunction: bash_completion_func,
 	}
+	cmds.SetHelpTemplate(help_template)
+	cmds.SetUsageTemplate(usage_template)
 
 	f.BindFlags(cmds.PersistentFlags())
 	f.BindExternalFlags(cmds.PersistentFlags())

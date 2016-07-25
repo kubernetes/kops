@@ -4405,6 +4405,8 @@ type CloneStackInput struct {
 	//   A supported Ubuntu operating system, such as Ubuntu 16.04 LTS, Ubuntu
 	// 14.04 LTS, or Ubuntu 12.04 LTS.
 	//
+	//    CentOS 7
+	//
 	//    Red Hat Enterprise Linux 7
 	//
 	//    Microsoft Windows Server 2012 R2 Base, Microsoft Windows Server 2012
@@ -4950,6 +4952,8 @@ type CreateInstanceInput struct {
 	//   A supported Ubuntu operating system, such as Ubuntu 16.04 LTS, Ubuntu
 	// 14.04 LTS, or Ubuntu 12.04 LTS.
 	//
+	//    CentOS 7
+	//
 	//    Red Hat Enterprise Linux 7
 	//
 	//   A supported Windows operating system, such as Microsoft Windows Server
@@ -5265,6 +5269,8 @@ type CreateStackInput struct {
 	//
 	//   A supported Ubuntu operating system, such as Ubuntu 16.04 LTS, Ubuntu
 	// 14.04 LTS, or Ubuntu 12.04 LTS.
+	//
+	//    CentOS 7
 	//
 	//    Red Hat Enterprise Linux 7
 	//
@@ -9490,6 +9496,8 @@ type UpdateInstanceInput struct {
 	//   A supported Ubuntu operating system, such as Ubuntu 16.04 LTS, Ubuntu
 	// 14.04 LTS, or Ubuntu 12.04 LTS.
 	//
+	//    CentOS 7
+	//
 	//    Red Hat Enterprise Linux 7
 	//
 	//   A supported Windows operating system, such as Microsoft Windows Server
@@ -9823,6 +9831,8 @@ type UpdateStackInput struct {
 	//
 	//   A supported Ubuntu operating system, such as Ubuntu 16.04 LTS, Ubuntu
 	// 14.04 LTS, or Ubuntu 12.04 LTS.
+	//
+	//    CentOS 7
 	//
 	//    Red Hat Enterprise Linux 7
 	//

@@ -2,15 +2,15 @@
 
 <!-- BEGIN STRIP_FOR_RELEASE -->
 
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
 
 <h2>PLEASE NOTE: This document applies to the HEAD of the source tree</h2>
@@ -79,10 +79,11 @@ The design of the pipeline for collecting application level metrics should
 be revisited and it's not clear whether application level metrics should be
 available in API server so the use case initially won't be supported.
 
-#### Ubernetes
+#### Cluster Federation
 
-Ubernetes might want to consider cluster-level usage (in addition to cluster-level request)
-of running pods when choosing where to schedule new pods. Although Ubernetes is still in design,
+The Cluster Federation control system might want to consider cluster-level usage (in addition to cluster-level request)
+of running pods when choosing where to schedule new pods. Although
+Cluster Federation is still in design,
 we expect the metrics API described here to be sufficient. Cluster-level usage can be
 obtained by summing over usage of all nodes in the cluster.
 

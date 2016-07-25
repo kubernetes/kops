@@ -12,13 +12,23 @@ import (
 func TestSetfilecon(t *testing.T) {
 	if selinux.SelinuxEnabled() {
 		tmp := "selinux_test"
+		con := "system_u:object_r:bin_t:s0"
 		out, _ := os.OpenFile(tmp, os.O_WRONLY|os.O_CREATE, 0)
 		out.Close()
-		err := selinux.Setfilecon(tmp, "system_u:object_r:bin_t:s0")
+		err := selinux.Setfilecon(tmp, con)
 		if err != nil {
 			t.Log("Setfilecon failed")
 			t.Fatal(err)
 		}
+		filecon, err := selinux.Getfilecon(tmp)
+		if err != nil {
+			t.Log("Getfilecon failed")
+			t.Fatal(err)
+		}
+		if con != filecon {
+			t.Fatal("Getfilecon failed, returned %s expected %s", filecon, con)
+		}
+
 		os.Remove(tmp)
 	}
 }

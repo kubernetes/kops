@@ -41,11 +41,12 @@ var ginkgoFlags = flag.String("ginkgo-flags", "", "Passed to ginkgo to specify a
 var sshOptionsMap map[string]string
 
 const (
-	archiveName = "e2e_node_test.tar.gz"
-	CNI_RELEASE = "c864f0e1ea73719b8f4582402b0847064f9883b0"
+	archiveName  = "e2e_node_test.tar.gz"
+	CNIRelease   = "8a936732094c0941e1543ef5d292a1f4fffa1ac5"
+	CNIDirectory = "cni"
 )
 
-var CNI_URL = fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/network-plugins/cni-%s.tar.gz", CNI_RELEASE)
+var CNIURL = fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/network-plugins/cni-%s.tar.gz", CNIRelease)
 
 var hostnameIpOverrides = struct {
 	sync.RWMutex
@@ -145,7 +146,7 @@ func CreateTestArchive() (string, error) {
 }
 
 // Returns the command output, whether the exit was ok, and any errors
-func RunRemote(archive string, host string, cleanup bool, junitFileNumber int, setupNode bool) (string, bool, error) {
+func RunRemote(archive string, host string, cleanup bool, junitFileNumber int, setupNode bool, testArgs string) (string, bool, error) {
 	if setupNode {
 		uname, err := user.Current()
 		if err != nil {
@@ -155,14 +156,6 @@ func RunRemote(archive string, host string, cleanup bool, junitFileNumber int, s
 		if err != nil {
 			return "", false, fmt.Errorf("instance %s not running docker daemon - Command failed: %s", host, output)
 		}
-	}
-
-	// Install the cni plugin. Note that /opt/cni does not get cleaned up after
-	// the test completes.
-	if _, err := RunSshCommand("ssh", GetHostnameOrIp(host), "--", "sh", "-c",
-		getSshCommand(" ; ", "sudo mkdir -p /opt/cni", fmt.Sprintf("sudo wget -O - %s | sudo tar -xz -C /opt/cni", CNI_URL))); err != nil {
-		// Exit failure with the error
-		return "", false, err
 	}
 
 	// Create the temp staging directory
@@ -180,6 +173,15 @@ func RunRemote(archive string, host string, cleanup bool, junitFileNumber int, s
 				glog.Errorf("failed to cleanup tmp directory %s on host %v.  Output:\n%s", tmp, err, output)
 			}
 		}()
+	}
+
+	// Install the cni plugin.
+	cniPath := filepath.Join(tmp, CNIDirectory)
+	if _, err := RunSshCommand("ssh", GetHostnameOrIp(host), "--", "sh", "-c",
+		getSshCommand(" ; ", fmt.Sprintf("sudo mkdir -p %s", cniPath),
+			fmt.Sprintf("sudo wget -O - %s | sudo tar -xz -C %s", CNIURL, cniPath))); err != nil {
+		// Exit failure with the error
+		return "", false, err
 	}
 
 	// Copy the archive to the staging directory
@@ -209,11 +211,10 @@ func RunRemote(archive string, host string, cleanup bool, junitFileNumber int, s
 		// Exit failure with the error
 		return "", false, err
 	}
-
 	// Run the tests
 	cmd = getSshCommand(" && ",
 		fmt.Sprintf("cd %s", tmp),
-		fmt.Sprintf("timeout -k 30s %ds ./ginkgo %s ./e2e_node.test -- --logtostderr --v 2 --build-services=false --stop-services=%t --node-name=%s --report-dir=%s/results --junit-file-number=%d", *testTimeoutSeconds, *ginkgoFlags, cleanup, host, tmp, junitFileNumber),
+		fmt.Sprintf("timeout -k 30s %ds ./ginkgo %s ./e2e_node.test -- --logtostderr --v 2 --build-services=false --stop-services=%t --node-name=%s --report-dir=%s/results --junit-file-number=%d %s", *testTimeoutSeconds, *ginkgoFlags, cleanup, host, tmp, junitFileNumber, testArgs),
 	)
 	aggErrs := []error{}
 

@@ -1039,6 +1039,7 @@
       ],
       "members":{
         "family":{"shape":"String"},
+        "taskRoleArn":{"shape":"String"},
         "containerDefinitions":{"shape":"ContainerDefinitions"},
         "volumes":{"shape":"VolumeList"}
       }
@@ -1246,6 +1247,7 @@
         "taskDefinitionArn":{"shape":"String"},
         "containerDefinitions":{"shape":"ContainerDefinitions"},
         "family":{"shape":"String"},
+        "taskRoleArn":{"shape":"String"},
         "revision":{"shape":"Integer"},
         "volumes":{"shape":"VolumeList"},
         "status":{"shape":"TaskDefinitionStatus"},
@@ -1270,7 +1272,8 @@
     "TaskOverride":{
       "type":"structure",
       "members":{
-        "containerOverrides":{"shape":"ContainerOverrides"}
+        "containerOverrides":{"shape":"ContainerOverrides"},
+        "taskRoleArn":{"shape":"String"}
       }
     },
     "Tasks":{

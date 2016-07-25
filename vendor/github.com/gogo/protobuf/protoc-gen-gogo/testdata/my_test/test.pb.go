@@ -33,7 +33,9 @@ var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
-const _ = proto.GoGoProtoPackageIsVersion1
+// A compilation error at this line likely means your copy of the
+// proto package needs to be updated.
+const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 
 type HatType int32
 
@@ -275,9 +277,10 @@ type Request_SomeGroup struct {
 	XXX_unrecognized []byte `json:"-"`
 }
 
-func (m *Request_SomeGroup) Reset()         { *m = Request_SomeGroup{} }
-func (m *Request_SomeGroup) String() string { return proto.CompactTextString(m) }
-func (*Request_SomeGroup) ProtoMessage()    {}
+func (m *Request_SomeGroup) Reset()                    { *m = Request_SomeGroup{} }
+func (m *Request_SomeGroup) String() string            { return proto.CompactTextString(m) }
+func (*Request_SomeGroup) ProtoMessage()               {}
+func (*Request_SomeGroup) Descriptor() ([]byte, []int) { return fileDescriptorTest, []int{0, 0} }
 
 func (m *Request_SomeGroup) GetGroupField() int32 {
 	if m != nil && m.GroupField != nil {
@@ -287,10 +290,10 @@ func (m *Request_SomeGroup) GetGroupField() int32 {
 }
 
 type Reply struct {
-	Found            []*Reply_Entry            `protobuf:"bytes,1,rep,name=found" json:"found,omitempty"`
-	CompactKeys      []int32                   `protobuf:"varint,2,rep,packed,name=compact_keys,json=compactKeys" json:"compact_keys,omitempty"`
-	XXX_extensions   map[int32]proto.Extension `json:"-"`
-	XXX_unrecognized []byte                    `json:"-"`
+	Found                        []*Reply_Entry `protobuf:"bytes,1,rep,name=found" json:"found,omitempty"`
+	CompactKeys                  []int32        `protobuf:"varint,2,rep,packed,name=compact_keys,json=compactKeys" json:"compact_keys,omitempty"`
+	proto.XXX_InternalExtensions `json:"-"`
+	XXX_unrecognized             []byte `json:"-"`
 }
 
 func (m *Reply) Reset()                    { *m = Reply{} }
@@ -304,12 +307,6 @@ var extRange_Reply = []proto.ExtensionRange{
 
 func (*Reply) ExtensionRangeArray() []proto.ExtensionRange {
 	return extRange_Reply
-}
-func (m *Reply) ExtensionMap() map[int32]proto.Extension {
-	if m.XXX_extensions == nil {
-		m.XXX_extensions = make(map[int32]proto.Extension)
-	}
-	return m.XXX_extensions
 }
 
 func (m *Reply) GetFound() []*Reply_Entry {
@@ -362,9 +359,9 @@ func (m *Reply_Entry) GetXMyFieldName_2() int64 {
 }
 
 type OtherBase struct {
-	Name             *string                   `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
-	XXX_extensions   map[int32]proto.Extension `json:"-"`
-	XXX_unrecognized []byte                    `json:"-"`
+	Name                         *string `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
+	proto.XXX_InternalExtensions `json:"-"`
+	XXX_unrecognized             []byte `json:"-"`
 }
 
 func (m *OtherBase) Reset()                    { *m = OtherBase{} }
@@ -378,12 +375,6 @@ var extRange_OtherBase = []proto.ExtensionRange{
 
 func (*OtherBase) ExtensionRangeArray() []proto.ExtensionRange {
 	return extRange_OtherBase
-}
-func (m *OtherBase) ExtensionMap() map[int32]proto.Extension {
-	if m.XXX_extensions == nil {
-		m.XXX_extensions = make(map[int32]proto.Extension)
-	}
-	return m.XXX_extensions
 }
 
 func (m *OtherBase) GetName() string {
@@ -444,8 +435,8 @@ func (m *OtherReplyExtensions) GetKey() int32 {
 }
 
 type OldReply struct {
-	XXX_extensions   map[int32]proto.Extension `json:"-"`
-	XXX_unrecognized []byte                    `json:"-"`
+	proto.XXX_InternalExtensions `json:"-"`
+	XXX_unrecognized             []byte `json:"-"`
 }
 
 func (m *OldReply) Reset()                    { *m = OldReply{} }
@@ -454,16 +445,16 @@ func (*OldReply) ProtoMessage()               {}
 func (*OldReply) Descriptor() ([]byte, []int) { return fileDescriptorTest, []int{5} }
 
 func (m *OldReply) Marshal() ([]byte, error) {
-	return proto.MarshalMessageSet(m.ExtensionMap())
+	return proto.MarshalMessageSet(&m.XXX_InternalExtensions)
 }
 func (m *OldReply) Unmarshal(buf []byte) error {
-	return proto.UnmarshalMessageSet(buf, m.ExtensionMap())
+	return proto.UnmarshalMessageSet(buf, &m.XXX_InternalExtensions)
 }
 func (m *OldReply) MarshalJSON() ([]byte, error) {
-	return proto.MarshalMessageSetJSON(m.XXX_extensions)
+	return proto.MarshalMessageSetJSON(&m.XXX_InternalExtensions)
 }
 func (m *OldReply) UnmarshalJSON(buf []byte) error {
-	return proto.UnmarshalMessageSetJSON(buf, m.XXX_extensions)
+	return proto.UnmarshalMessageSetJSON(buf, &m.XXX_InternalExtensions)
 }
 
 // ensure OldReply satisfies proto.Marshaler and proto.Unmarshaler
@@ -476,12 +467,6 @@ var extRange_OldReply = []proto.ExtensionRange{
 
 func (*OldReply) ExtensionRangeArray() []proto.ExtensionRange {
 	return extRange_OldReply
-}
-func (m *OldReply) ExtensionMap() map[int32]proto.Extension {
-	if m.XXX_extensions == nil {
-		m.XXX_extensions = make(map[int32]proto.Extension)
-	}
-	return m.XXX_extensions
 }
 
 type Communique struct {
@@ -835,9 +820,10 @@ type Communique_SomeGroup struct {
 	XXX_unrecognized []byte  `json:"-"`
 }
 
-func (m *Communique_SomeGroup) Reset()         { *m = Communique_SomeGroup{} }
-func (m *Communique_SomeGroup) String() string { return proto.CompactTextString(m) }
-func (*Communique_SomeGroup) ProtoMessage()    {}
+func (m *Communique_SomeGroup) Reset()                    { *m = Communique_SomeGroup{} }
+func (m *Communique_SomeGroup) String() string            { return proto.CompactTextString(m) }
+func (*Communique_SomeGroup) ProtoMessage()               {}
+func (*Communique_SomeGroup) Descriptor() ([]byte, []int) { return fileDescriptorTest, []int{6, 0} }
 
 func (m *Communique_SomeGroup) GetMember() string {
 	if m != nil && m.Member != nil {
@@ -893,6 +879,8 @@ func init() {
 	proto.RegisterExtension(E_Tag)
 	proto.RegisterExtension(E_Donut)
 }
+
+func init() { proto.RegisterFile("my_test/test.proto", fileDescriptorTest) }
 
 var fileDescriptorTest = []byte{
 	// 970 bytes of a gzipped FileDescriptorProto

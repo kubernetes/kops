@@ -1311,7 +1311,7 @@ func TestRequiredFieldEnforcement(t *testing.T) {
 	_, err := Marshal(pb)
 	if err == nil {
 		t.Error("marshal: expected error, got nil")
-	} else if strings.Index(err.Error(), "Label") < 0 {
+	} else if _, ok := err.(*RequiredNotSetError); !ok || !strings.Contains(err.Error(), "Label") {
 		t.Errorf("marshal: bad error type: %v", err)
 	}
 
@@ -1322,7 +1322,24 @@ func TestRequiredFieldEnforcement(t *testing.T) {
 	err = Unmarshal(buf, pb)
 	if err == nil {
 		t.Error("unmarshal: expected error, got nil")
-	} else if strings.Index(err.Error(), "{Unknown}") < 0 {
+	} else if _, ok := err.(*RequiredNotSetError); !ok || !strings.Contains(err.Error(), "{Unknown}") {
+		t.Errorf("unmarshal: bad error type: %v", err)
+	}
+}
+
+// Verify that absent required fields in groups cause Marshal/Unmarshal to return errors.
+func TestRequiredFieldEnforcementGroups(t *testing.T) {
+	pb := &GoTestRequiredGroupField{Group: &GoTestRequiredGroupField_Group{}}
+	if _, err := Marshal(pb); err == nil {
+		t.Error("marshal: expected error, got nil")
+	} else if _, ok := err.(*RequiredNotSetError); !ok || !strings.Contains(err.Error(), "Group.Field") {
+		t.Errorf("marshal: bad error type: %v", err)
+	}
+
+	buf := []byte{11, 12}
+	if err := Unmarshal(buf, pb); err == nil {
+		t.Error("unmarshal: expected error, got nil")
+	} else if _, ok := err.(*RequiredNotSetError); !ok || !strings.Contains(err.Error(), "Group.{Unknown}") {
 		t.Errorf("unmarshal: bad error type: %v", err)
 	}
 }

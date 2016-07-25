@@ -3,12 +3,7 @@ package procfs
 import "testing"
 
 func TestNewLimits(t *testing.T) {
-	fs, err := NewFS("fixtures")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	p, err := fs.NewProc(26231)
+	p, err := FS("fixtures").NewProc(26231)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -21,16 +16,16 @@ func TestNewLimits(t *testing.T) {
 	for _, test := range []struct {
 		name string
 		want int
-		got  int
+		have int
 	}{
-		{name: "cpu time", want: -1, got: l.CPUTime},
-		{name: "open files", want: 2048, got: l.OpenFiles},
-		{name: "msgqueue size", want: 819200, got: l.MsqqueueSize},
-		{name: "nice priority", want: 0, got: l.NicePriority},
-		{name: "address space", want: -1, got: l.AddressSpace},
+		{name: "cpu time", want: -1, have: l.CPUTime},
+		{name: "open files", want: 2048, have: l.OpenFiles},
+		{name: "msgqueue size", want: 819200, have: l.MsqqueueSize},
+		{name: "nice priority", want: 0, have: l.NicePriority},
+		{name: "address space", want: -1, have: l.AddressSpace},
 	} {
-		if test.want != test.got {
-			t.Errorf("want %s %d, got %d", test.name, test.want, test.got)
+		if test.want != test.have {
+			t.Errorf("want %s %d, have %d", test.name, test.want, test.have)
 		}
 	}
 }
