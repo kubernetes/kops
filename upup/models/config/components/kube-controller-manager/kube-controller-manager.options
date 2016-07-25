@@ -2,6 +2,7 @@ KubeControllerManager:
   PathSrvKubernetes: /srv/kubernetes
   Master: 127.0.0.1:8080
   AllocateNodeCIDRs: true
+  ConfigureCloudRoutes: false
   ServiceAccountPrivateKeyFile: /srv/kubernetes/server.key
   LogLevel: 2
   RootCAFile: /srv/kubernetes/ca.crt

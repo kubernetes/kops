@@ -99,6 +99,42 @@ func TestPopulateCluster_Docker_Spec(t *testing.T) {
 	}
 }
 
+func build(c *api.Cluster) (*api.Cluster, error) {
+	err := c.PerformAssignments()
+	if err != nil {
+		return nil, fmt.Errorf("error from PerformAssignments: %v", err)
+	}
+
+	addEtcdClusters(c)
+	registry := buildInmemoryClusterRegistry()
+	full, err := PopulateClusterSpec(c, registry)
+	if err != nil {
+		return nil, fmt.Errorf("Unexpected error from PopulateCluster: %v", err)
+	}
+	return full, nil
+}
+
+func TestPopulateCluster_Kubenet(t *testing.T) {
+	c := buildMinimalCluster()
+
+	full, err := build(c)
+	if err != nil {
+		t.Fatal("error during build: %v", err)
+	}
+
+	if full.Spec.Kubelet.NetworkPluginName != "kubenet" {
+		t.Fatalf("Unexpected NetworkPluginName: %v", full.Spec.Kubelet.NetworkPluginName)
+	}
+
+	if fi.BoolValue(full.Spec.Kubelet.ReconcileCIDR) != true {
+		t.Fatalf("Unexpected ReconcileCIDR: %v", full.Spec.Kubelet.ReconcileCIDR)
+	}
+
+	if fi.BoolValue(full.Spec.KubeControllerManager.ConfigureCloudRoutes) != true {
+		t.Fatalf("Unexpected ConfigureCloudRoutes: %v", full.Spec.KubeControllerManager.ConfigureCloudRoutes)
+	}
+}
+
 func TestPopulateCluster_Custom_CIDR(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.NetworkCIDR = "172.20.2.0/24"
