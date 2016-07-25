@@ -99,7 +99,7 @@ type Factory struct {
 	// Returns a Describer for displaying the specified RESTMapping type or an error.
 	Describer func(mapping *meta.RESTMapping) (kubectl.Describer, error)
 	// Returns a Printer for formatting objects of the given type or an error.
-	Printer func(mapping *meta.RESTMapping, noHeaders, withNamespace bool, wide bool, showAll bool, showLabels bool, absoluteTimestamps bool, columnLabels []string) (kubectl.ResourcePrinter, error)
+	Printer func(mapping *meta.RESTMapping, options kubectl.PrintOptions) (kubectl.ResourcePrinter, error)
 	// Returns a Scaler for changing the size of the specified RESTMapping type or an error
 	Scaler func(mapping *meta.RESTMapping) (kubectl.Scaler, error)
 	// Returns a Reaper for gracefully shutting down resources.
@@ -318,18 +318,21 @@ func NewFactory(optionalClientConfig clientcmd.ClientConfig) *Factory {
 			outputRESTMapper := kubectl.OutputVersionMapper{RESTMapper: mapper, OutputVersions: []unversioned.GroupVersion{cmdApiVersion}}
 			priorityRESTMapper := meta.PriorityRESTMapper{
 				Delegate: outputRESTMapper,
-				ResourcePriority: []unversioned.GroupVersionResource{
-					{Group: api.GroupName, Version: meta.AnyVersion, Resource: meta.AnyResource},
-					{Group: autoscaling.GroupName, Version: meta.AnyVersion, Resource: meta.AnyResource},
-					{Group: extensions.GroupName, Version: meta.AnyVersion, Resource: meta.AnyResource},
-					{Group: federation.GroupName, Version: meta.AnyVersion, Resource: meta.AnyResource},
-				},
-				KindPriority: []unversioned.GroupVersionKind{
-					{Group: api.GroupName, Version: meta.AnyVersion, Kind: meta.AnyKind},
-					{Group: autoscaling.GroupName, Version: meta.AnyVersion, Kind: meta.AnyKind},
-					{Group: extensions.GroupName, Version: meta.AnyVersion, Kind: meta.AnyKind},
-					{Group: federation.GroupName, Version: meta.AnyVersion, Kind: meta.AnyKind},
-				},
+			}
+			// TODO: this should come from registered versions
+			groups := []string{api.GroupName, autoscaling.GroupName, extensions.GroupName, federation.GroupName, batch.GroupName}
+			// set a preferred version
+			for _, group := range groups {
+				gvs := registered.EnabledVersionsForGroup(group)
+				if len(gvs) == 0 {
+					continue
+				}
+				priorityRESTMapper.ResourcePriority = append(priorityRESTMapper.ResourcePriority, unversioned.GroupVersionResource{Group: group, Version: gvs[0].Version, Resource: meta.AnyResource})
+				priorityRESTMapper.KindPriority = append(priorityRESTMapper.KindPriority, unversioned.GroupVersionKind{Group: group, Version: gvs[0].Version, Kind: meta.AnyKind})
+			}
+			for _, group := range groups {
+				priorityRESTMapper.ResourcePriority = append(priorityRESTMapper.ResourcePriority, unversioned.GroupVersionResource{Group: group, Version: meta.AnyVersion, Resource: meta.AnyResource})
+				priorityRESTMapper.KindPriority = append(priorityRESTMapper.KindPriority, unversioned.GroupVersionKind{Group: group, Version: meta.AnyVersion, Kind: meta.AnyKind})
 			}
 			return priorityRESTMapper, api.Scheme
 		},
@@ -380,7 +383,6 @@ func NewFactory(optionalClientConfig clientcmd.ClientConfig) *Factory {
 				gv := gvk.GroupVersion()
 				cfg.GroupVersion = &gv
 				cfg.APIPath = "/apis"
-				cfg.Codec = thirdpartyresourcedata.NewCodec(c.ExtensionsClient.RESTClient.Codec(), gvk)
 				cfg.NegotiatedSerializer = thirdpartyresourcedata.NewNegotiatedSerializer(api.Codecs, gvk.Kind, gv, gv)
 				return restclient.RESTClientFor(cfg)
 			}
@@ -418,8 +420,8 @@ func NewFactory(optionalClientConfig clientcmd.ClientConfig) *Factory {
 		JSONEncoder: func() runtime.Encoder {
 			return api.Codecs.LegacyCodec(registered.EnabledVersions()...)
 		},
-		Printer: func(mapping *meta.RESTMapping, noHeaders, withNamespace bool, wide bool, showAll bool, showLabels bool, absoluteTimestamps bool, columnLabels []string) (kubectl.ResourcePrinter, error) {
-			return kubectl.NewHumanReadablePrinter(noHeaders, withNamespace, wide, showAll, showLabels, absoluteTimestamps, columnLabels), nil
+		Printer: func(mapping *meta.RESTMapping, options kubectl.PrintOptions) (kubectl.ResourcePrinter, error) {
+			return kubectl.NewHumanReadablePrinter(options), nil
 		},
 		MapBasedSelectorForObject: func(object runtime.Object) (string, error) {
 			// TODO: replace with a swagger schema based approach (identify pod selector via schema introspection)
@@ -1221,7 +1223,15 @@ func (f *Factory) PrinterForMapping(cmd *cobra.Command, mapping *meta.RESTMappin
 		if err != nil {
 			columnLabel = []string{}
 		}
-		printer, err = f.Printer(mapping, GetFlagBool(cmd, "no-headers"), withNamespace, GetWideFlag(cmd), GetFlagBool(cmd, "show-all"), GetFlagBool(cmd, "show-labels"), isWatch(cmd), columnLabel)
+		printer, err = f.Printer(mapping, kubectl.PrintOptions{
+			NoHeaders:          GetFlagBool(cmd, "no-headers"),
+			WithNamespace:      withNamespace,
+			Wide:               GetWideFlag(cmd),
+			ShowAll:            GetFlagBool(cmd, "show-all"),
+			ShowLabels:         GetFlagBool(cmd, "show-labels"),
+			AbsoluteTimestamps: isWatch(cmd),
+			ColumnLabels:       columnLabel,
+		})
 		if err != nil {
 			return nil, err
 		}

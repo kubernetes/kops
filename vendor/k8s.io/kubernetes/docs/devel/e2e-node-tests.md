@@ -2,15 +2,15 @@
 
 <!-- BEGIN STRIP_FOR_RELEASE -->
 
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
 
 <h2>PLEASE NOTE: This document applies to the HEAD of the source tree</h2>
@@ -51,13 +51,14 @@ Why run tests *Locally*?  Much faster than running tests Remotely.
 Prerequisites:
 - [Install etcd](https://github.com/coreos/etcd/releases) on your PATH
   - Verify etcd is installed correctly by running `which etcd`
+  - Or make etcd binary available and executable at `/tmp/etcd`
 - [Install ginkgo](https://github.com/onsi/ginkgo) on your PATH
   - Verify ginkgo is installed correctly by running `which ginkgo`
 
 From the Kubernetes base directory, run:
 
 ```sh
-make test_e2e_node
+make test-e2e-node
 ```
 
 This will: run the *ginkgo* binary against the subdirectory *test/e2e_node*, which will in turn:
@@ -87,7 +88,7 @@ Prerequisites:
 Run:
 
 ```sh
-make test_e2e_node REMOTE=true
+make test-e2e-node REMOTE=true
 ```
 
 This will:
@@ -124,7 +125,7 @@ provided by the default image.
 List the available test images using gcloud.
 
 ```sh
-make test_e2e_node LIST_IMAGES=true
+make test-e2e-node LIST_IMAGES=true
 ```
 
 This will output a list of the available images for the default image project.
@@ -132,7 +133,7 @@ This will output a list of the available images for the default image project.
 Then run:
 
 ```sh
-make test_e2e_node REMOTE=true IMAGES="<comma-separated-list-images>"
+make test-e2e-node REMOTE=true IMAGES="<comma-separated-list-images>"
 ```
 
 ## Run tests against a running GCE instance (not an image)
@@ -140,7 +141,7 @@ make test_e2e_node REMOTE=true IMAGES="<comma-separated-list-images>"
 This is useful if you have an host instance running already and want to run the tests there instead of on a new instance.
 
 ```sh
-make test_e2e_node REMOTE=true HOSTS="<comma-separated-list-of-hostnames>"
+make test-e2e-node REMOTE=true HOSTS="<comma-separated-list-of-hostnames>"
 ```
 
 ## Delete instance after tests run
@@ -148,7 +149,7 @@ make test_e2e_node REMOTE=true HOSTS="<comma-separated-list-of-hostnames>"
 This is useful if you want recreate the instance for each test run to trigger flakes related to starting the instance.
 
 ```sh
-make test_e2e_node REMOTE=true DELETE_INSTANCES=true
+make test-e2e-node REMOTE=true DELETE_INSTANCES=true
 ```
 
 ## Keep instance, test binaries, and *processes* around after tests run
@@ -156,7 +157,7 @@ make test_e2e_node REMOTE=true DELETE_INSTANCES=true
 This is useful if you want to manually inspect or debug the kubelet process run as part of the tests.
 
 ```sh
-make test_e2e_node REMOTE=true CLEANUP=false
+make test-e2e-node REMOTE=true CLEANUP=false
 ```
 
 ## Run tests using an image in another project
@@ -164,7 +165,7 @@ make test_e2e_node REMOTE=true CLEANUP=false
 This is useful if you want to create your own host image in another project and use it for testing.
 
 ```sh
-make test_e2e_node REMOTE=true IMAGE_PROJECT="<name-of-project-with-images>" IMAGES="<image-name>"
+make test-e2e-node REMOTE=true IMAGE_PROJECT="<name-of-project-with-images>" IMAGES="<image-name>"
 ```
 
 Setting up your own host image may require additional steps such as installing etcd or docker.  See
@@ -176,7 +177,7 @@ This is useful if you want to create instances using a different name so that yo
 test in parallel against different instances of the same image.
 
 ```sh
-make test_e2e_node REMOTE=true INSTANCE_PREFIX="my-prefix"
+make test-e2e-node REMOTE=true INSTANCE_PREFIX="my-prefix"
 ```
 
 # Additional Test Options for both Remote and Local execution
@@ -186,13 +187,13 @@ make test_e2e_node REMOTE=true INSTANCE_PREFIX="my-prefix"
 To run tests matching a regex:
 
 ```sh
-make test_e2e_node REMOTE=true FOCUS="<regex-to-match>"
+make test-e2e-node REMOTE=true FOCUS="<regex-to-match>"
 ```
 
 To run tests NOT matching a regex:
 
 ```sh
-make test_e2e_node REMOTE=true SKIP="<regex-to-match>"
+make test-e2e-node REMOTE=true SKIP="<regex-to-match>"
 ```
 
 ## Run tests continually until they fail
@@ -202,7 +203,35 @@ run the tests until they fail.  **Note: this will only perform test setup once (
 less useful for catching flakes related creating the instance from an image.**
 
 ```sh
-make test_e2e_node REMOTE=true RUN_UNTIL_FAILURE=true
+make test-e2e-node REMOTE=true RUN_UNTIL_FAILURE=true
+```
+
+## Run tests with kubenet network plugin
+
+[kubenet](http://kubernetes.io/docs/admin/network-plugins/#kubenet) is
+the default network plugin used by kubelet since Kubernetes 1.3.  The
+plugin requires [CNI](https://github.com/containernetworking/cni) and
+[nsenter](http://man7.org/linux/man-pages/man1/nsenter.1.html).
+
+Currently, kubenet is enabled by default for Remote execution `REMOTE=true`,
+but disabled for Local execution.  **Note: kubenet is not supported for
+local execution currently. This may cause network related test result to be
+different for Local and Remote execution. So if you want to run network
+related test, Remote execution is recommended.**
+
+To enable/disable kubenet:
+
+```sh
+make test_e2e_node TEST_ARGS="--disable-kubenet=true" # enable kubenet
+make test_e2e_node TEST_ARGS="--disable-kubenet=false" # disable kubenet
+```
+
+## Additional QoS Cgroups Hierarchy level testing
+
+For testing with the QoS Cgroup Hierarchy enabled, you can pass --cgroups-per-qos flag as an argument into Ginkgo using TEST_ARGS
+
+```sh
+make test_e2e_node TEST_ARGS="--cgroups-per-qos=true"
 ```
 
 # Notes on tests run by the Kubernetes project during pre-, post- submit.

@@ -225,6 +225,54 @@ func (c *RDS) AuthorizeDBSecurityGroupIngress(input *AuthorizeDBSecurityGroupIng
 	return out, err
 }
 
+const opCopyDBClusterParameterGroup = "CopyDBClusterParameterGroup"
+
+// CopyDBClusterParameterGroupRequest generates a "aws/request.Request" representing the
+// client's request for the CopyDBClusterParameterGroup operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the CopyDBClusterParameterGroup method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the CopyDBClusterParameterGroupRequest method.
+//    req, resp := client.CopyDBClusterParameterGroupRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+func (c *RDS) CopyDBClusterParameterGroupRequest(input *CopyDBClusterParameterGroupInput) (req *request.Request, output *CopyDBClusterParameterGroupOutput) {
+	op := &request.Operation{
+		Name:       opCopyDBClusterParameterGroup,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CopyDBClusterParameterGroupInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &CopyDBClusterParameterGroupOutput{}
+	req.Data = output
+	return
+}
+
+// Copies the specified DB cluster parameter group.
+func (c *RDS) CopyDBClusterParameterGroup(input *CopyDBClusterParameterGroupInput) (*CopyDBClusterParameterGroupOutput, error) {
+	req, out := c.CopyDBClusterParameterGroupRequest(input)
+	err := req.Send()
+	return out, err
+}
+
 const opCopyDBClusterSnapshot = "CopyDBClusterSnapshot"
 
 // CopyDBClusterSnapshotRequest generates a "aws/request.Request" representing the
@@ -5224,6 +5272,98 @@ func (s CharacterSet) GoString() string {
 	return s.String()
 }
 
+type CopyDBClusterParameterGroupInput struct {
+	_ struct{} `type:"structure"`
+
+	// The identifier or Amazon Resource Name (ARN) for the source DB cluster parameter
+	// group. For information about creating an ARN, see  Constructing an RDS Amazon
+	// Resource Name (ARN) (http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.html#USER_Tagging.ARN).
+	//
+	// Constraints:
+	//
+	//   Must specify a valid DB cluster parameter group.
+	//
+	//   If the source DB cluster parameter group is in the same region as the
+	// copy, specify a valid DB parameter group identifier, for example my-db-cluster-param-group,
+	// or a valid ARN.
+	//
+	//   If the source DB parameter group is in a different region than the copy,
+	// specify a valid DB cluster parameter group ARN, for example arn:aws:rds:us-east-1:123456789012:cluster-pg:custom-cluster-group1.
+	SourceDBClusterParameterGroupIdentifier *string `type:"string" required:"true"`
+
+	// A list of tags.
+	Tags []*Tag `locationNameList:"Tag" type:"list"`
+
+	// A description for the copied DB cluster parameter group.
+	TargetDBClusterParameterGroupDescription *string `type:"string" required:"true"`
+
+	// The identifier for the copied DB cluster parameter group.
+	//
+	// Constraints:
+	//
+	//   Cannot be null, empty, or blank
+	//
+	//   Must contain from 1 to 255 alphanumeric characters or hyphens
+	//
+	//   First character must be a letter
+	//
+	//   Cannot end with a hyphen or contain two consecutive hyphens
+	//
+	//   Example: my-cluster-param-group1
+	TargetDBClusterParameterGroupIdentifier *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s CopyDBClusterParameterGroupInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CopyDBClusterParameterGroupInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CopyDBClusterParameterGroupInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CopyDBClusterParameterGroupInput"}
+	if s.SourceDBClusterParameterGroupIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("SourceDBClusterParameterGroupIdentifier"))
+	}
+	if s.TargetDBClusterParameterGroupDescription == nil {
+		invalidParams.Add(request.NewErrParamRequired("TargetDBClusterParameterGroupDescription"))
+	}
+	if s.TargetDBClusterParameterGroupIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("TargetDBClusterParameterGroupIdentifier"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+type CopyDBClusterParameterGroupOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Contains the result of a successful invocation of the CreateDBClusterParameterGroup
+	// or CopyDBClusterParameterGroup action.
+	//
+	// This data type is used as a request parameter in the DeleteDBClusterParameterGroup
+	// action, and as a response element in the DescribeDBClusterParameterGroups
+	// action.
+	DBClusterParameterGroup *DBClusterParameterGroup `type:"structure"`
+}
+
+// String returns the string representation
+func (s CopyDBClusterParameterGroupOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CopyDBClusterParameterGroupOutput) GoString() string {
+	return s.String()
+}
+
 type CopyDBClusterSnapshotInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5689,7 +5829,7 @@ type CreateDBClusterInput struct {
 	// printable ASCII character except "/", """, or "@".
 	//
 	// Constraints: Must contain from 8 to 41 characters.
-	MasterUserPassword *string `type:"string" required:"true"`
+	MasterUserPassword *string `type:"string"`
 
 	// The name of the master user for the client DB cluster.
 	//
@@ -5700,7 +5840,7 @@ type CreateDBClusterInput struct {
 	//   First character must be a letter.
 	//
 	//   Cannot be a reserved word for the chosen database engine.
-	MasterUsername *string `type:"string" required:"true"`
+	MasterUsername *string `type:"string"`
 
 	// A value that indicates that the DB cluster should be associated with the
 	// specified option group.
@@ -5780,12 +5920,6 @@ func (s *CreateDBClusterInput) Validate() error {
 	}
 	if s.Engine == nil {
 		invalidParams.Add(request.NewErrParamRequired("Engine"))
-	}
-	if s.MasterUserPassword == nil {
-		invalidParams.Add(request.NewErrParamRequired("MasterUserPassword"))
-	}
-	if s.MasterUsername == nil {
-		invalidParams.Add(request.NewErrParamRequired("MasterUsername"))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -5888,7 +6022,7 @@ type CreateDBClusterParameterGroupOutput struct {
 	_ struct{} `type:"structure"`
 
 	// Contains the result of a successful invocation of the CreateDBClusterParameterGroup
-	// action.
+	// or CopyDBClusterParameterGroup action.
 	//
 	// This data type is used as a request parameter in the DeleteDBClusterParameterGroup
 	// action, and as a response element in the DescribeDBClusterParameterGroups
@@ -6208,9 +6342,11 @@ type CreateDBInstanceInput struct {
 	//  Amazon Aurora
 	//
 	//    Version 5.6 (only available in AWS regions ap-northeast-1, ap-northeast-2,
-	// ap-southeast-2, eu-west-1, us-east-1, us-west-2):  5.6.10a
+	// ap-south-1, ap-southeast-2, eu-west-1, us-east-1, us-west-2):  5.6.10a
 	//
 	//    MariaDB
+	//
+	//    Version 10.1 (available in all AWS regions except us-gov-west-1):  10.1.14
 	//
 	//    Version 10.0 (available in all AWS regions):  10.0.17 | 10.0.24
 	//
@@ -6256,117 +6392,137 @@ type CreateDBInstanceInput struct {
 	//
 	//    Version 5.7 (available in all AWS regions):  5.7.10 | 5.7.11
 	//
-	//    Version 5.6 (available in all AWS regions except ap-northeast-2):  5.6.19a
-	// | 5.6.19b | 5.6.21 | 5.6.21b | 5.6.22
+	//    Version 5.6 (available in all AWS regions except ap-south-1, ap-northeast-2):
+	//  5.6.19a | 5.6.19b | 5.6.21 | 5.6.21b | 5.6.22
 	//
-	//    Version 5.6 (available in all AWS regions):  5.6.23 | 5.6.27 | 5.6.29
+	//    Version 5.6 (available in all AWS regions except ap-south-1):  5.6.23
 	//
-	//    Version 5.5 (available in all AWS regions except eu-central-1, ap-northeast-2):
-	//  5.5.40 | 5.5.40a
+	//    Version 5.6 (available in all AWS regions):  5.6.27 | 5.6.29
 	//
-	//    Version 5.5 (available in all AWS regions except ap-northeast-2):  5.5.40b
-	// | 5.5.41
+	//    Version 5.5 (only available in AWS regions ap-northeast-1, ap-southeast-1,
+	// ap-southeast-2, eu-west-1, sa-east-1, us-east-1, us-gov-west-1, us-west-1,
+	// us-west-2):  5.5.40 | 5.5.40a
 	//
-	//    Version 5.5 (available in all AWS regions):  5.5.42 | 5.5.46
+	//    Version 5.5 (available in all AWS regions except ap-south-1, ap-northeast-2):
+	//  5.5.40b | 5.5.41
 	//
-	//    Version 5.1 (available in all AWS regions except eu-central-1, ap-northeast-2):
-	//  5.1.73a | 5.1.73b
+	//    Version 5.5 (available in all AWS regions except ap-south-1):  5.5.42
+	//
+	//    Version 5.5 (available in all AWS regions):  5.5.46
+	//
+	//    Version 5.1 (only available in AWS regions ap-northeast-1, ap-southeast-1,
+	// ap-southeast-2, eu-west-1, sa-east-1, us-east-1, us-gov-west-1, us-west-1,
+	// us-west-2):  5.1.73a | 5.1.73b
 	//
 	//    Oracle Database Enterprise Edition (oracle-ee)
 	//
-	//    Version 12.1 (available in all AWS regions except ap-northeast-2):  12.1.0.1.v1
-	// | 12.1.0.1.v2
+	//    Version 12.1 (available in all AWS regions except ap-south-1, ap-northeast-2):
+	//  12.1.0.1.v1 | 12.1.0.1.v2
 	//
-	//    Version 12.1 (available in all AWS regions except ap-northeast-2, us-gov-west-1):
-	//  12.1.0.1.v3 | 12.1.0.1.v4
+	//    Version 12.1 (only available in AWS regions ap-northeast-1, ap-southeast-1,
+	// ap-southeast-2, eu-central-1, eu-west-1, sa-east-1, us-east-1, us-west-1,
+	// us-west-2):  12.1.0.1.v3 | 12.1.0.1.v4 | 12.1.0.1.v5
 	//
 	//    Version 12.1 (available in all AWS regions):  12.1.0.2.v1
 	//
 	//    Version 12.1 (available in all AWS regions except us-gov-west-1):  12.1.0.2.v2
-	// | 12.1.0.2.v3
+	// | 12.1.0.2.v3 | 12.1.0.2.v4
 	//
-	//    Version 11.2 (available in all AWS regions except eu-central-1, ap-northeast-2):
-	//  11.2.0.2.v3 | 11.2.0.2.v4 | 11.2.0.2.v5 | 11.2.0.2.v6 | 11.2.0.2.v7
+	//    Version 11.2 (only available in AWS regions ap-northeast-1, ap-southeast-1,
+	// ap-southeast-2, eu-west-1, sa-east-1, us-east-1, us-gov-west-1, us-west-1,
+	// us-west-2):  11.2.0.2.v3 | 11.2.0.2.v4 | 11.2.0.2.v5 | 11.2.0.2.v6 | 11.2.0.2.v7
 	//
-	//    Version 11.2 (available in all AWS regions except ap-northeast-2):  11.2.0.3.v1
-	// | 11.2.0.3.v2 | 11.2.0.3.v3
+	//    Version 11.2 (available in all AWS regions except ap-south-1, ap-northeast-2):
+	//  11.2.0.3.v1 | 11.2.0.3.v2 | 11.2.0.3.v3
 	//
-	//    Version 11.2 (available in all AWS regions except ap-northeast-2, us-gov-west-1):
-	//  11.2.0.3.v4
+	//    Version 11.2 (only available in AWS regions ap-northeast-1, ap-southeast-1,
+	// ap-southeast-2, eu-central-1, eu-west-1, sa-east-1, us-east-1, us-west-1,
+	// us-west-2):  11.2.0.3.v4
 	//
 	//    Version 11.2 (available in all AWS regions):  11.2.0.4.v1 | 11.2.0.4.v3
 	// | 11.2.0.4.v4
 	//
 	//    Version 11.2 (available in all AWS regions except us-gov-west-1):  11.2.0.4.v5
-	// | 11.2.0.4.v6 | 11.2.0.4.v7
+	// | 11.2.0.4.v6 | 11.2.0.4.v7 | 11.2.0.4.v8
 	//
 	//    Oracle Database Standard Edition (oracle-se)
 	//
-	//    Version 12.1 (available in all AWS regions except ap-northeast-2):  12.1.0.1.v1
-	// | 12.1.0.1.v2
+	//    Version 12.1 (available in all AWS regions except ap-south-1, ap-northeast-2):
+	//  12.1.0.1.v1 | 12.1.0.1.v2
 	//
-	//    Version 12.1 (available in all AWS regions except ap-northeast-2, us-gov-west-1):
-	//  12.1.0.1.v3 | 12.1.0.1.v4
+	//    Version 12.1 (only available in AWS regions ap-northeast-1, ap-southeast-1,
+	// ap-southeast-2, eu-central-1, eu-west-1, sa-east-1, us-east-1, us-west-1,
+	// us-west-2):  12.1.0.1.v3 | 12.1.0.1.v4 | 12.1.0.1.v5
 	//
-	//    Version 11.2 (available in all AWS regions except eu-central-1, ap-northeast-2):
-	//  11.2.0.2.v3 | 11.2.0.2.v4 | 11.2.0.2.v5 | 11.2.0.2.v6 | 11.2.0.2.v7
+	//    Version 11.2 (only available in AWS regions ap-northeast-1, ap-southeast-1,
+	// ap-southeast-2, eu-west-1, sa-east-1, us-east-1, us-gov-west-1, us-west-1,
+	// us-west-2):  11.2.0.2.v3 | 11.2.0.2.v4 | 11.2.0.2.v5 | 11.2.0.2.v6 | 11.2.0.2.v7
 	//
-	//    Version 11.2 (available in all AWS regions except ap-northeast-2):  11.2.0.3.v1
-	// | 11.2.0.3.v2 | 11.2.0.3.v3
+	//    Version 11.2 (available in all AWS regions except ap-south-1, ap-northeast-2):
+	//  11.2.0.3.v1 | 11.2.0.3.v2 | 11.2.0.3.v3
 	//
-	//    Version 11.2 (available in all AWS regions except ap-northeast-2, us-gov-west-1):
-	//  11.2.0.3.v4
+	//    Version 11.2 (only available in AWS regions ap-northeast-1, ap-southeast-1,
+	// ap-southeast-2, eu-central-1, eu-west-1, sa-east-1, us-east-1, us-west-1,
+	// us-west-2):  11.2.0.3.v4
 	//
 	//    Version 11.2 (available in all AWS regions):  11.2.0.4.v1 | 11.2.0.4.v3
 	// | 11.2.0.4.v4
 	//
 	//    Version 11.2 (available in all AWS regions except us-gov-west-1):  11.2.0.4.v5
-	// | 11.2.0.4.v6 | 11.2.0.4.v7
+	// | 11.2.0.4.v6 | 11.2.0.4.v7 | 11.2.0.4.v8
 	//
 	//    Oracle Database Standard Edition One (oracle-se1)
 	//
-	//    Version 12.1 (available in all AWS regions except ap-northeast-2):  12.1.0.1.v1
-	// | 12.1.0.1.v2
+	//    Version 12.1 (available in all AWS regions except ap-south-1, ap-northeast-2):
+	//  12.1.0.1.v1 | 12.1.0.1.v2
 	//
-	//    Version 12.1 (available in all AWS regions except ap-northeast-2, us-gov-west-1):
-	//  12.1.0.1.v3 | 12.1.0.1.v4
+	//    Version 12.1 (only available in AWS regions ap-northeast-1, ap-southeast-1,
+	// ap-southeast-2, eu-central-1, eu-west-1, sa-east-1, us-east-1, us-west-1,
+	// us-west-2):  12.1.0.1.v3 | 12.1.0.1.v4 | 12.1.0.1.v5
 	//
-	//    Version 11.2 (available in all AWS regions except eu-central-1, ap-northeast-2):
-	//  11.2.0.2.v3 | 11.2.0.2.v4 | 11.2.0.2.v5 | 11.2.0.2.v6 | 11.2.0.2.v7
+	//    Version 11.2 (only available in AWS regions ap-northeast-1, ap-southeast-1,
+	// ap-southeast-2, eu-west-1, sa-east-1, us-east-1, us-gov-west-1, us-west-1,
+	// us-west-2):  11.2.0.2.v3 | 11.2.0.2.v4 | 11.2.0.2.v5 | 11.2.0.2.v6 | 11.2.0.2.v7
 	//
-	//    Version 11.2 (available in all AWS regions except ap-northeast-2):  11.2.0.3.v1
-	// | 11.2.0.3.v2 | 11.2.0.3.v3
+	//    Version 11.2 (available in all AWS regions except ap-south-1, ap-northeast-2):
+	//  11.2.0.3.v1 | 11.2.0.3.v2 | 11.2.0.3.v3
 	//
-	//    Version 11.2 (available in all AWS regions except ap-northeast-2, us-gov-west-1):
-	//  11.2.0.3.v4
+	//    Version 11.2 (only available in AWS regions ap-northeast-1, ap-southeast-1,
+	// ap-southeast-2, eu-central-1, eu-west-1, sa-east-1, us-east-1, us-west-1,
+	// us-west-2):  11.2.0.3.v4
 	//
 	//    Version 11.2 (available in all AWS regions):  11.2.0.4.v1 | 11.2.0.4.v3
 	// | 11.2.0.4.v4
 	//
 	//    Version 11.2 (available in all AWS regions except us-gov-west-1):  11.2.0.4.v5
-	// | 11.2.0.4.v6 | 11.2.0.4.v7
+	// | 11.2.0.4.v6 | 11.2.0.4.v7 | 11.2.0.4.v8
 	//
 	//    Oracle Database Standard Edition Two (oracle-se2)
 	//
 	//    Version 12.1 (available in all AWS regions except us-gov-west-1):  12.1.0.2.v2
-	// | 12.1.0.2.v3
+	// | 12.1.0.2.v3 | 12.1.0.2.v4
 	//
 	//    PostgreSQL
 	//
 	//    Version 9.5 (available in all AWS regions except us-gov-west-1):  9.5.2
 	//
-	//    Version 9.4 (available in all AWS regions):  9.4.1 | 9.4.4 | 9.4.5
+	//    Version 9.4 (available in all AWS regions except ap-south-1):  9.4.1
+	// | 9.4.4
+	//
+	//    Version 9.4 (available in all AWS regions):  9.4.5
 	//
 	//    Version 9.4 (available in all AWS regions except us-gov-west-1):  9.4.7
 	//
-	//    Version 9.3 (available in all AWS regions except eu-central-1, ap-northeast-2):
-	//  9.3.1 | 9.3.2
+	//    Version 9.3 (only available in AWS regions ap-northeast-1, ap-southeast-1,
+	// ap-southeast-2, eu-west-1, sa-east-1, us-east-1, us-gov-west-1, us-west-1,
+	// us-west-2):  9.3.1 | 9.3.2
 	//
-	//    Version 9.3 (available in all AWS regions except ap-northeast-2):  9.3.10
-	// | 9.3.3 | 9.3.5 | 9.3.6 | 9.3.9
+	//    Version 9.3 (available in all AWS regions except ap-south-1, ap-northeast-2):
+	//  9.3.10 | 9.3.3 | 9.3.5 | 9.3.6 | 9.3.9
 	//
-	//    Version 9.3 (available in all AWS regions except ap-northeast-2, us-gov-west-1):
-	//  9.3.12
+	//    Version 9.3 (only available in AWS regions ap-northeast-1, ap-southeast-1,
+	// ap-southeast-2, eu-central-1, eu-west-1, sa-east-1, us-east-1, us-west-1,
+	// us-west-2):  9.3.12
 	EngineVersion *string `type:"string"`
 
 	// The amount of Provisioned IOPS (input/output operations per second) to be
@@ -7598,7 +7754,7 @@ func (s DBClusterOptionGroupStatus) GoString() string {
 }
 
 // Contains the result of a successful invocation of the CreateDBClusterParameterGroup
-// action.
+// or CopyDBClusterParameterGroup action.
 //
 // This data type is used as a request parameter in the DeleteDBClusterParameterGroup
 // action, and as a response element in the DescribeDBClusterParameterGroups
@@ -11793,6 +11949,12 @@ type FailoverDBClusterInput struct {
 	//
 	//   Cannot end with a hyphen or contain two consecutive hyphens
 	DBClusterIdentifier *string `type:"string"`
+
+	// The name of the instance to promote to the primary instance.
+	//
+	// You must specify the instance identifier for an Aurora Replica in the DB
+	// cluster. For example, mydbcluster-replica1.
+	TargetDBInstanceIdentifier *string `type:"string"`
 }
 
 // String returns the string representation
@@ -14313,7 +14475,7 @@ type RestoreDBClusterFromSnapshotInput struct {
 	EngineVersion *string `type:"string"`
 
 	// The KMS key identifier to use when restoring an encrypted DB cluster from
-	// an encrypted DB cluster snapshot.
+	// a DB cluster snapshot.
 	//
 	// The KMS key identifier is the Amazon Resource Name (ARN) for the KMS encryption
 	// key. If you are restoring a DB cluster with the same AWS account that owns
@@ -14327,11 +14489,7 @@ type RestoreDBClusterFromSnapshotInput struct {
 	// is encrypted using the KMS key that was used to encrypt the DB cluster snapshot.
 	//
 	//   If the DB cluster snapshot is not encrypted, then the restored DB cluster
-	// is not encrypted.
-	//
-	//   If SnapshotIdentifier refers to a DB cluster snapshot that is not encrypted,
-	// and you specify a value for the KmsKeyId parameter, then the restore request
-	// is rejected.
+	// is encrypted using the specified encryption key.
 	KmsKeyId *string `type:"string"`
 
 	// The name of the option group to use for the restored DB cluster.

@@ -34,6 +34,25 @@ func ExampleConfigService_DeleteConfigRule() {
 	fmt.Println(resp)
 }
 
+func ExampleConfigService_DeleteConfigurationRecorder() {
+	svc := configservice.New(session.New())
+
+	params := &configservice.DeleteConfigurationRecorderInput{
+		ConfigurationRecorderName: aws.String("RecorderName"), // Required
+	}
+	resp, err := svc.DeleteConfigurationRecorder(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
 func ExampleConfigService_DeleteDeliveryChannel() {
 	svc := configservice.New(session.New())
 
@@ -41,6 +60,25 @@ func ExampleConfigService_DeleteDeliveryChannel() {
 		DeliveryChannelName: aws.String("ChannelName"), // Required
 	}
 	resp, err := svc.DeleteDeliveryChannel(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
+func ExampleConfigService_DeleteEvaluationResults() {
+	svc := configservice.New(session.New())
+
+	params := &configservice.DeleteEvaluationResultsInput{
+		ConfigRuleName: aws.String("StringWithCharLimit64"), // Required
+	}
+	resp, err := svc.DeleteEvaluationResults(params)
 
 	if err != nil {
 		// Print the error, cast err to awserr.Error to get the Code and
@@ -408,8 +446,9 @@ func ExampleConfigService_PutConfigRule() {
 				Owner: aws.String("Owner"),
 				SourceDetails: []*configservice.SourceDetail{
 					{ // Required
-						EventSource: aws.String("EventSource"),
-						MessageType: aws.String("MessageType"),
+						EventSource:               aws.String("EventSource"),
+						MaximumExecutionFrequency: aws.String("MaximumExecutionFrequency"),
+						MessageType:               aws.String("MessageType"),
 					},
 					// More values...
 				},
@@ -520,6 +559,28 @@ func ExampleConfigService_PutEvaluations() {
 		},
 	}
 	resp, err := svc.PutEvaluations(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
+func ExampleConfigService_StartConfigRulesEvaluation() {
+	svc := configservice.New(session.New())
+
+	params := &configservice.StartConfigRulesEvaluationInput{
+		ConfigRuleNames: []*string{
+			aws.String("StringWithCharLimit64"), // Required
+			// More values...
+		},
+	}
+	resp, err := svc.StartConfigRulesEvaluation(params)
 
 	if err != nil {
 		// Print the error, cast err to awserr.Error to get the Code and

@@ -15,8 +15,5 @@ Please remove this comment block before submitting.
 * Use the release-note-* labels to set the release note state 
 * Clear this block to use the PR title as the release note 
 -OR-
-* Enter your extended release note here
+* Enter your extended release note here (newlines are formatted as bullets)
 ```
-
-
-[![Analytics](https://kubernetes-site.appspot.com/UA-36037335-10/GitHub/.github/PULL_REQUEST_TEMPLATE.md?pixel)]()

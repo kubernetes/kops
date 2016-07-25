@@ -72,6 +72,8 @@ type SSMAPI interface {
 
 	DescribeInstanceInformation(*ssm.DescribeInstanceInformationInput) (*ssm.DescribeInstanceInformationOutput, error)
 
+	DescribeInstanceInformationPages(*ssm.DescribeInstanceInformationInput, func(*ssm.DescribeInstanceInformationOutput, bool) bool) error
+
 	GetDocumentRequest(*ssm.GetDocumentInput) (*request.Request, *ssm.GetDocumentOutput)
 
 	GetDocument(*ssm.GetDocumentInput) (*ssm.GetDocumentOutput, error)

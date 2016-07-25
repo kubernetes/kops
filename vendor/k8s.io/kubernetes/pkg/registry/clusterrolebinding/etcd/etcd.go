@@ -19,13 +19,12 @@ package etcd
 import (
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/apis/rbac"
-	"k8s.io/kubernetes/pkg/fields"
-	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/registry/cachesize"
 	"k8s.io/kubernetes/pkg/registry/clusterrolebinding"
 	"k8s.io/kubernetes/pkg/registry/generic"
 	"k8s.io/kubernetes/pkg/registry/generic/registry"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/storage"
 )
 
 // REST implements a RESTStorage for ClusterRoleBinding against etcd
@@ -45,6 +44,7 @@ func NewREST(opts generic.RESTOptions) *REST {
 		prefix,
 		clusterrolebinding.Strategy,
 		newListFunc,
+		storage.NoTriggerPublisher,
 	)
 
 	store := &registry.Store{
@@ -59,9 +59,7 @@ func NewREST(opts generic.RESTOptions) *REST {
 		ObjectNameFunc: func(obj runtime.Object) (string, error) {
 			return obj.(*rbac.ClusterRoleBinding).Name, nil
 		},
-		PredicateFunc: func(label labels.Selector, field fields.Selector) generic.Matcher {
-			return clusterrolebinding.Matcher(label, field)
-		},
+		PredicateFunc:           clusterrolebinding.Matcher,
 		QualifiedResource:       rbac.Resource("clusterrolebindings"),
 		DeleteCollectionWorkers: opts.DeleteCollectionWorkers,
 

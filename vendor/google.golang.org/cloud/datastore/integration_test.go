@@ -453,7 +453,7 @@ func TestLargeQuery(t *testing.T) {
 			}
 			for i, child := range got {
 				if got, want := child.I, i+offset; got != want {
-					t.Errorf("GetAll(limit=%d offset=%d) got[%d].I == %d; want %d", limit, got, want)
+					t.Errorf("GetAll(limit=%d offset=%d) got[%d].I == %d; want %d", limit, offset, i, got, want)
 					break
 				}
 			}

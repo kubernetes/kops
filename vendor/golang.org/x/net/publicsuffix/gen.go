@@ -420,7 +420,7 @@ var children=[...]uint32{
 			fmt.Fprintf(w, "0x%08x, // c0x%04x (%s)%s %s\n",
 				c, i, s, wildcardStr(wildcard), nodeTypeStr(nodeType))
 		} else {
-			fmt.Fprintf(w, "0x%08x,\n", c)
+			fmt.Fprintf(w, "0x%x,\n", c)
 		}
 	}
 	fmt.Fprintf(w, "}\n\n")
@@ -560,7 +560,7 @@ func printNode(w io.Writer, n *node) error {
 				nodeTypeStr(c.nodeType), icannStr(c.icann), c.label,
 			)
 		} else {
-			fmt.Fprintf(w, "0x%08x,\n", encoding)
+			fmt.Fprintf(w, "0x%x,\n", encoding)
 		}
 	}
 	return nil

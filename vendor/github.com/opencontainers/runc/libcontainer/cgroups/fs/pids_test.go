@@ -80,4 +80,32 @@ func TestPidsStats(t *testing.T) {
 	if stats.PidsStats.Current != 1337 {
 		t.Fatalf("Expected %d, got %d for pids.current", 1337, stats.PidsStats.Current)
 	}
+
+	if stats.PidsStats.Limit != maxLimited {
+		t.Fatalf("Expected %d, got %d for pids.max", maxLimited, stats.PidsStats.Limit)
+	}
+}
+
+func TestPidsStatsUnlimited(t *testing.T) {
+	helper := NewCgroupTestUtil("pids", t)
+	defer helper.cleanup()
+
+	helper.writeFileContents(map[string]string{
+		"pids.current": strconv.Itoa(4096),
+		"pids.max":     "max",
+	})
+
+	pids := &PidsGroup{}
+	stats := *cgroups.NewStats()
+	if err := pids.GetStats(helper.CgroupPath, &stats); err != nil {
+		t.Fatal(err)
+	}
+
+	if stats.PidsStats.Current != 4096 {
+		t.Fatalf("Expected %d, got %d for pids.current", 4096, stats.PidsStats.Current)
+	}
+
+	if stats.PidsStats.Limit != 0 {
+		t.Fatalf("Expected %d, got %d for pids.max", 0, stats.PidsStats.Limit)
+	}
 }

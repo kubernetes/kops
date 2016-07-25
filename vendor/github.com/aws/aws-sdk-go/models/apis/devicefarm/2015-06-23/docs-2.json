@@ -4,9 +4,11 @@
   "operations": {
     "CreateDevicePool": "<p>Creates a device pool.</p>",
     "CreateProject": "<p>Creates a new project.</p>",
+    "CreateRemoteAccessSession": "<p>Specifies and starts a remote access session.</p>",
     "CreateUpload": "<p>Uploads an app or test scripts.</p>",
     "DeleteDevicePool": "<p>Deletes a device pool given the pool ARN. Does not allow deletion of curated pools owned by the system.</p>",
     "DeleteProject": "<p>Deletes an AWS Device Farm project, given the project ARN.</p> <p><b>Note</b> Deleting this resource does not stop an in-progress run.</p>",
+    "DeleteRemoteAccessSession": "<p>Deletes a completed remote access session and its results.</p>",
     "DeleteRun": "<p>Deletes the run, given the run ARN.</p> <p><b>Note</b> Deleting this resource does not stop an in-progress run.</p>",
     "DeleteUpload": "<p>Deletes an upload given the upload ARN.</p>",
     "GetAccountSettings": "<p>Returns the number of unmetered iOS and/or unmetered Android devices that have been purchased by the account.</p>",
@@ -16,10 +18,12 @@
     "GetJob": "<p>Gets information about a job.</p>",
     "GetOfferingStatus": "<p>Gets the current status and future status of all offerings purchased by an AWS account. The response indicates how many offerings are currently available and the offerings that will be available in the next period. The API returns a <code>NotEligible</code> error if the user is not permitted to invoke the operation. Please contact <a href=\"mailto:aws-devicefarm-support@amazon.com\">aws-devicefarm-support@amazon.com</a> if you believe that you should be able to invoke this operation.</p>",
     "GetProject": "<p>Gets information about a project.</p>",
+    "GetRemoteAccessSession": "<p>Returns a link to a currently running remote access session.</p>",
     "GetRun": "<p>Gets information about a run.</p>",
     "GetSuite": "<p>Gets information about a suite.</p>",
     "GetTest": "<p>Gets information about a test.</p>",
     "GetUpload": "<p>Gets information about an upload.</p>",
+    "InstallToRemoteAccessSession": "<p>Installs an application to the device in a remote access session. For Android applications, the file must be in .apk format. For iOS applications, the file must be in .ipa format.</p>",
     "ListArtifacts": "<p>Gets information about artifacts.</p>",
     "ListDevicePools": "<p>Gets information about device pools.</p>",
     "ListDevices": "<p>Gets information about unique device types.</p>",
@@ -27,6 +31,7 @@
     "ListOfferingTransactions": "<p>Returns a list of all historical purchases, renewals, and system renewal transactions for an AWS account. The list is paginated and ordered by a descending timestamp (most recent transactions are first). The API returns a <code>NotEligible</code> error if the user is not permitted to invoke the operation. Please contact <a href=\"mailto:aws-devicefarm-support@amazon.com\">aws-devicefarm-support@amazon.com</a> if you believe that you should be able to invoke this operation.</p>",
     "ListOfferings": "<p>Returns a list of products or offerings that the user can manage through the API. Each offering record indicates the recurring price per unit and the frequency for that offering. The API returns a <code>NotEligible</code> error if the user is not permitted to invoke the operation. Please contact <a href=\"mailto:aws-devicefarm-support@amazon.com\">aws-devicefarm-support@amazon.com</a> if you believe that you should be able to invoke this operation.</p>",
     "ListProjects": "<p>Gets information about projects.</p>",
+    "ListRemoteAccessSessions": "<p>Returns a list of all currently running remote access sessions.</p>",
     "ListRuns": "<p>Gets information about runs.</p>",
     "ListSamples": "<p>Gets information about samples.</p>",
     "ListSuites": "<p>Gets information about suites.</p>",
@@ -36,6 +41,7 @@
     "PurchaseOffering": "<p>Immediately purchases offerings for an AWS account. Offerings renew with the latest total purchased quantity for an offering, unless the renewal was overridden. The API returns a <code>NotEligible</code> error if the user is not permitted to invoke the operation. Please contact <a href=\"mailto:aws-devicefarm-support@amazon.com\">aws-devicefarm-support@amazon.com</a> if you believe that you should be able to invoke this operation.</p>",
     "RenewOffering": "<p>Explicitly sets the quantity of devices to renew for an offering, starting from the <code>effectiveDate</code> of the next period. The API returns a <code>NotEligible</code> error if the user is not permitted to invoke the operation. Please contact <a href=\"mailto:aws-devicefarm-support@amazon.com\">aws-devicefarm-support@amazon.com</a> if you believe that you should be able to invoke this operation.</p>",
     "ScheduleRun": "<p>Schedules a run.</p>",
+    "StopRemoteAccessSession": "<p>Ends a specified remote access session.</p>",
     "StopRun": "<p>Initiates a stop request for the current test run. AWS Device Farm will immediately stop the run on devices where tests have not started executing, and you will not be billed for these devices. On devices where tests have started executing, Setup Suite and Teardown Suite tests will run to completion before stopping execution on those devices. You will be billed for Setup, Teardown, and any tests that were in progress or already completed.</p>",
     "UpdateDevicePool": "<p>Modifies the name, description, and rules in a device pool given the attributes and the pool ARN. Rule updates are all-or-nothing, meaning they can only be updated as a whole (or not at all).</p>",
     "UpdateProject": "<p>Modifies the specified project name, given the project ARN and a new name.</p>"
@@ -59,9 +65,12 @@
         "AmazonResourceNames$member": null,
         "Artifact$arn": "<p>The artifact's ARN.</p>",
         "CreateDevicePoolRequest$projectArn": "<p>The ARN of the project for the device pool.</p>",
+        "CreateRemoteAccessSessionRequest$projectArn": "<p>The Amazon Resource Name (ARN) of the project for which you want to create a remote access session.</p>",
+        "CreateRemoteAccessSessionRequest$deviceArn": "<p>The Amazon Resource Name (ARN) of the device for which you want to create a remote access session.</p>",
         "CreateUploadRequest$projectArn": "<p>The ARN of the project for the upload.</p>",
         "DeleteDevicePoolRequest$arn": "<p>Represents the Amazon Resource Name (ARN) of the Device Farm device pool you wish to delete.</p>",
         "DeleteProjectRequest$arn": "<p>Represents the Amazon Resource Name (ARN) of the Device Farm project you wish to delete.</p>",
+        "DeleteRemoteAccessSessionRequest$arn": "<p>The Amazon Resource Name (ARN) of the sesssion for which you want to delete remote access.</p>",
         "DeleteRunRequest$arn": "<p>The Amazon Resource Name (ARN) for the run you wish to delete.</p>",
         "DeleteUploadRequest$arn": "<p>Represents the Amazon Resource Name (ARN) of the Device Farm upload you wish to delete.</p>",
         "Device$arn": "<p>The device's ARN.</p>",
@@ -72,16 +81,20 @@
         "GetDeviceRequest$arn": "<p>The device type's ARN.</p>",
         "GetJobRequest$arn": "<p>The job's ARN.</p>",
         "GetProjectRequest$arn": "<p>The project's ARN.</p>",
+        "GetRemoteAccessSessionRequest$arn": "<p>The Amazon Resource Name (ARN) of the remote access session about which you want to get session information.</p>",
         "GetRunRequest$arn": "<p>The run's ARN.</p>",
         "GetSuiteRequest$arn": "<p>The suite's ARN.</p>",
         "GetTestRequest$arn": "<p>The test's ARN.</p>",
         "GetUploadRequest$arn": "<p>The upload's ARN.</p>",
+        "InstallToRemoteAccessSessionRequest$remoteAccessSessionArn": "<p>The Amazon Resource Name (ARN) of the remote access session about which you are requesting information.</p>",
+        "InstallToRemoteAccessSessionRequest$appArn": "<p>The Amazon Resource Name (ARN) of the app about which you are requesting information.</p>",
         "Job$arn": "<p>The job's ARN.</p>",
         "ListArtifactsRequest$arn": "<p>The Run, Job, Suite, or Test ARN.</p>",
         "ListDevicePoolsRequest$arn": "<p>The project ARN.</p>",
         "ListDevicesRequest$arn": "<p>The device types' ARNs.</p>",
         "ListJobsRequest$arn": "<p>The jobs' ARNs.</p>",
         "ListProjectsRequest$arn": "<p>The projects' ARNs.</p>",
+        "ListRemoteAccessSessionsRequest$arn": "<p>The Amazon Resource Name (ARN) of the remote access session about which you are requesting information.</p>",
         "ListRunsRequest$arn": "<p>The runs' ARNs.</p>",
         "ListSamplesRequest$arn": "<p>The samples' ARNs.</p>",
         "ListSuitesRequest$arn": "<p>The suites' ARNs.</p>",
@@ -90,6 +103,7 @@
         "ListUploadsRequest$arn": "<p>The uploads' ARNs.</p>",
         "ProblemDetail$arn": "<p>The problem detail's ARN.</p>",
         "Project$arn": "<p>The project's ARN.</p>",
+        "RemoteAccessSession$arn": "<p>The Amazon Resource Name (ARN) of the remote access session.</p>",
         "Run$arn": "<p>The run's ARN.</p>",
         "Sample$arn": "<p>The sample's ARN.</p>",
         "ScheduleRunConfiguration$extraDataPackageArn": "<p>The ARN of the extra data for the run. The extra data is a .zip file that AWS Device Farm will extract to external data for Android or the app's sandbox for iOS.</p>",
@@ -98,6 +112,7 @@
         "ScheduleRunRequest$appArn": "<p>The ARN of the app to schedule a run.</p>",
         "ScheduleRunRequest$devicePoolArn": "<p>The ARN of the device pool for the run to be scheduled.</p>",
         "ScheduleRunTest$testPackageArn": "<p>The ARN of the uploaded test that will be run.</p>",
+        "StopRemoteAccessSessionRequest$arn": "<p>The Amazon Resource Name (ARN) of the remote access session you wish to stop.</p>",
         "StopRunRequest$arn": "<p>Represents the Amazon Resource Name (ARN) of the Device Farm run you wish to stop.</p>",
         "Suite$arn": "<p>The suite's ARN.</p>",
         "Test$arn": "<p>The test's ARN.</p>",
@@ -144,6 +159,8 @@
     "BillingMethod": {
       "base": null,
       "refs": {
+        "CreateRemoteAccessSessionConfiguration$billingMethod": "<p>Returns the billing method for purposes of configuring a remote access session.</p>",
+        "RemoteAccessSession$billingMethod": "<p>The billing method of the remote access session. Possible values include <code>METERED</code> or <code>UNMETERED</code>. For more information about metered devices, see <a href=\"http://docs.aws.amazon.com/devicefarm/latest/developerguide/welcome.html#welcome-terminology\">AWS Device Farm terminology</a>.\"</p>",
         "Run$billingMethod": "<p>Specifies the billing method for a test run: <code>metered</code> or <code>unmetered</code>. If the parameter is not specified, the default value is <code>unmetered</code>.</p>",
         "ScheduleRunConfiguration$billingMethod": "<p>Specifies the billing method for a test run: <code>metered</code> or <code>unmetered</code>. If the parameter is not specified, the default value is <code>unmetered</code>.</p>"
       }
@@ -151,6 +168,7 @@
     "Boolean": {
       "base": null,
       "refs": {
+        "Device$remoteAccessEnabled": "<p>Specifies whether remote access has been enabled for the specified device.</p>",
         "DevicePoolCompatibilityResult$compatible": "<p>Whether the result was compatible with the device pool.</p>",
         "Radios$wifi": "<p>True if Wi-Fi is enabled at the beginning of the test; otherwise, false.</p>",
         "Radios$bluetooth": "<p>True if Bluetooth is enabled at the beginning of the test; otherwise, false.</p>",
@@ -200,6 +218,22 @@
       "refs": {
       }
     },
+    "CreateRemoteAccessSessionConfiguration": {
+      "base": "<p>Creates the configuration settings for a remote access session, including the device model and type.</p>",
+      "refs": {
+        "CreateRemoteAccessSessionRequest$configuration": "<p>The configuration information for the remote access session request.</p>"
+      }
+    },
+    "CreateRemoteAccessSessionRequest": {
+      "base": "<p>Creates and submits a request to start a remote access session.</p>",
+      "refs": {
+      }
+    },
+    "CreateRemoteAccessSessionResult": {
+      "base": "<p>Represents the server response from a request to create a remote access session.</p>",
+      "refs": {
+      }
+    },
     "CreateUploadRequest": {
       "base": "<p>Represents a request to the create upload operation.</p>",
       "refs": {
@@ -225,6 +259,9 @@
         "OfferingStatus$effectiveOn": "<p>The date on which the offering is effective.</p>",
         "OfferingTransaction$createdOn": "<p>The date on which an offering transaction was created.</p>",
         "Project$created": "<p>When the project was created.</p>",
+        "RemoteAccessSession$created": "<p>The date and time the remote access session was created.</p>",
+        "RemoteAccessSession$started": "<p>The date and time the remote access session was started.</p>",
+        "RemoteAccessSession$stopped": "<p>The date and time the remote access session was stopped.</p>",
         "Run$created": "<p>When the run was created.</p>",
         "Run$started": "<p>The run's start time.</p>",
         "Run$stopped": "<p>The run's stop time.</p>",
@@ -257,6 +294,16 @@
       "refs": {
       }
     },
+    "DeleteRemoteAccessSessionRequest": {
+      "base": "<p>Represents the request to delete the specified remote access session.</p>",
+      "refs": {
+      }
+    },
+    "DeleteRemoteAccessSessionResult": {
+      "base": "<p>The response from the server when a request is made to delete the remote access session.</p>",
+      "refs": {
+      }
+    },
     "DeleteRunRequest": {
       "base": "<p>Represents a request to the delete run operation.</p>",
       "refs": {
@@ -284,7 +331,8 @@
         "Devices$member": null,
         "GetDeviceResult$device": null,
         "Job$device": null,
-        "Problem$device": "<p>Information about the associated device.</p>"
+        "Problem$device": "<p>Information about the associated device.</p>",
+        "RemoteAccessSession$device": null
       }
     },
     "DeviceAttribute": {
@@ -304,6 +352,7 @@
       "base": "<p>Represents the total (metered or unmetered) minutes used by the resource to run tests. Contains the sum of minutes consumed by all children.</p>",
       "refs": {
         "Job$deviceMinutes": "<p>Represents the total (metered or unmetered) minutes used by the job.</p>",
+        "RemoteAccessSession$deviceMinutes": null,
         "Run$deviceMinutes": "<p>Represents the total (metered or unmetered) minutes used by the test run.</p>",
         "Suite$deviceMinutes": "<p>Represents the total (metered or unmetered) minutes used by the test suite.</p>",
         "Test$deviceMinutes": "<p>Represents the total (metered or unmetered) minutes used by the test.</p>"
@@ -376,6 +425,7 @@
       "refs": {
         "Job$result": "<p>The job's result.</p> <p>Allowed values include:</p> <ul> <li><p>PENDING: A pending condition.</p></li> <li><p>PASSED: A passing condition.</p></li> <li><p>WARNED: A warning condition.</p></li> <li><p>FAILED: A failed condition.</p></li> <li><p>SKIPPED: A skipped condition.</p></li> <li><p>ERRORED: An error condition.</p></li> <li><p>STOPPED: A stopped condition.</p></li> </ul>",
         "Problem$result": "<p>The problem's result.</p> <p>Allowed values include:</p> <ul> <li><p>PENDING: A pending condition.</p></li> <li><p>PASSED: A passing condition.</p></li> <li><p>WARNED: A warning condition.</p></li> <li><p>FAILED: A failed condition.</p></li> <li><p>SKIPPED: A skipped condition.</p></li> <li><p>ERRORED: An error condition.</p></li> <li><p>STOPPED: A stopped condition.</p></li> </ul>",
+        "RemoteAccessSession$result": "<p>The result of the remote access session. Can be any of the following:</p> <ul> <li><p>PENDING: A pending condition.</p></li> <li><p>PASSED: A passing condition.</p></li> <li><p>WARNED: A warning condition.</p></li> <li><p>FAILED: A failed condition.</p></li> <li><p>SKIPPED: A skipped condition.</p></li> <li><p>ERRORED: An error condition.</p></li> <li><p>STOPPED: A stopped condition.</p></li> </ul>",
         "Run$result": "<p>The run's result.</p> <p>Allowed values include:</p> <ul> <li><p>PENDING: A pending condition.</p></li> <li><p>PASSED: A passing condition.</p></li> <li><p>WARNED: A warning condition.</p></li> <li><p>FAILED: A failed condition.</p></li> <li><p>SKIPPED: A skipped condition.</p></li> <li><p>ERRORED: An error condition.</p></li> <li><p>STOPPED: A stopped condition.</p></li> </ul>",
         "Suite$result": "<p>The suite's result.</p> <p>Allowed values include:</p> <ul> <li><p>PENDING: A pending condition.</p></li> <li><p>PASSED: A passing condition.</p></li> <li><p>WARNED: A warning condition.</p></li> <li><p>FAILED: A failed condition.</p></li> <li><p>SKIPPED: A skipped condition.</p></li> <li><p>ERRORED: An error condition.</p></li> <li><p>STOPPED: A stopped condition.</p></li> </ul>",
         "Test$result": "<p>The test's result.</p> <p>Allowed values include:</p> <ul> <li><p>PENDING: A pending condition.</p></li> <li><p>PASSED: A passing condition.</p></li> <li><p>WARNED: A warning condition.</p></li> <li><p>FAILED: A failed condition.</p></li> <li><p>SKIPPED: A skipped condition.</p></li> <li><p>ERRORED: An error condition.</p></li> <li><p>STOPPED: A stopped condition.</p></li> </ul>",
@@ -386,6 +436,7 @@
       "base": null,
       "refs": {
         "Job$status": "<p>The job's status.</p> <p>Allowed values include:</p> <ul> <li><p>PENDING: A pending status.</p></li> <li><p>PENDING_CONCURRENCY: A pending concurrency status.</p></li> <li><p>PENDING_DEVICE: A pending device status.</p></li> <li><p>PROCESSING: A processing status.</p></li> <li><p>SCHEDULING: A scheduling status.</p></li> <li><p>PREPARING: A preparing status.</p></li> <li><p>RUNNING: A running status.</p></li> <li><p>COMPLETED: A completed status.</p></li> <li><p>STOPPING: A stopping status.</p></li> </ul>",
+        "RemoteAccessSession$status": "<p>The status of the remote access session. Can be any of the following:</p> <ul> <li><p>PENDING: A pending status.</p></li> <li><p>PENDING_CONCURRENCY: A pending concurrency status.</p></li> <li><p>PENDING_DEVICE: A pending device status.</p></li> <li><p>PROCESSING: A processing status.</p></li> <li><p>SCHEDULING: A scheduling status.</p></li> <li><p>PREPARING: A preparing status.</p></li> <li><p>RUNNING: A running status.</p></li> <li><p>COMPLETED: A completed status.</p></li> <li><p>STOPPING: A stopping status.</p></li> </ul>",
         "Run$status": "<p>The run's status.</p> <p>Allowed values include:</p> <ul> <li><p>PENDING: A pending status.</p></li> <li><p>PENDING_CONCURRENCY: A pending concurrency status.</p></li> <li><p>PENDING_DEVICE: A pending device status.</p></li> <li><p>PROCESSING: A processing status.</p></li> <li><p>SCHEDULING: A scheduling status.</p></li> <li><p>PREPARING: A preparing status.</p></li> <li><p>RUNNING: A running status.</p></li> <li><p>COMPLETED: A completed status.</p></li> <li><p>STOPPING: A stopping status.</p></li> </ul>",
         "Suite$status": "<p>The suite's status.</p> <p>Allowed values include:</p> <ul> <li><p>PENDING: A pending status.</p></li> <li><p>PENDING_CONCURRENCY: A pending concurrency status.</p></li> <li><p>PENDING_DEVICE: A pending device status.</p></li> <li><p>PROCESSING: A processing status.</p></li> <li><p>SCHEDULING: A scheduling status.</p></li> <li><p>PREPARING: A preparing status.</p></li> <li><p>RUNNING: A running status.</p></li> <li><p>COMPLETED: A completed status.</p></li> <li><p>STOPPING: A stopping status.</p></li> </ul>",
         "Test$status": "<p>The test's status.</p> <p>Allowed values include:</p> <ul> <li><p>PENDING: A pending status.</p></li> <li><p>PENDING_CONCURRENCY: A pending concurrency status.</p></li> <li><p>PENDING_DEVICE: A pending device status.</p></li> <li><p>PROCESSING: A processing status.</p></li> <li><p>SCHEDULING: A scheduling status.</p></li> <li><p>PREPARING: A preparing status.</p></li> <li><p>RUNNING: A running status.</p></li> <li><p>COMPLETED: A completed status.</p></li> <li><p>STOPPING: A stopping status.</p></li> </ul>"
@@ -467,6 +518,16 @@
       "refs": {
       }
     },
+    "GetRemoteAccessSessionRequest": {
+      "base": "<p>Represents the request to get information about the specified remote access session.</p>",
+      "refs": {
+      }
+    },
+    "GetRemoteAccessSessionResult": {
+      "base": "<p>Represents the response from the server that lists detailed information about the remote access session.</p>",
+      "refs": {
+      }
+    },
     "GetRunRequest": {
       "base": "<p>Represents a request to the get run operation.</p>",
       "refs": {
@@ -522,6 +583,16 @@
       "base": null,
       "refs": {
         "DevicePoolCompatibilityResult$incompatibilityMessages": "<p>Information about the compatibility.</p>"
+      }
+    },
+    "InstallToRemoteAccessSessionRequest": {
+      "base": "<p>Represents the request to install an Android application (in .apk format) or an iOS application (in .ipa format) as part of a remote access session.</p>",
+      "refs": {
+      }
+    },
+    "InstallToRemoteAccessSessionResult": {
+      "base": "<p>Represents the response from the server after AWS Device Farm makes a request to install to a remote access session.</p>",
+      "refs": {
       }
     },
     "Integer": {
@@ -632,6 +703,16 @@
       "refs": {
       }
     },
+    "ListRemoteAccessSessionsRequest": {
+      "base": "<p>Represents the request to return information about the remote access session.</p>",
+      "refs": {
+      }
+    },
+    "ListRemoteAccessSessionsResult": {
+      "base": "<p>Represents the response from the server after AWS Device Farm makes a request to return information about the remote access session.</p>",
+      "refs": {
+      }
+    },
     "ListRunsRequest": {
       "base": "<p>Represents a request to the list runs operation.</p>",
       "refs": {
@@ -719,6 +800,7 @@
         "NotFoundException$message": "<p>Any additional information about the exception.</p>",
         "Offering$description": "<p>A string describing the offering.</p>",
         "Problem$message": "<p>A message about the problem's result.</p>",
+        "RemoteAccessSession$message": "<p>A message about the remote access session.</p>",
         "Run$message": "<p>A message about the run's result.</p>",
         "ServiceAccountException$message": "<p>Any additional information about the exception.</p>",
         "Suite$message": "<p>A message about the suite's result.</p>",
@@ -747,12 +829,14 @@
         "Artifact$name": "<p>The artifact's name.</p>",
         "CreateDevicePoolRequest$name": "<p>The device pool's name.</p>",
         "CreateProjectRequest$name": "<p>The project's name.</p>",
-        "CreateUploadRequest$name": "<p>The upload's file name.</p>",
+        "CreateRemoteAccessSessionRequest$name": "<p>The name of the remote access session that you wish to create.</p>",
+        "CreateUploadRequest$name": "<p>The upload's file name. The name should not contain the '/' character.</p>",
         "Device$name": "<p>The device's display name.</p>",
         "DevicePool$name": "<p>The device pool's name.</p>",
         "Job$name": "<p>The job's name.</p>",
         "ProblemDetail$name": "<p>The problem detail's name.</p>",
         "Project$name": "<p>The project's name.</p>",
+        "RemoteAccessSession$name": "<p>The name of the remote access session.</p>",
         "Run$name": "<p>The run's name.</p>",
         "ScheduleRunRequest$name": "<p>The name for the run to be scheduled.</p>",
         "Suite$name": "<p>The suite's name.</p>",
@@ -853,6 +937,8 @@
         "ListOfferingsResult$nextToken": "<p>An identifier that was returned from the previous call to this operation, which can be used to return the next set of items in the list.</p>",
         "ListProjectsRequest$nextToken": "<p>An identifier that was returned from the previous call to this operation, which can be used to return the next set of items in the list.</p>",
         "ListProjectsResult$nextToken": "<p>If the number of items that are returned is significantly large, this is an identifier that is also returned, which can be used in a subsequent call to this operation to return the next set of items in the list.</p>",
+        "ListRemoteAccessSessionsRequest$nextToken": "<p>An identifier that was returned from the previous call to this operation, which can be used to return the next set of items in the list.</p>",
+        "ListRemoteAccessSessionsResult$nextToken": "<p>An identifier that was returned from the previous call to this operation, which can be used to return the next set of items in the list.</p>",
         "ListRunsRequest$nextToken": "<p>An identifier that was returned from the previous call to this operation, which can be used to return the next set of items in the list.</p>",
         "ListRunsResult$nextToken": "<p>If the number of items that are returned is significantly large, this is an identifier that is also returned, which can be used in a subsequent call to this operation to return the next set of items in the list.</p>",
         "ListSamplesRequest$nextToken": "<p>An identifier that was returned from the previous call to this operation, which can be used to return the next set of items in the list.</p>",
@@ -942,6 +1028,21 @@
       "base": null,
       "refs": {
         "Offering$recurringCharges": "<p>Specifies whether there are recurring charges for the offering.</p>"
+      }
+    },
+    "RemoteAccessSession": {
+      "base": "<p>Represents information about the remote access session.</p>",
+      "refs": {
+        "CreateRemoteAccessSessionResult$remoteAccessSession": "<p>A container that describes the remote access session when the request to create a remote access session is sent.</p>",
+        "GetRemoteAccessSessionResult$remoteAccessSession": "<p>A container that lists detailed information about the remote access session.</p>",
+        "RemoteAccessSessions$member": null,
+        "StopRemoteAccessSessionResult$remoteAccessSession": "<p>A container representing the metadata from the service about the remote access session you are stopping.</p>"
+      }
+    },
+    "RemoteAccessSessions": {
+      "base": null,
+      "refs": {
+        "ListRemoteAccessSessionsResult$remoteAccessSessions": "<p>A container representing the metadata from the service about each remote access session you are requesting.</p>"
       }
     },
     "RenewOfferingRequest": {
@@ -1040,6 +1141,16 @@
       "refs": {
       }
     },
+    "StopRemoteAccessSessionRequest": {
+      "base": "<p>Represents the request to stop the remote access session.</p>",
+      "refs": {
+      }
+    },
+    "StopRemoteAccessSessionResult": {
+      "base": "<p>Represents the response from the server that describes the remote access session when AWS Device Farm stops the session.</p>",
+      "refs": {
+      }
+    },
     "StopRunRequest": {
       "base": "<p>Represents the request to stop a specific run.</p>",
       "refs": {
@@ -1062,6 +1173,9 @@
         "Device$image": "<p>The device's image name.</p>",
         "Device$carrier": "<p>The device's carrier.</p>",
         "Device$radio": "<p>The device's radio.</p>",
+        "Device$fleetType": "<p>The type of fleet to which this device belongs. Possible values for fleet type are PRIVATE and PUBLIC.</p>",
+        "Device$fleetName": "<p>The name of the fleet to which this device belongs.</p>",
+        "RemoteAccessSession$endpoint": "<p>The endpoint for the remote access sesssion.</p>",
         "Rule$value": "<p>The rule's value.</p>",
         "ScheduleRunConfiguration$locale": "<p>Information about the locale that is used for the run.</p>",
         "TestParameters$key": null,
@@ -1168,6 +1282,7 @@
       "refs": {
         "CreateUploadResult$upload": "<p>The newly created upload.</p>",
         "GetUploadResult$upload": null,
+        "InstallToRemoteAccessSessionResult$appUpload": null,
         "Uploads$member": null
       }
     },

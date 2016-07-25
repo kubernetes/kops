@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"golang.org/x/net/context"
@@ -244,6 +245,14 @@ func fullSubName(proj, name string) string {
 }
 
 func rawService(ctx context.Context) *raw.Service {
+	baseAddr := func() string {
+		// Environment variables for gcloud emulator:
+		// https://cloud.google.com/sdk/gcloud/reference/beta/emulators/pubsub/
+		if host := os.Getenv("PUBSUB_EMULATOR_HOST"); host != "" {
+			return "http://" + host + "/"
+		}
+		return prodAddr
+	}
 	return internal.Service(ctx, "pubsub", func(hc *http.Client) interface{} {
 		svc, _ := raw.New(hc)
 		svc.BasePath = baseAddr()

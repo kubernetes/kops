@@ -35,8 +35,8 @@ func (opt startIndex) customizeRead(conf *pagingConf) {
 	conf.startIndex = uint64(opt)
 }
 
-func (conf *readTableConf) fetch(ctx context.Context, c *Client, token string) (*readDataResult, error) {
-	return c.service.readTabledata(ctx, conf, token)
+func (conf *readTableConf) fetch(ctx context.Context, s service, token string) (*readDataResult, error) {
+	return s.readTabledata(ctx, conf, token)
 }
 
 func (c *Client) readTable(t *Table, options []ReadOption) (*Iterator, error) {
@@ -47,11 +47,11 @@ func (c *Client) readTable(t *Table, options []ReadOption) (*Iterator, error) {
 		o.customizeRead(&conf.paging)
 	}
 
-	return newIterator(c, conf), nil
+	return newIterator(c.service, conf), nil
 }
 
-func (conf *readQueryConf) fetch(ctx context.Context, c *Client, token string) (*readDataResult, error) {
-	return c.service.readQuery(ctx, conf, token)
+func (conf *readQueryConf) fetch(ctx context.Context, s service, token string) (*readDataResult, error) {
+	return s.readQuery(ctx, conf, token)
 }
 
 func (c *Client) readQueryResults(job *Job, options []ReadOption) (*Iterator, error) {
@@ -64,5 +64,5 @@ func (c *Client) readQueryResults(job *Job, options []ReadOption) (*Iterator, er
 		o.customizeRead(&conf.paging)
 	}
 
-	return newIterator(c, conf), nil
+	return newIterator(c.service, conf), nil
 }

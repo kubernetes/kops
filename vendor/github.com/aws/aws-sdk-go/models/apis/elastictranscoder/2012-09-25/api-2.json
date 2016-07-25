@@ -3,9 +3,9 @@
   "metadata":{
     "apiVersion":"2012-09-25",
     "endpointPrefix":"elastictranscoder",
+    "protocol":"rest-json",
     "serviceFullName":"Amazon Elastic Transcoder",
-    "signatureVersion":"v4",
-    "protocol":"rest-json"
+    "signatureVersion":"v4"
   },
   "operations":{
     "CancelJob":{
@@ -18,36 +18,12 @@
       "input":{"shape":"CancelJobRequest"},
       "output":{"shape":"CancelJobResponse"},
       "errors":[
-        {
-          "shape":"ValidationException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"IncompatibleVersionException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"ResourceNotFoundException",
-          "error":{"httpStatusCode":404},
-          "exception":true
-        },
-        {
-          "shape":"ResourceInUseException",
-          "error":{"httpStatusCode":409},
-          "exception":true
-        },
-        {
-          "shape":"AccessDeniedException",
-          "error":{"httpStatusCode":403},
-          "exception":true
-        },
-        {
-          "shape":"InternalServiceException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ValidationException"},
+        {"shape":"IncompatibleVersionException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ResourceInUseException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServiceException"}
       ]
     },
     "CreateJob":{
@@ -60,36 +36,12 @@
       "input":{"shape":"CreateJobRequest"},
       "output":{"shape":"CreateJobResponse"},
       "errors":[
-        {
-          "shape":"ValidationException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"IncompatibleVersionException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"ResourceNotFoundException",
-          "error":{"httpStatusCode":404},
-          "exception":true
-        },
-        {
-          "shape":"AccessDeniedException",
-          "error":{"httpStatusCode":403},
-          "exception":true
-        },
-        {
-          "shape":"LimitExceededException",
-          "error":{"httpStatusCode":429},
-          "exception":true
-        },
-        {
-          "shape":"InternalServiceException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ValidationException"},
+        {"shape":"IncompatibleVersionException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"InternalServiceException"}
       ]
     },
     "CreatePipeline":{
@@ -102,36 +54,12 @@
       "input":{"shape":"CreatePipelineRequest"},
       "output":{"shape":"CreatePipelineResponse"},
       "errors":[
-        {
-          "shape":"ValidationException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"IncompatibleVersionException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"AccessDeniedException",
-          "error":{"httpStatusCode":403},
-          "exception":true
-        },
-        {
-          "shape":"ResourceNotFoundException",
-          "error":{"httpStatusCode":404},
-          "exception":true
-        },
-        {
-          "shape":"LimitExceededException",
-          "error":{"httpStatusCode":429},
-          "exception":true
-        },
-        {
-          "shape":"InternalServiceException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ValidationException"},
+        {"shape":"IncompatibleVersionException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"InternalServiceException"}
       ]
     },
     "CreatePreset":{
@@ -144,31 +72,11 @@
       "input":{"shape":"CreatePresetRequest"},
       "output":{"shape":"CreatePresetResponse"},
       "errors":[
-        {
-          "shape":"ValidationException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"IncompatibleVersionException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"AccessDeniedException",
-          "error":{"httpStatusCode":403},
-          "exception":true
-        },
-        {
-          "shape":"LimitExceededException",
-          "error":{"httpStatusCode":429},
-          "exception":true
-        },
-        {
-          "shape":"InternalServiceException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ValidationException"},
+        {"shape":"IncompatibleVersionException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"InternalServiceException"}
       ]
     },
     "DeletePipeline":{
@@ -181,36 +89,12 @@
       "input":{"shape":"DeletePipelineRequest"},
       "output":{"shape":"DeletePipelineResponse"},
       "errors":[
-        {
-          "shape":"ValidationException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"IncompatibleVersionException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"ResourceNotFoundException",
-          "error":{"httpStatusCode":404},
-          "exception":true
-        },
-        {
-          "shape":"ResourceInUseException",
-          "error":{"httpStatusCode":409},
-          "exception":true
-        },
-        {
-          "shape":"AccessDeniedException",
-          "error":{"httpStatusCode":403},
-          "exception":true
-        },
-        {
-          "shape":"InternalServiceException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ValidationException"},
+        {"shape":"IncompatibleVersionException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ResourceInUseException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServiceException"}
       ]
     },
     "DeletePreset":{
@@ -223,31 +107,11 @@
       "input":{"shape":"DeletePresetRequest"},
       "output":{"shape":"DeletePresetResponse"},
       "errors":[
-        {
-          "shape":"ValidationException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"IncompatibleVersionException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"ResourceNotFoundException",
-          "error":{"httpStatusCode":404},
-          "exception":true
-        },
-        {
-          "shape":"AccessDeniedException",
-          "error":{"httpStatusCode":403},
-          "exception":true
-        },
-        {
-          "shape":"InternalServiceException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ValidationException"},
+        {"shape":"IncompatibleVersionException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServiceException"}
       ]
     },
     "ListJobsByPipeline":{
@@ -259,31 +123,11 @@
       "input":{"shape":"ListJobsByPipelineRequest"},
       "output":{"shape":"ListJobsByPipelineResponse"},
       "errors":[
-        {
-          "shape":"ValidationException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"IncompatibleVersionException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"ResourceNotFoundException",
-          "error":{"httpStatusCode":404},
-          "exception":true
-        },
-        {
-          "shape":"AccessDeniedException",
-          "error":{"httpStatusCode":403},
-          "exception":true
-        },
-        {
-          "shape":"InternalServiceException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ValidationException"},
+        {"shape":"IncompatibleVersionException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServiceException"}
       ]
     },
     "ListJobsByStatus":{
@@ -295,31 +139,11 @@
       "input":{"shape":"ListJobsByStatusRequest"},
       "output":{"shape":"ListJobsByStatusResponse"},
       "errors":[
-        {
-          "shape":"ValidationException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"IncompatibleVersionException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"ResourceNotFoundException",
-          "error":{"httpStatusCode":404},
-          "exception":true
-        },
-        {
-          "shape":"AccessDeniedException",
-          "error":{"httpStatusCode":403},
-          "exception":true
-        },
-        {
-          "shape":"InternalServiceException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ValidationException"},
+        {"shape":"IncompatibleVersionException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServiceException"}
       ]
     },
     "ListPipelines":{
@@ -331,26 +155,10 @@
       "input":{"shape":"ListPipelinesRequest"},
       "output":{"shape":"ListPipelinesResponse"},
       "errors":[
-        {
-          "shape":"ValidationException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"IncompatibleVersionException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"AccessDeniedException",
-          "error":{"httpStatusCode":403},
-          "exception":true
-        },
-        {
-          "shape":"InternalServiceException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ValidationException"},
+        {"shape":"IncompatibleVersionException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServiceException"}
       ]
     },
     "ListPresets":{
@@ -362,26 +170,10 @@
       "input":{"shape":"ListPresetsRequest"},
       "output":{"shape":"ListPresetsResponse"},
       "errors":[
-        {
-          "shape":"ValidationException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"IncompatibleVersionException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"AccessDeniedException",
-          "error":{"httpStatusCode":403},
-          "exception":true
-        },
-        {
-          "shape":"InternalServiceException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ValidationException"},
+        {"shape":"IncompatibleVersionException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServiceException"}
       ]
     },
     "ReadJob":{
@@ -393,31 +185,11 @@
       "input":{"shape":"ReadJobRequest"},
       "output":{"shape":"ReadJobResponse"},
       "errors":[
-        {
-          "shape":"ValidationException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"IncompatibleVersionException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"ResourceNotFoundException",
-          "error":{"httpStatusCode":404},
-          "exception":true
-        },
-        {
-          "shape":"AccessDeniedException",
-          "error":{"httpStatusCode":403},
-          "exception":true
-        },
-        {
-          "shape":"InternalServiceException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ValidationException"},
+        {"shape":"IncompatibleVersionException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServiceException"}
       ]
     },
     "ReadPipeline":{
@@ -429,31 +201,11 @@
       "input":{"shape":"ReadPipelineRequest"},
       "output":{"shape":"ReadPipelineResponse"},
       "errors":[
-        {
-          "shape":"ValidationException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"IncompatibleVersionException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"ResourceNotFoundException",
-          "error":{"httpStatusCode":404},
-          "exception":true
-        },
-        {
-          "shape":"AccessDeniedException",
-          "error":{"httpStatusCode":403},
-          "exception":true
-        },
-        {
-          "shape":"InternalServiceException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ValidationException"},
+        {"shape":"IncompatibleVersionException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServiceException"}
       ]
     },
     "ReadPreset":{
@@ -465,31 +217,11 @@
       "input":{"shape":"ReadPresetRequest"},
       "output":{"shape":"ReadPresetResponse"},
       "errors":[
-        {
-          "shape":"ValidationException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"IncompatibleVersionException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"ResourceNotFoundException",
-          "error":{"httpStatusCode":404},
-          "exception":true
-        },
-        {
-          "shape":"AccessDeniedException",
-          "error":{"httpStatusCode":403},
-          "exception":true
-        },
-        {
-          "shape":"InternalServiceException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ValidationException"},
+        {"shape":"IncompatibleVersionException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServiceException"}
       ]
     },
     "TestRole":{
@@ -502,31 +234,11 @@
       "input":{"shape":"TestRoleRequest"},
       "output":{"shape":"TestRoleResponse"},
       "errors":[
-        {
-          "shape":"ValidationException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"IncompatibleVersionException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"ResourceNotFoundException",
-          "error":{"httpStatusCode":404},
-          "exception":true
-        },
-        {
-          "shape":"AccessDeniedException",
-          "error":{"httpStatusCode":403},
-          "exception":true
-        },
-        {
-          "shape":"InternalServiceException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ValidationException"},
+        {"shape":"IncompatibleVersionException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServiceException"}
       ]
     },
     "UpdatePipeline":{
@@ -539,36 +251,12 @@
       "input":{"shape":"UpdatePipelineRequest"},
       "output":{"shape":"UpdatePipelineResponse"},
       "errors":[
-        {
-          "shape":"ValidationException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"IncompatibleVersionException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"AccessDeniedException",
-          "error":{"httpStatusCode":403},
-          "exception":true
-        },
-        {
-          "shape":"ResourceInUseException",
-          "error":{"httpStatusCode":409},
-          "exception":true
-        },
-        {
-          "shape":"ResourceNotFoundException",
-          "error":{"httpStatusCode":404},
-          "exception":true
-        },
-        {
-          "shape":"InternalServiceException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ValidationException"},
+        {"shape":"IncompatibleVersionException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceInUseException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalServiceException"}
       ]
     },
     "UpdatePipelineNotifications":{
@@ -580,36 +268,12 @@
       "input":{"shape":"UpdatePipelineNotificationsRequest"},
       "output":{"shape":"UpdatePipelineNotificationsResponse"},
       "errors":[
-        {
-          "shape":"ValidationException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"IncompatibleVersionException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"ResourceNotFoundException",
-          "error":{"httpStatusCode":404},
-          "exception":true
-        },
-        {
-          "shape":"ResourceInUseException",
-          "error":{"httpStatusCode":409},
-          "exception":true
-        },
-        {
-          "shape":"AccessDeniedException",
-          "error":{"httpStatusCode":403},
-          "exception":true
-        },
-        {
-          "shape":"InternalServiceException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ValidationException"},
+        {"shape":"IncompatibleVersionException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ResourceInUseException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServiceException"}
       ]
     },
     "UpdatePipelineStatus":{
@@ -621,36 +285,12 @@
       "input":{"shape":"UpdatePipelineStatusRequest"},
       "output":{"shape":"UpdatePipelineStatusResponse"},
       "errors":[
-        {
-          "shape":"ValidationException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"IncompatibleVersionException",
-          "error":{"httpStatusCode":400},
-          "exception":true
-        },
-        {
-          "shape":"ResourceNotFoundException",
-          "error":{"httpStatusCode":404},
-          "exception":true
-        },
-        {
-          "shape":"ResourceInUseException",
-          "error":{"httpStatusCode":409},
-          "exception":true
-        },
-        {
-          "shape":"AccessDeniedException",
-          "error":{"httpStatusCode":403},
-          "exception":true
-        },
-        {
-          "shape":"InternalServiceException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ValidationException"},
+        {"shape":"IncompatibleVersionException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ResourceInUseException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServiceException"}
       ]
     }
   },
@@ -697,7 +337,7 @@
     },
     "AudioBitDepth":{
       "type":"string",
-      "pattern":"(^16$)|(^24$)"
+      "pattern":"(^8$)|(^16$)|(^24$)|(^32$)"
     },
     "AudioBitOrder":{
       "type":"string",
@@ -749,7 +389,7 @@
     },
     "AudioSigned":{
       "type":"string",
-      "pattern":"(^Signed$)"
+      "pattern":"(^Unsigned$)|(^Signed$)"
     },
     "Base64EncodedString":{
       "type":"string",
@@ -785,7 +425,7 @@
     },
     "CaptionFormatFormat":{
       "type":"string",
-      "pattern":"(^mov-text$)|(^srt$)|(^scc$)|(^webvtt$)|(^dfxp$)"
+      "pattern":"(^mov-text$)|(^srt$)|(^scc$)|(^webvtt$)|(^dfxp$)|(^cea-708$)"
     },
     "CaptionFormatPattern":{
       "type":"string",
@@ -803,7 +443,7 @@
     "CaptionSource":{
       "type":"structure",
       "members":{
-        "Key":{"shape":"Key"},
+        "Key":{"shape":"LongKey"},
         "Language":{"shape":"Key"},
         "TimeOffset":{"shape":"TimeOffset"},
         "Label":{"shape":"Name"},
@@ -831,8 +471,8 @@
     },
     "CodecOption":{
       "type":"string",
-      "min":1,
-      "max":255
+      "max":255,
+      "min":1
     },
     "CodecOptions":{
       "type":"map",
@@ -983,8 +623,8 @@
     },
     "Description":{
       "type":"string",
-      "min":0,
-      "max":255
+      "max":255,
+      "min":0
     },
     "DetectedProperties":{
       "type":"structure",
@@ -1023,8 +663,8 @@
     },
     "Filename":{
       "type":"string",
-      "min":1,
-      "max":255
+      "max":255,
+      "min":1
     },
     "FixedGOP":{
       "type":"string",
@@ -1040,8 +680,8 @@
     },
     "Grantee":{
       "type":"string",
-      "min":1,
-      "max":255
+      "max":255,
+      "min":1
     },
     "GranteeType":{
       "type":"string",
@@ -1118,7 +758,7 @@
     "JobInput":{
       "type":"structure",
       "members":{
-        "Key":{"shape":"Key"},
+        "Key":{"shape":"LongKey"},
         "FrameRate":{"shape":"FrameRate"},
         "Resolution":{"shape":"Resolution"},
         "AspectRatio":{"shape":"AspectRatio"},
@@ -1184,13 +824,13 @@
     },
     "Key":{
       "type":"string",
-      "min":1,
-      "max":255
+      "max":255,
+      "min":1
     },
     "KeyArn":{
       "type":"string",
-      "min":0,
-      "max":255
+      "max":255,
+      "min":0
     },
     "KeyIdGuid":{
       "type":"string",
@@ -1311,6 +951,11 @@
         "NextPageToken":{"shape":"Id"}
       }
     },
+    "LongKey":{
+      "type":"string",
+      "max":1024,
+      "min":1
+    },
     "MaxFrameRate":{
       "type":"string",
       "pattern":"(^10$)|(^15$)|(^23.97$)|(^24$)|(^25$)|(^29.97$)|(^30$)|(^50$)|(^60$)"
@@ -1321,8 +966,8 @@
     },
     "Name":{
       "type":"string",
-      "min":1,
-      "max":40
+      "max":40,
+      "min":1
     },
     "NonEmptyBase64EncodedString":{
       "type":"string",
@@ -1341,8 +986,8 @@
     "NullableLong":{"type":"long"},
     "OneTo512String":{
       "type":"string",
-      "min":1,
-      "max":512
+      "max":512,
+      "min":1
     },
     "Opacity":{
       "type":"string",
@@ -1435,7 +1080,7 @@
     },
     "PlaylistFormat":{
       "type":"string",
-      "pattern":"(^HLSv3$)|(^HLSv4$)|(^Smooth$)"
+      "pattern":"(^HLSv3$)|(^HLSv4$)|(^Smooth$)|(^MPEG-DASH$)"
     },
     "Playlists":{
       "type":"list",
@@ -1457,7 +1102,7 @@
     },
     "PresetContainer":{
       "type":"string",
-      "pattern":"(^mp4$)|(^ts$)|(^webm$)|(^mp3$)|(^flac$)|(^oga$)|(^ogg$)|(^fmp4$)|(^mpg$)|(^flv$)|(^gif$)|(^mxf$)"
+      "pattern":"(^mp4$)|(^ts$)|(^webm$)|(^mp3$)|(^flac$)|(^oga$)|(^ogg$)|(^fmp4$)|(^mpg$)|(^flv$)|(^gif$)|(^mxf$)|(^wav$)"
     },
     "PresetType":{
       "type":"string",
@@ -1480,8 +1125,8 @@
     },
     "PresetWatermarkId":{
       "type":"string",
-      "min":1,
-      "max":40
+      "max":40,
+      "min":1
     },
     "PresetWatermarks":{
       "type":"list",
@@ -1750,7 +1395,7 @@
     },
     "VideoCodec":{
       "type":"string",
-      "pattern":"(^H\\.264$)|(^vp8$)|(^mpeg2$)|(^gif$)"
+      "pattern":"(^H\\.264$)|(^vp8$)|(^vp9$)|(^mpeg2$)|(^gif$)"
     },
     "VideoParameters":{
       "type":"structure",
@@ -1785,9 +1430,9 @@
     },
     "WatermarkKey":{
       "type":"string",
+      "max":1024,
       "min":1,
-      "max":255,
-      "pattern":"(^.{1,}.jpg$)|(^.{1,}.jpeg$)|(^.{1,}.png$)"
+      "pattern":"(^.{1,1020}.jpg$)|(^.{1,1019}.jpeg$)|(^.{1,1020}.png$)"
     },
     "WatermarkSizingPolicy":{
       "type":"string",
@@ -1795,13 +1440,13 @@
     },
     "ZeroTo255String":{
       "type":"string",
-      "min":0,
-      "max":255
+      "max":255,
+      "min":0
     },
     "ZeroTo512String":{
       "type":"string",
-      "min":0,
-      "max":512
+      "max":512,
+      "min":0
     }
   }
 }

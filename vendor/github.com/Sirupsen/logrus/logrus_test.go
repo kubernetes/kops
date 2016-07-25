@@ -255,7 +255,15 @@ func TestParseLevel(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, PanicLevel, l)
 
+	l, err = ParseLevel("PANIC")
+	assert.Nil(t, err)
+	assert.Equal(t, PanicLevel, l)
+
 	l, err = ParseLevel("fatal")
+	assert.Nil(t, err)
+	assert.Equal(t, FatalLevel, l)
+
+	l, err = ParseLevel("FATAL")
 	assert.Nil(t, err)
 	assert.Equal(t, FatalLevel, l)
 
@@ -263,7 +271,15 @@ func TestParseLevel(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, ErrorLevel, l)
 
+	l, err = ParseLevel("ERROR")
+	assert.Nil(t, err)
+	assert.Equal(t, ErrorLevel, l)
+
 	l, err = ParseLevel("warn")
+	assert.Nil(t, err)
+	assert.Equal(t, WarnLevel, l)
+
+	l, err = ParseLevel("WARN")
 	assert.Nil(t, err)
 	assert.Equal(t, WarnLevel, l)
 
@@ -271,11 +287,23 @@ func TestParseLevel(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, WarnLevel, l)
 
+	l, err = ParseLevel("WARNING")
+	assert.Nil(t, err)
+	assert.Equal(t, WarnLevel, l)
+
 	l, err = ParseLevel("info")
 	assert.Nil(t, err)
 	assert.Equal(t, InfoLevel, l)
 
+	l, err = ParseLevel("INFO")
+	assert.Nil(t, err)
+	assert.Equal(t, InfoLevel, l)
+
 	l, err = ParseLevel("debug")
+	assert.Nil(t, err)
+	assert.Equal(t, DebugLevel, l)
+
+	l, err = ParseLevel("DEBUG")
 	assert.Nil(t, err)
 	assert.Equal(t, DebugLevel, l)
 
@@ -298,4 +326,36 @@ func TestGetSetLevelRace(t *testing.T) {
 
 	}
 	wg.Wait()
+}
+
+func TestLoggingRace(t *testing.T) {
+	logger := New()
+
+	var wg sync.WaitGroup
+	wg.Add(100)
+
+	for i := 0; i < 100; i++ {
+		go func() {
+			logger.Info("info")
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+}
+
+// Compile test
+func TestLogrusInterface(t *testing.T) {
+	var buffer bytes.Buffer
+	fn := func(l FieldLogger) {
+		b := l.WithField("key", "value")
+		b.Debug("Test")
+	}
+	// test logger
+	logger := New()
+	logger.Out = &buffer
+	fn(logger)
+
+	// test Entry
+	e := logger.WithField("another", "value")
+	fn(e)
 }

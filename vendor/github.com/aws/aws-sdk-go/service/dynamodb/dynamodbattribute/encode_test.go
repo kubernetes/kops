@@ -124,3 +124,23 @@ func TestMarshalMapOmitEmptyElem(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expect, actual)
 }
+
+type testOmitEmptyScalar struct {
+	IntZero       int  `dynamodbav:",omitempty"`
+	IntPtrNil     *int `dynamodbav:",omitempty"`
+	IntPtrSetZero *int `dynamodbav:",omitempty"`
+}
+
+func TestMarshalOmitEmpty(t *testing.T) {
+	expect := &dynamodb.AttributeValue{
+		M: map[string]*dynamodb.AttributeValue{
+			"IntPtrSetZero": {N: aws.String("0")},
+		},
+	}
+
+	m := testOmitEmptyScalar{IntPtrSetZero: aws.Int(0)}
+
+	actual, err := Marshal(m)
+	assert.NoError(t, err)
+	assert.Equal(t, expect, actual)
+}

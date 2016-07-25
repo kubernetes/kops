@@ -27,7 +27,7 @@ import (
 	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/types"
 	hashutil "k8s.io/kubernetes/pkg/util/hash"
-	"k8s.io/kubernetes/third_party/golang/expansion"
+	"k8s.io/kubernetes/third_party/forked/golang/expansion"
 
 	"github.com/golang/glog"
 )
@@ -44,6 +44,10 @@ type RuntimeHelper interface {
 	GetClusterDNS(pod *api.Pod) (dnsServers []string, dnsSearches []string, err error)
 	GetPodDir(podUID types.UID) string
 	GeneratePodHostNameAndDomain(pod *api.Pod) (hostname string, hostDomain string, err error)
+	// GetExtraSupplementalGroupsForPod returns a list of the extra
+	// supplemental groups for the Pod. These extra supplemental groups come
+	// from annotations on persistent volumes that the pod depends on.
+	GetExtraSupplementalGroupsForPod(pod *api.Pod) []int64
 }
 
 // ShouldContainerBeRestarted checks whether a container needs to be restarted.

@@ -10,6 +10,10 @@ import (
 
 // DirectoryServiceAPI is the interface type for directoryservice.DirectoryService.
 type DirectoryServiceAPI interface {
+	AddTagsToResourceRequest(*directoryservice.AddTagsToResourceInput) (*request.Request, *directoryservice.AddTagsToResourceOutput)
+
+	AddTagsToResource(*directoryservice.AddTagsToResourceInput) (*directoryservice.AddTagsToResourceOutput, error)
+
 	ConnectDirectoryRequest(*directoryservice.ConnectDirectoryInput) (*request.Request, *directoryservice.ConnectDirectoryOutput)
 
 	ConnectDirectory(*directoryservice.ConnectDirectoryInput) (*directoryservice.ConnectDirectoryOutput, error)
@@ -106,9 +110,17 @@ type DirectoryServiceAPI interface {
 
 	GetSnapshotLimits(*directoryservice.GetSnapshotLimitsInput) (*directoryservice.GetSnapshotLimitsOutput, error)
 
+	ListTagsForResourceRequest(*directoryservice.ListTagsForResourceInput) (*request.Request, *directoryservice.ListTagsForResourceOutput)
+
+	ListTagsForResource(*directoryservice.ListTagsForResourceInput) (*directoryservice.ListTagsForResourceOutput, error)
+
 	RegisterEventTopicRequest(*directoryservice.RegisterEventTopicInput) (*request.Request, *directoryservice.RegisterEventTopicOutput)
 
 	RegisterEventTopic(*directoryservice.RegisterEventTopicInput) (*directoryservice.RegisterEventTopicOutput, error)
+
+	RemoveTagsFromResourceRequest(*directoryservice.RemoveTagsFromResourceInput) (*request.Request, *directoryservice.RemoveTagsFromResourceOutput)
+
+	RemoveTagsFromResource(*directoryservice.RemoveTagsFromResourceInput) (*directoryservice.RemoveTagsFromResourceOutput, error)
 
 	RestoreFromSnapshotRequest(*directoryservice.RestoreFromSnapshotInput) (*request.Request, *directoryservice.RestoreFromSnapshotOutput)
 

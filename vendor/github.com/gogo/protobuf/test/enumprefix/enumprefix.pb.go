@@ -26,7 +26,9 @@ var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
-const _ = proto.GoGoProtoPackageIsVersion1
+// A compilation error at this line likely means your copy of the
+// proto package needs to be updated.
+const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 
 type MyMessage struct {
 	TheField         test.TheTestEnum `protobuf:"varint,1,opt,name=TheField,json=theField,enum=test.TheTestEnum" json:"TheField"`
@@ -48,6 +50,8 @@ func (m *MyMessage) GetTheField() test.TheTestEnum {
 func init() {
 	proto.RegisterType((*MyMessage)(nil), "enumprefix.MyMessage")
 }
+
+func init() { proto.RegisterFile("enumprefix.proto", fileDescriptorEnumprefix) }
 
 var fileDescriptorEnumprefix = []byte{
 	// 148 bytes of a gzipped FileDescriptorProto

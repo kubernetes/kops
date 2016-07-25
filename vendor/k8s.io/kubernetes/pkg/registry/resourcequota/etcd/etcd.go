@@ -19,13 +19,12 @@ package etcd
 import (
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/rest"
-	"k8s.io/kubernetes/pkg/fields"
-	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/registry/cachesize"
 	"k8s.io/kubernetes/pkg/registry/generic"
 	"k8s.io/kubernetes/pkg/registry/generic/registry"
 	"k8s.io/kubernetes/pkg/registry/resourcequota"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/storage"
 )
 
 type REST struct {
@@ -38,7 +37,14 @@ func NewREST(opts generic.RESTOptions) (*REST, *StatusREST) {
 
 	newListFunc := func() runtime.Object { return &api.ResourceQuotaList{} }
 	storageInterface := opts.Decorator(
-		opts.Storage, cachesize.GetWatchCacheSizeByResource(cachesize.ResourceQuotas), &api.ResourceQuota{}, prefix, resourcequota.Strategy, newListFunc)
+		opts.Storage,
+		cachesize.GetWatchCacheSizeByResource(cachesize.ResourceQuotas),
+		&api.ResourceQuota{},
+		prefix,
+		resourcequota.Strategy,
+		newListFunc,
+		storage.NoTriggerPublisher,
+	)
 
 	store := &registry.Store{
 		NewFunc:     func() runtime.Object { return &api.ResourceQuota{} },
@@ -52,9 +58,7 @@ func NewREST(opts generic.RESTOptions) (*REST, *StatusREST) {
 		ObjectNameFunc: func(obj runtime.Object) (string, error) {
 			return obj.(*api.ResourceQuota).Name, nil
 		},
-		PredicateFunc: func(label labels.Selector, field fields.Selector) generic.Matcher {
-			return resourcequota.MatchResourceQuota(label, field)
-		},
+		PredicateFunc:           resourcequota.MatchResourceQuota,
 		QualifiedResource:       api.Resource("resourcequotas"),
 		DeleteCollectionWorkers: opts.DeleteCollectionWorkers,
 

@@ -78,6 +78,10 @@ type CodePipelineAPI interface {
 
 	PutActionRevision(*codepipeline.PutActionRevisionInput) (*codepipeline.PutActionRevisionOutput, error)
 
+	PutApprovalResultRequest(*codepipeline.PutApprovalResultInput) (*request.Request, *codepipeline.PutApprovalResultOutput)
+
+	PutApprovalResult(*codepipeline.PutApprovalResultInput) (*codepipeline.PutApprovalResultOutput, error)
+
 	PutJobFailureResultRequest(*codepipeline.PutJobFailureResultInput) (*request.Request, *codepipeline.PutJobFailureResultOutput)
 
 	PutJobFailureResult(*codepipeline.PutJobFailureResultInput) (*codepipeline.PutJobFailureResultOutput, error)

@@ -19,12 +19,11 @@ package etcd
 import (
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/apis/extensions"
-	"k8s.io/kubernetes/pkg/fields"
-	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/registry/generic"
 	"k8s.io/kubernetes/pkg/registry/generic/registry"
 	"k8s.io/kubernetes/pkg/registry/podsecuritypolicy"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/storage"
 )
 
 // REST implements a RESTStorage for PodSecurityPolicies against etcd.
@@ -38,7 +37,14 @@ const Prefix = "/podsecuritypolicies"
 func NewREST(opts generic.RESTOptions) *REST {
 	newListFunc := func() runtime.Object { return &extensions.PodSecurityPolicyList{} }
 	storageInterface := opts.Decorator(
-		opts.Storage, 100, &extensions.PodSecurityPolicy{}, Prefix, podsecuritypolicy.Strategy, newListFunc)
+		opts.Storage,
+		100,
+		&extensions.PodSecurityPolicy{},
+		Prefix,
+		podsecuritypolicy.Strategy,
+		newListFunc,
+		storage.NoTriggerPublisher,
+	)
 
 	store := &registry.Store{
 		NewFunc:     func() runtime.Object { return &extensions.PodSecurityPolicy{} },
@@ -52,9 +58,7 @@ func NewREST(opts generic.RESTOptions) *REST {
 		ObjectNameFunc: func(obj runtime.Object) (string, error) {
 			return obj.(*extensions.PodSecurityPolicy).Name, nil
 		},
-		PredicateFunc: func(label labels.Selector, field fields.Selector) generic.Matcher {
-			return podsecuritypolicy.MatchPodSecurityPolicy(label, field)
-		},
+		PredicateFunc:           podsecuritypolicy.MatchPodSecurityPolicy,
 		QualifiedResource:       extensions.Resource("podsecuritypolicies"),
 		DeleteCollectionWorkers: opts.DeleteCollectionWorkers,
 

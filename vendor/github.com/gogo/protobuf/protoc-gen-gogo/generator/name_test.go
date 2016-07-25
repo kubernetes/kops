@@ -33,6 +33,8 @@ package generator
 
 import (
 	"testing"
+
+	"github.com/gogo/protobuf/protoc-gen-gogo/descriptor"
 )
 
 func TestCamelCase(t *testing.T) {
@@ -51,6 +53,33 @@ func TestCamelCase(t *testing.T) {
 	for _, tc := range tests {
 		if got := CamelCase(tc.in); got != tc.want {
 			t.Errorf("CamelCase(%q) = %q, want %q", tc.in, got, tc.want)
+		}
+	}
+}
+
+func TestGoPackageOption(t *testing.T) {
+	tests := []struct {
+		in           string
+		impPath, pkg string
+		ok           bool
+	}{
+		{"", "", "", false},
+		{"foo", "", "foo", true},
+		{"github.com/golang/bar", "github.com/golang/bar", "bar", true},
+		{"github.com/golang/bar;baz", "github.com/golang/bar", "baz", true},
+	}
+	for _, tc := range tests {
+		d := &FileDescriptor{
+			FileDescriptorProto: &descriptor.FileDescriptorProto{
+				Options: &descriptor.FileOptions{
+					GoPackage: &tc.in,
+				},
+			},
+		}
+		impPath, pkg, ok := d.goPackageOption()
+		if impPath != tc.impPath || pkg != tc.pkg || ok != tc.ok {
+			t.Errorf("go_package = %q => (%q, %q, %t), want (%q, %q, %t)", tc.in,
+				impPath, pkg, ok, tc.impPath, tc.pkg, tc.ok)
 		}
 	}
 }

@@ -26,7 +26,7 @@ func TestInit(t *testing.T) {
 		}
 		if plabel != "" {
 			t.Log("InitLabels Disabled Failed")
-			t.Fatal()
+			t.FailNow()
 		}
 		testUser := []string{"user:user_u", "role:user_r", "type:user_t", "level:s0:c1,c15"}
 		plabel, mlabel, err = InitLabels(testUser)
@@ -41,8 +41,7 @@ func TestInit(t *testing.T) {
 		}
 
 		testBadData := []string{"user", "role:user_r", "type:user_t", "level:s0:c1,c15"}
-		plabel, mlabel, err = InitLabels(testBadData)
-		if err == nil {
+		if _, _, err = InitLabels(testBadData); err == nil {
 			t.Log("InitLabels Bad Failed")
 			t.Fatal(err)
 		}
@@ -52,39 +51,40 @@ func TestDuplicateLabel(t *testing.T) {
 	secopt := DupSecOpt("system_u:system_r:svirt_lxc_net_t:s0:c1,c2")
 	t.Log(secopt)
 	for _, opt := range secopt {
-		con := strings.SplitN(opt, ":", 3)
-		if len(con) != 3 || con[0] != "label" {
+		parts := strings.SplitN(opt, "=", 2)
+		if len(parts) != 2 || parts[0] != "label" {
 			t.Errorf("Invalid DupSecOpt return value")
 			continue
 		}
-		if con[1] == "user" {
-			if con[2] != "system_u" {
+		con := strings.SplitN(parts[1], ":", 2)
+		if con[0] == "user" {
+			if con[1] != "system_u" {
 				t.Errorf("DupSecOpt Failed user incorrect")
 			}
 			continue
 		}
-		if con[1] == "role" {
-			if con[2] != "system_r" {
+		if con[0] == "role" {
+			if con[1] != "system_r" {
 				t.Errorf("DupSecOpt Failed role incorrect")
 			}
 			continue
 		}
-		if con[1] == "type" {
-			if con[2] != "svirt_lxc_net_t" {
+		if con[0] == "type" {
+			if con[1] != "svirt_lxc_net_t" {
 				t.Errorf("DupSecOpt Failed type incorrect")
 			}
 			continue
 		}
-		if con[1] == "level" {
-			if con[2] != "s0:c1,c2" {
+		if con[0] == "level" {
+			if con[1] != "s0:c1,c2" {
 				t.Errorf("DupSecOpt Failed level incorrect")
 			}
 			continue
 		}
-		t.Errorf("DupSecOpt Failed invalid field %q", con[1])
+		t.Errorf("DupSecOpt Failed invalid field %q", con[0])
 	}
 	secopt = DisableSecOpt()
-	if secopt[0] != "label:disable" {
+	if secopt[0] != "label=disable" {
 		t.Errorf("DisableSecOpt Failed level incorrect")
 	}
 }
@@ -96,22 +96,22 @@ func TestRelabel(t *testing.T) {
 	defer os.RemoveAll(testdir)
 	label := "system_u:system_r:svirt_sandbox_file_t:s0:c1,c2"
 	if err := Relabel(testdir, "", true); err != nil {
-		t.Fatal("Relabel with no label failed: %v", err)
+		t.Fatalf("Relabel with no label failed: %v", err)
 	}
 	if err := Relabel(testdir, label, true); err != nil {
-		t.Fatal("Relabel shared failed: %v", err)
+		t.Fatalf("Relabel shared failed: %v", err)
 	}
 	if err := Relabel(testdir, label, false); err != nil {
-		t.Fatal("Relabel unshared failed: %v", err)
+		t.Fatalf("Relabel unshared failed: %v", err)
 	}
 	if err := Relabel("/etc", label, false); err == nil {
-		t.Fatal("Relabel /etc succeeded")
+		t.Fatalf("Relabel /etc succeeded")
 	}
 	if err := Relabel("/", label, false); err == nil {
-		t.Fatal("Relabel / succeeded")
+		t.Fatalf("Relabel / succeeded")
 	}
 	if err := Relabel("/usr", label, false); err == nil {
-		t.Fatal("Relabel /usr succeeded")
+		t.Fatalf("Relabel /usr succeeded")
 	}
 }
 
@@ -132,13 +132,13 @@ func TestValidate(t *testing.T) {
 
 func TestIsShared(t *testing.T) {
 	if shared := IsShared("Z"); shared {
-		t.Fatal("Expected label `Z` to not be shared, got %v", shared)
+		t.Fatalf("Expected label `Z` to not be shared, got %v", shared)
 	}
 	if shared := IsShared("z"); !shared {
-		t.Fatal("Expected label `z` to be shared, got %v", shared)
+		t.Fatalf("Expected label `z` to be shared, got %v", shared)
 	}
 	if shared := IsShared("Zz"); !shared {
-		t.Fatal("Expected label `Zz` to be shared, got %v", shared)
+		t.Fatalf("Expected label `Zz` to be shared, got %v", shared)
 	}
 
 }

@@ -18,7 +18,7 @@ import (
 	storagemiddleware "github.com/docker/distribution/registry/storage/driver/middleware"
 )
 
-// cloudFrontStorageMiddleware provides an simple implementation of layerHandler that
+// cloudFrontStorageMiddleware provides a simple implementation of layerHandler that
 // constructs temporary signed CloudFront URLs from the storagedriver layer URL,
 // then issues HTTP Temporary Redirects to this CloudFront content URL.
 type cloudFrontStorageMiddleware struct {

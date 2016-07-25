@@ -158,7 +158,7 @@ func showSubscription(client *pubsub.Client, argv []string) {
 		log.Fatalf("Checking whether topic exists: %v", err)
 	}
 	if !exists {
-		fmt.Println("The topic for this subscription has been deleted.\n")
+		fmt.Println("The topic for this subscription has been deleted.")
 	}
 }
 

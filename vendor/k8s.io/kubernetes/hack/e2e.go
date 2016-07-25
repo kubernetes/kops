@@ -75,6 +75,8 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	flag.Parse()
 
+	os.Setenv("KUBECTL", *root+`/cluster/kubectl.sh`+kubectlArgs())
+
 	if *isup {
 		status := 1
 		if IsUp() {
@@ -95,8 +97,6 @@ func main() {
 			log.Fatal("Error building. Aborting.")
 		}
 	}
-
-	os.Setenv("KUBECTL", *root+`/cluster/kubectl.sh`+kubectlArgs())
 
 	if *pushup {
 		if IsUp() {
@@ -193,14 +193,13 @@ func Test() bool {
 		ValidateClusterSize()
 	}
 
-	if os.Getenv("FEDERATION") == "" {
-		return finishRunning("Ginkgo tests", exec.Command(filepath.Join(*root, "hack/ginkgo-e2e.sh"), strings.Fields(*testArgs)...))
-	} else {
-
+	if os.Getenv("FEDERATION") == "true" {
 		if *testArgs == "" {
 			*testArgs = "--ginkgo.focus=\\[Feature:Federation\\]"
 		}
 		return finishRunning("Federated Ginkgo tests", exec.Command(filepath.Join(*root, "hack/federated-ginkgo-e2e.sh"), strings.Fields(*testArgs)...))
+	} else {
+		return finishRunning("Ginkgo tests", exec.Command(filepath.Join(*root, "hack/ginkgo-e2e.sh"), strings.Fields(*testArgs)...))
 	}
 }
 
