@@ -77,8 +77,6 @@ type ClusterSpec struct {
 	// ClusterName is a unique identifier for the cluster, and currently must be a DNS name
 	//ClusterName       string `json:",omitempty"`
 
-	//AllocateNodeCIDRs *bool `json:"allocateNodeCIDRs,omitempty"`
-
 	Multizone *bool `json:"multizone,omitempty"`
 
 	//ClusterIPRange                string `json:",omitempty"`
@@ -104,8 +102,6 @@ type ClusterSpec struct {
 	//  * enable debugging handlers on the master, so kubectl logs works
 	IsolateMasters *bool `json:"isolateMasters,omitempty"`
 
-	//NetworkProvider               string `json:",omitempty"`
-	//
 	//HairpinMode                   string `json:",omitempty"`
 	//
 	//OpencontrailTag               string `json:",omitempty"`
@@ -210,6 +206,9 @@ type ClusterSpec struct {
 	KubeProxy             *KubeProxyConfig             `json:"kubeProxy,omitempty"`
 	Kubelet               *KubeletConfig               `json:"kubelet,omitempty"`
 	MasterKubelet         *KubeletConfig               `json:"masterKubelet,omitempty"`
+
+	// Networking configuration
+	Networking *NetworkingSpec `json:"networking,omitempty"`
 }
 
 type KubeDNSConfig struct {
@@ -305,6 +304,21 @@ func (c *Cluster) PerformAssignments() error {
 func (c *Cluster) FillDefaults() error {
 	if len(c.Spec.AdminAccess) == 0 {
 		c.Spec.AdminAccess = append(c.Spec.AdminAccess, "0.0.0.0/0")
+	}
+
+	if c.Spec.Networking == nil {
+		c.Spec.Networking = &NetworkingSpec{}
+	}
+
+	if c.Spec.Networking.Classic != nil {
+		// OK
+	} else if c.Spec.Networking.Kubenet != nil {
+		// OK
+	} else if c.Spec.Networking.External != nil {
+		// OK
+	} else {
+		// No networking model selected; choose Classic
+		c.Spec.Networking.Classic = &ClassicNetworkingSpec{}
 	}
 
 	err := c.ensureKubernetesVersion()
