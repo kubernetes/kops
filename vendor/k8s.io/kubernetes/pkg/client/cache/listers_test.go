@@ -97,7 +97,7 @@ func TestStoreToNodeConditionLister(t *testing.T) {
 		store.Add(n)
 	}
 
-	predicate := func(node api.Node) bool {
+	predicate := func(node *api.Node) bool {
 		for _, cond := range node.Status.Conditions {
 			if cond.Type == api.NodeOutOfDisk && cond.Status == api.ConditionTrue {
 				return false
@@ -114,9 +114,9 @@ func TestStoreToNodeConditionLister(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
-	got := make([]string, len(gotNodes.Items))
-	for ix := range gotNodes.Items {
-		got[ix] = gotNodes.Items[ix].Name
+	got := make([]string, len(gotNodes))
+	for ix := range gotNodes {
+		got[ix] = gotNodes[ix].Name
 	}
 	if !want.HasAll(got...) || len(got) != len(want) {
 		t.Errorf("Expected %v, got %v", want, got)

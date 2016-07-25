@@ -1,11 +1,10 @@
 {% set pd_prefix = pillar.get('master_name', '') -%}
-{% set pd_name = pd_prefix + '-influxdb-pd') -%}
+{% set pd_name = pd_prefix + '-influxdb-pd' -%}
 
 kind: PersistentVolume
 apiVersion: v1
 metadata:
   name: influxdb-pv
-  namespace: kube-system
   labels:
     kubernetes.io/cluster-service: "true"
 spec:

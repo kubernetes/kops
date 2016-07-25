@@ -60,12 +60,6 @@ func (sm statsManifest) Put(ctx context.Context, manifest distribution.Manifest,
 	return sm.manifests.Put(ctx, manifest)
 }
 
-/*func (sm statsManifest) Enumerate(ctx context.Context, manifests []distribution.Manifest, last distribution.Manifest) (n int, err error) {
-	sm.stats["enumerate"]++
-	return sm.manifests.Enumerate(ctx, manifests, last)
-}
-*/
-
 type mockChallenger struct {
 	sync.Mutex
 	count int
@@ -75,7 +69,6 @@ type mockChallenger struct {
 func (m *mockChallenger) tryEstablishChallenges(context.Context) error {
 	m.Lock()
 	defer m.Unlock()
-
 	m.count++
 	return nil
 }
@@ -93,9 +86,15 @@ func newManifestStoreTestEnv(t *testing.T, name, tag string) *manifestStoreTestE
 	if err != nil {
 		t.Fatalf("unable to parse reference: %s", err)
 	}
+	k, err := libtrust.GenerateECP256PrivateKey()
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	ctx := context.Background()
-	truthRegistry, err := storage.NewRegistry(ctx, inmemory.New(), storage.BlobDescriptorCacheProvider(memory.NewInMemoryBlobDescriptorCacheProvider()))
+	truthRegistry, err := storage.NewRegistry(ctx, inmemory.New(),
+		storage.BlobDescriptorCacheProvider(memory.NewInMemoryBlobDescriptorCacheProvider()),
+		storage.Schema1SigningKey(k))
 	if err != nil {
 		t.Fatalf("error creating registry: %v", err)
 	}
@@ -117,7 +116,7 @@ func newManifestStoreTestEnv(t *testing.T, name, tag string) *manifestStoreTestE
 		t.Fatalf(err.Error())
 	}
 
-	localRegistry, err := storage.NewRegistry(ctx, inmemory.New(), storage.BlobDescriptorCacheProvider(memory.NewInMemoryBlobDescriptorCacheProvider()), storage.EnableRedirect, storage.DisableDigestResumption)
+	localRegistry, err := storage.NewRegistry(ctx, inmemory.New(), storage.BlobDescriptorCacheProvider(memory.NewInMemoryBlobDescriptorCacheProvider()), storage.EnableRedirect, storage.DisableDigestResumption, storage.Schema1SigningKey(k))
 	if err != nil {
 		t.Fatalf("error creating registry: %v", err)
 	}

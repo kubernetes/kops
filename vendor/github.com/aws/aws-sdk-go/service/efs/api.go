@@ -87,9 +87,10 @@ func (c *EFS) CreateFileSystemRequest(input *CreateFileSystemInput) (req *reques
 //  This operation also takes an optional PerformanceMode parameter that you
 // choose for your file system. We recommend generalPurpose performance mode
 // for most file systems. File systems using the maxIO performance mode can
-// scale to higher levels of aggregate throughput than general purpose mode
-// file systems, with a tradeoff of slightly higher latencies for most file
-// operations. For more information, see Amazon EFS: Performance Modes (http://docs.aws.amazon.com/efs/latest/ug/performance.html#performancemodes.html).
+// scale to higher levels of aggregate throughput and operations per second
+// with a tradeoff of slightly higher latencies for most file operations. The
+// performance mode can't be changed after the file system has been created.
+// For more information, see Amazon EFS: Performance Modes (http://docs.aws.amazon.com/efs/latest/ug/performance.html#performancemodes.html).
 //
 // After the file system is fully created, Amazon EFS sets its lifecycle state
 // to available, at which point you can create one or more mount targets for
@@ -813,9 +814,9 @@ type CreateFileSystemInput struct {
 
 	// The PerformanceMode of the file system. We recommend generalPurpose performance
 	// mode for most file systems. File systems using the maxIO performance mode
-	// can scale to higher levels of aggregate throughput than general purpose mode
-	// file systems, with a tradeoff of slightly higher latencies for most file
-	// operations.
+	// can scale to higher levels of aggregate throughput and operations per second
+	// with a tradeoff of slightly higher latencies for most file operations. This
+	// can't be changed after the file system has been created.
 	PerformanceMode *string `type:"string" enum:"PerformanceMode"`
 }
 

@@ -382,6 +382,8 @@ type IAMAPI interface {
 
 	ListSSHPublicKeys(*iam.ListSSHPublicKeysInput) (*iam.ListSSHPublicKeysOutput, error)
 
+	ListSSHPublicKeysPages(*iam.ListSSHPublicKeysInput, func(*iam.ListSSHPublicKeysOutput, bool) bool) error
+
 	ListServerCertificatesRequest(*iam.ListServerCertificatesInput) (*request.Request, *iam.ListServerCertificatesOutput)
 
 	ListServerCertificates(*iam.ListServerCertificatesInput) (*iam.ListServerCertificatesOutput, error)
@@ -448,9 +450,13 @@ type IAMAPI interface {
 
 	SimulateCustomPolicy(*iam.SimulateCustomPolicyInput) (*iam.SimulatePolicyResponse, error)
 
+	SimulateCustomPolicyPages(*iam.SimulateCustomPolicyInput, func(*iam.SimulatePolicyResponse, bool) bool) error
+
 	SimulatePrincipalPolicyRequest(*iam.SimulatePrincipalPolicyInput) (*request.Request, *iam.SimulatePolicyResponse)
 
 	SimulatePrincipalPolicy(*iam.SimulatePrincipalPolicyInput) (*iam.SimulatePolicyResponse, error)
+
+	SimulatePrincipalPolicyPages(*iam.SimulatePrincipalPolicyInput, func(*iam.SimulatePolicyResponse, bool) bool) error
 
 	UpdateAccessKeyRequest(*iam.UpdateAccessKeyInput) (*request.Request, *iam.UpdateAccessKeyOutput)
 

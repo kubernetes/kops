@@ -193,7 +193,7 @@ func ExampleQuery() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("There are %d posts.", n)
+	log.Printf("There are %d posts.", n)
 
 	// List the posts published since yesterday.
 	yesterday := time.Now().Add(-24 * time.Hour)

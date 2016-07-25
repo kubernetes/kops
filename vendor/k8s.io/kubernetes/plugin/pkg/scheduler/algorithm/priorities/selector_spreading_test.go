@@ -278,7 +278,7 @@ func TestSelectorSpreadPriority(t *testing.T) {
 	for _, test := range tests {
 		nodeNameToInfo := schedulercache.CreateNodeNameToInfoMap(test.pods)
 		selectorSpread := SelectorSpread{podLister: algorithm.FakePodLister(test.pods), serviceLister: algorithm.FakeServiceLister(test.services), controllerLister: algorithm.FakeControllerLister(test.rcs), replicaSetLister: algorithm.FakeReplicaSetLister(test.rss)}
-		list, err := selectorSpread.CalculateSpreadPriority(test.pod, nodeNameToInfo, algorithm.FakeNodeLister(makeNodeList(test.nodes)))
+		list, err := selectorSpread.CalculateSpreadPriority(test.pod, nodeNameToInfo, makeNodeList(test.nodes))
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
@@ -479,7 +479,7 @@ func TestZoneSelectorSpreadPriority(t *testing.T) {
 	for _, test := range tests {
 		nodeNameToInfo := schedulercache.CreateNodeNameToInfoMap(test.pods)
 		selectorSpread := SelectorSpread{podLister: algorithm.FakePodLister(test.pods), serviceLister: algorithm.FakeServiceLister(test.services), controllerLister: algorithm.FakeControllerLister(test.rcs), replicaSetLister: algorithm.FakeReplicaSetLister(test.rss)}
-		list, err := selectorSpread.CalculateSpreadPriority(test.pod, nodeNameToInfo, algorithm.FakeNodeLister(makeLabeledNodeList(labeledNodes)))
+		list, err := selectorSpread.CalculateSpreadPriority(test.pod, nodeNameToInfo, makeLabeledNodeList(labeledNodes))
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
@@ -651,7 +651,7 @@ func TestZoneSpreadPriority(t *testing.T) {
 	for _, test := range tests {
 		nodeNameToInfo := schedulercache.CreateNodeNameToInfoMap(test.pods)
 		zoneSpread := ServiceAntiAffinity{podLister: algorithm.FakePodLister(test.pods), serviceLister: algorithm.FakeServiceLister(test.services), label: "zone"}
-		list, err := zoneSpread.CalculateAntiAffinityPriority(test.pod, nodeNameToInfo, algorithm.FakeNodeLister(makeLabeledNodeList(test.nodes)))
+		list, err := zoneSpread.CalculateAntiAffinityPriority(test.pod, nodeNameToInfo, makeLabeledNodeList(test.nodes))
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
@@ -664,20 +664,18 @@ func TestZoneSpreadPriority(t *testing.T) {
 	}
 }
 
-func makeLabeledNodeList(nodeMap map[string]map[string]string) (result api.NodeList) {
-	nodes := []api.Node{}
+func makeLabeledNodeList(nodeMap map[string]map[string]string) []*api.Node {
+	nodes := make([]*api.Node, 0, len(nodeMap))
 	for nodeName, labels := range nodeMap {
-		nodes = append(nodes, api.Node{ObjectMeta: api.ObjectMeta{Name: nodeName, Labels: labels}})
+		nodes = append(nodes, &api.Node{ObjectMeta: api.ObjectMeta{Name: nodeName, Labels: labels}})
 	}
-	return api.NodeList{Items: nodes}
+	return nodes
 }
 
-func makeNodeList(nodeNames []string) api.NodeList {
-	result := api.NodeList{
-		Items: make([]api.Node, len(nodeNames)),
+func makeNodeList(nodeNames []string) []*api.Node {
+	nodes := make([]*api.Node, 0, len(nodeNames))
+	for _, nodeName := range nodeNames {
+		nodes = append(nodes, &api.Node{ObjectMeta: api.ObjectMeta{Name: nodeName}})
 	}
-	for ix := range nodeNames {
-		result.Items[ix].Name = nodeNames[ix]
-	}
-	return result
+	return nodes
 }

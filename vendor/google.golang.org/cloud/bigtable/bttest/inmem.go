@@ -891,7 +891,6 @@ func applyGC(cells []cell, rule *bttdpb.GcRule) []cell {
 	case *bttdpb.GcRule_MaxNumVersions:
 		n := int(rule.MaxNumVersions)
 		if len(cells) > n {
-			log.Printf("bttest: GC MaxNumVersions(%d) deleted %d cells.", n, len(cells)-n)
 			cells = cells[:n]
 		}
 		return cells

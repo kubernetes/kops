@@ -26,7 +26,9 @@ var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
-const _ = proto1.GoGoProtoPackageIsVersion1
+// A compilation error at this line likely means your copy of the
+// proto package needs to be updated.
+const _ = proto1.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 
 type Foo struct {
 	*Bar `protobuf:"bytes,1,opt,name=bar,embedded=bar" json:"bar,omitempty"`
@@ -394,6 +396,8 @@ func encodeVarintPopulateOneofembed(data []byte, v uint64) []byte {
 	data = append(data, uint8(v))
 	return data
 }
+
+func init() { proto1.RegisterFile("oneofembed.proto", fileDescriptorOneofembed) }
 
 var fileDescriptorOneofembed = []byte{
 	// 167 bytes of a gzipped FileDescriptorProto

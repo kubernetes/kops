@@ -63,6 +63,30 @@ func ExampleDeviceFarm_CreateProject() {
 	fmt.Println(resp)
 }
 
+func ExampleDeviceFarm_CreateRemoteAccessSession() {
+	svc := devicefarm.New(session.New())
+
+	params := &devicefarm.CreateRemoteAccessSessionInput{
+		DeviceArn:  aws.String("AmazonResourceName"), // Required
+		ProjectArn: aws.String("AmazonResourceName"), // Required
+		Configuration: &devicefarm.CreateRemoteAccessSessionConfiguration{
+			BillingMethod: aws.String("BillingMethod"),
+		},
+		Name: aws.String("Name"),
+	}
+	resp, err := svc.CreateRemoteAccessSession(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
 func ExampleDeviceFarm_CreateUpload() {
 	svc := devicefarm.New(session.New())
 
@@ -111,6 +135,25 @@ func ExampleDeviceFarm_DeleteProject() {
 		Arn: aws.String("AmazonResourceName"), // Required
 	}
 	resp, err := svc.DeleteProject(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
+func ExampleDeviceFarm_DeleteRemoteAccessSession() {
+	svc := devicefarm.New(session.New())
+
+	params := &devicefarm.DeleteRemoteAccessSessionInput{
+		Arn: aws.String("AmazonResourceName"), // Required
+	}
+	resp, err := svc.DeleteRemoteAccessSession(params)
 
 	if err != nil {
 		// Print the error, cast err to awserr.Error to get the Code and
@@ -294,6 +337,25 @@ func ExampleDeviceFarm_GetProject() {
 	fmt.Println(resp)
 }
 
+func ExampleDeviceFarm_GetRemoteAccessSession() {
+	svc := devicefarm.New(session.New())
+
+	params := &devicefarm.GetRemoteAccessSessionInput{
+		Arn: aws.String("AmazonResourceName"), // Required
+	}
+	resp, err := svc.GetRemoteAccessSession(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
 func ExampleDeviceFarm_GetRun() {
 	svc := devicefarm.New(session.New())
 
@@ -358,6 +420,26 @@ func ExampleDeviceFarm_GetUpload() {
 		Arn: aws.String("AmazonResourceName"), // Required
 	}
 	resp, err := svc.GetUpload(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
+func ExampleDeviceFarm_InstallToRemoteAccessSession() {
+	svc := devicefarm.New(session.New())
+
+	params := &devicefarm.InstallToRemoteAccessSessionInput{
+		AppArn:                 aws.String("AmazonResourceName"), // Required
+		RemoteAccessSessionArn: aws.String("AmazonResourceName"), // Required
+	}
+	resp, err := svc.InstallToRemoteAccessSession(params)
 
 	if err != nil {
 		// Print the error, cast err to awserr.Error to get the Code and
@@ -498,6 +580,26 @@ func ExampleDeviceFarm_ListProjects() {
 		NextToken: aws.String("PaginationToken"),
 	}
 	resp, err := svc.ListProjects(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
+func ExampleDeviceFarm_ListRemoteAccessSessions() {
+	svc := devicefarm.New(session.New())
+
+	params := &devicefarm.ListRemoteAccessSessionsInput{
+		Arn:       aws.String("AmazonResourceName"), // Required
+		NextToken: aws.String("PaginationToken"),
+	}
+	resp, err := svc.ListRemoteAccessSessions(params)
 
 	if err != nil {
 		// Print the error, cast err to awserr.Error to get the Code and
@@ -709,6 +811,25 @@ func ExampleDeviceFarm_ScheduleRun() {
 		Name: aws.String("Name"),
 	}
 	resp, err := svc.ScheduleRun(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
+func ExampleDeviceFarm_StopRemoteAccessSession() {
+	svc := devicefarm.New(session.New())
+
+	params := &devicefarm.StopRemoteAccessSessionInput{
+		Arn: aws.String("AmazonResourceName"), // Required
+	}
+	resp, err := svc.StopRemoteAccessSession(params)
 
 	if err != nil {
 		// Print the error, cast err to awserr.Error to get the Code and

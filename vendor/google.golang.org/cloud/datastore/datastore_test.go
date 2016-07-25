@@ -1549,7 +1549,7 @@ func TestPutMultiTypes(t *testing.T) {
 			continue
 		}
 		if len(got) != len(want) {
-			t.Errorf("%s: got %d entities, want %d", len(got), len(want))
+			t.Errorf("%s: got %d entities, want %d", tt.desc, len(got), len(want))
 			continue
 		}
 		for i, e := range got {

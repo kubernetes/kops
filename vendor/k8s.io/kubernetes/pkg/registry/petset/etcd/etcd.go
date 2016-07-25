@@ -20,13 +20,12 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/rest"
 	appsapi "k8s.io/kubernetes/pkg/apis/apps"
-	"k8s.io/kubernetes/pkg/fields"
-	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/registry/cachesize"
 	"k8s.io/kubernetes/pkg/registry/generic"
 	"k8s.io/kubernetes/pkg/registry/generic/registry"
 	"k8s.io/kubernetes/pkg/registry/petset"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/storage"
 )
 
 // rest implements a RESTStorage for replication controllers against etcd
@@ -40,7 +39,14 @@ func NewREST(opts generic.RESTOptions) (*REST, *StatusREST) {
 
 	newListFunc := func() runtime.Object { return &appsapi.PetSetList{} }
 	storageInterface := opts.Decorator(
-		opts.Storage, cachesize.GetWatchCacheSizeByResource(cachesize.PetSet), &appsapi.PetSet{}, prefix, petset.Strategy, newListFunc)
+		opts.Storage,
+		cachesize.GetWatchCacheSizeByResource(cachesize.PetSet),
+		&appsapi.PetSet{},
+		prefix,
+		petset.Strategy,
+		newListFunc,
+		storage.NoTriggerPublisher,
+	)
 
 	store := &registry.Store{
 		NewFunc: func() runtime.Object { return &appsapi.PetSet{} },
@@ -62,9 +68,7 @@ func NewREST(opts generic.RESTOptions) (*REST, *StatusREST) {
 			return obj.(*appsapi.PetSet).Name, nil
 		},
 		// Used to match objects based on labels/fields for list and watch
-		PredicateFunc: func(label labels.Selector, field fields.Selector) generic.Matcher {
-			return petset.MatchPetSet(label, field)
-		},
+		PredicateFunc:           petset.MatchPetSet,
 		QualifiedResource:       appsapi.Resource("petsets"),
 		DeleteCollectionWorkers: opts.DeleteCollectionWorkers,
 

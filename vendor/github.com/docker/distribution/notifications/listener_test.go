@@ -20,7 +20,12 @@ import (
 
 func TestListener(t *testing.T) {
 	ctx := context.Background()
-	registry, err := storage.NewRegistry(ctx, inmemory.New(), storage.BlobDescriptorCacheProvider(memory.NewInMemoryBlobDescriptorCacheProvider()), storage.EnableDelete, storage.EnableRedirect)
+	k, err := libtrust.GenerateECP256PrivateKey()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	registry, err := storage.NewRegistry(ctx, inmemory.New(), storage.BlobDescriptorCacheProvider(memory.NewInMemoryBlobDescriptorCacheProvider()), storage.EnableDelete, storage.EnableRedirect, storage.Schema1SigningKey(k))
 	if err != nil {
 		t.Fatalf("error creating registry: %v", err)
 	}

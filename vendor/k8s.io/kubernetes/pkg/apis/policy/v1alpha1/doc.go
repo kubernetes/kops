@@ -14,8 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// +k8s:deepcopy-gen=package,register
+// +k8s:conversion-gen=k8s.io/kubernetes/pkg/apis/policy
+
 // Package policy is for any kind of policy object.  Suitable examples, even if
 // they aren't all here, are PodDisruptionBudget, PodSecurityPolicy,
 // NetworkPolicy, etc.
-// +genconversion=true
-package v1alpha1
+package v1alpha1 // import "k8s.io/kubernetes/pkg/apis/policy/v1alpha1"

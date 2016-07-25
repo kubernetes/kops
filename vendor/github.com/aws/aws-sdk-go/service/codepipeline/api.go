@@ -870,6 +870,55 @@ func (c *CodePipeline) PutActionRevision(input *PutActionRevisionInput) (*PutAct
 	return out, err
 }
 
+const opPutApprovalResult = "PutApprovalResult"
+
+// PutApprovalResultRequest generates a "aws/request.Request" representing the
+// client's request for the PutApprovalResult operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the PutApprovalResult method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the PutApprovalResultRequest method.
+//    req, resp := client.PutApprovalResultRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+func (c *CodePipeline) PutApprovalResultRequest(input *PutApprovalResultInput) (req *request.Request, output *PutApprovalResultOutput) {
+	op := &request.Operation{
+		Name:       opPutApprovalResult,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &PutApprovalResultInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &PutApprovalResultOutput{}
+	req.Data = output
+	return
+}
+
+// Provides the response to a manual approval request to AWS CodePipeline. Valid
+// responses include Approved and Rejected.
+func (c *CodePipeline) PutApprovalResult(input *PutApprovalResultInput) (*PutApprovalResultOutput, error) {
+	req, out := c.PutApprovalResultRequest(input)
+	err := req.Send()
+	return out, err
+}
+
 const opPutJobFailureResult = "PutJobFailureResult"
 
 // PutJobFailureResultRequest generates a "aws/request.Request" representing the
@@ -1591,6 +1640,9 @@ type ActionExecution struct {
 	// The last status change of the action.
 	LastStatusChange *time.Time `locationName:"lastStatusChange" type:"timestamp" timestampFormat:"unix"`
 
+	// The ARN of the user who last changed the pipeline.
+	LastUpdatedBy *string `locationName:"lastUpdatedBy" type:"string"`
+
 	// A percentage of completeness of the action as it runs.
 	PercentComplete *int64 `locationName:"percentComplete" type:"integer"`
 
@@ -1600,6 +1652,12 @@ type ActionExecution struct {
 
 	// A summary of the run of the action.
 	Summary *string `locationName:"summary" type:"string"`
+
+	// The system-generated token used to identify a unique approval request. The
+	// token for each open approval request can be obtained using the GetPipelineState
+	// command and is used to validate that the approval request corresponding to
+	// this token is still valid.
+	Token *string `locationName:"token" type:"string"`
 }
 
 // String returns the string representation
@@ -1837,6 +1895,43 @@ func (s *ActionTypeSettings) Validate() error {
 	}
 	if s.ThirdPartyConfigurationUrl != nil && len(*s.ThirdPartyConfigurationUrl) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("ThirdPartyConfigurationUrl", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// Represents information about the result of an approval request.
+type ApprovalResult struct {
+	_ struct{} `type:"structure"`
+
+	// The response submitted by a reviewer assigned to an approval action request.
+	Status *string `locationName:"status" type:"string" required:"true" enum:"ApprovalStatus"`
+
+	// The summary of the current status of the approval request.
+	Summary *string `locationName:"summary" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s ApprovalResult) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ApprovalResult) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ApprovalResult) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ApprovalResult"}
+	if s.Status == nil {
+		invalidParams.Add(request.NewErrParamRequired("Status"))
+	}
+	if s.Summary == nil {
+		invalidParams.Add(request.NewErrParamRequired("Summary"))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -3491,6 +3586,93 @@ func (s PutActionRevisionOutput) GoString() string {
 	return s.String()
 }
 
+// Represents the input of a put approval result action.
+type PutApprovalResultInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the action for which approval is requested.
+	ActionName *string `locationName:"actionName" min:"1" type:"string" required:"true"`
+
+	// The name of the pipeline that contains the action.
+	PipelineName *string `locationName:"pipelineName" min:"1" type:"string" required:"true"`
+
+	// Represents information about the result of the approval request.
+	Result *ApprovalResult `locationName:"result" type:"structure" required:"true"`
+
+	// The name of the stage that contains the action.
+	StageName *string `locationName:"stageName" min:"1" type:"string" required:"true"`
+
+	// The system-generated token used to identify a unique approval request. The
+	// token for each open approval request can be obtained using the GetPipelineState
+	// action and is used to validate that the approval request corresponding to
+	// this token is still valid.
+	Token *string `locationName:"token" type:"string"`
+}
+
+// String returns the string representation
+func (s PutApprovalResultInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s PutApprovalResultInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutApprovalResultInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutApprovalResultInput"}
+	if s.ActionName == nil {
+		invalidParams.Add(request.NewErrParamRequired("ActionName"))
+	}
+	if s.ActionName != nil && len(*s.ActionName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ActionName", 1))
+	}
+	if s.PipelineName == nil {
+		invalidParams.Add(request.NewErrParamRequired("PipelineName"))
+	}
+	if s.PipelineName != nil && len(*s.PipelineName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PipelineName", 1))
+	}
+	if s.Result == nil {
+		invalidParams.Add(request.NewErrParamRequired("Result"))
+	}
+	if s.StageName == nil {
+		invalidParams.Add(request.NewErrParamRequired("StageName"))
+	}
+	if s.StageName != nil && len(*s.StageName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("StageName", 1))
+	}
+	if s.Result != nil {
+		if err := s.Result.Validate(); err != nil {
+			invalidParams.AddNested("Result", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// Represents the output of a put approval result action.
+type PutApprovalResultOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The timestamp showing when the approval or rejection was submitted.
+	ApprovedAt *time.Time `locationName:"approvedAt" type:"timestamp" timestampFormat:"unix"`
+}
+
+// String returns the string representation
+func (s PutApprovalResultOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s PutApprovalResultOutput) GoString() string {
+	return s.String()
+}
+
 // Represents the input of a put job failure result action.
 type PutJobFailureResultInput struct {
 	_ struct{} `type:"structure"`
@@ -3767,7 +3949,7 @@ func (s PutThirdPartyJobSuccessResultOutput) GoString() string {
 	return s.String()
 }
 
-// Represents the input of a retry stage execution operation.
+// Represents the input of a retry stage execution action.
 type RetryStageExecutionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3824,7 +4006,7 @@ func (s *RetryStageExecutionInput) Validate() error {
 	return nil
 }
 
-// Represents the output of a retry stage execution operation.
+// Represents the output of a retry stage execution action.
 type RetryStageExecutionOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4270,6 +4452,13 @@ const (
 	ActionOwnerThirdParty = "ThirdParty"
 	// @enum ActionOwner
 	ActionOwnerCustom = "Custom"
+)
+
+const (
+	// @enum ApprovalStatus
+	ApprovalStatusApproved = "Approved"
+	// @enum ApprovalStatus
+	ApprovalStatusRejected = "Rejected"
 )
 
 const (

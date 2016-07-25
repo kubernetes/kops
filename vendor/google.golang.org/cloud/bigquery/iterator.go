@@ -23,13 +23,13 @@ import (
 
 // A pageFetcher returns a page of rows, starting from the row specified by token.
 type pageFetcher interface {
-	fetch(ctx context.Context, c *Client, token string) (*readDataResult, error)
+	fetch(ctx context.Context, s service, token string) (*readDataResult, error)
 }
 
 // Iterator provides access to the result of a BigQuery lookup.
 // Next must be called before the first call to Get.
 type Iterator struct {
-	c *Client
+	service service
 
 	err error // contains any error encountered during calls to Next.
 
@@ -52,11 +52,11 @@ type Iterator struct {
 	offset int64
 }
 
-func newIterator(c *Client, pf pageFetcher) *Iterator {
+func newIterator(s service, pf pageFetcher) *Iterator {
 	return &Iterator{
-		c:      c,
-		pf:     pf,
-		offset: -1,
+		service: s,
+		pf:      pf,
+		offset:  -1,
 	}
 }
 
@@ -67,7 +67,7 @@ func (it *Iterator) fetchPage(ctx context.Context) bool {
 	var res *readDataResult
 	var err error
 	for {
-		res, err = it.pf.fetch(ctx, it.c, it.pageToken)
+		res, err = it.pf.fetch(ctx, it.service, it.pageToken)
 		if err != errIncompleteJob {
 			break
 		}

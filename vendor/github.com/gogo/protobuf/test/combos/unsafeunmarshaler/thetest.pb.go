@@ -80,9 +80,9 @@ import github_com_gogo_protobuf_test_custom_dash_type "github.com/gogo/protobuf/
 
 import bytes "bytes"
 import github_com_gogo_protobuf_sortkeys "github.com/gogo/protobuf/sortkeys"
+import github_com_gogo_protobuf_proto "github.com/gogo/protobuf/proto"
 
 import github_com_gogo_protobuf_protoc_gen_gogo_descriptor "github.com/gogo/protobuf/protoc-gen-gogo/descriptor"
-import github_com_gogo_protobuf_proto "github.com/gogo/protobuf/proto"
 import compress_gzip "compress/gzip"
 import io_ioutil "io/ioutil"
 
@@ -102,7 +102,9 @@ var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
-const _ = proto.GoGoProtoPackageIsVersion1
+// A compilation error at this line likely means your copy of the
+// proto package needs to be updated.
+const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 
 type TheTestEnum int32
 
@@ -858,9 +860,9 @@ func (*Timer) ProtoMessage()               {}
 func (*Timer) Descriptor() ([]byte, []int) { return fileDescriptorThetest, []int{39} }
 
 type MyExtendable struct {
-	Field1           *int64                    `protobuf:"varint,1,opt,name=Field1,json=field1" json:"Field1,omitempty"`
-	XXX_extensions   map[int32]proto.Extension `json:"-"`
-	XXX_unrecognized []byte                    `json:"-"`
+	Field1                       *int64 `protobuf:"varint,1,opt,name=Field1,json=field1" json:"Field1,omitempty"`
+	proto.XXX_InternalExtensions `json:"-"`
+	XXX_unrecognized             []byte `json:"-"`
 }
 
 func (m *MyExtendable) Reset()                    { *m = MyExtendable{} }
@@ -874,19 +876,13 @@ var extRange_MyExtendable = []proto.ExtensionRange{
 func (*MyExtendable) ExtensionRangeArray() []proto.ExtensionRange {
 	return extRange_MyExtendable
 }
-func (m *MyExtendable) ExtensionMap() map[int32]proto.Extension {
-	if m.XXX_extensions == nil {
-		m.XXX_extensions = make(map[int32]proto.Extension)
-	}
-	return m.XXX_extensions
-}
 
 type OtherExtenable struct {
-	Field2           *int64                    `protobuf:"varint,2,opt,name=Field2,json=field2" json:"Field2,omitempty"`
-	Field13          *int64                    `protobuf:"varint,13,opt,name=Field13,json=field13" json:"Field13,omitempty"`
-	M                *MyExtendable             `protobuf:"bytes,1,opt,name=M,json=m" json:"M,omitempty"`
-	XXX_extensions   map[int32]proto.Extension `json:"-"`
-	XXX_unrecognized []byte                    `json:"-"`
+	Field2                       *int64        `protobuf:"varint,2,opt,name=Field2,json=field2" json:"Field2,omitempty"`
+	Field13                      *int64        `protobuf:"varint,13,opt,name=Field13,json=field13" json:"Field13,omitempty"`
+	M                            *MyExtendable `protobuf:"bytes,1,opt,name=M,json=m" json:"M,omitempty"`
+	proto.XXX_InternalExtensions `json:"-"`
+	XXX_unrecognized             []byte `json:"-"`
 }
 
 func (m *OtherExtenable) Reset()                    { *m = OtherExtenable{} }
@@ -900,12 +896,6 @@ var extRange_OtherExtenable = []proto.ExtensionRange{
 
 func (*OtherExtenable) ExtensionRangeArray() []proto.ExtensionRange {
 	return extRange_OtherExtenable
-}
-func (m *OtherExtenable) ExtensionMap() map[int32]proto.Extension {
-	if m.XXX_extensions == nil {
-		m.XXX_extensions = make(map[int32]proto.Extension)
-	}
-	return m.XXX_extensions
 }
 
 type NestedDefinition struct {
@@ -4759,19 +4749,21 @@ func (this *MyExtendable) Compare(that interface{}) int {
 	} else if that1.Field1 != nil {
 		return -1
 	}
-	extkeys := make([]int32, 0, len(this.XXX_extensions)+len(that1.XXX_extensions))
-	for k := range this.XXX_extensions {
+	thismap := github_com_gogo_protobuf_proto.GetUnsafeExtensionsMap(this)
+	thatmap := github_com_gogo_protobuf_proto.GetUnsafeExtensionsMap(that1)
+	extkeys := make([]int32, 0, len(thismap)+len(thatmap))
+	for k := range thismap {
 		extkeys = append(extkeys, k)
 	}
-	for k := range that1.XXX_extensions {
-		if _, ok := this.XXX_extensions[k]; !ok {
+	for k := range thatmap {
+		if _, ok := thismap[k]; !ok {
 			extkeys = append(extkeys, k)
 		}
 	}
 	github_com_gogo_protobuf_sortkeys.Int32s(extkeys)
 	for _, k := range extkeys {
-		if v, ok := this.XXX_extensions[k]; ok {
-			if v2, ok := that1.XXX_extensions[k]; ok {
+		if v, ok := thismap[k]; ok {
+			if v2, ok := thatmap[k]; ok {
 				if c := v.Compare(&v2); c != 0 {
 					return c
 				}
@@ -4839,19 +4831,21 @@ func (this *OtherExtenable) Compare(that interface{}) int {
 	if c := this.M.Compare(that1.M); c != 0 {
 		return c
 	}
-	extkeys := make([]int32, 0, len(this.XXX_extensions)+len(that1.XXX_extensions))
-	for k := range this.XXX_extensions {
+	thismap := github_com_gogo_protobuf_proto.GetUnsafeExtensionsMap(this)
+	thatmap := github_com_gogo_protobuf_proto.GetUnsafeExtensionsMap(that1)
+	extkeys := make([]int32, 0, len(thismap)+len(thatmap))
+	for k := range thismap {
 		extkeys = append(extkeys, k)
 	}
-	for k := range that1.XXX_extensions {
-		if _, ok := this.XXX_extensions[k]; !ok {
+	for k := range thatmap {
+		if _, ok := thismap[k]; !ok {
 			extkeys = append(extkeys, k)
 		}
 	}
 	github_com_gogo_protobuf_sortkeys.Int32s(extkeys)
 	for _, k := range extkeys {
-		if v, ok := this.XXX_extensions[k]; ok {
-			if v2, ok := that1.XXX_extensions[k]; ok {
+		if v, ok := thismap[k]; ok {
+			if v2, ok := thatmap[k]; ok {
 				if c := v.Compare(&v2); c != 0 {
 					return c
 				}
@@ -12239,18 +12233,20 @@ func (this *MyExtendable) VerboseEqual(that interface{}) error {
 	} else if that1.Field1 != nil {
 		return fmt.Errorf("Field1 this(%v) Not Equal that(%v)", this.Field1, that1.Field1)
 	}
-	for k, v := range this.XXX_extensions {
-		if v2, ok := that1.XXX_extensions[k]; ok {
+	thismap := github_com_gogo_protobuf_proto.GetUnsafeExtensionsMap(this)
+	thatmap := github_com_gogo_protobuf_proto.GetUnsafeExtensionsMap(that1)
+	for k, v := range thismap {
+		if v2, ok := thatmap[k]; ok {
 			if !v.Equal(&v2) {
-				return fmt.Errorf("XXX_extensions this[%v](%v) Not Equal that[%v](%v)", k, this.XXX_extensions[k], k, that1.XXX_extensions[k])
+				return fmt.Errorf("XXX_InternalExtensions this[%v](%v) Not Equal that[%v](%v)", k, thismap[k], k, thatmap[k])
 			}
 		} else {
-			return fmt.Errorf("XXX_extensions[%v] Not In that", k)
+			return fmt.Errorf("XXX_InternalExtensions[%v] Not In that", k)
 		}
 	}
-	for k := range that1.XXX_extensions {
-		if _, ok := this.XXX_extensions[k]; !ok {
-			return fmt.Errorf("XXX_extensions[%v] Not In this", k)
+	for k := range thatmap {
+		if _, ok := thismap[k]; !ok {
+			return fmt.Errorf("XXX_InternalExtensions[%v] Not In this", k)
 		}
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
@@ -12292,8 +12288,10 @@ func (this *MyExtendable) Equal(that interface{}) bool {
 	} else if that1.Field1 != nil {
 		return false
 	}
-	for k, v := range this.XXX_extensions {
-		if v2, ok := that1.XXX_extensions[k]; ok {
+	thismap := github_com_gogo_protobuf_proto.GetUnsafeExtensionsMap(this)
+	thatmap := github_com_gogo_protobuf_proto.GetUnsafeExtensionsMap(that1)
+	for k, v := range thismap {
+		if v2, ok := thatmap[k]; ok {
 			if !v.Equal(&v2) {
 				return false
 			}
@@ -12301,8 +12299,8 @@ func (this *MyExtendable) Equal(that interface{}) bool {
 			return false
 		}
 	}
-	for k := range that1.XXX_extensions {
-		if _, ok := this.XXX_extensions[k]; !ok {
+	for k := range thatmap {
+		if _, ok := thismap[k]; !ok {
 			return false
 		}
 	}
@@ -12357,18 +12355,20 @@ func (this *OtherExtenable) VerboseEqual(that interface{}) error {
 	if !this.M.Equal(that1.M) {
 		return fmt.Errorf("M this(%v) Not Equal that(%v)", this.M, that1.M)
 	}
-	for k, v := range this.XXX_extensions {
-		if v2, ok := that1.XXX_extensions[k]; ok {
+	thismap := github_com_gogo_protobuf_proto.GetUnsafeExtensionsMap(this)
+	thatmap := github_com_gogo_protobuf_proto.GetUnsafeExtensionsMap(that1)
+	for k, v := range thismap {
+		if v2, ok := thatmap[k]; ok {
 			if !v.Equal(&v2) {
-				return fmt.Errorf("XXX_extensions this[%v](%v) Not Equal that[%v](%v)", k, this.XXX_extensions[k], k, that1.XXX_extensions[k])
+				return fmt.Errorf("XXX_InternalExtensions this[%v](%v) Not Equal that[%v](%v)", k, thismap[k], k, thatmap[k])
 			}
 		} else {
-			return fmt.Errorf("XXX_extensions[%v] Not In that", k)
+			return fmt.Errorf("XXX_InternalExtensions[%v] Not In that", k)
 		}
 	}
-	for k := range that1.XXX_extensions {
-		if _, ok := this.XXX_extensions[k]; !ok {
-			return fmt.Errorf("XXX_extensions[%v] Not In this", k)
+	for k := range thatmap {
+		if _, ok := thismap[k]; !ok {
+			return fmt.Errorf("XXX_InternalExtensions[%v] Not In this", k)
 		}
 	}
 	if !bytes.Equal(this.XXX_unrecognized, that1.XXX_unrecognized) {
@@ -12422,8 +12422,10 @@ func (this *OtherExtenable) Equal(that interface{}) bool {
 	if !this.M.Equal(that1.M) {
 		return false
 	}
-	for k, v := range this.XXX_extensions {
-		if v2, ok := that1.XXX_extensions[k]; ok {
+	thismap := github_com_gogo_protobuf_proto.GetUnsafeExtensionsMap(this)
+	thatmap := github_com_gogo_protobuf_proto.GetUnsafeExtensionsMap(that1)
+	for k, v := range thismap {
+		if v2, ok := thatmap[k]; ok {
 			if !v.Equal(&v2) {
 				return false
 			}
@@ -12431,8 +12433,8 @@ func (this *OtherExtenable) Equal(that interface{}) bool {
 			return false
 		}
 	}
-	for k := range that1.XXX_extensions {
-		if _, ok := this.XXX_extensions[k]; !ok {
+	for k := range thatmap {
+		if _, ok := thismap[k]; !ok {
 			return false
 		}
 	}
@@ -18716,9 +18718,7 @@ func (this *MyExtendable) GoString() string {
 	if this.Field1 != nil {
 		s = append(s, "Field1: "+valueToGoStringThetest(this.Field1, "int64")+",\n")
 	}
-	if this.XXX_extensions != nil {
-		s = append(s, "XXX_extensions: "+extensionToGoStringThetest(this.XXX_extensions)+",\n")
-	}
+	s = append(s, "XXX_InternalExtensions: "+extensionToGoStringThetest(this)+",\n")
 	if this.XXX_unrecognized != nil {
 		s = append(s, "XXX_unrecognized:"+fmt.Sprintf("%#v", this.XXX_unrecognized)+",\n")
 	}
@@ -18740,9 +18740,7 @@ func (this *OtherExtenable) GoString() string {
 	if this.M != nil {
 		s = append(s, "M: "+fmt.Sprintf("%#v", this.M)+",\n")
 	}
-	if this.XXX_extensions != nil {
-		s = append(s, "XXX_extensions: "+extensionToGoStringThetest(this.XXX_extensions)+",\n")
-	}
+	s = append(s, "XXX_InternalExtensions: "+extensionToGoStringThetest(this)+",\n")
 	if this.XXX_unrecognized != nil {
 		s = append(s, "XXX_unrecognized:"+fmt.Sprintf("%#v", this.XXX_unrecognized)+",\n")
 	}
@@ -19257,11 +19255,12 @@ func valueToGoStringThetest(v interface{}, typ string) string {
 	pv := reflect.Indirect(rv).Interface()
 	return fmt.Sprintf("func(v %v) *%v { return &v } ( %#v )", typ, typ, pv)
 }
-func extensionToGoStringThetest(e map[int32]github_com_gogo_protobuf_proto.Extension) string {
+func extensionToGoStringThetest(m github_com_gogo_protobuf_proto.Message) string {
+	e := github_com_gogo_protobuf_proto.GetUnsafeExtensionsMap(m)
 	if e == nil {
 		return "nil"
 	}
-	s := "map[int32]proto.Extension{"
+	s := "proto.NewUnsafeXXX_InternalExtensions(map[int32]proto.Extension{"
 	keys := make([]int, 0, len(e))
 	for k := range e {
 		keys = append(keys, int(k))
@@ -19271,7 +19270,7 @@ func extensionToGoStringThetest(e map[int32]github_com_gogo_protobuf_proto.Exten
 	for _, k := range keys {
 		ss = append(ss, strconv.Itoa(k)+": "+e[int32(k)].GoString())
 	}
-	s += strings.Join(ss, ",") + "}"
+	s += strings.Join(ss, ",") + "})"
 	return s
 }
 func NewPopulatedNidOptNative(r randyThetest, easy bool) *NidOptNative {
@@ -22725,9 +22724,7 @@ func (m *MyExtendable) Size() (n int) {
 	if m.Field1 != nil {
 		n += 1 + sovThetest(uint64(*m.Field1))
 	}
-	if m.XXX_extensions != nil {
-		n += github_com_gogo_protobuf_proto.SizeOfExtensionMap(m.XXX_extensions)
-	}
+	n += github_com_gogo_protobuf_proto.SizeOfInternalExtension(m)
 	if m.XXX_unrecognized != nil {
 		n += len(m.XXX_unrecognized)
 	}
@@ -22747,9 +22744,7 @@ func (m *OtherExtenable) Size() (n int) {
 		l = m.M.Size()
 		n += 1 + l + sovThetest(uint64(l))
 	}
-	if m.XXX_extensions != nil {
-		n += github_com_gogo_protobuf_proto.SizeOfExtensionMap(m.XXX_extensions)
-	}
+	n += github_com_gogo_protobuf_proto.SizeOfInternalExtension(m)
 	if m.XXX_unrecognized != nil {
 		n += len(m.XXX_unrecognized)
 	}
@@ -23885,7 +23880,7 @@ func (this *MyExtendable) String() string {
 	}
 	s := strings.Join([]string{`&MyExtendable{`,
 		`Field1:` + valueToStringThetest(this.Field1) + `,`,
-		`XXX_extensions:` + proto.StringFromExtensionsMap(this.XXX_extensions) + `,`,
+		`XXX_InternalExtensions:` + github_com_gogo_protobuf_proto.StringFromInternalExtension(this) + `,`,
 		`XXX_unrecognized:` + fmt.Sprintf("%v", this.XXX_unrecognized) + `,`,
 		`}`,
 	}, "")
@@ -23899,7 +23894,7 @@ func (this *OtherExtenable) String() string {
 		`Field2:` + valueToStringThetest(this.Field2) + `,`,
 		`Field13:` + valueToStringThetest(this.Field13) + `,`,
 		`M:` + strings.Replace(fmt.Sprintf("%v", this.M), "MyExtendable", "MyExtendable", 1) + `,`,
-		`XXX_extensions:` + proto.StringFromExtensionsMap(this.XXX_extensions) + `,`,
+		`XXX_InternalExtensions:` + github_com_gogo_protobuf_proto.StringFromInternalExtension(this) + `,`,
 		`XXX_unrecognized:` + fmt.Sprintf("%v", this.XXX_unrecognized) + `,`,
 		`}`,
 	}, "")
@@ -24131,7 +24126,7 @@ func (this *NoExtensionsMap) String() string {
 	}
 	s := strings.Join([]string{`&NoExtensionsMap{`,
 		`Field1:` + valueToStringThetest(this.Field1) + `,`,
-		`XXX_extensions:` + proto.StringFromExtensionsBytes(this.XXX_extensions) + `,`,
+		`XXX_extensions:` + github_com_gogo_protobuf_proto.StringFromExtensionsBytes(this.XXX_extensions) + `,`,
 		`XXX_unrecognized:` + fmt.Sprintf("%v", this.XXX_unrecognized) + `,`,
 		`}`,
 	}, "")
@@ -35494,6 +35489,8 @@ var (
 	ErrInvalidLengthThetestUnsafe = fmt.Errorf("proto: negative length found during unmarshaling")
 	ErrIntOverflowThetestUnsafe   = fmt.Errorf("proto: integer overflow")
 )
+
+func init() { proto.RegisterFile("combos/unsafeunmarshaler/thetest.proto", fileDescriptorThetest) }
 
 var fileDescriptorThetest = []byte{
 	// 3017 bytes of a gzipped FileDescriptorProto

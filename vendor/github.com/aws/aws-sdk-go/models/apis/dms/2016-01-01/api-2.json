@@ -92,6 +92,19 @@
         {"shape":"ResourceQuotaExceededFault"}
       ]
     },
+    "DeleteCertificate":{
+      "name":"DeleteCertificate",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteCertificateMessage"},
+      "output":{"shape":"DeleteCertificateResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundFault"},
+        {"shape":"InvalidResourceStateFault"}
+      ]
+    },
     "DeleteEndpoint":{
       "name":"DeleteEndpoint",
       "http":{
@@ -152,6 +165,18 @@
       },
       "input":{"shape":"DescribeAccountAttributesMessage"},
       "output":{"shape":"DescribeAccountAttributesResponse"}
+    },
+    "DescribeCertificates":{
+      "name":"DescribeCertificates",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeCertificatesMessage"},
+      "output":{"shape":"DescribeCertificatesResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundFault"}
+      ]
     },
     "DescribeConnections":{
       "name":"DescribeConnections",
@@ -270,6 +295,19 @@
         {"shape":"InvalidResourceStateFault"}
       ]
     },
+    "ImportCertificate":{
+      "name":"ImportCertificate",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ImportCertificateMessage"},
+      "output":{"shape":"ImportCertificateResponse"},
+      "errors":[
+        {"shape":"ResourceAlreadyExistsFault"},
+        {"shape":"InvalidCertificateFault"}
+      ]
+    },
     "ListTagsForResource":{
       "name":"ListTagsForResource",
       "http":{
@@ -323,6 +361,7 @@
       "input":{"shape":"ModifyReplicationSubnetGroupMessage"},
       "output":{"shape":"ModifyReplicationSubnetGroupResponse"},
       "errors":[
+        {"shape":"AccessDeniedFault"},
         {"shape":"ResourceNotFoundFault"},
         {"shape":"ResourceQuotaExceededFault"},
         {"shape":"SubnetAlreadyInUse"},
@@ -446,6 +485,27 @@
     },
     "Boolean":{"type":"boolean"},
     "BooleanOptional":{"type":"boolean"},
+    "Certificate":{
+      "type":"structure",
+      "members":{
+        "CertificateIdentifier":{"shape":"String"},
+        "CertificateCreationDate":{"shape":"TStamp"},
+        "CertificatePem":{"shape":"String"},
+        "CertificateArn":{"shape":"String"},
+        "CertificateOwner":{"shape":"String"},
+        "ValidFromDate":{"shape":"TStamp"},
+        "ValidToDate":{"shape":"TStamp"},
+        "SigningAlgorithm":{"shape":"String"},
+        "KeyLength":{"shape":"IntegerOptional"}
+      }
+    },
+    "CertificateList":{
+      "type":"list",
+      "member":{
+        "shape":"Certificate",
+        "locationName":"Certificate"
+      }
+    },
     "Connection":{
       "type":"structure",
       "members":{
@@ -486,7 +546,9 @@
         "DatabaseName":{"shape":"String"},
         "ExtraConnectionAttributes":{"shape":"String"},
         "KmsKeyId":{"shape":"String"},
-        "Tags":{"shape":"TagList"}
+        "Tags":{"shape":"TagList"},
+        "CertificateArn":{"shape":"String"},
+        "SslMode":{"shape":"DmsSslModeValue"}
       }
     },
     "CreateEndpointResponse":{
@@ -509,6 +571,7 @@
         "AvailabilityZone":{"shape":"String"},
         "ReplicationSubnetGroupIdentifier":{"shape":"String"},
         "PreferredMaintenanceWindow":{"shape":"String"},
+        "MultiAZ":{"shape":"BooleanOptional"},
         "EngineVersion":{"shape":"String"},
         "AutoMinorVersionUpgrade":{"shape":"BooleanOptional"},
         "Tags":{"shape":"TagList"},
@@ -568,6 +631,19 @@
       "type":"structure",
       "members":{
         "ReplicationTask":{"shape":"ReplicationTask"}
+      }
+    },
+    "DeleteCertificateMessage":{
+      "type":"structure",
+      "required":["CertificateArn"],
+      "members":{
+        "CertificateArn":{"shape":"String"}
+      }
+    },
+    "DeleteCertificateResponse":{
+      "type":"structure",
+      "members":{
+        "Certificate":{"shape":"Certificate"}
       }
     },
     "DeleteEndpointMessage":{
@@ -630,6 +706,21 @@
       "type":"structure",
       "members":{
         "AccountQuotas":{"shape":"AccountQuotaList"}
+      }
+    },
+    "DescribeCertificatesMessage":{
+      "type":"structure",
+      "members":{
+        "Filters":{"shape":"FilterList"},
+        "MaxRecords":{"shape":"IntegerOptional"},
+        "Marker":{"shape":"String"}
+      }
+    },
+    "DescribeCertificatesResponse":{
+      "type":"structure",
+      "members":{
+        "Marker":{"shape":"String"},
+        "Certificates":{"shape":"CertificateList"}
       }
     },
     "DescribeConnectionsMessage":{
@@ -782,6 +873,15 @@
         "Marker":{"shape":"String"}
       }
     },
+    "DmsSslModeValue":{
+      "type":"string",
+      "enum":[
+        "none",
+        "require",
+        "verify-ca",
+        "verify-full"
+      ]
+    },
     "Endpoint":{
       "type":"structure",
       "members":{
@@ -795,7 +895,9 @@
         "ExtraConnectionAttributes":{"shape":"String"},
         "Status":{"shape":"String"},
         "KmsKeyId":{"shape":"String"},
-        "EndpointArn":{"shape":"String"}
+        "EndpointArn":{"shape":"String"},
+        "CertificateArn":{"shape":"String"},
+        "SslMode":{"shape":"DmsSslModeValue"}
       }
     },
     "EndpointList":{
@@ -831,6 +933,20 @@
         "locationName":"Value"
       }
     },
+    "ImportCertificateMessage":{
+      "type":"structure",
+      "required":["CertificateIdentifier"],
+      "members":{
+        "CertificateIdentifier":{"shape":"String"},
+        "CertificatePem":{"shape":"String"}
+      }
+    },
+    "ImportCertificateResponse":{
+      "type":"structure",
+      "members":{
+        "Certificate":{"shape":"Certificate"}
+      }
+    },
     "InsufficientResourceCapacityFault":{
       "type":"structure",
       "members":{
@@ -840,6 +956,13 @@
     },
     "Integer":{"type":"integer"},
     "IntegerOptional":{"type":"integer"},
+    "InvalidCertificateFault":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ExceptionMessage"}
+      },
+      "exception":true
+    },
     "InvalidResourceStateFault":{
       "type":"structure",
       "members":{
@@ -900,7 +1023,9 @@
         "ServerName":{"shape":"String"},
         "Port":{"shape":"IntegerOptional"},
         "DatabaseName":{"shape":"String"},
-        "ExtraConnectionAttributes":{"shape":"String"}
+        "ExtraConnectionAttributes":{"shape":"String"},
+        "CertificateArn":{"shape":"String"},
+        "SslMode":{"shape":"DmsSslModeValue"}
       }
     },
     "ModifyEndpointResponse":{
@@ -919,6 +1044,7 @@
         "ReplicationInstanceClass":{"shape":"String"},
         "VpcSecurityGroupIds":{"shape":"VpcSecurityGroupIdList"},
         "PreferredMaintenanceWindow":{"shape":"String"},
+        "MultiAZ":{"shape":"BooleanOptional"},
         "EngineVersion":{"shape":"String"},
         "AllowMajorVersionUpgrade":{"shape":"Boolean"},
         "AutoMinorVersionUpgrade":{"shape":"BooleanOptional"},
@@ -1039,12 +1165,21 @@
         "ReplicationSubnetGroup":{"shape":"ReplicationSubnetGroup"},
         "PreferredMaintenanceWindow":{"shape":"String"},
         "PendingModifiedValues":{"shape":"ReplicationPendingModifiedValues"},
+        "MultiAZ":{"shape":"Boolean"},
         "EngineVersion":{"shape":"String"},
         "AutoMinorVersionUpgrade":{"shape":"Boolean"},
         "KmsKeyId":{"shape":"String"},
         "ReplicationInstanceArn":{"shape":"String"},
-        "ReplicationInstancePublicIpAddress":{"shape":"String"},
-        "ReplicationInstancePrivateIpAddress":{"shape":"String"},
+        "ReplicationInstancePublicIpAddress":{
+          "shape":"String",
+          "deprecated":true
+        },
+        "ReplicationInstancePrivateIpAddress":{
+          "shape":"String",
+          "deprecated":true
+        },
+        "ReplicationInstancePublicIpAddresses":{"shape":"ReplicationInstancePublicIpAddressList"},
+        "ReplicationInstancePrivateIpAddresses":{"shape":"ReplicationInstancePrivateIpAddressList"},
         "PubliclyAccessible":{"shape":"Boolean"}
       }
     },
@@ -1055,11 +1190,20 @@
         "locationName":"ReplicationInstance"
       }
     },
+    "ReplicationInstancePrivateIpAddressList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
+    "ReplicationInstancePublicIpAddressList":{
+      "type":"list",
+      "member":{"shape":"String"}
+    },
     "ReplicationPendingModifiedValues":{
       "type":"structure",
       "members":{
         "ReplicationInstanceClass":{"shape":"String"},
         "AllocatedStorage":{"shape":"IntegerOptional"},
+        "MultiAZ":{"shape":"BooleanOptional"},
         "EngineVersion":{"shape":"String"}
       }
     },

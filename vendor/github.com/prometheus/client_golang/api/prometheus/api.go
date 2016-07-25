@@ -29,6 +29,7 @@ import (
 
 	"github.com/prometheus/common/model"
 	"golang.org/x/net/context"
+	"golang.org/x/net/context/ctxhttp"
 )
 
 const (
@@ -106,7 +107,7 @@ func New(cfg Config) (Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	u.Path = apiPrefix
+	u.Path = strings.TrimRight(u.Path, "/") + apiPrefix
 
 	return &httpClient{
 		endpoint:  u,
@@ -134,29 +135,7 @@ func (c *httpClient) url(ep string, args map[string]string) *url.URL {
 }
 
 func (c *httpClient) do(ctx context.Context, req *http.Request) (*http.Response, []byte, error) {
-	type roundTripResponse struct {
-		resp *http.Response
-		err  error
-	}
-
-	rtchan := make(chan roundTripResponse, 1)
-	go func() {
-		resp, err := c.transport.RoundTrip(req)
-		rtchan <- roundTripResponse{resp: resp, err: err}
-		close(rtchan)
-	}()
-
-	var resp *http.Response
-	var err error
-
-	select {
-	case rtresp := <-rtchan:
-		resp, err = rtresp.resp, rtresp.err
-	case <-ctx.Done():
-		// Cancel request and wait until it terminated.
-		c.transport.CancelRequest(req)
-		resp, err = (<-rtchan).resp, ctx.Err()
-	}
+	resp, err := ctxhttp.Do(ctx, &http.Client{Transport: c.transport}, req)
 
 	defer func() {
 		if resp != nil {

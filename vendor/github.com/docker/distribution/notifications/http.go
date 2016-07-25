@@ -26,13 +26,16 @@ type httpSink struct {
 
 // newHTTPSink returns an unreliable, single-flight http sink. Wrap in other
 // sinks for increased reliability.
-func newHTTPSink(u string, timeout time.Duration, headers http.Header, listeners ...httpStatusListener) *httpSink {
+func newHTTPSink(u string, timeout time.Duration, headers http.Header, transport *http.Transport, listeners ...httpStatusListener) *httpSink {
+	if transport == nil {
+		transport = http.DefaultTransport.(*http.Transport)
+	}
 	return &httpSink{
 		url:       u,
 		listeners: listeners,
 		client: &http.Client{
 			Transport: &headerRoundTripper{
-				Transport: http.DefaultTransport.(*http.Transport),
+				Transport: transport,
 				headers:   headers,
 			},
 			Timeout: timeout,

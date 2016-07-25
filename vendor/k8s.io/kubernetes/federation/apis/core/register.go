@@ -35,7 +35,7 @@ const GroupName = ""
 // SchemeGroupVersion is group version used to register these objects
 var SchemeGroupVersion = unversioned.GroupVersion{Group: GroupName, Version: runtime.APIVersionInternal}
 
-// Unversiond is group version for unversioned API objects
+// Unversioned is group version for unversioned API objects
 // TODO: this should be v1 probably
 var Unversioned = unversioned.GroupVersion{Group: "", Version: "v1"}
 
@@ -59,6 +59,8 @@ func AddToScheme(scheme *runtime.Scheme) {
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&api.ServiceList{},
 		&api.Service{},
+		&api.Namespace{},
+		&api.NamespaceList{},
 		&api.ListOptions{},
 		&api.DeleteOptions{},
 	)
@@ -73,7 +75,6 @@ func AddToScheme(scheme *runtime.Scheme) {
 		&unversioned.APIResourceList{},
 	)
 
-	addDeepCopyFuncs(scheme)
 	addDefaultingFuncs(scheme)
 	addConversionFuncs(scheme)
 }

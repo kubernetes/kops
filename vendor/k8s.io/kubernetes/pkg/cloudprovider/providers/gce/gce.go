@@ -81,7 +81,7 @@ type GCECloud struct {
 	projectID                string
 	region                   string
 	localZone                string   // The zone in which we are running
-	managedZones             []string // List of zones we are spanning (for Ubernetes-Lite, primarily when running on master)
+	managedZones             []string // List of zones we are spanning (for multi-AZ clusters, primarily when running on master)
 	networkURL               string
 	nodeTags                 []string // List of tags to use on firewall rules for load balancers
 	nodeInstancePrefix       string   // If non-"", an advisory prefix for all nodes in the cluster
@@ -549,6 +549,9 @@ func (gce *GCECloud) EnsureLoadBalancer(apiService *api.Service, hostNames []str
 	if err != nil {
 		return nil, err
 	}
+	if !fwdRuleExists {
+		glog.Infof("Forwarding rule %v for Service %v/%v doesn't exist", loadBalancerName, apiService.Namespace, apiService.Name)
+	}
 
 	// Make sure we know which IP address will be used and have properly reserved
 	// it as static before moving forward with the rest of our operations.
@@ -667,21 +670,26 @@ func (gce *GCECloud) EnsureLoadBalancer(apiService *api.Service, hostNames []str
 		// Unlike forwarding rules and target pools, firewalls can be updated
 		// without needing to be deleted and recreated.
 		if firewallExists {
+			glog.Infof("EnsureLoadBalancer(%v(%v)): updating firewall", loadBalancerName, serviceName)
 			if err := gce.updateFirewall(loadBalancerName, gce.region, desc, sourceRanges, ports, hosts); err != nil {
 				return nil, err
 			}
-			glog.V(4).Infof("EnsureLoadBalancer(%v(%v)): updated firewall", loadBalancerName, serviceName)
+			glog.Infof("EnsureLoadBalancer(%v(%v)): updated firewall", loadBalancerName, serviceName)
 		} else {
+			glog.Infof("EnsureLoadBalancer(%v(%v)): creating firewall", loadBalancerName, serviceName)
 			if err := gce.createFirewall(loadBalancerName, gce.region, desc, sourceRanges, ports, hosts); err != nil {
 				return nil, err
 			}
-			glog.V(4).Infof("EnsureLoadBalancer(%v(%v)): created firewall", loadBalancerName, serviceName)
+			glog.Infof("EnsureLoadBalancer(%v(%v)): created firewall", loadBalancerName, serviceName)
 		}
 	}
 
 	tpExists, tpNeedsUpdate, err := gce.targetPoolNeedsUpdate(loadBalancerName, gce.region, affinityType)
 	if err != nil {
 		return nil, err
+	}
+	if !tpExists {
+		glog.Infof("Target pool %v for Service %v/%v doesn't exist", loadBalancerName, apiService.Namespace, apiService.Name)
 	}
 
 	// Now we get to some slightly more interesting logic.
@@ -699,13 +707,13 @@ func (gce *GCECloud) EnsureLoadBalancer(apiService *api.Service, hostNames []str
 		if err := gce.deleteForwardingRule(loadBalancerName, gce.region); err != nil {
 			return nil, fmt.Errorf("failed to delete existing forwarding rule %s for load balancer update: %v", loadBalancerName, err)
 		}
-		glog.V(4).Infof("EnsureLoadBalancer(%v(%v)): deleted forwarding rule", loadBalancerName, serviceName)
+		glog.Infof("EnsureLoadBalancer(%v(%v)): deleted forwarding rule", loadBalancerName, serviceName)
 	}
 	if tpExists && tpNeedsUpdate {
 		if err := gce.deleteTargetPool(loadBalancerName, gce.region); err != nil {
 			return nil, fmt.Errorf("failed to delete existing target pool %s for load balancer update: %v", loadBalancerName, err)
 		}
-		glog.V(4).Infof("EnsureLoadBalancer(%v(%v)): deleted target pool", loadBalancerName, serviceName)
+		glog.Infof("EnsureLoadBalancer(%v(%v)): deleted target pool", loadBalancerName, serviceName)
 	}
 
 	// Once we've deleted the resources (if necessary), build them back up (or for
@@ -720,9 +728,9 @@ func (gce *GCECloud) EnsureLoadBalancer(apiService *api.Service, hostNames []str
 			return nil, fmt.Errorf("failed to create target pool %s: %v", loadBalancerName, err)
 		}
 		if len(hosts) <= maxTargetPoolCreateInstances {
-			glog.V(4).Infof("EnsureLoadBalancer(%v(%v)): created target pool", loadBalancerName, serviceName)
+			glog.Infof("EnsureLoadBalancer(%v(%v)): created target pool", loadBalancerName, serviceName)
 		} else {
-			glog.V(4).Infof("EnsureLoadBalancer(%v(%v)): created initial target pool (now updating with %d hosts)", loadBalancerName, serviceName, len(hosts)-maxTargetPoolCreateInstances)
+			glog.Infof("EnsureLoadBalancer(%v(%v)): created initial target pool (now updating with %d hosts)", loadBalancerName, serviceName, len(hosts)-maxTargetPoolCreateInstances)
 
 			created := sets.NewString()
 			for _, host := range createInstances {
@@ -731,9 +739,11 @@ func (gce *GCECloud) EnsureLoadBalancer(apiService *api.Service, hostNames []str
 			if err := gce.updateTargetPool(loadBalancerName, created, hosts); err != nil {
 				return nil, fmt.Errorf("failed to update target pool %s: %v", loadBalancerName, err)
 			}
+			glog.Infof("EnsureLoadBalancer(%v(%v)): updated target pool (with %d hosts)", loadBalancerName, serviceName, len(hosts)-maxTargetPoolCreateInstances)
 		}
 	}
 	if tpNeedsUpdate || fwdRuleNeedsUpdate {
+		glog.Infof("EnsureLoadBalancer(%v(%v)): creating forwarding rule, IP %s", loadBalancerName, serviceName, ipAddress)
 		if err := gce.createForwardingRule(loadBalancerName, serviceName.String(), gce.region, ipAddress, ports); err != nil {
 			return nil, fmt.Errorf("failed to create forwarding rule %s: %v", loadBalancerName, err)
 		}
@@ -742,7 +752,7 @@ func (gce *GCECloud) EnsureLoadBalancer(apiService *api.Service, hostNames []str
 		// of a user-requested IP, the "is user-owned" flag will be set,
 		// preventing it from actually being released.
 		isSafeToReleaseIP = true
-		glog.V(4).Infof("EnsureLoadBalancer(%v(%v)): created forwarding rule, IP %s", loadBalancerName, serviceName, ipAddress)
+		glog.Infof("EnsureLoadBalancer(%v(%v)): created forwarding rule, IP %s", loadBalancerName, serviceName, ipAddress)
 	}
 
 	status := &api.LoadBalancerStatus{}
@@ -760,20 +770,31 @@ func (gce *GCECloud) forwardingRuleNeedsUpdate(name, region string, loadBalancer
 		if isHTTPErrorCode(err, http.StatusNotFound) {
 			return false, true, "", nil
 		}
-		return false, false, "", fmt.Errorf("error getting load balancer's forwarding rule: %v", err)
+		// Err on the side of caution in case of errors. Caller should notice the error and retry.
+		// We never want to end up recreating resources because gce api flaked.
+		return true, false, "", fmt.Errorf("error getting load balancer's forwarding rule: %v", err)
 	}
-	if loadBalancerIP != fwd.IPAddress {
+	// If the user asks for a specific static ip through the Service spec,
+	// check that we're actually using it.
+	// TODO: we report loadbalancer IP through status, so we want to verify if
+	// that matches the forwarding rule as well.
+	if loadBalancerIP != "" && loadBalancerIP != fwd.IPAddress {
+		glog.Infof("LoadBalancer ip for forwarding rule %v was expected to be %v, but was actually %v", fwd.Name, fwd.IPAddress, loadBalancerIP)
 		return true, true, fwd.IPAddress, nil
 	}
 	portRange, err := loadBalancerPortRange(ports)
 	if err != nil {
-		return false, false, "", err
+		// Err on the side of caution in case of errors. Caller should notice the error and retry.
+		// We never want to end up recreating resources because gce api flaked.
+		return true, false, "", err
 	}
 	if portRange != fwd.PortRange {
+		glog.Infof("LoadBalancer port range for forwarding rule %v was expected to be %v, but was actually %v", fwd.Name, fwd.PortRange, portRange)
 		return true, true, fwd.IPAddress, nil
 	}
 	// The service controller verified all the protocols match on the ports, just check the first one
 	if string(ports[0].Protocol) != fwd.IPProtocol {
+		glog.Infof("LoadBalancer protocol for forwarding rule %v was expected to be %v, but was actually %v", fwd.Name, fwd.IPProtocol, string(ports[0].Protocol))
 		return true, true, fwd.IPAddress, nil
 	}
 
@@ -811,9 +832,20 @@ func (gce *GCECloud) targetPoolNeedsUpdate(name, region string, affinityType api
 		if isHTTPErrorCode(err, http.StatusNotFound) {
 			return false, true, nil
 		}
-		return false, false, fmt.Errorf("error getting load balancer's target pool: %v", err)
+		// Err on the side of caution in case of errors. Caller should notice the error and retry.
+		// We never want to end up recreating resources because gce api flaked.
+		return true, false, fmt.Errorf("error getting load balancer's target pool: %v", err)
 	}
-	if translateAffinityType(affinityType) != tp.SessionAffinity {
+	// TODO: If the user modifies their Service's session affinity, it *should*
+	// reflect in the associated target pool. However, currently not setting the
+	// session affinity on a target pool defaults it to the empty string while
+	// not setting in on a Service defaults it to None. There is a lack of
+	// documentation around the default setting for the target pool, so if we
+	// find it's the undocumented empty string, don't blindly recreate the
+	// target pool (which results in downtime). Fix this when we have formally
+	// defined the defaults on either side.
+	if tp.SessionAffinity != "" && translateAffinityType(affinityType) != tp.SessionAffinity {
+		glog.Infof("LoadBalancer target pool %v changed affinity from %v to %v", name, tp.SessionAffinity, affinityType)
 		return true, true, nil
 	}
 	return true, false, nil
@@ -2335,6 +2367,15 @@ func (gce *GCECloud) AttachDisk(diskName, instanceID string, readOnly bool) erro
 func (gce *GCECloud) DetachDisk(devicePath, instanceID string) error {
 	inst, err := gce.getInstanceByName(instanceID)
 	if err != nil {
+		if err == cloudprovider.InstanceNotFound {
+			// If instance no longer exists, safe to assume volume is not attached.
+			glog.Warningf(
+				"Instance %q does not exist. DetachDisk will assume PD %q is not attached to it.",
+				instanceID,
+				devicePath)
+			return nil
+		}
+
 		return fmt.Errorf("error getting instance %q", instanceID)
 	}
 
@@ -2349,6 +2390,15 @@ func (gce *GCECloud) DetachDisk(devicePath, instanceID string) error {
 func (gce *GCECloud) DiskIsAttached(diskName, instanceID string) (bool, error) {
 	instance, err := gce.getInstanceByName(instanceID)
 	if err != nil {
+		if err == cloudprovider.InstanceNotFound {
+			// If instance no longer exists, safe to assume volume is not attached.
+			glog.Warningf(
+				"Instance %q does not exist. DiskIsAttached will assume PD %q is not attached to it.",
+				instanceID,
+				diskName)
+			return false, nil
+		}
+
 		return false, err
 	}
 

@@ -78,9 +78,7 @@ do
 done
 
 if [ "x$GO_OUT" == "x" ]; then
-    "${KUBE_ROOT}/hack/build-go.sh" \
-        cmd/kubectl \
-        cmd/hyperkube
+    make -C "${KUBE_ROOT}" WHAT="cmd/kubectl cmd/hyperkube"
 else
     echo "skipped the build."
 fi
@@ -124,7 +122,7 @@ CLAIM_BINDER_SYNC_PERIOD=${CLAIM_BINDER_SYNC_PERIOD:-"15s"} # current k8s defaul
 function test_apiserver_off {
     # For the common local scenario, fail fast if server is already running.
     # this can happen if you run local-up-cluster.sh twice and kill etcd in between.
-    curl -g $API_HOST:$API_PORT
+    curl --silent -g $API_HOST:$API_PORT
     if [ ! $? -eq 0 ]; then
         echo "API SERVER port is free, proceeding..."
     else
@@ -271,8 +269,16 @@ function start_apiserver {
       runtime_config="--runtime-config=${RUNTIME_CONFIG}"
     fi
 
+    # Let the API server pick a default address when API_HOST
+    # is set to 127.0.0.1
+    advertise_address=""
+    if [[ "${API_HOST}" != "127.0.0.1" ]]; then
+        advertise_address="--advertise_address=${API_HOST}"
+    fi
+
     APISERVER_LOG=/tmp/kube-apiserver.log
     sudo -E "${GO_OUT}/hyperkube" apiserver ${priv_arg} ${runtime_config}\
+      ${advertise_address} \
       --v=${LOG_LEVEL} \
       --cert-dir="${CERT_DIR}" \
       --service-account-key-file="${SERVICE_ACCOUNT_KEY}" \
@@ -281,7 +287,6 @@ function start_apiserver {
       --bind-address="${API_BIND_ADDR}" \
       --insecure-bind-address="${API_HOST_IP}" \
       --insecure-port="${API_PORT}" \
-      --advertise-address="${API_HOST_IP}" \
       --etcd-servers="http://${ETCD_HOST}:${ETCD_PORT}" \
       --service-cluster-ip-range="10.0.0.0/24" \
       --cloud-provider="${CLOUD_PROVIDER}" \
@@ -411,7 +416,7 @@ function start_kubedns {
 
     if [[ "${ENABLE_CLUSTER_DNS}" = true ]]; then
         echo "Creating kube-system namespace"
-        sed -e "s/{{ pillar\['dns_replicas'\] }}/${DNS_REPLICAS}/g;s/{{ pillar\['dns_domain'\] }}/${DNS_DOMAIN}/g;" "${KUBE_ROOT}/cluster/saltbase/salt/kube-dns/skydns-rc.yaml.in" >| skydns-rc.yaml
+        sed -e "s/{{ pillar\['dns_replicas'\] }}/${DNS_REPLICAS}/g;s/{{ pillar\['dns_domain'\] }}/${DNS_DOMAIN}/g;" "${KUBE_ROOT}/cluster/addons/dns/skydns-rc.yaml.in" >| skydns-rc.yaml
         if [[ "${FEDERATION:-}" == "true" ]]; then
           FEDERATIONS_DOMAIN_MAP="${FEDERATIONS_DOMAIN_MAP:-}"
           if [[ -z "${FEDERATIONS_DOMAIN_MAP}" && -n "${FEDERATION_NAME:-}" && -n "${DNS_ZONE_NAME:-}" ]]; then
@@ -425,7 +430,7 @@ function start_kubedns {
         else
           sed -i -e "/{{ pillar\['federations_domain_map'\] }}/d" skydns-rc.yaml
         fi
-        sed -e "s/{{ pillar\['dns_server'\] }}/${DNS_SERVER_IP}/g" "${KUBE_ROOT}/cluster/saltbase/salt/kube-dns/skydns-svc.yaml.in" >| skydns-svc.yaml
+        sed -e "s/{{ pillar\['dns_server'\] }}/${DNS_SERVER_IP}/g" "${KUBE_ROOT}/cluster/addons/dns/skydns-svc.yaml.in" >| skydns-svc.yaml
         cat <<EOF >namespace.yaml
 apiVersion: v1
 kind: Namespace

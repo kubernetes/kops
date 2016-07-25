@@ -18,6 +18,10 @@ type DeviceFarmAPI interface {
 
 	CreateProject(*devicefarm.CreateProjectInput) (*devicefarm.CreateProjectOutput, error)
 
+	CreateRemoteAccessSessionRequest(*devicefarm.CreateRemoteAccessSessionInput) (*request.Request, *devicefarm.CreateRemoteAccessSessionOutput)
+
+	CreateRemoteAccessSession(*devicefarm.CreateRemoteAccessSessionInput) (*devicefarm.CreateRemoteAccessSessionOutput, error)
+
 	CreateUploadRequest(*devicefarm.CreateUploadInput) (*request.Request, *devicefarm.CreateUploadOutput)
 
 	CreateUpload(*devicefarm.CreateUploadInput) (*devicefarm.CreateUploadOutput, error)
@@ -29,6 +33,10 @@ type DeviceFarmAPI interface {
 	DeleteProjectRequest(*devicefarm.DeleteProjectInput) (*request.Request, *devicefarm.DeleteProjectOutput)
 
 	DeleteProject(*devicefarm.DeleteProjectInput) (*devicefarm.DeleteProjectOutput, error)
+
+	DeleteRemoteAccessSessionRequest(*devicefarm.DeleteRemoteAccessSessionInput) (*request.Request, *devicefarm.DeleteRemoteAccessSessionOutput)
+
+	DeleteRemoteAccessSession(*devicefarm.DeleteRemoteAccessSessionInput) (*devicefarm.DeleteRemoteAccessSessionOutput, error)
 
 	DeleteRunRequest(*devicefarm.DeleteRunInput) (*request.Request, *devicefarm.DeleteRunOutput)
 
@@ -68,6 +76,10 @@ type DeviceFarmAPI interface {
 
 	GetProject(*devicefarm.GetProjectInput) (*devicefarm.GetProjectOutput, error)
 
+	GetRemoteAccessSessionRequest(*devicefarm.GetRemoteAccessSessionInput) (*request.Request, *devicefarm.GetRemoteAccessSessionOutput)
+
+	GetRemoteAccessSession(*devicefarm.GetRemoteAccessSessionInput) (*devicefarm.GetRemoteAccessSessionOutput, error)
+
 	GetRunRequest(*devicefarm.GetRunInput) (*request.Request, *devicefarm.GetRunOutput)
 
 	GetRun(*devicefarm.GetRunInput) (*devicefarm.GetRunOutput, error)
@@ -83,6 +95,10 @@ type DeviceFarmAPI interface {
 	GetUploadRequest(*devicefarm.GetUploadInput) (*request.Request, *devicefarm.GetUploadOutput)
 
 	GetUpload(*devicefarm.GetUploadInput) (*devicefarm.GetUploadOutput, error)
+
+	InstallToRemoteAccessSessionRequest(*devicefarm.InstallToRemoteAccessSessionInput) (*request.Request, *devicefarm.InstallToRemoteAccessSessionOutput)
+
+	InstallToRemoteAccessSession(*devicefarm.InstallToRemoteAccessSessionInput) (*devicefarm.InstallToRemoteAccessSessionOutput, error)
 
 	ListArtifactsRequest(*devicefarm.ListArtifactsInput) (*request.Request, *devicefarm.ListArtifactsOutput)
 
@@ -125,6 +141,10 @@ type DeviceFarmAPI interface {
 	ListProjects(*devicefarm.ListProjectsInput) (*devicefarm.ListProjectsOutput, error)
 
 	ListProjectsPages(*devicefarm.ListProjectsInput, func(*devicefarm.ListProjectsOutput, bool) bool) error
+
+	ListRemoteAccessSessionsRequest(*devicefarm.ListRemoteAccessSessionsInput) (*request.Request, *devicefarm.ListRemoteAccessSessionsOutput)
+
+	ListRemoteAccessSessions(*devicefarm.ListRemoteAccessSessionsInput) (*devicefarm.ListRemoteAccessSessionsOutput, error)
 
 	ListRunsRequest(*devicefarm.ListRunsInput) (*request.Request, *devicefarm.ListRunsOutput)
 
@@ -173,6 +193,10 @@ type DeviceFarmAPI interface {
 	ScheduleRunRequest(*devicefarm.ScheduleRunInput) (*request.Request, *devicefarm.ScheduleRunOutput)
 
 	ScheduleRun(*devicefarm.ScheduleRunInput) (*devicefarm.ScheduleRunOutput, error)
+
+	StopRemoteAccessSessionRequest(*devicefarm.StopRemoteAccessSessionInput) (*request.Request, *devicefarm.StopRemoteAccessSessionOutput)
+
+	StopRemoteAccessSession(*devicefarm.StopRemoteAccessSessionInput) (*devicefarm.StopRemoteAccessSessionOutput, error)
 
 	StopRunRequest(*devicefarm.StopRunInput) (*request.Request, *devicefarm.StopRunOutput)
 

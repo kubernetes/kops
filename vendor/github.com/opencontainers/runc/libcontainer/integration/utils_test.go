@@ -2,6 +2,8 @@ package integration
 
 import (
 	"bytes"
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -11,6 +13,7 @@ import (
 	"strings"
 	"syscall"
 	"testing"
+	"time"
 
 	"github.com/opencontainers/runc/libcontainer"
 	"github.com/opencontainers/runc/libcontainer/configs"
@@ -92,13 +95,17 @@ func copyBusybox(dest string) error {
 }
 
 func newContainer(config *configs.Config) (libcontainer.Container, error) {
-	f := factory
+	h := md5.New()
+	h.Write([]byte(time.Now().String()))
+	return newContainerWithName(hex.EncodeToString(h.Sum(nil)), config)
+}
 
+func newContainerWithName(name string, config *configs.Config) (libcontainer.Container, error) {
+	f := factory
 	if config.Cgroups != nil && config.Cgroups.Parent == "system.slice" {
 		f = systemdFactory
 	}
-
-	return f.Create("testCT", config)
+	return f.Create(name, config)
 }
 
 // runContainer runs the container with the specific config and arguments
@@ -121,7 +128,7 @@ func runContainer(config *configs.Config, console string, args ...string) (buffe
 		Stderr: buffers.Stderr,
 	}
 
-	err = container.Start(process)
+	err = container.Run(process)
 	if err != nil {
 		return buffers, -1, err
 	}

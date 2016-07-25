@@ -24,17 +24,17 @@ set -o nounset
 set -o pipefail
 
 KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
-source "$KUBE_ROOT/build/common.sh"
+source "${KUBE_ROOT}/build/common.sh"
 
 KUBE_RELEASE_RUN_TESTS=${KUBE_RELEASE_RUN_TESTS-y}
 
 kube::build::verify_prereqs
 kube::build::build_image
-kube::build::run_build_command hack/build-cross.sh
+kube::build::run_build_command make cross
 
 if [[ $KUBE_RELEASE_RUN_TESTS =~ ^[yY]$ ]]; then
-  kube::build::run_build_command hack/test-go.sh
-  kube::build::run_build_command hack/test-integration.sh
+  kube::build::run_build_command make test
+  kube::build::run_build_command make test-integration
 fi
 
 if [[ "${FEDERATION:-}" == "true" ]];then

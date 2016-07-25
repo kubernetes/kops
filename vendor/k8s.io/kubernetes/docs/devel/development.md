@@ -2,15 +2,15 @@
 
 <!-- BEGIN STRIP_FOR_RELEASE -->
 
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
 
 <h2>PLEASE NOTE: This document applies to the HEAD of the source tree</h2>
@@ -71,11 +71,22 @@ up a GOPATH.
 To build Kubernetes using your local Go development environment (generate linux
 binaries):
 
-        hack/build-go.sh
-You may pass build options and packages to the script as necessary. To build
-binaries for all platforms:
+```sh
+        make
+```
 
-        hack/build-cross.sh
+You may pass build options and packages to the script as necessary. For example,
+to build with optimizations disabled for enabling use of source debug tools:
+
+```sh
+        make GOGCFLAGS="-N -l"
+```
+
+To build binaries for all platforms:
+
+```sh
+        make cross
+```
 
 ## Workflow
 
@@ -230,9 +241,9 @@ separate dependency updates from other changes._
 
 ```sh
 export KPATH=$HOME/code/kubernetes
-mkdir -p $KPATH/src/k8s.io/kubernetes
-cd $KPATH/src/k8s.io/kubernetes
-git clone https://path/to/your/fork .
+mkdir -p $KPATH/src/k8s.io
+cd $KPATH/src/k8s.io
+git clone https://path/to/your/kubernetes/fork # assumes your fork is 'kubernetes'
 # Or copy your existing local repo here. IMPORTANT: making a symlink doesn't work.
 ```
 
@@ -314,8 +325,8 @@ Three basic commands let you run unit, integration and/or e2e tests:
 
 ```sh
 cd kubernetes
-hack/test-go.sh  # Run unit tests
-hack/test-integration.sh  # Run integration tests, requires etcd
+make test  # Run unit tests
+make test-integration  # Run integration tests, requires etcd
 go run hack/e2e.go -v --build --up --test --down  # Run e2e tests
 ```
 

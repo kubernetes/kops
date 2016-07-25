@@ -65,6 +65,9 @@ type Marshaler struct {
 	// value, and for newlines to be appear between fields and array
 	// elements.
 	Indent string
+
+	// Whether to use the original (.proto) name for fields.
+	OrigName bool
 }
 
 // Marshal marshals a protocol buffer into JSON.
@@ -145,7 +148,7 @@ func (m *Marshaler) marshalObject(out *errWriter, v proto.Message, indent string
 			value = sv.Field(0)
 			valueField = sv.Type().Field(0)
 		}
-		prop := jsonProperties(valueField)
+		prop := jsonProperties(valueField, m.OrigName)
 		if !firstField {
 			m.writeSep(out)
 		}
@@ -172,12 +175,14 @@ func (m *Marshaler) marshalObject(out *errWriter, v proto.Message, indent string
 	}
 
 	// Handle proto2 extensions.
-	if ep, ok := v.(extendableProto); ok {
+	if ep, ok := v.(proto.Message); ok {
 		extensions := proto.RegisteredExtensions(v)
-		extensionMap := ep.ExtensionMap()
 		// Sort extensions for stable output.
-		ids := make([]int32, 0, len(extensionMap))
-		for id := range extensionMap {
+		ids := make([]int32, 0, len(extensions))
+		for id, desc := range extensions {
+			if !proto.HasExtension(ep, desc) {
+				continue
+			}
 			ids = append(ids, id)
 		}
 		sort.Sort(int32Slice(ids))
@@ -194,7 +199,7 @@ func (m *Marshaler) marshalObject(out *errWriter, v proto.Message, indent string
 			value := reflect.ValueOf(ext)
 			var prop proto.Properties
 			prop.Parse(desc.Tag)
-			prop.OrigName = fmt.Sprintf("[%s]", desc.Name)
+			prop.JSONName = fmt.Sprintf("[%s]", desc.Name)
 			if !firstField {
 				m.writeSep(out)
 			}
@@ -229,7 +234,7 @@ func (m *Marshaler) marshalField(out *errWriter, prop *proto.Properties, v refle
 		out.write(m.Indent)
 	}
 	out.write(`"`)
-	out.write(prop.OrigName)
+	out.write(prop.JSONName)
 	out.write(`":`)
 	if m.Indent != "" {
 		out.write(" ")
@@ -258,7 +263,9 @@ func (m *Marshaler) marshalValue(out *errWriter, prop *proto.Properties, v refle
 				out.write(m.Indent)
 				out.write(m.Indent)
 			}
-			m.marshalValue(out, prop, sliceVal, indent+m.Indent)
+			if err := m.marshalValue(out, prop, sliceVal, indent+m.Indent); err != nil {
+				return err
+			}
 			comma = ","
 		}
 		if m.Indent != "" {
@@ -404,32 +411,84 @@ func (m *Marshaler) marshalValue(out *errWriter, prop *proto.Properties, v refle
 	return out.err
 }
 
+// Unmarshaler is a configurable object for converting from a JSON
+// representation to a protocol buffer object.
+type Unmarshaler struct {
+	// Whether to allow messages to contain unknown fields, as opposed to
+	// failing to unmarshal.
+	AllowUnknownFields bool
+}
+
+// UnmarshalNext unmarshals the next protocol buffer from a JSON object stream.
+// This function is lenient and will decode any options permutations of the
+// related Marshaler.
+func (u *Unmarshaler) UnmarshalNext(dec *json.Decoder, pb proto.Message) error {
+	inputValue := json.RawMessage{}
+	if err := dec.Decode(&inputValue); err != nil {
+		return err
+	}
+	return u.unmarshalValue(reflect.ValueOf(pb).Elem(), inputValue, nil)
+}
+
+// Unmarshal unmarshals a JSON object stream into a protocol
+// buffer. This function is lenient and will decode any options
+// permutations of the related Marshaler.
+func (u *Unmarshaler) Unmarshal(r io.Reader, pb proto.Message) error {
+	dec := json.NewDecoder(r)
+	return u.UnmarshalNext(dec, pb)
+}
+
+// UnmarshalNext unmarshals the next protocol buffer from a JSON object stream.
+// This function is lenient and will decode any options permutations of the
+// related Marshaler.
+func UnmarshalNext(dec *json.Decoder, pb proto.Message) error {
+	return new(Unmarshaler).UnmarshalNext(dec, pb)
+}
+
 // Unmarshal unmarshals a JSON object stream into a protocol
 // buffer. This function is lenient and will decode any options
 // permutations of the related Marshaler.
 func Unmarshal(r io.Reader, pb proto.Message) error {
-	inputValue := json.RawMessage{}
-	if err := json.NewDecoder(r).Decode(&inputValue); err != nil {
-		return err
-	}
-	return unmarshalValue(reflect.ValueOf(pb).Elem(), inputValue)
+	return new(Unmarshaler).Unmarshal(r, pb)
 }
 
 // UnmarshalString will populate the fields of a protocol buffer based
 // on a JSON string. This function is lenient and will decode any options
 // permutations of the related Marshaler.
 func UnmarshalString(str string, pb proto.Message) error {
-	return Unmarshal(strings.NewReader(str), pb)
+	return new(Unmarshaler).Unmarshal(strings.NewReader(str), pb)
 }
 
 // unmarshalValue converts/copies a value into the target.
-func unmarshalValue(target reflect.Value, inputValue json.RawMessage) error {
+// prop may be nil.
+func (u *Unmarshaler) unmarshalValue(target reflect.Value, inputValue json.RawMessage, prop *proto.Properties) error {
 	targetType := target.Type()
 
 	// Allocate memory for pointer fields.
 	if targetType.Kind() == reflect.Ptr {
 		target.Set(reflect.New(targetType.Elem()))
-		return unmarshalValue(target.Elem(), inputValue)
+		return u.unmarshalValue(target.Elem(), inputValue, prop)
+	}
+
+	// Handle enums, which have an underlying type of int32,
+	// and may appear as strings.
+	// The case of an enum appearing as a number is handled
+	// at the bottom of this function.
+	if inputValue[0] == '"' && prop != nil && prop.Enum != "" {
+		vmap := proto.EnumValueMap(prop.Enum)
+		// Don't need to do unquoting; valid enum names
+		// are from a limited character set.
+		s := inputValue[1 : len(inputValue)-1]
+		n, ok := vmap[string(s)]
+		if !ok {
+			return fmt.Errorf("unknown value %q for enum %s", s, prop.Enum)
+		}
+		if target.Kind() == reflect.Ptr { // proto2
+			target.Set(reflect.New(targetType.Elem()))
+			target = target.Elem()
+		}
+		target.SetInt(int64(n))
+		return nil
 	}
 
 	// Handle nested messages.
@@ -439,59 +498,58 @@ func unmarshalValue(target reflect.Value, inputValue json.RawMessage) error {
 			return err
 		}
 
+		consumeField := func(prop *proto.Properties) (json.RawMessage, bool) {
+			// Be liberal in what names we accept; both orig_name and camelName are okay.
+			fieldNames := acceptedJSONFieldNames(prop)
+
+			vOrig, okOrig := jsonFields[fieldNames.orig]
+			vCamel, okCamel := jsonFields[fieldNames.camel]
+			if !okOrig && !okCamel {
+				return nil, false
+			}
+			// If, for some reason, both are present in the data, favour the camelName.
+			var raw json.RawMessage
+			if okOrig {
+				raw = vOrig
+				delete(jsonFields, fieldNames.orig)
+			}
+			if okCamel {
+				raw = vCamel
+				delete(jsonFields, fieldNames.camel)
+			}
+			return raw, true
+		}
+
 		sprops := proto.GetProperties(targetType)
 		for i := 0; i < target.NumField(); i++ {
 			ft := target.Type().Field(i)
 			if strings.HasPrefix(ft.Name, "XXX_") {
 				continue
 			}
-			fieldName := jsonProperties(ft).OrigName
-
-			valueForField, ok := jsonFields[fieldName]
+			valueForField, ok := consumeField(sprops.Prop[i])
 			if !ok {
 				continue
 			}
-			delete(jsonFields, fieldName)
 
-			// Handle enums, which have an underlying type of int32,
-			// and may appear as strings. We do this while handling
-			// the struct so we have access to the enum info.
-			// The case of an enum appearing as a number is handled
-			// by the recursive call to unmarshalValue.
-			if enum := sprops.Prop[i].Enum; valueForField[0] == '"' && enum != "" {
-				vmap := proto.EnumValueMap(enum)
-				// Don't need to do unquoting; valid enum names
-				// are from a limited character set.
-				s := valueForField[1 : len(valueForField)-1]
-				n, ok := vmap[string(s)]
-				if !ok {
-					return fmt.Errorf("unknown value %q for enum %s", s, enum)
-				}
-				f := target.Field(i)
-				if f.Kind() == reflect.Ptr { // proto2
-					f.Set(reflect.New(f.Type().Elem()))
-					f = f.Elem()
-				}
-				f.SetInt(int64(n))
-				continue
-			}
-
-			if err := unmarshalValue(target.Field(i), valueForField); err != nil {
+			if err := u.unmarshalValue(target.Field(i), valueForField, sprops.Prop[i]); err != nil {
 				return err
 			}
 		}
 		// Check for any oneof fields.
-		for fname, raw := range jsonFields {
-			if oop, ok := sprops.OneofTypes[fname]; ok {
+		if len(jsonFields) > 0 {
+			for _, oop := range sprops.OneofTypes {
+				raw, ok := consumeField(oop.Prop)
+				if !ok {
+					continue
+				}
 				nv := reflect.New(oop.Type.Elem())
 				target.Field(oop.Field).Set(nv)
-				if err := unmarshalValue(nv.Elem().Field(0), raw); err != nil {
+				if err := u.unmarshalValue(nv.Elem().Field(0), raw, oop.Prop); err != nil {
 					return err
 				}
-				delete(jsonFields, fname)
 			}
 		}
-		if len(jsonFields) > 0 {
+		if !u.AllowUnknownFields && len(jsonFields) > 0 {
 			// Pick any field to be the scapegoat.
 			var f string
 			for fname := range jsonFields {
@@ -525,7 +583,7 @@ func unmarshalValue(target reflect.Value, inputValue json.RawMessage) error {
 		len := len(slc)
 		target.Set(reflect.MakeSlice(targetType, len, len))
 		for i := 0; i < len; i++ {
-			if err := unmarshalValue(target.Index(i), slc[i]); err != nil {
+			if err := u.unmarshalValue(target.Index(i), slc[i], prop); err != nil {
 				return err
 			}
 		}
@@ -539,6 +597,13 @@ func unmarshalValue(target reflect.Value, inputValue json.RawMessage) error {
 			return err
 		}
 		target.Set(reflect.MakeMap(targetType))
+		var keyprop, valprop *proto.Properties
+		if prop != nil {
+			// These could still be nil if the protobuf metadata is broken somehow.
+			// TODO: This won't work because the fields are unexported.
+			// We should probably just reparse them.
+			//keyprop, valprop = prop.mkeyprop, prop.mvalprop
+		}
 		for ks, raw := range mp {
 			// Unmarshal map key. The core json library already decoded the key into a
 			// string, so we handle that specially. Other types were quoted post-serialization.
@@ -547,7 +612,7 @@ func unmarshalValue(target reflect.Value, inputValue json.RawMessage) error {
 				k = reflect.ValueOf(ks)
 			} else {
 				k = reflect.New(targetType.Key()).Elem()
-				if err := unmarshalValue(k, json.RawMessage(ks)); err != nil {
+				if err := u.unmarshalValue(k, json.RawMessage(ks), keyprop); err != nil {
 					return err
 				}
 			}
@@ -558,7 +623,7 @@ func unmarshalValue(target reflect.Value, inputValue json.RawMessage) error {
 
 			// Unmarshal map value.
 			v := reflect.New(targetType.Elem()).Elem()
-			if err := unmarshalValue(v, raw); err != nil {
+			if err := u.unmarshalValue(v, raw, valprop); err != nil {
 				return err
 			}
 			target.SetMapIndex(k, v)
@@ -577,18 +642,26 @@ func unmarshalValue(target reflect.Value, inputValue json.RawMessage) error {
 	return json.Unmarshal(inputValue, target.Addr().Interface())
 }
 
-// jsonProperties returns parsed proto.Properties for the field.
-func jsonProperties(f reflect.StructField) *proto.Properties {
+// jsonProperties returns parsed proto.Properties for the field and corrects JSONName attribute.
+func jsonProperties(f reflect.StructField, origName bool) *proto.Properties {
 	var prop proto.Properties
 	prop.Init(f.Type, f.Name, f.Tag.Get("protobuf"), &f)
+	if origName || prop.JSONName == "" {
+		prop.JSONName = prop.OrigName
+	}
 	return &prop
 }
 
-// extendableProto is an interface implemented by any protocol buffer that may be extended.
-type extendableProto interface {
-	proto.Message
-	ExtensionRangeArray() []proto.ExtensionRange
-	ExtensionMap() map[int32]proto.Extension
+type fieldNames struct {
+	orig, camel string
+}
+
+func acceptedJSONFieldNames(prop *proto.Properties) fieldNames {
+	opts := fieldNames{orig: prop.OrigName, camel: prop.OrigName}
+	if prop.JSONName != "" {
+		opts.camel = prop.JSONName
+	}
+	return opts
 }
 
 // Writer wrapper inspired by https://blog.golang.org/errors-are-values
@@ -608,10 +681,21 @@ func (w *errWriter) write(str string) {
 // The easiest way to sort them in some deterministic order is to use fmt.
 // If this turns out to be inefficient we can always consider other options,
 // such as doing a Schwartzian transform.
+//
+// Numeric keys are sorted in numeric order per
+// https://developers.google.com/protocol-buffers/docs/proto#maps.
 type mapKeys []reflect.Value
 
 func (s mapKeys) Len() int      { return len(s) }
 func (s mapKeys) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
 func (s mapKeys) Less(i, j int) bool {
+	if k := s[i].Kind(); k == s[j].Kind() {
+		switch k {
+		case reflect.Int32, reflect.Int64:
+			return s[i].Int() < s[j].Int()
+		case reflect.Uint32, reflect.Uint64:
+			return s[i].Uint() < s[j].Uint()
+		}
+	}
 	return fmt.Sprint(s[i].Interface()) < fmt.Sprint(s[j].Interface())
 }

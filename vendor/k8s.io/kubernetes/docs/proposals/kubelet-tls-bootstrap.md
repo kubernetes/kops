@@ -2,15 +2,15 @@
 
 <!-- BEGIN STRIP_FOR_RELEASE -->
 
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
 
 <h2>PLEASE NOTE: This document applies to the HEAD of the source tree</h2>
@@ -87,7 +87,7 @@ type CertificateSigningRequest struct {
 	unversioned.TypeMeta `json:",inline"`
 	api.ObjectMeta       `json:"metadata,omitempty"`
 
-	// The certificate request itself and any additonal information.
+	// The certificate request itself and any additional information.
 	Spec CertificateSigningRequestSpec `json:"spec,omitempty"`
 
 	// Derived information about the request.
@@ -105,7 +105,7 @@ type CertificateSigningRequestSpec struct {
 
 // This information is derived from the request by Kubernetes and cannot be
 // modified by users. All information is optional since it might not be
-// available in the underlying request. This is intented to aid approval
+// available in the underlying request. This is intended to aid approval
 // decisions.
 type CertificateSigningRequestStatus struct {
 	// Information about the requesting user (if relevant)

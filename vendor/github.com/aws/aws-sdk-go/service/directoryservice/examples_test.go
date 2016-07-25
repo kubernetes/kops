@@ -15,6 +15,32 @@ import (
 var _ time.Duration
 var _ bytes.Buffer
 
+func ExampleDirectoryService_AddTagsToResource() {
+	svc := directoryservice.New(session.New())
+
+	params := &directoryservice.AddTagsToResourceInput{
+		ResourceId: aws.String("ResourceId"), // Required
+		Tags: []*directoryservice.Tag{ // Required
+			{ // Required
+				Key:   aws.String("TagKey"),   // Required
+				Value: aws.String("TagValue"), // Required
+			},
+			// More values...
+		},
+	}
+	resp, err := svc.AddTagsToResource(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
 func ExampleDirectoryService_ConnectDirectory() {
 	svc := directoryservice.New(session.New())
 
@@ -576,6 +602,27 @@ func ExampleDirectoryService_GetSnapshotLimits() {
 	fmt.Println(resp)
 }
 
+func ExampleDirectoryService_ListTagsForResource() {
+	svc := directoryservice.New(session.New())
+
+	params := &directoryservice.ListTagsForResourceInput{
+		ResourceId: aws.String("ResourceId"), // Required
+		Limit:      aws.Int64(1),
+		NextToken:  aws.String("NextToken"),
+	}
+	resp, err := svc.ListTagsForResource(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
 func ExampleDirectoryService_RegisterEventTopic() {
 	svc := directoryservice.New(session.New())
 
@@ -584,6 +631,29 @@ func ExampleDirectoryService_RegisterEventTopic() {
 		TopicName:   aws.String("TopicName"),   // Required
 	}
 	resp, err := svc.RegisterEventTopic(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
+func ExampleDirectoryService_RemoveTagsFromResource() {
+	svc := directoryservice.New(session.New())
+
+	params := &directoryservice.RemoveTagsFromResourceInput{
+		ResourceId: aws.String("ResourceId"), // Required
+		TagKeys: []*string{ // Required
+			aws.String("TagKey"), // Required
+			// More values...
+		},
+	}
+	resp, err := svc.RemoveTagsFromResource(params)
 
 	if err != nil {
 		// Print the error, cast err to awserr.Error to get the Code and

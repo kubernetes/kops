@@ -60,7 +60,7 @@ func NewCmdRolloutUndo(f *cmdutil.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "undo (TYPE NAME | TYPE/NAME) [flags]",
-		Short:   "undoes a previous rollout",
+		Short:   "Undo a previous rollout",
 		Long:    undo_long,
 		Example: undo_example,
 		Run: func(cmd *cobra.Command, args []string) {
@@ -129,7 +129,7 @@ func (o *UndoOptions) CompleteUndo(f *cmdutil.Factory, cmd *cobra.Command, out i
 func (o *UndoOptions) RunUndo() error {
 	allErrs := []error{}
 	for ix, info := range o.Infos {
-		result, err := o.Rollbackers[ix].Rollback(info.Namespace, info.Name, nil, o.ToRevision, info.Object)
+		result, err := o.Rollbackers[ix].Rollback(info.Object, nil, o.ToRevision)
 		if err != nil {
 			allErrs = append(allErrs, cmdutil.AddSourceToErr("undoing", info.Source, err))
 			continue
