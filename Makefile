@@ -35,6 +35,8 @@ gofmt:
 	gofmt -w -s upup/pkg/
 	gofmt -w -s protokube/cmd
 	gofmt -w -s protokube/pkg
+	gofmt -w -s dns-controller/cmd
+	gofmt -w -s dns-controller/pkg
 
 kops-tar: gocode
 	rm -rf .build/kops/tar
@@ -98,4 +100,20 @@ protokube-push: protokube-image
 	docker push ${DOCKER_REGISTRY}/protokube:1.3
 
 
+
+
+dns-controller-gocode:
+	go install k8s.io/kops/dns-controller/cmd/dns-controller
+
+dns-controller-builder-image:
+	docker build -f images/dns-controller-builder/Dockerfile -t dns-controller-builder .
+
+dns-controller-build-in-docker: dns-controller-builder-image
+	docker run -it -v `pwd`:/src dns-controller-builder /onbuild.sh
+
+dns-controller-image: dns-controller-build-in-docker
+	docker build -t ${DOCKER_REGISTRY}/dns-controller:1.3  -f images/dns-controller/Dockerfile .
+
+dns-controller-push: dns-controller-image
+	docker push ${DOCKER_REGISTRY}/dns-controller:1.3
 
