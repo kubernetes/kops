@@ -1,0 +1,3 @@
+KubeControllerManager:
+  ConfigureCloudRoutes: false
+#TODO PUT BACK TO TRUE

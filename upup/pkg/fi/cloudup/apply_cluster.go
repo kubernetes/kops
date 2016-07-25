@@ -126,6 +126,19 @@ func (c *ApplyClusterCmd) Run() error {
 			}
 			c.Assets = append(c.Assets, hash.Hex()+"@"+defaultKubectlAsset)
 		}
+
+		{
+			defaultCNIAsset := fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/network-plugins/cni-c864f0e1ea73719b8f4582402b0847064f9883b0.tar.gz")
+			glog.Infof("Adding default CNI asset: %s", defaultCNIAsset)
+
+			hashString := "0e827024fc0bed84968aaad20e439f328eb14186"
+			//hash, err := findHash(defaultCNIAsset)
+			//if err != nil {
+			//	return err
+			//}
+			//hashString := hash.Hex()
+			c.Assets = append(c.Assets, hashString+"@"+defaultCNIAsset)
+		}
 	}
 
 	if c.NodeUpSource == "" {

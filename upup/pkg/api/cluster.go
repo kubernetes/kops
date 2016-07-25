@@ -77,8 +77,6 @@ type ClusterSpec struct {
 	// ClusterName is a unique identifier for the cluster, and currently must be a DNS name
 	//ClusterName       string `json:",omitempty"`
 
-	//AllocateNodeCIDRs *bool `json:"allocateNodeCIDRs,omitempty"`
-
 	Multizone *bool `json:"multizone,omitempty"`
 
 	//ClusterIPRange                string `json:",omitempty"`
@@ -104,8 +102,8 @@ type ClusterSpec struct {
 	//  * enable debugging handlers on the master, so kubectl logs works
 	IsolateMasters *bool `json:"isolateMasters,omitempty"`
 
-	//NetworkProvider               string `json:",omitempty"`
-	//
+	//Networking *NetworkingConfig `json:",omitempty"`
+
 	//HairpinMode                   string `json:",omitempty"`
 	//
 	//OpencontrailTag               string `json:",omitempty"`
@@ -211,6 +209,10 @@ type ClusterSpec struct {
 	Kubelet               *KubeletConfig               `json:"kubelet,omitempty"`
 	MasterKubelet         *KubeletConfig               `json:"masterKubelet,omitempty"`
 }
+
+//// NetworkingConfig allows selection of a networking plugin
+//type NetworkingConfig struct {
+//}
 
 type KubeDNSConfig struct {
 	// Image is the name of the docker image to run

@@ -14,7 +14,7 @@ func buildClusterTags(cluster *api.Cluster) (map[string]struct{}, error) {
 
 	tags := make(map[string]struct{})
 
-	//tags["_networking_kubenet"] = struct{}{}
+	tags["_networking_kubenet"] = struct{}{}
 	//tags["_networking_builtin"] = struct{}{}
 
 	if useMasterASG {
@@ -64,6 +64,7 @@ func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTa
 		// No special tags
 
 		// TODO: Should we run _protokube on the nodes?
+		// TODO: temp hack
 		tags = append(tags, "_protokube")
 
 	case api.InstanceGroupRoleMaster:
@@ -76,14 +77,14 @@ func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTa
 		return nil, fmt.Errorf("Unrecognized role: %v", role)
 	}
 
-	//// TODO: Replace with list of CNI plugins
-	//if _, found := clusterTags["_networking_kubenet"]; found {
-	//	tags = append(tags, "_cni_bridge")
-	//	tags = append(tags, "_cni_host_local")
-	//	tags = append(tags, "_cni_loopback")
-	//	tags = append(tags, "_cni_ptp")
-	//	//tags = append(tags, "_cni_tuning")
-	//}
+	// TODO: Replace with list of CNI plugins
+	if _, found := clusterTags["_networking_kubenet"]; found {
+		tags = append(tags, "_cni_bridge")
+		tags = append(tags, "_cni_host_local")
+		tags = append(tags, "_cni_loopback")
+		tags = append(tags, "_cni_ptp")
+		//tags = append(tags, "_cni_tuning")
+	}
 
 	if _, found := clusterTags["_gce"]; found {
 		tags = append(tags, "_gce")
