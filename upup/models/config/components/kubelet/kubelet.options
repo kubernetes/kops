@@ -16,3 +16,4 @@ MasterKubelet:
   EnableDebuggingHandlers: false
   HairpinMode: none
   PodCIDR: 10.123.45.0/30
+  APIServers: http://127.0.0.1:8080
