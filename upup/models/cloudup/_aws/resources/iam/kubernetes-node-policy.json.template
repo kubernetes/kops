@@ -34,7 +34,7 @@
       ],
       "Resource": "*"
     }
-{{- if .NodePermissions.S3Buckets -}}
+{{ if .NodePermissions.S3Buckets }}
     ,
     {
       "Effect": "Allow",
