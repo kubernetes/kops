@@ -16,7 +16,7 @@
       "Action": ["elasticloadbalancing:*"],
       "Resource": ["*"]
     }
-{{- if .MasterPermissions.S3Buckets -}}
+{{ if .MasterPermissions.S3Buckets }}
     ,
     {
       "Effect": "Allow",
