@@ -160,3 +160,18 @@
 [submodule "_vendor/golang.org/x/sys"]
 	path = _vendor/golang.org/x/sys
 	url = https://github.com/golang/sys/
+[submodule "_vendor/github.com/BurntSushi/toml"]
+	path = _vendor/github.com/BurntSushi/toml
+	url = https://github.com/BurntSushi/toml
+[submodule "_vendor/github.com/kr/fs"]
+	path = _vendor/github.com/kr/fs
+	url = https://github.com/kr/fs
+[submodule "_vendor/github.com/magiconair/properties"]
+	path = _vendor/github.com/magiconair/properties
+	url = https://github.com/magiconair/properties
+[submodule "_vendor/github.com/mitchellh/mapstructure"]
+	path = _vendor/github.com/mitchellh/mapstructure
+	url = https://github.com/mitchellh/mapstructure
+[submodule "_vendor/gopkg.in/yaml.v2"]
+	path = _vendor/gopkg.in/yaml.v2
+	url = https://github.com/go-yaml/yaml
