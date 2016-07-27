@@ -50,18 +50,35 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	}
 
 	var masterInstance *ec2.Instance
+	zones := make(map[string]*api.ClusterZoneSpec)
+
 	for _, instance := range instances {
+		instanceState := aws.StringValue(instance.State.Name)
+
+		if instanceState != "terminated" && instance.Placement != nil {
+			zoneName := aws.StringValue(instance.Placement.AvailabilityZone)
+			zone := zones[zoneName]
+			if zone == nil {
+				zone = &api.ClusterZoneSpec{Name: zoneName}
+				zones[zoneName] = zone
+			}
+
+			subnet := aws.StringValue(instance.SubnetId)
+			if subnet != "" {
+				zone.ProviderID = subnet
+			}
+		}
+
 		role, _ := awsup.FindEC2Tag(instance.Tags, "Role")
 		if role == clusterName+"-master" {
 			if masterInstance != nil {
 				masterState := aws.StringValue(masterInstance.State.Name)
-				thisState := aws.StringValue(instance.State.Name)
 
-				glog.Infof("Found multiple masters: %s and %s", masterState, thisState)
+				glog.Infof("Found multiple masters: %s and %s", masterState, instanceState)
 
-				if masterState == "terminated" && thisState != "terminated" {
+				if masterState == "terminated" && instanceState != "terminated" {
 					// OK
-				} else if thisState == "terminated" && masterState != "terminated" {
+				} else if instanceState == "terminated" && masterState != "terminated" {
 					// Ignore this one
 					continue
 				} else {
@@ -79,23 +96,33 @@ func (x *ImportCluster) ImportAWSCluster() error {
 
 	masterGroup.Spec.MachineType = aws.StringValue(masterInstance.InstanceType)
 
-	masterSubnetID := aws.StringValue(masterInstance.SubnetId)
-
 	subnets, err := DescribeSubnets(x.Cloud)
 	if err != nil {
 		return fmt.Errorf("error finding subnets: %v", err)
 	}
-	var masterSubnet *ec2.Subnet
+
 	for _, s := range subnets {
-		if masterSubnetID == aws.StringValue(s.SubnetId) {
-			if masterSubnet != nil {
-				return fmt.Errorf("found duplicate subnet")
+		subnetID := aws.StringValue(s.SubnetId)
+
+		found := false
+		for _, zone := range zones {
+			if zone.ProviderID == subnetID {
+				zone.CIDR = aws.StringValue(s.CidrBlock)
+				found = true
 			}
-			masterSubnet = s
+		}
+
+		if !found {
+			glog.Warningf("Ignoring subnet %q in which no instances were found", subnetID)
 		}
 	}
-	if masterSubnet == nil {
-		return fmt.Errorf("cannot find subnet %q.  If you used an existing subnet, please tag it with %s=%s and retry the import", masterSubnetID, awsup.TagClusterName, clusterName)
+	for k, zone := range zones {
+		if zone.ProviderID == "" {
+			return fmt.Errorf("cannot find subnet %q.  Please report this issue", k)
+		}
+		if zone.CIDR == "" {
+			return fmt.Errorf("cannot find subnet %q.  If you used an existing subnet, please tag it with %s=%s and retry the import", zone.ProviderID, awsup.TagClusterName, clusterName)
+		}
 	}
 
 	vpcID := aws.StringValue(masterInstance.VpcId)
@@ -110,18 +137,18 @@ func (x *ImportCluster) ImportAWSCluster() error {
 		}
 	}
 
-	az := aws.StringValue(masterSubnet.AvailabilityZone)
-
 	cluster.Spec.NetworkID = vpcID
 	cluster.Spec.NetworkCIDR = aws.StringValue(vpc.CidrBlock)
-	cluster.Spec.Zones = append(cluster.Spec.Zones, &api.ClusterZoneSpec{
-		Name:       az,
-		CIDR:       aws.StringValue(masterSubnet.CidrBlock),
-		ProviderID: aws.StringValue(masterSubnet.SubnetId),
-	})
+	for _, zone := range zones {
+		cluster.Spec.Zones = append(cluster.Spec.Zones, zone)
+	}
 
-	masterGroup.Spec.Zones = []string{az}
-	masterGroup.Name = "master-" + az
+	masterZone := zones[aws.StringValue(masterInstance.Placement.AvailabilityZone)]
+	if masterZone == nil {
+		return fmt.Errorf("cannot find zone %q for master.  Please report this issue", aws.StringValue(masterInstance.Placement.AvailabilityZone))
+	}
+	masterGroup.Spec.Zones = []string{masterZone.Name}
+	masterGroup.Name = "master-" + masterZone.Name
 
 	userData, err := GetInstanceUserData(awsCloud, aws.StringValue(masterInstance.InstanceId))
 	if err != nil {
@@ -198,7 +225,9 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	nodeGroup := &api.InstanceGroup{}
 	nodeGroup.Spec.Role = api.InstanceGroupRoleNode
 	nodeGroup.Name = "nodes"
-	nodeGroup.Spec.Zones = []string{az}
+	for _, zone := range zones {
+		nodeGroup.Spec.Zones = append(nodeGroup.Spec.Zones, zone.Name)
+	}
 	instanceGroups = append(instanceGroups, nodeGroup)
 
 	//primaryNodeSet.Spec.MinSize, err = conf.ParseInt("NUM_MINIONS")
