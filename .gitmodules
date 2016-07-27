@@ -9,19 +9,19 @@
 	url = https://github.com/google/google-api-go-client
 [submodule "_vendor/github.com/spf13/pflag"]
 	path = _vendor/github.com/spf13/pflag
-	url = http://github.com/spf13/pflag
+	url = https://github.com/spf13/pflag
 [submodule "_vendor/github.com/spf13/cobra"]
 	path = _vendor/github.com/spf13/cobra
-	url = http://github.com/spf13/cobra
+	url = https://github.com/spf13/cobra
 [submodule "_vendor/github.com/golang/glog"]
 	path = _vendor/github.com/golang/glog
 	url = https://github.com/golang/glog
 [submodule "_vendor/github.com/prometheus/client_golang"]
 	path = _vendor/github.com/prometheus/client_golang
-	url = http://github.com/prometheus/client_golang
+	url = https://github.com/prometheus/client_golang
 [submodule "_vendor/github.com/ugorji/go"]
 	path = _vendor/github.com/ugorji/go
-	url = http://github.com/ugorji/go
+	url = https://github.com/ugorji/go
 [submodule "_vendor/github.com/prometheus/client_model"]
 	path = _vendor/github.com/prometheus/client_model
 	url = https://github.com/prometheus/client_model
@@ -130,3 +130,33 @@
 [submodule "_vendor/gopkg.in/gcfg.v1"]
 	path = _vendor/gopkg.in/gcfg.v1
 	url = https://github.com/go-gcfg/gcfg.git
+[submodule "_vendor/github.com/pkg/sftp"]
+	path = _vendor/github.com/pkg/sftp
+	url = https://github.com/pkg/sftp
+[submodule "_vendor/github.com/spf13/viper"]
+	path = _vendor/github.com/spf13/viper
+	url = https://github.com/spf13/viper
+[submodule "_vendor/github.com/docker/docker"]
+	path = _vendor/github.com/docker/docker
+	url = https://github.com/docker/docker
+[submodule "_vendor/github.com/hashicorp/hcl"]
+	path = _vendor/github.com/hashicorp/hcl
+	url = https://github.com/hashicorp/hcl
+[submodule "_vendor/golang.org/x/crypto"]
+	path = _vendor/golang.org/x/crypto
+	url = https://github.com/golang/crypto/
+[submodule "_vendor/github.com/fsnotify/fsnotify"]
+	path = _vendor/github.com/fsnotify/fsnotify
+	url = https://github.com/fsnotify/fsnotify
+[submodule "_vendor/github.com/pkg/errors"]
+	path = _vendor/github.com/pkg/errors
+	url = https://github.com/pkg/errors
+[submodule "_vendor/github.com/spf13/cast"]
+	path = _vendor/github.com/spf13/cast
+	url = https://github.com/spf13/cast
+[submodule "_vendor/github.com/spf13/jwalterweatherman"]
+	path = _vendor/github.com/spf13/jwalterweatherman
+	url = https://github.com/spf13/jwalterweatherman
+[submodule "_vendor/golang.org/x/sys"]
+	path = _vendor/golang.org/x/sys
+	url = https://github.com/golang/sys/
