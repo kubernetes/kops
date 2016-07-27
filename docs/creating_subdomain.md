@@ -10,12 +10,14 @@ Your main domain is `example.com` but you want to create a subdomain NameServer.
 Stat of your domain.
 
 > dig ns example.com
-> 
-> ;; QUESTION SECTION:
-> ;example.com.			IN	NS
-> 
-> ;; ANSWER SECTION:
-> example.com.		3600	IN	NS	ns3.somensserver.com.
+
+``` 
+;; QUESTION SECTION:
+;example.com.			IN	NS
+ 
+;; ANSWER SECTION:
+example.com.		3600	IN	NS	ns3.somensserver.com.
+```
 
 ## Create Subdomain
 You want to keep those records, now lets create the subdomain.
