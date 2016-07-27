@@ -96,17 +96,7 @@ func (a *ACLHandle) bucketDefaultList(ctx context.Context) ([]ACLRule, error) {
 	if err != nil {
 		return nil, fmt.Errorf("storage: error listing default object ACL for bucket %q: %v", a.bucket, err)
 	}
-	r := make([]ACLRule, 0, len(acls.Items))
-	for _, v := range acls.Items {
-		if m, ok := v.(map[string]interface{}); ok {
-			entity, ok1 := m["entity"].(string)
-			role, ok2 := m["role"].(string)
-			if ok1 && ok2 {
-				r = append(r, ACLRule{Entity: ACLEntity(entity), Role: ACLRole(role)})
-			}
-		}
-	}
-	return r, nil
+	return toACLRules(acls.Items), nil
 }
 
 func (a *ACLHandle) bucketDefaultSet(ctx context.Context, entity ACLEntity, role ACLRole) error {
@@ -169,17 +159,7 @@ func (a *ACLHandle) objectList(ctx context.Context) ([]ACLRule, error) {
 	if err != nil {
 		return nil, fmt.Errorf("storage: error listing object ACL for bucket %q, file %q: %v", a.bucket, a.object, err)
 	}
-	r := make([]ACLRule, 0, len(acls.Items))
-	for _, v := range acls.Items {
-		if m, ok := v.(map[string]interface{}); ok {
-			entity, ok1 := m["entity"].(string)
-			role, ok2 := m["role"].(string)
-			if ok1 && ok2 {
-				r = append(r, ACLRule{Entity: ACLEntity(entity), Role: ACLRole(role)})
-			}
-		}
-	}
-	return r, nil
+	return toACLRules(acls.Items), nil
 }
 
 func (a *ACLHandle) objectSet(ctx context.Context, entity ACLEntity, role ACLRole) error {
@@ -201,4 +181,18 @@ func (a *ACLHandle) objectDelete(ctx context.Context, entity ACLEntity) error {
 		return fmt.Errorf("storage: error deleting object ACL entry for bucket %q, file %q, entity %q: %v", a.bucket, a.object, entity, err)
 	}
 	return nil
+}
+
+func toACLRules(items []interface{}) []ACLRule {
+	r := make([]ACLRule, 0, len(items))
+	for _, v := range items {
+		if m, ok := v.(map[string]interface{}); ok {
+			entity, ok1 := m["entity"].(string)
+			role, ok2 := m["role"].(string)
+			if ok1 && ok2 {
+				r = append(r, ACLRule{Entity: ACLEntity(entity), Role: ACLRole(role)})
+			}
+		}
+	}
+	return r
 }

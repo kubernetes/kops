@@ -15,5 +15,7 @@ limitations under the License.
 */
 
 // +groupName=rbac.authorization.k8s.io
-// +genconversion=true
-package v1alpha1
+// +k8s:deepcopy-gen=package,register
+// +k8s:conversion-gen=k8s.io/kubernetes/pkg/apis/rbac
+
+package v1alpha1 // import "k8s.io/kubernetes/pkg/apis/rbac/v1alpha1"

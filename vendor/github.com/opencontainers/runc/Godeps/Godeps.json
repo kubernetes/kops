@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/opencontainers/runc",
-	"GoVersion": "go1.4.2",
+	"GoVersion": "go1.5.3",
 	"Deps": [
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
@@ -8,9 +8,14 @@
 			"Rev": "26709e2714106fb8ad40b773b711ebce25b78914"
 		},
 		{
-			"ImportPath": "github.com/codegangsta/cli",
-			"Comment": "1.2.0-107-g942282e",
-			"Rev": "942282e931e8286aa802a30b01fa7e16befb50f3"
+			"ImportPath": "github.com/urfave/cli",
+			"Comment": "v1.17.0-57-gedb24d0",
+			"Rev": "edb24d02aa3cea2319c33f2836d4a5133907fe4c"
+		},
+		{
+			"ImportPath": "github.com/coreos/go-systemd/activation",
+			"Comment": "v4",
+			"Rev": "b4a58d95188dd092ae20072bac14cece0e67c388"
 		},
 		{
 			"ImportPath": "github.com/coreos/go-systemd/dbus",
@@ -52,13 +57,13 @@
 			"Rev": "f7137ae6b19afbfd61a94b746fda3b3fe0491874"
 		},
 		{
-			"ImportPath": "github.com/opencontainers/specs",
-			"Comment": "v0.2.0-40-ga7b5092",
-			"Rev": "a7b50925d8996923d99e1c50750131e20b743067"
+			"ImportPath": "github.com/opencontainers/runtime-spec/specs-go",
+			"Comment": "v1.0.0-rc1",
+			"Rev": "06479209bdc0d4135911688c18157bd39bd99c22"
 		},
 		{
 			"ImportPath": "github.com/seccomp/libseccomp-golang",
-			"Rev": "1b506fc7c24eec5a3693cdcbed40d9c226cfc6a1"
+			"Rev": "32f571b70023028bd57d9288c20efbcb237f3ce0"
 		},
 		{
 			"ImportPath": "github.com/syndtr/gocapability/capability",

@@ -203,3 +203,36 @@ func TestStorageClass(t *testing.T) {
 	}
 
 }
+
+func TestOverThousandBlobs(t *testing.T) {
+	if skipS3() != "" {
+		t.Skip(skipS3())
+	}
+
+	rootDir, err := ioutil.TempDir("", "driver-")
+	if err != nil {
+		t.Fatalf("unexpected error creating temporary directory: %v", err)
+	}
+	defer os.Remove(rootDir)
+
+	standardDriver, err := s3DriverConstructor(rootDir, s3.StorageClassStandard)
+	if err != nil {
+		t.Fatalf("unexpected error creating driver with standard storage: %v", err)
+	}
+
+	ctx := context.Background()
+	for i := 0; i < 1005; i++ {
+		filename := "/thousandfiletest/file" + strconv.Itoa(i)
+		contents := []byte("contents")
+		err = standardDriver.PutContent(ctx, filename, contents)
+		if err != nil {
+			t.Fatalf("unexpected error creating content: %v", err)
+		}
+	}
+
+	// cant actually verify deletion because read-after-delete is inconsistent, but can ensure no errors
+	err = standardDriver.Delete(ctx, "/thousandfiletest")
+	if err != nil {
+		t.Fatalf("unexpected error deleting thousand files: %v", err)
+	}
+}

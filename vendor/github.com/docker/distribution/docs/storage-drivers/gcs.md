@@ -3,6 +3,8 @@
 title = "GCS storage driver"
 description = "Explains how to use the Google Cloud Storage drivers"
 keywords = ["registry, service, driver, images, storage,  gcs, google, cloud"]
+[menu.main]
+parent="smn_storagedrivers"
 +++
 <![end-metadata]-->
 

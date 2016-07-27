@@ -25,8 +25,6 @@ import (
 	"k8s.io/kubernetes/pkg/api/rest"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	extvalidation "k8s.io/kubernetes/pkg/apis/extensions/validation"
-	"k8s.io/kubernetes/pkg/fields"
-	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/registry/cachesize"
 	"k8s.io/kubernetes/pkg/registry/deployment"
 	"k8s.io/kubernetes/pkg/registry/generic"
@@ -65,7 +63,14 @@ func NewREST(opts generic.RESTOptions) (*REST, *StatusREST, *RollbackREST) {
 
 	newListFunc := func() runtime.Object { return &extensions.DeploymentList{} }
 	storageInterface := opts.Decorator(
-		opts.Storage, cachesize.GetWatchCacheSizeByResource(cachesize.Deployments), &extensions.Deployment{}, prefix, deployment.Strategy, newListFunc)
+		opts.Storage,
+		cachesize.GetWatchCacheSizeByResource(cachesize.Deployments),
+		&extensions.Deployment{},
+		prefix,
+		deployment.Strategy,
+		newListFunc,
+		storage.NoTriggerPublisher,
+	)
 
 	store := &registry.Store{
 		NewFunc: func() runtime.Object { return &extensions.Deployment{} },
@@ -86,9 +91,7 @@ func NewREST(opts generic.RESTOptions) (*REST, *StatusREST, *RollbackREST) {
 			return obj.(*extensions.Deployment).Name, nil
 		},
 		// Used to match objects based on labels/fields for list.
-		PredicateFunc: func(label labels.Selector, field fields.Selector) generic.Matcher {
-			return deployment.MatchDeployment(label, field)
-		},
+		PredicateFunc:           deployment.MatchDeployment,
 		QualifiedResource:       extensions.Resource("deployments"),
 		DeleteCollectionWorkers: opts.DeleteCollectionWorkers,
 

@@ -30,6 +30,9 @@ e2e_test=$(kube::util::find-binary "e2e.test")
 
 GINKGO_PARALLEL=${GINKGO_PARALLEL:-n} # set to 'y' to run tests in parallel
 
+# If 'y', will rerun failed tests once to give them a second chance.
+GINKGO_TOLERATE_FLAKES=${GINKGO_TOLERATE_FLAKES:-n}
+
 # The number of tests that can run in parallel depends on what tests
 # are running and on the size of the cluster. Too many, and tests will
 # fail due to resource contention. 25 is a reasonable default for a
@@ -101,6 +104,11 @@ elif [[ ${GINKGO_PARALLEL} =~ ^[yY]$ ]]; then
   ginkgo_args+=("--nodes=25")
 fi
 
+FLAKE_ATTEMPTS=1
+if [[ "${GINKGO_TOLERATE_FLAKES}" == "y" ]]; then
+  FLAKE_ATTEMPTS=2
+fi
+
 # The --host setting is used only when providing --auth_config
 # If --kubeconfig is used, the host to use is retrieved from the .kubeconfig
 # file and the one provided with --host is ignored.
@@ -108,6 +116,7 @@ fi
 export PATH=$(dirname "${e2e_test}"):"${PATH}"
 "${ginkgo}" "${ginkgo_args[@]:+${ginkgo_args[@]}}" "${e2e_test}" -- \
   "${auth_config[@]:+${auth_config[@]}}" \
+  --ginkgo.flakeAttempts="${FLAKE_ATTEMPTS}" \
   --host="${KUBE_MASTER_URL}" \
   --provider="${KUBERNETES_PROVIDER}" \
   --gce-project="${PROJECT:-}" \
@@ -119,8 +128,9 @@ export PATH=$(dirname "${e2e_test}"):"${PATH}"
   --repo-root="${KUBE_ROOT}" \
   --node-instance-group="${NODE_INSTANCE_GROUP:-}" \
   --prefix="${KUBE_GCE_INSTANCE_PREFIX:-e2e}" \
-  ${OS_DISTRIBUTION:+"--os-distro=${OS_DISTRIBUTION}"} \
   ${KUBE_CONTAINER_RUNTIME:+"--container-runtime=${KUBE_CONTAINER_RUNTIME}"} \
+  ${MASTER_OS_DISTRIBUTION:+"--master-os-distro=${MASTER_OS_DISTRIBUTION}"} \
+  ${NODE_OS_DISTRIBUTION:+"--node-os-distro=${NODE_OS_DISTRIBUTION}"} \
   ${NUM_NODES:+"--num-nodes=${NUM_NODES}"} \
   ${E2E_CLEAN_START:+"--clean-start=true"} \
   ${E2E_MIN_STARTUP_PODS:+"--minStartupPods=${E2E_MIN_STARTUP_PODS}"} \

@@ -150,7 +150,9 @@ func TestTransport(t *testing.T) {
 func onSameConn(t *testing.T, modReq func(*http.Request)) bool {
 	st := newServerTester(t, func(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, r.RemoteAddr)
-	}, optOnlyServer)
+	}, optOnlyServer, func(c net.Conn, st http.ConnState) {
+		t.Logf("conn %v is now state %v", c.RemoteAddr(), st)
+	})
 	defer st.Close()
 	tr := &Transport{TLSClientConfig: tlsConfigInsecure}
 	defer tr.CloseIdleConnections()
@@ -755,18 +757,18 @@ func testTransportReqBodyAfterResponse(t *testing.T, status int) {
 				if f.StreamEnded() {
 					return fmt.Errorf("headers contains END_STREAM unexpectedly: %v", f)
 				}
-				time.Sleep(50 * time.Millisecond) // let client send body
-				enc.WriteField(hpack.HeaderField{Name: ":status", Value: strconv.Itoa(status)})
-				ct.fr.WriteHeaders(HeadersFrameParam{
-					StreamID:      f.StreamID,
-					EndHeaders:    true,
-					EndStream:     false,
-					BlockFragment: buf.Bytes(),
-				})
 			case *DataFrame:
 				dataLen := len(f.Data())
-				dataRecv += int64(dataLen)
 				if dataLen > 0 {
+					if dataRecv == 0 {
+						enc.WriteField(hpack.HeaderField{Name: ":status", Value: strconv.Itoa(status)})
+						ct.fr.WriteHeaders(HeadersFrameParam{
+							StreamID:      f.StreamID,
+							EndHeaders:    true,
+							EndStream:     false,
+							BlockFragment: buf.Bytes(),
+						})
+					}
 					if err := ct.fr.WriteWindowUpdate(0, uint32(dataLen)); err != nil {
 						return err
 					}
@@ -774,6 +776,8 @@ func testTransportReqBodyAfterResponse(t *testing.T, status int) {
 						return err
 					}
 				}
+				dataRecv += int64(dataLen)
+
 				if !closed && ((status != 200 && dataRecv > 0) ||
 					(status == 200 && dataRecv == bodySize)) {
 					closed = true
@@ -1013,41 +1017,38 @@ func testTransportResPattern(t *testing.T, expect100Continue, resHeader headerTy
 			if err != nil {
 				return err
 			}
+			endStream := false
+			send := func(mode headerType) {
+				hbf := buf.Bytes()
+				switch mode {
+				case oneHeader:
+					ct.fr.WriteHeaders(HeadersFrameParam{
+						StreamID:      f.Header().StreamID,
+						EndHeaders:    true,
+						EndStream:     endStream,
+						BlockFragment: hbf,
+					})
+				case splitHeader:
+					if len(hbf) < 2 {
+						panic("too small")
+					}
+					ct.fr.WriteHeaders(HeadersFrameParam{
+						StreamID:      f.Header().StreamID,
+						EndHeaders:    false,
+						EndStream:     endStream,
+						BlockFragment: hbf[:1],
+					})
+					ct.fr.WriteContinuation(f.Header().StreamID, true, hbf[1:])
+				default:
+					panic("bogus mode")
+				}
+			}
 			switch f := f.(type) {
 			case *WindowUpdateFrame, *SettingsFrame:
 			case *DataFrame:
-				// ignore for now.
-			case *HeadersFrame:
-				endStream := false
-				send := func(mode headerType) {
-					hbf := buf.Bytes()
-					switch mode {
-					case oneHeader:
-						ct.fr.WriteHeaders(HeadersFrameParam{
-							StreamID:      f.StreamID,
-							EndHeaders:    true,
-							EndStream:     endStream,
-							BlockFragment: hbf,
-						})
-					case splitHeader:
-						if len(hbf) < 2 {
-							panic("too small")
-						}
-						ct.fr.WriteHeaders(HeadersFrameParam{
-							StreamID:      f.StreamID,
-							EndHeaders:    false,
-							EndStream:     endStream,
-							BlockFragment: hbf[:1],
-						})
-						ct.fr.WriteContinuation(f.StreamID, true, hbf[1:])
-					default:
-						panic("bogus mode")
-					}
-				}
-				if expect100Continue != noHeader {
-					buf.Reset()
-					enc.WriteField(hpack.HeaderField{Name: ":status", Value: "100"})
-					send(expect100Continue)
+				if !f.StreamEnded() {
+					// No need to send flow control tokens. The test request body is tiny.
+					continue
 				}
 				// Response headers (1+ frames; 1 or 2 in this test, but never 0)
 				{
@@ -1071,7 +1072,15 @@ func testTransportResPattern(t *testing.T, expect100Continue, resHeader headerTy
 					enc.WriteField(hpack.HeaderField{Name: "some-trailer", Value: "some-value"})
 					send(trailers)
 				}
-				return nil
+				if endStream {
+					return nil
+				}
+			case *HeadersFrame:
+				if expect100Continue != noHeader {
+					buf.Reset()
+					enc.WriteField(hpack.HeaderField{Name: ":status", Value: "100"})
+					send(expect100Continue)
+				}
 			}
 		}
 	}

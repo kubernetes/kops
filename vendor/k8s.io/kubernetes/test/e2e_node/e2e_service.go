@@ -25,6 +25,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
@@ -45,6 +46,7 @@ type e2eService struct {
 	kubeletStaticPodDir string
 	nodeName            string
 	logFiles            map[string]logFileData
+	cgroupsPerQOS       bool
 }
 
 type logFileData struct {
@@ -55,16 +57,22 @@ type logFileData struct {
 const (
 	// This is consistent with the level used in a cluster e2e test.
 	LOG_VERBOSITY_LEVEL = "4"
+	// Etcd binary is expected to either be available via PATH, or at this location.
+	defaultEtcdPath = "/tmp/etcd"
 )
 
-func newE2eService(nodeName string) *e2eService {
+func newE2eService(nodeName string, cgroupsPerQOS bool) *e2eService {
 	// Special log files that need to be collected for additional debugging.
 	var logFiles = map[string]logFileData{
 		"kern.log":   {[]string{"/var/log/kern.log"}, []string{"-k"}},
 		"docker.log": {[]string{"/var/log/docker.log", "/var/log/upstart/docker.log"}, []string{"-u", "docker"}},
 	}
 
-	return &e2eService{nodeName: nodeName, logFiles: logFiles}
+	return &e2eService{
+		nodeName:      nodeName,
+		logFiles:      logFiles,
+		cgroupsPerQOS: cgroupsPerQOS,
+	}
 }
 
 func (es *e2eService) start() error {
@@ -173,7 +181,16 @@ func (es *e2eService) startEtcd() (*killCmd, error) {
 		return nil, err
 	}
 	es.etcdDataDir = dataDir
-	cmd := exec.Command("etcd")
+	etcdPath, err := exec.LookPath("etcd")
+	if err != nil {
+		glog.Infof("etcd not found in PATH. Defaulting to %s...", defaultEtcdPath)
+		_, err = os.Stat(defaultEtcdPath)
+		if err != nil {
+			return nil, fmt.Errorf("etcd binary not found")
+		}
+		etcdPath = defaultEtcdPath
+	}
+	cmd := exec.Command(etcdPath)
 	// Execute etcd in the data directory instead of using --data-dir because the flag sometimes requires additional
 	// configuration (e.g. --name in version 0.4.9)
 	cmd.Dir = es.etcdDataDir
@@ -233,9 +250,24 @@ func (es *e2eService) startKubeletServer() (*killCmd, error) {
 		"--config", es.kubeletStaticPodDir,
 		"--file-check-frequency", "10s", // Check file frequently so tests won't wait too long
 		"--v", LOG_VERBOSITY_LEVEL, "--logtostderr",
-		"--network-plugin=kubenet",
 		"--pod-cidr=10.180.0.0/24", // Assign a fixed CIDR to the node because there is no node controller.
 	)
+	if es.cgroupsPerQOS {
+		cmdArgs = append(cmdArgs,
+			"--cgroups-per-qos", "true",
+			"--cgroup-root", "/",
+		)
+	}
+	if !*disableKubenet {
+		cwd, err := os.Getwd()
+		if err != nil {
+			return nil, err
+		}
+		cmdArgs = append(cmdArgs,
+			"--network-plugin=kubenet",
+			"--network-plugin-dir", filepath.Join(cwd, CNIDirectory, "bin")) // Enable kubenet
+	}
+
 	cmd := exec.Command("sudo", cmdArgs...)
 	hcc := newHealthCheckCommand(
 		"http://127.0.0.1:10255/healthz",
@@ -376,5 +408,5 @@ func newHealthCheckCommand(healthCheckUrl string, cmd *exec.Cmd, filename string
 }
 
 func (hcc *healthCheckCommand) String() string {
-	return fmt.Sprintf("`%s %s` health-check: %s", hcc.Path, strings.Join(hcc.Args, " "), hcc.HealthCheckUrl)
+	return fmt.Sprintf("`%s` health-check: %s", strings.Join(append([]string{hcc.Path}, hcc.Args[1:]...), " "), hcc.HealthCheckUrl)
 }

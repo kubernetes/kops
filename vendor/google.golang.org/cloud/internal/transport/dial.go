@@ -15,18 +15,14 @@
 package transport
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 
 	"golang.org/x/net/context"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
+	"google.golang.org/api/option"
+	"google.golang.org/api/transport"
 	"google.golang.org/cloud"
-	"google.golang.org/cloud/internal/opts"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/credentials/oauth"
 )
 
 // ErrHTTP is returned when on a non-200 HTTP response.
@@ -47,55 +43,19 @@ func (e *ErrHTTP) Error() string {
 // service, configured with the given ClientOptions. It also returns the endpoint
 // for the service as specified in the options.
 func NewHTTPClient(ctx context.Context, opt ...cloud.ClientOption) (*http.Client, string, error) {
-	var o opts.DialOpt
+	o := make([]option.ClientOption, 0, len(opt))
 	for _, opt := range opt {
-		opt.Resolve(&o)
+		o = append(o, opt.Resolve())
 	}
-	if o.GRPCClient != nil {
-		return nil, "", errors.New("unsupported GRPC base transport specified")
-	}
-	// TODO(djd): Wrap all http.Clients with appropriate internal version to add
-	// UserAgent header and prepend correct endpoint.
-	if o.HTTPClient != nil {
-		return o.HTTPClient, o.Endpoint, nil
-	}
-	if o.TokenSource == nil {
-		var err error
-		o.TokenSource, err = google.DefaultTokenSource(ctx, o.Scopes...)
-		if err != nil {
-			return nil, "", fmt.Errorf("google.DefaultTokenSource: %v", err)
-		}
-	}
-	return oauth2.NewClient(ctx, o.TokenSource), o.Endpoint, nil
+	return transport.NewHTTPClient(ctx, o...)
 }
 
 // DialGRPC returns a GRPC connection for use communicating with a Google cloud
 // service, configured with the given ClientOptions.
 func DialGRPC(ctx context.Context, opt ...cloud.ClientOption) (*grpc.ClientConn, error) {
-	var o opts.DialOpt
+	o := make([]option.ClientOption, 0, len(opt))
 	for _, opt := range opt {
-		opt.Resolve(&o)
+		o = append(o, opt.Resolve())
 	}
-	if o.HTTPClient != nil {
-		return nil, errors.New("unsupported HTTP base transport specified")
-	}
-	if o.GRPCClient != nil {
-		return o.GRPCClient, nil
-	}
-	if o.TokenSource == nil {
-		var err error
-		o.TokenSource, err = google.DefaultTokenSource(ctx, o.Scopes...)
-		if err != nil {
-			return nil, fmt.Errorf("google.DefaultTokenSource: %v", err)
-		}
-	}
-	grpcOpts := []grpc.DialOption{
-		grpc.WithPerRPCCredentials(oauth.TokenSource{o.TokenSource}),
-		grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(nil, "")),
-	}
-	grpcOpts = append(grpcOpts, o.GRPCDialOpts...)
-	if o.UserAgent != "" {
-		grpcOpts = append(grpcOpts, grpc.WithUserAgent(o.UserAgent))
-	}
-	return grpc.Dial(o.Endpoint, grpcOpts...)
+	return transport.DialGRPC(ctx, o...)
 }

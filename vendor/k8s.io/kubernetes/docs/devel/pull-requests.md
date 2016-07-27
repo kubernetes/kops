@@ -2,15 +2,15 @@
 
 <!-- BEGIN STRIP_FOR_RELEASE -->
 
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
 
 <h2>PLEASE NOTE: This document applies to the HEAD of the source tree</h2>
@@ -69,9 +69,9 @@ Additionally, for infrequent or new contributors, we require the on call to appl
 The following will save time for both you and your reviewer:
 
 * Enable [pre-commit hooks](development.md#committing-changes-to-your-fork) and verify they pass.
-* Verify `hack/verify-all.sh` passes.
-* Verify `hack/test-go.sh` passes.
-* Verify `hack/test-integration.sh` passes.
+* Verify `make verify` passes.
+* Verify `make test` passes.
+* Verify `make test-integration.sh` passes.
 
 ## Release Notes
 

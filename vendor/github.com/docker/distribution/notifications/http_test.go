@@ -1,6 +1,7 @@
 package notifications
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"mime"
@@ -8,6 +9,7 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/docker/distribution/manifest/schema1"
@@ -16,7 +18,7 @@ import (
 // TestHTTPSink mocks out an http endpoint and notifies it under a couple of
 // conditions, ensuring correct behavior.
 func TestHTTPSink(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	serverHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		if r.Method != "POST" {
 			w.WriteHeader(http.StatusMethodNotAllowed)
@@ -57,12 +59,38 @@ func TestHTTPSink(t *testing.T) {
 		}
 
 		w.WriteHeader(status)
-	}))
+	})
+	server := httptest.NewTLSServer(serverHandler)
 
 	metrics := newSafeMetrics()
-	sink := newHTTPSink(server.URL, 0, nil,
+	sink := newHTTPSink(server.URL, 0, nil, nil,
 		&endpointMetricsHTTPStatusListener{safeMetrics: metrics})
 
+	// first make sure that the default transport gives x509 untrusted cert error
+	events := []Event{}
+	err := sink.Write(events...)
+	if !strings.Contains(err.Error(), "x509") {
+		t.Fatal("TLS server with default transport should give unknown CA error")
+	}
+	if err := sink.Close(); err != nil {
+		t.Fatalf("unexpected error closing http sink: %v", err)
+	}
+
+	// make sure that passing in the transport no longer gives this error
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	sink = newHTTPSink(server.URL, 0, nil, tr,
+		&endpointMetricsHTTPStatusListener{safeMetrics: metrics})
+	err = sink.Write(events...)
+	if err != nil {
+		t.Fatalf("unexpected error writing events: %v", err)
+	}
+
+	// reset server to standard http server and sink to a basic sink
+	server = httptest.NewServer(serverHandler)
+	sink = newHTTPSink(server.URL, 0, nil, nil,
+		&endpointMetricsHTTPStatusListener{safeMetrics: metrics})
 	var expectedMetrics EndpointMetrics
 	expectedMetrics.Statuses = make(map[string]int)
 

@@ -638,6 +638,12 @@ type CertificateDetail struct {
 	// validation.
 	DomainValidationOptions []*DomainValidation `min:"1" type:"list"`
 
+	// The reason the certificate request failed. This value exists only when the
+	// structure's Status is FAILED. For more information, see Certificate Request
+	// Failed (http://docs.aws.amazon.com/acm/latest/userguide/troubleshooting.html#troubleshooting-failed)
+	// in the AWS Certificate Manager User Guide.
+	FailureReason *string `type:"string" enum:"FailureReason"`
+
 	// A list of ARNs for the resources that are using the certificate. An ACM Certificate
 	// can be used by multiple AWS resources.
 	InUseBy []*string `type:"list"`
@@ -1419,6 +1425,19 @@ const (
 	CertificateStatusRevoked = "REVOKED"
 	// @enum CertificateStatus
 	CertificateStatusFailed = "FAILED"
+)
+
+const (
+	// @enum FailureReason
+	FailureReasonNoAvailableContacts = "NO_AVAILABLE_CONTACTS"
+	// @enum FailureReason
+	FailureReasonAdditionalVerificationRequired = "ADDITIONAL_VERIFICATION_REQUIRED"
+	// @enum FailureReason
+	FailureReasonDomainNotAllowed = "DOMAIN_NOT_ALLOWED"
+	// @enum FailureReason
+	FailureReasonInvalidPublicDomain = "INVALID_PUBLIC_DOMAIN"
+	// @enum FailureReason
+	FailureReasonOther = "OTHER"
 )
 
 const (

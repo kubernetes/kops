@@ -195,6 +195,9 @@ var mergeTests = []struct {
 			NameMapping: map[int32]string{6: "Nigel"},
 			MsgMapping: map[int64]*pb.FloatingPoint{
 				0x4001: {F: proto.Float64(2.0)},
+				0x4002: {
+					F: proto.Float64(2.0),
+				},
 			},
 			ByteMapping: map[bool][]byte{true: []byte("wowsa")},
 		},
@@ -202,6 +205,12 @@ var mergeTests = []struct {
 			NameMapping: map[int32]string{
 				6: "Bruce", // should be overwritten
 				7: "Andrew",
+			},
+			MsgMapping: map[int64]*pb.FloatingPoint{
+				0x4002: {
+					F:     proto.Float64(3.0),
+					Exact: proto.Bool(true),
+				}, // the entire message should be overwritten
 			},
 		},
 		want: &pb.MessageWithMap{
@@ -211,6 +220,9 @@ var mergeTests = []struct {
 			},
 			MsgMapping: map[int64]*pb.FloatingPoint{
 				0x4001: {F: proto.Float64(2.0)},
+				0x4002: {
+					F: proto.Float64(2.0),
+				},
 			},
 			ByteMapping: map[bool][]byte{true: []byte("wowsa")},
 		},
@@ -252,6 +264,27 @@ var mergeTests = []struct {
 		},
 		want: &pb.Communique{
 			Union: &pb.Communique_Name{Name: "Bobby Tables"},
+		},
+	},
+	{
+		src: &proto3pb.Message{
+			Terrain: map[string]*proto3pb.Nested{
+				"kay_a": {Cute: true},      // replace
+				"kay_b": {Bunny: "rabbit"}, // insert
+			},
+		},
+		dst: &proto3pb.Message{
+			Terrain: map[string]*proto3pb.Nested{
+				"kay_a": {Bunny: "lost"},  // replaced
+				"kay_c": {Bunny: "bunny"}, // keep
+			},
+		},
+		want: &proto3pb.Message{
+			Terrain: map[string]*proto3pb.Nested{
+				"kay_a": {Cute: true},
+				"kay_b": {Bunny: "rabbit"},
+				"kay_c": {Bunny: "bunny"},
+			},
 		},
 	},
 }

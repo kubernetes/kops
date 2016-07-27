@@ -576,9 +576,17 @@ func ExampleSSM_SendCommand() {
 			aws.String("InstanceId"), // Required
 			// More values...
 		},
-		Comment:            aws.String("Comment"),
-		DocumentHash:       aws.String("DocumentHash"),
-		DocumentHashType:   aws.String("DocumentHashType"),
+		Comment:          aws.String("Comment"),
+		DocumentHash:     aws.String("DocumentHash"),
+		DocumentHashType: aws.String("DocumentHashType"),
+		NotificationConfig: &ssm.NotificationConfig{
+			NotificationArn: aws.String("NotificationArn"),
+			NotificationEvents: []*string{
+				aws.String("NotificationEvent"), // Required
+				// More values...
+			},
+			NotificationType: aws.String("NotificationType"),
+		},
 		OutputS3BucketName: aws.String("S3BucketName"),
 		OutputS3KeyPrefix:  aws.String("S3KeyPrefix"),
 		Parameters: map[string][]*string{
@@ -588,6 +596,7 @@ func ExampleSSM_SendCommand() {
 			},
 			// More values...
 		},
+		ServiceRoleArn: aws.String("ServiceRole"),
 		TimeoutSeconds: aws.Int64(1),
 	}
 	resp, err := svc.SendCommand(params)

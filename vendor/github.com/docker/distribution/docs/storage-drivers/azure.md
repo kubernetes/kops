@@ -3,6 +3,8 @@
 title = "Microsoft Azure storage driver"
 description = "Explains how to use the Azure storage drivers"
 keywords = ["registry, service, driver, images, storage,  azure"]
+[menu.main]
+parent = "smn_storagedrivers"
 +++
 <![end-metadata]-->
 

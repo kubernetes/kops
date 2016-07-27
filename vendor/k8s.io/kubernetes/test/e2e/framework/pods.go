@@ -17,56 +17,97 @@ limitations under the License.
 package framework
 
 import (
+	"fmt"
 	"sync"
+	"time"
 
 	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/client/unversioned"
+	"k8s.io/kubernetes/pkg/util/wait"
 
+	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-// TODO: Consolidate pod-specific framework functions here.
-
 // Convenience method for getting a pod client interface in the framework's namespace.
-func (f *Framework) PodClient() unversioned.PodInterface {
-	return f.Client.Pods(f.Namespace.Name)
-}
-
-// Create a new pod according to the framework specifications, and wait for it to start.
-func (f *Framework) CreatePod(pod *api.Pod) {
-	f.CreatePodAsync(pod)
-	ExpectNoError(f.WaitForPodRunning(pod.Name))
-}
-
-// Create a new pod according to the framework specifications (don't wait for it to start).
-func (f *Framework) CreatePodAsync(pod *api.Pod) {
-	f.MungePodSpec(pod)
-	_, err := f.PodClient().Create(pod)
-	ExpectNoError(err, "Error creating Pod")
-}
-
-// Batch version of CreatePod. All pods are created before waiting.
-func (f *Framework) CreatePods(pods []*api.Pod) {
-	for _, pod := range pods {
-		f.CreatePodAsync(pod)
+func (f *Framework) PodClient() *PodClient {
+	return &PodClient{
+		f:            f,
+		PodInterface: f.Client.Pods(f.Namespace.Name),
 	}
+}
+
+type PodClient struct {
+	f *Framework
+	unversioned.PodInterface
+}
+
+// Create creates a new pod according to the framework specifications (don't wait for it to start).
+func (c *PodClient) Create(pod *api.Pod) *api.Pod {
+	c.MungeSpec(pod)
+	p, err := c.PodInterface.Create(pod)
+	ExpectNoError(err, "Error creating Pod")
+	return p
+}
+
+// CreateSync creates a new pod according to the framework specifications, and wait for it to start.
+func (c *PodClient) CreateSync(pod *api.Pod) *api.Pod {
+	p := c.Create(pod)
+	ExpectNoError(c.f.WaitForPodRunning(p.Name))
+	// Get the newest pod after it becomes running, some status may change after pod created, such as pod ip.
+	p, err := c.Get(pod.Name)
+	ExpectNoError(err)
+	return p
+}
+
+// CreateBatch create a batch of pods. All pods are created before waiting.
+func (c *PodClient) CreateBatch(pods []*api.Pod) []*api.Pod {
+	ps := make([]*api.Pod, len(pods))
 	var wg sync.WaitGroup
-	for _, pod := range pods {
+	for i, pod := range pods {
 		wg.Add(1)
-		podName := pod.Name
-		go func() {
-			ExpectNoError(f.WaitForPodRunning(podName))
-			wg.Done()
-		}()
+		go func(i int, pod *api.Pod) {
+			defer wg.Done()
+			defer GinkgoRecover()
+			ps[i] = c.CreateSync(pod)
+		}(i, pod)
 	}
 	wg.Wait()
+	return ps
 }
 
-// Apply test-suite specific transformations to the pod spec.
-// TODO: figure out a nicer, more generic way to tie this to framework instances.
-func (f *Framework) MungePodSpec(pod *api.Pod) {
+// MungeSpec apply test-suite specific transformations to the pod spec.
+// TODO: Refactor the framework to always use PodClient so that we can completely hide the munge logic
+// in the PodClient.
+func (c *PodClient) MungeSpec(pod *api.Pod) {
 	if TestContext.NodeName != "" {
 		Expect(pod.Spec.NodeName).To(Or(BeZero(), Equal(TestContext.NodeName)), "Test misconfigured")
 		pod.Spec.NodeName = TestContext.NodeName
 	}
 }
+
+// Update updates the pod object. It retries if there is a conflict, throw out error if
+// there is any other errors. name is the pod name, updateFn is the function updating the
+// pod object.
+func (c *PodClient) Update(name string, updateFn func(pod *api.Pod)) {
+	ExpectNoError(wait.Poll(time.Millisecond*500, time.Second*30, func() (bool, error) {
+		pod, err := c.PodInterface.Get(name)
+		if err != nil {
+			return false, fmt.Errorf("failed to get pod %q: %v", name, err)
+		}
+		updateFn(pod)
+		_, err = c.PodInterface.Update(pod)
+		if err == nil {
+			Logf("Successfully updated pod %q", name)
+			return true, nil
+		}
+		if errors.IsConflict(err) {
+			Logf("Conflicting update to pod %q, re-get and re-update: %v", name, err)
+			return false, nil
+		}
+		return false, fmt.Errorf("failed to update pod %q: %v", name, err)
+	}))
+}
+
+// TODO(random-liu): Move pod wait function into this file

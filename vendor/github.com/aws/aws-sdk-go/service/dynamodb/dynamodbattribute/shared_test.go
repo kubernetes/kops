@@ -30,6 +30,32 @@ type testOmitEmptyStruct struct {
 	Value3 int
 }
 
+type testAliasedString string
+type testAliasedStringSlice []string
+type testAliasedInt int
+type testAliasedIntSlice []int
+type testAliasedMap map[string]int
+type testAliasedSlice []string
+type testAliasedByteSlice []byte
+
+type testAliasedStruct struct {
+	Value  testAliasedString
+	Value2 testAliasedInt
+	Value3 testAliasedMap
+	Value4 testAliasedSlice
+
+	Value5 testAliasedByteSlice
+	Value6 []testAliasedInt
+	Value7 []testAliasedString
+
+	Value8  []testAliasedByteSlice `dynamodbav:",binaryset"`
+	Value9  []testAliasedInt       `dynamodbav:",numberset"`
+	Value10 []testAliasedString    `dynamodbav:",stringset"`
+
+	Value11 testAliasedIntSlice
+	Value12 testAliasedStringSlice
+}
+
 type testNamedPointer *int
 
 var testDate, _ = time.Parse(time.RFC3339, "2016-05-03T17:06:26.209072Z")
@@ -172,6 +198,75 @@ var sharedTestCases = []struct {
 		},
 		actual:   &testOmitEmptyStruct{},
 		expected: testOmitEmptyStruct{Value: "", Value2: nil, Value3: 0},
+	},
+	{ // aliased type
+		in: &dynamodb.AttributeValue{
+			M: map[string]*dynamodb.AttributeValue{
+				"Value":  {S: aws.String("123")},
+				"Value2": {N: aws.String("123")},
+				"Value3": {M: map[string]*dynamodb.AttributeValue{
+					"Key": {N: aws.String("321")},
+				}},
+				"Value4": {L: []*dynamodb.AttributeValue{
+					{S: aws.String("1")},
+					{S: aws.String("2")},
+					{S: aws.String("3")},
+				}},
+				"Value5": {B: []byte{0, 1, 2}},
+				"Value6": {L: []*dynamodb.AttributeValue{
+					{N: aws.String("1")},
+					{N: aws.String("2")},
+					{N: aws.String("3")},
+				}},
+				"Value7": {L: []*dynamodb.AttributeValue{
+					{S: aws.String("1")},
+					{S: aws.String("2")},
+					{S: aws.String("3")},
+				}},
+				"Value8": {BS: [][]byte{
+					{0, 1, 2}, {3, 4, 5},
+				}},
+				"Value9": {NS: []*string{
+					aws.String("1"),
+					aws.String("2"),
+					aws.String("3"),
+				}},
+				"Value10": {SS: []*string{
+					aws.String("1"),
+					aws.String("2"),
+					aws.String("3"),
+				}},
+				"Value11": {L: []*dynamodb.AttributeValue{
+					{N: aws.String("1")},
+					{N: aws.String("2")},
+					{N: aws.String("3")},
+				}},
+				"Value12": {L: []*dynamodb.AttributeValue{
+					{S: aws.String("1")},
+					{S: aws.String("2")},
+					{S: aws.String("3")},
+				}},
+			},
+		},
+		actual: &testAliasedStruct{},
+		expected: testAliasedStruct{
+			Value: "123", Value2: 123,
+			Value3: testAliasedMap{
+				"Key": 321,
+			},
+			Value4: testAliasedSlice{"1", "2", "3"},
+			Value5: testAliasedByteSlice{0, 1, 2},
+			Value6: []testAliasedInt{1, 2, 3},
+			Value7: []testAliasedString{"1", "2", "3"},
+			Value8: []testAliasedByteSlice{
+				{0, 1, 2},
+				{3, 4, 5},
+			},
+			Value9:  []testAliasedInt{1, 2, 3},
+			Value10: []testAliasedString{"1", "2", "3"},
+			Value11: testAliasedIntSlice{1, 2, 3},
+			Value12: testAliasedStringSlice{"1", "2", "3"},
+		},
 	},
 	{
 		in:       &dynamodb.AttributeValue{N: aws.String("123")},

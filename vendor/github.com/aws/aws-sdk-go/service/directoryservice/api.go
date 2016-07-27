@@ -11,6 +11,56 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 )
 
+const opAddTagsToResource = "AddTagsToResource"
+
+// AddTagsToResourceRequest generates a "aws/request.Request" representing the
+// client's request for the AddTagsToResource operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the AddTagsToResource method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the AddTagsToResourceRequest method.
+//    req, resp := client.AddTagsToResourceRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+func (c *DirectoryService) AddTagsToResourceRequest(input *AddTagsToResourceInput) (req *request.Request, output *AddTagsToResourceOutput) {
+	op := &request.Operation{
+		Name:       opAddTagsToResource,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &AddTagsToResourceInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &AddTagsToResourceOutput{}
+	req.Data = output
+	return
+}
+
+// Adds or overwrites one or more tags for the specified Amazon Directory Services
+// directory. Each directory can have a maximum of 10 tags. Each tag consists
+// of a key and optional value. Tag keys must be unique per resource.
+func (c *DirectoryService) AddTagsToResource(input *AddTagsToResourceInput) (*AddTagsToResourceOutput, error) {
+	req, out := c.AddTagsToResourceRequest(input)
+	err := req.Send()
+	return out, err
+}
+
 const opConnectDirectory = "ConnectDirectory"
 
 // ConnectDirectoryRequest generates a "aws/request.Request" representing the
@@ -102,7 +152,7 @@ func (c *DirectoryService) CreateAliasRequest(input *CreateAliasInput) (req *req
 
 // Creates an alias for a directory and assigns the alias to the directory.
 // The alias is used to construct the access URL for the directory, such as
-// http://alias.awsapps.com.
+// http://<alias>.awsapps.com.
 //
 //  After an alias has been created, it cannot be deleted or reused, so this
 // operation should only be used when absolutely necessary.
@@ -1211,6 +1261,54 @@ func (c *DirectoryService) GetSnapshotLimits(input *GetSnapshotLimitsInput) (*Ge
 	return out, err
 }
 
+const opListTagsForResource = "ListTagsForResource"
+
+// ListTagsForResourceRequest generates a "aws/request.Request" representing the
+// client's request for the ListTagsForResource operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the ListTagsForResource method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the ListTagsForResourceRequest method.
+//    req, resp := client.ListTagsForResourceRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+func (c *DirectoryService) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
+	op := &request.Operation{
+		Name:       opListTagsForResource,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ListTagsForResourceInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &ListTagsForResourceOutput{}
+	req.Data = output
+	return
+}
+
+// Lists all tags on an Amazon Directory Services directory.
+func (c *DirectoryService) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
+	req, out := c.ListTagsForResourceRequest(input)
+	err := req.Send()
+	return out, err
+}
+
 const opRegisterEventTopic = "RegisterEventTopic"
 
 // RegisterEventTopicRequest generates a "aws/request.Request" representing the
@@ -1260,6 +1358,54 @@ func (c *DirectoryService) RegisterEventTopicRequest(input *RegisterEventTopicIn
 // Active status.
 func (c *DirectoryService) RegisterEventTopic(input *RegisterEventTopicInput) (*RegisterEventTopicOutput, error) {
 	req, out := c.RegisterEventTopicRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opRemoveTagsFromResource = "RemoveTagsFromResource"
+
+// RemoveTagsFromResourceRequest generates a "aws/request.Request" representing the
+// client's request for the RemoveTagsFromResource operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the RemoveTagsFromResource method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the RemoveTagsFromResourceRequest method.
+//    req, resp := client.RemoveTagsFromResourceRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+func (c *DirectoryService) RemoveTagsFromResourceRequest(input *RemoveTagsFromResourceInput) (req *request.Request, output *RemoveTagsFromResourceOutput) {
+	op := &request.Operation{
+		Name:       opRemoveTagsFromResource,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &RemoveTagsFromResourceInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &RemoveTagsFromResourceOutput{}
+	req.Data = output
+	return
+}
+
+// Removes tags from an Amazon Directory Services directory.
+func (c *DirectoryService) RemoveTagsFromResource(input *RemoveTagsFromResourceInput) (*RemoveTagsFromResourceOutput, error) {
+	req, out := c.RemoveTagsFromResourceRequest(input)
 	err := req.Send()
 	return out, err
 }
@@ -1467,6 +1613,66 @@ func (c *DirectoryService) VerifyTrust(input *VerifyTrustInput) (*VerifyTrustOut
 	req, out := c.VerifyTrustRequest(input)
 	err := req.Send()
 	return out, err
+}
+
+type AddTagsToResourceInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the directory to which to add the tag.
+	ResourceId *string `type:"string" required:"true"`
+
+	// The tags to be assigned to the Amazon Directory Services directory.
+	Tags []*Tag `type:"list" required:"true"`
+}
+
+// String returns the string representation
+func (s AddTagsToResourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AddTagsToResourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AddTagsToResourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AddTagsToResourceInput"}
+	if s.ResourceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
+	}
+	if s.Tags == nil {
+		invalidParams.Add(request.NewErrParamRequired("Tags"))
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+type AddTagsToResourceOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s AddTagsToResourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AddTagsToResourceOutput) GoString() string {
+	return s.String()
 }
 
 // Represents a named directory attribute.
@@ -1841,6 +2047,7 @@ func (s *CreateConditionalForwarderInput) Validate() error {
 	return nil
 }
 
+// The result of a CreateConditinalForwarder request.
 type CreateConditionalForwarderOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -1992,6 +2199,7 @@ func (s *CreateMicrosoftADInput) Validate() error {
 	return nil
 }
 
+// Result of a CreateMicrosoftAD request.
 type CreateMicrosoftADOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2072,6 +2280,7 @@ func (s CreateSnapshotOutput) GoString() string {
 type CreateTrustInput struct {
 	_ struct{} `type:"structure"`
 
+	// The IP addresses of the remote DNS server associated with RemoteDomainName.
 	ConditionalForwarderIpAddrs []*string `type:"list"`
 
 	// The Directory ID of the Microsoft AD in the AWS cloud for which to establish
@@ -2128,6 +2337,7 @@ func (s *CreateTrustInput) Validate() error {
 	return nil
 }
 
+// The result of a CreateTrust request.
 type CreateTrustOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2145,6 +2355,7 @@ func (s CreateTrustOutput) GoString() string {
 	return s.String()
 }
 
+// Deletes a conditional forwarder.
 type DeleteConditionalForwarderInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2182,6 +2393,7 @@ func (s *DeleteConditionalForwarderInput) Validate() error {
 	return nil
 }
 
+// The result of a DeleteConditionalForwarder request.
 type DeleteConditionalForwarderOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -2299,6 +2511,7 @@ func (s DeleteSnapshotOutput) GoString() string {
 type DeleteTrustInput struct {
 	_ struct{} `type:"structure"`
 
+	// Delete a conditional forwarder as part of a DeleteTrustRequest.
 	DeleteAssociatedConditionalForwarder *bool `type:"boolean"`
 
 	// The Trust ID of the trust relationship to be deleted.
@@ -2328,6 +2541,7 @@ func (s *DeleteTrustInput) Validate() error {
 	return nil
 }
 
+// The result of a DeleteTrust request.
 type DeleteTrustOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2386,6 +2600,7 @@ func (s *DeregisterEventTopicInput) Validate() error {
 	return nil
 }
 
+// The result of a DeregisterEventTopic request.
 type DeregisterEventTopicOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -2400,6 +2615,7 @@ func (s DeregisterEventTopicOutput) GoString() string {
 	return s.String()
 }
 
+// Describes a conditional forwarder.
 type DescribeConditionalForwardersInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2435,6 +2651,7 @@ func (s *DescribeConditionalForwardersInput) Validate() error {
 	return nil
 }
 
+// The result of a DescribeConditionalForwarder request.
 type DescribeConditionalForwardersOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2510,6 +2727,7 @@ func (s DescribeDirectoriesOutput) GoString() string {
 	return s.String()
 }
 
+// Describes event topics.
 type DescribeEventTopicsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2534,6 +2752,7 @@ func (s DescribeEventTopicsInput) GoString() string {
 	return s.String()
 }
 
+// The result of a DescribeEventTopic request.
 type DescribeEventTopicsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2644,6 +2863,7 @@ func (s DescribeTrustsInput) GoString() string {
 	return s.String()
 }
 
+// The result of a DescribeTrust request.
 type DescribeTrustsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2683,7 +2903,11 @@ type DirectoryConnectSettings struct {
 	// The username of an account in the on-premises directory that is used to connect
 	// to the directory. This account must have the following privileges:
 	//
-	//  Read users and groups Create computer objects Join computers to the domain
+	//   Read users and groups
+	//
+	//   Create computer objects
+	//
+	//   Join computers to the domain
 	CustomerUserName *string `min:"1" type:"string" required:"true"`
 
 	// A list of subnet identifiers in the VPC in which the AD Connector is created.
@@ -2765,8 +2989,8 @@ func (s DirectoryConnectSettingsDescription) GoString() string {
 type DirectoryDescription struct {
 	_ struct{} `type:"structure"`
 
-	// The access URL for the directory, such as http://alias.awsapps.com. If no
-	// alias has been created for the directory, alias is the directory identifier,
+	// The access URL for the directory, such as http://<alias>.awsapps.com. If
+	// no alias has been created for the directory, <alias> is the directory identifier,
 	// such as d-XXXXXXXXXX.
 	AccessUrl *string `min:"1" type:"string"`
 
@@ -3308,6 +3532,62 @@ func (s GetSnapshotLimitsOutput) GoString() string {
 	return s.String()
 }
 
+type ListTagsForResourceInput struct {
+	_ struct{} `type:"structure"`
+
+	// Reserved for future use.
+	Limit *int64 `type:"integer"`
+
+	// Reserved for future use.
+	NextToken *string `type:"string"`
+
+	// The ID of the directory for which you want to retrieve tags.
+	ResourceId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s ListTagsForResourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ListTagsForResourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListTagsForResourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListTagsForResourceInput"}
+	if s.ResourceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+type ListTagsForResourceOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Reserved for future use.
+	NextToken *string `type:"string"`
+
+	// List of tags returned by the ListTagsForResource operation.
+	Tags []*Tag `type:"list"`
+}
+
+// String returns the string representation
+func (s ListTagsForResourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ListTagsForResourceOutput) GoString() string {
+	return s.String()
+}
+
 // Contains information about a Remote Authentication Dial In User Service (RADIUS)
 // server.
 type RadiusSettings struct {
@@ -3375,6 +3655,7 @@ func (s *RadiusSettings) Validate() error {
 	return nil
 }
 
+// Registers a new event topic.
 type RegisterEventTopicInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3415,6 +3696,7 @@ func (s *RegisterEventTopicInput) Validate() error {
 	return nil
 }
 
+// The result of a RegisterEventTopic request.
 type RegisterEventTopicOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -3426,6 +3708,56 @@ func (s RegisterEventTopicOutput) String() string {
 
 // GoString returns the string representation
 func (s RegisterEventTopicOutput) GoString() string {
+	return s.String()
+}
+
+type RemoveTagsFromResourceInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the directory from which to remove the tag.
+	ResourceId *string `type:"string" required:"true"`
+
+	// The tag key (name) of the tag to be removed.
+	TagKeys []*string `type:"list" required:"true"`
+}
+
+// String returns the string representation
+func (s RemoveTagsFromResourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s RemoveTagsFromResourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RemoveTagsFromResourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RemoveTagsFromResourceInput"}
+	if s.ResourceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceId"))
+	}
+	if s.TagKeys == nil {
+		invalidParams.Add(request.NewErrParamRequired("TagKeys"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+type RemoveTagsFromResourceOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s RemoveTagsFromResourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s RemoveTagsFromResourceOutput) GoString() string {
 	return s.String()
 }
 
@@ -3532,6 +3864,53 @@ func (s SnapshotLimits) GoString() string {
 	return s.String()
 }
 
+// Metadata assigned to an Amazon Directory Services directory consisting of
+// a key-value pair.
+type Tag struct {
+	_ struct{} `type:"structure"`
+
+	// A key is the required name of the tag. The string value can be from 1 to
+	// 128 Unicode characters in length and cannot be prefixed with "aws:". The
+	// string can only contain only the set of Unicode letters, digits, white-space,
+	// '_', '.', '/', '=', '+', '-' (Java regex: "^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-]*)$").
+	Key *string `min:"1" type:"string" required:"true"`
+
+	// A value is the optional value of the tag. The string value can be from 1
+	// to 256 Unicode characters in length. The string can only contain only the
+	// set of Unicode letters, digits, white-space, '_', '.', '/', '=', '+', '-'
+	// (Java regex: "^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-]*)$").
+	Value *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s Tag) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s Tag) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Tag) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Tag"}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+	if s.Value == nil {
+		invalidParams.Add(request.NewErrParamRequired("Value"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 // Describes a trust relationship between an Microsoft AD in the AWS cloud and
 // an external domain.
 type Trust struct {
@@ -3579,6 +3958,7 @@ func (s Trust) GoString() string {
 	return s.String()
 }
 
+// Updates a conditional forwarder.
 type UpdateConditionalForwarderInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3624,6 +4004,7 @@ func (s *UpdateConditionalForwarderInput) Validate() error {
 	return nil
 }
 
+// The result of an UpdateConditionalForwarder request.
 type UpdateConditionalForwarderOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -3727,6 +4108,7 @@ func (s *VerifyTrustInput) Validate() error {
 	return nil
 }
 
+// Result of a VerifyTrust request.
 type VerifyTrustOutput struct {
 	_ struct{} `type:"structure"`
 

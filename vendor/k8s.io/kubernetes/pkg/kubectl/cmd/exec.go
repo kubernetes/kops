@@ -20,11 +20,8 @@ import (
 	"fmt"
 	"io"
 	"net/url"
-	"os"
-	"os/signal"
-	"syscall"
 
-	"github.com/docker/docker/pkg/term"
+	dockerterm "github.com/docker/docker/pkg/term"
 	"github.com/golang/glog"
 	"github.com/renstrom/dedent"
 	"github.com/spf13/cobra"
@@ -34,6 +31,8 @@ import (
 	"k8s.io/kubernetes/pkg/client/unversioned/remotecommand"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	remotecommandserver "k8s.io/kubernetes/pkg/kubelet/server/remotecommand"
+	"k8s.io/kubernetes/pkg/util/interrupt"
+	"k8s.io/kubernetes/pkg/util/term"
 )
 
 var (
@@ -51,15 +50,17 @@ var (
 
 func NewCmdExec(f *cmdutil.Factory, cmdIn io.Reader, cmdOut, cmdErr io.Writer) *cobra.Command {
 	options := &ExecOptions{
-		In:  cmdIn,
-		Out: cmdOut,
-		Err: cmdErr,
+		StreamOptions: StreamOptions{
+			In:  cmdIn,
+			Out: cmdOut,
+			Err: cmdErr,
+		},
 
 		Executor: &DefaultRemoteExecutor{},
 	}
 	cmd := &cobra.Command{
 		Use:     "exec POD [-c CONTAINER] -- COMMAND [args...]",
-		Short:   "Execute a command in a container.",
+		Short:   "Execute a command in a container",
 		Long:    "Execute a command in a container.",
 		Example: exec_example,
 		Run: func(cmd *cobra.Command, args []string) {
@@ -79,32 +80,49 @@ func NewCmdExec(f *cmdutil.Factory, cmdIn io.Reader, cmdOut, cmdErr io.Writer) *
 
 // RemoteExecutor defines the interface accepted by the Exec command - provided for test stubbing
 type RemoteExecutor interface {
-	Execute(method string, url *url.URL, config *restclient.Config, stdin io.Reader, stdout, stderr io.Writer, tty bool) error
+	Execute(method string, url *url.URL, config *restclient.Config, stdin io.Reader, stdout, stderr io.Writer, tty bool, terminalSizeQueue term.TerminalSizeQueue) error
 }
 
 // DefaultRemoteExecutor is the standard implementation of remote command execution
 type DefaultRemoteExecutor struct{}
 
-func (*DefaultRemoteExecutor) Execute(method string, url *url.URL, config *restclient.Config, stdin io.Reader, stdout, stderr io.Writer, tty bool) error {
+func (*DefaultRemoteExecutor) Execute(method string, url *url.URL, config *restclient.Config, stdin io.Reader, stdout, stderr io.Writer, tty bool, terminalSizeQueue term.TerminalSizeQueue) error {
 	exec, err := remotecommand.NewExecutor(config, method, url)
 	if err != nil {
 		return err
 	}
-	return exec.Stream(remotecommandserver.SupportedStreamingProtocols, stdin, stdout, stderr, tty)
+	return exec.Stream(remotecommand.StreamOptions{
+		SupportedProtocols: remotecommandserver.SupportedStreamingProtocols,
+		Stdin:              stdin,
+		Stdout:             stdout,
+		Stderr:             stderr,
+		Tty:                tty,
+		TerminalSizeQueue:  terminalSizeQueue,
+	})
 }
 
-// ExecOptions declare the arguments accepted by the Exec command
-type ExecOptions struct {
+type StreamOptions struct {
 	Namespace     string
 	PodName       string
 	ContainerName string
 	Stdin         bool
 	TTY           bool
-	Command       []string
+	// InterruptParent, if set, is used to handle interrupts while attached
+	InterruptParent *interrupt.Handler
+	In              io.Reader
+	Out             io.Writer
+	Err             io.Writer
 
-	In  io.Reader
-	Out io.Writer
-	Err io.Writer
+	// for testing
+	overrideStreams func() (io.ReadCloser, io.Writer, io.Writer)
+	isTerminalIn    func(t term.TTY) bool
+}
+
+// ExecOptions declare the arguments accepted by the Exec command
+type ExecOptions struct {
+	StreamOptions
+
+	Command []string
 
 	Executor RemoteExecutor
 	Client   *client.Client
@@ -169,6 +187,58 @@ func (p *ExecOptions) Validate() error {
 	return nil
 }
 
+func (o *StreamOptions) setupTTY() term.TTY {
+	t := term.TTY{
+		Parent: o.InterruptParent,
+		Out:    o.Out,
+	}
+
+	if !o.Stdin {
+		// need to nil out o.In to make sure we don't create a stream for stdin
+		o.In = nil
+		o.TTY = false
+		return t
+	}
+
+	t.In = o.In
+	if !o.TTY {
+		return t
+	}
+
+	if o.isTerminalIn == nil {
+		o.isTerminalIn = func(tty term.TTY) bool {
+			return tty.IsTerminalIn()
+		}
+	}
+	if !o.isTerminalIn(t) {
+		o.TTY = false
+
+		if o.Err != nil {
+			fmt.Fprintln(o.Err, "Unable to use a TTY - input is not a terminal or the right kind of file")
+		}
+
+		return t
+	}
+
+	// if we get to here, the user wants to attach stdin, wants a TTY, and o.In is a terminal, so we
+	// can safely set t.Raw to true
+	t.Raw = true
+
+	if o.overrideStreams == nil {
+		// use dockerterm.StdStreams() to get the right I/O handles on Windows
+		o.overrideStreams = dockerterm.StdStreams
+	}
+	stdin, stdout, _ := o.overrideStreams()
+	o.In = stdin
+	t.In = stdin
+	if o.Out != nil {
+		o.Out = stdout
+		t.Out = stdout
+	}
+
+	return t
+}
+
 // Run executes a validated remote execution against a pod.
 func (p *ExecOptions) Run() error {
 	pod, err := p.Client.Pods(p.Namespace).Get(p.PodName)
@@ -186,58 +256,42 @@ func (p *ExecOptions) Run() error {
 		containerName = pod.Spec.Containers[0].Name
 	}
 
-	// TODO: refactor with terminal helpers from the edit utility once that is merged
-	var stdin io.Reader
-	tty := p.TTY
-	if p.Stdin {
-		stdin = p.In
-		if tty {
-			if file, ok := stdin.(*os.File); ok {
-				inFd := file.Fd()
-				if term.IsTerminal(inFd) {
-					oldState, err := term.SetRawTerminal(inFd)
-					if err != nil {
-						glog.Fatal(err)
-					}
-					// this handles a clean exit, where the command finished
-					defer term.RestoreTerminal(inFd, oldState)
+	// ensure we can recover the terminal while attached
+	t := p.setupTTY()
 
-					// SIGINT is handled by term.SetRawTerminal (it runs a goroutine that listens
-					// for SIGINT and restores the terminal before exiting)
+	var sizeQueue term.TerminalSizeQueue
+	if t.Raw {
+		// this call spawns a goroutine to monitor/update the terminal size
+		sizeQueue = t.MonitorSize(t.GetSize())
 
-					// this handles SIGTERM
-					sigChan := make(chan os.Signal, 1)
-					signal.Notify(sigChan, syscall.SIGTERM)
-					go func() {
-						<-sigChan
-						term.RestoreTerminal(inFd, oldState)
-						os.Exit(0)
-					}()
-				} else {
-					fmt.Fprintln(p.Err, "STDIN is not a terminal")
-				}
-			} else {
-				tty = false
-				fmt.Fprintln(p.Err, "Unable to use a TTY - input is not the right kind of file")
-			}
-		}
+		// unset p.Err if it was previously set because both stdout and stderr go over p.Out when tty is
+		// true
+		p.Err = nil
 	}
 
-	// TODO: consider abstracting into a client invocation or client helper
-	req := p.Client.RESTClient.Post().
-		Resource("pods").
-		Name(pod.Name).
-		Namespace(pod.Namespace).
-		SubResource("exec").
-		Param("container", containerName)
-	req.VersionedParams(&api.PodExecOptions{
-		Container: containerName,
-		Command:   p.Command,
-		Stdin:     stdin != nil,
-		Stdout:    p.Out != nil,
-		Stderr:    p.Err != nil,
-		TTY:       tty,
-	}, api.ParameterCodec)
+	fn := func() error {
+		// TODO: consider abstracting into a client invocation or client helper
+		req := p.Client.RESTClient.Post().
+			Resource("pods").
+			Name(pod.Name).
+			Namespace(pod.Namespace).
+			SubResource("exec").
+			Param("container", containerName)
+		req.VersionedParams(&api.PodExecOptions{
+			Container: containerName,
+			Command:   p.Command,
+			Stdin:     p.Stdin,
+			Stdout:    p.Out != nil,
+			Stderr:    p.Err != nil,
+			TTY:       t.Raw,
+		}, api.ParameterCodec)
 
-	return p.Executor.Execute("POST", req.URL(), p.Config, stdin, p.Out, p.Err, tty)
+		return p.Executor.Execute("POST", req.URL(), p.Config, p.In, p.Out, p.Err, t.Raw, sizeQueue)
+	}
+
+	if err := t.Safe(fn); err != nil {
+		return err
+	}
+
+	return nil
 }

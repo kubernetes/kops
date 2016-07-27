@@ -19,13 +19,12 @@ package etcd
 import (
 	"k8s.io/kubernetes/pkg/api"
 	extensionsapi "k8s.io/kubernetes/pkg/apis/extensions"
-	"k8s.io/kubernetes/pkg/fields"
-	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/registry/cachesize"
 	"k8s.io/kubernetes/pkg/registry/generic"
 	"k8s.io/kubernetes/pkg/registry/generic/registry"
 	"k8s.io/kubernetes/pkg/registry/networkpolicy"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/storage"
 )
 
 // rest implements a RESTStorage for network policies against etcd
@@ -39,7 +38,14 @@ func NewREST(opts generic.RESTOptions) *REST {
 
 	newListFunc := func() runtime.Object { return &extensionsapi.NetworkPolicyList{} }
 	storageInterface := opts.Decorator(
-		opts.Storage, cachesize.GetWatchCacheSizeByResource(cachesize.NetworkPolicys), &extensionsapi.NetworkPolicy{}, prefix, networkpolicy.Strategy, newListFunc)
+		opts.Storage,
+		cachesize.GetWatchCacheSizeByResource(cachesize.NetworkPolicys),
+		&extensionsapi.NetworkPolicy{},
+		prefix,
+		networkpolicy.Strategy,
+		newListFunc,
+		storage.NoTriggerPublisher,
+	)
 
 	store := &registry.Store{
 		NewFunc: func() runtime.Object { return &extensionsapi.NetworkPolicy{} },
@@ -61,9 +67,7 @@ func NewREST(opts generic.RESTOptions) *REST {
 			return obj.(*extensionsapi.NetworkPolicy).Name, nil
 		},
 		// Used to match objects based on labels/fields for list and watch
-		PredicateFunc: func(label labels.Selector, field fields.Selector) generic.Matcher {
-			return networkpolicy.MatchNetworkPolicy(label, field)
-		},
+		PredicateFunc:           networkpolicy.MatchNetworkPolicy,
 		QualifiedResource:       extensionsapi.Resource("networkpolicies"),
 		DeleteCollectionWorkers: opts.DeleteCollectionWorkers,
 

@@ -18,8 +18,8 @@ var (
 	errResumableDigestNotAvailable = errors.New("resumable digest not available")
 )
 
-// layerWriter is used to control the various aspects of resumable
-// layer upload. It implements the LayerUpload interface.
+// blobWriter is used to control the various aspects of resumable
+// blob upload.
 type blobWriter struct {
 	ctx       context.Context
 	blobStore *linkedBlobStore
@@ -34,6 +34,7 @@ type blobWriter struct {
 	path       string
 
 	resumableDigestEnabled bool
+	committed              bool
 }
 
 var _ distribution.BlobWriter = &blobWriter{}
@@ -55,6 +56,9 @@ func (bw *blobWriter) Commit(ctx context.Context, desc distribution.Descriptor) 
 	if err := bw.fileWriter.Commit(); err != nil {
 		return distribution.Descriptor{}, err
 	}
+
+	bw.Close()
+	desc.Size = bw.Size()
 
 	canonical, err := bw.validateBlob(ctx, desc)
 	if err != nil {
@@ -78,22 +82,26 @@ func (bw *blobWriter) Commit(ctx context.Context, desc distribution.Descriptor) 
 		return distribution.Descriptor{}, err
 	}
 
+	bw.committed = true
 	return canonical, nil
 }
 
-// Rollback the blob upload process, releasing any resources associated with
+// Cancel the blob upload process, releasing any resources associated with
 // the writer and canceling the operation.
 func (bw *blobWriter) Cancel(ctx context.Context) error {
-	context.GetLogger(ctx).Debug("(*blobWriter).Rollback")
+	context.GetLogger(ctx).Debug("(*blobWriter).Cancel")
 	if err := bw.fileWriter.Cancel(); err != nil {
 		return err
+	}
+
+	if err := bw.Close(); err != nil {
+		context.GetLogger(ctx).Errorf("error closing blobwriter: %s", err)
 	}
 
 	if err := bw.removeResources(ctx); err != nil {
 		return err
 	}
 
-	bw.Close()
 	return nil
 }
 
@@ -130,7 +138,11 @@ func (bw *blobWriter) ReadFrom(r io.Reader) (n int64, err error) {
 }
 
 func (bw *blobWriter) Close() error {
-	if err := bw.storeHashState(bw.blobStore.ctx); err != nil {
+	if bw.committed {
+		return errors.New("blobwriter close after commit")
+	}
+
+	if err := bw.storeHashState(bw.blobStore.ctx); err != nil && err != errResumableDigestNotAvailable {
 		return err
 	}
 

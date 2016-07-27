@@ -1293,7 +1293,7 @@ func (s *Type) MarshalJSON() ([]byte, error) {
 // TypedValue: A single strongly-typed value.
 type TypedValue struct {
 	// BoolValue: A Boolean value: `true` or `false`.
-	BoolValue bool `json:"boolValue,omitempty"`
+	BoolValue *bool `json:"boolValue,omitempty"`
 
 	// DistributionValue: A distribution value.
 	DistributionValue *Distribution `json:"distributionValue,omitempty"`
@@ -1301,13 +1301,13 @@ type TypedValue struct {
 	// DoubleValue: A 64-bit double-precision floating-point number. Its
 	// magnitude is approximately ±10±300 and it has 16 significant digits
 	// of precision.
-	DoubleValue float64 `json:"doubleValue,omitempty"`
+	DoubleValue *float64 `json:"doubleValue,omitempty"`
 
 	// Int64Value: A 64-bit integer. Its range is approximately ±9.2x1018.
-	Int64Value int64 `json:"int64Value,omitempty,string"`
+	Int64Value *int64 `json:"int64Value,omitempty,string"`
 
 	// StringValue: A variable-length string value.
-	StringValue string `json:"stringValue,omitempty"`
+	StringValue *string `json:"stringValue,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "BoolValue") to
 	// unconditionally include in API requests. By default, fields with

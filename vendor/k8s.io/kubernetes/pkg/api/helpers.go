@@ -428,6 +428,10 @@ const (
 	// CreatedByAnnotation represents the key used to store the spec(json)
 	// used to create the resource.
 	CreatedByAnnotation = "kubernetes.io/created-by"
+
+	// PreferAvoidPodsAnnotationKey represents the key of preferAvoidPods data (json serialized)
+	// in the Annotations of a Node.
+	PreferAvoidPodsAnnotationKey string = "scheduler.alpha.kubernetes.io/preferAvoidPods"
 )
 
 // GetAffinityFromPod gets the json serialized affinity data from Pod.Annotations
@@ -470,7 +474,7 @@ func GetTaintsFromNodeAnnotations(annotations map[string]string) ([]Taint, error
 }
 
 // TolerationToleratesTaint checks if the toleration tolerates the taint.
-func TolerationToleratesTaint(toleration Toleration, taint Taint) bool {
+func TolerationToleratesTaint(toleration *Toleration, taint *Taint) bool {
 	if len(toleration.Effect) != 0 && toleration.Effect != taint.Effect {
 		return false
 	}
@@ -490,13 +494,24 @@ func TolerationToleratesTaint(toleration Toleration, taint Taint) bool {
 }
 
 // TaintToleratedByTolerations checks if taint is tolerated by any of the tolerations.
-func TaintToleratedByTolerations(taint Taint, tolerations []Toleration) bool {
+func TaintToleratedByTolerations(taint *Taint, tolerations []Toleration) bool {
 	tolerated := false
-	for _, toleration := range tolerations {
-		if TolerationToleratesTaint(toleration, taint) {
+	for i := range tolerations {
+		if TolerationToleratesTaint(&tolerations[i], taint) {
 			tolerated = true
 			break
 		}
 	}
 	return tolerated
+}
+
+func GetAvoidPodsFromNodeAnnotations(annotations map[string]string) (AvoidPods, error) {
+	var avoidPods AvoidPods
+	if len(annotations) > 0 && annotations[PreferAvoidPodsAnnotationKey] != "" {
+		err := json.Unmarshal([]byte(annotations[PreferAvoidPodsAnnotationKey]), &avoidPods)
+		if err != nil {
+			return avoidPods, err
+		}
+	}
+	return avoidPods, nil
 }

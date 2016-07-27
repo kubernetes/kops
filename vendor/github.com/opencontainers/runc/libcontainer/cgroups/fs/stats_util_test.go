@@ -110,4 +110,8 @@ func expectMemoryDataEquals(t *testing.T, expected, actual cgroups.MemoryData) {
 		logrus.Printf("Expected memory failcnt %d but found %d\n", expected.Failcnt, actual.Failcnt)
 		t.Fail()
 	}
+	if expected.Limit != actual.Limit {
+		logrus.Printf("Expected memory limit %d but found %d\n", expected.Limit, actual.Limit)
+		t.Fail()
+	}
 }

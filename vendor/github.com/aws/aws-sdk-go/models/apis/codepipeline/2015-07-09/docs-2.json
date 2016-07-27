@@ -19,6 +19,7 @@
     "PollForJobs": "<p>Returns information about any jobs for AWS CodePipeline to act upon.</p> <important> <p>When this API is called, AWS CodePipeline returns temporary credentials for the Amazon S3 bucket used to store artifacts for the pipeline, if the action requires access to that Amazon S3 bucket for input or output artifacts. Additionally, this API returns any secret values defined for the action.</p> </important>",
     "PollForThirdPartyJobs": "<p>Determines whether there are any third party jobs for a job worker to act on. Only used for partner actions.</p> <important> <p>When this API is called, AWS CodePipeline returns temporary credentials for the Amazon S3 bucket used to store artifacts for the pipeline, if the action requires access to that Amazon S3 bucket for input or output artifacts.</p> </important>",
     "PutActionRevision": "<p>Provides information to AWS CodePipeline about new revisions to a source.</p>",
+    "PutApprovalResult": "<p>Provides the response to a manual approval request to AWS CodePipeline. Valid responses include Approved and Rejected.</p>",
     "PutJobFailureResult": "<p>Represents the failure of a job as returned to the pipeline by a job worker. Only used for custom actions.</p>",
     "PutJobSuccessResult": "<p>Represents the success of a job as returned to the pipeline by a job worker. Only used for custom actions.</p>",
     "PutThirdPartyJobFailureResult": "<p>Represents the failure of a third party job as returned to the pipeline by a job worker. Only used for partner actions.</p>",
@@ -153,13 +154,20 @@
         "ActionExecution$status": "<p>The status of the action, or for a completed action, the last status of the action.</p>"
       }
     },
+    "ActionExecutionToken": {
+      "base": null,
+      "refs": {
+        "ActionExecution$token": "<p>The system-generated token used to identify a unique approval request. The token for each open approval request can be obtained using the GetPipelineState command and is used to validate that the approval request corresponding to this token is still valid.</p>"
+      }
+    },
     "ActionName": {
       "base": null,
       "refs": {
         "ActionContext$name": "<p>The name of the action within the context of a job.</p>",
         "ActionDeclaration$name": "<p>The action declaration's name.</p>",
         "ActionState$actionName": "<p>The name of the action.</p>",
-        "PutActionRevisionInput$actionName": "<p>The name of the action that will process the revision.</p>"
+        "PutActionRevisionInput$actionName": "<p>The name of the action that will process the revision.</p>",
+        "PutApprovalResultInput$actionName": "<p>The name of the action for which approval is requested.</p>"
       }
     },
     "ActionNotFoundException": {
@@ -241,6 +249,35 @@
       "refs": {
         "ActionType$settings": "<p>The settings for the action type.</p>",
         "CreateCustomActionTypeInput$settings": null
+      }
+    },
+    "ApprovalAlreadyCompletedException": {
+      "base": "<p>The approval action has already been approved or rejected.</p>",
+      "refs": {
+      }
+    },
+    "ApprovalResult": {
+      "base": "<p>Represents information about the result of an approval request.</p>",
+      "refs": {
+        "PutApprovalResultInput$result": "<p>Represents information about the result of the approval request.</p>"
+      }
+    },
+    "ApprovalStatus": {
+      "base": null,
+      "refs": {
+        "ApprovalResult$status": "<p>The response submitted by a reviewer assigned to an approval action request.</p>"
+      }
+    },
+    "ApprovalSummary": {
+      "base": null,
+      "refs": {
+        "ApprovalResult$summary": "<p>The summary of the current status of the approval request.</p>"
+      }
+    },
+    "ApprovalToken": {
+      "base": null,
+      "refs": {
+        "PutApprovalResultInput$token": "<p>The system-generated token used to identify a unique approval request. The token for each open approval request can be obtained using the <a>GetPipelineState</a> action and is used to validate that the approval request corresponding to this token is still valid.</p>"
       }
     },
     "Artifact": {
@@ -547,6 +584,11 @@
       "refs": {
       }
     },
+    "InvalidApprovalTokenException": {
+      "base": "<p>The approval request already received a response or has expired.</p>",
+      "refs": {
+      }
+    },
     "InvalidBlockerDeclarationException": {
       "base": "<p>Reserved for future use.</p>",
       "refs": {
@@ -648,6 +690,12 @@
         "TransitionState$lastChangedBy": "<p>The ID of the user who last changed the transition state.</p>"
       }
     },
+    "LastUpdatedBy": {
+      "base": null,
+      "refs": {
+        "ActionExecution$lastUpdatedBy": "<p>The ARN of the user who last changed the pipeline.</p>"
+      }
+    },
     "LimitExceededException": {
       "base": "<p>The number of pipelines associated with the AWS account has exceeded the limit allowed for the account.</p>",
       "refs": {
@@ -718,7 +766,7 @@
       }
     },
     "NotLatestPipelineExecutionException": {
-      "base": "<p>The stage has failed in a later pipeline run and the pipelineExecutionId associated with the request is out of date.</p>",
+      "base": "<p>The stage has failed in a later run of the pipeline and the pipelineExecutionId associated with the request is out of date.</p>",
       "refs": {
       }
     },
@@ -787,6 +835,7 @@
         "PipelineDeclaration$name": "<p>The name of the action to be performed.</p>",
         "PipelineSummary$name": "<p>The name of the pipeline.</p>",
         "PutActionRevisionInput$pipelineName": "<p>The name of the pipeline that will start processing the revision to the source.</p>",
+        "PutApprovalResultInput$pipelineName": "<p>The name of the pipeline that contains the action. </p>",
         "RetryStageExecutionInput$pipelineName": "<p>The name of the pipeline that contains the failed stage.</p>",
         "StartPipelineExecutionInput$name": "<p>The name of the pipeline to start.</p>"
       }
@@ -857,6 +906,16 @@
       "refs": {
       }
     },
+    "PutApprovalResultInput": {
+      "base": "<p>Represents the input of a put approval result action.</p>",
+      "refs": {
+      }
+    },
+    "PutApprovalResultOutput": {
+      "base": "<p>Represents the output of a put approval result action.</p>",
+      "refs": {
+      }
+    },
     "PutJobFailureResultInput": {
       "base": "<p>Represents the input of a put job failure result action.</p>",
       "refs": {
@@ -884,12 +943,12 @@
       }
     },
     "RetryStageExecutionInput": {
-      "base": "<p>Represents the input of a retry stage execution operation.</p>",
+      "base": "<p>Represents the input of a retry stage execution action.</p>",
       "refs": {
       }
     },
     "RetryStageExecutionOutput": {
-      "base": "<p>Represents the output of a retry stage execution operation.</p>",
+      "base": "<p>Represents the output of a retry stage execution action.</p>",
       "refs": {
       }
     },
@@ -987,6 +1046,7 @@
         "DisableStageTransitionInput$stageName": "<p>The name of the stage where you want to disable the inbound or outbound transition of artifacts.</p>",
         "EnableStageTransitionInput$stageName": "<p>The name of the stage where you want to enable the transition of artifacts, either into the stage (inbound) or from that stage to the next stage (outbound).</p>",
         "PutActionRevisionInput$stageName": "<p>The name of the stage that contains the action that will act upon the revision.</p>",
+        "PutApprovalResultInput$stageName": "<p>The name of the stage that contains the action.</p>",
         "RetryStageExecutionInput$stageName": "<p>The name of the failed stage to be retried.</p>",
         "StageContext$name": "<p>The name of the stage.</p>",
         "StageDeclaration$name": "<p>The name of the stage.</p>",
@@ -999,7 +1059,7 @@
       }
     },
     "StageNotRetryableException": {
-      "base": "<p>The specified stage can't be retried because the pipeline structure or stage state changed after the stage failed to complete, the stage contains no failed actions, one or more actions are still in progress, or another retry attempt is already in progress. </p>",
+      "base": "<p>The specified stage can't be retried because the pipeline structure or stage state changed after the stage was not completed; the stage contains no failed actions; one or more actions are still in progress; or another retry attempt is already in progress. </p>",
       "refs": {
       }
     },
@@ -1080,7 +1140,8 @@
         "GetPipelineStateOutput$created": "<p>The date and time the pipeline was created, in timestamp format.</p>",
         "GetPipelineStateOutput$updated": "<p>The date and time the pipeline was last updated, in timestamp format.</p>",
         "PipelineSummary$created": "<p>The date and time the pipeline was created, in timestamp format.</p>",
-        "PipelineSummary$updated": "<p>The date and time of the last update to the pipeline, in timestamp format.</p>"
+        "PipelineSummary$updated": "<p>The date and time of the last update to the pipeline, in timestamp format.</p>",
+        "PutApprovalResultOutput$approvedAt": "<p>The timestamp showing when the approval or rejection was submitted.</p>"
       }
     },
     "TransitionState": {

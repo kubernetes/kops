@@ -240,6 +240,23 @@
         {"shape":"ValidationException"}
       ]
     },
+    "PutApprovalResult":{
+      "name":"PutApprovalResult",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"PutApprovalResultInput"},
+      "output":{"shape":"PutApprovalResultOutput"},
+      "errors":[
+        {"shape":"InvalidApprovalTokenException"},
+        {"shape":"ApprovalAlreadyCompletedException"},
+        {"shape":"PipelineNotFoundException"},
+        {"shape":"StageNotFoundException"},
+        {"shape":"ActionNotFoundException"},
+        {"shape":"ValidationException"}
+      ]
+    },
     "PutJobFailureResult":{
       "name":"PutJobFailureResult",
       "http":{
@@ -493,6 +510,8 @@
         "status":{"shape":"ActionExecutionStatus"},
         "summary":{"shape":"ExecutionSummary"},
         "lastStatusChange":{"shape":"Timestamp"},
+        "token":{"shape":"ActionExecutionToken"},
+        "lastUpdatedBy":{"shape":"LastUpdatedBy"},
         "externalExecutionId":{"shape":"ExecutionId"},
         "externalExecutionUrl":{"shape":"Url"},
         "percentComplete":{"shape":"Percentage"},
@@ -507,6 +526,7 @@
         "Failed"
       ]
     },
+    "ActionExecutionToken":{"type":"string"},
     "ActionName":{
       "type":"string",
       "max":100,
@@ -613,6 +633,39 @@
         "executionUrlTemplate":{"shape":"UrlTemplate"},
         "revisionUrlTemplate":{"shape":"UrlTemplate"}
       }
+    },
+    "ApprovalAlreadyCompletedException":{
+      "type":"structure",
+      "members":{
+      },
+      "exception":true
+    },
+    "ApprovalResult":{
+      "type":"structure",
+      "required":[
+        "summary",
+        "status"
+      ],
+      "members":{
+        "summary":{"shape":"ApprovalSummary"},
+        "status":{"shape":"ApprovalStatus"}
+      }
+    },
+    "ApprovalStatus":{
+      "type":"string",
+      "enum":[
+        "Approved",
+        "Rejected"
+      ]
+    },
+    "ApprovalSummary":{
+      "type":"string",
+      "max":512,
+      "min":0
+    },
+    "ApprovalToken":{
+      "type":"string",
+      "pattern":"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
     },
     "Artifact":{
       "type":"structure",
@@ -956,6 +1009,12 @@
       },
       "exception":true
     },
+    "InvalidApprovalTokenException":{
+      "type":"structure",
+      "members":{
+      },
+      "exception":true
+    },
     "InvalidBlockerDeclarationException":{
       "type":"structure",
       "members":{
@@ -1062,6 +1121,7 @@
     },
     "LastChangedAt":{"type":"timestamp"},
     "LastChangedBy":{"type":"string"},
+    "LastUpdatedBy":{"type":"string"},
     "LimitExceededException":{
       "type":"structure",
       "members":{
@@ -1257,6 +1317,28 @@
       "members":{
         "newRevision":{"shape":"Boolean"},
         "pipelineExecutionId":{"shape":"PipelineExecutionId"}
+      }
+    },
+    "PutApprovalResultInput":{
+      "type":"structure",
+      "required":[
+        "pipelineName",
+        "stageName",
+        "actionName",
+        "result"
+      ],
+      "members":{
+        "pipelineName":{"shape":"PipelineName"},
+        "stageName":{"shape":"StageName"},
+        "actionName":{"shape":"ActionName"},
+        "result":{"shape":"ApprovalResult"},
+        "token":{"shape":"ApprovalToken"}
+      }
+    },
+    "PutApprovalResultOutput":{
+      "type":"structure",
+      "members":{
+        "approvedAt":{"shape":"Timestamp"}
       }
     },
     "PutJobFailureResultInput":{

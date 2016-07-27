@@ -37,7 +37,8 @@ func addDefaultingFuncs(scheme *runtime.Scheme) {
 }
 
 func addConversionFuncs(scheme *runtime.Scheme) {
-	scheme.AddConversionFuncs(
+	// Add non-generated conversion functions
+	err := scheme.AddConversionFuncs(
 		api.Convert_unversioned_TypeMeta_To_unversioned_TypeMeta,
 		api.Convert_unversioned_ListMeta_To_unversioned_ListMeta,
 		api.Convert_intstr_IntOrString_To_intstr_IntOrString,
@@ -53,4 +54,8 @@ func addConversionFuncs(scheme *runtime.Scheme) {
 		api.Convert_fields_Selector_To_string,
 		api.Convert_resource_Quantity_To_resource_Quantity,
 	)
+	if err != nil {
+		// If one of the conversion functions is malformed, detect it immediately.
+		panic(err)
+	}
 }

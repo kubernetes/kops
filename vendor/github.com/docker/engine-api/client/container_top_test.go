@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/docker/engine-api/types"
@@ -24,6 +25,7 @@ func TestContainerTopError(t *testing.T) {
 }
 
 func TestContainerTop(t *testing.T) {
+	expectedURL := "/containers/container_id/top"
 	expectedProcesses := [][]string{
 		{"p1", "p2"},
 		{"p3"},
@@ -32,6 +34,9 @@ func TestContainerTop(t *testing.T) {
 
 	client := &Client{
 		transport: newMockClient(nil, func(req *http.Request) (*http.Response, error) {
+			if !strings.HasPrefix(req.URL.Path, expectedURL) {
+				return nil, fmt.Errorf("Expected URL '%s', got '%s'", expectedURL, req.URL)
+			}
 			query := req.URL.Query()
 			args := query.Get("ps_args")
 			if args != "arg1 arg2" {

@@ -39,6 +39,8 @@ import (
 var (
 	runFor       = flag.Duration("run_for", 5*time.Second, "how long to run the load test for")
 	scratchTable = flag.String("scratch_table", "loadtest-scratch", "name of table to use; should not already exist")
+	csvOutput    = flag.String("csv_output", "",
+		"output path for statistics in .csv format. If this file already exists it will be overwritten.")
 
 	config      *cbtrc.Config
 	client      *bigtable.Client
@@ -63,6 +65,16 @@ func main() {
 	if flag.NArg() != 0 {
 		flag.Usage()
 		os.Exit(1)
+	}
+
+	var csvFile *os.File
+	if *csvOutput != "" {
+		csvFile, err = os.Create(*csvOutput)
+		if err != nil {
+			log.Fatalf("creating csv output file: %v", err)
+		}
+		defer csvFile.Close()
+		log.Printf("Writing statistics to %q ...", *csvOutput)
 	}
 
 	log.Printf("Dialing connections...")
@@ -133,8 +145,14 @@ func main() {
 	}
 	wg.Wait()
 
-	log.Printf("Reads (%d ok / %d tries):\n%v", reads.ok, reads.tries, stat.NewAggregate(reads.ds))
-	log.Printf("Writes (%d ok / %d tries):\n%v", writes.ok, writes.tries, stat.NewAggregate(writes.ds))
+	readsAgg := stat.NewAggregate("reads", reads.ds, reads.tries-reads.ok)
+	writesAgg := stat.NewAggregate("writes", writes.ds, writes.tries-writes.ok)
+	log.Printf("Reads (%d ok / %d tries):\n%v", reads.ok, reads.tries, readsAgg)
+	log.Printf("Writes (%d ok / %d tries):\n%v", writes.ok, writes.tries, writesAgg)
+
+	if csvFile != nil {
+		stat.WriteCSV([]*stat.Aggregate{readsAgg, writesAgg}, csvFile)
+	}
 }
 
 var allStats int64 // atomic
