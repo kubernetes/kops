@@ -21,7 +21,7 @@ import (
 type ServiceController struct {
 	util.Stoppable
 	kubeClient *client.CoreClient
-	scope        dns.Scope
+	scope      dns.Scope
 }
 
 // newServiceController creates a serviceController
@@ -32,7 +32,7 @@ func NewServiceController(kubeClient *client.CoreClient, dns dns.Context) (*Serv
 	}
 	c := &ServiceController{
 		kubeClient: kubeClient,
-		scope:        scope,
+		scope:      scope,
 	}
 
 	return c, nil
@@ -158,5 +158,5 @@ func (c *ServiceController) updateServiceRecords(service *v1.Service) {
 		glog.V(4).Infof("Service %q did not have %s annotation", service.Name, AnnotationNameDnsInternal)
 	}
 
-	c.scope.Replace( service.Name, records)
+	c.scope.Replace(service.Name, records)
 }
