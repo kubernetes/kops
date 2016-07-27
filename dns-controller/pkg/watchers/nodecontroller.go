@@ -20,7 +20,7 @@ import (
 type NodeController struct {
 	util.Stoppable
 	kubeClient *client.CoreClient
-	scope        dns.Scope
+	scope      dns.Scope
 }
 
 // newNodeController creates a nodeController
@@ -31,7 +31,7 @@ func NewNodeController(kubeClient *client.CoreClient, dns dns.Context) (*NodeCon
 	}
 	c := &NodeController{
 		kubeClient: kubeClient,
-		scope: scope,
+		scope:      scope,
 	}
 
 	return c, nil
