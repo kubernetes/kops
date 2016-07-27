@@ -381,7 +381,7 @@ func (c *CreateClusterCmd) Run(args []string) error {
 			fmt.Printf(" * edit your node instance group: kops edit ig --name=%s %s\n", clusterName, nodes[0].Name)
 		}
 		if len(masters) > 0 {
-			fmt.Printf(" * edit your master istance group: kops edit ig --name=%s %s\n", clusterName, masters[0].Name)
+			fmt.Printf(" * edit your master instance group: kops edit ig --name=%s %s\n", clusterName, masters[0].Name)
 		}
 		fmt.Printf("\n")
 		fmt.Printf("Finally configure your cluster with: kops update cluster %s --yes\n", clusterName)
