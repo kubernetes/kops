@@ -1,4 +1,7 @@
-# Upgrading from k8s 1.2
+# Upgrading from kubernetes 1.2 to kubernetes 1.3
+
+Kops let you upgrade an existing 1.2 cluster, installed using kube-up, to a cluster managed by
+kops running kubernetes version 1.3.
 
 ** This is an experimental and slightly risky procedure, so we recommend backing up important data before proceeding. 
 Take a snapshot of your EBS volumes; export all your data from kubectl etc. **
@@ -11,7 +14,7 @@ Limitations:
 
 ## Overview
 
-There are a few steps:
+There are a few steps to upgrade a kubernetes cluster from 1.2 to 1.3:
 
 * First you import the existing cluster state, so you can see and edit the configuration
 * You verify the cluster configuration
@@ -143,7 +146,3 @@ instance                kubernetes-master                       i-67af2ec8
 And once you've confirmed it looks right, run with `--yes`
 
 You will also need to release the old ElasticIP manually.
-
-Note that there is an issue in EC2/ELB: it seems that the NetworkInterfaces for the ELB aren't immediately deleted,
-and this prevents full teardown of the old resources (the subnet in particular).  A workaround is to delete
-the "Network Interfaces" for the old ELB subnet in the AWS console.
