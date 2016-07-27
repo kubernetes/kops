@@ -53,6 +53,14 @@ func (c *ImportClusterCmd) Run() error {
 		return err
 	}
 
+	cluster, err := clusterRegistry.Find(clusterName)
+	if err != nil {
+		return err
+	}
+	if cluster != nil {
+		return fmt.Errorf("cluster already exists: %q", clusterName)
+	}
+
 	d := &kutil.ImportCluster{}
 	d.ClusterName = clusterName
 	d.Cloud = cloud

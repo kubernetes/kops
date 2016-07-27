@@ -33,7 +33,6 @@ const (
 // (e.g. ELB dependencies).
 type DeleteCluster struct {
 	ClusterName string
-	Region      string
 	Cloud       fi.Cloud
 }
 
