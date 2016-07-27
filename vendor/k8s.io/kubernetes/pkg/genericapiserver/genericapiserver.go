@@ -372,16 +372,14 @@ func New(c *Config) (*GenericAPIServer, error) {
 		apiGroupsForDiscovery:     map[string]unversioned.APIGroup{},
 	}
 
-	var handlerContainer *restful.Container
 	if c.RestfulContainer != nil {
 		s.mux = c.RestfulContainer.ServeMux
-		handlerContainer = c.RestfulContainer
+		s.HandlerContainer = c.RestfulContainer
 	} else {
 		mux := http.NewServeMux()
 		s.mux = mux
-		handlerContainer = NewHandlerContainer(mux, c.Serializer)
+		s.HandlerContainer = NewHandlerContainer(mux, c.Serializer)
 	}
-	s.HandlerContainer = handlerContainer
 	// Use CurlyRouter to be able to use regular expressions in paths. Regular expressions are required in paths for example for proxy (where the path is proxy/{kind}/{name}/{*})
 	s.HandlerContainer.Router(restful.CurlyRouter{})
 	s.MuxHelper = &apiserver.MuxHelper{Mux: s.mux, RegisteredPaths: []string{}}
@@ -491,13 +489,13 @@ func (s *GenericAPIServer) init(c *Config) {
 
 	// After all wrapping is done, put a context filter around both handlers
 	if handler, err := api.NewRequestContextFilter(s.RequestContextMapper, s.Handler); err != nil {
-		glog.Fatalf("Could not initialize request context filter: %v", err)
+		glog.Fatalf("Could not initialize request context filter for s.Handler: %v", err)
 	} else {
 		s.Handler = handler
 	}
 
 	if handler, err := api.NewRequestContextFilter(s.RequestContextMapper, s.InsecureHandler); err != nil {
-		glog.Fatalf("Could not initialize request context filter: %v", err)
+		glog.Fatalf("Could not initialize request context filter for s.InsecureHandler: %v", err)
 	} else {
 		s.InsecureHandler = handler
 	}
@@ -658,7 +656,7 @@ func (s *GenericAPIServer) Run(options *options.ServerRunOptions) {
 	if s.enableSwaggerSupport {
 		s.InstallSwaggerAPI()
 	}
-	// We serve on 2 ports. See docs/accessing_the_api.md
+	// We serve on 2 ports. See docs/admin/accessing-the-api.md
 	secureLocation := ""
 	if options.SecurePort != 0 {
 		secureLocation = net.JoinHostPort(options.BindAddress.String(), strconv.Itoa(options.SecurePort))
@@ -750,8 +748,18 @@ func (s *GenericAPIServer) Run(options *options.ServerRunOptions) {
 		Handler:        apiserver.RecoverPanics(handler),
 		MaxHeaderBytes: 1 << 20,
 	}
+
 	glog.Infof("Serving insecurely on %s", insecureLocation)
-	glog.Fatal(http.ListenAndServe())
+	go func() {
+		defer utilruntime.HandleCrash()
+		for {
+			if err := http.ListenAndServe(); err != nil {
+				glog.Errorf("Unable to listen for insecure (%v); will try again.", err)
+			}
+			time.Sleep(15 * time.Second)
+		}
+	}()
+	select {}
 }
 
 // Exposes the given group version in API.
@@ -856,30 +864,30 @@ func (s *GenericAPIServer) getAPIGroupVersion(apiGroupInfo *APIGroupInfo, groupV
 	for k, v := range apiGroupInfo.VersionedResourcesStorageMap[groupVersion.Version] {
 		storage[strings.ToLower(k)] = v
 	}
-	version, err := s.newAPIGroupVersion(apiGroupInfo.GroupMeta, groupVersion)
+	version, err := s.newAPIGroupVersion(apiGroupInfo, groupVersion)
 	version.Root = apiPrefix
 	version.Storage = storage
-	version.ParameterCodec = apiGroupInfo.ParameterCodec
-	version.Serializer = apiGroupInfo.NegotiatedSerializer
-	version.Creater = apiGroupInfo.Scheme
-	version.Convertor = apiGroupInfo.Scheme
-	version.Copier = apiGroupInfo.Scheme
-	version.Typer = apiGroupInfo.Scheme
-	version.SubresourceGroupVersionKind = apiGroupInfo.SubresourceGroupVersionKind
 	return version, err
 }
 
-func (s *GenericAPIServer) newAPIGroupVersion(groupMeta apimachinery.GroupMeta, groupVersion unversioned.GroupVersion) (*apiserver.APIGroupVersion, error) {
+func (s *GenericAPIServer) newAPIGroupVersion(apiGroupInfo *APIGroupInfo, groupVersion unversioned.GroupVersion) (*apiserver.APIGroupVersion, error) {
 	return &apiserver.APIGroupVersion{
 		RequestInfoResolver: s.NewRequestInfoResolver(),
 
 		GroupVersion: groupVersion,
-		Linker:       groupMeta.SelfLinker,
-		Mapper:       groupMeta.RESTMapper,
 
-		Admit:   s.AdmissionControl,
-		Context: s.RequestContextMapper,
+		ParameterCodec: apiGroupInfo.ParameterCodec,
+		Serializer:     apiGroupInfo.NegotiatedSerializer,
+		Creater:        apiGroupInfo.Scheme,
+		Convertor:      apiGroupInfo.Scheme,
+		Copier:         apiGroupInfo.Scheme,
+		Typer:          apiGroupInfo.Scheme,
+		SubresourceGroupVersionKind: apiGroupInfo.SubresourceGroupVersionKind,
+		Linker: apiGroupInfo.GroupMeta.SelfLinker,
+		Mapper: apiGroupInfo.GroupMeta.RESTMapper,
 
+		Admit:             s.AdmissionControl,
+		Context:           s.RequestContextMapper,
 		MinRequestTimeout: s.MinRequestTimeout,
 	}, nil
 }
@@ -900,6 +908,13 @@ func (s *GenericAPIServer) InstallSwaggerAPI() {
 		ApiPath:         "/swaggerapi/",
 		SwaggerPath:     "/swaggerui/",
 		SwaggerFilePath: "/swagger-ui/",
+		SchemaFormatHandler: func(typeName string) string {
+			switch typeName {
+			case "unversioned.Time", "*unversioned.Time":
+				return "date-time"
+			}
+			return ""
+		},
 	}
 	swagger.RegisterSwaggerService(swaggerConfig, s.HandlerContainer)
 }

@@ -366,7 +366,9 @@
         {"shape":"InvalidOutputFolder"},
         {"shape":"InvalidParameters"},
         {"shape":"UnsupportedPlatformType"},
-        {"shape":"MaxDocumentSizeExceeded"}
+        {"shape":"MaxDocumentSizeExceeded"},
+        {"shape":"InvalidRole"},
+        {"shape":"InvalidNotificationConfig"}
       ]
     },
     "UpdateAssociationStatus":{
@@ -597,7 +599,9 @@
         "RequestedDateTime":{"shape":"DateTime"},
         "Status":{"shape":"CommandStatus"},
         "OutputS3BucketName":{"shape":"S3BucketName"},
-        "OutputS3KeyPrefix":{"shape":"S3KeyPrefix"}
+        "OutputS3KeyPrefix":{"shape":"S3KeyPrefix"},
+        "ServiceRole":{"shape":"ServiceRole"},
+        "NotificationConfig":{"shape":"NotificationConfig"}
       }
     },
     "CommandFilter":{
@@ -644,7 +648,9 @@
         "RequestedDateTime":{"shape":"DateTime"},
         "Status":{"shape":"CommandInvocationStatus"},
         "TraceOutput":{"shape":"InvocationTraceOutput"},
-        "CommandPlugins":{"shape":"CommandPluginList"}
+        "CommandPlugins":{"shape":"CommandPluginList"},
+        "ServiceRole":{"shape":"ServiceRole"},
+        "NotificationConfig":{"shape":"NotificationConfig"}
       }
     },
     "CommandInvocationList":{
@@ -1346,6 +1352,13 @@
       },
       "exception":true
     },
+    "InvalidNotificationConfig":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"}
+      },
+      "exception":true
+    },
     "InvalidOutputFolder":{
       "type":"structure",
       "members":{
@@ -1375,6 +1388,13 @@
     "InvalidResourceType":{
       "type":"structure",
       "members":{
+      },
+      "exception":true
+    },
+    "InvalidRole":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"String"}
       },
       "exception":true
     },
@@ -1521,6 +1541,37 @@
       }
     },
     "NextToken":{"type":"string"},
+    "NotificationArn":{"type":"string"},
+    "NotificationConfig":{
+      "type":"structure",
+      "members":{
+        "NotificationArn":{"shape":"NotificationArn"},
+        "NotificationEvents":{"shape":"NotificationEventList"},
+        "NotificationType":{"shape":"NotificationType"}
+      }
+    },
+    "NotificationEvent":{
+      "type":"string",
+      "enum":[
+        "All",
+        "InProgress",
+        "Success",
+        "TimedOut",
+        "Cancelled",
+        "Failed"
+      ]
+    },
+    "NotificationEventList":{
+      "type":"list",
+      "member":{"shape":"NotificationEvent"}
+    },
+    "NotificationType":{
+      "type":"string",
+      "enum":[
+        "Command",
+        "Invocation"
+      ]
+    },
     "ParameterName":{"type":"string"},
     "ParameterValue":{"type":"string"},
     "ParameterValueList":{
@@ -1626,7 +1677,9 @@
         "Comment":{"shape":"Comment"},
         "Parameters":{"shape":"Parameters"},
         "OutputS3BucketName":{"shape":"S3BucketName"},
-        "OutputS3KeyPrefix":{"shape":"S3KeyPrefix"}
+        "OutputS3KeyPrefix":{"shape":"S3KeyPrefix"},
+        "ServiceRoleArn":{"shape":"ServiceRole"},
+        "NotificationConfig":{"shape":"NotificationConfig"}
       }
     },
     "SendCommandResult":{
@@ -1635,6 +1688,7 @@
         "Command":{"shape":"Command"}
       }
     },
+    "ServiceRole":{"type":"string"},
     "StatusAdditionalInfo":{
       "type":"string",
       "max":1024

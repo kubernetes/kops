@@ -14,7 +14,6 @@
 package prometheus
 
 import (
-	"hash/fnv"
 	"testing"
 )
 
@@ -23,7 +22,6 @@ func TestDelete(t *testing.T) {
 	vec := MetricVec{
 		children: map[uint64]Metric{},
 		desc:     desc,
-		hash:     fnv.New64a(),
 		newMetric: func(lvs ...string) Metric {
 			return newValue(desc, UntypedValue, 0, lvs...)
 		},
@@ -63,7 +61,6 @@ func TestDeleteLabelValues(t *testing.T) {
 	vec := MetricVec{
 		children: map[uint64]Metric{},
 		desc:     desc,
-		hash:     fnv.New64a(),
 		newMetric: func(lvs ...string) Metric {
 			return newValue(desc, UntypedValue, 0, lvs...)
 		},

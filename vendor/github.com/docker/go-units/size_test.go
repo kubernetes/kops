@@ -67,6 +67,7 @@ func TestBytesSize(t *testing.T) {
 	assertEquals(t, "3.42 GiB", BytesSize(3.42*GiB))
 	assertEquals(t, "5.372 TiB", BytesSize(5.372*TiB))
 	assertEquals(t, "2.22 PiB", BytesSize(2.22*PiB))
+	assertEquals(t, "1.049e+06 YiB", BytesSize(KiB*KiB*KiB*KiB*KiB*PiB))
 }
 
 func TestHumanSize(t *testing.T) {
@@ -78,6 +79,7 @@ func TestHumanSize(t *testing.T) {
 	assertEquals(t, "3.42 GB", HumanSize(float64(3.42*GB)))
 	assertEquals(t, "5.372 TB", HumanSize(float64(5.372*TB)))
 	assertEquals(t, "2.22 PB", HumanSize(float64(2.22*PB)))
+	assertEquals(t, "1e+04 YB", HumanSize(float64(10000000000000*PB)))
 }
 
 func TestFromHumanSize(t *testing.T) {
@@ -93,13 +95,15 @@ func TestFromHumanSize(t *testing.T) {
 	assertSuccessEquals(t, 32*TB, FromHumanSize, "32Tb")
 	assertSuccessEquals(t, 32*PB, FromHumanSize, "32Pb")
 
+	assertSuccessEquals(t, 32.5*KB, FromHumanSize, "32.5kB")
+	assertSuccessEquals(t, 32.5*KB, FromHumanSize, "32.5 kB")
+	assertSuccessEquals(t, 32, FromHumanSize, "32.5 B")
+
 	assertError(t, FromHumanSize, "")
 	assertError(t, FromHumanSize, "hello")
 	assertError(t, FromHumanSize, "-32")
-	assertError(t, FromHumanSize, "32.3")
+	assertError(t, FromHumanSize, ".3kB")
 	assertError(t, FromHumanSize, " 32 ")
-	assertError(t, FromHumanSize, "32.3Kb")
-	assertError(t, FromHumanSize, "32 mb")
 	assertError(t, FromHumanSize, "32m b")
 	assertError(t, FromHumanSize, "32bm")
 }
@@ -119,13 +123,14 @@ func TestRAMInBytes(t *testing.T) {
 	assertSuccessEquals(t, 32*PiB, RAMInBytes, "32PB")
 	assertSuccessEquals(t, 32*PiB, RAMInBytes, "32P")
 
+	assertSuccessEquals(t, 32, RAMInBytes, "32.3")
+	tmp := 32.3 * MiB
+	assertSuccessEquals(t, int64(tmp), RAMInBytes, "32.3 mb")
+
 	assertError(t, RAMInBytes, "")
 	assertError(t, RAMInBytes, "hello")
 	assertError(t, RAMInBytes, "-32")
-	assertError(t, RAMInBytes, "32.3")
 	assertError(t, RAMInBytes, " 32 ")
-	assertError(t, RAMInBytes, "32.3Kb")
-	assertError(t, RAMInBytes, "32 mb")
 	assertError(t, RAMInBytes, "32m b")
 	assertError(t, RAMInBytes, "32bm")
 }

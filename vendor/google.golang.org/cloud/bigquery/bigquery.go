@@ -153,7 +153,8 @@ func (c *Client) executeQuery(ctx context.Context, q *Query, options ...ReadOpti
 
 func (c *Client) Dataset(id string) *Dataset {
 	return &Dataset{
-		id:     id,
-		client: c,
+		projectID: c.projectID,
+		id:        id,
+		service:   c.service,
 	}
 }

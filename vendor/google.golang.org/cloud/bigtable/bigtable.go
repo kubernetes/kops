@@ -26,10 +26,12 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/cloud"
 	btdpb "google.golang.org/cloud/bigtable/internal/data_proto"
+	"google.golang.org/cloud/bigtable/internal/option"
 	btspb "google.golang.org/cloud/bigtable/internal/service_proto"
 	"google.golang.org/cloud/internal/transport"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 )
 
 const prodAddr = "bigtable.googleapis.com:443"
@@ -46,10 +48,9 @@ type Client struct {
 
 // NewClient creates a new Client for a given project and instance.
 func NewClient(ctx context.Context, project, instance string, opts ...cloud.ClientOption) (*Client, error) {
-	o := []cloud.ClientOption{
-		cloud.WithEndpoint(prodAddr),
-		cloud.WithScopes(Scope),
-		cloud.WithUserAgent(clientUserAgent),
+	o, err := option.DefaultClientOptions(prodAddr, Scope, clientUserAgent)
+	if err != nil {
+		return nil, err
 	}
 	o = append(o, opts...)
 	conn, err := transport.DialGRPC(ctx, o...)
@@ -80,6 +81,9 @@ func (c *Client) fullTableName(table string) string {
 type Table struct {
 	c     *Client
 	table string
+
+	// Metadata to be sent with each request.
+	md metadata.MD
 }
 
 // Open opens a table.
@@ -87,6 +91,7 @@ func (c *Client) Open(table string) *Table {
 	return &Table{
 		c:     c,
 		table: table,
+		md:    metadata.Pairs(resourcePrefixHeader, c.fullTableName(table)),
 	}
 }
 
@@ -99,6 +104,7 @@ func (c *Client) Open(table string) *Table {
 // By default, the yielded rows will contain all values in all cells.
 // Use RowFilter to limit the cells returned.
 func (t *Table) ReadRows(ctx context.Context, arg RowSet, f func(Row) bool, opts ...ReadOption) error {
+	ctx = metadata.NewContext(ctx, t.md)
 	req := &btspb.ReadRowsRequest{
 		TableName: t.c.fullTableName(t.table),
 		Rows:      arg.proto(),
@@ -301,6 +307,7 @@ func (lr limitRows) set(req *btspb.ReadRowsRequest) { req.RowsLimit = lr.limit }
 
 // Apply applies a Mutation to a specific row.
 func (t *Table) Apply(ctx context.Context, row string, m *Mutation, opts ...ApplyOption) error {
+	ctx = metadata.NewContext(ctx, t.md)
 	after := func(res proto.Message) {
 		for _, o := range opts {
 			o.after(res)
@@ -444,6 +451,7 @@ func (m *Mutation) DeleteRow() {
 //
 // Conditional mutations cannot be applied in bulk and providing one will result in an error.
 func (t *Table) ApplyBulk(ctx context.Context, rowKeys []string, muts []*Mutation, opts ...ApplyOption) ([]error, error) {
+	ctx = metadata.NewContext(ctx, t.md)
 	if len(rowKeys) != len(muts) {
 		return nil, fmt.Errorf("mismatched rowKeys and mutation array lengths: %d, %d", len(rowKeys), len(muts))
 	}
@@ -515,6 +523,7 @@ func (ts Timestamp) Time() time.Time { return time.Unix(0, int64(ts)*1e3) }
 // ApplyReadModifyWrite applies a ReadModifyWrite to a specific row.
 // It returns the newly written cells.
 func (t *Table) ApplyReadModifyWrite(ctx context.Context, row string, m *ReadModifyWrite) (Row, error) {
+	ctx = metadata.NewContext(ctx, t.md)
 	req := &btspb.ReadModifyWriteRowRequest{
 		TableName: t.c.fullTableName(t.table),
 		RowKey:    []byte(row),

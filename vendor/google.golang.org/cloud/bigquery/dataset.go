@@ -18,8 +18,9 @@ import "golang.org/x/net/context"
 
 // Dataset is a reference to a BigQuery dataset.
 type Dataset struct {
-	id     string
-	client *Client
+	projectID string
+	id        string
+	service   service
 }
 
 // ListTables returns a list of all the tables contained in the Dataset.
@@ -27,7 +28,7 @@ func (d *Dataset) ListTables(ctx context.Context) ([]*Table, error) {
 	var tables []*Table
 
 	err := getPages("", func(pageToken string) (string, error) {
-		ts, tok, err := d.client.service.listTables(ctx, d.client.projectID, d.id, pageToken)
+		ts, tok, err := d.service.listTables(ctx, d.projectID, d.id, pageToken)
 		if err == nil {
 			tables = append(tables, ts...)
 		}

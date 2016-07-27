@@ -53,6 +53,7 @@ message Message {
 
   repeated uint64 key = 5;
   Nested nested = 6;
+  repeated Humour r_funny = 16;
 
   map<string, Nested> terrain = 10;
   testdata.SubDefaults proto2_field = 11;
@@ -61,6 +62,7 @@ message Message {
 
 message Nested {
   string bunny = 1;
+  bool cute = 2;
 }
 
 message MessageWithMap {

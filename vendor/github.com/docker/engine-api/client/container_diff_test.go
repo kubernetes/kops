@@ -3,8 +3,10 @@ package client
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/docker/engine-api/types"
@@ -23,8 +25,12 @@ func TestContainerDiffError(t *testing.T) {
 }
 
 func TestContainerDiff(t *testing.T) {
+	expectedURL := "/containers/container_id/changes"
 	client := &Client{
 		transport: newMockClient(nil, func(req *http.Request) (*http.Response, error) {
+			if !strings.HasPrefix(req.URL.Path, expectedURL) {
+				return nil, fmt.Errorf("Expected URL '%s', got '%s'", expectedURL, req.URL)
+			}
 			b, err := json.Marshal([]types.ContainerChange{
 				{
 					Kind: 0,

@@ -77,7 +77,7 @@ func NewCmdRun(f *cmdutil.Factory, cmdIn io.Reader, cmdOut, cmdErr io.Writer) *c
 		Use: "run NAME --image=image [--env=\"key=value\"] [--port=port] [--replicas=replicas] [--dry-run=bool] [--overrides=inline-json] [--command] -- [COMMAND] [args...]",
 		// run-container is deprecated
 		Aliases: []string{"run-container"},
-		Short:   "Run a particular image on the cluster.",
+		Short:   "Run a particular image on the cluster",
 		Long:    run_long,
 		Example: run_example,
 		Run: func(cmd *cobra.Command, args []string) {
@@ -117,9 +117,11 @@ func addRunFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool("expose", false, "If true, a public, external service is created for the container(s) which are run")
 	cmd.Flags().String("service-generator", "service/v2", "The name of the generator to use for creating a service.  Only used if --expose is true")
 	cmd.Flags().String("service-overrides", "", "An inline JSON override for the generated service object. If this is non-empty, it is used to override the generated object. Requires that the object supply a valid apiVersion field.  Only used if --expose is true.")
+	cmd.Flags().Bool("quiet", false, "If true, suppress prompt messages.")
 }
 
 func Run(f *cmdutil.Factory, cmdIn io.Reader, cmdOut, cmdErr io.Writer, cmd *cobra.Command, args []string, argsLenAtDash int) error {
+	quiet := cmdutil.GetFlagBool(cmd, "quiet")
 	if len(os.Args) > 1 && os.Args[1] == "run-container" {
 		printDeprecationWarning("run", "run-container")
 	}
@@ -224,11 +226,13 @@ func Run(f *cmdutil.Factory, cmdIn io.Reader, cmdOut, cmdErr io.Writer, cmd *cob
 
 	if attach {
 		opts := &AttachOptions{
-			In:    cmdIn,
-			Out:   cmdOut,
-			Err:   cmdErr,
-			Stdin: interactive,
-			TTY:   tty,
+			StreamOptions: StreamOptions{
+				In:    cmdIn,
+				Out:   cmdOut,
+				Err:   cmdErr,
+				Stdin: interactive,
+				TTY:   tty,
+			},
 
 			CommandName: cmd.Parent().CommandPath() + " attach",
 
@@ -250,7 +254,7 @@ func Run(f *cmdutil.Factory, cmdIn io.Reader, cmdOut, cmdErr io.Writer, cmd *cob
 		if err != nil {
 			return err
 		}
-		err = handleAttachPod(f, client, attachablePod, opts)
+		err = handleAttachPod(f, client, attachablePod, opts, quiet)
 		if err != nil {
 			return err
 		}
@@ -278,7 +282,7 @@ func Run(f *cmdutil.Factory, cmdIn io.Reader, cmdOut, cmdErr io.Writer, cmd *cob
 	}
 
 	outputFormat := cmdutil.GetFlagString(cmd, "output")
-	if outputFormat != "" {
+	if outputFormat != "" || cmdutil.GetDryRunFlag(cmd) {
 		return f.PrintObject(cmd, mapper, obj, cmdOut)
 	}
 	cmdutil.PrintSuccess(mapper, false, cmdOut, mapping.Resource, args[0], "created")
@@ -302,7 +306,7 @@ func contains(resourcesList map[string]*unversioned.APIResourceList, resource un
 	return false
 }
 
-func waitForPodRunning(c *client.Client, pod *api.Pod, out io.Writer) (status api.PodPhase, err error) {
+func waitForPodRunning(c *client.Client, pod *api.Pod, out io.Writer, quiet bool) (status api.PodPhase, err error) {
 	for {
 		pod, err := c.Pods(pod.Namespace).Get(pod.Name)
 		if err != nil {
@@ -324,14 +328,15 @@ func waitForPodRunning(c *client.Client, pod *api.Pod, out io.Writer) (status ap
 		if pod.Status.Phase == api.PodSucceeded || pod.Status.Phase == api.PodFailed {
 			return pod.Status.Phase, nil
 		}
-		fmt.Fprintf(out, "Waiting for pod %s/%s to be running, status is %s, pod ready: %v\n", pod.Namespace, pod.Name, pod.Status.Phase, ready)
+		if !quiet {
+			fmt.Fprintf(out, "Waiting for pod %s/%s to be running, status is %s, pod ready: %v\n", pod.Namespace, pod.Name, pod.Status.Phase, ready)
+		}
 		time.Sleep(2 * time.Second)
-		continue
 	}
 }
 
-func handleAttachPod(f *cmdutil.Factory, c *client.Client, pod *api.Pod, opts *AttachOptions) error {
-	status, err := waitForPodRunning(c, pod, opts.Out)
+func handleAttachPod(f *cmdutil.Factory, c *client.Client, pod *api.Pod, opts *AttachOptions, quiet bool) error {
+	status, err := waitForPodRunning(c, pod, opts.Out, quiet)
 	if err != nil {
 		return err
 	}
@@ -433,7 +438,7 @@ func generateService(f *cmdutil.Factory, cmd *cobra.Command, args []string, serv
 		return err
 	}
 
-	if cmdutil.GetFlagString(cmd, "output") != "" {
+	if cmdutil.GetFlagString(cmd, "output") != "" || cmdutil.GetDryRunFlag(cmd) {
 		return f.PrintObject(cmd, mapper, obj, out)
 	}
 	cmdutil.PrintSuccess(mapper, false, out, mapping.Resource, args[0], "created")

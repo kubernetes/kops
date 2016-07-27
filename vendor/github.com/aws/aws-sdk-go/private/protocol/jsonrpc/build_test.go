@@ -127,6 +127,7 @@ func (c *InputService1ProtocolTest) InputService1TestCaseOperation1Request(input
 	op := &request.Operation{
 		Name:       opInputService1TestCaseOperation1,
 		HTTPMethod: "POST",
+		HTTPPath:   "/",
 	}
 
 	if input == nil {
@@ -239,7 +240,8 @@ const opInputService2TestCaseOperation1 = "OperationName"
 //
 func (c *InputService2ProtocolTest) InputService2TestCaseOperation1Request(input *InputService2TestShapeInputService2TestCaseOperation1Input) (req *request.Request, output *InputService2TestShapeInputService2TestCaseOperation1Output) {
 	op := &request.Operation{
-		Name: opInputService2TestCaseOperation1,
+		Name:     opInputService2TestCaseOperation1,
+		HTTPPath: "/",
 	}
 
 	if input == nil {
@@ -352,7 +354,8 @@ const opInputService3TestCaseOperation1 = "OperationName"
 //
 func (c *InputService3ProtocolTest) InputService3TestCaseOperation1Request(input *InputService3TestShapeInputShape) (req *request.Request, output *InputService3TestShapeInputService3TestCaseOperation1Output) {
 	op := &request.Operation{
-		Name: opInputService3TestCaseOperation1,
+		Name:     opInputService3TestCaseOperation1,
+		HTTPPath: "/",
 	}
 
 	if input == nil {
@@ -399,7 +402,8 @@ const opInputService3TestCaseOperation2 = "OperationName"
 //
 func (c *InputService3ProtocolTest) InputService3TestCaseOperation2Request(input *InputService3TestShapeInputShape) (req *request.Request, output *InputService3TestShapeInputService3TestCaseOperation2Output) {
 	op := &request.Operation{
-		Name: opInputService3TestCaseOperation2,
+		Name:     opInputService3TestCaseOperation2,
+		HTTPPath: "/",
 	}
 
 	if input == nil {
@@ -521,6 +525,7 @@ func (c *InputService4ProtocolTest) InputService4TestCaseOperation1Request(input
 	op := &request.Operation{
 		Name:       opInputService4TestCaseOperation1,
 		HTTPMethod: "POST",
+		HTTPPath:   "/",
 	}
 
 	if input == nil {
@@ -633,7 +638,8 @@ const opInputService5TestCaseOperation1 = "OperationName"
 //
 func (c *InputService5ProtocolTest) InputService5TestCaseOperation1Request(input *InputService5TestShapeInputShape) (req *request.Request, output *InputService5TestShapeInputService5TestCaseOperation1Output) {
 	op := &request.Operation{
-		Name: opInputService5TestCaseOperation1,
+		Name:     opInputService5TestCaseOperation1,
+		HTTPPath: "/",
 	}
 
 	if input == nil {
@@ -680,7 +686,8 @@ const opInputService5TestCaseOperation2 = "OperationName"
 //
 func (c *InputService5ProtocolTest) InputService5TestCaseOperation2Request(input *InputService5TestShapeInputShape) (req *request.Request, output *InputService5TestShapeInputService5TestCaseOperation2Output) {
 	op := &request.Operation{
-		Name: opInputService5TestCaseOperation2,
+		Name:     opInputService5TestCaseOperation2,
+		HTTPPath: "/",
 	}
 
 	if input == nil {
@@ -727,7 +734,8 @@ const opInputService5TestCaseOperation3 = "OperationName"
 //
 func (c *InputService5ProtocolTest) InputService5TestCaseOperation3Request(input *InputService5TestShapeInputShape) (req *request.Request, output *InputService5TestShapeInputService5TestCaseOperation3Output) {
 	op := &request.Operation{
-		Name: opInputService5TestCaseOperation3,
+		Name:     opInputService5TestCaseOperation3,
+		HTTPPath: "/",
 	}
 
 	if input == nil {
@@ -774,7 +782,8 @@ const opInputService5TestCaseOperation4 = "OperationName"
 //
 func (c *InputService5ProtocolTest) InputService5TestCaseOperation4Request(input *InputService5TestShapeInputShape) (req *request.Request, output *InputService5TestShapeInputService5TestCaseOperation4Output) {
 	op := &request.Operation{
-		Name: opInputService5TestCaseOperation4,
+		Name:     opInputService5TestCaseOperation4,
+		HTTPPath: "/",
 	}
 
 	if input == nil {
@@ -821,7 +830,8 @@ const opInputService5TestCaseOperation5 = "OperationName"
 //
 func (c *InputService5ProtocolTest) InputService5TestCaseOperation5Request(input *InputService5TestShapeInputShape) (req *request.Request, output *InputService5TestShapeInputService5TestCaseOperation5Output) {
 	op := &request.Operation{
-		Name: opInputService5TestCaseOperation5,
+		Name:     opInputService5TestCaseOperation5,
+		HTTPPath: "/",
 	}
 
 	if input == nil {
@@ -868,7 +878,8 @@ const opInputService5TestCaseOperation6 = "OperationName"
 //
 func (c *InputService5ProtocolTest) InputService5TestCaseOperation6Request(input *InputService5TestShapeInputShape) (req *request.Request, output *InputService5TestShapeInputService5TestCaseOperation6Output) {
 	op := &request.Operation{
-		Name: opInputService5TestCaseOperation6,
+		Name:     opInputService5TestCaseOperation6,
+		HTTPPath: "/",
 	}
 
 	if input == nil {
@@ -1015,6 +1026,7 @@ func (c *InputService6ProtocolTest) InputService6TestCaseOperation1Request(input
 	op := &request.Operation{
 		Name:       opInputService6TestCaseOperation1,
 		HTTPMethod: "POST",
+		HTTPPath:   "/",
 	}
 
 	if input == nil {

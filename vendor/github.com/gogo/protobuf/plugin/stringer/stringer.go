@@ -126,6 +126,7 @@ func (p *stringer) Generate(file *generator.FileDescriptor) {
 	stringsPkg := p.NewImport("strings")
 	reflectPkg := p.NewImport("reflect")
 	sortKeysPkg := p.NewImport("github.com/gogo/protobuf/sortkeys")
+	protoPkg := p.NewImport("github.com/gogo/protobuf/proto")
 	for _, message := range file.Messages() {
 		if !gogoproto.IsStringer(file.FileDescriptorProto, message.DescriptorProto) {
 			continue
@@ -222,9 +223,9 @@ func (p *stringer) Generate(file *generator.FileDescriptor) {
 		}
 		if message.DescriptorProto.HasExtension() {
 			if gogoproto.HasExtensionsMap(file.FileDescriptorProto, message.DescriptorProto) {
-				p.P("`XXX_extensions:` + proto.StringFromExtensionsMap(this.XXX_extensions) + `,`,")
+				p.P("`XXX_InternalExtensions:` + ", protoPkg.Use(), ".StringFromInternalExtension(this) + `,`,")
 			} else {
-				p.P("`XXX_extensions:` + proto.StringFromExtensionsBytes(this.XXX_extensions) + `,`,")
+				p.P("`XXX_extensions:` + ", protoPkg.Use(), ".StringFromExtensionsBytes(this.XXX_extensions) + `,`,")
 			}
 		}
 		if gogoproto.HasUnrecognized(file.FileDescriptorProto, message.DescriptorProto) {

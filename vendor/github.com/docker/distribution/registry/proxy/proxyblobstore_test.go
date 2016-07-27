@@ -132,8 +132,15 @@ func makeTestEnv(t *testing.T, name string) *testEnv {
 		t.Fatalf("unable to create tempdir: %s", err)
 	}
 
+	localDriver, err := filesystem.FromParameters(map[string]interface{}{
+		"rootdirectory": truthDir,
+	})
+	if err != nil {
+		t.Fatalf("unable to create filesystem driver: %s", err)
+	}
+
 	// todo: create a tempfile area here
-	localRegistry, err := storage.NewRegistry(ctx, filesystem.New(truthDir), storage.BlobDescriptorCacheProvider(memory.NewInMemoryBlobDescriptorCacheProvider()), storage.EnableRedirect, storage.DisableDigestResumption)
+	localRegistry, err := storage.NewRegistry(ctx, localDriver, storage.BlobDescriptorCacheProvider(memory.NewInMemoryBlobDescriptorCacheProvider()), storage.EnableRedirect, storage.DisableDigestResumption)
 	if err != nil {
 		t.Fatalf("error creating registry: %v", err)
 	}
@@ -142,7 +149,14 @@ func makeTestEnv(t *testing.T, name string) *testEnv {
 		t.Fatalf("unexpected error getting repo: %v", err)
 	}
 
-	truthRegistry, err := storage.NewRegistry(ctx, filesystem.New(cacheDir), storage.BlobDescriptorCacheProvider(memory.NewInMemoryBlobDescriptorCacheProvider()))
+	cacheDriver, err := filesystem.FromParameters(map[string]interface{}{
+		"rootdirectory": cacheDir,
+	})
+	if err != nil {
+		t.Fatalf("unable to create filesystem driver: %s", err)
+	}
+
+	truthRegistry, err := storage.NewRegistry(ctx, cacheDriver, storage.BlobDescriptorCacheProvider(memory.NewInMemoryBlobDescriptorCacheProvider()))
 	if err != nil {
 		t.Fatalf("error creating registry: %v", err)
 	}

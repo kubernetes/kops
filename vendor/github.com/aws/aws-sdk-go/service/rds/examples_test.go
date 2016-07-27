@@ -105,6 +105,34 @@ func ExampleRDS_AuthorizeDBSecurityGroupIngress() {
 	fmt.Println(resp)
 }
 
+func ExampleRDS_CopyDBClusterParameterGroup() {
+	svc := rds.New(session.New())
+
+	params := &rds.CopyDBClusterParameterGroupInput{
+		SourceDBClusterParameterGroupIdentifier:  aws.String("String"), // Required
+		TargetDBClusterParameterGroupDescription: aws.String("String"), // Required
+		TargetDBClusterParameterGroupIdentifier:  aws.String("String"), // Required
+		Tags: []*rds.Tag{
+			{ // Required
+				Key:   aws.String("String"),
+				Value: aws.String("String"),
+			},
+			// More values...
+		},
+	}
+	resp, err := svc.CopyDBClusterParameterGroup(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
 func ExampleRDS_CopyDBClusterSnapshot() {
 	svc := rds.New(session.New())
 
@@ -223,8 +251,6 @@ func ExampleRDS_CreateDBCluster() {
 	params := &rds.CreateDBClusterInput{
 		DBClusterIdentifier: aws.String("String"), // Required
 		Engine:              aws.String("String"), // Required
-		MasterUserPassword:  aws.String("String"), // Required
-		MasterUsername:      aws.String("String"), // Required
 		AvailabilityZones: []*string{
 			aws.String("String"), // Required
 			// More values...
@@ -236,6 +262,8 @@ func ExampleRDS_CreateDBCluster() {
 		DatabaseName:                aws.String("String"),
 		EngineVersion:               aws.String("String"),
 		KmsKeyId:                    aws.String("String"),
+		MasterUserPassword:          aws.String("String"),
+		MasterUsername:              aws.String("String"),
 		OptionGroupName:             aws.String("String"),
 		Port:                        aws.Int64(1),
 		PreferredBackupWindow:       aws.String("String"),
@@ -1667,7 +1695,8 @@ func ExampleRDS_FailoverDBCluster() {
 	svc := rds.New(session.New())
 
 	params := &rds.FailoverDBClusterInput{
-		DBClusterIdentifier: aws.String("String"),
+		DBClusterIdentifier:        aws.String("String"),
+		TargetDBInstanceIdentifier: aws.String("String"),
 	}
 	resp, err := svc.FailoverDBCluster(params)
 

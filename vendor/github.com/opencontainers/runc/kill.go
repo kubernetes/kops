@@ -8,7 +8,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/codegangsta/cli"
+	"github.com/urfave/cli"
 )
 
 var signalMap = map[string]syscall.Signal{
@@ -52,25 +52,36 @@ var signalMap = map[string]syscall.Signal{
 var killCommand = cli.Command{
 	Name:  "kill",
 	Usage: "kill sends the specified signal (default: SIGTERM) to the container's init process",
-	Action: func(context *cli.Context) {
+	ArgsUsage: `<container-id> <signal>
+
+Where "<container-id>" is the name for the instance of the container and
+"<signal>" is the signal to be sent to the init process.
+
+EXAMPLE:
+For example, if the container id is "ubuntu01" the following will send a "KILL"
+signal to the init process of the "ubuntu01" container:
+	 
+       # runc kill ubuntu01 KILL`,
+	Action: func(context *cli.Context) error {
 		container, err := getContainer(context)
 		if err != nil {
-			fatal(err)
+			return err
 		}
 
-		sigstr := context.Args().First()
+		sigstr := context.Args().Get(1)
 		if sigstr == "" {
 			sigstr = "SIGTERM"
 		}
 
 		signal, err := parseSignal(sigstr)
 		if err != nil {
-			fatal(err)
+			return err
 		}
 
 		if err := container.Signal(signal); err != nil {
-			fatal(err)
+			return err
 		}
+		return nil
 	},
 }
 

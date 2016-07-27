@@ -3,6 +3,8 @@
 title = "Aliyun OSS storage driver"
 description = "Explains how to use the Aliyun OSS storage driver"
 keywords = ["registry, service, driver, images, storage, OSS, aliyun"]
+[menu.main]
+parent="smn_storagedrivers"
 +++
 <![end-metadata]-->
 

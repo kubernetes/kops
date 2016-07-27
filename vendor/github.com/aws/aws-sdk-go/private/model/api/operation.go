@@ -74,8 +74,8 @@ func (c *{{ .API.StructName }}) {{ .ExportedName }}Request(` +
 	op := &request.Operation{ {{ else }} op := &request.Operation{ {{ end }}	
 		Name:       op{{ .ExportedName }},
 		{{ if ne .HTTP.Method "" }}HTTPMethod: "{{ .HTTP.Method }}",
-		{{ end }}{{ if ne .HTTP.RequestURI "" }}HTTPPath:   "{{ .HTTP.RequestURI }}",
-		{{ end }}{{ if .Paginator }}Paginator: &request.Paginator{
+		{{ end }}HTTPPath: {{ if ne .HTTP.RequestURI "" }}"{{ .HTTP.RequestURI }}"{{ else }}"/"{{ end }},
+		{{ if .Paginator }}Paginator: &request.Paginator{
 				InputTokens: {{ .Paginator.InputTokensString }},
 				OutputTokens: {{ .Paginator.OutputTokensString }},
 				LimitToken: "{{ .Paginator.LimitKey }}",

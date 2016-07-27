@@ -18,12 +18,11 @@ package e2e_node
 
 import (
 	"fmt"
-	"io/ioutil"
-	"os"
 	"path"
 	"time"
 
 	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/kubelet/images"
 	"k8s.io/kubernetes/pkg/util"
 	"k8s.io/kubernetes/test/e2e/framework"
 
@@ -38,7 +37,7 @@ const (
 )
 
 var _ = framework.KubeDescribe("Container Runtime Conformance Test", func() {
-	f := NewDefaultFramework("runtime-conformance")
+	f := framework.NewDefaultFramework("runtime-conformance")
 
 	Describe("container runtime conformance blackbox test", func() {
 		Context("when starting a container that exits", func() {
@@ -58,9 +57,7 @@ var _ = framework.KubeDescribe("Container Runtime Conformance Test", func() {
 					{
 						Name: restartCountVolumeName,
 						VolumeSource: api.VolumeSource{
-							HostPath: &api.HostPathVolumeSource{
-								Path: os.TempDir(),
-							},
+							EmptyDir: &api.EmptyDirVolumeSource{Medium: api.StorageMediumMemory},
 						},
 					},
 				}
@@ -77,9 +74,6 @@ var _ = framework.KubeDescribe("Container Runtime Conformance Test", func() {
 					{"terminate-cmd-rpn", api.RestartPolicyNever, api.PodFailed, ContainerStateTerminated, 0, false},
 				}
 				for _, testCase := range testCases {
-					tmpFile, err := ioutil.TempFile("", "restartCount")
-					Expect(err).NotTo(HaveOccurred())
-					defer os.Remove(tmpFile.Name())
 
 					// It failed at the 1st run, then succeeded at 2nd run, then run forever
 					cmdScripts := `
@@ -93,14 +87,19 @@ if [ $count -eq 2 ]; then
 fi
 while true; do sleep 1; done
 `
-					tmpCmd := fmt.Sprintf(cmdScripts, path.Join(restartCountVolumePath, path.Base(tmpFile.Name())))
+					tmpCmd := fmt.Sprintf(cmdScripts, path.Join(restartCountVolumePath, "restartCount"))
 					testContainer.Name = testCase.Name
 					testContainer.Command = []string{"sh", "-c", tmpCmd}
 					terminateContainer := ConformanceContainer{
-						Framework:     f,
+						PodClient:     f.PodClient(),
 						Container:     testContainer,
 						RestartPolicy: testCase.RestartPolicy,
 						Volumes:       testVolumes,
+						PodSecurityContext: &api.PodSecurityContext{
+							SELinuxOptions: &api.SELinuxOptions{
+								Level: "s0",
+							},
+						},
 					}
 					terminateContainer.Create()
 					defer terminateContainer.Delete()
@@ -133,14 +132,18 @@ while true; do sleep 1; done
 				name := "termination-message-container"
 				terminationMessage := "DONE"
 				terminationMessagePath := "/dev/termination-log"
+				priv := true
 				c := ConformanceContainer{
-					Framework: f,
+					PodClient: f.PodClient(),
 					Container: api.Container{
 						Image:   ImageRegistry[busyBoxImage],
 						Name:    name,
 						Command: []string{"/bin/sh", "-c"},
 						Args:    []string{fmt.Sprintf("/bin/echo -n %s > %s", terminationMessage, terminationMessagePath)},
 						TerminationMessagePath: terminationMessagePath,
+						SecurityContext: &api.SecurityContext{
+							Privileged: &priv,
+						},
 					},
 					RestartPolicy: api.RestartPolicyNever,
 				}
@@ -187,44 +190,44 @@ while true; do sleep 1; done
 				image       string
 				secret      bool
 				phase       api.PodPhase
-				state       ContainerState
+				waiting     bool
 			}{
 				{
 					description: "should not be able to pull image from invalid registry",
 					image:       "invalid.com/invalid/alpine:3.1",
 					phase:       api.PodPending,
-					state:       ContainerStateWaiting,
+					waiting:     true,
 				},
 				{
 					description: "should not be able to pull non-existing image from gcr.io",
 					image:       "gcr.io/google_containers/invalid-image:invalid-tag",
 					phase:       api.PodPending,
-					state:       ContainerStateWaiting,
+					waiting:     true,
 				},
 				{
 					description: "should be able to pull image from gcr.io",
 					image:       NoPullImageRegistry[pullTestAlpineWithBash],
 					phase:       api.PodRunning,
-					state:       ContainerStateRunning,
+					waiting:     false,
 				},
 				{
 					description: "should be able to pull image from docker hub",
 					image:       NoPullImageRegistry[pullTestAlpine],
 					phase:       api.PodRunning,
-					state:       ContainerStateRunning,
+					waiting:     false,
 				},
 				{
 					description: "should not be able to pull from private registry without secret",
 					image:       NoPullImageRegistry[pullTestAuthenticatedAlpine],
 					phase:       api.PodPending,
-					state:       ContainerStateWaiting,
+					waiting:     true,
 				},
 				{
 					description: "should be able to pull from private registry with secret",
 					image:       NoPullImageRegistry[pullTestAuthenticatedAlpine],
 					secret:      true,
 					phase:       api.PodRunning,
-					state:       ContainerStateRunning,
+					waiting:     false,
 				},
 			} {
 				testCase := testCase
@@ -232,7 +235,7 @@ while true; do sleep 1; done
 					name := "image-pull-test"
 					command := []string{"/bin/sh", "-c", "while true; do sleep 1; done"}
 					container := ConformanceContainer{
-						Framework: f,
+						PodClient: f.PodClient(),
 						Container: api.Container{
 							Name:    name,
 							Image:   testCase.image,
@@ -259,15 +262,24 @@ while true; do sleep 1; done
 					// pod phase first, and the expected pod phase is Pending, the container status may not
 					// even show up when we check it.
 					By("check the container state")
-					getState := func() (ContainerState, error) {
+					checkContainerState := func() (bool, error) {
 						status, err := container.GetStatus()
 						if err != nil {
-							return ContainerStateUnknown, err
+							return false, err
 						}
-						return GetContainerState(status.State), nil
+						if !testCase.waiting && status.State.Running != nil {
+							return true, nil
+						}
+						if testCase.waiting && status.State.Waiting != nil {
+							reason := status.State.Waiting.Reason
+							return reason == images.ErrImagePull.Error() ||
+								reason == images.ErrImagePullBackOff.Error(), nil
+
+						}
+						return false, nil
 					}
-					Eventually(getState, retryTimeout, pollInterval).Should(Equal(testCase.state))
-					Consistently(getState, consistentCheckTimeout, pollInterval).Should(Equal(testCase.state))
+					Eventually(checkContainerState, retryTimeout, pollInterval).Should(BeTrue())
+					Consistently(checkContainerState, consistentCheckTimeout, pollInterval).Should(BeTrue())
 
 					By("check the pod phase")
 					Expect(container.GetPhase()).To(Equal(testCase.phase))

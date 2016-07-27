@@ -20,7 +20,7 @@ func closeResources(handler http.Handler, closers ...io.Closer) http.Handler {
 	})
 }
 
-// copyFullPayload copies the payload of a HTTP request to destWriter. If it
+// copyFullPayload copies the payload of an HTTP request to destWriter. If it
 // receives less content than expected, and the client disconnected during the
 // upload, it avoids sending a 400 error to keep the logs cleaner.
 func copyFullPayload(responseWriter http.ResponseWriter, r *http.Request, destWriter io.Writer, context ctxu.Context, action string, errSlice *errcode.Errors) error {

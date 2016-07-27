@@ -173,6 +173,7 @@ type plugin struct {
 	generator.PluginImports
 	fmtPkg   generator.Single
 	bytesPkg generator.Single
+	protoPkg generator.Single
 }
 
 func NewPlugin() *plugin {
@@ -191,6 +192,7 @@ func (p *plugin) Generate(file *generator.FileDescriptor) {
 	p.PluginImports = generator.NewPluginImports(p.Generator)
 	p.fmtPkg = p.NewImport("fmt")
 	p.bytesPkg = p.NewImport("bytes")
+	p.protoPkg = p.NewImport("github.com/gogo/protobuf/proto")
 
 	for _, msg := range file.Messages() {
 		if msg.DescriptorProto.GetOptions().GetMapEntry() {
@@ -495,16 +497,18 @@ func (p *plugin) generateMessage(file *generator.FileDescriptor, message *genera
 		}
 	}
 	if message.DescriptorProto.HasExtension() {
-		fieldname := "XXX_extensions"
 		if gogoproto.HasExtensionsMap(file.FileDescriptorProto, message.DescriptorProto) {
-			p.P(`for k, v := range this.`, fieldname, ` {`)
+			fieldname := "XXX_InternalExtensions"
+			p.P(`thismap := `, p.protoPkg.Use(), `.GetUnsafeExtensionsMap(this)`)
+			p.P(`thatmap := `, p.protoPkg.Use(), `.GetUnsafeExtensionsMap(that1)`)
+			p.P(`for k, v := range thismap {`)
 			p.In()
-			p.P(`if v2, ok := that1.`, fieldname, `[k]; ok {`)
+			p.P(`if v2, ok := thatmap[k]; ok {`)
 			p.In()
 			p.P(`if !v.Equal(&v2) {`)
 			p.In()
 			if verbose {
-				p.P(`return `, p.fmtPkg.Use(), `.Errorf("`, fieldname, ` this[%v](%v) Not Equal that[%v](%v)", k, this.`, fieldname, `[k], k, that1.`, fieldname, `[k])`)
+				p.P(`return `, p.fmtPkg.Use(), `.Errorf("`, fieldname, ` this[%v](%v) Not Equal that[%v](%v)", k, thismap[k], k, thatmap[k])`)
 			} else {
 				p.P(`return false`)
 			}
@@ -523,9 +527,9 @@ func (p *plugin) generateMessage(file *generator.FileDescriptor, message *genera
 			p.Out()
 			p.P(`}`)
 
-			p.P(`for k, _ := range that1.`, fieldname, ` {`)
+			p.P(`for k, _ := range thatmap {`)
 			p.In()
-			p.P(`if _, ok := this.`, fieldname, `[k]; !ok {`)
+			p.P(`if _, ok := thismap[k]; !ok {`)
 			p.In()
 			if verbose {
 				p.P(`return `, p.fmtPkg.Use(), `.Errorf("`, fieldname, `[%v] Not In this", k)`)
@@ -537,6 +541,7 @@ func (p *plugin) generateMessage(file *generator.FileDescriptor, message *genera
 			p.Out()
 			p.P(`}`)
 		} else {
+			fieldname := "XXX_extensions"
 			p.P(`if !`, p.bytesPkg.Use(), `.Equal(this.`, fieldname, `, that1.`, fieldname, `) {`)
 			p.In()
 			if verbose {

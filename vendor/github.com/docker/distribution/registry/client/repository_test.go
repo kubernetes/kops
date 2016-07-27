@@ -3,6 +3,7 @@ package client
 import (
 	"bytes"
 	"crypto/rand"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -605,6 +606,14 @@ func addTestManifestWithEtag(repo reference.Named, reference string, content []b
 	*m = append(*m, testutil.RequestResponseMapping{Request: getReqWithEtag, Response: getRespWithEtag})
 }
 
+func contentDigestString(mediatype string, content []byte) string {
+	if mediatype == schema1.MediaTypeSignedManifest {
+		m, _, _ := distribution.UnmarshalManifest(mediatype, content)
+		content = m.(*schema1.SignedManifest).Canonical
+	}
+	return digest.Canonical.FromBytes(content).String()
+}
+
 func addTestManifest(repo reference.Named, reference string, mediatype string, content []byte, m *testutil.RequestResponseMap) {
 	*m = append(*m, testutil.RequestResponseMapping{
 		Request: testutil.Request{
@@ -615,9 +624,10 @@ func addTestManifest(repo reference.Named, reference string, mediatype string, c
 			StatusCode: http.StatusOK,
 			Body:       content,
 			Headers: http.Header(map[string][]string{
-				"Content-Length": {fmt.Sprint(len(content))},
-				"Last-Modified":  {time.Now().Add(-1 * time.Second).Format(time.ANSIC)},
-				"Content-Type":   {mediatype},
+				"Content-Length":        {fmt.Sprint(len(content))},
+				"Last-Modified":         {time.Now().Add(-1 * time.Second).Format(time.ANSIC)},
+				"Content-Type":          {mediatype},
+				"Docker-Content-Digest": {contentDigestString(mediatype, content)},
 			}),
 		},
 	})
@@ -629,9 +639,10 @@ func addTestManifest(repo reference.Named, reference string, mediatype string, c
 		Response: testutil.Response{
 			StatusCode: http.StatusOK,
 			Headers: http.Header(map[string][]string{
-				"Content-Length": {fmt.Sprint(len(content))},
-				"Last-Modified":  {time.Now().Add(-1 * time.Second).Format(time.ANSIC)},
-				"Content-Type":   {mediatype},
+				"Content-Length":        {fmt.Sprint(len(content))},
+				"Last-Modified":         {time.Now().Add(-1 * time.Second).Format(time.ANSIC)},
+				"Content-Type":          {mediatype},
+				"Docker-Content-Digest": {digest.Canonical.FromBytes(content).String()},
 			}),
 		},
 	})
@@ -710,7 +721,8 @@ func TestV1ManifestFetch(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	manifest, err = ms.Get(ctx, dgst, distribution.WithTag("latest"))
+	var contentDigest digest.Digest
+	manifest, err = ms.Get(ctx, dgst, distribution.WithTag("latest"), ReturnContentDigest(&contentDigest))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -721,6 +733,10 @@ func TestV1ManifestFetch(t *testing.T) {
 
 	if err = checkEqualManifest(v1manifest, m1); err != nil {
 		t.Fatal(err)
+	}
+
+	if contentDigest != dgst {
+		t.Fatalf("Unexpected returned content digest %v, expected %v", contentDigest, dgst)
 	}
 
 	manifest, err = ms.Get(ctx, dgst, distribution.WithTag("badcontenttype"))
@@ -932,6 +948,78 @@ func TestManifestTags(t *testing.T) {
 		t.Fatalf("unexpected tags returned: %v", expected)
 	}
 	// TODO(dmcgowan): Check for error cases
+}
+
+func TestManifestTagsPaginated(t *testing.T) {
+	s := httptest.NewServer(http.NotFoundHandler())
+	defer s.Close()
+
+	repo, _ := reference.ParseNamed("test.example.com/repo/tags/list")
+	tagsList := []string{"tag1", "tag2", "funtag"}
+	var m testutil.RequestResponseMap
+	for i := 0; i < 3; i++ {
+		body, err := json.Marshal(map[string]interface{}{
+			"name": "test.example.com/repo/tags/list",
+			"tags": []string{tagsList[i]},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		queryParams := make(map[string][]string)
+		if i > 0 {
+			queryParams["n"] = []string{"1"}
+			queryParams["last"] = []string{tagsList[i-1]}
+		}
+		headers := http.Header(map[string][]string{
+			"Content-Length": {fmt.Sprint(len(body))},
+			"Last-Modified":  {time.Now().Add(-1 * time.Second).Format(time.ANSIC)},
+		})
+		if i < 2 {
+			headers.Set("Link", "<"+s.URL+"/v2/"+repo.Name()+"/tags/list?n=1&last="+tagsList[i]+`>; rel="next"`)
+		}
+		m = append(m, testutil.RequestResponseMapping{
+			Request: testutil.Request{
+				Method:      "GET",
+				Route:       "/v2/" + repo.Name() + "/tags/list",
+				QueryParams: queryParams,
+			},
+			Response: testutil.Response{
+				StatusCode: http.StatusOK,
+				Body:       body,
+				Headers:    headers,
+			},
+		})
+	}
+
+	s.Config.Handler = testutil.NewHandler(m)
+
+	r, err := NewRepository(context.Background(), repo, s.URL, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ctx := context.Background()
+	tagService := r.Tags(ctx)
+
+	tags, err := tagService.All(ctx)
+	if err != nil {
+		t.Fatal(tags, err)
+	}
+	if len(tags) != 3 {
+		t.Fatalf("Wrong number of tags returned: %d, expected 3", len(tags))
+	}
+
+	expected := map[string]struct{}{
+		"tag1":   {},
+		"tag2":   {},
+		"funtag": {},
+	}
+	for _, t := range tags {
+		delete(expected, t)
+	}
+	if len(expected) != 0 {
+		t.Fatalf("unexpected tags returned: %v", expected)
+	}
 }
 
 func TestManifestUnauthorized(t *testing.T) {

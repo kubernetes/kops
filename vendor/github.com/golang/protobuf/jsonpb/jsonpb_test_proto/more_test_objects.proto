@@ -50,4 +50,8 @@ message Mappy {
   map<int64, string> buggy = 4;
   map<bool, bool> booly = 5;
   map<string, Numeral> enumy = 6;
+  map<int32, bool> s32booly = 7;
+  map<int64, bool> s64booly = 8;
+  map<uint32, bool> u32booly = 9;
+  map<uint64, bool> u64booly = 10;
 }

@@ -3,7 +3,9 @@ package nsenter
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -18,41 +20,57 @@ type pid struct {
 	Pid int `json:"Pid"`
 }
 
-func TestNsenterAlivePid(t *testing.T) {
+func TestNsenterValidPaths(t *testing.T) {
 	args := []string{"nsenter-exec"}
 	parent, child, err := newPipe()
 	if err != nil {
 		t.Fatalf("failed to create pipe %v", err)
 	}
 
+	namespaces := []string{
+		// join pid ns of the current process
+		fmt.Sprintf("/proc/%d/ns/pid", os.Getpid()),
+	}
 	cmd := &exec.Cmd{
 		Path:       os.Args[0],
 		Args:       args,
 		ExtraFiles: []*os.File{child},
-		Env:        []string{"_LIBCONTAINER_INITTYPE=setns", "_LIBCONTAINER_INITPIPE=3"},
+		Env:        []string{"_LIBCONTAINER_INITPIPE=3"},
+		Stdout:     os.Stdout,
+		Stderr:     os.Stderr,
 	}
 
 	if err := cmd.Start(); err != nil {
 		t.Fatalf("nsenter failed to start %v", err)
 	}
+	// write cloneFlags
 	r := nl.NewNetlinkRequest(int(libcontainer.InitMsg), 0)
 	r.AddData(&libcontainer.Int32msg{
-		Type:  libcontainer.PidAttr,
-		Value: uint32(os.Getpid()),
+		Type:  libcontainer.CloneFlagsAttr,
+		Value: uint32(syscall.CLONE_NEWNET),
+	})
+	r.AddData(&libcontainer.Bytemsg{
+		Type:  libcontainer.NsPathsAttr,
+		Value: []byte(strings.Join(namespaces, ",")),
 	})
 	if _, err := io.Copy(parent, bytes.NewReader(r.Serialize())); err != nil {
 		t.Fatal(err)
 	}
+
 	decoder := json.NewDecoder(parent)
 	var pid *pid
-
-	if err := decoder.Decode(&pid); err != nil {
-		t.Fatalf("%v", err)
-	}
 
 	if err := cmd.Wait(); err != nil {
 		t.Fatalf("nsenter exits with a non-zero exit status")
 	}
+	if err := decoder.Decode(&pid); err != nil {
+		dir, _ := ioutil.ReadDir(fmt.Sprintf("/proc/%d/ns", os.Getpid()))
+		for _, d := range dir {
+			t.Log(d.Name())
+		}
+		t.Fatalf("%v", err)
+	}
+
 	p, err := os.FindProcess(pid.Pid)
 	if err != nil {
 		t.Fatalf("%v", err)
@@ -60,70 +78,43 @@ func TestNsenterAlivePid(t *testing.T) {
 	p.Wait()
 }
 
-func TestNsenterInvalidPid(t *testing.T) {
+func TestNsenterInvalidPaths(t *testing.T) {
 	args := []string{"nsenter-exec"}
 	parent, child, err := newPipe()
 	if err != nil {
 		t.Fatalf("failed to create pipe %v", err)
 	}
 
+	namespaces := []string{
+		// join pid ns of the current process
+		fmt.Sprintf("/proc/%d/ns/pid", -1),
+	}
 	cmd := &exec.Cmd{
 		Path:       os.Args[0],
 		Args:       args,
 		ExtraFiles: []*os.File{child},
-		Env:        []string{"_LIBCONTAINER_INITTYPE=setns", "_LIBCONTAINER_INITPIPE=3"},
+		Env:        []string{"_LIBCONTAINER_INITPIPE=3"},
 	}
 
 	if err := cmd.Start(); err != nil {
-		t.Fatal("nsenter exits with a zero exit status")
+		t.Fatal(err)
 	}
+	// write cloneFlags
 	r := nl.NewNetlinkRequest(int(libcontainer.InitMsg), 0)
 	r.AddData(&libcontainer.Int32msg{
-		Type:  libcontainer.PidAttr,
-		Value: 0,
+		Type:  libcontainer.CloneFlagsAttr,
+		Value: uint32(syscall.CLONE_NEWNET),
+	})
+	r.AddData(&libcontainer.Bytemsg{
+		Type:  libcontainer.NsPathsAttr,
+		Value: []byte(strings.Join(namespaces, ",")),
 	})
 	if _, err := io.Copy(parent, bytes.NewReader(r.Serialize())); err != nil {
 		t.Fatal(err)
 	}
 
 	if err := cmd.Wait(); err == nil {
-		t.Fatal("nsenter exits with a zero exit status")
-	}
-}
-
-func TestNsenterDeadPid(t *testing.T) {
-	deadCmd := exec.Command("true")
-	if err := deadCmd.Run(); err != nil {
-		t.Fatal(err)
-	}
-	args := []string{"nsenter-exec"}
-	parent, child, err := newPipe()
-	if err != nil {
-		t.Fatalf("failed to create pipe %v", err)
-	}
-
-	cmd := &exec.Cmd{
-		Path:       os.Args[0],
-		Args:       args,
-		ExtraFiles: []*os.File{child},
-		Env:        []string{"_LIBCONTAINER_INITTYPE=setns", "_LIBCONTAINER_INITPIPE=3"},
-	}
-
-	if err := cmd.Start(); err != nil {
-		t.Fatal("nsenter exits with a zero exit status")
-	}
-
-	r := nl.NewNetlinkRequest(int(libcontainer.InitMsg), 0)
-	r.AddData(&libcontainer.Int32msg{
-		Type:  libcontainer.PidAttr,
-		Value: uint32(deadCmd.Process.Pid),
-	})
-	if _, err := io.Copy(parent, bytes.NewReader(r.Serialize())); err != nil {
-		t.Fatal(err)
-	}
-
-	if err := cmd.Wait(); err == nil {
-		t.Fatal("nsenter exits with a zero exit status")
+		t.Fatalf("nsenter exits with a zero exit status")
 	}
 }
 
