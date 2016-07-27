@@ -35,7 +35,7 @@ type pageFetcherStub struct {
 	err error
 }
 
-func (pf *pageFetcherStub) fetch(ctx context.Context, c *Client, token string) (*readDataResult, error) {
+func (pf *pageFetcherStub) fetch(ctx context.Context, s service, token string) (*readDataResult, error) {
 	call, ok := pf.fetchResponses[token]
 	if !ok {
 		pf.err = fmt.Errorf("Unexpected page token: %q", token)
@@ -404,12 +404,12 @@ type delayedPageFetcher struct {
 	delayCount int
 }
 
-func (pf *delayedPageFetcher) fetch(ctx context.Context, c *Client, token string) (*readDataResult, error) {
+func (pf *delayedPageFetcher) fetch(ctx context.Context, s service, token string) (*readDataResult, error) {
 	if pf.delayCount > 0 {
 		pf.delayCount--
 		return nil, errIncompleteJob
 	}
-	return pf.pageFetcherStub.fetch(ctx, c, token)
+	return pf.pageFetcherStub.fetch(ctx, s, token)
 }
 
 func TestIterateIncompleteJob(t *testing.T) {

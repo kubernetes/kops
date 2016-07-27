@@ -68,50 +68,45 @@ const (
 
 // AdminClient is a client type for performing admin operations on a project's
 // buckets.
+//
+// Deprecated: Client has all of AdminClient's methods.
 type AdminClient struct {
-	hc        *http.Client
-	raw       *raw.Service
+	c         *Client
 	projectID string
 }
 
 // NewAdminClient creates a new AdminClient for a given project.
+//
+// Deprecated: use NewClient instead.
 func NewAdminClient(ctx context.Context, projectID string, opts ...cloud.ClientOption) (*AdminClient, error) {
 	c, err := NewClient(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return &AdminClient{
-		hc:        c.hc,
-		raw:       c.raw,
+		c:         c,
 		projectID: projectID,
 	}, nil
 }
 
 // Close closes the AdminClient.
 func (c *AdminClient) Close() error {
-	c.hc = nil
-	return nil
+	return c.c.Close()
 }
 
 // Create creates a Bucket in the project.
 // If attrs is nil the API defaults will be used.
+//
+// Deprecated: use BucketHandle.Create instead.
 func (c *AdminClient) CreateBucket(ctx context.Context, bucketName string, attrs *BucketAttrs) error {
-	var bkt *raw.Bucket
-	if attrs != nil {
-		bkt = attrs.toRawBucket()
-	} else {
-		bkt = &raw.Bucket{}
-	}
-	bkt.Name = bucketName
-	req := c.raw.Buckets.Insert(c.projectID, bkt)
-	_, err := req.Context(ctx).Do()
-	return err
+	return c.c.Bucket(bucketName).Create(ctx, c.projectID, attrs)
 }
 
 // Delete deletes a Bucket in the project.
+//
+// Deprecated: use BucketHandle.Delete instead.
 func (c *AdminClient) DeleteBucket(ctx context.Context, bucketName string) error {
-	req := c.raw.Buckets.Delete(bucketName)
-	return req.Context(ctx).Do()
+	return c.c.Bucket(bucketName).Delete(ctx)
 }
 
 // Client is a client for interacting with Google Cloud Storage.
@@ -178,6 +173,27 @@ func (c *Client) Bucket(name string) *BucketHandle {
 			isDefault: true,
 		},
 	}
+}
+
+// Create creates the Bucket in the project.
+// If attrs is nil the API defaults will be used.
+func (b *BucketHandle) Create(ctx context.Context, projectID string, attrs *BucketAttrs) error {
+	var bkt *raw.Bucket
+	if attrs != nil {
+		bkt = attrs.toRawBucket()
+	} else {
+		bkt = &raw.Bucket{}
+	}
+	bkt.Name = b.name
+	req := b.c.raw.Buckets.Insert(projectID, bkt)
+	_, err := req.Context(ctx).Do()
+	return err
+}
+
+// Delete deletes the Bucket.
+func (b *BucketHandle) Delete(ctx context.Context) error {
+	req := b.c.raw.Buckets.Delete(b.name)
+	return req.Context(ctx).Do()
 }
 
 // ACL returns an ACLHandle, which provides access to the bucket's access control list.

@@ -183,7 +183,7 @@ func TestFileReaderNonExistentFile(t *testing.T) {
 // conditions that can arise when reading a layer.
 func TestFileReaderErrors(t *testing.T) {
 	// TODO(stevvooe): We need to cover error return types, driven by the
-	// errors returned via the HTTP API. For now, here is a incomplete list:
+	// errors returned via the HTTP API. For now, here is an incomplete list:
 	//
 	// 	1. Layer Not Found: returned when layer is not found or access is
 	//        denied.

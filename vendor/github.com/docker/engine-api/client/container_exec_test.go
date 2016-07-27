@@ -80,8 +80,12 @@ func TestContainerExecStartError(t *testing.T) {
 }
 
 func TestContainerExecStart(t *testing.T) {
+	expectedURL := "/exec/exec_id/start"
 	client := &Client{
 		transport: newMockClient(nil, func(req *http.Request) (*http.Response, error) {
+			if !strings.HasPrefix(req.URL.Path, expectedURL) {
+				return nil, fmt.Errorf("Expected URL '%s', got '%s'", expectedURL, req.URL)
+			}
 			if err := req.ParseForm(); err != nil {
 				return nil, err
 			}
@@ -120,8 +124,12 @@ func TestContainerExecInspectError(t *testing.T) {
 }
 
 func TestContainerExecInspect(t *testing.T) {
+	expectedURL := "/exec/exec_id/json"
 	client := &Client{
 		transport: newMockClient(nil, func(req *http.Request) (*http.Response, error) {
+			if !strings.HasPrefix(req.URL.Path, expectedURL) {
+				return nil, fmt.Errorf("Expected URL '%s', got '%s'", expectedURL, req.URL)
+			}
 			b, err := json.Marshal(types.ContainerExecInspect{
 				ExecID:      "exec_id",
 				ContainerID: "container_id",

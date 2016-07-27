@@ -23,7 +23,7 @@ import (
 )
 
 // Entities with more than this many indexed properties will not be saved.
-const maxIndexedProperties = 5000
+const maxIndexedProperties = 20000
 
 // []byte fields more than 1 megabyte long will not be loaded or saved.
 const maxBlobLen = 1 << 20

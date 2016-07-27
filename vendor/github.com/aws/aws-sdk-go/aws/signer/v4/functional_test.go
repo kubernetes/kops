@@ -55,12 +55,13 @@ func TestPresignRequest(t *testing.T) {
 	assert.NoError(t, err)
 
 	expectedDate := "19700101T000000Z"
-	expectedHeaders := "content-disposition;host;x-amz-acl"
-	expectedSig := "b2754ba8ffeb74a40b94767017e24c4672107d6d5a894648d5d332ca61f5ffe4"
+	expectedHeaders := "content-disposition;host;x-amz-acl;x-amz-content-sha256"
+	expectedSig := "0d200ba61501d752acd06f39ef4dbe7d83ffd5ea15978dc3476dfc00b8eb574e"
 	expectedCred := "AKID/19700101/mock-region/s3/aws4_request"
 	expectedHeaderMap := http.Header{
-		"x-amz-acl":           []string{"public-read"},
-		"content-disposition": []string{"a+b c$d"},
+		"x-amz-acl":            []string{"public-read"},
+		"content-disposition":  []string{"a+b c$d"},
+		"x-amz-content-sha256": []string{"UNSIGNED-PAYLOAD"},
 	}
 
 	u, _ := url.Parse(urlstr)

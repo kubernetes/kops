@@ -3,33 +3,62 @@ package client
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/docker/engine-api/types"
 	"golang.org/x/net/context"
 )
 
-func infoMock(req *http.Request) (*http.Response, error) {
-	info := &types.Info{
-		ID:         "daemonID",
-		Containers: 3,
+func TestInfoServerError(t *testing.T) {
+	client := &Client{
+		transport: newMockClient(nil, errorMock(http.StatusInternalServerError, "Server error")),
 	}
-	b, err := json.Marshal(info)
-	if err != nil {
-		return nil, err
+	_, err := client.Info(context.Background())
+	if err == nil || err.Error() != "Error response from daemon: Server error" {
+		t.Fatalf("expected a Server Error, got %v", err)
 	}
+}
 
-	return &http.Response{
-		StatusCode: http.StatusOK,
-		Body:       ioutil.NopCloser(bytes.NewReader(b)),
-	}, nil
+func TestInfoInvalidResponseJSONError(t *testing.T) {
+	client := &Client{
+		transport: newMockClient(nil, func(req *http.Request) (*http.Response, error) {
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(bytes.NewReader([]byte("invalid json"))),
+			}, nil
+		}),
+	}
+	_, err := client.Info(context.Background())
+	if err == nil || !strings.Contains(err.Error(), "invalid character") {
+		t.Fatalf("expected a 'invalid character' error, got %v", err)
+	}
 }
 
 func TestInfo(t *testing.T) {
+	expectedURL := "/info"
 	client := &Client{
-		transport: newMockClient(nil, infoMock),
+		transport: newMockClient(nil, func(req *http.Request) (*http.Response, error) {
+			if !strings.HasPrefix(req.URL.Path, expectedURL) {
+				return nil, fmt.Errorf("Expected URL '%s', got '%s'", expectedURL, req.URL)
+			}
+			info := &types.Info{
+				ID:         "daemonID",
+				Containers: 3,
+			}
+			b, err := json.Marshal(info)
+			if err != nil {
+				return nil, err
+			}
+
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(bytes.NewReader(b)),
+			}, nil
+		}),
 	}
 
 	info, err := client.Info(context.Background())

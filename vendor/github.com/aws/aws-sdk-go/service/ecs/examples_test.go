@@ -560,7 +560,8 @@ func ExampleECS_RegisterTaskDefinition() {
 			},
 			// More values...
 		},
-		Family: aws.String("String"), // Required
+		Family:      aws.String("String"), // Required
+		TaskRoleArn: aws.String("String"),
 		Volumes: []*ecs.Volume{
 			{ // Required
 				Host: &ecs.HostVolumeProperties{
@@ -609,6 +610,7 @@ func ExampleECS_RunTask() {
 				},
 				// More values...
 			},
+			TaskRoleArn: aws.String("String"),
 		},
 		StartedBy: aws.String("String"),
 	}
@@ -653,6 +655,7 @@ func ExampleECS_StartTask() {
 				},
 				// More values...
 			},
+			TaskRoleArn: aws.String("String"),
 		},
 		StartedBy: aws.String("String"),
 	}

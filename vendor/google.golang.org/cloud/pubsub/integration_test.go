@@ -125,7 +125,7 @@ func TestAll(t *testing.T) {
 	for i := 0; i < len(want); i++ {
 		m, err := it.Next()
 		if err != nil {
-			t.Fatalf("error getting next message:", err)
+			t.Fatalf("error getting next message: %v", err)
 		}
 		md := extractMessageData(m)
 		got[md.ID] = md

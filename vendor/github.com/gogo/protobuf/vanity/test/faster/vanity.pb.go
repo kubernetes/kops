@@ -27,7 +27,9 @@ var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
-const _ = proto.GoGoProtoPackageIsVersion1
+// A compilation error at this line likely means your copy of the
+// proto package needs to be updated.
+const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 
 type A struct {
 	Strings string `protobuf:"bytes,1,opt,name=Strings,json=strings" json:"Strings"`
@@ -337,6 +339,8 @@ var (
 	ErrInvalidLengthVanity = fmt.Errorf("proto: negative length found during unmarshaling")
 	ErrIntOverflowVanity   = fmt.Errorf("proto: integer overflow")
 )
+
+func init() { proto.RegisterFile("vanity.proto", fileDescriptorVanity) }
 
 var fileDescriptorVanity = []byte{
 	// 110 bytes of a gzipped FileDescriptorProto

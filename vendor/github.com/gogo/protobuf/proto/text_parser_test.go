@@ -336,6 +336,16 @@ var unMarshalTextTests = []UnmarshalTextTest{
 		},
 	},
 
+	// Missing required field in a required submessage
+	{
+		in:  `count: 42 we_must_go_deeper < leo_finally_won_an_oscar <> >`,
+		err: `proto: required field "testdata.InnerMessage.host" not set`,
+		out: &MyMessage{
+			Count:          Int32(42),
+			WeMustGoDeeper: &RequiredInnerMessage{LeoFinallyWonAnOscar: &InnerMessage{}},
+		},
+	},
+
 	// Repeated non-repeated field
 	{
 		in:  `name: "Rob" name: "Russ"`,
@@ -498,7 +508,10 @@ func TestMapParsing(t *testing.T) {
 	const in = `name_mapping:<key:1234 value:"Feist"> name_mapping:<key:1 value:"Beatles">` +
 		`msg_mapping:<key:-4, value:<f: 2.0>,>` + // separating commas are okay
 		`msg_mapping<key:-2 value<f: 4.0>>` + // no colon after "value"
-		`byte_mapping:<key:true value:"so be it">`
+		`msg_mapping:<value:<f: 5.0>>` + // omitted key
+		`msg_mapping:<key:1>` + // omitted value
+		`byte_mapping:<key:true value:"so be it">` +
+		`byte_mapping:<>` // omitted key and value
 	want := &MessageWithMap{
 		NameMapping: map[int32]string{
 			1:    "Beatles",
@@ -507,9 +520,12 @@ func TestMapParsing(t *testing.T) {
 		MsgMapping: map[int64]*FloatingPoint{
 			-4: {F: Float64(2.0)},
 			-2: {F: Float64(4.0)},
+			0:  {F: Float64(5.0)},
+			1:  nil,
 		},
 		ByteMapping: map[bool][]byte{
-			true: []byte("so be it"),
+			false: nil,
+			true:  []byte("so be it"),
 		},
 	}
 	if err := UnmarshalText(in, m); err != nil {

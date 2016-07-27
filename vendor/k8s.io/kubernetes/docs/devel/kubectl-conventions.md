@@ -2,15 +2,15 @@
 
 <!-- BEGIN STRIP_FOR_RELEASE -->
 
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
-<img src="http://kubernetes.io/img/warning.png" alt="WARNING"
+<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
      width="25" height="25">
 
 <h2>PLEASE NOTE: This document applies to the HEAD of the source tree</h2>
@@ -125,6 +125,9 @@ flags and separate help that is tailored for the particular usage.
 * Flag names and single-character aliases should have the same meaning across
 all commands
 
+* Flag descriptions should start with an uppercase letter and not have a
+period at the end of a sentence
+
 * Command-line flags corresponding to API fields should accept API enums
 exactly (e.g., `--restart=Always`)
 
@@ -233,9 +236,16 @@ resources in other commands
 an exhaustive specification
 
   * Short should contain a one-line explanation of what the command does
+    * Short descriptions should start with an uppercase case letter and not
+    have a period at the end of a sentence
+    * Short descriptions should (if possible) start with a first person
+    (singular present tense) verb
 
   * Long may contain multiple lines, including additional information about
 input, output, commonly used flags, etc.
+    * Long descriptions should use proper grammar, start with an uppercase
+    letter and have a period at the end of a sentence
+
 
   * Example should contain examples
     * Start commands with `$`

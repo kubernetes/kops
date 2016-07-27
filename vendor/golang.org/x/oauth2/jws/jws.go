@@ -64,7 +64,7 @@ func (c *ClaimSet) encode() (string, error) {
 	}
 
 	if len(c.PrivateClaims) == 0 {
-		return base64Encode(b), nil
+		return base64.RawURLEncoding.EncodeToString(b), nil
 	}
 
 	// Marshal private claim set and then append it to b.
@@ -82,7 +82,7 @@ func (c *ClaimSet) encode() (string, error) {
 	}
 	b[len(b)-1] = ','         // Replace closing curly brace with a comma.
 	b = append(b, prv[1:]...) // Append private claims.
-	return base64Encode(b), nil
+	return base64.RawURLEncoding.EncodeToString(b), nil
 }
 
 // Header represents the header for the signed JWS payloads.
@@ -102,7 +102,7 @@ func (h *Header) encode() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return base64Encode(b), nil
+	return base64.RawURLEncoding.EncodeToString(b), nil
 }
 
 // Decode decodes a claim set from a JWS payload.
@@ -113,7 +113,7 @@ func Decode(payload string) (*ClaimSet, error) {
 		// TODO(jbd): Provide more context about the error.
 		return nil, errors.New("jws: invalid token received")
 	}
-	decoded, err := base64Decode(s[1])
+	decoded, err := base64.RawURLEncoding.DecodeString(s[1])
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +140,7 @@ func EncodeWithSigner(header *Header, c *ClaimSet, sg Signer) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("%s.%s", ss, base64Encode(sig)), nil
+	return fmt.Sprintf("%s.%s", ss, base64.RawURLEncoding.EncodeToString(sig)), nil
 }
 
 // Encode encodes a signed JWS with provided header and claim set.
@@ -163,7 +163,7 @@ func Verify(token string, key *rsa.PublicKey) error {
 	}
 
 	signedContent := parts[0] + "." + parts[1]
-	signatureString, err := base64Decode(parts[2])
+	signatureString, err := base64.RawURLEncoding.DecodeString(parts[2])
 	if err != nil {
 		return err
 	}
@@ -171,24 +171,4 @@ func Verify(token string, key *rsa.PublicKey) error {
 	h := sha256.New()
 	h.Write([]byte(signedContent))
 	return rsa.VerifyPKCS1v15(key, crypto.SHA256, h.Sum(nil), []byte(signatureString))
-}
-
-// base64Encode returns and Base64url encoded version of the input string with any
-// trailing "=" stripped.
-func base64Encode(b []byte) string {
-	return strings.TrimRight(base64.URLEncoding.EncodeToString(b), "=")
-}
-
-// base64Decode decodes the Base64url encoded string
-func base64Decode(s string) ([]byte, error) {
-	// add back missing padding
-	switch len(s) % 4 {
-	case 1:
-		s += "==="
-	case 2:
-		s += "=="
-	case 3:
-		s += "="
-	}
-	return base64.URLEncoding.DecodeString(s)
 }

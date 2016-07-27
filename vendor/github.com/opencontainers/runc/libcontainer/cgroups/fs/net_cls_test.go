@@ -3,12 +3,13 @@
 package fs
 
 import (
+	"strconv"
 	"testing"
 )
 
 const (
-	classidBefore = "0x100002"
-	classidAfter  = "0x100001"
+	classidBefore = 0x100002
+	classidAfter  = 0x100001
 )
 
 func TestNetClsSetClassid(t *testing.T) {
@@ -16,7 +17,7 @@ func TestNetClsSetClassid(t *testing.T) {
 	defer helper.cleanup()
 
 	helper.writeFileContents(map[string]string{
-		"net_cls.classid": classidBefore,
+		"net_cls.classid": strconv.FormatUint(classidBefore, 10),
 	})
 
 	helper.CgroupData.config.Resources.NetClsClassid = classidAfter
@@ -28,7 +29,7 @@ func TestNetClsSetClassid(t *testing.T) {
 	// As we are in mock environment, we can't get correct value of classid from
 	// net_cls.classid.
 	// So. we just judge if we successfully write classid into file
-	value, err := getCgroupParamString(helper.CgroupPath, "net_cls.classid")
+	value, err := getCgroupParamUint(helper.CgroupPath, "net_cls.classid")
 	if err != nil {
 		t.Fatalf("Failed to parse net_cls.classid - %s", err)
 	}

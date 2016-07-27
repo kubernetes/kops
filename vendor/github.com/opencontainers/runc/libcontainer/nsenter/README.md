@@ -10,16 +10,35 @@ The `nsenter` package will `import "C"` and it uses [cgo](https://golang.org/cmd
 package. In cgo, if the import of "C" is immediately preceded by a comment, that comment, 
 called the preamble, is used as a header when compiling the C parts of the package.
 So every time we  import package `nsenter`, the C code function `nsexec()` would be 
-called. And package `nsenter` is now only imported in Docker execdriver, so every time 
-before we call `execdriver.Exec()`, that C code would run.
+called. And package `nsenter` is now only imported in `main_unix.go`, so every time
+before we call `cmd.Start` on linux, that C code would run.
 
-`nsexec()` will first check the environment variable `_LIBCONTAINER_INITPID` 
-which will give the process of the container that should be joined. Namespaces fd will 
-be found from `/proc/[pid]/ns` and set by `setns` syscall.
+Because `nsexec()` must be run before the Go runtime in order to use the
+Linux kernel namespace, you must `import` this library into a package if
+you plan to use `libcontainer` directly. Otherwise Go will not execute
+the `nsexec()` constructor, which means that the re-exec will not cause
+the namespaces to be joined. You can import it like this:
 
-And then get the pipe number from `_LIBCONTAINER_INITPIPE`, error message could
-be transfered through it. If tty is added, `_LIBCONTAINER_CONSOLE_PATH` will 
-have value and start a console for output.
+```go
+import _ "github.com/opencontainers/runc/libcontainer/nsenter"
+```
 
-Finally, `nsexec()` will clone a child process , exit the parent process and let 
-the Go runtime take over.
+`nsexec()` will first get the file descriptor number for the init pipe
+from the environment variable `_LIBCONTAINER_INITPIPE` (which was opened
+by the parent and kept open across the fork-exec of the `nsexec()` init
+process). The init pipe is used to read bootstrap data (namespace paths,
+clone flags, uid and gid mappings, and the console path) from the parent
+process. `nsexec()` will then call `setns(2)` to join the namespaces
+provided in the bootstrap data (if available), `clone(2)` a child process
+with the provided clone flags, update the user and group ID mappings, do
+some further miscellaneous setup steps, and then send the PID of the
+child process to the parent of the `nsexec()` "caller". Finally,
+the parent `nsexec()` will exit and the child `nsexec()` process will
+return to allow the Go runtime take over.
+
+NOTE: We do both `setns(2)` and `clone(2)` even if we don't have any
+CLONE_NEW* clone flags because we must fork a new process in order to
+enter the PID namespace.
+
+
+

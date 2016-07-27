@@ -104,6 +104,8 @@ func newServerTester(t testing.TB, handler http.HandlerFunc, opts ...interface{}
 			case optQuiet:
 				quiet = true
 			}
+		case func(net.Conn, http.ConnState):
+			ts.Config.ConnState = v
 		default:
 			t.Fatalf("unknown newServerTester option type %T", v)
 		}

@@ -52,9 +52,11 @@ func ExampleDatabaseMigrationService_CreateEndpoint() {
 		Port:                      aws.Int64(1),                               // Required
 		ServerName:                aws.String("String"),                       // Required
 		Username:                  aws.String("String"),                       // Required
+		CertificateArn:            aws.String("String"),
 		DatabaseName:              aws.String("String"),
 		ExtraConnectionAttributes: aws.String("String"),
 		KmsKeyId:                  aws.String("String"),
+		SslMode:                   aws.String("DmsSslModeValue"),
 		Tags: []*databasemigrationservice.Tag{
 			{ // Required
 				Key:   aws.String("String"),
@@ -87,6 +89,7 @@ func ExampleDatabaseMigrationService_CreateReplicationInstance() {
 		AvailabilityZone:                 aws.String("String"),
 		EngineVersion:                    aws.String("String"),
 		KmsKeyId:                         aws.String("String"),
+		MultiAZ:                          aws.Bool(true),
 		PreferredMaintenanceWindow:       aws.String("String"),
 		PubliclyAccessible:               aws.Bool(true),
 		ReplicationSubnetGroupIdentifier: aws.String("String"),
@@ -167,6 +170,25 @@ func ExampleDatabaseMigrationService_CreateReplicationTask() {
 		},
 	}
 	resp, err := svc.CreateReplicationTask(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
+func ExampleDatabaseMigrationService_DeleteCertificate() {
+	svc := databasemigrationservice.New(session.New())
+
+	params := &databasemigrationservice.DeleteCertificateInput{
+		CertificateArn: aws.String("String"), // Required
+	}
+	resp, err := svc.DeleteCertificate(params)
 
 	if err != nil {
 		// Print the error, cast err to awserr.Error to get the Code and
@@ -260,6 +282,36 @@ func ExampleDatabaseMigrationService_DescribeAccountAttributes() {
 
 	var params *databasemigrationservice.DescribeAccountAttributesInput
 	resp, err := svc.DescribeAccountAttributes(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
+func ExampleDatabaseMigrationService_DescribeCertificates() {
+	svc := databasemigrationservice.New(session.New())
+
+	params := &databasemigrationservice.DescribeCertificatesInput{
+		Filters: []*databasemigrationservice.Filter{
+			{ // Required
+				Name: aws.String("String"), // Required
+				Values: []*string{ // Required
+					aws.String("String"), // Required
+					// More values...
+				},
+			},
+			// More values...
+		},
+		Marker:     aws.String("String"),
+		MaxRecords: aws.Int64(1),
+	}
+	resp, err := svc.DescribeCertificates(params)
 
 	if err != nil {
 		// Print the error, cast err to awserr.Error to get the Code and
@@ -533,6 +585,26 @@ func ExampleDatabaseMigrationService_DescribeTableStatistics() {
 	fmt.Println(resp)
 }
 
+func ExampleDatabaseMigrationService_ImportCertificate() {
+	svc := databasemigrationservice.New(session.New())
+
+	params := &databasemigrationservice.ImportCertificateInput{
+		CertificateIdentifier: aws.String("String"), // Required
+		CertificatePem:        aws.String("String"),
+	}
+	resp, err := svc.ImportCertificate(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
 func ExampleDatabaseMigrationService_ListTagsForResource() {
 	svc := databasemigrationservice.New(session.New())
 
@@ -557,6 +629,7 @@ func ExampleDatabaseMigrationService_ModifyEndpoint() {
 
 	params := &databasemigrationservice.ModifyEndpointInput{
 		EndpointArn:               aws.String("String"), // Required
+		CertificateArn:            aws.String("String"),
 		DatabaseName:              aws.String("String"),
 		EndpointIdentifier:        aws.String("String"),
 		EndpointType:              aws.String("ReplicationEndpointTypeValue"),
@@ -565,6 +638,7 @@ func ExampleDatabaseMigrationService_ModifyEndpoint() {
 		Password:                  aws.String("SecretString"),
 		Port:                      aws.Int64(1),
 		ServerName:                aws.String("String"),
+		SslMode:                   aws.String("DmsSslModeValue"),
 		Username:                  aws.String("String"),
 	}
 	resp, err := svc.ModifyEndpoint(params)
@@ -590,6 +664,7 @@ func ExampleDatabaseMigrationService_ModifyReplicationInstance() {
 		ApplyImmediately:              aws.Bool(true),
 		AutoMinorVersionUpgrade:       aws.Bool(true),
 		EngineVersion:                 aws.String("String"),
+		MultiAZ:                       aws.Bool(true),
 		PreferredMaintenanceWindow:    aws.String("String"),
 		ReplicationInstanceClass:      aws.String("String"),
 		ReplicationInstanceIdentifier: aws.String("String"),

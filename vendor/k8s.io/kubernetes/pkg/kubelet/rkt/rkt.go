@@ -45,6 +45,8 @@ import (
 	"k8s.io/kubernetes/pkg/client/record"
 	"k8s.io/kubernetes/pkg/credentialprovider"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
+	"k8s.io/kubernetes/pkg/kubelet/events"
+	"k8s.io/kubernetes/pkg/kubelet/images"
 	"k8s.io/kubernetes/pkg/kubelet/leaky"
 	"k8s.io/kubernetes/pkg/kubelet/lifecycle"
 	"k8s.io/kubernetes/pkg/kubelet/network"
@@ -60,6 +62,7 @@ import (
 	"k8s.io/kubernetes/pkg/util/flowcontrol"
 	"k8s.io/kubernetes/pkg/util/selinux"
 	utilstrings "k8s.io/kubernetes/pkg/util/strings"
+	"k8s.io/kubernetes/pkg/util/term"
 	utilwait "k8s.io/kubernetes/pkg/util/wait"
 )
 
@@ -150,7 +153,7 @@ type Runtime struct {
 	runtimeHelper       kubecontainer.RuntimeHelper
 	recorder            record.EventRecorder
 	livenessManager     proberesults.Manager
-	imagePuller         kubecontainer.ImagePuller
+	imagePuller         images.ImageManager
 	runner              kubecontainer.HandlerRunner
 	execer              utilexec.Interface
 	os                  kubecontainer.OSInterface
@@ -269,11 +272,7 @@ func New(
 
 	rkt.runner = lifecycle.NewHandlerRunner(httpClient, rkt, rkt)
 
-	if serializeImagePulls {
-		rkt.imagePuller = kubecontainer.NewSerializedImagePuller(recorder, rkt, imageBackOff)
-	} else {
-		rkt.imagePuller = kubecontainer.NewImagePuller(recorder, rkt, imageBackOff)
-	}
+	rkt.imagePuller = images.NewImageManager(recorder, rkt, imageBackOff, serializeImagePulls)
 
 	if err := rkt.getVersions(); err != nil {
 		return nil, fmt.Errorf("rkt: error getting version info: %v", err)
@@ -508,9 +507,11 @@ func verifyNonRoot(app *appctypes.App, ctx *api.SecurityContext) error {
 	return nil
 }
 
-func setSupplementaryGIDs(app *appctypes.App, podCtx *api.PodSecurityContext) {
-	if podCtx != nil {
+func setSupplementalGIDs(app *appctypes.App, podCtx *api.PodSecurityContext, supplementalGids []int64) {
+	if podCtx != nil || len(supplementalGids) != 0 {
 		app.SupplementaryGIDs = app.SupplementaryGIDs[:0]
+	}
+	if podCtx != nil {
 		for _, v := range podCtx.SupplementalGroups {
 			app.SupplementaryGIDs = append(app.SupplementaryGIDs, int(v))
 		}
@@ -518,10 +519,13 @@ func setSupplementaryGIDs(app *appctypes.App, podCtx *api.PodSecurityContext) {
 			app.SupplementaryGIDs = append(app.SupplementaryGIDs, int(*podCtx.FSGroup))
 		}
 	}
+	for _, v := range supplementalGids {
+		app.SupplementaryGIDs = append(app.SupplementaryGIDs, int(v))
+	}
 }
 
 // setApp merges the container spec with the image's manifest.
-func setApp(imgManifest *appcschema.ImageManifest, c *api.Container, opts *kubecontainer.RunContainerOptions, ctx *api.SecurityContext, podCtx *api.PodSecurityContext) error {
+func setApp(imgManifest *appcschema.ImageManifest, c *api.Container, opts *kubecontainer.RunContainerOptions, ctx *api.SecurityContext, podCtx *api.PodSecurityContext, supplementalGids []int64) error {
 	app := imgManifest.App
 
 	// Set up Exec.
@@ -562,7 +566,7 @@ func setApp(imgManifest *appcschema.ImageManifest, c *api.Container, opts *kubec
 	if ctx != nil && ctx.RunAsUser != nil {
 		app.User = strconv.Itoa(int(*ctx.RunAsUser))
 	}
-	setSupplementaryGIDs(app, podCtx)
+	setSupplementalGIDs(app, podCtx, supplementalGids)
 
 	// If 'User' or 'Group' are still empty at this point,
 	// then apply the root UID and GID.
@@ -650,22 +654,38 @@ func (r *Runtime) makePodManifest(pod *api.Pod, podIP string, pullSecrets []api.
 	return manifest, nil
 }
 
+func copyfile(src, dst string) error {
+	data, err := ioutil.ReadFile(src)
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(dst, data, 0644)
+}
+
 // TODO(yifan): Can make rkt handle this when '--net=host'. See https://github.com/coreos/rkt/issues/2430.
-func makeHostNetworkMount(opts *kubecontainer.RunContainerOptions) (*kubecontainer.Mount, *kubecontainer.Mount) {
+func makeHostNetworkMount(opts *kubecontainer.RunContainerOptions) (*kubecontainer.Mount, *kubecontainer.Mount, error) {
+	hostsPath := filepath.Join(opts.PodContainerDir, "etc-hosts")
+	resolvPath := filepath.Join(opts.PodContainerDir, "etc-resolv-conf")
+
+	if err := copyfile("/etc/hosts", hostsPath); err != nil {
+		return nil, nil, err
+	}
+	if err := copyfile("/etc/resolv.conf", resolvPath); err != nil {
+		return nil, nil, err
+	}
+
 	hostsMount := kubecontainer.Mount{
 		Name:          "kubernetes-hostnetwork-hosts-conf",
 		ContainerPath: "/etc/hosts",
-		HostPath:      "/etc/hosts",
-		ReadOnly:      true,
+		HostPath:      hostsPath,
 	}
 	resolvMount := kubecontainer.Mount{
 		Name:          "kubernetes-hostnetwork-resolv-conf",
 		ContainerPath: "/etc/resolv.conf",
-		HostPath:      "/etc/resolv.conf",
-		ReadOnly:      true,
+		HostPath:      resolvPath,
 	}
 	opts.Mounts = append(opts.Mounts, hostsMount, resolvMount)
-	return &hostsMount, &resolvMount
+	return &hostsMount, &resolvMount, nil
 }
 
 // podFinishedMarkerPath returns the path to a file which should be used to
@@ -735,7 +755,7 @@ func (r *Runtime) newAppcRuntimeApp(pod *api.Pod, podIP string, c api.Container,
 	if requiresPrivileged && !securitycontext.HasPrivilegedRequest(&c) {
 		return fmt.Errorf("cannot make %q: running a custom stage1 requires a privileged security context", format.Pod(pod))
 	}
-	if err, _ := r.imagePuller.PullImage(pod, &c, pullSecrets); err != nil {
+	if err, _ := r.imagePuller.EnsureImageExists(pod, &c, pullSecrets); err != nil {
 		return nil
 	}
 	imgManifest, err := r.getImageManifest(c.Image)
@@ -768,11 +788,14 @@ func (r *Runtime) newAppcRuntimeApp(pod *api.Pod, podIP string, c api.Container,
 		return err
 	}
 
-	// If run in 'hostnetwork' mode, then mount the host's /etc/resolv.conf and /etc/hosts,
+	// If run in 'hostnetwork' mode, then copy and mount the host's /etc/resolv.conf and /etc/hosts,
 	// and add volumes.
 	var hostsMnt, resolvMnt *kubecontainer.Mount
 	if kubecontainer.IsHostNetworkPod(pod) {
-		hostsMnt, resolvMnt = makeHostNetworkMount(opts)
+		hostsMnt, resolvMnt, err = makeHostNetworkMount(opts)
+		if err != nil {
+			return err
+		}
 		manifest.Volumes = append(manifest.Volumes, appctypes.Volume{
 			Name:   convertToACName(hostsMnt.Name),
 			Kind:   "host",
@@ -785,8 +808,9 @@ func (r *Runtime) newAppcRuntimeApp(pod *api.Pod, podIP string, c api.Container,
 		})
 	}
 
+	supplementalGids := r.runtimeHelper.GetExtraSupplementalGroupsForPod(pod)
 	ctx := securitycontext.DetermineEffectiveSecurityContext(pod, &c)
-	if err := setApp(imgManifest, &c, opts, ctx, pod.Spec.SecurityContext); err != nil {
+	if err := setApp(imgManifest, &c, opts, ctx, pod.Spec.SecurityContext, supplementalGids); err != nil {
 		return err
 	}
 
@@ -1202,13 +1226,13 @@ func (r *Runtime) generateEvents(runtimePod *kubecontainer.Pod, reason string, f
 		uuid := utilstrings.ShortenString(id.uuid, 8)
 		switch reason {
 		case "Created":
-			r.recorder.Eventf(ref, api.EventTypeNormal, kubecontainer.CreatedContainer, "Created with rkt id %v", uuid)
+			r.recorder.Eventf(ref, api.EventTypeNormal, events.CreatedContainer, "Created with rkt id %v", uuid)
 		case "Started":
-			r.recorder.Eventf(ref, api.EventTypeNormal, kubecontainer.StartedContainer, "Started with rkt id %v", uuid)
+			r.recorder.Eventf(ref, api.EventTypeNormal, events.StartedContainer, "Started with rkt id %v", uuid)
 		case "Failed":
-			r.recorder.Eventf(ref, api.EventTypeWarning, kubecontainer.FailedToStartContainer, "Failed to start with rkt id %v with error %v", uuid, failure)
+			r.recorder.Eventf(ref, api.EventTypeWarning, events.FailedToStartContainer, "Failed to start with rkt id %v with error %v", uuid, failure)
 		case "Killing":
-			r.recorder.Eventf(ref, api.EventTypeNormal, kubecontainer.KillingContainer, "Killing with rkt id %v", uuid)
+			r.recorder.Eventf(ref, api.EventTypeNormal, events.KillingContainer, "Killing with rkt id %v", uuid)
 		default:
 			glog.Errorf("rkt: Unexpected event %q", reason)
 		}
@@ -1294,7 +1318,7 @@ func (r *Runtime) RunPod(pod *api.Pod, pullSecrets []api.Secret) error {
 			continue
 		}
 		if prepareErr != nil {
-			r.recorder.Eventf(ref, api.EventTypeWarning, kubecontainer.FailedToCreateContainer, "Failed to create rkt container with error: %v", prepareErr)
+			r.recorder.Eventf(ref, api.EventTypeWarning, events.FailedToCreateContainer, "Failed to create rkt container with error: %v", prepareErr)
 			continue
 		}
 		containerID := runtimePod.Containers[i].ID
@@ -1349,7 +1373,7 @@ func (r *Runtime) runPreStopHook(containerID kubecontainer.ContainerID, pod *api
 		if !ok {
 			glog.Warningf("No ref for container %q", containerID)
 		} else {
-			r.recorder.Eventf(ref, api.EventTypeWarning, kubecontainer.FailedPreStopHook, msg)
+			r.recorder.Eventf(ref, api.EventTypeWarning, events.FailedPreStopHook, msg)
 		}
 	}
 	return err
@@ -1391,7 +1415,7 @@ func (r *Runtime) runPostStartHook(containerID kubecontainer.ContainerID, pod *a
 		if !ok {
 			glog.Warningf("No ref for container %q", containerID)
 		} else {
-			r.recorder.Eventf(ref, api.EventTypeWarning, kubecontainer.FailedPostStartHook, msg)
+			r.recorder.Eventf(ref, api.EventTypeWarning, events.FailedPostStartHook, msg)
 		}
 	}
 	return err
@@ -1631,13 +1655,6 @@ func (r *Runtime) KillPod(pod *api.Pod, runningPod kubecontainer.Pod, gracePerio
 		r.containerRefManager.ClearRef(c.ID)
 	}
 
-	// Touch the systemd service file to update the mod time so it will
-	// not be garbage collected too soon.
-	if err := r.os.Chtimes(serviceFile, time.Now(), time.Now()); err != nil {
-		glog.Errorf("rkt: Failed to change the modification time of the service file %q: %v", serviceName, err)
-		return err
-	}
-
 	// Since all service file have 'KillMode=mixed', the processes in
 	// the unit's cgroup will receive a SIGKILL if the normal stop timeouts.
 	reschan := make(chan string)
@@ -1837,6 +1854,10 @@ func podDetailsFromServiceFile(serviceFilePath string) (string, string, string, 
 	return "", "", "", false, fmt.Errorf("failed to parse pod from file %s", serviceFilePath)
 }
 
+func (r *Runtime) DeleteContainer(containerID kubecontainer.ContainerID) error {
+	return fmt.Errorf("unimplemented")
+}
+
 // GarbageCollect collects the pods/containers.
 // After one GC iteration:
 // - The deleted pods will be removed.
@@ -1988,7 +2009,7 @@ func (r *Runtime) removePod(uuid string) error {
 	return errors.NewAggregate(errlist)
 }
 
-// rktExitError implemets /pkg/util/exec.ExitError interface.
+// rktExitError implements /pkg/util/exec.ExitError interface.
 type rktExitError struct{ *exec.ExitError }
 
 var _ utilexec.ExitError = &rktExitError{}
@@ -2007,14 +2028,14 @@ func newRktExitError(e error) error {
 	return e
 }
 
-func (r *Runtime) AttachContainer(containerID kubecontainer.ContainerID, stdin io.Reader, stdout, stderr io.WriteCloser, tty bool) error {
+func (r *Runtime) AttachContainer(containerID kubecontainer.ContainerID, stdin io.Reader, stdout, stderr io.WriteCloser, tty bool, resize <-chan term.Size) error {
 	return fmt.Errorf("unimplemented")
 }
 
 // Note: In rkt, the container ID is in the form of "UUID:appName", where UUID is
 // the rkt UUID, and appName is the container name.
 // TODO(yifan): If the rkt is using lkvm as the stage1 image, then this function will fail.
-func (r *Runtime) ExecInContainer(containerID kubecontainer.ContainerID, cmd []string, stdin io.Reader, stdout, stderr io.WriteCloser, tty bool) error {
+func (r *Runtime) ExecInContainer(containerID kubecontainer.ContainerID, cmd []string, stdin io.Reader, stdout, stderr io.WriteCloser, tty bool, resize <-chan term.Size) error {
 	glog.V(4).Infof("Rkt execing in container.")
 
 	id, err := parseContainerID(containerID)
@@ -2034,6 +2055,10 @@ func (r *Runtime) ExecInContainer(containerID kubecontainer.ContainerID, cmd []s
 
 		// make sure to close the stdout stream
 		defer stdout.Close()
+
+		kubecontainer.HandleResizing(resize, func(size term.Size) {
+			term.SetSize(p.Fd(), size)
+		})
 
 		if stdin != nil {
 			go io.Copy(p, stdin)

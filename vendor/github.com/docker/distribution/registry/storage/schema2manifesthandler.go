@@ -1,20 +1,29 @@
 package storage
 
 import (
-	"fmt"
-
 	"encoding/json"
+	"errors"
+	"fmt"
+	"net/url"
+
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/context"
 	"github.com/docker/distribution/digest"
 	"github.com/docker/distribution/manifest/schema2"
 )
 
+var (
+	errUnexpectedURL = errors.New("unexpected URL on layer")
+	errMissingURL    = errors.New("missing URL on layer")
+	errInvalidURL    = errors.New("invalid URL on layer")
+)
+
 //schema2ManifestHandler is a ManifestHandler that covers schema2 manifests.
 type schema2ManifestHandler struct {
-	repository *repository
-	blobStore  *linkedBlobStore
-	ctx        context.Context
+	repository   distribution.Repository
+	blobStore    distribution.BlobStore
+	ctx          context.Context
+	manifestURLs manifestURLs
 }
 
 var _ ManifestHandler = &schema2ManifestHandler{}
@@ -53,11 +62,6 @@ func (ms *schema2ManifestHandler) Put(ctx context.Context, manifest distribution
 		return "", err
 	}
 
-	// Link the revision into the repository.
-	if err := ms.blobStore.linkBlob(ctx, revision); err != nil {
-		return "", err
-	}
-
 	return revision.Digest, nil
 }
 
@@ -80,7 +84,30 @@ func (ms *schema2ManifestHandler) verifyManifest(ctx context.Context, mnfst sche
 		}
 
 		for _, fsLayer := range mnfst.References() {
-			_, err := ms.repository.Blobs(ctx).Stat(ctx, fsLayer.Digest)
+			var err error
+			if fsLayer.MediaType != schema2.MediaTypeForeignLayer {
+				if len(fsLayer.URLs) == 0 {
+					_, err = ms.repository.Blobs(ctx).Stat(ctx, fsLayer.Digest)
+				} else {
+					err = errUnexpectedURL
+				}
+			} else {
+				// Clients download this layer from an external URL, so do not check for
+				// its presense.
+				if len(fsLayer.URLs) == 0 {
+					err = errMissingURL
+				}
+				allow := ms.manifestURLs.allow
+				deny := ms.manifestURLs.deny
+				for _, u := range fsLayer.URLs {
+					var pu *url.URL
+					pu, err = url.Parse(u)
+					if err != nil || (pu.Scheme != "http" && pu.Scheme != "https") || pu.Fragment != "" || (allow != nil && !allow.MatchString(u)) || (deny != nil && deny.MatchString(u)) {
+						err = errInvalidURL
+						break
+					}
+				}
+			}
 			if err != nil {
 				if err != distribution.ErrBlobUnknown {
 					errs = append(errs, err)

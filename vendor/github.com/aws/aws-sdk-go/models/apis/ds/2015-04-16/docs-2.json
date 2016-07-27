@@ -2,18 +2,19 @@
   "version": "2.0",
   "service": "<fullname>AWS Directory Service</fullname> <p>This is the <i>AWS Directory Service API Reference</i>. This guide provides detailed information about AWS Directory Service operations, data types, parameters, and errors.</p>",
   "operations": {
+    "AddTagsToResource": "<p>Adds or overwrites one or more tags for the specified Amazon Directory Services directory. Each directory can have a maximum of 10 tags. Each tag consists of a key and optional value. Tag keys must be unique per resource.</p>",
     "ConnectDirectory": "<p>Creates an AD Connector to connect to an on-premises directory.</p>",
-    "CreateAlias": "<p>Creates an alias for a directory and assigns the alias to the directory. The alias is used to construct the access URL for the directory, such as <code>http://<![CDATA[&#x3C;]]>alias<![CDATA[&#x3E;]]>.awsapps.com</code>.</p> <important> <p>After an alias has been created, it cannot be deleted or reused, so this operation should only be used when absolutely necessary.</p> </important>",
+    "CreateAlias": "<p>Creates an alias for a directory and assigns the alias to the directory. The alias is used to construct the access URL for the directory, such as <code>http://&lt;alias&gt;.awsapps.com</code>.</p> <important> <p>After an alias has been created, it cannot be deleted or reused, so this operation should only be used when absolutely necessary.</p> </important>",
     "CreateComputer": "<p>Creates a computer account in the specified directory, and joins the computer to the directory.</p>",
     "CreateConditionalForwarder": "<p>Creates a conditional forwarder associated with your AWS directory. Conditional forwarders are required in order to set up a trust relationship with another domain. The conditional forwarder points to the trusted domain.</p>",
     "CreateDirectory": "<p>Creates a Simple AD directory.</p>",
-    "CreateMicrosoftAD": "Creates a Microsoft AD in the AWS cloud.",
+    "CreateMicrosoftAD": "<p>Creates a Microsoft AD in the AWS cloud.</p>",
     "CreateSnapshot": "<p>Creates a snapshot of a Simple AD or Microsoft AD directory in the AWS cloud.</p> <note> <p>You cannot take snapshots of AD Connector directories.</p> </note>",
-    "CreateTrust": "<p>AWS Directory Service for Microsoft Active Directory allows you to configure trust relationships. For example, you can establish a trust between your Microsoft AD in the AWS cloud, and your existing on-premises Microsoft Active Directory. This would allow you to provide users and groups access to resources in either domain, with a single set of credentials.</p><p>This action initiates the creation of the AWS side of a trust relationship between a Microsoft AD in the AWS cloud and an external domain.</p>",
+    "CreateTrust": "<p>AWS Directory Service for Microsoft Active Directory allows you to configure trust relationships. For example, you can establish a trust between your Microsoft AD in the AWS cloud, and your existing on-premises Microsoft Active Directory. This would allow you to provide users and groups access to resources in either domain, with a single set of credentials.</p> <p>This action initiates the creation of the AWS side of a trust relationship between a Microsoft AD in the AWS cloud and an external domain.</p>",
     "DeleteConditionalForwarder": "<p>Deletes a conditional forwarder that has been set up for your AWS directory.</p>",
     "DeleteDirectory": "<p>Deletes an AWS Directory Service directory.</p>",
     "DeleteSnapshot": "<p>Deletes a directory snapshot.</p>",
-    "DeleteTrust": "Deletes an existing trust relationship between your Microsoft AD in the AWS cloud and an external domain.",
+    "DeleteTrust": "<p>Deletes an existing trust relationship between your Microsoft AD in the AWS cloud and an external domain.</p>",
     "DeregisterEventTopic": "<p>Removes the specified directory as a publisher to the specified SNS topic.</p>",
     "DescribeConditionalForwarders": "<p>Obtains information about the conditional forwarders for this account.</p> <p>If no input parameters are provided for RemoteDomainNames, this request describes all conditional forwarders for the specified directory ID.</p>",
     "DescribeDirectories": "<p>Obtains information about the directories that belong to this account.</p> <p>You can retrieve information about specific directories by passing the directory identifiers in the <i>DirectoryIds</i> parameter. Otherwise, all directories that belong to the current account are returned.</p> <p>This operation supports pagination with the use of the <i>NextToken</i> request and response parameters. If more results are available, the <i>DescribeDirectoriesResult.NextToken</i> member contains a token that you pass in the next call to <a>DescribeDirectories</a> to retrieve the next set of items.</p> <p>You can also specify a maximum number of return results with the <i>Limit</i> parameter.</p>",
@@ -26,17 +27,29 @@
     "EnableSso": "<p>Enables single-sign on for a directory.</p>",
     "GetDirectoryLimits": "<p>Obtains directory limit information for the current region.</p>",
     "GetSnapshotLimits": "<p>Obtains the manual snapshot limits for a directory.</p>",
-    "RegisterEventTopic": "<p>Associates a directory with an SNS topic. This establishes the directory as a publisher to the specified SNS topic. You can then receive email or text (SMS) messages when the status of your directory changes. You get notified if your directory goes from an Active status to an Impaired or Inoperable status. You also receive a notification when the directory returns to an Active status. </p>",
+    "ListTagsForResource": "<p>Lists all tags on an Amazon Directory Services directory.</p>",
+    "RegisterEventTopic": "<p>Associates a directory with an SNS topic. This establishes the directory as a publisher to the specified SNS topic. You can then receive email or text (SMS) messages when the status of your directory changes. You get notified if your directory goes from an Active status to an Impaired or Inoperable status. You also receive a notification when the directory returns to an Active status.</p>",
+    "RemoveTagsFromResource": "<p>Removes tags from an Amazon Directory Services directory.</p>",
     "RestoreFromSnapshot": "<p>Restores a directory using an existing directory snapshot.</p> <p>When you restore a directory from a snapshot, any changes made to the directory after the snapshot date are overwritten.</p> <p>This action returns as soon as the restore operation is initiated. You can monitor the progress of the restore operation by calling the <a>DescribeDirectories</a> operation with the directory identifier. When the <b>DirectoryDescription.Stage</b> value changes to <code>Active</code>, the restore operation is complete.</p>",
     "UpdateConditionalForwarder": "<p>Updates a conditional forwarder that has been set up for your AWS directory.</p>",
     "UpdateRadius": "<p>Updates the Remote Authentication Dial In User Service (RADIUS) server information for an AD Connector directory.</p>",
-    "VerifyTrust": "<p>AWS Directory Service for Microsoft Active Directory allows you to configure and verify trust relationships. </p><p>This action verifies a trust relationship between your Microsoft AD in the AWS cloud and an external domain.</p>"
+    "VerifyTrust": "<p>AWS Directory Service for Microsoft Active Directory allows you to configure and verify trust relationships.</p> <p>This action verifies a trust relationship between your Microsoft AD in the AWS cloud and an external domain.</p>"
   },
   "shapes": {
     "AccessUrl": {
       "base": null,
       "refs": {
-        "DirectoryDescription$AccessUrl": "<p>The access URL for the directory, such as <code>http://<![CDATA[&#x3C;]]>alias<![CDATA[&#x3E;]]>.awsapps.com</code>. If no alias has been created for the directory, <code><![CDATA[&#x3C;]]>alias<![CDATA[&#x3E;]]></code> is the directory identifier, such as <code>d-XXXXXXXXXX</code>.</p>"
+        "DirectoryDescription$AccessUrl": "<p>The access URL for the directory, such as <code>http://&lt;alias&gt;.awsapps.com</code>. If no alias has been created for the directory, <code>&lt;alias&gt;</code> is the directory identifier, such as <code>d-XXXXXXXXXX</code>.</p>"
+      }
+    },
+    "AddTagsToResourceRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "AddTagsToResourceResult": {
+      "base": null,
+      "refs": {
       }
     },
     "AliasName": {
@@ -99,7 +112,7 @@
       "base": null,
       "refs": {
         "DirectoryLimits$CloudOnlyDirectoriesLimitReached": "<p>Indicates if the cloud directory limit has been reached.</p>",
-        "DirectoryLimits$CloudOnlyMicrosoftADLimitReached": "Indicates if the Microsoft AD directory limit has been reached."
+        "DirectoryLimits$CloudOnlyMicrosoftADLimitReached": "<p>Indicates if the Microsoft AD directory limit has been reached.</p>"
       }
     },
     "Computer": {
@@ -183,7 +196,7 @@
       }
     },
     "CreateConditionalForwarderResult": {
-      "base": null,
+      "base": "<p>The result of a CreateConditinalForwarder request.</p>",
       "refs": {
       }
     },
@@ -198,12 +211,12 @@
       }
     },
     "CreateMicrosoftADRequest": {
-      "base": "Creates a Microsoft AD in the AWS cloud.",
+      "base": "<p>Creates a Microsoft AD in the AWS cloud.</p>",
       "refs": {
       }
     },
     "CreateMicrosoftADResult": {
-      "base": null,
+      "base": "<p>Result of a CreateMicrosoftAD request.</p>",
       "refs": {
       }
     },
@@ -218,12 +231,12 @@
       }
     },
     "CreateTrustRequest": {
-      "base": "<p>AWS Directory Service for Microsoft Active Directory allows you to configure trust relationships. For example, you can establish a trust between your Microsoft AD in the AWS cloud, and your existing on-premises Microsoft Active Directory. This would allow you to provide users and groups access to resources in either domain, with a single set of credentials.</p><p>This action initiates the creation of the AWS side of a trust relationship between a Microsoft AD in the AWS cloud and an external domain.</p>",
+      "base": "<p>AWS Directory Service for Microsoft Active Directory allows you to configure trust relationships. For example, you can establish a trust between your Microsoft AD in the AWS cloud, and your existing on-premises Microsoft Active Directory. This would allow you to provide users and groups access to resources in either domain, with a single set of credentials.</p> <p>This action initiates the creation of the AWS side of a trust relationship between a Microsoft AD in the AWS cloud and an external domain.</p>",
       "refs": {
       }
     },
     "CreateTrustResult": {
-      "base": null,
+      "base": "<p>The result of a CreateTrust request.</p>",
       "refs": {
       }
     },
@@ -231,22 +244,22 @@
       "base": null,
       "refs": {
         "EventTopic$CreatedDateTime": "<p>The date and time of when you associated your directory with the SNS topic.</p>",
-        "Trust$CreatedDateTime": "The date and time that the trust relationship was created."
+        "Trust$CreatedDateTime": "<p>The date and time that the trust relationship was created.</p>"
       }
     },
     "DeleteAssociatedConditionalForwarder": {
       "base": null,
       "refs": {
-        "DeleteTrustRequest$DeleteAssociatedConditionalForwarder": null
+        "DeleteTrustRequest$DeleteAssociatedConditionalForwarder": "<p>Delete a conditional forwarder as part of a DeleteTrustRequest.</p>"
       }
     },
     "DeleteConditionalForwarderRequest": {
-      "base": null,
+      "base": "<p>Deletes a conditional forwarder.</p>",
       "refs": {
       }
     },
     "DeleteConditionalForwarderResult": {
-      "base": null,
+      "base": "<p>The result of a DeleteConditionalForwarder request.</p>",
       "refs": {
       }
     },
@@ -271,12 +284,12 @@
       }
     },
     "DeleteTrustRequest": {
-      "base": "Deletes the local side of an existing trust relationship between the Microsoft AD in the AWS cloud and the external domain.",
+      "base": "<p>Deletes the local side of an existing trust relationship between the Microsoft AD in the AWS cloud and the external domain.</p>",
       "refs": {
       }
     },
     "DeleteTrustResult": {
-      "base": null,
+      "base": "<p>The result of a DeleteTrust request.</p>",
       "refs": {
       }
     },
@@ -286,17 +299,17 @@
       }
     },
     "DeregisterEventTopicResult": {
-      "base": null,
+      "base": "<p>The result of a DeregisterEventTopic request.</p>",
       "refs": {
       }
     },
     "DescribeConditionalForwardersRequest": {
-      "base": null,
+      "base": "<p>Describes a conditional forwarder.</p>",
       "refs": {
       }
     },
     "DescribeConditionalForwardersResult": {
-      "base": null,
+      "base": "<p>The result of a DescribeConditionalForwarder request.</p>",
       "refs": {
       }
     },
@@ -311,12 +324,12 @@
       }
     },
     "DescribeEventTopicsRequest": {
-      "base": null,
+      "base": "<p>Describes event topics.</p>",
       "refs": {
       }
     },
     "DescribeEventTopicsResult": {
-      "base": null,
+      "base": "<p>The result of a DescribeEventTopic request.</p>",
       "refs": {
       }
     },
@@ -331,12 +344,12 @@
       }
     },
     "DescribeTrustsRequest": {
-      "base": "Describes the trust relationships for a particular Microsoft AD in the AWS cloud. If no input parameters are are provided, such as directory ID or trust ID, this request describes all the trust relationships.",
+      "base": "<p>Describes the trust relationships for a particular Microsoft AD in the AWS cloud. If no input parameters are are provided, such as directory ID or trust ID, this request describes all the trust relationships.</p>",
       "refs": {
       }
     },
     "DescribeTrustsResult": {
-      "base": null,
+      "base": "<p>The result of a DescribeTrust request.</p>",
       "refs": {
       }
     },
@@ -382,9 +395,9 @@
         "CreateComputerRequest$DirectoryId": "<p>The identifier of the directory in which to create the computer account.</p>",
         "CreateConditionalForwarderRequest$DirectoryId": "<p>The directory ID of the AWS directory for which you are creating the conditional forwarder.</p>",
         "CreateDirectoryResult$DirectoryId": "<p>The identifier of the directory that was created.</p>",
-        "CreateMicrosoftADResult$DirectoryId": "The identifier of the directory that was created.",
+        "CreateMicrosoftADResult$DirectoryId": "<p>The identifier of the directory that was created.</p>",
         "CreateSnapshotRequest$DirectoryId": "<p>The identifier of the directory of which to take a snapshot.</p>",
-        "CreateTrustRequest$DirectoryId": "The Directory ID of the Microsoft AD in the AWS cloud for which to establish the trust relationship.",
+        "CreateTrustRequest$DirectoryId": "<p>The Directory ID of the Microsoft AD in the AWS cloud for which to establish the trust relationship.</p>",
         "DeleteConditionalForwarderRequest$DirectoryId": "<p>The directory ID for which you are deleting the conditional forwarder.</p>",
         "DeleteDirectoryRequest$DirectoryId": "<p>The identifier of the directory to delete.</p>",
         "DeleteDirectoryResult$DirectoryId": "<p>The directory identifier.</p>",
@@ -392,7 +405,7 @@
         "DescribeConditionalForwardersRequest$DirectoryId": "<p>The directory ID for which to get the list of associated conditional forwarders.</p>",
         "DescribeEventTopicsRequest$DirectoryId": "<p>The Directory ID for which to get the list of associated SNS topics. If this member is null, associations for all Directory IDs are returned.</p>",
         "DescribeSnapshotsRequest$DirectoryId": "<p>The identifier of the directory for which to retrieve snapshot information.</p>",
-        "DescribeTrustsRequest$DirectoryId": "The Directory ID of the AWS directory that is a part of the requested trust relationship.",
+        "DescribeTrustsRequest$DirectoryId": "<p>The Directory ID of the AWS directory that is a part of the requested trust relationship.</p>",
         "DirectoryDescription$DirectoryId": "<p>The directory identifier.</p>",
         "DirectoryIds$member": null,
         "DisableRadiusRequest$DirectoryId": "<p>The identifier of the directory for which to disable MFA.</p>",
@@ -403,7 +416,7 @@
         "GetSnapshotLimitsRequest$DirectoryId": "<p>Contains the identifier of the directory to obtain the limits for.</p>",
         "RegisterEventTopicRequest$DirectoryId": "<p>The Directory ID that will publish status messages to the SNS topic.</p>",
         "Snapshot$DirectoryId": "<p>The directory identifier.</p>",
-        "Trust$DirectoryId": "The Directory ID of the AWS directory involved in the trust relationship.",
+        "Trust$DirectoryId": "<p>The Directory ID of the AWS directory involved in the trust relationship.</p>",
         "UpdateConditionalForwarderRequest$DirectoryId": "<p>The directory ID of the AWS directory for which to update the conditional forwarder.</p>",
         "UpdateRadiusRequest$DirectoryId": "<p>The identifier of the directory for which to update the RADIUS server information.</p>"
       }
@@ -506,7 +519,7 @@
       "refs": {
         "ConditionalForwarder$DnsIpAddrs": "<p>The IP addresses of the remote DNS server associated with RemoteDomainName. This is the IP address of the DNS server that your conditional forwarder points to.</p>",
         "CreateConditionalForwarderRequest$DnsIpAddrs": "<p>The IP addresses of the remote DNS server associated with RemoteDomainName.</p>",
-        "CreateTrustRequest$ConditionalForwarderIpAddrs": null,
+        "CreateTrustRequest$ConditionalForwarderIpAddrs": "<p>The IP addresses of the remote DNS server associated with RemoteDomainName.</p>",
         "DirectoryConnectSettings$CustomerDnsIps": "<p>A list of one or more IP addresses of DNS servers or domain controllers in the on-premises directory.</p>",
         "DirectoryDescription$DnsIpAddrs": "<p>The IP addresses of the DNS servers for the directory. For a Simple AD or Microsoft AD directory, these are the IP addresses of the Simple AD or Microsoft AD directory servers. For an AD Connector directory, these are the IP addresses of the DNS servers or domain controllers in the on-premises directory to which the AD Connector is connected.</p>",
         "UpdateConditionalForwarderRequest$DnsIpAddrs": "<p>The updated IP addresses of the remote DNS server associated with the conditional forwarder.</p>"
@@ -568,6 +581,7 @@
         "InvalidParameterException$Message": null,
         "ServiceException$Message": null,
         "SnapshotLimitExceededException$Message": null,
+        "TagLimitExceededException$Message": null,
         "UnsupportedOperationException$Message": null
       }
     },
@@ -623,7 +637,7 @@
       "base": null,
       "refs": {
         "DirectoryDescription$StageLastUpdatedDateTime": "<p>The date and time that the stage was last updated.</p>",
-        "Trust$LastUpdatedDateTime": "The date and time that the trust relationship was last updated."
+        "Trust$LastUpdatedDateTime": "<p>The date and time that the trust relationship was last updated.</p>"
       }
     },
     "LaunchTime": {
@@ -637,15 +651,26 @@
       "refs": {
         "DescribeDirectoriesRequest$Limit": "<p>The maximum number of items to return. If this value is zero, the maximum number of items is specified by the limitations of the operation.</p>",
         "DescribeSnapshotsRequest$Limit": "<p>The maximum number of objects to return.</p>",
-        "DescribeTrustsRequest$Limit": "The maximum number of objects to return.",
+        "DescribeTrustsRequest$Limit": "<p>The maximum number of objects to return.</p>",
         "DirectoryLimits$CloudOnlyDirectoriesLimit": "<p>The maximum number of cloud directories allowed in the region.</p>",
         "DirectoryLimits$CloudOnlyDirectoriesCurrentCount": "<p>The current number of cloud directories in the region.</p>",
-        "DirectoryLimits$CloudOnlyMicrosoftADLimit": "The maximum number of Microsoft AD directories allowed in the region.",
-        "DirectoryLimits$CloudOnlyMicrosoftADCurrentCount": "The current number of Microsoft AD directories in the region.",
+        "DirectoryLimits$CloudOnlyMicrosoftADLimit": "<p>The maximum number of Microsoft AD directories allowed in the region.</p>",
+        "DirectoryLimits$CloudOnlyMicrosoftADCurrentCount": "<p>The current number of Microsoft AD directories in the region.</p>",
         "DirectoryLimits$ConnectedDirectoriesLimit": "<p>The maximum number of connected directories allowed in the region.</p>",
         "DirectoryLimits$ConnectedDirectoriesCurrentCount": "<p>The current number of connected directories in the region.</p>",
+        "ListTagsForResourceRequest$Limit": "<p>Reserved for future use.</p>",
         "SnapshotLimits$ManualSnapshotsLimit": "<p>The maximum number of manual snapshots allowed.</p>",
         "SnapshotLimits$ManualSnapshotsCurrentCount": "<p>The current number of manual snapshots of the directory.</p>"
+      }
+    },
+    "ListTagsForResourceRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "ListTagsForResourceResult": {
+      "base": null,
+      "refs": {
       }
     },
     "ManualSnapshotsLimitReached": {
@@ -662,7 +687,9 @@
         "DescribeSnapshotsRequest$NextToken": "<p>The <i>DescribeSnapshotsResult.NextToken</i> value from a previous call to <a>DescribeSnapshots</a>. Pass null if this is the first call.</p>",
         "DescribeSnapshotsResult$NextToken": "<p>If not null, more results are available. Pass this value in the <i>NextToken</i> member of a subsequent call to <a>DescribeSnapshots</a>.</p>",
         "DescribeTrustsRequest$NextToken": "<p>The <i>DescribeTrustsResult.NextToken</i> value from a previous call to <a>DescribeTrusts</a>. Pass null if this is the first call.</p>",
-        "DescribeTrustsResult$NextToken": "<p>If not null, more results are available. Pass this value for the <i>NextToken</i> parameter in a subsequent call to <a>DescribeTrusts</a> to retrieve the next set of items.</p>"
+        "DescribeTrustsResult$NextToken": "<p>If not null, more results are available. Pass this value for the <i>NextToken</i> parameter in a subsequent call to <a>DescribeTrusts</a> to retrieve the next set of items.</p>",
+        "ListTagsForResourceRequest$NextToken": "<p>Reserved for future use.</p>",
+        "ListTagsForResourceResult$NextToken": "<p>Reserved for future use.</p>"
       }
     },
     "OrganizationalUnitDN": {
@@ -699,7 +726,7 @@
     "RadiusRetries": {
       "base": null,
       "refs": {
-        "RadiusSettings$RadiusRetries": "<p>The maximum number of times that communication with the RADIUS server is attempted. </p>"
+        "RadiusSettings$RadiusRetries": "<p>The maximum number of times that communication with the RADIUS server is attempted.</p>"
       }
     },
     "RadiusSettings": {
@@ -729,12 +756,12 @@
       }
     },
     "RegisterEventTopicRequest": {
-      "base": null,
+      "base": "<p>Registers a new event topic.</p>",
       "refs": {
       }
     },
     "RegisterEventTopicResult": {
-      "base": null,
+      "base": "<p>The result of a RegisterEventTopic request.</p>",
       "refs": {
       }
     },
@@ -743,10 +770,10 @@
       "refs": {
         "ConditionalForwarder$RemoteDomainName": "<p>The fully qualified domain name (FQDN) of the remote domains pointed to by the conditional forwarder.</p>",
         "CreateConditionalForwarderRequest$RemoteDomainName": "<p>The fully qualified domain name (FQDN) of the remote domain with which you will set up a trust relationship.</p>",
-        "CreateTrustRequest$RemoteDomainName": "The Fully Qualified Domain Name (FQDN) of the external domain for which to create the trust relationship.",
+        "CreateTrustRequest$RemoteDomainName": "<p>The Fully Qualified Domain Name (FQDN) of the external domain for which to create the trust relationship.</p>",
         "DeleteConditionalForwarderRequest$RemoteDomainName": "<p>The fully qualified domain name (FQDN) of the remote domain with which you are deleting the conditional forwarder.</p>",
         "RemoteDomainNames$member": null,
-        "Trust$RemoteDomainName": "The Fully Qualified Domain Name (FQDN) of the external domain involved in the trust relationship.",
+        "Trust$RemoteDomainName": "<p>The Fully Qualified Domain Name (FQDN) of the external domain involved in the trust relationship.</p>",
         "UpdateConditionalForwarderRequest$RemoteDomainName": "<p>The fully qualified domain name (FQDN) of the remote domain with which you will set up a trust relationship.</p>"
       }
     },
@@ -754,6 +781,16 @@
       "base": null,
       "refs": {
         "DescribeConditionalForwardersRequest$RemoteDomainNames": "<p>The fully qualified domain names (FQDN) of the remote domains for which to get the list of associated conditional forwarders. If this member is null, all conditional forwarders are returned.</p>"
+      }
+    },
+    "RemoveTagsFromResourceRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "RemoveTagsFromResourceResult": {
+      "base": null,
+      "refs": {
       }
     },
     "ReplicationScope": {
@@ -776,7 +813,16 @@
         "InvalidParameterException$RequestId": null,
         "ServiceException$RequestId": null,
         "SnapshotLimitExceededException$RequestId": null,
+        "TagLimitExceededException$RequestId": null,
         "UnsupportedOperationException$RequestId": null
+      }
+    },
+    "ResourceId": {
+      "base": null,
+      "refs": {
+        "AddTagsToResourceRequest$ResourceId": "<p>The ID of the directory to which to add the tag.</p>",
+        "ListTagsForResourceRequest$ResourceId": "<p>The ID of the directory for which you want to retrieve tags.</p>",
+        "RemoveTagsFromResourceRequest$ResourceId": "<p>The ID of the directory from which to remove the tag.</p>"
       }
     },
     "RestoreFromSnapshotRequest": {
@@ -899,7 +945,7 @@
     "StateLastUpdatedDateTime": {
       "base": null,
       "refs": {
-        "Trust$StateLastUpdatedDateTime": "The date and time that the TrustState was last updated."
+        "Trust$StateLastUpdatedDateTime": "<p>The date and time that the TrustState was last updated.</p>"
       }
     },
     "SubnetId": {
@@ -915,6 +961,43 @@
         "DirectoryConnectSettingsDescription$SubnetIds": "<p>A list of subnet identifiers in the VPC that the AD connector is in.</p>",
         "DirectoryVpcSettings$SubnetIds": "<p>The identifiers of the subnets for the directory servers. The two subnets must be in different Availability Zones. AWS Directory Service creates a directory server and a DNS server in each of these subnets.</p>",
         "DirectoryVpcSettingsDescription$SubnetIds": "<p>The identifiers of the subnets for the directory servers.</p>"
+      }
+    },
+    "Tag": {
+      "base": "<p>Metadata assigned to an Amazon Directory Services directory consisting of a key-value pair.</p>",
+      "refs": {
+        "Tags$member": null
+      }
+    },
+    "TagKey": {
+      "base": null,
+      "refs": {
+        "Tag$Key": "<p>A key is the required name of the tag. The string value can be from 1 to 128 Unicode characters in length and cannot be prefixed with \"aws:\". The string can only contain only the set of Unicode letters, digits, white-space, '_', '.', '/', '=', '+', '-' (Java regex: \"^([\\\\p{L}\\\\p{Z}\\\\p{N}_.:/=+\\\\-]*)$\").</p>",
+        "TagKeys$member": null
+      }
+    },
+    "TagKeys": {
+      "base": null,
+      "refs": {
+        "RemoveTagsFromResourceRequest$TagKeys": "<p>The tag key (name) of the tag to be removed.</p>"
+      }
+    },
+    "TagLimitExceededException": {
+      "base": "<p>The maximum allowed number of tags was exceeded.</p>",
+      "refs": {
+      }
+    },
+    "TagValue": {
+      "base": null,
+      "refs": {
+        "Tag$Value": "<p>A value is the optional value of the tag. The string value can be from 1 to 256 Unicode characters in length. The string can only contain only the set of Unicode letters, digits, white-space, '_', '.', '/', '=', '+', '-' (Java regex: \"^([\\\\p{L}\\\\p{Z}\\\\p{N}_.:/=+\\\\-]*)$\").</p>"
+      }
+    },
+    "Tags": {
+      "base": null,
+      "refs": {
+        "AddTagsToResourceRequest$Tags": "<p>The tags to be assigned to the Amazon Directory Services directory.</p>",
+        "ListTagsForResourceResult$Tags": "<p>List of tags returned by the ListTagsForResource operation.</p>"
       }
     },
     "TopicArn": {
@@ -945,7 +1028,7 @@
       }
     },
     "Trust": {
-      "base": "Describes a trust relationship between an Microsoft AD in the AWS cloud and an external domain.",
+      "base": "<p>Describes a trust relationship between an Microsoft AD in the AWS cloud and an external domain.</p>",
       "refs": {
         "Trusts$member": null
       }
@@ -953,20 +1036,20 @@
     "TrustDirection": {
       "base": null,
       "refs": {
-        "CreateTrustRequest$TrustDirection": "The direction of the trust relationship.",
-        "Trust$TrustDirection": "The trust relationship direction."
+        "CreateTrustRequest$TrustDirection": "<p>The direction of the trust relationship.</p>",
+        "Trust$TrustDirection": "<p>The trust relationship direction.</p>"
       }
     },
     "TrustId": {
       "base": null,
       "refs": {
-        "CreateTrustResult$TrustId": "A unique identifier for the trust relationship that was created.",
-        "DeleteTrustRequest$TrustId": "The Trust ID of the trust relationship to be deleted.",
-        "DeleteTrustResult$TrustId": "The Trust ID of the trust relationship that was deleted.",
-        "Trust$TrustId": "The unique ID of the trust relationship.",
+        "CreateTrustResult$TrustId": "<p>A unique identifier for the trust relationship that was created.</p>",
+        "DeleteTrustRequest$TrustId": "<p>The Trust ID of the trust relationship to be deleted.</p>",
+        "DeleteTrustResult$TrustId": "<p>The Trust ID of the trust relationship that was deleted.</p>",
+        "Trust$TrustId": "<p>The unique ID of the trust relationship.</p>",
         "TrustIds$member": null,
-        "VerifyTrustRequest$TrustId": "The unique Trust ID of the trust relationship to verify.",
-        "VerifyTrustResult$TrustId": "The unique Trust ID of the trust relationship that was verified."
+        "VerifyTrustRequest$TrustId": "<p>The unique Trust ID of the trust relationship to verify.</p>",
+        "VerifyTrustResult$TrustId": "<p>The unique Trust ID of the trust relationship that was verified.</p>"
       }
     },
     "TrustIds": {
@@ -978,13 +1061,13 @@
     "TrustPassword": {
       "base": null,
       "refs": {
-        "CreateTrustRequest$TrustPassword": "The trust password. The must be the same password that was used when creating the trust relationship on the external domain."
+        "CreateTrustRequest$TrustPassword": "<p>The trust password. The must be the same password that was used when creating the trust relationship on the external domain.</p>"
       }
     },
     "TrustState": {
       "base": null,
       "refs": {
-        "Trust$TrustState": "The trust relationship state."
+        "Trust$TrustState": "<p>The trust relationship state.</p>"
       }
     },
     "TrustStateReason": {
@@ -996,8 +1079,8 @@
     "TrustType": {
       "base": null,
       "refs": {
-        "CreateTrustRequest$TrustType": "The trust relationship type.",
-        "Trust$TrustType": "The trust relationship type."
+        "CreateTrustRequest$TrustType": "<p>The trust relationship type.</p>",
+        "Trust$TrustType": "<p>The trust relationship type.</p>"
       }
     },
     "Trusts": {
@@ -1012,12 +1095,12 @@
       }
     },
     "UpdateConditionalForwarderRequest": {
-      "base": null,
+      "base": "<p>Updates a conditional forwarder.</p>",
       "refs": {
       }
     },
     "UpdateConditionalForwarderResult": {
-      "base": null,
+      "base": "<p>The result of an UpdateConditionalForwarder request.</p>",
       "refs": {
       }
     },
@@ -1040,19 +1123,19 @@
     "UserName": {
       "base": null,
       "refs": {
-        "DirectoryConnectSettings$CustomerUserName": "<p>The username of an account in the on-premises directory that is used to connect to the directory. This account must have the following privileges:</p> <ul> <li>Read users and groups</li> <li>Create computer objects</li> <li>Join computers to the domain</li> </ul>",
+        "DirectoryConnectSettings$CustomerUserName": "<p>The username of an account in the on-premises directory that is used to connect to the directory. This account must have the following privileges:</p> <ul> <li> <p>Read users and groups</p> </li> <li> <p>Create computer objects</p> </li> <li> <p>Join computers to the domain</p> </li> </ul>",
         "DirectoryConnectSettingsDescription$CustomerUserName": "<p>The username of the service account in the on-premises directory.</p>",
-        "DisableSsoRequest$UserName": "<p>The username of an alternate account to use to disable single-sign on. This is only used for AD Connector directories. This account must have privileges to remove a service principal name. </p> <p>If the AD Connector service account does not have privileges to remove a service principal name, you can specify an alternate account with the <i>UserName</i> and <i>Password</i> parameters. These credentials are only used to disable single sign-on and are not stored by the service. The AD Connector service account is not changed.</p>",
-        "EnableSsoRequest$UserName": "<p>The username of an alternate account to use to enable single-sign on. This is only used for AD Connector directories. This account must have privileges to add a service principal name. </p> <p>If the AD Connector service account does not have privileges to add a service principal name, you can specify an alternate account with the <i>UserName</i> and <i>Password</i> parameters. These credentials are only used to enable single sign-on and are not stored by the service. The AD Connector service account is not changed.</p>"
+        "DisableSsoRequest$UserName": "<p>The username of an alternate account to use to disable single-sign on. This is only used for AD Connector directories. This account must have privileges to remove a service principal name.</p> <p>If the AD Connector service account does not have privileges to remove a service principal name, you can specify an alternate account with the <i>UserName</i> and <i>Password</i> parameters. These credentials are only used to disable single sign-on and are not stored by the service. The AD Connector service account is not changed.</p>",
+        "EnableSsoRequest$UserName": "<p>The username of an alternate account to use to enable single-sign on. This is only used for AD Connector directories. This account must have privileges to add a service principal name.</p> <p>If the AD Connector service account does not have privileges to add a service principal name, you can specify an alternate account with the <i>UserName</i> and <i>Password</i> parameters. These credentials are only used to enable single sign-on and are not stored by the service. The AD Connector service account is not changed.</p>"
       }
     },
     "VerifyTrustRequest": {
-      "base": "Initiates the verification of an existing trust relationship between a Microsoft AD in the AWS cloud and an external domain.",
+      "base": "<p>Initiates the verification of an existing trust relationship between a Microsoft AD in the AWS cloud and an external domain.</p>",
       "refs": {
       }
     },
     "VerifyTrustResult": {
-      "base": null,
+      "base": "<p>Result of a VerifyTrust request.</p>",
       "refs": {
       }
     },

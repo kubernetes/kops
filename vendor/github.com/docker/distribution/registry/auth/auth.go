@@ -33,6 +33,7 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -47,6 +48,14 @@ const (
 	// UserNameKey is used to get the user name from
 	// a user context
 	UserNameKey = "auth.user.name"
+)
+
+var (
+	// ErrInvalidCredential is returned when the auth token does not authenticate correctly.
+	ErrInvalidCredential = errors.New("invalid authorization credential")
+
+	// ErrAuthenticationFailure returned when authentication fails.
+	ErrAuthenticationFailure = errors.New("authentication failure")
 )
 
 // UserInfo carries information about
@@ -95,6 +104,11 @@ type AccessController interface {
 	// based on the Challenge header or response status. The returned context
 	// object should have a "auth.user" value set to a UserInfo struct.
 	Authorized(ctx context.Context, access ...Access) (context.Context, error)
+}
+
+// CredentialAuthenticator is an object which is able to authenticate credentials
+type CredentialAuthenticator interface {
+	AuthenticateUser(username, password string) error
 }
 
 // WithUser returns a context with the authorized user info.

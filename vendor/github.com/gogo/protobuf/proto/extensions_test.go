@@ -428,3 +428,28 @@ func TestUnmarshalRepeatingNonRepeatedExtension(t *testing.T) {
 		}
 	}
 }
+
+func TestClearAllExtensions(t *testing.T) {
+	// unregistered extension
+	desc := &proto.ExtensionDesc{
+		ExtendedType:  (*pb.MyMessage)(nil),
+		ExtensionType: (*bool)(nil),
+		Field:         101010100,
+		Name:          "emptyextension",
+		Tag:           "varint,0,opt",
+	}
+	m := &pb.MyMessage{}
+	if proto.HasExtension(m, desc) {
+		t.Errorf("proto.HasExtension(%s): got true, want false", proto.MarshalTextString(m))
+	}
+	if err := proto.SetExtension(m, desc, proto.Bool(true)); err != nil {
+		t.Errorf("proto.SetExtension(m, desc, true): got error %q, want nil", err)
+	}
+	if !proto.HasExtension(m, desc) {
+		t.Errorf("proto.HasExtension(%s): got false, want true", proto.MarshalTextString(m))
+	}
+	proto.ClearAllExtensions(m)
+	if proto.HasExtension(m, desc) {
+		t.Errorf("proto.HasExtension(%s): got true, want false", proto.MarshalTextString(m))
+	}
+}

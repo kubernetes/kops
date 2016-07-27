@@ -38,7 +38,9 @@ var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
-const _ = proto.GoGoProtoPackageIsVersion1
+// A compilation error at this line likely means your copy of the
+// proto package needs to be updated.
+const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
 
 type Big struct {
 	Sub              *Sub   `protobuf:"bytes,1,opt,name=Sub,json=sub" json:"Sub,omitempty"`
@@ -660,11 +662,12 @@ func valueToGoStringUnmarshalmerge(v interface{}, typ string) string {
 	pv := reflect.Indirect(rv).Interface()
 	return fmt.Sprintf("func(v %v) *%v { return &v } ( %#v )", typ, typ, pv)
 }
-func extensionToGoStringUnmarshalmerge(e map[int32]github_com_gogo_protobuf_proto.Extension) string {
+func extensionToGoStringUnmarshalmerge(m github_com_gogo_protobuf_proto.Message) string {
+	e := github_com_gogo_protobuf_proto.GetUnsafeExtensionsMap(m)
 	if e == nil {
 		return "nil"
 	}
-	s := "map[int32]proto.Extension{"
+	s := "proto.NewUnsafeXXX_InternalExtensions(map[int32]proto.Extension{"
 	keys := make([]int, 0, len(e))
 	for k := range e {
 		keys = append(keys, int(k))
@@ -674,7 +677,7 @@ func extensionToGoStringUnmarshalmerge(e map[int32]github_com_gogo_protobuf_prot
 	for _, k := range keys {
 		ss = append(ss, strconv.Itoa(k)+": "+e[int32(k)].GoString())
 	}
-	s += strings.Join(ss, ",") + "}"
+	s += strings.Join(ss, ",") + "})"
 	return s
 }
 func NewPopulatedBig(r randyUnmarshalmerge, easy bool) *Big {
@@ -1655,6 +1658,8 @@ var (
 	ErrInvalidLengthUnmarshalmergeUnsafe = fmt.Errorf("proto: negative length found during unmarshaling")
 	ErrIntOverflowUnmarshalmergeUnsafe   = fmt.Errorf("proto: integer overflow")
 )
+
+func init() { proto.RegisterFile("unmarshalmerge.proto", fileDescriptorUnmarshalmerge) }
 
 var fileDescriptorUnmarshalmerge = []byte{
 	// 371 bytes of a gzipped FileDescriptorProto

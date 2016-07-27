@@ -113,7 +113,7 @@ func main() {
 	}
 	wg.Wait()
 
-	agg := stat.NewAggregate(scans.ds)
+	agg := stat.NewAggregate("scans", scans.ds, scans.tries-scans.ok)
 	log.Printf("Scans (%d ok / %d tries):\nscan times:\n%v\nthroughput (rows/second):\n%v",
 		scans.ok, scans.tries, agg, throughputString(agg))
 }

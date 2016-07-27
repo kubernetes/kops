@@ -117,3 +117,8 @@ dns-controller-image: dns-controller-build-in-docker
 dns-controller-push: dns-controller-image
 	docker push ${DOCKER_REGISTRY}/dns-controller:1.3
 
+
+
+copydeps:
+	rsync -avz _vendor/ vendor/ --exclude vendor/  --exclude .git
+

@@ -1139,6 +1139,9 @@ func (c *ECS) ListTasksRequest(input *ListTasksInput) (req *request.Request, out
 // Returns a list of tasks for a specified cluster. You can filter the results
 // by family name, by a particular container instance, or by the desired status
 // of the task with the family, containerInstance, and desiredStatus parameters.
+//
+// Recently-stopped tasks might appear in the returned results. Currently,
+// stopped tasks appear in the returned results for at least one hour.
 func (c *ECS) ListTasks(input *ListTasksInput) (*ListTasksOutput, error) {
 	req, out := c.ListTasksRequest(input)
 	err := req.Send()
@@ -1267,6 +1270,13 @@ func (c *ECS) RegisterTaskDefinitionRequest(input *RegisterTaskDefinitionInput) 
 // Optionally, you can add data volumes to your containers with the volumes
 // parameter. For more information about task definition parameters and defaults,
 // see Amazon ECS Task Definitions (http://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_defintions.html)
+// in the Amazon EC2 Container Service Developer Guide.
+//
+// You may also specify an IAM role for your task with the taskRoleArn parameter.
+// When you specify an IAM role for a task, its containers can then use the
+// latest versions of the AWS CLI or SDKs to make API requests to the AWS services
+// that are specified in the IAM policy associated with the role. For more information,
+// see IAM Roles for Tasks (http://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-iam-roles.html)
 // in the Amazon EC2 Container Service Developer Guide.
 func (c *ECS) RegisterTaskDefinition(input *RegisterTaskDefinitionInput) (*RegisterTaskDefinitionOutput, error) {
 	req, out := c.RegisterTaskDefinitionRequest(input)
@@ -1854,12 +1864,12 @@ type ContainerDefinition struct {
 	// 2 (including null), the behavior varies based on your Amazon ECS container
 	// agent version:
 	//
-	//   Agent versions less than or equal to 1.1.0: Null and zero CPU values are
-	// passed to Docker as 0, which Docker then converts to 1,024 CPU shares. CPU
-	// values of 1 are passed to Docker as 1, which the Linux kernel converts to
-	// 2 CPU shares.
+	//    Agent versions less than or equal to 1.1.0: Null and zero CPU values
+	// are passed to Docker as 0, which Docker then converts to 1,024 CPU shares.
+	// CPU values of 1 are passed to Docker as 1, which the Linux kernel converts
+	// to 2 CPU shares.
 	//
-	//   Agent versions greater than or equal to 1.2.0: Null, zero, and CPU values
+	//    Agent versions greater than or equal to 1.2.0: Null, zero, and CPU values
 	// of 1 are passed to Docker as 2.
 	Cpu *int64 `locationName:"cpu" type:"integer"`
 
@@ -1961,14 +1971,14 @@ type ContainerDefinition struct {
 	// section of the Docker Remote API (https://docs.docker.com/reference/api/docker_remote_api_v1.19/)
 	// and the IMAGE parameter of docker run (https://docs.docker.com/reference/commandline/run/).
 	//
-	//  Images in official repositories on Docker Hub use a single name (for example,
+	//   Images in official repositories on Docker Hub use a single name (for example,
 	// ubuntu or mongo).
 	//
-	//  Images in other repositories on Docker Hub are qualified with an organization
+	//   Images in other repositories on Docker Hub are qualified with an organization
 	// name (for example, amazon/amazon-ecs-agent).
 	//
-	//  Images in other online repositories are qualified further by a domain name
-	// (for example, quay.io/assemblyline/ubuntu).
+	//   Images in other online repositories are qualified further by a domain
+	// name (for example, quay.io/assemblyline/ubuntu).
 	Image *string `locationName:"image" type:"string"`
 
 	// The link parameter allows containers to communicate with each other without
@@ -2655,8 +2665,9 @@ func (s DeregisterTaskDefinitionOutput) GoString() string {
 type DescribeClustersInput struct {
 	_ struct{} `type:"structure"`
 
-	// A space-separated list of cluster names or full cluster Amazon Resource Name
-	// (ARN) entries. If you do not specify a cluster, the default cluster is assumed.
+	// A space-separated list of up to 100 cluster names or full cluster Amazon
+	// Resource Name (ARN) entries. If you do not specify a cluster, the default
+	// cluster is assumed.
 	Clusters []*string `locationName:"clusters" type:"list"`
 }
 
@@ -3400,7 +3411,12 @@ type ListTasksInput struct {
 	// The task status with which to filter the ListTasks results. Specifying a
 	// desiredStatus of STOPPED limits the results to tasks that are in the STOPPED
 	// status, which can be useful for debugging tasks that are not starting properly
-	// or have died or finished. The default status filter is RUNNING.
+	// or have died or finished. The default status filter is status filter is RUNNING,
+	// which shows tasks that ECS has set the desired status to RUNNING.
+	//
+	//  Although you can filter results based on a desired status of PENDING, this
+	// will not return any results because ECS never sets the desired status of
+	// a task to that value (only a task's lastStatus may have a value of PENDING).
 	DesiredStatus *string `locationName:"desiredStatus" type:"string" enum:"DesiredStatus"`
 
 	// The name of the family with which to filter the ListTasks results. Specifying
@@ -3751,6 +3767,11 @@ type RegisterTaskDefinitionInput struct {
 	// for your task definition. Up to 255 letters (uppercase and lowercase), numbers,
 	// hyphens, and underscores are allowed.
 	Family *string `locationName:"family" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the IAM role that containers in this task
+	// can assume. All containers in this task are granted the permissions that
+	// are specified in this role.
+	TaskRoleArn *string `locationName:"taskRoleArn" type:"string"`
 
 	// A list of volume definitions in JSON format that containers in your task
 	// may use.
@@ -4364,6 +4385,11 @@ type TaskDefinition struct {
 	// The full Amazon Resource Name (ARN) of the task definition.
 	TaskDefinitionArn *string `locationName:"taskDefinitionArn" type:"string"`
 
+	// The Amazon Resource Name (ARN) of the IAM role that containers in this task
+	// can assume. All containers in this task are granted the permissions that
+	// are specified in this role.
+	TaskRoleArn *string `locationName:"taskRoleArn" type:"string"`
+
 	// The list of volumes in a task. For more information about volume definition
 	// parameters and defaults, see Amazon ECS Task Definitions (http://docs.aws.amazon.com/http:/docs.aws.amazon.com/AmazonECS/latest/developerguidetask_defintions.html)
 	// in the Amazon EC2 Container Service Developer Guide.
@@ -4386,6 +4412,11 @@ type TaskOverride struct {
 
 	// One or more container overrides sent to a task.
 	ContainerOverrides []*ContainerOverride `locationName:"containerOverrides" type:"list"`
+
+	// The Amazon Resource Name (ARN) of the IAM role that containers in this task
+	// can assume. All containers in this task are granted the permissions that
+	// are specified in this role.
+	TaskRoleArn *string `locationName:"taskRoleArn" type:"string"`
 }
 
 // String returns the string representation

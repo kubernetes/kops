@@ -89,7 +89,7 @@ func config(ctx context.Context) (*Client, string) {
 	return client, p
 }
 
-func TestAdminClient(t *testing.T) {
+func TestBucketMethods(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Integration tests skipped in short mode")
 	}
@@ -101,29 +101,29 @@ func TestAdminClient(t *testing.T) {
 	projectID := testutil.ProjID()
 
 	newBucket := projectID + suffix
-	t.Logf("Testing admin with Bucket %q", newBucket)
+	t.Logf("Testing with Bucket %q", newBucket)
 
-	client, err := NewAdminClient(ctx, projectID, cloud.WithTokenSource(ts))
+	client, err := NewClient(ctx, cloud.WithTokenSource(ts))
 	if err != nil {
 		t.Fatalf("Could not create client: %v", err)
 	}
 	defer client.Close()
 
-	if err := client.CreateBucket(ctx, newBucket, nil); err != nil {
-		t.Errorf("CreateBucket(%v, %v) failed %v", newBucket, nil, err)
+	if err := client.Bucket(newBucket).Create(ctx, projectID, nil); err != nil {
+		t.Errorf("Bucket(%v).Create(%v, %v) failed: %v", newBucket, projectID, nil, err)
 	}
-	if err := client.DeleteBucket(ctx, newBucket); err != nil {
-		t.Errorf("DeleteBucket(%v) failed %v", newBucket, err)
+	if err := client.Bucket(newBucket).Delete(ctx); err != nil {
+		t.Errorf("Bucket(%v).Delete failed: %v", newBucket, err)
 		t.Logf("TODO: Warning this test left a new bucket in the cloud project, it must be deleted manually")
 	}
 	attrs := BucketAttrs{
 		DefaultObjectACL: []ACLRule{{Entity: "domain-google.com", Role: RoleReader}},
 	}
-	if err := client.CreateBucket(ctx, newBucket, &attrs); err != nil {
-		t.Errorf("CreateBucket(%v, %v) failed %v", newBucket, attrs, err)
+	if err := client.Bucket(newBucket).Create(ctx, projectID, &attrs); err != nil {
+		t.Errorf("Bucket(%v).Create(%v, %v) failed: %v", newBucket, projectID, attrs, err)
 	}
-	if err := client.DeleteBucket(ctx, newBucket); err != nil {
-		t.Errorf("DeleteBucket(%v) failed %v", newBucket, err)
+	if err := client.Bucket(newBucket).Delete(ctx); err != nil {
+		t.Errorf("Bucket(%v).Delete failed: %v", newBucket, err)
 		t.Logf("TODO: Warning this test left a new bucket in the cloud project, it must be deleted manually")
 	}
 }
@@ -191,6 +191,30 @@ func TestObjects(t *testing.T) {
 			t.Errorf("Close for %v failed with %v", obj, err)
 		}
 		contents[obj] = c
+	}
+
+	// Test bucket.List.
+	q := &Query{Prefix: "obj"}
+	missing := map[string]bool{}
+	for _, o := range objects {
+		missing[o] = true
+	}
+	for {
+		objs, err := bkt.List(ctx, q)
+		if err != nil {
+			t.Errorf("List: %v", err)
+			break
+		}
+		for _, oa := range objs.Results {
+			delete(missing, oa.Name)
+		}
+		if objs.Next == nil {
+			break
+		}
+		q = objs.Next
+	}
+	if len(missing) > 0 {
+		t.Errorf("bucket.List: missing %v", missing)
 	}
 
 	// Test Reader.
@@ -486,8 +510,15 @@ func TestACL(t *testing.T) {
 	bkt := client.Bucket(bucket)
 
 	entity := ACLEntity("domain-google.com")
-	if err := client.Bucket(bucket).DefaultObjectACL().Set(ctx, entity, RoleReader); err != nil {
+	rule := ACLRule{Entity: entity, Role: RoleReader}
+	if err := bkt.DefaultObjectACL().Set(ctx, entity, RoleReader); err != nil {
 		t.Errorf("Can't put default ACL rule for the bucket, errored with %v", err)
+	}
+	acl, err := bkt.DefaultObjectACL().List(ctx)
+	if err != nil {
+		t.Errorf("DefaultObjectACL.List for bucket %q: %v", bucket, err)
+	} else if !hasRule(acl, rule) {
+		t.Errorf("default ACL missing %#v", rule)
 	}
 	aclObjects := []string{"acl1" + suffix, "acl2" + suffix}
 	for _, obj := range aclObjects {
@@ -503,42 +534,46 @@ func TestACL(t *testing.T) {
 	}
 	name := aclObjects[0]
 	o := bkt.Object(name)
-	acl, err := o.ACL().List(ctx)
+	acl, err = o.ACL().List(ctx)
 	if err != nil {
 		t.Errorf("Can't retrieve ACL of %v", name)
-	}
-	aclFound := false
-	for _, rule := range acl {
-		if rule.Entity == entity && rule.Role == RoleReader {
-			aclFound = true
-		}
-	}
-	if !aclFound {
-		t.Error("Expected to find an ACL rule for google.com domain users, but not found")
+	} else if !hasRule(acl, rule) {
+		t.Errorf("object ACL missing %+v", rule)
 	}
 	if err := o.ACL().Delete(ctx, entity); err != nil {
-		t.Errorf("Can't delete the ACL rule for the entity: %v", entity)
+		t.Errorf("object ACL: could not delete entity %s", entity)
+	}
+	// Delete the default ACL rule. We can't move this code earlier in the
+	// test, because the test depends on the fact that the object ACL inherits
+	// it.
+	if err := bkt.DefaultObjectACL().Delete(ctx, entity); err != nil {
+		t.Errorf("default ACL: could not delete entity %s", entity)
 	}
 
-	if err := bkt.ACL().Set(ctx, "user-jbd@google.com", RoleReader); err != nil {
+	entity2 := ACLEntity("user-jbd@google.com")
+	rule2 := ACLRule{Entity: entity2, Role: RoleReader}
+	if err := bkt.ACL().Set(ctx, entity2, RoleReader); err != nil {
 		t.Errorf("Error while putting bucket ACL rule: %v", err)
 	}
 	bACL, err := bkt.ACL().List(ctx)
 	if err != nil {
 		t.Errorf("Error while getting the ACL of the bucket: %v", err)
+	} else if !hasRule(bACL, rule2) {
+		t.Errorf("bucket ACL missing %+v", rule2)
 	}
-	bACLFound := false
-	for _, rule := range bACL {
-		if rule.Entity == "user-jbd@google.com" && rule.Role == RoleReader {
-			bACLFound = true
-		}
-	}
-	if !bACLFound {
-		t.Error("Expected to find an ACL rule for jbd@google.com user, but not found")
-	}
-	if err := bkt.ACL().Delete(ctx, "user-jbd@google.com"); err != nil {
+	if err := bkt.ACL().Delete(ctx, entity2); err != nil {
 		t.Errorf("Error while deleting bucket ACL rule: %v", err)
 	}
+
+}
+
+func hasRule(acl []ACLRule, rule ACLRule) bool {
+	for _, r := range acl {
+		if r == rule {
+			return true
+		}
+	}
+	return false
 }
 
 func TestValidObjectNames(t *testing.T) {

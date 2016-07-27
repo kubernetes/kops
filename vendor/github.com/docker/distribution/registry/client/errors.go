@@ -11,7 +11,7 @@ import (
 	"github.com/docker/distribution/registry/api/errcode"
 )
 
-// ErrNoErrorsInBody is returned when a HTTP response body parses to an empty
+// ErrNoErrorsInBody is returned when an HTTP response body parses to an empty
 // errcode.Errors slice.
 var ErrNoErrorsInBody = errors.New("no error details found in HTTP response body")
 
@@ -51,10 +51,14 @@ func parseHTTPErrorResponse(statusCode int, r io.Reader) error {
 	}
 	err = json.Unmarshal(body, &detailsErr)
 	if err == nil && detailsErr.Details != "" {
-		if statusCode == http.StatusUnauthorized {
+		switch statusCode {
+		case http.StatusUnauthorized:
 			return errcode.ErrorCodeUnauthorized.WithMessage(detailsErr.Details)
+		case http.StatusTooManyRequests:
+			return errcode.ErrorCodeTooManyRequests.WithMessage(detailsErr.Details)
+		default:
+			return errcode.ErrorCodeUnknown.WithMessage(detailsErr.Details)
 		}
-		return errcode.ErrorCodeUnknown.WithMessage(detailsErr.Details)
 	}
 
 	if err := json.Unmarshal(body, &errors); err != nil {

@@ -799,6 +799,12 @@ func (c *SSM) DescribeInstanceInformationRequest(input *DescribeInstanceInformat
 		Name:       opDescribeInstanceInformation,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -821,6 +827,31 @@ func (c *SSM) DescribeInstanceInformation(input *DescribeInstanceInformationInpu
 	req, out := c.DescribeInstanceInformationRequest(input)
 	err := req.Send()
 	return out, err
+}
+
+// DescribeInstanceInformationPages iterates over the pages of a DescribeInstanceInformation operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeInstanceInformation method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//    // Example iterating over at most 3 pages of a DescribeInstanceInformation operation.
+//    pageNum := 0
+//    err := client.DescribeInstanceInformationPages(params,
+//        func(page *DescribeInstanceInformationOutput, lastPage bool) bool {
+//            pageNum++
+//            fmt.Println(page)
+//            return pageNum <= 3
+//        })
+//
+func (c *SSM) DescribeInstanceInformationPages(input *DescribeInstanceInformationInput, fn func(p *DescribeInstanceInformationOutput, lastPage bool) (shouldContinue bool)) error {
+	page, _ := c.DescribeInstanceInformationRequest(input)
+	page.Handlers.Build.PushBack(request.MakeAddToUserAgentFreeFormHandler("Paginator"))
+	return page.EachPage(func(p interface{}, lastPage bool) bool {
+		return fn(p.(*DescribeInstanceInformationOutput), lastPage)
+	})
 }
 
 const opGetDocument = "GetDocument"
@@ -1813,6 +1844,9 @@ type Command struct {
 	// The instance IDs against which this command was requested.
 	InstanceIds []*string `min:"1" type:"list"`
 
+	// Configurations for sending notifications about command status changes.
+	NotificationConfig *NotificationConfig `type:"structure"`
+
 	// The S3 bucket where the responses to the command executions should be stored.
 	// This was requested when issuing the command.
 	OutputS3BucketName *string `min:"3" type:"string"`
@@ -1827,6 +1861,10 @@ type Command struct {
 
 	// The date and time the command was requested.
 	RequestedDateTime *time.Time `type:"timestamp" timestampFormat:"unix"`
+
+	// The IAM service role that SSM uses to act on your behalf when sending notifications
+	// about command status changes.
+	ServiceRole *string `type:"string"`
 
 	// The status of the command.
 	Status *string `type:"string" enum:"CommandStatus"`
@@ -1905,8 +1943,16 @@ type CommandInvocation struct {
 	// The instance ID in which this invocation was requested.
 	InstanceId *string `type:"string"`
 
+	// Configurations for sending notifications about command status changes on
+	// a per instance basis.
+	NotificationConfig *NotificationConfig `type:"structure"`
+
 	// The time and date the request was sent to this instance.
 	RequestedDateTime *time.Time `type:"timestamp" timestampFormat:"unix"`
+
+	// The IAM service role that SSM uses to act on your behalf when sending notifications
+	// about command status changes on a per instance basis.
+	ServiceRole *string `type:"string"`
 
 	// Whether or not the invocation succeeded, failed, or is pending.
 	Status *string `type:"string" enum:"CommandInvocationStatus"`
@@ -3467,6 +3513,36 @@ func (s ModifyDocumentPermissionOutput) GoString() string {
 	return s.String()
 }
 
+// Configurations for sending notifications.
+type NotificationConfig struct {
+	_ struct{} `type:"structure"`
+
+	// An Amazon Resource Name (ARN) for a Simple Notification Service (SNS) topic.
+	// SSM pushes notifications about command status changes to this topic.
+	NotificationArn *string `type:"string"`
+
+	// The different events for which you can receive notifications. These events
+	// include the following: All (events), InProgress, Success, TimedOut, Cancelled,
+	// Failed. To learn more about these events, see Monitoring Commands (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/monitor-commands.html)
+	// in the Amazon Elastic Compute Cloud User Guide .
+	NotificationEvents []*string `type:"list"`
+
+	// Command: Receive notification when the status of a command changes. Invocation:
+	// For commands sent to multiple instances, receive notification on a per-instance
+	// basis when the status of a command changes.
+	NotificationType *string `type:"string" enum:"NotificationType"`
+}
+
+// String returns the string representation
+func (s NotificationConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s NotificationConfig) GoString() string {
+	return s.String()
+}
+
 type RemoveTagsFromResourceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3548,6 +3624,9 @@ type SendCommandInput struct {
 	// a maximum of 50 IDs.
 	InstanceIds []*string `min:"1" type:"list" required:"true"`
 
+	// Configurations for sending notifications.
+	NotificationConfig *NotificationConfig `type:"structure"`
+
 	// The name of the S3 bucket where command execution responses should be stored.
 	OutputS3BucketName *string `min:"3" type:"string"`
 
@@ -3558,6 +3637,9 @@ type SendCommandInput struct {
 	// The required and optional parameters specified in the SSM document being
 	// executed.
 	Parameters map[string][]*string `type:"map"`
+
+	// The IAM role that SSM uses to send notifications.
+	ServiceRoleArn *string `type:"string"`
 
 	// If this time is reached and the command has not already started executing,
 	// it will not execute.
@@ -3920,6 +4002,28 @@ const (
 	InstanceInformationFilterKeyIamRole = "IamRole"
 	// @enum InstanceInformationFilterKey
 	InstanceInformationFilterKeyResourceType = "ResourceType"
+)
+
+const (
+	// @enum NotificationEvent
+	NotificationEventAll = "All"
+	// @enum NotificationEvent
+	NotificationEventInProgress = "InProgress"
+	// @enum NotificationEvent
+	NotificationEventSuccess = "Success"
+	// @enum NotificationEvent
+	NotificationEventTimedOut = "TimedOut"
+	// @enum NotificationEvent
+	NotificationEventCancelled = "Cancelled"
+	// @enum NotificationEvent
+	NotificationEventFailed = "Failed"
+)
+
+const (
+	// @enum NotificationType
+	NotificationTypeCommand = "Command"
+	// @enum NotificationType
+	NotificationTypeInvocation = "Invocation"
 )
 
 const (

@@ -177,7 +177,8 @@
         "NotAfter":{"shape":"TStamp"},
         "KeyAlgorithm":{"shape":"KeyAlgorithm"},
         "SignatureAlgorithm":{"shape":"String"},
-        "InUseBy":{"shape":"InUseList"}
+        "InUseBy":{"shape":"InUseList"},
+        "FailureReason":{"shape":"FailureReason"}
       }
     },
     "CertificateStatus":{
@@ -230,7 +231,7 @@
     "DomainList":{
       "type":"list",
       "member":{"shape":"DomainNameString"},
-      "max":1000,
+      "max":100,
       "min":1
     },
     "DomainNameString":{
@@ -268,8 +269,18 @@
     "DomainValidationOptionList":{
       "type":"list",
       "member":{"shape":"DomainValidationOption"},
-      "max":1000,
+      "max":100,
       "min":1
+    },
+    "FailureReason":{
+      "type":"string",
+      "enum":[
+        "NO_AVAILABLE_CONTACTS",
+        "ADDITIONAL_VERIFICATION_REQUIRED",
+        "DOMAIN_NOT_ALLOWED",
+        "INVALID_PUBLIC_DOMAIN",
+        "OTHER"
+      ]
     },
     "GetCertificateRequest":{
       "type":"structure",

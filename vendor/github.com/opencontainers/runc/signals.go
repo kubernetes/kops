@@ -9,6 +9,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/opencontainers/runc/libcontainer"
+	"github.com/opencontainers/runc/libcontainer/system"
 	"github.com/opencontainers/runc/libcontainer/utils"
 )
 
@@ -16,7 +17,13 @@ const signalBufferSize = 2048
 
 // newSignalHandler returns a signal handler for processing SIGCHLD and SIGWINCH signals
 // while still forwarding all other signals to the process.
-func newSignalHandler(tty *tty) *signalHandler {
+func newSignalHandler(tty *tty, enableSubreaper bool) *signalHandler {
+	if enableSubreaper {
+		// set us as the subreaper before registering the signal handler for the container
+		if err := system.SetSubreaper(1); err != nil {
+			logrus.Warn(err)
+		}
+	}
 	// ensure that we have a large buffer size so that we do not miss any signals
 	// incase we are not processing them fast enough.
 	s := make(chan os.Signal, signalBufferSize)
@@ -106,8 +113,4 @@ func (h *signalHandler) reap() (exits []exit, err error) {
 			status: utils.ExitStatus(ws),
 		})
 	}
-}
-
-func (h *signalHandler) Close() error {
-	return h.tty.Close()
 }
