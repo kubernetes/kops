@@ -32,7 +32,7 @@ func NewPodController(kubeClient *client.CoreClient, dns dns.Context) (*PodContr
 	}
 	c := &PodController{
 		kubeClient: kubeClient,
-		scope:        scope,
+		scope:      scope,
 	}
 
 	return c, nil
@@ -127,7 +127,7 @@ func (c *PodController) updatePodRecords(pod *v1.Pod) {
 		var aliases []string
 		if pod.Spec.HostNetwork {
 			if pod.Spec.NodeName != "" {
-				aliases = append(aliases, "node/" + pod.Spec.NodeName + "/external")
+				aliases = append(aliases, "node/"+pod.Spec.NodeName+"/external")
 			}
 		} else {
 			glog.V(4).Infof("Pod %q had %s=%s, but was not HostNetwork", pod.Name, AnnotationNameDnsExternal, specExternal)
