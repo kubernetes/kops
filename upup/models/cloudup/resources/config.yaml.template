@@ -1,8 +1,5 @@
 Tags:
-{{ range $tag := Args }}
-  - {{ $tag }}
-{{ end }}
-{{ range $tag := NodeUpTags }}
+{{ range $tag := ComputeNodeTags Args }}
   - {{ $tag }}
 {{ end }}
 
