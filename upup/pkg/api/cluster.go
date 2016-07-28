@@ -94,6 +94,15 @@ type ClusterSpec struct {
 	// Currently only a single CIDR is supported (though a richer grammar could be added in future)
 	AdminAccess []string `json:"adminAccess,omitempty"`
 
+	// IsolatesMasters determines whether we should lock down masters so that they are not on the pod network.
+	// true is the kube-up behaviour, but it is very surprising: it means that daemonsets only work on the master
+	// if they have hostNetwork=true.
+	// false is now the default, and it will:
+	//  * give the master a normal PodCIDR
+	//  * run kube-proxy on the master
+	//  * enable debugging handlers on the master, so kubectl logs works
+	IsolateMasters *bool `json:"isolateMasters,omitempty"`
+
 	//NetworkProvider               string `json:",omitempty"`
 	//
 	//HairpinMode                   string `json:",omitempty"`
