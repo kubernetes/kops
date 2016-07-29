@@ -48,12 +48,18 @@ func (c *DescribeSecretsCommand) Run() error {
 		if err != nil {
 			return err
 		}
-		ids, err := caStore.List()
+		items, err := caStore.List()
 		if err != nil {
 			return fmt.Errorf("error listing CA store items %v", err)
 		}
 
-		for _, id := range ids {
+		for _, item := range items {
+			if item.Type != fi.SecretTypeKeypair {
+				continue
+			}
+
+			id := item.Name
+
 			cert, err := caStore.FindCert(id)
 			if err != nil {
 				return fmt.Errorf("error retrieving cert %q: %v", id, err)
