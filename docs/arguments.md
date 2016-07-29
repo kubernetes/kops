@@ -1,13 +1,5 @@
 # Detailed description of arguments
 
-# create
-
-## ssh-public-key
-
-`--ssh-public-key` is the path to the SSH public key to set up on the cluster.  (The SSH username is admin)
-
-This will automatically create an SSH public-key in the keystore (`kubectl get secret`) with a name of `admin`.
-
 ## admin-access
 
 `admin-access` controls the CIDR which can access the admin endpoints (SSH to each node, HTTPS to the master).

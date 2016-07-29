@@ -6,15 +6,17 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/upup/pkg/kutil"
 	"strings"
 )
 
 type UpdateClusterCmd struct {
-	Yes    bool
-	Target string
-	Models string
-	OutDir string
+	Yes          bool
+	Target       string
+	Models       string
+	OutDir       string
+	SSHPublicKey string
 }
 
 var updateCluster UpdateClusterCmd
@@ -37,6 +39,7 @@ func init() {
 	cmd.Flags().BoolVar(&updateCluster.Yes, "yes", false, "Actually create cloud resources")
 	cmd.Flags().StringVar(&updateCluster.Target, "target", "direct", "Target - direct, terraform")
 	cmd.Flags().StringVar(&updateCluster.Models, "model", "config,proto,cloudup", "Models to apply (separate multiple models with commas)")
+	cmd.Flags().StringVar(&updateCluster.SSHPublicKey, "ssh-public-key", "~/.ssh/id_rsa.pub", "SSH public key to use")
 	cmd.Flags().StringVar(&updateCluster.OutDir, "out", "", "Path to write any local output")
 }
 
@@ -83,6 +86,10 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 		return err
 	}
 
+	if c.SSHPublicKey != "" {
+		c.SSHPublicKey = utils.ExpandPath(c.SSHPublicKey)
+	}
+
 	strict := false
 	err = api.DeepValidate(cluster, fullInstanceGroups, strict)
 	if err != nil {
@@ -95,6 +102,7 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 		Models:          strings.Split(c.Models, ","),
 		ClusterRegistry: clusterRegistry,
 		Target:          c.Target,
+		SSHPublicKey:    c.SSHPublicKey,
 		OutDir:          c.OutDir,
 		DryRun:          isDryrun,
 	}
