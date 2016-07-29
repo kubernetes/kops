@@ -6,7 +6,6 @@ import (
 	"crypto/x509"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"k8s.io/kops/upup/pkg/fi"
 	"net"
 	"strings"
 )
@@ -63,13 +62,9 @@ func (cmd *CreateSecretsCommand) Run() error {
 			if err != nil {
 				return err
 			}
-			secret, err := fi.CreateSecret()
+			_, created, err := secretStore.GetOrCreateSecret(cmd.Id)
 			if err != nil {
-				return fmt.Errorf("error creating secret: %v", err)
-			}
-			_, created, err := secretStore.GetOrCreateSecret(cmd.Id, secret)
-			if err != nil {
-				return fmt.Errorf("error creating secret: %v", err)
+				return fmt.Errorf("error creating secrets %v", err)
 			}
 			if !created {
 				return fmt.Errorf("secret already exists")

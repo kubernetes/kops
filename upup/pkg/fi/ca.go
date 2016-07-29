@@ -28,19 +28,6 @@ type Certificate struct {
 	PublicKey   crypto.PublicKey
 }
 
-const (
-	SecretTypeSSHPublicKey = "SSHPublicKey"
-	SecretTypeKeypair      = "Keypair"
-	SecretTypeSecret       = "Secret"
-)
-
-type KeystoreItem struct {
-	Type string
-	Name string
-	Id   string
-	Data []byte
-}
-
 func (c *Certificate) UnmarshalJSON(b []byte) error {
 	s := ""
 	if err := json.Unmarshal(b, &s); err == nil {
@@ -80,33 +67,26 @@ func (c *Certificate) MarshalJSON() ([]byte, error) {
 
 type CAStore interface {
 	// Cert returns the primary specified certificate
-	Cert(name string) (*Certificate, error)
+	Cert(id string) (*Certificate, error)
 	// CertificatePool returns all active certificates with the specified id
-	CertificatePool(name string) (*CertificatePool, error)
-	PrivateKey(name string) (*PrivateKey, error)
+	CertificatePool(id string) (*CertificatePool, error)
+	PrivateKey(id string) (*PrivateKey, error)
 
-	FindCert(name string) (*Certificate, error)
-	FindPrivateKey(name string) (*PrivateKey, error)
+	FindCert(id string) (*Certificate, error)
+	FindPrivateKey(id string) (*PrivateKey, error)
 
 	//IssueCert(id string, privateKey *PrivateKey, template *x509.Certificate) (*Certificate, error)
 	//CreatePrivateKey(id string) (*PrivateKey, error)
 
-	CreateKeypair(name string, template *x509.Certificate) (*Certificate, *PrivateKey, error)
+	CreateKeypair(id string, template *x509.Certificate) (*Certificate, *PrivateKey, error)
 
-	// List will list all the items, but will not fetch the data
-	List() ([]*KeystoreItem, error)
+	List() ([]string, error)
 
 	// VFSPath returns the path where the CAStore is stored
 	VFSPath() vfs.Path
 
 	// AddCert adds an alternative certificate to the pool (primarily useful for CAs)
-	AddCert(name string, cert *Certificate) error
-
-	// AddSSHPublicKey adds an SSH public key
-	AddSSHPublicKey(name string, data []byte) error
-
-	// FindSSHPublicKeys retrieves the SSH public keys with the specific name
-	FindSSHPublicKeys(name string) ([]*KeystoreItem, error)
+	AddCert(id string, cert *Certificate) error
 }
 
 func (c *Certificate) AsString() (string, error) {
