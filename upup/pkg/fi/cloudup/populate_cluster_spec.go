@@ -262,6 +262,10 @@ func (c *populateClusterSpec) run() error {
 		tags["_master_dns"] = struct{}{}
 	}
 
+	if fi.BoolValue(cluster.Spec.IsolateMasters) {
+		tags["_isolate_masters"] = struct{}{}
+	}
+
 	cloud, err := BuildCloud(cluster)
 	if err != nil {
 		return err
