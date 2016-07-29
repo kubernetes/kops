@@ -3,6 +3,7 @@ package cloudup
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"io/ioutil"
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -31,7 +32,8 @@ type ApplyClusterCmd struct {
 	Target string
 	//// The node model to use
 	//NodeModel string
-
+	// The SSH public key (file) to use
+	SSHPublicKey string
 	// OutDir is a local directory in which we place output, can cache files etc
 	OutDir string
 
@@ -235,23 +237,11 @@ func (c *ApplyClusterCmd) Run() error {
 				"dnsZone": &awstasks.DNSZone{},
 			})
 
-			l.TemplateFunctions["MachineTypeInfo"] = awsup.GetMachineTypeInfo
-
-			{
-				sshPublicKeys, err := keyStore.FindSSHPublicKeys("admin")
-				if err != nil {
-					return fmt.Errorf("error reading SSH public key %q: %v", "admin", err)
-				}
-				if len(sshPublicKeys) == 0 {
-					return fmt.Errorf("Must specify SSH public key when running with AWS")
-				}
-				if len(sshPublicKeys) != 1 {
-					glog.Warningf("Found multiple SSH public keys - choosing arbitrarily")
-				}
-				sshPublicKey := sshPublicKeys[0]
-				l.Resources["ssh-public-key"] = fi.NewStringResource(string(sshPublicKey.Data))
+			if c.SSHPublicKey == "" {
+				return fmt.Errorf("SSH public key must be specified when running with AWS")
 			}
 
+			l.TemplateFunctions["MachineTypeInfo"] = awsup.GetMachineTypeInfo
 		}
 
 	default:
@@ -357,6 +347,15 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	tf.AddTo(l.TemplateFunctions)
+
+	if c.SSHPublicKey != "" {
+		authorized, err := ioutil.ReadFile(c.SSHPublicKey)
+		if err != nil {
+			return fmt.Errorf("error reading SSH key file %q: %v", c.SSHPublicKey, err)
+		}
+
+		l.Resources["ssh-public-key"] = fi.NewStringResource(string(authorized))
+	}
 
 	taskMap, err := l.BuildTasks(modelStore, c.Models)
 	if err != nil {
