@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	"io/ioutil"
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -110,6 +111,17 @@ func (c *CreateClusterCmd) Run(args []string) error {
 
 	if c.OutDir == "" {
 		c.OutDir = "out"
+	}
+
+	var sshPublicKeyData []byte
+	if c.SSHPublicKey != "" {
+		sshPublicKey := c.SSHPublicKey
+		sshPublicKey = utils.ExpandPath(sshPublicKey)
+		authorized, err := ioutil.ReadFile(sshPublicKey)
+		if err != nil {
+			return fmt.Errorf("error reading SSH key file %q: %v", sshPublicKey, err)
+		}
+		sshPublicKeyData = authorized
 	}
 
 	clusterRegistry, err := rootCommand.ClusterRegistry()
@@ -297,10 +309,6 @@ func (c *CreateClusterCmd) Run(args []string) error {
 		}
 	}
 
-	if c.SSHPublicKey != "" {
-		c.SSHPublicKey = utils.ExpandPath(c.SSHPublicKey)
-	}
-
 	if c.AdminAccess != "" {
 		cluster.Spec.AdminAccess = []string{c.AdminAccess}
 	}
@@ -345,6 +353,14 @@ func (c *CreateClusterCmd) Run(args []string) error {
 		return fmt.Errorf("error writing updated configuration: %v", err)
 	}
 
+	if sshPublicKeyData != nil {
+		keystore := clusterRegistry.KeyStore(clusterName)
+		err := keystore.AddSSHPublicKey("admin", sshPublicKeyData)
+		if err != nil {
+			return fmt.Errorf("error storing SSH public key: %v", err)
+		}
+	}
+
 	err = clusterRegistry.WriteCompletedConfig(fullCluster)
 	if err != nil {
 		return fmt.Errorf("error writing completed cluster spec: %v", err)
@@ -360,7 +376,6 @@ func (c *CreateClusterCmd) Run(args []string) error {
 		Models:          strings.Split(c.Models, ","),
 		ClusterRegistry: clusterRegistry,
 		Target:          c.Target,
-		SSHPublicKey:    c.SSHPublicKey,
 		OutDir:          c.OutDir,
 		DryRun:          isDryrun,
 	}

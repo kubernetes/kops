@@ -28,6 +28,13 @@ type Certificate struct {
 	PublicKey   crypto.PublicKey
 }
 
+type KeystoreItem struct {
+	Type string
+	Name string
+	Id   string
+	Data []byte
+}
+
 func (c *Certificate) UnmarshalJSON(b []byte) error {
 	s := ""
 	if err := json.Unmarshal(b, &s); err == nil {
@@ -87,6 +94,12 @@ type CAStore interface {
 
 	// AddCert adds an alternative certificate to the pool (primarily useful for CAs)
 	AddCert(id string, cert *Certificate) error
+
+	// AddSSHPublicKey adds an SSH public key
+	AddSSHPublicKey(id string, data []byte) error
+
+	// FindSSHPublicKeys retrieves the SSH public keys with the specific name
+	FindSSHPublicKeys(name string) ([]*KeystoreItem, error)
 }
 
 func (c *Certificate) AsString() (string, error) {
