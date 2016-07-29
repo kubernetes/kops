@@ -24,9 +24,6 @@ type ApplyClusterCmd struct {
 	// NodeUpSource is the location from which we download nodeup
 	NodeUpSource string
 
-	// Tags to pass to NodeUp
-	NodeUpTags []string
-
 	// Models is a list of cloudup models to apply
 	Models []string
 
@@ -131,7 +128,8 @@ func (c *ApplyClusterCmd) Run() error {
 
 	checkExisting := true
 
-	c.NodeUpTags = append(c.NodeUpTags, "_protokube")
+	var nodeUpTags []string
+	nodeUpTags = append(nodeUpTags, "_protokube")
 
 	if useMasterASG {
 		tags["_master_asg"] = struct{}{}
@@ -147,6 +145,10 @@ func (c *ApplyClusterCmd) Run() error {
 
 	if cluster.Spec.MasterPublicName != "" {
 		tags["_master_dns"] = struct{}{}
+	}
+
+	if fi.BoolValue(cluster.Spec.IsolateMasters) {
+		tags["_isolate_masters"] = struct{}{}
 	}
 
 	l.AddTypes(map[string]interface{}{
@@ -171,7 +173,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 			glog.Fatalf("GCE is (probably) not working currently - please ping @justinsb for cleanup")
 			tags["_gce"] = struct{}{}
-			c.NodeUpTags = append(c.NodeUpTags, "_gce")
+			nodeUpTags = append(nodeUpTags, "_gce")
 
 			l.AddTypes(map[string]interface{}{
 				"persistentDisk":       &gcetasks.PersistentDisk{},
@@ -190,7 +192,7 @@ func (c *ApplyClusterCmd) Run() error {
 			region = awsCloud.Region
 
 			tags["_aws"] = struct{}{}
-			c.NodeUpTags = append(c.NodeUpTags, "_aws")
+			nodeUpTags = append(nodeUpTags, "_aws")
 
 			l.AddTypes(map[string]interface{}{
 				// EC2
@@ -273,8 +275,26 @@ func (c *ApplyClusterCmd) Run() error {
 		return secretStore
 	}
 
-	l.TemplateFunctions["NodeUpTags"] = func() []string {
-		return c.NodeUpTags
+	l.TemplateFunctions["ComputeNodeTags"] = func(args []string) []string {
+		var tags []string
+		for _, tag := range nodeUpTags {
+			tags = append(tags, tag)
+		}
+
+		isMaster := false
+		for _, arg := range args {
+			tags = append(tags, arg)
+			if arg == "_kubernetes_master" {
+				isMaster = true
+			}
+		}
+
+		if isMaster && !fi.BoolValue(cluster.Spec.IsolateMasters) {
+			// Run this master as a pool node also (start kube-proxy etc)
+			tags = append(tags, "_kubernetes_pool")
+		}
+
+		return tags
 	}
 
 	//// TotalNodeCount computes the total count of nodes
