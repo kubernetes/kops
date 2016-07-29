@@ -2,14 +2,12 @@ package fi
 
 import (
 	"bytes"
-	"crypto/md5"
 	crypto_rand "crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"fmt"
 	"github.com/golang/glog"
-	"golang.org/x/crypto/ssh"
 	"k8s.io/kops/upup/pkg/fi/vfs"
 	"math/big"
 	"os"
@@ -26,10 +24,6 @@ type VFSCAStore struct {
 	cacheCaCertificates *certificates
 	cacheCaPrivateKeys  *privateKeys
 }
-
-const (
-	SecretTypeSSHPublicKey = "SSHPublicKey"
-)
 
 var _ CAStore = &VFSCAStore{}
 
@@ -577,94 +571,4 @@ func buildSerial(timestamp int64) *big.Int {
 	serial.Or(serial, randomComponent)
 
 	return serial
-}
-
-// AddSSHPublicKey stores an SSH public key
-func (c *VFSCAStore) AddSSHPublicKey(name string, pubkey []byte) error {
-	var id string
-	{
-		sshPublicKey, _, _, _, err := ssh.ParseAuthorizedKey(pubkey)
-		if err != nil {
-			return fmt.Errorf("error parsing public key: %v", err)
-		}
-
-		// compute fingerprint to serve as id
-		h := md5.New()
-		_, err = h.Write(sshPublicKey.Marshal())
-		if err != nil {
-			return err
-		}
-		id = fmt.Sprintf("%x", h.Sum(nil))
-	}
-
-	p := c.buildSSHPublicKeyPath(name, id)
-	return c.storeData(pubkey, p)
-}
-
-func (c *VFSCAStore) buildSSHPublicKeyPath(name string, id string) vfs.Path {
-	return c.basedir.Join("ssh", "public", name, id)
-}
-
-func (c *VFSCAStore) storeData(data []byte, p vfs.Path) error {
-	return p.WriteFile(data)
-}
-
-func (c *VFSCAStore) FindSSHPublicKeys(name string) ([]*KeystoreItem, error) {
-	p := c.basedir.Join("ssh", "public", name)
-
-	items, err := c.loadPath(p)
-	if err != nil {
-		return nil, err
-	}
-	for _, item := range items {
-		item.Type = SecretTypeSSHPublicKey
-		item.Name = name
-	}
-	return items, nil
-}
-
-func (c *VFSCAStore) loadPath(p vfs.Path) ([]*KeystoreItem, error) {
-	files, err := p.ReadDir()
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, nil
-		}
-		return nil, err
-	}
-
-	var keystoreItems []*KeystoreItem
-
-	for _, f := range files {
-		data, err := f.ReadFile()
-		if err != nil {
-			if os.IsNotExist(err) {
-				glog.V(2).Infof("Ignoring not-found issue reading %q", f)
-				continue
-			}
-			return nil, fmt.Errorf("error loading keystore item %q: %v", f, err)
-		}
-		name := f.Base()
-		keystoreItem := &KeystoreItem{
-			Id:   name,
-			Data: data,
-		}
-		keystoreItems = append(keystoreItems, keystoreItem)
-	}
-
-	return keystoreItems, nil
-}
-
-func (c *VFSCAStore) loadData(p vfs.Path) (*PrivateKey, error) {
-	data, err := p.ReadFile()
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	k, err := ParsePEMPrivateKey(data)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing private key from %q: %v", p, err)
-	}
-	return k, err
 }

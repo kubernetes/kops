@@ -61,12 +61,7 @@ func (_ *Secret) Render(c *fi.Context, a, e, changes *Secret) error {
 
 	secrets := c.SecretStore
 
-	secret, err := fi.CreateSecret()
-	if err != nil {
-		return fmt.Errorf("error creating secret %q: %v", name, err)
-	}
-
-	_, _, err = secrets.GetOrCreateSecret(name, secret)
+	_, _, err := secrets.GetOrCreateSecret(name)
 	if err != nil {
 		return fmt.Errorf("error creating secret %q: %v", name, err)
 	}
