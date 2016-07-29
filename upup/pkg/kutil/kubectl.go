@@ -50,7 +50,7 @@ func (k *Kubectl) execKubectl(args ...string) (string, error) {
 	env := os.Environ()
 	cmd.Env = env
 
-	human := cmd.Path + strings.Join(cmd.Args, " ")
+	human := strings.Join(cmd.Args, " ")
 	glog.V(2).Infof("Running command: %s", human)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
