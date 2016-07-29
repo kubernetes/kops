@@ -28,6 +28,12 @@ type Certificate struct {
 	PublicKey   crypto.PublicKey
 }
 
+const (
+	SecretTypeSSHPublicKey = "SSHPublicKey"
+	SecretTypeKeypair      = "Keypair"
+	SecretTypeSecret       = "Secret"
+)
+
 type KeystoreItem struct {
 	Type string
 	Name string
@@ -74,29 +80,30 @@ func (c *Certificate) MarshalJSON() ([]byte, error) {
 
 type CAStore interface {
 	// Cert returns the primary specified certificate
-	Cert(id string) (*Certificate, error)
+	Cert(name string) (*Certificate, error)
 	// CertificatePool returns all active certificates with the specified id
-	CertificatePool(id string) (*CertificatePool, error)
-	PrivateKey(id string) (*PrivateKey, error)
+	CertificatePool(name string) (*CertificatePool, error)
+	PrivateKey(name string) (*PrivateKey, error)
 
-	FindCert(id string) (*Certificate, error)
-	FindPrivateKey(id string) (*PrivateKey, error)
+	FindCert(name string) (*Certificate, error)
+	FindPrivateKey(name string) (*PrivateKey, error)
 
 	//IssueCert(id string, privateKey *PrivateKey, template *x509.Certificate) (*Certificate, error)
 	//CreatePrivateKey(id string) (*PrivateKey, error)
 
-	CreateKeypair(id string, template *x509.Certificate) (*Certificate, *PrivateKey, error)
+	CreateKeypair(name string, template *x509.Certificate) (*Certificate, *PrivateKey, error)
 
-	List() ([]string, error)
+	// List will list all the items, but will not fetch the data
+	List() ([]*KeystoreItem, error)
 
 	// VFSPath returns the path where the CAStore is stored
 	VFSPath() vfs.Path
 
 	// AddCert adds an alternative certificate to the pool (primarily useful for CAs)
-	AddCert(id string, cert *Certificate) error
+	AddCert(name string, cert *Certificate) error
 
 	// AddSSHPublicKey adds an SSH public key
-	AddSSHPublicKey(id string, data []byte) error
+	AddSSHPublicKey(name string, data []byte) error
 
 	// FindSSHPublicKeys retrieves the SSH public keys with the specific name
 	FindSSHPublicKeys(name string) ([]*KeystoreItem, error)
