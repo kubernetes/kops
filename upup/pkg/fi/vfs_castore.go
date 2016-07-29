@@ -27,6 +27,10 @@ type VFSCAStore struct {
 	cacheCaPrivateKeys  *privateKeys
 }
 
+const (
+	SecretTypeSSHPublicKey = "SSHPublicKey"
+)
+
 var _ CAStore = &VFSCAStore{}
 
 func NewVFSCAStore(basedir vfs.Path) CAStore {
@@ -318,66 +322,20 @@ func (c *VFSCAStore) FindCertificatePool(id string) (*CertificatePool, error) {
 	return pool, nil
 }
 
-func (c *VFSCAStore) List() ([]*KeystoreItem, error) {
-	var items []*KeystoreItem
+func (c *VFSCAStore) List() ([]string, error) {
+	var ids []string
 
-	{
-		baseDir := c.basedir.Join("issued")
-		files, err := baseDir.ReadTree()
-		if err != nil {
-			return nil, fmt.Errorf("error reading directory %q: %v", baseDir, err)
-		}
-
-		for _, f := range files {
-			relativePath, err := vfs.RelativePath(baseDir, f)
-			if err != nil {
-				return nil, err
-			}
-
-			tokens := strings.Split(relativePath, "/")
-			if len(tokens) != 2 {
-				glog.V(2).Infof("ignoring unexpected file in keystore: %q", f)
-				continue
-			}
-
-			item := &KeystoreItem{
-				Name: tokens[0],
-				Id:   strings.TrimSuffix(tokens[1], ".crt"),
-				Type: SecretTypeKeypair,
-			}
-			items = append(items, item)
-		}
+	issuedDir := c.basedir.Join("issued")
+	files, err := issuedDir.ReadDir()
+	if err != nil {
+		return nil, fmt.Errorf("error reading directory %q: %v", issuedDir, err)
 	}
 
-	{
-		baseDir := c.basedir.Join("ssh", "public")
-		files, err := baseDir.ReadTree()
-		if err != nil {
-			return nil, fmt.Errorf("error reading directory %q: %v", baseDir, err)
-		}
-
-		for _, f := range files {
-			relativePath, err := vfs.RelativePath(baseDir, f)
-			if err != nil {
-				return nil, err
-			}
-
-			tokens := strings.Split(relativePath, "/")
-			if len(tokens) != 2 {
-				glog.V(2).Infof("ignoring unexpected file in keystore: %q", f)
-				continue
-			}
-
-			item := &KeystoreItem{
-				Name: tokens[0],
-				Id:   tokens[1],
-				Type: SecretTypeSSHPublicKey,
-			}
-			items = append(items, item)
-		}
+	for _, f := range files {
+		name := f.Base()
+		ids = append(ids, name)
 	}
-
-	return items, nil
+	return ids, nil
 }
 
 func (c *VFSCAStore) IssueCert(id string, serial *big.Int, privateKey *PrivateKey, template *x509.Certificate) (*Certificate, error) {
