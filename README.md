@@ -89,6 +89,10 @@ You can now use kubernetes using the kubectl tool (after allowing a few minutes 
 
 * Learn about [InstanceGroups](docs/instance_groups.md), which let you change instance types, cluster sizes etc.
 
+## Learn more:
+
+* Read about [networking options](docs/networking.md), including a 50 node limit in the default configuration.
+
 ## Delete the cluster
 
 When you're done, you can also have kops delete the cluster.  It will delete all AWS resources tagged
