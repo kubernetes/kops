@@ -6,9 +6,10 @@ import (
 
 // getCmd represents the get command
 var getCmd = &cobra.Command{
-	Use:   "get",
-	Short: "list or get obejcts",
-	Long:  `list or get obejcts`,
+	Use:        "get",
+	SuggestFor: []string{"list"},
+	Short:      "list or get obejcts",
+	Long:       `list or get obejcts`,
 }
 
 func init() {
