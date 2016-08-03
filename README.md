@@ -33,6 +33,8 @@ you should use Go 1.6 or later)
 
 ## Bringing up a cluster on AWS
 
+* Ensure you have kubectl installed and on your path.  (We need it to set kubecfg configuration.)
+
 * Set up a DNS hosted zone in Route 53, e.g. `mydomain.com`, and set up the DNS nameservers as normal
   so that domains will resolve.  You can reuse an existing domain name (e.g. `mydomain.com`), or you can create
   a "child" hosted zone (e.g. `myclusters.mydomain.com`) if you want to isolate them.  Note that with AWS Route53,
