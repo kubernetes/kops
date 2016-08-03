@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync"
 )
 
 type TerraformTarget struct {
@@ -17,10 +18,14 @@ type TerraformTarget struct {
 	Region  string
 	Project string
 
-	resources []*terraformResource
-
-	files  map[string][]byte
 	outDir string
+
+	// mutex protects the following items (resources & files)
+	mutex sync.Mutex
+	// resources is a list of TF items that should be created
+	resources []*terraformResource
+	// files is a map of TF resource files that should be created
+	files map[string][]byte
 }
 
 func NewTerraformTarget(cloud fi.Cloud, region, project string, outDir string) *TerraformTarget {
@@ -57,6 +62,9 @@ func (t *TerraformTarget) AddFile(resourceType string, resourceName string, key 
 		return nil, fmt.Errorf("error rending resource %s %v", id, err)
 	}
 
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+
 	p := path.Join("data", id)
 	t.files[p] = d
 
@@ -70,6 +78,9 @@ func (t *TerraformTarget) RenderResource(resourceType string, resourceName strin
 		ResourceName: resourceName,
 		Item:         e,
 	}
+
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
 
 	t.resources = append(t.resources, res)
 
