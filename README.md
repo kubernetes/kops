@@ -85,6 +85,8 @@ You can now use kubernetes using the kubectl tool (after allowing a few minutes 
 
 ## Cluster management
 
+* Set up [add-ons](docs/addons.md), to add important functionality to k8s.
+
 * Learn about [InstanceGroups](docs/instance_groups.md), which let you change instance types, cluster sizes etc.
 
 ## Delete the cluster
