@@ -108,7 +108,7 @@ func (c *RootCmd) ClusterName() string {
 	if err != nil {
 		glog.Warningf("error reading kubecfg: %v", err)
 	} else if config != nil && config.Name != "" {
-		glog.V(2).Infof("Got cluster name from current kubectl context: %s", config.Name)
+		fmt.Fprintf(os.Stderr, "Using cluster from kubectl context: %s\n\n", config.Name)
 		c.clusterName = config.Name
 	}
 	return c.clusterName
