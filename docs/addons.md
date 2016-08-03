@@ -1,4 +1,4 @@
-## Installing addons with kops
+## Installing Kubernetes Addons
 
 With kops you manage addons by using kubectl.
 
@@ -10,7 +10,7 @@ This document describes how to install some common addons.
 
 ### Dashboard
 
-The (dashboard project)[https://github.com/kubernetes/dashboard] provides a nice administrative UI:
+The [dashboard project](https://github.com/kubernetes/dashboard) provides a nice administrative UI:
 
 Install using:
 ```
@@ -22,7 +22,7 @@ And then navigate to `https://<clustername>/api/v1/proxy/namespaces/kube-system/
 The login credentials are:
 
 * Username: `admin`
-* Password: get from `kops secrets expose --id kube --type secret`
+* Password: get by running `kops secrets expose --id kube --type secret`
 
 
 ### Monitoring - Standalone
