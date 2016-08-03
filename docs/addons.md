@@ -17,7 +17,9 @@ Install using:
 kubectl create -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/dashboard/v1.1.0.yaml
 ```
 
-And then navigate to `https://<clustername>/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard`
+And then navigate to `https://<clustername>/ui`
+
+(`/ui` is an alias to `https://<clustername>/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard`)
 
 The login credentials are:
 
