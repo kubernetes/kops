@@ -33,6 +33,7 @@ type CreateClusterCmd struct {
 	NetworkCIDR       string
 	DNSZone           string
 	AdminAccess       string
+	AssociatePublicIP bool
 }
 
 var createCluster CreateClusterCmd
@@ -80,6 +81,8 @@ func init() {
 	cmd.Flags().StringVar(&createCluster.DNSZone, "dns-zone", "", "DNS hosted zone to use (defaults to last two components of cluster name)")
 	cmd.Flags().StringVar(&createCluster.OutDir, "out", "", "Path to write any local output")
 	cmd.Flags().StringVar(&createCluster.AdminAccess, "admin-access", "", "Restrict access to admin endpoints (SSH, HTTPS) to this CIDR.  If not set, access will not be restricted by IP.")
+
+	cmd.Flags().BoolVar(&createCluster.AssociatePublicIP, "no-associate-public-ip", true, "Specify --no-associate-public-ip to disable association of public IP for master ASG and nodes.")
 }
 
 func (c *CreateClusterCmd) Run(args []string) error {
@@ -353,6 +356,9 @@ func (c *CreateClusterCmd) Run(args []string) error {
 	if isDryrun {
 		fmt.Println("Previewing changes that will be made:\n")
 	}
+
+	glog.V(1).Info("Associate Public IP: %v", c.AssociatePublicIP)
+	fullCluster.Spec.AssociatePublicIP = &c.AssociatePublicIP
 
 	applyCmd := &cloudup.ApplyClusterCmd{
 		Cluster:         fullCluster,

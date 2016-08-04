@@ -8,7 +8,7 @@ launchConfiguration/{{ $m.Name }}.masters.{{ ClusterName }}:
   iamInstanceProfile: iamInstanceProfile/masters.{{ ClusterName }}
   imageId: {{ $m.Spec.Image }}
   instanceType: {{ $m.Spec.MachineType }}
-  associatePublicIP: true
+  associatePublicIP: {{ AssociatePublicIP }}
   userData: resources/nodeup.sh _kubernetes_master
   rootVolumeSize: {{ or $m.Spec.RootVolumeSize "20" }}
   rootVolumeType: {{ or $m.Spec.RootVolumeType "gp2" }}
