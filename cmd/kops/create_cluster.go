@@ -15,25 +15,25 @@ import (
 )
 
 type CreateClusterCmd struct {
-	Yes               bool
-	Target            string
-	Models            string
-	Cloud             string
-	Zones             string
-	MasterZones       string
-	NodeSize          string
-	MasterSize        string
-	NodeCount         int
-	Project           string
-	KubernetesVersion string
-	OutDir            string
-	Image             string
-	SSHPublicKey      string
-	VPCID             string
-	NetworkCIDR       string
-	DNSZone           string
-	AdminAccess       string
-	AssociatePublicIP bool
+	Yes                      bool
+	Target                   string
+	Models                   string
+	Cloud                    string
+	Zones                    string
+	MasterZones              string
+	NodeSize                 string
+	MasterSize               string
+	NodeCount                int
+	Project                  string
+	KubernetesVersion        string
+	OutDir                   string
+	Image                    string
+	SSHPublicKey             string
+	VPCID                    string
+	NetworkCIDR              string
+	DNSZone                  string
+	AdminAccess              string
+	DisableAssociatePublicIP bool
 }
 
 var createCluster CreateClusterCmd
@@ -82,7 +82,7 @@ func init() {
 	cmd.Flags().StringVar(&createCluster.OutDir, "out", "", "Path to write any local output")
 	cmd.Flags().StringVar(&createCluster.AdminAccess, "admin-access", "", "Restrict access to admin endpoints (SSH, HTTPS) to this CIDR.  If not set, access will not be restricted by IP.")
 
-	cmd.Flags().BoolVar(&createCluster.AssociatePublicIP, "no-associate-public-ip", true, "Specify --no-associate-public-ip to disable association of public IP for master ASG and nodes.")
+	cmd.Flags().BoolVar(&createCluster.DisableAssociatePublicIP, "disable-associate-public-ip", false, "Specify --disable-associate-public-ip to disable association of public IP for master ASG and nodes.")
 }
 
 func (c *CreateClusterCmd) Run(args []string) error {
@@ -357,8 +357,11 @@ func (c *CreateClusterCmd) Run(args []string) error {
 		fmt.Println("Previewing changes that will be made:\n")
 	}
 
-	glog.V(1).Info("Associate Public IP: %v", c.AssociatePublicIP)
-	fullCluster.Spec.AssociatePublicIP = &c.AssociatePublicIP
+	if c.DisableAssociatePublicIP {
+		glog.V(1).Info("Disable associate public IP: %v", c.DisableAssociatePublicIP)
+		associatePublicIp := false
+		fullCluster.Spec.AssociatePublicIP = associatePublicIp
+	}
 
 	applyCmd := &cloudup.ApplyClusterCmd{
 		Cluster:         fullCluster,
