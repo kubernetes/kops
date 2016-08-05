@@ -31,30 +31,30 @@ func init() {
 
 	getCmd.cobraCommand.AddCommand(cmd)
 
-	cmd.Flags().StringVarP(&getSecretsCommand.Type, "type", "", "", "Type of secret to create")
+	cmd.Flags().StringVarP(&getSecretsCommand.Type, "type", "", "", "Filter by secret type")
 }
 
-func (c *GetSecretsCommand) Run(args []string) error {
+func listSecrets(secretType string, names []string) ([]*fi.KeystoreItem, error) {
 	var items []*fi.KeystoreItem
 
-	findType := strings.ToLower(c.Type)
+	findType := strings.ToLower(secretType)
 	switch findType {
 	case "":
 	// OK
 	case "sshpublickey", "keypair", "secret":
 	// OK
 	default:
-		return fmt.Errorf("unknown secret type %q", c.Type)
+		return nil, fmt.Errorf("unknown secret type %q", secretType)
 	}
 
 	{
 		caStore, err := rootCommand.KeyStore()
 		if err != nil {
-			return err
+			return nil, err
 		}
 		l, err := caStore.List()
 		if err != nil {
-			return fmt.Errorf("error listing CA store items %v", err)
+			return nil, fmt.Errorf("error listing CA store items %v", err)
 		}
 
 		for _, i := range l {
@@ -65,15 +65,15 @@ func (c *GetSecretsCommand) Run(args []string) error {
 		}
 	}
 
-	secretStore, err := rootCommand.SecretStore()
-	if err != nil {
-		return err
-	}
-
 	if findType == "" || findType == strings.ToLower(fi.SecretTypeSecret) {
+		secretStore, err := rootCommand.SecretStore()
+		if err != nil {
+			return nil, err
+		}
+
 		l, err := secretStore.ListSecrets()
 		if err != nil {
-			return fmt.Errorf("error listing secrets %v", err)
+			return nil, fmt.Errorf("error listing secrets %v", err)
 		}
 
 		for _, id := range l {
@@ -89,9 +89,9 @@ func (c *GetSecretsCommand) Run(args []string) error {
 		}
 	}
 
-	if len(args) != 0 {
+	if len(names) != 0 {
 		var matches []*fi.KeystoreItem
-		for _, arg := range args {
+		for _, arg := range names {
 			var found []*fi.KeystoreItem
 			for _, i := range items {
 				// There may be multiple secrets with the same name (of different type)
@@ -101,7 +101,7 @@ func (c *GetSecretsCommand) Run(args []string) error {
 			}
 
 			if len(found) == 0 {
-				return fmt.Errorf("Secret not found: %q", arg)
+				return nil, fmt.Errorf("Secret not found: %q", arg)
 			}
 
 			matches = append(matches, found...)
@@ -109,8 +109,17 @@ func (c *GetSecretsCommand) Run(args []string) error {
 		items = matches
 	}
 
+	return items, nil
+}
+
+func (c *GetSecretsCommand) Run(args []string) error {
+	items, err := listSecrets(c.Type, args)
+	if err != nil {
+		return err
+	}
+
 	if len(items) == 0 {
-		fmt.Fprintf(os.Stdout, "No secrets found\n")
+		fmt.Fprintf(os.Stderr, "No secrets found\n")
 
 		return nil
 	}
@@ -131,6 +140,11 @@ func (c *GetSecretsCommand) Run(args []string) error {
 	} else if output == OutputYaml {
 		return fmt.Errorf("yaml output format is not (currently) supported for secrets")
 	} else if output == "plaintext" {
+		secretStore, err := rootCommand.SecretStore()
+		if err != nil {
+			return err
+		}
+
 		for _, i := range items {
 			var data string
 			switch i.Type {
