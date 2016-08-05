@@ -11,6 +11,7 @@ import (
 )
 
 type GetClustersCmd struct {
+	FullSpec bool
 }
 
 var getClustersCmd GetClustersCmd
@@ -30,6 +31,8 @@ func init() {
 	}
 
 	getCmd.cobraCommand.AddCommand(cmd)
+
+	cmd.Flags().BoolVar(&getClustersCmd.FullSpec, "full", false, "Show fully populated configuration")
 }
 
 func (c *GetClustersCmd) Run(args []string) error {
@@ -84,19 +87,22 @@ func (c *GetClustersCmd) Run(args []string) error {
 		})
 		return t.Render(clusters, os.Stdout, "NAME", "CLOUD", "ZONES")
 	} else if output == OutputYaml {
-		var fullSpecs []*api.Cluster
-		for _, cluster := range clusters {
-			spec, err := clusterRegistry.ReadCompletedConfig(cluster.Name)
-			if err != nil {
-				return fmt.Errorf("error reading full cluster spec for %q: %v", cluster.Name, err)
+		if c.FullSpec {
+			var fullSpecs []*api.Cluster
+			for _, cluster := range clusters {
+				spec, err := clusterRegistry.ReadCompletedConfig(cluster.Name)
+				if err != nil {
+					return fmt.Errorf("error reading full cluster spec for %q: %v", cluster.Name, err)
+				}
+				fullSpecs = append(fullSpecs, spec)
 			}
-			fullSpecs = append(fullSpecs, spec)
+			clusters = fullSpecs
 		}
 
-		for _, fullSpec := range fullSpecs {
-			y, err := api.ToYaml(fullSpec)
+		for _, cluster := range clusters {
+			y, err := api.ToYaml(cluster)
 			if err != nil {
-				return fmt.Errorf("error marshaling yaml for %q: %v", fullSpec.Name, err)
+				return fmt.Errorf("error marshaling yaml for %q: %v", cluster.Name, err)
 			}
 			_, err = os.Stdout.Write(y)
 			if err != nil {
