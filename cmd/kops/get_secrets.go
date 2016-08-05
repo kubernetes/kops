@@ -39,6 +39,8 @@ func (c *GetSecretsCommand) Run(args []string) error {
 
 	findType := strings.ToLower(c.Type)
 	switch findType {
+	case "":
+	// OK
 	case "sshpublickey", "keypair", "secret":
 	// OK
 	default:
@@ -63,11 +65,12 @@ func (c *GetSecretsCommand) Run(args []string) error {
 		}
 	}
 
-	{
-		secretStore, err := rootCommand.SecretStore()
-		if err != nil {
-			return err
-		}
+	secretStore, err := rootCommand.SecretStore()
+	if err != nil {
+		return err
+	}
+
+	if findType == "" || findType == strings.ToLower(fi.SecretTypeSecret) {
 		l, err := secretStore.ListSecrets()
 		if err != nil {
 			return fmt.Errorf("error listing secrets %v", err)
@@ -127,6 +130,30 @@ func (c *GetSecretsCommand) Run(args []string) error {
 		return t.Render(items, os.Stdout, "TYPE", "NAME", "ID")
 	} else if output == OutputYaml {
 		return fmt.Errorf("yaml output format is not (currently) supported for secrets")
+	} else if output == "plaintext" {
+		for _, i := range items {
+			var data string
+			switch i.Type {
+			case fi.SecretTypeSecret:
+				secret, err := secretStore.FindSecret(i.Name)
+				if err != nil {
+					return fmt.Errorf("error getting secret %q: %v", i.Name, err)
+				}
+				if secret == nil {
+					return fmt.Errorf("cannot find secret %q", i.Name)
+				}
+				data = string(secret.Data)
+
+			default:
+				return fmt.Errorf("secret type %v cannot (currently) be exported as plaintext", i.Type)
+			}
+
+			_, err := fmt.Fprintf(os.Stdout, "%s\n", data)
+			if err != nil {
+				return fmt.Errorf("error writing output: %v", err)
+			}
+		}
+		return nil
 	} else {
 		return fmt.Errorf("Unknown output format: %q", output)
 	}
