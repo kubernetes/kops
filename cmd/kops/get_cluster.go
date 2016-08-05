@@ -62,7 +62,7 @@ func (c *GetClustersCmd) Run(args []string) error {
 	}
 
 	if len(clusters) == 0 {
-		fmt.Fprintf(os.Stdout, "No clusters found\n")
+		fmt.Fprintf(os.Stderr, "No clusters found\n")
 		return nil
 	}
 

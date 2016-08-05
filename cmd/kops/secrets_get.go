@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/golang/glog"
+	"fmt"
 	"github.com/spf13/cobra"
 )
 
@@ -11,10 +11,7 @@ func init() {
 		Short: "Get secrets",
 		Long:  `Get secrets.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := getSecretsCommand.Run(args)
-			if err != nil {
-				glog.Exitf("%v", err)
-			}
+			fmt.Printf("the 'secrets get' command has been replaced by 'get secrets -oplaintext'\n")
 		},
 	}
 
