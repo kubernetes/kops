@@ -710,3 +710,15 @@ func (c *VFSCAStore) loadData(p vfs.Path) (*PrivateKey, error) {
 	}
 	return k, err
 }
+
+func (c *VFSCAStore) DeleteSecret(item *KeystoreItem) error {
+	switch item.Type {
+	case SecretTypeSSHPublicKey:
+		p := c.buildSSHPublicKeyPath(item.Name, item.Id)
+		return p.Remove()
+
+	default:
+		// Primarily because we need to make sure users can recreate them!
+		return fmt.Errorf("deletion of keystore items of type %v not (yet) supported", item.Type)
+	}
+}
