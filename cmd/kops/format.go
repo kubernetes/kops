@@ -129,7 +129,7 @@ func (t *Table) Render(items interface{}, out io.Writer, columnNames ...string) 
 	w := new(tabwriter.Writer)
 
 	// Format in tab-separated columns with a tab stop of 8.
-	w.Init(out, 0, 8, 0, '\t', tabwriter.StripEscape)
+	w.Init(out, 0, 8, 1, '\t', tabwriter.StripEscape)
 
 	writeHeader := true
 	if writeHeader {
