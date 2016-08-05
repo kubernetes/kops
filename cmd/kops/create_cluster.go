@@ -359,8 +359,7 @@ func (c *CreateClusterCmd) Run(args []string) error {
 
 	if c.DisableAssociatePublicIP {
 		glog.V(1).Info("Disable associate public IP: %v", c.DisableAssociatePublicIP)
-		associatePublicIp := false
-		fullCluster.Spec.AssociatePublicIP = &associatePublicIp
+		fullCluster.Spec.AssociatePublicIP = fi.Bool(false);
 	}
 
 	applyCmd := &cloudup.ApplyClusterCmd{

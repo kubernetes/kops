@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strings"
 	"text/template"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 type TemplateFunctions struct {
@@ -79,7 +80,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["IAMServiceEC2"] = tf.IAMServiceEC2
 
 	dest["AssociatePublicIP"] = func() bool {
-		return tf.cluster.Spec.AssociatePublicIP
+		return fi.BoolValue(tf.cluster.Spec.AssociatePublicIP)
 	}
 }
 
