@@ -107,6 +107,9 @@ type CAStore interface {
 
 	// FindSSHPublicKeys retrieves the SSH public keys with the specific name
 	FindSSHPublicKeys(name string) ([]*KeystoreItem, error)
+
+	// DeleteSecret will delete the specified item
+	DeleteSecret(item *KeystoreItem) error
 }
 
 func (c *Certificate) AsString() (string, error) {
