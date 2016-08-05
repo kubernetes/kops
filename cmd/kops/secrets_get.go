@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
+	"fmt"
 )
 
 func init() {
@@ -11,7 +11,7 @@ func init() {
 		Short: "Get secrets",
 		Long:  `Get secrets.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("the 'secrets get' command has been replaced by 'get secrets -oplaintext'\n")
+			exitWithError(fmt.Errorf("The 'secrets get' command has been replaced by 'get secret'"))
 		},
 	}
 
