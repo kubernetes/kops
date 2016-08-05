@@ -62,7 +62,7 @@ func (c *VFSSecretStore) Secret(id string) (*Secret, error) {
 	return s, nil
 }
 
-func (c *VFSSecretStore) GetOrCreateSecret(id string) (*Secret, bool, error) {
+func (c *VFSSecretStore) GetOrCreateSecret(id string, secret *Secret) (*Secret, bool, error) {
 	p := c.buildSecretPath(id)
 
 	for i := 0; i < 2; i++ {
@@ -75,12 +75,7 @@ func (c *VFSSecretStore) GetOrCreateSecret(id string) (*Secret, bool, error) {
 			return s, false, nil
 		}
 
-		s, err = CreateSecret()
-		if err != nil {
-			return nil, false, err
-		}
-
-		err = c.createSecret(s, p)
+		err = c.createSecret(secret, p)
 		if err != nil {
 			if os.IsExist(err) && i == 0 {
 				glog.Infof("Got already-exists error when writing secret; likely due to concurrent creation.  Will retry")
