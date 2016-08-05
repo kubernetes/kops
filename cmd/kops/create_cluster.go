@@ -359,6 +359,8 @@ func (c *CreateClusterCmd) Run(args []string) error {
 
 	if c.NoPublicIP {
 		fullCluster.Spec.AssociatePublicIP = fi.Bool(false);
+	} else {
+		fullCluster.Spec.AssociatePublicIP = fi.Bool(true);
 	}
 
 	applyCmd := &cloudup.ApplyClusterCmd{
