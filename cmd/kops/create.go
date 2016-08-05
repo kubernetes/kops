@@ -7,8 +7,8 @@ import (
 // createCmd represents the create command
 var createCmd = &cobra.Command{
 	Use:   "create",
-	Short: "create clusters",
-	Long:  `Create clusters`,
+	Short: "create resources",
+	Long:  `Create resources`,
 }
 
 func init() {
