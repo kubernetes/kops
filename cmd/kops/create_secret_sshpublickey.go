@@ -15,7 +15,7 @@ type CreateSecretPublickeyCommand struct {
 
 var createSecretPublickeyCommand = CreateSecretPublickeyCommand{
 	cobraCommand: &cobra.Command{
-		Use:   "publickey",
+		Use:   "sshpublickey",
 		Short: "Create SSH publickey",
 		Long:  `Create SSH publickey.`,
 	},
@@ -38,10 +38,10 @@ func init() {
 
 func (cmd *CreateSecretPublickeyCommand) Run(args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("syntax: NAME -i <PublickeyPath>")
+		return fmt.Errorf("syntax: NAME -i <PublicKeyPath>")
 	}
 	if len(args) != 1 {
-		return fmt.Errorf("syntax: NAME -i <PublickeyPath>")
+		return fmt.Errorf("syntax: NAME -i <PublicKeyPath>")
 	}
 	name := args[0]
 
