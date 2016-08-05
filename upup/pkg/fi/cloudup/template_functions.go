@@ -78,7 +78,9 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["IAMPrefix"] = tf.IAMPrefix
 	dest["IAMServiceEC2"] = tf.IAMServiceEC2
 
-	dest["AssociatePublicIP"] = tf.cluster.Spec.AssociatePublicIP
+	dest["AssociatePublicIP"] = func() string {
+		return tf.cluster.Spec.AssociatePublicIP
+	}
 }
 
 func (tf *TemplateFunctions) EtcdClusterMemberTags(etcd *api.EtcdClusterSpec, m *api.EtcdMemberSpec) map[string]string {
