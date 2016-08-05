@@ -61,7 +61,7 @@ func (c *GetInstanceGroupsCmd) Run(args []string) error {
 	}
 
 	if len(instancegroups) == 0 {
-		fmt.Fprintf(os.Stdout, "No InstanceGroup objects found\n")
+		fmt.Fprintf(os.Stderr, "No InstanceGroup objects found\n")
 		return nil
 	}
 
