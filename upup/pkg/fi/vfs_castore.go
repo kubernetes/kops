@@ -370,7 +370,7 @@ func (c *VFSCAStore) List() ([]*KeystoreItem, error) {
 
 			item := &KeystoreItem{
 				Name: tokens[0],
-				Id:   tokens[1],
+				Id:   insertFingerprintColons(tokens[1]),
 				Type: SecretTypeSSHPublicKey,
 			}
 			items = append(items, item)
@@ -621,6 +621,39 @@ func buildSerial(timestamp int64) *big.Int {
 	return serial
 }
 
+func formatFingerprint(data []byte) string {
+	var buf bytes.Buffer
+
+	for i, b := range data {
+		s := fmt.Sprintf("%0.2x", b)
+		if i != 0 {
+			buf.WriteString(":")
+		}
+		buf.WriteString(s)
+	}
+	return buf.String()
+}
+
+func insertFingerprintColons(id string) string {
+	var buf bytes.Buffer
+
+	for {
+		if id == "" {
+			break
+		}
+		if buf.Len() != 0 {
+			buf.WriteString(":")
+		}
+		if len(id) < 2 {
+			buf.WriteString(id)
+		} else {
+			buf.WriteString(id[0:2])
+			id = id[2:]
+		}
+	}
+	return buf.String()
+}
+
 // AddSSHPublicKey stores an SSH public key
 func (c *VFSCAStore) AddSSHPublicKey(name string, pubkey []byte) error {
 	var id string
@@ -636,7 +669,7 @@ func (c *VFSCAStore) AddSSHPublicKey(name string, pubkey []byte) error {
 		if err != nil {
 			return err
 		}
-		id = fmt.Sprintf("%x", h.Sum(nil))
+		id = formatFingerprint(h.Sum(nil))
 	}
 
 	p := c.buildSSHPublicKeyPath(name, id)
@@ -644,6 +677,8 @@ func (c *VFSCAStore) AddSSHPublicKey(name string, pubkey []byte) error {
 }
 
 func (c *VFSCAStore) buildSSHPublicKeyPath(name string, id string) vfs.Path {
+	// id is fingerprint with colons, but we store without colons
+	id = strings.Replace(id, ":", "", -1)
 	return c.basedir.Join("ssh", "public", name, id)
 }
 
@@ -659,8 +694,11 @@ func (c *VFSCAStore) FindSSHPublicKeys(name string) ([]*KeystoreItem, error) {
 		return nil, err
 	}
 	for _, item := range items {
+		// Fill in the missing fields
 		item.Type = SecretTypeSSHPublicKey
 		item.Name = name
+
+		item.Id = insertFingerprintColons(item.Id)
 	}
 	return items, nil
 }
