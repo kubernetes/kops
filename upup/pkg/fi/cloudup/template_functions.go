@@ -78,7 +78,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["IAMPrefix"] = tf.IAMPrefix
 	dest["IAMServiceEC2"] = tf.IAMServiceEC2
 
-	dest["AssociatePublicIP"] = func() string {
+	dest["AssociatePublicIP"] = func() bool {
 		return tf.cluster.Spec.AssociatePublicIP
 	}
 }
