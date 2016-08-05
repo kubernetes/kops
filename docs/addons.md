@@ -24,7 +24,7 @@ And then navigate to `https://<clustername>/ui`
 The login credentials are:
 
 * Username: `admin`
-* Password: get by running `kops secrets expose --id kube --type secret`
+* Password: get by running `kops get secrets kube --type secret -oplaintext`
 
 
 ### Monitoring - Standalone
