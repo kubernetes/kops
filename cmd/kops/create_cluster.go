@@ -15,25 +15,25 @@ import (
 )
 
 type CreateClusterCmd struct {
-	Yes                      bool
-	Target                   string
-	Models                   string
-	Cloud                    string
-	Zones                    string
-	MasterZones              string
-	NodeSize                 string
-	MasterSize               string
-	NodeCount                int
-	Project                  string
-	KubernetesVersion        string
-	OutDir                   string
-	Image                    string
-	SSHPublicKey             string
-	VPCID                    string
-	NetworkCIDR              string
-	DNSZone                  string
-	AdminAccess              string
-	DisableAssociatePublicIP bool
+	Yes               bool
+	Target            string
+	Models            string
+	Cloud             string
+	Zones             string
+	MasterZones       string
+	NodeSize          string
+	MasterSize        string
+	NodeCount         int
+	Project           string
+	KubernetesVersion string
+	OutDir            string
+	Image             string
+	SSHPublicKey      string
+	VPCID             string
+	NetworkCIDR       string
+	DNSZone           string
+	AdminAccess       string
+	NoPublicIP        bool
 }
 
 var createCluster CreateClusterCmd
@@ -82,7 +82,7 @@ func init() {
 	cmd.Flags().StringVar(&createCluster.OutDir, "out", "", "Path to write any local output")
 	cmd.Flags().StringVar(&createCluster.AdminAccess, "admin-access", "", "Restrict access to admin endpoints (SSH, HTTPS) to this CIDR.  If not set, access will not be restricted by IP.")
 
-	cmd.Flags().BoolVar(&createCluster.DisableAssociatePublicIP, "disable-associate-public-ip", false, "Specify --disable-associate-public-ip to disable association of public IP for master ASG and nodes.")
+	cmd.Flags().BoolVar(&createCluster.NoPublicIP, "no-public-ip", false, "Specify --no-public-ip to disable association of public IP for master ASG and nodes.")
 }
 
 func (c *CreateClusterCmd) Run(args []string) error {
@@ -357,7 +357,7 @@ func (c *CreateClusterCmd) Run(args []string) error {
 		fmt.Println("Previewing changes that will be made:\n")
 	}
 
-	if c.DisableAssociatePublicIP {
+	if c.NoPublicIP {
 		fullCluster.Spec.AssociatePublicIP = fi.Bool(false);
 	}
 
