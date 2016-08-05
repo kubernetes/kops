@@ -21,9 +21,10 @@ var describeSecretsCommand DescribeSecretsCommand
 
 func init() {
 	cmd := &cobra.Command{
-		Use:   "secrets",
-		Short: "Describe secrets",
-		Long:  `Describe secrets.`,
+		Use:     "secrets",
+		Aliases: []string{"secret"},
+		Short:   "Describe secrets",
+		Long:    `Describe secrets.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := describeSecretsCommand.Run(args)
 			if err != nil {
