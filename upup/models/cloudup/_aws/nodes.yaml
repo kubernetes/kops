@@ -52,7 +52,7 @@ launchConfiguration/{{ $nodeset.Name }}.{{ ClusterName }}:
   iamInstanceProfile: iamInstanceProfile/nodes.{{ ClusterName }}
   imageId: {{ $nodeset.Spec.Image }}
   instanceType: {{ $nodeset.Spec.MachineType }}
-  associatePublicIP: {{ AssociatePublicIP }}
+  associatePublicIP: {{ $nodeset.Spec.AssociatePublicIP }}
   userData: resources/nodeup.sh _kubernetes_pool
   rootVolumeSize: {{ or $nodeset.Spec.RootVolumeSize "20" }}
   rootVolumeType: {{ or $nodeset.Spec.RootVolumeType "gp2" }}

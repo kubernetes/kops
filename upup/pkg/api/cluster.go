@@ -103,8 +103,6 @@ type ClusterSpec struct {
 	//  * enable debugging handlers on the master, so kubectl logs works
 	IsolateMasters *bool `json:"isolateMasters,omitempty"`
 
-	AssociatePublicIP *bool `json:"associatePublicIp,omitempty"`
-
 	//NetworkProvider               string `json:",omitempty"`
 	//
 	//HairpinMode                   string `json:",omitempty"`
