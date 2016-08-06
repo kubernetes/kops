@@ -230,9 +230,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 				// Autoscaling
 				"autoscalingGroup":    &awstasks.AutoscalingGroup{},
-				"launchConfiguration": &awstasks.LaunchConfiguration{
-					AssociatePublicIP: c.Cluster.Spec.AssociatePublicIP,
-				},
+				"launchConfiguration": &awstasks.LaunchConfiguration{},
 
 				// Route53
 				"dnsName": &awstasks.DNSName{},
