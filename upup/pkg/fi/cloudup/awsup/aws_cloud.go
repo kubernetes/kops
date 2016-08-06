@@ -78,7 +78,7 @@ func (c *AWSCloud) Tags() map[string]string {
 func isTagsEventualConsistencyError(err error) bool {
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch awsErr.Code() {
-		case "InvalidInstanceID.NotFound", "InvalidRouteTableID.NotFound", "InvalidVpcID.NotFound", "InvalidGroup.NotFound", "InvalidSubnetID.NotFound", "InvalidInternetGatewayID.NotFound":
+		case "InvalidInstanceID.NotFound", "InvalidRouteTableID.NotFound", "InvalidVpcID.NotFound", "InvalidGroup.NotFound", "InvalidSubnetID.NotFound", "InvalidInternetGatewayID.NotFound", "InvalidDhcpOptionsID.NotFound":
 			return true
 
 		default:
