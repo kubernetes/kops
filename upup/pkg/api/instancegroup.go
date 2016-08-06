@@ -44,6 +44,8 @@ type InstanceGroupSpec struct {
 
 	// MaxPrice indicates this is a spot-pricing group, with the specified value as our max-price bid
 	MaxPrice *string `json:"maxPrice,omitempty"`
+
+	AssociatePublicIP *bool `json:"associatePublicIp,omitempty"`
 }
 
 // PerformAssignmentsInstanceGroups populates InstanceGroups with default values
