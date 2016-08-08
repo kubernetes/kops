@@ -123,12 +123,14 @@ func (c *KubeconfigBuilder) execKubectl(args ...string) error {
 	env = append(env, fmt.Sprintf("KUBECONFIG=%s", c.KubeconfigPath))
 	cmd.Env = env
 
-	glog.V(2).Infof("Running command: %s %s", cmd.Path, strings.Join(cmd.Args, " "))
+	glog.V(2).Infof("Running command: %s", strings.Join(cmd.Args, " "))
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		glog.Info("error running kubectl:")
-		glog.Info(string(output))
-		return fmt.Errorf("error running kubectl")
+		if len(output) != 0 {
+			glog.Info("error running kubectl.  Output follows:")
+			glog.Info(string(output))
+		}
+		return fmt.Errorf("error running kubectl: %v", err)
 	}
 
 	glog.V(2).Info(string(output))

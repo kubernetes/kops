@@ -1,0 +1,4 @@
+MasterKubelet:
+  ReconcileCIDR: false
+  EnableDebuggingHandlers: false
+  HairpinMode: none
