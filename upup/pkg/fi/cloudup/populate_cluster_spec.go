@@ -262,6 +262,10 @@ func (c *populateClusterSpec) run() error {
 		tags["_master_dns"] = struct{}{}
 	}
 
+	if fi.BoolValue(cluster.Spec.IsolateMasters) {
+		tags["_isolate_masters"] = struct{}{}
+	}
+
 	cloud, err := BuildCloud(cluster)
 	if err != nil {
 		return err
@@ -286,7 +290,7 @@ func (c *populateClusterSpec) run() error {
 	if cluster.Spec.DNSZone == "" {
 		dnsZone, err := cloud.FindDNSHostedZone(cluster.Name)
 		if err != nil {
-			return fmt.Errorf("Error determining default DNS zone; please specify --zone-name: %v", err)
+			return fmt.Errorf("Error determining default DNS zone; please specify --dns-zone: %v", err)
 		}
 		glog.Infof("Defaulting DNS zone to: %s", dnsZone)
 		cluster.Spec.DNSZone = dnsZone

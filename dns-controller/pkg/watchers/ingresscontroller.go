@@ -21,7 +21,7 @@ import (
 type IngressController struct {
 	util.Stoppable
 	kubeClient *client_extensions.ExtensionsClient
-	scope        dns.Scope
+	scope      dns.Scope
 }
 
 // newIngressController creates a ingressController
@@ -32,7 +32,7 @@ func NewIngressController(kubeClient *client_extensions.ExtensionsClient, dns dn
 	}
 	c := &IngressController{
 		kubeClient: kubeClient,
-		scope:        scope,
+		scope:      scope,
 	}
 
 	return c, nil

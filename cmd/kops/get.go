@@ -4,13 +4,31 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// getCmd represents the get command
-var getCmd = &cobra.Command{
-	Use:   "get",
-	Short: "list or get obejcts",
-	Long:  `list or get obejcts`,
+// GetCmd represents the get command
+type GetCmd struct {
+	output string
+
+	cobraCommand *cobra.Command
 }
 
+var getCmd = GetCmd{
+	cobraCommand: &cobra.Command{
+		Use:        "get",
+		SuggestFor: []string{"list"},
+		Short:      "list or get objects",
+		Long:       `list or get objects`,
+	},
+}
+
+const (
+	OutputYaml  = "yaml"
+	OutputTable = "table"
+)
+
 func init() {
-	rootCommand.AddCommand(getCmd)
+	cmd := getCmd.cobraCommand
+
+	rootCommand.AddCommand(cmd)
+
+	cmd.PersistentFlags().StringVarP(&getCmd.output, "output", "o", OutputTable, "output format.  One of: table, yaml")
 }

@@ -14,9 +14,10 @@ import (
 )
 
 type DeleteClusterCmd struct {
-	Yes      bool
-	Region   string
-	External bool
+	Yes        bool
+	Region     string
+	External   bool
+	Unregister bool
 }
 
 var deleteCluster DeleteClusterCmd
@@ -37,7 +38,7 @@ func init() {
 	deleteCmd.AddCommand(cmd)
 
 	cmd.Flags().BoolVar(&deleteCluster.Yes, "yes", false, "Delete without confirmation")
-
+	cmd.Flags().BoolVar(&deleteCluster.Unregister, "unregister", false, "Don't delete cloud resources, just unregister the cluster")
 	cmd.Flags().BoolVar(&deleteCluster.External, "external", false, "Delete an external cluster")
 
 	cmd.Flags().StringVar(&deleteCluster.Region, "region", "", "region")
@@ -53,33 +54,32 @@ func (c *DeleteClusterCmd) Run(args []string) error {
 		return err
 	}
 
+	clusterName := rootCommand.clusterName
+	if clusterName == "" {
+		return fmt.Errorf("--name is required (when --external)")
+	}
+
 	var cloud fi.Cloud
-	clusterName := ""
-	region := ""
+	var cluster *api.Cluster
+
 	if c.External {
-		region = c.Region
+		region := c.Region
 		if region == "" {
 			return fmt.Errorf("--region is required (when --external)")
 		}
-		clusterName = rootCommand.clusterName
-		if clusterName == "" {
-			return fmt.Errorf("--name is required (when --external)")
-		}
 
 		tags := map[string]string{"KubernetesCluster": clusterName}
-		cloud, err = awsup.NewAWSCloud(c.Region, tags)
+		cloud, err = awsup.NewAWSCloud(region, tags)
 		if err != nil {
 			return fmt.Errorf("error initializing AWS client: %v", err)
 		}
 	} else {
-		clusterName = rootCommand.clusterName
-
 		clusterRegistry, err = rootCommand.ClusterRegistry()
 		if err != nil {
 			return err
 		}
 
-		cluster, err := clusterRegistry.Find(clusterName)
+		cluster, err = clusterRegistry.Find(clusterName)
 		if err != nil {
 			return err
 		}
@@ -91,57 +91,60 @@ func (c *DeleteClusterCmd) Run(args []string) error {
 		if clusterName != cluster.Name {
 			return fmt.Errorf("sanity check failed: cluster name mismatch")
 		}
-
-		cloud, err = cloudup.BuildCloud(cluster)
-		if err != nil {
-			return err
-		}
 	}
 
-	d := &kutil.DeleteCluster{}
-	d.ClusterName = clusterName
-	d.Region = region
-	d.Cloud = cloud
-
-	resources, err := d.ListResources()
-	if err != nil {
-		return err
-	}
-
-	if len(resources) == 0 {
-		fmt.Printf("No resources to delete\n")
-	} else {
-		t := &Table{}
-		t.AddColumn("TYPE", func(r *kutil.ResourceTracker) string {
-			return r.Type
-		})
-		t.AddColumn("ID", func(r *kutil.ResourceTracker) string {
-			return r.ID
-		})
-		t.AddColumn("NAME", func(r *kutil.ResourceTracker) string {
-			return r.Name
-		})
-		var l []*kutil.ResourceTracker
-		for _, v := range resources {
-			l = append(l, v)
+	if !c.Unregister {
+		if cloud == nil {
+			cloud, err = cloudup.BuildCloud(cluster)
+			if err != nil {
+				return err
+			}
 		}
 
-		err := t.Render(l, os.Stdout, "TYPE", "NAME", "ID")
+		d := &kutil.DeleteCluster{}
+		d.ClusterName = clusterName
+		d.Cloud = cloud
+
+		resources, err := d.ListResources()
 		if err != nil {
 			return err
 		}
 
-		if !c.Yes {
-			return fmt.Errorf("Must specify --yes to delete")
-		}
+		if len(resources) == 0 {
+			fmt.Printf("No resources to delete\n")
+		} else {
+			t := &Table{}
+			t.AddColumn("TYPE", func(r *kutil.ResourceTracker) string {
+				return r.Type
+			})
+			t.AddColumn("ID", func(r *kutil.ResourceTracker) string {
+				return r.ID
+			})
+			t.AddColumn("NAME", func(r *kutil.ResourceTracker) string {
+				return r.Name
+			})
+			var l []*kutil.ResourceTracker
+			for _, v := range resources {
+				l = append(l, v)
+			}
 
-		err = d.DeleteResources(resources)
-		if err != nil {
-			return err
+			err := t.Render(l, os.Stdout, "TYPE", "NAME", "ID")
+			if err != nil {
+				return err
+			}
+
+			if !c.Yes {
+				return fmt.Errorf("Must specify --yes to delete")
+			}
+
+			err = d.DeleteResources(resources)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
-	if clusterRegistry != nil {
+	if !c.External {
 		if !c.Yes {
 			fmt.Printf("\nMust specify --yes to delete\n")
 			return nil

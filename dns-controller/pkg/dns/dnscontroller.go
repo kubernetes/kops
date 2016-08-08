@@ -21,18 +21,18 @@ type DNSController struct {
 	util.Stoppable
 
 	// zones is the DNS provider
-	zones                  dnsprovider.Zones
+	zones dnsprovider.Zones
 
 	// mutex protects the following mutable state
-	mutex                  sync.Mutex
+	mutex sync.Mutex
 	// scopes is a map for each top-level grouping
-	scopes                 map[string]*DNSControllerScope
+	scopes map[string]*DNSControllerScope
 	// lastSuccessSnapshot is the last snapshot we were able to apply to DNS
 	// This lets us perform incremental updates to DNS.
 	lastSuccessfulSnapshot *snapshot
 
 	// changeCount is a change-counter, which helps us avoid computation when nothing has changed
-	changeCount            uint64
+	changeCount uint64
 }
 
 // DNSController is a Context
@@ -43,16 +43,16 @@ type DNSControllerScope struct {
 	// ScopeName is the string id for this scope
 	ScopeName string
 
-	parent    *DNSController
+	parent *DNSController
 
 	// mutex protected the following mutable state
-	mutex     sync.Mutex
+	mutex sync.Mutex
 
 	// Ready is set if the populating controller has performed an initial synchronization of records
-	Ready     bool
+	Ready bool
 
 	// Records is the map of actual records for this scope
-	Records   map[string][]Record
+	Records map[string][]Record
 }
 
 // DNSControllerScope is a Scope
@@ -312,7 +312,7 @@ func (o *dnsOp) findZone(fqdn string) dnsprovider.Zone {
 		if dot == -1 {
 			return nil
 		}
-		zoneName = zoneName[dot + 1:]
+		zoneName = zoneName[dot+1:]
 	}
 }
 

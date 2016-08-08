@@ -3,8 +3,7 @@
 When launching into a shared VPC, the VPC & the Internet Gateway will be reused, but we create a new subnet per zone,
 and a new route table.
 
-Use kops create cluster with the `--vpc` and `--network-cidr` arguments for your existing VPC, with --dryrun so we can see the
-config before we apply it.
+Use kops create cluster with the `--vpc` and `--network-cidr` arguments for your existing VPC:
 
 
 ```
