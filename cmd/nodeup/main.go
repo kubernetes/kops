@@ -13,8 +13,8 @@ func main() {
 	flag.StringVar(&flagModel, "model", flagModel, "directory to use as model for desired configuration")
 	var flagConf string
 	flag.StringVar(&flagConf, "conf", "node.yaml", "configuration location")
-	var flagAssetDir string
-	flag.StringVar(&flagAssetDir, "assets", "/var/cache/nodeup", "the location for the local asset cache")
+	var flagCacheDir string
+	flag.StringVar(&flagCacheDir, "cache", "/var/cache/nodeup", "the location for the local asset cache")
 	var flagRootFS string
 	flag.StringVar(&flagRootFS, "rootfs", "/", "the location of the machine root (for running in a container)")
 
@@ -38,7 +38,7 @@ func main() {
 		ConfigLocation: flagConf,
 		ModelDir:       flagModel,
 		Target:         target,
-		AssetDir:       flagAssetDir,
+		CacheDir:       flagCacheDir,
 		FSRoot:         flagRootFS,
 	}
 	err := cmd.Run(os.Stdout)

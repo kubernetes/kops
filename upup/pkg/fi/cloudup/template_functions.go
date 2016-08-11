@@ -4,7 +4,9 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"fmt"
+	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/api"
+	"k8s.io/kops/upup/pkg/fi/vfs"
 	"math/big"
 	"net"
 	"sort"
@@ -77,6 +79,8 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 
 	dest["IAMPrefix"] = tf.IAMPrefix
 	dest["IAMServiceEC2"] = tf.IAMServiceEC2
+
+	dest["Image"] = tf.Image
 }
 
 func (tf *TemplateFunctions) EtcdClusterMemberTags(etcd *api.EtcdClusterSpec, m *api.EtcdMemberSpec) map[string]string {
@@ -135,4 +139,31 @@ func (tf *TemplateFunctions) IAMPrefix() string {
 	default:
 		return "arn:aws"
 	}
+}
+
+// Image returns the docker image name for the specified component
+func (tf *TemplateFunctions) Image(component string) (string, error) {
+	if component == "kube-dns" {
+		// TODO: Once we are shipping different versions, start to use them
+		return "gcr.io/google_containers/kubedns-amd64:1.3", nil
+	}
+
+	if !isBaseURL(tf.cluster.Spec.KubernetesVersion) {
+		return "gcr.io/google_containers/" + component + ":" + "v" + tf.cluster.Spec.KubernetesVersion, nil
+	}
+
+	baseURL := tf.cluster.Spec.KubernetesVersion
+	baseURL = strings.TrimSuffix(baseURL, "/")
+
+	tagURL := baseURL + "/bin/linux/amd64/" + component + ".docker_tag"
+	glog.V(2).Infof("Downloading docker tag for %s from: %s", component, tagURL)
+
+	b, err := vfs.Context.ReadFile(tagURL)
+	if err != nil {
+		return "", fmt.Errorf("error reading tag file %q: %v", tagURL, err)
+	}
+	tag := strings.TrimSpace(string(b))
+	glog.V(2).Infof("Found tag %q for %q", tag, component)
+
+	return "gcr.io/google_containers/" + component + ":" + tag, nil
 }

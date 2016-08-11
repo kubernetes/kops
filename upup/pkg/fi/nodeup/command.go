@@ -8,17 +8,22 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
+	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/upup/pkg/fi/vfs"
+	"strconv"
 	"strings"
 )
+
+// We should probably retry for a long time - there is not really any great fallback
+const MaxAttemptsWithNoProgress = 100
 
 type NodeUpCommand struct {
 	config         *NodeUpConfig
 	cluster        *api.Cluster
 	ConfigLocation string
 	ModelDir       string
-	AssetDir       string
+	CacheDir       string
 	Target         string
 	FSRoot         string
 }
@@ -42,10 +47,10 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("ConfigLocation is required")
 	}
 
-	if c.AssetDir == "" {
-		return fmt.Errorf("AssetDir is required")
+	if c.CacheDir == "" {
+		return fmt.Errorf("CacheDir is required")
 	}
-	assets := fi.NewAssetStore(c.AssetDir)
+	assets := fi.NewAssetStore(c.CacheDir)
 	for _, asset := range c.config.Assets {
 		err := assets.Add(asset)
 		if err != nil {
@@ -135,6 +140,13 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("error building loader: %v", err)
 	}
 
+	for i, image := range c.config.Images {
+		taskMap["LoadImage."+strconv.Itoa(i)] = &nodetasks.LoadImageTask{
+			Source: image.Source,
+			Hash:   image.Hash,
+		}
+	}
+
 	var cloud fi.Cloud
 	var caStore fi.CAStore
 	var secretStore fi.SecretStore
@@ -143,7 +155,9 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	switch c.Target {
 	case "direct":
-		target = &local.LocalTarget{}
+		target = &local.LocalTarget{
+			CacheDir: c.CacheDir,
+		}
 	case "dryrun":
 		target = fi.NewDryRunTarget(out)
 	case "cloudinit":
@@ -159,7 +173,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 	defer context.Close()
 
-	err = context.RunTasks(taskMap)
+	err = context.RunTasks(taskMap, MaxAttemptsWithNoProgress)
 	if err != nil {
 		glog.Exitf("error running tasks: %v", err)
 	}

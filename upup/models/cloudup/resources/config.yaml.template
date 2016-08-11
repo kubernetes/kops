@@ -1,13 +1,1 @@
-Tags:
-{{ range $tag := ComputeNodeTags Args }}
-  - {{ $tag }}
-{{ end }}
-
-
-Assets:
-{{ range $asset := Assets }}
-  - {{ $asset }}
-{{ end }}
-
-ClusterName: {{ ClusterName }}
-ClusterLocation: {{ ClusterLocation }}
+{{ RenderNodeUpConfig Args }}

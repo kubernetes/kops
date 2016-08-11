@@ -12,10 +12,15 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
+	"k8s.io/kops/upup/pkg/fi/hashing"
+	"k8s.io/kops/upup/pkg/fi/nodeup"
+	"k8s.io/kops/upup/pkg/fi/vfs"
 	"os"
 	"path"
 	"strings"
 )
+
+const MaxAttemptsWithNoProgress = 3
 
 type ApplyClusterCmd struct {
 	Cluster *api.Cluster
@@ -56,10 +61,6 @@ func (c *ApplyClusterCmd) Run() error {
 		return err
 	}
 
-	// TODO: Make these configurable?
-	useMasterASG := true
-	useMasterLB := false
-
 	err = api.DeepValidate(c.Cluster, c.InstanceGroups, true)
 	if err != nil {
 		return err
@@ -77,8 +78,6 @@ func (c *ApplyClusterCmd) Run() error {
 	if c.ClusterRegistry == nil {
 		return fmt.Errorf("ClusterRegistry is required")
 	}
-
-	tags := make(map[string]struct{})
 
 	l := &Loader{}
 	l.Init()
@@ -99,8 +98,16 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	if len(c.Assets) == 0 {
+		var baseURL string
+		if isBaseURL(cluster.Spec.KubernetesVersion) {
+			baseURL = cluster.Spec.KubernetesVersion
+		} else {
+			baseURL = "https://storage.googleapis.com/kubernetes-release/release/v" + cluster.Spec.KubernetesVersion
+		}
+		baseURL = strings.TrimSuffix(baseURL, "/")
+
 		{
-			defaultKubeletAsset := fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/v%s/bin/linux/amd64/kubelet", cluster.Spec.KubernetesVersion)
+			defaultKubeletAsset := baseURL + "/bin/linux/amd64/kubelet"
 			glog.Infof("Adding default kubelet release asset: %s", defaultKubeletAsset)
 
 			hash, err := findHash(defaultKubeletAsset)
@@ -111,7 +118,7 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 		{
-			defaultKubectlAsset := fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/release/v%s/bin/linux/amd64/kubectl", cluster.Spec.KubernetesVersion)
+			defaultKubectlAsset := baseURL + "/bin/linux/amd64/kubectl"
 			glog.Infof("Adding default kubectl release asset: %s", defaultKubectlAsset)
 
 			hash, err := findHash(defaultKubectlAsset)
@@ -129,29 +136,6 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	checkExisting := true
-
-	var nodeUpTags []string
-	nodeUpTags = append(nodeUpTags, "_protokube")
-
-	if useMasterASG {
-		tags["_master_asg"] = struct{}{}
-	} else {
-		tags["_master_single"] = struct{}{}
-	}
-
-	if useMasterLB {
-		tags["_master_lb"] = struct{}{}
-	} else {
-		tags["_not_master_lb"] = struct{}{}
-	}
-
-	if cluster.Spec.MasterPublicName != "" {
-		tags["_master_dns"] = struct{}{}
-	}
-
-	if fi.BoolValue(cluster.Spec.IsolateMasters) {
-		tags["_isolate_masters"] = struct{}{}
-	}
 
 	l.AddTypes(map[string]interface{}{
 		"keypair": &fitasks.Keypair{},
@@ -174,8 +158,6 @@ func (c *ApplyClusterCmd) Run() error {
 			project = gceCloud.Project
 
 			glog.Fatalf("GCE is (probably) not working currently - please ping @justinsb for cleanup")
-			tags["_gce"] = struct{}{}
-			nodeUpTags = append(nodeUpTags, "_gce")
 
 			l.AddTypes(map[string]interface{}{
 				"persistentDisk":       &gcetasks.PersistentDisk{},
@@ -192,9 +174,6 @@ func (c *ApplyClusterCmd) Run() error {
 		{
 			awsCloud := cloud.(*awsup.AWSCloud)
 			region = awsCloud.Region
-
-			tags["_aws"] = struct{}{}
-			nodeUpTags = append(nodeUpTags, "_aws")
 
 			l.AddTypes(map[string]interface{}{
 				// EC2
@@ -248,13 +227,18 @@ func (c *ApplyClusterCmd) Run() error {
 		return fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
 	}
 
+	clusterTags, err := buildClusterTags(cluster)
+	if err != nil {
+		return err
+	}
+
 	tf := &TemplateFunctions{
 		cluster: cluster,
-		tags:    tags,
+		tags:    clusterTags,
 		region:  region,
 	}
 
-	l.Tags = tags
+	l.Tags = clusterTags
 	l.WorkDir = c.OutDir
 	l.ModelStore = modelStore
 
@@ -265,26 +249,85 @@ func (c *ApplyClusterCmd) Run() error {
 		return secretStore
 	}
 
-	l.TemplateFunctions["ComputeNodeTags"] = func(args []string) []string {
-		var tags []string
-		for _, tag := range nodeUpTags {
-			tags = append(tags, tag)
+	// RenderNodeUpConfig returns the NodeUp config, in YAML format
+	l.TemplateFunctions["RenderNodeUpConfig"] = func(args []string) (string, error) {
+		var role api.InstanceGroupRole
+		for _, arg := range args {
+			if arg == "_kubernetes_master" {
+				if role != "" {
+					return "", fmt.Errorf("found duplicate role tags in args: %v", args)
+				}
+				role = api.InstanceGroupRoleMaster
+			}
+			if arg == "_kubernetes_pool" {
+				if role != "" {
+					return "", fmt.Errorf("found duplicate role tags in args: %v", args)
+				}
+				role = api.InstanceGroupRoleNode
+			}
+		}
+		if role == "" {
+			return "", fmt.Errorf("cannot determine role from args: %v", args)
 		}
 
-		isMaster := false
-		for _, arg := range args {
-			tags = append(tags, arg)
-			if arg == "_kubernetes_master" {
-				isMaster = true
+		nodeUpTags, err := buildNodeupTags(role, tf.cluster, tf.tags)
+		if err != nil {
+			return "", err
+		}
+
+		config := &nodeup.NodeUpConfig{}
+		for _, tag := range args {
+			config.Tags = append(config.Tags, tag)
+		}
+		for _, tag := range nodeUpTags {
+			config.Tags = append(config.Tags, tag)
+		}
+
+		config.Assets = c.Assets
+
+		config.ClusterName = cluster.Name
+
+		configPath, err := c.ClusterRegistry.ConfigurationPath(cluster.Name)
+		if err != nil {
+			return "", err
+		}
+		config.ClusterLocation = configPath.Path()
+
+		var images []*nodeup.Image
+
+		if isBaseURL(cluster.Spec.KubernetesVersion) {
+			baseURL := cluster.Spec.KubernetesVersion
+			baseURL = strings.TrimSuffix(baseURL, "/")
+
+			// TODO: pull kube-dns image
+			// When using a custom version, we want to preload the images over http
+			components := []string{"kube-proxy"}
+			if role == api.InstanceGroupRoleMaster {
+				components = append(components, "kube-apiserver", "kube-controller-manager", "kube-scheduler")
+			}
+			for _, component := range components {
+				imagePath := baseURL + "/bin/linux/amd64/" + component + ".tar"
+				glog.Infof("Adding docker image: %s", imagePath)
+
+				hash, err := findHash(imagePath)
+				if err != nil {
+					return "", err
+				}
+				image := &nodeup.Image{
+					Source: imagePath,
+					Hash:   hash.Hex(),
+				}
+				images = append(images, image)
 			}
 		}
 
-		if isMaster && !fi.BoolValue(cluster.Spec.IsolateMasters) {
-			// Run this master as a pool node also (start kube-proxy etc)
-			tags = append(tags, "_kubernetes_pool")
+		config.Images = images
+		yaml, err := api.ToYaml(config)
+		if err != nil {
+			return "", err
 		}
 
-		return tags
+		return string(yaml), nil
 	}
 
 	//// TotalNodeCount computes the total count of nodes
@@ -335,16 +378,6 @@ func (c *ApplyClusterCmd) Run() error {
 	l.TemplateFunctions["NodeUpSourceHash"] = func() string {
 		return ""
 	}
-	l.TemplateFunctions["ClusterLocation"] = func() (string, error) {
-		configPath, err := c.ClusterRegistry.ConfigurationPath(cluster.Name)
-		if err != nil {
-			return "", err
-		}
-		return configPath.Path(), nil
-	}
-	l.TemplateFunctions["Assets"] = func() []string {
-		return c.Assets
-	}
 
 	tf.AddTo(l.TemplateFunctions)
 
@@ -392,7 +425,7 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 	defer context.Close()
 
-	err = context.RunTasks(taskMap)
+	err = context.RunTasks(taskMap, MaxAttemptsWithNoProgress)
 	if err != nil {
 		return fmt.Errorf("error running tasks: %v", err)
 	}
@@ -403,4 +436,24 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	return nil
+}
+
+func isBaseURL(kubernetesVersion string) bool {
+	return strings.HasPrefix(kubernetesVersion, "http:") || strings.HasPrefix(kubernetesVersion, "https:")
+}
+
+func findHash(url string) (*hashing.Hash, error) {
+	for _, ext := range []string{".sha1"} {
+		hashURL := url + ext
+		b, err := vfs.Context.ReadFile(hashURL)
+		if err != nil {
+			glog.Infof("error reading hash file %q: %v", hashURL, err)
+			continue
+		}
+		hashString := strings.TrimSpace(string(b))
+		glog.Infof("Found hash %q for %q", hashString, url)
+
+		return hashing.FromString(hashString)
+	}
+	return nil, fmt.Errorf("cannot determine hash for %v (have you specified a valid KubernetesVersion?)", url)
 }
