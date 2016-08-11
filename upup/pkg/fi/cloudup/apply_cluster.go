@@ -3,7 +3,6 @@ package cloudup
 import (
 	"fmt"
 	"github.com/golang/glog"
-	"io/ioutil"
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -30,10 +29,7 @@ type ApplyClusterCmd struct {
 
 	// Target specifies how we are operating e.g. direct to GCE, or AWS, or dry-run, or terraform
 	Target string
-	//// The node model to use
-	//NodeModel string
-	// The SSH public key (file) to use
-	SSHPublicKey string
+
 	// OutDir is a local directory in which we place output, can cache files etc
 	OutDir string
 
@@ -166,6 +162,18 @@ func (c *ApplyClusterCmd) Run() error {
 	region := ""
 	project := ""
 
+	var sshPublicKeys [][]byte
+	{
+		keys, err := keyStore.FindSSHPublicKeys(fi.SecretNameSSHPrimary)
+		if err != nil {
+			return fmt.Errorf("error retrieving SSH public key %q: %v", fi.SecretNameSSHPrimary, err)
+		}
+
+		for _, k := range keys {
+			sshPublicKeys = append(sshPublicKeys, k.Data)
+		}
+	}
+
 	switch cluster.Spec.CloudProvider {
 	case "gce":
 		{
@@ -237,8 +245,14 @@ func (c *ApplyClusterCmd) Run() error {
 				"dnsZone": &awstasks.DNSZone{},
 			})
 
-			if c.SSHPublicKey == "" {
-				return fmt.Errorf("SSH public key must be specified when running with AWS")
+			if len(sshPublicKeys) == 0 {
+				return fmt.Errorf("SSH public key must be specified when running with AWS (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.Name)
+			}
+
+			if len(sshPublicKeys) != 1 {
+				return fmt.Errorf("Exactly one 'admin' SSH public key can be specified when running with AWS; please delete a key using `kops delete secret`")
+			} else {
+				l.Resources["ssh-public-key"] = fi.NewStringResource(string(sshPublicKeys[0]))
 			}
 
 			l.TemplateFunctions["MachineTypeInfo"] = awsup.GetMachineTypeInfo
@@ -347,15 +361,6 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	tf.AddTo(l.TemplateFunctions)
-
-	if c.SSHPublicKey != "" {
-		authorized, err := ioutil.ReadFile(c.SSHPublicKey)
-		if err != nil {
-			return fmt.Errorf("error reading SSH key file %q: %v", c.SSHPublicKey, err)
-		}
-
-		l.Resources["ssh-public-key"] = fi.NewStringResource(string(authorized))
-	}
 
 	taskMap, err := l.BuildTasks(modelStore, c.Models)
 	if err != nil {
