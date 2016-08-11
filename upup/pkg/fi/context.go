@@ -38,11 +38,11 @@ func NewContext(target Target, cloud Cloud, castore CAStore, secretStore SecretS
 	return c, nil
 }
 
-func (c *Context) RunTasks(taskMap map[string]Task) error {
+func (c *Context) RunTasks(taskMap map[string]Task, maxAttemptsWithNoProgress int) error {
 	e := &executor{
 		context: c,
 	}
-	return e.RunTasks(taskMap)
+	return e.RunTasks(taskMap, maxAttemptsWithNoProgress)
 }
 
 func (c *Context) Close() {

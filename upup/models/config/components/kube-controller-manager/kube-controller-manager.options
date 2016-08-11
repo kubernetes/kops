@@ -6,7 +6,7 @@ KubeControllerManager:
   LogLevel: 2
   RootCAFile: /srv/kubernetes/ca.crt
   ClusterName: {{ ClusterName }}
-  Image: gcr.io/google_containers/kube-controller-manager:v{{ .KubernetesVersion }}
+  Image: {{ Image "kube-controller-manager" }}
   # Doesn't seem to be any real downside to always doing a leader election
   LeaderElection:
     LeaderElect: true

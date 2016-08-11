@@ -11,6 +11,9 @@ type NodeUpConfig struct {
 	// TODO: Remove once everything is in containers?
 	Assets []string `json:",omitempty"`
 
+	// Images are a list of images we should preload
+	Images []*Image `json:"images,omitempty"`
+
 	// ClusterLocation is the VFS path to the cluster spec
 	ClusterLocation string `json:",omitempty"`
 
@@ -20,38 +23,11 @@ type NodeUpConfig struct {
 	ClusterName string `json:",omitempty"`
 }
 
-// Our client configuration structure
-// Wherever possible, we try to use the types & names in https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
+// Image is a docker image we should pre-load
+type Image struct {
+	// Source is the URL from which we should download the image
+	Source string `json:"source,omitempty"`
 
-//type NodeConfig struct {
-//	Kubelet               *KubeletConfig               `json:",omitempty"`
-//	KubeProxy             *KubeProxyConfig             `json:",omitempty"`
-//	KubeControllerManager *KubeControllerManagerConfig `json:",omitempty"`
-//	KubeScheduler         *KubeSchedulerConfig         `json:",omitempty"`
-//	Docker                *DockerConfig                `json:",omitempty"`
-//	APIServer             *APIServerConfig             `json:",omitempty"`
-//
-//	DNS *DNSConfig `json:",omitempty"`
-//
-//	// NodeConfig can directly access a store of secrets, keys or configuration
-//	// (for example on S3) and then configure based on that
-//	// This supports (limited) dynamic reconfiguration also
-//	SecretStore string `json:",omitempty"`
-//	KeyStore    string `json:",omitempty"`
-//	ConfigStore string `json:",omitempty"`
-//
-//	KubeUser string `json:",omitempty"`
-//
-//	Tags   []string `json:",omitempty"`
-//	Assets []string `json:",omitempty"`
-//
-//	MasterInternalName string `json:",omitempty"`
-//
-//	// The DNS zone to use if configuring a cloud provided DNS zone
-//	DNSZone string `json:",omitempty"`
-//
-//	// Deprecated in favor of KeyStore / SecretStore
-//	Tokens       map[string]string          `json:",omitempty"`
-//	Certificates map[string]*fi.Certificate `json:",omitempty"`
-//	PrivateKeys  map[string]*fi.PrivateKey  `json:",omitempty"`
-//}
+	// Hash is the hash of the file, to verify image integrity (even over http)
+	Hash string `json:"hash,omitempty"`
+}
