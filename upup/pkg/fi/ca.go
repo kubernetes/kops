@@ -32,6 +32,9 @@ const (
 	SecretTypeSSHPublicKey = "SSHPublicKey"
 	SecretTypeKeypair      = "Keypair"
 	SecretTypeSecret       = "Secret"
+
+	// Name for the primary SSH key
+	SecretNameSSHPrimary = "admin"
 )
 
 type KeystoreItem struct {
