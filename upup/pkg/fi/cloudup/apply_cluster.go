@@ -253,6 +253,17 @@ func (c *ApplyClusterCmd) Run() error {
 				return fmt.Errorf("Exactly one 'admin' SSH public key can be specified when running with AWS; please delete a key using `kops delete secret`")
 			} else {
 				l.Resources["ssh-public-key"] = fi.NewStringResource(string(sshPublicKeys[0]))
+
+				// SSHKeyName computes a unique SSH key name, combining the cluster name and the SSH public key fingerprint
+				l.TemplateFunctions["SSHKeyName"] = func() (string, error) {
+					fingerprint, err := awstasks.ComputeOpenSSHKeyFingerprint(string(sshPublicKeys[0]))
+					if err != nil {
+						return "", err
+					}
+
+					name := "kubernetes." + cluster.Name + "-" + fingerprint
+					return name, nil
+				}
 			}
 
 			l.TemplateFunctions["MachineTypeInfo"] = awsup.GetMachineTypeInfo

@@ -28,7 +28,7 @@ instance/master.{{ ClusterName }}:
 {{ if not (HasTag "_master_lb") }}
     k8s.io/dns/public: "api.{{ ClusterName }}"
 {{ end }}
-  sshKey: sshKey/{{ ClusterName }}
+  sshKey: sshKey/{{ SSHKeyName }}
   securityGroups:
     - securityGroup/master.{{ ClusterName }}
   iamInstanceProfile: iamInstanceProfile/master.{{ ClusterName }}
