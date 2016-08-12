@@ -46,7 +46,7 @@ securityGroupRule/all-node-to-master:
 
 # LaunchConfiguration & ASG for nodes
 launchConfiguration/{{ $nodeset.Name }}.{{ ClusterName }}:
-  sshKey: sshKey/{{ ClusterName }}
+  sshKey: sshKey/{{ SSHKeyName }}
   securityGroups:
     - securityGroup/nodes.{{ ClusterName }}
   iamInstanceProfile: iamInstanceProfile/nodes.{{ ClusterName }}

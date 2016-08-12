@@ -662,7 +662,8 @@ func ListKeypairs(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error
 
 	glog.V(2).Infof("Listing EC2 Keypairs")
 	request := &ec2.DescribeKeyPairsInput{
-		Filters: []*ec2.Filter{awsup.NewEC2Filter("key-name", keypairName)},
+	// We need to match both the name and a prefix
+	//Filters: []*ec2.Filter{awsup.NewEC2Filter("key-name", keypairName)},
 	}
 	response, err := c.EC2.DescribeKeyPairs(request)
 	if err != nil {
@@ -673,6 +674,9 @@ func ListKeypairs(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error
 
 	for _, keypair := range response.KeyPairs {
 		name := aws.StringValue(keypair.KeyName)
+		if name != keypairName && !strings.HasPrefix(name, keypairName+"-") {
+			continue
+		}
 		tracker := &ResourceTracker{
 			Name:    name,
 			ID:      name,
