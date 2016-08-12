@@ -15,6 +15,10 @@ Some of the more interesting features:
 
 ## Recent changes
 
+Improvements are being made almost daily, but bigger changes are described here (until we get to
+a more formal release process):
+
+* Reworked SSH keys and support for running CI builds [Aug 11 2016](CHANGES.md#aug-11-2016)
 * Create command was split into create and update [Jul 21 2016](CHANGES.md#jul-21-2016)
 
 ## Installation
