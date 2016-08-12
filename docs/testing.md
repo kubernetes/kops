@@ -40,3 +40,9 @@ spec:
     name: main
 ...
 ```
+
+
+### Running the kubernetes e2e test suite
+
+The [e2e](../e2e/README.md) directory has a docker image and some scripts which make it easy to run
+the kubernetes e2e tests, using kops.
