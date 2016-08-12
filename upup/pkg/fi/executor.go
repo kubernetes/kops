@@ -8,8 +8,6 @@ import (
 	"time"
 )
 
-const MaxAttemptsWithNoProgress = 3
-
 type executor struct {
 	context *Context
 }
@@ -22,8 +20,8 @@ type taskState struct {
 }
 
 // RunTasks executes all the tasks, considering their dependencies
-// It will perform some re-execution on error, retrying as long as progess is still being made
-func (e *executor) RunTasks(taskMap map[string]Task) error {
+// It will perform some re-execution on error, retrying as long as progress is still being made
+func (e *executor) RunTasks(taskMap map[string]Task, maxAttemptsWithNoProgress int) error {
 	dependencies := FindTaskDependencies(taskMap)
 
 	taskStates := make(map[string]*taskState)
@@ -94,7 +92,7 @@ func (e *executor) RunTasks(taskMap map[string]Task) error {
 		if !progress {
 			if len(errors) != 0 {
 				noProgressCount++
-				if noProgressCount == MaxAttemptsWithNoProgress {
+				if noProgressCount == maxAttemptsWithNoProgress {
 					return fmt.Errorf("did not make any progress executing task.  Example error: %v", errors[0])
 				} else {
 					glog.Infof("No progress made, sleeping before retrying failed tasks")

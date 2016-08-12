@@ -212,6 +212,9 @@ type ClusterSpec struct {
 }
 
 type KubeDNSConfig struct {
+	// Image is the name of the docker image to run
+	Image string `json:"image,omitempty"`
+
 	Replicas int    `json:"replicas,omitempty"`
 	Domain   string `json:"domain,omitempty"`
 	ServerIP string `json:"serverIP,omitempty"`

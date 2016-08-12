@@ -14,4 +14,4 @@ KubeAPIServer:
   TokenAuthFile: /srv/kubernetes/known_tokens.csv
   LogLevel: 2
   AllowPrivileged: true
-  Image: gcr.io/google_containers/kube-apiserver:v{{ .KubernetesVersion }}
+  Image: {{ Image "kube-apiserver" }}

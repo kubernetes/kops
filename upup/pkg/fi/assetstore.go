@@ -69,13 +69,13 @@ func (r *assetResource) GetSource() *Source {
 }
 
 type AssetStore struct {
-	assetDir string
+	cacheDir string
 	assets   []*asset
 }
 
-func NewAssetStore(assetDir string) *AssetStore {
+func NewAssetStore(cacheDir string) *AssetStore {
 	a := &AssetStore{
-		assetDir: assetDir,
+		cacheDir: cacheDir,
 	}
 	return a
 }
@@ -163,7 +163,7 @@ func (a *AssetStore) addURL(url string, hash *hashing.Hash) error {
 		}
 	}
 
-	localFile := path.Join(a.assetDir, hash.String()+"_"+utils.SanitizeString(url))
+	localFile := path.Join(a.cacheDir, hash.String()+"_"+utils.SanitizeString(url))
 	_, err = DownloadURL(url, localFile, hash)
 	if err != nil {
 		return err
@@ -237,7 +237,7 @@ func (a *AssetStore) addURL(url string, hash *hashing.Hash) error {
 //}
 
 func (a *AssetStore) addArchive(archiveSource *Source, archiveFile string) error {
-	extracted := path.Join(a.assetDir, "extracted/"+path.Base(archiveFile))
+	extracted := path.Join(a.cacheDir, "extracted/"+path.Base(archiveFile))
 
 	// TODO: Use a temp file so this is atomic
 	if _, err := os.Stat(extracted); os.IsNotExist(err) {
