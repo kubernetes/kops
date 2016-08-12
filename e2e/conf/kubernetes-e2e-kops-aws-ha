@@ -1,0 +1,4 @@
+. conf/kubernetes-e2e-upup-aws
+
+export NODE_ZONES="eu-west-1a,eu-west-1b,eu-west-1c"
+export AWS_REGION="eu-west-1"

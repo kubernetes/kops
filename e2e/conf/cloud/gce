@@ -1,0 +1,5 @@
+# GCE variables
+#export INSTANCE_PREFIX="${E2E_NAME:-jenkins-e2e}"
+#export KUBE_GCE_NETWORK="${E2E_NAME:-jenkins-e2e}"
+#export KUBE_GCE_INSTANCE_PREFIX="${E2E_NAME:-jenkins-e2e}"
+#export GCE_SERVICE_ACCOUNT=$(gcloud auth list 2> /dev/null | grep active | cut -f3 -d' ')
