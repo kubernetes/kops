@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	"io/ioutil"
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -297,8 +298,14 @@ func (c *CreateClusterCmd) Run(args []string) error {
 		}
 	}
 
+	sshPublicKeys := make(map[string][]byte)
 	if c.SSHPublicKey != "" {
 		c.SSHPublicKey = utils.ExpandPath(c.SSHPublicKey)
+		authorized, err := ioutil.ReadFile(c.SSHPublicKey)
+		if err != nil {
+			return fmt.Errorf("error reading SSH key file %q: %v", c.SSHPublicKey, err)
+		}
+		sshPublicKeys[fi.SecretNameSSHPrimary] = authorized
 	}
 
 	if c.AdminAccess != "" {
@@ -350,6 +357,14 @@ func (c *CreateClusterCmd) Run(args []string) error {
 		return fmt.Errorf("error writing completed cluster spec: %v", err)
 	}
 
+	for k, data := range sshPublicKeys {
+		keyStore := clusterRegistry.KeyStore(cluster.Name)
+		err = keyStore.AddSSHPublicKey(k, data)
+		if err != nil {
+			return fmt.Errorf("error addding SSH public key: %v", err)
+		}
+	}
+
 	if isDryrun {
 		fmt.Println("Previewing changes that will be made:\n")
 	}
@@ -360,7 +375,6 @@ func (c *CreateClusterCmd) Run(args []string) error {
 		Models:          strings.Split(c.Models, ","),
 		ClusterRegistry: clusterRegistry,
 		Target:          c.Target,
-		SSHPublicKey:    c.SSHPublicKey,
 		OutDir:          c.OutDir,
 		DryRun:          isDryrun,
 	}

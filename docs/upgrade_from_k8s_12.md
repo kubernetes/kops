@@ -73,6 +73,14 @@ kops get clusters
 
 You can also list the instance groups: `kops get ig --name ${NEW_NAME}`
 
+## Import the SSH public key
+
+The SSH public key is not easily retrieved from the old cluster, so you must add it:
+
+```
+kops create secret --name ${NEW_NAME} sshpublickey admin -i ~/.ssh/id_rsa.pub
+```
+
 ## Bring up the new cluster
 
 Use the update command to bring up the new cluster:
