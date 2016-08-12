@@ -186,7 +186,7 @@ func (c *RootCmd) Cluster() (*api.ClusterRegistry, *api.Cluster, error) {
 }
 
 func (c *RootCmd) InstanceGroupRegistry() (*api.InstanceGroupRegistry, error) {
-	clusterStore, err := c.ClusterRegistry()
+	clusterRegistry, err := c.ClusterRegistry()
 	if err != nil {
 		return nil, err
 	}
@@ -196,11 +196,11 @@ func (c *RootCmd) InstanceGroupRegistry() (*api.InstanceGroupRegistry, error) {
 		return nil, fmt.Errorf("--name is required")
 	}
 
-	return clusterStore.InstanceGroups(clusterName)
+	return clusterRegistry.InstanceGroups(clusterName)
 }
 
 func (c *RootCmd) SecretStore() (fi.SecretStore, error) {
-	clusterStore, err := c.ClusterRegistry()
+	clusterRegistry, err := c.ClusterRegistry()
 	if err != nil {
 		return nil, err
 	}
@@ -210,11 +210,11 @@ func (c *RootCmd) SecretStore() (fi.SecretStore, error) {
 		return nil, fmt.Errorf("--name is required")
 	}
 
-	return clusterStore.SecretStore(clusterName), nil
+	return clusterRegistry.SecretStore(clusterName), nil
 }
 
 func (c *RootCmd) KeyStore() (fi.CAStore, error) {
-	clusterStore, err := c.ClusterRegistry()
+	clusterRegistry, err := c.ClusterRegistry()
 	if err != nil {
 		return nil, err
 	}
@@ -224,5 +224,5 @@ func (c *RootCmd) KeyStore() (fi.CAStore, error) {
 		return nil, fmt.Errorf("--name is required")
 	}
 
-	return clusterStore.KeyStore(clusterName), nil
+	return clusterRegistry.KeyStore(clusterName), nil
 }
