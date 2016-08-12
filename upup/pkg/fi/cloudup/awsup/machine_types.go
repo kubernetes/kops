@@ -320,6 +320,15 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks: []int{120, 120},
 	},
 
+	// hi1 family
+	{
+		Name:           "hi1.4xlarge",
+		MemoryGB:       60.5,
+		ECU:            35,
+		Cores:          16,
+		EphemeralDisks: []int{1024, 1024},
+	},
+
 	// i2 family
 	{
 		Name:           "i2.xlarge",
