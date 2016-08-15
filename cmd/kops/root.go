@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"encoding/json"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -114,7 +113,7 @@ func (c *RootCmd) ClusterName() string {
 	return c.clusterName
 }
 
-func readKubectlClusterConfig() (*kubectlClusterWithName, error) {
+func readKubectlClusterConfig() (*kutil.KubectlClusterWithName, error) {
 	kubectl := &kutil.Kubectl{}
 	context, err := kubectl.GetCurrentContext()
 	if err != nil {
@@ -122,19 +121,13 @@ func readKubectlClusterConfig() (*kubectlClusterWithName, error) {
 	}
 	glog.V(4).Infof("context = %q", context)
 
-	configString, err := kubectl.GetConfig(true, "json")
+	config, err := kubectl.GetConfig(true)
 	if err != nil {
 		return nil, fmt.Errorf("error getting current config from kubectl: %v", err)
 	}
-	glog.V(8).Infof("config = %q", configString)
 
-	config := &kubectlConfig{}
-	err = json.Unmarshal([]byte(configString), config)
-	if err != nil {
-		return nil, fmt.Errorf("cannot parse current config from kubectl: %v", err)
-	}
-
-	if len(config.Clusters) != 1 {
+	// Minify should have done this
+	if  len(config.Clusters) != 1 {
 		return nil, fmt.Errorf("expected exactly one cluster in kubectl config, found %d", len(config.Clusters))
 	}
 

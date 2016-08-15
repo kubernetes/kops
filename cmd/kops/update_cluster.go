@@ -134,6 +134,12 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 
 	// TODO: Only if not yet set?
 	if !isDryrun {
+		hasKubecfg, err := hasKubecfg(cluster.Name)
+		if err != nil {
+			glog.Warningf("error reading kubecfg: %v", err)
+			hasKubecfg = true
+		}
+
 		keyStore := clusterRegistry.KeyStore(cluster.Name)
 
 		kubecfgCert, err := keyStore.FindCert("kubecfg")
@@ -159,7 +165,35 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 		} else {
 			glog.Infof("kubecfg cert not found; won't export kubecfg")
 		}
+
+		if !hasKubecfg {
+			// Assume initial creation
+			fmt.Printf("\n")
+			fmt.Printf("Cluster is starting.  It should be ready in a few minutes.\n")
+			fmt.Printf("\n")
+			fmt.Printf("Suggestions:\n")
+			fmt.Printf(" * list nodes: kubectl get nodes --show-labels\n")
+			fmt.Printf(" * ssh to the master: ssh -i ~/.ssh/id_rsa admin@%s\n", cluster.Spec.MasterPublicName)
+			fmt.Printf(" * read about installing addons: https://github.com/kubernetes/kops/blob/master/docs/addons.md\n")
+			fmt.Printf("\n")
+		}
 	}
 
 	return nil
+}
+
+func hasKubecfg(contextName string) (bool, error) {
+	kubectl := &kutil.Kubectl{}
+
+	config, err := kubectl.GetConfig(false)
+	if err != nil {
+		return false, fmt.Errorf("error getting config from kubectl: %v", err)
+	}
+
+	for _, context := range config.Contexts {
+		if context.Name == contextName {
+			return true, nil
+		}
+	}
+	return false, nil
 }
