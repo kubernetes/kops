@@ -127,7 +127,7 @@ func readKubectlClusterConfig() (*kutil.KubectlClusterWithName, error) {
 	}
 
 	// Minify should have done this
-	if  len(config.Clusters) != 1 {
+	if len(config.Clusters) != 1 {
 		return nil, fmt.Errorf("expected exactly one cluster in kubectl config, found %d", len(config.Clusters))
 	}
 

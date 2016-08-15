@@ -53,16 +53,18 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 	}
 
 	isDryrun := false
+	targetName := c.Target
+
 	// direct requires --yes (others do not, because they don't do anything!)
 	if c.Target == cloudup.TargetDirect {
 		if !c.Yes {
 			isDryrun = true
-			c.Target = cloudup.TargetDryRun
+			targetName = cloudup.TargetDryRun
 		}
 	}
 	if c.Target == cloudup.TargetDryRun {
 		isDryrun = true
-		c.Target = cloudup.TargetDryRun
+		targetName = cloudup.TargetDryRun
 	}
 
 	if c.OutDir == "" {
@@ -118,7 +120,7 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 		InstanceGroups:  fullInstanceGroups,
 		Models:          strings.Split(c.Models, ","),
 		ClusterRegistry: clusterRegistry,
-		Target:          c.Target,
+		TargetName:      targetName,
 		OutDir:          c.OutDir,
 		DryRun:          isDryrun,
 	}
@@ -128,7 +130,12 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 	}
 
 	if isDryrun {
-		fmt.Printf("Must specify --yes to apply changes\n")
+		target := applyCmd.Target.(*fi.DryRunTarget)
+		if target.HasChanges() {
+			fmt.Printf("Must specify --yes to apply changes\n")
+		} else {
+			fmt.Printf("No changes need to be applied\n")
+		}
 		return nil
 	}
 
