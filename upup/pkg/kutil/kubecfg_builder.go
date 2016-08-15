@@ -106,7 +106,7 @@ func (c *KubeconfigBuilder) WriteKubecfg() error {
 	// If we have a bearer token, also create a credential entry with basic auth
 	// so that it is easy to discover the basic auth password for your cluster
 	// to use in a web browser.
-	if c.KubeBearerToken != "" && c.KubeUser != "" && c.KubePassword != "" {
+	if c.KubeUser != "" && c.KubePassword != "" {
 		err := c.execKubectl("config", "set-credentials", c.Context+"-basic-auth", "--username="+c.KubeUser, "--password="+c.KubePassword)
 		if err != nil {
 			return err
