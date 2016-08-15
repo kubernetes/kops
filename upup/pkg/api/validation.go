@@ -2,8 +2,10 @@ package api
 
 import (
 	"fmt"
+	"k8s.io/kubernetes/pkg/util/validation"
 	"net"
 	"net/url"
+	"strings"
 )
 
 func (c *Cluster) Validate(strict bool) error {
@@ -11,6 +13,18 @@ func (c *Cluster) Validate(strict bool) error {
 
 	if c.Name == "" {
 		return fmt.Errorf("Cluster Name is required (e.g. --name=mycluster.myzone.com)")
+	}
+
+	{
+		// Must be a dns name
+		errs := validation.IsDNS1123Subdomain(c.Name)
+		if len(errs) != 0 {
+			return fmt.Errorf("Cluster Name must be a valid DNS name (e.g. --name=mycluster.myzone.com) errors: %s", strings.Join(errs, ", "))
+		}
+
+		if !strings.Contains(c.Name, ".") {
+			return fmt.Errorf("Cluster Name must be a fully-qualified DNS name (e.g. --name=mycluster.myzone.com)")
+		}
 	}
 
 	if len(c.Spec.Zones) == 0 {
