@@ -104,6 +104,18 @@ func TestValidateFull_Default_Validates(t *testing.T) {
 	}
 }
 
+func TestValidateFull_ClusterName_InvalidDNS_NoDot(t *testing.T) {
+	c := buildDefaultCluster(t)
+	c.Name = "test"
+	expectErrorFromValidate(t, c, "DNS name")
+}
+
+func TestValidateFull_ClusterName_InvalidDNS_Invalid(t *testing.T) {
+	c := buildDefaultCluster(t)
+	c.Name = "test.-"
+	expectErrorFromValidate(t, c, "DNS name")
+}
+
 func TestValidateFull_ClusterName_Required(t *testing.T) {
 	c := buildDefaultCluster(t)
 	c.Name = ""
