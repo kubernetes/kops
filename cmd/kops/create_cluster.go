@@ -91,15 +91,16 @@ func (c *CreateClusterCmd) Run(args []string) error {
 
 	isDryrun := false
 	// direct requires --yes (others do not, because they don't make changes)
+	targetName := c.Target
 	if c.Target == cloudup.TargetDirect {
 		if !c.Yes {
 			isDryrun = true
-			c.Target = cloudup.TargetDryRun
+			targetName = cloudup.TargetDryRun
 		}
 	}
 	if c.Target == cloudup.TargetDryRun {
 		isDryrun = true
-		c.Target = cloudup.TargetDryRun
+		targetName = cloudup.TargetDryRun
 	}
 
 	clusterName := rootCommand.clusterName
@@ -374,7 +375,7 @@ func (c *CreateClusterCmd) Run(args []string) error {
 		InstanceGroups:  fullInstanceGroups,
 		Models:          strings.Split(c.Models, ","),
 		ClusterRegistry: clusterRegistry,
-		Target:          c.Target,
+		TargetName:      targetName,
 		OutDir:          c.OutDir,
 		DryRun:          isDryrun,
 	}
