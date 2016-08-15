@@ -23,9 +23,11 @@ ${GOPATH}/bin/kops update cluster ${NAME} --target=terraform
 
 cd out/terraform
 terraform plan
-terraform aply
+terraform apply
 ```
 
+When you eventually `terraform delete` the cluster, you should still run `kops delete cluster ${CLUSTER_NAME}`,
+to remove the kops cluster specification and any dynamically created Kubernetes resources (ELBs or volumes).
 
 ### Workaround for Terraform versions before 0.7
 
@@ -42,7 +44,7 @@ We divide the cloudup model into three parts:
 * models/proto which sets up the volumes and other data which would be hard to recover (e.g. likely keys & secrets in the near future)
 * models/cloudup which is the main cloud model for configuring everything else
 
-So the workaround is that you don't use terraform for the 'proto' phase (you can't anyway, because of the bug!):
+So the workaround is that you don't use terraform for the `proto` phase (you can't anyway, because of the bug!):
 
 ```
 export KOPS_STATE_STORE=s3://<somes3bucket>
@@ -67,5 +69,6 @@ terraform plan
 terraform apply
 ```
 
-Note that if you do this, you should still run `kops delete cluster ${CLUSTER_NAME}`, to remove the volumes
-and the kops cluster specification.
+You should still run `kops delete cluster ${CLUSTER_NAME}`, to remove the kops cluster specification and any
+dynamically created Kubernetes resources (ELBs or volumes), but under this workaround also to remove the primary
+ELB volumes from the `proto` phase.
