@@ -140,6 +140,10 @@ kubectl delete secret --namespace kube-system default-token-lhfkx
 Then restart the kube-dns pod so it picks up a valid secret:
 `kubectl delete pods --namespace kube-system --selector "k8s-app=kube-dns"`
 
+## Other fixes
+
+* If you're using a manually created ELB, the auto-scaling groups change, so you will need to reconfigure
+your ELBs to include the new auto-scaling group(s).
 
 ## Delete remaining resources of the old cluster
 
