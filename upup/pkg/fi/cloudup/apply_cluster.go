@@ -32,8 +32,11 @@ type ApplyClusterCmd struct {
 	// Models is a list of cloudup models to apply
 	Models []string
 
-	// Target specifies how we are operating e.g. direct to GCE, or AWS, or dry-run, or terraform
-	Target string
+	// TargetName specifies how we are operating e.g. direct to GCE, or AWS, or dry-run, or terraform
+	TargetName string
+
+	// Target is the fi.Target we will operate against
+	Target fi.Target
 
 	// OutDir is a local directory in which we place output, can cache files etc
 	OutDir string
@@ -413,7 +416,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 	var target fi.Target
 
-	switch c.Target {
+	switch c.TargetName {
 	case TargetDirect:
 		switch cluster.Spec.CloudProvider {
 		case "gce":
@@ -432,8 +435,9 @@ func (c *ApplyClusterCmd) Run() error {
 	case TargetDryRun:
 		target = fi.NewDryRunTarget(os.Stdout)
 	default:
-		return fmt.Errorf("unsupported target type %q", c.Target)
+		return fmt.Errorf("unsupported target type %q", c.TargetName)
 	}
+	c.Target = target
 
 	context, err := fi.NewContext(target, cloud, keyStore, secretStore, checkExisting)
 	if err != nil {
