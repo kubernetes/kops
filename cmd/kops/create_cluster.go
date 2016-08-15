@@ -406,6 +406,7 @@ func (c *CreateClusterCmd) Run(args []string) error {
 		x := &kutil.CreateKubecfg{
 			ClusterName:      cluster.Name,
 			KeyStore:         clusterRegistry.KeyStore(cluster.Name),
+			SecretStore:      clusterRegistry.SecretStore(cluster.Name),
 			MasterPublicName: cluster.Spec.MasterPublicName,
 		}
 		defer x.Close()
