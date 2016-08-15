@@ -257,3 +257,8 @@ func ValueAsString(value reflect.Value) string {
 func (t *DryRunTarget) Finish(taskMap map[string]Task) error {
 	return t.PrintReport(taskMap, t.out)
 }
+
+// HasChanges returns true iff any changes would have been made
+func (t *DryRunTarget) HasChanges() bool {
+	return len(t.changes) != 0
+}
