@@ -1,5 +1,5 @@
 KubeDNS:
-  Replicas: 1
+  Replicas: 2
   ServerIP: {{ WellKnownServiceIP 10 }}
   Domain: {{ .ClusterDNSDomain }}
   # TODO: Once we start shipping more images, start using them
