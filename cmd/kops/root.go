@@ -148,6 +148,10 @@ func (c *RootCmd) ClusterRegistry() (*api.ClusterRegistry, error) {
 		return nil, fmt.Errorf("error building state store path for %q: %v", c.stateLocation, err)
 	}
 
+	if !vfs.IsClusterReadable(basePath) {
+		return nil, fmt.Errorf("State store %q is not cloud-reachable - please use an S3 bucket", c.stateLocation)
+	}
+
 	clusterRegistry := api.NewClusterRegistry(basePath)
 	c.clusterRegistry = clusterRegistry
 	return clusterRegistry, nil
