@@ -41,7 +41,7 @@ func (p *Service) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 		// We assume that services depend on basically everything
 		typeName := utils.BuildTypeName(reflect.TypeOf(v))
 		switch typeName {
-		case "*CopyAssetTask", "*File", "*Package", "*Sysctl", "*UpdatePackages", "*User", "*Disk":
+		case "*CopyAssetTask", "*File", "*Package", "*Sysctl", "*UpdatePackages", "*UserTask", "*Disk":
 			deps = append(deps, v)
 		case "*Service":
 		// ignore
