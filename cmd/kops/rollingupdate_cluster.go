@@ -11,7 +11,8 @@ import (
 )
 
 type RollingUpdateClusterCmd struct {
-	Yes bool
+	Yes   bool
+	Force bool
 
 	cobraCommand *cobra.Command
 }
@@ -28,7 +29,8 @@ func init() {
 	cmd := rollingupdateCluster.cobraCommand
 	rollingUpdateCommand.cobraCommand.AddCommand(cmd)
 
-	cmd.Flags().BoolVar(&rollingupdateCluster.Yes, "yes", false, "Rollingupdate without confirmation")
+	cmd.Flags().BoolVar(&rollingupdateCluster.Yes, "yes", false, "perform rolling update without confirmation")
+	cmd.Flags().BoolVar(&rollingupdateCluster.Force, "force", false, "Force rolling update, even if no changes")
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		err := rollingupdateCluster.Run()
@@ -106,8 +108,7 @@ func (c *RollingUpdateClusterCmd) Run() error {
 		}
 	}
 
-	if !needUpdate {
-		// TODO: Allow --force option to force even if not needed?
+	if !needUpdate && !c.Force {
 		fmt.Printf("\nNo rolling-update required\n")
 		return nil
 	}
@@ -117,5 +118,5 @@ func (c *RollingUpdateClusterCmd) Run() error {
 		return nil
 	}
 
-	return d.RollingUpdate(groups)
+	return d.RollingUpdate(groups, c.Force)
 }
