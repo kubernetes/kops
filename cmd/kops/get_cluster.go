@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"fmt"
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/api"
 	"strings"
@@ -25,7 +24,7 @@ func init() {
 		Run: func(cmd *cobra.Command, args []string) {
 			err := getClustersCmd.Run(args)
 			if err != nil {
-				glog.Exitf("%v", err)
+				exitWithError(err)
 			}
 		},
 	}
