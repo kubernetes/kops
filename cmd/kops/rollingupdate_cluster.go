@@ -5,7 +5,6 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/kutil"
@@ -34,7 +33,7 @@ func init() {
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		err := rollingupdateCluster.Run()
 		if err != nil {
-			glog.Exitf("%v", err)
+			exitWithError(err)
 		}
 	}
 }
