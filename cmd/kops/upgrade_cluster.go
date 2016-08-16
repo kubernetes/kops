@@ -81,7 +81,8 @@ func (c *UpgradeClusterCmd) Run() error {
 
 	if len(actions) == 0 {
 		// TODO: Allow --force option to force even if not needed?
-		fmt.Printf("\nNo upgrade required\n")
+		// Note stderr - we try not to print to stdout if no update is needed
+		fmt.Fprintf(os.Stderr, "\nNo upgrade required\n")
 		return nil
 	}
 
