@@ -1,0 +1,12 @@
+##=============================================================
+# AWS Settings
+export AWS_DEFAULT_REGION=${AWS_REGION}
+#export KUBE_AWS_ZONE="us-west-2a"
+#export PROJECT="k8s-jkns-e2e-aws"
+export AWS_CONFIG_FILE=~/.aws/credentials
+export AWS_SSH_KEY=~/.ssh/kube_aws_rsa
+export KUBE_SSH_USER=admin
+# This is needed to be able to create PD from the e2e test
+export AWS_SHARED_CREDENTIALS_FILE=~/.aws/credentials
+
+export AWS_PROFILE=kubernetes-e2e
