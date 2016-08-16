@@ -1,8 +1,8 @@
 package api
 
 import (
-	"testing"
 	"k8s.io/kubernetes/pkg/util/validation"
+	"testing"
 )
 
 func Test_Validate_DNS(t *testing.T) {

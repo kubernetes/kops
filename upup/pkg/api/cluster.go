@@ -319,7 +319,7 @@ func (c *Cluster) FillDefaults() error {
 // It will be populated with the latest stable kubernetes version
 func (c *Cluster) ensureKubernetesVersion() error {
 	if c.Spec.KubernetesVersion == "" {
-		latestVersion, err := findLatestKubernetesVersion()
+		latestVersion, err := FindLatestKubernetesVersion()
 		if err != nil {
 			return err
 		}
@@ -329,9 +329,9 @@ func (c *Cluster) ensureKubernetesVersion() error {
 	return nil
 }
 
-// findLatestKubernetesVersion returns the latest kubernetes version,
+// FindLatestKubernetesVersion returns the latest kubernetes version,
 // as stored at https://storage.googleapis.com/kubernetes-release/release/stable.txt
-func findLatestKubernetesVersion() (string, error) {
+func FindLatestKubernetesVersion() (string, error) {
 	stableURL := "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
 	b, err := vfs.Context.ReadFile(stableURL)
 	if err != nil {

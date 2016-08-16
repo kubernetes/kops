@@ -33,6 +33,10 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	var instanceGroups []*api.InstanceGroup
 
 	cluster := &api.Cluster{}
+	cluster.Annotations = make(map[string]string)
+
+	cluster.Annotations[api.AnnotationNameManagement] = api.AnnotationValueManagementImported
+
 	cluster.Spec.CloudProvider = string(fi.CloudProviderAWS)
 	cluster.Name = clusterName
 
