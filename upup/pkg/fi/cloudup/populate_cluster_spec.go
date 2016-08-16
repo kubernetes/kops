@@ -216,19 +216,6 @@ func (c *populateClusterSpec) run() error {
 		// We do support this...
 	}
 
-	if cluster.Spec.KubernetesVersion == "" {
-		stableURL := "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
-		b, err := vfs.Context.ReadFile(stableURL)
-		if err != nil {
-			return fmt.Errorf("--kubernetes-version not specified, and unable to download latest version from %q: %v", stableURL, err)
-		}
-		latestVersion := strings.TrimSpace(string(b))
-		glog.Infof("Using kubernetes latest stable version: %s", latestVersion)
-
-		cluster.Spec.KubernetesVersion = latestVersion
-		//return fmt.Errorf("Must either specify a KubernetesVersion (-kubernetes-version) or provide an asset with the release bundle")
-	}
-
 	// Normalize k8s version
 	versionWithoutV := strings.TrimSpace(cluster.Spec.KubernetesVersion)
 	if strings.HasPrefix(versionWithoutV, "v") {
