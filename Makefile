@@ -17,6 +17,9 @@ gocode:
 check-builds-in-go15:
 	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.5 make -f /go/src/k8s.io/kops/Makefile gocode
 
+check-builds-in-go17:
+	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.7 make -f /go/src/k8s.io/kops/Makefile gocode
+
 codegen:
 	GO15VENDOREXPERIMENT=1 go install k8s.io/kops/upup/tools/generators/...
 	GO15VENDOREXPERIMENT=1 go generate k8s.io/kops/upup/pkg/fi/cloudup/awstasks
