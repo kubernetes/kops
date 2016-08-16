@@ -65,7 +65,7 @@ func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroup
 	return groups, nil
 }
 
-func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup) error {
+func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, force bool) error {
 	if len(groups) == 0 {
 		return nil
 	}
@@ -74,7 +74,20 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 	var resultsMutex sync.Mutex
 	results := make(map[string]error)
 
+	masterGroups := make(map[string]*CloudInstanceGroup)
+	nodeGroups := make(map[string]*CloudInstanceGroup)
 	for k, group := range groups {
+		switch group.InstanceGroup.Spec.Role {
+		case api.InstanceGroupRoleNode:
+			nodeGroups[k] = group
+		case api.InstanceGroupRoleMaster:
+			masterGroups[k] = group
+		default:
+			return fmt.Errorf("unknown group type for group %q", group.InstanceGroup.Name)
+		}
+	}
+
+	for k, nodeGroup := range nodeGroups {
 		wg.Add(1)
 		go func(k string, group *CloudInstanceGroup) {
 			resultsMutex.Lock()
@@ -82,12 +95,37 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 			resultsMutex.Unlock()
 
 			defer wg.Done()
-			err := group.RollingUpdate(c.Cloud)
+
+			err := group.RollingUpdate(c.Cloud, force)
 
 			resultsMutex.Lock()
 			results[k] = err
 			resultsMutex.Unlock()
-		}(k, group)
+		}(k, nodeGroup)
+	}
+
+	// We run master nodes in series, even if they are in separate instance groups
+	// typically they will be in separate instance groups, so we can force the zones,
+	// and we don't want to roll all the masters at the same time.  See issue #284
+	{
+		wg.Add(1)
+		go func() {
+			for k := range masterGroups {
+				resultsMutex.Lock()
+				results[k] = fmt.Errorf("function panic")
+				resultsMutex.Unlock()
+			}
+
+			defer wg.Done()
+
+			for k, group := range masterGroups {
+				err := group.RollingUpdate(c.Cloud, force)
+
+				resultsMutex.Lock()
+				results[k] = err
+				resultsMutex.Unlock()
+			}
+		}()
 	}
 
 	wg.Wait()
@@ -146,10 +184,14 @@ func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group) *Cloud
 	return n
 }
 
-func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud) error {
+func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool) error {
 	c := cloud.(*awsup.AWSCloud)
 
-	for _, i := range n.NeedUpdate {
+	update := n.NeedUpdate
+	if force {
+		update = append(update, n.Ready...)
+	}
+	for _, i := range update {
 		glog.Infof("Stopping instance %q in AWS ASG %q", *i.InstanceId, n.ASGName)
 
 		// TODO: Evacuate through k8s first?
