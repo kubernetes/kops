@@ -44,7 +44,7 @@ Now have a look at the cluster configuration, to make sure it looks right.  If i
 open an issue.
 
 ```
-kops edit cluster ${OLD_NAME}
+kops get cluster ${OLD_NAME} -oyaml
 ````
 
 ## Move resources to a new cluster
@@ -62,7 +62,7 @@ The upgrade procedure forces you to choose a new cluster name (e.g. `k8s.mydomai
 
 ```
 export NEW_NAME=k8s.mydomain.com
-kops upgrade cluster --newname ${NEW_NAME} --name ${OLD_NAME}
+kops toolbox convert-imported --newname ${NEW_NAME} --name ${OLD_NAME}
 ```
 
 If you now list the clusters, you should see both the old cluster & the new cluster
