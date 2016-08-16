@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/kops/upup/pkg/fi/vfs"
 	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"net"
@@ -268,6 +269,7 @@ type ClusterZoneSpec struct {
 // PerformAssignments populates values that are required and immutable
 // For example, it assigns stable Keys to NodeSets & Masters, and
 // it assigns CIDRs to subnets
+// We also assign KubernetesVersion, because we want it to be explicit
 func (c *Cluster) PerformAssignments() error {
 	if c.Spec.NetworkCIDR == "" && !c.SharedVPC() {
 		// TODO: Choose non-overlapping networking CIDRs for VPCs?
@@ -289,6 +291,11 @@ func (c *Cluster) PerformAssignments() error {
 		}
 	}
 
+	err := c.ensureKubernetesVersion()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -300,7 +307,38 @@ func (c *Cluster) FillDefaults() error {
 		c.Spec.AdminAccess = append(c.Spec.AdminAccess, "0.0.0.0/0")
 	}
 
+	err := c.ensureKubernetesVersion()
+	if err != nil {
+		return err
+	}
+
 	return nil
+}
+
+// ensureKubernetesVersion populates KubernetesVersion, if it is not already set
+// It will be populated with the latest stable kubernetes version
+func (c *Cluster) ensureKubernetesVersion() error {
+	if c.Spec.KubernetesVersion == "" {
+		latestVersion, err := findLatestKubernetesVersion()
+		if err != nil {
+			return err
+		}
+		glog.Infof("Using kubernetes latest stable version: %s", latestVersion)
+		c.Spec.KubernetesVersion = latestVersion
+	}
+	return nil
+}
+
+// findLatestKubernetesVersion returns the latest kubernetes version,
+// as stored at https://storage.googleapis.com/kubernetes-release/release/stable.txt
+func findLatestKubernetesVersion() (string, error) {
+	stableURL := "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
+	b, err := vfs.Context.ReadFile(stableURL)
+	if err != nil {
+		return "", fmt.Errorf("KubernetesVersion not specified, and unable to download latest version from %q: %v", stableURL, err)
+	}
+	latestVersion := strings.TrimSpace(string(b))
+	return latestVersion, nil
 }
 
 func (z *ClusterZoneSpec) performAssignments(c *Cluster) error {
