@@ -3,13 +3,15 @@ package main
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/kutil"
+	"k8s.io/kops/upup/pkg/api"
+	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"os"
 )
 
 type UpgradeClusterCmd struct {
+	Yes bool
+
 	NewClusterName string
 }
 
@@ -23,21 +25,26 @@ func init() {
 		Run: func(cmd *cobra.Command, args []string) {
 			err := upgradeCluster.Run()
 			if err != nil {
-				glog.Exitf("%v", err)
+				exitWithError(err)
 			}
 		},
 	}
 
-	upgradeCmd.AddCommand(cmd)
+	cmd.Flags().BoolVar(&upgradeCluster.Yes, "yes", false, "Apply update")
 
-	cmd.Flags().StringVar(&upgradeCluster.NewClusterName, "newname", "", "new cluster name")
+	upgradeCmd.AddCommand(cmd)
+}
+
+type upgradeAction struct {
+	Item     string
+	Property string
+	Old      string
+	New      string
+
+	apply func()
 }
 
 func (c *UpgradeClusterCmd) Run() error {
-	if c.NewClusterName == "" {
-		return fmt.Errorf("--newname is required")
-	}
-
 	clusterRegistry, cluster, err := rootCommand.Cluster()
 	if err != nil {
 		return err
@@ -50,46 +57,94 @@ func (c *UpgradeClusterCmd) Run() error {
 
 	instanceGroups, err := instanceGroupRegistry.ReadAll()
 
-	oldClusterName := cluster.Name
-	if oldClusterName == "" {
-		return fmt.Errorf("(Old) ClusterName must be set in configuration")
+	if cluster.Annotations[api.AnnotationNameManagement] == api.AnnotationValueManagementImported {
+		return fmt.Errorf("upgrade is not for use with imported clusters (did you mean `kops toolbox convert-imported`?)")
 	}
 
-	if len(cluster.Spec.Zones) == 0 {
-		return fmt.Errorf("Configuration must include Zones")
-	}
-
-	region := ""
-	for _, zone := range cluster.Spec.Zones {
-		if len(zone.Name) <= 2 {
-			return fmt.Errorf("Invalid AWS zone: %q", zone.Name)
-		}
-
-		zoneRegion := zone.Name[:len(zone.Name)-1]
-		if region != "" && zoneRegion != region {
-			return fmt.Errorf("Clusters cannot span multiple regions")
-		}
-
-		region = zoneRegion
-	}
-
-	tags := map[string]string{"KubernetesCluster": oldClusterName}
-	cloud, err := awsup.NewAWSCloud(region, tags)
-	if err != nil {
-		return fmt.Errorf("error initializing AWS client: %v", err)
-	}
-
-	d := &kutil.UpgradeCluster{}
-	d.NewClusterName = c.NewClusterName
-	d.OldClusterName = oldClusterName
-	d.Cloud = cloud
-	d.ClusterConfig = cluster
-	d.InstanceGroups = instanceGroups
-	d.ClusterRegistry = clusterRegistry
-
-	err = d.Upgrade()
+	latestKubernetesVersion, err := api.FindLatestKubernetesVersion()
 	if err != nil {
 		return err
+	}
+
+	var actions []*upgradeAction
+	if cluster.Spec.KubernetesVersion != latestKubernetesVersion {
+		actions = append(actions, &upgradeAction{
+			Item:     "Cluster",
+			Property: "KubernetesVersion",
+			Old:      cluster.Spec.KubernetesVersion,
+			New:      latestKubernetesVersion,
+			apply: func() {
+				cluster.Spec.KubernetesVersion = latestKubernetesVersion
+			},
+		})
+	}
+
+	if len(actions) == 0 {
+		// TODO: Allow --force option to force even if not needed?
+		fmt.Printf("\nNo upgrade required\n")
+		return nil
+	}
+
+	{
+		t := &Table{}
+		t.AddColumn("ITEM", func(a *upgradeAction) string {
+			return a.Item
+		})
+		t.AddColumn("PROPERTY", func(a *upgradeAction) string {
+			return a.Property
+		})
+		t.AddColumn("OLD", func(a *upgradeAction) string {
+			return a.Old
+		})
+		t.AddColumn("NEW", func(a *upgradeAction) string {
+			return a.New
+		})
+
+		err := t.Render(actions, os.Stdout, "ITEM", "PROPERTY", "OLD", "NEW")
+		if err != nil {
+			return err
+		}
+	}
+
+	if !c.Yes {
+		fmt.Printf("\nMust specify --yes to perform upgrade\n")
+		return nil
+	} else {
+		for _, action := range actions {
+			action.apply()
+		}
+
+		// TODO: DRY this chunk
+		err = cluster.PerformAssignments()
+		if err != nil {
+			return fmt.Errorf("error populating configuration: %v", err)
+		}
+
+		fullCluster, err := cloudup.PopulateClusterSpec(cluster, clusterRegistry)
+		if err != nil {
+			return err
+		}
+
+		err = api.DeepValidate(fullCluster, instanceGroups, true)
+		if err != nil {
+			return err
+		}
+
+		// Note we perform as much validation as we can, before writing a bad config
+		err = clusterRegistry.Update(cluster)
+		if err != nil {
+			return err
+		}
+
+		err = clusterRegistry.WriteCompletedConfig(fullCluster)
+		if err != nil {
+			return fmt.Errorf("error writing completed cluster spec: %v", err)
+		}
+
+		fmt.Printf("\nUpdates applied to configuration.\n")
+
+		// TODO: automate this step
+		fmt.Printf("You can now apply these changes, using `kops update cluster %s`\n", cluster.Name)
 	}
 
 	return nil
