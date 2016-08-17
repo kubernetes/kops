@@ -10,7 +10,8 @@ readonly ARCH=${BUILD_ARCH:-"linux/amd64"}
 readonly NAME=${BUILD_NAME:-"ci-${GITISH}-${ARCH/\//-}"} # e.g. ci-bef7faf-linux-amd64
 readonly TMPNAME="${NAME}-$(date +%s)" # e.g. ci-bef7faf-linux-amd64-12345678
 readonly TAG=${BUILD_DOCKER_TAG:-"b.gcr.io/kops-ci/kops:${NAME}"}
-readonly PUSH_TAG=${BUILD_PUSH:-"no"}
+readonly PUSH_TAG=${BUILD_PUSH_TAG:-"no"}
+readonly CLEAN_TAG=${BUILD_CLEAN_TAG:-"yes"}
 readonly TMPTAG="${TAG}-$(date +%s)"
 readonly LINK=${BUILD_LINK:-} # Also pushes to e.g. ci-{BUILD_LINK}-linux-amd64, i.e. for "latest"
 readonly SYMBOLIC_TAG=${BUILD_SYMBOLIC_TAG:-"b.gcr.io/kops-ci/kops:ci-${LINK}-${ARCH/\//-}"}
@@ -67,10 +68,10 @@ docker rmi -f "${TMPTAG}" || true
 if [[ -n "${LINK}" ]]; then
   docker rmi -f "${SYMBOLIC_TAG}" || true
 fi
-if [[ "${PUSH_TAG}" == "yes" ]]; then
+if [[ "${CLEAN_TAG}" == "yes" ]]; then
   docker rmi -f "${TAG}" || true
 else
   echo
-  echo "=== BUILD_PUSH not set, ${TAG} not removed ==="
+  echo "=== ${TAG} leaked (BUILD_CLEAN_TAG not set) ==="
   echo
 fi
