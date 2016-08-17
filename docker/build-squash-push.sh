@@ -5,8 +5,6 @@ set -o nounset
 set -o pipefail
 
 readonly DOCKER_ROOT=$(dirname "${BASH_SOURCE}")
-cd "${DOCKER_ROOT}" # To ensure we're in the git tree
-
 readonly GITISH=${BUILD_GITISH:-"$(git describe --always)"}
 readonly ARCH=${BUILD_ARCH:-"linux/amd64"}
 readonly NAME=${BUILD_NAME:-"ci-${GITISH}-${ARCH/\//-}"} # e.g. ci-bef7faf-linux-amd64
