@@ -5,11 +5,12 @@ set -o nounset
 set -o pipefail
 
 readonly DOCKER_ROOT=$(dirname "${BASH_SOURCE}")
-readonly GITISH=${BUILD_GITISH:-"$(git describe --always)"}
+readonly GITISH="$(git describe --always)"
 readonly ARCH=${BUILD_ARCH:-"linux/amd64"}
 readonly NAME=${BUILD_NAME:-"ci-${GITISH}-${ARCH/\//-}"} # e.g. ci-bef7faf-linux-amd64
 readonly TMPNAME="${NAME}-$(date +%s)" # e.g. ci-bef7faf-linux-amd64-12345678
 readonly TAG=${BUILD_DOCKER_TAG:-"b.gcr.io/kops-ci/kops:${NAME}"}
+readonly PUSH_TAG=${BUILD_PUSH:-"no"}
 readonly TMPTAG="${TAG}-$(date +%s)"
 readonly LINK=${BUILD_LINK:-} # Also pushes to e.g. ci-{BUILD_LINK}-linux-amd64, i.e. for "latest"
 readonly SYMBOLIC_TAG=${BUILD_SYMBOLIC_TAG:-"b.gcr.io/kops-ci/kops:ci-${LINK}-${ARCH/\//-}"}
@@ -26,21 +27,29 @@ if [[ -z "${GITISH}" ]]; then
 fi
 
 echo
-echo "=== Building at ${GITISH} for ${ARCH} (note: unable to build unpushed changes) ==="
+echo "=== Copying src to docker/_src ==="
+echo
+
+rsync -a --exclude=/docker/ "${DOCKER_ROOT}/.." "${DOCKER_ROOT}/_src"
+
+echo
+echo "=== Building at ${GITISH} for ${ARCH} ==="
 echo
 
 # Build -> $TMPTAG
-docker build -t "${TMPTAG}" --build-arg "KOPS_GITISH=${GITISH}" --build-arg "KUBECTL_ARCH=${ARCH}" --force-rm=true --rm=true --pull=true --no-cache=true "${DOCKER_ROOT}"
+docker build -t "${TMPTAG}" --build-arg "KUBECTL_ARCH=${ARCH}" --force-rm=true --rm=true --pull=true --no-cache=true "${DOCKER_ROOT}"
 
 # Squash -> $TAG
 docker create --name="${TMPNAME}" "${TMPTAG}"
 docker export "${TMPNAME}" | docker import - "${TAG}"
 
-echo
-echo "=== Pushing ${TAG} ==="
-echo
+if [[ "${PUSH_TAG}" == "yes" ]]; then
+  echo
+  echo "=== Pushing ${TAG} ==="
+  echo
 
-gcloud docker push "${TAG}"
+  gcloud docker push "${TAG}"
+fi
 
 if [[ -n "${LINK}" ]]; then
   echo
@@ -48,15 +57,20 @@ if [[ -n "${LINK}" ]]; then
   echo
   docker tag "${TAG}" "${SYMBOLIC_TAG}"
   gcloud docker push "${SYMBOLIC_TAG}"
-  echo
-  echo "=== Pushed ${SYMBOLIC_TAG} ==="
-  echo
 fi
 
+echo
 echo "=== Cleaning up ==="
 echo
-docker rm "${TMPNAME}"
-docker rmi -f "${TAG}" "${TMPTAG}"
+docker rm "${TMPNAME}" || true
+docker rmi -f "${TMPTAG}" || true
 if [[ -n "${LINK}" ]]; then
-  docker rmi -f "${SYMBOLIC_TAG}"
+  docker rmi -f "${SYMBOLIC_TAG}" || true
+fi
+if [[ "${PUSH_TAG}" == "yes" ]]; then
+  docker rmi -f "${TAG}" || true
+else
+  echo
+  echo "=== BUILD_PUSH not set, ${TAG} not removed ==="
+  echo
 fi
