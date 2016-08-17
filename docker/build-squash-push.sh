@@ -12,7 +12,7 @@ readonly TMPNAME="${NAME}-$(date +%s)" # e.g. ci-bef7faf-linux-amd64-12345678
 readonly TAG=${BUILD_DOCKER_TAG:-"b.gcr.io/kops-ci/kops:${NAME}"}
 readonly TMPTAG="${TAG}-$(date +%s)"
 readonly LINK=${BUILD_LINK:-} # Also pushes to e.g. ci-{BUILD_LINK}-linux-amd64, i.e. for "latest"
-readonly SYMBOLIC_TAG=${BUILD_TAG:-"b.gcr.io/kops-ci/kops:ci-${LINK}-${ARCH/\//-}"}
+readonly SYMBOLIC_TAG=${BUILD_SYMBOLIC_TAG:-"b.gcr.io/kops-ci/kops:ci-${LINK}-${ARCH/\//-}"}
 
 if [[ "${ARCH}" != "linux/amd64" ]]; then
   echo "!!! Alternate architecture build not supported yet. !!!"
@@ -42,11 +42,10 @@ echo
 
 gcloud docker push "${TAG}"
 
-echo
-echo "=== Pushed ${TAG} ==="
-echo
-
 if [[ -n "${LINK}" ]]; then
+  echo
+  echo "=== Pushing ${SYMBOLIC_TAG} ==="
+  echo
   docker tag "${TAG}" "${SYMBOLIC_TAG}"
   gcloud docker push "${SYMBOLIC_TAG}"
   echo
