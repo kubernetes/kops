@@ -1,7 +1,7 @@
 FROM golang:1.6-alpine
 
-# KOPS_GITISH: Modify to build at an explicit tag/gitish
-ARG KOPS_GITISH=HEAD
+ARG KOPS_SRC=_src
+COPY $KOPS_SRC/ /go/src/k8s.io/kops/
 
 # KUBECTL_SOURCE: Change to kubernetes-dev/ci for CI
 ARG KUBECTL_SOURCE=kubernetes-release/release
@@ -12,9 +12,7 @@ ARG KUBECTL_TRACK=latest.txt
 ARG KUBECTL_ARCH=linux/amd64
 
 RUN apk add --no-cache --update build-base curl git mercurial  --virtual .kops-deps && \
-    go get -d k8s.io/kops && \
-    cd "${GOPATH}/src/k8s.io/kops" && git fetch origin && git reset --hard "${KOPS_GITISH}" && git clean -xdf && go get -d . && \
-    make && ln -s /go/bin/kops /bin && \
+    cd "${GOPATH}/src/k8s.io/kops" && make && ln -s /go/bin/kops /bin && \
     MODELS=$(readlink "${GOPATH}/bin/models") && rm "${GOPATH}/bin/models" && mv "${MODELS}" "${GOPATH}/bin/models" && \
     GITISH=$(git describe --always) && \
     KUBECTL_VERSION=${KUBECTL_VERSION:-$(curl -SsL --retry 5 "https://storage.googleapis.com/${KUBECTL_SOURCE}/${KUBECTL_TRACK}")} && \
