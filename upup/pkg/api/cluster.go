@@ -102,6 +102,12 @@ type ClusterSpec struct {
 	//  * enable debugging handlers on the master, so kubectl logs works
 	IsolateMasters *bool `json:"isolateMasters,omitempty"`
 
+	// UpdatePolicy determines the policy for applying upgrades automatically.
+	// Valid values:
+	//   'external' do not apply updates automatically - they are applied manually or by an external system
+	//   missing: default policy (currently OS security upgrades that do not require a reboot)
+	UpdatePolicy *string `json:"updatePolicy,omitempty"`
+
 	//HairpinMode                   string `json:",omitempty"`
 	//
 	//OpencontrailTag               string `json:",omitempty"`
