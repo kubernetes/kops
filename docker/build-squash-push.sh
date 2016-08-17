@@ -35,6 +35,11 @@ docker build -t "${TMPTAG}" --build-arg "KOPS_GITISH=${GITISH}" --build-arg "KUB
 # Squash -> $TAG
 docker create --name="${TMPNAME}" "${TMPTAG}"
 docker export "${TMPNAME}" | docker import - "${TAG}"
+
+echo
+echo "=== Pushing ${TAG} ==="
+echo
+
 gcloud docker push "${TAG}"
 
 echo
