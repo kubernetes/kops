@@ -16,7 +16,7 @@ RUN apk add --no-cache --update build-base curl git mercurial  --virtual .kops-d
     cd "${GOPATH}/src/k8s.io/kops" && git fetch origin && git reset --hard "${KOPS_GITISH}" && git clean -xdf && go get -d . && \
     make && \
     MODELS=$(readlink "${GOPATH}/bin/models") && rm "${GOPATH}/bin/models" && mv "${MODELS}" "${GOPATH}/bin/models" && \
-    GITISH=$(git show-ref -s --abbrev HEAD) && \
+    GITISH=$(git describe --always) && \
     KUBECTL_VERSION=${KUBECTL_VERSION:-$(curl -SsL --retry 5 "https://storage.googleapis.com/${KUBECTL_SOURCE}/${KUBECTL_TRACK}")} && \
     echo "=== Fetching kubectl ${KUBECTL_VERSION} ===" && \
     curl -SsL --retry 5 "https://storage.googleapis.com/${KUBECTL_SOURCE}/${KUBECTL_VERSION}/${KUBECTL_ARCH}/kubectl" > /usr/local/bin/kubectl && \
