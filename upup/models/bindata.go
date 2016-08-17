@@ -50,6 +50,8 @@
 // upup/models/config/components/kubelet/_networking_kubenet/kubelet.kubenet.options
 // upup/models/config/components/kubelet/kubelet.options
 // upup/models/config/defaults.options
+// upup/models/nodeup/_automatic_upgrades/_debian_family/files/etc/apt/apt.conf.d/20auto-upgrades
+// upup/models/nodeup/_automatic_upgrades/_debian_family/packages/unattended-upgrades
 // upup/models/nodeup/_kope_routing/files/etc/kubernetes/manifests/kope-routing.manifest.template
 // upup/models/nodeup/_kope_routing/files/var/lib/kope-routing/kubeconfig.template
 // upup/models/nodeup/_kope_routing/files/var/lib/kope-routing/kubeconfig.template.meta
@@ -103,8 +105,6 @@
 // upup/models/nodeup/_kubernetes_pool/kube-proxy/files/var/log/kube-proxy.log.meta
 // upup/models/nodeup/_protokube/files/etc/sysconfig/protokube.template
 // upup/models/nodeup/_protokube/services/protokube.service.template
-// upup/models/nodeup/auto-upgrades/_debian_family/files/etc/apt/apt.conf.d/20auto-upgrades
-// upup/models/nodeup/auto-upgrades/_debian_family/packages/unattended-upgrades
 // upup/models/nodeup/docker/_gce/files/etc/sysctl.d/99-ip_forward.conf
 // upup/models/nodeup/docker/_gce/files/etc/sysctl.d/99-ip_forward.conf.meta
 // upup/models/nodeup/docker/_systemd/files/etc/sysconfig/docker.template
@@ -485,7 +485,7 @@ func cloudup_awsResourcesNodeupShTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "cloudup/_aws/resources/nodeup.sh.template", size: 3507, mode: os.FileMode(493), modTime: time.Unix(1473343539, 0)}
+	info := bindataFileInfo{name: "cloudup/_aws/resources/nodeup.sh.template", size: 3507, mode: os.FileMode(493), modTime: time.Unix(1473344504, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -585,7 +585,7 @@ func cloudup_gceResourcesNodeupShTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "cloudup/_gce/resources/nodeup.sh.template", size: 4351, mode: os.FileMode(493), modTime: time.Unix(1473344370, 0)}
+	info := bindataFileInfo{name: "cloudup/_gce/resources/nodeup.sh.template", size: 4351, mode: os.FileMode(493), modTime: time.Unix(1473344504, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -845,7 +845,7 @@ func configComponentsDocker_networking_kubenetKubenetOptions() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "config/components/docker/_networking_kubenet/kubenet.options", size: 20, mode: os.FileMode(420), modTime: time.Unix(1471885375, 0)}
+	info := bindataFileInfo{name: "config/components/docker/_networking_kubenet/kubenet.options", size: 20, mode: os.FileMode(420), modTime: time.Unix(1473344504, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -985,7 +985,7 @@ func configComponentsKubeControllerManager_networking_classicKubeControllerManag
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "config/components/kube-controller-manager/_networking_classic/kube-controller-manager.networking-classic.options", size: 52, mode: os.FileMode(420), modTime: time.Unix(1471885375, 0)}
+	info := bindataFileInfo{name: "config/components/kube-controller-manager/_networking_classic/kube-controller-manager.networking-classic.options", size: 52, mode: os.FileMode(420), modTime: time.Unix(1473344504, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -1005,7 +1005,7 @@ func configComponentsKubeControllerManager_networking_kubenet_networking_externa
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "config/components/kube-controller-manager/_networking_kubenet/_networking_external/kube-controller-manager.networking-external.options", size: 53, mode: os.FileMode(420), modTime: time.Unix(1471885375, 0)}
+	info := bindataFileInfo{name: "config/components/kube-controller-manager/_networking_kubenet/_networking_external/kube-controller-manager.networking-external.options", size: 53, mode: os.FileMode(420), modTime: time.Unix(1473344504, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -1025,7 +1025,7 @@ func configComponentsKubeControllerManager_networking_kubenetKubeControllerManag
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "config/components/kube-controller-manager/_networking_kubenet/kube-controller-manager.networking-kubenet.options", size: 52, mode: os.FileMode(420), modTime: time.Unix(1471885375, 0)}
+	info := bindataFileInfo{name: "config/components/kube-controller-manager/_networking_kubenet/kube-controller-manager.networking-kubenet.options", size: 52, mode: os.FileMode(420), modTime: time.Unix(1473344504, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -1045,7 +1045,7 @@ func configComponentsKubeControllerManagerKubeControllerManagerOptions() (*asset
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "config/components/kube-controller-manager/kube-controller-manager.options", size: 446, mode: os.FileMode(420), modTime: time.Unix(1471885375, 0)}
+	info := bindataFileInfo{name: "config/components/kube-controller-manager/kube-controller-manager.options", size: 446, mode: os.FileMode(420), modTime: time.Unix(1473344504, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -1185,7 +1185,7 @@ func configComponentsKubelet_networking_kubenetKubeletKubenetOptions() (*asset, 
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "config/components/kubelet/_networking_kubenet/kubelet.kubenet.options", size: 60, mode: os.FileMode(420), modTime: time.Unix(1471885375, 0)}
+	info := bindataFileInfo{name: "config/components/kubelet/_networking_kubenet/kubelet.kubenet.options", size: 60, mode: os.FileMode(420), modTime: time.Unix(1473344504, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -1226,6 +1226,46 @@ func configDefaultsOptions() (*asset, error) {
 	}
 
 	info := bindataFileInfo{name: "config/defaults.options", size: 67, mode: os.FileMode(420), modTime: time.Unix(1467694863, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var _nodeup_automatic_upgrades_debian_familyFilesEtcAptAptConfD20autoUpgrades = []byte("\x1f\x8b\x08\x00\x00\x09\x6e\x88\x00\xff\x72\x0c\x08\xb1\xb2\x0a\x48\x2d\xca\xcc\x4f\xc9\x4c\xb6\xb2\x0a\x2d\x48\x49\x2c\x49\xd5\x0d\x48\x4c\xce\x4e\x4c\x4f\xd5\xf5\xc9\x2c\x2e\x29\x56\x50\x32\x54\xb2\xe6\x42\x57\x98\x97\x58\x52\x92\x9a\x97\x92\x9a\xa2\x1b\x5a\x90\x5e\x94\x98\x92\x0a\x51\x86\xae\xce\xb1\xb4\x24\x3f\x39\x27\x35\x31\xcf\x33\xaf\x24\xb5\xa8\x2c\x31\x47\x41\xc9\x1c\xa8\x0c\x10\x00\x00\xff\xff\xaa\x17\xdd\x76\x77\x00\x00\x00")
+
+func nodeup_automatic_upgrades_debian_familyFilesEtcAptAptConfD20autoUpgradesBytes() ([]byte, error) {
+	return bindataRead(
+		_nodeup_automatic_upgrades_debian_familyFilesEtcAptAptConfD20autoUpgrades,
+		"nodeup/_automatic_upgrades/_debian_family/files/etc/apt/apt.conf.d/20auto-upgrades",
+	)
+}
+
+func nodeup_automatic_upgrades_debian_familyFilesEtcAptAptConfD20autoUpgrades() (*asset, error) {
+	bytes, err := nodeup_automatic_upgrades_debian_familyFilesEtcAptAptConfD20autoUpgradesBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "nodeup/_automatic_upgrades/_debian_family/files/etc/apt/apt.conf.d/20auto-upgrades", size: 119, mode: os.FileMode(420), modTime: time.Unix(1473344505, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var _nodeup_automatic_upgrades_debian_familyPackagesUnattendedUpgrades = []byte("\x1f\x8b\x08\x00\x00\x09\x6e\x88\x00\xff\x01\x00\x00\xff\xff\x00\x00\x00\x00\x00\x00\x00\x00")
+
+func nodeup_automatic_upgrades_debian_familyPackagesUnattendedUpgradesBytes() ([]byte, error) {
+	return bindataRead(
+		_nodeup_automatic_upgrades_debian_familyPackagesUnattendedUpgrades,
+		"nodeup/_automatic_upgrades/_debian_family/packages/unattended-upgrades",
+	)
+}
+
+func nodeup_automatic_upgrades_debian_familyPackagesUnattendedUpgrades() (*asset, error) {
+	bytes, err := nodeup_automatic_upgrades_debian_familyPackagesUnattendedUpgradesBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "nodeup/_automatic_upgrades/_debian_family/packages/unattended-upgrades", size: 0, mode: os.FileMode(420), modTime: time.Unix(1473344505, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -2285,47 +2325,7 @@ func nodeup_protokubeServicesProtokubeServiceTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "nodeup/_protokube/services/protokube.service.template", size: 442, mode: os.FileMode(420), modTime: time.Unix(1471581503, 0)}
-	a := &asset{bytes: bytes, info: info}
-	return a, nil
-}
-
-var _nodeupAutoUpgrades_debian_familyFilesEtcAptAptConfD20autoUpgrades = []byte("\x1f\x8b\x08\x00\x00\x09\x6e\x88\x00\xff\x72\x0c\x08\xb1\xb2\x0a\x48\x2d\xca\xcc\x4f\xc9\x4c\xb6\xb2\x0a\x2d\x48\x49\x2c\x49\xd5\x0d\x48\x4c\xce\x4e\x4c\x4f\xd5\xf5\xc9\x2c\x2e\x29\x56\x50\x32\x54\xb2\xe6\x42\x57\x98\x97\x58\x52\x92\x9a\x97\x92\x9a\xa2\x1b\x5a\x90\x5e\x94\x98\x92\x0a\x51\x86\xae\xce\xb1\xb4\x24\x3f\x39\x27\x35\x31\xcf\x33\xaf\x24\xb5\xa8\x2c\x31\x47\x41\xc9\x1c\xa8\x0c\x10\x00\x00\xff\xff\xaa\x17\xdd\x76\x77\x00\x00\x00")
-
-func nodeupAutoUpgrades_debian_familyFilesEtcAptAptConfD20autoUpgradesBytes() ([]byte, error) {
-	return bindataRead(
-		_nodeupAutoUpgrades_debian_familyFilesEtcAptAptConfD20autoUpgrades,
-		"nodeup/auto-upgrades/_debian_family/files/etc/apt/apt.conf.d/20auto-upgrades",
-	)
-}
-
-func nodeupAutoUpgrades_debian_familyFilesEtcAptAptConfD20autoUpgrades() (*asset, error) {
-	bytes, err := nodeupAutoUpgrades_debian_familyFilesEtcAptAptConfD20autoUpgradesBytes()
-	if err != nil {
-		return nil, err
-	}
-
-	info := bindataFileInfo{name: "nodeup/auto-upgrades/_debian_family/files/etc/apt/apt.conf.d/20auto-upgrades", size: 119, mode: os.FileMode(420), modTime: time.Unix(1471538325, 0)}
-	a := &asset{bytes: bytes, info: info}
-	return a, nil
-}
-
-var _nodeupAutoUpgrades_debian_familyPackagesUnattendedUpgrades = []byte("\x1f\x8b\x08\x00\x00\x09\x6e\x88\x00\xff\x01\x00\x00\xff\xff\x00\x00\x00\x00\x00\x00\x00\x00")
-
-func nodeupAutoUpgrades_debian_familyPackagesUnattendedUpgradesBytes() ([]byte, error) {
-	return bindataRead(
-		_nodeupAutoUpgrades_debian_familyPackagesUnattendedUpgrades,
-		"nodeup/auto-upgrades/_debian_family/packages/unattended-upgrades",
-	)
-}
-
-func nodeupAutoUpgrades_debian_familyPackagesUnattendedUpgrades() (*asset, error) {
-	bytes, err := nodeupAutoUpgrades_debian_familyPackagesUnattendedUpgradesBytes()
-	if err != nil {
-		return nil, err
-	}
-
-	info := bindataFileInfo{name: "nodeup/auto-upgrades/_debian_family/packages/unattended-upgrades", size: 0, mode: os.FileMode(420), modTime: time.Unix(1471538325, 0)}
+	info := bindataFileInfo{name: "nodeup/_protokube/services/protokube.service.template", size: 442, mode: os.FileMode(420), modTime: time.Unix(1473344504, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -2605,7 +2605,7 @@ func nodeupDockerPackages_xenialDockerEngine() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "nodeup/docker/packages/_xenial/docker-engine", size: 228, mode: os.FileMode(420), modTime: time.Unix(1473312670, 0)}
+	info := bindataFileInfo{name: "nodeup/docker/packages/_xenial/docker-engine", size: 228, mode: os.FileMode(420), modTime: time.Unix(1473344504, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -3085,7 +3085,7 @@ func nodeupNetworking_cni_bridgeFilesOptCniBinBridgeAsset() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "nodeup/networking/_cni_bridge/files/opt/cni/bin/bridge.asset", size: 3, mode: os.FileMode(420), modTime: time.Unix(1471885375, 0)}
+	info := bindataFileInfo{name: "nodeup/networking/_cni_bridge/files/opt/cni/bin/bridge.asset", size: 3, mode: os.FileMode(420), modTime: time.Unix(1473344504, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -3105,7 +3105,7 @@ func nodeupNetworking_cni_bridgeFilesOptCniBinBridgeAssetMeta() (*asset, error) 
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "nodeup/networking/_cni_bridge/files/opt/cni/bin/bridge.asset.meta", size: 20, mode: os.FileMode(420), modTime: time.Unix(1471885375, 0)}
+	info := bindataFileInfo{name: "nodeup/networking/_cni_bridge/files/opt/cni/bin/bridge.asset.meta", size: 20, mode: os.FileMode(420), modTime: time.Unix(1473344504, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -3125,7 +3125,7 @@ func nodeupNetworking_cni_host_localFilesOptCniBinHostLocalAsset() (*asset, erro
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "nodeup/networking/_cni_host_local/files/opt/cni/bin/host-local.asset", size: 3, mode: os.FileMode(420), modTime: time.Unix(1471885375, 0)}
+	info := bindataFileInfo{name: "nodeup/networking/_cni_host_local/files/opt/cni/bin/host-local.asset", size: 3, mode: os.FileMode(420), modTime: time.Unix(1473344504, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -3145,7 +3145,7 @@ func nodeupNetworking_cni_host_localFilesOptCniBinHostLocalAssetMeta() (*asset, 
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "nodeup/networking/_cni_host_local/files/opt/cni/bin/host-local.asset.meta", size: 20, mode: os.FileMode(420), modTime: time.Unix(1471885375, 0)}
+	info := bindataFileInfo{name: "nodeup/networking/_cni_host_local/files/opt/cni/bin/host-local.asset.meta", size: 20, mode: os.FileMode(420), modTime: time.Unix(1473344504, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -3165,7 +3165,7 @@ func nodeupNetworking_cni_loopbackFilesOptCniBinLoopbackAsset() (*asset, error) 
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "nodeup/networking/_cni_loopback/files/opt/cni/bin/loopback.asset", size: 3, mode: os.FileMode(420), modTime: time.Unix(1471885375, 0)}
+	info := bindataFileInfo{name: "nodeup/networking/_cni_loopback/files/opt/cni/bin/loopback.asset", size: 3, mode: os.FileMode(420), modTime: time.Unix(1473344504, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -3185,7 +3185,7 @@ func nodeupNetworking_cni_loopbackFilesOptCniBinLoopbackAssetMeta() (*asset, err
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "nodeup/networking/_cni_loopback/files/opt/cni/bin/loopback.asset.meta", size: 20, mode: os.FileMode(420), modTime: time.Unix(1471885375, 0)}
+	info := bindataFileInfo{name: "nodeup/networking/_cni_loopback/files/opt/cni/bin/loopback.asset.meta", size: 20, mode: os.FileMode(420), modTime: time.Unix(1473344504, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -3205,7 +3205,7 @@ func nodeupNetworking_cni_ptpFilesOptCniBinPtpAsset() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "nodeup/networking/_cni_ptp/files/opt/cni/bin/ptp.asset", size: 3, mode: os.FileMode(420), modTime: time.Unix(1471885375, 0)}
+	info := bindataFileInfo{name: "nodeup/networking/_cni_ptp/files/opt/cni/bin/ptp.asset", size: 3, mode: os.FileMode(420), modTime: time.Unix(1473344504, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -3225,7 +3225,7 @@ func nodeupNetworking_cni_ptpFilesOptCniBinPtpAssetMeta() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "nodeup/networking/_cni_ptp/files/opt/cni/bin/ptp.asset.meta", size: 20, mode: os.FileMode(420), modTime: time.Unix(1471885375, 0)}
+	info := bindataFileInfo{name: "nodeup/networking/_cni_ptp/files/opt/cni/bin/ptp.asset.meta", size: 20, mode: os.FileMode(420), modTime: time.Unix(1473344504, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -3485,7 +3485,7 @@ func proto_awsMaster_volumesYaml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "proto/_aws/master_volumes.yaml", size: 525, mode: os.FileMode(420), modTime: time.Unix(1473310410, 0)}
+	info := bindataFileInfo{name: "proto/_aws/master_volumes.yaml", size: 525, mode: os.FileMode(420), modTime: time.Unix(1473344504, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -3592,6 +3592,8 @@ var _bindata = map[string]func() (*asset, error){
 	"config/components/kubelet/_networking_kubenet/kubelet.kubenet.options": configComponentsKubelet_networking_kubenetKubeletKubenetOptions,
 	"config/components/kubelet/kubelet.options": configComponentsKubeletKubeletOptions,
 	"config/defaults.options": configDefaultsOptions,
+	"nodeup/_automatic_upgrades/_debian_family/files/etc/apt/apt.conf.d/20auto-upgrades": nodeup_automatic_upgrades_debian_familyFilesEtcAptAptConfD20autoUpgrades,
+	"nodeup/_automatic_upgrades/_debian_family/packages/unattended-upgrades": nodeup_automatic_upgrades_debian_familyPackagesUnattendedUpgrades,
 	"nodeup/_kope_routing/files/etc/kubernetes/manifests/kope-routing.manifest.template": nodeup_kope_routingFilesEtcKubernetesManifestsKopeRoutingManifestTemplate,
 	"nodeup/_kope_routing/files/var/lib/kope-routing/kubeconfig.template": nodeup_kope_routingFilesVarLibKopeRoutingKubeconfigTemplate,
 	"nodeup/_kope_routing/files/var/lib/kope-routing/kubeconfig.template.meta": nodeup_kope_routingFilesVarLibKopeRoutingKubeconfigTemplateMeta,
@@ -3645,8 +3647,6 @@ var _bindata = map[string]func() (*asset, error){
 	"nodeup/_kubernetes_pool/kube-proxy/files/var/log/kube-proxy.log.meta": nodeup_kubernetes_poolKubeProxyFilesVarLogKubeProxyLogMeta,
 	"nodeup/_protokube/files/etc/sysconfig/protokube.template": nodeup_protokubeFilesEtcSysconfigProtokubeTemplate,
 	"nodeup/_protokube/services/protokube.service.template": nodeup_protokubeServicesProtokubeServiceTemplate,
-	"nodeup/auto-upgrades/_debian_family/files/etc/apt/apt.conf.d/20auto-upgrades": nodeupAutoUpgrades_debian_familyFilesEtcAptAptConfD20autoUpgrades,
-	"nodeup/auto-upgrades/_debian_family/packages/unattended-upgrades": nodeupAutoUpgrades_debian_familyPackagesUnattendedUpgrades,
 	"nodeup/docker/_gce/files/etc/sysctl.d/99-ip_forward.conf": nodeupDocker_gceFilesEtcSysctlD99Ip_forwardConf,
 	"nodeup/docker/_gce/files/etc/sysctl.d/99-ip_forward.conf.meta": nodeupDocker_gceFilesEtcSysctlD99Ip_forwardConfMeta,
 	"nodeup/docker/_systemd/files/etc/sysconfig/docker.template": nodeupDocker_systemdFilesEtcSysconfigDockerTemplate,
@@ -3882,6 +3882,22 @@ var _bintree = &bintree{nil, map[string]*bintree{
 		"defaults.options": &bintree{configDefaultsOptions, map[string]*bintree{}},
 	}},
 	"nodeup": &bintree{nil, map[string]*bintree{
+		"_automatic_upgrades": &bintree{nil, map[string]*bintree{
+			"_debian_family": &bintree{nil, map[string]*bintree{
+				"files": &bintree{nil, map[string]*bintree{
+					"etc": &bintree{nil, map[string]*bintree{
+						"apt": &bintree{nil, map[string]*bintree{
+							"apt.conf.d": &bintree{nil, map[string]*bintree{
+								"20auto-upgrades": &bintree{nodeup_automatic_upgrades_debian_familyFilesEtcAptAptConfD20autoUpgrades, map[string]*bintree{}},
+							}},
+						}},
+					}},
+				}},
+				"packages": &bintree{nil, map[string]*bintree{
+					"unattended-upgrades": &bintree{nodeup_automatic_upgrades_debian_familyPackagesUnattendedUpgrades, map[string]*bintree{}},
+				}},
+			}},
+		}},
 		"_kope_routing": &bintree{nil, map[string]*bintree{
 			"files": &bintree{nil, map[string]*bintree{
 				"etc": &bintree{nil, map[string]*bintree{
@@ -4127,22 +4143,6 @@ var _bintree = &bintree{nil, map[string]*bintree{
 			}},
 			"services": &bintree{nil, map[string]*bintree{
 				"protokube.service.template": &bintree{nodeup_protokubeServicesProtokubeServiceTemplate, map[string]*bintree{}},
-			}},
-		}},
-		"auto-upgrades": &bintree{nil, map[string]*bintree{
-			"_debian_family": &bintree{nil, map[string]*bintree{
-				"files": &bintree{nil, map[string]*bintree{
-					"etc": &bintree{nil, map[string]*bintree{
-						"apt": &bintree{nil, map[string]*bintree{
-							"apt.conf.d": &bintree{nil, map[string]*bintree{
-								"20auto-upgrades": &bintree{nodeupAutoUpgrades_debian_familyFilesEtcAptAptConfD20autoUpgrades, map[string]*bintree{}},
-							}},
-						}},
-					}},
-				}},
-				"packages": &bintree{nil, map[string]*bintree{
-					"unattended-upgrades": &bintree{nodeupAutoUpgrades_debian_familyPackagesUnattendedUpgrades, map[string]*bintree{}},
-				}},
 			}},
 		}},
 		"docker": &bintree{nil, map[string]*bintree{
