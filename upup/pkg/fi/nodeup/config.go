@@ -21,6 +21,9 @@ type NodeUpConfig struct {
 	// Technically this is redundant - it is in ClusterLocation, but this can serve as a cross-check,
 	// and it allows us to more easily identify the cluster, for example when we are deleting resources.
 	ClusterName string `json:",omitempty"`
+
+	// ProtokubeImage is the docker image to load for protokube (bootstrapping)
+	ProtokubeImage *Image `json:"protokubeImage"`
 }
 
 // Image is a docker image we should pre-load
