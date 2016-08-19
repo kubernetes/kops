@@ -129,8 +129,13 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	if c.NodeUpSource == "" {
-		location := "https://kubeupv2.s3.amazonaws.com/nodeup/nodeup-1.3.tar.gz"
-		glog.Infof("Using default nodeup location: %q", location)
+		location := os.Getenv("NODEUP_URL")
+		if location == "" {
+			location = "https://kubeupv2.s3.amazonaws.com/nodeup/nodeup-1.3.tar.gz"
+			glog.Infof("Using default nodeup location: %q", location)
+		} else {
+			glog.Warningf("Using nodeup location from NODEUP_URL env var: %q", location)
+		}
 		c.NodeUpSource = location
 	}
 
@@ -350,6 +355,19 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 		config.Images = images
+
+		{
+			protokubeImage := os.Getenv("PROTOKUBE_IMAGE")
+			if protokubeImage != "" {
+				glog.Warningf("Using protokube image specified in PROTOKUBE_IMAGE env var: %q", protokubeImage)
+			} else {
+				protokubeImage = nodeup.DefaultProtokubeImage
+			}
+			config.ProtokubeImage = &nodeup.Image{
+				Source: protokubeImage,
+			}
+		}
+
 		yaml, err := api.ToYaml(config)
 		if err != nil {
 			return "", err
