@@ -208,11 +208,10 @@ type ClusterSpec struct {
 	KubeProxy             *KubeProxyConfig             `json:"kubeProxy,omitempty"`
 	Kubelet               *KubeletConfig               `json:"kubelet,omitempty"`
 	MasterKubelet         *KubeletConfig               `json:"masterKubelet,omitempty"`
-}
 
-//// NetworkingConfig allows selection of a networking plugin
-//type NetworkingConfig struct {
-//}
+	// Networking configuration
+	Networking *NetworkingSpec `json:"networking,omitempty"`
+}
 
 type KubeDNSConfig struct {
 	// Image is the name of the docker image to run
@@ -307,6 +306,19 @@ func (c *Cluster) PerformAssignments() error {
 func (c *Cluster) FillDefaults() error {
 	if len(c.Spec.AdminAccess) == 0 {
 		c.Spec.AdminAccess = append(c.Spec.AdminAccess, "0.0.0.0/0")
+	}
+
+	if c.Spec.Networking == nil {
+		c.Spec.Networking = &NetworkingSpec{}
+	}
+
+	if c.Spec.Networking.Classic != nil {
+		// OK
+	} else if c.Spec.Networking.Kubenet != nil {
+		// OK
+	} else {
+		// No networking model selected; choose Classic
+		c.Spec.Networking.Classic = &ClassicNetworkingSpec{}
 	}
 
 	err := c.ensureKubernetesVersion()

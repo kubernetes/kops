@@ -34,6 +34,7 @@ type CreateClusterCmd struct {
 	NetworkCIDR       string
 	DNSZone           string
 	AdminAccess       string
+	Networking        string
 }
 
 var createCluster CreateClusterCmd
@@ -77,6 +78,8 @@ func init() {
 	cmd.Flags().IntVar(&createCluster.NodeCount, "node-count", 0, "Set the number of nodes")
 
 	cmd.Flags().StringVar(&createCluster.Image, "image", "", "Image to use")
+
+	cmd.Flags().StringVar(&createCluster.Networking, "networking", "classic", "Networking mode to use.  kubenet or classic.  This currently defaults to classic, but will likely default to kubenet soon.")
 
 	cmd.Flags().StringVar(&createCluster.DNSZone, "dns-zone", "", "DNS hosted zone to use (defaults to last two components of cluster name)")
 	cmd.Flags().StringVar(&createCluster.OutDir, "out", "", "Path to write any local output")
@@ -131,6 +134,15 @@ func (c *CreateClusterCmd) Run(args []string) error {
 	cluster = &api.Cluster{}
 	var instanceGroups []*api.InstanceGroup
 
+	cluster.Spec.Networking = &api.NetworkingSpec{}
+	switch c.Networking {
+	case "classic":
+		cluster.Spec.Networking.Classic = &api.ClassicNetworkingSpec{}
+	case "kubenet":
+		cluster.Spec.Networking.Kubenet = &api.KubenetNetworkingSpec{}
+	default:
+		return fmt.Errorf("unknown networking mode %q", c.Networking)
+	}
 	if c.Zones != "" {
 		existingZones := make(map[string]*api.ClusterZoneSpec)
 		for _, zone := range cluster.Spec.Zones {

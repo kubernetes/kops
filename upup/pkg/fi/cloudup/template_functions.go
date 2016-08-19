@@ -81,7 +81,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["IAMServiceEC2"] = tf.IAMServiceEC2
 
 	dest["Image"] = tf.Image
-	dest["ComputeNodeTags"] = tf.ComputeNodeTags
 }
 
 func (tf *TemplateFunctions) EtcdClusterMemberTags(etcd *api.EtcdClusterSpec, m *api.EtcdMemberSpec) map[string]string {
