@@ -124,7 +124,18 @@ func (r *Loader) newTaskHandler(prefix string, builder TaskBuilder) loader.Handl
 		if err != nil {
 			return err
 		}
-		task, err := builder(i.Name, contents, i.Meta)
+		name := i.Name
+		if strings.HasSuffix(name, ".template") {
+			name = strings.TrimSuffix(name, ".template")
+			expanded, err := r.executeTemplate(name, contents)
+			if err != nil {
+				return fmt.Errorf("error executing template %q: %v", i.RelativePath, err)
+			}
+
+			contents = expanded
+		}
+
+		task, err := builder(name, contents, i.Meta)
 		if err != nil {
 			return fmt.Errorf("error building %s for %q: %v", i.Name, i.Path, err)
 		}
