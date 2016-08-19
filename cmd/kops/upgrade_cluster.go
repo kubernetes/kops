@@ -11,8 +11,6 @@ import (
 
 type UpgradeClusterCmd struct {
 	Yes bool
-
-	NewClusterName string
 }
 
 var upgradeCluster UpgradeClusterCmd
