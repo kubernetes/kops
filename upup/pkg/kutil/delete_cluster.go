@@ -1517,7 +1517,7 @@ func DeleteIAMRole(cloud fi.Cloud, r *ResourceTracker) error {
 		}
 		_, err := c.IAM.DeleteRolePolicy(request)
 		if err != nil {
-			return fmt.Errorf("error deleting IAM role policy %q %q", roleName, policyName, err)
+			return fmt.Errorf("error deleting IAM role policy %q %q: %v", roleName, policyName, err)
 		}
 	}
 

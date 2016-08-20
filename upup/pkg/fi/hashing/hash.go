@@ -65,7 +65,7 @@ func (ha HashAlgorithm) FromString(s string) (*Hash, error) {
 	}
 
 	if len(s) != l {
-		return nil, fmt.Errorf("invalid %q hash - unexpected length %s", ha, len(s))
+		return nil, fmt.Errorf("invalid %q hash - unexpected length %d", ha, len(s))
 	}
 
 	hashValue, err := hex.DecodeString(s)
