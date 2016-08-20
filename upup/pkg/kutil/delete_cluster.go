@@ -1386,7 +1386,7 @@ func deleteRoute53Records(cloud fi.Cloud, zone *route53.HostedZone, trackers []*
 			ResourceRecordSet: tracker.obj.(*route53.ResourceRecordSet),
 		})
 	}
-	human := strings.Join(names, ",")
+	human := strings.Join(names, ", ")
 	glog.V(2).Infof("Deleting route53 records %q", human)
 
 	changeBatch := &route53.ChangeBatch{
@@ -1433,7 +1433,10 @@ func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*ResourceTracker,
 
 	var trackers []*ResourceTracker
 
-	for _, zone := range zones {
+	for i := range zones {
+		// Be super careful becasue we close over this later (in groupDeleter)
+		zone := zones[i]
+
 		hostedZoneID := strings.TrimPrefix(aws.StringValue(zone.Id), "/hostedzone/")
 
 		glog.V(2).Infof("Querying for records in zone: %q", aws.StringValue(zone.Name))
