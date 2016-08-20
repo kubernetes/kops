@@ -147,9 +147,9 @@ type KubeletConfig struct {
 	//LowDiskSpaceThresholdMB int32 `json:"lowDiskSpaceThresholdMB"`
 	//// How frequently to calculate and cache volume disk usage for all pods
 	//VolumeStatsAggPeriod unversioned.Duration `json:"volumeStatsAggPeriod"`
-	//// networkPluginName is the name of the network plugin to be invoked for
-	//// various events in kubelet/pod lifecycle
-	//NetworkPluginName string `json:"networkPluginName"`
+	// networkPluginName is the name of the network plugin to be invoked for
+	// various events in kubelet/pod lifecycle
+	NetworkPluginName string `json:"networkPluginName,omitempty" flag:"network-plugin"`
 	//// networkPluginDir is the full path of the directory in which to search
 	//// for network plugins
 	//NetworkPluginDir string `json:"networkPluginDir"`

@@ -14,8 +14,14 @@ func buildClusterTags(cluster *api.Cluster) (map[string]struct{}, error) {
 
 	tags := make(map[string]struct{})
 
-	//tags["_networking_kubenet"] = struct{}{}
-	//tags["_networking_builtin"] = struct{}{}
+	networking := cluster.Spec.Networking
+	if networking == nil || networking.Classic != nil {
+		tags["_networking_classic"] = struct{}{}
+	} else if networking.Kubenet != nil {
+		tags["_networking_kubenet"] = struct{}{}
+	} else {
+		return nil, fmt.Errorf("No networking mode set")
+	}
 
 	if useMasterASG {
 		tags["_master_asg"] = struct{}{}
@@ -76,14 +82,14 @@ func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTa
 		return nil, fmt.Errorf("Unrecognized role: %v", role)
 	}
 
-	//// TODO: Replace with list of CNI plugins
-	//if _, found := clusterTags["_networking_kubenet"]; found {
-	//	tags = append(tags, "_cni_bridge")
-	//	tags = append(tags, "_cni_host_local")
-	//	tags = append(tags, "_cni_loopback")
-	//	tags = append(tags, "_cni_ptp")
-	//	//tags = append(tags, "_cni_tuning")
-	//}
+	// TODO: Replace with list of CNI plugins ?
+	if _, found := clusterTags["_networking_kubenet"]; found {
+		tags = append(tags, "_cni_bridge")
+		tags = append(tags, "_cni_host_local")
+		tags = append(tags, "_cni_loopback")
+		tags = append(tags, "_cni_ptp")
+		//tags = append(tags, "_cni_tuning")
+	}
 
 	if _, found := clusterTags["_gce"]; found {
 		tags = append(tags, "_gce")
