@@ -520,5 +520,5 @@ func (c *AWSCloud) FindDNSHostedZone(clusterDNSName string) (string, error) {
 		return id, nil
 	}
 
-	return "", fmt.Errorf("Found multiple hosted zones matching cluster %q; please specify the ID of the zone to use")
+	return "", fmt.Errorf("Found multiple hosted zones matching cluster %q; please specify the ID of the zone to use", clusterDNSName)
 }
