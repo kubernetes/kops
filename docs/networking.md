@@ -12,3 +12,12 @@ routing table, and thus it requires its own subnet.  It is theoretically possibl
 with other infrastructure (but not a second cluster!), but this is not really recommended.
 
 kops will support other networking options as they add support for the daemonset method of deployment.
+
+
+kops currently supports 3 networking modes:
+
+* `classic` kubernetes native networking, done in-process
+* `kubenet` kubernetes native networking via a CNI plugin.  Also has less reliance on Docker's networking.
+* `external` networking is done via a Daemonset
+
+TODO: Explain the difference between pod networking & inter-pod networking.
