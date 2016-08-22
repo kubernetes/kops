@@ -45,6 +45,11 @@ func (c *EditClusterCmd) Run(args []string) error {
 		return err
 	}
 
+	err = oldCluster.FillDefaults()
+	if err != nil {
+		return err
+	}
+
 	instanceGroupRegistry, err := rootCommand.InstanceGroupRegistry()
 	if err != nil {
 		return err
