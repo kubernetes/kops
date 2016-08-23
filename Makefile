@@ -5,23 +5,35 @@ S3_BUCKET=s3://must-override/
 GOPATH_1ST=$(shell echo ${GOPATH} | cut -d : -f 1)
 
 ifndef VERSION
-  VERSION := git-$(shell git rev-parse --short HEAD)
+	VERSION := git-$(shell git rev-parse --short HEAD)
 endif
+UNAME_S := $(shell uname -s)
 
-gocode:
-	GO15VENDOREXPERIMENT=1 go install -ldflags "-X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/...
+DOCKER_VERSION=golang:1.7
+
+gocode: docker-pull
+	GO15VENDOREXPERIMENT=1 go install -ldflags "-X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/kops/...
 	ln -sfn ${GOPATH_1ST}/src/k8s.io/kops/upup/models/ ${GOPATH_1ST}/bin/models
 
-# Build in a docker container with specific golang versions
-# Used to test we have not broken those versions
+# nodeup has to be compiled under linux.  I am getting a cross compile error on OSX, so I am
+# doing it in docker
+ifeq ($(UNAME_S),Linux)
+	GO15VENDOREXPERIMENT=1 go install -ldflags "-X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/nodeup/...
+else
+	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops -v ${GOPATH_1ST}/bin:/go/bin  \
+		-e VERSION=${VERSION} ${DOCKER_VERSION} make -f /go/src/k8s.io/kops/Makefile nodeup-gocode
+endif
+
+nodeup-gocode:
+	GOOS=linux GOARCH=amd64 GO15VENDOREXPERIMENT=1 go install -ldflags "-X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/nodeup/...
+
+# Build in a docker container with golang 1.5
+# Used to test we have not broken 1.5
 check-builds-in-go15:
 	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.5 make -f /go/src/k8s.io/kops/Makefile gocode
 
-check-builds-in-go16:
-	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.6 make -f /go/src/k8s.io/kops/Makefile gocode
-
-check-builds-in-go17:
-	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.7 make -f /go/src/k8s.io/kops/Makefile gocode
+check-builds-in-go17: docker-pull
+	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops ${DOCKER_VERSION} make -f /go/src/k8s.io/kops/Makefile gocode
 
 codegen:
 	GO15VENDOREXPERIMENT=1 go install k8s.io/kops/upup/tools/generators/...
@@ -128,3 +140,7 @@ dns-controller-push: dns-controller-image
 copydeps:
 	rsync -avz _vendor/ vendor/ --exclude vendor/  --exclude .git
 
+docker-pull:
+ifeq ($(shell docker images -q golang:1.7),)
+	docker pull ${DOCKER_VERSION}
+endif
