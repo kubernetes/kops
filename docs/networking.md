@@ -21,3 +21,37 @@ kops currently supports 3 networking modes:
 * `external` networking is done via a Daemonset
 
 TODO: Explain the difference between pod networking & inter-pod networking.
+
+
+
+## Switching between networking providers
+
+Make sure you are running the latest kops: `git pull && make`.  `kops version` should be `Version git-2f4ac90`
+
+`kops edit cluster` and you should see a block like:
+
+```
+  networking:
+    classic: {}
+```
+
+That means you are running with `classic` networking.  The `{}` means there are no configuration options
+(but we have to put something in there so that we do choose classic).
+
+To switch to kubenet, edit to be:
+```
+  networking:
+    kubenet: {}
+```
+
+Now follow the normal update / rolling-update procedure:
+
+* `kops update cluster` to preview
+* `kops update cluster --yes` to apply
+* `kops rolling-update cluster` to preview the rolling-update
+* `kops rolling-update cluster --yes` to roll all your instances
+
+Your cluster should be ready in a few minutes.
+
+It is not trivial to see that this has worked; the easiest way seems to be to SSH to the master and verify
+that kubelet has been run with `--network-plugin=kubenet`
