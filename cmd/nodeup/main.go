@@ -9,9 +9,16 @@ import (
 	"time"
 )
 
+var (
+	// value overwritten during build. This can be used to resolve issues.
+	BuildVersion = "0.1"
+)
+
 const retryInterval = 30 * time.Second
 
 func main() {
+	fmt.Printf("nodeup version %s\n", BuildVersion)
+
 	flagModel := "model"
 	flag.StringVar(&flagModel, "model", flagModel, "directory to use as model for desired configuration")
 	var flagConf string
