@@ -24,8 +24,7 @@
       "Resource": [
         {{ range $i, $b := .MasterPermissions.S3Buckets }}
         {{if $i}},{{end}}
-        "{{ IAMPrefix }}:s3:::{{ $b }}/{{ ClusterName }}",
-        "{{ IAMPrefix }}:s3:::{{ $b }}/{{ ClusterName }}/*"
+        "{{ IAMPrefix }}:s3:::{{ $b }}/*"
         {{ end }}
       ]
     },
