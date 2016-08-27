@@ -47,3 +47,6 @@ network_closure.sh
 
 # Docker _src sync
 /docker/_src
+
+# build stuff
+.build
