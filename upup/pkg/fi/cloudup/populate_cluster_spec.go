@@ -173,16 +173,6 @@ func (c *populateClusterSpec) run() error {
 	if vfs.IsClusterReadable(secretStore.VFSPath()) {
 		vfsPath := secretStore.VFSPath()
 		cluster.Spec.SecretStore = vfsPath.Path()
-		if s3Path, ok := vfsPath.(*vfs.S3Path); ok {
-			if cluster.Spec.MasterPermissions == nil {
-				cluster.Spec.MasterPermissions = &api.CloudPermissions{}
-			}
-			cluster.Spec.MasterPermissions.AddS3Bucket(s3Path.Bucket())
-			if cluster.Spec.NodePermissions == nil {
-				cluster.Spec.NodePermissions = &api.CloudPermissions{}
-			}
-			cluster.Spec.NodePermissions.AddS3Bucket(s3Path.Bucket())
-		}
 	} else {
 		// We could implement this approach, but it seems better to get all clouds using cluster-readable storage
 		return fmt.Errorf("secrets path is not cluster readable: %v", secretStore.VFSPath())
@@ -191,29 +181,20 @@ func (c *populateClusterSpec) run() error {
 	if vfs.IsClusterReadable(keyStore.VFSPath()) {
 		vfsPath := keyStore.VFSPath()
 		cluster.Spec.KeyStore = vfsPath.Path()
-		if s3Path, ok := vfsPath.(*vfs.S3Path); ok {
-			if cluster.Spec.MasterPermissions == nil {
-				cluster.Spec.MasterPermissions = &api.CloudPermissions{}
-			}
-			cluster.Spec.MasterPermissions.AddS3Bucket(s3Path.Bucket())
-			if cluster.Spec.NodePermissions == nil {
-				cluster.Spec.NodePermissions = &api.CloudPermissions{}
-			}
-			cluster.Spec.NodePermissions.AddS3Bucket(s3Path.Bucket())
-		}
 	} else {
 		// We could implement this approach, but it seems better to get all clouds using cluster-readable storage
 		return fmt.Errorf("keyStore path is not cluster readable: %v", keyStore.VFSPath())
 	}
 
-	configPath, err := c.ClusterRegistry.ConfigurationPath(cluster.Name)
+	clusterBasePath, err := c.ClusterRegistry.ClusterBase(cluster.Name)
 	if err != nil {
 		return err
 	}
-	if vfs.IsClusterReadable(configPath) {
-		cluster.Spec.ConfigStore = configPath.Path()
+	if vfs.IsClusterReadable(clusterBasePath) {
+		cluster.Spec.ConfigStore = clusterBasePath.Path()
 	} else {
-		// We do support this...
+		// We could implement this approach, but it seems better to get all clouds using cluster-readable storage
+		return fmt.Errorf("ClusterBase path is not cluster readable: %v", clusterBasePath)
 	}
 
 	// Normalize k8s version

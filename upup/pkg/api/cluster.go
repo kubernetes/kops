@@ -37,11 +37,6 @@ type ClusterSpec struct {
 	// Project is the cloud project we should use, required on GCE
 	Project string `json:"project,omitempty"`
 
-	// MasterPermissions contains the IAM permissions for the masters
-	MasterPermissions *CloudPermissions `json:"masterPermissions,omitempty"`
-	// NodePermissions contains the IAM permissions for the nodes
-	NodePermissions *CloudPermissions `json:"nodePermissions,omitempty"`
-
 	// MasterPublicName is the external DNS name for the master nodes
 	MasterPublicName string `json:"masterPublicName,omitempty"`
 	// MasterInternalName is the internal DNS name for the master nodes
@@ -429,59 +424,3 @@ func (z *ClusterZoneSpec) assignCIDR(c *Cluster) (string, error) {
 func (c *Cluster) SharedVPC() bool {
 	return c.Spec.NetworkID != ""
 }
-
-// CloudPermissions holds IAM-style permissions
-type CloudPermissions struct {
-	Permissions []*CloudPermission `json:"permissions,omitempty"`
-}
-
-// CloudPermission holds a single IAM-style permission
-type CloudPermission struct {
-	Resource string `json:"resource,omitempty"`
-}
-
-// AddS3Bucket adds a bucket if it does not already exist
-func (p *CloudPermissions) AddS3Bucket(bucket string) {
-	for _, p := range p.Permissions {
-		if p.Resource == "s3://"+bucket {
-			return
-		}
-	}
-
-	p.Permissions = append(p.Permissions, &CloudPermission{
-		Resource: "s3://" + bucket,
-	})
-}
-
-// S3Buckets returns each of the S3 buckets in the permission
-// TODO: Replace with something generic (probably we should just generate the permission)
-func (p *CloudPermissions) S3Buckets() []string {
-	var buckets []string
-	for _, p := range p.Permissions {
-		if strings.HasPrefix(p.Resource, "s3://") {
-			buckets = append(buckets, strings.TrimPrefix(p.Resource, "s3://"))
-		}
-	}
-
-	return buckets
-}
-
-//
-//// findImage finds the default image
-//func (c*NodeSetConfig) resolveImage() error {
-//	cloud.(*awsup.AWSCloud).ResolveImage()
-//
-//	if n.Image == "" {
-//		if defaultImage == "" {
-//			image, err := c.determineImage()
-//			if err != nil {
-//				return err
-//			}
-//			defaultImage = image
-//		}
-//		n.Image = defaultImage
-//	}
-//
-//
-//	return nil
-//}
