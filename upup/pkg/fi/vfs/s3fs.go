@@ -45,6 +45,10 @@ func (p *S3Path) Bucket() string {
 	return p.bucket
 }
 
+func (p *S3Path) Key() string {
+	return p.key
+}
+
 func (p *S3Path) String() string {
 	return p.Path()
 }

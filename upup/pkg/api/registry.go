@@ -110,12 +110,20 @@ func (r *ClusterRegistry) ReadCompletedConfig(clusterName string) (*Cluster, err
 }
 
 func (r *ClusterRegistry) ConfigurationPath(clusterName string) (vfs.Path, error) {
+	basePath, err := r.ClusterBase(clusterName)
+	if err != nil {
+		return nil, err
+	}
+	return basePath.Join(PathClusterCompleted), nil
+}
+
+func (r *ClusterRegistry) ClusterBase(clusterName string) (vfs.Path, error) {
 	if clusterName == "" {
 		return nil, fmt.Errorf("clusterName is required")
 	}
 	stateStore := r.stateStore(clusterName)
 
-	return stateStore.VFSPath().Join(PathClusterCompleted), nil
+	return stateStore.VFSPath(), nil
 }
 
 func (r *ClusterRegistry) Create(g *Cluster) error {
