@@ -22,7 +22,7 @@ metadata:
   labels:
     app: kubernetes-dashboard
     k8s-addon: kubernetes-dashboard.addons.k8s.io
-    version: v1.1.0
+    version: v1.4.0-beta1
   name: kubernetes-dashboard
   namespace: kube-system
 spec:
@@ -37,7 +37,7 @@ spec:
     spec:
       containers:
       - name: kubernetes-dashboard
-        image: gcr.io/google_containers/kubernetes-dashboard-amd64:v1.1.0
+        image: gcr.io/google_containers/kubernetes-dashboard-amd64:v1.4.0-beta1
         imagePullPolicy: Always
         ports:
         - name: http
