@@ -12,6 +12,8 @@ import (
 
 const TagMaster = "_kubernetes_master"
 
+const DefaultProtokubeImage = "kope/protokube:1.3"
+
 // templateFunctions is a simple helper-class for the functions accessible to templates
 type templateFunctions struct {
 	nodeupConfig *NodeUpConfig
@@ -98,6 +100,8 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 		}
 	}
 	dest["ClusterName"] = func() string { return t.cluster.Name }
+
+	dest["ProtokubeImage"] = t.ProtokubeImage
 }
 
 // IsMaster returns true if we are tagged as a master
@@ -173,4 +177,17 @@ func (t *templateFunctions) GetToken(key string) (string, error) {
 		return "", fmt.Errorf("token not found: %q", key)
 	}
 	return string(token.Data), nil
+}
+
+// ProtokubeImage returns the docker image for protokube
+func (t *templateFunctions) ProtokubeImage() string {
+	image := ""
+	if t.nodeupConfig.ProtokubeImage != nil {
+		image = t.nodeupConfig.ProtokubeImage.Source
+	}
+	if image == "" {
+		// use current default corresponding to this version of nodeup
+		image = DefaultProtokubeImage
+	}
+	return image
 }

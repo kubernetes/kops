@@ -93,7 +93,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 		request.Attribute = aws.String("userData")
 		response, err := cloud.EC2.DescribeInstanceAttribute(request)
 		if err != nil {
-			return nil, fmt.Errorf("error querying EC2 for user metadata for instance %q: %v", *i.InstanceId)
+			return nil, fmt.Errorf("error querying EC2 for user metadata for instance %q: %v", *i.InstanceId, err)
 		}
 		if response.UserData != nil {
 			b, err := base64.StdEncoding.DecodeString(aws.StringValue(response.UserData.Value))

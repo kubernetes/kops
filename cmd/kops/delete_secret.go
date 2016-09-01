@@ -57,7 +57,7 @@ func (c *DeleteSecretCmd) Run(args []string) error {
 	}
 
 	if len(secrets) == 0 {
-		return fmt.Errorf("secret %q not found")
+		return fmt.Errorf("secret not found")
 	}
 
 	if len(secrets) != 1 {

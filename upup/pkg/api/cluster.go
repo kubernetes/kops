@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/kops/upup/pkg/fi/vfs"
 	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"net"
@@ -76,8 +77,6 @@ type ClusterSpec struct {
 	// ClusterName is a unique identifier for the cluster, and currently must be a DNS name
 	//ClusterName       string `json:",omitempty"`
 
-	//AllocateNodeCIDRs *bool `json:"allocateNodeCIDRs,omitempty"`
-
 	Multizone *bool `json:"multizone,omitempty"`
 
 	//ClusterIPRange                string `json:",omitempty"`
@@ -103,8 +102,6 @@ type ClusterSpec struct {
 	//  * enable debugging handlers on the master, so kubectl logs works
 	IsolateMasters *bool `json:"isolateMasters,omitempty"`
 
-	//NetworkProvider               string `json:",omitempty"`
-	//
 	//HairpinMode                   string `json:",omitempty"`
 	//
 	//OpencontrailTag               string `json:",omitempty"`
@@ -209,9 +206,15 @@ type ClusterSpec struct {
 	KubeProxy             *KubeProxyConfig             `json:"kubeProxy,omitempty"`
 	Kubelet               *KubeletConfig               `json:"kubelet,omitempty"`
 	MasterKubelet         *KubeletConfig               `json:"masterKubelet,omitempty"`
+
+	// Networking configuration
+	Networking *NetworkingSpec `json:"networking,omitempty"`
 }
 
 type KubeDNSConfig struct {
+	// Image is the name of the docker image to run
+	Image string `json:"image,omitempty"`
+
 	Replicas int    `json:"replicas,omitempty"`
 	Domain   string `json:"domain,omitempty"`
 	ServerIP string `json:"serverIP,omitempty"`
@@ -265,6 +268,7 @@ type ClusterZoneSpec struct {
 // PerformAssignments populates values that are required and immutable
 // For example, it assigns stable Keys to NodeSets & Masters, and
 // it assigns CIDRs to subnets
+// We also assign KubernetesVersion, because we want it to be explicit
 func (c *Cluster) PerformAssignments() error {
 	if c.Spec.NetworkCIDR == "" && !c.SharedVPC() {
 		// TODO: Choose non-overlapping networking CIDRs for VPCs?
@@ -286,6 +290,11 @@ func (c *Cluster) PerformAssignments() error {
 		}
 	}
 
+	err := c.ensureKubernetesVersion()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -297,7 +306,53 @@ func (c *Cluster) FillDefaults() error {
 		c.Spec.AdminAccess = append(c.Spec.AdminAccess, "0.0.0.0/0")
 	}
 
+	if c.Spec.Networking == nil {
+		c.Spec.Networking = &NetworkingSpec{}
+	}
+
+	if c.Spec.Networking.Classic != nil {
+		// OK
+	} else if c.Spec.Networking.Kubenet != nil {
+		// OK
+	} else if c.Spec.Networking.External != nil {
+		// OK
+	} else {
+		// No networking model selected; choose Classic
+		c.Spec.Networking.Classic = &ClassicNetworkingSpec{}
+	}
+
+	err := c.ensureKubernetesVersion()
+	if err != nil {
+		return err
+	}
+
 	return nil
+}
+
+// ensureKubernetesVersion populates KubernetesVersion, if it is not already set
+// It will be populated with the latest stable kubernetes version
+func (c *Cluster) ensureKubernetesVersion() error {
+	if c.Spec.KubernetesVersion == "" {
+		latestVersion, err := FindLatestKubernetesVersion()
+		if err != nil {
+			return err
+		}
+		glog.Infof("Using kubernetes latest stable version: %s", latestVersion)
+		c.Spec.KubernetesVersion = latestVersion
+	}
+	return nil
+}
+
+// FindLatestKubernetesVersion returns the latest kubernetes version,
+// as stored at https://storage.googleapis.com/kubernetes-release/release/stable.txt
+func FindLatestKubernetesVersion() (string, error) {
+	stableURL := "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
+	b, err := vfs.Context.ReadFile(stableURL)
+	if err != nil {
+		return "", fmt.Errorf("KubernetesVersion not specified, and unable to download latest version from %q: %v", stableURL, err)
+	}
+	latestVersion := strings.TrimSpace(string(b))
+	return latestVersion, nil
 }
 
 func (z *ClusterZoneSpec) performAssignments(c *Cluster) error {

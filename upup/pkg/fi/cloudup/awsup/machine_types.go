@@ -239,6 +239,71 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks: nil,
 	},
 
+	// cc2 family
+	{
+		Name:           "cc2.8xlarge",
+		MemoryGB:       60.5,
+		ECU:            88,
+		Cores:          32,
+		EphemeralDisks: []int{840, 840, 840, 840},
+	},
+
+	// cg1 family
+	{
+		Name:           "cg1.4xlarge",
+		MemoryGB:       22.5,
+		ECU:            33.5,
+		Cores:          16,
+		EphemeralDisks: []int{840, 840},
+	},
+
+	// cr1 family
+	{
+		Name:           "cr1.8xlarge",
+		MemoryGB:       244.0,
+		ECU:            88,
+		Cores:          32,
+		EphemeralDisks: []int{120, 120},
+	},
+
+	// d2 family
+	{
+		Name:           "d2.xlarge",
+		MemoryGB:       30.5,
+		ECU:            14,
+		Cores:          4,
+		EphemeralDisks: []int{2000, 2000, 2000},
+	},
+	{
+		Name:           "d2.2xlarge",
+		MemoryGB:       61.0,
+		ECU:            28,
+		Cores:          8,
+		EphemeralDisks: []int{2000, 2000, 2000, 2000, 2000, 2000},
+	},
+	{
+		Name:     "d2.4xlarge",
+		MemoryGB: 122.0,
+		ECU:      56,
+		Cores:    16,
+		EphemeralDisks: []int{
+			2000, 2000, 2000, 2000, 2000, 2000,
+			2000, 2000, 2000, 2000, 2000, 2000,
+		},
+	},
+	{
+		Name:     "d2.8xlarge",
+		MemoryGB: 244.0,
+		ECU:      116,
+		Cores:    36,
+		EphemeralDisks: []int{
+			2000, 2000, 2000, 2000, 2000, 2000,
+			2000, 2000, 2000, 2000, 2000, 2000,
+			2000, 2000, 2000, 2000, 2000, 2000,
+			2000, 2000, 2000, 2000, 2000, 2000,
+		},
+	},
+
 	// g2 family
 	{
 		Name:           "g2.2xlarge",
@@ -253,6 +318,15 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            104,
 		Cores:          32,
 		EphemeralDisks: []int{120, 120},
+	},
+
+	// hi1 family
+	{
+		Name:           "hi1.4xlarge",
+		MemoryGB:       60.5,
+		ECU:            35,
+		Cores:          16,
+		EphemeralDisks: []int{1024, 1024},
 	},
 
 	// i2 family

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	"io/ioutil"
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -15,24 +16,25 @@ import (
 )
 
 type CreateClusterCmd struct {
-	Yes                 bool
-	Target              string
-	Models              string
-	Cloud               string
-	Zones               string
-	MasterZones         string
-	NodeSize            string
-	MasterSize          string
-	NodeCount           int
-	Project             string
-	KubernetesVersion   string
-	OutDir              string
-	Image               string
-	SSHPublicKey        string
-	VPCID               string
-	NetworkCIDR         string
-	DNSZone             string
-	AdminAccess         string
+	Yes               bool
+	Target            string
+	Models            string
+	Cloud             string
+	Zones             string
+	MasterZones       string
+	NodeSize          string
+	MasterSize        string
+	NodeCount         int
+	Project           string
+	KubernetesVersion string
+	OutDir            string
+	Image             string
+	SSHPublicKey      string
+	VPCID             string
+	NetworkCIDR       string
+	DNSZone           string
+	AdminAccess       string
+	Networking        string
 	NoAssociatePublicIP bool
 }
 
@@ -78,6 +80,8 @@ func init() {
 
 	cmd.Flags().StringVar(&createCluster.Image, "image", "", "Image to use")
 
+	cmd.Flags().StringVar(&createCluster.Networking, "networking", "classic", "Networking mode to use.  kubenet, classic, external.  This currently defaults to classic, but will likely default to kubenet soon.")
+
 	cmd.Flags().StringVar(&createCluster.DNSZone, "dns-zone", "", "DNS hosted zone to use (defaults to last two components of cluster name)")
 	cmd.Flags().StringVar(&createCluster.OutDir, "out", "", "Path to write any local output")
 	cmd.Flags().StringVar(&createCluster.AdminAccess, "admin-access", "", "Restrict access to admin endpoints (SSH, HTTPS) to this CIDR.  If not set, access will not be restricted by IP.")
@@ -93,15 +97,16 @@ func (c *CreateClusterCmd) Run(args []string) error {
 
 	isDryrun := false
 	// direct requires --yes (others do not, because they don't make changes)
+	targetName := c.Target
 	if c.Target == cloudup.TargetDirect {
 		if !c.Yes {
 			isDryrun = true
-			c.Target = cloudup.TargetDryRun
+			targetName = cloudup.TargetDryRun
 		}
 	}
 	if c.Target == cloudup.TargetDryRun {
 		isDryrun = true
-		c.Target = cloudup.TargetDryRun
+		targetName = cloudup.TargetDryRun
 	}
 
 	clusterName := rootCommand.clusterName
@@ -132,6 +137,17 @@ func (c *CreateClusterCmd) Run(args []string) error {
 	cluster = &api.Cluster{}
 	var instanceGroups []*api.InstanceGroup
 
+	cluster.Spec.Networking = &api.NetworkingSpec{}
+	switch c.Networking {
+	case "classic":
+		cluster.Spec.Networking.Classic = &api.ClassicNetworkingSpec{}
+	case "kubenet":
+		cluster.Spec.Networking.Kubenet = &api.KubenetNetworkingSpec{}
+	case "external":
+		cluster.Spec.Networking.External = &api.ExternalNetworkingSpec{}
+	default:
+		return fmt.Errorf("unknown networking mode %q", c.Networking)
+	}
 	if c.Zones != "" {
 		existingZones := make(map[string]*api.ClusterZoneSpec)
 		for _, zone := range cluster.Spec.Zones {
@@ -304,8 +320,14 @@ func (c *CreateClusterCmd) Run(args []string) error {
 		}
 	}
 
+	sshPublicKeys := make(map[string][]byte)
 	if c.SSHPublicKey != "" {
 		c.SSHPublicKey = utils.ExpandPath(c.SSHPublicKey)
+		authorized, err := ioutil.ReadFile(c.SSHPublicKey)
+		if err != nil {
+			return fmt.Errorf("error reading SSH key file %q: %v", c.SSHPublicKey, err)
+		}
+		sshPublicKeys[fi.SecretNameSSHPrimary] = authorized
 	}
 
 	if c.AdminAccess != "" {
@@ -357,6 +379,14 @@ func (c *CreateClusterCmd) Run(args []string) error {
 		return fmt.Errorf("error writing completed cluster spec: %v", err)
 	}
 
+	for k, data := range sshPublicKeys {
+		keyStore := clusterRegistry.KeyStore(cluster.Name)
+		err = keyStore.AddSSHPublicKey(k, data)
+		if err != nil {
+			return fmt.Errorf("error addding SSH public key: %v", err)
+		}
+	}
+
 	if isDryrun {
 		fmt.Println("Previewing changes that will be made:\n")
 	}
@@ -366,8 +396,7 @@ func (c *CreateClusterCmd) Run(args []string) error {
 		InstanceGroups:  fullInstanceGroups,
 		Models:          strings.Split(c.Models, ","),
 		ClusterRegistry: clusterRegistry,
-		Target:          c.Target,
-		SSHPublicKey:    c.SSHPublicKey,
+		TargetName:      targetName,
 		OutDir:          c.OutDir,
 		DryRun:          isDryrun,
 	}
@@ -399,6 +428,7 @@ func (c *CreateClusterCmd) Run(args []string) error {
 		x := &kutil.CreateKubecfg{
 			ClusterName:      cluster.Name,
 			KeyStore:         clusterRegistry.KeyStore(cluster.Name),
+			SecretStore:      clusterRegistry.SecretStore(cluster.Name),
 			MasterPublicName: cluster.Spec.MasterPublicName,
 		}
 		defer x.Close()

@@ -29,7 +29,7 @@ func (c *VFSContext) ReadFile(location string) ([]byte, error) {
 		// Handle our special case schemas
 		u, err := url.Parse(location)
 		if err != nil {
-			return nil, fmt.Errorf("error parsing location %q - not a valid URI")
+			return nil, fmt.Errorf("error parsing location %q - not a valid URI", location)
 		}
 
 		switch u.Scheme {

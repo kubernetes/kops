@@ -1,21 +1,27 @@
-all: gocode
+all: kops
 
 DOCKER_REGISTRY=gcr.io/must-override/
 S3_BUCKET=s3://must-override/
 GOPATH_1ST=$(shell echo ${GOPATH} | cut -d : -f 1)
 
 ifndef VERSION
-  VERSION := git-$(shell git rev-parse --short HEAD)
+	VERSION := git-$(shell git rev-parse --short HEAD)
 endif
 
-gocode:
-	GO15VENDOREXPERIMENT=1 go install -ldflags "-X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/...
+kops:
+	GO15VENDOREXPERIMENT=1 go install -ldflags "-X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/kops/...
 	ln -sfn ${GOPATH_1ST}/src/k8s.io/kops/upup/models/ ${GOPATH_1ST}/bin/models
 
-# Build in a docker container with golang 1.5
-# Used to test we have not broken 1.5
+# Build in a docker container with golang 1.X
+# Used to test we have not broken 1.X
 check-builds-in-go15:
 	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.5 make -f /go/src/k8s.io/kops/Makefile gocode
+
+check-builds-in-go16:
+	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.6 make -f /go/src/k8s.io/kops/Makefile gocode
+
+check-builds-in-go17:
+	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.7 make -f /go/src/k8s.io/kops/Makefile gocode
 
 codegen:
 	GO15VENDOREXPERIMENT=1 go install k8s.io/kops/upup/tools/generators/...
@@ -38,7 +44,7 @@ gofmt:
 	gofmt -w -s dns-controller/cmd
 	gofmt -w -s dns-controller/pkg
 
-kops-tar: gocode
+kops-tar: kops
 	rm -rf .build/kops/tar
 	mkdir -p .build/kops/tar/kops/
 	cp ${GOPATH_1ST}/bin/kops .build/kops/tar/kops/kops
@@ -46,15 +52,6 @@ kops-tar: gocode
 	tar czvf .build/kops.tar.gz -C .build/kops/tar/ .
 	tar tvf .build/kops.tar.gz
 	(sha1sum .build/kops.tar.gz | cut -d' ' -f1) > .build/kops.tar.gz.sha1
-
-nodeup-tar: gocode
-	rm -rf .build/nodeup/tar
-	mkdir -p .build/nodeup/tar/nodeup/root
-	cp ${GOPATH_1ST}/bin/nodeup .build/nodeup/tar/nodeup/root
-	cp -r upup/models/nodeup/ .build/nodeup/tar/nodeup/root/model/
-	tar czvf .build/nodeup.tar.gz -C .build/nodeup/tar/ .
-	tar tvf .build/nodeup.tar.gz
-	(sha1sum .build/nodeup.tar.gz | cut -d' ' -f1) > .build/nodeup.tar.gz.sha1 
 
 upload: nodeup-tar kops-tar
 	rm -rf .build/s3
@@ -101,6 +98,27 @@ protokube-push: protokube-image
 
 
 
+nodeup: nodeup-tar
+
+nodeup-gocode:
+	go install -ldflags "-X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/nodeup
+
+nodeup-builder-image:
+	docker build -f images/nodeup-builder/Dockerfile -t nodeup-builder .
+
+nodeup-build-in-docker: nodeup-builder-image
+	docker run -it -v `pwd`:/src nodeup-builder /onbuild.sh
+
+nodeup-tar: nodeup-build-in-docker
+	rm -rf .build/nodeup/tar
+	mkdir -p .build/nodeup/tar/nodeup/root
+	cp .build/artifacts/nodeup .build/nodeup/tar/nodeup/root
+	cp -r upup/models/nodeup/ .build/nodeup/tar/nodeup/root/model/
+	tar czvf .build/nodeup.tar.gz -C .build/nodeup/tar/ .
+	tar tvf .build/nodeup.tar.gz
+	(sha1sum .build/nodeup.tar.gz | cut -d' ' -f1) > .build/nodeup.tar.gz.sha1
+
+
 
 dns-controller-gocode:
 	go install k8s.io/kops/dns-controller/cmd/dns-controller
@@ -121,4 +139,3 @@ dns-controller-push: dns-controller-image
 
 copydeps:
 	rsync -avz _vendor/ vendor/ --exclude vendor/  --exclude .git
-

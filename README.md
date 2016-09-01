@@ -15,6 +15,10 @@ Some of the more interesting features:
 
 ## Recent changes
 
+Improvements are being made almost daily, but bigger changes are described here (until we get to
+a more formal release process):
+
+* Reworked SSH keys and support for running CI builds [Aug 11 2016](CHANGES.md#aug-11-2016)
 * Create command was split into create and update [Jul 21 2016](CHANGES.md#jul-21-2016)
 
 ## Installation
@@ -133,38 +137,11 @@ Each file in the tree describes a Task.
 On the nodeup side, Tasks can manage files, systemd services, packages etc.
 On the `kops update cluster` side, Tasks manage cloud resources: instances, networks, disks etc.
 
-## Workaround for terraform bug
+## Generate a terraform configuration
 
-Terraform currently has a bug where it can't create AWS tags containing a dot.  Until this is fixed,
-you can't use terraform to build EC2 resources that are tagged with `k8s.io/...` tags.  Thankfully this is only
-the volumes, and it isn't the worst idea to build these separately anyway.
+Kops can also generate a terraform configuration, which you can then apply using terraform, to build a Kubernetes
+cluster using terraform.
 
-We divide the cloudup model into three parts:
-* models/config which contains all the options - this is run automatically by "create cluster"
-* models/proto which sets up the volumes and other data which would be hard to recover (e.g. likely keys & secrets in the near future)
-* models/cloudup which is the main cloud model for configuring everything else
+If you are using a version of terraform prior to 0.7, please read about the [workaround for earlier versions of terraform](docs/terraform.md).
 
-So you don't use terraform for the 'proto' phase (you can't anyway, because of the bug!):
-
-```
-export KOPS_STATE_STORE=s3://<somes3bucket>
-export NAME=<kubernetes.mydomain.com>
-${GOPATH}/bin/kops create cluster --v=0 --zones=us-east-1c ${NAME}
-${GOPATH}/bin/kops update cluster --v=0 ${NAME} --model=proto --yes
-```
-
-And then you can use terraform to do the remainder of the installation:
-
-```
-export CLUSTER_NAME=<kubernetes.mydomain.com>
-${GOPATH}/bin/kops update cluster --v=0 ${NAME} --model=cloudup --target=terraform
-```
-
-Then, to apply using terraform:
-
-```
-cd out/terraform
-
-terraform plan
-terraform apply
-```
+For more details, please read the [how to use terraform to create a Kubernetes cluster](docs/terraform.md)
