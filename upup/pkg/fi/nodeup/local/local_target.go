@@ -3,6 +3,7 @@ package local
 import "k8s.io/kops/upup/pkg/fi"
 
 type LocalTarget struct {
+	CacheDir string
 }
 
 var _ fi.Target = &LocalTarget{}

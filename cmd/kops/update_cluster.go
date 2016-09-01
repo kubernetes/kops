@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	"io/ioutil"
 	"k8s.io/kops/upup/pkg/api"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/upup/pkg/kutil"
+	"os"
 	"strings"
 )
 
@@ -39,7 +42,7 @@ func init() {
 	cmd.Flags().BoolVar(&updateCluster.Yes, "yes", false, "Actually create cloud resources")
 	cmd.Flags().StringVar(&updateCluster.Target, "target", "direct", "Target - direct, terraform")
 	cmd.Flags().StringVar(&updateCluster.Models, "model", "config,proto,cloudup", "Models to apply (separate multiple models with commas)")
-	cmd.Flags().StringVar(&updateCluster.SSHPublicKey, "ssh-public-key", "~/.ssh/id_rsa.pub", "SSH public key to use")
+	cmd.Flags().StringVar(&updateCluster.SSHPublicKey, "ssh-public-key", "", "SSH public key to use (deprecated: use kops create secret instead)")
 	cmd.Flags().StringVar(&updateCluster.OutDir, "out", "", "Path to write any local output")
 }
 
@@ -50,16 +53,18 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 	}
 
 	isDryrun := false
+	targetName := c.Target
+
 	// direct requires --yes (others do not, because they don't do anything!)
 	if c.Target == cloudup.TargetDirect {
 		if !c.Yes {
 			isDryrun = true
-			c.Target = cloudup.TargetDryRun
+			targetName = cloudup.TargetDryRun
 		}
 	}
 	if c.Target == cloudup.TargetDryRun {
 		isDryrun = true
-		c.Target = cloudup.TargetDryRun
+		targetName = cloudup.TargetDryRun
 	}
 
 	if c.OutDir == "" {
@@ -87,7 +92,21 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 	}
 
 	if c.SSHPublicKey != "" {
+		fmt.Fprintf(os.Stderr, "--ssh-public-key on update is deprecated - please use `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub` instead\n", cluster.Name)
+
 		c.SSHPublicKey = utils.ExpandPath(c.SSHPublicKey)
+		authorized, err := ioutil.ReadFile(c.SSHPublicKey)
+		if err != nil {
+			return fmt.Errorf("error reading SSH key file %q: %v", c.SSHPublicKey, err)
+		}
+		keyStore, err := rootCommand.KeyStore()
+		if err != nil {
+			return err
+		}
+		err = keyStore.AddSSHPublicKey(fi.SecretNameSSHPrimary, authorized)
+		if err != nil {
+			return fmt.Errorf("error addding SSH public key: %v", err)
+		}
 	}
 
 	strict := false
@@ -101,8 +120,7 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 		InstanceGroups:  fullInstanceGroups,
 		Models:          strings.Split(c.Models, ","),
 		ClusterRegistry: clusterRegistry,
-		Target:          c.Target,
-		SSHPublicKey:    c.SSHPublicKey,
+		TargetName:      targetName,
 		OutDir:          c.OutDir,
 		DryRun:          isDryrun,
 	}
@@ -112,12 +130,23 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 	}
 
 	if isDryrun {
-		fmt.Printf("Must specify --yes to apply changes\n")
+		target := applyCmd.Target.(*fi.DryRunTarget)
+		if target.HasChanges() {
+			fmt.Printf("Must specify --yes to apply changes\n")
+		} else {
+			fmt.Printf("No changes need to be applied\n")
+		}
 		return nil
 	}
 
 	// TODO: Only if not yet set?
 	if !isDryrun {
+		hasKubecfg, err := hasKubecfg(cluster.Name)
+		if err != nil {
+			glog.Warningf("error reading kubecfg: %v", err)
+			hasKubecfg = true
+		}
+
 		keyStore := clusterRegistry.KeyStore(cluster.Name)
 
 		kubecfgCert, err := keyStore.FindCert("kubecfg")
@@ -131,6 +160,7 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 			x := &kutil.CreateKubecfg{
 				ClusterName:      cluster.Name,
 				KeyStore:         keyStore,
+				SecretStore:      clusterRegistry.SecretStore(cluster.Name),
 				MasterPublicName: cluster.Spec.MasterPublicName,
 			}
 			defer x.Close()
@@ -142,7 +172,35 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 		} else {
 			glog.Infof("kubecfg cert not found; won't export kubecfg")
 		}
+
+		if !hasKubecfg {
+			// Assume initial creation
+			fmt.Printf("\n")
+			fmt.Printf("Cluster is starting.  It should be ready in a few minutes.\n")
+			fmt.Printf("\n")
+			fmt.Printf("Suggestions:\n")
+			fmt.Printf(" * list nodes: kubectl get nodes --show-labels\n")
+			fmt.Printf(" * ssh to the master: ssh -i ~/.ssh/id_rsa admin@%s\n", cluster.Spec.MasterPublicName)
+			fmt.Printf(" * read about installing addons: https://github.com/kubernetes/kops/blob/master/docs/addons.md\n")
+			fmt.Printf("\n")
+		}
 	}
 
 	return nil
+}
+
+func hasKubecfg(contextName string) (bool, error) {
+	kubectl := &kutil.Kubectl{}
+
+	config, err := kubectl.GetConfig(false)
+	if err != nil {
+		return false, fmt.Errorf("error getting config from kubectl: %v", err)
+	}
+
+	for _, context := range config.Contexts {
+		if context.Name == contextName {
+			return true, nil
+		}
+	}
+	return false, nil
 }

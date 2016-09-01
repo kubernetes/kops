@@ -13,8 +13,8 @@ import (
 	"time"
 )
 
-// UpgradeCluster performs an upgrade of a k8s cluster
-type UpgradeCluster struct {
+// ConvertKubeupCluster performs a conversion of a cluster that was imported from kube-up
+type ConvertKubeupCluster struct {
 	OldClusterName string
 	NewClusterName string
 	Cloud          fi.Cloud
@@ -25,7 +25,7 @@ type UpgradeCluster struct {
 	InstanceGroups []*api.InstanceGroup
 }
 
-func (x *UpgradeCluster) Upgrade() error {
+func (x *ConvertKubeupCluster) Upgrade() error {
 	awsCloud := x.Cloud.(*awsup.AWSCloud)
 
 	cluster := x.ClusterConfig
@@ -52,6 +52,11 @@ func (x *UpgradeCluster) Upgrade() error {
 	err := cluster.PerformAssignments()
 	if err != nil {
 		return fmt.Errorf("error populating cluster defaults: %v", err)
+	}
+
+	if cluster.Annotations != nil {
+		// Remove the management annotation for the new cluster
+		delete(cluster.Annotations, api.AnnotationNameManagement)
 	}
 
 	fullCluster, err := cloudup.PopulateClusterSpec(cluster, x.ClusterRegistry)

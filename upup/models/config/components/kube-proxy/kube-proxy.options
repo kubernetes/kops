@@ -7,6 +7,6 @@ KubeProxy:
   # requests of other per-node add-ons (e.g. fluentd).
   CPURequest: 20m
 
-  Image: gcr.io/google_containers/kube-proxy:v{{ .KubernetesVersion }}
+  Image: {{ Image "kube-proxy" }}
 
   Master: https://{{ .MasterInternalName }}

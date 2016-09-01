@@ -6,17 +6,29 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi/nodeup"
 	"os"
+	"time"
 )
 
+var (
+	// value overwritten during build. This can be used to resolve issues.
+	BuildVersion = "0.1"
+)
+
+const retryInterval = 30 * time.Second
+
 func main() {
+	fmt.Printf("nodeup version %s\n", BuildVersion)
+
 	flagModel := "model"
 	flag.StringVar(&flagModel, "model", flagModel, "directory to use as model for desired configuration")
 	var flagConf string
 	flag.StringVar(&flagConf, "conf", "node.yaml", "configuration location")
-	var flagAssetDir string
-	flag.StringVar(&flagAssetDir, "assets", "/var/cache/nodeup", "the location for the local asset cache")
+	var flagCacheDir string
+	flag.StringVar(&flagCacheDir, "cache", "/var/cache/nodeup", "the location for the local asset cache")
 	var flagRootFS string
 	flag.StringVar(&flagRootFS, "rootfs", "/", "the location of the machine root (for running in a container)")
+	var flagRetries int
+	flag.IntVar(&flagRetries, "retries", -1, "maximum number of retries on failure: -1 means retry forever")
 
 	dryrun := false
 	flag.BoolVar(&dryrun, "dryrun", false, "Don't create cloud resources; just show what would be done")
@@ -34,17 +46,32 @@ func main() {
 		glog.Exitf("--conf is required")
 	}
 
-	cmd := &nodeup.NodeUpCommand{
-		ConfigLocation: flagConf,
-		ModelDir:       flagModel,
-		Target:         target,
-		AssetDir:       flagAssetDir,
-		FSRoot:         flagRootFS,
+	retries := flagRetries
+
+	for {
+		cmd := &nodeup.NodeUpCommand{
+			ConfigLocation: flagConf,
+			ModelDir:       flagModel,
+			Target:         target,
+			CacheDir:       flagCacheDir,
+			FSRoot:         flagRootFS,
+		}
+		err := cmd.Run(os.Stdout)
+		if err == nil {
+			fmt.Printf("success")
+			os.Exit(0)
+		}
+
+		if retries == 0 {
+			glog.Exitf("error running nodeup: %v", err)
+			os.Exit(1)
+		}
+
+		if retries > 0 {
+			retries--
+		}
+
+		glog.Warningf("got error running nodeup (will retry in %s): %v", retryInterval, err)
+		time.Sleep(retryInterval)
 	}
-	err := cmd.Run(os.Stdout)
-	if err != nil {
-		glog.Exitf("error running nodeup: %v", err)
-		os.Exit(1)
-	}
-	fmt.Printf("success")
 }

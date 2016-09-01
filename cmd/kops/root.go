@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"encoding/json"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -114,7 +113,7 @@ func (c *RootCmd) ClusterName() string {
 	return c.clusterName
 }
 
-func readKubectlClusterConfig() (*kubectlClusterWithName, error) {
+func readKubectlClusterConfig() (*kutil.KubectlClusterWithName, error) {
 	kubectl := &kutil.Kubectl{}
 	context, err := kubectl.GetCurrentContext()
 	if err != nil {
@@ -122,18 +121,12 @@ func readKubectlClusterConfig() (*kubectlClusterWithName, error) {
 	}
 	glog.V(4).Infof("context = %q", context)
 
-	configString, err := kubectl.GetConfig(true, "json")
+	config, err := kubectl.GetConfig(true)
 	if err != nil {
 		return nil, fmt.Errorf("error getting current config from kubectl: %v", err)
 	}
-	glog.V(8).Infof("config = %q", configString)
 
-	config := &kubectlConfig{}
-	err = json.Unmarshal([]byte(configString), config)
-	if err != nil {
-		return nil, fmt.Errorf("cannot parse current config from kubectl: %v", err)
-	}
-
+	// Minify should have done this
 	if len(config.Clusters) != 1 {
 		return nil, fmt.Errorf("expected exactly one cluster in kubectl config, found %d", len(config.Clusters))
 	}
@@ -153,6 +146,10 @@ func (c *RootCmd) ClusterRegistry() (*api.ClusterRegistry, error) {
 	basePath, err := vfs.Context.BuildVfsPath(c.stateLocation)
 	if err != nil {
 		return nil, fmt.Errorf("error building state store path for %q: %v", c.stateLocation, err)
+	}
+
+	if !vfs.IsClusterReadable(basePath) {
+		return nil, fmt.Errorf("State store %q is not cloud-reachable - please use an S3 bucket", c.stateLocation)
 	}
 
 	clusterRegistry := api.NewClusterRegistry(basePath)
@@ -186,7 +183,7 @@ func (c *RootCmd) Cluster() (*api.ClusterRegistry, *api.Cluster, error) {
 }
 
 func (c *RootCmd) InstanceGroupRegistry() (*api.InstanceGroupRegistry, error) {
-	clusterStore, err := c.ClusterRegistry()
+	clusterRegistry, err := c.ClusterRegistry()
 	if err != nil {
 		return nil, err
 	}
@@ -196,11 +193,11 @@ func (c *RootCmd) InstanceGroupRegistry() (*api.InstanceGroupRegistry, error) {
 		return nil, fmt.Errorf("--name is required")
 	}
 
-	return clusterStore.InstanceGroups(clusterName)
+	return clusterRegistry.InstanceGroups(clusterName)
 }
 
 func (c *RootCmd) SecretStore() (fi.SecretStore, error) {
-	clusterStore, err := c.ClusterRegistry()
+	clusterRegistry, err := c.ClusterRegistry()
 	if err != nil {
 		return nil, err
 	}
@@ -210,11 +207,11 @@ func (c *RootCmd) SecretStore() (fi.SecretStore, error) {
 		return nil, fmt.Errorf("--name is required")
 	}
 
-	return clusterStore.SecretStore(clusterName), nil
+	return clusterRegistry.SecretStore(clusterName), nil
 }
 
 func (c *RootCmd) KeyStore() (fi.CAStore, error) {
-	clusterStore, err := c.ClusterRegistry()
+	clusterRegistry, err := c.ClusterRegistry()
 	if err != nil {
 		return nil, err
 	}
@@ -224,5 +221,5 @@ func (c *RootCmd) KeyStore() (fi.CAStore, error) {
 		return nil, fmt.Errorf("--name is required")
 	}
 
-	return clusterStore.KeyStore(clusterName), nil
+	return clusterRegistry.KeyStore(clusterName), nil
 }

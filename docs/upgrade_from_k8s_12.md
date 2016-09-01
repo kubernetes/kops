@@ -44,7 +44,7 @@ Now have a look at the cluster configuration, to make sure it looks right.  If i
 open an issue.
 
 ```
-kops edit cluster ${OLD_NAME}
+kops get cluster ${OLD_NAME} -oyaml
 ````
 
 ## Move resources to a new cluster
@@ -62,7 +62,7 @@ The upgrade procedure forces you to choose a new cluster name (e.g. `k8s.mydomai
 
 ```
 export NEW_NAME=k8s.mydomain.com
-kops upgrade cluster --newname ${NEW_NAME} --name ${OLD_NAME}
+kops toolbox convert-imported --newname ${NEW_NAME} --name ${OLD_NAME}
 ```
 
 If you now list the clusters, you should see both the old cluster & the new cluster
@@ -72,6 +72,14 @@ kops get clusters
 ```
 
 You can also list the instance groups: `kops get ig --name ${NEW_NAME}`
+
+## Import the SSH public key
+
+The SSH public key is not easily retrieved from the old cluster, so you must add it:
+
+```
+kops create secret --name ${NEW_NAME} sshpublickey admin -i ~/.ssh/id_rsa.pub
+```
 
 ## Bring up the new cluster
 
@@ -132,6 +140,10 @@ kubectl delete secret --namespace kube-system default-token-lhfkx
 Then restart the kube-dns pod so it picks up a valid secret:
 `kubectl delete pods --namespace kube-system --selector "k8s-app=kube-dns"`
 
+## Other fixes
+
+* If you're using a manually created ELB, the auto-scaling groups change, so you will need to reconfigure
+your ELBs to include the new auto-scaling group(s).
 
 ## Delete remaining resources of the old cluster
 

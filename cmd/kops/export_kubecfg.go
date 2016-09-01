@@ -54,6 +54,7 @@ func (c *ExportKubecfgCommand) Run(args []string) error {
 	x := &kutil.CreateKubecfg{
 		ClusterName:      clusterName,
 		KeyStore:         clusterRegistry.KeyStore(clusterName),
+		SecretStore:      clusterRegistry.SecretStore(cluster.Name),
 		MasterPublicName: master,
 	}
 	defer x.Close()

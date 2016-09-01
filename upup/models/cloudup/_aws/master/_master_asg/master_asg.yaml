@@ -2,7 +2,7 @@
 
 # ASG for master
 launchConfiguration/{{ $m.Name }}.masters.{{ ClusterName }}:
-  sshKey: sshKey/{{ ClusterName }}
+  sshKey: sshKey/{{ SSHKeyName }}
   securityGroups:
     - securityGroup/masters.{{ ClusterName }}
   iamInstanceProfile: iamInstanceProfile/masters.{{ ClusterName }}
