@@ -6,7 +6,6 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/hashing"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/upup/pkg/fi/vfs"
@@ -87,10 +86,6 @@ func PopulateClusterSpec(cluster *api.Cluster, clusterRegistry *api.ClusterRegis
 }
 
 func (c *populateClusterSpec) run() error {
-	// TODO: Make these configurable?
-	useMasterASG := true
-	useMasterLB := false
-
 	err := c.InputCluster.Validate(false)
 	if err != nil {
 		return err
@@ -170,8 +165,6 @@ func (c *populateClusterSpec) run() error {
 		return fmt.Errorf("ClusterRegistry is required")
 	}
 
-	tags := make(map[string]struct{})
-
 	keyStore := c.ClusterRegistry.KeyStore(cluster.Name)
 	// Always assume a dry run during this phase
 	keyStore.(*fi.VFSCAStore).DryRun = true
@@ -223,19 +216,6 @@ func (c *populateClusterSpec) run() error {
 		// We do support this...
 	}
 
-	if cluster.Spec.KubernetesVersion == "" {
-		stableURL := "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
-		b, err := vfs.Context.ReadFile(stableURL)
-		if err != nil {
-			return fmt.Errorf("--kubernetes-version not specified, and unable to download latest version from %q: %v", stableURL, err)
-		}
-		latestVersion := strings.TrimSpace(string(b))
-		glog.Infof("Using kubernetes latest stable version: %s", latestVersion)
-
-		cluster.Spec.KubernetesVersion = latestVersion
-		//return fmt.Errorf("Must either specify a KubernetesVersion (-kubernetes-version) or provide an asset with the release bundle")
-	}
-
 	// Normalize k8s version
 	versionWithoutV := strings.TrimSpace(cluster.Spec.KubernetesVersion)
 	if strings.HasPrefix(versionWithoutV, "v") {
@@ -246,45 +226,9 @@ func (c *populateClusterSpec) run() error {
 		cluster.Spec.KubernetesVersion = versionWithoutV
 	}
 
-	if useMasterASG {
-		tags["_master_asg"] = struct{}{}
-	} else {
-		tags["_master_single"] = struct{}{}
-	}
-
-	if useMasterLB {
-		tags["_master_lb"] = struct{}{}
-	} else {
-		tags["_not_master_lb"] = struct{}{}
-	}
-
-	if cluster.Spec.MasterPublicName != "" {
-		tags["_master_dns"] = struct{}{}
-	}
-
-	if fi.BoolValue(cluster.Spec.IsolateMasters) {
-		tags["_isolate_masters"] = struct{}{}
-	}
-
 	cloud, err := BuildCloud(cluster)
 	if err != nil {
 		return err
-	}
-
-	switch cluster.Spec.CloudProvider {
-	case "gce":
-		{
-			glog.Fatalf("GCE is (probably) not working currently - please ping @justinsb for cleanup")
-			tags["_gce"] = struct{}{}
-		}
-
-	case "aws":
-		{
-			tags["_aws"] = struct{}{}
-		}
-
-	default:
-		return fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
 	}
 
 	if cluster.Spec.DNSZone == "" {
@@ -294,6 +238,11 @@ func (c *populateClusterSpec) run() error {
 		}
 		glog.Infof("Defaulting DNS zone to: %s", dnsZone)
 		cluster.Spec.DNSZone = dnsZone
+	}
+
+	tags, err := buildClusterTags(cluster)
+	if err != nil {
+		return err
 	}
 
 	tf := &TemplateFunctions{
@@ -327,22 +276,6 @@ func (c *populateClusterSpec) run() error {
 	c.fullCluster = fullCluster
 
 	return nil
-}
-
-func findHash(url string) (*hashing.Hash, error) {
-	for _, ext := range []string{".sha1"} {
-		hashURL := url + ext
-		b, err := vfs.Context.ReadFile(hashURL)
-		if err != nil {
-			glog.Infof("error reading hash file %q: %v", hashURL, err)
-			continue
-		}
-		hashString := strings.TrimSpace(string(b))
-		glog.Infof("Found hash %q for %q", hashString, url)
-
-		return hashing.FromString(hashString)
-	}
-	return nil, fmt.Errorf("cannot determine hash for %v (have you specified a valid KubernetesVersion?)", url)
 }
 
 func (c *populateClusterSpec) assignSubnets(cluster *api.Cluster) error {

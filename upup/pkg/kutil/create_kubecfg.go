@@ -14,6 +14,7 @@ import (
 type CreateKubecfg struct {
 	ClusterName      string
 	KeyStore         fi.CAStore
+	SecretStore      fi.SecretStore
 	MasterPublicName string
 
 	tmpdir string
@@ -48,6 +49,17 @@ func (c *CreateKubecfg) WriteKubecfg() error {
 	}
 
 	b.KubeMasterIP = c.MasterPublicName
+
+	{
+		secret, err := c.SecretStore.FindSecret("kube")
+		if err != nil {
+			return err
+		}
+		if secret != nil {
+			b.KubeUser = "admin"
+			b.KubePassword = string(secret.Data)
+		}
+	}
 
 	err = b.WriteKubecfg()
 	if err != nil {

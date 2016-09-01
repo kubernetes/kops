@@ -56,7 +56,7 @@ func (c *DeleteClusterCmd) Run(args []string) error {
 
 	clusterName := rootCommand.clusterName
 	if clusterName == "" {
-		return fmt.Errorf("--name is required (when --external)")
+		return fmt.Errorf("--name is required (for safety)")
 	}
 
 	var cloud fi.Cloud

@@ -15,12 +15,13 @@ func buildFlags(options interface{}) (string, error) {
 
 	walker := func(path string, field *reflect.StructField, val reflect.Value) error {
 		if field == nil {
-			glog.V(4).Infof("not writing non-field: %s", path)
+			glog.V(8).Infof("ignoring non-field: %s", path)
 			return nil
 		}
 		tag := field.Tag.Get("flag")
 		if tag == "" {
 			glog.V(4).Infof("not writing field with no flag tag: %s", path)
+			// We want to descend - it could be a structure containing flags
 			return nil
 		}
 		if tag == "-" {
@@ -29,6 +30,8 @@ func buildFlags(options interface{}) (string, error) {
 		}
 		flagName := tag
 
+		// We do have to do this, even though the recursive walk will do it for us
+		// because when we descend we won't have `field` set
 		if val.Kind() == reflect.Ptr {
 			if val.IsNil() {
 				return nil
@@ -54,7 +57,8 @@ func buildFlags(options interface{}) (string, error) {
 		if flag != "" {
 			flags = append(flags, flag)
 		}
-		return nil
+		// Nothing more to do here
+		return utils.SkipReflection
 	}
 	err := utils.ReflectRecursive(reflect.ValueOf(options), walker)
 	if err != nil {

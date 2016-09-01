@@ -33,6 +33,10 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	var instanceGroups []*api.InstanceGroup
 
 	cluster := &api.Cluster{}
+	cluster.Annotations = make(map[string]string)
+
+	cluster.Annotations[api.AnnotationNameManagement] = api.AnnotationValueManagementImported
+
 	cluster.Spec.CloudProvider = string(fi.CloudProviderAWS)
 	cluster.Name = clusterName
 
@@ -619,7 +623,7 @@ func GetInstanceUserData(cloud *awsup.AWSCloud, instanceID string) ([]byte, erro
 	request.Attribute = aws.String("userData")
 	response, err := cloud.EC2.DescribeInstanceAttribute(request)
 	if err != nil {
-		return nil, fmt.Errorf("error querying EC2 for user metadata for instance %q: %v", instanceID)
+		return nil, fmt.Errorf("error querying EC2 for user metadata for instance %q: %v", instanceID, err)
 	}
 	if response.UserData != nil {
 		b, err := base64.StdEncoding.DecodeString(aws.StringValue(response.UserData.Value))

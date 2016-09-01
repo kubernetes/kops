@@ -91,6 +91,7 @@ func reflectRecursive(path string, v reflect.Value, visitor visitorFunc) error {
 			f := v.Field(i)
 
 			childPath := path + "." + structField.Name
+			// TODO: I think we are double visiting here; we should instead pass down structField into reflectRecursive
 			err := visitor(childPath, &structField, f)
 			if err != nil && err != SkipReflection {
 				return err

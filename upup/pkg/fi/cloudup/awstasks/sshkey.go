@@ -79,30 +79,28 @@ func (e *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 	return actual, nil
 }
 
-// computeAWSKeyFingerprint computes the AWS-specific fingerprint of the SSH public key
-func computeAWSKeyFingerprint(publicKey string) (string, error) {
+// parseSSHPublicKey parses the SSH public key string
+func parseSSHPublicKey(publicKey string) (ssh.PublicKey, error) {
 	tokens := strings.Fields(publicKey)
 	if len(tokens) < 2 {
-		return "", fmt.Errorf("error parsing SSH public key: %q", publicKey)
+		return nil, fmt.Errorf("error parsing SSH public key: %q", publicKey)
 	}
 
 	sshPublicKeyBytes, err := base64.StdEncoding.DecodeString(tokens[1])
 	if len(tokens) < 2 {
-		return "", fmt.Errorf("error decoding SSH public key: %q", publicKey)
+		return nil, fmt.Errorf("error decoding SSH public key: %q", publicKey)
 	}
 
 	sshPublicKey, err := ssh.ParsePublicKey(sshPublicKeyBytes)
 	if err != nil {
-		return "", fmt.Errorf("error parsing SSH public key: %v", err)
+		return nil, fmt.Errorf("error parsing SSH public key: %v", err)
 	}
+	return sshPublicKey, nil
+}
 
-	der, err := toDER(sshPublicKey)
-	if err != nil {
-		return "", fmt.Errorf("error computing fingerprint for SSH public key: %v", err)
-	}
-	h := md5.Sum(der)
-	sshKeyFingerprint := fmt.Sprintf("%x", h)
-
+// colonSeparatedHex formats the byte slice SSH-fingerprint style: hex bytes separated by colons
+func colonSeparatedHex(data []byte) string {
+	sshKeyFingerprint := fmt.Sprintf("%x", data)
 	var colonSeparated bytes.Buffer
 	for i := 0; i < len(sshKeyFingerprint); i++ {
 		if (i%2) == 0 && i != 0 {
@@ -111,7 +109,34 @@ func computeAWSKeyFingerprint(publicKey string) (string, error) {
 		colonSeparated.WriteByte(sshKeyFingerprint[i])
 	}
 
-	return colonSeparated.String(), nil
+	return colonSeparated.String()
+}
+
+// computeAWSKeyFingerprint computes the AWS-specific fingerprint of the SSH public key
+func computeAWSKeyFingerprint(publicKey string) (string, error) {
+	sshPublicKey, err := parseSSHPublicKey(publicKey)
+	if err != nil {
+		return "", err
+	}
+
+	der, err := toDER(sshPublicKey)
+	if err != nil {
+		return "", fmt.Errorf("error computing fingerprint for SSH public key: %v", err)
+	}
+	h := md5.Sum(der)
+
+	return colonSeparatedHex(h[:]), nil
+}
+
+// ComputeOpenSSHKeyFingerprint computes the OpenSSH fingerprint of the SSH public key
+func ComputeOpenSSHKeyFingerprint(publicKey string) (string, error) {
+	sshPublicKey, err := parseSSHPublicKey(publicKey)
+	if err != nil {
+		return "", err
+	}
+
+	h := md5.Sum(sshPublicKey.Marshal())
+	return colonSeparatedHex(h[:]), nil
 }
 
 // toDER gets the DER encoding of the SSH public key
@@ -195,6 +220,7 @@ func (_ *SSHKey) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SSHKey) error {
 		e.KeyFingerprint = response.KeyFingerprint
 	}
 
+	// No tags on SSH public key
 	return nil //return output.AddAWSTags(cloud.Tags(), v, "vpc")
 }
 
@@ -204,7 +230,8 @@ type terraformSSHKey struct {
 }
 
 func (_ *SSHKey) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SSHKey) error {
-	publicKey, err := t.AddFile("aws_key_pair", *e.Name, "public_key", e.PublicKey)
+	tfName := strings.Replace(*e.Name, ":", "", -1)
+	publicKey, err := t.AddFile("aws_key_pair", tfName, "public_key", e.PublicKey)
 	if err != nil {
 		return fmt.Errorf("error rendering PublicKey: %v", err)
 	}
@@ -214,9 +241,10 @@ func (_ *SSHKey) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SS
 		PublicKey: publicKey,
 	}
 
-	return t.RenderResource("aws_key_pair", *e.Name, tf)
+	return t.RenderResource("aws_key_pair", tfName, tf)
 }
 
 func (e *SSHKey) TerraformLink() *terraform.Literal {
-	return terraform.LiteralProperty("aws_key_pair", *e.Name, "id")
+	tfName := strings.Replace(*e.Name, ":", "", -1)
+	return terraform.LiteralProperty("aws_key_pair", tfName, "id")
 }

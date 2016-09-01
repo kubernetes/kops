@@ -82,6 +82,7 @@ func (p *S3Path) WriteFile(data []byte) error {
 	request.Body = bytes.NewReader(data)
 	request.Bucket = aws.String(p.bucket)
 	request.Key = aws.String(p.key)
+	request.ServerSideEncryption = aws.String("AES256")
 
 	// We don't need Content-MD5: https://github.com/aws/aws-sdk-go/issues/208
 

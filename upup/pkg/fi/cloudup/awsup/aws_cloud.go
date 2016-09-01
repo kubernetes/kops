@@ -78,7 +78,7 @@ func (c *AWSCloud) Tags() map[string]string {
 func isTagsEventualConsistencyError(err error) bool {
 	if awsErr, ok := err.(awserr.Error); ok {
 		switch awsErr.Code() {
-		case "InvalidInstanceID.NotFound", "InvalidRouteTableID.NotFound", "InvalidVpcID.NotFound", "InvalidGroup.NotFound", "InvalidSubnetID.NotFound", "InvalidInternetGatewayID.NotFound":
+		case "InvalidInstanceID.NotFound", "InvalidRouteTableID.NotFound", "InvalidVpcID.NotFound", "InvalidGroup.NotFound", "InvalidSubnetID.NotFound", "InvalidInternetGatewayID.NotFound", "InvalidDhcpOptionsID.NotFound":
 			return true
 
 		default:
@@ -520,5 +520,5 @@ func (c *AWSCloud) FindDNSHostedZone(clusterDNSName string) (string, error) {
 		return id, nil
 	}
 
-	return "", fmt.Errorf("Found multiple hosted zones matching cluster %q; please specify the ID of the zone to use")
+	return "", fmt.Errorf("Found multiple hosted zones matching cluster %q; please specify the ID of the zone to use", clusterDNSName)
 }

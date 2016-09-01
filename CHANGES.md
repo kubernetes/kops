@@ -1,3 +1,20 @@
+## Aug 11 2016
+
+Reworked SSH keys and support for running CI builds
+
+* SSH keys are now stored as secrets.  `--ssh-public-key` will be created when you do `kops create cluster`.
+  You no longer need to specify a `--ssh-public-key` when you do an update, but if you do it will be imported.
+* An SSH public key must exist for AWS, if you do not have one you can import one with:
+  `kops create secret --name $CLUSTER_NAME sshpublickey admin -i ~/.ssh/id_rsa.pub`
+* For AWS, only a single SSH key can be used; you can delete extra keys with `kops delete secret`
+* To support changing SSH keys reliably, the name of the imported AWS SSH keypair will change to include
+  the OpenSSH key fingerprint.  Existing clusters will continue to work, but you will likely be prompted to
+  do a rolling update when you would otherwise not have to.  I suggest waiting till you next upgrade kubernetes.
+
+* Builds that are not published as Docker images can be run.  `kops` will pass a list of images in the NodeUp
+  configuration, and NodeUp will download and `docker load` these images.  For examples, see the
+  [testing tips](docs/testing.md)
+
 ## Jul 21 2016
 
 More rational model/UX - `kops create cluster` just creates spec, `kops update cluster` does real creation:

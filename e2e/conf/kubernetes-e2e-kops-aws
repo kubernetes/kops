@@ -1,0 +1,12 @@
+export KUBERNETES_PROVIDER="aws"
+
+export E2E_MIN_STARTUP_PODS="1"
+export MASTER_SIZE="m3.large"
+export NODE_SIZE="m3.large"
+export NUM_NODES="3"
+export GINKGO_TEST_ARGS="--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]"
+export GINKGO_PARALLEL="y"
+
+# Central only has 2 AZs, so we use it for the non-HA test
+export NODE_ZONES="eu-central-1a"
+export AWS_REGION="eu-central-1"

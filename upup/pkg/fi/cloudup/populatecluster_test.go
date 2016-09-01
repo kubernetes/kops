@@ -28,6 +28,26 @@ func buildMinimalCluster() *api.Cluster {
 	return c
 }
 
+func addEtcdClusters(c *api.Cluster) {
+	zones := sets.NewString()
+	for _, z := range c.Spec.Zones {
+		zones.Insert(z.Name)
+	}
+	etcdZones := zones.List()
+
+	for _, etcdCluster := range EtcdClusters {
+		etcd := &api.EtcdClusterSpec{}
+		etcd.Name = etcdCluster
+		for _, zone := range etcdZones {
+			m := &api.EtcdMemberSpec{}
+			m.Name = zone
+			m.Zone = zone
+			etcd.Members = append(etcd.Members, m)
+		}
+		c.Spec.EtcdClusters = append(c.Spec.EtcdClusters, etcd)
+	}
+}
+
 func TestPopulateCluster_Default_NoError(t *testing.T) {
 	c := buildMinimalCluster()
 
@@ -36,30 +56,82 @@ func TestPopulateCluster_Default_NoError(t *testing.T) {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
 
-	if len(c.Spec.EtcdClusters) == 0 {
-		zones := sets.NewString()
-		for _, z := range c.Spec.Zones {
-			zones.Insert(z.Name)
-		}
-		etcdZones := zones.List()
-
-		for _, etcdCluster := range EtcdClusters {
-			etcd := &api.EtcdClusterSpec{}
-			etcd.Name = etcdCluster
-			for _, zone := range etcdZones {
-				m := &api.EtcdMemberSpec{}
-				m.Name = zone
-				m.Zone = zone
-				etcd.Members = append(etcd.Members, m)
-			}
-			c.Spec.EtcdClusters = append(c.Spec.EtcdClusters, etcd)
-		}
-	}
+	addEtcdClusters(c)
 
 	registry := buildInmemoryClusterRegistry()
 	_, err = PopulateClusterSpec(c, registry)
 	if err != nil {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
+	}
+}
+
+func TestPopulateCluster_Docker_Spec(t *testing.T) {
+	c := buildMinimalCluster()
+	c.Spec.Docker = &api.DockerConfig{
+		MTU:              5678,
+		InsecureRegistry: "myregistry.com:1234",
+	}
+
+	err := c.PerformAssignments()
+	if err != nil {
+		t.Fatalf("error from PerformAssignments: %v", err)
+	}
+
+	addEtcdClusters(c)
+
+	registry := buildInmemoryClusterRegistry()
+	full, err := PopulateClusterSpec(c, registry)
+	if err != nil {
+		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
+	}
+
+	if full.Spec.Docker.MTU != 5678 {
+		t.Fatalf("Unexpected Docker MTU: %v", full.Spec.Docker.MTU)
+	}
+
+	if full.Spec.Docker.InsecureRegistry != "myregistry.com:1234" {
+		t.Fatalf("Unexpected Docker InsecureRegistry: %v", full.Spec.Docker.InsecureRegistry)
+	}
+
+	// Check default values not changed
+	if full.Spec.Docker.Bridge != "cbr0" {
+		t.Fatalf("Unexpected Docker Bridge: %v", full.Spec.Docker.Bridge)
+	}
+}
+
+func build(c *api.Cluster) (*api.Cluster, error) {
+	err := c.PerformAssignments()
+	if err != nil {
+		return nil, fmt.Errorf("error from PerformAssignments: %v", err)
+	}
+
+	addEtcdClusters(c)
+	registry := buildInmemoryClusterRegistry()
+	full, err := PopulateClusterSpec(c, registry)
+	if err != nil {
+		return nil, fmt.Errorf("Unexpected error from PopulateCluster: %v", err)
+	}
+	return full, nil
+}
+
+func TestPopulateCluster_Kubenet(t *testing.T) {
+	c := buildMinimalCluster()
+
+	full, err := build(c)
+	if err != nil {
+		t.Fatal("error during build: %v", err)
+	}
+
+	if full.Spec.Kubelet.NetworkPluginName != "kubenet" {
+		t.Fatalf("Unexpected NetworkPluginName: %v", full.Spec.Kubelet.NetworkPluginName)
+	}
+
+	if fi.BoolValue(full.Spec.Kubelet.ReconcileCIDR) != true {
+		t.Fatalf("Unexpected ReconcileCIDR: %v", full.Spec.Kubelet.ReconcileCIDR)
+	}
+
+	if fi.BoolValue(full.Spec.KubeControllerManager.ConfigureCloudRoutes) != true {
+		t.Fatalf("Unexpected ConfigureCloudRoutes: %v", full.Spec.KubeControllerManager.ConfigureCloudRoutes)
 	}
 }
 
@@ -77,25 +149,7 @@ func TestPopulateCluster_Custom_CIDR(t *testing.T) {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
 
-	if len(c.Spec.EtcdClusters) == 0 {
-		zones := sets.NewString()
-		for _, z := range c.Spec.Zones {
-			zones.Insert(z.Name)
-		}
-		etcdZones := zones.List()
-
-		for _, etcdCluster := range EtcdClusters {
-			etcd := &api.EtcdClusterSpec{}
-			etcd.Name = etcdCluster
-			for _, zone := range etcdZones {
-				m := &api.EtcdMemberSpec{}
-				m.Name = zone
-				m.Zone = zone
-				etcd.Members = append(etcd.Members, m)
-			}
-			c.Spec.EtcdClusters = append(c.Spec.EtcdClusters, etcd)
-		}
-	}
+	addEtcdClusters(c)
 
 	registry := buildInmemoryClusterRegistry()
 	full, err := PopulateClusterSpec(c, registry)
@@ -116,25 +170,7 @@ func TestPopulateCluster_IsolateMasters(t *testing.T) {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
 
-	if len(c.Spec.EtcdClusters) == 0 {
-		zones := sets.NewString()
-		for _, z := range c.Spec.Zones {
-			zones.Insert(z.Name)
-		}
-		etcdZones := zones.List()
-
-		for _, etcdCluster := range EtcdClusters {
-			etcd := &api.EtcdClusterSpec{}
-			etcd.Name = etcdCluster
-			for _, zone := range etcdZones {
-				m := &api.EtcdMemberSpec{}
-				m.Name = zone
-				m.Zone = zone
-				etcd.Members = append(etcd.Members, m)
-			}
-			c.Spec.EtcdClusters = append(c.Spec.EtcdClusters, etcd)
-		}
-	}
+	addEtcdClusters(c)
 
 	registry := buildInmemoryClusterRegistry()
 	full, err := PopulateClusterSpec(c, registry)
@@ -158,25 +194,7 @@ func TestPopulateCluster_IsolateMastersFalse(t *testing.T) {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
 
-	if len(c.Spec.EtcdClusters) == 0 {
-		zones := sets.NewString()
-		for _, z := range c.Spec.Zones {
-			zones.Insert(z.Name)
-		}
-		etcdZones := zones.List()
-
-		for _, etcdCluster := range EtcdClusters {
-			etcd := &api.EtcdClusterSpec{}
-			etcd.Name = etcdCluster
-			for _, zone := range etcdZones {
-				m := &api.EtcdMemberSpec{}
-				m.Name = zone
-				m.Zone = zone
-				etcd.Members = append(etcd.Members, m)
-			}
-			c.Spec.EtcdClusters = append(c.Spec.EtcdClusters, etcd)
-		}
-	}
+	addEtcdClusters(c)
 
 	registry := buildInmemoryClusterRegistry()
 	full, err := PopulateClusterSpec(c, registry)
