@@ -17,6 +17,8 @@ type EBSVolume struct {
 	AvailabilityZone *string
 	VolumeType       *string
 	SizeGB           *int64
+	KmsKeyId         *string
+	Encrypted        *bool
 	Tags             map[string]string
 }
 
@@ -76,6 +78,8 @@ func (e *EBSVolume) find(cloud *awsup.AWSCloud) (*EBSVolume, error) {
 		AvailabilityZone: v.AvailabilityZone,
 		VolumeType:       v.VolumeType,
 		SizeGB:           v.Size,
+		KmsKeyId:         v.KmsKeyId,
+		Encrypted:        v.Encrypted,
 		Name:             e.Name,
 	}
 
@@ -111,6 +115,8 @@ func (_ *EBSVolume) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EBSVolume) e
 			Size:             e.SizeGB,
 			AvailabilityZone: e.AvailabilityZone,
 			VolumeType:       e.VolumeType,
+			KmsKeyId:         e.KmsKeyId,
+			Encrypted:        e.Encrypted,
 		}
 
 		response, err := t.Cloud.EC2.CreateVolume(request)
@@ -128,6 +134,8 @@ type terraformVolume struct {
 	AvailabilityZone *string           `json:"availability_zone"`
 	Size             *int64            `json:"size"`
 	Type             *string           `json:"type"`
+	KmsKeyId         *string           `json:"kmsKeyId"`
+	Encrypted        *bool             `json:"encrypted"`
 	Tags             map[string]string `json:"tags,omitempty"`
 }
 
@@ -136,6 +144,8 @@ func (_ *EBSVolume) RenderTerraform(t *terraform.TerraformTarget, a, e, changes 
 		AvailabilityZone: e.AvailabilityZone,
 		Size:             e.SizeGB,
 		Type:             e.VolumeType,
+		KmsKeyId:         e.KmsKeyId,
+		Encrypted:        e.Encrypted,
 		Tags:             e.Tags,
 	}
 
