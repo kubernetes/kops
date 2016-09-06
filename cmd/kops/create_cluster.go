@@ -311,6 +311,9 @@ func (c *CreateClusterCmd) Run(args []string) error {
 				break
 			}
 		}
+		if cluster.Spec.CloudProvider == "" {
+			return fmt.Errorf("unable to infer CloudProvider from Zones (is there a typo in --zones?)")
+		}
 	}
 
 	sshPublicKeys := make(map[string][]byte)
