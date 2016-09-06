@@ -39,7 +39,7 @@
 	url = https://github.com/opencontainers/runc
 [submodule "_vendor/golang.org/x/oauth2"]
 	path = _vendor/golang.org/x/oauth2
-	url = https://github.com/golang/oauth2/
+	url = https://github.com/golang/oauth2
 [submodule "_vendor/github.com/imdario/mergo"]
 	path = _vendor/github.com/imdario/mergo
 	url = https://github.com/imdario/mergo
@@ -51,7 +51,7 @@
 	url = https://github.com/pborman/uuid
 [submodule "_vendor/golang.org/x/net"]
 	path = _vendor/golang.org/x/net
-	url = https://github.com/golang/net/
+	url = https://github.com/golang/net
 [submodule "_vendor/github.com/google/gofuzz"]
 	path = _vendor/github.com/google/gofuzz
 	url = https://github.com/google/gofuzz
@@ -144,7 +144,7 @@
 	url = https://github.com/hashicorp/hcl
 [submodule "_vendor/golang.org/x/crypto"]
 	path = _vendor/golang.org/x/crypto
-	url = https://github.com/golang/crypto/
+	url = https://github.com/golang/crypto
 [submodule "_vendor/github.com/fsnotify/fsnotify"]
 	path = _vendor/github.com/fsnotify/fsnotify
 	url = https://github.com/fsnotify/fsnotify
@@ -159,7 +159,7 @@
 	url = https://github.com/spf13/jwalterweatherman
 [submodule "_vendor/golang.org/x/sys"]
 	path = _vendor/golang.org/x/sys
-	url = https://github.com/golang/sys/
+	url = https://github.com/golang/sys
 [submodule "_vendor/github.com/BurntSushi/toml"]
 	path = _vendor/github.com/BurntSushi/toml
 	url = https://github.com/BurntSushi/toml
