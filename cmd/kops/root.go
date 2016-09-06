@@ -37,8 +37,7 @@ It allows you to create, destroy, upgrade and maintain clusters.`,
 func Execute() {
 	goflag.CommandLine.Parse([]string{})
 	if err := rootCommand.cobraCommand.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(-1)
+		exitWithError(err)
 	}
 }
 
