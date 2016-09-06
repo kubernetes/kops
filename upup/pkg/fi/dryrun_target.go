@@ -79,6 +79,27 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 			for _, r := range creates {
 				taskName := getTaskName(r.changes)
 				fmt.Fprintf(b, "  %s\t%s\n", taskName, IdForTask(taskMap, r.e))
+
+				changes := reflect.ValueOf(r.changes)
+				if changes.Kind() == reflect.Ptr && !changes.IsNil() {
+					changes = changes.Elem()
+				}
+
+				if changes.Kind() == reflect.Struct {
+					for i := 0; i < changes.NumField(); i++ {
+
+						field := changes.Field(i)
+
+						fieldName := changes.Type().Field(i).Name
+						fieldValue := ValueAsString(field)
+
+						// The field name is already printed above, no need to repeat it.
+						// Additionally, ignore any output that is not informative
+						if fieldName != "Name" && fieldValue != "<nil>" && fieldValue != "id:<nil>" && fieldValue != "<resource>" {
+							fmt.Fprintf(b, "  \t%s\t%s\n", fieldName, fieldValue)
+						}
+					}
+				}
 			}
 		}
 
