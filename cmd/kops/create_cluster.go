@@ -47,7 +47,7 @@ func init() {
 		Run: func(cmd *cobra.Command, args []string) {
 			err := createCluster.Run(args)
 			if err != nil {
-				glog.Exitf("%v", err)
+				exitWithError("%v", err)
 			}
 		},
 	}
@@ -209,8 +209,7 @@ func (c *CreateClusterCmd) Run(args []string) error {
 			}
 		} else {
 			// This is hard, because of the etcd cluster
-			glog.Errorf("Cannot change master-zones from the CLI")
-			os.Exit(1)
+			return fmt.Errorf("Cannot change master-zones from the CLI")
 		}
 	}
 
@@ -298,8 +297,7 @@ func (c *CreateClusterCmd) Run(args []string) error {
 	}
 
 	if cluster.SharedVPC() && cluster.Spec.NetworkCIDR == "" {
-		glog.Errorf("Must specify NetworkCIDR when VPC is set")
-		os.Exit(1)
+		return fmt.Errorf("Must specify NetworkCIDR when VPC is set")
 	}
 
 	if cluster.Spec.CloudProvider == "" {
