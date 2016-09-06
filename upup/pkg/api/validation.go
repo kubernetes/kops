@@ -156,7 +156,7 @@ func (c *Cluster) Validate(strict bool) error {
 	// Check CloudProvider
 	{
 		if c.Spec.CloudProvider == "" {
-			return fmt.Errorf("CloudProvider is not set")
+			return fmt.Errorf("unable to infer CloudProvider from Zones (is there a typo in --zones?)")
 		}
 		if c.Spec.Kubelet != nil && c.Spec.Kubelet.CloudProvider != "" && c.Spec.Kubelet.CloudProvider != c.Spec.CloudProvider {
 			return fmt.Errorf("Kubelet CloudProvider did not match cluster CloudProvider")
