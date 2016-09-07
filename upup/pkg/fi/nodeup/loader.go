@@ -9,7 +9,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"os"
+	"k8s.io/kops/upup/pkg/fi/vfs"
 	"strings"
 	"text/template"
 )
@@ -69,7 +69,7 @@ func ignoreHandler(i *loader.TreeWalkItem) error {
 	return nil
 }
 
-func (l *Loader) Build(baseDir string) (map[string]fi.Task, error) {
+func (l *Loader) Build(baseDir vfs.Path) (map[string]fi.Task, error) {
 	// First pass: load options
 	tw := &loader.TreeWalker{
 		DefaultHandler: ignoreHandler,
@@ -193,15 +193,11 @@ func (r *Loader) handleFile(i *loader.TreeWalkItem) error {
 
 		task, err = nodetasks.NewFileTask(i.Name, asset, destPath, i.Meta)
 	} else {
-		stat, err := os.Stat(i.Path)
-		if err != nil {
-			return fmt.Errorf("error doing stat on %q: %v", i.Path, err)
-		}
 		var contents fi.Resource
-		if stat.IsDir() {
+		if vfs.IsDirectory(i.Path) {
 			defaultFileType = nodetasks.FileType_Directory
 		} else {
-			contents = fi.NewFileResource(i.Path)
+			contents = fi.NewVFSResource(i.Path)
 		}
 		task, err = nodetasks.NewFileTask(i.Name, contents, "/"+i.RelativePath, i.Meta)
 	}

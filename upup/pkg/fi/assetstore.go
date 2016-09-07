@@ -60,7 +60,7 @@ type assetResource struct {
 var _ Resource = &assetResource{}
 var _ HasSource = &assetResource{}
 
-func (r *assetResource) Open() (io.ReadSeeker, error) {
+func (r *assetResource) Open() (io.Reader, error) {
 	return r.asset.resource.Open()
 }
 

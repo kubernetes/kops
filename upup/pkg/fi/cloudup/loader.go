@@ -10,8 +10,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kops/upup/pkg/fi/vfs"
 	"os"
-	"path"
 	"reflect"
 	"strings"
 	"text/template"
@@ -27,7 +27,7 @@ type Loader struct {
 
 	WorkDir string
 
-	ModelStore string
+	ModelStore vfs.Path
 
 	Tags              map[string]struct{}
 	TemplateFunctions template.FuncMap
@@ -51,7 +51,7 @@ type templateResource struct {
 var _ fi.Resource = &templateResource{}
 var _ fi.TemplateResource = &templateResource{}
 
-func (a *templateResource) Open() (io.ReadSeeker, error) {
+func (a *templateResource) Open() (io.Reader, error) {
 	var err error
 	result, err := a.loader.executeTemplate(a.key, a.template, a.args)
 	if err != nil {
@@ -127,7 +127,7 @@ func ignoreHandler(i *loader.TreeWalkItem) error {
 	return nil
 }
 
-func (l *Loader) BuildTasks(modelStore string, models []string) (map[string]fi.Task, error) {
+func (l *Loader) BuildTasks(modelStore vfs.Path, models []string) (map[string]fi.Task, error) {
 	// Second pass: load everything else
 	tw := &loader.TreeWalker{
 		DefaultHandler: l.objectHandler,
@@ -141,7 +141,7 @@ func (l *Loader) BuildTasks(modelStore string, models []string) (map[string]fi.T
 	}
 
 	for _, model := range models {
-		modelDir := path.Join(modelStore, model)
+		modelDir := modelStore.Join(model)
 		err := tw.Walk(modelDir)
 		if err != nil {
 			return nil, err
