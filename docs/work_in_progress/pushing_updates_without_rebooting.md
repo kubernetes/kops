@@ -31,18 +31,17 @@ cat <<'EOF' | ssh admin@${ip} 'sudo bash -s'
 #/bin/bash
 set -e
 set -x
-NODEUP_TAR_URL=https://kubeupv2.s3.amazonaws.com/nodeup/nodeup-1.3.tar.gz
-NODEUP_TAR=nodeup-1.3.tar.gz
+NODEUP_URL=https://kubeupv2.s3.amazonaws.com/kops/1.3/linux/amd64/nodeup
 
 INSTALL_DIR="/var/cache/kubernetes-install"
 mkdir -p ${INSTALL_DIR}  
 cd ${INSTALL_DIR}
 
-curl -f --ipv4 -Lo "${NODEUP_TAR}" --connect-timeout 20 --retry 6 --retry-delay 10 "${NODEUP_TAR_URL}"
 rm -rf nodeup
-tar zxf ${NODEUP_TAR}
+curl -f --ipv4 -Lo "nodeup" --connect-timeout 20 --retry 6 --retry-delay 10 "${NODEUP_URL}"
+chmod +x nodeup
 
-( cd nodeup/root; ./nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8 )
+( ./nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8 )
 EOF
 
 done

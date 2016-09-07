@@ -3,7 +3,7 @@ package loader
 import (
 	"fmt"
 	"github.com/golang/glog"
-	"io/ioutil"
+	"k8s.io/kops/upup/pkg/fi/vfs"
 	"os"
 	"path"
 	"strings"
@@ -19,7 +19,7 @@ type TreeWalker struct {
 type TreeWalkItem struct {
 	Context      string
 	Name         string
-	Path         string
+	Path         vfs.Path
 	RelativePath string
 	Meta         string
 	Tags         []string
@@ -34,7 +34,7 @@ func (i *TreeWalkItem) ReadString() (string, error) {
 }
 
 func (i *TreeWalkItem) ReadBytes() ([]byte, error) {
-	b, err := ioutil.ReadFile(i.Path)
+	b, err := i.Path.ReadFile()
 	if err != nil {
 		return nil, fmt.Errorf("error reading file %q: %v", i.Path, err)
 	}
@@ -47,7 +47,7 @@ func IsTag(name string) bool {
 	return len(name) != 0 && name[0] == '_'
 }
 
-func (t *TreeWalker) Walk(basedir string) error {
+func (t *TreeWalker) Walk(basedir vfs.Path) error {
 	i := &TreeWalkItem{
 		Context:      "",
 		Path:         basedir,
@@ -59,7 +59,7 @@ func (t *TreeWalker) Walk(basedir string) error {
 }
 
 func (t *TreeWalker) walkDirectory(parent *TreeWalkItem) error {
-	files, err := ioutil.ReadDir(parent.Path)
+	files, err := parent.Path.ReadDir()
 	if err != nil {
 		return fmt.Errorf("error reading directory %q: %v", parent.Path, err)
 	}
@@ -67,22 +67,22 @@ func (t *TreeWalker) walkDirectory(parent *TreeWalkItem) error {
 	for _, f := range files {
 		var err error
 
-		fileName := f.Name()
+		fileName := f.Base()
 
 		i := &TreeWalkItem{
 			Context:      parent.Context,
-			Path:         path.Join(parent.Path, fileName),
+			Path:         f,
 			RelativePath: path.Join(parent.RelativePath, fileName),
 			Name:         fileName,
 			Tags:         parent.Tags,
 		}
 
-		glog.V(4).Infof("visit %q", i.Path)
+		glog.V(4).Infof("visit %q", f)
 
 		hasMeta := false
 		{
-			metaPath := i.Path + ".meta"
-			metaBytes, err := ioutil.ReadFile(metaPath)
+			metaPath := parent.Path.Join(fileName + ".meta")
+			metaBytes, err := metaPath.ReadFile()
 			if err != nil {
 				if !os.IsNotExist(err) {
 					return fmt.Errorf("error reading file %q: %v", metaPath, err)
@@ -95,22 +95,22 @@ func (t *TreeWalker) walkDirectory(parent *TreeWalkItem) error {
 			}
 		}
 
-		if f.IsDir() {
+		if _, err := f.ReadDir(); err == nil {
 			if IsTag(fileName) {
 				// Only descend into the tag directory if we have the tag
 				_, found := t.Tags[fileName]
 				if !found {
-					glog.V(2).Infof("Skipping directory as tag not present: %q", i.Path)
+					glog.V(2).Infof("Skipping directory as tag not present: %q", f)
 					continue
 				} else {
 					i.Tags = append(i.Tags, fileName)
-					glog.V(2).Infof("Descending into directory, as tag is present: %q", i.Path)
+					glog.V(2).Infof("Descending into directory, as tag is present: %q", f)
 					err = t.walkDirectory(i)
 				}
 			} else if _, found := t.Contexts[fileName]; found {
 				// Entering a new context (mode of operation)
 				if parent.Context != "" {
-					return fmt.Errorf("found context %q inside context %q at %q", fileName, parent.Context, i.Path)
+					return fmt.Errorf("found context %q inside context %q at %q", fileName, parent.Context, f)
 				}
 				i.Context = fileName
 				i.RelativePath = ""
@@ -125,7 +125,7 @@ func (t *TreeWalker) walkDirectory(parent *TreeWalkItem) error {
 
 			// So that we can manage directories, we do not ignore directories which have a .meta file
 			if hasMeta {
-				glog.V(4).Infof("Found .meta file for directory %q; will process", i.Path)
+				glog.V(4).Infof("Found .meta file for directory %q; will process", f)
 			} else {
 				continue
 			}
@@ -134,9 +134,9 @@ func (t *TreeWalker) walkDirectory(parent *TreeWalkItem) error {
 		if strings.HasSuffix(fileName, ".meta") {
 			// We'll read it when we see the actual file
 			// But check the actual file is there
-			primaryPath := strings.TrimSuffix(i.Path, ".meta")
-			if _, err := os.Stat(primaryPath); os.IsNotExist(err) {
-				return fmt.Errorf("found .meta file without corresponding file: %q", i.Path)
+			primaryPath := strings.TrimSuffix(f.Base(), ".meta")
+			if _, err := parent.Path.Join(primaryPath).ReadFile(); os.IsNotExist(err) {
+				return fmt.Errorf("found .meta file without corresponding file: %q", f)
 			}
 
 			continue
@@ -157,7 +157,7 @@ func (t *TreeWalker) walkDirectory(parent *TreeWalkItem) error {
 
 		err = handler(i)
 		if err != nil {
-			return fmt.Errorf("error handling file %q: %v", i.Path, err)
+			return fmt.Errorf("error handling file %q: %v", f, err)
 		}
 	}
 

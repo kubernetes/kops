@@ -4,15 +4,13 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/upup/pkg/fi/vfs"
 	"net"
-	"os"
-	"os/exec"
-	"path"
 	"strings"
 	"text/template"
 )
@@ -25,7 +23,7 @@ type populateClusterSpec struct {
 	InputCluster *api.Cluster
 
 	// ModelStore is the location where models are found
-	ModelStore string
+	ModelStore vfs.Path
 	// Models is a list of cloudup models to apply
 	Models []string
 
@@ -36,32 +34,9 @@ type populateClusterSpec struct {
 	fullCluster *api.Cluster
 }
 
-func findModelStore() (string, error) {
-	executableLocation, err := exec.LookPath(os.Args[0])
-	if err != nil {
-		return "", fmt.Errorf("Cannot determine location of kops tool: %q.  Please report this problem!", os.Args[0])
-	}
-
-	var locations []string
-	locations = append(locations, path.Join(path.Dir(executableLocation), "models"))
-
-	gopath := os.Getenv("GOPATH")
-	locations = append(locations, path.Join(gopath, "src/k8s.io/kops/upup/models"))
-
-	for _, location := range locations {
-		_, err = os.Stat(location)
-		if err == nil {
-			return location, nil
-		}
-
-		if os.IsNotExist(err) {
-			continue
-		} else {
-			glog.Warningf("error accessing models directory %q: %v", location, err)
-		}
-	}
-
-	return "", fmt.Errorf("models directory not found at %q.  Please report this problem!", strings.Join(locations, ","))
+func findModelStore() (vfs.Path, error) {
+	p := models.NewAssetPath("")
+	return p, nil
 }
 
 // PopulateClusterSpec takes a user-specified cluster spec, and computes the full specification that should be set on the cluster.
