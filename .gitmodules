@@ -175,3 +175,6 @@
 [submodule "_vendor/gopkg.in/yaml.v2"]
 	path = _vendor/gopkg.in/yaml.v2
 	url = https://github.com/go-yaml/yaml
+[submodule "_vendor/github.com/jteeuwen/go-bindata"]
+	path = _vendor/github.com/jteeuwen/go-bindata
+	url = https://github.com/jteeuwen/go-bindata
