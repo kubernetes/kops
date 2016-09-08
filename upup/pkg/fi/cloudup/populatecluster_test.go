@@ -41,7 +41,7 @@ func addEtcdClusters(c *api.Cluster) {
 		for _, zone := range etcdZones {
 			m := &api.EtcdMemberSpec{}
 			m.Name = zone
-			m.Zone = zone
+			m.Zone = fi.String(zone)
 			etcd.Members = append(etcd.Members, m)
 		}
 		c.Spec.EtcdClusters = append(c.Spec.EtcdClusters, etcd)
@@ -68,7 +68,7 @@ func TestPopulateCluster_Default_NoError(t *testing.T) {
 func TestPopulateCluster_Docker_Spec(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.Docker = &api.DockerConfig{
-		MTU:              5678,
+		MTU:              fi.Int(5678),
 		InsecureRegistry: "myregistry.com:1234",
 	}
 
@@ -85,17 +85,12 @@ func TestPopulateCluster_Docker_Spec(t *testing.T) {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}
 
-	if full.Spec.Docker.MTU != 5678 {
+	if fi.IntValue(full.Spec.Docker.MTU) != 5678 {
 		t.Fatalf("Unexpected Docker MTU: %v", full.Spec.Docker.MTU)
 	}
 
 	if full.Spec.Docker.InsecureRegistry != "myregistry.com:1234" {
 		t.Fatalf("Unexpected Docker InsecureRegistry: %v", full.Spec.Docker.InsecureRegistry)
-	}
-
-	// Check default values not changed
-	if full.Spec.Docker.Bridge != "cbr0" {
-		t.Fatalf("Unexpected Docker Bridge: %v", full.Spec.Docker.Bridge)
 	}
 }
 
