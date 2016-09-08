@@ -33,14 +33,19 @@ func init() {
 	cmd.Flags().BoolVar(&rollingupdateCluster.Force, "force", false, "Force rolling update, even if no changes")
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
-		err := rollingupdateCluster.Run()
+		err := rollingupdateCluster.Run(args)
 		if err != nil {
 			exitWithError(err)
 		}
 	}
 }
 
-func (c *RollingUpdateClusterCmd) Run() error {
+func (c *RollingUpdateClusterCmd) Run(args []string) error {
+	err := rootCommand.ProcessArgs(args)
+	if err != nil {
+		return err
+	}
+
 	_, cluster, err := rootCommand.Cluster()
 	if err != nil {
 		return err
