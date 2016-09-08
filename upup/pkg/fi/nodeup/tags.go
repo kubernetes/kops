@@ -12,6 +12,21 @@ import (
 // FindOSTags infers tags from the current distro
 // We will likely remove this when everything is containerized
 func FindOSTags(rootfs string) ([]string, error) {
+	// Ubuntu has /etc/lsb-release (and /etc/debian_version)
+	lsbRelease, err := ioutil.ReadFile(path.Join(rootfs, "etc/lsb-release"))
+	if err == nil {
+		for _, line := range strings.Split(string(lsbRelease), "\n") {
+			line = strings.TrimSpace(line)
+			if line == "DISTRIB_CODENAME=xenial" {
+				return []string{"_xenial", "_debian_family", "_systemd"}, nil
+			}
+		}
+		glog.Warningf("unhandled lsb-release info %q", string(lsbRelease))
+	} else if !os.IsNotExist(err) {
+		glog.Warningf("error reading /etc/lsb-release: %v", err)
+	}
+
+	// Debian has /etc/debian_version
 	debianVersionBytes, err := ioutil.ReadFile(path.Join(rootfs, "etc/debian_version"))
 	if err == nil {
 		debianVersion := strings.TrimSpace(string(debianVersionBytes))
@@ -21,8 +36,9 @@ func FindOSTags(rootfs string) ([]string, error) {
 			return nil, fmt.Errorf("unhandled debian version %q", debianVersion)
 		}
 	} else if !os.IsNotExist(err) {
-		glog.Infof("error reading /etc/debian_version: %v", err)
+		glog.Warningf("error reading /etc/debian_version: %v", err)
 	}
+
 	return nil, fmt.Errorf("cannot identify distro")
 }
 

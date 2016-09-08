@@ -11,7 +11,9 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"reflect"
 	"strings"
+	"sync"
 )
 
 type Package struct {
@@ -21,6 +23,9 @@ type Package struct {
 	Source       *string `json:"source"`
 	Hash         *string `json:"hash"`
 	PreventStart *bool   `json:"preventStart"`
+
+	// Healthy is true if the package installation did not fail
+	Healthy *bool `json:"healthy"`
 }
 
 const (
@@ -29,16 +34,37 @@ const (
 
 var _ fi.HasDependencies = &Package{}
 
+// GetDependencies computes dependencies for the package task
 func (p *Package) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	var deps []fi.Task
+
+	// UpdatePackages before we install any packages
 	for _, v := range tasks {
 		if _, ok := v.(*UpdatePackages); ok {
 			deps = append(deps, v)
 		}
 	}
+
+	// If this package is a bare deb, install it after OS managed packages
+	if !p.isOSPackage() {
+		for _, v := range tasks {
+			if vp, ok := v.(*Package); ok {
+				if vp.isOSPackage() {
+					deps = append(deps, v)
+				}
+			}
+		}
+	}
+
 	return deps
 }
 
+// isOSPackage returns true if this is an OS provided package (as opposed to a bare .deb, for example)
+func (p *Package) isOSPackage() bool {
+	return fi.StringValue(p.Source) == ""
+}
+
+// String returns a string representation, implementing the Stringer interface
 func (p *Package) String() string {
 	return fmt.Sprintf("Package: %s", p.Name)
 }
@@ -51,6 +77,12 @@ func NewPackage(name string, contents string, meta string) (fi.Task, error) {
 			return nil, fmt.Errorf("error parsing json for package %q: %v", name, err)
 		}
 	}
+
+	// Default values: we want to install a package so that it is healthy
+	if p.Healthy == nil {
+		p.Healthy = fi.Bool(true)
+	}
+
 	return p, nil
 }
 
@@ -69,6 +101,7 @@ func (e *Package) Find(c *fi.Context) (*Package, error) {
 	}
 
 	installed := false
+	var healthy *bool
 	installedVersion := ""
 	for _, line := range strings.Split(string(output), "\n") {
 		if line == "" {
@@ -86,6 +119,11 @@ func (e *Package) Find(c *fi.Context) (*Package, error) {
 		case "ii":
 			installed = true
 			installedVersion = version
+			healthy = fi.Bool(true)
+		case "iF":
+			installed = true
+			installedVersion = version
+			healthy = fi.Bool(false)
 		case "rc":
 			// removed
 			installed = false
@@ -104,6 +142,7 @@ func (e *Package) Find(c *fi.Context) (*Package, error) {
 	return &Package{
 		Name:    e.Name,
 		Version: fi.String(installedVersion),
+		Healthy: healthy,
 	}, nil
 }
 
@@ -115,8 +154,15 @@ func (s *Package) CheckChanges(a, e, changes *Package) error {
 	return nil
 }
 
+// packageManagerLock is a simple lock that prevents concurrent package manager operations
+// It just avoids unnecessary failures from running e.g. concurrent apt-get installs
+var packageManagerLock sync.Mutex
+
 func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) error {
-	if changes.Version != nil {
+	packageManagerLock.Lock()
+	defer packageManagerLock.Unlock()
+
+	if a == nil || changes.Version != nil {
 		glog.Infof("Installing package %q", e.Name)
 
 		if e.Source != nil {
@@ -155,6 +201,22 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 			if err != nil {
 				return fmt.Errorf("error installing package %q: %v: %s", e.Name, err, string(output))
 			}
+		}
+	} else {
+		if changes.Healthy != nil {
+			args := []string{"dpkg", "--configure", "-a"}
+			glog.Infof("package is not healthy; runnning command %s", args)
+			cmd := exec.Command(args[0], args[1:]...)
+			output, err := cmd.CombinedOutput()
+			if err != nil {
+				return fmt.Errorf("error running `dpkg --configure -a`: %v: %s", err, string(output))
+			}
+
+			changes.Healthy = nil
+		}
+
+		if !reflect.DeepEqual(changes, &Package{}) {
+			glog.Warningf("cannot apply package changes for %q: %v", e.Name, changes)
 		}
 	}
 
