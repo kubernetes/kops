@@ -11,7 +11,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kubernetes/pkg/util/sets"
-	"os"
 	"strings"
 )
 
@@ -47,7 +46,7 @@ func init() {
 		Run: func(cmd *cobra.Command, args []string) {
 			err := createCluster.Run(args)
 			if err != nil {
-				exitWithError("%v", err)
+				exitWithError(err)
 			}
 		},
 	}
@@ -228,7 +227,7 @@ func (c *CreateClusterCmd) Run(args []string) error {
 			for _, zone := range etcdZones {
 				m := &api.EtcdMemberSpec{}
 				m.Name = zone
-				m.Zone = zone
+				m.Zone = fi.String(zone)
 				etcd.Members = append(etcd.Members, m)
 			}
 			cluster.Spec.EtcdClusters = append(cluster.Spec.EtcdClusters, etcd)
