@@ -240,13 +240,13 @@ type EtcdClusterSpec struct {
 
 type EtcdMemberSpec struct {
 	// Name is the name of the member within the etcd cluster
-	Name            string `json:"name,omitempty"`
-	Zone            string `json:"zone,omitempty"`
+	Name string  `json:"name,omitempty"`
+	Zone *string `json:"zone,omitempty"`
 
-	VolumeType      string `json:"volumeType,omitempty"`
-	VolumeSize      int    `json:"volumeSize,omitempty"`
-	KmsKeyId        string `json:"kmsKeyId,omitempty"`
-	EncryptedVolume bool   `json:"encryptedVolume,omitempty"`
+	VolumeType      *string `json:"volumeType,omitempty"`
+	VolumeSize      *int    `json:"volumeSize,omitempty"`
+	KmsKeyId        *string `json:"kmsKeyId,omitempty"`
+	EncryptedVolume *bool   `json:"encryptedVolume,omitempty"`
 }
 
 type ClusterZoneSpec struct {

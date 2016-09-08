@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/util/validation"
 	"net"
 	"net/url"
@@ -255,7 +256,7 @@ func (c *Cluster) Validate(strict bool) error {
 				if m.Name == "" {
 					return fmt.Errorf("EtcdMember did not have Name in cluster %q", etcd.Name)
 				}
-				if m.Zone == "" {
+				if fi.StringValue(m.Zone) == "" {
 					return fmt.Errorf("EtcdMember did not have Zone in cluster %q", etcd.Name)
 				}
 			}
