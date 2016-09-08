@@ -10,7 +10,7 @@ ifndef VERSION
   VERSION := git-$(shell git rev-parse --short HEAD)
 endif
 
-kops:
+kops: gobindata
 	GO15VENDOREXPERIMENT=1 go install -ldflags "-X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/kops/...
 
 gobindata:
