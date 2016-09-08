@@ -6,7 +6,9 @@ ebsVolume/{{$m.Name}}.etcd-{{$etcd.Name}}.{{ ClusterName }}:
   availabilityZone: {{ $m.Zone }}
   sizeGB: {{ or $m.VolumeSize 20 }}
   volumeType: {{ or $m.VolumeType "gp2" }}
+{{ if $m.KmsKeyId }}
   kmsKeyId: {{ $m.KmsKeyId }}
+{{ end }}
   encrypted: {{ or $m.EncryptedVolume false }}
   tags:
   {{ range $k, $v := EtcdClusterMemberTags $etcd $m }}

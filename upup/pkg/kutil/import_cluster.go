@@ -312,7 +312,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 		for _, az := range masterGroup.Spec.Zones {
 			etcdCluster.Members = append(etcdCluster.Members, &api.EtcdMemberSpec{
 				Name: az,
-				Zone: az,
+				Zone: fi.String(az),
 			})
 		}
 		cluster.Spec.EtcdClusters = append(cluster.Spec.EtcdClusters, etcdCluster)

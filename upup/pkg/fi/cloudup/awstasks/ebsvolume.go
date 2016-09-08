@@ -134,7 +134,7 @@ type terraformVolume struct {
 	AvailabilityZone *string           `json:"availability_zone"`
 	Size             *int64            `json:"size"`
 	Type             *string           `json:"type"`
-	KmsKeyId         *string           `json:"kmsKeyId"`
+	KmsKeyId         *string           `json:"kms_key_id"`
 	Encrypted        *bool             `json:"encrypted"`
 	Tags             map[string]string `json:"tags,omitempty"`
 }

@@ -103,8 +103,7 @@ func (c *populateClusterSpec) run() error {
 						return fmt.Errorf("EtcdMember #%d of etcd-cluster %s did not specify a Name", i, etcd.Name)
 					}
 
-					z := m.Zone
-					if z == "" {
+					if fi.StringValue(m.Zone) == "" {
 						return fmt.Errorf("EtcdMember %s:%s did not specify a Zone", etcd.Name, m.Name)
 					}
 				}
@@ -117,15 +116,17 @@ func (c *populateClusterSpec) run() error {
 						return fmt.Errorf("EtcdMembers found with same name %q in etcd-cluster %q", m.Name, etcd.Name)
 					}
 
-					if etcdZones[m.Zone] != nil {
+					zone := fi.StringValue(m.Zone)
+
+					if etcdZones[zone] != nil {
 						// Maybe this should just be a warning
-						return fmt.Errorf("EtcdMembers are in the same zone %q in etcd-cluster %q", m.Zone, etcd.Name)
+						return fmt.Errorf("EtcdMembers are in the same zone %q in etcd-cluster %q", zone, etcd.Name)
 					}
 
-					if clusterZones[m.Zone] == nil {
+					if clusterZones[zone] == nil {
 						return fmt.Errorf("EtcdMembers for %q is configured in zone %q, but that is not configured at the k8s-cluster level", etcd.Name, m.Zone)
 					}
-					etcdZones[m.Zone] = m
+					etcdZones[zone] = m
 				}
 
 				if (len(etcdZones) % 2) == 0 {
