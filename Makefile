@@ -83,13 +83,13 @@ protokube-gocode:
 	go install k8s.io/kops/protokube/cmd/protokube
 
 protokube-builder-image:
-	docker build -f images/protokube-builder/Dockerfile -t protokube-builder .
+	docker build -t protokube-builder images/protokube-builder
 
 protokube-build-in-docker: protokube-builder-image
 	docker run -it -v `pwd`:/src protokube-builder /onbuild.sh
 
 protokube-image: protokube-build-in-docker
-	docker build -t ${DOCKER_REGISTRY}/protokube:1.3  -f images/protokube/Dockerfile .
+	docker build -t ${DOCKER_REGISTRY}/protokube:1.3 -f images/protokube/Dockerfile .
 
 protokube-push: protokube-image
 	docker push ${DOCKER_REGISTRY}/protokube:1.3
@@ -102,7 +102,7 @@ nodeup-gocode:
 	go install -ldflags "-X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/nodeup
 
 nodeup-builder-image:
-	docker build -f images/nodeup-builder/Dockerfile -t nodeup-builder .
+	docker build -t nodeup-builder images/nodeup-builder
 
 nodeup-build-in-docker: nodeup-builder-image
 	docker run -it -v `pwd`:/src nodeup-builder /onbuild.sh
@@ -118,7 +118,7 @@ dns-controller-gocode:
 	go install k8s.io/kops/dns-controller/cmd/dns-controller
 
 dns-controller-builder-image:
-	docker build -f images/dns-controller-builder/Dockerfile -t dns-controller-builder .
+	docker build -t dns-controller-builder images/dns-controller-builder
 
 dns-controller-build-in-docker: dns-controller-builder-image
 	docker run -it -v `pwd`:/src dns-controller-builder /onbuild.sh
