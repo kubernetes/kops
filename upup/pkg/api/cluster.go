@@ -319,8 +319,8 @@ func (c *Cluster) FillDefaults() error {
 	} else if c.Spec.Networking.External != nil {
 		// OK
 	} else {
-		// No networking model selected; choose Classic
-		c.Spec.Networking.Classic = &ClassicNetworkingSpec{}
+		// No networking model selected; choose Kubenet
+		c.Spec.Networking.Kubenet = &KubenetNetworkingSpec{}
 	}
 
 	err := c.ensureKubernetesVersion()
