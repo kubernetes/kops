@@ -17,8 +17,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-NODEUP_TAR_URL={{ NodeUpSource }}
-NODEUP_TAR_HASH={{ NodeUpSourceHash }}
+NODEUP_URL={{ NodeUpSource }}
+NODEUP_HASH={{ NodeUpSourceHash }}
 
 function ensure-install-dir() {
   INSTALL_DIR="/var/cache/kubernetes-install"
@@ -52,6 +52,9 @@ download-or-bust() {
         return
       fi
     done
+
+    echo "All downloads failed; sleeping before retrying"
+    sleep 60
   done
 }
 
@@ -75,24 +78,21 @@ function try-download-release() {
   # TODO(zmerlynn): Now we REALLY have no excuse not to do the reboot
   # optimization.
 
-  local -r nodeup_tar_urls=( $(split-commas "${NODEUP_TAR_URL}") )
-  local -r nodeup_tar="${nodeup_tar_urls[0]##*/}"
-  if [[ -n "${NODEUP_TAR_HASH:-}" ]]; then
-    local -r nodeup_tar_hash="${NODEUP_TAR_HASH}"
+  local -r nodeup_urls=( $(split-commas "${NODEUP_URL}") )
+  local -r nodeup_filename="${nodeup_urls[0]##*/}"
+  if [[ -n "${NODEUP_HASH:-}" ]]; then
+    local -r nodeup_hash="${NODEUP_HASH}"
   else
   # TODO: Remove?
-    echo "Downloading binary release sha1 (not found in env)"
-    download-or-bust "" "${nodeup_tar_urls[@]/.tar.gz/.tar.gz.sha1}"
-    local -r nodeup_tar_hash=$(cat "${nodeup_tar}.sha1")
+    echo "Downloading sha1 (not found in env)"
+    download-or-bust "" "${nodeup_urls[@]/%/.sha1}"
+    local -r nodeup_hash=$(cat "${nodeup_filename}.sha1")
   fi
 
-  echo "Downloading binary release tar (${nodeup_tar_urls[@]})"
-  download-or-bust "${nodeup_tar_hash}" "${nodeup_tar_urls[@]}"
+  echo "Downloading nodeup (${nodeup_urls[@]})"
+  download-or-bust "${nodeup_hash}" "${nodeup_urls[@]}"
 
-  echo "Unpacking and checking integrity of nodeup"
-  rm -rf nodeupcurl ${nodeup_tar_urls[@]}
-
-  tar xzf "${nodeup_tar}" && tar tzf "${nodeup_tar}" > /dev/null
+  chmod +x nodeup
 }
 
 function download-release() {
@@ -103,7 +103,7 @@ function download-release() {
   done
 
   echo "Running release install script"
-  ( cd nodeup/root; ./nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8 )
+  ( cd ${INSTALL_DIR}; ./nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8 )
 }
 
 ####################################################################################
