@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"k8s.io/kops/upup/pkg/fi/vfs"
 	"os"
 )
 
 type Resource interface {
-	Open() (io.ReadSeeker, error)
+	Open() (io.Reader, error)
 }
 
 type TemplateResource interface {
@@ -108,7 +109,7 @@ func NewStringResource(s string) *StringResource {
 	return &StringResource{s: s}
 }
 
-func (s *StringResource) Open() (io.ReadSeeker, error) {
+func (s *StringResource) Open() (io.Reader, error) {
 	r := bytes.NewReader([]byte(s.s))
 	return r, nil
 }
@@ -128,7 +129,7 @@ func NewBytesResource(data []byte) *BytesResource {
 	return &BytesResource{data: data}
 }
 
-func (r *BytesResource) Open() (io.ReadSeeker, error) {
+func (r *BytesResource) Open() (io.Reader, error) {
 	reader := bytes.NewReader([]byte(r.data))
 	return reader, nil
 }
@@ -143,7 +144,7 @@ func NewFileResource(path string) *FileResource {
 	return &FileResource{Path: path}
 }
 
-func (r *FileResource) Open() (io.ReadSeeker, error) {
+func (r *FileResource) Open() (io.Reader, error) {
 	in, err := os.Open(r.Path)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -154,6 +155,28 @@ func (r *FileResource) Open() (io.ReadSeeker, error) {
 	return in, err
 }
 
+type VFSResource struct {
+	Path vfs.Path
+}
+
+var _ Resource = &VFSResource{}
+
+func NewVFSResource(path vfs.Path) *VFSResource {
+	return &VFSResource{Path: path}
+}
+
+func (r *VFSResource) Open() (io.Reader, error) {
+	data, err := r.Path.ReadFile()
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, err
+		}
+		return nil, fmt.Errorf("error opening file %q: %v", r.Path, err)
+	}
+	b := bytes.NewBuffer(data)
+	return b, err
+}
+
 type ResourceHolder struct {
 	Name     string
 	Resource Resource
@@ -161,7 +184,7 @@ type ResourceHolder struct {
 
 var _ Resource = &ResourceHolder{}
 
-func (o *ResourceHolder) Open() (io.ReadSeeker, error) {
+func (o *ResourceHolder) Open() (io.Reader, error) {
 	if o.Resource == nil {
 		return nil, fmt.Errorf("ResourceHolder %q is not bound", o.Name)
 	}

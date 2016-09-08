@@ -144,7 +144,7 @@ func (c *ApplyClusterCmd) Run() error {
 	if c.NodeUpSource == "" {
 		location := os.Getenv("NODEUP_URL")
 		if location == "" {
-			location = "https://kubeupv2.s3.amazonaws.com/nodeup/nodeup-1.3.tar.gz"
+			location = "https://kubeupv2.s3.amazonaws.com/kops/1.3/linux/amd64/nodeup"
 			glog.Infof("Using default nodeup location: %q", location)
 		} else {
 			glog.Warningf("Using nodeup location from NODEUP_URL env var: %q", location)
