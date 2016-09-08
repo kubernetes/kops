@@ -14,7 +14,7 @@ kops: gobindata
 	GO15VENDOREXPERIMENT=1 go install -ldflags "-X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/kops/...
 
 gobindata:
-	go install github.com/jteeuwen/go-bindata/...
+	go build -o ${GOPATH_1ST}/bin/go-bindata k8s.io/kops/vendor/github.com/jteeuwen/go-bindata/go-bindata
 	${GOPATH_1ST}/bin/go-bindata -o upup/models/bindata.go -pkg models -prefix upup/models/ upup/models/cloudup/... upup/models/config/... upup/models/nodeup/... upup/models/proto/...
 
 # Build in a docker container with golang 1.X
@@ -74,7 +74,6 @@ upload: nodeup-dist kops-dist
 
 push: nodeup-dist
 	scp -C .build/dist/nodeup  ${TARGET}:/tmp/
-	ssh ${TARGET} sudo cp /tmp/nodeup /var/cache/kubernetes-install/nodeup
 
 push-gce-dry: push
 	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /var/cache/kubernetes-install/nodeup --conf=metadata://gce/config --dryrun --v=8
@@ -86,7 +85,7 @@ push-gce-run: push
 	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /var/cache/kubernetes-install/nodeup --conf=metadata://gce/config --v=8
 
 push-aws-run: push
-	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /var/cache/kubernetes-install/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8
+	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8
 
 
 
@@ -109,7 +108,7 @@ protokube-push: protokube-image
 
 nodeup: nodeup-dist
 
-nodeup-gocode:
+nodeup-gocode: gobindata
 	go install -ldflags "-X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/nodeup
 
 nodeup-builder-image:
