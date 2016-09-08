@@ -1,9 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/kutil"
