@@ -4,14 +4,11 @@ DOCKER_REGISTRY=gcr.io/must-override/
 S3_BUCKET=s3://must-override/
 GOPATH_1ST=$(shell echo ${GOPATH} | cut -d : -f 1)
 
-ifndef VERSION
-	VERSION := git-$(shell git rev-parse --short HEAD)
-endif
+TAG=1.3
 
-crossbuild:
-	GOOS=darwin GOARCH=amd64 go build -o .build/darwin/amd64/kops -ldflags "-X main.BuildVersion=${VERSION}" -v k8s.io/kops/cmd/kops/...
-	GOOS=linux GOARCH=amd64 go build -o .build/linux/amd64/kops -ldflags "-X main.BuildVersion=${VERSION}" -v k8s.io/kops/cmd/kops/...
-	#GOOS=windows GOARCH=amd64 go build -o .build/windows/amd64/kops -ldflags "-X main.BuildVersion=${VERSION}" -v k8s.io/kops/cmd/kops/...
+ifndef VERSION
+  VERSION := git-$(shell git rev-parse --short HEAD)
+endif
 
 kops:
 	GO15VENDOREXPERIMENT=1 go install -ldflags "-X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/kops/...
@@ -52,18 +49,27 @@ gofmt:
 	gofmt -w -s dns-controller/cmd
 	gofmt -w -s dns-controller/pkg
 
-kops-dist: kops
+crossbuild:
 	mkdir -p .build/dist/
-	cp ${GOPATH_1ST}/bin/kops .build/dist/kops
-	(sha1sum .build/dist/kops | cut -d' ' -f1) > .build/dist/kops.sha1
+	GOOS=darwin GOARCH=amd64 go build -o .build/dist/darwin/amd64/kops -ldflags "-X main.BuildVersion=${VERSION}" -v k8s.io/kops/cmd/kops/...
+	GOOS=linux GOARCH=amd64 go build -o .build/dist/linux/amd64/kops -ldflags "-X main.BuildVersion=${VERSION}" -v k8s.io/kops/cmd/kops/...
+	#GOOS=windows GOARCH=amd64 go build -o .build/dist/windows/amd64/kops -ldflags "-X main.BuildVersion=${VERSION}" -v k8s.io/kops/cmd/kops/...
+
+kops-dist: crossbuild
+	mkdir -p .build/dist/
+	(sha1sum .build/dist/darwin/amd64/kops | cut -d' ' -f1) > .build/dist/darwin/amd64/kops.sha1
+	(sha1sum .build/dist/linux/amd64/kops | cut -d' ' -f1) > .build/dist/linux/amd64/kops.sha1
 
 upload: nodeup-dist kops-dist
 	rm -rf .build/s3
-	mkdir -p .build/s3/kops/1.3/linux/amd64/
-	cp .build/dist/nodeup .build/s3/kops/1.3/linux/amd64/nodeup
-	cp .build/dist/nodeup.sha1 .build/s3/kops/1.3/linux/amd64/nodeup.sha1
-	cp .build/dist/kops .build/s3/kops/1.3/linux/amd64/kops
-	cp .build/dist/kops.sha1 .build/s3/kops/1.3/linux/amd64/kops.sha1
+	mkdir -p .build/s3/kops/${VERSION}/linux/amd64/
+	mkdir -p .build/s3/kops/${VERSION}/darwin/amd64/
+	cp .build/dist/nodeup .build/s3/kops/${VERSION}/linux/amd64/nodeup
+	cp .build/dist/nodeup.sha1 .build/s3/kops/${VERSION}/linux/amd64/nodeup.sha1
+	cp .build/dist/linux/amd64/kops .build/s3/kops/${VERSION}/linux/amd64/kops
+	cp .build/dist/linux/amd64/kops.sha1 .build/s3/kops/${VERSION}/linux/amd64/kops.sha1
+	cp .build/dist/darwin/amd64/kops .build/s3/kops/${VERSION}/darwin/amd64/kops
+	cp .build/dist/darwin/amd64/kops.sha1 .build/s3/kops/${VERSION}/darwin/amd64/kops.sha1
 	aws s3 sync --acl public-read .build/s3/ ${S3_BUCKET}
 
 push: nodeup-dist
@@ -91,13 +97,13 @@ protokube-builder-image:
 	docker build -t protokube-builder images/protokube-builder
 
 protokube-build-in-docker: protokube-builder-image
-	docker run -it -v `pwd`:/src protokube-builder /onbuild.sh
+	docker run -it -e VERSION=${VERSION} -v `pwd`:/src protokube-builder /onbuild.sh
 
 protokube-image: protokube-build-in-docker
-	docker build -t ${DOCKER_REGISTRY}/protokube:1.3 -f images/protokube/Dockerfile .
+	docker build -t ${DOCKER_REGISTRY}/protokube:${TAG} -f images/protokube/Dockerfile .
 
 protokube-push: protokube-image
-	docker push ${DOCKER_REGISTRY}/protokube:1.3
+	docker push ${DOCKER_REGISTRY}/protokube:${TAG}
 
 
 
@@ -110,7 +116,7 @@ nodeup-builder-image:
 	docker build -t nodeup-builder images/nodeup-builder
 
 nodeup-build-in-docker: nodeup-builder-image
-	docker run -it -v `pwd`:/src nodeup-builder /onbuild.sh
+	docker run -it -e VERSION=${VERSION} -v `pwd`:/src nodeup-builder /onbuild.sh
 
 nodeup-dist: nodeup-build-in-docker
 	mkdir -p .build/dist
@@ -126,13 +132,13 @@ dns-controller-builder-image:
 	docker build -t dns-controller-builder images/dns-controller-builder
 
 dns-controller-build-in-docker: dns-controller-builder-image
-	docker run -it -v `pwd`:/src dns-controller-builder /onbuild.sh
+	docker run -it -e VERSION=${VERSION} -v `pwd`:/src dns-controller-builder /onbuild.sh
 
 dns-controller-image: dns-controller-build-in-docker
-	docker build -t ${DOCKER_REGISTRY}/dns-controller:1.3  -f images/dns-controller/Dockerfile .
+	docker build -t ${DOCKER_REGISTRY}/dns-controller:${TAG}  -f images/dns-controller/Dockerfile .
 
 dns-controller-push: dns-controller-image
-	docker push ${DOCKER_REGISTRY}/dns-controller:1.3
+	docker push ${DOCKER_REGISTRY}/dns-controller:${TAG}
 
 
 
