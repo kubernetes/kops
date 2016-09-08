@@ -47,6 +47,10 @@ func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup) (
 		}
 	}
 
+	if ig.Spec.AssociatePublicIP == nil {
+		ig.Spec.AssociatePublicIP = fi.Bool(true)
+	}
+
 	if ig.Spec.Image == "" {
 		ig.Spec.Image = defaultImage(cluster)
 	}
