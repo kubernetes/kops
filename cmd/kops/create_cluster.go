@@ -78,7 +78,7 @@ func init() {
 
 	cmd.Flags().StringVar(&createCluster.Image, "image", "", "Image to use")
 
-	cmd.Flags().StringVar(&createCluster.Networking, "networking", "classic", "Networking mode to use.  kubenet, classic, external.  This currently defaults to classic, but will likely default to kubenet soon.")
+	cmd.Flags().StringVar(&createCluster.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external.")
 
 	cmd.Flags().StringVar(&createCluster.DNSZone, "dns-zone", "", "DNS hosted zone to use (defaults to last two components of cluster name)")
 	cmd.Flags().StringVar(&createCluster.OutDir, "out", "", "Path to write any local output")
