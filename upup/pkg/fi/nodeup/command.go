@@ -127,6 +127,9 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		tags[tag] = struct{}{}
 	}
 
+	glog.Infof("Config tags: %v", c.config.Tags)
+	glog.Infof("OS tags: %v", osTags)
+
 	loader := NewLoader(c.config, c.cluster, assets, tags)
 
 	tf, err := newTemplateFunctions(c.config, c.cluster, tags)
