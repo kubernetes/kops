@@ -45,3 +45,13 @@ but is shorter; `somethingelse.example.com` is not a suffix-match.
 Examples:
 
 `--dns-zone=example.com` to use the hosted zone with a name of example.com
+
+## UpdatePolicy
+
+Cluster.Spec.UpdatePolicy
+
+Values:
+
+* `external` updates are performed by an external system (or manually), should not be automatically applied
+
+* unset means to use the default policy, which is currently to apply OS security updates unless they require a reboot
