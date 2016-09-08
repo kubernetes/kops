@@ -399,7 +399,7 @@ func (c *AWSCloud) ResolveImage(name string) (*ec2.Image, error) {
 		request.ImageIds = []*string{&name}
 	} else {
 		// Either <imagename> or <owner>/<imagename>
-		tokens := strings.Split(name, "/")
+		tokens := strings.SplitN(name, "/", 2)
 		if len(tokens) == 1 {
 			// self is a well-known value in the DescribeImages call
 			request.Owners = aws.StringSlice([]string{"self"})
