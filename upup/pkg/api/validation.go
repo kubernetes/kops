@@ -194,6 +194,16 @@ func (c *Cluster) Validate(strict bool) error {
 		}
 	}
 
+	// UpdatePolicy
+	if c.Spec.UpdatePolicy != nil {
+		switch *c.Spec.UpdatePolicy {
+		case UpdatePolicyExternal:
+			// Valid
+		default:
+			return fmt.Errorf("unrecognized value for UpdatePolicy: %v", *c.Spec.UpdatePolicy)
+		}
+	}
+
 	// AdminAccess
 	if strict && len(c.Spec.AdminAccess) == 0 {
 		return fmt.Errorf("AdminAccess not configured")

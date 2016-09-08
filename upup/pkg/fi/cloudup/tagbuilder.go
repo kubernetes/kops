@@ -7,6 +7,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
+// TODO: Rename to buildCloudupTags ?
 func buildClusterTags(cluster *api.Cluster) (map[string]struct{}, error) {
 	// TODO: Make these configurable?
 	useMasterASG := true
@@ -93,6 +94,15 @@ func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTa
 		tags = append(tags, "_cni_loopback")
 		tags = append(tags, "_cni_ptp")
 		//tags = append(tags, "_cni_tuning")
+	}
+
+	switch fi.StringValue(cluster.Spec.UpdatePolicy) {
+	case "": // default
+		tags = append(tags, "_automatic_upgrades")
+	case api.UpdatePolicyExternal:
+	// Skip applying the tag
+	default:
+		glog.Warningf("Unrecognized value for UpdatePolicy: %v", fi.StringValue(cluster.Spec.UpdatePolicy))
 	}
 
 	if _, found := clusterTags["_gce"]; found {
