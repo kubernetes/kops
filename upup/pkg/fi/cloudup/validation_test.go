@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/api"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/vfs"
 	"k8s.io/kubernetes/pkg/util/sets"
 	"strings"
@@ -122,6 +123,18 @@ func TestValidateFull_ClusterName_Required(t *testing.T) {
 	expectErrorFromValidate(t, c, "Name")
 }
 
+func TestValidateFull_UpdatePolicy_Valid(t *testing.T) {
+	c := buildDefaultCluster(t)
+	c.Spec.UpdatePolicy = fi.String(api.UpdatePolicyExternal)
+	expectNoErrorFromValidate(t, c)
+}
+
+func TestValidateFull_UpdatePolicy_Invalid(t *testing.T) {
+	c := buildDefaultCluster(t)
+	c.Spec.UpdatePolicy = fi.String("not-a-real-value")
+	expectErrorFromValidate(t, c, "UpdatePolicy")
+}
+
 func expectErrorFromValidate(t *testing.T, c *api.Cluster, message string) {
 	err := c.Validate(false)
 	if err == nil {
@@ -130,6 +143,13 @@ func expectErrorFromValidate(t *testing.T, c *api.Cluster, message string) {
 	actualMessage := fmt.Sprintf("%v", err)
 	if !strings.Contains(actualMessage, message) {
 		t.Fatalf("Expected error %q, got %q", message, actualMessage)
+	}
+}
+
+func expectNoErrorFromValidate(t *testing.T, c *api.Cluster) {
+	err := c.Validate(false)
+	if err != nil {
+		t.Fatalf("Unexpected error from Validate: %v", err)
 	}
 }
 
