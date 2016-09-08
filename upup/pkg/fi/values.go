@@ -32,6 +32,13 @@ func Int(v int) *int {
 	return &v
 }
 
+func IntValue(v *int) int {
+	if v == nil {
+		return 0
+	}
+	return *v
+}
+
 func Int64(v int64) *int64 {
 	return &v
 }
