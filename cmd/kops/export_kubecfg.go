@@ -24,8 +24,7 @@ func init() {
 		Run: func(cmd *cobra.Command, args []string) {
 			err := exportKubecfgCommand.Run(args)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "%v\n", err)
-				os.Exit(1)
+				exitWithError(err)
 			}
 		},
 	}
