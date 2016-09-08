@@ -3,6 +3,7 @@ package cloudup
 import (
 	"fmt"
 	"k8s.io/kops/upup/pkg/api"
+	"k8s.io/kops/upup/pkg/fi"
 	"strings"
 	"testing"
 )
@@ -111,8 +112,8 @@ func TestDeepValidate_EvenEtcdClusterSize(t *testing.T) {
 		{
 			Name: "main",
 			Members: []*api.EtcdMemberSpec{
-				{Name: "us-east-1a", Zone: "us-east-1a"},
-				{Name: "us-east-1b", Zone: "us-east-1b"},
+				{Name: "us-east-1a", Zone: fi.String("us-east-1a")},
+				{Name: "us-east-1b", Zone: fi.String("us-east-1b")},
 			},
 		},
 	}
