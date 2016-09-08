@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi/nodeup"
 	"os"
 	"time"
@@ -19,8 +20,6 @@ const retryInterval = 30 * time.Second
 func main() {
 	fmt.Printf("nodeup version %s\n", BuildVersion)
 
-	flagModel := "model"
-	flag.StringVar(&flagModel, "model", flagModel, "directory to use as model for desired configuration")
 	var flagConf string
 	flag.StringVar(&flagConf, "conf", "node.yaml", "configuration location")
 	var flagCacheDir string
@@ -51,10 +50,10 @@ func main() {
 	for {
 		cmd := &nodeup.NodeUpCommand{
 			ConfigLocation: flagConf,
-			ModelDir:       flagModel,
 			Target:         target,
 			CacheDir:       flagCacheDir,
 			FSRoot:         flagRootFS,
+			ModelDir:       models.NewAssetPath("nodeup"),
 		}
 		err := cmd.Run(os.Stdout)
 		if err == nil {

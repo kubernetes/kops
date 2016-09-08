@@ -13,6 +13,11 @@ import (
 type VFS interface {
 }
 
+func IsDirectory(p Path) bool {
+	_, err := p.ReadDir()
+	return err == nil
+}
+
 type Path interface {
 	Join(relativePath ...string) Path
 	ReadFile() ([]byte, error)

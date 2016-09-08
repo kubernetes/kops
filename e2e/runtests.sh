@@ -85,8 +85,9 @@ chmod +x /tmp/e2e.sh
 curl -fsS --retry 3  "https://storage.googleapis.com/kubernetes-release/release/v1.3.5/bin/linux/amd64/kubectl" > /usr/local/bin/kubectl
 chmod +x /usr/local/bin/kubectl
 
-curl -fsS --retry 3  "https://kubeupv2.s3.amazonaws.com/kops/kops-1.3.tar.gz" > /tmp/kops.tar.gz
-tar zxf /tmp/kops.tar.gz -C /opt
+curl -fsS --retry 3  "https://kubeupv2.s3.amazonaws.com/kops/1.3/linux/amd64/kops" > /tmp/kops
+cp /tmp/kops /usr/local/bin/kops
+chmod +x /usr/local/bin/kops
 
 if [[ ! -e ${AWS_SSH_KEY} ]]; then
   echo "Creating ssh key ${AWS_SSH_KEY}"
@@ -115,7 +116,7 @@ unpack_binaries
 
 # Clean up everything when we're done
 function finish {
-  /opt/kops/kops delete cluster \
+  kops delete cluster \
                  --name ${JOB_NAME}.${DNS_DOMAIN} \
                  --yes  2>&1 | tee -a ${build_dir}/build-log.txt
 }
@@ -124,8 +125,7 @@ trap finish EXIT
 set -e
 
 # Create the cluster spec
-pushd /opt/kops
-/opt/kops/kops create cluster \
+kops create cluster \
                   --name ${JOB_NAME}.${DNS_DOMAIN} \
                   --cloud ${KUBERNETES_PROVIDER} \
                   --zones ${NODE_ZONES} \
@@ -135,16 +135,13 @@ pushd /opt/kops
                   --kubernetes-version ${KUBERNETES_VERSION} \
                   --v=4 2>&1 | tee -a ${build_dir}/build-log.txt
 exit_code=${PIPESTATUS[0]}
-popd
 
 # Apply the cluster spec
 if [[ ${exit_code} == 0 ]]; then
-  pushd /opt/kops
-  /opt/kops/kops update cluster \
+  kops update cluster \
                     --name ${JOB_NAME}.${DNS_DOMAIN} \
                     --yes --v=4 2>&1 | tee -a ${build_dir}/build-log.txt
   exit_code=${PIPESTATUS[0]}
-  popd
 fi
 
 # Wait for kubectl to begin responding (at least master up)

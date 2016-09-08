@@ -22,7 +22,7 @@ type NodeUpCommand struct {
 	config         *NodeUpConfig
 	cluster        *api.Cluster
 	ConfigLocation string
-	ModelDir       string
+	ModelDir       vfs.Path
 	CacheDir       string
 	Target         string
 	FSRoot         string
