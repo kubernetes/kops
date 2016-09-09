@@ -14,6 +14,11 @@ Various syntaxes are available:
 The ami spec is precise, but AMIs vary by region.  So it is often more convenient to use the `<owner>/<name>`
 specifier, if equivalent images have been copied to various regions with the same name.
 
-For example, to use Ubuntu 16.04, you can specify:
+For example, to use Ubuntu 16.04, you could specify:
 
 `image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20160830`
+
+(Please note that ubuntu is currently undergoing validation testing with k8s - use at your own risk!)
+
+If you are creating a new cluster you can use the `--image` flag when running `kops create cluster`,
+which should be easier than editing your instance groups.
