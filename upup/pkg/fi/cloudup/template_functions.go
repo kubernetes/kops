@@ -84,6 +84,12 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["IAMNodePolicy"] = func() (string, error) {
 		return tf.buildAWSIAMPolicy(api.InstanceGroupRoleNode)
 	}
+	dest["WithDefaultBool"] = func(v *bool, defaultValue bool) bool {
+		if v != nil {
+			return *v
+		}
+		return defaultValue
+	}
 }
 
 func (tf *TemplateFunctions) EtcdClusterMemberTags(etcd *api.EtcdClusterSpec, m *api.EtcdMemberSpec) map[string]string {
