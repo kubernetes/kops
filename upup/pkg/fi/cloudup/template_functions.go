@@ -157,11 +157,11 @@ func (tf *TemplateFunctions) SharedZone(zone *api.ClusterZoneSpec) bool {
 
 // AdminCIDR returns the CIDRs that are allowed to access the admin ports of the cluster
 // (22, 443 on master and 22 on nodes)
-func (tf *TemplateFunctions) AdminCIDR() ([]string, error) {
+func (tf *TemplateFunctions) AdminCIDR() []string {
 	if len(tf.cluster.Spec.AdminAccess) == 0 {
-		return []string{"0.0.0.0/0"}, nil
+		return []string{"0.0.0.0/0"}
 	}
-	return tf.cluster.Spec.AdminAccess, nil
+	return tf.cluster.Spec.AdminAccess
 }
 
 // IAMServiceEC2 returns the name of the IAM service for EC2 in the current region
