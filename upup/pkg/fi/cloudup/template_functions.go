@@ -72,15 +72,18 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 		return tf.cluster.Name
 	}
 
-	dest["HasTag"] = func(tag string) bool {
-		_, found := tf.tags[tag]
-		return found
-	}
+	dest["HasTag"] = tf.HasTag
 
-	dest["IAMPrefix"] = tf.IAMPrefix
 	dest["IAMServiceEC2"] = tf.IAMServiceEC2
 
 	dest["Image"] = tf.Image
+
+	dest["IAMMasterPolicy"] = func() (string, error) {
+		return tf.buildAWSIAMPolicy(api.InstanceGroupRoleMaster)
+	}
+	dest["IAMNodePolicy"] = func() (string, error) {
+		return tf.buildAWSIAMPolicy(api.InstanceGroupRoleNode)
+	}
 }
 
 func (tf *TemplateFunctions) EtcdClusterMemberTags(etcd *api.EtcdClusterSpec, m *api.EtcdMemberSpec) map[string]string {
@@ -130,17 +133,6 @@ func (tf *TemplateFunctions) IAMServiceEC2() string {
 	}
 }
 
-// IAMPrefix returns the prefix for AWS ARNs in the current region, for use with IAM
-// it is arn:aws everywhere but in cn-north, where it is arn:aws-cn
-func (tf *TemplateFunctions) IAMPrefix() string {
-	switch tf.region {
-	case "cn-north-1":
-		return "arn:aws-cn"
-	default:
-		return "arn:aws"
-	}
-}
-
 // Image returns the docker image name for the specified component
 func (tf *TemplateFunctions) Image(component string) (string, error) {
 	if component == "kube-dns" {
@@ -166,4 +158,29 @@ func (tf *TemplateFunctions) Image(component string) (string, error) {
 	glog.V(2).Infof("Found tag %q for %q", tag, component)
 
 	return "gcr.io/google_containers/" + component + ":" + tag, nil
+}
+
+// HasTag returns true if the specified tag is set
+func (tf *TemplateFunctions) HasTag(tag string) bool {
+	_, found := tf.tags[tag]
+	return found
+}
+
+// buildAWSIAMPolicy produces the AWS IAM policy for the given role
+func (tf *TemplateFunctions) buildAWSIAMPolicy(role api.InstanceGroupRole) (string, error) {
+	b := &IAMPolicyBuilder{
+		Cluster: tf.cluster,
+		Role:    role,
+		Region:  tf.region,
+	}
+
+	policy, err := b.BuildAWSIAMPolicy()
+	if err != nil {
+		return "", fmt.Errorf("error building IAM policy: %v", err)
+	}
+	json, err := policy.AsJSON()
+	if err != nil {
+		return "", fmt.Errorf("error building IAM policy: %v", err)
+	}
+	return json, nil
 }
