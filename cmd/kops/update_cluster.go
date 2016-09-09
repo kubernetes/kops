@@ -91,6 +91,14 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 		return err
 	}
 
+	for i, g := range fullInstanceGroups {
+		fullGroup, err := cloudup.PopulateInstanceGroupSpec(cluster, g)
+		if err != nil {
+			return err
+		}
+		fullInstanceGroups[i] = fullGroup
+	}
+
 	if c.SSHPublicKey != "" {
 		fmt.Fprintf(os.Stderr, "--ssh-public-key on update is deprecated - please use `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub` instead\n", cluster.Name)
 
