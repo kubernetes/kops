@@ -3,9 +3,11 @@
 # We need to open security groups directly to the master nodes (instead of via the ELB)
 
 # HTTPS to the master is allowed (for API access)
-securityGroupRule/https-external-to-master:
+{{ range $index, $cidr := AdminCIDR }}
+securityGroupRule/https-external-to-master-{{ $index }}:
   securityGroup: securityGroup/masters.{{ ClusterName }}
-  cidr: {{ AdminCIDR }}
+  cidr: {{ $cidr }}
   protocol: tcp
   fromPort: 443
   toPort: 443
+{{ end }}
