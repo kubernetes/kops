@@ -12,7 +12,7 @@
 
 ### create secret 
 
-`kops create secret publickey admin -i ~/.ssh/id_rsa.pub`
+`kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub`
 
 ### delete secret
 
