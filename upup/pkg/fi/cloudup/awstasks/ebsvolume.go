@@ -131,11 +131,11 @@ func (_ *EBSVolume) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EBSVolume) e
 }
 
 type terraformVolume struct {
-	AvailabilityZone *string           `json:"availability_zone"`
-	Size             *int64            `json:"size"`
-	Type             *string           `json:"type"`
-	KmsKeyId         *string           `json:"kms_key_id"`
-	Encrypted        *bool             `json:"encrypted"`
+	AvailabilityZone *string           `json:"availability_zone,omitempty"`
+	Size             *int64            `json:"size,omitempty"`
+	Type             *string           `json:"type,omitempty"`
+	KmsKeyId         *string           `json:"kms_key_id,omitempty"`
+	Encrypted        *bool             `json:"encrypted,omitempty"`
 	Tags             map[string]string `json:"tags,omitempty"`
 }
 
