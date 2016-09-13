@@ -3,6 +3,10 @@
   "apiVersion": "policy/v1alpha1",
   "basePath": "https://10.10.10.10:6443",
   "resourcePath": "/apis/policy/v1alpha1",
+  "info": {
+   "title": "",
+   "description": ""
+  },
   "apis": [
    {
     "path": "/apis/policy/v1alpha1/namespaces/{namespace}/poddisruptionbudgets",
@@ -1110,6 +1114,10 @@
        "type": "string"
       },
       "description": "Must be empty before the object is deleted from the registry. Each entry is an identifier for the responsible component that will remove the entry from the list. If the deletionTimestamp of the object is non-nil, entries in this list can only be removed."
+     },
+     "clusterName": {
+      "type": "string",
+      "description": "The name of the cluster which the object belongs to. This is used to distinguish resources with same name and namespace in different clusters. This field is not set anywhere right now and apiserver is going to ignore it if set in create or update request."
      }
     }
    },

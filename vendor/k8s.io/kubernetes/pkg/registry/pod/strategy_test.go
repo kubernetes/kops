@@ -134,7 +134,7 @@ func TestCheckGracefulDelete(t *testing.T) {
 	}
 	for _, tc := range tcs {
 		out := &api.DeleteOptions{GracePeriodSeconds: &defaultGracePeriod}
-		Strategy.CheckGracefulDelete(tc.in, out)
+		Strategy.CheckGracefulDelete(api.NewContext(), tc.in, out)
 		if out.GracePeriodSeconds == nil {
 			t.Errorf("out grace period was nil but supposed to be %v", tc.gracePeriod)
 		}
@@ -252,7 +252,7 @@ func TestSelectableFieldLabelConversions(t *testing.T) {
 	apitesting.TestSelectableFieldLabelConversionsOfKind(t,
 		testapi.Default.GroupVersion().String(),
 		"Pod",
-		labels.Set(PodToSelectableFields(&api.Pod{})),
+		PodToSelectableFields(&api.Pod{}),
 		nil,
 	)
 }

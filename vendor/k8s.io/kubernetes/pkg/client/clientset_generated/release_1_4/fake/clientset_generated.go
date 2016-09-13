@@ -20,6 +20,8 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/apimachinery/registered"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_4"
+	v1beta1authorization "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_4/typed/authorization/v1beta1"
+	fakev1beta1authorization "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_4/typed/authorization/v1beta1/fake"
 	v1autoscaling "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_4/typed/autoscaling/v1"
 	fakev1autoscaling "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_4/typed/autoscaling/v1/fake"
 	v1batch "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_4/typed/batch/v1"
@@ -28,6 +30,8 @@ import (
 	fakev1core "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_4/typed/core/v1/fake"
 	v1beta1extensions "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_4/typed/extensions/v1beta1"
 	fakev1beta1extensions "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_4/typed/extensions/v1beta1/fake"
+	v1alpha1policy "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_4/typed/policy/v1alpha1"
+	fakev1alpha1policy "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_4/typed/policy/v1alpha1/fake"
 	"k8s.io/kubernetes/pkg/client/testing/core"
 	"k8s.io/kubernetes/pkg/client/typed/discovery"
 	fakediscovery "k8s.io/kubernetes/pkg/client/typed/discovery/fake"
@@ -73,9 +77,9 @@ func (c *Clientset) Core() v1core.CoreInterface {
 	return &fakev1core.FakeCore{Fake: &c.Fake}
 }
 
-// Extensions retrieves the ExtensionsClient
-func (c *Clientset) Extensions() v1beta1extensions.ExtensionsInterface {
-	return &fakev1beta1extensions.FakeExtensions{Fake: &c.Fake}
+// Authorization retrieves the AuthorizationClient
+func (c *Clientset) Authorization() v1beta1authorization.AuthorizationInterface {
+	return &fakev1beta1authorization.FakeAuthorization{Fake: &c.Fake}
 }
 
 // Autoscaling retrieves the AutoscalingClient
@@ -86,4 +90,14 @@ func (c *Clientset) Autoscaling() v1autoscaling.AutoscalingInterface {
 // Batch retrieves the BatchClient
 func (c *Clientset) Batch() v1batch.BatchInterface {
 	return &fakev1batch.FakeBatch{Fake: &c.Fake}
+}
+
+// Extensions retrieves the ExtensionsClient
+func (c *Clientset) Extensions() v1beta1extensions.ExtensionsInterface {
+	return &fakev1beta1extensions.FakeExtensions{Fake: &c.Fake}
+}
+
+// Policy retrieves the PolicyClient
+func (c *Clientset) Policy() v1alpha1policy.PolicyInterface {
+	return &fakev1alpha1policy.FakePolicy{Fake: &c.Fake}
 }

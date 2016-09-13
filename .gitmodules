@@ -178,3 +178,27 @@
 [submodule "_vendor/github.com/jteeuwen/go-bindata"]
 	path = _vendor/github.com/jteeuwen/go-bindata
 	url = https://github.com/jteeuwen/go-bindata
+[submodule "_vendor/github.com/go-openapi/spec"]
+	path = _vendor/github.com/go-openapi/spec
+	url = https://github.com/go-openapi/spec
+[submodule "_vendor/github.com/go-openapi/jsonpointer"]
+	path = _vendor/github.com/go-openapi/jsonpointer
+	url = https://github.com/go-openapi/jsonpointer
+[submodule "_vendor/github.com/go-openapi/jsonreference"]
+	path = _vendor/github.com/go-openapi/jsonreference
+	url = https://github.com/go-openapi/jsonreference
+[submodule "_vendor/github.com/go-openapi/swag"]
+	path = _vendor/github.com/go-openapi/swag
+	url = https://github.com/go-openapi/swag
+[submodule "_vendor/github.com/mailru/easyjson"]
+	path = _vendor/github.com/mailru/easyjson
+	url = https://github.com/mailru/easyjson
+[submodule "_vendor/github.com/PuerkitoBio/purell"]
+	path = _vendor/github.com/PuerkitoBio/purell
+	url = https://github.com/PuerkitoBio/purell
+[submodule "_vendor/github.com/PuerkitoBio/urlesc"]
+	path = _vendor/github.com/PuerkitoBio/urlesc
+	url = https://github.com/PuerkitoBio/urlesc
+[submodule "_vendor/golang.org/x/text"]
+	path = _vendor/golang.org/x/text
+	url = https://github.com/golang/text

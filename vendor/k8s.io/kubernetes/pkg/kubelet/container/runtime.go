@@ -25,6 +25,7 @@ import (
 
 	"github.com/golang/glog"
 	"k8s.io/kubernetes/pkg/api"
+	runtimeApi "k8s.io/kubernetes/pkg/kubelet/api/v1alpha1/runtime"
 	"k8s.io/kubernetes/pkg/types"
 	"k8s.io/kubernetes/pkg/util/flowcontrol"
 	"k8s.io/kubernetes/pkg/util/term"
@@ -110,7 +111,7 @@ type Runtime interface {
 	// by all containers in the pod.
 	GetNetNS(containerID ContainerID) (string, error)
 	// Returns the container ID that represents the Pod, as passed to network
-	// plugins. For example if the runtime uses an infra container, returns
+	// plugins. For example, if the runtime uses an infra container, returns
 	// the infra container's ContainerID.
 	// TODO: Change ContainerID to a Pod ID, see GetNetNS()
 	GetPodContainerID(*Pod) (ContainerID, error)
@@ -153,6 +154,11 @@ type Pod struct {
 	// List of containers that belongs to this pod. It may contain only
 	// running containers, or mixed with dead ones (when GetPods(true)).
 	Containers []*Container
+	// List of sandboxes associated with this pod. The sandboxes are converted
+	// to Container temporariliy to avoid substantial changes to other
+	// components. This is only populated by kuberuntime.
+	// TODO: use the runtimeApi.PodSandbox type directly.
+	Sandboxes []*Container
 }
 
 // PodPair contains both runtime#Pod and api#Pod
@@ -225,12 +231,11 @@ func (id DockerID) ContainerID() ContainerID {
 type ContainerState string
 
 const (
+	ContainerStateCreated ContainerState = "created"
 	ContainerStateRunning ContainerState = "running"
 	ContainerStateExited  ContainerState = "exited"
 	// This unknown encompasses all the states that we currently don't care.
 	ContainerStateUnknown ContainerState = "unknown"
-	// Not in use yet.
-	ContainerStateCreated ContainerState = "created"
 )
 
 // Container provides the runtime information for a container, such as ID, hash,
@@ -245,6 +250,8 @@ type Container struct {
 	// The image name of the container, this also includes the tag of the image,
 	// the expected form is "NAME:TAG".
 	Image string
+	// The id of the image used by the container.
+	ImageID string
 	// Hash of the container, used for comparison. Optional for containers
 	// not managed by kubelet.
 	Hash uint64
@@ -265,6 +272,9 @@ type PodStatus struct {
 	IP string
 	// Status of containers in the pod.
 	ContainerStatuses []*ContainerStatus
+	// Status of the pod sandbox.
+	// Only for kuberuntime now, other runtime may keep it nil.
+	SandboxStatuses []*runtimeApi.PodSandboxStatus
 }
 
 // ContainerStatus represents the status of a container.
@@ -340,6 +350,8 @@ type EnvVar struct {
 
 type Mount struct {
 	// Name of the volume mount.
+	// TODO(yifan): Remove this field, as this is not representing the unique name of the mount,
+	// but the volume name only.
 	Name string
 	// Path of the mount within the container.
 	ContainerPath string
@@ -449,6 +461,15 @@ func (p *Pod) FindContainerByName(containerName string) *Container {
 
 func (p *Pod) FindContainerByID(id ContainerID) *Container {
 	for _, c := range p.Containers {
+		if c.ID == id {
+			return c
+		}
+	}
+	return nil
+}
+
+func (p *Pod) FindSandboxByID(id ContainerID) *Container {
+	for _, c := range p.Sandboxes {
 		if c.ID == id {
 			return c
 		}

@@ -724,18 +724,26 @@ func (s *ServiceController) lockedUpdateDNSRecords(service *cachedService, clust
 	if !wantsDNSRecords(service.appliedState) {
 		return nil
 	}
+
 	ensuredCount := 0
+	unensuredCount := 0
 	for key := range s.clusterCache.clientMap {
 		for _, clusterName := range clusterNames {
 			if key == clusterName {
-				s.ensureDnsRecords(clusterName, service)
-				ensuredCount += 1
+				err := s.ensureDnsRecords(clusterName, service)
+				if err != nil {
+					unensuredCount += 1
+					glog.V(4).Infof("Failed to update DNS records for service %v from cluster %s: %v", service, clusterName, err)
+				} else {
+					ensuredCount += 1
+				}
 			}
 		}
 	}
-	if ensuredCount < len(clusterNames) {
-		return fmt.Errorf("Failed to update DNS records for %d of %d clusters for service %v due to missing clients for those clusters",
-			len(clusterNames)-ensuredCount, len(clusterNames), service)
+	missedCount := len(clusterNames) - ensuredCount - unensuredCount
+	if missedCount > 0 || unensuredCount > 0 {
+		return fmt.Errorf("Failed to update DNS records for %d clusters for service %v due to missing clients [missed count: %d] and/or failing to ensure DNS records [unensured count: %d]",
+			len(clusterNames), service, missedCount, unensuredCount)
 	}
 	return nil
 }
@@ -811,7 +819,7 @@ func (s *ServiceController) syncService(key string) error {
 	// obj holds the latest service info from apiserver
 	obj, exists, err := s.serviceStore.Store.GetByKey(key)
 	if err != nil {
-		glog.Infof("Unable to retrieve service %v from store: %v", key, err)
+		glog.Errorf("Unable to retrieve service %v from store: %v", key, err)
 		s.queue.Add(key)
 		return err
 	}

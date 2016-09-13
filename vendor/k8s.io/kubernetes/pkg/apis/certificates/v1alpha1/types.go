@@ -29,7 +29,7 @@ type CertificateSigningRequest struct {
 	unversioned.TypeMeta `json:",inline"`
 	v1.ObjectMeta        `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
-	// The certificate request itself and any additonal information.
+	// The certificate request itself and any additional information.
 	Spec CertificateSigningRequestSpec `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
 
 	// Derived information about the request.
@@ -81,5 +81,5 @@ type CertificateSigningRequestList struct {
 	unversioned.TypeMeta `json:",inline"`
 	unversioned.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
-	Items []CertificateSigningRequest `json:"items,omitempty" protobuf:"bytes,2,rep,name=items"`
+	Items []CertificateSigningRequest `json:"items" protobuf:"bytes,2,rep,name=items"`
 }

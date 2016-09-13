@@ -177,7 +177,7 @@ func TestCordon(t *testing.T) {
 				// Restore cmdutil behavior
 				cmdutil.DefaultBehaviorOnFatal()
 			}()
-			cmdutil.BehaviorOnFatal(func(e string) { saw_fatal = true; panic(e) })
+			cmdutil.BehaviorOnFatal(func(e string, code int) { saw_fatal = true; panic(e) })
 			cmd.SetArgs([]string{test.arg})
 			cmd.Execute()
 		}()
@@ -521,7 +521,7 @@ func TestDrain(t *testing.T) {
 				// Restore cmdutil behavior
 				cmdutil.DefaultBehaviorOnFatal()
 			}()
-			cmdutil.BehaviorOnFatal(func(e string) { saw_fatal = true; panic(e) })
+			cmdutil.BehaviorOnFatal(func(e string, code int) { saw_fatal = true; panic(e) })
 			cmd.SetArgs(test.args)
 			cmd.Execute()
 		}()
@@ -552,7 +552,10 @@ type MyReq struct {
 func (m *MyReq) isFor(method string, path string) bool {
 	req := m.Request
 
-	return method == req.Method && (req.URL.Path == path || req.URL.Path == strings.Join([]string{"/api/v1", path}, "") || req.URL.Path == strings.Join([]string{"/apis/extensions/v1beta1", path}, ""))
+	return method == req.Method && (req.URL.Path == path ||
+		req.URL.Path == strings.Join([]string{"/api/v1", path}, "") ||
+		req.URL.Path == strings.Join([]string{"/apis/extensions/v1beta1", path}, "") ||
+		req.URL.Path == strings.Join([]string{"/apis/batch/v1", path}, ""))
 }
 
 func refJson(t *testing.T, o runtime.Object) string {

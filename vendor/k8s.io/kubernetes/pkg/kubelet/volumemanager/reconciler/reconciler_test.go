@@ -24,10 +24,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
+	"k8s.io/kubernetes/pkg/client/record"
 	"k8s.io/kubernetes/pkg/client/testing/core"
+	"k8s.io/kubernetes/pkg/kubelet/config"
 	"k8s.io/kubernetes/pkg/kubelet/volumemanager/cache"
 	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/util/mount"
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/kubernetes/pkg/util/wait"
 	"k8s.io/kubernetes/pkg/volume"
 	volumetesting "k8s.io/kubernetes/pkg/volume/testing"
@@ -38,12 +41,13 @@ import (
 const (
 	// reconcilerLoopSleepDuration is the amount of time the reconciler loop
 	// waits between successive executions
-	reconcilerLoopSleepDuration time.Duration = 0 * time.Millisecond
-
+	reconcilerLoopSleepDuration      time.Duration = 0 * time.Millisecond
+	reconcilerReconstructSleepPeriod time.Duration = 10 * time.Minute
 	// waitForAttachTimeout is the maximum amount of time a
 	// operationexecutor.Mount call will wait for a volume to be attached.
 	waitForAttachTimeout time.Duration = 1 * time.Second
 	nodeName             string        = "myhostname"
+	kubeletPodsDir       string        = "fake-dir"
 )
 
 // Calls Run()
@@ -54,20 +58,24 @@ func Test_Run_Positive_DoNothing(t *testing.T) {
 	dsw := cache.NewDesiredStateOfWorld(volumePluginMgr)
 	asw := cache.NewActualStateOfWorld(nodeName, volumePluginMgr)
 	kubeClient := createTestClient()
-	oex := operationexecutor.NewOperationExecutor(kubeClient, volumePluginMgr)
+	fakeRecorder := &record.FakeRecorder{}
+	oex := operationexecutor.NewOperationExecutor(kubeClient, volumePluginMgr, fakeRecorder)
 	reconciler := NewReconciler(
 		kubeClient,
 		false, /* controllerAttachDetachEnabled */
 		reconcilerLoopSleepDuration,
+		reconcilerReconstructSleepPeriod,
 		waitForAttachTimeout,
 		nodeName,
 		dsw,
 		asw,
 		oex,
-		&mount.FakeMounter{})
+		&mount.FakeMounter{},
+		volumePluginMgr,
+		kubeletPodsDir)
 
 	// Act
-	go reconciler.Run(wait.NeverStop)
+	runReconciler(reconciler)
 
 	// Assert
 	assert.NoError(t, volumetesting.VerifyZeroAttachCalls(fakePlugin))
@@ -87,17 +95,21 @@ func Test_Run_Positive_VolumeAttachAndMount(t *testing.T) {
 	dsw := cache.NewDesiredStateOfWorld(volumePluginMgr)
 	asw := cache.NewActualStateOfWorld(nodeName, volumePluginMgr)
 	kubeClient := createTestClient()
-	oex := operationexecutor.NewOperationExecutor(kubeClient, volumePluginMgr)
+	fakeRecorder := &record.FakeRecorder{}
+	oex := operationexecutor.NewOperationExecutor(kubeClient, volumePluginMgr, fakeRecorder)
 	reconciler := NewReconciler(
 		kubeClient,
 		false, /* controllerAttachDetachEnabled */
 		reconcilerLoopSleepDuration,
+		reconcilerReconstructSleepPeriod,
 		waitForAttachTimeout,
 		nodeName,
 		dsw,
 		asw,
 		oex,
-		&mount.FakeMounter{})
+		&mount.FakeMounter{},
+		volumePluginMgr,
+		kubeletPodsDir)
 	pod := &api.Pod{
 		ObjectMeta: api.ObjectMeta{
 			Name: "pod1",
@@ -128,9 +140,8 @@ func Test_Run_Positive_VolumeAttachAndMount(t *testing.T) {
 	}
 
 	// Act
-	go reconciler.Run(wait.NeverStop)
+	runReconciler(reconciler)
 	waitForMount(t, fakePlugin, generatedVolumeName, asw)
-
 	// Assert
 	assert.NoError(t, volumetesting.VerifyAttachCallCount(
 		1 /* expectedAttachCallCount */, fakePlugin))
@@ -155,17 +166,21 @@ func Test_Run_Positive_VolumeMountControllerAttachEnabled(t *testing.T) {
 	dsw := cache.NewDesiredStateOfWorld(volumePluginMgr)
 	asw := cache.NewActualStateOfWorld(nodeName, volumePluginMgr)
 	kubeClient := createTestClient()
-	oex := operationexecutor.NewOperationExecutor(kubeClient, volumePluginMgr)
+	fakeRecorder := &record.FakeRecorder{}
+	oex := operationexecutor.NewOperationExecutor(kubeClient, volumePluginMgr, fakeRecorder)
 	reconciler := NewReconciler(
 		kubeClient,
 		true, /* controllerAttachDetachEnabled */
 		reconcilerLoopSleepDuration,
+		reconcilerReconstructSleepPeriod,
 		waitForAttachTimeout,
 		nodeName,
 		dsw,
 		asw,
 		oex,
-		&mount.FakeMounter{})
+		&mount.FakeMounter{},
+		volumePluginMgr,
+		kubeletPodsDir)
 	pod := &api.Pod{
 		ObjectMeta: api.ObjectMeta{
 			Name: "pod1",
@@ -197,7 +212,7 @@ func Test_Run_Positive_VolumeMountControllerAttachEnabled(t *testing.T) {
 	}
 
 	// Act
-	go reconciler.Run(wait.NeverStop)
+	runReconciler(reconciler)
 	waitForMount(t, fakePlugin, generatedVolumeName, asw)
 
 	// Assert
@@ -223,17 +238,21 @@ func Test_Run_Positive_VolumeAttachMountUnmountDetach(t *testing.T) {
 	dsw := cache.NewDesiredStateOfWorld(volumePluginMgr)
 	asw := cache.NewActualStateOfWorld(nodeName, volumePluginMgr)
 	kubeClient := createTestClient()
-	oex := operationexecutor.NewOperationExecutor(kubeClient, volumePluginMgr)
+	fakeRecorder := &record.FakeRecorder{}
+	oex := operationexecutor.NewOperationExecutor(kubeClient, volumePluginMgr, fakeRecorder)
 	reconciler := NewReconciler(
 		kubeClient,
 		false, /* controllerAttachDetachEnabled */
 		reconcilerLoopSleepDuration,
+		reconcilerReconstructSleepPeriod,
 		waitForAttachTimeout,
 		nodeName,
 		dsw,
 		asw,
 		oex,
-		&mount.FakeMounter{})
+		&mount.FakeMounter{},
+		volumePluginMgr,
+		kubeletPodsDir)
 	pod := &api.Pod{
 		ObjectMeta: api.ObjectMeta{
 			Name: "pod1",
@@ -264,9 +283,8 @@ func Test_Run_Positive_VolumeAttachMountUnmountDetach(t *testing.T) {
 	}
 
 	// Act
-	go reconciler.Run(wait.NeverStop)
+	runReconciler(reconciler)
 	waitForMount(t, fakePlugin, generatedVolumeName, asw)
-
 	// Assert
 	assert.NoError(t, volumetesting.VerifyAttachCallCount(
 		1 /* expectedAttachCallCount */, fakePlugin))
@@ -303,17 +321,21 @@ func Test_Run_Positive_VolumeUnmountControllerAttachEnabled(t *testing.T) {
 	dsw := cache.NewDesiredStateOfWorld(volumePluginMgr)
 	asw := cache.NewActualStateOfWorld(nodeName, volumePluginMgr)
 	kubeClient := createTestClient()
-	oex := operationexecutor.NewOperationExecutor(kubeClient, volumePluginMgr)
+	fakeRecorder := &record.FakeRecorder{}
+	oex := operationexecutor.NewOperationExecutor(kubeClient, volumePluginMgr, fakeRecorder)
 	reconciler := NewReconciler(
 		kubeClient,
 		true, /* controllerAttachDetachEnabled */
 		reconcilerLoopSleepDuration,
+		reconcilerReconstructSleepPeriod,
 		waitForAttachTimeout,
 		nodeName,
 		dsw,
 		asw,
 		oex,
-		&mount.FakeMounter{})
+		&mount.FakeMounter{},
+		volumePluginMgr,
+		kubeletPodsDir)
 	pod := &api.Pod{
 		ObjectMeta: api.ObjectMeta{
 			Name: "pod1",
@@ -344,7 +366,8 @@ func Test_Run_Positive_VolumeUnmountControllerAttachEnabled(t *testing.T) {
 	}
 
 	// Act
-	go reconciler.Run(wait.NeverStop)
+	runReconciler(reconciler)
+
 	dsw.MarkVolumesReportedInUse([]api.UniqueVolumeName{generatedVolumeName})
 	waitForMount(t, fakePlugin, generatedVolumeName, asw)
 
@@ -444,4 +467,9 @@ func createTestClient() *fake.Clientset {
 		return true, nil, fmt.Errorf("no reaction implemented for %s", action)
 	})
 	return fakeClient
+}
+
+func runReconciler(reconciler Reconciler) {
+	sourcesReady := config.NewSourcesReady(func(_ sets.String) bool { return false })
+	go reconciler.Run(sourcesReady, wait.NeverStop)
 }
