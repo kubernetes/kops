@@ -21,7 +21,7 @@ refer to the docs that go with that version.
 <!-- TAG RELEASE_LINK, added by the munger automatically -->
 <strong>
 The latest release of this document can be found
-[here](http://releases.k8s.io/release-1.3/docs/proposals/gpu-support.md).
+[here](http://releases.k8s.io/release-1.4/docs/proposals/gpu-support.md).
 
 Documentation for other releases can be found at
 [releases.k8s.io](http://releases.k8s.io).
@@ -147,7 +147,7 @@ Support binaries and libraries are often versioned along with the kernel module,
 so there should be further hooks to project those under `/bin` and some kind of
 `/lib` before the application is started. This can be done for Docker with the
 use of a versioned [Docker
-volume](https://docs.docker.com/engine/userguide/containers/dockervolumes/) or
+volume](https://docs.docker.com/engine/tutorials/dockervolumes/) or
 with upcoming Kubernetes-specific hooks such as init containers and volume
 containers. In v0, images are expected to bundle everything they need.
 

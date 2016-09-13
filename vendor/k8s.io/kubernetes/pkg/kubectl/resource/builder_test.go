@@ -253,7 +253,7 @@ var aRC string = `
 
 func TestPathBuilderAndVersionedObjectNotDefaulted(t *testing.T) {
 	b := NewBuilder(testapi.Default.RESTMapper(), api.Scheme, fakeClient(), testapi.Default.Codec()).
-		FilenameParam(false, false, "../../../docs/user-guide/update-demo/kitten-rc.yaml")
+		FilenameParam(false, false, "../../../test/fixtures/pkg/kubectl/builder/kitten-rc.yaml")
 
 	test := &testVisitor{}
 	singular := false
@@ -445,6 +445,7 @@ func TestDirectoryBuilder(t *testing.T) {
 	for _, info := range test.Infos {
 		if info.Name == "redis-master" && info.Namespace == "test" && info.Object != nil {
 			found = true
+			break
 		}
 	}
 	if !found {
@@ -622,6 +623,28 @@ func TestResourceNames(t *testing.T) {
 	}
 	if !reflect.DeepEqual(&svc.Items[0], test.Objects()[1]) {
 		t.Errorf("unexpected object: \n%#v, expected: \n%#v", test.Objects()[1], &svc.Items[0])
+	}
+}
+
+func TestResourceNamesWithoutResource(t *testing.T) {
+	pods, svc := testData()
+	b := NewBuilder(testapi.Default.RESTMapper(), api.Scheme, fakeClientWith("", t, map[string]string{
+		"/namespaces/test/pods/foo":     runtime.EncodeOrDie(testapi.Default.Codec(), &pods.Items[0]),
+		"/namespaces/test/services/baz": runtime.EncodeOrDie(testapi.Default.Codec(), &svc.Items[0]),
+	}), testapi.Default.Codec()).
+		NamespaceParam("test")
+
+	test := &testVisitor{}
+
+	if b.Do().Err() == nil {
+		t.Errorf("unexpected non-error")
+	}
+
+	b.ResourceNames("", "foo", "services/baz")
+
+	err := b.Do().Visit(test.Handle)
+	if err == nil || !strings.Contains(err.Error(), "must be RESOURCE/NAME") {
+		t.Fatalf("unexpected response: %v", err)
 	}
 }
 

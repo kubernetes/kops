@@ -23,12 +23,12 @@
 
 
 # LIMITATIONS
-# 1. controllers are not updated unless their name is changed
+# 1. Controllers are not updated unless their name is changed
 # 3. Services will not be updated unless their name is changed,
 #    but for services we actually want updates without name change.
 # 4. Json files are not handled at all. Currently addons must be
 #    in yaml files
-# 5. exit code is probably not always correct (I haven't checked
+# 5. Exit code is probably not always correct (I haven't checked
 #    carefully if it works in 100% cases)
 # 6. There are no unittests
 # 8. Will not work if the total length of paths to addons is greater than
@@ -36,9 +36,9 @@
 # 9. Performance issue: yaml files are read many times in a single execution.
 
 # cosmetic improvements to be done
-# 1. improve the log function; add timestamp, file name, etc.
-# 2. logging doesn't work from files that print things out.
-# 3. kubectl prints the output to stderr (the output should be captured and then
+# 1. Improve the log function; add timestamp, file name, etc.
+# 2. Logging doesn't work from files that print things out.
+# 3. Kubectl prints the output to stderr (the output should be captured and then
 #    logged)
 
 # global config
@@ -49,6 +49,7 @@ if [[ ! -x ${KUBECTL} ]]; then
     echo "ERROR: kubectl command (${KUBECTL}) not found or is not executable" 1>&2
     exit 1
 fi
+KUBECTL_OPTS=${KUBECTL_OPTS:-}
 
 # If an add-on definition is incorrect, or a definition has just disappeared
 # from the local directory, the script will still keep on retrying.
@@ -196,7 +197,7 @@ function run-until-success() {
 # returns a list of <namespace>/<name> pairs (nsnames)
 function get-addon-nsnames-from-server() {
     local -r obj_type=$1
-    "${KUBECTL}" get "${obj_type}" --all-namespaces -o go-template="{{range.items}}{{.metadata.namespace}}/{{.metadata.name}} {{end}}" -l kubernetes.io/cluster-service=true | sed 's/<no value>//g'
+    "${KUBECTL}" "${KUBECTL_OPTS}" get "${obj_type}" --all-namespaces -o go-template="{{range.items}}{{.metadata.namespace}}/{{.metadata.name}} {{end}}" -l kubernetes.io/cluster-service=true | sed 's/<no value>//g'
 }
 
 # returns the characters after the last separator (including)
@@ -242,7 +243,7 @@ function delete-object() {
     local -r obj_name=$3
     log INFO "Deleting ${obj_type} ${namespace}/${obj_name}"
 
-    run-until-success "${KUBECTL} delete --namespace=${namespace} ${obj_type} ${obj_name}" ${NUM_TRIES} ${DELAY_AFTER_ERROR_SEC}
+    run-until-success "${KUBECTL} ${KUBECTL_OPTS} delete --namespace=${namespace} ${obj_type} ${obj_name}" ${NUM_TRIES} ${DELAY_AFTER_ERROR_SEC}
 }
 
 function create-object() {
@@ -261,9 +262,9 @@ function create-object() {
     # this will keep on failing if the ${file_path} disappeared in the meantime.
     # Do not use too many retries.
     if [[ -n "${namespace}" ]]; then
-        run-until-success "${KUBECTL} create --namespace=${namespace} -f ${file_path}" ${NUM_TRIES} ${DELAY_AFTER_ERROR_SEC}
+        run-until-success "${KUBECTL} ${KUBECTL_OPTS} create --namespace=${namespace} -f ${file_path}" ${NUM_TRIES} ${DELAY_AFTER_ERROR_SEC}
     else
-        run-until-success "${KUBECTL} create -f ${file_path}" ${NUM_TRIES} ${DELAY_AFTER_ERROR_SEC}
+        run-until-success "${KUBECTL} ${KUBECTL_OPTS} create -f ${file_path}" ${NUM_TRIES} ${DELAY_AFTER_ERROR_SEC}
     fi
 }
 

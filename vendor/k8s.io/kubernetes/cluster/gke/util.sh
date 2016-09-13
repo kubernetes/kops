@@ -16,8 +16,7 @@
 
 # A library of helper functions and constant for the local config.
 
-# Use the config file specified in $KUBE_CONFIG_FILE, or default to
-# config-default.sh.
+# Uses the config file specified in $KUBE_CONFIG_FILE, or defaults to config-default.sh
 
 KUBE_PROMPT_FOR_UPDATE=y
 KUBE_SKIP_UPDATE=${KUBE_SKIP_UPDATE-"n"}
@@ -63,10 +62,12 @@ function detect-project() {
 }
 
 # Execute prior to running tests to build a release if required for env.
+#
+# Assumed Vars:
+#   KUBE_ROOT
 function test-build-release() {
   echo "... in gke:test-build-release()" >&2
-  echo "... We currently use the Kubernetes version that GKE supports,"
-  echo "... not bleeding-edge builds."
+  "${KUBE_ROOT}/build/release.sh"
 }
 
 # Verify needed binaries exist.
@@ -337,7 +338,7 @@ function ssh-to-node() {
   local node="$1"
   local cmd="$2"
   # Loop until we can successfully ssh into the box
-  for try in $(seq 1 5); do
+  for try in {1..5}; do
     if gcloud compute ssh --ssh-flag="-o LogLevel=quiet" --ssh-flag="-o ConnectTimeout=30" --project "${PROJECT}" --zone="${ZONE}" "${node}" --command "echo test > /dev/null"; then
       break
     fi

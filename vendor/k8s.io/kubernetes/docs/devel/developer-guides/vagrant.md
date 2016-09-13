@@ -21,7 +21,7 @@ refer to the docs that go with that version.
 <!-- TAG RELEASE_LINK, added by the munger automatically -->
 <strong>
 The latest release of this document can be found
-[here](http://releases.k8s.io/release-1.3/docs/devel/developer-guides/vagrant.md).
+[here](http://releases.k8s.io/release-1.4/docs/devel/developer-guides/vagrant.md).
 
 Documentation for other releases can be found at
 [releases.k8s.io](http://releases.k8s.io).
@@ -427,6 +427,20 @@ environment variables. For example, if running `make quick-release`, use:
 
 ```shell
 sudo -E make quick-release
+```
+
+#### I have repository access errors during VM provisioning!
+
+Sometimes VM provisioning may fail with errors that look like this:
+
+```
+Timeout was reached for https://mirrors.fedoraproject.org/metalink?repo=fedora-23&arch=x86_64 [Connection timed out after 120002 milliseconds]
+```
+
+You may use a custom Fedora repository URL to fix this:
+
+```shell
+export CUSTOM_FEDORA_REPOSITORY_URL=https://download.fedoraproject.org/pub/fedora/
 ```
 
 #### I ran vagrant suspend and nothing works!

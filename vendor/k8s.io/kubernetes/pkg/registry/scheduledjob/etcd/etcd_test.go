@@ -33,7 +33,7 @@ import (
 
 func newStorage(t *testing.T) (*REST, *StatusREST, *etcdtesting.EtcdTestServer) {
 	etcdStorage, server := registrytest.NewEtcdStorage(t, batch.GroupName)
-	restOptions := generic.RESTOptions{Storage: etcdStorage, Decorator: generic.UndecoratedStorage, DeleteCollectionWorkers: 1}
+	restOptions := generic.RESTOptions{StorageConfig: etcdStorage, Decorator: generic.UndecoratedStorage, DeleteCollectionWorkers: 1}
 	storage, statusStorage := NewREST(restOptions)
 	return storage, statusStorage, server
 }
@@ -45,7 +45,7 @@ func validNewScheduledJob() *batch.ScheduledJob {
 			Namespace: api.NamespaceDefault,
 		},
 		Spec: batch.ScheduledJobSpec{
-			Schedule:          "* * * * * ?",
+			Schedule:          "* * * * ?",
 			ConcurrencyPolicy: batch.AllowConcurrent,
 			JobTemplate: batch.JobTemplateSpec{
 				Spec: batch.JobSpec{
@@ -92,7 +92,7 @@ func TestUpdate(t *testing.T) {
 	storage, _, server := newStorage(t)
 	defer server.Terminate(t)
 	test := registrytest.New(t, storage.Store)
-	schedule := "1 1 1 1 1 ?"
+	schedule := "1 1 1 1 ?"
 	test.TestUpdate(
 		// valid
 		validNewScheduledJob(),

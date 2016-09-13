@@ -183,17 +183,17 @@ func (m *DefaultRESTMapper) ResourceSingularizer(resourceType string) (string, e
 		if !ok {
 			continue
 		}
-		if singular.IsEmpty() {
+		if singular.Empty() {
 			singular = currSingular
 			continue
 		}
 
 		if currSingular.Resource != singular.Resource {
-			return resourceType, fmt.Errorf("multiple possibile singular resources (%v) found for %v", resources, resourceType)
+			return resourceType, fmt.Errorf("multiple possible singular resources (%v) found for %v", resources, resourceType)
 		}
 	}
 
-	if singular.IsEmpty() {
+	if singular.Empty() {
 		return resourceType, fmt.Errorf("no singular of resource %v has been defined", resourceType)
 	}
 
@@ -223,8 +223,8 @@ func (m *DefaultRESTMapper) ResourcesFor(input unversioned.GroupVersionResource)
 
 	ret := []unversioned.GroupVersionResource{}
 	switch {
-	// fully qualified.  Find the exact match
 	case hasGroup && hasVersion:
+		// fully qualified.  Find the exact match
 		for plural, singular := range m.pluralToSingular {
 			if singular == resource {
 				ret = append(ret, plural)
@@ -237,14 +237,35 @@ func (m *DefaultRESTMapper) ResourcesFor(input unversioned.GroupVersionResource)
 		}
 
 	case hasGroup:
+		// given a group, prefer an exact match.  If you don't find one, resort to a prefix match on group
+		foundExactMatch := false
 		requestedGroupResource := resource.GroupResource()
 		for plural, singular := range m.pluralToSingular {
 			if singular.GroupResource() == requestedGroupResource {
+				foundExactMatch = true
 				ret = append(ret, plural)
 			}
 			if plural.GroupResource() == requestedGroupResource {
+				foundExactMatch = true
 				ret = append(ret, plural)
 			}
+		}
+
+		// if you didn't find an exact match, match on group prefixing. This allows storageclass.storage to match
+		// storageclass.storage.k8s.io
+		if !foundExactMatch {
+			for plural, singular := range m.pluralToSingular {
+				if !strings.HasPrefix(plural.Group, requestedGroupResource.Group) {
+					continue
+				}
+				if singular.Resource == requestedGroupResource.Resource {
+					ret = append(ret, plural)
+				}
+				if plural.Resource == requestedGroupResource.Resource {
+					ret = append(ret, plural)
+				}
+			}
+
 		}
 
 	case hasVersion:
@@ -309,11 +330,27 @@ func (m *DefaultRESTMapper) KindsFor(input unversioned.GroupVersionResource) ([]
 		}
 
 	case hasGroup:
+		foundExactMatch := false
 		requestedGroupResource := resource.GroupResource()
 		for currResource, currKind := range m.resourceToKind {
 			if currResource.GroupResource() == requestedGroupResource {
+				foundExactMatch = true
 				ret = append(ret, currKind)
 			}
+		}
+
+		// if you didn't find an exact match, match on group prefixing. This allows storageclass.storage to match
+		// storageclass.storage.k8s.io
+		if !foundExactMatch {
+			for currResource, currKind := range m.resourceToKind {
+				if !strings.HasPrefix(currResource.Group, requestedGroupResource.Group) {
+					continue
+				}
+				if currResource.Resource == requestedGroupResource.Resource {
+					ret = append(ret, currKind)
+				}
+			}
+
 		}
 
 	case hasVersion:

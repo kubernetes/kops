@@ -158,22 +158,24 @@ func (s *CMServer) Run(_ []string) error {
 	}
 	_, clusterCIDR, _ := net.ParseCIDR(s.ClusterCIDR)
 	_, serviceCIDR, _ := net.ParseCIDR(s.ServiceCIDR)
-	nodeController, err := nodecontroller.NewNodeController(cloud, clientset.NewForConfigOrDie(restclient.AddUserAgent(kubeconfig, "node-controller")),
-		s.PodEvictionTimeout.Duration, s.DeletingPodsQps,
+	nodeController, err := nodecontroller.NewNodeControllerFromClient(cloud, clientset.NewForConfigOrDie(restclient.AddUserAgent(kubeconfig, "node-controller")),
+		s.PodEvictionTimeout.Duration, s.NodeEvictionRate, s.SecondaryNodeEvictionRate, s.LargeClusterSizeThreshold, s.UnhealthyZoneThreshold,
 		s.NodeMonitorGracePeriod.Duration, s.NodeStartupGracePeriod.Duration, s.NodeMonitorPeriod.Duration, clusterCIDR, serviceCIDR, int(s.NodeCIDRMaskSize), s.AllocateNodeCIDRs)
 	if err != nil {
 		glog.Fatalf("Failed to initialize nodecontroller: %v", err)
 	}
-	nodeController.Run(s.NodeSyncPeriod.Duration)
+	nodeController.Run()
 
 	nodeStatusUpdaterController := node.NewStatusUpdater(clientset.NewForConfigOrDie(restclient.AddUserAgent(kubeconfig, "node-status-controller")), s.NodeMonitorPeriod.Duration, time.Now)
 	if err := nodeStatusUpdaterController.Run(wait.NeverStop); err != nil {
 		glog.Fatalf("Failed to start node status update controller: %v", err)
 	}
 
-	serviceController := servicecontroller.New(cloud, clientset.NewForConfigOrDie(restclient.AddUserAgent(kubeconfig, "service-controller")), s.ClusterName)
-	if err := serviceController.Run(s.ServiceSyncPeriod.Duration, s.NodeSyncPeriod.Duration); err != nil {
+	serviceController, err := servicecontroller.New(cloud, clientset.NewForConfigOrDie(restclient.AddUserAgent(kubeconfig, "service-controller")), s.ClusterName)
+	if err != nil {
 		glog.Errorf("Failed to start service controller: %v", err)
+	} else {
+		serviceController.Run(int(s.ConcurrentServiceSyncs))
 	}
 
 	if s.AllocateNodeCIDRs && s.ConfigureCloudRoutes {
@@ -283,24 +285,24 @@ func (s *CMServer) Run(_ []string) error {
 		}
 	}
 
-	provisioner, err := kubecontrollermanager.NewVolumeProvisioner(cloud, s.VolumeConfiguration)
+	alphaProvisioner, err := kubecontrollermanager.NewAlphaVolumeProvisioner(cloud, s.VolumeConfiguration)
 	if err != nil {
-		glog.Fatalf("A Provisioner could not be created: %v, but one was expected. Provisioning will not work. This functionality is considered an early Alpha version.", err)
+		glog.Fatalf("An backward-compatible provisioner could not be created: %v, but one was expected. Provisioning will not work. This functionality is considered an early Alpha version.", err)
 	}
-
-	volumeController := persistentvolumecontroller.NewPersistentVolumeController(
+	volumeController := persistentvolumecontroller.NewPersistentVolumeControllerFromClient(
 		clientset.NewForConfigOrDie(restclient.AddUserAgent(kubeconfig, "persistent-volume-binder")),
 		s.PVClaimBinderSyncPeriod.Duration,
-		provisioner,
-		kubecontrollermanager.ProbeRecyclableVolumePlugins(s.VolumeConfiguration),
+		alphaProvisioner,
+		kubecontrollermanager.ProbeControllerVolumePlugins(cloud, s.VolumeConfiguration),
 		cloud,
 		s.ClusterName,
-		nil,
-		nil,
-		nil,
+		nil, // volumeSource
+		nil, // claimSource
+		nil, // classSource
+		nil, // eventRecorder
 		s.VolumeConfiguration.EnableDynamicProvisioning,
 	)
-	volumeController.Run()
+	volumeController.Run(wait.NeverStop)
 
 	var rootCA []byte
 

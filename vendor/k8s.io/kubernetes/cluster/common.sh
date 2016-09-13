@@ -71,10 +71,16 @@ function create-kubeconfig() {
   fi
 
   # KUBECONFIG determines the file we write to, but it may not exist yet
-  if [[ ! -e "${KUBECONFIG}" ]]; then
-    mkdir -p $(dirname "${KUBECONFIG}")
-    touch "${KUBECONFIG}"
-  fi
+  OLD_IFS=$IFS
+  IFS=':'
+  for cfg in ${KUBECONFIG} ; do
+    if [[ ! -e "${cfg}" ]]; then
+      mkdir -p "$(dirname "${cfg}")"
+      touch "${cfg}"
+    fi
+  done
+  IFS=$OLD_IFS
+
   local cluster_args=(
       "--server=${KUBE_SERVER:-https://${KUBE_MASTER_IP}}"
   )
@@ -256,6 +262,16 @@ function load-or-gen-kube-basicauth() {
 
   if [[ -z "${KUBE_USER:-}" || -z "${KUBE_PASSWORD:-}" ]]; then
     gen-kube-basicauth
+  fi
+
+  # Make sure they don't contain any funny characters.
+  if ! [[ "${KUBE_USER}" =~ ^[-._@a-zA-Z0-9]+$ ]]; then
+    echo "Bad KUBE_USER string."
+    exit 1
+  fi
+  if ! [[ "${KUBE_PASSWORD}" =~ ^[-._@#%/a-zA-Z0-9]+$ ]]; then
+    echo "Bad KUBE_PASSWORD string."
+    exit 1
   fi
 }
 
@@ -463,7 +479,7 @@ function stage-images() {
   done
 
   kube::util::wait-for-jobs || {
-    kube::log::error "unable to push images. see ${temp_dir}/*.log for more info."
+    kube::log::error "unable to push images. See ${temp_dir}/*.log for more info."
     return 1
   }
 
@@ -550,6 +566,7 @@ ENABLE_CLUSTER_LOGGING: $(yaml-quote ${ENABLE_CLUSTER_LOGGING:-false})
 ENABLE_CLUSTER_UI: $(yaml-quote ${ENABLE_CLUSTER_UI:-false})
 ENABLE_NODE_PROBLEM_DETECTOR: $(yaml-quote ${ENABLE_NODE_PROBLEM_DETECTOR:-false})
 ENABLE_NODE_LOGGING: $(yaml-quote ${ENABLE_NODE_LOGGING:-false})
+ENABLE_RESCHEDULER: $(yaml-quote ${ENABLE_RESCHEDULER:-false})
 LOGGING_DESTINATION: $(yaml-quote ${LOGGING_DESTINATION:-})
 ELASTICSEARCH_LOGGING_REPLICAS: $(yaml-quote ${ELASTICSEARCH_LOGGING_REPLICAS:-})
 ENABLE_CLUSTER_DNS: $(yaml-quote ${ENABLE_CLUSTER_DNS:-false})
@@ -568,6 +585,7 @@ CA_CERT: $(yaml-quote ${CA_CERT_BASE64:-})
 KUBELET_CERT: $(yaml-quote ${KUBELET_CERT_BASE64:-})
 KUBELET_KEY: $(yaml-quote ${KUBELET_KEY_BASE64:-})
 NETWORK_PROVIDER: $(yaml-quote ${NETWORK_PROVIDER:-})
+NETWORK_POLICY_PROVIDER: $(yaml-quote ${NETWORK_POLICY_PROVIDER:-})
 PREPULL_E2E_IMAGES: $(yaml-quote ${PREPULL_E2E_IMAGES:-})
 HAIRPIN_MODE: $(yaml-quote ${HAIRPIN_MODE:-})
 OPENCONTRAIL_TAG: $(yaml-quote ${OPENCONTRAIL_TAG:-})
@@ -628,6 +646,11 @@ EOF
 ENABLE_CUSTOM_METRICS: $(yaml-quote ${ENABLE_CUSTOM_METRICS})
 EOF
   fi
+  if [ -n "${FEATURE_GATES:-}" ]; then
+    cat >>$file <<EOF
+FEATURE_GATES: $(yaml-quote ${FEATURE_GATES})
+EOF
+  fi
   if [[ "${master}" == "true" ]]; then
     # Master-only env vars.
     cat >>$file <<EOF
@@ -644,7 +667,14 @@ ENABLE_MANIFEST_URL: $(yaml-quote ${ENABLE_MANIFEST_URL:-false})
 MANIFEST_URL: $(yaml-quote ${MANIFEST_URL:-})
 MANIFEST_URL_HEADER: $(yaml-quote ${MANIFEST_URL_HEADER:-})
 NUM_NODES: $(yaml-quote ${NUM_NODES})
+STORAGE_BACKEND: $(yaml-quote ${STORAGE_BACKEND:-})
+ENABLE_GARBAGE_COLLECTOR: $(yaml-quote ${ENABLE_GARBAGE_COLLECTOR:-})
 EOF
+    if [ -n "${TEST_ETCD_VERSION:-}" ]; then
+      cat >>$file <<EOF
+TEST_ETCD_VERSION: $(yaml-quote ${TEST_ETCD_VERSION})
+EOF
+    fi
     if [ -n "${APISERVER_TEST_ARGS:-}" ]; then
       cat >>$file <<EOF
 APISERVER_TEST_ARGS: $(yaml-quote ${APISERVER_TEST_ARGS})
@@ -675,6 +705,12 @@ EOF
 SCHEDULER_TEST_LOG_LEVEL: $(yaml-quote ${SCHEDULER_TEST_LOG_LEVEL})
 EOF
     fi
+    if [ -n "${INITIAL_ETCD_CLUSTER:-}" ]; then
+      cat >>$file <<EOF
+INITIAL_ETCD_CLUSTER: $(yaml-quote ${INITIAL_ETCD_CLUSTER})
+EOF
+    fi
+
   else
     # Node-only env vars.
     cat >>$file <<EOF
@@ -742,6 +778,11 @@ EOF
 DNS_ZONE_NAME: $(yaml-quote ${DNS_ZONE_NAME})
 EOF
   fi
+  if [ -n "${SCHEDULING_ALGORITHM_PROVIDER:-}" ]; then
+    cat >>$file <<EOF
+SCHEDULING_ALGORITHM_PROVIDER: $(yaml-quote ${SCHEDULING_ALGORITHM_PROVIDER})
+EOF
+  fi
 }
 
 function sha1sum-file() {
@@ -771,6 +812,7 @@ function sha1sum-file() {
 #
 # Assumed vars
 #   KUBE_TEMP
+#   MASTER_NAME
 #
 # Vars set:
 #   CERT_DIR
@@ -798,24 +840,8 @@ function create-certs {
 
   echo "Generating certs for alternate-names: ${sans}"
 
-  local -r cert_create_debug_output=$(mktemp "${KUBE_TEMP}/cert_create_debug_output.XXX")
-  # Note: This was heavily cribbed from make-ca-cert.sh
-  (set -x
-    cd "${KUBE_TEMP}"
-    curl -L -O --connect-timeout 20 --retry 6 --retry-delay 2 https://storage.googleapis.com/kubernetes-release/easy-rsa/easy-rsa.tar.gz
-    tar xzf easy-rsa.tar.gz
-    cd easy-rsa-master/easyrsa3
-    ./easyrsa init-pki
-    ./easyrsa --batch "--req-cn=${primary_cn}@$(date +%s)" build-ca nopass
-    ./easyrsa --subject-alt-name="${sans}" build-server-full "${MASTER_NAME}" nopass
-    ./easyrsa build-client-full kubelet nopass
-    ./easyrsa build-client-full kubecfg nopass) &>${cert_create_debug_output} || {
-    # If there was an error in the subshell, just die.
-    # TODO(roberthbailey): add better error handling here
-    cat "${cert_create_debug_output}" >&2
-    echo "=== Failed to generate certificates: Aborting ===" >&2
-    exit 2
-  }
+  PRIMARY_CN="${primary_cn}" SANS="${sans}" generate-certs
+
   CERT_DIR="${KUBE_TEMP}/easy-rsa-master/easyrsa3"
   # By default, linux wraps base64 output every 76 cols, so we use 'tr -d' to remove whitespaces.
   # Note 'base64 -w0' doesn't work on Mac OS X, which has different flags.
@@ -826,6 +852,37 @@ function create-certs {
   KUBELET_KEY_BASE64=$(cat "${CERT_DIR}/pki/private/kubelet.key" | base64 | tr -d '\r\n')
   KUBECFG_CERT_BASE64=$(cat "${CERT_DIR}/pki/issued/kubecfg.crt" | base64 | tr -d '\r\n')
   KUBECFG_KEY_BASE64=$(cat "${CERT_DIR}/pki/private/kubecfg.key" | base64 | tr -d '\r\n')
+}
+
+# Runs the easy RSA commands to generate certificate files.
+# The generated files are at ${KUBE_TEMP}/easy-rsa-master/easyrsa3
+#
+# Assumed vars
+#   KUBE_TEMP
+#   MASTER_NAME
+#   PRIMARY_CN: Primary canonical name
+#   SANS: Subject alternate names
+#
+#
+function generate-certs {
+  local -r cert_create_debug_output=$(mktemp "${KUBE_TEMP}/cert_create_debug_output.XXX")
+  # Note: This was heavily cribbed from make-ca-cert.sh
+  (set -x
+    cd "${KUBE_TEMP}"
+    curl -L -O --connect-timeout 20 --retry 6 --retry-delay 2 https://storage.googleapis.com/kubernetes-release/easy-rsa/easy-rsa.tar.gz
+    tar xzf easy-rsa.tar.gz
+    cd easy-rsa-master/easyrsa3
+    ./easyrsa init-pki
+    ./easyrsa --batch "--req-cn=${PRIMARY_CN}@$(date +%s)" build-ca nopass
+    ./easyrsa --subject-alt-name="${SANS}" build-server-full "${MASTER_NAME}" nopass
+    ./easyrsa build-client-full kubelet nopass
+    ./easyrsa build-client-full kubecfg nopass) &>${cert_create_debug_output} || {
+    # If there was an error in the subshell, just die.
+    # TODO(roberthbailey): add better error handling here
+    cat "${cert_create_debug_output}" >&2
+    echo "=== Failed to generate certificates: Aborting ===" >&2
+    exit 2
+  }
 }
 
 #

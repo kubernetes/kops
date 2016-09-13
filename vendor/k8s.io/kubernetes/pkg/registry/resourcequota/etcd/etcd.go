@@ -33,11 +33,11 @@ type REST struct {
 
 // NewREST returns a RESTStorage object that will work against resource quotas.
 func NewREST(opts generic.RESTOptions) (*REST, *StatusREST) {
-	prefix := "/resourcequotas"
+	prefix := "/" + opts.ResourcePrefix
 
 	newListFunc := func() runtime.Object { return &api.ResourceQuotaList{} }
-	storageInterface := opts.Decorator(
-		opts.Storage,
+	storageInterface, _ := opts.Decorator(
+		opts.StorageConfig,
 		cachesize.GetWatchCacheSizeByResource(cachesize.ResourceQuotas),
 		&api.ResourceQuota{},
 		prefix,

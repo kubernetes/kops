@@ -21,7 +21,7 @@ refer to the docs that go with that version.
 <!-- TAG RELEASE_LINK, added by the munger automatically -->
 <strong>
 The latest release of this document can be found
-[here](http://releases.k8s.io/release-1.3/examples/elasticsearch/README.md).
+[here](http://releases.k8s.io/release-1.4/examples/elasticsearch/README.md).
 
 Documentation for other releases can be found at
 [releases.k8s.io](http://releases.k8s.io).
@@ -43,7 +43,7 @@ Current Elasticsearch version is `1.7.1`.
 
 ## Docker image
 
-This example uses [this pre-built image](https://github.com/pires/docker-elasticsearch-kubernetes) will not be supported. Feel free to fork to fit your own needs, but mind yourself that you will need to change Kubernetes descriptors accordingly.
+The [pre-built image](https://github.com/pires/docker-elasticsearch-kubernetes) used in this example will not be supported. Feel free to fork to fit your own needs, but keep in mind that you will need to change Kubernetes descriptors accordingly.
 
 ## Deploy
 

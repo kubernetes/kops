@@ -59,11 +59,11 @@ type REST struct {
 
 // NewREST returns a RESTStorage object that will work against replication controllers.
 func NewREST(opts generic.RESTOptions) (*REST, *StatusREST) {
-	prefix := "/controllers"
+	prefix := "/" + opts.ResourcePrefix
 
 	newListFunc := func() runtime.Object { return &api.ReplicationControllerList{} }
-	storageInterface := opts.Decorator(
-		opts.Storage,
+	storageInterface, _ := opts.Decorator(
+		opts.StorageConfig,
 		cachesize.GetWatchCacheSizeByResource(cachesize.Controllers),
 		&api.ReplicationController{},
 		prefix,

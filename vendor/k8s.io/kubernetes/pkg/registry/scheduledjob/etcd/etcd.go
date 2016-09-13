@@ -35,11 +35,11 @@ type REST struct {
 
 // NewREST returns a RESTStorage object that will work against ScheduledJobs.
 func NewREST(opts generic.RESTOptions) (*REST, *StatusREST) {
-	prefix := "/scheduledjobs"
+	prefix := "/" + opts.ResourcePrefix
 
 	newListFunc := func() runtime.Object { return &batch.ScheduledJobList{} }
-	storageInterface := opts.Decorator(
-		opts.Storage,
+	storageInterface, _ := opts.Decorator(
+		opts.StorageConfig,
 		cachesize.GetWatchCacheSizeByResource(cachesize.ScheduledJobs),
 		&batch.ScheduledJob{},
 		prefix,

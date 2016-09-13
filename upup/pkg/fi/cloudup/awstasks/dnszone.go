@@ -142,8 +142,9 @@ func (_ *DNSZone) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSZone) error
 }
 
 type terraformRoute53Zone struct {
-	Name *string           `json:"name"`
-	Tags map[string]string `json:"tags,omitempty"`
+	Name      *string              `json:"name"`
+	Tags      map[string]string    `json:"tags,omitempty"`
+	Lifecycle *terraform.Lifecycle `json:"lifecycle,omitempty"`
 }
 
 func (_ *DNSZone) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *DNSZone) error {
@@ -162,15 +163,29 @@ func (_ *DNSZone) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *D
 		glog.Infof("Existing zone %q found; will configure TF to reuse", aws.StringValue(z.Name))
 
 		e.ID = z.Id
+	}
+
+	if z == nil {
+		// Because we expect most users to create their zones externally,
+		// we now block hostedzone creation in terraform.
+		// This lets us perform deeper DNS validation, but also solves the problem
+		// that otherwise we don't know if TF created the hosted zone
+		// (in which case we should output it) or whether it already existed (in which case we should not)
+		// The root problem here is that TF doesn't have a strong notion of an unmanaged resource
+		return fmt.Errorf("Creation of Route53 hosted zones is not supported for terraform")
+		//tf := &terraformRoute53Zone{
+		//	Name: e.Name,
+		//	//Tags:               cloud.BuildTags(e.Name, nil),
+		//}
+		//
+		//tf.Lifecycle = &terraform.Lifecycle{
+		//	PreventDestroy: fi.Bool(true),
+		//}
+		//
+		//return t.RenderResource("aws_route53_zone", *e.Name, tf)
+	} else {
 		return nil
 	}
-
-	tf := &terraformRoute53Zone{
-		Name: e.Name,
-		//Tags:               cloud.BuildTags(e.Name, nil),
-	}
-
-	return t.RenderResource("aws_route53_zone", *e.Name, tf)
 }
 
 func (e *DNSZone) TerraformLink() *terraform.Literal {

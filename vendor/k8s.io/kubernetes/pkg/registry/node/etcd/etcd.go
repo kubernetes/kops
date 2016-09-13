@@ -66,11 +66,11 @@ func (r *StatusREST) Update(ctx api.Context, name string, objInfo rest.UpdatedOb
 
 // NewStorage returns a NodeStorage object that will work against nodes.
 func NewStorage(opts generic.RESTOptions, connection client.ConnectionInfoGetter, proxyTransport http.RoundTripper) NodeStorage {
-	prefix := "/minions"
+	prefix := "/" + opts.ResourcePrefix
 
 	newListFunc := func() runtime.Object { return &api.NodeList{} }
-	storageInterface := opts.Decorator(
-		opts.Storage,
+	storageInterface, _ := opts.Decorator(
+		opts.StorageConfig,
 		cachesize.GetWatchCacheSizeByResource(cachesize.Nodes),
 		&api.Node{},
 		prefix,

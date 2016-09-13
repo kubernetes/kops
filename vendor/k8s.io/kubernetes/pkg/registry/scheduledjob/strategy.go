@@ -44,13 +44,13 @@ func (scheduledJobStrategy) NamespaceScoped() bool {
 }
 
 // PrepareForCreate clears the status of a scheduled job before creation.
-func (scheduledJobStrategy) PrepareForCreate(obj runtime.Object) {
+func (scheduledJobStrategy) PrepareForCreate(ctx api.Context, obj runtime.Object) {
 	scheduledJob := obj.(*batch.ScheduledJob)
 	scheduledJob.Status = batch.ScheduledJobStatus{}
 }
 
 // PrepareForUpdate clears fields that are not allowed to be set by end users on update.
-func (scheduledJobStrategy) PrepareForUpdate(obj, old runtime.Object) {
+func (scheduledJobStrategy) PrepareForUpdate(ctx api.Context, obj, old runtime.Object) {
 	newScheduledJob := obj.(*batch.ScheduledJob)
 	oldScheduledJob := old.(*batch.ScheduledJob)
 	newScheduledJob.Status = oldScheduledJob.Status
@@ -86,7 +86,7 @@ type scheduledJobStatusStrategy struct {
 
 var StatusStrategy = scheduledJobStatusStrategy{Strategy}
 
-func (scheduledJobStatusStrategy) PrepareForUpdate(obj, old runtime.Object) {
+func (scheduledJobStatusStrategy) PrepareForUpdate(ctx api.Context, obj, old runtime.Object) {
 	newJob := obj.(*batch.ScheduledJob)
 	oldJob := old.(*batch.ScheduledJob)
 	newJob.Spec = oldJob.Spec
@@ -98,13 +98,13 @@ func (scheduledJobStatusStrategy) ValidateUpdate(ctx api.Context, obj, old runti
 
 // ScheduledJobToSelectableFields returns a field set that represents the object for matching purposes.
 func ScheduledJobToSelectableFields(scheduledJob *batch.ScheduledJob) fields.Set {
-	return generic.ObjectMetaFieldsSet(scheduledJob.ObjectMeta, true)
+	return generic.ObjectMetaFieldsSet(&scheduledJob.ObjectMeta, true)
 }
 
 // MatchScheduledJob is the filter used by the generic etcd backend to route
 // watch events from etcd to clients of the apiserver only interested in specific
 // labels/fields.
-func MatchScheduledJob(label labels.Selector, field fields.Selector) generic.Matcher {
+func MatchScheduledJob(label labels.Selector, field fields.Selector) *generic.SelectionPredicate {
 	return &generic.SelectionPredicate{
 		Label: label,
 		Field: field,

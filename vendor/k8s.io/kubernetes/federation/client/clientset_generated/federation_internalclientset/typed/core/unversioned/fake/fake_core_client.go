@@ -26,8 +26,16 @@ type FakeCore struct {
 	*core.Fake
 }
 
+func (c *FakeCore) Events(namespace string) unversioned.EventInterface {
+	return &FakeEvents{c, namespace}
+}
+
 func (c *FakeCore) Namespaces() unversioned.NamespaceInterface {
 	return &FakeNamespaces{c}
+}
+
+func (c *FakeCore) Secrets(namespace string) unversioned.SecretInterface {
+	return &FakeSecrets{c, namespace}
 }
 
 func (c *FakeCore) Services(namespace string) unversioned.ServiceInterface {
