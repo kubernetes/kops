@@ -21,7 +21,7 @@ func init() {
 		Short: "Upgrade cluster",
 		Long:  `Upgrades a k8s cluster.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := upgradeCluster.Run()
+			err := upgradeCluster.Run(args)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -42,7 +42,12 @@ type upgradeAction struct {
 	apply func()
 }
 
-func (c *UpgradeClusterCmd) Run() error {
+func (c *UpgradeClusterCmd) Run(args []string) error {
+	err := rootCommand.ProcessArgs(args)
+	if err != nil {
+		return err
+	}
+
 	clusterRegistry, cluster, err := rootCommand.Cluster()
 	if err != nil {
 		return err
