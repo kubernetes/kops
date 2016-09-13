@@ -105,6 +105,38 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 			Action:   []string{"elasticloadbalancing:*"},
 			Resource: []string{"*"},
 		})
+
+		// Restrict the KMS permissions to only the keys that are being used
+		var set = make(map[string]bool)
+		for _, e := range b.Cluster.Spec.EtcdClusters {
+			for _, m := range e.Members {
+				if m.KmsKeyId != nil {
+					set[*m.KmsKeyId] = true
+				}
+			}
+		}
+
+		keyIds := make([]string, 0, len(set))
+		for k := range set {
+			keyIds = append(keyIds, k)
+		}
+
+		if len(keyIds) > 0 {
+			p.Statement = append(p.Statement, &IAMStatement{
+				Effect:   IAMStatementEffectAllow,
+				Action:   []string{
+					"kms:Encrypt",
+					"kms:Decrypt",
+					"kms:ReEncrypt*",
+					"kms:GenerateDataKey*",
+					"kms:DescribeKey",
+					"kms:CreateGrant",
+					"kms:ListGrants",
+					"kms:RevokeGrant",
+				},
+				Resource: keyIds,
+			})
+		}
 	}
 
 	// For S3 IAM permissions, we grant permissions to subtrees.  So find the parents;
