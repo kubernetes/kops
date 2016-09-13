@@ -22,13 +22,11 @@ func BuildKubeletConfigSpec(cluster *Cluster, instanceGroup *InstanceGroup) (*Ku
 		utils.JsonMergeStruct(c, cluster.Spec.Kubelet)
 	}
 
-	if instanceGroup != nil {
-		for k, v := range instanceGroup.Spec.NodeLabels {
-			if c.NodeLabels == nil {
-				c.NodeLabels = make(map[string]string)
-			}
-			c.NodeLabels[k] = v
+	for k, v := range instanceGroup.Spec.NodeLabels {
+		if c.NodeLabels == nil {
+			c.NodeLabels = make(map[string]string)
 		}
+		c.NodeLabels[k] = v
 	}
 
 	return c, nil
