@@ -21,7 +21,7 @@ const MaxAttemptsWithNoProgress = 100
 type NodeUpCommand struct {
 	config         *NodeUpConfig
 	cluster        *api.Cluster
-	instancegroup  *api.InstanceGroup
+	instanceGroup  *api.InstanceGroup
 	ConfigLocation string
 	ModelDir       vfs.Path
 	CacheDir       string
@@ -109,16 +109,18 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	if c.config.InstanceGroupName != "" {
 		instanceGroupLocation := configBase.Join("instancegroup", c.config.InstanceGroupName)
 
-		c.instancegroup = &api.InstanceGroup{}
+		c.instanceGroup = &api.InstanceGroup{}
 		b, err := instanceGroupLocation.ReadFile()
 		if err != nil {
 			return fmt.Errorf("error loading InstanceGroup %q: %v", instanceGroupLocation, err)
 		}
 
-		err = utils.YamlUnmarshal(b, c.instancegroup)
+		err = utils.YamlUnmarshal(b, c.instanceGroup)
 		if err != nil {
 			return fmt.Errorf("error parsing InstanceGroup %q: %v", instanceGroupLocation, err)
 		}
+	} else {
+		glog.Warningf("No instance group defined in nodeup config")
 	}
 
 	err := evaluateSpec(c.cluster)
@@ -164,7 +166,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	loader := NewLoader(c.config, c.cluster, assets, tags)
 
-	tf, err := newTemplateFunctions(c.config, c.cluster, c.instancegroup, tags)
+	tf, err := newTemplateFunctions(c.config, c.cluster, c.instanceGroup, tags)
 	if err != nil {
 		return fmt.Errorf("error initializing: %v", err)
 	}

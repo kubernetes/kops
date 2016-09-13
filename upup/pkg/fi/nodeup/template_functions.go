@@ -67,11 +67,28 @@ func newTemplateFunctions(nodeupConfig *NodeUpConfig, cluster *api.Cluster, inst
 		return nil, fmt.Errorf("KeyStore not set")
 	}
 
-	kubeletConfigSpec, err := api.BuildKubeletConfigSpec(t.cluster, t.instanceGroup)
-	if err != nil {
-		return nil, fmt.Errorf("error building kubelet config: %v", err)
+	{
+		instanceGroup := t.instanceGroup
+		if instanceGroup == nil {
+			// Old clusters might not have exported instance groups
+			// in that case we build a synthetic instance group with the information that BuildKubeletConfigSpec needs
+			// TODO: Remove this once we have a stable release
+			glog.Warningf("Building a synthetic instance group")
+			instanceGroup = &api.InstanceGroup{}
+			instanceGroup.Name = "synthetic"
+			if t.IsMaster() {
+				instanceGroup.Spec.Role = api.InstanceGroupRoleMaster
+			} else {
+				instanceGroup.Spec.Role = api.InstanceGroupRoleNode
+			}
+			t.instanceGroup = instanceGroup
+		}
+		kubeletConfigSpec, err := api.BuildKubeletConfigSpec(cluster, instanceGroup)
+		if err != nil {
+			return nil, fmt.Errorf("error building kubelet config: %v", err)
+		}
+		t.kubeletConfig = kubeletConfigSpec
 	}
-	t.kubeletConfig = kubeletConfigSpec
 
 	return t, nil
 }
