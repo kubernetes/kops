@@ -205,8 +205,8 @@ type ClusterSpec struct {
 	KubeControllerManager *KubeControllerManagerConfig `json:"kubeControllerManager,omitempty"`
 	KubeScheduler         *KubeSchedulerConfig         `json:"kubeScheduler,omitempty"`
 	KubeProxy             *KubeProxyConfig             `json:"kubeProxy,omitempty"`
-	Kubelet               *KubeletConfig               `json:"kubelet,omitempty"`
-	MasterKubelet         *KubeletConfig               `json:"masterKubelet,omitempty"`
+	Kubelet               *KubeletConfigSpec           `json:"kubelet,omitempty"`
+	MasterKubelet         *KubeletConfigSpec           `json:"masterKubelet,omitempty"`
 
 	// Networking configuration
 	Networking *NetworkingSpec `json:"networking,omitempty"`
