@@ -119,7 +119,7 @@ echo "== nodeup node config starting =="
 ensure-install-dir
 
 cat > kube_env.yaml << __EOF_KUBE_ENV
-{{ RenderNodeUpConfig Args }}
+{{ RenderNodeUpConfig (GetInstanceGroup (index Args 0)) }}
 __EOF_KUBE_ENV
 
 download-release

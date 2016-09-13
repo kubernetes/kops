@@ -14,8 +14,15 @@ type NodeUpConfig struct {
 	// Images are a list of images we should preload
 	Images []*Image `json:"images,omitempty"`
 
+	// ConfigBase is the base VFS path for config objects
+	ConfigBase *string `json:",omitempty"`
+
 	// ClusterLocation is the VFS path to the cluster spec
-	ClusterLocation string `json:",omitempty"`
+	// Deprecated: prefer ConfigBase
+	ClusterLocation *string `json:",omitempty"`
+
+	// InstanceGroupName is the name of the instance group
+	InstanceGroupName string `json:",omitempty"`
 
 	// ClusterName is the name of the cluster
 	// Technically this is redundant - it is in ClusterLocation, but this can serve as a cross-check,

@@ -43,7 +43,7 @@ func (l *SpecBuilder) BuildCompleteSpec(clusterSpec *api.ClusterSpec, modelStore
 	*completed = *(loaded.(*api.ClusterSpec))
 
 	// Master kubelet config = (base kubelet config + master kubelet config)
-	masterKubelet := &api.KubeletConfig{}
+	masterKubelet := &api.KubeletConfigSpec{}
 	utils.JsonMergeStruct(masterKubelet, completed.Kubelet)
 	utils.JsonMergeStruct(masterKubelet, completed.MasterKubelet)
 	completed.MasterKubelet = masterKubelet

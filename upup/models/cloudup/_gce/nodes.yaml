@@ -19,10 +19,10 @@ instanceTemplate/{{ $nodeset.Key }}-{{ $.NodeInstancePrefix }}-template:
     # kube-env: resources/kube-env
 {{ if eq $.NodeInit "cloudinit" }}
     # TODO: we should probably always store the config somewhere
-    config: resources/cloudinit.yaml _kubernetes_master
+    config: resources/cloudinit.yaml $nodeset.Name
 {{ else }}
     startup-script: resources/nodeup.sh
-    config: resources/config.yaml _kubernetes_pool
+    config: resources/config.yaml $nodeset.Name
 {{ end }}
     cluster-name: resources/cluster-name
   tags:
