@@ -20,6 +20,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
+	"strings"
 )
 
 // Compile time check for interface adeherence
@@ -35,7 +36,9 @@ func (zone *Zone) Name() string {
 }
 
 func (zone *Zone) ID() string {
-	return aws.StringValue(zone.impl.Id)
+	id := aws.StringValue(zone.impl.Id)
+	id = strings.TrimPrefix(id, "/hostedzone/")
+	return id
 }
 
 func (zone *Zone) ResourceRecordSets() (dnsprovider.ResourceRecordSets, bool) {
