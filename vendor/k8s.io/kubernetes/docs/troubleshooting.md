@@ -21,7 +21,7 @@ refer to the docs that go with that version.
 <!-- TAG RELEASE_LINK, added by the munger automatically -->
 <strong>
 The latest release of this document can be found
-[here](http://releases.k8s.io/release-1.3/docs/troubleshooting.md).
+[here](http://releases.k8s.io/release-1.4/docs/troubleshooting.md).
 
 Documentation for other releases can be found at
 [releases.k8s.io](http://releases.k8s.io).
@@ -69,7 +69,7 @@ The Kubernetes team hangs out on Slack in the `#kubernetes-users` channel.  You 
 
 ## Mailing List
 
-The Google Container Engine mailing list is [google-containers@googlegroups.com](https://groups.google.com/forum/#!forum/google-containers)
+The Google Container Engine mailing list is [kubernetes-users@googlegroups.com](https://groups.google.com/forum/#!forum/kubernetes-users)
 
 ## Bugs and Feature requests
 

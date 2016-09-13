@@ -21,7 +21,7 @@ refer to the docs that go with that version.
 <!-- TAG RELEASE_LINK, added by the munger automatically -->
 <strong>
 The latest release of this document can be found
-[here](http://releases.k8s.io/release-1.3/examples/k8petstore/README.md).
+[here](http://releases.k8s.io/release-1.4/examples/k8petstore/README.md).
 
 Documentation for other releases can be found at
 [releases.k8s.io](http://releases.k8s.io).
@@ -132,7 +132,7 @@ Now that you are done hacking around on the app, you can run it in Kubernetes.  
 
 Now, how to run the entire application in Kubernetes?
 
-To simplify running this application, we have a single file, k8petstore.sh, which writes out json files on to disk.  This allows us to have dynamic parameters, without needing to worry about managing multiple json files.
+To simplify running this application, we have a single file, [k8petstore.sh](k8petstore.sh), which writes out json files on to disk.  This allows us to have dynamic parameters, e.g. the namespace is configured by `NS` whose default value is `k8petstore`, without needing to worry about managing multiple json files.
 
 You might want to change it to point to your customized Go image, if you chose to modify things, like the number of data generators (more generators will create more load on the redis master).
 

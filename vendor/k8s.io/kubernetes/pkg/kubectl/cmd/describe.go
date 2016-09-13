@@ -51,8 +51,7 @@ var (
 		will first check for an exact match on TYPE and NAME_PREFIX. If no such resource
 		exists, it will output details for every resource that has a name prefixed with NAME_PREFIX.
 
-		`) +
-		kubectl.PossibleResourceTypes
+		`) + valid_resources
 
 	describe_example = dedent.Dedent(`
 		# Describe a node
@@ -75,7 +74,7 @@ var (
 		kubectl describe pods frontend`)
 )
 
-func NewCmdDescribe(f *cmdutil.Factory, out io.Writer) *cobra.Command {
+func NewCmdDescribe(f *cmdutil.Factory, out, cmdErr io.Writer) *cobra.Command {
 	options := &DescribeOptions{}
 	describerSettings := &kubectl.DescriberSettings{}
 
@@ -88,7 +87,7 @@ func NewCmdDescribe(f *cmdutil.Factory, out io.Writer) *cobra.Command {
 		Long:    describe_long,
 		Example: describe_example,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := RunDescribe(f, out, cmd, args, options, describerSettings)
+			err := RunDescribe(f, out, cmdErr, cmd, args, options, describerSettings)
 			cmdutil.CheckErr(err)
 		},
 		ValidArgs:  validArgs,
@@ -104,7 +103,7 @@ func NewCmdDescribe(f *cmdutil.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunDescribe(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, args []string, options *DescribeOptions, describerSettings *kubectl.DescriberSettings) error {
+func RunDescribe(f *cmdutil.Factory, out, cmdErr io.Writer, cmd *cobra.Command, args []string, options *DescribeOptions, describerSettings *kubectl.DescriberSettings) error {
 	selector := cmdutil.GetFlagString(cmd, "selector")
 	allNamespaces := cmdutil.GetFlagBool(cmd, "all-namespaces")
 	cmdNamespace, enforceNamespace, err := f.DefaultNamespace()
@@ -115,7 +114,7 @@ func RunDescribe(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, args []s
 		enforceNamespace = false
 	}
 	if len(args) == 0 && len(options.Filenames) == 0 {
-		fmt.Fprint(out, "You must specify the type of resource to describe. ", valid_resources)
+		fmt.Fprint(cmdErr, "You must specify the type of resource to describe. ", valid_resources)
 		return cmdutil.UsageError(cmd, "Required resource not specified.")
 	}
 
@@ -142,6 +141,7 @@ func RunDescribe(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, args []s
 		allErrs = append(allErrs, err)
 	}
 
+	first := true
 	for _, info := range infos {
 		mapping := info.ResourceMapping()
 		describer, err := f.Describer(mapping)
@@ -154,7 +154,12 @@ func RunDescribe(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, args []s
 			allErrs = append(allErrs, err)
 			continue
 		}
-		fmt.Fprintf(out, "%s\n\n", s)
+		if first {
+			first = false
+			fmt.Fprint(out, s)
+		} else {
+			fmt.Fprintf(out, "\n\n%s", s)
+		}
 	}
 
 	return utilerrors.NewAggregate(allErrs)

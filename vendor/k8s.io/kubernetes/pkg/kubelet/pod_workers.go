@@ -282,7 +282,7 @@ func (p *podWorkers) checkForUpdates(uid types.UID) {
 
 // killPodNow returns a KillPodFunc that can be used to kill a pod.
 // It is intended to be injected into other modules that need to kill a pod.
-func killPodNow(podWorkers PodWorkers) eviction.KillPodFunc {
+func killPodNow(podWorkers PodWorkers, recorder record.EventRecorder) eviction.KillPodFunc {
 	return func(pod *api.Pod, status api.PodStatus, gracePeriodOverride *int64) error {
 		// determine the grace period to use when killing the pod
 		gracePeriod := int64(0)
@@ -292,7 +292,7 @@ func killPodNow(podWorkers PodWorkers) eviction.KillPodFunc {
 			gracePeriod = *pod.Spec.TerminationGracePeriodSeconds
 		}
 
-		// we timeout and return an error if we dont get a callback within a reasonable time.
+		// we timeout and return an error if we don't get a callback within a reasonable time.
 		// the default timeout is relative to the grace period (we settle on 2s to wait for kubelet->runtime traffic to complete in sigkill)
 		timeout := int64(gracePeriod + (gracePeriod / 2))
 		minTimeout := int64(2)
@@ -325,6 +325,7 @@ func killPodNow(podWorkers PodWorkers) eviction.KillPodFunc {
 		case r := <-ch:
 			return r.err
 		case <-time.After(timeoutDuration):
+			recorder.Eventf(pod, api.EventTypeWarning, events.ExceededGracePeriod, "Container runtime did not kill the pod within specified grace period.")
 			return fmt.Errorf("timeout waiting to kill pod")
 		}
 	}

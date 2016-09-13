@@ -21,14 +21,17 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
 	"k8s.io/kubernetes/pkg/util/flowcontrol"
 	"k8s.io/kubernetes/pkg/util/sets"
+
+	"github.com/golang/glog"
 )
 
 // TimedValue is a value that should be processed at a designated time.
 type TimedValue struct {
-	Value     string
+	Value string
+	// UID could be anything that helps identify the value
+	UID       interface{}
 	AddedAt   time.Time
 	ProcessAt time.Time
 }
@@ -94,13 +97,15 @@ func (q *UniqueQueue) Replace(value TimedValue) bool {
 	return false
 }
 
-// Removes the value from the queue, so Get() call won't return it, and allow subsequent addition
-// of the given value. If the value is not present does nothing and returns false.
-func (q *UniqueQueue) Remove(value string) bool {
+// Removes the value from the queue, but keeps it in the set, so it won't be added second time.
+// Returns true if something was removed.
+func (q *UniqueQueue) RemoveFromQueue(value string) bool {
 	q.lock.Lock()
 	defer q.lock.Unlock()
 
-	q.set.Delete(value)
+	if !q.set.Has(value) {
+		return false
+	}
 	for i, val := range q.queue {
 		if val.Value == value {
 			heap.Remove(&q.queue, i)
@@ -108,6 +113,25 @@ func (q *UniqueQueue) Remove(value string) bool {
 		}
 	}
 	return false
+}
+
+// Removes the value from the queue, so Get() call won't return it, and allow subsequent addition
+// of the given value. If the value is not present does nothing and returns false.
+func (q *UniqueQueue) Remove(value string) bool {
+	q.lock.Lock()
+	defer q.lock.Unlock()
+
+	if !q.set.Has(value) {
+		return false
+	}
+	q.set.Delete(value)
+	for i, val := range q.queue {
+		if val.Value == value {
+			heap.Remove(&q.queue, i)
+			return true
+		}
+	}
+	return true
 }
 
 // Returns the oldest added value that wasn't returned yet.
@@ -171,7 +195,11 @@ type ActionFunc func(TimedValue) (bool, time.Duration)
 // Try processes the queue. Ends prematurely if RateLimiter forbids an action and leak is true.
 // Otherwise, requeues the item to be processed. Each value is processed once if fn returns true,
 // otherwise it is added back to the queue. The returned remaining is used to identify the minimum
-// time to execute the next item in the queue.
+// time to execute the next item in the queue. The same value is processed only once unless
+// Remove is explicitly called on it (it's done by the cancelPodEviction function in NodeController
+// when Node becomes Ready again)
+// TODO: figure out a good way to do garbage collection for all Nodes that were removed from
+// the cluster.
 func (q *RateLimitedTimedQueue) Try(fn ActionFunc) {
 	val, ok := q.queue.Head()
 	q.limiterLock.Lock()
@@ -179,7 +207,7 @@ func (q *RateLimitedTimedQueue) Try(fn ActionFunc) {
 	for ok {
 		// rate limit the queue checking
 		if !q.limiter.TryAccept() {
-			glog.V(10).Info("Try rate limited...")
+			glog.V(10).Infof("Try rate limited for value: %v", val)
 			// Try again later
 			break
 		}
@@ -193,18 +221,19 @@ func (q *RateLimitedTimedQueue) Try(fn ActionFunc) {
 			val.ProcessAt = now.Add(wait + 1)
 			q.queue.Replace(val)
 		} else {
-			q.queue.Remove(val.Value)
+			q.queue.RemoveFromQueue(val.Value)
 		}
 		val, ok = q.queue.Head()
 	}
 }
 
-// Adds value to the queue to be processed. Won't add the same value a second time if it was already
-// added and not removed.
-func (q *RateLimitedTimedQueue) Add(value string) bool {
+// Adds value to the queue to be processed. Won't add the same value(comparsion by value) a second time
+// if it was already added and not removed.
+func (q *RateLimitedTimedQueue) Add(value string, uid interface{}) bool {
 	now := now()
 	return q.queue.Add(TimedValue{
 		Value:     value,
+		UID:       uid,
 		AddedAt:   now,
 		ProcessAt: now,
 	})

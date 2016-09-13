@@ -21,7 +21,7 @@ refer to the docs that go with that version.
 <!-- TAG RELEASE_LINK, added by the munger automatically -->
 <strong>
 The latest release of this document can be found
-[here](http://releases.k8s.io/release-1.3/docs/user-guide/resourcequota/README.md).
+[here](http://releases.k8s.io/release-1.4/docs/user-guide/resourcequota/README.md).
 
 Documentation for other releases can be found at
 [releases.k8s.io](http://releases.k8s.io).
@@ -32,7 +32,7 @@ Documentation for other releases can be found at
 
 <!-- END MUNGE: UNVERSIONED_WARNING -->
 
-This file has moved to: http://kubernetes.github.io/docs/user-guide/resourcequota/
+This file has moved to: http://kubernetes.github.io/docs/admin/resourcequota/
 
 
 <!-- BEGIN MUNGE: GENERATED_ANALYTICS -->

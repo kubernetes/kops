@@ -27,9 +27,12 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/golang/glog"
+	"k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/kubectl"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
+	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/util/wait"
 )
 
 // ReplaceOptions is the start of the data required to perform the operation.  As new fields are added, add them here instead of
@@ -84,7 +87,7 @@ func NewCmdReplace(f *cmdutil.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().Bool("force", false, "Delete and re-create the specified resource")
 	cmd.Flags().Bool("cascade", false, "Only relevant during a force replace. If true, cascade the deletion of the resources managed by this resource (e.g. Pods created by a ReplicationController).")
 	cmd.Flags().Int("grace-period", -1, "Only relevant during a force replace. Period of time in seconds given to the old resource to terminate gracefully. Ignored if negative.")
-	cmd.Flags().Duration("timeout", 0, "Only relevant during a force replace. The length of time to wait before giving up on a delete of the old resource, zero means determine a timeout from the size of the object")
+	cmd.Flags().Duration("timeout", 0, "Only relevant during a force replace. The length of time to wait before giving up on a delete of the old resource, zero means determine a timeout from the size of the object. Any other values should contain a corresponding time unit (e.g. 1s, 2m, 3h).")
 	cmdutil.AddValidateFlags(cmd)
 	cmdutil.AddRecursiveFlag(cmd, &options.Recursive)
 	cmdutil.AddOutputFlagsForMutation(cmd)
@@ -117,6 +120,14 @@ func RunReplace(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, args []st
 	shortOutput := cmdutil.GetFlagString(cmd, "output") == "name"
 	if force {
 		return forceReplace(f, out, cmd, args, shortOutput, options)
+	}
+
+	if cmdutil.GetFlagInt(cmd, "grace-period") >= 0 {
+		return fmt.Errorf("--grace-period must have --force specified")
+	}
+
+	if cmdutil.GetFlagDuration(cmd, "timeout") != 0 {
+		return fmt.Errorf("--timeout must have --force specified")
 	}
 
 	mapper, typer := f.Object(cmdutil.GetIncludeThirdPartyAPIs(cmd))
@@ -187,8 +198,11 @@ func forceReplace(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, args []
 		}
 	}
 
-	mapper, typer := f.Object(cmdutil.GetIncludeThirdPartyAPIs(cmd))
-	r := resource.NewBuilder(mapper, typer, resource.ClientMapperFunc(f.ClientForMapping), f.Decoder(true)).
+	mapper, typer, err := f.UnstructuredObject()
+	if err != nil {
+		return err
+	}
+	r := resource.NewBuilder(mapper, typer, resource.ClientMapperFunc(f.UnstructuredClientForMapping), runtime.UnstructuredJSONScheme).
 		ContinueOnError().
 		NamespaceParam(cmdNamespace).DefaultNamespace().
 		FilenameParam(enforceNamespace, options.Recursive, options.Filenames...).
@@ -201,10 +215,11 @@ func forceReplace(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, args []
 	}
 	//Replace will create a resource if it doesn't exist already, so ignore not found error
 	ignoreNotFound := true
+	timeout := cmdutil.GetFlagDuration(cmd, "timeout")
 	// By default use a reaper to delete all related resources.
 	if cmdutil.GetFlagBool(cmd, "cascade") {
 		glog.Warningf("\"cascade\" is set, kubectl will delete and re-create all resources managed by this resource (e.g. Pods created by a ReplicationController). Consider using \"kubectl rolling-update\" if you want to update a ReplicationController together with its Pods.")
-		err = ReapResult(r, f, out, cmdutil.GetFlagBool(cmd, "cascade"), ignoreNotFound, cmdutil.GetFlagDuration(cmd, "timeout"), cmdutil.GetFlagInt(cmd, "grace-period"), shortOutput, mapper)
+		err = ReapResult(r, f, out, cmdutil.GetFlagBool(cmd, "cascade"), ignoreNotFound, timeout, cmdutil.GetFlagInt(cmd, "grace-period"), shortOutput, mapper, false)
 	} else {
 		err = DeleteResult(r, out, ignoreNotFound, shortOutput, mapper)
 	}
@@ -212,7 +227,23 @@ func forceReplace(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, args []
 		return err
 	}
 
-	r = resource.NewBuilder(mapper, typer, resource.ClientMapperFunc(f.ClientForMapping), f.Decoder(true)).
+	if timeout == 0 {
+		timeout = kubectl.Timeout
+	}
+	r.Visit(func(info *resource.Info, err error) error {
+		if err != nil {
+			return err
+		}
+
+		return wait.PollImmediate(kubectl.Interval, timeout, func() (bool, error) {
+			if err := info.Get(); !errors.IsNotFound(err) {
+				return false, err
+			}
+			return true, nil
+		})
+	})
+
+	r = resource.NewBuilder(mapper, typer, resource.ClientMapperFunc(f.UnstructuredClientForMapping), runtime.UnstructuredJSONScheme).
 		Schema(schema).
 		ContinueOnError().
 		NamespaceParam(cmdNamespace).DefaultNamespace().

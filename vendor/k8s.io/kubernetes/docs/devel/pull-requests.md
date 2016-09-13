@@ -21,7 +21,7 @@ refer to the docs that go with that version.
 <!-- TAG RELEASE_LINK, added by the munger automatically -->
 <strong>
 The latest release of this document can be found
-[here](http://releases.k8s.io/release-1.3/docs/devel/pull-requests.md).
+[here](http://releases.k8s.io/release-1.4/docs/devel/pull-requests.md).
 
 Documentation for other releases can be found at
 [releases.k8s.io](http://releases.k8s.io).
@@ -71,7 +71,7 @@ The following will save time for both you and your reviewer:
 * Enable [pre-commit hooks](development.md#committing-changes-to-your-fork) and verify they pass.
 * Verify `make verify` passes.
 * Verify `make test` passes.
-* Verify `make test-integration.sh` passes.
+* Verify `make test-integration` passes.
 
 ## Release Notes
 

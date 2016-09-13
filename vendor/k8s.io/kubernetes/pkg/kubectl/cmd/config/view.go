@@ -71,7 +71,7 @@ func NewCmdConfigView(out io.Writer, ConfigAccess clientcmd.ConfigAccess) *cobra
 				cmd.Flags().Set("output", defaultOutputFormat)
 			}
 			if outputFormat == "" {
-				fmt.Printf("reset to default output format (%s) as --output is empty", defaultOutputFormat)
+				fmt.Printf("Reset to default output format (%s) as --output is empty\n", defaultOutputFormat)
 				cmd.Flags().Set("output", defaultOutputFormat)
 			}
 
@@ -79,7 +79,7 @@ func NewCmdConfigView(out io.Writer, ConfigAccess clientcmd.ConfigAccess) *cobra
 			cmdutil.CheckErr(err)
 			version, err := cmdutil.OutputVersion(cmd, &latest.ExternalVersion)
 			cmdutil.CheckErr(err)
-			printer = kubectl.NewVersionedPrinter(printer, clientcmdapi.Scheme, version)
+			printer = kubectl.NewVersionedPrinter(printer, latest.Scheme, version)
 
 			cmdutil.CheckErr(options.Run(out, printer))
 		},
@@ -89,10 +89,10 @@ func NewCmdConfigView(out io.Writer, ConfigAccess clientcmd.ConfigAccess) *cobra
 	cmd.Flags().Set("output", defaultOutputFormat)
 
 	options.Merge.Default(true)
-	f := cmd.Flags().VarPF(&options.Merge, "merge", "", "merge together the full hierarchy of kubeconfig files")
+	f := cmd.Flags().VarPF(&options.Merge, "merge", "", "merge the full hierarchy of kubeconfig files")
 	f.NoOptDefVal = "true"
 	cmd.Flags().BoolVar(&options.RawByteData, "raw", false, "display raw byte data")
-	cmd.Flags().BoolVar(&options.Flatten, "flatten", false, "flatten the resulting kubeconfig file into self contained output (useful for creating portable kubeconfig files)")
+	cmd.Flags().BoolVar(&options.Flatten, "flatten", false, "flatten the resulting kubeconfig file into self-contained output (useful for creating portable kubeconfig files)")
 	cmd.Flags().BoolVar(&options.Minify, "minify", false, "remove all information not used by current-context from the output")
 	return cmd
 }

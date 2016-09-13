@@ -22,9 +22,11 @@ import (
 
 	"k8s.io/kubernetes/cmd/kube-proxy/app"
 	"k8s.io/kubernetes/cmd/kube-proxy/app/options"
+	_ "k8s.io/kubernetes/pkg/client/metrics/prometheus" // for client metric registration
 	"k8s.io/kubernetes/pkg/healthz"
-	"k8s.io/kubernetes/pkg/util"
 	"k8s.io/kubernetes/pkg/util/flag"
+	"k8s.io/kubernetes/pkg/util/logs"
+	_ "k8s.io/kubernetes/pkg/version/prometheus" // for version metric registration
 	"k8s.io/kubernetes/pkg/version/verflag"
 
 	"github.com/spf13/pflag"
@@ -39,8 +41,8 @@ func main() {
 	config.AddFlags(pflag.CommandLine)
 
 	flag.InitFlags()
-	util.InitLogs()
-	defer util.FlushLogs()
+	logs.InitLogs()
+	defer logs.FlushLogs()
 
 	verflag.PrintAndExitIfRequested()
 

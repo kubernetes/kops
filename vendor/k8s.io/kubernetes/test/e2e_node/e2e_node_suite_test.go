@@ -20,6 +20,7 @@ package e2e_node
 
 import (
 	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -27,49 +28,56 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"strings"
 	"testing"
 	"time"
 
 	"k8s.io/kubernetes/pkg/api"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	"k8s.io/kubernetes/pkg/client/restclient"
-	"k8s.io/kubernetes/pkg/client/typed/dynamic"
-	namespacecontroller "k8s.io/kubernetes/pkg/controller/namespace"
-	"k8s.io/kubernetes/pkg/util/wait"
 	commontest "k8s.io/kubernetes/test/e2e/common"
 	"k8s.io/kubernetes/test/e2e/framework"
+	"k8s.io/kubernetes/test/e2e_node/services"
 
 	"github.com/golang/glog"
 	. "github.com/onsi/ginkgo"
+	"github.com/onsi/ginkgo/config"
 	more_reporters "github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
+	"github.com/spf13/pflag"
 )
 
-var e2es *e2eService
+var e2es *services.E2EServices
 
 var prePullImages = flag.Bool("prepull-images", true, "If true, prepull images so image pull failures do not cause test failures.")
-var junitFileNumber = flag.Int("junit-file-number", 1, "Used to create junit filename - e.g. junit_01.xml.")
+var runServicesMode = flag.Bool("run-services-mode", false, "If true, only run services (etcd, apiserver) in current process, and not run test.")
 
 func init() {
 	framework.RegisterCommonFlags()
 	framework.RegisterNodeFlags()
+	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
+	// Mark the run-services-mode flag as hidden to prevent user from using it.
+	pflag.CommandLine.MarkHidden("run-services-mode")
 }
 
 func TestE2eNode(t *testing.T) {
-	flag.Parse()
-
+	pflag.Parse()
+	if *runServicesMode {
+		// If run-services-mode is specified, only run services in current process.
+		services.RunE2EServices()
+		return
+	}
+	// If run-services-mode is not specified, run test.
 	rand.Seed(time.Now().UTC().UnixNano())
 	RegisterFailHandler(Fail)
 	reporters := []Reporter{}
-	if *reportDir != "" {
+	reportDir := framework.TestContext.ReportDir
+	if reportDir != "" {
 		// Create the directory if it doesn't already exists
-		if err := os.MkdirAll(*reportDir, 0755); err != nil {
+		if err := os.MkdirAll(reportDir, 0755); err != nil {
 			glog.Errorf("Failed creating report directory: %v", err)
 		} else {
 			// Configure a junit reporter to write to the directory
-			junitFile := fmt.Sprintf("junit_%02d.xml", *junitFileNumber)
-			junitPath := path.Join(*reportDir, junitFile)
+			junitFile := fmt.Sprintf("junit_%s%02d.xml", framework.TestContext.ReportPrefix, config.GinkgoConfig.ParallelNode)
+			junitPath := path.Join(reportDir, junitFile)
 			reporters = append(reporters, more_reporters.NewJUnitReporter(junitPath))
 		}
 	}
@@ -77,18 +85,13 @@ func TestE2eNode(t *testing.T) {
 }
 
 // Setup the kubelet on the node
-var _ = BeforeSuite(func() {
-	if *buildServices {
-		buildGo()
-	}
+var _ = SynchronizedBeforeSuite(func() []byte {
+	// Initialize node name here, so that the following code can get right node name.
 	if framework.TestContext.NodeName == "" {
-		output, err := exec.Command("hostname").CombinedOutput()
-		if err != nil {
-			glog.Fatalf("Could not get node name from hostname %v.  Output:\n%s", err, output)
-		}
-		framework.TestContext.NodeName = strings.TrimSpace(fmt.Sprintf("%s", output))
+		hostname, err := os.Hostname()
+		Expect(err).NotTo(HaveOccurred(), "should be able to get node name")
+		framework.TestContext.NodeName = hostname
 	}
-
 	// Pre-pull the images tests depend on so we can fail immediately if there is an image pull issue
 	// This helps with debugging test flakes since it is hard to tell when a test failure is due to image pulling.
 	if *prePullImages {
@@ -103,29 +106,35 @@ var _ = BeforeSuite(func() {
 	maskLocksmithdOnCoreos()
 
 	if *startServices {
-		e2es = newE2eService(framework.TestContext.NodeName, framework.TestContext.CgroupsPerQOS)
-		if err := e2es.start(); err != nil {
-			Fail(fmt.Sprintf("Unable to start node services.\n%v", err))
-		}
+		e2es = services.NewE2EServices()
+		Expect(e2es.Start()).To(Succeed(), "should be able to start node services.")
 		glog.Infof("Node services started.  Running tests...")
 	} else {
 		glog.Infof("Running tests without starting services.")
 	}
 
-	glog.Infof("Starting namespace controller")
-	startNamespaceController()
+	glog.Infof("Wait for the node to be ready")
+	waitForNodeReady()
 
 	// Reference common test to make the import valid.
 	commontest.CurrentSuite = commontest.NodeE2E
+
+	data, err := json.Marshal(&framework.TestContext.NodeTestContextType)
+	Expect(err).NotTo(HaveOccurred(), "should be able to serialize node test context.")
+
+	return data
+}, func(data []byte) {
+	// The node test context is updated in the first function, update it on every test node.
+	err := json.Unmarshal(data, &framework.TestContext.NodeTestContextType)
+	Expect(err).NotTo(HaveOccurred(), "should be able to deserialize node test context.")
 })
 
 // Tear down the kubelet on the node
-var _ = AfterSuite(func() {
+var _ = SynchronizedAfterSuite(func() {}, func() {
 	if e2es != nil {
-		e2es.getLogFiles()
 		if *startServices && *stopServices {
 			glog.Infof("Stopping node services...")
-			e2es.stop()
+			e2es.Stop()
 		}
 	}
 
@@ -140,28 +149,37 @@ func maskLocksmithdOnCoreos() {
 		return
 	}
 	if bytes.Contains(data, []byte("ID=coreos")) {
-		if output, err := exec.Command("sudo", "systemctl", "mask", "--now", "locksmithd").CombinedOutput(); err != nil {
-			glog.Fatalf("Could not mask locksmithd: %v, output: %q", err, string(output))
-		}
+		output, err := exec.Command("sudo", "systemctl", "mask", "--now", "locksmithd").CombinedOutput()
+		Expect(err).NotTo(HaveOccurred(), fmt.Sprintf("should be able to mask locksmithd - output: %q", string(output)))
 		glog.Infof("Locksmithd is masked successfully")
 	}
 }
 
-const (
-	// ncResyncPeriod is resync period of the namespace controller
-	ncResyncPeriod = 5 * time.Minute
-	// ncConcurrency is concurrency of the namespace controller
-	ncConcurrency = 2
-)
-
-func startNamespaceController() {
-	// Use the default QPS
-	config := restclient.AddUserAgent(&restclient.Config{Host: framework.TestContext.Host}, "node-e2e-namespace-controller")
+func waitForNodeReady() {
+	const (
+		// nodeReadyTimeout is the time to wait for node to become ready.
+		nodeReadyTimeout = 2 * time.Minute
+		// nodeReadyPollInterval is the interval to check node ready.
+		nodeReadyPollInterval = 1 * time.Second
+	)
+	config, err := framework.LoadConfig()
+	Expect(err).NotTo(HaveOccurred())
 	client, err := clientset.NewForConfig(config)
 	Expect(err).NotTo(HaveOccurred())
-	clientPool := dynamic.NewClientPool(config, dynamic.LegacyAPIPathResolverFunc)
-	resources, err := client.Discovery().ServerPreferredNamespacedResources()
-	Expect(err).NotTo(HaveOccurred())
-	nc := namespacecontroller.NewNamespaceController(client, clientPool, resources, ncResyncPeriod, api.FinalizerKubernetes)
-	go nc.Run(ncConcurrency, wait.NeverStop)
+	Eventually(func() error {
+		nodes, err := client.Nodes().List(api.ListOptions{})
+		Expect(err).NotTo(HaveOccurred())
+		if nodes == nil {
+			return fmt.Errorf("the node list is nil.")
+		}
+		Expect(len(nodes.Items) > 1).NotTo(BeTrue())
+		if len(nodes.Items) == 0 {
+			return fmt.Errorf("empty node list: %+v", nodes)
+		}
+		node := nodes.Items[0]
+		if !api.IsNodeReady(&node) {
+			return fmt.Errorf("node is not ready: %+v", node)
+		}
+		return nil
+	}, nodeReadyTimeout, nodeReadyPollInterval).Should(Succeed())
 }

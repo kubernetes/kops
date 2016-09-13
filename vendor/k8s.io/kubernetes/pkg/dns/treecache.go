@@ -17,10 +17,10 @@ limitations under the License.
 package dns
 
 import (
-	"bytes"
 	"encoding/json"
-	skymsg "github.com/skynetservices/skydns/msg"
 	"strings"
+
+	skymsg "github.com/skynetservices/skydns/msg"
 )
 
 type TreeCache struct {
@@ -36,18 +36,11 @@ func NewTreeCache() *TreeCache {
 }
 
 func (cache *TreeCache) Serialize() (string, error) {
-	b, err := json.Marshal(cache)
+	prettyJSON, err := json.MarshalIndent(cache, "", "\t")
 	if err != nil {
 		return "", err
 	}
-
-	var prettyJSON bytes.Buffer
-	err = json.Indent(&prettyJSON, b, "", "\t")
-
-	if err != nil {
-		return "", err
-	}
-	return string(prettyJSON.Bytes()), nil
+	return string(prettyJSON), nil
 }
 
 // setEntry creates the entire path if it doesn't already exist in the cache,
@@ -60,7 +53,7 @@ func (cache *TreeCache) Serialize() (string, error) {
 func (cache *TreeCache) setEntry(key string, val *skymsg.Service, fqdn string, path ...string) {
 	// TODO: Consolidate setEntry and setSubCache into a single method with a
 	// type switch.
-	// TODO: Insted of passing the fqdn as an argument, we can reconstruct
+	// TODO: Instead of passing the fqdn as an argument, we can reconstruct
 	// it from the path, provided callers always pass the full path to the
 	// object. This is currently *not* the case, since callers first create
 	// a new, empty node, populate it, then parent it under the right path.
@@ -162,8 +155,14 @@ func (cache *TreeCache) deletePath(path ...string) bool {
 		return false
 	}
 	if parentNode := cache.getSubCache(path[:len(path)-1]...); parentNode != nil {
-		if _, ok := parentNode.ChildNodes[path[len(path)-1]]; ok {
-			delete(parentNode.ChildNodes, path[len(path)-1])
+		name := path[len(path)-1]
+		if _, ok := parentNode.ChildNodes[name]; ok {
+			delete(parentNode.ChildNodes, name)
+			return true
+		}
+		// ExternalName services are stored with their name as the leaf key
+		if _, ok := parentNode.Entries[name]; ok {
+			delete(parentNode.Entries, name)
 			return true
 		}
 	}

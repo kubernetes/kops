@@ -63,7 +63,7 @@ func (p *streamProtocolV3) createStreams(conn streamCreator) error {
 }
 
 func (p *streamProtocolV3) handleResizes() {
-	if p.resizeStream == nil {
+	if p.resizeStream == nil || p.TerminalSizeQueue == nil {
 		return
 	}
 
@@ -90,7 +90,7 @@ func (p *streamProtocolV3) stream(conn streamCreator) error {
 
 	// now that all the streams have been created, proceed with reading & copying
 
-	errorChan := p.setupErrorStreamReading()
+	errorChan := watchErrorStream(p.errorStream, &errorDecoderV3{})
 
 	p.handleResizes()
 
@@ -105,4 +105,8 @@ func (p *streamProtocolV3) stream(conn streamCreator) error {
 
 	// waits for errorStream to finish reading with an error or nil
 	return <-errorChan
+}
+
+type errorDecoderV3 struct {
+	errorDecoderV2
 }

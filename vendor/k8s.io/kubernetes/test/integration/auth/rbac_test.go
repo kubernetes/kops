@@ -77,11 +77,11 @@ func clientForUser(user string) *http.Client {
 
 func newRBACAuthorizer(t *testing.T, superUser string, config *master.Config) authorizer.Authorizer {
 	newRESTOptions := func(resource string) generic.RESTOptions {
-		storageInterface, err := config.StorageFactory.New(rbacapi.Resource(resource))
+		storageConfig, err := config.StorageFactory.NewConfig(rbacapi.Resource(resource))
 		if err != nil {
 			t.Fatalf("failed to get storage: %v", err)
 		}
-		return generic.RESTOptions{Storage: storageInterface, Decorator: generic.UndecoratedStorage}
+		return generic.RESTOptions{StorageConfig: storageConfig, Decorator: generic.UndecoratedStorage, ResourcePrefix: resource}
 	}
 
 	roleRegistry := role.NewRegistry(roleetcd.NewREST(newRESTOptions("roles")))
@@ -303,7 +303,7 @@ func TestRBAC(t *testing.T) {
 						Subjects: []v1alpha1.Subject{
 							{Kind: "User", Name: "pod-reader"},
 						},
-						RoleRef: v1.ObjectReference{Kind: "ClusterRole", Name: "read-pods"},
+						RoleRef: v1alpha1.RoleRef{Kind: "ClusterRole", Name: "read-pods"},
 					},
 				},
 			},
@@ -335,14 +335,14 @@ func TestRBAC(t *testing.T) {
 					{
 						ObjectMeta: v1.ObjectMeta{Name: "write-jobs"},
 						Subjects:   []v1alpha1.Subject{{Kind: "User", Name: "job-writer"}},
-						RoleRef:    v1.ObjectReference{Kind: "ClusterRole", Name: "write-jobs"},
+						RoleRef:    v1alpha1.RoleRef{Kind: "ClusterRole", Name: "write-jobs"},
 					},
 				},
 				roleBindings: []v1alpha1.RoleBinding{
 					{
 						ObjectMeta: v1.ObjectMeta{Name: "write-jobs", Namespace: "job-namespace"},
 						Subjects:   []v1alpha1.Subject{{Kind: "User", Name: "job-writer-namespace"}},
-						RoleRef:    v1.ObjectReference{Kind: "ClusterRole", Name: "write-jobs"},
+						RoleRef:    v1alpha1.RoleRef{Kind: "ClusterRole", Name: "write-jobs"},
 					},
 				},
 			},

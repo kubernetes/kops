@@ -21,9 +21,10 @@ import (
 	"reflect"
 	"strings"
 
+	"testing"
+
 	"k8s.io/kubernetes/pkg/api"
 	api_pod "k8s.io/kubernetes/pkg/api/pod"
-	"testing"
 )
 
 func TestPetIDName(t *testing.T) {
@@ -54,11 +55,11 @@ func TestPetIDDNS(t *testing.T) {
 			t.Fatalf("Failed to generate pet %v", err)
 		}
 		if hostname, ok := pod.Annotations[api_pod.PodHostnameAnnotation]; !ok || hostname != petName {
-			t.Errorf("Wrong hostname: %v", petName)
+			t.Errorf("Wrong hostname: %v", hostname)
 		}
 		// TODO: Check this against the governing service.
 		if subdomain, ok := pod.Annotations[api_pod.PodSubdomainAnnotation]; !ok || subdomain != petSubdomain {
-			t.Errorf("Wrong subdomain: %v", petName)
+			t.Errorf("Wrong subdomain: %v", subdomain)
 		}
 	}
 }
