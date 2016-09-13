@@ -36,15 +36,15 @@ func TestDescribeUnknownSchemaObject(t *testing.T) {
 	}
 	tf.Namespace = "non-default"
 	buf := bytes.NewBuffer([]byte{})
-
-	cmd := NewCmdDescribe(f, buf)
+	buferr := bytes.NewBuffer([]byte{})
+	cmd := NewCmdDescribe(f, buf, buferr)
 	cmd.Run(cmd, []string{"type", "foo"})
 
 	if d.Name != "foo" || d.Namespace != "non-default" {
 		t.Errorf("unexpected describer: %#v", d)
 	}
 
-	if buf.String() != fmt.Sprintf("%s\n\n", d.Output) {
+	if buf.String() != fmt.Sprintf("%s", d.Output) {
 		t.Errorf("unexpected output: %s", buf.String())
 	}
 }
@@ -68,8 +68,8 @@ func TestDescribeObject(t *testing.T) {
 	}
 	tf.Namespace = "test"
 	buf := bytes.NewBuffer([]byte{})
-
-	cmd := NewCmdDescribe(f, buf)
+	buferr := bytes.NewBuffer([]byte{})
+	cmd := NewCmdDescribe(f, buf, buferr)
 	cmd.Flags().Set("filename", "../../../examples/guestbook/legacy/redis-master-controller.yaml")
 	cmd.Run(cmd, []string{})
 
@@ -77,7 +77,7 @@ func TestDescribeObject(t *testing.T) {
 		t.Errorf("unexpected describer: %#v", d)
 	}
 
-	if buf.String() != fmt.Sprintf("%s\n\n", d.Output) {
+	if buf.String() != fmt.Sprintf("%s", d.Output) {
 		t.Errorf("unexpected output: %s", buf.String())
 	}
 }
@@ -94,9 +94,10 @@ func TestDescribeListObjects(t *testing.T) {
 
 	tf.Namespace = "test"
 	buf := bytes.NewBuffer([]byte{})
-	cmd := NewCmdDescribe(f, buf)
+	buferr := bytes.NewBuffer([]byte{})
+	cmd := NewCmdDescribe(f, buf, buferr)
 	cmd.Run(cmd, []string{"pods"})
-	if buf.String() != fmt.Sprintf("%s\n\n%s\n\n", d.Output, d.Output) {
+	if buf.String() != fmt.Sprintf("%s\n\n%s", d.Output, d.Output) {
 		t.Errorf("unexpected output: %s", buf.String())
 	}
 }
@@ -113,7 +114,8 @@ func TestDescribeObjectShowEvents(t *testing.T) {
 
 	tf.Namespace = "test"
 	buf := bytes.NewBuffer([]byte{})
-	cmd := NewCmdDescribe(f, buf)
+	buferr := bytes.NewBuffer([]byte{})
+	cmd := NewCmdDescribe(f, buf, buferr)
 	cmd.Flags().Set("show-events", "true")
 	cmd.Run(cmd, []string{"pods"})
 	if d.Settings.ShowEvents != true {
@@ -133,7 +135,8 @@ func TestDescribeObjectSkipEvents(t *testing.T) {
 
 	tf.Namespace = "test"
 	buf := bytes.NewBuffer([]byte{})
-	cmd := NewCmdDescribe(f, buf)
+	buferr := bytes.NewBuffer([]byte{})
+	cmd := NewCmdDescribe(f, buf, buferr)
 	cmd.Flags().Set("show-events", "false")
 	cmd.Run(cmd, []string{"pods"})
 	if d.Settings.ShowEvents != false {

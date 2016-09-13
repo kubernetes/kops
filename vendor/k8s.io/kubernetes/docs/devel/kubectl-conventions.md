@@ -21,7 +21,7 @@ refer to the docs that go with that version.
 <!-- TAG RELEASE_LINK, added by the munger automatically -->
 <strong>
 The latest release of this document can be found
-[here](http://releases.k8s.io/release-1.3/docs/devel/kubectl-conventions.md).
+[here](http://releases.k8s.io/release-1.4/docs/devel/kubectl-conventions.md).
 
 Documentation for other releases can be found at
 [releases.k8s.io](http://releases.k8s.io).
@@ -142,6 +142,7 @@ list when adding new short flags
 
   * `-f`: Resource file
     * also used for `--follow` in `logs`, but should be deprecated in favor of `-F`
+  * `-n`: Namespace scope
   * `-l`: Label selector
     * also used for `--labels` in `expose`, but should be deprecated
   * `-L`: Label columns

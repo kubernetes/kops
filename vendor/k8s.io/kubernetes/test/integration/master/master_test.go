@@ -23,6 +23,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"strings"
 	"testing"
@@ -31,6 +32,7 @@ import (
 	"github.com/ghodss/yaml"
 
 	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/testapi"
 	"k8s.io/kubernetes/pkg/apis/batch/v2alpha1"
 	"k8s.io/kubernetes/pkg/client/restclient"
@@ -412,5 +414,75 @@ func TestMasterService(t *testing.T) {
 	})
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
+	}
+}
+
+func TestServiceAlloc(t *testing.T) {
+	cfg := framework.NewIntegrationTestMasterConfig()
+	_, cidr, err := net.ParseCIDR("192.168.0.0/30")
+	if err != nil {
+		t.Fatalf("bad cidr: %v", err)
+	}
+	cfg.ServiceClusterIPRange = cidr
+	_, s := framework.RunAMaster(cfg)
+	defer s.Close()
+
+	client := client.NewOrDie(&restclient.Config{Host: s.URL, ContentConfig: restclient.ContentConfig{GroupVersion: testapi.Default.GroupVersion()}})
+
+	svc := func(i int) *api.Service {
+		return &api.Service{
+			ObjectMeta: api.ObjectMeta{
+				Name: fmt.Sprintf("svc-%v", i),
+			},
+			Spec: api.ServiceSpec{
+				Type: api.ServiceTypeClusterIP,
+				Ports: []api.ServicePort{
+					{Port: 80},
+				},
+			},
+		}
+	}
+
+	// Wait until the default "kubernetes" service is created.
+	if err = wait.Poll(250*time.Millisecond, time.Minute, func() (bool, error) {
+		_, err := client.Services(api.NamespaceDefault).Get("kubernetes")
+		if err != nil && !errors.IsNotFound(err) {
+			return false, err
+		}
+		return !errors.IsNotFound(err), nil
+	}); err != nil {
+		t.Fatalf("creating kubernetes service timed out")
+	}
+
+	// Make a service.
+	if _, err := client.Services(api.NamespaceDefault).Create(svc(1)); err != nil {
+		t.Fatalf("got unexpected error: %v", err)
+	}
+
+	// Make a second service. It will fail because we're out of cluster IPs
+	if _, err := client.Services(api.NamespaceDefault).Create(svc(2)); err != nil {
+		if !strings.Contains(err.Error(), "range is full") {
+			t.Errorf("unexpected error text: %v", err)
+		}
+	} else {
+		svcs, err := client.Services(api.NamespaceAll).List(api.ListOptions{})
+		if err != nil {
+			t.Fatalf("unexpected success, and error getting the services: %v", err)
+		}
+		allIPs := []string{}
+		for _, s := range svcs.Items {
+			allIPs = append(allIPs, s.Spec.ClusterIP)
+		}
+		t.Fatalf("unexpected creation success. The following IPs exist: %#v. It should only be possible to allocate 2 IP addresses in this cluster.\n\n%#v", allIPs, svcs)
+	}
+
+	// Delete the first service.
+	if err := client.Services(api.NamespaceDefault).Delete(svc(1).ObjectMeta.Name); err != nil {
+		t.Fatalf("got unexpected error: %v", err)
+	}
+
+	// This time creating the second service should work.
+	if _, err := client.Services(api.NamespaceDefault).Create(svc(2)); err != nil {
+		t.Fatalf("got unexpected error: %v", err)
 	}
 }

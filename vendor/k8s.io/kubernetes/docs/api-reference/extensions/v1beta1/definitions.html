@@ -1064,6 +1064,13 @@ span.icon > [class^="icon-"], span.icon > [class*=" icon-"] { cursor: default; }
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#_v1_downwardapivolumefile">v1.DownwardAPIVolumeFile</a> array</p></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">defaultMode</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Optional: mode bits to use on created files by default. Must be a value between 0 and 0777. Defaults to 0644. Directories within the path are not affected by this setting. This might be in conflict with other options that affect the file mode, like fsGroup, and the result can be other mode bits set.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">integer (int32)</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
 </tbody>
 </table>
 
@@ -1346,6 +1353,13 @@ Examples:<br>
 <td class="tableblock halign-left valign-top"><p class="tableblock">If unspecified, each key-value pair in the Data field of the referenced ConfigMap will be projected into the volume as a file whose name is the key and content is the value. If specified, the listed keys will be projected into the specified paths, and unlisted keys will not be present. If a key is specified which is not present in the ConfigMap, the volume setup will error. Paths must be relative and may not contain the <em>..</em> path or start with <em>..</em>.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#_v1_keytopath">v1.KeyToPath</a> array</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">defaultMode</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Optional: mode bits to use on created files by default. Must be a value between 0 and 0777. Defaults to 0644. Directories within the path are not affected by this setting. This might be in conflict with other options that affect the file mode, like fsGroup, and the result can be other mode bits set.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">integer (int32)</p></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
 </tbody>
@@ -1715,6 +1729,13 @@ Populated by the system when a graceful deletion is requested. Read-only. More i
 <td class="tableblock halign-left valign-top"><p class="tableblock">Must be empty before the object is deleted from the registry. Each entry is an identifier for the responsible component that will remove the entry from the list. If the deletionTimestamp of the object is non-nil, entries in this list can only be removed.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">string array</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">clusterName</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The name of the cluster which the object belongs to. This is used to distinguish resources with same name and namespace in different clusters. This field is not set anywhere right now and apiserver is going to ignore it if set in create or update request.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">string</p></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
 </tbody>
@@ -2371,6 +2392,13 @@ Populated by the system when a graceful deletion is requested. Read-only. More i
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#_v1_keytopath">v1.KeyToPath</a> array</p></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">defaultMode</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Optional: mode bits to use on created files by default. Must be a value between 0 and 0777. Defaults to 0644. Directories within the path are not affected by this setting. This might be in conflict with other options that affect the file mode, like fsGroup, and the result can be other mode bits set.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">integer (int32)</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
 </tbody>
 </table>
 
@@ -2400,7 +2428,7 @@ Populated by the system when a graceful deletion is requested. Read-only. More i
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">fieldRef</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Selects a field of the pod; only name and namespace are supported.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Selects a field of the pod: supports metadata.name, metadata.namespace, metadata.labels, metadata.annotations, spec.nodeName, spec.serviceAccountName, status.podIP.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#_v1_objectfieldselector">v1.ObjectFieldSelector</a></p></td>
 <td class="tableblock halign-left valign-top"></td>
@@ -2433,7 +2461,7 @@ Populated by the system when a graceful deletion is requested. Read-only. More i
 <div class="sect2">
 <h3 id="_v1_flexvolumesource">v1.FlexVolumeSource</h3>
 <div class="paragraph">
-<p>FlexVolume represents a generic volume resource that is provisioned/attached using a exec based plugin. This is an alpha feature and may change in future.</p>
+<p>FlexVolume represents a generic volume resource that is provisioned/attached using an exec based plugin. This is an alpha feature and may change in future.</p>
 </div>
 <table class="tableblock frame-all grid-all" style="width:100%; ">
 <colgroup>
@@ -2637,6 +2665,68 @@ Populated by the system when a graceful deletion is requested. Read-only. More i
 
 </div>
 <div class="sect2">
+<h3 id="_v1_azurediskvolumesource">v1.AzureDiskVolumeSource</h3>
+<div class="paragraph">
+<p>AzureDisk represents an Azure Data Disk mount on the host and bind mount to the pod.</p>
+</div>
+<table class="tableblock frame-all grid-all" style="width:100%; ">
+<colgroup>
+<col style="width:20%;">
+<col style="width:20%;">
+<col style="width:20%;">
+<col style="width:20%;">
+<col style="width:20%;"> 
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Required</th>
+<th class="tableblock halign-left valign-top">Schema</th>
+<th class="tableblock halign-left valign-top">Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">diskName</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The Name of the data disk in the blob storage</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">string</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">diskURI</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The URI the data disk in the blob storage</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">string</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">cachingMode</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Host Caching mode: None, Read Only, Read Write.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#_v1_azuredatadiskcachingmode">v1.AzureDataDiskCachingMode</a></p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">fsType</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Filesystem type to mount. Must be a filesystem type supported by the host operating system. Ex. "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">string</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">readOnly</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Defaults to false (read/write). ReadOnly here will force the ReadOnly setting in VolumeMounts.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+</tr>
+</tbody>
+</table>
+
+</div>
+<div class="sect2">
 <h3 id="_v1_keytopath">v1.KeyToPath</h3>
 <div class="paragraph">
 <p>Maps a string key to a path within a volume.</p>
@@ -2671,6 +2761,13 @@ Populated by the system when a graceful deletion is requested. Read-only. More i
 <td class="tableblock halign-left valign-top"><p class="tableblock">The relative path of the file to map the key to. May not be an absolute path. May not contain the path element <em>..</em>. May not start with the string <em>..</em>.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">string</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mode</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Optional: mode bits to use on this file, must be a value between 0 and 0777. If not specified, the volume defaultMode will be used. This might be in conflict with other options that affect the file mode, like fsGroup, and the result can be other mode bits set.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">integer (int32)</p></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
 </tbody>
@@ -2889,7 +2986,7 @@ Populated by the system when a graceful deletion is requested. Read-only. More i
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">flexVolume</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">FlexVolume represents a generic volume resource that is provisioned/attached using a exec based plugin. This is an alpha feature and may change in future.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FlexVolume represents a generic volume resource that is provisioned/attached using an exec based plugin. This is an alpha feature and may change in future.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#_v1_flexvolumesource">v1.FlexVolumeSource</a></p></td>
 <td class="tableblock halign-left valign-top"></td>
@@ -2948,6 +3045,20 @@ Populated by the system when a graceful deletion is requested. Read-only. More i
 <td class="tableblock halign-left valign-top"><p class="tableblock">VsphereVolume represents a vSphere volume attached and mounted on kubelets host machine</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#_v1_vspherevirtualdiskvolumesource">v1.VsphereVirtualDiskVolumeSource</a></p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">quobyte</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Quobyte represents a Quobyte mount on the host that shares a pod&#8217;s lifetime</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#_v1_quobytevolumesource">v1.QuobyteVolumeSource</a></p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">azureDisk</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AzureDisk represents an Azure Data Disk mount on the host and bind mount to the pod.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#_v1_azurediskvolumesource">v1.AzureDiskVolumeSource</a></p></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
 </tbody>
@@ -3413,6 +3524,13 @@ Populated by the system when a graceful deletion is requested. Read-only. More i
 <td class="tableblock halign-left valign-top"><p class="tableblock">Selects a resource of the container: only resources limits and requests (limits.cpu, limits.memory, requests.cpu and requests.memory) are currently supported.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#_v1_resourcefieldselector">v1.ResourceFieldSelector</a></p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mode</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Optional: mode bits to use on this file, must be a value between 0 and 0777. If not specified, the volume defaultMode will be used. This might be in conflict with other options that affect the file mode, like fsGroup, and the result can be other mode bits set.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">integer (int32)</p></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
 </tbody>
@@ -4436,7 +4554,7 @@ Populated by the system when a graceful deletion is requested. Read-only. More i
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">targetWWNs</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Required: FC target world wide names (WWNs)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Required: FC target worldwide names (WWNs)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">string array</p></td>
 <td class="tableblock halign-left valign-top"></td>
@@ -5289,6 +5407,13 @@ Both these may change in the future. Incoming requests are matched against the h
 <td class="tableblock halign-left valign-top"></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">readyReplicas</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The number of ready replicas for this replica set.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">integer (int32)</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">observedGeneration</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">ObservedGeneration reflects the generation of the most recently observed ReplicaSet.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
@@ -5733,6 +5858,68 @@ Both these may change in the future. Incoming requests are matched against the h
 
 </div>
 <div class="sect2">
+<h3 id="_v1_quobytevolumesource">v1.QuobyteVolumeSource</h3>
+<div class="paragraph">
+<p>Represents a Quobyte mount that lasts the lifetime of a pod. Quobyte volumes do not support ownership management or SELinux relabeling.</p>
+</div>
+<table class="tableblock frame-all grid-all" style="width:100%; ">
+<colgroup>
+<col style="width:20%;">
+<col style="width:20%;">
+<col style="width:20%;">
+<col style="width:20%;">
+<col style="width:20%;"> 
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Required</th>
+<th class="tableblock halign-left valign-top">Schema</th>
+<th class="tableblock halign-left valign-top">Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">registry</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Registry represents a single or multiple Quobyte Registry services specified as a string as host:port pair (multiple entries are separated with commas) which acts as the central registry for volumes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">string</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">volume</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Volume is a string that references an already created Quobyte volume by name.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">string</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">readOnly</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ReadOnly here will force the Quobyte volume to be mounted with read-only permissions. Defaults to false.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">user</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">User to map volume access to Defaults to serivceaccount user</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">string</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">group</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Group to map volume access to Default is no group</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">string</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+</tbody>
+</table>
+
+</div>
+<div class="sect2">
 <h3 id="_v1beta1_labelselectorrequirement">v1beta1.LabelSelectorRequirement</h3>
 <div class="paragraph">
 <p>A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.</p>
@@ -5853,14 +6040,14 @@ Both these may change in the future. Incoming requests are matched against the h
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">limits</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Limits describes the maximum amount of compute resources allowed. More info: <a href="http://releases.k8s.io/HEAD/docs/design/resources.md#resource-specifications">http://releases.k8s.io/HEAD/docs/design/resources.md#resource-specifications</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Limits describes the maximum amount of compute resources allowed. More info: <a href="http://kubernetes.io/docs/user-guide/compute-resources/">http://kubernetes.io/docs/user-guide/compute-resources/</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">object</p></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">requests</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: <a href="http://releases.k8s.io/HEAD/docs/design/resources.md#resource-specifications">http://releases.k8s.io/HEAD/docs/design/resources.md#resource-specifications</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: <a href="http://kubernetes.io/docs/user-guide/compute-resources/">http://kubernetes.io/docs/user-guide/compute-resources/</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">object</p></td>
 <td class="tableblock halign-left valign-top"></td>
@@ -6221,7 +6408,7 @@ Both these may change in the future. Incoming requests are matched against the h
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">path</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Path is a extended POSIX regex as defined by IEEE Std 1003.1, (i.e this follows the egrep/unix syntax, not the perl syntax) matched against the path of an incoming request. Currently it can contain characters disallowed from the conventional "path" part of a URL as defined by RFC 3986. Paths must begin with a <em>/</em>. If unspecified, the path defaults to a catch all sending traffic to the backend.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Path is an extended POSIX regex as defined by IEEE Std 1003.1, (i.e this follows the egrep/unix syntax, not the perl syntax) matched against the path of an incoming request. Currently it can contain characters disallowed from the conventional "path" part of a URL as defined by RFC 3986. Paths must begin with a <em>/</em>. If unspecified, the path defaults to a catch all sending traffic to the backend.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">string</p></td>
 <td class="tableblock halign-left valign-top"></td>
@@ -6355,6 +6542,10 @@ Both these may change in the future. Incoming requests are matched against the h
 
 </div>
 <div class="sect2">
+<h3 id="_v1_azuredatadiskcachingmode">v1.AzureDataDiskCachingMode</h3>
+
+</div>
+<div class="sect2">
 <h3 id="_any">any</h3>
 <div class="paragraph">
 <p>Represents an untyped JSON map - see the description of the field for more info about the structure of this object.</p>
@@ -6365,7 +6556,7 @@ Both these may change in the future. Incoming requests are matched against the h
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-07-07 17:05:18 UTC
+Last updated 2016-09-01 17:31:18 UTC
 </div>
 </div>
 </body>

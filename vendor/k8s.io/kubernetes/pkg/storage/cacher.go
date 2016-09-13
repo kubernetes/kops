@@ -65,6 +65,8 @@ type CacherConfig struct {
 	// NewList is a function that creates new empty object storing a list of
 	// objects of type Type.
 	NewListFunc func() runtime.Object
+
+	Codec runtime.Codec
 }
 
 type watchersMap map[int]*cacheWatcher
@@ -138,6 +140,9 @@ type Cacher struct {
 	// Underlying storage.Interface.
 	storage Interface
 
+	// Expected type of objects in the underlying cache.
+	objectType reflect.Type
+
 	// "sliding window" of recent changes of objects and the current state.
 	watchCache *watchCache
 	reflector  *cache.Reflector
@@ -156,6 +161,10 @@ type Cacher struct {
 	watcherIdx int
 	watchers   indexedWatchers
 
+	// Incoming events that should be dispatched to watchers.
+	incoming    chan watchCacheEvent
+	incomingHWM HighWaterMark
+
 	// Handling graceful termination.
 	stopLock sync.RWMutex
 	stopped  bool
@@ -173,7 +182,7 @@ func NewCacherFromConfig(config CacherConfig) *Cacher {
 	// Give this error when it is constructed rather than when you get the
 	// first watch item, because it's much easier to track down that way.
 	if obj, ok := config.Type.(runtime.Object); ok {
-		if err := runtime.CheckCodec(config.Storage.Codec(), obj); err != nil {
+		if err := runtime.CheckCodec(config.Codec, obj); err != nil {
 			panic("storage codec doesn't seem to match given type: " + err.Error())
 		}
 	}
@@ -181,6 +190,7 @@ func NewCacherFromConfig(config CacherConfig) *Cacher {
 	cacher := &Cacher{
 		ready:       newReady(),
 		storage:     config.Storage,
+		objectType:  reflect.TypeOf(config.Type),
 		watchCache:  watchCache,
 		reflector:   cache.NewReflector(listerWatcher, config.Type, watchCache, 0),
 		versioner:   config.Versioner,
@@ -191,6 +201,8 @@ func NewCacherFromConfig(config CacherConfig) *Cacher {
 			allWatchers:   make(map[int]*cacheWatcher),
 			valueWatchers: make(map[string]watchersMap),
 		},
+		// TODO: Figure out the correct value for the buffer size.
+		incoming: make(chan watchCacheEvent, 100),
 		// We need to (potentially) stop both:
 		// - wait.Until go-routine
 		// - reflector.ListAndWatch
@@ -199,6 +211,7 @@ func NewCacherFromConfig(config CacherConfig) *Cacher {
 		stopCh: make(chan struct{}),
 	}
 	watchCache.SetOnEvent(cacher.processEvent)
+	go cacher.dispatchEvents()
 
 	stopCh := cacher.stopCh
 	cacher.stopWg.Add(1)
@@ -241,11 +254,6 @@ func (c *Cacher) startCaching(stopChannel <-chan struct{}) {
 	if err := c.reflector.ListAndWatch(stopChannel); err != nil {
 		glog.Errorf("unexpected ListAndWatch error: %v", err)
 	}
-}
-
-// Implements storage.Interface.
-func (c *Cacher) Backends(ctx context.Context) []string {
-	return c.storage.Backends(ctx)
 }
 
 // Implements storage.Interface.
@@ -376,11 +384,6 @@ func (c *Cacher) GuaranteedUpdate(ctx context.Context, key string, ptrToType run
 	return c.storage.GuaranteedUpdate(ctx, key, ptrToType, ignoreNotFound, preconditions, tryUpdate)
 }
 
-// Implements storage.Interface.
-func (c *Cacher) Codec() runtime.Codec {
-	return c.storage.Codec()
-}
-
 func (c *Cacher) triggerValues(event *watchCacheEvent) ([]string, bool) {
 	// TODO: Currently we assume that in a given Cacher object, its <c.triggerFunc>
 	// is aware of exactly the same trigger (at most one). Thus calling:
@@ -408,7 +411,29 @@ func (c *Cacher) triggerValues(event *watchCacheEvent) ([]string, bool) {
 }
 
 func (c *Cacher) processEvent(event watchCacheEvent) {
-	triggerValues, supported := c.triggerValues(&event)
+	if curLen := int64(len(c.incoming)); c.incomingHWM.Update(curLen) {
+		// Monitor if this gets backed up, and how much.
+		glog.V(1).Infof("cacher (%v): %v objects queued in incoming channel.", c.objectType.String(), curLen)
+	}
+	c.incoming <- event
+}
+
+func (c *Cacher) dispatchEvents() {
+	for {
+		select {
+		case event, ok := <-c.incoming:
+			if !ok {
+				return
+			}
+			c.dispatchEvent(&event)
+		case <-c.stopCh:
+			return
+		}
+	}
+}
+
+func (c *Cacher) dispatchEvent(event *watchCacheEvent) {
+	triggerValues, supported := c.triggerValues(event)
 
 	c.Lock()
 	defer c.Unlock()
@@ -440,6 +465,7 @@ func (c *Cacher) processEvent(event watchCacheEvent) {
 }
 
 func (c *Cacher) terminateAllWatchers() {
+	glog.Warningf("Terminating all watchers from cacher %v", c.objectType)
 	c.Lock()
 	defer c.Unlock()
 	c.watchers.terminateAll()
@@ -611,17 +637,19 @@ func (c *cacheWatcher) stop() {
 
 var timerPool sync.Pool
 
-func (c *cacheWatcher) add(event watchCacheEvent) {
+func (c *cacheWatcher) add(event *watchCacheEvent) {
 	// Try to send the event immediately, without blocking.
 	select {
-	case c.input <- event:
+	case c.input <- *event:
 		return
 	default:
 	}
 
+	resultLen := len(c.result)
 	// OK, block sending, but only for up to 5 seconds.
 	// cacheWatcher.add is called very often, so arrange
 	// to reuse timers instead of constantly allocating.
+	startTime := time.Now()
 	const timeout = 5 * time.Second
 	t, ok := timerPool.Get().(*time.Timer)
 	if ok {
@@ -632,7 +660,7 @@ func (c *cacheWatcher) add(event watchCacheEvent) {
 	defer timerPool.Put(t)
 
 	select {
-	case c.input <- event:
+	case c.input <- *event:
 		stopped := t.Stop()
 		if !stopped {
 			// Consume triggered (but not yet received) timer event
@@ -646,6 +674,8 @@ func (c *cacheWatcher) add(event watchCacheEvent) {
 		c.forget(false)
 		c.stop()
 	}
+	glog.V(2).Infof("cacheWatcher add function blocked processing of %v for %v (initial result size %v)",
+		reflect.TypeOf(event.Object).String(), time.Since(startTime), resultLen)
 }
 
 func (c *cacheWatcher) sendWatchCacheEvent(event watchCacheEvent) {

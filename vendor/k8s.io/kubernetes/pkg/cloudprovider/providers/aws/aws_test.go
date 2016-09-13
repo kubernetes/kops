@@ -37,6 +37,7 @@ import (
 )
 
 const TestClusterId = "clusterid.test"
+const TestClusterName = "testCluster"
 
 func TestReadAWSCloudConfig(t *testing.T) {
 	tests := []struct {
@@ -493,6 +494,14 @@ func (elb *FakeELB) CreateLoadBalancerPolicy(*elb.CreateLoadBalancerPolicyInput)
 }
 
 func (elb *FakeELB) SetLoadBalancerPoliciesForBackendServer(*elb.SetLoadBalancerPoliciesForBackendServerInput) (*elb.SetLoadBalancerPoliciesForBackendServerOutput, error) {
+	panic("Not implemented")
+}
+
+func (elb *FakeELB) DescribeLoadBalancerAttributes(*elb.DescribeLoadBalancerAttributesInput) (*elb.DescribeLoadBalancerAttributesOutput, error) {
+	panic("Not implemented")
+}
+
+func (elb *FakeELB) ModifyLoadBalancerAttributes(*elb.ModifyLoadBalancerAttributesInput) (*elb.ModifyLoadBalancerAttributesOutput, error) {
 	panic("Not implemented")
 }
 
@@ -1182,7 +1191,7 @@ func TestDescribeLoadBalancerOnDelete(t *testing.T) {
 	c, _ := newAWSCloud(strings.NewReader("[global]"), awsServices)
 	awsServices.elb.expectDescribeLoadBalancers("aid")
 
-	c.EnsureLoadBalancerDeleted(&api.Service{ObjectMeta: api.ObjectMeta{Name: "myservice", UID: "id"}})
+	c.EnsureLoadBalancerDeleted(TestClusterName, &api.Service{ObjectMeta: api.ObjectMeta{Name: "myservice", UID: "id"}})
 }
 
 func TestDescribeLoadBalancerOnUpdate(t *testing.T) {
@@ -1190,7 +1199,7 @@ func TestDescribeLoadBalancerOnUpdate(t *testing.T) {
 	c, _ := newAWSCloud(strings.NewReader("[global]"), awsServices)
 	awsServices.elb.expectDescribeLoadBalancers("aid")
 
-	c.UpdateLoadBalancer(&api.Service{ObjectMeta: api.ObjectMeta{Name: "myservice", UID: "id"}}, []string{})
+	c.UpdateLoadBalancer(TestClusterName, &api.Service{ObjectMeta: api.ObjectMeta{Name: "myservice", UID: "id"}}, []string{})
 }
 
 func TestDescribeLoadBalancerOnGet(t *testing.T) {
@@ -1198,7 +1207,7 @@ func TestDescribeLoadBalancerOnGet(t *testing.T) {
 	c, _ := newAWSCloud(strings.NewReader("[global]"), awsServices)
 	awsServices.elb.expectDescribeLoadBalancers("aid")
 
-	c.GetLoadBalancer(&api.Service{ObjectMeta: api.ObjectMeta{Name: "myservice", UID: "id"}})
+	c.GetLoadBalancer(TestClusterName, &api.Service{ObjectMeta: api.ObjectMeta{Name: "myservice", UID: "id"}})
 }
 
 func TestDescribeLoadBalancerOnEnsure(t *testing.T) {
@@ -1206,7 +1215,7 @@ func TestDescribeLoadBalancerOnEnsure(t *testing.T) {
 	c, _ := newAWSCloud(strings.NewReader("[global]"), awsServices)
 	awsServices.elb.expectDescribeLoadBalancers("aid")
 
-	c.EnsureLoadBalancer(&api.Service{ObjectMeta: api.ObjectMeta{Name: "myservice", UID: "id"}}, []string{})
+	c.EnsureLoadBalancer(TestClusterName, &api.Service{ObjectMeta: api.ObjectMeta{Name: "myservice", UID: "id"}}, []string{})
 }
 
 func TestBuildListener(t *testing.T) {
@@ -1289,6 +1298,11 @@ func TestBuildListener(t *testing.T) {
 			"Named port not in whitelist, passthrough",
 			443, "", 8011, "tcp", "cert", "foo,bar",
 			false, "tcp", "tcp", "",
+		},
+		{
+			"HTTP->HTTP",
+			80, "", 8012, "http", "", "",
+			false, "http", "http", "",
 		},
 	}
 

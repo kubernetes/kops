@@ -8,6 +8,7 @@ algorithm-provider
 all-namespaces
 allocate-node-cidrs
 allow-privileged
+allowed-not-ready-nodes
 api-burst
 api-prefix
 api-rate
@@ -16,7 +17,13 @@ api-servers
 api-token
 api-version
 apiserver-count
+audit-log-maxage
+audit-log-maxbackup
+audit-log-maxsize
+audit-log-path
 auth-path
+auth-provider
+auth-provider-arg
 authentication-token-webhook-cache-ttl
 authentication-token-webhook-config-file
 authorization-mode
@@ -35,8 +42,8 @@ bind-address
 bind-pods-burst
 bind-pods-qps
 bounding-dirs
+build-dependencies
 build-only
-build-services
 build-tag
 cadvisor-port
 cert-dir
@@ -58,6 +65,7 @@ cloud-provider
 cluster-cidr
 cluster-dns
 cluster-domain
+cluster-ip
 cluster-name
 cluster-tag
 cluster-monitor-period
@@ -83,6 +91,7 @@ consumer-service-namespace
 contain-pod-resources
 container-port
 container-runtime
+container-runtime-endpoint
 controller-start-interval
 cors-allowed-origins
 cpu-cfs-quota
@@ -132,6 +141,7 @@ enable-hostpath-provisioner
 enable-server
 enable-swagger-ui
 enable-garbage-collector
+etcd-address
 etcd-cafile
 etcd-certfile
 etcd-config
@@ -156,6 +166,8 @@ executor-logv
 executor-path
 executor-suicide-timeout
 exit-on-lock-contention
+experimental-allowed-unsafe-sysctls
+experimental-bootstrap-kubeconfig
 experimental-flannel-overlay
 experimental-keystone-url
 experimental-nvidia-gpus
@@ -166,6 +178,7 @@ extra-peer-dirs
 failover-timeout
 failure-domains
 fake-clientset
+feature-gates
 federated-api-burst
 federated-api-qps
 federated-kube-context
@@ -196,6 +209,7 @@ grace-period
 ha-domain
 hairpin-mode
 hard-pod-affinity-symmetric-weight
+hard
 healthz-bind-address
 healthz-port
 horizontal-pod-autoscaler-sync-period
@@ -213,15 +227,18 @@ image-gc-high-threshold
 image-gc-low-threshold
 image-project
 image-pull-policy
+image-service-endpoint
 include-extended-apis
 included-types-overrides
 input-base
 input-dirs
+insecure-experimental-approve-all-kubelet-csrs-for-group
 insecure-bind-address
 insecure-port
 insecure-skip-tls-verify
 instance-metadata
 instance-name-prefix
+iptables-drop-bit
 iptables-masquerade-bit
 iptables-sync-period
 ir-data-source
@@ -268,11 +285,13 @@ kubelet-sync-frequency
 kubelet-timeout
 kubernetes-service-node-port
 label-columns
+large-cluster-size-threshold
 last-release-pr
 leader-elect
 leader-elect-lease-duration
 leader-elect-renew-deadline
 leader-elect-retry-period
+lease-duration
 leave-stdin-open
 limit-bytes
 load-balancer-ip
@@ -280,7 +299,9 @@ lock-file
 log-flush-frequency
 long-running-request-regexp
 low-diskspace-threshold-mb
+make-iptables-util-chains
 make-symlinks
+manifest-path
 manifest-url
 manifest-url-header
 masquerade-all
@@ -323,9 +344,11 @@ minion-path-override
 namespace-sync-period
 network-plugin
 network-plugin-dir
+network-plugin-mtu
 no-headers
 no-suggestions
 node-cidr-mask-size
+node-eviction-rate
 node-instance-group
 node-ip
 node-labels
@@ -357,6 +380,7 @@ path-override
 pod-cidr
 pod-eviction-timeout
 pod-infra-container-image
+pod-manifest-path
 pod-running
 pods-per-core
 policy-config-file
@@ -365,6 +389,7 @@ portal-net
 prepull-images
 private-mountns
 prom-push-gateway
+protect-kernel-defaults
 proto-import
 proxy-bindall
 proxy-kubeconfig
@@ -399,6 +424,7 @@ repo-root
 report-dir
 report-prefix
 required-contexts
+require-kubeconfig
 resolv-conf
 resource-container
 resource-quota-sync-period
@@ -411,6 +437,7 @@ rkt-stage1-image
 root-ca-file
 root-dir
 run-proxy
+run-services-mode
 runtime-cgroups
 runtime-config
 runtime-request-timeout
@@ -418,7 +445,9 @@ save-config
 scheduler-config
 scheduler-name
 schema-cache-dir
+scopes
 seccomp-profile-root
+secondary-node-eviction-rate
 secure-port
 serialize-image-pulls
 server-start-timeout
@@ -466,17 +495,21 @@ system-container
 system-pods-startup-timeout
 system-reserved
 target-port
+target-ram-mb
 tcp-services
 terminated-pod-gc-threshold
+test-flags
 test-timeout
 tls-cert-file
 tls-private-key-file
 to-version
 token-auth-file
+ttl-keys-prefix
 ttl-secs
 type-src
 udp-port
 udp-timeout
+unhealthy-zone-threshold
 unix-socket
 update-period
 upgrade-target
@@ -493,3 +526,4 @@ whitelist-override-label
 windows-line-endings
 www-prefix
 zone-name
+garbage-collector-enabled

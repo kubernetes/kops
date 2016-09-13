@@ -21,7 +21,7 @@ refer to the docs that go with that version.
 <!-- TAG RELEASE_LINK, added by the munger automatically -->
 <strong>
 The latest release of this document can be found
-[here](http://releases.k8s.io/release-1.3/docs/design/admission_control.md).
+[here](http://releases.k8s.io/release-1.4/docs/design/admission_control.md).
 
 Documentation for other releases can be found at
 [releases.k8s.io](http://releases.k8s.io).
@@ -102,6 +102,17 @@ available option by providing a name, and implementation of admission.Interface.
 func init() {
   admission.RegisterPlugin("AlwaysDeny", func(client client.Interface, config io.Reader) (admission.Interface, error) { return NewAlwaysDeny(), nil })
 }
+```
+
+A **plug-in** must be added to the imports in [plugins.go](../../cmd/kube-apiserver/app/plugins.go)
+
+```go
+  // Admission policies
+  _ "k8s.io/kubernetes/plugin/pkg/admission/admit"
+  _ "k8s.io/kubernetes/plugin/pkg/admission/alwayspullimages"
+  _ "k8s.io/kubernetes/plugin/pkg/admission/antiaffinity"
+  ...
+  _ "<YOUR NEW PLUGIN>"
 ```
 
 Invocation of admission control is handled by the **APIServer** and not

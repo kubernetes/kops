@@ -214,7 +214,7 @@ func (importRuleFile) VerifyFile(f *generator.File, path string) error {
 			}
 			found := false
 			for _, allowed := range r.AllowedPrefixes {
-				glog.V(0).Infof("Checking %v against %v\n", v, allowed)
+				glog.V(4).Infof("Checking %v against %v\n", v, allowed)
 				if strings.HasPrefix(v, allowed) {
 					found = true
 					break
@@ -226,7 +226,7 @@ func (importRuleFile) VerifyFile(f *generator.File, path string) error {
 		}
 	}
 	if len(rules.Rules) > 0 {
-		glog.V(0).Infof("%v passes rules found in %v\n", path, actualPath)
+		glog.V(2).Infof("%v passes rules found in %v\n", path, actualPath)
 	}
 
 	return nil
@@ -252,6 +252,7 @@ func (r *importRules) GenerateType(*generator.Context, *types.Type, io.Writer) e
 func (r *importRules) Filename() string                                              { return ".import-restrictions" }
 func (r *importRules) FileType() string                                              { return importBossFileType }
 func (r *importRules) Init(c *generator.Context, w io.Writer) error                  { return nil }
+func (r *importRules) Finalize(c *generator.Context, w io.Writer) error              { return nil }
 
 func dfsImports(dest *[]string, seen map[string]bool, p *types.Package) {
 	for _, p2 := range p.Imports {

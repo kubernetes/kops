@@ -27,6 +27,7 @@ import (
 
 	"github.com/renstrom/dedent"
 	"github.com/spf13/cobra"
+
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/meta"
@@ -34,6 +35,7 @@ import (
 	"k8s.io/kubernetes/pkg/kubectl"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
+	utilerrors "k8s.io/kubernetes/pkg/util/errors"
 	"k8s.io/kubernetes/pkg/util/intstr"
 )
 
@@ -49,7 +51,10 @@ var (
 
 		Replaces the specified replication controller with a new replication controller by updating one pod at a time to use the
 		new PodTemplate. The new-controller.json must specify the same namespace as the
-		existing replication controller and overwrite at least one (common) label in its replicaSelector.`)
+		existing replication controller and overwrite at least one (common) label in its replicaSelector.
+
+		![Workflow](http://kubernetes.io/images/docs/kubectl_rollingupdate.svg)
+`)
 	rollingUpdate_example = dedent.Dedent(`
 		# Update pods of frontend-v1 using new replication controller data in frontend-v2.json.
 		kubectl rolling-update frontend-v1 -f frontend-v2.json
@@ -115,31 +120,31 @@ func validateArguments(cmd *cobra.Command, filenames, args []string) error {
 	image := cmdutil.GetFlagString(cmd, "image")
 	rollback := cmdutil.GetFlagBool(cmd, "rollback")
 
+	errors := []error{}
 	if len(deploymentKey) == 0 {
-		return cmdutil.UsageError(cmd, "--deployment-label-key can not be empty")
+		errors = append(errors, cmdutil.UsageError(cmd, "--deployment-label-key can not be empty"))
 	}
 	if len(filenames) > 1 {
-		return cmdutil.UsageError(cmd, "May only specify a single filename for new controller")
+		errors = append(errors, cmdutil.UsageError(cmd, "May only specify a single filename for new controller"))
 	}
 
 	if !rollback {
 		if len(filenames) == 0 && len(image) == 0 {
-			return cmdutil.UsageError(cmd, "Must specify --filename or --image for new controller")
-		}
-		if len(filenames) != 0 && len(image) != 0 {
-			return cmdutil.UsageError(cmd, "--filename and --image can not both be specified")
+			errors = append(errors, cmdutil.UsageError(cmd, "Must specify --filename or --image for new controller"))
+		} else if len(filenames) != 0 && len(image) != 0 {
+			errors = append(errors, cmdutil.UsageError(cmd, "--filename and --image can not both be specified"))
 		}
 	} else {
 		if len(filenames) != 0 || len(image) != 0 {
-			return cmdutil.UsageError(cmd, "Don't specify --filename or --image on rollback")
+			errors = append(errors, cmdutil.UsageError(cmd, "Don't specify --filename or --image on rollback"))
 		}
 	}
 
 	if len(args) < 1 {
-		return cmdutil.UsageError(cmd, "Must specify the controller to update")
+		errors = append(errors, cmdutil.UsageError(cmd, "Must specify the controller to update"))
 	}
 
-	return nil
+	return utilerrors.NewAggregate(errors)
 }
 
 func RunRollingUpdate(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, args []string, options *RollingUpdateOptions) error {
@@ -173,24 +178,25 @@ func RunRollingUpdate(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, arg
 		return err
 	}
 
-	client, err := f.Client()
+	clientset, err := f.ClientSet()
 	if err != nil {
 		return err
 	}
+	coreClient := clientset.Core()
 
 	var newRc *api.ReplicationController
 	// fetch rc
-	oldRc, err := client.ReplicationControllers(cmdNamespace).Get(oldName)
+	oldRc, err := coreClient.ReplicationControllers(cmdNamespace).Get(oldName)
 	if err != nil {
 		if !errors.IsNotFound(err) || len(image) == 0 || len(args) > 1 {
 			return err
 		}
 		// We're in the middle of a rename, look for an RC with a source annotation of oldName
-		newRc, err := kubectl.FindSourceController(client, cmdNamespace, oldName)
+		newRc, err := kubectl.FindSourceController(coreClient, cmdNamespace, oldName)
 		if err != nil {
 			return err
 		}
-		return kubectl.Rename(client, newRc, oldName)
+		return kubectl.Rename(coreClient, newRc, oldName)
 	}
 
 	var keepOldName bool
@@ -220,6 +226,9 @@ func RunRollingUpdate(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, arg
 			if len(list.Items) > 1 {
 				return cmdutil.UsageError(cmd, "%s specifies multiple items", filename)
 			}
+			if len(list.Items) == 0 {
+				return cmdutil.UsageError(cmd, "please make sure %s exists and is not empty", filename)
+			}
 			obj = list.Items[0]
 		}
 		newRc, ok = obj.(*api.ReplicationController)
@@ -241,10 +250,10 @@ func RunRollingUpdate(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, arg
 	// than the old rc. This selector is the hash of the rc, with a suffix to provide uniqueness for
 	// same-image updates.
 	if len(image) != 0 {
-		codec := api.Codecs.LegacyCodec(client.APIVersion())
+		codec := api.Codecs.LegacyCodec(clientset.CoreClient.APIVersion())
 		keepOldName = len(args) == 1
 		newName := findNewName(args, oldRc)
-		if newRc, err = kubectl.LoadExistingNextReplicationController(client, cmdNamespace, newName); err != nil {
+		if newRc, err = kubectl.LoadExistingNextReplicationController(coreClient, cmdNamespace, newName); err != nil {
 			return err
 		}
 		if newRc != nil {
@@ -267,7 +276,7 @@ func RunRollingUpdate(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, arg
 				}
 				config.PullPolicy = api.PullPolicy(pullPolicy)
 			}
-			newRc, err = kubectl.CreateNewControllerFromCurrentController(client, codec, config)
+			newRc, err = kubectl.CreateNewControllerFromCurrentController(coreClient, codec, config)
 			if err != nil {
 				return err
 			}
@@ -280,7 +289,7 @@ func RunRollingUpdate(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, arg
 		}
 		// If new image is same as old, the hash may not be distinct, so add a suffix.
 		oldHash += "-orig"
-		oldRc, err = kubectl.UpdateExistingReplicationController(client, oldRc, cmdNamespace, newRc.Name, deploymentKey, oldHash, out)
+		oldRc, err = kubectl.UpdateExistingReplicationController(coreClient, coreClient, oldRc, cmdNamespace, newRc.Name, deploymentKey, oldHash, out)
 		if err != nil {
 			return err
 		}
@@ -289,7 +298,7 @@ func RunRollingUpdate(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, arg
 	if rollback {
 		keepOldName = len(args) == 1
 		newName := findNewName(args, oldRc)
-		if newRc, err = kubectl.LoadExistingNextReplicationController(client, cmdNamespace, newName); err != nil {
+		if newRc, err = kubectl.LoadExistingNextReplicationController(coreClient, cmdNamespace, newName); err != nil {
 			return err
 		}
 
@@ -303,7 +312,7 @@ func RunRollingUpdate(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, arg
 			filename, oldName)
 	}
 
-	updater := kubectl.NewRollingUpdater(newRc.Namespace, client)
+	updater := kubectl.NewRollingUpdater(newRc.Namespace, coreClient, coreClient)
 
 	// To successfully pull off a rolling update the new and old rc have to differ
 	// by at least one selector. Every new pod should have the selector and every
@@ -360,7 +369,7 @@ func RunRollingUpdate(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, arg
 		if err != nil {
 			return err
 		}
-		client.ReplicationControllers(config.NewRc.Namespace).Update(config.NewRc)
+		coreClient.ReplicationControllers(config.NewRc.Namespace).Update(config.NewRc)
 	}
 	err = updater.Update(config)
 	if err != nil {
@@ -373,7 +382,7 @@ func RunRollingUpdate(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, arg
 	} else {
 		message = fmt.Sprintf("rolling updated to %q", newRc.Name)
 	}
-	newRc, err = client.ReplicationControllers(cmdNamespace).Get(newRc.Name)
+	newRc, err = coreClient.ReplicationControllers(cmdNamespace).Get(newRc.Name)
 	if err != nil {
 		return err
 	}

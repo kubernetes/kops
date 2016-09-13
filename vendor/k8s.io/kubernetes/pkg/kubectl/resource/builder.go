@@ -78,6 +78,21 @@ type Builder struct {
 	schema validation.Schema
 }
 
+var missingResourceError = fmt.Errorf(`You must provide one or more resources by argument or filename.
+Example resource specifications include:
+   '-f rsrc.yaml'
+   '--filename=rsrc.json'
+   'pods my-pod'
+   'services'`)
+
+// TODO: expand this to include other errors.
+func IsUsageError(err error) bool {
+	if err == nil {
+		return false
+	}
+	return err == missingResourceError
+}
+
 type resourceTuple struct {
 	Resource string
 	Name     string
@@ -210,6 +225,10 @@ func (b *Builder) ResourceNames(resource string, names ...string) *Builder {
 
 		if ok {
 			b.resourceTuples = append(b.resourceTuples, tuple)
+			continue
+		}
+		if len(resource) == 0 {
+			b.errs = append(b.errs, fmt.Errorf("the argument %q must be RESOURCE/NAME", name))
 			continue
 		}
 
@@ -454,7 +473,7 @@ func (b *Builder) mappingFor(resourceArg string) (*meta.RESTMapping, error) {
 	if fullySpecifiedGVR != nil {
 		gvk, _ = b.mapper.KindFor(*fullySpecifiedGVR)
 	}
-	if gvk.IsEmpty() {
+	if gvk.Empty() {
 		var err error
 		gvk, err = b.mapper.KindFor(groupResource.WithVersion(""))
 		if err != nil {
@@ -696,7 +715,7 @@ func (b *Builder) visitorResult() *Result {
 	if len(b.resources) != 0 {
 		return &Result{err: fmt.Errorf("resource(s) were provided, but no name, label selector, or --all flag specified")}
 	}
-	return &Result{err: fmt.Errorf("you must provide one or more resources by argument or filename (%s)", strings.Join(InputExtensions, "|"))}
+	return &Result{err: missingResourceError}
 }
 
 // Do returns a Result object with a Visitor for the resources identified by the Builder.

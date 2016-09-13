@@ -53,9 +53,10 @@ const (
 func newClusterRoleBinding(roleName string, subjects ...string) rbac.ClusterRoleBinding {
 	r := rbac.ClusterRoleBinding{
 		ObjectMeta: api.ObjectMeta{},
-		RoleRef: api.ObjectReference{
-			Kind: "ClusterRole", // ClusterRoleBindings can only refer to ClusterRole
-			Name: roleName,
+		RoleRef: rbac.RoleRef{
+			APIGroup: rbac.GroupName,
+			Kind:     "ClusterRole", // ClusterRoleBindings can only refer to ClusterRole
+			Name:     roleName,
 		},
 	}
 
@@ -72,9 +73,9 @@ func newRoleBinding(namespace, roleName string, bindType uint16, subjects ...str
 
 	switch bindType {
 	case bindToRole:
-		r.RoleRef = api.ObjectReference{Kind: "Role", Namespace: namespace, Name: roleName}
+		r.RoleRef = rbac.RoleRef{APIGroup: rbac.GroupName, Kind: "Role", Name: roleName}
 	case bindToClusterRole:
-		r.RoleRef = api.ObjectReference{Kind: "ClusterRole", Name: roleName}
+		r.RoleRef = rbac.RoleRef{APIGroup: rbac.GroupName, Kind: "ClusterRole", Name: roleName}
 	}
 
 	r.Subjects = make([]rbac.Subject, len(subjects))
@@ -86,12 +87,13 @@ func newRoleBinding(namespace, roleName string, bindType uint16, subjects ...str
 }
 
 type defaultAttributes struct {
-	user      string
-	groups    string
-	verb      string
-	resource  string
-	namespace string
-	apiGroup  string
+	user        string
+	groups      string
+	verb        string
+	resource    string
+	subresource string
+	namespace   string
+	apiGroup    string
 }
 
 func (d *defaultAttributes) String() string {
@@ -106,7 +108,7 @@ func (d *defaultAttributes) GetVerb() string         { return d.verb }
 func (d *defaultAttributes) IsReadOnly() bool        { return d.verb == "get" || d.verb == "watch" }
 func (d *defaultAttributes) GetNamespace() string    { return d.namespace }
 func (d *defaultAttributes) GetResource() string     { return d.resource }
-func (d *defaultAttributes) GetSubresource() string  { return "" }
+func (d *defaultAttributes) GetSubresource() string  { return d.subresource }
 func (d *defaultAttributes) GetName() string         { return "" }
 func (d *defaultAttributes) GetAPIGroup() string     { return d.apiGroup }
 func (d *defaultAttributes) GetAPIVersion() string   { return "" }
@@ -133,17 +135,17 @@ func TestAuthorizer(t *testing.T) {
 				newRoleBinding("ns1", "admin", bindToClusterRole, "User:admin", "Group:admins"),
 			},
 			shouldPass: []authorizer.Attributes{
-				&defaultAttributes{"admin", "", "get", "Pods", "ns1", ""},
-				&defaultAttributes{"admin", "", "watch", "Pods", "ns1", ""},
-				&defaultAttributes{"admin", "group1", "watch", "Foobar", "ns1", ""},
-				&defaultAttributes{"joe", "admins", "watch", "Foobar", "ns1", ""},
-				&defaultAttributes{"joe", "group1,admins", "watch", "Foobar", "ns1", ""},
+				&defaultAttributes{"admin", "", "get", "Pods", "", "ns1", ""},
+				&defaultAttributes{"admin", "", "watch", "Pods", "", "ns1", ""},
+				&defaultAttributes{"admin", "group1", "watch", "Foobar", "", "ns1", ""},
+				&defaultAttributes{"joe", "admins", "watch", "Foobar", "", "ns1", ""},
+				&defaultAttributes{"joe", "group1,admins", "watch", "Foobar", "", "ns1", ""},
 			},
 			shouldFail: []authorizer.Attributes{
-				&defaultAttributes{"admin", "", "GET", "Pods", "ns2", ""},
-				&defaultAttributes{"admin", "", "GET", "Nodes", "", ""},
-				&defaultAttributes{"admin", "admins", "GET", "Pods", "ns2", ""},
-				&defaultAttributes{"admin", "admins", "GET", "Nodes", "", ""},
+				&defaultAttributes{"admin", "", "GET", "Pods", "", "ns2", ""},
+				&defaultAttributes{"admin", "", "GET", "Nodes", "", "", ""},
+				&defaultAttributes{"admin", "admins", "GET", "Pods", "", "ns2", ""},
+				&defaultAttributes{"admin", "admins", "GET", "Nodes", "", "", ""},
 			},
 		},
 		{
@@ -185,6 +187,36 @@ func TestAuthorizer(t *testing.T) {
 				// not covered by prefix
 				authorizer.AttributesRecord{User: &user.DefaultInfo{Name: "prefixed"}, Verb: "get", Path: "/api/v1"},
 				authorizer.AttributesRecord{User: &user.DefaultInfo{Groups: []string{"prefixed"}}, Verb: "get", Path: "/api/v1"},
+			},
+		},
+		{
+			// test subresource resolution
+			clusterRoles: []rbac.ClusterRole{
+				newClusterRole("admin", newRule("*", "*", "pods", "*")),
+			},
+			roleBindings: []rbac.RoleBinding{
+				newRoleBinding("ns1", "admin", bindToClusterRole, "User:admin", "Group:admins"),
+			},
+			shouldPass: []authorizer.Attributes{
+				&defaultAttributes{"admin", "", "get", "pods", "", "ns1", ""},
+			},
+			shouldFail: []authorizer.Attributes{
+				&defaultAttributes{"admin", "", "get", "pods", "status", "ns1", ""},
+			},
+		},
+		{
+			// test subresource resolution
+			clusterRoles: []rbac.ClusterRole{
+				newClusterRole("admin", newRule("*", "*", "pods/status", "*")),
+			},
+			roleBindings: []rbac.RoleBinding{
+				newRoleBinding("ns1", "admin", bindToClusterRole, "User:admin", "Group:admins"),
+			},
+			shouldPass: []authorizer.Attributes{
+				&defaultAttributes{"admin", "", "get", "pods", "status", "ns1", ""},
+			},
+			shouldFail: []authorizer.Attributes{
+				&defaultAttributes{"admin", "", "get", "pods", "", "ns1", ""},
 			},
 		},
 	}

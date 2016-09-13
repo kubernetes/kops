@@ -46,12 +46,15 @@ GENERATED_FILE_PREFIX := zz_generated.
 # Metadata for driving the build lives here.
 META_DIR := .make
 
+# Our build flags.
+# TODO(thockin): it would be nice to just use the native flags.  Can we EOL
+#                these "wrapper" flags?
 KUBE_GOFLAGS := $(GOFLAGS)
 KUBE_GOLDFLAGS := $(GOLDFLAGS)
-
-GOGCFLAGS ?=
 KUBE_GOGCFLAGS = $(GOGCFLAGS)
-export KUBE_GOGCFLAGS GOGCFLAGS
+
+# This controls the verbosity of the build.  Higher numbers mean more output.
+KUBE_VERBOSE ?= 1
 
 # Build code.
 #
@@ -79,9 +82,9 @@ all: generated_files
 #
 # Example:
 # make ginkgo
+.PHONY: ginkgo
 ginkgo:
 	hack/make-rules/build.sh vendor/github.com/onsi/ginkgo/ginkgo
-.PHONY: ginkgo
 
 # Runs all the presubmission verifications.
 #
@@ -94,6 +97,7 @@ ginkgo:
 .PHONY: verify
 verify:
 	KUBE_VERIFY_GIT_BRANCH=$(BRANCH) hack/make-rules/verify.sh -v
+	hack/make-rules/vet.sh
 
 # Build and run tests.
 #
@@ -115,11 +119,15 @@ check test: generated_files
 
 # Build and run integration tests.
 #
+# Args:
+#   WHAT: Directory names to test.  All *_test.go files under these
+#     directories will be run.  If not specified, "everything" will be tested.
+#
 # Example:
 #   make test-integration
 .PHONY: test-integration
 test-integration: generated_files
-	hack/make-rules/test-integration.sh
+	hack/make-rules/test-integration.sh $(WHAT)
 
 # Build and run end-to-end tests.
 #
@@ -158,6 +166,8 @@ test-e2e: ginkgo generated_files
 #  INSTANCE_PREFIX: For REMOTE=true only.  Instances created from images will
 #    have the name "${INSTANCE_PREFIX}-${IMAGE_NAME}".  Defaults to "test".
 #  INSTANCE_METADATA: For REMOTE=true and running on GCE only.
+#  GUBERNATOR: For REMOTE=true only. Produce link to Gubernator to view logs.
+#	 Defaults to false.
 #
 # Example:
 #   make test-e2e-node FOCUS=Kubelet SKIP=container
@@ -172,9 +182,9 @@ test-e2e-node: ginkgo generated_files
 #
 # Example:
 #   make test-cmd
-test-cmd: generated_files
-	@hack/make-rules/test-cmd.sh
 .PHONY: test-cmd
+test-cmd: generated_files
+	hack/make-rules/test-cmd.sh
 
 # Remove all build artifacts.
 #
@@ -196,13 +206,14 @@ clean: clean_meta
 clean_meta:
 	rm -rf $(META_DIR)
 
-# Remove all auto-generated artifacts.
+# Remove all auto-generated artifacts. Generated artifacts in staging folder should not be removed as they are not
+# generated using generated_files.
 #
 # Example:
 #   make clean_generated
 .PHONY: clean_generated
 clean_generated:
-	find . -type f -name $(GENERATED_FILE_PREFIX)\* | xargs rm -f
+	find . -type f -name $(GENERATED_FILE_PREFIX)\* | grep -v "[.]/staging/.*" | xargs rm -f
 
 # Run 'go vet'.
 #
@@ -250,10 +261,26 @@ cross:
 $(notdir $(abspath $(wildcard cmd/*/))): generated_files
 	hack/make-rules/build.sh cmd/$@
 
+# Add rules for all directories in plugin/cmd/
+#
+# Example:
+#   make kube-scheduler
+.PHONY: $(notdir $(abspath $(wildcard plugin/cmd/*/)))
+$(notdir $(abspath $(wildcard plugin/cmd/*/))): generated_files
+	hack/make-rules/build.sh plugin/cmd/$@
+
+# Add rules for all directories in federation/cmd/
+#
+# Example:
+#   make federation-apiserver federation-controller-manager
+.PHONY: $(notdir $(abspath $(wildcard federation/cmd/*/)))
+$(notdir $(abspath $(wildcard federation/cmd/*/))): generated_files
+	hack/make-rules/build.sh federation/cmd/$@
+
 # Produce auto-generated files needed for the build.
 #
 # Example:
 #   make generated_files
 .PHONY: generated_files
 generated_files:
-	$(MAKE) -f Makefile.$@ $@
+	$(MAKE) -f Makefile.$@ $@ CALLED_FROM_MAIN_MAKEFILE=1

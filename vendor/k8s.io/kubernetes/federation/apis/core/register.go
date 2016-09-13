@@ -42,19 +42,24 @@ var Unversioned = unversioned.GroupVersion{Group: "", Version: "v1"}
 // ParameterCodec handles versioning of objects that are converted to query parameters.
 var ParameterCodec = runtime.NewParameterCodec(Scheme)
 
-// Kind takes an unqualified kind and returns back a Group qualified GroupKind
+// Kind takes an unqualified kind and returns a Group qualified GroupKind
 func Kind(kind string) unversioned.GroupKind {
 	return SchemeGroupVersion.WithKind(kind).GroupKind()
 }
 
-// Resource takes an unqualified resource and returns back a Group qualified GroupResource
+// Resource takes an unqualified resource and returns a Group qualified GroupResource
 func Resource(resource string) unversioned.GroupResource {
 	return SchemeGroupVersion.WithResource(resource).GroupResource()
 }
 
-func AddToScheme(scheme *runtime.Scheme) {
-	if err := Scheme.AddIgnoredConversionType(&unversioned.TypeMeta{}, &unversioned.TypeMeta{}); err != nil {
-		panic(err)
+var (
+	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes, addDefaultingFuncs, addConversionFuncs)
+	AddToScheme   = SchemeBuilder.AddToScheme
+)
+
+func addKnownTypes(scheme *runtime.Scheme) error {
+	if err := scheme.AddIgnoredConversionType(&unversioned.TypeMeta{}, &unversioned.TypeMeta{}); err != nil {
+		return err
 	}
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&api.ServiceList{},
@@ -63,10 +68,14 @@ func AddToScheme(scheme *runtime.Scheme) {
 		&api.NamespaceList{},
 		&api.ListOptions{},
 		&api.DeleteOptions{},
+		&api.Secret{},
+		&api.SecretList{},
+		&api.Event{},
+		&api.EventList{},
 	)
 
 	// Register Unversioned types under their own special group
-	Scheme.AddUnversionedTypes(Unversioned,
+	scheme.AddUnversionedTypes(Unversioned,
 		&unversioned.ExportOptions{},
 		&unversioned.Status{},
 		&unversioned.APIVersions{},
@@ -74,7 +83,5 @@ func AddToScheme(scheme *runtime.Scheme) {
 		&unversioned.APIGroup{},
 		&unversioned.APIResourceList{},
 	)
-
-	addDefaultingFuncs(scheme)
-	addConversionFuncs(scheme)
+	return nil
 }

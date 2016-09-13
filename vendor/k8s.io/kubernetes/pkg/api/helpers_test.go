@@ -296,6 +296,107 @@ func TestGetAffinityFromPod(t *testing.T) {
 	}
 }
 
+func TestTaintToString(t *testing.T) {
+	testCases := []struct {
+		taint          *Taint
+		expectedString string
+	}{
+		{
+			taint: &Taint{
+				Key:    "foo",
+				Value:  "bar",
+				Effect: TaintEffectNoSchedule,
+			},
+			expectedString: "foo=bar:NoSchedule",
+		},
+		{
+			taint: &Taint{
+				Key:    "foo",
+				Effect: TaintEffectNoSchedule,
+			},
+			expectedString: "foo:NoSchedule",
+		},
+	}
+
+	for i, tc := range testCases {
+		if tc.expectedString != tc.taint.ToString() {
+			t.Errorf("[%v] expected taint %v converted to %s, got %s", i, tc.taint, tc.expectedString, tc.taint.ToString())
+		}
+	}
+}
+
+func TestMatchTaint(t *testing.T) {
+	testCases := []struct {
+		description  string
+		taint        *Taint
+		taintToMatch Taint
+		expectMatch  bool
+	}{
+		{
+			description: "two taints with the same key,value,effect should match",
+			taint: &Taint{
+				Key:    "foo",
+				Value:  "bar",
+				Effect: TaintEffectNoSchedule,
+			},
+			taintToMatch: Taint{
+				Key:    "foo",
+				Value:  "bar",
+				Effect: TaintEffectNoSchedule,
+			},
+			expectMatch: true,
+		},
+		{
+			description: "two taints with the same key,effect but different value should match",
+			taint: &Taint{
+				Key:    "foo",
+				Value:  "bar",
+				Effect: TaintEffectNoSchedule,
+			},
+			taintToMatch: Taint{
+				Key:    "foo",
+				Value:  "different-value",
+				Effect: TaintEffectNoSchedule,
+			},
+			expectMatch: true,
+		},
+		{
+			description: "two taints with the different key cannot match",
+			taint: &Taint{
+				Key:    "foo",
+				Value:  "bar",
+				Effect: TaintEffectNoSchedule,
+			},
+			taintToMatch: Taint{
+				Key:    "different-key",
+				Value:  "bar",
+				Effect: TaintEffectNoSchedule,
+			},
+			expectMatch: false,
+		},
+		{
+			description: "two taints with the different effect cannot match",
+			taint: &Taint{
+				Key:    "foo",
+				Value:  "bar",
+				Effect: TaintEffectNoSchedule,
+			},
+			taintToMatch: Taint{
+				Key:    "foo",
+				Value:  "bar",
+				Effect: TaintEffectPreferNoSchedule,
+			},
+			expectMatch: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		if tc.expectMatch != tc.taint.MatchTaint(tc.taintToMatch) {
+			t.Errorf("[%s] expect taint %s match taint %s", tc.description, tc.taint.ToString(), tc.taintToMatch.ToString())
+		}
+	}
+}
+
 func TestGetAvoidPodsFromNode(t *testing.T) {
 	controllerFlag := true
 	testCases := []struct {
@@ -388,6 +489,45 @@ func TestGetAvoidPodsFromNode(t *testing.T) {
 		}
 		if !reflect.DeepEqual(tc.expectValue, v) {
 			t.Errorf("[%v]expect value %v but got %v with %v", i, tc.expectValue, v, v.PreferAvoidPods[0].PodSignature.PodController.Controller)
+		}
+	}
+}
+
+func TestSysctlsFromPodAnnotation(t *testing.T) {
+	type Test struct {
+		annotation  string
+		expectValue []Sysctl
+		expectErr   bool
+	}
+	for i, test := range []Test{
+		{
+			annotation:  "",
+			expectValue: nil,
+		},
+		{
+			annotation: "foo.bar",
+			expectErr:  true,
+		},
+		{
+			annotation:  "foo.bar=42",
+			expectValue: []Sysctl{{Name: "foo.bar", Value: "42"}},
+		},
+		{
+			annotation: "foo.bar=42,",
+			expectErr:  true,
+		},
+		{
+			annotation:  "foo.bar=42,abc.def=1",
+			expectValue: []Sysctl{{Name: "foo.bar", Value: "42"}, {Name: "abc.def", Value: "1"}},
+		},
+	} {
+		sysctls, err := SysctlsFromPodAnnotation(test.annotation)
+		if test.expectErr && err == nil {
+			t.Errorf("[%v]expected error but got none", i)
+		} else if !test.expectErr && err != nil {
+			t.Errorf("[%v]did not expect error but got: %v", i, err)
+		} else if !reflect.DeepEqual(sysctls, test.expectValue) {
+			t.Errorf("[%v]expect value %v but got %v", i, test.expectValue, sysctls)
 		}
 	}
 }

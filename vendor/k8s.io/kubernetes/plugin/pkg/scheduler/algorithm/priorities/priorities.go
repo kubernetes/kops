@@ -17,6 +17,7 @@ limitations under the License.
 package priorities
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/golang/glog"
@@ -27,6 +28,21 @@ import (
 	schedulerapi "k8s.io/kubernetes/plugin/pkg/scheduler/api"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
+
+// priorityMetadata is a type that is passed as metadata for priority functions
+type priorityMetadata struct {
+	nonZeroRequest *schedulercache.Resource
+}
+
+func PriorityMetadata(pod *api.Pod, nodes []*api.Node) interface{} {
+	// If we cannot compute metadata, just return nil
+	if pod == nil {
+		return nil
+	}
+	return &priorityMetadata{
+		nonZeroRequest: getNonZeroRequests(pod),
+	}
+}
 
 func getNonZeroRequests(pod *api.Pod) *schedulercache.Resource {
 	result := &schedulercache.Resource{}
@@ -39,9 +55,10 @@ func getNonZeroRequests(pod *api.Pod) *schedulercache.Resource {
 	return result
 }
 
-// the unused capacity is calculated on a scale of 0-10
-// 0 being the lowest priority and 10 being the highest
-func calculateScore(requested int64, capacity int64, node string) int64 {
+// The unused capacity is calculated on a scale of 0-10
+// 0 being the lowest priority and 10 being the highest.
+// The more unused resources the higher the score is.
+func calculateUnusedScore(requested int64, capacity int64, node string) int64 {
 	if capacity == 0 {
 		return 0
 	}
@@ -53,22 +70,75 @@ func calculateScore(requested int64, capacity int64, node string) int64 {
 	return ((capacity - requested) * 10) / capacity
 }
 
-// Calculate the resource occupancy on a node.  'node' has information about the resources on the node.
+// The used capacity is calculated on a scale of 0-10
+// 0 being the lowest priority and 10 being the highest.
+// The more resources are used the higher the score is. This function
+// is almost a reversed version of calculatUnusedScore (10 - calculateUnusedScore).
+// The main difference is in rounding. It was added to keep the
+// final formula clean and not to modify the widely used (by users
+// in their default scheduling policies) calculateUSedScore.
+func calculateUsedScore(requested int64, capacity int64, node string) int64 {
+	if capacity == 0 {
+		return 0
+	}
+	if requested > capacity {
+		glog.V(2).Infof("Combined requested resources %d from existing pods exceeds capacity %d on node %s",
+			requested, capacity, node)
+		return 0
+	}
+	return (requested * 10) / capacity
+}
+
+// Calculates host priority based on the amount of unused resources.
+// 'node' has information about the resources on the node.
 // 'pods' is a list of pods currently scheduled on the node.
-// TODO: Use Node() from nodeInfo instead of passing it.
-func calculateResourceOccupancy(pod *api.Pod, podRequests *schedulercache.Resource, node *api.Node, nodeInfo *schedulercache.NodeInfo) schedulerapi.HostPriority {
+func calculateUnusedPriority(pod *api.Pod, podRequests *schedulercache.Resource, nodeInfo *schedulercache.NodeInfo) (schedulerapi.HostPriority, error) {
+	node := nodeInfo.Node()
+	if node == nil {
+		return schedulerapi.HostPriority{}, fmt.Errorf("node not found")
+	}
+
 	allocatableResources := nodeInfo.AllocatableResource()
 	totalResources := *podRequests
 	totalResources.MilliCPU += nodeInfo.NonZeroRequest().MilliCPU
 	totalResources.Memory += nodeInfo.NonZeroRequest().Memory
 
-	cpuScore := calculateScore(totalResources.MilliCPU, allocatableResources.MilliCPU, node.Name)
-	memoryScore := calculateScore(totalResources.Memory, allocatableResources.Memory, node.Name)
+	cpuScore := calculateUnusedScore(totalResources.MilliCPU, allocatableResources.MilliCPU, node.Name)
+	memoryScore := calculateUnusedScore(totalResources.Memory, allocatableResources.Memory, node.Name)
 	if glog.V(10) {
 		// We explicitly don't do glog.V(10).Infof() to avoid computing all the parameters if this is
 		// not logged. There is visible performance gain from it.
 		glog.V(10).Infof(
 			"%v -> %v: Least Requested Priority, capacity %d millicores %d memory bytes, total request %d millicores %d memory bytes, score %d CPU %d memory",
+			pod.Name, node.Name,
+			allocatableResources.MilliCPU, allocatableResources.Memory,
+			totalResources.MilliCPU, totalResources.Memory,
+			cpuScore, memoryScore,
+		)
+	}
+
+	return schedulerapi.HostPriority{
+		Host:  node.Name,
+		Score: int((cpuScore + memoryScore) / 2),
+	}, nil
+}
+
+// Calculate the resource used on a node.  'node' has information about the resources on the node.
+// 'pods' is a list of pods currently scheduled on the node.
+// TODO: Use Node() from nodeInfo instead of passing it.
+func calculateUsedPriority(pod *api.Pod, podRequests *schedulercache.Resource, node *api.Node, nodeInfo *schedulercache.NodeInfo) schedulerapi.HostPriority {
+	allocatableResources := nodeInfo.AllocatableResource()
+	totalResources := *podRequests
+	totalResources.MilliCPU += nodeInfo.NonZeroRequest().MilliCPU
+	totalResources.Memory += nodeInfo.NonZeroRequest().Memory
+
+	cpuScore := calculateUsedScore(totalResources.MilliCPU, allocatableResources.MilliCPU, node.Name)
+	memoryScore := calculateUsedScore(totalResources.Memory, allocatableResources.Memory, node.Name)
+	if glog.V(10) {
+		// We explicitly don't do glog.V(10).Infof() to avoid computing all the parameters if this is
+		// not logged. There is visible performance gain from it.
+		glog.V(10).Infof(
+			"%v -> %v: Most Requested Priority, capacity %d millicores %d memory bytes, total request %d millicores %d memory bytes, score %d CPU %d memory",
 			pod.Name, node.Name,
 			allocatableResources.MilliCPU, allocatableResources.Memory,
 			totalResources.MilliCPU, totalResources.Memory,
@@ -86,11 +156,26 @@ func calculateResourceOccupancy(pod *api.Pod, podRequests *schedulercache.Resour
 // It calculates the percentage of memory and CPU requested by pods scheduled on the node, and prioritizes
 // based on the minimum of the average of the fraction of requested to capacity.
 // Details: cpu((capacity - sum(requested)) * 10 / capacity) + memory((capacity - sum(requested)) * 10 / capacity) / 2
-func LeastRequestedPriority(pod *api.Pod, nodeNameToInfo map[string]*schedulercache.NodeInfo, nodes []*api.Node) (schedulerapi.HostPriorityList, error) {
+func LeastRequestedPriorityMap(pod *api.Pod, meta interface{}, nodeInfo *schedulercache.NodeInfo) (schedulerapi.HostPriority, error) {
+	var nonZeroRequest *schedulercache.Resource
+	if priorityMeta, ok := meta.(*priorityMetadata); ok {
+		nonZeroRequest = priorityMeta.nonZeroRequest
+	} else {
+		// We couldn't parse metadata - fallback to computing it.
+		nonZeroRequest = getNonZeroRequests(pod)
+	}
+	return calculateUnusedPriority(pod, nonZeroRequest, nodeInfo)
+}
+
+// MostRequestedPriority is a priority function that favors nodes with most requested resources.
+// It calculates the percentage of memory and CPU requested by pods scheduled on the node, and prioritizes
+// based on the maximum of the average of the fraction of requested to capacity.
+// Details: (cpu(10 * sum(requested) / capacity) + memory(10 * sum(requested) / capacity)) / 2
+func MostRequestedPriority(pod *api.Pod, nodeNameToInfo map[string]*schedulercache.NodeInfo, nodes []*api.Node) (schedulerapi.HostPriorityList, error) {
 	podResources := getNonZeroRequests(pod)
 	list := make(schedulerapi.HostPriorityList, 0, len(nodes))
 	for _, node := range nodes {
-		list = append(list, calculateResourceOccupancy(pod, podResources, node, nodeNameToInfo[node.Name]))
+		list = append(list, calculateUsedPriority(pod, podResources, node, nodeNameToInfo[node.Name]))
 	}
 	return list, nil
 }
@@ -260,24 +345,16 @@ func fractionOfCapacity(requested, capacity int64) float64 {
 	return float64(requested) / float64(capacity)
 }
 
-type NodePreferAvoidPod struct {
-	controllerLister algorithm.ControllerLister
-	replicaSetLister algorithm.ReplicaSetLister
-}
-
-func NewNodePreferAvoidPodsPriority(controllerLister algorithm.ControllerLister, replicaSetLister algorithm.ReplicaSetLister) algorithm.PriorityFunction {
-	nodePreferAvoid := &NodePreferAvoidPod{
-		controllerLister: controllerLister,
-		replicaSetLister: replicaSetLister,
+func CalculateNodePreferAvoidPodsPriority(pod *api.Pod, nodeNameToInfo map[string]*schedulercache.NodeInfo, nodes []*api.Node) (schedulerapi.HostPriorityList, error) {
+	controllerRef := priorityutil.GetControllerRef(pod)
+	if controllerRef != nil {
+		// Ignore pods that are owned by other controller than ReplicationController
+		// or ReplicaSet.
+		if controllerRef.Kind != "ReplicationController" && controllerRef.Kind != "ReplicaSet" {
+			controllerRef = nil
+		}
 	}
-	return nodePreferAvoid.CalculateNodePreferAvoidPodsPriority
-}
-
-func (npa *NodePreferAvoidPod) CalculateNodePreferAvoidPodsPriority(pod *api.Pod, nodeNameToInfo map[string]*schedulercache.NodeInfo, nodes []*api.Node) (schedulerapi.HostPriorityList, error) {
-	// TODO: Once we have ownerReference fully implemented, use it to find controller for the pod.
-	rcs, _ := npa.controllerLister.GetPodControllers(pod)
-	rss, _ := npa.replicaSetLister.GetPodReplicaSets(pod)
-	if len(rcs) == 0 && len(rss) == 0 {
+	if controllerRef == nil {
 		result := make(schedulerapi.HostPriorityList, 0, len(nodes))
 		for _, node := range nodes {
 			result = append(result, schedulerapi.HostPriority{Host: node.Name, Score: 10})
@@ -296,17 +373,8 @@ func (npa *NodePreferAvoidPod) CalculateNodePreferAvoidPodsPriority(pod *api.Pod
 		avoidNode = false
 		for i := range avoids.PreferAvoidPods {
 			avoid := &avoids.PreferAvoidPods[i]
-			// TODO: Once we have controllerRef implemented there will be at most one owner
-			// of our pod. That said we won't even need loop theoretically. That said for
-			// code simplicity, we can get rid of all breaks.
-			// Also, we can simply compare fields from ownerRef with avoid.
-			for _, rc := range rcs {
-				if avoid.PodSignature.PodController.Kind == "ReplicationController" && avoid.PodSignature.PodController.UID == rc.UID {
-					avoidNode = true
-				}
-			}
-			for _, rs := range rss {
-				if avoid.PodSignature.PodController.Kind == "ReplicaSet" && avoid.PodSignature.PodController.UID == rs.UID {
+			if controllerRef != nil {
+				if avoid.PodSignature.PodController.Kind == controllerRef.Kind && avoid.PodSignature.PodController.UID == controllerRef.UID {
 					avoidNode = true
 				}
 			}

@@ -42,10 +42,11 @@ $ brew install bash-completion
 $ source $(brew --prefix)/etc/bash_completion
 $ source <(kubectl completion bash)
 
-If you use zsh, the following will load kubectl zsh completion:
+If you use zsh*, the following will load kubectl zsh completion:
 
 $ source <(kubectl completion zsh)
-`
+
+* zsh completions are only supported in versions of zsh >= 5.2`
 )
 
 var (
@@ -244,7 +245,8 @@ if sed --help 2>&1 | grep -q GNU; then
 	RWORD='\>'
 fi
 
-__kubectl_bash_source <(sed \
+__kubectl_convert_bash_to_zsh() {
+	sed \
 	-e 's/declare -F/whence -w/' \
 	-e 's/local \([a-zA-Z0-9_]*\)=/local \1; \1=/' \
 	-e 's/flags+=("\(--.*\)=")/flags+=("\1"); two_word_flags+=("\1")/' \
@@ -266,7 +268,9 @@ __kubectl_bash_source <(sed \
 
 	zsh_tail := `
 BASH_COMPLETION_EOF
-)
+}
+
+__kubectl_bash_source <(__kubectl_convert_bash_to_zsh)
 `
 	out.Write([]byte(zsh_tail))
 	return nil

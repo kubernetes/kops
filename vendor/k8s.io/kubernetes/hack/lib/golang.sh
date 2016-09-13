@@ -37,8 +37,6 @@ kube::golang::server_targets() {
     cmd/kubelet
     cmd/kubemark
     cmd/hyperkube
-    federation/cmd/federation-apiserver
-    federation/cmd/federation-controller-manager
     plugin/cmd/kube-scheduler
   )
   if [ -n "${KUBERNETES_CONTRIB:-}" ]; then
@@ -48,6 +46,7 @@ kube::golang::server_targets() {
   fi
   echo "${targets[@]}"
 }
+
 readonly KUBE_SERVER_TARGETS=($(kube::golang::server_targets))
 readonly KUBE_SERVER_BINARIES=("${KUBE_SERVER_TARGETS[@]##*/}")
 
@@ -69,26 +68,32 @@ if [[ "${KUBE_FASTBUILD:-}" == "true" ]]; then
 else
 
   # The server platform we are building on.
-  readonly KUBE_SERVER_PLATFORMS=(
+  KUBE_SERVER_PLATFORMS=(
     linux/amd64
     linux/arm
     linux/arm64
-    linux/ppc64le # note: hyperkube is temporarily disabled due to a linking error
   )
+  if [[ "${KUBE_BUILD_PPC64LE:-}" =~ ^[yY]$ ]]; then
+    KUBE_SERVER_PLATFORMS+=(linux/ppc64le)
+  fi
+  readonly KUBE_SERVER_PLATFORMS
 
   # If we update this we should also update the set of golang compilers we build
   # in 'build/build-image/cross/Dockerfile'. However, it's only a bit faster since go 1.5, not mandatory
-  readonly KUBE_CLIENT_PLATFORMS=(
+  KUBE_CLIENT_PLATFORMS=(
     linux/amd64
     linux/386
     linux/arm
     linux/arm64
-    linux/ppc64le
     darwin/amd64
     darwin/386
     windows/amd64
     windows/386
   )
+  if [[ "${KUBE_BUILD_PPC64LE:-}" =~ ^[yY]$ ]]; then
+    KUBE_CLIENT_PLATFORMS+=(linux/ppc64le)
+  fi
+  readonly KUBE_CLIENT_PLATFORMS
 
   # Which platforms we should compile test targets for. Not all client platforms need these tests
   readonly KUBE_TEST_PLATFORMS=(
@@ -168,8 +173,6 @@ readonly KUBE_STATIC_LIBRARIES=(
   kube-scheduler
   kube-proxy
   kubectl
-  federation-apiserver
-  federation-controller-manager
 )
 
 kube::golang::is_statically_linked_library() {
@@ -260,10 +263,11 @@ kube::golang::create_gopath_tree() {
   local go_pkg_basedir=$(dirname "${go_pkg_dir}")
 
   mkdir -p "${go_pkg_basedir}"
-  rm -f "${go_pkg_dir}"
 
   # TODO: This symlink should be relative.
-  ln -s "${KUBE_ROOT}" "${go_pkg_dir}"
+  if [[ ! -e "${go_pkg_dir}" || "$(readlink ${go_pkg_dir})" != "${KUBE_ROOT}" ]]; then
+    ln -snf "${KUBE_ROOT}" "${go_pkg_dir}"
+  fi
 }
 
 # Ensure the godep tool exists and is a viable version.
@@ -347,6 +351,9 @@ kube::golang::setup_env() {
   subdir=$(kube::realpath . | sed "s|$KUBE_ROOT||")
   cd "${KUBE_GOPATH}/src/${KUBE_GO_PACKAGE}/${subdir}"
 
+  # Set GOROOT so binaries that parse code can work properly.
+  export GOROOT=$(go env GOROOT)
+
   # Unset GOBIN in case it already exists in the current session.
   unset GOBIN
 
@@ -366,7 +373,7 @@ kube::golang::place_bins() {
   local host_platform
   host_platform=$(kube::golang::host_platform)
 
-  kube::log::status "Placing binaries"
+  V=2 kube::log::status "Placing binaries"
 
   local platform
   for platform in "${KUBE_CLIENT_PLATFORMS[@]}"; do
@@ -454,17 +461,10 @@ kube::golang::build_binaries_for_platform() {
   local -a statics=()
   local -a nonstatics=()
   local -a tests=()
+
   for binary in "${binaries[@]}"; do
 
-    # TODO(IBM): Enable hyperkube builds for ppc64le again
-    # The current workaround creates a text file with help text instead of a binary
-    # We're doing it this way so the build system isn't affected so much
-    if [[ "${binary}" == *"hyperkube" && "${platform}" == "linux/ppc64le" ]]; then
-      echo "hyperkube build for ppc64le is disabled. Creating dummy text file instead."
-      local outfile=$(kube::golang::output_filename_for_binary "${binary}" "${platform}")
-      mkdir -p $(dirname ${outfile})
-      echo "Not available at the moment. Please see: https://github.com/kubernetes/kubernetes/issues/25886 for more information." > ${outfile}
-    elif [[ "${binary}" =~ ".test"$ ]]; then
+    if [[ "${binary}" =~ ".test"$ ]]; then
       tests+=($binary)
     elif kube::golang::is_statically_linked_library "${binary}"; then
       statics+=($binary)
@@ -596,7 +596,7 @@ kube::golang::build_binaries() {
   (
     # Check for `go` binary and set ${GOPATH}.
     kube::golang::setup_env
-    echo "Go version: $(go version)"
+    V=2 kube::log::info "Go version: $(go version)"
 
     local host_platform
     host_platform=$(kube::golang::host_platform)
@@ -610,6 +610,18 @@ kube::golang::build_binaries() {
     local use_go_build
     local -a targets=()
     local arg
+
+    # Add any files with those //generate annotations in the array below.
+    readonly BINDATAS=( "${KUBE_ROOT}/test/e2e/framework/gobindata_util.go" )
+    kube::log::status "Generating bindata:" "${BINDATAS[@]}"
+    for bindata in ${BINDATAS[@]}; do
+          # Only try to generate bindata if the file exists, since in some cases
+          # one-off builds of individual directories may exclude some files.
+      if [[ -f $bindata ]]; then
+          go generate "${bindata}"
+      fi
+    done
+
     for arg; do
       if [[ "${arg}" == "--use_go_build" ]]; then
         use_go_build=true
@@ -651,7 +663,7 @@ kube::golang::build_binaries() {
     kube::golang::build_kube_toolchain
 
     if [[ "${parallel}" == "true" ]]; then
-      kube::log::status "Building go targets for ${platforms[@]} in parallel (output will appear in a burst when complete):" "${targets[@]}"
+      kube::log::status "Building go targets for {${platforms[*]}} in parallel (output will appear in a burst when complete):" "${targets[@]}"
       local platform
       for platform in "${platforms[@]}"; do (
           kube::golang::set_platform_envs "${platform}"
