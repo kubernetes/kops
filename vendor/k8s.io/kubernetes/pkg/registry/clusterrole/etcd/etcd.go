@@ -34,11 +34,11 @@ type REST struct {
 
 // NewREST returns a RESTStorage object that will work against ClusterRole objects.
 func NewREST(opts generic.RESTOptions) *REST {
-	prefix := "/clusterroles"
+	prefix := "/" + opts.ResourcePrefix
 
 	newListFunc := func() runtime.Object { return &rbac.ClusterRoleList{} }
-	storageInterface := opts.Decorator(
-		opts.Storage,
+	storageInterface, _ := opts.Decorator(
+		opts.StorageConfig,
 		cachesize.GetWatchCacheSizeByResource(cachesize.ClusterRoles),
 		&rbac.ClusterRole{},
 		prefix,

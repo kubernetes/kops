@@ -27,6 +27,7 @@ import (
 	"k8s.io/kubernetes/pkg/kubectl"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
+	"k8s.io/kubernetes/pkg/runtime"
 )
 
 // CreateOptions is the start of the data required to perform the operation.  As new fields are added, add them here instead of
@@ -80,9 +81,12 @@ func NewCmdCreate(f *cmdutil.Factory, out io.Writer) *cobra.Command {
 
 	// create subcommands
 	cmd.AddCommand(NewCmdCreateNamespace(f, out))
+	cmd.AddCommand(NewCmdCreateQuota(f, out))
 	cmd.AddCommand(NewCmdCreateSecret(f, out))
 	cmd.AddCommand(NewCmdCreateConfigMap(f, out))
 	cmd.AddCommand(NewCmdCreateServiceAccount(f, out))
+	cmd.AddCommand(NewCmdCreateService(f, out))
+	cmd.AddCommand(NewCmdCreateDeployment(f, out))
 	return cmd
 }
 
@@ -104,8 +108,11 @@ func RunCreate(f *cmdutil.Factory, cmd *cobra.Command, out io.Writer, options *C
 		return err
 	}
 
-	mapper, typer := f.Object(cmdutil.GetIncludeThirdPartyAPIs(cmd))
-	r := resource.NewBuilder(mapper, typer, resource.ClientMapperFunc(f.ClientForMapping), f.Decoder(true)).
+	mapper, typer, err := f.UnstructuredObject()
+	if err != nil {
+		return err
+	}
+	r := resource.NewBuilder(mapper, typer, resource.ClientMapperFunc(f.UnstructuredClientForMapping), runtime.UnstructuredJSONScheme).
 		Schema(schema).
 		ContinueOnError().
 		NamespaceParam(cmdNamespace).DefaultNamespace().

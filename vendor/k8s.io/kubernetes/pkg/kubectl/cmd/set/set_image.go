@@ -58,7 +58,7 @@ type ImageOptions struct {
 
 var (
 	image_resources = `
-  pod (po), replicationcontroller (rc), deployment, daemonset (ds), job, replicaset (rs)`
+  pod (po), replicationcontroller (rc), deployment (deploy), daemonset (ds), job, replicaset (rs)`
 
 	image_long = dedent.Dedent(`
 		Update existing container image(s) of resources.
@@ -147,15 +147,16 @@ func (o *ImageOptions) Complete(f *cmdutil.Factory, cmd *cobra.Command, args []s
 }
 
 func (o *ImageOptions) Validate() error {
+	errors := []error{}
 	if len(o.Resources) < 1 && len(o.Filenames) == 0 {
-		return fmt.Errorf("one or more resources must be specified as <resource> <name> or <resource>/<name>")
+		errors = append(errors, fmt.Errorf("one or more resources must be specified as <resource> <name> or <resource>/<name>"))
 	}
 	if len(o.ContainerImages) < 1 {
-		return fmt.Errorf("at least one image update is required")
+		errors = append(errors, fmt.Errorf("at least one image update is required"))
 	} else if len(o.ContainerImages) > 1 && hasWildcardKey(o.ContainerImages) {
-		return fmt.Errorf("all containers are already specified by *, but saw more than one container_name=container_image pairs")
+		errors = append(errors, fmt.Errorf("all containers are already specified by *, but saw more than one container_name=container_image pairs"))
 	}
-	return nil
+	return utilerrors.NewAggregate(errors)
 }
 
 func (o *ImageOptions) Run() error {

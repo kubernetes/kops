@@ -58,7 +58,7 @@ function setClusterInfo() {
         NODE_IPS="$NODE_IPS,$nodeIP"
       fi
     else
-      echo "unsupported role for ${i}. please check"
+      echo "unsupported role for ${i}. Please check"
       exit 1
     fi
 
@@ -156,7 +156,7 @@ function verify-cluster() {
       verify-master
       verify-node "$i"
     else
-      echo "unsupported role for ${i}. please check"
+      echo "unsupported role for ${i}. Please check"
       exit 1
     fi
 
@@ -318,6 +318,7 @@ EOF
 
 # Create ~/kube/default/flanneld with proper contents.
 # $1: The one hostname or IP address at which the etcd leader listens.
+# $2: The IP address or network interface for the local Flannel daemon to use
 function create-flanneld-opts() {
   cat <<EOF > ~/kube/default/flanneld
 FLANNEL_OPTS="--etcd-endpoints=http://${1}:4001 \
@@ -977,7 +978,7 @@ function kube-push() {
     elif [[ "${roles_array[${ii}]}" == "ai" ]]; then
       provision-masterandnode
     else
-      echo "unsupported role for ${i}. please check"
+      echo "unsupported role for ${i}. Please check"
       exit 1
     fi
     ((ii=ii+1))

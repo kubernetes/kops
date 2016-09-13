@@ -23,7 +23,6 @@ import (
 	apitesting "k8s.io/kubernetes/pkg/api/testing"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apis/batch"
-	"k8s.io/kubernetes/pkg/labels"
 )
 
 func newBool(a bool) *bool {
@@ -54,7 +53,7 @@ func TestScheduledJobStrategy(t *testing.T) {
 			Namespace: api.NamespaceDefault,
 		},
 		Spec: batch.ScheduledJobSpec{
-			Schedule:          "* * * * * ?",
+			Schedule:          "* * * * ?",
 			ConcurrencyPolicy: batch.AllowConcurrent,
 			JobTemplate: batch.JobTemplateSpec{
 				Spec: batch.JobSpec{
@@ -64,7 +63,7 @@ func TestScheduledJobStrategy(t *testing.T) {
 		},
 	}
 
-	Strategy.PrepareForCreate(scheduledJob)
+	Strategy.PrepareForCreate(ctx, scheduledJob)
 	if len(scheduledJob.Status.Active) != 0 {
 		t.Errorf("ScheduledJob does not allow setting status on create")
 	}
@@ -76,7 +75,7 @@ func TestScheduledJobStrategy(t *testing.T) {
 	updatedScheduledJob := &batch.ScheduledJob{
 		ObjectMeta: api.ObjectMeta{Name: "bar", ResourceVersion: "4"},
 		Spec: batch.ScheduledJobSpec{
-			Schedule: "5 5 5 5 * ?",
+			Schedule: "5 5 5 * ?",
 		},
 		Status: batch.ScheduledJobStatus{
 			LastScheduleTime: &now,
@@ -84,7 +83,7 @@ func TestScheduledJobStrategy(t *testing.T) {
 	}
 
 	// ensure we do not change status
-	Strategy.PrepareForUpdate(updatedScheduledJob, scheduledJob)
+	Strategy.PrepareForUpdate(ctx, updatedScheduledJob, scheduledJob)
 	if updatedScheduledJob.Status.Active != nil {
 		t.Errorf("PrepareForUpdate should have preserved prior version status")
 	}
@@ -109,7 +108,7 @@ func TestScheduledJobStatusStrategy(t *testing.T) {
 			Containers:    []api.Container{{Name: "abc", Image: "image", ImagePullPolicy: "IfNotPresent"}},
 		},
 	}
-	oldSchedule := "* * * * * ?"
+	oldSchedule := "* * * * ?"
 	oldScheduledJob := &batch.ScheduledJob{
 		ObjectMeta: api.ObjectMeta{
 			Name:            "myscheduledjob",
@@ -134,7 +133,7 @@ func TestScheduledJobStatusStrategy(t *testing.T) {
 			ResourceVersion: "9",
 		},
 		Spec: batch.ScheduledJobSpec{
-			Schedule:          "5 5 5 * * ?",
+			Schedule:          "5 5 * * ?",
 			ConcurrencyPolicy: batch.AllowConcurrent,
 			JobTemplate: batch.JobTemplateSpec{
 				Spec: batch.JobSpec{
@@ -147,7 +146,7 @@ func TestScheduledJobStatusStrategy(t *testing.T) {
 		},
 	}
 
-	StatusStrategy.PrepareForUpdate(newScheduledJob, oldScheduledJob)
+	StatusStrategy.PrepareForUpdate(ctx, newScheduledJob, oldScheduledJob)
 	if newScheduledJob.Status.LastScheduleTime == nil {
 		t.Errorf("ScheduledJob status updates must allow changes to scheduledJob status")
 	}
@@ -168,7 +167,7 @@ func TestSelectableFieldLabelConversions(t *testing.T) {
 	apitesting.TestSelectableFieldLabelConversionsOfKind(t,
 		"batch/v2alpha1",
 		"ScheduledJob",
-		labels.Set(ScheduledJobToSelectableFields(&batch.ScheduledJob{})),
+		ScheduledJobToSelectableFields(&batch.ScheduledJob{}),
 		nil,
 	)
 }

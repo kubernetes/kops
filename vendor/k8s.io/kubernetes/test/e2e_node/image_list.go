@@ -18,6 +18,7 @@ package e2e_node
 
 import (
 	"os/exec"
+	"os/user"
 	"time"
 
 	"github.com/golang/glog"
@@ -30,14 +31,20 @@ const (
 	maxImagePullRetries = 5
 	// Sleep duration between image pull retry attempts.
 	imagePullRetryDelay = time.Second
-	busyBoxImage        = iota
 
+	busyBoxImage = iota
+	epTestImage
 	hostExecImage
+	livenessImage
+	mountTestImage5
+	mountTestImage6
+	mountTestImage7
+	mountTestUserImage
 	netExecImage
 	nginxImage
-	mountTestImage
-	testWebServer
 	pauseImage
+	serveHostnameImage
+	testWebServer
 
 	// Images just used for explicitly testing pulling of images
 	pullTestAlpine
@@ -47,13 +54,17 @@ const (
 )
 
 var ImageRegistry = map[int]string{
-	busyBoxImage:   "gcr.io/google_containers/busybox:1.24",
-	hostExecImage:  "gcr.io/google_containers/hostexec:1.2",
-	netExecImage:   "gcr.io/google_containers/netexec:1.4",
-	nginxImage:     "gcr.io/google_containers/nginx-slim:0.7",
-	mountTestImage: "gcr.io/google_containers/mounttest:0.6",
-	testWebServer:  "gcr.io/google_containers/test-webserver:e2e",
-	pauseImage:     framework.GetPauseImageNameForHostArch(),
+	busyBoxImage:       "gcr.io/google_containers/busybox:1.24",
+	epTestImage:        "gcr.io/google_containers/eptest:0.1",
+	hostExecImage:      "gcr.io/google_containers/hostexec:1.2",
+	livenessImage:      "gcr.io/google_containers/liveness:e2e",
+	mountTestImage7:    "gcr.io/google_containers/mounttest:0.7",
+	mountTestUserImage: "gcr.io/google_containers/mounttest-user:0.3",
+	netExecImage:       "gcr.io/google_containers/netexec:1.4",
+	nginxImage:         "gcr.io/google_containers/nginx-slim:0.7",
+	pauseImage:         framework.GetPauseImageNameForHostArch(),
+	serveHostnameImage: "gcr.io/google_containers/serve_hostname:v1.4",
+	testWebServer:      "gcr.io/google_containers/test-webserver:e2e",
 }
 
 // These are used by tests that explicitly test the ability to pull images
@@ -66,6 +77,10 @@ var NoPullImageRegistry = map[int]string{
 
 // Pre-fetch all images tests depend on so that we don't fail in an actual test
 func PrePullAllImages() error {
+	usr, err := user.Current()
+	if err != nil {
+		return err
+	}
 	for _, image := range ImageRegistry {
 		var (
 			err    error
@@ -78,8 +93,8 @@ func PrePullAllImages() error {
 			if output, err = exec.Command("docker", "pull", image).CombinedOutput(); err == nil {
 				break
 			}
-			glog.Warningf("Failed to pull %s, retrying in %s (%d of %d): %v",
-				image, imagePullRetryDelay.String(), i+1, maxImagePullRetries, err)
+			glog.Warningf("Failed to pull %s as user %q, retrying in %s (%d of %d): %v",
+				image, usr.Username, imagePullRetryDelay.String(), i+1, maxImagePullRetries, err)
 		}
 		if err != nil {
 			glog.Warningf("Could not pre-pull image %s %v output:  %s", image, err, output)

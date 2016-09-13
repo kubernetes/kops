@@ -24,6 +24,7 @@ const (
 	FailedToStartContainer  = "Failed"
 	KillingContainer        = "Killing"
 	BackOffStartContainer   = "BackOff"
+	ExceededGracePeriod     = "ExceededGracePeriod"
 
 	// Image event reason list
 	PullingImage            = "Pulling"
@@ -40,7 +41,12 @@ const (
 	NodeNotSchedulable      = "NodeNotSchedulable"
 	StartingKubelet         = "Starting"
 	KubeletSetupFailed      = "KubeletSetupFailed"
+	FailedDetachVolume      = "FailedDetachVolume"
 	FailedMountVolume       = "FailedMount"
+	FailedUnMountVolume     = "FailedUnMount"
+	SuccessfulDetachVolume  = "SuccessfulDetachVolume"
+	SuccessfulMountVolume   = "SuccessfulMountVolume"
+	SuccessfulUnMountVolume = "SuccessfulUnMountVolume"
 	HostPortConflict        = "HostPortConflict"
 	NodeSelectorMismatching = "NodeSelectorMismatching"
 	InsufficientFreeCPU     = "InsufficientFreeCPU"

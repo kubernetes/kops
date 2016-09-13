@@ -38,15 +38,13 @@ export CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true
 
 # FEDERATION?
 : ${FEDERATION:="false"}
-: ${RELEASE_INFRA_PUSH:="false"}
 : ${KUBE_RELEASE_RUN_TESTS:="n"}
-export KUBE_RELEASE_RUN_TESTS RELEASE_INFRA_PUSH FEDERATION
+export KUBE_RELEASE_RUN_TESTS
 
 # Clean stuff out. Assume the last build left the tree in an odd
 # state.
 rm -rf ~/.kube*
 make clean
-git clean -fdx
 
 # Uncomment if you want to purge the Docker cache completely each
 # build. It costs about 150s each build to pull the golang image and
@@ -55,27 +53,30 @@ git clean -fdx
 # docker images -q | xargs -r docker rmi
 
 # Build
-go run ./hack/e2e.go -v --build
+# Jobs explicitly set KUBE_FASTBUILD to desired settings.
+make release
 
 # Push to GCS?
 if [[ ${KUBE_SKIP_PUSH_GCS:-} =~ ^[yY]$ ]]; then
   echo "Not pushed to GCS..."
-elif $RELEASE_INFRA_PUSH; then
-  git clone https://github.com/kubernetes/release $WORKSPACE/release
-  readonly release_infra_clone=$WORKSPACE/release
-
-  if [[ ! -x $release_infra_clone/push-ci-build.sh ]]; then
-    echo "FATAL: Something went wrong." \
-         "$release_infra_clone/push-ci-build.sh isn't available. Exiting..." >&2
-    exit 1
-  fi
-
-  $FEDERATION && federation_flag="--federation"
-  # Use --nomock to do the real thing
-  #$release_infra_clone/push-ci-build.sh --nomock ${federation_flag-}
-  $release_infra_clone/push-ci-build.sh ${federation_flag-}
 else
-  ./build/push-ci-build.sh
+  readonly release_infra_clone="${WORKSPACE}/_tmp/release.git"
+  mkdir -p ${WORKSPACE}/_tmp
+  git clone https://github.com/kubernetes/release ${release_infra_clone}
+
+  push_build=${release_infra_clone}/push-build.sh
+
+  if [[ ! -x ${push_build} ]]; then
+    # TODO: Remove/Restore this with the full deprecation PR
+    push_build=${release_infra_clone}/push-ci-build.sh
+    #echo "FATAL: Something went wrong. ${push_build} isn't available." \
+    #     "Exiting..." >&2
+    #exit 1
+  fi
+  [[ -n "${KUBE_GCS_RELEASE_BUCKET-}" ]] \
+   && bucket_flag="--bucket=${KUBE_GCS_RELEASE_BUCKET-}"
+  ${FEDERATION} && federation_flag="--federation"
+  ${push_build} ${bucket_flag-} ${federation_flag-} --nomock --verbose --ci
 fi
 
 sha256sum _output/release-tars/kubernetes*.tar.gz

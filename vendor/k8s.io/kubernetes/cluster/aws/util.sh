@@ -136,7 +136,7 @@ fi
 # TODO (bburns) Parameterize this for multiple cluster per project
 function get_vpc_id {
   $AWS_CMD describe-vpcs \
-           --filters Name=tag:Name,Values=kubernetes-vpc \
+           --filters Name=tag:Name,Values=${VPC_NAME} \
                      Name=tag:KubernetesCluster,Values=${CLUSTER_ID} \
            --query Vpcs[].VpcId
 }
@@ -819,7 +819,7 @@ function vpc-setup {
 	  VPC_ID=$($AWS_CMD create-vpc --cidr-block ${VPC_CIDR} --query Vpc.VpcId)
 	  $AWS_CMD modify-vpc-attribute --vpc-id $VPC_ID --enable-dns-support '{"Value": true}' > $LOG
 	  $AWS_CMD modify-vpc-attribute --vpc-id $VPC_ID --enable-dns-hostnames '{"Value": true}' > $LOG
-	  add-tag $VPC_ID Name kubernetes-vpc
+	  add-tag $VPC_ID Name ${VPC_NAME}
 	  add-tag $VPC_ID KubernetesCluster ${CLUSTER_ID}
   fi
 
@@ -931,14 +931,12 @@ function kube-up {
   authorize-security-group-ingress "${MASTER_SG_ID}" "--source-group ${NODE_SG_ID} --protocol all"
   authorize-security-group-ingress "${NODE_SG_ID}" "--source-group ${MASTER_SG_ID} --protocol all"
 
-  # TODO(justinsb): Would be fairly easy to replace 0.0.0.0/0 in these rules
-
   # SSH is open to the world
-  authorize-security-group-ingress "${MASTER_SG_ID}" "--protocol tcp --port 22 --cidr 0.0.0.0/0"
-  authorize-security-group-ingress "${NODE_SG_ID}" "--protocol tcp --port 22 --cidr 0.0.0.0/0"
+  authorize-security-group-ingress "${MASTER_SG_ID}" "--protocol tcp --port 22 --cidr ${SSH_CIDR}"
+  authorize-security-group-ingress "${NODE_SG_ID}" "--protocol tcp --port 22 --cidr ${SSH_CIDR}"
 
   # HTTPS to the master is allowed (for API access)
-  authorize-security-group-ingress "${MASTER_SG_ID}" "--protocol tcp --port 443 --cidr 0.0.0.0/0"
+  authorize-security-group-ingress "${MASTER_SG_ID}" "--protocol tcp --port 443 --cidr ${HTTP_API_CIDR}"
 
   # KUBE_USE_EXISTING_MASTER is used to add minions to an existing master
   if [[ "${KUBE_USE_EXISTING_MASTER:-}" == "true" ]]; then
@@ -1345,6 +1343,11 @@ function kube-down {
       done
       echo "All instances deleted"
     fi
+    if [[ -n $(${AWS_ASG_CMD} describe-launch-configurations --launch-configuration-names ${ASG_NAME} --query LaunchConfigurations[].LaunchConfigurationName) ]]; then
+      echo "Warning: default auto-scaling launch configuration ${ASG_NAME} still exists, attempting to delete"
+      echo "  (This may happen if kube-up leaves just the launch configuration but no auto-scaling group.)"
+      ${AWS_ASG_CMD} delete-launch-configuration --launch-configuration-name ${ASG_NAME} || true
+    fi
 
     find-master-pd
     find-tagged-master-ip
@@ -1439,7 +1442,9 @@ function kube-down {
     echo "If you are trying to delete a cluster in a shared VPC," >&2
     echo "please consider using one of the methods in the kube-deploy repo." >&2
     echo "See: https://github.com/kubernetes/kube-deploy/blob/master/docs/delete_cluster.md" >&2
-    exit 1
+    echo "" >&2
+    echo "Note: You may be seeing this message may be because the cluster was already deleted, or" >&2
+    echo "has a name other than '${CLUSTER_ID}'." >&2
   fi
 }
 
@@ -1547,7 +1552,7 @@ function ssh-to-node {
 
   local ip=$(get_ssh_hostname ${node})
 
-  for try in $(seq 1 5); do
+  for try in {1..5}; do
     if ssh -oLogLevel=quiet -oConnectTimeout=30 -oStrictHostKeyChecking=no -i "${AWS_SSH_KEY}" ${SSH_USER}@${ip} "echo test > /dev/null"; then
       break
     fi

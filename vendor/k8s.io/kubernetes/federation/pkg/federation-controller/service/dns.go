@@ -126,7 +126,7 @@ func getRrset(dnsName string, rrsetsInterface dnsprovider.ResourceRecordSets) (d
 	return returnVal, nil
 }
 
-/* getResolvedEndpoints perfoms DNS resolution on the provided slice of endpoints (which might be DNS names or IPv4 addresses)
+/* getResolvedEndpoints performs DNS resolution on the provided slice of endpoints (which might be DNS names or IPv4 addresses)
    and returns a list of IPv4 addresses.  If any of the endpoints are neither valid IPv4 addresses nor resolvable DNS names,
    non-nil error is also returned (possibly along with a partially complete list of resolved endpoints.
 */
@@ -135,7 +135,7 @@ func getResolvedEndpoints(endpoints []string) ([]string, error) {
 	for _, endpoint := range endpoints {
 		if net.ParseIP(endpoint) == nil {
 			// It's not a valid IP address, so assume it's a DNS name, and try to resolve it,
-			// replacing it's DNS name with it's IP addresses in expandedEndpoints
+			// replacing its DNS name with its IP addresses in expandedEndpoints
 			ipAddrs, err := net.LookupHost(endpoint)
 			if err != nil {
 				return resolvedEndpoints, err
@@ -256,8 +256,12 @@ func (s *ServiceController) ensureDnsRrsets(dnsZoneName, dnsName string, endpoin
 	return nil
 }
 
-/* ensureDnsRecords ensures (idempotently, and with minimum mutations) that all of the DNS records for a service in a given cluster are correct, given the current state of that service in that cluster.  This should be called every time the state of a service might have changed (either w.r.t. it's loadblancer address, or if the number of healthy backend endpoints for that service transitioned from zero to non-zero (or vice verse).  Only shards of the service which have both a loadbalancer ingress IP address or hostname AND at least one healthy backend endpoint are included in DNS records for that service (at all of zone, region and global levels). All other addresses are removed.  Also, if no shards exist in the zone or region of the cluster, a CNAME reference to the next higher level is ensured to exist.
- */
+/* ensureDnsRecords ensures (idempotently, and with minimum mutations) that all of the DNS records for a service in a given cluster are correct,
+given the current state of that service in that cluster.  This should be called every time the state of a service might have changed
+(either w.r.t. it's loadblancer address, or if the number of healthy backend endpoints for that service transitioned from zero to non-zero
+(or vice verse).  Only shards of the service which have both a loadbalancer ingress IP address or hostname AND at least one healthy backend endpoint
+are included in DNS records for that service (at all of zone, region and global levels). All other addresses are removed.  Also, if no shards exist
+in the zone or region of the cluster, a CNAME reference to the next higher level is ensured to exist. */
 func (s *ServiceController) ensureDnsRecords(clusterName string, cachedService *cachedService) error {
 	// Quinton: Pseudocode....
 	// See https://github.com/kubernetes/kubernetes/pull/25107#issuecomment-218026648

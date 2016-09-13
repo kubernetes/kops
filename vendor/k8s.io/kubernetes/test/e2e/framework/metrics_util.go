@@ -57,6 +57,10 @@ func (m *MetricsForE2E) filterMetrics() {
 	for _, metric := range InterestingApiServerMetrics {
 		interestingApiServerMetrics[metric] = (*m).ApiServerMetrics[metric]
 	}
+	interestingControllerManagerMetrics := make(metrics.ControllerManagerMetrics)
+	for _, metric := range InterestingControllerManagerMetrics {
+		interestingControllerManagerMetrics[metric] = (*m).ControllerManagerMetrics[metric]
+	}
 	interestingKubeletMetrics := make(map[string]metrics.KubeletMetrics)
 	for kubelet, grabbed := range (*m).KubeletMetrics {
 		interestingKubeletMetrics[kubelet] = make(metrics.KubeletMetrics)
@@ -65,6 +69,7 @@ func (m *MetricsForE2E) filterMetrics() {
 		}
 	}
 	(*m).ApiServerMetrics = interestingApiServerMetrics
+	(*m).ControllerManagerMetrics = interestingControllerManagerMetrics
 	(*m).KubeletMetrics = interestingKubeletMetrics
 }
 
@@ -73,6 +78,12 @@ func (m *MetricsForE2E) PrintHumanReadable() string {
 	for _, interestingMetric := range InterestingApiServerMetrics {
 		buf.WriteString(fmt.Sprintf("For %v:\n", interestingMetric))
 		for _, sample := range (*m).ApiServerMetrics[interestingMetric] {
+			buf.WriteString(fmt.Sprintf("\t%v\n", metrics.PrintSample(sample)))
+		}
+	}
+	for _, interestingMetric := range InterestingControllerManagerMetrics {
+		buf.WriteString(fmt.Sprintf("For %v:\n", interestingMetric))
+		for _, sample := range (*m).ControllerManagerMetrics[interestingMetric] {
 			buf.WriteString(fmt.Sprintf("\t%v\n", metrics.PrintSample(sample)))
 		}
 	}
@@ -104,6 +115,12 @@ var InterestingApiServerMetrics = []string{
 	"etcd_request_latencies_summary",
 }
 
+var InterestingControllerManagerMetrics = []string{
+	"garbage_collector_event_processing_latency_microseconds",
+	"garbage_collector_dirty_processing_latency_microseconds",
+	"garbage_collector_orphan_processing_latency_microseconds",
+}
+
 var InterestingKubeletMetrics = []string{
 	"kubelet_container_manager_latency_microseconds",
 	"kubelet_docker_errors",
@@ -117,9 +134,10 @@ var InterestingKubeletMetrics = []string{
 
 // Dashboard metrics
 type LatencyMetric struct {
-	Perc50 time.Duration `json:"Perc50"`
-	Perc90 time.Duration `json:"Perc90"`
-	Perc99 time.Duration `json:"Perc99"`
+	Perc50  time.Duration `json:"Perc50"`
+	Perc90  time.Duration `json:"Perc90"`
+	Perc99  time.Duration `json:"Perc99"`
+	Perc100 time.Duration `json:"Perc100"`
 }
 
 type PodStartupLatency struct {
@@ -433,7 +451,8 @@ func ExtractLatencyMetrics(latencies []PodLatencyData) LatencyMetric {
 	perc50 := latencies[int(math.Ceil(float64(length*50)/100))-1].Latency
 	perc90 := latencies[int(math.Ceil(float64(length*90)/100))-1].Latency
 	perc99 := latencies[int(math.Ceil(float64(length*99)/100))-1].Latency
-	return LatencyMetric{Perc50: perc50, Perc90: perc90, Perc99: perc99}
+	perc100 := latencies[length-1].Latency
+	return LatencyMetric{Perc50: perc50, Perc90: perc90, Perc99: perc99, Perc100: perc100}
 }
 
 // LogSuspiciousLatency logs metrics/docker errors from all nodes that had slow startup times

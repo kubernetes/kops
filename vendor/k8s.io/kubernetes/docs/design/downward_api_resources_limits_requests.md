@@ -21,7 +21,7 @@ refer to the docs that go with that version.
 <!-- TAG RELEASE_LINK, added by the munger automatically -->
 <strong>
 The latest release of this document can be found
-[here](http://releases.k8s.io/release-1.3/docs/design/downward_api_resources_limits_requests.md).
+[here](http://releases.k8s.io/release-1.4/docs/design/downward_api_resources_limits_requests.md).
 
 Documentation for other releases can be found at
 [releases.k8s.io](http://releases.k8s.io).
@@ -106,7 +106,7 @@ the values. As kubelet operates on internal objects (without json tags),
 and the selectors are part of versioned objects, retrieving values of
 the limits and requests can be handled using these two solutions:
 
-1. By converting an internal object to versioned obejct, and then using
+1. By converting an internal object to versioned object, and then using
 the json path library to retrieve the values from the versioned object
 by processing the selector.
 

@@ -29,8 +29,8 @@ import (
 	"k8s.io/kubernetes/pkg/client/testing/core"
 	"k8s.io/kubernetes/pkg/controller"
 	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/util"
 	"k8s.io/kubernetes/pkg/util/intstr"
+	"k8s.io/kubernetes/pkg/util/uuid"
 )
 
 var (
@@ -90,7 +90,7 @@ func newDeployment(replicas int, revisionHistoryLimit *int) *exp.Deployment {
 	d := exp.Deployment{
 		TypeMeta: unversioned.TypeMeta{APIVersion: testapi.Default.GroupVersion().String()},
 		ObjectMeta: api.ObjectMeta{
-			UID:             util.NewUUID(),
+			UID:             uuid.NewUUID(),
 			Name:            "foobar",
 			Namespace:       api.NamespaceDefault,
 			ResourceVersion: "18",
@@ -203,7 +203,7 @@ func (f *fixture) run(deploymentName string) {
 	c.rsStoreSynced = alwaysReady
 	c.podStoreSynced = alwaysReady
 	for _, d := range f.dStore {
-		c.dStore.Store.Add(d)
+		c.dStore.Indexer.Add(d)
 	}
 	for _, rs := range f.rsStore {
 		c.rsStore.Store.Add(rs)
@@ -275,7 +275,7 @@ func TestDeploymentController_dontSyncDeploymentsWithEmptyPodSelector(t *testing
 	d := newDeployment(1, nil)
 	empty := unversioned.LabelSelector{}
 	d.Spec.Selector = &empty
-	controller.dStore.Store.Add(d)
+	controller.dStore.Indexer.Add(d)
 	// We expect the deployment controller to not take action here since it's configuration
 	// is invalid, even though no replicasets exist that match it's selector.
 	controller.syncDeployment(fmt.Sprintf("%s/%s", d.ObjectMeta.Namespace, d.ObjectMeta.Name))
