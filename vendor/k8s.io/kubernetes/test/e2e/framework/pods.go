@@ -30,7 +30,9 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-// Convenience method for getting a pod client interface in the framework's namespace.
+// Convenience method for getting a pod client interface in the framework's namespace,
+// possibly applying test-suite specific transformations to the pod spec, e.g. for
+// node e2e pod scheduling.
 func (f *Framework) PodClient() *PodClient {
 	return &PodClient{
 		f:            f,
@@ -45,7 +47,7 @@ type PodClient struct {
 
 // Create creates a new pod according to the framework specifications (don't wait for it to start).
 func (c *PodClient) Create(pod *api.Pod) *api.Pod {
-	c.MungeSpec(pod)
+	c.mungeSpec(pod)
 	p, err := c.PodInterface.Create(pod)
 	ExpectNoError(err, "Error creating Pod")
 	return p
@@ -56,7 +58,7 @@ func (c *PodClient) CreateSync(pod *api.Pod) *api.Pod {
 	p := c.Create(pod)
 	ExpectNoError(c.f.WaitForPodRunning(p.Name))
 	// Get the newest pod after it becomes running, some status may change after pod created, such as pod ip.
-	p, err := c.Get(pod.Name)
+	p, err := c.Get(p.Name)
 	ExpectNoError(err)
 	return p
 }
@@ -75,16 +77,6 @@ func (c *PodClient) CreateBatch(pods []*api.Pod) []*api.Pod {
 	}
 	wg.Wait()
 	return ps
-}
-
-// MungeSpec apply test-suite specific transformations to the pod spec.
-// TODO: Refactor the framework to always use PodClient so that we can completely hide the munge logic
-// in the PodClient.
-func (c *PodClient) MungeSpec(pod *api.Pod) {
-	if TestContext.NodeName != "" {
-		Expect(pod.Spec.NodeName).To(Or(BeZero(), Equal(TestContext.NodeName)), "Test misconfigured")
-		pod.Spec.NodeName = TestContext.NodeName
-	}
 }
 
 // Update updates the pod object. It retries if there is a conflict, throw out error if
@@ -108,6 +100,14 @@ func (c *PodClient) Update(name string, updateFn func(pod *api.Pod)) {
 		}
 		return false, fmt.Errorf("failed to update pod %q: %v", name, err)
 	}))
+}
+
+// mungeSpec apply test-suite specific transformations to the pod spec.
+func (c *PodClient) mungeSpec(pod *api.Pod) {
+	if TestContext.NodeName != "" {
+		Expect(pod.Spec.NodeName).To(Or(BeZero(), Equal(TestContext.NodeName)), "Test misconfigured")
+		pod.Spec.NodeName = TestContext.NodeName
+	}
 }
 
 // TODO(random-liu): Move pod wait function into this file

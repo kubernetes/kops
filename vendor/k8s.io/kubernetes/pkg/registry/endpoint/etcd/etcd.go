@@ -32,11 +32,11 @@ type REST struct {
 
 // NewREST returns a RESTStorage object that will work against endpoints.
 func NewREST(opts generic.RESTOptions) *REST {
-	prefix := "/services/endpoints"
+	prefix := "/" + opts.ResourcePrefix
 
 	newListFunc := func() runtime.Object { return &api.EndpointsList{} }
-	storageInterface := opts.Decorator(
-		opts.Storage,
+	storageInterface, _ := opts.Decorator(
+		opts.StorageConfig,
 		cachesize.GetWatchCacheSizeByResource(cachesize.Endpoints),
 		&api.Endpoints{},
 		prefix,

@@ -18,7 +18,7 @@
 
 ETCD_VERSION=${ETCD_VERSION:-2.2.1}
 ETCD_HOST=${ETCD_HOST:-127.0.0.1}
-ETCD_PORT=${ETCD_PORT:-4001}
+ETCD_PORT=${ETCD_PORT:-2379}
 
 kube::etcd::start() {
   which etcd >/dev/null || {
@@ -32,7 +32,7 @@ kube::etcd::start() {
     exit 1
   fi
 
-  version=$(etcd -version | cut -d " " -f 3)
+  version=$(etcd --version | head -n 1 | cut -d " " -f 3)
   if [[ "${version}" < "${ETCD_VERSION}" ]]; then
    kube::log::usage "etcd version ${ETCD_VERSION} or greater required."
    kube::log::info "You can use 'hack/install-etcd.sh' to install a copy in third_party/."
@@ -40,7 +40,7 @@ kube::etcd::start() {
   fi
 
   # Start etcd
-  ETCD_DIR=$(mktemp -d 2>/dev/null || mktemp -d -t test-etcd.XXXXXX)
+  ETCD_DIR=${ETCD_DIR:-$(mktemp -d 2>/dev/null || mktemp -d -t test-etcd.XXXXXX)}
   if [[ -d "${ARTIFACTS_DIR:-}" ]]; then
     ETCD_LOGFILE="${ARTIFACTS_DIR}/etcd.$(uname -n).$(id -un).log.DEBUG.$(date +%Y%m%d-%H%M%S).$$"
   else

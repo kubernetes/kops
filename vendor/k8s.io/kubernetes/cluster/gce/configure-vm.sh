@@ -434,6 +434,7 @@ enable_cluster_ui: '$(echo "$ENABLE_CLUSTER_UI" | sed -e "s/'/''/g")'
 enable_node_problem_detector: '$(echo "$ENABLE_NODE_PROBLEM_DETECTOR" | sed -e "s/'/''/g")'
 enable_l7_loadbalancing: '$(echo "$ENABLE_L7_LOADBALANCING" | sed -e "s/'/''/g")'
 enable_node_logging: '$(echo "$ENABLE_NODE_LOGGING" | sed -e "s/'/''/g")'
+enable_rescheduler: '$(echo "$ENABLE_RESCHEDULER" | sed -e "s/'/''/g")'
 logging_destination: '$(echo "$LOGGING_DESTINATION" | sed -e "s/'/''/g")'
 elasticsearch_replicas: '$(echo "$ELASTICSEARCH_LOGGING_REPLICAS" | sed -e "s/'/''/g")'
 enable_cluster_dns: '$(echo "$ENABLE_CLUSTER_DNS" | sed -e "s/'/''/g")'
@@ -442,6 +443,7 @@ dns_replicas: '$(echo "$DNS_REPLICAS" | sed -e "s/'/''/g")'
 dns_server: '$(echo "$DNS_SERVER_IP" | sed -e "s/'/''/g")'
 dns_domain: '$(echo "$DNS_DOMAIN" | sed -e "s/'/''/g")'
 admission_control: '$(echo "$ADMISSION_CONTROL" | sed -e "s/'/''/g")'
+storage_backend: '$(echo "$STORAGE_BACKEND" | sed -e "s/'/''/g")'
 network_provider: '$(echo "$NETWORK_PROVIDER" | sed -e "s/'/''/g")'
 prepull_e2e_images: '$(echo "$PREPULL_E2E_IMAGES" | sed -e "s/'/''/g")'
 hairpin_mode: '$(echo "$HAIRPIN_MODE" | sed -e "s/'/''/g")'
@@ -452,17 +454,28 @@ network_policy_provider: '$(echo "$NETWORK_POLICY_PROVIDER" | sed -e "s/'/''/g")
 enable_manifest_url: '$(echo "${ENABLE_MANIFEST_URL:-}" | sed -e "s/'/''/g")'
 manifest_url: '$(echo "${MANIFEST_URL:-}" | sed -e "s/'/''/g")'
 manifest_url_header: '$(echo "${MANIFEST_URL_HEADER:-}" | sed -e "s/'/''/g")'
-master_name: '$(echo "${MASTER_NAME:-}" | sed -e "s/'/''/g")'
 num_nodes: $(echo "${NUM_NODES:-}" | sed -e "s/'/''/g")
 e2e_storage_test_environment: '$(echo "$E2E_STORAGE_TEST_ENVIRONMENT" | sed -e "s/'/''/g")'
 kube_uid: '$(echo "${KUBE_UID}" | sed -e "s/'/''/g")'
+initial_etcd_cluster: '$(echo "${INITIAL_ETCD_CLUSTER:-}" | sed -e "s/'/''/g")'
+hostname: $(hostname -s)
 EOF
+    if [ -n "${ADMISSION_CONTROL:-}" ] && [ ${ADMISSION_CONTROL} == *"ImagePolicyWebhook"* ]; then
+      cat <<EOF >>/srv/salt-overlay/pillar/cluster-params.sls
+admission-control-config-file: /etc/admission_controller.config
+EOF
+    fi
     if [ -n "${KUBELET_PORT:-}" ]; then
       cat <<EOF >>/srv/salt-overlay/pillar/cluster-params.sls
 kubelet_port: '$(echo "$KUBELET_PORT" | sed -e "s/'/''/g")'
 EOF
     fi
     # Configuration changes for test clusters
+    if [ -n "${TEST_ETCD_VERSION:-}" ]; then
+      cat <<EOF >>/srv/salt-overlay/pillar/cluster-params.sls
+etcd_docker_tag: '$(echo "$TEST_ETCD_VERSION" | sed -e "s/'/''/g")'
+EOF
+    fi
     if [ -n "${APISERVER_TEST_ARGS:-}" ]; then
       cat <<EOF >>/srv/salt-overlay/pillar/cluster-params.sls
 apiserver_test_args: '$(echo "$APISERVER_TEST_ARGS" | sed -e "s/'/''/g")'
@@ -569,6 +582,11 @@ EOF
     else
       cat <<EOF >>/srv/salt-overlay/pillar/cluster-params.sls
 federations_domain_map: ''
+EOF
+    fi
+    if [ -n "${SCHEDULING_ALGORITHM_PROVIDER:-}" ]; then
+      cat <<EOF >>/srv/salt-overlay/pillar/cluster-params.sls
+scheduling_algorithm_provider: '$(echo "${SCHEDULING_ALGORITHM_PROVIDER}" | sed -e "s/'/''/g")'
 EOF
     fi
 }
@@ -888,6 +906,44 @@ contexts:
 EOF
   fi
 
+
+  if [[ -n "${GCP_IMAGE_VERIFICATION_URL:-}" ]]; then
+    # This is the config file for the image review webhook.
+    cat <<EOF >>/etc/salt/minion.d/grains.conf
+  image_review_config: /etc/gcp_image_review.config
+EOF
+    cat <<EOF >/etc/gcp_image_review.config
+clusters:
+  - name: gcp-image-review-server
+    cluster:
+      server: ${GCP_IMAGE_VERIFICATION_URL}
+users:
+  - name: kube-apiserver
+    user:
+      auth-provider:
+        name: gcp
+current-context: webhook
+contexts:
+- context:
+    cluster: gcp-image-review-server
+    user: kube-apiserver
+  name: webhook
+EOF
+    # This is the config for the image review admission controller.
+    cat <<EOF >>/etc/salt/minion.d/grains.conf
+  image_review_webhook_config: /etc/admission_controller.config
+EOF
+    cat <<EOF >/etc/admission_controller.config
+imagePolicy:
+  kubeConfigFile: /etc/gcp_image_review.config
+  allowTTL: 30
+  denyTTL: 30
+  retryBackoff: 500
+  defaultAllow: true
+EOF
+  fi
+
+
   # If the kubelet on the master is enabled, give it the same CIDR range
   # as a generic node.
   if [[ ! -z "${KUBELET_APISERVER:-}" ]] && [[ ! -z "${KUBELET_CERT:-}" ]] && [[ ! -z "${KUBELET_KEY:-}" ]]; then
@@ -947,6 +1003,7 @@ function salt-grains() {
   env-to-grains "docker_opts"
   env-to-grains "docker_root"
   env-to-grains "kubelet_root"
+  env-to-grains "feature_gates"
 }
 
 function configure-salt() {

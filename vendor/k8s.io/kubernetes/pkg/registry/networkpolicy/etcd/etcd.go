@@ -34,11 +34,11 @@ type REST struct {
 
 // NewREST returns a RESTStorage object that will work against network policies.
 func NewREST(opts generic.RESTOptions) *REST {
-	prefix := "/networkpolicies"
+	prefix := "/" + opts.ResourcePrefix
 
 	newListFunc := func() runtime.Object { return &extensionsapi.NetworkPolicyList{} }
-	storageInterface := opts.Decorator(
-		opts.Storage,
+	storageInterface, _ := opts.Decorator(
+		opts.StorageConfig,
 		cachesize.GetWatchCacheSizeByResource(cachesize.NetworkPolicys),
 		&extensionsapi.NetworkPolicy{},
 		prefix,

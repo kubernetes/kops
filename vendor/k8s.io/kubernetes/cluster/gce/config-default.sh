@@ -36,23 +36,22 @@ PREEMPTIBLE_NODE=${PREEMPTIBLE_NODE:-false}
 PREEMPTIBLE_MASTER=${PREEMPTIBLE_MASTER:-false}
 
 MASTER_OS_DISTRIBUTION=${KUBE_MASTER_OS_DISTRIBUTION:-${KUBE_OS_DISTRIBUTION:-gci}}
-NODE_OS_DISTRIBUTION=${KUBE_NODE_OS_DISTRIBUTION:-${KUBE_OS_DISTRIBUTION:-debian}}
-# By default a cluster will be started with the master on GCI and nodes on
-# containervm. If you are updating the containervm version, update this
-# variable.
+NODE_OS_DISTRIBUTION=${KUBE_NODE_OS_DISTRIBUTION:-${KUBE_OS_DISTRIBUTION:-gci}}
 CVM_VERSION=container-v1-3-v20160604
+GCI_VERSION="gci-dev-54-8743-3-0"
 MASTER_IMAGE=${KUBE_GCE_MASTER_IMAGE:-}
 MASTER_IMAGE_PROJECT=${KUBE_GCE_MASTER_PROJECT:-google-containers}
 NODE_IMAGE=${KUBE_GCE_NODE_IMAGE:-${CVM_VERSION}}
 NODE_IMAGE_PROJECT=${KUBE_GCE_NODE_PROJECT:-google-containers}
 CONTAINER_RUNTIME=${KUBE_CONTAINER_RUNTIME:-docker}
-RKT_VERSION=${KUBE_RKT_VERSION:-1.9.1}
+RKT_VERSION=${KUBE_RKT_VERSION:-1.14.0}
 RKT_STAGE1_IMAGE=${KUBE_RKT_STAGE1_IMAGE:-coreos.com/rkt/stage1-coreos}
 
 NETWORK=${KUBE_GCE_NETWORK:-default}
 INSTANCE_PREFIX="${KUBE_GCE_INSTANCE_PREFIX:-kubernetes}"
 CLUSTER_NAME="${CLUSTER_NAME:-${INSTANCE_PREFIX}}"
 MASTER_NAME="${INSTANCE_PREFIX}-master"
+INITIAL_ETCD_CLUSTER="${MASTER_NAME}"
 MASTER_TAG="${INSTANCE_PREFIX}-master"
 NODE_TAG="${INSTANCE_PREFIX}-minion"
 MASTER_IP_RANGE="${MASTER_IP_RANGE:-10.246.0.0/24}"
@@ -101,6 +100,9 @@ fi
 # Optional: customize runtime config
 RUNTIME_CONFIG="${KUBE_RUNTIME_CONFIG:-}"
 
+# Optional: set feature gates
+FEATURE_GATES="${KUBE_FEATURE_GATES:-}"
+
 # Optional: Install cluster DNS.
 ENABLE_CLUSTER_DNS="${KUBE_ENABLE_CLUSTER_DNS:-true}"
 DNS_SERVER_IP="${KUBE_DNS_SERVER_IP:-10.0.0.10}"
@@ -127,12 +129,18 @@ if [[ "${ENABLE_CLUSTER_AUTOSCALER}" == "true" ]]; then
   AUTOSCALER_ENABLE_SCALE_DOWN="${KUBE_AUTOSCALER_ENABLE_SCALE_DOWN:-true}"
 fi
 
+# Optional: Enable Rescheduler
+ENABLE_RESCHEDULER="${KUBE_ENABLE_RESCHEDULER:-true}"
+
 # Admission Controllers to invoke prior to persisting objects in cluster
 # If we included ResourceQuota, we should keep it at the end of the list to prevent incremeting quota usage prematurely.
-ADMISSION_CONTROL=NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,ResourceQuota
+ADMISSION_CONTROL=NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,DefaultStorageClass,ResourceQuota
 
 # Optional: if set to true kube-up will automatically check for existing resources and clean them up.
 KUBE_UP_AUTOMATIC_CLEANUP=${KUBE_UP_AUTOMATIC_CLEANUP:-false}
+
+# Storage backend. 'etcd2' supported, 'etcd3' experimental.
+STORAGE_BACKEND=${STORAGE_BACKEND:-etcd2}
 
 # Networking plugin specific settings.
 NETWORK_PROVIDER="${NETWORK_PROVIDER:-kubenet}" # none, opencontrail, flannel, kubenet
@@ -149,4 +157,7 @@ HAIRPIN_MODE="${HAIRPIN_MODE:-promiscuous-bridge}" # promiscuous-bridge, hairpin
 E2E_STORAGE_TEST_ENVIRONMENT=${KUBE_E2E_STORAGE_TEST_ENVIRONMENT:-false}
 
 # Evict pods whenever compute resource availability on the nodes gets below a threshold.
-EVICTION_HARD="${EVICTION_HARD:-memory.available<100Mi}"
+EVICTION_HARD="${EVICTION_HARD:-memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%}"
+
+# Optional: custom scheduling algorithm
+SCHEDULING_ALGORITHM_PROVIDER="${SCHEDULING_ALGORITHM_PROVIDER:-}"

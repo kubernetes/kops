@@ -24,8 +24,8 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 	client "k8s.io/kubernetes/pkg/client/unversioned"
 	"k8s.io/kubernetes/pkg/kubelet/api/v1alpha1/stats"
-	"k8s.io/kubernetes/pkg/util"
 	"k8s.io/kubernetes/pkg/util/sets"
+	"k8s.io/kubernetes/pkg/util/uuid"
 	"k8s.io/kubernetes/test/e2e/framework"
 
 	. "github.com/onsi/ginkgo"
@@ -65,7 +65,7 @@ func runResourceTrackingTest(f *framework.Framework, podsPerNode int, nodeNames 
 	numNodes := nodeNames.Len()
 	totalPods := podsPerNode * numNodes
 	By(fmt.Sprintf("Creating a RC of %d pods and wait until all pods of this RC are running", totalPods))
-	rcName := fmt.Sprintf("resource%d-%s", totalPods, string(util.NewUUID()))
+	rcName := fmt.Sprintf("resource%d-%s", totalPods, string(uuid.NewUUID()))
 
 	// TODO: Use a more realistic workload
 	Expect(framework.RunRC(framework.RCConfig{
@@ -115,7 +115,7 @@ func runResourceTrackingTest(f *framework.Framework, podsPerNode int, nodeNames 
 	verifyCPULimits(expectedCPU, cpuSummary)
 
 	By("Deleting the RC")
-	framework.DeleteRC(f.Client, f.Namespace.Name, rcName)
+	framework.DeleteRCAndPods(f.Client, f.Namespace.Name, rcName)
 }
 
 func verifyMemoryLimits(c *client.Client, expected framework.ResourceUsagePerContainer, actual framework.ResourceUsagePerNode) {
@@ -237,7 +237,8 @@ var _ = framework.KubeDescribe("Kubelet [Serial] [Slow]", func() {
 				// of the addon pods affect the memory usage on each node.
 				memLimits: framework.ResourceUsagePerContainer{
 					stats.SystemContainerKubelet: &framework.ContainerResourceUsage{MemoryRSSInBytes: 70 * 1024 * 1024},
-					stats.SystemContainerRuntime: &framework.ContainerResourceUsage{MemoryRSSInBytes: 85 * 1024 * 1024},
+					// The detail can be found at https://github.com/kubernetes/kubernetes/issues/28384#issuecomment-244158892
+					stats.SystemContainerRuntime: &framework.ContainerResourceUsage{MemoryRSSInBytes: 125 * 1024 * 1024},
 				},
 			},
 			{
@@ -250,7 +251,7 @@ var _ = framework.KubeDescribe("Kubelet [Serial] [Slow]", func() {
 				// of the addon pods affect the memory usage on each node.
 				memLimits: framework.ResourceUsagePerContainer{
 					stats.SystemContainerKubelet: &framework.ContainerResourceUsage{MemoryRSSInBytes: 70 * 1024 * 1024},
-					stats.SystemContainerRuntime: &framework.ContainerResourceUsage{MemoryRSSInBytes: 150 * 1024 * 1024},
+					stats.SystemContainerRuntime: &framework.ContainerResourceUsage{MemoryRSSInBytes: 200 * 1024 * 1024},
 				},
 			},
 			{

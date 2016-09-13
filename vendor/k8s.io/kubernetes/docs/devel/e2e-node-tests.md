@@ -21,7 +21,7 @@ refer to the docs that go with that version.
 <!-- TAG RELEASE_LINK, added by the munger automatically -->
 <strong>
 The latest release of this document can be found
-[here](http://releases.k8s.io/release-1.3/docs/devel/e2e-node-tests.md).
+[here](http://releases.k8s.io/release-1.4/docs/devel/e2e-node-tests.md).
 
 Documentation for other releases can be found at
 [releases.k8s.io](http://releases.k8s.io).
@@ -41,6 +41,8 @@ Tests can be run either locally or against a host running on GCE.
 Node e2e tests are run as both pre- and post- submit tests by the Kubernetes project.
 
 *Note: Linux only. Mac and Windows unsupported.*
+
+*Note: There is no scheduler running. The e2e tests have to do manual scheduling, e.g. by using `framework.PodClient`.*
 
 # Running tests
 
@@ -206,6 +208,18 @@ less useful for catching flakes related creating the instance from an image.**
 make test-e2e-node REMOTE=true RUN_UNTIL_FAILURE=true
 ```
 
+## Run tests in parallel
+
+Running test in parallel can usually shorten the test duration. By default node
+e2e test runs with`--nodes=8` (see ginkgo flag
+[--nodes](https://onsi.github.io/ginkgo/#parallel-specs)). You can use the
+`PARALLELISM` option to change the parallelism.
+
+```sh
+make test-e2e-node PARALLELISM=4 # run test with 4 parallel nodes
+make test-e2e-node PARALLELISM=1 # run test sequentially
+```
+
 ## Run tests with kubenet network plugin
 
 [kubenet](http://kubernetes.io/docs/admin/network-plugins/#kubenet) is
@@ -229,6 +243,8 @@ make test_e2e_node TEST_ARGS="--disable-kubenet=false" # disable kubenet
 ## Additional QoS Cgroups Hierarchy level testing
 
 For testing with the QoS Cgroup Hierarchy enabled, you can pass --cgroups-per-qos flag as an argument into Ginkgo using TEST_ARGS
+
+*Note: Disabled pending feature stabilization.*
 
 ```sh
 make test_e2e_node TEST_ARGS="--cgroups-per-qos=true"

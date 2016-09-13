@@ -284,9 +284,9 @@ func (tc *testCase) prepareTestClient(t *testing.T) *fake.Clientset {
 		var heapsterRawMemResponse []byte
 
 		if tc.useMetricsApi {
-			metrics := []*metrics_api.PodMetrics{}
+			metrics := metrics_api.PodMetricsList{}
 			for i, cpu := range tc.reportedLevels {
-				podMetric := &metrics_api.PodMetrics{
+				podMetric := metrics_api.PodMetrics{
 					ObjectMeta: v1.ObjectMeta{
 						Name:      fmt.Sprintf("%s-%d", podNamePrefix, i),
 						Namespace: namespace,
@@ -306,7 +306,7 @@ func (tc *testCase) prepareTestClient(t *testing.T) *fake.Clientset {
 						},
 					},
 				}
-				metrics = append(metrics, podMetric)
+				metrics.Items = append(metrics.Items, podMetric)
 			}
 			heapsterRawMemResponse, _ = json.Marshal(&metrics)
 		} else {
@@ -314,7 +314,7 @@ func (tc *testCase) prepareTestClient(t *testing.T) *fake.Clientset {
 			metrics := heapster.MetricResultList{}
 			for _, level := range tc.reportedLevels {
 				metric := heapster.MetricResult{
-					Metrics:         []heapster.MetricPoint{{timestamp, level, nil}},
+					Metrics:         []heapster.MetricPoint{{Timestamp: timestamp, Value: level, FloatValue: nil}},
 					LatestTimestamp: timestamp,
 				}
 				metrics.Items = append(metrics.Items, metric)
@@ -665,7 +665,7 @@ func TestZeroReplicas(t *testing.T) {
 		minReplicas:         3,
 		maxReplicas:         5,
 		initialReplicas:     0,
-		desiredReplicas:     3,
+		desiredReplicas:     0,
 		CPUTarget:           90,
 		reportedLevels:      []uint64{},
 		reportedCPURequests: []resource.Quantity{},

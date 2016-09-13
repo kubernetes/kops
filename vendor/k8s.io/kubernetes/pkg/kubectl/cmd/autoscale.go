@@ -45,15 +45,18 @@ var (
 		An autoscaler can automatically increase or decrease number of pods deployed within the system as needed.`)
 
 	autoscaleExample = dedent.Dedent(`
-		# Auto scale a deployment "foo", with the number of pods between 2 to 10, target CPU utilization specified so a default autoscaling policy will be used:
+		# Auto scale a deployment "foo", with the number of pods between 2 and 10, target CPU utilization specified so a default autoscaling policy will be used:
 		kubectl autoscale deployment foo --min=2 --max=10
 
-		# Auto scale a replication controller "foo", with the number of pods between 1 to 5, target CPU utilization at 80%:
+		# Auto scale a replication controller "foo", with the number of pods between 1 and 5, target CPU utilization at 80%:
 		kubectl autoscale rc foo --max=5 --cpu-percent=80`)
 )
 
 func NewCmdAutoscale(f *cmdutil.Factory, out io.Writer) *cobra.Command {
 	options := &AutoscaleOptions{}
+
+	validArgs := []string{"deployment", "replicaset", "replicationcontroller"}
+	argAliases := kubectl.ResourceAliases(validArgs)
 
 	cmd := &cobra.Command{
 		Use:     "autoscale (-f FILENAME | TYPE NAME | TYPE/NAME) [--min=MINPODS] --max=MAXPODS [--cpu-percent=CPU] [flags]",
@@ -64,6 +67,8 @@ func NewCmdAutoscale(f *cmdutil.Factory, out io.Writer) *cobra.Command {
 			err := RunAutoscale(f, out, cmd, args, options)
 			cmdutil.CheckErr(err)
 		},
+		ValidArgs:  validArgs,
+		ArgAliases: argAliases,
 	}
 	cmdutil.AddPrinterFlags(cmd)
 	cmd.Flags().String("generator", "horizontalpodautoscaler/v1", "The name of the API generator to use. Currently there is only 1 generator.")
@@ -198,9 +203,10 @@ func validateFlags(cmd *cobra.Command) error {
 	errs := []error{}
 	max, min := cmdutil.GetFlagInt(cmd, "max"), cmdutil.GetFlagInt(cmd, "min")
 	if max < 1 {
-		errs = append(errs, fmt.Errorf("--max=MAXPODS is required and must be at least 1"))
-	} else if max < min {
-		errs = append(errs, fmt.Errorf("--max=MAXPODS must be larger or equal to --min=MINPODS"))
+		errs = append(errs, fmt.Errorf("--max=MAXPODS is required and must be at least 1, max: %d", max))
+	}
+	if max < min {
+		errs = append(errs, fmt.Errorf("--max=MAXPODS must be larger or equal to --min=MINPODS, max: %d, min: %d", max, min))
 	}
 	return utilerrors.NewAggregate(errs)
 }

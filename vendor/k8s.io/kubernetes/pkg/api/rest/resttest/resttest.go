@@ -27,7 +27,7 @@ import (
 	"k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/rest"
 	"k8s.io/kubernetes/pkg/api/unversioned"
-	"k8s.io/kubernetes/pkg/api/validation"
+	"k8s.io/kubernetes/pkg/api/validation/path"
 	"k8s.io/kubernetes/pkg/conversion"
 	"k8s.io/kubernetes/pkg/fields"
 	"k8s.io/kubernetes/pkg/labels"
@@ -159,6 +159,7 @@ func (t *Tester) TestCreate(valid runtime.Object, createFn CreateFunc, getFn Get
 	}
 	t.testCreateInvokesValidation(invalid...)
 	t.testCreateValidatesNames(copyOrDie(valid))
+	t.testCreateIgnoreClusterName(copyOrDie(valid))
 }
 
 // Test updating an object.
@@ -174,6 +175,7 @@ func (t *Tester) TestUpdate(valid runtime.Object, createFn CreateFunc, getFn Get
 	t.testUpdateRetrievesOldObject(copyOrDie(valid), createFn, getFn)
 	t.testUpdatePropagatesUpdatedObjectError(copyOrDie(valid), createFn, getFn)
 	t.testUpdateIgnoreGenerationUpdates(copyOrDie(valid), createFn, getFn)
+	t.testUpdateIgnoreClusterName(copyOrDie(valid), createFn, getFn)
 }
 
 // Test deleting an object.
@@ -364,7 +366,7 @@ func (t *Tester) testCreateIgnoresMismatchedNamespace(valid runtime.Object) {
 }
 
 func (t *Tester) testCreateValidatesNames(valid runtime.Object) {
-	for _, invalidName := range validation.NameMayNotBe {
+	for _, invalidName := range path.NameMayNotBe {
 		objCopy := copyOrDie(valid)
 		objCopyMeta := t.getObjectMetaOrFail(objCopy)
 		objCopyMeta.Name = invalidName
@@ -376,7 +378,7 @@ func (t *Tester) testCreateValidatesNames(valid runtime.Object) {
 		}
 	}
 
-	for _, invalidSuffix := range validation.NameMayNotContain {
+	for _, invalidSuffix := range path.NameMayNotContain {
 		objCopy := copyOrDie(valid)
 		objCopyMeta := t.getObjectMetaOrFail(objCopy)
 		objCopyMeta.Name += invalidSuffix
@@ -427,6 +429,22 @@ func (t *Tester) testCreateResetsUserData(valid runtime.Object) {
 	defer t.delete(t.TestContext(), obj)
 	if objectMeta.UID == "bad-uid" || objectMeta.CreationTimestamp == now {
 		t.Errorf("ObjectMeta did not reset basic fields: %#v", objectMeta)
+	}
+}
+
+func (t *Tester) testCreateIgnoreClusterName(valid runtime.Object) {
+	objectMeta := t.getObjectMetaOrFail(valid)
+	objectMeta.Name = t.namer(3)
+	objectMeta.ClusterName = "clustername-to-ignore"
+
+	obj, err := t.storage.(rest.Creater).Create(t.TestContext(), copyOrDie(valid))
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+	defer t.delete(t.TestContext(), obj)
+	createdObjectMeta := t.getObjectMetaOrFail(obj)
+	if len(createdObjectMeta.ClusterName) != 0 {
+		t.Errorf("Expected empty clusterName on created object, got '%v'", createdObjectMeta.ClusterName)
 	}
 }
 
@@ -689,6 +707,41 @@ func (t *Tester) testUpdateRejectsMismatchedNamespace(obj runtime.Object, create
 	} else if !strings.Contains(err.Error(), "does not match the namespace sent on the request") {
 		t.Errorf("expected 'does not match the namespace sent on the request' error, got '%v'", err.Error())
 	}
+}
+
+func (t *Tester) testUpdateIgnoreClusterName(obj runtime.Object, createFn CreateFunc, getFn GetFunc) {
+	ctx := t.TestContext()
+
+	foo := copyOrDie(obj)
+	name := t.namer(9)
+	t.setObjectMeta(foo, name)
+
+	if err := createFn(ctx, foo); err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+
+	storedFoo, err := getFn(ctx, foo)
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+
+	older := copyOrDie(storedFoo)
+	olderMeta := t.getObjectMetaOrFail(older)
+	olderMeta.ClusterName = "clustername-to-ignore"
+
+	_, _, err = t.storage.(rest.Updater).Update(t.TestContext(), olderMeta.Name, rest.DefaultUpdatedObjectInfo(older, api.Scheme))
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+
+	updatedFoo, err := getFn(ctx, older)
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+	if clusterName := t.getObjectMetaOrFail(updatedFoo).ClusterName; len(clusterName) != 0 {
+		t.Errorf("Unexpected clusterName update: expected empty, got %v", clusterName)
+	}
+
 }
 
 // =============================================================================
@@ -960,7 +1013,7 @@ func (t *Tester) testDeleteGracefulShorten(obj runtime.Object, createFn CreateFu
 	objectMeta = t.getObjectMetaOrFail(object)
 	if objectMeta.DeletionTimestamp == nil || objectMeta.DeletionGracePeriodSeconds == nil ||
 		*objectMeta.DeletionGracePeriodSeconds != expectedGrace || !objectMeta.DeletionTimestamp.Before(deletionTimestamp) {
-		t.Errorf("unexpected deleted meta: %+v", objectMeta)
+		t.Errorf("unexpected deleted meta: %#v", objectMeta)
 	}
 }
 

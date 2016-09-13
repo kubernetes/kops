@@ -37,15 +37,17 @@ import (
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/apis/policy"
 	"k8s.io/kubernetes/pkg/apis/rbac"
-	"k8s.io/kubernetes/pkg/apiserver"
+	"k8s.io/kubernetes/pkg/apis/storage"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/client/record"
 	"k8s.io/kubernetes/pkg/client/restclient"
 	client "k8s.io/kubernetes/pkg/client/unversioned"
+	clientsetadapter "k8s.io/kubernetes/pkg/client/unversioned/adapters/internalclientset"
 	"k8s.io/kubernetes/pkg/controller"
 	replicationcontroller "k8s.io/kubernetes/pkg/controller/replication"
 	"k8s.io/kubernetes/pkg/fields"
 	"k8s.io/kubernetes/pkg/genericapiserver"
+	"k8s.io/kubernetes/pkg/genericapiserver/authorizer"
 	"k8s.io/kubernetes/pkg/kubectl"
 	kubeletclient "k8s.io/kubernetes/pkg/kubelet/client"
 	"k8s.io/kubernetes/pkg/master"
@@ -54,6 +56,7 @@ import (
 	utilnet "k8s.io/kubernetes/pkg/util/net"
 	"k8s.io/kubernetes/plugin/pkg/admission/admit"
 
+	"github.com/go-openapi/spec"
 	"github.com/pborman/uuid"
 )
 
@@ -114,14 +117,12 @@ func NewMasterComponents(c *Config) *MasterComponents {
 	if c.StartReplicationManager {
 		go controllerManager.Run(goruntime.NumCPU(), rcStopCh)
 	}
-	var once sync.Once
 	return &MasterComponents{
 		ApiServer:         s,
 		KubeMaster:        m,
 		RestClient:        restClient,
 		ControllerManager: controllerManager,
 		rcStopCh:          rcStopCh,
-		once:              once,
 	}
 }
 
@@ -136,6 +137,18 @@ func startMasterOrDie(masterConfig *master.Config) (*master.Master, *httptest.Se
 		masterConfig = NewMasterConfig()
 		masterConfig.EnableProfiling = true
 		masterConfig.EnableSwaggerSupport = true
+		masterConfig.EnableOpenAPISupport = true
+		masterConfig.OpenAPIInfo = spec.Info{
+			InfoProps: spec.InfoProps{
+				Title:   "Kubernetes",
+				Version: "unversioned",
+			},
+		}
+		masterConfig.OpenAPIDefaultResponse = spec.Response{
+			ResponseProps: spec.ResponseProps{
+				Description: "Default Response.",
+			},
+		}
 	}
 	m, err := master.New(masterConfig)
 	if err != nil {
@@ -198,6 +211,10 @@ func NewMasterConfig() *master.Config {
 		unversioned.GroupResource{Group: certificates.GroupName, Resource: genericapiserver.AllResources},
 		"",
 		NewSingleContentTypeSerializer(api.Scheme, testapi.Certificates.Codec(), runtime.ContentTypeJSON))
+	storageFactory.SetSerializer(
+		unversioned.GroupResource{Group: storage.GroupName, Resource: genericapiserver.AllResources},
+		"",
+		NewSingleContentTypeSerializer(api.Scheme, testapi.Storage.Codec(), runtime.ContentTypeJSON))
 
 	return &master.Config{
 		Config: &genericapiserver.Config{
@@ -205,7 +222,7 @@ func NewMasterConfig() *master.Config {
 			APIResourceConfigSource: master.DefaultAPIResourceConfigSource(),
 			APIPrefix:               "/api",
 			APIGroupPrefix:          "/apis",
-			Authorizer:              apiserver.NewAlwaysAllowAuthorizer(),
+			Authorizer:              authorizer.NewAlwaysAllowAuthorizer(),
 			AdmissionControl:        admit.NewAlwaysAdmit(),
 			Serializer:              api.Codecs,
 			EnableWatchCache:        true,
@@ -274,7 +291,7 @@ func RCFromManifest(fileName string) *api.ReplicationController {
 
 // StopRC stops the rc via kubectl's stop library
 func StopRC(rc *api.ReplicationController, restClient *client.Client) error {
-	reaper, err := kubectl.ReaperFor(api.Kind("ReplicationController"), restClient)
+	reaper, err := kubectl.ReaperFor(api.Kind("ReplicationController"), clientsetadapter.FromUnversionedClient(restClient))
 	if err != nil || reaper == nil {
 		return err
 	}
@@ -287,7 +304,7 @@ func StopRC(rc *api.ReplicationController, restClient *client.Client) error {
 
 // ScaleRC scales the given rc to the given replicas.
 func ScaleRC(name, ns string, replicas int32, restClient *client.Client) (*api.ReplicationController, error) {
-	scaler, err := kubectl.ScalerFor(api.Kind("ReplicationController"), restClient)
+	scaler, err := kubectl.ScalerFor(api.Kind("ReplicationController"), clientsetadapter.FromUnversionedClient(restClient))
 	if err != nil {
 		return nil, err
 	}
@@ -351,7 +368,7 @@ func StartPods(namespace string, numPods int, host string, restClient *client.Cl
 	} else {
 		// Delete the rc, otherwise when we restart master components for the next benchmark
 		// the rc controller will race with the pods controller in the rc manager.
-		return restClient.ReplicationControllers(namespace).Delete(rc.Name)
+		return restClient.ReplicationControllers(namespace).Delete(rc.Name, nil)
 	}
 }
 
