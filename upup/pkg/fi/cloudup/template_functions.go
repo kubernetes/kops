@@ -15,9 +15,11 @@ import (
 )
 
 type TemplateFunctions struct {
-	cluster *api.Cluster
-	tags    map[string]struct{}
-	region  string
+	cluster        *api.Cluster
+	instanceGroups []*api.InstanceGroup
+
+	tags   map[string]struct{}
+	region string
 }
 
 func (tf *TemplateFunctions) WellKnownServiceIP(id int) (net.IP, error) {
@@ -90,6 +92,10 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 		}
 		return defaultValue
 	}
+
+	dest["GetInstanceGroup"] = tf.GetInstanceGroup
+
+	dest["CloudTags"] = tf.CloudTags
 }
 
 func (tf *TemplateFunctions) EtcdClusterMemberTags(etcd *api.EtcdClusterSpec, m *api.EtcdMemberSpec) map[string]string {
@@ -189,4 +195,41 @@ func (tf *TemplateFunctions) buildAWSIAMPolicy(role api.InstanceGroupRole) (stri
 		return "", fmt.Errorf("error building IAM policy: %v", err)
 	}
 	return json, nil
+}
+
+// CloudTags computes the tags to apply to instances in the specified InstanceGroup
+func (tf *TemplateFunctions) CloudTags(ig *api.InstanceGroup) (map[string]string, error) {
+	labels := make(map[string]string)
+
+	// Apply any user-specified labels
+	for k, v := range ig.Spec.CloudLabels {
+		labels[k] = v
+	}
+
+	// The system tags take priority because the cluster likely breaks without them...
+
+	if ig.Spec.Role == api.InstanceGroupRoleMaster {
+		labels["k8s.io/role/master"] = "1"
+		labels["k8s.io/dns/internal"] = "api.internal." + tf.cluster.Name
+
+		if !tf.HasTag("_master_lb") {
+			labels["k8s.io/dns/public"] = "api." + tf.cluster.Name
+		}
+	}
+
+	if ig.Spec.Role == api.InstanceGroupRoleNode {
+		labels["k8s.io/role/node"] = "1"
+	}
+
+	return labels, nil
+}
+
+// GetInstanceGroup returns the instance group with the specified name
+func (tf *TemplateFunctions) GetInstanceGroup(name string) (*api.InstanceGroup, error) {
+	for _, ig := range tf.instanceGroups {
+		if ig.Name == name {
+			return ig, nil
+		}
+	}
+	return nil, fmt.Errorf("InstanceGroup %q not found", name)
 }

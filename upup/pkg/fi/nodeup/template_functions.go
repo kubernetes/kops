@@ -17,21 +17,30 @@ const DefaultProtokubeImage = "kope/protokube:1.3"
 // templateFunctions is a simple helper-class for the functions accessible to templates
 type templateFunctions struct {
 	nodeupConfig *NodeUpConfig
-	cluster      *api.Cluster
+
+	// cluster is populated with the current cluster
+	cluster *api.Cluster
+	// instanceGroup is populated with this node's instance group
+	instanceGroup *api.InstanceGroup
+
 	// keyStore is populated with a KeyStore, if KeyStore is set
 	keyStore fi.CAStore
 	// secretStore is populated with a SecretStore, if SecretStore is set
 	secretStore fi.SecretStore
 
 	tags map[string]struct{}
+
+	// kubeletConfig is the kubelet config for the current node
+	kubeletConfig *api.KubeletConfigSpec
 }
 
 // newTemplateFunctions is the constructor for templateFunctions
-func newTemplateFunctions(nodeupConfig *NodeUpConfig, cluster *api.Cluster, tags map[string]struct{}) (*templateFunctions, error) {
+func newTemplateFunctions(nodeupConfig *NodeUpConfig, cluster *api.Cluster, instanceGroup *api.InstanceGroup, tags map[string]struct{}) (*templateFunctions, error) {
 	t := &templateFunctions{
-		nodeupConfig: nodeupConfig,
-		cluster:      cluster,
-		tags:         tags,
+		nodeupConfig:  nodeupConfig,
+		cluster:       cluster,
+		instanceGroup: instanceGroup,
+		tags:          tags,
 	}
 
 	if cluster.Spec.SecretStore != "" {
@@ -57,6 +66,12 @@ func newTemplateFunctions(nodeupConfig *NodeUpConfig, cluster *api.Cluster, tags
 	} else {
 		return nil, fmt.Errorf("KeyStore not set")
 	}
+
+	kubeletConfigSpec, err := api.BuildKubeletConfigSpec(t.cluster, t.instanceGroup)
+	if err != nil {
+		return nil, fmt.Errorf("error building kubelet config: %v", err)
+	}
+	t.kubeletConfig = kubeletConfigSpec
 
 	return t, nil
 }
@@ -92,14 +107,13 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 	dest["KubeProxy"] = func() *api.KubeProxyConfig {
 		return t.cluster.Spec.KubeProxy
 	}
-	dest["Kubelet"] = func() *api.KubeletConfig {
-		if t.IsMaster() {
-			return t.cluster.Spec.MasterKubelet
-		} else {
-			return t.cluster.Spec.Kubelet
-		}
+	dest["KubeletConfig"] = func() *api.KubeletConfigSpec {
+		return t.kubeletConfig
 	}
-	dest["ClusterName"] = func() string { return t.cluster.Name }
+
+	dest["ClusterName"] = func() string {
+		return t.cluster.Name
+	}
 
 	dest["ProtokubeImage"] = t.ProtokubeImage
 }

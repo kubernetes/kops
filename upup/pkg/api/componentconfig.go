@@ -1,9 +1,21 @@
 package api
 
+import (
+	k8sapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/unversioned"
+)
+
 // Configuration for each component
 // Wherever possible, we try to use the types & names in https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
 
 type KubeletConfig struct {
+	unversioned.TypeMeta `json:",inline"`
+	k8sapi.ObjectMeta    `json:"metadata,omitempty"`
+
+	Spec ClusterSpec `json:"spec,omitempty"`
+}
+
+type KubeletConfigSpec struct {
 	APIServers string `json:"apiServers,omitempty" flag:"api-servers"`
 
 	LogLevel *int `json:"logLevel,omitempty" flag:"v"`
@@ -254,8 +266,8 @@ type KubeletConfig struct {
 	//// nodeIP is IP address of the node. If set, kubelet will use this IP
 	//// address for the node.
 	//NodeIP string `json:"nodeIP,omitempty"`
-	//// nodeLabels to add when registering the node in the cluster.
-	//NodeLabels map[string]string `json:"nodeLabels"`
+	// nodeLabels to add when registering the node in the cluster.
+	NodeLabels map[string]string `json:"nodeLabels,omitempty" flag:"node-labels"`
 	// nonMasqueradeCIDR configures masquerading: traffic to IPs outside this range will use IP masquerade.
 	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty" flag:"non-masquerade-cidr"`
 	//// enable gathering custom metrics.
@@ -276,7 +288,6 @@ type KubeletConfig struct {
 	//// manage attachment/detachment of volumes scheduled to this node, and
 	//// disables kubelet from executing any attach/detach operations
 	//EnableControllerAttachDetach bool `json:"enableControllerAttachDetach"`
-
 }
 
 type KubeProxyConfig struct {

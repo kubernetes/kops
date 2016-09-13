@@ -22,12 +22,6 @@ instanceVolumeAttachment/master-volume-attachment:
 instance/master.{{ ClusterName }}:
   subnet: subnet/{{ $zone }}.{{ ClusterName }}
   privateIpAddress: {{ $.MasterInternalIP }}
-  tags:
-    k8s.io/role/master: "1"
-    k8s.io/dns/internal: "api.internal.{{ ClusterName }}"
-{{ if not (HasTag "_master_lb") }}
-    k8s.io/dns/public: "api.{{ ClusterName }}"
-{{ end }}
   sshKey: sshKey/{{ SSHKeyName }}
   securityGroups:
     - securityGroup/master.{{ ClusterName }}
@@ -35,13 +29,17 @@ instance/master.{{ ClusterName }}:
   imageId: {{ $.MasterImage }}
   instanceType: {{ $.MasterMachineType }}
   associatePublicIP: true
-  userData: resources/nodeup.sh _kubernetes_master
+  userData: resources/nodeup.sh {{ $.Name }}
   blockDeviceMappings:
     # Map all the ephemeral devices
     {{ range $d := (MachineTypeInfo $.MasterMachineType).EphemeralDevices }}
     - DeviceName: {{ $d.DeviceName }}
       VirtualName: {{ $d.VirtualName }}
     {{ end }}
+  tags:
+  {{ range $k, $v := CloudTags $m }}
+    {{ $k }}: "{{ $v }}"
+  {{ end }}
 
 {{ end }}
 
