@@ -109,14 +109,6 @@ func (r *ClusterRegistry) ReadCompletedConfig(clusterName string) (*Cluster, err
 	return cluster, nil
 }
 
-func (r *ClusterRegistry) ConfigurationPath(clusterName string) (vfs.Path, error) {
-	basePath, err := r.ClusterBase(clusterName)
-	if err != nil {
-		return nil, err
-	}
-	return basePath.Join(PathClusterCompleted), nil
-}
-
 func (r *ClusterRegistry) ClusterBase(clusterName string) (vfs.Path, error) {
 	if clusterName == "" {
 		return nil, fmt.Errorf("clusterName is required")
@@ -203,6 +195,13 @@ func (r *InstanceGroupRegistry) Find(name string) (*InstanceGroup, error) {
 		return nil, fmt.Errorf("error reading instancegroup configuration %q: %v", name, err)
 	}
 	return group, nil
+}
+
+func (r *InstanceGroupRegistry) InstanceGroupPath(name string) (vfs.Path, error) {
+	if name == "" {
+		return nil, fmt.Errorf("name is required")
+	}
+	return r.stateStore.VFSPath().Join("instancegroup/" + name), nil
 }
 
 func (r *InstanceGroupRegistry) Delete(name string) (bool, error) {

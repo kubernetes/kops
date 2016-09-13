@@ -39,6 +39,28 @@ func buildFlags(options interface{}) (string, error) {
 			val = val.Elem()
 		}
 
+		if val.Kind() == reflect.Map {
+			if val.IsNil() {
+				return nil
+			}
+			// We handle a map[string]string like --node-labels=k1=v1,k2=v2 etc
+			// As we need more formats we can add additional spec to the flags tag
+			if stringStringMap, ok := val.Interface().(map[string]string); ok {
+				var args []string
+				for k, v := range stringStringMap {
+					arg := fmt.Sprintf("%s=%s", k, v)
+					args = append(args, arg)
+				}
+				if len(args) != 0 {
+					flag := fmt.Sprintf("--%s=%s", flagName, strings.Join(args, ","))
+					flags = append(flags, flag)
+				}
+				return utils.SkipReflection
+			} else {
+				return fmt.Errorf("BuildFlags of value type not handled: %T %s=%v", val.Interface(), path, val.Interface())
+			}
+		}
+
 		var flag string
 		switch v := val.Interface().(type) {
 		case string:

@@ -45,7 +45,14 @@ type InstanceGroupSpec struct {
 	// MaxPrice indicates this is a spot-pricing group, with the specified value as our max-price bid
 	MaxPrice *string `json:"maxPrice,omitempty"`
 
+	// AssociatePublicIP is true if we want instances to have a public IP
 	AssociatePublicIP *bool `json:"associatePublicIp,omitempty"`
+
+	// CloudLabels indicates the labels for instances in this group, at the AWS level
+	CloudLabels map[string]string `json:"cloudLabels,omitempty"`
+
+	// NodeLabels indicates the kubernetes labels for nodes in this group
+	NodeLabels map[string]string `json:"nodeLabels,omitempty"`
 }
 
 // PerformAssignmentsInstanceGroups populates InstanceGroups with default values

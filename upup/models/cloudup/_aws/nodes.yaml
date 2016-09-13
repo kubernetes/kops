@@ -42,33 +42,35 @@ securityGroupRule/all-node-to-master:
   securityGroup: securityGroup/masters.{{ ClusterName }}
   sourceGroup: securityGroup/nodes.{{ ClusterName }}
 
-{{ range $nodeset := NodeSets }}
+{{ range $ig := NodeSets }}
 
 # LaunchConfiguration & ASG for nodes
-launchConfiguration/{{ $nodeset.Name }}.{{ ClusterName }}:
+launchConfiguration/{{ $ig.Name }}.{{ ClusterName }}:
   sshKey: sshKey/{{ SSHKeyName }}
   securityGroups:
     - securityGroup/nodes.{{ ClusterName }}
   iamInstanceProfile: iamInstanceProfile/nodes.{{ ClusterName }}
-  imageId: {{ $nodeset.Spec.Image }}
-  instanceType: {{ $nodeset.Spec.MachineType }}
-  associatePublicIP: {{ WithDefaultBool $nodeset.Spec.AssociatePublicIP true }}
-  userData: resources/nodeup.sh _kubernetes_pool
-  rootVolumeSize: {{ or $nodeset.Spec.RootVolumeSize "20" }}
-  rootVolumeType: {{ or $nodeset.Spec.RootVolumeType "gp2" }}
-{{ if $nodeset.Spec.MaxPrice }}
-  spotPrice: "{{ $nodeset.Spec.MaxPrice }}"
+  imageId: {{ $ig.Spec.Image }}
+  instanceType: {{ $ig.Spec.MachineType }}
+  associatePublicIP: {{ WithDefaultBool $ig.Spec.AssociatePublicIP true }}
+  userData: resources/nodeup.sh {{ $ig.Name }}
+  rootVolumeSize: {{ or $ig.Spec.RootVolumeSize "20" }}
+  rootVolumeType: {{ or $ig.Spec.RootVolumeType "gp2" }}
+{{ if $ig.Spec.MaxPrice }}
+  spotPrice: "{{ $ig.Spec.MaxPrice }}"
 {{ end }}
 
-autoscalingGroup/{{ $nodeset.Name }}.{{ ClusterName }}:
-  launchConfiguration: launchConfiguration/{{ $nodeset.Name }}.{{ ClusterName }}
-  minSize: {{ or $nodeset.Spec.MinSize 2 }}
-  maxSize: {{ or $nodeset.Spec.MaxSize 2 }}
+autoscalingGroup/{{ $ig.Name }}.{{ ClusterName }}:
+  launchConfiguration: launchConfiguration/{{ $ig.Name }}.{{ ClusterName }}
+  minSize: {{ or $ig.Spec.MinSize 2 }}
+  maxSize: {{ or $ig.Spec.MaxSize 2 }}
   subnets:
-{{ range $zone := $nodeset.Spec.Zones }}
+{{ range $zone := $ig.Spec.Zones }}
     - subnet/{{ $zone }}.{{ ClusterName }}
 {{ end }}
   tags:
-    k8s.io/role/node: "1"
+  {{ range $k, $v := CloudTags $ig }}
+    {{ $k }}: "{{ $v }}"
+  {{ end }}
 
 {{ end }}
