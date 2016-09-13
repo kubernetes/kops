@@ -21,6 +21,7 @@ const MaxAttemptsWithNoProgress = 100
 type NodeUpCommand struct {
 	config         *NodeUpConfig
 	cluster        *api.Cluster
+	instancegroup  *api.InstanceGroup
 	ConfigLocation string
 	ModelDir       vfs.Path
 	CacheDir       string
@@ -58,35 +59,66 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		}
 	}
 
-	//c.nodeset = &cloudup.NodeSetConfig{}
-	//if c.config.NodeSetLocation != "" {
-	//	b, err := vfs.Context.ReadFile(c.config.NodeSetLocation)
-	//	if err != nil {
-	//		return fmt.Errorf("error loading NodeSet %q: %v", c.config.NodeSetLocation, err)
-	//	}
-	//
-	//	err = utils.YamlUnmarshal(b, c.nodeset)
-	//	if err != nil {
-	//		return fmt.Errorf("error parsing NodeSet %q: %v", c.config.NodeSetLocation, err)
-	//	}
-	//} else {
-	//	return fmt.Errorf("NodeSetLocation is required")
-	//}
+	var configBase vfs.Path
+	if fi.StringValue(c.config.ConfigBase) != "" {
+		var err error
+		configBase, err = vfs.Context.BuildVfsPath(*c.config.ConfigBase)
+		if err != nil {
+			return fmt.Errorf("cannot parse ConfigBase %q: %v", *c.config.ConfigBase, err)
+		}
+	} else if fi.StringValue(c.config.ClusterLocation) != "" {
+		basePath := *c.config.ClusterLocation
+		lastSlash := strings.LastIndex(basePath, "/")
+		if lastSlash != -1 {
+			basePath = basePath[0:lastSlash]
+		}
+
+		var err error
+		configBase, err = vfs.Context.BuildVfsPath(basePath)
+		if err != nil {
+			return fmt.Errorf("cannot parse inferred ConfigBase %q: %v", basePath, err)
+		}
+	} else {
+		return fmt.Errorf("ConfigBase is required")
+	}
 
 	c.cluster = &api.Cluster{}
-	if c.config.ClusterLocation != "" {
-		b, err := vfs.Context.ReadFile(c.config.ClusterLocation)
+	{
+		var p vfs.Path
+		if fi.StringValue(c.config.ClusterLocation) != "" {
+			var err error
+			p, err = vfs.Context.BuildVfsPath(*c.config.ClusterLocation)
+			if err != nil {
+				return fmt.Errorf("error parsing ClusterLocation %q: %v", *c.config.ClusterLocation, err)
+			}
+		} else {
+			p = configBase.Join(api.PathClusterCompleted)
+		}
+
+		b, err := p.ReadFile()
 		if err != nil {
-			return fmt.Errorf("error loading Cluster %q: %v", c.config.ClusterLocation, err)
+			return fmt.Errorf("error loading Cluster %q: %v", p, err)
 		}
 
 		err = utils.YamlUnmarshal(b, c.cluster)
 		if err != nil {
 			return fmt.Errorf("error parsing Cluster %q: %v", c.config.ClusterLocation, err)
 		}
-	} else {
-		// TODO Infer this from NodeSetLocation?
-		return fmt.Errorf("ClusterLocation is required")
+	}
+
+	if c.config.InstanceGroupName != "" {
+		instanceGroupLocation := configBase.Join("instancegroup", c.config.InstanceGroupName)
+
+		c.instancegroup = &api.InstanceGroup{}
+		b, err := instanceGroupLocation.ReadFile()
+		if err != nil {
+			return fmt.Errorf("error loading InstanceGroup %q: %v", instanceGroupLocation, err)
+		}
+
+		err = utils.YamlUnmarshal(b, c.instancegroup)
+		if err != nil {
+			return fmt.Errorf("error parsing InstanceGroup %q: %v", instanceGroupLocation, err)
+		}
 	}
 
 	err := evaluateSpec(c.cluster)
@@ -132,7 +164,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	loader := NewLoader(c.config, c.cluster, assets, tags)
 
-	tf, err := newTemplateFunctions(c.config, c.cluster, tags)
+	tf, err := newTemplateFunctions(c.config, c.cluster, c.instancegroup, tags)
 	if err != nil {
 		return fmt.Errorf("error initializing: %v", err)
 	}
