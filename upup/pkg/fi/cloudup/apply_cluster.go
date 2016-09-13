@@ -61,6 +61,11 @@ func (c *ApplyClusterCmd) Run() error {
 		return err
 	}
 
+	err = c.upgradeSpecs()
+	if err != nil {
+		return err
+	}
+
 	err = api.DeepValidate(c.Cluster, c.InstanceGroups, true)
 	if err != nil {
 		return err
@@ -77,6 +82,11 @@ func (c *ApplyClusterCmd) Run() error {
 
 	if c.ClusterRegistry == nil {
 		return fmt.Errorf("ClusterRegistry is required")
+	}
+
+	instanceGroupRegistry, err := c.ClusterRegistry.InstanceGroups(c.Cluster.Name)
+	if err != nil {
+		return err
 	}
 
 	l := &Loader{}
@@ -285,9 +295,10 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	tf := &TemplateFunctions{
-		cluster: cluster,
-		tags:    clusterTags,
-		region:  region,
+		cluster:        cluster,
+		instanceGroups: c.InstanceGroups,
+		tags:           clusterTags,
+		region:         region,
 	}
 
 	l.Tags = clusterTags
@@ -302,24 +313,14 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	// RenderNodeUpConfig returns the NodeUp config, in YAML format
-	l.TemplateFunctions["RenderNodeUpConfig"] = func(args []string) (string, error) {
-		var role api.InstanceGroupRole
-		for _, arg := range args {
-			if arg == "_kubernetes_master" {
-				if role != "" {
-					return "", fmt.Errorf("found duplicate role tags in args: %v", args)
-				}
-				role = api.InstanceGroupRoleMaster
-			}
-			if arg == "_kubernetes_pool" {
-				if role != "" {
-					return "", fmt.Errorf("found duplicate role tags in args: %v", args)
-				}
-				role = api.InstanceGroupRoleNode
-			}
+	l.TemplateFunctions["RenderNodeUpConfig"] = func(ig *api.InstanceGroup) (string, error) {
+		if ig == nil {
+			return "", fmt.Errorf("instanceGroup cannot be nil")
 		}
+
+		role := ig.Spec.Role
 		if role == "" {
-			return "", fmt.Errorf("cannot determine role from args: %v", args)
+			return "", fmt.Errorf("cannot determine role for instance group: %v", ig.Name)
 		}
 
 		nodeUpTags, err := buildNodeupTags(role, tf.cluster, tf.tags)
@@ -328,9 +329,6 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 		config := &nodeup.NodeUpConfig{}
-		for _, tag := range args {
-			config.Tags = append(config.Tags, tag)
-		}
 		for _, tag := range nodeUpTags {
 			config.Tags = append(config.Tags, tag)
 		}
@@ -339,11 +337,13 @@ func (c *ApplyClusterCmd) Run() error {
 
 		config.ClusterName = cluster.Name
 
-		configPath, err := c.ClusterRegistry.ConfigurationPath(cluster.Name)
+		configBase, err := c.ClusterRegistry.ClusterBase(cluster.Name)
 		if err != nil {
 			return "", err
 		}
-		config.ClusterLocation = configPath.Path()
+		config.ConfigBase = fi.String(configBase.Path())
+
+		config.InstanceGroupName = ig.Name
 
 		var images []*nodeup.Image
 
@@ -452,6 +452,7 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	var target fi.Target
+	dryRun := false
 
 	switch c.TargetName {
 	case TargetDirect:
@@ -471,10 +472,25 @@ func (c *ApplyClusterCmd) Run() error {
 
 	case TargetDryRun:
 		target = fi.NewDryRunTarget(os.Stdout)
+		dryRun = true
 	default:
 		return fmt.Errorf("unsupported target type %q", c.TargetName)
 	}
 	c.Target = target
+
+	if !dryRun {
+		err = c.ClusterRegistry.WriteCompletedConfig(c.Cluster)
+		if err != nil {
+			return fmt.Errorf("error writing completed cluster spec: %v", err)
+		}
+
+		for _, g := range c.InstanceGroups {
+			err := instanceGroupRegistry.Update(g)
+			if err != nil {
+				return fmt.Errorf("error writing InstanceGroup %q to registry: %v", g.Name, err)
+			}
+		}
+	}
 
 	context, err := fi.NewContext(target, cloud, keyStore, secretStore, checkExisting)
 	if err != nil {
@@ -545,6 +561,30 @@ func validateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 
 	if len(matches) > 1 {
 		return fmt.Errorf("found multiple DNS Zones matching %q", cluster.Spec.DNSZone)
+	}
+
+	return nil
+}
+
+// upgradeSpecs ensures that fields are fully populated / defaulted
+func (c *ApplyClusterCmd) upgradeSpecs() error {
+	//err := c.Cluster.PerformAssignments()
+	//if err != nil {
+	//	return fmt.Errorf("error populating configuration: %v", err)
+	//}
+
+	fullCluster, err := PopulateClusterSpec(c.Cluster, c.ClusterRegistry)
+	if err != nil {
+		return err
+	}
+	c.Cluster = fullCluster
+
+	for i, g := range c.InstanceGroups {
+		fullGroup, err := PopulateInstanceGroupSpec(fullCluster, g)
+		if err != nil {
+			return err
+		}
+		c.InstanceGroups[i] = fullGroup
 	}
 
 	return nil

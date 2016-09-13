@@ -5,7 +5,6 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"io/ioutil"
-	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -76,27 +75,14 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 		return err
 	}
 
-	fullCluster, err := clusterRegistry.ReadCompletedConfig(cluster.Name)
-	if err != nil {
-		return err
-	}
-
 	instanceGroupRegistry, err := rootCommand.InstanceGroupRegistry()
 	if err != nil {
 		return err
 	}
 
-	fullInstanceGroups, err := instanceGroupRegistry.ReadAll()
+	instanceGroups, err := instanceGroupRegistry.ReadAll()
 	if err != nil {
 		return err
-	}
-
-	for i, g := range fullInstanceGroups {
-		fullGroup, err := cloudup.PopulateInstanceGroupSpec(cluster, g)
-		if err != nil {
-			return err
-		}
-		fullInstanceGroups[i] = fullGroup
 	}
 
 	if c.SSHPublicKey != "" {
@@ -117,15 +103,9 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 		}
 	}
 
-	strict := false
-	err = api.DeepValidate(cluster, fullInstanceGroups, strict)
-	if err != nil {
-		return err
-	}
-
 	applyCmd := &cloudup.ApplyClusterCmd{
-		Cluster:         fullCluster,
-		InstanceGroups:  fullInstanceGroups,
+		Cluster:         cluster,
+		InstanceGroups:  instanceGroups,
 		Models:          strings.Split(c.Models, ","),
 		ClusterRegistry: clusterRegistry,
 		TargetName:      targetName,

@@ -72,16 +72,19 @@ func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTa
 
 	switch role {
 	case api.InstanceGroupRoleNode:
-		// No special tags
+		tags = append(tags, "_kubernetes_pool")
 
 		// TODO: Should we run _protokube on the nodes?
 		tags = append(tags, "_protokube")
 
 	case api.InstanceGroupRoleMaster:
+		tags = append(tags, "_kubernetes_master")
+
 		if !fi.BoolValue(cluster.Spec.IsolateMasters) {
 			// Run this master as a pool node also (start kube-proxy etc)
 			tags = append(tags, "_kubernetes_pool")
 		}
+
 		tags = append(tags, "_protokube")
 	default:
 		return nil, fmt.Errorf("Unrecognized role: %v", role)
