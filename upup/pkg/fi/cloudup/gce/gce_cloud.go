@@ -8,6 +8,8 @@ import (
 	"google.golang.org/api/compute/v1"
 	"google.golang.org/api/storage/v1"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kubernetes/federation/pkg/dnsprovider"
+	"k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns"
 )
 
 type GCECloud struct {
@@ -52,4 +54,12 @@ func NewGCECloud(region string, project string) (*GCECloud, error) {
 
 func (c *GCECloud) FindDNSHostedZone(clusterDNSName string) (string, error) {
 	return "", fmt.Errorf("FindDNSHostedZone not yet implemented on GCE")
+}
+
+func (c *GCECloud) DNS() (dnsprovider.Interface, error) {
+	provider, err := dnsprovider.GetDnsProvider(clouddns.ProviderName, nil)
+	if err != nil {
+		return nil, fmt.Errorf("Error building (k8s) DNS provider: %v", err)
+	}
+	return provider, nil
 }

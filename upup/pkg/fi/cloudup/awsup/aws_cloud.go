@@ -12,6 +12,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kubernetes/federation/pkg/dnsprovider"
+	k8sroute53 "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
 	"strings"
 	"time"
 )
@@ -464,6 +466,14 @@ func (c *AWSCloud) ValidateZones(zones []string) error {
 	}
 
 	return nil
+}
+
+func (c *AWSCloud) DNS() (dnsprovider.Interface, error) {
+	provider, err := dnsprovider.GetDnsProvider(k8sroute53.ProviderName, nil)
+	if err != nil {
+		return nil, fmt.Errorf("Error building (k8s) DNS provider: %v", err)
+	}
+	return provider, nil
 }
 
 func (c *AWSCloud) FindDNSHostedZone(clusterDNSName string) (string, error) {

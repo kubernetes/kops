@@ -285,7 +285,7 @@ type terraformLaunchConfiguration struct {
 	UserData                 *terraform.Literal      `json:"user_data,omitempty"`
 	RootBlockDevice          *terraformBlockDevice   `json:"root_block_device,omitempty"`
 	EphemeralBlockDevice     []*terraformBlockDevice `json:"ephemeral_block_device,omitempty"`
-	Lifecycle                *terraformLifecycle     `json:"lifecycle,omitempty"`
+	Lifecycle                *terraform.Lifecycle    `json:"lifecycle,omitempty"`
 	SpotPrice                *string                 `json:"spot_price,omitempty"`
 }
 
@@ -298,10 +298,6 @@ type terraformBlockDevice struct {
 	VolumeType          *string `json:"volume_type,omitempty"`
 	VolumeSize          *int64  `json:"volume_size,omitempty"`
 	DeleteOnTermination *bool   `json:"delete_on_termination,omitempty"`
-}
-
-type terraformLifecycle struct {
-	CreateBeforeDestroy *bool `json:"create_before_destroy,omitempty"`
 }
 
 func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LaunchConfiguration) error {
@@ -378,7 +374,7 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 	}
 
 	// So that we can update configurations
-	tf.Lifecycle = &terraformLifecycle{CreateBeforeDestroy: fi.Bool(true)}
+	tf.Lifecycle = &terraform.Lifecycle{CreateBeforeDestroy: fi.Bool(true)}
 
 	return t.RenderResource("aws_launch_configuration", *e.Name, tf)
 }
