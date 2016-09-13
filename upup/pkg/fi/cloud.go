@@ -1,5 +1,7 @@
 package fi
 
+import "k8s.io/kubernetes/federation/pkg/dnsprovider"
+
 type CloudProviderID string
 
 const CloudProviderAWS CloudProviderID = "aws"
@@ -9,6 +11,8 @@ type Cloud interface {
 	ProviderID() CloudProviderID
 
 	FindDNSHostedZone(dnsName string) (string, error)
+
+	DNS() (dnsprovider.Interface, error)
 }
 
 // zonesToCloud allows us to infer from certain well-known zones to a cloud
