@@ -14,19 +14,19 @@ kops: gobindata
 	GO15VENDOREXPERIMENT=1 go install -ldflags "-X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/kops/...
 
 gobindata:
-	go build -o ${GOPATH_1ST}/bin/go-bindata k8s.io/kops/vendor/github.com/jteeuwen/go-bindata/go-bindata
-	${GOPATH_1ST}/bin/go-bindata -o upup/models/bindata.go -pkg models -prefix upup/models/ upup/models/cloudup/... upup/models/config/... upup/models/nodeup/... upup/models/proto/...
+	GO15VENDOREXPERIMENT=1 go build -o ${GOPATH_1ST}/bin/go-bindata k8s.io/kops/vendor/github.com/jteeuwen/go-bindata/go-bindata
+	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOPATH_1ST}/bin/go-bindata -o upup/models/bindata.go -pkg models -prefix upup/models/ upup/models/cloudup/... upup/models/config/... upup/models/nodeup/... upup/models/proto/...
 
 # Build in a docker container with golang 1.X
 # Used to test we have not broken 1.X
 check-builds-in-go15:
-	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.5 make -f /go/src/k8s.io/kops/Makefile gocode
+	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.5 make -f /go/src/k8s.io/kops/Makefile kops
 
 check-builds-in-go16:
-	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.6 make -f /go/src/k8s.io/kops/Makefile gocode
+	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.6 make -f /go/src/k8s.io/kops/Makefile kops
 
 check-builds-in-go17:
-	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.7 make -f /go/src/k8s.io/kops/Makefile gocode
+	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.7 make -f /go/src/k8s.io/kops/Makefile kops
 
 codegen: gobindata
 	GO15VENDOREXPERIMENT=1 go install k8s.io/kops/upup/tools/generators/...
