@@ -18,6 +18,7 @@ type Subnet struct {
 	VPC              *VPC
 	AvailabilityZone *string
 	CIDR             *string
+	Shared           *bool
 }
 
 var _ fi.CompareWithID = &Subnet{}
@@ -55,6 +56,7 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 		VPC:              &VPC{ID: subnet.VpcId},
 		CIDR:             subnet.CidrBlock,
 		Name:             findNameTag(subnet.Tags),
+		Shared:           e.Shared,
 	}
 
 	glog.V(2).Infof("found matching subnet %q", *actual.ID)
@@ -97,6 +99,16 @@ func (s *Subnet) CheckChanges(a, e, changes *Subnet) error {
 }
 
 func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		// Verify the subnet was found
+		if a == nil {
+			return fmt.Errorf("Subnet with id %q not found", fi.StringValue(e.ID))
+		}
+
+		return nil
+	}
+
 	if a == nil {
 		glog.V(2).Infof("Creating Subnet with CIDR: %q", *e.CIDR)
 
@@ -143,6 +155,12 @@ type terraformSubnet struct {
 func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Subnet) error {
 	cloud := t.Cloud.(*awsup.AWSCloud)
 
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		// Not terraform owned / managed
+		return nil
+	}
+
 	tf := &terraformSubnet{
 		VPCID:            e.VPC.TerraformLink(),
 		CIDR:             e.CIDR,
@@ -154,5 +172,15 @@ func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Su
 }
 
 func (e *Subnet) TerraformLink() *terraform.Literal {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		if e.ID == nil {
+			glog.Fatalf("ID must be set, if subnet is shared: %s", e)
+		}
+
+		glog.V(4).Infof("reusing existing subnet with id %q", *e.ID)
+		return terraform.LiteralFromStringValue(*e.ID)
+	}
+
 	return terraform.LiteralProperty("aws_subnet", *e.Name, "id")
 }
