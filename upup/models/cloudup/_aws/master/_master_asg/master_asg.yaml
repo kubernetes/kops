@@ -17,8 +17,8 @@ launchConfiguration/{{ $m.Name }}.masters.{{ ClusterName }}:
 {{ end }}
 
 autoscalingGroup/{{ $m.Name}}.masters.{{ ClusterName }}:
-  minSize: 1
-  maxSize: 1
+  minSize: {{ or $m.Spec.MinSize 1 }}
+  maxSize: {{ or $m.Spec.MaxSize 1 }}
   subnets:
   {{ range $z := $m.Spec.Zones }}
     - subnet/{{ $z }}.{{ ClusterName }}
