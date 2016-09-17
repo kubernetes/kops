@@ -6,6 +6,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi/vfs"
+	"k8s.io/kubernetes/pkg/util/sets"
 	"strings"
 )
 
@@ -107,24 +108,19 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 		})
 
 		// Restrict the KMS permissions to only the keys that are being used
-		var set = make(map[string]bool)
+		kmsKeyIDs := sets.NewString()
 		for _, e := range b.Cluster.Spec.EtcdClusters {
 			for _, m := range e.Members {
 				if m.KmsKeyId != nil {
-					set[*m.KmsKeyId] = true
+					kmsKeyIDs.Insert(*m.KmsKeyId)
 				}
 			}
 		}
 
-		keyIds := make([]string, 0, len(set))
-		for k := range set {
-			keyIds = append(keyIds, k)
-		}
-
-		if len(keyIds) > 0 {
+		if kmsKeyIDs.Len() > 0 {
 			p.Statement = append(p.Statement, &IAMStatement{
-				Effect:   IAMStatementEffectAllow,
-				Action:   []string{
+				Effect: IAMStatementEffectAllow,
+				Action: []string{
 					"kms:Encrypt",
 					"kms:Decrypt",
 					"kms:ReEncrypt*",
@@ -134,7 +130,7 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 					"kms:ListGrants",
 					"kms:RevokeGrant",
 				},
-				Resource: keyIds,
+				Resource: kmsKeyIDs.List(),
 			})
 		}
 	}
