@@ -69,7 +69,7 @@ func TestPopulateCluster_Docker_Spec(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.Docker = &api.DockerConfig{
 		MTU:              fi.Int(5678),
-		InsecureRegistry: "myregistry.com:1234",
+		InsecureRegistry: fi.String("myregistry.com:1234"),
 	}
 
 	err := c.PerformAssignments()
@@ -89,7 +89,7 @@ func TestPopulateCluster_Docker_Spec(t *testing.T) {
 		t.Fatalf("Unexpected Docker MTU: %v", full.Spec.Docker.MTU)
 	}
 
-	if full.Spec.Docker.InsecureRegistry != "myregistry.com:1234" {
+	if fi.StringValue(full.Spec.Docker.InsecureRegistry) != "myregistry.com:1234" {
 		t.Fatalf("Unexpected Docker InsecureRegistry: %v", full.Spec.Docker.InsecureRegistry)
 	}
 }
