@@ -43,6 +43,20 @@ func Int64(v int64) *int64 {
 	return &v
 }
 
+func Int64Value(v *int64) int64 {
+	if v == nil {
+		return 0
+	}
+	return *v
+}
+
+func Uint64Value(v *uint64) uint64 {
+	if v == nil {
+		return 0
+	}
+	return *v
+}
+
 func DebugPrint(o interface{}) string {
 	if o == nil {
 		return "<nil>"
