@@ -168,10 +168,6 @@ type ClusterSpec struct {
 	//
 	//TestCluster                   string `json:",omitempty"`
 	//
-	//DockerOptions                 string `json:",omitempty"`
-	//DockerStorage                 string `json:",omitempty"`
-	//ExtraDockerOpts               string `json:",omitempty"`
-	//
 	//E2EStorageTestEnvironment     string `json:",omitempty"`
 	//KubeletTestArgs               string `json:",omitempty"`
 	//KubeletTestLogLevel           string `json:",omitempty"`

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/util/validation"
+	"k8s.io/kubernetes/pkg/util/validation/field"
 	"net"
 	"net/url"
 	"strings"
@@ -343,4 +344,21 @@ func isSubnet(parent *net.IPNet, child *net.IPNet) bool {
 // subnetsOverlap checks if two subnets overlap
 func subnetsOverlap(l *net.IPNet, r *net.IPNet) bool {
 	return l.Contains(r.IP) || r.Contains(l.IP)
+}
+
+func IsValidValue(fldPath *field.Path, v *string, validValues []string) field.ErrorList {
+	allErrs := field.ErrorList{}
+	if v != nil {
+		found := false
+		for _, validValue := range validValues {
+			if *v == validValue {
+				found = true
+				break
+			}
+		}
+		if !found {
+			allErrs = append(allErrs, field.NotSupported(fldPath, *v, validValues))
+		}
+	}
+	return allErrs
 }
