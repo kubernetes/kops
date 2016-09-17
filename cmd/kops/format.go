@@ -103,10 +103,6 @@ func (t *Table) Render(items interface{}, out io.Writer, columnNames ...string) 
 	}
 
 	SortByFunction(n, func(i, j int) {
-		a := itemsValue.Index(i)
-		itemsValue.Index(i).Set(itemsValue.Index(j))
-		itemsValue.Index(j).Set(a)
-
 		row := rows[i]
 		rows[i] = rows[j]
 		rows[j] = row
