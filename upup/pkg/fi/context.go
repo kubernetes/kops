@@ -18,15 +18,18 @@ type Context struct {
 	SecretStore SecretStore
 
 	CheckExisting bool
+
+	tasks map[string]Task
 }
 
-func NewContext(target Target, cloud Cloud, castore CAStore, secretStore SecretStore, checkExisting bool) (*Context, error) {
+func NewContext(target Target, cloud Cloud, castore CAStore, secretStore SecretStore, checkExisting bool, tasks map[string]Task) (*Context, error) {
 	c := &Context{
 		Cloud:         cloud,
 		Target:        target,
 		CAStore:       castore,
 		SecretStore:   secretStore,
 		CheckExisting: checkExisting,
+		tasks:         tasks,
 	}
 
 	t, err := ioutil.TempDir("", "deploy")
@@ -38,11 +41,15 @@ func NewContext(target Target, cloud Cloud, castore CAStore, secretStore SecretS
 	return c, nil
 }
 
-func (c *Context) RunTasks(taskMap map[string]Task, maxAttemptsWithNoProgress int) error {
+func (c *Context) AllTasks() map[string]Task {
+	return c.tasks
+}
+
+func (c *Context) RunTasks(maxAttemptsWithNoProgress int) error {
 	e := &executor{
 		context: c,
 	}
-	return e.RunTasks(taskMap, maxAttemptsWithNoProgress)
+	return e.RunTasks(c.tasks, maxAttemptsWithNoProgress)
 }
 
 func (c *Context) Close() {
