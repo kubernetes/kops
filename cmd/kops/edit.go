@@ -7,8 +7,7 @@ import (
 // editCmd represents the edit command
 var editCmd = &cobra.Command{
 	Use:   "edit",
-	Short: "edit clusters",
-	Long:  `edit clusters`,
+	Short: "edit items",
 }
 
 func init() {
