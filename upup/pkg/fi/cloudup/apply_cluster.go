@@ -492,13 +492,13 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 	}
 
-	context, err := fi.NewContext(target, cloud, keyStore, secretStore, checkExisting)
+	context, err := fi.NewContext(target, cloud, keyStore, secretStore, checkExisting, taskMap)
 	if err != nil {
 		return fmt.Errorf("error building context: %v", err)
 	}
 	defer context.Close()
 
-	err = context.RunTasks(taskMap, MaxAttemptsWithNoProgress)
+	err = context.RunTasks(MaxAttemptsWithNoProgress)
 	if err != nil {
 		return fmt.Errorf("error running tasks: %v", err)
 	}

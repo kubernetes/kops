@@ -17,6 +17,7 @@ iamInstanceProfileRole/masters.{{ ClusterName }}:
 securityGroup/masters.{{ ClusterName }}:
   vpc: vpc/{{ ClusterName }}
   description: 'Security group for masters'
+  removeExtraRules: true
 
 # Allow full egress
 securityGroupRule/master-egress:
