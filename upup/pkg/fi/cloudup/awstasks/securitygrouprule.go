@@ -58,55 +58,16 @@ func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 
 	var foundRule *ec2.IpPermission
 
-	matchProtocol := "-1" // Wildcard
-	if e.Protocol != nil {
-		matchProtocol = *e.Protocol
-	}
-
 	ipPermissions := sg.IpPermissions
 	if fi.BoolValue(e.Egress) {
 		ipPermissions = sg.IpPermissionsEgress
 	}
 
 	for _, rule := range ipPermissions {
-		if aws.Int64Value(rule.FromPort) != aws.Int64Value(e.FromPort) {
-			continue
+		if e.matches(rule) {
+			foundRule = rule
+			break
 		}
-		if aws.Int64Value(rule.ToPort) != aws.Int64Value(e.ToPort) {
-			continue
-		}
-		if aws.StringValue(rule.IpProtocol) != matchProtocol {
-			continue
-		}
-		if e.CIDR != nil {
-			// TODO: Only if len 1?
-			match := false
-			for _, ipRange := range rule.IpRanges {
-				if aws.StringValue(ipRange.CidrIp) == *e.CIDR {
-					match = true
-					break
-				}
-			}
-			if !match {
-				continue
-			}
-		}
-
-		if e.SourceGroup != nil {
-			// TODO: Only if len 1?
-			match := false
-			for _, spec := range rule.UserIdGroupPairs {
-				if aws.StringValue(spec.GroupId) == *e.SourceGroup.ID {
-					match = true
-					break
-				}
-			}
-			if !match {
-				continue
-			}
-		}
-		foundRule = rule
-		break
 	}
 
 	if foundRule != nil {
@@ -132,6 +93,52 @@ func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 	}
 
 	return nil, nil
+}
+
+func (e *SecurityGroupRule) matches(rule *ec2.IpPermission) bool {
+	if aws.Int64Value(rule.FromPort) != aws.Int64Value(e.FromPort) {
+		return false
+	}
+	if aws.Int64Value(rule.ToPort) != aws.Int64Value(e.ToPort) {
+		return false
+	}
+
+	matchProtocol := "-1" // Wildcard
+	if e.Protocol != nil {
+		matchProtocol = *e.Protocol
+	}
+	if aws.StringValue(rule.IpProtocol) != matchProtocol {
+		return false
+	}
+
+	if e.CIDR != nil {
+		// TODO: Only if len 1?
+		match := false
+		for _, ipRange := range rule.IpRanges {
+			if aws.StringValue(ipRange.CidrIp) == *e.CIDR {
+				match = true
+				break
+			}
+		}
+		if !match {
+			return false
+		}
+	}
+
+	if e.SourceGroup != nil {
+		// TODO: Only if len 1?
+		match := false
+		for _, spec := range rule.UserIdGroupPairs {
+			if aws.StringValue(spec.GroupId) == *e.SourceGroup.ID {
+				match = true
+				break
+			}
+		}
+		if !match {
+			return false
+		}
+	}
+	return true
 }
 
 func (e *SecurityGroupRule) Run(c *fi.Context) error {
