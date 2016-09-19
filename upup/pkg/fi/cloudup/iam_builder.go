@@ -72,7 +72,12 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 			Action:   []string{"route53:*"},
 			Resource: []string{"*"},
 		})
+	}
 
+	{
+		// We provide ECR access on the nodes (naturally), but we also provide access on the master.
+		// We shouldn't be running lots of pods on the master, but it is perfectly reasonable to run
+		// a private logging pod or similar.
 		p.Statement = append(p.Statement, &IAMStatement{
 			Effect: IAMStatementEffectAllow,
 			Action: []string{
