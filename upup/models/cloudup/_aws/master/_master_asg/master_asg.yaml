@@ -16,9 +16,9 @@ launchConfiguration/{{ $m.Name }}.masters.{{ ClusterName }}:
   spotPrice: "{{ $m.Spec.MaxPrice }}"
 {{ end }}
 
-autoscalingGroup/{{ $m.Name}}.masters.{{ ClusterName }}:
-  minSize: 1
-  maxSize: 1
+autoscalingGroup/{{ $m.Name }}.masters.{{ ClusterName }}:
+  minSize: {{ $m.Spec.MinSize }}
+  maxSize: {{ $m.Spec.MaxSize }}
   subnets:
   {{ range $z := $m.Spec.Zones }}
     - subnet/{{ $z }}.{{ ClusterName }}
