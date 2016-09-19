@@ -521,6 +521,9 @@ type KubeControllerManagerConfig struct {
 }
 
 type KubeSchedulerConfig struct {
+	Master   string `json:"master,omitempty" flag:"master"`
+	LogLevel int    `json:"logLevel,omitempty" flag:"v"`
+
 	Image string `json:"image,omitempty"`
 
 	// Configuration flags - a subset of https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
