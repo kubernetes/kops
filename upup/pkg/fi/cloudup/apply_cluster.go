@@ -548,10 +548,11 @@ func validateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 	}
 
 	var matches []dnsprovider.Zone
+	findName := strings.TrimSuffix(cluster.Spec.DNSZone, ".")
 	for _, zone := range zones {
 		id := zone.ID()
-		name := zone.Name()
-		if id == cluster.Spec.DNSZone || name == cluster.Spec.DNSZone {
+		name := strings.TrimSuffix(zone.Name(), ".")
+		if id == cluster.Spec.DNSZone || name == findName {
 			matches = append(matches, zone)
 		}
 	}
