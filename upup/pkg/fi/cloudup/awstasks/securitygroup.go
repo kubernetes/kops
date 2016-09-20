@@ -6,7 +6,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
-	"github.com/kopeio/aws-controller/pkg/kope/utils"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -165,7 +164,7 @@ type deleteSecurityGroupRule struct {
 var _ fi.Deletion = &deleteSecurityGroupRule{}
 
 func (d *deleteSecurityGroupRule) Delete(t fi.Target) error {
-	glog.V(2).Infof("deleting security group permission: %v", utils.DebugString(d.permission))
+	glog.V(2).Infof("deleting security group permission: %v", fi.DebugAsJsonString(d.permission))
 
 	awsTarget, ok := t.(*awsup.AWSAPITarget)
 	if !ok {
@@ -221,7 +220,7 @@ func (d *deleteSecurityGroupRule) Item() string {
 	for _, r := range p.IpRanges {
 		s += fmt.Sprintf(" ip=%s", aws.StringValue(r.CidrIp))
 	}
-	//permissionString := utils.DebugString(d.permission)
+	//permissionString := fi.DebugAsJsonString(d.permission)
 	//s += permissionString
 
 	return s
