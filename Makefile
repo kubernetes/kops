@@ -5,7 +5,10 @@ S3_BUCKET?=s3://must-override/
 GCS_LOCATION?=gs://must-override
 GOPATH_1ST=$(shell echo ${GOPATH} | cut -d : -f 1)
 UNIQUE:=$(shell date +%s)
-GOVERSION=1.7
+GOVERSION=1.6
+
+# See http://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
+MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 
 TAG=1.3
 
@@ -72,7 +75,7 @@ crossbuild:
 
 crossbuild-in-docker:
 	docker pull golang:${GOVERSION} # Keep golang image up to date
-	docker run --name=kops-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile crossbuild
+	docker run --name=kops-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile crossbuild
 	docker cp kops-build-${UNIQUE}:/go/.build .
 
 kops-dist: crossbuild-in-docker
@@ -139,7 +142,7 @@ nodeup-gocode: gobindata
 
 nodeup-dist:
 	docker pull golang:${GOVERSION} # Keep golang image up to date
-	docker run --name=nodeup-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile nodeup-gocode
+	docker run --name=nodeup-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile nodeup-gocode
 	mkdir -p .build/dist
 	docker cp nodeup-build-${UNIQUE}:/go/bin/nodeup .build/dist/
 	(sha1sum .build/dist/nodeup | cut -d' ' -f1) > .build/dist/nodeup.sha1
