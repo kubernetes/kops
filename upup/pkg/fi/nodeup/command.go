@@ -204,13 +204,13 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("unsupported target type %q", c.Target)
 	}
 
-	context, err := fi.NewContext(target, cloud, caStore, secretStore, checkExisting)
+	context, err := fi.NewContext(target, cloud, caStore, secretStore, checkExisting, taskMap)
 	if err != nil {
 		glog.Exitf("error building context: %v", err)
 	}
 	defer context.Close()
 
-	err = context.RunTasks(taskMap, MaxAttemptsWithNoProgress)
+	err = context.RunTasks(MaxAttemptsWithNoProgress)
 	if err != nil {
 		glog.Exitf("error running tasks: %v", err)
 	}

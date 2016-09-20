@@ -15,7 +15,8 @@ import (
 // By running against a DryRunTarget, a list of changes that would be made can be easily collected,
 // without any special support from the Tasks.
 type DryRunTarget struct {
-	changes []*render
+	changes   []*render
+	deletions []Deletion
 
 	// The destination to which the final report will be printed on Finish()
 	out io.Writer
@@ -46,6 +47,11 @@ func (t *DryRunTarget) Render(a, e, changes Task) error {
 		e:       e,
 		changes: changes,
 	})
+	return nil
+}
+
+func (t *DryRunTarget) Delete(deletion Deletion) error {
+	t.deletions = append(t.deletions, deletion)
 	return nil
 }
 
@@ -179,6 +185,13 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 		}
 	}
 
+	if len(t.deletions) != 0 {
+		fmt.Fprintf(b, "Will delete items:\n")
+		for _, d := range t.deletions {
+			fmt.Fprintf(b, "  %s\t%s\n", d.TaskName(), d.Item())
+		}
+	}
+
 	_, err := out.Write(b.Bytes())
 	return err
 }
@@ -281,5 +294,5 @@ func (t *DryRunTarget) Finish(taskMap map[string]Task) error {
 
 // HasChanges returns true iff any changes would have been made
 func (t *DryRunTarget) HasChanges() bool {
-	return len(t.changes) != 0
+	return len(t.changes)+len(t.deletions) != 0
 }

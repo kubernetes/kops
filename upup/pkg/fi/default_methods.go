@@ -31,16 +31,37 @@ func DefaultDeltaRunMethod(e Task, c *Context) error {
 	changes := reflect.New(reflect.TypeOf(e).Elem()).Interface().(Task)
 	changed := BuildChanges(a, e, changes)
 
-	if !changed {
-		return nil
+	if changed {
+		err = invokeCheckChanges(a, e, changes)
+		if err != nil {
+			return err
+		}
+
+		err = c.Render(a, e, changes)
+		if err != nil {
+			return err
+		}
 	}
 
-	err = invokeCheckChanges(a, e, changes)
-	if err != nil {
-		return err
+	if producesDeletions, ok := e.(ProducesDeletions); ok {
+		var deletions []Deletion
+		deletions, err = producesDeletions.FindDeletions(c)
+		if err != nil {
+			return err
+		}
+		for _, deletion := range deletions {
+			if _, ok := c.Target.(*DryRunTarget); ok {
+				err = c.Target.(*DryRunTarget).Delete(deletion)
+			} else {
+				err = deletion.Delete(c.Target)
+			}
+			if err != nil {
+				return err
+			}
+		}
 	}
 
-	return c.Render(a, e, changes)
+	return nil
 }
 
 // invokeCheckChanges calls the checkChanges method by reflection
