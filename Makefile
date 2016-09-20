@@ -1,20 +1,35 @@
 all: kops
 
-DOCKER_REGISTRY=gcr.io/must-override/
-S3_BUCKET=s3://must-override/
+DOCKER_REGISTRY?=gcr.io/must-override/
+S3_BUCKET?=s3://must-override/
+GCS_LOCATION?=gs://must-override
 GOPATH_1ST=$(shell echo ${GOPATH} | cut -d : -f 1)
+UNIQUE:=$(shell date +%s)
+GOVERSION=1.7
 
 TAG=1.3
 
 ifndef VERSION
-  VERSION := git-$(shell git rev-parse --short HEAD)
+  VERSION := git-$(shell git describe --always)
+endif
+
+# Go exports:
+
+GO15VENDOREXPERIMENT=1
+export GO15VENDOREXPERIMENT
+
+ifdef STATIC_BUILD
+  CGO_ENABLED=0
+  export CGO_ENABLED
+  EXTRA_BUILDFLAGS=-installsuffix cgo
+  EXTRA_LDFLAGS=-s
 endif
 
 kops: gobindata
-	GO15VENDOREXPERIMENT=1 go install -ldflags "-X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/kops/...
+	go install ${EXTRA_BUILDFLAGS} -ldflags "-X main.BuildVersion=${VERSION} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/...
 
 gobindata:
-	GO15VENDOREXPERIMENT=1 go build -o ${GOPATH_1ST}/bin/go-bindata k8s.io/kops/vendor/github.com/jteeuwen/go-bindata/go-bindata
+	go build ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS}" -o ${GOPATH_1ST}/bin/go-bindata k8s.io/kops/vendor/github.com/jteeuwen/go-bindata/go-bindata
 	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOPATH_1ST}/bin/go-bindata -o upup/models/bindata.go -pkg models -prefix upup/models/ upup/models/cloudup/... upup/models/config/... upup/models/nodeup/... upup/models/proto/...
 
 # Build in a docker container with golang 1.X
@@ -29,13 +44,13 @@ check-builds-in-go17:
 	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.7 make -f /go/src/k8s.io/kops/Makefile kops
 
 codegen: gobindata
-	GO15VENDOREXPERIMENT=1 go install k8s.io/kops/upup/tools/generators/...
-	GO15VENDOREXPERIMENT=1 PATH=${GOPATH_1ST}/bin:${PATH} go generate k8s.io/kops/upup/pkg/fi/cloudup/awstasks
-	GO15VENDOREXPERIMENT=1 PATH=${GOPATH_1ST}/bin:${PATH} go generate k8s.io/kops/upup/pkg/fi/cloudup/gcetasks
-	GO15VENDOREXPERIMENT=1 PATH=${GOPATH_1ST}/bin:${PATH} go generate k8s.io/kops/upup/pkg/fi/fitasks
+	go install k8s.io/kops/upup/tools/generators/...
+	PATH=${GOPATH_1ST}/bin:${PATH} go generate k8s.io/kops/upup/pkg/fi/cloudup/awstasks
+	PATH=${GOPATH_1ST}/bin:${PATH} go generate k8s.io/kops/upup/pkg/fi/cloudup/gcetasks
+	PATH=${GOPATH_1ST}/bin:${PATH} go generate k8s.io/kops/upup/pkg/fi/fitasks
 
 test:
-	GO15VENDOREXPERIMENT=1 go test k8s.io/kops/upup/pkg/... -args -v=1 -logtostderr
+	go test k8s.io/kops/upup/pkg/... -args -v=1 -logtostderr
 
 godeps:
 	# I think strip-vendor is the workaround for 25572
@@ -51,26 +66,37 @@ gofmt:
 
 crossbuild:
 	mkdir -p .build/dist/
-	GOOS=darwin GOARCH=amd64 go build -o .build/dist/darwin/amd64/kops -ldflags "-X main.BuildVersion=${VERSION}" -v k8s.io/kops/cmd/kops/...
-	GOOS=linux GOARCH=amd64 go build -o .build/dist/linux/amd64/kops -ldflags "-X main.BuildVersion=${VERSION}" -v k8s.io/kops/cmd/kops/...
+	GOOS=darwin GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/darwin/amd64/kops -ldflags "${EXTRA_LDFLAGS} -X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/kops/...
+	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/linux/amd64/kops -ldflags "${EXTRA_LDFLAGS} -X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/kops/...
 	#GOOS=windows GOARCH=amd64 go build -o .build/dist/windows/amd64/kops -ldflags "-X main.BuildVersion=${VERSION}" -v k8s.io/kops/cmd/kops/...
 
-kops-dist: crossbuild
+crossbuild-in-docker:
+	docker pull golang:${GOVERSION} # Keep golang image up to date
+	docker run --name=kops-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile crossbuild
+	docker cp kops-build-${UNIQUE}:/go/.build .
+
+kops-dist: crossbuild-in-docker
 	mkdir -p .build/dist/
 	(sha1sum .build/dist/darwin/amd64/kops | cut -d' ' -f1) > .build/dist/darwin/amd64/kops.sha1
 	(sha1sum .build/dist/linux/amd64/kops | cut -d' ' -f1) > .build/dist/linux/amd64/kops.sha1
 
-upload: nodeup-dist kops-dist
-	rm -rf .build/s3
-	mkdir -p .build/s3/kops/${VERSION}/linux/amd64/
-	mkdir -p .build/s3/kops/${VERSION}/darwin/amd64/
-	cp .build/dist/nodeup .build/s3/kops/${VERSION}/linux/amd64/nodeup
-	cp .build/dist/nodeup.sha1 .build/s3/kops/${VERSION}/linux/amd64/nodeup.sha1
-	cp .build/dist/linux/amd64/kops .build/s3/kops/${VERSION}/linux/amd64/kops
-	cp .build/dist/linux/amd64/kops.sha1 .build/s3/kops/${VERSION}/linux/amd64/kops.sha1
-	cp .build/dist/darwin/amd64/kops .build/s3/kops/${VERSION}/darwin/amd64/kops
-	cp .build/dist/darwin/amd64/kops.sha1 .build/s3/kops/${VERSION}/darwin/amd64/kops.sha1
-	aws s3 sync --acl public-read .build/s3/ ${S3_BUCKET}
+version-dist: nodeup-dist kops-dist
+	rm -rf .build/upload
+	mkdir -p .build/upload/kops/${VERSION}/linux/amd64/
+	mkdir -p .build/upload/kops/${VERSION}/darwin/amd64/
+	cp .build/dist/nodeup .build/upload/kops/${VERSION}/linux/amd64/nodeup
+	cp .build/dist/nodeup.sha1 .build/upload/kops/${VERSION}/linux/amd64/nodeup.sha1
+	cp .build/dist/linux/amd64/kops .build/upload/kops/${VERSION}/linux/amd64/kops
+	cp .build/dist/linux/amd64/kops.sha1 .build/upload/kops/${VERSION}/linux/amd64/kops.sha1
+	cp .build/dist/darwin/amd64/kops .build/upload/kops/${VERSION}/darwin/amd64/kops
+	cp .build/dist/darwin/amd64/kops.sha1 .build/upload/kops/${VERSION}/darwin/amd64/kops.sha1
+
+upload: version-dist
+	aws s3 sync --acl public-read .build/upload/ ${S3_BUCKET}
+
+
+gcs-upload: version-dist
+	gsutil -m rsync -r .build/upload/kops ${GCS_LOCATION}
 
 push: nodeup-dist
 	scp -C .build/dist/nodeup  ${TARGET}:/tmp/
@@ -109,17 +135,13 @@ protokube-push: protokube-image
 nodeup: nodeup-dist
 
 nodeup-gocode: gobindata
-	go install -ldflags "-X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/nodeup
+	go install ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS} -X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/nodeup
 
-nodeup-builder-image:
-	docker build -t nodeup-builder images/nodeup-builder
-
-nodeup-build-in-docker: nodeup-builder-image
-	docker run -it -e VERSION=${VERSION} -v `pwd`:/src nodeup-builder /onbuild.sh
-
-nodeup-dist: nodeup-build-in-docker
+nodeup-dist:
+	docker pull golang:${GOVERSION} # Keep golang image up to date
+	docker run --name=nodeup-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile nodeup-gocode
 	mkdir -p .build/dist
-	cp .build/artifacts/nodeup .build/dist/
+	docker cp nodeup-build-${UNIQUE}:/go/bin/nodeup .build/dist/
 	(sha1sum .build/dist/nodeup | cut -d' ' -f1) > .build/dist/nodeup.sha1
 
 
