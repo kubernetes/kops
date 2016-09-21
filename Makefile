@@ -3,6 +3,8 @@ all: kops
 DOCKER_REGISTRY?=gcr.io/must-override/
 S3_BUCKET?=s3://must-override/
 GCS_LOCATION?=gs://must-override
+GCS_URL=$(GCS_LOCATION:gs://%=http://storage.googleapis.com/%)
+LATEST_FILE?=latest-ci.txt
 GOPATH_1ST=$(shell echo ${GOPATH} | cut -d : -f 1)
 UNIQUE:=$(shell date +%s)
 GOVERSION=1.6
@@ -97,9 +99,12 @@ version-dist: nodeup-dist kops-dist
 upload: version-dist
 	aws s3 sync --acl public-read .build/upload/ ${S3_BUCKET}
 
-
 gcs-upload: version-dist
 	gsutil -m rsync -r .build/upload/kops ${GCS_LOCATION}
+
+gcs-publish-ci: gcs-upload
+	echo "${GCS_URL}/${VERSION}" > .build/upload/${LATEST_FILE}
+	gsutil cp .build/upload/${LATEST_FILE} ${GCS_LOCATION}
 
 push: nodeup-dist
 	scp -C .build/dist/nodeup  ${TARGET}:/tmp/
