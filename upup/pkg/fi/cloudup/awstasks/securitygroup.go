@@ -257,7 +257,13 @@ func expandPermissions(sgID *string, permission *ec2.IpPermission, egress bool) 
 	return rules
 }
 
+// security group deletion is temporarily reverted - #478
 func (e *SecurityGroup) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
+	return nil, nil
+}
+
+// security group deletion is temporarily reverted - #478
+func (e *SecurityGroup) revertedFindDeletions(c *fi.Context) ([]fi.Deletion, error) {
 	var removals []fi.Deletion
 
 	if fi.BoolValue(e.RemoveExtraRules) != true {
