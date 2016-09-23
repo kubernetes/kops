@@ -18,6 +18,8 @@ For example, to use Ubuntu 16.04, you could specify:
 
 `image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20160830`
 
+You can find the name for an image using e.g. `aws ec2 describe-images --image-id ami-a3641cb4`
+
 (Please note that ubuntu is currently undergoing validation testing with k8s - use at your own risk!)
 
 If you are creating a new cluster you can use the `--image` flag when running `kops create cluster`,
