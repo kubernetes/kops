@@ -46,3 +46,34 @@ spec:
 
 The [e2e](../e2e/README.md) directory has a docker image and some scripts which make it easy to run
 the kubernetes e2e tests, using kops.
+
+### Uploading a custom build
+
+If you want to upload a custom build, here is one way to do so:
+
+```
+make quick-release
+cd ./_output/release-tars/
+# ??? rm -rf kubernetes/
+tar zxf kubernetes-server-linux-amd64.tar.gz
+
+rm kubernetes/server/bin/federation*
+rm kubernetes/server/bin/hyperkube
+rm kubernetes/server/bin/kube-apiserver
+rm kubernetes/server/bin/kube-controller-manager
+rm kubernetes/server/bin/kube-dns
+rm kubernetes/server/bin/kubemark
+rm kubernetes/server/bin/kube-proxy
+rm kubernetes/server/bin/kube-scheduler
+
+find kubernetes/server/bin -type f -name "*.tar" | xargs -I {} /bin/bash -c "sha1sum {} | cut -f1 -d ' ' > {}.sha1"
+find kubernetes/server/bin -type f -name "kube???" | xargs -I {} /bin/bash -c "sha1sum {} | cut -f1 -d ' ' > {}.sha1"
+
+aws s3 sync  --acl public-read  kubernetes/server/bin/ s3://${S3_BUCKET_NAME}/kubernetes/dev/bin/linux/amd64/
+```
+
+Then:
+
+* `kops create cluster ... --kubernetes-version https://${S3_BUCKET_NAME}.s3.amazonaws.com/kubernetes/dev/`
+
+* for an existing cluster: `kops edit cluster` and set `KubernetesVersion` to `https://${S3_BUCKET_NAME}.s3.amazonaws.com/kubernetes/dev/`
