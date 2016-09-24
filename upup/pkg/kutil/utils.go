@@ -9,8 +9,8 @@ import (
 )
 
 // findAutoscalingGroups finds autoscaling groups matching the specified tags
-// This isn't entirely trivial because autoscaling doesn't let us filter with as much precision as we wouldlike
-func findAutoscalingGroups(cloud *awsup.AWSCloud, tags map[string]string) ([]*autoscaling.Group, error) {
+// This isn't entirely trivial because autoscaling doesn't let us filter with as much precision as we would like
+func findAutoscalingGroups(cloud awsup.AWSCloud, tags map[string]string) ([]*autoscaling.Group, error) {
 	var asgs []*autoscaling.Group
 
 	glog.V(2).Infof("Listing all Autoscaling groups matching cluster tags")
@@ -28,7 +28,7 @@ func findAutoscalingGroups(cloud *awsup.AWSCloud, tags map[string]string) ([]*au
 			Filters: asFilters,
 		}
 
-		err := cloud.Autoscaling.DescribeTagsPages(request, func(p *autoscaling.DescribeTagsOutput, lastPage bool) bool {
+		err := cloud.Autoscaling().DescribeTagsPages(request, func(p *autoscaling.DescribeTagsOutput, lastPage bool) bool {
 			for _, t := range p.Tags {
 				switch *t.ResourceType {
 				case "auto-scaling-group":
@@ -49,7 +49,7 @@ func findAutoscalingGroups(cloud *awsup.AWSCloud, tags map[string]string) ([]*au
 		request := &autoscaling.DescribeAutoScalingGroupsInput{
 			AutoScalingGroupNames: asgNames,
 		}
-		err := cloud.Autoscaling.DescribeAutoScalingGroupsPages(request, func(p *autoscaling.DescribeAutoScalingGroupsOutput, lastPage bool) bool {
+		err := cloud.Autoscaling().DescribeAutoScalingGroupsPages(request, func(p *autoscaling.DescribeAutoScalingGroupsOutput, lastPage bool) bool {
 			for _, asg := range p.AutoScalingGroups {
 				if !matchesAsgTags(tags, asg.Tags) {
 					// We used an inexact filter above
@@ -68,7 +68,7 @@ func findAutoscalingGroups(cloud *awsup.AWSCloud, tags map[string]string) ([]*au
 	return asgs, nil
 }
 
-func findAutoscalingLaunchConfiguration(cloud *awsup.AWSCloud, name string) (*autoscaling.LaunchConfiguration, error) {
+func findAutoscalingLaunchConfiguration(cloud awsup.AWSCloud, name string) (*autoscaling.LaunchConfiguration, error) {
 	glog.V(2).Infof("Retrieving Autoscaling LaunchConfigurations %q", name)
 
 	var results []*autoscaling.LaunchConfiguration
@@ -76,7 +76,7 @@ func findAutoscalingLaunchConfiguration(cloud *awsup.AWSCloud, name string) (*au
 	request := &autoscaling.DescribeLaunchConfigurationsInput{
 		LaunchConfigurationNames: []*string{&name},
 	}
-	err := cloud.Autoscaling.DescribeLaunchConfigurationsPages(request, func(p *autoscaling.DescribeLaunchConfigurationsOutput, lastPage bool) bool {
+	err := cloud.Autoscaling().DescribeLaunchConfigurationsPages(request, func(p *autoscaling.DescribeLaunchConfigurationsOutput, lastPage bool) bool {
 		for _, t := range p.LaunchConfigurations {
 			results = append(results, t)
 		}

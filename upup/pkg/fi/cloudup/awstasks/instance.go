@@ -41,7 +41,7 @@ func (s *Instance) CompareWithID() *string {
 }
 
 func (e *Instance) Find(c *fi.Context) (*Instance, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	filters := cloud.BuildFilters(e.Name)
 	filters = append(filters, awsup.NewEC2Filter("instance-state-name", "pending", "running", "stopping", "stopped"))
@@ -49,7 +49,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 		Filters: filters,
 	}
 
-	response, err := cloud.EC2.DescribeInstances(request)
+	response, err := cloud.EC2().DescribeInstances(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing instances: %v", err)
 	}
@@ -91,7 +91,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 		request := &ec2.DescribeInstanceAttributeInput{}
 		request.InstanceId = i.InstanceId
 		request.Attribute = aws.String("userData")
-		response, err := cloud.EC2.DescribeInstanceAttribute(request)
+		response, err := cloud.EC2().DescribeInstanceAttribute(request)
 		if err != nil {
 			return nil, fmt.Errorf("error querying EC2 for user metadata for instance %q: %v", *i.InstanceId, err)
 		}
@@ -163,7 +163,7 @@ func nameFromIAMARN(arn *string) *string {
 }
 
 func (e *Instance) Run(c *fi.Context) error {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	cloud.AddTags(e.Name, e.Tags)
 
@@ -252,7 +252,7 @@ func (_ *Instance) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Instance) err
 			}
 		}
 
-		response, err := t.Cloud.EC2.RunInstances(request)
+		response, err := t.Cloud.EC2().RunInstances(request)
 		if err != nil {
 			return fmt.Errorf("error creating Instance: %v", err)
 		}

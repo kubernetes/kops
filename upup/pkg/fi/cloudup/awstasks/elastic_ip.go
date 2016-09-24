@@ -26,7 +26,7 @@ type ElasticIP struct {
 var _ fi.HasAddress = &ElasticIP{}
 
 func (e *ElasticIP) FindAddress(context *fi.Context) (*string, error) {
-	actual, err := e.find(context.Cloud.(*awsup.AWSCloud))
+	actual, err := e.find(context.Cloud.(awsup.AWSCloud))
 	if err != nil {
 		return nil, fmt.Errorf("error querying for ElasticIP: %v", err)
 	}
@@ -37,10 +37,10 @@ func (e *ElasticIP) FindAddress(context *fi.Context) (*string, error) {
 }
 
 func (e *ElasticIP) Find(context *fi.Context) (*ElasticIP, error) {
-	return e.find(context.Cloud.(*awsup.AWSCloud))
+	return e.find(context.Cloud.(awsup.AWSCloud))
 }
 
-func (e *ElasticIP) findTagOnResourceID(cloud *awsup.AWSCloud) (*string, error) {
+func (e *ElasticIP) findTagOnResourceID(cloud awsup.AWSCloud) (*string, error) {
 	if e.TagOnResource == nil {
 		return nil, nil
 	}
@@ -58,7 +58,7 @@ func (e *ElasticIP) findTagOnResourceID(cloud *awsup.AWSCloud) (*string, error) 
 	return id, err
 }
 
-func (e *ElasticIP) find(cloud *awsup.AWSCloud) (*ElasticIP, error) {
+func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
 	publicIP := e.PublicIP
 	allocationID := e.ID
 
@@ -76,7 +76,7 @@ func (e *ElasticIP) find(cloud *awsup.AWSCloud) (*ElasticIP, error) {
 			Filters: filters,
 		}
 
-		response, err := cloud.EC2.DescribeTags(request)
+		response, err := cloud.EC2().DescribeTags(request)
 		if err != nil {
 			return nil, fmt.Errorf("error listing tags: %v", err)
 		}
@@ -101,7 +101,7 @@ func (e *ElasticIP) find(cloud *awsup.AWSCloud) (*ElasticIP, error) {
 			request.Filters = []*ec2.Filter{awsup.NewEC2Filter("public-ip", *publicIP)}
 		}
 
-		response, err := cloud.EC2.DescribeAddresses(request)
+		response, err := cloud.EC2().DescribeAddresses(request)
 		if err != nil {
 			return nil, fmt.Errorf("error listing ElasticIPs: %v", err)
 		}
@@ -156,7 +156,7 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 		request := &ec2.AllocateAddressInput{}
 		request.Domain = aws.String(ec2.DomainTypeVpc)
 
-		response, err := t.Cloud.EC2.AllocateAddress(request)
+		response, err := t.Cloud.EC2().AllocateAddress(request)
 		if err != nil {
 			return fmt.Errorf("error creating ElasticIP: %v", err)
 		}

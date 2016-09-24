@@ -21,7 +21,7 @@ type RollingUpdateCluster struct {
 }
 
 func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroups []*api.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*CloudInstanceGroup, error) {
-	awsCloud := cloud.(*awsup.AWSCloud)
+	awsCloud := cloud.(awsup.AWSCloud)
 
 	groups := make(map[string]*CloudInstanceGroup)
 
@@ -207,7 +207,7 @@ func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group, nodeMa
 }
 
 func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, k8sClient *release_1_3.Clientset) error {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	update := n.NeedUpdate
 	if force {
@@ -227,7 +227,7 @@ func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, k8sClient
 		request := &ec2.TerminateInstancesInput{
 			InstanceIds: []*string{i.ASGInstance.InstanceId},
 		}
-		_, err := c.EC2.TerminateInstances(request)
+		_, err := c.EC2().TerminateInstances(request)
 		if err != nil {
 			return fmt.Errorf("error deleting instance %q: %v", i.ASGInstance.InstanceId, err)
 		}
@@ -240,7 +240,7 @@ func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, k8sClient
 }
 
 func (g *CloudInstanceGroup) Delete(cloud fi.Cloud) error {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	// TODO: Graceful?
 
@@ -252,7 +252,7 @@ func (g *CloudInstanceGroup) Delete(cloud fi.Cloud) error {
 			AutoScalingGroupName: g.asg.AutoScalingGroupName,
 			ForceDelete:          aws.Bool(true),
 		}
-		_, err := c.Autoscaling.DeleteAutoScalingGroup(request)
+		_, err := c.Autoscaling().DeleteAutoScalingGroup(request)
 		if err != nil {
 			return fmt.Errorf("error deleting autoscaling group %q: %v", asgName, err)
 		}
@@ -265,7 +265,7 @@ func (g *CloudInstanceGroup) Delete(cloud fi.Cloud) error {
 		request := &autoscaling.DeleteLaunchConfigurationInput{
 			LaunchConfigurationName: g.asg.LaunchConfigurationName,
 		}
-		_, err := c.Autoscaling.DeleteLaunchConfiguration(request)
+		_, err := c.Autoscaling().DeleteLaunchConfiguration(request)
 		if err != nil {
 			return fmt.Errorf("error deleting autoscaling launch configuration %q: %v", lcName, err)
 		}

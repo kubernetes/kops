@@ -24,7 +24,7 @@ func (e *RouteTable) CompareWithID() *string {
 }
 
 func (e *RouteTable) Find(c *fi.Context) (*RouteTable, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	request := &ec2.DescribeRouteTablesInput{}
 	if e.ID != nil {
@@ -33,7 +33,7 @@ func (e *RouteTable) Find(c *fi.Context) (*RouteTable, error) {
 		request.Filters = cloud.BuildFilters(e.Name)
 	}
 
-	response, err := cloud.EC2.DescribeRouteTables(request)
+	response, err := cloud.EC2().DescribeRouteTables(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing RouteTables: %v", err)
 	}
@@ -88,7 +88,7 @@ func (_ *RouteTable) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *RouteTable)
 			VpcId: vpcID,
 		}
 
-		response, err := t.Cloud.EC2.CreateRouteTable(request)
+		response, err := t.Cloud.EC2().CreateRouteTable(request)
 		if err != nil {
 			return fmt.Errorf("error creating RouteTable: %v", err)
 		}
@@ -106,7 +106,7 @@ type terraformRouteTable struct {
 }
 
 func (_ *RouteTable) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *RouteTable) error {
-	cloud := t.Cloud.(*awsup.AWSCloud)
+	cloud := t.Cloud.(awsup.AWSCloud)
 
 	tf := &terraformRouteTable{
 		VPCID: e.VPC.TerraformLink(),

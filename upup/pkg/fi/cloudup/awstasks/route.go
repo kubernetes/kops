@@ -22,7 +22,7 @@ type Route struct {
 }
 
 func (e *Route) Find(c *fi.Context) (*Route, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	if e.RouteTable == nil || e.CIDR == nil {
 		// TODO: Move to validate?
@@ -37,7 +37,7 @@ func (e *Route) Find(c *fi.Context) (*Route, error) {
 		RouteTableIds: []*string{e.RouteTable.ID},
 	}
 
-	response, err := cloud.EC2.DescribeRouteTables(request)
+	response, err := cloud.EC2().DescribeRouteTables(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing RouteTables: %v", err)
 	}
@@ -134,7 +134,7 @@ func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
 
 		glog.V(2).Infof("Creating Route with RouteTable:%q CIDR:%q", *e.RouteTable.ID, *e.CIDR)
 
-		response, err := t.Cloud.EC2.CreateRoute(request)
+		response, err := t.Cloud.EC2().CreateRoute(request)
 		if err != nil {
 			return fmt.Errorf("error creating Route: %v", err)
 		}
@@ -157,7 +157,7 @@ func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
 
 		glog.V(2).Infof("Updating Route with RouteTable:%q CIDR:%q", *e.RouteTable.ID, *e.CIDR)
 
-		_, err := t.Cloud.EC2.ReplaceRoute(request)
+		_, err := t.Cloud.EC2().ReplaceRoute(request)
 		if err != nil {
 			return fmt.Errorf("error updating Route: %v", err)
 		}

@@ -28,7 +28,7 @@ func (e *Subnet) CompareWithID() *string {
 }
 
 func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	request := &ec2.DescribeSubnetsInput{}
 	if e.ID != nil {
@@ -37,7 +37,7 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 		request.Filters = cloud.BuildFilters(e.Name)
 	}
 
-	response, err := cloud.EC2.DescribeSubnets(request)
+	response, err := cloud.EC2().DescribeSubnets(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing Subnets: %v", err)
 	}
@@ -118,7 +118,7 @@ func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 			VpcId:            e.VPC.ID,
 		}
 
-		response, err := t.Cloud.EC2.CreateSubnet(request)
+		response, err := t.Cloud.EC2().CreateSubnet(request)
 		if err != nil {
 			return fmt.Errorf("error creating subnet: %v", err)
 		}
@@ -153,7 +153,7 @@ type terraformSubnet struct {
 }
 
 func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Subnet) error {
-	cloud := t.Cloud.(*awsup.AWSCloud)
+	cloud := t.Cloud.(awsup.AWSCloud)
 
 	shared := fi.BoolValue(e.Shared)
 	if shared {

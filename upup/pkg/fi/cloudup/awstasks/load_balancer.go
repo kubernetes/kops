@@ -56,13 +56,13 @@ func (e *LoadBalancerListener) GetDependencies(tasks map[string]fi.Task) []fi.Ta
 	return nil
 }
 
-func findELB(cloud *awsup.AWSCloud, name string) (*elb.LoadBalancerDescription, error) {
+func findELB(cloud awsup.AWSCloud, name string) (*elb.LoadBalancerDescription, error) {
 	request := &elb.DescribeLoadBalancersInput{
 		LoadBalancerNames: []*string{&name},
 	}
 
 	var found []*elb.LoadBalancerDescription
-	err := cloud.ELB.DescribeLoadBalancersPages(request, func(p *elb.DescribeLoadBalancersOutput, lastPage bool) (shouldContinue bool) {
+	err := cloud.ELB().DescribeLoadBalancersPages(request, func(p *elb.DescribeLoadBalancersOutput, lastPage bool) (shouldContinue bool) {
 		for _, lb := range p.LoadBalancerDescriptions {
 			if aws.StringValue(lb.LoadBalancerName) == name {
 				found = append(found, lb)
@@ -96,7 +96,7 @@ func findELB(cloud *awsup.AWSCloud, name string) (*elb.LoadBalancerDescription, 
 }
 
 func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	elbName := fi.StringValue(e.ID)
 	if elbName == "" {
@@ -206,7 +206,7 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 
 		glog.V(2).Infof("Creating ELB with Name:%q", *e.ID)
 
-		response, err := t.Cloud.ELB.CreateLoadBalancer(request)
+		response, err := t.Cloud.ELB().CreateLoadBalancer(request)
 		if err != nil {
 			return fmt.Errorf("error creating ELB: %v", err)
 		}
@@ -244,7 +244,7 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 
 			glog.V(2).Infof("Creating LoadBalancer listeners")
 
-			_, err := t.Cloud.ELB.CreateLoadBalancerListeners(request)
+			_, err := t.Cloud.ELB().CreateLoadBalancerListeners(request)
 			if err != nil {
 				return fmt.Errorf("error creating LoadBalancerListeners: %v", err)
 			}
