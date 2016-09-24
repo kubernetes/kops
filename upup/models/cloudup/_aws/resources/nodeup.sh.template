@@ -114,6 +114,7 @@ function run-nodeup() {
 
 ####################################################################################
 
+/bin/systemd-machine-id-setup || echo "failed to set up ensure machine-id configured"
 
 echo "== nodeup node config starting =="
 ensure-install-dir
