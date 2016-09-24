@@ -359,7 +359,7 @@ type KubeAPIServerConfig struct {
 	Address               string            `json:"address,omitempty" flag:"address"`
 	EtcdServers           string            `json:"etcdServers,omitempty" flag:"etcd-servers"`
 	EtcdServersOverrides  string            `json:"etcdServersOverrides,omitempty" flag:"etcd-servers-overrides"`
-	AdmissionControl      []string          `json:"admissionControl,omitempty" flag:"admission-control"`
+	AdmissionControl      string            `json:"admissionControl,omitempty" flag:"admission-control"`
 	ServiceClusterIPRange string            `json:"serviceClusterIPRange,omitempty" flag:"service-cluster-ip-range"`
 	ClientCAFile          string            `json:"clientCAFile,omitempty" flag:"client-ca-file"`
 	BasicAuthFile         string            `json:"basicAuthFile,omitempty" flag:"basic-auth-file"`
