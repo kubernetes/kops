@@ -1,16 +1,16 @@
 package main
 
 import (
-	"fmt"
-
 	"bytes"
+	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
-	"os"
-	"path/filepath"
 )
 
 type EditInstanceGroupCmd struct {
@@ -26,14 +26,14 @@ func init() {
 		Long:    `Edit an instancegroup configuration.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
-				glog.Exitf("Specify name of instance group to edit")
+				exitWithError(fmt.Errorf("Specify name of instance group to edit"))
 			}
 			if len(args) != 1 {
-				glog.Exitf("Can only edit one instance group at a time!")
+				exitWithError(fmt.Errorf("Can only edit one instance group at a time!"))
 			}
 			err := editInstanceGroupCmd.Run(args[0])
 			if err != nil {
-				glog.Exitf("%v", err)
+				exitWithError(err)
 			}
 		},
 	}

@@ -1,16 +1,15 @@
 package main
 
 import (
-	"fmt"
-
 	"bytes"
-	"github.com/golang/glog"
+	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
-	"os"
-	"path/filepath"
 )
 
 type EditClusterCmd struct {
@@ -26,7 +25,7 @@ func init() {
 		Run: func(cmd *cobra.Command, args []string) {
 			err := editClusterCmd.Run(args)
 			if err != nil {
-				glog.Exitf("%v", err)
+				exitWithError(err)
 			}
 		},
 	}
