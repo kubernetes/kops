@@ -105,7 +105,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 
 			defer wg.Done()
 
-			err := group.RollingUpdate(c.Cloud, force)
+			err := group.RollingUpdate(c.Cloud, force, k8sClient)
 
 			resultsMutex.Lock()
 			results[k] = err

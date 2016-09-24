@@ -16,7 +16,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/vfs"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	"os"
-	"path"
 	"strings"
 )
 
