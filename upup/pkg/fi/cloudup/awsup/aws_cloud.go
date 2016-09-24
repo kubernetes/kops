@@ -96,8 +96,8 @@ func (c *awsCloudImplementation) Region() string {
 var awsCloudInstances map[string]AWSCloud = make(map[string]AWSCloud)
 
 func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
-	c := awsCloudInstances[region]
-	if c == nil {
+	raw := awsCloudInstances[region]
+	if raw == nil {
 		c := &awsCloudImplementation{region: region}
 
 		config := aws.NewConfig().WithRegion(region)
@@ -108,9 +108,10 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		c.route53 = route53.New(session.New(), config)
 
 		awsCloudInstances[region] = c
+		raw = c
 	}
 
-	i := c.WithTags(tags)
+	i := raw.WithTags(tags)
 
 	return i, nil
 }
