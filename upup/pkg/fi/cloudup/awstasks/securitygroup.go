@@ -53,7 +53,7 @@ func (e *SecurityGroup) Find(c *fi.Context) (*SecurityGroup, error) {
 }
 
 func (e *SecurityGroup) findEc2(c *fi.Context) (*ec2.SecurityGroup, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	var vpcID *string
 	if e.VPC != nil {
@@ -76,7 +76,7 @@ func (e *SecurityGroup) findEc2(c *fi.Context) (*ec2.SecurityGroup, error) {
 		request.Filters = cloud.BuildFilters(e.Name)
 	}
 
-	response, err := cloud.EC2.DescribeSecurityGroups(request)
+	response, err := cloud.EC2().DescribeSecurityGroups(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing SecurityGroups: %v", err)
 	}
@@ -120,7 +120,7 @@ func (_ *SecurityGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Security
 			Description: e.Description,
 		}
 
-		response, err := t.Cloud.EC2.CreateSecurityGroup(request)
+		response, err := t.Cloud.EC2().CreateSecurityGroup(request)
 		if err != nil {
 			return fmt.Errorf("error creating SecurityGroup: %v", err)
 		}
@@ -139,7 +139,7 @@ type terraformSecurityGroup struct {
 }
 
 func (_ *SecurityGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SecurityGroup) error {
-	cloud := t.Cloud.(*awsup.AWSCloud)
+	cloud := t.Cloud.(awsup.AWSCloud)
 
 	tf := &terraformSecurityGroup{
 		Name:        e.Name,
@@ -178,7 +178,7 @@ func (d *deleteSecurityGroupRule) Delete(t fi.Target) error {
 		request.IpPermissions = []*ec2.IpPermission{d.permission}
 
 		glog.V(2).Infof("Calling EC2 RevokeSecurityGroupEgress")
-		_, err := awsTarget.Cloud.EC2.RevokeSecurityGroupEgress(request)
+		_, err := awsTarget.Cloud.EC2().RevokeSecurityGroupEgress(request)
 		if err != nil {
 			return fmt.Errorf("error revoking SecurityGroupEgress: %v", err)
 		}
@@ -189,7 +189,7 @@ func (d *deleteSecurityGroupRule) Delete(t fi.Target) error {
 		request.IpPermissions = []*ec2.IpPermission{d.permission}
 
 		glog.V(2).Infof("Calling EC2 RevokeSecurityGroupIngress")
-		_, err := awsTarget.Cloud.EC2.RevokeSecurityGroupIngress(request)
+		_, err := awsTarget.Cloud.EC2().RevokeSecurityGroupIngress(request)
 		if err != nil {
 			return fmt.Errorf("error revoking SecurityGroupIngress: %v", err)
 		}

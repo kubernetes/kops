@@ -24,7 +24,7 @@ func (s *RouteTableAssociation) CompareWithID() *string {
 }
 
 func (e *RouteTableAssociation) Find(c *fi.Context) (*RouteTableAssociation, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	routeTableID := e.RouteTable.ID
 	subnetID := e.Subnet.ID
@@ -37,7 +37,7 @@ func (e *RouteTableAssociation) Find(c *fi.Context) (*RouteTableAssociation, err
 		RouteTableIds: []*string{routeTableID},
 	}
 
-	response, err := cloud.EC2.DescribeRouteTables(request)
+	response, err := cloud.EC2().DescribeRouteTables(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing RouteTables: %v", err)
 	}
@@ -91,7 +91,7 @@ func (s *RouteTableAssociation) CheckChanges(a, e, changes *RouteTableAssociatio
 	return nil
 }
 
-func findExistingRouteTableForSubnet(cloud *awsup.AWSCloud, subnet *Subnet) (*ec2.RouteTable, error) {
+func findExistingRouteTableForSubnet(cloud awsup.AWSCloud, subnet *Subnet) (*ec2.RouteTable, error) {
 	if subnet == nil {
 		return nil, fmt.Errorf("subnet not set")
 	}
@@ -102,7 +102,7 @@ func findExistingRouteTableForSubnet(cloud *awsup.AWSCloud, subnet *Subnet) (*ec
 	request := &ec2.DescribeRouteTablesInput{
 		Filters: []*ec2.Filter{awsup.NewEC2Filter("association.subnet-id", fi.StringValue(subnet.ID))},
 	}
-	response, err := cloud.EC2.DescribeRouteTables(request)
+	response, err := cloud.EC2().DescribeRouteTables(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing RouteTables: %v", err)
 	}
@@ -137,7 +137,7 @@ func (_ *RouteTableAssociation) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *
 					AssociationId: a.RouteTableAssociationId,
 				}
 
-				_, err := t.Cloud.EC2.DisassociateRouteTable(request)
+				_, err := t.Cloud.EC2().DisassociateRouteTable(request)
 				if err != nil {
 					return fmt.Errorf("error disassociating existing RouteTable from subnet: %v", err)
 				}
@@ -150,7 +150,7 @@ func (_ *RouteTableAssociation) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *
 			RouteTableId: e.RouteTable.ID,
 		}
 
-		response, err := t.Cloud.EC2.AssociateRouteTable(request)
+		response, err := t.Cloud.EC2().AssociateRouteTable(request)
 		if err != nil {
 			return fmt.Errorf("error creating RouteTableAssociation: %v", err)
 		}

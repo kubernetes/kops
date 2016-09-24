@@ -27,7 +27,7 @@ func (e *DNSZone) CompareWithID() *string {
 }
 
 func (e *DNSZone) Find(c *fi.Context) (*DNSZone, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	z, err := e.findExisting(cloud)
 	if err != nil {
@@ -49,7 +49,7 @@ func (e *DNSZone) Find(c *fi.Context) (*DNSZone, error) {
 	return actual, nil
 }
 
-func (e *DNSZone) findExisting(cloud *awsup.AWSCloud) (*route53.HostedZone, error) {
+func (e *DNSZone) findExisting(cloud awsup.AWSCloud) (*route53.HostedZone, error) {
 	findID := ""
 	if e.ID != nil {
 		findID = *e.ID
@@ -62,7 +62,7 @@ func (e *DNSZone) findExisting(cloud *awsup.AWSCloud) (*route53.HostedZone, erro
 			Id: aws.String(findID),
 		}
 
-		response, err := cloud.Route53.GetHostedZone(request)
+		response, err := cloud.Route53().GetHostedZone(request)
 		if err != nil {
 			if awsup.AWSErrorCode(err) == "NoSuchHostedZone" {
 				if e.ID != nil {
@@ -88,7 +88,7 @@ func (e *DNSZone) findExisting(cloud *awsup.AWSCloud) (*route53.HostedZone, erro
 		DNSName: aws.String(findName),
 	}
 
-	response, err := cloud.Route53.ListHostedZonesByName(request)
+	response, err := cloud.Route53().ListHostedZonesByName(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing DNS HostedZones: %v", err)
 	}
@@ -129,7 +129,7 @@ func (_ *DNSZone) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSZone) error
 
 		glog.V(2).Infof("Creating Route53 HostedZone with Name %q", e.Name)
 
-		response, err := t.Cloud.Route53.CreateHostedZone(request)
+		response, err := t.Cloud.Route53().CreateHostedZone(request)
 		if err != nil {
 			return fmt.Errorf("error creating DNS HostedZone: %v", err)
 		}
@@ -148,7 +148,7 @@ type terraformRoute53Zone struct {
 }
 
 func (_ *DNSZone) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *DNSZone) error {
-	cloud := t.Cloud.(*awsup.AWSCloud)
+	cloud := t.Cloud.(awsup.AWSCloud)
 
 	// As a special case, we check for an existing zone
 	// It is really painful to have TF create a new one...

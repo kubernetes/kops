@@ -37,13 +37,13 @@ func (e *SSHKey) CompareWithID() *string {
 }
 
 func (e *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	request := &ec2.DescribeKeyPairsInput{
 		KeyNames: []*string{e.Name},
 	}
 
-	response, err := cloud.EC2.DescribeKeyPairs(request)
+	response, err := cloud.EC2().DescribeKeyPairs(request)
 	if awsErr, ok := err.(awserr.Error); ok {
 		if awsErr.Code() == "InvalidKeyPair.NotFound" {
 			return nil, nil
@@ -212,7 +212,7 @@ func (_ *SSHKey) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SSHKey) error {
 			request.PublicKeyMaterial = d
 		}
 
-		response, err := t.Cloud.EC2.ImportKeyPair(request)
+		response, err := t.Cloud.EC2().ImportKeyPair(request)
 		if err != nil {
 			return fmt.Errorf("error creating SSHKey: %v", err)
 		}

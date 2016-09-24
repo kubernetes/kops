@@ -5,11 +5,14 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/vfs"
 	"k8s.io/kubernetes/pkg/util/sets"
 	"strings"
 	"testing"
 )
+
+const MockAWSRegion = "us-mock-1"
 
 func buildInmemoryClusterRegistry() *api.ClusterRegistry {
 	memfs := vfs.NewMemFSContext()
@@ -48,6 +51,8 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 		}
 	}
 
+	awsup.InstallMockAWSCloud(MockAWSRegion, "abcd")
+
 	fullSpec, err := PopulateClusterSpec(c, registry)
 	if err != nil {
 		t.Fatalf("error from PopulateClusterSpec: %v", err)
@@ -57,8 +62,8 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 	//c.Cluster = &api.Cluster{}
 	//c.Cluster.Name = "testcluster.mydomain.com"
 
-	//c.InstanceGroups = append(c.InstanceGroups, buildNodeInstanceGroup("us-east-1a"))
-	//c.InstanceGroups = append(c.InstanceGroups, buildMasterInstanceGroup("us-east-1a"))
+	//c.InstanceGroups = append(c.InstanceGroups, buildNodeInstanceGroup("us-mock-1a"))
+	//c.InstanceGroups = append(c.InstanceGroups, buildMasterInstanceGroup("us-mock-1a"))
 	//c.SSHPublicKey = path.Join(os.Getenv("HOME"), ".ssh", "id_rsa.pub")
 	//
 	//c.Cluster.Spec.Kubelet = &api.KubeletConfig{}
@@ -175,13 +180,13 @@ func expectNoErrorFromValidate(t *testing.T, c *api.Cluster) {
 //	c.Cluster = &api.Cluster{}
 //	c.Cluster.Name = "testcluster.mydomain.com"
 //	c.Cluster.Spec.Zones = []*api.ClusterZoneSpec{
-//		{Name: "us-east-1a", CIDR: "172.20.1.0/24"},
-//		{Name: "us-east-1b", CIDR: "172.20.2.0/24"},
-//		{Name: "us-east-1c", CIDR: "172.20.3.0/24"},
-//		{Name: "us-east-1d", CIDR: "172.20.4.0/24"},
+//		{Name: "us-mock-1a", CIDR: "172.20.1.0/24"},
+//		{Name: "us-mock-1b", CIDR: "172.20.2.0/24"},
+//		{Name: "us-mock-1c", CIDR: "172.20.3.0/24"},
+//		{Name: "us-mock-1d", CIDR: "172.20.4.0/24"},
 //	}
-//	c.InstanceGroups = append(c.InstanceGroups, buildNodeInstanceGroup("us-east-1a"))
-//	c.InstanceGroups = append(c.InstanceGroups, buildMasterInstanceGroup("us-east-1a"))
+//	c.InstanceGroups = append(c.InstanceGroups, buildNodeInstanceGroup("us-mock-1a"))
+//	c.InstanceGroups = append(c.InstanceGroups, buildMasterInstanceGroup("us-mock-1a"))
 //	c.SSHPublicKey = path.Join(os.Getenv("HOME"), ".ssh", "id_rsa.pub")
 //
 //	c.Cluster.Spec.Kubelet = &api.KubeletConfig{}

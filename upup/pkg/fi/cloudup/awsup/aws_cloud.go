@@ -23,36 +23,96 @@ const MaxCreateTagsAttempts = 60
 
 const TagClusterName = "KubernetesCluster"
 
-type AWSCloud struct {
-	EC2         *ec2.EC2
-	IAM         *iam.IAM
-	ELB         *elb.ELB
-	Autoscaling *autoscaling.AutoScaling
-	Route53     *route53.Route53
+type AWSCloud interface {
+	fi.Cloud
 
-	Region string
+	Region() string
+
+	EC2() *ec2.EC2
+	IAM() *iam.IAM
+	ELB() *elb.ELB
+	Autoscaling() *autoscaling.AutoScaling
+	Route53() *route53.Route53
+
+	// TODO: Document and rationalize these tags/filters methods
+	AddTags(name *string, tags map[string]string)
+	BuildFilters(name *string) []*ec2.Filter
+	BuildTags(name *string) map[string]string
+	Tags() map[string]string
+
+	// GetTags will fetch the tags for the specified resource, retrying (up to MaxDescribeTagsAttempts) if it hits an eventual-consistency type error
+	GetTags(resourceId string) (map[string]string, error)
+
+	// CreateTags will add tags to the specified resource, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
+	CreateTags(resourceId string, tags map[string]string) error
+
+	AddAWSTags(id string, expected map[string]string) error
+	GetELBTags(loadBalancerName string) (map[string]string, error)
+
+	// CreateELBTags will add tags to the specified loadBalancer, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
+	CreateELBTags(loadBalancerName string, tags map[string]string) error
+
+	// DescribeInstance is a helper that queries for the specified instance by id
+	DescribeInstance(instanceID string) (*ec2.Instance, error)
+
+	// DescribeVPC is a helper that queries for the specified vpc by id
+	DescribeVPC(vpcID string) (*ec2.Vpc, error)
+
+	DescribeAvailabilityZones() ([]*ec2.AvailabilityZone, error)
+
+	// ResolveImage finds an AMI image based on the given name.
+	// The name can be one of:
+	// `ami-...` in which case it is presumed to be an id
+	// owner/name in which case we find the image with the specified name, owned by owner
+	// name in which case we find the image with the specified name, with the current owner
+	ResolveImage(name string) (*ec2.Image, error)
+
+	// WithTags created a copy of AWSCloud with the specified default-tags bound
+	WithTags(tags map[string]string) AWSCloud
+}
+
+type awsCloudImplementation struct {
+	ec2         *ec2.EC2
+	iam         *iam.IAM
+	elb         *elb.ELB
+	autoscaling *autoscaling.AutoScaling
+	route53     *route53.Route53
+
+	region string
 
 	tags map[string]string
 }
 
-var _ fi.Cloud = &AWSCloud{}
+var _ fi.Cloud = &awsCloudImplementation{}
 
-func (c *AWSCloud) ProviderID() fi.CloudProviderID {
+func (c *awsCloudImplementation) ProviderID() fi.CloudProviderID {
 	return fi.CloudProviderAWS
 }
 
-func NewAWSCloud(region string, tags map[string]string) (*AWSCloud, error) {
-	c := &AWSCloud{Region: region}
+func (c *awsCloudImplementation) Region() string {
+	return c.region
+}
 
-	config := aws.NewConfig().WithRegion(region)
-	c.EC2 = ec2.New(session.New(), config)
-	c.IAM = iam.New(session.New(), config)
-	c.ELB = elb.New(session.New(), config)
-	c.Autoscaling = autoscaling.New(session.New(), config)
-	c.Route53 = route53.New(session.New(), config)
+var awsCloudInstances map[string]AWSCloud = make(map[string]AWSCloud)
 
-	c.tags = tags
-	return c, nil
+func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
+	c := awsCloudInstances[region]
+	if c == nil {
+		c := &awsCloudImplementation{region: region}
+
+		config := aws.NewConfig().WithRegion(region)
+		c.ec2 = ec2.New(session.New(), config)
+		c.iam = iam.New(session.New(), config)
+		c.elb = elb.New(session.New(), config)
+		c.autoscaling = autoscaling.New(session.New(), config)
+		c.route53 = route53.New(session.New(), config)
+
+		awsCloudInstances[region] = c
+	}
+
+	i := c.WithTags(tags)
+
+	return i, nil
 }
 
 func NewEC2Filter(name string, values ...string) *ec2.Filter {
@@ -67,13 +127,20 @@ func NewEC2Filter(name string, values ...string) *ec2.Filter {
 	return filter
 }
 
-func (c *AWSCloud) Tags() map[string]string {
+func (c *awsCloudImplementation) Tags() map[string]string {
 	// Defensive copy
 	tags := make(map[string]string)
 	for k, v := range c.tags {
 		tags[k] = v
 	}
 	return tags
+}
+
+func (c *awsCloudImplementation) WithTags(tags map[string]string) AWSCloud {
+	i := &awsCloudImplementation{}
+	*i = *c
+	i.tags = tags
+	return i
 }
 
 // isTagsEventualConsistencyError checks if the error is one of the errors encountered when we try to create/get tags before the resource has fully 'propagated' in EC2
@@ -91,7 +158,7 @@ func isTagsEventualConsistencyError(err error) bool {
 }
 
 // GetTags will fetch the tags for the specified resource, retrying (up to MaxDescribeTagsAttempts) if it hits an eventual-consistency type error
-func (c *AWSCloud) GetTags(resourceId string) (map[string]string, error) {
+func (c *awsCloudImplementation) GetTags(resourceId string) (map[string]string, error) {
 	tags := map[string]string{}
 
 	request := &ec2.DescribeTagsInput{
@@ -104,7 +171,7 @@ func (c *AWSCloud) GetTags(resourceId string) (map[string]string, error) {
 	for {
 		attempt++
 
-		response, err := c.EC2.DescribeTags(request)
+		response, err := c.EC2().DescribeTags(request)
 		if err != nil {
 			if isTagsEventualConsistencyError(err) {
 				if attempt > MaxDescribeTagsAttempts {
@@ -132,7 +199,7 @@ func (c *AWSCloud) GetTags(resourceId string) (map[string]string, error) {
 }
 
 // CreateTags will add tags to the specified resource, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
-func (c *AWSCloud) CreateTags(resourceId string, tags map[string]string) error {
+func (c *awsCloudImplementation) CreateTags(resourceId string, tags map[string]string) error {
 	if len(tags) == 0 {
 		return nil
 	}
@@ -151,7 +218,7 @@ func (c *AWSCloud) CreateTags(resourceId string, tags map[string]string) error {
 			Resources: []*string{&resourceId},
 		}
 
-		_, err := c.EC2.CreateTags(request)
+		_, err := c.EC2().CreateTags(request)
 		if err != nil {
 			if isTagsEventualConsistencyError(err) {
 				if attempt > MaxCreateTagsAttempts {
@@ -171,7 +238,7 @@ func (c *AWSCloud) CreateTags(resourceId string, tags map[string]string) error {
 }
 
 // DeleteTags will remove tags from the specified resource, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
-func (c *AWSCloud) DeleteTags(resourceId string, tags map[string]string) error {
+func (c *awsCloudImplementation) DeleteTags(resourceId string, tags map[string]string) error {
 	if len(tags) == 0 {
 		return nil
 	}
@@ -190,7 +257,7 @@ func (c *AWSCloud) DeleteTags(resourceId string, tags map[string]string) error {
 			Resources: []*string{&resourceId},
 		}
 
-		_, err := c.EC2.DeleteTags(request)
+		_, err := c.EC2().DeleteTags(request)
 		if err != nil {
 			if isTagsEventualConsistencyError(err) {
 				if attempt > MaxCreateTagsAttempts {
@@ -209,7 +276,7 @@ func (c *AWSCloud) DeleteTags(resourceId string, tags map[string]string) error {
 	}
 }
 
-func (c *AWSCloud) AddAWSTags(id string, expected map[string]string) error {
+func (c *awsCloudImplementation) AddAWSTags(id string, expected map[string]string) error {
 	actual, err := c.GetTags(id)
 	if err != nil {
 		return fmt.Errorf("unexpected error fetching tags for resource: %v", err)
@@ -236,7 +303,7 @@ func (c *AWSCloud) AddAWSTags(id string, expected map[string]string) error {
 	return nil
 }
 
-func (c *AWSCloud) GetELBTags(loadBalancerName string) (map[string]string, error) {
+func (c *awsCloudImplementation) GetELBTags(loadBalancerName string) (map[string]string, error) {
 	tags := map[string]string{}
 
 	request := &elb.DescribeTagsInput{
@@ -247,7 +314,7 @@ func (c *AWSCloud) GetELBTags(loadBalancerName string) (map[string]string, error
 	for {
 		attempt++
 
-		response, err := c.ELB.DescribeTags(request)
+		response, err := c.ELB().DescribeTags(request)
 		if err != nil {
 			return nil, fmt.Errorf("error listing tags on %v: %v", loadBalancerName, err)
 		}
@@ -263,7 +330,7 @@ func (c *AWSCloud) GetELBTags(loadBalancerName string) (map[string]string, error
 }
 
 // CreateELBTags will add tags to the specified loadBalancer, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
-func (c *AWSCloud) CreateELBTags(loadBalancerName string, tags map[string]string) error {
+func (c *awsCloudImplementation) CreateELBTags(loadBalancerName string, tags map[string]string) error {
 	if len(tags) == 0 {
 		return nil
 	}
@@ -282,7 +349,7 @@ func (c *AWSCloud) CreateELBTags(loadBalancerName string, tags map[string]string
 			LoadBalancerNames: []*string{&loadBalancerName},
 		}
 
-		_, err := c.ELB.AddTags(request)
+		_, err := c.ELB().AddTags(request)
 		if err != nil {
 			return fmt.Errorf("error creating tags on %v: %v", loadBalancerName, err)
 		}
@@ -291,7 +358,7 @@ func (c *AWSCloud) CreateELBTags(loadBalancerName string, tags map[string]string
 	}
 }
 
-func (c *AWSCloud) BuildTags(name *string) map[string]string {
+func (c *awsCloudImplementation) BuildTags(name *string) map[string]string {
 	tags := make(map[string]string)
 	if name != nil {
 		tags["Name"] = *name
@@ -304,7 +371,7 @@ func (c *AWSCloud) BuildTags(name *string) map[string]string {
 	return tags
 }
 
-func (c *AWSCloud) AddTags(name *string, tags map[string]string) {
+func (c *awsCloudImplementation) AddTags(name *string, tags map[string]string) {
 	if name != nil {
 		tags["Name"] = *name
 	}
@@ -313,7 +380,7 @@ func (c *AWSCloud) AddTags(name *string, tags map[string]string) {
 	}
 }
 
-func (c *AWSCloud) BuildFilters(name *string) []*ec2.Filter {
+func (c *awsCloudImplementation) BuildFilters(name *string) []*ec2.Filter {
 	filters := []*ec2.Filter{}
 
 	merged := make(map[string]string)
@@ -334,13 +401,13 @@ func (c *AWSCloud) BuildFilters(name *string) []*ec2.Filter {
 }
 
 // DescribeInstance is a helper that queries for the specified instance by id
-func (t *AWSCloud) DescribeInstance(instanceID string) (*ec2.Instance, error) {
+func (t *awsCloudImplementation) DescribeInstance(instanceID string) (*ec2.Instance, error) {
 	glog.V(2).Infof("Calling DescribeInstances for instance %q", instanceID)
 	request := &ec2.DescribeInstancesInput{
 		InstanceIds: []*string{&instanceID},
 	}
 
-	response, err := t.EC2.DescribeInstances(request)
+	response, err := t.EC2().DescribeInstances(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing Instances: %v", err)
 	}
@@ -365,13 +432,13 @@ func (t *AWSCloud) DescribeInstance(instanceID string) (*ec2.Instance, error) {
 }
 
 // DescribeVPC is a helper that queries for the specified vpc by id
-func (t *AWSCloud) DescribeVPC(vpcID string) (*ec2.Vpc, error) {
+func (t *awsCloudImplementation) DescribeVPC(vpcID string) (*ec2.Vpc, error) {
 	glog.V(2).Infof("Calling DescribeVPC for VPC %q", vpcID)
 	request := &ec2.DescribeVpcsInput{
 		VpcIds: []*string{&vpcID},
 	}
 
-	response, err := t.EC2.DescribeVpcs(request)
+	response, err := t.EC2().DescribeVpcs(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing VPCs: %v", err)
 	}
@@ -391,7 +458,7 @@ func (t *AWSCloud) DescribeVPC(vpcID string) (*ec2.Vpc, error) {
 // `ami-...` in which case it is presumed to be an id
 // owner/name in which case we find the image with the specified name, owned by owner
 // name in which case we find the image with the specified name, with the current owner
-func (c *AWSCloud) ResolveImage(name string) (*ec2.Image, error) {
+func (c *awsCloudImplementation) ResolveImage(name string) (*ec2.Image, error) {
 	// TODO: Cache this result during a single execution (we get called multiple times)
 	glog.V(2).Infof("Calling DescribeImages to resolve name %q", name)
 	request := &ec2.DescribeImagesInput{}
@@ -414,7 +481,7 @@ func (c *AWSCloud) ResolveImage(name string) (*ec2.Image, error) {
 		}
 	}
 
-	response, err := c.EC2.DescribeImages(request)
+	response, err := c.EC2().DescribeImages(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing images: %v", err)
 	}
@@ -430,28 +497,39 @@ func (c *AWSCloud) ResolveImage(name string) (*ec2.Image, error) {
 	return image, nil
 }
 
-// ValidateZones checks that every zone in the sliced passed is recognized
-func (c *AWSCloud) ValidateZones(zones []string) error {
-	glog.V(2).Infof("Querying EC2 for all valid zones in region %q", c.Region)
+func (c *awsCloudImplementation) DescribeAvailabilityZones() ([]*ec2.AvailabilityZone, error) {
+	glog.V(2).Infof("Querying EC2 for all valid zones in region %q", c.region)
 
 	request := &ec2.DescribeAvailabilityZonesInput{}
-	response, err := c.EC2.DescribeAvailabilityZones(request)
-
+	response, err := c.EC2().DescribeAvailabilityZones(request)
 	if err != nil {
-		return fmt.Errorf("Got an error while querying for valid AZs in %q (verify your AWS credentials?)", c.Region)
+		return nil, fmt.Errorf("Got an error while querying for valid AZs in %q (verify your AWS credentials?)", c.region)
+	}
+
+	return response.AvailabilityZones, nil
+}
+
+// ValidateZones checks that every zone in the sliced passed is recognized
+func ValidateZones(zones []string, cloud AWSCloud) error {
+	azs, err := cloud.DescribeAvailabilityZones()
+	if err != nil {
+		return err
 	}
 
 	zoneMap := make(map[string]*ec2.AvailabilityZone)
-	var knownZones []string
-	for _, z := range response.AvailabilityZones {
+	for _, z := range azs {
 		name := aws.StringValue(z.ZoneName)
 		zoneMap[name] = z
-		knownZones = append(knownZones, name)
 	}
 
 	for _, zone := range zones {
 		z := zoneMap[zone]
 		if z == nil {
+			var knownZones []string
+			for z := range zoneMap {
+				knownZones = append(knownZones, z)
+			}
+
 			glog.Infof("Known zones: %q", strings.Join(knownZones, ","))
 			return fmt.Errorf("Zone is not a recognized AZ: %q (check you have specified a valid zone?)", zone)
 		}
@@ -468,7 +546,7 @@ func (c *AWSCloud) ValidateZones(zones []string) error {
 	return nil
 }
 
-func (c *AWSCloud) DNS() (dnsprovider.Interface, error) {
+func (c *awsCloudImplementation) DNS() (dnsprovider.Interface, error) {
 	provider, err := dnsprovider.GetDnsProvider(k8sroute53.ProviderName, nil)
 	if err != nil {
 		return nil, fmt.Errorf("Error building (k8s) DNS provider: %v", err)
@@ -476,14 +554,14 @@ func (c *AWSCloud) DNS() (dnsprovider.Interface, error) {
 	return provider, nil
 }
 
-func (c *AWSCloud) FindDNSHostedZone(clusterDNSName string) (string, error) {
+func (c *awsCloudImplementation) FindDNSHostedZone(clusterDNSName string) (string, error) {
 	glog.V(2).Infof("Querying for all route53 zones to find match for %q", clusterDNSName)
 
 	clusterDNSName = "." + strings.TrimSuffix(clusterDNSName, ".")
 
 	var zones []*route53.HostedZone
 	request := &route53.ListHostedZonesInput{}
-	err := c.Route53.ListHostedZonesPages(request, func(p *route53.ListHostedZonesOutput, lastPage bool) bool {
+	err := c.Route53().ListHostedZonesPages(request, func(p *route53.ListHostedZonesOutput, lastPage bool) bool {
 		for _, zone := range p.HostedZones {
 			zoneName := aws.StringValue(zone.Name)
 			zoneName = "." + strings.TrimSuffix(zoneName, ".")
@@ -531,4 +609,24 @@ func (c *AWSCloud) FindDNSHostedZone(clusterDNSName string) (string, error) {
 	}
 
 	return "", fmt.Errorf("Found multiple hosted zones matching cluster %q; please specify the ID of the zone to use", clusterDNSName)
+}
+
+func (c *awsCloudImplementation) EC2() *ec2.EC2 {
+	return c.ec2
+}
+
+func (c *awsCloudImplementation) IAM() *iam.IAM {
+	return c.iam
+}
+
+func (c *awsCloudImplementation) ELB() *elb.ELB {
+	return c.elb
+}
+
+func (c *awsCloudImplementation) Autoscaling() *autoscaling.AutoScaling {
+	return c.autoscaling
+}
+
+func (c *awsCloudImplementation) Route53() *route53.Route53 {
+	return c.route53
 }

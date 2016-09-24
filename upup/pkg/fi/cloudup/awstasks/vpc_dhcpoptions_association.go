@@ -20,7 +20,7 @@ func (e *VPCDHCPOptionsAssociation) String() string {
 }
 
 func (e *VPCDHCPOptionsAssociation) Find(c *fi.Context) (*VPCDHCPOptionsAssociation, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	vpcID := e.VPC.ID
 	dhcpOptionsID := e.DHCPOptions.ID
@@ -70,7 +70,7 @@ func (_ *VPCDHCPOptionsAssociation) RenderAWS(t *awsup.AWSAPITarget, a, e, chang
 			DhcpOptionsId: e.DHCPOptions.ID,
 		}
 
-		_, err := t.Cloud.EC2.AssociateDhcpOptions(request)
+		_, err := t.Cloud.EC2().AssociateDhcpOptions(request)
 		if err != nil {
 			return fmt.Errorf("error creating VPCDHCPOptionsAssociation: %v", err)
 		}

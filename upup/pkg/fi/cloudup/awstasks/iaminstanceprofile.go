@@ -27,10 +27,10 @@ func (e *IAMInstanceProfile) CompareWithID() *string {
 
 // findIAMInstanceProfile retrieves the InstanceProfile with specified name
 // It returns nil,nil if not found
-func findIAMInstanceProfile(cloud *awsup.AWSCloud, name string) (*iam.InstanceProfile, error) {
+func findIAMInstanceProfile(cloud awsup.AWSCloud, name string) (*iam.InstanceProfile, error) {
 	request := &iam.GetInstanceProfileInput{InstanceProfileName: aws.String(name)}
 
-	response, err := cloud.IAM.GetInstanceProfile(request)
+	response, err := cloud.IAM().GetInstanceProfile(request)
 	if awsErr, ok := err.(awserr.Error); ok {
 		if awsErr.Code() == "NoSuchEntity" {
 			return nil, nil
@@ -45,7 +45,7 @@ func findIAMInstanceProfile(cloud *awsup.AWSCloud, name string) (*iam.InstancePr
 }
 
 func (e *IAMInstanceProfile) Find(c *fi.Context) (*IAMInstanceProfile, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	p, err := findIAMInstanceProfile(cloud, *e.Name)
 	if err != nil {
@@ -88,7 +88,7 @@ func (_ *IAMInstanceProfile) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAM
 			InstanceProfileName: e.Name,
 		}
 
-		response, err := t.Cloud.IAM.CreateInstanceProfile(request)
+		response, err := t.Cloud.IAM().CreateInstanceProfile(request)
 		if err != nil {
 			return fmt.Errorf("error creating IAMInstanceProfile: %v", err)
 		}
