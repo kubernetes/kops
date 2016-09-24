@@ -26,16 +26,16 @@ import (
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	extensionsapiv1beta1 "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
 	"k8s.io/kubernetes/pkg/genericapiserver"
-	daemonetcd "k8s.io/kubernetes/pkg/registry/daemonset/etcd"
-	deploymentetcd "k8s.io/kubernetes/pkg/registry/deployment/etcd"
-	expcontrolleretcd "k8s.io/kubernetes/pkg/registry/experimental/controller/etcd"
-	horizontalpodautoscaleretcd "k8s.io/kubernetes/pkg/registry/horizontalpodautoscaler/etcd"
-	ingressetcd "k8s.io/kubernetes/pkg/registry/ingress/etcd"
-	jobetcd "k8s.io/kubernetes/pkg/registry/job/etcd"
-	networkpolicyetcd "k8s.io/kubernetes/pkg/registry/networkpolicy/etcd"
-	pspetcd "k8s.io/kubernetes/pkg/registry/podsecuritypolicy/etcd"
-	replicasetetcd "k8s.io/kubernetes/pkg/registry/replicaset/etcd"
-	thirdpartyresourceetcd "k8s.io/kubernetes/pkg/registry/thirdpartyresource/etcd"
+	horizontalpodautoscaleretcd "k8s.io/kubernetes/pkg/registry/autoscaling/horizontalpodautoscaler/etcd"
+	jobetcd "k8s.io/kubernetes/pkg/registry/batch/job/etcd"
+	expcontrolleretcd "k8s.io/kubernetes/pkg/registry/extensions/controller/etcd"
+	daemonetcd "k8s.io/kubernetes/pkg/registry/extensions/daemonset/etcd"
+	deploymentetcd "k8s.io/kubernetes/pkg/registry/extensions/deployment/etcd"
+	ingressetcd "k8s.io/kubernetes/pkg/registry/extensions/ingress/etcd"
+	networkpolicyetcd "k8s.io/kubernetes/pkg/registry/extensions/networkpolicy/etcd"
+	pspetcd "k8s.io/kubernetes/pkg/registry/extensions/podsecuritypolicy/etcd"
+	replicasetetcd "k8s.io/kubernetes/pkg/registry/extensions/replicaset/etcd"
+	thirdpartyresourceetcd "k8s.io/kubernetes/pkg/registry/extensions/thirdpartyresource/etcd"
 	"k8s.io/kubernetes/pkg/util/wait"
 )
 
@@ -44,9 +44,9 @@ type ExtensionsRESTStorageProvider struct {
 	DisableThirdPartyControllerForTesting bool
 }
 
-var _ RESTStorageProvider = &ExtensionsRESTStorageProvider{}
+var _ genericapiserver.RESTStorageProvider = &ExtensionsRESTStorageProvider{}
 
-func (p ExtensionsRESTStorageProvider) NewRESTStorage(apiResourceConfigSource genericapiserver.APIResourceConfigSource, restOptionsGetter RESTOptionsGetter) (genericapiserver.APIGroupInfo, bool) {
+func (p ExtensionsRESTStorageProvider) NewRESTStorage(apiResourceConfigSource genericapiserver.APIResourceConfigSource, restOptionsGetter genericapiserver.RESTOptionsGetter) (genericapiserver.APIGroupInfo, bool) {
 	apiGroupInfo := genericapiserver.NewDefaultAPIGroupInfo(extensions.GroupName)
 
 	if apiResourceConfigSource.AnyResourcesForVersionEnabled(extensionsapiv1beta1.SchemeGroupVersion) {
@@ -57,7 +57,7 @@ func (p ExtensionsRESTStorageProvider) NewRESTStorage(apiResourceConfigSource ge
 	return apiGroupInfo, true
 }
 
-func (p ExtensionsRESTStorageProvider) v1beta1Storage(apiResourceConfigSource genericapiserver.APIResourceConfigSource, restOptionsGetter RESTOptionsGetter) map[string]rest.Storage {
+func (p ExtensionsRESTStorageProvider) v1beta1Storage(apiResourceConfigSource genericapiserver.APIResourceConfigSource, restOptionsGetter genericapiserver.RESTOptionsGetter) map[string]rest.Storage {
 	version := extensionsapiv1beta1.SchemeGroupVersion
 
 	storage := map[string]rest.Storage{}

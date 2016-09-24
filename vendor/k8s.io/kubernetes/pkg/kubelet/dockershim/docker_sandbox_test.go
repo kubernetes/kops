@@ -18,9 +18,10 @@ package dockershim
 
 import (
 	"fmt"
+	"os"
 	"testing"
+	"time"
 
-	dockertypes "github.com/docker/engine-api/types"
 	"github.com/stretchr/testify/assert"
 
 	runtimeApi "k8s.io/kubernetes/pkg/kubelet/api/v1alpha1/runtime"
@@ -28,6 +29,10 @@ import (
 
 // A helper to create a basic config.
 func makeSandboxConfig(name, namespace, uid string, attempt uint32) *runtimeApi.PodSandboxConfig {
+	return makeSandboxConfigWithLabelsAndAnnotations(name, namespace, uid, attempt, map[string]string{}, map[string]string{})
+}
+
+func makeSandboxConfigWithLabelsAndAnnotations(name, namespace, uid string, attempt uint32, labels, annotations map[string]string) *runtimeApi.PodSandboxConfig {
 	return &runtimeApi.PodSandboxConfig{
 		Metadata: &runtimeApi.PodSandboxMetadata{
 			Name:      &name,
@@ -35,35 +40,23 @@ func makeSandboxConfig(name, namespace, uid string, attempt uint32) *runtimeApi.
 			Uid:       &uid,
 			Attempt:   &attempt,
 		},
+		Labels:      labels,
+		Annotations: annotations,
 	}
-}
-
-// TestRunSandbox tests that RunSandbox creates and starts a container
-// acting a the sandbox for the pod.
-func TestRunSandbox(t *testing.T) {
-	ds, fakeDocker := newTestDockerSevice()
-	config := makeSandboxConfig("foo", "bar", "1", 0)
-	id, err := ds.RunPodSandbox(config)
-	assert.NoError(t, err)
-	assert.NoError(t, fakeDocker.AssertStarted([]string{id}))
-
-	// List running containers and verify that there is one (and only one)
-	// running container that we just created.
-	containers, err := fakeDocker.ListContainers(dockertypes.ContainerListOptions{All: false})
-	assert.NoError(t, err)
-	assert.Len(t, containers, 1)
-	assert.Equal(t, id, containers[0].ID)
 }
 
 // TestListSandboxes creates several sandboxes and then list them to check
 // whether the correct metadatas, states, and labels are returned.
 func TestListSandboxes(t *testing.T) {
-	ds, _ := newTestDockerSevice()
+	ds, _, _ := newTestDockerSevice()
 	name, namespace := "foo", "bar"
 	configs := []*runtimeApi.PodSandboxConfig{}
 	for i := 0; i < 3; i++ {
-		c := makeSandboxConfig(fmt.Sprintf("%s%d", name, i),
-			fmt.Sprintf("%s%d", namespace, i), fmt.Sprintf("%d", i), 0)
+		c := makeSandboxConfigWithLabelsAndAnnotations(fmt.Sprintf("%s%d", name, i),
+			fmt.Sprintf("%s%d", namespace, i), fmt.Sprintf("%d", i), 0,
+			map[string]string{"label": fmt.Sprintf("foo%d", i)},
+			map[string]string{"annotation": fmt.Sprintf("bar%d", i)},
+		)
 		configs = append(configs, c)
 	}
 
@@ -76,15 +69,64 @@ func TestListSandboxes(t *testing.T) {
 		// Prepend to the expected list because ListPodSandbox returns
 		// the most recent sandbox first.
 		expected = append([]*runtimeApi.PodSandbox{{
-			Metadata:  configs[i].Metadata,
-			Id:        &id,
-			State:     &state,
-			Labels:    map[string]string{containerTypeLabelKey: containerTypeLabelSandbox},
-			CreatedAt: &createdAt,
+			Metadata:    configs[i].Metadata,
+			Id:          &id,
+			State:       &state,
+			CreatedAt:   &createdAt,
+			Labels:      configs[i].Labels,
+			Annotations: configs[i].Annotations,
 		}}, expected...)
 	}
 	sandboxes, err := ds.ListPodSandbox(nil)
 	assert.NoError(t, err)
 	assert.Len(t, sandboxes, len(expected))
 	assert.Equal(t, expected, sandboxes)
+}
+
+// TestSandboxStatus tests the basic lifecycle operations and verify that
+// the status returned reflects the operations performed.
+func TestSandboxStatus(t *testing.T) {
+	ds, _, fClock := newTestDockerSevice()
+	labels := map[string]string{"label": "foobar1"}
+	annotations := map[string]string{"annotation": "abc"}
+	config := makeSandboxConfigWithLabelsAndAnnotations("foo", "bar", "1", 0, labels, annotations)
+
+	// TODO: The following variables depend on the internal
+	// implementation of FakeDockerClient, and should be fixed.
+	fakeIP := "2.3.4.5"
+	fakeNS := fmt.Sprintf("/proc/%d/ns/net", os.Getpid())
+
+	state := runtimeApi.PodSandBoxState_READY
+	ct := int64(0)
+	expected := &runtimeApi.PodSandboxStatus{
+		State:       &state,
+		CreatedAt:   &ct,
+		Metadata:    config.Metadata,
+		Network:     &runtimeApi.PodSandboxNetworkStatus{Ip: &fakeIP},
+		Linux:       &runtimeApi.LinuxPodSandboxStatus{Namespaces: &runtimeApi.Namespace{Network: &fakeNS}},
+		Labels:      labels,
+		Annotations: annotations,
+	}
+
+	// Create the sandbox.
+	fClock.SetTime(time.Now())
+	*expected.CreatedAt = fClock.Now().Unix()
+	id, err := ds.RunPodSandbox(config)
+	expected.Id = &id // ID is only known after the creation.
+	status, err := ds.PodSandboxStatus(id)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, status)
+
+	// Stop the sandbox.
+	*expected.State = runtimeApi.PodSandBoxState_NOTREADY
+	err = ds.StopPodSandbox(id)
+	assert.NoError(t, err)
+	status, err = ds.PodSandboxStatus(id)
+	assert.Equal(t, expected, status)
+
+	// Remove the container.
+	err = ds.RemovePodSandbox(id)
+	assert.NoError(t, err)
+	status, err = ds.PodSandboxStatus(id)
+	assert.Error(t, err, fmt.Sprintf("status of sandbox: %+v", status))
 }

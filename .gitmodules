@@ -202,3 +202,9 @@
 [submodule "_vendor/golang.org/x/text"]
 	path = _vendor/golang.org/x/text
 	url = https://github.com/golang/text
+[submodule "_vendor/github.com/howeyc/gopass"]
+	path = _vendor/github.com/howeyc/gopass
+	url = https://github.com/howeyc/gopass
+[submodule "_vendor/cloud.google.com/go"]
+	path = _vendor/cloud.google.com/go
+	url = https://github.com/GoogleCloudPlatform/google-cloud-go

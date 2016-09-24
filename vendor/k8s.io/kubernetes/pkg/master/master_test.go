@@ -37,7 +37,7 @@ import (
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/apimachinery/registered"
 	"k8s.io/kubernetes/pkg/apis/apps"
-	appsapi "k8s.io/kubernetes/pkg/apis/apps"
+	appsapiv1alpha1 "k8s.io/kubernetes/pkg/apis/apps/v1alpha1"
 	"k8s.io/kubernetes/pkg/apis/autoscaling"
 	autoscalingapiv1 "k8s.io/kubernetes/pkg/apis/autoscaling/v1"
 	"k8s.io/kubernetes/pkg/apis/batch"
@@ -50,20 +50,20 @@ import (
 	"k8s.io/kubernetes/pkg/apiserver"
 	"k8s.io/kubernetes/pkg/genericapiserver"
 	"k8s.io/kubernetes/pkg/kubelet/client"
-	"k8s.io/kubernetes/pkg/registry/endpoint"
+	"k8s.io/kubernetes/pkg/registry/core/endpoint"
+	"k8s.io/kubernetes/pkg/registry/core/namespace"
+	ipallocator "k8s.io/kubernetes/pkg/registry/core/service/ipallocator"
+	"k8s.io/kubernetes/pkg/registry/extensions/thirdpartyresourcedata"
 	"k8s.io/kubernetes/pkg/registry/generic"
-	"k8s.io/kubernetes/pkg/registry/namespace"
 	"k8s.io/kubernetes/pkg/registry/registrytest"
-	ipallocator "k8s.io/kubernetes/pkg/registry/service/ipallocator"
-	"k8s.io/kubernetes/pkg/registry/thirdpartyresourcedata"
 	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/storage"
 	"k8s.io/kubernetes/pkg/storage/etcd/etcdtest"
 	etcdtesting "k8s.io/kubernetes/pkg/storage/etcd/testing"
-	"k8s.io/kubernetes/pkg/storage/storagebackend"
 	"k8s.io/kubernetes/pkg/util/intstr"
 	utilnet "k8s.io/kubernetes/pkg/util/net"
 	"k8s.io/kubernetes/pkg/util/sets"
+	"k8s.io/kubernetes/pkg/version"
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
@@ -71,27 +71,18 @@ import (
 	"github.com/go-openapi/validate"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
+	"k8s.io/kubernetes/pkg/generated/openapi"
 )
 
 // setUp is a convience function for setting up for (most) tests.
 func setUp(t *testing.T) (*Master, *etcdtesting.EtcdTestServer, Config, *assert.Assertions) {
-	server := etcdtesting.NewUnsecuredEtcdTestClientServer(t)
+	server, storageConfig := etcdtesting.NewUnsecuredEtcd3TestClientServer(t)
 
 	master := &Master{
 		GenericAPIServer: &genericapiserver.GenericAPIServer{},
 	}
 	config := Config{
 		Config: &genericapiserver.Config{},
-	}
-
-	storageConfig := storagebackend.Config{
-		Prefix:   etcdtest.PathPrefix(),
-		CAFile:   server.CAFile,
-		KeyFile:  server.KeyFile,
-		CertFile: server.CertFile,
-	}
-	for _, url := range server.ClientURLs {
-		storageConfig.ServerList = append(storageConfig.ServerList, url.String())
 	}
 
 	resourceEncoding := genericapiserver.NewDefaultResourceEncodingConfig()
@@ -102,7 +93,7 @@ func setUp(t *testing.T) (*Master, *etcdtesting.EtcdTestServer, Config, *assert.
 	resourceEncoding.SetVersionEncoding(extensions.GroupName, *testapi.Extensions.GroupVersion(), unversioned.GroupVersion{Group: extensions.GroupName, Version: runtime.APIVersionInternal})
 	resourceEncoding.SetVersionEncoding(rbac.GroupName, *testapi.Rbac.GroupVersion(), unversioned.GroupVersion{Group: rbac.GroupName, Version: runtime.APIVersionInternal})
 	resourceEncoding.SetVersionEncoding(certificates.GroupName, *testapi.Certificates.GroupVersion(), unversioned.GroupVersion{Group: certificates.GroupName, Version: runtime.APIVersionInternal})
-	storageFactory := genericapiserver.NewDefaultStorageFactory(storageConfig, testapi.StorageMediaType(), api.Codecs, resourceEncoding, DefaultAPIResourceConfigSource())
+	storageFactory := genericapiserver.NewDefaultStorageFactory(*storageConfig, testapi.StorageMediaType(), api.Codecs, resourceEncoding, DefaultAPIResourceConfigSource())
 
 	config.StorageFactory = storageFactory
 	config.APIResourceConfigSource = DefaultAPIResourceConfigSource()
@@ -115,6 +106,7 @@ func setUp(t *testing.T) (*Master, *etcdtesting.EtcdTestServer, Config, *assert.
 	config.ProxyDialer = func(network, addr string) (net.Conn, error) { return nil, nil }
 	config.ProxyTLSClientConfig = &tls.Config{}
 	config.RequestContextMapper = api.NewRequestContextMapper()
+	config.Config.EnableVersion = true
 
 	// TODO: this is kind of hacky.  The trouble is that the sync loop
 	// runs in a go-routine and there is no way to validate in the test
@@ -148,7 +140,7 @@ func limitedAPIResourceConfigSource() *genericapiserver.ResourceConfig {
 		extensionsapiv1beta1.SchemeGroupVersion,
 		batchapiv1.SchemeGroupVersion,
 		batchapiv2alpha1.SchemeGroupVersion,
-		appsapi.SchemeGroupVersion,
+		appsapiv1alpha1.SchemeGroupVersion,
 		autoscalingapiv1.SchemeGroupVersion,
 	)
 	return ret
@@ -211,6 +203,29 @@ func TestNamespaceSubresources(t *testing.T) {
 
 	if !reflect.DeepEqual(expectedSubresources.List(), foundSubresources.List()) {
 		t.Errorf("Expected namespace subresources %#v, got %#v. Update apiserver/handlers.go#namespaceSubresources", expectedSubresources.List(), foundSubresources.List())
+	}
+}
+
+// TestVersion tests /version
+func TestVersion(t *testing.T) {
+	s, etcdserver, _, _ := newMaster(t)
+	defer etcdserver.Terminate(t)
+
+	req, _ := http.NewRequest("GET", "/version", nil)
+	resp := httptest.NewRecorder()
+	s.InsecureHandler.ServeHTTP(resp, req)
+	if resp.Code != 200 {
+		t.Fatalf("expected http 200, got: %d", resp.Code)
+	}
+
+	var info version.Info
+	err := json.NewDecoder(resp.Body).Decode(&info)
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+
+	if !reflect.DeepEqual(version.Get(), info) {
+		t.Errorf("Expected %#v, Got %#v", version.Get(), info)
 	}
 }
 
@@ -1237,6 +1252,7 @@ func TestValidOpenAPISpec(t *testing.T) {
 	_, etcdserver, config, assert := setUp(t)
 	defer etcdserver.Terminate(t)
 
+	config.OpenAPIDefinitions = openapi.OpenAPIDefinitions
 	config.EnableOpenAPISupport = true
 	config.EnableIndex = true
 	config.OpenAPIInfo = spec.Info{
