@@ -172,4 +172,4 @@ dns-controller-push: dns-controller-image
 
 
 copydeps:
-	rsync -avz _vendor/ vendor/ --exclude vendor/  --exclude .git
+	rsync -avz _vendor/ vendor/ --delete --exclude vendor/  --exclude .git
