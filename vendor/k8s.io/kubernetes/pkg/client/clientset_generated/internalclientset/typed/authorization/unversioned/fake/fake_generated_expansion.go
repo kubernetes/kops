@@ -31,3 +31,8 @@ func (c *FakeSelfSubjectAccessReviews) Create(sar *authorizationapi.SelfSubjectA
 	obj, err := c.Fake.Invokes(core.NewRootCreateAction(authorizationapi.SchemeGroupVersion.WithResource("selfsubjectaccessreviews"), sar), &authorizationapi.SelfSubjectAccessReview{})
 	return obj.(*authorizationapi.SelfSubjectAccessReview), err
 }
+
+func (c *FakeLocalSubjectAccessReviews) Create(sar *authorizationapi.LocalSubjectAccessReview) (result *authorizationapi.LocalSubjectAccessReview, err error) {
+	obj, err := c.Fake.Invokes(core.NewCreateAction(authorizationapi.SchemeGroupVersion.WithResource("localsubjectaccessreviews"), c.ns, sar), &authorizationapi.SubjectAccessReview{})
+	return obj.(*authorizationapi.LocalSubjectAccessReview), err
+}

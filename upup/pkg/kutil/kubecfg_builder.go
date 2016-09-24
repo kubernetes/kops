@@ -3,6 +3,7 @@ package kutil
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 	"os"
 	"os/exec"
 	"path"
@@ -31,10 +32,9 @@ type KubeconfigBuilder struct {
 func (c *KubeconfigBuilder) Init() {
 	c.KubectlPath = "kubectl" // default to in-path
 
-	kubeconfig := os.Getenv("KUBECONFIG")
+	kubeconfig := os.Getenv(clientcmd.RecommendedConfigPathEnvVar)
 	if kubeconfig == "" {
-		homedir := os.Getenv("HOME")
-		kubeconfig = path.Join(homedir, ".kube", "config")
+		kubeconfig = clientcmd.RecommendedHomeFile
 	}
 	c.KubeconfigPath = kubeconfig
 }
