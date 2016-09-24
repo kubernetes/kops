@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
@@ -30,7 +29,7 @@ func init() {
 		Run: func(cmd *cobra.Command, args []string) {
 			err := deleteCluster.Run(args)
 			if err != nil {
-				glog.Exitf("%v", err)
+				exitWithError(err)
 			}
 		},
 	}
@@ -93,6 +92,8 @@ func (c *DeleteClusterCmd) Run(args []string) error {
 		}
 	}
 
+	wouldDeleteCloudResources := false
+
 	if !c.Unregister {
 		if cloud == nil {
 			cloud, err = cloudup.BuildCloud(cluster)
@@ -111,8 +112,10 @@ func (c *DeleteClusterCmd) Run(args []string) error {
 		}
 
 		if len(resources) == 0 {
-			fmt.Printf("No resources to delete\n")
+			fmt.Printf("No cloud resources to delete\n")
 		} else {
+			wouldDeleteCloudResources = true
+
 			t := &Table{}
 			t.AddColumn("TYPE", func(r *kutil.ResourceTracker) string {
 				return r.Type
@@ -146,7 +149,11 @@ func (c *DeleteClusterCmd) Run(args []string) error {
 
 	if !c.External {
 		if !c.Yes {
-			fmt.Printf("\nMust specify --yes to delete\n")
+			if wouldDeleteCloudResources {
+				fmt.Printf("\nMust specify --yes to delete cloud resources & unregister cluster\n")
+			} else {
+				fmt.Printf("\nMust specify --yes to unregister the cluster\n")
+			}
 			return nil
 		}
 		err := clusterRegistry.DeleteAllClusterState(clusterName)
