@@ -70,7 +70,7 @@ func gunzipBytes(d []byte) ([]byte, error) {
 }
 
 func buildEC2Filters(cloud fi.Cloud) []*ec2.Filter {
-	awsCloud := cloud.(*awsup.AWSCloud)
+	awsCloud := cloud.(awsup.AWSCloud)
 	tags := awsCloud.Tags()
 
 	var filters []*ec2.Filter
@@ -82,7 +82,7 @@ func buildEC2Filters(cloud fi.Cloud) []*ec2.Filter {
 }
 
 func (c *DeleteCluster) ListResources() (map[string]*ResourceTracker, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	resources := make(map[string]*ResourceTracker)
 
@@ -347,14 +347,14 @@ func matchesElbTags(tags map[string]string, actual []*elb.Tag) bool {
 //}
 
 func DeleteInstance(cloud fi.Cloud, t *ResourceTracker) error {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	id := t.ID
 	glog.V(2).Infof("Deleting EC2 instance %q", id)
 	request := &ec2.TerminateInstancesInput{
 		InstanceIds: []*string{&id},
 	}
-	_, err := c.EC2.TerminateInstances(request)
+	_, err := c.EC2().TerminateInstances(request)
 	if err != nil {
 		return fmt.Errorf("error deleting instance %q: %v", id, err)
 	}
@@ -362,7 +362,7 @@ func DeleteInstance(cloud fi.Cloud, t *ResourceTracker) error {
 }
 
 func ListInstances(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	glog.V(2).Infof("Querying EC2 instances")
 	request := &ec2.DescribeInstancesInput{
@@ -371,7 +371,7 @@ func ListInstances(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, erro
 
 	var trackers []*ResourceTracker
 
-	err := c.EC2.DescribeInstancesPages(request, func(p *ec2.DescribeInstancesOutput, lastPage bool) bool {
+	err := c.EC2().DescribeInstancesPages(request, func(p *ec2.DescribeInstancesOutput, lastPage bool) bool {
 		for _, reservation := range p.Reservations {
 			for _, instance := range reservation.Instances {
 				id := aws.StringValue(instance.InstanceId)
@@ -431,7 +431,7 @@ func ListInstances(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, erro
 }
 
 func DeleteSecurityGroup(cloud fi.Cloud, t *ResourceTracker) error {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	id := t.ID
 	// First clear all inter-dependent rules
@@ -440,7 +440,7 @@ func DeleteSecurityGroup(cloud fi.Cloud, t *ResourceTracker) error {
 		request := &ec2.DescribeSecurityGroupsInput{
 			GroupIds: []*string{&id},
 		}
-		response, err := c.EC2.DescribeSecurityGroups(request)
+		response, err := c.EC2().DescribeSecurityGroups(request)
 		if err != nil {
 			return fmt.Errorf("error describing SecurityGroup %q: %v", id, err)
 		}
@@ -458,7 +458,7 @@ func DeleteSecurityGroup(cloud fi.Cloud, t *ResourceTracker) error {
 				GroupId:       &id,
 				IpPermissions: sg.IpPermissions,
 			}
-			_, err = c.EC2.RevokeSecurityGroupIngress(revoke)
+			_, err = c.EC2().RevokeSecurityGroupIngress(revoke)
 			if err != nil {
 				return fmt.Errorf("cannot revoke ingress for ID %q: %v", id, err)
 			}
@@ -470,7 +470,7 @@ func DeleteSecurityGroup(cloud fi.Cloud, t *ResourceTracker) error {
 		request := &ec2.DeleteSecurityGroupInput{
 			GroupId: &id,
 		}
-		_, err := c.EC2.DeleteSecurityGroup(request)
+		_, err := c.EC2().DeleteSecurityGroup(request)
 		if err != nil {
 			if IsDependencyViolation(err) {
 				return err
@@ -509,13 +509,13 @@ func ListSecurityGroups(cloud fi.Cloud, clusterName string) ([]*ResourceTracker,
 }
 
 func DescribeSecurityGroups(cloud fi.Cloud) ([]*ec2.SecurityGroup, error) {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	glog.V(2).Infof("Listing EC2 SecurityGroups")
 	request := &ec2.DescribeSecurityGroupsInput{
 		Filters: buildEC2Filters(cloud),
 	}
-	response, err := c.EC2.DescribeSecurityGroups(request)
+	response, err := c.EC2().DescribeSecurityGroups(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing SecurityGroups: %v", err)
 	}
@@ -524,7 +524,7 @@ func DescribeSecurityGroups(cloud fi.Cloud) ([]*ec2.SecurityGroup, error) {
 }
 
 func DeleteVolume(cloud fi.Cloud, r *ResourceTracker) error {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	id := r.ID
 
@@ -532,7 +532,7 @@ func DeleteVolume(cloud fi.Cloud, r *ResourceTracker) error {
 	request := &ec2.DeleteVolumeInput{
 		VolumeId: &id,
 	}
-	_, err := c.EC2.DeleteVolume(request)
+	_, err := c.EC2().DeleteVolume(request)
 	if err != nil {
 		if IsDependencyViolation(err) {
 			return err
@@ -547,7 +547,7 @@ func DeleteVolume(cloud fi.Cloud, r *ResourceTracker) error {
 }
 
 func ListVolumes(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	volumes, err := DescribeVolumes(cloud)
 	if err != nil {
@@ -590,7 +590,7 @@ func ListVolumes(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 	if len(elasticIPs) != 0 {
 		glog.V(2).Infof("Querying EC2 Elastic IPs")
 		request := &ec2.DescribeAddressesInput{}
-		response, err := c.EC2.DescribeAddresses(request)
+		response, err := c.EC2().DescribeAddresses(request)
 		if err != nil {
 			return nil, fmt.Errorf("error describing addresses: %v", err)
 		}
@@ -617,7 +617,7 @@ func ListVolumes(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 }
 
 func DescribeVolumes(cloud fi.Cloud) ([]*ec2.Volume, error) {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	var volumes []*ec2.Volume
 
@@ -626,7 +626,7 @@ func DescribeVolumes(cloud fi.Cloud) ([]*ec2.Volume, error) {
 		Filters: buildEC2Filters(c),
 	}
 
-	err := c.EC2.DescribeVolumesPages(request, func(p *ec2.DescribeVolumesOutput, lastPage bool) bool {
+	err := c.EC2().DescribeVolumesPages(request, func(p *ec2.DescribeVolumesOutput, lastPage bool) bool {
 		for _, volume := range p.Volumes {
 			volumes = append(volumes, volume)
 		}
@@ -640,7 +640,7 @@ func DescribeVolumes(cloud fi.Cloud) ([]*ec2.Volume, error) {
 }
 
 func DeleteKeypair(cloud fi.Cloud, r *ResourceTracker) error {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	name := r.Name
 
@@ -648,7 +648,7 @@ func DeleteKeypair(cloud fi.Cloud, r *ResourceTracker) error {
 	request := &ec2.DeleteKeyPairInput{
 		KeyName: &name,
 	}
-	_, err := c.EC2.DeleteKeyPair(request)
+	_, err := c.EC2().DeleteKeyPair(request)
 	if err != nil {
 		return fmt.Errorf("error deleting KeyPair %q: %v", name, err)
 	}
@@ -656,7 +656,7 @@ func DeleteKeypair(cloud fi.Cloud, r *ResourceTracker) error {
 }
 
 func ListKeypairs(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	keypairName := "kubernetes." + clusterName
 
@@ -665,7 +665,7 @@ func ListKeypairs(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error
 	// We need to match both the name and a prefix
 	//Filters: []*ec2.Filter{awsup.NewEC2Filter("key-name", keypairName)},
 	}
-	response, err := c.EC2.DescribeKeyPairs(request)
+	response, err := c.EC2().DescribeKeyPairs(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing KeyPairs: %v", err)
 	}
@@ -704,7 +704,7 @@ func IsDependencyViolation(err error) bool {
 }
 
 func DeleteSubnet(cloud fi.Cloud, tracker *ResourceTracker) error {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	id := tracker.ID
 
@@ -712,7 +712,7 @@ func DeleteSubnet(cloud fi.Cloud, tracker *ResourceTracker) error {
 	request := &ec2.DeleteSubnetInput{
 		SubnetId: &id,
 	}
-	_, err := c.EC2.DeleteSubnet(request)
+	_, err := c.EC2().DeleteSubnet(request)
 	if err != nil {
 		if IsDependencyViolation(err) {
 			return err
@@ -750,13 +750,13 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 }
 
 func DescribeSubnets(cloud fi.Cloud) ([]*ec2.Subnet, error) {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	glog.V(2).Infof("Listing EC2 subnets")
 	request := &ec2.DescribeSubnetsInput{
 		Filters: buildEC2Filters(cloud),
 	}
-	response, err := c.EC2.DescribeSubnets(request)
+	response, err := c.EC2().DescribeSubnets(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing subnets: %v", err)
 	}
@@ -765,7 +765,7 @@ func DescribeSubnets(cloud fi.Cloud) ([]*ec2.Subnet, error) {
 }
 
 func DeleteRouteTable(cloud fi.Cloud, r *ResourceTracker) error {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	id := r.ID
 
@@ -773,7 +773,7 @@ func DeleteRouteTable(cloud fi.Cloud, r *ResourceTracker) error {
 	request := &ec2.DeleteRouteTableInput{
 		RouteTableId: &id,
 	}
-	_, err := c.EC2.DeleteRouteTable(request)
+	_, err := c.EC2().DeleteRouteTable(request)
 	if err != nil {
 		if IsDependencyViolation(err) {
 			return err
@@ -784,13 +784,13 @@ func DeleteRouteTable(cloud fi.Cloud, r *ResourceTracker) error {
 }
 
 func ListRouteTables(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	glog.V(2).Infof("Listing EC2 RouteTables")
 	request := &ec2.DescribeRouteTablesInput{
 		Filters: buildEC2Filters(cloud),
 	}
-	response, err := c.EC2.DescribeRouteTables(request)
+	response, err := c.EC2().DescribeRouteTables(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing RouteTables: %v", err)
 	}
@@ -824,7 +824,7 @@ func ListRouteTables(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, er
 }
 
 func DeleteDhcpOptions(cloud fi.Cloud, r *ResourceTracker) error {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	id := r.ID
 
@@ -832,7 +832,7 @@ func DeleteDhcpOptions(cloud fi.Cloud, r *ResourceTracker) error {
 	request := &ec2.DeleteDhcpOptionsInput{
 		DhcpOptionsId: &id,
 	}
-	_, err := c.EC2.DeleteDhcpOptions(request)
+	_, err := c.EC2().DeleteDhcpOptions(request)
 	if err != nil {
 		if IsDependencyViolation(err) {
 			return err
@@ -869,13 +869,13 @@ func ListDhcpOptions(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, er
 }
 
 func DescribeDhcpOptions(cloud fi.Cloud) ([]*ec2.DhcpOptions, error) {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	glog.V(2).Infof("Listing EC2 DhcpOptions")
 	request := &ec2.DescribeDhcpOptionsInput{
 		Filters: buildEC2Filters(cloud),
 	}
-	response, err := c.EC2.DescribeDhcpOptions(request)
+	response, err := c.EC2().DescribeDhcpOptions(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing DhcpOptions: %v", err)
 	}
@@ -884,7 +884,7 @@ func DescribeDhcpOptions(cloud fi.Cloud) ([]*ec2.DhcpOptions, error) {
 }
 
 func DeleteInternetGateway(cloud fi.Cloud, r *ResourceTracker) error {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	id := r.ID
 
@@ -893,7 +893,7 @@ func DeleteInternetGateway(cloud fi.Cloud, r *ResourceTracker) error {
 		request := &ec2.DescribeInternetGatewaysInput{
 			InternetGatewayIds: []*string{&id},
 		}
-		response, err := c.EC2.DescribeInternetGateways(request)
+		response, err := c.EC2().DescribeInternetGateways(request)
 		if err != nil {
 			if awsup.AWSErrorCode(err) == "InvalidInternetGatewayID.NotFound" {
 				glog.Infof("Internet gateway %q not found; assuming already deleted", id)
@@ -917,7 +917,7 @@ func DeleteInternetGateway(cloud fi.Cloud, r *ResourceTracker) error {
 			InternetGatewayId: &id,
 			VpcId:             a.VpcId,
 		}
-		_, err := c.EC2.DetachInternetGateway(request)
+		_, err := c.EC2().DetachInternetGateway(request)
 		if err != nil {
 			if IsDependencyViolation(err) {
 				return err
@@ -931,7 +931,7 @@ func DeleteInternetGateway(cloud fi.Cloud, r *ResourceTracker) error {
 		request := &ec2.DeleteInternetGatewayInput{
 			InternetGatewayId: &id,
 		}
-		_, err := c.EC2.DeleteInternetGateway(request)
+		_, err := c.EC2().DeleteInternetGateway(request)
 		if err != nil {
 			if IsDependencyViolation(err) {
 				return err
@@ -978,13 +978,13 @@ func ListInternetGateways(cloud fi.Cloud, clusterName string) ([]*ResourceTracke
 }
 
 func DescribeInternetGateways(cloud fi.Cloud) ([]*ec2.InternetGateway, error) {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	glog.V(2).Infof("Listing EC2 InternetGateways")
 	request := &ec2.DescribeInternetGatewaysInput{
 		Filters: buildEC2Filters(cloud),
 	}
-	response, err := c.EC2.DescribeInternetGateways(request)
+	response, err := c.EC2().DescribeInternetGateways(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing InternetGateway: %v", err)
 	}
@@ -1000,12 +1000,12 @@ func DescribeInternetGateways(cloud fi.Cloud) ([]*ec2.InternetGateway, error) {
 // DescribeInternetGatewaysIgnoreTags returns all ec2.InternetGateways, ignoring tags
 // (gateways were not always tagged in kube-up)
 func DescribeInternetGatewaysIgnoreTags(cloud fi.Cloud) ([]*ec2.InternetGateway, error) {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	glog.V(2).Infof("Listing all Internet Gateways")
 
 	request := &ec2.DescribeInternetGatewaysInput{}
-	response, err := c.EC2.DescribeInternetGateways(request)
+	response, err := c.EC2().DescribeInternetGateways(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing (all) InternetGateways: %v", err)
 	}
@@ -1020,7 +1020,7 @@ func DescribeInternetGatewaysIgnoreTags(cloud fi.Cloud) ([]*ec2.InternetGateway,
 }
 
 func DeleteVPC(cloud fi.Cloud, r *ResourceTracker) error {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	id := r.ID
 
@@ -1028,7 +1028,7 @@ func DeleteVPC(cloud fi.Cloud, r *ResourceTracker) error {
 	request := &ec2.DeleteVpcInput{
 		VpcId: &id,
 	}
-	_, err := c.EC2.DeleteVpc(request)
+	_, err := c.EC2().DeleteVpc(request)
 	if err != nil {
 		if IsDependencyViolation(err) {
 			return err
@@ -1039,13 +1039,13 @@ func DeleteVPC(cloud fi.Cloud, r *ResourceTracker) error {
 }
 
 func ListVPCs(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	glog.V(2).Infof("Listing EC2 VPC")
 	request := &ec2.DescribeVpcsInput{
 		Filters: buildEC2Filters(cloud),
 	}
-	response, err := c.EC2.DescribeVpcs(request)
+	response, err := c.EC2().DescribeVpcs(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing VPCs: %v", err)
 	}
@@ -1072,7 +1072,7 @@ func ListVPCs(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
 }
 
 func DeleteAutoScalingGroup(cloud fi.Cloud, r *ResourceTracker) error {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	id := r.ID
 
@@ -1081,7 +1081,7 @@ func DeleteAutoScalingGroup(cloud fi.Cloud, r *ResourceTracker) error {
 		AutoScalingGroupName: &id,
 		ForceDelete:          aws.Bool(true),
 	}
-	_, err := c.Autoscaling.DeleteAutoScalingGroup(request)
+	_, err := c.Autoscaling().DeleteAutoScalingGroup(request)
 	if err != nil {
 		if IsDependencyViolation(err) {
 			return err
@@ -1092,7 +1092,7 @@ func DeleteAutoScalingGroup(cloud fi.Cloud, r *ResourceTracker) error {
 }
 
 func ListAutoScalingGroups(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	tags := c.Tags()
 
@@ -1130,14 +1130,14 @@ func ListAutoScalingGroups(cloud fi.Cloud, clusterName string) ([]*ResourceTrack
 }
 
 func ListAutoScalingLaunchConfigurations(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	glog.V(2).Infof("Listing all Autoscaling LaunchConfigurations for cluster %q", clusterName)
 
 	var trackers []*ResourceTracker
 
 	request := &autoscaling.DescribeLaunchConfigurationsInput{}
-	err := c.Autoscaling.DescribeLaunchConfigurationsPages(request, func(p *autoscaling.DescribeLaunchConfigurationsOutput, lastPage bool) bool {
+	err := c.Autoscaling().DescribeLaunchConfigurationsPages(request, func(p *autoscaling.DescribeLaunchConfigurationsOutput, lastPage bool) bool {
 		for _, t := range p.LaunchConfigurations {
 			if t.UserData == nil {
 				continue
@@ -1230,14 +1230,14 @@ func extractClusterName(userData string) string {
 
 }
 func DeleteAutoscalingLaunchConfiguration(cloud fi.Cloud, r *ResourceTracker) error {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	id := r.ID
 	glog.V(2).Infof("Deleting autoscaling LaunchConfiguration %q", id)
 	request := &autoscaling.DeleteLaunchConfigurationInput{
 		LaunchConfigurationName: &id,
 	}
-	_, err := c.Autoscaling.DeleteLaunchConfiguration(request)
+	_, err := c.Autoscaling().DeleteLaunchConfiguration(request)
 	if err != nil {
 		return fmt.Errorf("error deleting autoscaling LaunchConfiguration %q: %v", id, err)
 	}
@@ -1245,7 +1245,7 @@ func DeleteAutoscalingLaunchConfiguration(cloud fi.Cloud, r *ResourceTracker) er
 }
 
 func DeleteELB(cloud fi.Cloud, r *ResourceTracker) error {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	id := r.ID
 
@@ -1253,7 +1253,7 @@ func DeleteELB(cloud fi.Cloud, r *ResourceTracker) error {
 	request := &elb.DeleteLoadBalancerInput{
 		LoadBalancerName: &id,
 	}
-	_, err := c.ELB.DeleteLoadBalancer(request)
+	_, err := c.ELB().DeleteLoadBalancer(request)
 	if err != nil {
 		if IsDependencyViolation(err) {
 			return err
@@ -1297,7 +1297,7 @@ func ListELBs(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
 }
 
 func DescribeELBs(cloud fi.Cloud) ([]*elb.LoadBalancerDescription, map[string][]*elb.Tag, error) {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 	tags := c.Tags()
 
 	glog.V(2).Infof("Listing all ELBs")
@@ -1310,7 +1310,7 @@ func DescribeELBs(cloud fi.Cloud) ([]*elb.LoadBalancerDescription, map[string][]
 	elbTags := make(map[string][]*elb.Tag)
 
 	var innerError error
-	err := c.ELB.DescribeLoadBalancersPages(request, func(p *elb.DescribeLoadBalancersOutput, lastPage bool) bool {
+	err := c.ELB().DescribeLoadBalancersPages(request, func(p *elb.DescribeLoadBalancersOutput, lastPage bool) bool {
 		if len(p.LoadBalancerDescriptions) == 0 {
 			return true
 		}
@@ -1325,7 +1325,7 @@ func DescribeELBs(cloud fi.Cloud) ([]*elb.LoadBalancerDescription, map[string][]
 			tagRequest.LoadBalancerNames = append(tagRequest.LoadBalancerNames, elb.LoadBalancerName)
 		}
 
-		tagResponse, err := c.ELB.DescribeTags(tagRequest)
+		tagResponse, err := c.ELB().DescribeTags(tagRequest)
 		if err != nil {
 			innerError = fmt.Errorf("error listing elb Tags: %v", err)
 			return false
@@ -1356,7 +1356,7 @@ func DescribeELBs(cloud fi.Cloud) ([]*elb.LoadBalancerDescription, map[string][]
 }
 
 func DeleteElasticIP(cloud fi.Cloud, t *ResourceTracker) error {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	id := t.ID
 
@@ -1364,7 +1364,7 @@ func DeleteElasticIP(cloud fi.Cloud, t *ResourceTracker) error {
 	request := &ec2.ReleaseAddressInput{
 		AllocationId: &id,
 	}
-	_, err := c.EC2.ReleaseAddress(request)
+	_, err := c.EC2().ReleaseAddress(request)
 	if err != nil {
 		if IsDependencyViolation(err) {
 			return err
@@ -1375,7 +1375,7 @@ func DeleteElasticIP(cloud fi.Cloud, t *ResourceTracker) error {
 }
 
 func deleteRoute53Records(cloud fi.Cloud, zone *route53.HostedZone, trackers []*ResourceTracker) error {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	var changes []*route53.Change
 	var names []string
@@ -1396,7 +1396,7 @@ func deleteRoute53Records(cloud fi.Cloud, zone *route53.HostedZone, trackers []*
 		HostedZoneId: zone.Id,
 		ChangeBatch:  changeBatch,
 	}
-	_, err := c.Route53.ChangeResourceRecordSets(request)
+	_, err := c.Route53().ChangeResourceRecordSets(request)
 	if err != nil {
 		return fmt.Errorf("error deleting route53 record %q: %v", human, err)
 	}
@@ -1404,7 +1404,7 @@ func deleteRoute53Records(cloud fi.Cloud, zone *route53.HostedZone, trackers []*
 }
 
 func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	// Normalize cluster name, with leading "."
 	clusterName = "." + strings.TrimSuffix(clusterName, ".")
@@ -1415,7 +1415,7 @@ func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*ResourceTracker,
 		glog.V(2).Infof("Querying for all route53 zones")
 
 		request := &route53.ListHostedZonesInput{}
-		err := c.Route53.ListHostedZonesPages(request, func(p *route53.ListHostedZonesOutput, lastPage bool) bool {
+		err := c.Route53().ListHostedZonesPages(request, func(p *route53.ListHostedZonesOutput, lastPage bool) bool {
 			for _, zone := range p.HostedZones {
 				zoneName := aws.StringValue(zone.Name)
 				zoneName = "." + strings.TrimSuffix(zoneName, ".")
@@ -1443,7 +1443,7 @@ func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*ResourceTracker,
 		request := &route53.ListResourceRecordSetsInput{
 			HostedZoneId: zone.Id,
 		}
-		err := c.Route53.ListResourceRecordSetsPages(request, func(p *route53.ListResourceRecordSetsOutput, lastPage bool) bool {
+		err := c.Route53().ListResourceRecordSetsPages(request, func(p *route53.ListResourceRecordSetsOutput, lastPage bool) bool {
 			for _, rrs := range p.ResourceRecordSets {
 				if aws.StringValue(rrs.Type) != "A" {
 					continue
@@ -1492,7 +1492,7 @@ func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*ResourceTracker,
 }
 
 func DeleteIAMRole(cloud fi.Cloud, r *ResourceTracker) error {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	roleName := r.Name
 
@@ -1501,7 +1501,7 @@ func DeleteIAMRole(cloud fi.Cloud, r *ResourceTracker) error {
 		request := &iam.ListRolePoliciesInput{
 			RoleName: aws.String(roleName),
 		}
-		err := c.IAM.ListRolePoliciesPages(request, func(page *iam.ListRolePoliciesOutput, lastPage bool) bool {
+		err := c.IAM().ListRolePoliciesPages(request, func(page *iam.ListRolePoliciesOutput, lastPage bool) bool {
 			for _, policy := range page.PolicyNames {
 				policyNames = append(policyNames, aws.StringValue(policy))
 			}
@@ -1518,7 +1518,7 @@ func DeleteIAMRole(cloud fi.Cloud, r *ResourceTracker) error {
 			RoleName:   aws.String(r.Name),
 			PolicyName: aws.String(policyName),
 		}
-		_, err := c.IAM.DeleteRolePolicy(request)
+		_, err := c.IAM().DeleteRolePolicy(request)
 		if err != nil {
 			return fmt.Errorf("error deleting IAM role policy %q %q: %v", roleName, policyName, err)
 		}
@@ -1529,7 +1529,7 @@ func DeleteIAMRole(cloud fi.Cloud, r *ResourceTracker) error {
 		request := &iam.DeleteRoleInput{
 			RoleName: aws.String(r.Name),
 		}
-		_, err := c.IAM.DeleteRole(request)
+		_, err := c.IAM().DeleteRole(request)
 		if err != nil {
 			return fmt.Errorf("error deleting IAM role %q: %v", r.Name, err)
 		}
@@ -1539,7 +1539,7 @@ func DeleteIAMRole(cloud fi.Cloud, r *ResourceTracker) error {
 }
 
 func ListIAMRoles(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	remove := make(map[string]bool)
 	remove["masters."+clusterName] = true
@@ -1549,7 +1549,7 @@ func ListIAMRoles(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error
 	// Find roles matching remove map
 	{
 		request := &iam.ListRolesInput{}
-		err := c.IAM.ListRolesPages(request, func(p *iam.ListRolesOutput, lastPage bool) bool {
+		err := c.IAM().ListRolesPages(request, func(p *iam.ListRolesOutput, lastPage bool) bool {
 			for _, r := range p.Roles {
 				name := aws.StringValue(r.RoleName)
 				if remove[name] {
@@ -1580,7 +1580,7 @@ func ListIAMRoles(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error
 }
 
 func DeleteIAMInstanceProfile(cloud fi.Cloud, r *ResourceTracker) error {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	profile := r.obj.(*iam.InstanceProfile)
 	name := aws.StringValue(profile.InstanceProfileName)
@@ -1593,7 +1593,7 @@ func DeleteIAMInstanceProfile(cloud fi.Cloud, r *ResourceTracker) error {
 				InstanceProfileName: profile.InstanceProfileName,
 				RoleName:            role.RoleName,
 			}
-			_, err := c.IAM.RemoveRoleFromInstanceProfile(request)
+			_, err := c.IAM().RemoveRoleFromInstanceProfile(request)
 			if err != nil {
 				return fmt.Errorf("error removing role %q from IAM instance profile %q: %v", aws.StringValue(role.RoleName), name, err)
 			}
@@ -1606,7 +1606,7 @@ func DeleteIAMInstanceProfile(cloud fi.Cloud, r *ResourceTracker) error {
 		request := &iam.DeleteInstanceProfileInput{
 			InstanceProfileName: profile.InstanceProfileName,
 		}
-		_, err := c.IAM.DeleteInstanceProfile(request)
+		_, err := c.IAM().DeleteInstanceProfile(request)
 		if err != nil {
 			return fmt.Errorf("error deleting IAM instance profile %q: %v", name, err)
 		}
@@ -1616,7 +1616,7 @@ func DeleteIAMInstanceProfile(cloud fi.Cloud, r *ResourceTracker) error {
 }
 
 func ListIAMInstanceProfiles(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
-	c := cloud.(*awsup.AWSCloud)
+	c := cloud.(awsup.AWSCloud)
 
 	remove := make(map[string]bool)
 	remove["masters."+clusterName] = true
@@ -1625,7 +1625,7 @@ func ListIAMInstanceProfiles(cloud fi.Cloud, clusterName string) ([]*ResourceTra
 	var profiles []*iam.InstanceProfile
 
 	request := &iam.ListInstanceProfilesInput{}
-	err := c.IAM.ListInstanceProfilesPages(request, func(p *iam.ListInstanceProfilesOutput, lastPage bool) bool {
+	err := c.IAM().ListInstanceProfilesPages(request, func(p *iam.ListInstanceProfilesOutput, lastPage bool) bool {
 		for _, p := range p.InstanceProfiles {
 			name := aws.StringValue(p.InstanceProfileName)
 			if remove[name] {

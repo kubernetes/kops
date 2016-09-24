@@ -12,20 +12,26 @@ import (
 	"os"
 )
 
+// allRegions is the list of all regions; tests will set the values
+var allRegions []*ec2.Region
+
 // ValidateRegion checks that an AWS region name is valid
 func ValidateRegion(region string) error {
-	glog.V(2).Infof("Querying EC2 for all valid regions")
+	if allRegions == nil {
+		glog.V(2).Infof("Querying EC2 for all valid regions")
 
-	request := &ec2.DescribeRegionsInput{}
-	config := aws.NewConfig().WithRegion("us-east-1")
-	client := ec2.New(session.New(), config)
+		request := &ec2.DescribeRegionsInput{}
+		config := aws.NewConfig().WithRegion("us-east-1")
+		client := ec2.New(session.New(), config)
 
-	response, err := client.DescribeRegions(request)
-
-	if err != nil {
-		return fmt.Errorf("Got an error while querying for valid regions (verify your AWS credentials?)")
+		response, err := client.DescribeRegions(request)
+		if err != nil {
+			return fmt.Errorf("Got an error while querying for valid regions (verify your AWS credentials?)")
+		}
+		allRegions = response.Regions
 	}
-	for _, r := range response.Regions {
+
+	for _, r := range allRegions {
 		name := aws.StringValue(r.RegionName)
 		if name == region {
 			return nil

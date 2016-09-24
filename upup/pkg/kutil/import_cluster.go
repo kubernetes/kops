@@ -23,7 +23,7 @@ type ImportCluster struct {
 }
 
 func (x *ImportCluster) ImportAWSCluster() error {
-	awsCloud := x.Cloud.(*awsup.AWSCloud)
+	awsCloud := x.Cloud.(awsup.AWSCloud)
 	clusterName := x.ClusterName
 
 	if clusterName == "" {
@@ -495,7 +495,7 @@ func parseInt(s string) (int, error) {
 //	return nil
 //}
 //
-//func findInternetGateway(cloud *awsup.AWSCloud, vpcID string) (*ec2.InternetGateway, error) {
+//func findInternetGateway(cloud awsup.AWSCloud, vpcID string) (*ec2.InternetGateway, error) {
 //	request := &ec2.DescribeInternetGatewaysInput{
 //		Filters: []*ec2.Filter{fi.NewEC2Filter("attachment.vpc-id", vpcID)},
 //	}
@@ -515,7 +515,7 @@ func parseInt(s string) (int, error) {
 //	return igw, nil
 //}
 
-//func findRouteTable(cloud *awsup.AWSCloud, subnetID string) (*ec2.RouteTable, error) {
+//func findRouteTable(cloud awsup.AWSCloud, subnetID string) (*ec2.RouteTable, error) {
 //	request := &ec2.DescribeRouteTablesInput{
 //		Filters: []*ec2.Filter{fi.NewEC2Filter("association.subnet-id", subnetID)},
 //	}
@@ -535,7 +535,7 @@ func parseInt(s string) (int, error) {
 //	return rt, nil
 //}
 //
-//func findElasticIP(cloud *awsup.AWSCloud, publicIP string) (*ec2.Address, error) {
+//func findElasticIP(cloud awsup.AWSCloud, publicIP string) (*ec2.Address, error) {
 //	request := &ec2.DescribeAddressesInput{
 //		PublicIps: []*string{&publicIP},
 //	}
@@ -559,7 +559,7 @@ func parseInt(s string) (int, error) {
 //	return response.Addresses[0], nil
 //}
 
-func findInstances(c *awsup.AWSCloud) ([]*ec2.Instance, error) {
+func findInstances(c awsup.AWSCloud) ([]*ec2.Instance, error) {
 	filters := buildEC2Filters(c)
 
 	request := &ec2.DescribeInstancesInput{
@@ -570,7 +570,7 @@ func findInstances(c *awsup.AWSCloud) ([]*ec2.Instance, error) {
 
 	var instances []*ec2.Instance
 
-	err := c.EC2.DescribeInstancesPages(request, func(p *ec2.DescribeInstancesOutput, lastPage bool) bool {
+	err := c.EC2().DescribeInstancesPages(request, func(p *ec2.DescribeInstancesOutput, lastPage bool) bool {
 		for _, reservation := range p.Reservations {
 			for _, instance := range reservation.Instances {
 				instances = append(instances, instance)
@@ -617,11 +617,11 @@ func findInstances(c *awsup.AWSCloud) ([]*ec2.Instance, error) {
 //}
 
 // Fetch instance UserData
-func GetInstanceUserData(cloud *awsup.AWSCloud, instanceID string) ([]byte, error) {
+func GetInstanceUserData(cloud awsup.AWSCloud, instanceID string) ([]byte, error) {
 	request := &ec2.DescribeInstanceAttributeInput{}
 	request.InstanceId = aws.String(instanceID)
 	request.Attribute = aws.String("userData")
-	response, err := cloud.EC2.DescribeInstanceAttribute(request)
+	response, err := cloud.EC2().DescribeInstanceAttribute(request)
 	if err != nil {
 		return nil, fmt.Errorf("error querying EC2 for user metadata for instance %q: %v", instanceID, err)
 	}

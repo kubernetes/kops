@@ -35,7 +35,7 @@ type TaggableResource interface {
 var _ TaggableResource = &EBSVolume{}
 
 func (e *EBSVolume) FindResourceID(c fi.Cloud) (*string, error) {
-	actual, err := e.find(c.(*awsup.AWSCloud))
+	actual, err := e.find(c.(awsup.AWSCloud))
 	if err != nil {
 		return nil, fmt.Errorf("error querying for EBSVolume: %v", err)
 	}
@@ -46,20 +46,20 @@ func (e *EBSVolume) FindResourceID(c fi.Cloud) (*string, error) {
 }
 
 func (e *EBSVolume) Find(context *fi.Context) (*EBSVolume, error) {
-	actual, err := e.find(context.Cloud.(*awsup.AWSCloud))
+	actual, err := e.find(context.Cloud.(awsup.AWSCloud))
 	if actual != nil && err == nil {
 		e.ID = actual.ID
 	}
 	return actual, err
 }
 
-func (e *EBSVolume) find(cloud *awsup.AWSCloud) (*EBSVolume, error) {
+func (e *EBSVolume) find(cloud awsup.AWSCloud) (*EBSVolume, error) {
 	filters := cloud.BuildFilters(e.Name)
 	request := &ec2.DescribeVolumesInput{
 		Filters: filters,
 	}
 
-	response, err := cloud.EC2.DescribeVolumes(request)
+	response, err := cloud.EC2().DescribeVolumes(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing volumes: %v", err)
 	}
@@ -89,7 +89,7 @@ func (e *EBSVolume) find(cloud *awsup.AWSCloud) (*EBSVolume, error) {
 }
 
 func (e *EBSVolume) Run(c *fi.Context) error {
-	c.Cloud.(*awsup.AWSCloud).AddTags(e.Name, e.Tags)
+	c.Cloud.(awsup.AWSCloud).AddTags(e.Name, e.Tags)
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
@@ -119,7 +119,7 @@ func (_ *EBSVolume) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EBSVolume) e
 			Encrypted:        e.Encrypted,
 		}
 
-		response, err := t.Cloud.EC2.CreateVolume(request)
+		response, err := t.Cloud.EC2().CreateVolume(request)
 		if err != nil {
 			return fmt.Errorf("error creating PersistentVolume: %v", err)
 		}

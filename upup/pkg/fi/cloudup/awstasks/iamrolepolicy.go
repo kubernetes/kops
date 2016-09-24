@@ -23,14 +23,14 @@ type IAMRolePolicy struct {
 }
 
 func (e *IAMRolePolicy) Find(c *fi.Context) (*IAMRolePolicy, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	request := &iam.GetRolePolicyInput{
 		RoleName:   e.Role.Name,
 		PolicyName: e.Name,
 	}
 
-	response, err := cloud.IAM.GetRolePolicy(request)
+	response, err := cloud.IAM().GetRolePolicy(request)
 	if awsErr, ok := err.(awserr.Error); ok {
 		if awsErr.Code() == "NoSuchEntity" {
 			return nil, nil
@@ -117,7 +117,7 @@ func (_ *IAMRolePolicy) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRoleP
 		request.RoleName = e.Name
 		request.PolicyName = e.Name
 
-		_, err = t.Cloud.IAM.PutRolePolicy(request)
+		_, err = t.Cloud.IAM().PutRolePolicy(request)
 		if err != nil {
 			return fmt.Errorf("error creating/updating IAMRolePolicy: %v", err)
 		}
