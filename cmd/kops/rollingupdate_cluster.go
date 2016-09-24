@@ -8,6 +8,10 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/kutil"
+	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3"
+	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 )
 
 type RollingUpdateClusterCmd struct {
@@ -51,6 +55,24 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 		return err
 	}
 
+	contextName := cluster.Name
+	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		clientcmd.NewDefaultClientConfigLoadingRules(),
+		&clientcmd.ConfigOverrides{CurrentContext: contextName}).ClientConfig()
+	if err != nil {
+		return fmt.Errorf("cannot load kubecfg settings for %q: %v", contextName, err)
+	}
+
+	k8sClient, err := release_1_3.NewForConfig(config)
+	if err != nil {
+		return fmt.Errorf("cannot build kube client for %q: %v", contextName, err)
+	}
+
+	nodes, err := k8sClient.Core().Nodes().List(api.ListOptions{})
+	if err != nil {
+		return fmt.Errorf("error listing nodes in cluster: %v", err)
+	}
+
 	instanceGroupRegistry, err := rootCommand.InstanceGroupRegistry()
 	if err != nil {
 		return err
@@ -70,7 +92,7 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 	d.Cloud = cloud
 
 	warnUnmatched := true
-	groups, err := kutil.FindCloudInstanceGroups(cloud, cluster, instancegroups, warnUnmatched)
+	groups, err := kutil.FindCloudInstanceGroups(cloud, cluster, instancegroups, warnUnmatched, nodes.Items)
 	if err != nil {
 		return err
 	}
@@ -95,12 +117,26 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 		t.AddColumn("MAX", func(r *kutil.CloudInstanceGroup) string {
 			return strconv.Itoa(r.MaxSize())
 		})
+		t.AddColumn("NODES", func(r *kutil.CloudInstanceGroup) string {
+			var nodes []*v1.Node
+			for _, i := range r.Ready {
+				if i.Node != nil {
+					nodes = append(nodes, i.Node)
+				}
+			}
+			for _, i := range r.NeedUpdate {
+				if i.Node != nil {
+					nodes = append(nodes, i.Node)
+				}
+			}
+			return strconv.Itoa(len(nodes))
+		})
 		var l []*kutil.CloudInstanceGroup
 		for _, v := range groups {
 			l = append(l, v)
 		}
 
-		err := t.Render(l, os.Stdout, "NAME", "STATUS", "NEEDUPDATE", "READY", "MIN", "MAX")
+		err := t.Render(l, os.Stdout, "NAME", "STATUS", "NEEDUPDATE", "READY", "MIN", "MAX", "NODES")
 		if err != nil {
 			return err
 		}
@@ -123,5 +159,5 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 		return nil
 	}
 
-	return d.RollingUpdate(groups, c.Force)
+	return d.RollingUpdate(groups, c.Force, k8sClient)
 }

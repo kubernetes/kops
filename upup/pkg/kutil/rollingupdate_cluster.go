@@ -9,6 +9,8 @@ import (
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3"
 	"sync"
 	"time"
 )
@@ -18,7 +20,7 @@ type RollingUpdateCluster struct {
 	Cloud fi.Cloud
 }
 
-func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroups []*api.InstanceGroup, warnUnmatched bool) (map[string]*CloudInstanceGroup, error) {
+func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroups []*api.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*CloudInstanceGroup, error) {
 	awsCloud := cloud.(*awsup.AWSCloud)
 
 	groups := make(map[string]*CloudInstanceGroup)
@@ -28,6 +30,13 @@ func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroup
 	asgs, err := findAutoscalingGroups(awsCloud, tags)
 	if err != nil {
 		return nil, err
+	}
+
+	nodeMap := make(map[string]*v1.Node)
+	for i := range nodes {
+		node := &nodes[i]
+		awsID := node.Spec.ExternalID
+		nodeMap[awsID] = node
 	}
 
 	for _, asg := range asgs {
@@ -58,14 +67,14 @@ func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroup
 			}
 			continue
 		}
-		group := buildCloudInstanceGroup(instancegroup, asg)
+		group := buildCloudInstanceGroup(instancegroup, asg, nodeMap)
 		groups[instancegroup.Name] = group
 	}
 
 	return groups, nil
 }
 
-func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, force bool) error {
+func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, force bool, k8sClient *release_1_3.Clientset) error {
 	if len(groups) == 0 {
 		return nil
 	}
@@ -119,7 +128,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 			defer wg.Done()
 
 			for k, group := range masterGroups {
-				err := group.RollingUpdate(c.Cloud, force)
+				err := group.RollingUpdate(c.Cloud, force, k8sClient)
 
 				resultsMutex.Lock()
 				results[k] = err
@@ -144,10 +153,16 @@ type CloudInstanceGroup struct {
 	InstanceGroup *api.InstanceGroup
 	ASGName       string
 	Status        string
-	Ready         []*autoscaling.Instance
-	NeedUpdate    []*autoscaling.Instance
+	Ready         []*CloudInstanceGroupInstance
+	NeedUpdate    []*CloudInstanceGroupInstance
 
 	asg *autoscaling.Group
+}
+
+// CloudInstanceGroupInstance describes an instance in an autoscaling group
+type CloudInstanceGroupInstance struct {
+	ASGInstance *autoscaling.Instance
+	Node        *v1.Node
 }
 
 func (c *CloudInstanceGroup) MinSize() int {
@@ -158,7 +173,7 @@ func (c *CloudInstanceGroup) MaxSize() int {
 	return int(aws.Int64Value(c.asg.MaxSize))
 }
 
-func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group) *CloudInstanceGroup {
+func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group, nodeMap map[string]*v1.Node) *CloudInstanceGroup {
 	n := &CloudInstanceGroup{
 		ASGName:       aws.StringValue(g.AutoScalingGroupName),
 		InstanceGroup: ig,
@@ -168,10 +183,17 @@ func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group) *Cloud
 	findLaunchConfigurationName := aws.StringValue(g.LaunchConfigurationName)
 
 	for _, i := range g.Instances {
+		c := &CloudInstanceGroupInstance{ASGInstance: i}
+
+		node := nodeMap[aws.StringValue(i.InstanceId)]
+		if node != nil {
+			c.Node = node
+		}
+
 		if findLaunchConfigurationName == aws.StringValue(i.LaunchConfigurationName) {
-			n.Ready = append(n.Ready, i)
+			n.Ready = append(n.Ready, c)
 		} else {
-			n.NeedUpdate = append(n.NeedUpdate, i)
+			n.NeedUpdate = append(n.NeedUpdate, c)
 		}
 	}
 
@@ -184,7 +206,7 @@ func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group) *Cloud
 	return n
 }
 
-func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool) error {
+func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, k8sClient *release_1_3.Clientset) error {
 	c := cloud.(*awsup.AWSCloud)
 
 	update := n.NeedUpdate
@@ -192,7 +214,7 @@ func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool) error {
 		update = append(update, n.Ready...)
 	}
 	for _, i := range update {
-		glog.Infof("Stopping instance %q in AWS ASG %q", *i.InstanceId, n.ASGName)
+		glog.Infof("Stopping instance %q in AWS ASG %q", *i.ASGInstance.InstanceId, n.ASGName)
 
 		// TODO: Evacuate through k8s first?
 
@@ -203,11 +225,11 @@ func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool) error {
 		// TODO: Batch termination, like a rolling-update
 
 		request := &ec2.TerminateInstancesInput{
-			InstanceIds: []*string{i.InstanceId},
+			InstanceIds: []*string{i.ASGInstance.InstanceId},
 		}
 		_, err := c.EC2.TerminateInstances(request)
 		if err != nil {
-			return fmt.Errorf("error deleting instance %q: %v", i.InstanceId, err)
+			return fmt.Errorf("error deleting instance %q: %v", i.ASGInstance.InstanceId, err)
 		}
 
 		// TODO: Wait for node to appear back in k8s
