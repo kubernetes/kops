@@ -80,7 +80,7 @@ func (rc *RouteController) reconcileNodeRoutes() error {
 	if err != nil {
 		return fmt.Errorf("error listing routes: %v", err)
 	}
-	// TODO (cjcullen): use pkg/controller/framework.NewInformer to watch this
+	// TODO (cjcullen): use pkg/controller/cache.NewInformer to watch this
 	// and reduce the number of lists needed.
 	nodeList, err := rc.kubeClient.Core().Nodes().List(api.ListOptions{})
 	if err != nil {
@@ -137,7 +137,11 @@ func (rc *RouteController) reconcile(nodes []api.Node, routes []*cloudprovider.R
 				}
 			}(node.Name, nameHint, route)
 		} else {
-			rc.updateNetworkingCondition(node.Name, true)
+			// Update condition only if it doesn't reflect the current state.
+			_, condition := api.GetNodeCondition(&node.Status, api.NodeNetworkUnavailable)
+			if condition == nil || condition.Status != api.ConditionFalse {
+				rc.updateNetworkingCondition(node.Name, true)
+			}
 		}
 		nodeCIDRs[node.Name] = node.Spec.PodCIDR
 	}

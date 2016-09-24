@@ -32,11 +32,85 @@ import (
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	runtimeApi "k8s.io/kubernetes/pkg/kubelet/api/v1alpha1/runtime"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
+	"k8s.io/kubernetes/pkg/kubelet/dockershim"
 	"k8s.io/kubernetes/pkg/kubelet/events"
+	"k8s.io/kubernetes/pkg/kubelet/util/format"
 	"k8s.io/kubernetes/pkg/types"
 	utilruntime "k8s.io/kubernetes/pkg/util/runtime"
 	"k8s.io/kubernetes/pkg/util/term"
 )
+
+// startContainer starts a container and returns a message indicates why it is failed on error.
+// It starts the container through the following steps:
+// * pull the image
+// * create the container
+// * start the container
+// * run the post start lifecycle hooks (if applicable)
+func (m *kubeGenericRuntimeManager) startContainer(podSandboxID string, podSandboxConfig *runtimeApi.PodSandboxConfig, container *api.Container, pod *api.Pod, podStatus *kubecontainer.PodStatus, pullSecrets []api.Secret, podIP string) (string, error) {
+	// Step 1: pull the image.
+	err, msg := m.imagePuller.EnsureImageExists(pod, container, pullSecrets)
+	if err != nil {
+		return msg, err
+	}
+
+	// Step 2: create the container.
+	ref, err := kubecontainer.GenerateContainerRef(pod, container)
+	if err != nil {
+		glog.Errorf("Can't make a ref to pod %q, container %v: %v", format.Pod(pod), container.Name, err)
+	}
+	glog.V(4).Infof("Generating ref for container %s: %#v", container.Name, ref)
+
+	// For a new container, the RestartCount should be 0
+	restartCount := 0
+	containerStatus := podStatus.FindContainerStatusByName(container.Name)
+	if containerStatus != nil {
+		restartCount = containerStatus.RestartCount + 1
+	}
+
+	containerConfig, err := m.generateContainerConfig(container, pod, restartCount, podIP)
+	if err != nil {
+		m.recorder.Eventf(ref, api.EventTypeWarning, events.FailedToCreateContainer, "Failed to create container with error: %v", err)
+		return "Generate Container Config Failed", err
+	}
+	containerID, err := m.runtimeService.CreateContainer(podSandboxID, containerConfig, podSandboxConfig)
+	if err != nil {
+		m.recorder.Eventf(ref, api.EventTypeWarning, events.FailedToCreateContainer, "Failed to create container with error: %v", err)
+		return "Create Container Failed", err
+	}
+	m.recorder.Eventf(ref, api.EventTypeNormal, events.CreatedContainer, "Created container with id %v", containerID)
+	if ref != nil {
+		m.containerRefManager.SetRef(kubecontainer.ContainerID{
+			Type: m.runtimeName,
+			ID:   containerID,
+		}, ref)
+	}
+
+	// Step 3: start the container.
+	err = m.runtimeService.StartContainer(containerID)
+	if err != nil {
+		m.recorder.Eventf(ref, api.EventTypeWarning, events.FailedToStartContainer,
+			"Failed to start container with id %v with error: %v", containerID, err)
+		return "Start Container Failed", err
+	}
+	m.recorder.Eventf(ref, api.EventTypeNormal, events.StartedContainer, "Started container with id %v", containerID)
+
+	// Step 4: execute the post start hook.
+	if container.Lifecycle != nil && container.Lifecycle.PostStart != nil {
+		kubeContainerID := kubecontainer.ContainerID{
+			Type: m.runtimeName,
+			ID:   containerID,
+		}
+		msg, handlerErr := m.runner.Run(kubeContainerID, pod, container, container.Lifecycle.PostStart)
+		if handlerErr != nil {
+			err := fmt.Errorf("PostStart handler: %v", handlerErr)
+			m.generateContainerEvent(kubeContainerID, api.EventTypeWarning, events.FailedPostStartHook, msg)
+			m.killContainer(pod, kubeContainerID, container, "FailedPostStartHook", nil)
+			return "PostStart Hook Failed", err
+		}
+	}
+
+	return "", nil
+}
 
 // getContainerLogsPath gets log path for container.
 func getContainerLogsPath(containerName string, podUID types.UID) string {
@@ -239,6 +313,31 @@ func makeUID() string {
 	return fmt.Sprintf("%08x", rand.Uint32())
 }
 
+// getTerminationMessage gets termination message of the container.
+func getTerminationMessage(status *runtimeApi.ContainerStatus, kubeStatus *kubecontainer.ContainerStatus, terminationMessagePath string) string {
+	message := ""
+
+	if !kubeStatus.FinishedAt.IsZero() || kubeStatus.ExitCode != 0 {
+		if terminationMessagePath == "" {
+			return ""
+		}
+
+		for _, mount := range status.Mounts {
+			if mount.GetContainerPath() == terminationMessagePath {
+				path := mount.GetHostPath()
+				if data, err := ioutil.ReadFile(path); err != nil {
+					message = fmt.Sprintf("Error on reading termination-log %s: %v", path, err)
+				} else {
+					message = string(data)
+				}
+				break
+			}
+		}
+	}
+
+	return message
+}
+
 // getKubeletContainerStatuses gets all containers' status for the pod sandbox.
 func (m *kubeGenericRuntimeManager) getKubeletContainerStatuses(podSandboxID string) ([]*kubecontainer.ContainerStatus, error) {
 	containers, err := m.runtimeService.ListContainers(&runtimeApi.ContainerFilter{
@@ -278,27 +377,16 @@ func (m *kubeGenericRuntimeManager) getKubeletContainerStatuses(podSandboxID str
 			cStatus.StartedAt = time.Unix(status.GetStartedAt(), 0)
 		} else {
 			cStatus.Reason = status.GetReason()
+			cStatus.Message = status.GetMessage()
 			cStatus.ExitCode = int(status.GetExitCode())
 			cStatus.FinishedAt = time.Unix(status.GetFinishedAt(), 0)
 		}
 
-		message := ""
-		if !cStatus.FinishedAt.IsZero() || cStatus.ExitCode != 0 {
-			if annotatedInfo.TerminationMessagePath != "" {
-				for _, mount := range status.Mounts {
-					if mount.GetContainerPath() == annotatedInfo.TerminationMessagePath {
-						path := mount.GetHostPath()
-						if data, err := ioutil.ReadFile(path); err != nil {
-							message = fmt.Sprintf("Error on reading termination-log %s: %v", path, err)
-						} else {
-							message = string(data)
-						}
-						break
-					}
-				}
-			}
+		tMessage := getTerminationMessage(status, cStatus, annotatedInfo.TerminationMessagePath)
+		// Use the termination message written by the application is not empty
+		if len(tMessage) != 0 {
+			cStatus.Message = tMessage
 		}
-		cStatus.Message = message
 		statuses[i] = cStatus
 	}
 
@@ -361,12 +449,11 @@ func (m *kubeGenericRuntimeManager) killContainer(pod *api.Pod, containerID kube
 	if pod != nil && containerSpec != nil && containerSpec.Lifecycle != nil && containerSpec.Lifecycle.PreStop != nil {
 		gracePeriod = gracePeriod - m.executePreStopHook(pod, containerID, containerSpec, gracePeriod)
 	}
-	if gracePeriodOverride == nil {
-		// always give containers a minimal shutdown window to avoid unnecessary SIGKILLs
-		if gracePeriod < minimumGracePeriodInSeconds {
-			gracePeriod = minimumGracePeriodInSeconds
-		}
-	} else {
+	// always give containers a minimal shutdown window to avoid unnecessary SIGKILLs
+	if gracePeriod < minimumGracePeriodInSeconds {
+		gracePeriod = minimumGracePeriodInSeconds
+	}
+	if gracePeriodOverride != nil {
 		gracePeriod = *gracePeriodOverride
 		glog.V(3).Infof("Killing container %q, but using %d second grace period override", containerID, gracePeriod)
 	}
@@ -432,6 +519,13 @@ func (m *kubeGenericRuntimeManager) AttachContainer(id kubecontainer.ContainerID
 
 // GetContainerLogs returns logs of a specific container.
 func (m *kubeGenericRuntimeManager) GetContainerLogs(pod *api.Pod, containerID kubecontainer.ContainerID, logOptions *api.PodLogOptions, stdout, stderr io.Writer) (err error) {
+	// Get logs directly from docker for in-process docker integration for
+	// now to unblock other tests.
+	// TODO: remove this hack after setting down on how to implement log
+	// retrieval/management.
+	if ds, ok := m.runtimeService.(dockershim.DockerLegacyService); ok {
+		return ds.GetContainerLogs(pod, containerID, logOptions, stdout, stderr)
+	}
 	return fmt.Errorf("not implemented")
 }
 
@@ -440,6 +534,12 @@ func (m *kubeGenericRuntimeManager) GetContainerLogs(pod *api.Pod, containerID k
 // tty.
 // TODO: handle terminal resizing, refer https://github.com/kubernetes/kubernetes/issues/29579
 func (m *kubeGenericRuntimeManager) ExecInContainer(containerID kubecontainer.ContainerID, cmd []string, stdin io.Reader, stdout, stderr io.WriteCloser, tty bool, resize <-chan term.Size) error {
+	// Use `docker exec` directly for in-process docker integration for
+	// now to unblock other tests.
+	// TODO: remove this hack after exec is defined in CRI.
+	if ds, ok := m.runtimeService.(dockershim.DockerLegacyService); ok {
+		return ds.ExecInContainer(containerID, cmd, stdin, stdout, stderr, tty, resize)
+	}
 	return fmt.Errorf("not implemented")
 }
 

@@ -19,6 +19,7 @@ package factory
 import (
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 	"sync"
 
@@ -206,7 +207,7 @@ func RegisterCustomPriorityFunction(policy schedulerapi.PriorityPolicy) string {
 			}
 		} else if policy.Argument.LabelPreference != nil {
 			pcf = &PriorityConfigFactory{
-				Function: func(args PluginFactoryArgs) algorithm.PriorityFunction {
+				MapReduceFunction: func(args PluginFactoryArgs) (algorithm.PriorityMapFunction, algorithm.PriorityReduceFunction) {
 					return priorities.NewNodeLabelPriority(
 						policy.Argument.LabelPreference.Label,
 						policy.Argument.LabelPreference.Presence,
@@ -375,5 +376,6 @@ func ListAlgorithmProviders() string {
 	for name := range algorithmProviderMap {
 		availableAlgorithmProviders = append(availableAlgorithmProviders, name)
 	}
+	sort.Strings(availableAlgorithmProviders)
 	return strings.Join(availableAlgorithmProviders, " | ")
 }

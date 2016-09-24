@@ -21,14 +21,14 @@ import (
 	"k8s.io/kubernetes/pkg/apis/autoscaling"
 	autoscalingapiv1 "k8s.io/kubernetes/pkg/apis/autoscaling/v1"
 	"k8s.io/kubernetes/pkg/genericapiserver"
-	horizontalpodautoscaleretcd "k8s.io/kubernetes/pkg/registry/horizontalpodautoscaler/etcd"
+	horizontalpodautoscaleretcd "k8s.io/kubernetes/pkg/registry/autoscaling/horizontalpodautoscaler/etcd"
 )
 
 type AutoscalingRESTStorageProvider struct{}
 
-var _ RESTStorageProvider = &AutoscalingRESTStorageProvider{}
+var _ genericapiserver.RESTStorageProvider = &AutoscalingRESTStorageProvider{}
 
-func (p AutoscalingRESTStorageProvider) NewRESTStorage(apiResourceConfigSource genericapiserver.APIResourceConfigSource, restOptionsGetter RESTOptionsGetter) (genericapiserver.APIGroupInfo, bool) {
+func (p AutoscalingRESTStorageProvider) NewRESTStorage(apiResourceConfigSource genericapiserver.APIResourceConfigSource, restOptionsGetter genericapiserver.RESTOptionsGetter) (genericapiserver.APIGroupInfo, bool) {
 	apiGroupInfo := genericapiserver.NewDefaultAPIGroupInfo(autoscaling.GroupName)
 
 	if apiResourceConfigSource.AnyResourcesForVersionEnabled(autoscalingapiv1.SchemeGroupVersion) {
@@ -39,7 +39,7 @@ func (p AutoscalingRESTStorageProvider) NewRESTStorage(apiResourceConfigSource g
 	return apiGroupInfo, true
 }
 
-func (p AutoscalingRESTStorageProvider) v1Storage(apiResourceConfigSource genericapiserver.APIResourceConfigSource, restOptionsGetter RESTOptionsGetter) map[string]rest.Storage {
+func (p AutoscalingRESTStorageProvider) v1Storage(apiResourceConfigSource genericapiserver.APIResourceConfigSource, restOptionsGetter genericapiserver.RESTOptionsGetter) map[string]rest.Storage {
 	version := autoscalingapiv1.SchemeGroupVersion
 
 	storage := map[string]rest.Storage{}

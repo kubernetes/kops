@@ -26,14 +26,15 @@ import (
 	"sync"
 	"time"
 
-	staging "k8s.io/client-go/1.4/kubernetes"
-	"k8s.io/client-go/1.4/pkg/util/sets"
-	clientreporestclient "k8s.io/client-go/1.4/rest"
+	staging "k8s.io/client-go/1.5/kubernetes"
+	"k8s.io/client-go/1.5/pkg/util/sets"
+	clientreporestclient "k8s.io/client-go/1.5/rest"
 	"k8s.io/kubernetes/federation/client/clientset_generated/federation_release_1_4"
 	"k8s.io/kubernetes/pkg/api"
 	apierrs "k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/pkg/apimachinery/registered"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
 	"k8s.io/kubernetes/pkg/client/restclient"
 	"k8s.io/kubernetes/pkg/client/typed/dynamic"
@@ -120,6 +121,12 @@ func NewDefaultFederatedFramework(baseName string) *Framework {
 	return f
 }
 
+func NewDefaultGroupVersionFramework(baseName string, groupVersion unversioned.GroupVersion) *Framework {
+	f := NewDefaultFramework(baseName)
+	f.options.GroupVersion = &groupVersion
+	return f
+}
+
 func NewFramework(baseName string, options FrameworkOptions, client *client.Client) *Framework {
 	f := &Framework{
 		BaseName:                 baseName,
@@ -191,7 +198,7 @@ func (f *Framework) BeforeEach() {
 		clientRepoConfig := getClientRepoConfig(config)
 		f.StagingClient, err = staging.NewForConfig(clientRepoConfig)
 		Expect(err).NotTo(HaveOccurred())
-		f.ClientPool = dynamic.NewClientPool(config, dynamic.LegacyAPIPathResolverFunc)
+		f.ClientPool = dynamic.NewClientPool(config, registered.RESTMapper(), dynamic.LegacyAPIPathResolverFunc)
 	}
 
 	if f.federated {
@@ -350,10 +357,15 @@ func (f *Framework) AfterEach() {
 
 	// Print events if the test failed.
 	if CurrentGinkgoTestDescription().Failed && TestContext.DumpLogsOnFailure {
-		DumpAllNamespaceInfo(f.Client, f.Namespace.Name)
+		// Pass both unversioned client and and versioned clientset, till we have removed all uses of the unversioned client.
+		DumpAllNamespaceInfo(f.Client, f.Clientset_1_5, f.Namespace.Name)
 		By(fmt.Sprintf("Dumping a list of prepulled images on each node"))
 		LogContainersInPodsWithLabels(f.Client, api.NamespaceSystem, ImagePullerLabels, "image-puller")
 		if f.federated {
+			// Dump federation events in federation namespace.
+			DumpEventsInNamespace(func(opts api.ListOptions, ns string) (*v1.EventList, error) {
+				return f.FederationClientset_1_4.Core().Events(ns).List(opts)
+			}, f.FederationNamespace.Name)
 			// Print logs of federation control plane pods (federation-apiserver and federation-controller-manager)
 			LogPodsWithLabels(f.Client, "federation", map[string]string{"app": "federated-cluster"})
 			// Print logs of kube-dns pod

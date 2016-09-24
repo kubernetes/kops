@@ -71,6 +71,8 @@ cluster-tag
 cluster-monitor-period
 cluster-signing-cert-file
 cluster-signing-key-file
+cni-bin-dir
+cni-conf-dir
 concurrent-deployment-syncs
 concurrent-endpoint-syncs
 concurrent-namespace-syncs
@@ -100,6 +102,7 @@ create-external-load-balancer
 current-release-pr
 current-replicas
 daemonset-lookup-cache-size
+data-dir
 default-container-cpu-limit
 default-container-mem-limit
 delay-shutdown
@@ -172,6 +175,7 @@ experimental-flannel-overlay
 experimental-keystone-url
 experimental-nvidia-gpus
 experimental-prefix
+experimental-runtime-integration-type
 external-hostname
 external-ip
 extra-peer-dirs
@@ -436,10 +440,12 @@ rkt-path
 rkt-stage1-image
 root-ca-file
 root-dir
+route-reconciliation-period
 run-proxy
 run-services-mode
 runtime-cgroups
 runtime-config
+runtime-integration-type
 runtime-request-timeout
 save-config
 scheduler-config
@@ -500,6 +506,7 @@ tcp-services
 terminated-pod-gc-threshold
 test-flags
 test-timeout
+tls-ca-file
 tls-cert-file
 tls-private-key-file
 to-version
@@ -512,6 +519,7 @@ udp-timeout
 unhealthy-zone-threshold
 unix-socket
 update-period
+upgrade-image
 upgrade-target
 use-kubernetes-cluster-service
 user-whitelist
@@ -527,3 +535,4 @@ windows-line-endings
 www-prefix
 zone-name
 garbage-collector-enabled
+viper-config
