@@ -35,7 +35,7 @@ kops: gobindata
 
 gobindata:
 	go build ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS}" -o ${GOPATH_1ST}/bin/go-bindata k8s.io/kops/vendor/github.com/jteeuwen/go-bindata/go-bindata
-	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOPATH_1ST}/bin/go-bindata -o upup/models/bindata.go -pkg models -prefix upup/models/ upup/models/cloudup/... upup/models/config/... upup/models/nodeup/... upup/models/proto/...
+	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOPATH_1ST}/bin/go-bindata -o upup/models/bindata.go -pkg models -ignore="\\.DS_Store" -ignore=".*\\.go" -prefix upup/ upup/models/...
 
 # Build in a docker container with golang 1.X
 # Used to test we have not broken 1.X
