@@ -22,7 +22,7 @@ func (e *IAMInstanceProfileRole) String() string {
 }
 
 func (e *IAMInstanceProfileRole) Find(c *fi.Context) (*IAMInstanceProfileRole, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	if e.Role == nil || e.Role.ID == nil {
 		glog.V(2).Infof("Role/RoleID not set")
@@ -32,7 +32,7 @@ func (e *IAMInstanceProfileRole) Find(c *fi.Context) (*IAMInstanceProfileRole, e
 
 	request := &iam.GetInstanceProfileInput{InstanceProfileName: e.InstanceProfile.Name}
 
-	response, err := cloud.IAM.GetInstanceProfile(request)
+	response, err := cloud.IAM().GetInstanceProfile(request)
 	if awsErr, ok := err.(awserr.Error); ok {
 		if awsErr.Code() == "NoSuchEntity" {
 			return nil, nil
@@ -79,7 +79,7 @@ func (_ *IAMInstanceProfileRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes 
 			RoleName:            e.Role.Name,
 		}
 
-		_, err := t.Cloud.IAM.AddRoleToInstanceProfile(request)
+		_, err := t.Cloud.IAM().AddRoleToInstanceProfile(request)
 		if err != nil {
 			return fmt.Errorf("error creating IAMInstanceProfileRole: %v", err)
 		}

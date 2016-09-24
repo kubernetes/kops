@@ -44,14 +44,14 @@ func (e *LaunchConfiguration) CompareWithID() *string {
 }
 
 func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	request := &autoscaling.DescribeLaunchConfigurationsInput{}
 
 	prefix := *e.Name + "-"
 
 	configurations := map[string]*autoscaling.LaunchConfiguration{}
-	err := cloud.Autoscaling.DescribeLaunchConfigurationsPages(request, func(page *autoscaling.DescribeLaunchConfigurationsOutput, lastPage bool) bool {
+	err := cloud.Autoscaling().DescribeLaunchConfigurationsPages(request, func(page *autoscaling.DescribeLaunchConfigurationsOutput, lastPage bool) bool {
 		for _, l := range page.LaunchConfigurations {
 			name := aws.StringValue(l.LaunchConfigurationName)
 			if strings.HasPrefix(name, prefix) {
@@ -150,7 +150,7 @@ func buildEphemeralDevices(instanceTypeName *string) (map[string]*BlockDeviceMap
 	return blockDeviceMappings, nil
 }
 
-func (e *LaunchConfiguration) buildRootDevice(cloud *awsup.AWSCloud) (map[string]*BlockDeviceMapping, error) {
+func (e *LaunchConfiguration) buildRootDevice(cloud awsup.AWSCloud) (map[string]*BlockDeviceMapping, error) {
 	imageID := fi.StringValue(e.ImageID)
 	image, err := cloud.ResolveImage(imageID)
 	if err != nil {
@@ -255,7 +255,7 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 		request.IamInstanceProfile = e.IAMInstanceProfile.Name
 	}
 
-	_, err = t.Cloud.Autoscaling.CreateLaunchConfiguration(request)
+	_, err = t.Cloud.Autoscaling().CreateLaunchConfiguration(request)
 
 	if err != nil {
 		if awsup.AWSErrorCode(err) == "ValidationError" {
@@ -301,7 +301,7 @@ type terraformBlockDevice struct {
 }
 
 func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LaunchConfiguration) error {
-	cloud := t.Cloud.(*awsup.AWSCloud)
+	cloud := t.Cloud.(awsup.AWSCloud)
 
 	if e.ImageID == nil {
 		return fi.RequiredField("ImageID")

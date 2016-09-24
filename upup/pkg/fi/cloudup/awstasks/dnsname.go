@@ -23,7 +23,7 @@ type DNSName struct {
 }
 
 func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	findName := fi.StringValue(e.Name)
 	if findName == "" {
@@ -43,7 +43,7 @@ func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
 
 	var found *route53.ResourceRecordSet
 
-	err := cloud.Route53.ListResourceRecordSetsPages(request, func(p *route53.ListResourceRecordSetsOutput, lastPage bool) (shouldContinue bool) {
+	err := cloud.Route53().ListResourceRecordSetsPages(request, func(p *route53.ListResourceRecordSetsOutput, lastPage bool) (shouldContinue bool) {
 		for _, rr := range p.ResourceRecordSets {
 			resourceType := aws.StringValue(rr.Type)
 			name := aws.StringValue(rr.Name)
@@ -124,7 +124,7 @@ func (_ *DNSName) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSName) error
 
 	glog.V(2).Infof("Updating DNS record %q", *e.Name)
 
-	response, err := t.Cloud.Route53.ChangeResourceRecordSets(request)
+	response, err := t.Cloud.Route53().ChangeResourceRecordSets(request)
 	if err != nil {
 		return fmt.Errorf("error creating ResourceRecordSets: %v", err)
 	}

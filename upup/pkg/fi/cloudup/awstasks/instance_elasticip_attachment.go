@@ -19,7 +19,7 @@ func (e *InstanceElasticIPAttachment) String() string {
 }
 
 func (e *InstanceElasticIPAttachment) Find(c *fi.Context) (*InstanceElasticIPAttachment, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	instanceID := e.Instance.ID
 	eipID := e.ElasticIP.ID
@@ -32,7 +32,7 @@ func (e *InstanceElasticIPAttachment) Find(c *fi.Context) (*InstanceElasticIPAtt
 		AllocationIds: []*string{eipID},
 	}
 
-	response, err := cloud.EC2.DescribeAddresses(request)
+	response, err := cloud.EC2().DescribeAddresses(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing ElasticIPs: %v", err)
 	}
@@ -72,7 +72,7 @@ func (_ *InstanceElasticIPAttachment) RenderAWS(t *awsup.AWSAPITarget, a, e, cha
 		request.InstanceId = e.Instance.ID
 		request.AllocationId = a.ElasticIP.ID
 
-		_, err = t.Cloud.EC2.AssociateAddress(request)
+		_, err = t.Cloud.EC2().AssociateAddress(request)
 		if err != nil {
 			return fmt.Errorf("error creating InstanceElasticIPAttachment: %v", err)
 		}

@@ -24,8 +24,8 @@ func (e *InternetGateway) CompareWithID() *string {
 	return e.ID
 }
 
-func findInternetGateway(cloud *awsup.AWSCloud, request *ec2.DescribeInternetGatewaysInput) (*ec2.InternetGateway, error) {
-	response, err := cloud.EC2.DescribeInternetGateways(request)
+func findInternetGateway(cloud awsup.AWSCloud, request *ec2.DescribeInternetGatewaysInput) (*ec2.InternetGateway, error) {
+	response, err := cloud.EC2().DescribeInternetGateways(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing InternetGateways: %v", err)
 	}
@@ -41,7 +41,7 @@ func findInternetGateway(cloud *awsup.AWSCloud, request *ec2.DescribeInternetGat
 }
 
 func (e *InternetGateway) Find(c *fi.Context) (*InternetGateway, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	request := &ec2.DescribeInternetGatewaysInput{}
 
@@ -118,7 +118,7 @@ func (_ *InternetGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Intern
 
 		request := &ec2.CreateInternetGatewayInput{}
 
-		response, err := t.Cloud.EC2.CreateInternetGateway(request)
+		response, err := t.Cloud.EC2().CreateInternetGateway(request)
 		if err != nil {
 			return fmt.Errorf("error creating InternetGateway: %v", err)
 		}
@@ -134,7 +134,7 @@ func (_ *InternetGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Intern
 			InternetGatewayId: e.ID,
 		}
 
-		_, err := t.Cloud.EC2.AttachInternetGateway(attachRequest)
+		_, err := t.Cloud.EC2().AttachInternetGateway(attachRequest)
 		if err != nil {
 			return fmt.Errorf("error attaching InternetGateway to VPC: %v", err)
 		}
@@ -166,7 +166,7 @@ func (_ *InternetGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, ch
 				return fmt.Errorf("VPC ID is required when InternetGateway is shared")
 			}
 			request.Filters = []*ec2.Filter{awsup.NewEC2Filter("attachment.vpc-id", vpcID)}
-			igw, err := findInternetGateway(t.Cloud.(*awsup.AWSCloud), request)
+			igw, err := findInternetGateway(t.Cloud.(awsup.AWSCloud), request)
 			if err != nil {
 				return err
 			}
@@ -180,7 +180,7 @@ func (_ *InternetGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, ch
 		return nil
 	}
 
-	cloud := t.Cloud.(*awsup.AWSCloud)
+	cloud := t.Cloud.(awsup.AWSCloud)
 
 	tf := &terraformInternetGateway{
 		VPCID: e.VPC.TerraformLink(),

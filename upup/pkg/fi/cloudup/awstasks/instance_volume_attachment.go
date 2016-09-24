@@ -21,7 +21,7 @@ func (e *InstanceVolumeAttachment) String() string {
 }
 
 func (e *InstanceVolumeAttachment) Find(c *fi.Context) (*InstanceVolumeAttachment, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	instanceID := e.Instance.ID
 	volumeID := e.Volume.ID
@@ -89,7 +89,7 @@ func (_ *InstanceVolumeAttachment) RenderAWS(t *awsup.AWSAPITarget, a, e, change
 			Device:     e.Device,
 		}
 
-		_, err = t.Cloud.EC2.AttachVolume(request)
+		_, err = t.Cloud.EC2().AttachVolume(request)
 		if err != nil {
 			return fmt.Errorf("error creating InstanceVolumeAttachment: %v", err)
 		}
