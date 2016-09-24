@@ -15,8 +15,9 @@ import (
 )
 
 type RollingUpdateClusterCmd struct {
-	Yes   bool
-	Force bool
+	Yes       bool
+	Force     bool
+	CloudOnly bool
 
 	cobraCommand *cobra.Command
 }
@@ -35,6 +36,7 @@ func init() {
 
 	cmd.Flags().BoolVar(&rollingupdateCluster.Yes, "yes", false, "perform rolling update without confirmation")
 	cmd.Flags().BoolVar(&rollingupdateCluster.Force, "force", false, "Force rolling update, even if no changes")
+	cmd.Flags().BoolVar(&rollingupdateCluster.CloudOnly, "cloudonly", false, "Perform rolling update without confirming progress with k8s")
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		err := rollingupdateCluster.Run(args)
@@ -63,14 +65,24 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 		return fmt.Errorf("cannot load kubecfg settings for %q: %v", contextName, err)
 	}
 
-	k8sClient, err := release_1_3.NewForConfig(config)
-	if err != nil {
-		return fmt.Errorf("cannot build kube client for %q: %v", contextName, err)
-	}
+	var nodes []v1.Node
+	var k8sClient *release_1_3.Clientset
+	if !c.CloudOnly {
+		k8sClient, err = release_1_3.NewForConfig(config)
+		if err != nil {
+			return fmt.Errorf("cannot build kube client for %q: %v", contextName, err)
+		}
 
-	nodes, err := k8sClient.Core().Nodes().List(api.ListOptions{})
-	if err != nil {
-		return fmt.Errorf("error listing nodes in cluster: %v", err)
+		nodeList, err := k8sClient.Core().Nodes().List(api.ListOptions{})
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Unable to reach the kubernetes API.\n")
+			fmt.Fprintf(os.Stderr, "Use --cloudonly to do a rolling-update without confirming progress with the k8s API\n\n")
+			return fmt.Errorf("error listing nodes in cluster: %v", err)
+		}
+
+		if nodeList != nil {
+			nodes = nodeList.Items
+		}
 	}
 
 	instanceGroupRegistry, err := rootCommand.InstanceGroupRegistry()
@@ -92,7 +104,7 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 	d.Cloud = cloud
 
 	warnUnmatched := true
-	groups, err := kutil.FindCloudInstanceGroups(cloud, cluster, instancegroups, warnUnmatched, nodes.Items)
+	groups, err := kutil.FindCloudInstanceGroups(cloud, cluster, instancegroups, warnUnmatched, nodes)
 	if err != nil {
 		return err
 	}
@@ -136,7 +148,11 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 			l = append(l, v)
 		}
 
-		err := t.Render(l, os.Stdout, "NAME", "STATUS", "NEEDUPDATE", "READY", "MIN", "MAX", "NODES")
+		columns := []string{"NAME", "STATUS", "NEEDUPDATE", "READY", "MIN", "MAX"}
+		if !c.CloudOnly {
+			columns = append(columns, "NODES")
+		}
+		err := t.Render(l, os.Stdout, columns...)
 		if err != nil {
 			return err
 		}
