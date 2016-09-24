@@ -55,3 +55,7 @@ Values:
 * `external` updates are performed by an external system (or manually), should not be automatically applied
 
 * unset means to use the default policy, which is currently to apply OS security updates unless they require a reboot
+
+## out
+
+`out` determines the directory into which kubectl will write the target output.  It defaults to `out/terraform`
