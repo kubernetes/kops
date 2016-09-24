@@ -1,0 +1,3 @@
+{
+  "onChangeExecute": [ "sysctl", "--system" ]
+}
