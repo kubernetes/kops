@@ -150,7 +150,6 @@ type ClusterSpec struct {
 	////KubecfgKey                    []byte
 	//
 	//AdmissionControl              string `json:",omitempty"`
-	//RuntimeConfig                 string `json:",omitempty"`
 	//
 	//KubeImageTag                  string `json:",omitempty"`
 	//KubeDockerRegistry            string `json:",omitempty"`
