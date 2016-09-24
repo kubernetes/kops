@@ -51,7 +51,7 @@ var _ = framework.KubeDescribe("Federated ingresses [Feature:Federation]", func(
 
 	// Create/delete ingress api objects
 	// Validate federation apiserver, does not rely on underlying clusters or federation ingress controller.
-	Describe("Ingress objects", func() {
+	Describe("Federated Ingresses", func() {
 		AfterEach(func() {
 			nsName := f.FederationNamespace.Name
 			// Delete registered ingresses.
@@ -137,6 +137,7 @@ var _ = framework.KubeDescribe("Federated ingresses [Feature:Federation]", func(
 				deleteBackendPodsOrFail(clusters, ns)
 				if service != nil {
 					deleteServiceOrFail(f.FederationClientset_1_4, ns, service.Name)
+					cleanupServiceShardsAndProviderResources(ns, service, clusters)
 					service = nil
 				} else {
 					By("No service to delete. Service is nil")
@@ -149,7 +150,7 @@ var _ = framework.KubeDescribe("Federated ingresses [Feature:Federation]", func(
 				}
 			})
 
-			PIt("should be able to discover a federated ingress service", func() {
+			PIt("should be able to discover a federated ingress service via DNS", func() {
 				// we are about the ingress name
 				svcDNSNames := []string{
 					fmt.Sprintf("%s.%s", FederatedIngressServiceName, ns),
@@ -163,7 +164,9 @@ var _ = framework.KubeDescribe("Federated ingresses [Feature:Federation]", func(
 					discoverService(f, DNSName, true, "federated-ingress-e2e-discovery-pod-"+strconv.Itoa(i))
 				}
 				// TODO check dns record in global dns server
+			})
 
+			It("should be able to connect to a federated ingress via its load balancer", func() {
 				// check the traffic on federation ingress
 				jig.waitForFederatedIngress()
 			})

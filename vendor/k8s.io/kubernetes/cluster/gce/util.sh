@@ -47,15 +47,21 @@ elif [[ "${MASTER_OS_DISTRIBUTION}" == "debian" ]]; then
   MASTER_IMAGE_PROJECT=${KUBE_GCE_MASTER_PROJECT:-google-containers}
 fi
 
-if [[ "${NODE_OS_DISTRIBUTION}" == "gci" ]]; then
-  # If the node image is not set, we use the latest GCI image.
-  # Otherwise, we respect whatever is set by the user.
-  NODE_IMAGE=${KUBE_GCE_NODE_IMAGE:-${GCI_VERSION}}
-  NODE_IMAGE_PROJECT=${KUBE_GCE_NODE_PROJECT:-google-containers}
-elif [[ "${NODE_OS_DISTRIBUTION}" == "debian" ]]; then
-  NODE_IMAGE=${KUBE_GCE_NODE_IMAGE:-${CVM_VERSION}}
-  NODE_IMAGE_PROJECT=${KUBE_GCE_NODE_PROJECT:-google-containers}
-fi
+# Sets node image based on the specified os distro. Currently this function only
+# supports gci and debian.
+function set-node-image() {
+  if [[ "${NODE_OS_DISTRIBUTION}" == "gci" ]]; then
+    # If the node image is not set, we use the latest GCI image.
+    # Otherwise, we respect whatever is set by the user.
+    NODE_IMAGE=${KUBE_GCE_NODE_IMAGE:-${GCI_VERSION}}
+    NODE_IMAGE_PROJECT=${KUBE_GCE_NODE_PROJECT:-google-containers}
+  elif [[ "${NODE_OS_DISTRIBUTION}" == "debian" ]]; then
+    NODE_IMAGE=${KUBE_GCE_NODE_IMAGE:-${CVM_VERSION}}
+    NODE_IMAGE_PROJECT=${KUBE_GCE_NODE_PROJECT:-google-containers}
+  fi
+}
+
+set-node-image
 
 # Verfiy cluster autoscaler configuration.
 if [[ "${ENABLE_CLUSTER_AUTOSCALER}" == "true" ]]; then
@@ -595,9 +601,8 @@ function kube-up() {
     parse-master-env
     create-nodes
   elif [[ ${KUBE_EXPERIMENTAL_REPLICATE_EXISTING_MASTER:-} == "true" ]]; then
-    # TODO(jsz): implement adding replica for other distributions.
-    if  [[ "${MASTER_OS_DISTRIBUTION}" != "gci" ]]; then
-      echo "Master replication supported only for gci"
+    if  [[ "${MASTER_OS_DISTRIBUTION}" != "gci" && "${MASTER_OS_DISTRIBUTION}" != "debian" ]]; then
+      echo "Master replication supported only for gci and debian"
       return 1
     fi
     create-loadbalancer
@@ -1127,34 +1132,36 @@ function kube-down() {
   echo "Bringing down cluster"
   set +e  # Do not stop on error
 
-  # Get the name of the managed instance group template before we delete the
-  # managed instance group. (The name of the managed instance group template may
-  # change during a cluster upgrade.)
-  local templates=$(get-template "${PROJECT}")
+  if [[ "${KUBE_DELETE_NODES:-}" != "false" ]]; then
+    # Get the name of the managed instance group template before we delete the
+    # managed instance group. (The name of the managed instance group template may
+    # change during a cluster upgrade.)
+    local templates=$(get-template "${PROJECT}")
 
-  for group in ${INSTANCE_GROUPS[@]:-}; do
-    if gcloud compute instance-groups managed describe "${group}" --project "${PROJECT}" --zone "${ZONE}" &>/dev/null; then
-      gcloud compute instance-groups managed delete \
-        --project "${PROJECT}" \
-        --quiet \
-        --zone "${ZONE}" \
-        "${group}" &
-    fi
-  done
+    for group in ${INSTANCE_GROUPS[@]:-}; do
+      if gcloud compute instance-groups managed describe "${group}" --project "${PROJECT}" --zone "${ZONE}" &>/dev/null; then
+        gcloud compute instance-groups managed delete \
+          --project "${PROJECT}" \
+          --quiet \
+          --zone "${ZONE}" \
+          "${group}" &
+      fi
+    done
 
-  # Wait for last batch of jobs
-  kube::util::wait-for-jobs || {
-    echo -e "Failed to delete instance group(s)." >&2
-  }
+    # Wait for last batch of jobs
+    kube::util::wait-for-jobs || {
+      echo -e "Failed to delete instance group(s)." >&2
+    }
 
-  for template in ${templates[@]:-}; do
-    if gcloud compute instance-templates describe --project "${PROJECT}" "${template}" &>/dev/null; then
-      gcloud compute instance-templates delete \
-        --project "${PROJECT}" \
-        --quiet \
-        "${template}"
-    fi
-  done
+    for template in ${templates[@]:-}; do
+      if gcloud compute instance-templates describe --project "${PROJECT}" "${template}" &>/dev/null; then
+        gcloud compute instance-templates delete \
+          --project "${PROJECT}" \
+          --quiet \
+          "${template}"
+      fi
+    done
+  fi
 
   local -r REPLICA_NAME="$(get-replica-name)"
 
@@ -1183,12 +1190,14 @@ function kube-down() {
   fi
 
   # Delete the master replica pd (possibly leaked by kube-up if master create failed).
-  if gcloud compute disks describe "${REPLICA_NAME}"-pd --zone "${ZONE}" --project "${PROJECT}" &>/dev/null; then
+  # TODO(jszczepkowski): remove also possibly leaked replicas' pds
+  local -r replica_pd="${REPLICA_NAME:-${MASTER_NAME}}-pd"
+  if gcloud compute disks describe "${replica_pd}" --zone "${ZONE}" --project "${PROJECT}" &>/dev/null; then
     gcloud compute disks delete \
       --project "${PROJECT}" \
       --quiet \
       --zone "${ZONE}" \
-      "${REPLICA_NAME}"-pd
+      "${replica_pd}"
   fi
 
   # Delete disk for cluster registry if enabled
@@ -1254,23 +1263,25 @@ function kube-down() {
     fi
   fi
 
-  # Find out what minions are running.
-  local -a minions
-  minions=( $(gcloud compute instances list \
-                --project "${PROJECT}" --zones "${ZONE}" \
-                --regexp "${NODE_INSTANCE_PREFIX}-.+" \
-                --format='value(name)') )
-  # If any minions are running, delete them in batches.
-  while (( "${#minions[@]}" > 0 )); do
-    echo Deleting nodes "${minions[*]::${batch}}"
-    gcloud compute instances delete \
-      --project "${PROJECT}" \
-      --quiet \
-      --delete-disks boot \
-      --zone "${ZONE}" \
-      "${minions[@]::${batch}}"
-    minions=( "${minions[@]:${batch}}" )
-  done
+  if [[ "${KUBE_DELETE_NODES:-}" != "false" ]]; then
+    # Find out what minions are running.
+    local -a minions
+    minions=( $(gcloud compute instances list \
+                  --project "${PROJECT}" --zones "${ZONE}" \
+                  --regexp "${NODE_INSTANCE_PREFIX}-.+" \
+                  --format='value(name)') )
+    # If any minions are running, delete them in batches.
+    while (( "${#minions[@]}" > 0 )); do
+      echo Deleting nodes "${minions[*]::${batch}}"
+      gcloud compute instances delete \
+        --project "${PROJECT}" \
+        --quiet \
+        --delete-disks boot \
+        --zone "${ZONE}" \
+        "${minions[@]::${batch}}"
+      minions=( "${minions[@]:${batch}}" )
+    done
+  fi
 
   # Delete routes.
   local -a routes

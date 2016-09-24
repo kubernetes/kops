@@ -22,6 +22,7 @@ import (
 	authorizationv1beta1 "k8s.io/kubernetes/pkg/apis/authorization/v1beta1"
 	"k8s.io/kubernetes/pkg/auth/authorizer"
 	"k8s.io/kubernetes/pkg/genericapiserver"
+	"k8s.io/kubernetes/pkg/registry/authorization/localsubjectaccessreview"
 	"k8s.io/kubernetes/pkg/registry/authorization/selfsubjectaccessreview"
 	"k8s.io/kubernetes/pkg/registry/authorization/subjectaccessreview"
 )
@@ -30,9 +31,9 @@ type AuthorizationRESTStorageProvider struct {
 	Authorizer authorizer.Authorizer
 }
 
-var _ RESTStorageProvider = &AuthorizationRESTStorageProvider{}
+var _ genericapiserver.RESTStorageProvider = &AuthorizationRESTStorageProvider{}
 
-func (p AuthorizationRESTStorageProvider) NewRESTStorage(apiResourceConfigSource genericapiserver.APIResourceConfigSource, restOptionsGetter RESTOptionsGetter) (genericapiserver.APIGroupInfo, bool) {
+func (p AuthorizationRESTStorageProvider) NewRESTStorage(apiResourceConfigSource genericapiserver.APIResourceConfigSource, restOptionsGetter genericapiserver.RESTOptionsGetter) (genericapiserver.APIGroupInfo, bool) {
 	if p.Authorizer == nil {
 		return genericapiserver.APIGroupInfo{}, false
 	}
@@ -47,7 +48,7 @@ func (p AuthorizationRESTStorageProvider) NewRESTStorage(apiResourceConfigSource
 	return apiGroupInfo, true
 }
 
-func (p AuthorizationRESTStorageProvider) v1beta1Storage(apiResourceConfigSource genericapiserver.APIResourceConfigSource, restOptionsGetter RESTOptionsGetter) map[string]rest.Storage {
+func (p AuthorizationRESTStorageProvider) v1beta1Storage(apiResourceConfigSource genericapiserver.APIResourceConfigSource, restOptionsGetter genericapiserver.RESTOptionsGetter) map[string]rest.Storage {
 	version := authorizationv1beta1.SchemeGroupVersion
 
 	storage := map[string]rest.Storage{}
@@ -56,6 +57,9 @@ func (p AuthorizationRESTStorageProvider) v1beta1Storage(apiResourceConfigSource
 	}
 	if apiResourceConfigSource.ResourceEnabled(version.WithResource("selfsubjectaccessreviews")) {
 		storage["selfsubjectaccessreviews"] = selfsubjectaccessreview.NewREST(p.Authorizer)
+	}
+	if apiResourceConfigSource.ResourceEnabled(version.WithResource("localsubjectaccessreviews")) {
+		storage["localsubjectaccessreviews"] = localsubjectaccessreview.NewREST(p.Authorizer)
 	}
 
 	return storage

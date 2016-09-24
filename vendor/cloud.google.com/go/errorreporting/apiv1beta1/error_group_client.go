@@ -1,0 +1,168 @@
+// Copyright 2016 Google Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// AUTO-GENERATED CODE. DO NOT EDIT.
+
+package errorreporting
+
+import (
+	"fmt"
+	"runtime"
+	"time"
+
+	gax "github.com/googleapis/gax-go"
+	"golang.org/x/net/context"
+	"google.golang.org/api/option"
+	"google.golang.org/api/transport"
+	clouderrorreportingpb "google.golang.org/genproto/googleapis/devtools/clouderrorreporting/v1beta1"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
+)
+
+var (
+	errorGroupGroupPathTemplate = gax.MustCompilePathTemplate("projects/{project}/groups/{group}")
+)
+
+// ErrorGroupCallOptions contains the retry settings for each method of this client.
+type ErrorGroupCallOptions struct {
+	GetGroup    []gax.CallOption
+	UpdateGroup []gax.CallOption
+}
+
+func defaultErrorGroupClientOptions() []option.ClientOption {
+	return []option.ClientOption{
+		option.WithEndpoint("clouderrorreporting.googleapis.com:443"),
+		option.WithScopes(
+			"https://www.googleapis.com/auth/cloud-platform",
+		),
+	}
+}
+
+func defaultErrorGroupCallOptions() *ErrorGroupCallOptions {
+	retry := map[[2]string][]gax.CallOption{
+		{"default", "idempotent"}: {
+			gax.WithRetry(func() gax.Retryer {
+				return gax.OnCodes([]codes.Code{
+					codes.DeadlineExceeded,
+					codes.Unavailable,
+				}, gax.Backoff{
+					Initial:    100 * time.Millisecond,
+					Max:        60000 * time.Millisecond,
+					Multiplier: 1.3,
+				})
+			}),
+		},
+	}
+
+	return &ErrorGroupCallOptions{
+		GetGroup:    retry[[2]string{"default", "idempotent"}],
+		UpdateGroup: retry[[2]string{"default", "idempotent"}],
+	}
+}
+
+// ErrorGroupClient is a client for interacting with ErrorGroupService.
+type ErrorGroupClient struct {
+	// The connection to the service.
+	conn *grpc.ClientConn
+
+	// The gRPC API client.
+	client clouderrorreportingpb.ErrorGroupServiceClient
+
+	// The call options for this service.
+	CallOptions *ErrorGroupCallOptions
+
+	// The metadata to be sent with each request.
+	metadata map[string][]string
+}
+
+// NewErrorGroupClient creates a new error_group service client.
+//
+// Service for retrieving and updating individual error groups.
+func NewErrorGroupClient(ctx context.Context, opts ...option.ClientOption) (*ErrorGroupClient, error) {
+	conn, err := transport.DialGRPC(ctx, append(defaultErrorGroupClientOptions(), opts...)...)
+	if err != nil {
+		return nil, err
+	}
+	c := &ErrorGroupClient{
+		conn:        conn,
+		client:      clouderrorreportingpb.NewErrorGroupServiceClient(conn),
+		CallOptions: defaultErrorGroupCallOptions(),
+	}
+	c.SetGoogleClientInfo("gax", gax.Version)
+	return c, nil
+}
+
+// Connection returns the client's connection to the API service.
+func (c *ErrorGroupClient) Connection() *grpc.ClientConn {
+	return c.conn
+}
+
+// Close closes the connection to the API service. The user should invoke this when
+// the client is no longer required.
+func (c *ErrorGroupClient) Close() error {
+	return c.conn.Close()
+}
+
+// SetGoogleClientInfo sets the name and version of the application in
+// the `x-goog-api-client` header passed on each request. Intended for
+// use by Google-written clients.
+func (c *ErrorGroupClient) SetGoogleClientInfo(name, version string) {
+	c.metadata = map[string][]string{
+		"x-goog-api-client": {fmt.Sprintf("%s/%s %s gax/%s go/%s", name, version, gapicNameVersion, gax.Version, runtime.Version())},
+	}
+}
+
+// GroupPath returns the path for the group resource.
+func ErrorGroupGroupPath(project string, group string) string {
+	path, err := errorGroupGroupPathTemplate.Render(map[string]string{
+		"project": project,
+		"group":   group,
+	})
+	if err != nil {
+		panic(err)
+	}
+	return path
+}
+
+// GetGroup get the specified group.
+func (c *ErrorGroupClient) GetGroup(ctx context.Context, req *clouderrorreportingpb.GetGroupRequest) (*clouderrorreportingpb.ErrorGroup, error) {
+	ctx = metadata.NewContext(ctx, c.metadata)
+	var resp *clouderrorreportingpb.ErrorGroup
+	err := gax.Invoke(ctx, func(ctx context.Context) error {
+		var err error
+		resp, err = c.client.GetGroup(ctx, req)
+		return err
+	}, c.CallOptions.GetGroup...)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+// UpdateGroup replace the data for the specified group.
+// Fails if the group does not exist.
+func (c *ErrorGroupClient) UpdateGroup(ctx context.Context, req *clouderrorreportingpb.UpdateGroupRequest) (*clouderrorreportingpb.ErrorGroup, error) {
+	ctx = metadata.NewContext(ctx, c.metadata)
+	var resp *clouderrorreportingpb.ErrorGroup
+	err := gax.Invoke(ctx, func(ctx context.Context) error {
+		var err error
+		resp, err = c.client.UpdateGroup(ctx, req)
+		return err
+	}, c.CallOptions.UpdateGroup...)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}

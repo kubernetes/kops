@@ -52,6 +52,7 @@ import (
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/cache"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
 	"k8s.io/kubernetes/pkg/client/restclient"
 	"k8s.io/kubernetes/pkg/client/typed/discovery"
 	"k8s.io/kubernetes/pkg/client/typed/dynamic"
@@ -436,7 +437,7 @@ func SkipUnlessFederated(c *client.Client) {
 }
 
 func SkipIfMissingResource(clientPool dynamic.ClientPool, gvr unversioned.GroupVersionResource, namespace string) {
-	dynamicClient, err := clientPool.ClientForGroupVersion(gvr.GroupVersion())
+	dynamicClient, err := clientPool.ClientForGroupVersionResource(gvr)
 	if err != nil {
 		Failf("Unexpected error getting dynamic client for %v: %v", gvr.GroupVersion(), err)
 	}
@@ -1027,7 +1028,7 @@ func CreateTestingNS(baseName string, c *client.Client, labels map[string]string
 	}
 	// Be robust about making the namespace creation call.
 	var got *api.Namespace
-	if err := wait.PollImmediate(Poll, SingleCallTimeout, func() (bool, error) {
+	if err := wait.PollImmediate(Poll, 30*time.Second, func() (bool, error) {
 		var err error
 		got, err = c.Namespaces().Create(namespaceObj)
 		if err != nil {
@@ -1229,7 +1230,7 @@ func hasRemainingContent(c *client.Client, clientPool dynamic.ClientPool, namesp
 	// dump how many of resource type is on the server in a log.
 	for _, gvr := range groupVersionResources {
 		// get a client for this group version...
-		dynamicClient, err := clientPool.ClientForGroupVersion(gvr.GroupVersion())
+		dynamicClient, err := clientPool.ClientForGroupVersionResource(gvr)
 		if err != nil {
 			// not all resource types support list, so some errors here are normal depending on the resource type.
 			Logf("namespace: %s, unable to get client - gvr: %v, error: %v", namespace, gvr, err)
@@ -1369,7 +1370,7 @@ func CheckInvariants(events []watch.Event, fns ...InvariantFunc) error {
 // Returns an error if timeout occurs first, or pod goes in to failed state.
 func WaitForPodRunningInNamespace(c *client.Client, pod *api.Pod) error {
 	// this short-cicuit is needed for cases when we pass a list of pods instead
-	// of newly created pod (eg. VerifyPods) which means we are getting already
+	// of newly created pod (e.g. VerifyPods) which means we are getting already
 	// running pod for which waiting does not make sense and will always fail
 	if pod.Status.Phase == api.PodRunning {
 		return nil
@@ -1549,6 +1550,7 @@ func WaitForPodToDisappear(c *client.Client, ns, podName string, label labels.Se
 			if pod.Name == podName {
 				Logf("Pod %s still exists", podName)
 				found = true
+				break
 			}
 		}
 		if !found {
@@ -1754,6 +1756,16 @@ func ServerVersionGTE(v semver.Version, c discovery.ServerVersionInterface) (boo
 		return false, fmt.Errorf("Unable to parse server version %q: %v", serverVersion.GitVersion, err)
 	}
 	return sv.GTE(v), nil
+}
+
+func SkipUnlessKubectlVersionGTE(v semver.Version) {
+	gte, err := KubectlVersionGTE(v)
+	if err != nil {
+		Failf("Failed to get kubectl version: %v", err)
+	}
+	if !gte {
+		Skipf("Not supported for kubectl versions before %q", v)
+	}
 }
 
 // KubectlVersionGTE returns true if the kubectl version is greater than or
@@ -1966,6 +1978,14 @@ func LoadClient() (*client.Client, error) {
 		return nil, fmt.Errorf("error creating client: %v", err.Error())
 	}
 	return loadClientFromConfig(config)
+}
+
+func LoadClientset() (*release_1_5.Clientset, error) {
+	config, err := LoadConfig()
+	if err != nil {
+		return nil, fmt.Errorf("error creating client: %v", err.Error())
+	}
+	return release_1_5.NewForConfig(config)
 }
 
 // randomSuffix provides a random string to append to pods,services,rcs.
@@ -2805,9 +2825,11 @@ func dumpPodDebugInfo(c *client.Client, pods []*api.Pod) {
 	DumpNodeDebugInfo(c, badNodes.List())
 }
 
-func DumpAllNamespaceInfo(c *client.Client, namespace string) {
+type EventsLister func(opts api.ListOptions, ns string) (*v1.EventList, error)
+
+func DumpEventsInNamespace(eventsLister EventsLister, namespace string) {
 	By(fmt.Sprintf("Collecting events from namespace %q.", namespace))
-	events, err := c.Events(namespace).List(api.ListOptions{})
+	events, err := eventsLister(api.ListOptions{}, namespace)
 	Expect(err).NotTo(HaveOccurred())
 
 	// Sort events by their first timestamp
@@ -2821,6 +2843,12 @@ func DumpAllNamespaceInfo(c *client.Client, namespace string) {
 	// Note that we don't wait for any Cleanup to propagate, which means
 	// that if you delete a bunch of pods right before ending your test,
 	// you may or may not see the killing/deletion/Cleanup events.
+}
+
+func DumpAllNamespaceInfo(c *client.Client, cs *release_1_5.Clientset, namespace string) {
+	DumpEventsInNamespace(func(opts api.ListOptions, ns string) (*v1.EventList, error) {
+		return cs.Core().Events(ns).List(opts)
+	}, namespace)
 
 	// If cluster is large, then the following logs are basically useless, because:
 	// 1. it takes tens of minutes or hours to grab all of them
@@ -2840,7 +2868,7 @@ func DumpAllNamespaceInfo(c *client.Client, namespace string) {
 }
 
 // byFirstTimestamp sorts a slice of events by first timestamp, using their involvedObject's name as a tie breaker.
-type byFirstTimestamp []api.Event
+type byFirstTimestamp []v1.Event
 
 func (o byFirstTimestamp) Len() int      { return len(o) }
 func (o byFirstTimestamp) Swap(i, j int) { o[i], o[j] = o[j], o[i] }
@@ -3405,7 +3433,7 @@ func DeleteRCAndWaitForGC(c *client.Client, ns, name string) error {
 	}
 	terminatePodTime := time.Now().Sub(startTime) - deleteRCTime
 	Logf("Terminating RC %s pods took: %v", name, terminatePodTime)
-	err = waitForPodsGone(ps, 10*time.Second, 10*time.Minute)
+	err = waitForPodsGone(ps, interval, 10*time.Minute)
 	if err != nil {
 		return fmt.Errorf("error while waiting for pods gone %s: %v", name, err)
 	}
@@ -4098,6 +4126,12 @@ func GetSigner(provider string) (ssh.Signer, error) {
 		}
 		// Otherwise revert to home dir
 		keyfile = "kube_aws_rsa"
+	case "vagrant":
+		keyfile := os.Getenv("VAGRANT_SSH_KEY")
+		if len(keyfile) != 0 {
+			return sshutil.MakePrivateKeySignerFromFile(keyfile)
+		}
+		return nil, fmt.Errorf("VAGRANT_SSH_KEY env variable should be provided")
 	default:
 		return nil, fmt.Errorf("GetSigner(...) not implemented for %s", provider)
 	}
