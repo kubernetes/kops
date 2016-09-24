@@ -67,7 +67,11 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 	}
 
 	if c.OutDir == "" {
-		c.OutDir = "out"
+		if c.Target == cloudup.TargetTerraform {
+			c.OutDir = "out/terraform"
+		} else {
+			c.OutDir = "out"
+		}
 	}
 
 	clusterRegistry, cluster, err := rootCommand.Cluster()
