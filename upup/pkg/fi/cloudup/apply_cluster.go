@@ -467,7 +467,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 	case TargetTerraform:
 		checkExisting = false
-		outDir := path.Join(c.OutDir, "terraform")
+		outDir := c.OutDir
 		target = terraform.NewTerraformTarget(cloud, region, project, outDir)
 
 	case TargetDryRun:
