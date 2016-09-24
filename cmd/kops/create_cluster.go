@@ -116,7 +116,11 @@ func (c *CreateClusterCmd) Run(args []string) error {
 	// TODO: Reuse rootCommand stateStore logic?
 
 	if c.OutDir == "" {
-		c.OutDir = "out"
+		if c.Target == cloudup.TargetTerraform {
+			c.OutDir = "out/terraform"
+		} else {
+			c.OutDir = "out"
+		}
 	}
 
 	clusterRegistry, err := rootCommand.ClusterRegistry()
