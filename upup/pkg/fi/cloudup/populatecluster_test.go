@@ -13,9 +13,9 @@ func buildMinimalCluster() *api.Cluster {
 	c := &api.Cluster{}
 	c.Name = "testcluster.test.com"
 	c.Spec.Zones = []*api.ClusterZoneSpec{
-		{Name: "us-east-1a", CIDR: "172.20.1.0/24"},
-		{Name: "us-east-1b", CIDR: "172.20.2.0/24"},
-		{Name: "us-east-1c", CIDR: "172.20.3.0/24"},
+		{Name: "us-mock-1a", CIDR: "172.20.1.0/24"},
+		{Name: "us-mock-1b", CIDR: "172.20.2.0/24"},
+		{Name: "us-mock-1c", CIDR: "172.20.3.0/24"},
 	}
 	c.Spec.NetworkCIDR = "172.20.0.0/16"
 	c.Spec.NonMasqueradeCIDR = "100.64.0.0/10"
@@ -114,7 +114,7 @@ func TestPopulateCluster_Kubenet(t *testing.T) {
 
 	full, err := build(c)
 	if err != nil {
-		t.Fatal("error during build: %v", err)
+		t.Fatalf("error during build: %v", err)
 	}
 
 	if full.Spec.Kubelet.NetworkPluginName != "kubenet" {
@@ -134,9 +134,9 @@ func TestPopulateCluster_Custom_CIDR(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.NetworkCIDR = "172.20.2.0/24"
 	c.Spec.Zones = []*api.ClusterZoneSpec{
-		{Name: "us-east-1a", CIDR: "172.20.2.0/27"},
-		{Name: "us-east-1b", CIDR: "172.20.2.32/27"},
-		{Name: "us-east-1c", CIDR: "172.20.2.64/27"},
+		{Name: "us-mock-1a", CIDR: "172.20.2.0/27"},
+		{Name: "us-mock-1b", CIDR: "172.20.2.32/27"},
+		{Name: "us-mock-1c", CIDR: "172.20.2.64/27"},
 	}
 
 	err := c.PerformAssignments()

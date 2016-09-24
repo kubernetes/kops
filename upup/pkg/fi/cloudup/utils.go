@@ -18,7 +18,6 @@ func BuildCloud(cluster *api.Cluster) (fi.Cloud, error) {
 	switch cluster.Spec.CloudProvider {
 	case "gce":
 		{
-
 			nodeZones := make(map[string]bool)
 			for _, zone := range cluster.Spec.Zones {
 				nodeZones[zone.Name] = true
@@ -82,7 +81,7 @@ func BuildCloud(cluster *api.Cluster) (fi.Cloud, error) {
 			for _, z := range cluster.Spec.Zones {
 				zoneNames = append(zoneNames, z.Name)
 			}
-			err = awsCloud.ValidateZones(zoneNames)
+			err = awsup.ValidateZones(zoneNames, awsCloud)
 			if err != nil {
 				return nil, err
 			}

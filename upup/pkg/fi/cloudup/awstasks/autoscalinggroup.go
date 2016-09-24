@@ -32,13 +32,13 @@ func (e *AutoscalingGroup) CompareWithID() *string {
 	return e.Name
 }
 
-func findAutoscalingGroup(cloud *awsup.AWSCloud, name string) (*autoscaling.Group, error) {
+func findAutoscalingGroup(cloud awsup.AWSCloud, name string) (*autoscaling.Group, error) {
 	request := &autoscaling.DescribeAutoScalingGroupsInput{
 		AutoScalingGroupNames: []*string{&name},
 	}
 
 	var found []*autoscaling.Group
-	err := cloud.Autoscaling.DescribeAutoScalingGroupsPages(request, func(p *autoscaling.DescribeAutoScalingGroupsOutput, lastPage bool) (shouldContinue bool) {
+	err := cloud.Autoscaling().DescribeAutoScalingGroupsPages(request, func(p *autoscaling.DescribeAutoScalingGroupsOutput, lastPage bool) (shouldContinue bool) {
 		for _, g := range p.AutoScalingGroups {
 			if aws.StringValue(g.AutoScalingGroupName) == name {
 				found = append(found, g)
@@ -66,7 +66,7 @@ func findAutoscalingGroup(cloud *awsup.AWSCloud, name string) (*autoscaling.Grou
 }
 
 func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	g, err := findAutoscalingGroup(cloud, *e.Name)
 	if err != nil {
@@ -108,7 +108,7 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 }
 
 func (e *AutoscalingGroup) Run(c *fi.Context) error {
-	c.Cloud.(*awsup.AWSCloud).AddTags(e.Name, e.Tags)
+	c.Cloud.(awsup.AWSCloud).AddTags(e.Name, e.Tags)
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
@@ -156,7 +156,7 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		}
 		request.Tags = tags
 
-		_, err := t.Cloud.Autoscaling.CreateAutoScalingGroup(request)
+		_, err := t.Cloud.Autoscaling().CreateAutoScalingGroup(request)
 		if err != nil {
 			return fmt.Errorf("error creating AutoscalingGroup: %v", err)
 		}
@@ -200,7 +200,7 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 
 		glog.V(2).Infof("Updating autoscaling group %s", *e.Name)
 
-		_, err := t.Cloud.Autoscaling.UpdateAutoScalingGroup(request)
+		_, err := t.Cloud.Autoscaling().UpdateAutoScalingGroup(request)
 		if err != nil {
 			return fmt.Errorf("error updating AutoscalingGroup: %v", err)
 		}

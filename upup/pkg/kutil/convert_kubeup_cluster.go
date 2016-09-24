@@ -26,7 +26,7 @@ type ConvertKubeupCluster struct {
 }
 
 func (x *ConvertKubeupCluster) Upgrade() error {
-	awsCloud := x.Cloud.(*awsup.AWSCloud)
+	awsCloud := x.Cloud.(awsup.AWSCloud)
 
 	cluster := x.ClusterConfig
 
@@ -124,7 +124,7 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 			MaxSize:              aws.Int64(0),
 		}
 
-		_, err := awsCloud.Autoscaling.UpdateAutoScalingGroup(request)
+		_, err := awsCloud.Autoscaling().UpdateAutoScalingGroup(request)
 		if err != nil {
 			return fmt.Errorf("error updating autoscaling group %q: %v", name, err)
 		}
@@ -148,7 +148,7 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 			InstanceIds: []*string{master.InstanceId},
 		}
 
-		_, err := awsCloud.EC2.StopInstances(request)
+		_, err := awsCloud.EC2().StopInstances(request)
 		if err != nil {
 			return fmt.Errorf("error stopping master instance: %v", err)
 		}
@@ -205,7 +205,7 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 			}
 
 			for {
-				_, err := awsCloud.EC2.DetachVolume(request)
+				_, err := awsCloud.EC2().DetachVolume(request)
 				if err != nil {
 					if awsup.AWSErrorCode(err) == "IncorrectState" {
 						glog.Infof("will retry volume detach (master has probably not stopped yet): %q", err)
