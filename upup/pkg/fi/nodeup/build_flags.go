@@ -61,6 +61,22 @@ func buildFlags(options interface{}) (string, error) {
 			}
 		}
 
+		if val.Kind() == reflect.Slice {
+			if val.IsNil() {
+				return nil
+			}
+			// We handle a []string like --admision-control=v1,v2 etc
+			if stringSlice, ok := val.Interface().([]string); ok {
+				if len(stringSlice) != 0 {
+					flag := fmt.Sprintf("--%s=%s", flagName, strings.Join(stringSlice, ","))
+					flags = append(flags, flag)
+				}
+				return utils.SkipReflection
+			} else {
+				return fmt.Errorf("BuildFlags of value type not handled: %T %s=%v", val.Interface(), path, val.Interface())
+			}
+		}
+
 		var flag string
 		switch v := val.Interface().(type) {
 		case string:
