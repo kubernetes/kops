@@ -21,14 +21,14 @@ import (
 	"k8s.io/kubernetes/pkg/apis/policy"
 	policyapiv1alpha1 "k8s.io/kubernetes/pkg/apis/policy/v1alpha1"
 	"k8s.io/kubernetes/pkg/genericapiserver"
-	poddisruptionbudgetetcd "k8s.io/kubernetes/pkg/registry/poddisruptionbudget/etcd"
+	poddisruptionbudgetetcd "k8s.io/kubernetes/pkg/registry/policy/poddisruptionbudget/etcd"
 )
 
 type PolicyRESTStorageProvider struct{}
 
-var _ RESTStorageProvider = &PolicyRESTStorageProvider{}
+var _ genericapiserver.RESTStorageProvider = &PolicyRESTStorageProvider{}
 
-func (p PolicyRESTStorageProvider) NewRESTStorage(apiResourceConfigSource genericapiserver.APIResourceConfigSource, restOptionsGetter RESTOptionsGetter) (genericapiserver.APIGroupInfo, bool) {
+func (p PolicyRESTStorageProvider) NewRESTStorage(apiResourceConfigSource genericapiserver.APIResourceConfigSource, restOptionsGetter genericapiserver.RESTOptionsGetter) (genericapiserver.APIGroupInfo, bool) {
 	apiGroupInfo := genericapiserver.NewDefaultAPIGroupInfo(policy.GroupName)
 
 	if apiResourceConfigSource.AnyResourcesForVersionEnabled(policyapiv1alpha1.SchemeGroupVersion) {
@@ -39,7 +39,7 @@ func (p PolicyRESTStorageProvider) NewRESTStorage(apiResourceConfigSource generi
 	return apiGroupInfo, true
 }
 
-func (p PolicyRESTStorageProvider) v1alpha1Storage(apiResourceConfigSource genericapiserver.APIResourceConfigSource, restOptionsGetter RESTOptionsGetter) map[string]rest.Storage {
+func (p PolicyRESTStorageProvider) v1alpha1Storage(apiResourceConfigSource genericapiserver.APIResourceConfigSource, restOptionsGetter genericapiserver.RESTOptionsGetter) map[string]rest.Storage {
 	version := policyapiv1alpha1.SchemeGroupVersion
 
 	storage := map[string]rest.Storage{}

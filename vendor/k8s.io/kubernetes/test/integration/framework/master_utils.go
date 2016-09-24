@@ -58,6 +58,7 @@ import (
 
 	"github.com/go-openapi/spec"
 	"github.com/pborman/uuid"
+	"k8s.io/kubernetes/pkg/generated/openapi"
 )
 
 const (
@@ -155,6 +156,11 @@ func startMasterOrDie(masterConfig *master.Config) (*master.Master, *httptest.Se
 		glog.Fatalf("error in bringing up the master: %v", err)
 	}
 
+	// TODO have this start method actually use the normal start sequence for the API server
+	// this method never actually calls the `Run` method for the API server
+	// fire the post hooks ourselves
+	m.GenericAPIServer.RunPostStartHooks(genericapiserver.PostStartHookContext{})
+
 	return m, s
 }
 
@@ -218,19 +224,22 @@ func NewMasterConfig() *master.Config {
 
 	return &master.Config{
 		Config: &genericapiserver.Config{
-			StorageFactory:          storageFactory,
 			APIResourceConfigSource: master.DefaultAPIResourceConfigSource(),
 			APIPrefix:               "/api",
 			APIGroupPrefix:          "/apis",
 			Authorizer:              authorizer.NewAlwaysAllowAuthorizer(),
 			AdmissionControl:        admit.NewAlwaysAdmit(),
 			Serializer:              api.Codecs,
-			EnableWatchCache:        true,
 			// Set those values to avoid annoying warnings in logs.
 			ServiceClusterIPRange: parseCIDROrDie("10.0.0.0/24"),
 			ServiceNodePortRange:  utilnet.PortRange{Base: 30000, Size: 2768},
+			EnableVersion:         true,
+			OpenAPIDefinitions:    openapi.OpenAPIDefinitions,
+			EnableOpenAPISupport:  true,
 		},
-		KubeletClient: kubeletclient.FakeKubeletClient{},
+		StorageFactory:   storageFactory,
+		EnableWatchCache: true,
+		KubeletClient:    kubeletclient.FakeKubeletClient{},
 	}
 }
 
@@ -239,6 +248,7 @@ func NewIntegrationTestMasterConfig() *master.Config {
 	masterConfig := NewMasterConfig()
 	masterConfig.EnableCoreControllers = true
 	masterConfig.EnableIndex = true
+	masterConfig.EnableVersion = true
 	masterConfig.PublicAddress = net.ParseIP("192.168.10.4")
 	masterConfig.APIResourceConfigSource = master.DefaultAPIResourceConfigSource()
 	return masterConfig

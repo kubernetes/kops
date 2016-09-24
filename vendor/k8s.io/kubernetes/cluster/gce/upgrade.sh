@@ -33,11 +33,12 @@ source "${KUBE_ROOT}/cluster/kube-util.sh"
 function usage() {
   echo "!!! EXPERIMENTAL !!!"
   echo ""
-  echo "${0} [-M|-N|-P] -l | <version number or publication>"
+  echo "${0} [-M|-N|-P] -l -o | <version number or publication>"
   echo "  Upgrades master and nodes by default"
   echo "  -M:  Upgrade master only"
   echo "  -N:  Upgrade nodes only"
   echo "  -P:  Node upgrade prerequisites only (create a new instance template)"
+  echo "  -o:  Use os distro sepcified in KUBE_NODE_OS_DISTRIBUTION for new nodes. Options include 'debian' or 'gci'"
   echo "  -l:  Use local(dev) binaries"
   echo ""
   echo '  Version number or publication is either a proper version number'
@@ -70,6 +71,13 @@ function usage() {
 function upgrade-master() {
   echo "== Upgrading master to '${SERVER_BINARY_TAR_URL}'. Do not interrupt, deleting master instance. =="
 
+  # Tries to figure out KUBE_USER/KUBE_PASSWORD by first looking under
+  # kubeconfig:username, and then under kubeconfig:username-basic-auth.
+  # TODO: KUBE_USER is used in generating ABAC policy which the
+  # apiserver may not have enabled. If it's enabled, we must have a user
+  # to generate a valid ABAC policy. If the username changes, should
+  # the script fail? Should we generate a default username and password
+  # if the section is missing in kubeconfig? Handle this better in 1.5.
   get-kubeconfig-basicauth
   get-kubeconfig-bearertoken
 
@@ -132,6 +140,20 @@ function get-node-env() {
   gcloud compute --project ${PROJECT} ssh --zone ${ZONE} ${NODE_NAMES[0]} --command \
     "curl --fail --silent -H 'Metadata-Flavor: Google' \
       'http://metadata/computeMetadata/v1/instance/attributes/kube-env'" 2>/dev/null
+}
+
+# Read os distro information from /os/release on node.
+# $1: The name of node
+#
+# Assumed vars:
+#   PROJECT
+#   ZONE
+function get-node-os() {
+  gcloud compute ssh "$1" \
+    --project "${PROJECT}" \
+    --zone "${ZONE}" \
+    --command \
+    "cat /etc/os-release | grep \"^ID=.*\" | cut -c 4-"
 }
 
 # Assumed vars:
@@ -199,6 +221,13 @@ function prepare-node-upgrade() {
   #                 compatible way?
   write-node-env
 
+  if [[ "${env_os_distro}" == "false" ]]; then
+    NODE_OS_DISTRIBUTION=$(get-node-os "${NODE_NAMES[0]}")
+    source "${KUBE_ROOT}/cluster/gce/${NODE_OS_DISTRIBUTION}/node-helper.sh"
+    # Reset the node image based on current os distro
+    set-node-image
+  fi
+
   # TODO(zmerlynn): Get configure-vm script from ${version}. (Must plumb this
   #                 through all create-node-instance-template implementations).
   local template_name=$(get-template-name-from-version ${SANITIZED_VERSION})
@@ -224,6 +253,7 @@ function do-node-upgrade() {
         --zones="${ZONE}" \
         --regexp="${group}" \
         --format='value(instanceTemplate)' || true))
+    echo "== Calling rolling-update for ${group}. ==" >&2
     update=$(gcloud alpha compute rolling-updates \
         --project="${PROJECT}" \
         --zone="${ZONE}" \
@@ -238,6 +268,7 @@ function do-node-upgrade() {
     updates+=("${id}")
   done
 
+  echo "== Waiting for Upgrading nodes to be finished. ==" >&2
   # Wait until rolling updates are finished.
   for update in ${updates[@]}; do
     while true; do
@@ -271,8 +302,9 @@ master_upgrade=true
 node_upgrade=true
 node_prereqs=false
 local_binaries=false
+env_os_distro=false
 
-while getopts ":MNPlh" opt; do
+while getopts ":MNPlho" opt; do
   case ${opt} in
     M)
       node_upgrade=false
@@ -285,6 +317,9 @@ while getopts ":MNPlh" opt; do
       ;;
     l)
       local_binaries=true
+      ;;
+    o)
+      env_os_distro=true
       ;;
     h)
       usage

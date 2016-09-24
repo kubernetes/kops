@@ -35,7 +35,6 @@ import (
 	release_1_4 "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_4"
 	"k8s.io/kubernetes/pkg/client/record"
 	"k8s.io/kubernetes/pkg/controller"
-	"k8s.io/kubernetes/pkg/controller/framework"
 	pkg_runtime "k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/util/runtime"
 	"k8s.io/kubernetes/pkg/util/sets"
@@ -68,6 +67,8 @@ const (
 	UserAgentName = "federation-service-controller"
 	KubeAPIQPS    = 20.0
 	KubeAPIBurst  = 30
+
+	maxNoOfClusters = 100
 )
 
 type cachedService struct {
@@ -109,16 +110,26 @@ type ServiceController struct {
 	// A store of services, populated by the serviceController
 	serviceStore cache.StoreToServiceLister
 	// Watches changes to all services
-	serviceController *framework.Controller
+	serviceController *cache.Controller
 	// A store of services, populated by the serviceController
 	clusterStore federationcache.StoreToClusterLister
 	// Watches changes to all services
-	clusterController *framework.Controller
+	clusterController *cache.Controller
 	eventBroadcaster  record.EventBroadcaster
 	eventRecorder     record.EventRecorder
 	// services that need to be synced
 	queue           *workqueue.Type
 	knownClusterSet sets.String
+	// endpoint worker map contains all the clusters registered with an indication that worker exist
+	// key clusterName
+	endpointWorkerMap map[string]bool
+	// channel for worker to signal that it is going out of existence
+	endpointWorkerDoneChan chan string
+	// service worker map contains all the clusters registered with an indication that worker exist
+	// key clusterName
+	serviceWorkerMap map[string]bool
+	// channel for worker to signal that it is going out of existence
+	serviceWorkerDoneChan chan string
 }
 
 // New returns a new service controller to keep DNS provider service resources
@@ -145,7 +156,7 @@ func New(federationClient federation_release_1_4.Interface, dns dnsprovider.Inte
 		queue:            workqueue.New(),
 		knownClusterSet:  make(sets.String),
 	}
-	s.serviceStore.Store, s.serviceController = framework.NewInformer(
+	s.serviceStore.Indexer, s.serviceController = cache.NewIndexerInformer(
 		&cache.ListWatch{
 			ListFunc: func(options api.ListOptions) (pkg_runtime.Object, error) {
 				return s.federationClient.Core().Services(v1.NamespaceAll).List(options)
@@ -156,7 +167,7 @@ func New(federationClient federation_release_1_4.Interface, dns dnsprovider.Inte
 		},
 		&v1.Service{},
 		serviceSyncPeriod,
-		framework.ResourceEventHandlerFuncs{
+		cache.ResourceEventHandlerFuncs{
 			AddFunc: s.enqueueService,
 			UpdateFunc: func(old, cur interface{}) {
 				// there is case that old and new are equals but we still catch the event now.
@@ -166,8 +177,9 @@ func New(federationClient federation_release_1_4.Interface, dns dnsprovider.Inte
 			},
 			DeleteFunc: s.enqueueService,
 		},
+		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
 	)
-	s.clusterStore.Store, s.clusterController = framework.NewInformer(
+	s.clusterStore.Store, s.clusterController = cache.NewInformer(
 		&cache.ListWatch{
 			ListFunc: func(options api.ListOptions) (pkg_runtime.Object, error) {
 				return s.federationClient.Federation().Clusters().List(options)
@@ -178,7 +190,7 @@ func New(federationClient federation_release_1_4.Interface, dns dnsprovider.Inte
 		},
 		&v1beta1.Cluster{},
 		clusterSyncPeriod,
-		framework.ResourceEventHandlerFuncs{
+		cache.ResourceEventHandlerFuncs{
 			DeleteFunc: s.clusterCache.delFromClusterSet,
 			AddFunc:    s.clusterCache.addToClientMap,
 			UpdateFunc: func(old, cur interface{}) {
@@ -205,6 +217,11 @@ func New(federationClient federation_release_1_4.Interface, dns dnsprovider.Inte
 			},
 		},
 	)
+
+	s.endpointWorkerMap = make(map[string]bool)
+	s.serviceWorkerMap = make(map[string]bool)
+	s.endpointWorkerDoneChan = make(chan string, maxNoOfClusters)
+	s.serviceWorkerDoneChan = make(chan string, maxNoOfClusters)
 	return s
 }
 
@@ -817,7 +834,7 @@ func (s *ServiceController) syncService(key string) error {
 		glog.V(4).Infof("Finished syncing service %q (%v)", key, time.Now().Sub(startTime))
 	}()
 	// obj holds the latest service info from apiserver
-	obj, exists, err := s.serviceStore.Store.GetByKey(key)
+	obj, exists, err := s.serviceStore.Indexer.GetByKey(key)
 	if err != nil {
 		glog.Errorf("Unable to retrieve service %v from store: %v", key, err)
 		s.queue.Add(key)
