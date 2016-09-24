@@ -33,16 +33,16 @@ route/0.0.0.0/0:
   internetGateway: internetGateway/{{ ClusterName }}
   vpc: vpc/{{ ClusterName }}
 
-{{ range $index, $zone := .Zones }}
+{{ range $zone := .Zones }}
 
 subnet/{{ $zone.Name }}.{{ ClusterName }}:
   vpc: vpc/{{ ClusterName }}
   availabilityZone: {{ $zone.Name }}
   cidr: {{ $zone.CIDR }}
   id: {{ $zone.ProviderID }}
-  shared: {{ SharedZone $index }}
+  shared: {{ SharedZone $zone }}
 
-{{ if not (SharedZone $index) }}
+{{ if not (SharedZone $zone) }}
 routeTableAssociation/{{ $zone.Name }}.{{ ClusterName }}:
   routeTable: routeTable/{{ ClusterName }}
   subnet: subnet/{{ $zone.Name }}.{{ ClusterName }}
