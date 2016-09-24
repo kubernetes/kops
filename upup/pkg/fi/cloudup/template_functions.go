@@ -58,9 +58,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["EtcdClusterMemberTags"] = tf.EtcdClusterMemberTags
 	dest["SharedVPC"] = tf.SharedVPC
 
-	dest["SharedZone"] = func(index int) bool {
-		return tf.SharedZone(index)
-	}
+	dest["SharedZone"] = tf.SharedZone
 	dest["WellKnownServiceIP"] = tf.WellKnownServiceIP
 	dest["AdminCIDR"] = tf.AdminCIDR
 
@@ -128,8 +126,8 @@ func (tf *TemplateFunctions) SharedVPC() bool {
 }
 
 // SharedZone is a simple helper function which makes the templates for a shared Zone clearer
-func (tf *TemplateFunctions) SharedZone(index int) bool {
-	return tf.cluster.Spec.Zones[index].ProviderID != ""
+func (tf *TemplateFunctions) SharedZone(zone *api.ClusterZoneSpec) bool {
+	return zone.ProviderID != ""
 }
 
 // AdminCIDR returns the single CIDR that is allowed access to the admin ports of the cluster (22, 443 on master)
