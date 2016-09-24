@@ -10,12 +10,12 @@ import (
 )
 
 type AWSAPITarget struct {
-	Cloud *AWSCloud
+	Cloud AWSCloud
 }
 
 var _ fi.Target = &AWSAPITarget{}
 
-func NewAWSAPITarget(cloud *AWSCloud) *AWSAPITarget {
+func NewAWSAPITarget(cloud AWSCloud) *AWSAPITarget {
 	return &AWSAPITarget{
 		Cloud: cloud,
 	}

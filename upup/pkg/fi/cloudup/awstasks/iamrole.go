@@ -30,11 +30,11 @@ func (e *IAMRole) CompareWithID() *string {
 }
 
 func (e *IAMRole) Find(c *fi.Context) (*IAMRole, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	request := &iam.GetRoleInput{RoleName: e.Name}
 
-	response, err := cloud.IAM.GetRole(request)
+	response, err := cloud.IAM().GetRole(request)
 	if awsErr, ok := err.(awserr.Error); ok {
 		if awsErr.Code() == "NoSuchEntity" {
 			return nil, nil
@@ -119,7 +119,7 @@ func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error
 		request.AssumeRolePolicyDocument = aws.String(policy)
 		request.RoleName = e.Name
 
-		response, err := t.Cloud.IAM.CreateRole(request)
+		response, err := t.Cloud.IAM().CreateRole(request)
 		if err != nil {
 			return fmt.Errorf("error creating IAMRole: %v", err)
 		}
@@ -150,7 +150,7 @@ func (_ *IAMRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRole) error
 			request.PolicyDocument = aws.String(policy)
 			request.RoleName = e.Name
 
-			_, err = t.Cloud.IAM.UpdateAssumeRolePolicy(request)
+			_, err = t.Cloud.IAM().UpdateAssumeRolePolicy(request)
 			if err != nil {
 				return fmt.Errorf("error updating IAMRole: %v", err)
 			}

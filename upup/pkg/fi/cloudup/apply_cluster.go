@@ -211,8 +211,8 @@ func (c *ApplyClusterCmd) Run() error {
 
 	case "aws":
 		{
-			awsCloud := cloud.(*awsup.AWSCloud)
-			region = awsCloud.Region
+			awsCloud := cloud.(awsup.AWSCloud)
+			region = awsCloud.Region()
 
 			l.AddTypes(map[string]interface{}{
 				// EC2
@@ -459,7 +459,7 @@ func (c *ApplyClusterCmd) Run() error {
 		case "gce":
 			target = gce.NewGCEAPITarget(cloud.(*gce.GCECloud))
 		case "aws":
-			target = awsup.NewAWSAPITarget(cloud.(*awsup.AWSCloud))
+			target = awsup.NewAWSAPITarget(cloud.(awsup.AWSCloud))
 		default:
 			return fmt.Errorf("direct configuration not supported with CloudProvider:%q", cluster.Spec.CloudProvider)
 		}

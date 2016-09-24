@@ -28,7 +28,7 @@ func (e *DHCPOptions) CompareWithID() *string {
 }
 
 func (e *DHCPOptions) Find(c *fi.Context) (*DHCPOptions, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	request := &ec2.DescribeDhcpOptionsInput{}
 	if e.ID != nil {
@@ -37,7 +37,7 @@ func (e *DHCPOptions) Find(c *fi.Context) (*DHCPOptions, error) {
 		request.Filters = cloud.BuildFilters(e.Name)
 	}
 
-	response, err := cloud.EC2.DescribeDhcpOptions(request)
+	response, err := cloud.EC2().DescribeDhcpOptions(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing DHCPOptions: %v", err)
 	}
@@ -127,7 +127,7 @@ func (_ *DHCPOptions) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DHCPOption
 			request.DhcpConfigurations = append(request.DhcpConfigurations, o)
 		}
 
-		response, err := t.Cloud.EC2.CreateDhcpOptions(request)
+		response, err := t.Cloud.EC2().CreateDhcpOptions(request)
 		if err != nil {
 			return fmt.Errorf("error creating DHCPOptions: %v", err)
 		}
@@ -145,7 +145,7 @@ type terraformDHCPOptions struct {
 }
 
 func (_ *DHCPOptions) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *DHCPOptions) error {
-	cloud := t.Cloud.(*awsup.AWSCloud)
+	cloud := t.Cloud.(awsup.AWSCloud)
 
 	tf := &terraformDHCPOptions{
 		DomainName: e.DomainName,

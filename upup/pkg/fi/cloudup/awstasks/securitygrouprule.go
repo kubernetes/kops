@@ -29,7 +29,7 @@ type SecurityGroupRule struct {
 }
 
 func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	if e.SecurityGroup == nil || e.SecurityGroup.ID == nil {
 		return nil, nil
@@ -41,7 +41,7 @@ func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 		},
 	}
 
-	response, err := cloud.EC2.DescribeSecurityGroups(request)
+	response, err := cloud.EC2().DescribeSecurityGroups(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing SecurityGroup: %v", err)
 	}
@@ -188,7 +188,7 @@ func (_ *SecurityGroupRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Secu
 			request.IpPermissions = []*ec2.IpPermission{ipPermission}
 
 			glog.V(2).Infof("Calling EC2 AuthorizeSecurityGroupEgress")
-			_, err := t.Cloud.EC2.AuthorizeSecurityGroupEgress(request)
+			_, err := t.Cloud.EC2().AuthorizeSecurityGroupEgress(request)
 			if err != nil {
 				return fmt.Errorf("error creating SecurityGroupEgress: %v", err)
 			}
@@ -199,7 +199,7 @@ func (_ *SecurityGroupRule) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Secu
 			request.IpPermissions = []*ec2.IpPermission{ipPermission}
 
 			glog.V(2).Infof("Calling EC2 AuthorizeSecurityGroupIngress")
-			_, err := t.Cloud.EC2.AuthorizeSecurityGroupIngress(request)
+			_, err := t.Cloud.EC2().AuthorizeSecurityGroupIngress(request)
 			if err != nil {
 				return fmt.Errorf("error creating SecurityGroupIngress: %v", err)
 			}

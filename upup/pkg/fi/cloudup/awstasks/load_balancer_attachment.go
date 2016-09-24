@@ -20,7 +20,7 @@ func (e *LoadBalancerAttachment) String() string {
 }
 
 func (e *LoadBalancerAttachment) Find(c *fi.Context) (*LoadBalancerAttachment, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	if e.AutoscalingGroup != nil {
 		g, err := findAutoscalingGroup(cloud, *e.AutoscalingGroup.Name)
@@ -69,7 +69,7 @@ func (_ *LoadBalancerAttachment) RenderAWS(t *awsup.AWSAPITarget, a, e, changes 
 
 	glog.V(2).Infof("Attaching autoscaling group %q to ELB %q", *e.AutoscalingGroup.Name, *e.LoadBalancer.Name)
 
-	_, err := t.Cloud.Autoscaling.AttachLoadBalancers(request)
+	_, err := t.Cloud.Autoscaling().AttachLoadBalancers(request)
 	if err != nil {
 		return fmt.Errorf("error attaching autoscaling group to ELB: %v", err)
 	}

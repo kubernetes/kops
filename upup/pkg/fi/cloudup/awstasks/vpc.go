@@ -30,7 +30,7 @@ func (e *VPC) CompareWithID() *string {
 }
 
 func (e *VPC) Find(c *fi.Context) (*VPC, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	request := &ec2.DescribeVpcsInput{}
 
@@ -40,7 +40,7 @@ func (e *VPC) Find(c *fi.Context) (*VPC, error) {
 		request.Filters = cloud.BuildFilters(e.Name)
 	}
 
-	response, err := cloud.EC2.DescribeVpcs(request)
+	response, err := cloud.EC2().DescribeVpcs(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing VPCs: %v", err)
 	}
@@ -62,7 +62,7 @@ func (e *VPC) Find(c *fi.Context) (*VPC, error) {
 
 	if actual.ID != nil {
 		request := &ec2.DescribeVpcAttributeInput{VpcId: actual.ID, Attribute: aws.String(ec2.VpcAttributeNameEnableDnsSupport)}
-		response, err := cloud.EC2.DescribeVpcAttribute(request)
+		response, err := cloud.EC2().DescribeVpcAttribute(request)
 		if err != nil {
 			return nil, fmt.Errorf("error querying for dns support: %v", err)
 		}
@@ -71,7 +71,7 @@ func (e *VPC) Find(c *fi.Context) (*VPC, error) {
 
 	if actual.ID != nil {
 		request := &ec2.DescribeVpcAttributeInput{VpcId: actual.ID, Attribute: aws.String(ec2.VpcAttributeNameEnableDnsHostnames)}
-		response, err := cloud.EC2.DescribeVpcAttribute(request)
+		response, err := cloud.EC2().DescribeVpcAttribute(request)
 		if err != nil {
 			return nil, fmt.Errorf("error querying for dns support: %v", err)
 		}
@@ -133,7 +133,7 @@ func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 			CidrBlock: e.CIDR,
 		}
 
-		response, err := t.Cloud.EC2.CreateVpc(request)
+		response, err := t.Cloud.EC2().CreateVpc(request)
 		if err != nil {
 			return fmt.Errorf("error creating VPC: %v", err)
 		}
@@ -147,7 +147,7 @@ func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 			EnableDnsSupport: &ec2.AttributeBooleanValue{Value: changes.EnableDNSSupport},
 		}
 
-		_, err := t.Cloud.EC2.ModifyVpcAttribute(request)
+		_, err := t.Cloud.EC2().ModifyVpcAttribute(request)
 		if err != nil {
 			return fmt.Errorf("error modifying VPC attribute: %v", err)
 		}
@@ -159,7 +159,7 @@ func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 			EnableDnsHostnames: &ec2.AttributeBooleanValue{Value: changes.EnableDNSHostnames},
 		}
 
-		_, err := t.Cloud.EC2.ModifyVpcAttribute(request)
+		_, err := t.Cloud.EC2().ModifyVpcAttribute(request)
 		if err != nil {
 			return fmt.Errorf("error modifying VPC attribute: %v", err)
 		}
@@ -181,7 +181,7 @@ type terraformVPC struct {
 }
 
 func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) error {
-	cloud := t.Cloud.(*awsup.AWSCloud)
+	cloud := t.Cloud.(awsup.AWSCloud)
 
 	shared := fi.BoolValue(e.Shared)
 	if shared {

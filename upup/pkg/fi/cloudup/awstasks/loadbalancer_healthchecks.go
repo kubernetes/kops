@@ -26,7 +26,7 @@ func (e *LoadBalancerHealthChecks) String() string {
 }
 
 func (e *LoadBalancerHealthChecks) Find(c *fi.Context) (*LoadBalancerHealthChecks, error) {
-	cloud := c.Cloud.(*awsup.AWSCloud)
+	cloud := c.Cloud.(awsup.AWSCloud)
 
 	elbName := fi.StringValue(e.LoadBalancer.ID)
 
@@ -81,7 +81,7 @@ func (_ *LoadBalancerHealthChecks) RenderAWS(t *awsup.AWSAPITarget, a, e, change
 
 	glog.V(2).Infof("Configuring health checks on ELB %q", *e.LoadBalancer.ID)
 
-	_, err := t.Cloud.ELB.ConfigureHealthCheck(request)
+	_, err := t.Cloud.ELB().ConfigureHealthCheck(request)
 	if err != nil {
 		return fmt.Errorf("error attaching autoscaling group to ELB: %v", err)
 	}
