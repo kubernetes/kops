@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/kutil"
@@ -23,7 +22,7 @@ func init() {
 		Run: func(cmd *cobra.Command, args []string) {
 			err := importCluster.Run()
 			if err != nil {
-				glog.Exitf("%v", err)
+				exitWithError(err)
 			}
 		},
 	}
