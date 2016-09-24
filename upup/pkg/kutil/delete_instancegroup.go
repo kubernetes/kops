@@ -15,7 +15,7 @@ type DeleteInstanceGroup struct {
 }
 
 func (c *DeleteInstanceGroup) DeleteInstanceGroup(group *api.InstanceGroup) error {
-	groups, err := FindCloudInstanceGroups(c.Cloud, c.Cluster, []*api.InstanceGroup{group}, false)
+	groups, err := FindCloudInstanceGroups(c.Cloud, c.Cluster, []*api.InstanceGroup{group}, false, nil)
 	cig := groups[group.Name]
 	if cig == nil {
 		return fmt.Errorf("InstanceGroup not found in cloud")
