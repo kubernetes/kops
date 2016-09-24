@@ -37,14 +37,11 @@ import (
 	"k8s.io/kubernetes/pkg/storage"
 	utilruntime "k8s.io/kubernetes/pkg/util/runtime"
 	"k8s.io/kubernetes/pkg/util/validation/field"
+	"k8s.io/kubernetes/pkg/version"
 	"k8s.io/kubernetes/pkg/watch"
 
 	"github.com/golang/glog"
 )
-
-// EnableGarbageCollector affects the handling of Update and Delete requests. It
-// must be synced with the corresponding flag in kube-controller-manager.
-var EnableGarbageCollector bool
 
 // Store implements generic.Registry.
 // It's intended to be embeddable, so that you can implement any
@@ -89,6 +86,13 @@ type Store struct {
 
 	// Returns a matcher corresponding to the provided labels and fields.
 	PredicateFunc func(label labels.Selector, field fields.Selector) *generic.SelectionPredicate
+
+	// Called to cleanup storage clients.
+	DestroyFunc func()
+
+	// EnableGarbageCollection affects the handling of Update and Delete requests. It
+	// must be synced with the corresponding flag in kube-controller-manager.
+	EnableGarbageCollection bool
 
 	// DeleteCollectionWorkers is the maximum number of workers in a single
 	// DeleteCollection call.
@@ -215,6 +219,25 @@ func (e *Store) ListPredicate(ctx api.Context, m *generic.SelectionPredicate, op
 	return list, storeerr.InterpretListError(err, e.QualifiedResource)
 }
 
+// TODO: remove this function after 1.6
+// returns if the user agent is is kubectl older than v1.4.0
+func isOldKubectl(userAgent string) bool {
+	// example userAgent string: kubectl-1.3/v1.3.8 (linux/amd64) kubernetes/e328d5b
+	if !strings.Contains(userAgent, "kubectl") {
+		return false
+	}
+	userAgent = strings.Split(userAgent, " ")[0]
+	subs := strings.Split(userAgent, "/")
+	if len(subs) != 2 {
+		return false
+	}
+	kubectlVersion, versionErr := version.Parse(subs[1])
+	if versionErr != nil {
+		return false
+	}
+	return kubectlVersion.LT(version.MustParse("v1.4.0"))
+}
+
 // Create inserts a new item according to the unique key from the object.
 func (e *Store) Create(ctx api.Context, obj runtime.Object) (runtime.Object, error) {
 	if err := rest.BeforeCreate(e.CreateStrategy, ctx, obj); err != nil {
@@ -249,6 +272,15 @@ func (e *Store) Create(ctx api.Context, obj runtime.Object) (runtime.Object, err
 		if accessor.GetDeletionTimestamp() != nil {
 			msg := &err.(*kubeerr.StatusError).ErrStatus.Message
 			*msg = fmt.Sprintf("object is being deleted: %s", *msg)
+			// TODO: remove this block after 1.6
+			userAgent, _ := api.UserAgentFrom(ctx)
+			if !isOldKubectl(userAgent) {
+				return nil, err
+			}
+			if e.QualifiedResource.Resource != "replicationcontrollers" {
+				return nil, err
+			}
+			*msg = fmt.Sprintf("%s: if you're using \"kubectl rolling-update\" with kubectl version older than v1.4.0, your rolling update has failed, though the pods are correctly updated. Please see https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG.md#kubectl-rolling-update for a workaround", *msg)
 		}
 		return nil, err
 	}
@@ -269,7 +301,7 @@ func (e *Store) Create(ctx api.Context, obj runtime.Object) (runtime.Object, err
 // it further checks if the object's DeletionGracePeriodSeconds is 0. If so, it
 // returns true.
 func (e *Store) shouldDelete(ctx api.Context, key string, obj, existing runtime.Object) bool {
-	if !EnableGarbageCollector {
+	if !e.EnableGarbageCollection {
 		return false
 	}
 	newMeta, err := api.ObjectMetaFor(obj)
@@ -691,7 +723,7 @@ func (e *Store) Delete(ctx api.Context, name string, options *api.DeleteOptions)
 	var ignoreNotFound bool
 	var deleteImmediately bool = true
 	var lastExisting, out runtime.Object
-	if !EnableGarbageCollector {
+	if !e.EnableGarbageCollection {
 		// TODO: remove the check on graceful, because we support no-op updates now.
 		if graceful {
 			err, ignoreNotFound, deleteImmediately, out, lastExisting = e.updateForGracefulDeletion(ctx, name, key, options, preconditions, obj)

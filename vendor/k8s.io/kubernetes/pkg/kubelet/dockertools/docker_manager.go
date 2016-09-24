@@ -249,7 +249,7 @@ func NewDockerManager(
 		os:                     osInterface,
 		machineInfo:            machineInfo,
 		podInfraContainerImage: podInfraContainerImage,
-		dockerPuller:           newDockerPuller(client, qps, burst),
+		dockerPuller:           newDockerPuller(client),
 		dockerRoot:             dockerRoot,
 		containerLogsDir:       containerLogsDir,
 		networkPlugin:          networkPlugin,
@@ -265,7 +265,7 @@ func NewDockerManager(
 		seccompProfileRoot:     seccompProfileRoot,
 	}
 	dm.runner = lifecycle.NewHandlerRunner(httpClient, dm, dm)
-	dm.imagePuller = images.NewImageManager(kubecontainer.FilterEventRecorder(recorder), dm, imageBackOff, serializeImagePulls)
+	dm.imagePuller = images.NewImageManager(kubecontainer.FilterEventRecorder(recorder), dm, imageBackOff, serializeImagePulls, qps, burst)
 	dm.containerGC = NewContainerGC(client, podGetter, containerLogsDir)
 
 	dm.versionCache = cache.NewObjectCache(
@@ -1505,7 +1505,7 @@ func (dm *DockerManager) killContainer(containerID kubecontainer.ContainerID, co
 		}()
 		select {
 		case <-time.After(time.Duration(gracePeriod) * time.Second):
-			glog.V(2).Infof("preStop hook for container %q did not complete in %d seconds", name, gracePeriod)
+			glog.Warningf("preStop hook for container %q did not complete in %d seconds", name, gracePeriod)
 		case <-done:
 			glog.V(4).Infof("preStop hook for container %q completed", name)
 		}
@@ -1530,7 +1530,7 @@ func (dm *DockerManager) killContainer(containerID kubecontainer.ContainerID, co
 	if err == nil {
 		glog.V(2).Infof("Container %q exited after %s", name, unversioned.Now().Sub(start.Time))
 	} else {
-		glog.V(2).Infof("Container %q termination failed after %s: %v", name, unversioned.Now().Sub(start.Time), err)
+		glog.Warningf("Container %q termination failed after %s: %v", name, unversioned.Now().Sub(start.Time), err)
 	}
 	ref, ok := dm.containerRefManager.GetRef(containerID)
 	if !ok {
@@ -2051,7 +2051,7 @@ func (dm *DockerManager) SyncPod(pod *api.Pod, _ api.PodStatus, podStatus *kubec
 
 		// Killing phase: if we want to start new infra container, or nothing is running kill everything (including infra container)
 		// TODO(random-liu): We'll use pod status directly in the future
-		killResult := dm.killPodWithSyncResult(pod, kubecontainer.ConvertPodStatusToRunningPod(podStatus), nil)
+		killResult := dm.killPodWithSyncResult(pod, kubecontainer.ConvertPodStatusToRunningPod(dm.Type(), podStatus), nil)
 		result.AddPodSyncResult(killResult)
 		if killResult.Error() != nil {
 			return

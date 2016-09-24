@@ -113,7 +113,10 @@ func (i *indexedWatchers) deleteWatcher(number int, value string, supported bool
 	}
 }
 
-func (i *indexedWatchers) terminateAll() {
+func (i *indexedWatchers) terminateAll(objectType reflect.Type) {
+	if len(i.allWatchers) > 0 || len(i.valueWatchers) > 0 {
+		glog.Warningf("Terminating all watchers from cacher %v", objectType)
+	}
 	i.allWatchers.terminateAll()
 	for index, watchers := range i.valueWatchers {
 		watchers.terminateAll()
@@ -127,6 +130,13 @@ func (i *indexedWatchers) terminateAll() {
 // Cacher implements storage.Interface (although most of the calls are just
 // delegated to the underlying storage).
 type Cacher struct {
+	// HighWaterMarks for performance debugging.
+	// Important: Since HighWaterMark is using sync/atomic, it has to be at the top of the struct due to a bug on 32-bit platforms
+	// See: https://golang.org/pkg/sync/atomic/ for more information
+	incomingHWM HighWaterMark
+	// Incoming events that should be dispatched to watchers.
+	incoming chan watchCacheEvent
+
 	sync.RWMutex
 
 	// Before accessing the cacher's cache, wait for the ready to be ok.
@@ -160,10 +170,6 @@ type Cacher struct {
 	// watcher is interested into the watchers
 	watcherIdx int
 	watchers   indexedWatchers
-
-	// Incoming events that should be dispatched to watchers.
-	incoming    chan watchCacheEvent
-	incomingHWM HighWaterMark
 
 	// Handling graceful termination.
 	stopLock sync.RWMutex
@@ -465,10 +471,9 @@ func (c *Cacher) dispatchEvent(event *watchCacheEvent) {
 }
 
 func (c *Cacher) terminateAllWatchers() {
-	glog.Warningf("Terminating all watchers from cacher %v", c.objectType)
 	c.Lock()
 	defer c.Unlock()
-	c.watchers.terminateAll()
+	c.watchers.terminateAll(c.objectType)
 }
 
 func (c *Cacher) isStopped() bool {

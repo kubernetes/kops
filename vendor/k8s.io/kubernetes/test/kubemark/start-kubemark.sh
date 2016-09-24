@@ -261,16 +261,20 @@ until [[ "${ready}" -ge "${NUM_NODES}" ]]; do
   echo -n .
   sleep 1
   now=$(date +%s)
-  # Fail it if it already took more than 15 minutes.
-  if [ $((now - start)) -gt 900 ]; then
+  # Fail it if it already took more than 30 minutes.
+  if [ $((now - start)) -gt 1800 ]; then
     echo ""
     echo "Timeout waiting for all HollowNodes to become Running"
     # Try listing nodes again - if it fails it means that API server is not responding
     if "${KUBECTL}" --kubeconfig="${LOCAL_KUBECONFIG}" get node &> /dev/null; then
       echo "Found only ${ready} ready Nodes while waiting for ${NUM_NODES}."
-      exit 1
+    else
+      echo "Got error while trying to list Nodes. Probably API server is down."
     fi
-    echo "Got error while trying to list Nodes. Probably API server is down."
+    pods=$("${KUBECTL}" get pods --namespace=kubemark) || true
+    not_running=$(($(echo "${pods}" | grep -v "Running" | wc -l) - 1))
+    echo "${not_running} HollowNode pods are reported as not running"
+    echo $(echo "${pods}" | grep -v "Running")
     exit 1
   fi
   nodes=$("${KUBECTL}" --kubeconfig="${LOCAL_KUBECONFIG}" get node) || true
