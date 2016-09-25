@@ -13,7 +13,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"io"
-	"k8s.io/kops/upup/pkg/fi/vfs"
+	"k8s.io/kops/util/pkg/vfs"
 	"math/big"
 	"time"
 )
