@@ -2,3 +2,10 @@
 
 dnsZone/{{ .DNSZone }}: {}
 
+{{ if DNSZonePrivate }}
+
+dnsZoneAssociation/{{ .DNSZone }}-{{ ClusterName }}:
+  vpc: vpc/{{ ClusterName }}
+  dnsZone: dnsZone/{{ .DNSZone }}
+
+{{ end }}

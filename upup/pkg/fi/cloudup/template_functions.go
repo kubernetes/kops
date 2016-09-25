@@ -98,6 +98,8 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["GetInstanceGroup"] = tf.GetInstanceGroup
 
 	dest["CloudTags"] = tf.CloudTags
+
+	dest["DNSZonePrivate"] = tf.DNSZonePrivate
 }
 
 func (tf *TemplateFunctions) EtcdClusterMemberTags(etcd *api.EtcdClusterSpec, m *api.EtcdMemberSpec) map[string]string {
@@ -239,4 +241,9 @@ func (tf *TemplateFunctions) GetInstanceGroup(name string) (*api.InstanceGroup, 
 		}
 	}
 	return nil, fmt.Errorf("InstanceGroup %q not found", name)
+}
+
+// DNSZonePrivate returns true if we are using a private DNS zone
+func (tf *TemplateFunctions) DNSZonePrivate() bool {
+	return false
 }
