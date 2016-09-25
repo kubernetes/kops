@@ -2,15 +2,16 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"strings"
+
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"io/ioutil"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/upup/pkg/kutil"
-	"os"
-	"strings"
 )
 
 type UpdateClusterCmd struct {
@@ -31,7 +32,7 @@ func init() {
 		Run: func(cmd *cobra.Command, args []string) {
 			err := updateCluster.Run(args)
 			if err != nil {
-				glog.Exitf("%v", err)
+				exitWithError(err)
 			}
 		},
 	}

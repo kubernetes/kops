@@ -1,15 +1,14 @@
 package main
 
 import (
-	"fmt"
-
 	"bytes"
-	"github.com/golang/glog"
+	"fmt"
+	"os"
+
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
-	"os"
 	"path/filepath"
 )
 
@@ -26,14 +25,14 @@ func init() {
 		Long:    `Create an instancegroup configuration.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
-				glog.Exitf("Specify name of instance group to create")
+				exitWithError(fmt.Errorf("Specify name of instance group to create"))
 			}
 			if len(args) != 1 {
-				glog.Exitf("Can only create one instance group at a time!")
+				exitWithError(fmt.Errorf("Can only create one instance group at a time!"))
 			}
 			err := createInstanceGroupCmd.Run(args[0])
 			if err != nil {
-				glog.Exitf("%v", err)
+				exitWithError(err)
 			}
 		},
 	}

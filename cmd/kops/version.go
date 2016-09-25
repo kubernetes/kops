@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/golang/glog"
+
 	"github.com/spf13/cobra"
 )
 
@@ -29,7 +29,7 @@ func init() {
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		err := versionCmd.Run()
 		if err != nil {
-			glog.Exitf("%v", err)
+			exitWithError(err)
 		}
 	}
 }
