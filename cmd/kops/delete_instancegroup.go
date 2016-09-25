@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/kutil"
@@ -22,14 +21,14 @@ func init() {
 		Long:    `Delete an instancegroup configuration.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
-				glog.Exitf("Specify name of instance group to delete")
+				exitWithError(fmt.Errorf("Specify name of instance group to delete"))
 			}
 			if len(args) != 1 {
-				glog.Exitf("Can only edit one instance group at a time!")
+				exitWithError(fmt.Errorf("Can only edit one instance group at a time!"))
 			}
 			err := deleteInstanceceGroupCmd.Run(args[0])
 			if err != nil {
-				glog.Exitf("%v", err)
+				exitWithError(err)
 			}
 		},
 	}
