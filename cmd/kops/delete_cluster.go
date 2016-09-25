@@ -140,6 +140,8 @@ func (c *DeleteClusterCmd) Run(args []string) error {
 				return fmt.Errorf("Must specify --yes to delete")
 			}
 
+			fmt.Fprintf(os.Stdout, "\n")
+
 			err = d.DeleteResources(resources)
 			if err != nil {
 				return err
