@@ -173,3 +173,6 @@ dns-controller-push: dns-controller-image
 
 copydeps:
 	rsync -avz _vendor/ vendor/ --delete --exclude vendor/  --exclude .git
+
+ci: kops nodeup-gocode test
+	echo "Done"
