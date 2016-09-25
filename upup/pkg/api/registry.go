@@ -5,7 +5,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/utils"
-	"k8s.io/kops/upup/pkg/fi/vfs"
+	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"os"
 	"strings"

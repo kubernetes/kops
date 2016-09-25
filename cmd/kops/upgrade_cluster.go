@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kops/util/pkg/tables"
 	"os"
 )
 
@@ -90,7 +91,7 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 	}
 
 	{
-		t := &Table{}
+		t := &tables.Table{}
 		t.AddColumn("ITEM", func(a *upgradeAction) string {
 			return a.Item
 		})

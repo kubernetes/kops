@@ -5,7 +5,7 @@ import (
 	"github.com/golang/glog"
 	"io"
 	"io/ioutil"
-	"k8s.io/kops/upup/pkg/fi/hashing"
+	"k8s.io/kops/util/pkg/hashing"
 	"os"
 	"path"
 	"sync"
