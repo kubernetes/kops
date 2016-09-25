@@ -10,7 +10,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
-	"k8s.io/kops/upup/pkg/fi/vfs"
+	"k8s.io/kops/util/pkg/vfs"
 	"strconv"
 	"strings"
 )

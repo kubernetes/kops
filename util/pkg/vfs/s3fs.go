@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/golang/glog"
 	"io/ioutil"
-	"k8s.io/kops/upup/pkg/fi/hashing"
+	"k8s.io/kops/util/pkg/hashing"
 	"os"
 	"path"
 	"strings"

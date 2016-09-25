@@ -6,10 +6,10 @@ import (
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/vfs"
 	"k8s.io/kubernetes/pkg/util/sets"
 	"strings"
 	"testing"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 const MockAWSRegion = "us-mock-1"

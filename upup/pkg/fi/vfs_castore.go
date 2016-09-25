@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"golang.org/x/crypto/ssh"
-	"k8s.io/kops/upup/pkg/fi/vfs"
+	"k8s.io/kops/util/pkg/vfs"
 	"math/big"
 	"os"
 	"strings"
