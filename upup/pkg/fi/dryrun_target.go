@@ -84,7 +84,7 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 			fmt.Fprintf(b, "Will create resources:\n")
 			for _, r := range creates {
 				taskName := getTaskName(r.changes)
-				fmt.Fprintf(b, "  %s\t%s\n", taskName, IdForTask(taskMap, r.e))
+				fmt.Fprintf(b, "  %-20s\t%s\n", taskName, IdForTask(taskMap, r.e))
 
 				changes := reflect.ValueOf(r.changes)
 				if changes.Kind() == reflect.Ptr && !changes.IsNil() {
@@ -102,10 +102,12 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 						// The field name is already printed above, no need to repeat it.
 						// Additionally, ignore any output that is not informative
 						if fieldName != "Name" && fieldValue != "<nil>" && fieldValue != "id:<nil>" && fieldValue != "<resource>" {
-							fmt.Fprintf(b, "  \t%s\t%s\n", fieldName, fieldValue)
+							fmt.Fprintf(b, "  \t%-20s\t%s\n", fieldName, fieldValue)
 						}
 					}
 				}
+
+				fmt.Fprintf(b, "\n")
 			}
 		}
 
@@ -165,7 +167,7 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 						if ignored {
 							continue
 						}
-						changeList = append(changeList, valC.Type().Field(i).Name+description)
+						changeList = append(changeList, fmt.Sprintf("%-20s\t%s", valC.Type().Field(i).Name, description))
 					}
 				} else {
 					return fmt.Errorf("unhandled change type: %v", valC.Type())
@@ -176,9 +178,9 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 				}
 
 				taskName := getTaskName(r.changes)
-				fmt.Fprintf(b, "  %s\t%s\n", taskName, IdForTask(taskMap, r.e))
+				fmt.Fprintf(b, "  %-20s\t%s\n", taskName, IdForTask(taskMap, r.e))
 				for _, f := range changeList {
-					fmt.Fprintf(b, "    %s\n", f)
+					fmt.Fprintf(b, "  \t%s\n", f)
 				}
 				fmt.Fprintf(b, "\n")
 			}
@@ -188,7 +190,7 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 	if len(t.deletions) != 0 {
 		fmt.Fprintf(b, "Will delete items:\n")
 		for _, d := range t.deletions {
-			fmt.Fprintf(b, "  %s\t%s\n", d.TaskName(), d.Item())
+			fmt.Fprintf(b, "  %-20s %s\n", d.TaskName(), d.Item())
 		}
 	}
 
