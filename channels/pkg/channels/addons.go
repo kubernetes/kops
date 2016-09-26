@@ -5,16 +5,17 @@ import (
 	"k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
+	"net/url"
 	"strings"
 )
 
 type Addons struct {
-	Channel   string
+	Channel   url.URL
 	APIObject *api.Addons
 }
 
-func LoadAddons(location string) (*Addons, error) {
-	data, err := vfs.Context.ReadFile(location)
+func LoadAddons(location *url.URL) (*Addons, error) {
+	data, err := vfs.Context.ReadFile(location.String())
 	if err != nil {
 		return nil, fmt.Errorf("error reading addons from %q: %v", location, err)
 	}
@@ -31,7 +32,7 @@ func LoadAddons(location string) (*Addons, error) {
 		}
 	}
 
-	return &Addons{Channel: location, APIObject: apiObject}, nil
+	return &Addons{Channel: *location, APIObject: apiObject}, nil
 }
 
 func (a *Addons) GetCurrent() ([]*Addon, error) {
@@ -42,7 +43,11 @@ func (a *Addons) GetCurrent() ([]*Addon, error) {
 			name = *s.Name
 		}
 
-		addon := &Addon{Channel: a.Channel, Spec: s, Name: name}
+		addon := &Addon{
+			Channel: a.Channel,
+			Spec:    s,
+			Name:    name,
+		}
 		existing := specs[name]
 		if existing == nil || addon.ChannelVersion().Replaces(existing.ChannelVersion()) {
 			specs[name] = addon
