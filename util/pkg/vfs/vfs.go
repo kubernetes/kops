@@ -3,7 +3,7 @@ package vfs
 import (
 	"fmt"
 	"github.com/golang/glog"
-	"k8s.io/kops/upup/pkg/fi/hashing"
+	"k8s.io/kops/util/pkg/hashing"
 	"strings"
 )
 

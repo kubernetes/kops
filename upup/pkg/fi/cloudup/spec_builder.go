@@ -6,7 +6,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/utils"
-	"k8s.io/kops/upup/pkg/fi/vfs"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 type SpecBuilder struct {

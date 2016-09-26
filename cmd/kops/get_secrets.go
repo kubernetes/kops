@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/tables"
 	"strings"
 )
 
@@ -126,7 +127,7 @@ func (c *GetSecretsCommand) Run(args []string) error {
 
 	output := getCmd.output
 	if output == OutputTable {
-		t := &Table{}
+		t := &tables.Table{}
 		t.AddColumn("NAME", func(i *fi.KeystoreItem) string {
 			return i.Name
 		})

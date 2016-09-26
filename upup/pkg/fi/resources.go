@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"k8s.io/kops/upup/pkg/fi/vfs"
+	"k8s.io/kops/util/pkg/vfs"
 	"os"
 )
 

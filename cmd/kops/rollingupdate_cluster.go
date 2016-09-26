@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/kutil"
+	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3"
@@ -110,7 +111,7 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 	}
 
 	{
-		t := &Table{}
+		t := &tables.Table{}
 		t.AddColumn("NAME", func(r *kutil.CloudInstanceGroup) string {
 			return r.InstanceGroup.Name
 		})

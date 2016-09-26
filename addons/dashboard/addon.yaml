@@ -1,0 +1,14 @@
+kind: Addons
+metadata:
+  name: dashboard
+spec:
+  addons:
+  - version: 1.1.0
+    selector:
+      k8s-addon: kubernetes-dashboard.addons.k8s.io
+    manifest: https://raw.githubusercontent.com/kubernetes/kops/master/addons/dashboard/v1.1.0.yaml
+  - version: 1.4.0
+    selector:
+      k8s-addon: kubernetes-dashboard.addons.k8s.io
+    manifest: https://raw.githubusercontent.com/kubernetes/kops/master/addons/dashboard/v1.4.0.yaml
+
