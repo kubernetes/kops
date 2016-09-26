@@ -1,5 +1,7 @@
 all: kops
 
+.PHONY: channels
+
 DOCKER_REGISTRY?=gcr.io/must-override/
 S3_BUCKET?=s3://must-override/
 GCS_LOCATION?=gs://must-override
@@ -62,6 +64,9 @@ godeps:
 	glide install --strip-vendor --strip-vcs
 
 gofmt:
+	gofmt -w -s cmd/
+	gofmt -w -s channels/
+	gofmt -w -s util/
 	gofmt -w -s cmd/
 	gofmt -w -s upup/pkg/
 	gofmt -w -s protokube/cmd
@@ -176,3 +181,11 @@ copydeps:
 
 ci: kops nodeup-gocode test
 	echo "Done"
+
+
+
+# --------------------------------------------------
+# channel tool
+
+channels:
+	go install ${EXTRA_BUILDFLAGS} -ldflags "-X main.BuildVersion=${VERSION} ${EXTRA_LDFLAGS}" k8s.io/kops/channels/cmd/...

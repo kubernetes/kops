@@ -3,7 +3,7 @@ package fi
 import (
 	"fmt"
 	"k8s.io/kops/upup/pkg/fi/utils"
-	"k8s.io/kops/upup/pkg/fi/vfs"
+	"k8s.io/kops/util/pkg/vfs"
 	"os"
 	"strings"
 )

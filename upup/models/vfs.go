@@ -1,11 +1,11 @@
 package models
 
 import (
-	"k8s.io/kops/upup/pkg/fi/vfs"
 	"path"
 	"errors"
 	"os"
 	"strings"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 var ReadOnlyError = errors.New("AssetPath is read-only")
