@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/api"
+	"k8s.io/kops/util/pkg/tables"
 	"strings"
 )
 
@@ -70,7 +71,7 @@ func (c *GetClustersCmd) Run(args []string) error {
 
 	output := getCmd.output
 	if output == OutputTable {
-		t := &Table{}
+		t := &tables.Table{}
 		t.AddColumn("NAME", func(c *api.Cluster) string {
 			return c.Name
 		})

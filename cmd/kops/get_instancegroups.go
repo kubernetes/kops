@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/api"
+	"k8s.io/kops/util/pkg/tables"
 )
 
 type GetInstanceGroupsCmd struct {
@@ -66,7 +67,7 @@ func (c *GetInstanceGroupsCmd) Run(args []string) error {
 
 	output := getCmd.output
 	if output == OutputTable {
-		t := &Table{}
+		t := &tables.Table{}
 		t.AddColumn("NAME", func(c *api.InstanceGroup) string {
 			return c.Name
 		})

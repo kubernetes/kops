@@ -9,6 +9,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/kutil"
+	"k8s.io/kops/util/pkg/tables"
 	"os"
 )
 
@@ -116,7 +117,7 @@ func (c *DeleteClusterCmd) Run(args []string) error {
 		} else {
 			wouldDeleteCloudResources = true
 
-			t := &Table{}
+			t := &tables.Table{}
 			t.AddColumn("TYPE", func(r *kutil.ResourceTracker) string {
 				return r.Type
 			})
