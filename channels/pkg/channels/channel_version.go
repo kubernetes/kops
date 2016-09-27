@@ -3,8 +3,8 @@ package channels
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/blang/semver"
 	"github.com/golang/glog"
-	"github.com/kopeio/route-controller/_vendor/github.com/blang/semver"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3"
