@@ -20,6 +20,10 @@ func LoadAddons(location *url.URL) (*Addons, error) {
 		return nil, fmt.Errorf("error reading addons from %q: %v", location, err)
 	}
 
+	return ParseAddons(location, data)
+}
+
+func ParseAddons(location *url.URL, data []byte) (*Addons, error) {
 	// Yaml can't parse empty strings
 	configString := string(data)
 	configString = strings.TrimSpace(configString)
@@ -36,7 +40,28 @@ func LoadAddons(location *url.URL) (*Addons, error) {
 }
 
 func (a *Addons) GetCurrent() ([]*Addon, error) {
+	all, err := a.All()
+	if err != nil {
+		return nil, err
+	}
 	specs := make(map[string]*Addon)
+	for _, addon := range all {
+		name := addon.Name
+		existing := specs[name]
+		if existing == nil || addon.ChannelVersion().Replaces(existing.ChannelVersion()) {
+			specs[name] = addon
+		}
+	}
+
+	var addons []*Addon
+	for _, addon := range specs {
+		addons = append(addons, addon)
+	}
+	return addons, nil
+}
+
+func (a *Addons) All() ([]*Addon, error) {
+	var addons []*Addon
 	for _, s := range a.APIObject.Spec.Addons {
 		name := a.APIObject.Name
 		if s.Name != nil {
@@ -48,14 +73,7 @@ func (a *Addons) GetCurrent() ([]*Addon, error) {
 			Spec:    s,
 			Name:    name,
 		}
-		existing := specs[name]
-		if existing == nil || addon.ChannelVersion().Replaces(existing.ChannelVersion()) {
-			specs[name] = addon
-		}
-	}
 
-	var addons []*Addon
-	for _, addon := range specs {
 		addons = append(addons, addon)
 	}
 	return addons, nil
