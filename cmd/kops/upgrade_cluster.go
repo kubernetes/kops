@@ -7,7 +7,6 @@ import (
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/tables"
-	"k8s.io/kops/util/pkg/vfs"
 	"os"
 )
 
