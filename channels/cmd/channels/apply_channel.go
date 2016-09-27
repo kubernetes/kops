@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kops/channels/pkg/channels"
 	"k8s.io/kops/util/pkg/tables"
+	"net/url"
 	"os"
 )
 
@@ -37,9 +38,25 @@ func (c *ApplyChannelCmd) Run(args []string) error {
 		return err
 	}
 
+	cwd, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("error getting current directory: %v", err)
+	}
+	baseURL, err := url.Parse(cwd + string(os.PathSeparator))
+	if err != nil {
+		return fmt.Errorf("error building url for current directory %q: %v", cwd, err)
+	}
+
 	var addons []*channels.Addon
 	for _, arg := range args {
-		o, err := channels.LoadAddons(arg)
+		channel, err := url.Parse(arg)
+		if err != nil {
+			return fmt.Errorf("unable to parse argument %q as url", arg)
+		}
+		if !channel.IsAbs() {
+			channel = baseURL.ResolveReference(channel)
+		}
+		o, err := channels.LoadAddons(channel)
 		if err != nil {
 			return fmt.Errorf("error loading file %q: %v", arg, err)
 		}
