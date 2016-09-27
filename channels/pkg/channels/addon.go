@@ -6,11 +6,12 @@ import (
 	"k8s.io/kops/channels/pkg/api"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3"
 	"k8s.io/kubernetes/pkg/util/validation/field"
+	"net/url"
 )
 
 type Addon struct {
 	Name    string
-	Channel string
+	Channel url.URL
 	Spec    *api.AddonSpec
 }
 
@@ -21,8 +22,9 @@ type AddonUpdate struct {
 }
 
 func (a *Addon) ChannelVersion() *ChannelVersion {
+	channel := a.Channel.String()
 	return &ChannelVersion{
-		Channel: &a.Channel,
+		Channel: &channel,
 		Version: a.Spec.Version,
 	}
 }
@@ -74,9 +76,16 @@ func (a *Addon) EnsureUpdated(k8sClient *release_1_3.Clientset) (*AddonUpdate, e
 	}
 
 	manifest := *a.Spec.Manifest
-	glog.Infof("Applying update from %q", manifest)
+	manifestURL, err := url.Parse(manifest)
+	if err != nil {
+		return nil, field.Invalid(field.NewPath("Spec", "Manifest"), manifest, "Not a valid URL")
+	}
+	if !manifestURL.IsAbs() {
+		manifestURL = a.Channel.ResolveReference(manifestURL)
+	}
+	glog.Infof("Applying update from %q", manifestURL)
 
-	err = Apply(manifest)
+	err = Apply(manifestURL.String())
 	if err != nil {
 		return nil, fmt.Errorf("error applying update from %q: %v", manifest, err)
 	}
