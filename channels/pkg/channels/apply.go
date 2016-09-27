@@ -25,7 +25,7 @@ func execKubectl(args ...string) (string, error) {
 	glog.V(2).Infof("Running command: %s", human)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		glog.Infof("error running %s:", human)
+		glog.Infof("error running %s", human)
 		glog.Info(string(output))
 		return string(output), fmt.Errorf("error running kubectl")
 	}
