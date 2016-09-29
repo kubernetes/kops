@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"io"
+	"io/ioutil"
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
@@ -11,6 +12,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
+	"os/exec"
 	"strconv"
 	"strings"
 )
@@ -236,6 +238,13 @@ func evaluateSpec(c *api.Cluster) error {
 		return err
 	}
 
+	if c.Spec.Docker != nil {
+		err = evaluateDockerSpecStorage(c.Spec.Docker)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -259,4 +268,89 @@ func evaluateHostnameOverride(hostnameOverride string) (string, error) {
 		glog.Infof("Using hostname from AWS metadata service: %s", v)
 	}
 	return v, nil
+}
+
+// evaluateDockerSpec selects the first supported storage mode, if it is a list
+func evaluateDockerSpecStorage(spec *api.DockerConfig) error {
+	storage := fi.StringValue(spec.Storage)
+	if strings.Contains(fi.StringValue(spec.Storage), ",") {
+		precedence := strings.Split(storage, ",")
+		for _, opt := range precedence {
+			fs := opt
+			if fs == "overlay2" {
+				fs = "overlay"
+			}
+			supported, err := kernelHasFilesystem(fs)
+			if err != nil {
+				glog.Warningf("error checking if %q filesystem is supported: %v", fs, err)
+				continue
+			}
+
+			if !supported {
+				// overlay -> overlay
+				// aufs -> aufs
+				module := fs
+				err := modprobe(fs)
+				if err != nil {
+					glog.Warningf("error running `modprobe %q`: %v", module, err)
+				}
+			}
+
+			supported, err = kernelHasFilesystem(fs)
+			if err != nil {
+				glog.Warningf("error checking if %q filesystem is supported: %v", fs, err)
+				continue
+			}
+
+			if supported {
+				glog.Infof("Using supported docker storage %q", opt)
+				spec.Storage = fi.String(opt)
+				return nil
+			}
+
+			glog.Warningf("%q docker storage was specified, but filesystem is not supported", opt)
+		}
+
+		// Just in case we don't recognize the driver?
+		// TODO: Is this the best behaviour
+		glog.Warningf("No storage module was supported from %q, will default to %q", storage, precedence[0])
+		spec.Storage = fi.String(precedence[0])
+		return nil
+	}
+
+	return nil
+}
+
+// kernelHasFilesystem checks if /proc/filesystems contains the specified filesystem
+func kernelHasFilesystem(fs string) (bool, error) {
+	contents, err := ioutil.ReadFile("/proc/filesystems")
+	if err != nil {
+		return false, fmt.Errorf("error reading /proc/filesystems: %v", err)
+	}
+
+	for _, line := range strings.Split(string(contents), "\n") {
+		tokens := strings.Fields(line)
+		for _, token := range tokens {
+			// Technically we should skip "nodev", but it doesn't matter
+			if token == fs {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
+}
+
+// modprobe will exec `modprobe <module>`
+func modprobe(module string) error {
+	glog.Infof("Doing modprobe for module %v", module)
+	out, err := exec.Command("/sbin/modprobe", module).CombinedOutput()
+	outString := string(out)
+	if err != nil {
+		return fmt.Errorf("modprobe for module %q failed (%v): %s", module, err, outString)
+	}
+	if outString != "" {
+		glog.Infof("Output from modprobe %s:\n%s", module, outString)
+	}
+	return nil
 }
