@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/blang/semver"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/util/validation"
 	"k8s.io/kubernetes/pkg/util/validation/field"
@@ -11,6 +12,8 @@ import (
 )
 
 func (c *Cluster) Validate(strict bool) error {
+	specField := field.NewPath("Spec")
+
 	var err error
 
 	if c.Name == "" {
@@ -199,7 +202,7 @@ func (c *Cluster) Validate(strict bool) error {
 	if c.Spec.UpdatePolicy != nil {
 		switch *c.Spec.UpdatePolicy {
 		case UpdatePolicyExternal:
-			// Valid
+		// Valid
 		default:
 			return fmt.Errorf("unrecognized value for UpdatePolicy: %v", *c.Spec.UpdatePolicy)
 		}
@@ -270,6 +273,24 @@ func (c *Cluster) Validate(strict bool) error {
 				if fi.StringValue(m.Zone) == "" {
 					return fmt.Errorf("EtcdMember did not have Zone in cluster %q", etcd.Name)
 				}
+			}
+		}
+	}
+
+	// KubernetesVersion
+	if c.Spec.KubernetesVersion == "" {
+		if strict {
+			return field.Required(specField.Child("KubernetesVersion"), "")
+		}
+	} else {
+		sv, err := ParseKubernetesVersion(c.Spec.KubernetesVersion)
+		if err != nil {
+			return field.Invalid(specField.Child("KubernetesVersion"), c.Spec.KubernetesVersion, "unable to determine kubernetes version")
+		}
+
+		if sv.GTE(semver.Version{Major: 1, Minor: 4}) {
+			if c.Spec.Networking != nil && c.Spec.Networking.Classic != nil {
+				return field.Invalid(specField.Child("Networking"), "classic", "classic networking is not supported with kubernetes versions 1.4 and later")
 			}
 		}
 	}
