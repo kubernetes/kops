@@ -6,10 +6,10 @@ import (
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/util/sets"
 	"strings"
 	"testing"
-	"k8s.io/kops/util/pkg/vfs"
 )
 
 const MockAWSRegion = "us-mock-1"
@@ -138,6 +138,26 @@ func TestValidateFull_UpdatePolicy_Invalid(t *testing.T) {
 	c := buildDefaultCluster(t)
 	c.Spec.UpdatePolicy = fi.String("not-a-real-value")
 	expectErrorFromValidate(t, c, "UpdatePolicy")
+}
+
+func Test_Validate_No_Classic_With_14(t *testing.T) {
+	c := buildDefaultCluster(t)
+	c.Spec.KubernetesVersion = "1.4.1"
+	c.Spec.Networking = &api.NetworkingSpec{
+		Classic: &api.ClassicNetworkingSpec{},
+	}
+
+	expectErrorFromValidate(t, c, "Spec.Networking")
+}
+
+func Test_Validate_Kubenet_With_14(t *testing.T) {
+	c := buildDefaultCluster(t)
+	c.Spec.KubernetesVersion = "1.4.1"
+	c.Spec.Networking = &api.NetworkingSpec{
+		Kubenet: &api.KubenetNetworkingSpec{},
+	}
+
+	expectNoErrorFromValidate(t, c)
 }
 
 func expectErrorFromValidate(t *testing.T, c *api.Cluster, message string) {
