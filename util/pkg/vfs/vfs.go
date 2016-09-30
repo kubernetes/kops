@@ -35,7 +35,7 @@ type Path interface {
 	// Path returns a string representing the full path
 	Path() string
 
-	// ReadDir lists the files in a particular Pathss
+	// ReadDir lists the files in a particular Path
 	ReadDir() ([]Path, error)
 
 	// ReadTree lists all files in the subtree rooted at the current Path
