@@ -1,100 +1,100 @@
-{
-"apiVersion": "v1",
-"kind": "Pod",
-"metadata": {
-  "name":"kube-apiserver",
-  "namespace": "kube-system"
-},
-"spec":{
-"hostNetwork": true,
-"containers":[
-    {
-    "name": "kube-apiserver",
-    "image": "{{ KubeAPIServer.Image }}",
-    "resources": {
-      "requests": {
-        "cpu": "250m"
-      }
-    },
-    "command": [
-                 "/bin/sh",
-                 "-c",
-                 "/usr/local/bin/kube-apiserver {{ BuildFlags KubeAPIServer }} 1>>/var/log/kube-apiserver.log 2>&1"
-               ],
-    "livenessProbe": {
-      "httpGet": {
-        "host": "127.0.0.1",
-        "port": 8080,
-        "path": "/healthz"
-      },
-      "initialDelaySeconds": 15,
-      "timeoutSeconds": 15
-    },
-    "ports":[
-      { "name": "https",
-        "containerPort": {{ KubeAPIServer.SecurePort }},
-        "hostPort": {{ KubeAPIServer.SecurePort }} },{
-       "name": "local",
-        "containerPort": 8080,
-        "hostPort": 8080}
-        ],
-    "volumeMounts": [
-        {"name": "usrsharessl","mountPath": "/usr/share/ssl", "readOnly": true}, {"name": "usrssl","mountPath": "/usr/ssl", "readOnly": true}, {"name": "usrlibssl","mountPath": "/usr/lib/ssl", "readOnly": true}, {"name": "usrlocalopenssl","mountPath": "/usr/local/openssl", "readOnly": true},
-
-        { "name": "srvkube",
-        "mountPath": "{{ KubeAPIServer.PathSrvKubernetes }}",
-        "readOnly": true},
-        { "name": "logfile",
-        "mountPath": "/var/log/kube-apiserver.log",
-        "readOnly": false},
-        { "name": "etcssl",
-        "mountPath": "/etc/ssl",
-        "readOnly": true},
-        { "name": "varssl",
-        "mountPath": "/var/ssl",
-        "readOnly": true},
-        { "name": "etcopenssl",
-        "mountPath": "/etc/openssl",
-        "readOnly": true},
-        { "name": "etcpkitls",
-        "mountPath": "/etc/pki/tls",
-        "readOnly": true},
-        { "name": "srvsshproxy",
-        "mountPath": "{{ KubeAPIServer.PathSrvSshproxy }}",
-        "readOnly": false}
-      ]
-    }
-],
-"volumes":[
-  {"name": "usrsharessl","hostPath": {"path": "/usr/share/ssl"}}, {"name": "usrssl","hostPath": {"path": "/usr/ssl"}}, {"name": "usrlibssl","hostPath": {"path": "/usr/lib/ssl"}}, {"name": "usrlocalopenssl","hostPath": {"path": "/usr/local/openssl"}},
-
-  { "name": "srvkube",
-    "hostPath": {
-        "path": "{{ KubeAPIServer.PathSrvKubernetes }}"}
-  },
-  { "name": "logfile",
-    "hostPath": {
-        "path": "/var/log/kube-apiserver.log"}
-  },
-  { "name": "etcssl",
-    "hostPath": {
-        "path": "/etc/ssl"}
-  },
-  { "name": "varssl",
-    "hostPath": {
-        "path": "/var/ssl"}
-  },
-  { "name": "etcopenssl",
-    "hostPath": {
-        "path": "/etc/openssl"}
-  },
-  { "name": "etcpkitls",
-    "hostPath": {
-        "path": "/etc/pki/tls"}
-  },
-  { "name": "srvsshproxy",
-    "hostPath": {
-        "path": "{{ KubeAPIServer.PathSrvSshproxy }}"}
-  }
-]
-}}
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    dns.alpha.kubernetes.io/external: {{ .MasterPublicName }}
+    dns.alpha.kubernetes.io/internal: {{ .MasterInternalName }}
+  name: kube-apiserver
+  namespace: kube-system
+spec:
+  hostNetwork: true
+  containers:
+  - name: kube-apiserver
+    image: "{{ KubeAPIServer.Image }}"
+    resources:
+      requests:
+        cpu: 250m
+    command:
+    - "/bin/sh"
+    - "-c"
+    - "/usr/local/bin/kube-apiserver {{ BuildFlags KubeAPIServer }} 1>>/var/log/kube-apiserver.log 2>&1"
+    livenessProbe:
+      httpGet:
+        host: 127.0.0.1
+        path: /healthz
+        port: 8080
+      initialDelaySeconds: 15
+      timeoutSeconds: 15
+    ports:
+    - name: https
+      containerPort: {{ KubeAPIServer.SecurePort }}
+      hostPort: {{ KubeAPIServer.SecurePort }}
+    - name: local
+      containerPort: 8080
+      hostPort: 8080
+    volumeMounts:
+    - mountPath: /usr/share/ssl
+      name: usrsharessl
+      readOnly: true
+    - mountPath: /usr/ssl
+      name: usrssl
+      readOnly: true
+    - mountPath: /usr/lib/ssl
+      name: usrlibssl
+      readOnly: true
+    - mountPath: /usr/local/openssl
+      name: usrlocalopenssl
+      readOnly: true
+    - mountPath: "{{ KubeAPIServer.PathSrvKubernetes }}"
+      name: srvkube
+      readOnly: true
+    - mountPath: /var/log/kube-apiserver.log
+      name: logfile
+    - mountPath: /etc/ssl
+      name: etcssl
+      readOnly: true
+    - mountPath: /var/ssl
+      name: varssl
+      readOnly: true
+    - mountPath: /etc/openssl
+      name: etcopenssl
+      readOnly: true
+    - mountPath: /etc/pki/tls
+      name: etcpkitls
+      readOnly: true
+    - mountPath: "{{ KubeAPIServer.PathSrvSshproxy }}"
+      name: srvsshproxy
+  volumes:
+  - hostPath:
+      path: /usr/share/ssl
+    name: usrsharessl
+  - hostPath:
+      path: /usr/ssl
+    name: usrssl
+  - hostPath:
+      path: /usr/lib/ssl
+    name: usrlibssl
+  - hostPath:
+      path: /usr/local/openssl
+    name: usrlocalopenssl
+  - hostPath:
+      path: "{{ KubeAPIServer.PathSrvKubernetes }}"
+    name: srvkube
+  - hostPath:
+      path: /var/log/kube-apiserver.log
+    name: logfile
+  - hostPath:
+      path: /etc/ssl
+    name: etcssl
+  - hostPath:
+      path: /var/ssl
+    name: varssl
+  - hostPath:
+      path: /etc/openssl
+    name: etcopenssl
+  - hostPath:
+      path: /etc/pki/tls
+    name: etcpkitls
+  - hostPath:
+      path: "{{ KubeAPIServer.PathSrvSshproxy }}"
+    name: srvsshproxy

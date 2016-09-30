@@ -3,9 +3,10 @@ KubeAPIServer:
   PathSrvKubernetes: /srv/kubernetes
   PathSrvSshproxy: /srv/sshproxy
   Address: 127.0.0.1
-  EtcdServers: http://127.0.0.1:4001
-  EtcdServersOverrides: /events#http://127.0.0.1:4002
-  AdmissionControl: NamespaceLifecycle,LimitRanger,ServiceAccount,ResourceQuota,PersistentVolumeLabel
+  EtcdServers:
+  - http://127.0.0.1:4001
+  EtcdServersOverrides:
+  - /events#http://127.0.0.1:4002
   ServiceClusterIPRange: {{ .ServiceClusterIPRange }}
   ClientCAFile: /srv/kubernetes/ca.crt
   BasicAuthFile: /srv/kubernetes/basic_auth.csv
