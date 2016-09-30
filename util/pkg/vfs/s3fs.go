@@ -154,10 +154,19 @@ func (p *S3Path) ReadDir() ([]Path, error) {
 	request.Prefix = aws.String(prefix)
 	request.Delimiter = aws.String("/")
 
+	glog.V(4).Infof("Listing objects in S3 bucket %q with prefix %q", p.bucket, prefix)
 	var paths []Path
 	err := p.client.ListObjectsPages(request, func(page *s3.ListObjectsOutput, lastPage bool) bool {
 		for _, o := range page.Contents {
 			key := aws.StringValue(o.Key)
+			if key == prefix {
+				// We have reports (#548 and #520) of the directory being returned as a file
+				// And this will indeed happen if the directory has been created as a file,
+				// which seems to happen if you use some external tools to manipulate the S3 bucket.
+				// We need to tolerate that, so skip the parent directory.
+				glog.V(4).Infof("Skipping read of directory: %q", key)
+				continue
+			}
 			child := &S3Path{
 				client: p.client,
 				bucket: p.bucket,
