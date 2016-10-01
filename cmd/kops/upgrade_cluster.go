@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 
+	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/api"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/tables"
 	"os"
@@ -12,6 +14,8 @@ import (
 
 type UpgradeClusterCmd struct {
 	Yes bool
+
+	Channel string
 }
 
 var upgradeCluster UpgradeClusterCmd
@@ -30,6 +34,7 @@ func init() {
 	}
 
 	cmd.Flags().BoolVar(&upgradeCluster.Yes, "yes", false, "Apply update")
+	cmd.Flags().StringVar(&upgradeCluster.Channel, "channel", "", "Channel to use for upgrade")
 
 	upgradeCmd.AddCommand(cmd)
 }
@@ -65,22 +70,136 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		return fmt.Errorf("upgrade is not for use with imported clusters (did you mean `kops toolbox convert-imported`?)")
 	}
 
-	latestKubernetesVersion, err := api.FindLatestKubernetesVersion()
-	if err != nil {
-		return err
+	channelLocation := c.Channel
+	if channelLocation == "" {
+		channelLocation = cluster.Spec.Channel
+	}
+	if channelLocation == "" {
+		channelLocation = api.DefaultChannel
 	}
 
 	var actions []*upgradeAction
-	if cluster.Spec.KubernetesVersion != latestKubernetesVersion {
+	if channelLocation != cluster.Spec.Channel {
+		actions = append(actions, &upgradeAction{
+			Item:     "Cluster",
+			Property: "Channel",
+			Old:      cluster.Spec.Channel,
+			New:      channelLocation,
+			apply: func() {
+				cluster.Spec.Channel = channelLocation
+			},
+		})
+	}
+
+	channel, err := api.LoadChannel(channelLocation)
+	if err != nil {
+		return fmt.Errorf("error loading channel %q: %v", channelLocation, err)
+	}
+
+	channelClusterSpec := channel.Spec.Cluster
+	if channelClusterSpec == nil {
+		// Just to prevent too much nil handling
+		channelClusterSpec = &api.ClusterSpec{}
+	}
+
+	//latestKubernetesVersion, err := api.FindLatestKubernetesVersion()
+	//if err != nil {
+	//	return err
+	//}
+
+	if channelClusterSpec.KubernetesVersion != "" && cluster.Spec.KubernetesVersion != channelClusterSpec.KubernetesVersion {
 		actions = append(actions, &upgradeAction{
 			Item:     "Cluster",
 			Property: "KubernetesVersion",
 			Old:      cluster.Spec.KubernetesVersion,
-			New:      latestKubernetesVersion,
+			New:      channelClusterSpec.KubernetesVersion,
 			apply: func() {
-				cluster.Spec.KubernetesVersion = latestKubernetesVersion
+				cluster.Spec.KubernetesVersion = channelClusterSpec.KubernetesVersion
 			},
 		})
+	}
+
+	// Prompt to upgrade addins?
+
+	// Prompt to upgrade to kubenet
+	if channelClusterSpec.Networking != nil {
+		clusterNetworking := cluster.Spec.Networking
+		if clusterNetworking == nil {
+			clusterNetworking = &api.NetworkingSpec{}
+		}
+		// TODO: make this less hard coded
+		if channelClusterSpec.Networking.Kubenet != nil && channelClusterSpec.Networking.Classic != nil {
+			actions = append(actions, &upgradeAction{
+				Item:     "Cluster",
+				Property: "Networking",
+				Old:      "classic",
+				New:      "kubenet",
+				apply: func() {
+					cluster.Spec.Networking.Classic = nil
+					cluster.Spec.Networking.Kubenet = channelClusterSpec.Networking.Kubenet
+				},
+			})
+		}
+	}
+
+	cloud, err := cloudup.BuildCloud(cluster)
+	if err != nil {
+		return err
+	}
+
+	// Prompt to upgrade image
+	{
+		var matches []*api.ChannelImageSpec
+		for _, image := range channel.Spec.Images {
+			cloudProvider := image.Labels[api.ImageLabelCloudprovider]
+			if cloudProvider != string(cloud.ProviderID()) {
+				continue
+			}
+			matches = append(matches, image)
+		}
+
+		if len(matches) == 0 {
+			glog.Warningf("No matching images specified in channel; cannot prompt for upgrade")
+		} else if len(matches) != 1 {
+			glog.Warningf("Multiple matching images specified in channel; cannot prompt for upgrade")
+		} else {
+			for _, ig := range instanceGroups {
+				if ig.Spec.Image != matches[0].Name {
+					target := ig
+					actions = append(actions, &upgradeAction{
+						Item:     "InstanceGroup/" + target.Name,
+						Property: "Image",
+						Old:      target.Spec.Image,
+						New:      matches[0].Name,
+						apply: func() {
+							target.Spec.Image = matches[0].Name
+						},
+					})
+				}
+			}
+		}
+	}
+
+	// Prompt to upgrade to overlayfs
+	if channelClusterSpec.Docker != nil {
+		if cluster.Spec.Docker == nil {
+			cluster.Spec.Docker = &api.DockerConfig{}
+		}
+		// TODO: make less hard-coded
+		if channelClusterSpec.Docker.Storage != nil {
+			dockerStorage := fi.StringValue(cluster.Spec.Docker.Storage)
+			if dockerStorage != fi.StringValue(channelClusterSpec.Docker.Storage) {
+				actions = append(actions, &upgradeAction{
+					Item:     "Cluster",
+					Property: "Docker.Storage",
+					Old:      dockerStorage,
+					New:      fi.StringValue(channelClusterSpec.Docker.Storage),
+					apply: func() {
+						cluster.Spec.Docker.Storage = channelClusterSpec.Docker.Storage
+					},
+				})
+			}
+		}
 	}
 
 	if len(actions) == 0 {
@@ -139,6 +258,13 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		err = clusterRegistry.Update(cluster)
 		if err != nil {
 			return err
+		}
+
+		for _, g := range instanceGroups {
+			err := instanceGroupRegistry.Update(g)
+			if err != nil {
+				return fmt.Errorf("error writing InstanceGroup %q to registry: %v", g.Name, err)
+			}
 		}
 
 		err = clusterRegistry.WriteCompletedConfig(fullCluster)

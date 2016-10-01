@@ -42,6 +42,13 @@ func (x *ImportCluster) ImportAWSCluster() error {
 
 	cluster.Spec.KubeControllerManager = &api.KubeControllerManagerConfig{}
 
+	cluster.Spec.Channel = api.DefaultChannel
+
+	channel, err := api.LoadChannel(cluster.Spec.Channel)
+	if err != nil {
+		return err
+	}
+
 	masterGroup := &api.InstanceGroup{}
 	masterGroup.Spec.Role = api.InstanceGroupRoleMaster
 	masterGroup.Spec.MinSize = fi.Int(1)
@@ -418,7 +425,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 
 	var fullInstanceGroups []*api.InstanceGroup
 	for _, ig := range instanceGroups {
-		full, err := cloudup.PopulateInstanceGroupSpec(cluster, ig)
+		full, err := cloudup.PopulateInstanceGroupSpec(cluster, ig, channel)
 		if err != nil {
 			return err
 		}

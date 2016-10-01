@@ -56,6 +56,11 @@ func (c *EditInstanceGroupCmd) Run(groupName string) error {
 		}
 	}
 
+	channel, err := cloudup.ChannelForCluster(cluster)
+	if err != nil {
+		return err
+	}
+
 	registry, err := rootCommand.InstanceGroupRegistry()
 	if err != nil {
 		return err
@@ -110,7 +115,7 @@ func (c *EditInstanceGroupCmd) Run(groupName string) error {
 		return err
 	}
 
-	fullGroup, err := cloudup.PopulateInstanceGroupSpec(cluster, newGroup)
+	fullGroup, err := cloudup.PopulateInstanceGroupSpec(cluster, newGroup, channel)
 	if err != nil {
 		return err
 	}
