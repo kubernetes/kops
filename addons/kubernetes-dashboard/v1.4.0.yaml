@@ -19,7 +19,7 @@ spec:
         k8s-addon: kubernetes-dashboard.addons.k8s.io
         k8s-app: kubernetes-dashboard
         version: v1.4.0
-        # kubernetes.io/cluster-service: "true"
+        kubernetes.io/cluster-service: "true"
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
         scheduler.alpha.kubernetes.io/tolerations: '[{"key":"CriticalAddonsOnly", "operator":"Exists"}]'
@@ -53,7 +53,7 @@ metadata:
   labels:
     k8s-addon: kubernetes-dashboard.addons.k8s.io
     k8s-app: kubernetes-dashboard
-    # kubernetes.io/cluster-service: "true"
+    kubernetes.io/cluster-service: "true"
 spec:
   selector:
     k8s-app: kubernetes-dashboard
