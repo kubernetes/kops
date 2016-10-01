@@ -30,7 +30,9 @@ func TestPopulateInstanceGroup_Name_Required(t *testing.T) {
 	g := buildMinimalNodeInstanceGroup()
 	g.Name = ""
 
-	expectErrorFromPopulateInstanceGroup(t, cluster, g, "Name")
+	channel := &api.Channel{}
+
+	expectErrorFromPopulateInstanceGroup(t, cluster, g, channel, "Name")
 }
 
 func TestPopulateInstanceGroup_Role_Required(t *testing.T) {
@@ -38,11 +40,13 @@ func TestPopulateInstanceGroup_Role_Required(t *testing.T) {
 	g := buildMinimalNodeInstanceGroup()
 	g.Spec.Role = ""
 
-	expectErrorFromPopulateInstanceGroup(t, cluster, g, "Role")
+	channel := &api.Channel{}
+
+	expectErrorFromPopulateInstanceGroup(t, cluster, g, channel, "Role")
 }
 
-func expectErrorFromPopulateInstanceGroup(t *testing.T, cluster *api.Cluster, g *api.InstanceGroup, message string) {
-	_, err := PopulateInstanceGroupSpec(cluster, g)
+func expectErrorFromPopulateInstanceGroup(t *testing.T, cluster *api.Cluster, g *api.InstanceGroup, channel *api.Channel, message string) {
+	_, err := PopulateInstanceGroupSpec(cluster, g, channel)
 	if err == nil {
 		t.Fatalf("Expected error from PopulateInstanceGroup")
 	}
