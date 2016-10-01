@@ -573,6 +573,11 @@ func (c *ApplyClusterCmd) upgradeSpecs() error {
 	//	return fmt.Errorf("error populating configuration: %v", err)
 	//}
 
+	channel, err := ChannelForCluster(c.Cluster)
+	if err != nil {
+		return err
+	}
+
 	fullCluster, err := PopulateClusterSpec(c.Cluster, c.ClusterRegistry)
 	if err != nil {
 		return err
@@ -580,7 +585,7 @@ func (c *ApplyClusterCmd) upgradeSpecs() error {
 	c.Cluster = fullCluster
 
 	for i, g := range c.InstanceGroups {
-		fullGroup, err := PopulateInstanceGroupSpec(fullCluster, g)
+		fullGroup, err := PopulateInstanceGroupSpec(fullCluster, g, channel)
 		if err != nil {
 			return err
 		}
@@ -588,4 +593,12 @@ func (c *ApplyClusterCmd) upgradeSpecs() error {
 	}
 
 	return nil
+}
+
+func ChannelForCluster(c *api.Cluster) (*api.Channel, error) {
+	channelLocation := c.Spec.Channel
+	if channelLocation == "" {
+		channelLocation = api.DefaultChannel
+	}
+	return api.LoadChannel(channelLocation)
 }

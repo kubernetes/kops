@@ -23,6 +23,9 @@ type ConvertKubeupCluster struct {
 
 	ClusterConfig  *api.Cluster
 	InstanceGroups []*api.InstanceGroup
+
+	// Channel is the channel that we are upgrading to
+	Channel *api.Channel
 }
 
 func (x *ConvertKubeupCluster) Upgrade() error {
@@ -49,6 +52,12 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 
 	// Build completed cluster (force errors asap)
 	cluster.Name = newClusterName
+
+	// Set KubernetesVersion from channel
+	if x.Channel != nil && x.Channel.Spec.Cluster != nil && x.Channel.Spec.Cluster.KubernetesVersion != "" {
+		cluster.Spec.KubernetesVersion = x.Channel.Spec.Cluster.KubernetesVersion
+	}
+
 	err := cluster.PerformAssignments()
 	if err != nil {
 		return fmt.Errorf("error populating cluster defaults: %v", err)
