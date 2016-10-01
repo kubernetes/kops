@@ -65,7 +65,7 @@ func buildFlags(options interface{}) (string, error) {
 			if val.IsNil() {
 				return nil
 			}
-			// We handle a []string like --admision-control=v1,v2 etc
+			// We handle a []string like --admission-control=v1,v2 etc
 			if stringSlice, ok := val.Interface().([]string); ok {
 				if len(stringSlice) != 0 {
 					flag := fmt.Sprintf("--%s=%s", flagName, strings.Join(stringSlice, ","))
@@ -85,7 +85,7 @@ func buildFlags(options interface{}) (string, error) {
 				flag = fmt.Sprintf("--%s=%s", flagName, vString)
 			}
 
-		case bool, int, float32, float64:
+		case bool, int, int32, int64, float32, float64:
 			vString := fmt.Sprintf("%v", v)
 			flag = fmt.Sprintf("--%s=%s", flagName, vString)
 
