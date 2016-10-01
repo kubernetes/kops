@@ -9,13 +9,14 @@ import (
 func TestBuildTags_CloudProvider_AWS(t *testing.T) {
 	c := &api.Cluster{
 		Spec: api.ClusterSpec{
-			CloudProvider: "aws",
+			CloudProvider:     "aws",
+			KubernetesVersion: "v1.3.5",
 		},
 	}
 
-	tags, err := buildClusterTags(c)
+	tags, err := buildCloudupTags(c)
 	if err != nil {
-		t.Fatalf("buildTags error: %v", err)
+		t.Fatalf("buildCloudupTags error: %v", err)
 	}
 
 	if _, found := tags["_aws"]; !found {
@@ -32,17 +33,44 @@ func TestBuildTags_CloudProvider_AWS(t *testing.T) {
 	}
 }
 
+func TestBuildTags_KubernetesVersions(t *testing.T) {
+	grid := map[string]string{
+		"1.3.7":         "_k8s_1_3",
+		"v1.4.0-beta.8": "_k8s_1_4",
+		"1.5.0":         "_k8s_1_5",
+		"https://storage.googleapis.com/kubernetes-release-dev/ci/v1.4.0-alpha.2.677+ea69570f61af8e/": "_k8s_1_4",
+	}
+	for version, tag := range grid {
+		c := &api.Cluster{
+			Spec: api.ClusterSpec{
+				CloudProvider:     "aws",
+				KubernetesVersion: version,
+			},
+		}
+
+		tags, err := buildCloudupTags(c)
+		if err != nil {
+			t.Fatalf("buildCloudupTags error: %v", err)
+		}
+
+		if _, found := tags[tag]; !found {
+			t.Fatalf("tag %q not found for %q: %v", tag, version, tags)
+		}
+	}
+}
+
 func TestBuildTags_UpdatePolicy_Nil(t *testing.T) {
 	c := &api.Cluster{
 		Spec: api.ClusterSpec{
-			CloudProvider: "aws",
-			UpdatePolicy:  nil,
+			CloudProvider:     "aws",
+			KubernetesVersion: "v1.3.5",
+			UpdatePolicy:      nil,
 		},
 	}
 
-	tags, err := buildClusterTags(c)
+	tags, err := buildCloudupTags(c)
 	if err != nil {
-		t.Fatalf("buildTags error: %v", err)
+		t.Fatalf("buildCloudupTags error: %v", err)
 	}
 
 	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
@@ -58,12 +86,13 @@ func TestBuildTags_UpdatePolicy_Nil(t *testing.T) {
 func TestBuildTags_UpdatePolicy_None(t *testing.T) {
 	c := &api.Cluster{
 		Spec: api.ClusterSpec{
-			CloudProvider: "aws",
-			UpdatePolicy:  fi.String(api.UpdatePolicyExternal),
+			CloudProvider:     "aws",
+			KubernetesVersion: "v1.3.5",
+			UpdatePolicy:      fi.String(api.UpdatePolicyExternal),
 		},
 	}
 
-	tags, err := buildClusterTags(c)
+	tags, err := buildCloudupTags(c)
 	if err != nil {
 		t.Fatalf("buildTags error: %v", err)
 	}
