@@ -231,7 +231,7 @@ func (t *templateFunctions) KubeProxyConfig() *api.KubeProxyConfig {
 	// which would mean that DNS can't rely on API to come up
 	if t.IsMaster() {
 		glog.Infof("kube-proxy running on the master; setting API endpoint to localhost")
-		config.Master = fi.String("http://127.0.0.1:8080")
+		config.Master = "http://127.0.0.1:8080"
 	}
 
 	return config
