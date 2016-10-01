@@ -3,12 +3,12 @@ package channels
 import (
 	"fmt"
 	"github.com/golang/glog"
-	"os"
-	"os/exec"
-	"strings"
 	"io/ioutil"
 	"k8s.io/kops/util/pkg/vfs"
+	"os"
+	"os/exec"
 	"path"
+	"strings"
 )
 
 // Apply calls kubectl apply to apply the manifest.
