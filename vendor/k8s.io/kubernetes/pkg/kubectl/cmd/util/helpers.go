@@ -122,6 +122,11 @@ func checkErrWithPrefix(prefix string, err error) {
 // checkErr formats a given error as a string and calls the passed handleErr
 // func with that string and an kubectl exit code.
 func checkErr(prefix string, err error, handleErr func(string, int)) {
+	// unwrap aggregates of 1
+	if agg, ok := err.(utilerrors.Aggregate); ok && len(agg.Errors()) == 1 {
+		err = agg.Errors()[0]
+	}
+
 	switch {
 	case err == nil:
 		return
@@ -296,9 +301,18 @@ func GetFlagString(cmd *cobra.Command, flag string) string {
 	return s
 }
 
-// GetFlagStringList can be used to accept multiple argument with flag repetition (e.g. -f arg1 -f arg2 ...)
+// GetFlagStringSlice can be used to accept multiple argument with flag repetition (e.g. -f arg1,arg2 -f arg3 ...)
 func GetFlagStringSlice(cmd *cobra.Command, flag string) []string {
 	s, err := cmd.Flags().GetStringSlice(flag)
+	if err != nil {
+		glog.Fatalf("err accessing flag %s for command %s: %v", flag, cmd.Name(), err)
+	}
+	return s
+}
+
+// GetFlagStringArray can be used to accept multiple argument with flag repetition (e.g. -f arg1 -f arg2 ...)
+func GetFlagStringArray(cmd *cobra.Command, flag string) []string {
+	s, err := cmd.Flags().GetStringArray(flag)
 	if err != nil {
 		glog.Fatalf("err accessing flag %s for command %s: %v", flag, cmd.Name(), err)
 	}
@@ -701,4 +715,16 @@ func ObjectListToVersionedObject(objects []runtime.Object, version unversioned.G
 		return nil, err
 	}
 	return converted, nil
+}
+
+// IsSiblingCommandExists receives a pointer to a cobra command and a target string.
+// Returns true if the target string is found in the list of sibling commands.
+func IsSiblingCommandExists(cmd *cobra.Command, targetCmdName string) bool {
+	for _, c := range cmd.Parent().Commands() {
+		if c.Name() == targetCmdName {
+			return true
+		}
+	}
+
+	return false
 }

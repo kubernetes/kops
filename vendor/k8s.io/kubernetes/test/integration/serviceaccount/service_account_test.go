@@ -361,7 +361,7 @@ func startServiceAccountTestServer(t *testing.T) (*clientset.Clientset, restclie
 	})
 	serviceAccountKey, _ := rsa.GenerateKey(rand.Reader, 2048)
 	serviceAccountTokenGetter := serviceaccountcontroller.NewGetterFromClient(rootClientset)
-	serviceAccountTokenAuth := serviceaccount.JWTTokenAuthenticator([]*rsa.PublicKey{&serviceAccountKey.PublicKey}, true, serviceAccountTokenGetter)
+	serviceAccountTokenAuth := serviceaccount.JWTTokenAuthenticator([]interface{}{&serviceAccountKey.PublicKey}, true, serviceAccountTokenGetter)
 	authenticator := union.New(
 		bearertoken.New(rootTokenAuth),
 		bearertoken.New(serviceAccountTokenAuth),
@@ -406,13 +406,13 @@ func startServiceAccountTestServer(t *testing.T) (*clientset.Clientset, restclie
 	serviceAccountAdmission := serviceaccountadmission.NewServiceAccount(rootClientset)
 
 	masterConfig := framework.NewMasterConfig()
-	masterConfig.EnableIndex = true
-	masterConfig.Authenticator = authenticator
-	masterConfig.Authorizer = authorizer
-	masterConfig.AdmissionControl = serviceAccountAdmission
+	masterConfig.GenericConfig.EnableIndex = true
+	masterConfig.GenericConfig.Authenticator = authenticator
+	masterConfig.GenericConfig.Authorizer = authorizer
+	masterConfig.GenericConfig.AdmissionControl = serviceAccountAdmission
 
 	// Create a master and install handlers into mux.
-	m, err := master.New(masterConfig)
+	m, err := masterConfig.Complete().New()
 	if err != nil {
 		t.Fatalf("Error in bringing up the master: %v", err)
 	}

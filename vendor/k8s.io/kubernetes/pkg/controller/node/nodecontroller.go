@@ -26,17 +26,15 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
-	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/cache"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	unversionedcore "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/core/unversioned"
 	"k8s.io/kubernetes/pkg/client/record"
 	"k8s.io/kubernetes/pkg/cloudprovider"
-	"k8s.io/kubernetes/pkg/controller"
 	"k8s.io/kubernetes/pkg/controller/informers"
 	"k8s.io/kubernetes/pkg/fields"
 	"k8s.io/kubernetes/pkg/labels"
-	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/types"
 	"k8s.io/kubernetes/pkg/util/flowcontrol"
 	"k8s.io/kubernetes/pkg/util/metrics"
 	utilnode "k8s.io/kubernetes/pkg/util/node"
@@ -44,7 +42,6 @@ import (
 	"k8s.io/kubernetes/pkg/util/system"
 	"k8s.io/kubernetes/pkg/util/wait"
 	"k8s.io/kubernetes/pkg/version"
-	"k8s.io/kubernetes/pkg/watch"
 )
 
 func init() {
@@ -134,20 +131,14 @@ type NodeController struct {
 	// The maximum duration before a pod evicted from a node can be forcefully terminated.
 	maximumGracePeriod time.Duration
 	recorder           record.EventRecorder
-	// Pod framework and store
-	podController cache.ControllerInterface
-	podStore      cache.StoreToPodLister
-	// Node framework and store
-	nodeController *cache.Controller
-	nodeStore      cache.StoreToNodeLister
-	// DaemonSet framework and store
-	daemonSetController *cache.Controller
-	daemonSetStore      cache.StoreToDaemonSetLister
+	podStore           cache.StoreToPodLister
+	nodeStore          cache.StoreToNodeLister
+	daemonSetStore     cache.StoreToDaemonSetLister
 	// allocate/recycle CIDRs for node if allocateNodeCIDRs == true
 	cidrAllocator CIDRAllocator
 
 	forcefullyDeletePod        func(*api.Pod) error
-	nodeExistsInCloudProvider  func(string) (bool, error)
+	nodeExistsInCloudProvider  func(types.NodeName) (bool, error)
 	computeZoneStateFunc       func(nodeConditions []*api.NodeCondition) (int, zoneState)
 	enterPartialDisruptionFunc func(nodeNum int) float32
 	enterFullDisruptionFunc    func(nodeNum int) float32
@@ -171,7 +162,9 @@ type NodeController struct {
 // podCIDRs it has already allocated to nodes. Since we don't allow podCIDR changes
 // currently, this should be handled as a fatal error.
 func NewNodeController(
-	podInformer cache.SharedIndexInformer,
+	podInformer informers.PodInformer,
+	nodeInformer informers.NodeInformer,
+	daemonSetInformer informers.DaemonSetInformer,
 	cloud cloudprovider.Interface,
 	kubeClient clientset.Interface,
 	podEvictionTimeout time.Duration,
@@ -229,7 +222,7 @@ func NewNodeController(
 		serviceCIDR:                 serviceCIDR,
 		allocateNodeCIDRs:           allocateNodeCIDRs,
 		forcefullyDeletePod:         func(p *api.Pod) error { return forcefullyDeletePod(kubeClient, p) },
-		nodeExistsInCloudProvider:   func(nodeName string) (bool, error) { return nodeExistsInCloudProvider(cloud, nodeName) },
+		nodeExistsInCloudProvider:   func(nodeName types.NodeName) (bool, error) { return nodeExistsInCloudProvider(cloud, nodeName) },
 		evictionLimiterQPS:          evictionLimiterQPS,
 		secondaryEvictionLimiterQPS: secondaryEvictionLimiterQPS,
 		largeClusterThreshold:       largeClusterThreshold,
@@ -240,21 +233,25 @@ func NewNodeController(
 	nc.enterFullDisruptionFunc = nc.HealthyQPSFunc
 	nc.computeZoneStateFunc = nc.ComputeZoneState
 
-	podInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+	podInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    nc.maybeDeleteTerminatingPod,
 		UpdateFunc: func(_, obj interface{}) { nc.maybeDeleteTerminatingPod(obj) },
 	})
-	nc.podStore.Indexer = podInformer.GetIndexer()
-	nc.podController = podInformer.GetController()
+	nc.podStore = *podInformer.Lister()
 
 	nodeEventHandlerFuncs := cache.ResourceEventHandlerFuncs{}
 	if nc.allocateNodeCIDRs {
 		nodeEventHandlerFuncs = cache.ResourceEventHandlerFuncs{
-			AddFunc: func(obj interface{}) {
-				node := obj.(*api.Node)
-				err := nc.cidrAllocator.AllocateOrOccupyCIDR(node)
+			AddFunc: func(originalObj interface{}) {
+				obj, err := api.Scheme.DeepCopy(originalObj)
 				if err != nil {
-					glog.Errorf("Error allocating CIDR: %v", err)
+					utilruntime.HandleError(err)
+					return
+				}
+				node := obj.(*api.Node)
+
+				if err := nc.cidrAllocator.AllocateOrOccupyCIDR(node); err != nil {
+					utilruntime.HandleError(fmt.Errorf("Error allocating CIDR: %v", err))
 				}
 			},
 			UpdateFunc: func(_, obj interface{}) {
@@ -279,49 +276,36 @@ func NewNodeController(
 				// state is correct.
 				// Restart of NC fixes the issue.
 				if node.Spec.PodCIDR == "" {
-					err := nc.cidrAllocator.AllocateOrOccupyCIDR(node)
+					nodeCopy, err := api.Scheme.Copy(node)
 					if err != nil {
-						glog.Errorf("Error allocating CIDR: %v", err)
+						utilruntime.HandleError(err)
+						return
+					}
+
+					if err := nc.cidrAllocator.AllocateOrOccupyCIDR(nodeCopy.(*api.Node)); err != nil {
+						utilruntime.HandleError(fmt.Errorf("Error allocating CIDR: %v", err))
 					}
 				}
 			},
-			DeleteFunc: func(obj interface{}) {
-				node := obj.(*api.Node)
-				err := nc.cidrAllocator.ReleaseCIDR(node)
+			DeleteFunc: func(originalObj interface{}) {
+				obj, err := api.Scheme.DeepCopy(originalObj)
 				if err != nil {
+					utilruntime.HandleError(err)
+					return
+				}
+
+				node := obj.(*api.Node)
+				if err := nc.cidrAllocator.ReleaseCIDR(node); err != nil {
 					glog.Errorf("Error releasing CIDR: %v", err)
 				}
 			},
 		}
 	}
 
-	nc.nodeStore.Store, nc.nodeController = cache.NewInformer(
-		&cache.ListWatch{
-			ListFunc: func(options api.ListOptions) (runtime.Object, error) {
-				return nc.kubeClient.Core().Nodes().List(options)
-			},
-			WatchFunc: func(options api.ListOptions) (watch.Interface, error) {
-				return nc.kubeClient.Core().Nodes().Watch(options)
-			},
-		},
-		&api.Node{},
-		controller.NoResyncPeriodFunc(),
-		nodeEventHandlerFuncs,
-	)
+	nodeInformer.Informer().AddEventHandler(nodeEventHandlerFuncs)
+	nc.nodeStore = *nodeInformer.Lister()
 
-	nc.daemonSetStore.Store, nc.daemonSetController = cache.NewInformer(
-		&cache.ListWatch{
-			ListFunc: func(options api.ListOptions) (runtime.Object, error) {
-				return nc.kubeClient.Extensions().DaemonSets(api.NamespaceAll).List(options)
-			},
-			WatchFunc: func(options api.ListOptions) (watch.Interface, error) {
-				return nc.kubeClient.Extensions().DaemonSets(api.NamespaceAll).Watch(options)
-			},
-		},
-		&extensions.DaemonSet{},
-		controller.NoResyncPeriodFunc(),
-		cache.ResourceEventHandlerFuncs{},
-	)
+	nc.daemonSetStore = *daemonSetInformer.Lister()
 
 	if allocateNodeCIDRs {
 		var nodeList *api.NodeList
@@ -350,41 +334,8 @@ func NewNodeController(
 	return nc, nil
 }
 
-func NewNodeControllerFromClient(
-	cloud cloudprovider.Interface,
-	kubeClient clientset.Interface,
-	podEvictionTimeout time.Duration,
-	evictionLimiterQPS float32,
-	secondaryEvictionLimiterQPS float32,
-	largeClusterThreshold int32,
-	unhealthyZoneThreshold float32,
-	nodeMonitorGracePeriod time.Duration,
-	nodeStartupGracePeriod time.Duration,
-	nodeMonitorPeriod time.Duration,
-	clusterCIDR *net.IPNet,
-	serviceCIDR *net.IPNet,
-	nodeCIDRMaskSize int,
-	allocateNodeCIDRs bool) (*NodeController, error) {
-	podInformer := informers.NewPodInformer(kubeClient, controller.NoResyncPeriodFunc())
-	nc, err := NewNodeController(podInformer, cloud, kubeClient, podEvictionTimeout, evictionLimiterQPS, secondaryEvictionLimiterQPS,
-		largeClusterThreshold, unhealthyZoneThreshold, nodeMonitorGracePeriod, nodeStartupGracePeriod, nodeMonitorPeriod, clusterCIDR,
-		serviceCIDR, nodeCIDRMaskSize, allocateNodeCIDRs)
-	if err != nil {
-		return nil, err
-	}
-	nc.internalPodInformer = podInformer
-	return nc, nil
-}
-
 // Run starts an asynchronous loop that monitors the status of cluster nodes.
 func (nc *NodeController) Run() {
-	go nc.nodeController.Run(wait.NeverStop)
-	go nc.podController.Run(wait.NeverStop)
-	go nc.daemonSetController.Run(wait.NeverStop)
-	if nc.internalPodInformer != nil {
-		go nc.internalPodInformer.Run(wait.NeverStop)
-	}
-
 	// Incorporate the results of node status pushed from kubelet to master.
 	go wait.Until(func() {
 		if err := nc.monitorNodeStatus(); err != nil {
@@ -464,15 +415,6 @@ func (nc *NodeController) Run() {
 			})
 		}
 	}, nodeEvictionPeriod, wait.NeverStop)
-
-	go wait.Until(func() {
-		pods, err := nc.podStore.List(labels.Everything())
-		if err != nil {
-			utilruntime.HandleError(err)
-			return
-		}
-		cleanupOrphanedPods(pods, nc.nodeStore.Store, nc.forcefullyDeletePod)
-	}, 30*time.Second, wait.NeverStop)
 }
 
 // monitorNodeStatus verifies node status are constantly updated by kubelet, and if not,
@@ -511,7 +453,6 @@ func (nc *NodeController) monitorNodeStatus() error {
 	for i := range deleted {
 		glog.V(1).Infof("NodeController observed a Node deletion: %v", deleted[i].Name)
 		recordNodeEvent(nc.recorder, deleted[i].Name, string(deleted[i].UID), api.EventTypeNormal, "RemovingNode", fmt.Sprintf("Removing Node %v from NodeController", deleted[i].Name))
-		nc.evictPods(deleted[i])
 		delete(nc.knownNodeSet, deleted[i].Name)
 	}
 
@@ -576,7 +517,7 @@ func (nc *NodeController) monitorNodeStatus() error {
 			// Check with the cloud provider to see if the node still exists. If it
 			// doesn't, delete the node immediately.
 			if currentReadyCondition.Status != api.ConditionTrue && nc.cloud != nil {
-				exists, err := nc.nodeExistsInCloudProvider(node.Name)
+				exists, err := nc.nodeExistsInCloudProvider(types.NodeName(node.Name))
 				if err != nil {
 					glog.Errorf("Error determining if node %v exists in cloud: %v", node.Name, err)
 					continue

@@ -566,10 +566,6 @@ function kube::build::run_build_command() {
     "${DOCKER_MOUNT_ARGS[@]}"
   )
 
-  if [ -n "${KUBERNETES_CONTRIB:-}" ]; then
-    docker_run_opts+=(-e "KUBERNETES_CONTRIB=${KUBERNETES_CONTRIB}")
-  fi
-
   docker_run_opts+=(
     --env "KUBE_FASTBUILD=${KUBE_FASTBUILD:-false}"
     --env "KUBE_BUILDER_OS=${OSTYPE:-notdetected}"
@@ -949,9 +945,9 @@ function kube::release::package_test_tarball() {
     cp "${test_bins[@]/#/${LOCAL_OUTPUT_BINPATH}/${platform}/}" \
       "${release_stage}/platforms/${platform}"
   done
-  for platform in "${KUBE_NODE_TEST_PLATFORMS[@]}"; do
+  for platform in "${KUBE_TEST_SERVER_PLATFORMS[@]}"; do
     mkdir -p "${release_stage}/platforms/${platform}"
-    cp "${KUBE_NODE_TEST_BINARIES[@]/#/${LOCAL_OUTPUT_BINPATH}/${platform}/}" \
+    cp "${KUBE_TEST_SERVER_BINARIES[@]/#/${LOCAL_OUTPUT_BINPATH}/${platform}/}" \
       "${release_stage}/platforms/${platform}"
   done
 

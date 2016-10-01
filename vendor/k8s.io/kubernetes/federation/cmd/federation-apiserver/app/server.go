@@ -115,6 +115,8 @@ func Run(s *options.ServerRunOptions) error {
 	}
 
 	apiAuthenticator, err := authenticator.New(authenticator.AuthenticatorConfig{
+		Anonymous:         s.AnonymousAuth,
+		AnyToken:          s.EnableAnyToken,
 		BasicAuthFile:     s.BasicAuthFile,
 		ClientCAFile:      s.ClientCAFile,
 		TokenAuthFile:     s.TokenAuthFile,
@@ -171,6 +173,10 @@ func Run(s *options.ServerRunOptions) error {
 	admissionControlPluginNames := strings.Split(s.AdmissionControl, ",")
 	privilegedLoopbackToken := uuid.NewRandom().String()
 
+	selfClientConfig, err := s.NewSelfClientConfig(privilegedLoopbackToken)
+	if err != nil {
+		glog.Fatalf("Failed to create clientset: %v", err)
+	}
 	client, err := s.NewSelfClient(privilegedLoopbackToken)
 	if err != nil {
 		glog.Errorf("Failed to create clientset: %v", err)
@@ -181,16 +187,16 @@ func Run(s *options.ServerRunOptions) error {
 		var uid = uuid.NewRandom().String()
 		tokens := make(map[string]*user.DefaultInfo)
 		tokens[privilegedLoopbackToken] = &user.DefaultInfo{
-			Name:   "system:apiserver",
+			Name:   user.APIServerUser,
 			UID:    uid,
-			Groups: []string{"system:masters"},
+			Groups: []string{user.SystemPrivilegedGroup},
 		}
 
 		tokenAuthenticator := authenticator.NewAuthenticatorFromTokens(tokens)
-		apiAuthenticator = authenticatorunion.New(apiAuthenticator, tokenAuthenticator)
+		apiAuthenticator = authenticatorunion.New(tokenAuthenticator, apiAuthenticator)
 
-		tokenAuthorizer := authorizer.NewPrivilegedGroups("system:masters")
-		apiAuthorizer = authorizerunion.New(apiAuthorizer, tokenAuthorizer)
+		tokenAuthorizer := authorizer.NewPrivilegedGroups(user.SystemPrivilegedGroup)
+		apiAuthorizer = authorizerunion.New(tokenAuthorizer, apiAuthorizer)
 	}
 
 	sharedInformers := informers.NewSharedInformerFactory(client, 10*time.Minute)
@@ -202,6 +208,7 @@ func Run(s *options.ServerRunOptions) error {
 	}
 	genericConfig := genericapiserver.NewConfig(s.ServerRunOptions)
 	// TODO: Move the following to generic api server as well.
+	genericConfig.LoopbackClientConfig = selfClientConfig
 	genericConfig.Authenticator = apiAuthenticator
 	genericConfig.SupportsBasicAuth = len(s.BasicAuthFile) > 0
 	genericConfig.Authorizer = apiAuthorizer
@@ -219,7 +226,7 @@ func Run(s *options.ServerRunOptions) error {
 		cachesize.SetWatchCacheSizes(s.WatchCacheSizes)
 	}
 
-	m, err := genericConfig.New()
+	m, err := genericConfig.Complete().New()
 	if err != nil {
 		return err
 	}

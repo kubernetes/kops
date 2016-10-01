@@ -304,14 +304,18 @@ runTests() {
   if [[ -z "${version}" ]]; then
     kube_flags=(
       -s "http://127.0.0.1:${API_PORT}"
-      --match-server-version
     )
+    if [[ -z "${ALLOW_SKEW:-}" ]]; then
+      kube_flags+=("--match-server-version")
+    fi
     [ "$(kubectl get nodes -o go-template='{{ .apiVersion }}' "${kube_flags[@]}")" == "v1" ]
   else
     kube_flags=(
       -s "http://127.0.0.1:${API_PORT}"
-      --match-server-version
     )
+    if [[ -z "${ALLOW_SKEW:-}" ]]; then
+      kube_flags+=("--match-server-version")
+    fi
     [ "$(kubectl get nodes -o go-template='{{ .apiVersion }}' "${kube_flags[@]}")" == "${version}" ]
   fi
   id_field=".metadata.name"
@@ -987,6 +991,21 @@ __EOF__
   [[ "$(kubectl get pods test-pod -o yaml "${kube_flags[@]}" | grep kubectl.kubernetes.io/last-applied-configuration)" ]]
   # Clean up
   kubectl delete pods test-pod "${kube_flags[@]}"
+
+
+  ## kubectl apply -f with label selector should only apply matching objects
+  # Pre-Condition: no POD exists
+  kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" ''
+  # apply
+  kubectl apply -l unique-label=bingbang -f hack/testdata/filter "${kube_flags[@]}"
+  # check right pod exists
+  kube::test::get_object_assert 'pods selector-test-pod' "{{${labels_field}.name}}" 'selector-test-pod'
+  # check wrong pod doesn't exist
+  output_message=$(! kubectl get pods selector-test-pod-dont-apply 2>&1 "${kube_flags[@]}")
+  kube::test::if_has_string "${output_message}" 'pods "selector-test-pod-dont-apply" not found'
+  # cleanup
+  kubectl delete pods selector-test-pod
+
 
   ## kubectl run should create deployments or jobs
   # Pre-Condition: no Job exists
