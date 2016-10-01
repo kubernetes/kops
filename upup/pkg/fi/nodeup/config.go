@@ -30,7 +30,10 @@ type NodeUpConfig struct {
 	ClusterName string `json:",omitempty"`
 
 	// ProtokubeImage is the docker image to load for protokube (bootstrapping)
-	ProtokubeImage *Image `json:"protokubeImage"`
+	ProtokubeImage *Image `json:"protokubeImage,omitempty"`
+
+	// Channels is a list of channels that we should apply
+	Channels []string `json:"channels,omitempty"`
 }
 
 // Image is a docker image we should pre-load

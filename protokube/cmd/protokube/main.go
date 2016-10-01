@@ -26,6 +26,9 @@ func main() {
 	clusterID := ""
 	flag.StringVar(&clusterID, "cluster-id", clusterID, "Cluster ID")
 
+	flagChannels := ""
+	flag.StringVar(&flagChannels, "channels", flagChannels, "channels to install")
+
 	flag.Set("logtostderr", "true")
 	flag.Parse()
 
@@ -85,6 +88,11 @@ func main() {
 
 	modelDir := "model/etcd"
 
+	var channels []string
+	if flagChannels != "" {
+		channels = strings.Split(flagChannels, ",")
+	}
+
 	k := &protokube.KubeBoot{
 		Master:            master,
 		InternalDNSSuffix: dnsInternalSuffix,
@@ -94,6 +102,10 @@ func main() {
 
 		ModelDir: modelDir,
 		DNS:      dns,
+
+		Channels: channels,
+
+		Kubernetes: protokube.NewKubernetesContext(),
 	}
 	k.Init(volumes)
 

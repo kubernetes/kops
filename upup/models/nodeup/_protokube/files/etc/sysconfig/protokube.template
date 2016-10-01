@@ -1,5 +1,1 @@
-{{ if HasTag "_kubernetes_master" }}
-DAEMON_ARGS="--dns-zone-name={{ .DNSZone }} --master=true --containerized --v=8"
-{{ else }}
-DAEMON_ARGS="--dns-zone-name={{ .DNSZone }} --master=false --containerized --v=8"
-{{ end }}
+DAEMON_ARGS="{{ BuildFlags ProtokubeFlags }}"

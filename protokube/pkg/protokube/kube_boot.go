@@ -19,6 +19,10 @@ type KubeBoot struct {
 	DNS DNSProvider
 
 	ModelDir string
+
+	Channels []string
+
+	Kubernetes *KubernetesContext
 }
 
 func (k *KubeBoot) Init(volumesProvider Volumes) {
@@ -85,6 +89,20 @@ func (k *KubeBoot) syncOnce() error {
 		//k.MasterID = volumeInfo.MasterID
 
 		// TODO: Should we set up symlinks here?
+	}
+
+	if k.Master {
+		err := ApplyMasterTaints(k.Kubernetes)
+		if err != nil {
+			glog.Warningf("error updating master taints: %v", err)
+		}
+	}
+
+	for _, channel := range k.Channels {
+		err := ApplyChannel(channel)
+		if err != nil {
+			glog.Warningf("error applying channel %q: %v", channel, err)
+		}
 	}
 
 	return nil

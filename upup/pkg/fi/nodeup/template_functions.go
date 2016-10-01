@@ -12,7 +12,7 @@ import (
 
 const TagMaster = "_kubernetes_master"
 
-const DefaultProtokubeImage = "kope/protokube:1.3"
+const DefaultProtokubeImage = "kope/protokube:1.4"
 
 // templateFunctions is a simple helper-class for the functions accessible to templates
 type templateFunctions struct {
@@ -131,6 +131,8 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 	}
 
 	dest["ProtokubeImage"] = t.ProtokubeImage
+
+	dest["ProtokubeFlags"] = t.ProtokubeFlags
 }
 
 // IsMaster returns true if we are tagged as a master
@@ -219,6 +221,26 @@ func (t *templateFunctions) ProtokubeImage() string {
 		image = DefaultProtokubeImage
 	}
 	return image
+}
+
+// ProtokubeFlags returns the flags object for protokube
+func (t *templateFunctions) ProtokubeFlags() *ProtokubeFlags {
+	f := &ProtokubeFlags{}
+
+	master := t.IsMaster()
+
+	f.Master = fi.Bool(master)
+	if master {
+		f.Channels = t.nodeupConfig.Channels
+	}
+
+	f.LogLevel = fi.Int(8)
+	f.Containerized = fi.Bool(true)
+	if t.cluster.Spec.DNSZone != "" {
+		f.DNSZoneName = fi.String(t.cluster.Spec.DNSZone)
+	}
+
+	return f
 }
 
 // KubeProxyConfig builds the KubeProxyConfig configuration object
