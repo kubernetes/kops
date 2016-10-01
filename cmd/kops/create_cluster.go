@@ -35,6 +35,9 @@ type CreateClusterCmd struct {
 	AdminAccess       string
 	Networking        string
 	AssociatePublicIP bool
+
+	// Channel is the location of the api.Channel to use for our defaults
+	Channel string
 }
 
 var createCluster CreateClusterCmd
@@ -64,7 +67,7 @@ func init() {
 	cmd.Flags().StringVar(&createCluster.MasterZones, "master-zones", "", "Zones in which to run masters (must be an odd number)")
 
 	cmd.Flags().StringVar(&createCluster.Project, "project", "", "Project to use (must be set on GCE)")
-	cmd.Flags().StringVar(&createCluster.KubernetesVersion, "kubernetes-version", "", "Version of kubernetes to run (defaults to latest)")
+	cmd.Flags().StringVar(&createCluster.KubernetesVersion, "kubernetes-version", "", "Version of kubernetes to run (defaults to version in channel)")
 
 	cmd.Flags().StringVar(&createCluster.SSHPublicKey, "ssh-public-key", "~/.ssh/id_rsa.pub", "SSH public key to use")
 
@@ -86,6 +89,8 @@ func init() {
 	cmd.Flags().StringVar(&createCluster.AdminAccess, "admin-access", "", "Restrict access to admin endpoints (SSH, HTTPS) to this CIDR.  If not set, access will not be restricted by IP.")
 
 	cmd.Flags().BoolVar(&createCluster.AssociatePublicIP, "associate-public-ip", true, "Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.")
+
+	cmd.Flags().StringVar(&createCluster.Channel, "channel", api.DefaultChannel, "Channel for default versions and configuration to use")
 }
 
 func (c *CreateClusterCmd) Run(args []string) error {
@@ -138,6 +143,16 @@ func (c *CreateClusterCmd) Run(args []string) error {
 	}
 
 	cluster = &api.Cluster{}
+
+	channel, err := api.LoadChannel(c.Channel)
+	if err != nil {
+		return err
+	}
+	if channel.Spec.Cluster != nil {
+		cluster.Spec = *channel.Spec.Cluster
+	}
+	cluster.Spec.Channel = c.Channel
+
 	var instanceGroups []*api.InstanceGroup
 
 	cluster.Spec.Networking = &api.NetworkingSpec{}
@@ -360,7 +375,7 @@ func (c *CreateClusterCmd) Run(args []string) error {
 
 	var fullInstanceGroups []*api.InstanceGroup
 	for _, group := range instanceGroups {
-		fullGroup, err := cloudup.PopulateInstanceGroupSpec(fullCluster, group)
+		fullGroup, err := cloudup.PopulateInstanceGroupSpec(fullCluster, group, channel)
 		if err != nil {
 			return err
 		}
