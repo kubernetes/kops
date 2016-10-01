@@ -179,7 +179,7 @@ func (c *populateClusterSpec) run() error {
 		versionWithoutV = versionWithoutV[1:]
 	}
 	if cluster.Spec.KubernetesVersion != versionWithoutV {
-		glog.Warningf("Normalizing kubernetes version: %q -> %q", cluster.Spec.KubernetesVersion, versionWithoutV)
+		glog.V(2).Infof("Normalizing kubernetes version: %q -> %q", cluster.Spec.KubernetesVersion, versionWithoutV)
 		cluster.Spec.KubernetesVersion = versionWithoutV
 	}
 
