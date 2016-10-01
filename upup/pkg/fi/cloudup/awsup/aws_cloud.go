@@ -475,7 +475,15 @@ func (c *awsCloudImplementation) ResolveImage(name string) (*ec2.Image, error) {
 			request.Owners = aws.StringSlice([]string{"self"})
 			request.Filters = append(request.Filters, NewEC2Filter("name", name))
 		} else if len(tokens) == 2 {
-			request.Owners = []*string{&tokens[0]}
+			owner := tokens[0]
+
+			// Check for well known owner aliases
+			switch owner {
+			case "kope.io":
+				owner = "383156758163"
+			}
+
+			request.Owners = []*string{&owner}
 			request.Filters = append(request.Filters, NewEC2Filter("name", tokens[1]))
 		} else {
 			return nil, fmt.Errorf("image name specification not recognized: %q", name)
