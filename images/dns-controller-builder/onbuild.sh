@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -ex
 
 mkdir -p /go
 export GOPATH=/go
