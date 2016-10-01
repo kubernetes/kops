@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
@@ -24,10 +25,6 @@ type ChannelSpec struct {
 
 	Cluster *ClusterSpec `json:"cluster,omitempty"`
 }
-
-const (
-	ImageLabelCloudprovider = "k8s.io/cloudprovider"
-)
 
 type ChannelImageSpec struct {
 	Labels map[string]string `json:"labels,omitempty"`
@@ -65,4 +62,26 @@ func LoadChannel(location string) (*Channel, error) {
 	}
 	glog.V(4).Info("Channel contents: %s", string(channelBytes))
 	return channel, nil
+}
+
+// FindImage returns the image for the cloudprovider, or nil if none found
+func (c *Channel) FindImage(provider fi.CloudProviderID) *ChannelImageSpec {
+	var matches []*ChannelImageSpec
+
+	for _, image := range c.Spec.Images {
+		if image.ProviderID != string(provider) {
+			continue
+		}
+		matches = append(matches, image)
+	}
+
+	if len(matches) == 0 {
+		glog.V(2).Infof("No matching images in channel for cloudprovider %q", provider)
+		return nil
+	}
+
+	if len(matches) != 1 {
+		glog.Warningf("Multiple matching images in channel for cloudprovider %q", provider)
+	}
+	return matches[0]
 }
