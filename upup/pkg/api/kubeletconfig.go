@@ -2,6 +2,9 @@ package api
 
 import "k8s.io/kops/upup/pkg/fi/utils"
 
+const RoleLabelName = "kubernetes.io/role"
+const RoleMasterLabelValue = "master"
+
 // NodeLabels are defined in the InstanceGroup, but set flags on the kubelet config.
 // We have a conflict here: on the one hand we want an easy to use abstract specification
 // for the cluster, on the other hand we don't want two fields that do the same thing.
@@ -20,6 +23,13 @@ func BuildKubeletConfigSpec(cluster *Cluster, instanceGroup *InstanceGroup) (*Ku
 		utils.JsonMergeStruct(c, cluster.Spec.MasterKubelet)
 	} else {
 		utils.JsonMergeStruct(c, cluster.Spec.Kubelet)
+	}
+
+	if instanceGroup.Spec.Role == InstanceGroupRoleMaster {
+		if c.NodeLabels == nil {
+			c.NodeLabels = make(map[string]string)
+		}
+		c.NodeLabels[RoleLabelName] = RoleMasterLabelValue
 	}
 
 	for k, v := range instanceGroup.Spec.NodeLabels {
