@@ -7,10 +7,12 @@ import (
 	"k8s.io/kops/util/pkg/tables"
 	"net/url"
 	"os"
+	"strings"
 )
 
 type ApplyChannelCmd struct {
-	Yes bool
+	Yes   bool
+	Files []string
 }
 
 var applyChannel ApplyChannelCmd
@@ -28,6 +30,7 @@ func init() {
 	}
 
 	cmd.Flags().BoolVar(&applyChannel.Yes, "yes", false, "Apply update")
+	cmd.Flags().StringSliceVar(&applyChannel.Files, "f", []string{}, "Apply from a local file")
 
 	applyCmd.AddCommand(cmd)
 }
@@ -38,32 +41,60 @@ func (c *ApplyChannelCmd) Run(args []string) error {
 		return err
 	}
 
-	cwd, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("error getting current directory: %v", err)
-	}
-	baseURL, err := url.Parse(cwd + string(os.PathSeparator))
-	if err != nil {
-		return fmt.Errorf("error building url for current directory %q: %v", cwd, err)
-	}
-
 	var addons []*channels.Addon
-	for _, arg := range args {
-		channel, err := url.Parse(arg)
+	for _, name := range args {
+		location, err := url.Parse(name)
 		if err != nil {
-			return fmt.Errorf("unable to parse argument %q as url", arg)
+			return fmt.Errorf("unable to parse argument %q as url", name)
 		}
-		if !channel.IsAbs() {
-			channel = baseURL.ResolveReference(channel)
+		if !location.IsAbs() {
+			// We recognize the following "well-known" format:
+			// <name> with no slashes ->
+			if strings.Contains(name, "/") {
+				return fmt.Errorf("Channel format not recognized (did you mean to use `-f` to specify a local file?): %q", name)
+			}
+			expanded := "https://raw.githubusercontent.com/kubernetes/kops/master/addons/" + name + "/addon.yaml"
+			location, err = url.Parse(expanded)
+			if err != nil {
+				return fmt.Errorf("unable to parse expanded argument %q as url", expanded)
+			}
 		}
-		o, err := channels.LoadAddons(channel)
+		o, err := channels.LoadAddons(name, location)
 		if err != nil {
-			return fmt.Errorf("error loading file %q: %v", arg, err)
+			return fmt.Errorf("error loading channel: %v", location, err)
 		}
 
 		current, err := o.GetCurrent()
 		if err != nil {
-			return fmt.Errorf("error processing latest versions in %q: %v", arg, err)
+			return fmt.Errorf("error processing latest versions in %q: %v", location, err)
+		}
+		addons = append(addons, current...)
+	}
+
+	for _, f := range c.Files {
+		location, err := url.Parse(f)
+		if err != nil {
+			return fmt.Errorf("unable to parse argument %q as url", f)
+		}
+		if !location.IsAbs() {
+			cwd, err := os.Getwd()
+			if err != nil {
+				return fmt.Errorf("error getting current directory: %v", err)
+			}
+			baseURL, err := url.Parse(cwd + string(os.PathSeparator))
+			if err != nil {
+				return fmt.Errorf("error building url for current directory %q: %v", cwd, err)
+			}
+			location = baseURL.ResolveReference(location)
+		}
+		o, err := channels.LoadAddons(f, location)
+		if err != nil {
+			return fmt.Errorf("error loading file %q: %v", f, err)
+		}
+
+		current, err := o.GetCurrent()
+		if err != nil {
+			return fmt.Errorf("error processing latest versions in %q: %v", f, err)
 		}
 		addons = append(addons, current...)
 	}
