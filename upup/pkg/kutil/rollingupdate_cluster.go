@@ -84,7 +84,6 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 		return nil
 	}
 
-	var wg sync.WaitGroup
 	var resultsMutex sync.Mutex
 	results := make(map[string]error)
 
@@ -103,49 +102,58 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 
 	// Upgrade master first
 	{
+		var wg sync.WaitGroup
+
 		// We run master nodes in series, even if they are in separate instance groups
 		// typically they will be in separate instance groups, so we can force the zones,
 		// and we don't want to roll all the masters at the same time.  See issue #284
-		{
-			wg.Add(1)
-			go func() {
-				for k := range masterGroups {
-					resultsMutex.Lock()
-					results[k] = fmt.Errorf("function panic")
-					resultsMutex.Unlock()
-				}
+		wg.Add(1)
 
-				defer wg.Done()
+		go func() {
+			for k := range masterGroups {
+				resultsMutex.Lock()
+				results[k] = fmt.Errorf("function panic")
+				resultsMutex.Unlock()
+			}
 
-				for k, group := range masterGroups {
-					err := group.RollingUpdate(c.Cloud, c.Force, c.MasterInterval, k8sClient)
+			defer wg.Done()
 
-					resultsMutex.Lock()
-					results[k] = err
-					resultsMutex.Unlock()
-				}
-			}()
-		}
+			for k, group := range masterGroups {
+				err := group.RollingUpdate(c.Cloud, c.Force, c.MasterInterval, k8sClient)
+
+				resultsMutex.Lock()
+				results[k] = err
+				resultsMutex.Unlock()
+
+				// TODO: Bail on error?
+			}
+		}()
 
 		wg.Wait()
 	}
 
 	// Upgrade nodes, with greater parallelism
-	for k, nodeGroup := range nodeGroups {
-		wg.Add(1)
-		go func(k string, group *CloudInstanceGroup) {
-			resultsMutex.Lock()
-			results[k] = fmt.Errorf("function panic")
-			resultsMutex.Unlock()
+	{
+		var wg sync.WaitGroup
 
-			defer wg.Done()
+		for k, nodeGroup := range nodeGroups {
+			wg.Add(1)
+			go func(k string, group *CloudInstanceGroup) {
+				resultsMutex.Lock()
+				results[k] = fmt.Errorf("function panic")
+				resultsMutex.Unlock()
 
-			err := group.RollingUpdate(c.Cloud, c.Force, c.NodeInterval, k8sClient)
+				defer wg.Done()
 
-			resultsMutex.Lock()
-			results[k] = err
-			resultsMutex.Unlock()
-		}(k, nodeGroup)
+				err := group.RollingUpdate(c.Cloud, c.Force, c.NodeInterval, k8sClient)
+
+				resultsMutex.Lock()
+				results[k] = err
+				resultsMutex.Unlock()
+			}(k, nodeGroup)
+		}
+
+		wg.Wait()
 	}
 
 	for _, err := range results {
@@ -189,7 +197,7 @@ func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group, nodeMa
 		asg:           g,
 	}
 
-	findLaunchConfigurationName := aws.StringValue(g.LaunchConfigurationName)
+	readyLaunchConfigurationName := aws.StringValue(g.LaunchConfigurationName)
 
 	for _, i := range g.Instances {
 		c := &CloudInstanceGroupInstance{ASGInstance: i}
@@ -199,7 +207,7 @@ func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group, nodeMa
 			c.Node = node
 		}
 
-		if findLaunchConfigurationName == aws.StringValue(i.LaunchConfigurationName) {
+		if readyLaunchConfigurationName == aws.StringValue(i.LaunchConfigurationName) {
 			n.Ready = append(n.Ready, c)
 		} else {
 			n.NeedUpdate = append(n.NeedUpdate, c)
