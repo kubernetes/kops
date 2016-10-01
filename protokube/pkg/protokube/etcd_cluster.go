@@ -22,6 +22,7 @@ type EtcdCluster struct {
 	Me           *EtcdNode
 	Nodes        []*EtcdNode
 	PodName      string
+	CPURequest   string
 
 	Spec *EtcdClusterSpec
 
@@ -105,6 +106,10 @@ func (c *EtcdCluster) configure(k *KubeBoot) error {
 
 	if c.PodName == "" {
 		c.PodName = c.ClusterName
+	}
+
+	if c.CPURequest == "" {
+		c.CPURequest = "100m"
 	}
 
 	err := touchFile(PathFor(c.LogFile))
