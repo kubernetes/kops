@@ -149,30 +149,21 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 
 	// Prompt to upgrade image
 	{
-		var matches []*api.ChannelImageSpec
-		for _, image := range channel.Spec.Images {
-			cloudProvider := image.Labels[api.ImageLabelCloudprovider]
-			if cloudProvider != string(cloud.ProviderID()) {
-				continue
-			}
-			matches = append(matches, image)
-		}
+		image := channel.FindImage(cloud.ProviderID())
 
-		if len(matches) == 0 {
+		if image == nil {
 			glog.Warningf("No matching images specified in channel; cannot prompt for upgrade")
-		} else if len(matches) != 1 {
-			glog.Warningf("Multiple matching images specified in channel; cannot prompt for upgrade")
 		} else {
 			for _, ig := range instanceGroups {
-				if ig.Spec.Image != matches[0].Name {
+				if ig.Spec.Image != image.Name {
 					target := ig
 					actions = append(actions, &upgradeAction{
 						Item:     "InstanceGroup/" + target.Name,
 						Property: "Image",
 						Old:      target.Spec.Image,
-						New:      matches[0].Name,
+						New:      image.Name,
 						apply: func() {
-							target.Spec.Image = matches[0].Name
+							target.Spec.Image = image.Name
 						},
 					})
 				}
