@@ -13,6 +13,7 @@ import (
 	"os"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -873,18 +874,39 @@ func TestHiddenFlagUsage(t *testing.T) {
 	}
 }
 
-const defaultOutput = `      --A                    for bootstrapping, allow 'any' type
-      --Alongflagname        disable bounds checking
-  -C, --CCC                  a boolean defaulting to true (default true)
-      --D path               set relative path for local imports
-      --F number             a non-zero number (default 2.7)
-      --G float              a float that defaults to zero
-      --N int                a non-zero int (default 27)
-      --ND1 string[="bar"]   a string with NoOptDefVal (default "foo")
-      --ND2 num[=4321]       a num with NoOptDefVal (default 1234)
-      --Z int                an int that defaults to zero
-      --maxT timeout         set timeout for dial
+const defaultOutput = `      --A                         for bootstrapping, allow 'any' type
+      --Alongflagname             disable bounds checking
+  -C, --CCC                       a boolean defaulting to true (default true)
+      --D path                    set relative path for local imports
+      --F number                  a non-zero number (default 2.7)
+      --G float                   a float that defaults to zero
+      --IP ip                     IP address with no default
+      --IPMask ipMask             Netmask address with no default
+      --IPNet ipNet               IP network with no default
+      --Ints intSlice             int slice with zero default
+      --N int                     a non-zero int (default 27)
+      --ND1 string[="bar"]        a string with NoOptDefVal (default "foo")
+      --ND2 num[=4321]            a num with NoOptDefVal (default 1234)
+      --StringArray stringArray   string array with zero default
+      --StringSlice stringSlice   string slice with zero default
+      --Z int                     an int that defaults to zero
+      --custom custom             custom Value implementation
+      --customP custom            a VarP with default (default 10)
+      --maxT timeout              set timeout for dial
 `
+
+// Custom value that satisfies the Value interface.
+type customValue int
+
+func (cv *customValue) String() string { return fmt.Sprintf("%v", *cv) }
+
+func (cv *customValue) Set(s string) error {
+	v, err := strconv.ParseInt(s, 0, 64)
+	*cv = customValue(v)
+	return err
+}
+
+func (cv *customValue) Type() string { return "custom" }
 
 func TestPrintDefaults(t *testing.T) {
 	fs := NewFlagSet("print defaults test", ContinueOnError)
@@ -897,12 +919,25 @@ func TestPrintDefaults(t *testing.T) {
 	fs.Float64("F", 2.7, "a non-zero `number`")
 	fs.Float64("G", 0, "a float that defaults to zero")
 	fs.Int("N", 27, "a non-zero int")
+	fs.IntSlice("Ints", []int{}, "int slice with zero default")
+	fs.IP("IP", nil, "IP address with no default")
+	fs.IPMask("IPMask", nil, "Netmask address with no default")
+	fs.IPNet("IPNet", net.IPNet{}, "IP network with no default")
 	fs.Int("Z", 0, "an int that defaults to zero")
 	fs.Duration("maxT", 0, "set `timeout` for dial")
 	fs.String("ND1", "foo", "a string with NoOptDefVal")
 	fs.Lookup("ND1").NoOptDefVal = "bar"
 	fs.Int("ND2", 1234, "a `num` with NoOptDefVal")
 	fs.Lookup("ND2").NoOptDefVal = "4321"
+	fs.StringSlice("StringSlice", []string{}, "string slice with zero default")
+	fs.StringArray("StringArray", []string{}, "string array with zero default")
+
+	var cv customValue
+	fs.Var(&cv, "custom", "custom Value implementation")
+
+	cv2 := customValue(10)
+	fs.VarP(&cv2, "customP", "", "a VarP with default")
+
 	fs.PrintDefaults()
 	got := buf.String()
 	if got != defaultOutput {

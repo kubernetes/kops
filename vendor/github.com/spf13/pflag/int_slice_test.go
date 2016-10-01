@@ -60,6 +60,9 @@ func TestIS(t *testing.T) {
 		}
 	}
 	getIS, err := f.GetIntSlice("is")
+	if err != nil {
+		t.Fatalf("got error: %v", err)
+	}
 	for i, v := range getIS {
 		d, err := strconv.Atoi(vals[i])
 		if err != nil {

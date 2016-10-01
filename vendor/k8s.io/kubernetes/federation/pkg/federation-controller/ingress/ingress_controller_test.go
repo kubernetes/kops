@@ -23,13 +23,13 @@ import (
 	"time"
 
 	federation_api "k8s.io/kubernetes/federation/apis/federation/v1beta1"
-	fake_federation_release_1_4 "k8s.io/kubernetes/federation/client/clientset_generated/federation_release_1_4/fake"
+	fake_fedclientset "k8s.io/kubernetes/federation/client/clientset_generated/federation_release_1_5/fake"
 	"k8s.io/kubernetes/federation/pkg/federation-controller/util"
 	. "k8s.io/kubernetes/federation/pkg/federation-controller/util/test"
 	api_v1 "k8s.io/kubernetes/pkg/api/v1"
 	extensions_v1beta1 "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
-	kube_release_1_4 "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_4"
-	fake_kube_release_1_4 "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_4/fake"
+	kubeclientset "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	fake_kubeclientset "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5/fake"
 	"k8s.io/kubernetes/pkg/runtime"
 
 	"github.com/stretchr/testify/assert"
@@ -45,7 +45,7 @@ func TestIngressController(t *testing.T) {
 	cfg2 := NewConfigMap("bar") // Different UID from cfg1, so that we can check that they get reconciled.
 
 	t.Log("Creating fake infrastructure")
-	fedClient := &fake_federation_release_1_4.Clientset{}
+	fedClient := &fake_fedclientset.Clientset{}
 	RegisterFakeList("clusters", &fedClient.Fake, &fakeClusterList)
 	RegisterFakeList("ingresses", &fedClient.Fake, &extensions_v1beta1.IngressList{Items: []extensions_v1beta1.Ingress{}})
 	fedIngressWatch := RegisterFakeWatch("ingresses", &fedClient.Fake)
@@ -53,7 +53,7 @@ func TestIngressController(t *testing.T) {
 	fedClusterUpdateChan := RegisterFakeCopyOnUpdate("clusters", &fedClient.Fake, clusterWatch)
 	fedIngressUpdateChan := RegisterFakeCopyOnUpdate("ingresses", &fedClient.Fake, fedIngressWatch)
 
-	cluster1Client := &fake_kube_release_1_4.Clientset{}
+	cluster1Client := &fake_kubeclientset.Clientset{}
 	RegisterFakeList("ingresses", &cluster1Client.Fake, &extensions_v1beta1.IngressList{Items: []extensions_v1beta1.Ingress{}})
 	RegisterFakeList("configmaps", &cluster1Client.Fake, &fakeConfigMapList1)
 	cluster1IngressWatch := RegisterFakeWatch("ingresses", &cluster1Client.Fake)
@@ -61,7 +61,7 @@ func TestIngressController(t *testing.T) {
 	cluster1IngressCreateChan := RegisterFakeCopyOnCreate("ingresses", &cluster1Client.Fake, cluster1IngressWatch)
 	cluster1IngressUpdateChan := RegisterFakeCopyOnUpdate("ingresses", &cluster1Client.Fake, cluster1IngressWatch)
 
-	cluster2Client := &fake_kube_release_1_4.Clientset{}
+	cluster2Client := &fake_kubeclientset.Clientset{}
 	RegisterFakeList("ingresses", &cluster2Client.Fake, &extensions_v1beta1.IngressList{Items: []extensions_v1beta1.Ingress{}})
 	RegisterFakeList("configmaps", &cluster2Client.Fake, &fakeConfigMapList2)
 	cluster2IngressWatch := RegisterFakeWatch("ingresses", &cluster2Client.Fake)
@@ -69,7 +69,7 @@ func TestIngressController(t *testing.T) {
 	cluster2IngressCreateChan := RegisterFakeCopyOnCreate("ingresses", &cluster2Client.Fake, cluster2IngressWatch)
 	cluster2ConfigMapUpdateChan := RegisterFakeCopyOnUpdate("configmaps", &cluster2Client.Fake, cluster2ConfigMapWatch)
 
-	clientFactoryFunc := func(cluster *federation_api.Cluster) (kube_release_1_4.Interface, error) {
+	clientFactoryFunc := func(cluster *federation_api.Cluster) (kubeclientset.Interface, error) {
 		switch cluster.Name {
 		case cluster1.Name:
 			return cluster1Client, nil
@@ -99,7 +99,6 @@ func TestIngressController(t *testing.T) {
 			Name:      "test-ingress",
 			Namespace: "mynamespace",
 			SelfLink:  "/api/v1/namespaces/mynamespace/ingress/test-ingress",
-			// TODO: Remove: Annotations: map[string]string{},
 		},
 		Status: extensions_v1beta1.IngressStatus{
 			LoadBalancer: api_v1.LoadBalancerStatus{
@@ -152,6 +151,7 @@ func TestIngressController(t *testing.T) {
 	assert.Equal(t, updatedIngress2.ObjectMeta.Annotations["A"], updatedIngress.ObjectMeta.Annotations["A"], "Updated annotation not transferred from federated to cluster ingress.")
 	// Test add cluster
 	t.Log("Adding a second cluster")
+	ing1.Annotations = make(map[string]string)
 	ing1.Annotations[staticIPNameKeyWritable] = "foo" // Make sure that the base object has a static IP name first.
 	fedIngressWatch.Modify(&ing1)
 	clusterWatch.Add(cluster2)

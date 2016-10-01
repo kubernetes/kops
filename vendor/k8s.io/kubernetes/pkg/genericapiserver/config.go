@@ -19,12 +19,13 @@ package genericapiserver
 import (
 	"crypto/tls"
 	"fmt"
-	"mime"
+	"io"
 	"net"
 	"net/http"
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/emicklei/go-restful"
@@ -36,10 +37,12 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apiserver"
-	"k8s.io/kubernetes/pkg/apiserver/audit"
+	apiserverfilters "k8s.io/kubernetes/pkg/apiserver/filters"
+	"k8s.io/kubernetes/pkg/apiserver/request"
 	"k8s.io/kubernetes/pkg/auth/authenticator"
 	"k8s.io/kubernetes/pkg/auth/authorizer"
 	authhandlers "k8s.io/kubernetes/pkg/auth/handlers"
+	"k8s.io/kubernetes/pkg/client/restclient"
 	"k8s.io/kubernetes/pkg/cloudprovider"
 	genericfilters "k8s.io/kubernetes/pkg/genericapiserver/filters"
 	"k8s.io/kubernetes/pkg/genericapiserver/openapi/common"
@@ -49,14 +52,13 @@ import (
 	ipallocator "k8s.io/kubernetes/pkg/registry/core/service/ipallocator"
 	"k8s.io/kubernetes/pkg/runtime"
 	utilnet "k8s.io/kubernetes/pkg/util/net"
+	"k8s.io/kubernetes/pkg/util/sets"
 )
 
 // Config is a structure used to configure a GenericAPIServer.
 type Config struct {
-	AuditLogPath       string
-	AuditLogMaxAge     int
-	AuditLogMaxBackups int
-	AuditLogMaxSize    int
+	// Destination for audit logs
+	AuditWriter io.Writer
 	// Allow downstream consumers to disable swagger.
 	// This includes returning the generated swagger spec at /swaggerapi and swagger ui at /swagger-ui.
 	EnableSwaggerSupport bool
@@ -81,6 +83,9 @@ type Config struct {
 	MasterServiceNamespace string
 	// TODO(ericchiang): Determine if policy escalation checks should be an admission controller.
 	AuthorizerRBACSuperUser string
+
+	// LoopbackClientConfig is a config for a privileged loopback connection to the API server
+	LoopbackClientConfig *restclient.Config
 
 	// Map requests to contexts. Exported so downstream consumers can provider their own mappers
 	RequestContextMapper api.RequestContextMapper
@@ -160,19 +165,30 @@ type Config struct {
 
 	// MaxRequestsInFlight is the maximum number of parallel non-long-running requests. Every further
 	// request has to wait.
-	MaxRequestsInFlight  int
-	LongRunningRequestRE string
+	MaxRequestsInFlight int
+
+	// Predicate which is true for paths of long-running http requests
+	LongRunningFunc genericfilters.LongRunningRequestCheck
 }
 
 func NewConfig(options *options.ServerRunOptions) *Config {
+	longRunningRE := regexp.MustCompile(options.LongRunningRequestRE)
+
+	var auditWriter io.Writer
+	if len(options.AuditLogPath) != 0 {
+		auditWriter = &lumberjack.Logger{
+			Filename:   options.AuditLogPath,
+			MaxAge:     options.AuditLogMaxAge,
+			MaxBackups: options.AuditLogMaxBackups,
+			MaxSize:    options.AuditLogMaxSize,
+		}
+	}
+
 	return &Config{
 		APIGroupPrefix:            options.APIGroupPrefix,
 		APIPrefix:                 options.APIPrefix,
 		CorsAllowedOriginList:     options.CorsAllowedOriginList,
-		AuditLogPath:              options.AuditLogPath,
-		AuditLogMaxAge:            options.AuditLogMaxAge,
-		AuditLogMaxBackups:        options.AuditLogMaxBackups,
-		AuditLogMaxSize:           options.AuditLogMaxSize,
+		AuditWriter:               auditWriter,
 		EnableGarbageCollection:   options.EnableGarbageCollection,
 		EnableIndex:               true,
 		EnableProfiling:           options.EnableProfiling,
@@ -196,13 +212,17 @@ func NewConfig(options *options.ServerRunOptions) *Config {
 				Version: "unversioned",
 			},
 		},
-		MaxRequestsInFlight:  options.MaxRequestsInFlight,
-		LongRunningRequestRE: options.LongRunningRequestRE,
+		MaxRequestsInFlight: options.MaxRequestsInFlight,
+		LongRunningFunc:     genericfilters.BasicLongRunningRequestCheck(longRunningRE, map[string]string{"watch": "true"}),
 	}
 }
 
-// setDefaults fills in any fields not set that are required to have valid data.
-func (c *Config) setDefaults() {
+type completedConfig struct {
+	*Config
+}
+
+// Complete fills in any fields not set that are required to have valid data. It's mutating the receiver.
+func (c *Config) Complete() completedConfig {
 	if c.ServiceClusterIPRange == nil {
 		defaultNet := "10.0.0.0/24"
 		glog.Warningf("Network range for service cluster IPs is unspecified. Defaulting to %v.", defaultNet)
@@ -255,6 +275,12 @@ func (c *Config) setDefaults() {
 		}
 		c.ExternalHost = hostAndPort
 	}
+	return completedConfig{c}
+}
+
+// SkipComplete provides a way to construct a server instance without config completion.
+func (c *Config) SkipComplete() completedConfig {
+	return completedConfig{c}
 }
 
 // New returns a new instance of GenericAPIServer from the given config.
@@ -279,16 +305,15 @@ func (c *Config) setDefaults() {
 //   If the caller wants to add additional endpoints not using the GenericAPIServer's
 //   auth, then the caller should create a handler for those endpoints, which delegates the
 //   any unhandled paths to "Handler".
-func (c Config) New() (*GenericAPIServer, error) {
+func (c completedConfig) New() (*GenericAPIServer, error) {
 	if c.Serializer == nil {
 		return nil, fmt.Errorf("Genericapiserver.New() called with config.Serializer == nil")
 	}
 
-	c.setDefaults()
-
 	s := &GenericAPIServer{
 		ServiceClusterIPRange: c.ServiceClusterIPRange,
 		ServiceNodePortRange:  c.ServiceNodePortRange,
+		LoopbackClientConfig:  c.LoopbackClientConfig,
 		legacyAPIPrefix:       c.APIPrefix,
 		apiPrefix:             c.APIGroupPrefix,
 		admissionControl:      c.AdmissionControl,
@@ -324,6 +349,7 @@ func (c Config) New() (*GenericAPIServer, error) {
 	// Use CurlyRouter to be able to use regular expressions in paths. Regular expressions are required in paths for example for proxy (where the path is proxy/{kind}/{name}/{*})
 	s.HandlerContainer.Router(restful.CurlyRouter{})
 	s.Mux = apiserver.NewPathRecorderMux(s.HandlerContainer.ServeMux)
+	apiserver.InstallServiceErrorHandler(s.Serializer, s.HandlerContainer)
 
 	if c.ProxyDialer != nil || c.ProxyTLSClientConfig != nil {
 		s.ProxyTransport = utilnet.SetTransportDefaults(&http.Transport{
@@ -332,50 +358,35 @@ func (c Config) New() (*GenericAPIServer, error) {
 		})
 	}
 
-	if len(c.AuditLogPath) != 0 {
-		s.auditWriter = &lumberjack.Logger{
-			Filename:   c.AuditLogPath,
-			MaxAge:     c.AuditLogMaxAge,
-			MaxBackups: c.AuditLogMaxBackups,
-			MaxSize:    c.AuditLogMaxSize,
-		}
-	}
-
-	// Send correct mime type for .svg files.
-	// TODO: remove when https://github.com/golang/go/commit/21e47d831bafb59f22b1ea8098f709677ec8ce33
-	// makes it into all of our supported go versions (only in v1.7.1 now).
-	mime.AddExtensionType(".svg", "image/svg+xml")
-
-	s.installAPI(&c)
-	s.Handler, s.InsecureHandler = s.buildHandlerChains(&c, http.Handler(s.Mux.BaseMux().(*http.ServeMux)))
+	s.installAPI(c.Config)
+	s.Handler, s.InsecureHandler = s.buildHandlerChains(c.Config, http.Handler(s.Mux.BaseMux().(*http.ServeMux)))
 
 	return s, nil
 }
 
 func (s *GenericAPIServer) buildHandlerChains(c *Config, handler http.Handler) (secure http.Handler, insecure http.Handler) {
-	longRunningRE := regexp.MustCompile(c.LongRunningRequestRE)
-	longRunningFunc := genericfilters.BasicLongRunningRequestCheck(longRunningRE, map[string]string{"watch": "true"})
-
 	// filters which insecure and secure have in common
-	handler = genericfilters.WithCORS(handler, c.CorsAllowedOriginList, nil, nil, "true")
+	handler = genericfilters.WithCORS(handler, c.CorsAllowedOriginList, nil, nil, nil, "true")
 
 	// insecure filters
 	insecure = handler
+	insecure = genericfilters.WithPanicRecovery(insecure, c.RequestContextMapper)
+	insecure = apiserverfilters.WithRequestInfo(insecure, NewRequestInfoResolver(c), c.RequestContextMapper)
 	insecure = api.WithRequestContext(insecure, c.RequestContextMapper)
-	insecure = apiserver.RecoverPanics(insecure, s.NewRequestInfoResolver())
-	insecure = genericfilters.WithTimeoutForNonLongRunningRequests(insecure, longRunningFunc)
+	insecure = genericfilters.WithTimeoutForNonLongRunningRequests(insecure, c.LongRunningFunc)
 
 	// secure filters
-	attributeGetter := apiserver.NewRequestAttributeGetter(c.RequestContextMapper, s.NewRequestInfoResolver())
+	attributeGetter := apiserverfilters.NewRequestAttributeGetter(c.RequestContextMapper)
 	secure = handler
-	secure = apiserver.WithAuthorization(secure, attributeGetter, c.Authorizer)
-	secure = apiserver.WithImpersonation(secure, c.RequestContextMapper, c.Authorizer)
-	secure = audit.WithAudit(secure, attributeGetter, s.auditWriter) // before impersonation to read original user
+	secure = apiserverfilters.WithAuthorization(secure, attributeGetter, c.Authorizer)
+	secure = apiserverfilters.WithImpersonation(secure, c.RequestContextMapper, c.Authorizer)
+	secure = apiserverfilters.WithAudit(secure, attributeGetter, c.AuditWriter) // before impersonation to read original user
 	secure = authhandlers.WithAuthentication(secure, c.RequestContextMapper, c.Authenticator, authhandlers.Unauthorized(c.SupportsBasicAuth))
+	secure = genericfilters.WithPanicRecovery(secure, c.RequestContextMapper)
+	secure = apiserverfilters.WithRequestInfo(secure, NewRequestInfoResolver(c), c.RequestContextMapper)
 	secure = api.WithRequestContext(secure, c.RequestContextMapper)
-	secure = apiserver.RecoverPanics(secure, s.NewRequestInfoResolver())
-	secure = genericfilters.WithTimeoutForNonLongRunningRequests(secure, longRunningFunc)
-	secure = genericfilters.WithMaxInFlightLimit(secure, c.MaxRequestsInFlight, longRunningFunc)
+	secure = genericfilters.WithTimeoutForNonLongRunningRequests(secure, c.LongRunningFunc)
+	secure = genericfilters.WithMaxInFlightLimit(secure, c.MaxRequestsInFlight, c.LongRunningFunc)
 
 	return
 }
@@ -424,11 +435,15 @@ func DefaultAndValidateRunOptions(options *options.ServerRunOptions) {
 			if !supported {
 				glog.Fatalf("GCE cloud provider has no instances.  this shouldn't happen. exiting.")
 			}
-			name, err := os.Hostname()
+			hostname, err := os.Hostname()
 			if err != nil {
 				glog.Fatalf("Failed to get hostname: %v", err)
 			}
-			addrs, err := instances.NodeAddresses(name)
+			nodeName, err := instances.CurrentNodeName(hostname)
+			if err != nil {
+				glog.Fatalf("Failed to get NodeName: %v", err)
+			}
+			addrs, err := instances.NodeAddresses(nodeName)
 			if err != nil {
 				glog.Warningf("Unable to obtain external host address from cloud provider: %v", err)
 			} else {
@@ -439,5 +454,12 @@ func DefaultAndValidateRunOptions(options *options.ServerRunOptions) {
 				}
 			}
 		}
+	}
+}
+
+func NewRequestInfoResolver(c *Config) *request.RequestInfoResolver {
+	return &request.RequestInfoResolver{
+		APIPrefixes:          sets.NewString(strings.Trim(c.APIPrefix, "/"), strings.Trim(c.APIGroupPrefix, "/")), // all possible API prefixes
+		GrouplessAPIPrefixes: sets.NewString(strings.Trim(c.APIPrefix, "/")),                                      // APIPrefixes that won't have groups (legacy)
 	}
 }

@@ -25,6 +25,9 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/apis/apps"
 	"k8s.io/kubernetes/pkg/client/cache"
+	fake_internal "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/apps/unversioned"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/apps/unversioned/fake"
 	"k8s.io/kubernetes/pkg/controller"
 	"k8s.io/kubernetes/pkg/util/errors"
 )
@@ -73,7 +76,7 @@ func scalePetSet(t *testing.T, ps *apps.PetSet, psc *PetSetController, fc *fakeP
 	for i := 0; i < scale; i++ {
 		pl := fc.getPodList()
 		if len(pl) != i {
-			t.Errorf("Unexpected number of pets, expected %d found %d", i, len(fc.pets))
+			t.Errorf("Unexpected number of pets, expected %d found %d", i, len(pl))
 		}
 		if _, syncErr := psc.syncPetSet(ps, pl); syncErr != nil {
 			errs = append(errs, syncErr)
@@ -120,7 +123,7 @@ func TestPetSetControllerDeletes(t *testing.T) {
 	knownPods := fc.getPodList()
 	for i := replicas - 1; i >= 0; i-- {
 		if len(fc.pets) != i+1 {
-			t.Errorf("Unexpected number of pets, expected %d found %d", i, len(fc.pets))
+			t.Errorf("Unexpected number of pets, expected %d found %d", i+1, len(fc.pets))
 		}
 		if _, syncErr := psc.syncPetSet(ps, knownPods); syncErr != nil {
 			errs = append(errs, syncErr)
@@ -265,5 +268,64 @@ func TestPetSetBlockingPetIsCleared(t *testing.T) {
 	psc.syncPetSet(ps, fc.getPodList())
 	if p, exists, err := psc.blockingPetStore.store.GetByKey(fmt.Sprintf("%v/%v", ps.Namespace, ps.Name)); err != nil || exists {
 		t.Errorf("Unexpected blocking pet, err %v: %+v", err, p)
+	}
+}
+
+func TestSyncPetSetBlockedPet(t *testing.T) {
+	psc, fc := newFakePetSetController()
+	ps := newPetSet(3)
+	i, _ := psc.syncPetSet(ps, fc.getPodList())
+	if i != len(fc.getPodList()) {
+		t.Errorf("syncPetSet should return actual amount of pods")
+	}
+}
+
+type fakeClient struct {
+	fake_internal.Clientset
+	petSetClient *fakePetSetClient
+}
+
+func (c *fakeClient) Apps() unversioned.AppsInterface {
+	return &fakeApps{c, &fake.FakeApps{}}
+}
+
+type fakeApps struct {
+	*fakeClient
+	*fake.FakeApps
+}
+
+func (c *fakeApps) PetSets(namespace string) unversioned.PetSetInterface {
+	c.petSetClient.Namespace = namespace
+	return c.petSetClient
+}
+
+type fakePetSetClient struct {
+	*fake.FakePetSets
+	Namespace string
+	replicas  int
+}
+
+func (f *fakePetSetClient) UpdateStatus(petSet *apps.PetSet) (*apps.PetSet, error) {
+	f.replicas = petSet.Status.Replicas
+	return petSet, nil
+}
+
+func TestPetSetReplicaCount(t *testing.T) {
+	fpsc := &fakePetSetClient{}
+	psc, _ := newFakePetSetController()
+	psc.kubeClient = &fakeClient{
+		petSetClient: fpsc,
+	}
+
+	ps := newPetSet(3)
+	psKey := fmt.Sprintf("%v/%v", ps.Namespace, ps.Name)
+	psc.psStore.Store.Add(ps)
+
+	if err := psc.Sync(psKey); err != nil {
+		t.Errorf("Error during sync of deleted petset %v", err)
+	}
+
+	if fpsc.replicas != 1 {
+		t.Errorf("Replicas count sent as status update for PetSet should be 1, is %d instead", fpsc.replicas)
 	}
 }

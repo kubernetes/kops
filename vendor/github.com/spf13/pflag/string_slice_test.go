@@ -39,6 +39,23 @@ func TestEmptySS(t *testing.T) {
 	}
 }
 
+func TestEmptySSValue(t *testing.T) {
+	var ss []string
+	f := setUpSSFlagSet(&ss)
+	err := f.Parse([]string{"--ss="})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+
+	getSS, err := f.GetStringSlice("ss")
+	if err != nil {
+		t.Fatal("got an error from GetStringSlice():", err)
+	}
+	if len(getSS) != 0 {
+		t.Fatalf("got ss %v with len=%d but expected length=0", getSS, len(getSS))
+	}
+}
+
 func TestSS(t *testing.T) {
 	var ss []string
 	f := setUpSSFlagSet(&ss)
@@ -133,9 +150,27 @@ func TestSSCalledTwice(t *testing.T) {
 	if err != nil {
 		t.Fatal("expected no error; got", err)
 	}
+
+	if len(expected) != len(ss) {
+		t.Fatalf("expected number of ss to be %d but got: %d", len(expected), len(ss))
+	}
 	for i, v := range ss {
 		if expected[i] != v {
 			t.Fatalf("expected ss[%d] to be %s but got: %s", i, expected[i], v)
+		}
+	}
+
+	values, err := f.GetStringSlice("ss")
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+
+	if len(expected) != len(values) {
+		t.Fatalf("expected number of values to be %d but got: %d", len(expected), len(ss))
+	}
+	for i, v := range values {
+		if expected[i] != v {
+			t.Fatalf("expected got ss[%d] to be %s but got: %s", i, expected[i], v)
 		}
 	}
 }
@@ -144,18 +179,37 @@ func TestSSWithComma(t *testing.T) {
 	var ss []string
 	f := setUpSSFlagSet(&ss)
 
-	in := []string{`"one,two"`, `"three"`}
-	expected := []string{"one,two", "three"}
+	in := []string{`"one,two"`, `"three"`, `"four,five",six`}
+	expected := []string{"one,two", "three", "four,five", "six"}
 	argfmt := "--ss=%s"
 	arg1 := fmt.Sprintf(argfmt, in[0])
 	arg2 := fmt.Sprintf(argfmt, in[1])
-	err := f.Parse([]string{arg1, arg2})
+	arg3 := fmt.Sprintf(argfmt, in[2])
+	err := f.Parse([]string{arg1, arg2, arg3})
 	if err != nil {
 		t.Fatal("expected no error; got", err)
+	}
+
+	if len(expected) != len(ss) {
+		t.Fatalf("expected number of ss to be %d but got: %d", len(expected), len(ss))
 	}
 	for i, v := range ss {
 		if expected[i] != v {
 			t.Fatalf("expected ss[%d] to be %s but got: %s", i, expected[i], v)
+		}
+	}
+
+	values, err := f.GetStringSlice("ss")
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+
+	if len(expected) != len(values) {
+		t.Fatalf("expected number of values to be %d but got: %d", len(expected), len(values))
+	}
+	for i, v := range values {
+		if expected[i] != v {
+			t.Fatalf("expected got ss[%d] to be %s but got: %s", i, expected[i], v)
 		}
 	}
 }
