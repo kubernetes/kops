@@ -19,6 +19,10 @@ import (
 	"strings"
 )
 
+const (
+	NodeUpVersion = "1.4.0"
+)
+
 const MaxAttemptsWithNoProgress = 3
 
 type ApplyClusterCmd struct {
@@ -101,6 +105,10 @@ func (c *ApplyClusterCmd) Run() error {
 		return fmt.Errorf("error getting config base: %v", err)
 	}
 
+	channels := []string{
+		configBase.Join("addons", "bootstrap-channel.yaml").Path(),
+	}
+
 	// Normalize k8s version
 	versionWithoutV := strings.TrimSpace(cluster.Spec.KubernetesVersion)
 	if strings.HasPrefix(versionWithoutV, "v") {
@@ -159,7 +167,7 @@ func (c *ApplyClusterCmd) Run() error {
 	if c.NodeUpSource == "" {
 		location := os.Getenv("NODEUP_URL")
 		if location == "" {
-			location = "https://kubeupv2.s3.amazonaws.com/kops/1.3/linux/amd64/nodeup"
+			location = "https://kubeupv2.s3.amazonaws.com/kops/" + NodeUpVersion + "/linux/amd64/nodeup"
 			glog.V(2).Infof("Using default nodeup location: %q", location)
 		} else {
 			glog.Warningf("Using nodeup location from NODEUP_URL env var: %q", location)
@@ -387,6 +395,8 @@ func (c *ApplyClusterCmd) Run() error {
 				Source: protokubeImage,
 			}
 		}
+
+		config.Channels = channels
 
 		yaml, err := api.ToYaml(config)
 		if err != nil {

@@ -101,6 +101,10 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["CloudTags"] = tf.CloudTags
 
 	dest["APIServerCount"] = tf.APIServerCount
+
+	dest["KubeDNS"] = func() *api.KubeDNSConfig {
+		return tf.cluster.Spec.KubeDNS
+	}
 }
 
 func (tf *TemplateFunctions) EtcdClusterMemberTags(etcd *api.EtcdClusterSpec, m *api.EtcdMemberSpec) map[string]string {
@@ -125,7 +129,7 @@ func (tf *TemplateFunctions) EtcdClusterMemberTags(etcd *api.EtcdClusterSpec, m 
 
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
 func (tf *TemplateFunctions) SharedVPC() bool {
-	return tf.cluster.Spec.NetworkID != ""
+	return tf.cluster.SharedVPC()
 }
 
 // SharedZone is a simple helper function which makes the templates for a shared Zone clearer
@@ -220,11 +224,6 @@ func (tf *TemplateFunctions) CloudTags(ig *api.InstanceGroup) (map[string]string
 
 	if ig.Spec.Role == api.InstanceGroupRoleMaster {
 		labels["k8s.io/role/master"] = "1"
-		labels["k8s.io/dns/internal"] = "api.internal." + tf.cluster.Name
-
-		if !tf.HasTag("_master_lb") {
-			labels["k8s.io/dns/public"] = "api." + tf.cluster.Name
-		}
 	}
 
 	if ig.Spec.Role == api.InstanceGroupRoleNode {
@@ -244,7 +243,7 @@ func (tf *TemplateFunctions) GetInstanceGroup(name string) (*api.InstanceGroup, 
 	return nil, fmt.Errorf("InstanceGroup %q not found", name)
 }
 
-// APIServerCount returns the value for the kubeapiserver --apiserver-count flag
+// APIServerCount returns the value for the apiserver --apiserver-count flag
 func (tf *TemplateFunctions) APIServerCount() int {
 	count := 0
 	for _, ig := range tf.instanceGroups {

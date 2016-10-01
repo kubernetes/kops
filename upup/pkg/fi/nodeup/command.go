@@ -165,10 +165,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		tags[tag] = struct{}{}
 	}
 
-	// For the transition to 1.4, we will force the _kube-addons tag
-	// In 1.4, we will remove this tag and replace it with the protokube channels management
-	tags["_kube-addons"] = struct{}{}
-
 	glog.Infof("Config tags: %v", c.config.Tags)
 	glog.Infof("OS tags: %v", osTags)
 
@@ -255,10 +251,13 @@ func evaluateSpec(c *api.Cluster) error {
 }
 
 func evaluateHostnameOverride(hostnameOverride string) (string, error) {
+	if hostnameOverride == "" {
+		return "", nil
+	}
 	k := strings.TrimSpace(hostnameOverride)
 	k = strings.ToLower(k)
 
-	if hostnameOverride != "@aws" {
+	if k != "@aws" {
 		return hostnameOverride, nil
 	}
 

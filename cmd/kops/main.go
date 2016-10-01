@@ -2,7 +2,13 @@ package main
 
 import (
 	"fmt"
+	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"os"
+)
+
+var (
+	// value overwritten during build. This can be used to resolve issues.
+	BuildVersion = cloudup.NodeUpVersion
 )
 
 func main() {
