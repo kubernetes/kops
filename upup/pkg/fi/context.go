@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"io/ioutil"
+	"k8s.io/kops/util/pkg/vfs"
 	"os"
 	"reflect"
 	"strings"
@@ -12,24 +13,26 @@ import (
 type Context struct {
 	Tmpdir string
 
-	Target      Target
-	Cloud       Cloud
-	CAStore     CAStore
-	SecretStore SecretStore
+	Target            Target
+	Cloud             Cloud
+	CAStore           CAStore
+	SecretStore       SecretStore
+	ClusterConfigBase vfs.Path
 
 	CheckExisting bool
 
 	tasks map[string]Task
 }
 
-func NewContext(target Target, cloud Cloud, castore CAStore, secretStore SecretStore, checkExisting bool, tasks map[string]Task) (*Context, error) {
+func NewContext(target Target, cloud Cloud, castore CAStore, secretStore SecretStore, clusterConfigBase vfs.Path, checkExisting bool, tasks map[string]Task) (*Context, error) {
 	c := &Context{
-		Cloud:         cloud,
-		Target:        target,
-		CAStore:       castore,
-		SecretStore:   secretStore,
-		CheckExisting: checkExisting,
-		tasks:         tasks,
+		Cloud:             cloud,
+		Target:            target,
+		CAStore:           castore,
+		SecretStore:       secretStore,
+		ClusterConfigBase: clusterConfigBase,
+		CheckExisting:     checkExisting,
+		tasks:             tasks,
 	}
 
 	t, err := ioutil.TempDir("", "deploy")
