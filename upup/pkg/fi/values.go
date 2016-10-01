@@ -13,6 +13,13 @@ func StringValue(s *string) string {
 	return *s
 }
 
+func IsNilOrEmpty(s *string) bool {
+	if s == nil {
+		return true
+	}
+	return *s == ""
+}
+
 func String(s string) *string {
 	return &s
 }

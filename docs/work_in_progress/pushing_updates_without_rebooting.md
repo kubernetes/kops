@@ -31,7 +31,7 @@ cat <<'EOF' | ssh admin@${ip} 'sudo bash -s'
 #/bin/bash
 set -e
 set -x
-NODEUP_URL=https://kubeupv2.s3.amazonaws.com/kops/1.3/linux/amd64/nodeup
+NODEUP_URL=https://kubeupv2.s3.amazonaws.com/kops/1.4.0/linux/amd64/nodeup
 
 INSTALL_DIR="/var/cache/kubernetes-install"
 mkdir -p ${INSTALL_DIR}  

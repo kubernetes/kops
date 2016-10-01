@@ -327,6 +327,9 @@ func (r *ClusterRegistry) DeleteAllClusterState(clusterName string) error {
 		if relativePath == "config" || relativePath == "cluster.spec" {
 			continue
 		}
+		if strings.HasPrefix(relativePath, "addons/") {
+			continue
+		}
 		if strings.HasPrefix(relativePath, "pki/") {
 			continue
 		}
