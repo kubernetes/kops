@@ -20,6 +20,9 @@ type Cluster struct {
 }
 
 type ClusterSpec struct {
+	// The Channel we are following
+	Channel string `json:"channel,omitempty"`
+
 	// The CloudProvider to use (aws or gce)
 	CloudProvider string `json:"cloudProvider,omitempty"`
 
@@ -319,6 +322,10 @@ func (c *Cluster) FillDefaults() error {
 		c.Spec.Networking.Kubenet = &KubenetNetworkingSpec{}
 	}
 
+	if c.Spec.Channel == "" {
+		c.Spec.Channel = DefaultChannel
+	}
+
 	err := c.ensureKubernetesVersion()
 	if err != nil {
 		return err
@@ -328,8 +335,20 @@ func (c *Cluster) FillDefaults() error {
 }
 
 // ensureKubernetesVersion populates KubernetesVersion, if it is not already set
-// It will be populated with the latest stable kubernetes version
+// It will be populated with the latest stable kubernetes version, or the version from the channel
 func (c *Cluster) ensureKubernetesVersion() error {
+	if c.Spec.KubernetesVersion == "" {
+		if c.Spec.Channel != "" {
+			channel, err := LoadChannel(c.Spec.Channel)
+			if err != nil {
+				return err
+			}
+			if channel.Spec.Cluster.KubernetesVersion != "" {
+				c.Spec.KubernetesVersion = channel.Spec.Cluster.KubernetesVersion
+			}
+		}
+	}
+
 	if c.Spec.KubernetesVersion == "" {
 		latestVersion, err := FindLatestKubernetesVersion()
 		if err != nil {

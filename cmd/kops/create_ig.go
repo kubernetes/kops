@@ -43,6 +43,11 @@ func init() {
 func (c *CreateInstanceGroupCmd) Run(groupName string) error {
 	_, cluster, err := rootCommand.Cluster()
 
+	channel, err := cloudup.ChannelForCluster(cluster)
+	if err != nil {
+		return err
+	}
+
 	instanceGroupStore, err := rootCommand.InstanceGroupRegistry()
 	if err != nil {
 		return err
@@ -62,7 +67,7 @@ func (c *CreateInstanceGroupCmd) Run(groupName string) error {
 	ig.Name = groupName
 	ig.Spec.Role = api.InstanceGroupRoleNode
 
-	ig, err = cloudup.PopulateInstanceGroupSpec(cluster, ig)
+	ig, err = cloudup.PopulateInstanceGroupSpec(cluster, ig, channel)
 	if err != nil {
 		return err
 	}
