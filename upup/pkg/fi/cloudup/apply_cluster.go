@@ -117,7 +117,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 		{
 			defaultKubeletAsset := baseURL + "/bin/linux/amd64/kubelet"
-			glog.Infof("Adding default kubelet release asset: %s", defaultKubeletAsset)
+			glog.V(2).Infof("Adding default kubelet release asset: %s", defaultKubeletAsset)
 
 			hash, err := findHash(defaultKubeletAsset)
 			if err != nil {
@@ -128,7 +128,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 		{
 			defaultKubectlAsset := baseURL + "/bin/linux/amd64/kubectl"
-			glog.Infof("Adding default kubectl release asset: %s", defaultKubectlAsset)
+			glog.V(2).Infof("Adding default kubectl release asset: %s", defaultKubectlAsset)
 
 			hash, err := findHash(defaultKubectlAsset)
 			if err != nil {
@@ -139,7 +139,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 		if usesCNI(cluster) {
 			defaultCNIAsset := fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/network-plugins/cni-8a936732094c0941e1543ef5d292a1f4fffa1ac5.tar.gz")
-			glog.Infof("Adding default CNI asset: %s", defaultCNIAsset)
+			glog.V(2).Infof("Adding default CNI asset: %s", defaultCNIAsset)
 
 			hashString := "86966c78cc9265ee23f7892c5cad0ec7590cec93"
 			//hash, err := findHash(defaultCNIAsset)
@@ -155,7 +155,7 @@ func (c *ApplyClusterCmd) Run() error {
 		location := os.Getenv("NODEUP_URL")
 		if location == "" {
 			location = "https://kubeupv2.s3.amazonaws.com/kops/1.3/linux/amd64/nodeup"
-			glog.Infof("Using default nodeup location: %q", location)
+			glog.V(2).Infof("Using default nodeup location: %q", location)
 		} else {
 			glog.Warningf("Using nodeup location from NODEUP_URL env var: %q", location)
 		}
@@ -523,7 +523,7 @@ func findHash(url string) (*hashing.Hash, error) {
 			continue
 		}
 		hashString := strings.TrimSpace(string(b))
-		glog.Infof("Found hash %q for %q", hashString, url)
+		glog.V(2).Infof("Found hash %q for %q", hashString, url)
 
 		return hashing.FromString(hashString)
 	}
