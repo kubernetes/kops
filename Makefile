@@ -2,7 +2,7 @@ all: kops
 
 .PHONY: channels
 
-DOCKER_REGISTRY?=gcr.io/must-override/
+DOCKER_REGISTRY?=gcr.io/must-override
 S3_BUCKET?=s3://must-override/
 GCS_LOCATION?=gs://must-override
 GCS_URL=$(GCS_LOCATION:gs://%=https://storage.googleapis.com/%)
@@ -58,21 +58,6 @@ codegen: gobindata
 
 test:
 	go test k8s.io/kops/upup/pkg/... -args -v=1 -logtostderr
-
-godeps:
-	# I think strip-vendor is the workaround for 25572
-	glide install --strip-vendor --strip-vcs
-
-gofmt:
-	gofmt -w -s cmd/
-	gofmt -w -s channels/
-	gofmt -w -s util/
-	gofmt -w -s cmd/
-	gofmt -w -s upup/pkg/
-	gofmt -w -s protokube/cmd
-	gofmt -w -s protokube/pkg
-	gofmt -w -s dns-controller/cmd
-	gofmt -w -s dns-controller/pkg
 
 crossbuild:
 	mkdir -p .build/dist/
@@ -174,18 +159,36 @@ dns-controller-image: dns-controller-build-in-docker
 dns-controller-push: dns-controller-image
 	docker push ${DOCKER_REGISTRY}/dns-controller:${TAG}
 
-
+# --------------------------------------------------
+# development targets
 
 copydeps:
 	rsync -avz _vendor/ vendor/ --delete --exclude vendor/  --exclude .git
+
+gofmt:
+	gofmt -w -s cmd/
+	gofmt -w -s channels/
+	gofmt -w -s util/
+	gofmt -w -s cmd/
+	gofmt -w -s upup/pkg/
+	gofmt -w -s protokube/cmd
+	gofmt -w -s protokube/pkg
+	gofmt -w -s dns-controller/cmd
+	gofmt -w -s dns-controller/pkg
+
+
+# --------------------------------------------------
+# Continuous integration targets
 
 ci: kops nodeup-gocode test
 	echo "Done"
 
 
-
 # --------------------------------------------------
 # channel tool
 
-channels:
-	go install ${EXTRA_BUILDFLAGS} -ldflags "-X main.BuildVersion=${VERSION} ${EXTRA_LDFLAGS}" k8s.io/kops/channels/cmd/...
+channels: channels-gocode
+
+channels-gocode:
+	go install ${EXTRA_BUILDFLAGS} -ldflags "-X main.BuildVersion=${VERSION} ${EXTRA_LDFLAGS}" k8s.io/kops/channels/cmd/channels
+
