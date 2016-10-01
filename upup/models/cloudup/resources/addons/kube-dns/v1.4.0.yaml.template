@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: v1
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: kube-dns-v20
@@ -25,8 +25,9 @@ metadata:
 spec:
   replicas: {{ KubeDNS.Replicas }}
   selector:
-    k8s-app: kube-dns
-    version: v20
+    matchLabels:
+      k8s-app: kube-dns
+      version: v20
   template:
     metadata:
       labels:
