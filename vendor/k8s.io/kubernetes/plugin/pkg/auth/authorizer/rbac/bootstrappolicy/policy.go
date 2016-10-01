@@ -18,18 +18,32 @@ package bootstrappolicy
 
 import (
 	"k8s.io/kubernetes/pkg/api"
-	rbacapi "k8s.io/kubernetes/pkg/apis/rbac"
+	rbac "k8s.io/kubernetes/pkg/apis/rbac"
+)
+
+var (
+	readWrite = []string{"get", "list", "watch", "create", "update", "patch", "delete", "deletecollection"}
+	read      = []string{"get", "list", "watch"}
+
+	legacyGroup = ""
 )
 
 // ClusterRoles returns the cluster roles to bootstrap an API server with
-func ClusterRoles() []rbacapi.ClusterRole {
-	return []rbacapi.ClusterRole{
-		// TODO update the expression of these rules to match openshift for ease of inspection
+func ClusterRoles() []rbac.ClusterRole {
+	return []rbac.ClusterRole{
 		{
+			// a "root" role which can do absolutely anything
 			ObjectMeta: api.ObjectMeta{Name: "cluster-admin"},
-			Rules: []rbacapi.PolicyRule{
-				{Verbs: []string{"*"}, APIGroups: []string{"*"}, Resources: []string{"*"}},
-				{Verbs: []string{"*"}, NonResourceURLs: []string{"*"}},
+			Rules: []rbac.PolicyRule{
+				rbac.NewRule("*").Groups("*").Resources("*").RuleOrDie(),
+				rbac.NewRule("*").URLs("*").RuleOrDie(),
+			},
+		},
+		{
+			// a role which provides just enough power to discovery API versions for negotiation
+			ObjectMeta: api.ObjectMeta{Name: "system:discovery"},
+			Rules: []rbac.PolicyRule{
+				rbac.NewRule("get").URLs("/version", "/api", "/api/*", "/apis", "/apis/*").RuleOrDie(),
 			},
 		},
 	}

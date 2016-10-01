@@ -61,7 +61,7 @@ func priorityFunction(mapFn algorithm.PriorityMapFunction, reduceFn algorithm.Pr
 			result = append(result, hostResult)
 		}
 		if reduceFn != nil {
-			if err := reduceFn(result); err != nil {
+			if err := reduceFn(pod, result); err != nil {
 				return nil, err
 			}
 		}
@@ -990,7 +990,7 @@ func TestPrioritiesRegistered(t *testing.T) {
 		if err == nil {
 			functions = append(functions, fileFunctions...)
 		} else {
-			t.Errorf("unexpected error when parsing %s", filePath)
+			t.Errorf("unexpected error when parsing %s: %v", filePath, err)
 		}
 	}
 

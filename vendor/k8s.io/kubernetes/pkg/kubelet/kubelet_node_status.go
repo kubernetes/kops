@@ -98,7 +98,7 @@ func (kl *Kubelet) tryRegisterWithApiServer(node *api.Node) bool {
 		return false
 	}
 
-	existingNode, err := kl.kubeClient.Core().Nodes().Get(kl.nodeName)
+	existingNode, err := kl.kubeClient.Core().Nodes().Get(string(kl.nodeName))
 	if err != nil {
 		glog.Errorf("Unable to register node %q with API server: error getting existing node: %v", kl.nodeName, err)
 		return false
@@ -173,7 +173,7 @@ func (kl *Kubelet) reconcileCMADAnnotationWithExistingNode(node, existingNode *a
 func (kl *Kubelet) initialNode() (*api.Node, error) {
 	node := &api.Node{
 		ObjectMeta: api.ObjectMeta{
-			Name: kl.nodeName,
+			Name: string(kl.nodeName),
 			Labels: map[string]string{
 				unversioned.LabelHostname: kl.hostname,
 				unversioned.LabelOS:       goRuntime.GOOS,
@@ -309,7 +309,7 @@ func (kl *Kubelet) updateNodeStatus() error {
 // tryUpdateNodeStatus tries to update node status to master. If ReconcileCBR0
 // is set, this function will also confirm that cbr0 is configured correctly.
 func (kl *Kubelet) tryUpdateNodeStatus() error {
-	node, err := kl.kubeClient.Core().Nodes().Get(kl.nodeName)
+	node, err := kl.kubeClient.Core().Nodes().Get(string(kl.nodeName))
 	if err != nil {
 		return fmt.Errorf("error getting node %q: %v", kl.nodeName, err)
 	}
@@ -359,6 +359,14 @@ func (kl *Kubelet) recordNodeStatusEvent(eventtype, event string) {
 
 // Set IP addresses for the node.
 func (kl *Kubelet) setNodeAddress(node *api.Node) error {
+
+	if kl.nodeIP != nil {
+		if err := kl.validateNodeIP(); err != nil {
+			return fmt.Errorf("failed to validate nodeIP: %v", err)
+		}
+		glog.V(2).Infof("Using node IP: %q", kl.nodeIP.String())
+	}
+
 	if kl.cloud != nil {
 		instances, ok := kl.cloud.Instances()
 		if !ok {
@@ -372,6 +380,19 @@ func (kl *Kubelet) setNodeAddress(node *api.Node) error {
 		if err != nil {
 			return fmt.Errorf("failed to get node address from cloud provider: %v", err)
 		}
+
+		if kl.nodeIP != nil {
+			for _, nodeAddress := range nodeAddresses {
+				if nodeAddress.Address == kl.nodeIP.String() {
+					node.Status.Addresses = []api.NodeAddress{
+						{Type: nodeAddress.Type, Address: nodeAddress.Address},
+					}
+					return nil
+				}
+			}
+			return fmt.Errorf("failed to get node address from cloud provider that matches ip: %v", kl.nodeIP)
+		}
+
 		node.Status.Addresses = nodeAddresses
 	} else {
 		var ipAddr net.IP
@@ -847,4 +868,37 @@ func SetNodeStatus(f func(*api.Node) error) Option {
 	return func(k *Kubelet) {
 		k.setNodeStatusFuncs = append(k.setNodeStatusFuncs, f)
 	}
+}
+
+// Validate given node IP belongs to the current host
+func (kl *Kubelet) validateNodeIP() error {
+	if kl.nodeIP == nil {
+		return nil
+	}
+
+	// Honor IP limitations set in setNodeStatus()
+	if kl.nodeIP.IsLoopback() {
+		return fmt.Errorf("nodeIP can't be loopback address")
+	}
+	if kl.nodeIP.To4() == nil {
+		return fmt.Errorf("nodeIP must be IPv4 address")
+	}
+
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return err
+	}
+	for _, addr := range addrs {
+		var ip net.IP
+		switch v := addr.(type) {
+		case *net.IPNet:
+			ip = v.IP
+		case *net.IPAddr:
+			ip = v.IP
+		}
+		if ip != nil && ip.Equal(kl.nodeIP) {
+			return nil
+		}
+	}
+	return fmt.Errorf("Node IP: %q not found in the host's network interfaces", kl.nodeIP.String())
 }

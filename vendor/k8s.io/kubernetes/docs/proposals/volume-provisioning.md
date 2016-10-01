@@ -71,13 +71,13 @@ should not prevent future work to allow out-of-tree provisioners.
 
 ## Design
 
-This design represents the minimally viable changes required to provision based on storage classe configuration.  Additional incremental features may be added as a separte effort.
+This design represents the minimally viable changes required to provision based on storage class configuration.  Additional incremental features may be added as a separate effort.
 
 We propose that:
 
 1.  For the base impelementation storage class and volume selectors are mutually exclusive.
 
-2.  An api object will be incubated in extensions/v1beta1 named `storage` to hold the a `StorageClass`
+2.  An api object will be incubated in storage.k8s.io/v1beta1 to hold the a `StorageClass`
     API resource. Each StorageClass object contains parameters required by the provisioner to provision volumes of that class.  These parameters are opaque to the user.
 
 3.  `PersistentVolume.Spec.Class` attribute is added to volumes. This attribute
@@ -99,7 +99,7 @@ We propose that:
 6.  The existing provisioner plugin implementations be modified to accept
     parameters as specified via `StorageClass`.
 
-7.  The persistent volume controller modified to invoke provisioners using `StorageClass` configuration and bind claims with `PersistentVolumeClaim.Spec.Class` to volumes with equivilant `PersistentVolume.Spec.Class`
+7.  The persistent volume controller modified to invoke provisioners using `StorageClass` configuration and bind claims with `PersistentVolumeClaim.Spec.Class` to volumes with equivalent `PersistentVolume.Spec.Class`
 
 8.  The existing alpha dynamic provisioning feature be phased out in the
     next release.
@@ -155,7 +155,7 @@ Existing behavior is un-changed for claims that do not specify `claim.Spec.Class
 
 A new API group should hold the API for storage classes, following the pattern
 of autoscaling, metrics, etc.  To allow for future storage-related APIs, we
-should call this new API group `storage` and incubate in extensions/v1beta1.
+should call this new API group `storage.k8s.io` and incubate in storage.k8s.io/v1beta1.
 
 Storage classes will be represented by an API object called `StorageClass`:
 
