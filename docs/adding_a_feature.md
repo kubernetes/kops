@@ -110,9 +110,9 @@ func TestBuildTags_UpdatePolicy_Nil(t *testing.T) {
 		},
 	}
 
-	tags, err := buildClusterTags(c)
+	tags, err := buildCloudupTags(c)
 	if err != nil {
-		t.Fatalf("buildTags error: %v", err)
+		t.Fatalf("buildCloudupTags error: %v", err)
 	}
 
 	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
@@ -132,9 +132,9 @@ func TestBuildTags_UpdatePolicy_External(t *testing.T) {
 		},
 	}
 
-	tags, err := buildClusterTags(c)
+	tags, err := buildCloudupTags(c)
 	if err != nil {
-		t.Fatalf("buildTags error: %v", err)
+		t.Fatalf("buildCloudupTags error: %v", err)
 	}
 
 	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
@@ -184,9 +184,9 @@ and then push nodeup using:
 
 ```
 export S3_BUCKET_NAME=<yourbucketname>
-make upload S3_BUCKET=s3://${S3_BUCKET_NAME} VERSION=1.3
+make upload S3_BUCKET=s3://${S3_BUCKET_NAME} VERSION=1.4.0
 
-export NODEUP_URL=https://${S3_BUCKET_NAME}.s3.amazonaws.com/kops/1.3/linux/amd64/nodeup
+export NODEUP_URL=https://${S3_BUCKET_NAME}.s3.amazonaws.com/kops/1.4.0/linux/amd64/nodeup
 
 kops create cluster <clustername> --zones us-east-1b
 ...
