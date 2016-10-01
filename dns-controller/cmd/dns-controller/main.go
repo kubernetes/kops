@@ -24,6 +24,9 @@ func main() {
 	dnsProviderId := "aws-route53"
 	flags.StringVar(&dnsProviderId, "dns", dnsProviderId, "DNS provider we should use (aws-route53, google-clouddns)")
 
+	watchIngress := true
+	flags.BoolVar(&watchIngress, "watch-ingress", watchIngress, "Configure hostnames found in ingress resources")
+
 	// Trick to avoid 'logging before flag.Parse' warning
 	flag.CommandLine.Parse([]string{})
 
@@ -84,16 +87,24 @@ func main() {
 		os.Exit(1)
 	}
 
-	ingressController, err := watchers.NewIngressController(kubeExtensionsClient, dnsController)
-	if err != nil {
-		glog.Errorf("Error building ingress controller: %v", err)
-		os.Exit(1)
+	var ingressController *watchers.IngressController
+	if watchIngress {
+		ingressController, err = watchers.NewIngressController(kubeExtensionsClient, dnsController)
+		if err != nil {
+			glog.Errorf("Error building ingress controller: %v", err)
+			os.Exit(1)
+		}
+	} else {
+		glog.Infof("Ingress controller disabled")
 	}
 
 	go nodeController.Run()
 	go podController.Run()
 	go serviceController.Run()
-	go ingressController.Run()
+
+	if ingressController != nil {
+		go ingressController.Run()
+	}
 
 	dnsController.Run()
 }

@@ -19,7 +19,7 @@ package genericapiserver
 import (
 	"crypto/tls"
 	"fmt"
-	"io"
+	"mime"
 	"net"
 	"net/http"
 	"path"
@@ -42,6 +42,7 @@ import (
 	"k8s.io/kubernetes/pkg/apimachinery"
 	"k8s.io/kubernetes/pkg/apimachinery/registered"
 	"k8s.io/kubernetes/pkg/apiserver"
+	"k8s.io/kubernetes/pkg/client/restclient"
 	"k8s.io/kubernetes/pkg/genericapiserver/openapi"
 	"k8s.io/kubernetes/pkg/genericapiserver/openapi/common"
 	"k8s.io/kubernetes/pkg/genericapiserver/options"
@@ -49,7 +50,6 @@ import (
 	certutil "k8s.io/kubernetes/pkg/util/cert"
 	utilnet "k8s.io/kubernetes/pkg/util/net"
 	utilruntime "k8s.io/kubernetes/pkg/util/runtime"
-	"k8s.io/kubernetes/pkg/util/sets"
 )
 
 // Info about an API group.
@@ -94,6 +94,9 @@ type GenericAPIServer struct {
 	// ServiceNodePortRange is only used for `master.go` to construct its RESTStorage for the legacy API group
 	// TODO refactor this closer to the point of use.
 	ServiceNodePortRange utilnet.PortRange
+
+	// LoopbackClientConfig is a config for a privileged loopback connection to the API server
+	LoopbackClientConfig *restclient.Config
 
 	// minRequestTimeout is how short the request timeout can be.  This is used to build the RESTHandler
 	minRequestTimeout time.Duration
@@ -166,9 +169,13 @@ type GenericAPIServer struct {
 	postStartHooks       map[string]PostStartHookFunc
 	postStartHookLock    sync.Mutex
 	postStartHooksCalled bool
+}
 
-	// Writer to write the audit log to.
-	auditWriter io.Writer
+func init() {
+	// Send correct mime type for .svg files.
+	// TODO: remove when https://github.com/golang/go/commit/21e47d831bafb59f22b1ea8098f709677ec8ce33
+	// makes it into all of our supported go versions (only in v1.7.1 now).
+	mime.AddExtensionType(".svg", "image/svg+xml")
 }
 
 // RequestContextMapper is exposed so that third party resource storage can be build in a different location.
@@ -181,13 +188,6 @@ func (s *GenericAPIServer) RequestContextMapper() api.RequestContextMapper {
 // TODO refactor third party resource storage
 func (s *GenericAPIServer) MinRequestTimeout() time.Duration {
 	return s.minRequestTimeout
-}
-
-func (s *GenericAPIServer) NewRequestInfoResolver() *apiserver.RequestInfoResolver {
-	return &apiserver.RequestInfoResolver{
-		APIPrefixes:          sets.NewString(strings.Trim(s.legacyAPIPrefix, "/"), strings.Trim(s.apiPrefix, "/")), // all possible API prefixes
-		GrouplessAPIPrefixes: sets.NewString(strings.Trim(s.legacyAPIPrefix, "/")),                                 // APIPrefixes that won't have groups (legacy)
-	}
 }
 
 // HandleWithAuth adds an http.Handler for pattern to an http.ServeMux
@@ -251,6 +251,9 @@ func (s *GenericAPIServer) Run(options *options.ServerRunOptions) {
 			secureServer.TLSConfig.ClientAuth = tls.RequestClientCert
 			// Specify allowed CAs for client certificates
 			secureServer.TLSConfig.ClientCAs = clientCAs
+			// "h2" NextProtos is necessary for enabling HTTP2 for go's 1.7 HTTP Server
+			secureServer.TLSConfig.NextProtos = []string{"h2"}
+
 		}
 
 		glog.Infof("Serving securely on %s", secureLocation)
@@ -259,7 +262,7 @@ func (s *GenericAPIServer) Run(options *options.ServerRunOptions) {
 			options.TLSPrivateKeyFile = path.Join(options.CertDirectory, "apiserver.key")
 			// TODO (cjcullen): Is ClusterIP the right address to sign a cert with?
 			alternateIPs := []net.IP{s.ServiceReadWriteIP}
-			alternateDNS := []string{"kubernetes.default.svc", "kubernetes.default", "kubernetes"}
+			alternateDNS := []string{"kubernetes.default.svc", "kubernetes.default", "kubernetes", "localhost"}
 			// It would be nice to set a fqdn subject alt name, but only the kubelets know, the apiserver is clueless
 			// alternateDNS = append(alternateDNS, "kubernetes.default.svc.CLUSTER.DNS.NAME")
 			if !certutil.CanReadCertOrKey(options.TLSCertFile, options.TLSPrivateKeyFile) {
@@ -316,7 +319,7 @@ func (s *GenericAPIServer) Run(options *options.ServerRunOptions) {
 
 	<-secureStartedCh
 	<-insecureStartedCh
-	s.RunPostStartHooks(PostStartHookContext{})
+	s.RunPostStartHooks()
 
 	// err == systemd.SdNotifyNoSocket when not running on a systemd system
 	if err := systemd.SdNotify("READY=1\n"); err != nil && err != systemd.SdNotifyNoSocket {
@@ -395,7 +398,6 @@ func (s *GenericAPIServer) InstallAPIGroup(apiGroupInfo *APIGroupInfo) error {
 		s.AddAPIGroupForDiscovery(apiGroup)
 		s.HandlerContainer.Add(apiserver.NewGroupWebService(s.Serializer, apiPrefix+"/"+apiGroup.Name, apiGroup))
 	}
-	apiserver.InstallServiceErrorHandler(s.Serializer, s.HandlerContainer, s.NewRequestInfoResolver(), apiVersions)
 	return nil
 }
 
@@ -446,8 +448,6 @@ func (s *GenericAPIServer) getAPIGroupVersion(apiGroupInfo *APIGroupInfo, groupV
 
 func (s *GenericAPIServer) newAPIGroupVersion(apiGroupInfo *APIGroupInfo, groupVersion unversioned.GroupVersion) (*apiserver.APIGroupVersion, error) {
 	return &apiserver.APIGroupVersion{
-		RequestInfoResolver: s.NewRequestInfoResolver(),
-
 		GroupVersion: groupVersion,
 
 		ParameterCodec: apiGroupInfo.ParameterCodec,
