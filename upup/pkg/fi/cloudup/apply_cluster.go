@@ -96,6 +96,11 @@ func (c *ApplyClusterCmd) Run() error {
 	keyStore.(*fi.VFSCAStore).DryRun = c.DryRun
 	secretStore := c.ClusterRegistry.SecretStore(cluster.Name)
 
+	configBase, err := c.ClusterRegistry.ClusterBase(cluster.Name)
+	if err != nil {
+		return fmt.Errorf("error getting config base: %v", err)
+	}
+
 	// Normalize k8s version
 	versionWithoutV := strings.TrimSpace(cluster.Spec.KubernetesVersion)
 	if strings.HasPrefix(versionWithoutV, "v") {
@@ -165,8 +170,9 @@ func (c *ApplyClusterCmd) Run() error {
 	checkExisting := true
 
 	l.AddTypes(map[string]interface{}{
-		"keypair": &fitasks.Keypair{},
-		"secret":  &fitasks.Secret{},
+		"keypair":     &fitasks.Keypair{},
+		"secret":      &fitasks.Secret{},
+		"managedFile": &fitasks.ManagedFile{},
 	})
 
 	cloud, err := BuildCloud(cluster)
@@ -336,10 +342,6 @@ func (c *ApplyClusterCmd) Run() error {
 
 		config.ClusterName = cluster.Name
 
-		configBase, err := c.ClusterRegistry.ClusterBase(cluster.Name)
-		if err != nil {
-			return "", err
-		}
 		config.ConfigBase = fi.String(configBase.Path())
 
 		config.InstanceGroupName = ig.Name
@@ -491,7 +493,7 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 	}
 
-	context, err := fi.NewContext(target, cloud, keyStore, secretStore, checkExisting, taskMap)
+	context, err := fi.NewContext(target, cloud, keyStore, secretStore, configBase, checkExisting, taskMap)
 	if err != nil {
 		return fmt.Errorf("error building context: %v", err)
 	}
