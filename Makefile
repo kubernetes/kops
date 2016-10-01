@@ -86,7 +86,7 @@ version-dist: nodeup-dist kops-dist
 	cp .build/dist/darwin/amd64/kops .build/upload/kops/${VERSION}/darwin/amd64/kops
 	cp .build/dist/darwin/amd64/kops.sha1 .build/upload/kops/${VERSION}/darwin/amd64/kops.sha1
 
-upload: version-dist
+upload: kops version-dist
 	aws s3 sync --acl public-read .build/upload/ ${S3_BUCKET}
 
 gcs-upload: version-dist
