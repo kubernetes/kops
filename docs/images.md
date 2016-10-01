@@ -24,3 +24,8 @@ You can find the name for an image using e.g. `aws ec2 describe-images --image-i
 
 If you are creating a new cluster you can use the `--image` flag when running `kops create cluster`,
 which should be easier than editing your instance groups.
+
+
+In addition, we support a few-well known aliases for the owner:
+
+`kope.io` => `383156758163`
