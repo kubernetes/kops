@@ -7,8 +7,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-// TODO: Rename to buildCloudupTags ?
-func buildClusterTags(cluster *api.Cluster) (map[string]struct{}, error) {
+func buildCloudupTags(cluster *api.Cluster) (map[string]struct{}, error) {
 	// TODO: Make these configurable?
 	useMasterASG := true
 	useMasterLB := false
@@ -62,6 +61,28 @@ func buildClusterTags(cluster *api.Cluster) (map[string]struct{}, error) {
 
 	default:
 		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
+	}
+
+	versionTag := ""
+	if cluster.Spec.KubernetesVersion != "" {
+		sv, err := api.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
+		if err != nil {
+			return nil, fmt.Errorf("unable to determine kubernetes version from %q", cluster.Spec.KubernetesVersion)
+		}
+
+		if sv.Major == 1 && sv.Minor >= 5 {
+			versionTag = "_k8s_1_5"
+		} else if sv.Major == 1 && sv.Minor == 4 {
+			versionTag = "_k8s_1_4"
+		} else {
+			// We don't differentiate between these older versions
+			versionTag = "_k8s_1_3"
+		}
+	}
+	if versionTag == "" {
+		return nil, fmt.Errorf("unable to determine kubernetes version from %q", cluster.Spec.KubernetesVersion)
+	} else {
+		tags[versionTag] = struct{}{}
 	}
 
 	return tags, nil

@@ -197,7 +197,7 @@ func (c *populateClusterSpec) run() error {
 		cluster.Spec.DNSZone = dnsZone
 	}
 
-	tags, err := buildClusterTags(cluster)
+	tags, err := buildCloudupTags(cluster)
 	if err != nil {
 		return err
 	}

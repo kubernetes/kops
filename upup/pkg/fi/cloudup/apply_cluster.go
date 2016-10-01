@@ -288,7 +288,7 @@ func (c *ApplyClusterCmd) Run() error {
 		return err
 	}
 
-	clusterTags, err := buildClusterTags(cluster)
+	clusterTags, err := buildCloudupTags(cluster)
 	if err != nil {
 		return err
 	}
