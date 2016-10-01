@@ -86,8 +86,17 @@ func (c *GetAddonsCmd) Run(args []string) error {
 			}
 			return "?"
 		})
+		t.AddColumn("CHANNEL", func(r *addonInfo) string {
+			if r.Version == nil {
+				return "-"
+			}
+			if r.Version.Channel != nil {
+				return *r.Version.Channel
+			}
+			return "?"
+		})
 
-		columns := []string{"NAMESPACE", "NAME", "VERSION"}
+		columns := []string{"NAMESPACE", "NAME", "VERSION", "CHANNEL"}
 		err := t.Render(info, os.Stdout, columns...)
 		if err != nil {
 			return err

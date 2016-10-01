@@ -10,9 +10,10 @@ import (
 )
 
 type Addon struct {
-	Name    string
-	Channel url.URL
-	Spec    *api.AddonSpec
+	Name            string
+	ChannelName     string
+	ChannelLocation url.URL
+	Spec            *api.AddonSpec
 }
 
 type AddonUpdate struct {
@@ -22,9 +23,8 @@ type AddonUpdate struct {
 }
 
 func (a *Addon) ChannelVersion() *ChannelVersion {
-	channel := a.Channel.String()
 	return &ChannelVersion{
-		Channel: &channel,
+		Channel: &a.ChannelName,
 		Version: a.Spec.Version,
 	}
 }
@@ -81,7 +81,7 @@ func (a *Addon) EnsureUpdated(k8sClient *release_1_3.Clientset) (*AddonUpdate, e
 		return nil, field.Invalid(field.NewPath("Spec", "Manifest"), manifest, "Not a valid URL")
 	}
 	if !manifestURL.IsAbs() {
-		manifestURL = a.Channel.ResolveReference(manifestURL)
+		manifestURL = a.ChannelLocation.ResolveReference(manifestURL)
 	}
 	glog.Infof("Applying update from %q", manifestURL)
 
