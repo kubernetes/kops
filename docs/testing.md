@@ -59,12 +59,16 @@ tar zxf kubernetes-server-linux-amd64.tar.gz
 
 rm kubernetes/server/bin/federation*
 rm kubernetes/server/bin/hyperkube
+rm kubernetes/server/bin/kubeadm
 rm kubernetes/server/bin/kube-apiserver
 rm kubernetes/server/bin/kube-controller-manager
+rm kubernetes/server/bin/kube-discovery
 rm kubernetes/server/bin/kube-dns
 rm kubernetes/server/bin/kubemark
 rm kubernetes/server/bin/kube-proxy
 rm kubernetes/server/bin/kube-scheduler
+rm kubernetes/kubernetes-src.tar.gz
+
 
 find kubernetes/server/bin -type f -name "*.tar" | xargs -I {} /bin/bash -c "sha1sum {} | cut -f1 -d ' ' > {}.sha1"
 find kubernetes/server/bin -type f -name "kube???" | xargs -I {} /bin/bash -c "sha1sum {} | cut -f1 -d ' ' > {}.sha1"
