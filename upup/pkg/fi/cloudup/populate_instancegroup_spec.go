@@ -11,8 +11,8 @@ import (
 const DefaultNodeMachineTypeAWS = "t2.medium"
 const DefaultNodeMachineTypeGCE = "n1-standard-2"
 
-const DefaultMasterMachineTypeAWS = "m3.large"
-const DefaultMasterMachineTypeGCE = "n1-standard-2"
+const DefaultMasterMachineTypeAWS = "m3.medium"
+const DefaultMasterMachineTypeGCE = "n1-standard-1"
 
 // PopulateInstanceGroupSpec sets default values in the InstanceGroup
 // The InstanceGroup is simpler than the cluster spec, so we just populate in place (like the rest of k8s)
