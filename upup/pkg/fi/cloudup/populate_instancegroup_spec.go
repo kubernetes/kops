@@ -16,7 +16,7 @@ const DefaultMasterMachineTypeGCE = "n1-standard-1"
 
 // PopulateInstanceGroupSpec sets default values in the InstanceGroup
 // The InstanceGroup is simpler than the cluster spec, so we just populate in place (like the rest of k8s)
-func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup) (*api.InstanceGroup, error) {
+func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup, channel *api.Channel) (*api.InstanceGroup, error) {
 	err := input.Validate(false)
 	if err != nil {
 		return nil, err
@@ -52,7 +52,7 @@ func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup) (
 	}
 
 	if ig.Spec.Image == "" {
-		ig.Spec.Image = defaultImage(cluster)
+		ig.Spec.Image = defaultImage(cluster, channel)
 	}
 
 	if ig.IsMaster() {
@@ -126,13 +126,17 @@ func defaultMasterMachineType(cluster *api.Cluster) string {
 }
 
 // defaultImage returns the default Image, based on the cloudprovider
-func defaultImage(cluster *api.Cluster) string {
-	// TODO: Use spec?
-	switch cluster.Spec.CloudProvider {
-	case "aws":
-		return "282335181503/k8s-1.3-debian-jessie-amd64-hvm-ebs-2016-06-18"
-	default:
-		glog.V(2).Infof("Cannot set default Image for CloudProvider=%q", cluster.Spec.CloudProvider)
-		return ""
+func defaultImage(cluster *api.Cluster, channel *api.Channel) string {
+	if channel != nil {
+		for _, image := range channel.Spec.Images {
+			if image.ProviderID != cluster.Spec.CloudProvider {
+				continue
+			}
+
+			return image.Name
+		}
 	}
+
+	glog.Infof("Cannot set default Image for CloudProvider=%q", cluster.Spec.CloudProvider)
+	return ""
 }

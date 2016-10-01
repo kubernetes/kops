@@ -11,6 +11,9 @@ import (
 
 type ConvertImportedCmd struct {
 	NewClusterName string
+
+	// Channel is the location of the api.Channel to use for our defaults
+	Channel string
 }
 
 var convertImported ConvertImportedCmd
@@ -30,6 +33,7 @@ func init() {
 	toolboxCmd.AddCommand(cmd)
 
 	cmd.Flags().StringVar(&convertImported.NewClusterName, "newname", "", "new cluster name")
+	cmd.Flags().StringVar(&convertImported.Channel, "channel", api.DefaultChannel, "Channel to use for upgrade")
 }
 
 func (c *ConvertImportedCmd) Run() error {
@@ -83,13 +87,20 @@ func (c *ConvertImportedCmd) Run() error {
 		return fmt.Errorf("error initializing AWS client: %v", err)
 	}
 
-	d := &kutil.ConvertKubeupCluster{}
-	d.NewClusterName = c.NewClusterName
-	d.OldClusterName = oldClusterName
-	d.Cloud = cloud
-	d.ClusterConfig = cluster
-	d.InstanceGroups = instanceGroups
-	d.ClusterRegistry = clusterRegistry
+	channel, err := api.LoadChannel(c.Channel)
+	if err != nil {
+		return err
+	}
+
+	d := &kutil.ConvertKubeupCluster{
+		NewClusterName:  c.NewClusterName,
+		OldClusterName:  oldClusterName,
+		Cloud:           cloud,
+		ClusterConfig:   cluster,
+		InstanceGroups:  instanceGroups,
+		ClusterRegistry: clusterRegistry,
+		Channel:         channel,
+	}
 
 	err = d.Upgrade()
 	if err != nil {
