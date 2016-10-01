@@ -25,6 +25,7 @@ source "${KUBE_ROOT}/test/kubemark/common.sh"
 function writeEnvironmentFiles() {
   cat > "${RESOURCE_DIRECTORY}/apiserver_flags" <<EOF
 ${APISERVER_TEST_ARGS}
+--storage-backend=${STORAGE_BACKEND}
 --service-cluster-ip-range="${SERVICE_CLUSTER_IP_RANGE}"
 EOF
 sed -i'' -e "s/\"//g" "${RESOURCE_DIRECTORY}/apiserver_flags"
@@ -46,24 +47,14 @@ sed -i'' -e "s/\"//g" "${RESOURCE_DIRECTORY}/controllers_flags"
 
 MAKE_DIR="${KUBE_ROOT}/cluster/images/kubemark"
 
-echo "Copying kubemark to ${MAKE_DIR}"
-if [[ -f "${KUBE_ROOT}/_output/release-tars/kubernetes-server-linux-amd64.tar.gz" ]]; then
-  # Running from distro
-  SERVER_TARBALL="${KUBE_ROOT}/_output/release-tars/kubernetes-server-linux-amd64.tar.gz"
-  echo "Using server tarball: ${SERVER_TARBALL}"
-  cp "${KUBE_ROOT}/_output/release-stage/server/linux-amd64/kubernetes/server/bin/kubemark" "${MAKE_DIR}"
-elif [[ -f "${KUBE_ROOT}/server/kubernetes-server-linux-amd64.tar.gz" ]]; then
-  # Running from an extracted release tarball (kubernetes.tar.gz)
-  SERVER_TARBALL="${KUBE_ROOT}/server/kubernetes-server-linux-amd64.tar.gz"
-  echo "Using server tarball: ${SERVER_TARBALL}"
-  tar \
-    --strip-components=3 \
-    -xzf "${SERVER_TARBALL}" \
-    -C "${MAKE_DIR}" 'kubernetes/server/bin/kubemark' || exit 1
-else
-  echo 'Cannot find kubernetes/server/bin/kubemark binary'
+KUBEMARK_BIN="$(kube::util::find-binary-for-platform kubemark linux/amd64)"
+if [[ -z "${KUBEMARK_BIN}" ]]; then
+  echo 'Cannot find cmd/kubemark binary'
   exit 1
 fi
+
+echo "Copying kubemark to ${MAKE_DIR}"
+cp "${KUBEMARK_BIN}" "${MAKE_DIR}"
 
 CURR_DIR=`pwd`
 cd "${MAKE_DIR}"
@@ -146,7 +137,7 @@ gcloud compute ssh --zone="${ZONE}" --project="${PROJECT}" "${MASTER_NAME}" \
 writeEnvironmentFiles
 
 gcloud compute copy-files --zone="${ZONE}" --project="${PROJECT}" \
-  "${SERVER_TARBALL}" \
+  "${SERVER_BINARY_TAR}" \
   "${KUBEMARK_DIRECTORY}/start-kubemark-master.sh" \
   "${KUBEMARK_DIRECTORY}/configure-kubectl.sh" \
   "${RESOURCE_DIRECTORY}/apiserver_flags" \
@@ -155,7 +146,8 @@ gcloud compute copy-files --zone="${ZONE}" --project="${PROJECT}" \
   "${MASTER_NAME}":~
 
 gcloud compute ssh "${MASTER_NAME}" --zone="${ZONE}" --project="${PROJECT}" \
-  --command="chmod a+x configure-kubectl.sh && chmod a+x start-kubemark-master.sh && sudo ./start-kubemark-master.sh ${EVENT_STORE_IP:-127.0.0.1} ${NUM_NODES:-0}"
+  --command="chmod a+x configure-kubectl.sh && chmod a+x start-kubemark-master.sh && \
+             sudo ./start-kubemark-master.sh ${EVENT_STORE_IP:-127.0.0.1} ${NUM_NODES:-0} ${TEST_ETCD_VERSION:-}"
 
 # create kubeconfig for Kubelet:
 KUBECONFIG_CONTENTS=$(echo "apiVersion: v1
@@ -272,8 +264,10 @@ until [[ "${ready}" -ge "${NUM_NODES}" ]]; do
       echo "Got error while trying to list Nodes. Probably API server is down."
     fi
     pods=$("${KUBECTL}" get pods --namespace=kubemark) || true
+    running=$(($(echo "${pods}" | grep "Running" | wc -l)))
+    echo "${running} HollowNode pods are reported as 'Running'"
     not_running=$(($(echo "${pods}" | grep -v "Running" | wc -l) - 1))
-    echo "${not_running} HollowNode pods are reported as not running"
+    echo "${not_running} HollowNode pods are reported as NOT 'Running'"
     echo $(echo "${pods}" | grep -v "Running")
     exit 1
   fi

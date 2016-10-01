@@ -11,7 +11,7 @@
 
 ### Are you ...
 
-  * Interested in learning more about using Kubernetes?  Please see our user-facing documentation on [kubernetes.io](http://kubernetes.io)
+  * Interested in learning more about using Kubernetes?  Please see our user-facing documentation on [kubernetes.io](http://kubernetes.io) or try the [Scalable Microservices with Kubernetes](https://www.udacity.com/course/scalable-microservices-with-kubernetes--ud615) course
   * Interested in hacking on the core Kubernetes code base?  Keep reading!
 
 <hr>
@@ -134,6 +134,9 @@ For Q&A, our threads are at:
 If you're interested in being a contributor and want to get involved in developing Kubernetes, start in the [Kubernetes Developer Guide](docs/devel/README.md) and also review the [contributor guidelines](CONTRIBUTING.md).
 
 Or, if you just have an idea for a new feature, see the [Kubernetes Features](https://github.com/kubernetes/features) repository for details on how to propose it.
+
+Also, please see our [expectations](docs/devel/community-expectations.md) for members of
+the Kubernetes community.
 
 ### Support
 

@@ -855,8 +855,12 @@ func validateGlusterfs(glusterfs *api.GlusterfsVolumeSource, fldPath *field.Path
 
 func validateFlockerVolumeSource(flocker *api.FlockerVolumeSource, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
-	if len(flocker.DatasetName) == 0 {
-		allErrs = append(allErrs, field.Required(fldPath.Child("datasetName"), ""))
+	if len(flocker.DatasetName) == 0 && len(flocker.DatasetUUID) == 0 {
+		//TODO: consider adding a RequiredOneOf() error for this and similar cases
+		allErrs = append(allErrs, field.Required(fldPath, "one of datasetName and datasetUUID is required"))
+	}
+	if len(flocker.DatasetName) != 0 && len(flocker.DatasetUUID) != 0 {
+		allErrs = append(allErrs, field.Invalid(fldPath, "resource", "datasetName and datasetUUID can not be specified simultaneously"))
 	}
 	if strings.Contains(flocker.DatasetName, "/") {
 		allErrs = append(allErrs, field.Invalid(fldPath.Child("datasetName"), flocker.DatasetName, "must not contain '/'"))
@@ -2402,6 +2406,9 @@ func ValidateService(service *api.Service) field.ErrorList {
 				allErrs = append(allErrs, field.Invalid(portPath, port.Port, "may not expose port 10250 externally since it is used by kubelet"))
 			}
 		}
+		if service.Spec.ClusterIP == "None" {
+			allErrs = append(allErrs, field.Invalid(specPath.Child("clusterIP"), service.Spec.ClusterIP, "may not be set to 'None' for LoadBalancer services"))
+		}
 	case api.ServiceTypeExternalName:
 		if service.Spec.ClusterIP != "" {
 			allErrs = append(allErrs, field.Invalid(specPath.Child("clusterIP"), service.Spec.ClusterIP, "must be empty for ExternalName services"))
@@ -2602,6 +2609,8 @@ func ValidateReplicationControllerStatusUpdate(controller, oldController *api.Re
 	statusPath := field.NewPath("status")
 	allErrs = append(allErrs, ValidateNonnegativeField(int64(controller.Status.Replicas), statusPath.Child("replicas"))...)
 	allErrs = append(allErrs, ValidateNonnegativeField(int64(controller.Status.FullyLabeledReplicas), statusPath.Child("fullyLabeledReplicas"))...)
+	allErrs = append(allErrs, ValidateNonnegativeField(int64(controller.Status.ReadyReplicas), statusPath.Child("readyReplicas"))...)
+	allErrs = append(allErrs, ValidateNonnegativeField(int64(controller.Status.AvailableReplicas), statusPath.Child("availableReplicas"))...)
 	allErrs = append(allErrs, ValidateNonnegativeField(int64(controller.Status.ObservedGeneration), statusPath.Child("observedGeneration"))...)
 	return allErrs
 }
@@ -2645,6 +2654,7 @@ func ValidatePodTemplateSpecForRC(template *api.PodTemplateSpec, selectorMap map
 // ValidateReplicationControllerSpec tests if required fields in the replication controller spec are set.
 func ValidateReplicationControllerSpec(spec *api.ReplicationControllerSpec, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
+	allErrs = append(allErrs, ValidateNonnegativeField(int64(spec.MinReadySeconds), fldPath.Child("minReadySeconds"))...)
 	allErrs = append(allErrs, ValidateNonEmptySelector(spec.Selector, fldPath.Child("selector"))...)
 	allErrs = append(allErrs, ValidateNonnegativeField(int64(spec.Replicas), fldPath.Child("replicas"))...)
 	allErrs = append(allErrs, ValidatePodTemplateSpecForRC(spec.Template, spec.Selector, spec.Replicas, fldPath.Child("template"))...)
