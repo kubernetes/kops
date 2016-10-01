@@ -86,12 +86,14 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	c.cluster = &api.Cluster{}
 	{
+		clusterLocation := fi.StringValue(c.config.ClusterLocation)
+
 		var p vfs.Path
-		if fi.StringValue(c.config.ClusterLocation) != "" {
+		if clusterLocation != "" {
 			var err error
-			p, err = vfs.Context.BuildVfsPath(*c.config.ClusterLocation)
+			p, err = vfs.Context.BuildVfsPath(clusterLocation)
 			if err != nil {
-				return fmt.Errorf("error parsing ClusterLocation %q: %v", *c.config.ClusterLocation, err)
+				return fmt.Errorf("error parsing ClusterLocation %q: %v", clusterLocation, err)
 			}
 		} else {
 			p = configBase.Join(api.PathClusterCompleted)
@@ -104,7 +106,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 		err = utils.YamlUnmarshal(b, c.cluster)
 		if err != nil {
-			return fmt.Errorf("error parsing Cluster %q: %v", c.config.ClusterLocation, err)
+			return fmt.Errorf("error parsing Cluster %q: %v", clusterLocation, err)
 		}
 	}
 
@@ -210,7 +212,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("unsupported target type %q", c.Target)
 	}
 
-	context, err := fi.NewContext(target, cloud, caStore, secretStore, checkExisting, taskMap)
+	context, err := fi.NewContext(target, cloud, caStore, secretStore, configBase, checkExisting, taskMap)
 	if err != nil {
 		glog.Exitf("error building context: %v", err)
 	}
