@@ -14,7 +14,7 @@ GOVERSION=1.6
 # See http://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 
-TAG=1.3
+TAG=1.4
 
 ifndef VERSION
   VERSION := git-$(shell git describe --always)

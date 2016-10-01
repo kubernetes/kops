@@ -85,7 +85,7 @@ chmod +x /tmp/e2e.sh
 curl -fsS --retry 3  "https://storage.googleapis.com/kubernetes-release/release/v1.3.5/bin/linux/amd64/kubectl" > /usr/local/bin/kubectl
 chmod +x /usr/local/bin/kubectl
 
-curl -fsS --retry 3  "https://kubeupv2.s3.amazonaws.com/kops/1.3/linux/amd64/kops" > /tmp/kops
+curl -fsS --retry 3  "https://kubeupv2.s3.amazonaws.com/kops/1.4.0/linux/amd64/kops" > /tmp/kops
 cp /tmp/kops /usr/local/bin/kops
 chmod +x /usr/local/bin/kops
 

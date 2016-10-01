@@ -6,11 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	// value overwritten during build. This can be used to resolve issues.
-	BuildVersion = "0.1"
-)
-
 type VersionCmd struct {
 	cobraCommand *cobra.Command
 }

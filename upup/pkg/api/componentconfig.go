@@ -64,7 +64,7 @@ type KubeletConfigSpec struct {
 	// of the actual hostname.
 	// Note: We recognize some additional values:
 	//  @aws uses the hostname from the AWS metadata service
-	HostnameOverride string `json:"hostnameOverride" flag:"hostname-override"`
+	HostnameOverride string `json:"hostnameOverride,omitempty" flag:"hostname-override"`
 	//// podInfraContainerImage is the image whose network/ipc namespaces
 	//// containers in each pod will use.
 	//PodInfraContainerImage string `json:"podInfraContainerImage"`
@@ -362,9 +362,9 @@ type KubeAPIServerConfig struct {
 	CloudProvider         string            `json:"cloudProvider,omitempty" flag:"cloud-provider"`
 	SecurePort            int               `json:"securePort,omitempty" flag:"secure-port"`
 	Address               string            `json:"address,omitempty" flag:"address"`
-	EtcdServers           string            `json:"etcdServers,omitempty" flag:"etcd-servers"`
-	EtcdServersOverrides  string            `json:"etcdServersOverrides,omitempty" flag:"etcd-servers-overrides"`
-	AdmissionControl      string            `json:"admissionControl,omitempty" flag:"admission-control"`
+	EtcdServers           []string          `json:"etcdServers,omitempty" flag:"etcd-servers"`
+	EtcdServersOverrides  []string          `json:"etcdServersOverrides,omitempty" flag:"etcd-servers-overrides"`
+	AdmissionControl      []string          `json:"admissionControl,omitempty" flag:"admission-control"`
 	ServiceClusterIPRange string            `json:"serviceClusterIPRange,omitempty" flag:"service-cluster-ip-range"`
 	ClientCAFile          string            `json:"clientCAFile,omitempty" flag:"client-ca-file"`
 	BasicAuthFile         string            `json:"basicAuthFile,omitempty" flag:"basic-auth-file"`
