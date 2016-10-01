@@ -16,6 +16,8 @@ func (c *Cluster) Validate(strict bool) error {
 
 	var err error
 
+	specPath := field.NewPath("Cluster").Child("Spec")
+
 	if c.Name == "" {
 		return fmt.Errorf("Cluster Name is required (e.g. --name=mycluster.myzone.com)")
 	}
@@ -65,34 +67,36 @@ func (c *Cluster) Validate(strict bool) error {
 	// Check NetworkCIDR
 	var networkCIDR *net.IPNet
 	{
-		if c.Spec.NetworkCIDR == "" {
+		networkCIDRString := c.Spec.NetworkCIDR
+		if networkCIDRString == "" {
 			return fmt.Errorf("Cluster did not have NetworkCIDR set")
 		}
-		_, networkCIDR, err = net.ParseCIDR(c.Spec.NetworkCIDR)
+		_, networkCIDR, err = net.ParseCIDR(networkCIDRString)
 		if err != nil {
-			return fmt.Errorf("Cluster had an invalid NetworkCIDR: %q", c.Spec.NetworkCIDR)
+			return fmt.Errorf("Cluster had an invalid NetworkCIDR: %q", networkCIDRString)
 		}
 	}
 
 	// Check NonMasqueradeCIDR
 	var nonMasqueradeCIDR *net.IPNet
 	{
-		if c.Spec.NonMasqueradeCIDR == "" {
+		nonMasqueradeCIDRString := c.Spec.NonMasqueradeCIDR
+		if nonMasqueradeCIDRString == "" {
 			return fmt.Errorf("Cluster did not have NonMasqueradeCIDR set")
 		}
-		_, nonMasqueradeCIDR, err = net.ParseCIDR(c.Spec.NonMasqueradeCIDR)
+		_, nonMasqueradeCIDR, err = net.ParseCIDR(nonMasqueradeCIDRString)
 		if err != nil {
-			return fmt.Errorf("Cluster had an invalid NonMasqueradeCIDR: %q", c.Spec.NonMasqueradeCIDR)
+			return fmt.Errorf("Cluster had an invalid NonMasqueradeCIDR: %q", nonMasqueradeCIDRString)
 		}
 
 		if subnetsOverlap(nonMasqueradeCIDR, networkCIDR) {
-			return fmt.Errorf("NonMasqueradeCIDR %q cannot overlap with NetworkCIDR %q", c.Spec.NonMasqueradeCIDR, c.Spec.NetworkCIDR)
+			return fmt.Errorf("NonMasqueradeCIDR %q cannot overlap with NetworkCIDR %q", nonMasqueradeCIDRString, c.Spec.NetworkCIDR)
 		}
 
-		if c.Spec.Kubelet != nil && c.Spec.Kubelet.NonMasqueradeCIDR != c.Spec.NonMasqueradeCIDR {
+		if c.Spec.Kubelet != nil && c.Spec.Kubelet.NonMasqueradeCIDR != nonMasqueradeCIDRString {
 			return fmt.Errorf("Kubelet NonMasqueradeCIDR did not match cluster NonMasqueradeCIDR")
 		}
-		if c.Spec.MasterKubelet != nil && c.Spec.MasterKubelet.NonMasqueradeCIDR != c.Spec.NonMasqueradeCIDR {
+		if c.Spec.MasterKubelet != nil && c.Spec.MasterKubelet.NonMasqueradeCIDR != nonMasqueradeCIDRString {
 			return fmt.Errorf("MasterKubelet NonMasqueradeCIDR did not match cluster NonMasqueradeCIDR")
 		}
 	}
@@ -100,21 +104,22 @@ func (c *Cluster) Validate(strict bool) error {
 	// Check ServiceClusterIPRange
 	var serviceClusterIPRange *net.IPNet
 	{
-		if c.Spec.ServiceClusterIPRange == "" {
+		serviceClusterIPRangeString := c.Spec.ServiceClusterIPRange
+		if serviceClusterIPRangeString == "" {
 			if strict {
 				return fmt.Errorf("Cluster did not have ServiceClusterIPRange set")
 			}
 		} else {
-			_, serviceClusterIPRange, err = net.ParseCIDR(c.Spec.ServiceClusterIPRange)
+			_, serviceClusterIPRange, err = net.ParseCIDR(serviceClusterIPRangeString)
 			if err != nil {
-				return fmt.Errorf("Cluster had an invalid ServiceClusterIPRange: %q", c.Spec.ServiceClusterIPRange)
+				return fmt.Errorf("Cluster had an invalid ServiceClusterIPRange: %q", serviceClusterIPRangeString)
 			}
 
 			if !isSubnet(nonMasqueradeCIDR, serviceClusterIPRange) {
-				return fmt.Errorf("ServiceClusterIPRange %q must be a subnet of NonMasqueradeCIDR %q", c.Spec.ServiceClusterIPRange, c.Spec.NonMasqueradeCIDR)
+				return fmt.Errorf("ServiceClusterIPRange %q must be a subnet of NonMasqueradeCIDR %q", serviceClusterIPRangeString, c.Spec.NonMasqueradeCIDR)
 			}
 
-			if c.Spec.KubeAPIServer != nil && c.Spec.KubeAPIServer.ServiceClusterIPRange != c.Spec.ServiceClusterIPRange {
+			if c.Spec.KubeAPIServer != nil && c.Spec.KubeAPIServer.ServiceClusterIPRange != serviceClusterIPRangeString {
 				return fmt.Errorf("KubeAPIServer ServiceClusterIPRange did not match cluster ServiceClusterIPRange")
 			}
 		}
@@ -123,31 +128,33 @@ func (c *Cluster) Validate(strict bool) error {
 	// Check ClusterCIDR
 	if c.Spec.KubeControllerManager != nil {
 		var clusterCIDR *net.IPNet
-		if c.Spec.KubeControllerManager.ClusterCIDR != "" {
-			_, clusterCIDR, err = net.ParseCIDR(c.Spec.KubeControllerManager.ClusterCIDR)
+		clusterCIDRString := c.Spec.KubeControllerManager.ClusterCIDR
+		if clusterCIDRString != "" {
+			_, clusterCIDR, err = net.ParseCIDR(clusterCIDRString)
 			if err != nil {
-				return fmt.Errorf("Cluster had an invalid KubeControllerManager.ClusterCIDR: %q", c.Spec.KubeControllerManager.ClusterCIDR)
+				return fmt.Errorf("Cluster had an invalid KubeControllerManager.ClusterCIDR: %q", clusterCIDRString)
 			}
 
 			if !isSubnet(nonMasqueradeCIDR, clusterCIDR) {
-				return fmt.Errorf("KubeControllerManager.ClusterCIDR %q must be a subnet of NonMasqueradeCIDR %q", c.Spec.KubeControllerManager.ClusterCIDR, c.Spec.NonMasqueradeCIDR)
+				return fmt.Errorf("KubeControllerManager.ClusterCIDR %q must be a subnet of NonMasqueradeCIDR %q", clusterCIDRString, c.Spec.NonMasqueradeCIDR)
 			}
 		}
 	}
 
 	// Check KubeDNS.ServerIP
 	if c.Spec.KubeDNS != nil {
-		if c.Spec.KubeDNS.ServerIP == "" {
+		serverIPString := c.Spec.KubeDNS.ServerIP
+		if serverIPString == "" {
 			return fmt.Errorf("Cluster did not have KubeDNS.ServerIP set")
 		}
 
-		dnsServiceIP := net.ParseIP(c.Spec.KubeDNS.ServerIP)
+		dnsServiceIP := net.ParseIP(serverIPString)
 		if dnsServiceIP == nil {
-			return fmt.Errorf("Cluster had an invalid KubeDNS.ServerIP: %q", c.Spec.KubeDNS.ServerIP)
+			return fmt.Errorf("Cluster had an invalid KubeDNS.ServerIP: %q", serverIPString)
 		}
 
 		if !serviceClusterIPRange.Contains(dnsServiceIP) {
-			return fmt.Errorf("ServiceClusterIPRange %q must contain the DNS Server IP %q", c.Spec.ServiceClusterIPRange, c.Spec.KubeDNS.ServerIP)
+			return fmt.Errorf("ServiceClusterIPRange %q must contain the DNS Server IP %q", c.Spec.ServiceClusterIPRange, serverIPString)
 		}
 
 		if c.Spec.Kubelet != nil && c.Spec.Kubelet.ClusterDNS != c.Spec.KubeDNS.ServerIP {
@@ -160,26 +167,27 @@ func (c *Cluster) Validate(strict bool) error {
 
 	// Check CloudProvider
 	{
-		if c.Spec.CloudProvider == "" {
-			return fmt.Errorf("CloudProvider is not set")
+		cloudProvider := c.Spec.CloudProvider
+
+		if cloudProvider == "" {
+			return field.Required(specPath.Child("CloudProvider"), "")
 		}
-		if c.Spec.Kubelet != nil && c.Spec.Kubelet.CloudProvider != "" && c.Spec.Kubelet.CloudProvider != c.Spec.CloudProvider {
-			return fmt.Errorf("Kubelet CloudProvider did not match cluster CloudProvider")
+		if c.Spec.Kubelet != nil && cloudProvider != c.Spec.Kubelet.CloudProvider {
+			return field.Invalid(specPath.Child("Kubelet", "CloudProvider"), c.Spec.Kubelet.CloudProvider, "Did not match cluster CloudProvider")
 		}
-		if c.Spec.MasterKubelet != nil && c.Spec.MasterKubelet.CloudProvider != "" && c.Spec.MasterKubelet.CloudProvider != c.Spec.CloudProvider {
-			return fmt.Errorf("MasterKubelet CloudProvider did not match cluster CloudProvider")
+		if c.Spec.MasterKubelet != nil && cloudProvider != c.Spec.Kubelet.CloudProvider {
+			return field.Invalid(specPath.Child("MasterKubelet", "CloudProvider"), c.Spec.Kubelet.CloudProvider, "Did not match cluster CloudProvider")
 		}
-		if c.Spec.KubeAPIServer != nil && c.Spec.KubeAPIServer.CloudProvider != "" && c.Spec.KubeAPIServer.CloudProvider != c.Spec.CloudProvider {
-			return fmt.Errorf("KubeAPIServer CloudProvider did not match cluster CloudProvider")
+		if c.Spec.KubeAPIServer != nil && cloudProvider != c.Spec.KubeAPIServer.CloudProvider {
+			return field.Invalid(specPath.Child("KubeAPIServer", "CloudProvider"), c.Spec.KubeAPIServer.CloudProvider, "Did not match cluster CloudProvider")
 		}
-		if c.Spec.KubeControllerManager != nil && c.Spec.KubeControllerManager.CloudProvider != "" && c.Spec.KubeControllerManager.CloudProvider != c.Spec.CloudProvider {
-			return fmt.Errorf("KubeControllerManager CloudProvider did not match cluster CloudProvider")
+		if c.Spec.KubeControllerManager != nil && cloudProvider != c.Spec.KubeControllerManager.CloudProvider {
+			return field.Invalid(specPath.Child("KubeControllerManager", "CloudProvider"), c.Spec.KubeControllerManager.CloudProvider, "Did not match cluster CloudProvider")
 		}
 	}
 
 	// Check that the zone CIDRs are all consistent
 	{
-
 		for _, z := range c.Spec.Zones {
 			if z.CIDR == "" {
 				if strict {
@@ -222,31 +230,38 @@ func (c *Cluster) Validate(strict bool) error {
 
 	// KubeProxy
 	if c.Spec.KubeProxy != nil {
-		if strict && c.Spec.KubeProxy.Master == "" {
-			return fmt.Errorf("KubeProxy.Master not set")
+		kubeProxyPath := specPath.Child("KubeProxy")
+
+		master := c.Spec.KubeProxy.Master
+		if strict && master == "" {
+			return field.Required(kubeProxyPath.Child("Master"), "")
 		}
-		if c.Spec.KubeProxy.Master != "" && !isValidAPIServersURL(c.Spec.KubeProxy.Master) {
-			return fmt.Errorf("KubeProxy.Master not valid")
+		if master != "" && !isValidAPIServersURL(master) {
+			return field.Invalid(kubeProxyPath.Child("Master"), master, "Not a valid APIServer URL")
 		}
 	}
 
 	// Kubelet
 	if c.Spec.Kubelet != nil {
+		kubeletPath := specPath.Child("Kubelet")
+
 		if strict && c.Spec.Kubelet.APIServers == "" {
-			return fmt.Errorf("Kubelet.APIServers not set")
+			return field.Required(kubeletPath.Child("APIServers"), "")
 		}
 		if c.Spec.Kubelet.APIServers != "" && !isValidAPIServersURL(c.Spec.Kubelet.APIServers) {
-			return fmt.Errorf("Kubelet.APIServers not valid")
+			return field.Invalid(kubeletPath.Child("APIServers"), c.Spec.Kubelet.APIServers, "Not a valid APIServer URL")
 		}
 	}
 
 	// MasterKubelet
 	if c.Spec.MasterKubelet != nil {
+		masterKubeletPath := specPath.Child("MasterKubelet")
+
 		if strict && c.Spec.MasterKubelet.APIServers == "" {
-			return fmt.Errorf("MasterKubelet.APIServers not set")
+			return field.Required(masterKubeletPath.Child("APIServers"), "")
 		}
-		if c.Spec.MasterKubelet.APIServers != "" && !isValidAPIServersURL(c.Spec.MasterKubelet.APIServers) {
-			return fmt.Errorf("MasterKubelet.APIServers not valid")
+		if c.Spec.Kubelet.APIServers != "" && !isValidAPIServersURL(c.Spec.MasterKubelet.APIServers) {
+			return field.Invalid(masterKubeletPath.Child("APIServers"), c.Spec.MasterKubelet.APIServers, "Not a valid APIServer URL")
 		}
 	}
 
