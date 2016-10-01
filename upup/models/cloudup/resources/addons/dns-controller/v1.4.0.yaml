@@ -30,6 +30,7 @@ spec:
         image: justinsb/dns-controller:1.3
         command:
         - /usr/bin/dns-controller
+        - --watch-ingress=false
         - --dns=aws-route53
         - -v=8
         resources:
