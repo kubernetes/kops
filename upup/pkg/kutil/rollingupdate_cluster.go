@@ -18,6 +18,11 @@ import (
 // RollingUpdateCluster restarts cluster nodes
 type RollingUpdateCluster struct {
 	Cloud fi.Cloud
+
+	MasterInterval time.Duration
+	NodeInterval   time.Duration
+
+	Force bool
 }
 
 func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroups []*api.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*CloudInstanceGroup, error) {
@@ -74,7 +79,7 @@ func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroup
 	return groups, nil
 }
 
-func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, force bool, k8sClient *release_1_3.Clientset) error {
+func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, k8sClient *release_1_3.Clientset) error {
 	if len(groups) == 0 {
 		return nil
 	}
@@ -96,6 +101,36 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 		}
 	}
 
+	// Upgrade master first
+	{
+		// We run master nodes in series, even if they are in separate instance groups
+		// typically they will be in separate instance groups, so we can force the zones,
+		// and we don't want to roll all the masters at the same time.  See issue #284
+		{
+			wg.Add(1)
+			go func() {
+				for k := range masterGroups {
+					resultsMutex.Lock()
+					results[k] = fmt.Errorf("function panic")
+					resultsMutex.Unlock()
+				}
+
+				defer wg.Done()
+
+				for k, group := range masterGroups {
+					err := group.RollingUpdate(c.Cloud, c.Force, c.MasterInterval, k8sClient)
+
+					resultsMutex.Lock()
+					results[k] = err
+					resultsMutex.Unlock()
+				}
+			}()
+		}
+
+		wg.Wait()
+	}
+
+	// Upgrade nodes, with greater parallelism
 	for k, nodeGroup := range nodeGroups {
 		wg.Add(1)
 		go func(k string, group *CloudInstanceGroup) {
@@ -105,39 +140,13 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 
 			defer wg.Done()
 
-			err := group.RollingUpdate(c.Cloud, force, k8sClient)
+			err := group.RollingUpdate(c.Cloud, c.Force, c.NodeInterval, k8sClient)
 
 			resultsMutex.Lock()
 			results[k] = err
 			resultsMutex.Unlock()
 		}(k, nodeGroup)
 	}
-
-	// We run master nodes in series, even if they are in separate instance groups
-	// typically they will be in separate instance groups, so we can force the zones,
-	// and we don't want to roll all the masters at the same time.  See issue #284
-	{
-		wg.Add(1)
-		go func() {
-			for k := range masterGroups {
-				resultsMutex.Lock()
-				results[k] = fmt.Errorf("function panic")
-				resultsMutex.Unlock()
-			}
-
-			defer wg.Done()
-
-			for k, group := range masterGroups {
-				err := group.RollingUpdate(c.Cloud, force, k8sClient)
-
-				resultsMutex.Lock()
-				results[k] = err
-				resultsMutex.Unlock()
-			}
-		}()
-	}
-
-	wg.Wait()
 
 	for _, err := range results {
 		if err != nil {
@@ -206,15 +215,15 @@ func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group, nodeMa
 	return n
 }
 
-func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, k8sClient *release_1_3.Clientset) error {
+func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, interval time.Duration, k8sClient *release_1_3.Clientset) error {
 	c := cloud.(awsup.AWSCloud)
 
 	update := n.NeedUpdate
 	if force {
 		update = append(update, n.Ready...)
 	}
-	for _, i := range update {
-		glog.Infof("Stopping instance %q in AWS ASG %q", *i.ASGInstance.InstanceId, n.ASGName)
+	for _, u := range update {
+		glog.Infof("Stopping instance %q in AWS ASG %q", *u.ASGInstance.InstanceId, n.ASGName)
 
 		// TODO: Evacuate through k8s first?
 
@@ -225,15 +234,15 @@ func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, k8sClient
 		// TODO: Batch termination, like a rolling-update
 
 		request := &ec2.TerminateInstancesInput{
-			InstanceIds: []*string{i.ASGInstance.InstanceId},
+			InstanceIds: []*string{u.ASGInstance.InstanceId},
 		}
 		_, err := c.EC2().TerminateInstances(request)
 		if err != nil {
-			return fmt.Errorf("error deleting instance %q: %v", i.ASGInstance.InstanceId, err)
+			return fmt.Errorf("error deleting instance %q: %v", u.ASGInstance.InstanceId, err)
 		}
 
 		// TODO: Wait for node to appear back in k8s
-		time.Sleep(time.Minute)
+		time.Sleep(interval)
 	}
 
 	return nil

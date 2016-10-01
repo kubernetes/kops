@@ -13,12 +13,15 @@ import (
 	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
+	"time"
 )
 
 type RollingUpdateClusterCmd struct {
-	Yes       bool
-	Force     bool
-	CloudOnly bool
+	Yes            bool
+	Force          bool
+	CloudOnly      bool
+	MasterInterval time.Duration
+	NodeInterval   time.Duration
 
 	cobraCommand *cobra.Command
 }
@@ -38,6 +41,8 @@ func init() {
 	cmd.Flags().BoolVar(&rollingupdateCluster.Yes, "yes", false, "perform rolling update without confirmation")
 	cmd.Flags().BoolVar(&rollingupdateCluster.Force, "force", false, "Force rolling update, even if no changes")
 	cmd.Flags().BoolVar(&rollingupdateCluster.CloudOnly, "cloudonly", false, "Perform rolling update without confirming progress with k8s")
+	cmd.Flags().DurationVar(&rollingupdateCluster.MasterInterval, "master-interval", 5*time.Minute, "Time to wait between restarting masters")
+	cmd.Flags().DurationVar(&rollingupdateCluster.NodeInterval, "node-interval", 2*time.Minute, "Time to wait between restarting nodes")
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		err := rollingupdateCluster.Run(args)
@@ -101,7 +106,11 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 		return err
 	}
 
-	d := &kutil.RollingUpdateCluster{}
+	d := &kutil.RollingUpdateCluster{
+		MasterInterval: c.MasterInterval,
+		NodeInterval:   c.NodeInterval,
+		Force:          c.Force,
+	}
 	d.Cloud = cloud
 
 	warnUnmatched := true
@@ -176,5 +185,5 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 		return nil
 	}
 
-	return d.RollingUpdate(groups, c.Force, k8sClient)
+	return d.RollingUpdate(groups, k8sClient)
 }
