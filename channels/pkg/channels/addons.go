@@ -2,6 +2,7 @@ package channels
 
 import (
 	"fmt"
+	"github.com/golang/glog"
 	"k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
@@ -10,20 +11,22 @@ import (
 )
 
 type Addons struct {
-	Channel   url.URL
-	APIObject *api.Addons
+	ChannelName     string
+	ChannelLocation url.URL
+	APIObject       *api.Addons
 }
 
-func LoadAddons(location *url.URL) (*Addons, error) {
+func LoadAddons(name string, location *url.URL) (*Addons, error) {
+	glog.V(2).Infof("Loading addons channel from %q", location)
 	data, err := vfs.Context.ReadFile(location.String())
 	if err != nil {
 		return nil, fmt.Errorf("error reading addons from %q: %v", location, err)
 	}
 
-	return ParseAddons(location, data)
+	return ParseAddons(name, location, data)
 }
 
-func ParseAddons(location *url.URL, data []byte) (*Addons, error) {
+func ParseAddons(name string, location *url.URL, data []byte) (*Addons, error) {
 	// Yaml can't parse empty strings
 	configString := string(data)
 	configString = strings.TrimSpace(configString)
@@ -36,7 +39,7 @@ func ParseAddons(location *url.URL, data []byte) (*Addons, error) {
 		}
 	}
 
-	return &Addons{Channel: *location, APIObject: apiObject}, nil
+	return &Addons{ChannelName: name, ChannelLocation: *location, APIObject: apiObject}, nil
 }
 
 func (a *Addons) GetCurrent() ([]*Addon, error) {
@@ -69,9 +72,10 @@ func (a *Addons) All() ([]*Addon, error) {
 		}
 
 		addon := &Addon{
-			Channel: a.Channel,
-			Spec:    s,
-			Name:    name,
+			ChannelName:     a.ChannelName,
+			ChannelLocation: a.ChannelLocation,
+			Spec:            s,
+			Name:            name,
 		}
 
 		addons = append(addons, addon)
