@@ -27,7 +27,7 @@ spec:
       dnsPolicy: Default  # Don't use cluster DNS (we are likely running before kube-dns)
       containers:
       - name: dns-controller
-        image: justinsb/dns-controller:1.3
+        image: kope/dns-controller:1.4.0
         command:
         - /usr/bin/dns-controller
         - --watch-ingress=false
