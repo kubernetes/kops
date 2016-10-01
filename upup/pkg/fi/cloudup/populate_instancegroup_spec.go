@@ -128,11 +128,8 @@ func defaultMasterMachineType(cluster *api.Cluster) string {
 // defaultImage returns the default Image, based on the cloudprovider
 func defaultImage(cluster *api.Cluster, channel *api.Channel) string {
 	if channel != nil {
-		for _, image := range channel.Spec.Images {
-			if image.ProviderID != cluster.Spec.CloudProvider {
-				continue
-			}
-
+		image := channel.FindImage(fi.CloudProviderID(cluster.Spec.CloudProvider))
+		if image != nil {
 			return image.Name
 		}
 	}
