@@ -288,6 +288,11 @@ type KubeletConfigSpec struct {
 	//// manage attachment/detachment of volumes scheduled to this node, and
 	//// disables kubelet from executing any attach/detach operations
 	//EnableControllerAttachDetach bool `json:"enableControllerAttachDetach"`
+
+	// networkPluginMTU is the MTU to be passed to the network plugin,
+	// and overrides the default MTU for cases where it cannot be automatically
+	// computed (such as IPSEC).
+	NetworkPluginMTU *int32 `json:"networkPluginMTU,omitEmpty" flag:"network-plugin-mtu"`
 }
 
 type KubeProxyConfig struct {
