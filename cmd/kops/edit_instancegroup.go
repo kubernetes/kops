@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -45,15 +44,6 @@ func (c *EditInstanceGroupCmd) Run(groupName string) error {
 	clusterRegistry, cluster, err := rootCommand.Cluster()
 	if err != nil {
 		return err
-	}
-
-	fullCluster, err := clusterRegistry.ReadCompletedConfig(cluster.Name)
-	if err != nil {
-		if os.IsNotExist(err) {
-			glog.Warning("cluster config not found; will not do full validation")
-		} else {
-			return err
-		}
 	}
 
 	channel, err := cloudup.ChannelForCluster(cluster)
@@ -120,16 +110,21 @@ func (c *EditInstanceGroupCmd) Run(groupName string) error {
 		return err
 	}
 
-	if fullCluster != nil {
-		err = fullGroup.CrossValidate(fullCluster, true)
-		if err != nil {
-			return err
-		}
-	} else {
-		err = fullGroup.Validate(true)
-		if err != nil {
-			return err
-		}
+	// We need the full cluster spec to perform deep validation
+	// Note that we don't write it back though
+	err = cluster.PerformAssignments()
+	if err != nil {
+		return fmt.Errorf("error populating configuration: %v", err)
+	}
+
+	fullCluster, err := cloudup.PopulateClusterSpec(cluster, clusterRegistry)
+	if err != nil {
+		return err
+	}
+
+	err = fullGroup.CrossValidate(fullCluster, true)
+	if err != nil {
+		return err
 	}
 
 	// Note we perform as much validation as we can, before writing a bad config
