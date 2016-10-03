@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/spf13/cobra"
+	"k8s.io/kops/upup/pkg/api/registry"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/kutil"
 )
@@ -35,7 +36,17 @@ func (c *ExportKubecfgCommand) Run(args []string) error {
 		return err
 	}
 
-	clusterRegistry, cluster, err := rootCommand.Cluster()
+	cluster, err := rootCommand.Cluster()
+	if err != nil {
+		return err
+	}
+
+	keyStore, err := registry.KeyStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	secretStore, err := registry.SecretStore(cluster)
 	if err != nil {
 		return err
 	}
@@ -49,8 +60,8 @@ func (c *ExportKubecfgCommand) Run(args []string) error {
 
 	x := &kutil.CreateKubecfg{
 		ClusterName:      clusterName,
-		KeyStore:         clusterRegistry.KeyStore(clusterName),
-		SecretStore:      clusterRegistry.SecretStore(cluster.Name),
+		KeyStore:         keyStore,
+		SecretStore:      secretStore,
 		MasterPublicName: master,
 	}
 	defer x.Close()

@@ -1,9 +1,10 @@
-package fi
+package secrets
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 	"os"
 )
@@ -12,9 +13,9 @@ type VFSSecretStore struct {
 	basedir vfs.Path
 }
 
-var _ SecretStore = &VFSSecretStore{}
+var _ fi.SecretStore = &VFSSecretStore{}
 
-func NewVFSSecretStore(basedir vfs.Path) SecretStore {
+func NewVFSSecretStore(basedir vfs.Path) fi.SecretStore {
 	c := &VFSSecretStore{
 		basedir: basedir,
 	}
@@ -29,7 +30,7 @@ func (c *VFSSecretStore) buildSecretPath(id string) vfs.Path {
 	return c.basedir.Join(id)
 }
 
-func (c *VFSSecretStore) FindSecret(id string) (*Secret, error) {
+func (c *VFSSecretStore) FindSecret(id string) (*fi.Secret, error) {
 	p := c.buildSecretPath(id)
 	s, err := c.loadSecret(p)
 	if err != nil {
@@ -51,7 +52,7 @@ func (c *VFSSecretStore) ListSecrets() ([]string, error) {
 	return ids, nil
 }
 
-func (c *VFSSecretStore) Secret(id string) (*Secret, error) {
+func (c *VFSSecretStore) Secret(id string) (*fi.Secret, error) {
 	s, err := c.FindSecret(id)
 	if err != nil {
 		return nil, err
@@ -62,7 +63,7 @@ func (c *VFSSecretStore) Secret(id string) (*Secret, error) {
 	return s, nil
 }
 
-func (c *VFSSecretStore) GetOrCreateSecret(id string, secret *Secret) (*Secret, bool, error) {
+func (c *VFSSecretStore) GetOrCreateSecret(id string, secret *fi.Secret) (*fi.Secret, bool, error) {
 	p := c.buildSecretPath(id)
 
 	for i := 0; i < 2; i++ {
@@ -99,14 +100,14 @@ func (c *VFSSecretStore) GetOrCreateSecret(id string, secret *Secret) (*Secret, 
 	return s, true, nil
 }
 
-func (c *VFSSecretStore) loadSecret(p vfs.Path) (*Secret, error) {
+func (c *VFSSecretStore) loadSecret(p vfs.Path) (*fi.Secret, error) {
 	data, err := p.ReadFile()
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil
 		}
 	}
-	s := &Secret{}
+	s := &fi.Secret{}
 	err = json.Unmarshal(data, s)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing secret from %q: %v", p, err)
@@ -115,7 +116,7 @@ func (c *VFSSecretStore) loadSecret(p vfs.Path) (*Secret, error) {
 }
 
 // createSecret writes the secret, but only if it does not exists
-func (c *VFSSecretStore) createSecret(s *Secret, p vfs.Path) error {
+func (c *VFSSecretStore) createSecret(s *fi.Secret, p vfs.Path) error {
 	data, err := json.Marshal(s)
 	if err != nil {
 		return fmt.Errorf("error serializing secret: %v", err)
