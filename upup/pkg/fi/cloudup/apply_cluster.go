@@ -3,7 +3,9 @@ package cloudup
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/upup/pkg/api"
+	"k8s.io/kops/upup/pkg/api/registry"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -51,8 +53,7 @@ type ApplyClusterCmd struct {
 	//  url with hash: <hex>@http://... or <hex>@https://...
 	Assets []string
 
-	// ClusterRegistry manages the cluster configuration storage
-	ClusterRegistry *api.ClusterRegistry
+	Clientset simple.Clientset
 
 	// DryRun is true if this is only a dry run
 	DryRun bool
@@ -83,26 +84,24 @@ func (c *ApplyClusterCmd) Run() error {
 		return fmt.Errorf("DNSZone not set")
 	}
 
-	if c.ClusterRegistry == nil {
-		return fmt.Errorf("ClusterRegistry is required")
-	}
-
-	instanceGroupRegistry, err := c.ClusterRegistry.InstanceGroups(c.Cluster.Name)
-	if err != nil {
-		return err
-	}
-
 	l := &Loader{}
 	l.Init()
 	l.Cluster = c.Cluster
 
-	keyStore := c.ClusterRegistry.KeyStore(cluster.Name)
-	keyStore.(*fi.VFSCAStore).DryRun = c.DryRun
-	secretStore := c.ClusterRegistry.SecretStore(cluster.Name)
-
-	configBase, err := c.ClusterRegistry.ClusterBase(cluster.Name)
+	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
 	if err != nil {
-		return fmt.Errorf("error getting config base: %v", err)
+		return fmt.Errorf("error parsing config base %q: %v", cluster.Spec.ConfigBase)
+	}
+
+	keyStore, err := registry.KeyStore(cluster)
+	if err != nil {
+		return err
+	}
+	keyStore.(*fi.VFSCAStore).DryRun = c.DryRun
+
+	secretStore, err := registry.SecretStore(cluster)
+	if err != nil {
+		return err
 	}
 
 	channels := []string{
@@ -490,13 +489,13 @@ func (c *ApplyClusterCmd) Run() error {
 	c.Target = target
 
 	if !dryRun {
-		err = c.ClusterRegistry.WriteCompletedConfig(c.Cluster)
+		err = registry.WriteConfig(configBase.Join(registry.PathClusterCompleted), c.Cluster)
 		if err != nil {
 			return fmt.Errorf("error writing completed cluster spec: %v", err)
 		}
 
 		for _, g := range c.InstanceGroups {
-			err := instanceGroupRegistry.Update(g)
+			_, err := c.Clientset.InstanceGroups(c.Cluster.Name).Update(g)
 			if err != nil {
 				return fmt.Errorf("error writing InstanceGroup %q to registry: %v", g.Name, err)
 			}
@@ -590,7 +589,7 @@ func (c *ApplyClusterCmd) upgradeSpecs() error {
 		return err
 	}
 
-	fullCluster, err := PopulateClusterSpec(c.Cluster, c.ClusterRegistry)
+	fullCluster, err := PopulateClusterSpec(c.Cluster)
 	if err != nil {
 		return err
 	}

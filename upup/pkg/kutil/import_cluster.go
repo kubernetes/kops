@@ -6,7 +6,10 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/upup/pkg/api"
+	"k8s.io/kops/upup/pkg/api/registry"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -19,7 +22,7 @@ type ImportCluster struct {
 	ClusterName string
 	Cloud       fi.Cloud
 
-	ClusterRegistry *api.ClusterRegistry
+	Clientset simple.Clientset
 }
 
 func (x *ImportCluster) ImportAWSCluster() error {
@@ -43,6 +46,12 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	cluster.Spec.KubeControllerManager = &api.KubeControllerManagerConfig{}
 
 	cluster.Spec.Channel = api.DefaultChannel
+
+	configBase, err := x.Clientset.Clusters().(*vfsclientset.ClusterVFS).ConfigBase(clusterName)
+	if err != nil {
+		return fmt.Errorf("error building ConfigBase for cluster: %v", err)
+	}
+	cluster.Spec.ConfigBase = configBase.Path()
 
 	channel, err := api.LoadChannel(cluster.Spec.Channel)
 	if err != nil {
@@ -361,7 +370,10 @@ func (x *ImportCluster) ImportAWSCluster() error {
 
 	//b.Context = "aws_" + instancePrefix
 
-	keyStore := x.ClusterRegistry.KeyStore(clusterName)
+	keyStore, err := registry.KeyStore(cluster)
+	if err != nil {
+		return err
+	}
 
 	//caCert, err := masterSSH.Join("ca.crt").ReadFile()
 	caCert, err := conf.ParseCert("CA_CERT")
@@ -432,7 +444,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 		fullInstanceGroups = append(fullInstanceGroups, full)
 	}
 
-	err = api.CreateClusterConfig(x.ClusterRegistry, cluster, fullInstanceGroups)
+	err = registry.CreateClusterConfig(x.Clientset, cluster, fullInstanceGroups)
 	if err != nil {
 		return err
 	}

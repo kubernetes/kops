@@ -41,19 +41,19 @@ func init() {
 }
 
 func (c *CreateInstanceGroupCmd) Run(groupName string) error {
-	_, cluster, err := rootCommand.Cluster()
+	cluster, err := rootCommand.Cluster()
+
+	clientset, err := rootCommand.Clientset()
+	if err != nil {
+		return err
+	}
 
 	channel, err := cloudup.ChannelForCluster(cluster)
 	if err != nil {
 		return err
 	}
 
-	instanceGroupStore, err := rootCommand.InstanceGroupRegistry()
-	if err != nil {
-		return err
-	}
-
-	existing, err := instanceGroupStore.Find(groupName)
+	existing, err := clientset.InstanceGroups(cluster.Name).Get(groupName)
 	if err != nil {
 		return err
 	}
@@ -104,9 +104,9 @@ func (c *CreateInstanceGroupCmd) Run(groupName string) error {
 		return err
 	}
 
-	err = instanceGroupStore.Create(group)
+	_, err = clientset.InstanceGroups(cluster.Name).Create(group)
 	if err != nil {
-		return fmt.Errorf("error storing instancegroup: %v", err)
+		return fmt.Errorf("error storing InstanceGroup: %v", err)
 	}
 
 	return nil

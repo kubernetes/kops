@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/api"
+	"k8s.io/kops/upup/pkg/api/registry"
 	"k8s.io/kops/util/pkg/tables"
+	k8sapi "k8s.io/kubernetes/pkg/api"
 	"strings"
 )
 
@@ -36,34 +38,20 @@ func init() {
 }
 
 func (c *GetClustersCmd) Run(args []string) error {
-	clusterRegistry, err := rootCommand.ClusterRegistry()
+	client, err := rootCommand.Clientset()
+	if err != nil {
+		return err
+	}
+
+	clusterList, err := client.Clusters().List(k8sapi.ListOptions{})
 	if err != nil {
 		return err
 	}
 
 	var clusters []*api.Cluster
-
-	clusterNames := args
-	if len(args) == 0 {
-		clusterNames, err = clusterRegistry.List()
-		if err != nil {
-			return err
-		}
+	for i := range clusterList.Items {
+		clusters = append(clusters, &clusterList.Items[i])
 	}
-
-	for _, clusterName := range clusterNames {
-		cluster, err := clusterRegistry.Find(clusterName)
-		if err != nil {
-			return err
-		}
-
-		if cluster == nil {
-			return fmt.Errorf("cluster not found %q", clusterName)
-		}
-
-		clusters = append(clusters, cluster)
-	}
-
 	if len(clusters) == 0 {
 		fmt.Fprintf(os.Stderr, "No clusters found\n")
 		return nil
@@ -90,11 +78,16 @@ func (c *GetClustersCmd) Run(args []string) error {
 		if c.FullSpec {
 			var fullSpecs []*api.Cluster
 			for _, cluster := range clusters {
-				spec, err := clusterRegistry.ReadCompletedConfig(cluster.Name)
+				configBase, err := registry.ConfigBase(cluster)
 				if err != nil {
 					return fmt.Errorf("error reading full cluster spec for %q: %v", cluster.Name, err)
 				}
-				fullSpecs = append(fullSpecs, spec)
+				fullSpec := &api.Cluster{}
+				err = registry.ReadConfig(configBase.Join(registry.PathClusterCompleted), fullSpec)
+				if err != nil {
+					return fmt.Errorf("error reading full cluster spec for %q: %v", cluster.Name, err)
+				}
+				fullSpecs = append(fullSpecs, fullSpec)
 			}
 			clusters = fullSpecs
 		}

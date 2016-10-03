@@ -8,7 +8,9 @@ import (
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/api"
+	"k8s.io/kops/upup/pkg/api/registry"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
 )
 
@@ -39,7 +41,7 @@ func (c *EditClusterCmd) Run(args []string) error {
 		return err
 	}
 
-	clusterRegistry, oldCluster, err := rootCommand.Cluster()
+	oldCluster, err := rootCommand.Cluster()
 	if err != nil {
 		return err
 	}
@@ -49,14 +51,18 @@ func (c *EditClusterCmd) Run(args []string) error {
 		return err
 	}
 
-	instanceGroupRegistry, err := rootCommand.InstanceGroupRegistry()
+	clientset, err := rootCommand.Clientset()
 	if err != nil {
 		return err
 	}
 
-	instancegroups, err := instanceGroupRegistry.ReadAll()
+	list, err := clientset.InstanceGroups(oldCluster.Name).List(k8sapi.ListOptions{})
 	if err != nil {
 		return err
+	}
+	var instancegroups []*api.InstanceGroup
+	for i := range list.Items {
+		instancegroups = append(instancegroups, &list.Items[i])
 	}
 
 	var (
@@ -96,7 +102,7 @@ func (c *EditClusterCmd) Run(args []string) error {
 		return fmt.Errorf("error populating configuration: %v", err)
 	}
 
-	fullCluster, err := cloudup.PopulateClusterSpec(newCluster, clusterRegistry)
+	fullCluster, err := cloudup.PopulateClusterSpec(newCluster)
 	if err != nil {
 		return err
 	}
@@ -106,13 +112,18 @@ func (c *EditClusterCmd) Run(args []string) error {
 		return err
 	}
 
-	// Note we perform as much validation as we can, before writing a bad config
-	err = clusterRegistry.Update(newCluster)
+	configBase, err := registry.ConfigBase(newCluster)
 	if err != nil {
 		return err
 	}
 
-	err = clusterRegistry.WriteCompletedConfig(fullCluster)
+	// Note we perform as much validation as we can, before writing a bad config
+	_, err = clientset.Clusters().Update(newCluster)
+	if err != nil {
+		return err
+	}
+
+	err = registry.WriteConfig(configBase.Join(registry.PathClusterCompleted), fullCluster)
 	if err != nil {
 		return fmt.Errorf("error writing completed cluster spec: %v", err)
 	}

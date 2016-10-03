@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/util/pkg/tables"
+	k8sapi "k8s.io/kubernetes/pkg/api"
 )
 
 type GetInstanceGroupsCmd struct {
@@ -34,19 +35,26 @@ func init() {
 }
 
 func (c *GetInstanceGroupsCmd) Run(args []string) error {
-	registry, err := rootCommand.InstanceGroupRegistry()
+	clusterName := rootCommand.ClusterName()
+	if clusterName == "" {
+		return fmt.Errorf("--name is required")
+	}
+
+	clientset, err := rootCommand.Clientset()
 	if err != nil {
 		return err
 	}
 
-	instancegroups, err := registry.ReadAll()
+	list, err := clientset.InstanceGroups(clusterName).List(k8sapi.ListOptions{})
 	if err != nil {
 		return err
 	}
 
+	var instancegroups []*api.InstanceGroup
 	if len(args) != 0 {
 		m := make(map[string]*api.InstanceGroup)
-		for _, ig := range instancegroups {
+		for i := range list.Items {
+			ig := &list.Items[i]
 			m[ig.Name] = ig
 		}
 		instancegroups = make([]*api.InstanceGroup, 0, len(args))
@@ -56,6 +64,11 @@ func (c *GetInstanceGroupsCmd) Run(args []string) error {
 				return fmt.Errorf("instancegroup not found %q", arg)
 			}
 
+			instancegroups = append(instancegroups, ig)
+		}
+	} else {
+		for i := range list.Items {
+			ig := &list.Items[i]
 			instancegroups = append(instancegroups, ig)
 		}
 	}

@@ -2,16 +2,18 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
-	"os"
-	"strings"
-
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	"io/ioutil"
+	"k8s.io/kops/upup/pkg/api"
+	"k8s.io/kops/upup/pkg/api/registry"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/upup/pkg/kutil"
+	k8sapi "k8s.io/kubernetes/pkg/api"
+	"os"
+	"strings"
 )
 
 type UpdateClusterCmd struct {
@@ -75,19 +77,33 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 		}
 	}
 
-	clusterRegistry, cluster, err := rootCommand.Cluster()
+	cluster, err := rootCommand.Cluster()
 	if err != nil {
 		return err
 	}
 
-	instanceGroupRegistry, err := rootCommand.InstanceGroupRegistry()
+	keyStore, err := registry.KeyStore(cluster)
 	if err != nil {
 		return err
 	}
 
-	instanceGroups, err := instanceGroupRegistry.ReadAll()
+	secretStore, err := registry.SecretStore(cluster)
 	if err != nil {
 		return err
+	}
+
+	clientset, err := rootCommand.Clientset()
+	if err != nil {
+		return err
+	}
+
+	list, err := clientset.InstanceGroups(cluster.Name).List(k8sapi.ListOptions{})
+	if err != nil {
+		return err
+	}
+	var instanceGroups []*api.InstanceGroup
+	for i := range list.Items {
+		instanceGroups = append(instanceGroups, &list.Items[i])
 	}
 
 	if c.SSHPublicKey != "" {
@@ -98,10 +114,6 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 		if err != nil {
 			return fmt.Errorf("error reading SSH key file %q: %v", c.SSHPublicKey, err)
 		}
-		keyStore, err := rootCommand.KeyStore()
-		if err != nil {
-			return err
-		}
 		err = keyStore.AddSSHPublicKey(fi.SecretNameSSHPrimary, authorized)
 		if err != nil {
 			return fmt.Errorf("error addding SSH public key: %v", err)
@@ -109,13 +121,13 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 	}
 
 	applyCmd := &cloudup.ApplyClusterCmd{
-		Cluster:         cluster,
-		InstanceGroups:  instanceGroups,
-		Models:          strings.Split(c.Models, ","),
-		ClusterRegistry: clusterRegistry,
-		TargetName:      targetName,
-		OutDir:          c.OutDir,
-		DryRun:          isDryrun,
+		Cluster:        cluster,
+		InstanceGroups: instanceGroups,
+		Models:         strings.Split(c.Models, ","),
+		Clientset:      clientset,
+		TargetName:     targetName,
+		OutDir:         c.OutDir,
+		DryRun:         isDryrun,
 	}
 	err = applyCmd.Run()
 	if err != nil {
@@ -140,8 +152,6 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 			hasKubecfg = true
 		}
 
-		keyStore := clusterRegistry.KeyStore(cluster.Name)
-
 		kubecfgCert, err := keyStore.FindCert("kubecfg")
 		if err != nil {
 			// This is only a convenience; don't error because of it
@@ -153,7 +163,7 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 			x := &kutil.CreateKubecfg{
 				ClusterName:      cluster.Name,
 				KeyStore:         keyStore,
-				SecretStore:      clusterRegistry.SecretStore(cluster.Name),
+				SecretStore:      secretStore,
 				MasterPublicName: cluster.Spec.MasterPublicName,
 			}
 			defer x.Close()
