@@ -47,12 +47,12 @@ func (c *ImportClusterCmd) Run() error {
 		return fmt.Errorf("error initializing AWS client: %v", err)
 	}
 
-	clusterRegistry, err := rootCommand.ClusterRegistry()
+	clientset, err := rootCommand.Clientset()
 	if err != nil {
 		return err
 	}
 
-	cluster, err := clusterRegistry.Find(clusterName)
+	cluster, err := clientset.Clusters().Get(clusterName)
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func (c *ImportClusterCmd) Run() error {
 	d := &kutil.ImportCluster{}
 	d.ClusterName = clusterName
 	d.Cloud = cloud
-	d.ClusterRegistry = clusterRegistry
+	d.Clientset = clientset
 
 	err = d.ImportAWSCluster()
 	if err != nil {

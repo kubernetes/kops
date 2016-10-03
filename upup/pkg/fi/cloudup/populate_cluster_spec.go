@@ -6,6 +6,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/api"
+	"k8s.io/kops/upup/pkg/api/registry"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -27,9 +28,6 @@ type populateClusterSpec struct {
 	// Models is a list of cloudup models to apply
 	Models []string
 
-	// ClusterRegistry manages the cluster configuration storage
-	ClusterRegistry *api.ClusterRegistry
-
 	// fullCluster holds the built completed cluster spec
 	fullCluster *api.Cluster
 }
@@ -41,17 +39,16 @@ func findModelStore() (vfs.Path, error) {
 
 // PopulateClusterSpec takes a user-specified cluster spec, and computes the full specification that should be set on the cluster.
 // We do this so that we don't need any real "brains" on the node side.
-func PopulateClusterSpec(cluster *api.Cluster, clusterRegistry *api.ClusterRegistry) (*api.Cluster, error) {
+func PopulateClusterSpec(cluster *api.Cluster) (*api.Cluster, error) {
 	modelStore, err := findModelStore()
 	if err != nil {
 		return nil, err
 	}
 
 	c := &populateClusterSpec{
-		InputCluster:    cluster,
-		ModelStore:      modelStore,
-		Models:          []string{"config"},
-		ClusterRegistry: clusterRegistry,
+		InputCluster: cluster,
+		ModelStore:   modelStore,
+		Models:       []string{"config"},
 	}
 	err = c.run()
 	if err != nil {
@@ -137,14 +134,17 @@ func (c *populateClusterSpec) run() error {
 		}
 	}
 
-	if c.ClusterRegistry == nil {
-		return fmt.Errorf("ClusterRegistry is required")
+	keyStore, err := registry.KeyStore(cluster)
+	if err != nil {
+		return err
 	}
-
-	keyStore := c.ClusterRegistry.KeyStore(cluster.Name)
 	// Always assume a dry run during this phase
 	keyStore.(*fi.VFSCAStore).DryRun = true
-	secretStore := c.ClusterRegistry.SecretStore(cluster.Name)
+
+	secretStore, err := registry.SecretStore(cluster)
+	if err != nil {
+		return err
+	}
 
 	if vfs.IsClusterReadable(secretStore.VFSPath()) {
 		vfsPath := secretStore.VFSPath()
@@ -162,15 +162,15 @@ func (c *populateClusterSpec) run() error {
 		return fmt.Errorf("keyStore path is not cluster readable: %v", keyStore.VFSPath())
 	}
 
-	clusterBasePath, err := c.ClusterRegistry.ClusterBase(cluster.Name)
+	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
 	if err != nil {
-		return err
+		return fmt.Errorf("error parsing ConfigBase %q: %v", cluster.Spec.ConfigBase, err)
 	}
-	if vfs.IsClusterReadable(clusterBasePath) {
-		cluster.Spec.ConfigStore = clusterBasePath.Path()
+	if vfs.IsClusterReadable(configBase) {
+		cluster.Spec.ConfigStore = configBase.Path()
 	} else {
 		// We could implement this approach, but it seems better to get all clouds using cluster-readable storage
-		return fmt.Errorf("ClusterBase path is not cluster readable: %v", clusterBasePath)
+		return fmt.Errorf("ConfigBase path is not cluster readable: %v", cluster.Spec.ConfigBase)
 	}
 
 	// Normalize k8s version

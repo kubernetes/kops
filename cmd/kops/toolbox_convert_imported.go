@@ -7,6 +7,7 @@ import (
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/kutil"
+	k8sapi "k8s.io/kubernetes/pkg/api"
 )
 
 type ConvertImportedCmd struct {
@@ -37,17 +38,24 @@ func init() {
 }
 
 func (c *ConvertImportedCmd) Run() error {
-	clusterRegistry, cluster, err := rootCommand.Cluster()
+	cluster, err := rootCommand.Cluster()
 	if err != nil {
 		return err
 	}
 
-	instanceGroupRegistry, err := rootCommand.InstanceGroupRegistry()
+	clientset, err := rootCommand.Clientset()
 	if err != nil {
 		return err
 	}
 
-	instanceGroups, err := instanceGroupRegistry.ReadAll()
+	list, err := clientset.InstanceGroups(cluster.Name).List(k8sapi.ListOptions{})
+	if err != nil {
+		return err
+	}
+	var instanceGroups []*api.InstanceGroup
+	for i := range list.Items {
+		instanceGroups = append(instanceGroups, &list.Items[i])
+	}
 
 	if cluster.Annotations[api.AnnotationNameManagement] != api.AnnotationValueManagementImported {
 		return fmt.Errorf("cluster %q does not appear to be a cluster imported using kops import", cluster.Name)
@@ -93,13 +101,13 @@ func (c *ConvertImportedCmd) Run() error {
 	}
 
 	d := &kutil.ConvertKubeupCluster{
-		NewClusterName:  c.NewClusterName,
-		OldClusterName:  oldClusterName,
-		Cloud:           cloud,
-		ClusterConfig:   cluster,
-		InstanceGroups:  instanceGroups,
-		ClusterRegistry: clusterRegistry,
-		Channel:         channel,
+		NewClusterName: c.NewClusterName,
+		OldClusterName: oldClusterName,
+		Cloud:          cloud,
+		ClusterConfig:  cluster,
+		InstanceGroups: instanceGroups,
+		Clientset:      clientset,
+		Channel:        channel,
 	}
 
 	err = d.Upgrade()

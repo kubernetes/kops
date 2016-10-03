@@ -41,17 +41,17 @@ func (c *DeleteInstanceceGroupCmd) Run(groupName string) error {
 		return fmt.Errorf("name is required")
 	}
 
-	_, cluster, err := rootCommand.Cluster()
+	cluster, err := rootCommand.Cluster()
 	if err != nil {
 		return err
 	}
 
-	registry, err := rootCommand.InstanceGroupRegistry()
+	clientset, err := rootCommand.Clientset()
 	if err != nil {
 		return err
 	}
 
-	group, err := registry.Find(groupName)
+	group, err := clientset.InstanceGroups(cluster.Name).Get(groupName)
 	if err != nil {
 		return fmt.Errorf("error reading InstanceGroup %q: %v", groupName, err)
 	}
@@ -67,7 +67,7 @@ func (c *DeleteInstanceceGroupCmd) Run(groupName string) error {
 	d := &kutil.DeleteInstanceGroup{}
 	d.Cluster = cluster
 	d.Cloud = cloud
-	d.InstanceGroupRegistry = registry
+	d.Clientset = clientset
 
 	err = d.DeleteInstanceGroup(group)
 	if err != nil {
