@@ -18,6 +18,8 @@ import (
 
 // DNSController applies the desired DNS state to the DNS backend
 type DNSController struct {
+	zoneRules *ZoneRules
+
 	util.Stoppable
 
 	// zones is the DNS provider
@@ -59,13 +61,14 @@ type DNSControllerScope struct {
 var _ Scope = &DNSControllerScope{}
 
 // NewDnsController creates a DnsController
-func NewDNSController(provider dnsprovider.Interface) (*DNSController, error) {
+func NewDNSController(provider dnsprovider.Interface, zoneRules *ZoneRules) (*DNSController, error) {
 	if provider == nil {
 		return nil, fmt.Errorf("must pass provider")
 	}
 
 	c := &DNSController{
-		scopes: make(map[string]*DNSControllerScope),
+		scopes:    make(map[string]*DNSControllerScope),
+		zoneRules: zoneRules,
 	}
 
 	zones, ok := provider.Zones()
@@ -213,7 +216,7 @@ func (c *DNSController) runOnce() error {
 		oldValueMap = c.lastSuccessfulSnapshot.recordValues
 	}
 
-	op, err := newDNSOp(c.zones)
+	op, err := newDNSOp(c.zoneRules, c.zones)
 	if err != nil {
 		return err
 	}
@@ -275,7 +278,7 @@ type dnsOp struct {
 	zones         map[string]dnsprovider.Zone
 }
 
-func newDNSOp(zonesProvider dnsprovider.Zones) (*dnsOp, error) {
+func newDNSOp(zoneRules *ZoneRules, zonesProvider dnsprovider.Zones) (*dnsOp, error) {
 	o := &dnsOp{
 		zonesProvider: zonesProvider,
 	}
@@ -284,10 +287,34 @@ func newDNSOp(zonesProvider dnsprovider.Zones) (*dnsOp, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error querying for zones: %v", err)
 	}
-	zoneMap := make(map[string]dnsprovider.Zone)
+
+	// First we build up a map of all zones by name,
+	// then we go through and pick the "correct" zone for each name
+	allZoneMap := make(map[string][]dnsprovider.Zone)
 	for _, zone := range zones {
 		name := EnsureDotSuffix(zone.Name())
-		zoneMap[name] = zone
+		allZoneMap[name] = append(allZoneMap[name], zone)
+	}
+
+	zoneMap := make(map[string]dnsprovider.Zone)
+	for name, zones := range allZoneMap {
+		var matches []dnsprovider.Zone
+		for _, zone := range zones {
+			if zoneRules.MatchesExplicitly(zone) {
+				matches = append(matches, zone)
+			}
+		}
+
+		if len(matches) == 0 && zoneRules.Wildcard {
+			// No explicit matches but wildcard; treat everything as matching
+			matches = append(matches, zones...)
+		}
+
+		if len(matches) == 1 {
+			zoneMap[name] = matches[0]
+		} else if len(matches) > 1 {
+			glog.Warningf("Found multiple zones for name %q, won't manage zone (To fix: provide zone mapping flag with ID of zone)", name)
+		}
 	}
 	o.zones = zoneMap
 

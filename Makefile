@@ -14,7 +14,9 @@ GOVERSION=1.6
 # See http://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 
-TAG=1.4
+# Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
+DNS_CONTROLLER_TAG=1.4.1
+PROTOKUBE_TAG=1.4.0
 
 ifndef VERSION
   VERSION := git-$(shell git describe --always)
@@ -123,10 +125,10 @@ protokube-build-in-docker: protokube-builder-image
 	docker run -it -e VERSION=${VERSION} -v `pwd`:/src protokube-builder /onbuild.sh
 
 protokube-image: protokube-build-in-docker
-	docker build -t ${DOCKER_REGISTRY}/protokube:${TAG} -f images/protokube/Dockerfile .
+	docker build -t ${DOCKER_REGISTRY}/protokube:${PROTOKUBE_TAG} -f images/protokube/Dockerfile .
 
 protokube-push: protokube-image
-	docker push ${DOCKER_REGISTRY}/protokube:${TAG}
+	docker push ${DOCKER_REGISTRY}/protokube:${PROTOKUBE_TAG}
 
 
 
@@ -154,10 +156,10 @@ dns-controller-build-in-docker: dns-controller-builder-image
 	docker run -it -e VERSION=${VERSION} -v `pwd`:/src dns-controller-builder /onbuild.sh
 
 dns-controller-image: dns-controller-build-in-docker
-	docker build -t ${DOCKER_REGISTRY}/dns-controller:${TAG}  -f images/dns-controller/Dockerfile .
+	docker build -t ${DOCKER_REGISTRY}/dns-controller:${DNS_CONTROLLER_TAG}  -f images/dns-controller/Dockerfile .
 
 dns-controller-push: dns-controller-image
-	docker push ${DOCKER_REGISTRY}/dns-controller:${TAG}
+	docker push ${DOCKER_REGISTRY}/dns-controller:${DNS_CONTROLLER_TAG}
 
 # --------------------------------------------------
 # development targets
