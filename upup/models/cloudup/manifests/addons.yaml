@@ -11,5 +11,5 @@ managedFile/{{ ClusterName }}-addons-bootstrap-core:
   contents: resources/addons/core/v1.4.0.yaml
 
 managedFile/{{ ClusterName }}-addons-bootstrap-dns-controller:
-  location: addons/dns-controller/v1.4.0.yaml
-  contents: resources/addons/dns-controller/v1.4.0.yaml
+  location: addons/dns-controller/v1.4.1.yaml
+  contents: resources/addons/dns-controller/v1.4.1.yaml
