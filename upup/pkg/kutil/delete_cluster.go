@@ -356,7 +356,11 @@ func DeleteInstance(cloud fi.Cloud, t *ResourceTracker) error {
 	}
 	_, err := c.EC2().TerminateInstances(request)
 	if err != nil {
-		return fmt.Errorf("error deleting instance %q: %v", id, err)
+		if awsup.AWSErrorCode(err) == "InvalidInstanceID.NotFound" {
+			glog.V(2).Infof("Got InvalidInstanceID.NotFound error deleting instance %q; will treat as already-deleted")
+		} else {
+			return fmt.Errorf("error deleting Instance %q: %v", id, err)
+		}
 	}
 	return nil
 }
