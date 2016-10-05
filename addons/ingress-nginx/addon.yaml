@@ -1,6 +1,6 @@
 kind: Addons
 metadata:
-  name: kubernetes-dashboard
+  name: ingress-nginx
 spec:
   addons:
   - version: 1.4.0
