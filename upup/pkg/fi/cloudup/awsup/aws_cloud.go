@@ -101,6 +101,11 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		c := &awsCloudImplementation{region: region}
 
 		config := aws.NewConfig().WithRegion(region)
+
+		// This avoids a confusing error message when we fail to get credentials
+		// e.g. https://github.com/kubernetes/kops/issues/605
+		config = config.WithCredentialsChainVerboseErrors(true)
+
 		c.ec2 = ec2.New(session.New(), config)
 		c.iam = iam.New(session.New(), config)
 		c.elb = elb.New(session.New(), config)
