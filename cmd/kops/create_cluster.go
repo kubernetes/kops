@@ -420,7 +420,6 @@ func (c *CreateClusterCmd) Run(args []string) error {
 
 	applyCmd := &cloudup.ApplyClusterCmd{
 		Cluster:        fullCluster,
-		InstanceGroups: fullInstanceGroups,
 		Models:         strings.Split(c.Models, ","),
 		Clientset:      clientset,
 		TargetName:     targetName,
