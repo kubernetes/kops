@@ -231,7 +231,8 @@ func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, interval 
 		update = append(update, n.Ready...)
 	}
 	for _, u := range update {
-		glog.Infof("Stopping instance %q in AWS ASG %q", *u.ASGInstance.InstanceId, n.ASGName)
+		instanceID := aws.StringValue(u.ASGInstance.InstanceId)
+		glog.Infof("Stopping instance %q in AWS ASG %q", instanceID, n.ASGName)
 
 		// TODO: Evacuate through k8s first?
 
@@ -246,7 +247,7 @@ func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, interval 
 		}
 		_, err := c.EC2().TerminateInstances(request)
 		if err != nil {
-			return fmt.Errorf("error deleting instance %q: %v", u.ASGInstance.InstanceId, err)
+			return fmt.Errorf("error deleting instance %q: %v", instanceID, err)
 		}
 
 		// TODO: Wait for node to appear back in k8s
