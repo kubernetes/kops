@@ -5,13 +5,11 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"io/ioutil"
-	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/api/registry"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/upup/pkg/kutil"
-	k8sapi "k8s.io/kubernetes/pkg/api"
 	"os"
 	"strings"
 )
@@ -97,15 +95,6 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 		return err
 	}
 
-	list, err := clientset.InstanceGroups(cluster.Name).List(k8sapi.ListOptions{})
-	if err != nil {
-		return err
-	}
-	var instanceGroups []*api.InstanceGroup
-	for i := range list.Items {
-		instanceGroups = append(instanceGroups, &list.Items[i])
-	}
-
 	if c.SSHPublicKey != "" {
 		fmt.Fprintf(os.Stderr, "--ssh-public-key on update is deprecated - please use `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub` instead\n", cluster.Name)
 
@@ -121,13 +110,12 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 	}
 
 	applyCmd := &cloudup.ApplyClusterCmd{
-		Cluster:        cluster,
-		InstanceGroups: instanceGroups,
-		Models:         strings.Split(c.Models, ","),
-		Clientset:      clientset,
-		TargetName:     targetName,
-		OutDir:         c.OutDir,
-		DryRun:         isDryrun,
+		Cluster:    cluster,
+		Models:     strings.Split(c.Models, ","),
+		Clientset:  clientset,
+		TargetName: targetName,
+		OutDir:     c.OutDir,
+		DryRun:     isDryrun,
 	}
 	err = applyCmd.Run()
 	if err != nil {

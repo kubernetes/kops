@@ -17,6 +17,7 @@ import (
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
+	k8sapi "k8s.io/kubernetes/pkg/api"
 	"os"
 	"strings"
 )
@@ -60,6 +61,18 @@ type ApplyClusterCmd struct {
 }
 
 func (c *ApplyClusterCmd) Run() error {
+	if c.InstanceGroups == nil {
+		list, err := c.Clientset.InstanceGroups(c.Cluster.Name).List(k8sapi.ListOptions{})
+		if err != nil {
+			return err
+		}
+		var instanceGroups []*api.InstanceGroup
+		for i := range list.Items {
+			instanceGroups = append(instanceGroups, &list.Items[i])
+		}
+		c.InstanceGroups = instanceGroups
+	}
+
 	modelStore, err := findModelStore()
 	if err != nil {
 		return err
