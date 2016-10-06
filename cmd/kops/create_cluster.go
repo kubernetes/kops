@@ -146,12 +146,6 @@ func (c *CreateClusterCmd) Run(args []string) error {
 
 	cluster = &api.Cluster{}
 
-	configBase, err := clientset.Clusters().(*vfsclientset.ClusterVFS).ConfigBase(clusterName)
-	if err != nil {
-		return fmt.Errorf("error building ConfigBase for cluster: %v", err)
-	}
-	cluster.Spec.ConfigBase = configBase.Path()
-
 	channel, err := api.LoadChannel(c.Channel)
 	if err != nil {
 		return err
@@ -161,7 +155,11 @@ func (c *CreateClusterCmd) Run(args []string) error {
 	}
 	cluster.Spec.Channel = c.Channel
 
-	var instanceGroups []*api.InstanceGroup
+	configBase, err := clientset.Clusters().(*vfsclientset.ClusterVFS).ConfigBase(clusterName)
+	if err != nil {
+		return fmt.Errorf("error building ConfigBase for cluster: %v", err)
+	}
+	cluster.Spec.ConfigBase = configBase.Path()
 
 	cluster.Spec.Networking = &api.NetworkingSpec{}
 	switch c.Networking {
@@ -195,14 +193,7 @@ func (c *CreateClusterCmd) Run(args []string) error {
 
 	var masters []*api.InstanceGroup
 	var nodes []*api.InstanceGroup
-
-	for _, group := range instanceGroups {
-		if group.IsMaster() {
-			masters = append(masters, group)
-		} else {
-			nodes = append(nodes, group)
-		}
-	}
+	var instanceGroups []*api.InstanceGroup
 
 	if c.MasterZones == "" {
 		if len(masters) == 0 {
@@ -244,7 +235,7 @@ func (c *CreateClusterCmd) Run(args []string) error {
 
 	if len(cluster.Spec.EtcdClusters) == 0 {
 		zones := sets.NewString()
-		for _, group := range instanceGroups {
+		for _, group := range masters {
 			for _, zone := range group.Spec.Zones {
 				zones.Insert(zone)
 			}

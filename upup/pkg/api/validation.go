@@ -19,7 +19,7 @@ func (c *Cluster) Validate(strict bool) error {
 	specPath := field.NewPath("Cluster").Child("Spec")
 
 	if c.Name == "" {
-		return fmt.Errorf("Cluster Name is required (e.g. --name=mycluster.myzone.com)")
+		return field.Required(field.NewPath("Name"), "Cluster Name is required (e.g. --name=mycluster.myzone.com)")
 	}
 
 	{
@@ -69,11 +69,11 @@ func (c *Cluster) Validate(strict bool) error {
 	{
 		networkCIDRString := c.Spec.NetworkCIDR
 		if networkCIDRString == "" {
-			return fmt.Errorf("Cluster did not have NetworkCIDR set")
+			return field.Required(specField.Child("NetworkCIDR"), "Cluster did not have NetworkCIDR set")
 		}
 		_, networkCIDR, err = net.ParseCIDR(networkCIDRString)
 		if err != nil {
-			return fmt.Errorf("Cluster had an invalid NetworkCIDR: %q", networkCIDRString)
+			return field.Invalid(specField.Child("NetworkCIDR"), networkCIDRString, fmt.Sprintf("Cluster had an invalid NetworkCIDR"))
 		}
 	}
 
@@ -267,8 +267,8 @@ func (c *Cluster) Validate(strict bool) error {
 
 	// Etcd
 	{
-		if strict && len(c.Spec.EtcdClusters) == 0 {
-			return fmt.Errorf("EtcdClusters not configured")
+		if len(c.Spec.EtcdClusters) == 0 {
+			return field.Required(specField.Child("EtcdClusters"), "")
 		}
 		for _, etcd := range c.Spec.EtcdClusters {
 			if etcd.Name == "" {
