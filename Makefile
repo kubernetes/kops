@@ -100,13 +100,13 @@ push: nodeup-dist
 	scp -C .build/dist/nodeup  ${TARGET}:/tmp/
 
 push-gce-dry: push
-	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /var/cache/kubernetes-install/nodeup --conf=metadata://gce/config --dryrun --v=8
+	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=metadata://gce/config --dryrun --v=8
 
 push-aws-dry: push
-	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /var/cache/kubernetes-install/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --dryrun --v=8
+	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --dryrun --v=8
 
 push-gce-run: push
-	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /var/cache/kubernetes-install/nodeup --conf=metadata://gce/config --v=8
+	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=metadata://gce/config --v=8
 
 push-aws-run: push
 	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8
