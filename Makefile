@@ -1,6 +1,6 @@
 all: kops
 
-.PHONY: channels
+.PHONY: channels examples
 
 DOCKER_REGISTRY?=gcr.io/must-override
 S3_BUCKET?=s3://must-override/
@@ -194,3 +194,8 @@ channels: channels-gocode
 channels-gocode:
 	go install ${EXTRA_BUILDFLAGS} -ldflags "-X main.BuildVersion=${VERSION} ${EXTRA_LDFLAGS}" k8s.io/kops/channels/cmd/channels
 
+# --------------------------------------------------
+# API / embedding examples
+
+examples:
+	go install k8s.io/kops/examples/kops-api-example/...

@@ -36,7 +36,13 @@ func main() {
 
 	err = up()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
+		fmt.Fprintf(os.Stderr, "error from up: %v\n", err)
+		os.Exit(1)
+	}
+
+	err = apply()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error from apply: %v\n", err)
 		os.Exit(1)
 	}
 }
