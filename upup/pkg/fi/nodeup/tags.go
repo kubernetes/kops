@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"io/ioutil"
+	"k8s.io/kops/upup/pkg/fi/nodeup/tags"
 	"os"
 	"path"
 	"strings"
@@ -18,7 +19,7 @@ func FindOSTags(rootfs string) ([]string, error) {
 		for _, line := range strings.Split(string(lsbRelease), "\n") {
 			line = strings.TrimSpace(line)
 			if line == "DISTRIB_CODENAME=xenial" {
-				return []string{"_xenial", "_debian_family", "_systemd"}, nil
+				return []string{"_xenial", tags.TagOSFamilyDebian, tags.TagSystemd}, nil
 			}
 		}
 		glog.Warningf("unhandled lsb-release info %q", string(lsbRelease))
@@ -31,12 +32,26 @@ func FindOSTags(rootfs string) ([]string, error) {
 	if err == nil {
 		debianVersion := strings.TrimSpace(string(debianVersionBytes))
 		if strings.HasPrefix(debianVersion, "8.") {
-			return []string{"_jessie", "_debian_family", "_systemd"}, nil
+			return []string{"_jessie", tags.TagOSFamilyDebian, tags.TagSystemd}, nil
 		} else {
 			return nil, fmt.Errorf("unhandled debian version %q", debianVersion)
 		}
 	} else if !os.IsNotExist(err) {
 		glog.Warningf("error reading /etc/debian_version: %v", err)
+	}
+
+	// Centos has /etc/centos-release
+	centosRelease, err := ioutil.ReadFile(path.Join(rootfs, "etc/centos-release"))
+	if err == nil {
+		for _, line := range strings.Split(string(centosRelease), "\n") {
+			line = strings.TrimSpace(line)
+			if strings.HasPrefix(line, "CentOS Linux release 7.") {
+				return []string{"_centos7", tags.TagOSFamilyCentos, tags.TagSystemd}, nil
+			}
+		}
+		glog.Warningf("unhandled centos-release info %q", string(lsbRelease))
+	} else if !os.IsNotExist(err) {
+		glog.Warningf("error reading /etc/centos-release: %v", err)
 	}
 
 	return nil, fmt.Errorf("cannot identify distro")
