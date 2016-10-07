@@ -12,10 +12,12 @@ import (
 // VFSContext is a 'context' for VFS, that is normally a singleton
 // but allows us to configure S3 credentials, for example
 type VFSContext struct {
-	s3Context S3Context
+	s3Context *S3Context
 }
 
-var Context VFSContext
+var Context = VFSContext{
+	s3Context: NewS3Context(),
+}
 
 // ReadLocation reads a file from a vfs URL
 // It supports additional schemes which don't (yet) have full VFS implementations:
@@ -108,6 +110,6 @@ func (c *VFSContext) buildS3Path(p string) (*S3Path, error) {
 
 	bucket := strings.TrimSuffix(u.Host, "/")
 
-	s3path := NewS3Path(&c.s3Context, bucket, u.Path)
+	s3path := NewS3Path(c.s3Context, bucket, u.Path)
 	return s3path, nil
 }
