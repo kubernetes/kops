@@ -105,6 +105,8 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["KubeDNS"] = func() *api.KubeDNSConfig {
 		return tf.cluster.Spec.KubeDNS
 	}
+
+	dest["DnsControllerArgv"] = tf.DnsControllerArgv
 }
 
 func (tf *TemplateFunctions) EtcdClusterMemberTags(etcd *api.EtcdClusterSpec, m *api.EtcdMemberSpec) map[string]string {
@@ -257,4 +259,29 @@ func (tf *TemplateFunctions) APIServerCount() int {
 		count += size
 	}
 	return count
+}
+
+func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
+	var argv []string
+
+	argv = append(argv, "/usr/bin/dns-controller")
+
+	argv = append(argv, "--watch-ingress=false")
+	argv = append(argv, "--dns=aws-route53")
+
+	zone := tf.cluster.Spec.DNSZone
+	if zone != "" {
+		if strings.Contains(zone, ".") {
+			// match by name
+			argv = append(argv, "--zone="+zone)
+		} else {
+			// match by id
+			argv = append(argv, "--zone=*/"+zone)
+		}
+	}
+	// permit wildcard updates
+	argv = append(argv, "--zone=*/*")
+	argv = append(argv, "-v=8")
+
+	return argv, nil
 }
