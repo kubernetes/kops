@@ -109,8 +109,13 @@ func (l *Loader) Build(baseDir vfs.Path) (map[string]fi.Task, error) {
 	// If there is a package task, we need an update packages task
 	for _, t := range l.tasks {
 		if _, ok := t.(*nodetasks.Package); ok {
-			l.tasks["UpdatePackages"] = &nodetasks.UpdatePackages{}
+			glog.Infof("Package task found; adding UpdatePackages task")
+			l.tasks["UpdatePackages"] = nodetasks.NewUpdatePackages()
+			break
 		}
+	}
+	if l.tasks["UpdatePackages"] == nil {
+		glog.Infof("No package task found; won't update packages")
 	}
 
 	return l.tasks, nil
