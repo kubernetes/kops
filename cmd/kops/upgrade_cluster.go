@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/tables"
+	k8sapi "k8s.io/kubernetes/pkg/api"
 	"os"
 )
 
@@ -54,17 +54,25 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		return err
 	}
 
-	clusterRegistry, cluster, err := rootCommand.Cluster()
+	cluster, err := rootCommand.Cluster()
 	if err != nil {
 		return err
 	}
 
-	instanceGroupRegistry, err := rootCommand.InstanceGroupRegistry()
+	clientset, err := rootCommand.Clientset()
 	if err != nil {
 		return err
 	}
 
-	instanceGroups, err := instanceGroupRegistry.ReadAll()
+	list, err := clientset.InstanceGroups(cluster.Name).List(k8sapi.ListOptions{})
+	if err != nil {
+		return err
+	}
+
+	var instanceGroups []*api.InstanceGroup
+	for i := range list.Items {
+		instanceGroups = append(instanceGroups, &list.Items[i])
+	}
 
 	if cluster.Annotations[api.AnnotationNameManagement] == api.AnnotationValueManagementImported {
 		return fmt.Errorf("upgrade is not for use with imported clusters (did you mean `kops toolbox convert-imported`?)")
@@ -235,7 +243,7 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 			return fmt.Errorf("error populating configuration: %v", err)
 		}
 
-		fullCluster, err := cloudup.PopulateClusterSpec(cluster, clusterRegistry)
+		fullCluster, err := cloudup.PopulateClusterSpec(cluster)
 		if err != nil {
 			return err
 		}
@@ -246,21 +254,16 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		}
 
 		// Note we perform as much validation as we can, before writing a bad config
-		err = clusterRegistry.Update(cluster)
+		_, err = clientset.Clusters().Update(cluster)
 		if err != nil {
 			return err
 		}
 
 		for _, g := range instanceGroups {
-			err := instanceGroupRegistry.Update(g)
+			_, err := clientset.InstanceGroups(cluster.Name).Update(g)
 			if err != nil {
-				return fmt.Errorf("error writing InstanceGroup %q to registry: %v", g.Name, err)
+				return fmt.Errorf("error writing InstanceGroup %q: %v", g.Name, err)
 			}
-		}
-
-		err = clusterRegistry.WriteCompletedConfig(fullCluster)
-		if err != nil {
-			return fmt.Errorf("error writing completed cluster spec: %v", err)
 		}
 
 		fmt.Printf("\nUpdates applied to configuration.\n")

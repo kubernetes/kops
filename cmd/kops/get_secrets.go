@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"k8s.io/kops/upup/pkg/api/registry"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/tables"
 	"strings"
@@ -35,7 +36,7 @@ func init() {
 	cmd.Flags().StringVarP(&getSecretsCommand.Type, "type", "", "", "Filter by secret type")
 }
 
-func listSecrets(secretType string, names []string) ([]*fi.KeystoreItem, error) {
+func listSecrets(keyStore fi.CAStore, secretStore fi.SecretStore, secretType string, names []string) ([]*fi.KeystoreItem, error) {
 	var items []*fi.KeystoreItem
 
 	findType := strings.ToLower(secretType)
@@ -49,11 +50,7 @@ func listSecrets(secretType string, names []string) ([]*fi.KeystoreItem, error) 
 	}
 
 	{
-		caStore, err := rootCommand.KeyStore()
-		if err != nil {
-			return nil, err
-		}
-		l, err := caStore.List()
+		l, err := keyStore.List()
 		if err != nil {
 			return nil, fmt.Errorf("error listing CA store items %v", err)
 		}
@@ -67,11 +64,6 @@ func listSecrets(secretType string, names []string) ([]*fi.KeystoreItem, error) 
 	}
 
 	if findType == "" || findType == strings.ToLower(fi.SecretTypeSecret) {
-		secretStore, err := rootCommand.SecretStore()
-		if err != nil {
-			return nil, err
-		}
-
 		l, err := secretStore.ListSecrets()
 		if err != nil {
 			return nil, fmt.Errorf("error listing secrets %v", err)
@@ -114,7 +106,22 @@ func listSecrets(secretType string, names []string) ([]*fi.KeystoreItem, error) 
 }
 
 func (c *GetSecretsCommand) Run(args []string) error {
-	items, err := listSecrets(c.Type, args)
+	cluster, err := rootCommand.Cluster()
+	if err != nil {
+		return err
+	}
+
+	keyStore, err := registry.KeyStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	secretStore, err := registry.SecretStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	items, err := listSecrets(keyStore, secretStore, c.Type, args)
 	if err != nil {
 		return err
 	}
@@ -141,11 +148,6 @@ func (c *GetSecretsCommand) Run(args []string) error {
 	} else if output == OutputYaml {
 		return fmt.Errorf("yaml output format is not (currently) supported for secrets")
 	} else if output == "plaintext" {
-		secretStore, err := rootCommand.SecretStore()
-		if err != nil {
-			return err
-		}
-
 		for _, i := range items {
 			var data string
 			switch i.Type {

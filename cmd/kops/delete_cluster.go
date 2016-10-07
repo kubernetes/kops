@@ -4,12 +4,15 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/upup/pkg/api"
+	"k8s.io/kops/upup/pkg/api/registry"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kops/util/pkg/tables"
+	"k8s.io/kops/util/pkg/vfs"
 	"os"
 )
 
@@ -47,7 +50,8 @@ func init() {
 type getter func(o interface{}) interface{}
 
 func (c *DeleteClusterCmd) Run(args []string) error {
-	var clusterRegistry *api.ClusterRegistry
+	var configBase vfs.Path
+	var clientset simple.Clientset
 
 	err := rootCommand.ProcessArgs(args)
 	if err != nil {
@@ -74,12 +78,12 @@ func (c *DeleteClusterCmd) Run(args []string) error {
 			return fmt.Errorf("error initializing AWS client: %v", err)
 		}
 	} else {
-		clusterRegistry, err = rootCommand.ClusterRegistry()
+		clientset, err = rootCommand.Clientset()
 		if err != nil {
 			return err
 		}
 
-		cluster, err = clusterRegistry.Find(clusterName)
+		cluster, err = clientset.Clusters().Get(clusterName)
 		if err != nil {
 			return err
 		}
@@ -90,6 +94,11 @@ func (c *DeleteClusterCmd) Run(args []string) error {
 
 		if clusterName != cluster.Name {
 			return fmt.Errorf("sanity check failed: cluster name mismatch")
+		}
+
+		configBase, err = registry.ConfigBase(cluster)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -159,7 +168,7 @@ func (c *DeleteClusterCmd) Run(args []string) error {
 			}
 			return nil
 		}
-		err := clusterRegistry.DeleteAllClusterState(clusterName)
+		err := registry.DeleteAllClusterState(configBase)
 		if err != nil {
 			return fmt.Errorf("error removing cluster from state store: %v", err)
 		}

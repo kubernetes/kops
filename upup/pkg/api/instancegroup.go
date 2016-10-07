@@ -5,6 +5,7 @@ import (
 	"github.com/golang/glog"
 	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/util/validation/field"
 )
 
 // InstanceGroup represents a group of instances (either nodes or masters) with the same configuration
@@ -13,6 +14,10 @@ type InstanceGroup struct {
 	k8sapi.ObjectMeta    `json:"metadata,omitempty"`
 
 	Spec InstanceGroupSpec `json:"spec,omitempty"`
+}
+
+type InstanceGroupList struct {
+	Items []InstanceGroup `json:"items"`
 }
 
 // InstanceGroupRole string describes the roles of the nodes in this InstanceGroup (master or nodes)
@@ -97,11 +102,11 @@ func (g *InstanceGroup) IsMaster() bool {
 
 func (g *InstanceGroup) Validate(strict bool) error {
 	if g.Name == "" {
-		return fmt.Errorf("Name is required")
+		return field.Required(field.NewPath("Name"), "")
 	}
 
 	if g.Spec.Role == "" {
-		return fmt.Errorf("InstanceGroup %q Role not set", g.Name)
+		return field.Required(field.NewPath("Role"), "Role must be set")
 	}
 
 	switch g.Spec.Role {
@@ -109,7 +114,7 @@ func (g *InstanceGroup) Validate(strict bool) error {
 	case InstanceGroupRoleNode:
 
 	default:
-		return fmt.Errorf("Unknown Role: %q", g.Spec.Role)
+		return field.Invalid(field.NewPath("Role"), g.Spec.Role, "Unknown role")
 	}
 
 	if g.IsMaster() {
