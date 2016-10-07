@@ -1,7 +1,7 @@
 package tags
 
 const (
-	TagOSFamilyCentos = "_centos_family"
+	TagOSFamilyRHEL   = "_rhel_family"
 	TagOSFamilyDebian = "_debian_family"
 
 	TagSystemd = "_systemd"
