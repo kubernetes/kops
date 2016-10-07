@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"io/ioutil"
+	"k8s.io/kops/upup/pkg/api/registry"
 )
 
 type CreateSecretPublickeyCommand struct {
@@ -49,7 +50,12 @@ func (cmd *CreateSecretPublickeyCommand) Run(args []string) error {
 		return fmt.Errorf("pubkey path is required (use -i)")
 	}
 
-	caStore, err := rootCommand.KeyStore()
+	cluster, err := rootCommand.Cluster()
+	if err != nil {
+		return err
+	}
+
+	keyStore, err := registry.KeyStore(cluster)
 	if err != nil {
 		return err
 	}
@@ -59,7 +65,7 @@ func (cmd *CreateSecretPublickeyCommand) Run(args []string) error {
 		return fmt.Errorf("error reading SSH public key %v: %v", cmd.Pubkey, err)
 	}
 
-	err = caStore.AddSSHPublicKey(name, data)
+	err = keyStore.AddSSHPublicKey(name, data)
 	if err != nil {
 		return fmt.Errorf("error adding SSH public key: %v", err)
 	}

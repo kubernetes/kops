@@ -41,7 +41,7 @@ func init() {
 }
 
 func (c *EditInstanceGroupCmd) Run(groupName string) error {
-	clusterRegistry, cluster, err := rootCommand.Cluster()
+	cluster, err := rootCommand.Cluster()
 	if err != nil {
 		return err
 	}
@@ -51,7 +51,7 @@ func (c *EditInstanceGroupCmd) Run(groupName string) error {
 		return err
 	}
 
-	registry, err := rootCommand.InstanceGroupRegistry()
+	clientset, err := rootCommand.Clientset()
 	if err != nil {
 		return err
 	}
@@ -60,7 +60,7 @@ func (c *EditInstanceGroupCmd) Run(groupName string) error {
 		return fmt.Errorf("name is required")
 	}
 
-	oldGroup, err := registry.Find(groupName)
+	oldGroup, err := clientset.InstanceGroups(cluster.Name).Get(groupName)
 	if err != nil {
 		return fmt.Errorf("error reading InstanceGroup %q: %v", groupName, err)
 	}
@@ -117,7 +117,7 @@ func (c *EditInstanceGroupCmd) Run(groupName string) error {
 		return fmt.Errorf("error populating configuration: %v", err)
 	}
 
-	fullCluster, err := cloudup.PopulateClusterSpec(cluster, clusterRegistry)
+	fullCluster, err := cloudup.PopulateClusterSpec(cluster)
 	if err != nil {
 		return err
 	}
@@ -128,7 +128,7 @@ func (c *EditInstanceGroupCmd) Run(groupName string) error {
 	}
 
 	// Note we perform as much validation as we can, before writing a bad config
-	err = registry.Update(fullGroup)
+	_, err = clientset.InstanceGroups(cluster.Name).Update(fullGroup)
 	if err != nil {
 		return err
 	}

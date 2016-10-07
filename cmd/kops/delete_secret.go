@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"k8s.io/kops/upup/pkg/api/registry"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -41,7 +42,22 @@ func (c *DeleteSecretCmd) Run(args []string) error {
 		secretID = args[2]
 	}
 
-	secrets, err := listSecrets(secretType, []string{secretName})
+	cluster, err := rootCommand.Cluster()
+	if err != nil {
+		return err
+	}
+
+	keyStore, err := registry.KeyStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	secretStore, err := registry.SecretStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	secrets, err := listSecrets(keyStore, secretStore, secretType, []string{secretName})
 	if err != nil {
 		return err
 	}
@@ -63,11 +79,6 @@ func (c *DeleteSecretCmd) Run(args []string) error {
 	if len(secrets) != 1 {
 		// TODO: it would be friendly to print the matching keys
 		return fmt.Errorf("found multiple matching secrets; specify the id of the key")
-	}
-
-	keyStore, err := rootCommand.KeyStore()
-	if err != nil {
-		return err
 	}
 
 	err = keyStore.DeleteSecret(secrets[0])
