@@ -40,3 +40,11 @@ The following steps are known:
 
 * Accept the agreement at http://aws.amazon.com/marketplace/pp?sku=aw0evgkw8e5c1q413zgy5pjce
 * Specify the AMI by id (there are no tags): us-east-1: ami-6d1c2007
+
+## RHEL7
+
+RHEL7 support is still experimental.
+
+The following steps are known:
+
+* Specify the AMI by id (there are no tags): us-east-1: ami-2051294a

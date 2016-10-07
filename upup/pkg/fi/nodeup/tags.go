@@ -54,6 +54,20 @@ func FindOSTags(rootfs string) ([]string, error) {
 		glog.Warningf("error reading /etc/centos-release: %v", err)
 	}
 
+	// Redhat has /etc/redhat-release
+	redhatRelease, err := ioutil.ReadFile(path.Join(rootfs, "etc/redhat-release"))
+	if err == nil {
+		for _, line := range strings.Split(string(redhatRelease), "\n") {
+			line = strings.TrimSpace(line)
+			if strings.HasPrefix(line, "Red Hat Enterprise Linux Server release 7.") {
+				return []string{"_rhel7", tags.TagOSFamilyCentos, tags.TagSystemd}, nil
+			}
+		}
+		glog.Warningf("unhandled redhat-release info %q", string(lsbRelease))
+	} else if !os.IsNotExist(err) {
+		glog.Warningf("error reading /etc/redhat-release: %v", err)
+	}
+
 	return nil, fmt.Errorf("cannot identify distro")
 }
 
