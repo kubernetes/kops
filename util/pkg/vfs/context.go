@@ -2,10 +2,6 @@ package vfs
 
 import (
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/golang/glog"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -16,6 +12,7 @@ import (
 // VFSContext is a 'context' for VFS, that is normally a singleton
 // but allows us to configure S3 credentials, for example
 type VFSContext struct {
+	s3Context S3Context
 }
 
 var Context VFSContext
@@ -111,40 +108,6 @@ func (c *VFSContext) buildS3Path(p string) (*S3Path, error) {
 
 	bucket := strings.TrimSuffix(u.Host, "/")
 
-	var region string
-	{
-		// Probe to find correct region for bucket
-		// TODO: Caching (both of the client & of the bucket location)
-		config := aws.NewConfig().WithRegion("us-east-1")
-		session := session.New()
-		s3Client := s3.New(session, config)
-
-		request := &s3.GetBucketLocationInput{}
-		request.Bucket = aws.String(bucket)
-
-		response, err := s3Client.GetBucketLocation(request)
-		if err != nil {
-			// TODO: Auto-create bucket?
-			return nil, fmt.Errorf("error getting location for S3 bucket %q: %v", bucket, err)
-		}
-		if response.LocationConstraint == nil {
-			// US Classic does not return a region
-			region = "us-east-1"
-		} else {
-			region = *response.LocationConstraint
-			// Another special case: "EU" can mean eu-west-1
-			if region == "EU" {
-				region = "eu-west-1"
-			}
-		}
-		glog.V(2).Infof("Found bucket %q in region %q", bucket, region)
-	}
-
-	// TODO: Caching (of the S3 client)
-	config := aws.NewConfig().WithRegion(region)
-	session := session.New()
-	s3Client := s3.New(session, config)
-
-	s3path := NewS3Path(s3Client, bucket, u.Path)
+	s3path := NewS3Path(&c.s3Context, bucket, u.Path)
 	return s3path, nil
 }
