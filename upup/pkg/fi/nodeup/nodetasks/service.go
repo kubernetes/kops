@@ -20,6 +20,10 @@ import (
 
 const (
 	debianSystemdSystemPath = "/lib/systemd/system"
+
+	// TODO: Generally only repo packages write to /usr/lib/systemd/system on _rhel_family
+	// But we use it in two ways: we update the docker manifest, and we install our own
+	// package (protokube, kubelet).  Maybe we should have the idea of a "system" package.
 	centosSystemdSystemPath = "/usr/lib/systemd/system"
 )
 
@@ -114,7 +118,7 @@ func getSystemdStatus(name string) (map[string]string, error) {
 func (e *Service) systemdSystemPath(target tags.HasTags) (string, error) {
 	if target.HasTag(tags.TagOSFamilyDebian) {
 		return debianSystemdSystemPath, nil
-	} else if target.HasTag(tags.TagOSFamilyCentos) {
+	} else if target.HasTag(tags.TagOSFamilyRHEL) {
 		return centosSystemdSystemPath, nil
 	} else {
 		return "", fmt.Errorf("unsupported systemd system")

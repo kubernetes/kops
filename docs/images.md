@@ -32,7 +32,7 @@ In addition, we support a few-well known aliases for the owner:
 
 
 
-## Centos
+## CentOS
 
 CentOS7 support is still experimental.
 
@@ -40,6 +40,7 @@ The following steps are known:
 
 * Accept the agreement at http://aws.amazon.com/marketplace/pp?sku=aw0evgkw8e5c1q413zgy5pjce
 * Specify the AMI by id (there are no tags): us-east-1: ami-6d1c2007
+* CentOS7 AMIs are running an older kernel than we prefer to run elsewhere
 
 ## RHEL7
 
@@ -48,3 +49,4 @@ RHEL7 support is still experimental.
 The following steps are known:
 
 * Specify the AMI by id (there are no tags): us-east-1: ami-2051294a
+* RHEL7 AMIs are running an older kernel than we prefer to run elsewhere

@@ -94,7 +94,7 @@ func (e *Package) Find(c *fi.Context) (*Package, error) {
 		return e.findDpkg(c)
 	}
 
-	if target.HasTag(tags.TagOSFamilyCentos) {
+	if target.HasTag(tags.TagOSFamilyRHEL) {
 		return e.findYum(c)
 	}
 
@@ -252,7 +252,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 			var args []string
 			if t.HasTag(tags.TagOSFamilyDebian) {
 				args = []string{"dpkg", "-i", local}
-			} else if t.HasTag(tags.TagOSFamilyCentos) {
+			} else if t.HasTag(tags.TagOSFamilyRHEL) {
 				args = []string{"/usr/bin/rpm", "-i", local}
 			} else {
 				return fmt.Errorf("unsupported package system")
@@ -268,7 +268,7 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 			if t.HasTag(tags.TagOSFamilyDebian) {
 				args = []string{"apt-get", "install", "--yes", e.Name}
 
-			} else if t.HasTag(tags.TagOSFamilyCentos) {
+			} else if t.HasTag(tags.TagOSFamilyRHEL) {
 				args = []string{"/usr/bin/yum", "install", "-y", e.Name}
 			} else {
 				return fmt.Errorf("unsupported package system")
@@ -293,9 +293,9 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 				}
 
 				changes.Healthy = nil
-			} else if t.HasTag(tags.TagOSFamilyCentos) {
-				// We can't reach here anyway...
-				return fmt.Errorf("package repair not supported on centos")
+			} else if t.HasTag(tags.TagOSFamilyRHEL) {
+				// Not set on TagOSFamilyRHEL, we can't currently reach here anyway...
+				return fmt.Errorf("package repair not supported on RHEL/CentOS")
 			} else {
 				return fmt.Errorf("unsupported package system")
 			}
