@@ -28,6 +28,8 @@ const (
 
 const MaxAttemptsWithNoProgress = 3
 
+var CloudupModels = []string{"config","proto","cloudup"}
+
 type ApplyClusterCmd struct {
 	Cluster *api.Cluster
 
@@ -71,6 +73,10 @@ func (c *ApplyClusterCmd) Run() error {
 			instanceGroups = append(instanceGroups, &list.Items[i])
 		}
 		c.InstanceGroups = instanceGroups
+	}
+
+	if c.Models == nil {
+		c.Models = CloudupModels
 	}
 
 	modelStore, err := findModelStore()
