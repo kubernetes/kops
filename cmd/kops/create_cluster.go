@@ -419,12 +419,12 @@ func (c *CreateClusterCmd) Run(args []string) error {
 	}
 
 	applyCmd := &cloudup.ApplyClusterCmd{
-		Cluster:        fullCluster,
-		Models:         strings.Split(c.Models, ","),
-		Clientset:      clientset,
-		TargetName:     targetName,
-		OutDir:         c.OutDir,
-		DryRun:         isDryrun,
+		Cluster:    fullCluster,
+		Models:     strings.Split(c.Models, ","),
+		Clientset:  clientset,
+		TargetName: targetName,
+		OutDir:     c.OutDir,
+		DryRun:     isDryrun,
 	}
 
 	err = applyCmd.Run()
