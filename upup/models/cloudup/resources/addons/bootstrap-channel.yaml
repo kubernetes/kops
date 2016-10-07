@@ -14,7 +14,7 @@ spec:
       k8s-addon: core.addons.k8s.io
     manifest: core/v1.4.0.yaml
   - name: dns-controller
-    version: 1.4.0
+    version: 1.4.1
     selector:
       k8s-addon: dns-controller.addons.k8s.io
-    manifest: dns-controller/v1.4.0.yaml
+    manifest: dns-controller/v1.4.1.yaml
