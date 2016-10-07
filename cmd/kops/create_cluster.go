@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"strings"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"io/ioutil"
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/api/registry"
@@ -13,7 +14,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kubernetes/pkg/util/sets"
-	"strings"
 )
 
 type CreateClusterCmd struct {
@@ -37,9 +37,9 @@ type CreateClusterCmd struct {
 	AdminAccess       string
 	Networking        string
 	AssociatePublicIP bool
-
 	// Channel is the location of the api.Channel to use for our defaults
 	Channel string
+	Filename          string
 }
 
 var createCluster CreateClusterCmd
@@ -93,12 +93,33 @@ func init() {
 	cmd.Flags().BoolVar(&createCluster.AssociatePublicIP, "associate-public-ip", true, "Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.")
 
 	cmd.Flags().StringVar(&createCluster.Channel, "channel", api.DefaultChannel, "Channel for default versions and configuration to use")
+
+	cmd.Flags().StringVarP(&createCluster.Filename, "filename", "f", "", "Filename identifying a .yml manifest")
 }
 
 func (c *CreateClusterCmd) Run(args []string) error {
 	err := rootCommand.ProcessArgs(args)
 	if err != nil {
 		return err
+	}
+
+	if c.Filename != "" {
+		clusterConfig, err := getManifest(c.Filename)
+		if err != nil {
+			return err
+		}
+		// This is a WeakDecode() that won't throw an error if a directive does not exist.
+		clusterConfig.Unmarshal(c)
+		c.Zones = clusterConfig.GetString("Zones")
+		if c.Zones == "" {
+			c.Zones = strings.Join(clusterConfig.GetStringSlice("Zones"), ",")
+		}
+		c.MasterZones = clusterConfig.GetString("Zones")
+		if c.MasterZones == "" {
+			c.MasterZones = strings.Join(clusterConfig.GetStringSlice("MasterZones"), ",")
+		}
+		rootCommand.clusterName = clusterConfig.GetString("Name")
+		rootCommand.stateLocation = clusterConfig.GetString("State")
 	}
 
 	isDryrun := false

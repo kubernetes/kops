@@ -1,0 +1,25 @@
+Name: "example-name"
+State: "s3://state-bucket"
+
+Yes: true
+Cloud: "aws"
+Zones:
+  - "us-west-2c"
+Image: "ami-12345678"
+DNSZone: "mydomain.io"
+
+Target:
+Models:
+MasterZones:
+NodeSize:
+MasterSize:
+NodeCount:
+Project:
+KubernetesVersion:
+OutDir:
+SSHPublicKey:
+VPCID:
+NetworkCIDR:
+AdminAccess:
+Networking:
+AssociatePublicIP:

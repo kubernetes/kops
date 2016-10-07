@@ -21,6 +21,7 @@ type DeleteClusterCmd struct {
 	Region     string
 	External   bool
 	Unregister bool
+	Filename   string
 }
 
 var deleteCluster DeleteClusterCmd
@@ -45,6 +46,8 @@ func init() {
 	cmd.Flags().BoolVar(&deleteCluster.External, "external", false, "Delete an external cluster")
 
 	cmd.Flags().StringVar(&deleteCluster.Region, "region", "", "region")
+
+	cmd.Flags().StringVarP(&deleteCluster.Filename, "filename", "f", "", "Filename identifying a .yml manifest")
 }
 
 type getter func(o interface{}) interface{}
@@ -56,6 +59,17 @@ func (c *DeleteClusterCmd) Run(args []string) error {
 	err := rootCommand.ProcessArgs(args)
 	if err != nil {
 		return err
+	}
+
+	if c.Filename != "" {
+		clusterConfig, err := getManifest(c.Filename)
+		if err != nil {
+			return err
+		}
+		// This is a WeakDecode() that won't throw an error if a directive does not exist.
+		clusterConfig.Unmarshal(c)
+		rootCommand.clusterName = clusterConfig.GetString("Name")
+		rootCommand.stateLocation = clusterConfig.GetString("State")
 	}
 
 	clusterName := rootCommand.clusterName

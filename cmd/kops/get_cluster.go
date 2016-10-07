@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-
 	"fmt"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/upup/pkg/api"
@@ -14,6 +13,7 @@ import (
 
 type GetClustersCmd struct {
 	FullSpec bool
+	Filename string
 }
 
 var getClustersCmd GetClustersCmd
@@ -35,12 +35,24 @@ func init() {
 	getCmd.cobraCommand.AddCommand(cmd)
 
 	cmd.Flags().BoolVar(&getClustersCmd.FullSpec, "full", false, "Show fully populated configuration")
+
+	cmd.Flags().StringVarP(&getClustersCmd.Filename, "filename", "f", "", "Filename identifying a .yml manifest.")
 }
 
 func (c *GetClustersCmd) Run(args []string) error {
 	client, err := rootCommand.Clientset()
 	if err != nil {
 		return err
+	}
+	if c.Filename != "" {
+		clusterConfig, err := getManifest(c.Filename)
+		if err != nil {
+			return err
+		}
+		// This is a WeakDecode() that won't throw an error if a directive does not exist.
+		clusterConfig.Unmarshal(c)
+		rootCommand.clusterName = clusterConfig.GetString("Name")
+		rootCommand.stateLocation = clusterConfig.GetString("State")
 	}
 
 	clusterList, err := client.Clusters().List(k8sapi.ListOptions{})
