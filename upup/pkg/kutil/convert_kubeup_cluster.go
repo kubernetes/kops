@@ -6,7 +6,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/upup/pkg/api"
+	"k8s.io/kops/upup/pkg/api/registry"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -19,7 +22,7 @@ type ConvertKubeupCluster struct {
 	NewClusterName string
 	Cloud          fi.Cloud
 
-	ClusterRegistry *api.ClusterRegistry
+	Clientset simple.Clientset
 
 	ClusterConfig  *api.Cluster
 	InstanceGroups []*api.InstanceGroup
@@ -42,8 +45,10 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 		return fmt.Errorf("OldClusterName must be specified")
 	}
 
-	newKeyStore := x.ClusterRegistry.KeyStore(newClusterName)
-	oldKeyStore := x.ClusterRegistry.KeyStore(oldClusterName)
+	oldKeyStore, err := registry.KeyStore(cluster)
+	if err != nil {
+		return err
+	}
 
 	oldTags := awsCloud.Tags()
 
@@ -53,12 +58,23 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 	// Build completed cluster (force errors asap)
 	cluster.Name = newClusterName
 
+	newConfigBase, err := x.Clientset.Clusters().(*vfsclientset.ClusterVFS).ConfigBase(newClusterName)
+	if err != nil {
+		return fmt.Errorf("error building ConfigBase for cluster: %v", err)
+	}
+	cluster.Spec.ConfigBase = newConfigBase.Path()
+
+	newKeyStore, err := registry.KeyStore(cluster)
+	if err != nil {
+		return err
+	}
+
 	// Set KubernetesVersion from channel
 	if x.Channel != nil && x.Channel.Spec.Cluster != nil && x.Channel.Spec.Cluster.KubernetesVersion != "" {
 		cluster.Spec.KubernetesVersion = x.Channel.Spec.Cluster.KubernetesVersion
 	}
 
-	err := cluster.PerformAssignments()
+	err = cluster.PerformAssignments()
 	if err != nil {
 		return fmt.Errorf("error populating cluster defaults: %v", err)
 	}
@@ -68,7 +84,7 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 		delete(cluster.Annotations, api.AnnotationNameManagement)
 	}
 
-	fullCluster, err := cloudup.PopulateClusterSpec(cluster, x.ClusterRegistry)
+	fullCluster, err := cloudup.PopulateClusterSpec(cluster)
 	if err != nil {
 		return err
 	}
@@ -397,12 +413,16 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 		}
 	}
 
-	err = api.CreateClusterConfig(x.ClusterRegistry, cluster, x.InstanceGroups)
+	err = registry.CreateClusterConfig(x.Clientset, cluster, x.InstanceGroups)
 	if err != nil {
 		return fmt.Errorf("error writing updated configuration: %v", err)
 	}
 
-	err = x.ClusterRegistry.WriteCompletedConfig(fullCluster)
+	err = registry.WriteConfig(newConfigBase.Join(registry.PathClusterCompleted), fullCluster)
+	if err != nil {
+		return fmt.Errorf("error writing completed cluster spec: %v", err)
+	}
+
 	if err != nil {
 		return fmt.Errorf("error writing completed cluster spec: %v", err)
 	}

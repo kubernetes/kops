@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"crypto/rsa"
 	"github.com/spf13/cobra"
+	"k8s.io/kops/upup/pkg/api/registry"
 	"k8s.io/kops/upup/pkg/fi"
 	"os"
 	"sort"
@@ -39,7 +40,22 @@ func init() {
 }
 
 func (c *DescribeSecretsCommand) Run(args []string) error {
-	items, err := listSecrets(c.Type, args)
+	cluster, err := rootCommand.Cluster()
+	if err != nil {
+		return err
+	}
+
+	keyStore, err := registry.KeyStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	secretStore, err := registry.SecretStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	items, err := listSecrets(keyStore, secretStore, c.Type, args)
 	if err != nil {
 		return err
 	}
@@ -55,11 +71,6 @@ func (c *DescribeSecretsCommand) Run(args []string) error {
 
 	// Format in tab-separated columns with a tab stop of 8.
 	w.Init(os.Stdout, 0, 8, 0, '\t', tabwriter.StripEscape)
-
-	keyStore, err := rootCommand.KeyStore()
-	if err != nil {
-		return err
-	}
 
 	for _, i := range items {
 		fmt.Fprintf(w, "Name:\t%s\n", i.Name)

@@ -5,7 +5,9 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"io/ioutil"
+	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/upup/pkg/api"
+	"k8s.io/kops/upup/pkg/api/registry"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -128,12 +130,12 @@ func (c *CreateClusterCmd) Run(args []string) error {
 		}
 	}
 
-	clusterRegistry, err := rootCommand.ClusterRegistry()
+	clientset, err := rootCommand.Clientset()
 	if err != nil {
 		return err
 	}
 
-	cluster, err := clusterRegistry.Find(clusterName)
+	cluster, err := clientset.Clusters().Get(clusterName)
 	if err != nil {
 		return err
 	}
@@ -153,7 +155,11 @@ func (c *CreateClusterCmd) Run(args []string) error {
 	}
 	cluster.Spec.Channel = c.Channel
 
-	var instanceGroups []*api.InstanceGroup
+	configBase, err := clientset.Clusters().(*vfsclientset.ClusterVFS).ConfigBase(clusterName)
+	if err != nil {
+		return fmt.Errorf("error building ConfigBase for cluster: %v", err)
+	}
+	cluster.Spec.ConfigBase = configBase.Path()
 
 	cluster.Spec.Networking = &api.NetworkingSpec{}
 	switch c.Networking {
@@ -187,14 +193,7 @@ func (c *CreateClusterCmd) Run(args []string) error {
 
 	var masters []*api.InstanceGroup
 	var nodes []*api.InstanceGroup
-
-	for _, group := range instanceGroups {
-		if group.IsMaster() {
-			masters = append(masters, group)
-		} else {
-			nodes = append(nodes, group)
-		}
-	}
+	var instanceGroups []*api.InstanceGroup
 
 	if c.MasterZones == "" {
 		if len(masters) == 0 {
@@ -236,7 +235,7 @@ func (c *CreateClusterCmd) Run(args []string) error {
 
 	if len(cluster.Spec.EtcdClusters) == 0 {
 		zones := sets.NewString()
-		for _, group := range instanceGroups {
+		for _, group := range masters {
 			for _, zone := range group.Spec.Zones {
 				zones.Insert(zone)
 			}
@@ -368,7 +367,7 @@ func (c *CreateClusterCmd) Run(args []string) error {
 		return err
 	}
 
-	fullCluster, err := cloudup.PopulateClusterSpec(cluster, clusterRegistry)
+	fullCluster, err := cloudup.PopulateClusterSpec(cluster)
 	if err != nil {
 		return err
 	}
@@ -388,18 +387,27 @@ func (c *CreateClusterCmd) Run(args []string) error {
 	}
 
 	// Note we perform as much validation as we can, before writing a bad config
-	err = api.CreateClusterConfig(clusterRegistry, cluster, fullInstanceGroups)
+	err = registry.CreateClusterConfig(clientset, cluster, fullInstanceGroups)
 	if err != nil {
 		return fmt.Errorf("error writing updated configuration: %v", err)
 	}
 
-	err = clusterRegistry.WriteCompletedConfig(fullCluster)
+	keyStore, err := registry.KeyStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	secretStore, err := registry.SecretStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	err = registry.WriteConfig(configBase.Join(registry.PathClusterCompleted), fullCluster)
 	if err != nil {
 		return fmt.Errorf("error writing completed cluster spec: %v", err)
 	}
 
 	for k, data := range sshPublicKeys {
-		keyStore := clusterRegistry.KeyStore(cluster.Name)
 		err = keyStore.AddSSHPublicKey(k, data)
 		if err != nil {
 			return fmt.Errorf("error addding SSH public key: %v", err)
@@ -411,13 +419,12 @@ func (c *CreateClusterCmd) Run(args []string) error {
 	}
 
 	applyCmd := &cloudup.ApplyClusterCmd{
-		Cluster:         fullCluster,
-		InstanceGroups:  fullInstanceGroups,
-		Models:          strings.Split(c.Models, ","),
-		ClusterRegistry: clusterRegistry,
-		TargetName:      targetName,
-		OutDir:          c.OutDir,
-		DryRun:          isDryrun,
+		Cluster:        fullCluster,
+		Models:         strings.Split(c.Models, ","),
+		Clientset:      clientset,
+		TargetName:     targetName,
+		OutDir:         c.OutDir,
+		DryRun:         isDryrun,
 	}
 
 	err = applyCmd.Run()
@@ -446,8 +453,8 @@ func (c *CreateClusterCmd) Run(args []string) error {
 
 		x := &kutil.CreateKubecfg{
 			ClusterName:      cluster.Name,
-			KeyStore:         clusterRegistry.KeyStore(cluster.Name),
-			SecretStore:      clusterRegistry.SecretStore(cluster.Name),
+			KeyStore:         keyStore,
+			SecretStore:      secretStore,
 			MasterPublicName: cluster.Spec.MasterPublicName,
 		}
 		defer x.Close()

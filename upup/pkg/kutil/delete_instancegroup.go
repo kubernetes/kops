@@ -3,15 +3,16 @@ package kutil
 import (
 	"fmt"
 
+	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 // DeleteInstanceGroup removes the cloud resources for an InstanceGroup
 type DeleteInstanceGroup struct {
-	Cluster               *api.Cluster
-	Cloud                 fi.Cloud
-	InstanceGroupRegistry *api.InstanceGroupRegistry
+	Cluster   *api.Cluster
+	Cloud     fi.Cloud
+	Clientset simple.Clientset
 }
 
 func (c *DeleteInstanceGroup) DeleteInstanceGroup(group *api.InstanceGroup) error {
@@ -29,7 +30,7 @@ func (c *DeleteInstanceGroup) DeleteInstanceGroup(group *api.InstanceGroup) erro
 		return fmt.Errorf("error deleting cloud resources for InstanceGroup: %v", err)
 	}
 
-	_, err = c.InstanceGroupRegistry.Delete(group.Name)
+	err = c.Clientset.InstanceGroups(c.Cluster.Name).Delete(group.Name, nil)
 	if err != nil {
 		return err
 	}

@@ -2,17 +2,17 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"strconv"
-
 	"github.com/spf13/cobra"
+	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kops/util/pkg/tables"
-	"k8s.io/kubernetes/pkg/api"
+	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
+	"os"
+	"strconv"
 	"time"
 )
 
@@ -58,7 +58,12 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 		return err
 	}
 
-	_, cluster, err := rootCommand.Cluster()
+	cluster, err := rootCommand.Cluster()
+	if err != nil {
+		return err
+	}
+
+	clientset, err := rootCommand.Clientset()
 	if err != nil {
 		return err
 	}
@@ -79,7 +84,7 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 			return fmt.Errorf("cannot build kube client for %q: %v", contextName, err)
 		}
 
-		nodeList, err := k8sClient.Core().Nodes().List(api.ListOptions{})
+		nodeList, err := k8sClient.Core().Nodes().List(k8sapi.ListOptions{})
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to reach the kubernetes API.\n")
 			fmt.Fprintf(os.Stderr, "Use --cloudonly to do a rolling-update without confirming progress with the k8s API\n\n")
@@ -91,14 +96,13 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 		}
 	}
 
-	instanceGroupRegistry, err := rootCommand.InstanceGroupRegistry()
+	list, err := clientset.InstanceGroups(cluster.Name).List(k8sapi.ListOptions{})
 	if err != nil {
 		return err
 	}
-
-	instancegroups, err := instanceGroupRegistry.ReadAll()
-	if err != nil {
-		return err
+	var instancegroups []*api.InstanceGroup
+	for i := range list.Items {
+		instancegroups = append(instancegroups, &list.Items[i])
 	}
 
 	cloud, err := cloudup.BuildCloud(cluster)

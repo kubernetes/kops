@@ -6,6 +6,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/util/pkg/vfs"
 	"text/template"
 )
@@ -50,7 +51,7 @@ func newTemplateFunctions(nodeupConfig *NodeUpConfig, cluster *api.Cluster, inst
 			return nil, fmt.Errorf("error building secret store path: %v", err)
 		}
 
-		t.secretStore = fi.NewVFSSecretStore(p)
+		t.secretStore = secrets.NewVFSSecretStore(p)
 	} else {
 		return nil, fmt.Errorf("SecretStore not set")
 	}

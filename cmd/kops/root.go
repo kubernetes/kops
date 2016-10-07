@@ -3,21 +3,21 @@ package main
 import (
 	goflag "flag"
 	"fmt"
-	"os"
-
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/upup/pkg/api"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kops/util/pkg/vfs"
+	"os"
 )
 
 type RootCmd struct {
 	configFile string
 
-	clusterRegistry *api.ClusterRegistry
+	clientset simple.Clientset
 
 	stateLocation string
 	clusterName   string
@@ -134,15 +134,7 @@ func readKubectlClusterConfig() (*kutil.KubectlClusterWithName, error) {
 	return config.Clusters[0], nil
 }
 
-func (c *RootCmd) ClusterRegistry() (*api.ClusterRegistry, error) {
-	if c.clusterRegistry != nil {
-		return c.clusterRegistry, nil
-	}
-
-	if c.stateLocation == "" {
-		return nil, fmt.Errorf("--state is required (or export KOPS_STATE_STORE)")
-	}
-
+func (c *RootCmd) Clientset() (simple.Clientset, error) {
 	basePath, err := vfs.Context.BuildVfsPath(c.stateLocation)
 	if err != nil {
 		return nil, fmt.Errorf("error building state store path for %q: %v", c.stateLocation, err)
@@ -152,74 +144,32 @@ func (c *RootCmd) ClusterRegistry() (*api.ClusterRegistry, error) {
 		return nil, fmt.Errorf("State store %q is not cloud-reachable - please use an S3 bucket", c.stateLocation)
 	}
 
-	clusterRegistry := api.NewClusterRegistry(basePath)
-	c.clusterRegistry = clusterRegistry
-	return clusterRegistry, nil
+	clientset := vfsclientset.NewVFSClientset(basePath)
+
+	return clientset, nil
 }
 
-func (c *RootCmd) Cluster() (*api.ClusterRegistry, *api.Cluster, error) {
-	clusterRegistry, err := c.ClusterRegistry()
+func (c *RootCmd) Cluster() (*api.Cluster, error) {
+	clientset, err := c.Clientset()
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	clusterName := c.ClusterName()
 	if clusterName == "" {
-		return nil, nil, fmt.Errorf("--name is required")
+		return nil, fmt.Errorf("--name is required")
 	}
 
-	cluster, err := clusterRegistry.Find(clusterName)
+	cluster, err := clientset.Clusters().Get(clusterName)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error reading cluster configuration: %v", err)
+		return nil, fmt.Errorf("error reading cluster configuration: %v", err)
 	}
 	if cluster == nil {
-		return nil, nil, fmt.Errorf("cluster %q not found", clusterName)
+		return nil, fmt.Errorf("cluster %q not found", clusterName)
 	}
 
 	if clusterName != cluster.Name {
-		return nil, nil, fmt.Errorf("cluster name did not match expected name: %v vs %v", clusterName, cluster.Name)
+		return nil, fmt.Errorf("cluster name did not match expected name: %v vs %v", clusterName, cluster.Name)
 	}
-	return clusterRegistry, cluster, nil
-}
-
-func (c *RootCmd) InstanceGroupRegistry() (*api.InstanceGroupRegistry, error) {
-	clusterRegistry, err := c.ClusterRegistry()
-	if err != nil {
-		return nil, err
-	}
-
-	clusterName := c.ClusterName()
-	if clusterName == "" {
-		return nil, fmt.Errorf("--name is required")
-	}
-
-	return clusterRegistry.InstanceGroups(clusterName)
-}
-
-func (c *RootCmd) SecretStore() (fi.SecretStore, error) {
-	clusterRegistry, err := c.ClusterRegistry()
-	if err != nil {
-		return nil, err
-	}
-
-	clusterName := c.ClusterName()
-	if clusterName == "" {
-		return nil, fmt.Errorf("--name is required")
-	}
-
-	return clusterRegistry.SecretStore(clusterName), nil
-}
-
-func (c *RootCmd) KeyStore() (fi.CAStore, error) {
-	clusterRegistry, err := c.ClusterRegistry()
-	if err != nil {
-		return nil, err
-	}
-
-	clusterName := c.ClusterName()
-	if clusterName == "" {
-		return nil, fmt.Errorf("--name is required")
-	}
-
-	return clusterRegistry.KeyStore(clusterName), nil
+	return cluster, nil
 }
