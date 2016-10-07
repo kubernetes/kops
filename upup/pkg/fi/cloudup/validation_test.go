@@ -6,7 +6,6 @@ import (
 	"k8s.io/kops/upup/pkg/api"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/util/sets"
 	"strings"
 	"testing"
@@ -14,16 +13,7 @@ import (
 
 const MockAWSRegion = "us-mock-1"
 
-func buildInmemoryClusterRegistry() *api.ClusterRegistry {
-	memfs := vfs.NewMemFSContext()
-	memfs.MarkClusterReadable()
-	basePath := vfs.NewMemFSPath(memfs, "test-statestore")
-	return api.NewClusterRegistry(basePath)
-}
-
 func buildDefaultCluster(t *testing.T) *api.Cluster {
-	registry := buildInmemoryClusterRegistry()
-
 	c := buildMinimalCluster()
 
 	err := c.PerformAssignments()
@@ -53,7 +43,7 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 
 	awsup.InstallMockAWSCloud(MockAWSRegion, "abcd")
 
-	fullSpec, err := PopulateClusterSpec(c, registry)
+	fullSpec, err := PopulateClusterSpec(c)
 	if err != nil {
 		t.Fatalf("error from PopulateClusterSpec: %v", err)
 	}
