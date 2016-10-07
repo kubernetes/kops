@@ -41,7 +41,7 @@ func init() {
 
 	cmd.Flags().BoolVar(&updateCluster.Yes, "yes", false, "Actually create cloud resources")
 	cmd.Flags().StringVar(&updateCluster.Target, "target", "direct", "Target - direct, terraform")
-	cmd.Flags().StringVar(&updateCluster.Models, "model", "config,proto,cloudup", "Models to apply (separate multiple models with commas)")
+	cmd.Flags().StringVar(&updateCluster.Models, "model", strings.Join(cloudup.CloudupModels, ","), "Models to apply (separate multiple models with commas)")
 	cmd.Flags().StringVar(&updateCluster.SSHPublicKey, "ssh-public-key", "", "SSH public key to use (deprecated: use kops create secret instead)")
 	cmd.Flags().StringVar(&updateCluster.OutDir, "out", "", "Path to write any local output")
 }
