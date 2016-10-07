@@ -24,6 +24,9 @@ func main() {
 	dnsProviderId := "aws-route53"
 	flags.StringVar(&dnsProviderId, "dns", dnsProviderId, "DNS provider we should use (aws-route53, google-clouddns)")
 
+	var zones []string
+	flags.StringSliceVarP(&zones, "zone", "z", []string{}, "Configure permitted zones and their mappings")
+
 	watchIngress := true
 	flags.BoolVar(&watchIngress, "watch-ingress", watchIngress, "Configure hostnames found in ingress resources")
 
@@ -36,6 +39,12 @@ func main() {
 	clientConfig := kubectl_util.DefaultClientConfig(flags)
 
 	flags.Parse(os.Args)
+
+	zoneRules, err := dns.ParseZoneRules(zones)
+	if err != nil {
+		glog.Errorf("unexpected zone flags: %q", err)
+		os.Exit(1)
+	}
 
 	config, err := clientConfig.ClientConfig()
 	if err != nil {
@@ -63,7 +72,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	dnsController, err := dns.NewDNSController(dnsProvider)
+	dnsController, err := dns.NewDNSController(dnsProvider, zoneRules)
 	if err != nil {
 		glog.Errorf("Error building DNS controller: %v", err)
 		os.Exit(1)
