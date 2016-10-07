@@ -17,23 +17,24 @@ import (
 )
 
 type S3Path struct {
-	client *s3.S3
-	bucket string
-	key    string
-	etag   *string
+	s3Context *S3Context
+	bucket    string
+	region    string
+	key       string
+	etag      *string
 }
 
 var _ Path = &S3Path{}
 var _ HasHash = &S3Path{}
 
-func NewS3Path(client *s3.S3, bucket string, key string) *S3Path {
+func NewS3Path(s3Context *S3Context, bucket string, key string) *S3Path {
 	bucket = strings.TrimSuffix(bucket, "/")
 	key = strings.TrimPrefix(key, "/")
 
 	return &S3Path{
-		client: client,
-		bucket: bucket,
-		key:    key,
+		s3Context: s3Context,
+		bucket:    bucket,
+		key:       key,
 	}
 }
 
@@ -54,11 +55,16 @@ func (p *S3Path) String() string {
 }
 
 func (p *S3Path) Remove() error {
+	client, err := p.client()
+	if err != nil {
+		return err
+	}
+
 	request := &s3.DeleteObjectInput{}
 	request.Bucket = aws.String(p.bucket)
 	request.Key = aws.String(p.key)
 
-	_, err := p.client.DeleteObject(request)
+	_, err = client.DeleteObject(request)
 	if err != nil {
 		// TODO: Check for not-exists, return os.NotExist
 
@@ -73,13 +79,18 @@ func (p *S3Path) Join(relativePath ...string) Path {
 	args = append(args, relativePath...)
 	joined := path.Join(args...)
 	return &S3Path{
-		client: p.client,
-		bucket: p.bucket,
-		key:    joined,
+		s3Context: p.s3Context,
+		bucket:    p.bucket,
+		key:       joined,
 	}
 }
 
 func (p *S3Path) WriteFile(data []byte) error {
+	client, err := p.client()
+	if err != nil {
+		return err
+	}
+
 	glog.V(4).Infof("Writing file %q", p)
 
 	request := &s3.PutObjectInput{}
@@ -90,7 +101,7 @@ func (p *S3Path) WriteFile(data []byte) error {
 
 	// We don't need Content-MD5: https://github.com/aws/aws-sdk-go/issues/208
 
-	_, err := p.client.PutObject(request)
+	_, err = client.PutObject(request)
 	if err != nil {
 		return fmt.Errorf("error writing %s: %v", p, err)
 	}
@@ -122,13 +133,18 @@ func (p *S3Path) CreateFile(data []byte) error {
 }
 
 func (p *S3Path) ReadFile() ([]byte, error) {
+	client, err := p.client()
+	if err != nil {
+		return nil, err
+	}
+
 	glog.V(4).Infof("Reading file %q", p)
 
 	request := &s3.GetObjectInput{}
 	request.Bucket = aws.String(p.bucket)
 	request.Key = aws.String(p.key)
 
-	response, err := p.client.GetObject(request)
+	response, err := client.GetObject(request)
 	if err != nil {
 		if AWSErrorCode(err) == "NoSuchKey" {
 			return nil, os.ErrNotExist
@@ -145,6 +161,11 @@ func (p *S3Path) ReadFile() ([]byte, error) {
 }
 
 func (p *S3Path) ReadDir() ([]Path, error) {
+	client, err := p.client()
+	if err != nil {
+		return nil, err
+	}
+
 	prefix := p.key
 	if !strings.HasSuffix(prefix, "/") {
 		prefix += "/"
@@ -156,7 +177,7 @@ func (p *S3Path) ReadDir() ([]Path, error) {
 
 	glog.V(4).Infof("Listing objects in S3 bucket %q with prefix %q", p.bucket, prefix)
 	var paths []Path
-	err := p.client.ListObjectsPages(request, func(page *s3.ListObjectsOutput, lastPage bool) bool {
+	err = client.ListObjectsPages(request, func(page *s3.ListObjectsOutput, lastPage bool) bool {
 		for _, o := range page.Contents {
 			key := aws.StringValue(o.Key)
 			if key == prefix {
@@ -168,10 +189,10 @@ func (p *S3Path) ReadDir() ([]Path, error) {
 				continue
 			}
 			child := &S3Path{
-				client: p.client,
-				bucket: p.bucket,
-				key:    key,
-				etag:   o.ETag,
+				s3Context: p.s3Context,
+				bucket:    p.bucket,
+				key:       key,
+				etag:      o.ETag,
 			}
 			paths = append(paths, child)
 		}
@@ -185,20 +206,25 @@ func (p *S3Path) ReadDir() ([]Path, error) {
 }
 
 func (p *S3Path) ReadTree() ([]Path, error) {
+	client, err := p.client()
+	if err != nil {
+		return nil, err
+	}
+
 	request := &s3.ListObjectsInput{}
 	request.Bucket = aws.String(p.bucket)
 	request.Prefix = aws.String(p.key)
 	// No delimiter for recursive search
 
 	var paths []Path
-	err := p.client.ListObjectsPages(request, func(page *s3.ListObjectsOutput, lastPage bool) bool {
+	err = client.ListObjectsPages(request, func(page *s3.ListObjectsOutput, lastPage bool) bool {
 		for _, o := range page.Contents {
 			key := aws.StringValue(o.Key)
 			child := &S3Path{
-				client: p.client,
-				bucket: p.bucket,
-				key:    key,
-				etag:   o.ETag,
+				s3Context: p.s3Context,
+				bucket:    p.bucket,
+				key:       key,
+				etag:      o.ETag,
 			}
 			paths = append(paths, child)
 		}
@@ -208,6 +234,23 @@ func (p *S3Path) ReadTree() ([]Path, error) {
 		return nil, fmt.Errorf("error listing %s: %v", p, err)
 	}
 	return paths, nil
+}
+
+func (p *S3Path) client() (*s3.S3, error) {
+	var err error
+	if p.region == "" {
+		p.region, err = p.s3Context.getRegionForBucket(p.bucket)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	client, err := p.s3Context.getClient(p.region)
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
 }
 
 func (p *S3Path) Base() string {

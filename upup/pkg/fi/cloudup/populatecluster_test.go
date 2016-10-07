@@ -21,6 +21,8 @@ func buildMinimalCluster() *api.Cluster {
 	c.Spec.NonMasqueradeCIDR = "100.64.0.0/10"
 	c.Spec.CloudProvider = "aws"
 
+	c.Spec.ConfigBase = "s3://unittest-bucket/"
+
 	// Required to stop a call to cloud provider
 	// TODO: Mock cloudprovider
 	c.Spec.DNSZone = "test.com"
@@ -58,8 +60,7 @@ func TestPopulateCluster_Default_NoError(t *testing.T) {
 
 	addEtcdClusters(c)
 
-	registry := buildInmemoryClusterRegistry()
-	_, err = PopulateClusterSpec(c, registry)
+	_, err = PopulateClusterSpec(c)
 	if err != nil {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}
@@ -79,8 +80,7 @@ func TestPopulateCluster_Docker_Spec(t *testing.T) {
 
 	addEtcdClusters(c)
 
-	registry := buildInmemoryClusterRegistry()
-	full, err := PopulateClusterSpec(c, registry)
+	full, err := PopulateClusterSpec(c)
 	if err != nil {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}
@@ -101,8 +101,7 @@ func build(c *api.Cluster) (*api.Cluster, error) {
 	}
 
 	addEtcdClusters(c)
-	registry := buildInmemoryClusterRegistry()
-	full, err := PopulateClusterSpec(c, registry)
+	full, err := PopulateClusterSpec(c)
 	if err != nil {
 		return nil, fmt.Errorf("Unexpected error from PopulateCluster: %v", err)
 	}
@@ -146,8 +145,7 @@ func TestPopulateCluster_Custom_CIDR(t *testing.T) {
 
 	addEtcdClusters(c)
 
-	registry := buildInmemoryClusterRegistry()
-	full, err := PopulateClusterSpec(c, registry)
+	full, err := PopulateClusterSpec(c)
 	if err != nil {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}
@@ -167,8 +165,7 @@ func TestPopulateCluster_IsolateMasters(t *testing.T) {
 
 	addEtcdClusters(c)
 
-	registry := buildInmemoryClusterRegistry()
-	full, err := PopulateClusterSpec(c, registry)
+	full, err := PopulateClusterSpec(c)
 	if err != nil {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}
@@ -191,8 +188,7 @@ func TestPopulateCluster_IsolateMastersFalse(t *testing.T) {
 
 	addEtcdClusters(c)
 
-	registry := buildInmemoryClusterRegistry()
-	full, err := PopulateClusterSpec(c, registry)
+	full, err := PopulateClusterSpec(c)
 	if err != nil {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}
@@ -240,8 +236,7 @@ func TestPopulateCluster_CloudProvider_Required(t *testing.T) {
 }
 
 func expectErrorFromPopulateCluster(t *testing.T, c *api.Cluster, message string) {
-	registry := buildInmemoryClusterRegistry()
-	_, err := PopulateClusterSpec(c, registry)
+	_, err := PopulateClusterSpec(c)
 	if err == nil {
 		t.Fatalf("Expected error from PopulateCluster")
 	}
