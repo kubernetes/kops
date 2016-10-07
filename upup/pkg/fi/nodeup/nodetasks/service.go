@@ -8,6 +8,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
+	"k8s.io/kops/upup/pkg/fi/nodeup/tags"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"os"
 	"os/exec"
@@ -18,7 +19,12 @@ import (
 )
 
 const (
-	systemdSystemPath = "/lib/systemd/system" // TODO: Different on redhat
+	debianSystemdSystemPath = "/lib/systemd/system"
+
+	// TODO: Generally only repo packages write to /usr/lib/systemd/system on _rhel_family
+	// But we use it in two ways: we update the docker manifest, and we install our own
+	// package (protokube, kubelet).  Maybe we should have the idea of a "system" package.
+	centosSystemdSystemPath = "/usr/lib/systemd/system"
 )
 
 type Service struct {
@@ -109,7 +115,22 @@ func getSystemdStatus(name string) (map[string]string, error) {
 	return properties, nil
 }
 
+func (e *Service) systemdSystemPath(target tags.HasTags) (string, error) {
+	if target.HasTag(tags.TagOSFamilyDebian) {
+		return debianSystemdSystemPath, nil
+	} else if target.HasTag(tags.TagOSFamilyRHEL) {
+		return centosSystemdSystemPath, nil
+	} else {
+		return "", fmt.Errorf("unsupported systemd system")
+	}
+}
+
 func (e *Service) Find(c *fi.Context) (*Service, error) {
+	systemdSystemPath, err := e.systemdSystemPath(c.Target.(tags.HasTags))
+	if err != nil {
+		return nil, err
+	}
+
 	servicePath := path.Join(systemdSystemPath, e.Name)
 
 	d, err := ioutil.ReadFile(servicePath)
@@ -203,6 +224,11 @@ func (s *Service) CheckChanges(a, e, changes *Service) error {
 }
 
 func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) error {
+	systemdSystemPath, err := e.systemdSystemPath(t)
+	if err != nil {
+		return err
+	}
+
 	serviceName := e.Name
 
 	action := ""
@@ -311,10 +337,15 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 }
 
 func (_ *Service) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *Service) error {
+	systemdSystemPath, err := e.systemdSystemPath(t)
+	if err != nil {
+		return err
+	}
+
 	serviceName := e.Name
 
 	servicePath := path.Join(systemdSystemPath, serviceName)
-	err := t.WriteFile(servicePath, fi.NewStringResource(*e.Definition), 0644, 0755)
+	err = t.WriteFile(servicePath, fi.NewStringResource(*e.Definition), 0644, 0755)
 	if err != nil {
 		return err
 	}

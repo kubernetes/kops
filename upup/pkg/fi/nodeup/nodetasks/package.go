@@ -7,6 +7,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
+	"k8s.io/kops/upup/pkg/fi/nodeup/tags"
 	"k8s.io/kops/util/pkg/hashing"
 	"os"
 	"os/exec"
@@ -87,6 +88,20 @@ func NewPackage(name string, contents string, meta string) (fi.Task, error) {
 }
 
 func (e *Package) Find(c *fi.Context) (*Package, error) {
+	target := c.Target.(*local.LocalTarget)
+
+	if target.HasTag(tags.TagOSFamilyDebian) {
+		return e.findDpkg(c)
+	}
+
+	if target.HasTag(tags.TagOSFamilyRHEL) {
+		return e.findYum(c)
+	}
+
+	return nil, fmt.Errorf("unsupported package system")
+}
+
+func (e *Package) findDpkg(c *fi.Context) (*Package, error) {
 	args := []string{"dpkg-query", "-f", "${db:Status-Abbrev}${Version}\\n", "-W", e.Name}
 	human := strings.Join(args, " ")
 
@@ -146,6 +161,54 @@ func (e *Package) Find(c *fi.Context) (*Package, error) {
 	}, nil
 }
 
+func (e *Package) findYum(c *fi.Context) (*Package, error) {
+	args := []string{"/usr/bin/rpm", "-q", e.Name, "--queryformat", "%{NAME} %{VERSION}"}
+	human := strings.Join(args, " ")
+
+	glog.V(2).Infof("Listing installed packages: %s", human)
+	cmd := exec.Command(args[0], args[1:]...)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		if strings.Contains(string(output), "is not installed") {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("error listing installed packages: %v: %s", err, string(output))
+	}
+
+	installed := false
+	var healthy *bool
+	installedVersion := ""
+	for _, line := range strings.Split(string(output), "\n") {
+		if line == "" {
+			continue
+		}
+
+		tokens := strings.Split(line, " ")
+		if len(tokens) != 2 {
+			return nil, fmt.Errorf("error parsing rpm line %q", line)
+		}
+
+		name := tokens[0]
+		if name != e.Name {
+			return nil, fmt.Errorf("error parsing rpm line %q", line)
+		}
+		installed = true
+		installedVersion = tokens[1]
+		// If we implement unhealthy; be sure to implement repair in Render
+		healthy = fi.Bool(true)
+	}
+
+	if !installed {
+		return nil, nil
+	}
+
+	return &Package{
+		Name:    e.Name,
+		Version: fi.String(installedVersion),
+		Healthy: healthy,
+	}, nil
+}
+
 func (e *Package) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
@@ -186,7 +249,14 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 				return err
 			}
 
-			args := []string{"dpkg", "-i", local}
+			var args []string
+			if t.HasTag(tags.TagOSFamilyDebian) {
+				args = []string{"dpkg", "-i", local}
+			} else if t.HasTag(tags.TagOSFamilyRHEL) {
+				args = []string{"/usr/bin/rpm", "-i", local}
+			} else {
+				return fmt.Errorf("unsupported package system")
+			}
 			glog.Infof("running command %s", args)
 			cmd := exec.Command(args[0], args[1:]...)
 			output, err := cmd.CombinedOutput()
@@ -194,7 +264,16 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 				return fmt.Errorf("error installing package %q: %v: %s", e.Name, err, string(output))
 			}
 		} else {
-			args := []string{"apt-get", "install", "--yes", e.Name}
+			var args []string
+			if t.HasTag(tags.TagOSFamilyDebian) {
+				args = []string{"apt-get", "install", "--yes", e.Name}
+
+			} else if t.HasTag(tags.TagOSFamilyRHEL) {
+				args = []string{"/usr/bin/yum", "install", "-y", e.Name}
+			} else {
+				return fmt.Errorf("unsupported package system")
+			}
+
 			glog.Infof("running command %s", args)
 			cmd := exec.Command(args[0], args[1:]...)
 			output, err := cmd.CombinedOutput()
@@ -204,15 +283,22 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 		}
 	} else {
 		if changes.Healthy != nil {
-			args := []string{"dpkg", "--configure", "-a"}
-			glog.Infof("package is not healthy; runnning command %s", args)
-			cmd := exec.Command(args[0], args[1:]...)
-			output, err := cmd.CombinedOutput()
-			if err != nil {
-				return fmt.Errorf("error running `dpkg --configure -a`: %v: %s", err, string(output))
-			}
+			if t.HasTag(tags.TagOSFamilyDebian) {
+				args := []string{"dpkg", "--configure", "-a"}
+				glog.Infof("package is not healthy; runnning command %s", args)
+				cmd := exec.Command(args[0], args[1:]...)
+				output, err := cmd.CombinedOutput()
+				if err != nil {
+					return fmt.Errorf("error running `dpkg --configure -a`: %v: %s", err, string(output))
+				}
 
-			changes.Healthy = nil
+				changes.Healthy = nil
+			} else if t.HasTag(tags.TagOSFamilyRHEL) {
+				// Not set on TagOSFamilyRHEL, we can't currently reach here anyway...
+				return fmt.Errorf("package repair not supported on RHEL/CentOS")
+			} else {
+				return fmt.Errorf("unsupported package system")
+			}
 		}
 
 		if !reflect.DeepEqual(changes, &Package{}) {

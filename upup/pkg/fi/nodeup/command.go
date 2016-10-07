@@ -199,12 +199,13 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	case "direct":
 		target = &local.LocalTarget{
 			CacheDir: c.CacheDir,
+			Tags:     tags,
 		}
 	case "dryrun":
 		target = fi.NewDryRunTarget(out)
 	case "cloudinit":
 		checkExisting = false
-		target = cloudinit.NewCloudInitTarget(out)
+		target = cloudinit.NewCloudInitTarget(out, tags)
 	default:
 		return fmt.Errorf("unsupported target type %q", c.Target)
 	}

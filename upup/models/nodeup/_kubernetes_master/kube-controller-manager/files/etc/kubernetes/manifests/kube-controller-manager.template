@@ -49,6 +49,9 @@
         "readOnly": true},
         { "name": "etcpkitls",
         "mountPath": "/etc/pki/tls",
+        "readOnly": true},
+        { "name": "etcpkicatrust",
+        "mountPath": "/etc/pki/ca-trust",
         "readOnly": true}
       ]
     }
@@ -79,6 +82,10 @@
   { "name": "etcpkitls",
     "hostPath": {
         "path": "/etc/pki/tls"}
+  },
+  { "name": "etcpkicatrust",
+    "hostPath": {
+        "path": "/etc/pki/ca-trust"}
   }
 ]
 }}

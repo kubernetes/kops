@@ -14,6 +14,7 @@ import (
 type CloudInitTarget struct {
 	Config *CloudConfig
 	out    io.Writer
+	Tags   map[string]struct{}
 }
 
 type AddBehaviour int
@@ -23,10 +24,11 @@ const (
 	Once
 )
 
-func NewCloudInitTarget(out io.Writer) *CloudInitTarget {
+func NewCloudInitTarget(out io.Writer, tags map[string]struct{}) *CloudInitTarget {
 	t := &CloudInitTarget{
 		Config: &CloudConfig{},
 		out:    out,
+		Tags:   tags,
 	}
 	return t
 }
@@ -47,6 +49,11 @@ type CloudConfigFile struct {
 	Path        string `json:"path,omitempty"`
 	Permissions string `json:"permissions,omitempty"`
 	Content     string `json:"content,omitempty"`
+}
+
+func (t *CloudInitTarget) HasTag(tag string) bool {
+	_, found := t.Tags[tag]
+	return found
 }
 
 func (t *CloudInitTarget) AddMkdirpCommand(p string, dirMode os.FileMode) {
