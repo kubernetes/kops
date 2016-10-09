@@ -101,7 +101,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.Image, "image", "", "Image to use")
 
-	cmd.Flags().StringVar(&options.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external.")
+	cmd.Flags().StringVar(&options.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external, cni.")
 
 	cmd.Flags().StringVar(&options.DNSZone, "dns-zone", "", "DNS hosted zone to use (defaults to longest matching zone)")
 	cmd.Flags().StringVar(&options.OutDir, "out", "", "Path to write any local output")
@@ -188,6 +188,8 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 		cluster.Spec.Networking.Kubenet = &api.KubenetNetworkingSpec{}
 	case "external":
 		cluster.Spec.Networking.External = &api.ExternalNetworkingSpec{}
+	case "cni":
+		cluster.Spec.Networking.CNI = &api.CNINetworkingSpec{}
 	default:
 		return fmt.Errorf("unknown networking mode %q", c.Networking)
 	}
