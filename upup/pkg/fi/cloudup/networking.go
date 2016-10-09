@@ -38,6 +38,11 @@ func usesCNI(c *api.Cluster) bool {
 		return true
 	}
 
+	if networkConfig.CNI != nil {
+		// external: assume uses CNI
+		return true
+	}
+
 	// Assume other modes also use CNI
 	glog.Warningf("Unknown networking mode configured")
 	return true
