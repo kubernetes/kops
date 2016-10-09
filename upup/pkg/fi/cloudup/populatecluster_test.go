@@ -145,6 +145,45 @@ func TestPopulateCluster_Kubenet(t *testing.T) {
 	}
 }
 
+func TestPopulateCluster_CNI(t *testing.T) {
+	c := buildMinimalCluster()
+
+	c.Spec.Kubelet = &api.KubeletConfigSpec{
+		ConfigureCBR0:     fi.Bool(false),
+		NetworkPluginName: "cni",
+		NonMasqueradeCIDR: c.Spec.NonMasqueradeCIDR,
+		CloudProvider:     c.Spec.CloudProvider,
+	}
+
+	c.Spec.NetworkCIDR = "172.20.2.0/24"
+	c.Spec.Zones = []*api.ClusterZoneSpec{
+		{Name: "us-west-2a", CIDR: "172.20.2.0/27"},
+		{Name: "us-west-2b", CIDR: "172.20.2.32/27"},
+		{Name: "us-west-2c", CIDR: "172.20.2.64/27"},
+	}
+
+	full, err := build(c)
+	if err != nil {
+		t.Fatalf("error during build: %v", err)
+	}
+
+	if full.Spec.Kubelet.NetworkPluginName != "cni" {
+		t.Fatalf("Unexpected NetworkPluginName: %v", full.Spec.Kubelet.NetworkPluginName)
+	}
+
+	if fi.BoolValue(full.Spec.Kubelet.ReconcileCIDR) != true {
+		t.Fatalf("Unexpected ReconcileCIDR: %v", full.Spec.Kubelet.ReconcileCIDR)
+	}
+
+	if fi.BoolValue(full.Spec.Kubelet.ConfigureCBR0) != false {
+		t.Fatalf("Unexpected ConfigureCBR0: %v", full.Spec.Kubelet.ConfigureCBR0)
+	}
+
+	if fi.BoolValue(full.Spec.KubeControllerManager.ConfigureCloudRoutes) != true {
+		t.Fatalf("Unexpected ConfigureCloudRoutes: %v", full.Spec.KubeControllerManager.ConfigureCloudRoutes)
+	}
+}
+
 func TestPopulateCluster_Custom_CIDR(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.NetworkCIDR = "172.20.2.0/24"
