@@ -26,8 +26,8 @@ We recommend using a release from the Release tab above.
 Build the code (make sure you have set GOPATH):
 ```
 go get -d k8s.io/kops
-git checkout release
 cd ${GOPATH}/src/k8s.io/kops/
+git checkout release
 make
 ```
 
