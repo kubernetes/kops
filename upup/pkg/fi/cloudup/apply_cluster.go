@@ -23,12 +23,12 @@ import (
 )
 
 const (
-	NodeUpVersion = "1.4.0"
+	NodeUpVersion = "1.4.1"
 )
 
 const MaxAttemptsWithNoProgress = 3
 
-var CloudupModels = []string{"config","proto","cloudup"}
+var CloudupModels = []string{"config", "proto", "cloudup"}
 
 type ApplyClusterCmd struct {
 	Cluster *api.Cluster
