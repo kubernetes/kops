@@ -15,20 +15,24 @@ Some of the more interesting features:
 
 ## Recent changes
 
-Improvements are being made almost daily, but bigger changes are described here (until we get to
-a more formal release process):
-
-* Reworked SSH keys and support for running CI builds [Aug 11 2016](CHANGES.md#aug-11-2016)
-* Create command was split into create and update [Jul 21 2016](CHANGES.md#jul-21-2016)
+Change history is available in [HISTORY.md](HISTORY.md)
 
 ## Installation
+
+We recommend using a release from the Release tab above.
+
+## Installation from source
 
 Build the code (make sure you have set GOPATH):
 ```
 go get -d k8s.io/kops
+git checkout release
 cd ${GOPATH}/src/k8s.io/kops/
 make
 ```
+
+* The `release` branch is where releases are taken from.  This is the stable code branch.
+* The `master` branch  _should_ also be functional, but is where active development happens, so may be less stable.
 
 (Note that the code uses the relatively new Go vendoring, so building requires Go 1.6 or later,
 or you must export GO15VENDOREXPERIMENT=1 when building with Go 1.5.  The makefile sets
