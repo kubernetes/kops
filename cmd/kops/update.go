@@ -15,6 +15,7 @@ func NewCmdUpdate(f *util.Factory, out io.Writer) *cobra.Command {
 
 	//  subcommands
 	cmd.AddCommand(NewCmdUpdateCluster(f, out))
+	cmd.AddCommand(NewCmdUpdateFederation(f, out))
 
 	return cmd
 }

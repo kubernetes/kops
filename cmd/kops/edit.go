@@ -15,6 +15,7 @@ func NewCmdEdit(f *util.Factory, out io.Writer) *cobra.Command {
 	// create subcommands
 	cmd.AddCommand(NewCmdEditCluster(f, out))
 	cmd.AddCommand(NewCmdEditInstanceGroup(f, out))
+	cmd.AddCommand(NewCmdEditFederation(f, out))
 
 	return cmd
 }

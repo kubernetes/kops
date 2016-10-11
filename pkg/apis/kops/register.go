@@ -46,6 +46,7 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&Cluster{},
 		&InstanceGroup{},
+		&Federation{},
 	)
 	return nil
 }
@@ -54,5 +55,8 @@ func (obj *Cluster) GetObjectKind() unversioned.ObjectKind {
 	return &obj.TypeMeta
 }
 func (obj *InstanceGroup) GetObjectKind() unversioned.ObjectKind {
+	return &obj.TypeMeta
+}
+func (obj *Federation) GetObjectKind() unversioned.ObjectKind {
 	return &obj.TypeMeta
 }

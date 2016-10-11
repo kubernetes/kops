@@ -1,0 +1,6 @@
+kind: Cluster
+apiVersion: kops/v1alpha1
+metadata:
+  name: control1.federation.com
+spec:
+  channel: stable
