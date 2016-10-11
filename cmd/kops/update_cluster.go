@@ -5,7 +5,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"io/ioutil"
-	"k8s.io/kops/upup/pkg/api/registry"
+	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"

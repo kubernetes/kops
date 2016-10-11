@@ -2,13 +2,13 @@ package main
 
 import (
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
-	"k8s.io/kops/upup/pkg/api"
+	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"io/ioutil"
 	"fmt"
-	"k8s.io/kops/upup/pkg/api/registry"
+	"k8s.io/kops/pkg/apis/kops/registry"
 )
 
 func up() error {
