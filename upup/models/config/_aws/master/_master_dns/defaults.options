@@ -1,5 +1,0 @@
-{{ if HasTag "_master_lb" }}
-MasterInternalName: {{ .MasterPublicName }}
-{{ else }}
-MasterInternalName: api.internal.{{ ClusterName }}
-{{ end }}

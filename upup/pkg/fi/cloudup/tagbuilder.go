@@ -39,10 +39,6 @@ func buildCloudupTags(cluster *api.Cluster) (map[string]struct{}, error) {
 		tags["_not_master_lb"] = struct{}{}
 	}
 
-	if cluster.Spec.MasterPublicName != "" {
-		tags["_master_dns"] = struct{}{}
-	}
-
 	if fi.BoolValue(cluster.Spec.IsolateMasters) {
 		tags["_isolate_masters"] = struct{}{}
 	}
