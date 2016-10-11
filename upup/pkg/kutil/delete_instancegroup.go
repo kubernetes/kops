@@ -2,7 +2,6 @@ package kutil
 
 import (
 	"fmt"
-
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/upup/pkg/fi"
