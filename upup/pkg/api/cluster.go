@@ -290,6 +290,7 @@ func (c *Cluster) PerformAssignments() error {
 		c.Spec.NonMasqueradeCIDR = "100.64.0.0/10"
 	}
 
+	// TODO: Unclear this should be here - it isn't too hard to change
 	if c.Spec.MasterPublicName == "" && c.Name != "" {
 		c.Spec.MasterPublicName = "api." + c.Name
 	}
@@ -339,6 +340,18 @@ func (c *Cluster) FillDefaults() error {
 	err := c.ensureKubernetesVersion()
 	if err != nil {
 		return err
+	}
+
+	if c.Name == "" {
+		return fmt.Errorf("cluster Name not set in FillDefaults")
+	}
+
+	if c.Spec.MasterInternalName == "" {
+		c.Spec.MasterInternalName = "api.internal." + c.Name
+	}
+
+	if c.Spec.MasterPublicName == "" {
+		c.Spec.MasterPublicName = "api." + c.Name
 	}
 
 	return nil
