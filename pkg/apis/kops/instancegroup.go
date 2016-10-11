@@ -100,7 +100,7 @@ func (g *InstanceGroup) IsMaster() bool {
 	}
 }
 
-func (g *InstanceGroup) Validate(strict bool) error {
+func (g *InstanceGroup) Validate() error {
 	if g.Name == "" {
 		return field.Required(field.NewPath("Name"), "")
 	}
@@ -129,7 +129,7 @@ func (g *InstanceGroup) Validate(strict bool) error {
 // CrossValidate performs validation of the instance group, including that it is consistent with the Cluster
 // It calls Validate, so all that validation is included.
 func (g *InstanceGroup) CrossValidate(cluster *Cluster, strict bool) error {
-	err := g.Validate(strict)
+	err := g.Validate()
 	if err != nil {
 		return err
 	}

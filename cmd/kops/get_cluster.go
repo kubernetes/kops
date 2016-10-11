@@ -1,14 +1,13 @@
 package main
 
 import (
-	"os"
-
 	"fmt"
 	"github.com/spf13/cobra"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/util/pkg/tables"
 	k8sapi "k8s.io/kubernetes/pkg/api"
+	"os"
 	"strings"
 )
 

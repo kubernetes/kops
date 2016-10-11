@@ -6,24 +6,33 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	api "k8s.io/kops/pkg/apis/kops"
+	"io"
+	"k8s.io/kops/cmd/kops/util"
+	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
-	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/upup/pkg/kutil"
-	"k8s.io/kops/util/pkg/vfs"
+	k8sapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 	"os"
 )
 
+type Factory interface {
+	Clientset() (simple.Clientset, error)
+}
+
 type RootCmd struct {
+	util.FactoryOptions
+
+	factory *util.Factory
+
 	configFile string
 
-	clientset simple.Clientset
-
-	stateLocation string
-	clusterName   string
+	clusterName string
 
 	cobraCommand *cobra.Command
 }
+
+var _ Factory = &RootCmd{}
 
 var rootCommand = RootCmd{
 	cobraCommand: &cobra.Command{
@@ -35,6 +44,10 @@ It allows you to create, destroy, upgrade and maintain clusters.`,
 }
 
 func Execute() {
+	if err := initializeSchemas(); err != nil {
+		exitWithError(fmt.Errorf("initialization error: %v", err))
+	}
+
 	goflag.Set("logtostderr", "true")
 	goflag.CommandLine.Parse([]string{})
 	if err := rootCommand.cobraCommand.Execute(); err != nil {
@@ -42,8 +55,25 @@ func Execute() {
 	}
 }
 
+func initializeSchemas() error {
+	scheme := k8sapi.Scheme //runtime.NewScheme()
+	if err := kopsapi.AddToScheme(scheme); err != nil {
+		return err
+	}
+	return nil
+}
+
 func init() {
 	cobra.OnInitialize(initConfig)
+
+	factory := util.NewFactory(&rootCommand.FactoryOptions)
+	rootCommand.factory = factory
+
+	NewCmdRoot(factory, os.Stdout)
+}
+
+func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
+	//options := &RootOptions{}
 
 	cmd := rootCommand.cobraCommand
 
@@ -52,9 +82,16 @@ func init() {
 	cmd.PersistentFlags().StringVar(&rootCommand.configFile, "config", "", "config file (default is $HOME/.kops.yaml)")
 
 	defaultStateStore := os.Getenv("KOPS_STATE_STORE")
-	cmd.PersistentFlags().StringVarP(&rootCommand.stateLocation, "state", "", defaultStateStore, "Location of state storage")
+	cmd.PersistentFlags().StringVarP(&rootCommand.RegistryPath, "state", "", defaultStateStore, "Location of state storage")
 
 	cmd.PersistentFlags().StringVarP(&rootCommand.clusterName, "name", "", "", "Name of cluster")
+
+	// create subcommands
+	cmd.AddCommand(NewCmdCreate(f, out))
+	cmd.AddCommand(NewCmdEdit(f, out))
+	cmd.AddCommand(NewCmdUpdate(f, out))
+
+	return cmd
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -103,13 +140,34 @@ func (c *RootCmd) ClusterName() string {
 		return c.clusterName
 	}
 
-	config, err := readKubectlClusterConfig()
+	// Read from kubeconfig
+	pathOptions := clientcmd.NewDefaultPathOptions()
+
+	config, err := pathOptions.GetStartingConfig()
 	if err != nil {
 		glog.Warningf("error reading kubecfg: %v", err)
-	} else if config != nil && config.Name != "" {
-		fmt.Fprintf(os.Stderr, "Using cluster from kubectl context: %s\n\n", config.Name)
-		c.clusterName = config.Name
+	} else if config.CurrentContext == "" {
+		glog.Warningf("no context set in kubecfg")
+	} else {
+		context := config.Contexts[config.CurrentContext]
+		if context == nil {
+			glog.Warningf("context %q in kubecfg not found", config.CurrentContext)
+		} else if context.Cluster == "" {
+			glog.Warningf("context %q in kubecfg did not have a cluster", config.CurrentContext)
+		} else {
+			fmt.Fprintf(os.Stderr, "Using cluster from kubectl context: %s\n\n", context.Cluster)
+			c.clusterName = context.Cluster
+		}
 	}
+
+	//config, err := readKubectlClusterConfig()
+	//if err != nil {
+	//	glog.Warningf("error reading kubecfg: %v", err)
+	//} else if config != nil && config.Name != "" {
+	//	fmt.Fprintf(os.Stderr, "Using cluster from kubectl context: %s\n\n", config.Name)
+	//	c.clusterName = config.Name
+	//}
+
 	return c.clusterName
 }
 
@@ -135,21 +193,10 @@ func readKubectlClusterConfig() (*kutil.KubectlClusterWithName, error) {
 }
 
 func (c *RootCmd) Clientset() (simple.Clientset, error) {
-	basePath, err := vfs.Context.BuildVfsPath(c.stateLocation)
-	if err != nil {
-		return nil, fmt.Errorf("error building state store path for %q: %v", c.stateLocation, err)
-	}
-
-	if !vfs.IsClusterReadable(basePath) {
-		return nil, fmt.Errorf("State store %q is not cloud-reachable - please use an S3 bucket", c.stateLocation)
-	}
-
-	clientset := vfsclientset.NewVFSClientset(basePath)
-
-	return clientset, nil
+	return c.factory.Clientset()
 }
 
-func (c *RootCmd) Cluster() (*api.Cluster, error) {
+func (c *RootCmd) Cluster() (*kopsapi.Cluster, error) {
 	clientset, err := c.Clientset()
 	if err != nil {
 		return nil, err
