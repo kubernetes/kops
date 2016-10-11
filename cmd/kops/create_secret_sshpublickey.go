@@ -2,42 +2,39 @@ package main
 
 import (
 	"fmt"
-
 	"github.com/spf13/cobra"
+	"io"
 	"io/ioutil"
+	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"os"
 )
 
-type CreateSecretPublickeyCommand struct {
-	cobraCommand *cobra.Command
-
+type CreateSecretPublickeyOptions struct {
 	Pubkey string
 }
 
-var createSecretPublickeyCommand = CreateSecretPublickeyCommand{
-	cobraCommand: &cobra.Command{
+func NewCmdCreateSecretPublicKey(f *util.Factory, out io.Writer) *cobra.Command {
+	options := &CreateSecretPublickeyOptions{}
+
+	cmd := &cobra.Command{
 		Use:   "sshpublickey",
 		Short: "Create SSH publickey",
 		Long:  `Create SSH publickey.`,
-	},
-}
-
-func init() {
-	cmd := createSecretPublickeyCommand.cobraCommand
-
-	cmd.Run = func(cmd *cobra.Command, args []string) {
-		err := createSecretPublickeyCommand.Run(args)
-		if err != nil {
-			exitWithError(err)
-		}
+		Run: func(cmd *cobra.Command, args []string) {
+			err := RunCreateSecretPublicKey(f, cmd, args, os.Stdout, options)
+			if err != nil {
+				exitWithError(err)
+			}
+		},
 	}
 
-	cmd.Flags().StringVarP(&createSecretPublickeyCommand.Pubkey, "pubkey", "i", "", "Path to SSH public key")
+	cmd.Flags().StringVarP(&options.Pubkey, "pubkey", "i", "", "Path to SSH public key")
 
-	createSecretCmd.cobraCommand.AddCommand(cmd)
+	return cmd
 }
 
-func (cmd *CreateSecretPublickeyCommand) Run(args []string) error {
+func RunCreateSecretPublicKey(f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, options *CreateSecretPublickeyOptions) error {
 	if len(args) == 0 {
 		return fmt.Errorf("syntax: NAME -i <PublicKeyPath>")
 	}
@@ -46,7 +43,7 @@ func (cmd *CreateSecretPublickeyCommand) Run(args []string) error {
 	}
 	name := args[0]
 
-	if cmd.Pubkey == "" {
+	if options.Pubkey == "" {
 		return fmt.Errorf("pubkey path is required (use -i)")
 	}
 
@@ -60,9 +57,9 @@ func (cmd *CreateSecretPublickeyCommand) Run(args []string) error {
 		return err
 	}
 
-	data, err := ioutil.ReadFile(cmd.Pubkey)
+	data, err := ioutil.ReadFile(options.Pubkey)
 	if err != nil {
-		return fmt.Errorf("error reading SSH public key %v: %v", cmd.Pubkey, err)
+		return fmt.Errorf("error reading SSH public key %v: %v", options.Pubkey, err)
 	}
 
 	err = keyStore.AddSSHPublicKey(name, data)
