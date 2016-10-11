@@ -190,7 +190,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 
 	var cloud fi.Cloud
-	var caStore fi.CAStore
+	var keyStore fi.Keystore
 	var secretStore fi.SecretStore
 	var target fi.Target
 	checkExisting := true
@@ -210,7 +210,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("unsupported target type %q", c.Target)
 	}
 
-	context, err := fi.NewContext(target, cloud, caStore, secretStore, configBase, checkExisting, taskMap)
+	context, err := fi.NewContext(target, cloud, keyStore, secretStore, configBase, checkExisting, taskMap)
 	if err != nil {
 		glog.Exitf("error building context: %v", err)
 	}
