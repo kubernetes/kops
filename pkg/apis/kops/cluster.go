@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"k8s.io/kops/util/pkg/vfs"
-	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"net"
 	"strconv"
@@ -14,7 +13,7 @@ import (
 
 type Cluster struct {
 	unversioned.TypeMeta `json:",inline"`
-	k8sapi.ObjectMeta    `json:"metadata,omitempty"`
+	ObjectMeta    `json:"metadata,omitempty"`
 
 	Spec ClusterSpec `json:"spec,omitempty"`
 }
