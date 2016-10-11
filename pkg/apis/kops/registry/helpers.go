@@ -3,7 +3,7 @@ package registry
 import (
 	"fmt"
 	"k8s.io/kops/pkg/client/simple"
-	"k8s.io/kops/upup/pkg/api"
+	api "k8s.io/kops/pkg/apis/kops"
 )
 
 func CreateClusterConfig(clientset simple.Clientset, cluster *api.Cluster, groups []*api.InstanceGroup) error {

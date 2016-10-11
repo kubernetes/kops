@@ -2,7 +2,7 @@ package cloudup
 
 import (
 	"github.com/golang/glog"
-	"k8s.io/kops/upup/pkg/api"
+	api "k8s.io/kops/pkg/apis/kops"
 )
 
 func usesCNI(c *api.Cluster) bool {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"io/ioutil"
-	"k8s.io/kops/upup/pkg/api/registry"
+	"k8s.io/kops/pkg/apis/kops/registry"
 )
 
 type CreateSecretPublickeyCommand struct {
