@@ -3,7 +3,6 @@ package kops
 import (
 	"fmt"
 	"github.com/golang/glog"
-	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/util/validation/field"
 )
@@ -11,7 +10,7 @@ import (
 // InstanceGroup represents a group of instances (either nodes or masters) with the same configuration
 type InstanceGroup struct {
 	unversioned.TypeMeta `json:",inline"`
-	k8sapi.ObjectMeta    `json:"metadata,omitempty"`
+	ObjectMeta    `json:"metadata,omitempty"`
 
 	Spec InstanceGroupSpec `json:"spec,omitempty"`
 }
