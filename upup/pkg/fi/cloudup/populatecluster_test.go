@@ -155,12 +155,12 @@ func TestPopulateCluster_CNI(t *testing.T) {
 		CloudProvider:     c.Spec.CloudProvider,
 	}
 
-	c.Spec.NetworkCIDR = "172.20.2.0/24"
+	/*
 	c.Spec.Zones = []*api.ClusterZoneSpec{
 		{Name: "us-west-2a", CIDR: "172.20.2.0/27"},
 		{Name: "us-west-2b", CIDR: "172.20.2.32/27"},
 		{Name: "us-west-2c", CIDR: "172.20.2.64/27"},
-	}
+	}*/
 
 	full, err := build(c)
 	if err != nil {
