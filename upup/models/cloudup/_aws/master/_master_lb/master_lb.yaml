@@ -49,13 +49,10 @@ securityGroupRule/https-elb-to-master:
   toPort: 443
 
 
-{{ if HasTag "_master_dns" }}
-
 # Master name -> ELB
 dnsName/{{ .MasterPublicName }}:
   Zone: dnsZone/{{ .DNSZone }}
   ResourceType: "A"
   TargetLoadBalancer: loadBalancer/api.{{ ClusterName }}
 
-{{ end }}
 
