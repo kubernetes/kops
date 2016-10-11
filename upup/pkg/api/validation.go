@@ -172,17 +172,25 @@ func (c *Cluster) Validate(strict bool) error {
 		if cloudProvider == "" {
 			return field.Required(specPath.Child("CloudProvider"), "")
 		}
-		if c.Spec.Kubelet != nil && cloudProvider != c.Spec.Kubelet.CloudProvider {
-			return field.Invalid(specPath.Child("Kubelet", "CloudProvider"), c.Spec.Kubelet.CloudProvider, "Did not match cluster CloudProvider")
+		if c.Spec.Kubelet != nil && (strict || c.Spec.Kubelet.CloudProvider != "") {
+			if cloudProvider != c.Spec.Kubelet.CloudProvider {
+				return field.Invalid(specPath.Child("Kubelet", "CloudProvider"), c.Spec.Kubelet.CloudProvider, "Did not match cluster CloudProvider")
+			}
 		}
-		if c.Spec.MasterKubelet != nil && cloudProvider != c.Spec.Kubelet.CloudProvider {
-			return field.Invalid(specPath.Child("MasterKubelet", "CloudProvider"), c.Spec.Kubelet.CloudProvider, "Did not match cluster CloudProvider")
+		if c.Spec.MasterKubelet != nil && (strict || c.Spec.MasterKubelet.CloudProvider != "") {
+			if cloudProvider != c.Spec.MasterKubelet.CloudProvider {
+				return field.Invalid(specPath.Child("MasterKubelet", "CloudProvider"), c.Spec.MasterKubelet.CloudProvider, "Did not match cluster CloudProvider")
+			}
 		}
-		if c.Spec.KubeAPIServer != nil && cloudProvider != c.Spec.KubeAPIServer.CloudProvider {
-			return field.Invalid(specPath.Child("KubeAPIServer", "CloudProvider"), c.Spec.KubeAPIServer.CloudProvider, "Did not match cluster CloudProvider")
+		if c.Spec.KubeAPIServer != nil && (strict || c.Spec.KubeAPIServer.CloudProvider != "") {
+			if cloudProvider != c.Spec.KubeAPIServer.CloudProvider {
+				return field.Invalid(specPath.Child("KubeAPIServer", "CloudProvider"), c.Spec.KubeAPIServer.CloudProvider, "Did not match cluster CloudProvider")
+			}
 		}
-		if c.Spec.KubeControllerManager != nil && cloudProvider != c.Spec.KubeControllerManager.CloudProvider {
-			return field.Invalid(specPath.Child("KubeControllerManager", "CloudProvider"), c.Spec.KubeControllerManager.CloudProvider, "Did not match cluster CloudProvider")
+		if c.Spec.KubeControllerManager != nil && (strict || c.Spec.KubeControllerManager.CloudProvider != "") {
+			if cloudProvider != c.Spec.KubeControllerManager.CloudProvider {
+				return field.Invalid(specPath.Child("KubeControllerManager", "CloudProvider"), c.Spec.KubeControllerManager.CloudProvider, "Did not match cluster CloudProvider")
+			}
 		}
 	}
 
