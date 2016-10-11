@@ -81,7 +81,21 @@ func (c *Certificate) MarshalJSON() ([]byte, error) {
 	return json.Marshal(data.String())
 }
 
+// Keystore contains just the functions we need to issue keypairs, not to list / manage them
+type Keystore interface {
+	// FindKeypair finds a cert & private key, returning nil where either is not found
+	// (if the certificate is found but not keypair, that is not an error: only the cert will be returned)
+	FindKeypair(name string) (*Certificate, *PrivateKey, error)
+
+	CreateKeypair(name string, template *x509.Certificate) (*Certificate, *PrivateKey, error)
+
+	// Store the keypair
+	StoreKeypair(id string, cert *Certificate, privateKey *PrivateKey) error
+}
+
 type CAStore interface {
+	Keystore
+
 	// Cert returns the primary specified certificate
 	Cert(name string) (*Certificate, error)
 	// CertificatePool returns all active certificates with the specified id
@@ -90,11 +104,6 @@ type CAStore interface {
 
 	FindCert(name string) (*Certificate, error)
 	FindPrivateKey(name string) (*PrivateKey, error)
-
-	//IssueCert(id string, privateKey *PrivateKey, template *x509.Certificate) (*Certificate, error)
-	//CreatePrivateKey(id string) (*PrivateKey, error)
-
-	CreateKeypair(name string, template *x509.Certificate) (*Certificate, *PrivateKey, error)
 
 	// List will list all the items, but will not fetch the data
 	List() ([]*KeystoreItem, error)
@@ -129,22 +138,50 @@ func (c *Certificate) AsString() (string, error) {
 	return data.String(), nil
 }
 
-type PrivateKey struct {
-	Key crypto.PrivateKey
-}
-
-func (c *PrivateKey) AsString() (string, error) {
+func (c *Certificate) AsBytes() ([]byte, error) {
 	// Nicer behaviour because this is called from templates
 	if c == nil {
-		return "", fmt.Errorf("AsString called on nil Certificate")
+		return nil, fmt.Errorf("AsBytes called on nil Certificate")
 	}
 
 	var data bytes.Buffer
 	_, err := c.WriteTo(&data)
 	if err != nil {
+		return nil, fmt.Errorf("error writing SSL certificate: %v", err)
+	}
+	return data.Bytes(), nil
+}
+
+type PrivateKey struct {
+	Key crypto.PrivateKey
+}
+
+func (k *PrivateKey) AsString() (string, error) {
+	// Nicer behaviour because this is called from templates
+	if k == nil {
+		return "", fmt.Errorf("AsString called on nil private key")
+	}
+
+	var data bytes.Buffer
+	_, err := k.WriteTo(&data)
+	if err != nil {
 		return "", fmt.Errorf("error writing SSL private key: %v", err)
 	}
 	return data.String(), nil
+}
+
+func (k *PrivateKey) AsBytes() ([]byte, error) {
+	// Nicer behaviour because this is called from templates
+	if k == nil {
+		return nil, fmt.Errorf("AsBytes called on nil private key")
+	}
+
+	var data bytes.Buffer
+	_, err := k.WriteTo(&data)
+	if err != nil {
+		return nil, fmt.Errorf("error writing SSL PrivateKey: %v", err)
+	}
+	return data.Bytes(), nil
 }
 
 func (k *PrivateKey) UnmarshalJSON(b []byte) (err error) {

@@ -32,14 +32,12 @@ func (e *Keypair) CheckExisting(c *fi.Context) bool {
 }
 
 func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
-	castore := c.CAStore
-
 	name := fi.StringValue(e.Name)
 	if name == "" {
 		return nil, nil
 	}
 
-	cert, err := castore.FindCert(name)
+	cert, key, err := c.Keystore.FindKeypair(name)
 	if err != nil {
 		return nil, err
 	}
@@ -47,10 +45,6 @@ func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
 		return nil, nil
 	}
 
-	key, err := castore.FindPrivateKey(name)
-	if err != nil {
-		return nil, err
-	}
 	if key == nil {
 		return nil, fmt.Errorf("found cert in store, but did not find private key: %q", name)
 	}
@@ -131,20 +125,52 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		return fi.RequiredField("Name")
 	}
 
-	castore := c.CAStore
-
-	template, err := buildCertificateTemplate(e.Type)
+	template, err := e.BuildCertificateTemplate()
 	if err != nil {
 		return err
 	}
 
+	createCertificate := false
+	if a == nil {
+		createCertificate = true
+	} else if changes != nil {
+		if changes.AlternateNames != nil {
+			createCertificate = true
+		} else {
+			glog.Warningf("Ignoring changes in key: %v", fi.DebugAsJsonString(changes))
+		}
+	}
+
+	if createCertificate {
+		glog.V(2).Infof("Creating PKI keypair %q", name)
+
+		// TODO: Reuse private key if already exists?
+		cert, _, err := c.Keystore.CreateKeypair(name, template)
+		if err != nil {
+			return err
+		}
+
+		glog.V(8).Infof("created certificate %v", cert)
+	}
+
+	// TODO: Check correct subject / flags
+
+	return nil
+}
+
+func (e *Keypair) BuildCertificateTemplate() (*x509.Certificate, error) {
+	template, err := buildCertificateTemplateForType(e.Type)
+	if err != nil {
+		return nil, err
+	}
+
 	subjectPkix, err := parsePkixName(e.Subject)
 	if err != nil {
-		return fmt.Errorf("error parsing Subject: %v", err)
+		return nil, fmt.Errorf("error parsing Subject: %v", err)
 	}
 
 	if len(subjectPkix.ToRDNSequence()) == 0 {
-		return fmt.Errorf("Subject name was empty for SSL keypair %q", name)
+		return nil, fmt.Errorf("Subject name was empty for SSL keypair %q", e.Name)
 	}
 
 	template.Subject = *subjectPkix
@@ -164,35 +190,10 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		}
 	}
 
-	createCertificate := false
-	if a == nil {
-		createCertificate = true
-	} else if changes != nil {
-		if changes.AlternateNames != nil {
-			createCertificate = true
-		} else {
-			glog.Warningf("Ignoring changes in key: %v", fi.DebugAsJsonString(changes))
-		}
-	}
-
-	if createCertificate {
-		glog.V(2).Infof("Creating PKI keypair %q", name)
-
-		// TODO: Reuse private key if already exists?
-		cert, _, err := castore.CreateKeypair(name, template)
-		if err != nil {
-			return err
-		}
-
-		glog.V(8).Infof("created certificate %v", cert)
-	}
-
-	// TODO: Check correct subject / flags
-
-	return nil
+	return template, nil
 }
 
-func buildCertificateTemplate(certificateType string) (*x509.Certificate, error) {
+func buildCertificateTemplateForType(certificateType string) (*x509.Certificate, error) {
 	if expanded, found := wellKnownCertificateTypes[certificateType]; found {
 		certificateType = expanded
 	}
