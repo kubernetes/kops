@@ -20,6 +20,7 @@ type UpdateClusterCmd struct {
 	Models       string
 	OutDir       string
 	SSHPublicKey string
+	Filename     string
 }
 
 var updateCluster UpdateClusterCmd
@@ -44,12 +45,24 @@ func init() {
 	cmd.Flags().StringVar(&updateCluster.Models, "model", strings.Join(cloudup.CloudupModels, ","), "Models to apply (separate multiple models with commas)")
 	cmd.Flags().StringVar(&updateCluster.SSHPublicKey, "ssh-public-key", "", "SSH public key to use (deprecated: use kops create secret instead)")
 	cmd.Flags().StringVar(&updateCluster.OutDir, "out", "", "Path to write any local output")
+
+	cmd.Flags().StringVarP(&updateCluster.Filename, "filename", "f", "", "Filename identifying a .yml manifest.")
 }
 
 func (c *UpdateClusterCmd) Run(args []string) error {
 	err := rootCommand.ProcessArgs(args)
 	if err != nil {
 		return err
+	}
+	if c.Filename != "" {
+		clusterConfig, err := getManifest(c.Filename)
+		if err != nil {
+			return err
+		}
+		// This is a WeakDecode() that won't throw an error if a directive does not exist.
+		clusterConfig.Unmarshal(c)
+		rootCommand.clusterName = clusterConfig.GetString("Name")
+		rootCommand.stateLocation = clusterConfig.GetString("State")
 	}
 
 	isDryrun := false

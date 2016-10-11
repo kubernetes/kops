@@ -37,6 +37,9 @@ endif
 kops: gobindata
 	go install ${EXTRA_BUILDFLAGS} -ldflags "-X main.BuildVersion=${VERSION} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/...
 
+cobra-test:
+	go test k8s.io/kops/cmd/kops
+
 gobindata:
 	go build ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS}" -o ${GOPATH_1ST}/bin/go-bindata k8s.io/kops/vendor/github.com/jteeuwen/go-bindata/go-bindata
 	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOPATH_1ST}/bin/go-bindata -o upup/models/bindata.go -pkg models -ignore="\\.DS_Store" -ignore=".*\\.go" -prefix upup/models/ upup/models/...
