@@ -1,4 +1,4 @@
-package api
+package kops
 
 import (
 	k8sapi "k8s.io/kubernetes/pkg/api"

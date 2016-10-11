@@ -2,7 +2,7 @@ package vfsclientset
 
 import (
 	"k8s.io/kops/pkg/client/simple"
-	"k8s.io/kops/upup/pkg/api"
+	api "k8s.io/kops/pkg/apis/kops"
 	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"time"
@@ -10,7 +10,7 @@ import (
 	"os"
 	"github.com/golang/glog"
 	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kops/upup/pkg/api/registry"
+	"k8s.io/kops/pkg/apis/kops/registry"
 )
 
 type InstanceGroupVFS struct {
