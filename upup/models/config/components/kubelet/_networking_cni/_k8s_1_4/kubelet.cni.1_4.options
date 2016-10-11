@@ -1,7 +1,0 @@
-Kubelet:
-  # AWS MTU is 9001
-  NetworkPluginMTU: 9001
-
-MasterKubelet:
-  # AWS MTU is 9001
-  NetworkPluginMTU: 9001
