@@ -72,6 +72,10 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 			Action:   []string{"route53:*"},
 			Resource: []string{"*"},
 		})
+
+		additionalNodePermissions := make([]*IAMStatement, 0)
+		json.Unmarshal([]byte(*b.Cluster.Spec.AdditionalNodePermissions), &additionalNodePermissions)
+		p.Statement = append(p.Statement, additionalNodePermissions...)
 	}
 
 	{
@@ -138,6 +142,10 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 				Resource: kmsKeyIDs.List(),
 			})
 		}
+
+		additionalMasterPermissions := make([]*IAMStatement, 0)
+		json.Unmarshal([]byte(*b.Cluster.Spec.AdditionalMasterPermissions), &additionalMasterPermissions)
+		p.Statement = append(p.Statement, additionalMasterPermissions...)
 	}
 
 	// For S3 IAM permissions, we grant permissions to subtrees.  So find the parents;
