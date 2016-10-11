@@ -11,6 +11,7 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 	"strings"
 	"os"
+	"github.com/golang/glog"
 )
 
 type ClusterVFS struct {
@@ -127,6 +128,13 @@ func (r *ClusterVFS) find(clusterName string) (*api.Cluster, error) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("error reading cluster configuration %q: %v", clusterName, err)
+	}
+
+	if c.Name == "" {
+		c.Name = clusterName
+	}
+	if c.Name != clusterName {
+		glog.Warningf("Name of cluster does not match: %q vs %q", c.Name, clusterName)
 	}
 
 	// TODO: Split this out into real version updates / schema changes
