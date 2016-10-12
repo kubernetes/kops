@@ -1,120 +1,69 @@
 package vfsclientset
 
 import (
-	"k8s.io/kops/pkg/client/simple"
-	api "k8s.io/kops/pkg/apis/kops"
-	k8sapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
-	"time"
-	"fmt"
-	"os"
 	"github.com/golang/glog"
-	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kops/pkg/apis/kops/registry"
+	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/v1alpha1"
+	"k8s.io/kops/pkg/client/simple"
+	k8sapi "k8s.io/kubernetes/pkg/api"
 )
 
 type InstanceGroupVFS struct {
-	clusterBasePath vfs.Path
+	commonVFS
 }
 
-var _ simple.ClusterInterface = &ClusterVFS{}
+func newInstanceGroupVFS(c *VFSClientset, clusterName string) *InstanceGroupVFS {
+	if clusterName == "" {
+		glog.Fatalf("clusterName is required")
+	}
+
+	key := "instancegroup"
+
+	r := &InstanceGroupVFS{}
+	r.init(key, c.basePath.Join(clusterName, key), v1alpha1.SchemeGroupVersion)
+	return r
+}
+
+var _ simple.InstanceGroupInterface = &InstanceGroupVFS{}
 
 func (c *InstanceGroupVFS) Get(name string) (*api.InstanceGroup, error) {
-	group := &api.InstanceGroup{}
-	err := registry.ReadConfig(c.clusterBasePath.Join("instancegroup", name), group)
+	v := &api.InstanceGroup{}
+	found, err := c.get(name, v)
 	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, nil
-		}
-		return nil, fmt.Errorf("error reading InstanceGroup %q: %v", name, err)
+		return nil, err
 	}
-	return group, nil
+	if !found {
+		return nil, nil
+	}
+	return v, nil
 }
 
 func (c *InstanceGroupVFS) List(options k8sapi.ListOptions) (*api.InstanceGroupList, error) {
-	items, err := c.readAll()
+	list := &api.InstanceGroupList{}
+	items, err := c.list(list.Items, options)
 	if err != nil {
 		return nil, err
 	}
-	ret := &api.InstanceGroupList{}
-	for _, i := range items {
-		ret.Items = append(ret.Items, *i)
-	}
-	return ret, nil
+	list.Items = items.([]api.InstanceGroup)
+	return list, nil
 }
 
 func (c *InstanceGroupVFS) Create(g *api.InstanceGroup) (*api.InstanceGroup, error) {
-	err := g.Validate()
+	err := c.create(g)
 	if err != nil {
 		return nil, err
 	}
-
-	if g.CreationTimestamp.IsZero() {
-		g.CreationTimestamp = unversioned.NewTime(time.Now().UTC())
-	}
-
-	err = registry.WriteConfig(c.clusterBasePath.Join("instancegroup",  g.Name), g, vfs.WriteOptionCreate)
-	if err != nil {
-		return nil, fmt.Errorf("error writing InstanceGroup: %v", err)
-	}
-
 	return g, nil
 }
 
 func (c *InstanceGroupVFS) Update(g *api.InstanceGroup) (*api.InstanceGroup, error) {
-	err := g.Validate()
+	err := c.update(g)
 	if err != nil {
 		return nil, err
 	}
-
-	err = registry.WriteConfig(c.clusterBasePath.Join("instancegroup",  g.Name), g, vfs.WriteOptionOnlyIfExists)
-	if err != nil {
-		return nil, fmt.Errorf("error writing InstanceGroup %q: %v", g.Name, err)
-	}
-
 	return g, nil
 }
 
-func (c *InstanceGroupVFS) Delete(name string, options *k8sapi.DeleteOptions) (error) {
-	p := c.clusterBasePath.Join("instancegroup", name)
-	err := p.Remove()
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil
-		}
-		return fmt.Errorf("error deleting instancegroup configuration %q: %v", name, err)
-	}
-	return nil
+func (c *InstanceGroupVFS) Delete(name string, options *k8sapi.DeleteOptions) error {
+	return c.delete(name, options)
 }
-
-func (c *InstanceGroupVFS) listNames() ([]string, error) {
-	keys, err := listChildNames(c.clusterBasePath.Join("instancegroup"))
-	if err != nil {
-		return nil, fmt.Errorf("error listing instancegroups in state store: %v", err)
-	}
-	return keys, nil
-}
-
-func (r *InstanceGroupVFS) readAll() ([]*api.InstanceGroup, error) {
-	names, err := r.listNames()
-	if err != nil {
-		return nil, err
-	}
-
-	var instancegroups []*api.InstanceGroup
-	for _, name := range names {
-		g, err := r.Get(name)
-		if err != nil {
-			return nil, err
-		}
-
-		if g == nil {
-			glog.Warningf("InstanceGroup was listed, but then not found %q", name)
-		}
-
-		instancegroups = append(instancegroups, g)
-	}
-
-	return instancegroups, nil
-}
-
