@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	"io"
 	"io/ioutil"
+	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -14,7 +16,7 @@ import (
 	"strings"
 )
 
-type UpdateClusterCmd struct {
+type UpdateClusterOptions struct {
 	Yes          bool
 	Target       string
 	Models       string
@@ -22,31 +24,31 @@ type UpdateClusterCmd struct {
 	SSHPublicKey string
 }
 
-var updateCluster UpdateClusterCmd
+func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
+	options := &UpdateClusterOptions{}
 
-func init() {
 	cmd := &cobra.Command{
 		Use:   "cluster",
 		Short: "Update cluster",
 		Long:  `Updates a k8s cluster.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := updateCluster.Run(args)
+			err := RunUpdateCluster(f, cmd, args, os.Stdout, options)
 			if err != nil {
 				exitWithError(err)
 			}
 		},
 	}
 
-	updateCmd.AddCommand(cmd)
+	cmd.Flags().BoolVar(&options.Yes, "yes", false, "Actually create cloud resources")
+	cmd.Flags().StringVar(&options.Target, "target", "direct", "Target - direct, terraform")
+	cmd.Flags().StringVar(&options.Models, "model", strings.Join(cloudup.CloudupModels, ","), "Models to apply (separate multiple models with commas)")
+	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", "", "SSH public key to use (deprecated: use kops create secret instead)")
+	cmd.Flags().StringVar(&options.OutDir, "out", "", "Path to write any local output")
 
-	cmd.Flags().BoolVar(&updateCluster.Yes, "yes", false, "Actually create cloud resources")
-	cmd.Flags().StringVar(&updateCluster.Target, "target", "direct", "Target - direct, terraform")
-	cmd.Flags().StringVar(&updateCluster.Models, "model", strings.Join(cloudup.CloudupModels, ","), "Models to apply (separate multiple models with commas)")
-	cmd.Flags().StringVar(&updateCluster.SSHPublicKey, "ssh-public-key", "", "SSH public key to use (deprecated: use kops create secret instead)")
-	cmd.Flags().StringVar(&updateCluster.OutDir, "out", "", "Path to write any local output")
+	return cmd
 }
 
-func (c *UpdateClusterCmd) Run(args []string) error {
+func RunUpdateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, c *UpdateClusterOptions) error {
 	err := rootCommand.ProcessArgs(args)
 	if err != nil {
 		return err
@@ -90,13 +92,13 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 		return err
 	}
 
-	clientset, err := rootCommand.Clientset()
+	clientset, err := f.Clientset()
 	if err != nil {
 		return err
 	}
 
 	if c.SSHPublicKey != "" {
-		fmt.Fprintf(os.Stderr, "--ssh-public-key on update is deprecated - please use `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub` instead\n", cluster.Name)
+		fmt.Fprintf(out, "--ssh-public-key on update is deprecated - please use `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub` instead\n", cluster.Name)
 
 		c.SSHPublicKey = utils.ExpandPath(c.SSHPublicKey)
 		authorized, err := ioutil.ReadFile(c.SSHPublicKey)
@@ -149,12 +151,11 @@ func (c *UpdateClusterCmd) Run(args []string) error {
 		if kubecfgCert != nil {
 			glog.Infof("Exporting kubecfg for cluster")
 			x := &kutil.CreateKubecfg{
-				ClusterName:      cluster.Name,
-				KeyStore:         keyStore,
-				SecretStore:      secretStore,
-				MasterPublicName: cluster.Spec.MasterPublicName,
+				ContextName:  cluster.Name,
+				KeyStore:     keyStore,
+				SecretStore:  secretStore,
+				KubeMasterIP: cluster.Spec.MasterPublicName,
 			}
-			defer x.Close()
 
 			err = x.WriteKubecfg()
 			if err != nil {

@@ -3,6 +3,8 @@ package kutil
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"io/ioutil"
+	"k8s.io/kubernetes/pkg/client/restclient"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 	"os"
 	"os/exec"
@@ -18,18 +20,20 @@ type KubeconfigBuilder struct {
 
 	KubeMasterIP string
 
-	Context string
+	Context   string
+	Namespace string
 
 	KubeBearerToken string
 	KubeUser        string
 	KubePassword    string
 
-	CACert      string
-	KubecfgCert string
-	KubecfgKey  string
+	CACert     []byte
+	ClientCert []byte
+	ClientKey  []byte
 }
 
-func (c *KubeconfigBuilder) Init() {
+func NewKubeconfigBuilder() *KubeconfigBuilder {
+	c := &KubeconfigBuilder{}
 	c.KubectlPath = "kubectl" // default to in-path
 
 	kubeconfig := os.Getenv(clientcmd.RecommendedConfigPathEnvVar)
@@ -37,9 +41,41 @@ func (c *KubeconfigBuilder) Init() {
 		kubeconfig = clientcmd.RecommendedHomeFile
 	}
 	c.KubeconfigPath = kubeconfig
+	return c
+}
+
+func (c *KubeconfigBuilder) BuildRestConfig() (*restclient.Config, error) {
+	restConfig := &restclient.Config{
+		Host: "https://" + c.KubeMasterIP,
+	}
+	restConfig.CAData = c.CACert
+	restConfig.CertData = c.ClientCert
+	restConfig.KeyData = c.ClientKey
+
+	// username/password or bearer token may be set, but not both
+	if c.KubeBearerToken != "" {
+		restConfig.BearerToken = c.KubeBearerToken
+	} else {
+		restConfig.Username = c.KubeUser
+		restConfig.Password = c.KubePassword
+	}
+
+	return restConfig, nil
 }
 
 func (c *KubeconfigBuilder) WriteKubecfg() error {
+	tmpdir, err := ioutil.TempDir("", "k8s")
+	if err != nil {
+		return fmt.Errorf("error creating temporary directory: %v", err)
+	}
+
+	defer func() {
+		err := os.RemoveAll(tmpdir)
+		if err != nil {
+			glog.Warningf("error deleting tempdir %q: %v", tmpdir, err)
+		}
+	}()
+
 	if _, err := os.Stat(c.KubeconfigPath); os.IsNotExist(err) {
 		err := os.MkdirAll(path.Dir(c.KubeconfigPath), 0700)
 		if err != nil {
@@ -56,10 +92,14 @@ func (c *KubeconfigBuilder) WriteKubecfg() error {
 
 	clusterArgs = append(clusterArgs, "--server=https://"+c.KubeMasterIP)
 
-	if c.CACert == "" {
+	if c.CACert == nil {
 		clusterArgs = append(clusterArgs, "--insecure-skip-tls-verify=true")
 	} else {
-		clusterArgs = append(clusterArgs, "--certificate-authority="+c.CACert)
+		caCert := path.Join(tmpdir, "ca.crt")
+		if err := ioutil.WriteFile(caCert, c.CACert, 0600); err != nil {
+			return err
+		}
+		clusterArgs = append(clusterArgs, "--certificate-authority="+caCert)
 		clusterArgs = append(clusterArgs, "--embed-certs=true")
 	}
 
@@ -72,15 +112,24 @@ func (c *KubeconfigBuilder) WriteKubecfg() error {
 		userArgs = append(userArgs, "--password="+c.KubePassword)
 	}
 
-	if c.KubecfgCert != "" && c.KubecfgKey != "" {
-		userArgs = append(userArgs, "--client-certificate="+c.KubecfgCert)
-		userArgs = append(userArgs, "--client-key="+c.KubecfgKey)
+	if c.ClientCert != nil && c.ClientKey != nil {
+		clientCert := path.Join(tmpdir, "client.crt")
+		if err := ioutil.WriteFile(clientCert, c.ClientCert, 0600); err != nil {
+			return err
+		}
+		clientKey := path.Join(tmpdir, "client.key")
+		if err := ioutil.WriteFile(clientKey, c.ClientKey, 0600); err != nil {
+			return err
+		}
+
+		userArgs = append(userArgs, "--client-certificate="+clientCert)
+		userArgs = append(userArgs, "--client-key="+clientKey)
 		userArgs = append(userArgs, "--embed-certs=true")
 	}
 
 	setClusterArgs := []string{"config", "set-cluster", c.Context}
 	setClusterArgs = append(setClusterArgs, clusterArgs...)
-	err := c.execKubectl(setClusterArgs...)
+	err = c.execKubectl(setClusterArgs...)
 	if err != nil {
 		return err
 	}
@@ -94,9 +143,15 @@ func (c *KubeconfigBuilder) WriteKubecfg() error {
 		}
 	}
 
-	err = c.execKubectl("config", "set-context", c.Context, "--cluster="+c.Context, "--user="+c.Context)
-	if err != nil {
-		return err
+	{
+		args := []string{"config", "set-context", c.Context, "--cluster=" + c.Context, "--user=" + c.Context}
+		if c.Namespace != "" {
+			args = append(args, "--namespace", c.Namespace)
+		}
+		err = c.execKubectl(args...)
+		if err != nil {
+			return err
+		}
 	}
 	err = c.execKubectl("config", "use-context", c.Context, "--cluster="+c.Context, "--user="+c.Context)
 	if err != nil {

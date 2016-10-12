@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-
 	"github.com/spf13/cobra"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"

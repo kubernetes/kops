@@ -44,7 +44,7 @@ func (c *InstanceGroupVFS) List(options k8sapi.ListOptions) (*api.InstanceGroupL
 }
 
 func (c *InstanceGroupVFS) Create(g *api.InstanceGroup) (*api.InstanceGroup, error) {
-	err := g.Validate(true)
+	err := g.Validate()
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func (c *InstanceGroupVFS) Create(g *api.InstanceGroup) (*api.InstanceGroup, err
 }
 
 func (c *InstanceGroupVFS) Update(g *api.InstanceGroup) (*api.InstanceGroup, error) {
-	err := g.Validate(true)
+	err := g.Validate()
 	if err != nil {
 		return nil, err
 	}

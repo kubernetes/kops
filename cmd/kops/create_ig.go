@@ -3,44 +3,47 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"os"
-
 	"github.com/spf13/cobra"
+	"io"
+	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
+	"os"
 	"path/filepath"
 )
 
-type CreateInstanceGroupCmd struct {
+type CreateInstanceGroupOptions struct {
 }
 
-var createInstanceGroupCmd CreateInstanceGroupCmd
+func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
+	options := &CreateInstanceGroupOptions{}
 
-func init() {
 	cmd := &cobra.Command{
 		Use:     "instancegroup",
 		Aliases: []string{"instancegroups", "ig"},
 		Short:   "Create instancegroup",
 		Long:    `Create an instancegroup configuration.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) == 0 {
-				exitWithError(fmt.Errorf("Specify name of instance group to create"))
-			}
-			if len(args) != 1 {
-				exitWithError(fmt.Errorf("Can only create one instance group at a time!"))
-			}
-			err := createInstanceGroupCmd.Run(args[0])
+			err := RunCreateInstanceGroup(f, cmd, args, os.Stdout, options)
 			if err != nil {
 				exitWithError(err)
 			}
 		},
 	}
 
-	createCmd.AddCommand(cmd)
+	return cmd
 }
 
-func (c *CreateInstanceGroupCmd) Run(groupName string) error {
+func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, c *CreateInstanceGroupOptions) error {
+	if len(args) == 0 {
+		return fmt.Errorf("Specify name of instance group to create")
+	}
+	if len(args) != 1 {
+		return fmt.Errorf("Can only create one instance group at a time!")
+	}
+	groupName := args[0]
+
 	cluster, err := rootCommand.Cluster()
 
 	clientset, err := rootCommand.Clientset()
@@ -99,7 +102,7 @@ func (c *CreateInstanceGroupCmd) Run(groupName string) error {
 		return fmt.Errorf("error parsing yaml: %v", err)
 	}
 
-	err = group.Validate(false)
+	err = group.Validate()
 	if err != nil {
 		return err
 	}

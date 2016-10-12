@@ -1,10 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	"io"
 	"io/ioutil"
+	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
@@ -16,7 +19,7 @@ import (
 	"strings"
 )
 
-type CreateClusterCmd struct {
+type CreateClusterOptions struct {
 	Yes               bool
 	Target            string
 	Models            string
@@ -42,60 +45,60 @@ type CreateClusterCmd struct {
 	Channel string
 }
 
-var createCluster CreateClusterCmd
+func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
+	options := &CreateClusterOptions{}
 
-func init() {
 	cmd := &cobra.Command{
 		Use:   "cluster",
 		Short: "Create cluster",
 		Long:  `Creates a k8s cluster.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := createCluster.Run(args)
+			err := RunCreateCluster(f, cmd, args, out, options)
 			if err != nil {
 				exitWithError(err)
 			}
 		},
 	}
 
-	createCmd.AddCommand(cmd)
+	cmd.Flags().BoolVar(&options.Yes, "yes", false, "Specify --yes to immediately create the cluster")
+	cmd.Flags().StringVar(&options.Target, "target", cloudup.TargetDirect, "Target - direct, terraform")
+	cmd.Flags().StringVar(&options.Models, "model", "config,proto,cloudup", "Models to apply (separate multiple models with commas)")
 
-	cmd.Flags().BoolVar(&createCluster.Yes, "yes", false, "Specify --yes to immediately create the cluster")
-	cmd.Flags().StringVar(&createCluster.Target, "target", cloudup.TargetDirect, "Target - direct, terraform")
-	cmd.Flags().StringVar(&createCluster.Models, "model", "config,proto,cloudup", "Models to apply (separate multiple models with commas)")
+	cmd.Flags().StringVar(&options.Cloud, "cloud", "", "Cloud provider to use - gce, aws")
 
-	cmd.Flags().StringVar(&createCluster.Cloud, "cloud", "", "Cloud provider to use - gce, aws")
+	cmd.Flags().StringVar(&options.Zones, "zones", "", "Zones in which to run the cluster")
+	cmd.Flags().StringVar(&options.MasterZones, "master-zones", "", "Zones in which to run masters (must be an odd number)")
 
-	cmd.Flags().StringVar(&createCluster.Zones, "zones", "", "Zones in which to run the cluster")
-	cmd.Flags().StringVar(&createCluster.MasterZones, "master-zones", "", "Zones in which to run masters (must be an odd number)")
+	cmd.Flags().StringVar(&options.Project, "project", "", "Project to use (must be set on GCE)")
+	cmd.Flags().StringVar(&options.KubernetesVersion, "kubernetes-version", "", "Version of kubernetes to run (defaults to version in channel)")
 
-	cmd.Flags().StringVar(&createCluster.Project, "project", "", "Project to use (must be set on GCE)")
-	cmd.Flags().StringVar(&createCluster.KubernetesVersion, "kubernetes-version", "", "Version of kubernetes to run (defaults to version in channel)")
+	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", "~/.ssh/id_rsa.pub", "SSH public key to use")
 
-	cmd.Flags().StringVar(&createCluster.SSHPublicKey, "ssh-public-key", "~/.ssh/id_rsa.pub", "SSH public key to use")
+	cmd.Flags().StringVar(&options.NodeSize, "node-size", "", "Set instance size for nodes")
 
-	cmd.Flags().StringVar(&createCluster.NodeSize, "node-size", "", "Set instance size for nodes")
+	cmd.Flags().StringVar(&options.MasterSize, "master-size", "", "Set instance size for masters")
 
-	cmd.Flags().StringVar(&createCluster.MasterSize, "master-size", "", "Set instance size for masters")
+	cmd.Flags().StringVar(&options.VPCID, "vpc", "", "Set to use a shared VPC")
+	cmd.Flags().StringVar(&options.NetworkCIDR, "network-cidr", "", "Set to override the default network CIDR")
 
-	cmd.Flags().StringVar(&createCluster.VPCID, "vpc", "", "Set to use a shared VPC")
-	cmd.Flags().StringVar(&createCluster.NetworkCIDR, "network-cidr", "", "Set to override the default network CIDR")
+	cmd.Flags().IntVar(&options.NodeCount, "node-count", 0, "Set the number of nodes")
 
-	cmd.Flags().IntVar(&createCluster.NodeCount, "node-count", 0, "Set the number of nodes")
+	cmd.Flags().StringVar(&options.Image, "image", "", "Image to use")
 
-	cmd.Flags().StringVar(&createCluster.Image, "image", "", "Image to use")
+	cmd.Flags().StringVar(&options.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external.")
 
-	cmd.Flags().StringVar(&createCluster.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external.")
+	cmd.Flags().StringVar(&options.DNSZone, "dns-zone", "", "DNS hosted zone to use (defaults to last two components of cluster name)")
+	cmd.Flags().StringVar(&options.OutDir, "out", "", "Path to write any local output")
+	cmd.Flags().StringVar(&options.AdminAccess, "admin-access", "", "Restrict access to admin endpoints (SSH, HTTPS) to this CIDR.  If not set, access will not be restricted by IP.")
 
-	cmd.Flags().StringVar(&createCluster.DNSZone, "dns-zone", "", "DNS hosted zone to use (defaults to last two components of cluster name)")
-	cmd.Flags().StringVar(&createCluster.OutDir, "out", "", "Path to write any local output")
-	cmd.Flags().StringVar(&createCluster.AdminAccess, "admin-access", "", "Restrict access to admin endpoints (SSH, HTTPS) to this CIDR.  If not set, access will not be restricted by IP.")
+	cmd.Flags().BoolVar(&options.AssociatePublicIP, "associate-public-ip", true, "Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.")
 
-	cmd.Flags().BoolVar(&createCluster.AssociatePublicIP, "associate-public-ip", true, "Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.")
+	cmd.Flags().StringVar(&options.Channel, "channel", api.DefaultChannel, "Channel for default versions and configuration to use")
 
-	cmd.Flags().StringVar(&createCluster.Channel, "channel", api.DefaultChannel, "Channel for default versions and configuration to use")
+	return cmd
 }
 
-func (c *CreateClusterCmd) Run(args []string) error {
+func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, c *CreateClusterOptions) error {
 	err := rootCommand.ProcessArgs(args)
 	if err != nil {
 		return err
@@ -433,31 +436,36 @@ func (c *CreateClusterCmd) Run(args []string) error {
 	}
 
 	if isDryrun {
-		fmt.Printf("\n")
-		fmt.Printf("Cluster configuration has been created.\n")
-		fmt.Printf("\n")
-		fmt.Printf("Suggestions:\n")
-		fmt.Printf(" * list clusters with: kops get cluster\n")
-		fmt.Printf(" * edit this cluster with: kops edit cluster %s\n", clusterName)
+		var sb bytes.Buffer
+		fmt.Fprintf(&sb, "\n")
+		fmt.Fprintf(&sb, "Cluster configuration has been created.\n")
+		fmt.Fprintf(&sb, "\n")
+		fmt.Fprintf(&sb, "Suggestions:\n")
+		fmt.Fprintf(&sb, " * list clusters with: kops get cluster\n")
+		fmt.Fprintf(&sb, " * edit this cluster with: kops edit cluster %s\n", clusterName)
 		if len(nodes) > 0 {
-			fmt.Printf(" * edit your node instance group: kops edit ig --name=%s %s\n", clusterName, nodes[0].Name)
+			fmt.Fprintf(&sb, " * edit your node instance group: kops edit ig --name=%s %s\n", clusterName, nodes[0].Name)
 		}
 		if len(masters) > 0 {
-			fmt.Printf(" * edit your master instance group: kops edit ig --name=%s %s\n", clusterName, masters[0].Name)
+			fmt.Fprintf(&sb, " * edit your master instance group: kops edit ig --name=%s %s\n", clusterName, masters[0].Name)
 		}
-		fmt.Printf("\n")
-		fmt.Printf("Finally configure your cluster with: kops update cluster %s --yes\n", clusterName)
-		fmt.Printf("\n")
+		fmt.Fprintf(&sb, "\n")
+		fmt.Fprintf(&sb, "Finally configure your cluster with: kops update cluster %s --yes\n", clusterName)
+		fmt.Fprintf(&sb, "\n")
+
+		_, err := out.Write(sb.Bytes())
+		if err != nil {
+			return fmt.Errorf("error writing to output: %v", err)
+		}
 	} else {
 		glog.Infof("Exporting kubecfg for cluster")
 
 		x := &kutil.CreateKubecfg{
-			ClusterName:      cluster.Name,
-			KeyStore:         keyStore,
-			SecretStore:      secretStore,
-			MasterPublicName: cluster.Spec.MasterPublicName,
+			ContextName:  cluster.Name,
+			KeyStore:     keyStore,
+			SecretStore:  secretStore,
+			KubeMasterIP: cluster.Spec.MasterPublicName,
 		}
-		defer x.Close()
 
 		err = x.WriteKubecfg()
 		if err != nil {

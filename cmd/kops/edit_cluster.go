@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/cobra"
+	"io"
+	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -14,28 +16,28 @@ import (
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
 )
 
-type EditClusterCmd struct {
+type EditClusterOptions struct {
 }
 
-var editClusterCmd EditClusterCmd
+func NewCmdEditCluster(f *util.Factory, out io.Writer) *cobra.Command {
+	options := &EditClusterOptions{}
 
-func init() {
 	cmd := &cobra.Command{
 		Use:   "cluster",
 		Short: "Edit cluster",
 		Long:  `Edit a cluster configuration.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := editClusterCmd.Run(args)
+			err := RunEditCluster(f, cmd, args, out, options)
 			if err != nil {
 				exitWithError(err)
 			}
 		},
 	}
 
-	editCmd.AddCommand(cmd)
+	return cmd
 }
 
-func (c *EditClusterCmd) Run(args []string) error {
+func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, options *EditClusterOptions) error {
 	err := rootCommand.ProcessArgs(args)
 	if err != nil {
 		return err
@@ -51,7 +53,7 @@ func (c *EditClusterCmd) Run(args []string) error {
 		return err
 	}
 
-	clientset, err := rootCommand.Clientset()
+	clientset, err := f.Clientset()
 	if err != nil {
 		return err
 	}

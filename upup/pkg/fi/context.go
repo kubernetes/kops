@@ -15,7 +15,7 @@ type Context struct {
 
 	Target            Target
 	Cloud             Cloud
-	CAStore           CAStore
+	Keystore          Keystore
 	SecretStore       SecretStore
 	ClusterConfigBase vfs.Path
 
@@ -24,11 +24,11 @@ type Context struct {
 	tasks map[string]Task
 }
 
-func NewContext(target Target, cloud Cloud, castore CAStore, secretStore SecretStore, clusterConfigBase vfs.Path, checkExisting bool, tasks map[string]Task) (*Context, error) {
+func NewContext(target Target, cloud Cloud, keystore Keystore, secretStore SecretStore, clusterConfigBase vfs.Path, checkExisting bool, tasks map[string]Task) (*Context, error) {
 	c := &Context{
 		Cloud:             cloud,
 		Target:            target,
-		CAStore:           castore,
+		Keystore:          keystore,
 		SecretStore:       secretStore,
 		ClusterConfigBase: clusterConfigBase,
 		CheckExisting:     checkExisting,

@@ -17,7 +17,7 @@ const DefaultMasterMachineTypeGCE = "n1-standard-1"
 // PopulateInstanceGroupSpec sets default values in the InstanceGroup
 // The InstanceGroup is simpler than the cluster spec, so we just populate in place (like the rest of k8s)
 func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup, channel *api.Channel) (*api.InstanceGroup, error) {
-	err := input.Validate(false)
+	err := input.Validate()
 	if err != nil {
 		return nil, err
 	}

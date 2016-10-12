@@ -2,14 +2,13 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"strconv"
-	"strings"
-
 	"github.com/spf13/cobra"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/tables"
 	k8sapi "k8s.io/kubernetes/pkg/api"
+	"os"
+	"strconv"
+	"strings"
 )
 
 type GetInstanceGroupsCmd struct {
