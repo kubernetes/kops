@@ -1,4 +1,4 @@
-package api
+package kops
 
 import (
 	"encoding/binary"

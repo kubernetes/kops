@@ -1,4 +1,4 @@
-package api
+package kops
 
 // AnnotationNameManagement is the annotation that indicates that a cluster is under external or non-standard management
 const AnnotationNameManagement = "kops.kubernetes.io/management"
