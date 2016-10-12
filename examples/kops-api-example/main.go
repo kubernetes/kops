@@ -1,10 +1,10 @@
 package main
 
 import (
-	"os"
 	"flag"
-	"k8s.io/kops/util/pkg/vfs"
 	"fmt"
+	"k8s.io/kops/util/pkg/vfs"
+	"os"
 	"strings"
 )
 
@@ -16,6 +16,7 @@ var clusterName string
 
 // nodeZones is the set of zones in which we will run nodes
 var nodeZones []string
+
 // masterZones is the set of zones in which we will run masters
 var masterZones []string
 
@@ -64,7 +65,7 @@ func parseFlags() error {
 		return fmt.Errorf("Must pass -zones with comma-separated list of zones")
 	}
 	nodeZones = strings.Split(*flagZones, ",")
-	masterZones = []string{nodeZones[0] }
+	masterZones = []string{nodeZones[0]}
 
 	return nil
 }

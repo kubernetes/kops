@@ -34,12 +34,15 @@ ifdef STATIC_BUILD
   EXTRA_LDFLAGS=-s
 endif
 
-kops: gobindata
+kops: kops-gobindata
 	go install ${EXTRA_BUILDFLAGS} -ldflags "-X main.BuildVersion=${VERSION} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/...
 
-gobindata:
+gobindata-tool:
 	go build ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS}" -o ${GOPATH_1ST}/bin/go-bindata k8s.io/kops/vendor/github.com/jteeuwen/go-bindata/go-bindata
-	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOPATH_1ST}/bin/go-bindata -o upup/models/bindata.go -pkg models -ignore="\\.DS_Store" -ignore=".*\\.go" -prefix upup/models/ upup/models/...
+
+kops-gobindata: gobindata-tool
+	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOPATH_1ST}/bin/go-bindata -o upup/models/bindata.go -pkg models -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/...
+	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOPATH_1ST}/bin/go-bindata -o federation/model/bindata.go -pkg model -ignore="\\.DS_Store" -ignore="bindata\\.go" -prefix federation/model/ federation/model/...
 
 # Build in a docker container with golang 1.X
 # Used to test we have not broken 1.X
@@ -52,7 +55,7 @@ check-builds-in-go16:
 check-builds-in-go17:
 	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.7 make -f /go/src/k8s.io/kops/Makefile kops
 
-codegen: gobindata
+codegen: kops-gobindata
 	go install k8s.io/kops/upup/tools/generators/...
 	PATH=${GOPATH_1ST}/bin:${PATH} go generate k8s.io/kops/upup/pkg/fi/cloudup/awstasks
 	PATH=${GOPATH_1ST}/bin:${PATH} go generate k8s.io/kops/upup/pkg/fi/cloudup/gcetasks
@@ -136,7 +139,7 @@ protokube-push: protokube-image
 
 nodeup: nodeup-dist
 
-nodeup-gocode: gobindata
+nodeup-gocode: kops-gobindata
 	go install ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS} -X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/nodeup
 
 nodeup-dist:
@@ -172,6 +175,7 @@ copydeps:
 gofmt:
 	gofmt -w -s cmd/
 	gofmt -w -s channels/
+	gofmt -w -s examples/
 	gofmt -w -s util/
 	gofmt -w -s cmd/
 	gofmt -w -s upup/pkg/
