@@ -82,13 +82,11 @@ func (s *VFSCAStore) readCAKeypairs() (*certificates, *privateKeys, error) {
 	return s.cacheCaCertificates, s.cacheCaPrivateKeys, nil
 }
 
-// Creates and stores CA keypair
-// Should be called with the mutex held, to prevent concurrent creation of different keys
-func (c *VFSCAStore) generateCACertificate() (*certificates, *privateKeys, error) {
+func BuildCAX509Template() *x509.Certificate {
 	subject := &pkix.Name{
 		CommonName: "kubernetes",
 	}
-	serial := c.buildSerial()
+
 	template := &x509.Certificate{
 		Subject:               *subject,
 		KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
@@ -96,6 +94,13 @@ func (c *VFSCAStore) generateCACertificate() (*certificates, *privateKeys, error
 		BasicConstraintsValid: true,
 		IsCA: true,
 	}
+	return template
+}
+
+// Creates and stores CA keypair
+// Should be called with the mutex held, to prevent concurrent creation of different keys
+func (c *VFSCAStore) generateCACertificate() (*certificates, *privateKeys, error) {
+	template := BuildCAX509Template()
 
 	caRsaKey, err := rsa.GenerateKey(crypto_rand.Reader, 2048)
 	if err != nil {
@@ -108,6 +113,9 @@ func (c *VFSCAStore) generateCACertificate() (*certificates, *privateKeys, error
 	if err != nil {
 		return nil, nil, err
 	}
+
+	t := time.Now().UnixNano()
+	serial := BuildPKISerial(t)
 
 	keyPath := c.buildPrivateKeyPath(CertificateId_CA, serial)
 	err = c.storePrivateKey(caPrivateKey, keyPath)
@@ -259,6 +267,20 @@ func (c *VFSCAStore) CertificatePool(id string) (*CertificatePool, error) {
 
 }
 
+func (c *VFSCAStore) FindKeypair(id string) (*Certificate, *PrivateKey, error) {
+	cert, err := c.FindCert(id)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	key, err := c.FindPrivateKey(id)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return cert, key, nil
+}
+
 func (c *VFSCAStore) FindCert(id string) (*Certificate, error) {
 	var certs *certificates
 
@@ -385,8 +407,6 @@ func (c *VFSCAStore) IssueCert(id string, serial *big.Int, privateKey *PrivateKe
 
 	template.SerialNumber = serial
 
-	p := c.buildCertificatePath(id, serial)
-
 	caCertificates, caPrivateKeys, err := c.readCAKeypairs()
 	if err != nil {
 		return nil, err
@@ -400,20 +420,44 @@ func (c *VFSCAStore) IssueCert(id string, serial *big.Int, privateKey *PrivateKe
 		return nil, err
 	}
 
-	err = c.storeCertificate(cert, p)
+	err = c.StoreKeypair(id, cert, privateKey)
 	if err != nil {
 		return nil, err
 	}
 
 	// Make double-sure it round-trips
+	p := c.buildCertificatePath(id, serial)
 	return c.loadOneCertificate(p)
+}
+
+func (c *VFSCAStore) StoreKeypair(id string, cert *Certificate, privateKey *PrivateKey) error {
+	serial := cert.Certificate.SerialNumber
+
+	{
+		p := c.buildPrivateKeyPath(id, serial)
+		err := c.storePrivateKey(privateKey, p)
+		if err != nil {
+			return err
+		}
+	}
+
+	{
+		p := c.buildCertificatePath(id, serial)
+		err := c.storeCertificate(cert, p)
+		if err != nil {
+			// TODO: Delete private key?
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (c *VFSCAStore) AddCert(id string, cert *Certificate) error {
 	glog.Infof("Issuing new certificate: %q", id)
 
 	// We add with a timestamp of zero so this will never be the newest cert
-	serial := buildSerial(0)
+	serial := BuildPKISerial(0)
 
 	p := c.buildCertificatePath(id, serial)
 
@@ -550,35 +594,19 @@ func (c *VFSCAStore) PrivateKey(id string) (*PrivateKey, error) {
 func (c *VFSCAStore) CreateKeypair(id string, template *x509.Certificate) (*Certificate, *PrivateKey, error) {
 	serial := c.buildSerial()
 
-	privateKey, err := c.CreatePrivateKey(id, serial)
+	rsaKey, err := rsa.GenerateKey(crypto_rand.Reader, 2048)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("error generating RSA private key: %v", err)
 	}
+
+	privateKey := &PrivateKey{Key: rsaKey}
 
 	cert, err := c.IssueCert(id, serial, privateKey, template)
 	if err != nil {
-		// TODO: Delete cert?
 		return nil, nil, err
 	}
 
 	return cert, privateKey, nil
-}
-
-func (c *VFSCAStore) CreatePrivateKey(id string, serial *big.Int) (*PrivateKey, error) {
-	p := c.buildPrivateKeyPath(id, serial)
-
-	rsaKey, err := rsa.GenerateKey(crypto_rand.Reader, 2048)
-	if err != nil {
-		return nil, fmt.Errorf("error generating RSA private key: %v", err)
-	}
-
-	privateKey := &PrivateKey{Key: rsaKey}
-	err = c.storePrivateKey(privateKey, p)
-	if err != nil {
-		return nil, err
-	}
-
-	return privateKey, nil
 }
 
 func (c *VFSCAStore) storePrivateKey(privateKey *PrivateKey, p vfs.Path) error {
@@ -604,10 +632,14 @@ func (c *VFSCAStore) storeCertificate(cert *Certificate, p vfs.Path) error {
 
 func (c *VFSCAStore) buildSerial() *big.Int {
 	t := time.Now().UnixNano()
-	return buildSerial(t)
+	return BuildPKISerial(t)
 }
 
-func buildSerial(timestamp int64) *big.Int {
+// BuildPKISerial produces a serial number for certs that is vanishingly unlikely to collide
+// The timestamp should be provided as an input (time.Now().UnixNano()), and then we combine
+// that with a 32 bit random crypto-rand integer.
+// We also know that a bigger value was created later (modulo clock skew)
+func BuildPKISerial(timestamp int64) *big.Int {
 	randomLimit := new(big.Int).Lsh(big.NewInt(1), 32)
 	randomComponent, err := crypto_rand.Int(crypto_rand.Reader, randomLimit)
 	if err != nil {

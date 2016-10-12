@@ -2,15 +2,19 @@ package main
 
 import (
 	"github.com/spf13/cobra"
+	"io"
+	"k8s.io/kops/cmd/kops/util"
 )
 
-// updateCmd represents the create command
-var updateCmd = &cobra.Command{
-	Use:   "update",
-	Short: "update clusters",
-	Long:  `Update clusters`,
-}
+func NewCmdUpdate(f *util.Factory, out io.Writer) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update",
+		Short: "update clusters",
+		Long:  `Update clusters`,
+	}
 
-func init() {
-	rootCommand.AddCommand(updateCmd)
+	//  subcommands
+	cmd.AddCommand(NewCmdUpdateCluster(f, out))
+
+	return cmd
 }

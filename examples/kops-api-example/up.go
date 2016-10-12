@@ -1,14 +1,15 @@
 package main
 
 import (
-	"k8s.io/kops/pkg/client/simple/vfsclientset"
-	api "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi/cloudup"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/utils"
-	"io/ioutil"
 	"fmt"
+	"io/ioutil"
+	"k8s.io/kops/pkg/apis/kops"
+	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/client/simple/vfsclientset"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 func up() error {
@@ -18,9 +19,9 @@ func up() error {
 
 	cluster.Name = clusterName
 	cluster.Spec = api.ClusterSpec{
-		Channel: "stable",
+		Channel:       "stable",
 		CloudProvider: "aws",
-		ConfigBase: registryBase.Join(cluster.Name).Path(),
+		ConfigBase:    registryBase.Join(cluster.Name).Path(),
 	}
 
 	for _, z := range nodeZones {
@@ -57,7 +58,7 @@ func up() error {
 		ig := &api.InstanceGroup{}
 		ig.Name = "master"
 		ig.Spec = api.InstanceGroupSpec{
-			Role: api.InstanceGroupRoleMaster,
+			Role:  api.InstanceGroupRoleMaster,
 			Zones: masterZones,
 		}
 		_, err := clientset.InstanceGroups(cluster.Name).Create(ig)
@@ -66,13 +67,12 @@ func up() error {
 		}
 	}
 
-
 	// Create node ig
 	{
 		ig := &api.InstanceGroup{}
 		ig.Name = "nodes"
 		ig.Spec = api.InstanceGroupSpec{
-			Role: api.InstanceGroupRoleNode,
+			Role:  api.InstanceGroupRoleNode,
 			Zones: nodeZones,
 		}
 

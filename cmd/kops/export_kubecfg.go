@@ -59,12 +59,11 @@ func (c *ExportKubecfgCommand) Run(args []string) error {
 	}
 
 	x := &kutil.CreateKubecfg{
-		ClusterName:      clusterName,
-		KeyStore:         keyStore,
-		SecretStore:      secretStore,
-		MasterPublicName: master,
+		ContextName:  clusterName,
+		KeyStore:     keyStore,
+		SecretStore:  secretStore,
+		KubeMasterIP: master,
 	}
-	defer x.Close()
 
 	return x.WriteKubecfg()
 }

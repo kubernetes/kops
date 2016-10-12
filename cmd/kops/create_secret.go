@@ -2,22 +2,19 @@ package main
 
 import (
 	"github.com/spf13/cobra"
+	"io"
+	"k8s.io/kops/cmd/kops/util"
 )
 
-type CreateSecretCommand struct {
-	cobraCommand *cobra.Command
-}
-
-var createSecretCmd = CreateSecretCommand{
-	cobraCommand: &cobra.Command{
+func NewCmdCreateSecret(f *util.Factory, out io.Writer) *cobra.Command {
+	cmd := &cobra.Command{
 		Use:   "secret",
 		Short: "Create secrets",
 		Long:  `Create secrets.`,
-	},
-}
+	}
 
-func init() {
-	cmd := createSecretCmd.cobraCommand
+	// create subcommands
+	cmd.AddCommand(NewCmdCreateSecretPublicKey(f, out))
 
-	createCmd.AddCommand(cmd)
+	return cmd
 }
