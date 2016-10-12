@@ -7,40 +7,46 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/cobra"
+	"io"
+	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
 )
 
-type EditInstanceGroupCmd struct {
+type EditInstanceGroupOptions struct {
 }
 
-var editInstanceGroupCmd EditInstanceGroupCmd
+func NewCmdEditInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
+	options := &EditInstanceGroupOptions{}
 
-func init() {
 	cmd := &cobra.Command{
 		Use:     "instancegroup",
 		Aliases: []string{"instancegroups", "ig"},
 		Short:   "Edit instancegroup",
 		Long:    `Edit an instancegroup configuration.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) == 0 {
-				exitWithError(fmt.Errorf("Specify name of instance group to edit"))
-			}
-			if len(args) != 1 {
-				exitWithError(fmt.Errorf("Can only edit one instance group at a time!"))
-			}
-			err := editInstanceGroupCmd.Run(args[0])
+
+			err := RunEditInstanceGroup(f, cmd, args, os.Stdout, options)
 			if err != nil {
 				exitWithError(err)
 			}
 		},
 	}
 
-	editCmd.AddCommand(cmd)
+	return cmd
 }
 
-func (c *EditInstanceGroupCmd) Run(groupName string) error {
+func RunEditInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, options *EditInstanceGroupOptions) error {
+	if len(args) == 0 {
+		return fmt.Errorf("Specify name of instance group to edit")
+	}
+	if len(args) != 1 {
+		return fmt.Errorf("Can only edit one instance group at a time")
+	}
+
+	groupName := args[0]
+
 	cluster, err := rootCommand.Cluster()
 	if err != nil {
 		return err
@@ -100,7 +106,7 @@ func (c *EditInstanceGroupCmd) Run(groupName string) error {
 		return fmt.Errorf("error parsing config: %v", err)
 	}
 
-	err = newGroup.Validate(false)
+	err = newGroup.Validate()
 	if err != nil {
 		return err
 	}
