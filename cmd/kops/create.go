@@ -25,6 +25,7 @@ import (
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/vfs"
 	k8sapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/errors"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
 )
@@ -68,6 +69,11 @@ func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 func RunCreate(f *util.Factory, cmd *cobra.Command, out io.Writer, c *CreateOptions) error {
+	clientset, err := f.Clientset()
+	if err != nil {
+		return err
+	}
+
 	// Codecs provides access to encoding and decoding for the scheme
 	codecs := k8sapi.Codecs //serializer.NewCodecFactory(scheme)
 
@@ -85,6 +91,14 @@ func RunCreate(f *util.Factory, cmd *cobra.Command, out io.Writer, c *CreateOpti
 		}
 
 		switch v := o.(type) {
+		case *kopsapi.Federation:
+			_, err = clientset.Federations().Create(v)
+			if err != nil {
+				if errors.IsAlreadyExists(err) {
+					return fmt.Errorf("federation %q already exists", v.Name)
+				}
+				return fmt.Errorf("error creating federation: %v", err)
+			}
 		default:
 			glog.V(2).Infof("Type of object was %T", v)
 			return fmt.Errorf("Unhandled kind %q in %q", gvk, f)
