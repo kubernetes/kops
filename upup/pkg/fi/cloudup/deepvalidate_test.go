@@ -2,7 +2,7 @@ package cloudup
 
 import (
 	"fmt"
-	"k8s.io/kops/upup/pkg/api"
+	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"strings"
 	"testing"

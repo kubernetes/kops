@@ -1,7 +1,7 @@
 package simple
 
 import (
-	"k8s.io/kops/upup/pkg/api"
+	api "k8s.io/kops/pkg/apis/kops"
 	k8sapi "k8s.io/kubernetes/pkg/api"
 )
 
