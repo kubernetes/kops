@@ -3,7 +3,7 @@ package cloudup
 import (
 	"fmt"
 	"github.com/golang/glog"
-	"k8s.io/kops/upup/pkg/api"
+	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kubernetes/pkg/util/sets"
@@ -171,7 +171,7 @@ func expectNoErrorFromValidate(t *testing.T, c *api.Cluster) {
 //
 //import (
 //	"fmt"
-//	"k8s.io/kops/upup/pkg/api"
+//	api "k8s.io/kops/pkg/apis/kops"
 //	"k8s.io/kops/upup/pkg/fi/vfs"
 //	k8sapi "k8s.io/kubernetes/pkg/api"
 //	"os"

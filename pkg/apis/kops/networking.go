@@ -1,4 +1,4 @@
-package api
+package kops
 
 // NetworkingSpec allows selection and configuration of a networking plugin
 type NetworkingSpec struct {
