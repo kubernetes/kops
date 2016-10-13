@@ -106,6 +106,13 @@ func buildCloudupTags(cluster *api.Cluster) (map[string]struct{}, error) {
 func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTags map[string]struct{}) ([]string, error) {
 	var tags []string
 
+	networking := cluster.Spec.Networking
+
+	if networking.CNI != nil {
+		// external is based on cni, weave, flannel, etc
+		tags = append(tags, "_networking_cni")
+	}
+
 	switch role {
 	case api.InstanceGroupRoleNode:
 		tags = append(tags, "_kubernetes_pool")
@@ -150,6 +157,8 @@ func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTa
 	if _, found := clusterTags["_aws"]; found {
 		tags = append(tags, "_aws")
 	}
+
+
 
 	return tags, nil
 }
