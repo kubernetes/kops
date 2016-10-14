@@ -108,6 +108,10 @@ func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTa
 
 	networking := cluster.Spec.Networking
 
+	if networking == nil {
+		return nil, fmt.Errorf("Networking is not set, and should not be nil here")
+	}
+
 	if networking.CNI != nil {
 		// external is based on cni, weave, flannel, etc
 		tags = append(tags, "_networking_cni")
@@ -157,8 +161,6 @@ func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTa
 	if _, found := clusterTags["_aws"]; found {
 		tags = append(tags, "_aws")
 	}
-
-
 
 	return tags, nil
 }

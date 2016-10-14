@@ -22,13 +22,44 @@ import (
 	"testing"
 )
 
-func TestBuildTags_CloudProvider_AWS(t *testing.T) {
-	c := &api.Cluster{
+type ClusterParams struct {
+	CloudProvider     string
+	KubernetesVersion string
+	UpdatePolicy      string
+}
+
+func buildCluster(clusterArgs interface{}) *api.Cluster {
+
+	if clusterArgs == nil {
+		clusterArgs = ClusterParams{CloudProvider: "aws", KubernetesVersion: "1.4.0"}
+	}
+
+	cParams := clusterArgs.(ClusterParams)
+
+	if cParams.CloudProvider == "" {
+		cParams.CloudProvider = "aws"
+	}
+
+	if cParams.KubernetesVersion == "" {
+		cParams.KubernetesVersion = "v1.4.0"
+	}
+
+	networking := &api.NetworkingSpec{
+		CNI: &api.CNINetworkingSpec{},
+	}
+
+	return &api.Cluster{
 		Spec: api.ClusterSpec{
-			CloudProvider:     "aws",
-			KubernetesVersion: "v1.3.5",
+			CloudProvider:     cParams.CloudProvider,
+			KubernetesVersion: cParams.KubernetesVersion,
+			Networking:        networking,
+			UpdatePolicy:      fi.String(cParams.UpdatePolicy),
 		},
 	}
+}
+func TestBuildTags_CloudProvider_AWS(t *testing.T) {
+
+	c := buildCluster(nil)
 
 	tags, err := buildCloudupTags(c)
 	if err != nil {
@@ -36,7 +67,11 @@ func TestBuildTags_CloudProvider_AWS(t *testing.T) {
 	}
 
 	if _, found := tags["_aws"]; !found {
-		t.Fatalf("tag _aws not found")
+		t.Fatal("tag _aws not found")
+	}
+
+	if _, found := tags["_networking_cni"]; !found {
+		t.Fatal("tag _networking_cni not found")
 	}
 
 	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
@@ -45,7 +80,7 @@ func TestBuildTags_CloudProvider_AWS(t *testing.T) {
 	}
 
 	if !stringSliceContains(nodeUpTags, "_aws") {
-		t.Fatalf("nodeUpTag _aws not found")
+		t.Fatal("nodeUpTag _aws not found")
 	}
 }
 
@@ -57,12 +92,7 @@ func TestBuildTags_KubernetesVersions(t *testing.T) {
 		"https://storage.googleapis.com/kubernetes-release-dev/ci/v1.4.0-alpha.2.677+ea69570f61af8e/": "_k8s_1_4",
 	}
 	for version, tag := range grid {
-		c := &api.Cluster{
-			Spec: api.ClusterSpec{
-				CloudProvider:     "aws",
-				KubernetesVersion: version,
-			},
-		}
+		c := buildCluster(ClusterParams{KubernetesVersion: version})
 
 		tags, err := buildCloudupTags(c)
 		if err != nil {
@@ -76,13 +106,7 @@ func TestBuildTags_KubernetesVersions(t *testing.T) {
 }
 
 func TestBuildTags_UpdatePolicy_Nil(t *testing.T) {
-	c := &api.Cluster{
-		Spec: api.ClusterSpec{
-			CloudProvider:     "aws",
-			KubernetesVersion: "v1.3.5",
-			UpdatePolicy:      nil,
-		},
-	}
+	c := buildCluster(nil)
 
 	tags, err := buildCloudupTags(c)
 	if err != nil {
@@ -95,18 +119,12 @@ func TestBuildTags_UpdatePolicy_Nil(t *testing.T) {
 	}
 
 	if !stringSliceContains(nodeUpTags, "_automatic_upgrades") {
-		t.Fatalf("nodeUpTag _automatic_upgrades not found")
+		t.Fatal("nodeUpTag _automatic_upgrades not found")
 	}
 }
 
 func TestBuildTags_UpdatePolicy_None(t *testing.T) {
-	c := &api.Cluster{
-		Spec: api.ClusterSpec{
-			CloudProvider:     "aws",
-			KubernetesVersion: "v1.3.5",
-			UpdatePolicy:      fi.String(api.UpdatePolicyExternal),
-		},
-	}
+	c := buildCluster(ClusterParams{CloudProvider: "aws", UpdatePolicy: api.UpdatePolicyExternal})
 
 	tags, err := buildCloudupTags(c)
 	if err != nil {
@@ -119,7 +137,7 @@ func TestBuildTags_UpdatePolicy_None(t *testing.T) {
 	}
 
 	if stringSliceContains(nodeUpTags, "_automatic_upgrades") {
-		t.Fatalf("nodeUpTag _automatic_upgrades found unexpectedly")
+		t.Fatal("nodeUpTag _automatic_upgrades found unexpectedly")
 	}
 }
 
