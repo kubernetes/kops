@@ -15,8 +15,6 @@
 # limitations under the License.
 
 set -o errexit
-set -o nounset
-set -o pipefail
 
 KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
 BAD_HEADERS=$(${KUBE_ROOT}/hack/verify-boilerplate.sh | awk '{ print $6}')
@@ -28,7 +26,7 @@ do
 	for j in ${BAD_HEADERS}
 	do
 		:
-	        HEADER=$(cat hack/boilerplate/boilerplate.${i}.txt | sed 's/YEAR/2016/')
+	        HEADER=$(cat ${KUBE_ROOT}/hack/boilerplate/boilerplate.${i}.txt | sed 's/YEAR/2016/')
 			value=$(<${j})
 			if [[ "$j" != *$i ]]
             then
