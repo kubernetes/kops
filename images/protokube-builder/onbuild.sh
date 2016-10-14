@@ -22,5 +22,3 @@ cp /go/bin/channels /src/.build/artifacts/
 cd /src/.build/artifacts/
 curl -O https://storage.googleapis.com/kubernetes-release/release/v1.3.7/bin/linux/amd64/kubectl
 chmod +x kubectl
-
-
