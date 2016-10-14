@@ -14,35 +14,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -o errexit
+set -o nounset
+set -o pipefail
 
-HEADER=$(cat hack/boilerplate/boilerplate.sh.txt | sed 's/YEAR/2016/')
+KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
+BAD_HEADERS=$(${KUBE_ROOT}/hack/verify-boilerplate.sh | awk '{ print $6}')
+FORMATS="sh go Makefile Dockerfile"
 
-SCRIPTS=$(hack/verify-boilerplate.sh | awk  '{ print $6 }' | grep sh$)
-for i in ${SCRIPTS}
+for i in ${FORMATS}
 do
 	:
-	value=$(<$i)
-	if [[ $value == *"# Copyright"* ]]
-	then
-		  echo "Bad header in $i"
-		  continue
-	fi
-	echo -e "${HEADER}\n\n${value}" > $i
+	for j in ${BAD_HEADERS}
+	do
+		:
+	        HEADER=$(cat hack/boilerplate/boilerplate.${i}.txt | sed 's/YEAR/2016/')
+			value=$(<${j})
+			if [[ "$j" != *$i ]]
+            then
+                continue
+            fi
+
+			if [[ ${value} == *"# Copyright"* ]]
+			then
+				echo "Bad header in ${j} ${i}"
+			else
+				text="$HEADER
+
+$value"
+				echo ${j}
+				echo "$text" > ${j}
+			fi
+	done
 done
-
-HEADER=$(cat hack/boilerplate/boilerplate.go.txt | sed 's/YEAR/2016/')
-
-SCRIPTS=$(hack/verify-boilerplate.sh | awk  '{ print $6 }' | grep go$)
-for i in ${SCRIPTS}
-do
-	:
-	value=$(<$i)
-	if [[ $value == *"# Copyright"* ]]
-	then
-		  echo "Bad header in $i"
-		  continue
-	fi
-	echo -e "${HEADER}\n\n${value}" > $i
-done
-
-
