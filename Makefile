@@ -66,8 +66,8 @@ test:
 
 crossbuild:
 	mkdir -p .build/dist/
-	GOOS=darwin GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/darwin/amd64/kops -ldflags "${EXTRA_LDFLAGS} -X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/kops/
-	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/linux/amd64/kops -ldflags "${EXTRA_LDFLAGS} -X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/kops/
+	GOOS=darwin GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/darwin/amd64/kops -ldflags "${EXTRA_LDFLAGS} -X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/kops
+	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/linux/amd64/kops -ldflags "${EXTRA_LDFLAGS} -X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/kops
 	#GOOS=windows GOARCH=amd64 go build -o .build/dist/windows/amd64/kops -ldflags "-X main.BuildVersion=${VERSION}" -v k8s.io/kops/cmd/kops/...
 
 crossbuild-in-docker:
