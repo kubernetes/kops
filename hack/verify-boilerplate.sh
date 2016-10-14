@@ -1,6 +1,6 @@
-#!/bin/bash -ex
+#!/bin/bash
 
-# Copyright 2016 The Kubernetes Authors.
+# Copyright 2014 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,14 +15,19 @@
 # limitations under the License.
 
 
-mkdir -p /go
-export GOPATH=/go
+set -o errexit
+set -o nounset
+set -o pipefail
 
-mkdir -p /go/src/k8s.io
-ln -s /src/ /go/src/k8s.io/kops
+KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
+boiler="${KUBE_ROOT}/hack/boilerplate/boilerplate.py"
 
-cd /go/src/k8s.io/kops/
-make dns-controller-gocode
+files_need_boilerplate=($(${boiler} "$@"))
 
-mkdir -p /src/.build/artifacts/
-cp /go/bin/dns-controller /src/.build/artifacts/
+if [[ ${#files_need_boilerplate[@]} -gt 0 ]]; then
+  for file in "${files_need_boilerplate[@]}"; do
+    echo "Boilerplate header is wrong for: ${file}"
+  done
+
+  exit 1
+fi
