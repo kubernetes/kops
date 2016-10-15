@@ -454,7 +454,7 @@ func (c *VFSCAStore) StoreKeypair(id string, cert *Certificate, privateKey *Priv
 }
 
 func (c *VFSCAStore) AddCert(id string, cert *Certificate) error {
-	glog.Infof("Issuing new certificate: %q", id)
+	glog.Infof("Adding TLS certificate: %q", id)
 
 	// We add with a timestamp of zero so this will never be the newest cert
 	serial := BuildPKISerial(0)
