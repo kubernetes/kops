@@ -169,6 +169,7 @@ dns-controller-push: dns-controller-image
 # --------------------------------------------------
 # development targets
 
+# See docs/development/dependencies.md
 copydeps:
 	rsync -avz _vendor/ vendor/ --delete --exclude vendor/  --exclude .git
 
