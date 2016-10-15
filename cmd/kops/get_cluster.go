@@ -48,9 +48,27 @@ func (c *GetClustersCmd) Run(args []string) error {
 	}
 
 	var clusters []*api.Cluster
-	for i := range clusterList.Items {
-		clusters = append(clusters, &clusterList.Items[i])
+	if len(args) != 0 {
+		m := make(map[string]*api.Cluster)
+		for i := range clusterList.Items {
+			c := &clusterList.Items[i]
+			m[c.Name] = c
+		}
+		for _, arg := range args {
+			ig := m[arg]
+			if ig == nil {
+				return fmt.Errorf("cluster not found %q", arg)
+			}
+
+			clusters = append(clusters, ig)
+		}
+	} else {
+		for i := range clusterList.Items {
+			c := &clusterList.Items[i]
+			clusters = append(clusters, c)
+		}
 	}
+
 	if len(clusters) == 0 {
 		fmt.Fprintf(os.Stderr, "No clusters found\n")
 		return nil
