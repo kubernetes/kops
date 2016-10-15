@@ -38,6 +38,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	cluster := &api.Cluster{}
 	cluster.Annotations = make(map[string]string)
 
+	// This annotation relaxes some validation (e.g. cluster name as full-dns name)
 	cluster.Annotations[api.AnnotationNameManagement] = api.AnnotationValueManagementImported
 
 	cluster.Spec.CloudProvider = string(fi.CloudProviderAWS)
