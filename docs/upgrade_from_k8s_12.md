@@ -102,48 +102,79 @@ kops update cluster ${NEW_NAME} --yes
 
 You can export a kubecfg (although update cluster did this automatically): `kops export kubecfg ${NEW_NAME}`
 
-Within a few minutes the new cluster should be running. 
-
-Try `kubectl get nodes --show-labels`, `kubectl get pods` etc until you are sure that all is well.
 
 ## Workaround for secret import failure
 
-The import procedure tries to preserve the CA certificates, but it doesn't seem to be working right now.
+The import procedure tries to preserve the CA certificates, but unfortunately this isn't supported
+in kubernetes until [#34029](https://github.com/kubernetes/kubernetes/pull/34029) ships (should be
+in 1.5).
 
-So you will need to delete the service-account-tokens - they will be recreated with the correct keys.
+So you will need to delete the service-accounts, so they can be recreated with the correct keys.
 
-Otherwise some services (most notably DNS) will not work
+Unfortunately, until you do this, some services (most notably internal & external DNS) will not work.
+Because of that you must SSH to the master to do this repair.
 
-
-`kubectl get secrets --all-namespaces`
-> ```
-NAMESPACE     NAME                              TYPE                                  DATA      AGE
-default       default-token-4dgib               kubernetes.io/service-account-token   3         53m
-kube-system   default-token-lhfkx               kubernetes.io/service-account-token   3         53m
-kube-system   token-admin                       Opaque                                1         53m
-kube-system   token-kube-proxy                  Opaque                                1         53m
-kube-system   token-kubelet                     Opaque                                1         53m
-kube-system   token-system-controller-manager   Opaque                                1         53m
-kube-system   token-system-dns                  Opaque                                1         53m
-kube-system   token-system-logging              Opaque                                1         53m
-kube-system   token-system-monitoring           Opaque                                1         53m
-kube-system   token-system-scheduler            Opaque                                1         53m
-```
-
-Delete the tokens of type `kubernetes.io/service-account-token`:
+You can get the public IP address of the master from the AWS console, or by doing this:
 
 ```
-kubectl delete secret default-token-4dgib
-kubectl delete secret --namespace kube-system default-token-lhfkx
+aws ec2 --region $REGION describe-instances \
+    --filter Name=tag:KubernetesCluster,Values=${NEW_NAME} \
+             Name=tag-key,Values=k8s.io/role/master \
+             Name=instance-state-name,Values=running \
+    --query Reservations[].Instances[].PublicIpAddress \
+    --output text
 ```
 
-Then restart the kube-dns pod so it picks up a valid secret:
-`kubectl delete pods --namespace kube-system --selector "k8s-app=kube-dns"`
+Then `ssh admin@<ip>` (the SSH key will be the one you added above, i.e. `~/.ssh/id_rsa.pub`), and run:
+
+First check that the apiserver is running:
+```
+kubectl get nodes
+```
+
+You should see only one node (the master).  Then run
+```
+NS=`kubectl get namespaces -o 'jsonpath={.items[*].metadata.name}'`
+for i in ${NS}; do kubectl get secrets --namespace=${i} --no-headers | grep "kubernetes.io/service-account-token" | awk '{print $1}' | xargs -I {} kubectl delete secret --namespace=$i {}; done
+sleep 60 # Allow for new secrets to be created
+kubectl delete pods -lk8s-app=dns-controller --namespace=kube-system
+kubectl delete pods -lk8s-app=kube-dns --namespace=kube-system
+```
+
+
+You probably also want to delete the imported DNS services from prior versions:
+
+```
+kubectl delete rc -lk8s-app=kube-dns --namespace=kube-system
+```
+
+
+Within a few minutes the new cluster should be running.
+
+Try `kubectl get nodes --show-labels`, `kubectl get pods --all-namespaces` etc until you are sure that all is well.
+
+This should work even without being SSH-ed into the master, although it can take a few minutes
+for DNS to propagate.  If it doesn't work, double-check that you have specified a valid
+domain name for your cluster, that records have been created in Route53, and that you
+can resolve those records from your machine (using `nslookup` or `dig`).
 
 ## Other fixes
 
 * If you're using a manually created ELB, the auto-scaling groups change, so you will need to reconfigure
 your ELBs to include the new auto-scaling group(s).
+
+* It is recommended to delete old kubernetes system services that we imported (and replace them with newer versions):
+
+```
+kubectl delete rc -lk8s-app=kube-dns --namespace=kube-system
+
+kubectl delete rc -lk8s-app=elasticsearch-logging --namespace=kube-system
+kubectl delete rc -lk8s-app=kibana-logging --namespace=kube-system
+kubectl delete rc -lk8s-app=kubernetes-dashboard --namespace=kube-system
+kubectl delete rc -lk8s-app=influxGrafana --namespace=kube-system
+
+kubectl delete deployment -lk8s-app=heapster --namespace=kube-system
+```
 
 ## Delete remaining resources of the old cluster
 
