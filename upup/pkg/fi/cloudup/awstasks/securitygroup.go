@@ -25,6 +25,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"strconv"
+	"strings"
 )
 
 //go:generate fitask -type=SecurityGroup
@@ -35,7 +37,7 @@ type SecurityGroup struct {
 	Description *string
 	VPC         *VPC
 
-	RemoveExtraRules *bool
+	RemoveExtraRules []string
 }
 
 var _ fi.CompareWithID = &SecurityGroup{}
@@ -273,17 +275,20 @@ func expandPermissions(sgID *string, permission *ec2.IpPermission, egress bool) 
 	return rules
 }
 
-// security group deletion is temporarily reverted - #478
 func (e *SecurityGroup) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
-	return nil, nil
-}
-
-// security group deletion is temporarily reverted - #478
-func (e *SecurityGroup) revertedFindDeletions(c *fi.Context) ([]fi.Deletion, error) {
 	var removals []fi.Deletion
 
-	if fi.BoolValue(e.RemoveExtraRules) != true {
+	if len(e.RemoveExtraRules) == 0 {
 		return nil, nil
+	}
+
+	var rules []RemovalRule
+	for _, s := range e.RemoveExtraRules {
+		rule, err := ParseRemovalRule(s)
+		if err != nil {
+			return nil, fmt.Errorf("cannot parse rule %q: %v", s, err)
+		}
+		rules = append(rules, rule)
 	}
 
 	sg, err := e.findEc2(c)
@@ -301,6 +306,21 @@ func (e *SecurityGroup) revertedFindDeletions(c *fi.Context) ([]fi.Deletion, err
 	}
 
 	for _, permission := range ingress {
+		// Because of #478, we can't remove all non-matching security groups
+		// Instead we consider only certain rules to be 'in-scope'
+		// (in the model, we typically consider only rules on port 22 and 443)
+		match := false
+		for _, rule := range rules {
+			if rule.Matches(permission) {
+				glog.V(2).Infof("permission matches rule %s: %v", rule, permission)
+				match = true
+				break
+			}
+		}
+		if !match {
+			glog.V(4).Infof("Ignoring security group permission %q (did not match removal rules)", permission)
+			continue
+		}
 		found := false
 		for _, t := range c.AllTasks() {
 			er, ok := t.(*SecurityGroupRule)
@@ -346,4 +366,55 @@ func (e *SecurityGroup) revertedFindDeletions(c *fi.Context) ([]fi.Deletion, err
 	}
 
 	return removals, nil
+}
+
+// RemovalRule is a rule that filters the permissions we should remove
+type RemovalRule interface {
+	Matches(permission *ec2.IpPermission) bool
+}
+
+// ParseRemovalRule parses our removal rule DSL into a RemovalRule
+func ParseRemovalRule(rule string) (RemovalRule, error) {
+	rule = strings.TrimSpace(rule)
+	tokens := strings.Split(rule, "=")
+
+	// Simple little language:
+	//   port=N matches rules that filter (only) by port=N
+	//
+	// Note this language is internal, so isn't required to be stable
+
+	if len(tokens) == 2 {
+		if tokens[0] == "port" {
+			port, err := strconv.Atoi(tokens[1])
+			if err != nil {
+				return nil, fmt.Errorf("cannot parse rule %q", rule)
+			}
+
+			return &PortRemovalRule{Port: port}, nil
+		} else {
+			return nil, fmt.Errorf("cannot parse rule %q", rule)
+		}
+	}
+	return nil, fmt.Errorf("cannot parse rule %q", rule)
+}
+
+type PortRemovalRule struct {
+	Port int
+}
+
+var _ RemovalRule = &PortRemovalRule{}
+
+func (r *PortRemovalRule) String() string {
+	return fi.DebugAsJsonString(r)
+}
+
+func (r *PortRemovalRule) Matches(permission *ec2.IpPermission) bool {
+	// Check if port matches
+	if permission.FromPort == nil || *permission.FromPort != int64(r.Port) {
+		return false
+	}
+	if permission.ToPort == nil || *permission.ToPort != int64(r.Port) {
+		return false
+	}
+	return true
 }
