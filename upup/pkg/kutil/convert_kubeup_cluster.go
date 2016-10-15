@@ -115,6 +115,11 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 		return err
 	}
 
+	routeTables, err := DescribeRouteTables(x.Cloud)
+	if err != nil {
+		return err
+	}
+
 	autoscalingGroups, err := findAutoscalingGroups(awsCloud, oldTags)
 	if err != nil {
 		return err
@@ -320,6 +325,30 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 		err := awsCloud.AddAWSTags(id, newTags)
 		if err != nil {
 			return fmt.Errorf("error re-tagging Subnet %q: %v", id, err)
+		}
+	}
+
+	// Retag route tables
+	for _, routeTable := range routeTables {
+		id := aws.StringValue(routeTable.RouteTableId)
+
+		clusterTag, _ := awsup.FindEC2Tag(routeTable.Tags, awsup.TagClusterName)
+		if clusterTag != "" {
+			if clusterTag != oldClusterName {
+				return fmt.Errorf("RouteTable is tagged with a different cluster: %v", clusterTag)
+			}
+			replaceTags := make(map[string]string)
+			replaceTags[awsup.TagClusterName] = newClusterName
+			// Set the same name so we use the same route table
+			// As otherwise we don't attach the route table because the subnet is considered shared
+			replaceTags["Name"] = newClusterName
+
+			glog.Infof("Retagging RouteTable %q", id)
+
+			err := awsCloud.CreateTags(id, replaceTags)
+			if err != nil {
+				return fmt.Errorf("error re-tagging RouteTable: %v", err)
+			}
 		}
 	}
 
