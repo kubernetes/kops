@@ -109,7 +109,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
 	if err != nil {
-		return fmt.Errorf("error parsing config base %q: %v", cluster.Spec.ConfigBase)
+		return fmt.Errorf("error parsing config base %q: %v", cluster.Spec.ConfigBase, err)
 	}
 
 	keyStore, err := registry.KeyStore(cluster)
