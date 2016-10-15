@@ -788,20 +788,14 @@ func DeleteRouteTable(cloud fi.Cloud, r *ResourceTracker) error {
 }
 
 func ListRouteTables(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
-	c := cloud.(awsup.AWSCloud)
-
-	glog.V(2).Infof("Listing EC2 RouteTables")
-	request := &ec2.DescribeRouteTablesInput{
-		Filters: buildEC2Filters(cloud),
-	}
-	response, err := c.EC2().DescribeRouteTables(request)
+	routeTables, err := DescribeRouteTables(cloud)
 	if err != nil {
-		return nil, fmt.Errorf("error listing RouteTables: %v", err)
+		return nil, err
 	}
 
 	var trackers []*ResourceTracker
 
-	for _, rt := range response.RouteTables {
+	for _, rt := range routeTables {
 		tracker := &ResourceTracker{
 			Name:    FindName(rt.Tags),
 			ID:      aws.StringValue(rt.RouteTableId),
@@ -825,6 +819,21 @@ func ListRouteTables(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, er
 	}
 
 	return trackers, nil
+}
+
+func DescribeRouteTables(cloud fi.Cloud) ([]*ec2.RouteTable, error) {
+	c := cloud.(awsup.AWSCloud)
+
+	glog.V(2).Infof("Listing EC2 RouteTables")
+	request := &ec2.DescribeRouteTablesInput{
+		Filters: buildEC2Filters(cloud),
+	}
+	response, err := c.EC2().DescribeRouteTables(request)
+	if err != nil {
+		return nil, fmt.Errorf("error listing RouteTables: %v", err)
+	}
+
+	return response.RouteTables, nil
 }
 
 func DeleteDhcpOptions(cloud fi.Cloud, r *ResourceTracker) error {
