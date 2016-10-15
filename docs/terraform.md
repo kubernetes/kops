@@ -10,7 +10,7 @@ changed - items should appear in the same order etc).
 
 ### Using terraform
 
-To use terraform, you simple run update with `--target=terraform` (but see below for a workaround for a bug
+To use terraform, you simply run update with `--target=terraform` (but see below for a workaround for a bug
 if you are using a terraform version before 0.7)
 
 For example, a complete setup might be:
