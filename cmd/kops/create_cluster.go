@@ -418,7 +418,7 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 	}
 
 	if isDryrun {
-		fmt.Println("Previewing changes that will be made:\n")
+		fmt.Print("Previewing changes that will be made:\n\n")
 	}
 
 	applyCmd := &cloudup.ApplyClusterCmd{
