@@ -3,8 +3,6 @@
 kops is the easiest way to get a production Kubernetes up and running.  We like to think
 of it as "kubectl for clusters".
 
-(Currently work in progress, but working.  Some of these statements are forward-looking.)
-
 Some of the more interesting features:
 
 * Written in go, so hopefully easier to maintain and extend, as complexity inevitably increases
