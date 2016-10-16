@@ -71,7 +71,25 @@ func ValidateCluster(c *kops.Cluster, strict bool) error {
 		}
 	}
 
-	if len(c.Spec.Subnets) == 0 {
+	if c.Spec.CloudProvider == "" {
+		return field.Required(specPath.Child("CloudProvider"), "")
+	}
+
+	usesZones := true
+	usesNetworkCIDR := true
+	switch fi.CloudProviderID(c.Spec.CloudProvider) {
+	case fi.CloudProviderBareMetal:
+		usesZones = false
+		usesNetworkCIDR = false
+
+	case fi.CloudProviderAWS:
+		usesZones = true
+
+	default:
+		return field.Invalid(specPath.Child("CloudProvider"), c.Spec.CloudProvider, "CloudProvider not recognized")
+	}
+
+	if usesZones && len(c.Spec.Subnets) == 0 {
 		// TODO: Auto choose zones from region?
 		return fmt.Errorf("must configure at least one Subnet (use --zones)")
 	}
@@ -103,7 +121,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) error {
 
 	// Check NetworkCIDR
 	var networkCIDR *net.IPNet
-	{
+	if usesNetworkCIDR {
 		networkCIDRString := c.Spec.NetworkCIDR
 		if networkCIDRString == "" {
 			return field.Required(specField.Child("NetworkCIDR"), "Cluster did not have NetworkCIDR set")
@@ -126,7 +144,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) error {
 			return fmt.Errorf("Cluster had an invalid NonMasqueradeCIDR: %q", nonMasqueradeCIDRString)
 		}
 
-		if subnetsOverlap(nonMasqueradeCIDR, networkCIDR) {
+		if networkCIDR != nil && subnetsOverlap(nonMasqueradeCIDR, networkCIDR) {
 			return fmt.Errorf("NonMasqueradeCIDR %q cannot overlap with NetworkCIDR %q", nonMasqueradeCIDRString, c.Spec.NetworkCIDR)
 		}
 
@@ -210,28 +228,35 @@ func ValidateCluster(c *kops.Cluster, strict bool) error {
 
 	// Check CloudProvider
 	{
-		cloudProvider := c.Spec.CloudProvider
-
-		if cloudProvider == "" {
-			return field.Required(specPath.Child("CloudProvider"), "")
+		var k8sCloudProvider string
+		switch fi.CloudProviderID(c.Spec.CloudProvider) {
+		case fi.CloudProviderAWS:
+			k8sCloudProvider = "aws"
+		case fi.CloudProviderGCE:
+			k8sCloudProvider = "gce"
+		case fi.CloudProviderBareMetal:
+			// TODO: none?
+			k8sCloudProvider = ""
+		default:
+			return field.Invalid(specPath.Child("CloudProvider"), c.Spec.CloudProvider, "unknown cloudprovider")
 		}
 		if c.Spec.Kubelet != nil && (strict || c.Spec.Kubelet.CloudProvider != "") {
-			if cloudProvider != c.Spec.Kubelet.CloudProvider {
+			if k8sCloudProvider != c.Spec.Kubelet.CloudProvider {
 				return field.Invalid(specPath.Child("Kubelet", "CloudProvider"), c.Spec.Kubelet.CloudProvider, "Did not match cluster CloudProvider")
 			}
 		}
 		if c.Spec.MasterKubelet != nil && (strict || c.Spec.MasterKubelet.CloudProvider != "") {
-			if cloudProvider != c.Spec.MasterKubelet.CloudProvider {
+			if k8sCloudProvider != c.Spec.MasterKubelet.CloudProvider {
 				return field.Invalid(specPath.Child("MasterKubelet", "CloudProvider"), c.Spec.MasterKubelet.CloudProvider, "Did not match cluster CloudProvider")
 			}
 		}
 		if c.Spec.KubeAPIServer != nil && (strict || c.Spec.KubeAPIServer.CloudProvider != "") {
-			if cloudProvider != c.Spec.KubeAPIServer.CloudProvider {
+			if k8sCloudProvider != c.Spec.KubeAPIServer.CloudProvider {
 				return field.Invalid(specPath.Child("KubeAPIServer", "CloudProvider"), c.Spec.KubeAPIServer.CloudProvider, "Did not match cluster CloudProvider")
 			}
 		}
 		if c.Spec.KubeControllerManager != nil && (strict || c.Spec.KubeControllerManager.CloudProvider != "") {
-			if cloudProvider != c.Spec.KubeControllerManager.CloudProvider {
+			if k8sCloudProvider != c.Spec.KubeControllerManager.CloudProvider {
 				return field.Invalid(specPath.Child("KubeControllerManager", "CloudProvider"), c.Spec.KubeControllerManager.CloudProvider, "Did not match cluster CloudProvider")
 			}
 		}
@@ -432,7 +457,8 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool) er
 	}
 
 	if nodeGroupCount == 0 {
-		return fmt.Errorf("must configure at least one Node InstanceGroup")
+		// TODO: put this back?
+		//return fmt.Errorf("must configure at least one Node InstanceGroup")
 	}
 
 	for _, g := range groups {

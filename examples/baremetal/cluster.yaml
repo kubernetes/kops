@@ -1,0 +1,23 @@
+kind: Cluster
+apiVersion: kops/v1alpha1
+metadata:
+  name: baremetal.awsdata.com
+spec:
+  channel: stable
+  cloudProvider: baremetal
+  configBase: s3://clusters.awsdata.com/baremetal.awsdata.com
+  docker:
+    storage: overlay
+  kubernetesVersion: v1.4.1
+  networking:
+    kubenet: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  etcdClusters:
+  - etcdMembers:
+    - name: masters
+      instanceGroup: masters
+    name: main
+  - etcdMembers:
+    - name: masters
+      instanceGroup: masters
+    name: events

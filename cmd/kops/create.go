@@ -37,6 +37,9 @@ import (
 	"k8s.io/kubernetes/pkg/util/i18n"
 )
 
+// TODO: Move to field on instancegroup?
+const ClusterNameLabel = "kops.k8s.io/cluster"
+
 type CreateOptions struct {
 	resource.FilenameOptions
 }
