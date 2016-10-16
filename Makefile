@@ -188,11 +188,10 @@ copydeps:
 	rsync -avz _vendor/ vendor/ --delete --exclude vendor/  --exclude .git
 
 gofmt:
-	gofmt -w -s cmd/
 	gofmt -w -s channels/
+	gofmt -w -s cmd/
 	gofmt -w -s examples/
 	gofmt -w -s util/
-	gofmt -w -s cmd/
 	gofmt -w -s upup/pkg/
 	gofmt -w -s protokube/cmd
 	gofmt -w -s protokube/pkg
@@ -200,10 +199,21 @@ gofmt:
 	gofmt -w -s dns-controller/pkg
 
 
+govet:
+	go vet \
+	  k8s.io/kops/cmd/... \
+	  k8s.io/kops/channels/... \
+	  k8s.io/kops/examples/... \
+	  k8s.io/kops/util/... \
+	  k8s.io/kops/upup/... \
+	  k8s.io/kops/protokube/... \
+	  k8s.io/kops/dns-controller/...
+
+
 # --------------------------------------------------
 # Continuous integration targets
 
-ci: kops nodeup-gocode test
+ci: kops nodeup-gocode test govet
 	echo "Done"
 
 

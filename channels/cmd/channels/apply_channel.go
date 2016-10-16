@@ -77,7 +77,7 @@ func (c *ApplyChannelCmd) Run(args []string) error {
 		}
 		o, err := channels.LoadAddons(name, location)
 		if err != nil {
-			return fmt.Errorf("error loading channel: %v", location, err)
+			return fmt.Errorf("error loading channel %q: %v", location, err)
 		}
 
 		current, err := o.GetCurrent()
