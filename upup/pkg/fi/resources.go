@@ -130,11 +130,6 @@ func (s *StringResource) Open() (io.Reader, error) {
 	return r, nil
 }
 
-func (s *StringResource) WriteTo(out io.Writer) error {
-	_, err := out.Write([]byte(s.s))
-	return err
-}
-
 type BytesResource struct {
 	data []byte
 }
