@@ -109,6 +109,7 @@ upload: kops version-dist
 	aws s3 sync --acl public-read .build/upload/ ${S3_BUCKET}
 
 gcs-upload: version-dist
+	gcloud auth list
 	gsutil -m rsync -r .build/upload/kops ${GCS_LOCATION}
 
 gcs-publish-ci: gcs-upload
