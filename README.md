@@ -147,3 +147,17 @@ cluster using terraform.
 If you are using a version of terraform prior to 0.7, please read about the [workaround for earlier versions of terraform](docs/terraform.md).
 
 For more details, please read the [how to use terraform to create a Kubernetes cluster](docs/terraform.md)
+
+# Get involved
+
+### Slack
+
+More information on [the official Kubernetes slack](https://github.com/kubernetes/community#slack-chat).
+
+### Biweekly meetings
+
+We currently host biweekly meetings on Friday mornings at 9am PDT. Please join our meetings [here](https://hangouts.google.com/hangouts/_/cnmconsulting.net/plaform).
+
+For more information on meeting times please drop a line in **#sig-cluster-lifecycle** in slack.
+
+###### Note: These will be moving to an official Zoom meeting shortly.
