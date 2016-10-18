@@ -30,6 +30,9 @@ import (
 	"time"
 )
 
+const IAMPropagationRetryAttempts = 30
+const IAMPropagationRetryInterval = 10 * time.Second
+
 //go:generate fitask -type=LaunchConfiguration
 type LaunchConfiguration struct {
 	Name *string
@@ -272,7 +275,6 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 		request.IamInstanceProfile = e.IAMInstanceProfile.Name
 	}
 
-	maxAttempts := 6
 	attempt := 0
 	for {
 		attempt++
@@ -285,13 +287,13 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 		if awsup.AWSErrorCode(err) == "ValidationError" {
 			message := awsup.AWSErrorMessage(err)
 			if strings.Contains(message, "not authorized") || strings.Contains(message, "Invalid IamInstance") {
-				if attempt == maxAttempts {
+				if attempt == IAMPropagationRetryAttempts {
 					// IAM instance profile creation is notoriously async
 					return fmt.Errorf("IAM instance profile not yet created/propagated")
 				} else {
 					glog.Infof("Waiting for IAM to replicate")
 					glog.V(2).Infof("IAM error was %v", err)
-					time.Sleep(10 * time.Second)
+					time.Sleep(IAMPropagationRetryInterval)
 					continue
 				}
 			}
