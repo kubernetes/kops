@@ -24,6 +24,7 @@ internetGateway/{{ ClusterName }}:
   shared: {{ SharedVPC }}
   vpc: vpc/{{ ClusterName }}
 
+# Name must match name in convert_kubeup_cluster.go
 routeTable/{{ ClusterName }}:
   vpc: vpc/{{ ClusterName }}
 
