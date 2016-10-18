@@ -116,7 +116,7 @@ gcs-upload: version-dist
 
 gcs-publish-ci: gcs-upload
 	echo "${GCS_URL}/${VERSION}" > .build/upload/${LATEST_FILE}
-	gsutil cp .build/upload/${LATEST_FILE} ${GCS_LOCATION}
+	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp .build/upload/${LATEST_FILE} ${GCS_LOCATION}
 
 # Assumes running on linux for speed (todo: crossbuild on OSX?)
 push: nodeup-gocode
