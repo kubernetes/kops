@@ -17,20 +17,23 @@ limitations under the License.
 package fi
 
 import (
-	"fmt"
-
 	"bytes"
-	"github.com/golang/glog"
+	"fmt"
 	"io"
-	"k8s.io/kops/upup/pkg/fi/utils"
 	"reflect"
 	"strings"
+	"sync"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 // DryRunTarget is a special Target that does not execute anything, but instead tracks all changes.
 // By running against a DryRunTarget, a list of changes that would be made can be easily collected,
 // without any special support from the Tasks.
 type DryRunTarget struct {
+	mutex sync.Mutex
+
 	changes   []*render
 	deletions []Deletion
 
@@ -57,6 +60,9 @@ func (t *DryRunTarget) Render(a, e, changes Task) error {
 	valA := reflect.ValueOf(a)
 	aIsNil := valA.IsNil()
 
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+
 	t.changes = append(t.changes, &render{
 		a:       a,
 		aIsNil:  aIsNil,
@@ -67,7 +73,11 @@ func (t *DryRunTarget) Render(a, e, changes Task) error {
 }
 
 func (t *DryRunTarget) Delete(deletion Deletion) error {
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+
 	t.deletions = append(t.deletions, deletion)
+
 	return nil
 }
 
