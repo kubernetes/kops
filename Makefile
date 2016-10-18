@@ -24,6 +24,7 @@ LATEST_FILE?=latest-ci.txt
 GOPATH_1ST=$(shell echo ${GOPATH} | cut -d : -f 1)
 UNIQUE:=$(shell date +%s)
 GOVERSION=1.6
+GOBIN_UPUP_FLAGS=
 
 # See http://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
@@ -55,7 +56,7 @@ gobindata-tool:
 	go build ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS}" -o ${GOPATH_1ST}/bin/go-bindata k8s.io/kops/vendor/github.com/jteeuwen/go-bindata/go-bindata
 
 kops-gobindata: gobindata-tool
-	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOPATH_1ST}/bin/go-bindata -o upup/models/bindata.go -pkg models -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/...
+	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOPATH_1ST}/bin/go-bindata -o upup/models/bindata.go -pkg models -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" ${GOBIN_UPUP_FLAGS} -prefix upup/models/ upup/models/...
 	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOPATH_1ST}/bin/go-bindata -o federation/model/bindata.go -pkg model -ignore="\\.DS_Store" -ignore="bindata\\.go" -prefix federation/model/ federation/model/...
 
 # Build in a docker container with golang 1.X
@@ -161,7 +162,7 @@ nodeup-gocode: kops-gobindata
 
 nodeup-dist:
 	docker pull golang:${GOVERSION} # Keep golang image up to date
-	docker run --name=nodeup-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile nodeup-gocode
+	docker run --name=nodeup-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile nodeup-gocode GOBIN_UPUP_FLAGS=${GOBIN_UPUP_FLAGS}
 	mkdir -p .build/dist
 	docker cp nodeup-build-${UNIQUE}:/go/bin/nodeup .build/dist/
 	(sha1sum .build/dist/nodeup | cut -d' ' -f1) > .build/dist/nodeup.sha1
