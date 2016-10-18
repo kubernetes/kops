@@ -1,6 +1,7 @@
 [Unit]
 Description=Kubernetes Kubelet Server
 Documentation=https://github.com/kubernetes/kubernetes
+After=docker.service
 
 [Service]
 EnvironmentFile=/etc/sysconfig/kubelet
