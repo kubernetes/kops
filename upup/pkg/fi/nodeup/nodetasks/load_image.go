@@ -18,16 +18,19 @@ package nodetasks
 
 import (
 	"fmt"
+	"os/exec"
+	"path"
+	"strings"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/hashing"
-	"os/exec"
-	"path"
-	"strings"
 )
+
+const dockerService = "docker.service"
 
 // LoadImageTask is responsible for downloading a docker image
 type LoadImageTask struct {
@@ -36,6 +39,20 @@ type LoadImageTask struct {
 }
 
 var _ fi.Task = &LoadImageTask{}
+var _ fi.HasDependencies = &LoadImageTask{}
+
+func (t *LoadImageTask) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	// LoadImageTask depends on the docker service to ensure we
+	// sideload images after docker is completely updated and
+	// configured.
+	var deps []fi.Task
+	for _, v := range tasks {
+		if svc, ok := v.(*Service); ok && svc.Name == dockerService {
+			deps = append(deps, v)
+		}
+	}
+	return deps
+}
 
 func (t *LoadImageTask) String() string {
 	return fmt.Sprintf("LoadImageTask: %s", t.Source)

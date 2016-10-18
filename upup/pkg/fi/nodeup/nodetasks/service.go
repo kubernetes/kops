@@ -19,19 +19,18 @@ package nodetasks
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/golang/glog"
 	"io/ioutil"
+	"os"
+	"os/exec"
+	"path"
+	"strings"
+	"time"
+
+	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/nodeup/tags"
-	"k8s.io/kops/upup/pkg/fi/utils"
-	"os"
-	"os/exec"
-	"path"
-	"reflect"
-	"strings"
-	"time"
 )
 
 const (
@@ -60,15 +59,17 @@ var _ fi.HasDependencies = &Service{}
 func (p *Service) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	var deps []fi.Task
 	for _, v := range tasks {
-		// We assume that services depend on basically everything
-		typeName := utils.BuildTypeName(reflect.TypeOf(v))
-		switch typeName {
-		case "*CopyAssetTask", "*File", "*Package", "*Sysctl", "*UpdatePackages", "*UserTask", "*Disk":
+		// We assume that services depend on everything except for
+		// LoadImageTask. If there are any LoadImageTasks (e.g. we're
+		// launching a custom Kubernetes build), they all depend on
+		// the "docker.service" Service task.
+		switch v.(type) {
+		case *File, *Package, *UpdatePackages, *UserTask, *MountDiskTask:
 			deps = append(deps, v)
-		case "*Service":
-		// ignore
+		case *Service, *LoadImageTask:
+			// ignore
 		default:
-			glog.Warningf("Unhandled type name in Service::GetDependencies: %q", typeName)
+			glog.Warningf("Unhandled type %t in Service::GetDependencies: %v", v, v)
 			deps = append(deps, v)
 		}
 	}
