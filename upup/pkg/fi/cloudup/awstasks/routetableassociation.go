@@ -115,12 +115,14 @@ func findExistingRouteTableForSubnet(cloud awsup.AWSCloud, subnet *Subnet) (*ec2
 		return nil, fmt.Errorf("subnet ID not set")
 	}
 
+	subnetID := fi.StringValue(subnet.ID)
+
 	request := &ec2.DescribeRouteTablesInput{
-		Filters: []*ec2.Filter{awsup.NewEC2Filter("association.subnet-id", fi.StringValue(subnet.ID))},
+		Filters: []*ec2.Filter{awsup.NewEC2Filter("association.subnet-id", subnetID)},
 	}
 	response, err := cloud.EC2().DescribeRouteTables(request)
 	if err != nil {
-		return nil, fmt.Errorf("error listing RouteTables: %v", err)
+		return nil, fmt.Errorf("error listing RouteTables for subnet %q: %v", subnetID, err)
 	}
 	if response == nil || len(response.RouteTables) == 0 {
 		return nil, nil
