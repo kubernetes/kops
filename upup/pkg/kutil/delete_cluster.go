@@ -399,12 +399,10 @@ func ListInstances(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, erro
 				if instance.State != nil {
 					stateName := aws.StringValue(instance.State.Name)
 					switch stateName {
-					case "terminated":
-					case "shutting-down":
+					case "terminated", "shutting-down":
 						continue
 
-					case "running":
-					case "stopped":
+					case "running", "stopped":
 						// We need to delete
 						glog.V(4).Infof("instance %q has state=%q", id, stateName)
 
