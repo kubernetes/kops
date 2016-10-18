@@ -34,8 +34,17 @@ import (
 	"time"
 )
 
-const MaxDescribeTagsAttempts = 60
-const MaxCreateTagsAttempts = 60
+const DescribeTagsMaxAttempts = 120
+const DescribeTagsRetryInterval = 2 * time.Second
+const DescribeTagsLogInterval = 10 // this is in "retry intervals"
+
+const CreateTagsMaxAttempts = 120
+const CreateTagsRetryInterval = 2 * time.Second
+const CreateTagsLogInterval = 10 // this is in "retry intervals"
+
+const DeleteTagsMaxAttempts = 120
+const DeleteTagsRetryInterval = 2 * time.Second
+const DeleteTagsLogInterval = 10 // this is in "retry intervals"
 
 const TagClusterName = "KubernetesCluster"
 
@@ -196,12 +205,16 @@ func (c *awsCloudImplementation) GetTags(resourceId string) (map[string]string, 
 		response, err := c.EC2().DescribeTags(request)
 		if err != nil {
 			if isTagsEventualConsistencyError(err) {
-				if attempt > MaxDescribeTagsAttempts {
+				if attempt > DescribeTagsMaxAttempts {
 					return nil, fmt.Errorf("Got retryable error while getting tags on %q, but retried too many times without success: %v", resourceId, err)
 				}
 
+				if (attempt % DescribeTagsLogInterval) == 0 {
+					glog.Infof("waiting for eventual consistency while describing tags on %q", resourceId)
+				}
+
 				glog.V(2).Infof("will retry after encountering error getting tags on %q: %v", resourceId, err)
-				time.Sleep(2 * time.Second)
+				time.Sleep(DescribeTagsRetryInterval)
 				continue
 			}
 
@@ -243,12 +256,16 @@ func (c *awsCloudImplementation) CreateTags(resourceId string, tags map[string]s
 		_, err := c.EC2().CreateTags(request)
 		if err != nil {
 			if isTagsEventualConsistencyError(err) {
-				if attempt > MaxCreateTagsAttempts {
+				if attempt > CreateTagsMaxAttempts {
 					return fmt.Errorf("Got retryable error while creating tags on %q, but retried too many times without success: %v", resourceId, err)
 				}
 
+				if (attempt % CreateTagsLogInterval) == 0 {
+					glog.Infof("waiting for eventual consistency while creating tags on %q", resourceId)
+				}
+
 				glog.V(2).Infof("will retry after encountering error creating tags on %q: %v", resourceId, err)
-				time.Sleep(2 * time.Second)
+				time.Sleep(CreateTagsRetryInterval)
 				continue
 			}
 
@@ -282,12 +299,16 @@ func (c *awsCloudImplementation) DeleteTags(resourceId string, tags map[string]s
 		_, err := c.EC2().DeleteTags(request)
 		if err != nil {
 			if isTagsEventualConsistencyError(err) {
-				if attempt > MaxCreateTagsAttempts {
+				if attempt > DeleteTagsMaxAttempts {
 					return fmt.Errorf("Got retryable error while deleting tags on %q, but retried too many times without success: %v", resourceId, err)
 				}
 
+				if (attempt % DeleteTagsLogInterval) == 0 {
+					glog.Infof("waiting for eventual consistency while deleting tags on %q", resourceId)
+				}
+
 				glog.V(2).Infof("will retry after encountering error deleting tags on %q: %v", resourceId, err)
-				time.Sleep(2 * time.Second)
+				time.Sleep(DeleteTagsRetryInterval)
 				continue
 			}
 
