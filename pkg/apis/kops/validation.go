@@ -46,7 +46,10 @@ func (c *Cluster) Validate(strict bool) error {
 		}
 
 		if !strings.Contains(c.Name, ".") {
-			return fmt.Errorf("Cluster Name must be a fully-qualified DNS name (e.g. --name=mycluster.myzone.com)")
+			// Tolerate if this is a cluster we are importing for upgrade
+			if c.Annotations[AnnotationNameManagement] != AnnotationValueManagementImported {
+				return fmt.Errorf("Cluster Name must be a fully-qualified DNS name (e.g. --name=mycluster.myzone.com)")
+			}
 		}
 	}
 
