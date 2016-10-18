@@ -59,7 +59,7 @@ func findAutoscalingGroup(cloud awsup.AWSCloud, name string) (*autoscaling.Group
 			if aws.StringValue(g.AutoScalingGroupName) == name {
 				found = append(found, g)
 			} else {
-				glog.Warningf("Got ASG with unexpected name")
+				glog.Warningf("Got ASG with unexpected name %q", aws.StringValue(g.AutoScalingGroupName))
 			}
 		}
 
@@ -111,10 +111,11 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 		}
 	}
 
-	if g.LaunchConfigurationName == nil {
-		return nil, fmt.Errorf("autoscaling Group %q had no LaunchConfiguration", *actual.Name)
+	if fi.StringValue(g.LaunchConfigurationName) == "" {
+		glog.Warningf("autoscaling Group %q had no LaunchConfiguration", fi.StringValue(g.AutoScalingGroupName))
+	} else {
+		actual.LaunchConfiguration = &LaunchConfiguration{ID: g.LaunchConfigurationName}
 	}
-	actual.LaunchConfiguration = &LaunchConfiguration{ID: g.LaunchConfigurationName}
 
 	if subnetSlicesEqualIgnoreOrder(actual.Subnets, e.Subnets) {
 		actual.Subnets = e.Subnets
