@@ -184,7 +184,7 @@ func (c *KubeconfigBuilder) WriteKubecfg() error {
 		}
 	}
 
-	fmt.Printf("Wrote config for %s to %q\n", c.Context, c.KubeconfigPath)
+	fmt.Printf("Wrote config for %s\n", c.Context)
 	return nil
 }
 
