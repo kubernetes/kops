@@ -21,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/route53"
@@ -40,8 +41,15 @@ type MockAWSCloud struct {
 var _ fi.Cloud = (*MockAWSCloud)(nil)
 
 func InstallMockAWSCloud(region string, zoneLetters string) {
-	i := &MockAWSCloud{region: region}
+	i := BuildMockAWSCloud(region, zoneLetters)
 	awsCloudInstances[region] = i
+	allRegions = []*ec2.Region{
+		{RegionName: aws.String(region)},
+	}
+}
+
+func BuildMockAWSCloud(region string, zoneLetters string) *MockAWSCloud {
+	i := &MockAWSCloud{region: region}
 	for _, c := range zoneLetters {
 		azName := fmt.Sprintf("%s%c", region, c)
 		az := &ec2.AvailabilityZone{
@@ -51,13 +59,11 @@ func InstallMockAWSCloud(region string, zoneLetters string) {
 		}
 		i.zones = append(i.zones, az)
 	}
-
-	allRegions = []*ec2.Region{
-		{RegionName: aws.String(region)},
-	}
+	return i
 }
 
 type MockCloud struct {
+	MockEC2 ec2iface.EC2API
 }
 
 func (c *MockCloud) ProviderID() fi.CloudProviderID {
@@ -138,9 +144,11 @@ func (c *MockAWSCloud) WithTags(tags map[string]string) AWSCloud {
 	return m
 }
 
-func (c *MockAWSCloud) EC2() *ec2.EC2 {
-	glog.Fatalf("MockAWSCloud EC2 not implemented")
-	return nil
+func (c *MockAWSCloud) EC2() ec2iface.EC2API {
+	if c.MockEC2 == nil {
+		glog.Fatalf("MockAWSCloud MockEC2 not set")
+	}
+	return c.MockEC2
 }
 
 func (c *MockAWSCloud) IAM() *iam.IAM {

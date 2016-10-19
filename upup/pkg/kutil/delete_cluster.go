@@ -164,43 +164,8 @@ func (c *DeleteCluster) ListResources() (map[string]*ResourceTracker, error) {
 		}
 	}
 
-	{
-		// We sometimes have trouble tagging the route table (eventual consistency, e.g. #597)
-		// If we are deleting the VPC, we should delete the route table
-		// (no real reason not to; easy to recreate; no real state etc)
-		routeTables, err := DescribeRouteTablesIgnoreTags(cloud)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, rt := range routeTables {
-			rtID := aws.StringValue(rt.RouteTableId)
-			vpcID := aws.StringValue(rt.VpcId)
-			if vpcID == "" || rtID == "" {
-				continue
-			}
-
-			if resources["vpc:"+vpcID] == nil {
-				// Not deleting this VPC; ignore
-				continue
-			}
-
-			isMain := true
-			for _, a := range rt.Associations {
-				if aws.BoolValue(a.Main) == false {
-					isMain = false
-				}
-			}
-			if isMain {
-				glog.V(4).Infof("ignoring main routetable %q", rtID)
-				continue
-			}
-
-			t := buildTrackerForRouteTable(rt)
-			if resources[t.Type+":"+t.ID] == nil {
-				resources[t.Type+":"+t.ID] = t
-			}
-		}
+	if err := addUntaggedRouteTables(cloud, resources); err != nil {
+		return nil, err
 	}
 
 	for k, t := range resources {
@@ -209,6 +174,47 @@ func (c *DeleteCluster) ListResources() (map[string]*ResourceTracker, error) {
 		}
 	}
 	return resources, nil
+}
+
+func addUntaggedRouteTables(cloud awsup.AWSCloud, resources map[string]*ResourceTracker) error {
+	// We sometimes have trouble tagging the route table (eventual consistency, e.g. #597)
+	// If we are deleting the VPC, we should delete the route table
+	// (no real reason not to; easy to recreate; no real state etc)
+	routeTables, err := DescribeRouteTablesIgnoreTags(cloud)
+	if err != nil {
+		return err
+	}
+
+	for _, rt := range routeTables {
+		rtID := aws.StringValue(rt.RouteTableId)
+		vpcID := aws.StringValue(rt.VpcId)
+		if vpcID == "" || rtID == "" {
+			continue
+		}
+
+		if resources["vpc:"+vpcID] == nil {
+			// Not deleting this VPC; ignore
+			continue
+		}
+
+		isMain := false
+		for _, a := range rt.Associations {
+			if aws.BoolValue(a.Main) == true {
+				isMain = true
+			}
+		}
+		if isMain {
+			glog.V(4).Infof("ignoring main routetable %q", rtID)
+			continue
+		}
+
+		t := buildTrackerForRouteTable(rt)
+		if resources[t.Type+":"+t.ID] == nil {
+			resources[t.Type+":"+t.ID] = t
+		}
+	}
+
+	return nil
 }
 
 func (c *DeleteCluster) DeleteResources(resources map[string]*ResourceTracker) error {
