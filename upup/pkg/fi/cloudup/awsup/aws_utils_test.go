@@ -17,12 +17,22 @@ limitations under the License.
 package awsup
 
 import (
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/kops/pkg/apis/kops"
 	"testing"
 )
 
 func TestValidateRegion(t *testing.T) {
-	for _, region := range []string{"us-east-1", "us-east-2", "eu-west-1"} {
+	allRegions = []*ec2.Region{
+		{
+			RegionName: aws.String("us-mock-1"),
+		},
+		{
+			RegionName: aws.String("us-mock-2"),
+		},
+	}
+	for _, region := range []string{"us-mock-1", "us-mock-2"} {
 		err := ValidateRegion(region)
 		if err != nil {
 			t.Fatalf("unexpected error validating region %q: %v", region, err)
