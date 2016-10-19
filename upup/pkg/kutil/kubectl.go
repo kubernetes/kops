@@ -17,6 +17,7 @@ limitations under the License.
 package kutil
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/golang/glog"
@@ -71,7 +72,7 @@ func (k *Kubectl) GetConfig(minify bool) (*KubectlConfig, error) {
 		args = append(args, "--output", output)
 	}
 
-	configString, err := k.execKubectl(args...)
+	configString, _, err := k.execKubectl(args...)
 	if err != nil {
 		return nil, err
 	}
@@ -106,29 +107,11 @@ func (k *Kubectl) Apply(context string, data []byte) error {
 		return fmt.Errorf("error writing temp file: %v", err)
 	}
 
-	_, err = execKubectl("apply", "--context", context, "-f", localManifestFile.Name())
+	_, _, err = k.execKubectl("apply", "--context", context, "-f", localManifestFile.Name())
 	return err
 }
 
-func execKubectl(args ...string) (string, error) {
-	kubectlPath := "kubectl" // Assume in PATH
-	cmd := exec.Command(kubectlPath, args...)
-	env := os.Environ()
-	cmd.Env = env
-
-	human := strings.Join(cmd.Args, " ")
-	glog.V(2).Infof("Running command: %s", human)
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		glog.Infof("error running %s", human)
-		glog.Info(string(output))
-		return string(output), fmt.Errorf("error running kubectl")
-	}
-
-	return string(output), err
-}
-
-func (k *Kubectl) execKubectl(args ...string) (string, error) {
+func (k *Kubectl) execKubectl(args ...string) (string, string, error) {
 	kubectlPath := k.KubectlPath
 	if kubectlPath == "" {
 		kubectlPath = "kubectl" // Assume in PATH
@@ -136,17 +119,23 @@ func (k *Kubectl) execKubectl(args ...string) (string, error) {
 	cmd := exec.Command(kubectlPath, args...)
 	env := os.Environ()
 	cmd.Env = env
+	var stdout bytes.Buffer
+	cmd.Stdout = &stdout
+
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
 
 	human := strings.Join(cmd.Args, " ")
 	glog.V(2).Infof("Running command: %s", human)
-	output, err := cmd.CombinedOutput()
+	err := cmd.Run()
 	if err != nil {
-		glog.Infof("error running %s:", human)
-		glog.Info(string(output))
-		return string(output), fmt.Errorf("error running kubectl")
+		glog.Infof("error running %s", human)
+		glog.Info(stdout.String())
+		glog.Info(stderr.String())
+		return stdout.String(), stderr.String(), fmt.Errorf("error running kubectl: %v", err)
 	}
 
-	return string(output), err
+	return stdout.String(), stderr.String(), err
 }
 
 type KubectlConfig struct {
