@@ -5,7 +5,6 @@ Kubelet:
   LogLevel: 2
   ClusterDNS: {{ WellKnownServiceIP 10 }}
   ClusterDomain: {{ .ClusterDNSDomain }}
-  ConfigureCBR0: true
   BabysitDaemons: true
   APIServers: https://{{ .MasterInternalName }}
   NonMasqueradeCIDR: {{ .NonMasqueradeCIDR }}
