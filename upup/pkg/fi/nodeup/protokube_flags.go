@@ -17,10 +17,13 @@ limitations under the License.
 package nodeup
 
 type ProtokubeFlags struct {
-	DNSZoneName   *string `json:"dnsZoneName,omitempty" flag:"dns-zone-name"`
-	Master        *bool   `json:"master,omitempty" flag:"master"`
-	Containerized *bool   `json:"containerized,omitempty" flag:"containerized"`
-	LogLevel      *int    `json:"logLevel,omitempty" flag:"v"`
+	Master        *bool `json:"master,omitempty" flag:"master"`
+	Containerized *bool `json:"containerized,omitempty" flag:"containerized"`
+	LogLevel      *int  `json:"logLevel,omitempty" flag:"v"`
+
+	DNSProvider *string `json:"dnsProvider,omitempty" flag:"dns"`
+
+	Zone []string `json:"zone,omitempty" flag:"zone"`
 
 	Channels []string `json:"channels,omitempty" flag:"channels"`
 }
