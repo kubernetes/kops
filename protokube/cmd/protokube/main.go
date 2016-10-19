@@ -20,21 +20,47 @@ import (
 	"flag"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/spf13/pflag"
+	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/protokube/pkg/protokube"
+	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	"net"
 	"os"
 	"strings"
 )
 
+var (
+	flags = pflag.NewFlagSet("", pflag.ExitOnError)
+)
+
+var (
+	// value overwritten during build. This can be used to resolve issues.
+	BuildVersion = "0.1"
+)
+
 func main() {
+	fmt.Printf("protokube version %s\n", BuildVersion)
+
+	err := run()
+	if err != nil {
+		glog.Errorf("Error: %v", err)
+		os.Exit(1)
+	}
+	os.Exit(0)
+}
+
+func run() error {
+	dnsProviderId := "aws-route53"
+	flags.StringVar(&dnsProviderId, "dns", dnsProviderId, "DNS provider we should use (aws-route53, google-clouddns)")
+
+	var zones []string
+	flags.StringSliceVarP(&zones, "zone", "z", []string{}, "Configure permitted zones and their mappings")
+
 	master := false
 	flag.BoolVar(&master, "master", master, "Act as master")
 
 	containerized := false
 	flag.BoolVar(&containerized, "containerized", containerized, "Set if we are running containerized.")
-
-	dnsZoneName := ""
-	flag.StringVar(&dnsZoneName, "dns-zone-name", dnsZoneName, "Name of zone to use for DNS")
 
 	dnsInternalSuffix := ""
 	flag.StringVar(&dnsInternalSuffix, "dns-internal-suffix", dnsInternalSuffix, "DNS suffix for internal domain names")
@@ -45,20 +71,24 @@ func main() {
 	flagChannels := ""
 	flag.StringVar(&flagChannels, "channels", flagChannels, "channels to install")
 
+	// Trick to avoid 'logging before flag.Parse' warning
+	flag.CommandLine.Parse([]string{})
+
 	flag.Set("logtostderr", "true")
-	flag.Parse()
+
+	flags.AddGoFlagSet(flag.CommandLine)
+
+	flags.Parse(os.Args)
 
 	volumes, err := protokube.NewAWSVolumes()
 	if err != nil {
-		glog.Errorf("Error initializing AWS: %q", err)
-		os.Exit(1)
+		return fmt.Errorf("Error initializing AWS: %q", err)
 	}
 
 	if clusterID == "" {
 		clusterID = volumes.ClusterID()
 		if clusterID == "" {
-			glog.Errorf("cluster-id is required (cannot be determined from cloud)")
-			os.Exit(1)
+			return fmt.Errorf("cluster-id is required (cannot be determined from cloud)")
 		} else {
 			glog.Infof("Setting cluster-id from cloud: %s", clusterID)
 		}
@@ -75,10 +105,10 @@ func main() {
 		dnsInternalSuffix = "." + dnsInternalSuffix
 	}
 
-	if dnsZoneName == "" {
-		tokens := strings.Split(dnsInternalSuffix, ".")
-		dnsZoneName = strings.Join(tokens[len(tokens)-2:], ".")
-	}
+	//if dnsZoneName == "" {
+	//	tokens := strings.Split(dnsInternalSuffix, ".")
+	//	dnsZoneName = strings.Join(tokens[len(tokens)-2:], ".")
+	//}
 
 	// Get internal IP from cloud, to avoid problems if we're in a container
 	// TODO: Just run with --net=host ??
@@ -89,10 +119,34 @@ func main() {
 	//}
 	internalIP := volumes.InternalIP()
 
-	dns, err := protokube.NewRoute53DNSProvider(dnsZoneName)
-	if err != nil {
-		glog.Errorf("Error initializing DNS: %q", err)
-		os.Exit(1)
+	var dnsScope dns.Scope
+	var dnsController dns.DNSController
+	{
+		dnsProvider, err := dnsprovider.GetDnsProvider(dnsProviderId, nil)
+		if err != nil {
+			return fmt.Errorf("Error initializing DNS provider %q: %v", dnsProviderId, err)
+		}
+		if dnsProvider == nil {
+			return fmt.Errorf("DNS provider was nil %q: %v", dnsProviderId, err)
+		}
+
+		zoneRules, err := dns.ParseZoneRules(zones)
+		if err != nil {
+			return fmt.Errorf("unexpected zone flags: %q", err)
+		}
+
+		dnsController, err = dns.NewDNSController(dnsProvider, zoneRules)
+		if err != nil {
+			return nil, err
+		}
+
+		dnsScope, err = dnsController.CreateScope("protokube")
+		if err != nil {
+			return nil, err
+		}
+
+		// We don't really use readiness - our records are simple
+		dnsScope.MarkReady()
 	}
 
 	rootfs := "/"
@@ -117,7 +171,7 @@ func main() {
 		//EtcdClusters   : fromVolume
 
 		ModelDir: modelDir,
-		DNS:      dns,
+		DNSScope: dnsScope,
 
 		Channels: channels,
 
@@ -125,10 +179,11 @@ func main() {
 	}
 	k.Init(volumes)
 
+	go dnsController.Run()
+
 	k.RunSyncLoop()
 
-	glog.Infof("Unexpected exit")
-	os.Exit(1)
+	return fmt.Errorf("Unexpected exit")
 }
 
 // TODO: run with --net=host ??

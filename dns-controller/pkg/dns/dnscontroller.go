@@ -32,6 +32,8 @@ import (
 	"sync/atomic"
 )
 
+const DefaultTTL = time.Minute
+
 // DNSController applies the desired DNS state to the DNS backend
 type DNSController struct {
 	zoneRules *ZoneRules
@@ -252,10 +254,10 @@ func (c *DNSController) runOnce() error {
 			continue
 		}
 
-		ttl := 60
-		glog.Infof("Using default TTL of %d seconds", ttl)
+		ttl := DefaultTTL
+		glog.Infof("Using default TTL of %v", ttl)
 
-		err := op.updateRecords(k, newValues, int64(ttl))
+		err := op.updateRecords(k, newValues, int64(ttl.Seconds()))
 		if err != nil {
 			glog.Infof("error updating records for %s: %v", k, err)
 			errors = append(errors, err)

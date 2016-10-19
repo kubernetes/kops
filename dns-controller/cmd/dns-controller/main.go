@@ -56,12 +56,6 @@ func main() {
 
 	flags.Parse(os.Args)
 
-	zoneRules, err := dns.ParseZoneRules(zones)
-	if err != nil {
-		glog.Errorf("unexpected zone flags: %q", err)
-		os.Exit(1)
-	}
-
 	config, err := clientConfig.ClientConfig()
 	if err != nil {
 		glog.Errorf("error building client configuration: %v", err)
@@ -85,6 +79,12 @@ func main() {
 	}
 	if dnsProvider == nil {
 		glog.Errorf("DNS provider was nil %q: %v", dnsProviderId, err)
+		os.Exit(1)
+	}
+
+	zoneRules, err := dns.ParseZoneRules(zones)
+	if err != nil {
+		glog.Errorf("unexpected zone flags: %q", err)
 		os.Exit(1)
 	}
 

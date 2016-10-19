@@ -30,7 +30,9 @@ MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
 DNS_CONTROLLER_TAG=1.4.1
-PROTOKUBE_TAG=1.4.0
+
+# Keep in sync with DefaultProtokubeImage
+PROTOKUBE_TAG=1.4.2
 
 ifndef VERSION
   VERSION := git-$(shell git describe --always)

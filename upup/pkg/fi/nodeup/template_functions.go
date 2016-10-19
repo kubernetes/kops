@@ -24,12 +24,13 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/util/pkg/vfs"
+	"strings"
 	"text/template"
 )
 
 const TagMaster = "_kubernetes_master"
 
-const DefaultProtokubeImage = "kope/protokube:1.4"
+const DefaultProtokubeImage = "kope/protokube:1.4.2"
 
 // templateFunctions is a simple helper-class for the functions accessible to templates
 type templateFunctions struct {
@@ -257,9 +258,20 @@ func (t *templateFunctions) ProtokubeFlags() *ProtokubeFlags {
 
 	f.LogLevel = fi.Int(8)
 	f.Containerized = fi.Bool(true)
-	if t.cluster.Spec.DNSZone != "" {
-		f.DNSZoneName = fi.String(t.cluster.Spec.DNSZone)
+
+	zone := t.cluster.Spec.DNSZone
+	if zone != "" {
+		if strings.Contains(zone, ".") {
+			// match by name
+			f.Zone = append(f.Zone, zone)
+		} else {
+			// match by id
+			f.Zone = append(f.Zone, zone)
+		}
 	}
+
+	// permit wildcard updates
+	//argv = append(argv, "--zone=*/*")
 
 	return f
 }
