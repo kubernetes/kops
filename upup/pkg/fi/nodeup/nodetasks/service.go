@@ -69,7 +69,7 @@ func (p *Service) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 		case *Service, *LoadImageTask:
 			// ignore
 		default:
-			glog.Warningf("Unhandled type %t in Service::GetDependencies: %v", v, v)
+			glog.Warningf("Unhandled type %T in Service::GetDependencies: %v", v, v)
 			deps = append(deps, v)
 		}
 	}
