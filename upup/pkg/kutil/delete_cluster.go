@@ -164,7 +164,7 @@ func (c *DeleteCluster) ListResources() (map[string]*ResourceTracker, error) {
 		}
 	}
 
-	if err := addUntaggedRouteTables(cloud, resources); err != nil {
+	if err := addUntaggedRouteTables(cloud, c.ClusterName, resources); err != nil {
 		return nil, err
 	}
 
@@ -176,7 +176,7 @@ func (c *DeleteCluster) ListResources() (map[string]*ResourceTracker, error) {
 	return resources, nil
 }
 
-func addUntaggedRouteTables(cloud awsup.AWSCloud, resources map[string]*ResourceTracker) error {
+func addUntaggedRouteTables(cloud awsup.AWSCloud, clusterName string, resources map[string]*ResourceTracker) error {
 	// We sometimes have trouble tagging the route table (eventual consistency, e.g. #597)
 	// If we are deleting the VPC, we should delete the route table
 	// (no real reason not to; easy to recreate; no real state etc)
@@ -194,6 +194,12 @@ func addUntaggedRouteTables(cloud awsup.AWSCloud, resources map[string]*Resource
 
 		if resources["vpc:"+vpcID] == nil {
 			// Not deleting this VPC; ignore
+			continue
+		}
+
+		clusterTag, _ := awsup.FindEC2Tag(rt.Tags, awsup.TagClusterName)
+		if clusterTag != "" && clusterTag != clusterName {
+			glog.Infof("Skipping route table in VPC, but with wrong cluster tag (%q)", clusterTag)
 			continue
 		}
 

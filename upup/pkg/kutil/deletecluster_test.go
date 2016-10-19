@@ -30,6 +30,8 @@ func TestAddUntaggedRouteTables(t *testing.T) {
 	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 	resources := make(map[string]*ResourceTracker)
 
+	clusterName := "me.example.com"
+
 	c := &mockec2.MockEC2{}
 	cloud.MockEC2 = c
 
@@ -50,6 +52,18 @@ func TestAddUntaggedRouteTables(t *testing.T) {
 		},
 	})
 
+	// Skips route table tagged with other cluster
+	c.RouteTables = append(c.RouteTables, &ec2.RouteTable{
+		VpcId:        aws.String("vpc-1234"),
+		RouteTableId: aws.String("rt-1234main"),
+		Tags: []*ec2.Tag{
+			{
+				Key:   aws.String(awsup.TagClusterName),
+				Value: aws.String("other.example.com"),
+			},
+		},
+	})
+
 	// Ignores non-matching vpcs
 	c.RouteTables = append(c.RouteTables, &ec2.RouteTable{
 		VpcId:        aws.String("vpc-5555"),
@@ -58,7 +72,7 @@ func TestAddUntaggedRouteTables(t *testing.T) {
 
 	resources["vpc:vpc-1234"] = &ResourceTracker{}
 
-	err := addUntaggedRouteTables(cloud, resources)
+	err := addUntaggedRouteTables(cloud, clusterName, resources)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
