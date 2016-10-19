@@ -93,10 +93,10 @@ func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup, c
 
 // defaultNodeMachineType returns the default MachineType for nodes, based on the cloudprovider
 func defaultNodeMachineType(cluster *api.Cluster) string {
-	switch cluster.Spec.CloudProvider {
-	case "aws":
+	switch fi.CloudProviderID(cluster.Spec.CloudProvider) {
+	case fi.CloudProviderAWS:
 		return DefaultNodeMachineTypeAWS
-	case "gce":
+	case fi.CloudProviderGCE:
 		return DefaultNodeMachineTypeGCE
 	default:
 		glog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q", cluster.Spec.CloudProvider)
@@ -135,8 +135,8 @@ func defaultMasterMachineType(cluster *api.Cluster) string {
 	//MasterMachineType: m3.medium
 	//{{ end }}
 
-	switch cluster.Spec.CloudProvider {
-	case "aws":
+	switch fi.CloudProviderID(cluster.Spec.CloudProvider) {
+	case fi.CloudProviderAWS:
 		region, err := awsup.FindRegion(cluster)
 		if err != nil {
 			glog.Warningf("cannot determine region from cluster zones: %v", err)
@@ -146,7 +146,7 @@ func defaultMasterMachineType(cluster *api.Cluster) string {
 			return DefaultMasterMachineTypeAWS_USEAST2
 		}
 		return DefaultMasterMachineTypeAWS
-	case "gce":
+	case fi.CloudProviderGCE:
 		return DefaultMasterMachineTypeGCE
 	default:
 		glog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q", cluster.Spec.CloudProvider)
