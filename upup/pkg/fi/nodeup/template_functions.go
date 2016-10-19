@@ -279,8 +279,20 @@ func (t *templateFunctions) ProtokubeFlags() *ProtokubeFlags {
 
 	f.LogLevel = fi.Int(8)
 	f.Containerized = fi.Bool(true)
-	if t.cluster.Spec.DNSZone != "" {
-		f.DNSZoneName = fi.String(t.cluster.Spec.DNSZone)
+
+	zone := t.cluster.Spec.DNSZone
+	if zone != "" {
+		if strings.Contains(zone, ".") {
+			// match by name
+			f.Zone = append(f.Zone, zone)
+		} else {
+			// match by id
+			f.Zone = append(f.Zone, "*/"+zone)
+		}
+	} else {
+		glog.Warningf("DNSZone not specified; protokube won't be able to update DNS")
+		// TODO: Should we permit wildcard updates if zone is not specified?
+		//argv = append(argv, "--zone=*/*")
 	}
 
 	return f
