@@ -70,10 +70,6 @@ func (c *MockCloud) ProviderID() fi.CloudProviderID {
 	return "mock"
 }
 
-func (c *MockCloud) FindDNSHostedZone(dnsName string) (string, error) {
-	return "", fmt.Errorf("MockCloud FindDNSHostedZone not implemented")
-}
-
 func (c *MockCloud) DNS() (dnsprovider.Interface, error) {
 	return nil, fmt.Errorf("MockCloud DNS not implemented")
 }
