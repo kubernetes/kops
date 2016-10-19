@@ -23,6 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/route53"
@@ -53,7 +54,7 @@ type AWSCloud interface {
 
 	Region() string
 
-	EC2() *ec2.EC2
+	EC2() ec2iface.EC2API
 	IAM() *iam.IAM
 	ELB() *elb.ELB
 	Autoscaling() *autoscaling.AutoScaling
@@ -662,7 +663,7 @@ func (c *awsCloudImplementation) FindDNSHostedZone(clusterDNSName string) (strin
 	return "", fmt.Errorf("Found multiple hosted zones matching cluster %q; please specify the ID of the zone to use", clusterDNSName)
 }
 
-func (c *awsCloudImplementation) EC2() *ec2.EC2 {
+func (c *awsCloudImplementation) EC2() ec2iface.EC2API {
 	return c.ec2
 }
 

@@ -192,6 +192,7 @@ copydeps:
 
 gofmt:
 	gofmt -w -s channels/
+	gofmt -w -s cloudmock/
 	gofmt -w -s cmd/
 	gofmt -w -s examples/
 	gofmt -w -s util/
