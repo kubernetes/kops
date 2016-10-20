@@ -39,6 +39,9 @@ func buildCloudupTags(cluster *api.Cluster) (map[string]struct{}, error) {
 		// external is based on kubenet
 		tags["_networking_kubenet"] = struct{}{}
 		tags["_networking_external"] = struct{}{}
+	} else if networking.CNI != nil {
+		// external is based on cni, weave, flannel, etc
+		tags["_networking_cni"] = struct{}{}
 	} else {
 		return nil, fmt.Errorf("No networking mode set")
 	}
@@ -102,6 +105,17 @@ func buildCloudupTags(cluster *api.Cluster) (map[string]struct{}, error) {
 
 func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTags map[string]struct{}) ([]string, error) {
 	var tags []string
+
+	networking := cluster.Spec.Networking
+
+	if networking == nil {
+		return nil, fmt.Errorf("Networking is not set, and should not be nil here")
+	}
+
+	if networking.CNI != nil {
+		// external is based on cni, weave, flannel, etc
+		tags = append(tags, "_networking_cni")
+	}
 
 	switch role {
 	case api.InstanceGroupRoleNode:

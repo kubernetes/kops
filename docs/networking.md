@@ -1,44 +1,114 @@
-## Kubernetes Networking Options
+## Kubernetes Networking Setup
 
-kops sets up networking on AWS using VPC networking, where the master allocates a /24 CIDR to each Pod,
-drawing from the Pod network.  Routes for each node are then configured in the AWS VPC routing tables.
+Kubernetes Operations (kops) currently supports 4 networking modes:
 
-One important limitation to note is that an AWS routing table cannot have more than 50 entries, which sets a limit of
-50 nodes per cluster.  AWS support will sometimes raise the limit to 100, but performance limitations mean
-they are unlikely to raise it further.
+* `kubenet` kubernetes native networking via a CNI plugin.  This is the default.
+* `cni` Container Network Interface(CNI) style networking, often installed via a Daemonset.
+* `classic` kubernetes native networking, done in-process.
+* `external` networking is done via a Daemonset. This is used in some custom implementations.
+
+### kops Default Networking
+
+Kubernetes Operations (kops) uses `kubenet` networking by default. This sets up networking on AWS using VPC
+networking, where the  master allocates a /24 CIDR to each Pod, drawing from the Pod network.  
+Using `kubenet` mode routes for  each node are then configured in the AWS VPC routing tables.
+
+One important limitation when using `kubenet` networking is that an AWS routing table cannot have more than
+50 entries, which sets a limit of 50 nodes per cluster. AWS support will sometimes raise the limit to 100,
+but their documentation notes that routing tables over 50 may take a performance hit.
 
 Because k8s modifies the AWS routing table, this means that realistically kubernetes needs to own the
 routing table, and thus it requires its own subnet.  It is theoretically possible to share a routing table
-with other infrastructure (but not a second cluster!), but this is not really recommended.
+with other infrastructure (but not a second cluster!), but this is not really recommended.  Certain
+`cni` networking solutions claim to address these problems.
 
-kops will support other networking options as they add support for the daemonset method of deployment.
+### CNI Networking
 
+[Container Network Interface](https://github.com/containernetworking/cni)  provides a specification
+and libraries for writing plugins to configure network interfaces in Linux containers.  Kubernetes
+has built in support for CNI networking components.  Various solutions exist that
+support Kubernetes CNI networking, listed in alphabetical order:
 
-kops currently supports 3 networking modes:
+- [Calico](http://docs.projectcalico.org/v1.5/getting-started/kubernetes/installation/hosted/)
+- [Canal](https://github.com/tigera/canal/tree/master/k8s-install/kubeadm)
+- [Flannel](https://github.com/coreos/flannel/blob/master/Documentation/kube-flannel.yml)
+- [Weave Net](https://github.com/weaveworks/weave-kube)
 
-* `classic` kubernetes native networking, done in-process
-* `kubenet` kubernetes native networking via a CNI plugin.  Also has less reliance on Docker's networking.
-* `external` networking is done via a Daemonset
+This is not an all comprehensive list. At the time of writing this documentation, weave has
+been tested and used in the example below.  This project has no bias over the CNI provider
+that you run, we care that we provide the correct setup to run CNI providers.
 
-TODO: Explain the difference between pod networking & inter-pod networking.
+Both `kubenet` and `classic` networking options are completely baked into kops, while since
+CNI networking providers are not part of the Kubernetes project, we do not maintain
+their installation processes.  With that in mind, we do not support problems with
+different CNI providers but support configuring Kubernetes to run CNI providers.
 
+## Specifying network option for cluster creation
 
+You are able to specify your networking type via command line switch or in your yaml file.
+The `--networking` option accepts the three different values defined above: `kubenet`, `cni`,
+`classic`, and `external`. If `--networking` is left undefined `kubenet` is installed.
+
+### Weave Example for CNI
+
+Weave is currently the only tested CNI provider.
+
+#### Installation of CNI on a new Cluster
+
+The following command setups a cluster, in HA mode, that is ready for a CNI installation.
+
+```console
+$ export $ZONE=mylistofzones
+$ kops create cluster \
+  --zones $ZONES \
+  --master-zones $ZONES \
+  --master-size m4.large \
+  --node-size m4.large \
+  --networking cni \
+  --yes \
+  --name myclustername.mydns.io
+```
+
+Once the cluster is stable, which you can check with a `kubectl cluster-info` command, the next
+step is to install CNI networking. Most of the CNI network providers are
+moving to installing their components plugins via a Daemonset.  For instance weave will
+install with the following command:
+
+```console
+$ kubectl create -f https://git.io/weave-kube
+```
+
+The above daemonset installation requires K8s 1.4.x or above.
+
+### Validating CNI Installation
+
+You will notice that `kube-dns` fails to start properly until you deploy your CNI provider.
+Pod networking and IP addresses are provided by the CNI provider.
+
+Here are some steps items that will confirm a good CNI install:
+
+- `kubelet` is running with the with `--network-plugin=cni` option.
+- The CNS provider started without errors.
+- `kube-dns` daesonset starts.
+- Logging on a node will display messages on pod create and delete.
+
+The sig-networking and sig-cluster-lifecycle channels on K8s slack are always good starting places
+for Kubernetes specific CNI challenges.
 
 ## Switching between networking providers
 
-Make sure you are running the latest kops: `git pull && make`.  `kops version` should be `Version git-2f4ac90`
-
-`kops edit cluster` and you should see a block like:
+`kops edit cluster` and you will see a block like:
 
 ```
   networking:
     classic: {}
 ```
 
-That means you are running with `classic` networking.  The `{}` means there are no configuration options
-(but we have to put something in there so that we do choose classic).
+That means you are running with `classic` networking.  The `{}` means there are
+no configuration options, beyond the setting `classic`.
 
-To switch to kubenet, edit to be:
+To switch to kubenet, change the word classic to kubenet.
+
 ```
   networking:
     kubenet: {}
@@ -46,12 +116,14 @@ To switch to kubenet, edit to be:
 
 Now follow the normal update / rolling-update procedure:
 
-* `kops update cluster` to preview
-* `kops update cluster --yes` to apply
-* `kops rolling-update cluster` to preview the rolling-update
-* `kops rolling-update cluster --yes` to roll all your instances
+```console
+$ kops update cluster # to preview
+$ kops update cluster --yes # to apply
+$ kops rolling-update cluster # to preview the rolling-update
+$ kops rolling-update cluster --yes # to roll all your instances
+```
+Your cluster should be ready in a few minutes. It is not trivial to see that this
+has worked; the easiest way seems to be to SSH to the master and verify
+that kubelet has been run with `--network-plugin=kubenet`.
 
-Your cluster should be ready in a few minutes.
-
-It is not trivial to see that this has worked; the easiest way seems to be to SSH to the master and verify
-that kubelet has been run with `--network-plugin=kubenet`
+Switching from `kubenet` to a CNI network provider has not been tested at this time.
