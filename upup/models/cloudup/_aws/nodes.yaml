@@ -17,7 +17,8 @@ iamInstanceProfileRole/nodes.{{ ClusterName }}:
 securityGroup/nodes.{{ ClusterName }}:
   vpc: vpc/{{ ClusterName }}
   description: 'Security group for nodes'
-  removeExtraRules: true
+  removeExtraRules:
+  - port=22
 
 # Allow full egress
 securityGroupRule/node-egress:
