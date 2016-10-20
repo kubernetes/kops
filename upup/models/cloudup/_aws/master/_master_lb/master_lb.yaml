@@ -33,12 +33,15 @@ securityGroupRule/egress-api-lb:
   cidr: 0.0.0.0/0
 
 # HTTPS to the master ELB is allowed (for API access)
-securityGroupRule/https-external-to-api:
+# One security group rule is necessary per admin CIDR
+{{ range $index, $cidr := AdminCIDR }}
+securityGroupRule/https-external-to-api-{{ $index }}:
   securityGroup: securityGroup/api.{{ ClusterName }}
-  cidr: {{ AdminCIDR }}
+  cidr: {{ $cidr }}
   protocol: tcp
   fromPort: 443
   toPort: 443
+{{ end }}
 
 # Allow HTTPS to the master from the master ELB
 securityGroupRule/https-elb-to-master:
@@ -54,5 +57,3 @@ dnsName/{{ .MasterPublicName }}:
   Zone: dnsZone/{{ .DNSZone }}
   ResourceType: "A"
   TargetLoadBalancer: loadBalancer/api.{{ ClusterName }}
-
-

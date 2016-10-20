@@ -25,13 +25,15 @@ securityGroupRule/master-egress:
   egress: true
   cidr: 0.0.0.0/0
 
-# SSH is open to AdminCIDR
-securityGroupRule/ssh-external-to-master:
+# SSH is open to AdminCIDR set
+{{ range $index, $cidr := AdminCIDR }}
+securityGroupRule/ssh-external-to-master-{{ $index }}:
   securityGroup: securityGroup/masters.{{ ClusterName }}
-  cidr: {{ AdminCIDR }}
+  cidr: {{ $cidr }}
   protocol: tcp
   fromPort: 22
   toPort: 22
+{{ end }}
 
 # Masters can talk to masters
 securityGroupRule/all-master-to-master:
