@@ -184,7 +184,12 @@ func (c *KubeconfigBuilder) WriteKubecfg() error {
 		}
 	}
 
-	fmt.Printf("Wrote config for %s to %q\n", c.Context, c.KubeconfigPath)
+	split := strings.Split(c.KubeconfigPath, ":")
+	path := c.KubeconfigPath
+	if len(split) > 1 {
+		path = split[0]
+	}
+	fmt.Printf("Wrote config for %s to %q\n", c.Context, path)
 	return nil
 }
 
