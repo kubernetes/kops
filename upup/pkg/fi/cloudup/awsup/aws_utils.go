@@ -25,6 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/apis/kops"
 	"os"
 )
 
@@ -60,6 +61,29 @@ func ValidateRegion(region string) error {
 	}
 
 	return fmt.Errorf("Region is not a recognized EC2 region: %q (check you have specified valid zones?)", region)
+}
+
+// FindRegion determines the region from the zones specified in the cluster
+func FindRegion(cluster *kops.Cluster) (string, error) {
+	region := ""
+
+	nodeZones := make(map[string]bool)
+	for _, zone := range cluster.Spec.Zones {
+		if len(zone.Name) <= 2 {
+			return "", fmt.Errorf("Invalid AWS zone: %q", zone.Name)
+		}
+
+		nodeZones[zone.Name] = true
+
+		zoneRegion := zone.Name[:len(zone.Name)-1]
+		if region != "" && zoneRegion != region {
+			return "", fmt.Errorf("Clusters cannot span multiple regions (found zone %q, but region is %q)", zone.Name, region)
+		}
+
+		region = zoneRegion
+	}
+
+	return region, nil
 }
 
 // FindEC2Tag find the value of the tag with the specified key

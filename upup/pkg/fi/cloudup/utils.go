@@ -66,24 +66,12 @@ func BuildCloud(cluster *api.Cluster) (fi.Cloud, error) {
 
 	case "aws":
 		{
-
-			nodeZones := make(map[string]bool)
-			for _, zone := range cluster.Spec.Zones {
-				if len(zone.Name) <= 2 {
-					return nil, fmt.Errorf("Invalid AWS zone: %q", zone.Name)
-				}
-
-				nodeZones[zone.Name] = true
-
-				zoneRegion := zone.Name[:len(zone.Name)-1]
-				if region != "" && zoneRegion != region {
-					return nil, fmt.Errorf("Clusters cannot span multiple regions (found zone %q, but region is %q)", zone.Name, region)
-				}
-
-				region = zoneRegion
+			region, err := awsup.FindRegion(cluster)
+			if err != nil {
+				return nil, err
 			}
 
-			err := awsup.ValidateRegion(region)
+			err = awsup.ValidateRegion(region)
 			if err != nil {
 				return nil, err
 			}
