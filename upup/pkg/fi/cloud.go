@@ -26,8 +26,6 @@ const CloudProviderGCE CloudProviderID = "gce"
 type Cloud interface {
 	ProviderID() CloudProviderID
 
-	FindDNSHostedZone(dnsName string) (string, error)
-
 	DNS() (dnsprovider.Interface, error)
 }
 

@@ -34,6 +34,7 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	k8sapi "k8s.io/kubernetes/pkg/api"
+	"net"
 	"os"
 	"strings"
 )
@@ -237,8 +238,8 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 	}
 
-	switch cluster.Spec.CloudProvider {
-	case "gce":
+	switch fi.CloudProviderID(cluster.Spec.CloudProvider) {
+	case fi.CloudProviderGCE:
 		{
 			gceCloud := cloud.(*gce.GCECloud)
 			region = gceCloud.Region
@@ -257,7 +258,7 @@ func (c *ApplyClusterCmd) Run() error {
 			})
 		}
 
-	case "aws":
+	case fi.CloudProviderAWS:
 		{
 			awsCloud := cloud.(awsup.AWSCloud)
 			region = awsCloud.Region()
@@ -607,6 +608,29 @@ func validateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 
 	if len(matches) > 1 {
 		return fmt.Errorf("found multiple DNS Zones matching %q", cluster.Spec.DNSZone)
+	}
+
+	zone := matches[0]
+	dnsName := strings.TrimSuffix(zone.Name(), ".")
+
+	glog.V(2).Infof("Doing DNS lookup to verify NS records for %q", dnsName)
+	ns, err := net.LookupNS(dnsName)
+	if err != nil {
+		return fmt.Errorf("error doing DNS lookup for NS records for %q: %v", dnsName, err)
+	}
+
+	if len(ns) == 0 {
+		if os.Getenv("DNS_IGNORE_NS_CHECK") == "" {
+			return fmt.Errorf("NS records not found for %q - please make sure they are correctly configured", dnsName)
+		} else {
+			glog.Warningf("Ignoring failed NS record check because DNS_IGNORE_NS_CHECK is set")
+		}
+	} else {
+		var hosts []string
+		for _, n := range ns {
+			hosts = append(hosts, n.Host)
+		}
+		glog.V(2).Infof("Found NS records for %q: %v", dnsName, hosts)
 	}
 
 	return nil
