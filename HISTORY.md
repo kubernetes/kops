@@ -1,3 +1,8 @@
+## Stable Channel:
+
+* Update to kubernetes 1.4.3 (highly recommended update)
+* Image update includes kernel 4.4.26 (address CVE-2016-5195)
+
 ## 1.4.1
 
 * Fix dns-controller when multiple HostedZones with the same name
