@@ -1,5 +1,7 @@
 ## Kops - Kubernetes Ops
 
+[![Build Status](https://travis-ci.org/kubernetes/kops.svg?branch=master)](https://travis-ci.org/kubernetes/kops)
+
 kops is the easiest way to get a production Kubernetes up and running.  We like to think
 of it as "kubectl for clusters".
 
