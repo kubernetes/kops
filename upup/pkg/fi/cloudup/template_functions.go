@@ -14,6 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+/******************************************************************************
+Template Functions are what map functions in the models, to internal logic in
+kops. This is the point where we connect static YAML configuration to dynamic
+runtime values in memory.
+
+When defining a new function:
+	- Build the new function here
+	- Define the new function in AddTo()
+		dest["MyNewFunction"] = MyNewFunction // <-- Function Pointer
+******************************************************************************/
+
 package cloudup
 
 import (
@@ -71,9 +82,17 @@ func (tf *TemplateFunctions) WellKnownServiceIP(id int) (net.IP, error) {
 	return nil, fmt.Errorf("Unexpected IP address type for ServiceClusterIPRange: %s", tf.cluster.Spec.ServiceClusterIPRange)
 }
 
+// This will define the available functions we can use in our YAML models
+// If we are trying to get a new function implemented it MUST
+// be defined here.
 func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["EtcdClusterMemberTags"] = tf.EtcdClusterMemberTags
 	dest["SharedVPC"] = tf.SharedVPC
+
+	// Network topology definitions
+	dest["IsTopologyPublic"]  = tf.IsTopologyPublic
+	dest["IsTopologyPrivate"] = tf.IsTopologyPrivate
+	dest["IsTopologyHybrid1"] = tf.IsTopologyHybrid1
 
 	dest["SharedZone"] = tf.SharedZone
 	dest["WellKnownServiceIP"] = tf.WellKnownServiceIP
@@ -149,6 +168,12 @@ func (tf *TemplateFunctions) EtcdClusterMemberTags(etcd *api.EtcdClusterSpec, m 
 func (tf *TemplateFunctions) SharedVPC() bool {
 	return tf.cluster.SharedVPC()
 }
+
+// These are the network topology functions. They are boolean logic for checking which type of
+// topology this cluster is set to be deployed with.
+func (tf *TemplateFunctions) IsTopologyPrivate()  bool  { return tf.cluster.IsTopologyPrivate() }
+func (tf *TemplateFunctions)  IsTopologyPublic()  bool  { return tf.cluster.IsTopologyPublic() }
+func (tf *TemplateFunctions) IsTopologyHybrid1()  bool  { return tf.cluster.IsTopologyHybrid1() }
 
 // SharedZone is a simple helper function which makes the templates for a shared Zone clearer
 func (tf *TemplateFunctions) SharedZone(zone *api.ClusterZoneSpec) bool {
