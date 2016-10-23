@@ -1,38 +1,25 @@
-/*
-Copyright 2016 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package protokube
 
 import (
-	"bytes"
 	"fmt"
+	"os"
+	"bytes"
 	"github.com/golang/glog"
+	"time"
+	"strings"
 	"io/ioutil"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"os"
 	"path"
-	"strings"
-	"time"
+	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kubernetes/pkg/api/resource"
 )
 
 type EtcdClusterSpec struct {
 	ClusterKey string `json:"clusterKey,omitempty"`
 
-	NodeName  string   `json:"nodeName,omitempty"`
-	NodeNames []string `json:"nodeNames,omitempty"`
+	NodeName   string `json:"nodeName,omitempty"`
+	NodeNames  []string `json:"nodeNames,omitempty"`
 }
 
 func (e *EtcdClusterSpec) String() string {
@@ -56,6 +43,7 @@ type EtcdCluster struct {
 	VolumeMountPath string
 }
 
+
 func (e *EtcdCluster) String() string {
 	return DebugString(e)
 }
@@ -68,6 +56,7 @@ type EtcdNode struct {
 func (e *EtcdNode) String() string {
 	return DebugString(e)
 }
+
 
 type EtcdController struct {
 	kubeBoot *KubeBoot
@@ -283,3 +272,4 @@ func touchFile(p string) error {
 	}
 	return nil
 }
+

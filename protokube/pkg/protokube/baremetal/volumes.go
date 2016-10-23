@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"k8s.io/kops/protokube/pkg/protokube"
+	"strings"
+	"path"
+	"github.com/golang/glog"
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 type Volumes struct {
@@ -12,25 +16,60 @@ type Volumes struct {
 
 var _ protokube.Volumes = &Volumes{}
 
-func (v *Volumes) AttachVolume(volume *protokube.Volume) error {
+func NewVolumes(basedir string) ( *Volumes , error) {
+	v := &Volumes{
+		basedir:basedir,
+	}
+	return v, nil
+}
 
+func (v *Volumes) AttachVolume(volume *protokube.Volume) error {
+	return nil
+}
+
+func (v *Volumes) ClusterID() string {
+	return ""
 }
 
 func (v *Volumes) FindVolumes() ([]*protokube.Volume, error) {
 	files, err := ioutil.ReadDir(v.basedir)
 	if err != nil {
-		return fmt.Errorf("error reading directory %q: %v", v.basedir, err)
+		return nil, fmt.Errorf("error reading directory %q: %v", v.basedir, err)
 	}
 
 	var volumes []*protokube.Volume
 	for _, file := range files {
-		if !file.IsDir() {
+		if !strings.HasSuffix(file.Name(), ".meta") {
 			continue
 		}
 
 		volume := &protokube.Volume{}
 
-		volume.ID = file.Name()
-		volume.AttachedTo = "me"
+		{
+			p := path.Join(v.basedir, file.Name())
+			data, err := ioutil.ReadFile(p)
+			if err != nil {
+				glog.Warningf("ignoring error reading file %q: %v", p, err)
+				continue
+			}
+
+
+			err = utils.YamlUnmarshal([]byte(data), &volume.Info)
+			if err != nil {
+				glog.Warningf("ignoring error parsing %q: %v", p, err)
+				continue
+			}
+		}
+
+		id := strings.TrimSuffix(file.Name(), ".meta")
+
+		volume.ID = id
+		volume.LocalDevice = path.Join(v.basedir, id)
+		volume.AttachedTo = "localhost"
+		volume.Mountpoint = path.Join(v.basedir, id)
+
+		volumes = append(volumes, volume)
 	}
+
+	return volumes, nil
 }

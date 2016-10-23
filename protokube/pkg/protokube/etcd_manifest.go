@@ -121,6 +121,7 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 			},
 		})
 
+
 		pod.Spec.Containers = append(pod.Spec.Containers, container)
 	}
 
