@@ -77,6 +77,9 @@ type ClusterSpec struct {
 	// NetworkID is an identifier of a network, if we want to reuse/share an existing network (e.g. an AWS VPC)
 	NetworkID string `json:"networkID,omitempty"`
 
+	// Topology defines the type of network topology to use on the cluster - default public
+	Topology *TopologySpec `json:"topology,omitempty"`
+
 	// SecretStore is the VFS path to where secrets are stored
 	SecretStore string `json:"secretStore,omitempty"`
 	// KeyStore is the VFS path to where SSL keys and certificates are stored
@@ -343,8 +346,6 @@ func (c *Cluster) FillDefaults() error {
 		// OK
 	} else if c.Spec.Networking.External != nil {
 		// OK
-	} else if c.Spec.Networking.CNI != nil {
-		// OK
 	} else {
 		// No networking model selected; choose Kubenet
 		c.Spec.Networking.Kubenet = &KubenetNetworkingSpec{}
@@ -486,3 +487,17 @@ func (z *ClusterZoneSpec) assignCIDR(c *Cluster) (string, error) {
 func (c *Cluster) SharedVPC() bool {
 	return c.Spec.NetworkID != ""
 }
+
+// --------------------------------------------------------------------------------------------
+// Network Topology functions for template parsing
+//
+// Each of these functions can be used in the model templates
+// The go template package currently only supports boolean
+// operations, so the logic is mapped here as *Cluster functions.
+//
+// A function will need to be defined for all new topologies, if we plan to use them in the
+// model templates.
+// --------------------------------------------------------------------------------------------
+func (c *Cluster) IsTopologyPrivate()  bool  { return c.Spec.Topology.Type == TopologyPrivate }
+func (c *Cluster)  IsTopologyPublic()  bool  { return c.Spec.Topology.Type == TopologyPublic }
+func (c *Cluster) IsTopologyHybrid1()  bool  { return c.Spec.Topology.Type == TopologyHybrid1 }
