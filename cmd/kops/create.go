@@ -30,6 +30,9 @@ import (
 	"k8s.io/kubernetes/pkg/kubectl/resource"
 )
 
+// TODO: Move to field on instancegroup?
+const ClusterNameLabel = "kops.k8s.io/cluster"
+
 type CreateOptions struct {
 	resource.FilenameOptions
 }
@@ -99,6 +102,29 @@ func RunCreate(f *util.Factory, cmd *cobra.Command, out io.Writer, c *CreateOpti
 				}
 				return fmt.Errorf("error creating federation: %v", err)
 			}
+
+		case *kopsapi.Cluster:
+			_, err = clientset.Clusters().Create(v)
+			if err != nil {
+				if errors.IsAlreadyExists(err) {
+					return fmt.Errorf("cluster %q already exists", v.Name)
+				}
+				return fmt.Errorf("error creating cluster: %v", err)
+			}
+
+		case *kopsapi.InstanceGroup:
+			clusterName := v.Labels[ClusterNameLabel]
+			if clusterName == "" {
+				return fmt.Errorf("must specify %q label with cluster name to create instanceGroup", ClusterNameLabel)
+			}
+			_, err = clientset.InstanceGroups(clusterName).Create(v)
+			if err != nil {
+				if errors.IsAlreadyExists(err) {
+					return fmt.Errorf("instanceGroup %q already exists", v.Name)
+				}
+				return fmt.Errorf("error creating instanceGroup: %v", err)
+			}
+
 		default:
 			glog.V(2).Infof("Type of object was %T", v)
 			return fmt.Errorf("Unhandled kind %q in %q", gvk, f)
