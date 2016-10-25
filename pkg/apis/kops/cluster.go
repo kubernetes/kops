@@ -344,6 +344,8 @@ func (c *Cluster) FillDefaults() error {
 		// OK
 	} else if c.Spec.Networking.Kubenet != nil {
 		// OK
+	} else if c.Spec.Networking.CNI != nil {
+		// OK
 	} else if c.Spec.Networking.External != nil {
 		// OK
 	} else {
@@ -498,6 +500,6 @@ func (c *Cluster) SharedVPC() bool {
 // A function will need to be defined for all new topologies, if we plan to use them in the
 // model templates.
 // --------------------------------------------------------------------------------------------
-func (c *Cluster) IsTopologyPrivate()  bool  { return c.Spec.Topology.Type == TopologyPrivate }
-func (c *Cluster)  IsTopologyPublic()  bool  { return c.Spec.Topology.Type == TopologyPublic }
-func (c *Cluster) IsTopologyHybrid1()  bool  { return c.Spec.Topology.Type == TopologyHybrid1 }
+func (c *Cluster) IsTopologyPrivate()         bool  { return (c.Spec.Topology.Masters == TopologyPrivate && c.Spec.Topology.Nodes == TopologyPrivate) }
+func (c *Cluster)  IsTopologyPublic()         bool  { return (c.Spec.Topology.Masters == TopologyPublic && c.Spec.Topology.Nodes == TopologyPublic) }
+func (c *Cluster) IsTopologyPrivateMasters()  bool  { return (c.Spec.Topology.Masters == TopologyPrivate && c.Spec.Topology.Nodes == TopologyPublic) }

@@ -1,4 +1,4 @@
-{{ if IsTopologyHybrid1 }}
+{{ if IsTopologyPrivateMasters }}
   vpc/{{ ClusterName }}:
     id: {{ .NetworkID }}
     shared: {{ SharedVPC }}

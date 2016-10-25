@@ -12,7 +12,7 @@ Kops supports the following topologies on AWS
 | ----------------- |----------- | ----------------------------------------------------------------------------------------------------------- |
 |   Public Cluster  |   public   | All masters/nodes will be launched in a **public subnet** in the VPC                                        |
 |   Private Cluster |   private  | All masters/nodes will be launched in a **private subnet** in the VPC                                       |
-|     Hybrid (1)    |   hybrid1  | All masters will be launched into a **private subnet**, All nodes will be launched into a **public subnet** |
+|     Private Masters Public Nodes    |   privatemasters  | All masters will be launched into a **private subnet**, All nodes will be launched into a **public subnet** |
 
 
 #### Defining a topology on create
@@ -20,7 +20,7 @@ Kops supports the following topologies on AWS
 To specify a topology use the `--topology` or `-t` flag as in :
 
 ```
-kops create cluster ... --topology public|private|hybrid1
+kops create cluster ... --topology public|private|privatemasters
 ```
 
 
@@ -30,7 +30,7 @@ The topology definition in the kops configuration is as follows
 
 ```
 topology:
-    type: public|private|hybrid1
+    type: public|private|privatemasters
 ```
 
 Where kops will default to a public topology

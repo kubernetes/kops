@@ -92,7 +92,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	// Network topology definitions
 	dest["IsTopologyPublic"]  = tf.IsTopologyPublic
 	dest["IsTopologyPrivate"] = tf.IsTopologyPrivate
-	dest["IsTopologyHybrid1"] = tf.IsTopologyHybrid1
+	dest["IsTopologyPrivateMasters"] = tf.IsTopologyPrivateMasters()
 
 	dest["SharedZone"] = tf.SharedZone
 	dest["WellKnownServiceIP"] = tf.WellKnownServiceIP
@@ -171,9 +171,9 @@ func (tf *TemplateFunctions) SharedVPC() bool {
 
 // These are the network topology functions. They are boolean logic for checking which type of
 // topology this cluster is set to be deployed with.
-func (tf *TemplateFunctions) IsTopologyPrivate()  bool  { return tf.cluster.IsTopologyPrivate() }
-func (tf *TemplateFunctions)  IsTopologyPublic()  bool  { return tf.cluster.IsTopologyPublic() }
-func (tf *TemplateFunctions) IsTopologyHybrid1()  bool  { return tf.cluster.IsTopologyHybrid1() }
+func (tf *TemplateFunctions) IsTopologyPrivate()         bool  { return tf.cluster.IsTopologyPrivate() }
+func (tf *TemplateFunctions) IsTopologyPublic()          bool  { return tf.cluster.IsTopologyPublic() }
+func (tf *TemplateFunctions) IsTopologyPrivateMasters()  bool  { return tf.cluster.IsTopologyPrivateMasters() }
 
 // SharedZone is a simple helper function which makes the templates for a shared Zone clearer
 func (tf *TemplateFunctions) SharedZone(zone *api.ClusterZoneSpec) bool {
