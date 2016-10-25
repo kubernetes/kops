@@ -29,3 +29,22 @@ when you are happy that it is deleting the right things you run `kops delete clu
 ## `kops version`
 
 `kops version` will print the version of the code you are running.
+
+## Other interesting modes:
+
+* Build a terraform model: `--target=terraform`  The terraform model will be built in `out/terraform`
+
+* Specify the k8s build to run: `--kubernetes-version=1.2.2`
+
+* Run nodes in multiple zones: `--zones=us-east-1b,us-east-1c,us-east-1d`
+
+* Run with a HA master: `--master-zones=us-east-1b,us-east-1c,us-east-1d`
+
+* Specify the number of nodes: `--node-count=4`
+
+* Specify the node size: `--node-size=m4.large`
+
+* Specify the master size: `--master-size=m4.large`
+
+* Override the default DNS zone: `--dns-zone=<my.hosted.zone>`
+
