@@ -27,6 +27,7 @@ import (
 
 //go:generate fitask -type=natgateway
 type NATGateway struct {
+	Name         *string
 	ID           *string // AWS ID for the object
 	AllocationID *string // Pointer to an elastic IP
 	SubnetID     *string // Pointer to a subnet in the VPC

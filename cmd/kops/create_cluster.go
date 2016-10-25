@@ -116,7 +116,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.Channel, "channel", api.DefaultChannel, "Channel for default versions and configuration to use")
 
 	// Network topology
-	cmd.Flags().StringVarP(&options.Topology, "topology", "t", "public", "Controls network topology for the cluster. public|private|hybrid1. Default is 'public'.")
+	cmd.Flags().StringVarP(&options.Topology, "topology", "t", "public", "Controls network topology for the cluster. public|private|privatemasters. Default is 'public'.")
 
 	return cmd
 }
@@ -367,17 +367,18 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 	}
 
 	// Network Topology
-
 	switch  c.Topology{
 	case api.TopologyPublic:
-		cluster.Spec.Topology = &api.TopologySpec{Type: api.TopologyPublic}
+		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPublic, Nodes: api.TopologyPublic}
 	case api.TopologyPrivate:
-		cluster.Spec.Topology = &api.TopologySpec{Type: api.TopologyPrivate}
-	case api.TopologyHybrid1:
-		cluster.Spec.Topology = &api.TopologySpec{Type: api.TopologyHybrid1}
+		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPrivate, Nodes: api.TopologyPrivate}
+	case api.TopologyPrivateMasters:
+		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPrivate, Nodes: api.TopologyPublic}
+	case "":
+		glog.Warningf("Empty topology. Defaulting to public topology.")
+		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPublic, Nodes: api.TopologyPublic}
 	default:
-		glog.Warningf("Unable to detect topology. Defaulting to public topology.")
-		cluster.Spec.Topology = &api.TopologySpec{Type: api.TopologyPublic}
+		return fmt.Errorf("Invalid topology %s.", c.Topology)
 	}
 
 	sshPublicKeys := make(map[string][]byte)

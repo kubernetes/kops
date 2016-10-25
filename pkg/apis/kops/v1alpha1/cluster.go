@@ -78,6 +78,9 @@ type ClusterSpec struct {
 	// NetworkID is an identifier of a network, if we want to reuse/share an existing network (e.g. an AWS VPC)
 	NetworkID string `json:"networkID,omitempty"`
 
+	// Topology defines the type of network topology to use on the cluster - default public
+	Topology *TopologySpec `json:"topology,omitempty"`
+
 	// SecretStore is the VFS path to where secrets are stored
 	SecretStore string `json:"secretStore,omitempty"`
 	// KeyStore is the VFS path to where SSL keys and certificates are stored
