@@ -215,5 +215,25 @@ func (c *NodeController) updateNodeRecords(node *v1.Node) {
 		})
 	}
 
+	// node/role=<role>/external -> ExternalIP
+	{
+		role := node.Labels["kubernetes.io/role"]
+		if role == "" {
+			role = "node"
+		}
+
+		for _, a := range node.Status.Addresses {
+			if a.Type != v1.NodeExternalIP {
+				continue
+			}
+			records = append(records, dns.Record{
+				RecordType:  dns.RecordTypeA,
+				FQDN:        dns.AliasForNodesInRole(role),
+				Value:       a.Address,
+				AliasTarget: true,
+			})
+		}
+	}
+
 	c.scope.Replace(node.Name, records)
 }

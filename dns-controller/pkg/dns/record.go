@@ -36,3 +36,8 @@ type Record struct {
 	// where the referring record has Value = our FQDN
 	AliasTarget bool
 }
+
+// AliasForNodesInRole returns the alias for nodes in the given role
+func AliasForNodesInRole(role string) string {
+	return "node/role=" + role + "/external"
+}
