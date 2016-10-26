@@ -1,0 +1,51 @@
+vpc/{{ ClusterName }}:
+  id: {{ .NetworkID }}
+  shared: {{ SharedVPC }}
+  cidr: {{ .NetworkCIDR }}
+  enableDnsSupport: true
+  enableDnsHostnames: true
+
+
+{{ if not SharedVPC }}
+# TODO: would be good to create these as shared, to verify them
+dhcpOptions/{{ ClusterName }}:
+  domainNameServers: AmazonProvidedDNS
+{{ if eq Region "us-east-1" }}
+  domainName: ec2.internal
+{{ else }}
+  domainName: {{ Region }}.compute.internal
+{{ end }}
+
+vpcDHDCPOptionsAssociation/{{ ClusterName }}:
+  vpc: vpc/{{ ClusterName }}
+  dhcpOptions: dhcpOptions/{{ ClusterName }}
+{{ end }}
+
+internetGateway/{{ ClusterName }}:
+  shared: {{ SharedVPC }}
+  vpc: vpc/{{ ClusterName }}
+
+routeTable/{{ ClusterName }}:
+  vpc: vpc/{{ ClusterName }}
+
+route/0.0.0.0/0:
+  routeTable: routeTable/{{ ClusterName }}
+  cidr: 0.0.0.0/0
+  internetGateway: internetGateway/{{ ClusterName }}
+  vpc: vpc/{{ ClusterName }}
+
+{{ range $zone := .Zones }}
+subnet/{{ $zone.Name }}.{{ ClusterName }}:
+  vpc: vpc/{{ ClusterName }}
+  availabilityZone: {{ $zone.Name }}
+  cidr: {{ $zone.CIDR }}
+  id: {{ $zone.ProviderID }}
+  shared: {{ SharedZone $zone }}
+
+{{ if not (SharedZone $zone) }}
+routeTableAssociation/{{ $zone.Name }}.{{ ClusterName }}:
+  routeTable: routeTable/{{ ClusterName }}
+  subnet: subnet/{{ $zone.Name }}.{{ ClusterName }}
+{{ end }}
+{{ end }}
+{{ end }}

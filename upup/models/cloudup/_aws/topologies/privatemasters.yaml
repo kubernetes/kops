@@ -1,3 +1,0 @@
-{{ if IsTopologyPrivateMasters }}
-  # TODO This is not yet supported
-{{ end }}

@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kubernetes/pkg/util/sets"
 	"strings"
+	"os"
 )
 
 type CreateClusterOptions struct {
@@ -366,6 +367,7 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 		}
 	}
 
+
 	// Network Topology
 	switch  c.Topology{
 	case api.TopologyPublic:
@@ -411,6 +413,13 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 	}
 
 	fullCluster, err := cloudup.PopulateClusterSpec(cluster)
+	fmt.Println("------------------------------------------------")
+	fmt.Println(cluster.Spec.Topology)
+	fmt.Println("------------------------------------------------")
+	fmt.Println(fullCluster.Spec.Topology)
+	fmt.Println("------------------------------------------------")
+	os.Exit(1)
+
 	if err != nil {
 		return err
 	}
@@ -461,6 +470,8 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 		fmt.Print("Previewing changes that will be made:\n\n")
 	}
 
+	fmt.Println(fullCluster.Spec.Topology)
+	os.Exit(1)
 	applyCmd := &cloudup.ApplyClusterCmd{
 		Cluster:    fullCluster,
 		Models:     strings.Split(c.Models, ","),

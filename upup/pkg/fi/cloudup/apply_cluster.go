@@ -81,6 +81,7 @@ type ApplyClusterCmd struct {
 
 
 func (c *ApplyClusterCmd) Run() error {
+
 	if c.InstanceGroups == nil {
 		list, err := c.Clientset.InstanceGroups(c.Cluster.Name).List(k8sapi.ListOptions{})
 		if err != nil {
@@ -294,7 +295,13 @@ func (c *ApplyClusterCmd) Run() error {
 				"securityGroupRule":     &awstasks.SecurityGroupRule{},
 				"subnet":                &awstasks.Subnet{},
 				"vpc":                   &awstasks.VPC{},
-				"natGateway":		 &awstasks.NATGateway{},
+
+
+				// Not using NatGateways right now - not there yet :)
+				// Kris TODO
+				//"natGateway":		 &awstasks.NATGateway{},
+
+
 				"vpcDHDCPOptionsAssociation": &awstasks.VPCDHCPOptionsAssociation{},
 
 
