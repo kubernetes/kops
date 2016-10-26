@@ -1,5 +1,27 @@
 {{ if IsTopologyPrivate }}
 
+# Okay so we need to create some private VPC subnets..
+# So lets start with a VPC
+  vpc/{{ ClusterName }}:
+    id: {{ .NetworkID }}
+    shared: {{ SharedVPC }}
+    cidr: {{ .NetworkCIDR }}
+    enableDnsSupport: true
+    enableDnsHostnames: true
+
+#
+#
+#
+# ---------------------------------------------------------------
+#
+# Kris is working here - incomplete
+#
+# ---------------------------------------------------------------
+#
+#
+#
+#
+
 
 
 {{ end }}
