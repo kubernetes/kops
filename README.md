@@ -8,19 +8,21 @@ The easiest way to get a production Kubernetes cluster up and running.
 
 We like to think of it as `kubectl` for clusters. 
 
-The tool enables the user to deploy functional Kubernetes clusters in the cloud ([AWS](/docs/aws.md) or GCE). 
+kops lets you deploy functional Kubernetes clusters in the cloud. Right now kops focuses on deploy production grade and HA kubernetes clusters on [AWS](/docs/aws.md]).
 
 We encourage everyone to read more about [how it works](/docs/how_it_works.md) or check out some of the [other interesting modes](/docs/commands.md#other-interesting-modes).
 
-### Features 
+#### Quickstart
 
+Launching a Kubernetes cluster on [AWS](/docs/aws.md]).
+
+### Features
+
+* Automated Kubernetes cluster [CRUD](/docs/commands.md) for the cloud ([AWS](/docs/aws.md))
 * HA (Highly Available) Kubernetes clusters
-* Automated Kubernetes cluster [CRUD](/docs/commands.md) for the cloud ([AWS](/docs/aws.md) and GCE)
 * Uses a state-sync model for **dry-run** and automatic **idempotency**
 * Custom support for `kubectl` [add-ons](docs/addons.md)
-* Can produce configurations in other formats 
-    * [Terraform configuration](/docs/terraform.md)
-    * Cloud-Init configuration
+* Kops can generate [Terraform configuration](/docs/terraform.md)
 * Based on a simple meta-model defined in a directory tree
 * Easy command line syntax
 * Community support
