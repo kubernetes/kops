@@ -14,6 +14,17 @@ Kops supports the following topologies on AWS
 |   Private Cluster |   private  | All masters/nodes will be launched in a **private subnet** in the VPC                                       |
 |     Private Masters Public Nodes    |   privatemasters  | All masters will be launched into a **private subnet**, All nodes will be launched into a **public subnet** |
 
+[More information](http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Subnets.html) on Public and Private subnets in AWS
+
+Taken from the AWS documentation :
+
+##### Public Subnet
+If a subnet's traffic is routed to an Internet gateway, the subnet is known as a public subnet.
+
+##### Private Subnet
+If a subnet doesn't have a route to the Internet gateway, the subnet is known as a private subnet.-
+
+
 
 #### Defining a topology on create
 
@@ -39,3 +50,4 @@ Where kops will default to a public topology
 topology:
     type: public
 ```
+

@@ -92,7 +92,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	// Network topology definitions
 	dest["IsTopologyPublic"]  = tf.IsTopologyPublic
 	dest["IsTopologyPrivate"] = tf.IsTopologyPrivate
-	dest["IsTopologyPrivateMasters"] = tf.IsTopologyPrivateMasters()
+	dest["IsTopologyPrivateMasters"] = tf.IsTopologyPrivateMasters
 
 	dest["SharedZone"] = tf.SharedZone
 	dest["WellKnownServiceIP"] = tf.WellKnownServiceIP
