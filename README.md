@@ -8,13 +8,13 @@ The easiest way to get a production Kubernetes cluster up and running.
 
 We like to think of it as `kubectl` for clusters. 
 
-kops lets you deploy functional Kubernetes clusters in the cloud. Right now kops focuses on deploy production grade and HA kubernetes clusters on [AWS](/docs/aws.md]).
+kops lets you deploy functional Kubernetes clusters in the cloud. Right now kops focuses on deploy prod
 
 We encourage everyone to read more about [how it works](/docs/how_it_works.md) or check out some of the [other interesting modes](/docs/commands.md#other-interesting-modes).
 
 #### Quickstart
 
-Launching a Kubernetes cluster on [AWS](/docs/aws.md]).
+Launching a Kubernetes cluster on [AWS](/docs/aws.md).
 
 ### Features
 
