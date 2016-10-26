@@ -10,7 +10,7 @@ We like to think of it as `kubectl` for clusters.
 
 kops lets you deploy production grade (and HA) Kubernetes clusters in the cloud.
 
-We encourage everyone to read more about [how it works](/docs/how_it_works.md) or check out some of the [other interesting modes](/docs/commands.md#other-interesting-modes).
+We encourage everyone to read more about [adding a feature](/docs/adding_a_feature.md) before contributing.
 
 #### Quickstart
 
