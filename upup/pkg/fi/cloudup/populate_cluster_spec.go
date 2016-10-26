@@ -81,6 +81,7 @@ func (c *populateClusterSpec) run() error {
 
 	// Copy cluster & instance groups, so we can modify them freely
 	cluster := &api.Cluster{}
+
 	utils.JsonMergeStruct(cluster, c.InputCluster)
 
 	err = c.assignSubnets(cluster)
@@ -150,6 +151,7 @@ func (c *populateClusterSpec) run() error {
 		}
 	}
 
+
 	keyStore, err := registry.KeyStore(cluster)
 	if err != nil {
 		return err
@@ -198,11 +200,17 @@ func (c *populateClusterSpec) run() error {
 		glog.V(2).Infof("Normalizing kubernetes version: %q -> %q", cluster.Spec.KubernetesVersion, versionWithoutV)
 		cluster.Spec.KubernetesVersion = versionWithoutV
 	}
-
 	cloud, err := BuildCloud(cluster)
 	if err != nil {
 		return err
 	}
+
+	// Hard coding topology here
+	//
+	// We want topology to pass through
+	// Otherwise we were losing the pointer
+	cluster.Spec.Topology = c.InputCluster.Spec.Topology
+
 
 	if cluster.Spec.DNSZone == "" {
 		dns, err := cloud.DNS()
@@ -216,8 +224,8 @@ func (c *populateClusterSpec) run() error {
 		glog.Infof("Defaulting DNS zone to: %s", dnsZone)
 		cluster.Spec.DNSZone = dnsZone
 	}
-
 	tags, err := buildCloudupTags(cluster)
+
 	if err != nil {
 		return err
 	}
@@ -235,10 +243,14 @@ func (c *populateClusterSpec) run() error {
 		OptionsLoader: loader.NewOptionsLoader(templateFunctions),
 		Tags:          tags,
 	}
+
 	completed, err := specBuilder.BuildCompleteSpec(&cluster.Spec, c.ModelStore, c.Models)
 	if err != nil {
 		return fmt.Errorf("error building complete spec: %v", err)
 	}
+	// Hard coding topology here AGAIN
+	//
+	completed.Spec.Topology = c.InputCluster.Spec.Topology
 
 	fullCluster := &api.Cluster{}
 	*fullCluster = *cluster
@@ -251,7 +263,6 @@ func (c *populateClusterSpec) run() error {
 	}
 
 	c.fullCluster = fullCluster
-
 	return nil
 }
 
