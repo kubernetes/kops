@@ -79,6 +79,8 @@ type ClusterSpec struct {
 	NetworkID string `json:"networkID,omitempty"`
 
 	// Topology defines the type of network topology to use on the cluster - default public
+	// This is heavily weighted towards AWS for the time being, but should also be agnostic enough
+	// to port out to GCE later if needed
 	Topology *TopologySpec `json:"topology,omitempty"`
 
 	// SecretStore is the VFS path to where secrets are stored

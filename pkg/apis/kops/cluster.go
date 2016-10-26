@@ -40,52 +40,54 @@ type ClusterList struct {
 
 type ClusterSpec struct {
 	// The Channel we are following
-	Channel string `json:"channel,omitempty"`
+	Channel               string `json:"channel,omitempty"`
 
 	// ConfigBase is the path where we store configuration for the cluster
 	// This might be different that the location when the cluster spec itself is stored,
 	// both because this must be accessible to the cluster,
 	// and because it might be on a different cloud or storage system (etcd vs S3)
-	ConfigBase string `json:"configBase,omitempty"`
+	ConfigBase            string `json:"configBase,omitempty"`
 
 	// The CloudProvider to use (aws or gce)
-	CloudProvider string `json:"cloudProvider,omitempty"`
+	CloudProvider         string `json:"cloudProvider,omitempty"`
 
 	// The version of kubernetes to install (optional, and can be a "spec" like stable)
-	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
+	KubernetesVersion     string `json:"kubernetesVersion,omitempty"`
 
 	//
 	//// The Node initializer technique to use: cloudinit or nodeup
 	//NodeInit                      string `json:",omitempty"`
 
 	// Configuration of zones we are targeting
-	Zones []*ClusterZoneSpec `json:"zones,omitempty"`
+	Zones                 []*ClusterZoneSpec `json:"zones,omitempty"`
 	//Region                        string        `json:",omitempty"`
 
 	// Project is the cloud project we should use, required on GCE
-	Project string `json:"project,omitempty"`
+	Project               string `json:"project,omitempty"`
 
 	// MasterPublicName is the external DNS name for the master nodes
-	MasterPublicName string `json:"masterPublicName,omitempty"`
+	MasterPublicName      string `json:"masterPublicName,omitempty"`
 	// MasterInternalName is the internal DNS name for the master nodes
-	MasterInternalName string `json:"masterInternalName,omitempty"`
+	MasterInternalName    string `json:"masterInternalName,omitempty"`
 
 	// The CIDR used for the AWS VPC / GCE Network, or otherwise allocated to k8s
 	// This is a real CIDR, not the internal k8s network
-	NetworkCIDR string `json:"networkCIDR,omitempty"`
+	NetworkCIDR           string `json:"networkCIDR,omitempty"`
 
 	// NetworkID is an identifier of a network, if we want to reuse/share an existing network (e.g. an AWS VPC)
-	NetworkID string `json:"networkID,omitempty"`
+	NetworkID             string `json:"networkID,omitempty"`
 
 	// Topology defines the type of network topology to use on the cluster - default public
-	Topology *TopologySpec `json:"topology,omitempty"`
+	// This is heavily weighted towards AWS for the time being, but should also be agnostic enough
+	// to port out to GCE later if needed
+	Topology              *TopologySpec `json:"topology,omitempty"`
 
 	// SecretStore is the VFS path to where secrets are stored
-	SecretStore string `json:"secretStore,omitempty"`
+	SecretStore           string `json:"secretStore,omitempty"`
 	// KeyStore is the VFS path to where SSL keys and certificates are stored
-	KeyStore string `json:"keyStore,omitempty"`
+	KeyStore              string `json:"keyStore,omitempty"`
 	// ConfigStore is the VFS path to where the configuration (CloudConfig, NodeSetConfig etc) is stored
-	ConfigStore string `json:"configStore,omitempty"`
+	ConfigStore           string `json:"configStore,omitempty"`
 
 	// DNSZone is the DNS zone we should use when configuring DNS
 	// This is because some clouds let us define a managed zone foo.bar, and then have
@@ -93,17 +95,17 @@ type ClusterSpec struct {
 	// DNSZone will probably be a suffix of the MasterPublicName and MasterInternalName
 	// Note that DNSZone can either by the host name of the zone (containing dots),
 	// or can be an identifier for the zone.
-	DNSZone string `json:"dnsZone,omitempty"`
+	DNSZone               string `json:"dnsZone,omitempty"`
 
 	// ClusterDNSDomain is the suffix we use for internal DNS names (normally cluster.local)
-	ClusterDNSDomain string `json:"clusterDNSDomain,omitempty"`
+	ClusterDNSDomain      string `json:"clusterDNSDomain,omitempty"`
 
 	//InstancePrefix                string `json:",omitempty"`
 
 	// ClusterName is a unique identifier for the cluster, and currently must be a DNS name
 	//ClusterName       string `json:",omitempty"`
 
-	Multizone *bool `json:"multizone,omitempty"`
+	Multizone             *bool `json:"multizone,omitempty"`
 
 	//ClusterIPRange                string `json:",omitempty"`
 
@@ -113,11 +115,11 @@ type ClusterSpec struct {
 
 	// NonMasqueradeCIDR is the CIDR for the internal k8s network (on which pods & services live)
 	// It cannot overlap ServiceClusterIPRange
-	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty"`
+	NonMasqueradeCIDR     string `json:"nonMasqueradeCIDR,omitempty"`
 
 	// AdminAccess determines the permitted access to the admin endpoints (SSH & master HTTPS)
 	// Currently only a single CIDR is supported (though a richer grammar could be added in future)
-	AdminAccess []string `json:"adminAccess,omitempty"`
+	AdminAccess           []string `json:"adminAccess,omitempty"`
 
 	// IsolatesMasters determines whether we should lock down masters so that they are not on the pod network.
 	// true is the kube-up behaviour, but it is very surprising: it means that daemonsets only work on the master
@@ -126,13 +128,13 @@ type ClusterSpec struct {
 	//  * give the master a normal PodCIDR
 	//  * run kube-proxy on the master
 	//  * enable debugging handlers on the master, so kubectl logs works
-	IsolateMasters *bool `json:"isolateMasters,omitempty"`
+	IsolateMasters        *bool `json:"isolateMasters,omitempty"`
 
 	// UpdatePolicy determines the policy for applying upgrades automatically.
 	// Valid values:
 	//   'external' do not apply updates automatically - they are applied manually or by an external system
 	//   missing: default policy (currently OS security upgrades that do not require a reboot)
-	UpdatePolicy *string `json:"updatePolicy,omitempty"`
+	UpdatePolicy          *string `json:"updatePolicy,omitempty"`
 
 	//HairpinMode                   string `json:",omitempty"`
 	//
@@ -222,7 +224,7 @@ type ClusterSpec struct {
 	//Masters []*MasterConfig `json:",omitempty"`
 
 	// EtcdClusters stores the configuration for each cluster
-	EtcdClusters []*EtcdClusterSpec `json:"etcdClusters,omitempty"`
+	EtcdClusters          []*EtcdClusterSpec `json:"etcdClusters,omitempty"`
 
 	// Component configurations
 	Docker                *DockerConfig                `json:"docker,omitempty"`
@@ -235,12 +237,12 @@ type ClusterSpec struct {
 	MasterKubelet         *KubeletConfigSpec           `json:"masterKubelet,omitempty"`
 
 	// Networking configuration
-	Networking *NetworkingSpec `json:"networking,omitempty"`
+	Networking            *NetworkingSpec `json:"networking,omitempty"`
 }
 
 type KubeDNSConfig struct {
 	// Image is the name of the docker image to run
-	Image string `json:"image,omitempty"`
+	Image    string `json:"image,omitempty"`
 
 	Replicas int    `json:"replicas,omitempty"`
 	Domain   string `json:"domain,omitempty"`
@@ -259,7 +261,7 @@ type KubeDNSConfig struct {
 
 type EtcdClusterSpec struct {
 	// Name is the name of the etcd cluster (main, events etc)
-	Name string `json:"name,omitempty"`
+	Name    string `json:"name,omitempty"`
 
 	// EtcdMember stores the configurations for each member of the cluster (including the data volume)
 	Members []*EtcdMemberSpec `json:"etcdMembers,omitempty"`
@@ -267,8 +269,8 @@ type EtcdClusterSpec struct {
 
 type EtcdMemberSpec struct {
 	// Name is the name of the member within the etcd cluster
-	Name string  `json:"name,omitempty"`
-	Zone *string `json:"zone,omitempty"`
+	Name            string  `json:"name,omitempty"`
+	Zone            *string `json:"zone,omitempty"`
 
 	VolumeType      *string `json:"volumeType,omitempty"`
 	VolumeSize      *int    `json:"volumeSize,omitempty"`
@@ -277,8 +279,8 @@ type EtcdMemberSpec struct {
 }
 
 type ClusterZoneSpec struct {
-	Name string `json:"name,omitempty"`
-	CIDR string `json:"cidr,omitempty"`
+	Name       string `json:"name,omitempty"`
+	CIDR       string `json:"cidr,omitempty"`
 
 	// ProviderID is the cloud provider id for the objects associated with the zone (the subnet on AWS)
 	ProviderID string `json:"id,omitempty"`
@@ -434,7 +436,7 @@ func (z *ClusterZoneSpec) assignCIDR(c *Cluster) (string, error) {
 
 	lastCharMap := make(map[byte]bool)
 	for _, nodeZone := range c.Spec.Zones {
-		lastChar := nodeZone.Name[len(nodeZone.Name)-1]
+		lastChar := nodeZone.Name[len(nodeZone.Name) - 1]
 		lastCharMap[lastChar] = true
 	}
 
@@ -444,7 +446,7 @@ func (z *ClusterZoneSpec) assignCIDR(c *Cluster) (string, error) {
 		// Last char of zones are unique (GCE, AWS)
 		// At least on AWS, we also want 'a' to be 1, so that we don't collide with the lowest range,
 		// because kube-up uses that range
-		index = int(z.Name[len(z.Name)-1])
+		index = int(z.Name[len(z.Name) - 1])
 	} else {
 		glog.Warningf("Last char of zone names not unique")
 
@@ -474,7 +476,7 @@ func (z *ClusterZoneSpec) assignCIDR(c *Cluster) (string, error) {
 	ip4 := cidr.IP.To4()
 	if ip4 != nil {
 		n := binary.BigEndian.Uint32(ip4)
-		n += uint32(index) << uint(32-networkLength)
+		n += uint32(index) << uint(32 - networkLength)
 		subnetIP := make(net.IP, len(ip4))
 		binary.BigEndian.PutUint32(subnetIP, n)
 		subnetCIDR := subnetIP.String() + "/" + strconv.Itoa(networkLength)
@@ -500,6 +502,12 @@ func (c *Cluster) SharedVPC() bool {
 // A function will need to be defined for all new topologies, if we plan to use them in the
 // model templates.
 // --------------------------------------------------------------------------------------------
-func (c *Cluster) IsTopologyPrivate()         bool  { return (c.Spec.Topology.Masters == TopologyPrivate && c.Spec.Topology.Nodes == TopologyPrivate) }
-func (c *Cluster)  IsTopologyPublic()         bool  { return (c.Spec.Topology.Masters == TopologyPublic && c.Spec.Topology.Nodes == TopologyPublic) }
-func (c *Cluster) IsTopologyPrivateMasters()  bool  { return (c.Spec.Topology.Masters == TopologyPrivate && c.Spec.Topology.Nodes == TopologyPublic) }
+func (c *Cluster) IsTopologyPrivate() bool {
+	return (c.Spec.Topology.Masters == TopologyPrivate && c.Spec.Topology.Nodes == TopologyPrivate)
+}
+func (c *Cluster)  IsTopologyPublic() bool {
+	return (c.Spec.Topology.Masters == TopologyPublic && c.Spec.Topology.Nodes == TopologyPublic)
+}
+func (c *Cluster) IsTopologyPrivateMasters() bool {
+	return (c.Spec.Topology.Masters == TopologyPrivate && c.Spec.Topology.Nodes == TopologyPublic)
+}
