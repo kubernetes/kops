@@ -31,3 +31,7 @@ ${GOPATH}/bin/kops update cluster ${NAME} --yes
 ```
 
 If you have problems, please set `--v=8` and open an issue, and ping justinsb on slack!
+
+# Other interesting modes
+
+Learn about our [other interesting modes](commands.md#other-interesting-modes).

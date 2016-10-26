@@ -60,6 +60,7 @@ See [building notes](/docs/build.md) for more information.
  - Set up [add-ons](docs/addons.md), to add important functionality to Kubernetes
  - Learn about [InstanceGroups](docs/instance_groups.md), which let you change instance types, cluster sizes etc.. 
  - Read about [networking options](docs/networking.md), including a 50 node limit in the default configuration.
+ - Look at our [other interesting modes](/docs/commands.md#other-interesting-modes).
 
 # Community
 
