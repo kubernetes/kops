@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+
 package cloudup
 
 import (
@@ -73,6 +74,17 @@ func PopulateClusterSpec(cluster *api.Cluster) (*api.Cluster, error) {
 	return c.fullCluster, nil
 }
 
+
+//
+// Here be dragons
+//
+// This function has some `interesting` things going on.
+// In an effort to let the cluster.Spec fall through I am
+// hard coding topology in two places.. It seems and feels
+// very wrong.. but at least now my new cluster.Spec.Topology
+// struct is falling through..
+// @kris-nova
+//
 func (c *populateClusterSpec) run() error {
 	err := c.InputCluster.Validate(false)
 	if err != nil {
@@ -248,9 +260,11 @@ func (c *populateClusterSpec) run() error {
 	if err != nil {
 		return fmt.Errorf("error building complete spec: %v", err)
 	}
-	// Hard coding topology here AGAIN
+
 	//
-	completed.Spec.Topology = c.InputCluster.Spec.Topology
+	//
+	//
+	completed.Topology = c.InputCluster.Spec.Topology
 
 	fullCluster := &api.Cluster{}
 	*fullCluster = *cluster

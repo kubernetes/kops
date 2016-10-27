@@ -48,4 +48,3 @@ routeTableAssociation/{{ $zone.Name }}.{{ ClusterName }}:
   subnet: subnet/{{ $zone.Name }}.{{ ClusterName }}
 {{ end }}
 {{ end }}
-{{ end }}
