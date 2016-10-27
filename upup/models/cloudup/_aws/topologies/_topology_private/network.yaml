@@ -119,6 +119,17 @@ routeTableAssociation/{{ $zone.Name }}.{{ ClusterName }}:
   subnet: subnet/{{ $zone.Name }}.{{ ClusterName }}
 
 # ---------------------------------------------------------------
+# Elastic IP
+#
+# Every NGW needs a public (Elastic) IP address, every private
+# subnet needs a NGW, lets create it
+# ---------------------------------------------------------------
+elasticIP/{{ $zone.Name }}.{{ ClusterName }}:
+  name: {{ $zone.Name }}.{{ ClusterName }}
+  tagOnResource: vpc/{{ ClusterName }}
+  tagUsingKey: kubernetes.io/master-nat-gateway
+
+# ---------------------------------------------------------------
 # NGW
 #
 # All private subnets will need a NGW
@@ -127,15 +138,15 @@ routeTableAssociation/{{ $zone.Name }}.{{ ClusterName }}:
 # using a network address translation (NAT) gateway that resides
 # in the public subnet.
 # ---------------------------------------------------------------
-
-
-
-{{ end }}
-
-{{ end }}
-
-
-
+ngw/{{ $zone.Name }}.{{ ClusterName }}:
+  elasticIp: elasticIP/{{ $zone.Name }}.{{ ClusterName }}
+  subnet: subnet/{{ $zone.Name }}.{{ ClusterName }}
 
 
 {{ end }}
+
+{{ end }}
+
+
+
+

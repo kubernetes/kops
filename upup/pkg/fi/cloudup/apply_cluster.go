@@ -295,16 +295,8 @@ func (c *ApplyClusterCmd) Run() error {
 				"securityGroupRule":     &awstasks.SecurityGroupRule{},
 				"subnet":                &awstasks.Subnet{},
 				"vpc":                   &awstasks.VPC{},
-
-
-				// Not using NatGateways right now - not there yet :)
-				// Kris TODO
-				//"natGateway":		 &awstasks.NATGateway{},
-
-
+				"ngw":  		 &awstasks.NATGateway{},
 				"vpcDHDCPOptionsAssociation": &awstasks.VPCDHCPOptionsAssociation{},
-
-
 
 				// ELB
 				"loadBalancer":             &awstasks.LoadBalancer{},
