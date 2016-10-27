@@ -1,29 +1,50 @@
-## Kops - Kubernetes Ops
+# Kubernetes Operations (kops)
 
-[![Build Status](https://travis-ci.org/kubernetes/kops.svg?branch=master)](https://travis-ci.org/kubernetes/kops)
+[![Build Status](https://travis-ci.org/kubernetes/kops.svg?branch=master)](https://travis-ci.org/kubernetes/kops) [![Go Report Card](https://goreportcard.com/badge/k8s.io/kops)](https://goreportcard.com/report/k8s.io/kops)
 
-kops is the easiest way to get a production Kubernetes up and running.  We like to think
-of it as "kubectl for clusters".
+The easiest way to get a production Kubernetes cluster up and running.  
 
-Some of the more interesting features:
+# What is kops?
 
-* Written in go, so hopefully easier to maintain and extend, as complexity inevitably increases
-* Uses a state-sync model, so we get things like a dry-run mode and idempotency automatically
+We like to think of it as `kubectl` for clusters. 
+
+kops lets you deploy production grade (and HA) Kubernetes clusters in the cloud.
+
+We encourage everyone to read more about [adding a feature](/docs/adding_a_feature.md) before contributing.
+
+#### Quickstart
+
+Launching a Kubernetes cluster on [AWS](/docs/aws.md).
+
+### Features
+
+* Automated Kubernetes cluster [CRUD](/docs/commands.md) for the cloud ([AWS](/docs/aws.md))
+* HA (Highly Available) Kubernetes clusters
+* Uses a state-sync model for **dry-run** and automatic **idempotency**
+* Custom support for `kubectl` [add-ons](docs/addons.md)
+* Kops can generate [Terraform configuration](/docs/terraform.md)
 * Based on a simple meta-model defined in a directory tree
-* Can produce configurations in other formats (currently Terraform & Cloud-Init), so that we can have working
-  configurations for other tools also.
+* Easy command line syntax
+* Community support
 
-## Recent changes
+### Example on AWS
 
-Change history is available in [HISTORY.md](HISTORY.md)
+<p align="center">
+  <img src="/docs/img/demo.gif"> </image>
+</p>
 
-## Installation
+# Installation
 
-We recommend using a release from the Release tab above.
+### Recommended
+ 
+Download the [latest release](https://github.com/kubernetes/kops/releases/latest)
 
-## Installation from source
+### History
 
-Build the code (make sure you have set GOPATH):
+View our [changelog](HISTORY.md)
+
+### From Source
+
 ```
 go get -d k8s.io/kops
 cd ${GOPATH}/src/k8s.io/kops/
@@ -31,121 +52,24 @@ git checkout release
 make
 ```
 
-* The `release` branch is where releases are taken from.  This is the stable code branch.
-* The `master` branch  _should_ also be functional, but is where active development happens, so may be less stable.
+See [building notes](/docs/build.md) for more information.
 
-(Note that the code uses the relatively new Go vendoring, so building requires Go 1.6 or later,
-or you must export GO15VENDOREXPERIMENT=1 when building with Go 1.5.  The makefile sets
-GO15VENDOREXPERIMENT for you.  Go code generation does not honor the env var in 1.5, so for development
-you should use Go 1.6 or later)
+# Other Resources 
 
-## Bringing up a cluster on AWS
+ - Create [kubecfg settings for kubectl](/docs/tips.md#create-kubecfg-settings-for-kubectl)
+ - Set up [add-ons](docs/addons.md), to add important functionality to Kubernetes
+ - Learn about [InstanceGroups](docs/instance_groups.md), which let you change instance types, cluster sizes etc.. 
+ - Read about [networking options](docs/networking.md), including a 50 node limit in the default configuration.
+ - Look at our [other interesting modes](/docs/commands.md#other-interesting-modes).
 
-* Ensure you have kubectl installed and on your path.  (We need it to set kubecfg configuration.)
+# Community
 
-* Set up a DNS hosted zone in Route 53, e.g. `mydomain.com`, and set up the DNS nameservers as normal
-  so that domains will resolve.  You can reuse an existing domain name (e.g. `mydomain.com`), or you can create
-  a "child" hosted zone (e.g. `myclusters.mydomain.com`) if you want to isolate them.  Note that with AWS Route53,
-  you can have subdomains in a single hosted zone, so you can have `cluster1.testclusters.mydomain.com` under
-  `mydomain.com`.
+Reach out to the kops authors on [kubernetes slack](https://github.com/kubernetes/community#slack-chat). A great place to get involved or ask questions is [#sig-cluster-lifecycle](https://kubernetes.slack.com/?redir=%2Fmessages%2Fsig-cluster-lifecycle%2F)
 
-* Pick a DNS name under this zone to be the name of your cluster.  kops will set up DNS so your cluster
-  can be reached on this name.  For example, if your zone was `mydomain.com`, a good name would be
-  `kubernetes.mydomain.com`, or `dev.k8s.mydomain.com`, or even `dev.k8s.myproject.mydomain.com`. We'll call this `NAME`.
+# Bugs
 
-* Set `AWS_PROFILE` (if you need to select a profile for the AWS CLI to work)
+If you think you have found a bug : 
 
-* Pick an S3 bucket that you'll use to store your cluster configuration - this is called your state store.  You
-  can `export KOPS_STATE_STORE=s3://<mystatestorebucket>` and then kops will use this location by default.  We
-  suggest putting this in your bash profile or similar.  A single registry can hold multiple clusters, and it
-  can also be shared amongst your ops team (which is much easier than passing around kubecfg files!)
-
-* Run "kops create cluster" to create your cluster configuration:
-```
-${GOPATH}/bin/kops create cluster --cloud=aws --zones=us-east-1c ${NAME}
-```
-(protip: the --cloud=aws argument is optional if the cloud can be inferred from the zones)
-
-* Run "kops update cluster" to build your cluster:
-```
-${GOPATH}/bin/kops update cluster ${NAME} --yes
-```
-
-If you have problems, please set `--v=8` and open an issue, and ping justinsb on slack!
-
-## Create kubecfg settings for kubectl
-
-(This step is actually optional; `update cluster` will do it automatically after cluster creation.
- But we expect that if you're part of a team you might share the KOPS_STATE_STORE, and then you can do
- this on different machines instead of having to share kubecfg files)
-
-To create the kubecfg configuration settings for use with kubectl:
-
-```
-export KOPS_STATE_STORE=s3://<somes3bucket>
-# NAME=<kubernetes.mydomain.com>
-${GOPATH}/bin/kops export kubecfg ${NAME}
-```
-
-You can now use kubernetes using the kubectl tool (after allowing a few minutes for the cluster to come up):
-
-```kubectl get nodes```
-
-## Cluster management
-
-* Set up [add-ons](docs/addons.md), to add important functionality to k8s.
-
-* Learn about [InstanceGroups](docs/instance_groups.md), which let you change instance types, cluster sizes etc.
-
-## Learn more:
-
-* Read about [networking options](docs/networking.md), including a 50 node limit in the default configuration.
-
-## Delete the cluster
-
-When you're done, you can also have kops delete the cluster.  It will delete all AWS resources tagged
-with the cluster name in the specified region.
-
-```
-# NAME=<kubernetes.mydomain.com>
-${GOPATH}/bin/kops delete cluster ${NAME} # --yes
-```
-
-You must pass --yes to actually delete resources (without the `#` comment!)
-
-## Other interesting modes:
-
-* Build a terraform model: `--target=terraform`  The terraform model will be built in `out/terraform`
-
-* Specify the k8s build to run: `--kubernetes-version=1.2.2`
-
-* Run nodes in multiple zones: `--zones=us-east-1b,us-east-1c,us-east-1d`
-
-* Run with a HA master: `--master-zones=us-east-1b,us-east-1c,us-east-1d`
-
-* Specify the number of nodes: `--node-count=4`
-
-* Specify the node size: `--node-size=m4.large`
-
-* Specify the master size: `--master-size=m4.large`
-
-* Override the default DNS zone: `--dns-zone=<my.hosted.zone>`
-
-# How it works
-
-Everything is driven by a local configuration directory tree, called the "model".  The model represents
-the desired state of the world.
-
-Each file in the tree describes a Task.
-
-On the nodeup side, Tasks can manage files, systemd services, packages etc.
-On the `kops update cluster` side, Tasks manage cloud resources: instances, networks, disks etc.
-
-## Generate a terraform configuration
-
-Kops can also generate a terraform configuration, which you can then apply using terraform, to build a Kubernetes
-cluster using terraform.
-
-If you are using a version of terraform prior to 0.7, please read about the [workaround for earlier versions of terraform](docs/terraform.md).
-
-For more details, please read the [how to use terraform to create a Kubernetes cluster](docs/terraform.md)
+- Set `--v=8` and save the log output 
+- Open a [new issue](https://github.com/kubernetes/kops/issues/new)
+- Feel free to reach out to the kops community on [kubernetes slack](https://github.com/kubernetes/community#slack-chat)
