@@ -125,9 +125,7 @@ routeTableAssociation/{{ $zone.Name }}.{{ ClusterName }}:
 # subnet needs a NGW, lets create it
 # ---------------------------------------------------------------
 elasticIP/{{ $zone.Name }}.{{ ClusterName }}:
-  name: {{ $zone.Name }}.{{ ClusterName }}
-  tagOnResource: vpc/{{ ClusterName }}
-  tagUsingKey: kubernetes.io/master-nat-gateway
+  associatedSubnetTag: subnet/{{ $zone.Name }}.{{ ClusterName }}
 
 # ---------------------------------------------------------------
 # NGW
