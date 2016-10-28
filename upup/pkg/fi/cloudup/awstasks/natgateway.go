@@ -14,43 +14,77 @@ limitations under the License.
 package awstasks
 
 import (
-	//"fmt"
-	//"github.com/aws/aws-sdk-go/service/ec2"
-	//"github.com/golang/glog"
+	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	//"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"fmt"
 )
 
 //go:generate fitask -type=NATGateway
-type NATGateway struct {
+type NatGateway struct {
 	Name         *string
-	ElasticIp    *string
-	Subnet       *string
+	ElasticIp    *ElasticIP
+	Subnet       *Subnet
+	ID *string
 }
 
-var _ fi.CompareWithID = &NATGateway{} // Validate the IDs
+var _ fi.CompareWithID = &NatGateway{} // Validate the IDs
 
-func (e *NATGateway) CompareWithID() *string {
+func (e *NatGateway) CompareWithID() *string {
 	s := ""
 	return &s
 }
 
-func (e *NATGateway) Find(c *fi.Context) (*NATGateway, error) {
-	return &NATGateway{}, nil
+func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
+	return nil, nil
 }
 
-func (s *NATGateway) CheckChanges(a, e, changes *NATGateway) error {
+func (s *NatGateway) CheckChanges(a, e, changes *NatGateway) error {
 	return nil
 }
 
-func (e *NATGateway) Run(c *fi.Context) error {
+func (e *NatGateway) Run(c *fi.Context) error {
+	return fi.DefaultDeltaRunMethod(e, c)
+}
+
+func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway) error {
+
+	// New NGW
+	var id *string
+	if a == nil {
+		glog.V(2).Infof("Creating Nat Gateway")
+
+		request := &ec2.CreateNatGatewayInput{}
+		request.AllocationId = e.ElasticIp.ID
+		request.SubnetId = e.Subnet.ID
+		response, err := t.Cloud.EC2().CreateNatGateway(request)
+		if err != nil {
+			return fmt.Errorf("Error creating Nat Gateway: %v", err)
+		}
+		e.ID = response.NatGateway.NatGatewayId
+		id = e.ID
+	}else {
+		id = a.ID
+	}
+
+	// Tag the associated subnet
+	if e.Subnet == nil {
+		return  fmt.Errorf("Subnet not set")
+	} else if e.Subnet.ID == nil {
+		return  fmt.Errorf("Subnet ID not set")
+	}
+	tags := make(map[string]string)
+	tags["AssociatedNatgateway"] = *id
+	err := t.AddAWSTags(*e.Subnet.ID, tags)
+	if err != nil {
+		return fmt.Errorf("Unable to tag subnet %v", err)
+	}
 	return nil
 }
 
-func (_ *NATGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NATGateway) error {
-	return nil
-}
+// TODO Kris - We need to support NGW for Terraform
 
 //type terraformNATGateway struct {
 //	AllocationId *string           `json:"AllocationID,omitempty"`

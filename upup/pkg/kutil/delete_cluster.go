@@ -252,7 +252,6 @@ func (c *DeleteCluster) DeleteResources(resources map[string]*ResourceTracker) e
 	iterationsWithNoProgress := 0
 	for {
 		// TODO: Some form of default ordering based on types?
-		// TODO: Give up eventually?
 
 		failed := make(map[string]*ResourceTracker)
 
@@ -800,7 +799,7 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 
 	var trackers []*ResourceTracker
 	elasticIPs := make(map[string]bool)
-
+	ngws := make(map[string]bool)
 	for _, subnet := range subnets {
 		tracker := &ResourceTracker{
 			Name:    FindName(subnet.Tags),
@@ -809,8 +808,7 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 			deleter: DeleteSubnet,
 		}
 
-		// Get tags and append with EIPs as needed
-
+		// Get tags and append with EIPs/NGWs as needed
 		for _, tag := range subnet.Tags {
 			name := aws.StringValue(tag.Key)
 			ip := ""
@@ -819,6 +817,13 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 			}
 			if ip != "" {
 				elasticIPs[ip] = true
+			}
+			id := ""
+			if name == "AssociatedNatgateway" {
+				id = aws.StringValue(tag.Value)
+			}
+			if id != "" {
+				ngws[id] = true
 			}
 		}
 
@@ -829,6 +834,7 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 
 		trackers = append(trackers, tracker)
 
+		// Associated Elastic IPs
 		if len(elasticIPs) != 0 {
 			glog.V(2).Infof("Querying EC2 Elastic IPs")
 			request := &ec2.DescribeAddressesInput{}
@@ -854,6 +860,34 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 
 			}
 		}
+
+		// Associated Nat Gateways
+		if len(ngws) != 0 {
+			glog.V(2).Infof("Querying Nat Gateways")
+			request := &ec2.DescribeNatGatewaysInput{}
+			response, err := c.EC2().DescribeNatGateways(request)
+			if err != nil {
+				return nil, fmt.Errorf("error describing nat gateways: %v", err)
+			}
+
+			for _, ngw := range response.NatGateways {
+				id := aws.StringValue(ngw.NatGatewayId)
+				if !ngws[id] {
+					continue
+				}
+
+				tracker := &ResourceTracker{
+					Name:    id,
+					ID:      aws.StringValue(ngw.NatGatewayId),
+					Type:    "natgateway",
+					deleter: DeleteNGW,
+				}
+
+				trackers = append(trackers, tracker)
+
+			}
+		}
+
 	}
 
 	return trackers, nil
@@ -1517,6 +1551,25 @@ func DeleteElasticIP(cloud fi.Cloud, t *ResourceTracker) error {
 			return err
 		}
 		return fmt.Errorf("error deleting elastic ip %q: %v", t.Name, err)
+	}
+	return nil
+}
+
+func DeleteNGW(cloud fi.Cloud, t *ResourceTracker) error {
+	c := cloud.(awsup.AWSCloud)
+
+	id := t.ID
+
+	glog.V(2).Infof("Removing NGW %s", t.Name)
+	request := &ec2.DeleteNatGatewayInput{
+		NatGatewayId: &id,
+	}
+	_, err := c.EC2().DeleteNatGateway(request)
+	if err != nil {
+		if IsDependencyViolation(err) {
+			return err
+		}
+		return fmt.Errorf("error deleting ngw %q: %v", t.Name, err)
 	}
 	return nil
 }

@@ -295,7 +295,7 @@ func (c *ApplyClusterCmd) Run() error {
 				"securityGroupRule":     &awstasks.SecurityGroupRule{},
 				"subnet":                &awstasks.Subnet{},
 				"vpc":                   &awstasks.VPC{},
-				"ngw":  		 &awstasks.NATGateway{},
+				"ngw":  		 &awstasks.NatGateway{},
 				"vpcDHDCPOptionsAssociation": &awstasks.VPCDHCPOptionsAssociation{},
 
 				// ELB
