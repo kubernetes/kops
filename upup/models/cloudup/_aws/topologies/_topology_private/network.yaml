@@ -122,10 +122,11 @@ routeTableAssociation/{{ $zone.Name }}.{{ ClusterName }}:
 # Elastic IP
 #
 # Every NGW needs a public (Elastic) IP address, every private
-# subnet needs a NGW, lets create it
+# subnet needs a NGW, lets create it. We tie it to a subnet
+# so we can track it in AWS
 # ---------------------------------------------------------------
 elasticIP/{{ $zone.Name }}.{{ ClusterName }}:
-  associatedSubnet: subnet/{{ $zone.Name }}.{{ ClusterName }}
+  subnet: subnet/{{ $zone.Name }}.{{ ClusterName }}
 
 # ---------------------------------------------------------------
 # NGW
