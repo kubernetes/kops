@@ -25,7 +25,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"fmt"
-	"os"
 )
 
 //go:generate fitask -type=ElasticIP
@@ -42,7 +41,8 @@ type ElasticIP struct {
 	// Allow support for assicated subnets
 	// If you need another resource you must add it
 
-	AssociatedSubnetTag   *string // This is the string for the associated subnet
+	AssociatedSubnet   *Subnet
+
 	//AssociatedSubnetTagId *string
 
 	//AssociatedElbTag      *string
@@ -65,23 +65,6 @@ func (e *ElasticIP) FindAddress(context *fi.Context) (*string, error) {
 
 func (e *ElasticIP) Find(context *fi.Context) (*ElasticIP, error) {
 	return e.find(context.Cloud.(awsup.AWSCloud))
-}
-
-func (e *ElasticIP) findAssociatedResourceId(cloud awsup.AWSCloud) (*string, error) {
-
-	// Validate Associated Tags
-	// We can trust that the values should be populated here for Associated*Tag
-
-	// Kris left off here..
-
-	// We need to actually get the resource ID for the subnet here..
-	// TODO Kris - lets code in support for other associations after the fact
-
-	//
-
-	fmt.Println("KRIS STOPPED WORKING HERE")
-	os.Exit(-1)
-
 }
 
 func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
@@ -170,11 +153,8 @@ func (s *ElasticIP) CheckChanges(a, e, changes *ElasticIP) error {
 
 func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) error {
 
-	tagOnResourceID, err := e.findTagOnResourceID(t.Cloud)
-	if err != nil {
-		return err
-	}
-
+	var publicIp *string
+	var eipId *string
 
 	// If this is a new ElasticIP
 	if a == nil {
@@ -190,17 +170,27 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 
 		e.ID = response.AllocationId
 		e.PublicIP = response.PublicIp
+		publicIp = e.PublicIP
+		eipId = response.AllocationId
+	}else {
+		publicIp = a.PublicIP
+		eipId = a.ID
 	}
-	//
-	//if publicIP != nil && e.TagUsingKey != nil && tagOnResourceID != nil {
-	//	tags := map[string]string{
-	//		*e.TagUsingKey: *publicIP,
-	//	}
-	//	err := t.AddAWSTags(*tagOnResourceID, tags)
-	//	if err != nil {
-	//		return fmt.Errorf("error adding tags to resource for ElasticIP: %v", err)
-	//	}
-	//}
+
+
+	// Tag the associated subnet
+	if e.AssociatedSubnet == nil {
+		return  fmt.Errorf("Subnet not set")
+	} else if e.AssociatedSubnet.ID == nil {
+		return  fmt.Errorf("Subnet ID not set")
+	}
+	tags := make(map[string]string)
+	tags["AssociatedElasticIp"] = *publicIp
+	tags["AssociatedElasticIpAllocationId"] = *eipId
+	err := t.AddAWSTags(*e.AssociatedSubnet.ID, tags)
+	if err != nil {
+		return fmt.Errorf("Unable to tag subnet %v", err)
+	}
 
 	return nil
 }
