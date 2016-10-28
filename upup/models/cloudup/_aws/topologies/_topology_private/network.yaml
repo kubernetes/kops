@@ -125,7 +125,7 @@ routeTableAssociation/{{ $zone.Name }}.{{ ClusterName }}:
 # subnet needs a NGW, lets create it
 # ---------------------------------------------------------------
 elasticIP/{{ $zone.Name }}.{{ ClusterName }}:
-  associatedSubnetTag: subnet/{{ $zone.Name }}.{{ ClusterName }}
+  associatedSubnet: subnet/{{ $zone.Name }}.{{ ClusterName }}
 
 # ---------------------------------------------------------------
 # NGW

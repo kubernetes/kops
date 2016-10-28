@@ -53,19 +53,19 @@ type DeleteCluster struct {
 }
 
 type ResourceTracker struct {
-	Name string
-	Type string
-	ID   string
+	Name         string
+	Type         string
+	ID           string
 
-	blocks  []string
-	blocked []string
-	done    bool
+	blocks       []string
+	blocked      []string
+	done         bool
 
 	deleter      func(cloud fi.Cloud, tracker *ResourceTracker) error
 	groupKey     string
 	groupDeleter func(cloud fi.Cloud, trackers []*ResourceTracker) error
 
-	obj interface{}
+	obj          interface{}
 }
 
 type listFn func(fi.Cloud, string) ([]*ResourceTracker, error)
@@ -91,7 +91,7 @@ func buildEC2Filters(cloud fi.Cloud) []*ec2.Filter {
 
 	var filters []*ec2.Filter
 	for k, v := range tags {
-		filter := awsup.NewEC2Filter("tag:"+k, v)
+		filter := awsup.NewEC2Filter("tag:" + k, v)
 		filters = append(filters, filter)
 	}
 	return filters
@@ -131,7 +131,7 @@ func (c *DeleteCluster) ListResources() (map[string]*ResourceTracker, error) {
 			return nil, err
 		}
 		for _, t := range trackers {
-			resources[t.Type+":"+t.ID] = t
+			resources[t.Type + ":" + t.ID] = t
 		}
 	}
 
@@ -152,8 +152,8 @@ func (c *DeleteCluster) ListResources() (map[string]*ResourceTracker, error) {
 				if vpcID == "" || igwID == "" {
 					continue
 				}
-				if resources["vpc:"+vpcID] != nil && resources["internet-gateway:"+igwID] == nil {
-					resources["internet-gateway:"+igwID] = &ResourceTracker{
+				if resources["vpc:" + vpcID] != nil && resources["internet-gateway:" + igwID] == nil {
+					resources["internet-gateway:" + igwID] = &ResourceTracker{
 						Name:    FindName(igw.Tags),
 						ID:      igwID,
 						Type:    "internet-gateway",
@@ -192,7 +192,7 @@ func addUntaggedRouteTables(cloud awsup.AWSCloud, clusterName string, resources 
 			continue
 		}
 
-		if resources["vpc:"+vpcID] == nil {
+		if resources["vpc:" + vpcID] == nil {
 			// Not deleting this VPC; ignore
 			continue
 		}
@@ -215,8 +215,8 @@ func addUntaggedRouteTables(cloud awsup.AWSCloud, clusterName string, resources 
 		}
 
 		t := buildTrackerForRouteTable(rt)
-		if resources[t.Type+":"+t.ID] == nil {
-			resources[t.Type+":"+t.ID] = t
+		if resources[t.Type + ":" + t.ID] == nil {
+			resources[t.Type + ":" + t.ID] = t
 		}
 	}
 
@@ -470,19 +470,19 @@ func ListInstances(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, erro
 				}
 
 				var blocks []string
-				blocks = append(blocks, "vpc:"+aws.StringValue(instance.VpcId))
+				blocks = append(blocks, "vpc:" + aws.StringValue(instance.VpcId))
 
 				for _, volume := range instance.BlockDeviceMappings {
 					if volume.Ebs == nil {
 						continue
 					}
-					blocks = append(blocks, "volume:"+aws.StringValue(volume.Ebs.VolumeId))
+					blocks = append(blocks, "volume:" + aws.StringValue(volume.Ebs.VolumeId))
 				}
 				for _, sg := range instance.SecurityGroups {
-					blocks = append(blocks, "security-group:"+aws.StringValue(sg.GroupId))
+					blocks = append(blocks, "security-group:" + aws.StringValue(sg.GroupId))
 				}
-				blocks = append(blocks, "subnet:"+aws.StringValue(instance.SubnetId))
-				blocks = append(blocks, "vpc:"+aws.StringValue(instance.VpcId))
+				blocks = append(blocks, "subnet:" + aws.StringValue(instance.SubnetId))
+				blocks = append(blocks, "vpc:" + aws.StringValue(instance.VpcId))
 
 				tracker.blocks = blocks
 
@@ -567,7 +567,7 @@ func ListSecurityGroups(cloud fi.Cloud, clusterName string) ([]*ResourceTracker,
 		}
 
 		var blocks []string
-		blocks = append(blocks, "vpc:"+aws.StringValue(sg.VpcId))
+		blocks = append(blocks, "vpc:" + aws.StringValue(sg.VpcId))
 
 		tracker.blocks = blocks
 
@@ -731,8 +731,8 @@ func ListKeypairs(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error
 
 	glog.V(2).Infof("Listing EC2 Keypairs")
 	request := &ec2.DescribeKeyPairsInput{
-	// We need to match both the name and a prefix
-	//Filters: []*ec2.Filter{awsup.NewEC2Filter("key-name", keypairName)},
+		// We need to match both the name and a prefix
+		//Filters: []*ec2.Filter{awsup.NewEC2Filter("key-name", keypairName)},
 	}
 	response, err := c.EC2().DescribeKeyPairs(request)
 	if err != nil {
@@ -743,7 +743,7 @@ func ListKeypairs(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error
 
 	for _, keypair := range response.KeyPairs {
 		name := aws.StringValue(keypair.KeyName)
-		if name != keypairName && !strings.HasPrefix(name, keypairName+"-") {
+		if name != keypairName && !strings.HasPrefix(name, keypairName + "-") {
 			continue
 		}
 		tracker := &ResourceTracker{
@@ -792,12 +792,14 @@ func DeleteSubnet(cloud fi.Cloud, tracker *ResourceTracker) error {
 }
 
 func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
+	c := cloud.(awsup.AWSCloud)
 	subnets, err := DescribeSubnets(cloud)
 	if err != nil {
 		return nil, fmt.Errorf("error listing subnets: %v", err)
 	}
 
 	var trackers []*ResourceTracker
+	elasticIPs := make(map[string]bool)
 
 	for _, subnet := range subnets {
 		tracker := &ResourceTracker{
@@ -807,12 +809,51 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 			deleter: DeleteSubnet,
 		}
 
+		// Get tags and append with EIPs as needed
+
+		for _, tag := range subnet.Tags {
+			name := aws.StringValue(tag.Key)
+			ip := ""
+			if name == "AssociatedElasticIp" {
+				ip = aws.StringValue(tag.Value)
+			}
+			if ip != "" {
+				elasticIPs[ip] = true
+			}
+		}
+
 		var blocks []string
-		blocks = append(blocks, "vpc:"+aws.StringValue(subnet.VpcId))
+		blocks = append(blocks, "vpc:" + aws.StringValue(subnet.VpcId))
 
 		tracker.blocks = blocks
 
 		trackers = append(trackers, tracker)
+
+		if len(elasticIPs) != 0 {
+			glog.V(2).Infof("Querying EC2 Elastic IPs")
+			request := &ec2.DescribeAddressesInput{}
+			response, err := c.EC2().DescribeAddresses(request)
+			if err != nil {
+				return nil, fmt.Errorf("error describing addresses: %v", err)
+			}
+
+			for _, address := range response.Addresses {
+				ip := aws.StringValue(address.PublicIp)
+				if !elasticIPs[ip] {
+					continue
+				}
+
+				tracker := &ResourceTracker{
+					Name:    ip,
+					ID:      aws.StringValue(address.AllocationId),
+					Type:    "elastic-ip",
+					deleter: DeleteElasticIP,
+				}
+
+				trackers = append(trackers, tracker)
+
+			}
+		}
 	}
 
 	return trackers, nil
@@ -909,10 +950,10 @@ func buildTrackerForRouteTable(rt *ec2.RouteTable) *ResourceTracker {
 	var blocks []string
 	var blocked []string
 
-	blocks = append(blocks, "vpc:"+aws.StringValue(rt.VpcId))
+	blocks = append(blocks, "vpc:" + aws.StringValue(rt.VpcId))
 
 	for _, a := range rt.Associations {
-		blocked = append(blocked, "subnet:"+aws.StringValue(a.SubnetId))
+		blocked = append(blocked, "subnet:" + aws.StringValue(a.SubnetId))
 	}
 
 	tracker.blocks = blocks
@@ -1064,7 +1105,7 @@ func ListInternetGateways(cloud fi.Cloud, clusterName string) ([]*ResourceTracke
 		var blocks []string
 		for _, a := range o.Attachments {
 			if aws.StringValue(a.VpcId) != "" {
-				blocks = append(blocks, "vpc:"+aws.StringValue(a.VpcId))
+				blocks = append(blocks, "vpc:" + aws.StringValue(a.VpcId))
 			}
 		}
 		tracker.blocks = blocks
@@ -1167,7 +1208,7 @@ func ListVPCs(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
 		}
 
 		var blocks []string
-		blocks = append(blocks, "dhcp-options:"+aws.StringValue(v.DhcpOptionsId))
+		blocks = append(blocks, "dhcp-options:" + aws.StringValue(v.DhcpOptionsId))
 
 		tracker.blocks = blocks
 
@@ -1223,9 +1264,9 @@ func ListAutoScalingGroups(cloud fi.Cloud, clusterName string) ([]*ResourceTrack
 			if subnet == "" {
 				continue
 			}
-			blocks = append(blocks, "subnet:"+subnet)
+			blocks = append(blocks, "subnet:" + subnet)
 		}
-		blocks = append(blocks, TypeAutoscalingLaunchConfig+":"+aws.StringValue(asg.LaunchConfigurationName))
+		blocks = append(blocks, TypeAutoscalingLaunchConfig + ":" + aws.StringValue(asg.LaunchConfigurationName))
 
 		tracker.blocks = blocks
 
@@ -1387,12 +1428,12 @@ func ListELBs(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
 
 		var blocks []string
 		for _, sg := range elb.SecurityGroups {
-			blocks = append(blocks, "security-group:"+aws.StringValue(sg))
+			blocks = append(blocks, "security-group:" + aws.StringValue(sg))
 		}
 		for _, s := range elb.Subnets {
-			blocks = append(blocks, "subnet:"+aws.StringValue(s))
+			blocks = append(blocks, "subnet:" + aws.StringValue(s))
 		}
-		blocks = append(blocks, "vpc:"+aws.StringValue(elb.VPCId))
+		blocks = append(blocks, "vpc:" + aws.StringValue(elb.VPCId))
 
 		tracker.blocks = blocks
 
@@ -1648,8 +1689,8 @@ func ListIAMRoles(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error
 	c := cloud.(awsup.AWSCloud)
 
 	remove := make(map[string]bool)
-	remove["masters."+clusterName] = true
-	remove["nodes."+clusterName] = true
+	remove["masters." + clusterName] = true
+	remove["nodes." + clusterName] = true
 
 	var roles []*iam.Role
 	// Find roles matching remove map
@@ -1725,8 +1766,8 @@ func ListIAMInstanceProfiles(cloud fi.Cloud, clusterName string) ([]*ResourceTra
 	c := cloud.(awsup.AWSCloud)
 
 	remove := make(map[string]bool)
-	remove["masters."+clusterName] = true
-	remove["nodes."+clusterName] = true
+	remove["masters." + clusterName] = true
+	remove["nodes." + clusterName] = true
 
 	var profiles []*iam.InstanceProfile
 
