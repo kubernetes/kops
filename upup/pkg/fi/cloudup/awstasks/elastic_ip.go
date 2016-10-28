@@ -63,79 +63,77 @@ func (e *ElasticIP) FindAddress(context *fi.Context) (*string, error) {
 	return actual.PublicIP, nil
 }
 
+//
+// Find (public wrapper for find()
+//
 func (e *ElasticIP) Find(context *fi.Context) (*ElasticIP, error) {
 	return e.find(context.Cloud.(awsup.AWSCloud))
 }
 
+// Will attempt to look up the elastic IP from AWS
 func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
-	//publicIP := e.PublicIP
-	//allocationID := e.ID
-	//
-	//tagOnResourceID, err := e.findTagOnResourceID(cloud)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//// Find via tag on foreign resource
-	//if allocationID == nil && publicIP == nil && e.TagUsingKey != nil && tagOnResourceID != nil {
-	//	var filters []*ec2.Filter
-	//	filters = append(filters, awsup.NewEC2Filter("key", *e.TagUsingKey))
-	//	filters = append(filters, awsup.NewEC2Filter("resource-id", *tagOnResourceID))
-	//
-	//	request := &ec2.DescribeTagsInput{
-	//		Filters: filters,
-	//	}
-	//
-	//	response, err := cloud.EC2().DescribeTags(request)
-	//	if err != nil {
-	//		return nil, fmt.Errorf("error listing tags: %v", err)
-	//	}
-	//
-	//	if response == nil || len(response.Tags) == 0 {
-	//		return nil, nil
-	//	}
-	//
-	//	if len(response.Tags) != 1 {
-	//		return nil, fmt.Errorf("found multiple tags for: %v", e)
-	//	}
-	//	t := response.Tags[0]
-	//	publicIP = t.Value
-	//	glog.V(2).Infof("Found public IP via tag: %v", *publicIP)
-	//}
-	//
-	//if publicIP != nil || allocationID != nil {
-	//	request := &ec2.DescribeAddressesInput{}
-	//	if allocationID != nil {
-	//		request.AllocationIds = []*string{allocationID}
-	//	} else if publicIP != nil {
-	//		request.Filters = []*ec2.Filter{awsup.NewEC2Filter("public-ip", *publicIP)}
-	//	}
-	//
-	//	response, err := cloud.EC2().DescribeAddresses(request)
-	//	if err != nil {
-	//		return nil, fmt.Errorf("error listing ElasticIPs: %v", err)
-	//	}
-	//
-	//	if response == nil || len(response.Addresses) == 0 {
-	//		return nil, nil
-	//	}
-	//
-	//	if len(response.Addresses) != 1 {
-	//		return nil, fmt.Errorf("found multiple ElasticIPs for: %v", e)
-	//	}
-	//	a := response.Addresses[0]
-	//	actual := &ElasticIP{
-	//		ID:       a.AllocationId,
-	//		PublicIP: a.PublicIp,
-	//	}
-	//
-	//	// These two are weird properties; we copy them so they don't come up as changes
-	//	actual.TagUsingKey = e.TagUsingKey
-	//	actual.TagOnResource = e.TagOnResource
-	//
-	//	e.ID = actual.ID
-	//
-	//	return actual, nil
-	//}
+	publicIP := e.PublicIP
+	allocationID := e.ID
+
+	// Find via tag on foreign resource
+	if allocationID == nil && publicIP == nil && e.AssociatedSubnet.ID != nil {
+		var filters []*ec2.Filter
+		filters = append(filters, awsup.NewEC2Filter("key", "AssociatedElasticIp"))
+		filters = append(filters, awsup.NewEC2Filter("resource-id", e.AssociatedSubnet.ID))
+
+		request := &ec2.DescribeTagsInput{
+			Filters: filters,
+		}
+
+		response, err := cloud.EC2().DescribeTags(request)
+		if err != nil {
+			return nil, fmt.Errorf("error listing tags: %v", err)
+		}
+
+		if response == nil || len(response.Tags) == 0 {
+			return nil, nil
+		}
+
+		if len(response.Tags) != 1 {
+			return nil, fmt.Errorf("found multiple tags for: %v", e)
+		}
+		t := response.Tags[0]
+		publicIP = t.Value
+		glog.V(2).Infof("Found public IP via tag: %v", *publicIP)
+	}
+
+	if publicIP != nil || allocationID != nil {
+		request := &ec2.DescribeAddressesInput{}
+		if allocationID != nil {
+			request.AllocationIds = []*string{allocationID}
+		} else if publicIP != nil {
+			request.Filters = []*ec2.Filter{awsup.NewEC2Filter("public-ip", *publicIP)}
+		}
+
+		response, err := cloud.EC2().DescribeAddresses(request)
+		if err != nil {
+			return nil, fmt.Errorf("error listing ElasticIPs: %v", err)
+		}
+
+		if response == nil || len(response.Addresses) == 0 {
+			return nil, nil
+		}
+
+		if len(response.Addresses) != 1 {
+			return nil, fmt.Errorf("found multiple ElasticIPs for: %v", e)
+		}
+		a := response.Addresses[0]
+		actual := &ElasticIP{
+			ID:       a.AllocationId,
+			PublicIP: a.PublicIp,
+		}
+
+		actual.AssociatedSubnet = e.AssociatedSubnet
+
+		e.ID = actual.ID
+
+		return actual, nil
+	}
 	return nil, nil
 }
 
@@ -147,10 +145,31 @@ func (e *ElasticIP) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
+// Validation for the resource. EIPs are simple, so virtually no
+// validation
 func (s *ElasticIP) CheckChanges(a, e, changes *ElasticIP) error {
+	// This is a new EIP
+	if a == nil {
+		// No logic for EIPs - they are just created
+	}
+
+	// This is an existing EIP
+	// We should never be changing this
+	if a != nil {
+		if changes.PublicIP != nil {
+			return fi.CannotChangeField("PublicIP")
+		}
+		if changes.AssociatedSubnet != nil {
+			return fi.CannotChangeField("AssociatedSubnet")
+		}
+		if changes.ID != nil {
+			return fi.CannotChangeField("ID")
+		}
+	}
 	return nil
 }
 
+// Here is where we actually apply changes to AWS
 func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) error {
 
 	var publicIp *string
@@ -186,11 +205,10 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 	}
 	tags := make(map[string]string)
 	tags["AssociatedElasticIp"] = *publicIp
-	tags["AssociatedElasticIpAllocationId"] = *eipId
+	tags["AssociatedElasticIpAllocationId"] = *eipId // Leaving this in for reference, even though we don't use it
 	err := t.AddAWSTags(*e.AssociatedSubnet.ID, tags)
 	if err != nil {
 		return fmt.Errorf("Unable to tag subnet %v", err)
 	}
-
 	return nil
 }
