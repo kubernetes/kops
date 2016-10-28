@@ -38,16 +38,10 @@ type ElasticIP struct {
 
 
 
-	// Allow support for assicated subnets
-	// If you need another resource you must add it
-
-	AssociatedSubnet   *Subnet
-
-	//AssociatedSubnetTagId *string
-
-	//AssociatedElbTag      *string
-	//AssociatedElbTagId    *string
-
+	// Allow support for associated subnets
+	// If you need another resource to tag on (ebs volume)
+	// you must add it
+	Subnet   *Subnet
 }
 
 var _ fi.HasAddress = &ElasticIP{}
@@ -76,10 +70,10 @@ func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
 	allocationID := e.ID
 
 	// Find via tag on foreign resource
-	if allocationID == nil && publicIP == nil && e.AssociatedSubnet.ID != nil {
+	if allocationID == nil && publicIP == nil && e.Subnet.ID != nil {
 		var filters []*ec2.Filter
 		filters = append(filters, awsup.NewEC2Filter("key", "AssociatedElasticIp"))
-		filters = append(filters, awsup.NewEC2Filter("resource-id", e.AssociatedSubnet.ID))
+		filters = append(filters, awsup.NewEC2Filter("resource-id", *e.Subnet.ID))
 
 		request := &ec2.DescribeTagsInput{
 			Filters: filters,
@@ -128,7 +122,7 @@ func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
 			PublicIP: a.PublicIp,
 		}
 
-		actual.AssociatedSubnet = e.AssociatedSubnet
+		actual.Subnet = e.Subnet
 
 		e.ID = actual.ID
 
@@ -159,8 +153,8 @@ func (s *ElasticIP) CheckChanges(a, e, changes *ElasticIP) error {
 		if changes.PublicIP != nil {
 			return fi.CannotChangeField("PublicIP")
 		}
-		if changes.AssociatedSubnet != nil {
-			return fi.CannotChangeField("AssociatedSubnet")
+		if changes.Subnet != nil {
+			return fi.CannotChangeField("Subnet")
 		}
 		if changes.ID != nil {
 			return fi.CannotChangeField("ID")
@@ -198,17 +192,20 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 
 
 	// Tag the associated subnet
-	if e.AssociatedSubnet == nil {
+	if e.Subnet == nil {
 		return  fmt.Errorf("Subnet not set")
-	} else if e.AssociatedSubnet.ID == nil {
+	} else if e.Subnet.ID == nil {
 		return  fmt.Errorf("Subnet ID not set")
 	}
 	tags := make(map[string]string)
 	tags["AssociatedElasticIp"] = *publicIp
 	tags["AssociatedElasticIpAllocationId"] = *eipId // Leaving this in for reference, even though we don't use it
-	err := t.AddAWSTags(*e.AssociatedSubnet.ID, tags)
+	err := t.AddAWSTags(*e.Subnet.ID, tags)
 	if err != nil {
 		return fmt.Errorf("Unable to tag subnet %v", err)
 	}
 	return nil
 }
+
+
+// TODO Kris - We need to support EIP for Terraform

@@ -24,12 +24,10 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-// NATGateway
-
 // JSON marshalling boilerplate
-type realNATGateway NATGateway
+type realNATGateway NatGateway
 
-func (o *NATGateway) UnmarshalJSON(data []byte) error {
+func (o *NatGateway) UnmarshalJSON(data []byte) error {
 	var jsonName string
 	if err := json.Unmarshal(data, &jsonName); err == nil {
 		o.Name = &jsonName
@@ -40,20 +38,20 @@ func (o *NATGateway) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &r); err != nil {
 		return err
 	}
-	*o = NATGateway(r)
+	*o = NatGateway(r)
 	return nil
 }
 
-var _ fi.HasName = &NATGateway{}
+var _ fi.HasName = &NatGateway{}
 
-func (e *NATGateway) GetName() *string {
+func (e *NatGateway) GetName() *string {
 	return e.Name
 }
 
-func (e *NATGateway) SetName(name string) {
+func (e *NatGateway) SetName(name string) {
 	e.Name = &name
 }
 
-func (e *NATGateway) String() string {
+func (e *NatGateway) String() string {
 	return fi.TaskAsString(e)
 }
