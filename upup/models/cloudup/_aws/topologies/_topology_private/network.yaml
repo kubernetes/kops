@@ -73,16 +73,16 @@ internetGateway/{{ ClusterName }}:
 #
 # The main route table associated with the Internet Gateway
 # ---------------------------------------------------------------
-routeTable/{{ ClusterName }}:
+routeTable/main-{{ ClusterName }}:
   vpc: vpc/{{ ClusterName }}
 
 # ---------------------------------------------------------------
-# Routes
+# Main Routes
 #
 # Routes for the Main Route Table
 # ---------------------------------------------------------------
-route/0.0.0.0/0:
-  routeTable: routeTable/{{ ClusterName }}
+route/wan:
+  routeTable: routeTable/main-{{ ClusterName }}
   cidr: 0.0.0.0/0
   internetGateway: internetGateway/{{ ClusterName }}
   vpc: vpc/{{ ClusterName }}
@@ -98,25 +98,30 @@ route/0.0.0.0/0:
 # ---------------------------------------------------------------
 {{ range $zone := .Zones }}
 
-subnet/{{ $zone.Name }}.{{ ClusterName }}:
+# ---------------------------------------------------------------
+# Utility Subnet
+#
+# This is the public subnet that will hold the route to the
+# gateway, the NAT gateway
+# ---------------------------------------------------------------
+subnet/utility-{{ $zone.Name }}.{{ ClusterName }}:
   vpc: vpc/{{ ClusterName }}
   availabilityZone: {{ $zone.Name }}
   cidr: {{ $zone.CIDR }}
   id: {{ $zone.ProviderID }}
   shared: {{ SharedZone $zone }}
 
+
+{{ if not (SharedZone $zone) }}
+
 # ---------------------------------------------------------------
 # Utility Subnet Route Table Associations
 #
-# This is a core component of private networking for kubernetes
-# on AWS. In order for a subnet to be considered private it can
-# NOT have a route directly to the Internet Gateway. So all
-# associations here must be for Utility Subnets only!
+# Map the Utility subnet to the Main route table
 # ---------------------------------------------------------------
-{{ if not (SharedZone $zone) }}
-routeTableAssociation/{{ $zone.Name }}.{{ ClusterName }}:
-  routeTable: routeTable/{{ ClusterName }}
-  subnet: subnet/{{ $zone.Name }}.{{ ClusterName }}
+routeTableAssociation/main-{{ $zone.Name }}.{{ ClusterName }}:
+  routeTable: routeTable/main-{{ ClusterName }}
+  subnet: subnet/utility-{{ $zone.Name }}.{{ ClusterName }}
 
 # ---------------------------------------------------------------
 # Elastic IP
@@ -126,10 +131,10 @@ routeTableAssociation/{{ $zone.Name }}.{{ ClusterName }}:
 # so we can track it in AWS
 # ---------------------------------------------------------------
 elasticIP/{{ $zone.Name }}.{{ ClusterName }}:
-  subnet: subnet/{{ $zone.Name }}.{{ ClusterName }}
+  subnet: subnet/utility-{{ $zone.Name }}.{{ ClusterName }}
 
 # ---------------------------------------------------------------
-# NGW
+# NAT Gateway
 #
 # All private subnets will need a NGW
 #
@@ -139,7 +144,49 @@ elasticIP/{{ $zone.Name }}.{{ ClusterName }}:
 # ---------------------------------------------------------------
 ngw/{{ $zone.Name }}.{{ ClusterName }}:
   elasticIp: elasticIP/{{ $zone.Name }}.{{ ClusterName }}
-  subnet: subnet/{{ $zone.Name }}.{{ ClusterName }}
+  subnet: subnet/utility-{{ $zone.Name }}.{{ ClusterName }}
+
+# ---------------------------------------------------------------
+# Private Subnet
+#
+# This is the private subnet
+# TODO Kris - We need private CIDRs here and with the private route
+# ---------------------------------------------------------------
+subnet/private-{{ $zone.Name }}.{{ ClusterName }}:
+  vpc: vpc/{{ ClusterName }}
+  availabilityZone: {{ $zone.Name }}
+  cidr: {{ $zone.PrivateCIDR }}
+  id: {{ $zone.ProviderID }}
+  shared: {{ SharedZone $zone }}
+
+# ---------------------------------------------------------------
+# Private Route Table
+#
+# The private route table that will route to the NAT Gateway
+# ---------------------------------------------------------------
+routeTable/private-{{ $zone.Name }}.{{ ClusterName }}:
+  vpc: vpc/{{ ClusterName }}
+
+# ---------------------------------------------------------------
+# Private Subnet Route Table Associations
+#
+# Map the Private subnet to the Private route table
+# ---------------------------------------------------------------
+routeTableAssociation/private-{{ $zone.Name }}.{{ ClusterName }}:
+  routeTable: routeTable/private-{{ $zone.Name }}.{{ ClusterName }}
+  subnet: subnet/private-{{ $zone.Name }}.{{ ClusterName }}
+
+# ---------------------------------------------------------------
+# Private Routes
+#
+# Routes for the private route table.
+# Will route to the NAT Gateway
+# ---------------------------------------------------------------
+route/private-{{ $zone.Name }}.{{ ClusterName }}:
+  routeTable: routeTable/private-{{ $zone.Name }}.{{ ClusterName }}
+  cidr: 0.0.0.0/0
+  vpc: vpc/{{ ClusterName }}
+  natGateway: ngw/{{ $zone.Name }}.{{ ClusterName }}
 
 
 {{ end }}
