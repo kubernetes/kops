@@ -1,0 +1,81 @@
+# IAM configuration
+# We create an instance role for the nodes
+iamRole/nodes.{{ ClusterName }}:
+  rolePolicyDocument: resources/iam/kubernetes-node-role.json
+
+iamRolePolicy/nodes.{{ ClusterName }}:
+  role: iamRole/nodes.{{ ClusterName }}
+  policyDocument: resources/iam/kubernetes-node-policy.json
+
+iamInstanceProfile/nodes.{{ ClusterName }}: {}
+
+iamInstanceProfileRole/nodes.{{ ClusterName }}:
+  instanceProfile: iamInstanceProfile/nodes.{{ ClusterName }}
+  role: iamRole/nodes.{{ ClusterName }}
+
+# Create security group for nodes
+securityGroup/nodes.{{ ClusterName }}:
+  vpc: vpc/{{ ClusterName }}
+  description: 'Security group for nodes'
+  removeExtraRules:
+  - port=22
+
+# Allow full egress
+securityGroupRule/node-egress:
+  securityGroup: securityGroup/nodes.{{ ClusterName }}
+  egress: true
+  cidr: 0.0.0.0/0
+
+# SSH is open to CIDRs defined in the cluster configuration
+{{ range $index, $cidr := AdminCIDR }}
+securityGroupRule/ssh-external-to-node-{{ $index }}:
+  securityGroup: securityGroup/nodes.{{ ClusterName }}
+  cidr: {{ $cidr }}
+  protocol: tcp
+  fromPort: 22
+  toPort: 22
+{{ end }}
+
+# Nodes can talk to nodes
+securityGroupRule/all-node-to-node:
+  securityGroup: securityGroup/nodes.{{ ClusterName }}
+  sourceGroup: securityGroup/nodes.{{ ClusterName }}
+
+# Nodes can talk masters nodes
+securityGroupRule/all-node-to-master:
+  securityGroup: securityGroup/masters.{{ ClusterName }}
+  sourceGroup: securityGroup/nodes.{{ ClusterName }}
+
+{{ range $ig := NodeSets }}
+
+# LaunchConfiguration & ASG for nodes
+launchConfiguration/{{ $ig.Name }}.{{ ClusterName }}:
+  sshKey: sshKey/{{ SSHKeyName }}
+  securityGroups:
+    - securityGroup/nodes.{{ ClusterName }}
+  iamInstanceProfile: iamInstanceProfile/nodes.{{ ClusterName }}
+  imageId: {{ $ig.Spec.Image }}
+  instanceType: {{ $ig.Spec.MachineType }}
+  associatePublicIP: {{ WithDefaultBool $ig.Spec.AssociatePublicIP true }}
+  userData: resources/nodeup.sh {{ $ig.Name }}
+  rootVolumeSize: {{ or $ig.Spec.RootVolumeSize "20" }}
+  rootVolumeType: {{ or $ig.Spec.RootVolumeType "gp2" }}
+{{ if $ig.Spec.MaxPrice }}
+  spotPrice: "{{ $ig.Spec.MaxPrice }}"
+{{ end }}
+
+autoscalingGroup/{{ $ig.Name }}.{{ ClusterName }}:
+  launchConfiguration: launchConfiguration/{{ $ig.Name }}.{{ ClusterName }}
+  minSize: {{ or $ig.Spec.MinSize 2 }}
+  maxSize: {{ or $ig.Spec.MaxSize 2 }}
+  subnets:
+{{ range $zone := $ig.Spec.Zones }}
+    # Nodes in private topology get launched into the private subnet
+    - subnet/private-{{ $zone }}.{{ ClusterName }}
+{{ end }}
+  tags:
+  {{ range $k, $v := CloudTags $ig }}
+    {{ $k }}: "{{ $v }}"
+  {{ end }}
+
+{{ end }}

@@ -31,7 +31,6 @@ import (
 
 //
 //
-//
 func buildCloudupTags(cluster *api.Cluster) (map[string]struct{}, error) {
 	// TODO: Make these configurable?
 	useMasterASG := true

@@ -21,7 +21,13 @@ autoscalingGroup/{{ $m.Name }}.masters.{{ ClusterName }}:
   maxSize: {{ $m.Spec.MaxSize }}
   subnets:
   {{ range $z := $m.Spec.Zones }}
+  {{ if IsTopologyPublic }}
     - subnet/{{ $z }}.{{ ClusterName }}
+  {{ end }}
+  {{ if IsTopologyPrivate }}
+    - subnet/private-{{ $z }}.{{ ClusterName }}
+  {{ end }}
+
   {{ end }}
   launchConfiguration: launchConfiguration/{{ $m.Name }}.masters.{{ ClusterName }}
   tags:
