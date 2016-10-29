@@ -68,6 +68,9 @@ func buildCloudupTags(cluster *api.Cluster) (map[string]struct{}, error) {
 	}
 
 	// Network Topologies
+	if cluster.Spec.Topology == nil {
+		return nil, fmt.Errorf("missing topology spec")
+	}
 	if cluster.Spec.Topology.Masters == api.TopologyPublic && cluster.Spec.Topology.Nodes == api.TopologyPublic {
 		tags["_topology_public"] = struct{}{}
 	} else if cluster.Spec.Topology.Masters == api.TopologyPrivate && cluster.Spec.Topology.Nodes == api.TopologyPrivate {

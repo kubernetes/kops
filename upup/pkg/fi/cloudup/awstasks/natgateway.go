@@ -38,6 +38,7 @@ func (e *NatGateway) CompareWithID() *string {
 }
 
 func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
+	// TODO Kris - port this over from eip and flesh it out
 	return nil, nil
 }
 
