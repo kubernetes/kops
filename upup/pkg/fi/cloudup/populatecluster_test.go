@@ -33,6 +33,11 @@ func buildMinimalCluster() *api.Cluster {
 		{Name: "us-mock-1b", CIDR: "172.20.2.0/24"},
 		{Name: "us-mock-1c", CIDR: "172.20.3.0/24"},
 	}
+	// Default to public topology
+	c.Spec.Topology = &api.TopologySpec{
+		Masters: api.TopologyPublic,
+		Nodes: api.TopologyPublic,
+	}
 	c.Spec.NetworkCIDR = "172.20.0.0/16"
 	c.Spec.NonMasqueradeCIDR = "100.64.0.0/10"
 	c.Spec.CloudProvider = "aws"
