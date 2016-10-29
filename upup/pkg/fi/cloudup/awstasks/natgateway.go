@@ -24,25 +24,102 @@ import (
 
 //go:generate fitask -type=NATGateway
 type NatGateway struct {
-	Name         *string
-	ElasticIp    *ElasticIP
-	Subnet       *Subnet
-	ID *string
+	Name      *string
+	ElasticIp *ElasticIP
+	Subnet    *Subnet
+	ID        *string
 }
 
 var _ fi.CompareWithID = &NatGateway{} // Validate the IDs
 
 func (e *NatGateway) CompareWithID() *string {
-	s := ""
-	return &s
+	return e.ID
 }
 
 func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
-	// TODO Kris - port this over from eip and flesh it out
+	cloud := c.Cloud.(awsup.AWSCloud)
+	ID := e.ID
+	ElasticIp := e.ElasticIp
+	Subnet := e.Subnet
+
+	// Find via tag on foreign resource
+	if ID == nil && ElasticIp == nil && Subnet != nil {
+		var filters []*ec2.Filter
+		filters = append(filters, awsup.NewEC2Filter("key", "AssociatedNatgateway"))
+		filters = append(filters, awsup.NewEC2Filter("resource-id", *e.Subnet.ID))
+
+		request := &ec2.DescribeTagsInput{
+			Filters: filters,
+		}
+
+		response, err := cloud.EC2().DescribeTags(request)
+		if err != nil {
+			return nil, fmt.Errorf("error listing tags: %v", err)
+		}
+
+		if response == nil || len(response.Tags) == 0 {
+			return nil, nil
+		}
+
+		if len(response.Tags) != 1 {
+			return nil, fmt.Errorf("found multiple tags for: %v", e)
+		}
+		t := response.Tags[0]
+		ID = t.Value
+		glog.V(2).Infof("Found nat gateway via tag: %v", *ID)
+	}
+
+	if ID != nil {
+		request := &ec2.DescribeNatGatewaysInput{}
+		request.NatGatewayIds = []*string{ID}
+		response, err := cloud.EC2().DescribeNatGateways(request)
+		if err != nil {
+			return nil, fmt.Errorf("error listing NAT Gateways: %v", err)
+		}
+
+		if response == nil || len(response.NatGateways) == 0 {
+			glog.V(2).Infof("Unable to find Nat Gateways")
+			return nil, nil
+		}
+		if len(response.NatGateways) != 1 {
+			return nil, fmt.Errorf("found multiple NAT Gateways for: %v", e)
+		}
+		a := response.NatGateways[0]
+		actual := &NatGateway{
+			ID: a.NatGatewayId,
+		}
+		actual.Subnet = e.Subnet
+		actual.ElasticIp = e.ElasticIp
+		e.ID = actual.ID
+		return actual, nil
+	}
 	return nil, nil
 }
 
 func (s *NatGateway) CheckChanges(a, e, changes *NatGateway) error {
+
+	// New
+	if a == nil {
+		if e.ElasticIp == nil {
+			return fi.RequiredField("ElasticIp")
+		}
+		if e.Subnet == nil {
+			return fi.RequiredField("Subnet")
+		}
+	}
+
+	// Delta
+	if a != nil {
+		if changes.ElasticIp != nil {
+			return fi.CannotChangeField("ElasticIp")
+		}
+		if changes.Subnet != nil {
+			return fi.CannotChangeField("Subnet")
+		}
+		if changes.ID != nil {
+			return fi.CannotChangeField("ID")
+		}
+	}
 	return nil
 }
 
@@ -66,15 +143,15 @@ func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway)
 		}
 		e.ID = response.NatGateway.NatGatewayId
 		id = e.ID
-	}else {
+	} else {
 		id = a.ID
 	}
 
 	// Tag the associated subnet
 	if e.Subnet == nil {
-		return  fmt.Errorf("Subnet not set")
+		return fmt.Errorf("Subnet not set")
 	} else if e.Subnet.ID == nil {
-		return  fmt.Errorf("Subnet ID not set")
+		return fmt.Errorf("Subnet ID not set")
 	}
 	tags := make(map[string]string)
 	tags["AssociatedNatgateway"] = *id
