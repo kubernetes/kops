@@ -93,6 +93,8 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["IsTopologyPublic"]  = tf.IsTopologyPublic
 	dest["IsTopologyPrivate"] = tf.IsTopologyPrivate
 	dest["IsTopologyPrivateMasters"] = tf.IsTopologyPrivateMasters
+	dest["WithBastion"] = tf.WithBastion
+	dest["GetBastionImageId"] = tf.GetBastionImageId
 
 	dest["SharedZone"] = tf.SharedZone
 	dest["WellKnownServiceIP"] = tf.WellKnownServiceIP
@@ -174,6 +176,28 @@ func (tf *TemplateFunctions) SharedVPC() bool {
 func (tf *TemplateFunctions) IsTopologyPrivate()         bool  { return tf.cluster.IsTopologyPrivate() }
 func (tf *TemplateFunctions) IsTopologyPublic()          bool  { return tf.cluster.IsTopologyPublic() }
 func (tf *TemplateFunctions) IsTopologyPrivateMasters()  bool  { return tf.cluster.IsTopologyPrivateMasters() }
+
+func (tf *TemplateFunctions) WithBastion()  bool  {
+	 return !tf.cluster.Spec.Topology.BypassBastion
+}
+
+// TODO Kris - Here we just blindly return the first instance group image
+// we should make this better
+func (tf *TemplateFunctions) GetBastionImageId() (string, error) {
+	if len(tf.instanceGroups) == 0 {
+		return "", fmt.Errorf("Unable to find AMI in instance group")
+	}else if len(tf.instanceGroups) > 0 {
+		ami := tf.instanceGroups[0].Spec.Image
+		for i := 1; i < len(tf.instanceGroups); i++ {
+			// If we can't be sure all AMIs are the same, we don't know which one to use for the bastion host
+			if tf.instanceGroups[i].Spec.Image != ami {
+				return "", fmt.Errorf("Unable to use multiple image id's with a private bastion")
+			}
+		}
+		return ami, nil;
+	}
+	return "", nil
+}
 
 // SharedZone is a simple helper function which makes the templates for a shared Zone clearer
 func (tf *TemplateFunctions) SharedZone(zone *api.ClusterZoneSpec) bool {

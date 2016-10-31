@@ -17,12 +17,20 @@ limitations under the License.
 package kops
 
 const (
-	TopologyPublic  = "public"
-	TopologyPrivate = "private"
+	TopologyPublic         = "public"
+	TopologyPrivate        = "private"
 	TopologyPrivateMasters = "privatemasters"
 )
 
 type TopologySpec struct {
-	Masters string `json:"type,omitempty"`
-	Nodes   string `json:"type,omitempty"`
+	// The environment to launch the Kubernetes masters in public|private
+	Masters       string `json:"masters,omitempty"`
+
+	// The environment to launch the Kubernetes nodes in public|private
+	Nodes         string `json:"nodes,omitempty"`
+
+	// Controls if a private topology should deploy a bastion host or not
+	// The bastion host is designed to be a simple, and secure bridge between
+	// the public subnet and the private subnet
+	BypassBastion bool `json:"bypassBastion,omitempty"`
 }
