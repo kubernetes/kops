@@ -57,7 +57,7 @@ kops update cluster ${CLUSTER_NAME} --yes
 
 
 Finally, if your shared VPC has a KubernetesCluster tag (because it was created with kops), you should
-probably remove that tag to indicate to indicate that the resources are not owned by that cluster, and so
+probably remove that tag to indicate that the resources are not owned by that cluster, and so
 deleting the cluster won't try to delete the VPC.  (Deleting the VPC won't succeed anyway, because it's in use,
 but it's better to avoid the later confusion!)
 
