@@ -36,33 +36,32 @@ import (
 )
 
 type CreateClusterOptions struct {
-	Yes                  bool
-	Target               string
-	Models               string
-	Cloud                string
-	Zones                string
-	MasterZones          string
-	NodeSize             string
-	MasterSize           string
-	NodeCount            int
-	Project              string
-	KubernetesVersion    string
-	OutDir               string
-	Image                string
-	SSHPublicKey         string
-	VPCID                string
-	NetworkCIDR          string
-	DNSZone              string
-	AdminAccess          string
-	Networking           string
-	AssociatePublicIP    bool
+	Yes               bool
+	Target            string
+	Models            string
+	Cloud             string
+	Zones             string
+	MasterZones       string
+	NodeSize          string
+	MasterSize        string
+	NodeCount         int
+	Project           string
+	KubernetesVersion string
+	OutDir            string
+	Image             string
+	SSHPublicKey      string
+	VPCID             string
+	NetworkCIDR       string
+	DNSZone           string
+	AdminAccess       string
+	Networking        string
+	AssociatePublicIP bool
 
 	// Channel is the location of the api.Channel to use for our defaults
-	Channel              string
+	Channel           string
 
 	// The network topology to use
-	Topology	     string
-
+	Topology          string
 }
 
 func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
@@ -370,14 +369,14 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 	// Network Topology
 	switch  c.Topology{
 	case api.TopologyPublic:
-		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPublic, Nodes: api.TopologyPublic}
+		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPublic, Nodes: api.TopologyPublic, BypassBastion: false}
 	case api.TopologyPrivate:
-		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPrivate, Nodes: api.TopologyPrivate}
+		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPrivate, Nodes: api.TopologyPrivate, BypassBastion: false}
 	case api.TopologyPrivateMasters:
-		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPrivate, Nodes: api.TopologyPublic}
+		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPrivate, Nodes: api.TopologyPublic, BypassBastion: false}
 	case "":
 		glog.Warningf("Empty topology. Defaulting to public topology.")
-		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPublic, Nodes: api.TopologyPublic}
+		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPublic, Nodes: api.TopologyPublic, BypassBastion: false}
 	default:
 		return fmt.Errorf("Invalid topology %s.", c.Topology)
 	}
@@ -412,7 +411,6 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 	}
 
 	fullCluster, err := cloudup.PopulateClusterSpec(cluster)
-
 	if err != nil {
 		return err
 	}

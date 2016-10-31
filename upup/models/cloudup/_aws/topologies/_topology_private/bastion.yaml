@@ -1,0 +1,53 @@
+{{ if WithBastion }}
+
+
+securityGroup/bastion.{{ ClusterName }}:
+  vpc: vpc/{{ ClusterName }}
+  description: 'Security group for bastion'
+  removeExtraRules:
+  - port=22
+
+
+securityGroupRule/bastion-egress:
+  securityGroup: securityGroup/nodes.{{ ClusterName }}
+  egress: true
+  cidr: 0.0.0.0/0
+
+
+{{ range $index, $cidr := AdminCIDR }}
+securityGroupRule/ssh-external-to-bastion-{{ $index }}:
+  securityGroup: securityGroup/bastion.{{ ClusterName }}
+  cidr: {{ $cidr }}
+  protocol: tcp
+  fromPort: 22
+  toPort: 22
+{{ end }}
+
+# Nodes can talk to bastion
+securityGroupRule/all-node-to-bastion:
+  securityGroup: securityGroup/bastion.{{ ClusterName }}
+  sourceGroup: securityGroup/nodes.{{ ClusterName }}
+
+# Masters can talk to bastion
+securityGroupRule/all-master-to-bastion:
+  securityGroup: securityGroup/bastion.{{ ClusterName }}
+  sourceGroup: securityGroup/masters.{{ ClusterName }}
+
+
+{{ range $zone := .Zones }}
+instance/bastion-{{ $zone.Name }}.{{ ClusterName }}:
+  subnet: subnet/utility-{{ $zone.Name }}.{{ ClusterName }}
+  imageId: {{ GetBastionImageId }}
+  # TODO Kris - Hard coding m3.medium here (for now) we will probably want to abstract this out later.. for now.. it's a bastion box - and we are still prototyping this topology
+  InstanceType: m3.medium
+  SSHKey: sshKey/{{ SSHKeyName }}
+  securityGroups:
+    - securityGroup/bastion.{{ ClusterName }}
+  AssociatePublicIP: true
+  name: bastion-{{ $zone.Name }}.{{ ClusterName }}
+  tags:
+    Name: bastion-{{ $zone.Name }}.{{ ClusterName }}
+    KubernetesCluster: {{ ClusterName }}
+{{ end }}
+
+{{ end }}
