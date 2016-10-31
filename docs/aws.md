@@ -32,6 +32,8 @@ ${GOPATH}/bin/kops update cluster ${NAME} --yes
 
 If you have problems, please set `--v=8` and open an issue, and ping justinsb on slack!
 
+Note that the `etcd` routes in Route53 will appear immediately, but the `api.cluster.mydomain.com` routes will not appear for a few minutes; wait for all of the EC2 instances, particularly the masters, to become `running` before attempting to debug.
+
 # Other interesting modes
 
 Learn about our [other interesting modes](commands.md#other-interesting-modes).
