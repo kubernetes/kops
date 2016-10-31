@@ -540,3 +540,4 @@ func (c *Cluster)  IsTopologyPublic() bool {
 func (c *Cluster) IsTopologyPrivateMasters() bool {
 	return (c.Spec.Topology.Masters == TopologyPrivate && c.Spec.Topology.Nodes == TopologyPublic)
 }
+
