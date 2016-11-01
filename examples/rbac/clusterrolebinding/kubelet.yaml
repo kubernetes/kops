@@ -1,0 +1,11 @@
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1alpha1
+metadata:
+  name: kubelet
+subjects:
+- kind: User
+  name: kubelet
+roleRef:
+  kind: ClusterRole
+  name: kubelet
+  apiVersion: rbac.authorization.k8s.io/v1alpha1

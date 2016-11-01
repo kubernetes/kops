@@ -389,6 +389,16 @@ type KubeAPIServerConfig struct {
 	AllowPrivileged       *bool             `json:"allowPrivileged,omitempty" flag:"allow-privileged"`
 	APIServerCount        *int              `json:"apiServerCount,omitempty" flag:"apiserver-count"`
 	RuntimeConfig         map[string]string `json:"runtimeConfig,omitempty" flag:"runtime-config"`
+
+	AuthorizationMode               *string `json:"authorizationMode,omitempty" flag:"authorization-mode"`
+
+	AuthorizationRBACSuperUser *string `json:"authorizationRbacSuperUser,omitempty" flag:"authorization-rbac-super-user"`
+
+	OIDCIssuerURL               *string `json:"oidcIssuerUrl,omitempty" flag:"oidc-issuer-url"`
+	OIDCClientID                *string `json:"odicClientId,omitempty" flag:"oidc-client-id"`
+	OIDCCAFile                  *string `json:"odicCA,omitempty" flag:"oidc-ca-file"`
+	OIDCUsernameClaim           *string `json:"oidcUsernameClaim,omitempty" flag:"oidc-username-claim"`
+	OIDCGroupsClaim             *string `json:"oidcGroupsClaim,omitempty" flag:"oidc-groups-claim"`
 }
 
 type KubeControllerManagerConfig struct {
