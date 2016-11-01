@@ -27,14 +27,14 @@ securityGroupRule/node-egress:
   cidr: 0.0.0.0/0
 
 # SSH is open to CIDRs defined in the cluster configuration
-{{ range $index, $cidr := AdminCIDR }}
-securityGroupRule/ssh-external-to-node-{{ $index }}:
-  securityGroup: securityGroup/nodes.{{ ClusterName }}
-  cidr: {{ $cidr }}
-  protocol: tcp
-  fromPort: 22
-  toPort: 22
-{{ end }}
+#{{ range $index, $cidr := AdminCIDR }}
+#securityGroupRule/ssh-external-to-node-{{ $index }}:
+#  securityGroup: securityGroup/nodes.{{ ClusterName }}
+#  cidr: {{ $cidr }}
+#  protocol: tcp
+#  fromPort: 22
+#  toPort: 22
+#{{ end }}
 
 # Nodes can talk to nodes
 securityGroupRule/all-node-to-node:
