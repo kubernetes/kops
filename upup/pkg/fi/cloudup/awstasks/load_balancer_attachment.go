@@ -24,11 +24,15 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"github.com/aws/aws-sdk-go/service/elb"
 )
 
 type LoadBalancerAttachment struct {
 	LoadBalancer     *LoadBalancer
+
+	// LoadBalancerAttachments now support ASGs or direct instances
 	AutoscalingGroup *AutoscalingGroup
+	Instance *Instance
 }
 
 func (e *LoadBalancerAttachment) String() string {
@@ -38,7 +42,18 @@ func (e *LoadBalancerAttachment) String() string {
 func (e *LoadBalancerAttachment) Find(c *fi.Context) (*LoadBalancerAttachment, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
-	if e.AutoscalingGroup != nil {
+	// Instance only
+	if e.Instance != nil && e.AutoscalingGroup == nil {
+		i, err := e.Instance.Find(c)
+		if err != nil {
+			return nil, fmt.Errorf("unable to find instance: %v", err)
+		}
+		actual := &LoadBalancerAttachment{}
+		actual.LoadBalancer = e.LoadBalancer
+		actual.Instance = i
+		return actual, nil
+	// ASG only
+	}else if e.AutoscalingGroup != nil && e.Instance == nil {
 		g, err := findAutoscalingGroup(cloud, *e.AutoscalingGroup.Name)
 		if err != nil {
 			return nil, err
@@ -57,6 +72,9 @@ func (e *LoadBalancerAttachment) Find(c *fi.Context) (*LoadBalancerAttachment, e
 			actual.AutoscalingGroup = e.AutoscalingGroup
 			return actual, nil
 		}
+	}else{
+	// Invalid request
+		return nil, fmt.Errorf("Must specify either an instance or an ASG")
 	}
 
 	return nil, nil
@@ -79,16 +97,29 @@ func (s *LoadBalancerAttachment) CheckChanges(a, e, changes *LoadBalancerAttachm
 }
 
 func (_ *LoadBalancerAttachment) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalancerAttachment) error {
-	request := &autoscaling.AttachLoadBalancersInput{}
-	request.AutoScalingGroupName = e.AutoscalingGroup.Name
-	request.LoadBalancerNames = []*string{e.LoadBalancer.ID}
 
-	glog.V(2).Infof("Attaching autoscaling group %q to ELB %q", *e.AutoscalingGroup.Name, *e.LoadBalancer.Name)
-
-	_, err := t.Cloud.Autoscaling().AttachLoadBalancers(request)
-	if err != nil {
-		return fmt.Errorf("error attaching autoscaling group to ELB: %v", err)
+	if e.AutoscalingGroup != nil && e.Instance == nil {
+		request := &autoscaling.AttachLoadBalancersInput{}
+		request.AutoScalingGroupName = e.AutoscalingGroup.Name
+		request.LoadBalancerNames = []*string{e.LoadBalancer.ID}
+		glog.V(2).Infof("Attaching autoscaling group %q to ELB %q", *e.AutoscalingGroup.Name, *e.LoadBalancer.Name)
+		_, err := t.Cloud.Autoscaling().AttachLoadBalancers(request)
+		if err != nil {
+			return fmt.Errorf("error attaching autoscaling group to ELB: %v", err)
+		}
+	}else if e.AutoscalingGroup == nil && e.Instance != nil {
+		request := &elb.RegisterInstancesWithLoadBalancerInput{}
+		var instances []*elb.Instance
+		i := &elb.Instance{
+			InstanceId: e.Instance.ID,
+		}
+		instances = append(instances, i)
+		request.Instances = instances
+		_, err := t.Cloud.ELB().RegisterInstancesWithLoadBalancer(request)
+		glog.V(2).Infof("Attaching instance %q to ELB %q", *e.AutoscalingGroup.Name, *e.LoadBalancer.Name)
+		if err != nil {
+			return fmt.Errorf("error attaching instance to ELB: %v", err)
+		}
 	}
-
 	return nil
 }

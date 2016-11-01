@@ -26,49 +26,87 @@ securityGroup/bastion.{{ ClusterName }}:
   removeExtraRules:
   - port=22
 
-# ---------------------------------------------------------------
-# Security Group Rule - All Egress
-#
-# Open the bastion to all outbound traffic
-# ---------------------------------------------------------------
 securityGroupRule/bastion-egress:
   securityGroup: securityGroup/nodes.{{ ClusterName }}
   egress: true
   cidr: 0.0.0.0/0
 
-
-# ---------------------------------------------------------------
-# Security Group Rule - 22 TCP
-#
-# Open up to/from 22 TCP for admin CIDRs
-# ---------------------------------------------------------------
-{{ range $index, $cidr := AdminCIDR }}
-securityGroupRule/ssh-external-to-bastion-{{ $index }}:
-  securityGroup: securityGroup/bastion.{{ ClusterName }}
-  cidr: {{ $cidr }}
-  protocol: tcp
-  fromPort: 22
-  toPort: 22
-{{ end }}
-
-# ---------------------------------------------------------------
-# Security Group Rule - Nodes to Bastion
-#
-# Open up traffic from the k8s nodes to the bastion
-# ---------------------------------------------------------------
 securityGroupRule/all-node-to-bastion:
   securityGroup: securityGroup/bastion.{{ ClusterName }}
   sourceGroup: securityGroup/nodes.{{ ClusterName }}
 
-# ---------------------------------------------------------------
-# Security Group Rule - Masters to Bastion
-#
-# Open up traffic from the k8s master(s) to the bastion
-# ---------------------------------------------------------------
 securityGroupRule/all-master-to-bastion:
   securityGroup: securityGroup/bastion.{{ ClusterName }}
   sourceGroup: securityGroup/masters.{{ ClusterName }}
 
+securityGroupRule/ssh-external-to-bastion:
+  securityGroup: securityGroup/bastion.{{ ClusterName }}
+  sourceGroup: securityGroup/bastion-elb.{{ ClusterName }}
+  protocol: tcp
+  fromPort: 22
+  toPort: 22
+
+
+# ---------------------------------------------------------------
+# Bastion ELB Security Group
+#
+# The security group that the bastion lives in
+# ---------------------------------------------------------------
+securityGroup/bastion-elb.{{ ClusterName }}:
+  vpc: vpc/{{ ClusterName }}
+  description: 'Security group for bastion ELB'
+  removeExtraRules:
+  - port=22
+
+securityGroupRule/bastion-elb-egress:
+  securityGroup: securityGroup/bastion-elb.{{ ClusterName }}
+  egress: true
+  cidr: 0.0.0.0/0
+
+securityGroupRule/ssh-external-to-bastion-elb:
+  securityGroup: securityGroup/bastion-elb.{{ ClusterName }}
+  cidr:  0.0.0.0/0
+  protocol: tcp
+  fromPort: 22
+  toPort: 22
+
+
+# ---------------------------------------------------------------
+# Public Facing ELBs
+#
+# Our two public endpoints for the cluster
+# ---------------------------------------------------------------
+loadBalancer/bastion.{{ ClusterName }}:
+  id: bastion
+  securityGroups:
+    - securityGroup/bastion-elb.{{ ClusterName }}
+  subnets:
+  {{ range $zone := .Zones }}
+    - subnet/utility-{{ $zone.Name }}.{{ ClusterName }}
+  {{ end }}
+  listeners:
+    22: { instancePort: 22 }
+
+loadBalancerAttachment/bastion-elb-attachment.{{ ClusterName }}:
+  loadBalancer: loadBalancer/bastion.{{ ClusterName }}
+  instance: instance/bastion-{{ GetBastionZone }}.{{ ClusterName }}
+
+loadBalancer/api.{{ ClusterName }}:
+  id: api
+  securityGroups:
+    - securityGroup/api-elb.{{ ClusterName }}
+  subnets:
+  {{ range $zone := .Zones }}
+    - subnet/utility-{{ $zone.Name }}.{{ ClusterName }}
+  {{ end }}
+  listeners:
+    443: { instancePort: 443 }
+
+{{ range $m := Masters }}
+loadBalancerAttachment/bastion-elb-attachment.{{ ClusterName }}:
+  loadBalancer: loadBalancer/bastion.{{ ClusterName }}
+  autoscalingGroup: autoscalingGroup/{{ $m.Name }}.masters.{{ ClusterName }}
+{{ end }}
 
 # ---------------------------------------------------------------
 # Instance - The Bastion itself
@@ -77,17 +115,42 @@ securityGroupRule/all-master-to-bastion:
 # we probably want to abstract this out in a later feature.
 # ---------------------------------------------------------------
 instance/bastion-{{ GetBastionZone }}.{{ ClusterName }}:
-  subnet: subnet/utility-{{ GetBastionZone }}.{{ ClusterName }}
+  subnet: subnet/private-{{ GetBastionZone }}.{{ ClusterName }}
   imageId: {{ GetBastionImageId }}
   InstanceType: t2.small
   SSHKey: sshKey/{{ SSHKeyName }}
   securityGroups:
     - securityGroup/bastion.{{ ClusterName }}
-  AssociatePublicIP: true
+  AssociatePublicIP: false
   name: bastion-{{ GetBastionZone }}.{{ ClusterName }}
   tags:
     Name: bastion-{{ GetBastionZone }}.{{ ClusterName }}
     KubernetesCluster: {{ ClusterName }}
+
+
+
+
+
+
+# Kris TODO - Move this out and into a different yaml file
+securityGroup/api-elb.{{ ClusterName }}:
+  vpc: vpc/{{ ClusterName }}
+  description: 'Security group for api ELB'
+  removeExtraRules:
+  - port=22
+
+securityGroupRule/api-elb-egress:
+  securityGroup: securityGroup/api-elb.{{ ClusterName }}
+  egress: true
+  cidr: 0.0.0.0/0
+
+securityGroupRule/https-api-elb:
+  securityGroup: securityGroup/api-elb.{{ ClusterName }}
+  cidr:  0.0.0.0/0
+  protocol: tcp
+  fromPort: 443
+  toPort: 443
+
 
 
 {{ end }}
