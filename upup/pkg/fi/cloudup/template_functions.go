@@ -95,6 +95,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["IsTopologyPrivateMasters"] = tf.IsTopologyPrivateMasters
 	dest["WithBastion"] = tf.WithBastion
 	dest["GetBastionImageId"] = tf.GetBastionImageId
+	dest["GetBastionZone"] = tf.GetBastionZone
 
 	dest["SharedZone"] = tf.SharedZone
 	dest["WellKnownServiceIP"] = tf.WellKnownServiceIP
@@ -181,8 +182,18 @@ func (tf *TemplateFunctions) WithBastion()  bool  {
 	 return !tf.cluster.Spec.Topology.BypassBastion
 }
 
-// TODO Kris - Here we just blindly return the first instance group image
-// we should make this better
+// This function is replacing existing yaml
+func (tf *TemplateFunctions) GetBastionZone() (string, error) {
+	var name string
+	if len(tf.cluster.Spec.Zones) <= 1 {
+		return "", fmt.Errorf("Unable to detect zone name for bastion")
+	} else {
+		// If we have a list, always use the first one
+		name = tf.cluster.Spec.Zones[0].Name
+	}
+	return name, nil
+}
+
 func (tf *TemplateFunctions) GetBastionImageId() (string, error) {
 	if len(tf.instanceGroups) == 0 {
 		return "", fmt.Errorf("Unable to find AMI in instance group")

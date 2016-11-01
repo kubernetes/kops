@@ -1,19 +1,47 @@
 {{ if WithBastion }}
+# ---------------------------------------------------------------
+#
+# Bastion Host for Private Network Topologies in AWS
+#
+# The bastion host will live in one of the utility subnets
+# created in the private topology. The bastion host will have
+# port 22 TCP open to 0.0.0.0/0. And will have internal SSH
+# access to all private subnets.
+#
+# ---------------------------------------------------------------
 
 
+
+
+
+
+# ---------------------------------------------------------------
+# Bastion Security Group
+#
+# The security group that the bastion lives in
+# ---------------------------------------------------------------
 securityGroup/bastion.{{ ClusterName }}:
   vpc: vpc/{{ ClusterName }}
   description: 'Security group for bastion'
   removeExtraRules:
   - port=22
 
-
+# ---------------------------------------------------------------
+# Security Group Rule - All Egress
+#
+# Open the bastion to all outbound traffic
+# ---------------------------------------------------------------
 securityGroupRule/bastion-egress:
   securityGroup: securityGroup/nodes.{{ ClusterName }}
   egress: true
   cidr: 0.0.0.0/0
 
 
+# ---------------------------------------------------------------
+# Security Group Rule - 22 TCP
+#
+# Open up to/from 22 TCP for admin CIDRs
+# ---------------------------------------------------------------
 {{ range $index, $cidr := AdminCIDR }}
 securityGroupRule/ssh-external-to-bastion-{{ $index }}:
   securityGroup: securityGroup/bastion.{{ ClusterName }}
@@ -23,31 +51,43 @@ securityGroupRule/ssh-external-to-bastion-{{ $index }}:
   toPort: 22
 {{ end }}
 
-# Nodes can talk to bastion
+# ---------------------------------------------------------------
+# Security Group Rule - Nodes to Bastion
+#
+# Open up traffic from the k8s nodes to the bastion
+# ---------------------------------------------------------------
 securityGroupRule/all-node-to-bastion:
   securityGroup: securityGroup/bastion.{{ ClusterName }}
   sourceGroup: securityGroup/nodes.{{ ClusterName }}
 
-# Masters can talk to bastion
+# ---------------------------------------------------------------
+# Security Group Rule - Masters to Bastion
+#
+# Open up traffic from the k8s master(s) to the bastion
+# ---------------------------------------------------------------
 securityGroupRule/all-master-to-bastion:
   securityGroup: securityGroup/bastion.{{ ClusterName }}
   sourceGroup: securityGroup/masters.{{ ClusterName }}
 
 
-{{ range $zone := .Zones }}
-instance/bastion-{{ $zone.Name }}.{{ ClusterName }}:
-  subnet: subnet/utility-{{ $zone.Name }}.{{ ClusterName }}
+# ---------------------------------------------------------------
+# Instance - The Bastion itself
+#
+# Define the bastion host. Hard coding to a t2.small for now.
+# we probably want to abstract this out in a later feature.
+# ---------------------------------------------------------------
+instance/bastion-{{ GetBastionZone }}.{{ ClusterName }}:
+  subnet: subnet/utility-{{ GetBastionZone }}.{{ ClusterName }}
   imageId: {{ GetBastionImageId }}
-  # TODO Kris - Hard coding m3.medium here (for now) we will probably want to abstract this out later.. for now.. it's a bastion box - and we are still prototyping this topology
-  InstanceType: m3.medium
+  InstanceType: t2.small
   SSHKey: sshKey/{{ SSHKeyName }}
   securityGroups:
     - securityGroup/bastion.{{ ClusterName }}
   AssociatePublicIP: true
-  name: bastion-{{ $zone.Name }}.{{ ClusterName }}
+  name: bastion-{{ GetBastionZone }}.{{ ClusterName }}
   tags:
-    Name: bastion-{{ $zone.Name }}.{{ ClusterName }}
+    Name: bastion-{{ GetBastionZone }}.{{ ClusterName }}
     KubernetesCluster: {{ ClusterName }}
-{{ end }}
+
 
 {{ end }}

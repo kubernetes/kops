@@ -19,9 +19,6 @@
 
 
 
-
-
-
 # ---------------------------------------------------------------
 # VPC
 #
@@ -149,8 +146,7 @@ ngw/{{ $zone.Name }}.{{ ClusterName }}:
 # ---------------------------------------------------------------
 # Private Subnet
 #
-# This is the private subnet
-# TODO Kris - We need private CIDRs here and with the private route
+# This is the private subnet for each AZ
 # ---------------------------------------------------------------
 subnet/private-{{ $zone.Name }}.{{ ClusterName }}:
   vpc: vpc/{{ ClusterName }}
