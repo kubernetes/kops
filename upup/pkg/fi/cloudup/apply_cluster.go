@@ -55,6 +55,9 @@ type ApplyClusterCmd struct {
 	// NodeUpSource is the location from which we download nodeup
 	NodeUpSource string
 
+	// PostInstallScriptSource is the location from which we download a script to be run at the end of cloud-init
+	PostInstallScriptSource string
+
 	// Models is a list of cloudup models to apply
 	Models []string
 
@@ -213,6 +216,16 @@ func (c *ApplyClusterCmd) Run() error {
 			glog.Warningf("Using nodeup location from NODEUP_URL env var: %q", location)
 		}
 		c.NodeUpSource = location
+	}
+
+	if c.PostInstallScriptSource == "" {
+		location := os.Getenv("POST_INSTALL_SCRIPT_URL")
+		if location == "" {
+			glog.V(2).Infof("No post install script provided")
+		} else {
+			glog.Warningf("Using post install script from POST_INSTALL_SCRIPT_URL env var: %q", location)
+		}
+		c.PostInstallScriptSource = location
 	}
 
 	checkExisting := true
@@ -492,6 +505,13 @@ func (c *ApplyClusterCmd) Run() error {
 		return c.NodeUpSource
 	}
 	l.TemplateFunctions["NodeUpSourceHash"] = func() string {
+		return ""
+	}
+
+	l.TemplateFunctions["PostInstallScriptSource"] = func() string {
+		return c.PostInstallScriptSource
+	}
+	l.TemplateFunctions["PostInstallScriptHash"] = func() string {
 		return ""
 	}
 
