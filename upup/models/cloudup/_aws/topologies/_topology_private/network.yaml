@@ -4,19 +4,7 @@
 #
 # Inspired by https://github.com/kubernetes/kops/issues/428
 #
-# This will handle deploying k8s instance into a private subnet.
-#
-# Where a private subnet means:
-# A subnet doesn't have a route to the Internet gateway.
-#
-# Utility Subnet - A subnet that is used to bridge a private
-# subnet to a public subnet with a NGW
-#
 # ---------------------------------------------------------------
-
-
-
-
 
 
 # ---------------------------------------------------------------
@@ -203,6 +191,25 @@ loadBalancer/api.{{ ClusterName }}:
   listeners:
     443: { instancePort: 443 }
 
+# ---------------------------------------------------------------
+# Kube-Proxy - Healthz - 10249
+#
+# HealthCheck for the kubernetes API via the kube-proxy
+# ---------------------------------------------------------------
+loadBalancerHealthChecks/api.{{ ClusterName }}:
+  loadBalancer: loadBalancer/api.{{ ClusterName }}
+  # 10249 Is the default kube-proxy healthz protocol
+  target: HTTP:10249/healthz
+  healthyThreshold: 2
+  unhealthyThreshold: 2
+  interval: 10
+  timeout: 5
+securityGroupRule/kube-proxy-api-elb:
+  securityGroup: securityGroup/masters.{{ ClusterName }}
+  sourceGroup: securityGroup/api-elb.{{ ClusterName }}
+  protocol: tcp
+  fromPort: 10249
+  toPort: 10249
 
 
 # ---------------------------------------------------------------
@@ -238,3 +245,4 @@ securityGroupRule/https-api-elb:
   protocol: tcp
   fromPort: 443
   toPort: 443
+
