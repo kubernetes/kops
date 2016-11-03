@@ -198,8 +198,7 @@ loadBalancer/api.{{ ClusterName }}:
 # ---------------------------------------------------------------
 loadBalancerHealthChecks/api.{{ ClusterName }}:
   loadBalancer: loadBalancer/api.{{ ClusterName }}
-  # 10249 Is the default kube-proxy healthz protocol
-  target: HTTP:10249/healthz
+  target: TCP:443
   healthyThreshold: 2
   unhealthyThreshold: 2
   interval: 10
@@ -208,8 +207,8 @@ securityGroupRule/kube-proxy-api-elb:
   securityGroup: securityGroup/masters.{{ ClusterName }}
   sourceGroup: securityGroup/api-elb.{{ ClusterName }}
   protocol: tcp
-  fromPort: 10249
-  toPort: 10249
+  fromPort: 443
+  toPort: 443
 
 
 # ---------------------------------------------------------------
@@ -246,3 +245,14 @@ securityGroupRule/https-api-elb:
   fromPort: 443
   toPort: 443
 
+# ---------------------------------------------------------------
+# DNS - Api
+#
+# This will point our DNS to the load balancer, and put the pieces
+# together for kubectl to be work
+# ---------------------------------------------------------------
+dnsZone/{{ .DNSZone }}: {}
+dnsName/{{ .MasterPublicName }}:
+  Zone: dnsZone/{{ .DNSZone }}
+  ResourceType: "A"
+  TargetLoadBalancer: loadBalancer/api.{{ ClusterName }}

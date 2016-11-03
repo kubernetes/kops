@@ -30,6 +30,7 @@ import (
 	"k8s.io/kops/upup/pkg/kutil"
 	"os"
 	"strings"
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 type UpdateClusterOptions struct {
@@ -188,7 +189,11 @@ func RunUpdateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 			fmt.Printf("\n")
 			fmt.Printf("Suggestions:\n")
 			fmt.Printf(" * list nodes: kubectl get nodes --show-labels\n")
-			fmt.Printf(" * ssh to the master: ssh -i ~/.ssh/id_rsa admin@%s\n", cluster.Spec.MasterPublicName)
+			if cluster.Spec.Topology.Masters == kops.TopologyPublic {
+				fmt.Printf(" * ssh to the master: ssh -i ~/.ssh/id_rsa admin@%s\n", cluster.Spec.MasterPublicName)
+			}else {
+				fmt.Printf(" * ssh to the bastion: ssh -i ~/.ssh/id_rsa admin@%s\n", cluster.Spec.MasterPublicName)
+			}
 			fmt.Printf(" * read about installing addons: https://github.com/kubernetes/kops/blob/master/docs/addons.md\n")
 			fmt.Printf("\n")
 		}
