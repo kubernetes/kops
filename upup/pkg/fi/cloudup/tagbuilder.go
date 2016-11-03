@@ -62,7 +62,7 @@ func buildCloudupTags(cluster *api.Cluster) (map[string]struct{}, error) {
 
 	if useMasterLB {
 		tags["_master_lb"] = struct{}{}
-	} else {
+	} else if cluster.Spec.Topology.Masters == api.TopologyPublic {
 		tags["_not_master_lb"] = struct{}{}
 	}
 

@@ -12,7 +12,7 @@ launchConfiguration/{{ $m.Name }}.masters.{{ ClusterName }}:
   associatePublicIP: {{ WithDefaultBool $m.Spec.AssociatePublicIP true }}
   {{ end }}
   {{ if IsTopologyPrivate }}
-  associatePublicIP: false
+  associatePublicIP: true
   {{ end }}
   userData: resources/nodeup.sh {{ $m.Name }}
   rootVolumeSize: {{ or $m.Spec.RootVolumeSize "20" }}

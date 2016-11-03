@@ -28,6 +28,7 @@ securityGroupRule/master-egress:
   cidr: 0.0.0.0/0
 
 # SSH is open to AdminCIDR set
+{{ if IsTopologyPublic }}
 {{ range $index, $cidr := AdminCIDR }}
 securityGroupRule/ssh-external-to-master-{{ $index }}:
   securityGroup: securityGroup/masters.{{ ClusterName }}
@@ -35,6 +36,7 @@ securityGroupRule/ssh-external-to-master-{{ $index }}:
   protocol: tcp
   fromPort: 22
   toPort: 22
+{{ end }}
 {{ end }}
 
 # Masters can talk to masters
@@ -46,3 +48,9 @@ securityGroupRule/all-master-to-master:
 securityGroupRule/all-master-to-node:
   securityGroup: securityGroup/nodes.{{ ClusterName }}
   sourceGroup: securityGroup/masters.{{ ClusterName }}
+
+{{ if WithBastion }}
+securityGroupRule/bastion-to-master:
+  securityGroup: securityGroup/masters.{{ ClusterName }}
+  sourceGroup: securityGroup/bastion.{{ ClusterName }}
+{{ end }}
