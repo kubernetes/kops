@@ -1,19 +1,20 @@
+# ---------------------------------------------------------------
+#
+# Private Network Topology in AWS
+#
+# Inspired by https://github.com/kubernetes/kops/issues/428
+#
+# This will handle deploying k8s instance into a private subnet.
+#
+# Where a private subnet means:
+# A subnet doesn't have a route to the Internet gateway.
+#
+# Utility Subnet - A subnet that is used to bridge a private
+# subnet to a public subnet with a NGW
+#
+# ---------------------------------------------------------------
+
 {{ if WithBastion }}
-# ---------------------------------------------------------------
-#
-# Bastion Host for Private Network Topologies in AWS
-#
-# The bastion host will live in one of the utility subnets
-# created in the private topology. The bastion host will have
-# port 22 TCP open to 0.0.0.0/0. And will have internal SSH
-# access to all private subnets.
-#
-# ---------------------------------------------------------------
-
-
-
-
-
 
 # ---------------------------------------------------------------
 # Security Group - Bastion
@@ -85,12 +86,17 @@ loadBalancerAttachment/bastion-elb-attachment.{{ ClusterName }}:
   autoscalingGroup: autoscalingGroup/bastion.{{ ClusterName }}
 
 
-
 # ---------------------------------------------------------------
 # ASG - The Bastion itself
 #
 # Define the bastion host. Hard coding to a t2.small for now.
 # we probably want to abstract this out in a later feature.
+#
+# The bastion host will live in one of the utility subnets
+# created in the private topology. The bastion host will have
+# port 22 TCP open to 0.0.0.0/0. And will have internal SSH
+# access to all private subnets.
+#
 # ---------------------------------------------------------------
 launchConfiguration/bastion.{{ ClusterName }}:
   sshKey: sshKey/{{ SSHKeyName }}

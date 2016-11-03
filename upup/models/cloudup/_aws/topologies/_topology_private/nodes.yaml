@@ -1,54 +1,60 @@
-# IAM configuration
-# We create an instance role for the nodes
+# ---------------------------------------------------------------
+#
+# Private Network Topology in AWS
+#
+# Inspired by https://github.com/kubernetes/kops/issues/428
+#
+# This will handle deploying k8s instance into a private subnet.
+#
+# Where a private subnet means:
+# A subnet doesn't have a route to the Internet gateway.
+#
+# Utility Subnet - A subnet that is used to bridge a private
+# subnet to a public subnet with a NGW
+#
+# ---------------------------------------------------------------
+
+
+# ---------------------------------------------------------------
+# IAM - Nodes
+# ---------------------------------------------------------------
 iamRole/nodes.{{ ClusterName }}:
   rolePolicyDocument: resources/iam/kubernetes-node-role.json
-
 iamRolePolicy/nodes.{{ ClusterName }}:
   role: iamRole/nodes.{{ ClusterName }}
   policyDocument: resources/iam/kubernetes-node-policy.json
-
 iamInstanceProfile/nodes.{{ ClusterName }}: {}
-
 iamInstanceProfileRole/nodes.{{ ClusterName }}:
   instanceProfile: iamInstanceProfile/nodes.{{ ClusterName }}
   role: iamRole/nodes.{{ ClusterName }}
 
-# Create security group for nodes
+# ---------------------------------------------------------------
+# Security Group - Nodes
+# ---------------------------------------------------------------
 securityGroup/nodes.{{ ClusterName }}:
   vpc: vpc/{{ ClusterName }}
   description: 'Security group for nodes'
   removeExtraRules:
   - port=22
-
-# Allow full egress
 securityGroupRule/node-egress:
   securityGroup: securityGroup/nodes.{{ ClusterName }}
   egress: true
   cidr: 0.0.0.0/0
-
-# SSH is open to CIDRs defined in the cluster configuration
-#{{ range $index, $cidr := AdminCIDR }}
-#securityGroupRule/ssh-external-to-node-{{ $index }}:
-#  securityGroup: securityGroup/nodes.{{ ClusterName }}
-#  cidr: {{ $cidr }}
-#  protocol: tcp
-#  fromPort: 22
-#  toPort: 22
-#{{ end }}
-
-# Nodes can talk to nodes
 securityGroupRule/all-node-to-node:
   securityGroup: securityGroup/nodes.{{ ClusterName }}
   sourceGroup: securityGroup/nodes.{{ ClusterName }}
-
-# Nodes can talk masters nodes
 securityGroupRule/all-node-to-master:
   securityGroup: securityGroup/masters.{{ ClusterName }}
   sourceGroup: securityGroup/nodes.{{ ClusterName }}
 
-{{ range $ig := NodeSets }}
 
-# LaunchConfiguration & ASG for nodes
+
+{{ range $ig := NodeSets }}
+# ---------------------------------------------------------------
+# AutoScaleGroup - Nodes
+#
+# The AutoScaleGroup for the Nodes
+# ---------------------------------------------------------------
 launchConfiguration/{{ $ig.Name }}.{{ ClusterName }}:
   sshKey: sshKey/{{ SSHKeyName }}
   securityGroups:
@@ -63,7 +69,6 @@ launchConfiguration/{{ $ig.Name }}.{{ ClusterName }}:
 {{ if $ig.Spec.MaxPrice }}
   spotPrice: "{{ $ig.Spec.MaxPrice }}"
 {{ end }}
-
 autoscalingGroup/{{ $ig.Name }}.{{ ClusterName }}:
   launchConfiguration: launchConfiguration/{{ $ig.Name }}.{{ ClusterName }}
   minSize: {{ or $ig.Spec.MinSize 2 }}
@@ -77,5 +82,7 @@ autoscalingGroup/{{ $ig.Name }}.{{ ClusterName }}:
   {{ range $k, $v := CloudTags $ig }}
     {{ $k }}: "{{ $v }}"
   {{ end }}
+
+
 
 {{ end }}
