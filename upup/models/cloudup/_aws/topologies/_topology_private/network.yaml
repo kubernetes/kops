@@ -49,7 +49,6 @@ dhcpOptions/{{ ClusterName }}:
 {{ else }}
   domainName: {{ Region }}.compute.internal
 {{ end }}
-
 vpcDHDCPOptionsAssociation/{{ ClusterName }}:
   vpc: vpc/{{ ClusterName }}
   dhcpOptions: dhcpOptions/{{ ClusterName }}
@@ -185,10 +184,57 @@ route/private-{{ $zone.Name }}.{{ ClusterName }}:
   natGateway: ngw/{{ $zone.Name }}.{{ ClusterName }}
 
 
+{{ end }} # SharedVPC
+{{ end }} # For Each Zone
+
+# ---------------------------------------------------------------
+# Load Balancer - API
+#
+# This is the load balancer in front of the Kubernetes API
+# ---------------------------------------------------------------
+loadBalancer/api.{{ ClusterName }}:
+  id: {{ GetELBName32 "api" }}
+  securityGroups:
+    - securityGroup/api-elb.{{ ClusterName }}
+  subnets:
+  {{ range $zone := .Zones }}
+    - subnet/utility-{{ $zone.Name }}.{{ ClusterName }}
+  {{ end }}
+  listeners:
+    443: { instancePort: 443 }
+
+
+
+# ---------------------------------------------------------------
+# Load Balancer - Masters
+#
+# Attach each master ASG to the ELB
+# ---------------------------------------------------------------
+{{ range $m := Masters }}
+loadBalancerAttachment/api-elb-attachment.{{ $m.Name }}.{{ ClusterName }}:
+  loadBalancer: loadBalancer/api.{{ ClusterName }}
+  autoscalingGroup: autoscalingGroup/{{ $m.Name }}.masters.{{ ClusterName }}
 {{ end }}
 
-{{ end }}
 
-
-
-
+# ---------------------------------------------------------------
+# Security Group - API ELB
+#
+# This is the security group that is external facing. These are
+# the public rules for kubernetes!
+# ---------------------------------------------------------------
+securityGroup/api-elb.{{ ClusterName }}:
+  vpc: vpc/{{ ClusterName }}
+  description: 'Security group for api ELB'
+  removeExtraRules:
+  - port=22
+securityGroupRule/api-elb-egress:
+  securityGroup: securityGroup/api-elb.{{ ClusterName }}
+  egress: true
+  cidr: 0.0.0.0/0
+securityGroupRule/https-api-elb:
+  securityGroup: securityGroup/api-elb.{{ ClusterName }}
+  cidr:  0.0.0.0/0
+  protocol: tcp
+  fromPort: 443
+  toPort: 443
