@@ -96,6 +96,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["WithBastion"] = tf.WithBastion
 	dest["GetBastionImageId"] = tf.GetBastionImageId
 	dest["GetBastionZone"] = tf.GetBastionZone
+	dest["GetELBName32"] = tf.GetELBName32
 
 	dest["SharedZone"] = tf.SharedZone
 	dest["WellKnownServiceIP"] = tf.WellKnownServiceIP
@@ -192,6 +193,23 @@ func (tf *TemplateFunctions) GetBastionZone() (string, error) {
 		name = tf.cluster.Spec.Zones[0].Name
 	}
 	return name, nil
+}
+
+// Will attempt to calculate a meaningful name for an ELB given a prefix
+// Will never return a string longer than 32 chars
+func (tf *TemplateFunctions) GetELBName32(prefix string) (string, error ){
+	var returnString string
+	c := tf.cluster.Name
+	s := strings.Split(c, ".")
+	if len(s) > 0 {
+		returnString = fmt.Sprintf("%s-%s", prefix, s[0])
+	}else {
+		returnString = fmt.Sprintf("%s-%s", prefix, c)
+	}
+	if len(returnString) > 32 {
+		returnString = returnString[:32]
+	}
+	return returnString, nil
 }
 
 func (tf *TemplateFunctions) GetBastionImageId() (string, error) {
