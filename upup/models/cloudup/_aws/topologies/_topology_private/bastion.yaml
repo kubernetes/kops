@@ -4,14 +4,6 @@
 #
 # Inspired by https://github.com/kubernetes/kops/issues/428
 #
-# This will handle deploying k8s instance into a private subnet.
-#
-# Where a private subnet means:
-# A subnet doesn't have a route to the Internet gateway.
-#
-# Utility Subnet - A subnet that is used to bridge a private
-# subnet to a public subnet with a NGW
-#
 # ---------------------------------------------------------------
 
 {{ if WithBastion }}
@@ -30,12 +22,13 @@ securityGroupRule/bastion-egress:
   securityGroup: securityGroup/nodes.{{ ClusterName }}
   egress: true
   cidr: 0.0.0.0/0
-securityGroupRule/all-node-to-bastion:
-  securityGroup: securityGroup/bastion.{{ ClusterName }}
-  sourceGroup: securityGroup/nodes.{{ ClusterName }}
-securityGroupRule/all-master-to-bastion:
-  securityGroup: securityGroup/bastion.{{ ClusterName }}
-  sourceGroup: securityGroup/masters.{{ ClusterName }}
+# TODO Kris - I don't think we need to open these
+#securityGroupRule/all-node-to-bastion:
+#  securityGroup: securityGroup/bastion.{{ ClusterName }}
+#  sourceGroup: securityGroup/nodes.{{ ClusterName }}
+#securityGroupRule/all-master-to-bastion:
+#  securityGroup: securityGroup/bastion.{{ ClusterName }}
+#  sourceGroup: securityGroup/masters.{{ ClusterName }}
 securityGroupRule/ssh-external-to-bastion:
   securityGroup: securityGroup/bastion.{{ ClusterName }}
   sourceGroup: securityGroup/bastion-elb.{{ ClusterName }}
@@ -43,6 +36,15 @@ securityGroupRule/ssh-external-to-bastion:
   fromPort: 22
   toPort: 22
 
+# ---------------------------------------------------------------
+# Security Group - Bastion->Nodes
+#
+# If we are creating a bastion, we need to poke a hole in the
+# firewall for it to talk to our masters
+# ---------------------------------------------------------------
+securityGroupRule/all-bastion-to-master:
+  securityGroup: securityGroup/nodes.{{ ClusterName }}
+  sourceGroup: securityGroup/bastion.{{ ClusterName }}
 
 # ---------------------------------------------------------------
 # Security Group - Bastion ELB
@@ -105,7 +107,7 @@ launchConfiguration/bastion.{{ ClusterName }}:
   iamInstanceProfile: iamInstanceProfile/masters.{{ ClusterName }}
   imageId: {{ GetBastionImageId }}
   instanceType: t2.small
-  associatePublicIP: false
+  associatePublicIP: true
   rootVolumeSize: 20
   rootVolumeType: gp2
 autoscalingGroup/bastion.{{ ClusterName }}:
@@ -117,5 +119,24 @@ autoscalingGroup/bastion.{{ ClusterName }}:
   tags:
     Name: bastion-{{ GetBastionZone }}.{{ ClusterName }}
     KubernetesCluster: {{ ClusterName }}
+
+# ---------------------------------------------------------------
+# TODO Kris
+#
+# So as it stands we are *NOT* defining a friendly CNAME for the
+# bastion ELB. I think this is a good thing.
+#
+# If we came up with a formula EG: bastion.<clusterName> we could
+# be exposing ourselves to a few threats :)
+#
+# I think it's best in this situation to err on the side of
+# caution and force the end user to define something convenient
+# on their own.
+#
+# TLDR; If you want a friendly CNAME for your bastion - you have
+# to build it yourself. Kops won't support that
+#
+# Right?
+# ---------------------------------------------------------------
 
 {{ end }}
