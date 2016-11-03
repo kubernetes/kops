@@ -22,7 +22,7 @@ import (
 	"fmt"
 )
 
-//go:generate fitask -type=NATGateway
+//go:generate fitask -type=NatGateway
 type NatGateway struct {
 	Name      *string
 	ElasticIp *ElasticIP

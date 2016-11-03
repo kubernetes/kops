@@ -28,15 +28,17 @@ import (
 )
 
 type LoadBalancerAttachment struct {
+	Name             *string
 	LoadBalancer     *LoadBalancer
 
 	// LoadBalancerAttachments now support ASGs or direct instances
 	AutoscalingGroup *AutoscalingGroup
-	Instance *Instance
-}
+	Subnet           *Subnet
 
-func (e *LoadBalancerAttachment) String() string {
-	return fi.TaskAsString(e)
+	// Here be dragons..
+	// This will *NOT* unmarshal.. for some reason this pointer is initiated as nil
+	// instead of a pointer to Instance with nil members..
+	Instance        *Instance
 }
 
 func (e *LoadBalancerAttachment) Find(c *fi.Context) (*LoadBalancerAttachment, error) {
@@ -52,8 +54,8 @@ func (e *LoadBalancerAttachment) Find(c *fi.Context) (*LoadBalancerAttachment, e
 		actual.LoadBalancer = e.LoadBalancer
 		actual.Instance = i
 		return actual, nil
-	// ASG only
-	}else if e.AutoscalingGroup != nil && e.Instance == nil {
+		// ASG only
+	} else if e.AutoscalingGroup != nil && e.Instance == nil {
 		g, err := findAutoscalingGroup(cloud, *e.AutoscalingGroup.Name)
 		if err != nil {
 			return nil, err
@@ -72,8 +74,8 @@ func (e *LoadBalancerAttachment) Find(c *fi.Context) (*LoadBalancerAttachment, e
 			actual.AutoscalingGroup = e.AutoscalingGroup
 			return actual, nil
 		}
-	}else{
-	// Invalid request
+	} else {
+		// Invalid request
 		return nil, fmt.Errorf("Must specify either an instance or an ASG")
 	}
 
@@ -107,7 +109,7 @@ func (_ *LoadBalancerAttachment) RenderAWS(t *awsup.AWSAPITarget, a, e, changes 
 		if err != nil {
 			return fmt.Errorf("error attaching autoscaling group to ELB: %v", err)
 		}
-	}else if e.AutoscalingGroup == nil && e.Instance != nil {
+	} else if e.AutoscalingGroup == nil && e.Instance != nil {
 		request := &elb.RegisterInstancesWithLoadBalancerInput{}
 		var instances []*elb.Instance
 		i := &elb.Instance{
