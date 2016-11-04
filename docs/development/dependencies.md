@@ -20,3 +20,16 @@ See for example the discussion [here](https://github.com/dpw/vendetta/issues/13)
 
 * We have to manually manage our dependencies (this is arguably also an advantage, in the absence of any real rules to resolve conflicts)
 * `go get` will fetch the submodules, so we pull a lot more data than we need to
+
+## Updating a dependency
+
+```
+pushd _vendor/github.com/aws/aws-sdk-go
+git fetch
+git checkout v1.5.2
+popd
+make copydeps
+git add _vendor/github.com/aws/aws-sdk-go/
+git add vendor/github.com/aws/aws-sdk-go/
+git commit -m "Update aws-sdk-go to 1.5.2"
+```
