@@ -612,24 +612,24 @@ func validateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 	zone := matches[0]
 	dnsName := strings.TrimSuffix(zone.Name(), ".")
 
-	glog.V(2).Infof("Doing DNS lookup to verify NS records for %q", dnsName)
-	ns, err := net.LookupNS(dnsName)
-	if err != nil {
-		return fmt.Errorf("error doing DNS lookup for NS records for %q: %v", dnsName, err)
-	}
+	if os.Getenv("DNS_IGNORE_NS_CHECK") == "" {
+		glog.V(2).Infof("Doing DNS lookup to verify NS records for %q", dnsName)
+		ns, err := net.LookupNS(dnsName)
+		if err != nil {
+			return fmt.Errorf("error doing DNS lookup for NS records for %q: %v", dnsName, err)
+		}
 
-	if len(ns) == 0 {
-		if os.Getenv("DNS_IGNORE_NS_CHECK") == "" {
+		if len(ns) == 0 {
 			return fmt.Errorf("NS records not found for %q - please make sure they are correctly configured", dnsName)
 		} else {
-			glog.Warningf("Ignoring failed NS record check because DNS_IGNORE_NS_CHECK is set")
+			var hosts []string
+			for _, n := range ns {
+				hosts = append(hosts, n.Host)
+			}
+			glog.V(2).Infof("Found NS records for %q: %v", dnsName, hosts)
 		}
 	} else {
-		var hosts []string
-		for _, n := range ns {
-			hosts = append(hosts, n.Host)
-		}
-		glog.V(2).Infof("Found NS records for %q: %v", dnsName, hosts)
+		glog.Warningf("Ignoring NS record check because DNS_IGNORE_NS_CHECK is set")
 	}
 
 	return nil
