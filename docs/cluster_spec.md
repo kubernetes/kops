@@ -34,7 +34,7 @@ spec:
       apps/v1alpha1: "true"
 ```
 
-Will result in the flag `--runtime-config=batch/v2alpha1=true,apps/v1alpha1=true`. Note that `kube-apiserver` accepts `true` as a value switch-like flags.
+Will result in the flag `--runtime-config=batch/v2alpha1=true,apps/v1alpha1=true`. Note that `kube-apiserver` accepts `true` as a value for switch-like flags.
 
 ### networkID
 
