@@ -27,7 +27,7 @@ The login credentials are:
 * Password: get by running `kops get secrets kube --type secret -oplaintext` or `kubectl config view --minify`
 
 
-### Monitoring - Standalone
+### Monitoring with Heapster - Standalone
 
 Monitoring supports the horizontal pod autoscaler.
 
