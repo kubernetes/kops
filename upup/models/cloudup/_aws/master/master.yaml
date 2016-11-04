@@ -49,7 +49,7 @@ securityGroupRule/all-master-to-node:
   securityGroup: securityGroup/nodes.{{ ClusterName }}
   sourceGroup: securityGroup/masters.{{ ClusterName }}
 
-{{ if WithBastion }}
+{{ if and WithBastion IsTopologyPrivate }}
 securityGroupRule/bastion-to-master:
   securityGroup: securityGroup/masters.{{ ClusterName }}
   sourceGroup: securityGroup/bastion.{{ ClusterName }}
