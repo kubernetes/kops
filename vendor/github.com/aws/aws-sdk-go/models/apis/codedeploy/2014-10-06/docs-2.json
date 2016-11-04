@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "service": "<fullname>AWS CodeDeploy</fullname> <b>Overview</b> <p>This reference guide provides descriptions of the AWS CodeDeploy APIs. For more information about AWS CodeDeploy, see the <a href=\"docs.aws.amazon.com/codedeploy/latest/userguide\">AWS CodeDeploy User Guide</a>.</p> <b>Using the APIs</b> <p>You can use the AWS CodeDeploy APIs to work with the following:</p> <ul> <li> <p>Applications are unique identifiers used by AWS CodeDeploy to ensure the correct combinations of revisions, deployment configurations, and deployment groups are being referenced during deployments.</p> <p>You can use the AWS CodeDeploy APIs to create, delete, get, list, and update applications.</p> </li> <li> <p>Deployment configurations are sets of deployment rules and success and failure conditions used by AWS CodeDeploy during deployments.</p> <p>You can use the AWS CodeDeploy APIs to create, delete, get, and list deployment configurations.</p> </li> <li> <p>Deployment groups are groups of instances to which application revisions can be deployed.</p> <p>You can use the AWS CodeDeploy APIs to create, delete, get, list, and update deployment groups.</p> </li> <li> <p>Instances represent Amazon EC2 instances to which application revisions are deployed. Instances are identified by their Amazon EC2 tags or Auto Scaling group names. Instances belong to deployment groups.</p> <p>You can use the AWS CodeDeploy APIs to get and list instance.</p> </li> <li> <p>Deployments represent the process of deploying revisions to instances.</p> <p>You can use the AWS CodeDeploy APIs to create, get, list, and stop deployments.</p> </li> <li> <p>Application revisions are archive files stored in Amazon S3 buckets or GitHub repositories. These revisions contain source content (such as source code, web pages, executable files, and deployment scripts) along with an application specification (AppSpec) file. (The AppSpec file is unique to AWS CodeDeploy; it defines the deployment actions you want AWS CodeDeploy to execute.) Ffor application revisions stored in Amazon S3 buckets, an application revision is uniquely identified by its Amazon S3 object key and its ETag, version, or both. For application revisions stored in GitHub repositories, an application revision is uniquely identified by its repository name and commit ID. Application revisions are deployed through deployment groups.</p> <p>You can use the AWS CodeDeploy APIs to get, list, and register application revisions.</p> </li> </ul>",
+  "service": "<fullname>AWS CodeDeploy</fullname> <p> <b>Overview</b> </p> <p>This reference guide provides descriptions of the AWS CodeDeploy APIs. For more information about AWS CodeDeploy, see the <a href=\"http://docs.aws.amazon.com/codedeploy/latest/userguide\">AWS CodeDeploy User Guide</a>.</p> <p> <b>Using the APIs</b> </p> <p>You can use the AWS CodeDeploy APIs to work with the following:</p> <ul> <li> <p>Applications are unique identifiers used by AWS CodeDeploy to ensure the correct combinations of revisions, deployment configurations, and deployment groups are being referenced during deployments.</p> <p>You can use the AWS CodeDeploy APIs to create, delete, get, list, and update applications.</p> </li> <li> <p>Deployment configurations are sets of deployment rules and success and failure conditions used by AWS CodeDeploy during deployments.</p> <p>You can use the AWS CodeDeploy APIs to create, delete, get, and list deployment configurations.</p> </li> <li> <p>Deployment groups are groups of instances to which application revisions can be deployed.</p> <p>You can use the AWS CodeDeploy APIs to create, delete, get, list, and update deployment groups.</p> </li> <li> <p>Instances represent Amazon EC2 instances to which application revisions are deployed. Instances are identified by their Amazon EC2 tags or Auto Scaling group names. Instances belong to deployment groups.</p> <p>You can use the AWS CodeDeploy APIs to get and list instance.</p> </li> <li> <p>Deployments represent the process of deploying revisions to instances.</p> <p>You can use the AWS CodeDeploy APIs to create, get, list, and stop deployments.</p> </li> <li> <p>Application revisions are archive files stored in Amazon S3 buckets or GitHub repositories. These revisions contain source content (such as source code, web pages, executable files, and deployment scripts) along with an application specification (AppSpec) file. (The AppSpec file is unique to AWS CodeDeploy; it defines the deployment actions you want AWS CodeDeploy to execute.) For application revisions stored in Amazon S3 buckets, an application revision is uniquely identified by its Amazon S3 object key and its ETag, version, or both. For application revisions stored in GitHub repositories, an application revision is uniquely identified by its repository name and commit ID. Application revisions are deployed through deployment groups.</p> <p>You can use the AWS CodeDeploy APIs to get, list, and register application revisions.</p> </li> </ul>",
   "operations": {
     "AddTagsToOnPremisesInstances": "<p>Adds tags to on-premises instances.</p>",
     "BatchGetApplicationRevisions": "<p>Gets information about one or more application revisions.</p>",
@@ -14,7 +14,7 @@
     "CreateDeploymentConfig": "<p>Creates a deployment configuration.</p>",
     "CreateDeploymentGroup": "<p>Creates a deployment group to which application revisions will be deployed.</p>",
     "DeleteApplication": "<p>Deletes an application.</p>",
-    "DeleteDeploymentConfig": "<p>Deletes a deployment configuration.</p> <note>A deployment configuration cannot be deleted if it is currently in use. Predefined configurations cannot be deleted.</note>",
+    "DeleteDeploymentConfig": "<p>Deletes a deployment configuration.</p> <note> <p>A deployment configuration cannot be deleted if it is currently in use. Predefined configurations cannot be deleted.</p> </note>",
     "DeleteDeploymentGroup": "<p>Deletes a deployment group.</p>",
     "DeregisterOnPremisesInstance": "<p>Deregisters an on-premises instance.</p>",
     "GetApplication": "<p>Gets information about an application.</p>",
@@ -41,6 +41,37 @@
   "shapes": {
     "AddTagsToOnPremisesInstancesInput": {
       "base": "<p>Represents the input of, and adds tags to, an on-premises instance operation.</p>",
+      "refs": {
+      }
+    },
+    "Alarm": {
+      "base": "<p>Information about an alarm.</p>",
+      "refs": {
+        "AlarmList$member": null
+      }
+    },
+    "AlarmConfiguration": {
+      "base": "<p>Information about alarms associated with the deployment group.</p>",
+      "refs": {
+        "CreateDeploymentGroupInput$alarmConfiguration": "<p>Information to add about Amazon CloudWatch alarms when the deployment group is created. </p>",
+        "DeploymentGroupInfo$alarmConfiguration": "<p>A list of alarms associated with the deployment group.</p>",
+        "UpdateDeploymentGroupInput$alarmConfiguration": "<p>Information to add or change about Amazon CloudWatch alarms when the deployment group is updated. </p>"
+      }
+    },
+    "AlarmList": {
+      "base": null,
+      "refs": {
+        "AlarmConfiguration$alarms": "<p>A list of alarms configured for the deployment group. A maximum of 10 alarms can be added to a deployment group.</p>"
+      }
+    },
+    "AlarmName": {
+      "base": null,
+      "refs": {
+        "Alarm$name": "<p>The name of the alarm. Maximum length is 255 characters. Each alarm name can be used only once in a list of alarms.</p>"
+      }
+    },
+    "AlarmsLimitExceededException": {
+      "base": "<p>The maximum number of alarms for a deployment group (10) was exceeded.</p>",
       "refs": {
       }
     },
@@ -110,7 +141,7 @@
     "ApplicationRevisionSortBy": {
       "base": null,
       "refs": {
-        "ListApplicationRevisionsInput$sortBy": "<p>The column name to use to sort the list results:</p> <ul> <li>registerTime: Sort by the time the revisions were registered with AWS CodeDeploy.</li> <li>firstUsedTime: Sort by the time the revisions were first used in a deployment.</li> <li>lastUsedTime: Sort by the time the revisions were last used in a deployment.</li> </ul> <p>If not specified or set to null, the results will be returned in an arbitrary order.</p>"
+        "ListApplicationRevisionsInput$sortBy": "<p>The column name to use to sort the list results:</p> <ul> <li> <p>registerTime: Sort by the time the revisions were registered with AWS CodeDeploy.</p> </li> <li> <p>firstUsedTime: Sort by the time the revisions were first used in a deployment.</p> </li> <li> <p>lastUsedTime: Sort by the time the revisions were last used in a deployment.</p> </li> </ul> <p>If not specified or set to null, the results will be returned in an arbitrary order.</p>"
       }
     },
     "ApplicationsInfoList": {
@@ -124,6 +155,28 @@
       "refs": {
         "BatchGetApplicationsInput$applicationNames": "<p>A list of application names separated by spaces.</p>",
         "ListApplicationsOutput$applications": "<p>A list of application names.</p>"
+      }
+    },
+    "AutoRollbackConfiguration": {
+      "base": "<p>Information about a configuration for automatically rolling back to a previous version of an application revision when a deployment doesn't complete successfully.</p>",
+      "refs": {
+        "CreateDeploymentGroupInput$autoRollbackConfiguration": "<p>Configuration information for an automatic rollback that is added when a deployment group is created.</p>",
+        "CreateDeploymentInput$autoRollbackConfiguration": "<p>Configuration information for an automatic rollback that is added when a deployment is created.</p>",
+        "DeploymentGroupInfo$autoRollbackConfiguration": "<p>Information about the automatic rollback configuration associated with the deployment group.</p>",
+        "DeploymentInfo$autoRollbackConfiguration": "<p>Information about the automatic rollback configuration associated with the deployment.</p>",
+        "UpdateDeploymentGroupInput$autoRollbackConfiguration": "<p>Information for an automatic rollback configuration that is added or changed when a deployment group is updated.</p>"
+      }
+    },
+    "AutoRollbackEvent": {
+      "base": null,
+      "refs": {
+        "AutoRollbackEventsList$member": null
+      }
+    },
+    "AutoRollbackEventsList": {
+      "base": null,
+      "refs": {
+        "AutoRollbackConfiguration$events": "<p>The event type or types that trigger a rollback.</p>"
       }
     },
     "AutoScalingGroup": {
@@ -228,9 +281,14 @@
     "Boolean": {
       "base": null,
       "refs": {
+        "AlarmConfiguration$enabled": "<p>Indicates whether the alarm configuration is enabled.</p>",
+        "AlarmConfiguration$ignorePollAlarmFailure": "<p>Indicates whether a deployment should continue if information about the current state of alarms cannot be retrieved from Amazon CloudWatch. The default value is false.</p> <ul> <li> <p>true: The deployment will proceed even if alarm status information can't be retrieved from Amazon CloudWatch.</p> </li> <li> <p>false: The deployment will stop if alarm status information can't be retrieved from Amazon CloudWatch.</p> </li> </ul>",
         "ApplicationInfo$linkedToGitHub": "<p>True if the user has authenticated with GitHub for the specified application; otherwise, false.</p>",
+        "AutoRollbackConfiguration$enabled": "<p>Indicates whether a defined automatic rollback configuration is currently enabled.</p>",
         "CreateDeploymentInput$ignoreApplicationStopFailures": "<p>If set to true, then if the deployment causes the ApplicationStop deployment lifecycle event to an instance to fail, the deployment to that instance will not be considered to have failed at that point and will continue on to the BeforeInstall deployment lifecycle event.</p> <p>If set to false or not specified, then if the deployment causes the ApplicationStop deployment lifecycle event to fail to an instance, the deployment to that instance will stop, and the deployment to that instance will be considered to have failed.</p>",
-        "DeploymentInfo$ignoreApplicationStopFailures": "<p>If true, then if the deployment causes the ApplicationStop deployment lifecycle event to an instance to fail, the deployment to that instance will not be considered to have failed at that point and will continue on to the BeforeInstall deployment lifecycle event.</p> <p>If false or not specified, then if the deployment causes the ApplicationStop deployment lifecycle event to an instance to fail, the deployment to that instance will stop, and the deployment to that instance will be considered to have failed.</p>"
+        "CreateDeploymentInput$updateOutdatedInstancesOnly": "<p>Indicates whether to deploy to all instances or only to instances that are not running the latest application revision.</p>",
+        "DeploymentInfo$ignoreApplicationStopFailures": "<p>If true, then if the deployment causes the ApplicationStop deployment lifecycle event to an instance to fail, the deployment to that instance will not be considered to have failed at that point and will continue on to the BeforeInstall deployment lifecycle event.</p> <p>If false or not specified, then if the deployment causes the ApplicationStop deployment lifecycle event to an instance to fail, the deployment to that instance will stop, and the deployment to that instance will be considered to have failed.</p>",
+        "DeploymentInfo$updateOutdatedInstancesOnly": "<p>Indicates whether only instances that are not running the latest application revision are to be deployed to.</p>"
       }
     },
     "BucketNameFilterRequiredException": {
@@ -241,7 +299,7 @@
     "BundleType": {
       "base": null,
       "refs": {
-        "S3Location$bundleType": "<p>The file type of the application revision. Must be one of the following:</p> <ul> <li>tar: A tar archive file.</li> <li>tgz: A compressed tar archive file.</li> <li>zip: A zip archive file.</li> </ul>"
+        "S3Location$bundleType": "<p>The file type of the application revision. Must be one of the following:</p> <ul> <li> <p>tar: A tar archive file.</p> </li> <li> <p>tgz: A compressed tar archive file.</p> </li> <li> <p>zip: A zip archive file.</p> </li> </ul>"
       }
     },
     "CommitId": {
@@ -352,7 +410,7 @@
       "base": null,
       "refs": {
         "CreateDeploymentConfigInput$deploymentConfigName": "<p>The name of the deployment configuration to create.</p>",
-        "CreateDeploymentGroupInput$deploymentConfigName": "<p>If specified, the deployment configuration name can be either one of the predefined configurations provided with AWS CodeDeploy or a custom deployment configuration that you create by calling the create deployment configuration operation.</p> <note> <p>CodeDeployDefault.OneAtATime is the default deployment configuration. It is used if a configuration isn't specified for the deployment or the deployment group.</p> </note> <p>The predefined deployment configurations include the following:</p> <ul> <li> <p><b>CodeDeployDefault.AllAtOnce</b> attempts to deploy an application revision to as many instance as possible at once. The status of the overall deployment will be displayed as <b>Succeeded</b> if the application revision is deployed to one or more of the instances. The status of the overall deployment will be displayed as <b>Failed</b> if the application revision is not deployed to any of the instances. Using an example of nine instance, CodeDeployDefault.AllAtOnce will attempt to deploy to all nine instance at once. The overall deployment will succeed if deployment to even a single instance is successful; it will fail only if deployments to all nine instance fail. </p> </li> <li> <p><b>CodeDeployDefault.HalfAtATime</b> deploys to up to half of the instances at a time (with fractions rounded down). The overall deployment succeeds if the application revision is deployed to at least half of the instances (with fractions rounded up); otherwise, the deployment fails. In the example of nine instances, it will deploy to up to four instance at a time. The overall deployment succeeds if deployment to five or more instances succeed; otherwise, the deployment fails. The deployment may be successfully deployed to some instances even if the overall deployment fails.</p> </li> <li> <p><b>CodeDeployDefault.OneAtATime</b> deploys the application revision to only one instance at a time.</p> <p>For deployment groups that contain more than one instance:</p> <ul> <li> <p>The overall deployment succeeds if the application revision is deployed to all of the instances. The exception to this rule is if deployment to the last instance fails, the overall deployment still succeeds. This is because AWS CodeDeploy allows only one instance at a time to be taken offline with the CodeDeployDefault.OneAtATime configuration.</p> </li> <li> <p>The overall deployment fails as soon as the application revision fails to be deployed to any but the last instance. The deployment may be successfully deployed to some instances even if the overall deployment fails.</p> </li> <li> <p>In an example using nine instance, it will deploy to one instance at a time. The overall deployment succeeds if deployment to the first eight instance is successful; the overall deployment fails if deployment to any of the first eight instance fails.</p> </li> </ul> <p>For deployment groups that contain only one instance, the overall deployment is successful only if deployment to the single instance is successful</p> </li> </ul>",
+        "CreateDeploymentGroupInput$deploymentConfigName": "<p>If specified, the deployment configuration name can be either one of the predefined configurations provided with AWS CodeDeploy or a custom deployment configuration that you create by calling the create deployment configuration operation.</p> <note> <p>CodeDeployDefault.OneAtATime is the default deployment configuration. It is used if a configuration isn't specified for the deployment or the deployment group.</p> </note> <p>The predefined deployment configurations include the following:</p> <ul> <li> <p> <b>CodeDeployDefault.AllAtOnce</b> attempts to deploy an application revision to as many instances as possible at once. The status of the overall deployment will be displayed as <b>Succeeded</b> if the application revision is deployed to one or more of the instances. The status of the overall deployment will be displayed as <b>Failed</b> if the application revision is not deployed to any of the instances. Using an example of nine instances, CodeDeployDefault.AllAtOnce will attempt to deploy to all nine instances at once. The overall deployment will succeed if deployment to even a single instance is successful; it will fail only if deployments to all nine instances fail. </p> </li> <li> <p> <b>CodeDeployDefault.HalfAtATime</b> deploys to up to half of the instances at a time (with fractions rounded down). The overall deployment succeeds if the application revision is deployed to at least half of the instances (with fractions rounded up); otherwise, the deployment fails. In the example of nine instances, it will deploy to up to four instances at a time. The overall deployment succeeds if deployment to five or more instances succeed; otherwise, the deployment fails. The deployment may be successfully deployed to some instances even if the overall deployment fails.</p> </li> <li> <p> <b>CodeDeployDefault.OneAtATime</b> deploys the application revision to only one instance at a time.</p> <p>For deployment groups that contain more than one instance:</p> <ul> <li> <p>The overall deployment succeeds if the application revision is deployed to all of the instances. The exception to this rule is if deployment to the last instance fails, the overall deployment still succeeds. This is because AWS CodeDeploy allows only one instance at a time to be taken offline with the CodeDeployDefault.OneAtATime configuration.</p> </li> <li> <p>The overall deployment fails as soon as the application revision fails to be deployed to any but the last instance. The deployment may be successfully deployed to some instances even if the overall deployment fails.</p> </li> <li> <p>In an example using nine instances, it will deploy to one instance at a time. The overall deployment succeeds if deployment to the first eight instances is successful; the overall deployment fails if deployment to any of the first eight instances fails.</p> </li> </ul> <p>For deployment groups that contain only one instance, the overall deployment is successful only if deployment to the single instance is successful</p> </li> </ul>",
         "CreateDeploymentInput$deploymentConfigName": "<p>The name of a deployment configuration associated with the applicable IAM user or AWS account.</p> <p>If not specified, the value configured in the deployment group will be used as the default. If the deployment group does not have a deployment configuration associated with it, then CodeDeployDefault.OneAtATime will be used by default.</p>",
         "DeleteDeploymentConfigInput$deploymentConfigName": "<p>The name of a deployment configuration associated with the applicable IAM user or AWS account.</p>",
         "DeploymentConfigInfo$deploymentConfigName": "<p>The deployment configuration name.</p>",
@@ -377,7 +435,7 @@
     "DeploymentCreator": {
       "base": null,
       "refs": {
-        "DeploymentInfo$creator": "<p>The means by which the deployment was created:</p> <ul> <li>user: A user created the deployment.</li> <li>autoscaling: Auto Scaling created the deployment.</li> </ul>"
+        "DeploymentInfo$creator": "<p>The means by which the deployment was created:</p> <ul> <li> <p>user: A user created the deployment.</p> </li> <li> <p>autoscaling: Auto Scaling created the deployment.</p> </li> <li> <p>codeDeployRollback: A rollback process created the deployment.</p> </li> </ul>"
       }
     },
     "DeploymentDoesNotExistException": {
@@ -459,6 +517,8 @@
         "GetDeploymentInstanceInput$deploymentId": "<p>The unique ID of a deployment.</p>",
         "InstanceSummary$deploymentId": "<p>The deployment ID.</p>",
         "ListDeploymentInstancesInput$deploymentId": "<p>The unique ID of a deployment.</p>",
+        "RollbackInfo$rollbackDeploymentId": "<p>The ID of the deployment rollback.</p>",
+        "RollbackInfo$rollbackTriggeringDeploymentId": "<p>The deployment ID of the deployment that was underway and triggered a rollback deployment because it failed or was stopped.</p>",
         "StopDeploymentInput$deploymentId": "<p>The unique ID of a deployment.</p>"
       }
     },
@@ -500,7 +560,7 @@
     "DeploymentStatusList": {
       "base": null,
       "refs": {
-        "ListDeploymentsInput$includeOnlyStatuses": "<p>A subset of deployments to list by status:</p> <ul> <li>Created: Include created deployments in the resulting list.</li> <li>Queued: Include queued deployments in the resulting list.</li> <li>In Progress: Include in-progress deployments in the resulting list.</li> <li>Succeeded: Include successful deployments in the resulting list.</li> <li>Failed: Include failed deployments in the resulting list.</li> <li>Stopped: Include stopped deployments in the resulting list.</li> </ul>"
+        "ListDeploymentsInput$includeOnlyStatuses": "<p>A subset of deployments to list by status:</p> <ul> <li> <p>Created: Include created deployments in the resulting list.</p> </li> <li> <p>Queued: Include queued deployments in the resulting list.</p> </li> <li> <p>In Progress: Include in-progress deployments in the resulting list.</p> </li> <li> <p>Succeeded: Include successful deployments in the resulting list.</p> </li> <li> <p>Failed: Include failed deployments in the resulting list.</p> </li> <li> <p>Stopped: Include stopped deployments in the resulting list.</p> </li> </ul>"
       }
     },
     "DeploymentsInfoList": {
@@ -527,7 +587,8 @@
         "CreateDeploymentInput$description": "<p>A comment about the deployment.</p>",
         "DeploymentInfo$description": "<p>A comment about the deployment.</p>",
         "GenericRevisionInfo$description": "<p>A comment about the revision.</p>",
-        "RegisterApplicationRevisionInput$description": "<p>A comment about the revision.</p>"
+        "RegisterApplicationRevisionInput$description": "<p>A comment about the revision.</p>",
+        "RollbackInfo$rollbackMessage": "<p>Information describing the status of a deployment rollback; for example, whether the deployment can't be rolled back, is in progress, failed, or succeeded. </p>"
       }
     },
     "DescriptionTooLongException": {
@@ -558,7 +619,7 @@
     "EC2TagFilterType": {
       "base": null,
       "refs": {
-        "EC2TagFilter$Type": "<p>The tag filter type:</p> <ul> <li>KEY_ONLY: Key only.</li> <li>VALUE_ONLY: Value only.</li> <li>KEY_AND_VALUE: Key and value.</li> </ul>"
+        "EC2TagFilter$Type": "<p>The tag filter type:</p> <ul> <li> <p>KEY_ONLY: Key only.</p> </li> <li> <p>VALUE_ONLY: Value only.</p> </li> <li> <p>KEY_AND_VALUE: Key and value.</p> </li> </ul>"
       }
     },
     "ETag": {
@@ -570,7 +631,7 @@
     "ErrorCode": {
       "base": null,
       "refs": {
-        "ErrorInformation$code": "<p>The error code:</p> <ul> <li>APPLICATION_MISSING: The application was missing. This error code will most likely be raised if the application is deleted after the deployment is created but before it is started.</li> <li>DEPLOYMENT_GROUP_MISSING: The deployment group was missing. This error code will most likely be raised if the deployment group is deleted after the deployment is created but before it is started.</li> <li>HEALTH_CONSTRAINTS: The deployment failed on too many instances to be successfully deployed within the instance health constraints specified.</li> <li>HEALTH_CONSTRAINTS_INVALID: The revision cannot be successfully deployed within the instance health constraints specified.</li> <li>IAM_ROLE_MISSING: The service role cannot be accessed.</li> <li>IAM_ROLE_PERMISSIONS: The service role does not have the correct permissions.</li> <li>INTERNAL_ERROR: There was an internal error.</li> <li>NO_EC2_SUBSCRIPTION: The calling account is not subscribed to the Amazon EC2 service.</li> <li>NO_INSTANCES: No instance were specified, or no instance can be found.</li> <li>OVER_MAX_INSTANCES: The maximum number of instance was exceeded.</li> <li>THROTTLED: The operation was throttled because the calling account exceeded the throttling limits of one or more AWS services.</li> <li>TIMEOUT: The deployment has timed out.</li> <li>REVISION_MISSING: The revision ID was missing. This error code will most likely be raised if the revision is deleted after the deployment is created but before it is started.</li> </ul>"
+        "ErrorInformation$code": "<p>The error code:</p> <ul> <li> <p>APPLICATION_MISSING: The application was missing. This error code will most likely be raised if the application is deleted after the deployment is created but before it is started.</p> </li> <li> <p>DEPLOYMENT_GROUP_MISSING: The deployment group was missing. This error code will most likely be raised if the deployment group is deleted after the deployment is created but before it is started.</p> </li> <li> <p>HEALTH_CONSTRAINTS: The deployment failed on too many instances to be successfully deployed within the instance health constraints specified.</p> </li> <li> <p>HEALTH_CONSTRAINTS_INVALID: The revision cannot be successfully deployed within the instance health constraints specified.</p> </li> <li> <p>IAM_ROLE_MISSING: The service role cannot be accessed.</p> </li> <li> <p>IAM_ROLE_PERMISSIONS: The service role does not have the correct permissions.</p> </li> <li> <p>INTERNAL_ERROR: There was an internal error.</p> </li> <li> <p>NO_EC2_SUBSCRIPTION: The calling account is not subscribed to the Amazon EC2 service.</p> </li> <li> <p>NO_INSTANCES: No instance were specified, or no instance can be found.</p> </li> <li> <p>OVER_MAX_INSTANCES: The maximum number of instance was exceeded.</p> </li> <li> <p>THROTTLED: The operation was throttled because the calling account exceeded the throttling limits of one or more AWS services.</p> </li> <li> <p>TIMEOUT: The deployment has timed out.</p> </li> <li> <p>REVISION_MISSING: The revision ID was missing. This error code will most likely be raised if the revision is deleted after the deployment is created but before it is started.</p> </li> </ul>"
       }
     },
     "ErrorInformation": {
@@ -778,13 +839,13 @@
       "base": null,
       "refs": {
         "InstanceStatusList$member": null,
-        "InstanceSummary$status": "<p>The deployment status for this instance:</p> <ul> <li>Pending: The deployment is pending for this instance.</li> <li>In Progress: The deployment is in progress for this instance.</li> <li>Succeeded: The deployment has succeeded for this instance.</li> <li>Failed: The deployment has failed for this instance.</li> <li>Skipped: The deployment has been skipped for this instance.</li> <li>Unknown: The deployment status is unknown for this instance.</li> </ul>"
+        "InstanceSummary$status": "<p>The deployment status for this instance:</p> <ul> <li> <p>Pending: The deployment is pending for this instance.</p> </li> <li> <p>In Progress: The deployment is in progress for this instance.</p> </li> <li> <p>Succeeded: The deployment has succeeded for this instance.</p> </li> <li> <p>Failed: The deployment has failed for this instance.</p> </li> <li> <p>Skipped: The deployment has been skipped for this instance.</p> </li> <li> <p>Unknown: The deployment status is unknown for this instance.</p> </li> </ul>"
       }
     },
     "InstanceStatusList": {
       "base": null,
       "refs": {
-        "ListDeploymentInstancesInput$instanceStatusFilter": "<p>A subset of instances to list by status:</p> <ul> <li>Pending: Include those instance with pending deployments.</li> <li>InProgress: Include those instance where deployments are still in progress.</li> <li>Succeeded: Include those instances with successful deployments.</li> <li>Failed: Include those instance with failed deployments.</li> <li>Skipped: Include those instance with skipped deployments.</li> <li>Unknown: Include those instance with deployments in an unknown state.</li> </ul>"
+        "ListDeploymentInstancesInput$instanceStatusFilter": "<p>A subset of instances to list by status:</p> <ul> <li> <p>Pending: Include those instance with pending deployments.</p> </li> <li> <p>InProgress: Include those instance where deployments are still in progress.</p> </li> <li> <p>Succeeded: Include those instances with successful deployments.</p> </li> <li> <p>Failed: Include those instance with failed deployments.</p> </li> <li> <p>Skipped: Include those instance with skipped deployments.</p> </li> <li> <p>Unknown: Include those instance with deployments in an unknown state.</p> </li> </ul>"
       }
     },
     "InstanceSummary": {
@@ -807,8 +868,18 @@
         "ListDeploymentInstancesOutput$instancesList": "<p>A list of instance IDs.</p>"
       }
     },
+    "InvalidAlarmConfigException": {
+      "base": "<p>The format of the alarm configuration is invalid. Possible causes include:</p> <ul> <li> <p>The alarm list is null.</p> </li> <li> <p>The alarm object is null.</p> </li> <li> <p>The alarm name is empty or null or exceeds the 255 character limit.</p> </li> <li> <p>Two alarms with the same name have been specified.</p> </li> <li> <p>The alarm configuration is enabled but the alarm list is empty.</p> </li> </ul>",
+      "refs": {
+      }
+    },
     "InvalidApplicationNameException": {
       "base": "<p>The application name was specified in an invalid format.</p>",
+      "refs": {
+      }
+    },
+    "InvalidAutoRollbackConfigException": {
+      "base": "<p>The automatic rollback configuration was specified in an invalid format. For example, automatic rollback is enabled but an invalid triggering event type or no event types were listed.</p>",
       "refs": {
       }
     },
@@ -943,7 +1014,7 @@
     "LifecycleErrorCode": {
       "base": null,
       "refs": {
-        "Diagnostics$errorCode": "<p>The associated error code:</p> <ul> <li>Success: The specified script ran.</li> <li>ScriptMissing: The specified script was not found in the specified location.</li> <li>ScriptNotExecutable: The specified script is not a recognized executable file type.</li> <li>ScriptTimedOut: The specified script did not finish running in the specified time period.</li> <li>ScriptFailed: The specified script failed to run as expected.</li> <li>UnknownError: The specified script did not run for an unknown reason.</li> </ul>"
+        "Diagnostics$errorCode": "<p>The associated error code:</p> <ul> <li> <p>Success: The specified script ran.</p> </li> <li> <p>ScriptMissing: The specified script was not found in the specified location.</p> </li> <li> <p>ScriptNotExecutable: The specified script is not a recognized executable file type.</p> </li> <li> <p>ScriptTimedOut: The specified script did not finish running in the specified time period.</p> </li> <li> <p>ScriptFailed: The specified script failed to run as expected.</p> </li> <li> <p>UnknownError: The specified script did not run for an unknown reason.</p> </li> </ul>"
       }
     },
     "LifecycleEvent": {
@@ -967,7 +1038,7 @@
     "LifecycleEventStatus": {
       "base": null,
       "refs": {
-        "LifecycleEvent$status": "<p>The deployment lifecycle event status:</p> <ul> <li>Pending: The deployment lifecycle event is pending.</li> <li>InProgress: The deployment lifecycle event is in progress.</li> <li>Succeeded: The deployment lifecycle event ran successfully.</li> <li>Failed: The deployment lifecycle event has failed.</li> <li>Skipped: The deployment lifecycle event has been skipped.</li> <li>Unknown: The deployment lifecycle event is unknown.</li> </ul>"
+        "LifecycleEvent$status": "<p>The deployment lifecycle event status:</p> <ul> <li> <p>Pending: The deployment lifecycle event is pending.</p> </li> <li> <p>InProgress: The deployment lifecycle event is in progress.</p> </li> <li> <p>Succeeded: The deployment lifecycle event ran successfully.</p> </li> <li> <p>Failed: The deployment lifecycle event has failed.</p> </li> <li> <p>Skipped: The deployment lifecycle event has been skipped.</p> </li> <li> <p>Unknown: The deployment lifecycle event is unknown.</p> </li> </ul>"
       }
     },
     "LifecycleHookLimitExceededException": {
@@ -1042,7 +1113,7 @@
       }
     },
     "ListOnPremisesInstancesInput": {
-      "base": "<p>Represents the input of a list on-premises instances operation.</p>.",
+      "base": "<p>Represents the input of a list on-premises instances operation.</p>",
       "refs": {
       }
     },
@@ -1054,7 +1125,7 @@
     "ListStateFilterAction": {
       "base": null,
       "refs": {
-        "ListApplicationRevisionsInput$deployed": "<p>Whether to list revisions based on whether the revision is the target revision of an deployment group:</p> <ul> <li>include: List revisions that are target revisions of a deployment group.</li> <li>exclude: Do not list revisions that are target revisions of a deployment group.</li> <li>ignore: List all revisions.</li> </ul>"
+        "ListApplicationRevisionsInput$deployed": "<p>Whether to list revisions based on whether the revision is the target revision of an deployment group:</p> <ul> <li> <p>include: List revisions that are target revisions of a deployment group.</p> </li> <li> <p>exclude: Do not list revisions that are target revisions of a deployment group.</p> </li> <li> <p>ignore: List all revisions.</p> </li> </ul>"
       }
     },
     "LogTail": {
@@ -1072,14 +1143,14 @@
     "MinimumHealthyHosts": {
       "base": "<p>Information about minimum healthy instance.</p>",
       "refs": {
-        "CreateDeploymentConfigInput$minimumHealthyHosts": "<p>The minimum number of healthy instances that should be available at any time during the deployment. There are two parameters expected in the input: type and value.</p> <p>The type parameter takes either of the following values:</p> <ul> <li>HOST_COUNT: The value parameter represents the minimum number of healthy instances as an absolute value.</li> <li>FLEET_PERCENT: The value parameter represents the minimum number of healthy instances as a percentage of the total number of instances in the deployment. If you specify FLEET_PERCENT, at the start of the deployment, AWS CodeDeploy converts the percentage to the equivalent number of instance and rounds up fractional instances.</li> </ul> <p>The value parameter takes an integer.</p> <p>For example, to set a minimum of 95% healthy instance, specify a type of FLEET_PERCENT and a value of 95.</p>",
+        "CreateDeploymentConfigInput$minimumHealthyHosts": "<p>The minimum number of healthy instances that should be available at any time during the deployment. There are two parameters expected in the input: type and value.</p> <p>The type parameter takes either of the following values:</p> <ul> <li> <p>HOST_COUNT: The value parameter represents the minimum number of healthy instances as an absolute value.</p> </li> <li> <p>FLEET_PERCENT: The value parameter represents the minimum number of healthy instances as a percentage of the total number of instances in the deployment. If you specify FLEET_PERCENT, at the start of the deployment, AWS CodeDeploy converts the percentage to the equivalent number of instance and rounds up fractional instances.</p> </li> </ul> <p>The value parameter takes an integer.</p> <p>For example, to set a minimum of 95% healthy instance, specify a type of FLEET_PERCENT and a value of 95.</p>",
         "DeploymentConfigInfo$minimumHealthyHosts": "<p>Information about the number or percentage of minimum healthy instance.</p>"
       }
     },
     "MinimumHealthyHostsType": {
       "base": null,
       "refs": {
-        "MinimumHealthyHosts$type": "<p>The minimum healthy instance type:</p> <ul> <li>HOST_COUNT: The minimum number of healthy instance as an absolute value.</li> <li>FLEET_PERCENT: The minimum number of healthy instance as a percentage of the total number of instance in the deployment.</li> </ul> <p>In an example of nine instance, if a HOST_COUNT of six is specified, deploy to up to three instances at a time. The deployment will be successful if six or more instances are deployed to successfully; otherwise, the deployment fails. If a FLEET_PERCENT of 40 is specified, deploy to up to five instance at a time. The deployment will be successful if four or more instance are deployed to successfully; otherwise, the deployment fails.</p> <note>In a call to the get deployment configuration operation, CodeDeployDefault.OneAtATime will return a minimum healthy instance type of MOST_CONCURRENCY and a value of 1. This means a deployment to only one instance at a time. (You cannot set the type to MOST_CONCURRENCY, only to HOST_COUNT or FLEET_PERCENT.) In addition, with CodeDeployDefault.OneAtATime, AWS CodeDeploy will try to ensure that all instances but one are kept in a healthy state during the deployment. Although this allows one instance at a time to be taken offline for a new deployment, it also means that if the deployment to the last instance fails, the overall deployment still succeeds.</note>"
+        "MinimumHealthyHosts$type": "<p>The minimum healthy instance type:</p> <ul> <li> <p>HOST_COUNT: The minimum number of healthy instance as an absolute value.</p> </li> <li> <p>FLEET_PERCENT: The minimum number of healthy instance as a percentage of the total number of instance in the deployment.</p> </li> </ul> <p>In an example of nine instance, if a HOST_COUNT of six is specified, deploy to up to three instances at a time. The deployment will be successful if six or more instances are deployed to successfully; otherwise, the deployment fails. If a FLEET_PERCENT of 40 is specified, deploy to up to five instance at a time. The deployment will be successful if four or more instance are deployed to successfully; otherwise, the deployment fails.</p> <note> <p>In a call to the get deployment configuration operation, CodeDeployDefault.OneAtATime will return a minimum healthy instance type of MOST_CONCURRENCY and a value of 1. This means a deployment to only one instance at a time. (You cannot set the type to MOST_CONCURRENCY, only to HOST_COUNT or FLEET_PERCENT.) In addition, with CodeDeployDefault.OneAtATime, AWS CodeDeploy will try to ensure that all instances but one are kept in a healthy state during the deployment. Although this allows one instance at a time to be taken offline for a new deployment, it also means that if the deployment to the last instance fails, the overall deployment still succeeds.</p> </note>"
       }
     },
     "MinimumHealthyHostsValue": {
@@ -1107,6 +1178,12 @@
         "ListOnPremisesInstancesOutput$nextToken": "<p>If a large amount of information is returned, an identifier is also returned. It can be used in a subsequent list on-premises instances call to return the next set of on-premises instances in the list.</p>"
       }
     },
+    "NullableBoolean": {
+      "base": null,
+      "refs": {
+        "StopDeploymentInput$autoRollbackEnabled": "<p>Indicates, when a deployment is stopped, whether instances that have been updated should be rolled back to the previous version of the application revision.</p>"
+      }
+    },
     "RegisterApplicationRevisionInput": {
       "base": "<p>Represents the input of a register application revision operation.</p>",
       "refs": {
@@ -1120,7 +1197,7 @@
     "RegistrationStatus": {
       "base": null,
       "refs": {
-        "ListOnPremisesInstancesInput$registrationStatus": "<p>The registration status of the on-premises instances:</p> <ul> <li>Deregistered: Include deregistered on-premises instances in the resulting list.</li> <li>Registered: Include registered on-premises instances in the resulting list.</li> </ul>"
+        "ListOnPremisesInstancesInput$registrationStatus": "<p>The registration status of the on-premises instances:</p> <ul> <li> <p>Deregistered: Include deregistered on-premises instances in the resulting list.</p> </li> <li> <p>Registered: Include registered on-premises instances in the resulting list.</p> </li> </ul>"
       }
     },
     "RemoveTagsFromOnPremisesInstancesInput": {
@@ -1174,7 +1251,7 @@
     "RevisionLocationType": {
       "base": null,
       "refs": {
-        "RevisionLocation$revisionType": "<p>The type of application revision:</p> <ul> <li>S3: An application revision stored in Amazon S3.</li> <li>GitHub: An application revision stored in GitHub.</li> </ul>"
+        "RevisionLocation$revisionType": "<p>The type of application revision:</p> <ul> <li> <p>S3: An application revision stored in Amazon S3.</p> </li> <li> <p>GitHub: An application revision stored in GitHub.</p> </li> </ul>"
       }
     },
     "RevisionRequiredException": {
@@ -1193,6 +1270,12 @@
     "RoleRequiredException": {
       "base": "<p>The role ID was not specified.</p>",
       "refs": {
+      }
+    },
+    "RollbackInfo": {
+      "base": "<p>Information about a deployment rollback.</p>",
+      "refs": {
+        "DeploymentInfo$rollbackInfo": "<p>Information about a deployment rollback.</p>"
       }
     },
     "S3Bucket": {
@@ -1224,7 +1307,7 @@
     "SortOrder": {
       "base": null,
       "refs": {
-        "ListApplicationRevisionsInput$sortOrder": "<p>The order in which to sort the list results:</p> <ul> <li>ascending: ascending order.</li> <li>descending: descending order.</li> </ul> <p>If not specified, the results will be sorted in ascending order.</p> <p>If set to null, the results will be sorted in an arbitrary order.</p>"
+        "ListApplicationRevisionsInput$sortOrder": "<p>The order in which to sort the list results:</p> <ul> <li> <p>ascending: ascending order.</p> </li> <li> <p>descending: descending order.</p> </li> </ul> <p>If not specified, the results will be sorted in ascending order.</p> <p>If set to null, the results will be sorted in an arbitrary order.</p>"
       }
     },
     "StopDeploymentInput": {
@@ -1240,7 +1323,7 @@
     "StopStatus": {
       "base": null,
       "refs": {
-        "StopDeploymentOutput$status": "<p>The status of the stop deployment operation:</p> <ul> <li>Pending: The stop operation is pending.</li> <li>Succeeded: The stop operation was successful.</li> </ul>"
+        "StopDeploymentOutput$status": "<p>The status of the stop deployment operation:</p> <ul> <li> <p>Pending: The stop operation is pending.</p> </li> <li> <p>Succeeded: The stop operation was successful.</p> </li> </ul>"
       }
     },
     "Tag": {
@@ -1267,7 +1350,7 @@
     "TagFilterType": {
       "base": null,
       "refs": {
-        "TagFilter$Type": "<p>The on-premises instance tag filter type:</p> <ul> <li>KEY_ONLY: Key only.</li> <li>VALUE_ONLY: Value only.</li> <li>KEY_AND_VALUE: Key and value.</li> </ul>"
+        "TagFilter$Type": "<p>The on-premises instance tag filter type:</p> <ul> <li> <p>KEY_ONLY: Key only.</p> </li> <li> <p>VALUE_ONLY: Value only.</p> </li> <li> <p>KEY_AND_VALUE: Key and value.</p> </li> </ul>"
       }
     },
     "TagLimitExceededException": {
@@ -1310,8 +1393,8 @@
         "InstanceSummary$lastUpdatedAt": "<p>A timestamp indicating when the instance information was last updated.</p>",
         "LifecycleEvent$startTime": "<p>A timestamp indicating when the deployment lifecycle event started.</p>",
         "LifecycleEvent$endTime": "<p>A timestamp indicating when the deployment lifecycle event ended.</p>",
-        "TimeRange$start": "<p>The start time of the time range.</p> <note>Specify null to leave the start time open-ended.</note>",
-        "TimeRange$end": "<p>The end time of the time range.</p> <note>Specify null to leave the end time open-ended.</note>"
+        "TimeRange$start": "<p>The start time of the time range.</p> <note> <p>Specify null to leave the start time open-ended.</p> </note>",
+        "TimeRange$end": "<p>The end time of the time range.</p> <note> <p>Specify null to leave the end time open-ended.</p> </note>"
       }
     },
     "TriggerConfig": {
@@ -1323,9 +1406,9 @@
     "TriggerConfigList": {
       "base": null,
       "refs": {
-        "CreateDeploymentGroupInput$triggerConfigurations": "<p>Information about triggers to create when the deployment group is created.</p>",
-        "DeploymentGroupInfo$triggerConfigurations": "<p>A list of associated triggers. </p>",
-        "UpdateDeploymentGroupInput$triggerConfigurations": "<p>Information about triggers to change when the deployment group is updated.</p>"
+        "CreateDeploymentGroupInput$triggerConfigurations": "<p>Information about triggers to create when the deployment group is created. For examples, see <a href=\"http://docs.aws.amazon.com/codedeploy/latest/userguide/how-to-notify-sns.html\">Create a Trigger for an AWS CodeDeploy Event</a> in the AWS CodeDeploy User Guide.</p>",
+        "DeploymentGroupInfo$triggerConfigurations": "<p>Information about triggers associated with the deployment group.</p>",
+        "UpdateDeploymentGroupInput$triggerConfigurations": "<p>Information about triggers to change when the deployment group is updated. For examples, see <a href=\"http://docs.aws.amazon.com/codedeploy/latest/userguide/how-to-notify-edit.html\">Modify Triggers in an AWS CodeDeploy Deployment Group</a> in the AWS CodeDeploy User Guide.</p>"
       }
     },
     "TriggerEventType": {
@@ -1337,7 +1420,7 @@
     "TriggerEventTypeList": {
       "base": null,
       "refs": {
-        "TriggerConfig$triggerEvents": "<p>The event type or types for which notifications are triggered.</p> <p>The following event type values are supported:</p> <ul> <li>DEPLOYMENT_START</li> <li>DEPLOYMENT_SUCCESS</li> <li>DEPLOYMENT_FAILURE</li> <li>DEPLOYMENT_STOP</li> <li>INSTANCE_START</li> <li>INSTANCE_SUCCESS</li> <li>INSTANCE_FAILURE</li> </ul>"
+        "TriggerConfig$triggerEvents": "<p>The event type or types for which notifications are triggered.</p>"
       }
     },
     "TriggerName": {

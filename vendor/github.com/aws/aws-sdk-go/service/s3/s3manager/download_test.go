@@ -3,6 +3,7 @@ package s3manager_test
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"regexp"
@@ -145,6 +146,37 @@ func dlLoggingSvcContentRangeTotalAny(data []byte, states []int) (*s3.S3, *[]str
 		}
 		r.HTTPResponse.Header.Set("Content-Range", fmt.Sprintf("bytes %d-%d/*",
 			start, fin-1))
+		index++
+	})
+
+	return svc, &names
+}
+
+func dlLoggingSvcWithErrReader(cases []testErrReader) (*s3.S3, *[]string) {
+	var m sync.Mutex
+	names := []string{}
+	var index int = 0
+
+	svc := s3.New(unit.Session, &aws.Config{
+		MaxRetries: aws.Int(len(cases) - 1),
+	})
+	svc.Handlers.Send.Clear()
+	svc.Handlers.Send.PushBack(func(r *request.Request) {
+		m.Lock()
+		defer m.Unlock()
+
+		names = append(names, r.Operation.Name)
+
+		c := cases[index]
+
+		r.HTTPResponse = &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(&c),
+			Header:     http.Header{},
+		}
+		r.HTTPResponse.Header.Set("Content-Range",
+			fmt.Sprintf("bytes %d-%d/%d", 0, c.Len-1, c.Len))
+		r.HTTPResponse.Header.Set("Content-Length", fmt.Sprintf("%d", c.Len))
 		index++
 	})
 
@@ -306,4 +338,90 @@ func TestDownloadContentRangeTotalAny(t *testing.T) {
 		count += int(b)
 	}
 	assert.Equal(t, 0, count)
+}
+
+func TestDownloadPartBodyRetry_SuccessRetry(t *testing.T) {
+	s, names := dlLoggingSvcWithErrReader([]testErrReader{
+		{Buf: []byte("ab"), Len: 3, Err: io.ErrUnexpectedEOF},
+		{Buf: []byte("123"), Len: 3, Err: io.EOF},
+	})
+
+	d := s3manager.NewDownloaderWithClient(s, func(d *s3manager.Downloader) {
+		d.Concurrency = 1
+	})
+
+	w := &aws.WriteAtBuffer{}
+	n, err := d.Download(w, &s3.GetObjectInput{
+		Bucket: aws.String("bucket"),
+		Key:    aws.String("key"),
+	})
+
+	assert.Nil(t, err)
+	assert.Equal(t, int64(3), n)
+	assert.Equal(t, []string{"GetObject", "GetObject"}, *names)
+	assert.Equal(t, []byte("123"), w.Bytes())
+}
+
+func TestDownloadPartBodyRetry_SuccessNoRetry(t *testing.T) {
+	s, names := dlLoggingSvcWithErrReader([]testErrReader{
+		{Buf: []byte("abc"), Len: 3, Err: io.EOF},
+	})
+
+	d := s3manager.NewDownloaderWithClient(s, func(d *s3manager.Downloader) {
+		d.Concurrency = 1
+	})
+
+	w := &aws.WriteAtBuffer{}
+	n, err := d.Download(w, &s3.GetObjectInput{
+		Bucket: aws.String("bucket"),
+		Key:    aws.String("key"),
+	})
+
+	assert.Nil(t, err)
+	assert.Equal(t, int64(3), n)
+	assert.Equal(t, []string{"GetObject"}, *names)
+	assert.Equal(t, []byte("abc"), w.Bytes())
+}
+
+func TestDownloadPartBodyRetry_FailRetry(t *testing.T) {
+	s, names := dlLoggingSvcWithErrReader([]testErrReader{
+		{Buf: []byte("ab"), Len: 3, Err: io.ErrUnexpectedEOF},
+	})
+
+	d := s3manager.NewDownloaderWithClient(s, func(d *s3manager.Downloader) {
+		d.Concurrency = 1
+	})
+
+	w := &aws.WriteAtBuffer{}
+	n, err := d.Download(w, &s3.GetObjectInput{
+		Bucket: aws.String("bucket"),
+		Key:    aws.String("key"),
+	})
+
+	assert.Error(t, err)
+	assert.Equal(t, int64(2), n)
+	assert.Equal(t, []string{"GetObject"}, *names)
+	assert.Equal(t, []byte("ab"), w.Bytes())
+}
+
+type testErrReader struct {
+	Buf []byte
+	Err error
+	Len int64
+
+	off int
+}
+
+func (r *testErrReader) Read(p []byte) (int, error) {
+	to := len(r.Buf) - r.off
+
+	n := copy(p, r.Buf[r.off:to])
+	r.off += n
+
+	if n < len(p) {
+		return n, r.Err
+
+	}
+
+	return n, nil
 }

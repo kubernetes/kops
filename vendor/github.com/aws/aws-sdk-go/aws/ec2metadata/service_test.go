@@ -9,25 +9,24 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
-	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/awstesting/unit"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestClientOverrideDefaultHTTPClientTimeout(t *testing.T) {
-	svc := ec2metadata.New(session.New())
+	svc := ec2metadata.New(unit.Session)
 
 	assert.NotEqual(t, http.DefaultClient, svc.Config.HTTPClient)
 	assert.Equal(t, 5*time.Second, svc.Config.HTTPClient.Timeout)
 }
 
 func TestClientNotOverrideDefaultHTTPClientTimeout(t *testing.T) {
-	origClient := *http.DefaultClient
 	http.DefaultClient.Transport = &http.Transport{}
 	defer func() {
-		http.DefaultClient = &origClient
+		http.DefaultClient.Transport = nil
 	}()
 
-	svc := ec2metadata.New(session.New())
+	svc := ec2metadata.New(unit.Session)
 
 	assert.Equal(t, http.DefaultClient, svc.Config.HTTPClient)
 
@@ -38,7 +37,7 @@ func TestClientNotOverrideDefaultHTTPClientTimeout(t *testing.T) {
 }
 
 func TestClientDisableOverrideDefaultHTTPClientTimeout(t *testing.T) {
-	svc := ec2metadata.New(session.New(aws.NewConfig().WithEC2MetadataDisableTimeoutOverride(true)))
+	svc := ec2metadata.New(unit.Session, aws.NewConfig().WithEC2MetadataDisableTimeoutOverride(true))
 
 	assert.Equal(t, http.DefaultClient, svc.Config.HTTPClient)
 }
@@ -69,7 +68,7 @@ func runEC2MetadataClients(t *testing.T, cfg *aws.Config, atOnce int) {
 	wg.Add(atOnce)
 	for i := 0; i < atOnce; i++ {
 		go func() {
-			svc := ec2metadata.New(session.New(), cfg)
+			svc := ec2metadata.New(unit.Session, cfg)
 			_, err := svc.Region()
 			assert.NoError(t, err)
 			wg.Done()

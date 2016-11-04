@@ -6,11 +6,11 @@ package cognitosync
 import (
 	"github.com/aws/aws-sdk-go/awstesting/integration/smoke"
 	"github.com/aws/aws-sdk-go/service/cognitosync"
-	. "github.com/lsegal/gucumber"
+	"github.com/gucumber/gucumber"
 )
 
 func init() {
-	Before("@cognitosync", func() {
-		World["client"] = cognitosync.New(smoke.Session)
+	gucumber.Before("@cognitosync", func() {
+		gucumber.World["client"] = cognitosync.New(smoke.Session)
 	})
 }

@@ -1,8 +1,8 @@
-// +build go1.5
+// +build go1.5,deprecated
 
 package main
 
-//go:generate go run gen/gen.go
+//go:generate go run -tags deprecated gen/gen.go
 
 import (
 	"os"
