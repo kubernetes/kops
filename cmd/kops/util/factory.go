@@ -43,7 +43,7 @@ func (f *Factory) Clientset() (simple.Clientset, error) {
 	if f.clientset == nil {
 		registryPath := f.options.RegistryPath
 		if registryPath == "" {
-			return nil, field.Required(field.NewPath("RegistryPath"), "")
+			return nil, field.Required(field.NewPath("RegistryPath"), "Please set the --state flag, or `export KOPS_STATE_STORE=s3://<bucket>`")
 		}
 		basePath, err := vfs.Context.BuildVfsPath(registryPath)
 		if err != nil {
@@ -51,7 +51,7 @@ func (f *Factory) Clientset() (simple.Clientset, error) {
 		}
 
 		if !vfs.IsClusterReadable(basePath) {
-			return nil, field.Invalid(field.NewPath("RegistryPath"), registryPath, "Not cloud-reachable - please use an S3 bucket")
+			return nil, field.Invalid(field.NewPath("RegistryPath"), registryPath, "Not cloud-reachable - please use an S3 bucket when setting --state or KOPS_STATE_STORE")
 		}
 
 		f.clientset = vfsclientset.NewVFSClientset(basePath)
