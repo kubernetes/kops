@@ -13,7 +13,7 @@ spec:
     image: "{{ KubeAPIServer.Image }}"
     resources:
       requests:
-        cpu: 250m
+        cpu: 150m
     command:
     - "/bin/sh"
     - "-c"
