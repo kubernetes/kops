@@ -11,6 +11,24 @@
     "targetPrefix":"DirectoryService_20150416"
   },
   "operations":{
+    "AddIpRoutes":{
+      "name":"AddIpRoutes",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"AddIpRoutesRequest"},
+      "output":{"shape":"AddIpRoutesResult"},
+      "errors":[
+        {"shape":"EntityDoesNotExistException"},
+        {"shape":"EntityAlreadyExistsException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"DirectoryUnavailableException"},
+        {"shape":"IpRouteLimitExceededException"},
+        {"shape":"ClientException"},
+        {"shape":"ServiceException"}
+      ]
+    },
     "AddTagsToResource":{
       "name":"AddTagsToResource",
       "http":{
@@ -407,6 +425,22 @@
         {"shape":"ServiceException"}
       ]
     },
+    "ListIpRoutes":{
+      "name":"ListIpRoutes",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListIpRoutesRequest"},
+      "output":{"shape":"ListIpRoutesResult"},
+      "errors":[
+        {"shape":"EntityDoesNotExistException"},
+        {"shape":"InvalidNextTokenException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ClientException"},
+        {"shape":"ServiceException"}
+      ]
+    },
     "ListTagsForResource":{
       "name":"ListTagsForResource",
       "http":{
@@ -434,6 +468,22 @@
       "errors":[
         {"shape":"EntityDoesNotExistException"},
         {"shape":"InvalidParameterException"},
+        {"shape":"ClientException"},
+        {"shape":"ServiceException"}
+      ]
+    },
+    "RemoveIpRoutes":{
+      "name":"RemoveIpRoutes",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"RemoveIpRoutesRequest"},
+      "output":{"shape":"RemoveIpRoutesResult"},
+      "errors":[
+        {"shape":"EntityDoesNotExistException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"DirectoryUnavailableException"},
         {"shape":"ClientException"},
         {"shape":"ServiceException"}
       ]
@@ -523,6 +573,23 @@
       "max":128,
       "min":1
     },
+    "AddIpRoutesRequest":{
+      "type":"structure",
+      "required":[
+        "DirectoryId",
+        "IpRoutes"
+      ],
+      "members":{
+        "DirectoryId":{"shape":"DirectoryId"},
+        "IpRoutes":{"shape":"IpRoutes"},
+        "UpdateSecurityGroupForDirectoryControllers":{"shape":"UpdateSecurityGroupForDirectoryControllers"}
+      }
+    },
+    "AddIpRoutesResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
     "AddTagsToResourceRequest":{
       "type":"structure",
       "required":[
@@ -539,6 +606,7 @@
       "members":{
       }
     },
+    "AddedDateTime":{"type":"timestamp"},
     "AliasName":{
       "type":"string",
       "max":62,
@@ -573,6 +641,14 @@
     "AvailabilityZones":{
       "type":"list",
       "member":{"shape":"AvailabilityZone"}
+    },
+    "CidrIp":{
+      "type":"string",
+      "pattern":"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([1-9]|[1-2][0-9]|3[0-2]))$"
+    },
+    "CidrIps":{
+      "type":"list",
+      "member":{"shape":"CidrIp"}
     },
     "ClientException":{
       "type":"structure",
@@ -1233,11 +1309,73 @@
       "type":"list",
       "member":{"shape":"IpAddr"}
     },
+    "IpRoute":{
+      "type":"structure",
+      "members":{
+        "CidrIp":{"shape":"CidrIp"},
+        "Description":{"shape":"Description"}
+      }
+    },
+    "IpRouteInfo":{
+      "type":"structure",
+      "members":{
+        "DirectoryId":{"shape":"DirectoryId"},
+        "CidrIp":{"shape":"CidrIp"},
+        "IpRouteStatusMsg":{"shape":"IpRouteStatusMsg"},
+        "AddedDateTime":{"shape":"AddedDateTime"},
+        "IpRouteStatusReason":{"shape":"IpRouteStatusReason"},
+        "Description":{"shape":"Description"}
+      }
+    },
+    "IpRouteLimitExceededException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"ExceptionMessage"},
+        "RequestId":{"shape":"RequestId"}
+      },
+      "exception":true
+    },
+    "IpRouteStatusMsg":{
+      "type":"string",
+      "enum":[
+        "Adding",
+        "Added",
+        "Removing",
+        "Removed",
+        "AddFailed",
+        "RemoveFailed"
+      ]
+    },
+    "IpRouteStatusReason":{"type":"string"},
+    "IpRoutes":{
+      "type":"list",
+      "member":{"shape":"IpRoute"}
+    },
+    "IpRoutesInfo":{
+      "type":"list",
+      "member":{"shape":"IpRouteInfo"}
+    },
     "LastUpdatedDateTime":{"type":"timestamp"},
     "LaunchTime":{"type":"timestamp"},
     "Limit":{
       "type":"integer",
       "min":0
+    },
+    "ListIpRoutesRequest":{
+      "type":"structure",
+      "required":["DirectoryId"],
+      "members":{
+        "DirectoryId":{"shape":"DirectoryId"},
+        "NextToken":{"shape":"NextToken"},
+        "Limit":{"shape":"Limit"}
+      }
+    },
+    "ListIpRoutesResult":{
+      "type":"structure",
+      "members":{
+        "IpRoutesInfo":{"shape":"IpRoutesInfo"},
+        "NextToken":{"shape":"NextToken"}
+      }
     },
     "ListTagsForResourceRequest":{
       "type":"structure",
@@ -1346,6 +1484,22 @@
     "RemoteDomainNames":{
       "type":"list",
       "member":{"shape":"RemoteDomainName"}
+    },
+    "RemoveIpRoutesRequest":{
+      "type":"structure",
+      "required":[
+        "DirectoryId",
+        "CidrIps"
+      ],
+      "members":{
+        "DirectoryId":{"shape":"DirectoryId"},
+        "CidrIps":{"shape":"CidrIps"}
+      }
+    },
+    "RemoveIpRoutesResult":{
+      "type":"structure",
+      "members":{
+      }
     },
     "RemoveTagsFromResourceRequest":{
       "type":"structure",
@@ -1647,6 +1801,7 @@
       "members":{
       }
     },
+    "UpdateSecurityGroupForDirectoryControllers":{"type":"boolean"},
     "UseSameUsername":{"type":"boolean"},
     "UserName":{
       "type":"string",

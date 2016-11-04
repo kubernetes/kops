@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/awstesting/unit"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
@@ -25,7 +25,7 @@ type logger interface {
 	log(key string, data map[string]interface{}) error
 }
 
-// init intializes the logger and uses dependecy injection for the
+// init initializes the logger and uses dependency injection for the
 // outputer
 func newBenchmarkLogger(output string) (*benchmarkLogger, error) {
 	b := &benchmarkLogger{}
@@ -75,10 +75,10 @@ type outputer interface {
 type dynamodbOut struct {
 	table  string // table to write to in dynamodb
 	region string
-	db     *dynamodb.DynamoDB // the dynamodb session
+	db     *dynamodb.DynamoDB // the dynamodb
 }
 
-// init initializes dynamodbOut to have a new session
+// init initializes dynamodbOut
 func newDynamodbOut(table, region string) *dynamodbOut {
 	out := dynamodbOut{
 		table:  table,
@@ -86,7 +86,7 @@ func newDynamodbOut(table, region string) *dynamodbOut {
 	}
 
 	out.db = dynamodb.New(
-		session.New(),
+		unit.Session,
 		&aws.Config{Region: &out.region},
 	)
 	return &out

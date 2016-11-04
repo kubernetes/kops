@@ -6,11 +6,11 @@ package acm
 import (
 	"github.com/aws/aws-sdk-go/awstesting/integration/smoke"
 	"github.com/aws/aws-sdk-go/service/acm"
-	. "github.com/lsegal/gucumber"
+	"github.com/gucumber/gucumber"
 )
 
 func init() {
-	Before("@acm", func() {
-		World["client"] = acm.New(smoke.Session)
+	gucumber.Before("@acm", func() {
+		gucumber.World["client"] = acm.New(smoke.Session)
 	})
 }

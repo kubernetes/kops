@@ -256,6 +256,19 @@
         {"shape":"DirectConnectClientException"}
       ]
     },
+    "DescribeTags":{
+      "name":"DescribeTags",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeTagsRequest"},
+      "output":{"shape":"DescribeTagsResponse"},
+      "errors":[
+        {"shape":"DirectConnectServerException"},
+        {"shape":"DirectConnectClientException"}
+      ]
+    },
     "DescribeVirtualGateways":{
       "name":"DescribeVirtualGateways",
       "http":{
@@ -276,6 +289,34 @@
       },
       "input":{"shape":"DescribeVirtualInterfacesRequest"},
       "output":{"shape":"VirtualInterfaces"},
+      "errors":[
+        {"shape":"DirectConnectServerException"},
+        {"shape":"DirectConnectClientException"}
+      ]
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"DuplicateTagKeysException"},
+        {"shape":"TooManyTagsException"},
+        {"shape":"DirectConnectServerException"},
+        {"shape":"DirectConnectClientException"}
+      ]
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
       "errors":[
         {"shape":"DirectConnectServerException"},
         {"shape":"DirectConnectClientException"}
@@ -545,6 +586,19 @@
         "interconnectId":{"shape":"InterconnectId"}
       }
     },
+    "DescribeTagsRequest":{
+      "type":"structure",
+      "required":["resourceArns"],
+      "members":{
+        "resourceArns":{"shape":"ResourceArnList"}
+      }
+    },
+    "DescribeTagsResponse":{
+      "type":"structure",
+      "members":{
+        "resourceTags":{"shape":"ResourceTagList"}
+      }
+    },
     "DescribeVirtualInterfacesRequest":{
       "type":"structure",
       "members":{
@@ -563,6 +617,12 @@
       "type":"structure",
       "members":{
         "message":{"shape":"ErrorMessage"}
+      },
+      "exception":true
+    },
+    "DuplicateTagKeysException":{
+      "type":"structure",
+      "members":{
       },
       "exception":true
     },
@@ -712,6 +772,22 @@
     "PartnerName":{"type":"string"},
     "ProviderName":{"type":"string"},
     "Region":{"type":"string"},
+    "ResourceArn":{"type":"string"},
+    "ResourceArnList":{
+      "type":"list",
+      "member":{"shape":"ResourceArn"}
+    },
+    "ResourceTag":{
+      "type":"structure",
+      "members":{
+        "resourceArn":{"shape":"ResourceArn"},
+        "tags":{"shape":"TagList"}
+      }
+    },
+    "ResourceTagList":{
+      "type":"list",
+      "member":{"shape":"ResourceTag"}
+    },
     "RouteFilterPrefix":{
       "type":"structure",
       "members":{
@@ -723,6 +799,73 @@
       "member":{"shape":"RouteFilterPrefix"}
     },
     "RouterConfig":{"type":"string"},
+    "Tag":{
+      "type":"structure",
+      "required":["key"],
+      "members":{
+        "key":{"shape":"TagKey"},
+        "value":{"shape":"TagValue"}
+      }
+    },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)$"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"}
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "min":1
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tags"
+      ],
+      "members":{
+        "resourceArn":{"shape":"ResourceArn"},
+        "tags":{"shape":"TagList"}
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)$"
+    },
+    "TooManyTagsException":{
+      "type":"structure",
+      "members":{
+      },
+      "exception":true
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "resourceArn",
+        "tagKeys"
+      ],
+      "members":{
+        "resourceArn":{"shape":"ResourceArn"},
+        "tagKeys":{"shape":"TagKeyList"}
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
     "VLAN":{"type":"integer"},
     "VirtualGateway":{
       "type":"structure",

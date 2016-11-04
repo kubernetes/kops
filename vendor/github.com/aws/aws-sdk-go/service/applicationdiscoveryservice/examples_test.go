@@ -16,7 +16,13 @@ var _ time.Duration
 var _ bytes.Buffer
 
 func ExampleApplicationDiscoveryService_CreateTags() {
-	svc := applicationdiscoveryservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := applicationdiscoveryservice.New(sess)
 
 	params := &applicationdiscoveryservice.CreateTagsInput{
 		ConfigurationIds: []*string{ // Required
@@ -45,7 +51,13 @@ func ExampleApplicationDiscoveryService_CreateTags() {
 }
 
 func ExampleApplicationDiscoveryService_DeleteTags() {
-	svc := applicationdiscoveryservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := applicationdiscoveryservice.New(sess)
 
 	params := &applicationdiscoveryservice.DeleteTagsInput{
 		ConfigurationIds: []*string{ // Required
@@ -74,7 +86,13 @@ func ExampleApplicationDiscoveryService_DeleteTags() {
 }
 
 func ExampleApplicationDiscoveryService_DescribeAgents() {
-	svc := applicationdiscoveryservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := applicationdiscoveryservice.New(sess)
 
 	params := &applicationdiscoveryservice.DescribeAgentsInput{
 		AgentIds: []*string{
@@ -98,7 +116,13 @@ func ExampleApplicationDiscoveryService_DescribeAgents() {
 }
 
 func ExampleApplicationDiscoveryService_DescribeConfigurations() {
-	svc := applicationdiscoveryservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := applicationdiscoveryservice.New(sess)
 
 	params := &applicationdiscoveryservice.DescribeConfigurationsInput{
 		ConfigurationIds: []*string{ // Required
@@ -120,7 +144,13 @@ func ExampleApplicationDiscoveryService_DescribeConfigurations() {
 }
 
 func ExampleApplicationDiscoveryService_DescribeExportConfigurations() {
-	svc := applicationdiscoveryservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := applicationdiscoveryservice.New(sess)
 
 	params := &applicationdiscoveryservice.DescribeExportConfigurationsInput{
 		ExportIds: []*string{
@@ -144,7 +174,13 @@ func ExampleApplicationDiscoveryService_DescribeExportConfigurations() {
 }
 
 func ExampleApplicationDiscoveryService_DescribeTags() {
-	svc := applicationdiscoveryservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := applicationdiscoveryservice.New(sess)
 
 	params := &applicationdiscoveryservice.DescribeTagsInput{
 		Filters: []*applicationdiscoveryservice.TagFilter{
@@ -174,7 +210,13 @@ func ExampleApplicationDiscoveryService_DescribeTags() {
 }
 
 func ExampleApplicationDiscoveryService_ExportConfigurations() {
-	svc := applicationdiscoveryservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := applicationdiscoveryservice.New(sess)
 
 	var params *applicationdiscoveryservice.ExportConfigurationsInput
 	resp, err := svc.ExportConfigurations(params)
@@ -191,7 +233,13 @@ func ExampleApplicationDiscoveryService_ExportConfigurations() {
 }
 
 func ExampleApplicationDiscoveryService_ListConfigurations() {
-	svc := applicationdiscoveryservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := applicationdiscoveryservice.New(sess)
 
 	params := &applicationdiscoveryservice.ListConfigurationsInput{
 		ConfigurationType: aws.String("ConfigurationItemType"), // Required
@@ -223,7 +271,13 @@ func ExampleApplicationDiscoveryService_ListConfigurations() {
 }
 
 func ExampleApplicationDiscoveryService_StartDataCollectionByAgentIds() {
-	svc := applicationdiscoveryservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := applicationdiscoveryservice.New(sess)
 
 	params := &applicationdiscoveryservice.StartDataCollectionByAgentIdsInput{
 		AgentIds: []*string{ // Required
@@ -245,7 +299,13 @@ func ExampleApplicationDiscoveryService_StartDataCollectionByAgentIds() {
 }
 
 func ExampleApplicationDiscoveryService_StopDataCollectionByAgentIds() {
-	svc := applicationdiscoveryservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := applicationdiscoveryservice.New(sess)
 
 	params := &applicationdiscoveryservice.StopDataCollectionByAgentIdsInput{
 		AgentIds: []*string{ // Required

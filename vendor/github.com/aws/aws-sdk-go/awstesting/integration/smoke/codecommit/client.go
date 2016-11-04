@@ -6,11 +6,11 @@ package codecommit
 import (
 	"github.com/aws/aws-sdk-go/awstesting/integration/smoke"
 	"github.com/aws/aws-sdk-go/service/codecommit"
-	. "github.com/lsegal/gucumber"
+	"github.com/gucumber/gucumber"
 )
 
 func init() {
-	Before("@codecommit", func() {
-		World["client"] = codecommit.New(smoke.Session)
+	gucumber.Before("@codecommit", func() {
+		gucumber.World["client"] = codecommit.New(smoke.Session)
 	})
 }

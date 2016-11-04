@@ -22,6 +22,18 @@
       "errors":[
         {"shape":"MarketplaceCommerceAnalyticsException"}
       ]
+    },
+    "StartSupportDataExport":{
+      "name":"StartSupportDataExport",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StartSupportDataExportRequest"},
+      "output":{"shape":"StartSupportDataExportResult"},
+      "errors":[
+        {"shape":"MarketplaceCommerceAnalyticsException"}
+      ]
     }
   },
   "shapes":{
@@ -65,6 +77,7 @@
     },
     "DestinationS3Prefix":{"type":"string"},
     "ExceptionMessage":{"type":"string"},
+    "FromDate":{"type":"timestamp"},
     "GenerateDataSetRequest":{
       "type":"structure",
       "required":[
@@ -114,6 +127,40 @@
     },
     "SnsTopicArn":{
       "type":"string",
+      "min":1
+    },
+    "StartSupportDataExportRequest":{
+      "type":"structure",
+      "required":[
+        "dataSetType",
+        "fromDate",
+        "roleNameArn",
+        "destinationS3BucketName",
+        "snsTopicArn"
+      ],
+      "members":{
+        "dataSetType":{"shape":"SupportDataSetType"},
+        "fromDate":{"shape":"FromDate"},
+        "roleNameArn":{"shape":"RoleNameArn"},
+        "destinationS3BucketName":{"shape":"DestinationS3BucketName"},
+        "destinationS3Prefix":{"shape":"DestinationS3Prefix"},
+        "snsTopicArn":{"shape":"SnsTopicArn"},
+        "customerDefinedValues":{"shape":"CustomerDefinedValues"}
+      }
+    },
+    "StartSupportDataExportResult":{
+      "type":"structure",
+      "members":{
+        "dataSetRequestId":{"shape":"DataSetRequestId"}
+      }
+    },
+    "SupportDataSetType":{
+      "type":"string",
+      "enum":[
+        "customer_support_contacts_data",
+        "test_customer_support_contacts_data"
+      ],
+      "max":255,
       "min":1
     }
   }

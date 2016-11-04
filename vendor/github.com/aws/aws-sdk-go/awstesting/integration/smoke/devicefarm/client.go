@@ -7,13 +7,13 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/awstesting/integration/smoke"
 	"github.com/aws/aws-sdk-go/service/devicefarm"
-	. "github.com/lsegal/gucumber"
+	"github.com/gucumber/gucumber"
 )
 
 func init() {
-	Before("@devicefarm", func() {
+	gucumber.Before("@devicefarm", func() {
 		// FIXME remove custom region
-		World["client"] = devicefarm.New(smoke.Session,
+		gucumber.World["client"] = devicefarm.New(smoke.Session,
 			aws.NewConfig().WithRegion("us-west-2"))
 	})
 }

@@ -8,7 +8,7 @@ listObjects is an example using the AWS SDK for Go to list objects' key in a S3 
 The example uses the the bucket name provided, and lists all object keys in a bucket.
 
 ```sh
-go run listObjects.go <bucket>
+go run -tags example listObjects.go <bucket>
 ```
 
 Output:

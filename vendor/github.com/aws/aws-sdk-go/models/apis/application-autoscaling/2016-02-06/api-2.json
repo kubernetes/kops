@@ -363,7 +363,10 @@
     },
     "ScalableDimension":{
       "type":"string",
-      "enum":["ecs:service:DesiredCount"]
+      "enum":[
+        "ecs:service:DesiredCount",
+        "ec2:spot-fleet-request:TargetCapacity"
+      ]
     },
     "ScalableTarget":{
       "type":"structure",
@@ -461,7 +464,10 @@
     },
     "ServiceNamespace":{
       "type":"string",
-      "enum":["ecs"]
+      "enum":[
+        "ecs",
+        "ec2"
+      ]
     },
     "StepAdjustment":{
       "type":"structure",
