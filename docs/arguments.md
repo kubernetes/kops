@@ -4,8 +4,6 @@
 
 `admin-access` controls the CIDR which can access the admin endpoints (SSH to each node, HTTPS to the master).
 
-It maps to `Cluster.Spec.AdminAccess`
-
 If not specified, no IP level restrictions will apply (though there are still restrictions, for example you need
 a permitted SSH key to access the SSH service!).
 
@@ -13,16 +11,13 @@ Currently this can only be a single CIDR.
 
 Examples:
 
-CLI:
+**CLI:**
+
 `--admin-access=18.0.0.0/8` to restrict to IPs in the 18.0.0.0/8 CIDR
 
-YAML:
+**YAML:**
 
-```
-spec:
-  adminAccess:
-  - 18.0.0.0/8
-```
+See the docs in [cluster_spec.md#adminaccess](cluster_spec.md#adminaccess)
 
 ## dns-zone
 
