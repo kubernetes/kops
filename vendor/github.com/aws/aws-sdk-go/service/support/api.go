@@ -15,6 +15,8 @@ const opAddAttachmentsToSet = "AddAttachmentsToSet"
 // value can be used to capture response data after the request's "Send" method
 // is called.
 //
+// See AddAttachmentsToSet for usage and error information.
+//
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
 // access properties on the request object before or after sending the request. If
@@ -49,16 +51,45 @@ func (c *Support) AddAttachmentsToSetRequest(input *AddAttachmentsToSetInput) (r
 	return
 }
 
-// Adds one or more attachments to an attachment set. If an AttachmentSetId
+// AddAttachmentsToSet API operation for AWS Support.
+//
+// Adds one or more attachments to an attachment set. If an attachmentSetId
 // is not specified, a new attachment set is created, and the ID of the set
-// is returned in the response. If an AttachmentSetId is specified, the attachments
+// is returned in the response. If an attachmentSetId is specified, the attachments
 // are added to the specified set, if it exists.
 //
 // An attachment set is a temporary container for attachments that are to be
 // added to a case or case communication. The set is available for one hour
-// after it is created; the ExpiryTime returned in the response indicates when
+// after it is created; the expiryTime returned in the response indicates when
 // the set expires. The maximum number of attachments in a set is 3, and the
 // maximum size of any attachment in the set is 5 MB.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Support's
+// API operation AddAttachmentsToSet for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An internal server error occurred.
+//
+//   * AttachmentSetIdNotFound
+//   An attachment set with the specified ID could not be found.
+//
+//   * AttachmentSetExpired
+//   The expiration time of the attachment set has passed. The set expires 1 hour
+//   after it is created.
+//
+//   * AttachmentSetSizeLimitExceeded
+//   A limit for the size of an attachment set has been exceeded. The limits are
+//   3 attachments and 5 MB per attachment.
+//
+//   * AttachmentLimitExceeded
+//   The limit for the number of attachment sets created in a short period of
+//   time has been exceeded.
+//
 func (c *Support) AddAttachmentsToSet(input *AddAttachmentsToSetInput) (*AddAttachmentsToSetOutput, error) {
 	req, out := c.AddAttachmentsToSetRequest(input)
 	err := req.Send()
@@ -71,6 +102,8 @@ const opAddCommunicationToCase = "AddCommunicationToCase"
 // client's request for the AddCommunicationToCase operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See AddCommunicationToCase for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -106,14 +139,38 @@ func (c *Support) AddCommunicationToCaseRequest(input *AddCommunicationToCaseInp
 	return
 }
 
+// AddCommunicationToCase API operation for AWS Support.
+//
 // Adds additional customer communication to an AWS Support case. You use the
-// CaseId value to identify the case to add communication to. You can list a
-// set of email addresses to copy on the communication using the CcEmailAddresses
-// value. The CommunicationBody value contains the text of the communication.
+// caseId value to identify the case to add communication to. You can list a
+// set of email addresses to copy on the communication using the ccEmailAddresses
+// value. The communicationBody value contains the text of the communication.
 //
 // The response indicates the success or failure of the request.
 //
 // This operation implements a subset of the features of the AWS Support Center.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Support's
+// API operation AddCommunicationToCase for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An internal server error occurred.
+//
+//   * CaseIdNotFound
+//   The requested caseId could not be located.
+//
+//   * AttachmentSetIdNotFound
+//   An attachment set with the specified ID could not be found.
+//
+//   * AttachmentSetExpired
+//   The expiration time of the attachment set has passed. The set expires 1 hour
+//   after it is created.
+//
 func (c *Support) AddCommunicationToCase(input *AddCommunicationToCaseInput) (*AddCommunicationToCaseOutput, error) {
 	req, out := c.AddCommunicationToCaseRequest(input)
 	err := req.Send()
@@ -126,6 +183,8 @@ const opCreateCase = "CreateCase"
 // client's request for the CreateCase operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See CreateCase for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -161,36 +220,74 @@ func (c *Support) CreateCaseRequest(input *CreateCaseInput) (req *request.Reques
 	return
 }
 
+// CreateCase API operation for AWS Support.
+//
 // Creates a new case in the AWS Support Center. This operation is modeled on
 // the behavior of the AWS Support Center Create Case (https://console.aws.amazon.com/support/home#/case/create)
 // page. Its parameters require you to specify the following information:
 //
-//   IssueType. The type of issue for the case. You can specify either "customer-service"
-// or "technical." If you do not indicate a value, the default is "technical."
-//   ServiceCode. The code for an AWS service. You obtain the ServiceCode by
-// calling DescribeServices.   CategoryCode. The category for the service defined
-// for the ServiceCode value. You also obtain the category code for a service
-// by calling DescribeServices. Each AWS service defines its own set of category
-// codes.   SeverityCode. A value that indicates the urgency of the case, which
-// in turn determines the response time according to your service level agreement
-// with AWS Support. You obtain the SeverityCode by calling DescribeSeverityLevels.
-//  Subject. The Subject field on the AWS Support Center Create Case (https://console.aws.amazon.com/support/home#/case/create)
-// page.  CommunicationBody. The Description field on the AWS Support Center
-// Create Case (https://console.aws.amazon.com/support/home#/case/create) page.
-//  AttachmentSetId. The ID of a set of attachments that has been created by
-// using AddAttachmentsToSet.  Language. The human language in which AWS Support
-// handles the case. English and Japanese are currently supported.  CcEmailAddresses.
-// The AWS Support Center CC field on the Create Case (https://console.aws.amazon.com/support/home#/case/create)
-// page. You can list email addresses to be copied on any correspondence about
-// the case. The account that opens the case is already identified by passing
-// the AWS Credentials in the HTTP POST method or in a method or function call
-// from one of the programming languages supported by an AWS SDK (http://aws.amazon.com/tools/).
-//   To add additional communication or attachments to an existing case, use
-// AddCommunicationToCase.
+//    * issueType. The type of issue for the case. You can specify either "customer-service"
+//    or "technical." If you do not indicate a value, the default is "technical."
 //
-//  A successful CreateCase request returns an AWS Support case number. Case
+//
+//    * serviceCode. The code for an AWS service. You obtain the serviceCode
+//    by calling DescribeServices.
+//
+//    * categoryCode. The category for the service defined for the serviceCode
+//    value. You also obtain the category code for a service by calling DescribeServices.
+//    Each AWS service defines its own set of category codes.
+//
+//    * severityCode. A value that indicates the urgency of the case, which
+//    in turn determines the response time according to your service level agreement
+//    with AWS Support. You obtain the SeverityCode by calling DescribeSeverityLevels.
+//
+//    * subject. The Subject field on the AWS Support Center Create Case (https://console.aws.amazon.com/support/home#/case/create)
+//    page.
+//
+//    * communicationBody. The Description field on the AWS Support Center Create
+//    Case (https://console.aws.amazon.com/support/home#/case/create) page.
+//
+//    * attachmentSetId. The ID of a set of attachments that has been created
+//    by using AddAttachmentsToSet.
+//
+//    * language. The human language in which AWS Support handles the case.
+//    English and Japanese are currently supported.
+//
+//    * ccEmailAddresses. The AWS Support Center CC field on the Create Case
+//    (https://console.aws.amazon.com/support/home#/case/create) page. You can
+//    list email addresses to be copied on any correspondence about the case.
+//    The account that opens the case is already identified by passing the AWS
+//    Credentials in the HTTP POST method or in a method or function call from
+//    one of the programming languages supported by an AWS SDK (http://aws.amazon.com/tools/).
+//
+//
+// To add additional communication or attachments to an existing case, use AddCommunicationToCase.
+//
+// A successful CreateCase request returns an AWS Support case number. Case
 // numbers are used by the DescribeCases operation to retrieve existing AWS
 // Support cases.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Support's
+// API operation CreateCase for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An internal server error occurred.
+//
+//   * CaseCreationLimitExceeded
+//   The case creation limit for the account has been exceeded.
+//
+//   * AttachmentSetIdNotFound
+//   An attachment set with the specified ID could not be found.
+//
+//   * AttachmentSetExpired
+//   The expiration time of the attachment set has passed. The set expires 1 hour
+//   after it is created.
+//
 func (c *Support) CreateCase(input *CreateCaseInput) (*CreateCaseOutput, error) {
 	req, out := c.CreateCaseRequest(input)
 	err := req.Send()
@@ -203,6 +300,8 @@ const opDescribeAttachment = "DescribeAttachment"
 // client's request for the DescribeAttachment operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeAttachment for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -238,10 +337,31 @@ func (c *Support) DescribeAttachmentRequest(input *DescribeAttachmentInput) (req
 	return
 }
 
+// DescribeAttachment API operation for AWS Support.
+//
 // Returns the attachment that has the specified ID. Attachment IDs are generated
 // by the case management system when you add an attachment to a case or case
 // communication. Attachment IDs are returned in the AttachmentDetails objects
 // that are returned by the DescribeCommunications operation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Support's
+// API operation DescribeAttachment for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An internal server error occurred.
+//
+//   * DescribeAttachmentLimitExceeded
+//   The limit for the number of DescribeAttachment requests in a short period
+//   of time has been exceeded.
+//
+//   * AttachmentIdNotFound
+//   An attachment with the specified ID could not be found.
+//
 func (c *Support) DescribeAttachment(input *DescribeAttachmentInput) (*DescribeAttachmentOutput, error) {
 	req, out := c.DescribeAttachmentRequest(input)
 	err := req.Send()
@@ -254,6 +374,8 @@ const opDescribeCases = "DescribeCases"
 // client's request for the DescribeCases operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeCases for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -295,10 +417,12 @@ func (c *Support) DescribeCasesRequest(input *DescribeCasesInput) (req *request.
 	return
 }
 
+// DescribeCases API operation for AWS Support.
+//
 // Returns a list of cases that you specify by passing one or more case IDs.
-// In addition, you can filter the cases by date by setting values for the AfterTime
-// and BeforeTime request parameters. You can set values for the IncludeResolvedCases
-// and IncludeCommunications request parameters to control how much information
+// In addition, you can filter the cases by date by setting values for the afterTime
+// and beforeTime request parameters. You can set values for the includeResolvedCases
+// and includeCommunications request parameters to control how much information
 // is returned.
 //
 // Case data is available for 12 months after creation. If a case was created
@@ -306,9 +430,25 @@ func (c *Support) DescribeCasesRequest(input *DescribeCasesInput) (req *request.
 //
 // The response returns the following in JSON format:
 //
-//  One or more CaseDetails data types.  One or more NextToken values, which
-// specify where to paginate the returned records represented by the CaseDetails
-// objects.
+//    * One or more CaseDetails data types.
+//
+//    * One or more nextToken values, which specify where to paginate the returned
+//    records represented by the CaseDetails objects.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Support's
+// API operation DescribeCases for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An internal server error occurred.
+//
+//   * CaseIdNotFound
+//   The requested caseId could not be located.
+//
 func (c *Support) DescribeCases(input *DescribeCasesInput) (*DescribeCasesOutput, error) {
 	req, out := c.DescribeCasesRequest(input)
 	err := req.Send()
@@ -346,6 +486,8 @@ const opDescribeCommunications = "DescribeCommunications"
 // client's request for the DescribeCommunications operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeCommunications for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -387,16 +529,33 @@ func (c *Support) DescribeCommunicationsRequest(input *DescribeCommunicationsInp
 	return
 }
 
+// DescribeCommunications API operation for AWS Support.
+//
 // Returns communications (and attachments) for one or more support cases. You
-// can use the AfterTime and BeforeTime parameters to filter by date. You can
-// use the CaseId parameter to restrict the results to a particular case.
+// can use the afterTime and beforeTime parameters to filter by date. You can
+// use the caseId parameter to restrict the results to a particular case.
 //
 // Case data is available for 12 months after creation. If a case was created
 // more than 12 months ago, a request for data might cause an error.
 //
-// You can use the MaxResults and NextToken parameters to control the pagination
-// of the result set. Set MaxResults to the number of cases you want displayed
-// on each page, and use NextToken to specify the resumption of pagination.
+// You can use the maxResults and nextToken parameters to control the pagination
+// of the result set. Set maxResults to the number of cases you want displayed
+// on each page, and use nextToken to specify the resumption of pagination.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Support's
+// API operation DescribeCommunications for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An internal server error occurred.
+//
+//   * CaseIdNotFound
+//   The requested caseId could not be located.
+//
 func (c *Support) DescribeCommunications(input *DescribeCommunicationsInput) (*DescribeCommunicationsOutput, error) {
 	req, out := c.DescribeCommunicationsRequest(input)
 	err := req.Send()
@@ -435,6 +594,8 @@ const opDescribeServices = "DescribeServices"
 // value can be used to capture response data after the request's "Send" method
 // is called.
 //
+// See DescribeServices for usage and error information.
+//
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
 // access properties on the request object before or after sending the request. If
@@ -469,6 +630,8 @@ func (c *Support) DescribeServicesRequest(input *DescribeServicesInput) (req *re
 	return
 }
 
+// DescribeServices API operation for AWS Support.
+//
 // Returns the current list of AWS services and a list of service categories
 // that applies to each one. You then use service names and categories in your
 // CreateCase requests. Each AWS service has its own set of categories.
@@ -480,6 +643,18 @@ func (c *Support) DescribeServicesRequest(input *DescribeServicesInput) (req *re
 // and categories returned by the DescribeServices request. Always use the service
 // codes and categories obtained programmatically. This practice ensures that
 // you always have the most recent set of service and category codes.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Support's
+// API operation DescribeServices for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An internal server error occurred.
+//
 func (c *Support) DescribeServices(input *DescribeServicesInput) (*DescribeServicesOutput, error) {
 	req, out := c.DescribeServicesRequest(input)
 	err := req.Send()
@@ -492,6 +667,8 @@ const opDescribeSeverityLevels = "DescribeSeverityLevels"
 // client's request for the DescribeSeverityLevels operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeSeverityLevels for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -527,9 +704,23 @@ func (c *Support) DescribeSeverityLevelsRequest(input *DescribeSeverityLevelsInp
 	return
 }
 
+// DescribeSeverityLevels API operation for AWS Support.
+//
 // Returns the list of severity levels that you can assign to an AWS Support
 // case. The severity level for a case is also a field in the CaseDetails data
 // type included in any CreateCase request.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Support's
+// API operation DescribeSeverityLevels for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An internal server error occurred.
+//
 func (c *Support) DescribeSeverityLevels(input *DescribeSeverityLevelsInput) (*DescribeSeverityLevelsOutput, error) {
 	req, out := c.DescribeSeverityLevelsRequest(input)
 	err := req.Send()
@@ -542,6 +733,8 @@ const opDescribeTrustedAdvisorCheckRefreshStatuses = "DescribeTrustedAdvisorChec
 // client's request for the DescribeTrustedAdvisorCheckRefreshStatuses operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeTrustedAdvisorCheckRefreshStatuses for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -577,8 +770,26 @@ func (c *Support) DescribeTrustedAdvisorCheckRefreshStatusesRequest(input *Descr
 	return
 }
 
+// DescribeTrustedAdvisorCheckRefreshStatuses API operation for AWS Support.
+//
 // Returns the refresh status of the Trusted Advisor checks that have the specified
 // check IDs. Check IDs can be obtained by calling DescribeTrustedAdvisorChecks.
+//
+// Some checks are refreshed automatically, and their refresh statuses cannot
+// be retrieved by using this operation. Use of the DescribeTrustedAdvisorCheckRefreshStatuses
+// operation for these checks causes an InvalidParameterValue error.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Support's
+// API operation DescribeTrustedAdvisorCheckRefreshStatuses for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An internal server error occurred.
+//
 func (c *Support) DescribeTrustedAdvisorCheckRefreshStatuses(input *DescribeTrustedAdvisorCheckRefreshStatusesInput) (*DescribeTrustedAdvisorCheckRefreshStatusesOutput, error) {
 	req, out := c.DescribeTrustedAdvisorCheckRefreshStatusesRequest(input)
 	err := req.Send()
@@ -591,6 +802,8 @@ const opDescribeTrustedAdvisorCheckResult = "DescribeTrustedAdvisorCheckResult"
 // client's request for the DescribeTrustedAdvisorCheckResult operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeTrustedAdvisorCheckResult for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -626,18 +839,40 @@ func (c *Support) DescribeTrustedAdvisorCheckResultRequest(input *DescribeTruste
 	return
 }
 
+// DescribeTrustedAdvisorCheckResult API operation for AWS Support.
+//
 // Returns the results of the Trusted Advisor check that has the specified check
 // ID. Check IDs can be obtained by calling DescribeTrustedAdvisorChecks.
 //
 // The response contains a TrustedAdvisorCheckResult object, which contains
 // these three objects:
 //
-//  TrustedAdvisorCategorySpecificSummary TrustedAdvisorResourceDetail TrustedAdvisorResourcesSummary
-//  In addition, the response contains these fields:
+//    * TrustedAdvisorCategorySpecificSummary
 //
-//   Status. The alert status of the check: "ok" (green), "warning" (yellow),
-// "error" (red), or "not_available".  Timestamp. The time of the last refresh
-// of the check.  CheckId. The unique identifier for the check.
+//    * TrustedAdvisorResourceDetail
+//
+//    * TrustedAdvisorResourcesSummary
+//
+// In addition, the response contains these fields:
+//
+//    * status. The alert status of the check: "ok" (green), "warning" (yellow),
+//    "error" (red), or "not_available".
+//
+//    * timestamp. The time of the last refresh of the check.
+//
+//    * checkId. The unique identifier for the check.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Support's
+// API operation DescribeTrustedAdvisorCheckResult for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An internal server error occurred.
+//
 func (c *Support) DescribeTrustedAdvisorCheckResult(input *DescribeTrustedAdvisorCheckResultInput) (*DescribeTrustedAdvisorCheckResultOutput, error) {
 	req, out := c.DescribeTrustedAdvisorCheckResultRequest(input)
 	err := req.Send()
@@ -650,6 +885,8 @@ const opDescribeTrustedAdvisorCheckSummaries = "DescribeTrustedAdvisorCheckSumma
 // client's request for the DescribeTrustedAdvisorCheckSummaries operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeTrustedAdvisorCheckSummaries for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -685,10 +922,24 @@ func (c *Support) DescribeTrustedAdvisorCheckSummariesRequest(input *DescribeTru
 	return
 }
 
+// DescribeTrustedAdvisorCheckSummaries API operation for AWS Support.
+//
 // Returns the summaries of the results of the Trusted Advisor checks that have
 // the specified check IDs. Check IDs can be obtained by calling DescribeTrustedAdvisorChecks.
 //
 // The response contains an array of TrustedAdvisorCheckSummary objects.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Support's
+// API operation DescribeTrustedAdvisorCheckSummaries for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An internal server error occurred.
+//
 func (c *Support) DescribeTrustedAdvisorCheckSummaries(input *DescribeTrustedAdvisorCheckSummariesInput) (*DescribeTrustedAdvisorCheckSummariesOutput, error) {
 	req, out := c.DescribeTrustedAdvisorCheckSummariesRequest(input)
 	err := req.Send()
@@ -701,6 +952,8 @@ const opDescribeTrustedAdvisorChecks = "DescribeTrustedAdvisorChecks"
 // client's request for the DescribeTrustedAdvisorChecks operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeTrustedAdvisorChecks for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -736,10 +989,24 @@ func (c *Support) DescribeTrustedAdvisorChecksRequest(input *DescribeTrustedAdvi
 	return
 }
 
+// DescribeTrustedAdvisorChecks API operation for AWS Support.
+//
 // Returns information about all available Trusted Advisor checks, including
 // name, ID, category, description, and metadata. You must specify a language
 // code; English ("en") and Japanese ("ja") are currently supported. The response
 // contains a TrustedAdvisorCheckDescription for each check.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Support's
+// API operation DescribeTrustedAdvisorChecks for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An internal server error occurred.
+//
 func (c *Support) DescribeTrustedAdvisorChecks(input *DescribeTrustedAdvisorChecksInput) (*DescribeTrustedAdvisorChecksOutput, error) {
 	req, out := c.DescribeTrustedAdvisorChecksRequest(input)
 	err := req.Send()
@@ -752,6 +1019,8 @@ const opRefreshTrustedAdvisorCheck = "RefreshTrustedAdvisorCheck"
 // client's request for the RefreshTrustedAdvisorCheck operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See RefreshTrustedAdvisorCheck for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -787,16 +1056,37 @@ func (c *Support) RefreshTrustedAdvisorCheckRequest(input *RefreshTrustedAdvisor
 	return
 }
 
+// RefreshTrustedAdvisorCheck API operation for AWS Support.
+//
 // Requests a refresh of the Trusted Advisor check that has the specified check
 // ID. Check IDs can be obtained by calling DescribeTrustedAdvisorChecks.
+//
+// Some checks are refreshed automatically, and they cannot be refreshed by
+// using this operation. Use of the RefreshTrustedAdvisorCheck operation for
+// these checks causes an InvalidParameterValue error.
 //
 // The response contains a TrustedAdvisorCheckRefreshStatus object, which contains
 // these fields:
 //
-//   Status. The refresh status of the check: "none", "enqueued", "processing",
-// "success", or "abandoned".  MillisUntilNextRefreshable. The amount of time,
-// in milliseconds, until the check is eligible for refresh.  CheckId. The unique
-// identifier for the check.
+//    * status. The refresh status of the check: "none", "enqueued", "processing",
+//    "success", or "abandoned".
+//
+//    * millisUntilNextRefreshable. The amount of time, in milliseconds, until
+//    the check is eligible for refresh.
+//
+//    * checkId. The unique identifier for the check.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Support's
+// API operation RefreshTrustedAdvisorCheck for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An internal server error occurred.
+//
 func (c *Support) RefreshTrustedAdvisorCheck(input *RefreshTrustedAdvisorCheckInput) (*RefreshTrustedAdvisorCheckOutput, error) {
 	req, out := c.RefreshTrustedAdvisorCheckRequest(input)
 	err := req.Send()
@@ -809,6 +1099,8 @@ const opResolveCase = "ResolveCase"
 // client's request for the ResolveCase operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See ResolveCase for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -844,8 +1136,25 @@ func (c *Support) ResolveCaseRequest(input *ResolveCaseInput) (req *request.Requ
 	return
 }
 
-// Takes a CaseId and returns the initial state of the case along with the state
+// ResolveCase API operation for AWS Support.
+//
+// Takes a caseId and returns the initial state of the case along with the state
 // of the case after the call to ResolveCase completed.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Support's
+// API operation ResolveCase for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An internal server error occurred.
+//
+//   * CaseIdNotFound
+//   The requested caseId could not be located.
+//
 func (c *Support) ResolveCase(input *ResolveCaseInput) (*ResolveCaseOutput, error) {
 	req, out := c.ResolveCaseRequest(input)
 	err := req.Send()
@@ -855,14 +1164,16 @@ func (c *Support) ResolveCase(input *ResolveCaseInput) (*ResolveCaseOutput, erro
 type AddAttachmentsToSetInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ID of the attachment set. If an AttachmentSetId is not specified, a new
+	// The ID of the attachment set. If an attachmentSetId is not specified, a new
 	// attachment set is created, and the ID of the set is returned in the response.
-	// If an AttachmentSetId is specified, the attachments are added to the specified
+	// If an attachmentSetId is specified, the attachments are added to the specified
 	// set, if it exists.
 	AttachmentSetId *string `locationName:"attachmentSetId" type:"string"`
 
 	// One or more attachments to add to the set. The limit is 3 attachments per
 	// set, and the size limit is 5 MB per attachment.
+	//
+	// Attachments is a required field
 	Attachments []*Attachment `locationName:"attachments" type:"list" required:"true"`
 }
 
@@ -889,14 +1200,26 @@ func (s *AddAttachmentsToSetInput) Validate() error {
 	return nil
 }
 
+// SetAttachmentSetId sets the AttachmentSetId field's value.
+func (s *AddAttachmentsToSetInput) SetAttachmentSetId(v string) *AddAttachmentsToSetInput {
+	s.AttachmentSetId = &v
+	return s
+}
+
+// SetAttachments sets the Attachments field's value.
+func (s *AddAttachmentsToSetInput) SetAttachments(v []*Attachment) *AddAttachmentsToSetInput {
+	s.Attachments = v
+	return s
+}
+
 // The ID and expiry time of the attachment set returned by the AddAttachmentsToSet
 // operation.
 type AddAttachmentsToSetOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The ID of the attachment set. If an AttachmentSetId was not specified, a
+	// The ID of the attachment set. If an attachmentSetId was not specified, a
 	// new attachment set is created, and the ID of the set is returned in the response.
-	// If an AttachmentSetId was specified, the attachments are added to the specified
+	// If an attachmentSetId was specified, the attachments are added to the specified
 	// set, if it exists.
 	AttachmentSetId *string `locationName:"attachmentSetId" type:"string"`
 
@@ -912,6 +1235,18 @@ func (s AddAttachmentsToSetOutput) String() string {
 // GoString returns the string representation
 func (s AddAttachmentsToSetOutput) GoString() string {
 	return s.String()
+}
+
+// SetAttachmentSetId sets the AttachmentSetId field's value.
+func (s *AddAttachmentsToSetOutput) SetAttachmentSetId(v string) *AddAttachmentsToSetOutput {
+	s.AttachmentSetId = &v
+	return s
+}
+
+// SetExpiryTime sets the ExpiryTime field's value.
+func (s *AddAttachmentsToSetOutput) SetExpiryTime(v string) *AddAttachmentsToSetOutput {
+	s.ExpiryTime = &v
+	return s
 }
 
 // To be written.
@@ -931,7 +1266,9 @@ type AddCommunicationToCaseInput struct {
 	CcEmailAddresses []*string `locationName:"ccEmailAddresses" type:"list"`
 
 	// The body of an email communication to add to the support case.
-	CommunicationBody *string `locationName:"communicationBody" type:"string" required:"true"`
+	//
+	// CommunicationBody is a required field
+	CommunicationBody *string `locationName:"communicationBody" min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation
@@ -950,11 +1287,38 @@ func (s *AddCommunicationToCaseInput) Validate() error {
 	if s.CommunicationBody == nil {
 		invalidParams.Add(request.NewErrParamRequired("CommunicationBody"))
 	}
+	if s.CommunicationBody != nil && len(*s.CommunicationBody) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("CommunicationBody", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAttachmentSetId sets the AttachmentSetId field's value.
+func (s *AddCommunicationToCaseInput) SetAttachmentSetId(v string) *AddCommunicationToCaseInput {
+	s.AttachmentSetId = &v
+	return s
+}
+
+// SetCaseId sets the CaseId field's value.
+func (s *AddCommunicationToCaseInput) SetCaseId(v string) *AddCommunicationToCaseInput {
+	s.CaseId = &v
+	return s
+}
+
+// SetCcEmailAddresses sets the CcEmailAddresses field's value.
+func (s *AddCommunicationToCaseInput) SetCcEmailAddresses(v []*string) *AddCommunicationToCaseInput {
+	s.CcEmailAddresses = v
+	return s
+}
+
+// SetCommunicationBody sets the CommunicationBody field's value.
+func (s *AddCommunicationToCaseInput) SetCommunicationBody(v string) *AddCommunicationToCaseInput {
+	s.CommunicationBody = &v
+	return s
 }
 
 // The result of the AddCommunicationToCase operation.
@@ -973,6 +1337,12 @@ func (s AddCommunicationToCaseOutput) String() string {
 // GoString returns the string representation
 func (s AddCommunicationToCaseOutput) GoString() string {
 	return s.String()
+}
+
+// SetResult sets the Result field's value.
+func (s *AddCommunicationToCaseOutput) SetResult(v bool) *AddCommunicationToCaseOutput {
+	s.Result = &v
+	return s
 }
 
 // An attachment to a case communication. The attachment consists of the file
@@ -999,6 +1369,18 @@ func (s Attachment) GoString() string {
 	return s.String()
 }
 
+// SetData sets the Data field's value.
+func (s *Attachment) SetData(v []byte) *Attachment {
+	s.Data = v
+	return s
+}
+
+// SetFileName sets the FileName field's value.
+func (s *Attachment) SetFileName(v string) *Attachment {
+	s.FileName = &v
+	return s
+}
+
 // The file name and ID of an attachment to a case communication. You can use
 // the ID to retrieve the attachment with the DescribeAttachment operation.
 type AttachmentDetails struct {
@@ -1021,27 +1403,54 @@ func (s AttachmentDetails) GoString() string {
 	return s.String()
 }
 
+// SetAttachmentId sets the AttachmentId field's value.
+func (s *AttachmentDetails) SetAttachmentId(v string) *AttachmentDetails {
+	s.AttachmentId = &v
+	return s
+}
+
+// SetFileName sets the FileName field's value.
+func (s *AttachmentDetails) SetFileName(v string) *AttachmentDetails {
+	s.FileName = &v
+	return s
+}
+
 // A JSON-formatted object that contains the metadata for a support case. It
 // is contained the response from a DescribeCases request. CaseDetails contains
 // the following fields:
 //
-//   CaseID. The AWS Support case ID requested or returned in the call. The
-// case ID is an alphanumeric string formatted as shown in this example: case-12345678910-2013-c4c1d2bf33c5cf47.
-//  CategoryCode. The category of problem for the AWS Support case. Corresponds
-// to the CategoryCode values returned by a call to DescribeServices.  DisplayId.
-// The identifier for the case on pages in the AWS Support Center.  Language.
-// The ISO 639-1 code for the language in which AWS provides support. AWS Support
-// currently supports English ("en") and Japanese ("ja"). Language parameters
-// must be passed explicitly for operations that take them.  RecentCommunications.
-// One or more Communication objects. Fields of these objects are Attachments,
-// Body, CaseId, SubmittedBy, and TimeCreated.  NextToken. A resumption point
-// for pagination.  ServiceCode. The identifier for the AWS service that corresponds
-// to the service code defined in the call to DescribeServices.  SeverityCode.
-// The severity code assigned to the case. Contains one of the values returned
-// by the call to DescribeSeverityLevels.  Status. The status of the case in
-// the AWS Support Center.  Subject. The subject line of the case.  SubmittedBy.
-// The email address of the account that submitted the case.  TimeCreated. The
-// time the case was created, in ISO-8601 format.
+//    * caseId. The AWS Support case ID requested or returned in the call. The
+//    case ID is an alphanumeric string formatted as shown in this example:
+//    case-12345678910-2013-c4c1d2bf33c5cf47.
+//
+//    * categoryCode. The category of problem for the AWS Support case. Corresponds
+//    to the CategoryCode values returned by a call to DescribeServices.
+//
+//    * displayId. The identifier for the case on pages in the AWS Support Center.
+//
+//    * language. The ISO 639-1 code for the language in which AWS provides
+//    support. AWS Support currently supports English ("en") and Japanese ("ja").
+//    Language parameters must be passed explicitly for operations that take
+//    them.
+//
+//    * recentCommunications. One or more Communication objects. Fields of these
+//    objects are attachments, body, caseId, submittedBy, and timeCreated.
+//
+//    * nextToken. A resumption point for pagination.
+//
+//    * serviceCode. The identifier for the AWS service that corresponds to
+//    the service code defined in the call to DescribeServices.
+//
+//    * severityCode. The severity code assigned to the case. Contains one of
+//    the values returned by the call to DescribeSeverityLevels.
+//
+//    * status. The status of the case in the AWS Support Center.
+//
+//    * subject. The subject line of the case.
+//
+//    * submittedBy. The email address of the account that submitted the case.
+//
+//    * timeCreated. The time the case was created, in ISO-8601 format.
 type CaseDetails struct {
 	_ struct{} `type:"structure"`
 
@@ -1098,6 +1507,78 @@ func (s CaseDetails) GoString() string {
 	return s.String()
 }
 
+// SetCaseId sets the CaseId field's value.
+func (s *CaseDetails) SetCaseId(v string) *CaseDetails {
+	s.CaseId = &v
+	return s
+}
+
+// SetCategoryCode sets the CategoryCode field's value.
+func (s *CaseDetails) SetCategoryCode(v string) *CaseDetails {
+	s.CategoryCode = &v
+	return s
+}
+
+// SetCcEmailAddresses sets the CcEmailAddresses field's value.
+func (s *CaseDetails) SetCcEmailAddresses(v []*string) *CaseDetails {
+	s.CcEmailAddresses = v
+	return s
+}
+
+// SetDisplayId sets the DisplayId field's value.
+func (s *CaseDetails) SetDisplayId(v string) *CaseDetails {
+	s.DisplayId = &v
+	return s
+}
+
+// SetLanguage sets the Language field's value.
+func (s *CaseDetails) SetLanguage(v string) *CaseDetails {
+	s.Language = &v
+	return s
+}
+
+// SetRecentCommunications sets the RecentCommunications field's value.
+func (s *CaseDetails) SetRecentCommunications(v *RecentCaseCommunications) *CaseDetails {
+	s.RecentCommunications = v
+	return s
+}
+
+// SetServiceCode sets the ServiceCode field's value.
+func (s *CaseDetails) SetServiceCode(v string) *CaseDetails {
+	s.ServiceCode = &v
+	return s
+}
+
+// SetSeverityCode sets the SeverityCode field's value.
+func (s *CaseDetails) SetSeverityCode(v string) *CaseDetails {
+	s.SeverityCode = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *CaseDetails) SetStatus(v string) *CaseDetails {
+	s.Status = &v
+	return s
+}
+
+// SetSubject sets the Subject field's value.
+func (s *CaseDetails) SetSubject(v string) *CaseDetails {
+	s.Subject = &v
+	return s
+}
+
+// SetSubmittedBy sets the SubmittedBy field's value.
+func (s *CaseDetails) SetSubmittedBy(v string) *CaseDetails {
+	s.SubmittedBy = &v
+	return s
+}
+
+// SetTimeCreated sets the TimeCreated field's value.
+func (s *CaseDetails) SetTimeCreated(v string) *CaseDetails {
+	s.TimeCreated = &v
+	return s
+}
+
 // A JSON-formatted name/value pair that represents the category name and category
 // code of the problem, selected from the DescribeServices response for each
 // AWS service.
@@ -1121,6 +1602,18 @@ func (s Category) GoString() string {
 	return s.String()
 }
 
+// SetCode sets the Code field's value.
+func (s *Category) SetCode(v string) *Category {
+	s.Code = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Category) SetName(v string) *Category {
+	s.Name = &v
+	return s
+}
+
 // A communication associated with an AWS Support case. The communication consists
 // of the case ID, the message body, attachment information, the account email
 // address, and the date and time of the communication.
@@ -1131,7 +1624,7 @@ type Communication struct {
 	AttachmentSet []*AttachmentDetails `locationName:"attachmentSet" type:"list"`
 
 	// The text of the communication between the customer and AWS Support.
-	Body *string `locationName:"body" type:"string"`
+	Body *string `locationName:"body" min:"1" type:"string"`
 
 	// The AWS Support case ID requested or returned in the call. The case ID is
 	// an alphanumeric string formatted as shown in this example: case-12345678910-2013-c4c1d2bf33c5cf47
@@ -1154,6 +1647,36 @@ func (s Communication) GoString() string {
 	return s.String()
 }
 
+// SetAttachmentSet sets the AttachmentSet field's value.
+func (s *Communication) SetAttachmentSet(v []*AttachmentDetails) *Communication {
+	s.AttachmentSet = v
+	return s
+}
+
+// SetBody sets the Body field's value.
+func (s *Communication) SetBody(v string) *Communication {
+	s.Body = &v
+	return s
+}
+
+// SetCaseId sets the CaseId field's value.
+func (s *Communication) SetCaseId(v string) *Communication {
+	s.CaseId = &v
+	return s
+}
+
+// SetSubmittedBy sets the SubmittedBy field's value.
+func (s *Communication) SetSubmittedBy(v string) *Communication {
+	s.SubmittedBy = &v
+	return s
+}
+
+// SetTimeCreated sets the TimeCreated field's value.
+func (s *Communication) SetTimeCreated(v string) *Communication {
+	s.TimeCreated = &v
+	return s
+}
+
 type CreateCaseInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1169,7 +1692,9 @@ type CreateCaseInput struct {
 
 	// The communication body text when you create an AWS Support case by calling
 	// CreateCase.
-	CommunicationBody *string `locationName:"communicationBody" type:"string" required:"true"`
+	//
+	// CommunicationBody is a required field
+	CommunicationBody *string `locationName:"communicationBody" min:"1" type:"string" required:"true"`
 
 	// The type of issue for the case. You can specify either "customer-service"
 	// or "technical." If you do not indicate a value, the default is "technical."
@@ -1191,6 +1716,8 @@ type CreateCaseInput struct {
 	SeverityCode *string `locationName:"severityCode" type:"string"`
 
 	// The title of the AWS Support case.
+	//
+	// Subject is a required field
 	Subject *string `locationName:"subject" type:"string" required:"true"`
 }
 
@@ -1210,6 +1737,9 @@ func (s *CreateCaseInput) Validate() error {
 	if s.CommunicationBody == nil {
 		invalidParams.Add(request.NewErrParamRequired("CommunicationBody"))
 	}
+	if s.CommunicationBody != nil && len(*s.CommunicationBody) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("CommunicationBody", 1))
+	}
 	if s.Subject == nil {
 		invalidParams.Add(request.NewErrParamRequired("Subject"))
 	}
@@ -1218,6 +1748,60 @@ func (s *CreateCaseInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAttachmentSetId sets the AttachmentSetId field's value.
+func (s *CreateCaseInput) SetAttachmentSetId(v string) *CreateCaseInput {
+	s.AttachmentSetId = &v
+	return s
+}
+
+// SetCategoryCode sets the CategoryCode field's value.
+func (s *CreateCaseInput) SetCategoryCode(v string) *CreateCaseInput {
+	s.CategoryCode = &v
+	return s
+}
+
+// SetCcEmailAddresses sets the CcEmailAddresses field's value.
+func (s *CreateCaseInput) SetCcEmailAddresses(v []*string) *CreateCaseInput {
+	s.CcEmailAddresses = v
+	return s
+}
+
+// SetCommunicationBody sets the CommunicationBody field's value.
+func (s *CreateCaseInput) SetCommunicationBody(v string) *CreateCaseInput {
+	s.CommunicationBody = &v
+	return s
+}
+
+// SetIssueType sets the IssueType field's value.
+func (s *CreateCaseInput) SetIssueType(v string) *CreateCaseInput {
+	s.IssueType = &v
+	return s
+}
+
+// SetLanguage sets the Language field's value.
+func (s *CreateCaseInput) SetLanguage(v string) *CreateCaseInput {
+	s.Language = &v
+	return s
+}
+
+// SetServiceCode sets the ServiceCode field's value.
+func (s *CreateCaseInput) SetServiceCode(v string) *CreateCaseInput {
+	s.ServiceCode = &v
+	return s
+}
+
+// SetSeverityCode sets the SeverityCode field's value.
+func (s *CreateCaseInput) SetSeverityCode(v string) *CreateCaseInput {
+	s.SeverityCode = &v
+	return s
+}
+
+// SetSubject sets the Subject field's value.
+func (s *CreateCaseInput) SetSubject(v string) *CreateCaseInput {
+	s.Subject = &v
+	return s
 }
 
 // The AWS Support case ID returned by a successful completion of the CreateCase
@@ -1240,11 +1824,19 @@ func (s CreateCaseOutput) GoString() string {
 	return s.String()
 }
 
+// SetCaseId sets the CaseId field's value.
+func (s *CreateCaseOutput) SetCaseId(v string) *CreateCaseOutput {
+	s.CaseId = &v
+	return s
+}
+
 type DescribeAttachmentInput struct {
 	_ struct{} `type:"structure"`
 
 	// The ID of the attachment to return. Attachment IDs are returned by the DescribeCommunications
 	// operation.
+	//
+	// AttachmentId is a required field
 	AttachmentId *string `locationName:"attachmentId" type:"string" required:"true"`
 }
 
@@ -1271,6 +1863,12 @@ func (s *DescribeAttachmentInput) Validate() error {
 	return nil
 }
 
+// SetAttachmentId sets the AttachmentId field's value.
+func (s *DescribeAttachmentInput) SetAttachmentId(v string) *DescribeAttachmentInput {
+	s.AttachmentId = &v
+	return s
+}
+
 // The content and file name of the attachment returned by the DescribeAttachment
 // operation.
 type DescribeAttachmentOutput struct {
@@ -1288,6 +1886,12 @@ func (s DescribeAttachmentOutput) String() string {
 // GoString returns the string representation
 func (s DescribeAttachmentOutput) GoString() string {
 	return s.String()
+}
+
+// SetAttachment sets the Attachment field's value.
+func (s *DescribeAttachmentOutput) SetAttachment(v *Attachment) *DescribeAttachmentOutput {
+	s.Attachment = v
+	return s
 }
 
 type DescribeCasesInput struct {
@@ -1351,7 +1955,61 @@ func (s *DescribeCasesInput) Validate() error {
 	return nil
 }
 
-// Returns an array of CaseDetails objects and a NextToken that defines a point
+// SetAfterTime sets the AfterTime field's value.
+func (s *DescribeCasesInput) SetAfterTime(v string) *DescribeCasesInput {
+	s.AfterTime = &v
+	return s
+}
+
+// SetBeforeTime sets the BeforeTime field's value.
+func (s *DescribeCasesInput) SetBeforeTime(v string) *DescribeCasesInput {
+	s.BeforeTime = &v
+	return s
+}
+
+// SetCaseIdList sets the CaseIdList field's value.
+func (s *DescribeCasesInput) SetCaseIdList(v []*string) *DescribeCasesInput {
+	s.CaseIdList = v
+	return s
+}
+
+// SetDisplayId sets the DisplayId field's value.
+func (s *DescribeCasesInput) SetDisplayId(v string) *DescribeCasesInput {
+	s.DisplayId = &v
+	return s
+}
+
+// SetIncludeCommunications sets the IncludeCommunications field's value.
+func (s *DescribeCasesInput) SetIncludeCommunications(v bool) *DescribeCasesInput {
+	s.IncludeCommunications = &v
+	return s
+}
+
+// SetIncludeResolvedCases sets the IncludeResolvedCases field's value.
+func (s *DescribeCasesInput) SetIncludeResolvedCases(v bool) *DescribeCasesInput {
+	s.IncludeResolvedCases = &v
+	return s
+}
+
+// SetLanguage sets the Language field's value.
+func (s *DescribeCasesInput) SetLanguage(v string) *DescribeCasesInput {
+	s.Language = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeCasesInput) SetMaxResults(v int64) *DescribeCasesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeCasesInput) SetNextToken(v string) *DescribeCasesInput {
+	s.NextToken = &v
+	return s
+}
+
+// Returns an array of CaseDetails objects and a nextToken that defines a point
 // for pagination in the result set.
 type DescribeCasesOutput struct {
 	_ struct{} `type:"structure"`
@@ -1373,6 +2031,18 @@ func (s DescribeCasesOutput) GoString() string {
 	return s.String()
 }
 
+// SetCases sets the Cases field's value.
+func (s *DescribeCasesOutput) SetCases(v []*CaseDetails) *DescribeCasesOutput {
+	s.Cases = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeCasesOutput) SetNextToken(v string) *DescribeCasesOutput {
+	s.NextToken = &v
+	return s
+}
+
 type DescribeCommunicationsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1386,6 +2056,8 @@ type DescribeCommunicationsInput struct {
 
 	// The AWS Support case ID requested or returned in the call. The case ID is
 	// an alphanumeric string formatted as shown in this example: case-12345678910-2013-c4c1d2bf33c5cf47
+	//
+	// CaseId is a required field
 	CaseId *string `locationName:"caseId" type:"string" required:"true"`
 
 	// The maximum number of results to return before paginating.
@@ -1421,6 +2093,36 @@ func (s *DescribeCommunicationsInput) Validate() error {
 	return nil
 }
 
+// SetAfterTime sets the AfterTime field's value.
+func (s *DescribeCommunicationsInput) SetAfterTime(v string) *DescribeCommunicationsInput {
+	s.AfterTime = &v
+	return s
+}
+
+// SetBeforeTime sets the BeforeTime field's value.
+func (s *DescribeCommunicationsInput) SetBeforeTime(v string) *DescribeCommunicationsInput {
+	s.BeforeTime = &v
+	return s
+}
+
+// SetCaseId sets the CaseId field's value.
+func (s *DescribeCommunicationsInput) SetCaseId(v string) *DescribeCommunicationsInput {
+	s.CaseId = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeCommunicationsInput) SetMaxResults(v int64) *DescribeCommunicationsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeCommunicationsInput) SetNextToken(v string) *DescribeCommunicationsInput {
+	s.NextToken = &v
+	return s
+}
+
 // The communications returned by the DescribeCommunications operation.
 type DescribeCommunicationsOutput struct {
 	_ struct{} `type:"structure"`
@@ -1440,6 +2142,18 @@ func (s DescribeCommunicationsOutput) String() string {
 // GoString returns the string representation
 func (s DescribeCommunicationsOutput) GoString() string {
 	return s.String()
+}
+
+// SetCommunications sets the Communications field's value.
+func (s *DescribeCommunicationsOutput) SetCommunications(v []*Communication) *DescribeCommunicationsOutput {
+	s.Communications = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeCommunicationsOutput) SetNextToken(v string) *DescribeCommunicationsOutput {
+	s.NextToken = &v
+	return s
 }
 
 type DescribeServicesInput struct {
@@ -1464,6 +2178,18 @@ func (s DescribeServicesInput) GoString() string {
 	return s.String()
 }
 
+// SetLanguage sets the Language field's value.
+func (s *DescribeServicesInput) SetLanguage(v string) *DescribeServicesInput {
+	s.Language = &v
+	return s
+}
+
+// SetServiceCodeList sets the ServiceCodeList field's value.
+func (s *DescribeServicesInput) SetServiceCodeList(v []*string) *DescribeServicesInput {
+	s.ServiceCodeList = v
+	return s
+}
+
 // The list of AWS services returned by the DescribeServices operation.
 type DescribeServicesOutput struct {
 	_ struct{} `type:"structure"`
@@ -1480,6 +2206,12 @@ func (s DescribeServicesOutput) String() string {
 // GoString returns the string representation
 func (s DescribeServicesOutput) GoString() string {
 	return s.String()
+}
+
+// SetServices sets the Services field's value.
+func (s *DescribeServicesOutput) SetServices(v []*Service) *DescribeServicesOutput {
+	s.Services = v
+	return s
 }
 
 type DescribeSeverityLevelsInput struct {
@@ -1501,6 +2233,12 @@ func (s DescribeSeverityLevelsInput) GoString() string {
 	return s.String()
 }
 
+// SetLanguage sets the Language field's value.
+func (s *DescribeSeverityLevelsInput) SetLanguage(v string) *DescribeSeverityLevelsInput {
+	s.Language = &v
+	return s
+}
+
 // The list of severity levels returned by the DescribeSeverityLevels operation.
 type DescribeSeverityLevelsOutput struct {
 	_ struct{} `type:"structure"`
@@ -1520,10 +2258,20 @@ func (s DescribeSeverityLevelsOutput) GoString() string {
 	return s.String()
 }
 
+// SetSeverityLevels sets the SeverityLevels field's value.
+func (s *DescribeSeverityLevelsOutput) SetSeverityLevels(v []*SeverityLevel) *DescribeSeverityLevelsOutput {
+	s.SeverityLevels = v
+	return s
+}
+
 type DescribeTrustedAdvisorCheckRefreshStatusesInput struct {
 	_ struct{} `type:"structure"`
 
-	// The IDs of the Trusted Advisor checks.
+	// The IDs of the Trusted Advisor checks to get the status of. Note: Specifying
+	// the check ID of a check that is automatically refreshed causes an InvalidParameterValue
+	// error.
+	//
+	// CheckIds is a required field
 	CheckIds []*string `locationName:"checkIds" type:"list" required:"true"`
 }
 
@@ -1550,12 +2298,20 @@ func (s *DescribeTrustedAdvisorCheckRefreshStatusesInput) Validate() error {
 	return nil
 }
 
+// SetCheckIds sets the CheckIds field's value.
+func (s *DescribeTrustedAdvisorCheckRefreshStatusesInput) SetCheckIds(v []*string) *DescribeTrustedAdvisorCheckRefreshStatusesInput {
+	s.CheckIds = v
+	return s
+}
+
 // The statuses of the Trusted Advisor checks returned by the DescribeTrustedAdvisorCheckRefreshStatuses
 // operation.
 type DescribeTrustedAdvisorCheckRefreshStatusesOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The refresh status of the specified Trusted Advisor checks.
+	//
+	// Statuses is a required field
 	Statuses []*TrustedAdvisorCheckRefreshStatus `locationName:"statuses" type:"list" required:"true"`
 }
 
@@ -1569,10 +2325,18 @@ func (s DescribeTrustedAdvisorCheckRefreshStatusesOutput) GoString() string {
 	return s.String()
 }
 
+// SetStatuses sets the Statuses field's value.
+func (s *DescribeTrustedAdvisorCheckRefreshStatusesOutput) SetStatuses(v []*TrustedAdvisorCheckRefreshStatus) *DescribeTrustedAdvisorCheckRefreshStatusesOutput {
+	s.Statuses = v
+	return s
+}
+
 type DescribeTrustedAdvisorCheckResultInput struct {
 	_ struct{} `type:"structure"`
 
 	// The unique identifier for the Trusted Advisor check.
+	//
+	// CheckId is a required field
 	CheckId *string `locationName:"checkId" type:"string" required:"true"`
 
 	// The ISO 639-1 code for the language in which AWS provides support. AWS Support
@@ -1604,6 +2368,18 @@ func (s *DescribeTrustedAdvisorCheckResultInput) Validate() error {
 	return nil
 }
 
+// SetCheckId sets the CheckId field's value.
+func (s *DescribeTrustedAdvisorCheckResultInput) SetCheckId(v string) *DescribeTrustedAdvisorCheckResultInput {
+	s.CheckId = &v
+	return s
+}
+
+// SetLanguage sets the Language field's value.
+func (s *DescribeTrustedAdvisorCheckResultInput) SetLanguage(v string) *DescribeTrustedAdvisorCheckResultInput {
+	s.Language = &v
+	return s
+}
+
 // The result of the Trusted Advisor check returned by the DescribeTrustedAdvisorCheckResult
 // operation.
 type DescribeTrustedAdvisorCheckResultOutput struct {
@@ -1623,10 +2399,18 @@ func (s DescribeTrustedAdvisorCheckResultOutput) GoString() string {
 	return s.String()
 }
 
+// SetResult sets the Result field's value.
+func (s *DescribeTrustedAdvisorCheckResultOutput) SetResult(v *TrustedAdvisorCheckResult) *DescribeTrustedAdvisorCheckResultOutput {
+	s.Result = v
+	return s
+}
+
 type DescribeTrustedAdvisorCheckSummariesInput struct {
 	_ struct{} `type:"structure"`
 
 	// The IDs of the Trusted Advisor checks.
+	//
+	// CheckIds is a required field
 	CheckIds []*string `locationName:"checkIds" type:"list" required:"true"`
 }
 
@@ -1653,12 +2437,20 @@ func (s *DescribeTrustedAdvisorCheckSummariesInput) Validate() error {
 	return nil
 }
 
+// SetCheckIds sets the CheckIds field's value.
+func (s *DescribeTrustedAdvisorCheckSummariesInput) SetCheckIds(v []*string) *DescribeTrustedAdvisorCheckSummariesInput {
+	s.CheckIds = v
+	return s
+}
+
 // The summaries of the Trusted Advisor checks returned by the DescribeTrustedAdvisorCheckSummaries
 // operation.
 type DescribeTrustedAdvisorCheckSummariesOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The summary information for the requested Trusted Advisor checks.
+	//
+	// Summaries is a required field
 	Summaries []*TrustedAdvisorCheckSummary `locationName:"summaries" type:"list" required:"true"`
 }
 
@@ -1672,12 +2464,20 @@ func (s DescribeTrustedAdvisorCheckSummariesOutput) GoString() string {
 	return s.String()
 }
 
+// SetSummaries sets the Summaries field's value.
+func (s *DescribeTrustedAdvisorCheckSummariesOutput) SetSummaries(v []*TrustedAdvisorCheckSummary) *DescribeTrustedAdvisorCheckSummariesOutput {
+	s.Summaries = v
+	return s
+}
+
 type DescribeTrustedAdvisorChecksInput struct {
 	_ struct{} `type:"structure"`
 
 	// The ISO 639-1 code for the language in which AWS provides support. AWS Support
 	// currently supports English ("en") and Japanese ("ja"). Language parameters
 	// must be passed explicitly for operations that take them.
+	//
+	// Language is a required field
 	Language *string `locationName:"language" type:"string" required:"true"`
 }
 
@@ -1704,12 +2504,20 @@ func (s *DescribeTrustedAdvisorChecksInput) Validate() error {
 	return nil
 }
 
+// SetLanguage sets the Language field's value.
+func (s *DescribeTrustedAdvisorChecksInput) SetLanguage(v string) *DescribeTrustedAdvisorChecksInput {
+	s.Language = &v
+	return s
+}
+
 // Information about the Trusted Advisor checks returned by the DescribeTrustedAdvisorChecks
 // operation.
 type DescribeTrustedAdvisorChecksOutput struct {
 	_ struct{} `type:"structure"`
 
 	// Information about all available Trusted Advisor checks.
+	//
+	// Checks is a required field
 	Checks []*TrustedAdvisorCheckDescription `locationName:"checks" type:"list" required:"true"`
 }
 
@@ -1721,6 +2529,12 @@ func (s DescribeTrustedAdvisorChecksOutput) String() string {
 // GoString returns the string representation
 func (s DescribeTrustedAdvisorChecksOutput) GoString() string {
 	return s.String()
+}
+
+// SetChecks sets the Checks field's value.
+func (s *DescribeTrustedAdvisorChecksOutput) SetChecks(v []*TrustedAdvisorCheckDescription) *DescribeTrustedAdvisorChecksOutput {
+	s.Checks = v
+	return s
 }
 
 // The five most recent communications associated with the case.
@@ -1744,10 +2558,26 @@ func (s RecentCaseCommunications) GoString() string {
 	return s.String()
 }
 
+// SetCommunications sets the Communications field's value.
+func (s *RecentCaseCommunications) SetCommunications(v []*Communication) *RecentCaseCommunications {
+	s.Communications = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *RecentCaseCommunications) SetNextToken(v string) *RecentCaseCommunications {
+	s.NextToken = &v
+	return s
+}
+
 type RefreshTrustedAdvisorCheckInput struct {
 	_ struct{} `type:"structure"`
 
-	// The unique identifier for the Trusted Advisor check.
+	// The unique identifier for the Trusted Advisor check to refresh. Note: Specifying
+	// the check ID of a check that is automatically refreshed causes an InvalidParameterValue
+	// error.
+	//
+	// CheckId is a required field
 	CheckId *string `locationName:"checkId" type:"string" required:"true"`
 }
 
@@ -1774,12 +2604,20 @@ func (s *RefreshTrustedAdvisorCheckInput) Validate() error {
 	return nil
 }
 
+// SetCheckId sets the CheckId field's value.
+func (s *RefreshTrustedAdvisorCheckInput) SetCheckId(v string) *RefreshTrustedAdvisorCheckInput {
+	s.CheckId = &v
+	return s
+}
+
 // The current refresh status of a Trusted Advisor check.
 type RefreshTrustedAdvisorCheckOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The current refresh status for a check, including the amount of time until
 	// the check is eligible for refresh.
+	//
+	// Status is a required field
 	Status *TrustedAdvisorCheckRefreshStatus `locationName:"status" type:"structure" required:"true"`
 }
 
@@ -1791,6 +2629,12 @@ func (s RefreshTrustedAdvisorCheckOutput) String() string {
 // GoString returns the string representation
 func (s RefreshTrustedAdvisorCheckOutput) GoString() string {
 	return s.String()
+}
+
+// SetStatus sets the Status field's value.
+func (s *RefreshTrustedAdvisorCheckOutput) SetStatus(v *TrustedAdvisorCheckRefreshStatus) *RefreshTrustedAdvisorCheckOutput {
+	s.Status = v
+	return s
 }
 
 type ResolveCaseInput struct {
@@ -1809,6 +2653,12 @@ func (s ResolveCaseInput) String() string {
 // GoString returns the string representation
 func (s ResolveCaseInput) GoString() string {
 	return s.String()
+}
+
+// SetCaseId sets the CaseId field's value.
+func (s *ResolveCaseInput) SetCaseId(v string) *ResolveCaseInput {
+	s.CaseId = &v
+	return s
 }
 
 // The status of the case returned by the ResolveCase operation.
@@ -1832,6 +2682,18 @@ func (s ResolveCaseOutput) GoString() string {
 	return s.String()
 }
 
+// SetFinalCaseStatus sets the FinalCaseStatus field's value.
+func (s *ResolveCaseOutput) SetFinalCaseStatus(v string) *ResolveCaseOutput {
+	s.FinalCaseStatus = &v
+	return s
+}
+
+// SetInitialCaseStatus sets the InitialCaseStatus field's value.
+func (s *ResolveCaseOutput) SetInitialCaseStatus(v string) *ResolveCaseOutput {
+	s.InitialCaseStatus = &v
+	return s
+}
+
 // Information about an AWS service returned by the DescribeServices operation.
 type Service struct {
 	_ struct{} `type:"structure"`
@@ -1842,10 +2704,10 @@ type Service struct {
 	Categories []*Category `locationName:"categories" type:"list"`
 
 	// The code for an AWS service returned by the DescribeServices response. The
-	// Name element contains the corresponding friendly name.
+	// name element contains the corresponding friendly name.
 	Code *string `locationName:"code" type:"string"`
 
-	// The friendly name for an AWS service. The Code element contains the corresponding
+	// The friendly name for an AWS service. The code element contains the corresponding
 	// code.
 	Name *string `locationName:"name" type:"string"`
 }
@@ -1860,13 +2722,31 @@ func (s Service) GoString() string {
 	return s.String()
 }
 
+// SetCategories sets the Categories field's value.
+func (s *Service) SetCategories(v []*Category) *Service {
+	s.Categories = v
+	return s
+}
+
+// SetCode sets the Code field's value.
+func (s *Service) SetCode(v string) *Service {
+	s.Code = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Service) SetName(v string) *Service {
+	s.Name = &v
+	return s
+}
+
 // A code and name pair that represent a severity level that can be applied
 // to a support case.
 type SeverityLevel struct {
 	_ struct{} `type:"structure"`
 
 	// One of four values: "low," "medium," "high," and "urgent". These values correspond
-	// to response times returned to the caller in SeverityLevel.name.
+	// to response times returned to the caller in severityLevel.name.
 	Code *string `locationName:"code" type:"string"`
 
 	// The name of the severity level that corresponds to the severity level code.
@@ -1881,6 +2761,18 @@ func (s SeverityLevel) String() string {
 // GoString returns the string representation
 func (s SeverityLevel) GoString() string {
 	return s.String()
+}
+
+// SetCode sets the Code field's value.
+func (s *SeverityLevel) SetCode(v string) *SeverityLevel {
+	s.Code = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *SeverityLevel) SetName(v string) *SeverityLevel {
+	s.Name = &v
+	return s
 }
 
 // The container for summary information that relates to the category of the
@@ -1903,18 +2795,30 @@ func (s TrustedAdvisorCategorySpecificSummary) GoString() string {
 	return s.String()
 }
 
+// SetCostOptimizing sets the CostOptimizing field's value.
+func (s *TrustedAdvisorCategorySpecificSummary) SetCostOptimizing(v *TrustedAdvisorCostOptimizingSummary) *TrustedAdvisorCategorySpecificSummary {
+	s.CostOptimizing = v
+	return s
+}
+
 // The description and metadata for a Trusted Advisor check.
 type TrustedAdvisorCheckDescription struct {
 	_ struct{} `type:"structure"`
 
 	// The category of the Trusted Advisor check.
+	//
+	// Category is a required field
 	Category *string `locationName:"category" type:"string" required:"true"`
 
 	// The description of the Trusted Advisor check, which includes the alert criteria
 	// and recommended actions (contains HTML markup).
+	//
+	// Description is a required field
 	Description *string `locationName:"description" type:"string" required:"true"`
 
 	// The unique identifier for the Trusted Advisor check.
+	//
+	// Id is a required field
 	Id *string `locationName:"id" type:"string" required:"true"`
 
 	// The column headings for the data returned by the Trusted Advisor check. The
@@ -1922,9 +2826,13 @@ type TrustedAdvisorCheckDescription struct {
 	// element of the TrustedAdvisorResourceDetail for the check. Metadata contains
 	// all the data that is shown in the Excel download, even in those cases where
 	// the UI shows just summary data.
+	//
+	// Metadata is a required field
 	Metadata []*string `locationName:"metadata" type:"list" required:"true"`
 
 	// The display name for the Trusted Advisor check.
+	//
+	// Name is a required field
 	Name *string `locationName:"name" type:"string" required:"true"`
 }
 
@@ -1938,19 +2846,55 @@ func (s TrustedAdvisorCheckDescription) GoString() string {
 	return s.String()
 }
 
+// SetCategory sets the Category field's value.
+func (s *TrustedAdvisorCheckDescription) SetCategory(v string) *TrustedAdvisorCheckDescription {
+	s.Category = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *TrustedAdvisorCheckDescription) SetDescription(v string) *TrustedAdvisorCheckDescription {
+	s.Description = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *TrustedAdvisorCheckDescription) SetId(v string) *TrustedAdvisorCheckDescription {
+	s.Id = &v
+	return s
+}
+
+// SetMetadata sets the Metadata field's value.
+func (s *TrustedAdvisorCheckDescription) SetMetadata(v []*string) *TrustedAdvisorCheckDescription {
+	s.Metadata = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *TrustedAdvisorCheckDescription) SetName(v string) *TrustedAdvisorCheckDescription {
+	s.Name = &v
+	return s
+}
+
 // The refresh status of a Trusted Advisor check.
 type TrustedAdvisorCheckRefreshStatus struct {
 	_ struct{} `type:"structure"`
 
 	// The unique identifier for the Trusted Advisor check.
+	//
+	// CheckId is a required field
 	CheckId *string `locationName:"checkId" type:"string" required:"true"`
 
 	// The amount of time, in milliseconds, until the Trusted Advisor check is eligible
 	// for refresh.
+	//
+	// MillisUntilNextRefreshable is a required field
 	MillisUntilNextRefreshable *int64 `locationName:"millisUntilNextRefreshable" type:"long" required:"true"`
 
 	// The status of the Trusted Advisor check for which a refresh has been requested:
 	// "none", "enqueued", "processing", "success", or "abandoned".
+	//
+	// Status is a required field
 	Status *string `locationName:"status" type:"string" required:"true"`
 }
 
@@ -1964,29 +2908,59 @@ func (s TrustedAdvisorCheckRefreshStatus) GoString() string {
 	return s.String()
 }
 
+// SetCheckId sets the CheckId field's value.
+func (s *TrustedAdvisorCheckRefreshStatus) SetCheckId(v string) *TrustedAdvisorCheckRefreshStatus {
+	s.CheckId = &v
+	return s
+}
+
+// SetMillisUntilNextRefreshable sets the MillisUntilNextRefreshable field's value.
+func (s *TrustedAdvisorCheckRefreshStatus) SetMillisUntilNextRefreshable(v int64) *TrustedAdvisorCheckRefreshStatus {
+	s.MillisUntilNextRefreshable = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *TrustedAdvisorCheckRefreshStatus) SetStatus(v string) *TrustedAdvisorCheckRefreshStatus {
+	s.Status = &v
+	return s
+}
+
 // The results of a Trusted Advisor check returned by DescribeTrustedAdvisorCheckResult.
 type TrustedAdvisorCheckResult struct {
 	_ struct{} `type:"structure"`
 
 	// Summary information that relates to the category of the check. Cost Optimizing
 	// is the only category that is currently supported.
+	//
+	// CategorySpecificSummary is a required field
 	CategorySpecificSummary *TrustedAdvisorCategorySpecificSummary `locationName:"categorySpecificSummary" type:"structure" required:"true"`
 
 	// The unique identifier for the Trusted Advisor check.
+	//
+	// CheckId is a required field
 	CheckId *string `locationName:"checkId" type:"string" required:"true"`
 
 	// The details about each resource listed in the check result.
+	//
+	// FlaggedResources is a required field
 	FlaggedResources []*TrustedAdvisorResourceDetail `locationName:"flaggedResources" type:"list" required:"true"`
 
 	// Details about AWS resources that were analyzed in a call to Trusted Advisor
 	// DescribeTrustedAdvisorCheckSummaries.
+	//
+	// ResourcesSummary is a required field
 	ResourcesSummary *TrustedAdvisorResourcesSummary `locationName:"resourcesSummary" type:"structure" required:"true"`
 
 	// The alert status of the check: "ok" (green), "warning" (yellow), "error"
 	// (red), or "not_available".
+	//
+	// Status is a required field
 	Status *string `locationName:"status" type:"string" required:"true"`
 
 	// The time of the last refresh of the check.
+	//
+	// Timestamp is a required field
 	Timestamp *string `locationName:"timestamp" type:"string" required:"true"`
 }
 
@@ -2000,6 +2974,42 @@ func (s TrustedAdvisorCheckResult) GoString() string {
 	return s.String()
 }
 
+// SetCategorySpecificSummary sets the CategorySpecificSummary field's value.
+func (s *TrustedAdvisorCheckResult) SetCategorySpecificSummary(v *TrustedAdvisorCategorySpecificSummary) *TrustedAdvisorCheckResult {
+	s.CategorySpecificSummary = v
+	return s
+}
+
+// SetCheckId sets the CheckId field's value.
+func (s *TrustedAdvisorCheckResult) SetCheckId(v string) *TrustedAdvisorCheckResult {
+	s.CheckId = &v
+	return s
+}
+
+// SetFlaggedResources sets the FlaggedResources field's value.
+func (s *TrustedAdvisorCheckResult) SetFlaggedResources(v []*TrustedAdvisorResourceDetail) *TrustedAdvisorCheckResult {
+	s.FlaggedResources = v
+	return s
+}
+
+// SetResourcesSummary sets the ResourcesSummary field's value.
+func (s *TrustedAdvisorCheckResult) SetResourcesSummary(v *TrustedAdvisorResourcesSummary) *TrustedAdvisorCheckResult {
+	s.ResourcesSummary = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *TrustedAdvisorCheckResult) SetStatus(v string) *TrustedAdvisorCheckResult {
+	s.Status = &v
+	return s
+}
+
+// SetTimestamp sets the Timestamp field's value.
+func (s *TrustedAdvisorCheckResult) SetTimestamp(v string) *TrustedAdvisorCheckResult {
+	s.Timestamp = &v
+	return s
+}
+
 // A summary of a Trusted Advisor check result, including the alert status,
 // last refresh, and number of resources examined.
 type TrustedAdvisorCheckSummary struct {
@@ -2007,9 +3017,13 @@ type TrustedAdvisorCheckSummary struct {
 
 	// Summary information that relates to the category of the check. Cost Optimizing
 	// is the only category that is currently supported.
+	//
+	// CategorySpecificSummary is a required field
 	CategorySpecificSummary *TrustedAdvisorCategorySpecificSummary `locationName:"categorySpecificSummary" type:"structure" required:"true"`
 
 	// The unique identifier for the Trusted Advisor check.
+	//
+	// CheckId is a required field
 	CheckId *string `locationName:"checkId" type:"string" required:"true"`
 
 	// Specifies whether the Trusted Advisor check has flagged resources.
@@ -2017,13 +3031,19 @@ type TrustedAdvisorCheckSummary struct {
 
 	// Details about AWS resources that were analyzed in a call to Trusted Advisor
 	// DescribeTrustedAdvisorCheckSummaries.
+	//
+	// ResourcesSummary is a required field
 	ResourcesSummary *TrustedAdvisorResourcesSummary `locationName:"resourcesSummary" type:"structure" required:"true"`
 
 	// The alert status of the check: "ok" (green), "warning" (yellow), "error"
 	// (red), or "not_available".
+	//
+	// Status is a required field
 	Status *string `locationName:"status" type:"string" required:"true"`
 
 	// The time of the last refresh of the check.
+	//
+	// Timestamp is a required field
 	Timestamp *string `locationName:"timestamp" type:"string" required:"true"`
 }
 
@@ -2037,6 +3057,42 @@ func (s TrustedAdvisorCheckSummary) GoString() string {
 	return s.String()
 }
 
+// SetCategorySpecificSummary sets the CategorySpecificSummary field's value.
+func (s *TrustedAdvisorCheckSummary) SetCategorySpecificSummary(v *TrustedAdvisorCategorySpecificSummary) *TrustedAdvisorCheckSummary {
+	s.CategorySpecificSummary = v
+	return s
+}
+
+// SetCheckId sets the CheckId field's value.
+func (s *TrustedAdvisorCheckSummary) SetCheckId(v string) *TrustedAdvisorCheckSummary {
+	s.CheckId = &v
+	return s
+}
+
+// SetHasFlaggedResources sets the HasFlaggedResources field's value.
+func (s *TrustedAdvisorCheckSummary) SetHasFlaggedResources(v bool) *TrustedAdvisorCheckSummary {
+	s.HasFlaggedResources = &v
+	return s
+}
+
+// SetResourcesSummary sets the ResourcesSummary field's value.
+func (s *TrustedAdvisorCheckSummary) SetResourcesSummary(v *TrustedAdvisorResourcesSummary) *TrustedAdvisorCheckSummary {
+	s.ResourcesSummary = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *TrustedAdvisorCheckSummary) SetStatus(v string) *TrustedAdvisorCheckSummary {
+	s.Status = &v
+	return s
+}
+
+// SetTimestamp sets the Timestamp field's value.
+func (s *TrustedAdvisorCheckSummary) SetTimestamp(v string) *TrustedAdvisorCheckSummary {
+	s.Timestamp = &v
+	return s
+}
+
 // The estimated cost savings that might be realized if the recommended actions
 // are taken.
 type TrustedAdvisorCostOptimizingSummary struct {
@@ -2044,10 +3100,14 @@ type TrustedAdvisorCostOptimizingSummary struct {
 
 	// The estimated monthly savings that might be realized if the recommended actions
 	// are taken.
+	//
+	// EstimatedMonthlySavings is a required field
 	EstimatedMonthlySavings *float64 `locationName:"estimatedMonthlySavings" type:"double" required:"true"`
 
 	// The estimated percentage of savings that might be realized if the recommended
 	// actions are taken.
+	//
+	// EstimatedPercentMonthlySavings is a required field
 	EstimatedPercentMonthlySavings *float64 `locationName:"estimatedPercentMonthlySavings" type:"double" required:"true"`
 }
 
@@ -2059,6 +3119,18 @@ func (s TrustedAdvisorCostOptimizingSummary) String() string {
 // GoString returns the string representation
 func (s TrustedAdvisorCostOptimizingSummary) GoString() string {
 	return s.String()
+}
+
+// SetEstimatedMonthlySavings sets the EstimatedMonthlySavings field's value.
+func (s *TrustedAdvisorCostOptimizingSummary) SetEstimatedMonthlySavings(v float64) *TrustedAdvisorCostOptimizingSummary {
+	s.EstimatedMonthlySavings = &v
+	return s
+}
+
+// SetEstimatedPercentMonthlySavings sets the EstimatedPercentMonthlySavings field's value.
+func (s *TrustedAdvisorCostOptimizingSummary) SetEstimatedPercentMonthlySavings(v float64) *TrustedAdvisorCostOptimizingSummary {
+	s.EstimatedPercentMonthlySavings = &v
+	return s
 }
 
 // Contains information about a resource identified by a Trusted Advisor check.
@@ -2074,15 +3146,21 @@ type TrustedAdvisorResourceDetail struct {
 	// object returned by the call to DescribeTrustedAdvisorChecks. Metadata contains
 	// all the data that is shown in the Excel download, even in those cases where
 	// the UI shows just summary data.
+	//
+	// Metadata is a required field
 	Metadata []*string `locationName:"metadata" type:"list" required:"true"`
 
 	// The AWS region in which the identified resource is located.
-	Region *string `locationName:"region" type:"string" required:"true"`
+	Region *string `locationName:"region" type:"string"`
 
 	// The unique identifier for the identified resource.
+	//
+	// ResourceId is a required field
 	ResourceId *string `locationName:"resourceId" type:"string" required:"true"`
 
 	// The status code for the resource identified in the Trusted Advisor check.
+	//
+	// Status is a required field
 	Status *string `locationName:"status" type:"string" required:"true"`
 }
 
@@ -2096,6 +3174,36 @@ func (s TrustedAdvisorResourceDetail) GoString() string {
 	return s.String()
 }
 
+// SetIsSuppressed sets the IsSuppressed field's value.
+func (s *TrustedAdvisorResourceDetail) SetIsSuppressed(v bool) *TrustedAdvisorResourceDetail {
+	s.IsSuppressed = &v
+	return s
+}
+
+// SetMetadata sets the Metadata field's value.
+func (s *TrustedAdvisorResourceDetail) SetMetadata(v []*string) *TrustedAdvisorResourceDetail {
+	s.Metadata = v
+	return s
+}
+
+// SetRegion sets the Region field's value.
+func (s *TrustedAdvisorResourceDetail) SetRegion(v string) *TrustedAdvisorResourceDetail {
+	s.Region = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *TrustedAdvisorResourceDetail) SetResourceId(v string) *TrustedAdvisorResourceDetail {
+	s.ResourceId = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *TrustedAdvisorResourceDetail) SetStatus(v string) *TrustedAdvisorResourceDetail {
+	s.Status = &v
+	return s
+}
+
 // Details about AWS resources that were analyzed in a call to Trusted Advisor
 // DescribeTrustedAdvisorCheckSummaries.
 type TrustedAdvisorResourcesSummary struct {
@@ -2103,17 +3211,25 @@ type TrustedAdvisorResourcesSummary struct {
 
 	// The number of AWS resources that were flagged (listed) by the Trusted Advisor
 	// check.
+	//
+	// ResourcesFlagged is a required field
 	ResourcesFlagged *int64 `locationName:"resourcesFlagged" type:"long" required:"true"`
 
 	// The number of AWS resources ignored by Trusted Advisor because information
 	// was unavailable.
+	//
+	// ResourcesIgnored is a required field
 	ResourcesIgnored *int64 `locationName:"resourcesIgnored" type:"long" required:"true"`
 
 	// The number of AWS resources that were analyzed by the Trusted Advisor check.
+	//
+	// ResourcesProcessed is a required field
 	ResourcesProcessed *int64 `locationName:"resourcesProcessed" type:"long" required:"true"`
 
 	// The number of AWS resources ignored by Trusted Advisor because they were
 	// marked as suppressed by the user.
+	//
+	// ResourcesSuppressed is a required field
 	ResourcesSuppressed *int64 `locationName:"resourcesSuppressed" type:"long" required:"true"`
 }
 
@@ -2125,4 +3241,28 @@ func (s TrustedAdvisorResourcesSummary) String() string {
 // GoString returns the string representation
 func (s TrustedAdvisorResourcesSummary) GoString() string {
 	return s.String()
+}
+
+// SetResourcesFlagged sets the ResourcesFlagged field's value.
+func (s *TrustedAdvisorResourcesSummary) SetResourcesFlagged(v int64) *TrustedAdvisorResourcesSummary {
+	s.ResourcesFlagged = &v
+	return s
+}
+
+// SetResourcesIgnored sets the ResourcesIgnored field's value.
+func (s *TrustedAdvisorResourcesSummary) SetResourcesIgnored(v int64) *TrustedAdvisorResourcesSummary {
+	s.ResourcesIgnored = &v
+	return s
+}
+
+// SetResourcesProcessed sets the ResourcesProcessed field's value.
+func (s *TrustedAdvisorResourcesSummary) SetResourcesProcessed(v int64) *TrustedAdvisorResourcesSummary {
+	s.ResourcesProcessed = &v
+	return s
+}
+
+// SetResourcesSuppressed sets the ResourcesSuppressed field's value.
+func (s *TrustedAdvisorResourcesSummary) SetResourcesSuppressed(v int64) *TrustedAdvisorResourcesSummary {
+	s.ResourcesSuppressed = &v
+	return s
 }

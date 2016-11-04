@@ -16,7 +16,13 @@ var _ time.Duration
 var _ bytes.Buffer
 
 func ExampleSES_CloneReceiptRuleSet() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.CloneReceiptRuleSetInput{
 		OriginalRuleSetName: aws.String("ReceiptRuleSetName"), // Required
@@ -35,8 +41,88 @@ func ExampleSES_CloneReceiptRuleSet() {
 	fmt.Println(resp)
 }
 
+func ExampleSES_CreateConfigurationSet() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
+
+	params := &ses.CreateConfigurationSetInput{
+		ConfigurationSet: &ses.ConfigurationSet{ // Required
+			Name: aws.String("ConfigurationSetName"), // Required
+		},
+	}
+	resp, err := svc.CreateConfigurationSet(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
+func ExampleSES_CreateConfigurationSetEventDestination() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
+
+	params := &ses.CreateConfigurationSetEventDestinationInput{
+		ConfigurationSetName: aws.String("ConfigurationSetName"), // Required
+		EventDestination: &ses.EventDestination{ // Required
+			MatchingEventTypes: []*string{ // Required
+				aws.String("EventType"), // Required
+				// More values...
+			},
+			Name: aws.String("EventDestinationName"), // Required
+			CloudWatchDestination: &ses.CloudWatchDestination{
+				DimensionConfigurations: []*ses.CloudWatchDimensionConfiguration{ // Required
+					{ // Required
+						DefaultDimensionValue: aws.String("DefaultDimensionValue"), // Required
+						DimensionName:         aws.String("DimensionName"),         // Required
+						DimensionValueSource:  aws.String("DimensionValueSource"),  // Required
+					},
+					// More values...
+				},
+			},
+			Enabled: aws.Bool(true),
+			KinesisFirehoseDestination: &ses.KinesisFirehoseDestination{
+				DeliveryStreamARN: aws.String("AmazonResourceName"), // Required
+				IAMRoleARN:        aws.String("AmazonResourceName"), // Required
+			},
+		},
+	}
+	resp, err := svc.CreateConfigurationSetEventDestination(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
 func ExampleSES_CreateReceiptFilter() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.CreateReceiptFilterInput{
 		Filter: &ses.ReceiptFilter{ // Required
@@ -61,7 +147,13 @@ func ExampleSES_CreateReceiptFilter() {
 }
 
 func ExampleSES_CreateReceiptRule() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.CreateReceiptRuleInput{
 		Rule: &ses.ReceiptRule{ // Required
@@ -130,7 +222,13 @@ func ExampleSES_CreateReceiptRule() {
 }
 
 func ExampleSES_CreateReceiptRuleSet() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.CreateReceiptRuleSetInput{
 		RuleSetName: aws.String("ReceiptRuleSetName"), // Required
@@ -148,8 +246,65 @@ func ExampleSES_CreateReceiptRuleSet() {
 	fmt.Println(resp)
 }
 
+func ExampleSES_DeleteConfigurationSet() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
+
+	params := &ses.DeleteConfigurationSetInput{
+		ConfigurationSetName: aws.String("ConfigurationSetName"), // Required
+	}
+	resp, err := svc.DeleteConfigurationSet(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
+func ExampleSES_DeleteConfigurationSetEventDestination() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
+
+	params := &ses.DeleteConfigurationSetEventDestinationInput{
+		ConfigurationSetName: aws.String("ConfigurationSetName"), // Required
+		EventDestinationName: aws.String("EventDestinationName"), // Required
+	}
+	resp, err := svc.DeleteConfigurationSetEventDestination(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
 func ExampleSES_DeleteIdentity() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.DeleteIdentityInput{
 		Identity: aws.String("Identity"), // Required
@@ -168,7 +323,13 @@ func ExampleSES_DeleteIdentity() {
 }
 
 func ExampleSES_DeleteIdentityPolicy() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.DeleteIdentityPolicyInput{
 		Identity:   aws.String("Identity"),   // Required
@@ -188,7 +349,13 @@ func ExampleSES_DeleteIdentityPolicy() {
 }
 
 func ExampleSES_DeleteReceiptFilter() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.DeleteReceiptFilterInput{
 		FilterName: aws.String("ReceiptFilterName"), // Required
@@ -207,7 +374,13 @@ func ExampleSES_DeleteReceiptFilter() {
 }
 
 func ExampleSES_DeleteReceiptRule() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.DeleteReceiptRuleInput{
 		RuleName:    aws.String("ReceiptRuleName"),    // Required
@@ -227,7 +400,13 @@ func ExampleSES_DeleteReceiptRule() {
 }
 
 func ExampleSES_DeleteReceiptRuleSet() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.DeleteReceiptRuleSetInput{
 		RuleSetName: aws.String("ReceiptRuleSetName"), // Required
@@ -246,7 +425,13 @@ func ExampleSES_DeleteReceiptRuleSet() {
 }
 
 func ExampleSES_DeleteVerifiedEmailAddress() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.DeleteVerifiedEmailAddressInput{
 		EmailAddress: aws.String("Address"), // Required
@@ -265,7 +450,13 @@ func ExampleSES_DeleteVerifiedEmailAddress() {
 }
 
 func ExampleSES_DescribeActiveReceiptRuleSet() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	var params *ses.DescribeActiveReceiptRuleSetInput
 	resp, err := svc.DescribeActiveReceiptRuleSet(params)
@@ -281,8 +472,43 @@ func ExampleSES_DescribeActiveReceiptRuleSet() {
 	fmt.Println(resp)
 }
 
+func ExampleSES_DescribeConfigurationSet() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
+
+	params := &ses.DescribeConfigurationSetInput{
+		ConfigurationSetName: aws.String("ConfigurationSetName"), // Required
+		ConfigurationSetAttributeNames: []*string{
+			aws.String("ConfigurationSetAttribute"), // Required
+			// More values...
+		},
+	}
+	resp, err := svc.DescribeConfigurationSet(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
 func ExampleSES_DescribeReceiptRule() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.DescribeReceiptRuleInput{
 		RuleName:    aws.String("ReceiptRuleName"),    // Required
@@ -302,7 +528,13 @@ func ExampleSES_DescribeReceiptRule() {
 }
 
 func ExampleSES_DescribeReceiptRuleSet() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.DescribeReceiptRuleSetInput{
 		RuleSetName: aws.String("ReceiptRuleSetName"), // Required
@@ -321,7 +553,13 @@ func ExampleSES_DescribeReceiptRuleSet() {
 }
 
 func ExampleSES_GetIdentityDkimAttributes() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.GetIdentityDkimAttributesInput{
 		Identities: []*string{ // Required
@@ -343,7 +581,13 @@ func ExampleSES_GetIdentityDkimAttributes() {
 }
 
 func ExampleSES_GetIdentityMailFromDomainAttributes() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.GetIdentityMailFromDomainAttributesInput{
 		Identities: []*string{ // Required
@@ -365,7 +609,13 @@ func ExampleSES_GetIdentityMailFromDomainAttributes() {
 }
 
 func ExampleSES_GetIdentityNotificationAttributes() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.GetIdentityNotificationAttributesInput{
 		Identities: []*string{ // Required
@@ -387,7 +637,13 @@ func ExampleSES_GetIdentityNotificationAttributes() {
 }
 
 func ExampleSES_GetIdentityPolicies() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.GetIdentityPoliciesInput{
 		Identity: aws.String("Identity"), // Required
@@ -410,7 +666,13 @@ func ExampleSES_GetIdentityPolicies() {
 }
 
 func ExampleSES_GetIdentityVerificationAttributes() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.GetIdentityVerificationAttributesInput{
 		Identities: []*string{ // Required
@@ -432,7 +694,13 @@ func ExampleSES_GetIdentityVerificationAttributes() {
 }
 
 func ExampleSES_GetSendQuota() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	var params *ses.GetSendQuotaInput
 	resp, err := svc.GetSendQuota(params)
@@ -449,7 +717,13 @@ func ExampleSES_GetSendQuota() {
 }
 
 func ExampleSES_GetSendStatistics() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	var params *ses.GetSendStatisticsInput
 	resp, err := svc.GetSendStatistics(params)
@@ -465,8 +739,40 @@ func ExampleSES_GetSendStatistics() {
 	fmt.Println(resp)
 }
 
+func ExampleSES_ListConfigurationSets() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
+
+	params := &ses.ListConfigurationSetsInput{
+		MaxItems:  aws.Int64(1),
+		NextToken: aws.String("NextToken"),
+	}
+	resp, err := svc.ListConfigurationSets(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
 func ExampleSES_ListIdentities() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.ListIdentitiesInput{
 		IdentityType: aws.String("IdentityType"),
@@ -487,7 +793,13 @@ func ExampleSES_ListIdentities() {
 }
 
 func ExampleSES_ListIdentityPolicies() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.ListIdentityPoliciesInput{
 		Identity: aws.String("Identity"), // Required
@@ -506,7 +818,13 @@ func ExampleSES_ListIdentityPolicies() {
 }
 
 func ExampleSES_ListReceiptFilters() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	var params *ses.ListReceiptFiltersInput
 	resp, err := svc.ListReceiptFilters(params)
@@ -523,7 +841,13 @@ func ExampleSES_ListReceiptFilters() {
 }
 
 func ExampleSES_ListReceiptRuleSets() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.ListReceiptRuleSetsInput{
 		NextToken: aws.String("NextToken"),
@@ -542,7 +866,13 @@ func ExampleSES_ListReceiptRuleSets() {
 }
 
 func ExampleSES_ListVerifiedEmailAddresses() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	var params *ses.ListVerifiedEmailAddressesInput
 	resp, err := svc.ListVerifiedEmailAddresses(params)
@@ -559,7 +889,13 @@ func ExampleSES_ListVerifiedEmailAddresses() {
 }
 
 func ExampleSES_PutIdentityPolicy() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.PutIdentityPolicyInput{
 		Identity:   aws.String("Identity"),   // Required
@@ -580,7 +916,13 @@ func ExampleSES_PutIdentityPolicy() {
 }
 
 func ExampleSES_ReorderReceiptRuleSet() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.ReorderReceiptRuleSetInput{
 		RuleNames: []*string{ // Required
@@ -603,7 +945,13 @@ func ExampleSES_ReorderReceiptRuleSet() {
 }
 
 func ExampleSES_SendBounce() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.SendBounceInput{
 		BounceSender: aws.String("Address"), // Required
@@ -659,7 +1007,13 @@ func ExampleSES_SendBounce() {
 }
 
 func ExampleSES_SendEmail() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.SendEmailInput{
 		Destination: &ses.Destination{ // Required
@@ -692,7 +1046,8 @@ func ExampleSES_SendEmail() {
 				Charset: aws.String("Charset"),
 			},
 		},
-		Source: aws.String("Address"), // Required
+		Source:               aws.String("Address"), // Required
+		ConfigurationSetName: aws.String("ConfigurationSetName"),
 		ReplyToAddresses: []*string{
 			aws.String("Address"), // Required
 			// More values...
@@ -700,6 +1055,13 @@ func ExampleSES_SendEmail() {
 		ReturnPath:    aws.String("Address"),
 		ReturnPathArn: aws.String("AmazonResourceName"),
 		SourceArn:     aws.String("AmazonResourceName"),
+		Tags: []*ses.MessageTag{
+			{ // Required
+				Name:  aws.String("MessageTagName"),  // Required
+				Value: aws.String("MessageTagValue"), // Required
+			},
+			// More values...
+		},
 	}
 	resp, err := svc.SendEmail(params)
 
@@ -715,12 +1077,19 @@ func ExampleSES_SendEmail() {
 }
 
 func ExampleSES_SendRawEmail() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.SendRawEmailInput{
 		RawMessage: &ses.RawMessage{ // Required
 			Data: []byte("PAYLOAD"), // Required
 		},
+		ConfigurationSetName: aws.String("ConfigurationSetName"),
 		Destinations: []*string{
 			aws.String("Address"), // Required
 			// More values...
@@ -729,6 +1098,13 @@ func ExampleSES_SendRawEmail() {
 		ReturnPathArn: aws.String("AmazonResourceName"),
 		Source:        aws.String("Address"),
 		SourceArn:     aws.String("AmazonResourceName"),
+		Tags: []*ses.MessageTag{
+			{ // Required
+				Name:  aws.String("MessageTagName"),  // Required
+				Value: aws.String("MessageTagValue"), // Required
+			},
+			// More values...
+		},
 	}
 	resp, err := svc.SendRawEmail(params)
 
@@ -744,7 +1120,13 @@ func ExampleSES_SendRawEmail() {
 }
 
 func ExampleSES_SetActiveReceiptRuleSet() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.SetActiveReceiptRuleSetInput{
 		RuleSetName: aws.String("ReceiptRuleSetName"),
@@ -763,7 +1145,13 @@ func ExampleSES_SetActiveReceiptRuleSet() {
 }
 
 func ExampleSES_SetIdentityDkimEnabled() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.SetIdentityDkimEnabledInput{
 		DkimEnabled: aws.Bool(true),         // Required
@@ -783,7 +1171,13 @@ func ExampleSES_SetIdentityDkimEnabled() {
 }
 
 func ExampleSES_SetIdentityFeedbackForwardingEnabled() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.SetIdentityFeedbackForwardingEnabledInput{
 		ForwardingEnabled: aws.Bool(true),         // Required
@@ -803,7 +1197,13 @@ func ExampleSES_SetIdentityFeedbackForwardingEnabled() {
 }
 
 func ExampleSES_SetIdentityHeadersInNotificationsEnabled() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.SetIdentityHeadersInNotificationsEnabledInput{
 		Enabled:          aws.Bool(true),                 // Required
@@ -824,7 +1224,13 @@ func ExampleSES_SetIdentityHeadersInNotificationsEnabled() {
 }
 
 func ExampleSES_SetIdentityMailFromDomain() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.SetIdentityMailFromDomainInput{
 		Identity:            aws.String("Identity"), // Required
@@ -845,7 +1251,13 @@ func ExampleSES_SetIdentityMailFromDomain() {
 }
 
 func ExampleSES_SetIdentityNotificationTopic() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.SetIdentityNotificationTopicInput{
 		Identity:         aws.String("Identity"),         // Required
@@ -866,7 +1278,13 @@ func ExampleSES_SetIdentityNotificationTopic() {
 }
 
 func ExampleSES_SetReceiptRulePosition() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.SetReceiptRulePositionInput{
 		RuleName:    aws.String("ReceiptRuleName"),    // Required
@@ -886,8 +1304,61 @@ func ExampleSES_SetReceiptRulePosition() {
 	fmt.Println(resp)
 }
 
+func ExampleSES_UpdateConfigurationSetEventDestination() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
+
+	params := &ses.UpdateConfigurationSetEventDestinationInput{
+		ConfigurationSetName: aws.String("ConfigurationSetName"), // Required
+		EventDestination: &ses.EventDestination{ // Required
+			MatchingEventTypes: []*string{ // Required
+				aws.String("EventType"), // Required
+				// More values...
+			},
+			Name: aws.String("EventDestinationName"), // Required
+			CloudWatchDestination: &ses.CloudWatchDestination{
+				DimensionConfigurations: []*ses.CloudWatchDimensionConfiguration{ // Required
+					{ // Required
+						DefaultDimensionValue: aws.String("DefaultDimensionValue"), // Required
+						DimensionName:         aws.String("DimensionName"),         // Required
+						DimensionValueSource:  aws.String("DimensionValueSource"),  // Required
+					},
+					// More values...
+				},
+			},
+			Enabled: aws.Bool(true),
+			KinesisFirehoseDestination: &ses.KinesisFirehoseDestination{
+				DeliveryStreamARN: aws.String("AmazonResourceName"), // Required
+				IAMRoleARN:        aws.String("AmazonResourceName"), // Required
+			},
+		},
+	}
+	resp, err := svc.UpdateConfigurationSetEventDestination(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
 func ExampleSES_UpdateReceiptRule() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.UpdateReceiptRuleInput{
 		Rule: &ses.ReceiptRule{ // Required
@@ -955,7 +1426,13 @@ func ExampleSES_UpdateReceiptRule() {
 }
 
 func ExampleSES_VerifyDomainDkim() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.VerifyDomainDkimInput{
 		Domain: aws.String("Domain"), // Required
@@ -974,7 +1451,13 @@ func ExampleSES_VerifyDomainDkim() {
 }
 
 func ExampleSES_VerifyDomainIdentity() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.VerifyDomainIdentityInput{
 		Domain: aws.String("Domain"), // Required
@@ -993,7 +1476,13 @@ func ExampleSES_VerifyDomainIdentity() {
 }
 
 func ExampleSES_VerifyEmailAddress() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.VerifyEmailAddressInput{
 		EmailAddress: aws.String("Address"), // Required
@@ -1012,7 +1501,13 @@ func ExampleSES_VerifyEmailAddress() {
 }
 
 func ExampleSES_VerifyEmailIdentity() {
-	svc := ses.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ses.New(sess)
 
 	params := &ses.VerifyEmailIdentityInput{
 		EmailAddress: aws.String("Address"), // Required

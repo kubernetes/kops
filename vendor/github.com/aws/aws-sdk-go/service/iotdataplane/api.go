@@ -17,6 +17,8 @@ const opDeleteThingShadow = "DeleteThingShadow"
 // value can be used to capture response data after the request's "Send" method
 // is called.
 //
+// See DeleteThingShadow for usage and error information.
+//
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
 // access properties on the request object before or after sending the request. If
@@ -51,10 +53,45 @@ func (c *IoTDataPlane) DeleteThingShadowRequest(input *DeleteThingShadowInput) (
 	return
 }
 
+// DeleteThingShadow API operation for AWS IoT Data Plane.
+//
 // Deletes the thing shadow for the specified thing.
 //
 // For more information, see DeleteThingShadow (http://docs.aws.amazon.com/iot/latest/developerguide/API_DeleteThingShadow.html)
 // in the AWS IoT Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS IoT Data Plane's
+// API operation DeleteThingShadow for usage and error information.
+//
+// Returned Error Codes:
+//   * ResourceNotFoundException
+//   The specified resource does not exist.
+//
+//   * InvalidRequestException
+//   The request is not valid.
+//
+//   * ThrottlingException
+//   The rate exceeds the limit.
+//
+//   * UnauthorizedException
+//   You are not authorized to perform this operation.
+//
+//   * ServiceUnavailableException
+//   The service is temporarily unavailable.
+//
+//   * InternalFailureException
+//   An unexpected error has occurred.
+//
+//   * MethodNotAllowedException
+//   The specified combination of HTTP verb and URI is not supported.
+//
+//   * UnsupportedDocumentEncodingException
+//   The document encoding is not supported.
+//
 func (c *IoTDataPlane) DeleteThingShadow(input *DeleteThingShadowInput) (*DeleteThingShadowOutput, error) {
 	req, out := c.DeleteThingShadowRequest(input)
 	err := req.Send()
@@ -67,6 +104,8 @@ const opGetThingShadow = "GetThingShadow"
 // client's request for the GetThingShadow operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See GetThingShadow for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -102,10 +141,45 @@ func (c *IoTDataPlane) GetThingShadowRequest(input *GetThingShadowInput) (req *r
 	return
 }
 
+// GetThingShadow API operation for AWS IoT Data Plane.
+//
 // Gets the thing shadow for the specified thing.
 //
 // For more information, see GetThingShadow (http://docs.aws.amazon.com/iot/latest/developerguide/API_GetThingShadow.html)
 // in the AWS IoT Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS IoT Data Plane's
+// API operation GetThingShadow for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidRequestException
+//   The request is not valid.
+//
+//   * ResourceNotFoundException
+//   The specified resource does not exist.
+//
+//   * ThrottlingException
+//   The rate exceeds the limit.
+//
+//   * UnauthorizedException
+//   You are not authorized to perform this operation.
+//
+//   * ServiceUnavailableException
+//   The service is temporarily unavailable.
+//
+//   * InternalFailureException
+//   An unexpected error has occurred.
+//
+//   * MethodNotAllowedException
+//   The specified combination of HTTP verb and URI is not supported.
+//
+//   * UnsupportedDocumentEncodingException
+//   The document encoding is not supported.
+//
 func (c *IoTDataPlane) GetThingShadow(input *GetThingShadowInput) (*GetThingShadowOutput, error) {
 	req, out := c.GetThingShadowRequest(input)
 	err := req.Send()
@@ -118,6 +192,8 @@ const opPublish = "Publish"
 // client's request for the Publish operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See Publish for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -155,10 +231,33 @@ func (c *IoTDataPlane) PublishRequest(input *PublishInput) (req *request.Request
 	return
 }
 
+// Publish API operation for AWS IoT Data Plane.
+//
 // Publishes state information.
 //
 // For more information, see HTTP Protocol (http://docs.aws.amazon.com/iot/latest/developerguide/protocols.html#http)
 // in the AWS IoT Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS IoT Data Plane's
+// API operation Publish for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalFailureException
+//   An unexpected error has occurred.
+//
+//   * InvalidRequestException
+//   The request is not valid.
+//
+//   * UnauthorizedException
+//   You are not authorized to perform this operation.
+//
+//   * MethodNotAllowedException
+//   The specified combination of HTTP verb and URI is not supported.
+//
 func (c *IoTDataPlane) Publish(input *PublishInput) (*PublishOutput, error) {
 	req, out := c.PublishRequest(input)
 	err := req.Send()
@@ -171,6 +270,8 @@ const opUpdateThingShadow = "UpdateThingShadow"
 // client's request for the UpdateThingShadow operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See UpdateThingShadow for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -206,10 +307,48 @@ func (c *IoTDataPlane) UpdateThingShadowRequest(input *UpdateThingShadowInput) (
 	return
 }
 
+// UpdateThingShadow API operation for AWS IoT Data Plane.
+//
 // Updates the thing shadow for the specified thing.
 //
 // For more information, see UpdateThingShadow (http://docs.aws.amazon.com/iot/latest/developerguide/API_UpdateThingShadow.html)
 // in the AWS IoT Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS IoT Data Plane's
+// API operation UpdateThingShadow for usage and error information.
+//
+// Returned Error Codes:
+//   * ConflictException
+//   The specified version does not match the version of the document.
+//
+//   * RequestEntityTooLargeException
+//   The payload exceeds the maximum size allowed.
+//
+//   * InvalidRequestException
+//   The request is not valid.
+//
+//   * ThrottlingException
+//   The rate exceeds the limit.
+//
+//   * UnauthorizedException
+//   You are not authorized to perform this operation.
+//
+//   * ServiceUnavailableException
+//   The service is temporarily unavailable.
+//
+//   * InternalFailureException
+//   An unexpected error has occurred.
+//
+//   * MethodNotAllowedException
+//   The specified combination of HTTP verb and URI is not supported.
+//
+//   * UnsupportedDocumentEncodingException
+//   The document encoding is not supported.
+//
 func (c *IoTDataPlane) UpdateThingShadow(input *UpdateThingShadowInput) (*UpdateThingShadowOutput, error) {
 	req, out := c.UpdateThingShadowRequest(input)
 	err := req.Send()
@@ -221,6 +360,8 @@ type DeleteThingShadowInput struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the thing.
+	//
+	// ThingName is a required field
 	ThingName *string `location:"uri" locationName:"thingName" min:"1" type:"string" required:"true"`
 }
 
@@ -250,11 +391,19 @@ func (s *DeleteThingShadowInput) Validate() error {
 	return nil
 }
 
+// SetThingName sets the ThingName field's value.
+func (s *DeleteThingShadowInput) SetThingName(v string) *DeleteThingShadowInput {
+	s.ThingName = &v
+	return s
+}
+
 // The output from the DeleteThingShadow operation.
 type DeleteThingShadowOutput struct {
 	_ struct{} `type:"structure" payload:"Payload"`
 
 	// The state information, in JSON format.
+	//
+	// Payload is a required field
 	Payload []byte `locationName:"payload" type:"blob" required:"true"`
 }
 
@@ -268,11 +417,19 @@ func (s DeleteThingShadowOutput) GoString() string {
 	return s.String()
 }
 
+// SetPayload sets the Payload field's value.
+func (s *DeleteThingShadowOutput) SetPayload(v []byte) *DeleteThingShadowOutput {
+	s.Payload = v
+	return s
+}
+
 // The input for the GetThingShadow operation.
 type GetThingShadowInput struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the thing.
+	//
+	// ThingName is a required field
 	ThingName *string `location:"uri" locationName:"thingName" min:"1" type:"string" required:"true"`
 }
 
@@ -302,6 +459,12 @@ func (s *GetThingShadowInput) Validate() error {
 	return nil
 }
 
+// SetThingName sets the ThingName field's value.
+func (s *GetThingShadowInput) SetThingName(v string) *GetThingShadowInput {
+	s.ThingName = &v
+	return s
+}
+
 // The output from the GetThingShadow operation.
 type GetThingShadowOutput struct {
 	_ struct{} `type:"structure" payload:"Payload"`
@@ -320,6 +483,12 @@ func (s GetThingShadowOutput) GoString() string {
 	return s.String()
 }
 
+// SetPayload sets the Payload field's value.
+func (s *GetThingShadowOutput) SetPayload(v []byte) *GetThingShadowOutput {
+	s.Payload = v
+	return s
+}
+
 // The input for the Publish operation.
 type PublishInput struct {
 	_ struct{} `type:"structure" payload:"Payload"`
@@ -331,6 +500,8 @@ type PublishInput struct {
 	Qos *int64 `location:"querystring" locationName:"qos" type:"integer"`
 
 	// The name of the MQTT topic.
+	//
+	// Topic is a required field
 	Topic *string `location:"uri" locationName:"topic" type:"string" required:"true"`
 }
 
@@ -357,6 +528,24 @@ func (s *PublishInput) Validate() error {
 	return nil
 }
 
+// SetPayload sets the Payload field's value.
+func (s *PublishInput) SetPayload(v []byte) *PublishInput {
+	s.Payload = v
+	return s
+}
+
+// SetQos sets the Qos field's value.
+func (s *PublishInput) SetQos(v int64) *PublishInput {
+	s.Qos = &v
+	return s
+}
+
+// SetTopic sets the Topic field's value.
+func (s *PublishInput) SetTopic(v string) *PublishInput {
+	s.Topic = &v
+	return s
+}
+
 type PublishOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -376,9 +565,13 @@ type UpdateThingShadowInput struct {
 	_ struct{} `type:"structure" payload:"Payload"`
 
 	// The state information, in JSON format.
+	//
+	// Payload is a required field
 	Payload []byte `locationName:"payload" type:"blob" required:"true"`
 
 	// The name of the thing.
+	//
+	// ThingName is a required field
 	ThingName *string `location:"uri" locationName:"thingName" min:"1" type:"string" required:"true"`
 }
 
@@ -411,6 +604,18 @@ func (s *UpdateThingShadowInput) Validate() error {
 	return nil
 }
 
+// SetPayload sets the Payload field's value.
+func (s *UpdateThingShadowInput) SetPayload(v []byte) *UpdateThingShadowInput {
+	s.Payload = v
+	return s
+}
+
+// SetThingName sets the ThingName field's value.
+func (s *UpdateThingShadowInput) SetThingName(v string) *UpdateThingShadowInput {
+	s.ThingName = &v
+	return s
+}
+
 // The output from the UpdateThingShadow operation.
 type UpdateThingShadowOutput struct {
 	_ struct{} `type:"structure" payload:"Payload"`
@@ -427,4 +632,10 @@ func (s UpdateThingShadowOutput) String() string {
 // GoString returns the string representation
 func (s UpdateThingShadowOutput) GoString() string {
 	return s.String()
+}
+
+// SetPayload sets the Payload field's value.
+func (s *UpdateThingShadowOutput) SetPayload(v []byte) *UpdateThingShadowOutput {
+	s.Payload = v
+	return s
 }

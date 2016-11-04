@@ -16,7 +16,13 @@ var _ time.Duration
 var _ bytes.Buffer
 
 func ExampleElasticTranscoder_CancelJob() {
-	svc := elastictranscoder.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := elastictranscoder.New(sess)
 
 	params := &elastictranscoder.CancelJobInput{
 		Id: aws.String("Id"), // Required
@@ -35,7 +41,13 @@ func ExampleElasticTranscoder_CancelJob() {
 }
 
 func ExampleElasticTranscoder_CreateJob() {
-	svc := elastictranscoder.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := elastictranscoder.New(sess)
 
 	params := &elastictranscoder.CreateJobInput{
 		Input: &elastictranscoder.JobInput{ // Required
@@ -294,7 +306,13 @@ func ExampleElasticTranscoder_CreateJob() {
 }
 
 func ExampleElasticTranscoder_CreatePipeline() {
-	svc := elastictranscoder.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := elastictranscoder.New(sess)
 
 	params := &elastictranscoder.CreatePipelineInput{
 		InputBucket:  aws.String("BucketName"), // Required
@@ -353,7 +371,13 @@ func ExampleElasticTranscoder_CreatePipeline() {
 }
 
 func ExampleElasticTranscoder_CreatePreset() {
-	svc := elastictranscoder.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := elastictranscoder.New(sess)
 
 	params := &elastictranscoder.CreatePresetInput{
 		Container: aws.String("PresetContainer"), // Required
@@ -431,7 +455,13 @@ func ExampleElasticTranscoder_CreatePreset() {
 }
 
 func ExampleElasticTranscoder_DeletePipeline() {
-	svc := elastictranscoder.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := elastictranscoder.New(sess)
 
 	params := &elastictranscoder.DeletePipelineInput{
 		Id: aws.String("Id"), // Required
@@ -450,7 +480,13 @@ func ExampleElasticTranscoder_DeletePipeline() {
 }
 
 func ExampleElasticTranscoder_DeletePreset() {
-	svc := elastictranscoder.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := elastictranscoder.New(sess)
 
 	params := &elastictranscoder.DeletePresetInput{
 		Id: aws.String("Id"), // Required
@@ -469,7 +505,13 @@ func ExampleElasticTranscoder_DeletePreset() {
 }
 
 func ExampleElasticTranscoder_ListJobsByPipeline() {
-	svc := elastictranscoder.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := elastictranscoder.New(sess)
 
 	params := &elastictranscoder.ListJobsByPipelineInput{
 		PipelineId: aws.String("Id"), // Required
@@ -490,7 +532,13 @@ func ExampleElasticTranscoder_ListJobsByPipeline() {
 }
 
 func ExampleElasticTranscoder_ListJobsByStatus() {
-	svc := elastictranscoder.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := elastictranscoder.New(sess)
 
 	params := &elastictranscoder.ListJobsByStatusInput{
 		Status:    aws.String("JobStatus"), // Required
@@ -511,7 +559,13 @@ func ExampleElasticTranscoder_ListJobsByStatus() {
 }
 
 func ExampleElasticTranscoder_ListPipelines() {
-	svc := elastictranscoder.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := elastictranscoder.New(sess)
 
 	params := &elastictranscoder.ListPipelinesInput{
 		Ascending: aws.String("Ascending"),
@@ -531,7 +585,13 @@ func ExampleElasticTranscoder_ListPipelines() {
 }
 
 func ExampleElasticTranscoder_ListPresets() {
-	svc := elastictranscoder.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := elastictranscoder.New(sess)
 
 	params := &elastictranscoder.ListPresetsInput{
 		Ascending: aws.String("Ascending"),
@@ -551,7 +611,13 @@ func ExampleElasticTranscoder_ListPresets() {
 }
 
 func ExampleElasticTranscoder_ReadJob() {
-	svc := elastictranscoder.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := elastictranscoder.New(sess)
 
 	params := &elastictranscoder.ReadJobInput{
 		Id: aws.String("Id"), // Required
@@ -570,7 +636,13 @@ func ExampleElasticTranscoder_ReadJob() {
 }
 
 func ExampleElasticTranscoder_ReadPipeline() {
-	svc := elastictranscoder.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := elastictranscoder.New(sess)
 
 	params := &elastictranscoder.ReadPipelineInput{
 		Id: aws.String("Id"), // Required
@@ -589,7 +661,13 @@ func ExampleElasticTranscoder_ReadPipeline() {
 }
 
 func ExampleElasticTranscoder_ReadPreset() {
-	svc := elastictranscoder.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := elastictranscoder.New(sess)
 
 	params := &elastictranscoder.ReadPresetInput{
 		Id: aws.String("Id"), // Required
@@ -608,7 +686,13 @@ func ExampleElasticTranscoder_ReadPreset() {
 }
 
 func ExampleElasticTranscoder_TestRole() {
-	svc := elastictranscoder.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := elastictranscoder.New(sess)
 
 	params := &elastictranscoder.TestRoleInput{
 		InputBucket:  aws.String("BucketName"), // Required
@@ -633,7 +717,13 @@ func ExampleElasticTranscoder_TestRole() {
 }
 
 func ExampleElasticTranscoder_UpdatePipeline() {
-	svc := elastictranscoder.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := elastictranscoder.New(sess)
 
 	params := &elastictranscoder.UpdatePipelineInput{
 		Id:           aws.String("Id"), // Required
@@ -692,7 +782,13 @@ func ExampleElasticTranscoder_UpdatePipeline() {
 }
 
 func ExampleElasticTranscoder_UpdatePipelineNotifications() {
-	svc := elastictranscoder.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := elastictranscoder.New(sess)
 
 	params := &elastictranscoder.UpdatePipelineNotificationsInput{
 		Id: aws.String("Id"), // Required
@@ -717,7 +813,13 @@ func ExampleElasticTranscoder_UpdatePipelineNotifications() {
 }
 
 func ExampleElasticTranscoder_UpdatePipelineStatus() {
-	svc := elastictranscoder.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := elastictranscoder.New(sess)
 
 	params := &elastictranscoder.UpdatePipelineStatusInput{
 		Id:     aws.String("Id"),             // Required

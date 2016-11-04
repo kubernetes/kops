@@ -270,6 +270,59 @@ func TestUnmarshalMapError(t *testing.T) {
 	}
 }
 
+func TestUnmarshalListOfMaps(t *testing.T) {
+	type testItem struct {
+		Value  string
+		Value2 int
+	}
+
+	cases := []struct {
+		in               []map[string]*dynamodb.AttributeValue
+		actual, expected interface{}
+		err              error
+	}{
+		{ // Simple map conversion.
+			in: []map[string]*dynamodb.AttributeValue{
+				{
+					"Value": &dynamodb.AttributeValue{
+						BOOL: aws.Bool(true),
+					},
+				},
+			},
+			actual: &[]map[string]interface{}{},
+			expected: []map[string]interface{}{
+				{
+					"Value": true,
+				},
+			},
+		},
+		{ // attribute to struct.
+			in: []map[string]*dynamodb.AttributeValue{
+				{
+					"Value": &dynamodb.AttributeValue{
+						S: aws.String("abc"),
+					},
+					"Value2": &dynamodb.AttributeValue{
+						N: aws.String("123"),
+					},
+				},
+			},
+			actual: &[]testItem{},
+			expected: []testItem{
+				{
+					Value:  "abc",
+					Value2: 123,
+				},
+			},
+		},
+	}
+
+	for i, c := range cases {
+		err := UnmarshalListOfMaps(c.in, c.actual)
+		assertConvertTest(t, i, c.actual, c.expected, err, c.err)
+	}
+}
+
 type unmarshalUnmarshaler struct {
 	Value  string
 	Value2 int
@@ -391,4 +444,37 @@ func TestDecodeUseNumberNumberSet(t *testing.T) {
 
 	assert.Equal(t, "123", ns[0].String())
 	assert.Equal(t, "321", ns[1].String())
+}
+
+func TestDecodeEmbeddedPointerStruct(t *testing.T) {
+	type B struct {
+		Bint int
+	}
+	type C struct {
+		Cint int
+	}
+	type A struct {
+		Aint int
+		*B
+		*C
+	}
+	av := &dynamodb.AttributeValue{
+		M: map[string]*dynamodb.AttributeValue{
+			"Aint": {
+				N: aws.String("321"),
+			},
+			"Bint": {
+				N: aws.String("123"),
+			},
+		},
+	}
+	decoder := NewDecoder()
+	a := A{}
+	err := decoder.Decode(av, &a)
+	assert.NoError(t, err)
+	assert.Equal(t, 321, a.Aint)
+	// Embedded pointer struct can be created automatically.
+	assert.Equal(t, 123, a.Bint)
+	// But not for absent fields.
+	assert.Nil(t, a.C)
 }

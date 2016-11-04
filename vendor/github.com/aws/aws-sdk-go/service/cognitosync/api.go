@@ -20,6 +20,8 @@ const opBulkPublish = "BulkPublish"
 // value can be used to capture response data after the request's "Send" method
 // is called.
 //
+// See BulkPublish for usage and error information.
+//
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
 // access properties on the request object before or after sending the request. If
@@ -54,13 +56,44 @@ func (c *CognitoSync) BulkPublishRequest(input *BulkPublishInput) (req *request.
 	return
 }
 
+// BulkPublish API operation for Amazon Cognito Sync.
+//
 // Initiates a bulk publish of all existing datasets for an Identity Pool to
 // the configured stream. Customers are limited to one successful bulk publish
 // per 24 hours. Bulk publish is an asynchronous request, customers can see
 // the status of the request via the GetBulkPublishDetails operation.
 //
-// This API can only be called with developer credentials. You cannot call
-// this API with the temporary user credentials provided by Cognito Identity.
+// This API can only be called with developer credentials. You cannot call this
+// API with the temporary user credentials provided by Cognito Identity.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Sync's
+// API operation BulkPublish for usage and error information.
+//
+// Returned Error Codes:
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * InvalidParameterException
+//   Thrown when a request parameter does not comply with the associated constraints.
+//
+//   * ResourceNotFoundException
+//   Thrown if the resource doesn't exist.
+//
+//   * InternalErrorException
+//   Indicates an internal service error.
+//
+//   * DuplicateRequestException
+//   An exception thrown when there is an IN_PROGRESS bulk publish operation for
+//   the given identity pool.
+//
+//   * AlreadyStreamedException
+//   An exception thrown when a bulk publish operation is requested less than
+//   24 hours after a previous bulk publish operation completed successfully.
+//
 func (c *CognitoSync) BulkPublish(input *BulkPublishInput) (*BulkPublishOutput, error) {
 	req, out := c.BulkPublishRequest(input)
 	err := req.Send()
@@ -73,6 +106,8 @@ const opDeleteDataset = "DeleteDataset"
 // client's request for the DeleteDataset operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DeleteDataset for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -108,6 +143,8 @@ func (c *CognitoSync) DeleteDatasetRequest(input *DeleteDatasetInput) (req *requ
 	return
 }
 
+// DeleteDataset API operation for Amazon Cognito Sync.
+//
 // Deletes the specific dataset. The dataset will be deleted permanently, and
 // the action can't be undone. Datasets that this dataset was merged with will
 // no longer report the merge. Any subsequent operation on this dataset will
@@ -115,6 +152,34 @@ func (c *CognitoSync) DeleteDatasetRequest(input *DeleteDatasetInput) (req *requ
 //
 // This API can be called with temporary user credentials provided by Cognito
 // Identity or with developer credentials.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Sync's
+// API operation DeleteDataset for usage and error information.
+//
+// Returned Error Codes:
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * InvalidParameterException
+//   Thrown when a request parameter does not comply with the associated constraints.
+//
+//   * ResourceNotFoundException
+//   Thrown if the resource doesn't exist.
+//
+//   * InternalErrorException
+//   Indicates an internal service error.
+//
+//   * TooManyRequestsException
+//   Thrown if the request is throttled.
+//
+//   * ResourceConflictException
+//   Thrown if an update can't be applied because the resource was changed by
+//   another call and this would result in a conflict.
+//
 func (c *CognitoSync) DeleteDataset(input *DeleteDatasetInput) (*DeleteDatasetOutput, error) {
 	req, out := c.DeleteDatasetRequest(input)
 	err := req.Send()
@@ -127,6 +192,8 @@ const opDescribeDataset = "DescribeDataset"
 // client's request for the DescribeDataset operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeDataset for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -162,6 +229,8 @@ func (c *CognitoSync) DescribeDatasetRequest(input *DescribeDatasetInput) (req *
 	return
 }
 
+// DescribeDataset API operation for Amazon Cognito Sync.
+//
 // Gets meta data about a dataset by identity and dataset name. With Amazon
 // Cognito Sync, each identity has access only to its own data. Thus, the credentials
 // used to make this API call need to have access to the identity data.
@@ -169,6 +238,30 @@ func (c *CognitoSync) DescribeDatasetRequest(input *DescribeDatasetInput) (req *
 // This API can be called with temporary user credentials provided by Cognito
 // Identity or with developer credentials. You should use Cognito Identity credentials
 // to make this API call.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Sync's
+// API operation DescribeDataset for usage and error information.
+//
+// Returned Error Codes:
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * InvalidParameterException
+//   Thrown when a request parameter does not comply with the associated constraints.
+//
+//   * ResourceNotFoundException
+//   Thrown if the resource doesn't exist.
+//
+//   * InternalErrorException
+//   Indicates an internal service error.
+//
+//   * TooManyRequestsException
+//   Thrown if the request is throttled.
+//
 func (c *CognitoSync) DescribeDataset(input *DescribeDatasetInput) (*DescribeDatasetOutput, error) {
 	req, out := c.DescribeDatasetRequest(input)
 	err := req.Send()
@@ -181,6 +274,8 @@ const opDescribeIdentityPoolUsage = "DescribeIdentityPoolUsage"
 // client's request for the DescribeIdentityPoolUsage operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeIdentityPoolUsage for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -216,11 +311,37 @@ func (c *CognitoSync) DescribeIdentityPoolUsageRequest(input *DescribeIdentityPo
 	return
 }
 
+// DescribeIdentityPoolUsage API operation for Amazon Cognito Sync.
+//
 // Gets usage details (for example, data storage) about a particular identity
 // pool.
 //
-// This API can only be called with developer credentials. You cannot call
-// this API with the temporary user credentials provided by Cognito Identity.
+// This API can only be called with developer credentials. You cannot call this
+// API with the temporary user credentials provided by Cognito Identity.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Sync's
+// API operation DescribeIdentityPoolUsage for usage and error information.
+//
+// Returned Error Codes:
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * InvalidParameterException
+//   Thrown when a request parameter does not comply with the associated constraints.
+//
+//   * ResourceNotFoundException
+//   Thrown if the resource doesn't exist.
+//
+//   * InternalErrorException
+//   Indicates an internal service error.
+//
+//   * TooManyRequestsException
+//   Thrown if the request is throttled.
+//
 func (c *CognitoSync) DescribeIdentityPoolUsage(input *DescribeIdentityPoolUsageInput) (*DescribeIdentityPoolUsageOutput, error) {
 	req, out := c.DescribeIdentityPoolUsageRequest(input)
 	err := req.Send()
@@ -233,6 +354,8 @@ const opDescribeIdentityUsage = "DescribeIdentityUsage"
 // client's request for the DescribeIdentityUsage operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeIdentityUsage for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -268,11 +391,37 @@ func (c *CognitoSync) DescribeIdentityUsageRequest(input *DescribeIdentityUsageI
 	return
 }
 
+// DescribeIdentityUsage API operation for Amazon Cognito Sync.
+//
 // Gets usage information for an identity, including number of datasets and
 // data usage.
 //
 // This API can be called with temporary user credentials provided by Cognito
 // Identity or with developer credentials.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Sync's
+// API operation DescribeIdentityUsage for usage and error information.
+//
+// Returned Error Codes:
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * InvalidParameterException
+//   Thrown when a request parameter does not comply with the associated constraints.
+//
+//   * ResourceNotFoundException
+//   Thrown if the resource doesn't exist.
+//
+//   * InternalErrorException
+//   Indicates an internal service error.
+//
+//   * TooManyRequestsException
+//   Thrown if the request is throttled.
+//
 func (c *CognitoSync) DescribeIdentityUsage(input *DescribeIdentityUsageInput) (*DescribeIdentityUsageOutput, error) {
 	req, out := c.DescribeIdentityUsageRequest(input)
 	err := req.Send()
@@ -285,6 +434,8 @@ const opGetBulkPublishDetails = "GetBulkPublishDetails"
 // client's request for the GetBulkPublishDetails operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See GetBulkPublishDetails for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -320,10 +471,33 @@ func (c *CognitoSync) GetBulkPublishDetailsRequest(input *GetBulkPublishDetailsI
 	return
 }
 
+// GetBulkPublishDetails API operation for Amazon Cognito Sync.
+//
 // Get the status of the last BulkPublish operation for an identity pool.
 //
-// This API can only be called with developer credentials. You cannot call
-// this API with the temporary user credentials provided by Cognito Identity.
+// This API can only be called with developer credentials. You cannot call this
+// API with the temporary user credentials provided by Cognito Identity.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Sync's
+// API operation GetBulkPublishDetails for usage and error information.
+//
+// Returned Error Codes:
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * InvalidParameterException
+//   Thrown when a request parameter does not comply with the associated constraints.
+//
+//   * ResourceNotFoundException
+//   Thrown if the resource doesn't exist.
+//
+//   * InternalErrorException
+//   Indicates an internal service error.
+//
 func (c *CognitoSync) GetBulkPublishDetails(input *GetBulkPublishDetailsInput) (*GetBulkPublishDetailsOutput, error) {
 	req, out := c.GetBulkPublishDetailsRequest(input)
 	err := req.Send()
@@ -336,6 +510,8 @@ const opGetCognitoEvents = "GetCognitoEvents"
 // client's request for the GetCognitoEvents operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See GetCognitoEvents for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -371,11 +547,37 @@ func (c *CognitoSync) GetCognitoEventsRequest(input *GetCognitoEventsInput) (req
 	return
 }
 
+// GetCognitoEvents API operation for Amazon Cognito Sync.
+//
 // Gets the events and the corresponding Lambda functions associated with an
 // identity pool.
 //
-// This API can only be called with developer credentials. You cannot call
-// this API with the temporary user credentials provided by Cognito Identity.
+// This API can only be called with developer credentials. You cannot call this
+// API with the temporary user credentials provided by Cognito Identity.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Sync's
+// API operation GetCognitoEvents for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   Thrown when a request parameter does not comply with the associated constraints.
+//
+//   * ResourceNotFoundException
+//   Thrown if the resource doesn't exist.
+//
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * InternalErrorException
+//   Indicates an internal service error.
+//
+//   * TooManyRequestsException
+//   Thrown if the request is throttled.
+//
 func (c *CognitoSync) GetCognitoEvents(input *GetCognitoEventsInput) (*GetCognitoEventsOutput, error) {
 	req, out := c.GetCognitoEventsRequest(input)
 	err := req.Send()
@@ -388,6 +590,8 @@ const opGetIdentityPoolConfiguration = "GetIdentityPoolConfiguration"
 // client's request for the GetIdentityPoolConfiguration operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See GetIdentityPoolConfiguration for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -423,10 +627,36 @@ func (c *CognitoSync) GetIdentityPoolConfigurationRequest(input *GetIdentityPool
 	return
 }
 
+// GetIdentityPoolConfiguration API operation for Amazon Cognito Sync.
+//
 // Gets the configuration settings of an identity pool.
 //
-// This API can only be called with developer credentials. You cannot call
-// this API with the temporary user credentials provided by Cognito Identity.
+// This API can only be called with developer credentials. You cannot call this
+// API with the temporary user credentials provided by Cognito Identity.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Sync's
+// API operation GetIdentityPoolConfiguration for usage and error information.
+//
+// Returned Error Codes:
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * InvalidParameterException
+//   Thrown when a request parameter does not comply with the associated constraints.
+//
+//   * ResourceNotFoundException
+//   Thrown if the resource doesn't exist.
+//
+//   * InternalErrorException
+//   Indicates an internal service error.
+//
+//   * TooManyRequestsException
+//   Thrown if the request is throttled.
+//
 func (c *CognitoSync) GetIdentityPoolConfiguration(input *GetIdentityPoolConfigurationInput) (*GetIdentityPoolConfigurationOutput, error) {
 	req, out := c.GetIdentityPoolConfigurationRequest(input)
 	err := req.Send()
@@ -439,6 +669,8 @@ const opListDatasets = "ListDatasets"
 // client's request for the ListDatasets operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See ListDatasets for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -474,6 +706,8 @@ func (c *CognitoSync) ListDatasetsRequest(input *ListDatasetsInput) (req *reques
 	return
 }
 
+// ListDatasets API operation for Amazon Cognito Sync.
+//
 // Lists datasets for an identity. With Amazon Cognito Sync, each identity has
 // access only to its own data. Thus, the credentials used to make this API
 // call need to have access to the identity data.
@@ -481,6 +715,27 @@ func (c *CognitoSync) ListDatasetsRequest(input *ListDatasetsInput) (req *reques
 // ListDatasets can be called with temporary user credentials provided by Cognito
 // Identity or with developer credentials. You should use the Cognito Identity
 // credentials to make this API call.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Sync's
+// API operation ListDatasets for usage and error information.
+//
+// Returned Error Codes:
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * InvalidParameterException
+//   Thrown when a request parameter does not comply with the associated constraints.
+//
+//   * InternalErrorException
+//   Indicates an internal service error.
+//
+//   * TooManyRequestsException
+//   Thrown if the request is throttled.
+//
 func (c *CognitoSync) ListDatasets(input *ListDatasetsInput) (*ListDatasetsOutput, error) {
 	req, out := c.ListDatasetsRequest(input)
 	err := req.Send()
@@ -493,6 +748,8 @@ const opListIdentityPoolUsage = "ListIdentityPoolUsage"
 // client's request for the ListIdentityPoolUsage operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See ListIdentityPoolUsage for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -528,11 +785,34 @@ func (c *CognitoSync) ListIdentityPoolUsageRequest(input *ListIdentityPoolUsageI
 	return
 }
 
+// ListIdentityPoolUsage API operation for Amazon Cognito Sync.
+//
 // Gets a list of identity pools registered with Cognito.
 //
 // ListIdentityPoolUsage can only be called with developer credentials. You
 // cannot make this API call with the temporary user credentials provided by
 // Cognito Identity.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Sync's
+// API operation ListIdentityPoolUsage for usage and error information.
+//
+// Returned Error Codes:
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * InvalidParameterException
+//   Thrown when a request parameter does not comply with the associated constraints.
+//
+//   * InternalErrorException
+//   Indicates an internal service error.
+//
+//   * TooManyRequestsException
+//   Thrown if the request is throttled.
+//
 func (c *CognitoSync) ListIdentityPoolUsage(input *ListIdentityPoolUsageInput) (*ListIdentityPoolUsageOutput, error) {
 	req, out := c.ListIdentityPoolUsageRequest(input)
 	err := req.Send()
@@ -545,6 +825,8 @@ const opListRecords = "ListRecords"
 // client's request for the ListRecords operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See ListRecords for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -580,6 +862,8 @@ func (c *CognitoSync) ListRecordsRequest(input *ListRecordsInput) (req *request.
 	return
 }
 
+// ListRecords API operation for Amazon Cognito Sync.
+//
 // Gets paginated records, optionally changed after a particular sync count
 // for a dataset and identity. With Amazon Cognito Sync, each identity has access
 // only to its own data. Thus, the credentials used to make this API call need
@@ -588,6 +872,27 @@ func (c *CognitoSync) ListRecordsRequest(input *ListRecordsInput) (req *request.
 // ListRecords can be called with temporary user credentials provided by Cognito
 // Identity or with developer credentials. You should use Cognito Identity credentials
 // to make this API call.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Sync's
+// API operation ListRecords for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   Thrown when a request parameter does not comply with the associated constraints.
+//
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * TooManyRequestsException
+//   Thrown if the request is throttled.
+//
+//   * InternalErrorException
+//   Indicates an internal service error.
+//
 func (c *CognitoSync) ListRecords(input *ListRecordsInput) (*ListRecordsOutput, error) {
 	req, out := c.ListRecordsRequest(input)
 	err := req.Send()
@@ -600,6 +905,8 @@ const opRegisterDevice = "RegisterDevice"
 // client's request for the RegisterDevice operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See RegisterDevice for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -635,10 +942,39 @@ func (c *CognitoSync) RegisterDeviceRequest(input *RegisterDeviceInput) (req *re
 	return
 }
 
+// RegisterDevice API operation for Amazon Cognito Sync.
+//
 // Registers a device to receive push sync notifications.
 //
 // This API can only be called with temporary credentials provided by Cognito
 // Identity. You cannot call this API with developer credentials.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Sync's
+// API operation RegisterDevice for usage and error information.
+//
+// Returned Error Codes:
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * InvalidParameterException
+//   Thrown when a request parameter does not comply with the associated constraints.
+//
+//   * ResourceNotFoundException
+//   Thrown if the resource doesn't exist.
+//
+//   * InternalErrorException
+//   Indicates an internal service error.
+//
+//   * InvalidConfigurationException
+
+//
+//   * TooManyRequestsException
+//   Thrown if the request is throttled.
+//
 func (c *CognitoSync) RegisterDevice(input *RegisterDeviceInput) (*RegisterDeviceOutput, error) {
 	req, out := c.RegisterDeviceRequest(input)
 	err := req.Send()
@@ -651,6 +987,8 @@ const opSetCognitoEvents = "SetCognitoEvents"
 // client's request for the SetCognitoEvents operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See SetCognitoEvents for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -688,13 +1026,39 @@ func (c *CognitoSync) SetCognitoEventsRequest(input *SetCognitoEventsInput) (req
 	return
 }
 
+// SetCognitoEvents API operation for Amazon Cognito Sync.
+//
 // Sets the AWS Lambda function for a given event type for an identity pool.
 // This request only updates the key/value pair specified. Other key/values
 // pairs are not updated. To remove a key value pair, pass a empty value for
 // the particular key.
 //
-// This API can only be called with developer credentials. You cannot call
-// this API with the temporary user credentials provided by Cognito Identity.
+// This API can only be called with developer credentials. You cannot call this
+// API with the temporary user credentials provided by Cognito Identity.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Sync's
+// API operation SetCognitoEvents for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   Thrown when a request parameter does not comply with the associated constraints.
+//
+//   * ResourceNotFoundException
+//   Thrown if the resource doesn't exist.
+//
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * InternalErrorException
+//   Indicates an internal service error.
+//
+//   * TooManyRequestsException
+//   Thrown if the request is throttled.
+//
 func (c *CognitoSync) SetCognitoEvents(input *SetCognitoEventsInput) (*SetCognitoEventsOutput, error) {
 	req, out := c.SetCognitoEventsRequest(input)
 	err := req.Send()
@@ -707,6 +1071,8 @@ const opSetIdentityPoolConfiguration = "SetIdentityPoolConfiguration"
 // client's request for the SetIdentityPoolConfiguration operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See SetIdentityPoolConfiguration for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -742,10 +1108,39 @@ func (c *CognitoSync) SetIdentityPoolConfigurationRequest(input *SetIdentityPool
 	return
 }
 
+// SetIdentityPoolConfiguration API operation for Amazon Cognito Sync.
+//
 // Sets the necessary configuration for push sync.
 //
-// This API can only be called with developer credentials. You cannot call
-// this API with the temporary user credentials provided by Cognito Identity.
+// This API can only be called with developer credentials. You cannot call this
+// API with the temporary user credentials provided by Cognito Identity.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Sync's
+// API operation SetIdentityPoolConfiguration for usage and error information.
+//
+// Returned Error Codes:
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * InvalidParameterException
+//   Thrown when a request parameter does not comply with the associated constraints.
+//
+//   * ResourceNotFoundException
+//   Thrown if the resource doesn't exist.
+//
+//   * InternalErrorException
+//   Indicates an internal service error.
+//
+//   * TooManyRequestsException
+//   Thrown if the request is throttled.
+//
+//   * ConcurrentModificationException
+//   Thrown if there are parallel requests to modify a resource.
+//
 func (c *CognitoSync) SetIdentityPoolConfiguration(input *SetIdentityPoolConfigurationInput) (*SetIdentityPoolConfigurationOutput, error) {
 	req, out := c.SetIdentityPoolConfigurationRequest(input)
 	err := req.Send()
@@ -758,6 +1153,8 @@ const opSubscribeToDataset = "SubscribeToDataset"
 // client's request for the SubscribeToDataset operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See SubscribeToDataset for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -793,11 +1190,40 @@ func (c *CognitoSync) SubscribeToDatasetRequest(input *SubscribeToDatasetInput) 
 	return
 }
 
+// SubscribeToDataset API operation for Amazon Cognito Sync.
+//
 // Subscribes to receive notifications when a dataset is modified by another
 // device.
 //
 // This API can only be called with temporary credentials provided by Cognito
 // Identity. You cannot call this API with developer credentials.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Sync's
+// API operation SubscribeToDataset for usage and error information.
+//
+// Returned Error Codes:
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * InvalidParameterException
+//   Thrown when a request parameter does not comply with the associated constraints.
+//
+//   * ResourceNotFoundException
+//   Thrown if the resource doesn't exist.
+//
+//   * InternalErrorException
+//   Indicates an internal service error.
+//
+//   * InvalidConfigurationException
+
+//
+//   * TooManyRequestsException
+//   Thrown if the request is throttled.
+//
 func (c *CognitoSync) SubscribeToDataset(input *SubscribeToDatasetInput) (*SubscribeToDatasetOutput, error) {
 	req, out := c.SubscribeToDatasetRequest(input)
 	err := req.Send()
@@ -810,6 +1236,8 @@ const opUnsubscribeFromDataset = "UnsubscribeFromDataset"
 // client's request for the UnsubscribeFromDataset operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See UnsubscribeFromDataset for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -845,11 +1273,40 @@ func (c *CognitoSync) UnsubscribeFromDatasetRequest(input *UnsubscribeFromDatase
 	return
 }
 
+// UnsubscribeFromDataset API operation for Amazon Cognito Sync.
+//
 // Unsubscribes from receiving notifications when a dataset is modified by another
 // device.
 //
 // This API can only be called with temporary credentials provided by Cognito
 // Identity. You cannot call this API with developer credentials.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Sync's
+// API operation UnsubscribeFromDataset for usage and error information.
+//
+// Returned Error Codes:
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * InvalidParameterException
+//   Thrown when a request parameter does not comply with the associated constraints.
+//
+//   * ResourceNotFoundException
+//   Thrown if the resource doesn't exist.
+//
+//   * InternalErrorException
+//   Indicates an internal service error.
+//
+//   * InvalidConfigurationException
+
+//
+//   * TooManyRequestsException
+//   Thrown if the request is throttled.
+//
 func (c *CognitoSync) UnsubscribeFromDataset(input *UnsubscribeFromDatasetInput) (*UnsubscribeFromDatasetOutput, error) {
 	req, out := c.UnsubscribeFromDatasetRequest(input)
 	err := req.Send()
@@ -862,6 +1319,8 @@ const opUpdateRecords = "UpdateRecords"
 // client's request for the UpdateRecords operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See UpdateRecords for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -897,6 +1356,8 @@ func (c *CognitoSync) UpdateRecordsRequest(input *UpdateRecordsInput) (req *requ
 	return
 }
 
+// UpdateRecords API operation for Amazon Cognito Sync.
+//
 // Posts updates to records and adds and deletes records for a dataset and user.
 //
 // The sync count in the record patch is your last known sync count for that
@@ -913,6 +1374,43 @@ func (c *CognitoSync) UpdateRecordsRequest(input *UpdateRecordsInput) (req *requ
 //
 // This API can be called with temporary user credentials provided by Cognito
 // Identity or with developer credentials.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Sync's
+// API operation UpdateRecords for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   Thrown when a request parameter does not comply with the associated constraints.
+//
+//   * LimitExceededException
+//   Thrown when the limit on the number of objects or operations has been exceeded.
+//
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * ResourceNotFoundException
+//   Thrown if the resource doesn't exist.
+//
+//   * ResourceConflictException
+//   Thrown if an update can't be applied because the resource was changed by
+//   another call and this would result in a conflict.
+//
+//   * InvalidLambdaFunctionOutputException
+//   The AWS Lambda function returned invalid output or an exception.
+//
+//   * LambdaThrottledException
+//   AWS Lambda throttled your account, please contact AWS Support
+//
+//   * TooManyRequestsException
+//   Thrown if the request is throttled.
+//
+//   * InternalErrorException
+//   Indicates an internal service error.
+//
 func (c *CognitoSync) UpdateRecords(input *UpdateRecordsInput) (*UpdateRecordsOutput, error) {
 	req, out := c.UpdateRecordsRequest(input)
 	err := req.Send()
@@ -925,6 +1423,8 @@ type BulkPublishInput struct {
 
 	// A name-spaced GUID (for example, us-east-1:23EC4050-6AEA-7089-A2DD-08002EXAMPLE)
 	// created by Amazon Cognito. GUID generation is unique within a region.
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `location:"uri" locationName:"IdentityPoolId" min:"1" type:"string" required:"true"`
 }
 
@@ -954,6 +1454,12 @@ func (s *BulkPublishInput) Validate() error {
 	return nil
 }
 
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *BulkPublishInput) SetIdentityPoolId(v string) *BulkPublishInput {
+	s.IdentityPoolId = &v
+	return s
+}
+
 // The output for the BulkPublish operation.
 type BulkPublishOutput struct {
 	_ struct{} `type:"structure"`
@@ -971,6 +1477,12 @@ func (s BulkPublishOutput) String() string {
 // GoString returns the string representation
 func (s BulkPublishOutput) GoString() string {
 	return s.String()
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *BulkPublishOutput) SetIdentityPoolId(v string) *BulkPublishOutput {
+	s.IdentityPoolId = &v
+	return s
 }
 
 // Configuration options for configure Cognito streams.
@@ -1020,6 +1532,24 @@ func (s *CognitoStreams) Validate() error {
 	return nil
 }
 
+// SetRoleArn sets the RoleArn field's value.
+func (s *CognitoStreams) SetRoleArn(v string) *CognitoStreams {
+	s.RoleArn = &v
+	return s
+}
+
+// SetStreamName sets the StreamName field's value.
+func (s *CognitoStreams) SetStreamName(v string) *CognitoStreams {
+	s.StreamName = &v
+	return s
+}
+
+// SetStreamingStatus sets the StreamingStatus field's value.
+func (s *CognitoStreams) SetStreamingStatus(v string) *CognitoStreams {
+	s.StreamingStatus = &v
+	return s
+}
+
 // A collection of data for an identity pool. An identity pool can have multiple
 // datasets. A dataset is per identity and can be general or associated with
 // a particular entity in an application (like a saved game). Datasets are automatically
@@ -1062,20 +1592,68 @@ func (s Dataset) GoString() string {
 	return s.String()
 }
 
+// SetCreationDate sets the CreationDate field's value.
+func (s *Dataset) SetCreationDate(v time.Time) *Dataset {
+	s.CreationDate = &v
+	return s
+}
+
+// SetDataStorage sets the DataStorage field's value.
+func (s *Dataset) SetDataStorage(v int64) *Dataset {
+	s.DataStorage = &v
+	return s
+}
+
+// SetDatasetName sets the DatasetName field's value.
+func (s *Dataset) SetDatasetName(v string) *Dataset {
+	s.DatasetName = &v
+	return s
+}
+
+// SetIdentityId sets the IdentityId field's value.
+func (s *Dataset) SetIdentityId(v string) *Dataset {
+	s.IdentityId = &v
+	return s
+}
+
+// SetLastModifiedBy sets the LastModifiedBy field's value.
+func (s *Dataset) SetLastModifiedBy(v string) *Dataset {
+	s.LastModifiedBy = &v
+	return s
+}
+
+// SetLastModifiedDate sets the LastModifiedDate field's value.
+func (s *Dataset) SetLastModifiedDate(v time.Time) *Dataset {
+	s.LastModifiedDate = &v
+	return s
+}
+
+// SetNumRecords sets the NumRecords field's value.
+func (s *Dataset) SetNumRecords(v int64) *Dataset {
+	s.NumRecords = &v
+	return s
+}
+
 // A request to delete the specific dataset.
 type DeleteDatasetInput struct {
 	_ struct{} `type:"structure"`
 
 	// A string of up to 128 characters. Allowed characters are a-z, A-Z, 0-9, '_'
 	// (underscore), '-' (dash), and '.' (dot).
+	//
+	// DatasetName is a required field
 	DatasetName *string `location:"uri" locationName:"DatasetName" min:"1" type:"string" required:"true"`
 
 	// A name-spaced GUID (for example, us-east-1:23EC4050-6AEA-7089-A2DD-08002EXAMPLE)
 	// created by Amazon Cognito. GUID generation is unique within a region.
+	//
+	// IdentityId is a required field
 	IdentityId *string `location:"uri" locationName:"IdentityId" min:"1" type:"string" required:"true"`
 
 	// A name-spaced GUID (for example, us-east-1:23EC4050-6AEA-7089-A2DD-08002EXAMPLE)
 	// created by Amazon Cognito. GUID generation is unique within a region.
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `location:"uri" locationName:"IdentityPoolId" min:"1" type:"string" required:"true"`
 }
 
@@ -1117,6 +1695,24 @@ func (s *DeleteDatasetInput) Validate() error {
 	return nil
 }
 
+// SetDatasetName sets the DatasetName field's value.
+func (s *DeleteDatasetInput) SetDatasetName(v string) *DeleteDatasetInput {
+	s.DatasetName = &v
+	return s
+}
+
+// SetIdentityId sets the IdentityId field's value.
+func (s *DeleteDatasetInput) SetIdentityId(v string) *DeleteDatasetInput {
+	s.IdentityId = &v
+	return s
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *DeleteDatasetInput) SetIdentityPoolId(v string) *DeleteDatasetInput {
+	s.IdentityPoolId = &v
+	return s
+}
+
 // Response to a successful DeleteDataset request.
 type DeleteDatasetOutput struct {
 	_ struct{} `type:"structure"`
@@ -1139,6 +1735,12 @@ func (s DeleteDatasetOutput) GoString() string {
 	return s.String()
 }
 
+// SetDataset sets the Dataset field's value.
+func (s *DeleteDatasetOutput) SetDataset(v *Dataset) *DeleteDatasetOutput {
+	s.Dataset = v
+	return s
+}
+
 // A request for meta data about a dataset (creation date, number of records,
 // size) by owner and dataset name.
 type DescribeDatasetInput struct {
@@ -1146,14 +1748,20 @@ type DescribeDatasetInput struct {
 
 	// A string of up to 128 characters. Allowed characters are a-z, A-Z, 0-9, '_'
 	// (underscore), '-' (dash), and '.' (dot).
+	//
+	// DatasetName is a required field
 	DatasetName *string `location:"uri" locationName:"DatasetName" min:"1" type:"string" required:"true"`
 
 	// A name-spaced GUID (for example, us-east-1:23EC4050-6AEA-7089-A2DD-08002EXAMPLE)
 	// created by Amazon Cognito. GUID generation is unique within a region.
+	//
+	// IdentityId is a required field
 	IdentityId *string `location:"uri" locationName:"IdentityId" min:"1" type:"string" required:"true"`
 
 	// A name-spaced GUID (for example, us-east-1:23EC4050-6AEA-7089-A2DD-08002EXAMPLE)
 	// created by Amazon Cognito. GUID generation is unique within a region.
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `location:"uri" locationName:"IdentityPoolId" min:"1" type:"string" required:"true"`
 }
 
@@ -1195,6 +1803,24 @@ func (s *DescribeDatasetInput) Validate() error {
 	return nil
 }
 
+// SetDatasetName sets the DatasetName field's value.
+func (s *DescribeDatasetInput) SetDatasetName(v string) *DescribeDatasetInput {
+	s.DatasetName = &v
+	return s
+}
+
+// SetIdentityId sets the IdentityId field's value.
+func (s *DescribeDatasetInput) SetIdentityId(v string) *DescribeDatasetInput {
+	s.IdentityId = &v
+	return s
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *DescribeDatasetInput) SetIdentityPoolId(v string) *DescribeDatasetInput {
+	s.IdentityPoolId = &v
+	return s
+}
+
 // Response to a successful DescribeDataset request.
 type DescribeDatasetOutput struct {
 	_ struct{} `type:"structure"`
@@ -1217,12 +1843,20 @@ func (s DescribeDatasetOutput) GoString() string {
 	return s.String()
 }
 
+// SetDataset sets the Dataset field's value.
+func (s *DescribeDatasetOutput) SetDataset(v *Dataset) *DescribeDatasetOutput {
+	s.Dataset = v
+	return s
+}
+
 // A request for usage information about the identity pool.
 type DescribeIdentityPoolUsageInput struct {
 	_ struct{} `type:"structure"`
 
 	// A name-spaced GUID (for example, us-east-1:23EC4050-6AEA-7089-A2DD-08002EXAMPLE)
 	// created by Amazon Cognito. GUID generation is unique within a region.
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `location:"uri" locationName:"IdentityPoolId" min:"1" type:"string" required:"true"`
 }
 
@@ -1252,6 +1886,12 @@ func (s *DescribeIdentityPoolUsageInput) Validate() error {
 	return nil
 }
 
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *DescribeIdentityPoolUsageInput) SetIdentityPoolId(v string) *DescribeIdentityPoolUsageInput {
+	s.IdentityPoolId = &v
+	return s
+}
+
 // Response to a successful DescribeIdentityPoolUsage request.
 type DescribeIdentityPoolUsageOutput struct {
 	_ struct{} `type:"structure"`
@@ -1270,16 +1910,26 @@ func (s DescribeIdentityPoolUsageOutput) GoString() string {
 	return s.String()
 }
 
+// SetIdentityPoolUsage sets the IdentityPoolUsage field's value.
+func (s *DescribeIdentityPoolUsageOutput) SetIdentityPoolUsage(v *IdentityPoolUsage) *DescribeIdentityPoolUsageOutput {
+	s.IdentityPoolUsage = v
+	return s
+}
+
 // A request for information about the usage of an identity pool.
 type DescribeIdentityUsageInput struct {
 	_ struct{} `type:"structure"`
 
 	// A name-spaced GUID (for example, us-east-1:23EC4050-6AEA-7089-A2DD-08002EXAMPLE)
 	// created by Amazon Cognito. GUID generation is unique within a region.
+	//
+	// IdentityId is a required field
 	IdentityId *string `location:"uri" locationName:"IdentityId" min:"1" type:"string" required:"true"`
 
 	// A name-spaced GUID (for example, us-east-1:23EC4050-6AEA-7089-A2DD-08002EXAMPLE)
 	// created by Amazon Cognito. GUID generation is unique within a region.
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `location:"uri" locationName:"IdentityPoolId" min:"1" type:"string" required:"true"`
 }
 
@@ -1315,6 +1965,18 @@ func (s *DescribeIdentityUsageInput) Validate() error {
 	return nil
 }
 
+// SetIdentityId sets the IdentityId field's value.
+func (s *DescribeIdentityUsageInput) SetIdentityId(v string) *DescribeIdentityUsageInput {
+	s.IdentityId = &v
+	return s
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *DescribeIdentityUsageInput) SetIdentityPoolId(v string) *DescribeIdentityUsageInput {
+	s.IdentityPoolId = &v
+	return s
+}
+
 // The response to a successful DescribeIdentityUsage request.
 type DescribeIdentityUsageOutput struct {
 	_ struct{} `type:"structure"`
@@ -1333,12 +1995,20 @@ func (s DescribeIdentityUsageOutput) GoString() string {
 	return s.String()
 }
 
+// SetIdentityUsage sets the IdentityUsage field's value.
+func (s *DescribeIdentityUsageOutput) SetIdentityUsage(v *IdentityUsage) *DescribeIdentityUsageOutput {
+	s.IdentityUsage = v
+	return s
+}
+
 // The input for the GetBulkPublishDetails operation.
 type GetBulkPublishDetailsInput struct {
 	_ struct{} `type:"structure"`
 
 	// A name-spaced GUID (for example, us-east-1:23EC4050-6AEA-7089-A2DD-08002EXAMPLE)
 	// created by Amazon Cognito. GUID generation is unique within a region.
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `location:"uri" locationName:"IdentityPoolId" min:"1" type:"string" required:"true"`
 }
 
@@ -1366,6 +2036,12 @@ func (s *GetBulkPublishDetailsInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *GetBulkPublishDetailsInput) SetIdentityPoolId(v string) *GetBulkPublishDetailsInput {
+	s.IdentityPoolId = &v
+	return s
 }
 
 // The output for the GetBulkPublishDetails operation.
@@ -1410,11 +2086,43 @@ func (s GetBulkPublishDetailsOutput) GoString() string {
 	return s.String()
 }
 
+// SetBulkPublishCompleteTime sets the BulkPublishCompleteTime field's value.
+func (s *GetBulkPublishDetailsOutput) SetBulkPublishCompleteTime(v time.Time) *GetBulkPublishDetailsOutput {
+	s.BulkPublishCompleteTime = &v
+	return s
+}
+
+// SetBulkPublishStartTime sets the BulkPublishStartTime field's value.
+func (s *GetBulkPublishDetailsOutput) SetBulkPublishStartTime(v time.Time) *GetBulkPublishDetailsOutput {
+	s.BulkPublishStartTime = &v
+	return s
+}
+
+// SetBulkPublishStatus sets the BulkPublishStatus field's value.
+func (s *GetBulkPublishDetailsOutput) SetBulkPublishStatus(v string) *GetBulkPublishDetailsOutput {
+	s.BulkPublishStatus = &v
+	return s
+}
+
+// SetFailureMessage sets the FailureMessage field's value.
+func (s *GetBulkPublishDetailsOutput) SetFailureMessage(v string) *GetBulkPublishDetailsOutput {
+	s.FailureMessage = &v
+	return s
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *GetBulkPublishDetailsOutput) SetIdentityPoolId(v string) *GetBulkPublishDetailsOutput {
+	s.IdentityPoolId = &v
+	return s
+}
+
 // A request for a list of the configured Cognito Events
 type GetCognitoEventsInput struct {
 	_ struct{} `type:"structure"`
 
 	// The Cognito Identity Pool ID for the request
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `location:"uri" locationName:"IdentityPoolId" min:"1" type:"string" required:"true"`
 }
 
@@ -1444,6 +2152,12 @@ func (s *GetCognitoEventsInput) Validate() error {
 	return nil
 }
 
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *GetCognitoEventsInput) SetIdentityPoolId(v string) *GetCognitoEventsInput {
+	s.IdentityPoolId = &v
+	return s
+}
+
 // The response from the GetCognitoEvents request
 type GetCognitoEventsOutput struct {
 	_ struct{} `type:"structure"`
@@ -1462,6 +2176,12 @@ func (s GetCognitoEventsOutput) GoString() string {
 	return s.String()
 }
 
+// SetEvents sets the Events field's value.
+func (s *GetCognitoEventsOutput) SetEvents(v map[string]*string) *GetCognitoEventsOutput {
+	s.Events = v
+	return s
+}
+
 // The input for the GetIdentityPoolConfiguration operation.
 type GetIdentityPoolConfigurationInput struct {
 	_ struct{} `type:"structure"`
@@ -1469,6 +2189,8 @@ type GetIdentityPoolConfigurationInput struct {
 	// A name-spaced GUID (for example, us-east-1:23EC4050-6AEA-7089-A2DD-08002EXAMPLE)
 	// created by Amazon Cognito. This is the ID of the pool for which to return
 	// a configuration.
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `location:"uri" locationName:"IdentityPoolId" min:"1" type:"string" required:"true"`
 }
 
@@ -1498,6 +2220,12 @@ func (s *GetIdentityPoolConfigurationInput) Validate() error {
 	return nil
 }
 
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *GetIdentityPoolConfigurationInput) SetIdentityPoolId(v string) *GetIdentityPoolConfigurationInput {
+	s.IdentityPoolId = &v
+	return s
+}
+
 // The output for the GetIdentityPoolConfiguration operation.
 type GetIdentityPoolConfigurationOutput struct {
 	_ struct{} `type:"structure"`
@@ -1521,6 +2249,24 @@ func (s GetIdentityPoolConfigurationOutput) String() string {
 // GoString returns the string representation
 func (s GetIdentityPoolConfigurationOutput) GoString() string {
 	return s.String()
+}
+
+// SetCognitoStreams sets the CognitoStreams field's value.
+func (s *GetIdentityPoolConfigurationOutput) SetCognitoStreams(v *CognitoStreams) *GetIdentityPoolConfigurationOutput {
+	s.CognitoStreams = v
+	return s
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *GetIdentityPoolConfigurationOutput) SetIdentityPoolId(v string) *GetIdentityPoolConfigurationOutput {
+	s.IdentityPoolId = &v
+	return s
+}
+
+// SetPushSync sets the PushSync field's value.
+func (s *GetIdentityPoolConfigurationOutput) SetPushSync(v *PushSync) *GetIdentityPoolConfigurationOutput {
+	s.PushSync = v
+	return s
 }
 
 // Usage information for the identity pool.
@@ -1549,6 +2295,30 @@ func (s IdentityPoolUsage) String() string {
 // GoString returns the string representation
 func (s IdentityPoolUsage) GoString() string {
 	return s.String()
+}
+
+// SetDataStorage sets the DataStorage field's value.
+func (s *IdentityPoolUsage) SetDataStorage(v int64) *IdentityPoolUsage {
+	s.DataStorage = &v
+	return s
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *IdentityPoolUsage) SetIdentityPoolId(v string) *IdentityPoolUsage {
+	s.IdentityPoolId = &v
+	return s
+}
+
+// SetLastModifiedDate sets the LastModifiedDate field's value.
+func (s *IdentityPoolUsage) SetLastModifiedDate(v time.Time) *IdentityPoolUsage {
+	s.LastModifiedDate = &v
+	return s
+}
+
+// SetSyncSessionsCount sets the SyncSessionsCount field's value.
+func (s *IdentityPoolUsage) SetSyncSessionsCount(v int64) *IdentityPoolUsage {
+	s.SyncSessionsCount = &v
+	return s
 }
 
 // Usage information for the identity.
@@ -1583,16 +2353,50 @@ func (s IdentityUsage) GoString() string {
 	return s.String()
 }
 
+// SetDataStorage sets the DataStorage field's value.
+func (s *IdentityUsage) SetDataStorage(v int64) *IdentityUsage {
+	s.DataStorage = &v
+	return s
+}
+
+// SetDatasetCount sets the DatasetCount field's value.
+func (s *IdentityUsage) SetDatasetCount(v int64) *IdentityUsage {
+	s.DatasetCount = &v
+	return s
+}
+
+// SetIdentityId sets the IdentityId field's value.
+func (s *IdentityUsage) SetIdentityId(v string) *IdentityUsage {
+	s.IdentityId = &v
+	return s
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *IdentityUsage) SetIdentityPoolId(v string) *IdentityUsage {
+	s.IdentityPoolId = &v
+	return s
+}
+
+// SetLastModifiedDate sets the LastModifiedDate field's value.
+func (s *IdentityUsage) SetLastModifiedDate(v time.Time) *IdentityUsage {
+	s.LastModifiedDate = &v
+	return s
+}
+
 // Request for a list of datasets for an identity.
 type ListDatasetsInput struct {
 	_ struct{} `type:"structure"`
 
 	// A name-spaced GUID (for example, us-east-1:23EC4050-6AEA-7089-A2DD-08002EXAMPLE)
 	// created by Amazon Cognito. GUID generation is unique within a region.
+	//
+	// IdentityId is a required field
 	IdentityId *string `location:"uri" locationName:"IdentityId" min:"1" type:"string" required:"true"`
 
 	// A name-spaced GUID (for example, us-east-1:23EC4050-6AEA-7089-A2DD-08002EXAMPLE)
 	// created by Amazon Cognito. GUID generation is unique within a region.
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `location:"uri" locationName:"IdentityPoolId" min:"1" type:"string" required:"true"`
 
 	// The maximum number of results to be returned.
@@ -1634,6 +2438,30 @@ func (s *ListDatasetsInput) Validate() error {
 	return nil
 }
 
+// SetIdentityId sets the IdentityId field's value.
+func (s *ListDatasetsInput) SetIdentityId(v string) *ListDatasetsInput {
+	s.IdentityId = &v
+	return s
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *ListDatasetsInput) SetIdentityPoolId(v string) *ListDatasetsInput {
+	s.IdentityPoolId = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListDatasetsInput) SetMaxResults(v int64) *ListDatasetsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListDatasetsInput) SetNextToken(v string) *ListDatasetsInput {
+	s.NextToken = &v
+	return s
+}
+
 // Returned for a successful ListDatasets request.
 type ListDatasetsOutput struct {
 	_ struct{} `type:"structure"`
@@ -1658,6 +2486,24 @@ func (s ListDatasetsOutput) GoString() string {
 	return s.String()
 }
 
+// SetCount sets the Count field's value.
+func (s *ListDatasetsOutput) SetCount(v int64) *ListDatasetsOutput {
+	s.Count = &v
+	return s
+}
+
+// SetDatasets sets the Datasets field's value.
+func (s *ListDatasetsOutput) SetDatasets(v []*Dataset) *ListDatasetsOutput {
+	s.Datasets = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListDatasetsOutput) SetNextToken(v string) *ListDatasetsOutput {
+	s.NextToken = &v
+	return s
+}
+
 // A request for usage information on an identity pool.
 type ListIdentityPoolUsageInput struct {
 	_ struct{} `type:"structure"`
@@ -1677,6 +2523,18 @@ func (s ListIdentityPoolUsageInput) String() string {
 // GoString returns the string representation
 func (s ListIdentityPoolUsageInput) GoString() string {
 	return s.String()
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListIdentityPoolUsageInput) SetMaxResults(v int64) *ListIdentityPoolUsageInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListIdentityPoolUsageInput) SetNextToken(v string) *ListIdentityPoolUsageInput {
+	s.NextToken = &v
+	return s
 }
 
 // Returned for a successful ListIdentityPoolUsage request.
@@ -1706,20 +2564,50 @@ func (s ListIdentityPoolUsageOutput) GoString() string {
 	return s.String()
 }
 
+// SetCount sets the Count field's value.
+func (s *ListIdentityPoolUsageOutput) SetCount(v int64) *ListIdentityPoolUsageOutput {
+	s.Count = &v
+	return s
+}
+
+// SetIdentityPoolUsages sets the IdentityPoolUsages field's value.
+func (s *ListIdentityPoolUsageOutput) SetIdentityPoolUsages(v []*IdentityPoolUsage) *ListIdentityPoolUsageOutput {
+	s.IdentityPoolUsages = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListIdentityPoolUsageOutput) SetMaxResults(v int64) *ListIdentityPoolUsageOutput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListIdentityPoolUsageOutput) SetNextToken(v string) *ListIdentityPoolUsageOutput {
+	s.NextToken = &v
+	return s
+}
+
 // A request for a list of records.
 type ListRecordsInput struct {
 	_ struct{} `type:"structure"`
 
 	// A string of up to 128 characters. Allowed characters are a-z, A-Z, 0-9, '_'
 	// (underscore), '-' (dash), and '.' (dot).
+	//
+	// DatasetName is a required field
 	DatasetName *string `location:"uri" locationName:"DatasetName" min:"1" type:"string" required:"true"`
 
 	// A name-spaced GUID (for example, us-east-1:23EC4050-6AEA-7089-A2DD-08002EXAMPLE)
 	// created by Amazon Cognito. GUID generation is unique within a region.
+	//
+	// IdentityId is a required field
 	IdentityId *string `location:"uri" locationName:"IdentityId" min:"1" type:"string" required:"true"`
 
 	// A name-spaced GUID (for example, us-east-1:23EC4050-6AEA-7089-A2DD-08002EXAMPLE)
 	// created by Amazon Cognito. GUID generation is unique within a region.
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `location:"uri" locationName:"IdentityPoolId" min:"1" type:"string" required:"true"`
 
 	// The last server sync count for this record.
@@ -1773,6 +2661,48 @@ func (s *ListRecordsInput) Validate() error {
 	return nil
 }
 
+// SetDatasetName sets the DatasetName field's value.
+func (s *ListRecordsInput) SetDatasetName(v string) *ListRecordsInput {
+	s.DatasetName = &v
+	return s
+}
+
+// SetIdentityId sets the IdentityId field's value.
+func (s *ListRecordsInput) SetIdentityId(v string) *ListRecordsInput {
+	s.IdentityId = &v
+	return s
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *ListRecordsInput) SetIdentityPoolId(v string) *ListRecordsInput {
+	s.IdentityPoolId = &v
+	return s
+}
+
+// SetLastSyncCount sets the LastSyncCount field's value.
+func (s *ListRecordsInput) SetLastSyncCount(v int64) *ListRecordsInput {
+	s.LastSyncCount = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListRecordsInput) SetMaxResults(v int64) *ListRecordsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListRecordsInput) SetNextToken(v string) *ListRecordsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetSyncSessionToken sets the SyncSessionToken field's value.
+func (s *ListRecordsInput) SetSyncSessionToken(v string) *ListRecordsInput {
+	s.SyncSessionToken = &v
+	return s
+}
+
 // Returned for a successful ListRecordsRequest.
 type ListRecordsOutput struct {
 	_ struct{} `type:"structure"`
@@ -1815,6 +2745,60 @@ func (s ListRecordsOutput) GoString() string {
 	return s.String()
 }
 
+// SetCount sets the Count field's value.
+func (s *ListRecordsOutput) SetCount(v int64) *ListRecordsOutput {
+	s.Count = &v
+	return s
+}
+
+// SetDatasetDeletedAfterRequestedSyncCount sets the DatasetDeletedAfterRequestedSyncCount field's value.
+func (s *ListRecordsOutput) SetDatasetDeletedAfterRequestedSyncCount(v bool) *ListRecordsOutput {
+	s.DatasetDeletedAfterRequestedSyncCount = &v
+	return s
+}
+
+// SetDatasetExists sets the DatasetExists field's value.
+func (s *ListRecordsOutput) SetDatasetExists(v bool) *ListRecordsOutput {
+	s.DatasetExists = &v
+	return s
+}
+
+// SetDatasetSyncCount sets the DatasetSyncCount field's value.
+func (s *ListRecordsOutput) SetDatasetSyncCount(v int64) *ListRecordsOutput {
+	s.DatasetSyncCount = &v
+	return s
+}
+
+// SetLastModifiedBy sets the LastModifiedBy field's value.
+func (s *ListRecordsOutput) SetLastModifiedBy(v string) *ListRecordsOutput {
+	s.LastModifiedBy = &v
+	return s
+}
+
+// SetMergedDatasetNames sets the MergedDatasetNames field's value.
+func (s *ListRecordsOutput) SetMergedDatasetNames(v []*string) *ListRecordsOutput {
+	s.MergedDatasetNames = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListRecordsOutput) SetNextToken(v string) *ListRecordsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetRecords sets the Records field's value.
+func (s *ListRecordsOutput) SetRecords(v []*Record) *ListRecordsOutput {
+	s.Records = v
+	return s
+}
+
+// SetSyncSessionToken sets the SyncSessionToken field's value.
+func (s *ListRecordsOutput) SetSyncSessionToken(v string) *ListRecordsOutput {
+	s.SyncSessionToken = &v
+	return s
+}
+
 // Configuration options to be applied to the identity pool.
 type PushSync struct {
 	_ struct{} `type:"structure"`
@@ -1847,6 +2831,18 @@ func (s *PushSync) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetApplicationArns sets the ApplicationArns field's value.
+func (s *PushSync) SetApplicationArns(v []*string) *PushSync {
+	s.ApplicationArns = v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *PushSync) SetRoleArn(v string) *PushSync {
+	s.RoleArn = &v
+	return s
 }
 
 // The basic data structure of a dataset.
@@ -1882,6 +2878,42 @@ func (s Record) GoString() string {
 	return s.String()
 }
 
+// SetDeviceLastModifiedDate sets the DeviceLastModifiedDate field's value.
+func (s *Record) SetDeviceLastModifiedDate(v time.Time) *Record {
+	s.DeviceLastModifiedDate = &v
+	return s
+}
+
+// SetKey sets the Key field's value.
+func (s *Record) SetKey(v string) *Record {
+	s.Key = &v
+	return s
+}
+
+// SetLastModifiedBy sets the LastModifiedBy field's value.
+func (s *Record) SetLastModifiedBy(v string) *Record {
+	s.LastModifiedBy = &v
+	return s
+}
+
+// SetLastModifiedDate sets the LastModifiedDate field's value.
+func (s *Record) SetLastModifiedDate(v time.Time) *Record {
+	s.LastModifiedDate = &v
+	return s
+}
+
+// SetSyncCount sets the SyncCount field's value.
+func (s *Record) SetSyncCount(v int64) *Record {
+	s.SyncCount = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *Record) SetValue(v string) *Record {
+	s.Value = &v
+	return s
+}
+
 // An update operation for a record.
 type RecordPatch struct {
 	_ struct{} `type:"structure"`
@@ -1890,12 +2922,18 @@ type RecordPatch struct {
 	DeviceLastModifiedDate *time.Time `type:"timestamp" timestampFormat:"unix"`
 
 	// The key associated with the record patch.
+	//
+	// Key is a required field
 	Key *string `min:"1" type:"string" required:"true"`
 
 	// An operation, either replace or remove.
+	//
+	// Op is a required field
 	Op *string `type:"string" required:"true" enum:"Operation"`
 
 	// Last known server sync count for this record. Set to 0 if unknown.
+	//
+	// SyncCount is a required field
 	SyncCount *int64 `type:"long" required:"true"`
 
 	// The value associated with the record patch.
@@ -1934,22 +2972,60 @@ func (s *RecordPatch) Validate() error {
 	return nil
 }
 
+// SetDeviceLastModifiedDate sets the DeviceLastModifiedDate field's value.
+func (s *RecordPatch) SetDeviceLastModifiedDate(v time.Time) *RecordPatch {
+	s.DeviceLastModifiedDate = &v
+	return s
+}
+
+// SetKey sets the Key field's value.
+func (s *RecordPatch) SetKey(v string) *RecordPatch {
+	s.Key = &v
+	return s
+}
+
+// SetOp sets the Op field's value.
+func (s *RecordPatch) SetOp(v string) *RecordPatch {
+	s.Op = &v
+	return s
+}
+
+// SetSyncCount sets the SyncCount field's value.
+func (s *RecordPatch) SetSyncCount(v int64) *RecordPatch {
+	s.SyncCount = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *RecordPatch) SetValue(v string) *RecordPatch {
+	s.Value = &v
+	return s
+}
+
 // A request to RegisterDevice.
 type RegisterDeviceInput struct {
 	_ struct{} `type:"structure"`
 
 	// The unique ID for this identity.
+	//
+	// IdentityId is a required field
 	IdentityId *string `location:"uri" locationName:"IdentityId" min:"1" type:"string" required:"true"`
 
 	// A name-spaced GUID (for example, us-east-1:23EC4050-6AEA-7089-A2DD-08002EXAMPLE)
 	// created by Amazon Cognito. Here, the ID of the pool that the identity belongs
 	// to.
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `location:"uri" locationName:"IdentityPoolId" min:"1" type:"string" required:"true"`
 
 	// The SNS platform type (e.g. GCM, SDM, APNS, APNS_SANDBOX).
+	//
+	// Platform is a required field
 	Platform *string `type:"string" required:"true" enum:"Platform"`
 
 	// The push token.
+	//
+	// Token is a required field
 	Token *string `type:"string" required:"true"`
 }
 
@@ -1991,6 +3067,30 @@ func (s *RegisterDeviceInput) Validate() error {
 	return nil
 }
 
+// SetIdentityId sets the IdentityId field's value.
+func (s *RegisterDeviceInput) SetIdentityId(v string) *RegisterDeviceInput {
+	s.IdentityId = &v
+	return s
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *RegisterDeviceInput) SetIdentityPoolId(v string) *RegisterDeviceInput {
+	s.IdentityPoolId = &v
+	return s
+}
+
+// SetPlatform sets the Platform field's value.
+func (s *RegisterDeviceInput) SetPlatform(v string) *RegisterDeviceInput {
+	s.Platform = &v
+	return s
+}
+
+// SetToken sets the Token field's value.
+func (s *RegisterDeviceInput) SetToken(v string) *RegisterDeviceInput {
+	s.Token = &v
+	return s
+}
+
 // Response to a RegisterDevice request.
 type RegisterDeviceOutput struct {
 	_ struct{} `type:"structure"`
@@ -2009,16 +3109,24 @@ func (s RegisterDeviceOutput) GoString() string {
 	return s.String()
 }
 
+// SetDeviceId sets the DeviceId field's value.
+func (s *RegisterDeviceOutput) SetDeviceId(v string) *RegisterDeviceOutput {
+	s.DeviceId = &v
+	return s
+}
+
 // A request to configure Cognito Events"
-//
-// "
 type SetCognitoEventsInput struct {
 	_ struct{} `type:"structure"`
 
 	// The events to configure
+	//
+	// Events is a required field
 	Events map[string]*string `type:"map" required:"true"`
 
 	// The Cognito Identity Pool to use when configuring Cognito Events
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `location:"uri" locationName:"IdentityPoolId" min:"1" type:"string" required:"true"`
 }
 
@@ -2051,6 +3159,18 @@ func (s *SetCognitoEventsInput) Validate() error {
 	return nil
 }
 
+// SetEvents sets the Events field's value.
+func (s *SetCognitoEventsInput) SetEvents(v map[string]*string) *SetCognitoEventsInput {
+	s.Events = v
+	return s
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *SetCognitoEventsInput) SetIdentityPoolId(v string) *SetCognitoEventsInput {
+	s.IdentityPoolId = &v
+	return s
+}
+
 type SetCognitoEventsOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -2074,6 +3194,8 @@ type SetIdentityPoolConfigurationInput struct {
 
 	// A name-spaced GUID (for example, us-east-1:23EC4050-6AEA-7089-A2DD-08002EXAMPLE)
 	// created by Amazon Cognito. This is the ID of the pool to modify.
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `location:"uri" locationName:"IdentityPoolId" min:"1" type:"string" required:"true"`
 
 	// Options to apply to this identity pool for push synchronization.
@@ -2116,6 +3238,24 @@ func (s *SetIdentityPoolConfigurationInput) Validate() error {
 	return nil
 }
 
+// SetCognitoStreams sets the CognitoStreams field's value.
+func (s *SetIdentityPoolConfigurationInput) SetCognitoStreams(v *CognitoStreams) *SetIdentityPoolConfigurationInput {
+	s.CognitoStreams = v
+	return s
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *SetIdentityPoolConfigurationInput) SetIdentityPoolId(v string) *SetIdentityPoolConfigurationInput {
+	s.IdentityPoolId = &v
+	return s
+}
+
+// SetPushSync sets the PushSync field's value.
+func (s *SetIdentityPoolConfigurationInput) SetPushSync(v *PushSync) *SetIdentityPoolConfigurationInput {
+	s.PushSync = v
+	return s
+}
+
 // The output for the SetIdentityPoolConfiguration operation
 type SetIdentityPoolConfigurationOutput struct {
 	_ struct{} `type:"structure"`
@@ -2141,21 +3281,47 @@ func (s SetIdentityPoolConfigurationOutput) GoString() string {
 	return s.String()
 }
 
+// SetCognitoStreams sets the CognitoStreams field's value.
+func (s *SetIdentityPoolConfigurationOutput) SetCognitoStreams(v *CognitoStreams) *SetIdentityPoolConfigurationOutput {
+	s.CognitoStreams = v
+	return s
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *SetIdentityPoolConfigurationOutput) SetIdentityPoolId(v string) *SetIdentityPoolConfigurationOutput {
+	s.IdentityPoolId = &v
+	return s
+}
+
+// SetPushSync sets the PushSync field's value.
+func (s *SetIdentityPoolConfigurationOutput) SetPushSync(v *PushSync) *SetIdentityPoolConfigurationOutput {
+	s.PushSync = v
+	return s
+}
+
 // A request to SubscribeToDatasetRequest.
 type SubscribeToDatasetInput struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the dataset to subcribe to.
+	//
+	// DatasetName is a required field
 	DatasetName *string `location:"uri" locationName:"DatasetName" min:"1" type:"string" required:"true"`
 
 	// The unique ID generated for this device by Cognito.
+	//
+	// DeviceId is a required field
 	DeviceId *string `location:"uri" locationName:"DeviceId" min:"1" type:"string" required:"true"`
 
 	// Unique ID for this identity.
+	//
+	// IdentityId is a required field
 	IdentityId *string `location:"uri" locationName:"IdentityId" min:"1" type:"string" required:"true"`
 
 	// A name-spaced GUID (for example, us-east-1:23EC4050-6AEA-7089-A2DD-08002EXAMPLE)
 	// created by Amazon Cognito. The ID of the pool to which the identity belongs.
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `location:"uri" locationName:"IdentityPoolId" min:"1" type:"string" required:"true"`
 }
 
@@ -2203,6 +3369,30 @@ func (s *SubscribeToDatasetInput) Validate() error {
 	return nil
 }
 
+// SetDatasetName sets the DatasetName field's value.
+func (s *SubscribeToDatasetInput) SetDatasetName(v string) *SubscribeToDatasetInput {
+	s.DatasetName = &v
+	return s
+}
+
+// SetDeviceId sets the DeviceId field's value.
+func (s *SubscribeToDatasetInput) SetDeviceId(v string) *SubscribeToDatasetInput {
+	s.DeviceId = &v
+	return s
+}
+
+// SetIdentityId sets the IdentityId field's value.
+func (s *SubscribeToDatasetInput) SetIdentityId(v string) *SubscribeToDatasetInput {
+	s.IdentityId = &v
+	return s
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *SubscribeToDatasetInput) SetIdentityPoolId(v string) *SubscribeToDatasetInput {
+	s.IdentityPoolId = &v
+	return s
+}
+
 // Response to a SubscribeToDataset request.
 type SubscribeToDatasetOutput struct {
 	_ struct{} `type:"structure"`
@@ -2223,16 +3413,24 @@ type UnsubscribeFromDatasetInput struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the dataset from which to unsubcribe.
+	//
+	// DatasetName is a required field
 	DatasetName *string `location:"uri" locationName:"DatasetName" min:"1" type:"string" required:"true"`
 
 	// The unique ID generated for this device by Cognito.
+	//
+	// DeviceId is a required field
 	DeviceId *string `location:"uri" locationName:"DeviceId" min:"1" type:"string" required:"true"`
 
 	// Unique ID for this identity.
+	//
+	// IdentityId is a required field
 	IdentityId *string `location:"uri" locationName:"IdentityId" min:"1" type:"string" required:"true"`
 
 	// A name-spaced GUID (for example, us-east-1:23EC4050-6AEA-7089-A2DD-08002EXAMPLE)
 	// created by Amazon Cognito. The ID of the pool to which this identity belongs.
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `location:"uri" locationName:"IdentityPoolId" min:"1" type:"string" required:"true"`
 }
 
@@ -2280,6 +3478,30 @@ func (s *UnsubscribeFromDatasetInput) Validate() error {
 	return nil
 }
 
+// SetDatasetName sets the DatasetName field's value.
+func (s *UnsubscribeFromDatasetInput) SetDatasetName(v string) *UnsubscribeFromDatasetInput {
+	s.DatasetName = &v
+	return s
+}
+
+// SetDeviceId sets the DeviceId field's value.
+func (s *UnsubscribeFromDatasetInput) SetDeviceId(v string) *UnsubscribeFromDatasetInput {
+	s.DeviceId = &v
+	return s
+}
+
+// SetIdentityId sets the IdentityId field's value.
+func (s *UnsubscribeFromDatasetInput) SetIdentityId(v string) *UnsubscribeFromDatasetInput {
+	s.IdentityId = &v
+	return s
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *UnsubscribeFromDatasetInput) SetIdentityPoolId(v string) *UnsubscribeFromDatasetInput {
+	s.IdentityPoolId = &v
+	return s
+}
+
 // Response to an UnsubscribeFromDataset request.
 type UnsubscribeFromDatasetOutput struct {
 	_ struct{} `type:"structure"`
@@ -2306,6 +3528,8 @@ type UpdateRecordsInput struct {
 
 	// A string of up to 128 characters. Allowed characters are a-z, A-Z, 0-9, '_'
 	// (underscore), '-' (dash), and '.' (dot).
+	//
+	// DatasetName is a required field
 	DatasetName *string `location:"uri" locationName:"DatasetName" min:"1" type:"string" required:"true"`
 
 	// The unique ID generated for this device by Cognito.
@@ -2313,10 +3537,14 @@ type UpdateRecordsInput struct {
 
 	// A name-spaced GUID (for example, us-east-1:23EC4050-6AEA-7089-A2DD-08002EXAMPLE)
 	// created by Amazon Cognito. GUID generation is unique within a region.
+	//
+	// IdentityId is a required field
 	IdentityId *string `location:"uri" locationName:"IdentityId" min:"1" type:"string" required:"true"`
 
 	// A name-spaced GUID (for example, us-east-1:23EC4050-6AEA-7089-A2DD-08002EXAMPLE)
 	// created by Amazon Cognito. GUID generation is unique within a region.
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `location:"uri" locationName:"IdentityPoolId" min:"1" type:"string" required:"true"`
 
 	// A list of patch operations.
@@ -2324,6 +3552,8 @@ type UpdateRecordsInput struct {
 
 	// The SyncSessionToken returned by a previous call to ListRecords for this
 	// dataset and identity.
+	//
+	// SyncSessionToken is a required field
 	SyncSessionToken *string `type:"string" required:"true"`
 }
 
@@ -2381,6 +3611,48 @@ func (s *UpdateRecordsInput) Validate() error {
 	return nil
 }
 
+// SetClientContext sets the ClientContext field's value.
+func (s *UpdateRecordsInput) SetClientContext(v string) *UpdateRecordsInput {
+	s.ClientContext = &v
+	return s
+}
+
+// SetDatasetName sets the DatasetName field's value.
+func (s *UpdateRecordsInput) SetDatasetName(v string) *UpdateRecordsInput {
+	s.DatasetName = &v
+	return s
+}
+
+// SetDeviceId sets the DeviceId field's value.
+func (s *UpdateRecordsInput) SetDeviceId(v string) *UpdateRecordsInput {
+	s.DeviceId = &v
+	return s
+}
+
+// SetIdentityId sets the IdentityId field's value.
+func (s *UpdateRecordsInput) SetIdentityId(v string) *UpdateRecordsInput {
+	s.IdentityId = &v
+	return s
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *UpdateRecordsInput) SetIdentityPoolId(v string) *UpdateRecordsInput {
+	s.IdentityPoolId = &v
+	return s
+}
+
+// SetRecordPatches sets the RecordPatches field's value.
+func (s *UpdateRecordsInput) SetRecordPatches(v []*RecordPatch) *UpdateRecordsInput {
+	s.RecordPatches = v
+	return s
+}
+
+// SetSyncSessionToken sets the SyncSessionToken field's value.
+func (s *UpdateRecordsInput) SetSyncSessionToken(v string) *UpdateRecordsInput {
+	s.SyncSessionToken = &v
+	return s
+}
+
 // Returned for a successful UpdateRecordsRequest.
 type UpdateRecordsOutput struct {
 	_ struct{} `type:"structure"`
@@ -2399,38 +3671,52 @@ func (s UpdateRecordsOutput) GoString() string {
 	return s.String()
 }
 
+// SetRecords sets the Records field's value.
+func (s *UpdateRecordsOutput) SetRecords(v []*Record) *UpdateRecordsOutput {
+	s.Records = v
+	return s
+}
+
 const (
-	// @enum BulkPublishStatus
+	// BulkPublishStatusNotStarted is a BulkPublishStatus enum value
 	BulkPublishStatusNotStarted = "NOT_STARTED"
-	// @enum BulkPublishStatus
+
+	// BulkPublishStatusInProgress is a BulkPublishStatus enum value
 	BulkPublishStatusInProgress = "IN_PROGRESS"
-	// @enum BulkPublishStatus
+
+	// BulkPublishStatusFailed is a BulkPublishStatus enum value
 	BulkPublishStatusFailed = "FAILED"
-	// @enum BulkPublishStatus
+
+	// BulkPublishStatusSucceeded is a BulkPublishStatus enum value
 	BulkPublishStatusSucceeded = "SUCCEEDED"
 )
 
 const (
-	// @enum Operation
+	// OperationReplace is a Operation enum value
 	OperationReplace = "replace"
-	// @enum Operation
+
+	// OperationRemove is a Operation enum value
 	OperationRemove = "remove"
 )
 
 const (
-	// @enum Platform
+	// PlatformApns is a Platform enum value
 	PlatformApns = "APNS"
-	// @enum Platform
+
+	// PlatformApnsSandbox is a Platform enum value
 	PlatformApnsSandbox = "APNS_SANDBOX"
-	// @enum Platform
+
+	// PlatformGcm is a Platform enum value
 	PlatformGcm = "GCM"
-	// @enum Platform
+
+	// PlatformAdm is a Platform enum value
 	PlatformAdm = "ADM"
 )
 
 const (
-	// @enum StreamingStatus
+	// StreamingStatusEnabled is a StreamingStatus enum value
 	StreamingStatusEnabled = "ENABLED"
-	// @enum StreamingStatus
+
+	// StreamingStatusDisabled is a StreamingStatus enum value
 	StreamingStatusDisabled = "DISABLED"
 )
