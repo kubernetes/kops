@@ -45,7 +45,7 @@ git add _vendor/github.com/shurcooL/sanitized_anchor_name
 git add vendor/github.com/cpuguy83/go-md2man
 git add vendor/github.com/russross/blackfriday
 git add vendor/github.com/shurcooL/sanitized_anchor_name
-git commit -m "Added go-md2man, blackfriday and sanitized_anchor_name deps"
+git commit -m "Add go-md2man, blackfriday and sanitized_anchor_name deps"
 ```
 
 ## Updating a dependency
