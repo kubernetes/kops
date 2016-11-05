@@ -24,12 +24,12 @@ It allows you to create, destroy, upgrade and maintain clusters.
 ```
 
 ### SEE ALSO
+* [kops completion](kops_completion.md)	 - Outputs kops shell completion for the given shell (bash)
 * [kops create](kops_create.md)	 - Create a resource by filename or stdin
 * [kops delete](kops_delete.md)	 - delete clusters
 * [kops describe](kops_describe.md)	 - describe objects
 * [kops edit](kops_edit.md)	 - edit items
 * [kops export](kops_export.md)	 - export clusters/kubecfg
-* [kops genhelpdocs](kops_genhelpdocs.md)	 - Generate CLI help docs
 * [kops get](kops_get.md)	 - list or get objects
 * [kops import](kops_import.md)	 - import clusters
 * [kops rolling-update](kops_rolling-update.md)	 - rolling update clusters
