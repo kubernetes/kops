@@ -16,7 +16,13 @@ var _ time.Duration
 var _ bytes.Buffer
 
 func ExampleEMR_AddInstanceGroups() {
-	svc := emr.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := emr.New(sess)
 
 	params := &emr.AddInstanceGroupsInput{
 		InstanceGroups: []*emr.InstanceGroupConfig{ // Required
@@ -73,7 +79,13 @@ func ExampleEMR_AddInstanceGroups() {
 }
 
 func ExampleEMR_AddJobFlowSteps() {
-	svc := emr.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := emr.New(sess)
 
 	params := &emr.AddJobFlowStepsInput{
 		JobFlowId: aws.String("XmlStringMaxLen256"), // Required
@@ -114,7 +126,13 @@ func ExampleEMR_AddJobFlowSteps() {
 }
 
 func ExampleEMR_AddTags() {
-	svc := emr.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := emr.New(sess)
 
 	params := &emr.AddTagsInput{
 		ResourceId: aws.String("ResourceId"), // Required
@@ -139,8 +157,65 @@ func ExampleEMR_AddTags() {
 	fmt.Println(resp)
 }
 
+func ExampleEMR_CreateSecurityConfiguration() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := emr.New(sess)
+
+	params := &emr.CreateSecurityConfigurationInput{
+		Name: aws.String("XmlString"), // Required
+		SecurityConfiguration: aws.String("String"), // Required
+	}
+	resp, err := svc.CreateSecurityConfiguration(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
+func ExampleEMR_DeleteSecurityConfiguration() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := emr.New(sess)
+
+	params := &emr.DeleteSecurityConfigurationInput{
+		Name: aws.String("XmlString"), // Required
+	}
+	resp, err := svc.DeleteSecurityConfiguration(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
 func ExampleEMR_DescribeCluster() {
-	svc := emr.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := emr.New(sess)
 
 	params := &emr.DescribeClusterInput{
 		ClusterId: aws.String("ClusterId"), // Required
@@ -159,7 +234,13 @@ func ExampleEMR_DescribeCluster() {
 }
 
 func ExampleEMR_DescribeJobFlows() {
-	svc := emr.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := emr.New(sess)
 
 	params := &emr.DescribeJobFlowsInput{
 		CreatedAfter:  aws.Time(time.Now()),
@@ -186,8 +267,39 @@ func ExampleEMR_DescribeJobFlows() {
 	fmt.Println(resp)
 }
 
+func ExampleEMR_DescribeSecurityConfiguration() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := emr.New(sess)
+
+	params := &emr.DescribeSecurityConfigurationInput{
+		Name: aws.String("XmlString"), // Required
+	}
+	resp, err := svc.DescribeSecurityConfiguration(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
 func ExampleEMR_DescribeStep() {
-	svc := emr.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := emr.New(sess)
 
 	params := &emr.DescribeStepInput{
 		ClusterId: aws.String("ClusterId"), // Required
@@ -207,7 +319,13 @@ func ExampleEMR_DescribeStep() {
 }
 
 func ExampleEMR_ListBootstrapActions() {
-	svc := emr.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := emr.New(sess)
 
 	params := &emr.ListBootstrapActionsInput{
 		ClusterId: aws.String("ClusterId"), // Required
@@ -227,7 +345,13 @@ func ExampleEMR_ListBootstrapActions() {
 }
 
 func ExampleEMR_ListClusters() {
-	svc := emr.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := emr.New(sess)
 
 	params := &emr.ListClustersInput{
 		ClusterStates: []*string{
@@ -252,7 +376,13 @@ func ExampleEMR_ListClusters() {
 }
 
 func ExampleEMR_ListInstanceGroups() {
-	svc := emr.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := emr.New(sess)
 
 	params := &emr.ListInstanceGroupsInput{
 		ClusterId: aws.String("ClusterId"), // Required
@@ -272,7 +402,13 @@ func ExampleEMR_ListInstanceGroups() {
 }
 
 func ExampleEMR_ListInstances() {
-	svc := emr.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := emr.New(sess)
 
 	params := &emr.ListInstancesInput{
 		ClusterId:       aws.String("ClusterId"), // Required
@@ -300,8 +436,39 @@ func ExampleEMR_ListInstances() {
 	fmt.Println(resp)
 }
 
+func ExampleEMR_ListSecurityConfigurations() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := emr.New(sess)
+
+	params := &emr.ListSecurityConfigurationsInput{
+		Marker: aws.String("Marker"),
+	}
+	resp, err := svc.ListSecurityConfigurations(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
 func ExampleEMR_ListSteps() {
-	svc := emr.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := emr.New(sess)
 
 	params := &emr.ListStepsInput{
 		ClusterId: aws.String("ClusterId"), // Required
@@ -329,7 +496,13 @@ func ExampleEMR_ListSteps() {
 }
 
 func ExampleEMR_ModifyInstanceGroups() {
-	svc := emr.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := emr.New(sess)
 
 	params := &emr.ModifyInstanceGroupsInput{
 		InstanceGroups: []*emr.InstanceGroupModifyConfig{
@@ -372,7 +545,13 @@ func ExampleEMR_ModifyInstanceGroups() {
 }
 
 func ExampleEMR_RemoveTags() {
-	svc := emr.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := emr.New(sess)
 
 	params := &emr.RemoveTagsInput{
 		ResourceId: aws.String("ResourceId"), // Required
@@ -395,7 +574,13 @@ func ExampleEMR_RemoveTags() {
 }
 
 func ExampleEMR_RunJobFlow() {
-	svc := emr.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := emr.New(sess)
 
 	params := &emr.RunJobFlowInput{
 		Instances: &emr.JobFlowInstancesConfig{ // Required
@@ -516,8 +701,9 @@ func ExampleEMR_RunJobFlow() {
 			},
 			// More values...
 		},
-		ReleaseLabel: aws.String("XmlStringMaxLen256"),
-		ServiceRole:  aws.String("XmlString"),
+		ReleaseLabel:          aws.String("XmlStringMaxLen256"),
+		SecurityConfiguration: aws.String("XmlString"),
+		ServiceRole:           aws.String("XmlString"),
 		Steps: []*emr.StepConfig{
 			{ // Required
 				HadoopJarStep: &emr.HadoopJarStepConfig{ // Required
@@ -567,7 +753,13 @@ func ExampleEMR_RunJobFlow() {
 }
 
 func ExampleEMR_SetTerminationProtection() {
-	svc := emr.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := emr.New(sess)
 
 	params := &emr.SetTerminationProtectionInput{
 		JobFlowIds: []*string{ // Required
@@ -590,7 +782,13 @@ func ExampleEMR_SetTerminationProtection() {
 }
 
 func ExampleEMR_SetVisibleToAllUsers() {
-	svc := emr.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := emr.New(sess)
 
 	params := &emr.SetVisibleToAllUsersInput{
 		JobFlowIds: []*string{ // Required
@@ -613,7 +811,13 @@ func ExampleEMR_SetVisibleToAllUsers() {
 }
 
 func ExampleEMR_TerminateJobFlows() {
-	svc := emr.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := emr.New(sess)
 
 	params := &emr.TerminateJobFlowsInput{
 		JobFlowIds: []*string{ // Required

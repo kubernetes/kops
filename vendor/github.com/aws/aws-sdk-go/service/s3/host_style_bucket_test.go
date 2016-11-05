@@ -50,6 +50,12 @@ var (
 		{"a.b.c", "http://a.b.c.s3-accelerate.amazonaws.com/", ""},
 		{"a$b$c", "http://s3-mock-region.amazonaws.com/%7BBucket%7D", "InvalidParameterException"},
 	}
+
+	accelerateDualstack = []s3BucketTest{
+		{"abc", "https://abc.s3-accelerate.dualstack.amazonaws.com/", ""},
+		{"a.b.c", "https://s3.dualstack.mock-region.amazonaws.com/%7BBucket%7D", "InvalidParameterException"},
+		{"a$b$c", "https://s3.dualstack.mock-region.amazonaws.com/%7BBucket%7D", "InvalidParameterException"},
+	}
 )
 
 func runTests(t *testing.T, svc *s3.S3, tests []s3BucketTest) {
@@ -72,6 +78,14 @@ func TestAccelerateBucketBuild(t *testing.T) {
 func TestAccelerateNoSSLBucketBuild(t *testing.T) {
 	s := s3.New(unit.Session, &aws.Config{S3UseAccelerate: aws.Bool(true), DisableSSL: aws.Bool(true)})
 	runTests(t, s, accelerateNoSSLTests)
+}
+
+func TestAccelerateDualstackBucketBuild(t *testing.T) {
+	s := s3.New(unit.Session, &aws.Config{
+		S3UseAccelerate: aws.Bool(true),
+		UseDualStack:    aws.Bool(true),
+	})
+	runTests(t, s, accelerateDualstack)
 }
 
 func TestHostStyleBucketBuild(t *testing.T) {

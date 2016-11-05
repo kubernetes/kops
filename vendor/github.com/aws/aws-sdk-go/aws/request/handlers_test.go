@@ -79,7 +79,7 @@ func TestStopHandlers(t *testing.T) {
 		called++
 	}})
 	l.PushBackNamed(request.NamedHandler{Name: "name3", Fn: func(r *request.Request) {
-		assert.Fail(t, "thrid handler should not be called")
+		assert.Fail(t, "third handler should not be called")
 	}})
 	l.Run(&request.Request{})
 

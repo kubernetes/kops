@@ -1696,3 +1696,213 @@ func (m *MockEC2) UnmonitorInstances(*ec2.UnmonitorInstancesInput) (*ec2.Unmonit
 	panic("Not implemented")
 	return nil, nil
 }
+
+func (m *MockEC2) AcceptReservedInstancesExchangeQuoteRequest(*ec2.AcceptReservedInstancesExchangeQuoteInput) (*request.Request, *ec2.AcceptReservedInstancesExchangeQuoteOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) AcceptReservedInstancesExchangeQuote(*ec2.AcceptReservedInstancesExchangeQuoteInput) (*ec2.AcceptReservedInstancesExchangeQuoteOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DescribeHostReservationOfferingsRequest(*ec2.DescribeHostReservationOfferingsInput) (*request.Request, *ec2.DescribeHostReservationOfferingsOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DescribeHostReservationOfferings(*ec2.DescribeHostReservationOfferingsInput) (*ec2.DescribeHostReservationOfferingsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DescribeHostReservationsRequest(*ec2.DescribeHostReservationsInput) (*request.Request, *ec2.DescribeHostReservationsOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DescribeHostReservations(*ec2.DescribeHostReservationsInput) (*ec2.DescribeHostReservationsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) GetHostReservationPurchasePreviewRequest(*ec2.GetHostReservationPurchasePreviewInput) (*request.Request, *ec2.GetHostReservationPurchasePreviewOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) GetHostReservationPurchasePreview(*ec2.GetHostReservationPurchasePreviewInput) (*ec2.GetHostReservationPurchasePreviewOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) PurchaseHostReservationRequest(*ec2.PurchaseHostReservationInput) (*request.Request, *ec2.PurchaseHostReservationOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) PurchaseHostReservation(*ec2.PurchaseHostReservationInput) (*ec2.PurchaseHostReservationOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) GetReservedInstancesExchangeQuoteRequest(*ec2.GetReservedInstancesExchangeQuoteInput) (*request.Request, *ec2.GetReservedInstancesExchangeQuoteOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) GetReservedInstancesExchangeQuote(*ec2.GetReservedInstancesExchangeQuoteInput) (*ec2.GetReservedInstancesExchangeQuoteOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) WaitUntilBundleTaskComplete(*ec2.DescribeBundleTasksInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilConversionTaskCancelled(*ec2.DescribeConversionTasksInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilConversionTaskCompleted(*ec2.DescribeConversionTasksInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilConversionTaskDeleted(*ec2.DescribeConversionTasksInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilCustomerGatewayAvailable(*ec2.DescribeCustomerGatewaysInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilExportTaskCancelled(*ec2.DescribeExportTasksInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilExportTaskCompleted(*ec2.DescribeExportTasksInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilImageAvailable(*ec2.DescribeImagesInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilImageExists(*ec2.DescribeImagesInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilInstanceExists(*ec2.DescribeInstancesInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilInstanceRunning(*ec2.DescribeInstancesInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilInstanceStatusOk(*ec2.DescribeInstanceStatusInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilInstanceStopped(*ec2.DescribeInstancesInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilInstanceTerminated(*ec2.DescribeInstancesInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilKeyPairExists(*ec2.DescribeKeyPairsInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilNatGatewayAvailable(*ec2.DescribeNatGatewaysInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilNetworkInterfaceAvailable(*ec2.DescribeNetworkInterfacesInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilPasswordDataAvailable(*ec2.GetPasswordDataInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilSnapshotCompleted(*ec2.DescribeSnapshotsInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilSpotInstanceRequestFulfilled(*ec2.DescribeSpotInstanceRequestsInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilSubnetAvailable(*ec2.DescribeSubnetsInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilSystemStatusOk(*ec2.DescribeInstanceStatusInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilVolumeAvailable(*ec2.DescribeVolumesInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilVolumeDeleted(*ec2.DescribeVolumesInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilVolumeInUse(*ec2.DescribeVolumesInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilVpcAvailable(*ec2.DescribeVpcsInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilVpcExists(*ec2.DescribeVpcsInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilVpcPeeringConnectionExists(*ec2.DescribeVpcPeeringConnectionsInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilVpnConnectionAvailable(*ec2.DescribeVpnConnectionsInput) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) WaitUntilVpnConnectionDeleted(*ec2.DescribeVpnConnectionsInput) error {
+	panic("Not implemented")
+	return nil
+}

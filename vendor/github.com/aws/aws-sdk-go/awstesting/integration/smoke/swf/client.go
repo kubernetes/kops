@@ -6,11 +6,11 @@ package swf
 import (
 	"github.com/aws/aws-sdk-go/awstesting/integration/smoke"
 	"github.com/aws/aws-sdk-go/service/swf"
-	. "github.com/lsegal/gucumber"
+	"github.com/gucumber/gucumber"
 )
 
 func init() {
-	Before("@swf", func() {
-		World["client"] = swf.New(smoke.Session)
+	gucumber.Before("@swf", func() {
+		gucumber.World["client"] = swf.New(smoke.Session)
 	})
 }

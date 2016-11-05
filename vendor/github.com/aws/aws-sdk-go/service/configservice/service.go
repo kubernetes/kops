@@ -31,9 +31,9 @@ import (
 // For more information about how to sign a request with this protocol, see
 // Signature Version 4 Signing Process (http://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
 //
-// For detailed information about AWS Config features and their associated
-// actions or commands, as well as how to work with AWS Management Console,
-// see What Is AWS Config? (http://docs.aws.amazon.com/config/latest/developerguide/WhatIsConfig.html)
+// For detailed information about AWS Config features and their associated actions
+// or commands, as well as how to work with AWS Management Console, see What
+// Is AWS Config? (http://docs.aws.amazon.com/config/latest/developerguide/WhatIsConfig.html)
 // in the AWS Config Developer Guide.
 //The service client's operations are safe to be used concurrently.
 // It is not safe to mutate any of the client's properties though.

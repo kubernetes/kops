@@ -16,7 +16,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/awstesting/integration"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -58,7 +57,7 @@ func setup() {
 
 // Delete the bucket
 func teardown() {
-	svc := s3.New(session.New())
+	svc := s3.New(integration.Session)
 
 	objs, _ := svc.ListObjects(&s3.ListObjectsInput{Bucket: bucketName})
 	for _, o := range objs.Contents {
@@ -128,7 +127,7 @@ func TestUploadConcurrently(t *testing.T) {
 }
 
 func TestUploadFailCleanup(t *testing.T) {
-	svc := s3.New(session.New())
+	svc := s3.New(integration.Session)
 
 	// Break checksum on 2nd part so it fails
 	part := 0
@@ -151,6 +150,7 @@ func TestUploadFailCleanup(t *testing.T) {
 		Body:   bytes.NewReader(integBuf12MB),
 	})
 	assert.Error(t, err)
+	assert.NotContains(t, err.Error(), "MissingRegion")
 	uploadID := ""
 	if merr, ok := err.(s3manager.MultiUploadFailure); ok {
 		uploadID = merr.UploadID()

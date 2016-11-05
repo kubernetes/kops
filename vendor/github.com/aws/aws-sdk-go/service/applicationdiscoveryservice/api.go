@@ -18,6 +18,8 @@ const opCreateTags = "CreateTags"
 // value can be used to capture response data after the request's "Send" method
 // is called.
 //
+// See CreateTags for usage and error information.
+//
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
 // access properties on the request object before or after sending the request. If
@@ -52,9 +54,38 @@ func (c *ApplicationDiscoveryService) CreateTagsRequest(input *CreateTagsInput) 
 	return
 }
 
+// CreateTags API operation for AWS Application Discovery Service.
+//
 // Creates one or more tags for configuration items. Tags are metadata that
 // help you categorize IT assets. This API accepts a list of multiple configuration
 // items.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Application Discovery Service's
+// API operation CreateTags for usage and error information.
+//
+// Returned Error Codes:
+//   * AuthorizationErrorException
+//   The AWS user account does not have permission to perform the action. Check
+//   the IAM policy associated with this account.
+//
+//   * ResourceNotFoundException
+//   The specified configuration ID was not located. Verify the configuration
+//   ID and try again.
+//
+//   * InvalidParameterException
+//   One or more parameters are not valid. Verify the parameters and try again.
+//
+//   * InvalidParameterValueException
+//   The value of one or more parameters are either invalid or out of range. Verify
+//   the parameter values and try again.
+//
+//   * ServerInternalErrorException
+//   The server experienced an internal error. Try again.
+//
 func (c *ApplicationDiscoveryService) CreateTags(input *CreateTagsInput) (*CreateTagsOutput, error) {
 	req, out := c.CreateTagsRequest(input)
 	err := req.Send()
@@ -67,6 +98,8 @@ const opDeleteTags = "DeleteTags"
 // client's request for the DeleteTags operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DeleteTags for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -102,8 +135,37 @@ func (c *ApplicationDiscoveryService) DeleteTagsRequest(input *DeleteTagsInput) 
 	return
 }
 
+// DeleteTags API operation for AWS Application Discovery Service.
+//
 // Deletes the association between configuration items and one or more tags.
 // This API accepts a list of multiple configuration items.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Application Discovery Service's
+// API operation DeleteTags for usage and error information.
+//
+// Returned Error Codes:
+//   * AuthorizationErrorException
+//   The AWS user account does not have permission to perform the action. Check
+//   the IAM policy associated with this account.
+//
+//   * ResourceNotFoundException
+//   The specified configuration ID was not located. Verify the configuration
+//   ID and try again.
+//
+//   * InvalidParameterException
+//   One or more parameters are not valid. Verify the parameters and try again.
+//
+//   * InvalidParameterValueException
+//   The value of one or more parameters are either invalid or out of range. Verify
+//   the parameter values and try again.
+//
+//   * ServerInternalErrorException
+//   The server experienced an internal error. Try again.
+//
 func (c *ApplicationDiscoveryService) DeleteTags(input *DeleteTagsInput) (*DeleteTagsOutput, error) {
 	req, out := c.DeleteTagsRequest(input)
 	err := req.Send()
@@ -116,6 +178,8 @@ const opDescribeAgents = "DescribeAgents"
 // client's request for the DescribeAgents operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeAgents for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -151,8 +215,33 @@ func (c *ApplicationDiscoveryService) DescribeAgentsRequest(input *DescribeAgent
 	return
 }
 
+// DescribeAgents API operation for AWS Application Discovery Service.
+//
 // Lists AWS agents by ID or lists all agents associated with your user account
 // if you did not specify an agent ID.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Application Discovery Service's
+// API operation DescribeAgents for usage and error information.
+//
+// Returned Error Codes:
+//   * AuthorizationErrorException
+//   The AWS user account does not have permission to perform the action. Check
+//   the IAM policy associated with this account.
+//
+//   * InvalidParameterException
+//   One or more parameters are not valid. Verify the parameters and try again.
+//
+//   * InvalidParameterValueException
+//   The value of one or more parameters are either invalid or out of range. Verify
+//   the parameter values and try again.
+//
+//   * ServerInternalErrorException
+//   The server experienced an internal error. Try again.
+//
 func (c *ApplicationDiscoveryService) DescribeAgents(input *DescribeAgentsInput) (*DescribeAgentsOutput, error) {
 	req, out := c.DescribeAgentsRequest(input)
 	err := req.Send()
@@ -165,6 +254,8 @@ const opDescribeConfigurations = "DescribeConfigurations"
 // client's request for the DescribeConfigurations operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeConfigurations for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -200,10 +291,35 @@ func (c *ApplicationDiscoveryService) DescribeConfigurationsRequest(input *Descr
 	return
 }
 
+// DescribeConfigurations API operation for AWS Application Discovery Service.
+//
 // Retrieves a list of attributes for a specific configuration ID. For example,
 // the output for a server configuration item includes a list of attributes
 // about the server, including host name, operating system, number of network
 // cards, etc.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Application Discovery Service's
+// API operation DescribeConfigurations for usage and error information.
+//
+// Returned Error Codes:
+//   * AuthorizationErrorException
+//   The AWS user account does not have permission to perform the action. Check
+//   the IAM policy associated with this account.
+//
+//   * InvalidParameterException
+//   One or more parameters are not valid. Verify the parameters and try again.
+//
+//   * InvalidParameterValueException
+//   The value of one or more parameters are either invalid or out of range. Verify
+//   the parameter values and try again.
+//
+//   * ServerInternalErrorException
+//   The server experienced an internal error. Try again.
+//
 func (c *ApplicationDiscoveryService) DescribeConfigurations(input *DescribeConfigurationsInput) (*DescribeConfigurationsOutput, error) {
 	req, out := c.DescribeConfigurationsRequest(input)
 	err := req.Send()
@@ -216,6 +332,8 @@ const opDescribeExportConfigurations = "DescribeExportConfigurations"
 // client's request for the DescribeExportConfigurations operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeExportConfigurations for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -251,8 +369,37 @@ func (c *ApplicationDiscoveryService) DescribeExportConfigurationsRequest(input 
 	return
 }
 
+// DescribeExportConfigurations API operation for AWS Application Discovery Service.
+//
 // Retrieves the status of a given export process. You can retrieve status from
 // a maximum of 100 processes.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Application Discovery Service's
+// API operation DescribeExportConfigurations for usage and error information.
+//
+// Returned Error Codes:
+//   * AuthorizationErrorException
+//   The AWS user account does not have permission to perform the action. Check
+//   the IAM policy associated with this account.
+//
+//   * ResourceNotFoundException
+//   The specified configuration ID was not located. Verify the configuration
+//   ID and try again.
+//
+//   * InvalidParameterException
+//   One or more parameters are not valid. Verify the parameters and try again.
+//
+//   * InvalidParameterValueException
+//   The value of one or more parameters are either invalid or out of range. Verify
+//   the parameter values and try again.
+//
+//   * ServerInternalErrorException
+//   The server experienced an internal error. Try again.
+//
 func (c *ApplicationDiscoveryService) DescribeExportConfigurations(input *DescribeExportConfigurationsInput) (*DescribeExportConfigurationsOutput, error) {
 	req, out := c.DescribeExportConfigurationsRequest(input)
 	err := req.Send()
@@ -265,6 +412,8 @@ const opDescribeTags = "DescribeTags"
 // client's request for the DescribeTags operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeTags for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -300,8 +449,37 @@ func (c *ApplicationDiscoveryService) DescribeTagsRequest(input *DescribeTagsInp
 	return
 }
 
+// DescribeTags API operation for AWS Application Discovery Service.
+//
 // Retrieves a list of configuration items that are tagged with a specific tag.
 // Or retrieves a list of all tags assigned to a specific configuration item.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Application Discovery Service's
+// API operation DescribeTags for usage and error information.
+//
+// Returned Error Codes:
+//   * AuthorizationErrorException
+//   The AWS user account does not have permission to perform the action. Check
+//   the IAM policy associated with this account.
+//
+//   * ResourceNotFoundException
+//   The specified configuration ID was not located. Verify the configuration
+//   ID and try again.
+//
+//   * InvalidParameterException
+//   One or more parameters are not valid. Verify the parameters and try again.
+//
+//   * InvalidParameterValueException
+//   The value of one or more parameters are either invalid or out of range. Verify
+//   the parameter values and try again.
+//
+//   * ServerInternalErrorException
+//   The server experienced an internal error. Try again.
+//
 func (c *ApplicationDiscoveryService) DescribeTags(input *DescribeTagsInput) (*DescribeTagsOutput, error) {
 	req, out := c.DescribeTagsRequest(input)
 	err := req.Send()
@@ -314,6 +492,8 @@ const opExportConfigurations = "ExportConfigurations"
 // client's request for the ExportConfigurations operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See ExportConfigurations for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -349,11 +529,39 @@ func (c *ApplicationDiscoveryService) ExportConfigurationsRequest(input *ExportC
 	return
 }
 
+// ExportConfigurations API operation for AWS Application Discovery Service.
+//
 // Exports all discovered configuration data to an Amazon S3 bucket or an application
 // that enables you to view and evaluate the data. Data includes tags and tag
 // associations, processes, connections, servers, and system performance. This
 // API returns an export ID which you can query using the GetExportStatus API.
 // The system imposes a limit of two configuration exports in six hours.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Application Discovery Service's
+// API operation ExportConfigurations for usage and error information.
+//
+// Returned Error Codes:
+//   * AuthorizationErrorException
+//   The AWS user account does not have permission to perform the action. Check
+//   the IAM policy associated with this account.
+//
+//   * InvalidParameterException
+//   One or more parameters are not valid. Verify the parameters and try again.
+//
+//   * InvalidParameterValueException
+//   The value of one or more parameters are either invalid or out of range. Verify
+//   the parameter values and try again.
+//
+//   * ServerInternalErrorException
+//   The server experienced an internal error. Try again.
+//
+//   * OperationNotPermittedException
+//   This operation is not permitted.
+//
 func (c *ApplicationDiscoveryService) ExportConfigurations(input *ExportConfigurationsInput) (*ExportConfigurationsOutput, error) {
 	req, out := c.ExportConfigurationsRequest(input)
 	err := req.Send()
@@ -366,6 +574,8 @@ const opListConfigurations = "ListConfigurations"
 // client's request for the ListConfigurations operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See ListConfigurations for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -401,8 +611,37 @@ func (c *ApplicationDiscoveryService) ListConfigurationsRequest(input *ListConfi
 	return
 }
 
+// ListConfigurations API operation for AWS Application Discovery Service.
+//
 // Retrieves a list of configurations items according to the criteria you specify
 // in a filter. The filter criteria identify relationship requirements.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Application Discovery Service's
+// API operation ListConfigurations for usage and error information.
+//
+// Returned Error Codes:
+//   * AuthorizationErrorException
+//   The AWS user account does not have permission to perform the action. Check
+//   the IAM policy associated with this account.
+//
+//   * ResourceNotFoundException
+//   The specified configuration ID was not located. Verify the configuration
+//   ID and try again.
+//
+//   * InvalidParameterException
+//   One or more parameters are not valid. Verify the parameters and try again.
+//
+//   * InvalidParameterValueException
+//   The value of one or more parameters are either invalid or out of range. Verify
+//   the parameter values and try again.
+//
+//   * ServerInternalErrorException
+//   The server experienced an internal error. Try again.
+//
 func (c *ApplicationDiscoveryService) ListConfigurations(input *ListConfigurationsInput) (*ListConfigurationsOutput, error) {
 	req, out := c.ListConfigurationsRequest(input)
 	err := req.Send()
@@ -415,6 +654,8 @@ const opStartDataCollectionByAgentIds = "StartDataCollectionByAgentIds"
 // client's request for the StartDataCollectionByAgentIds operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See StartDataCollectionByAgentIds for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -450,8 +691,33 @@ func (c *ApplicationDiscoveryService) StartDataCollectionByAgentIdsRequest(input
 	return
 }
 
+// StartDataCollectionByAgentIds API operation for AWS Application Discovery Service.
+//
 // Instructs the specified agents to start collecting data. Agents can reside
 // on host servers or virtual machines in your data center.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Application Discovery Service's
+// API operation StartDataCollectionByAgentIds for usage and error information.
+//
+// Returned Error Codes:
+//   * AuthorizationErrorException
+//   The AWS user account does not have permission to perform the action. Check
+//   the IAM policy associated with this account.
+//
+//   * InvalidParameterException
+//   One or more parameters are not valid. Verify the parameters and try again.
+//
+//   * InvalidParameterValueException
+//   The value of one or more parameters are either invalid or out of range. Verify
+//   the parameter values and try again.
+//
+//   * ServerInternalErrorException
+//   The server experienced an internal error. Try again.
+//
 func (c *ApplicationDiscoveryService) StartDataCollectionByAgentIds(input *StartDataCollectionByAgentIdsInput) (*StartDataCollectionByAgentIdsOutput, error) {
 	req, out := c.StartDataCollectionByAgentIdsRequest(input)
 	err := req.Send()
@@ -464,6 +730,8 @@ const opStopDataCollectionByAgentIds = "StopDataCollectionByAgentIds"
 // client's request for the StopDataCollectionByAgentIds operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See StopDataCollectionByAgentIds for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -499,7 +767,32 @@ func (c *ApplicationDiscoveryService) StopDataCollectionByAgentIdsRequest(input 
 	return
 }
 
+// StopDataCollectionByAgentIds API operation for AWS Application Discovery Service.
+//
 // Instructs the specified agents to stop collecting data.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Application Discovery Service's
+// API operation StopDataCollectionByAgentIds for usage and error information.
+//
+// Returned Error Codes:
+//   * AuthorizationErrorException
+//   The AWS user account does not have permission to perform the action. Check
+//   the IAM policy associated with this account.
+//
+//   * InvalidParameterException
+//   One or more parameters are not valid. Verify the parameters and try again.
+//
+//   * InvalidParameterValueException
+//   The value of one or more parameters are either invalid or out of range. Verify
+//   the parameter values and try again.
+//
+//   * ServerInternalErrorException
+//   The server experienced an internal error. Try again.
+//
 func (c *ApplicationDiscoveryService) StopDataCollectionByAgentIds(input *StopDataCollectionByAgentIdsInput) (*StopDataCollectionByAgentIdsOutput, error) {
 	req, out := c.StopDataCollectionByAgentIdsRequest(input)
 	err := req.Send()
@@ -532,6 +825,24 @@ func (s AgentConfigurationStatus) String() string {
 // GoString returns the string representation
 func (s AgentConfigurationStatus) GoString() string {
 	return s.String()
+}
+
+// SetAgentId sets the AgentId field's value.
+func (s *AgentConfigurationStatus) SetAgentId(v string) *AgentConfigurationStatus {
+	s.AgentId = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *AgentConfigurationStatus) SetDescription(v string) *AgentConfigurationStatus {
+	s.Description = &v
+	return s
+}
+
+// SetOperationSucceeded sets the OperationSucceeded field's value.
+func (s *AgentConfigurationStatus) SetOperationSucceeded(v bool) *AgentConfigurationStatus {
+	s.OperationSucceeded = &v
+	return s
 }
 
 // Information about agents associated with the user’s AWS account. Information
@@ -570,6 +881,42 @@ func (s AgentInfo) GoString() string {
 	return s.String()
 }
 
+// SetAgentId sets the AgentId field's value.
+func (s *AgentInfo) SetAgentId(v string) *AgentInfo {
+	s.AgentId = &v
+	return s
+}
+
+// SetAgentNetworkInfoList sets the AgentNetworkInfoList field's value.
+func (s *AgentInfo) SetAgentNetworkInfoList(v []*AgentNetworkInfo) *AgentInfo {
+	s.AgentNetworkInfoList = v
+	return s
+}
+
+// SetConnectorId sets the ConnectorId field's value.
+func (s *AgentInfo) SetConnectorId(v string) *AgentInfo {
+	s.ConnectorId = &v
+	return s
+}
+
+// SetHealth sets the Health field's value.
+func (s *AgentInfo) SetHealth(v string) *AgentInfo {
+	s.Health = &v
+	return s
+}
+
+// SetHostName sets the HostName field's value.
+func (s *AgentInfo) SetHostName(v string) *AgentInfo {
+	s.HostName = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *AgentInfo) SetVersion(v string) *AgentInfo {
+	s.Version = &v
+	return s
+}
+
 // Network details about the host where the agent resides.
 type AgentNetworkInfo struct {
 	_ struct{} `type:"structure"`
@@ -589,6 +936,18 @@ func (s AgentNetworkInfo) String() string {
 // GoString returns the string representation
 func (s AgentNetworkInfo) GoString() string {
 	return s.String()
+}
+
+// SetIpAddress sets the IpAddress field's value.
+func (s *AgentNetworkInfo) SetIpAddress(v string) *AgentNetworkInfo {
+	s.IpAddress = &v
+	return s
+}
+
+// SetMacAddress sets the MacAddress field's value.
+func (s *AgentNetworkInfo) SetMacAddress(v string) *AgentNetworkInfo {
+	s.MacAddress = &v
+	return s
 }
 
 // Tags for a configuration item. Tags are metadata that help you categorize
@@ -624,16 +983,50 @@ func (s ConfigurationTag) GoString() string {
 	return s.String()
 }
 
+// SetConfigurationId sets the ConfigurationId field's value.
+func (s *ConfigurationTag) SetConfigurationId(v string) *ConfigurationTag {
+	s.ConfigurationId = &v
+	return s
+}
+
+// SetConfigurationType sets the ConfigurationType field's value.
+func (s *ConfigurationTag) SetConfigurationType(v string) *ConfigurationTag {
+	s.ConfigurationType = &v
+	return s
+}
+
+// SetKey sets the Key field's value.
+func (s *ConfigurationTag) SetKey(v string) *ConfigurationTag {
+	s.Key = &v
+	return s
+}
+
+// SetTimeOfCreation sets the TimeOfCreation field's value.
+func (s *ConfigurationTag) SetTimeOfCreation(v time.Time) *ConfigurationTag {
+	s.TimeOfCreation = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *ConfigurationTag) SetValue(v string) *ConfigurationTag {
+	s.Value = &v
+	return s
+}
+
 type CreateTagsInput struct {
 	_ struct{} `type:"structure"`
 
 	// A list of configuration items that you want to tag.
+	//
+	// ConfigurationIds is a required field
 	ConfigurationIds []*string `locationName:"configurationIds" type:"list" required:"true"`
 
 	// Tags that you want to associate with one or more configuration items. Specify
 	// the tags that you want to create in a key-value format. For example:
 	//
-	//  {"key": "serverType", "value": "webServer"}
+	// {"key": "serverType", "value": "webServer"}
+	//
+	// Tags is a required field
 	Tags []*Tag `locationName:"tags" locationNameList:"item" type:"list" required:"true"`
 }
 
@@ -673,6 +1066,18 @@ func (s *CreateTagsInput) Validate() error {
 	return nil
 }
 
+// SetConfigurationIds sets the ConfigurationIds field's value.
+func (s *CreateTagsInput) SetConfigurationIds(v []*string) *CreateTagsInput {
+	s.ConfigurationIds = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateTagsInput) SetTags(v []*Tag) *CreateTagsInput {
+	s.Tags = v
+	return s
+}
+
 type CreateTagsOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -691,12 +1096,14 @@ type DeleteTagsInput struct {
 	_ struct{} `type:"structure"`
 
 	// A list of configuration items with tags that you want to delete.
+	//
+	// ConfigurationIds is a required field
 	ConfigurationIds []*string `locationName:"configurationIds" type:"list" required:"true"`
 
 	// Tags that you want to delete from one or more configuration items. Specify
 	// the tags that you want to delete in a key-value format. For example:
 	//
-	//  {"key": "serverType", "value": "webServer"}
+	// {"key": "serverType", "value": "webServer"}
 	Tags []*Tag `locationName:"tags" locationNameList:"item" type:"list"`
 }
 
@@ -731,6 +1138,18 @@ func (s *DeleteTagsInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetConfigurationIds sets the ConfigurationIds field's value.
+func (s *DeleteTagsInput) SetConfigurationIds(v []*string) *DeleteTagsInput {
+	s.ConfigurationIds = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *DeleteTagsInput) SetTags(v []*Tag) *DeleteTagsInput {
+	s.Tags = v
+	return s
 }
 
 type DeleteTagsOutput struct {
@@ -772,6 +1191,24 @@ func (s DescribeAgentsInput) GoString() string {
 	return s.String()
 }
 
+// SetAgentIds sets the AgentIds field's value.
+func (s *DescribeAgentsInput) SetAgentIds(v []*string) *DescribeAgentsInput {
+	s.AgentIds = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeAgentsInput) SetMaxResults(v int64) *DescribeAgentsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeAgentsInput) SetNextToken(v string) *DescribeAgentsInput {
+	s.NextToken = &v
+	return s
+}
+
 type DescribeAgentsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -795,10 +1232,24 @@ func (s DescribeAgentsOutput) GoString() string {
 	return s.String()
 }
 
+// SetAgentsInfo sets the AgentsInfo field's value.
+func (s *DescribeAgentsOutput) SetAgentsInfo(v []*AgentInfo) *DescribeAgentsOutput {
+	s.AgentsInfo = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeAgentsOutput) SetNextToken(v string) *DescribeAgentsOutput {
+	s.NextToken = &v
+	return s
+}
+
 type DescribeConfigurationsInput struct {
 	_ struct{} `type:"structure"`
 
 	// One or more configuration IDs.
+	//
+	// ConfigurationIds is a required field
 	ConfigurationIds []*string `locationName:"configurationIds" type:"list" required:"true"`
 }
 
@@ -825,6 +1276,12 @@ func (s *DescribeConfigurationsInput) Validate() error {
 	return nil
 }
 
+// SetConfigurationIds sets the ConfigurationIds field's value.
+func (s *DescribeConfigurationsInput) SetConfigurationIds(v []*string) *DescribeConfigurationsInput {
+	s.ConfigurationIds = v
+	return s
+}
+
 type DescribeConfigurationsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -840,6 +1297,12 @@ func (s DescribeConfigurationsOutput) String() string {
 // GoString returns the string representation
 func (s DescribeConfigurationsOutput) GoString() string {
 	return s.String()
+}
+
+// SetConfigurations sets the Configurations field's value.
+func (s *DescribeConfigurationsOutput) SetConfigurations(v []map[string]*string) *DescribeConfigurationsOutput {
+	s.Configurations = v
+	return s
 }
 
 type DescribeExportConfigurationsInput struct {
@@ -868,6 +1331,24 @@ func (s DescribeExportConfigurationsInput) GoString() string {
 	return s.String()
 }
 
+// SetExportIds sets the ExportIds field's value.
+func (s *DescribeExportConfigurationsInput) SetExportIds(v []*string) *DescribeExportConfigurationsInput {
+	s.ExportIds = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeExportConfigurationsInput) SetMaxResults(v int64) *DescribeExportConfigurationsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeExportConfigurationsInput) SetNextToken(v string) *DescribeExportConfigurationsInput {
+	s.NextToken = &v
+	return s
+}
+
 type DescribeExportConfigurationsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -890,6 +1371,18 @@ func (s DescribeExportConfigurationsOutput) String() string {
 // GoString returns the string representation
 func (s DescribeExportConfigurationsOutput) GoString() string {
 	return s.String()
+}
+
+// SetExportsInfo sets the ExportsInfo field's value.
+func (s *DescribeExportConfigurationsOutput) SetExportsInfo(v []*ExportInfo) *DescribeExportConfigurationsOutput {
+	s.ExportsInfo = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeExportConfigurationsOutput) SetNextToken(v string) *DescribeExportConfigurationsOutput {
+	s.NextToken = &v
+	return s
 }
 
 type DescribeTagsInput struct {
@@ -937,6 +1430,24 @@ func (s *DescribeTagsInput) Validate() error {
 	return nil
 }
 
+// SetFilters sets the Filters field's value.
+func (s *DescribeTagsInput) SetFilters(v []*TagFilter) *DescribeTagsInput {
+	s.Filters = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeTagsInput) SetMaxResults(v int64) *DescribeTagsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeTagsInput) SetNextToken(v string) *DescribeTagsInput {
+	s.NextToken = &v
+	return s
+}
+
 type DescribeTagsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -956,6 +1467,18 @@ func (s DescribeTagsOutput) String() string {
 // GoString returns the string representation
 func (s DescribeTagsOutput) GoString() string {
 	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeTagsOutput) SetNextToken(v string) *DescribeTagsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *DescribeTagsOutput) SetTags(v []*ConfigurationTag) *DescribeTagsOutput {
+	s.Tags = v
+	return s
 }
 
 type ExportConfigurationsInput struct {
@@ -989,6 +1512,12 @@ func (s ExportConfigurationsOutput) GoString() string {
 	return s.String()
 }
 
+// SetExportId sets the ExportId field's value.
+func (s *ExportConfigurationsOutput) SetExportId(v string) *ExportConfigurationsOutput {
+	s.ExportId = &v
+	return s
+}
+
 // Information regarding the export status of the discovered data. The value
 // is an array of objects.
 type ExportInfo struct {
@@ -999,17 +1528,25 @@ type ExportInfo struct {
 	ConfigurationsDownloadUrl *string `locationName:"configurationsDownloadUrl" type:"string"`
 
 	// A unique identifier that you can use to query the export.
+	//
+	// ExportId is a required field
 	ExportId *string `locationName:"exportId" type:"string" required:"true"`
 
 	// The time the configuration data export was initiated.
+	//
+	// ExportRequestTime is a required field
 	ExportRequestTime *time.Time `locationName:"exportRequestTime" type:"timestamp" timestampFormat:"unix" required:"true"`
 
 	// The status of the configuration data export. The status can succeed, fail,
 	// or be in-progress.
+	//
+	// ExportStatus is a required field
 	ExportStatus *string `locationName:"exportStatus" type:"string" required:"true" enum:"ExportStatus"`
 
 	// Helpful status messages for API callers. For example: Too many exports in
 	// the last 6 hours. Export in progress. Export was successful.
+	//
+	// StatusMessage is a required field
 	StatusMessage *string `locationName:"statusMessage" type:"string" required:"true"`
 }
 
@@ -1023,6 +1560,36 @@ func (s ExportInfo) GoString() string {
 	return s.String()
 }
 
+// SetConfigurationsDownloadUrl sets the ConfigurationsDownloadUrl field's value.
+func (s *ExportInfo) SetConfigurationsDownloadUrl(v string) *ExportInfo {
+	s.ConfigurationsDownloadUrl = &v
+	return s
+}
+
+// SetExportId sets the ExportId field's value.
+func (s *ExportInfo) SetExportId(v string) *ExportInfo {
+	s.ExportId = &v
+	return s
+}
+
+// SetExportRequestTime sets the ExportRequestTime field's value.
+func (s *ExportInfo) SetExportRequestTime(v time.Time) *ExportInfo {
+	s.ExportRequestTime = &v
+	return s
+}
+
+// SetExportStatus sets the ExportStatus field's value.
+func (s *ExportInfo) SetExportStatus(v string) *ExportInfo {
+	s.ExportStatus = &v
+	return s
+}
+
+// SetStatusMessage sets the StatusMessage field's value.
+func (s *ExportInfo) SetStatusMessage(v string) *ExportInfo {
+	s.StatusMessage = &v
+	return s
+}
+
 // A filter that can use conditional operators.
 type Filter struct {
 	_ struct{} `type:"structure"`
@@ -1033,85 +1600,97 @@ type Filter struct {
 	// for a particular filter, the system differentiates the values using OR. Calling
 	// either DescribeConfigurations or ListConfigurations returns attributes of
 	// matching configuration items.
+	//
+	// Condition is a required field
 	Condition *string `locationName:"condition" type:"string" required:"true"`
 
 	// The name of the filter. The following filter names are allowed for SERVER
 	// configuration items.
 	//
-	//  Server     server.hostName
+	// Server
 	//
-	//    server.osName
+	//    * server.hostName
 	//
-	//    server.osVersion
+	//    * server.osName
 	//
-	//    server.configurationid
+	//    * server.osVersion
 	//
-	//    server.agentid
+	//    * server.configurationid
 	//
-	//   The name of the filter. The following filter names are allowed for PROCESS
+	//    * server.agentid
+	//
+	// The name of the filter. The following filter names are allowed for PROCESS
 	// configuration items.
 	//
-	//  Process     process.configurationid
+	// Process
 	//
-	//    process.name
+	//    * process.configurationid
 	//
-	//    process.commandLine
+	//    * process.name
 	//
-	//    server.configurationid
+	//    * process.commandLine
 	//
-	//    server.hostName
+	//    * server.configurationid
 	//
-	//    server.osName
+	//    * server.hostName
 	//
-	//    server.osVersion
+	//    * server.osName
 	//
-	//    server.agentId
+	//    * server.osVersion
 	//
-	//   The name of the filter. The following filter names are allowed for CONNECTION
+	//    * server.agentId
+	//
+	// The name of the filter. The following filter names are allowed for CONNECTION
 	// configuration items.
 	//
-	//  Connection     connection.sourceIp
+	// Connection
 	//
-	//    connection.destinationIp
+	//    * connection.sourceIp
 	//
-	//    connection.destinationPort
+	//    * connection.destinationIp
 	//
-	//    sourceProcess.configurationId
+	//    * connection.destinationPort
 	//
-	//    sourceProcess.name
+	//    * sourceProcess.configurationId
 	//
-	//    sourceProcess.commandLine
+	//    * sourceProcess.name
 	//
-	//    destinationProcess.configurationId
+	//    * sourceProcess.commandLine
 	//
-	//    destinationProcess.name
+	//    * destinationProcess.configurationId
 	//
-	//    destinationProcess.commandLine
+	//    * destinationProcess.name
 	//
-	//    sourceServer.configurationId
+	//    * destinationProcess.commandLine
 	//
-	//    sourceServer.hostName
+	//    * sourceServer.configurationId
 	//
-	//    sourceServer.osName
+	//    * sourceServer.hostName
 	//
-	//    sourceServer.osVersion
+	//    * sourceServer.osName
 	//
-	//    sourceServer.agentId
+	//    * sourceServer.osVersion
 	//
-	//    destinationServer.configurationId
+	//    * sourceServer.agentId
 	//
-	//    destinationServer.hostName
+	//    * destinationServer.configurationId
 	//
-	//    destinationServer.osName
+	//    * destinationServer.hostName
 	//
-	//    destinationServer.osVersion
+	//    * destinationServer.osName
 	//
-	//    destinationServer.agentId
+	//    * destinationServer.osVersion
+	//
+	//    * destinationServer.agentId
+	//
+	// Name is a required field
 	Name *string `locationName:"name" type:"string" required:"true"`
 
 	// A string value that you want to filter on. For example, if you choose the
 	// destinationServer.osVersion filter name, you could specify Ubuntu for the
 	// value.
+	//
+	// Values is a required field
 	Values []*string `locationName:"values" locationNameList:"item" type:"list" required:"true"`
 }
 
@@ -1144,15 +1723,35 @@ func (s *Filter) Validate() error {
 	return nil
 }
 
+// SetCondition sets the Condition field's value.
+func (s *Filter) SetCondition(v string) *Filter {
+	s.Condition = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Filter) SetName(v string) *Filter {
+	s.Name = &v
+	return s
+}
+
+// SetValues sets the Values field's value.
+func (s *Filter) SetValues(v []*string) *Filter {
+	s.Values = v
+	return s
+}
+
 type ListConfigurationsInput struct {
 	_ struct{} `type:"structure"`
 
 	// A valid configuration identified by the Discovery Service.
+	//
+	// ConfigurationType is a required field
 	ConfigurationType *string `locationName:"configurationType" type:"string" required:"true" enum:"ConfigurationItemType"`
 
 	// You can filter the list using a key-value format. For example:
 	//
-	//  {"key": "serverType", "value": "webServer"}
+	// {"key": "serverType", "value": "webServer"}
 	//
 	// You can separate these items by using logical operators.
 	Filters []*Filter `locationName:"filters" type:"list"`
@@ -1197,6 +1796,30 @@ func (s *ListConfigurationsInput) Validate() error {
 	return nil
 }
 
+// SetConfigurationType sets the ConfigurationType field's value.
+func (s *ListConfigurationsInput) SetConfigurationType(v string) *ListConfigurationsInput {
+	s.ConfigurationType = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *ListConfigurationsInput) SetFilters(v []*Filter) *ListConfigurationsInput {
+	s.Filters = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListConfigurationsInput) SetMaxResults(v int64) *ListConfigurationsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListConfigurationsInput) SetNextToken(v string) *ListConfigurationsInput {
+	s.NextToken = &v
+	return s
+}
+
 type ListConfigurationsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1218,6 +1841,18 @@ func (s ListConfigurationsOutput) GoString() string {
 	return s.String()
 }
 
+// SetConfigurations sets the Configurations field's value.
+func (s *ListConfigurationsOutput) SetConfigurations(v []map[string]*string) *ListConfigurationsOutput {
+	s.Configurations = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListConfigurationsOutput) SetNextToken(v string) *ListConfigurationsOutput {
+	s.NextToken = &v
+	return s
+}
+
 type StartDataCollectionByAgentIdsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1228,6 +1863,8 @@ type StartDataCollectionByAgentIdsInput struct {
 	// agents and you do not have permission to contact some of those agents, the
 	// system does not throw an exception. Instead, the system shows Failed in the
 	// Description field.
+	//
+	// AgentIds is a required field
 	AgentIds []*string `locationName:"agentIds" type:"list" required:"true"`
 }
 
@@ -1254,6 +1891,12 @@ func (s *StartDataCollectionByAgentIdsInput) Validate() error {
 	return nil
 }
 
+// SetAgentIds sets the AgentIds field's value.
+func (s *StartDataCollectionByAgentIdsInput) SetAgentIds(v []*string) *StartDataCollectionByAgentIdsInput {
+	s.AgentIds = v
+	return s
+}
+
 type StartDataCollectionByAgentIdsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1273,10 +1916,18 @@ func (s StartDataCollectionByAgentIdsOutput) GoString() string {
 	return s.String()
 }
 
+// SetAgentsConfigurationStatus sets the AgentsConfigurationStatus field's value.
+func (s *StartDataCollectionByAgentIdsOutput) SetAgentsConfigurationStatus(v []*AgentConfigurationStatus) *StartDataCollectionByAgentIdsOutput {
+	s.AgentsConfigurationStatus = v
+	return s
+}
+
 type StopDataCollectionByAgentIdsInput struct {
 	_ struct{} `type:"structure"`
 
 	// The IDs of the agents that you want to stop collecting data.
+	//
+	// AgentIds is a required field
 	AgentIds []*string `locationName:"agentIds" type:"list" required:"true"`
 }
 
@@ -1303,6 +1954,12 @@ func (s *StopDataCollectionByAgentIdsInput) Validate() error {
 	return nil
 }
 
+// SetAgentIds sets the AgentIds field's value.
+func (s *StopDataCollectionByAgentIdsInput) SetAgentIds(v []*string) *StopDataCollectionByAgentIdsInput {
+	s.AgentIds = v
+	return s
+}
+
 type StopDataCollectionByAgentIdsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1322,14 +1979,24 @@ func (s StopDataCollectionByAgentIdsOutput) GoString() string {
 	return s.String()
 }
 
+// SetAgentsConfigurationStatus sets the AgentsConfigurationStatus field's value.
+func (s *StopDataCollectionByAgentIdsOutput) SetAgentsConfigurationStatus(v []*AgentConfigurationStatus) *StopDataCollectionByAgentIdsOutput {
+	s.AgentsConfigurationStatus = v
+	return s
+}
+
 // Metadata that help you categorize IT assets.
 type Tag struct {
 	_ struct{} `type:"structure"`
 
 	// A type of tag to filter on.
+	//
+	// Key is a required field
 	Key *string `locationName:"key" type:"string" required:"true"`
 
 	// A value for a tag key to filter on.
+	//
+	// Value is a required field
 	Value *string `locationName:"value" type:"string" required:"true"`
 }
 
@@ -1359,14 +2026,30 @@ func (s *Tag) Validate() error {
 	return nil
 }
 
+// SetKey sets the Key field's value.
+func (s *Tag) SetKey(v string) *Tag {
+	s.Key = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *Tag) SetValue(v string) *Tag {
+	s.Value = &v
+	return s
+}
+
 // The name of a tag filter. Valid names are: tagKey, tagValue, configurationId.
 type TagFilter struct {
 	_ struct{} `type:"structure"`
 
 	// A name of a tag filter.
+	//
+	// Name is a required field
 	Name *string `locationName:"name" type:"string" required:"true"`
 
 	// Values of a tag filter.
+	//
+	// Values is a required field
 	Values []*string `locationName:"values" locationNameList:"item" type:"list" required:"true"`
 }
 
@@ -1396,35 +2079,56 @@ func (s *TagFilter) Validate() error {
 	return nil
 }
 
+// SetName sets the Name field's value.
+func (s *TagFilter) SetName(v string) *TagFilter {
+	s.Name = &v
+	return s
+}
+
+// SetValues sets the Values field's value.
+func (s *TagFilter) SetValues(v []*string) *TagFilter {
+	s.Values = v
+	return s
+}
+
 const (
-	// @enum AgentStatus
+	// AgentStatusHealthy is a AgentStatus enum value
 	AgentStatusHealthy = "HEALTHY"
-	// @enum AgentStatus
+
+	// AgentStatusUnhealthy is a AgentStatus enum value
 	AgentStatusUnhealthy = "UNHEALTHY"
-	// @enum AgentStatus
+
+	// AgentStatusRunning is a AgentStatus enum value
 	AgentStatusRunning = "RUNNING"
-	// @enum AgentStatus
+
+	// AgentStatusUnknown is a AgentStatus enum value
 	AgentStatusUnknown = "UNKNOWN"
-	// @enum AgentStatus
+
+	// AgentStatusBlacklisted is a AgentStatus enum value
 	AgentStatusBlacklisted = "BLACKLISTED"
-	// @enum AgentStatus
+
+	// AgentStatusShutdown is a AgentStatus enum value
 	AgentStatusShutdown = "SHUTDOWN"
 )
 
 const (
-	// @enum ConfigurationItemType
+	// ConfigurationItemTypeServer is a ConfigurationItemType enum value
 	ConfigurationItemTypeServer = "SERVER"
-	// @enum ConfigurationItemType
+
+	// ConfigurationItemTypeProcess is a ConfigurationItemType enum value
 	ConfigurationItemTypeProcess = "PROCESS"
-	// @enum ConfigurationItemType
+
+	// ConfigurationItemTypeConnection is a ConfigurationItemType enum value
 	ConfigurationItemTypeConnection = "CONNECTION"
 )
 
 const (
-	// @enum ExportStatus
+	// ExportStatusFailed is a ExportStatus enum value
 	ExportStatusFailed = "FAILED"
-	// @enum ExportStatus
+
+	// ExportStatusSucceeded is a ExportStatus enum value
 	ExportStatusSucceeded = "SUCCEEDED"
-	// @enum ExportStatus
+
+	// ExportStatusInProgress is a ExportStatus enum value
 	ExportStatusInProgress = "IN_PROGRESS"
 )

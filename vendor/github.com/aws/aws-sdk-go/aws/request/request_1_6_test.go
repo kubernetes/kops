@@ -18,7 +18,7 @@ import (
 // go version 1.4 and 1.5 do not return an error. Version 1.5 will url encode
 // the uri while 1.4 will not
 func TestRequestInvalidEndpoint(t *testing.T) {
-	endpoint, _ := endpoints.NormalizeEndpoint("localhost:80 ", "test-service", "test-region", false)
+	endpoint, _ := endpoints.NormalizeEndpoint("localhost:80 ", "test-service", "test-region", false, false)
 	r := request.New(
 		aws.Config{},
 		metadata.ClientInfo{Endpoint: endpoint},

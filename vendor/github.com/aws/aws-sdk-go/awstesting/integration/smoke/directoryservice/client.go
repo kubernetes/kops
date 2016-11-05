@@ -6,11 +6,11 @@ package directoryservice
 import (
 	"github.com/aws/aws-sdk-go/awstesting/integration/smoke"
 	"github.com/aws/aws-sdk-go/service/directoryservice"
-	. "github.com/lsegal/gucumber"
+	"github.com/gucumber/gucumber"
 )
 
 func init() {
-	Before("@directoryservice", func() {
-		World["client"] = directoryservice.New(smoke.Session)
+	gucumber.Before("@directoryservice", func() {
+		gucumber.World["client"] = directoryservice.New(smoke.Session)
 	})
 }
