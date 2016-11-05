@@ -1540,7 +1540,7 @@ func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*ResourceTracker,
 	var trackers []*ResourceTracker
 
 	for i := range zones {
-		// Be super careful becasue we close over this later (in groupDeleter)
+		// Be super careful because we close over this later (in groupDeleter)
 		zone := zones[i]
 
 		hostedZoneID := strings.TrimPrefix(aws.StringValue(zone.Id), "/hostedzone/")
