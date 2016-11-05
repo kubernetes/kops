@@ -41,6 +41,12 @@
 			<div class="expanded">
 				<h2 class="toggleButton" title="Click to hide Overview section">Overview ▾</h2>
 				{{comment_html .Doc}}
+				<p>
+				{{if ne $.IfaceLink ""}}
+				The stub package, <a href={{$.IfaceLink}}>{{$.PDoc.Name}}iface</a>, can be used to provide alternative implementations of service clients, 
+				such as mocking the client for testing.
+				{{end}}
+				</p?>
 			</div>
 		</div>
 		{{example_html $ ""}}

@@ -433,13 +433,13 @@ func TestUploadOrderMultiBufferedReader(t *testing.T) {
 	assert.Equal(t, []int{1024 * 1024 * 2, 1024 * 1024 * 5, 1024 * 1024 * 5}, parts)
 }
 
-func TestUploadOrderMultiBufferedReaderUnexpectedEOF(t *testing.T) {
+func TestUploadOrderMultiBufferedReaderPartial(t *testing.T) {
 	s, ops, args := loggingSvc(emptyList)
 	mgr := s3manager.NewUploaderWithClient(s)
 	_, err := mgr.Upload(&s3manager.UploadInput{
 		Bucket: aws.String("Bucket"),
 		Key:    aws.String("Key"),
-		Body:   &sizedReader{size: 1024 * 1024 * 12, err: io.ErrUnexpectedEOF},
+		Body:   &sizedReader{size: 1024 * 1024 * 12, err: io.EOF},
 	})
 
 	assert.NoError(t, err)
@@ -456,8 +456,7 @@ func TestUploadOrderMultiBufferedReaderUnexpectedEOF(t *testing.T) {
 }
 
 // TestUploadOrderMultiBufferedReaderEOF tests the edge case where the
-// file size is the same as part size, which means nextReader will
-// return io.EOF rather than io.ErrUnexpectedEOF
+// file size is the same as part size.
 func TestUploadOrderMultiBufferedReaderEOF(t *testing.T) {
 	s, ops, args := loggingSvc(emptyList)
 	mgr := s3manager.NewUploaderWithClient(s)
@@ -553,6 +552,44 @@ func TestUploadInputS3PutObjectInputPairity(t *testing.T) {
 	assert.Empty(t, aOnly, "s3.PutObjectInput")
 	assert.Empty(t, bOnly, "s3Manager.UploadInput")
 }
+
+type testIncompleteReader struct {
+	Buf   []byte
+	Count int
+}
+
+func (r *testIncompleteReader) Read(p []byte) (n int, err error) {
+	if r.Count < 0 {
+		return 0, io.ErrUnexpectedEOF
+	}
+
+	r.Count--
+	return copy(p, r.Buf), nil
+}
+
+func TestUploadUnexpectedEOF(t *testing.T) {
+	s, ops, args := loggingSvc(emptyList)
+	mgr := s3manager.NewUploaderWithClient(s, func(u *s3manager.Uploader) {
+		u.Concurrency = 1
+	})
+	_, err := mgr.Upload(&s3manager.UploadInput{
+		Bucket: aws.String("Bucket"),
+		Key:    aws.String("Key"),
+		Body: &testIncompleteReader{
+			Buf:   make([]byte, 1024*1024*5),
+			Count: 1,
+		},
+	})
+
+	assert.Error(t, err)
+	assert.Equal(t, "CreateMultipartUpload", (*ops)[0])
+	assert.Equal(t, "UploadPart", (*ops)[1])
+	assert.Equal(t, "AbortMultipartUpload", (*ops)[len(*ops)-1])
+
+	// Part lengths
+	assert.Equal(t, 1024*1024*5, buflen(val((*args)[1], "Body")))
+}
+
 func compareStructType(a, b reflect.Type) map[string]int {
 	if a.Kind() != reflect.Struct || b.Kind() != reflect.Struct {
 		panic(fmt.Sprintf("types must both be structs, got %v and %v", a.Kind(), b.Kind()))
@@ -592,4 +629,44 @@ func enumFields(v reflect.Type) []reflect.StructField {
 	}
 
 	return fields
+}
+
+type fooReaderAt struct{}
+
+func (r *fooReaderAt) Read(p []byte) (n int, err error) {
+	return 12, io.EOF
+}
+
+func (r *fooReaderAt) ReadAt(p []byte, off int64) (n int, err error) {
+	return 12, io.EOF
+}
+
+func TestReaderAt(t *testing.T) {
+	svc := s3.New(unit.Session)
+	svc.Handlers.Unmarshal.Clear()
+	svc.Handlers.UnmarshalMeta.Clear()
+	svc.Handlers.UnmarshalError.Clear()
+	svc.Handlers.Send.Clear()
+
+	contentLen := ""
+	svc.Handlers.Send.PushBack(func(r *request.Request) {
+		contentLen = r.HTTPRequest.Header.Get("Content-Length")
+		r.HTTPResponse = &http.Response{
+			StatusCode: 200,
+			Body:       ioutil.NopCloser(bytes.NewReader([]byte{})),
+		}
+	})
+
+	mgr := s3manager.NewUploaderWithClient(svc, func(u *s3manager.Uploader) {
+		u.Concurrency = 1
+	})
+
+	_, err := mgr.Upload(&s3manager.UploadInput{
+		Bucket: aws.String("Bucket"),
+		Key:    aws.String("Key"),
+		Body:   &fooReaderAt{},
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, contentLen, "12")
 }

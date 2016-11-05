@@ -18,8 +18,7 @@ import (
 //
 // The endpoint for configuration service requests is region-specific: cloudsearch.region.amazonaws.com.
 // For example, cloudsearch.us-east-1.amazonaws.com. For a current list of supported
-// regions and endpoints, see Regions and Endpoints (http://docs.aws.amazon.com/general/latest/gr/rande.html#cloudsearch_region"
-// target="_blank).
+// regions and endpoints, see Regions and Endpoints (http://docs.aws.amazon.com/general/latest/gr/rande.html#cloudsearch_region).
 //The service client's operations are safe to be used concurrently.
 // It is not safe to mutate any of the client's properties though.
 type CloudSearch struct {

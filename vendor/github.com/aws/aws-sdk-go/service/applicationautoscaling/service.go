@@ -15,36 +15,37 @@ import (
 // elastic AWS resources. With Application Auto Scaling, you can automatically
 // scale your AWS resources, with an experience similar to that of Auto Scaling.
 //
-//  At this time, Application Auto Scaling only supports scaling Amazon ECS
-// services.
+// Application Auto Scaling supports scaling the following AWS resources:
 //
-//  For example, you can use Application Auto Scaling to accomplish the following
-// tasks:
+//    * Amazon ECS services
 //
-//   Define scaling policies for automatically adjusting your application’s
-// resources
+//    * Amazon EC2 Spot fleet instances
 //
-//   Scale your resources in response to CloudWatch alarms
+// You can use Application Auto Scaling to accomplish the following tasks:
 //
-//   View history of your scaling events
+//    * Define scaling policies for automatically adjusting your AWS resources
 //
-//   Application Auto Scaling is available in the following regions:
+//    * Scale your resources in response to CloudWatch alarms
 //
-//    us-east-1
+//    * View history of your scaling events
 //
-//    us-west-1
+// Application Auto Scaling is available in the following regions:
 //
-//    us-west-2
+//    * us-east-1
 //
-//    ap-southeast-1
+//    * us-west-1
 //
-//    ap-southeast-2
+//    * us-west-2
 //
-//    ap-northeast-1
+//    * ap-southeast-1
 //
-//    eu-central-1
+//    * ap-southeast-2
 //
-//    eu-west-1
+//    * ap-northeast-1
+//
+//    * eu-central-1
+//
+//    * eu-west-1
 //The service client's operations are safe to be used concurrently.
 // It is not safe to mutate any of the client's properties though.
 type ApplicationAutoScaling struct {

@@ -4,6 +4,7 @@
 package directconnect
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/awsutil"
@@ -16,6 +17,8 @@ const opAllocateConnectionOnInterconnect = "AllocateConnectionOnInterconnect"
 // client's request for the AllocateConnectionOnInterconnect operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See AllocateConnectionOnInterconnect for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -51,12 +54,31 @@ func (c *DirectConnect) AllocateConnectionOnInterconnectRequest(input *AllocateC
 	return
 }
 
+// AllocateConnectionOnInterconnect API operation for AWS Direct Connect.
+//
 // Creates a hosted connection on an interconnect.
 //
 // Allocates a VLAN number and a specified amount of bandwidth for use by a
 // hosted connection on the given interconnect.
 //
-//  This is intended for use by AWS Direct Connect partners only.
+// This is intended for use by AWS Direct Connect partners only.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation AllocateConnectionOnInterconnect for usage and error information.
+//
+// Returned Error Codes:
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
 func (c *DirectConnect) AllocateConnectionOnInterconnect(input *AllocateConnectionOnInterconnectInput) (*Connection, error) {
 	req, out := c.AllocateConnectionOnInterconnectRequest(input)
 	err := req.Send()
@@ -69,6 +91,8 @@ const opAllocatePrivateVirtualInterface = "AllocatePrivateVirtualInterface"
 // client's request for the AllocatePrivateVirtualInterface operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See AllocatePrivateVirtualInterface for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -104,15 +128,34 @@ func (c *DirectConnect) AllocatePrivateVirtualInterfaceRequest(input *AllocatePr
 	return
 }
 
+// AllocatePrivateVirtualInterface API operation for AWS Direct Connect.
+//
 // Provisions a private virtual interface to be owned by a different customer.
 //
 // The owner of a connection calls this function to provision a private virtual
 // interface which will be owned by another AWS customer.
 //
-// Virtual interfaces created using this function must be confirmed by the
-// virtual interface owner by calling ConfirmPrivateVirtualInterface. Until
-// this step has been completed, the virtual interface will be in 'Confirming'
-// state, and will not be available for handling traffic.
+// Virtual interfaces created using this function must be confirmed by the virtual
+// interface owner by calling ConfirmPrivateVirtualInterface. Until this step
+// has been completed, the virtual interface will be in 'Confirming' state,
+// and will not be available for handling traffic.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation AllocatePrivateVirtualInterface for usage and error information.
+//
+// Returned Error Codes:
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
 func (c *DirectConnect) AllocatePrivateVirtualInterface(input *AllocatePrivateVirtualInterfaceInput) (*VirtualInterface, error) {
 	req, out := c.AllocatePrivateVirtualInterfaceRequest(input)
 	err := req.Send()
@@ -125,6 +168,8 @@ const opAllocatePublicVirtualInterface = "AllocatePublicVirtualInterface"
 // client's request for the AllocatePublicVirtualInterface operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See AllocatePublicVirtualInterface for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -160,15 +205,34 @@ func (c *DirectConnect) AllocatePublicVirtualInterfaceRequest(input *AllocatePub
 	return
 }
 
+// AllocatePublicVirtualInterface API operation for AWS Direct Connect.
+//
 // Provisions a public virtual interface to be owned by a different customer.
 //
 // The owner of a connection calls this function to provision a public virtual
 // interface which will be owned by another AWS customer.
 //
-// Virtual interfaces created using this function must be confirmed by the
-// virtual interface owner by calling ConfirmPublicVirtualInterface. Until this
-// step has been completed, the virtual interface will be in 'Confirming' state,
+// Virtual interfaces created using this function must be confirmed by the virtual
+// interface owner by calling ConfirmPublicVirtualInterface. Until this step
+// has been completed, the virtual interface will be in 'Confirming' state,
 // and will not be available for handling traffic.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation AllocatePublicVirtualInterface for usage and error information.
+//
+// Returned Error Codes:
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
 func (c *DirectConnect) AllocatePublicVirtualInterface(input *AllocatePublicVirtualInterfaceInput) (*VirtualInterface, error) {
 	req, out := c.AllocatePublicVirtualInterfaceRequest(input)
 	err := req.Send()
@@ -181,6 +245,8 @@ const opConfirmConnection = "ConfirmConnection"
 // client's request for the ConfirmConnection operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See ConfirmConnection for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -216,11 +282,30 @@ func (c *DirectConnect) ConfirmConnectionRequest(input *ConfirmConnectionInput) 
 	return
 }
 
+// ConfirmConnection API operation for AWS Direct Connect.
+//
 // Confirm the creation of a hosted connection on an interconnect.
 //
 // Upon creation, the hosted connection is initially in the 'Ordering' state,
 // and will remain in this state until the owner calls ConfirmConnection to
 // confirm creation of the hosted connection.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation ConfirmConnection for usage and error information.
+//
+// Returned Error Codes:
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
 func (c *DirectConnect) ConfirmConnection(input *ConfirmConnectionInput) (*ConfirmConnectionOutput, error) {
 	req, out := c.ConfirmConnectionRequest(input)
 	err := req.Send()
@@ -233,6 +318,8 @@ const opConfirmPrivateVirtualInterface = "ConfirmPrivateVirtualInterface"
 // client's request for the ConfirmPrivateVirtualInterface operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See ConfirmPrivateVirtualInterface for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -268,11 +355,30 @@ func (c *DirectConnect) ConfirmPrivateVirtualInterfaceRequest(input *ConfirmPriv
 	return
 }
 
+// ConfirmPrivateVirtualInterface API operation for AWS Direct Connect.
+//
 // Accept ownership of a private virtual interface created by another customer.
 //
 // After the virtual interface owner calls this function, the virtual interface
 // will be created and attached to the given virtual private gateway, and will
 // be available for handling traffic.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation ConfirmPrivateVirtualInterface for usage and error information.
+//
+// Returned Error Codes:
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
 func (c *DirectConnect) ConfirmPrivateVirtualInterface(input *ConfirmPrivateVirtualInterfaceInput) (*ConfirmPrivateVirtualInterfaceOutput, error) {
 	req, out := c.ConfirmPrivateVirtualInterfaceRequest(input)
 	err := req.Send()
@@ -285,6 +391,8 @@ const opConfirmPublicVirtualInterface = "ConfirmPublicVirtualInterface"
 // client's request for the ConfirmPublicVirtualInterface operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See ConfirmPublicVirtualInterface for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -320,10 +428,29 @@ func (c *DirectConnect) ConfirmPublicVirtualInterfaceRequest(input *ConfirmPubli
 	return
 }
 
+// ConfirmPublicVirtualInterface API operation for AWS Direct Connect.
+//
 // Accept ownership of a public virtual interface created by another customer.
 //
 // After the virtual interface owner calls this function, the specified virtual
 // interface will be created and made available for handling traffic.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation ConfirmPublicVirtualInterface for usage and error information.
+//
+// Returned Error Codes:
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
 func (c *DirectConnect) ConfirmPublicVirtualInterface(input *ConfirmPublicVirtualInterfaceInput) (*ConfirmPublicVirtualInterfaceOutput, error) {
 	req, out := c.ConfirmPublicVirtualInterfaceRequest(input)
 	err := req.Send()
@@ -336,6 +463,8 @@ const opCreateConnection = "CreateConnection"
 // client's request for the CreateConnection operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See CreateConnection for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -371,6 +500,8 @@ func (c *DirectConnect) CreateConnectionRequest(input *CreateConnectionInput) (r
 	return
 }
 
+// CreateConnection API operation for AWS Direct Connect.
+//
 // Creates a new connection between the customer network and a specific AWS
 // Direct Connect location.
 //
@@ -381,6 +512,23 @@ func (c *DirectConnect) CreateConnectionRequest(input *CreateConnectionInput) (r
 // in the region it is associated with. You can establish connections with AWS
 // Direct Connect locations in multiple regions, but a connection in one region
 // does not provide connectivity to other regions.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation CreateConnection for usage and error information.
+//
+// Returned Error Codes:
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
 func (c *DirectConnect) CreateConnection(input *CreateConnectionInput) (*Connection, error) {
 	req, out := c.CreateConnectionRequest(input)
 	err := req.Send()
@@ -393,6 +541,8 @@ const opCreateInterconnect = "CreateInterconnect"
 // client's request for the CreateInterconnect operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See CreateInterconnect for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -428,6 +578,8 @@ func (c *DirectConnect) CreateInterconnectRequest(input *CreateInterconnectInput
 	return
 }
 
+// CreateInterconnect API operation for AWS Direct Connect.
+//
 // Creates a new interconnect between a AWS Direct Connect partner's network
 // and a specific AWS Direct Connect location.
 //
@@ -445,7 +597,24 @@ func (c *DirectConnect) CreateInterconnectRequest(input *CreateInterconnectInput
 // on their connection, using the VLAN assigned to them by the AWS Direct Connect
 // partner.
 //
-//  This is intended for use by AWS Direct Connect partners only.
+// This is intended for use by AWS Direct Connect partners only.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation CreateInterconnect for usage and error information.
+//
+// Returned Error Codes:
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
 func (c *DirectConnect) CreateInterconnect(input *CreateInterconnectInput) (*Interconnect, error) {
 	req, out := c.CreateInterconnectRequest(input)
 	err := req.Send()
@@ -458,6 +627,8 @@ const opCreatePrivateVirtualInterface = "CreatePrivateVirtualInterface"
 // client's request for the CreatePrivateVirtualInterface operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See CreatePrivateVirtualInterface for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -493,9 +664,28 @@ func (c *DirectConnect) CreatePrivateVirtualInterfaceRequest(input *CreatePrivat
 	return
 }
 
+// CreatePrivateVirtualInterface API operation for AWS Direct Connect.
+//
 // Creates a new private virtual interface. A virtual interface is the VLAN
 // that transports AWS Direct Connect traffic. A private virtual interface supports
 // sending traffic to a single virtual private cloud (VPC).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation CreatePrivateVirtualInterface for usage and error information.
+//
+// Returned Error Codes:
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
 func (c *DirectConnect) CreatePrivateVirtualInterface(input *CreatePrivateVirtualInterfaceInput) (*VirtualInterface, error) {
 	req, out := c.CreatePrivateVirtualInterfaceRequest(input)
 	err := req.Send()
@@ -508,6 +698,8 @@ const opCreatePublicVirtualInterface = "CreatePublicVirtualInterface"
 // client's request for the CreatePublicVirtualInterface operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See CreatePublicVirtualInterface for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -543,10 +735,29 @@ func (c *DirectConnect) CreatePublicVirtualInterfaceRequest(input *CreatePublicV
 	return
 }
 
+// CreatePublicVirtualInterface API operation for AWS Direct Connect.
+//
 // Creates a new public virtual interface. A virtual interface is the VLAN that
 // transports AWS Direct Connect traffic. A public virtual interface supports
 // sending traffic to public services of AWS such as Amazon Simple Storage Service
 // (Amazon S3).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation CreatePublicVirtualInterface for usage and error information.
+//
+// Returned Error Codes:
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
 func (c *DirectConnect) CreatePublicVirtualInterface(input *CreatePublicVirtualInterfaceInput) (*VirtualInterface, error) {
 	req, out := c.CreatePublicVirtualInterfaceRequest(input)
 	err := req.Send()
@@ -559,6 +770,8 @@ const opDeleteConnection = "DeleteConnection"
 // client's request for the DeleteConnection operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DeleteConnection for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -594,12 +807,31 @@ func (c *DirectConnect) DeleteConnectionRequest(input *DeleteConnectionInput) (r
 	return
 }
 
+// DeleteConnection API operation for AWS Direct Connect.
+//
 // Deletes the connection.
 //
 // Deleting a connection only stops the AWS Direct Connect port hour and data
 // transfer charges. You need to cancel separately with the providers any services
 // or charges for cross-connects or network circuits that connect you to the
 // AWS Direct Connect location.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation DeleteConnection for usage and error information.
+//
+// Returned Error Codes:
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
 func (c *DirectConnect) DeleteConnection(input *DeleteConnectionInput) (*Connection, error) {
 	req, out := c.DeleteConnectionRequest(input)
 	err := req.Send()
@@ -612,6 +844,8 @@ const opDeleteInterconnect = "DeleteInterconnect"
 // client's request for the DeleteInterconnect operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DeleteInterconnect for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -647,9 +881,28 @@ func (c *DirectConnect) DeleteInterconnectRequest(input *DeleteInterconnectInput
 	return
 }
 
+// DeleteInterconnect API operation for AWS Direct Connect.
+//
 // Deletes the specified interconnect.
 //
-//  This is intended for use by AWS Direct Connect partners only.
+// This is intended for use by AWS Direct Connect partners only.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation DeleteInterconnect for usage and error information.
+//
+// Returned Error Codes:
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
 func (c *DirectConnect) DeleteInterconnect(input *DeleteInterconnectInput) (*DeleteInterconnectOutput, error) {
 	req, out := c.DeleteInterconnectRequest(input)
 	err := req.Send()
@@ -662,6 +915,8 @@ const opDeleteVirtualInterface = "DeleteVirtualInterface"
 // client's request for the DeleteVirtualInterface operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DeleteVirtualInterface for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -697,7 +952,26 @@ func (c *DirectConnect) DeleteVirtualInterfaceRequest(input *DeleteVirtualInterf
 	return
 }
 
+// DeleteVirtualInterface API operation for AWS Direct Connect.
+//
 // Deletes a virtual interface.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation DeleteVirtualInterface for usage and error information.
+//
+// Returned Error Codes:
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
 func (c *DirectConnect) DeleteVirtualInterface(input *DeleteVirtualInterfaceInput) (*DeleteVirtualInterfaceOutput, error) {
 	req, out := c.DeleteVirtualInterfaceRequest(input)
 	err := req.Send()
@@ -710,6 +984,8 @@ const opDescribeConnectionLoa = "DescribeConnectionLoa"
 // client's request for the DescribeConnectionLoa operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeConnectionLoa for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -745,6 +1021,8 @@ func (c *DirectConnect) DescribeConnectionLoaRequest(input *DescribeConnectionLo
 	return
 }
 
+// DescribeConnectionLoa API operation for AWS Direct Connect.
+//
 // Returns the LOA-CFA for a Connection.
 //
 // The Letter of Authorization - Connecting Facility Assignment (LOA-CFA) is
@@ -752,6 +1030,23 @@ func (c *DirectConnect) DescribeConnectionLoaRequest(input *DescribeConnectionLo
 // your cross connect to AWS at the colocation facility. For more information,
 // see Requesting Cross Connects at AWS Direct Connect Locations (http://docs.aws.amazon.com/directconnect/latest/UserGuide/Colocation.html)
 // in the AWS Direct Connect user guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation DescribeConnectionLoa for usage and error information.
+//
+// Returned Error Codes:
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
 func (c *DirectConnect) DescribeConnectionLoa(input *DescribeConnectionLoaInput) (*DescribeConnectionLoaOutput, error) {
 	req, out := c.DescribeConnectionLoaRequest(input)
 	err := req.Send()
@@ -764,6 +1059,8 @@ const opDescribeConnections = "DescribeConnections"
 // client's request for the DescribeConnections operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeConnections for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -799,9 +1096,28 @@ func (c *DirectConnect) DescribeConnectionsRequest(input *DescribeConnectionsInp
 	return
 }
 
+// DescribeConnections API operation for AWS Direct Connect.
+//
 // Displays all connections in this region.
 //
 // If a connection ID is provided, the call returns only that particular connection.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation DescribeConnections for usage and error information.
+//
+// Returned Error Codes:
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
 func (c *DirectConnect) DescribeConnections(input *DescribeConnectionsInput) (*Connections, error) {
 	req, out := c.DescribeConnectionsRequest(input)
 	err := req.Send()
@@ -814,6 +1130,8 @@ const opDescribeConnectionsOnInterconnect = "DescribeConnectionsOnInterconnect"
 // client's request for the DescribeConnectionsOnInterconnect operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeConnectionsOnInterconnect for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -849,9 +1167,28 @@ func (c *DirectConnect) DescribeConnectionsOnInterconnectRequest(input *Describe
 	return
 }
 
+// DescribeConnectionsOnInterconnect API operation for AWS Direct Connect.
+//
 // Return a list of connections that have been provisioned on the given interconnect.
 //
-//  This is intended for use by AWS Direct Connect partners only.
+// This is intended for use by AWS Direct Connect partners only.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation DescribeConnectionsOnInterconnect for usage and error information.
+//
+// Returned Error Codes:
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
 func (c *DirectConnect) DescribeConnectionsOnInterconnect(input *DescribeConnectionsOnInterconnectInput) (*Connections, error) {
 	req, out := c.DescribeConnectionsOnInterconnectRequest(input)
 	err := req.Send()
@@ -864,6 +1201,8 @@ const opDescribeInterconnectLoa = "DescribeInterconnectLoa"
 // client's request for the DescribeInterconnectLoa operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeInterconnectLoa for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -899,6 +1238,8 @@ func (c *DirectConnect) DescribeInterconnectLoaRequest(input *DescribeInterconne
 	return
 }
 
+// DescribeInterconnectLoa API operation for AWS Direct Connect.
+//
 // Returns the LOA-CFA for an Interconnect.
 //
 // The Letter of Authorization - Connecting Facility Assignment (LOA-CFA) is
@@ -906,6 +1247,23 @@ func (c *DirectConnect) DescribeInterconnectLoaRequest(input *DescribeInterconne
 // colocation facility. For more information, see Requesting Cross Connects
 // at AWS Direct Connect Locations (http://docs.aws.amazon.com/directconnect/latest/UserGuide/Colocation.html)
 // in the AWS Direct Connect user guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation DescribeInterconnectLoa for usage and error information.
+//
+// Returned Error Codes:
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
 func (c *DirectConnect) DescribeInterconnectLoa(input *DescribeInterconnectLoaInput) (*DescribeInterconnectLoaOutput, error) {
 	req, out := c.DescribeInterconnectLoaRequest(input)
 	err := req.Send()
@@ -918,6 +1276,8 @@ const opDescribeInterconnects = "DescribeInterconnects"
 // client's request for the DescribeInterconnects operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeInterconnects for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -953,9 +1313,28 @@ func (c *DirectConnect) DescribeInterconnectsRequest(input *DescribeInterconnect
 	return
 }
 
+// DescribeInterconnects API operation for AWS Direct Connect.
+//
 // Returns a list of interconnects owned by the AWS account.
 //
 // If an interconnect ID is provided, it will only return this particular interconnect.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation DescribeInterconnects for usage and error information.
+//
+// Returned Error Codes:
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
 func (c *DirectConnect) DescribeInterconnects(input *DescribeInterconnectsInput) (*DescribeInterconnectsOutput, error) {
 	req, out := c.DescribeInterconnectsRequest(input)
 	err := req.Send()
@@ -968,6 +1347,8 @@ const opDescribeLocations = "DescribeLocations"
 // client's request for the DescribeLocations operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeLocations for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -1003,11 +1384,99 @@ func (c *DirectConnect) DescribeLocationsRequest(input *DescribeLocationsInput) 
 	return
 }
 
+// DescribeLocations API operation for AWS Direct Connect.
+//
 // Returns the list of AWS Direct Connect locations in the current AWS region.
 // These are the locations that may be selected when calling CreateConnection
 // or CreateInterconnect.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation DescribeLocations for usage and error information.
+//
+// Returned Error Codes:
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
 func (c *DirectConnect) DescribeLocations(input *DescribeLocationsInput) (*DescribeLocationsOutput, error) {
 	req, out := c.DescribeLocationsRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opDescribeTags = "DescribeTags"
+
+// DescribeTagsRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeTags operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See DescribeTags for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the DescribeTags method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the DescribeTagsRequest method.
+//    req, resp := client.DescribeTagsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+func (c *DirectConnect) DescribeTagsRequest(input *DescribeTagsInput) (req *request.Request, output *DescribeTagsOutput) {
+	op := &request.Operation{
+		Name:       opDescribeTags,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DescribeTagsInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &DescribeTagsOutput{}
+	req.Data = output
+	return
+}
+
+// DescribeTags API operation for AWS Direct Connect.
+//
+// Describes the tags associated with the specified Direct Connect resources.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation DescribeTags for usage and error information.
+//
+// Returned Error Codes:
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
+func (c *DirectConnect) DescribeTags(input *DescribeTagsInput) (*DescribeTagsOutput, error) {
+	req, out := c.DescribeTagsRequest(input)
 	err := req.Send()
 	return out, err
 }
@@ -1018,6 +1487,8 @@ const opDescribeVirtualGateways = "DescribeVirtualGateways"
 // client's request for the DescribeVirtualGateways operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeVirtualGateways for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -1053,6 +1524,8 @@ func (c *DirectConnect) DescribeVirtualGatewaysRequest(input *DescribeVirtualGat
 	return
 }
 
+// DescribeVirtualGateways API operation for AWS Direct Connect.
+//
 // Returns a list of virtual private gateways owned by the AWS account.
 //
 // You can create one or more AWS Direct Connect private virtual interfaces
@@ -1060,6 +1533,23 @@ func (c *DirectConnect) DescribeVirtualGatewaysRequest(input *DescribeVirtualGat
 // via Amazon Virtual Private Cloud (VPC) console or the EC2 CreateVpnGateway
 // (http://docs.aws.amazon.com/AWSEC2/latest/APIReference/ApiReference-query-CreateVpnGateway.html)
 // action.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation DescribeVirtualGateways for usage and error information.
+//
+// Returned Error Codes:
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
 func (c *DirectConnect) DescribeVirtualGateways(input *DescribeVirtualGatewaysInput) (*DescribeVirtualGatewaysOutput, error) {
 	req, out := c.DescribeVirtualGatewaysRequest(input)
 	err := req.Send()
@@ -1072,6 +1562,8 @@ const opDescribeVirtualInterfaces = "DescribeVirtualInterfaces"
 // client's request for the DescribeVirtualInterfaces operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeVirtualInterfaces for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -1107,20 +1599,189 @@ func (c *DirectConnect) DescribeVirtualInterfacesRequest(input *DescribeVirtualI
 	return
 }
 
+// DescribeVirtualInterfaces API operation for AWS Direct Connect.
+//
 // Displays all virtual interfaces for an AWS account. Virtual interfaces deleted
 // fewer than 15 minutes before DescribeVirtualInterfaces is called are also
 // returned. If a connection ID is included then only virtual interfaces associated
 // with this connection will be returned. If a virtual interface ID is included
 // then only a single virtual interface will be returned.
 //
-// A virtual interface (VLAN) transmits the traffic between the AWS Direct
-// Connect location and the customer.
+// A virtual interface (VLAN) transmits the traffic between the AWS Direct Connect
+// location and the customer.
 //
 // If a connection ID is provided, only virtual interfaces provisioned on the
 // specified connection will be returned. If a virtual interface ID is provided,
 // only this particular virtual interface will be returned.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation DescribeVirtualInterfaces for usage and error information.
+//
+// Returned Error Codes:
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
 func (c *DirectConnect) DescribeVirtualInterfaces(input *DescribeVirtualInterfacesInput) (*DescribeVirtualInterfacesOutput, error) {
 	req, out := c.DescribeVirtualInterfacesRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opTagResource = "TagResource"
+
+// TagResourceRequest generates a "aws/request.Request" representing the
+// client's request for the TagResource operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See TagResource for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the TagResource method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the TagResourceRequest method.
+//    req, resp := client.TagResourceRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+func (c *DirectConnect) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
+	op := &request.Operation{
+		Name:       opTagResource,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &TagResourceInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &TagResourceOutput{}
+	req.Data = output
+	return
+}
+
+// TagResource API operation for AWS Direct Connect.
+//
+// Adds the specified tags to the specified Direct Connect resource. Each Direct
+// Connect resource can have a maximum of 50 tags.
+//
+// Each tag consists of a key and an optional value. If a tag with the same
+// key is already associated with the Direct Connect resource, this action updates
+// its value.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation TagResource for usage and error information.
+//
+// Returned Error Codes:
+//   * DuplicateTagKeysException
+//   A tag key was specified more than once.
+//
+//   * TooManyTagsException
+//   You have reached the limit on the number of tags that can be assigned to
+//   a Direct Connect resource.
+//
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
+func (c *DirectConnect) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
+	req, out := c.TagResourceRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opUntagResource = "UntagResource"
+
+// UntagResourceRequest generates a "aws/request.Request" representing the
+// client's request for the UntagResource operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See UntagResource for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the UntagResource method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the UntagResourceRequest method.
+//    req, resp := client.UntagResourceRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+func (c *DirectConnect) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
+	op := &request.Operation{
+		Name:       opUntagResource,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &UntagResourceInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &UntagResourceOutput{}
+	req.Data = output
+	return
+}
+
+// UntagResource API operation for AWS Direct Connect.
+//
+// Removes one or more tags from the specified Direct Connect resource.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation UntagResource for usage and error information.
+//
+// Returned Error Codes:
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
+func (c *DirectConnect) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
+	req, out := c.UntagResourceRequest(input)
 	err := req.Send()
 	return out, err
 }
@@ -1136,6 +1797,8 @@ type AllocateConnectionOnInterconnectInput struct {
 	// Default: None
 	//
 	// Values: 50M, 100M, 200M, 300M, 400M, or 500M
+	//
+	// Bandwidth is a required field
 	Bandwidth *string `locationName:"bandwidth" type:"string" required:"true"`
 
 	// Name of the provisioned connection.
@@ -1143,6 +1806,8 @@ type AllocateConnectionOnInterconnectInput struct {
 	// Example: "500M Connection to AWS"
 	//
 	// Default: None
+	//
+	// ConnectionName is a required field
 	ConnectionName *string `locationName:"connectionName" type:"string" required:"true"`
 
 	// ID of the interconnect on which the connection will be provisioned.
@@ -1150,6 +1815,8 @@ type AllocateConnectionOnInterconnectInput struct {
 	// Example: dxcon-456abc78
 	//
 	// Default: None
+	//
+	// InterconnectId is a required field
 	InterconnectId *string `locationName:"interconnectId" type:"string" required:"true"`
 
 	// Numeric account Id of the customer for whom the connection will be provisioned.
@@ -1157,6 +1824,8 @@ type AllocateConnectionOnInterconnectInput struct {
 	// Example: 123443215678
 	//
 	// Default: None
+	//
+	// OwnerAccount is a required field
 	OwnerAccount *string `locationName:"ownerAccount" type:"string" required:"true"`
 
 	// The dedicated VLAN provisioned to the connection.
@@ -1164,6 +1833,8 @@ type AllocateConnectionOnInterconnectInput struct {
 	// Example: 101
 	//
 	// Default: None
+	//
+	// Vlan is a required field
 	Vlan *int64 `locationName:"vlan" type:"integer" required:"true"`
 }
 
@@ -1202,6 +1873,36 @@ func (s *AllocateConnectionOnInterconnectInput) Validate() error {
 	return nil
 }
 
+// SetBandwidth sets the Bandwidth field's value.
+func (s *AllocateConnectionOnInterconnectInput) SetBandwidth(v string) *AllocateConnectionOnInterconnectInput {
+	s.Bandwidth = &v
+	return s
+}
+
+// SetConnectionName sets the ConnectionName field's value.
+func (s *AllocateConnectionOnInterconnectInput) SetConnectionName(v string) *AllocateConnectionOnInterconnectInput {
+	s.ConnectionName = &v
+	return s
+}
+
+// SetInterconnectId sets the InterconnectId field's value.
+func (s *AllocateConnectionOnInterconnectInput) SetInterconnectId(v string) *AllocateConnectionOnInterconnectInput {
+	s.InterconnectId = &v
+	return s
+}
+
+// SetOwnerAccount sets the OwnerAccount field's value.
+func (s *AllocateConnectionOnInterconnectInput) SetOwnerAccount(v string) *AllocateConnectionOnInterconnectInput {
+	s.OwnerAccount = &v
+	return s
+}
+
+// SetVlan sets the Vlan field's value.
+func (s *AllocateConnectionOnInterconnectInput) SetVlan(v int64) *AllocateConnectionOnInterconnectInput {
+	s.Vlan = &v
+	return s
+}
+
 // Container for the parameters to the AllocatePrivateVirtualInterface operation.
 type AllocatePrivateVirtualInterfaceInput struct {
 	_ struct{} `type:"structure"`
@@ -1209,16 +1910,22 @@ type AllocatePrivateVirtualInterfaceInput struct {
 	// The connection ID on which the private virtual interface is provisioned.
 	//
 	// Default: None
+	//
+	// ConnectionId is a required field
 	ConnectionId *string `locationName:"connectionId" type:"string" required:"true"`
 
 	// Detailed information for the private virtual interface to be provisioned.
 	//
 	// Default: None
+	//
+	// NewPrivateVirtualInterfaceAllocation is a required field
 	NewPrivateVirtualInterfaceAllocation *NewPrivateVirtualInterfaceAllocation `locationName:"newPrivateVirtualInterfaceAllocation" type:"structure" required:"true"`
 
 	// The AWS account that will own the new private virtual interface.
 	//
 	// Default: None
+	//
+	// OwnerAccount is a required field
 	OwnerAccount *string `locationName:"ownerAccount" type:"string" required:"true"`
 }
 
@@ -1256,6 +1963,24 @@ func (s *AllocatePrivateVirtualInterfaceInput) Validate() error {
 	return nil
 }
 
+// SetConnectionId sets the ConnectionId field's value.
+func (s *AllocatePrivateVirtualInterfaceInput) SetConnectionId(v string) *AllocatePrivateVirtualInterfaceInput {
+	s.ConnectionId = &v
+	return s
+}
+
+// SetNewPrivateVirtualInterfaceAllocation sets the NewPrivateVirtualInterfaceAllocation field's value.
+func (s *AllocatePrivateVirtualInterfaceInput) SetNewPrivateVirtualInterfaceAllocation(v *NewPrivateVirtualInterfaceAllocation) *AllocatePrivateVirtualInterfaceInput {
+	s.NewPrivateVirtualInterfaceAllocation = v
+	return s
+}
+
+// SetOwnerAccount sets the OwnerAccount field's value.
+func (s *AllocatePrivateVirtualInterfaceInput) SetOwnerAccount(v string) *AllocatePrivateVirtualInterfaceInput {
+	s.OwnerAccount = &v
+	return s
+}
+
 // Container for the parameters to the AllocatePublicVirtualInterface operation.
 type AllocatePublicVirtualInterfaceInput struct {
 	_ struct{} `type:"structure"`
@@ -1263,16 +1988,22 @@ type AllocatePublicVirtualInterfaceInput struct {
 	// The connection ID on which the public virtual interface is provisioned.
 	//
 	// Default: None
+	//
+	// ConnectionId is a required field
 	ConnectionId *string `locationName:"connectionId" type:"string" required:"true"`
 
 	// Detailed information for the public virtual interface to be provisioned.
 	//
 	// Default: None
+	//
+	// NewPublicVirtualInterfaceAllocation is a required field
 	NewPublicVirtualInterfaceAllocation *NewPublicVirtualInterfaceAllocation `locationName:"newPublicVirtualInterfaceAllocation" type:"structure" required:"true"`
 
 	// The AWS account that will own the new public virtual interface.
 	//
 	// Default: None
+	//
+	// OwnerAccount is a required field
 	OwnerAccount *string `locationName:"ownerAccount" type:"string" required:"true"`
 }
 
@@ -1310,6 +2041,24 @@ func (s *AllocatePublicVirtualInterfaceInput) Validate() error {
 	return nil
 }
 
+// SetConnectionId sets the ConnectionId field's value.
+func (s *AllocatePublicVirtualInterfaceInput) SetConnectionId(v string) *AllocatePublicVirtualInterfaceInput {
+	s.ConnectionId = &v
+	return s
+}
+
+// SetNewPublicVirtualInterfaceAllocation sets the NewPublicVirtualInterfaceAllocation field's value.
+func (s *AllocatePublicVirtualInterfaceInput) SetNewPublicVirtualInterfaceAllocation(v *NewPublicVirtualInterfaceAllocation) *AllocatePublicVirtualInterfaceInput {
+	s.NewPublicVirtualInterfaceAllocation = v
+	return s
+}
+
+// SetOwnerAccount sets the OwnerAccount field's value.
+func (s *AllocatePublicVirtualInterfaceInput) SetOwnerAccount(v string) *AllocatePublicVirtualInterfaceInput {
+	s.OwnerAccount = &v
+	return s
+}
+
 // Container for the parameters to the ConfirmConnection operation.
 type ConfirmConnectionInput struct {
 	_ struct{} `type:"structure"`
@@ -1319,6 +2068,8 @@ type ConfirmConnectionInput struct {
 	// Example: dxcon-fg5678gh
 	//
 	// Default: None
+	//
+	// ConnectionId is a required field
 	ConnectionId *string `locationName:"connectionId" type:"string" required:"true"`
 }
 
@@ -1345,32 +2096,38 @@ func (s *ConfirmConnectionInput) Validate() error {
 	return nil
 }
 
+// SetConnectionId sets the ConnectionId field's value.
+func (s *ConfirmConnectionInput) SetConnectionId(v string) *ConfirmConnectionInput {
+	s.ConnectionId = &v
+	return s
+}
+
 // The response received when ConfirmConnection is called.
 type ConfirmConnectionOutput struct {
 	_ struct{} `type:"structure"`
 
 	// State of the connection.
 	//
-	//    Ordering: The initial state of a hosted connection provisioned on an
-	// interconnect. The connection stays in the ordering state until the owner
-	// of the hosted connection confirms or declines the connection order.
+	//    * Ordering: The initial state of a hosted connection provisioned on an
+	//    interconnect. The connection stays in the ordering state until the owner
+	//    of the hosted connection confirms or declines the connection order.
 	//
-	//    Requested: The initial state of a standard connection. The connection
-	// stays in the requested state until the Letter of Authorization (LOA) is sent
-	// to the customer.
+	//    * Requested: The initial state of a standard connection. The connection
+	//    stays in the requested state until the Letter of Authorization (LOA) is
+	//    sent to the customer.
 	//
-	//    Pending: The connection has been approved, and is being initialized.
+	//    * Pending: The connection has been approved, and is being initialized.
 	//
-	//    Available: The network link is up, and the connection is ready for use.
+	//    * Available: The network link is up, and the connection is ready for use.
 	//
-	//    Down: The network link is down.
+	//    * Down: The network link is down.
 	//
-	//    Deleting: The connection is in the process of being deleted.
+	//    * Deleting: The connection is in the process of being deleted.
 	//
-	//    Deleted: The connection has been deleted.
+	//    * Deleted: The connection has been deleted.
 	//
-	//    Rejected: A hosted connection in the 'Ordering' state will enter the
-	// 'Rejected' state if it is deleted by the end customer.
+	//    * Rejected: A hosted connection in the 'Ordering' state will enter the
+	//    'Rejected' state if it is deleted by the end customer.
 	ConnectionState *string `locationName:"connectionState" type:"string" enum:"ConnectionState"`
 }
 
@@ -1384,17 +2141,25 @@ func (s ConfirmConnectionOutput) GoString() string {
 	return s.String()
 }
 
+// SetConnectionState sets the ConnectionState field's value.
+func (s *ConfirmConnectionOutput) SetConnectionState(v string) *ConfirmConnectionOutput {
+	s.ConnectionState = &v
+	return s
+}
+
 // Container for the parameters to the ConfirmPrivateVirtualInterface operation.
 type ConfirmPrivateVirtualInterfaceInput struct {
 	_ struct{} `type:"structure"`
 
 	// ID of the virtual private gateway that will be attached to the virtual interface.
 	//
-	//  A virtual private gateway can be managed via the Amazon Virtual Private
-	// Cloud (VPC) console or the EC2 CreateVpnGateway (http://docs.aws.amazon.com/AWSEC2/latest/APIReference/ApiReference-query-CreateVpnGateway.html)
+	// A virtual private gateway can be managed via the Amazon Virtual Private Cloud
+	// (VPC) console or the EC2 CreateVpnGateway (http://docs.aws.amazon.com/AWSEC2/latest/APIReference/ApiReference-query-CreateVpnGateway.html)
 	// action.
 	//
 	// Default: None
+	//
+	// VirtualGatewayId is a required field
 	VirtualGatewayId *string `locationName:"virtualGatewayId" type:"string" required:"true"`
 
 	// ID of the virtual interface.
@@ -1402,6 +2167,8 @@ type ConfirmPrivateVirtualInterfaceInput struct {
 	// Example: dxvif-123dfg56
 	//
 	// Default: None
+	//
+	// VirtualInterfaceId is a required field
 	VirtualInterfaceId *string `locationName:"virtualInterfaceId" type:"string" required:"true"`
 }
 
@@ -1431,38 +2198,50 @@ func (s *ConfirmPrivateVirtualInterfaceInput) Validate() error {
 	return nil
 }
 
+// SetVirtualGatewayId sets the VirtualGatewayId field's value.
+func (s *ConfirmPrivateVirtualInterfaceInput) SetVirtualGatewayId(v string) *ConfirmPrivateVirtualInterfaceInput {
+	s.VirtualGatewayId = &v
+	return s
+}
+
+// SetVirtualInterfaceId sets the VirtualInterfaceId field's value.
+func (s *ConfirmPrivateVirtualInterfaceInput) SetVirtualInterfaceId(v string) *ConfirmPrivateVirtualInterfaceInput {
+	s.VirtualInterfaceId = &v
+	return s
+}
+
 // The response received when ConfirmPrivateVirtualInterface is called.
 type ConfirmPrivateVirtualInterfaceOutput struct {
 	_ struct{} `type:"structure"`
 
 	// State of the virtual interface.
 	//
-	//    Confirming: The creation of the virtual interface is pending confirmation
-	// from the virtual interface owner. If the owner of the virtual interface is
-	// different from the owner of the connection on which it is provisioned, then
-	// the virtual interface will remain in this state until it is confirmed by
-	// the virtual interface owner.
+	//    * Confirming: The creation of the virtual interface is pending confirmation
+	//    from the virtual interface owner. If the owner of the virtual interface
+	//    is different from the owner of the connection on which it is provisioned,
+	//    then the virtual interface will remain in this state until it is confirmed
+	//    by the virtual interface owner.
 	//
-	//    Verifying: This state only applies to public virtual interfaces. Each
-	// public virtual interface needs validation before the virtual interface can
-	// be created.
+	//    * Verifying: This state only applies to public virtual interfaces. Each
+	//    public virtual interface needs validation before the virtual interface
+	//    can be created.
 	//
-	//    Pending: A virtual interface is in this state from the time that it is
-	// created until the virtual interface is ready to forward traffic.
+	//    * Pending: A virtual interface is in this state from the time that it
+	//    is created until the virtual interface is ready to forward traffic.
 	//
-	//    Available: A virtual interface that is able to forward traffic.
+	//    * Available: A virtual interface that is able to forward traffic.
 	//
-	//    Down: A virtual interface that is BGP down.
+	//    * Down: A virtual interface that is BGP down.
 	//
-	//    Deleting: A virtual interface is in this state immediately after calling
-	// DeleteVirtualInterface until it can no longer forward traffic.
+	//    * Deleting: A virtual interface is in this state immediately after calling
+	//    DeleteVirtualInterface until it can no longer forward traffic.
 	//
-	//    Deleted: A virtual interface that cannot forward traffic.
+	//    * Deleted: A virtual interface that cannot forward traffic.
 	//
-	//    Rejected: The virtual interface owner has declined creation of the virtual
-	// interface. If a virtual interface in the 'Confirming' state is deleted by
-	// the virtual interface owner, the virtual interface will enter the 'Rejected'
-	// state.
+	//    * Rejected: The virtual interface owner has declined creation of the virtual
+	//    interface. If a virtual interface in the 'Confirming' state is deleted
+	//    by the virtual interface owner, the virtual interface will enter the 'Rejected'
+	//    state.
 	VirtualInterfaceState *string `locationName:"virtualInterfaceState" type:"string" enum:"VirtualInterfaceState"`
 }
 
@@ -1476,6 +2255,12 @@ func (s ConfirmPrivateVirtualInterfaceOutput) GoString() string {
 	return s.String()
 }
 
+// SetVirtualInterfaceState sets the VirtualInterfaceState field's value.
+func (s *ConfirmPrivateVirtualInterfaceOutput) SetVirtualInterfaceState(v string) *ConfirmPrivateVirtualInterfaceOutput {
+	s.VirtualInterfaceState = &v
+	return s
+}
+
 // Container for the parameters to the ConfirmPublicVirtualInterface operation.
 type ConfirmPublicVirtualInterfaceInput struct {
 	_ struct{} `type:"structure"`
@@ -1485,6 +2270,8 @@ type ConfirmPublicVirtualInterfaceInput struct {
 	// Example: dxvif-123dfg56
 	//
 	// Default: None
+	//
+	// VirtualInterfaceId is a required field
 	VirtualInterfaceId *string `locationName:"virtualInterfaceId" type:"string" required:"true"`
 }
 
@@ -1511,38 +2298,44 @@ func (s *ConfirmPublicVirtualInterfaceInput) Validate() error {
 	return nil
 }
 
+// SetVirtualInterfaceId sets the VirtualInterfaceId field's value.
+func (s *ConfirmPublicVirtualInterfaceInput) SetVirtualInterfaceId(v string) *ConfirmPublicVirtualInterfaceInput {
+	s.VirtualInterfaceId = &v
+	return s
+}
+
 // The response received when ConfirmPublicVirtualInterface is called.
 type ConfirmPublicVirtualInterfaceOutput struct {
 	_ struct{} `type:"structure"`
 
 	// State of the virtual interface.
 	//
-	//    Confirming: The creation of the virtual interface is pending confirmation
-	// from the virtual interface owner. If the owner of the virtual interface is
-	// different from the owner of the connection on which it is provisioned, then
-	// the virtual interface will remain in this state until it is confirmed by
-	// the virtual interface owner.
+	//    * Confirming: The creation of the virtual interface is pending confirmation
+	//    from the virtual interface owner. If the owner of the virtual interface
+	//    is different from the owner of the connection on which it is provisioned,
+	//    then the virtual interface will remain in this state until it is confirmed
+	//    by the virtual interface owner.
 	//
-	//    Verifying: This state only applies to public virtual interfaces. Each
-	// public virtual interface needs validation before the virtual interface can
-	// be created.
+	//    * Verifying: This state only applies to public virtual interfaces. Each
+	//    public virtual interface needs validation before the virtual interface
+	//    can be created.
 	//
-	//    Pending: A virtual interface is in this state from the time that it is
-	// created until the virtual interface is ready to forward traffic.
+	//    * Pending: A virtual interface is in this state from the time that it
+	//    is created until the virtual interface is ready to forward traffic.
 	//
-	//    Available: A virtual interface that is able to forward traffic.
+	//    * Available: A virtual interface that is able to forward traffic.
 	//
-	//    Down: A virtual interface that is BGP down.
+	//    * Down: A virtual interface that is BGP down.
 	//
-	//    Deleting: A virtual interface is in this state immediately after calling
-	// DeleteVirtualInterface until it can no longer forward traffic.
+	//    * Deleting: A virtual interface is in this state immediately after calling
+	//    DeleteVirtualInterface until it can no longer forward traffic.
 	//
-	//    Deleted: A virtual interface that cannot forward traffic.
+	//    * Deleted: A virtual interface that cannot forward traffic.
 	//
-	//    Rejected: The virtual interface owner has declined creation of the virtual
-	// interface. If a virtual interface in the 'Confirming' state is deleted by
-	// the virtual interface owner, the virtual interface will enter the 'Rejected'
-	// state.
+	//    * Rejected: The virtual interface owner has declined creation of the virtual
+	//    interface. If a virtual interface in the 'Confirming' state is deleted
+	//    by the virtual interface owner, the virtual interface will enter the 'Rejected'
+	//    state.
 	VirtualInterfaceState *string `locationName:"virtualInterfaceState" type:"string" enum:"VirtualInterfaceState"`
 }
 
@@ -1554,6 +2347,12 @@ func (s ConfirmPublicVirtualInterfaceOutput) String() string {
 // GoString returns the string representation
 func (s ConfirmPublicVirtualInterfaceOutput) GoString() string {
 	return s.String()
+}
+
+// SetVirtualInterfaceState sets the VirtualInterfaceState field's value.
+func (s *ConfirmPublicVirtualInterfaceOutput) SetVirtualInterfaceState(v string) *ConfirmPublicVirtualInterfaceOutput {
+	s.VirtualInterfaceState = &v
+	return s
 }
 
 // A connection represents the physical network connection between the AWS Direct
@@ -1584,26 +2383,26 @@ type Connection struct {
 
 	// State of the connection.
 	//
-	//    Ordering: The initial state of a hosted connection provisioned on an
-	// interconnect. The connection stays in the ordering state until the owner
-	// of the hosted connection confirms or declines the connection order.
+	//    * Ordering: The initial state of a hosted connection provisioned on an
+	//    interconnect. The connection stays in the ordering state until the owner
+	//    of the hosted connection confirms or declines the connection order.
 	//
-	//    Requested: The initial state of a standard connection. The connection
-	// stays in the requested state until the Letter of Authorization (LOA) is sent
-	// to the customer.
+	//    * Requested: The initial state of a standard connection. The connection
+	//    stays in the requested state until the Letter of Authorization (LOA) is
+	//    sent to the customer.
 	//
-	//    Pending: The connection has been approved, and is being initialized.
+	//    * Pending: The connection has been approved, and is being initialized.
 	//
-	//    Available: The network link is up, and the connection is ready for use.
+	//    * Available: The network link is up, and the connection is ready for use.
 	//
-	//    Down: The network link is down.
+	//    * Down: The network link is down.
 	//
-	//    Deleting: The connection is in the process of being deleted.
+	//    * Deleting: The connection is in the process of being deleted.
 	//
-	//    Deleted: The connection has been deleted.
+	//    * Deleted: The connection has been deleted.
 	//
-	//    Rejected: A hosted connection in the 'Ordering' state will enter the
-	// 'Rejected' state if it is deleted by the end customer.
+	//    * Rejected: A hosted connection in the 'Ordering' state will enter the
+	//    'Rejected' state if it is deleted by the end customer.
 	ConnectionState *string `locationName:"connectionState" type:"string" enum:"ConnectionState"`
 
 	// The time of the most recent call to DescribeConnectionLoa for this Connection.
@@ -1645,6 +2444,66 @@ func (s Connection) GoString() string {
 	return s.String()
 }
 
+// SetBandwidth sets the Bandwidth field's value.
+func (s *Connection) SetBandwidth(v string) *Connection {
+	s.Bandwidth = &v
+	return s
+}
+
+// SetConnectionId sets the ConnectionId field's value.
+func (s *Connection) SetConnectionId(v string) *Connection {
+	s.ConnectionId = &v
+	return s
+}
+
+// SetConnectionName sets the ConnectionName field's value.
+func (s *Connection) SetConnectionName(v string) *Connection {
+	s.ConnectionName = &v
+	return s
+}
+
+// SetConnectionState sets the ConnectionState field's value.
+func (s *Connection) SetConnectionState(v string) *Connection {
+	s.ConnectionState = &v
+	return s
+}
+
+// SetLoaIssueTime sets the LoaIssueTime field's value.
+func (s *Connection) SetLoaIssueTime(v time.Time) *Connection {
+	s.LoaIssueTime = &v
+	return s
+}
+
+// SetLocation sets the Location field's value.
+func (s *Connection) SetLocation(v string) *Connection {
+	s.Location = &v
+	return s
+}
+
+// SetOwnerAccount sets the OwnerAccount field's value.
+func (s *Connection) SetOwnerAccount(v string) *Connection {
+	s.OwnerAccount = &v
+	return s
+}
+
+// SetPartnerName sets the PartnerName field's value.
+func (s *Connection) SetPartnerName(v string) *Connection {
+	s.PartnerName = &v
+	return s
+}
+
+// SetRegion sets the Region field's value.
+func (s *Connection) SetRegion(v string) *Connection {
+	s.Region = &v
+	return s
+}
+
+// SetVlan sets the Vlan field's value.
+func (s *Connection) SetVlan(v int64) *Connection {
+	s.Vlan = &v
+	return s
+}
+
 // A structure containing a list of connections.
 type Connections struct {
 	_ struct{} `type:"structure"`
@@ -1663,6 +2522,12 @@ func (s Connections) GoString() string {
 	return s.String()
 }
 
+// SetConnections sets the Connections field's value.
+func (s *Connections) SetConnections(v []*Connection) *Connections {
+	s.Connections = v
+	return s
+}
+
 // Container for the parameters to the CreateConnection operation.
 type CreateConnectionInput struct {
 	_ struct{} `type:"structure"`
@@ -1672,6 +2537,8 @@ type CreateConnectionInput struct {
 	// Example: 1Gbps
 	//
 	// Default: None
+	//
+	// Bandwidth is a required field
 	Bandwidth *string `locationName:"bandwidth" type:"string" required:"true"`
 
 	// The name of the connection.
@@ -1679,6 +2546,8 @@ type CreateConnectionInput struct {
 	// Example: "My Connection to AWS"
 	//
 	// Default: None
+	//
+	// ConnectionName is a required field
 	ConnectionName *string `locationName:"connectionName" type:"string" required:"true"`
 
 	// Where the connection is located.
@@ -1686,6 +2555,8 @@ type CreateConnectionInput struct {
 	// Example: EqSV5
 	//
 	// Default: None
+	//
+	// Location is a required field
 	Location *string `locationName:"location" type:"string" required:"true"`
 }
 
@@ -1718,6 +2589,24 @@ func (s *CreateConnectionInput) Validate() error {
 	return nil
 }
 
+// SetBandwidth sets the Bandwidth field's value.
+func (s *CreateConnectionInput) SetBandwidth(v string) *CreateConnectionInput {
+	s.Bandwidth = &v
+	return s
+}
+
+// SetConnectionName sets the ConnectionName field's value.
+func (s *CreateConnectionInput) SetConnectionName(v string) *CreateConnectionInput {
+	s.ConnectionName = &v
+	return s
+}
+
+// SetLocation sets the Location field's value.
+func (s *CreateConnectionInput) SetLocation(v string) *CreateConnectionInput {
+	s.Location = &v
+	return s
+}
+
 // Container for the parameters to the CreateInterconnect operation.
 type CreateInterconnectInput struct {
 	_ struct{} `type:"structure"`
@@ -1729,6 +2618,8 @@ type CreateInterconnectInput struct {
 	// Default: None
 	//
 	// Available values: 1Gbps,10Gbps
+	//
+	// Bandwidth is a required field
 	Bandwidth *string `locationName:"bandwidth" type:"string" required:"true"`
 
 	// The name of the interconnect.
@@ -1736,6 +2627,8 @@ type CreateInterconnectInput struct {
 	// Example: "1G Interconnect to AWS"
 	//
 	// Default: None
+	//
+	// InterconnectName is a required field
 	InterconnectName *string `locationName:"interconnectName" type:"string" required:"true"`
 
 	// Where the interconnect is located
@@ -1743,6 +2636,8 @@ type CreateInterconnectInput struct {
 	// Example: EqSV5
 	//
 	// Default: None
+	//
+	// Location is a required field
 	Location *string `locationName:"location" type:"string" required:"true"`
 }
 
@@ -1775,6 +2670,24 @@ func (s *CreateInterconnectInput) Validate() error {
 	return nil
 }
 
+// SetBandwidth sets the Bandwidth field's value.
+func (s *CreateInterconnectInput) SetBandwidth(v string) *CreateInterconnectInput {
+	s.Bandwidth = &v
+	return s
+}
+
+// SetInterconnectName sets the InterconnectName field's value.
+func (s *CreateInterconnectInput) SetInterconnectName(v string) *CreateInterconnectInput {
+	s.InterconnectName = &v
+	return s
+}
+
+// SetLocation sets the Location field's value.
+func (s *CreateInterconnectInput) SetLocation(v string) *CreateInterconnectInput {
+	s.Location = &v
+	return s
+}
+
 // Container for the parameters to the CreatePrivateVirtualInterface operation.
 type CreatePrivateVirtualInterfaceInput struct {
 	_ struct{} `type:"structure"`
@@ -1784,11 +2697,15 @@ type CreatePrivateVirtualInterfaceInput struct {
 	// Example: dxcon-fg5678gh
 	//
 	// Default: None
+	//
+	// ConnectionId is a required field
 	ConnectionId *string `locationName:"connectionId" type:"string" required:"true"`
 
 	// Detailed information for the private virtual interface to be created.
 	//
 	// Default: None
+	//
+	// NewPrivateVirtualInterface is a required field
 	NewPrivateVirtualInterface *NewPrivateVirtualInterface `locationName:"newPrivateVirtualInterface" type:"structure" required:"true"`
 }
 
@@ -1823,6 +2740,18 @@ func (s *CreatePrivateVirtualInterfaceInput) Validate() error {
 	return nil
 }
 
+// SetConnectionId sets the ConnectionId field's value.
+func (s *CreatePrivateVirtualInterfaceInput) SetConnectionId(v string) *CreatePrivateVirtualInterfaceInput {
+	s.ConnectionId = &v
+	return s
+}
+
+// SetNewPrivateVirtualInterface sets the NewPrivateVirtualInterface field's value.
+func (s *CreatePrivateVirtualInterfaceInput) SetNewPrivateVirtualInterface(v *NewPrivateVirtualInterface) *CreatePrivateVirtualInterfaceInput {
+	s.NewPrivateVirtualInterface = v
+	return s
+}
+
 // Container for the parameters to the CreatePublicVirtualInterface operation.
 type CreatePublicVirtualInterfaceInput struct {
 	_ struct{} `type:"structure"`
@@ -1832,11 +2761,15 @@ type CreatePublicVirtualInterfaceInput struct {
 	// Example: dxcon-fg5678gh
 	//
 	// Default: None
+	//
+	// ConnectionId is a required field
 	ConnectionId *string `locationName:"connectionId" type:"string" required:"true"`
 
 	// Detailed information for the public virtual interface to be created.
 	//
 	// Default: None
+	//
+	// NewPublicVirtualInterface is a required field
 	NewPublicVirtualInterface *NewPublicVirtualInterface `locationName:"newPublicVirtualInterface" type:"structure" required:"true"`
 }
 
@@ -1871,6 +2804,18 @@ func (s *CreatePublicVirtualInterfaceInput) Validate() error {
 	return nil
 }
 
+// SetConnectionId sets the ConnectionId field's value.
+func (s *CreatePublicVirtualInterfaceInput) SetConnectionId(v string) *CreatePublicVirtualInterfaceInput {
+	s.ConnectionId = &v
+	return s
+}
+
+// SetNewPublicVirtualInterface sets the NewPublicVirtualInterface field's value.
+func (s *CreatePublicVirtualInterfaceInput) SetNewPublicVirtualInterface(v *NewPublicVirtualInterface) *CreatePublicVirtualInterfaceInput {
+	s.NewPublicVirtualInterface = v
+	return s
+}
+
 // Container for the parameters to the DeleteConnection operation.
 type DeleteConnectionInput struct {
 	_ struct{} `type:"structure"`
@@ -1880,6 +2825,8 @@ type DeleteConnectionInput struct {
 	// Example: dxcon-fg5678gh
 	//
 	// Default: None
+	//
+	// ConnectionId is a required field
 	ConnectionId *string `locationName:"connectionId" type:"string" required:"true"`
 }
 
@@ -1906,6 +2853,12 @@ func (s *DeleteConnectionInput) Validate() error {
 	return nil
 }
 
+// SetConnectionId sets the ConnectionId field's value.
+func (s *DeleteConnectionInput) SetConnectionId(v string) *DeleteConnectionInput {
+	s.ConnectionId = &v
+	return s
+}
+
 // Container for the parameters to the DeleteInterconnect operation.
 type DeleteInterconnectInput struct {
 	_ struct{} `type:"structure"`
@@ -1913,6 +2866,8 @@ type DeleteInterconnectInput struct {
 	// The ID of the interconnect.
 	//
 	// Example: dxcon-abc123
+	//
+	// InterconnectId is a required field
 	InterconnectId *string `locationName:"interconnectId" type:"string" required:"true"`
 }
 
@@ -1939,26 +2894,32 @@ func (s *DeleteInterconnectInput) Validate() error {
 	return nil
 }
 
+// SetInterconnectId sets the InterconnectId field's value.
+func (s *DeleteInterconnectInput) SetInterconnectId(v string) *DeleteInterconnectInput {
+	s.InterconnectId = &v
+	return s
+}
+
 // The response received when DeleteInterconnect is called.
 type DeleteInterconnectOutput struct {
 	_ struct{} `type:"structure"`
 
 	// State of the interconnect.
 	//
-	//    Requested: The initial state of an interconnect. The interconnect stays
-	// in the requested state until the Letter of Authorization (LOA) is sent to
-	// the customer.
+	//    * Requested: The initial state of an interconnect. The interconnect stays
+	//    in the requested state until the Letter of Authorization (LOA) is sent
+	//    to the customer.
 	//
-	//    Pending>: The interconnect has been approved, and is being initialized.
+	//    * Pending>: The interconnect has been approved, and is being initialized.
 	//
-	//    Available: The network link is up, and the interconnect is ready for
-	// use.
+	//    * Available: The network link is up, and the interconnect is ready for
+	//    use.
 	//
-	//    Down: The network link is down.
+	//    * Down: The network link is down.
 	//
-	//    Deleting: The interconnect is in the process of being deleted.
+	//    * Deleting: The interconnect is in the process of being deleted.
 	//
-	//    Deleted: The interconnect has been deleted.
+	//    * Deleted: The interconnect has been deleted.
 	InterconnectState *string `locationName:"interconnectState" type:"string" enum:"InterconnectState"`
 }
 
@@ -1972,6 +2933,12 @@ func (s DeleteInterconnectOutput) GoString() string {
 	return s.String()
 }
 
+// SetInterconnectState sets the InterconnectState field's value.
+func (s *DeleteInterconnectOutput) SetInterconnectState(v string) *DeleteInterconnectOutput {
+	s.InterconnectState = &v
+	return s
+}
+
 // Container for the parameters to the DeleteVirtualInterface operation.
 type DeleteVirtualInterfaceInput struct {
 	_ struct{} `type:"structure"`
@@ -1981,6 +2948,8 @@ type DeleteVirtualInterfaceInput struct {
 	// Example: dxvif-123dfg56
 	//
 	// Default: None
+	//
+	// VirtualInterfaceId is a required field
 	VirtualInterfaceId *string `locationName:"virtualInterfaceId" type:"string" required:"true"`
 }
 
@@ -2007,38 +2976,44 @@ func (s *DeleteVirtualInterfaceInput) Validate() error {
 	return nil
 }
 
+// SetVirtualInterfaceId sets the VirtualInterfaceId field's value.
+func (s *DeleteVirtualInterfaceInput) SetVirtualInterfaceId(v string) *DeleteVirtualInterfaceInput {
+	s.VirtualInterfaceId = &v
+	return s
+}
+
 // The response received when DeleteVirtualInterface is called.
 type DeleteVirtualInterfaceOutput struct {
 	_ struct{} `type:"structure"`
 
 	// State of the virtual interface.
 	//
-	//    Confirming: The creation of the virtual interface is pending confirmation
-	// from the virtual interface owner. If the owner of the virtual interface is
-	// different from the owner of the connection on which it is provisioned, then
-	// the virtual interface will remain in this state until it is confirmed by
-	// the virtual interface owner.
+	//    * Confirming: The creation of the virtual interface is pending confirmation
+	//    from the virtual interface owner. If the owner of the virtual interface
+	//    is different from the owner of the connection on which it is provisioned,
+	//    then the virtual interface will remain in this state until it is confirmed
+	//    by the virtual interface owner.
 	//
-	//    Verifying: This state only applies to public virtual interfaces. Each
-	// public virtual interface needs validation before the virtual interface can
-	// be created.
+	//    * Verifying: This state only applies to public virtual interfaces. Each
+	//    public virtual interface needs validation before the virtual interface
+	//    can be created.
 	//
-	//    Pending: A virtual interface is in this state from the time that it is
-	// created until the virtual interface is ready to forward traffic.
+	//    * Pending: A virtual interface is in this state from the time that it
+	//    is created until the virtual interface is ready to forward traffic.
 	//
-	//    Available: A virtual interface that is able to forward traffic.
+	//    * Available: A virtual interface that is able to forward traffic.
 	//
-	//    Down: A virtual interface that is BGP down.
+	//    * Down: A virtual interface that is BGP down.
 	//
-	//    Deleting: A virtual interface is in this state immediately after calling
-	// DeleteVirtualInterface until it can no longer forward traffic.
+	//    * Deleting: A virtual interface is in this state immediately after calling
+	//    DeleteVirtualInterface until it can no longer forward traffic.
 	//
-	//    Deleted: A virtual interface that cannot forward traffic.
+	//    * Deleted: A virtual interface that cannot forward traffic.
 	//
-	//    Rejected: The virtual interface owner has declined creation of the virtual
-	// interface. If a virtual interface in the 'Confirming' state is deleted by
-	// the virtual interface owner, the virtual interface will enter the 'Rejected'
-	// state.
+	//    * Rejected: The virtual interface owner has declined creation of the virtual
+	//    interface. If a virtual interface in the 'Confirming' state is deleted
+	//    by the virtual interface owner, the virtual interface will enter the 'Rejected'
+	//    state.
 	VirtualInterfaceState *string `locationName:"virtualInterfaceState" type:"string" enum:"VirtualInterfaceState"`
 }
 
@@ -2052,6 +3027,12 @@ func (s DeleteVirtualInterfaceOutput) GoString() string {
 	return s.String()
 }
 
+// SetVirtualInterfaceState sets the VirtualInterfaceState field's value.
+func (s *DeleteVirtualInterfaceOutput) SetVirtualInterfaceState(v string) *DeleteVirtualInterfaceOutput {
+	s.VirtualInterfaceState = &v
+	return s
+}
+
 // Container for the parameters to the DescribeConnectionLoa operation.
 type DescribeConnectionLoaInput struct {
 	_ struct{} `type:"structure"`
@@ -2061,6 +3042,8 @@ type DescribeConnectionLoaInput struct {
 	// Example: dxcon-fg5678gh
 	//
 	// Default: None
+	//
+	// ConnectionId is a required field
 	ConnectionId *string `locationName:"connectionId" type:"string" required:"true"`
 
 	// A standard media type indicating the content type of the LOA-CFA document.
@@ -2100,6 +3083,24 @@ func (s *DescribeConnectionLoaInput) Validate() error {
 	return nil
 }
 
+// SetConnectionId sets the ConnectionId field's value.
+func (s *DescribeConnectionLoaInput) SetConnectionId(v string) *DescribeConnectionLoaInput {
+	s.ConnectionId = &v
+	return s
+}
+
+// SetLoaContentType sets the LoaContentType field's value.
+func (s *DescribeConnectionLoaInput) SetLoaContentType(v string) *DescribeConnectionLoaInput {
+	s.LoaContentType = &v
+	return s
+}
+
+// SetProviderName sets the ProviderName field's value.
+func (s *DescribeConnectionLoaInput) SetProviderName(v string) *DescribeConnectionLoaInput {
+	s.ProviderName = &v
+	return s
+}
+
 // The response received when DescribeConnectionLoa is called.
 type DescribeConnectionLoaOutput struct {
 	_ struct{} `type:"structure"`
@@ -2117,6 +3118,12 @@ func (s DescribeConnectionLoaOutput) String() string {
 // GoString returns the string representation
 func (s DescribeConnectionLoaOutput) GoString() string {
 	return s.String()
+}
+
+// SetLoa sets the Loa field's value.
+func (s *DescribeConnectionLoaOutput) SetLoa(v *Loa) *DescribeConnectionLoaOutput {
+	s.Loa = v
+	return s
 }
 
 // Container for the parameters to the DescribeConnections operation.
@@ -2141,6 +3148,12 @@ func (s DescribeConnectionsInput) GoString() string {
 	return s.String()
 }
 
+// SetConnectionId sets the ConnectionId field's value.
+func (s *DescribeConnectionsInput) SetConnectionId(v string) *DescribeConnectionsInput {
+	s.ConnectionId = &v
+	return s
+}
+
 // Container for the parameters to the DescribeConnectionsOnInterconnect operation.
 type DescribeConnectionsOnInterconnectInput struct {
 	_ struct{} `type:"structure"`
@@ -2150,6 +3163,8 @@ type DescribeConnectionsOnInterconnectInput struct {
 	// Example: dxcon-abc123
 	//
 	// Default: None
+	//
+	// InterconnectId is a required field
 	InterconnectId *string `locationName:"interconnectId" type:"string" required:"true"`
 }
 
@@ -2176,6 +3191,12 @@ func (s *DescribeConnectionsOnInterconnectInput) Validate() error {
 	return nil
 }
 
+// SetInterconnectId sets the InterconnectId field's value.
+func (s *DescribeConnectionsOnInterconnectInput) SetInterconnectId(v string) *DescribeConnectionsOnInterconnectInput {
+	s.InterconnectId = &v
+	return s
+}
+
 // Container for the parameters to the DescribeInterconnectLoa operation.
 type DescribeInterconnectLoaInput struct {
 	_ struct{} `type:"structure"`
@@ -2183,6 +3204,8 @@ type DescribeInterconnectLoaInput struct {
 	// The ID of the interconnect.
 	//
 	// Example: dxcon-abc123
+	//
+	// InterconnectId is a required field
 	InterconnectId *string `locationName:"interconnectId" type:"string" required:"true"`
 
 	// A standard media type indicating the content type of the LOA-CFA document.
@@ -2222,6 +3245,24 @@ func (s *DescribeInterconnectLoaInput) Validate() error {
 	return nil
 }
 
+// SetInterconnectId sets the InterconnectId field's value.
+func (s *DescribeInterconnectLoaInput) SetInterconnectId(v string) *DescribeInterconnectLoaInput {
+	s.InterconnectId = &v
+	return s
+}
+
+// SetLoaContentType sets the LoaContentType field's value.
+func (s *DescribeInterconnectLoaInput) SetLoaContentType(v string) *DescribeInterconnectLoaInput {
+	s.LoaContentType = &v
+	return s
+}
+
+// SetProviderName sets the ProviderName field's value.
+func (s *DescribeInterconnectLoaInput) SetProviderName(v string) *DescribeInterconnectLoaInput {
+	s.ProviderName = &v
+	return s
+}
+
 // The response received when DescribeInterconnectLoa is called.
 type DescribeInterconnectLoaOutput struct {
 	_ struct{} `type:"structure"`
@@ -2239,6 +3280,12 @@ func (s DescribeInterconnectLoaOutput) String() string {
 // GoString returns the string representation
 func (s DescribeInterconnectLoaOutput) GoString() string {
 	return s.String()
+}
+
+// SetLoa sets the Loa field's value.
+func (s *DescribeInterconnectLoaOutput) SetLoa(v *Loa) *DescribeInterconnectLoaOutput {
+	s.Loa = v
+	return s
 }
 
 // Container for the parameters to the DescribeInterconnects operation.
@@ -2261,6 +3308,12 @@ func (s DescribeInterconnectsInput) GoString() string {
 	return s.String()
 }
 
+// SetInterconnectId sets the InterconnectId field's value.
+func (s *DescribeInterconnectsInput) SetInterconnectId(v string) *DescribeInterconnectsInput {
+	s.InterconnectId = &v
+	return s
+}
+
 // A structure containing a list of interconnects.
 type DescribeInterconnectsOutput struct {
 	_ struct{} `type:"structure"`
@@ -2277,6 +3330,12 @@ func (s DescribeInterconnectsOutput) String() string {
 // GoString returns the string representation
 func (s DescribeInterconnectsOutput) GoString() string {
 	return s.String()
+}
+
+// SetInterconnects sets the Interconnects field's value.
+func (s *DescribeInterconnectsOutput) SetInterconnects(v []*Interconnect) *DescribeInterconnectsOutput {
+	s.Interconnects = v
+	return s
 }
 
 type DescribeLocationsInput struct {
@@ -2315,6 +3374,75 @@ func (s DescribeLocationsOutput) GoString() string {
 	return s.String()
 }
 
+// SetLocations sets the Locations field's value.
+func (s *DescribeLocationsOutput) SetLocations(v []*Location) *DescribeLocationsOutput {
+	s.Locations = v
+	return s
+}
+
+// Container for the parameters to the DescribeTags operation.
+type DescribeTagsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Names (ARNs) of the Direct Connect resources.
+	//
+	// ResourceArns is a required field
+	ResourceArns []*string `locationName:"resourceArns" type:"list" required:"true"`
+}
+
+// String returns the string representation
+func (s DescribeTagsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeTagsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeTagsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeTagsInput"}
+	if s.ResourceArns == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceArns"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetResourceArns sets the ResourceArns field's value.
+func (s *DescribeTagsInput) SetResourceArns(v []*string) *DescribeTagsInput {
+	s.ResourceArns = v
+	return s
+}
+
+// The response received when DescribeTags is called.
+type DescribeTagsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the tags.
+	ResourceTags []*ResourceTag `locationName:"resourceTags" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeTagsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeTagsOutput) GoString() string {
+	return s.String()
+}
+
+// SetResourceTags sets the ResourceTags field's value.
+func (s *DescribeTagsOutput) SetResourceTags(v []*ResourceTag) *DescribeTagsOutput {
+	s.ResourceTags = v
+	return s
+}
+
 type DescribeVirtualGatewaysInput struct {
 	_ struct{} `type:"structure"`
 }
@@ -2347,6 +3475,12 @@ func (s DescribeVirtualGatewaysOutput) GoString() string {
 	return s.String()
 }
 
+// SetVirtualGateways sets the VirtualGateways field's value.
+func (s *DescribeVirtualGatewaysOutput) SetVirtualGateways(v []*VirtualGateway) *DescribeVirtualGatewaysOutput {
+	s.VirtualGateways = v
+	return s
+}
+
 // Container for the parameters to the DescribeVirtualInterfaces operation.
 type DescribeVirtualInterfacesInput struct {
 	_ struct{} `type:"structure"`
@@ -2376,6 +3510,18 @@ func (s DescribeVirtualInterfacesInput) GoString() string {
 	return s.String()
 }
 
+// SetConnectionId sets the ConnectionId field's value.
+func (s *DescribeVirtualInterfacesInput) SetConnectionId(v string) *DescribeVirtualInterfacesInput {
+	s.ConnectionId = &v
+	return s
+}
+
+// SetVirtualInterfaceId sets the VirtualInterfaceId field's value.
+func (s *DescribeVirtualInterfacesInput) SetVirtualInterfaceId(v string) *DescribeVirtualInterfacesInput {
+	s.VirtualInterfaceId = &v
+	return s
+}
+
 // A structure containing a list of virtual interfaces.
 type DescribeVirtualInterfacesOutput struct {
 	_ struct{} `type:"structure"`
@@ -2392,6 +3538,12 @@ func (s DescribeVirtualInterfacesOutput) String() string {
 // GoString returns the string representation
 func (s DescribeVirtualInterfacesOutput) GoString() string {
 	return s.String()
+}
+
+// SetVirtualInterfaces sets the VirtualInterfaces field's value.
+func (s *DescribeVirtualInterfacesOutput) SetVirtualInterfaces(v []*VirtualInterface) *DescribeVirtualInterfacesOutput {
+	s.VirtualInterfaces = v
+	return s
 }
 
 // An interconnect is a connection that can host other connections.
@@ -2428,20 +3580,20 @@ type Interconnect struct {
 
 	// State of the interconnect.
 	//
-	//    Requested: The initial state of an interconnect. The interconnect stays
-	// in the requested state until the Letter of Authorization (LOA) is sent to
-	// the customer.
+	//    * Requested: The initial state of an interconnect. The interconnect stays
+	//    in the requested state until the Letter of Authorization (LOA) is sent
+	//    to the customer.
 	//
-	//    Pending>: The interconnect has been approved, and is being initialized.
+	//    * Pending>: The interconnect has been approved, and is being initialized.
 	//
-	//    Available: The network link is up, and the interconnect is ready for
-	// use.
+	//    * Available: The network link is up, and the interconnect is ready for
+	//    use.
 	//
-	//    Down: The network link is down.
+	//    * Down: The network link is down.
 	//
-	//    Deleting: The interconnect is in the process of being deleted.
+	//    * Deleting: The interconnect is in the process of being deleted.
 	//
-	//    Deleted: The interconnect has been deleted.
+	//    * Deleted: The interconnect has been deleted.
 	InterconnectState *string `locationName:"interconnectState" type:"string" enum:"InterconnectState"`
 
 	// The time of the most recent call to DescribeInterconnectLoa for this Interconnect.
@@ -2472,6 +3624,48 @@ func (s Interconnect) GoString() string {
 	return s.String()
 }
 
+// SetBandwidth sets the Bandwidth field's value.
+func (s *Interconnect) SetBandwidth(v string) *Interconnect {
+	s.Bandwidth = &v
+	return s
+}
+
+// SetInterconnectId sets the InterconnectId field's value.
+func (s *Interconnect) SetInterconnectId(v string) *Interconnect {
+	s.InterconnectId = &v
+	return s
+}
+
+// SetInterconnectName sets the InterconnectName field's value.
+func (s *Interconnect) SetInterconnectName(v string) *Interconnect {
+	s.InterconnectName = &v
+	return s
+}
+
+// SetInterconnectState sets the InterconnectState field's value.
+func (s *Interconnect) SetInterconnectState(v string) *Interconnect {
+	s.InterconnectState = &v
+	return s
+}
+
+// SetLoaIssueTime sets the LoaIssueTime field's value.
+func (s *Interconnect) SetLoaIssueTime(v time.Time) *Interconnect {
+	s.LoaIssueTime = &v
+	return s
+}
+
+// SetLocation sets the Location field's value.
+func (s *Interconnect) SetLocation(v string) *Interconnect {
+	s.Location = &v
+	return s
+}
+
+// SetRegion sets the Region field's value.
+func (s *Interconnect) SetRegion(v string) *Interconnect {
+	s.Region = &v
+	return s
+}
+
 // A structure containing the Letter of Authorization - Connecting Facility
 // Assignment (LOA-CFA) for a connection.
 type Loa struct {
@@ -2499,6 +3693,18 @@ func (s Loa) GoString() string {
 	return s.String()
 }
 
+// SetLoaContent sets the LoaContent field's value.
+func (s *Loa) SetLoaContent(v []byte) *Loa {
+	s.LoaContent = v
+	return s
+}
+
+// SetLoaContentType sets the LoaContentType field's value.
+func (s *Loa) SetLoaContentType(v string) *Loa {
+	s.LoaContentType = &v
+	return s
+}
+
 // An AWS Direct Connect location where connections and interconnects can be
 // requested.
 type Location struct {
@@ -2522,6 +3728,18 @@ func (s Location) GoString() string {
 	return s.String()
 }
 
+// SetLocationCode sets the LocationCode field's value.
+func (s *Location) SetLocationCode(v string) *Location {
+	s.LocationCode = &v
+	return s
+}
+
+// SetLocationName sets the LocationName field's value.
+func (s *Location) SetLocationName(v string) *Location {
+	s.LocationName = &v
+	return s
+}
+
 // A structure containing information about a new private virtual interface.
 type NewPrivateVirtualInterface struct {
 	_ struct{} `type:"structure"`
@@ -2534,6 +3752,8 @@ type NewPrivateVirtualInterface struct {
 	// Autonomous system (AS) number for Border Gateway Protocol (BGP) configuration.
 	//
 	// Example: 65000
+	//
+	// Asn is a required field
 	Asn *int64 `locationName:"asn" type:"integer" required:"true"`
 
 	// Authentication key for BGP configuration.
@@ -2550,16 +3770,22 @@ type NewPrivateVirtualInterface struct {
 	// virtual interfaces.
 	//
 	// Example: vgw-123er56
+	//
+	// VirtualGatewayId is a required field
 	VirtualGatewayId *string `locationName:"virtualGatewayId" type:"string" required:"true"`
 
 	// The name of the virtual interface assigned by the customer.
 	//
 	// Example: "My VPC"
+	//
+	// VirtualInterfaceName is a required field
 	VirtualInterfaceName *string `locationName:"virtualInterfaceName" type:"string" required:"true"`
 
 	// The VLAN ID.
 	//
 	// Example: 101
+	//
+	// Vlan is a required field
 	Vlan *int64 `locationName:"vlan" type:"integer" required:"true"`
 }
 
@@ -2595,6 +3821,48 @@ func (s *NewPrivateVirtualInterface) Validate() error {
 	return nil
 }
 
+// SetAmazonAddress sets the AmazonAddress field's value.
+func (s *NewPrivateVirtualInterface) SetAmazonAddress(v string) *NewPrivateVirtualInterface {
+	s.AmazonAddress = &v
+	return s
+}
+
+// SetAsn sets the Asn field's value.
+func (s *NewPrivateVirtualInterface) SetAsn(v int64) *NewPrivateVirtualInterface {
+	s.Asn = &v
+	return s
+}
+
+// SetAuthKey sets the AuthKey field's value.
+func (s *NewPrivateVirtualInterface) SetAuthKey(v string) *NewPrivateVirtualInterface {
+	s.AuthKey = &v
+	return s
+}
+
+// SetCustomerAddress sets the CustomerAddress field's value.
+func (s *NewPrivateVirtualInterface) SetCustomerAddress(v string) *NewPrivateVirtualInterface {
+	s.CustomerAddress = &v
+	return s
+}
+
+// SetVirtualGatewayId sets the VirtualGatewayId field's value.
+func (s *NewPrivateVirtualInterface) SetVirtualGatewayId(v string) *NewPrivateVirtualInterface {
+	s.VirtualGatewayId = &v
+	return s
+}
+
+// SetVirtualInterfaceName sets the VirtualInterfaceName field's value.
+func (s *NewPrivateVirtualInterface) SetVirtualInterfaceName(v string) *NewPrivateVirtualInterface {
+	s.VirtualInterfaceName = &v
+	return s
+}
+
+// SetVlan sets the Vlan field's value.
+func (s *NewPrivateVirtualInterface) SetVlan(v int64) *NewPrivateVirtualInterface {
+	s.Vlan = &v
+	return s
+}
+
 // A structure containing information about a private virtual interface that
 // will be provisioned on a connection.
 type NewPrivateVirtualInterfaceAllocation struct {
@@ -2608,6 +3876,8 @@ type NewPrivateVirtualInterfaceAllocation struct {
 	// Autonomous system (AS) number for Border Gateway Protocol (BGP) configuration.
 	//
 	// Example: 65000
+	//
+	// Asn is a required field
 	Asn *int64 `locationName:"asn" type:"integer" required:"true"`
 
 	// Authentication key for BGP configuration.
@@ -2623,11 +3893,15 @@ type NewPrivateVirtualInterfaceAllocation struct {
 	// The name of the virtual interface assigned by the customer.
 	//
 	// Example: "My VPC"
+	//
+	// VirtualInterfaceName is a required field
 	VirtualInterfaceName *string `locationName:"virtualInterfaceName" type:"string" required:"true"`
 
 	// The VLAN ID.
 	//
 	// Example: 101
+	//
+	// Vlan is a required field
 	Vlan *int64 `locationName:"vlan" type:"integer" required:"true"`
 }
 
@@ -2660,6 +3934,42 @@ func (s *NewPrivateVirtualInterfaceAllocation) Validate() error {
 	return nil
 }
 
+// SetAmazonAddress sets the AmazonAddress field's value.
+func (s *NewPrivateVirtualInterfaceAllocation) SetAmazonAddress(v string) *NewPrivateVirtualInterfaceAllocation {
+	s.AmazonAddress = &v
+	return s
+}
+
+// SetAsn sets the Asn field's value.
+func (s *NewPrivateVirtualInterfaceAllocation) SetAsn(v int64) *NewPrivateVirtualInterfaceAllocation {
+	s.Asn = &v
+	return s
+}
+
+// SetAuthKey sets the AuthKey field's value.
+func (s *NewPrivateVirtualInterfaceAllocation) SetAuthKey(v string) *NewPrivateVirtualInterfaceAllocation {
+	s.AuthKey = &v
+	return s
+}
+
+// SetCustomerAddress sets the CustomerAddress field's value.
+func (s *NewPrivateVirtualInterfaceAllocation) SetCustomerAddress(v string) *NewPrivateVirtualInterfaceAllocation {
+	s.CustomerAddress = &v
+	return s
+}
+
+// SetVirtualInterfaceName sets the VirtualInterfaceName field's value.
+func (s *NewPrivateVirtualInterfaceAllocation) SetVirtualInterfaceName(v string) *NewPrivateVirtualInterfaceAllocation {
+	s.VirtualInterfaceName = &v
+	return s
+}
+
+// SetVlan sets the Vlan field's value.
+func (s *NewPrivateVirtualInterfaceAllocation) SetVlan(v int64) *NewPrivateVirtualInterfaceAllocation {
+	s.Vlan = &v
+	return s
+}
+
 // A structure containing information about a new public virtual interface.
 type NewPublicVirtualInterface struct {
 	_ struct{} `type:"structure"`
@@ -2667,11 +3977,15 @@ type NewPublicVirtualInterface struct {
 	// IP address assigned to the Amazon interface.
 	//
 	// Example: 192.168.1.1/30
+	//
+	// AmazonAddress is a required field
 	AmazonAddress *string `locationName:"amazonAddress" type:"string" required:"true"`
 
 	// Autonomous system (AS) number for Border Gateway Protocol (BGP) configuration.
 	//
 	// Example: 65000
+	//
+	// Asn is a required field
 	Asn *int64 `locationName:"asn" type:"integer" required:"true"`
 
 	// Authentication key for BGP configuration.
@@ -2682,20 +3996,28 @@ type NewPublicVirtualInterface struct {
 	// IP address assigned to the customer interface.
 	//
 	// Example: 192.168.1.2/30
+	//
+	// CustomerAddress is a required field
 	CustomerAddress *string `locationName:"customerAddress" type:"string" required:"true"`
 
 	// A list of routes to be advertised to the AWS network in this region (public
 	// virtual interface).
+	//
+	// RouteFilterPrefixes is a required field
 	RouteFilterPrefixes []*RouteFilterPrefix `locationName:"routeFilterPrefixes" type:"list" required:"true"`
 
 	// The name of the virtual interface assigned by the customer.
 	//
 	// Example: "My VPC"
+	//
+	// VirtualInterfaceName is a required field
 	VirtualInterfaceName *string `locationName:"virtualInterfaceName" type:"string" required:"true"`
 
 	// The VLAN ID.
 	//
 	// Example: 101
+	//
+	// Vlan is a required field
 	Vlan *int64 `locationName:"vlan" type:"integer" required:"true"`
 }
 
@@ -2737,6 +4059,48 @@ func (s *NewPublicVirtualInterface) Validate() error {
 	return nil
 }
 
+// SetAmazonAddress sets the AmazonAddress field's value.
+func (s *NewPublicVirtualInterface) SetAmazonAddress(v string) *NewPublicVirtualInterface {
+	s.AmazonAddress = &v
+	return s
+}
+
+// SetAsn sets the Asn field's value.
+func (s *NewPublicVirtualInterface) SetAsn(v int64) *NewPublicVirtualInterface {
+	s.Asn = &v
+	return s
+}
+
+// SetAuthKey sets the AuthKey field's value.
+func (s *NewPublicVirtualInterface) SetAuthKey(v string) *NewPublicVirtualInterface {
+	s.AuthKey = &v
+	return s
+}
+
+// SetCustomerAddress sets the CustomerAddress field's value.
+func (s *NewPublicVirtualInterface) SetCustomerAddress(v string) *NewPublicVirtualInterface {
+	s.CustomerAddress = &v
+	return s
+}
+
+// SetRouteFilterPrefixes sets the RouteFilterPrefixes field's value.
+func (s *NewPublicVirtualInterface) SetRouteFilterPrefixes(v []*RouteFilterPrefix) *NewPublicVirtualInterface {
+	s.RouteFilterPrefixes = v
+	return s
+}
+
+// SetVirtualInterfaceName sets the VirtualInterfaceName field's value.
+func (s *NewPublicVirtualInterface) SetVirtualInterfaceName(v string) *NewPublicVirtualInterface {
+	s.VirtualInterfaceName = &v
+	return s
+}
+
+// SetVlan sets the Vlan field's value.
+func (s *NewPublicVirtualInterface) SetVlan(v int64) *NewPublicVirtualInterface {
+	s.Vlan = &v
+	return s
+}
+
 // A structure containing information about a public virtual interface that
 // will be provisioned on a connection.
 type NewPublicVirtualInterfaceAllocation struct {
@@ -2745,11 +4109,15 @@ type NewPublicVirtualInterfaceAllocation struct {
 	// IP address assigned to the Amazon interface.
 	//
 	// Example: 192.168.1.1/30
+	//
+	// AmazonAddress is a required field
 	AmazonAddress *string `locationName:"amazonAddress" type:"string" required:"true"`
 
 	// Autonomous system (AS) number for Border Gateway Protocol (BGP) configuration.
 	//
 	// Example: 65000
+	//
+	// Asn is a required field
 	Asn *int64 `locationName:"asn" type:"integer" required:"true"`
 
 	// Authentication key for BGP configuration.
@@ -2760,20 +4128,28 @@ type NewPublicVirtualInterfaceAllocation struct {
 	// IP address assigned to the customer interface.
 	//
 	// Example: 192.168.1.2/30
+	//
+	// CustomerAddress is a required field
 	CustomerAddress *string `locationName:"customerAddress" type:"string" required:"true"`
 
 	// A list of routes to be advertised to the AWS network in this region (public
 	// virtual interface).
+	//
+	// RouteFilterPrefixes is a required field
 	RouteFilterPrefixes []*RouteFilterPrefix `locationName:"routeFilterPrefixes" type:"list" required:"true"`
 
 	// The name of the virtual interface assigned by the customer.
 	//
 	// Example: "My VPC"
+	//
+	// VirtualInterfaceName is a required field
 	VirtualInterfaceName *string `locationName:"virtualInterfaceName" type:"string" required:"true"`
 
 	// The VLAN ID.
 	//
 	// Example: 101
+	//
+	// Vlan is a required field
 	Vlan *int64 `locationName:"vlan" type:"integer" required:"true"`
 }
 
@@ -2815,6 +4191,81 @@ func (s *NewPublicVirtualInterfaceAllocation) Validate() error {
 	return nil
 }
 
+// SetAmazonAddress sets the AmazonAddress field's value.
+func (s *NewPublicVirtualInterfaceAllocation) SetAmazonAddress(v string) *NewPublicVirtualInterfaceAllocation {
+	s.AmazonAddress = &v
+	return s
+}
+
+// SetAsn sets the Asn field's value.
+func (s *NewPublicVirtualInterfaceAllocation) SetAsn(v int64) *NewPublicVirtualInterfaceAllocation {
+	s.Asn = &v
+	return s
+}
+
+// SetAuthKey sets the AuthKey field's value.
+func (s *NewPublicVirtualInterfaceAllocation) SetAuthKey(v string) *NewPublicVirtualInterfaceAllocation {
+	s.AuthKey = &v
+	return s
+}
+
+// SetCustomerAddress sets the CustomerAddress field's value.
+func (s *NewPublicVirtualInterfaceAllocation) SetCustomerAddress(v string) *NewPublicVirtualInterfaceAllocation {
+	s.CustomerAddress = &v
+	return s
+}
+
+// SetRouteFilterPrefixes sets the RouteFilterPrefixes field's value.
+func (s *NewPublicVirtualInterfaceAllocation) SetRouteFilterPrefixes(v []*RouteFilterPrefix) *NewPublicVirtualInterfaceAllocation {
+	s.RouteFilterPrefixes = v
+	return s
+}
+
+// SetVirtualInterfaceName sets the VirtualInterfaceName field's value.
+func (s *NewPublicVirtualInterfaceAllocation) SetVirtualInterfaceName(v string) *NewPublicVirtualInterfaceAllocation {
+	s.VirtualInterfaceName = &v
+	return s
+}
+
+// SetVlan sets the Vlan field's value.
+func (s *NewPublicVirtualInterfaceAllocation) SetVlan(v int64) *NewPublicVirtualInterfaceAllocation {
+	s.Vlan = &v
+	return s
+}
+
+// The tags associated with a Direct Connect resource.
+type ResourceTag struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the Direct Connect resource.
+	ResourceArn *string `locationName:"resourceArn" type:"string"`
+
+	// The tags.
+	Tags []*Tag `locationName:"tags" min:"1" type:"list"`
+}
+
+// String returns the string representation
+func (s ResourceTag) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ResourceTag) GoString() string {
+	return s.String()
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *ResourceTag) SetResourceArn(v string) *ResourceTag {
+	s.ResourceArn = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *ResourceTag) SetTags(v []*Tag) *ResourceTag {
+	s.Tags = v
+	return s
+}
+
 // A route filter prefix that the customer can advertise through Border Gateway
 // Protocol (BGP) over a public virtual interface.
 type RouteFilterPrefix struct {
@@ -2837,6 +4288,214 @@ func (s RouteFilterPrefix) GoString() string {
 	return s.String()
 }
 
+// SetCidr sets the Cidr field's value.
+func (s *RouteFilterPrefix) SetCidr(v string) *RouteFilterPrefix {
+	s.Cidr = &v
+	return s
+}
+
+// Information about a tag.
+type Tag struct {
+	_ struct{} `type:"structure"`
+
+	// The key of the tag.
+	//
+	// Key is a required field
+	Key *string `locationName:"key" min:"1" type:"string" required:"true"`
+
+	// The value of the tag.
+	Value *string `locationName:"value" type:"string"`
+}
+
+// String returns the string representation
+func (s Tag) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s Tag) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Tag) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Tag"}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetKey sets the Key field's value.
+func (s *Tag) SetKey(v string) *Tag {
+	s.Key = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *Tag) SetValue(v string) *Tag {
+	s.Value = &v
+	return s
+}
+
+// Container for the parameters to the TagResource operation.
+type TagResourceInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the Direct Connect resource.
+	//
+	// Example: arn:aws:directconnect:us-east-1:123456789012:dxcon/dxcon-fg5678gh
+	//
+	// ResourceArn is a required field
+	ResourceArn *string `locationName:"resourceArn" type:"string" required:"true"`
+
+	// The list of tags to add.
+	//
+	// Tags is a required field
+	Tags []*Tag `locationName:"tags" min:"1" type:"list" required:"true"`
+}
+
+// String returns the string representation
+func (s TagResourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s TagResourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TagResourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TagResourceInput"}
+	if s.ResourceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
+	}
+	if s.Tags == nil {
+		invalidParams.Add(request.NewErrParamRequired("Tags"))
+	}
+	if s.Tags != nil && len(s.Tags) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Tags", 1))
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *TagResourceInput) SetResourceArn(v string) *TagResourceInput {
+	s.ResourceArn = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *TagResourceInput) SetTags(v []*Tag) *TagResourceInput {
+	s.Tags = v
+	return s
+}
+
+// The response received when TagResource is called.
+type TagResourceOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s TagResourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s TagResourceOutput) GoString() string {
+	return s.String()
+}
+
+// Container for the parameters to the UntagResource operation.
+type UntagResourceInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the Direct Connect resource.
+	//
+	// ResourceArn is a required field
+	ResourceArn *string `locationName:"resourceArn" type:"string" required:"true"`
+
+	// The list of tag keys to remove.
+	//
+	// TagKeys is a required field
+	TagKeys []*string `locationName:"tagKeys" type:"list" required:"true"`
+}
+
+// String returns the string representation
+func (s UntagResourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s UntagResourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UntagResourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UntagResourceInput"}
+	if s.ResourceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
+	}
+	if s.TagKeys == nil {
+		invalidParams.Add(request.NewErrParamRequired("TagKeys"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *UntagResourceInput) SetResourceArn(v string) *UntagResourceInput {
+	s.ResourceArn = &v
+	return s
+}
+
+// SetTagKeys sets the TagKeys field's value.
+func (s *UntagResourceInput) SetTagKeys(v []*string) *UntagResourceInput {
+	s.TagKeys = v
+	return s
+}
+
+// The response received when UntagResource is called.
+type UntagResourceOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s UntagResourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s UntagResourceOutput) GoString() string {
+	return s.String()
+}
+
 // You can create one or more AWS Direct Connect private virtual interfaces
 // linking to your virtual private gateway.
 //
@@ -2853,14 +4512,14 @@ type VirtualGateway struct {
 
 	// State of the virtual private gateway.
 	//
-	//    Pending: This is the initial state after calling CreateVpnGateway.
+	//    * Pending: This is the initial state after calling CreateVpnGateway.
 	//
-	//    Available: Ready for use by a private virtual interface.
+	//    * Available: Ready for use by a private virtual interface.
 	//
-	//    Deleting: This is the initial state after calling DeleteVpnGateway.
+	//    * Deleting: This is the initial state after calling DeleteVpnGateway.
 	//
-	//    Deleted: In this state, a private virtual interface is unable to send
-	// traffic over this gateway.
+	//    * Deleted: In this state, a private virtual interface is unable to send
+	//    traffic over this gateway.
 	VirtualGatewayState *string `locationName:"virtualGatewayState" type:"string"`
 }
 
@@ -2872,6 +4531,18 @@ func (s VirtualGateway) String() string {
 // GoString returns the string representation
 func (s VirtualGateway) GoString() string {
 	return s.String()
+}
+
+// SetVirtualGatewayId sets the VirtualGatewayId field's value.
+func (s *VirtualGateway) SetVirtualGatewayId(v string) *VirtualGateway {
+	s.VirtualGatewayId = &v
+	return s
+}
+
+// SetVirtualGatewayState sets the VirtualGatewayState field's value.
+func (s *VirtualGateway) SetVirtualGatewayState(v string) *VirtualGateway {
+	s.VirtualGatewayState = &v
+	return s
 }
 
 // A virtual interface (VLAN) transmits the traffic between the AWS Direct Connect
@@ -2943,32 +4614,32 @@ type VirtualInterface struct {
 
 	// State of the virtual interface.
 	//
-	//    Confirming: The creation of the virtual interface is pending confirmation
-	// from the virtual interface owner. If the owner of the virtual interface is
-	// different from the owner of the connection on which it is provisioned, then
-	// the virtual interface will remain in this state until it is confirmed by
-	// the virtual interface owner.
+	//    * Confirming: The creation of the virtual interface is pending confirmation
+	//    from the virtual interface owner. If the owner of the virtual interface
+	//    is different from the owner of the connection on which it is provisioned,
+	//    then the virtual interface will remain in this state until it is confirmed
+	//    by the virtual interface owner.
 	//
-	//    Verifying: This state only applies to public virtual interfaces. Each
-	// public virtual interface needs validation before the virtual interface can
-	// be created.
+	//    * Verifying: This state only applies to public virtual interfaces. Each
+	//    public virtual interface needs validation before the virtual interface
+	//    can be created.
 	//
-	//    Pending: A virtual interface is in this state from the time that it is
-	// created until the virtual interface is ready to forward traffic.
+	//    * Pending: A virtual interface is in this state from the time that it
+	//    is created until the virtual interface is ready to forward traffic.
 	//
-	//    Available: A virtual interface that is able to forward traffic.
+	//    * Available: A virtual interface that is able to forward traffic.
 	//
-	//    Down: A virtual interface that is BGP down.
+	//    * Down: A virtual interface that is BGP down.
 	//
-	//    Deleting: A virtual interface is in this state immediately after calling
-	// DeleteVirtualInterface until it can no longer forward traffic.
+	//    * Deleting: A virtual interface is in this state immediately after calling
+	//    DeleteVirtualInterface until it can no longer forward traffic.
 	//
-	//    Deleted: A virtual interface that cannot forward traffic.
+	//    * Deleted: A virtual interface that cannot forward traffic.
 	//
-	//    Rejected: The virtual interface owner has declined creation of the virtual
-	// interface. If a virtual interface in the 'Confirming' state is deleted by
-	// the virtual interface owner, the virtual interface will enter the 'Rejected'
-	// state.
+	//    * Rejected: The virtual interface owner has declined creation of the virtual
+	//    interface. If a virtual interface in the 'Confirming' state is deleted
+	//    by the virtual interface owner, the virtual interface will enter the 'Rejected'
+	//    state.
 	VirtualInterfaceState *string `locationName:"virtualInterfaceState" type:"string" enum:"VirtualInterfaceState"`
 
 	// The type of virtual interface.
@@ -2993,75 +4664,177 @@ func (s VirtualInterface) GoString() string {
 	return s.String()
 }
 
+// SetAmazonAddress sets the AmazonAddress field's value.
+func (s *VirtualInterface) SetAmazonAddress(v string) *VirtualInterface {
+	s.AmazonAddress = &v
+	return s
+}
+
+// SetAsn sets the Asn field's value.
+func (s *VirtualInterface) SetAsn(v int64) *VirtualInterface {
+	s.Asn = &v
+	return s
+}
+
+// SetAuthKey sets the AuthKey field's value.
+func (s *VirtualInterface) SetAuthKey(v string) *VirtualInterface {
+	s.AuthKey = &v
+	return s
+}
+
+// SetConnectionId sets the ConnectionId field's value.
+func (s *VirtualInterface) SetConnectionId(v string) *VirtualInterface {
+	s.ConnectionId = &v
+	return s
+}
+
+// SetCustomerAddress sets the CustomerAddress field's value.
+func (s *VirtualInterface) SetCustomerAddress(v string) *VirtualInterface {
+	s.CustomerAddress = &v
+	return s
+}
+
+// SetCustomerRouterConfig sets the CustomerRouterConfig field's value.
+func (s *VirtualInterface) SetCustomerRouterConfig(v string) *VirtualInterface {
+	s.CustomerRouterConfig = &v
+	return s
+}
+
+// SetLocation sets the Location field's value.
+func (s *VirtualInterface) SetLocation(v string) *VirtualInterface {
+	s.Location = &v
+	return s
+}
+
+// SetOwnerAccount sets the OwnerAccount field's value.
+func (s *VirtualInterface) SetOwnerAccount(v string) *VirtualInterface {
+	s.OwnerAccount = &v
+	return s
+}
+
+// SetRouteFilterPrefixes sets the RouteFilterPrefixes field's value.
+func (s *VirtualInterface) SetRouteFilterPrefixes(v []*RouteFilterPrefix) *VirtualInterface {
+	s.RouteFilterPrefixes = v
+	return s
+}
+
+// SetVirtualGatewayId sets the VirtualGatewayId field's value.
+func (s *VirtualInterface) SetVirtualGatewayId(v string) *VirtualInterface {
+	s.VirtualGatewayId = &v
+	return s
+}
+
+// SetVirtualInterfaceId sets the VirtualInterfaceId field's value.
+func (s *VirtualInterface) SetVirtualInterfaceId(v string) *VirtualInterface {
+	s.VirtualInterfaceId = &v
+	return s
+}
+
+// SetVirtualInterfaceName sets the VirtualInterfaceName field's value.
+func (s *VirtualInterface) SetVirtualInterfaceName(v string) *VirtualInterface {
+	s.VirtualInterfaceName = &v
+	return s
+}
+
+// SetVirtualInterfaceState sets the VirtualInterfaceState field's value.
+func (s *VirtualInterface) SetVirtualInterfaceState(v string) *VirtualInterface {
+	s.VirtualInterfaceState = &v
+	return s
+}
+
+// SetVirtualInterfaceType sets the VirtualInterfaceType field's value.
+func (s *VirtualInterface) SetVirtualInterfaceType(v string) *VirtualInterface {
+	s.VirtualInterfaceType = &v
+	return s
+}
+
+// SetVlan sets the Vlan field's value.
+func (s *VirtualInterface) SetVlan(v int64) *VirtualInterface {
+	s.Vlan = &v
+	return s
+}
+
 // State of the connection.
 //
-//    Ordering: The initial state of a hosted connection provisioned on an
-// interconnect. The connection stays in the ordering state until the owner
-// of the hosted connection confirms or declines the connection order.
+//    * Ordering: The initial state of a hosted connection provisioned on an
+//    interconnect. The connection stays in the ordering state until the owner
+//    of the hosted connection confirms or declines the connection order.
 //
-//    Requested: The initial state of a standard connection. The connection
-// stays in the requested state until the Letter of Authorization (LOA) is sent
-// to the customer.
+//    * Requested: The initial state of a standard connection. The connection
+//    stays in the requested state until the Letter of Authorization (LOA) is
+//    sent to the customer.
 //
-//    Pending: The connection has been approved, and is being initialized.
+//    * Pending: The connection has been approved, and is being initialized.
 //
-//    Available: The network link is up, and the connection is ready for use.
+//    * Available: The network link is up, and the connection is ready for use.
 //
-//    Down: The network link is down.
+//    * Down: The network link is down.
 //
-//    Deleting: The connection is in the process of being deleted.
+//    * Deleting: The connection is in the process of being deleted.
 //
-//    Deleted: The connection has been deleted.
+//    * Deleted: The connection has been deleted.
 //
-//    Rejected: A hosted connection in the 'Ordering' state will enter the
-// 'Rejected' state if it is deleted by the end customer.
+//    * Rejected: A hosted connection in the 'Ordering' state will enter the
+//    'Rejected' state if it is deleted by the end customer.
 const (
-	// @enum ConnectionState
+	// ConnectionStateOrdering is a ConnectionState enum value
 	ConnectionStateOrdering = "ordering"
-	// @enum ConnectionState
+
+	// ConnectionStateRequested is a ConnectionState enum value
 	ConnectionStateRequested = "requested"
-	// @enum ConnectionState
+
+	// ConnectionStatePending is a ConnectionState enum value
 	ConnectionStatePending = "pending"
-	// @enum ConnectionState
+
+	// ConnectionStateAvailable is a ConnectionState enum value
 	ConnectionStateAvailable = "available"
-	// @enum ConnectionState
+
+	// ConnectionStateDown is a ConnectionState enum value
 	ConnectionStateDown = "down"
-	// @enum ConnectionState
+
+	// ConnectionStateDeleting is a ConnectionState enum value
 	ConnectionStateDeleting = "deleting"
-	// @enum ConnectionState
+
+	// ConnectionStateDeleted is a ConnectionState enum value
 	ConnectionStateDeleted = "deleted"
-	// @enum ConnectionState
+
+	// ConnectionStateRejected is a ConnectionState enum value
 	ConnectionStateRejected = "rejected"
 )
 
 // State of the interconnect.
 //
-//    Requested: The initial state of an interconnect. The interconnect stays
-// in the requested state until the Letter of Authorization (LOA) is sent to
-// the customer.
+//    * Requested: The initial state of an interconnect. The interconnect stays
+//    in the requested state until the Letter of Authorization (LOA) is sent
+//    to the customer.
 //
-//    Pending>: The interconnect has been approved, and is being initialized.
+//    * Pending>: The interconnect has been approved, and is being initialized.
 //
-//    Available: The network link is up, and the interconnect is ready for
-// use.
+//    * Available: The network link is up, and the interconnect is ready for
+//    use.
 //
-//    Down: The network link is down.
+//    * Down: The network link is down.
 //
-//    Deleting: The interconnect is in the process of being deleted.
+//    * Deleting: The interconnect is in the process of being deleted.
 //
-//    Deleted: The interconnect has been deleted.
+//    * Deleted: The interconnect has been deleted.
 const (
-	// @enum InterconnectState
+	// InterconnectStateRequested is a InterconnectState enum value
 	InterconnectStateRequested = "requested"
-	// @enum InterconnectState
+
+	// InterconnectStatePending is a InterconnectState enum value
 	InterconnectStatePending = "pending"
-	// @enum InterconnectState
+
+	// InterconnectStateAvailable is a InterconnectState enum value
 	InterconnectStateAvailable = "available"
-	// @enum InterconnectState
+
+	// InterconnectStateDown is a InterconnectState enum value
 	InterconnectStateDown = "down"
-	// @enum InterconnectState
+
+	// InterconnectStateDeleting is a InterconnectState enum value
 	InterconnectStateDeleting = "deleting"
-	// @enum InterconnectState
+
+	// InterconnectStateDeleted is a InterconnectState enum value
 	InterconnectStateDeleted = "deleted"
 )
 
@@ -3070,53 +4843,60 @@ const (
 //
 // Default: application/pdf
 const (
-	// @enum LoaContentType
+	// LoaContentTypeApplicationPdf is a LoaContentType enum value
 	LoaContentTypeApplicationPdf = "application/pdf"
 )
 
 // State of the virtual interface.
 //
-//    Confirming: The creation of the virtual interface is pending confirmation
-// from the virtual interface owner. If the owner of the virtual interface is
-// different from the owner of the connection on which it is provisioned, then
-// the virtual interface will remain in this state until it is confirmed by
-// the virtual interface owner.
+//    * Confirming: The creation of the virtual interface is pending confirmation
+//    from the virtual interface owner. If the owner of the virtual interface
+//    is different from the owner of the connection on which it is provisioned,
+//    then the virtual interface will remain in this state until it is confirmed
+//    by the virtual interface owner.
 //
-//    Verifying: This state only applies to public virtual interfaces. Each
-// public virtual interface needs validation before the virtual interface can
-// be created.
+//    * Verifying: This state only applies to public virtual interfaces. Each
+//    public virtual interface needs validation before the virtual interface
+//    can be created.
 //
-//    Pending: A virtual interface is in this state from the time that it is
-// created until the virtual interface is ready to forward traffic.
+//    * Pending: A virtual interface is in this state from the time that it
+//    is created until the virtual interface is ready to forward traffic.
 //
-//    Available: A virtual interface that is able to forward traffic.
+//    * Available: A virtual interface that is able to forward traffic.
 //
-//    Down: A virtual interface that is BGP down.
+//    * Down: A virtual interface that is BGP down.
 //
-//    Deleting: A virtual interface is in this state immediately after calling
-// DeleteVirtualInterface until it can no longer forward traffic.
+//    * Deleting: A virtual interface is in this state immediately after calling
+//    DeleteVirtualInterface until it can no longer forward traffic.
 //
-//    Deleted: A virtual interface that cannot forward traffic.
+//    * Deleted: A virtual interface that cannot forward traffic.
 //
-//    Rejected: The virtual interface owner has declined creation of the virtual
-// interface. If a virtual interface in the 'Confirming' state is deleted by
-// the virtual interface owner, the virtual interface will enter the 'Rejected'
-// state.
+//    * Rejected: The virtual interface owner has declined creation of the virtual
+//    interface. If a virtual interface in the 'Confirming' state is deleted
+//    by the virtual interface owner, the virtual interface will enter the 'Rejected'
+//    state.
 const (
-	// @enum VirtualInterfaceState
+	// VirtualInterfaceStateConfirming is a VirtualInterfaceState enum value
 	VirtualInterfaceStateConfirming = "confirming"
-	// @enum VirtualInterfaceState
+
+	// VirtualInterfaceStateVerifying is a VirtualInterfaceState enum value
 	VirtualInterfaceStateVerifying = "verifying"
-	// @enum VirtualInterfaceState
+
+	// VirtualInterfaceStatePending is a VirtualInterfaceState enum value
 	VirtualInterfaceStatePending = "pending"
-	// @enum VirtualInterfaceState
+
+	// VirtualInterfaceStateAvailable is a VirtualInterfaceState enum value
 	VirtualInterfaceStateAvailable = "available"
-	// @enum VirtualInterfaceState
+
+	// VirtualInterfaceStateDown is a VirtualInterfaceState enum value
 	VirtualInterfaceStateDown = "down"
-	// @enum VirtualInterfaceState
+
+	// VirtualInterfaceStateDeleting is a VirtualInterfaceState enum value
 	VirtualInterfaceStateDeleting = "deleting"
-	// @enum VirtualInterfaceState
+
+	// VirtualInterfaceStateDeleted is a VirtualInterfaceState enum value
 	VirtualInterfaceStateDeleted = "deleted"
-	// @enum VirtualInterfaceState
+
+	// VirtualInterfaceStateRejected is a VirtualInterfaceState enum value
 	VirtualInterfaceStateRejected = "rejected"
 )

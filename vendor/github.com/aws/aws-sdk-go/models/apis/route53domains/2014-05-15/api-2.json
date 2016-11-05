@@ -123,6 +123,19 @@
         {"shape":"UnsupportedTLD"}
       ]
     },
+    "GetDomainSuggestions":{
+      "name":"GetDomainSuggestions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetDomainSuggestionsRequest"},
+      "output":{"shape":"GetDomainSuggestionsResponse"},
+      "errors":[
+        {"shape":"InvalidInput"},
+        {"shape":"UnsupportedTLD"}
+      ]
+    },
     "GetOperationDetail":{
       "name":"GetOperationDetail",
       "http":{
@@ -187,6 +200,22 @@
         {"shape":"DuplicateRequest"},
         {"shape":"TLDRulesViolation"},
         {"shape":"DomainLimitExceeded"},
+        {"shape":"OperationLimitExceeded"}
+      ]
+    },
+    "RenewDomain":{
+      "name":"RenewDomain",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"RenewDomainRequest"},
+      "output":{"shape":"RenewDomainResponse"},
+      "errors":[
+        {"shape":"InvalidInput"},
+        {"shape":"UnsupportedTLD"},
+        {"shape":"DuplicateRequest"},
+        {"shape":"TLDRulesViolation"},
         {"shape":"OperationLimitExceeded"}
       ]
     },
@@ -295,12 +324,38 @@
         {"shape":"OperationLimitExceeded"},
         {"shape":"UnsupportedTLD"}
       ]
+    },
+    "ViewBilling":{
+      "name":"ViewBilling",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ViewBillingRequest"},
+      "output":{"shape":"ViewBillingResponse"},
+      "errors":[
+        {"shape":"InvalidInput"}
+      ]
     }
   },
   "shapes":{
     "AddressLine":{
       "type":"string",
       "max":255
+    },
+    "BillingRecord":{
+      "type":"structure",
+      "members":{
+        "DomainName":{"shape":"DomainName"},
+        "Operation":{"shape":"OperationType"},
+        "InvoiceId":{"shape":"InvoiceId"},
+        "BillDate":{"shape":"Timestamp"},
+        "Price":{"shape":"Price"}
+      }
+    },
+    "BillingRecords":{
+      "type":"list",
+      "member":{"shape":"BillingRecord"}
     },
     "Boolean":{"type":"boolean"},
     "CheckDomainAvailabilityRequest":{
@@ -594,6 +649,7 @@
         "ZW"
       ]
     },
+    "CurrentExpiryYear":{"type":"integer"},
     "DNSSec":{"type":"string"},
     "DeleteTagsForDomainRequest":{
       "type":"structure",
@@ -671,6 +727,17 @@
     "DomainStatusList":{
       "type":"list",
       "member":{"shape":"DomainStatus"}
+    },
+    "DomainSuggestion":{
+      "type":"structure",
+      "members":{
+        "DomainName":{"shape":"DomainName"},
+        "Availability":{"shape":"String"}
+      }
+    },
+    "DomainSuggestionsList":{
+      "type":"list",
+      "member":{"shape":"DomainSuggestion"}
     },
     "DomainSummary":{
       "type":"structure",
@@ -828,6 +895,25 @@
         "StatusList":{"shape":"DomainStatusList"}
       }
     },
+    "GetDomainSuggestionsRequest":{
+      "type":"structure",
+      "required":[
+        "DomainName",
+        "SuggestionCount",
+        "OnlyAvailable"
+      ],
+      "members":{
+        "DomainName":{"shape":"DomainName"},
+        "SuggestionCount":{"shape":"Integer"},
+        "OnlyAvailable":{"shape":"Boolean"}
+      }
+    },
+    "GetDomainSuggestionsResponse":{
+      "type":"structure",
+      "members":{
+        "SuggestionsList":{"shape":"DomainSuggestionsList"}
+      }
+    },
     "GetOperationDetailRequest":{
       "type":"structure",
       "required":["OperationId"],
@@ -859,6 +945,7 @@
       "max":255,
       "pattern":"[a-zA-Z0-9_\\-.]*"
     },
+    "Integer":{"type":"integer"},
     "InvalidInput":{
       "type":"structure",
       "members":{
@@ -866,6 +953,7 @@
       },
       "exception":true
     },
+    "InvoiceId":{"type":"string"},
     "LangCode":{
       "type":"string",
       "max":3
@@ -986,6 +1074,7 @@
       "type":"integer",
       "max":100
     },
+    "Price":{"type":"double"},
     "ReachabilityStatus":{
       "type":"string",
       "enum":[
@@ -1027,6 +1116,25 @@
     "RegistrarUrl":{"type":"string"},
     "RegistrarWhoIsServer":{"type":"string"},
     "RegistryDomainId":{"type":"string"},
+    "RenewDomainRequest":{
+      "type":"structure",
+      "required":[
+        "DomainName",
+        "CurrentExpiryYear"
+      ],
+      "members":{
+        "DomainName":{"shape":"DomainName"},
+        "DurationInYears":{"shape":"DurationInYears"},
+        "CurrentExpiryYear":{"shape":"CurrentExpiryYear"}
+      }
+    },
+    "RenewDomainResponse":{
+      "type":"structure",
+      "required":["OperationId"],
+      "members":{
+        "OperationId":{"shape":"OperationId"}
+      }
+    },
     "Reseller":{"type":"string"},
     "ResendContactReachabilityEmailRequest":{
       "type":"structure",
@@ -1060,6 +1168,7 @@
       "type":"string",
       "max":255
     },
+    "String":{"type":"string"},
     "TLDRulesViolation":{
       "type":"structure",
       "members":{
@@ -1187,6 +1296,22 @@
     "UpdateTagsForDomainResponse":{
       "type":"structure",
       "members":{
+      }
+    },
+    "ViewBillingRequest":{
+      "type":"structure",
+      "members":{
+        "Start":{"shape":"Timestamp"},
+        "End":{"shape":"Timestamp"},
+        "Marker":{"shape":"PageMarker"},
+        "MaxItems":{"shape":"PageMaxItems"}
+      }
+    },
+    "ViewBillingResponse":{
+      "type":"structure",
+      "members":{
+        "NextPageMarker":{"shape":"PageMarker"},
+        "BillingRecords":{"shape":"BillingRecords"}
       }
     },
     "ZipCode":{

@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/client/metadata"
 	"github.com/aws/aws-sdk-go/aws/corehandlers"
 	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/awstesting/unit"
 	"github.com/aws/aws-sdk-go/service/kinesis"
 	"github.com/stretchr/testify/require"
 )
@@ -242,7 +242,7 @@ func BenchmarkValidateAny(b *testing.B) {
 		input.Records = append(input.Records, record)
 	}
 
-	req, _ := kinesis.New(session.New()).PutRecordsRequest(input)
+	req, _ := kinesis.New(unit.Session).PutRecordsRequest(input)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

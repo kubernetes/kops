@@ -21,8 +21,11 @@
     "DescribeInterconnectLoa": "<p>Returns the LOA-CFA for an Interconnect.</p> <p>The Letter of Authorization - Connecting Facility Assignment (LOA-CFA) is a document that is used when establishing your cross connect to AWS at the colocation facility. For more information, see <a href=\"http://docs.aws.amazon.com/directconnect/latest/UserGuide/Colocation.html\">Requesting Cross Connects at AWS Direct Connect Locations</a> in the AWS Direct Connect user guide.</p>",
     "DescribeInterconnects": "<p>Returns a list of interconnects owned by the AWS account.</p> <p>If an interconnect ID is provided, it will only return this particular interconnect.</p>",
     "DescribeLocations": "<p>Returns the list of AWS Direct Connect locations in the current AWS region. These are the locations that may be selected when calling CreateConnection or CreateInterconnect.</p>",
+    "DescribeTags": "<p>Describes the tags associated with the specified Direct Connect resources.</p>",
     "DescribeVirtualGateways": "<p>Returns a list of virtual private gateways owned by the AWS account.</p> <p>You can create one or more AWS Direct Connect private virtual interfaces linking to a virtual private gateway. A virtual private gateway can be managed via Amazon Virtual Private Cloud (VPC) console or the <a href=\"http://docs.aws.amazon.com/AWSEC2/latest/APIReference/ApiReference-query-CreateVpnGateway.html\">EC2 CreateVpnGateway</a> action.</p>",
-    "DescribeVirtualInterfaces": "<p>Displays all virtual interfaces for an AWS account. Virtual interfaces deleted fewer than 15 minutes before DescribeVirtualInterfaces is called are also returned. If a connection ID is included then only virtual interfaces associated with this connection will be returned. If a virtual interface ID is included then only a single virtual interface will be returned.</p> <p>A virtual interface (VLAN) transmits the traffic between the AWS Direct Connect location and the customer.</p> <p>If a connection ID is provided, only virtual interfaces provisioned on the specified connection will be returned. If a virtual interface ID is provided, only this particular virtual interface will be returned.</p>"
+    "DescribeVirtualInterfaces": "<p>Displays all virtual interfaces for an AWS account. Virtual interfaces deleted fewer than 15 minutes before DescribeVirtualInterfaces is called are also returned. If a connection ID is included then only virtual interfaces associated with this connection will be returned. If a virtual interface ID is included then only a single virtual interface will be returned.</p> <p>A virtual interface (VLAN) transmits the traffic between the AWS Direct Connect location and the customer.</p> <p>If a connection ID is provided, only virtual interfaces provisioned on the specified connection will be returned. If a virtual interface ID is provided, only this particular virtual interface will be returned.</p>",
+    "TagResource": "<p>Adds the specified tags to the specified Direct Connect resource. Each Direct Connect resource can have a maximum of 50 tags.</p> <p>Each tag consists of a key and an optional value. If a tag with the same key is already associated with the Direct Connect resource, this action updates its value.</p>",
+    "UntagResource": "<p>Removes one or more tags from the specified Direct Connect resource.</p>"
   },
   "shapes": {
     "ASN": {
@@ -254,6 +257,16 @@
       "refs": {
       }
     },
+    "DescribeTagsRequest": {
+      "base": "<p>Container for the parameters to the DescribeTags operation.</p>",
+      "refs": {
+      }
+    },
+    "DescribeTagsResponse": {
+      "base": "<p>The response received when DescribeTags is called.</p>",
+      "refs": {
+      }
+    },
     "DescribeVirtualInterfacesRequest": {
       "base": "<p>Container for the parameters to the DescribeVirtualInterfaces operation.</p>",
       "refs": {
@@ -266,6 +279,11 @@
     },
     "DirectConnectServerException": {
       "base": "<p>A server-side error occurred during the API call. The error message will contain additional details about the cause.</p>",
+      "refs": {
+      }
+    },
+    "DuplicateTagKeysException": {
+      "base": "<p>A tag key was specified more than once.</p>",
       "refs": {
       }
     },
@@ -434,6 +452,33 @@
         "Interconnect$region": null
       }
     },
+    "ResourceArn": {
+      "base": null,
+      "refs": {
+        "ResourceArnList$member": null,
+        "ResourceTag$resourceArn": "<p>The Amazon Resource Name (ARN) of the Direct Connect resource.</p>",
+        "TagResourceRequest$resourceArn": "<p>The Amazon Resource Name (ARN) of the Direct Connect resource.</p> <p>Example: arn:aws:directconnect:us-east-1:123456789012:dxcon/dxcon-fg5678gh</p>",
+        "UntagResourceRequest$resourceArn": "<p>The Amazon Resource Name (ARN) of the Direct Connect resource.</p>"
+      }
+    },
+    "ResourceArnList": {
+      "base": null,
+      "refs": {
+        "DescribeTagsRequest$resourceArns": "<p>The Amazon Resource Names (ARNs) of the Direct Connect resources.</p>"
+      }
+    },
+    "ResourceTag": {
+      "base": "<p>The tags associated with a Direct Connect resource.</p>",
+      "refs": {
+        "ResourceTagList$member": null
+      }
+    },
+    "ResourceTagList": {
+      "base": null,
+      "refs": {
+        "DescribeTagsResponse$resourceTags": "<p>Information about the tags.</p>"
+      }
+    },
     "RouteFilterPrefix": {
       "base": "<p>A route filter prefix that the customer can advertise through Border Gateway Protocol (BGP) over a public virtual interface.</p>",
       "refs": {
@@ -452,6 +497,63 @@
       "base": null,
       "refs": {
         "VirtualInterface$customerRouterConfig": "<p>Information for generating the customer router configuration.</p>"
+      }
+    },
+    "Tag": {
+      "base": "<p>Information about a tag.</p>",
+      "refs": {
+        "TagList$member": null
+      }
+    },
+    "TagKey": {
+      "base": null,
+      "refs": {
+        "Tag$key": "<p>The key of the tag.</p>",
+        "TagKeyList$member": null
+      }
+    },
+    "TagKeyList": {
+      "base": null,
+      "refs": {
+        "UntagResourceRequest$tagKeys": "<p>The list of tag keys to remove.</p>"
+      }
+    },
+    "TagList": {
+      "base": null,
+      "refs": {
+        "ResourceTag$tags": "<p>The tags.</p>",
+        "TagResourceRequest$tags": "<p>The list of tags to add.</p>"
+      }
+    },
+    "TagResourceRequest": {
+      "base": "<p>Container for the parameters to the TagResource operation.</p>",
+      "refs": {
+      }
+    },
+    "TagResourceResponse": {
+      "base": "<p>The response received when TagResource is called.</p>",
+      "refs": {
+      }
+    },
+    "TagValue": {
+      "base": null,
+      "refs": {
+        "Tag$value": "<p>The value of the tag.</p>"
+      }
+    },
+    "TooManyTagsException": {
+      "base": "<p>You have reached the limit on the number of tags that can be assigned to a Direct Connect resource.</p>",
+      "refs": {
+      }
+    },
+    "UntagResourceRequest": {
+      "base": "<p>Container for the parameters to the UntagResource operation.</p>",
+      "refs": {
+      }
+    },
+    "UntagResourceResponse": {
+      "base": "<p>The response received when UntagResource is called.</p>",
+      "refs": {
       }
     },
     "VLAN": {
