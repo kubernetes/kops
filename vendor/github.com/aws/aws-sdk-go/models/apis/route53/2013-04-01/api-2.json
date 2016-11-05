@@ -672,6 +672,19 @@
         {"shape":"NoSuchTrafficPolicy"}
       ]
     },
+    "TestDNSAnswer":{
+      "name":"TestDNSAnswer",
+      "http":{
+        "method":"GET",
+        "requestUri":"/2013-04-01/testdnsanswer"
+      },
+      "input":{"shape":"TestDNSAnswerRequest"},
+      "output":{"shape":"TestDNSAnswerResponse"},
+      "errors":[
+        {"shape":"NoSuchHostedZone"},
+        {"shape":"InvalidInput"}
+      ]
+    },
     "UpdateHealthCheck":{
       "name":"UpdateHealthCheck",
       "http":{
@@ -973,6 +986,7 @@
         "us-west-2",
         "eu-central-1",
         "eu-west-1",
+        "ap-south-1",
         "ap-southeast-1",
         "ap-southeast-2",
         "ap-northeast-1",
@@ -1191,6 +1205,7 @@
       "type":"string",
       "max":1024
     },
+    "DNSRCode":{"type":"string"},
     "Date":{
       "type":"string",
       "deprecated":true,
@@ -2603,6 +2618,11 @@
       "max":255,
       "min":1
     },
+    "Nameserver":{
+      "type":"string",
+      "max":255,
+      "min":0
+    },
     "Namespace":{
       "type":"string",
       "max":255,
@@ -2712,11 +2732,24 @@
         "NS",
         "CNAME",
         "MX",
+        "NAPTR",
         "PTR",
         "SRV",
         "SPF",
         "AAAA"
       ]
+    },
+    "RecordData":{
+      "type":"list",
+      "member":{
+        "shape":"RecordDataEntry",
+        "locationName":"RecordDataEntry"
+      }
+    },
+    "RecordDataEntry":{
+      "type":"string",
+      "max":512,
+      "min":0
     },
     "RequestInterval":{
       "type":"integer",
@@ -2779,6 +2812,7 @@
       "type":"string",
       "enum":[
         "us-east-1",
+        "us-east-2",
         "us-west-1",
         "us-west-2",
         "eu-west-1",
@@ -2855,6 +2889,11 @@
         "CheckedTime":{"shape":"TimeStamp"}
       }
     },
+    "SubnetMask":{
+      "type":"string",
+      "max":2,
+      "min":0
+    },
     "TTL":{
       "type":"long",
       "max":2147483647,
@@ -2912,6 +2951,65 @@
     "TagValue":{
       "type":"string",
       "max":256
+    },
+    "TestDNSAnswerRequest":{
+      "type":"structure",
+      "required":[
+        "HostedZoneId",
+        "RecordName",
+        "RecordType"
+      ],
+      "members":{
+        "HostedZoneId":{
+          "shape":"ResourceId",
+          "location":"querystring",
+          "locationName":"hostedzoneid"
+        },
+        "RecordName":{
+          "shape":"DNSName",
+          "location":"querystring",
+          "locationName":"recordname"
+        },
+        "RecordType":{
+          "shape":"RRType",
+          "location":"querystring",
+          "locationName":"recordtype"
+        },
+        "ResolverIP":{
+          "shape":"IPAddress",
+          "location":"querystring",
+          "locationName":"resolverip"
+        },
+        "EDNS0ClientSubnetIP":{
+          "shape":"IPAddress",
+          "location":"querystring",
+          "locationName":"edns0clientsubnetip"
+        },
+        "EDNS0ClientSubnetMask":{
+          "shape":"SubnetMask",
+          "location":"querystring",
+          "locationName":"edns0clientsubnetmask"
+        }
+      }
+    },
+    "TestDNSAnswerResponse":{
+      "type":"structure",
+      "required":[
+        "Nameserver",
+        "RecordName",
+        "RecordType",
+        "RecordData",
+        "ResponseCode",
+        "Protocol"
+      ],
+      "members":{
+        "Nameserver":{"shape":"Nameserver"},
+        "RecordName":{"shape":"DNSName"},
+        "RecordType":{"shape":"RRType"},
+        "RecordData":{"shape":"RecordData"},
+        "ResponseCode":{"shape":"DNSRCode"},
+        "Protocol":{"shape":"TransportProtocol"}
+      }
     },
     "Threshold":{"type":"double"},
     "ThrottlingException":{
@@ -3090,6 +3188,7 @@
       "type":"string",
       "max":4
     },
+    "TransportProtocol":{"type":"string"},
     "UpdateHealthCheckRequest":{
       "type":"structure",
       "required":["HealthCheckId"],
@@ -3218,6 +3317,7 @@
       "type":"string",
       "enum":[
         "us-east-1",
+        "us-east-2",
         "us-west-1",
         "us-west-2",
         "eu-west-1",

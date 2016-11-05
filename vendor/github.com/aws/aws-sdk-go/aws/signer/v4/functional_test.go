@@ -7,10 +7,27 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/signer/v4"
 	"github.com/aws/aws-sdk-go/awstesting/unit"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/stretchr/testify/assert"
 )
+
+var standaloneSignCases = []struct {
+	OrigURI                    string
+	OrigQuery                  string
+	Region, Service, SubDomain string
+	ExpSig                     string
+	EscapedURI                 string
+}{
+	{
+		OrigURI:   `/logs-*/_search`,
+		OrigQuery: `pretty=true`,
+		Region:    "us-west-2", Service: "es", SubDomain: "hostname-clusterkey",
+		EscapedURI: `/logs-%2A/_search`,
+		ExpSig:     `AWS4-HMAC-SHA256 Credential=AKID/19700101/us-west-2/es/aws4_request, SignedHeaders=host;x-amz-date;x-amz-security-token, Signature=79d0760751907af16f64a537c1242416dacf51204a7dd5284492d15577973b91`,
+	},
+}
 
 func TestPresignHandler(t *testing.T) {
 	svc := s3.New(unit.Session)
@@ -74,4 +91,26 @@ func TestPresignRequest(t *testing.T) {
 	assert.Equal(t, "300", urlQ.Get("X-Amz-Expires"))
 
 	assert.NotContains(t, urlstr, "+") // + encoded as %20
+}
+
+func TestStandaloneSign_CustomURIEscape(t *testing.T) {
+	var expectSig = `AWS4-HMAC-SHA256 Credential=AKID/19700101/us-east-1/es/aws4_request, SignedHeaders=host;x-amz-date;x-amz-security-token, Signature=6601e883cc6d23871fd6c2a394c5677ea2b8c82b04a6446786d64cd74f520967`
+
+	creds := unit.Session.Config.Credentials
+	signer := v4.NewSigner(creds, func(s *v4.Signer) {
+		s.DisableURIPathEscaping = true
+	})
+
+	host := "https://subdomain.us-east-1.es.amazonaws.com"
+	req, err := http.NewRequest("GET", host, nil)
+	assert.NoError(t, err)
+
+	req.URL.Path = `/log-*/_search`
+	req.URL.Opaque = "//subdomain.us-east-1.es.amazonaws.com/log-%2A/_search"
+
+	_, err = signer.Sign(req, nil, "es", "us-east-1", time.Unix(0, 0))
+	assert.NoError(t, err)
+
+	actual := req.Header.Get("Authorization")
+	assert.Equal(t, expectSig, actual)
 }

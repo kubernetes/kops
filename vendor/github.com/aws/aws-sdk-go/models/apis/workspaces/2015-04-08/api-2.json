@@ -99,6 +99,36 @@
         {"shape":"ResourceUnavailableException"}
       ]
     },
+    "DescribeWorkspacesConnectionStatus":{
+      "name":"DescribeWorkspacesConnectionStatus",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeWorkspacesConnectionStatusRequest"},
+      "output":{"shape":"DescribeWorkspacesConnectionStatusResult"},
+      "errors":[
+        {"shape":"InvalidParameterValuesException"}
+      ]
+    },
+    "ModifyWorkspaceProperties":{
+      "name":"ModifyWorkspaceProperties",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ModifyWorkspacePropertiesRequest"},
+      "output":{"shape":"ModifyWorkspacePropertiesResult"},
+      "errors":[
+        {"shape":"InvalidParameterValuesException"},
+        {"shape":"InvalidResourceStateException"},
+        {"shape":"OperationInProgressException"},
+        {"shape":"UnsupportedWorkspaceConfigurationException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"ResourceUnavailableException"}
+      ]
+    },
     "RebootWorkspaces":{
       "name":"RebootWorkspaces",
       "http":{
@@ -117,6 +147,24 @@
       "input":{"shape":"RebuildWorkspacesRequest"},
       "output":{"shape":"RebuildWorkspacesResult"}
     },
+    "StartWorkspaces":{
+      "name":"StartWorkspaces",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StartWorkspacesRequest"},
+      "output":{"shape":"StartWorkspacesResult"}
+    },
+    "StopWorkspaces":{
+      "name":"StopWorkspaces",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StopWorkspacesRequest"},
+      "output":{"shape":"StopWorkspacesResult"}
+    },
     "TerminateWorkspaces":{
       "name":"TerminateWorkspaces",
       "http":{
@@ -131,6 +179,13 @@
     "ARN":{
       "type":"string",
       "pattern":"^arn:aws:[A-Za-z0-9][A-za-z0-9_/.-]{0,62}:[A-za-z0-9_/.-]{0,63}:[A-za-z0-9_/.-]{0,63}:[A-Za-z0-9][A-za-z0-9_/.-]{0,127}$"
+    },
+    "AccessDeniedException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ExceptionMessage"}
+      },
+      "exception":true
     },
     "Alias":{"type":"string"},
     "BooleanObject":{"type":"boolean"},
@@ -164,6 +219,14 @@
       }
     },
     "ComputerName":{"type":"string"},
+    "ConnectionState":{
+      "type":"string",
+      "enum":[
+        "CONNECTED",
+        "DISCONNECTED",
+        "UNKNOWN"
+      ]
+    },
     "CreateTagsRequest":{
       "type":"structure",
       "required":[
@@ -263,6 +326,20 @@
         "NextToken":{"shape":"PaginationToken"}
       }
     },
+    "DescribeWorkspacesConnectionStatusRequest":{
+      "type":"structure",
+      "members":{
+        "WorkspaceIds":{"shape":"WorkspaceIdList"},
+        "NextToken":{"shape":"PaginationToken"}
+      }
+    },
+    "DescribeWorkspacesConnectionStatusResult":{
+      "type":"structure",
+      "members":{
+        "WorkspacesConnectionStatus":{"shape":"WorkspaceConnectionStatusList"},
+        "NextToken":{"shape":"PaginationToken"}
+      }
+    },
     "DescribeWorkspacesRequest":{
       "type":"structure",
       "members":{
@@ -323,6 +400,14 @@
       "type":"list",
       "member":{"shape":"FailedWorkspaceChangeRequest"}
     },
+    "FailedStartWorkspaceRequests":{
+      "type":"list",
+      "member":{"shape":"FailedWorkspaceChangeRequest"}
+    },
+    "FailedStopWorkspaceRequests":{
+      "type":"list",
+      "member":{"shape":"FailedWorkspaceChangeRequest"}
+    },
     "FailedTerminateWorkspaceRequests":{
       "type":"list",
       "member":{"shape":"FailedWorkspaceChangeRequest"}
@@ -342,15 +427,45 @@
       },
       "exception":true
     },
+    "InvalidResourceStateException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ExceptionMessage"}
+      },
+      "exception":true
+    },
     "IpAddress":{"type":"string"},
     "Limit":{
       "type":"integer",
       "max":25,
       "min":1
     },
+    "ModifyWorkspacePropertiesRequest":{
+      "type":"structure",
+      "required":[
+        "WorkspaceId",
+        "WorkspaceProperties"
+      ],
+      "members":{
+        "WorkspaceId":{"shape":"WorkspaceId"},
+        "WorkspaceProperties":{"shape":"WorkspaceProperties"}
+      }
+    },
+    "ModifyWorkspacePropertiesResult":{
+      "type":"structure",
+      "members":{
+      }
+    },
     "NonEmptyString":{
       "type":"string",
       "min":1
+    },
+    "OperationInProgressException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ExceptionMessage"}
+      },
+      "exception":true
     },
     "PaginationToken":{
       "type":"string",
@@ -437,9 +552,67 @@
       },
       "exception":true
     },
+    "RunningMode":{
+      "type":"string",
+      "enum":[
+        "AUTO_STOP",
+        "ALWAYS_ON"
+      ]
+    },
+    "RunningModeAutoStopTimeoutInMinutes":{"type":"integer"},
     "SecurityGroupId":{
       "type":"string",
       "pattern":"^(sg-[0-9a-f]{8})$"
+    },
+    "StartRequest":{
+      "type":"structure",
+      "members":{
+        "WorkspaceId":{"shape":"WorkspaceId"}
+      }
+    },
+    "StartWorkspaceRequests":{
+      "type":"list",
+      "member":{"shape":"StartRequest"},
+      "max":25,
+      "min":1
+    },
+    "StartWorkspacesRequest":{
+      "type":"structure",
+      "required":["StartWorkspaceRequests"],
+      "members":{
+        "StartWorkspaceRequests":{"shape":"StartWorkspaceRequests"}
+      }
+    },
+    "StartWorkspacesResult":{
+      "type":"structure",
+      "members":{
+        "FailedRequests":{"shape":"FailedStartWorkspaceRequests"}
+      }
+    },
+    "StopRequest":{
+      "type":"structure",
+      "members":{
+        "WorkspaceId":{"shape":"WorkspaceId"}
+      }
+    },
+    "StopWorkspaceRequests":{
+      "type":"list",
+      "member":{"shape":"StopRequest"},
+      "max":25,
+      "min":1
+    },
+    "StopWorkspacesRequest":{
+      "type":"structure",
+      "required":["StopWorkspaceRequests"],
+      "members":{
+        "StopWorkspaceRequests":{"shape":"StopWorkspaceRequests"}
+      }
+    },
+    "StopWorkspacesResult":{
+      "type":"structure",
+      "members":{
+        "FailedRequests":{"shape":"FailedStopWorkspaceRequests"}
+      }
     },
     "SubnetId":{
       "type":"string",
@@ -500,6 +673,14 @@
         "FailedRequests":{"shape":"FailedTerminateWorkspaceRequests"}
       }
     },
+    "Timestamp":{"type":"timestamp"},
+    "UnsupportedWorkspaceConfigurationException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ExceptionMessage"}
+      },
+      "exception":true
+    },
     "UserName":{
       "type":"string",
       "max":63,
@@ -527,7 +708,8 @@
         "ComputerName":{"shape":"ComputerName"},
         "VolumeEncryptionKey":{"shape":"VolumeEncryptionKey"},
         "UserVolumeEncryptionEnabled":{"shape":"BooleanObject"},
-        "RootVolumeEncryptionEnabled":{"shape":"BooleanObject"}
+        "RootVolumeEncryptionEnabled":{"shape":"BooleanObject"},
+        "WorkspaceProperties":{"shape":"WorkspaceProperties"}
       }
     },
     "WorkspaceBundle":{
@@ -540,6 +722,19 @@
         "UserStorage":{"shape":"UserStorage"},
         "ComputeType":{"shape":"ComputeType"}
       }
+    },
+    "WorkspaceConnectionStatus":{
+      "type":"structure",
+      "members":{
+        "WorkspaceId":{"shape":"WorkspaceId"},
+        "ConnectionState":{"shape":"ConnectionState"},
+        "ConnectionStateCheckTimestamp":{"shape":"Timestamp"},
+        "LastKnownUserConnectionTimestamp":{"shape":"Timestamp"}
+      }
+    },
+    "WorkspaceConnectionStatusList":{
+      "type":"list",
+      "member":{"shape":"WorkspaceConnectionStatus"}
     },
     "WorkspaceDirectory":{
       "type":"structure",
@@ -590,6 +785,13 @@
       "type":"list",
       "member":{"shape":"Workspace"}
     },
+    "WorkspaceProperties":{
+      "type":"structure",
+      "members":{
+        "RunningMode":{"shape":"RunningMode"},
+        "RunningModeAutoStopTimeoutInMinutes":{"shape":"RunningModeAutoStopTimeoutInMinutes"}
+      }
+    },
     "WorkspaceRequest":{
       "type":"structure",
       "required":[
@@ -604,6 +806,7 @@
         "VolumeEncryptionKey":{"shape":"VolumeEncryptionKey"},
         "UserVolumeEncryptionEnabled":{"shape":"BooleanObject"},
         "RootVolumeEncryptionEnabled":{"shape":"BooleanObject"},
+        "WorkspaceProperties":{"shape":"WorkspaceProperties"},
         "Tags":{"shape":"TagList"}
       }
     },
@@ -621,10 +824,14 @@
         "IMPAIRED",
         "UNHEALTHY",
         "REBOOTING",
+        "STARTING",
         "REBUILDING",
+        "MAINTENANCE",
         "TERMINATING",
         "TERMINATED",
         "SUSPENDED",
+        "STOPPING",
+        "STOPPED",
         "ERROR"
       ]
     }

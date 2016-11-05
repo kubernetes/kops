@@ -6,11 +6,11 @@ package lambda
 import (
 	"github.com/aws/aws-sdk-go/awstesting/integration/smoke"
 	"github.com/aws/aws-sdk-go/service/lambda"
-	. "github.com/lsegal/gucumber"
+	"github.com/gucumber/gucumber"
 )
 
 func init() {
-	Before("@lambda", func() {
-		World["client"] = lambda.New(smoke.Session)
+	gucumber.Before("@lambda", func() {
+		gucumber.World["client"] = lambda.New(smoke.Session)
 	})
 }

@@ -117,6 +117,21 @@
         {"shape":"RepositoryPolicyNotFoundException"}
       ]
     },
+    "DescribeImages":{
+      "name":"DescribeImages",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeImagesRequest"},
+      "output":{"shape":"DescribeImagesResponse"},
+      "errors":[
+        {"shape":"ServerException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"RepositoryNotFoundException"},
+        {"shape":"ImageNotFoundException"}
+      ]
+    },
     "DescribeRepositories":{
       "name":"DescribeRepositories",
       "http":{
@@ -374,6 +389,7 @@
         "repository":{"shape":"Repository"}
       }
     },
+    "CreationTimestamp":{"type":"timestamp"},
     "DeleteRepositoryPolicyRequest":{
       "type":"structure",
       "required":["repositoryName"],
@@ -403,6 +419,31 @@
       "type":"structure",
       "members":{
         "repository":{"shape":"Repository"}
+      }
+    },
+    "DescribeImagesFilter":{
+      "type":"structure",
+      "members":{
+        "tagStatus":{"shape":"TagStatus"}
+      }
+    },
+    "DescribeImagesRequest":{
+      "type":"structure",
+      "required":["repositoryName"],
+      "members":{
+        "registryId":{"shape":"RegistryId"},
+        "repositoryName":{"shape":"RepositoryName"},
+        "imageIds":{"shape":"ImageIdentifierList"},
+        "nextToken":{"shape":"NextToken"},
+        "maxResults":{"shape":"MaxResults"},
+        "filter":{"shape":"DescribeImagesFilter"}
+      }
+    },
+    "DescribeImagesResponse":{
+      "type":"structure",
+      "members":{
+        "imageDetails":{"shape":"ImageDetailList"},
+        "nextToken":{"shape":"NextToken"}
       }
     },
     "DescribeRepositoriesRequest":{
@@ -500,6 +541,21 @@
       },
       "exception":true
     },
+    "ImageDetail":{
+      "type":"structure",
+      "members":{
+        "registryId":{"shape":"RegistryId"},
+        "repositoryName":{"shape":"RepositoryName"},
+        "imageDigest":{"shape":"ImageDigest"},
+        "imageTags":{"shape":"ImageTagList"},
+        "imageSizeInBytes":{"shape":"ImageSizeInBytes"},
+        "imagePushedAt":{"shape":"PushTimestamp"}
+      }
+    },
+    "ImageDetailList":{
+      "type":"list",
+      "member":{"shape":"ImageDetail"}
+    },
     "ImageDigest":{"type":"string"},
     "ImageFailure":{
       "type":"structure",
@@ -542,7 +598,19 @@
       "member":{"shape":"Image"}
     },
     "ImageManifest":{"type":"string"},
+    "ImageNotFoundException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ExceptionMessage"}
+      },
+      "exception":true
+    },
+    "ImageSizeInBytes":{"type":"long"},
     "ImageTag":{"type":"string"},
+    "ImageTagList":{
+      "type":"list",
+      "member":{"shape":"ImageTag"}
+    },
     "InitiateLayerUploadRequest":{
       "type":"structure",
       "required":["repositoryName"],
@@ -669,6 +737,12 @@
       },
       "exception":true
     },
+    "ListImagesFilter":{
+      "type":"structure",
+      "members":{
+        "tagStatus":{"shape":"TagStatus"}
+      }
+    },
     "ListImagesRequest":{
       "type":"structure",
       "required":["repositoryName"],
@@ -676,7 +750,8 @@
         "registryId":{"shape":"RegistryId"},
         "repositoryName":{"shape":"RepositoryName"},
         "nextToken":{"shape":"NextToken"},
-        "maxResults":{"shape":"MaxResults"}
+        "maxResults":{"shape":"MaxResults"},
+        "filter":{"shape":"ListImagesFilter"}
       }
     },
     "ListImagesResponse":{
@@ -697,6 +772,7 @@
       "min":0
     },
     "ProxyEndpoint":{"type":"string"},
+    "PushTimestamp":{"type":"timestamp"},
     "PutImageRequest":{
       "type":"structure",
       "required":[
@@ -725,7 +801,8 @@
         "repositoryArn":{"shape":"Arn"},
         "registryId":{"shape":"RegistryId"},
         "repositoryName":{"shape":"RepositoryName"},
-        "repositoryUri":{"shape":"Url"}
+        "repositoryUri":{"shape":"Url"},
+        "createdAt":{"shape":"CreationTimestamp"}
       }
     },
     "RepositoryAlreadyExistsException":{
@@ -805,6 +882,13 @@
         "repositoryName":{"shape":"RepositoryName"},
         "policyText":{"shape":"RepositoryPolicyText"}
       }
+    },
+    "TagStatus":{
+      "type":"string",
+      "enum":[
+        "TAGGED",
+        "UNTAGGED"
+      ]
     },
     "UploadId":{
       "type":"string",

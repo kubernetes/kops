@@ -18,6 +18,8 @@ const opDescribeProduct = "DescribeProduct"
 // value can be used to capture response data after the request's "Send" method
 // is called.
 //
+// See DescribeProduct for usage and error information.
+//
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
 // access properties on the request object before or after sending the request. If
@@ -52,10 +54,27 @@ func (c *ServiceCatalog) DescribeProductRequest(input *DescribeProductInput) (re
 	return
 }
 
+// DescribeProduct API operation for AWS Service Catalog.
+//
 // Retrieves information about a specified product.
 //
 // This operation is functionally identical to DescribeProductView except that
 // it takes as input ProductId instead of ProductViewId.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Service Catalog's
+// API operation DescribeProduct for usage and error information.
+//
+// Returned Error Codes:
+//   * ResourceNotFoundException
+//   The specified resource was not found.
+//
+//   * InvalidParametersException
+//   One or more parameters provided to the operation are invalid.
+//
 func (c *ServiceCatalog) DescribeProduct(input *DescribeProductInput) (*DescribeProductOutput, error) {
 	req, out := c.DescribeProductRequest(input)
 	err := req.Send()
@@ -68,6 +87,8 @@ const opDescribeProductView = "DescribeProductView"
 // client's request for the DescribeProductView operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeProductView for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -103,10 +124,27 @@ func (c *ServiceCatalog) DescribeProductViewRequest(input *DescribeProductViewIn
 	return
 }
 
+// DescribeProductView API operation for AWS Service Catalog.
+//
 // Retrieves information about a specified product.
 //
-// This operation is functionally identical to DescribeProduct except that
-// it takes as input ProductViewId instead of ProductId.
+// This operation is functionally identical to DescribeProduct except that it
+// takes as input ProductViewId instead of ProductId.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Service Catalog's
+// API operation DescribeProductView for usage and error information.
+//
+// Returned Error Codes:
+//   * ResourceNotFoundException
+//   The specified resource was not found.
+//
+//   * InvalidParametersException
+//   One or more parameters provided to the operation are invalid.
+//
 func (c *ServiceCatalog) DescribeProductView(input *DescribeProductViewInput) (*DescribeProductViewOutput, error) {
 	req, out := c.DescribeProductViewRequest(input)
 	err := req.Send()
@@ -119,6 +157,8 @@ const opDescribeProvisioningParameters = "DescribeProvisioningParameters"
 // client's request for the DescribeProvisioningParameters operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeProvisioningParameters for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -154,10 +194,27 @@ func (c *ServiceCatalog) DescribeProvisioningParametersRequest(input *DescribePr
 	return
 }
 
+// DescribeProvisioningParameters API operation for AWS Service Catalog.
+//
 // Provides information about parameters required to provision a specified product
 // in a specified manner. Use this operation to obtain the list of ProvisioningArtifactParameters
 // parameters available to call the ProvisionProduct operation for the specified
 // product.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Service Catalog's
+// API operation DescribeProvisioningParameters for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParametersException
+//   One or more parameters provided to the operation are invalid.
+//
+//   * ResourceNotFoundException
+//   The specified resource was not found.
+//
 func (c *ServiceCatalog) DescribeProvisioningParameters(input *DescribeProvisioningParametersInput) (*DescribeProvisioningParametersOutput, error) {
 	req, out := c.DescribeProvisioningParametersRequest(input)
 	err := req.Send()
@@ -170,6 +227,8 @@ const opDescribeRecord = "DescribeRecord"
 // client's request for the DescribeRecord operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeRecord for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -205,9 +264,23 @@ func (c *ServiceCatalog) DescribeRecordRequest(input *DescribeRecordInput) (req 
 	return
 }
 
+// DescribeRecord API operation for AWS Service Catalog.
+//
 // Retrieves a paginated list of the full details of a specific request. Use
 // this operation after calling a request operation (ProvisionProduct, TerminateProvisionedProduct,
 // or UpdateProvisionedProduct).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Service Catalog's
+// API operation DescribeRecord for usage and error information.
+//
+// Returned Error Codes:
+//   * ResourceNotFoundException
+//   The specified resource was not found.
+//
 func (c *ServiceCatalog) DescribeRecord(input *DescribeRecordInput) (*DescribeRecordOutput, error) {
 	req, out := c.DescribeRecordRequest(input)
 	err := req.Send()
@@ -220,6 +293,8 @@ const opListLaunchPaths = "ListLaunchPaths"
 // client's request for the ListLaunchPaths operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See ListLaunchPaths for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -255,9 +330,26 @@ func (c *ServiceCatalog) ListLaunchPathsRequest(input *ListLaunchPathsInput) (re
 	return
 }
 
+// ListLaunchPaths API operation for AWS Service Catalog.
+//
 // Returns a paginated list of all paths to a specified product. A path is how
 // the user has access to a specified product, and is necessary when provisioning
 // a product. A path also determines the constraints put on the product.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Service Catalog's
+// API operation ListLaunchPaths for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParametersException
+//   One or more parameters provided to the operation are invalid.
+//
+//   * ResourceNotFoundException
+//   The specified resource was not found.
+//
 func (c *ServiceCatalog) ListLaunchPaths(input *ListLaunchPathsInput) (*ListLaunchPathsOutput, error) {
 	req, out := c.ListLaunchPathsRequest(input)
 	err := req.Send()
@@ -270,6 +362,8 @@ const opListRecordHistory = "ListRecordHistory"
 // client's request for the ListRecordHistory operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See ListRecordHistory for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -305,8 +399,22 @@ func (c *ServiceCatalog) ListRecordHistoryRequest(input *ListRecordHistoryInput)
 	return
 }
 
+// ListRecordHistory API operation for AWS Service Catalog.
+//
 // Returns a paginated list of all performed requests, in the form of RecordDetails
 // objects that are filtered as specified.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Service Catalog's
+// API operation ListRecordHistory for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParametersException
+//   One or more parameters provided to the operation are invalid.
+//
 func (c *ServiceCatalog) ListRecordHistory(input *ListRecordHistoryInput) (*ListRecordHistoryOutput, error) {
 	req, out := c.ListRecordHistoryRequest(input)
 	err := req.Send()
@@ -319,6 +427,8 @@ const opProvisionProduct = "ProvisionProduct"
 // client's request for the ProvisionProduct operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See ProvisionProduct for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -354,12 +464,32 @@ func (c *ServiceCatalog) ProvisionProductRequest(input *ProvisionProductInput) (
 	return
 }
 
+// ProvisionProduct API operation for AWS Service Catalog.
+//
 // Requests a Provision of a specified product. A ProvisionedProduct is a resourced
 // instance for a product. For example, provisioning a CloudFormation-template-backed
 // product results in launching a CloudFormation stack and all the underlying
 // resources that come with it.
 //
 // You can check the status of this request using the DescribeRecord operation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Service Catalog's
+// API operation ProvisionProduct for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParametersException
+//   One or more parameters provided to the operation are invalid.
+//
+//   * ResourceNotFoundException
+//   The specified resource was not found.
+//
+//   * DuplicateResourceException
+//   The specified resource is a duplicate.
+//
 func (c *ServiceCatalog) ProvisionProduct(input *ProvisionProductInput) (*ProvisionProductOutput, error) {
 	req, out := c.ProvisionProductRequest(input)
 	err := req.Send()
@@ -372,6 +502,8 @@ const opScanProvisionedProducts = "ScanProvisionedProducts"
 // client's request for the ScanProvisionedProducts operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See ScanProvisionedProducts for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -407,8 +539,22 @@ func (c *ServiceCatalog) ScanProvisionedProductsRequest(input *ScanProvisionedPr
 	return
 }
 
+// ScanProvisionedProducts API operation for AWS Service Catalog.
+//
 // Returns a paginated list of all the ProvisionedProduct objects that are currently
 // available (not terminated).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Service Catalog's
+// API operation ScanProvisionedProducts for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParametersException
+//   One or more parameters provided to the operation are invalid.
+//
 func (c *ServiceCatalog) ScanProvisionedProducts(input *ScanProvisionedProductsInput) (*ScanProvisionedProductsOutput, error) {
 	req, out := c.ScanProvisionedProductsRequest(input)
 	err := req.Send()
@@ -421,6 +567,8 @@ const opSearchProducts = "SearchProducts"
 // client's request for the SearchProducts operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See SearchProducts for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -456,11 +604,25 @@ func (c *ServiceCatalog) SearchProductsRequest(input *SearchProductsInput) (req 
 	return
 }
 
+// SearchProducts API operation for AWS Service Catalog.
+//
 // Returns a paginated list all of the Products objects to which the caller
 // has access.
 //
-// The output of this operation can be used as input for other operations,
-// such as DescribeProductView.
+// The output of this operation can be used as input for other operations, such
+// as DescribeProductView.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Service Catalog's
+// API operation SearchProducts for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParametersException
+//   One or more parameters provided to the operation are invalid.
+//
 func (c *ServiceCatalog) SearchProducts(input *SearchProductsInput) (*SearchProductsOutput, error) {
 	req, out := c.SearchProductsRequest(input)
 	err := req.Send()
@@ -473,6 +635,8 @@ const opTerminateProvisionedProduct = "TerminateProvisionedProduct"
 // client's request for the TerminateProvisionedProduct operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See TerminateProvisionedProduct for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -508,6 +672,8 @@ func (c *ServiceCatalog) TerminateProvisionedProductRequest(input *TerminateProv
 	return
 }
 
+// TerminateProvisionedProduct API operation for AWS Service Catalog.
+//
 // Requests termination of an existing ProvisionedProduct object. If there are
 // Tags associated with the object, they are terminated when the ProvisionedProduct
 // object is terminated.
@@ -516,6 +682,18 @@ func (c *ServiceCatalog) TerminateProvisionedProductRequest(input *TerminateProv
 // object.
 //
 // You can check the status of this request using the DescribeRecord operation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Service Catalog's
+// API operation TerminateProvisionedProduct for usage and error information.
+//
+// Returned Error Codes:
+//   * ResourceNotFoundException
+//   The specified resource was not found.
+//
 func (c *ServiceCatalog) TerminateProvisionedProduct(input *TerminateProvisionedProductInput) (*TerminateProvisionedProductOutput, error) {
 	req, out := c.TerminateProvisionedProductRequest(input)
 	err := req.Send()
@@ -528,6 +706,8 @@ const opUpdateProvisionedProduct = "UpdateProvisionedProduct"
 // client's request for the UpdateProvisionedProduct operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See UpdateProvisionedProduct for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -563,6 +743,8 @@ func (c *ServiceCatalog) UpdateProvisionedProductRequest(input *UpdateProvisione
 	return
 }
 
+// UpdateProvisionedProduct API operation for AWS Service Catalog.
+//
 // Requests updates to the configuration of an existing ProvisionedProduct object.
 // If there are tags associated with the object, they cannot be updated or added
 // with this operation. Depending on the specific updates requested, this operation
@@ -570,10 +752,65 @@ func (c *ServiceCatalog) UpdateProvisionedProductRequest(input *UpdateProvisione
 // object entirely.
 //
 // You can check the status of this request using the DescribeRecord operation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Service Catalog's
+// API operation UpdateProvisionedProduct for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParametersException
+//   One or more parameters provided to the operation are invalid.
+//
+//   * ResourceNotFoundException
+//   The specified resource was not found.
+//
 func (c *ServiceCatalog) UpdateProvisionedProduct(input *UpdateProvisionedProductInput) (*UpdateProvisionedProductOutput, error) {
 	req, out := c.UpdateProvisionedProductRequest(input)
 	err := req.Send()
 	return out, err
+}
+
+// The access level to limit results.
+type AccessLevelFilter struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the access level.
+	//
+	// Account allows results at the account level.
+	//
+	// Role allows results based on the federated role of the specified user.
+	//
+	// User allows results limited to the specified user.
+	Key *string `type:"string" enum:"AccessLevelFilterKey"`
+
+	// Specifies the user to which the access level applies. A value of Self is
+	// currently supported.
+	Value *string `type:"string"`
+}
+
+// String returns the string representation
+func (s AccessLevelFilter) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AccessLevelFilter) GoString() string {
+	return s.String()
+}
+
+// SetKey sets the Key field's value.
+func (s *AccessLevelFilter) SetKey(v string) *AccessLevelFilter {
+	s.Key = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *AccessLevelFilter) SetValue(v string) *AccessLevelFilter {
+	s.Value = &v
+	return s
 }
 
 // An administrator-specified constraint to apply when provisioning a product.
@@ -597,10 +834,23 @@ func (s ConstraintSummary) GoString() string {
 	return s.String()
 }
 
+// SetDescription sets the Description field's value.
+func (s *ConstraintSummary) SetDescription(v string) *ConstraintSummary {
+	s.Description = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *ConstraintSummary) SetType(v string) *ConstraintSummary {
+	s.Type = &v
+	return s
+}
+
 type DescribeProductInput struct {
 	_ struct{} `type:"structure"`
 
-	// Optional language code. Supported language codes are as follows:
+	// The language code to use for this operation. Supported language codes are
+	// as follows:
 	//
 	// "en" (English)
 	//
@@ -612,7 +862,9 @@ type DescribeProductInput struct {
 	AcceptLanguage *string `type:"string"`
 
 	// The ProductId of the product to describe.
-	Id *string `type:"string" required:"true"`
+	//
+	// Id is a required field
+	Id *string `min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation
@@ -631,11 +883,26 @@ func (s *DescribeProductInput) Validate() error {
 	if s.Id == nil {
 		invalidParams.Add(request.NewErrParamRequired("Id"))
 	}
+	if s.Id != nil && len(*s.Id) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Id", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAcceptLanguage sets the AcceptLanguage field's value.
+func (s *DescribeProductInput) SetAcceptLanguage(v string) *DescribeProductInput {
+	s.AcceptLanguage = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *DescribeProductInput) SetId(v string) *DescribeProductInput {
+	s.Id = &v
+	return s
 }
 
 type DescribeProductOutput struct {
@@ -659,10 +926,23 @@ func (s DescribeProductOutput) GoString() string {
 	return s.String()
 }
 
+// SetProductViewSummary sets the ProductViewSummary field's value.
+func (s *DescribeProductOutput) SetProductViewSummary(v *ProductViewSummary) *DescribeProductOutput {
+	s.ProductViewSummary = v
+	return s
+}
+
+// SetProvisioningArtifacts sets the ProvisioningArtifacts field's value.
+func (s *DescribeProductOutput) SetProvisioningArtifacts(v []*ProvisioningArtifact) *DescribeProductOutput {
+	s.ProvisioningArtifacts = v
+	return s
+}
+
 type DescribeProductViewInput struct {
 	_ struct{} `type:"structure"`
 
-	// Optional language code. Supported language codes are as follows:
+	// The language code to use for this operation. Supported language codes are
+	// as follows:
 	//
 	// "en" (English)
 	//
@@ -674,7 +954,9 @@ type DescribeProductViewInput struct {
 	AcceptLanguage *string `type:"string"`
 
 	// The ProductViewId of the product to describe.
-	Id *string `type:"string" required:"true"`
+	//
+	// Id is a required field
+	Id *string `min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation
@@ -693,11 +975,26 @@ func (s *DescribeProductViewInput) Validate() error {
 	if s.Id == nil {
 		invalidParams.Add(request.NewErrParamRequired("Id"))
 	}
+	if s.Id != nil && len(*s.Id) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Id", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAcceptLanguage sets the AcceptLanguage field's value.
+func (s *DescribeProductViewInput) SetAcceptLanguage(v string) *DescribeProductViewInput {
+	s.AcceptLanguage = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *DescribeProductViewInput) SetId(v string) *DescribeProductViewInput {
+	s.Id = &v
+	return s
 }
 
 type DescribeProductViewOutput struct {
@@ -721,10 +1018,23 @@ func (s DescribeProductViewOutput) GoString() string {
 	return s.String()
 }
 
+// SetProductViewSummary sets the ProductViewSummary field's value.
+func (s *DescribeProductViewOutput) SetProductViewSummary(v *ProductViewSummary) *DescribeProductViewOutput {
+	s.ProductViewSummary = v
+	return s
+}
+
+// SetProvisioningArtifacts sets the ProvisioningArtifacts field's value.
+func (s *DescribeProductViewOutput) SetProvisioningArtifacts(v []*ProvisioningArtifact) *DescribeProductViewOutput {
+	s.ProvisioningArtifacts = v
+	return s
+}
+
 type DescribeProvisioningParametersInput struct {
 	_ struct{} `type:"structure"`
 
-	// Optional language code. Supported language codes are as follows:
+	// The language code to use for this operation. Supported language codes are
+	// as follows:
 	//
 	// "en" (English)
 	//
@@ -738,13 +1048,17 @@ type DescribeProvisioningParametersInput struct {
 	// The identifier of the path for this product's provisioning. This value is
 	// optional if the product has a default path, and is required if there is more
 	// than one path for the specified product.
-	PathId *string `type:"string"`
+	PathId *string `min:"1" type:"string"`
 
 	// The identifier of the product.
-	ProductId *string `type:"string" required:"true"`
+	//
+	// ProductId is a required field
+	ProductId *string `min:"1" type:"string" required:"true"`
 
 	// The provisioning artifact identifier for this product.
-	ProvisioningArtifactId *string `type:"string" required:"true"`
+	//
+	// ProvisioningArtifactId is a required field
+	ProvisioningArtifactId *string `min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation
@@ -760,17 +1074,50 @@ func (s DescribeProvisioningParametersInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *DescribeProvisioningParametersInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "DescribeProvisioningParametersInput"}
+	if s.PathId != nil && len(*s.PathId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PathId", 1))
+	}
 	if s.ProductId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ProductId"))
 	}
+	if s.ProductId != nil && len(*s.ProductId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ProductId", 1))
+	}
 	if s.ProvisioningArtifactId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ProvisioningArtifactId"))
+	}
+	if s.ProvisioningArtifactId != nil && len(*s.ProvisioningArtifactId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ProvisioningArtifactId", 1))
 	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAcceptLanguage sets the AcceptLanguage field's value.
+func (s *DescribeProvisioningParametersInput) SetAcceptLanguage(v string) *DescribeProvisioningParametersInput {
+	s.AcceptLanguage = &v
+	return s
+}
+
+// SetPathId sets the PathId field's value.
+func (s *DescribeProvisioningParametersInput) SetPathId(v string) *DescribeProvisioningParametersInput {
+	s.PathId = &v
+	return s
+}
+
+// SetProductId sets the ProductId field's value.
+func (s *DescribeProvisioningParametersInput) SetProductId(v string) *DescribeProvisioningParametersInput {
+	s.ProductId = &v
+	return s
+}
+
+// SetProvisioningArtifactId sets the ProvisioningArtifactId field's value.
+func (s *DescribeProvisioningParametersInput) SetProvisioningArtifactId(v string) *DescribeProvisioningParametersInput {
+	s.ProvisioningArtifactId = &v
+	return s
 }
 
 type DescribeProvisioningParametersOutput struct {
@@ -798,10 +1145,29 @@ func (s DescribeProvisioningParametersOutput) GoString() string {
 	return s.String()
 }
 
+// SetConstraintSummaries sets the ConstraintSummaries field's value.
+func (s *DescribeProvisioningParametersOutput) SetConstraintSummaries(v []*ConstraintSummary) *DescribeProvisioningParametersOutput {
+	s.ConstraintSummaries = v
+	return s
+}
+
+// SetProvisioningArtifactParameters sets the ProvisioningArtifactParameters field's value.
+func (s *DescribeProvisioningParametersOutput) SetProvisioningArtifactParameters(v []*ProvisioningArtifactParameter) *DescribeProvisioningParametersOutput {
+	s.ProvisioningArtifactParameters = v
+	return s
+}
+
+// SetUsageInstructions sets the UsageInstructions field's value.
+func (s *DescribeProvisioningParametersOutput) SetUsageInstructions(v []*UsageInstruction) *DescribeProvisioningParametersOutput {
+	s.UsageInstructions = v
+	return s
+}
+
 type DescribeRecordInput struct {
 	_ struct{} `type:"structure"`
 
-	// Optional language code. Supported language codes are as follows:
+	// The language code to use for this operation. Supported language codes are
+	// as follows:
 	//
 	// "en" (English)
 	//
@@ -815,14 +1181,16 @@ type DescribeRecordInput struct {
 	// The record identifier of the ProvisionedProduct object for which to retrieve
 	// output information. This is the RecordDetail.RecordId obtained from the request
 	// operation's response.
-	Id *string `type:"string" required:"true"`
+	//
+	// Id is a required field
+	Id *string `min:"1" type:"string" required:"true"`
 
 	// The maximum number of items to return in the results. If more results exist
 	// than fit in the specified PageSize, the value of NextPageToken in the response
 	// is non-null.
 	PageSize *int64 `type:"integer"`
 
-	// The page token of the first page retrieve. If null, this retrieves the first
+	// The page token of the first page retrieved. If null, this retrieves the first
 	// page of size PageSize.
 	PageToken *string `type:"string"`
 }
@@ -843,11 +1211,38 @@ func (s *DescribeRecordInput) Validate() error {
 	if s.Id == nil {
 		invalidParams.Add(request.NewErrParamRequired("Id"))
 	}
+	if s.Id != nil && len(*s.Id) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Id", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAcceptLanguage sets the AcceptLanguage field's value.
+func (s *DescribeRecordInput) SetAcceptLanguage(v string) *DescribeRecordInput {
+	s.AcceptLanguage = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *DescribeRecordInput) SetId(v string) *DescribeRecordInput {
+	s.Id = &v
+	return s
+}
+
+// SetPageSize sets the PageSize field's value.
+func (s *DescribeRecordInput) SetPageSize(v int64) *DescribeRecordInput {
+	s.PageSize = &v
+	return s
+}
+
+// SetPageToken sets the PageToken field's value.
+func (s *DescribeRecordInput) SetPageToken(v string) *DescribeRecordInput {
+	s.PageToken = &v
+	return s
 }
 
 type DescribeRecordOutput struct {
@@ -876,6 +1271,24 @@ func (s DescribeRecordOutput) GoString() string {
 	return s.String()
 }
 
+// SetNextPageToken sets the NextPageToken field's value.
+func (s *DescribeRecordOutput) SetNextPageToken(v string) *DescribeRecordOutput {
+	s.NextPageToken = &v
+	return s
+}
+
+// SetRecordDetail sets the RecordDetail field's value.
+func (s *DescribeRecordOutput) SetRecordDetail(v *RecordDetail) *DescribeRecordOutput {
+	s.RecordDetail = v
+	return s
+}
+
+// SetRecordOutputs sets the RecordOutputs field's value.
+func (s *DescribeRecordOutput) SetRecordOutputs(v []*RecordOutput) *DescribeRecordOutput {
+	s.RecordOutputs = v
+	return s
+}
+
 // Summary information about a path for a user to have access to a specified
 // product.
 type LaunchPathSummary struct {
@@ -885,7 +1298,7 @@ type LaunchPathSummary struct {
 	ConstraintSummaries []*ConstraintSummary `type:"list"`
 
 	// The unique identifier of the product path.
-	Id *string `type:"string"`
+	Id *string `min:"1" type:"string"`
 
 	// Corresponds to the name of the portfolio to which the user was assigned.
 	Name *string `type:"string"`
@@ -904,10 +1317,35 @@ func (s LaunchPathSummary) GoString() string {
 	return s.String()
 }
 
+// SetConstraintSummaries sets the ConstraintSummaries field's value.
+func (s *LaunchPathSummary) SetConstraintSummaries(v []*ConstraintSummary) *LaunchPathSummary {
+	s.ConstraintSummaries = v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *LaunchPathSummary) SetId(v string) *LaunchPathSummary {
+	s.Id = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *LaunchPathSummary) SetName(v string) *LaunchPathSummary {
+	s.Name = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *LaunchPathSummary) SetTags(v []*Tag) *LaunchPathSummary {
+	s.Tags = v
+	return s
+}
+
 type ListLaunchPathsInput struct {
 	_ struct{} `type:"structure"`
 
-	// Optional language code. Supported language codes are as follows:
+	// The language code to use for this operation. Supported language codes are
+	// as follows:
 	//
 	// "en" (English)
 	//
@@ -923,12 +1361,14 @@ type ListLaunchPathsInput struct {
 	// is non-null.
 	PageSize *int64 `type:"integer"`
 
-	// The page token of the first page retrieve. If null, this retrieves the first
+	// The page token of the first page retrieved. If null, this retrieves the first
 	// page of size PageSize.
 	PageToken *string `type:"string"`
 
 	// Identifies the product for which to retrieve LaunchPathSummaries information.
-	ProductId *string `type:"string" required:"true"`
+	//
+	// ProductId is a required field
+	ProductId *string `min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation
@@ -947,11 +1387,38 @@ func (s *ListLaunchPathsInput) Validate() error {
 	if s.ProductId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ProductId"))
 	}
+	if s.ProductId != nil && len(*s.ProductId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ProductId", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAcceptLanguage sets the AcceptLanguage field's value.
+func (s *ListLaunchPathsInput) SetAcceptLanguage(v string) *ListLaunchPathsInput {
+	s.AcceptLanguage = &v
+	return s
+}
+
+// SetPageSize sets the PageSize field's value.
+func (s *ListLaunchPathsInput) SetPageSize(v int64) *ListLaunchPathsInput {
+	s.PageSize = &v
+	return s
+}
+
+// SetPageToken sets the PageToken field's value.
+func (s *ListLaunchPathsInput) SetPageToken(v string) *ListLaunchPathsInput {
+	s.PageToken = &v
+	return s
+}
+
+// SetProductId sets the ProductId field's value.
+func (s *ListLaunchPathsInput) SetProductId(v string) *ListLaunchPathsInput {
+	s.ProductId = &v
+	return s
 }
 
 type ListLaunchPathsOutput struct {
@@ -975,10 +1442,23 @@ func (s ListLaunchPathsOutput) GoString() string {
 	return s.String()
 }
 
+// SetLaunchPathSummaries sets the LaunchPathSummaries field's value.
+func (s *ListLaunchPathsOutput) SetLaunchPathSummaries(v []*LaunchPathSummary) *ListLaunchPathsOutput {
+	s.LaunchPathSummaries = v
+	return s
+}
+
+// SetNextPageToken sets the NextPageToken field's value.
+func (s *ListLaunchPathsOutput) SetNextPageToken(v string) *ListLaunchPathsOutput {
+	s.NextPageToken = &v
+	return s
+}
+
 type ListRecordHistoryInput struct {
 	_ struct{} `type:"structure"`
 
-	// Optional language code. Supported language codes are as follows:
+	// The language code to use for this operation. Supported language codes are
+	// as follows:
 	//
 	// "en" (English)
 	//
@@ -989,16 +1469,20 @@ type ListRecordHistoryInput struct {
 	// If no code is specified, "en" is used as the default.
 	AcceptLanguage *string `type:"string"`
 
+	// The access level for obtaining results. If left unspecified, User level access
+	// is used.
+	AccessLevelFilter *AccessLevelFilter `type:"structure"`
+
 	// The maximum number of items to return in the results. If more results exist
 	// than fit in the specified PageSize, the value of NextPageToken in the response
 	// is non-null.
 	PageSize *int64 `type:"integer"`
 
-	// The page token of the first page retrieve. If null, this retrieves the first
+	// The page token of the first page retrieved. If null, this retrieves the first
 	// page of size PageSize.
 	PageToken *string `type:"string"`
 
-	// (Optional) The filter to limit search results.
+	// The filter to limit search results.
 	SearchFilter *ListRecordHistorySearchFilter `type:"structure"`
 }
 
@@ -1010,6 +1494,36 @@ func (s ListRecordHistoryInput) String() string {
 // GoString returns the string representation
 func (s ListRecordHistoryInput) GoString() string {
 	return s.String()
+}
+
+// SetAcceptLanguage sets the AcceptLanguage field's value.
+func (s *ListRecordHistoryInput) SetAcceptLanguage(v string) *ListRecordHistoryInput {
+	s.AcceptLanguage = &v
+	return s
+}
+
+// SetAccessLevelFilter sets the AccessLevelFilter field's value.
+func (s *ListRecordHistoryInput) SetAccessLevelFilter(v *AccessLevelFilter) *ListRecordHistoryInput {
+	s.AccessLevelFilter = v
+	return s
+}
+
+// SetPageSize sets the PageSize field's value.
+func (s *ListRecordHistoryInput) SetPageSize(v int64) *ListRecordHistoryInput {
+	s.PageSize = &v
+	return s
+}
+
+// SetPageToken sets the PageToken field's value.
+func (s *ListRecordHistoryInput) SetPageToken(v string) *ListRecordHistoryInput {
+	s.PageToken = &v
+	return s
+}
+
+// SetSearchFilter sets the SearchFilter field's value.
+func (s *ListRecordHistoryInput) SetSearchFilter(v *ListRecordHistorySearchFilter) *ListRecordHistoryInput {
+	s.SearchFilter = v
+	return s
 }
 
 type ListRecordHistoryOutput struct {
@@ -1033,6 +1547,18 @@ func (s ListRecordHistoryOutput) GoString() string {
 	return s.String()
 }
 
+// SetNextPageToken sets the NextPageToken field's value.
+func (s *ListRecordHistoryOutput) SetNextPageToken(v string) *ListRecordHistoryOutput {
+	s.NextPageToken = &v
+	return s
+}
+
+// SetRecordDetails sets the RecordDetails field's value.
+func (s *ListRecordHistoryOutput) SetRecordDetails(v []*RecordDetail) *ListRecordHistoryOutput {
+	s.RecordDetails = v
+	return s
+}
+
 // The search filter to limit results when listing request history records.
 type ListRecordHistorySearchFilter struct {
 	_ struct{} `type:"structure"`
@@ -1054,6 +1580,18 @@ func (s ListRecordHistorySearchFilter) GoString() string {
 	return s.String()
 }
 
+// SetKey sets the Key field's value.
+func (s *ListRecordHistorySearchFilter) SetKey(v string) *ListRecordHistorySearchFilter {
+	s.Key = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *ListRecordHistorySearchFilter) SetValue(v string) *ListRecordHistorySearchFilter {
+	s.Value = &v
+	return s
+}
+
 // The constraints that the administrator has put on the parameter.
 type ParameterConstraints struct {
 	_ struct{} `type:"structure"`
@@ -1070,6 +1608,12 @@ func (s ParameterConstraints) String() string {
 // GoString returns the string representation
 func (s ParameterConstraints) GoString() string {
 	return s.String()
+}
+
+// SetAllowedValues sets the AllowedValues field's value.
+func (s *ParameterConstraints) SetAllowedValues(v []*string) *ParameterConstraints {
+	s.AllowedValues = v
+	return s
 }
 
 // A single product view aggregation value/count pair, containing metadata about
@@ -1094,6 +1638,18 @@ func (s ProductViewAggregationValue) GoString() string {
 	return s.String()
 }
 
+// SetApproximateCount sets the ApproximateCount field's value.
+func (s *ProductViewAggregationValue) SetApproximateCount(v int64) *ProductViewAggregationValue {
+	s.ApproximateCount = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *ProductViewAggregationValue) SetValue(v string) *ProductViewAggregationValue {
+	s.Value = &v
+	return s
+}
+
 // The summary metadata about the specified product.
 type ProductViewSummary struct {
 	_ struct{} `type:"structure"`
@@ -1110,7 +1666,7 @@ type ProductViewSummary struct {
 	HasDefaultPath *bool `type:"boolean"`
 
 	// The product view identifier.
-	Id *string `type:"string"`
+	Id *string `min:"1" type:"string"`
 
 	// The name of the product.
 	Name *string `type:"string"`
@@ -1120,7 +1676,7 @@ type ProductViewSummary struct {
 	Owner *string `type:"string"`
 
 	// The product identifier.
-	ProductId *string `type:"string"`
+	ProductId *string `min:"1" type:"string"`
 
 	// Short description of the product.
 	ShortDescription *string `type:"string"`
@@ -1149,10 +1705,77 @@ func (s ProductViewSummary) GoString() string {
 	return s.String()
 }
 
+// SetDistributor sets the Distributor field's value.
+func (s *ProductViewSummary) SetDistributor(v string) *ProductViewSummary {
+	s.Distributor = &v
+	return s
+}
+
+// SetHasDefaultPath sets the HasDefaultPath field's value.
+func (s *ProductViewSummary) SetHasDefaultPath(v bool) *ProductViewSummary {
+	s.HasDefaultPath = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *ProductViewSummary) SetId(v string) *ProductViewSummary {
+	s.Id = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *ProductViewSummary) SetName(v string) *ProductViewSummary {
+	s.Name = &v
+	return s
+}
+
+// SetOwner sets the Owner field's value.
+func (s *ProductViewSummary) SetOwner(v string) *ProductViewSummary {
+	s.Owner = &v
+	return s
+}
+
+// SetProductId sets the ProductId field's value.
+func (s *ProductViewSummary) SetProductId(v string) *ProductViewSummary {
+	s.ProductId = &v
+	return s
+}
+
+// SetShortDescription sets the ShortDescription field's value.
+func (s *ProductViewSummary) SetShortDescription(v string) *ProductViewSummary {
+	s.ShortDescription = &v
+	return s
+}
+
+// SetSupportDescription sets the SupportDescription field's value.
+func (s *ProductViewSummary) SetSupportDescription(v string) *ProductViewSummary {
+	s.SupportDescription = &v
+	return s
+}
+
+// SetSupportEmail sets the SupportEmail field's value.
+func (s *ProductViewSummary) SetSupportEmail(v string) *ProductViewSummary {
+	s.SupportEmail = &v
+	return s
+}
+
+// SetSupportUrl sets the SupportUrl field's value.
+func (s *ProductViewSummary) SetSupportUrl(v string) *ProductViewSummary {
+	s.SupportUrl = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *ProductViewSummary) SetType(v string) *ProductViewSummary {
+	s.Type = &v
+	return s
+}
+
 type ProvisionProductInput struct {
 	_ struct{} `type:"structure"`
 
-	// Optional language code. Supported language codes are as follows:
+	// The language code to use for this operation. Supported language codes are
+	// as follows:
 	//
 	// "en" (English)
 	//
@@ -1170,27 +1793,35 @@ type ProvisionProductInput struct {
 	// The identifier of the path for this product's provisioning. This value is
 	// optional if the product has a default path, and is required if there is more
 	// than one path for the specified product.
-	PathId *string `type:"string"`
+	PathId *string `min:"1" type:"string"`
 
 	// The identifier of the product.
-	ProductId *string `type:"string" required:"true"`
+	//
+	// ProductId is a required field
+	ProductId *string `min:"1" type:"string" required:"true"`
 
 	// An idempotency token that uniquely identifies the provisioning request.
+	//
+	// ProvisionToken is a required field
 	ProvisionToken *string `min:"1" type:"string" required:"true" idempotencyToken:"true"`
 
 	// A user-friendly name to identify the ProvisionedProduct object. This value
 	// must be unique for the AWS account and cannot be updated after the product
 	// is provisioned.
+	//
+	// ProvisionedProductName is a required field
 	ProvisionedProductName *string `type:"string" required:"true"`
 
 	// The provisioning artifact identifier for this product.
-	ProvisioningArtifactId *string `type:"string" required:"true"`
+	//
+	// ProvisioningArtifactId is a required field
+	ProvisioningArtifactId *string `min:"1" type:"string" required:"true"`
 
 	// Parameters specified by the administrator that are required for provisioning
 	// the product.
 	ProvisioningParameters []*ProvisioningParameter `type:"list"`
 
-	// (Optional) A list of tags to use as provisioning options.
+	// A list of tags to use as provisioning options.
 	Tags []*Tag `type:"list"`
 }
 
@@ -1207,8 +1838,14 @@ func (s ProvisionProductInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *ProvisionProductInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "ProvisionProductInput"}
+	if s.PathId != nil && len(*s.PathId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PathId", 1))
+	}
 	if s.ProductId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ProductId"))
+	}
+	if s.ProductId != nil && len(*s.ProductId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ProductId", 1))
 	}
 	if s.ProvisionToken == nil {
 		invalidParams.Add(request.NewErrParamRequired("ProvisionToken"))
@@ -1221,6 +1858,9 @@ func (s *ProvisionProductInput) Validate() error {
 	}
 	if s.ProvisioningArtifactId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ProvisioningArtifactId"))
+	}
+	if s.ProvisioningArtifactId != nil && len(*s.ProvisioningArtifactId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ProvisioningArtifactId", 1))
 	}
 	if s.Tags != nil {
 		for i, v := range s.Tags {
@@ -1237,6 +1877,60 @@ func (s *ProvisionProductInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAcceptLanguage sets the AcceptLanguage field's value.
+func (s *ProvisionProductInput) SetAcceptLanguage(v string) *ProvisionProductInput {
+	s.AcceptLanguage = &v
+	return s
+}
+
+// SetNotificationArns sets the NotificationArns field's value.
+func (s *ProvisionProductInput) SetNotificationArns(v []*string) *ProvisionProductInput {
+	s.NotificationArns = v
+	return s
+}
+
+// SetPathId sets the PathId field's value.
+func (s *ProvisionProductInput) SetPathId(v string) *ProvisionProductInput {
+	s.PathId = &v
+	return s
+}
+
+// SetProductId sets the ProductId field's value.
+func (s *ProvisionProductInput) SetProductId(v string) *ProvisionProductInput {
+	s.ProductId = &v
+	return s
+}
+
+// SetProvisionToken sets the ProvisionToken field's value.
+func (s *ProvisionProductInput) SetProvisionToken(v string) *ProvisionProductInput {
+	s.ProvisionToken = &v
+	return s
+}
+
+// SetProvisionedProductName sets the ProvisionedProductName field's value.
+func (s *ProvisionProductInput) SetProvisionedProductName(v string) *ProvisionProductInput {
+	s.ProvisionedProductName = &v
+	return s
+}
+
+// SetProvisioningArtifactId sets the ProvisioningArtifactId field's value.
+func (s *ProvisionProductInput) SetProvisioningArtifactId(v string) *ProvisionProductInput {
+	s.ProvisioningArtifactId = &v
+	return s
+}
+
+// SetProvisioningParameters sets the ProvisioningParameters field's value.
+func (s *ProvisionProductInput) SetProvisioningParameters(v []*ProvisioningParameter) *ProvisionProductInput {
+	s.ProvisioningParameters = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *ProvisionProductInput) SetTags(v []*Tag) *ProvisionProductInput {
+	s.Tags = v
+	return s
 }
 
 type ProvisionProductOutput struct {
@@ -1257,6 +1951,12 @@ func (s ProvisionProductOutput) String() string {
 // GoString returns the string representation
 func (s ProvisionProductOutput) GoString() string {
 	return s.String()
+}
+
+// SetRecordDetail sets the RecordDetail field's value.
+func (s *ProvisionProductOutput) SetRecordDetail(v *RecordDetail) *ProvisionProductOutput {
+	s.RecordDetail = v
+	return s
 }
 
 // Detailed information about a ProvisionedProduct object.
@@ -1302,6 +2002,60 @@ func (s ProvisionedProductDetail) GoString() string {
 	return s.String()
 }
 
+// SetArn sets the Arn field's value.
+func (s *ProvisionedProductDetail) SetArn(v string) *ProvisionedProductDetail {
+	s.Arn = &v
+	return s
+}
+
+// SetCreatedTime sets the CreatedTime field's value.
+func (s *ProvisionedProductDetail) SetCreatedTime(v time.Time) *ProvisionedProductDetail {
+	s.CreatedTime = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *ProvisionedProductDetail) SetId(v string) *ProvisionedProductDetail {
+	s.Id = &v
+	return s
+}
+
+// SetIdempotencyToken sets the IdempotencyToken field's value.
+func (s *ProvisionedProductDetail) SetIdempotencyToken(v string) *ProvisionedProductDetail {
+	s.IdempotencyToken = &v
+	return s
+}
+
+// SetLastRecordId sets the LastRecordId field's value.
+func (s *ProvisionedProductDetail) SetLastRecordId(v string) *ProvisionedProductDetail {
+	s.LastRecordId = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *ProvisionedProductDetail) SetName(v string) *ProvisionedProductDetail {
+	s.Name = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *ProvisionedProductDetail) SetStatus(v string) *ProvisionedProductDetail {
+	s.Status = &v
+	return s
+}
+
+// SetStatusMessage sets the StatusMessage field's value.
+func (s *ProvisionedProductDetail) SetStatusMessage(v string) *ProvisionedProductDetail {
+	s.StatusMessage = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *ProvisionedProductDetail) SetType(v string) *ProvisionedProductDetail {
+	s.Type = &v
+	return s
+}
+
 // Contains information indicating the ways in which a product can be provisioned.
 type ProvisioningArtifact struct {
 	_ struct{} `type:"structure"`
@@ -1313,7 +2067,7 @@ type ProvisioningArtifact struct {
 	Description *string `type:"string"`
 
 	// The identifier for the artifact.
-	Id *string `type:"string"`
+	Id *string `min:"1" type:"string"`
 
 	// The name of the artifact.
 	Name *string `type:"string"`
@@ -1327,6 +2081,30 @@ func (s ProvisioningArtifact) String() string {
 // GoString returns the string representation
 func (s ProvisioningArtifact) GoString() string {
 	return s.String()
+}
+
+// SetCreatedTime sets the CreatedTime field's value.
+func (s *ProvisioningArtifact) SetCreatedTime(v time.Time) *ProvisioningArtifact {
+	s.CreatedTime = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *ProvisioningArtifact) SetDescription(v string) *ProvisioningArtifact {
+	s.Description = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *ProvisioningArtifact) SetId(v string) *ProvisioningArtifact {
+	s.Id = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *ProvisioningArtifact) SetName(v string) *ProvisioningArtifact {
+	s.Name = &v
+	return s
 }
 
 // A parameter used to successfully provision the product. This value includes
@@ -1365,6 +2143,42 @@ func (s ProvisioningArtifactParameter) GoString() string {
 	return s.String()
 }
 
+// SetDefaultValue sets the DefaultValue field's value.
+func (s *ProvisioningArtifactParameter) SetDefaultValue(v string) *ProvisioningArtifactParameter {
+	s.DefaultValue = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *ProvisioningArtifactParameter) SetDescription(v string) *ProvisioningArtifactParameter {
+	s.Description = &v
+	return s
+}
+
+// SetIsNoEcho sets the IsNoEcho field's value.
+func (s *ProvisioningArtifactParameter) SetIsNoEcho(v bool) *ProvisioningArtifactParameter {
+	s.IsNoEcho = &v
+	return s
+}
+
+// SetParameterConstraints sets the ParameterConstraints field's value.
+func (s *ProvisioningArtifactParameter) SetParameterConstraints(v *ParameterConstraints) *ProvisioningArtifactParameter {
+	s.ParameterConstraints = v
+	return s
+}
+
+// SetParameterKey sets the ParameterKey field's value.
+func (s *ProvisioningArtifactParameter) SetParameterKey(v string) *ProvisioningArtifactParameter {
+	s.ParameterKey = &v
+	return s
+}
+
+// SetParameterType sets the ParameterType field's value.
+func (s *ProvisioningArtifactParameter) SetParameterType(v string) *ProvisioningArtifactParameter {
+	s.ParameterType = &v
+	return s
+}
+
 // The arameter key/value pairs used to provision a product.
 type ProvisioningParameter struct {
 	_ struct{} `type:"structure"`
@@ -1387,6 +2201,18 @@ func (s ProvisioningParameter) GoString() string {
 	return s.String()
 }
 
+// SetKey sets the Key field's value.
+func (s *ProvisioningParameter) SetKey(v string) *ProvisioningParameter {
+	s.Key = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *ProvisioningParameter) SetValue(v string) *ProvisioningParameter {
+	s.Value = &v
+	return s
+}
+
 // The full details of a specific ProvisionedProduct object.
 type RecordDetail struct {
 	_ struct{} `type:"structure"`
@@ -1395,13 +2221,13 @@ type RecordDetail struct {
 	CreatedTime *time.Time `type:"timestamp" timestampFormat:"unix"`
 
 	// The identifier of the path for this product's provisioning.
-	PathId *string `type:"string"`
+	PathId *string `min:"1" type:"string"`
 
 	// The identifier of the product.
-	ProductId *string `type:"string"`
+	ProductId *string `min:"1" type:"string"`
 
 	// The identifier of the ProvisionedProduct object.
-	ProvisionedProductId *string `type:"string"`
+	ProvisionedProductId *string `min:"1" type:"string"`
 
 	// The user-friendly name of the ProvisionedProduct object.
 	ProvisionedProductName *string `type:"string"`
@@ -1410,13 +2236,13 @@ type RecordDetail struct {
 	ProvisionedProductType *string `type:"string"`
 
 	// The provisioning artifact identifier for this product.
-	ProvisioningArtifactId *string `type:"string"`
+	ProvisioningArtifactId *string `min:"1" type:"string"`
 
 	// A list of errors that occurred while processing the request.
 	RecordErrors []*RecordError `type:"list"`
 
 	// The identifier of the ProvisionedProduct object record.
-	RecordId *string `type:"string"`
+	RecordId *string `min:"1" type:"string"`
 
 	// List of tags associated with this record.
 	RecordTags []*RecordTag `type:"list"`
@@ -1441,6 +2267,84 @@ func (s RecordDetail) GoString() string {
 	return s.String()
 }
 
+// SetCreatedTime sets the CreatedTime field's value.
+func (s *RecordDetail) SetCreatedTime(v time.Time) *RecordDetail {
+	s.CreatedTime = &v
+	return s
+}
+
+// SetPathId sets the PathId field's value.
+func (s *RecordDetail) SetPathId(v string) *RecordDetail {
+	s.PathId = &v
+	return s
+}
+
+// SetProductId sets the ProductId field's value.
+func (s *RecordDetail) SetProductId(v string) *RecordDetail {
+	s.ProductId = &v
+	return s
+}
+
+// SetProvisionedProductId sets the ProvisionedProductId field's value.
+func (s *RecordDetail) SetProvisionedProductId(v string) *RecordDetail {
+	s.ProvisionedProductId = &v
+	return s
+}
+
+// SetProvisionedProductName sets the ProvisionedProductName field's value.
+func (s *RecordDetail) SetProvisionedProductName(v string) *RecordDetail {
+	s.ProvisionedProductName = &v
+	return s
+}
+
+// SetProvisionedProductType sets the ProvisionedProductType field's value.
+func (s *RecordDetail) SetProvisionedProductType(v string) *RecordDetail {
+	s.ProvisionedProductType = &v
+	return s
+}
+
+// SetProvisioningArtifactId sets the ProvisioningArtifactId field's value.
+func (s *RecordDetail) SetProvisioningArtifactId(v string) *RecordDetail {
+	s.ProvisioningArtifactId = &v
+	return s
+}
+
+// SetRecordErrors sets the RecordErrors field's value.
+func (s *RecordDetail) SetRecordErrors(v []*RecordError) *RecordDetail {
+	s.RecordErrors = v
+	return s
+}
+
+// SetRecordId sets the RecordId field's value.
+func (s *RecordDetail) SetRecordId(v string) *RecordDetail {
+	s.RecordId = &v
+	return s
+}
+
+// SetRecordTags sets the RecordTags field's value.
+func (s *RecordDetail) SetRecordTags(v []*RecordTag) *RecordDetail {
+	s.RecordTags = v
+	return s
+}
+
+// SetRecordType sets the RecordType field's value.
+func (s *RecordDetail) SetRecordType(v string) *RecordDetail {
+	s.RecordType = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *RecordDetail) SetStatus(v string) *RecordDetail {
+	s.Status = &v
+	return s
+}
+
+// SetUpdatedTime sets the UpdatedTime field's value.
+func (s *RecordDetail) SetUpdatedTime(v time.Time) *RecordDetail {
+	s.UpdatedTime = &v
+	return s
+}
+
 // The error code and description resulting from an operation.
 type RecordError struct {
 	_ struct{} `type:"structure"`
@@ -1460,6 +2364,18 @@ func (s RecordError) String() string {
 // GoString returns the string representation
 func (s RecordError) GoString() string {
 	return s.String()
+}
+
+// SetCode sets the Code field's value.
+func (s *RecordError) SetCode(v string) *RecordError {
+	s.Code = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *RecordError) SetDescription(v string) *RecordError {
+	s.Description = &v
+	return s
 }
 
 // An output for the specified Product object created as the result of a request.
@@ -1488,6 +2404,24 @@ func (s RecordOutput) GoString() string {
 	return s.String()
 }
 
+// SetDescription sets the Description field's value.
+func (s *RecordOutput) SetDescription(v string) *RecordOutput {
+	s.Description = &v
+	return s
+}
+
+// SetOutputKey sets the OutputKey field's value.
+func (s *RecordOutput) SetOutputKey(v string) *RecordOutput {
+	s.OutputKey = &v
+	return s
+}
+
+// SetOutputValue sets the OutputValue field's value.
+func (s *RecordOutput) SetOutputValue(v string) *RecordOutput {
+	s.OutputValue = &v
+	return s
+}
+
 // A tag associated with the record, stored as a key-value pair.
 type RecordTag struct {
 	_ struct{} `type:"structure"`
@@ -1509,10 +2443,23 @@ func (s RecordTag) GoString() string {
 	return s.String()
 }
 
+// SetKey sets the Key field's value.
+func (s *RecordTag) SetKey(v string) *RecordTag {
+	s.Key = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *RecordTag) SetValue(v string) *RecordTag {
+	s.Value = &v
+	return s
+}
+
 type ScanProvisionedProductsInput struct {
 	_ struct{} `type:"structure"`
 
-	// Optional language code. Supported language codes are as follows:
+	// The language code to use for this operation. Supported language codes are
+	// as follows:
 	//
 	// "en" (English)
 	//
@@ -1523,12 +2470,16 @@ type ScanProvisionedProductsInput struct {
 	// If no code is specified, "en" is used as the default.
 	AcceptLanguage *string `type:"string"`
 
+	// The access level for obtaining results. If left unspecified, User level access
+	// is used.
+	AccessLevelFilter *AccessLevelFilter `type:"structure"`
+
 	// The maximum number of items to return in the results. If more results exist
 	// than fit in the specified PageSize, the value of NextPageToken in the response
 	// is non-null.
 	PageSize *int64 `type:"integer"`
 
-	// The page token of the first page retrieve. If null, this retrieves the first
+	// The page token of the first page retrieved. If null, this retrieves the first
 	// page of size PageSize.
 	PageToken *string `type:"string"`
 }
@@ -1541,6 +2492,30 @@ func (s ScanProvisionedProductsInput) String() string {
 // GoString returns the string representation
 func (s ScanProvisionedProductsInput) GoString() string {
 	return s.String()
+}
+
+// SetAcceptLanguage sets the AcceptLanguage field's value.
+func (s *ScanProvisionedProductsInput) SetAcceptLanguage(v string) *ScanProvisionedProductsInput {
+	s.AcceptLanguage = &v
+	return s
+}
+
+// SetAccessLevelFilter sets the AccessLevelFilter field's value.
+func (s *ScanProvisionedProductsInput) SetAccessLevelFilter(v *AccessLevelFilter) *ScanProvisionedProductsInput {
+	s.AccessLevelFilter = v
+	return s
+}
+
+// SetPageSize sets the PageSize field's value.
+func (s *ScanProvisionedProductsInput) SetPageSize(v int64) *ScanProvisionedProductsInput {
+	s.PageSize = &v
+	return s
+}
+
+// SetPageToken sets the PageToken field's value.
+func (s *ScanProvisionedProductsInput) SetPageToken(v string) *ScanProvisionedProductsInput {
+	s.PageToken = &v
+	return s
 }
 
 type ScanProvisionedProductsOutput struct {
@@ -1564,10 +2539,23 @@ func (s ScanProvisionedProductsOutput) GoString() string {
 	return s.String()
 }
 
+// SetNextPageToken sets the NextPageToken field's value.
+func (s *ScanProvisionedProductsOutput) SetNextPageToken(v string) *ScanProvisionedProductsOutput {
+	s.NextPageToken = &v
+	return s
+}
+
+// SetProvisionedProducts sets the ProvisionedProducts field's value.
+func (s *ScanProvisionedProductsOutput) SetProvisionedProducts(v []*ProvisionedProductDetail) *ScanProvisionedProductsOutput {
+	s.ProvisionedProducts = v
+	return s
+}
+
 type SearchProductsInput struct {
 	_ struct{} `type:"structure"`
 
-	// Optional language code. Supported language codes are as follows:
+	// The language code to use for this operation. Supported language codes are
+	// as follows:
 	//
 	// "en" (English)
 	//
@@ -1578,9 +2566,9 @@ type SearchProductsInput struct {
 	// If no code is specified, "en" is used as the default.
 	AcceptLanguage *string `type:"string"`
 
-	// (Optional) The list of filters with which to limit search results. If no
-	// search filters are specified, the output is all the products to which the
-	// calling user has access.
+	// The list of filters with which to limit search results. If no search filters
+	// are specified, the output is all the products to which the calling user has
+	// access.
 	Filters map[string][]*string `type:"map"`
 
 	// The maximum number of items to return in the results. If more results exist
@@ -1588,16 +2576,14 @@ type SearchProductsInput struct {
 	// is non-null.
 	PageSize *int64 `type:"integer"`
 
-	// The page token of the first page retrieve. If null, this retrieves the first
+	// The page token of the first page retrieved. If null, this retrieves the first
 	// page of size PageSize.
 	PageToken *string `type:"string"`
 
-	// (Optional) The sort field specifier. If no value is specified, results are
-	// not sorted.
+	// The sort field specifier. If no value is specified, results are not sorted.
 	SortBy *string `type:"string" enum:"ProductViewSortBy"`
 
-	// (Optional) The sort order specifier. If no value is specified, results are
-	// not sorted.
+	// The sort order specifier. If no value is specified, results are not sorted.
 	SortOrder *string `type:"string" enum:"SortOrder"`
 }
 
@@ -1609,6 +2595,42 @@ func (s SearchProductsInput) String() string {
 // GoString returns the string representation
 func (s SearchProductsInput) GoString() string {
 	return s.String()
+}
+
+// SetAcceptLanguage sets the AcceptLanguage field's value.
+func (s *SearchProductsInput) SetAcceptLanguage(v string) *SearchProductsInput {
+	s.AcceptLanguage = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *SearchProductsInput) SetFilters(v map[string][]*string) *SearchProductsInput {
+	s.Filters = v
+	return s
+}
+
+// SetPageSize sets the PageSize field's value.
+func (s *SearchProductsInput) SetPageSize(v int64) *SearchProductsInput {
+	s.PageSize = &v
+	return s
+}
+
+// SetPageToken sets the PageToken field's value.
+func (s *SearchProductsInput) SetPageToken(v string) *SearchProductsInput {
+	s.PageToken = &v
+	return s
+}
+
+// SetSortBy sets the SortBy field's value.
+func (s *SearchProductsInput) SetSortBy(v string) *SearchProductsInput {
+	s.SortBy = &v
+	return s
+}
+
+// SetSortOrder sets the SortOrder field's value.
+func (s *SearchProductsInput) SetSortOrder(v string) *SearchProductsInput {
+	s.SortOrder = &v
+	return s
 }
 
 type SearchProductsOutput struct {
@@ -1635,8 +2657,26 @@ func (s SearchProductsOutput) GoString() string {
 	return s.String()
 }
 
-// Optional key/value pairs to associate with this provisioning. These tags
-// are propagated to the resources created in the provisioning.
+// SetNextPageToken sets the NextPageToken field's value.
+func (s *SearchProductsOutput) SetNextPageToken(v string) *SearchProductsOutput {
+	s.NextPageToken = &v
+	return s
+}
+
+// SetProductViewAggregations sets the ProductViewAggregations field's value.
+func (s *SearchProductsOutput) SetProductViewAggregations(v map[string][]*ProductViewAggregationValue) *SearchProductsOutput {
+	s.ProductViewAggregations = v
+	return s
+}
+
+// SetProductViewSummaries sets the ProductViewSummaries field's value.
+func (s *SearchProductsOutput) SetProductViewSummaries(v []*ProductViewSummary) *SearchProductsOutput {
+	s.ProductViewSummaries = v
+	return s
+}
+
+// Key/value pairs to associate with this provisioning. These tags are entirely
+// discretionary and are propagated to the resources created in the provisioning.
 type Tag struct {
 	_ struct{} `type:"structure"`
 
@@ -1673,10 +2713,23 @@ func (s *Tag) Validate() error {
 	return nil
 }
 
+// SetKey sets the Key field's value.
+func (s *Tag) SetKey(v string) *Tag {
+	s.Key = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *Tag) SetValue(v string) *Tag {
+	s.Value = &v
+	return s
+}
+
 type TerminateProvisionedProductInput struct {
 	_ struct{} `type:"structure"`
 
-	// Optional language code. Supported language codes are as follows:
+	// The language code to use for this operation. Supported language codes are
+	// as follows:
 	//
 	// "en" (English)
 	//
@@ -1687,14 +2740,13 @@ type TerminateProvisionedProductInput struct {
 	// If no code is specified, "en" is used as the default.
 	AcceptLanguage *string `type:"string"`
 
-	// Optional Boolean parameter. If set to true, AWS Service Catalog stops managing
-	// the specified ProvisionedProduct object even if it cannot delete the underlying
-	// resources.
+	// If set to true, AWS Service Catalog stops managing the specified ProvisionedProduct
+	// object even if it cannot delete the underlying resources.
 	IgnoreErrors *bool `type:"boolean"`
 
 	// The identifier of the ProvisionedProduct object to terminate. You must specify
 	// either ProvisionedProductName or ProvisionedProductId, but not both.
-	ProvisionedProductId *string `type:"string"`
+	ProvisionedProductId *string `min:"1" type:"string"`
 
 	// The name of the ProvisionedProduct object to terminate. You must specify
 	// either ProvisionedProductName or ProvisionedProductId, but not both.
@@ -1704,6 +2756,8 @@ type TerminateProvisionedProductInput struct {
 	// token is only valid during the termination process. After the ProvisionedProduct
 	// object is terminated, further requests to terminate the same ProvisionedProduct
 	// object always return ResourceNotFound regardless of the value of TerminateToken.
+	//
+	// TerminateToken is a required field
 	TerminateToken *string `min:"1" type:"string" required:"true" idempotencyToken:"true"`
 }
 
@@ -1720,6 +2774,9 @@ func (s TerminateProvisionedProductInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *TerminateProvisionedProductInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "TerminateProvisionedProductInput"}
+	if s.ProvisionedProductId != nil && len(*s.ProvisionedProductId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ProvisionedProductId", 1))
+	}
 	if s.ProvisionedProductName != nil && len(*s.ProvisionedProductName) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("ProvisionedProductName", 1))
 	}
@@ -1734,6 +2791,36 @@ func (s *TerminateProvisionedProductInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAcceptLanguage sets the AcceptLanguage field's value.
+func (s *TerminateProvisionedProductInput) SetAcceptLanguage(v string) *TerminateProvisionedProductInput {
+	s.AcceptLanguage = &v
+	return s
+}
+
+// SetIgnoreErrors sets the IgnoreErrors field's value.
+func (s *TerminateProvisionedProductInput) SetIgnoreErrors(v bool) *TerminateProvisionedProductInput {
+	s.IgnoreErrors = &v
+	return s
+}
+
+// SetProvisionedProductId sets the ProvisionedProductId field's value.
+func (s *TerminateProvisionedProductInput) SetProvisionedProductId(v string) *TerminateProvisionedProductInput {
+	s.ProvisionedProductId = &v
+	return s
+}
+
+// SetProvisionedProductName sets the ProvisionedProductName field's value.
+func (s *TerminateProvisionedProductInput) SetProvisionedProductName(v string) *TerminateProvisionedProductInput {
+	s.ProvisionedProductName = &v
+	return s
+}
+
+// SetTerminateToken sets the TerminateToken field's value.
+func (s *TerminateProvisionedProductInput) SetTerminateToken(v string) *TerminateProvisionedProductInput {
+	s.TerminateToken = &v
+	return s
 }
 
 type TerminateProvisionedProductOutput struct {
@@ -1756,10 +2843,17 @@ func (s TerminateProvisionedProductOutput) GoString() string {
 	return s.String()
 }
 
+// SetRecordDetail sets the RecordDetail field's value.
+func (s *TerminateProvisionedProductOutput) SetRecordDetail(v *RecordDetail) *TerminateProvisionedProductOutput {
+	s.RecordDetail = v
+	return s
+}
+
 type UpdateProvisionedProductInput struct {
 	_ struct{} `type:"structure"`
 
-	// Optional language code. Supported language codes are as follows:
+	// The language code to use for this operation. Supported language codes are
+	// as follows:
 	//
 	// "en" (English)
 	//
@@ -1773,27 +2867,29 @@ type UpdateProvisionedProductInput struct {
 	// The identifier of the path to use in the updated ProvisionedProduct object.
 	// This value is optional if the product has a default path, and is required
 	// if there is more than one path for the specified product.
-	PathId *string `type:"string"`
+	PathId *string `min:"1" type:"string"`
 
 	// The identifier of the ProvisionedProduct object.
-	ProductId *string `type:"string"`
+	ProductId *string `min:"1" type:"string"`
 
 	// The identifier of the ProvisionedProduct object to update. You must specify
 	// either ProvisionedProductName or ProvisionedProductId, but not both.
-	ProvisionedProductId *string `type:"string"`
+	ProvisionedProductId *string `min:"1" type:"string"`
 
 	// The updated name of the ProvisionedProduct object . You must specify either
 	// ProvisionedProductName or ProvisionedProductId, but not both.
 	ProvisionedProductName *string `min:"1" type:"string"`
 
 	// The provisioning artifact identifier for this product.
-	ProvisioningArtifactId *string `type:"string"`
+	ProvisioningArtifactId *string `min:"1" type:"string"`
 
 	// A list of ProvisioningParameter objects used to update the ProvisionedProduct
 	// object.
 	ProvisioningParameters []*UpdateProvisioningParameter `type:"list"`
 
 	// The idempotency token that uniquely identifies the provisioning update request.
+	//
+	// UpdateToken is a required field
 	UpdateToken *string `min:"1" type:"string" required:"true" idempotencyToken:"true"`
 }
 
@@ -1810,8 +2906,20 @@ func (s UpdateProvisionedProductInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *UpdateProvisionedProductInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "UpdateProvisionedProductInput"}
+	if s.PathId != nil && len(*s.PathId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PathId", 1))
+	}
+	if s.ProductId != nil && len(*s.ProductId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ProductId", 1))
+	}
+	if s.ProvisionedProductId != nil && len(*s.ProvisionedProductId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ProvisionedProductId", 1))
+	}
 	if s.ProvisionedProductName != nil && len(*s.ProvisionedProductName) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("ProvisionedProductName", 1))
+	}
+	if s.ProvisioningArtifactId != nil && len(*s.ProvisioningArtifactId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ProvisioningArtifactId", 1))
 	}
 	if s.UpdateToken == nil {
 		invalidParams.Add(request.NewErrParamRequired("UpdateToken"))
@@ -1824,6 +2932,54 @@ func (s *UpdateProvisionedProductInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAcceptLanguage sets the AcceptLanguage field's value.
+func (s *UpdateProvisionedProductInput) SetAcceptLanguage(v string) *UpdateProvisionedProductInput {
+	s.AcceptLanguage = &v
+	return s
+}
+
+// SetPathId sets the PathId field's value.
+func (s *UpdateProvisionedProductInput) SetPathId(v string) *UpdateProvisionedProductInput {
+	s.PathId = &v
+	return s
+}
+
+// SetProductId sets the ProductId field's value.
+func (s *UpdateProvisionedProductInput) SetProductId(v string) *UpdateProvisionedProductInput {
+	s.ProductId = &v
+	return s
+}
+
+// SetProvisionedProductId sets the ProvisionedProductId field's value.
+func (s *UpdateProvisionedProductInput) SetProvisionedProductId(v string) *UpdateProvisionedProductInput {
+	s.ProvisionedProductId = &v
+	return s
+}
+
+// SetProvisionedProductName sets the ProvisionedProductName field's value.
+func (s *UpdateProvisionedProductInput) SetProvisionedProductName(v string) *UpdateProvisionedProductInput {
+	s.ProvisionedProductName = &v
+	return s
+}
+
+// SetProvisioningArtifactId sets the ProvisioningArtifactId field's value.
+func (s *UpdateProvisionedProductInput) SetProvisioningArtifactId(v string) *UpdateProvisionedProductInput {
+	s.ProvisioningArtifactId = &v
+	return s
+}
+
+// SetProvisioningParameters sets the ProvisioningParameters field's value.
+func (s *UpdateProvisionedProductInput) SetProvisioningParameters(v []*UpdateProvisioningParameter) *UpdateProvisionedProductInput {
+	s.ProvisioningParameters = v
+	return s
+}
+
+// SetUpdateToken sets the UpdateToken field's value.
+func (s *UpdateProvisionedProductInput) SetUpdateToken(v string) *UpdateProvisionedProductInput {
+	s.UpdateToken = &v
+	return s
 }
 
 type UpdateProvisionedProductOutput struct {
@@ -1844,6 +3000,12 @@ func (s UpdateProvisionedProductOutput) String() string {
 // GoString returns the string representation
 func (s UpdateProvisionedProductOutput) GoString() string {
 	return s.String()
+}
+
+// SetRecordDetail sets the RecordDetail field's value.
+func (s *UpdateProvisionedProductOutput) SetRecordDetail(v *RecordDetail) *UpdateProvisionedProductOutput {
+	s.RecordDetail = v
+	return s
 }
 
 // The parameter key/value pair used to update a ProvisionedProduct object.
@@ -1874,6 +3036,24 @@ func (s UpdateProvisioningParameter) GoString() string {
 	return s.String()
 }
 
+// SetKey sets the Key field's value.
+func (s *UpdateProvisioningParameter) SetKey(v string) *UpdateProvisioningParameter {
+	s.Key = &v
+	return s
+}
+
+// SetUsePreviousValue sets the UsePreviousValue field's value.
+func (s *UpdateProvisioningParameter) SetUsePreviousValue(v bool) *UpdateProvisioningParameter {
+	s.UsePreviousValue = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *UpdateProvisioningParameter) SetValue(v string) *UpdateProvisioningParameter {
+	s.Value = &v
+	return s
+}
+
 // Additional information provided by the administrator.
 type UsageInstruction struct {
 	_ struct{} `type:"structure"`
@@ -1895,36 +3075,66 @@ func (s UsageInstruction) GoString() string {
 	return s.String()
 }
 
+// SetType sets the Type field's value.
+func (s *UsageInstruction) SetType(v string) *UsageInstruction {
+	s.Type = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *UsageInstruction) SetValue(v string) *UsageInstruction {
+	s.Value = &v
+	return s
+}
+
 const (
-	// @enum ProductViewFilterBy
+	// AccessLevelFilterKeyAccount is a AccessLevelFilterKey enum value
+	AccessLevelFilterKeyAccount = "Account"
+
+	// AccessLevelFilterKeyRole is a AccessLevelFilterKey enum value
+	AccessLevelFilterKeyRole = "Role"
+
+	// AccessLevelFilterKeyUser is a AccessLevelFilterKey enum value
+	AccessLevelFilterKeyUser = "User"
+)
+
+const (
+	// ProductViewFilterByFullTextSearch is a ProductViewFilterBy enum value
 	ProductViewFilterByFullTextSearch = "FullTextSearch"
-	// @enum ProductViewFilterBy
+
+	// ProductViewFilterByOwner is a ProductViewFilterBy enum value
 	ProductViewFilterByOwner = "Owner"
-	// @enum ProductViewFilterBy
+
+	// ProductViewFilterByProductType is a ProductViewFilterBy enum value
 	ProductViewFilterByProductType = "ProductType"
 )
 
 const (
-	// @enum ProductViewSortBy
+	// ProductViewSortByTitle is a ProductViewSortBy enum value
 	ProductViewSortByTitle = "Title"
-	// @enum ProductViewSortBy
+
+	// ProductViewSortByVersionCount is a ProductViewSortBy enum value
 	ProductViewSortByVersionCount = "VersionCount"
-	// @enum ProductViewSortBy
+
+	// ProductViewSortByCreationDate is a ProductViewSortBy enum value
 	ProductViewSortByCreationDate = "CreationDate"
 )
 
 const (
-	// @enum RecordStatus
+	// RecordStatusInProgress is a RecordStatus enum value
 	RecordStatusInProgress = "IN_PROGRESS"
-	// @enum RecordStatus
+
+	// RecordStatusSucceeded is a RecordStatus enum value
 	RecordStatusSucceeded = "SUCCEEDED"
-	// @enum RecordStatus
+
+	// RecordStatusError is a RecordStatus enum value
 	RecordStatusError = "ERROR"
 )
 
 const (
-	// @enum SortOrder
+	// SortOrderAscending is a SortOrder enum value
 	SortOrderAscending = "ASCENDING"
-	// @enum SortOrder
+
+	// SortOrderDescending is a SortOrder enum value
 	SortOrderDescending = "DESCENDING"
 )
