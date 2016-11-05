@@ -1,25 +1,24 @@
 package protokube
 
 import (
-	"fmt"
-	"os"
 	"bytes"
+	"fmt"
 	"github.com/golang/glog"
-	"time"
-	"strings"
 	"io/ioutil"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"os"
-	"path"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kubernetes/pkg/api/resource"
+	"os"
+	"path"
+	"strings"
+	"time"
 )
 
 type EtcdClusterSpec struct {
 	ClusterKey string `json:"clusterKey,omitempty"`
 
-	NodeName   string `json:"nodeName,omitempty"`
-	NodeNames  []string `json:"nodeNames,omitempty"`
+	NodeName  string   `json:"nodeName,omitempty"`
+	NodeNames []string `json:"nodeNames,omitempty"`
 }
 
 func (e *EtcdClusterSpec) String() string {
@@ -43,7 +42,6 @@ type EtcdCluster struct {
 	VolumeMountPath string
 }
 
-
 func (e *EtcdCluster) String() string {
 	return DebugString(e)
 }
@@ -56,7 +54,6 @@ type EtcdNode struct {
 func (e *EtcdNode) String() string {
 	return DebugString(e)
 }
-
 
 type EtcdController struct {
 	kubeBoot *KubeBoot
@@ -272,4 +269,3 @@ func touchFile(p string) error {
 	}
 	return nil
 }
-

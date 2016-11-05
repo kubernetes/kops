@@ -2,12 +2,12 @@ package baremetal
 
 import (
 	"fmt"
+	"github.com/golang/glog"
 	"io/ioutil"
 	"k8s.io/kops/protokube/pkg/protokube"
-	"strings"
-	"path"
-	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi/utils"
+	"path"
+	"strings"
 )
 
 type Volumes struct {
@@ -16,9 +16,9 @@ type Volumes struct {
 
 var _ protokube.Volumes = &Volumes{}
 
-func NewVolumes(basedir string) ( *Volumes , error) {
+func NewVolumes(basedir string) (*Volumes, error) {
 	v := &Volumes{
-		basedir:basedir,
+		basedir: basedir,
 	}
 	return v, nil
 }
@@ -52,7 +52,6 @@ func (v *Volumes) FindVolumes() ([]*protokube.Volume, error) {
 				glog.Warningf("ignoring error reading file %q: %v", p, err)
 				continue
 			}
-
 
 			err = utils.YamlUnmarshal([]byte(data), &volume.Info)
 			if err != nil {

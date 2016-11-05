@@ -27,6 +27,7 @@ import (
 	gossipdns "k8s.io/kops/protokube/pkg/gossip/dns"
 	"k8s.io/kops/protokube/pkg/gossip/mesh"
 	"k8s.io/kops/protokube/pkg/protokube"
+	"k8s.io/kops/protokube/pkg/protokube/baremetal"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	"net"
 	"os"
@@ -44,9 +45,6 @@ var (
 
 	// value overwritten during build. This can be used to resolve issues.
 	BuildVersion = "0.1"
-=======
-	"k8s.io/kops/protokube/pkg/protokube/baremetal"
->>>>>>> protokube work for baremetal
 )
 
 func main() {
@@ -75,6 +73,12 @@ func run() error {
 
 	initializeRBAC := false
 	flag.BoolVar(&initializeRBAC, "initialize-rbac", initializeRBAC, "Set if we should initialize RBAC")
+
+	populateExternalIP := false
+	flag.BoolVar(&populateExternalIP, "populate-external-ip", populateExternalIP, "If set, will populate the external IP when starting up")
+
+	cloud := ""
+	flag.StringVar(&cloud, "cloud", cloud, "Cloud provider to use - gce, aws, baremetal")
 
 	containerized := false
 	flag.BoolVar(&containerized, "containerized", containerized, "Set if we are running containerized.")
@@ -198,7 +202,6 @@ func run() error {
 	//	glog.Errorf("Error finding internal IP: %q", err)
 	//	os.Exit(1)
 	//}
-
 
 	rootfs := "/"
 	if containerized {
@@ -324,7 +327,8 @@ func run() error {
 		//MasterID          : fromVolume
 		//EtcdClusters   : fromVolume
 
-		InitializeRBAC: initializeRBAC,
+		InitializeRBAC:     initializeRBAC,
+		PopulateExternalIP: populateExternalIP,
 
 		ModelDir: modelDir,
 		DNS:      dnsProvider,

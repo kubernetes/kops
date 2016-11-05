@@ -2,8 +2,8 @@ package protokube
 
 import (
 	"fmt"
-	"net"
 	"github.com/golang/glog"
+	"net"
 	"strings"
 )
 
@@ -29,7 +29,7 @@ func FindInternalIP() (net.IP, error) {
 		// Not a lot else to go on...
 		// eth are the "traditional" names
 		// Ubuntu 15.10 introduces names that start with "en"
-		if !strings.HasPrefix(name, "eth")  && !strings.HasPrefix(name, "en") {
+		if !strings.HasPrefix(name, "eth") && !strings.HasPrefix(name, "en") {
 			glog.V(2).Infof("Ignoring interface %s - name does not look like ethernet device", name)
 			continue
 		}
