@@ -91,7 +91,7 @@ func (e *SecurityGroup) findEc2(c *fi.Context) (*ec2.SecurityGroup, error) {
 		filters = append(filters, awsup.NewEC2Filter("vpc-id", *vpcID))
 		filters = append(filters, awsup.NewEC2Filter("group-name", *e.Name))
 
-		request.Filters = cloud.BuildFilters(e.Name)
+		request.Filters = filters
 	}
 
 	response, err := cloud.EC2().DescribeSecurityGroups(request)
