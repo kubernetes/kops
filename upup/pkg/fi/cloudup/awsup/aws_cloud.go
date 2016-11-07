@@ -524,6 +524,8 @@ func (c *awsCloudImplementation) ResolveImage(name string) (*ec2.Image, error) {
 			switch owner {
 			case "kope.io":
 				owner = "383156758163"
+			case "redhat.com":
+				owner = "309956199498"
 			}
 
 			request.Owners = []*string{&owner}
