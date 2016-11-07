@@ -28,8 +28,8 @@ which should be easier than editing your instance groups.
 
 In addition, we support a few-well known aliases for the owner:
 
-`kope.io` => `383156758163`
-
+* `kope.io` => `383156758163`
+* `redhat.com` => `309956199498`
 
 
 ## CentOS
@@ -48,5 +48,7 @@ RHEL7 support is still experimental.
 
 The following steps are known:
 
-* Specify the AMI by id (there are no tags): us-east-1: ami-2051294a
+* RHEL 7.2 is the recommended minimum version
 * RHEL7 AMIs are running an older kernel than we prefer to run elsewhere
+* Redhat AMIs can be found using `aws ec2 describe-images --region=us-east-1 --owner=309956199498 --filters Name=virtualization-type,Values=hvm`
+* You can specify the name using the owner alias, for example `redhat.com/RHEL-7.2_HVM-20161025-x86_64-1-Hourly2-GP2`
