@@ -25,12 +25,42 @@ You can find the name for an image using e.g. `aws ec2 describe-images --image-i
 If you are creating a new cluster you can use the `--image` flag when running `kops create cluster`,
 which should be easier than editing your instance groups.
 
-
 In addition, we support a few-well known aliases for the owner:
 
 * `kope.io` => `383156758163`
 * `redhat.com` => `309956199498`
 
+## Debian
+
+A Debian image with a custom kubernetes kernel is the primary (default) platform for kops.
+
+We run a Debian Jessie image, with a 4.4 (stable series) kernel that is built with kubernetes-specific settings.
+
+The tooling used to build these images is open source:
+
+* [imagebuilder](https://github.com/kubernetes/kube-deploy/tree/master/imagebuilder) is used to build an image
+  as defined by a bootstrap-vz [template](https://github.com/kubernetes/kube-deploy/tree/master/imagebuilder/templates)
+* The [kubernetes-kernel](https://github.com/kopeio/kubernetes-kernel) project has the build scripts / configuration
+  used for building the kernel.
+
+The latest image name is kept in the [stable channel manifest](https://github.com/kubernetes/kops/blob/master/channels/stable),
+but an example is `kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21`.  This means to look for an image published 
+by `kope.io`, (which is a well-known alias to account `383156758163`), with the name
+`k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21`.  By using a name instead of an AMI, we can reference an image
+irrespective of the region in which it is located.
+
+## Ubuntu
+
+Ubuntu is not the default platform, but is believed to be entirely functional.
+
+Ubuntu 16.04 or later is required (we require systemd).
+
+For example, to use Ubuntu 16.04, you could specify:
+
+`image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20160830`
+
+You can find the name for an image by first consulting [Ubuntu's image finder](https://cloud-images.ubuntu.com/locator/),
+and then using e.g. `aws ec2 describe-images --image-id ami-a3641cb4`
 
 ## CentOS
 
