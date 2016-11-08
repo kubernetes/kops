@@ -375,8 +375,6 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 			return fmt.Errorf("Invalid networking option %s. Currently only '--networking cni' is supported for private topologies", c.Networking)
 		}
 		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPrivate, Nodes: api.TopologyPrivate, BypassBastion: false}
-	case api.TopologyPrivateMasters:
-		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPrivate, Nodes: api.TopologyPublic, BypassBastion: false}
 	case "":
 		glog.Warningf("Empty topology. Defaulting to public topology.")
 		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPublic, Nodes: api.TopologyPublic, BypassBastion: false}
