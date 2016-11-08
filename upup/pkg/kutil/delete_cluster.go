@@ -364,7 +364,7 @@ func (c *DeleteCluster) DeleteResources(resources map[string]*ResourceTracker) e
 		}
 
 		iterationsWithNoProgress++
-		if iterationsWithNoProgress > 30 {
+		if iterationsWithNoProgress > 42 {
 			return fmt.Errorf("Not making progress deleting resources; giving up")
 		}
 
