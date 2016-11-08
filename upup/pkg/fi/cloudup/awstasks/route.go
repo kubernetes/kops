@@ -126,10 +126,10 @@ func (s *Route) CheckChanges(a, e, changes *Route) error {
 			targetCount++
 		}
 		if targetCount == 0 {
-			return fmt.Errorf("InternetGateway | Instance | NatGateway is required")
+			return fmt.Errorf("InternetGateway or Instance or NatGateway is required")
 		}
 		if targetCount != 1 {
-			return fmt.Errorf("Cannot set more than 1 InternetGateway | Instance | NatGateway")
+			return fmt.Errorf("Cannot set more than 1 InternetGateway or Instance or NatGateway")
 		}
 	}
 
