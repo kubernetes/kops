@@ -19,17 +19,18 @@ package kops
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/golang/glog"
-	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kubernetes/pkg/api/unversioned"
 	"net"
 	"strconv"
 	"strings"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kubernetes/pkg/api/unversioned"
 )
 
 type Cluster struct {
 	unversioned.TypeMeta `json:",inline"`
-	ObjectMeta    `json:"metadata,omitempty"`
+	ObjectMeta           `json:"metadata,omitempty"`
 
 	Spec ClusterSpec `json:"spec,omitempty"`
 }
@@ -130,6 +131,9 @@ type ClusterSpec struct {
 	//   'external' do not apply updates automatically - they are applied manually or by an external system
 	//   missing: default policy (currently OS security upgrades that do not require a reboot)
 	UpdatePolicy *string `json:"updatePolicy,omitempty"`
+
+	// IgnoreNSCheck determines whether to ignore checks that verify the NS record is available.
+	IgnoreNSCheck *bool `json:"ignoreNSCheck,omitempty"`
 
 	//HairpinMode                   string `json:",omitempty"`
 	//

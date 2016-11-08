@@ -619,7 +619,7 @@ func validateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 	zone := matches[0]
 	dnsName := strings.TrimSuffix(zone.Name(), ".")
 
-	if os.Getenv("DNS_IGNORE_NS_CHECK") == "" {
+	if !fi.BoolValue(cluster.Spec.IgnoreNSCheck) {
 		glog.V(2).Infof("Doing DNS lookup to verify NS records for %q", dnsName)
 		ns, err := net.LookupNS(dnsName)
 		if err != nil {
@@ -636,7 +636,7 @@ func validateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 			glog.V(2).Infof("Found NS records for %q: %v", dnsName, hosts)
 		}
 	} else {
-		glog.Warningf("Ignoring NS record check because DNS_IGNORE_NS_CHECK is set")
+		glog.Warningf("Ignoring NS record check")
 	}
 
 	return nil

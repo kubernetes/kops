@@ -19,10 +19,12 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/golang/glog"
-	"github.com/spf13/cobra"
 	"io"
 	"io/ioutil"
+	"strings"
+
+	"github.com/golang/glog"
+	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
@@ -32,7 +34,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kubernetes/pkg/util/sets"
-	"strings"
 )
 
 type CreateClusterOptions struct {
@@ -56,6 +57,7 @@ type CreateClusterOptions struct {
 	AdminAccess       string
 	Networking        string
 	AssociatePublicIP bool
+	IgnoreNSCheck     bool
 
 	// Channel is the location of the api.Channel to use for our defaults
 	Channel string
@@ -110,6 +112,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.AssociatePublicIP, "associate-public-ip", true, "Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.")
 
 	cmd.Flags().StringVar(&options.Channel, "channel", api.DefaultChannel, "Channel for default versions and configuration to use")
+
+	cmd.Flags().BoolVar(&options.IgnoreNSCheck, "ignore-ns-check", false, "Specify --ignore-ns-check=[true|false] to ignore NS record checks. Default is 'false'.")
 
 	return cmd
 }
@@ -372,6 +376,8 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 	if c.AdminAccess != "" {
 		cluster.Spec.AdminAccess = []string{c.AdminAccess}
 	}
+
+	cluster.Spec.IgnoreNSCheck = fi.Bool(c.IgnoreNSCheck)
 
 	err = cluster.PerformAssignments()
 	if err != nil {
