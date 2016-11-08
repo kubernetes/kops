@@ -135,6 +135,9 @@ type ClusterSpec struct {
 	//   missing: default policy (currently OS security upgrades that do not require a reboot)
 	UpdatePolicy *string `json:"updatePolicy,omitempty"`
 
+	// IgnoreNSCheck determines whether to ignore checks that verify the NS record is available.
+	IgnoreNSCheck *bool `json:"ignoreNSCheck,omitempty"`
+
 	//HairpinMode                   string `json:",omitempty"`
 	//
 	//OpencontrailTag               string `json:",omitempty"`
