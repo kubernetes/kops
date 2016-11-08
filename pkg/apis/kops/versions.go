@@ -27,8 +27,6 @@ import (
 func ParseKubernetesVersion(version string) (*semver.Version, error) {
 	sv, err := semver.ParseTolerant(version)
 	if err != nil {
-		glog.Warningf("error parsing kubernetes semver %q, falling back to string matching", version)
-
 		v := strings.Trim(version, "v")
 		if strings.HasPrefix(v, "1.3.") {
 			sv = semver.Version{Major: 1, Minor: 3}
@@ -51,8 +49,10 @@ func ParseKubernetesVersion(version string) (*semver.Version, error) {
 		} else if strings.Contains(v, "/v1.7.") {
 			sv = semver.Version{Major: 1, Minor: 7}
 		} else {
+			glog.Errorf("unable to parse Kubernetes version %q", version)
 			return nil, fmt.Errorf("unable to parse kubernetes version %q", version)
 		}
+		glog.V(1).Infof("Kubernetes version %q string matched to %v", version, sv)
 	}
 
 	return &sv, nil
