@@ -117,6 +117,7 @@ func (c *populateClusterSpec) run() error {
 			clusterZones[z.Name] = z
 		}
 
+
 		// Check etcd configuration
 		{
 			for i, etcd := range cluster.Spec.EtcdClusters {
@@ -261,9 +262,6 @@ func (c *populateClusterSpec) run() error {
 		return fmt.Errorf("error building complete spec: %v", err)
 	}
 
-	//
-	//
-	//
 	completed.Topology = c.InputCluster.Spec.Topology
 
 	fullCluster := &api.Cluster{}
