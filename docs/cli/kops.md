@@ -24,7 +24,7 @@ It allows you to create, destroy, upgrade and maintain clusters.
 ```
 
 ### SEE ALSO
-* [kops completion](kops_completion.md)	 - Outputs kops shell completion for the given shell (bash)
+* [kops completion](kops_completion.md)	 - Output shell completion code for the given shell (bash)
 * [kops create](kops_create.md)	 - Create a resource by filename or stdin
 * [kops delete](kops_delete.md)	 - delete clusters
 * [kops describe](kops_describe.md)	 - describe objects
