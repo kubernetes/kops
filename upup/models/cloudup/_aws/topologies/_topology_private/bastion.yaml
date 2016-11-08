@@ -107,7 +107,7 @@ launchConfiguration/bastion.{{ ClusterName }}:
   iamInstanceProfile: iamInstanceProfile/masters.{{ ClusterName }}
   imageId: {{ GetBastionImageId }}
   instanceType: t2.small
-  associatePublicIP: true
+  associatePublicIP: false
   rootVolumeSize: 20
   rootVolumeType: gp2
 autoscalingGroup/bastion.{{ ClusterName }}:
