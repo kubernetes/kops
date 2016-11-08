@@ -19,7 +19,7 @@ GIT_VER=git-$(git describe --always)
 VERBOSITY=10
 
 # STATE_STORE
-export S3_BUCKET="s3://oscar-ai-k8s"
+export S3_BUCKET="s3://kops-state"
 
 # CLUSTER NAME
 CLUSTER_PREFIX="k8s-001"
@@ -45,18 +45,22 @@ NODEUP_OS="linux"
 NODEUP_ARCH="amd64"
 NODEUP_BUCKET="kops-devel"
 export NODEUP_URL="https://${NODEUP_BUCKET}.s3-us-west-1.com/${NODEUP_BUCKET}/kops/${GIT_VER}/${NODEUP_OS}/${NODEUP_ARCH}/nodeup"
+
+# Build kops
 make version-dist
 make
+
+# Push Nodeup to S3
 aws s3 sync --acl public-read .build/upload/ s3://${NODEUP_BUCKET}
 
-
-
+# Idempotent Delete
 kops delete cluster \
   --name $CLUSTER_NAME \
   --state $S3_BUCKET \
   -v $VERBOSITY \
   --yes
 
+# Create the new cluster
 kops create cluster \
   --name $CLUSTER_NAME \
   --state $S3_BUCKET \
