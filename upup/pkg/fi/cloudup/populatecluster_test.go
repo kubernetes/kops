@@ -288,6 +288,27 @@ func TestPopulateCluster_CloudProvider_Required(t *testing.T) {
 	expectErrorFromPopulateCluster(t, c, "CloudProvider")
 }
 
+func TestPopulateCluster_TopologyInvalidNil_Required(t *testing.T) {
+	c := buildMinimalCluster()
+	c.Spec.Topology.Masters = ""
+	c.Spec.Topology.Nodes = ""
+	expectErrorFromPopulateCluster(t, c, "Topology")
+}
+
+func TestPopulateCluster_TopologyInvalidValue_Required(t *testing.T) {
+	c := buildMinimalCluster()
+	c.Spec.Topology.Masters = "123"
+	c.Spec.Topology.Nodes = "abc"
+	expectErrorFromPopulateCluster(t, c, "Topology")
+}
+
+func TestPopulateCluster_TopologyInvalidMatchingValues_Required(t *testing.T) {
+	c := buildMinimalCluster()
+	c.Spec.Topology.Masters = api.TopologyPublic
+	c.Spec.Topology.Nodes = api.TopologyPrivate
+	expectErrorFromPopulateCluster(t, c, "Topology")
+}
+
 func expectErrorFromPopulateCluster(t *testing.T, c *api.Cluster, message string) {
 	_, err := PopulateClusterSpec(c)
 	if err == nil {
