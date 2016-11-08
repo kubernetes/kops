@@ -118,6 +118,9 @@ gcs-publish-ci: gcs-upload
 	echo "${GCS_URL}/${VERSION}" > .build/upload/${LATEST_FILE}
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp .build/upload/${LATEST_FILE} ${GCS_LOCATION}
 
+gen-cli-docs:
+	@kops genhelpdocs --out docs/cli
+
 # Assumes running on linux for speed (todo: crossbuild on OSX?)
 push: nodeup-gocode
 	scp -C ${GOPATH_1ST}/bin/nodeup  ${TARGET}:/tmp/
