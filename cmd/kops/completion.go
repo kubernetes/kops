@@ -52,8 +52,8 @@ This command prints shell code which must be evaluation to provide interactive
 completion of kops commands.`
 
 	example = `
-	# load in the kops completion code for bash (depends on the bash-completion framework).
-	source <(kops completion bash)`
+# load in the kops completion code for bash (depends on the bash-completion framework).
+source <(kops completion bash)`
 )
 
 var completionCmd = CompletionCmd{
