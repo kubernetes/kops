@@ -115,7 +115,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.Channel, "channel", api.DefaultChannel, "Channel for default versions and configuration to use")
 
 	// Network topology
-	cmd.Flags().StringVarP(&options.Topology, "topology", "t", "public", "Controls network topology for the cluster. public|private|privatemasters. Default is 'public'.")
+	cmd.Flags().StringVarP(&options.Topology, "topology", "t", "public", "Controls network topology for the cluster. public|private. Default is 'public'.")
 
 	return cmd
 }
