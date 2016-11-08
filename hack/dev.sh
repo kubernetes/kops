@@ -22,11 +22,11 @@ VERBOSITY=10
 export S3_BUCKET="s3://oscar-ai-k8s"
 
 # CLUSTER NAME
-CLUSTER_PREFIX="k8s-43"
+CLUSTER_PREFIX="k8s-001"
 CLUSTER_ENV="dev"
 CLUSTER_REGION="us-west-2"
 CLUSTER_SUBDOMAIN="aws-${CLUSTER_REGION}"
-CLUSTER_DOMAIN="datapipe.io"
+CLUSTER_DOMAIN="mydomain.com"
 CLUSTER_NAME="${CLUSTER_PREFIX}.${CLUSTER_ENV}.${CLUSTER_SUBDOMAIN}.${CLUSTER_DOMAIN}"
 
 # CLUSTER CONFIG
@@ -44,10 +44,9 @@ NETWORKING="cni"
 NODEUP_OS="linux"
 NODEUP_ARCH="amd64"
 NODEUP_BUCKET="kops-devel"
-NODEUP_URL="https://${NODEUP_BUCKET}.s3-us-west-1.com/${NODEUP_BUCKET}/kops/${GIT_VER}/${NODEUP_OS}/${NODEUP_ARCH}/nodeup"
-#make version-dist & # Compile Kops releases
-make              & # Compile Kops
-wait
+export NODEUP_URL="https://${NODEUP_BUCKET}.s3-us-west-1.com/${NODEUP_BUCKET}/kops/${GIT_VER}/${NODEUP_OS}/${NODEUP_ARCH}/nodeup"
+make version-dist
+make
 aws s3 sync --acl public-read .build/upload/ s3://${NODEUP_BUCKET}
 
 
