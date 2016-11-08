@@ -1,14 +1,24 @@
 ## kops completion
 
-Outputs kops shell completion for the given shell (bash)
+Output shell completion code for the given shell (bash)
 
 ### Synopsis
 
 
-Outputs kops shell completion for the given shell (bash)
+Output shell completion code for the given shell (bash).
+
+This command prints shell code which must be evaluation to provide interactive
+completion of kops commands.
 
 ```
 kops completion
+```
+
+### Examples
+
+```
+# load in the kops completion code for bash (depends on the bash-completion framework).
+source <(kops completion bash)
 ```
 
 ### Options

@@ -45,10 +45,23 @@ type CompletionCmd struct {
 	Shell        string
 }
 
+var (
+	longDescription = `Output shell completion code for the given shell (bash).
+
+This command prints shell code which must be evaluation to provide interactive
+completion of kops commands.`
+
+	example = `
+	# load in the kops completion code for bash (depends on the bash-completion framework).
+	source <(kops completion bash)`
+)
+
 var completionCmd = CompletionCmd{
 	cobraCommand: &cobra.Command{
-		Use:   "completion",
-		Short: "Outputs kops shell completion for the given shell (bash)",
+		Use:     "completion",
+		Short:   "Output shell completion code for the given shell (bash)",
+		Long:    longDescription,
+		Example: example,
 	},
 }
 
