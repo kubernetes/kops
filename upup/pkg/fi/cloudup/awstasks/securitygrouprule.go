@@ -145,7 +145,7 @@ func (e *SecurityGroupRule) matches(rule *ec2.IpPermission) bool {
 		// TODO: Only if len 1?
 		match := false
 		for _, spec := range rule.UserIdGroupPairs {
-			if *e.SourceGroup == nil {
+			if e.SourceGroup == nil {
 				continue
 			}
 			if aws.StringValue(spec.GroupId) == *e.SourceGroup.ID {
