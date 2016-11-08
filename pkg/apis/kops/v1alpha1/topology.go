@@ -19,7 +19,6 @@ package v1alpha1
 const (
 	TopologyPublic         = "public"
 	TopologyPrivate        = "private"
-	TopologyPrivateMasters = "privatemasters"
 )
 
 type TopologySpec struct {

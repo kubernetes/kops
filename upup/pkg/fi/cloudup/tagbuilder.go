@@ -74,8 +74,6 @@ func buildCloudupTags(cluster *api.Cluster) (map[string]struct{}, error) {
 		tags["_topology_public"] = struct{}{}
 	} else if cluster.Spec.Topology.Masters == api.TopologyPrivate && cluster.Spec.Topology.Nodes == api.TopologyPrivate {
 		tags["_topology_private"] = struct{}{}
-	} else if cluster.Spec.Topology.Masters == api.TopologyPrivate && cluster.Spec.Topology.Nodes == api.TopologyPublic {
-		tags["_topology_privatemasters"] = struct{}{}
 	} else {
 		return nil, fmt.Errorf("Unable to parse topology")
 	}

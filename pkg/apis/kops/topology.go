@@ -19,7 +19,6 @@ package kops
 const (
 	TopologyPublic         = "public"
 	TopologyPrivate        = "private"
-	TopologyPrivateMasters = "privatemasters"
 )
 
 type TopologySpec struct {
