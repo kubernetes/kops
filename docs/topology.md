@@ -38,6 +38,7 @@ kops create cluster ... --topology public|private
 
 - Right now we require `-networking cni` for all private topologies.
 - Right now a manual install of weave is required for private topologies.
+- Right now upgrading from a public cluster to a private cluster is considered very **experimental**
 
 ```
 kubectl create -f https://git.io/weave-kube
