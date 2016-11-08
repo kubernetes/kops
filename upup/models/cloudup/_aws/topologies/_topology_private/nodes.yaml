@@ -53,7 +53,7 @@ launchConfiguration/{{ $ig.Name }}.{{ ClusterName }}:
   iamInstanceProfile: iamInstanceProfile/nodes.{{ ClusterName }}
   imageId: {{ $ig.Spec.Image }}
   instanceType: {{ $ig.Spec.MachineType }}
-  associatePublicIP: true
+  associatePublicIP: false
   userData: resources/nodeup.sh {{ $ig.Name }}
   rootVolumeSize: {{ or $ig.Spec.RootVolumeSize "20" }}
   rootVolumeType: {{ or $ig.Spec.RootVolumeType "gp2" }}
