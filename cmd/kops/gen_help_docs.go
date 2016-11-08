@@ -49,6 +49,7 @@ func init() {
 }
 
 func (c *GenHelpDocsCmd) Run() error {
+	rootCommand.cobraCommand.DisableAutoGenTag = true
 	err := doc.GenMarkdownTree(rootCommand.cobraCommand, c.OutDir)
 
 	return err
