@@ -351,7 +351,6 @@ func (l *Loader) loadObjectMap(key string, data map[string]interface{}) (map[str
 				return nil, fmt.Errorf("cannot determine type for %q", k)
 			}
 		}
-
 		t, found := l.typeMap[typeId]
 		if !found {
 			return nil, fmt.Errorf("unknown type %q (in %q)", typeId, key)

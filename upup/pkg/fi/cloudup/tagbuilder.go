@@ -14,6 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+/******************************************************************************
+* The Kops Tag Builder
+*
+* Tags are how we manage kops functionality.
+*
+******************************************************************************/
+
 package cloudup
 
 import (
@@ -23,6 +30,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
+//
+//
 func buildCloudupTags(cluster *api.Cluster) (map[string]struct{}, error) {
 	// TODO: Make these configurable?
 	useMasterASG := true
@@ -54,8 +63,20 @@ func buildCloudupTags(cluster *api.Cluster) (map[string]struct{}, error) {
 
 	if useMasterLB {
 		tags["_master_lb"] = struct{}{}
-	} else {
+	} else if cluster.Spec.Topology.Masters == api.TopologyPublic {
 		tags["_not_master_lb"] = struct{}{}
+	}
+
+	// Network Topologies
+	if cluster.Spec.Topology == nil {
+		return nil, fmt.Errorf("missing topology spec")
+	}
+	if cluster.Spec.Topology.Masters == api.TopologyPublic && cluster.Spec.Topology.Nodes == api.TopologyPublic {
+		tags["_topology_public"] = struct{}{}
+	} else if cluster.Spec.Topology.Masters == api.TopologyPrivate && cluster.Spec.Topology.Nodes == api.TopologyPrivate {
+		tags["_topology_private"] = struct{}{}
+	} else {
+		return nil, fmt.Errorf("Unable to parse topology. Unsupported topology configuration. Masters and nodes must match!")
 	}
 
 	if fi.BoolValue(cluster.Spec.IsolateMasters) {

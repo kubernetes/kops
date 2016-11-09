@@ -292,6 +292,21 @@ func (c *Cluster) Validate(strict bool) error {
 		}
 	}
 
+	// Topology support
+	if c.Spec.Topology.Masters != "" && c.Spec.Topology.Nodes != "" {
+		if c.Spec.Topology.Masters != TopologyPublic && c.Spec.Topology.Masters != TopologyPrivate {
+			return fmt.Errorf("Invalid Masters value for Topology")
+		} else if c.Spec.Topology.Nodes != TopologyPublic && c.Spec.Topology.Nodes != TopologyPrivate {
+			return fmt.Errorf("Invalid Nodes value for Topology")
+		// Until we support other topologies - these must match
+		} else if c.Spec.Topology.Masters != c.Spec.Topology.Nodes {
+			return fmt.Errorf("Topology Nodes must match Topology Masters")
+		}
+
+	}else{
+		return fmt.Errorf("Topology requires non-nil values for Masters and Nodes")
+	}
+
 	// Etcd
 	{
 		if len(c.Spec.EtcdClusters) == 0 {

@@ -20,6 +20,8 @@ const opAcknowledgeJob = "AcknowledgeJob"
 // value can be used to capture response data after the request's "Send" method
 // is called.
 //
+// See AcknowledgeJob for usage and error information.
+//
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
 // access properties on the request object before or after sending the request. If
@@ -54,8 +56,28 @@ func (c *CodePipeline) AcknowledgeJobRequest(input *AcknowledgeJobInput) (req *r
 	return
 }
 
+// AcknowledgeJob API operation for AWS CodePipeline.
+//
 // Returns information about a specified job and whether that job has been received
 // by the job worker. Only used for custom actions.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation AcknowledgeJob for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * InvalidNonceException
+//   The specified nonce was specified in an invalid format.
+//
+//   * JobNotFoundException
+//   The specified job was specified in an invalid format or cannot be found.
+//
 func (c *CodePipeline) AcknowledgeJob(input *AcknowledgeJobInput) (*AcknowledgeJobOutput, error) {
 	req, out := c.AcknowledgeJobRequest(input)
 	err := req.Send()
@@ -68,6 +90,8 @@ const opAcknowledgeThirdPartyJob = "AcknowledgeThirdPartyJob"
 // client's request for the AcknowledgeThirdPartyJob operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See AcknowledgeThirdPartyJob for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -103,8 +127,31 @@ func (c *CodePipeline) AcknowledgeThirdPartyJobRequest(input *AcknowledgeThirdPa
 	return
 }
 
+// AcknowledgeThirdPartyJob API operation for AWS CodePipeline.
+//
 // Confirms a job worker has received the specified job. Only used for partner
 // actions.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation AcknowledgeThirdPartyJob for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * InvalidNonceException
+//   The specified nonce was specified in an invalid format.
+//
+//   * JobNotFoundException
+//   The specified job was specified in an invalid format or cannot be found.
+//
+//   * InvalidClientTokenException
+//   The client token was specified in an invalid format
+//
 func (c *CodePipeline) AcknowledgeThirdPartyJob(input *AcknowledgeThirdPartyJobInput) (*AcknowledgeThirdPartyJobOutput, error) {
 	req, out := c.AcknowledgeThirdPartyJobRequest(input)
 	err := req.Send()
@@ -117,6 +164,8 @@ const opCreateCustomActionType = "CreateCustomActionType"
 // client's request for the CreateCustomActionType operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See CreateCustomActionType for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -152,8 +201,26 @@ func (c *CodePipeline) CreateCustomActionTypeRequest(input *CreateCustomActionTy
 	return
 }
 
+// CreateCustomActionType API operation for AWS CodePipeline.
+//
 // Creates a new custom action that can be used in all pipelines associated
 // with the AWS account. Only used for custom actions.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation CreateCustomActionType for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * LimitExceededException
+//   The number of pipelines associated with the AWS account has exceeded the
+//   limit allowed for the account.
+//
 func (c *CodePipeline) CreateCustomActionType(input *CreateCustomActionTypeInput) (*CreateCustomActionTypeOutput, error) {
 	req, out := c.CreateCustomActionTypeRequest(input)
 	err := req.Send()
@@ -166,6 +233,8 @@ const opCreatePipeline = "CreatePipeline"
 // client's request for the CreatePipeline operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See CreatePipeline for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -201,7 +270,40 @@ func (c *CodePipeline) CreatePipelineRequest(input *CreatePipelineInput) (req *r
 	return
 }
 
+// CreatePipeline API operation for AWS CodePipeline.
+//
 // Creates a pipeline.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation CreatePipeline for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * PipelineNameInUseException
+//   The specified pipeline name is already in use.
+//
+//   * InvalidStageDeclarationException
+//   The specified stage declaration was specified in an invalid format.
+//
+//   * InvalidActionDeclarationException
+//   The specified action declaration was specified in an invalid format.
+//
+//   * InvalidBlockerDeclarationException
+//   Reserved for future use.
+//
+//   * InvalidStructureException
+//   The specified structure was specified in an invalid format.
+//
+//   * LimitExceededException
+//   The number of pipelines associated with the AWS account has exceeded the
+//   limit allowed for the account.
+//
 func (c *CodePipeline) CreatePipeline(input *CreatePipelineInput) (*CreatePipelineOutput, error) {
 	req, out := c.CreatePipelineRequest(input)
 	err := req.Send()
@@ -214,6 +316,8 @@ const opDeleteCustomActionType = "DeleteCustomActionType"
 // client's request for the DeleteCustomActionType operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DeleteCustomActionType for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -251,11 +355,25 @@ func (c *CodePipeline) DeleteCustomActionTypeRequest(input *DeleteCustomActionTy
 	return
 }
 
+// DeleteCustomActionType API operation for AWS CodePipeline.
+//
 // Marks a custom action as deleted. PollForJobs for the custom action will
 // fail after the action is marked for deletion. Only used for custom actions.
 //
-//  You cannot recreate a custom action after it has been deleted unless you
+// You cannot recreate a custom action after it has been deleted unless you
 // increase the version number of the action.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation DeleteCustomActionType for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
 func (c *CodePipeline) DeleteCustomActionType(input *DeleteCustomActionTypeInput) (*DeleteCustomActionTypeOutput, error) {
 	req, out := c.DeleteCustomActionTypeRequest(input)
 	err := req.Send()
@@ -268,6 +386,8 @@ const opDeletePipeline = "DeletePipeline"
 // client's request for the DeletePipeline operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DeletePipeline for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -305,7 +425,21 @@ func (c *CodePipeline) DeletePipelineRequest(input *DeletePipelineInput) (req *r
 	return
 }
 
+// DeletePipeline API operation for AWS CodePipeline.
+//
 // Deletes the specified pipeline.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation DeletePipeline for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
 func (c *CodePipeline) DeletePipeline(input *DeletePipelineInput) (*DeletePipelineOutput, error) {
 	req, out := c.DeletePipelineRequest(input)
 	err := req.Send()
@@ -318,6 +452,8 @@ const opDisableStageTransition = "DisableStageTransition"
 // client's request for the DisableStageTransition operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DisableStageTransition for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -355,8 +491,28 @@ func (c *CodePipeline) DisableStageTransitionRequest(input *DisableStageTransiti
 	return
 }
 
+// DisableStageTransition API operation for AWS CodePipeline.
+//
 // Prevents artifacts in a pipeline from transitioning to the next stage in
 // the pipeline.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation DisableStageTransition for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * PipelineNotFoundException
+//   The specified pipeline was specified in an invalid format or cannot be found.
+//
+//   * StageNotFoundException
+//   The specified stage was specified in an invalid format or cannot be found.
+//
 func (c *CodePipeline) DisableStageTransition(input *DisableStageTransitionInput) (*DisableStageTransitionOutput, error) {
 	req, out := c.DisableStageTransitionRequest(input)
 	err := req.Send()
@@ -369,6 +525,8 @@ const opEnableStageTransition = "EnableStageTransition"
 // client's request for the EnableStageTransition operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See EnableStageTransition for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -406,7 +564,27 @@ func (c *CodePipeline) EnableStageTransitionRequest(input *EnableStageTransition
 	return
 }
 
+// EnableStageTransition API operation for AWS CodePipeline.
+//
 // Enables artifacts in a pipeline to transition to a stage in a pipeline.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation EnableStageTransition for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * PipelineNotFoundException
+//   The specified pipeline was specified in an invalid format or cannot be found.
+//
+//   * StageNotFoundException
+//   The specified stage was specified in an invalid format or cannot be found.
+//
 func (c *CodePipeline) EnableStageTransition(input *EnableStageTransitionInput) (*EnableStageTransitionOutput, error) {
 	req, out := c.EnableStageTransitionRequest(input)
 	err := req.Send()
@@ -419,6 +597,8 @@ const opGetJobDetails = "GetJobDetails"
 // client's request for the GetJobDetails operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See GetJobDetails for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -454,12 +634,29 @@ func (c *CodePipeline) GetJobDetailsRequest(input *GetJobDetailsInput) (req *req
 	return
 }
 
+// GetJobDetails API operation for AWS CodePipeline.
+//
 // Returns information about a job. Only used for custom actions.
 //
-//  When this API is called, AWS CodePipeline returns temporary credentials
-// for the Amazon S3 bucket used to store artifacts for the pipeline, if the
-// action requires access to that Amazon S3 bucket for input or output artifacts.
-// Additionally, this API returns any secret values defined for the action.
+// When this API is called, AWS CodePipeline returns temporary credentials for
+// the Amazon S3 bucket used to store artifacts for the pipeline, if the action
+// requires access to that Amazon S3 bucket for input or output artifacts. Additionally,
+// this API returns any secret values defined for the action.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation GetJobDetails for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * JobNotFoundException
+//   The specified job was specified in an invalid format or cannot be found.
+//
 func (c *CodePipeline) GetJobDetails(input *GetJobDetailsInput) (*GetJobDetailsOutput, error) {
 	req, out := c.GetJobDetailsRequest(input)
 	err := req.Send()
@@ -472,6 +669,8 @@ const opGetPipeline = "GetPipeline"
 // client's request for the GetPipeline operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See GetPipeline for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -507,11 +706,105 @@ func (c *CodePipeline) GetPipelineRequest(input *GetPipelineInput) (req *request
 	return
 }
 
+// GetPipeline API operation for AWS CodePipeline.
+//
 // Returns the metadata, structure, stages, and actions of a pipeline. Can be
 // used to return the entire structure of a pipeline in JSON format, which can
 // then be modified and used to update the pipeline structure with UpdatePipeline.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation GetPipeline for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * PipelineNotFoundException
+//   The specified pipeline was specified in an invalid format or cannot be found.
+//
+//   * PipelineVersionNotFoundException
+//   The specified pipeline version was specified in an invalid format or cannot
+//   be found.
+//
 func (c *CodePipeline) GetPipeline(input *GetPipelineInput) (*GetPipelineOutput, error) {
 	req, out := c.GetPipelineRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opGetPipelineExecution = "GetPipelineExecution"
+
+// GetPipelineExecutionRequest generates a "aws/request.Request" representing the
+// client's request for the GetPipelineExecution operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See GetPipelineExecution for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the GetPipelineExecution method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the GetPipelineExecutionRequest method.
+//    req, resp := client.GetPipelineExecutionRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+func (c *CodePipeline) GetPipelineExecutionRequest(input *GetPipelineExecutionInput) (req *request.Request, output *GetPipelineExecutionOutput) {
+	op := &request.Operation{
+		Name:       opGetPipelineExecution,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetPipelineExecutionInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &GetPipelineExecutionOutput{}
+	req.Data = output
+	return
+}
+
+// GetPipelineExecution API operation for AWS CodePipeline.
+//
+// Returns information about an execution of a pipeline, including details about
+// artifacts, the pipeline execution ID, and the name, version, and status of
+// the pipeline.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation GetPipelineExecution for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * PipelineNotFoundException
+//   The specified pipeline was specified in an invalid format or cannot be found.
+//
+//   * PipelineExecutionNotFoundException
+//   The pipeline execution was specified in an invalid format or cannot be found,
+//   or an execution ID does not belong to the specified pipeline.
+//
+func (c *CodePipeline) GetPipelineExecution(input *GetPipelineExecutionInput) (*GetPipelineExecutionOutput, error) {
+	req, out := c.GetPipelineExecutionRequest(input)
 	err := req.Send()
 	return out, err
 }
@@ -522,6 +815,8 @@ const opGetPipelineState = "GetPipelineState"
 // client's request for the GetPipelineState operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See GetPipelineState for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -557,8 +852,25 @@ func (c *CodePipeline) GetPipelineStateRequest(input *GetPipelineStateInput) (re
 	return
 }
 
+// GetPipelineState API operation for AWS CodePipeline.
+//
 // Returns information about the state of a pipeline, including the stages and
 // actions.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation GetPipelineState for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * PipelineNotFoundException
+//   The specified pipeline was specified in an invalid format or cannot be found.
+//
 func (c *CodePipeline) GetPipelineState(input *GetPipelineStateInput) (*GetPipelineStateOutput, error) {
 	req, out := c.GetPipelineStateRequest(input)
 	err := req.Send()
@@ -571,6 +883,8 @@ const opGetThirdPartyJobDetails = "GetThirdPartyJobDetails"
 // client's request for the GetThirdPartyJobDetails operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See GetThirdPartyJobDetails for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -606,13 +920,36 @@ func (c *CodePipeline) GetThirdPartyJobDetailsRequest(input *GetThirdPartyJobDet
 	return
 }
 
+// GetThirdPartyJobDetails API operation for AWS CodePipeline.
+//
 // Requests the details of a job for a third party action. Only used for partner
 // actions.
 //
-//  When this API is called, AWS CodePipeline returns temporary credentials
-// for the Amazon S3 bucket used to store artifacts for the pipeline, if the
-// action requires access to that Amazon S3 bucket for input or output artifacts.
-// Additionally, this API returns any secret values defined for the action.
+// When this API is called, AWS CodePipeline returns temporary credentials for
+// the Amazon S3 bucket used to store artifacts for the pipeline, if the action
+// requires access to that Amazon S3 bucket for input or output artifacts. Additionally,
+// this API returns any secret values defined for the action.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation GetThirdPartyJobDetails for usage and error information.
+//
+// Returned Error Codes:
+//   * JobNotFoundException
+//   The specified job was specified in an invalid format or cannot be found.
+//
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * InvalidClientTokenException
+//   The client token was specified in an invalid format
+//
+//   * InvalidJobException
+//   The specified job was specified in an invalid format or cannot be found.
+//
 func (c *CodePipeline) GetThirdPartyJobDetails(input *GetThirdPartyJobDetailsInput) (*GetThirdPartyJobDetailsOutput, error) {
 	req, out := c.GetThirdPartyJobDetailsRequest(input)
 	err := req.Send()
@@ -625,6 +962,8 @@ const opListActionTypes = "ListActionTypes"
 // client's request for the ListActionTypes operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See ListActionTypes for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -660,8 +999,26 @@ func (c *CodePipeline) ListActionTypesRequest(input *ListActionTypesInput) (req 
 	return
 }
 
+// ListActionTypes API operation for AWS CodePipeline.
+//
 // Gets a summary of all AWS CodePipeline action types associated with your
 // account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation ListActionTypes for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * InvalidNextTokenException
+//   The next token was specified in an invalid format. Make sure that the next
+//   token you provided is the token returned by a previous call.
+//
 func (c *CodePipeline) ListActionTypes(input *ListActionTypesInput) (*ListActionTypesOutput, error) {
 	req, out := c.ListActionTypesRequest(input)
 	err := req.Send()
@@ -674,6 +1031,8 @@ const opListPipelines = "ListPipelines"
 // client's request for the ListPipelines operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See ListPipelines for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -709,7 +1068,22 @@ func (c *CodePipeline) ListPipelinesRequest(input *ListPipelinesInput) (req *req
 	return
 }
 
+// ListPipelines API operation for AWS CodePipeline.
+//
 // Gets a summary of all of the pipelines associated with your account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation ListPipelines for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidNextTokenException
+//   The next token was specified in an invalid format. Make sure that the next
+//   token you provided is the token returned by a previous call.
+//
 func (c *CodePipeline) ListPipelines(input *ListPipelinesInput) (*ListPipelinesOutput, error) {
 	req, out := c.ListPipelinesRequest(input)
 	err := req.Send()
@@ -722,6 +1096,8 @@ const opPollForJobs = "PollForJobs"
 // client's request for the PollForJobs operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See PollForJobs for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -757,12 +1133,29 @@ func (c *CodePipeline) PollForJobsRequest(input *PollForJobsInput) (req *request
 	return
 }
 
+// PollForJobs API operation for AWS CodePipeline.
+//
 // Returns information about any jobs for AWS CodePipeline to act upon.
 //
-//  When this API is called, AWS CodePipeline returns temporary credentials
-// for the Amazon S3 bucket used to store artifacts for the pipeline, if the
-// action requires access to that Amazon S3 bucket for input or output artifacts.
-// Additionally, this API returns any secret values defined for the action.
+// When this API is called, AWS CodePipeline returns temporary credentials for
+// the Amazon S3 bucket used to store artifacts for the pipeline, if the action
+// requires access to that Amazon S3 bucket for input or output artifacts. Additionally,
+// this API returns any secret values defined for the action.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation PollForJobs for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * ActionTypeNotFoundException
+//   The specified action type cannot be found.
+//
 func (c *CodePipeline) PollForJobs(input *PollForJobsInput) (*PollForJobsOutput, error) {
 	req, out := c.PollForJobsRequest(input)
 	err := req.Send()
@@ -775,6 +1168,8 @@ const opPollForThirdPartyJobs = "PollForThirdPartyJobs"
 // client's request for the PollForThirdPartyJobs operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See PollForThirdPartyJobs for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -810,12 +1205,29 @@ func (c *CodePipeline) PollForThirdPartyJobsRequest(input *PollForThirdPartyJobs
 	return
 }
 
+// PollForThirdPartyJobs API operation for AWS CodePipeline.
+//
 // Determines whether there are any third party jobs for a job worker to act
 // on. Only used for partner actions.
 //
-//  When this API is called, AWS CodePipeline returns temporary credentials
-// for the Amazon S3 bucket used to store artifacts for the pipeline, if the
-// action requires access to that Amazon S3 bucket for input or output artifacts.
+// When this API is called, AWS CodePipeline returns temporary credentials for
+// the Amazon S3 bucket used to store artifacts for the pipeline, if the action
+// requires access to that Amazon S3 bucket for input or output artifacts.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation PollForThirdPartyJobs for usage and error information.
+//
+// Returned Error Codes:
+//   * ActionTypeNotFoundException
+//   The specified action type cannot be found.
+//
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
 func (c *CodePipeline) PollForThirdPartyJobs(input *PollForThirdPartyJobsInput) (*PollForThirdPartyJobsOutput, error) {
 	req, out := c.PollForThirdPartyJobsRequest(input)
 	err := req.Send()
@@ -828,6 +1240,8 @@ const opPutActionRevision = "PutActionRevision"
 // client's request for the PutActionRevision operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See PutActionRevision for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -863,7 +1277,30 @@ func (c *CodePipeline) PutActionRevisionRequest(input *PutActionRevisionInput) (
 	return
 }
 
+// PutActionRevision API operation for AWS CodePipeline.
+//
 // Provides information to AWS CodePipeline about new revisions to a source.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation PutActionRevision for usage and error information.
+//
+// Returned Error Codes:
+//   * PipelineNotFoundException
+//   The specified pipeline was specified in an invalid format or cannot be found.
+//
+//   * StageNotFoundException
+//   The specified stage was specified in an invalid format or cannot be found.
+//
+//   * ActionNotFoundException
+//   The specified action cannot be found.
+//
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
 func (c *CodePipeline) PutActionRevision(input *PutActionRevisionInput) (*PutActionRevisionOutput, error) {
 	req, out := c.PutActionRevisionRequest(input)
 	err := req.Send()
@@ -876,6 +1313,8 @@ const opPutApprovalResult = "PutApprovalResult"
 // client's request for the PutApprovalResult operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See PutApprovalResult for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -911,8 +1350,37 @@ func (c *CodePipeline) PutApprovalResultRequest(input *PutApprovalResultInput) (
 	return
 }
 
+// PutApprovalResult API operation for AWS CodePipeline.
+//
 // Provides the response to a manual approval request to AWS CodePipeline. Valid
 // responses include Approved and Rejected.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation PutApprovalResult for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidApprovalTokenException
+//   The approval request already received a response or has expired.
+//
+//   * ApprovalAlreadyCompletedException
+//   The approval action has already been approved or rejected.
+//
+//   * PipelineNotFoundException
+//   The specified pipeline was specified in an invalid format or cannot be found.
+//
+//   * StageNotFoundException
+//   The specified stage was specified in an invalid format or cannot be found.
+//
+//   * ActionNotFoundException
+//   The specified action cannot be found.
+//
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
 func (c *CodePipeline) PutApprovalResult(input *PutApprovalResultInput) (*PutApprovalResultOutput, error) {
 	req, out := c.PutApprovalResultRequest(input)
 	err := req.Send()
@@ -925,6 +1393,8 @@ const opPutJobFailureResult = "PutJobFailureResult"
 // client's request for the PutJobFailureResult operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See PutJobFailureResult for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -962,8 +1432,28 @@ func (c *CodePipeline) PutJobFailureResultRequest(input *PutJobFailureResultInpu
 	return
 }
 
+// PutJobFailureResult API operation for AWS CodePipeline.
+//
 // Represents the failure of a job as returned to the pipeline by a job worker.
 // Only used for custom actions.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation PutJobFailureResult for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * JobNotFoundException
+//   The specified job was specified in an invalid format or cannot be found.
+//
+//   * InvalidJobStateException
+//   The specified job state was specified in an invalid format.
+//
 func (c *CodePipeline) PutJobFailureResult(input *PutJobFailureResultInput) (*PutJobFailureResultOutput, error) {
 	req, out := c.PutJobFailureResultRequest(input)
 	err := req.Send()
@@ -976,6 +1466,8 @@ const opPutJobSuccessResult = "PutJobSuccessResult"
 // client's request for the PutJobSuccessResult operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See PutJobSuccessResult for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -1013,8 +1505,28 @@ func (c *CodePipeline) PutJobSuccessResultRequest(input *PutJobSuccessResultInpu
 	return
 }
 
+// PutJobSuccessResult API operation for AWS CodePipeline.
+//
 // Represents the success of a job as returned to the pipeline by a job worker.
 // Only used for custom actions.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation PutJobSuccessResult for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * JobNotFoundException
+//   The specified job was specified in an invalid format or cannot be found.
+//
+//   * InvalidJobStateException
+//   The specified job state was specified in an invalid format.
+//
 func (c *CodePipeline) PutJobSuccessResult(input *PutJobSuccessResultInput) (*PutJobSuccessResultOutput, error) {
 	req, out := c.PutJobSuccessResultRequest(input)
 	err := req.Send()
@@ -1027,6 +1539,8 @@ const opPutThirdPartyJobFailureResult = "PutThirdPartyJobFailureResult"
 // client's request for the PutThirdPartyJobFailureResult operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See PutThirdPartyJobFailureResult for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -1064,8 +1578,31 @@ func (c *CodePipeline) PutThirdPartyJobFailureResultRequest(input *PutThirdParty
 	return
 }
 
+// PutThirdPartyJobFailureResult API operation for AWS CodePipeline.
+//
 // Represents the failure of a third party job as returned to the pipeline by
 // a job worker. Only used for partner actions.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation PutThirdPartyJobFailureResult for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * JobNotFoundException
+//   The specified job was specified in an invalid format or cannot be found.
+//
+//   * InvalidJobStateException
+//   The specified job state was specified in an invalid format.
+//
+//   * InvalidClientTokenException
+//   The client token was specified in an invalid format
+//
 func (c *CodePipeline) PutThirdPartyJobFailureResult(input *PutThirdPartyJobFailureResultInput) (*PutThirdPartyJobFailureResultOutput, error) {
 	req, out := c.PutThirdPartyJobFailureResultRequest(input)
 	err := req.Send()
@@ -1078,6 +1615,8 @@ const opPutThirdPartyJobSuccessResult = "PutThirdPartyJobSuccessResult"
 // client's request for the PutThirdPartyJobSuccessResult operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See PutThirdPartyJobSuccessResult for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -1115,8 +1654,31 @@ func (c *CodePipeline) PutThirdPartyJobSuccessResultRequest(input *PutThirdParty
 	return
 }
 
+// PutThirdPartyJobSuccessResult API operation for AWS CodePipeline.
+//
 // Represents the success of a third party job as returned to the pipeline by
 // a job worker. Only used for partner actions.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation PutThirdPartyJobSuccessResult for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * JobNotFoundException
+//   The specified job was specified in an invalid format or cannot be found.
+//
+//   * InvalidJobStateException
+//   The specified job state was specified in an invalid format.
+//
+//   * InvalidClientTokenException
+//   The client token was specified in an invalid format
+//
 func (c *CodePipeline) PutThirdPartyJobSuccessResult(input *PutThirdPartyJobSuccessResultInput) (*PutThirdPartyJobSuccessResultOutput, error) {
 	req, out := c.PutThirdPartyJobSuccessResultRequest(input)
 	err := req.Send()
@@ -1129,6 +1691,8 @@ const opRetryStageExecution = "RetryStageExecution"
 // client's request for the RetryStageExecution operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See RetryStageExecution for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -1164,7 +1728,37 @@ func (c *CodePipeline) RetryStageExecutionRequest(input *RetryStageExecutionInpu
 	return
 }
 
+// RetryStageExecution API operation for AWS CodePipeline.
+//
 // Resumes the pipeline execution by retrying the last failed actions in a stage.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation RetryStageExecution for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * PipelineNotFoundException
+//   The specified pipeline was specified in an invalid format or cannot be found.
+//
+//   * StageNotFoundException
+//   The specified stage was specified in an invalid format or cannot be found.
+//
+//   * StageNotRetryableException
+//   The specified stage can't be retried because the pipeline structure or stage
+//   state changed after the stage was not completed; the stage contains no failed
+//   actions; one or more actions are still in progress; or another retry attempt
+//   is already in progress.
+//
+//   * NotLatestPipelineExecutionException
+//   The stage has failed in a later run of the pipeline and the pipelineExecutionId
+//   associated with the request is out of date.
+//
 func (c *CodePipeline) RetryStageExecution(input *RetryStageExecutionInput) (*RetryStageExecutionOutput, error) {
 	req, out := c.RetryStageExecutionRequest(input)
 	err := req.Send()
@@ -1177,6 +1771,8 @@ const opStartPipelineExecution = "StartPipelineExecution"
 // client's request for the StartPipelineExecution operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See StartPipelineExecution for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -1212,8 +1808,25 @@ func (c *CodePipeline) StartPipelineExecutionRequest(input *StartPipelineExecuti
 	return
 }
 
+// StartPipelineExecution API operation for AWS CodePipeline.
+//
 // Starts the specified pipeline. Specifically, it begins processing the latest
 // commit to the source location specified as part of the pipeline.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation StartPipelineExecution for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * PipelineNotFoundException
+//   The specified pipeline was specified in an invalid format or cannot be found.
+//
 func (c *CodePipeline) StartPipelineExecution(input *StartPipelineExecutionInput) (*StartPipelineExecutionOutput, error) {
 	req, out := c.StartPipelineExecutionRequest(input)
 	err := req.Send()
@@ -1226,6 +1839,8 @@ const opUpdatePipeline = "UpdatePipeline"
 // client's request for the UpdatePipeline operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See UpdatePipeline for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -1261,10 +1876,36 @@ func (c *CodePipeline) UpdatePipelineRequest(input *UpdatePipelineInput) (req *r
 	return
 }
 
+// UpdatePipeline API operation for AWS CodePipeline.
+//
 // Updates a specified pipeline with edits or changes to its structure. Use
 // a JSON file with the pipeline structure in conjunction with UpdatePipeline
 // to provide the full structure of the pipeline. Updating the pipeline increases
 // the version number of the pipeline by 1.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodePipeline's
+// API operation UpdatePipeline for usage and error information.
+//
+// Returned Error Codes:
+//   * ValidationException
+//   The validation was specified in an invalid format.
+//
+//   * InvalidStageDeclarationException
+//   The specified stage declaration was specified in an invalid format.
+//
+//   * InvalidActionDeclarationException
+//   The specified action declaration was specified in an invalid format.
+//
+//   * InvalidBlockerDeclarationException
+//   Reserved for future use.
+//
+//   * InvalidStructureException
+//   The specified structure was specified in an invalid format.
+//
 func (c *CodePipeline) UpdatePipeline(input *UpdatePipelineInput) (*UpdatePipelineOutput, error) {
 	req, out := c.UpdatePipelineRequest(input)
 	err := req.Send()
@@ -1279,12 +1920,18 @@ type AWSSessionCredentials struct {
 	_ struct{} `type:"structure"`
 
 	// The access key for the session.
+	//
+	// AccessKeyId is a required field
 	AccessKeyId *string `locationName:"accessKeyId" type:"string" required:"true"`
 
 	// The secret access key for the session.
+	//
+	// SecretAccessKey is a required field
 	SecretAccessKey *string `locationName:"secretAccessKey" type:"string" required:"true"`
 
 	// The token for the session.
+	//
+	// SessionToken is a required field
 	SessionToken *string `locationName:"sessionToken" type:"string" required:"true"`
 }
 
@@ -1298,16 +1945,38 @@ func (s AWSSessionCredentials) GoString() string {
 	return s.String()
 }
 
+// SetAccessKeyId sets the AccessKeyId field's value.
+func (s *AWSSessionCredentials) SetAccessKeyId(v string) *AWSSessionCredentials {
+	s.AccessKeyId = &v
+	return s
+}
+
+// SetSecretAccessKey sets the SecretAccessKey field's value.
+func (s *AWSSessionCredentials) SetSecretAccessKey(v string) *AWSSessionCredentials {
+	s.SecretAccessKey = &v
+	return s
+}
+
+// SetSessionToken sets the SessionToken field's value.
+func (s *AWSSessionCredentials) SetSessionToken(v string) *AWSSessionCredentials {
+	s.SessionToken = &v
+	return s
+}
+
 // Represents the input of an acknowledge job action.
 type AcknowledgeJobInput struct {
 	_ struct{} `type:"structure"`
 
 	// The unique system-generated ID of the job for which you want to confirm receipt.
+	//
+	// JobId is a required field
 	JobId *string `locationName:"jobId" type:"string" required:"true"`
 
 	// A system-generated random number that AWS CodePipeline uses to ensure that
 	// the job is being worked on by only one job worker. This number must be returned
 	// in the response.
+	//
+	// Nonce is a required field
 	Nonce *string `locationName:"nonce" type:"string" required:"true"`
 }
 
@@ -1337,6 +2006,18 @@ func (s *AcknowledgeJobInput) Validate() error {
 	return nil
 }
 
+// SetJobId sets the JobId field's value.
+func (s *AcknowledgeJobInput) SetJobId(v string) *AcknowledgeJobInput {
+	s.JobId = &v
+	return s
+}
+
+// SetNonce sets the Nonce field's value.
+func (s *AcknowledgeJobInput) SetNonce(v string) *AcknowledgeJobInput {
+	s.Nonce = &v
+	return s
+}
+
 // Represents the output of an acknowledge job action.
 type AcknowledgeJobOutput struct {
 	_ struct{} `type:"structure"`
@@ -1355,20 +2036,32 @@ func (s AcknowledgeJobOutput) GoString() string {
 	return s.String()
 }
 
+// SetStatus sets the Status field's value.
+func (s *AcknowledgeJobOutput) SetStatus(v string) *AcknowledgeJobOutput {
+	s.Status = &v
+	return s
+}
+
 // Represents the input of an acknowledge third party job action.
 type AcknowledgeThirdPartyJobInput struct {
 	_ struct{} `type:"structure"`
 
 	// The clientToken portion of the clientId and clientToken pair used to verify
 	// that the calling entity is allowed access to the job and its details.
+	//
+	// ClientToken is a required field
 	ClientToken *string `locationName:"clientToken" type:"string" required:"true"`
 
 	// The unique system-generated ID of the job.
+	//
+	// JobId is a required field
 	JobId *string `locationName:"jobId" min:"1" type:"string" required:"true"`
 
 	// A system-generated random number that AWS CodePipeline uses to ensure that
 	// the job is being worked on by only one job worker. This number must be returned
 	// in the response.
+	//
+	// Nonce is a required field
 	Nonce *string `locationName:"nonce" type:"string" required:"true"`
 }
 
@@ -1404,6 +2097,24 @@ func (s *AcknowledgeThirdPartyJobInput) Validate() error {
 	return nil
 }
 
+// SetClientToken sets the ClientToken field's value.
+func (s *AcknowledgeThirdPartyJobInput) SetClientToken(v string) *AcknowledgeThirdPartyJobInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetJobId sets the JobId field's value.
+func (s *AcknowledgeThirdPartyJobInput) SetJobId(v string) *AcknowledgeThirdPartyJobInput {
+	s.JobId = &v
+	return s
+}
+
+// SetNonce sets the Nonce field's value.
+func (s *AcknowledgeThirdPartyJobInput) SetNonce(v string) *AcknowledgeThirdPartyJobInput {
+	s.Nonce = &v
+	return s
+}
+
 // Represents the output of an acknowledge third party job action.
 type AcknowledgeThirdPartyJobOutput struct {
 	_ struct{} `type:"structure"`
@@ -1420,6 +2131,12 @@ func (s AcknowledgeThirdPartyJobOutput) String() string {
 // GoString returns the string representation
 func (s AcknowledgeThirdPartyJobOutput) GoString() string {
 	return s.String()
+}
+
+// SetStatus sets the Status field's value.
+func (s *AcknowledgeThirdPartyJobOutput) SetStatus(v string) *AcknowledgeThirdPartyJobOutput {
+	s.Status = &v
+	return s
 }
 
 // Represents information about an action configuration.
@@ -1440,6 +2157,12 @@ func (s ActionConfiguration) GoString() string {
 	return s.String()
 }
 
+// SetConfiguration sets the Configuration field's value.
+func (s *ActionConfiguration) SetConfiguration(v map[string]*string) *ActionConfiguration {
+	s.Configuration = v
+	return s
+}
+
 // Represents information about an action configuration property.
 type ActionConfigurationProperty struct {
 	_ struct{} `type:"structure"`
@@ -1449,9 +2172,13 @@ type ActionConfigurationProperty struct {
 	Description *string `locationName:"description" min:"1" type:"string"`
 
 	// Whether the configuration property is a key.
+	//
+	// Key is a required field
 	Key *bool `locationName:"key" type:"boolean" required:"true"`
 
 	// The name of the action configuration property.
+	//
+	// Name is a required field
 	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 
 	// Indicates that the proprety will be used in conjunction with PollForJobs.
@@ -1466,6 +2193,8 @@ type ActionConfigurationProperty struct {
 	Queryable *bool `locationName:"queryable" type:"boolean"`
 
 	// Whether the configuration property is a required value.
+	//
+	// Required is a required field
 	Required *bool `locationName:"required" type:"boolean" required:"true"`
 
 	// Whether the configuration property is secret. Secrets are hidden from all
@@ -1474,6 +2203,8 @@ type ActionConfigurationProperty struct {
 	//
 	// When updating a pipeline, passing * * * * * without changing any other values
 	// of the action will preserve the prior value of the secret.
+	//
+	// Secret is a required field
 	Secret *bool `locationName:"secret" type:"boolean" required:"true"`
 
 	// The type of the configuration property.
@@ -1518,6 +2249,48 @@ func (s *ActionConfigurationProperty) Validate() error {
 	return nil
 }
 
+// SetDescription sets the Description field's value.
+func (s *ActionConfigurationProperty) SetDescription(v string) *ActionConfigurationProperty {
+	s.Description = &v
+	return s
+}
+
+// SetKey sets the Key field's value.
+func (s *ActionConfigurationProperty) SetKey(v bool) *ActionConfigurationProperty {
+	s.Key = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *ActionConfigurationProperty) SetName(v string) *ActionConfigurationProperty {
+	s.Name = &v
+	return s
+}
+
+// SetQueryable sets the Queryable field's value.
+func (s *ActionConfigurationProperty) SetQueryable(v bool) *ActionConfigurationProperty {
+	s.Queryable = &v
+	return s
+}
+
+// SetRequired sets the Required field's value.
+func (s *ActionConfigurationProperty) SetRequired(v bool) *ActionConfigurationProperty {
+	s.Required = &v
+	return s
+}
+
+// SetSecret sets the Secret field's value.
+func (s *ActionConfigurationProperty) SetSecret(v bool) *ActionConfigurationProperty {
+	s.Secret = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *ActionConfigurationProperty) SetType(v string) *ActionConfigurationProperty {
+	s.Type = &v
+	return s
+}
+
 // Represents the context of an action within the stage of a pipeline to a job
 // worker.
 type ActionContext struct {
@@ -1537,11 +2310,19 @@ func (s ActionContext) GoString() string {
 	return s.String()
 }
 
+// SetName sets the Name field's value.
+func (s *ActionContext) SetName(v string) *ActionContext {
+	s.Name = &v
+	return s
+}
+
 // Represents information about an action declaration.
 type ActionDeclaration struct {
 	_ struct{} `type:"structure"`
 
 	// The configuration information for the action type.
+	//
+	// ActionTypeId is a required field
 	ActionTypeId *ActionTypeId `locationName:"actionTypeId" type:"structure" required:"true"`
 
 	// The action declaration's configuration.
@@ -1552,6 +2333,8 @@ type ActionDeclaration struct {
 	InputArtifacts []*InputArtifact `locationName:"inputArtifacts" type:"list"`
 
 	// The action declaration's name.
+	//
+	// Name is a required field
 	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 
 	// The name or ID of the result of the action declaration, such as a test or
@@ -1623,6 +2406,48 @@ func (s *ActionDeclaration) Validate() error {
 	return nil
 }
 
+// SetActionTypeId sets the ActionTypeId field's value.
+func (s *ActionDeclaration) SetActionTypeId(v *ActionTypeId) *ActionDeclaration {
+	s.ActionTypeId = v
+	return s
+}
+
+// SetConfiguration sets the Configuration field's value.
+func (s *ActionDeclaration) SetConfiguration(v map[string]*string) *ActionDeclaration {
+	s.Configuration = v
+	return s
+}
+
+// SetInputArtifacts sets the InputArtifacts field's value.
+func (s *ActionDeclaration) SetInputArtifacts(v []*InputArtifact) *ActionDeclaration {
+	s.InputArtifacts = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *ActionDeclaration) SetName(v string) *ActionDeclaration {
+	s.Name = &v
+	return s
+}
+
+// SetOutputArtifacts sets the OutputArtifacts field's value.
+func (s *ActionDeclaration) SetOutputArtifacts(v []*OutputArtifact) *ActionDeclaration {
+	s.OutputArtifacts = v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *ActionDeclaration) SetRoleArn(v string) *ActionDeclaration {
+	s.RoleArn = &v
+	return s
+}
+
+// SetRunOrder sets the RunOrder field's value.
+func (s *ActionDeclaration) SetRunOrder(v int64) *ActionDeclaration {
+	s.RunOrder = &v
+	return s
+}
+
 // Represents information about the run of an action.
 type ActionExecution struct {
 	_ struct{} `type:"structure"`
@@ -1670,20 +2495,80 @@ func (s ActionExecution) GoString() string {
 	return s.String()
 }
 
+// SetErrorDetails sets the ErrorDetails field's value.
+func (s *ActionExecution) SetErrorDetails(v *ErrorDetails) *ActionExecution {
+	s.ErrorDetails = v
+	return s
+}
+
+// SetExternalExecutionId sets the ExternalExecutionId field's value.
+func (s *ActionExecution) SetExternalExecutionId(v string) *ActionExecution {
+	s.ExternalExecutionId = &v
+	return s
+}
+
+// SetExternalExecutionUrl sets the ExternalExecutionUrl field's value.
+func (s *ActionExecution) SetExternalExecutionUrl(v string) *ActionExecution {
+	s.ExternalExecutionUrl = &v
+	return s
+}
+
+// SetLastStatusChange sets the LastStatusChange field's value.
+func (s *ActionExecution) SetLastStatusChange(v time.Time) *ActionExecution {
+	s.LastStatusChange = &v
+	return s
+}
+
+// SetLastUpdatedBy sets the LastUpdatedBy field's value.
+func (s *ActionExecution) SetLastUpdatedBy(v string) *ActionExecution {
+	s.LastUpdatedBy = &v
+	return s
+}
+
+// SetPercentComplete sets the PercentComplete field's value.
+func (s *ActionExecution) SetPercentComplete(v int64) *ActionExecution {
+	s.PercentComplete = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *ActionExecution) SetStatus(v string) *ActionExecution {
+	s.Status = &v
+	return s
+}
+
+// SetSummary sets the Summary field's value.
+func (s *ActionExecution) SetSummary(v string) *ActionExecution {
+	s.Summary = &v
+	return s
+}
+
+// SetToken sets the Token field's value.
+func (s *ActionExecution) SetToken(v string) *ActionExecution {
+	s.Token = &v
+	return s
+}
+
 // Represents information about the version (or revision) of an action.
 type ActionRevision struct {
 	_ struct{} `type:"structure"`
 
 	// The date and time when the most recent version of the action was created,
 	// in timestamp format.
+	//
+	// Created is a required field
 	Created *time.Time `locationName:"created" type:"timestamp" timestampFormat:"unix" required:"true"`
 
 	// The unique identifier of the change that set the state to this revision,
 	// for example a deployment ID or timestamp.
+	//
+	// RevisionChangeId is a required field
 	RevisionChangeId *string `locationName:"revisionChangeId" min:"1" type:"string" required:"true"`
 
 	// The system-generated unique ID that identifies the revision number of the
 	// action.
+	//
+	// RevisionId is a required field
 	RevisionId *string `locationName:"revisionId" min:"1" type:"string" required:"true"`
 }
 
@@ -1722,6 +2607,24 @@ func (s *ActionRevision) Validate() error {
 	return nil
 }
 
+// SetCreated sets the Created field's value.
+func (s *ActionRevision) SetCreated(v time.Time) *ActionRevision {
+	s.Created = &v
+	return s
+}
+
+// SetRevisionChangeId sets the RevisionChangeId field's value.
+func (s *ActionRevision) SetRevisionChangeId(v string) *ActionRevision {
+	s.RevisionChangeId = &v
+	return s
+}
+
+// SetRevisionId sets the RevisionId field's value.
+func (s *ActionRevision) SetRevisionId(v string) *ActionRevision {
+	s.RevisionId = &v
+	return s
+}
+
 // Represents information about the state of an action.
 type ActionState struct {
 	_ struct{} `type:"structure"`
@@ -1754,6 +2657,36 @@ func (s ActionState) GoString() string {
 	return s.String()
 }
 
+// SetActionName sets the ActionName field's value.
+func (s *ActionState) SetActionName(v string) *ActionState {
+	s.ActionName = &v
+	return s
+}
+
+// SetCurrentRevision sets the CurrentRevision field's value.
+func (s *ActionState) SetCurrentRevision(v *ActionRevision) *ActionState {
+	s.CurrentRevision = v
+	return s
+}
+
+// SetEntityUrl sets the EntityUrl field's value.
+func (s *ActionState) SetEntityUrl(v string) *ActionState {
+	s.EntityUrl = &v
+	return s
+}
+
+// SetLatestExecution sets the LatestExecution field's value.
+func (s *ActionState) SetLatestExecution(v *ActionExecution) *ActionState {
+	s.LatestExecution = v
+	return s
+}
+
+// SetRevisionUrl sets the RevisionUrl field's value.
+func (s *ActionState) SetRevisionUrl(v string) *ActionState {
+	s.RevisionUrl = &v
+	return s
+}
+
 // Returns information about the details of an action type.
 type ActionType struct {
 	_ struct{} `type:"structure"`
@@ -1762,12 +2695,18 @@ type ActionType struct {
 	ActionConfigurationProperties []*ActionConfigurationProperty `locationName:"actionConfigurationProperties" type:"list"`
 
 	// Represents information about an action type.
+	//
+	// Id is a required field
 	Id *ActionTypeId `locationName:"id" type:"structure" required:"true"`
 
 	// The details of the input artifact for the action, such as its commit ID.
+	//
+	// InputArtifactDetails is a required field
 	InputArtifactDetails *ArtifactDetails `locationName:"inputArtifactDetails" type:"structure" required:"true"`
 
 	// The details of the output artifact of the action, such as its commit ID.
+	//
+	// OutputArtifactDetails is a required field
 	OutputArtifactDetails *ArtifactDetails `locationName:"outputArtifactDetails" type:"structure" required:"true"`
 
 	// The settings for the action type.
@@ -1784,6 +2723,36 @@ func (s ActionType) GoString() string {
 	return s.String()
 }
 
+// SetActionConfigurationProperties sets the ActionConfigurationProperties field's value.
+func (s *ActionType) SetActionConfigurationProperties(v []*ActionConfigurationProperty) *ActionType {
+	s.ActionConfigurationProperties = v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *ActionType) SetId(v *ActionTypeId) *ActionType {
+	s.Id = v
+	return s
+}
+
+// SetInputArtifactDetails sets the InputArtifactDetails field's value.
+func (s *ActionType) SetInputArtifactDetails(v *ArtifactDetails) *ActionType {
+	s.InputArtifactDetails = v
+	return s
+}
+
+// SetOutputArtifactDetails sets the OutputArtifactDetails field's value.
+func (s *ActionType) SetOutputArtifactDetails(v *ArtifactDetails) *ActionType {
+	s.OutputArtifactDetails = v
+	return s
+}
+
+// SetSettings sets the Settings field's value.
+func (s *ActionType) SetSettings(v *ActionTypeSettings) *ActionType {
+	s.Settings = v
+	return s
+}
+
 // Represents information about an action type.
 type ActionTypeId struct {
 	_ struct{} `type:"structure"`
@@ -1791,18 +2760,26 @@ type ActionTypeId struct {
 	// A category defines what kind of action can be taken in the stage, and constrains
 	// the provider type for the action. Valid categories are limited to one of
 	// the values below.
+	//
+	// Category is a required field
 	Category *string `locationName:"category" type:"string" required:"true" enum:"ActionCategory"`
 
 	// The creator of the action being called.
+	//
+	// Owner is a required field
 	Owner *string `locationName:"owner" type:"string" required:"true" enum:"ActionOwner"`
 
 	// The provider of the service being called by the action. Valid providers are
 	// determined by the action category. For example, an action in the Deploy category
 	// type might have a provider of AWS CodeDeploy, which would be specified as
 	// CodeDeploy.
+	//
+	// Provider is a required field
 	Provider *string `locationName:"provider" min:"1" type:"string" required:"true"`
 
 	// A string that identifies the action type.
+	//
+	// Version is a required field
 	Version *string `locationName:"version" min:"1" type:"string" required:"true"`
 }
 
@@ -1842,6 +2819,30 @@ func (s *ActionTypeId) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetCategory sets the Category field's value.
+func (s *ActionTypeId) SetCategory(v string) *ActionTypeId {
+	s.Category = &v
+	return s
+}
+
+// SetOwner sets the Owner field's value.
+func (s *ActionTypeId) SetOwner(v string) *ActionTypeId {
+	s.Owner = &v
+	return s
+}
+
+// SetProvider sets the Provider field's value.
+func (s *ActionTypeId) SetProvider(v string) *ActionTypeId {
+	s.Provider = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *ActionTypeId) SetVersion(v string) *ActionTypeId {
+	s.Version = &v
+	return s
 }
 
 // Returns information about the settings for an action type.
@@ -1903,14 +2904,42 @@ func (s *ActionTypeSettings) Validate() error {
 	return nil
 }
 
+// SetEntityUrlTemplate sets the EntityUrlTemplate field's value.
+func (s *ActionTypeSettings) SetEntityUrlTemplate(v string) *ActionTypeSettings {
+	s.EntityUrlTemplate = &v
+	return s
+}
+
+// SetExecutionUrlTemplate sets the ExecutionUrlTemplate field's value.
+func (s *ActionTypeSettings) SetExecutionUrlTemplate(v string) *ActionTypeSettings {
+	s.ExecutionUrlTemplate = &v
+	return s
+}
+
+// SetRevisionUrlTemplate sets the RevisionUrlTemplate field's value.
+func (s *ActionTypeSettings) SetRevisionUrlTemplate(v string) *ActionTypeSettings {
+	s.RevisionUrlTemplate = &v
+	return s
+}
+
+// SetThirdPartyConfigurationUrl sets the ThirdPartyConfigurationUrl field's value.
+func (s *ActionTypeSettings) SetThirdPartyConfigurationUrl(v string) *ActionTypeSettings {
+	s.ThirdPartyConfigurationUrl = &v
+	return s
+}
+
 // Represents information about the result of an approval request.
 type ApprovalResult struct {
 	_ struct{} `type:"structure"`
 
 	// The response submitted by a reviewer assigned to an approval action request.
+	//
+	// Status is a required field
 	Status *string `locationName:"status" type:"string" required:"true" enum:"ApprovalStatus"`
 
 	// The summary of the current status of the approval request.
+	//
+	// Summary is a required field
 	Summary *string `locationName:"summary" type:"string" required:"true"`
 }
 
@@ -1940,6 +2969,18 @@ func (s *ApprovalResult) Validate() error {
 	return nil
 }
 
+// SetStatus sets the Status field's value.
+func (s *ApprovalResult) SetStatus(v string) *ApprovalResult {
+	s.Status = &v
+	return s
+}
+
+// SetSummary sets the Summary field's value.
+func (s *ApprovalResult) SetSummary(v string) *ApprovalResult {
+	s.Summary = &v
+	return s
+}
+
 // Represents information about an artifact that will be worked upon by actions
 // in the pipeline.
 type Artifact struct {
@@ -1966,14 +3007,36 @@ func (s Artifact) GoString() string {
 	return s.String()
 }
 
+// SetLocation sets the Location field's value.
+func (s *Artifact) SetLocation(v *ArtifactLocation) *Artifact {
+	s.Location = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Artifact) SetName(v string) *Artifact {
+	s.Name = &v
+	return s
+}
+
+// SetRevision sets the Revision field's value.
+func (s *Artifact) SetRevision(v string) *Artifact {
+	s.Revision = &v
+	return s
+}
+
 // Returns information about the details of an artifact.
 type ArtifactDetails struct {
 	_ struct{} `type:"structure"`
 
 	// The maximum number of artifacts allowed for the action type.
+	//
+	// MaximumCount is a required field
 	MaximumCount *int64 `locationName:"maximumCount" type:"integer" required:"true"`
 
 	// The minimum number of artifacts allowed for the action type.
+	//
+	// MinimumCount is a required field
 	MinimumCount *int64 `locationName:"minimumCount" type:"integer" required:"true"`
 }
 
@@ -2003,6 +3066,18 @@ func (s *ArtifactDetails) Validate() error {
 	return nil
 }
 
+// SetMaximumCount sets the MaximumCount field's value.
+func (s *ArtifactDetails) SetMaximumCount(v int64) *ArtifactDetails {
+	s.MaximumCount = &v
+	return s
+}
+
+// SetMinimumCount sets the MinimumCount field's value.
+func (s *ArtifactDetails) SetMinimumCount(v int64) *ArtifactDetails {
+	s.MinimumCount = &v
+	return s
+}
+
 // Represents information about the location of an artifact.
 type ArtifactLocation struct {
 	_ struct{} `type:"structure"`
@@ -2024,6 +3099,95 @@ func (s ArtifactLocation) GoString() string {
 	return s.String()
 }
 
+// SetS3Location sets the S3Location field's value.
+func (s *ArtifactLocation) SetS3Location(v *S3ArtifactLocation) *ArtifactLocation {
+	s.S3Location = v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *ArtifactLocation) SetType(v string) *ArtifactLocation {
+	s.Type = &v
+	return s
+}
+
+// Represents revision details of an artifact.
+type ArtifactRevision struct {
+	_ struct{} `type:"structure"`
+
+	// The date and time when the most recent revision of the artifact was created,
+	// in timestamp format.
+	Created *time.Time `locationName:"created" type:"timestamp" timestampFormat:"unix"`
+
+	// The name of an artifact. This name might be system-generated, such as "MyApp",
+	// or might be defined by the user when an action is created.
+	Name *string `locationName:"name" min:"1" type:"string"`
+
+	// An additional identifier for a revision, such as a commit date or, for artifacts
+	// stored in Amazon S3 buckets, the ETag value.
+	RevisionChangeIdentifier *string `locationName:"revisionChangeIdentifier" min:"1" type:"string"`
+
+	// The revision ID of the artifact.
+	RevisionId *string `locationName:"revisionId" min:"1" type:"string"`
+
+	// Summary information about the most recent revision of the artifact. For GitHub
+	// and AWS CodeCommit repositories, the commit message. For Amazon S3 buckets
+	// or actions, the user-provided content of a codepipeline-artifact-revision-summary
+	// key specified in the object metadata.
+	RevisionSummary *string `locationName:"revisionSummary" min:"1" type:"string"`
+
+	// The commit ID for the artifact revision. For artifacts stored in GitHub or
+	// AWS CodeCommit repositories, the commit ID is linked to a commit details
+	// page.
+	RevisionUrl *string `locationName:"revisionUrl" min:"1" type:"string"`
+}
+
+// String returns the string representation
+func (s ArtifactRevision) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ArtifactRevision) GoString() string {
+	return s.String()
+}
+
+// SetCreated sets the Created field's value.
+func (s *ArtifactRevision) SetCreated(v time.Time) *ArtifactRevision {
+	s.Created = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *ArtifactRevision) SetName(v string) *ArtifactRevision {
+	s.Name = &v
+	return s
+}
+
+// SetRevisionChangeIdentifier sets the RevisionChangeIdentifier field's value.
+func (s *ArtifactRevision) SetRevisionChangeIdentifier(v string) *ArtifactRevision {
+	s.RevisionChangeIdentifier = &v
+	return s
+}
+
+// SetRevisionId sets the RevisionId field's value.
+func (s *ArtifactRevision) SetRevisionId(v string) *ArtifactRevision {
+	s.RevisionId = &v
+	return s
+}
+
+// SetRevisionSummary sets the RevisionSummary field's value.
+func (s *ArtifactRevision) SetRevisionSummary(v string) *ArtifactRevision {
+	s.RevisionSummary = &v
+	return s
+}
+
+// SetRevisionUrl sets the RevisionUrl field's value.
+func (s *ArtifactRevision) SetRevisionUrl(v string) *ArtifactRevision {
+	s.RevisionUrl = &v
+	return s
+}
+
 // The Amazon S3 location where artifacts are stored for the pipeline. If this
 // Amazon S3 bucket is created manually, it must meet the requirements for AWS
 // CodePipeline. For more information, see the Concepts (http://docs.aws.amazon.com/codepipeline/latest/userguide/concepts.html#CPS3Bucket).
@@ -2037,9 +3201,13 @@ type ArtifactStore struct {
 
 	// The location for storing the artifacts for a pipeline, such as an S3 bucket
 	// or folder.
+	//
+	// Location is a required field
 	Location *string `locationName:"location" min:"3" type:"string" required:"true"`
 
 	// The type of the artifact store, such as S3.
+	//
+	// Type is a required field
 	Type *string `locationName:"type" type:"string" required:"true" enum:"ArtifactStoreType"`
 }
 
@@ -2077,14 +3245,36 @@ func (s *ArtifactStore) Validate() error {
 	return nil
 }
 
+// SetEncryptionKey sets the EncryptionKey field's value.
+func (s *ArtifactStore) SetEncryptionKey(v *EncryptionKey) *ArtifactStore {
+	s.EncryptionKey = v
+	return s
+}
+
+// SetLocation sets the Location field's value.
+func (s *ArtifactStore) SetLocation(v string) *ArtifactStore {
+	s.Location = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *ArtifactStore) SetType(v string) *ArtifactStore {
+	s.Type = &v
+	return s
+}
+
 // Reserved for future use.
 type BlockerDeclaration struct {
 	_ struct{} `type:"structure"`
 
 	// Reserved for future use.
+	//
+	// Name is a required field
 	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 
 	// Reserved for future use.
+	//
+	// Type is a required field
 	Type *string `locationName:"type" type:"string" required:"true" enum:"BlockerType"`
 }
 
@@ -2117,37 +3307,59 @@ func (s *BlockerDeclaration) Validate() error {
 	return nil
 }
 
+// SetName sets the Name field's value.
+func (s *BlockerDeclaration) SetName(v string) *BlockerDeclaration {
+	s.Name = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *BlockerDeclaration) SetType(v string) *BlockerDeclaration {
+	s.Type = &v
+	return s
+}
+
 // Represents the input of a create custom action operation.
 type CreateCustomActionTypeInput struct {
 	_ struct{} `type:"structure"`
 
-	// The category of the custom action, such as a source action or a build action.
+	// The category of the custom action, such as a build action or a test action.
 	//
-	//  Although Source is listed as a valid value, it is not currently functional.
-	// This value is reserved for future use.
+	// Although Source and Approval are listed as valid values, they are not currently
+	// functional. These values are reserved for future use.
+	//
+	// Category is a required field
 	Category *string `locationName:"category" type:"string" required:"true" enum:"ActionCategory"`
 
 	// The configuration properties for the custom action.
 	//
-	//  You can refer to a name in the configuration properties of the custom action
+	// You can refer to a name in the configuration properties of the custom action
 	// within the URL templates by following the format of {Config:name}, as long
 	// as the configuration property is both required and not secret. For more information,
 	// see Create a Custom Action for a Pipeline (http://docs.aws.amazon.com/codepipeline/latest/userguide/how-to-create-custom-action.html).
 	ConfigurationProperties []*ActionConfigurationProperty `locationName:"configurationProperties" type:"list"`
 
 	// Returns information about the details of an artifact.
+	//
+	// InputArtifactDetails is a required field
 	InputArtifactDetails *ArtifactDetails `locationName:"inputArtifactDetails" type:"structure" required:"true"`
 
 	// Returns information about the details of an artifact.
+	//
+	// OutputArtifactDetails is a required field
 	OutputArtifactDetails *ArtifactDetails `locationName:"outputArtifactDetails" type:"structure" required:"true"`
 
 	// The provider of the service used in the custom action, such as AWS CodeDeploy.
+	//
+	// Provider is a required field
 	Provider *string `locationName:"provider" min:"1" type:"string" required:"true"`
 
 	// Returns information about the settings for an action type.
 	Settings *ActionTypeSettings `locationName:"settings" type:"structure"`
 
-	// The version number of the custom action.
+	// The version identifier of the custom action.
+	//
+	// Version is a required field
 	Version *string `locationName:"version" min:"1" type:"string" required:"true"`
 }
 
@@ -2217,11 +3429,55 @@ func (s *CreateCustomActionTypeInput) Validate() error {
 	return nil
 }
 
+// SetCategory sets the Category field's value.
+func (s *CreateCustomActionTypeInput) SetCategory(v string) *CreateCustomActionTypeInput {
+	s.Category = &v
+	return s
+}
+
+// SetConfigurationProperties sets the ConfigurationProperties field's value.
+func (s *CreateCustomActionTypeInput) SetConfigurationProperties(v []*ActionConfigurationProperty) *CreateCustomActionTypeInput {
+	s.ConfigurationProperties = v
+	return s
+}
+
+// SetInputArtifactDetails sets the InputArtifactDetails field's value.
+func (s *CreateCustomActionTypeInput) SetInputArtifactDetails(v *ArtifactDetails) *CreateCustomActionTypeInput {
+	s.InputArtifactDetails = v
+	return s
+}
+
+// SetOutputArtifactDetails sets the OutputArtifactDetails field's value.
+func (s *CreateCustomActionTypeInput) SetOutputArtifactDetails(v *ArtifactDetails) *CreateCustomActionTypeInput {
+	s.OutputArtifactDetails = v
+	return s
+}
+
+// SetProvider sets the Provider field's value.
+func (s *CreateCustomActionTypeInput) SetProvider(v string) *CreateCustomActionTypeInput {
+	s.Provider = &v
+	return s
+}
+
+// SetSettings sets the Settings field's value.
+func (s *CreateCustomActionTypeInput) SetSettings(v *ActionTypeSettings) *CreateCustomActionTypeInput {
+	s.Settings = v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *CreateCustomActionTypeInput) SetVersion(v string) *CreateCustomActionTypeInput {
+	s.Version = &v
+	return s
+}
+
 // Represents the output of a create custom action operation.
 type CreateCustomActionTypeOutput struct {
 	_ struct{} `type:"structure"`
 
 	// Returns information about the details of an action type.
+	//
+	// ActionType is a required field
 	ActionType *ActionType `locationName:"actionType" type:"structure" required:"true"`
 }
 
@@ -2235,11 +3491,19 @@ func (s CreateCustomActionTypeOutput) GoString() string {
 	return s.String()
 }
 
+// SetActionType sets the ActionType field's value.
+func (s *CreateCustomActionTypeOutput) SetActionType(v *ActionType) *CreateCustomActionTypeOutput {
+	s.ActionType = v
+	return s
+}
+
 // Represents the input of a create pipeline action.
 type CreatePipelineInput struct {
 	_ struct{} `type:"structure"`
 
 	// Represents the structure of actions and stages to be performed in the pipeline.
+	//
+	// Pipeline is a required field
 	Pipeline *PipelineDeclaration `locationName:"pipeline" type:"structure" required:"true"`
 }
 
@@ -2271,6 +3535,12 @@ func (s *CreatePipelineInput) Validate() error {
 	return nil
 }
 
+// SetPipeline sets the Pipeline field's value.
+func (s *CreatePipelineInput) SetPipeline(v *PipelineDeclaration) *CreatePipelineInput {
+	s.Pipeline = v
+	return s
+}
+
 // Represents the output of a create pipeline action.
 type CreatePipelineOutput struct {
 	_ struct{} `type:"structure"`
@@ -2289,15 +3559,32 @@ func (s CreatePipelineOutput) GoString() string {
 	return s.String()
 }
 
+// SetPipeline sets the Pipeline field's value.
+func (s *CreatePipelineOutput) SetPipeline(v *PipelineDeclaration) *CreatePipelineOutput {
+	s.Pipeline = v
+	return s
+}
+
 // Represents information about a current revision.
 type CurrentRevision struct {
 	_ struct{} `type:"structure"`
 
 	// The change identifier for the current revision.
+	//
+	// ChangeIdentifier is a required field
 	ChangeIdentifier *string `locationName:"changeIdentifier" min:"1" type:"string" required:"true"`
 
+	// The date and time when the most recent revision of the artifact was created,
+	// in timestamp format.
+	Created *time.Time `locationName:"created" type:"timestamp" timestampFormat:"unix"`
+
 	// The revision ID of the current version of an artifact.
+	//
+	// Revision is a required field
 	Revision *string `locationName:"revision" min:"1" type:"string" required:"true"`
+
+	// The summary of the most recent revision of the artifact.
+	RevisionSummary *string `locationName:"revisionSummary" min:"1" type:"string"`
 }
 
 // String returns the string representation
@@ -2325,11 +3612,38 @@ func (s *CurrentRevision) Validate() error {
 	if s.Revision != nil && len(*s.Revision) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Revision", 1))
 	}
+	if s.RevisionSummary != nil && len(*s.RevisionSummary) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RevisionSummary", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetChangeIdentifier sets the ChangeIdentifier field's value.
+func (s *CurrentRevision) SetChangeIdentifier(v string) *CurrentRevision {
+	s.ChangeIdentifier = &v
+	return s
+}
+
+// SetCreated sets the Created field's value.
+func (s *CurrentRevision) SetCreated(v time.Time) *CurrentRevision {
+	s.Created = &v
+	return s
+}
+
+// SetRevision sets the Revision field's value.
+func (s *CurrentRevision) SetRevision(v string) *CurrentRevision {
+	s.Revision = &v
+	return s
+}
+
+// SetRevisionSummary sets the RevisionSummary field's value.
+func (s *CurrentRevision) SetRevisionSummary(v string) *CurrentRevision {
+	s.RevisionSummary = &v
+	return s
 }
 
 // Represents the input of a delete custom action operation. The custom action
@@ -2339,12 +3653,18 @@ type DeleteCustomActionTypeInput struct {
 
 	// The category of the custom action that you want to delete, such as source
 	// or deploy.
+	//
+	// Category is a required field
 	Category *string `locationName:"category" type:"string" required:"true" enum:"ActionCategory"`
 
 	// The provider of the service used in the custom action, such as AWS CodeDeploy.
+	//
+	// Provider is a required field
 	Provider *string `locationName:"provider" min:"1" type:"string" required:"true"`
 
 	// The version of the custom action to delete.
+	//
+	// Version is a required field
 	Version *string `locationName:"version" min:"1" type:"string" required:"true"`
 }
 
@@ -2383,6 +3703,24 @@ func (s *DeleteCustomActionTypeInput) Validate() error {
 	return nil
 }
 
+// SetCategory sets the Category field's value.
+func (s *DeleteCustomActionTypeInput) SetCategory(v string) *DeleteCustomActionTypeInput {
+	s.Category = &v
+	return s
+}
+
+// SetProvider sets the Provider field's value.
+func (s *DeleteCustomActionTypeInput) SetProvider(v string) *DeleteCustomActionTypeInput {
+	s.Provider = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *DeleteCustomActionTypeInput) SetVersion(v string) *DeleteCustomActionTypeInput {
+	s.Version = &v
+	return s
+}
+
 type DeleteCustomActionTypeOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -2402,6 +3740,8 @@ type DeletePipelineInput struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the pipeline to be deleted.
+	//
+	// Name is a required field
 	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 }
 
@@ -2431,6 +3771,12 @@ func (s *DeletePipelineInput) Validate() error {
 	return nil
 }
 
+// SetName sets the Name field's value.
+func (s *DeletePipelineInput) SetName(v string) *DeletePipelineInput {
+	s.Name = &v
+	return s
+}
+
 type DeletePipelineOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -2451,21 +3797,29 @@ type DisableStageTransitionInput struct {
 
 	// The name of the pipeline in which you want to disable the flow of artifacts
 	// from one stage to another.
+	//
+	// PipelineName is a required field
 	PipelineName *string `locationName:"pipelineName" min:"1" type:"string" required:"true"`
 
 	// The reason given to the user why a stage is disabled, such as waiting for
 	// manual approval or manual tests. This message is displayed in the pipeline
 	// console UI.
+	//
+	// Reason is a required field
 	Reason *string `locationName:"reason" min:"1" type:"string" required:"true"`
 
 	// The name of the stage where you want to disable the inbound or outbound transition
 	// of artifacts.
+	//
+	// StageName is a required field
 	StageName *string `locationName:"stageName" min:"1" type:"string" required:"true"`
 
 	// Specifies whether artifacts will be prevented from transitioning into the
 	// stage and being processed by the actions in that stage (inbound), or prevented
 	// from transitioning from the stage after they have been processed by the actions
 	// in that stage (outbound).
+	//
+	// TransitionType is a required field
 	TransitionType *string `locationName:"transitionType" type:"string" required:"true" enum:"StageTransitionType"`
 }
 
@@ -2510,6 +3864,30 @@ func (s *DisableStageTransitionInput) Validate() error {
 	return nil
 }
 
+// SetPipelineName sets the PipelineName field's value.
+func (s *DisableStageTransitionInput) SetPipelineName(v string) *DisableStageTransitionInput {
+	s.PipelineName = &v
+	return s
+}
+
+// SetReason sets the Reason field's value.
+func (s *DisableStageTransitionInput) SetReason(v string) *DisableStageTransitionInput {
+	s.Reason = &v
+	return s
+}
+
+// SetStageName sets the StageName field's value.
+func (s *DisableStageTransitionInput) SetStageName(v string) *DisableStageTransitionInput {
+	s.StageName = &v
+	return s
+}
+
+// SetTransitionType sets the TransitionType field's value.
+func (s *DisableStageTransitionInput) SetTransitionType(v string) *DisableStageTransitionInput {
+	s.TransitionType = &v
+	return s
+}
+
 type DisableStageTransitionOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -2530,15 +3908,21 @@ type EnableStageTransitionInput struct {
 
 	// The name of the pipeline in which you want to enable the flow of artifacts
 	// from one stage to another.
+	//
+	// PipelineName is a required field
 	PipelineName *string `locationName:"pipelineName" min:"1" type:"string" required:"true"`
 
 	// The name of the stage where you want to enable the transition of artifacts,
 	// either into the stage (inbound) or from that stage to the next stage (outbound).
+	//
+	// StageName is a required field
 	StageName *string `locationName:"stageName" min:"1" type:"string" required:"true"`
 
 	// Specifies whether artifacts will be allowed to enter the stage and be processed
 	// by the actions in that stage (inbound) or whether already-processed artifacts
 	// will be allowed to transition to the next stage (outbound).
+	//
+	// TransitionType is a required field
 	TransitionType *string `locationName:"transitionType" type:"string" required:"true" enum:"StageTransitionType"`
 }
 
@@ -2577,6 +3961,24 @@ func (s *EnableStageTransitionInput) Validate() error {
 	return nil
 }
 
+// SetPipelineName sets the PipelineName field's value.
+func (s *EnableStageTransitionInput) SetPipelineName(v string) *EnableStageTransitionInput {
+	s.PipelineName = &v
+	return s
+}
+
+// SetStageName sets the StageName field's value.
+func (s *EnableStageTransitionInput) SetStageName(v string) *EnableStageTransitionInput {
+	s.StageName = &v
+	return s
+}
+
+// SetTransitionType sets the TransitionType field's value.
+func (s *EnableStageTransitionInput) SetTransitionType(v string) *EnableStageTransitionInput {
+	s.TransitionType = &v
+	return s
+}
+
 type EnableStageTransitionOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -2598,10 +4000,14 @@ type EncryptionKey struct {
 
 	// The ID used to identify the key. For an AWS KMS key, this is the key ID or
 	// key ARN.
+	//
+	// Id is a required field
 	Id *string `locationName:"id" min:"1" type:"string" required:"true"`
 
 	// The type of encryption key, such as an AWS Key Management Service (AWS KMS)
 	// key. When creating or updating a pipeline, the value must be set to 'KMS'.
+	//
+	// Type is a required field
 	Type *string `locationName:"type" type:"string" required:"true" enum:"EncryptionKeyType"`
 }
 
@@ -2634,6 +4040,18 @@ func (s *EncryptionKey) Validate() error {
 	return nil
 }
 
+// SetId sets the Id field's value.
+func (s *EncryptionKey) SetId(v string) *EncryptionKey {
+	s.Id = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *EncryptionKey) SetType(v string) *EncryptionKey {
+	s.Type = &v
+	return s
+}
+
 // Represents information about an error in AWS CodePipeline.
 type ErrorDetails struct {
 	_ struct{} `type:"structure"`
@@ -2653,6 +4071,18 @@ func (s ErrorDetails) String() string {
 // GoString returns the string representation
 func (s ErrorDetails) GoString() string {
 	return s.String()
+}
+
+// SetCode sets the Code field's value.
+func (s *ErrorDetails) SetCode(v string) *ErrorDetails {
+	s.Code = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *ErrorDetails) SetMessage(v string) *ErrorDetails {
+	s.Message = &v
+	return s
 }
 
 // The details of the actions taken and results produced on an artifact as it
@@ -2695,6 +4125,24 @@ func (s *ExecutionDetails) Validate() error {
 	return nil
 }
 
+// SetExternalExecutionId sets the ExternalExecutionId field's value.
+func (s *ExecutionDetails) SetExternalExecutionId(v string) *ExecutionDetails {
+	s.ExternalExecutionId = &v
+	return s
+}
+
+// SetPercentComplete sets the PercentComplete field's value.
+func (s *ExecutionDetails) SetPercentComplete(v int64) *ExecutionDetails {
+	s.PercentComplete = &v
+	return s
+}
+
+// SetSummary sets the Summary field's value.
+func (s *ExecutionDetails) SetSummary(v string) *ExecutionDetails {
+	s.Summary = &v
+	return s
+}
+
 // Represents information about failure details.
 type FailureDetails struct {
 	_ struct{} `type:"structure"`
@@ -2703,9 +4151,13 @@ type FailureDetails struct {
 	ExternalExecutionId *string `locationName:"externalExecutionId" min:"1" type:"string"`
 
 	// The message about the failure.
+	//
+	// Message is a required field
 	Message *string `locationName:"message" type:"string" required:"true"`
 
 	// The type of the failure.
+	//
+	// Type is a required field
 	Type *string `locationName:"type" type:"string" required:"true" enum:"FailureType"`
 }
 
@@ -2738,11 +4190,31 @@ func (s *FailureDetails) Validate() error {
 	return nil
 }
 
+// SetExternalExecutionId sets the ExternalExecutionId field's value.
+func (s *FailureDetails) SetExternalExecutionId(v string) *FailureDetails {
+	s.ExternalExecutionId = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *FailureDetails) SetMessage(v string) *FailureDetails {
+	s.Message = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *FailureDetails) SetType(v string) *FailureDetails {
+	s.Type = &v
+	return s
+}
+
 // Represents the input of a get job details action.
 type GetJobDetailsInput struct {
 	_ struct{} `type:"structure"`
 
 	// The unique system-generated ID for the job.
+	//
+	// JobId is a required field
 	JobId *string `locationName:"jobId" type:"string" required:"true"`
 }
 
@@ -2769,13 +4241,19 @@ func (s *GetJobDetailsInput) Validate() error {
 	return nil
 }
 
+// SetJobId sets the JobId field's value.
+func (s *GetJobDetailsInput) SetJobId(v string) *GetJobDetailsInput {
+	s.JobId = &v
+	return s
+}
+
 // Represents the output of a get job details action.
 type GetJobDetailsOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The details of the job.
 	//
-	//  If AWSSessionCredentials is used, a long-running job can call GetJobDetails
+	// If AWSSessionCredentials is used, a long-running job can call GetJobDetails
 	// again to obtain new credentials.
 	JobDetails *JobDetails `locationName:"jobDetails" type:"structure"`
 }
@@ -2790,12 +4268,100 @@ func (s GetJobDetailsOutput) GoString() string {
 	return s.String()
 }
 
+// SetJobDetails sets the JobDetails field's value.
+func (s *GetJobDetailsOutput) SetJobDetails(v *JobDetails) *GetJobDetailsOutput {
+	s.JobDetails = v
+	return s
+}
+
+// Represents the input of a get pipeline execution action.
+type GetPipelineExecutionInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the pipeline execution about which you want to get execution details.
+	//
+	// PipelineExecutionId is a required field
+	PipelineExecutionId *string `locationName:"pipelineExecutionId" type:"string" required:"true"`
+
+	// The name of the pipeline about which you want to get execution details.
+	//
+	// PipelineName is a required field
+	PipelineName *string `locationName:"pipelineName" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s GetPipelineExecutionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetPipelineExecutionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetPipelineExecutionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetPipelineExecutionInput"}
+	if s.PipelineExecutionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("PipelineExecutionId"))
+	}
+	if s.PipelineName == nil {
+		invalidParams.Add(request.NewErrParamRequired("PipelineName"))
+	}
+	if s.PipelineName != nil && len(*s.PipelineName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PipelineName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetPipelineExecutionId sets the PipelineExecutionId field's value.
+func (s *GetPipelineExecutionInput) SetPipelineExecutionId(v string) *GetPipelineExecutionInput {
+	s.PipelineExecutionId = &v
+	return s
+}
+
+// SetPipelineName sets the PipelineName field's value.
+func (s *GetPipelineExecutionInput) SetPipelineName(v string) *GetPipelineExecutionInput {
+	s.PipelineName = &v
+	return s
+}
+
+// Represents the output of a get pipeline execution action.
+type GetPipelineExecutionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Represents information about the execution of a pipeline.
+	PipelineExecution *PipelineExecution `locationName:"pipelineExecution" type:"structure"`
+}
+
+// String returns the string representation
+func (s GetPipelineExecutionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetPipelineExecutionOutput) GoString() string {
+	return s.String()
+}
+
+// SetPipelineExecution sets the PipelineExecution field's value.
+func (s *GetPipelineExecutionOutput) SetPipelineExecution(v *PipelineExecution) *GetPipelineExecutionOutput {
+	s.PipelineExecution = v
+	return s
+}
+
 // Represents the input of a get pipeline action.
 type GetPipelineInput struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the pipeline for which you want to get information. Pipeline
 	// names must be unique under an Amazon Web Services (AWS) user account.
+	//
+	// Name is a required field
 	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 
 	// The version number of the pipeline. If you do not specify a version, defaults
@@ -2832,6 +4398,18 @@ func (s *GetPipelineInput) Validate() error {
 	return nil
 }
 
+// SetName sets the Name field's value.
+func (s *GetPipelineInput) SetName(v string) *GetPipelineInput {
+	s.Name = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *GetPipelineInput) SetVersion(v int64) *GetPipelineInput {
+	s.Version = &v
+	return s
+}
+
 // Represents the output of a get pipeline action.
 type GetPipelineOutput struct {
 	_ struct{} `type:"structure"`
@@ -2850,11 +4428,19 @@ func (s GetPipelineOutput) GoString() string {
 	return s.String()
 }
 
+// SetPipeline sets the Pipeline field's value.
+func (s *GetPipelineOutput) SetPipeline(v *PipelineDeclaration) *GetPipelineOutput {
+	s.Pipeline = v
+	return s
+}
+
 // Represents the input of a get pipeline state action.
 type GetPipelineStateInput struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the pipeline about which you want to get information.
+	//
+	// Name is a required field
 	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 }
 
@@ -2884,6 +4470,12 @@ func (s *GetPipelineStateInput) Validate() error {
 	return nil
 }
 
+// SetName sets the Name field's value.
+func (s *GetPipelineStateInput) SetName(v string) *GetPipelineStateInput {
+	s.Name = &v
+	return s
+}
+
 // Represents the output of a get pipeline state action.
 type GetPipelineStateOutput struct {
 	_ struct{} `type:"structure"`
@@ -2896,7 +4488,7 @@ type GetPipelineStateOutput struct {
 
 	// The version number of the pipeline.
 	//
-	//  A newly-created pipeline is always assigned a version number of 1.
+	// A newly-created pipeline is always assigned a version number of 1.
 	PipelineVersion *int64 `locationName:"pipelineVersion" min:"1" type:"integer"`
 
 	// A list of the pipeline stage output information, including stage name, state,
@@ -2917,15 +4509,49 @@ func (s GetPipelineStateOutput) GoString() string {
 	return s.String()
 }
 
+// SetCreated sets the Created field's value.
+func (s *GetPipelineStateOutput) SetCreated(v time.Time) *GetPipelineStateOutput {
+	s.Created = &v
+	return s
+}
+
+// SetPipelineName sets the PipelineName field's value.
+func (s *GetPipelineStateOutput) SetPipelineName(v string) *GetPipelineStateOutput {
+	s.PipelineName = &v
+	return s
+}
+
+// SetPipelineVersion sets the PipelineVersion field's value.
+func (s *GetPipelineStateOutput) SetPipelineVersion(v int64) *GetPipelineStateOutput {
+	s.PipelineVersion = &v
+	return s
+}
+
+// SetStageStates sets the StageStates field's value.
+func (s *GetPipelineStateOutput) SetStageStates(v []*StageState) *GetPipelineStateOutput {
+	s.StageStates = v
+	return s
+}
+
+// SetUpdated sets the Updated field's value.
+func (s *GetPipelineStateOutput) SetUpdated(v time.Time) *GetPipelineStateOutput {
+	s.Updated = &v
+	return s
+}
+
 // Represents the input of a get third party job details action.
 type GetThirdPartyJobDetailsInput struct {
 	_ struct{} `type:"structure"`
 
 	// The clientToken portion of the clientId and clientToken pair used to verify
 	// that the calling entity is allowed access to the job and its details.
+	//
+	// ClientToken is a required field
 	ClientToken *string `locationName:"clientToken" type:"string" required:"true"`
 
 	// The unique system-generated ID used for identifying the job.
+	//
+	// JobId is a required field
 	JobId *string `locationName:"jobId" min:"1" type:"string" required:"true"`
 }
 
@@ -2958,6 +4584,18 @@ func (s *GetThirdPartyJobDetailsInput) Validate() error {
 	return nil
 }
 
+// SetClientToken sets the ClientToken field's value.
+func (s *GetThirdPartyJobDetailsInput) SetClientToken(v string) *GetThirdPartyJobDetailsInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetJobId sets the JobId field's value.
+func (s *GetThirdPartyJobDetailsInput) SetJobId(v string) *GetThirdPartyJobDetailsInput {
+	s.JobId = &v
+	return s
+}
+
 // Represents the output of a get third party job details action.
 type GetThirdPartyJobDetailsOutput struct {
 	_ struct{} `type:"structure"`
@@ -2976,6 +4614,12 @@ func (s GetThirdPartyJobDetailsOutput) GoString() string {
 	return s.String()
 }
 
+// SetJobDetails sets the JobDetails field's value.
+func (s *GetThirdPartyJobDetailsOutput) SetJobDetails(v *ThirdPartyJobDetails) *GetThirdPartyJobDetailsOutput {
+	s.JobDetails = v
+	return s
+}
+
 // Represents information about an artifact to be worked on, such as a test
 // or build artifact.
 type InputArtifact struct {
@@ -2988,6 +4632,8 @@ type InputArtifact struct {
 	// action in strict sequence from the action that provided the output artifact.
 	// Actions in parallel can declare different output artifacts, which are in
 	// turn consumed by different following actions.
+	//
+	// Name is a required field
 	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 }
 
@@ -3017,6 +4663,12 @@ func (s *InputArtifact) Validate() error {
 	return nil
 }
 
+// SetName sets the Name field's value.
+func (s *InputArtifact) SetName(v string) *InputArtifact {
+	s.Name = &v
+	return s
+}
+
 // Represents information about a job.
 type Job struct {
 	_ struct{} `type:"structure"`
@@ -3044,6 +4696,30 @@ func (s Job) String() string {
 // GoString returns the string representation
 func (s Job) GoString() string {
 	return s.String()
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *Job) SetAccountId(v string) *Job {
+	s.AccountId = &v
+	return s
+}
+
+// SetData sets the Data field's value.
+func (s *Job) SetData(v *JobData) *Job {
+	s.Data = v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *Job) SetId(v string) *Job {
+	s.Id = &v
+	return s
+}
+
+// SetNonce sets the Nonce field's value.
+func (s *Job) SetNonce(v string) *Job {
+	s.Nonce = &v
+	return s
 }
 
 // Represents additional information about a job required for a job worker to
@@ -3091,6 +4767,54 @@ func (s JobData) GoString() string {
 	return s.String()
 }
 
+// SetActionConfiguration sets the ActionConfiguration field's value.
+func (s *JobData) SetActionConfiguration(v *ActionConfiguration) *JobData {
+	s.ActionConfiguration = v
+	return s
+}
+
+// SetActionTypeId sets the ActionTypeId field's value.
+func (s *JobData) SetActionTypeId(v *ActionTypeId) *JobData {
+	s.ActionTypeId = v
+	return s
+}
+
+// SetArtifactCredentials sets the ArtifactCredentials field's value.
+func (s *JobData) SetArtifactCredentials(v *AWSSessionCredentials) *JobData {
+	s.ArtifactCredentials = v
+	return s
+}
+
+// SetContinuationToken sets the ContinuationToken field's value.
+func (s *JobData) SetContinuationToken(v string) *JobData {
+	s.ContinuationToken = &v
+	return s
+}
+
+// SetEncryptionKey sets the EncryptionKey field's value.
+func (s *JobData) SetEncryptionKey(v *EncryptionKey) *JobData {
+	s.EncryptionKey = v
+	return s
+}
+
+// SetInputArtifacts sets the InputArtifacts field's value.
+func (s *JobData) SetInputArtifacts(v []*Artifact) *JobData {
+	s.InputArtifacts = v
+	return s
+}
+
+// SetOutputArtifacts sets the OutputArtifacts field's value.
+func (s *JobData) SetOutputArtifacts(v []*Artifact) *JobData {
+	s.OutputArtifacts = v
+	return s
+}
+
+// SetPipelineContext sets the PipelineContext field's value.
+func (s *JobData) SetPipelineContext(v *PipelineContext) *JobData {
+	s.PipelineContext = v
+	return s
+}
+
 // Represents information about the details of a job.
 type JobDetails struct {
 	_ struct{} `type:"structure"`
@@ -3116,6 +4840,24 @@ func (s JobDetails) GoString() string {
 	return s.String()
 }
 
+// SetAccountId sets the AccountId field's value.
+func (s *JobDetails) SetAccountId(v string) *JobDetails {
+	s.AccountId = &v
+	return s
+}
+
+// SetData sets the Data field's value.
+func (s *JobDetails) SetData(v *JobData) *JobDetails {
+	s.Data = v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *JobDetails) SetId(v string) *JobDetails {
+	s.Id = &v
+	return s
+}
+
 // Represents the input of a list action types action.
 type ListActionTypesInput struct {
 	_ struct{} `type:"structure"`
@@ -3138,11 +4880,25 @@ func (s ListActionTypesInput) GoString() string {
 	return s.String()
 }
 
+// SetActionOwnerFilter sets the ActionOwnerFilter field's value.
+func (s *ListActionTypesInput) SetActionOwnerFilter(v string) *ListActionTypesInput {
+	s.ActionOwnerFilter = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListActionTypesInput) SetNextToken(v string) *ListActionTypesInput {
+	s.NextToken = &v
+	return s
+}
+
 // Represents the output of a list action types action.
 type ListActionTypesOutput struct {
 	_ struct{} `type:"structure"`
 
 	// Provides details of the action types.
+	//
+	// ActionTypes is a required field
 	ActionTypes []*ActionType `locationName:"actionTypes" type:"list" required:"true"`
 
 	// If the amount of returned information is significantly large, an identifier
@@ -3159,6 +4915,18 @@ func (s ListActionTypesOutput) String() string {
 // GoString returns the string representation
 func (s ListActionTypesOutput) GoString() string {
 	return s.String()
+}
+
+// SetActionTypes sets the ActionTypes field's value.
+func (s *ListActionTypesOutput) SetActionTypes(v []*ActionType) *ListActionTypesOutput {
+	s.ActionTypes = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListActionTypesOutput) SetNextToken(v string) *ListActionTypesOutput {
+	s.NextToken = &v
+	return s
 }
 
 // Represents the input of a list pipelines action.
@@ -3178,6 +4946,12 @@ func (s ListPipelinesInput) String() string {
 // GoString returns the string representation
 func (s ListPipelinesInput) GoString() string {
 	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListPipelinesInput) SetNextToken(v string) *ListPipelinesInput {
+	s.NextToken = &v
+	return s
 }
 
 // Represents the output of a list pipelines action.
@@ -3203,6 +4977,18 @@ func (s ListPipelinesOutput) GoString() string {
 	return s.String()
 }
 
+// SetNextToken sets the NextToken field's value.
+func (s *ListPipelinesOutput) SetNextToken(v string) *ListPipelinesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPipelines sets the Pipelines field's value.
+func (s *ListPipelinesOutput) SetPipelines(v []*PipelineSummary) *ListPipelinesOutput {
+	s.Pipelines = v
+	return s
+}
+
 // Represents information about the output of an action.
 type OutputArtifact struct {
 	_ struct{} `type:"structure"`
@@ -3216,6 +5002,8 @@ type OutputArtifact struct {
 	// turn consumed by different following actions.
 	//
 	// Output artifact names must be unique within a pipeline.
+	//
+	// Name is a required field
 	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 }
 
@@ -3245,6 +5033,12 @@ func (s *OutputArtifact) Validate() error {
 	return nil
 }
 
+// SetName sets the Name field's value.
+func (s *OutputArtifact) SetName(v string) *OutputArtifact {
+	s.Name = &v
+	return s
+}
+
 // Represents information about a pipeline to a job worker.
 type PipelineContext struct {
 	_ struct{} `type:"structure"`
@@ -3271,6 +5065,24 @@ func (s PipelineContext) GoString() string {
 	return s.String()
 }
 
+// SetAction sets the Action field's value.
+func (s *PipelineContext) SetAction(v *ActionContext) *PipelineContext {
+	s.Action = v
+	return s
+}
+
+// SetPipelineName sets the PipelineName field's value.
+func (s *PipelineContext) SetPipelineName(v string) *PipelineContext {
+	s.PipelineName = &v
+	return s
+}
+
+// SetStage sets the Stage field's value.
+func (s *PipelineContext) SetStage(v *StageContext) *PipelineContext {
+	s.Stage = v
+	return s
+}
+
 // Represents the structure of actions and stages to be performed in the pipeline.
 type PipelineDeclaration struct {
 	_ struct{} `type:"structure"`
@@ -3278,17 +5090,25 @@ type PipelineDeclaration struct {
 	// The Amazon S3 location where artifacts are stored for the pipeline. If this
 	// Amazon S3 bucket is created manually, it must meet the requirements for AWS
 	// CodePipeline. For more information, see the Concepts (http://docs.aws.amazon.com/codepipeline/latest/userguide/concepts.html#CPS3Bucket).
+	//
+	// ArtifactStore is a required field
 	ArtifactStore *ArtifactStore `locationName:"artifactStore" type:"structure" required:"true"`
 
 	// The name of the action to be performed.
+	//
+	// Name is a required field
 	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 
 	// The Amazon Resource Name (ARN) for AWS CodePipeline to use to either perform
 	// actions with no actionRoleArn, or to use to assume roles for actions with
 	// an actionRoleArn.
+	//
+	// RoleArn is a required field
 	RoleArn *string `locationName:"roleArn" type:"string" required:"true"`
 
 	// The stage in which to perform the action.
+	//
+	// Stages is a required field
 	Stages []*StageDeclaration `locationName:"stages" type:"list" required:"true"`
 
 	// The version number of the pipeline. A new pipeline always has a version number
@@ -3349,6 +5169,106 @@ func (s *PipelineDeclaration) Validate() error {
 	return nil
 }
 
+// SetArtifactStore sets the ArtifactStore field's value.
+func (s *PipelineDeclaration) SetArtifactStore(v *ArtifactStore) *PipelineDeclaration {
+	s.ArtifactStore = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *PipelineDeclaration) SetName(v string) *PipelineDeclaration {
+	s.Name = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *PipelineDeclaration) SetRoleArn(v string) *PipelineDeclaration {
+	s.RoleArn = &v
+	return s
+}
+
+// SetStages sets the Stages field's value.
+func (s *PipelineDeclaration) SetStages(v []*StageDeclaration) *PipelineDeclaration {
+	s.Stages = v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *PipelineDeclaration) SetVersion(v int64) *PipelineDeclaration {
+	s.Version = &v
+	return s
+}
+
+// Represents information about an execution of a pipeline.
+type PipelineExecution struct {
+	_ struct{} `type:"structure"`
+
+	// A list of ArtifactRevision objects included in a pipeline execution.
+	ArtifactRevisions []*ArtifactRevision `locationName:"artifactRevisions" type:"list"`
+
+	// The ID of the pipeline execution.
+	PipelineExecutionId *string `locationName:"pipelineExecutionId" type:"string"`
+
+	// The name of the pipeline that was executed.
+	PipelineName *string `locationName:"pipelineName" min:"1" type:"string"`
+
+	// The version number of the pipeline that was executed.
+	PipelineVersion *int64 `locationName:"pipelineVersion" min:"1" type:"integer"`
+
+	// The status of the pipeline execution.
+	//
+	//    * InProgress: The pipeline execution is currently running.
+	//
+	//    * Succeeded: The pipeline execution completed successfully.
+	//
+	//    * Superseded: While this pipeline execution was waiting for the next stage
+	//    to be completed, a newer pipeline execution caught up and continued through
+	//    the pipeline instead.
+	//
+	//    * Failed: The pipeline did not complete successfully.
+	Status *string `locationName:"status" type:"string" enum:"PipelineExecutionStatus"`
+}
+
+// String returns the string representation
+func (s PipelineExecution) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s PipelineExecution) GoString() string {
+	return s.String()
+}
+
+// SetArtifactRevisions sets the ArtifactRevisions field's value.
+func (s *PipelineExecution) SetArtifactRevisions(v []*ArtifactRevision) *PipelineExecution {
+	s.ArtifactRevisions = v
+	return s
+}
+
+// SetPipelineExecutionId sets the PipelineExecutionId field's value.
+func (s *PipelineExecution) SetPipelineExecutionId(v string) *PipelineExecution {
+	s.PipelineExecutionId = &v
+	return s
+}
+
+// SetPipelineName sets the PipelineName field's value.
+func (s *PipelineExecution) SetPipelineName(v string) *PipelineExecution {
+	s.PipelineName = &v
+	return s
+}
+
+// SetPipelineVersion sets the PipelineVersion field's value.
+func (s *PipelineExecution) SetPipelineVersion(v int64) *PipelineExecution {
+	s.PipelineVersion = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *PipelineExecution) SetStatus(v string) *PipelineExecution {
+	s.Status = &v
+	return s
+}
+
 // Returns a summary of a pipeline.
 type PipelineSummary struct {
 	_ struct{} `type:"structure"`
@@ -3376,11 +5296,37 @@ func (s PipelineSummary) GoString() string {
 	return s.String()
 }
 
+// SetCreated sets the Created field's value.
+func (s *PipelineSummary) SetCreated(v time.Time) *PipelineSummary {
+	s.Created = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *PipelineSummary) SetName(v string) *PipelineSummary {
+	s.Name = &v
+	return s
+}
+
+// SetUpdated sets the Updated field's value.
+func (s *PipelineSummary) SetUpdated(v time.Time) *PipelineSummary {
+	s.Updated = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *PipelineSummary) SetVersion(v int64) *PipelineSummary {
+	s.Version = &v
+	return s
+}
+
 // Represents the input of a poll for jobs action.
 type PollForJobsInput struct {
 	_ struct{} `type:"structure"`
 
 	// Represents information about an action type.
+	//
+	// ActionTypeId is a required field
 	ActionTypeId *ActionTypeId `locationName:"actionTypeId" type:"structure" required:"true"`
 
 	// The maximum number of jobs to return in a poll for jobs call.
@@ -3424,6 +5370,24 @@ func (s *PollForJobsInput) Validate() error {
 	return nil
 }
 
+// SetActionTypeId sets the ActionTypeId field's value.
+func (s *PollForJobsInput) SetActionTypeId(v *ActionTypeId) *PollForJobsInput {
+	s.ActionTypeId = v
+	return s
+}
+
+// SetMaxBatchSize sets the MaxBatchSize field's value.
+func (s *PollForJobsInput) SetMaxBatchSize(v int64) *PollForJobsInput {
+	s.MaxBatchSize = &v
+	return s
+}
+
+// SetQueryParam sets the QueryParam field's value.
+func (s *PollForJobsInput) SetQueryParam(v map[string]*string) *PollForJobsInput {
+	s.QueryParam = v
+	return s
+}
+
 // Represents the output of a poll for jobs action.
 type PollForJobsOutput struct {
 	_ struct{} `type:"structure"`
@@ -3442,11 +5406,19 @@ func (s PollForJobsOutput) GoString() string {
 	return s.String()
 }
 
+// SetJobs sets the Jobs field's value.
+func (s *PollForJobsOutput) SetJobs(v []*Job) *PollForJobsOutput {
+	s.Jobs = v
+	return s
+}
+
 // Represents the input of a poll for third party jobs action.
 type PollForThirdPartyJobsInput struct {
 	_ struct{} `type:"structure"`
 
 	// Represents information about an action type.
+	//
+	// ActionTypeId is a required field
 	ActionTypeId *ActionTypeId `locationName:"actionTypeId" type:"structure" required:"true"`
 
 	// The maximum number of jobs to return in a poll for jobs call.
@@ -3484,6 +5456,18 @@ func (s *PollForThirdPartyJobsInput) Validate() error {
 	return nil
 }
 
+// SetActionTypeId sets the ActionTypeId field's value.
+func (s *PollForThirdPartyJobsInput) SetActionTypeId(v *ActionTypeId) *PollForThirdPartyJobsInput {
+	s.ActionTypeId = v
+	return s
+}
+
+// SetMaxBatchSize sets the MaxBatchSize field's value.
+func (s *PollForThirdPartyJobsInput) SetMaxBatchSize(v int64) *PollForThirdPartyJobsInput {
+	s.MaxBatchSize = &v
+	return s
+}
+
 // Represents the output of a poll for third party jobs action.
 type PollForThirdPartyJobsOutput struct {
 	_ struct{} `type:"structure"`
@@ -3502,20 +5486,34 @@ func (s PollForThirdPartyJobsOutput) GoString() string {
 	return s.String()
 }
 
+// SetJobs sets the Jobs field's value.
+func (s *PollForThirdPartyJobsOutput) SetJobs(v []*ThirdPartyJob) *PollForThirdPartyJobsOutput {
+	s.Jobs = v
+	return s
+}
+
 // Represents the input of a put action revision action.
 type PutActionRevisionInput struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the action that will process the revision.
+	//
+	// ActionName is a required field
 	ActionName *string `locationName:"actionName" min:"1" type:"string" required:"true"`
 
 	// Represents information about the version (or revision) of an action.
+	//
+	// ActionRevision is a required field
 	ActionRevision *ActionRevision `locationName:"actionRevision" type:"structure" required:"true"`
 
 	// The name of the pipeline that will start processing the revision to the source.
+	//
+	// PipelineName is a required field
 	PipelineName *string `locationName:"pipelineName" min:"1" type:"string" required:"true"`
 
 	// The name of the stage that contains the action that will act upon the revision.
+	//
+	// StageName is a required field
 	StageName *string `locationName:"stageName" min:"1" type:"string" required:"true"`
 }
 
@@ -3565,11 +5563,36 @@ func (s *PutActionRevisionInput) Validate() error {
 	return nil
 }
 
+// SetActionName sets the ActionName field's value.
+func (s *PutActionRevisionInput) SetActionName(v string) *PutActionRevisionInput {
+	s.ActionName = &v
+	return s
+}
+
+// SetActionRevision sets the ActionRevision field's value.
+func (s *PutActionRevisionInput) SetActionRevision(v *ActionRevision) *PutActionRevisionInput {
+	s.ActionRevision = v
+	return s
+}
+
+// SetPipelineName sets the PipelineName field's value.
+func (s *PutActionRevisionInput) SetPipelineName(v string) *PutActionRevisionInput {
+	s.PipelineName = &v
+	return s
+}
+
+// SetStageName sets the StageName field's value.
+func (s *PutActionRevisionInput) SetStageName(v string) *PutActionRevisionInput {
+	s.StageName = &v
+	return s
+}
+
 // Represents the output of a put action revision action.
 type PutActionRevisionOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The new revision number or ID for the revision after the action completes.
+	// Indicates whether the artifact revision was previously used in an execution
+	// of the specified pipeline.
 	NewRevision *bool `locationName:"newRevision" type:"boolean"`
 
 	// The ID of the current workflow state of the pipeline.
@@ -3586,27 +5609,49 @@ func (s PutActionRevisionOutput) GoString() string {
 	return s.String()
 }
 
+// SetNewRevision sets the NewRevision field's value.
+func (s *PutActionRevisionOutput) SetNewRevision(v bool) *PutActionRevisionOutput {
+	s.NewRevision = &v
+	return s
+}
+
+// SetPipelineExecutionId sets the PipelineExecutionId field's value.
+func (s *PutActionRevisionOutput) SetPipelineExecutionId(v string) *PutActionRevisionOutput {
+	s.PipelineExecutionId = &v
+	return s
+}
+
 // Represents the input of a put approval result action.
 type PutApprovalResultInput struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the action for which approval is requested.
+	//
+	// ActionName is a required field
 	ActionName *string `locationName:"actionName" min:"1" type:"string" required:"true"`
 
 	// The name of the pipeline that contains the action.
+	//
+	// PipelineName is a required field
 	PipelineName *string `locationName:"pipelineName" min:"1" type:"string" required:"true"`
 
 	// Represents information about the result of the approval request.
+	//
+	// Result is a required field
 	Result *ApprovalResult `locationName:"result" type:"structure" required:"true"`
 
 	// The name of the stage that contains the action.
+	//
+	// StageName is a required field
 	StageName *string `locationName:"stageName" min:"1" type:"string" required:"true"`
 
 	// The system-generated token used to identify a unique approval request. The
 	// token for each open approval request can be obtained using the GetPipelineState
 	// action and is used to validate that the approval request corresponding to
 	// this token is still valid.
-	Token *string `locationName:"token" type:"string"`
+	//
+	// Token is a required field
+	Token *string `locationName:"token" type:"string" required:"true"`
 }
 
 // String returns the string representation
@@ -3643,6 +5688,9 @@ func (s *PutApprovalResultInput) Validate() error {
 	if s.StageName != nil && len(*s.StageName) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("StageName", 1))
 	}
+	if s.Token == nil {
+		invalidParams.Add(request.NewErrParamRequired("Token"))
+	}
 	if s.Result != nil {
 		if err := s.Result.Validate(); err != nil {
 			invalidParams.AddNested("Result", err.(request.ErrInvalidParams))
@@ -3653,6 +5701,36 @@ func (s *PutApprovalResultInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetActionName sets the ActionName field's value.
+func (s *PutApprovalResultInput) SetActionName(v string) *PutApprovalResultInput {
+	s.ActionName = &v
+	return s
+}
+
+// SetPipelineName sets the PipelineName field's value.
+func (s *PutApprovalResultInput) SetPipelineName(v string) *PutApprovalResultInput {
+	s.PipelineName = &v
+	return s
+}
+
+// SetResult sets the Result field's value.
+func (s *PutApprovalResultInput) SetResult(v *ApprovalResult) *PutApprovalResultInput {
+	s.Result = v
+	return s
+}
+
+// SetStageName sets the StageName field's value.
+func (s *PutApprovalResultInput) SetStageName(v string) *PutApprovalResultInput {
+	s.StageName = &v
+	return s
+}
+
+// SetToken sets the Token field's value.
+func (s *PutApprovalResultInput) SetToken(v string) *PutApprovalResultInput {
+	s.Token = &v
+	return s
 }
 
 // Represents the output of a put approval result action.
@@ -3673,15 +5751,25 @@ func (s PutApprovalResultOutput) GoString() string {
 	return s.String()
 }
 
+// SetApprovedAt sets the ApprovedAt field's value.
+func (s *PutApprovalResultOutput) SetApprovedAt(v time.Time) *PutApprovalResultOutput {
+	s.ApprovedAt = &v
+	return s
+}
+
 // Represents the input of a put job failure result action.
 type PutJobFailureResultInput struct {
 	_ struct{} `type:"structure"`
 
 	// The details about the failure of a job.
+	//
+	// FailureDetails is a required field
 	FailureDetails *FailureDetails `locationName:"failureDetails" type:"structure" required:"true"`
 
 	// The unique system-generated ID of the job that failed. This is the same ID
 	// returned from PollForJobs.
+	//
+	// JobId is a required field
 	JobId *string `locationName:"jobId" type:"string" required:"true"`
 }
 
@@ -3714,6 +5802,18 @@ func (s *PutJobFailureResultInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetFailureDetails sets the FailureDetails field's value.
+func (s *PutJobFailureResultInput) SetFailureDetails(v *FailureDetails) *PutJobFailureResultInput {
+	s.FailureDetails = v
+	return s
+}
+
+// SetJobId sets the JobId field's value.
+func (s *PutJobFailureResultInput) SetJobId(v string) *PutJobFailureResultInput {
+	s.JobId = &v
+	return s
 }
 
 type PutJobFailureResultOutput struct {
@@ -3752,6 +5852,8 @@ type PutJobSuccessResultInput struct {
 
 	// The unique system-generated ID of the job that succeeded. This is the same
 	// ID returned from PollForJobs.
+	//
+	// JobId is a required field
 	JobId *string `locationName:"jobId" type:"string" required:"true"`
 }
 
@@ -3788,6 +5890,30 @@ func (s *PutJobSuccessResultInput) Validate() error {
 	return nil
 }
 
+// SetContinuationToken sets the ContinuationToken field's value.
+func (s *PutJobSuccessResultInput) SetContinuationToken(v string) *PutJobSuccessResultInput {
+	s.ContinuationToken = &v
+	return s
+}
+
+// SetCurrentRevision sets the CurrentRevision field's value.
+func (s *PutJobSuccessResultInput) SetCurrentRevision(v *CurrentRevision) *PutJobSuccessResultInput {
+	s.CurrentRevision = v
+	return s
+}
+
+// SetExecutionDetails sets the ExecutionDetails field's value.
+func (s *PutJobSuccessResultInput) SetExecutionDetails(v *ExecutionDetails) *PutJobSuccessResultInput {
+	s.ExecutionDetails = v
+	return s
+}
+
+// SetJobId sets the JobId field's value.
+func (s *PutJobSuccessResultInput) SetJobId(v string) *PutJobSuccessResultInput {
+	s.JobId = &v
+	return s
+}
+
 type PutJobSuccessResultOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -3808,12 +5934,18 @@ type PutThirdPartyJobFailureResultInput struct {
 
 	// The clientToken portion of the clientId and clientToken pair used to verify
 	// that the calling entity is allowed access to the job and its details.
+	//
+	// ClientToken is a required field
 	ClientToken *string `locationName:"clientToken" type:"string" required:"true"`
 
 	// Represents information about failure details.
+	//
+	// FailureDetails is a required field
 	FailureDetails *FailureDetails `locationName:"failureDetails" type:"structure" required:"true"`
 
 	// The ID of the job that failed. This is the same ID returned from PollForThirdPartyJobs.
+	//
+	// JobId is a required field
 	JobId *string `locationName:"jobId" min:"1" type:"string" required:"true"`
 }
 
@@ -3854,6 +5986,24 @@ func (s *PutThirdPartyJobFailureResultInput) Validate() error {
 	return nil
 }
 
+// SetClientToken sets the ClientToken field's value.
+func (s *PutThirdPartyJobFailureResultInput) SetClientToken(v string) *PutThirdPartyJobFailureResultInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetFailureDetails sets the FailureDetails field's value.
+func (s *PutThirdPartyJobFailureResultInput) SetFailureDetails(v *FailureDetails) *PutThirdPartyJobFailureResultInput {
+	s.FailureDetails = v
+	return s
+}
+
+// SetJobId sets the JobId field's value.
+func (s *PutThirdPartyJobFailureResultInput) SetJobId(v string) *PutThirdPartyJobFailureResultInput {
+	s.JobId = &v
+	return s
+}
+
 type PutThirdPartyJobFailureResultOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -3874,6 +6024,8 @@ type PutThirdPartyJobSuccessResultInput struct {
 
 	// The clientToken portion of the clientId and clientToken pair used to verify
 	// that the calling entity is allowed access to the job and its details.
+	//
+	// ClientToken is a required field
 	ClientToken *string `locationName:"clientToken" type:"string" required:"true"`
 
 	// A token generated by a job worker, such as an AWS CodeDeploy deployment ID,
@@ -3893,6 +6045,8 @@ type PutThirdPartyJobSuccessResultInput struct {
 
 	// The ID of the job that successfully completed. This is the same ID returned
 	// from PollForThirdPartyJobs.
+	//
+	// JobId is a required field
 	JobId *string `locationName:"jobId" min:"1" type:"string" required:"true"`
 }
 
@@ -3935,6 +6089,36 @@ func (s *PutThirdPartyJobSuccessResultInput) Validate() error {
 	return nil
 }
 
+// SetClientToken sets the ClientToken field's value.
+func (s *PutThirdPartyJobSuccessResultInput) SetClientToken(v string) *PutThirdPartyJobSuccessResultInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetContinuationToken sets the ContinuationToken field's value.
+func (s *PutThirdPartyJobSuccessResultInput) SetContinuationToken(v string) *PutThirdPartyJobSuccessResultInput {
+	s.ContinuationToken = &v
+	return s
+}
+
+// SetCurrentRevision sets the CurrentRevision field's value.
+func (s *PutThirdPartyJobSuccessResultInput) SetCurrentRevision(v *CurrentRevision) *PutThirdPartyJobSuccessResultInput {
+	s.CurrentRevision = v
+	return s
+}
+
+// SetExecutionDetails sets the ExecutionDetails field's value.
+func (s *PutThirdPartyJobSuccessResultInput) SetExecutionDetails(v *ExecutionDetails) *PutThirdPartyJobSuccessResultInput {
+	s.ExecutionDetails = v
+	return s
+}
+
+// SetJobId sets the JobId field's value.
+func (s *PutThirdPartyJobSuccessResultInput) SetJobId(v string) *PutThirdPartyJobSuccessResultInput {
+	s.JobId = &v
+	return s
+}
+
 type PutThirdPartyJobSuccessResultOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -3956,15 +6140,23 @@ type RetryStageExecutionInput struct {
 	// The ID of the pipeline execution in the failed stage to be retried. Use the
 	// GetPipelineState action to retrieve the current pipelineExecutionId of the
 	// failed stage
+	//
+	// PipelineExecutionId is a required field
 	PipelineExecutionId *string `locationName:"pipelineExecutionId" type:"string" required:"true"`
 
 	// The name of the pipeline that contains the failed stage.
+	//
+	// PipelineName is a required field
 	PipelineName *string `locationName:"pipelineName" min:"1" type:"string" required:"true"`
 
 	// The scope of the retry attempt. Currently, the only supported value is FAILED_ACTIONS.
+	//
+	// RetryMode is a required field
 	RetryMode *string `locationName:"retryMode" type:"string" required:"true" enum:"StageRetryMode"`
 
 	// The name of the failed stage to be retried.
+	//
+	// StageName is a required field
 	StageName *string `locationName:"stageName" min:"1" type:"string" required:"true"`
 }
 
@@ -4006,6 +6198,30 @@ func (s *RetryStageExecutionInput) Validate() error {
 	return nil
 }
 
+// SetPipelineExecutionId sets the PipelineExecutionId field's value.
+func (s *RetryStageExecutionInput) SetPipelineExecutionId(v string) *RetryStageExecutionInput {
+	s.PipelineExecutionId = &v
+	return s
+}
+
+// SetPipelineName sets the PipelineName field's value.
+func (s *RetryStageExecutionInput) SetPipelineName(v string) *RetryStageExecutionInput {
+	s.PipelineName = &v
+	return s
+}
+
+// SetRetryMode sets the RetryMode field's value.
+func (s *RetryStageExecutionInput) SetRetryMode(v string) *RetryStageExecutionInput {
+	s.RetryMode = &v
+	return s
+}
+
+// SetStageName sets the StageName field's value.
+func (s *RetryStageExecutionInput) SetStageName(v string) *RetryStageExecutionInput {
+	s.StageName = &v
+	return s
+}
+
 // Represents the output of a retry stage execution action.
 type RetryStageExecutionOutput struct {
 	_ struct{} `type:"structure"`
@@ -4024,15 +6240,25 @@ func (s RetryStageExecutionOutput) GoString() string {
 	return s.String()
 }
 
+// SetPipelineExecutionId sets the PipelineExecutionId field's value.
+func (s *RetryStageExecutionOutput) SetPipelineExecutionId(v string) *RetryStageExecutionOutput {
+	s.PipelineExecutionId = &v
+	return s
+}
+
 // The location of the Amazon S3 bucket that contains a revision.
 type S3ArtifactLocation struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the Amazon S3 bucket.
+	//
+	// BucketName is a required field
 	BucketName *string `locationName:"bucketName" type:"string" required:"true"`
 
 	// The key of the object in the Amazon S3 bucket, which uniquely identifies
 	// the object in the bucket.
+	//
+	// ObjectKey is a required field
 	ObjectKey *string `locationName:"objectKey" type:"string" required:"true"`
 }
 
@@ -4044,6 +6270,18 @@ func (s S3ArtifactLocation) String() string {
 // GoString returns the string representation
 func (s S3ArtifactLocation) GoString() string {
 	return s.String()
+}
+
+// SetBucketName sets the BucketName field's value.
+func (s *S3ArtifactLocation) SetBucketName(v string) *S3ArtifactLocation {
+	s.BucketName = &v
+	return s
+}
+
+// SetObjectKey sets the ObjectKey field's value.
+func (s *S3ArtifactLocation) SetObjectKey(v string) *S3ArtifactLocation {
+	s.ObjectKey = &v
+	return s
 }
 
 // Represents information about a stage to a job worker.
@@ -4064,17 +6302,27 @@ func (s StageContext) GoString() string {
 	return s.String()
 }
 
+// SetName sets the Name field's value.
+func (s *StageContext) SetName(v string) *StageContext {
+	s.Name = &v
+	return s
+}
+
 // Represents information about a stage and its definition.
 type StageDeclaration struct {
 	_ struct{} `type:"structure"`
 
 	// The actions included in a stage.
+	//
+	// Actions is a required field
 	Actions []*ActionDeclaration `locationName:"actions" type:"list" required:"true"`
 
 	// Reserved for future use.
 	Blockers []*BlockerDeclaration `locationName:"blockers" type:"list"`
 
 	// The name of the stage.
+	//
+	// Name is a required field
 	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 }
 
@@ -4127,15 +6375,37 @@ func (s *StageDeclaration) Validate() error {
 	return nil
 }
 
+// SetActions sets the Actions field's value.
+func (s *StageDeclaration) SetActions(v []*ActionDeclaration) *StageDeclaration {
+	s.Actions = v
+	return s
+}
+
+// SetBlockers sets the Blockers field's value.
+func (s *StageDeclaration) SetBlockers(v []*BlockerDeclaration) *StageDeclaration {
+	s.Blockers = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *StageDeclaration) SetName(v string) *StageDeclaration {
+	s.Name = &v
+	return s
+}
+
 // Represents information about the run of a stage.
 type StageExecution struct {
 	_ struct{} `type:"structure"`
 
 	// The ID of the pipeline execution associated with the stage.
+	//
+	// PipelineExecutionId is a required field
 	PipelineExecutionId *string `locationName:"pipelineExecutionId" type:"string" required:"true"`
 
 	// The status of the stage, or for a completed stage, the last status of the
 	// stage.
+	//
+	// Status is a required field
 	Status *string `locationName:"status" type:"string" required:"true" enum:"StageExecutionStatus"`
 }
 
@@ -4147,6 +6417,18 @@ func (s StageExecution) String() string {
 // GoString returns the string representation
 func (s StageExecution) GoString() string {
 	return s.String()
+}
+
+// SetPipelineExecutionId sets the PipelineExecutionId field's value.
+func (s *StageExecution) SetPipelineExecutionId(v string) *StageExecution {
+	s.PipelineExecutionId = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *StageExecution) SetStatus(v string) *StageExecution {
+	s.Status = &v
+	return s
 }
 
 // Represents information about the state of the stage.
@@ -4177,11 +6459,37 @@ func (s StageState) GoString() string {
 	return s.String()
 }
 
+// SetActionStates sets the ActionStates field's value.
+func (s *StageState) SetActionStates(v []*ActionState) *StageState {
+	s.ActionStates = v
+	return s
+}
+
+// SetInboundTransitionState sets the InboundTransitionState field's value.
+func (s *StageState) SetInboundTransitionState(v *TransitionState) *StageState {
+	s.InboundTransitionState = v
+	return s
+}
+
+// SetLatestExecution sets the LatestExecution field's value.
+func (s *StageState) SetLatestExecution(v *StageExecution) *StageState {
+	s.LatestExecution = v
+	return s
+}
+
+// SetStageName sets the StageName field's value.
+func (s *StageState) SetStageName(v string) *StageState {
+	s.StageName = &v
+	return s
+}
+
 // Represents the input of a start pipeline execution action.
 type StartPipelineExecutionInput struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the pipeline to start.
+	//
+	// Name is a required field
 	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 }
 
@@ -4211,11 +6519,17 @@ func (s *StartPipelineExecutionInput) Validate() error {
 	return nil
 }
 
+// SetName sets the Name field's value.
+func (s *StartPipelineExecutionInput) SetName(v string) *StartPipelineExecutionInput {
+	s.Name = &v
+	return s
+}
+
 // Represents the output of a start pipeline execution action.
 type StartPipelineExecutionOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The unique system-generated ID of the pipeline that was started.
+	// The unique system-generated ID of the pipeline execution that was started.
 	PipelineExecutionId *string `locationName:"pipelineExecutionId" type:"string"`
 }
 
@@ -4227,6 +6541,12 @@ func (s StartPipelineExecutionOutput) String() string {
 // GoString returns the string representation
 func (s StartPipelineExecutionOutput) GoString() string {
 	return s.String()
+}
+
+// SetPipelineExecutionId sets the PipelineExecutionId field's value.
+func (s *StartPipelineExecutionOutput) SetPipelineExecutionId(v string) *StartPipelineExecutionOutput {
+	s.PipelineExecutionId = &v
+	return s
 }
 
 // A response to a PollForThirdPartyJobs request returned by AWS CodePipeline
@@ -4250,6 +6570,18 @@ func (s ThirdPartyJob) String() string {
 // GoString returns the string representation
 func (s ThirdPartyJob) GoString() string {
 	return s.String()
+}
+
+// SetClientId sets the ClientId field's value.
+func (s *ThirdPartyJob) SetClientId(v string) *ThirdPartyJob {
+	s.ClientId = &v
+	return s
+}
+
+// SetJobId sets the JobId field's value.
+func (s *ThirdPartyJob) SetJobId(v string) *ThirdPartyJob {
+	s.JobId = &v
+	return s
 }
 
 // Represents information about the job data for a partner action.
@@ -4303,6 +6635,54 @@ func (s ThirdPartyJobData) GoString() string {
 	return s.String()
 }
 
+// SetActionConfiguration sets the ActionConfiguration field's value.
+func (s *ThirdPartyJobData) SetActionConfiguration(v *ActionConfiguration) *ThirdPartyJobData {
+	s.ActionConfiguration = v
+	return s
+}
+
+// SetActionTypeId sets the ActionTypeId field's value.
+func (s *ThirdPartyJobData) SetActionTypeId(v *ActionTypeId) *ThirdPartyJobData {
+	s.ActionTypeId = v
+	return s
+}
+
+// SetArtifactCredentials sets the ArtifactCredentials field's value.
+func (s *ThirdPartyJobData) SetArtifactCredentials(v *AWSSessionCredentials) *ThirdPartyJobData {
+	s.ArtifactCredentials = v
+	return s
+}
+
+// SetContinuationToken sets the ContinuationToken field's value.
+func (s *ThirdPartyJobData) SetContinuationToken(v string) *ThirdPartyJobData {
+	s.ContinuationToken = &v
+	return s
+}
+
+// SetEncryptionKey sets the EncryptionKey field's value.
+func (s *ThirdPartyJobData) SetEncryptionKey(v *EncryptionKey) *ThirdPartyJobData {
+	s.EncryptionKey = v
+	return s
+}
+
+// SetInputArtifacts sets the InputArtifacts field's value.
+func (s *ThirdPartyJobData) SetInputArtifacts(v []*Artifact) *ThirdPartyJobData {
+	s.InputArtifacts = v
+	return s
+}
+
+// SetOutputArtifacts sets the OutputArtifacts field's value.
+func (s *ThirdPartyJobData) SetOutputArtifacts(v []*Artifact) *ThirdPartyJobData {
+	s.OutputArtifacts = v
+	return s
+}
+
+// SetPipelineContext sets the PipelineContext field's value.
+func (s *ThirdPartyJobData) SetPipelineContext(v *PipelineContext) *ThirdPartyJobData {
+	s.PipelineContext = v
+	return s
+}
+
 // The details of a job sent in response to a GetThirdPartyJobDetails request.
 type ThirdPartyJobDetails struct {
 	_ struct{} `type:"structure"`
@@ -4327,6 +6707,24 @@ func (s ThirdPartyJobDetails) String() string {
 // GoString returns the string representation
 func (s ThirdPartyJobDetails) GoString() string {
 	return s.String()
+}
+
+// SetData sets the Data field's value.
+func (s *ThirdPartyJobDetails) SetData(v *ThirdPartyJobData) *ThirdPartyJobDetails {
+	s.Data = v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *ThirdPartyJobDetails) SetId(v string) *ThirdPartyJobDetails {
+	s.Id = &v
+	return s
+}
+
+// SetNonce sets the Nonce field's value.
+func (s *ThirdPartyJobDetails) SetNonce(v string) *ThirdPartyJobDetails {
+	s.Nonce = &v
+	return s
 }
 
 // Represents information about the state of transitions between one stage and
@@ -4358,11 +6756,37 @@ func (s TransitionState) GoString() string {
 	return s.String()
 }
 
+// SetDisabledReason sets the DisabledReason field's value.
+func (s *TransitionState) SetDisabledReason(v string) *TransitionState {
+	s.DisabledReason = &v
+	return s
+}
+
+// SetEnabled sets the Enabled field's value.
+func (s *TransitionState) SetEnabled(v bool) *TransitionState {
+	s.Enabled = &v
+	return s
+}
+
+// SetLastChangedAt sets the LastChangedAt field's value.
+func (s *TransitionState) SetLastChangedAt(v time.Time) *TransitionState {
+	s.LastChangedAt = &v
+	return s
+}
+
+// SetLastChangedBy sets the LastChangedBy field's value.
+func (s *TransitionState) SetLastChangedBy(v string) *TransitionState {
+	s.LastChangedBy = &v
+	return s
+}
+
 // Represents the input of an update pipeline action.
 type UpdatePipelineInput struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the pipeline to be updated.
+	//
+	// Pipeline is a required field
 	Pipeline *PipelineDeclaration `locationName:"pipeline" type:"structure" required:"true"`
 }
 
@@ -4394,6 +6818,12 @@ func (s *UpdatePipelineInput) Validate() error {
 	return nil
 }
 
+// SetPipeline sets the Pipeline field's value.
+func (s *UpdatePipelineInput) SetPipeline(v *PipelineDeclaration) *UpdatePipelineInput {
+	s.Pipeline = v
+	return s
+}
+
 // Represents the output of an update pipeline action.
 type UpdatePipelineOutput struct {
 	_ struct{} `type:"structure"`
@@ -4412,124 +6842,170 @@ func (s UpdatePipelineOutput) GoString() string {
 	return s.String()
 }
 
+// SetPipeline sets the Pipeline field's value.
+func (s *UpdatePipelineOutput) SetPipeline(v *PipelineDeclaration) *UpdatePipelineOutput {
+	s.Pipeline = v
+	return s
+}
+
 const (
-	// @enum ActionCategory
+	// ActionCategorySource is a ActionCategory enum value
 	ActionCategorySource = "Source"
-	// @enum ActionCategory
+
+	// ActionCategoryBuild is a ActionCategory enum value
 	ActionCategoryBuild = "Build"
-	// @enum ActionCategory
+
+	// ActionCategoryDeploy is a ActionCategory enum value
 	ActionCategoryDeploy = "Deploy"
-	// @enum ActionCategory
+
+	// ActionCategoryTest is a ActionCategory enum value
 	ActionCategoryTest = "Test"
-	// @enum ActionCategory
+
+	// ActionCategoryInvoke is a ActionCategory enum value
 	ActionCategoryInvoke = "Invoke"
-	// @enum ActionCategory
+
+	// ActionCategoryApproval is a ActionCategory enum value
 	ActionCategoryApproval = "Approval"
 )
 
 const (
-	// @enum ActionConfigurationPropertyType
+	// ActionConfigurationPropertyTypeString is a ActionConfigurationPropertyType enum value
 	ActionConfigurationPropertyTypeString = "String"
-	// @enum ActionConfigurationPropertyType
+
+	// ActionConfigurationPropertyTypeNumber is a ActionConfigurationPropertyType enum value
 	ActionConfigurationPropertyTypeNumber = "Number"
-	// @enum ActionConfigurationPropertyType
+
+	// ActionConfigurationPropertyTypeBoolean is a ActionConfigurationPropertyType enum value
 	ActionConfigurationPropertyTypeBoolean = "Boolean"
 )
 
 const (
-	// @enum ActionExecutionStatus
+	// ActionExecutionStatusInProgress is a ActionExecutionStatus enum value
 	ActionExecutionStatusInProgress = "InProgress"
-	// @enum ActionExecutionStatus
+
+	// ActionExecutionStatusSucceeded is a ActionExecutionStatus enum value
 	ActionExecutionStatusSucceeded = "Succeeded"
-	// @enum ActionExecutionStatus
+
+	// ActionExecutionStatusFailed is a ActionExecutionStatus enum value
 	ActionExecutionStatusFailed = "Failed"
 )
 
 const (
-	// @enum ActionOwner
+	// ActionOwnerAws is a ActionOwner enum value
 	ActionOwnerAws = "AWS"
-	// @enum ActionOwner
+
+	// ActionOwnerThirdParty is a ActionOwner enum value
 	ActionOwnerThirdParty = "ThirdParty"
-	// @enum ActionOwner
+
+	// ActionOwnerCustom is a ActionOwner enum value
 	ActionOwnerCustom = "Custom"
 )
 
 const (
-	// @enum ApprovalStatus
+	// ApprovalStatusApproved is a ApprovalStatus enum value
 	ApprovalStatusApproved = "Approved"
-	// @enum ApprovalStatus
+
+	// ApprovalStatusRejected is a ApprovalStatus enum value
 	ApprovalStatusRejected = "Rejected"
 )
 
 const (
-	// @enum ArtifactLocationType
+	// ArtifactLocationTypeS3 is a ArtifactLocationType enum value
 	ArtifactLocationTypeS3 = "S3"
 )
 
 const (
-	// @enum ArtifactStoreType
+	// ArtifactStoreTypeS3 is a ArtifactStoreType enum value
 	ArtifactStoreTypeS3 = "S3"
 )
 
 const (
-	// @enum BlockerType
+	// BlockerTypeSchedule is a BlockerType enum value
 	BlockerTypeSchedule = "Schedule"
 )
 
 const (
-	// @enum EncryptionKeyType
+	// EncryptionKeyTypeKms is a EncryptionKeyType enum value
 	EncryptionKeyTypeKms = "KMS"
 )
 
 const (
-	// @enum FailureType
+	// FailureTypeJobFailed is a FailureType enum value
 	FailureTypeJobFailed = "JobFailed"
-	// @enum FailureType
+
+	// FailureTypeConfigurationError is a FailureType enum value
 	FailureTypeConfigurationError = "ConfigurationError"
-	// @enum FailureType
+
+	// FailureTypePermissionError is a FailureType enum value
 	FailureTypePermissionError = "PermissionError"
-	// @enum FailureType
+
+	// FailureTypeRevisionOutOfSync is a FailureType enum value
 	FailureTypeRevisionOutOfSync = "RevisionOutOfSync"
-	// @enum FailureType
+
+	// FailureTypeRevisionUnavailable is a FailureType enum value
 	FailureTypeRevisionUnavailable = "RevisionUnavailable"
-	// @enum FailureType
+
+	// FailureTypeSystemUnavailable is a FailureType enum value
 	FailureTypeSystemUnavailable = "SystemUnavailable"
 )
 
 const (
-	// @enum JobStatus
+	// JobStatusCreated is a JobStatus enum value
 	JobStatusCreated = "Created"
-	// @enum JobStatus
+
+	// JobStatusQueued is a JobStatus enum value
 	JobStatusQueued = "Queued"
-	// @enum JobStatus
+
+	// JobStatusDispatched is a JobStatus enum value
 	JobStatusDispatched = "Dispatched"
-	// @enum JobStatus
+
+	// JobStatusInProgress is a JobStatus enum value
 	JobStatusInProgress = "InProgress"
-	// @enum JobStatus
+
+	// JobStatusTimedOut is a JobStatus enum value
 	JobStatusTimedOut = "TimedOut"
-	// @enum JobStatus
+
+	// JobStatusSucceeded is a JobStatus enum value
 	JobStatusSucceeded = "Succeeded"
-	// @enum JobStatus
+
+	// JobStatusFailed is a JobStatus enum value
 	JobStatusFailed = "Failed"
 )
 
 const (
-	// @enum StageExecutionStatus
+	// PipelineExecutionStatusInProgress is a PipelineExecutionStatus enum value
+	PipelineExecutionStatusInProgress = "InProgress"
+
+	// PipelineExecutionStatusSucceeded is a PipelineExecutionStatus enum value
+	PipelineExecutionStatusSucceeded = "Succeeded"
+
+	// PipelineExecutionStatusSuperseded is a PipelineExecutionStatus enum value
+	PipelineExecutionStatusSuperseded = "Superseded"
+
+	// PipelineExecutionStatusFailed is a PipelineExecutionStatus enum value
+	PipelineExecutionStatusFailed = "Failed"
+)
+
+const (
+	// StageExecutionStatusInProgress is a StageExecutionStatus enum value
 	StageExecutionStatusInProgress = "InProgress"
-	// @enum StageExecutionStatus
+
+	// StageExecutionStatusFailed is a StageExecutionStatus enum value
 	StageExecutionStatusFailed = "Failed"
-	// @enum StageExecutionStatus
+
+	// StageExecutionStatusSucceeded is a StageExecutionStatus enum value
 	StageExecutionStatusSucceeded = "Succeeded"
 )
 
 const (
-	// @enum StageRetryMode
+	// StageRetryModeFailedActions is a StageRetryMode enum value
 	StageRetryModeFailedActions = "FAILED_ACTIONS"
 )
 
 const (
-	// @enum StageTransitionType
+	// StageTransitionTypeInbound is a StageTransitionType enum value
 	StageTransitionTypeInbound = "Inbound"
-	// @enum StageTransitionType
+
+	// StageTransitionTypeOutbound is a StageTransitionType enum value
 	StageTransitionTypeOutbound = "Outbound"
 )

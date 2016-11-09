@@ -147,9 +147,8 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 
 	// Prompt to upgrade to kubenet
 	if channelClusterSpec.Networking != nil {
-		clusterNetworking := cluster.Spec.Networking
-		if clusterNetworking == nil {
-			clusterNetworking = &api.NetworkingSpec{}
+		if cluster.Spec.Networking == nil {
+			cluster.Spec.Networking = &api.NetworkingSpec{}
 		}
 		// TODO: make this less hard coded
 		if channelClusterSpec.Networking.Kubenet != nil && channelClusterSpec.Networking.Classic != nil {

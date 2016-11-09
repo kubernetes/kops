@@ -5,6 +5,7 @@ vpc/{{ ClusterName }}:
   enableDnsSupport: true
   enableDnsHostnames: true
 
+
 {{ if not SharedVPC }}
 # TODO: would be good to create these as shared, to verify them
 dhcpOptions/{{ ClusterName }}:
@@ -24,7 +25,6 @@ internetGateway/{{ ClusterName }}:
   shared: {{ SharedVPC }}
   vpc: vpc/{{ ClusterName }}
 
-# Name must match name in convert_kubeup_cluster.go
 routeTable/{{ ClusterName }}:
   vpc: vpc/{{ ClusterName }}
 
@@ -35,7 +35,6 @@ route/0.0.0.0/0:
   vpc: vpc/{{ ClusterName }}
 
 {{ range $zone := .Zones }}
-
 subnet/{{ $zone.Name }}.{{ ClusterName }}:
   vpc: vpc/{{ ClusterName }}
   availabilityZone: {{ $zone.Name }}
@@ -47,6 +46,5 @@ subnet/{{ $zone.Name }}.{{ ClusterName }}:
 routeTableAssociation/{{ $zone.Name }}.{{ ClusterName }}:
   routeTable: routeTable/{{ ClusterName }}
   subnet: subnet/{{ $zone.Name }}.{{ ClusterName }}
-{{ end}}
-
+{{ end }}
 {{ end }}

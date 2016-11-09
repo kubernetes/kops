@@ -196,9 +196,9 @@ and then push nodeup using:
 
 ```
 export S3_BUCKET_NAME=<yourbucketname>
-make upload S3_BUCKET=s3://${S3_BUCKET_NAME} VERSION=1.4.0
+make upload S3_BUCKET=s3://${S3_BUCKET_NAME} VERSION=dev
 
-export NODEUP_URL=https://${S3_BUCKET_NAME}.s3.amazonaws.com/kops/1.4.0/linux/amd64/nodeup
+export NODEUP_URL=https://${S3_BUCKET_NAME}.s3.amazonaws.com/kops/dev/linux/amd64/nodeup
 
 kops create cluster <clustername> --zones us-east-1b
 ...

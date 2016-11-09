@@ -33,6 +33,11 @@ func buildMinimalCluster() *api.Cluster {
 		{Name: "us-mock-1b", CIDR: "172.20.2.0/24"},
 		{Name: "us-mock-1c", CIDR: "172.20.3.0/24"},
 	}
+	// Default to public topology
+	c.Spec.Topology = &api.TopologySpec{
+		Masters: api.TopologyPublic,
+		Nodes: api.TopologyPublic,
+	}
 	c.Spec.NetworkCIDR = "172.20.0.0/16"
 	c.Spec.NonMasqueradeCIDR = "100.64.0.0/10"
 	c.Spec.CloudProvider = "aws"
@@ -281,6 +286,27 @@ func TestPopulateCluster_CloudProvider_Required(t *testing.T) {
 	c.Spec.CloudProvider = ""
 
 	expectErrorFromPopulateCluster(t, c, "CloudProvider")
+}
+
+func TestPopulateCluster_TopologyInvalidNil_Required(t *testing.T) {
+	c := buildMinimalCluster()
+	c.Spec.Topology.Masters = ""
+	c.Spec.Topology.Nodes = ""
+	expectErrorFromPopulateCluster(t, c, "Topology")
+}
+
+func TestPopulateCluster_TopologyInvalidValue_Required(t *testing.T) {
+	c := buildMinimalCluster()
+	c.Spec.Topology.Masters = "123"
+	c.Spec.Topology.Nodes = "abc"
+	expectErrorFromPopulateCluster(t, c, "Topology")
+}
+
+func TestPopulateCluster_TopologyInvalidMatchingValues_Required(t *testing.T) {
+	c := buildMinimalCluster()
+	c.Spec.Topology.Masters = api.TopologyPublic
+	c.Spec.Topology.Nodes = api.TopologyPrivate
+	expectErrorFromPopulateCluster(t, c, "Topology")
 }
 
 func expectErrorFromPopulateCluster(t *testing.T, c *api.Cluster, message string) {

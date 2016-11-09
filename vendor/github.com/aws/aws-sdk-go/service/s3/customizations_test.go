@@ -4,6 +4,9 @@ import (
 	"crypto/md5"
 	"encoding/base64"
 	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -102,4 +105,54 @@ func TestMD5InPutBucketLifecycleConfiguration(t *testing.T) {
 		},
 	})
 	assertMD5(t, req)
+}
+
+const (
+	metaKeyPrefix = `X-Amz-Meta-`
+	utf8KeySuffix = `My-Info`
+	utf8Value     = "hello-世界\u0444"
+)
+
+func TestPutObjectMetadataWithUnicode(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, utf8Value, r.Header.Get(metaKeyPrefix+utf8KeySuffix))
+	}))
+	svc := s3.New(unit.Session, &aws.Config{
+		Endpoint:   aws.String(server.URL),
+		DisableSSL: aws.Bool(true),
+	})
+
+	_, err := svc.PutObject(&s3.PutObjectInput{
+		Bucket: aws.String("my_bucket"),
+		Key:    aws.String("my_key"),
+		Body:   strings.NewReader(""),
+		Metadata: func() map[string]*string {
+			v := map[string]*string{}
+			v[utf8KeySuffix] = aws.String(utf8Value)
+			return v
+		}(),
+	})
+
+	assert.NoError(t, err)
+}
+
+func TestGetObjectMetadataWithUnicode(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set(metaKeyPrefix+utf8KeySuffix, utf8Value)
+	}))
+	svc := s3.New(unit.Session, &aws.Config{
+		Endpoint:   aws.String(server.URL),
+		DisableSSL: aws.Bool(true),
+	})
+
+	resp, err := svc.GetObject(&s3.GetObjectInput{
+		Bucket: aws.String("my_bucket"),
+		Key:    aws.String("my_key"),
+	})
+
+	assert.NoError(t, err)
+	resp.Body.Close()
+
+	assert.Equal(t, utf8Value, *resp.Metadata[utf8KeySuffix])
+
 }

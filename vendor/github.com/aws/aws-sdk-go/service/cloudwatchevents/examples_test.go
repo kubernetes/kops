@@ -16,7 +16,13 @@ var _ time.Duration
 var _ bytes.Buffer
 
 func ExampleCloudWatchEvents_DeleteRule() {
-	svc := cloudwatchevents.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := cloudwatchevents.New(sess)
 
 	params := &cloudwatchevents.DeleteRuleInput{
 		Name: aws.String("RuleName"), // Required
@@ -35,7 +41,13 @@ func ExampleCloudWatchEvents_DeleteRule() {
 }
 
 func ExampleCloudWatchEvents_DescribeRule() {
-	svc := cloudwatchevents.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := cloudwatchevents.New(sess)
 
 	params := &cloudwatchevents.DescribeRuleInput{
 		Name: aws.String("RuleName"), // Required
@@ -54,7 +66,13 @@ func ExampleCloudWatchEvents_DescribeRule() {
 }
 
 func ExampleCloudWatchEvents_DisableRule() {
-	svc := cloudwatchevents.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := cloudwatchevents.New(sess)
 
 	params := &cloudwatchevents.DisableRuleInput{
 		Name: aws.String("RuleName"), // Required
@@ -73,7 +91,13 @@ func ExampleCloudWatchEvents_DisableRule() {
 }
 
 func ExampleCloudWatchEvents_EnableRule() {
-	svc := cloudwatchevents.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := cloudwatchevents.New(sess)
 
 	params := &cloudwatchevents.EnableRuleInput{
 		Name: aws.String("RuleName"), // Required
@@ -92,7 +116,13 @@ func ExampleCloudWatchEvents_EnableRule() {
 }
 
 func ExampleCloudWatchEvents_ListRuleNamesByTarget() {
-	svc := cloudwatchevents.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := cloudwatchevents.New(sess)
 
 	params := &cloudwatchevents.ListRuleNamesByTargetInput{
 		TargetArn: aws.String("TargetArn"), // Required
@@ -113,7 +143,13 @@ func ExampleCloudWatchEvents_ListRuleNamesByTarget() {
 }
 
 func ExampleCloudWatchEvents_ListRules() {
-	svc := cloudwatchevents.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := cloudwatchevents.New(sess)
 
 	params := &cloudwatchevents.ListRulesInput{
 		Limit:      aws.Int64(1),
@@ -134,7 +170,13 @@ func ExampleCloudWatchEvents_ListRules() {
 }
 
 func ExampleCloudWatchEvents_ListTargetsByRule() {
-	svc := cloudwatchevents.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := cloudwatchevents.New(sess)
 
 	params := &cloudwatchevents.ListTargetsByRuleInput{
 		Rule:      aws.String("RuleName"), // Required
@@ -155,7 +197,13 @@ func ExampleCloudWatchEvents_ListTargetsByRule() {
 }
 
 func ExampleCloudWatchEvents_PutEvents() {
-	svc := cloudwatchevents.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := cloudwatchevents.New(sess)
 
 	params := &cloudwatchevents.PutEventsInput{
 		Entries: []*cloudwatchevents.PutEventsRequestEntry{ // Required
@@ -186,7 +234,13 @@ func ExampleCloudWatchEvents_PutEvents() {
 }
 
 func ExampleCloudWatchEvents_PutRule() {
-	svc := cloudwatchevents.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := cloudwatchevents.New(sess)
 
 	params := &cloudwatchevents.PutRuleInput{
 		Name:               aws.String("RuleName"), // Required
@@ -210,7 +264,13 @@ func ExampleCloudWatchEvents_PutRule() {
 }
 
 func ExampleCloudWatchEvents_PutTargets() {
-	svc := cloudwatchevents.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := cloudwatchevents.New(sess)
 
 	params := &cloudwatchevents.PutTargetsInput{
 		Rule: aws.String("RuleName"), // Required
@@ -238,7 +298,13 @@ func ExampleCloudWatchEvents_PutTargets() {
 }
 
 func ExampleCloudWatchEvents_RemoveTargets() {
-	svc := cloudwatchevents.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := cloudwatchevents.New(sess)
 
 	params := &cloudwatchevents.RemoveTargetsInput{
 		Ids: []*string{ // Required
@@ -261,7 +327,13 @@ func ExampleCloudWatchEvents_RemoveTargets() {
 }
 
 func ExampleCloudWatchEvents_TestEventPattern() {
-	svc := cloudwatchevents.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := cloudwatchevents.New(sess)
 
 	params := &cloudwatchevents.TestEventPatternInput{
 		Event:        aws.String("String"),       // Required

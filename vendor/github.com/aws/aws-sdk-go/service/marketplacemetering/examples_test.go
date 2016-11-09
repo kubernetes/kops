@@ -16,7 +16,13 @@ var _ time.Duration
 var _ bytes.Buffer
 
 func ExampleMarketplaceMetering_MeterUsage() {
-	svc := marketplacemetering.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := marketplacemetering.New(sess)
 
 	params := &marketplacemetering.MeterUsageInput{
 		DryRun:         aws.Bool(true),               // Required

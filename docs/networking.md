@@ -32,6 +32,7 @@ support Kubernetes CNI networking, listed in alphabetical order:
 - [Calico](http://docs.projectcalico.org/v1.5/getting-started/kubernetes/installation/hosted/)
 - [Canal](https://github.com/tigera/canal/tree/master/k8s-install/kubeadm)
 - [Flannel](https://github.com/coreos/flannel/blob/master/Documentation/kube-flannel.yml)
+- [Romana](https://github.com/romana/romana/tree/master/containerize#using-kops)
 - [Weave Net](https://github.com/weaveworks/weave-kube)
 
 This is not an all comprehensive list. At the time of writing this documentation, weave has

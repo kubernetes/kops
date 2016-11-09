@@ -79,7 +79,9 @@ type ApplyClusterCmd struct {
 	DryRun bool
 }
 
+
 func (c *ApplyClusterCmd) Run() error {
+
 	if c.InstanceGroups == nil {
 		list, err := c.Clientset.InstanceGroups(c.Cluster.Name).List(k8sapi.ListOptions{})
 		if err != nil {
@@ -293,6 +295,7 @@ func (c *ApplyClusterCmd) Run() error {
 				"securityGroupRule":     &awstasks.SecurityGroupRule{},
 				"subnet":                &awstasks.Subnet{},
 				"vpc":                   &awstasks.VPC{},
+				"ngw":  		 &awstasks.NatGateway{},
 				"vpcDHDCPOptionsAssociation": &awstasks.VPCDHCPOptionsAssociation{},
 
 				// ELB
@@ -553,8 +556,7 @@ func (c *ApplyClusterCmd) Run() error {
 	if err != nil {
 		return fmt.Errorf("error running tasks: %v", err)
 	}
-
-	err = target.Finish(taskMap)
+	err = target.Finish(taskMap) //This will finish the apply, and print the changes
 	if err != nil {
 		return fmt.Errorf("error closing target: %v", err)
 	}
