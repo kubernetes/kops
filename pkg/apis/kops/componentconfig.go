@@ -25,7 +25,7 @@ import (
 
 type KubeletConfig struct {
 	unversioned.TypeMeta `json:",inline"`
-	ObjectMeta    `json:"metadata,omitempty"`
+	ObjectMeta           `json:"metadata,omitempty"`
 
 	Spec ClusterSpec `json:"spec,omitempty"`
 }
@@ -389,6 +389,15 @@ type KubeAPIServerConfig struct {
 	AllowPrivileged       *bool             `json:"allowPrivileged,omitempty" flag:"allow-privileged"`
 	APIServerCount        *int              `json:"apiServerCount,omitempty" flag:"apiserver-count"`
 	RuntimeConfig         map[string]string `json:"runtimeConfig,omitempty" flag:"runtime-config"`
+
+	OIDCIssuerURL     string  `json:"oidcIssuerURL,omitempty" flag:"oidc-issuer-url"`
+	OIDCUsernameClaim string  `json:"oidcUsernameClaim,omitempty" flag:"oidc-username-claim"`
+	OIDCClientID      string  `json:"oidcClientID,omitempty" flag:"oidc-client-id"`
+	OIDCCAFile        *string `json:"odicCA,omitempty" flag:"oidc-ca-file"`
+	OIDCGroupsClaim   *string `json:"oidcGroupsClaim,omitempty" flag:"oidc-groups-claim"`
+
+	AuthorizationMode          *string `json:"authorizationMode,omitempty" flag:"authorization-mode"`
+	AuthorizationRBACSuperUser *string `json:"authorizationRbacSuperUser,omitempty" flag:"authorization-rbac-super-user"`
 }
 
 type KubeControllerManagerConfig struct {
