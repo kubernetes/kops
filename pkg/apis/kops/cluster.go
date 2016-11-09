@@ -29,7 +29,7 @@ import (
 
 type Cluster struct {
 	unversioned.TypeMeta `json:",inline"`
-	ObjectMeta    `json:"metadata,omitempty"`
+	ObjectMeta           `json:"metadata,omitempty"`
 
 	Spec ClusterSpec `json:"spec,omitempty"`
 }
@@ -76,6 +76,11 @@ type ClusterSpec struct {
 
 	// NetworkID is an identifier of a network, if we want to reuse/share an existing network (e.g. an AWS VPC)
 	NetworkID string `json:"networkID,omitempty"`
+
+	// Topology defines the type of network topology to use on the cluster - default public
+	// This is heavily weighted towards AWS for the time being, but should also be agnostic enough
+	// to port out to GCE later if needed
+	Topology *TopologySpec `json:"topology,omitempty"`
 
 	// SecretStore is the VFS path to where secrets are stored
 	SecretStore string `json:"secretStore,omitempty"`
@@ -275,7 +280,14 @@ type EtcdMemberSpec struct {
 
 type ClusterZoneSpec struct {
 	Name string `json:"name,omitempty"`
-	CIDR string `json:"cidr,omitempty"`
+
+	// For Private network topologies we need to have 2
+	// CIDR blocks.
+	// 1 - Utility (Public) Subnets
+	// 2 - Operating (Private) Subnets
+
+	PrivateCIDR string `json:"privateCIDR,omitempty"`
+	CIDR        string `json:"cidr,omitempty"`
 
 	// ProviderID is the cloud provider id for the objects associated with the zone (the subnet on AWS)
 	ProviderID string `json:"id,omitempty"`
@@ -341,9 +353,9 @@ func (c *Cluster) FillDefaults() error {
 		// OK
 	} else if c.Spec.Networking.Kubenet != nil {
 		// OK
-	} else if c.Spec.Networking.External != nil {
-		// OK
 	} else if c.Spec.Networking.CNI != nil {
+		// OK
+	} else if c.Spec.Networking.External != nil {
 		// OK
 	} else {
 		// No networking model selected; choose Kubenet
@@ -414,20 +426,26 @@ func FindLatestKubernetesVersion() (string, error) {
 
 func (z *ClusterZoneSpec) performAssignments(c *Cluster) error {
 	if z.CIDR == "" {
-		cidr, err := z.assignCIDR(c)
+		err := z.assignCIDR(c)
 		if err != nil {
 			return err
 		}
-		glog.Infof("Assigned CIDR %s to zone %s", cidr, z.Name)
-		z.CIDR = cidr
 	}
-
 	return nil
 }
 
-func (z *ClusterZoneSpec) assignCIDR(c *Cluster) (string, error) {
+// Will generate a CIDR block based on the last character in
+// the cluster.Spec.Zones structure.
+//
+func (z *ClusterZoneSpec) assignCIDR(c *Cluster) error {
 	// TODO: We probably could query for the existing subnets & allocate appropriately
 	// for now we'll require users to set CIDRs themselves
+
+	// Used in calculating private subnet blocks (if needed only)
+	needsPrivateBlock := false
+	if c.Spec.Topology.Masters == TopologyPrivate || c.Spec.Topology.Nodes == TopologyPrivate {
+		needsPrivateBlock = true
+	}
 
 	lastCharMap := make(map[byte]bool)
 	for _, nodeZone := range c.Spec.Zones {
@@ -452,13 +470,13 @@ func (z *ClusterZoneSpec) assignCIDR(c *Cluster) (string, error) {
 			}
 		}
 		if index == -1 {
-			return "", fmt.Errorf("zone not configured: %q", z.Name)
+			return fmt.Errorf("zone not configured: %q", z.Name)
 		}
 	}
 
 	_, cidr, err := net.ParseCIDR(c.Spec.NetworkCIDR)
 	if err != nil {
-		return "", fmt.Errorf("Invalid NetworkCIDR: %q", c.Spec.NetworkCIDR)
+		return fmt.Errorf("Invalid NetworkCIDR: %q", c.Spec.NetworkCIDR)
 	}
 	networkLength, _ := cidr.Mask.Size()
 
@@ -475,14 +493,49 @@ func (z *ClusterZoneSpec) assignCIDR(c *Cluster) (string, error) {
 		subnetIP := make(net.IP, len(ip4))
 		binary.BigEndian.PutUint32(subnetIP, n)
 		subnetCIDR := subnetIP.String() + "/" + strconv.Itoa(networkLength)
+		z.CIDR = subnetCIDR
 		glog.V(2).Infof("Computed CIDR for subnet in zone %q as %q", z.Name, subnetCIDR)
-		return subnetCIDR, nil
+		glog.Infof("Assigned CIDR %s to zone %s", subnetCIDR, z.Name)
+
+		if needsPrivateBlock {
+			m := binary.BigEndian.Uint32(ip4)
+			// All Private CIDR blocks are at the end of our range
+			m += uint32(index+len(c.Spec.Zones)) << uint(32-networkLength)
+			privSubnetIp := make(net.IP, len(ip4))
+			binary.BigEndian.PutUint32(privSubnetIp, m)
+			privCIDR := privSubnetIp.String() + "/" + strconv.Itoa(networkLength)
+			z.PrivateCIDR = privCIDR
+			glog.V(2).Infof("Computed Private CIDR for subnet in zone %q as %q", z.Name, privCIDR)
+			glog.Infof("Assigned Private CIDR %s to zone %s", privCIDR, z.Name)
+		}
+
+		return nil
 	}
 
-	return "", fmt.Errorf("Unexpected IP address type for NetworkCIDR: %s", c.Spec.NetworkCIDR)
+	return fmt.Errorf("Unexpected IP address type for NetworkCIDR: %s", c.Spec.NetworkCIDR)
 }
 
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
 func (c *Cluster) SharedVPC() bool {
 	return c.Spec.NetworkID != ""
+}
+
+// --------------------------------------------------------------------------------------------
+// Network Topology functions for template parsing
+//
+// Each of these functions can be used in the model templates
+// The go template package currently only supports boolean
+// operations, so the logic is mapped here as *Cluster functions.
+//
+// A function will need to be defined for all new topologies, if we plan to use them in the
+// model templates.
+// --------------------------------------------------------------------------------------------
+func (c *Cluster) IsTopologyPrivate() bool {
+	return (c.Spec.Topology.Masters == TopologyPrivate && c.Spec.Topology.Nodes == TopologyPrivate)
+}
+func (c *Cluster) IsTopologyPublic() bool {
+	return (c.Spec.Topology.Masters == TopologyPublic && c.Spec.Topology.Nodes == TopologyPublic)
+}
+func (c *Cluster) IsTopologyPrivateMasters() bool {
+	return (c.Spec.Topology.Masters == TopologyPrivate && c.Spec.Topology.Nodes == TopologyPublic)
 }

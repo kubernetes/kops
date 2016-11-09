@@ -54,6 +54,10 @@ func buildCluster(clusterArgs interface{}) *api.Cluster {
 			KubernetesVersion: cParams.KubernetesVersion,
 			Networking:        networking,
 			UpdatePolicy:      fi.String(cParams.UpdatePolicy),
+			Topology:          &api.TopologySpec{
+				Masters: api.TopologyPublic,
+				Nodes:   api.TopologyPublic,
+			},
 		},
 	}
 }

@@ -17,26 +17,31 @@ limitations under the License.
 package awstasks
 
 import (
-	"fmt"
-
+	//"fmt"
+	//
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"fmt"
 )
 
 //go:generate fitask -type=ElasticIP
+
+// Elastic IP
+// Representation the EIP AWS task
 type ElasticIP struct {
-	Name *string
+	Name                  *string
+	ID                    *string
+	PublicIP              *string
 
-	ID       *string
-	PublicIP *string
 
-	// Because ElasticIPs don't supporting tagging (sadly), we instead tag on
-	// a different resource
-	TagUsingKey   *string
-	TagOnResource fi.Task
+
+	// Allow support for associated subnets
+	// If you need another resource to tag on (ebs volume)
+	// you must add it
+	Subnet   *Subnet
 }
 
 var _ fi.HasAddress = &ElasticIP{}
@@ -52,41 +57,23 @@ func (e *ElasticIP) FindAddress(context *fi.Context) (*string, error) {
 	return actual.PublicIP, nil
 }
 
+//
+// Find (public wrapper for find()
+//
 func (e *ElasticIP) Find(context *fi.Context) (*ElasticIP, error) {
 	return e.find(context.Cloud.(awsup.AWSCloud))
 }
 
-func (e *ElasticIP) findTagOnResourceID(cloud awsup.AWSCloud) (*string, error) {
-	if e.TagOnResource == nil {
-		return nil, nil
-	}
-
-	var tagOnResource TaggableResource
-	var ok bool
-	if tagOnResource, ok = e.TagOnResource.(TaggableResource); !ok {
-		return nil, fmt.Errorf("TagOnResource must implement TaggableResource (type is %T)", e.TagOnResource)
-	}
-
-	id, err := tagOnResource.FindResourceID(cloud)
-	if err != nil {
-		return nil, fmt.Errorf("error trying to find id of TagOnResource: %v", err)
-	}
-	return id, err
-}
-
+// Will attempt to look up the elastic IP from AWS
 func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
 	publicIP := e.PublicIP
 	allocationID := e.ID
 
-	tagOnResourceID, err := e.findTagOnResourceID(cloud)
-	if err != nil {
-		return nil, err
-	}
 	// Find via tag on foreign resource
-	if allocationID == nil && publicIP == nil && e.TagUsingKey != nil && tagOnResourceID != nil {
+	if allocationID == nil && publicIP == nil && e.Subnet.ID != nil {
 		var filters []*ec2.Filter
-		filters = append(filters, awsup.NewEC2Filter("key", *e.TagUsingKey))
-		filters = append(filters, awsup.NewEC2Filter("resource-id", *tagOnResourceID))
+		filters = append(filters, awsup.NewEC2Filter("key", "AssociatedElasticIp"))
+		filters = append(filters, awsup.NewEC2Filter("resource-id", *e.Subnet.ID))
 
 		request := &ec2.DescribeTagsInput{
 			Filters: filters,
@@ -135,38 +122,55 @@ func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
 			PublicIP: a.PublicIp,
 		}
 
-		// These two are weird properties; we copy them so they don't come up as changes
-		actual.TagUsingKey = e.TagUsingKey
-		actual.TagOnResource = e.TagOnResource
+		actual.Subnet = e.Subnet
 
 		e.ID = actual.ID
 
 		return actual, nil
 	}
-
 	return nil, nil
 }
 
+// The Run() function is called to execute this task.
+// This is the main entry point of the task, and will actually
+// connect our internal resource representation to an actual
+// resource in AWS
 func (e *ElasticIP) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
+// Validation for the resource. EIPs are simple, so virtually no
+// validation
 func (s *ElasticIP) CheckChanges(a, e, changes *ElasticIP) error {
+	// This is a new EIP
+	if a == nil {
+		// No logic for EIPs - they are just created
+	}
+
+	// This is an existing EIP
+	// We should never be changing this
+	if a != nil {
+		if changes.PublicIP != nil {
+			return fi.CannotChangeField("PublicIP")
+		}
+		if changes.Subnet != nil {
+			return fi.CannotChangeField("Subnet")
+		}
+		if changes.ID != nil {
+			return fi.CannotChangeField("ID")
+		}
+	}
 	return nil
 }
 
+// Here is where we actually apply changes to AWS
 func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) error {
-	var publicIP *string
 
-	tagOnResourceID, err := e.findTagOnResourceID(t.Cloud)
-	if err != nil {
-		return err
-	}
+	var publicIp *string
+	var eipId *string
 
+	// If this is a new ElasticIP
 	if a == nil {
-		if tagOnResourceID == nil || e.TagUsingKey == nil {
-			return fmt.Errorf("cannot create ElasticIP without TagOnResource being set (would leak)")
-		}
 		glog.V(2).Infof("Creating ElasticIP for VPC")
 
 		request := &ec2.AllocateAddressInput{}
@@ -179,19 +183,29 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 
 		e.ID = response.AllocationId
 		e.PublicIP = response.PublicIp
-		publicIP = response.PublicIp
-	} else {
-		publicIP = a.PublicIP
+		publicIp = e.PublicIP
+		eipId = response.AllocationId
+	}else {
+		publicIp = a.PublicIP
+		eipId = a.ID
 	}
 
-	if publicIP != nil && e.TagUsingKey != nil && tagOnResourceID != nil {
-		tags := map[string]string{
-			*e.TagUsingKey: *publicIP,
-		}
-		err := t.AddAWSTags(*tagOnResourceID, tags)
-		if err != nil {
-			return fmt.Errorf("error adding tags to resource for ElasticIP: %v", err)
-		}
+
+	// Tag the associated subnet
+	if e.Subnet == nil {
+		return  fmt.Errorf("Subnet not set")
+	} else if e.Subnet.ID == nil {
+		return  fmt.Errorf("Subnet ID not set")
+	}
+	tags := make(map[string]string)
+	tags["AssociatedElasticIp"] = *publicIp
+	tags["AssociatedElasticIpAllocationId"] = *eipId // Leaving this in for reference, even though we don't use it
+	err := t.AddAWSTags(*e.Subnet.ID, tags)
+	if err != nil {
+		return fmt.Errorf("Unable to tag subnet %v", err)
 	}
 	return nil
 }
+
+
+// TODO Kris - We need to support EIP for Terraform
