@@ -186,7 +186,7 @@ func (tf *TemplateFunctions) WithBastion()  bool  {
 // This function is replacing existing yaml
 func (tf *TemplateFunctions) GetBastionZone() (string, error) {
 	var name string
-	if len(tf.cluster.Spec.Zones) <= 1 {
+	if len(tf.cluster.Spec.Zones) < 1 {
 		return "", fmt.Errorf("Unable to detect zone name for bastion")
 	} else {
 		// If we have a list, always use the first one
