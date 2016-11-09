@@ -8,7 +8,12 @@ launchConfiguration/{{ $m.Name }}.masters.{{ ClusterName }}:
   iamInstanceProfile: iamInstanceProfile/masters.{{ ClusterName }}
   imageId: {{ $m.Spec.Image }}
   instanceType: {{ $m.Spec.MachineType }}
+  {{ if IsTopologyPublic }}
   associatePublicIP: {{ WithDefaultBool $m.Spec.AssociatePublicIP true }}
+  {{ end }}
+  {{ if IsTopologyPrivate }}
+  associatePublicIP: false
+  {{ end }}
   userData: resources/nodeup.sh {{ $m.Name }}
   rootVolumeSize: {{ or $m.Spec.RootVolumeSize "20" }}
   rootVolumeType: {{ or $m.Spec.RootVolumeType "gp2" }}
@@ -21,7 +26,13 @@ autoscalingGroup/{{ $m.Name }}.masters.{{ ClusterName }}:
   maxSize: {{ $m.Spec.MaxSize }}
   subnets:
   {{ range $z := $m.Spec.Zones }}
+  {{ if IsTopologyPublic }}
     - subnet/{{ $z }}.{{ ClusterName }}
+  {{ end }}
+  {{ if IsTopologyPrivate }}
+    - subnet/private-{{ $z }}.{{ ClusterName }}
+  {{ end }}
+
   {{ end }}
   launchConfiguration: launchConfiguration/{{ $m.Name }}.masters.{{ ClusterName }}
   tags:

@@ -2,7 +2,9 @@ apiVersion: v1
 kind: Pod
 metadata:
   annotations:
+{{ if IsTopologyPublic }}
     dns.alpha.kubernetes.io/external: {{ .MasterPublicName }}
+{{ end }}
     dns.alpha.kubernetes.io/internal: {{ .MasterInternalName }}
   name: kube-apiserver
   namespace: kube-system

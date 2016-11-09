@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+
 package cloudup
 
 import (
@@ -73,6 +74,17 @@ func PopulateClusterSpec(cluster *api.Cluster) (*api.Cluster, error) {
 	return c.fullCluster, nil
 }
 
+
+//
+// Here be dragons
+//
+// This function has some `interesting` things going on.
+// In an effort to let the cluster.Spec fall through I am
+// hard coding topology in two places.. It seems and feels
+// very wrong.. but at least now my new cluster.Spec.Topology
+// struct is falling through..
+// @kris-nova
+//
 func (c *populateClusterSpec) run() error {
 	err := c.InputCluster.Validate(false)
 	if err != nil {
@@ -81,6 +93,7 @@ func (c *populateClusterSpec) run() error {
 
 	// Copy cluster & instance groups, so we can modify them freely
 	cluster := &api.Cluster{}
+
 	utils.JsonMergeStruct(cluster, c.InputCluster)
 
 	err = c.assignSubnets(cluster)
@@ -103,6 +116,7 @@ func (c *populateClusterSpec) run() error {
 			}
 			clusterZones[z.Name] = z
 		}
+
 
 		// Check etcd configuration
 		{
@@ -149,6 +163,7 @@ func (c *populateClusterSpec) run() error {
 			}
 		}
 	}
+
 
 	keyStore, err := registry.KeyStore(cluster)
 	if err != nil {
@@ -198,11 +213,17 @@ func (c *populateClusterSpec) run() error {
 		glog.V(2).Infof("Normalizing kubernetes version: %q -> %q", cluster.Spec.KubernetesVersion, versionWithoutV)
 		cluster.Spec.KubernetesVersion = versionWithoutV
 	}
-
 	cloud, err := BuildCloud(cluster)
 	if err != nil {
 		return err
 	}
+
+	// Hard coding topology here
+	//
+	// We want topology to pass through
+	// Otherwise we were losing the pointer
+	cluster.Spec.Topology = c.InputCluster.Spec.Topology
+
 
 	if cluster.Spec.DNSZone == "" {
 		dns, err := cloud.DNS()
@@ -216,8 +237,8 @@ func (c *populateClusterSpec) run() error {
 		glog.Infof("Defaulting DNS zone to: %s", dnsZone)
 		cluster.Spec.DNSZone = dnsZone
 	}
-
 	tags, err := buildCloudupTags(cluster)
+
 	if err != nil {
 		return err
 	}
@@ -235,10 +256,13 @@ func (c *populateClusterSpec) run() error {
 		OptionsLoader: loader.NewOptionsLoader(templateFunctions),
 		Tags:          tags,
 	}
+
 	completed, err := specBuilder.BuildCompleteSpec(&cluster.Spec, c.ModelStore, c.Models)
 	if err != nil {
 		return fmt.Errorf("error building complete spec: %v", err)
 	}
+
+	completed.Topology = c.InputCluster.Spec.Topology
 
 	fullCluster := &api.Cluster{}
 	*fullCluster = *cluster
@@ -251,7 +275,6 @@ func (c *populateClusterSpec) run() error {
 	}
 
 	c.fullCluster = fullCluster
-
 	return nil
 }
 
