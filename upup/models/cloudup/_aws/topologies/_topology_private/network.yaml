@@ -1,0 +1,258 @@
+# ---------------------------------------------------------------
+#
+# Private Network Topology in AWS
+#
+# Inspired by https://github.com/kubernetes/kops/issues/428
+#
+# ---------------------------------------------------------------
+
+
+# ---------------------------------------------------------------
+# VPC
+#
+# This is a single VPC that will hold all networking componets for
+# a k8s cluster
+#
+# ---------------------------------------------------------------
+vpc/{{ ClusterName }}:
+  id: {{ .NetworkID }}
+  shared: {{ SharedVPC }}
+  cidr: {{ .NetworkCIDR }}
+  enableDnsSupport: true
+  enableDnsHostnames: true
+
+# ---------------------------------------------------------------
+# DHCP
+#
+# If this is not a shared VPC
+# (There is more than one availability zone for this cluster)
+#
+# Also add support for us-east-1
+# ---------------------------------------------------------------
+{{ if not SharedVPC }}
+dhcpOptions/{{ ClusterName }}:
+  domainNameServers: AmazonProvidedDNS
+{{ if eq Region "us-east-1" }}
+  domainName: ec2.internal
+{{ else }}
+  domainName: {{ Region }}.compute.internal
+{{ end }}
+vpcDHDCPOptionsAssociation/{{ ClusterName }}:
+  vpc: vpc/{{ ClusterName }}
+  dhcpOptions: dhcpOptions/{{ ClusterName }}
+{{ end }}
+
+# ---------------------------------------------------------------
+# Internet Gateway
+#
+# This is the main entry point to the cluster. There will be a
+# route table associated with the gateway.
+# ---------------------------------------------------------------
+internetGateway/{{ ClusterName }}:
+  shared: {{ SharedVPC }}
+  vpc: vpc/{{ ClusterName }}
+
+# ---------------------------------------------------------------
+# Main Route Table
+#
+# The main route table associated with the Internet Gateway
+# ---------------------------------------------------------------
+routeTable/main-{{ ClusterName }}:
+  vpc: vpc/{{ ClusterName }}
+
+# ---------------------------------------------------------------
+# Main Routes
+#
+# Routes for the Main Route Table
+# ---------------------------------------------------------------
+route/wan:
+  routeTable: routeTable/main-{{ ClusterName }}
+  cidr: 0.0.0.0/0
+  internetGateway: internetGateway/{{ ClusterName }}
+  vpc: vpc/{{ ClusterName }}
+
+# ---------------------------------------------------------------
+# Zones (Availability Zones)
+#
+# For every availability zone
+#   - 1 Utility/Public subnet
+#     - 1 NGW for the private subnet to NAT to
+#     - 1 Route Table Association to the Main Route Table
+#   - 1 Private subnet (to hold the instances)
+# ---------------------------------------------------------------
+{{ range $zone := .Zones }}
+
+# ---------------------------------------------------------------
+# Utility Subnet
+#
+# This is the public subnet that will hold the route to the
+# gateway, the NAT gateway
+# ---------------------------------------------------------------
+subnet/utility-{{ $zone.Name }}.{{ ClusterName }}:
+  vpc: vpc/{{ ClusterName }}
+  availabilityZone: {{ $zone.Name }}
+  cidr: {{ $zone.CIDR }}
+  id: {{ $zone.ProviderID }}
+  shared: {{ SharedZone $zone }}
+
+
+{{ if not (SharedZone $zone) }}
+
+# ---------------------------------------------------------------
+# Utility Subnet Route Table Associations
+#
+# Map the Utility subnet to the Main route table
+# ---------------------------------------------------------------
+routeTableAssociation/main-{{ $zone.Name }}.{{ ClusterName }}:
+  routeTable: routeTable/main-{{ ClusterName }}
+  subnet: subnet/utility-{{ $zone.Name }}.{{ ClusterName }}
+
+# ---------------------------------------------------------------
+# Elastic IP
+#
+# Every NGW needs a public (Elastic) IP address, every private
+# subnet needs a NGW, lets create it. We tie it to a subnet
+# so we can track it in AWS
+# ---------------------------------------------------------------
+elasticIP/{{ $zone.Name }}.{{ ClusterName }}:
+  subnet: subnet/utility-{{ $zone.Name }}.{{ ClusterName }}
+
+# ---------------------------------------------------------------
+# NAT Gateway
+#
+# All private subnets will need a NGW
+#
+# The instances in the private subnet can access the Internet by
+# using a network address translation (NAT) gateway that resides
+# in the public subnet.
+# ---------------------------------------------------------------
+ngw/{{ $zone.Name }}.{{ ClusterName }}:
+  elasticIp: elasticIP/{{ $zone.Name }}.{{ ClusterName }}
+  subnet: subnet/utility-{{ $zone.Name }}.{{ ClusterName }}
+
+# ---------------------------------------------------------------
+# Private Subnet
+#
+# This is the private subnet for each AZ
+# ---------------------------------------------------------------
+subnet/private-{{ $zone.Name }}.{{ ClusterName }}:
+  vpc: vpc/{{ ClusterName }}
+  availabilityZone: {{ $zone.Name }}
+  cidr: {{ $zone.PrivateCIDR }}
+  id: {{ $zone.ProviderID }}
+  shared: {{ SharedZone $zone }}
+
+# ---------------------------------------------------------------
+# Private Route Table
+#
+# The private route table that will route to the NAT Gateway
+# ---------------------------------------------------------------
+routeTable/private-{{ $zone.Name }}.{{ ClusterName }}:
+  vpc: vpc/{{ ClusterName }}
+
+# ---------------------------------------------------------------
+# Private Subnet Route Table Associations
+#
+# Map the Private subnet to the Private route table
+# ---------------------------------------------------------------
+routeTableAssociation/private-{{ $zone.Name }}.{{ ClusterName }}:
+  routeTable: routeTable/private-{{ $zone.Name }}.{{ ClusterName }}
+  subnet: subnet/private-{{ $zone.Name }}.{{ ClusterName }}
+
+# ---------------------------------------------------------------
+# Private Routes
+#
+# Routes for the private route table.
+# Will route to the NAT Gateway
+# ---------------------------------------------------------------
+route/private-{{ $zone.Name }}.{{ ClusterName }}:
+  routeTable: routeTable/private-{{ $zone.Name }}.{{ ClusterName }}
+  cidr: 0.0.0.0/0
+  vpc: vpc/{{ ClusterName }}
+  natGateway: ngw/{{ $zone.Name }}.{{ ClusterName }}
+
+
+{{ end }} # SharedVPC
+{{ end }} # For Each Zone
+
+# ---------------------------------------------------------------
+# Load Balancer - API
+#
+# This is the load balancer in front of the Kubernetes API
+# ---------------------------------------------------------------
+loadBalancer/api.{{ ClusterName }}:
+  id: {{ GetELBName32 "api" }}
+  securityGroups:
+    - securityGroup/api-elb.{{ ClusterName }}
+  subnets:
+  {{ range $zone := .Zones }}
+    - subnet/utility-{{ $zone.Name }}.{{ ClusterName }}
+  {{ end }}
+  listeners:
+    443: { instancePort: 443 }
+
+# ---------------------------------------------------------------
+# Kube-Proxy - Healthz - 10249
+#
+# HealthCheck for the kubernetes API via the kube-proxy
+# ---------------------------------------------------------------
+loadBalancerHealthChecks/api.{{ ClusterName }}:
+  loadBalancer: loadBalancer/api.{{ ClusterName }}
+  target: TCP:443
+  healthyThreshold: 2
+  unhealthyThreshold: 2
+  interval: 10
+  timeout: 5
+securityGroupRule/kube-proxy-api-elb:
+  securityGroup: securityGroup/masters.{{ ClusterName }}
+  sourceGroup: securityGroup/api-elb.{{ ClusterName }}
+  protocol: tcp
+  fromPort: 443
+  toPort: 443
+
+
+# ---------------------------------------------------------------
+# Load Balancer - Masters
+#
+# Attach each master ASG to the ELB
+# ---------------------------------------------------------------
+{{ range $m := Masters }}
+loadBalancerAttachment/api-elb-attachment.{{ $m.Name }}.{{ ClusterName }}:
+  loadBalancer: loadBalancer/api.{{ ClusterName }}
+  autoscalingGroup: autoscalingGroup/{{ $m.Name }}.masters.{{ ClusterName }}
+{{ end }}
+
+
+# ---------------------------------------------------------------
+# Security Group - API ELB
+#
+# This is the security group that is external facing. These are
+# the public rules for kubernetes!
+# ---------------------------------------------------------------
+securityGroup/api-elb.{{ ClusterName }}:
+  vpc: vpc/{{ ClusterName }}
+  description: 'Security group for api ELB'
+  removeExtraRules:
+  - port=22
+securityGroupRule/api-elb-egress:
+  securityGroup: securityGroup/api-elb.{{ ClusterName }}
+  egress: true
+  cidr: 0.0.0.0/0
+securityGroupRule/https-api-elb:
+  securityGroup: securityGroup/api-elb.{{ ClusterName }}
+  cidr:  0.0.0.0/0
+  protocol: tcp
+  fromPort: 443
+  toPort: 443
+
+# ---------------------------------------------------------------
+# DNS - Api
+#
+# This will point our DNS to the load balancer, and put the pieces
+# together for kubectl to be work
+# ---------------------------------------------------------------
+dnsZone/{{ .DNSZone }}: {}
+dnsName/{{ .MasterPublicName }}:
+  Zone: dnsZone/{{ .DNSZone }}
+  ResourceType: "A"
+  TargetLoadBalancer: loadBalancer/api.{{ ClusterName }}
