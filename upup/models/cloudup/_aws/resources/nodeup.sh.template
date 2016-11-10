@@ -20,6 +20,9 @@ set -o pipefail
 NODEUP_URL={{ NodeUpSource }}
 NODEUP_HASH={{ NodeUpSourceHash }}
 
+PRE_INSTALL_SCRIPT_URL={{ PreInstallScriptSource }}
+PRE_INSTALL_SCRIPT_HASH={{ PreInstallScriptHash }}
+
 POST_INSTALL_SCRIPT_URL={{ PostInstallScriptSource }}
 POST_INSTALL_SCRIPT_HASH={{ PostInstallScriptHash }}
 
@@ -124,9 +127,16 @@ function run() {
 ####################################################################################
 
 /bin/systemd-machine-id-setup || echo "failed to set up ensure machine-id configured"
+ensure-install-dir
+
+if [[ ! -z ${PRE_INSTALL_SCRIPT_URL} ]]; then
+  echo "== pre-install script starting"
+  download "${PRE_INSTALL_SCRIPT_HASH}" "${PRE_INSTALL_SCRIPT_URL}"
+  run "${filename}"
+  echo "== pre-install script done"
+fi
 
 echo "== nodeup node config starting =="
-ensure-install-dir
 
 cat > kube_env.yaml << __EOF_KUBE_ENV
 {{ RenderNodeUpConfig (GetInstanceGroup (index Args 0)) }}

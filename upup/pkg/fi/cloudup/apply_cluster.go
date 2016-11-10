@@ -55,6 +55,9 @@ type ApplyClusterCmd struct {
 	// NodeUpSource is the location from which we download nodeup
 	NodeUpSource string
 
+	// PreInstallScriptSource is the location from which we downlad a script to be run at the start of cloud-init
+	PreInstallScriptSource string
+
 	// PostInstallScriptSource is the location from which we download a script to be run at the end of cloud-init
 	PostInstallScriptSource string
 
@@ -216,6 +219,16 @@ func (c *ApplyClusterCmd) Run() error {
 			glog.Warningf("Using nodeup location from NODEUP_URL env var: %q", location)
 		}
 		c.NodeUpSource = location
+	}
+
+	if c.PreInstallScriptSource == "" {
+		location := os.Getenv("PRE_INSTALL_SCRIPT_URL")
+		if location == "" {
+			glog.V(2).Infof("No pre-install script provided")
+		} else {
+			glog.Warningf("Using pre-install script from PRE_INSTALL_SCRIPT_URL env var: %q", location)
+		}
+		c.PreInstallScriptSource = location
 	}
 
 	if c.PostInstallScriptSource == "" {
@@ -505,6 +518,13 @@ func (c *ApplyClusterCmd) Run() error {
 		return c.NodeUpSource
 	}
 	l.TemplateFunctions["NodeUpSourceHash"] = func() string {
+		return ""
+	}
+
+	l.TemplateFunctions["PreInstallScriptSource"] = func() string {
+		return c.PreInstallScriptSource
+	}
+	l.TemplateFunctions["PreInstallScriptHash"] = func() string {
 		return ""
 	}
 
