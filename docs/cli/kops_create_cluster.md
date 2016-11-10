@@ -35,6 +35,8 @@ kops create cluster
       --vpc string                  Set to use a shared VPC
       --yes                         Specify --yes to immediately create the cluster
       --zones string                Zones in which to run the cluster
+      --topology string             Specify --topology=[public|private] to enable/disable public/private networking for all master and nodes. Default is 'public'
+
 ```
 
 ### Options inherited from parent commands
@@ -54,4 +56,3 @@ kops create cluster
 
 ### SEE ALSO
 * [kops create](kops_create.md)	 - Create a resource by filename or stdin
-
