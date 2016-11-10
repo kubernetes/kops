@@ -1,14 +1,10 @@
+{{ if WithBastion }}
 # ---------------------------------------------------------------
 #
 # Private Network Topology in AWS
 #
 # Inspired by https://github.com/kubernetes/kops/issues/428
 #
-# ---------------------------------------------------------------
-
-{{ if WithBastion }}
-
-# ---------------------------------------------------------------
 # Security Group - Bastion
 #
 # The security group that the bastion lives in
