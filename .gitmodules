@@ -217,3 +217,6 @@
 [submodule "_vendor/github.com/shurcooL/sanitized_anchor_name"]
 	path = _vendor/github.com/shurcooL/sanitized_anchor_name
 	url = https://github.com/shurcooL/sanitized_anchor_name.git
+[submodule "_vendor/github.com/juju227/static_assetfs"]
+	path = _vendor/github.com/juju227/static_assetfs
+	url = https://github.com/JuJu227/static_assetfs

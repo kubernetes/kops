@@ -17,10 +17,13 @@ limitations under the License.
 package models
 
 import (
-	"path"
 	"errors"
 	"os"
+	"path"
 	"strings"
+
+	"github.com/juju227/static_assetfs/static"
+
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -55,7 +58,7 @@ func (p *AssetPath) CreateFile(data []byte) error {
 }
 
 func (p *AssetPath) ReadFile() ([]byte, error) {
-	data, err := Asset(p.location)
+	data, err := static.Asset(p.location)
 	if err != nil {
 		// Yuk
 		if strings.Contains(err.Error(), "not found") {
@@ -66,7 +69,7 @@ func (p *AssetPath) ReadFile() ([]byte, error) {
 }
 
 func (p *AssetPath) ReadDir() ([]vfs.Path, error) {
-	files, err := AssetDir(p.location)
+	files, err := static.AssetDir(p.location)
 	if err != nil {
 		// Yuk
 		if strings.Contains(err.Error(), "not found") {
@@ -91,7 +94,7 @@ func (p *AssetPath) ReadTree() ([]vfs.Path, error) {
 }
 
 func readTree(base string, dest *[]vfs.Path) error {
-	files, err := AssetDir(base)
+	files, err := static.AssetDir(base)
 	if err != nil {
 		// Yuk
 		if strings.Contains(err.Error(), "not found") {
@@ -107,7 +110,7 @@ func readTree(base string, dest *[]vfs.Path) error {
 		// This is because go-bindata doesn't support FileInfo on directories :-(
 		{
 			err = readTree(p, dest)
-			if err != nil && !os.IsNotExist(err){
+			if err != nil && !os.IsNotExist(err) {
 				return err
 			}
 		}
