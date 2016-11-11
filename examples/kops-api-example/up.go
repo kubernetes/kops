@@ -19,7 +19,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"k8s.io/kops/pkg/apis/kops"
+
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
