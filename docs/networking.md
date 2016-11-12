@@ -51,6 +51,24 @@ kops create cluster \
 
 #### `weave`
 
+Weave Net creates a virtual network that connects containers across multiple
+hosts running anywhere: on any cloud, on your laptop or in your datacenter,
+even across clouds and datacenters.
+
+Weave Net has two transport options that can be used with kops: one based on
+the VXLAN kernel module and one implemented over UDP which is more flexible -
+it can traverse a NAT firewall for instance. Weave Net automatically picks the
+fastest transport available between two nodes.
+
+Weave Net also implements the Kubernetes Network Policy specification
+http://kubernetes.io/docs/user-guide/networkpolicies/ which lets you define
+rules to restrict communication into pods.
+
+For more details see:
+https://www.weave.works/docs/net/latest/introducing-weave/
+
+##### Example Cluster Creation with `kubenet`
+
 > TODO
 
 #### `cni`
