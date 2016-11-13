@@ -32,13 +32,15 @@ func up() error {
 	clientset := vfsclientset.NewVFSClientset(registryBase)
 
 	cluster := &api.Cluster{}
-
 	cluster.Name = clusterName
 	cluster.Spec = api.ClusterSpec{
 		Channel:       "stable",
 		CloudProvider: "aws",
 		ConfigBase:    registryBase.Join(cluster.Name).Path(),
+		Topology:      &api.TopologySpec{},
 	}
+	cluster.Spec.Topology.Masters = api.TopologyPublic
+	cluster.Spec.Topology.Nodes = api.TopologyPublic
 
 	for _, z := range nodeZones {
 		cluster.Spec.Zones = append(cluster.Spec.Zones, &api.ClusterZoneSpec{
