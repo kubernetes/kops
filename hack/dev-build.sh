@@ -23,10 +23,14 @@
 #
 # This script (by design) will handle building a full kops cluster in AWS,
 # with a custom version of the Nodeup binary compiled at runtime.
+# 
+# This script and Makefile uses aws client
+# https://aws.amazon.com/cli/
+# and make sure you `aws configure` 
 #
 # Example usage
 #
-# S3_BUCKET="s3://my-dev-s3-state \
+# STATE_STORE="s3://my-dev-s3-state \
 # CLUSTER_DOMAIN="mydomain.io" \
 # CLUSTER_PREFIX="prefix" \
 # NODEUP_BUCKET="s3-devel-bucket-name-store-nodeup" \
@@ -36,9 +40,7 @@
 
 # This script assumes it's in $KOPS/hack
 
-KOPS_DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-[ -z "$S3_BUCKET" ] && echo "Need to set S3_BUCKET" && exit 1;
+[ -z "$STATE_STORE" ] && echo "Need to set STATE_STORE" && exit 1;
 [ -z "$CLUSTER_DOMAIN" ] && echo "Need to set CLUSTER_DOMAIN" && exit 1;
 [ -z "$CLUSTER_PREFIX" ] && echo "Need to set CLUSTER_PREFIX" && exit 1;
 [ -z "$NODEUP_BUCKET" ] && echo "Need to set NODEUP_BUCKET" && exit 1;
@@ -72,14 +74,14 @@ NODEUP_URL="https://s3-us-west-1.amazonaws.com/${NODEUP_BUCKET}/kops/${GIT_VER}/
 
 VERBOSITY=${VERBOSITY:-2}
 
-make upload S3_BUCKET=s3://${NODEUP_BUCKET}
+make upload STATE_STORE=s3://${NODEUP_BUCKET}
 
 echo ==========
 echo "Deleting cluster ${CLUSTER_NAME}"
 
 kops delete cluster \
   --name $CLUSTER_NAME \
-  --state $S3_BUCKET \
+  --state $STATE_STORE \
   -v $VERBOSITY \
   --yes
 
@@ -88,7 +90,7 @@ echo "Creating cluster ${CLUSTER_NAME}"
 
 NODEUP_URL=${NODEUP_URL} kops create cluster \
   --name $CLUSTER_NAME \
-  --state $S3_BUCKET \
+  --state $STATE_STORE \
   --node-count $NODE_COUNT \
   --zones $NODE_ZONES \
   --master-zones $MASTER_ZONES \
