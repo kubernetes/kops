@@ -30,23 +30,24 @@
 #
 # Example usage
 #
-# STATE_STORE="s3://my-dev-s3-state \
+# KOPS_STATE_STORE="s3://my-dev-s3-state \
 # CLUSTER_NAME="fullcluster.name.mydomain.io" \
 # NODEUP_BUCKET="s3-devel-bucket-name-store-nodeup" \
 # ./dev-build.sh
 #
 ###############################################################################
 
-set -o errexit
-set -o pipefail
-
 KOPS_DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-[ -z "$STATE_STORE" ] && echo "Need to set STATE_STORE" && exit 1;
+#
+# Check that expected vars are set
+#
+[ -z "$KOPS_STATE_STORE" ] && echo "Need to set KOPS_STATE_STORE" && exit 1;
 [ -z "$CLUSTER_NAME" ] && echo "Need to set CLUSTER_NAME" && exit 1;
 [ -z "$NODEUP_BUCKET" ] && echo "Need to set NODEUP_BUCKET" && exit 1;
 
-# CLUSTER CONFIG
+
+# Cluster config
 NODE_COUNT=${NODE_COUNT:-3}
 NODE_ZONES=${NODE_ZONES:-"us-west-2a,us-west-2b,us-west-2c"}
 NODE_SIZE=${NODE_SIZE:-m4.xlarge}
@@ -57,26 +58,26 @@ MASTER_SIZE=${MASTER_SIZE:-m4.large}
 TOPOLOGY=${TOPOLOGY:-private}
 NETWORKING=${NETWORKING:-cni}
 
-# NODEUP
-NODEUP_OS="linux"
-NODEUP_ARCH="amd64"
+VERBOSITY=${VERBOSITY:-2}
 
 cd $KOPS_DIRECTORY/..
 
 GIT_VER=git-$(git describe --always)
 [ -z "$GIT_VER" ] && echo "we do not have GIT_VER something is very wrong" && exit 1;
-NODEUP_URL="https://s3-us-west-1.amazonaws.com/${NODEUP_BUCKET}/kops/${GIT_VER}/${NODEUP_OS}/${NODEUP_ARCH}/nodeup"
 
-VERBOSITY=${VERBOSITY:-2}
+NODEUP_URL="https://s3-us-west-1.amazonaws.com/${NODEUP_BUCKET}/kops/${GIT_VER}/linux/amd64/nodeup"
 
-make upload STATE_STORE=s3://${NODEUP_BUCKET}
+echo ==========
+echo "Starting build"
+
+S3_BUCKET=s3://${NODEUP_BUCKET} make upload
 
 echo ==========
 echo "Deleting cluster ${CLUSTER_NAME}. Elle est finie."
 
 kops delete cluster \
   --name $CLUSTER_NAME \
-  --state $STATE_STORE \
+  --state $KOPS_STATE_STORE \
   -v $VERBOSITY \
   --yes
 
@@ -85,7 +86,7 @@ echo "Creating cluster ${CLUSTER_NAME}"
 
 NODEUP_URL=${NODEUP_URL} kops create cluster \
   --name $CLUSTER_NAME \
-  --state $STATE_STORE \
+  --state $KOPS_STATE_STORE \
   --node-count $NODE_COUNT \
   --zones $NODE_ZONES \
   --master-zones $MASTER_ZONES \
