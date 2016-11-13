@@ -31,25 +31,20 @@
 # Example usage
 #
 # STATE_STORE="s3://my-dev-s3-state \
-# CLUSTER_DOMAIN="mydomain.io" \
-# CLUSTER_PREFIX="prefix" \
+# CLUSTER_NAME="fullcluster.name.mydomain.io" \
 # NODEUP_BUCKET="s3-devel-bucket-name-store-nodeup" \
 # ./dev-build.sh
 #
 ###############################################################################
 
-# This script assumes it's in $KOPS/hack
+set -o errexit
+set -o pipefail
+
+KOPS_DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 [ -z "$STATE_STORE" ] && echo "Need to set STATE_STORE" && exit 1;
-[ -z "$CLUSTER_DOMAIN" ] && echo "Need to set CLUSTER_DOMAIN" && exit 1;
-[ -z "$CLUSTER_PREFIX" ] && echo "Need to set CLUSTER_PREFIX" && exit 1;
+[ -z "$CLUSTER_NAME" ] && echo "Need to set CLUSTER_NAME" && exit 1;
 [ -z "$NODEUP_BUCKET" ] && echo "Need to set NODEUP_BUCKET" && exit 1;
-
-# TODO make this better
-CLUSTER_ENV="dev"
-CLUSTER_REGION="us-west-2"
-CLUSTER_SUBDOMAIN="aws-${CLUSTER_REGION}"
-CLUSTER_NAME="${CLUSTER_PREFIX}.${CLUSTER_ENV}.${CLUSTER_SUBDOMAIN}.${CLUSTER_DOMAIN}"
 
 # CLUSTER CONFIG
 NODE_COUNT=${NODE_COUNT:-3}
@@ -66,10 +61,10 @@ NETWORKING=${NETWORKING:-cni}
 NODEUP_OS="linux"
 NODEUP_ARCH="amd64"
 
-cd ../
+cd $KOPS_DIRECTORY/..
 
 GIT_VER=git-$(git describe --always)
-# TODO check that GIT_VER worked
+[ -z "$GIT_VER" ] && echo "we do not have GIT_VER something is very wrong" && exit 1;
 NODEUP_URL="https://s3-us-west-1.amazonaws.com/${NODEUP_BUCKET}/kops/${GIT_VER}/${NODEUP_OS}/${NODEUP_ARCH}/nodeup"
 
 VERBOSITY=${VERBOSITY:-2}
@@ -77,7 +72,7 @@ VERBOSITY=${VERBOSITY:-2}
 make upload STATE_STORE=s3://${NODEUP_BUCKET}
 
 echo ==========
-echo "Deleting cluster ${CLUSTER_NAME}"
+echo "Deleting cluster ${CLUSTER_NAME}. Elle est finie."
 
 kops delete cluster \
   --name $CLUSTER_NAME \
@@ -95,7 +90,6 @@ NODEUP_URL=${NODEUP_URL} kops create cluster \
   --zones $NODE_ZONES \
   --master-zones $MASTER_ZONES \
   --cloud aws \
-  --dns-zone ${CLUSTER_SUBDOMAIN}.${CLUSTER_DOMAIN} \
   --node-size $NODE_SIZE \
   --master-size $MASTER_SIZE \
   --topology $TOPOLOGY \
@@ -104,4 +98,4 @@ NODEUP_URL=${NODEUP_URL} kops create cluster \
   --yes
 
 echo ==========
-echo "Your k8s cluster ${CLUSTER_NAME}, awaits your bidding"
+echo "Your k8s cluster ${CLUSTER_NAME}, awaits your bidding."
