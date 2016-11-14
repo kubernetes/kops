@@ -18,8 +18,8 @@ For example, a complete setup might be:
 ```
 export KOPS_STATE_STORE=s3://<somes3bucket>
 export CLUSTER_NAME=<kubernetes.mydomain.com>
-${GOPATH}/bin/kops create cluster ${NAME} --zones us-east-1c
-${GOPATH}/bin/kops update cluster ${NAME} --target=terraform
+${GOPATH}/bin/kops create cluster ${CLUSTER_NAME} --zones us-east-1c
+${GOPATH}/bin/kops update cluster ${CLUSTER_NAME} --target=terraform
 
 cd out/terraform
 terraform plan
