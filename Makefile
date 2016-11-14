@@ -198,6 +198,7 @@ gofmt:
 	gofmt -w -s cloudmock/
 	gofmt -w -s cmd/
 	gofmt -w -s examples/
+	gofmt -w -s federation/
 	gofmt -w -s util/
 	gofmt -w -s upup/pkg/
 	gofmt -w -s protokube/cmd
@@ -211,6 +212,7 @@ govet:
 	  k8s.io/kops/cmd/... \
 	  k8s.io/kops/channels/... \
 	  k8s.io/kops/examples/... \
+	  k8s.io/kops/federation/... \
 	  k8s.io/kops/util/... \
 	  k8s.io/kops/upup/... \
 	  k8s.io/kops/protokube/... \

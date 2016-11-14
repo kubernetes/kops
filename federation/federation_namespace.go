@@ -17,10 +17,10 @@ limitations under the License.
 package federation
 
 import (
-	"k8s.io/kubernetes/federation/client/clientset_generated/federation_release_1_4"
-	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/api/errors"
 	"fmt"
+	"github.com/golang/glog"
+	"k8s.io/kubernetes/federation/client/clientset_generated/federation_release_1_4"
+	"k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/v1"
 )
 
