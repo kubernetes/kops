@@ -41,7 +41,6 @@ func up() error {
 	cluster.Spec.Topology.Masters = api.TopologyPublic
 	cluster.Spec.Topology.Nodes = api.TopologyPublic
 
-
 	for _, z := range nodeZones {
 		cluster.Spec.Zones = append(cluster.Spec.Zones, &api.ClusterZoneSpec{
 			Name: z,

@@ -23,6 +23,7 @@ import (
 	"io"
 	"io/ioutil"
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -30,7 +31,6 @@ import (
 	"k8s.io/kops/upup/pkg/kutil"
 	"os"
 	"strings"
-	"k8s.io/kops/pkg/apis/kops"
 )
 
 type UpdateClusterOptions struct {
@@ -191,7 +191,7 @@ func RunUpdateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 			fmt.Printf(" * list nodes: kubectl get nodes --show-labels\n")
 			if cluster.Spec.Topology.Masters == kops.TopologyPublic {
 				fmt.Printf(" * ssh to the master: ssh -i ~/.ssh/id_rsa admin@%s\n", cluster.Spec.MasterPublicName)
-			}else {
+			} else {
 				fmt.Printf(" * ssh to the bastion: ssh -i ~/.ssh/id_rsa admin@%s\n", cluster.Spec.MasterPublicName)
 			}
 			fmt.Printf(" * read about installing addons: https://github.com/kubernetes/kops/blob/master/docs/addons.md\n")
