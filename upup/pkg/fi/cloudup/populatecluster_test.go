@@ -36,7 +36,7 @@ func buildMinimalCluster() *api.Cluster {
 	// Default to public topology
 	c.Spec.Topology = &api.TopologySpec{
 		Masters: api.TopologyPublic,
-		Nodes: api.TopologyPublic,
+		Nodes:   api.TopologyPublic,
 	}
 	c.Spec.NetworkCIDR = "172.20.0.0/16"
 	c.Spec.NonMasqueradeCIDR = "100.64.0.0/10"
