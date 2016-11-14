@@ -32,10 +32,10 @@ import (
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/k8sapi"
 	"k8s.io/kops/upup/pkg/kutil"
-	"k8s.io/kubernetes/federation/client/clientset_generated/federation_release_1_4"
+	"k8s.io/kubernetes/federation/client/clientset_generated/federation_release_1_5"
 	"k8s.io/kubernetes/pkg/api/errors"
 	k8sapiv1 "k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
 	"strings"
 	"text/template"
 )
@@ -111,7 +111,7 @@ func (o *ApplyFederationOperation) Run() error {
 
 	// TODO: sync clusters
 
-	var controllerKubernetesClients []release_1_3.Interface
+	var controllerKubernetesClients []release_1_5.Interface
 	for _, controller := range o.Federation.Spec.Controllers {
 		cluster, err := o.KopsClient.Clusters().Get(controller)
 		if err != nil {
@@ -140,11 +140,11 @@ func (o *ApplyFederationOperation) Run() error {
 	if err != nil {
 		return err
 	}
-	federationControllerClient, err := federation_release_1_4.NewForConfig(federationRestConfig)
+	federationControllerClient, err := federation_release_1_5.NewForConfig(federationRestConfig)
 	if err != nil {
 		return err
 	}
-	//k8sControllerClient, err := release_1_3.NewForConfig(federationRestConfig)
+	//k8sControllerClient, err := release_1_5.NewForConfig(federationRestConfig)
 	//if err != nil {
 	//	return err
 	//}
@@ -380,7 +380,7 @@ func (o *ApplyFederationOperation) EnsureNamespace(c *fi.Context) error {
 	return nil
 }
 
-func (o *ApplyFederationOperation) ensureFederationNamespace(k8s federation_release_1_4.Interface, name string) (*k8sapiv1.Namespace, error) {
+func (o *ApplyFederationOperation) ensureFederationNamespace(k8s federation_release_1_5.Interface, name string) (*k8sapiv1.Namespace, error) {
 	return mutateNamespace(k8s, name, func(n *k8sapiv1.Namespace) (*k8sapiv1.Namespace, error) {
 		if n == nil {
 			n = &k8sapiv1.Namespace{}

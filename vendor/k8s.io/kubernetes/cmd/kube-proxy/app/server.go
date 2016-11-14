@@ -30,8 +30,9 @@ import (
 
 	"k8s.io/kubernetes/cmd/kube-proxy/app/options"
 	"k8s.io/kubernetes/pkg/api"
+	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
+	unversionedcore "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/core/internalversion"
 	"k8s.io/kubernetes/pkg/client/record"
-	kubeclient "k8s.io/kubernetes/pkg/client/unversioned"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 	clientcmdapi "k8s.io/kubernetes/pkg/client/unversioned/clientcmd/api"
 	"k8s.io/kubernetes/pkg/proxy"
@@ -56,7 +57,7 @@ import (
 )
 
 type ProxyServer struct {
-	Client       *kubeclient.Client
+	Client       clientset.Interface
 	Config       *options.ProxyServerConfig
 	IptInterface utiliptables.Interface
 	Proxier      proxy.ProxyProvider
@@ -82,7 +83,7 @@ func checkKnownProxyMode(proxyMode string) bool {
 }
 
 func NewProxyServer(
-	client *kubeclient.Client,
+	client clientset.Interface,
 	config *options.ProxyServerConfig,
 	iptInterface utiliptables.Interface,
 	proxier proxy.ProxyProvider,
@@ -185,7 +186,7 @@ func NewProxyServerDefault(config *options.ProxyServerConfig) (*ProxyServer, err
 	kubeconfig.QPS = config.KubeAPIQPS
 	kubeconfig.Burst = int(config.KubeAPIBurst)
 
-	client, err := kubeclient.New(kubeconfig)
+	client, err := clientset.NewForConfig(kubeconfig)
 	if err != nil {
 		glog.Fatalf("Invalid API configuration: %v", err)
 	}
@@ -198,14 +199,14 @@ func NewProxyServerDefault(config *options.ProxyServerConfig) (*ProxyServer, err
 	var proxier proxy.ProxyProvider
 	var endpointsHandler proxyconfig.EndpointsConfigHandler
 
-	proxyMode := getProxyMode(string(config.Mode), client.Nodes(), hostname, iptInterface, iptables.LinuxKernelCompatTester{})
+	proxyMode := getProxyMode(string(config.Mode), client.Core().Nodes(), hostname, iptInterface, iptables.LinuxKernelCompatTester{})
 	if proxyMode == proxyModeIPTables {
 		glog.V(0).Info("Using iptables Proxier.")
 		if config.IPTablesMasqueradeBit == nil {
 			// IPTablesMasqueradeBit must be specified or defaulted.
 			return nil, fmt.Errorf("Unable to read IPTablesMasqueradeBit from config")
 		}
-		proxierIPTables, err := iptables.NewProxier(iptInterface, utilsysctl.New(), execer, config.IPTablesSyncPeriod.Duration, config.MasqueradeAll, int(*config.IPTablesMasqueradeBit), config.ClusterCIDR, hostname, getNodeIP(client, hostname))
+		proxierIPTables, err := iptables.NewProxier(iptInterface, utilsysctl.New(), execer, config.IPTablesSyncPeriod.Duration, config.IPTablesMinSyncPeriod.Duration, config.MasqueradeAll, int(*config.IPTablesMasqueradeBit), config.ClusterCIDR, hostname, getNodeIP(client, hostname))
 		if err != nil {
 			glog.Fatalf("Unable to create proxier: %v", err)
 		}
@@ -228,6 +229,7 @@ func NewProxyServerDefault(config *options.ProxyServerConfig) (*ProxyServer, err
 			iptInterface,
 			*utilnet.ParsePortRangeOrDie(config.PortRange),
 			config.IPTablesSyncPeriod.Duration,
+			config.IPTablesMinSyncPeriod.Duration,
 			config.UDPIdleTimeout.Duration,
 		)
 		if err != nil {
@@ -251,7 +253,7 @@ func NewProxyServerDefault(config *options.ProxyServerConfig) (*ProxyServer, err
 	endpointsConfig.RegisterHandler(endpointsHandler)
 
 	proxyconfig.NewSourceAPI(
-		client,
+		client.Core().RESTClient(),
 		config.ConfigSyncPeriod,
 		serviceConfig.Channel("api"),
 		endpointsConfig.Channel("api"),
@@ -281,7 +283,7 @@ func (s *ProxyServer) Run() error {
 		return nil
 	}
 
-	s.Broadcaster.StartRecordingToSink(s.Client.Events(""))
+	s.Broadcaster.StartRecordingToSink(&unversionedcore.EventSinkImpl{Interface: s.Client.Core().Events("")})
 
 	// Start up a webserver if requested
 	if s.Config.HealthzPort > 0 {
@@ -315,12 +317,22 @@ func (s *ProxyServer) Run() error {
 				// administrator should decide whether and how to handle this issue,
 				// whether to drain the node and restart docker.
 				// TODO(random-liu): Remove this when the docker bug is fixed.
-				const message = "DOCKER RESTART NEEDED (docker issue #24000): /sys is read-only: can't raise conntrack limits, problems may arise later."
+				const message = "DOCKER RESTART NEEDED (docker issue #24000): /sys is read-only: " +
+					"cannot modify conntrack limits, problems may arise later."
 				s.Recorder.Eventf(s.Config.NodeRef, api.EventTypeWarning, err.Error(), message)
 			}
 		}
+
 		if s.Config.ConntrackTCPEstablishedTimeout.Duration > 0 {
-			if err := s.Conntracker.SetTCPEstablishedTimeout(int(s.Config.ConntrackTCPEstablishedTimeout.Duration / time.Second)); err != nil {
+			timeout := int(s.Config.ConntrackTCPEstablishedTimeout.Duration / time.Second)
+			if err := s.Conntracker.SetTCPEstablishedTimeout(timeout); err != nil {
+				return err
+			}
+		}
+
+		if s.Config.ConntrackTCPCloseWaitTimeout.Duration > 0 {
+			timeout := int(s.Config.ConntrackTCPCloseWaitTimeout.Duration / time.Second)
+			if err := s.Conntracker.SetTCPCloseWaitTimeout(timeout); err != nil {
 				return err
 			}
 		}
@@ -418,9 +430,9 @@ func (s *ProxyServer) birthCry() {
 	s.Recorder.Eventf(s.Config.NodeRef, api.EventTypeNormal, "Starting", "Starting kube-proxy.")
 }
 
-func getNodeIP(client *kubeclient.Client, hostname string) net.IP {
+func getNodeIP(client clientset.Interface, hostname string) net.IP {
 	var nodeIP net.IP
-	node, err := client.Nodes().Get(hostname)
+	node, err := client.Core().Nodes().Get(hostname)
 	if err != nil {
 		glog.Warningf("Failed to retrieve node info: %v", err)
 		return nil

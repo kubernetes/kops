@@ -155,7 +155,7 @@ assemble_kubelet_flags() {
     if [ ! -z "${KUBELET_APISERVER:-}" ] && \
        [ ! -z "${KUBELET_CERT:-}" ] && \
        [ ! -z "${KUBELET_KEY:-}" ]; then
-      KUBELET_CMD_FLAGS="${KUBELET_CMD_FLAGS} --api-servers=https://${KUBELET_APISERVER} --register-schedulable=false --reconcile-cidr=false --pod-cidr=10.123.45.0/29"
+      KUBELET_CMD_FLAGS="${KUBELET_CMD_FLAGS} --api-servers=https://${KUBELET_APISERVER} --register-schedulable=false --pod-cidr=10.123.45.0/29"
     else
       KUBELET_CMD_FLAGS="${KUBELET_CMD_FLAGS} --pod-cidr=${MASTER_IP_RANGE}"
     fi
@@ -175,9 +175,6 @@ assemble_kubelet_flags() {
   fi
   if [ -n "${NODE_LABELS:-}" ]; then
     KUBELET_CMD_FLAGS="${KUBELET_CMD_FLAGS} --node-labels=${NODE_LABELS}"
-  fi
-  if [ "${ALLOCATE_NODE_CIDRS:-}" = "true" ]; then
-     KUBELET_CMD_FLAGS="${KUBELET_CMD_FLAGS} --configure-cbr0=${ALLOCATE_NODE_CIDRS}"
   fi
   # Add the unconditional flags
   KUBELET_CMD_FLAGS="${KUBELET_CMD_FLAGS} --cloud-provider=gce --allow-privileged=true --cgroup-root=/ --system-cgroups=/system --kubelet-cgroups=/kubelet --babysit-daemons=true --config=/etc/kubernetes/manifests --cluster-dns=${DNS_SERVER_IP} --cluster-domain=${DNS_DOMAIN}"
@@ -461,10 +458,15 @@ prepare_etcd_manifest() {
   sed -i -e "s@{{ *etcd_cluster *}}@$etcd_cluster@g" "${etcd_temp_file}"
   sed -i -e "s@{{ *storage_backend *}}@${STORAGE_BACKEND:-}@g" "${temp_file}"
   sed -i -e "s@{{ *cluster_state *}}@$cluster_state@g" "${etcd_temp_file}"
-  if [[ -n "${TEST_ETCD_VERSION:-}" ]]; then
-    sed -i -e "s@{{ *pillar\.get('etcd_docker_tag', '\(.*\)') *}}@${TEST_ETCD_VERSION}@g" "${etcd_temp_file}"
+  if [[ -n "${ETCD_IMAGE:-}" ]]; then
+    sed -i -e "s@{{ *pillar\.get('etcd_docker_tag', '\(.*\)') *}}@${ETCD_IMAGE}@g" "${etcd_temp_file}"
   else
     sed -i -e "s@{{ *pillar\.get('etcd_docker_tag', '\(.*\)') *}}@\1@g" "${etcd_temp_file}"
+  fi
+  if [[ -n "${ETCD_VERSION:-}" ]]; then
+    sed -i -e "s@{{ *pillar\.get('etcd_version', '\(.*\)') *}}@${ETCD_VERSION}@g" "${etcd_temp_file}"
+  else
+    sed -i -e "s@{{ *pillar\.get('etcd_version', '\(.*\)') *}}@\1@g" "${etcd_temp_file}"
   fi
   # Replace the volume host path
   sed -i -e "s@/mnt/master-pd/var/etcd@/mnt/disks/master-pd/var/etcd@g" "${etcd_temp_file}"

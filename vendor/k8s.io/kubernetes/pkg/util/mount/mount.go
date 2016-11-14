@@ -28,6 +28,11 @@ import (
 	"k8s.io/kubernetes/pkg/util/exec"
 )
 
+const (
+	// Default mount command if mounter path is not specified
+	mount = "mount"
+)
+
 type Interface interface {
 	// Mount mounts source to target as fstype with given options.
 	Mount(source string, target string, fstype string, options []string) error
@@ -91,6 +96,24 @@ func (mounter *SafeFormatAndMount) FormatAndMount(source string, target string, 
 // New returns a mount.Interface for the current system.
 func New() Interface {
 	return &Mounter{}
+}
+
+// NewCustomMounter returns a mount.Interface for the current system.
+// It provides options to override the default mounter behavior.
+// mounterPath allows using an alternative to `/bin/mount` for mounting.
+// mounterRootfsPath allows specifying a custom root filesystem path for non default `mounterPath`.
+func NewCustomMounter(mounterPath, mounterRootfsPath string) Interface {
+	// If mounter-path flag is not set, use default mount path
+	if mounterPath == "" {
+		mounterPath = mount
+	}
+	if mounterRootfsPath == "" {
+		mounterRootfsPath = "/"
+	}
+	return &Mounter{
+		mounterPath:       mounterPath,
+		mounterRootfsPath: mounterRootfsPath,
+	}
 }
 
 // GetMountRefs finds all other references to the device referenced

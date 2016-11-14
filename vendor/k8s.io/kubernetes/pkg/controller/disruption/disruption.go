@@ -26,8 +26,8 @@ import (
 	"k8s.io/kubernetes/pkg/apis/policy"
 	"k8s.io/kubernetes/pkg/client/cache"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	unversionedcore "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/core/unversioned"
-	policyclientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/policy/unversioned"
+	unversionedcore "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/core/internalversion"
+	policyclientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/policy/internalversion"
 	"k8s.io/kubernetes/pkg/client/record"
 	"k8s.io/kubernetes/pkg/controller"
 	"k8s.io/kubernetes/pkg/runtime"
@@ -142,7 +142,7 @@ func NewDisruptionController(podInformer cache.SharedIndexInformer, kubeClient i
 
 	dc.rcLister.Indexer = dc.rcIndexer
 
-	dc.rsStore, dc.rsController = cache.NewInformer(
+	dc.rsLister.Indexer, dc.rsController = cache.NewIndexerInformer(
 		&cache.ListWatch{
 			ListFunc: func(options api.ListOptions) (runtime.Object, error) {
 				return dc.kubeClient.Extensions().ReplicaSets(api.NamespaceAll).List(options)
@@ -154,9 +154,9 @@ func NewDisruptionController(podInformer cache.SharedIndexInformer, kubeClient i
 		&extensions.ReplicaSet{},
 		30*time.Second,
 		cache.ResourceEventHandlerFuncs{},
+		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
 	)
-
-	dc.rsLister.Store = dc.rsStore
+	dc.rsStore = dc.rsLister.Indexer
 
 	dc.dIndexer, dc.dController = cache.NewIndexerInformer(
 		&cache.ListWatch{
@@ -202,7 +202,7 @@ func (dc *DisruptionController) getPodReplicaSets(pod *api.Pod) ([]controllerAnd
 	for _, rs := range rss {
 		// GetDeploymentsForReplicaSet returns an error only if no matching
 		// deployments are found.
-		_, err := dc.dLister.GetDeploymentsForReplicaSet(&rs)
+		_, err := dc.dLister.GetDeploymentsForReplicaSet(rs)
 		if err == nil { // A deployment was found, so this finder will not count this RS.
 			continue
 		}
@@ -227,7 +227,7 @@ func (dc *DisruptionController) getPodDeployments(pod *api.Pod) ([]controllerAnd
 	}
 	controllerScale := map[types.UID]int32{}
 	for _, rs := range rss {
-		ds, err := dc.dLister.GetDeploymentsForReplicaSet(&rs)
+		ds, err := dc.dLister.GetDeploymentsForReplicaSet(rs)
 		// GetDeploymentsForReplicaSet returns an error only if no matching
 		// deployments are found.  In that case we skip this ReplicaSet.
 		if err != nil {
@@ -541,8 +541,8 @@ Pod:
 	return
 }
 
-// failSafe is an attempt to at least update the PodDisruptionAllowed field to
-// false if everything something else has failed.  This is one place we
+// failSafe is an attempt to at least update the PodDisruptionsAllowed field to
+// 0 if everything else has failed.  This is one place we
 // implement the  "fail open" part of the design since if we manage to update
 // this field correctly, we will prevent the /evict handler from approving an
 // eviction when it may be unsafe to do so.
@@ -552,7 +552,7 @@ func (dc *DisruptionController) failSafe(pdb *policy.PodDisruptionBudget) error 
 		return err
 	}
 	newPdb := obj.(policy.PodDisruptionBudget)
-	newPdb.Status.PodDisruptionAllowed = false
+	newPdb.Status.PodDisruptionsAllowed = 0
 
 	return dc.getUpdater()(&newPdb)
 }
@@ -562,9 +562,12 @@ func (dc *DisruptionController) updatePdbSpec(pdb *policy.PodDisruptionBudget, c
 	// pods are in a safe state when their first pods appear but this controller
 	// has not updated their status yet.  This isn't the only race, but it's a
 	// common one that's easy to detect.
-	disruptionAllowed := currentHealthy-1 >= desiredHealthy && expectedCount > 0
+	disruptionsAllowed := currentHealthy - desiredHealthy
+	if expectedCount <= 0 || disruptionsAllowed <= 0 {
+		disruptionsAllowed = 0
+	}
 
-	if pdb.Status.CurrentHealthy == currentHealthy && pdb.Status.DesiredHealthy == desiredHealthy && pdb.Status.ExpectedPods == expectedCount && pdb.Status.PodDisruptionAllowed == disruptionAllowed {
+	if pdb.Status.CurrentHealthy == currentHealthy && pdb.Status.DesiredHealthy == desiredHealthy && pdb.Status.ExpectedPods == expectedCount && pdb.Status.PodDisruptionsAllowed == disruptionsAllowed {
 		return nil
 	}
 
@@ -575,10 +578,10 @@ func (dc *DisruptionController) updatePdbSpec(pdb *policy.PodDisruptionBudget, c
 	newPdb := obj.(policy.PodDisruptionBudget)
 
 	newPdb.Status = policy.PodDisruptionBudgetStatus{
-		CurrentHealthy:       currentHealthy,
-		DesiredHealthy:       desiredHealthy,
-		ExpectedPods:         expectedCount,
-		PodDisruptionAllowed: disruptionAllowed,
+		CurrentHealthy:        currentHealthy,
+		DesiredHealthy:        desiredHealthy,
+		ExpectedPods:          expectedCount,
+		PodDisruptionsAllowed: disruptionsAllowed,
 	}
 
 	return dc.getUpdater()(&newPdb)

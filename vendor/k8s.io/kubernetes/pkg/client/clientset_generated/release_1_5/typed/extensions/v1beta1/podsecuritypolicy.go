@@ -18,7 +18,9 @@ package v1beta1
 
 import (
 	api "k8s.io/kubernetes/pkg/api"
+	v1 "k8s.io/kubernetes/pkg/api/v1"
 	v1beta1 "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
+	restclient "k8s.io/kubernetes/pkg/client/restclient"
 	watch "k8s.io/kubernetes/pkg/watch"
 )
 
@@ -32,24 +34,24 @@ type PodSecurityPoliciesGetter interface {
 type PodSecurityPolicyInterface interface {
 	Create(*v1beta1.PodSecurityPolicy) (*v1beta1.PodSecurityPolicy, error)
 	Update(*v1beta1.PodSecurityPolicy) (*v1beta1.PodSecurityPolicy, error)
-	Delete(name string, options *api.DeleteOptions) error
-	DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error
+	Delete(name string, options *v1.DeleteOptions) error
+	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
 	Get(name string) (*v1beta1.PodSecurityPolicy, error)
-	List(opts api.ListOptions) (*v1beta1.PodSecurityPolicyList, error)
-	Watch(opts api.ListOptions) (watch.Interface, error)
+	List(opts v1.ListOptions) (*v1beta1.PodSecurityPolicyList, error)
+	Watch(opts v1.ListOptions) (watch.Interface, error)
 	Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1beta1.PodSecurityPolicy, err error)
 	PodSecurityPolicyExpansion
 }
 
 // podSecurityPolicies implements PodSecurityPolicyInterface
 type podSecurityPolicies struct {
-	client *ExtensionsClient
+	client restclient.Interface
 }
 
 // newPodSecurityPolicies returns a PodSecurityPolicies
-func newPodSecurityPolicies(c *ExtensionsClient) *podSecurityPolicies {
+func newPodSecurityPolicies(c *ExtensionsV1beta1Client) *podSecurityPolicies {
 	return &podSecurityPolicies{
-		client: c,
+		client: c.RESTClient(),
 	}
 }
 
@@ -77,7 +79,7 @@ func (c *podSecurityPolicies) Update(podSecurityPolicy *v1beta1.PodSecurityPolic
 }
 
 // Delete takes name of the podSecurityPolicy and deletes it. Returns an error if one occurs.
-func (c *podSecurityPolicies) Delete(name string, options *api.DeleteOptions) error {
+func (c *podSecurityPolicies) Delete(name string, options *v1.DeleteOptions) error {
 	return c.client.Delete().
 		Resource("podsecuritypolicies").
 		Name(name).
@@ -87,7 +89,7 @@ func (c *podSecurityPolicies) Delete(name string, options *api.DeleteOptions) er
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *podSecurityPolicies) DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error {
+func (c *podSecurityPolicies) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
 	return c.client.Delete().
 		Resource("podsecuritypolicies").
 		VersionedParams(&listOptions, api.ParameterCodec).
@@ -108,7 +110,7 @@ func (c *podSecurityPolicies) Get(name string) (result *v1beta1.PodSecurityPolic
 }
 
 // List takes label and field selectors, and returns the list of PodSecurityPolicies that match those selectors.
-func (c *podSecurityPolicies) List(opts api.ListOptions) (result *v1beta1.PodSecurityPolicyList, err error) {
+func (c *podSecurityPolicies) List(opts v1.ListOptions) (result *v1beta1.PodSecurityPolicyList, err error) {
 	result = &v1beta1.PodSecurityPolicyList{}
 	err = c.client.Get().
 		Resource("podsecuritypolicies").
@@ -119,7 +121,7 @@ func (c *podSecurityPolicies) List(opts api.ListOptions) (result *v1beta1.PodSec
 }
 
 // Watch returns a watch.Interface that watches the requested podSecurityPolicies.
-func (c *podSecurityPolicies) Watch(opts api.ListOptions) (watch.Interface, error) {
+func (c *podSecurityPolicies) Watch(opts v1.ListOptions) (watch.Interface, error) {
 	return c.client.Get().
 		Prefix("watch").
 		Resource("podsecuritypolicies").
