@@ -21,15 +21,15 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"github.com/aws/aws-sdk-go/service/elb"
 )
 
 type LoadBalancerAttachment struct {
-	Name             *string
-	LoadBalancer     *LoadBalancer
+	Name         *string
+	LoadBalancer *LoadBalancer
 
 	// LoadBalancerAttachments now support ASGs or direct instances
 	AutoscalingGroup *AutoscalingGroup
@@ -38,7 +38,7 @@ type LoadBalancerAttachment struct {
 	// Here be dragons..
 	// This will *NOT* unmarshal.. for some reason this pointer is initiated as nil
 	// instead of a pointer to Instance with nil members..
-	Instance        *Instance
+	Instance *Instance
 }
 
 func (e *LoadBalancerAttachment) Find(c *fi.Context) (*LoadBalancerAttachment, error) {

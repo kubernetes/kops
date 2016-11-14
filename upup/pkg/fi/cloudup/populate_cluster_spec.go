@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-
 package cloudup
 
 import (
@@ -74,7 +73,6 @@ func PopulateClusterSpec(cluster *api.Cluster) (*api.Cluster, error) {
 	return c.fullCluster, nil
 }
 
-
 //
 // Here be dragons
 //
@@ -116,7 +114,6 @@ func (c *populateClusterSpec) run() error {
 			}
 			clusterZones[z.Name] = z
 		}
-
 
 		// Check etcd configuration
 		{
@@ -163,7 +160,6 @@ func (c *populateClusterSpec) run() error {
 			}
 		}
 	}
-
 
 	keyStore, err := registry.KeyStore(cluster)
 	if err != nil {
@@ -223,7 +219,6 @@ func (c *populateClusterSpec) run() error {
 	// We want topology to pass through
 	// Otherwise we were losing the pointer
 	cluster.Spec.Topology = c.InputCluster.Spec.Topology
-
 
 	if cluster.Spec.DNSZone == "" {
 		dns, err := cloud.DNS()

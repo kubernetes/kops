@@ -90,7 +90,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["SharedVPC"] = tf.SharedVPC
 
 	// Network topology definitions
-	dest["IsTopologyPublic"]  = tf.IsTopologyPublic
+	dest["IsTopologyPublic"] = tf.IsTopologyPublic
 	dest["IsTopologyPrivate"] = tf.IsTopologyPrivate
 	dest["IsTopologyPrivateMasters"] = tf.IsTopologyPrivateMasters
 	dest["WithBastion"] = tf.WithBastion
@@ -175,12 +175,14 @@ func (tf *TemplateFunctions) SharedVPC() bool {
 
 // These are the network topology functions. They are boolean logic for checking which type of
 // topology this cluster is set to be deployed with.
-func (tf *TemplateFunctions) IsTopologyPrivate()         bool  { return tf.cluster.IsTopologyPrivate() }
-func (tf *TemplateFunctions) IsTopologyPublic()          bool  { return tf.cluster.IsTopologyPublic() }
-func (tf *TemplateFunctions) IsTopologyPrivateMasters()  bool  { return tf.cluster.IsTopologyPrivateMasters() }
+func (tf *TemplateFunctions) IsTopologyPrivate() bool { return tf.cluster.IsTopologyPrivate() }
+func (tf *TemplateFunctions) IsTopologyPublic() bool  { return tf.cluster.IsTopologyPublic() }
+func (tf *TemplateFunctions) IsTopologyPrivateMasters() bool {
+	return tf.cluster.IsTopologyPrivateMasters()
+}
 
-func (tf *TemplateFunctions) WithBastion()  bool  {
-	 return !tf.cluster.Spec.Topology.BypassBastion
+func (tf *TemplateFunctions) WithBastion() bool {
+	return !tf.cluster.Spec.Topology.BypassBastion
 }
 
 // This function is replacing existing yaml
@@ -197,13 +199,13 @@ func (tf *TemplateFunctions) GetBastionZone() (string, error) {
 
 // Will attempt to calculate a meaningful name for an ELB given a prefix
 // Will never return a string longer than 32 chars
-func (tf *TemplateFunctions) GetELBName32(prefix string) (string, error ){
+func (tf *TemplateFunctions) GetELBName32(prefix string) (string, error) {
 	var returnString string
 	c := tf.cluster.Name
 	s := strings.Split(c, ".")
 	if len(s) > 0 {
 		returnString = fmt.Sprintf("%s-%s", prefix, s[0])
-	}else {
+	} else {
 		returnString = fmt.Sprintf("%s-%s", prefix, c)
 	}
 	if len(returnString) > 32 {
@@ -215,7 +217,7 @@ func (tf *TemplateFunctions) GetELBName32(prefix string) (string, error ){
 func (tf *TemplateFunctions) GetBastionImageId() (string, error) {
 	if len(tf.instanceGroups) == 0 {
 		return "", fmt.Errorf("Unable to find AMI in instance group")
-	}else if len(tf.instanceGroups) > 0 {
+	} else if len(tf.instanceGroups) > 0 {
 		ami := tf.instanceGroups[0].Spec.Image
 		for i := 1; i < len(tf.instanceGroups); i++ {
 			// If we can't be sure all AMIs are the same, we don't know which one to use for the bastion host
@@ -223,7 +225,7 @@ func (tf *TemplateFunctions) GetBastionImageId() (string, error) {
 				return "", fmt.Errorf("Unable to use multiple image id's with a private bastion")
 			}
 		}
-		return ami, nil;
+		return ami, nil
 	}
 	return "", nil
 }

@@ -31,9 +31,9 @@ import (
 type Route struct {
 	Name *string
 
-	RouteTable      *RouteTable
-	Instance        *Instance
-	CIDR            *string
+	RouteTable *RouteTable
+	Instance   *Instance
+	CIDR       *string
 
 	// Either an InternetGateway or a NAT Gateway
 	// MUST be provided.
@@ -152,9 +152,9 @@ func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
 
 		if e.InternetGateway == nil && e.NatGateway == nil {
 			return fmt.Errorf("missing target for route")
-		}else if e.InternetGateway != nil {
+		} else if e.InternetGateway != nil {
 			request.GatewayId = checkNotNil(e.InternetGateway.ID)
-		}else if e.NatGateway != nil {
+		} else if e.NatGateway != nil {
 			request.NatGatewayId = checkNotNil(e.NatGateway.ID)
 		}
 
@@ -179,9 +179,9 @@ func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
 
 		if e.InternetGateway == nil && e.NatGateway == nil {
 			return fmt.Errorf("missing target for route")
-		}else if e.InternetGateway != nil {
+		} else if e.InternetGateway != nil {
 			request.GatewayId = checkNotNil(e.InternetGateway.ID)
-		}else if e.NatGateway != nil {
+		} else if e.NatGateway != nil {
 			request.NatGatewayId = checkNotNil(e.NatGateway.ID)
 		}
 
