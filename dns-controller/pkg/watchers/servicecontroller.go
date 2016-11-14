@@ -151,14 +151,14 @@ func (c *ServiceController) updateServiceRecords(service *v1.Service) {
 						RecordType: dns.RecordTypeCNAME,
 						Value:      ingress.Hostname,
 					})
-					glog.V(4).Infof("Found CNAME for service %s/%s: %q", service.Namespace, service.Name, ingress.Hostname)
+					glog.V(4).Infof("Found CNAME record for service %s/%s: %q", service.Namespace, service.Name, ingress.Hostname)
 				}
 				if ingress.IP != "" {
 					ingresses = append(ingresses, dns.Record{
 						RecordType: dns.RecordTypeA,
 						Value:      ingress.IP,
 					})
-					glog.V(4).Infof("Found A for service %s/%s: %q", service.Namespace, service.Name, ingress.IP)
+					glog.V(4).Infof("Found A record for service %s/%s: %q", service.Namespace, service.Name, ingress.IP)
 				}
 			}
 		} else if service.Spec.Type == v1.ServiceTypeNodePort {
@@ -168,6 +168,7 @@ func (c *ServiceController) updateServiceRecords(service *v1.Service) {
 			})
 			glog.V(4).Infof("Setting internal alias for NodePort service %s/%s", service.Namespace, service.Name)
 		} else {
+			// TODO: Emit event so that users are informed of this
 			glog.V(2).Infof("Cannot expose service %s/%s of type %q", service.Namespace, service.Name, service.Spec.Type)
 		}
 
@@ -184,7 +185,7 @@ func (c *ServiceController) updateServiceRecords(service *v1.Service) {
 			}
 		}
 	} else {
-		glog.V(4).Infof("Service %s/%s did not have %s annotation", service.Namespace, service.Name, AnnotationNameDnsExternal)
+		glog.V(8).Infof("Service %s/%s did not have %s annotation", service.Namespace, service.Name, AnnotationNameDnsExternal)
 	}
 
 	c.scope.Replace(service.Name, records)
