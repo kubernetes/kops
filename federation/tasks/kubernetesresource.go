@@ -18,14 +18,14 @@ package tasks
 
 import (
 	"fmt"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/federation/targets/kubernetes"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/util/validation/field"
 )
 
 //go:generate fitask -type=KubernetesResource
 type KubernetesResource struct {
-	Name     *string
+	Name *string
 
 	Manifest *fi.ResourceHolder
 }
