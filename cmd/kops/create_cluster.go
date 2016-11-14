@@ -58,10 +58,10 @@ type CreateClusterOptions struct {
 	AssociatePublicIP bool
 
 	// Channel is the location of the api.Channel to use for our defaults
-	Channel           string
+	Channel string
 
 	// The network topology to use
-	Topology          string
+	Topology string
 }
 
 func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
@@ -365,9 +365,8 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 		}
 	}
 
-
 	// Network Topology
-	switch  c.Topology{
+	switch c.Topology {
 	case api.TopologyPublic:
 		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPublic, Nodes: api.TopologyPublic, BypassBastion: false}
 	case api.TopologyPrivate:

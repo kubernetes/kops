@@ -79,7 +79,6 @@ type ApplyClusterCmd struct {
 	DryRun bool
 }
 
-
 func (c *ApplyClusterCmd) Run() error {
 
 	if c.InstanceGroups == nil {
@@ -295,7 +294,7 @@ func (c *ApplyClusterCmd) Run() error {
 				"securityGroupRule":     &awstasks.SecurityGroupRule{},
 				"subnet":                &awstasks.Subnet{},
 				"vpc":                   &awstasks.VPC{},
-				"ngw":  		 &awstasks.NatGateway{},
+				"ngw":                   &awstasks.NatGateway{},
 				"vpcDHDCPOptionsAssociation": &awstasks.VPCDHCPOptionsAssociation{},
 
 				// ELB
