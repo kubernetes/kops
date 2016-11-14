@@ -32,8 +32,8 @@ KUBE_ROOT="$(dirname "${BASH_SOURCE}")/../.."
 DEPLOY_ROOT="${KUBE_ROOT}/federation/deploy"
 CUR_ROOT="$(pwd)"
 
-source "${KUBE_ROOT}/build/common.sh"
-source "${KUBE_ROOT}/build/util.sh"
+source "${KUBE_ROOT}/build-tools/common.sh"
+source "${KUBE_ROOT}/build-tools/util.sh"
 # Provides the detect-project function
 source "${KUBE_ROOT}/cluster/kube-util.sh"
 # Provides logging facilities
@@ -127,7 +127,7 @@ function push() {
   fi
 
   kube::log::status "Pushing hyperkube image to the registry"
-  gcloud docker push "${KUBE_REGISTRY}/hyperkube-amd64:${kube_version}"
+  gcloud docker -- push "${KUBE_REGISTRY}/hyperkube-amd64:${kube_version}"
 
   # Update config after build and push, but before turning up the clusters
   # to ensure the config has the right image version tags.

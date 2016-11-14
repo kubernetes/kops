@@ -99,6 +99,14 @@ verify:
 	KUBE_VERIFY_GIT_BRANCH=$(BRANCH) hack/make-rules/verify.sh -v
 	hack/make-rules/vet.sh
 
+# Runs all the generated updates.
+#
+# Example:
+# make update
+.PHONY: update
+update:
+	hack/update-all.sh
+
 # Build and run tests.
 #
 # Args:
@@ -185,6 +193,7 @@ test-e2e-node: ginkgo generated_files
 #   make test-cmd
 .PHONY: test-cmd
 test-cmd: generated_files
+	hack/make-rules/test-kubeadm-cmd.sh
 	hack/make-rules/test-cmd.sh
 
 # Remove all build artifacts.
@@ -195,7 +204,7 @@ test-cmd: generated_files
 # TODO(thockin): call clean_generated when we stop committing generated code.
 .PHONY: clean
 clean: clean_meta
-	build/make-clean.sh
+	build-tools/make-clean.sh
 	rm -rf $(OUT_DIR)
 	rm -rf Godeps/_workspace # Just until we are sure it is gone
 
@@ -236,7 +245,7 @@ vet:
 #   make release
 .PHONY: release
 release:
-	build/release.sh
+	build-tools/release.sh
 
 # Build a release, but skip tests
 #
@@ -244,7 +253,7 @@ release:
 #   make release-skip-tests
 .PHONY: release-skip-tests quick-release
 release-skip-tests quick-release:
-	KUBE_RELEASE_RUN_TESTS=n KUBE_FASTBUILD=true build/release.sh
+	KUBE_RELEASE_RUN_TESTS=n KUBE_FASTBUILD=true build-tools/release.sh
 
 # Cross-compile for all platforms
 #

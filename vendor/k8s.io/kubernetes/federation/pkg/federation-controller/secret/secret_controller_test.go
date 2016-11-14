@@ -29,6 +29,8 @@ import (
 	kubeclientset "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
 	fake_kubeclientset "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5/fake"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/types"
+	"k8s.io/kubernetes/pkg/util/wait"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -95,6 +97,12 @@ func TestSecretController(t *testing.T) {
 	assert.Equal(t, secret1.Namespace, createdSecret.Namespace)
 	assert.Equal(t, secret1.Name, createdSecret.Name)
 	assert.True(t, secretsEqual(secret1, *createdSecret))
+
+	// Wait for the secret to appear in the informer store
+	err := WaitForStoreUpdate(
+		secretController.secretFederatedInformer.GetTargetStore(),
+		cluster1.Name, types.NamespacedName{Namespace: secret1.Namespace, Name: secret1.Name}.String(), wait.ForeverTestTimeout)
+	assert.Nil(t, err, "secret should have appeared in the informer store")
 
 	// Test update federated secret.
 	secret1.Annotations = map[string]string{

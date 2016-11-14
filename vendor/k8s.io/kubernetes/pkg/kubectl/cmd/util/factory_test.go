@@ -36,12 +36,13 @@ import (
 	"k8s.io/kubernetes/pkg/api/testapi"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/api/validation"
+	"k8s.io/kubernetes/pkg/apimachinery/registered"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
+	manualfake "k8s.io/kubernetes/pkg/client/restclient/fake"
 	testcore "k8s.io/kubernetes/pkg/client/testing/core"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 	clientcmdapi "k8s.io/kubernetes/pkg/client/unversioned/clientcmd/api"
-	manualfake "k8s.io/kubernetes/pkg/client/unversioned/fake"
 	"k8s.io/kubernetes/pkg/controller"
 	"k8s.io/kubernetes/pkg/kubectl"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
@@ -54,7 +55,7 @@ import (
 func TestNewFactoryDefaultFlagBindings(t *testing.T) {
 	factory := NewFactory(nil)
 
-	if !factory.flags.HasFlags() {
+	if !factory.FlagSet().HasFlags() {
 		t.Errorf("Expected flags, but didn't get any")
 	}
 }
@@ -63,8 +64,8 @@ func TestNewFactoryNoFlagBindings(t *testing.T) {
 	clientConfig := clientcmd.NewDefaultClientConfig(*clientcmdapi.NewConfig(), &clientcmd.ConfigOverrides{})
 	factory := NewFactory(clientConfig)
 
-	if factory.flags.HasFlags() {
-		t.Errorf("Expected zero flags, but got %v", factory.flags)
+	if factory.FlagSet().HasFlags() {
+		t.Errorf("Expected zero flags, but got %v", factory.FlagSet())
 	}
 }
 
@@ -228,17 +229,17 @@ func TestCanBeExposed(t *testing.T) {
 func TestFlagUnderscoreRenaming(t *testing.T) {
 	factory := NewFactory(nil)
 
-	factory.flags.SetNormalizeFunc(flag.WordSepNormalizeFunc)
-	factory.flags.Bool("valid_flag", false, "bool value")
+	factory.FlagSet().SetNormalizeFunc(flag.WordSepNormalizeFunc)
+	factory.FlagSet().Bool("valid_flag", false, "bool value")
 
 	// In case of failure of this test check this PR: spf13/pflag#23
-	if factory.flags.Lookup("valid_flag").Name != "valid-flag" {
-		t.Fatalf("Expected flag name to be valid-flag, got %s", factory.flags.Lookup("valid_flag").Name)
+	if factory.FlagSet().Lookup("valid_flag").Name != "valid-flag" {
+		t.Fatalf("Expected flag name to be valid-flag, got %s", factory.FlagSet().Lookup("valid_flag").Name)
 	}
 }
 
 func loadSchemaForTest() (validation.Schema, error) {
-	pathToSwaggerSpec := "../../../../api/swagger-spec/" + testapi.Default.GroupVersion().Version + ".json"
+	pathToSwaggerSpec := "../../../../api/swagger-spec/" + registered.GroupOrDie(api.GroupName).GroupVersion.Version + ".json"
 	data, err := ioutil.ReadFile(pathToSwaggerSpec)
 	if err != nil {
 		return nil, err
@@ -735,12 +736,12 @@ func TestDiscoveryReplaceAliases(t *testing.T) {
 		{
 			name:     "all-replacement",
 			arg:      "all",
-			expected: "pods,replicationcontrollers,services,petsets,horizontalpodautoscalers,jobs,deployments,replicasets",
+			expected: "pods,replicationcontrollers,services,statefulsets,horizontalpodautoscalers,jobs,deployments,replicasets",
 		},
 		{
 			name:     "alias-in-comma-separated-arg",
 			arg:      "all,secrets",
-			expected: "pods,replicationcontrollers,services,petsets,horizontalpodautoscalers,jobs,deployments,replicasets,secrets",
+			expected: "pods,replicationcontrollers,services,statefulsets,horizontalpodautoscalers,jobs,deployments,replicasets,secrets",
 		},
 	}
 

@@ -30,12 +30,14 @@ import (
 	"reflect"
 	"strings"
 
+	"k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm"
 	"k8s.io/kubernetes/federation/apis/federation"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/meta"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apimachinery/registered"
 	"k8s.io/kubernetes/pkg/apis/apps"
+	"k8s.io/kubernetes/pkg/apis/authorization"
 	"k8s.io/kubernetes/pkg/apis/autoscaling"
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/certificates"
@@ -47,6 +49,7 @@ import (
 	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/runtime/serializer/recognizer"
 
+	_ "k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/install"
 	_ "k8s.io/kubernetes/federation/apis/federation/install"
 	_ "k8s.io/kubernetes/pkg/api/install"
 	_ "k8s.io/kubernetes/pkg/apis/apps/install"
@@ -64,18 +67,19 @@ import (
 )
 
 var (
-	Groups       = make(map[string]TestGroup)
-	Default      TestGroup
-	Autoscaling  TestGroup
-	Batch        TestGroup
-	Extensions   TestGroup
-	Apps         TestGroup
-	Policy       TestGroup
-	Federation   TestGroup
-	Rbac         TestGroup
-	Certificates TestGroup
-	Storage      TestGroup
-	ImagePolicy  TestGroup
+	Groups        = make(map[string]TestGroup)
+	Default       TestGroup
+	Authorization TestGroup
+	Autoscaling   TestGroup
+	Batch         TestGroup
+	Extensions    TestGroup
+	Apps          TestGroup
+	Policy        TestGroup
+	Federation    TestGroup
+	Rbac          TestGroup
+	Certificates  TestGroup
+	Storage       TestGroup
+	ImagePolicy   TestGroup
 
 	serializer        runtime.SerializerInfo
 	storageSerializer runtime.SerializerInfo
@@ -91,11 +95,11 @@ type TestGroup struct {
 func init() {
 	if apiMediaType := os.Getenv("KUBE_TEST_API_TYPE"); len(apiMediaType) > 0 {
 		var ok bool
-		mediaType, options, err := mime.ParseMediaType(apiMediaType)
+		mediaType, _, err := mime.ParseMediaType(apiMediaType)
 		if err != nil {
 			panic(err)
 		}
-		serializer, ok = api.Codecs.SerializerForMediaType(mediaType, options)
+		serializer, ok = runtime.SerializerInfoForMediaType(api.Codecs.SupportedMediaTypes(), mediaType)
 		if !ok {
 			panic(fmt.Sprintf("no serializer for %s", apiMediaType))
 		}
@@ -103,11 +107,11 @@ func init() {
 
 	if storageMediaType := StorageMediaType(); len(storageMediaType) > 0 {
 		var ok bool
-		mediaType, options, err := mime.ParseMediaType(storageMediaType)
+		mediaType, _, err := mime.ParseMediaType(storageMediaType)
 		if err != nil {
 			panic(err)
 		}
-		storageSerializer, ok = api.Codecs.SerializerForMediaType(mediaType, options)
+		storageSerializer, ok = runtime.SerializerInfoForMediaType(api.Codecs.SupportedMediaTypes(), mediaType)
 		if !ok {
 			panic(fmt.Sprintf("no serializer for %s", storageMediaType))
 		}
@@ -247,13 +251,30 @@ func init() {
 			externalTypes:        api.Scheme.KnownTypes(externalGroupVersion),
 		}
 	}
-
 	if _, ok := Groups[imagepolicy.GroupName]; !ok {
 		externalGroupVersion := unversioned.GroupVersion{Group: imagepolicy.GroupName, Version: registered.GroupOrDie(imagepolicy.GroupName).GroupVersion.Version}
 		Groups[imagepolicy.GroupName] = TestGroup{
 			externalGroupVersion: externalGroupVersion,
 			internalGroupVersion: imagepolicy.SchemeGroupVersion,
 			internalTypes:        api.Scheme.KnownTypes(imagepolicy.SchemeGroupVersion),
+			externalTypes:        api.Scheme.KnownTypes(externalGroupVersion),
+		}
+	}
+	if _, ok := Groups[authorization.GroupName]; !ok {
+		externalGroupVersion := unversioned.GroupVersion{Group: authorization.GroupName, Version: registered.GroupOrDie(authorization.GroupName).GroupVersion.Version}
+		Groups[authorization.GroupName] = TestGroup{
+			externalGroupVersion: externalGroupVersion,
+			internalGroupVersion: authorization.SchemeGroupVersion,
+			internalTypes:        api.Scheme.KnownTypes(authorization.SchemeGroupVersion),
+			externalTypes:        api.Scheme.KnownTypes(externalGroupVersion),
+		}
+	}
+	if _, ok := Groups[kubeadm.GroupName]; !ok {
+		externalGroupVersion := unversioned.GroupVersion{Group: kubeadm.GroupName, Version: registered.GroupOrDie(kubeadm.GroupName).GroupVersion.Version}
+		Groups[kubeadm.GroupName] = TestGroup{
+			externalGroupVersion: externalGroupVersion,
+			internalGroupVersion: kubeadm.SchemeGroupVersion,
+			internalTypes:        api.Scheme.KnownTypes(kubeadm.SchemeGroupVersion),
 			externalTypes:        api.Scheme.KnownTypes(externalGroupVersion),
 		}
 	}
@@ -269,6 +290,7 @@ func init() {
 	Rbac = Groups[rbac.GroupName]
 	Storage = Groups[storage.GroupName]
 	ImagePolicy = Groups[imagepolicy.GroupName]
+	Authorization = Groups[authorization.GroupName]
 }
 
 func (g TestGroup) ContentConfig() (string, *unversioned.GroupVersion, runtime.Codec) {
@@ -302,7 +324,7 @@ func (g TestGroup) Codec() runtime.Codec {
 	if serializer.Serializer == nil {
 		return api.Codecs.LegacyCodec(g.externalGroupVersion)
 	}
-	return api.Codecs.CodecForVersions(serializer, api.Codecs.UniversalDeserializer(), unversioned.GroupVersions{g.externalGroupVersion}, nil)
+	return api.Codecs.CodecForVersions(serializer.Serializer, api.Codecs.UniversalDeserializer(), unversioned.GroupVersions{g.externalGroupVersion}, nil)
 }
 
 // NegotiatedSerializer returns the negotiated serializer for the server.
@@ -442,11 +464,11 @@ func GetCodecForObject(obj runtime.Object) (runtime.Codec, error) {
 	}
 	// Codec used for unversioned types
 	if api.Scheme.Recognizes(kind) {
-		serializer, ok := api.Codecs.SerializerForFileExtension("json")
+		serializer, ok := runtime.SerializerInfoForMediaType(api.Codecs.SupportedMediaTypes(), runtime.ContentTypeJSON)
 		if !ok {
 			return nil, fmt.Errorf("no serializer registered for json")
 		}
-		return serializer, nil
+		return serializer.Serializer, nil
 	}
 	return nil, fmt.Errorf("unexpected kind: %v", kind)
 }

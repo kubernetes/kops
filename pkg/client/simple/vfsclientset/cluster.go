@@ -17,21 +17,30 @@ limitations under the License.
 package vfsclientset
 
 import (
-	"k8s.io/kops/pkg/client/simple"
-	api "k8s.io/kops/pkg/apis/kops"
-	k8sapi "k8s.io/kubernetes/pkg/api"
 	"fmt"
-	"k8s.io/kops/pkg/apis/kops/registry"
-	"k8s.io/kubernetes/pkg/api/unversioned"
-	"time"
-	"k8s.io/kops/util/pkg/vfs"
-	"strings"
-	"os"
 	"github.com/golang/glog"
+	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/util/pkg/vfs"
+	k8sapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/unversioned"
+	"os"
+	"strings"
+	"time"
+	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 )
 
 type ClusterVFS struct {
-	basePath vfs.Path
+	commonVFS
+}
+
+func newClusterVFS(basePath vfs.Path) (*ClusterVFS) {
+	c := &ClusterVFS{}
+	c.init("Cluster", basePath, v1alpha1.SchemeGroupVersion)
+	defaultReadVersion := v1alpha1.SchemeGroupVersion.WithKind("Cluster")
+	c.defaultReadVersion = &defaultReadVersion
+	return c
 }
 
 var _ simple.ClusterInterface = &ClusterVFS{}
@@ -41,7 +50,7 @@ func (c *ClusterVFS) Get(name string) (*api.Cluster, error) {
 }
 
 // Deprecated, but we need this for now..
-func (c*ClusterVFS) ConfigBase(clusterName string) (vfs.Path, error) {
+func (c *ClusterVFS) ConfigBase(clusterName string) (vfs.Path, error) {
 	if clusterName == "" {
 		return nil, fmt.Errorf("clusterName is required")
 	}
@@ -83,11 +92,12 @@ func (r *ClusterVFS) Create(c *api.Cluster) (*api.Cluster, error) {
 		c.CreationTimestamp = unversioned.NewTime(time.Now().UTC())
 	}
 
-	configPath := r.basePath.Join(c.Name, registry.PathCluster)
-
-	err = registry.WriteConfig(configPath, c, vfs.WriteOptionCreate)
+	err = r.writeConfig(r.basePath.Join(registry.PathCluster), c, vfs.WriteOptionCreate)
 	if err != nil {
-		return nil, fmt.Errorf("error writing Cluster: %v", err)
+		if os.IsExist(err) {
+			return nil, err
+		}
+		return nil, fmt.Errorf("error writing Cluster %q: %v", c.Name, err)
 	}
 
 	return c, nil
@@ -99,11 +109,12 @@ func (r *ClusterVFS) Update(c *api.Cluster) (*api.Cluster, error) {
 		return nil, err
 	}
 
-	configPath := r.basePath.Join(c.Name, registry.PathCluster)
-
-	err = registry.WriteConfig(configPath, c, vfs.WriteOptionOnlyIfExists)
+	err = r.writeConfig(r.basePath.Join(registry.PathCluster), c, vfs.WriteOptionOnlyIfExists)
 	if err != nil {
-		return nil, fmt.Errorf("error writing cluster %q: %v", c.Name, err)
+		if os.IsExist(err) {
+			return nil, err
+		}
+		return nil, fmt.Errorf("error writing Cluster: %v", err)
 	}
 
 	return c, nil
@@ -137,14 +148,16 @@ func (r *ClusterVFS) find(clusterName string) (*api.Cluster, error) {
 		return nil, fmt.Errorf("clusterName is required")
 	}
 	configPath := r.basePath.Join(clusterName, registry.PathCluster)
-	c := &api.Cluster{}
-	err := registry.ReadConfig(configPath, c)
+
+	o, err := r.readConfig(configPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("error reading cluster configuration %q: %v", clusterName, err)
 	}
+
+	c := o.(*api.Cluster)
 
 	if c.Name == "" {
 		c.Name = clusterName
