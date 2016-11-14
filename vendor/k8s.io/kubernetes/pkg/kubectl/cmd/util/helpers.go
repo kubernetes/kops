@@ -34,7 +34,6 @@ import (
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apimachinery/registered"
 	"k8s.io/kubernetes/pkg/apis/extensions"
-	"k8s.io/kubernetes/pkg/client/typed/discovery"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 	"k8s.io/kubernetes/pkg/kubectl"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
@@ -88,22 +87,25 @@ func DefaultBehaviorOnFatal() {
 	fatalErrHandler = fatal
 }
 
-// fatal prints the message if set and then exits. If V(2) or greater, glog.Fatal
-// is invoked for extended information.
+// fatal prints the message (if provided) and then exits. If V(2) or greater,
+// glog.Fatal is invoked for extended information.
 func fatal(msg string, code int) {
+	if glog.V(2) {
+		glog.FatalDepth(2, msg)
+	}
 	if len(msg) > 0 {
 		// add newline if needed
 		if !strings.HasSuffix(msg, "\n") {
 			msg += "\n"
 		}
-
-		if glog.V(2) {
-			glog.FatalDepth(2, msg)
-		}
 		fmt.Fprint(os.Stderr, msg)
 	}
 	os.Exit(code)
 }
+
+// ErrExit may be passed to CheckError to instruct it to output nothing but exit with
+// status code 1.
+var ErrExit = fmt.Errorf("exit")
 
 // CheckErr prints a user friendly error to STDERR and exits with a non-zero
 // exit code. Unrecognized errors will be printed with an "error: " prefix.
@@ -129,6 +131,9 @@ func checkErr(prefix string, err error, handleErr func(string, int)) {
 
 	switch {
 	case err == nil:
+		return
+	case err == ErrExit:
+		handleErr("", DefaultErrorExitCode)
 		return
 	case kerrors.IsInvalid(err):
 		details := err.(*kerrors.StatusError).Status().Details
@@ -249,6 +254,26 @@ func MultilineError(prefix string, err error) string {
 	return fmt.Sprintf("%s%s\n", prefix, err)
 }
 
+// PrintErrorWithCauses prints an error's kind, name, and each of the error's causes in a new line.
+// The returned string will end with a newline.
+// Returns true if a case exists to handle the error type, or false otherwise.
+func PrintErrorWithCauses(err error, errOut io.Writer) bool {
+	switch t := err.(type) {
+	case *kerrors.StatusError:
+		errorDetails := t.Status().Details
+		if errorDetails != nil {
+			fmt.Fprintf(errOut, "error: %s %q is invalid\n\n", errorDetails.Kind, errorDetails.Name)
+			for _, cause := range errorDetails.Causes {
+				fmt.Fprintf(errOut, "* %s: %s\n", cause.Field, cause.Message)
+			}
+			return true
+		}
+	}
+
+	fmt.Fprintf(errOut, "error: %v\n", err)
+	return false
+}
+
 // MultipleErrors returns a newline delimited string containing
 // the prefix and referenced errors in standard form.
 func MultipleErrors(prefix string, errs []error) string {
@@ -296,7 +321,7 @@ func isWatch(cmd *cobra.Command) bool {
 func GetFlagString(cmd *cobra.Command, flag string) string {
 	s, err := cmd.Flags().GetString(flag)
 	if err != nil {
-		glog.Fatalf("err accessing flag %s for command %s: %v", flag, cmd.Name(), err)
+		glog.Fatalf("error accessing flag %s for command %s: %v", flag, cmd.Name(), err)
 	}
 	return s
 }
@@ -305,7 +330,7 @@ func GetFlagString(cmd *cobra.Command, flag string) string {
 func GetFlagStringSlice(cmd *cobra.Command, flag string) []string {
 	s, err := cmd.Flags().GetStringSlice(flag)
 	if err != nil {
-		glog.Fatalf("err accessing flag %s for command %s: %v", flag, cmd.Name(), err)
+		glog.Fatalf("error accessing flag %s for command %s: %v", flag, cmd.Name(), err)
 	}
 	return s
 }
@@ -331,7 +356,7 @@ func GetWideFlag(cmd *cobra.Command) bool {
 func GetFlagBool(cmd *cobra.Command, flag string) bool {
 	b, err := cmd.Flags().GetBool(flag)
 	if err != nil {
-		glog.Fatalf("err accessing flag %s for command %s: %v", flag, cmd.Name(), err)
+		glog.Fatalf("error accessing flag %s for command %s: %v", flag, cmd.Name(), err)
 	}
 	return b
 }
@@ -340,7 +365,7 @@ func GetFlagBool(cmd *cobra.Command, flag string) bool {
 func GetFlagInt(cmd *cobra.Command, flag string) int {
 	i, err := cmd.Flags().GetInt(flag)
 	if err != nil {
-		glog.Fatalf("err accessing flag %s for command %s: %v", flag, cmd.Name(), err)
+		glog.Fatalf("error accessing flag %s for command %s: %v", flag, cmd.Name(), err)
 	}
 	return i
 }
@@ -349,7 +374,7 @@ func GetFlagInt(cmd *cobra.Command, flag string) int {
 func GetFlagInt64(cmd *cobra.Command, flag string) int64 {
 	i, err := cmd.Flags().GetInt64(flag)
 	if err != nil {
-		glog.Fatalf("err accessing flag %s for command %s: %v", flag, cmd.Name(), err)
+		glog.Fatalf("error accessing flag %s for command %s: %v", flag, cmd.Name(), err)
 	}
 	return i
 }
@@ -357,7 +382,7 @@ func GetFlagInt64(cmd *cobra.Command, flag string) int64 {
 func GetFlagDuration(cmd *cobra.Command, flag string) time.Duration {
 	d, err := cmd.Flags().GetDuration(flag)
 	if err != nil {
-		glog.Fatalf("err accessing flag %s for command %s: %v", flag, cmd.Name(), err)
+		glog.Fatalf("error accessing flag %s for command %s: %v", flag, cmd.Name(), err)
 	}
 	return d
 }
@@ -525,49 +550,6 @@ func ShouldRecord(cmd *cobra.Command, info *resource.Info) bool {
 	return GetRecordFlag(cmd) || (ContainsChangeCause(info) && !cmd.Flags().Changed("record"))
 }
 
-// GetThirdPartyGroupVersions returns the thirdparty "group/versions"s and
-// resources supported by the server. A user may delete a thirdparty resource
-// when this function is running, so this function may return a "NotFound" error
-// due to the race.
-func GetThirdPartyGroupVersions(discovery discovery.DiscoveryInterface) ([]unversioned.GroupVersion, []unversioned.GroupVersionKind, error) {
-	result := []unversioned.GroupVersion{}
-	gvks := []unversioned.GroupVersionKind{}
-
-	groupList, err := discovery.ServerGroups()
-	if err != nil {
-		// On forbidden or not found, just return empty lists.
-		if kerrors.IsForbidden(err) || kerrors.IsNotFound(err) {
-			return result, gvks, nil
-		}
-
-		return nil, nil, err
-	}
-
-	for ix := range groupList.Groups {
-		group := &groupList.Groups[ix]
-		for jx := range group.Versions {
-			gv, err2 := unversioned.ParseGroupVersion(group.Versions[jx].GroupVersion)
-			if err2 != nil {
-				return nil, nil, err
-			}
-			// Skip GroupVersionKinds that have been statically registered.
-			if registered.IsRegisteredVersion(gv) {
-				continue
-			}
-			result = append(result, gv)
-
-			resourceList, err := discovery.ServerResourcesForGroupVersion(group.Versions[jx].GroupVersion)
-			if err != nil {
-				return nil, nil, err
-			}
-			for kx := range resourceList.APIResources {
-				gvks = append(gvks, gv.WithKind(resourceList.APIResources[kx].Kind))
-			}
-		}
-	}
-	return result, gvks, nil
-}
-
 func AddInclude3rdPartyFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool("include-extended-apis", true, "If true, include definitions of new APIs via calls to the API server. [default true]")
 	cmd.Flags().MarkDeprecated("include-extended-apis", "No longer required.")
@@ -605,7 +587,7 @@ func ParsePairs(pairArgs []string, pairType string, supportRemove bool) (newPair
 	for _, pairArg := range pairArgs {
 		if strings.Index(pairArg, "=") != -1 {
 			parts := strings.SplitN(pairArg, "=", 2)
-			if len(parts) != 2 || len(parts[1]) == 0 {
+			if len(parts) != 2 {
 				if invalidBuf.Len() > 0 {
 					invalidBuf.WriteString(", ")
 				}
@@ -698,12 +680,10 @@ func FilterResourceList(obj runtime.Object, filterFuncs kubectl.Filters, filterO
 	return filterCount, list, nil
 }
 
-func PrintFilterCount(hiddenObjNum int, resource string, out io.Writer, options *kubectl.PrintOptions) error {
+func PrintFilterCount(hiddenObjNum int, resource string, options *kubectl.PrintOptions) {
 	if !options.NoHeaders && !options.ShowAll && hiddenObjNum > 0 {
-		_, err := fmt.Fprintf(out, "  info: %d completed object(s) was(were) not shown in %s list. Pass --show-all to see all objects.\n\n", hiddenObjNum, resource)
-		return err
+		glog.V(2).Infof("  info: %d completed object(s) was(were) not shown in %s list. Pass --show-all to see all objects.\n\n", hiddenObjNum, resource)
 	}
-	return nil
 }
 
 // ObjectListToVersionedObject receives a list of api objects and a group version
@@ -727,4 +707,21 @@ func IsSiblingCommandExists(cmd *cobra.Command, targetCmdName string) bool {
 	}
 
 	return false
+}
+
+// DefaultSubCommandRun prints a command's help string to the specified output if no
+// arguments (sub-commands) are provided, or a usage error otherwise.
+func DefaultSubCommandRun(out io.Writer) func(c *cobra.Command, args []string) {
+	return func(c *cobra.Command, args []string) {
+		c.SetOutput(out)
+		RequireNoArguments(c, args)
+		c.Help()
+	}
+}
+
+// RequireNoArguments exits with a usage error if extra arguments are provided.
+func RequireNoArguments(c *cobra.Command, args []string) {
+	if len(args) > 0 {
+		CheckErr(UsageError(c, fmt.Sprintf(`unknown command %q`, strings.Join(args, " "))))
+	}
 }

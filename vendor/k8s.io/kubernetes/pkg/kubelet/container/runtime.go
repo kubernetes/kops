@@ -19,6 +19,7 @@ package container
 import (
 	"fmt"
 	"io"
+	"net/url"
 	"reflect"
 	"strings"
 	"time"
@@ -112,12 +113,34 @@ type Runtime interface {
 	GetContainerLogs(pod *api.Pod, containerID ContainerID, logOptions *api.PodLogOptions, stdout, stderr io.Writer) (err error)
 	// Delete a container. If the container is still running, an error is returned.
 	DeleteContainer(containerID ContainerID) error
-	// ContainerCommandRunner encapsulates the command runner interfaces for testability.
-	ContainerCommandRunner
-	// ContainerAttach encapsulates the attaching to containers for testability
-	ContainerAttacher
 	// ImageService provides methods to image-related methods.
 	ImageService
+	// UpdatePodCIDR sends a new podCIDR to the runtime.
+	// This method just proxies a new runtimeConfig with the updated
+	// CIDR value down to the runtime shim.
+	UpdatePodCIDR(podCIDR string) error
+}
+
+// DirectStreamingRuntime is the interface implemented by runtimes for which the streaming calls
+// (exec/attach/port-forward) should be served directly by the Kubelet.
+type DirectStreamingRuntime interface {
+	// Runs the command in the container of the specified pod using nsenter.
+	// Attaches the processes stdin, stdout, and stderr. Optionally uses a
+	// tty.
+	ExecInContainer(containerID ContainerID, cmd []string, stdin io.Reader, stdout, stderr io.WriteCloser, tty bool, resize <-chan term.Size) error
+	// Forward the specified port from the specified pod to the stream.
+	PortForward(pod *Pod, port uint16, stream io.ReadWriteCloser) error
+	// ContainerAttach encapsulates the attaching to containers for testability
+	ContainerAttacher
+}
+
+// IndirectStreamingRuntime is the interface implemented by runtimes that handle the serving of the
+// streaming calls (exec/attach/port-forward) themselves. In this case, Kubelet should redirect to
+// the runtime server.
+type IndirectStreamingRuntime interface {
+	GetExec(id ContainerID, cmd []string, stdin, stdout, stderr, tty bool) (*url.URL, error)
+	GetAttach(id ContainerID, stdin, stdout, stderr bool) (*url.URL, error)
+	GetPortForward(podName, podNamespace string, podUID types.UID) (*url.URL, error)
 }
 
 type ImageService interface {
@@ -138,14 +161,10 @@ type ContainerAttacher interface {
 	AttachContainer(id ContainerID, stdin io.Reader, stdout, stderr io.WriteCloser, tty bool, resize <-chan term.Size) (err error)
 }
 
-// CommandRunner encapsulates the command runner interfaces for testability.
 type ContainerCommandRunner interface {
-	// Runs the command in the container of the specified pod using nsenter.
-	// Attaches the processes stdin, stdout, and stderr. Optionally uses a
-	// tty.
-	ExecInContainer(containerID ContainerID, cmd []string, stdin io.Reader, stdout, stderr io.WriteCloser, tty bool, resize <-chan term.Size) error
-	// Forward the specified port from the specified pod to the stream.
-	PortForward(pod *Pod, port uint16, stream io.ReadWriteCloser) error
+	// RunInContainer synchronously executes the command in the container, and returns the output.
+	// If the command completes with a non-0 exit code, a pkg/util/exec.ExitError will be returned.
+	RunInContainer(id ContainerID, cmd []string) ([]byte, error)
 }
 
 // Pod is a group of containers.
@@ -381,6 +400,15 @@ type PortMapping struct {
 	HostIP string
 }
 
+type DeviceInfo struct {
+	// Path on host for mapping
+	PathOnHost string
+	// Path in Container to map
+	PathInContainer string
+	// Cgroup permissions
+	Permissions string
+}
+
 // RunContainerOptions specify the options which are necessary for running containers
 type RunContainerOptions struct {
 	// The environment variables list.
@@ -388,7 +416,7 @@ type RunContainerOptions struct {
 	// The mounts for the containers.
 	Mounts []Mount
 	// The host devices mapped into the containers.
-	Devices []string
+	Devices []DeviceInfo
 	// The port mappings for the containers.
 	PortMappings []PortMapping
 	// If the container has specified the TerminationMessagePath, then

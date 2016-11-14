@@ -19,6 +19,7 @@ package v1
 import (
 	api "k8s.io/kubernetes/pkg/api"
 	v1 "k8s.io/kubernetes/pkg/api/v1"
+	restclient "k8s.io/kubernetes/pkg/client/restclient"
 	watch "k8s.io/kubernetes/pkg/watch"
 )
 
@@ -32,25 +33,25 @@ type SecretsGetter interface {
 type SecretInterface interface {
 	Create(*v1.Secret) (*v1.Secret, error)
 	Update(*v1.Secret) (*v1.Secret, error)
-	Delete(name string, options *api.DeleteOptions) error
-	DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error
+	Delete(name string, options *v1.DeleteOptions) error
+	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
 	Get(name string) (*v1.Secret, error)
-	List(opts api.ListOptions) (*v1.SecretList, error)
-	Watch(opts api.ListOptions) (watch.Interface, error)
+	List(opts v1.ListOptions) (*v1.SecretList, error)
+	Watch(opts v1.ListOptions) (watch.Interface, error)
 	Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1.Secret, err error)
 	SecretExpansion
 }
 
 // secrets implements SecretInterface
 type secrets struct {
-	client *CoreClient
+	client restclient.Interface
 	ns     string
 }
 
 // newSecrets returns a Secrets
-func newSecrets(c *CoreClient, namespace string) *secrets {
+func newSecrets(c *CoreV1Client, namespace string) *secrets {
 	return &secrets{
-		client: c,
+		client: c.RESTClient(),
 		ns:     namespace,
 	}
 }
@@ -81,7 +82,7 @@ func (c *secrets) Update(secret *v1.Secret) (result *v1.Secret, err error) {
 }
 
 // Delete takes name of the secret and deletes it. Returns an error if one occurs.
-func (c *secrets) Delete(name string, options *api.DeleteOptions) error {
+func (c *secrets) Delete(name string, options *v1.DeleteOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("secrets").
@@ -92,7 +93,7 @@ func (c *secrets) Delete(name string, options *api.DeleteOptions) error {
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *secrets) DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error {
+func (c *secrets) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("secrets").
@@ -115,7 +116,7 @@ func (c *secrets) Get(name string) (result *v1.Secret, err error) {
 }
 
 // List takes label and field selectors, and returns the list of Secrets that match those selectors.
-func (c *secrets) List(opts api.ListOptions) (result *v1.SecretList, err error) {
+func (c *secrets) List(opts v1.ListOptions) (result *v1.SecretList, err error) {
 	result = &v1.SecretList{}
 	err = c.client.Get().
 		Namespace(c.ns).
@@ -127,7 +128,7 @@ func (c *secrets) List(opts api.ListOptions) (result *v1.SecretList, err error) 
 }
 
 // Watch returns a watch.Interface that watches the requested secrets.
-func (c *secrets) Watch(opts api.ListOptions) (watch.Interface, error) {
+func (c *secrets) Watch(opts v1.ListOptions) (watch.Interface, error) {
 	return c.client.Get().
 		Prefix("watch").
 		Namespace(c.ns).

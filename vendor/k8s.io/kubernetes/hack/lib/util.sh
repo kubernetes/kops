@@ -32,7 +32,7 @@ kube::util::wait_for_url() {
   local i
   for i in $(seq 1 $times); do
     local out
-    if out=$(curl -gfs $url 2>/dev/null); then
+    if out=$(curl -gkfs $url 2>/dev/null); then
       kube::log::status "On try ${i}, ${prefix}: ${out}"
       return 0
     fi
@@ -387,60 +387,6 @@ kube::util::fetch-swagger-spec() {
   curl -w "\n" -fs "${SWAGGER_API_PATH}logs" > "${SWAGGER_ROOT_DIR}/logs.json"
 }
 
-# Takes a group/version and returns the openapi-spec file name.
-# default behavior: extensions/v1beta1 -> v1beta1.extensions
-# special case for v1: v1 -> v1
-kube::util::gv-to-openapi-name() {
-  local group_version="$1"
-  case "${group_version}" in
-    v1)
-      echo "v1"
-      ;;
-    *)
-      echo "${group_version#*/}.${group_version%/*}"
-      ;;
-  esac
-}
-
-
-# Fetches openapi spec from apiserver.
-# Assumed vars:
-# OPENAPI_API_PATH: Base path for openapi on apiserver. normally APIServer root. i.e., http://localhost:8080/
-# OPENAPI_ROOT_DIR: Root dir where we want to to save the fetched spec.
-# VERSIONS: Array of group versions to include in swagger spec.
-kube::util::fetch-openapi-spec() {
-  for ver in ${VERSIONS}; do
-    if [[ " ${KUBE_NONSERVER_GROUP_VERSIONS} " == *" ${ver} "* ]]; then
-      continue
-    fi
-    # fetch the openapi spec for each group version.
-    if [[ ${ver} == "v1" ]]; then
-      SUBPATH="api"
-    else
-      SUBPATH="apis"
-    fi
-    SUBPATH="${SUBPATH}/${ver}"
-    OPENAPI_JSON_NAME="$(kube::util::gv-to-openapi-name ${ver}).json"
-    curl -w "\n" -fs "${OPENAPI_PATH}${SUBPATH}/swagger.json" > "${OPENAPI_ROOT_DIR}/${OPENAPI_JSON_NAME}"
-
-    # fetch the openapi spec for the discovery mechanism at group level.
-    if [[ ${ver} == "v1" ]]; then
-      continue
-    fi
-    SUBPATH="apis/"${ver%/*}
-    OPEAN_JSON_NAME="${ver%/*}.json"
-    curl -w "\n" -fs "${OPENAPI_PATH}${SUBPATH}/swagger.json" > "${OPENAPI_ROOT_DIR}/${OPENAPI_JSON_NAME}"
-  done
-
-  # fetch openapi specs for other discovery mechanism.
-  curl -w "\n" -fs "${OPENAPI_PATH}swagger.json" > "${OPENAPI_ROOT_DIR}/root_swagger.json"
-  curl -w "\n" -fs "${OPENAPI_PATH}version/swagger.json" > "${OPENAPI_ROOT_DIR}/version.json"
-  curl -w "\n" -fs "${OPENAPI_PATH}api/swagger.json" > "${OPENAPI_ROOT_DIR}/api.json"
-  curl -w "\n" -fs "${OPENAPI_PATH}apis/swagger.json" > "${OPENAPI_ROOT_DIR}/apis.json"
-  curl -w "\n" -fs "${OPENAPI_PATH}logs/swagger.json" > "${OPENAPI_ROOT_DIR}/logs.json"
-}
-
-
 # Returns the name of the upstream remote repository name for the local git
 # repo, e.g. "upstream" or "origin".
 kube::util::git_upstream_remote_name() {
@@ -475,6 +421,25 @@ kube::util::has_changes_against_upstream_branch() {
     return 0
   fi
   echo "No '${pattern}' changes detected."
+  return 1
+}
+
+kube::util::download_file() {
+  local -r url=$1
+  local -r destination_file=$2
+
+  rm  ${destination_file} 2&> /dev/null || true
+
+  for i in $(seq 5)
+  do
+    if ! curl -fsSL --retry 3 --keepalive-time 2 ${url} -o ${destination_file}; then
+      echo "Downloading ${url} failed. $((5-i)) retries left."
+      sleep 1
+    else
+      echo "Downloading ${url} succeed"
+      return 0
+    fi
+  done
   return 1
 }
 

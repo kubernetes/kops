@@ -18,7 +18,9 @@ package v1beta1
 
 import (
 	api "k8s.io/kubernetes/pkg/api"
+	v1 "k8s.io/kubernetes/pkg/api/v1"
 	v1beta1 "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
+	restclient "k8s.io/kubernetes/pkg/client/restclient"
 	watch "k8s.io/kubernetes/pkg/watch"
 )
 
@@ -33,25 +35,25 @@ type IngressInterface interface {
 	Create(*v1beta1.Ingress) (*v1beta1.Ingress, error)
 	Update(*v1beta1.Ingress) (*v1beta1.Ingress, error)
 	UpdateStatus(*v1beta1.Ingress) (*v1beta1.Ingress, error)
-	Delete(name string, options *api.DeleteOptions) error
-	DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error
+	Delete(name string, options *v1.DeleteOptions) error
+	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
 	Get(name string) (*v1beta1.Ingress, error)
-	List(opts api.ListOptions) (*v1beta1.IngressList, error)
-	Watch(opts api.ListOptions) (watch.Interface, error)
+	List(opts v1.ListOptions) (*v1beta1.IngressList, error)
+	Watch(opts v1.ListOptions) (watch.Interface, error)
 	Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1beta1.Ingress, err error)
 	IngressExpansion
 }
 
 // ingresses implements IngressInterface
 type ingresses struct {
-	client *ExtensionsClient
+	client restclient.Interface
 	ns     string
 }
 
 // newIngresses returns a Ingresses
-func newIngresses(c *ExtensionsClient, namespace string) *ingresses {
+func newIngresses(c *ExtensionsV1beta1Client, namespace string) *ingresses {
 	return &ingresses{
-		client: c,
+		client: c.RESTClient(),
 		ns:     namespace,
 	}
 }
@@ -95,7 +97,7 @@ func (c *ingresses) UpdateStatus(ingress *v1beta1.Ingress) (result *v1beta1.Ingr
 }
 
 // Delete takes name of the ingress and deletes it. Returns an error if one occurs.
-func (c *ingresses) Delete(name string, options *api.DeleteOptions) error {
+func (c *ingresses) Delete(name string, options *v1.DeleteOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("ingresses").
@@ -106,7 +108,7 @@ func (c *ingresses) Delete(name string, options *api.DeleteOptions) error {
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *ingresses) DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error {
+func (c *ingresses) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("ingresses").
@@ -129,7 +131,7 @@ func (c *ingresses) Get(name string) (result *v1beta1.Ingress, err error) {
 }
 
 // List takes label and field selectors, and returns the list of Ingresses that match those selectors.
-func (c *ingresses) List(opts api.ListOptions) (result *v1beta1.IngressList, err error) {
+func (c *ingresses) List(opts v1.ListOptions) (result *v1beta1.IngressList, err error) {
 	result = &v1beta1.IngressList{}
 	err = c.client.Get().
 		Namespace(c.ns).
@@ -141,7 +143,7 @@ func (c *ingresses) List(opts api.ListOptions) (result *v1beta1.IngressList, err
 }
 
 // Watch returns a watch.Interface that watches the requested ingresses.
-func (c *ingresses) Watch(opts api.ListOptions) (watch.Interface, error) {
+func (c *ingresses) Watch(opts v1.ListOptions) (watch.Interface, error) {
 	return c.client.Get().
 		Prefix("watch").
 		Namespace(c.ns).

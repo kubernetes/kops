@@ -1,42 +1,8 @@
-<!-- BEGIN MUNGE: UNVERSIONED_WARNING -->
-
-<!-- BEGIN STRIP_FOR_RELEASE -->
-
-<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
-     width="25" height="25">
-<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
-     width="25" height="25">
-<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
-     width="25" height="25">
-<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
-     width="25" height="25">
-<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
-     width="25" height="25">
-
-<h2>PLEASE NOTE: This document applies to the HEAD of the source tree</h2>
-
-If you are using a released version of Kubernetes, you should
-refer to the docs that go with that version.
-
-<!-- TAG RELEASE_LINK, added by the munger automatically -->
-<strong>
-The latest release of this document can be found
-[here](http://releases.k8s.io/release-1.4/examples/experimental/persistent-volume-provisioning/README.md).
-
-Documentation for other releases can be found at
-[releases.k8s.io](http://releases.k8s.io).
-</strong>
---
-
-<!-- END STRIP_FOR_RELEASE -->
-
-<!-- END MUNGE: UNVERSIONED_WARNING -->
-
 ## Persistent Volume Provisioning
 
 This example shows how to use experimental persistent volume provisioning.
 
-### Pre-requisites
+### Prerequisites
 
 This example assumes that you have an understanding of Kubernetes administration and can modify the
 scripts that launch kube-controller-manager.
@@ -92,7 +58,7 @@ metadata:
   name: slow
 provisioner: kubernetes.io/vsphere-volume
 parameters:
-  diskformat: thin
+  diskformat: eagerzeroedthick
 ```
 
 * `diskformat`: `thin`, `zeroedthick` and `eagerzeroedthick`. See vSphere docs for details. Default: `"thin"`.
@@ -107,14 +73,12 @@ metadata:
   name: slow
 provisioner: kubernetes.io/glusterfs
 parameters:
-  endpoint: "glusterfs-cluster"
   resturl: "http://127.0.0.1:8081"
   restuser: "admin"
   secretNamespace: "default"
   secretName: "heketi-secret"
 ```
 
-* `endpoint`: `glusterfs-cluster` is the endpoint name which includes GlusterFS trusted pool IP addresses. This parameter is mandatory. We need to also create a service for this endpoint, so that the endpoint will be persisted. This service can be without a selector to tell Kubernetes we want to add its endpoints manually.  Please note that, glusterfs plugin looks for the endpoint in the pod namespace, so it is mandatory that the endpoint and service have to be created in Pod's namespace for successful mount of gluster volumes in the pod.
 * `resturl` : Gluster REST service/Heketi service url which provision gluster volumes on demand. The general format should be `IPaddress:Port` and this is a mandatory parameter for GlusterFS dynamic provisioner. If Heketi service is exposed as a routable service in openshift/kubernetes setup, this can have a format similar to
 `http://heketi-storage-project.cloudapps.mystorage.com` where the fqdn is a resolvable heketi service url.
 * `restauthenabled` : Gluster REST service authentication boolean that enables authentication to the REST server. If this value is 'true', `restuser` and `restuserkey` or `secretNamespace` + `secretName` have to be filled. This option is deprecated, authentication is enabled when any of `restuser`, `restuserkey`, `secretName` or `secretNamespace` is specified.
@@ -128,31 +92,8 @@ Example of a secret can be found in [glusterfs-provisioning-secret.yaml](gluster
 
 Reference : ([How to configure Heketi](https://github.com/heketi/heketi/wiki/Setting-up-the-topology))
 
-Create endpoints
+When the persistent volumes are dynamically provisioned, the Gluster plugin automatically create an endpoint and a headless service in the name `gluster-dynamic-<claimname>`. This dynamic endpoint and service will be deleted automatically when the persistent volume claim is deleted.
 
-As in example [glusterfs-endpoints.json](../../volumes/glusterfs/glusterfs-endpoints.json) file, the "IP" field should be filled with the address of a node in the Glusterfs server cluster. It is fine to give any valid value (from 1 to 65535) to the "port" field.
-
-Create the endpoints,
-
-```sh
-$ kubectl create -f examples/volumes/glusterfs/glusterfs-endpoints.json
-```
-
-You can verify that the endpoints are successfully created by running
-
-```sh
-$ kubectl get endpoints
-NAME                ENDPOINTS
-glusterfs-cluster   10.240.106.152:1,10.240.79.157:1
-```
-
-We need also create a service for this endpoints, so that the endpoints will be persisted. It is possible to create `service` without a selector to tell Kubernetes we want to add its endpoints manually. For an example service file refer [glusterfs-service.json](../../volumes/glusterfs/glusterfs-service.json).
-
-Use this command to create the service:
-
-```sh
-$ kubectl create -f examples/volumes/glusterfs/glusterfs-service.json
-```
 
 #### OpenStack Cinder
 
@@ -283,6 +224,23 @@ Create a Pod to use the PVC:
 $ kubectl create -f examples/experimental/persistent-volume-provisioning/quobyte/example-pod.yaml
 ```
 
+#### Azure Disk
+
+```yaml
+kind: StorageClass
+apiVersion: storage.k8s.io/v1beta1
+metadata:
+  name: slow
+provisioner: kubernetes.io/azure-disk
+parameters:
+  skuName: Standard_LRS
+  location: eastus
+  storageAccount: azure_storage_account_name
+```
+
+* `skuName`: Azure storage account Sku tier. Default is empty.
+* `location`: Azure storage account location. Default is empty.
+* `storageAccount`: Azure storage account name. If storage account is not provided, all storage accounts associated with the resource group are searched to find one that matches `skuName` and `location`. If storage account is provided, `skuName` and `location` are ignored.
 
 ### User provisioning requests
 

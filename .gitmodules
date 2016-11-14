@@ -217,3 +217,12 @@
 [submodule "_vendor/github.com/shurcooL/sanitized_anchor_name"]
 	path = _vendor/github.com/shurcooL/sanitized_anchor_name
 	url = https://github.com/shurcooL/sanitized_anchor_name.git
+[submodule "_vendor/github.com/exponent-io/jsonpath"]
+	path = _vendor/github.com/exponent-io/jsonpath
+	url = https://github.com/exponent-io/jsonpath
+[submodule "_vendor/github.com/mitchellh/go-wordwrap"]
+	path = _vendor/github.com/mitchellh/go-wordwrap
+	url = https://github.com/mitchellh/go-wordwrap
+[submodule "_vendor/github.com/dgrijalva/jwt-go"]
+	path = _vendor/github.com/dgrijalva/jwt-go
+	url = https://github.com/dgrijalva/jwt-go
