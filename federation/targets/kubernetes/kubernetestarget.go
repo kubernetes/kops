@@ -17,12 +17,12 @@ limitations under the License.
 package kubernetes
 
 import (
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/pkg/client/simple"
+	"fmt"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3"
-	"fmt"
 )
 
 type KubernetesTarget struct {
@@ -34,9 +34,9 @@ type KubernetesTarget struct {
 
 func NewKubernetesTarget(clientset simple.Clientset, keystore fi.Keystore, cluster *kopsapi.Cluster) (*KubernetesTarget, error) {
 	b := &kutil.CreateKubecfg{
-		ContextName: cluster.Name,
-		KeyStore: keystore,
-		SecretStore: nil,
+		ContextName:  cluster.Name,
+		KeyStore:     keystore,
+		SecretStore:  nil,
 		KubeMasterIP: cluster.Spec.MasterPublicName,
 	}
 
@@ -56,7 +56,7 @@ func NewKubernetesTarget(clientset simple.Clientset, keystore fi.Keystore, clust
 	}
 
 	target := &KubernetesTarget{
-		cluster: cluster,
+		cluster:          cluster,
 		KubernetesClient: k8sClient,
 	}
 	return target, nil
@@ -80,7 +80,6 @@ func (t *KubernetesTarget) Apply(manifest []byte) error {
 	if err != nil {
 		return err
 	}
-
 
 	return nil
 }
