@@ -247,8 +247,7 @@ func (c *populateClusterSpec) run() error {
 
 	tf.AddTo(templateFunctions)
 
-	codeModels := []loader.OptionsBuilder{
-	}
+	codeModels := []loader.OptionsBuilder{}
 	specBuilder := &SpecBuilder{
 		OptionsLoader: loader.NewOptionsLoader(templateFunctions, codeModels),
 		Tags:          tags,
