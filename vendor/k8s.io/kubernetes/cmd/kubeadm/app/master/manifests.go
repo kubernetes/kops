@@ -24,7 +24,7 @@ import (
 	"path"
 	"strings"
 
-	kubeadmapi "k8s.io/kubernetes/cmd/kubeadm/app/api"
+	kubeadmapi "k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm"
 	"k8s.io/kubernetes/cmd/kubeadm/app/images"
 	"k8s.io/kubernetes/pkg/api/resource"
 	"k8s.io/kubernetes/pkg/api/unversioned"
@@ -53,36 +53,36 @@ const (
 
 // WriteStaticPodManifests builds manifest objects based on user provided configuration and then dumps it to disk
 // where kubelet will pick and schedule them.
-func WriteStaticPodManifests(s *kubeadmapi.KubeadmConfig) error {
+func WriteStaticPodManifests(cfg *kubeadmapi.MasterConfiguration) error {
 	// Prepare static pod specs
 	staticPodSpecs := map[string]api.Pod{
 		kubeAPIServer: componentPod(api.Container{
 			Name:          kubeAPIServer,
-			Image:         images.GetCoreImage(images.KubeAPIServerImage, s, s.EnvParams["hyperkube_image"]),
-			Command:       getComponentCommand(apiServer, s),
+			Image:         images.GetCoreImage(images.KubeAPIServerImage, cfg, kubeadmapi.GlobalEnvParams.HyperkubeImage),
+			Command:       getAPIServerCommand(cfg),
 			VolumeMounts:  []api.VolumeMount{certsVolumeMount(), k8sVolumeMount()},
 			LivenessProbe: componentProbe(8080, "/healthz"),
 			Resources:     componentResources("250m"),
-		}, certsVolume(s), k8sVolume(s)),
+		}, certsVolume(cfg), k8sVolume(cfg)),
 		kubeControllerManager: componentPod(api.Container{
 			Name:          kubeControllerManager,
-			Image:         images.GetCoreImage(images.KubeControllerManagerImage, s, s.EnvParams["hyperkube_image"]),
-			Command:       getComponentCommand(controllerManager, s),
+			Image:         images.GetCoreImage(images.KubeControllerManagerImage, cfg, kubeadmapi.GlobalEnvParams.HyperkubeImage),
+			Command:       getControllerManagerCommand(cfg),
 			VolumeMounts:  []api.VolumeMount{certsVolumeMount(), k8sVolumeMount()},
 			LivenessProbe: componentProbe(10252, "/healthz"),
 			Resources:     componentResources("200m"),
-		}, certsVolume(s), k8sVolume(s)),
+		}, certsVolume(cfg), k8sVolume(cfg)),
 		kubeScheduler: componentPod(api.Container{
 			Name:          kubeScheduler,
-			Image:         images.GetCoreImage(images.KubeSchedulerImage, s, s.EnvParams["hyperkube_image"]),
-			Command:       getComponentCommand(scheduler, s),
+			Image:         images.GetCoreImage(images.KubeSchedulerImage, cfg, kubeadmapi.GlobalEnvParams.HyperkubeImage),
+			Command:       getSchedulerCommand(cfg),
 			LivenessProbe: componentProbe(10251, "/healthz"),
 			Resources:     componentResources("100m"),
 		}),
 	}
 
 	// Add etcd static pod spec only if external etcd is not configured
-	if len(s.InitFlags.API.Etcd.ExternalEndpoints) == 0 {
+	if len(cfg.Etcd.Endpoints) == 0 {
 		staticPodSpecs[etcd] = componentPod(api.Container{
 			Name: etcd,
 			Command: []string{
@@ -92,7 +92,7 @@ func WriteStaticPodManifests(s *kubeadmapi.KubeadmConfig) error {
 				"--data-dir=/var/etcd/data",
 			},
 			VolumeMounts:  []api.VolumeMount{certsVolumeMount(), etcdVolumeMount(), k8sVolumeMount()},
-			Image:         images.GetCoreImage(images.KubeEtcdImage, s, s.EnvParams["etcd_image"]),
+			Image:         images.GetCoreImage(images.KubeEtcdImage, cfg, kubeadmapi.GlobalEnvParams.EtcdImage),
 			LivenessProbe: componentProbe(2379, "/health"),
 			Resources:     componentResources("200m"),
 			SecurityContext: &api.SecurityContext{
@@ -104,10 +104,10 @@ func WriteStaticPodManifests(s *kubeadmapi.KubeadmConfig) error {
 					Type: "unconfined_t",
 				},
 			},
-		}, certsVolume(s), etcdVolume(s), k8sVolume(s))
+		}, certsVolume(cfg), etcdVolume(cfg), k8sVolume(cfg))
 	}
 
-	manifestsPath := path.Join(s.EnvParams["kubernetes_dir"], "manifests")
+	manifestsPath := path.Join(kubeadmapi.GlobalEnvParams.KubernetesDir, "manifests")
 	if err := os.MkdirAll(manifestsPath, 0700); err != nil {
 		return fmt.Errorf("<master/manifests> failed to create directory %q [%v]", manifestsPath, err)
 	}
@@ -125,11 +125,11 @@ func WriteStaticPodManifests(s *kubeadmapi.KubeadmConfig) error {
 }
 
 // etcdVolume exposes a path on the host in order to guarantee data survival during reboot.
-func etcdVolume(s *kubeadmapi.KubeadmConfig) api.Volume {
+func etcdVolume(cfg *kubeadmapi.MasterConfiguration) api.Volume {
 	return api.Volume{
 		Name: "etcd",
 		VolumeSource: api.VolumeSource{
-			HostPath: &api.HostPathVolumeSource{Path: s.EnvParams["host_etcd_path"]},
+			HostPath: &api.HostPathVolumeSource{Path: kubeadmapi.GlobalEnvParams.HostEtcdPath},
 		},
 	}
 }
@@ -142,7 +142,7 @@ func etcdVolumeMount() api.VolumeMount {
 }
 
 // certsVolume exposes host SSL certificates to pod containers.
-func certsVolume(s *kubeadmapi.KubeadmConfig) api.Volume {
+func certsVolume(cfg *kubeadmapi.MasterConfiguration) api.Volume {
 	return api.Volume{
 		Name: "certs",
 		VolumeSource: api.VolumeSource{
@@ -159,11 +159,11 @@ func certsVolumeMount() api.VolumeMount {
 	}
 }
 
-func k8sVolume(s *kubeadmapi.KubeadmConfig) api.Volume {
+func k8sVolume(cfg *kubeadmapi.MasterConfiguration) api.Volume {
 	return api.Volume{
 		Name: "pki",
 		VolumeSource: api.VolumeSource{
-			HostPath: &api.HostPathVolumeSource{Path: s.EnvParams["kubernetes_dir"]},
+			HostPath: &api.HostPathVolumeSource{Path: kubeadmapi.GlobalEnvParams.KubernetesDir},
 		},
 	}
 }
@@ -195,6 +195,7 @@ func componentProbe(port int, path string) *api.Probe {
 		},
 		InitialDelaySeconds: 15,
 		TimeoutSeconds:      15,
+		FailureThreshold:    8,
 	}
 }
 
@@ -217,85 +218,99 @@ func componentPod(container api.Container, volumes ...api.Volume) api.Pod {
 	}
 }
 
-func getComponentCommand(component string, s *kubeadmapi.KubeadmConfig) (command []string) {
-	baseFlags := map[string][]string{
-		apiServer: {
-			"--insecure-bind-address=127.0.0.1",
-			"--etcd-servers=http://127.0.0.1:2379",
-			"--admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,DefaultStorageClass,ResourceQuota",
-			"--service-cluster-ip-range=" + s.InitFlags.Services.CIDR.String(),
-			"--service-account-key-file=" + pkiDir + "/apiserver-key.pem",
-			"--client-ca-file=" + pkiDir + "/ca.pem",
-			"--tls-cert-file=" + pkiDir + "/apiserver.pem",
-			"--tls-private-key-file=" + pkiDir + "/apiserver-key.pem",
-			"--token-auth-file=" + pkiDir + "/tokens.csv",
-			"--secure-port=443",
-			"--allow-privileged",
-		},
-		controllerManager: {
-			"--address=127.0.0.1",
-			"--leader-elect",
-			"--master=127.0.0.1:8080",
-			"--cluster-name=" + DefaultClusterName,
-			"--root-ca-file=" + pkiDir + "/ca.pem",
-			"--service-account-private-key-file=" + pkiDir + "/apiserver-key.pem",
-			"--cluster-signing-cert-file=" + pkiDir + "/ca.pem",
-			"--cluster-signing-key-file=" + pkiDir + "/ca-key.pem",
-			"--insecure-experimental-approve-all-kubelet-csrs-for-group=system:kubelet-bootstrap",
-		},
-		scheduler: {
-			"--address=127.0.0.1",
-			"--leader-elect",
-			"--master=127.0.0.1:8080",
-		},
-		proxy: {},
-	}
-
-	if s.EnvParams["hyperkube_image"] != "" {
+func getComponentBaseCommand(component string) (command []string) {
+	if kubeadmapi.GlobalEnvParams.HyperkubeImage != "" {
 		command = []string{"/hyperkube", component}
 	} else {
-		command = []string{"/usr/local/bin/kube-" + component}
+		command = []string{"kube-" + component}
+	}
+	command = append(command, kubeadmapi.GlobalEnvParams.ComponentLoglevel)
+	return
+}
+
+func getAPIServerCommand(cfg *kubeadmapi.MasterConfiguration) (command []string) {
+	command = append(getComponentBaseCommand(apiServer),
+		"--insecure-bind-address=127.0.0.1",
+		"--admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,DefaultStorageClass,ResourceQuota",
+		"--service-cluster-ip-range="+cfg.Networking.ServiceSubnet,
+		"--service-account-key-file="+pkiDir+"/apiserver-key.pem",
+		"--client-ca-file="+pkiDir+"/ca.pem",
+		"--tls-cert-file="+pkiDir+"/apiserver.pem",
+		"--tls-private-key-file="+pkiDir+"/apiserver-key.pem",
+		"--token-auth-file="+pkiDir+"/tokens.csv",
+		fmt.Sprintf("--secure-port=%d", cfg.API.BindPort),
+		"--allow-privileged",
+	)
+
+	// Use first address we are given
+	if len(cfg.API.AdvertiseAddresses) > 0 {
+		command = append(command, fmt.Sprintf("--advertise-address=%s", cfg.API.AdvertiseAddresses[0]))
 	}
 
-	command = append(command, s.EnvParams["component_loglevel"])
-	command = append(command, baseFlags[component]...)
+	// Check if the user decided to use an external etcd cluster
+	if len(cfg.Etcd.Endpoints) > 0 {
+		command = append(command, fmt.Sprintf("--etcd-servers=%s", strings.Join(cfg.Etcd.Endpoints, ",")))
+	} else {
+		command = append(command, "--etcd-servers=http://127.0.0.1:2379")
+	}
 
-	if component == apiServer {
-		// Check if the user decided to use an external etcd cluster
-		if len(s.InitFlags.API.Etcd.ExternalEndpoints) > 0 {
-			command = append(command, fmt.Sprintf("--etcd-servers=%s", strings.Join(s.InitFlags.API.Etcd.ExternalEndpoints, ",")))
-		} else {
-			command = append(command, "--etcd-servers=http://127.0.0.1:2379")
-		}
+	// Is etcd secured?
+	if cfg.Etcd.CAFile != "" {
+		command = append(command, fmt.Sprintf("--etcd-cafile=%s", cfg.Etcd.CAFile))
+	}
+	if cfg.Etcd.CertFile != "" && cfg.Etcd.KeyFile != "" {
+		etcdClientFileArg := fmt.Sprintf("--etcd-certfile=%s", cfg.Etcd.CertFile)
+		etcdKeyFileArg := fmt.Sprintf("--etcd-keyfile=%s", cfg.Etcd.KeyFile)
+		command = append(command, etcdClientFileArg, etcdKeyFileArg)
+	}
 
-		// Is etcd secured?
-		if s.InitFlags.API.Etcd.ExternalCAFile != "" {
-			command = append(command, fmt.Sprintf("--etcd-cafile=%s", s.InitFlags.API.Etcd.ExternalCAFile))
-		}
-		if s.InitFlags.API.Etcd.ExternalCertFile != "" && s.InitFlags.API.Etcd.ExternalKeyFile != "" {
-			etcdClientFileArg := fmt.Sprintf("--etcd-certfile=%s", s.InitFlags.API.Etcd.ExternalCertFile)
-			etcdKeyFileArg := fmt.Sprintf("--etcd-keyfile=%s", s.InitFlags.API.Etcd.ExternalKeyFile)
-			command = append(command, etcdClientFileArg, etcdKeyFileArg)
+	return
+}
+
+func getControllerManagerCommand(cfg *kubeadmapi.MasterConfiguration) (command []string) {
+	command = append(getComponentBaseCommand(controllerManager),
+		"--address=127.0.0.1",
+		"--leader-elect",
+		"--master=127.0.0.1:8080",
+		"--cluster-name="+DefaultClusterName,
+		"--root-ca-file="+pkiDir+"/ca.pem",
+		"--service-account-private-key-file="+pkiDir+"/apiserver-key.pem",
+		"--cluster-signing-cert-file="+pkiDir+"/ca.pem",
+		"--cluster-signing-key-file="+pkiDir+"/ca-key.pem",
+		"--insecure-experimental-approve-all-kubelet-csrs-for-group=system:kubelet-bootstrap",
+	)
+
+	if cfg.CloudProvider != "" {
+		command = append(command, "--cloud-provider="+cfg.CloudProvider)
+
+		// Only append the --cloud-config option if there's a such file
+		// TODO(phase1+) this won't work unless it's in one of the few directories we bind-mount
+		if _, err := os.Stat(DefaultCloudConfigPath); err == nil {
+			command = append(command, "--cloud-config="+DefaultCloudConfigPath)
 		}
 	}
 
-	if component == controllerManager {
-		if s.InitFlags.CloudProvider != "" {
-			command = append(command, "--cloud-provider="+s.InitFlags.CloudProvider)
-
-			// Only append the --cloud-config option if there's a such file
-			// TODO(phase1+) this won't work unless it's in one of the few directories we bind-mount
-			if _, err := os.Stat(DefaultCloudConfigPath); err == nil {
-				command = append(command, "--cloud-config="+DefaultCloudConfigPath)
-			}
-		}
-
-		if s.InitFlags.PodNetwork.CIDR.IP != nil {
-			// Let the controller-manager allocate Node CIDRs for the Pod network.
-			// Each node will get a subspace of the address CIDR provided with --pod-network-cidr.
-			command = append(command, "--allocate-node-cidrs=true", "--cluster-cidr="+s.InitFlags.PodNetwork.CIDR.String())
-		}
+	// Let the controller-manager allocate Node CIDRs for the Pod network.
+	// Each node will get a subspace of the address CIDR provided with --pod-network-cidr.
+	if cfg.Networking.PodSubnet != "" {
+		command = append(command, "--allocate-node-cidrs=true", "--cluster-cidr="+cfg.Networking.PodSubnet)
 	}
+
+	return
+}
+
+func getSchedulerCommand(cfg *kubeadmapi.MasterConfiguration) (command []string) {
+	command = append(getComponentBaseCommand(scheduler),
+		"--address=127.0.0.1",
+		"--leader-elect",
+		"--master=127.0.0.1:8080",
+	)
+
+	return
+}
+
+func getProxyCommand(cfg *kubeadmapi.MasterConfiguration) (command []string) {
+	command = getComponentBaseCommand(proxy)
 
 	return
 }

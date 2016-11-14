@@ -24,20 +24,24 @@ import (
 
 // PodDisruptionBudgetSpec is a description of a PodDisruptionBudget.
 type PodDisruptionBudgetSpec struct {
-	// The minimum number of pods that must be available simultaneously.  This
-	// can be either an integer or a string specifying a percentage, e.g. "28%".
+	// An eviction is allowed if at least "minAvailable" pods selected by
+	// "selector" will still be available after the eviction, i.e. even in the
+	// absence of the evicted pod.  So for example you can prevent all voluntary
+	// evictions by specifying "100%".
+	// +optional
 	MinAvailable intstr.IntOrString `json:"minAvailable,omitempty"`
 
 	// Label query over pods whose evictions are managed by the disruption
 	// budget.
+	// +optional
 	Selector *unversioned.LabelSelector `json:"selector,omitempty"`
 }
 
 // PodDisruptionBudgetStatus represents information about the status of a
 // PodDisruptionBudget. Status may trail the actual state of a system.
 type PodDisruptionBudgetStatus struct {
-	// Whether or not a disruption is currently allowed.
-	PodDisruptionAllowed bool `json:"disruptionAllowed"`
+	// Number of pod disruptions that are currently allowed.
+	PodDisruptionsAllowed int32 `json:"disruptionsAllowed"`
 
 	// current number of healthy pods
 	CurrentHealthy int32 `json:"currentHealthy"`
@@ -54,30 +58,36 @@ type PodDisruptionBudgetStatus struct {
 // PodDisruptionBudget is an object to define the max disruption that can be caused to a collection of pods
 type PodDisruptionBudget struct {
 	unversioned.TypeMeta `json:",inline"`
-	api.ObjectMeta       `json:"metadata,omitempty"`
+	// +optional
+	api.ObjectMeta `json:"metadata,omitempty"`
 
 	// Specification of the desired behavior of the PodDisruptionBudget.
+	// +optional
 	Spec PodDisruptionBudgetSpec `json:"spec,omitempty"`
 	// Most recently observed status of the PodDisruptionBudget.
+	// +optional
 	Status PodDisruptionBudgetStatus `json:"status,omitempty"`
 }
 
 // PodDisruptionBudgetList is a collection of PodDisruptionBudgets.
 type PodDisruptionBudgetList struct {
 	unversioned.TypeMeta `json:",inline"`
+	// +optional
 	unversioned.ListMeta `json:"metadata,omitempty"`
 	Items                []PodDisruptionBudget `json:"items"`
 }
 
 // Eviction evicts a pod from its node subject to certain policies and safety constraints.
 // This is a subresource of Pod.  A request to cause such an eviction is
-// created by POSTing to .../pods/<pod name>/evictions.
+// created by POSTing to .../pods/<pod name>/eviction.
 type Eviction struct {
 	unversioned.TypeMeta `json:",inline"`
 
 	// ObjectMeta describes the pod that is being evicted.
+	// +optional
 	api.ObjectMeta `json:"metadata,omitempty"`
 
 	// DeleteOptions may be provided
+	// +optional
 	DeleteOptions *api.DeleteOptions `json:"deleteOptions,omitempty"`
 }

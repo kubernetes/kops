@@ -473,13 +473,10 @@ function start-kubelet {
   flags+=" --cluster-dns=${DNS_SERVER_IP}"
   flags+=" --cluster-domain=${DNS_DOMAIN}"
   flags+=" --config=/etc/kubernetes/manifests"
-  flags+=" --kubelet-cgroups=/kubelet"
-  flags+=" --system-cgroups=/system"
 
   if [[ -n "${KUBELET_PORT:-}" ]]; then
     flags+=" --port=${KUBELET_PORT}"
   fi
-  local reconcile_cidr="true"
   if [[ "${KUBERNETES_MASTER:-}" == "true" ]]; then
     flags+=" --enable-debugging-handlers=false"
     flags+=" --hairpin-mode=none"
@@ -490,7 +487,6 @@ function start-kubelet {
       # TODO: determine if we still allow non-hostnetwork pods to run on master, clean up master pod setup
       # WARNING: potential ip range collision with 10.123.45.0/29
       flags+=" --pod-cidr=10.123.45.0/29"
-      reconcile_cidr="false"
     else
       flags+=" --pod-cidr=${MASTER_IP_RANGE}"
     fi
@@ -512,9 +508,8 @@ function start-kubelet {
     fi
     flags+=" --network-plugin=${NETWORK_PROVIDER}"
   fi
-  flags+=" --reconcile-cidr=${reconcile_cidr}"
   if [[ -n "${NON_MASQUERADE_CIDR:-}" ]]; then
-    flag+=" --non-masquerade-cidr=${NON_MASQUERADE_CIDR}"
+    flags+=" --non-masquerade-cidr=${NON_MASQUERADE_CIDR}"
   fi
   if [[ "${ENABLE_MANIFEST_URL:-}" == "true" ]]; then
     flags+=" --manifest-url=${MANIFEST_URL}"
@@ -528,9 +523,6 @@ function start-kubelet {
   fi
   if [[ -n "${EVICTION_HARD:-}" ]]; then
     flags+=" --eviction-hard=${EVICTION_HARD}"
-  fi
-  if [[ "${ALLOCATE_NODE_CIDRS:-}" == "true" ]]; then
-    flags+=" --configure-cbr0=${ALLOCATE_NODE_CIDRS}"
   fi
   if [[ -n "${FEATURE_GATES:-}" ]]; then
     flags+=" --feature-gates=${FEATURE_GATES}"
@@ -634,10 +626,15 @@ function prepare-etcd-manifest {
   sed -i -e "s@{{ *etcd_cluster *}}@$etcd_cluster@g" "${temp_file}"
   sed -i -e "s@{{ *storage_backend *}}@${STORAGE_BACKEND:-}@g" "${temp_file}"
   sed -i -e "s@{{ *cluster_state *}}@$cluster_state@g" "${temp_file}"
-  if [[ -n "${TEST_ETCD_VERSION:-}" ]]; then
-    sed -i -e "s@{{ *pillar\.get('etcd_docker_tag', '\(.*\)') *}}@${TEST_ETCD_VERSION}@g" "${temp_file}"
+  if [[ -n "${ETCD_IMAGE:-}" ]]; then
+    sed -i -e "s@{{ *pillar\.get('etcd_docker_tag', '\(.*\)') *}}@${ETCD_IMAGE}@g" "${temp_file}"
   else
     sed -i -e "s@{{ *pillar\.get('etcd_docker_tag', '\(.*\)') *}}@\1@g" "${temp_file}"
+  fi
+  if [[ -n "${ETCD_VERSION:-}" ]]; then
+    sed -i -e "s@{{ *pillar\.get('etcd_version', '\(.*\)') *}}@${ETCD_VERSION}@g" "${temp_file}"
+  else
+    sed -i -e "s@{{ *pillar\.get('etcd_version', '\(.*\)') *}}@\1@g" "${temp_file}"
   fi
   # Replace the volume host path.
   sed -i -e "s@/mnt/master-pd/var/etcd@/mnt/disks/master-pd/var/etcd@g" "${temp_file}"
@@ -1170,6 +1167,9 @@ For Kubernetes copyright and licensing information, see:
 EOF
 }
 
+function override-kubectl {
+    echo "export PATH=${KUBE_HOME}/bin:\$PATH" > /etc/profile.d/kube_env.sh
+}
 
 ########### Main Function ###########
 echo "Start to configure instance for kubernetes"
@@ -1204,6 +1204,7 @@ else
   create-kubeproxy-kubeconfig
 fi
 
+override-kubectl
 assemble-docker-flags
 load-docker-images
 start-kubelet

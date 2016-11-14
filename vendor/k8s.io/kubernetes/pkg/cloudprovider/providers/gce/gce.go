@@ -133,6 +133,10 @@ type Disks interface {
 	// DiskIsAttached checks if a disk is attached to the node with the specified NodeName.
 	DiskIsAttached(diskName string, nodeName types.NodeName) (bool, error)
 
+	// DisksAreAttached is a batch function to check if a list of disks are attached
+	// to the node with the specified NodeName.
+	DisksAreAttached(diskNames []string, nodeName types.NodeName) (map[string]bool, error)
+
 	// CreateDisk creates a new PD with given properties. Tags are serialized
 	// as JSON into Description field.
 	CreateDisk(name string, diskType string, zone string, sizeGb int64, tags map[string]string) error
@@ -736,9 +740,7 @@ func (gce *GCECloud) EnsureLoadBalancer(clusterName string, apiService *api.Serv
 			// This logic exists to detect a transition for a pre-existing service and turn on
 			// the tpNeedsUpdate flag to delete/recreate fwdrule/tpool adding the health check
 			// to the target pool.
-			glog.V(2).Infof("Annotation %s=%s added to new or pre-existing service",
-				apiservice.AnnotationExternalTraffic,
-				apiservice.AnnotationValueExternalTrafficLocal)
+			glog.V(2).Infof("Annotation external-traffic=OnlyLocal added to new or pre-existing service")
 			tpNeedsUpdate = true
 		}
 		hcToCreate, err = gce.ensureHttpHealthCheck(loadBalancerName, path, healthCheckNodePort)
@@ -1446,6 +1448,23 @@ func (gce *GCECloud) deleteForwardingRule(name, region string) error {
 		}
 	}
 	return nil
+}
+
+func (gce *GCECloud) DeleteForwardingRule(name string) error {
+	region, err := GetGCERegion(gce.localZone)
+	if err != nil {
+		return err
+	}
+	return gce.deleteForwardingRule(name, region)
+}
+
+// DeleteTargetPool deletes the given target pool.
+func (gce *GCECloud) DeleteTargetPool(name string, hc *compute.HttpHealthCheck) error {
+	region, err := GetGCERegion(gce.localZone)
+	if err != nil {
+		return err
+	}
+	return gce.deleteTargetPool(name, region, hc)
 }
 
 func (gce *GCECloud) deleteTargetPool(name, region string, hc *compute.HttpHealthCheck) error {
@@ -2636,6 +2655,38 @@ func (gce *GCECloud) DiskIsAttached(diskName string, nodeName types.NodeName) (b
 	return false, nil
 }
 
+func (gce *GCECloud) DisksAreAttached(diskNames []string, nodeName types.NodeName) (map[string]bool, error) {
+	attached := make(map[string]bool)
+	for _, diskName := range diskNames {
+		attached[diskName] = false
+	}
+	instanceName := mapNodeNameToInstanceName(nodeName)
+	instance, err := gce.getInstanceByName(instanceName)
+	if err != nil {
+		if err == cloudprovider.InstanceNotFound {
+			// If instance no longer exists, safe to assume volume is not attached.
+			glog.Warningf(
+				"Instance %q does not exist. DisksAreAttached will assume PD %v are not attached to it.",
+				instanceName,
+				diskNames)
+			return attached, nil
+		}
+
+		return attached, err
+	}
+
+	for _, instanceDisk := range instance.Disks {
+		for _, diskName := range diskNames {
+			if instanceDisk.DeviceName == diskName {
+				// Disk is still attached to node
+				attached[diskName] = true
+			}
+		}
+	}
+
+	return attached, nil
+}
+
 // Returns a gceDisk for the disk, if it is found in the specified zone.
 // If not found, returns (nil, nil)
 func (gce *GCECloud) findDiskByName(diskName string, zone string) (*gceDisk, error) {
@@ -2832,6 +2883,7 @@ func (gce *GCECloud) getInstancesByNames(names []string) ([]*gceInstance, error)
 
 	instanceArray := make([]*gceInstance, len(names))
 	for i, name := range names {
+		name = canonicalizeInstanceName(name)
 		instance := instances[name]
 		if instance == nil {
 			glog.Errorf("Failed to retrieve instance: %q", name)

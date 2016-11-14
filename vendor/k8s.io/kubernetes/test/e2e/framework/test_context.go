@@ -55,6 +55,7 @@ type TestContextType struct {
 	NodeOSDistro             string
 	VerifyServiceAccount     bool
 	DeleteNamespace          bool
+	DeleteNamespaceOnFailure bool
 	AllowedNotReadyNodes     int
 	CleanStart               bool
 	// If set to 'true' or 'all' framework will start a goroutine monitoring resource usage of system add-ons.
@@ -105,6 +106,8 @@ type NodeTestContextType struct {
 	DisableKubenet bool
 	// Whether to enable the QoS Cgroup Hierarchy or not
 	CgroupsPerQOS bool
+	// How the kubelet should interface with the cgroup hierarchy (cgroupfs or systemd)
+	CgroupDriver string
 	// The hard eviction thresholds
 	EvictionHard string
 	// ManifestPath is the static pod manifest path.
@@ -113,6 +116,13 @@ type NodeTestContextType struct {
 	PrepullImages bool
 	// RuntimeIntegrationType indicates how runtime is integrated with Kubelet. This is mainly used for CRI validation test.
 	RuntimeIntegrationType string
+	// ContainerRuntimeEndpoint is the endpoint of remote container runtime grpc server. This is mainly used for Remote CRI
+	// validation test.
+	ContainerRuntimeEndpoint string
+	// MounterPath is the path to the program to run to perform a mount
+	MounterPath string
+	// MounterRootfsPath is the path to the root filesystem for the program used to perform a mount in kubelet
+	MounterRootfsPath string
 }
 
 type CloudConfig struct {
@@ -148,6 +158,7 @@ func RegisterCommonFlags() {
 	flag.StringVar(&TestContext.OutputPrintType, "output-print-type", "hr", "Comma separated list: 'hr' for human readable summaries 'json' for JSON ones.")
 	flag.BoolVar(&TestContext.DumpLogsOnFailure, "dump-logs-on-failure", true, "If set to true test will dump data about the namespace in which test was running.")
 	flag.BoolVar(&TestContext.DeleteNamespace, "delete-namespace", true, "If true tests will delete namespace after completion. It is only designed to make debugging easier, DO NOT turn it off by default.")
+	flag.BoolVar(&TestContext.DeleteNamespaceOnFailure, "delete-namespace-on-failure", true, "If true, framework will delete test namespace on failure. Used only during test debugging.")
 	flag.IntVar(&TestContext.AllowedNotReadyNodes, "allowed-not-ready-nodes", 0, "If non-zero, framework will allow for that many non-ready nodes when checking for all ready nodes.")
 	flag.StringVar(&TestContext.Host, "host", "http://127.0.0.1:8080", "The host, or apiserver, to connect to")
 	flag.StringVar(&TestContext.ReportPrefix, "report-prefix", "", "Optional prefix for JUnit XML reports. Default is empty, which doesn't prepend anything to the default name.")
@@ -201,44 +212,43 @@ func RegisterNodeFlags() {
 	// TODO(random-liu): Remove kubelet related flags when we move the kubelet start logic out of the test.
 	// TODO(random-liu): Find someway to get kubelet configuration, and automatic config and filter test based on the configuration.
 	flag.BoolVar(&TestContext.DisableKubenet, "disable-kubenet", false, "If true, start kubelet without kubenet. (default false)")
-	// TODO: uncomment this when the flag is re-enabled in kubelet
-	//flag.BoolVar(&TestContext.CgroupsPerQOS, "cgroups-per-qos", false, "Enable creation of QoS cgroup hierarchy, if true top level QoS and pod cgroups are created.")
-	flag.StringVar(&TestContext.EvictionHard, "eviction-hard", "memory.available<250Mi,imagefs.available<10%", "The hard eviction thresholds. If set, pods get evicted when the specified resources drop below the thresholds.")
+	flag.StringVar(&TestContext.EvictionHard, "eviction-hard", "memory.available<250Mi,nodefs.available<10%,nodefs.inodesFree<5%", "The hard eviction thresholds. If set, pods get evicted when the specified resources drop below the thresholds.")
+	flag.BoolVar(&TestContext.CgroupsPerQOS, "cgroups-per-qos", false, "Enable creation of QoS cgroup hierarchy, if true top level QoS and pod cgroups are created.")
+	flag.StringVar(&TestContext.CgroupDriver, "cgroup-driver", "", "Driver that the kubelet uses to manipulate cgroups on the host.  Possible values: 'cgroupfs', 'systemd'")
 	flag.StringVar(&TestContext.ManifestPath, "manifest-path", "", "The path to the static pod manifest file.")
 	flag.BoolVar(&TestContext.PrepullImages, "prepull-images", true, "If true, prepull images so image pull failures do not cause test failures.")
 	flag.StringVar(&TestContext.RuntimeIntegrationType, "runtime-integration-type", "", "Choose the integration path for the container runtime, mainly used for CRI validation.")
+	flag.StringVar(&TestContext.ContainerRuntimeEndpoint, "container-runtime-endpoint", "", "The endpoint of remote container runtime grpc server, mainly used for Remote CRI validation.")
+	flag.StringVar(&TestContext.MounterPath, "experimental-mounter-path", "", "Path of mounter binary. Leave empty to use the default mount.")
+	flag.StringVar(&TestContext.MounterRootfsPath, "experimental-mounter-rootfs-path", "", "Absolute path to root filesystem for the mounter binary.")
 }
 
-// Enable viper configuration management of flags.
+// overwriteFlagsWithViperConfig finds and writes values to flags using viper as input.
+func overwriteFlagsWithViperConfig() {
+	viperFlagSetter := func(f *flag.Flag) {
+		if viper.IsSet(f.Name) {
+			f.Value.Set(viper.GetString(f.Name))
+		}
+	}
+	flag.VisitAll(viperFlagSetter)
+}
+
+// ViperizeFlags sets up all flag and config processing. Future configuration info should be added to viper, not to flags.
 func ViperizeFlags() {
-	// TODO @jayunit100: Maybe a more elegant viper-flag integration for the future?
-	// For now, we layer it on top, because 'flag' deps of 'go test' make pflag wrappers
-	// fragile, seeming to force 'flag' to have deep awareness of pflag params.
+
+	// Part 1: Set regular flags.
+	// TODO: Future, lets eliminate e2e 'flag' deps entirely in favor of viper only,
+	// since go test 'flag's are sort of incompatible w/ flag, glog, etc.
 	RegisterCommonFlags()
 	RegisterClusterFlags()
-
 	flag.Parse()
 
-	// Add viper in a minimal way.
-	// Flag interop isnt possible, since 'go test' coupling to flag.Parse.
+	// Part 2: Set Viper provided flags.
 	// This must be done after common flags are registered, since Viper is a flag option.
 	viper.SetConfigName(TestContext.Viper)
 	viper.AddConfigPath(".")
 	viper.ReadInConfig()
 
+	// TODO Consider wether or not we want to use overwriteFlagsWithViperConfig().
 	viper.Unmarshal(&TestContext)
-
-	/** This can be used to overwrite a flag value.
-	*
-	*	viperFlagSetter := func(f *flag.Flag) {
-	*		if viper.IsSet(f.Name) {
-	*			glog.V(4).Infof("[viper config] Overwriting, found a settting for %v %v", f.Name, f.Value)
-	*			viper.Unmarshal(&TestContext)
-	*			// f.Value.Set(viper.GetString(f.Name))
-	*		}
-	*	}
-	*	// Each flag that we've declared can be set via viper.
-	*	flag.VisitAll(viperFlagSetter)
-	*
-	 */
 }

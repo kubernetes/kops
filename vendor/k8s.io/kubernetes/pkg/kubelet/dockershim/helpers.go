@@ -27,7 +27,10 @@ import (
 	dockernat "github.com/docker/go-connections/nat"
 	"github.com/golang/glog"
 
+	"k8s.io/kubernetes/pkg/api"
 	runtimeApi "k8s.io/kubernetes/pkg/kubelet/api/v1alpha1/runtime"
+	"k8s.io/kubernetes/pkg/kubelet/dockertools"
+	"k8s.io/kubernetes/pkg/kubelet/types"
 )
 
 const (
@@ -86,14 +89,19 @@ func extractLabels(input map[string]string) (map[string]string, map[string]strin
 		// Check if the key is used internally by the shim.
 		internal := false
 		for _, internalKey := range internalLabelKeys {
-			// TODO: containerTypeLabelKey is the only internal label the shim uses
-			// right now. Expand this to a list later.
 			if k == internalKey {
 				internal = true
 				break
 			}
 		}
 		if internal {
+			continue
+		}
+
+		// Delete the container name label for the sandbox. It is added in the shim,
+		// should not be exposed via CRI.
+		if k == types.KubernetesContainerNameLabel &&
+			input[containerTypeLabelKey] == containerTypeLabelSandbox {
 			continue
 		}
 
@@ -179,16 +187,61 @@ func makePortsAndBindings(pm []*runtimeApi.PortMapping) (map[dockernat.Port]stru
 	return exposedPorts, portBindings
 }
 
-// TODO: Seccomp support. Need to figure out how to pass seccomp options
-// through the runtime API (annotations?).See dockerManager.getSecurityOpts()
-// for the details. Always set the default seccomp profile for now.
-// Also need to support syntax for different docker versions.
-func getSeccompOpts() string {
-	return fmt.Sprintf("%s=%s", "seccomp", defaultSeccompProfile)
+// getContainerSecurityOpt gets container security options from container and sandbox config, currently from sandbox
+// annotations.
+// It is an experimental feature and may be promoted to official runtime api in the future.
+func getContainerSecurityOpts(containerName string, sandboxConfig *runtimeApi.PodSandboxConfig, seccompProfileRoot string) ([]string, error) {
+	appArmorOpts, err := dockertools.GetAppArmorOpts(sandboxConfig.GetAnnotations(), containerName)
+	if err != nil {
+		return nil, err
+	}
+	seccompOpts, err := dockertools.GetSeccompOpts(sandboxConfig.GetAnnotations(), containerName, seccompProfileRoot)
+	if err != nil {
+		return nil, err
+	}
+	securityOpts := append(appArmorOpts, seccompOpts...)
+	var opts []string
+	for _, securityOpt := range securityOpts {
+		k, v := securityOpt.GetKV()
+		opts = append(opts, fmt.Sprintf("%s=%s", k, v))
+	}
+	return opts, nil
+}
+
+func getSandboxSecurityOpts(sandboxConfig *runtimeApi.PodSandboxConfig, seccompProfileRoot string) ([]string, error) {
+	// sandboxContainerName doesn't exist in the pod, so pod security options will be returned by default.
+	return getContainerSecurityOpts(sandboxContainerName, sandboxConfig, seccompProfileRoot)
 }
 
 func getNetworkNamespace(c *dockertypes.ContainerJSON) string {
+	if c.State.Pid == 0 {
+		// Docker reports pid 0 for an exited container. We can't use it to
+		// check the network namespace, so return an empty string instead.
+		glog.V(4).Infof("Cannot find network namespace for the terminated container %q", c.ID)
+		return ""
+	}
 	return fmt.Sprintf(dockerNetNSFmt, c.State.Pid)
+}
+
+// getSysctlsFromAnnotations gets sysctls from annotations.
+func getSysctlsFromAnnotations(annotations map[string]string) (map[string]string, error) {
+	var results map[string]string
+
+	sysctls, unsafeSysctls, err := api.SysctlsFromPodAnnotations(annotations)
+	if err != nil {
+		return nil, err
+	}
+	if len(sysctls)+len(unsafeSysctls) > 0 {
+		results = make(map[string]string, len(sysctls)+len(unsafeSysctls))
+		for _, c := range sysctls {
+			results[c.Name] = c.Value
+		}
+		for _, c := range unsafeSysctls {
+			results[c.Name] = c.Value
+		}
+	}
+
+	return results, nil
 }
 
 // dockerFilter wraps around dockerfilters.Args and provides methods to modify

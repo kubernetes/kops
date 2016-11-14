@@ -20,6 +20,7 @@ package options
 import (
 	"time"
 
+	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/validation"
 	genericoptions "k8s.io/kubernetes/pkg/genericapiserver/options"
 	kubeletclient "k8s.io/kubernetes/pkg/kubelet/client"
@@ -28,28 +29,34 @@ import (
 	"github.com/spf13/pflag"
 )
 
-// APIServer runs a kubernetes api server.
-type APIServer struct {
-	*genericoptions.ServerRunOptions
+// ServerRunOptions runs a kubernetes api server.
+type ServerRunOptions struct {
+	GenericServerRunOptions     *genericoptions.ServerRunOptions
 	AllowPrivileged             bool
 	EventTTL                    time.Duration
 	KubeletConfig               kubeletclient.KubeletClientConfig
 	MaxConnectionBytesPerSec    int64
 	SSHKeyfile                  string
 	SSHUser                     string
-	ServiceAccountKeyFile       string
+	ServiceAccountKeyFiles      []string
 	ServiceAccountLookup        bool
 	WebhookTokenAuthnConfigFile string
 	WebhookTokenAuthnCacheTTL   time.Duration
 }
 
-// NewAPIServer creates a new APIServer object with default parameters
-func NewAPIServer() *APIServer {
-	s := APIServer{
-		ServerRunOptions: genericoptions.NewServerRunOptions().WithEtcdOptions(),
-		EventTTL:         1 * time.Hour,
+// NewServerRunOptions creates a new ServerRunOptions object with default parameters
+func NewServerRunOptions() *ServerRunOptions {
+	s := ServerRunOptions{
+		GenericServerRunOptions: genericoptions.NewServerRunOptions().WithEtcdOptions(),
+		EventTTL:                1 * time.Hour,
 		KubeletConfig: kubeletclient.KubeletClientConfig{
-			Port:        ports.KubeletPort,
+			Port: ports.KubeletPort,
+			PreferredAddressTypes: []string{
+				string(api.NodeHostName),
+				string(api.NodeInternalIP),
+				string(api.NodeExternalIP),
+				string(api.NodeLegacyHostIP),
+			},
 			EnableHttps: true,
 			HTTPTimeout: time.Duration(5) * time.Second,
 		},
@@ -59,20 +66,21 @@ func NewAPIServer() *APIServer {
 }
 
 // AddFlags adds flags for a specific APIServer to the specified FlagSet
-func (s *APIServer) AddFlags(fs *pflag.FlagSet) {
+func (s *ServerRunOptions) AddFlags(fs *pflag.FlagSet) {
 	// Add the generic flags.
-	s.ServerRunOptions.AddUniversalFlags(fs)
+	s.GenericServerRunOptions.AddUniversalFlags(fs)
 	//Add etcd specific flags.
-	s.ServerRunOptions.AddEtcdStorageFlags(fs)
+	s.GenericServerRunOptions.AddEtcdStorageFlags(fs)
 	// Note: the weird ""+ in below lines seems to be the only way to get gofmt to
 	// arrange these text blocks sensibly. Grrr.
 
 	fs.DurationVar(&s.EventTTL, "event-ttl", s.EventTTL,
 		"Amount of time to retain events. Default is 1h.")
 
-	fs.StringVar(&s.ServiceAccountKeyFile, "service-account-key-file", s.ServiceAccountKeyFile, ""+
-		"File containing PEM-encoded x509 RSA or ECDSA private or public key, used to verify "+
-		"ServiceAccount tokens. If unspecified, --tls-private-key-file is used.")
+	fs.StringArrayVar(&s.ServiceAccountKeyFiles, "service-account-key-file", s.ServiceAccountKeyFiles, ""+
+		"File containing PEM-encoded x509 RSA or ECDSA private or public keys, used to verify "+
+		"ServiceAccount tokens. If unspecified, --tls-private-key-file is used. "+
+		"The specified file can contain multiple keys, and the flag can be specified multiple times with different files.")
 
 	fs.BoolVar(&s.ServiceAccountLookup, "service-account-lookup", s.ServiceAccountLookup,
 		"If true, validate ServiceAccount tokens exist in etcd as part of authentication.")
@@ -100,6 +108,9 @@ func (s *APIServer) AddFlags(fs *pflag.FlagSet) {
 	// Kubelet related flags:
 	fs.BoolVar(&s.KubeletConfig.EnableHttps, "kubelet-https", s.KubeletConfig.EnableHttps,
 		"Use https for kubelet connections.")
+
+	fs.StringSliceVar(&s.KubeletConfig.PreferredAddressTypes, "kubelet-preferred-address-types", s.KubeletConfig.PreferredAddressTypes,
+		"List of the preferred NodeAddressTypes to use for kubelet connections.")
 
 	fs.UintVar(&s.KubeletConfig.Port, "kubelet-port", s.KubeletConfig.Port,
 		"DEPRECATED: kubelet port.")

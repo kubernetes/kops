@@ -28,6 +28,7 @@ import (
 	federationcache "k8s.io/kubernetes/federation/client/cache"
 	fedclientset "k8s.io/kubernetes/federation/client/clientset_generated/federation_release_1_5"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
+	"k8s.io/kubernetes/federation/pkg/federation-controller/util"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/errors"
 	v1 "k8s.io/kubernetes/pkg/api/v1"
@@ -102,7 +103,10 @@ type ServiceController struct {
 	dns              dnsprovider.Interface
 	federationClient fedclientset.Interface
 	federationName   string
-	zoneName         string
+	// serviceDnsSuffix is the DNS suffix we use when publishing service DNS names
+	serviceDnsSuffix string
+	// zoneName is used to identify the zone in which to put records
+	zoneName string
 	// each federation should be configured with a single zone (e.g. "mycompany.com")
 	dnsZones     dnsprovider.Zones
 	serviceCache *serviceCache
@@ -135,7 +139,8 @@ type ServiceController struct {
 // New returns a new service controller to keep DNS provider service resources
 // (like Kubernetes Services and DNS server records for service discovery) in sync with the registry.
 
-func New(federationClient fedclientset.Interface, dns dnsprovider.Interface, federationName, zoneName string) *ServiceController {
+func New(federationClient fedclientset.Interface, dns dnsprovider.Interface,
+	federationName, serviceDnsSuffix, zoneName string) *ServiceController {
 	broadcaster := record.NewBroadcaster()
 	// federationClient event is not supported yet
 	// broadcaster.StartRecordingToSink(&unversioned_core.EventSinkImpl{Interface: kubeClient.Core().Events("")})
@@ -145,6 +150,7 @@ func New(federationClient fedclientset.Interface, dns dnsprovider.Interface, fed
 		dns:              dns,
 		federationClient: federationClient,
 		federationName:   federationName,
+		serviceDnsSuffix: serviceDnsSuffix,
 		zoneName:         zoneName,
 		serviceCache:     &serviceCache{fedServiceMap: make(map[string]*cachedService)},
 		clusterCache: &clusterClientCache{
@@ -159,10 +165,12 @@ func New(federationClient fedclientset.Interface, dns dnsprovider.Interface, fed
 	s.serviceStore.Indexer, s.serviceController = cache.NewIndexerInformer(
 		&cache.ListWatch{
 			ListFunc: func(options api.ListOptions) (pkg_runtime.Object, error) {
-				return s.federationClient.Core().Services(v1.NamespaceAll).List(options)
+				versionedOptions := util.VersionizeV1ListOptions(options)
+				return s.federationClient.Core().Services(v1.NamespaceAll).List(versionedOptions)
 			},
 			WatchFunc: func(options api.ListOptions) (watch.Interface, error) {
-				return s.federationClient.Core().Services(v1.NamespaceAll).Watch(options)
+				versionedOptions := util.VersionizeV1ListOptions(options)
+				return s.federationClient.Core().Services(v1.NamespaceAll).Watch(versionedOptions)
 			},
 		},
 		&v1.Service{},
@@ -182,10 +190,12 @@ func New(federationClient fedclientset.Interface, dns dnsprovider.Interface, fed
 	s.clusterStore.Store, s.clusterController = cache.NewInformer(
 		&cache.ListWatch{
 			ListFunc: func(options api.ListOptions) (pkg_runtime.Object, error) {
-				return s.federationClient.Federation().Clusters().List(options)
+				versionedOptions := util.VersionizeV1ListOptions(options)
+				return s.federationClient.Federation().Clusters().List(versionedOptions)
 			},
 			WatchFunc: func(options api.ListOptions) (watch.Interface, error) {
-				return s.federationClient.Federation().Clusters().Watch(options)
+				versionedOptions := util.VersionizeV1ListOptions(options)
+				return s.federationClient.Federation().Clusters().Watch(versionedOptions)
 			},
 		},
 		&v1beta1.Cluster{},
@@ -271,6 +281,13 @@ func (s *ServiceController) init() error {
 	}
 	if s.zoneName == "" {
 		return fmt.Errorf("ServiceController should not be run without zoneName.")
+	}
+	if s.serviceDnsSuffix == "" {
+		// TODO: Is this the right place to do defaulting?
+		if s.zoneName == "" {
+			return fmt.Errorf("ServiceController must be run with zoneName, if serviceDnsSuffix is not set.")
+		}
+		s.serviceDnsSuffix = s.zoneName
 	}
 	if s.dns == nil {
 		return fmt.Errorf("ServiceController should not be run without a dnsprovider.")
@@ -387,7 +404,7 @@ func (s *ServiceController) deleteClusterService(clusterName string, cachedServi
 	glog.V(4).Infof("Deleting service %s/%s from cluster %s", service.Namespace, service.Name, clusterName)
 	var err error
 	for i := 0; i < clientRetryCount; i++ {
-		err = clientset.Core().Services(service.Namespace).Delete(service.Name, &api.DeleteOptions{})
+		err = clientset.Core().Services(service.Namespace).Delete(service.Name, &v1.DeleteOptions{})
 		if err == nil || errors.IsNotFound(err) {
 			glog.V(4).Infof("Service %s/%s deleted from cluster %s", service.Namespace, service.Name, clusterName)
 			delete(cachedService.endpointMap, clusterName)
