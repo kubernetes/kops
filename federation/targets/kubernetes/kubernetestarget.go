@@ -22,13 +22,13 @@ import (
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/kutil"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
 )
 
 type KubernetesTarget struct {
 	//kubectlContext string
 	//keystore *k8sapi.KubernetesKeystore
-	KubernetesClient release_1_3.Interface
+	KubernetesClient release_1_5.Interface
 	cluster          *kopsapi.Cluster
 }
 
@@ -50,7 +50,7 @@ func NewKubernetesTarget(clientset simple.Clientset, keystore fi.Keystore, clust
 		return nil, fmt.Errorf("error building configuration for cluster %q: %v", cluster.Name, err)
 	}
 
-	k8sClient, err := release_1_3.NewForConfig(clientConfig)
+	k8sClient, err := release_1_5.NewForConfig(clientConfig)
 	if err != nil {
 		return nil, fmt.Errorf("cannot build k8s client: %v", err)
 	}

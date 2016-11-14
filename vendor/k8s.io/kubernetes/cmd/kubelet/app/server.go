@@ -39,11 +39,11 @@ import (
 	"k8s.io/kubernetes/cmd/kubelet/app/options"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/apis/componentconfig"
-	v1alpha1 "k8s.io/kubernetes/pkg/apis/componentconfig/v1alpha1"
+	componentconfigv1alpha1 "k8s.io/kubernetes/pkg/apis/componentconfig/v1alpha1"
 	"k8s.io/kubernetes/pkg/capabilities"
 	"k8s.io/kubernetes/pkg/client/chaosclient"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	unversionedcore "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/core/unversioned"
+	unversionedcore "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/core/internalversion"
 	"k8s.io/kubernetes/pkg/client/record"
 	"k8s.io/kubernetes/pkg/client/restclient"
 	clientauth "k8s.io/kubernetes/pkg/client/unversioned/auth"
@@ -62,6 +62,7 @@ import (
 	kubetypes "k8s.io/kubernetes/pkg/kubelet/types"
 	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/types"
+	"k8s.io/kubernetes/pkg/util/cert"
 	certutil "k8s.io/kubernetes/pkg/util/cert"
 	utilconfig "k8s.io/kubernetes/pkg/util/config"
 	"k8s.io/kubernetes/pkg/util/configz"
@@ -117,7 +118,7 @@ func UnsecuredKubeletDeps(s *options.KubeletServer) (*kubelet.KubeletDeps, error
 		return nil, err
 	}
 
-	mounter := mount.New()
+	mounter := mount.NewCustomMounter(s.ExperimentalMounterPath, s.ExperimentalMounterRootfsPath)
 	var writer kubeio.Writer = &kubeio.StdWriter{}
 	if s.Containerized {
 		glog.V(2).Info("Running kubelet in containerized mode (experimental)")
@@ -241,11 +242,12 @@ func initKubeletConfigSync(s *options.KubeletServer) (*componentconfig.KubeletCo
 		startKubeletConfigSyncLoop(s, jsonstr)
 
 		// Convert json from API server to external type struct, and convert that to internal type struct
-		extKC := v1alpha1.KubeletConfiguration{}
+		extKC := componentconfigv1alpha1.KubeletConfiguration{}
 		err := runtime.DecodeInto(api.Codecs.UniversalDecoder(), []byte(jsonstr), &extKC)
 		if err != nil {
 			return nil, err
 		}
+		api.Scheme.Default(&extKC)
 		kc := componentconfig.KubeletConfiguration{}
 		err = api.Scheme.Convert(&extKC, &kc, nil)
 		if err != nil {
@@ -282,7 +284,7 @@ func checkPermissions() error {
 }
 
 func setConfigz(cz *configz.Config, kc *componentconfig.KubeletConfiguration) {
-	tmp := v1alpha1.KubeletConfiguration{}
+	tmp := componentconfigv1alpha1.KubeletConfiguration{}
 	api.Scheme.Convert(kc, &tmp, nil)
 	cz.Set(tmp)
 }
@@ -319,6 +321,12 @@ func run(s *options.KubeletServer, kubeDeps *kubelet.KubeletDeps) (err error) {
 		}
 	}
 
+	// Set feature gates based on the value in KubeletConfiguration
+	err = utilconfig.DefaultFeatureGate.Set(s.KubeletConfiguration.FeatureGates)
+	if err != nil {
+		return err
+	}
+
 	// Register current configuration with /configz endpoint
 	cfgz, cfgzErr := initConfigz(&s.KubeletConfiguration)
 	if utilconfig.DefaultFeatureGate.DynamicKubeletConfig() {
@@ -337,6 +345,11 @@ func run(s *options.KubeletServer, kubeDeps *kubelet.KubeletDeps) (err error) {
 				} else {
 					setConfigz(cfgz, &s.KubeletConfiguration)
 				}
+				// Update feature gates from the new config
+				err = utilconfig.DefaultFeatureGate.Set(s.KubeletConfiguration.FeatureGates)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -345,7 +358,7 @@ func run(s *options.KubeletServer, kubeDeps *kubelet.KubeletDeps) (err error) {
 		var kubeClient, eventClient *clientset.Clientset
 		var cloud cloudprovider.Interface
 
-		if s.CloudProvider != v1alpha1.AutoDetectCloudProvider {
+		if s.CloudProvider != componentconfigv1alpha1.AutoDetectCloudProvider {
 			cloud, err = cloudprovider.InitCloudProvider(s.CloudProvider, s.CloudConfigFile)
 			if err != nil {
 				return err
@@ -398,8 +411,20 @@ func run(s *options.KubeletServer, kubeDeps *kubelet.KubeletDeps) (err error) {
 		kubeDeps.EventClient = eventClient
 	}
 
+	if kubeDeps.Auth == nil {
+		nodeName, err := getNodeName(kubeDeps.Cloud, nodeutil.GetHostname(s.HostnameOverride))
+		if err != nil {
+			return err
+		}
+		auth, err := buildAuth(nodeName, kubeDeps.KubeClient, s.KubeletConfiguration)
+		if err != nil {
+			return err
+		}
+		kubeDeps.Auth = auth
+	}
+
 	if kubeDeps.CAdvisorInterface == nil {
-		kubeDeps.CAdvisorInterface, err = cadvisor.New(uint(s.CAdvisorPort), s.ContainerRuntime)
+		kubeDeps.CAdvisorInterface, err = cadvisor.New(uint(s.CAdvisorPort), s.ContainerRuntime, s.RootDirectory)
 		if err != nil {
 			return err
 		}
@@ -410,13 +435,15 @@ func run(s *options.KubeletServer, kubeDeps *kubelet.KubeletDeps) (err error) {
 			return fmt.Errorf("invalid configuration: system container was specified and cgroup root was not specified")
 		}
 		kubeDeps.ContainerManager, err = cm.NewContainerManager(kubeDeps.Mounter, kubeDeps.CAdvisorInterface, cm.NodeConfig{
-			RuntimeCgroupsName:    s.RuntimeCgroups,
-			SystemCgroupsName:     s.SystemCgroups,
-			KubeletCgroupsName:    s.KubeletCgroups,
-			ContainerRuntime:      s.ContainerRuntime,
-			CgroupsPerQOS:         s.CgroupsPerQOS,
-			CgroupRoot:            s.CgroupRoot,
-			ProtectKernelDefaults: s.ProtectKernelDefaults,
+			RuntimeCgroupsName:     s.RuntimeCgroups,
+			SystemCgroupsName:      s.SystemCgroups,
+			KubeletCgroupsName:     s.KubeletCgroups,
+			ContainerRuntime:       s.ContainerRuntime,
+			CgroupsPerQOS:          s.CgroupsPerQOS,
+			CgroupRoot:             s.CgroupRoot,
+			CgroupDriver:           s.CgroupDriver,
+			ProtectKernelDefaults:  s.ProtectKernelDefaults,
+			RuntimeIntegrationType: s.ExperimentalRuntimeIntegrationType,
 		})
 		if err != nil {
 			return err
@@ -488,9 +515,19 @@ func InitializeTLS(kc *componentconfig.KubeletConfiguration) (*server.TLSOptions
 		kc.TLSCertFile = path.Join(kc.CertDirectory, "kubelet.crt")
 		kc.TLSPrivateKeyFile = path.Join(kc.CertDirectory, "kubelet.key")
 		if !certutil.CanReadCertOrKey(kc.TLSCertFile, kc.TLSPrivateKeyFile) {
-			if err := certutil.GenerateSelfSignedCert(nodeutil.GetHostname(kc.HostnameOverride), kc.TLSCertFile, kc.TLSPrivateKeyFile, nil, nil); err != nil {
+			cert, key, err := certutil.GenerateSelfSignedCertKey(nodeutil.GetHostname(kc.HostnameOverride), nil, nil)
+			if err != nil {
 				return nil, fmt.Errorf("unable to generate self signed cert: %v", err)
 			}
+
+			if err := certutil.WriteCert(kc.TLSCertFile, cert); err != nil {
+				return nil, err
+			}
+
+			if err := certutil.WriteKey(kc.TLSPrivateKeyFile, key); err != nil {
+				return nil, err
+			}
+
 			glog.V(4).Infof("Using self-signed cert (%s, %s)", kc.TLSCertFile, kc.TLSPrivateKeyFile)
 		}
 	}
@@ -500,12 +537,22 @@ func InitializeTLS(kc *componentconfig.KubeletConfiguration) (*server.TLSOptions
 			// Can't use TLSv1.0 because of POODLE and BEAST using CBC cipher
 			// Can't use TLSv1.1 because of RC4 cipher usage
 			MinVersion: tls.VersionTLS12,
-			// Populate PeerCertificates in requests, but don't yet reject connections without certificates.
-			ClientAuth: tls.RequestClientCert,
 		},
 		CertFile: kc.TLSCertFile,
 		KeyFile:  kc.TLSPrivateKeyFile,
 	}
+
+	if len(kc.Authentication.X509.ClientCAFile) > 0 {
+		clientCAs, err := cert.NewPool(kc.Authentication.X509.ClientCAFile)
+		if err != nil {
+			return nil, fmt.Errorf("unable to load client CA file %s: %v", kc.Authentication.X509.ClientCAFile, err)
+		}
+		// Specify allowed CAs for client certificates
+		tlsOptions.Config.ClientCAs = clientCAs
+		// Populate PeerCertificates in requests, but don't reject connections without verified certificates
+		tlsOptions.Config.ClientAuth = tls.RequestClientCert
+	}
+
 	return tlsOptions, nil
 }
 

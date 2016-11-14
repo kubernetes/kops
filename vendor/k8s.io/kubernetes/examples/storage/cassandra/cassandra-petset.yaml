@@ -1,5 +1,5 @@
-apiVersion: "apps/v1alpha1"
-kind: PetSet
+apiVersion: "apps/v1beta1"
+kind: StatefulSet
 metadata:
   name: cassandra
 spec:
@@ -27,10 +27,10 @@ spec:
           name: cql
         resources:
           limits:
-            cpu: "1"
+            cpu: "500m"
             memory: 1Gi
           requests:
-           cpu: "1"
+           cpu: "500m"
            memory: 1Gi
         securityContext:
           capabilities:

@@ -17,9 +17,9 @@ limitations under the License.
 package vfsclientset
 
 import (
+	"fmt"
 	"k8s.io/kops/util/pkg/vfs"
 	"os"
-	"fmt"
 )
 
 func listChildNames(vfsPath vfs.Path) ([]string, error) {

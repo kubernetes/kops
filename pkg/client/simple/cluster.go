@@ -21,7 +21,6 @@ import (
 	k8sapi "k8s.io/kubernetes/pkg/api"
 )
 
-
 // ClusterInterface has methods to work with Cluster resources.
 type ClusterInterface interface {
 	Create(*api.Cluster) (*api.Cluster, error)

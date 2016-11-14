@@ -21,7 +21,6 @@ import (
 	k8sapi "k8s.io/kubernetes/pkg/api"
 )
 
-
 // FederationInterface has methods to work with Federation resources.
 type FederationInterface interface {
 	Create(*api.Federation) (*api.Federation, error)

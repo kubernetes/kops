@@ -31,7 +31,7 @@ import (
 
 	"github.com/golang/glog"
 	utilerrors "k8s.io/kubernetes/pkg/util/errors"
-	"k8s.io/kubernetes/test/e2e_node/build"
+	"k8s.io/kubernetes/test/e2e_node/builder"
 )
 
 var sshOptions = flag.String("ssh-options", "", "Commandline options passed to ssh.")
@@ -45,6 +45,8 @@ const (
 	archiveName  = "e2e_node_test.tar.gz"
 	CNIRelease   = "07a8a28637e97b22eb8dfe710eeae1344f69d16e"
 	CNIDirectory = "cni"
+	// Note: This path needs to be in sync with the "target" path for `/` in cluster/gce/gci/mounter/mounter
+	mounterRootfsPath string = "/media/root"
 )
 
 var CNIURL = fmt.Sprintf("https://storage.googleapis.com/kubernetes-release/network-plugins/cni-%s.tar.gz", CNIRelease)
@@ -83,12 +85,12 @@ func GetHostnameOrIp(hostname string) string {
 // the binaries k8s required for node e2e tests
 func CreateTestArchive() (string, error) {
 	// Build the executables
-	if err := build.BuildGo(); err != nil {
+	if err := builder.BuildGo(); err != nil {
 		return "", fmt.Errorf("failed to build the depedencies: %v", err)
 	}
 
 	// Make sure we can find the newly built binaries
-	buildOutputDir, err := build.GetK8sBuildOutputDir()
+	buildOutputDir, err := builder.GetK8sBuildOutputDir()
 	if err != nil {
 		return "", fmt.Errorf("failed to locate kubernetes build output directory %v", err)
 	}
@@ -113,8 +115,34 @@ func CreateTestArchive() (string, error) {
 		}
 	}
 
+	// Include the GCI mounter in the deployed tarball
+	k8sDir, err := builder.GetK8sRootDir()
+	if err != nil {
+		return "", fmt.Errorf("Could not find K8s root dir! Err: %v", err)
+	}
+	localSource := "cluster/gce/gci/mounter/mounter"
+	source := filepath.Join(k8sDir, localSource)
+
+	// Require the GCI mounter script, we want to make sure the remote test runner stays up to date if the mounter file moves
+	if _, err := os.Stat(source); err != nil {
+		return "", fmt.Errorf("Could not find GCI mounter script at %q! If this script has been (re)moved, please update the e2e node remote test runner accordingly! Err: %v", source, err)
+	}
+
+	bindir := "cluster/gce/gci/mounter"
+	bin := "mounter"
+	destdir := filepath.Join(tardir, bindir)
+	dest := filepath.Join(destdir, bin)
+	out, err := exec.Command("mkdir", "-p", filepath.Join(tardir, bindir)).CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("failed to create directory %q for GCI mounter script. Err: %v. Output:\n%s", destdir, err, out)
+	}
+	out, err = exec.Command("cp", source, dest).CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("failed to copy GCI mounter script to the archive bin. Err: %v. Output:\n%s", err, out)
+	}
+
 	// Build the tar
-	out, err := exec.Command("tar", "-zcvf", archiveName, "-C", tardir, ".").CombinedOutput()
+	out, err = exec.Command("tar", "-zcvf", archiveName, "-C", tardir, ".").CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("failed to build tar %v.  Output:\n%s", err, out)
 	}
@@ -141,7 +169,9 @@ func RunRemote(archive string, host string, cleanup bool, junitFilePrefix string
 
 	// Create the temp staging directory
 	glog.Infof("Staging test binaries on %s", host)
-	tmp := fmt.Sprintf("/tmp/gcloud-e2e-%d", rand.Int31())
+	dirName := fmt.Sprintf("gcloud-e2e-%d", rand.Int31())
+	tmp := fmt.Sprintf("/tmp/%s", dirName)
+
 	_, err := RunSshCommand("ssh", GetHostnameOrIp(host), "--", "mkdir", tmp)
 	if err != nil {
 		// Exit failure with the error
@@ -165,6 +195,27 @@ func RunRemote(archive string, host string, cleanup bool, junitFilePrefix string
 		return "", false, err
 	}
 
+	// Configure iptables firewall rules
+	// TODO: consider calling bootstrap script to configure host based on OS
+	cmd := getSshCommand("&&",
+		`iptables -L INPUT | grep "Chain INPUT (policy DROP)"`,
+		"(iptables -C INPUT -w -p TCP -j ACCEPT || iptables -A INPUT -w -p TCP -j ACCEPT)",
+		"(iptables -C INPUT -w -p UDP -j ACCEPT || iptables -A INPUT -w -p UDP -j ACCEPT)",
+		"(iptables -C INPUT -w -p ICMP -j ACCEPT || iptables -A INPUT -w -p ICMP -j ACCEPT)")
+	output, err := RunSshCommand("ssh", GetHostnameOrIp(host), "--", "sudo", "sh", "-c", cmd)
+	if err != nil {
+		glog.Errorf("Failed to configured firewall: %v output: %v", err, output)
+	}
+	cmd = getSshCommand("&&",
+		`iptables -L FORWARD | grep "Chain FORWARD (policy DROP)" > /dev/null`,
+		"(iptables -C FORWARD -w -p TCP -j ACCEPT || iptables -A FORWARD -w -p TCP -j ACCEPT)",
+		"(iptables -C FORWARD -w -p UDP -j ACCEPT || iptables -A FORWARD -w -p UDP -j ACCEPT)",
+		"(iptables -C FORWARD -w -p ICMP -j ACCEPT || iptables -A FORWARD -w -p ICMP -j ACCEPT)")
+	output, err = RunSshCommand("ssh", GetHostnameOrIp(host), "--", "sudo", "sh", "-c", cmd)
+	if err != nil {
+		glog.Errorf("Failed to configured firewall: %v output: %v", err, output)
+	}
+
 	// Copy the archive to the staging directory
 	_, err = RunSshCommand("scp", archive, fmt.Sprintf("%s:%s/", GetHostnameOrIp(host), tmp))
 	if err != nil {
@@ -173,7 +224,7 @@ func RunRemote(archive string, host string, cleanup bool, junitFilePrefix string
 	}
 
 	// Kill any running node processes
-	cmd := getSshCommand(" ; ",
+	cmd = getSshCommand(" ; ",
 		"sudo pkill kubelet",
 		"sudo pkill kube-apiserver",
 		"sudo pkill etcd",
@@ -187,11 +238,51 @@ func RunRemote(archive string, host string, cleanup bool, junitFilePrefix string
 	// Extract the archive
 	cmd = getSshCommand(" && ", fmt.Sprintf("cd %s", tmp), fmt.Sprintf("tar -xzvf ./%s", archiveName))
 	glog.Infof("Extracting tar on %s", host)
-	output, err := RunSshCommand("ssh", GetHostnameOrIp(host), "--", "sh", "-c", cmd)
+	output, err = RunSshCommand("ssh", GetHostnameOrIp(host), "--", "sh", "-c", cmd)
 	if err != nil {
 		// Exit failure with the error
 		return "", false, err
 	}
+
+	// If we are testing on a GCI node, we chmod 544 the mounter and specify a different mounter path in the test args.
+	// We do this here because the local var `tmp` tells us which /tmp/gcloud-e2e-%d is relevant to the current test run.
+
+	// Determine if the GCI mounter script exists locally.
+	k8sDir, err := builder.GetK8sRootDir()
+	if err != nil {
+		return "", false, fmt.Errorf("Could not find K8s root dir! Err: %v", err)
+	}
+	localSource := "cluster/gce/gci/mounter/mounter"
+	source := filepath.Join(k8sDir, localSource)
+
+	// Require the GCI mounter script, we want to make sure the remote test runner stays up to date if the mounter file moves
+	if _, err = os.Stat(source); err != nil {
+		return "", false, fmt.Errorf("Could not find GCI mounter script at %q! If this script has been (re)moved, please update the e2e node remote test runner accordingly! Err: %v", source, err)
+	}
+
+	// Determine if tests will run on a GCI node.
+	output, err = RunSshCommand("ssh", GetHostnameOrIp(host), "--", "sh", "-c", "'cat /etc/os-release'")
+	if err != nil {
+		glog.Errorf("Issue detecting node's OS via node's /etc/os-release. Err: %v, Output:\n%s", err, output)
+		return "", false, fmt.Errorf("Issue detecting node's OS via node's /etc/os-release. Err: %v, Output:\n%s", err, output)
+	}
+	if strings.Contains(output, "ID=gci") {
+		// Note this implicitly requires the script to be where we expect in the tarball, so if that location changes the error
+		// here will tell us to update the remote test runner.
+		mounterPath := filepath.Join(tmp, "cluster/gce/gci/mounter/mounter")
+		output, err = RunSshCommand("ssh", GetHostnameOrIp(host), "--", "sh", "-c", fmt.Sprintf("'chmod 544 %s'", mounterPath))
+		if err != nil {
+			glog.Errorf("Unable to chmod 544 GCI mounter script. Err: %v, Output:\n%s", err, output)
+			return "", false, err
+		}
+		// Insert args at beginning of testArgs, so any values from command line take precedence
+		testArgs = fmt.Sprintf("--experimental-mounter-rootfs-path=%s ", mounterRootfsPath) + testArgs
+		testArgs = fmt.Sprintf("--experimental-mounter-path=%s ", mounterPath) + testArgs
+
+		// Temporarily disabled (associated Kubelet flags commented out in k8s.io/kubernetes/test/e2e_node/services/services.go):
+		// glog.Infof("GCI node and GCI mounter both detected, setting --experimental-mounter-path=%q and --experimental-mounter-rootfs-path=%q accordingly", mounterPath, mounterRootfsPath)
+	}
+
 	// Run the tests
 	cmd = getSshCommand(" && ",
 		fmt.Sprintf("cd %s", tmp),
@@ -205,6 +296,32 @@ func RunRemote(archive string, host string, cleanup bool, junitFilePrefix string
 
 	if err != nil {
 		aggErrs = append(aggErrs, err)
+	}
+
+	if err != nil {
+		// Encountered an unexpected error. The remote test harness may not
+		// have finished retrieved and stored all the logs in this case. Try
+		// to get some logs for debugging purposes.
+		// TODO: This is a best-effort, temporary hack that only works for
+		// journald nodes. We should have a more robust way to collect logs.
+		var (
+			logName  = fmt.Sprintf("%s-system.log", dirName)
+			logPath  = fmt.Sprintf("/tmp/%s-system.log", dirName)
+			destPath = fmt.Sprintf("%s/%s-%s", *resultsDir, host, logName)
+		)
+		glog.Infof("Test failed unexpectedly. Attempting to retreiving system logs (only works for nodes with journald)")
+		// Try getting the system logs from journald and store it to a file.
+		// Don't reuse the original test directory on the remote host because
+		// it could've be been removed if the node was rebooted.
+		_, err := RunSshCommand("ssh", GetHostnameOrIp(host), "--", "sh", "-c", fmt.Sprintf("'sudo journalctl --system --all > %s'", logPath))
+		if err == nil {
+			glog.Infof("Got the system logs from journald; copying it back...")
+			if _, err := RunSshCommand("scp", fmt.Sprintf("%s:%s", GetHostnameOrIp(host), logPath), destPath); err != nil {
+				glog.Infof("Failed to copy the log: err: %v", err)
+			}
+		} else {
+			glog.Infof("Failed to run journactl (normal if it doesn't exist on the node): %v", err)
+		}
 	}
 
 	glog.Infof("Copying test artifacts from %s", host)

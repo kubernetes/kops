@@ -240,7 +240,7 @@ func (mounter *quobyteMounter) SetUpAt(dir string, fsGroup *int64) error {
 		options = append(options, "ro")
 	}
 
-	//if a trailling slash is missing we add it here
+	//if a trailing slash is missing we add it here
 	if err := mounter.mounter.Mount(mounter.correctTraillingSlash(mounter.registry), dir, "quobyte", options); err != nil {
 		return fmt.Errorf("quobyte: mount failed: %v", err)
 	}
@@ -320,10 +320,6 @@ func (plugin *quobytePlugin) newDeleterInternal(spec *volume.Spec) (volume.Delet
 }
 
 func (plugin *quobytePlugin) NewProvisioner(options volume.VolumeOptions) (volume.Provisioner, error) {
-	if len(options.AccessModes) == 0 {
-		options.AccessModes = plugin.GetAccessModes()
-	}
-
 	return plugin.newProvisionerInternal(options)
 }
 
@@ -344,7 +340,7 @@ type quobyteVolumeProvisioner struct {
 }
 
 func (provisioner *quobyteVolumeProvisioner) Provision() (*api.PersistentVolume, error) {
-	if provisioner.options.Selector != nil {
+	if provisioner.options.PVC.Spec.Selector != nil {
 		return nil, fmt.Errorf("claim Selector is not supported")
 	}
 	var apiServer, adminSecretName, quobyteUser, quobytePassword string
@@ -375,7 +371,7 @@ func (provisioner *quobyteVolumeProvisioner) Provision() (*api.PersistentVolume,
 		}
 	}
 
-	secretMap, err := util.GetSecret(adminSecretNamespace, adminSecretName, provisioner.plugin.host.GetKubeClient())
+	secretMap, err := util.GetSecretForPV(adminSecretNamespace, adminSecretName, quobytePluginName, provisioner.plugin.host.GetKubeClient())
 	if err != nil {
 		return nil, err
 	}
@@ -390,11 +386,11 @@ func (provisioner *quobyteVolumeProvisioner) Provision() (*api.PersistentVolume,
 	}
 
 	if !validateRegistry(provisioner.registry) {
-		return nil, fmt.Errorf("Quoybte registry missing or malformed: must be a host:port pair or multiple pairs seperated by commas")
+		return nil, fmt.Errorf("Quoybte registry missing or malformed: must be a host:port pair or multiple pairs separated by commas")
 	}
 
 	if len(apiServer) == 0 {
-		return nil, fmt.Errorf("Quoybte API server missing or malformed: must be a http(s)://host:port pair or multiple pairs seperated by commas")
+		return nil, fmt.Errorf("Quoybte API server missing or malformed: must be a http(s)://host:port pair or multiple pairs separated by commas")
 	}
 
 	// create random image name
@@ -416,7 +412,10 @@ func (provisioner *quobyteVolumeProvisioner) Provision() (*api.PersistentVolume,
 	pv := new(api.PersistentVolume)
 	pv.Spec.PersistentVolumeSource.Quobyte = vol
 	pv.Spec.PersistentVolumeReclaimPolicy = provisioner.options.PersistentVolumeReclaimPolicy
-	pv.Spec.AccessModes = provisioner.options.AccessModes
+	pv.Spec.AccessModes = provisioner.options.PVC.Spec.AccessModes
+	if len(pv.Spec.AccessModes) == 0 {
+		pv.Spec.AccessModes = provisioner.plugin.GetAccessModes()
+	}
 	pv.Spec.Capacity = api.ResourceList{
 		api.ResourceName(api.ResourceStorage): resource.MustParse(fmt.Sprintf("%dGi", sizeGB)),
 	}
@@ -445,9 +444,10 @@ func (deleter *quobyteVolumeDeleter) Delete() error {
 		return err
 	}
 
-	secretMap, err := util.GetSecret(
+	secretMap, err := util.GetSecretForPV(
 		annotations[annotationQuobyteAPISecretNamespace],
 		annotations[annotationQuobyteAPISecret],
+		quobytePluginName,
 		deleter.plugin.host.GetKubeClient())
 
 	if err != nil {

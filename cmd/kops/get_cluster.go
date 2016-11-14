@@ -116,7 +116,7 @@ func (c *GetClustersCmd) Run(args []string) error {
 					return fmt.Errorf("error reading full cluster spec for %q: %v", cluster.Name, err)
 				}
 				fullSpec := &api.Cluster{}
-				err = registry.ReadConfig(configBase.Join(registry.PathClusterCompleted), fullSpec)
+				err = registry.ReadConfigDeprecated(configBase.Join(registry.PathClusterCompleted), fullSpec)
 				if err != nil {
 					return fmt.Errorf("error reading full cluster spec for %q: %v", cluster.Name, err)
 				}

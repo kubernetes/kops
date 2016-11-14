@@ -150,6 +150,14 @@ func TestUpdateNewNodeStatus(t *testing.T) {
 					LastTransitionTime: unversioned.Time{},
 				},
 				{
+					Type:               api.NodeInodePressure,
+					Status:             api.ConditionFalse,
+					Reason:             "KubeletHasNoInodePressure",
+					Message:            fmt.Sprintf("kubelet has no inode pressure"),
+					LastHeartbeatTime:  unversioned.Time{},
+					LastTransitionTime: unversioned.Time{},
+				},
+				{
 					Type:               api.NodeReady,
 					Status:             api.ConditionTrue,
 					Reason:             "KubeletReady",
@@ -185,6 +193,7 @@ func TestUpdateNewNodeStatus(t *testing.T) {
 			Addresses: []api.NodeAddress{
 				{Type: api.NodeLegacyHostIP, Address: "127.0.0.1"},
 				{Type: api.NodeInternalIP, Address: "127.0.0.1"},
+				{Type: api.NodeHostName, Address: testKubeletHostname},
 			},
 			Images: expectedImageList,
 		},
@@ -341,6 +350,14 @@ func TestUpdateExistingNodeStatus(t *testing.T) {
 						LastTransitionTime: unversioned.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 					},
 					{
+						Type:               api.NodeInodePressure,
+						Status:             api.ConditionFalse,
+						Reason:             "KubeletHasSufficientInode",
+						Message:            fmt.Sprintf("kubelet has sufficient inodes available"),
+						LastHeartbeatTime:  unversioned.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
+						LastTransitionTime: unversioned.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
+					},
+					{
 						Type:               api.NodeReady,
 						Status:             api.ConditionTrue,
 						Reason:             "KubeletReady",
@@ -413,6 +430,14 @@ func TestUpdateExistingNodeStatus(t *testing.T) {
 					LastTransitionTime: unversioned.Time{},
 				},
 				{
+					Type:               api.NodeInodePressure,
+					Status:             api.ConditionFalse,
+					Reason:             "KubeletHasSufficientInode",
+					Message:            fmt.Sprintf("kubelet has sufficient inodes available"),
+					LastHeartbeatTime:  unversioned.Time{},
+					LastTransitionTime: unversioned.Time{},
+				},
+				{
 					Type:               api.NodeReady,
 					Status:             api.ConditionTrue,
 					Reason:             "KubeletReady",
@@ -448,6 +473,7 @@ func TestUpdateExistingNodeStatus(t *testing.T) {
 			Addresses: []api.NodeAddress{
 				{Type: api.NodeLegacyHostIP, Address: "127.0.0.1"},
 				{Type: api.NodeInternalIP, Address: "127.0.0.1"},
+				{Type: api.NodeHostName, Address: testKubeletHostname},
 			},
 			// images will be sorted from max to min in node status.
 			Images: []api.ContainerImage{
@@ -716,6 +742,14 @@ func TestUpdateNodeStatusWithRuntimeStateError(t *testing.T) {
 					LastHeartbeatTime:  unversioned.Time{},
 					LastTransitionTime: unversioned.Time{},
 				},
+				{
+					Type:               api.NodeInodePressure,
+					Status:             api.ConditionFalse,
+					Reason:             "KubeletHasNoInodePressure",
+					Message:            fmt.Sprintf("kubelet has no inode pressure"),
+					LastHeartbeatTime:  unversioned.Time{},
+					LastTransitionTime: unversioned.Time{},
+				},
 				{}, //placeholder
 			},
 			NodeInfo: api.NodeSystemInfo{
@@ -745,6 +779,7 @@ func TestUpdateNodeStatusWithRuntimeStateError(t *testing.T) {
 			Addresses: []api.NodeAddress{
 				{Type: api.NodeLegacyHostIP, Address: "127.0.0.1"},
 				{Type: api.NodeInternalIP, Address: "127.0.0.1"},
+				{Type: api.NodeHostName, Address: testKubeletHostname},
 			},
 			Images: []api.ContainerImage{
 				{

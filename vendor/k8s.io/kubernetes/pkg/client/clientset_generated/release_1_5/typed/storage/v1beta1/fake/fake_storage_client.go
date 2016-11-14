@@ -22,16 +22,17 @@ import (
 	core "k8s.io/kubernetes/pkg/client/testing/core"
 )
 
-type FakeStorage struct {
+type FakeStorageV1beta1 struct {
 	*core.Fake
 }
 
-func (c *FakeStorage) StorageClasses() v1beta1.StorageClassInterface {
+func (c *FakeStorageV1beta1) StorageClasses() v1beta1.StorageClassInterface {
 	return &FakeStorageClasses{c}
 }
 
-// GetRESTClient returns a RESTClient that is used to communicate
+// RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *FakeStorage) GetRESTClient() *restclient.RESTClient {
-	return nil
+func (c *FakeStorageV1beta1) RESTClient() restclient.Interface {
+	var ret *restclient.RESTClient
+	return ret
 }
