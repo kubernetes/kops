@@ -38,8 +38,13 @@ func usesCNI(c *api.Cluster) bool {
 		return true
 	}
 
+	if networkConfig.Kopeio != nil {
+		// Kopeio uses kubenet (and thus CNI)
+		return true
+	}
+
 	if networkConfig.CNI != nil {
-		// external: assume uses CNI
+		// CNI definitely uses CNI!
 		return true
 	}
 
