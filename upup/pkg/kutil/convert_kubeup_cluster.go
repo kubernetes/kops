@@ -463,7 +463,8 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 		return fmt.Errorf("error writing updated configuration: %v", err)
 	}
 
-	err = registry.WriteConfig(newConfigBase.Join(registry.PathClusterCompleted), fullCluster)
+	// TODO: No longer needed?
+	err = registry.WriteConfigDeprecated(newConfigBase.Join(registry.PathClusterCompleted), fullCluster)
 	if err != nil {
 		return fmt.Errorf("error writing completed cluster spec: %v", err)
 	}
