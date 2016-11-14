@@ -361,6 +361,7 @@ func (c *ApplyClusterCmd) Run() error {
 	l.ModelStore = modelStore
 
 	l.Builders = []TaskBuilder{
+		&BootstrapChannelBuilder{cluster: cluster},
 	}
 
 	l.TemplateFunctions["CA"] = func() fi.CAStore {

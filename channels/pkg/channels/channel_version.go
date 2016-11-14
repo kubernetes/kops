@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"github.com/blang/semver"
 	"github.com/golang/glog"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3"
@@ -37,6 +38,17 @@ type Channel struct {
 type ChannelVersion struct {
 	Version *string `json:"version,omitempty"`
 	Channel *string `json:"channel,omitempty"`
+}
+
+func stringValue(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}
+
+func (c *ChannelVersion) String() {
+	return "Version=" + stringValue(c.Version) + " Channel=" + stringValue(c.Channel)
 }
 
 func ParseChannelVersion(s string) (*ChannelVersion, error) {
