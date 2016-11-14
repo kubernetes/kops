@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2015 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,24 +16,17 @@ limitations under the License.
 
 package vfsclientset
 
+// These imports are the API groups the client will support.
 import (
 	"fmt"
-	"k8s.io/kops/util/pkg/vfs"
-	"os"
+
+	_ "k8s.io/kubernetes/pkg/api/install"
+	"k8s.io/kubernetes/pkg/apimachinery/registered"
+	_ "k8s.io/kops/pkg/apis/kops/install"
 )
 
-func listChildNames(vfsPath vfs.Path) ([]string, error) {
-	children, err := vfsPath.ReadDir()
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, nil
-		}
-		return nil, fmt.Errorf("error listing children of %s: %v", vfsPath, err)
+func init() {
+	if missingVersions := registered.ValidateEnvRequestedVersions(); len(missingVersions) != 0 {
+		panic(fmt.Sprintf("KUBE_API_VERSIONS contains versions that are not installed: %q.", missingVersions))
 	}
-
-	var names []string
-	for _, child := range children {
-		names = append(names, child.Base())
-	}
-	return names, nil
 }

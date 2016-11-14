@@ -250,7 +250,6 @@ type KubeDNSConfig struct {
 	ServerIP string `json:"serverIP,omitempty"`
 }
 
-//
 //type MasterConfig struct {
 //	Name string `json:",omitempty"`
 //
@@ -258,7 +257,6 @@ type KubeDNSConfig struct {
 //	Zone        string `json:",omitempty"`
 //	MachineType string `json:",omitempty"`
 //}
-//
 
 type EtcdClusterSpec struct {
 	// Name is the name of the etcd cluster (main, events etc)
@@ -281,7 +279,14 @@ type EtcdMemberSpec struct {
 
 type ClusterZoneSpec struct {
 	Name string `json:"name,omitempty"`
-	CIDR string `json:"cidr,omitempty"`
+
+	// For Private network topologies we need to have 2
+	// CIDR blocks.
+	// 1 - Utility (Public) Subnets
+	// 2 - Operating (Private) Subnets
+
+	PrivateCIDR string `json:"privateCIDR,omitempty"`
+	CIDR        string `json:"cidr,omitempty"`
 
 	// ProviderID is the cloud provider id for the objects associated with the zone (the subnet on AWS)
 	ProviderID string `json:"id,omitempty"`

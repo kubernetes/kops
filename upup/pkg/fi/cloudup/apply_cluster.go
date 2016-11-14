@@ -532,7 +532,7 @@ func (c *ApplyClusterCmd) Run() error {
 	c.Target = target
 
 	if !dryRun {
-		err = registry.WriteConfig(configBase.Join(registry.PathClusterCompleted), c.Cluster)
+		err = registry.WriteConfigDeprecated(configBase.Join(registry.PathClusterCompleted), c.Cluster)
 		if err != nil {
 			return fmt.Errorf("error writing completed cluster spec: %v", err)
 		}
