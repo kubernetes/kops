@@ -106,6 +106,8 @@ type ActualStateOfWorld interface {
 	// based on the current actual state of the world.
 	GetAttachedVolumesForNode(nodeName types.NodeName) []AttachedVolume
 
+	GetAttachedVolumesPerNode() map[types.NodeName][]operationexecutor.AttachedVolume
+
 	// GetVolumesToReportAttached returns a map containing the set of nodes for
 	// which the VolumesAttached Status field in the Node API object should be
 	// updated. The key in this map is the name of the node to update and the
@@ -279,8 +281,17 @@ func (asw *actualStateOfWorld) AddVolumeNode(
 			nodesAttachedTo: make(map[types.NodeName]nodeAttachedTo),
 			devicePath:      devicePath,
 		}
-		asw.attachedVolumes[volumeName] = volumeObj
+	} else {
+		// If volume object already exists, it indicates that the information would be out of date.
+		// Update the fields for volume object except the nodes attached to the volumes.
+		volumeObj.devicePath = devicePath
+		volumeObj.spec = volumeSpec
+		glog.V(2).Infof("Volume %q is already added to attachedVolume list to node %q, update device path %q",
+			volumeName,
+			nodeName,
+			devicePath)
 	}
+	asw.attachedVolumes[volumeName] = volumeObj
 
 	_, nodeExists := volumeObj.nodesAttachedTo[nodeName]
 	if !nodeExists {
@@ -323,7 +334,7 @@ func (asw *actualStateOfWorld) SetVolumeMountedByNode(
 
 	nodeObj.mountedByNode = mounted
 	volumeObj.nodesAttachedTo[nodeName] = nodeObj
-	glog.V(4).Infof("SetVolumeMountedByNode volume %v to the node %q mounted %q",
+	glog.V(4).Infof("SetVolumeMountedByNode volume %v to the node %q mounted %t",
 		volumeName,
 		nodeName,
 		mounted)
@@ -532,6 +543,25 @@ func (asw *actualStateOfWorld) GetAttachedVolumesForNode(
 	return attachedVolumes
 }
 
+func (asw *actualStateOfWorld) GetAttachedVolumesPerNode() map[types.NodeName][]operationexecutor.AttachedVolume {
+	asw.RLock()
+	defer asw.RUnlock()
+
+	attachedVolumesPerNode := make(map[types.NodeName][]operationexecutor.AttachedVolume)
+	for _, volumeObj := range asw.attachedVolumes {
+		for nodeName, nodeObj := range volumeObj.nodesAttachedTo {
+			volumes, exists := attachedVolumesPerNode[nodeName]
+			if !exists {
+				volumes = []operationexecutor.AttachedVolume{}
+			}
+			volumes = append(volumes, getAttachedVolume(&volumeObj, &nodeObj).AttachedVolume)
+			attachedVolumesPerNode[nodeName] = volumes
+		}
+	}
+
+	return attachedVolumesPerNode
+}
+
 func (asw *actualStateOfWorld) GetVolumesToReportAttached() map[types.NodeName][]api.AttachedVolume {
 	asw.RLock()
 	defer asw.RUnlock()
@@ -569,6 +599,7 @@ func getAttachedVolume(
 			VolumeName:         attachedVolume.volumeName,
 			VolumeSpec:         attachedVolume.spec,
 			NodeName:           nodeAttachedTo.nodeName,
+			DevicePath:         attachedVolume.devicePath,
 			PluginIsAttachable: true,
 		},
 		MountedByNode:       nodeAttachedTo.mountedByNode,

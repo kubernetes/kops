@@ -1,37 +1,3 @@
-<!-- BEGIN MUNGE: UNVERSIONED_WARNING -->
-
-<!-- BEGIN STRIP_FOR_RELEASE -->
-
-<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
-     width="25" height="25">
-<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
-     width="25" height="25">
-<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
-     width="25" height="25">
-<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
-     width="25" height="25">
-<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
-     width="25" height="25">
-
-<h2>PLEASE NOTE: This document applies to the HEAD of the source tree</h2>
-
-If you are using a released version of Kubernetes, you should
-refer to the docs that go with that version.
-
-<!-- TAG RELEASE_LINK, added by the munger automatically -->
-<strong>
-The latest release of this document can be found
-[here](http://releases.k8s.io/release-1.4/docs/devel/kubectl-conventions.md).
-
-Documentation for other releases can be found at
-[releases.k8s.io](http://releases.k8s.io).
-</strong>
---
-
-<!-- END STRIP_FOR_RELEASE -->
-
-<!-- END MUNGE: UNVERSIONED_WARNING -->
-
 # Kubectl Conventions
 
 Updated: 8/27/2015
@@ -301,23 +267,24 @@ Sample command skeleton:
 // MineRecommendedName is the recommended command name for kubectl mine.
 const MineRecommendedName = "mine"
 
+// Long command description and examples.
+var (
+  mineLong = templates.LongDesc(`
+    mine which is described here
+    with lots of details.`)
+
+  mineExample = templates.Examples(`
+    # Run my command's first action
+    kubectl mine first_action
+
+    # Run my command's second action on latest stuff
+    kubectl mine second_action --flag`)
+)
+
 // MineConfig contains all the options for running the mine cli command.
 type MineConfig struct {
   mineLatest bool
 }
-
-var (
-  mineLong = dedent.Dedent(`
-        mine which is described here
-        with lots of details.`)
-
-  mineExample = dedent.Dedent(`
-          # Run my command's first action
-          kubectl mine first_action
-
-          # Run my command's second action on latest stuff
-          kubectl mine second_action --flag`)
-)
 
 // NewCmdMine implements the kubectl mine command.
 func NewCmdMine(parent, name string, f *cmdutil.Factory, out io.Writer) *cobra.Command {

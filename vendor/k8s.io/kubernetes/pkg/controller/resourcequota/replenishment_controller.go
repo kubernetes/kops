@@ -94,43 +94,43 @@ type ReplenishmentControllerFactory interface {
 
 // replenishmentControllerFactory implements ReplenishmentControllerFactory
 type replenishmentControllerFactory struct {
-	kubeClient  clientset.Interface
-	podInformer cache.SharedInformer
+	kubeClient            clientset.Interface
+	sharedInformerFactory informers.SharedInformerFactory
 }
 
 // NewReplenishmentControllerFactory returns a factory that knows how to build controllers
 // to replenish resources when updated or deleted
-func NewReplenishmentControllerFactory(podInformer cache.SharedInformer, kubeClient clientset.Interface) ReplenishmentControllerFactory {
+func NewReplenishmentControllerFactory(f informers.SharedInformerFactory, kubeClient clientset.Interface) ReplenishmentControllerFactory {
 	return &replenishmentControllerFactory{
-		kubeClient:  kubeClient,
-		podInformer: podInformer,
+		kubeClient:            kubeClient,
+		sharedInformerFactory: f,
 	}
 }
 
+// NewReplenishmentControllerFactoryFromClient returns a factory that knows how to build controllers to replenish resources
+// when updated or deleted using the specified client.
 func NewReplenishmentControllerFactoryFromClient(kubeClient clientset.Interface) ReplenishmentControllerFactory {
 	return NewReplenishmentControllerFactory(nil, kubeClient)
 }
 
 func (r *replenishmentControllerFactory) NewController(options *ReplenishmentControllerOptions) (cache.ControllerInterface, error) {
 	var result cache.ControllerInterface
-	if r.kubeClient != nil && r.kubeClient.Core().GetRESTClient().GetRateLimiter() != nil {
-		metrics.RegisterMetricAndTrackRateLimiterUsage("replenishment_controller", r.kubeClient.Core().GetRESTClient().GetRateLimiter())
+	if r.kubeClient != nil && r.kubeClient.Core().RESTClient().GetRateLimiter() != nil {
+		metrics.RegisterMetricAndTrackRateLimiterUsage("replenishment_controller", r.kubeClient.Core().RESTClient().GetRateLimiter())
 	}
 
 	switch options.GroupKind {
 	case api.Kind("Pod"):
-		if r.podInformer != nil {
-			r.podInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		if r.sharedInformerFactory != nil {
+			podInformer := r.sharedInformerFactory.Pods().Informer()
+			podInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 				UpdateFunc: PodReplenishmentUpdateFunc(options),
 				DeleteFunc: ObjectReplenishmentDeleteFunc(options),
 			})
-			result = r.podInformer.GetController()
+			result = podInformer.GetController()
 			break
 		}
-
-		r.podInformer = informers.NewPodInformer(r.kubeClient, options.ResyncPeriod())
-		result = r.podInformer
-
+		result = informers.NewPodInformer(r.kubeClient, options.ResyncPeriod())
 	case api.Kind("Service"):
 		_, result = cache.NewInformer(
 			&cache.ListWatch{

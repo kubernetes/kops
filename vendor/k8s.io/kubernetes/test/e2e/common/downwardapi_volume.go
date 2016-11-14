@@ -89,15 +89,11 @@ var _ = framework.KubeDescribe("Downward API volume", func() {
 		podName := "labelsupdate" + string(uuid.NewUUID())
 		pod := downwardAPIVolumePodForUpdateTest(podName, labels, map[string]string{}, "/etc/labels")
 		containerName := "client-container"
-		defer func() {
-			By("Deleting the pod")
-			podClient.Delete(pod.Name, api.NewDeleteOptions(0))
-		}()
 		By("Creating the pod")
 		podClient.CreateSync(pod)
 
 		Eventually(func() (string, error) {
-			return framework.GetPodLogs(f.Client, f.Namespace.Name, podName, containerName)
+			return framework.GetPodLogs(f.ClientSet, f.Namespace.Name, podName, containerName)
 		},
 			podLogTimeout, framework.Poll).Should(ContainSubstring("key1=\"value1\"\n"))
 
@@ -107,7 +103,7 @@ var _ = framework.KubeDescribe("Downward API volume", func() {
 		})
 
 		Eventually(func() (string, error) {
-			return framework.GetPodLogs(f.Client, f.Namespace.Name, pod.Name, containerName)
+			return framework.GetPodLogs(f.ClientSet, f.Namespace.Name, pod.Name, containerName)
 		},
 			podLogTimeout, framework.Poll).Should(ContainSubstring("key3=\"value3\"\n"))
 	})
@@ -119,18 +115,14 @@ var _ = framework.KubeDescribe("Downward API volume", func() {
 		pod := downwardAPIVolumePodForUpdateTest(podName, map[string]string{}, annotations, "/etc/annotations")
 
 		containerName := "client-container"
-		defer func() {
-			By("Deleting the pod")
-			podClient.Delete(pod.Name, api.NewDeleteOptions(0))
-		}()
 		By("Creating the pod")
 		podClient.CreateSync(pod)
 
 		pod, err := podClient.Get(pod.Name)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred(), "Failed to get pod %q", pod.Name)
 
 		Eventually(func() (string, error) {
-			return framework.GetPodLogs(f.Client, f.Namespace.Name, pod.Name, containerName)
+			return framework.GetPodLogs(f.ClientSet, f.Namespace.Name, pod.Name, containerName)
 		},
 			podLogTimeout, framework.Poll).Should(ContainSubstring("builder=\"bar\"\n"))
 
@@ -140,7 +132,7 @@ var _ = framework.KubeDescribe("Downward API volume", func() {
 		})
 
 		Eventually(func() (string, error) {
-			return framework.GetPodLogs(f.Client, f.Namespace.Name, pod.Name, containerName)
+			return framework.GetPodLogs(f.ClientSet, f.Namespace.Name, pod.Name, containerName)
 		},
 			podLogTimeout, framework.Poll).Should(ContainSubstring("builder=\"foo\"\n"))
 	})

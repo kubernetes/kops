@@ -18,7 +18,7 @@ package testing
 
 import (
 	"fmt"
-	"io"
+	"reflect"
 	"sync"
 	"time"
 
@@ -77,6 +77,16 @@ func (r *FakeRuntimeService) SetFakeContainers(containers []*FakeContainer) {
 
 }
 
+func (r *FakeRuntimeService) AssertCalls(calls []string) error {
+	r.Lock()
+	defer r.Unlock()
+
+	if !reflect.DeepEqual(calls, r.Called) {
+		return fmt.Errorf("expected %#v, got %#v", calls, r.Called)
+	}
+	return nil
+}
+
 func NewFakeRuntimeService() *FakeRuntimeService {
 	return &FakeRuntimeService{
 		Called:     make([]string, 0),
@@ -109,13 +119,16 @@ func (r *FakeRuntimeService) RunPodSandbox(config *runtimeApi.PodSandboxConfig) 
 	// fixed name from BuildSandboxName() for easily making fake sandboxes.
 	podSandboxID := BuildSandboxName(config.Metadata)
 	createdAt := time.Now().Unix()
-	readyState := runtimeApi.PodSandBoxState_READY
+	readyState := runtimeApi.PodSandboxState_SANDBOX_READY
 	r.Sandboxes[podSandboxID] = &FakePodSandbox{
 		PodSandboxStatus: runtimeApi.PodSandboxStatus{
-			Id:          &podSandboxID,
-			Metadata:    config.Metadata,
-			State:       &readyState,
-			CreatedAt:   &createdAt,
+			Id:        &podSandboxID,
+			Metadata:  config.Metadata,
+			State:     &readyState,
+			CreatedAt: &createdAt,
+			Network: &runtimeApi.PodSandboxNetworkStatus{
+				Ip: &FakePodSandboxIP,
+			},
 			Labels:      config.Labels,
 			Annotations: config.Annotations,
 		},
@@ -130,7 +143,7 @@ func (r *FakeRuntimeService) StopPodSandbox(podSandboxID string) error {
 
 	r.Called = append(r.Called, "StopPodSandbox")
 
-	notReadyState := runtimeApi.PodSandBoxState_NOTREADY
+	notReadyState := runtimeApi.PodSandboxState_SANDBOX_NOTREADY
 	if s, ok := r.Sandboxes[podSandboxID]; ok {
 		s.State = &notReadyState
 	} else {
@@ -163,17 +176,8 @@ func (r *FakeRuntimeService) PodSandboxStatus(podSandboxID string) (*runtimeApi.
 		return nil, fmt.Errorf("pod sandbox %q not found", podSandboxID)
 	}
 
-	return &runtimeApi.PodSandboxStatus{
-		Id:        &podSandboxID,
-		Metadata:  s.Metadata,
-		CreatedAt: s.CreatedAt,
-		State:     s.State,
-		Network: &runtimeApi.PodSandboxNetworkStatus{
-			Ip: &FakePodSandboxIP,
-		},
-		Labels:      s.Labels,
-		Annotations: s.Annotations,
-	}, nil
+	status := s.PodSandboxStatus
+	return &status, nil
 }
 
 func (r *FakeRuntimeService) ListPodSandbox(filter *runtimeApi.PodSandboxFilter) ([]*runtimeApi.PodSandbox, error) {
@@ -197,15 +201,24 @@ func (r *FakeRuntimeService) ListPodSandbox(filter *runtimeApi.PodSandboxFilter)
 		}
 
 		result = append(result, &runtimeApi.PodSandbox{
-			Id:        s.Id,
-			Metadata:  s.Metadata,
-			State:     s.State,
-			CreatedAt: s.CreatedAt,
-			Labels:    s.Labels,
+			Id:          s.Id,
+			Metadata:    s.Metadata,
+			State:       s.State,
+			CreatedAt:   s.CreatedAt,
+			Labels:      s.Labels,
+			Annotations: s.Annotations,
 		})
 	}
 
 	return result, nil
+}
+
+func (r *FakeRuntimeService) PortForward(*runtimeApi.PortForwardRequest) (*runtimeApi.PortForwardResponse, error) {
+	r.Lock()
+	defer r.Unlock()
+
+	r.Called = append(r.Called, "PortForward")
+	return &runtimeApi.PortForwardResponse{}, nil
 }
 
 func (r *FakeRuntimeService) CreateContainer(podSandboxID string, config *runtimeApi.ContainerConfig, sandboxConfig *runtimeApi.PodSandboxConfig) (string, error) {
@@ -216,9 +229,9 @@ func (r *FakeRuntimeService) CreateContainer(podSandboxID string, config *runtim
 
 	// ContainerID should be randomized for real container runtime, but here just use
 	// fixed BuildContainerName() for easily making fake containers.
-	containerID := BuildContainerName(config.Metadata)
+	containerID := BuildContainerName(config.Metadata, podSandboxID)
 	createdAt := time.Now().Unix()
-	createdState := runtimeApi.ContainerState_CREATED
+	createdState := runtimeApi.ContainerState_CONTAINER_CREATED
 	imageRef := config.Image.GetImage()
 	r.Containers[containerID] = &FakeContainer{
 		ContainerStatus: runtimeApi.ContainerStatus{
@@ -250,7 +263,7 @@ func (r *FakeRuntimeService) StartContainer(containerID string) error {
 
 	// Set container to running.
 	startedAt := time.Now().Unix()
-	runningState := runtimeApi.ContainerState_RUNNING
+	runningState := runtimeApi.ContainerState_CONTAINER_RUNNING
 	c.State = &runningState
 	c.StartedAt = &startedAt
 
@@ -270,7 +283,7 @@ func (r *FakeRuntimeService) StopContainer(containerID string, timeout int64) er
 
 	// Set container to exited state.
 	finishedAt := time.Now().Unix()
-	exitedState := runtimeApi.ContainerState_EXITED
+	exitedState := runtimeApi.ContainerState_CONTAINER_EXITED
 	c.State = &exitedState
 	c.FinishedAt = &finishedAt
 
@@ -321,6 +334,7 @@ func (r *FakeRuntimeService) ListContainers(filter *runtimeApi.ContainerFilter) 
 			Image:        s.Image,
 			ImageRef:     s.ImageRef,
 			Labels:       s.Labels,
+			Annotations:  s.Annotations,
 		})
 	}
 
@@ -338,27 +352,34 @@ func (r *FakeRuntimeService) ContainerStatus(containerID string) (*runtimeApi.Co
 		return nil, fmt.Errorf("container %q not found", containerID)
 	}
 
-	return &runtimeApi.ContainerStatus{
-		Id:          c.Id,
-		Metadata:    c.Metadata,
-		State:       c.State,
-		CreatedAt:   c.CreatedAt,
-		Image:       c.Image,
-		ImageRef:    c.ImageRef,
-		Labels:      c.Labels,
-		Annotations: c.Annotations,
-		ExitCode:    c.ExitCode,
-		StartedAt:   c.StartedAt,
-		FinishedAt:  c.FinishedAt,
-		Reason:      c.Reason,
-		Mounts:      c.Mounts,
-	}, nil
+	status := c.ContainerStatus
+	return &status, nil
 }
 
-func (r *FakeRuntimeService) Exec(containerID string, cmd []string, tty bool, stdin io.Reader, stdout, stderr io.WriteCloser) error {
+func (r *FakeRuntimeService) ExecSync(containerID string, cmd []string, timeout time.Duration) (stdout []byte, stderr []byte, err error) {
+	r.Lock()
+	defer r.Unlock()
+
+	r.Called = append(r.Called, "ExecSync")
+	return nil, nil, nil
+}
+
+func (r *FakeRuntimeService) Exec(*runtimeApi.ExecRequest) (*runtimeApi.ExecResponse, error) {
 	r.Lock()
 	defer r.Unlock()
 
 	r.Called = append(r.Called, "Exec")
+	return &runtimeApi.ExecResponse{}, nil
+}
+
+func (r *FakeRuntimeService) Attach(req *runtimeApi.AttachRequest) (*runtimeApi.AttachResponse, error) {
+	r.Lock()
+	defer r.Unlock()
+
+	r.Called = append(r.Called, "Attach")
+	return &runtimeApi.AttachResponse{}, nil
+}
+
+func (r *FakeRuntimeService) UpdateRuntimeConfig(runtimeCOnfig *runtimeApi.RuntimeConfig) error {
 	return nil
 }

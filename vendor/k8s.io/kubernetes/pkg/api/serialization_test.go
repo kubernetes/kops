@@ -51,9 +51,10 @@ import (
 
 var fuzzIters = flag.Int("fuzz-iters", 20, "How many fuzzing iterations to do.")
 
-var codecsToTest = []func(version unversioned.GroupVersion, item runtime.Object) (runtime.Codec, error){
-	func(version unversioned.GroupVersion, item runtime.Object) (runtime.Codec, error) {
-		return testapi.GetCodecForObject(item)
+var codecsToTest = []func(version unversioned.GroupVersion, item runtime.Object) (runtime.Codec, bool, error){
+	func(version unversioned.GroupVersion, item runtime.Object) (runtime.Codec, bool, error) {
+		c, err := testapi.GetCodecForObject(item)
+		return c, true, err
 	},
 }
 
@@ -135,10 +136,13 @@ func roundTripSame(t *testing.T, group testapi.TestGroup, item runtime.Object, e
 	version := *group.GroupVersion()
 	codecs := []runtime.Codec{}
 	for _, fn := range codecsToTest {
-		codec, err := fn(version, item)
+		codec, ok, err := fn(version, item)
 		if err != nil {
 			t.Errorf("unable to get codec: %v", err)
 			return
+		}
+		if !ok {
+			continue
 		}
 		codecs = append(codecs, codec)
 	}
@@ -240,15 +244,37 @@ var nonRoundTrippableTypes = sets.NewString(
 	"WatchEvent",
 )
 
-var commonKinds = []string{"ListOptions", "DeleteOptions"}
+var commonKinds = []string{"Status", "ListOptions", "DeleteOptions", "ExportOptions"}
 
-// verify all external group/versions have the common kinds like the ListOptions, DeleteOptions are registered.
+// verify all external group/versions have the common kinds registered.
 func TestCommonKindsRegistered(t *testing.T) {
 	for _, kind := range commonKinds {
 		for _, group := range testapi.Groups {
 			gv := group.GroupVersion()
-			if _, err := api.Scheme.New(gv.WithKind(kind)); err != nil {
+			gvk := gv.WithKind(kind)
+			obj, err := api.Scheme.New(gvk)
+			if err != nil {
 				t.Error(err)
+			}
+			defaults := gv.WithKind("")
+			if _, got, err := api.Codecs.LegacyCodec().Decode([]byte(`{"kind":"`+kind+`"}`), &defaults, nil); err != nil || gvk != *got {
+				t.Errorf("expected %v: %v %v", gvk, got, err)
+			}
+			data, err := runtime.Encode(api.Codecs.LegacyCodec(*gv), obj)
+			if err != nil {
+				t.Errorf("expected %v: %v\n%s", gvk, err, string(data))
+				continue
+			}
+			if !bytes.Contains(data, []byte(`"kind":"`+kind+`","apiVersion":"`+gv.String()+`"`)) {
+				if kind != "Status" {
+					t.Errorf("expected %v: %v\n%s", gvk, err, string(data))
+					continue
+				}
+				// TODO: this is wrong, but legacy clients expect it
+				if !bytes.Contains(data, []byte(`"kind":"`+kind+`","apiVersion":"v1"`)) {
+					t.Errorf("expected %v: %v\n%s", gvk, err, string(data))
+					continue
+				}
 			}
 		}
 	}
@@ -376,12 +402,15 @@ func TestObjectWatchFraming(t *testing.T) {
 	secret.Data["long"] = bytes.Repeat([]byte{0x01, 0x02, 0x03, 0x00}, 1000)
 	converted, _ := api.Scheme.ConvertToVersion(secret, v1.SchemeGroupVersion)
 	v1secret := converted.(*v1.Secret)
-	for _, streamingMediaType := range api.Codecs.SupportedStreamingMediaTypes() {
-		s, _ := api.Codecs.StreamingSerializerForMediaType(streamingMediaType, nil)
+	for _, info := range api.Codecs.SupportedMediaTypes() {
+		if info.StreamSerializer == nil {
+			continue
+		}
+		s := info.StreamSerializer
 		framer := s.Framer
-		embedded := s.Embedded.Serializer
+		embedded := info.Serializer
 		if embedded == nil {
-			t.Errorf("no embedded serializer for %s", streamingMediaType)
+			t.Errorf("no embedded serializer for %s", info.MediaType)
 			continue
 		}
 		innerDecode := api.Codecs.DecoderToVersion(embedded, api.SchemeGroupVersion)
@@ -438,7 +467,7 @@ func TestObjectWatchFraming(t *testing.T) {
 		}
 
 		if !api.Semantic.DeepEqual(secret, outEvent.Object.Object) {
-			t.Fatalf("%s: did not match after frame decoding: %s", streamingMediaType, diff.ObjectGoPrintDiff(secret, outEvent.Object.Object))
+			t.Fatalf("%s: did not match after frame decoding: %s", info.MediaType, diff.ObjectGoPrintDiff(secret, outEvent.Object.Object))
 		}
 	}
 }
