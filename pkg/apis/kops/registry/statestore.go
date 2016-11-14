@@ -24,7 +24,7 @@ import (
 	"strings"
 )
 
-func ReadConfig(configPath vfs.Path, config interface{}) error {
+func ReadConfigDeprecated(configPath vfs.Path, config interface{}) error {
 	data, err := configPath.ReadFile()
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -47,7 +47,9 @@ func ReadConfig(configPath vfs.Path, config interface{}) error {
 	return nil
 }
 
-func WriteConfig(configPath vfs.Path, config interface{}, writeOptions ...vfs.WriteOption) error {
+// WriteConfigDeprecated writes a config file as yaml.
+// It is deprecated because it is unversioned, but it is still used, in particular for writing the completed config.
+func WriteConfigDeprecated(configPath vfs.Path, config interface{}, writeOptions ...vfs.WriteOption) error {
 	data, err := utils.YamlMarshal(config)
 	if err != nil {
 		return fmt.Errorf("error marshalling configuration: %v", err)
