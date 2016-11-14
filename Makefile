@@ -222,7 +222,7 @@ govet:
 # --------------------------------------------------
 # Continuous integration targets
 
-ci: kops nodeup-gocode test govet
+ci: kops nodeup-gocode examples test govet
 	echo "Done"
 
 
