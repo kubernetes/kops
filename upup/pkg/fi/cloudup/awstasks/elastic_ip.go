@@ -19,12 +19,12 @@ package awstasks
 import (
 	//"fmt"
 	//
+	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"fmt"
 )
 
 //go:generate fitask -type=ElasticIP
@@ -32,16 +32,14 @@ import (
 // Elastic IP
 // Representation the EIP AWS task
 type ElasticIP struct {
-	Name                  *string
-	ID                    *string
-	PublicIP              *string
-
-
+	Name     *string
+	ID       *string
+	PublicIP *string
 
 	// Allow support for associated subnets
 	// If you need another resource to tag on (ebs volume)
 	// you must add it
-	Subnet   *Subnet
+	Subnet *Subnet
 }
 
 var _ fi.HasAddress = &ElasticIP{}
@@ -185,17 +183,16 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 		e.PublicIP = response.PublicIp
 		publicIp = e.PublicIP
 		eipId = response.AllocationId
-	}else {
+	} else {
 		publicIp = a.PublicIP
 		eipId = a.ID
 	}
 
-
 	// Tag the associated subnet
 	if e.Subnet == nil {
-		return  fmt.Errorf("Subnet not set")
+		return fmt.Errorf("Subnet not set")
 	} else if e.Subnet.ID == nil {
-		return  fmt.Errorf("Subnet ID not set")
+		return fmt.Errorf("Subnet ID not set")
 	}
 	tags := make(map[string]string)
 	tags["AssociatedElasticIp"] = *publicIp
@@ -206,6 +203,5 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 	}
 	return nil
 }
-
 
 // TODO Kris - We need to support EIP for Terraform
