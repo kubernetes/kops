@@ -372,8 +372,8 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 	case api.TopologyPublic:
 		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPublic, Nodes: api.TopologyPublic, BypassBastion: false}
 	case api.TopologyPrivate:
-		if c.Networking != "cni" {
-			return fmt.Errorf("Invalid networking option %s. Currently only '--networking cni' is supported for private topologies", c.Networking)
+		if !supportsPrivateTopology(cluster.Spec.Networking) {
+			return fmt.Errorf("Invalid networking option %s. Currently only '--networking cni' or '--networking kopeio-vxlan' are supported for private topologies", c.Networking)
 		}
 		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPrivate, Nodes: api.TopologyPrivate, BypassBastion: false}
 	case "":
@@ -529,4 +529,14 @@ func parseZoneList(s string) []string {
 		filtered = append(filtered, v)
 	}
 	return filtered
+}
+
+func supportsPrivateTopology(n *api.NetworkingSpec) bool {
+	if n.CNI != nil {
+		return true
+	}
+	if n.Kopeio != nil {
+		return true
+	}
+	return false
 }
