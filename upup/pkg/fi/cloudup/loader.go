@@ -54,7 +54,13 @@ type Loader struct {
 
 	Resources map[string]fi.Resource
 
+	Builders []TaskBuilder
+
 	tasks map[string]fi.Task
+}
+
+type TaskBuilder interface {
+	BuildTasks(l *Loader) error
 }
 
 type templateResource struct {
@@ -164,6 +170,13 @@ func (l *Loader) BuildTasks(modelStore vfs.Path, models []string) (map[string]fi
 		}
 	}
 
+	for _, builder := range l.Builders {
+		err := builder.BuildTasks(l)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	err := l.processDeferrals()
 	if err != nil {
 		return nil, err
@@ -207,26 +220,28 @@ func (l *Loader) processDeferrals() error {
 						}
 						return utils.SkipReflection
 					} else if rh, ok := intf.(*fi.ResourceHolder); ok {
-						//Resources can contain template 'arguments', separated by spaces
-						// <resourcename> <arg1> <arg2>
-						tokens := strings.Split(rh.Name, " ")
-						match := tokens[0]
-						args := tokens[1:]
+						if rh.Resource == nil {
+							//Resources can contain template 'arguments', separated by spaces
+							// <resourcename> <arg1> <arg2>
+							tokens := strings.Split(rh.Name, " ")
+							match := tokens[0]
+							args := tokens[1:]
 
-						match = strings.TrimPrefix(match, "resources/")
-						resource := l.Resources[match]
+							match = strings.TrimPrefix(match, "resources/")
+							resource := l.Resources[match]
 
-						if resource == nil {
-							glog.Infof("Known resources:")
-							for k := range l.Resources {
-								glog.Infof("  %s", k)
+							if resource == nil {
+								glog.Infof("Known resources:")
+								for k := range l.Resources {
+									glog.Infof("  %s", k)
+								}
+								return fmt.Errorf("Unable to find resource %q, referenced from %s:%s", rh.Name, taskKey, path)
 							}
-							return fmt.Errorf("Unable to find resource %q, referenced from %s:%s", rh.Name, taskKey, path)
-						}
 
-						err := l.populateResource(rh, resource, args)
-						if err != nil {
-							return fmt.Errorf("error setting resource value: %v", err)
+							err := l.populateResource(rh, resource, args)
+							if err != nil {
+								return fmt.Errorf("error setting resource value: %v", err)
+							}
 						}
 						return utils.SkipReflection
 					}

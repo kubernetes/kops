@@ -121,7 +121,7 @@ func (r *ClusterVFS) Update(c *api.Cluster) (*api.Cluster, error) {
 
 	err = r.writeConfig(r.basePath.Join(clusterName, registry.PathCluster), c, vfs.WriteOptionOnlyIfExists)
 	if err != nil {
-		if os.IsExist(err) {
+		if os.IsNotExist(err) {
 			return nil, err
 		}
 		return nil, fmt.Errorf("error writing Cluster: %v", err)
