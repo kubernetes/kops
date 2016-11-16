@@ -1,7 +1,3 @@
-managedFile/{{ ClusterName }}-addons-bootstrap:
-  location: addons/bootstrap-channel.yaml
-  contents: resources/addons/bootstrap-channel.yaml
-
 managedFile/{{ ClusterName }}-addons-bootstrap-kube-dns:
   location: addons/kube-dns/v1.4.0.yaml
   contents: resources/addons/kube-dns/v1.4.0.yaml
