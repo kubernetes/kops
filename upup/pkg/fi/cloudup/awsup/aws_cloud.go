@@ -35,6 +35,12 @@ import (
 	"time"
 )
 
+// By default, aws-sdk-go only retries 3 times, which doesn't give
+// much time for exponential backoff to work for serious issues. At 13
+// retries, we'll try a given request for up to ~6m with exponential
+// backoff along the way.
+const ClientMaxRetries = 13
+
 const DescribeTagsMaxAttempts = 120
 const DescribeTagsRetryInterval = 2 * time.Second
 const DescribeTagsLogInterval = 10 // this is in "retry intervals"
@@ -126,7 +132,7 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 	if raw == nil {
 		c := &awsCloudImplementation{region: region}
 
-		config := aws.NewConfig().WithRegion(region)
+		config := aws.NewConfig().WithRegion(region).WithMaxRetries(ClientMaxRetries)
 
 		// This avoids a confusing error message when we fail to get credentials
 		// e.g. https://github.com/kubernetes/kops/issues/605
