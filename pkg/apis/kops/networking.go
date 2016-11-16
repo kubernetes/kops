@@ -23,7 +23,7 @@ type NetworkingSpec struct {
 	External *ExternalNetworkingSpec `json:"external,omitempty"`
 	CNI      *CNINetworkingSpec      `json:"cni,omitempty"`
 	Kopeio   *KopeioNetworkingSpec   `json:"kopeio,omitempty"`
-	Weave    *WeaveNetworkingSpec    `json:"kopeio,omitempty"`
+	Weave    *WeaveNetworkingSpec    `json:"weave,omitempty"`
 }
 
 // ClassicNetworkingSpec is the specification of classic networking mode, integrated into kubernetes
