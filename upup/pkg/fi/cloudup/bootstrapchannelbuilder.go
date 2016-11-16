@@ -2,6 +2,7 @@ package cloudup
 
 import (
 	"fmt"
+
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -70,11 +71,26 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		Manifest: fi.String("dns-controller/v1.4.1.yaml"),
 	})
 
+	// TODO: Create configuration object for cni providers (maybe create it but orphan it)?
 	if b.cluster.Spec.Networking.Kopeio != nil {
 		key := "networking.kope.io"
 		version := "1.0.20161116"
 
-		// TODO: Create configuration object (maybe create it but orphan it)?
+		location := key + "/v" + version + ".yaml"
+
+		addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+			Name:     fi.String(key),
+			Version:  fi.String(version),
+			Selector: map[string]string{"k8s-addon": key},
+			Manifest: fi.String(location),
+		})
+
+		manifests[key] = "addons/" + location
+	}
+
+	if b.cluster.Spec.Networking.Weave != nil {
+		key := "networking.weave.io"
+		version := "1.8.0.20161116"
 
 		location := key + "/v" + version + ".yaml"
 
