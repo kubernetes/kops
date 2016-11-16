@@ -1,0 +1,11 @@
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1alpha1
+metadata:
+  name: justin_fathomdb.com
+subjects:
+- kind: User
+  name: justin@fathomdb.com
+roleRef:
+  kind: ClusterRole
+  name: readonly
+  apiVersion: rbac.authorization.k8s.io/v1alpha1

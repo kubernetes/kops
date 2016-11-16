@@ -1,0 +1,11 @@
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1alpha1
+metadata:
+  name: kube-proxy
+subjects:
+- kind: User
+  name: kube-proxy
+roleRef:
+  kind: ClusterRole
+  name: kube-proxy
+  apiVersion: rbac.authorization.k8s.io/v1alpha1
