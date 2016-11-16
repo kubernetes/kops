@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package kops
 
 // NetworkingSpec allows selection and configuration of a networking plugin
 type NetworkingSpec struct {
@@ -22,7 +22,8 @@ type NetworkingSpec struct {
 	Kubenet  *KubenetNetworkingSpec  `json:"kubenet,omitempty"`
 	External *ExternalNetworkingSpec `json:"external,omitempty"`
 	CNI      *CNINetworkingSpec      `json:"cni,omitempty"`
-	Kopeio   *KopeioNetworkingSpec    `json:"kopeio,omitempty"`
+	Kopeio   *KopeioNetworkingSpec   `json:"kopeio,omitempty"`
+	Weave    *WeaveNetworkingSpec    `json:"weave,omitempty"`
 }
 
 // ClassicNetworkingSpec is the specification of classic networking mode, integrated into kubernetes
@@ -46,4 +47,8 @@ type CNINetworkingSpec struct {
 
 // Kopeio declares that we want Kopeio networking
 type KopeioNetworkingSpec struct {
+}
+
+// Weave declares that we want Weave networking
+type WeaveNetworkingSpec struct {
 }
