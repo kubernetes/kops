@@ -41,6 +41,12 @@ type OptionsLoader struct {
 	templates OptionsTemplateList
 
 	TemplateFunctions template.FuncMap
+
+	Builders []OptionsBuilder
+}
+
+type OptionsBuilder interface {
+	BuildOptions(options interface{}) error
 }
 
 type OptionsTemplateList []*OptionsTemplate
@@ -66,12 +72,13 @@ func (a OptionsTemplateList) Less(i, j int) bool {
 	return l.Name < r.Name
 }
 
-func NewOptionsLoader(templateFunctions template.FuncMap) *OptionsLoader {
+func NewOptionsLoader(templateFunctions template.FuncMap, builders []OptionsBuilder) *OptionsLoader {
 	l := &OptionsLoader{}
 	l.TemplateFunctions = make(template.FuncMap)
 	for k, v := range templateFunctions {
 		l.TemplateFunctions[k] = v
 	}
+	l.Builders = builders
 	return l
 }
 
@@ -114,6 +121,15 @@ func (l *OptionsLoader) iterate(userConfig interface{}, current interface{}) (in
 		err = json.Unmarshal(jsonBytes, next)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing yaml (converted to JSON) %q: %v", t.Name, err)
+		}
+	}
+
+	for _, t := range l.Builders {
+		glog.V(2).Infof("executing builder %T", t)
+
+		err := t.BuildOptions(next)
+		if err != nil {
+			return nil, err
 		}
 	}
 

@@ -148,6 +148,7 @@ func (c *commonVFS) writeConfig(configPath vfs.Path, o runtime.Object, writeOpti
 	}
 	if err != nil {
 		if create && os.IsExist(err) {
+			glog.Warningf("failed to create file as already exists: %v", configPath)
 			return err
 		}
 		return fmt.Errorf("error writing configuration file %s: %v", configPath, err)

@@ -104,7 +104,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.Image, "image", "", "Image to use")
 
-	cmd.Flags().StringVar(&options.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external, cni.")
+	cmd.Flags().StringVar(&options.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external, cni, kopeio-vxlan.")
 
 	cmd.Flags().StringVar(&options.DNSZone, "dns-zone", "", "DNS hosted zone to use (defaults to longest matching zone)")
 	cmd.Flags().StringVar(&options.OutDir, "out", "", "Path to write any local output")
@@ -196,6 +196,8 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 		cluster.Spec.Networking.External = &api.ExternalNetworkingSpec{}
 	case "cni":
 		cluster.Spec.Networking.CNI = &api.CNINetworkingSpec{}
+	case "kopeio-vxlan":
+		cluster.Spec.Networking.Kopeio = &api.KopeioNetworkingSpec{}
 	default:
 		return fmt.Errorf("unknown networking mode %q", c.Networking)
 	}
@@ -370,8 +372,8 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 	case api.TopologyPublic:
 		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPublic, Nodes: api.TopologyPublic, BypassBastion: false}
 	case api.TopologyPrivate:
-		if c.Networking != "cni" {
-			return fmt.Errorf("Invalid networking option %s. Currently only '--networking cni' is supported for private topologies", c.Networking)
+		if !supportsPrivateTopology(cluster.Spec.Networking) {
+			return fmt.Errorf("Invalid networking option %s. Currently only '--networking cni' or '--networking kopeio-vxlan' are supported for private topologies", c.Networking)
 		}
 		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPrivate, Nodes: api.TopologyPrivate, BypassBastion: false}
 	case "":
@@ -527,4 +529,14 @@ func parseZoneList(s string) []string {
 		filtered = append(filtered, v)
 	}
 	return filtered
+}
+
+func supportsPrivateTopology(n *api.NetworkingSpec) bool {
+	if n.CNI != nil {
+		return true
+	}
+	if n.Kopeio != nil {
+		return true
+	}
+	return false
 }
