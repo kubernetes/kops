@@ -43,6 +43,11 @@ func usesCNI(c *api.Cluster) bool {
 		return true
 	}
 
+	if networkConfig.Weave != nil {
+		//  Weave uses CNI
+		return true
+	}
+
 	if networkConfig.CNI != nil {
 		// CNI definitely uses CNI!
 		return true
