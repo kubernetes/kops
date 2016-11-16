@@ -36,7 +36,7 @@ kops create cluster
       --yes                         Specify --yes to immediately create the cluster
       --zones string                Zones in which to run the cluster
       --topology string             Specify --topology=[public|private] to enable/disable public/private networking for all master and nodes. Default is 'public'
-
+      --bastion bool                Specify --bastion=[true|false] to enable/disable bastion setup
 ```
 
 ### Options inherited from parent commands
