@@ -19,12 +19,13 @@ package kops
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/golang/glog"
-	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kubernetes/pkg/api/unversioned"
 	"net"
 	"strconv"
 	"strings"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kubernetes/pkg/api/unversioned"
 )
 
 type Cluster struct {

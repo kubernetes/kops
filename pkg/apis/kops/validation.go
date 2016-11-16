@@ -18,13 +18,14 @@ package kops
 
 import (
 	"fmt"
+	"net"
+	"net/url"
+	"strings"
+
 	"github.com/blang/semver"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/util/validation"
 	"k8s.io/kubernetes/pkg/util/validation/field"
-	"net"
-	"net/url"
-	"strings"
 )
 
 func (c *Cluster) Validate(strict bool) error {
@@ -310,15 +311,21 @@ func (c *Cluster) Validate(strict bool) error {
 			return fmt.Errorf("Invalid Masters value for Topology")
 		} else if c.Spec.Topology.Nodes != TopologyPublic && c.Spec.Topology.Nodes != TopologyPrivate {
 			return fmt.Errorf("Invalid Nodes value for Topology")
-		// Until we support other topologies - these must match
+			// Until we support other topologies - these must match
 		} else if c.Spec.Topology.Masters != c.Spec.Topology.Nodes {
 			return fmt.Errorf("Topology Nodes must match Topology Masters")
 		}
 
-	}else{
+	} else {
 		return fmt.Errorf("Topology requires non-nil values for Masters and Nodes")
 	}
 
+	// Bastion
+	if !c.Spec.Topology.BypassBastion {
+		if c.Spec.Topology.Masters == TopologyPublic || c.Spec.Topology.Nodes == TopologyPublic {
+			return fmt.Errorf("Bastion supports only Private Masters and Nodes")
+		}
+	}
 	// Etcd
 	{
 		if len(c.Spec.EtcdClusters) == 0 {
