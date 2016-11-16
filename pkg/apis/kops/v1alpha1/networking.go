@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package kops
+package v1alpha1
 
 // NetworkingSpec allows selection and configuration of a networking plugin
 type NetworkingSpec struct {
