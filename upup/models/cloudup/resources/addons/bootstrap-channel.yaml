@@ -13,6 +13,11 @@ spec:
     selector:
       k8s-addon: core.addons.k8s.io
     manifest: core/v1.4.0.yaml
+  - name: limit-range
+    version: 1.5.0
+    selector:
+      k8s-addon: limit-range.addons.k8s.io
+    manifest: limit-range/v1.5.0.yaml
   - name: dns-controller
     version: 1.4.1
     selector:
