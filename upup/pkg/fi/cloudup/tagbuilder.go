@@ -48,12 +48,10 @@ func buildCloudupTags(cluster *api.Cluster) (map[string]struct{}, error) {
 		// external is based on kubenet
 		tags["_networking_kubenet"] = struct{}{}
 		tags["_networking_external"] = struct{}{}
-	} else if networking.CNI != nil {
+	} else if networking.CNI != nil || networking.Weave != nil {
 		// external is based on cni, weave, flannel, etc
 		tags["_networking_cni"] = struct{}{}
-	} else if networking.Weave != nil {
-		// external is based on cni, weave, flannel, etc
-		tags["_networking_cni"] = struct{}{}
+	// TODO combine with the External
 	} else if networking.Kopeio != nil {
 		// Kopeio is based on kubenet / external
 		tags["_networking_kubenet"] = struct{}{}
