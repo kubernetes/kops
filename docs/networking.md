@@ -22,6 +22,21 @@ routing table, and thus it requires its own subnet.  It is theoretically possibl
 with other infrastructure (but not a second cluster!), but this is not really recommended.  Certain
 `cni` networking solutions claim to address these problems.
 
+### Supported CNI Networking
+
+Two different providers are currently built into kops:
+
+1. kopeio-vxlan
+2. [weave](https://github.com/weaveworks/weave-kube)
+
+The manifests for the providers are included with kops, and you simply use `--networking provider-name`.
+Replace the provider name with the names listed above with you `kops cluster create`.  For instance
+to install `kopeio-vxlan` execute the following:
+
+```console
+$ kops create cluster --networking kopeio-vxlan
+``` 
+
 ### CNI Networking
 
 [Container Network Interface](https://github.com/containernetworking/cni)  provides a specification
@@ -31,9 +46,7 @@ support Kubernetes CNI networking, listed in alphabetical order:
 
 - [Calico](http://docs.projectcalico.org/v1.5/getting-started/kubernetes/installation/hosted/)
 - [Canal](https://github.com/tigera/canal/tree/master/k8s-install/kubeadm)
-- [Flannel](https://github.com/coreos/flannel/blob/master/Documentation/kube-flannel.yml)
 - [Romana](https://github.com/romana/romana/tree/master/containerize#using-kops)
-- [Weave Net](https://github.com/weaveworks/weave-kube)
 
 This is not an all comprehensive list. At the time of writing this documentation, weave has
 been tested and used in the example below.  This project has no bias over the CNI provider
