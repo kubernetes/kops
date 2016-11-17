@@ -349,6 +349,7 @@ func (c *Cluster) FillDefaults() error {
 		c.Spec.Networking = &NetworkingSpec{}
 	}
 
+	// TODO move this into networking.go :(
 	if c.Spec.Networking.Classic != nil {
 		// OK
 	} else if c.Spec.Networking.Kubenet != nil {
@@ -358,6 +359,8 @@ func (c *Cluster) FillDefaults() error {
 	} else if c.Spec.Networking.External != nil {
 		// OK
 	} else if c.Spec.Networking.Kopeio != nil {
+		// OK
+	} else if c.Spec.Networking.Weave != nil {
 		// OK
 	} else {
 		// No networking model selected; choose Kubenet
