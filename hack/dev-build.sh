@@ -56,7 +56,7 @@ MASTER_SIZE=${MASTER_SIZE:-m4.large}
 
 # NETWORK
 TOPOLOGY=${TOPOLOGY:-private}
-NETWORKING=${NETWORKING:-cni}
+NETWORKING=${NETWORKING:-weave}
 
 VERBOSITY=${VERBOSITY:-2}
 
@@ -96,6 +96,7 @@ NODEUP_URL=${NODEUP_URL} kops create cluster \
   --topology $TOPOLOGY \
   --networking $NETWORKING \
   -v $VERBOSITY \
+  --image "k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-11-16" \
   --yes
 
 echo ==========
