@@ -58,7 +58,7 @@ MASTER_SIZE=${MASTER_SIZE:-m4.large}
 TOPOLOGY=${TOPOLOGY:-private}
 NETWORKING=${NETWORKING:-weave}
 
-VERBOSITY=${VERBOSITY:-2}
+VERBOSITY=${VERBOSITY:-10}
 
 cd $KOPS_DIRECTORY/..
 
@@ -70,7 +70,7 @@ NODEUP_URL="https://s3-us-west-1.amazonaws.com/${NODEUP_BUCKET}/kops/${GIT_VER}/
 echo ==========
 echo "Starting build"
 
-S3_BUCKET=s3://${NODEUP_BUCKET} make upload
+make ci && S3_BUCKET=s3://${NODEUP_BUCKET} make upload
 
 echo ==========
 echo "Deleting cluster ${CLUSTER_NAME}. Elle est finie."
