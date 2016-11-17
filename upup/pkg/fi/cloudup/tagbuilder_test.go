@@ -61,6 +61,41 @@ func buildCluster(clusterArgs interface{}) *api.Cluster {
 		},
 	}
 }
+
+func TestBuildTags_CloudProvider_AWS_Weave(t *testing.T) {
+
+	c := buildCluster(nil)
+	networking := &api.NetworkingSpec{ Weave: &api.WeaveNetworkingSpec{} }
+
+	c.Spec.Networking = networking
+
+	tags, err := buildCloudupTags(c)
+	if err != nil {
+		t.Fatalf("buildCloudupTags error: %v", err)
+	}
+
+	if _, found := tags["_aws"]; !found {
+		t.Fatal("tag _aws not found")
+	}
+
+	if _, found := tags["_networking_cni"]; !found {
+		t.Fatal("tag _networking_cni not found")
+	}
+
+	if _, found := tags["_networking_kubenet"]; found {
+		t.Fatal("tag _networking_kubenet found")
+	}
+
+	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
+	if err != nil {
+		t.Fatalf("buildNodeupTags error: %v", err)
+	}
+
+	if !stringSliceContains(nodeUpTags, "_aws") {
+		t.Fatal("nodeUpTag _aws not found")
+	}
+}
+
 func TestBuildTags_CloudProvider_AWS(t *testing.T) {
 
 	c := buildCluster(nil)
