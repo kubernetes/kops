@@ -65,9 +65,7 @@ func buildCluster(clusterArgs interface{}) *api.Cluster {
 func TestBuildTags_CloudProvider_AWS_Weave(t *testing.T) {
 
 	c := buildCluster(nil)
-	networking := &api.NetworkingSpec{
-		CNI: &api.CNINetworkingSpec{},
-	}
+	networking := &api.NetworkingSpec{ Weave: &api.WeaveNetworkingSpec{} }
 
 	c.Spec.Networking = networking
 
