@@ -40,6 +40,7 @@ func buildCloudupTags(cluster *api.Cluster) (map[string]struct{}, error) {
 	tags := make(map[string]struct{})
 
 	networking := cluster.Spec.Networking
+	glog.Infof("networking: %s", networking)
 
 	if networking == nil || networking.Classic != nil {
 		tags["_networking_classic"] = struct{}{}
@@ -51,6 +52,7 @@ func buildCloudupTags(cluster *api.Cluster) (map[string]struct{}, error) {
 		tags["_networking_external"] = struct{}{}
 	} else if networking.CNI != nil || networking.Weave != nil {
 		tags["_networking_cni"] = struct{}{}
+		glog.Infof("CNI: _networking_cni")
 	// TODO combine with the External
 	} else if networking.Kopeio != nil {
 		// Kopeio is based on kubenet / external
@@ -125,6 +127,8 @@ func buildCloudupTags(cluster *api.Cluster) (map[string]struct{}, error) {
 	} else {
 		tags[versionTag] = struct{}{}
 	}
+
+	glog.Infof("tags: %s", tags)
 
 	return tags, nil
 }
