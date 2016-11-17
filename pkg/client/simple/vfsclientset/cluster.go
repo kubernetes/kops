@@ -69,11 +69,13 @@ func (c *ClusterVFS) List(options k8sapi.ListOptions) (*api.ClusterList, error) 
 	for _, clusterName := range names {
 		cluster, err := c.find(clusterName)
 		if err != nil {
-			return nil, err
+			glog.Warningf("cluster %q found in state store listing, but cannot be loaded: %v", clusterName, err)
+			continue
 		}
 
 		if cluster == nil {
-			return nil, fmt.Errorf("cluster not found %q", clusterName)
+			glog.Warningf("cluster %q found in state store listing, but doesn't exist now", clusterName)
+			continue
 		}
 
 		items = append(items, *cluster)
