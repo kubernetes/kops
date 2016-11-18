@@ -31,9 +31,7 @@ import (
 
 var (
 	flags = pflag.NewFlagSet("", pflag.ExitOnError)
-)
 
-var (
 	// value overwritten during build. This can be used to resolve issues.
 	BuildVersion = "0.1"
 )
@@ -104,11 +102,6 @@ func run() error {
 	if !strings.HasPrefix(dnsInternalSuffix, ".") {
 		dnsInternalSuffix = "." + dnsInternalSuffix
 	}
-
-	//if dnsZoneName == "" {
-	//	tokens := strings.Split(dnsInternalSuffix, ".")
-	//	dnsZoneName = strings.Join(tokens[len(tokens)-2:], ".")
-	//}
 
 	// Get internal IP from cloud, to avoid problems if we're in a container
 	// TODO: Just run with --net=host ??
