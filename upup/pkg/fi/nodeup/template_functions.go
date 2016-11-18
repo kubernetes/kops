@@ -266,7 +266,7 @@ func (t *templateFunctions) ProtokubeFlags() *ProtokubeFlags {
 			f.Zone = append(f.Zone, zone)
 		} else {
 			// match by id
-			f.Zone = append(f.Zone, "*/" + zone)
+			f.Zone = append(f.Zone, "*/"+zone)
 		}
 	}
 
