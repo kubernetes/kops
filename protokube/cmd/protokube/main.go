@@ -27,6 +27,10 @@ import (
 	"net"
 	"os"
 	"strings"
+
+	// Load DNS plugins
+	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
+	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns"
 )
 
 var (
@@ -120,7 +124,7 @@ func run() error {
 			return fmt.Errorf("Error initializing DNS provider %q: %v", dnsProviderId, err)
 		}
 		if dnsProvider == nil {
-			return fmt.Errorf("DNS provider was nil %q: %v", dnsProviderId, err)
+			return fmt.Errorf("DNS provider %q could not be initialized", dnsProviderId)
 		}
 
 		zoneRules, err := dns.ParseZoneRules(zones)
