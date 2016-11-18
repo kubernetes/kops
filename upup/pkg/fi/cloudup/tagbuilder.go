@@ -52,7 +52,7 @@ func buildCloudupTags(cluster *api.Cluster) (map[string]struct{}, error) {
 		tags["_networking_external"] = struct{}{}
 	} else if networking.CNI != nil || networking.Weave != nil {
 		tags["_networking_cni"] = struct{}{}
-	// TODO combine with the External
+		// TODO combine with the External
 	} else if networking.Kopeio != nil {
 		// Kopeio is based on kubenet / external
 		tags["_networking_kubenet"] = struct{}{}
