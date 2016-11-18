@@ -28,6 +28,15 @@ ${APISERVER_TEST_ARGS}
 --storage-backend=${STORAGE_BACKEND}
 --service-cluster-ip-range="${SERVICE_CLUSTER_IP_RANGE}"
 EOF
+if [ -z "${CUSTOM_ADMISSION_PLUGINS:-}"]; then
+ cat >> "${RESOURCE_DIRECTORY}/apiserver_flags" <<EOF
+--admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,ResourceQuota
+EOF
+else
+  cat >> "${RESOURCE_DIRECTORY}/apiserver_flags" <<EOF
+--admission-control=${CUSTOM_ADMISSION_PLUGINS}
+EOF
+fi
 sed -i'' -e "s/\"//g" "${RESOURCE_DIRECTORY}/apiserver_flags"
 
   cat > "${RESOURCE_DIRECTORY}/scheduler_flags" <<EOF
@@ -148,7 +157,7 @@ gcloud compute copy-files --zone="${ZONE}" --project="${PROJECT}" \
 
 gcloud compute ssh "${MASTER_NAME}" --zone="${ZONE}" --project="${PROJECT}" \
   --command="chmod a+x configure-kubectl.sh && chmod a+x start-kubemark-master.sh && \
-             sudo ./start-kubemark-master.sh ${EVENT_STORE_IP:-127.0.0.1} ${NUM_NODES:-0} ${ETCD_VERSION:-}"
+             sudo ./start-kubemark-master.sh ${EVENT_STORE_IP:-127.0.0.1} ${NUM_NODES:-0} ${ETCD_IMAGE:-}"
 
 # create kubeconfig for Kubelet:
 KUBECONFIG_CONTENTS=$(echo "apiVersion: v1

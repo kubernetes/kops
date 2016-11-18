@@ -31,12 +31,12 @@ var _ = framework.KubeDescribe("Secrets", func() {
 	f := framework.NewDefaultFramework("secrets")
 
 	It("should be consumable from pods in volume [Conformance]", func() {
-		doSecretE2EWithoutMapping(f, nil)
+		doSecretE2EWithoutMapping(f, nil /* default mode */, "secret-test-"+string(uuid.NewUUID()))
 	})
 
 	It("should be consumable from pods in volume with defaultMode set [Conformance]", func() {
 		defaultMode := int32(0400)
-		doSecretE2EWithoutMapping(f, &defaultMode)
+		doSecretE2EWithoutMapping(f, &defaultMode, "secret-test-"+string(uuid.NewUUID()))
 	})
 
 	It("should be consumable from pods in volume with mappings [Conformance]", func() {
@@ -48,77 +48,32 @@ var _ = framework.KubeDescribe("Secrets", func() {
 		doSecretE2EWithMapping(f, &mode)
 	})
 
+	It("should be able to mount in a volume regardless of a different secret existing with same name in different namespace", func() {
+		var (
+			namespace2  *api.Namespace
+			err         error
+			secret2Name = "secret-test-" + string(uuid.NewUUID())
+		)
+
+		if namespace2, err = f.CreateNamespace("secret-namespace", nil); err != nil {
+			framework.Failf("unable to create new namespace %s: %v", namespace2.Name, err)
+		}
+
+		secret2 := secretForTest(namespace2.Name, secret2Name)
+		secret2.Data = map[string][]byte{
+			"this_should_not_match_content_of_other_secret": []byte("similarly_this_should_not_match_content_of_other_secret\n"),
+		}
+		if secret2, err = f.ClientSet.Core().Secrets(namespace2.Name).Create(secret2); err != nil {
+			framework.Failf("unable to create test secret %s: %v", secret2.Name, err)
+		}
+		doSecretE2EWithoutMapping(f, nil /* default mode */, secret2.Name)
+	})
+
 	It("should be consumable in multiple volumes in a pod [Conformance]", func() {
 		// This test ensures that the same secret can be mounted in multiple
 		// volumes in the same pod.  This test case exists to prevent
 		// regressions that break this use-case.
-		var (
-			name             = "secret-test-" + string(uuid.NewUUID())
-			volumeName       = "secret-volume"
-			volumeMountPath  = "/etc/secret-volume"
-			volumeName2      = "secret-volume-2"
-			volumeMountPath2 = "/etc/secret-volume-2"
-			secret           = secretForTest(f.Namespace.Name, name)
-		)
-
-		By(fmt.Sprintf("Creating secret with name %s", secret.Name))
-		var err error
-		if secret, err = f.ClientSet.Core().Secrets(f.Namespace.Name).Create(secret); err != nil {
-			framework.Failf("unable to create test secret %s: %v", secret.Name, err)
-		}
-
-		pod := &api.Pod{
-			ObjectMeta: api.ObjectMeta{
-				Name: "pod-secrets-" + string(uuid.NewUUID()),
-			},
-			Spec: api.PodSpec{
-				Volumes: []api.Volume{
-					{
-						Name: volumeName,
-						VolumeSource: api.VolumeSource{
-							Secret: &api.SecretVolumeSource{
-								SecretName: name,
-							},
-						},
-					},
-					{
-						Name: volumeName2,
-						VolumeSource: api.VolumeSource{
-							Secret: &api.SecretVolumeSource{
-								SecretName: name,
-							},
-						},
-					},
-				},
-				Containers: []api.Container{
-					{
-						Name:  "secret-volume-test",
-						Image: "gcr.io/google_containers/mounttest:0.7",
-						Args: []string{
-							"--file_content=/etc/secret-volume/data-1",
-							"--file_mode=/etc/secret-volume/data-1"},
-						VolumeMounts: []api.VolumeMount{
-							{
-								Name:      volumeName,
-								MountPath: volumeMountPath,
-								ReadOnly:  true,
-							},
-							{
-								Name:      volumeName2,
-								MountPath: volumeMountPath2,
-								ReadOnly:  true,
-							},
-						},
-					},
-				},
-				RestartPolicy: api.RestartPolicyNever,
-			},
-		}
-
-		f.TestContainerOutput("consume secrets", pod, 0, []string{
-			"content of file \"/etc/secret-volume/data-1\": value-1",
-			"mode of file \"/etc/secret-volume/data-1\": -rw-r--r--",
-		})
+		doSecretE2EMultipleVolumes(f)
 	})
 
 	It("should be consumable from pods in env vars [Conformance]", func() {
@@ -180,12 +135,11 @@ func secretForTest(namespace, name string) *api.Secret {
 	}
 }
 
-func doSecretE2EWithoutMapping(f *framework.Framework, defaultMode *int32) {
+func doSecretE2EWithoutMapping(f *framework.Framework, defaultMode *int32, secretName string) {
 	var (
-		name            = "secret-test-" + string(uuid.NewUUID())
 		volumeName      = "secret-volume"
 		volumeMountPath = "/etc/secret-volume"
-		secret          = secretForTest(f.Namespace.Name, name)
+		secret          = secretForTest(f.Namespace.Name, secretName)
 	)
 
 	By(fmt.Sprintf("Creating secret with name %s", secret.Name))
@@ -196,7 +150,8 @@ func doSecretE2EWithoutMapping(f *framework.Framework, defaultMode *int32) {
 
 	pod := &api.Pod{
 		ObjectMeta: api.ObjectMeta{
-			Name: "pod-secrets-" + string(uuid.NewUUID()),
+			Name:      "pod-secrets-" + string(uuid.NewUUID()),
+			Namespace: f.Namespace.Name,
 		},
 		Spec: api.PodSpec{
 			Volumes: []api.Volume{
@@ -204,7 +159,7 @@ func doSecretE2EWithoutMapping(f *framework.Framework, defaultMode *int32) {
 					Name: volumeName,
 					VolumeSource: api.VolumeSource{
 						Secret: &api.SecretVolumeSource{
-							SecretName: name,
+							SecretName: secretName,
 						},
 					},
 				},
@@ -312,4 +267,83 @@ func doSecretE2EWithMapping(f *framework.Framework, mode *int32) {
 	}
 
 	f.TestContainerOutput("consume secrets", pod, 0, expectedOutput)
+}
+
+func DoSecretE2EMultipleVolumesSetup(f *framework.Framework) (*api.Pod, []string) {
+	var (
+		name             = "secret-test-" + string(uuid.NewUUID())
+		volumeName       = "secret-volume"
+		volumeMountPath  = "/etc/secret-volume"
+		volumeName2      = "secret-volume-2"
+		volumeMountPath2 = "/etc/secret-volume-2"
+		secret           = secretForTest(f.Namespace.Name, name)
+	)
+
+	By(fmt.Sprintf("Creating secret with name %s", secret.Name))
+	var err error
+	if secret, err = f.ClientSet.Core().Secrets(f.Namespace.Name).Create(secret); err != nil {
+		framework.Failf("unable to create test secret %s: %v", secret.Name, err)
+	}
+
+	pod := &api.Pod{
+		ObjectMeta: api.ObjectMeta{
+			Name: "pod-secrets-" + string(uuid.NewUUID()),
+		},
+		Spec: api.PodSpec{
+			Volumes: []api.Volume{
+				{
+					Name: volumeName,
+					VolumeSource: api.VolumeSource{
+						Secret: &api.SecretVolumeSource{
+							SecretName: name,
+						},
+					},
+				},
+				{
+					Name: volumeName2,
+					VolumeSource: api.VolumeSource{
+						Secret: &api.SecretVolumeSource{
+							SecretName: name,
+						},
+					},
+				},
+			},
+			Containers: []api.Container{
+				{
+					Name:  "secret-volume-test",
+					Image: "gcr.io/google_containers/mounttest:0.7",
+					Args: []string{
+						"--file_content=/etc/secret-volume/data-1",
+						"--file_mode=/etc/secret-volume/data-1"},
+					VolumeMounts: []api.VolumeMount{
+						{
+							Name:      volumeName,
+							MountPath: volumeMountPath,
+							ReadOnly:  true,
+						},
+						{
+							Name:      volumeName2,
+							MountPath: volumeMountPath2,
+							ReadOnly:  true,
+						},
+					},
+				},
+			},
+			RestartPolicy: api.RestartPolicyNever,
+		},
+	}
+	expectedOutput := []string{
+		"content of file \"/etc/secret-volume/data-1\": value-1",
+		"mode of file \"/etc/secret-volume/data-1\": -rw-r--r--",
+	}
+	return pod, expectedOutput
+}
+
+func DoSecretE2EMultipleVolumesValidate(f *framework.Framework, pod *api.Pod, expectedOutput []string) {
+	f.TestContainerOutput("consume secrets", pod, 0, expectedOutput)
+}
+
+func doSecretE2EMultipleVolumes(f *framework.Framework) {
+	pod, expectedOutput := DoSecretE2EMultipleVolumesSetup(f)
+	DoSecretE2EMultipleVolumesValidate(f, pod, expectedOutput)
 }
