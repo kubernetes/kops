@@ -122,7 +122,7 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 		tags.Insert(versionTag)
 	}
 
-	glog.Infof("tags: %s", tags.List())
+	glog.V(4).Infof("tags: %s", tags.List())
 
 	return tags, nil
 }

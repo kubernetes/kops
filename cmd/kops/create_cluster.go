@@ -204,7 +204,7 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 		return fmt.Errorf("unknown networking mode %q", c.Networking)
 	}
 
-	glog.Infof("networking selected %s, %s", c.Networking, cluster.Spec.Networking)
+	glog.V(4).Infof("networking mode=%s => %s", c.Networking, fi.DebugAsJsonString(cluster.Spec.Networking))
 
 	if c.Zones != "" {
 		existingZones := make(map[string]*api.ClusterZoneSpec)
