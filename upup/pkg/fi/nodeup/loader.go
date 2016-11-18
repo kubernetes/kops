@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kubernetes/pkg/util/sets"
 	"strings"
 	"text/template"
 )
@@ -38,11 +39,11 @@ type Loader struct {
 	assets *fi.AssetStore
 	tasks  map[string]fi.Task
 
-	tags              map[string]struct{}
+	tags              sets.String
 	TemplateFunctions template.FuncMap
 }
 
-func NewLoader(config *NodeUpConfig, cluster *api.Cluster, assets *fi.AssetStore, tags map[string]struct{}) *Loader {
+func NewLoader(config *NodeUpConfig, cluster *api.Cluster, assets *fi.AssetStore, tags sets.String) *Loader {
 	l := &Loader{}
 	l.assets = assets
 	l.tasks = make(map[string]fi.Task)

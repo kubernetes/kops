@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kubernetes/pkg/util/sets"
 	"os"
 	"reflect"
 	"strings"
@@ -45,7 +46,7 @@ type Loader struct {
 
 	ModelStore vfs.Path
 
-	Tags              map[string]struct{}
+	Tags              sets.String
 	TemplateFunctions template.FuncMap
 
 	typeMap map[string]reflect.Type

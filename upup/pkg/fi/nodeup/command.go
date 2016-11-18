@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kubernetes/pkg/util/sets"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -174,13 +175,9 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("error determining OS tags: %v", err)
 	}
 
-	tags := make(map[string]struct{})
-	for _, tag := range osTags {
-		tags[tag] = struct{}{}
-	}
-	for _, tag := range c.config.Tags {
-		tags[tag] = struct{}{}
-	}
+	tags := sets.NewString()
+	tags.Insert(osTags...)
+	tags.Insert(c.config.Tags...)
 
 	glog.Infof("Config tags: %v", c.config.Tags)
 	glog.Infof("OS tags: %v", osTags)
