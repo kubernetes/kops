@@ -113,7 +113,7 @@ func run() error {
 	internalIP := volumes.InternalIP()
 
 	var dnsScope dns.Scope
-	var dnsController dns.DNSController
+	var dnsController *dns.DNSController
 	{
 		dnsProvider, err := dnsprovider.GetDnsProvider(dnsProviderId, nil)
 		if err != nil {
@@ -130,12 +130,12 @@ func run() error {
 
 		dnsController, err = dns.NewDNSController(dnsProvider, zoneRules)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		dnsScope, err = dnsController.CreateScope("protokube")
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		// We don't really use readiness - our records are simple

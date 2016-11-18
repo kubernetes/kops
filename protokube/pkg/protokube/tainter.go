@@ -22,6 +22,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/labels"
+	"k8s.io/kubernetes/pkg/api/v1"
 )
 
 type nodePatch struct {
@@ -46,8 +47,8 @@ func ApplyMasterTaints(kubeContext *KubernetesContext) error {
 		return err
 	}
 
-	options := api.ListOptions{
-		LabelSelector: labels.SelectorFromSet(labels.Set{"kubernetes.io/role": "master"}),
+	options := v1.ListOptions{
+		LabelSelector: labels.SelectorFromSet(labels.Set{"kubernetes.io/role": "master"}).String(),
 	}
 	glog.V(2).Infof("Querying k8s for nodes with selector %q", options.LabelSelector)
 	nodes, err := client.Core().Nodes().List(options)
