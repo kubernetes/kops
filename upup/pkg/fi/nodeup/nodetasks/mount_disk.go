@@ -58,7 +58,7 @@ func NewMountDiskTask(name string, contents string, meta string) (fi.Task, error
 }
 
 func (e *MountDiskTask) Find(c *fi.Context) (*MountDiskTask, error) {
-	mounter := mount.New()
+	mounter := mount.New("")
 
 	mps, err := mounter.List()
 	if err != nil {
@@ -121,7 +121,7 @@ func (_ *MountDiskTask) RenderLocal(t *local.LocalTarget, a, e, changes *MountDi
 	if changes.Mountpoint != "" {
 		glog.Infof("Mounting device %q on %q", e.Device, e.Mountpoint)
 
-		mounter := &mount.SafeFormatAndMount{Interface: mount.New(), Runner: exec.New()}
+		mounter := &mount.SafeFormatAndMount{Interface: mount.New(""), Runner: exec.New()}
 
 		fstype := ""
 		options := []string{}
