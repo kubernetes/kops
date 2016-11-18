@@ -56,13 +56,15 @@ func imageInspectToRuntimeAPIImage(image *dockertypes.ImageInspect) (*runtimeApi
 	}
 
 	size := uint64(image.VirtualSize)
-	return &runtimeApi.Image{
+	runtimeImage := &runtimeApi.Image{
 		Id:          &image.ID,
 		RepoTags:    image.RepoTags,
 		RepoDigests: image.RepoDigests,
 		Size_:       &size,
-	}, nil
+	}
 
+	runtimeImage.Uid, runtimeImage.Username = getUserFromImageUser(image.Config.User)
+	return runtimeImage, nil
 }
 
 func toPullableImageID(id string, image *dockertypes.ImageInspect) string {
