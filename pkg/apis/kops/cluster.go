@@ -488,7 +488,7 @@ func (z *ClusterZoneSpec) assignCIDR(c *Cluster) error {
 	// We assume a maximum of 8 subnets per network
 	// TODO: Does this make sense on GCE?
 	// TODO: Should we limit this to say 1000 IPs per subnet? (any reason to?)
-	index = index % 8
+	index = index % 8 - 1
 	networkLength += 3
 
 	ip4 := cidr.IP.To4()
