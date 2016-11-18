@@ -75,7 +75,7 @@ func density30AddonResourceVerifier(numNodes int) map[string]framework.ResourceC
 		if numNodes <= 5 {
 			apiserverCPU = 0.35
 			apiserverMem = 150 * (1024 * 1024)
-			controllerCPU = 0.1
+			controllerCPU = 0.15
 			controllerMem = 100 * (1024 * 1024)
 			schedulerCPU = 0.05
 			schedulerMem = 50 * (1024 * 1024)
@@ -87,14 +87,14 @@ func density30AddonResourceVerifier(numNodes int) map[string]framework.ResourceC
 			schedulerCPU = 0.75
 			schedulerMem = 500 * (1024 * 1024)
 		} else if numNodes <= 500 {
-			apiserverCPU = 2.5
+			apiserverCPU = 3.5
 			apiserverMem = 3400 * (1024 * 1024)
 			controllerCPU = 1.3
 			controllerMem = 1100 * (1024 * 1024)
 			schedulerCPU = 1.5
 			schedulerMem = 500 * (1024 * 1024)
 		} else if numNodes <= 1000 {
-			apiserverCPU = 4
+			apiserverCPU = 5.5
 			apiserverMem = 4000 * (1024 * 1024)
 			controllerCPU = 3
 			controllerMem = 2000 * (1024 * 1024)
@@ -133,8 +133,8 @@ func density30AddonResourceVerifier(numNodes int) map[string]framework.ResourceC
 		MemoryConstraint: 100 * (1024 * 1024),
 	}
 	constraints["kube-proxy"] = framework.ResourceConstraint{
-		CPUConstraint:    0.1,
-		MemoryConstraint: 20 * (1024 * 1024),
+		CPUConstraint:    0.15,
+		MemoryConstraint: 30 * (1024 * 1024),
 	}
 	constraints["l7-lb-controller"] = framework.ResourceConstraint{
 		CPUConstraint:    0.15,
@@ -310,10 +310,6 @@ var _ = framework.KubeDescribe("Density", func() {
 		c = f.ClientSet
 		ns = f.Namespace.Name
 
-		// In large clusters we may get to this point but still have a bunch
-		// of nodes without Routes created. Since this would make a node
-		// unschedulable, we need to wait until all of them are schedulable.
-		framework.ExpectNoError(framework.WaitForAllNodesSchedulable(c, framework.NodeSchedulableTimeout))
 		masters, nodes = framework.GetMasterAndWorkerNodesOrDie(c)
 		nodeCount = len(nodes.Items)
 		Expect(nodeCount).NotTo(BeZero())
