@@ -32,7 +32,7 @@ MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 DNS_CONTROLLER_TAG=1.4.1
 
 # Keep in sync with DefaultProtokubeImage
-PROTOKUBE_TAG=1.4.2
+PROTOKUBE_TAG=1.4.1
 
 ifndef VERSION
   VERSION := git-$(shell git describe --always)
