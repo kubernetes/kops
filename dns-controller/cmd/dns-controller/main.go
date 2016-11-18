@@ -23,8 +23,8 @@ import (
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/watchers"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
-	client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3/typed/core/v1"
-	client_extensions "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3/typed/extensions/v1beta1"
+	client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5/typed/core/v1"
+	client_extensions "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5/typed/extensions/v1beta1"
 	kubectl_util "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"os"
 
