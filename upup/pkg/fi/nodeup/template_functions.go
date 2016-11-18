@@ -24,6 +24,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kubernetes/pkg/util/sets"
 	"strings"
 	"text/template"
 )
@@ -46,14 +47,14 @@ type templateFunctions struct {
 	// secretStore is populated with a SecretStore, if SecretStore is set
 	secretStore fi.SecretStore
 
-	tags map[string]struct{}
+	tags sets.String
 
 	// kubeletConfig is the kubelet config for the current node
 	kubeletConfig *api.KubeletConfigSpec
 }
 
 // newTemplateFunctions is the constructor for templateFunctions
-func newTemplateFunctions(nodeupConfig *NodeUpConfig, cluster *api.Cluster, instanceGroup *api.InstanceGroup, tags map[string]struct{}) (*templateFunctions, error) {
+func newTemplateFunctions(nodeupConfig *NodeUpConfig, cluster *api.Cluster, instanceGroup *api.InstanceGroup, tags sets.String) (*templateFunctions, error) {
 	t := &templateFunctions{
 		nodeupConfig:  nodeupConfig,
 		cluster:       cluster,

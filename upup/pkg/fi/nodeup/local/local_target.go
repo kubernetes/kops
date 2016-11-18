@@ -16,11 +16,14 @@ limitations under the License.
 
 package local
 
-import "k8s.io/kops/upup/pkg/fi"
+import (
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kubernetes/pkg/util/sets"
+)
 
 type LocalTarget struct {
 	CacheDir string
-	Tags     map[string]struct{}
+	Tags     sets.String
 }
 
 var _ fi.Target = &LocalTarget{}
