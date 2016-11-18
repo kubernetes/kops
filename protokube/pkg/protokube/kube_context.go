@@ -19,21 +19,21 @@ package protokube
 import (
 	"fmt"
 	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 	"sync"
 )
 
 type KubernetesContext struct {
 	mutex  sync.Mutex
-	client *release_1_3.Clientset
+	client *release_1_5.Clientset
 }
 
 func NewKubernetesContext() *KubernetesContext {
 	return &KubernetesContext{}
 }
 
-func (c *KubernetesContext) KubernetesClient() (*release_1_3.Clientset, error) {
+func (c *KubernetesContext) KubernetesClient() (*release_1_5.Clientset, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
@@ -54,7 +54,7 @@ func (c *KubernetesContext) KubernetesClient() (*release_1_3.Clientset, error) {
 			}
 		}
 
-		k8sClient, err := release_1_3.NewForConfig(clientConfig)
+		k8sClient, err := release_1_5.NewForConfig(clientConfig)
 		if err != nil {
 			return nil, fmt.Errorf("cannot build kube client: %v", err)
 		}
