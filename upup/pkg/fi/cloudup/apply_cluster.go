@@ -388,7 +388,7 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 		config := &nodeup.NodeUpConfig{}
-		for _, tag := range nodeUpTags {
+		for _, tag := range nodeUpTags.List() {
 			config.Tags = append(config.Tags, tag)
 		}
 
