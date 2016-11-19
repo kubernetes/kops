@@ -28,49 +28,46 @@ import (
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kubernetes/pkg/util/sets"
 )
 
-//
-//
-func buildCloudupTags(cluster *api.Cluster) (map[string]struct{}, error) {
+func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 	// TODO: Make these configurable?
 	useMasterASG := true
 	useMasterLB := false
 
-	tags := make(map[string]struct{})
+	tags := sets.NewString()
 
 	networking := cluster.Spec.Networking
-	glog.Infof("networking: %s", networking)
 
 	if networking == nil || networking.Classic != nil {
-		tags["_networking_classic"] = struct{}{}
+		tags.Insert("_networking_classic")
 	} else if networking.Kubenet != nil {
-		tags["_networking_kubenet"] = struct{}{}
+		tags.Insert("_networking_kubenet")
 	} else if networking.External != nil {
 		// external is based on kubenet
-		tags["_networking_kubenet"] = struct{}{}
-		tags["_networking_external"] = struct{}{}
+		tags.Insert("_networking_kubenet", "_networking_external")
 	} else if networking.CNI != nil || networking.Weave != nil {
-		tags["_networking_cni"] = struct{}{}
-		// TODO combine with the External
+		tags.Insert("_networking_cni")
 	} else if networking.Kopeio != nil {
+		// TODO combine with the External
 		// Kopeio is based on kubenet / external
-		tags["_networking_kubenet"] = struct{}{}
-		tags["_networking_external"] = struct{}{}
+		// TODO combine with External
+		tags.Insert("_networking_kubenet", "_networking_external")
 	} else {
 		return nil, fmt.Errorf("No networking mode set")
 	}
 
 	if useMasterASG {
-		tags["_master_asg"] = struct{}{}
+		tags.Insert("_master_asg")
 	} else {
-		tags["_master_single"] = struct{}{}
+		tags.Insert("_master_single")
 	}
 
 	if useMasterLB {
-		tags["_master_lb"] = struct{}{}
+		tags.Insert("_master_lb")
 	} else if cluster.Spec.Topology.Masters == api.TopologyPublic {
-		tags["_not_master_lb"] = struct{}{}
+		tags.Insert("_not_master_lb")
 	}
 
 	// Network Topologies
@@ -78,27 +75,27 @@ func buildCloudupTags(cluster *api.Cluster) (map[string]struct{}, error) {
 		return nil, fmt.Errorf("missing topology spec")
 	}
 	if cluster.Spec.Topology.Masters == api.TopologyPublic && cluster.Spec.Topology.Nodes == api.TopologyPublic {
-		tags["_topology_public"] = struct{}{}
+		tags.Insert("_topology_public")
 	} else if cluster.Spec.Topology.Masters == api.TopologyPrivate && cluster.Spec.Topology.Nodes == api.TopologyPrivate {
-		tags["_topology_private"] = struct{}{}
+		tags.Insert("_topology_private")
 	} else {
 		return nil, fmt.Errorf("Unable to parse topology. Unsupported topology configuration. Masters and nodes must match!")
 	}
 
 	if fi.BoolValue(cluster.Spec.IsolateMasters) {
-		tags["_isolate_masters"] = struct{}{}
+		tags.Insert("_isolate_masters")
 	}
 
 	switch cluster.Spec.CloudProvider {
 	case "gce":
 		{
 			glog.Fatalf("GCE is (probably) not working currently - please ping @justinsb for cleanup")
-			tags["_gce"] = struct{}{}
+			tags.Insert("_gce")
 		}
 
 	case "aws":
 		{
-			tags["_aws"] = struct{}{}
+			tags.Insert("_aws")
 		}
 
 	default:
@@ -124,16 +121,16 @@ func buildCloudupTags(cluster *api.Cluster) (map[string]struct{}, error) {
 	if versionTag == "" {
 		return nil, fmt.Errorf("unable to determine kubernetes version from %q", cluster.Spec.KubernetesVersion)
 	} else {
-		tags[versionTag] = struct{}{}
+		tags.Insert(versionTag)
 	}
 
-	glog.Infof("tags: %s", tags)
+	glog.V(4).Infof("tags: %s", tags.List())
 
 	return tags, nil
 }
 
-func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTags map[string]struct{}) ([]string, error) {
-	var tags []string
+func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTags sets.String) (sets.String, error) {
+	tags := sets.NewString()
 
 	networking := cluster.Spec.Networking
 
@@ -143,52 +140,49 @@ func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTa
 
 	if networking.CNI != nil || networking.Weave != nil {
 		// external is based on cni, weave, flannel, etc
-		tags = append(tags, "_networking_cni")
+		tags.Insert("_networking_cni")
 	}
 
 	switch role {
 	case api.InstanceGroupRoleNode:
-		tags = append(tags, "_kubernetes_pool")
+		tags.Insert("_kubernetes_pool")
 
 		// TODO: Should we run _protokube on the nodes?
-		tags = append(tags, "_protokube")
+		tags.Insert("_protokube")
 
 	case api.InstanceGroupRoleMaster:
-		tags = append(tags, "_kubernetes_master")
+		tags.Insert("_kubernetes_master")
 
 		if !fi.BoolValue(cluster.Spec.IsolateMasters) {
 			// Run this master as a pool node also (start kube-proxy etc)
-			tags = append(tags, "_kubernetes_pool")
+			tags.Insert("_kubernetes_pool")
 		}
 
-		tags = append(tags, "_protokube")
+		tags.Insert("_protokube")
 	default:
 		return nil, fmt.Errorf("Unrecognized role: %v", role)
 	}
 
 	// TODO: Replace with list of CNI plugins ?
 	if usesCNI(cluster) {
-		tags = append(tags, "_cni_bridge")
-		tags = append(tags, "_cni_host_local")
-		tags = append(tags, "_cni_loopback")
-		tags = append(tags, "_cni_ptp")
-		//tags = append(tags, "_cni_tuning")
+		tags.Insert("_cni_bridge", "_cni_host_local", "_cni_loopback", "_cni_ptp")
+		//tags.Insert("_cni_tuning")
 	}
 
 	switch fi.StringValue(cluster.Spec.UpdatePolicy) {
 	case "": // default
-		tags = append(tags, "_automatic_upgrades")
+		tags.Insert("_automatic_upgrades")
 	case api.UpdatePolicyExternal:
 	// Skip applying the tag
 	default:
 		glog.Warningf("Unrecognized value for UpdatePolicy: %v", fi.StringValue(cluster.Spec.UpdatePolicy))
 	}
 
-	if _, found := clusterTags["_gce"]; found {
-		tags = append(tags, "_gce")
+	if clusterTags.Has("_gce") {
+		tags.Insert("_gce")
 	}
-	if _, found := clusterTags["_aws"]; found {
-		tags = append(tags, "_aws")
+	if clusterTags.Has("_aws") {
+		tags.Insert("_aws")
 	}
 
 	return tags, nil
