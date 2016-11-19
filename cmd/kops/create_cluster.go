@@ -538,7 +538,6 @@ func parseZoneList(s string) []string {
 
 func supportsPrivateTopology(n *api.NetworkingSpec) bool {
 
-
 	if n.CNI != nil || n.Kopeio != nil || n.Weave != nil {
 		return true
 	}

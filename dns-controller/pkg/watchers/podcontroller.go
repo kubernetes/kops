@@ -24,11 +24,8 @@ import (
 
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/util"
-	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/v1"
-	client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3/typed/core/v1"
-	"k8s.io/kubernetes/pkg/fields"
-	"k8s.io/kubernetes/pkg/labels"
+	client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5/typed/core/v1"
 	"k8s.io/kubernetes/pkg/watch"
 	"strings"
 )
@@ -36,12 +33,12 @@ import (
 // PodController watches for Pods with dns annotations
 type PodController struct {
 	util.Stoppable
-	kubeClient *client.CoreClient
+	kubeClient client.CoreV1Interface
 	scope      dns.Scope
 }
 
 // newPodController creates a podController
-func NewPodController(kubeClient *client.CoreClient, dns dns.Context) (*PodController, error) {
+func NewPodController(kubeClient client.CoreV1Interface, dns dns.Context) (*PodController, error) {
 	scope, err := dns.CreateScope("pod")
 	if err != nil {
 		return nil, fmt.Errorf("error building dns scope: %v", err)
@@ -67,11 +64,11 @@ func (c *PodController) Run() {
 
 func (c *PodController) runWatcher(stopCh <-chan struct{}) {
 	runOnce := func() (bool, error) {
-		var listOpts api.ListOptions
+		var listOpts v1.ListOptions
 		glog.Warningf("querying without label filter")
-		listOpts.LabelSelector = labels.Everything()
+		//listOpts.LabelSelector = labels.Everything()
 		glog.Warningf("querying without field filter")
-		listOpts.FieldSelector = fields.Everything()
+		//listOpts.FieldSelector = fields.Everything()
 		podList, err := c.kubeClient.Pods("").List(listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error listing pods: %v", err)
@@ -84,9 +81,9 @@ func (c *PodController) runWatcher(stopCh <-chan struct{}) {
 		c.scope.MarkReady()
 
 		glog.Warningf("querying without label filter")
-		listOpts.LabelSelector = labels.Everything()
+		//listOpts.LabelSelector = labels.Everything()
 		glog.Warningf("querying without field filter")
-		listOpts.FieldSelector = fields.Everything()
+		//listOpts.FieldSelector = fields.Everything()
 		listOpts.Watch = true
 		listOpts.ResourceVersion = podList.ResourceVersion
 		watcher, err := c.kubeClient.Pods("").Watch(listOpts)
