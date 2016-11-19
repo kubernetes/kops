@@ -1,5 +1,7 @@
 # Bringing up a cluster on AWS
 
+[This guide is incomplete.  See here for updated documentation](http://kubernetes.io/docs/getting-started-guides/kops/)
+
 * Ensure you have kubectl installed and on your path.  (We need it to set kubecfg configuration.)
 
 * Set up a DNS hosted zone in Route 53, e.g. `mydomain.com`, and set up the DNS nameservers as normal
