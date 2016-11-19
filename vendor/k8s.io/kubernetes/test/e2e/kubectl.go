@@ -87,6 +87,7 @@ const (
 	runJobTimeout            = 5 * time.Minute
 	busyboxImage             = "gcr.io/google_containers/busybox:1.24"
 	nginxImage               = "gcr.io/google_containers/nginx-slim:0.7"
+	newNginxImage            = "gcr.io/google_containers/nginx-slim:0.8"
 	kubeCtlManifestPath      = "test/e2e/testing-manifests/kubectl"
 	redisControllerFilename  = "redis-master-controller.json"
 	redisServiceFilename     = "redis-master-service.json"
@@ -155,9 +156,9 @@ func readTestFileOrDie(file string) []byte {
 func runKubectlRetryOrDie(args ...string) string {
 	var err error
 	var output string
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 5; i++ {
 		output, err = framework.RunKubectl(args...)
-		if err == nil || !strings.Contains(err.Error(), registry.OptimisticLockErrorMsg) {
+		if err == nil || (!strings.Contains(err.Error(), registry.OptimisticLockErrorMsg) && !strings.Contains(err.Error(), "Operation cannot be fulfilled")) {
 			break
 		}
 		time.Sleep(time.Second)
@@ -193,7 +194,7 @@ var _ = framework.KubeDescribe("Kubectl alpha client", func() {
 		})
 
 		AfterEach(func() {
-			framework.RunKubectlOrDie("delete", "scheduledjobs", sjName, nsFlag)
+			framework.RunKubectlOrDie("delete", "cronjobs", sjName, nsFlag)
 		})
 
 		It("should create a ScheduledJob", func() {
@@ -203,7 +204,7 @@ var _ = framework.KubeDescribe("Kubectl alpha client", func() {
 			framework.RunKubectlOrDie("run", sjName, "--restart=OnFailure", "--generator=scheduledjob/v2alpha1",
 				"--schedule="+schedule, "--image="+busyboxImage, nsFlag)
 			By("verifying the ScheduledJob " + sjName + " was created")
-			sj, err := c.Batch().ScheduledJobs(ns).Get(sjName)
+			sj, err := c.Batch().CronJobs(ns).Get(sjName)
 			if err != nil {
 				framework.Failf("Failed getting ScheduledJob %s: %v", sjName, err)
 			}
@@ -216,6 +217,43 @@ var _ = framework.KubeDescribe("Kubectl alpha client", func() {
 			}
 			if sj.Spec.JobTemplate.Spec.Template.Spec.RestartPolicy != api.RestartPolicyOnFailure {
 				framework.Failf("Failed creating a ScheduledJob with correct restart policy for --restart=OnFailure")
+			}
+		})
+	})
+
+	framework.KubeDescribe("Kubectl run CronJob", func() {
+		var nsFlag string
+		var cjName string
+
+		BeforeEach(func() {
+			nsFlag = fmt.Sprintf("--namespace=%v", ns)
+			cjName = "e2e-test-echo-cronjob"
+		})
+
+		AfterEach(func() {
+			framework.RunKubectlOrDie("delete", "cronjobs", cjName, nsFlag)
+		})
+
+		It("should create a CronJob", func() {
+			framework.SkipIfMissingResource(f.ClientPool, CronJobGroupVersionResource, f.Namespace.Name)
+
+			schedule := "*/5 * * * ?"
+			framework.RunKubectlOrDie("run", cjName, "--restart=OnFailure", "--generator=cronjob/v2alpha1",
+				"--schedule="+schedule, "--image="+busyboxImage, nsFlag)
+			By("verifying the CronJob " + cjName + " was created")
+			sj, err := c.Batch().CronJobs(ns).Get(cjName)
+			if err != nil {
+				framework.Failf("Failed getting CronJob %s: %v", cjName, err)
+			}
+			if sj.Spec.Schedule != schedule {
+				framework.Failf("Failed creating a CronJob with correct schedule %s", schedule)
+			}
+			containers := sj.Spec.JobTemplate.Spec.Template.Spec.Containers
+			if containers == nil || len(containers) != 1 || containers[0].Image != busyboxImage {
+				framework.Failf("Failed creating CronJob %s for 1 pod with expected image %s: %#v", cjName, busyboxImage, containers)
+			}
+			if sj.Spec.JobTemplate.Spec.Template.Spec.RestartPolicy != api.RestartPolicyOnFailure {
+				framework.Failf("Failed creating a CronJob with correct restart policy for --restart=OnFailure")
 			}
 		})
 	})
@@ -297,34 +335,8 @@ var _ = framework.KubeDescribe("Kubectl client", func() {
 	})
 
 	framework.KubeDescribe("Guestbook application", func() {
-		forEachGBFile := func(run func(s string)) {
-			for _, gbAppFile := range []string{
-				"examples/guestbook/frontend-deployment.yaml",
-				"examples/guestbook/frontend-service.yaml",
-				"examples/guestbook/redis-master-deployment.yaml",
-				"examples/guestbook/redis-master-service.yaml",
-				"examples/guestbook/redis-slave-deployment.yaml",
-				"examples/guestbook/redis-slave-service.yaml",
-			} {
-				contents := framework.ReadOrDie(gbAppFile)
-				run(string(contents))
-			}
-		}
-
 		It("should create and stop a working application [Conformance]", func() {
-			framework.SkipUnlessServerVersionGTE(deploymentsVersion, c.Discovery())
-
-			defer forEachGBFile(func(contents string) {
-				cleanupKubectlInputs(contents, ns)
-			})
-			By("creating all guestbook components")
-			forEachGBFile(func(contents string) {
-				framework.Logf(contents)
-				framework.RunKubectlOrDieInput(contents, "create", "-f", "-", fmt.Sprintf("--namespace=%v", ns))
-			})
-
-			By("validating guestbook app")
-			validateGuestbookApp(c, ns)
+			guestbookApplication(c, ns)
 		})
 	})
 
@@ -1296,18 +1308,17 @@ var _ = framework.KubeDescribe("Kubectl client", func() {
 	framework.KubeDescribe("Kubectl taint", func() {
 		It("should update the taint on a node", func() {
 			testTaint := api.Taint{
-				Key:    fmt.Sprintf("kubernetes.io/e2e-taint-key-%s", string(uuid.NewUUID())),
+				Key:    fmt.Sprintf("kubernetes.io/e2e-taint-key-001-%s", string(uuid.NewUUID())),
 				Value:  "testing-taint-value",
 				Effect: api.TaintEffectNoSchedule,
 			}
 
-			nodes, err := c.Core().Nodes().List(api.ListOptions{})
-			Expect(err).NotTo(HaveOccurred())
-			node := nodes.Items[0]
-			nodeName := node.Name
+			nodeName := getNodeThatCanRunPod(f)
 
 			By("adding the taint " + testTaint.ToString() + " to a node")
 			runKubectlRetryOrDie("taint", "nodes", nodeName, testTaint.ToString())
+			defer framework.RemoveTaintOffNode(f.ClientSet, nodeName, testTaint)
+
 			By("verifying the node has the taint " + testTaint.ToString())
 			output := runKubectlRetryOrDie("describe", "node", nodeName)
 			requiredStrings := [][]string{
@@ -1328,18 +1339,17 @@ var _ = framework.KubeDescribe("Kubectl client", func() {
 
 		It("should remove all the taints with the same key off a node", func() {
 			testTaint := api.Taint{
-				Key:    fmt.Sprintf("kubernetes.io/e2e-taint-key-%s", string(uuid.NewUUID())),
+				Key:    fmt.Sprintf("kubernetes.io/e2e-taint-key-002-%s", string(uuid.NewUUID())),
 				Value:  "testing-taint-value",
 				Effect: api.TaintEffectNoSchedule,
 			}
 
-			nodes, err := c.Core().Nodes().List(api.ListOptions{})
-			Expect(err).NotTo(HaveOccurred())
-			node := nodes.Items[0]
-			nodeName := node.Name
+			nodeName := getNodeThatCanRunPod(f)
 
 			By("adding the taint " + testTaint.ToString() + " to a node")
 			runKubectlRetryOrDie("taint", "nodes", nodeName, testTaint.ToString())
+			defer framework.RemoveTaintOffNode(f.ClientSet, nodeName, testTaint)
+
 			By("verifying the node has the taint " + testTaint.ToString())
 			output := runKubectlRetryOrDie("describe", "node", nodeName)
 			requiredStrings := [][]string{
@@ -1356,6 +1366,8 @@ var _ = framework.KubeDescribe("Kubectl client", func() {
 			}
 			By("adding another taint " + newTestTaint.ToString() + " to the node")
 			runKubectlRetryOrDie("taint", "nodes", nodeName, newTestTaint.ToString())
+			defer framework.RemoveTaintOffNode(f.ClientSet, nodeName, newTestTaint)
+
 			By("verifying the node has the taint " + newTestTaint.ToString())
 			output = runKubectlRetryOrDie("describe", "node", nodeName)
 			requiredStrings = [][]string{
@@ -1538,27 +1550,32 @@ func validateGuestbookApp(c clientset.Interface, ns string) {
 	err := testutils.WaitForPodsWithLabelRunning(c, ns, label)
 	Expect(err).NotTo(HaveOccurred())
 	framework.Logf("Waiting for frontend to serve content.")
-	if !waitForGuestbookResponse(c, "get", "", `{"data": ""}`, guestbookStartupTimeout, ns) {
+	// the response could be {"data": ""} or "data": "TestEntry"} depending on how many times validateGuestbookApp is called
+	if !waitForGuestbookResponse(c, "get", "", []string{`{"data": ""}`, `{"data": "TestEntry"}`}, guestbookStartupTimeout, ns) {
 		framework.Failf("Frontend service did not start serving content in %v seconds.", guestbookStartupTimeout.Seconds())
 	}
 
 	framework.Logf("Trying to add a new entry to the guestbook.")
-	if !waitForGuestbookResponse(c, "set", "TestEntry", `{"message": "Updated"}`, guestbookResponseTimeout, ns) {
+	if !waitForGuestbookResponse(c, "set", "TestEntry", []string{`{"message": "Updated"}`}, guestbookResponseTimeout, ns) {
 		framework.Failf("Cannot added new entry in %v seconds.", guestbookResponseTimeout.Seconds())
 	}
 
 	framework.Logf("Verifying that added entry can be retrieved.")
-	if !waitForGuestbookResponse(c, "get", "", `{"data": "TestEntry"}`, guestbookResponseTimeout, ns) {
+	if !waitForGuestbookResponse(c, "get", "", []string{`{"data": "TestEntry"}`}, guestbookResponseTimeout, ns) {
 		framework.Failf("Entry to guestbook wasn't correctly added in %v seconds.", guestbookResponseTimeout.Seconds())
 	}
 }
 
 // Returns whether received expected response from guestbook on time.
-func waitForGuestbookResponse(c clientset.Interface, cmd, arg, expectedResponse string, timeout time.Duration, ns string) bool {
+func waitForGuestbookResponse(c clientset.Interface, cmd, arg string, expectedResponse []string, timeout time.Duration, ns string) bool {
 	for start := time.Now(); time.Since(start) < timeout; time.Sleep(5 * time.Second) {
 		res, err := makeRequestToGuestbook(c, cmd, arg, ns)
-		if err == nil && res == expectedResponse {
-			return true
+		if err == nil {
+			for _, expResp := range expectedResponse {
+				if res == expResp {
+					return true
+				}
+			}
 		}
 		framework.Logf("Failed to get response from guestbook. err: %v, response: %s", err, res)
 	}
@@ -1772,4 +1789,46 @@ func startLocalProxy() (srv *httptest.Server, logs *bytes.Buffer) {
 	p.Verbose = true
 	p.Logger = log.New(logs, "", 0)
 	return httptest.NewServer(p), logs
+}
+
+func forEachGuestbookFile(run func(s string)) {
+	for _, gbAppFile := range []string{
+		"examples/guestbook/frontend-deployment.yaml",
+		"examples/guestbook/frontend-service.yaml",
+		"examples/guestbook/redis-master-deployment.yaml",
+		"examples/guestbook/redis-master-service.yaml",
+		"examples/guestbook/redis-slave-deployment.yaml",
+		"examples/guestbook/redis-slave-service.yaml",
+	} {
+		contents := framework.ReadOrDie(gbAppFile)
+		run(string(contents))
+	}
+}
+
+func GuestbookApplicationSetup(c clientset.Interface, ns string) {
+	framework.SkipUnlessServerVersionGTE(deploymentsVersion, c.Discovery())
+
+	By("creating all guestbook components")
+	forEachGuestbookFile(func(contents string) {
+		framework.Logf(contents)
+		framework.RunKubectlOrDieInput(contents, "create", "-f", "-", fmt.Sprintf("--namespace=%v", ns))
+	})
+}
+
+func GuestbookApplicationValidate(c clientset.Interface, ns string) {
+	By("validating guestbook app")
+	validateGuestbookApp(c, ns)
+}
+
+func GuestbookApplicationTeardown(c clientset.Interface, ns string) {
+	By("teardown guestbook app")
+	forEachGuestbookFile(func(contents string) {
+		cleanupKubectlInputs(contents, ns)
+	})
+}
+
+func guestbookApplication(c clientset.Interface, ns string) {
+	GuestbookApplicationSetup(c, ns)
+	GuestbookApplicationValidate(c, ns)
+	GuestbookApplicationTeardown(c, ns)
 }

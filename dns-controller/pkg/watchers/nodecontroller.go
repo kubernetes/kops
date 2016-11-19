@@ -24,23 +24,20 @@ import (
 
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/util"
-	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/v1"
-	client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3/typed/core/v1"
-	"k8s.io/kubernetes/pkg/fields"
-	"k8s.io/kubernetes/pkg/labels"
+	client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5/typed/core/v1"
 	"k8s.io/kubernetes/pkg/watch"
 )
 
 // NodeController watches for nodes
 type NodeController struct {
 	util.Stoppable
-	kubeClient *client.CoreClient
+	kubeClient client.CoreV1Interface
 	scope      dns.Scope
 }
 
 // newNodeController creates a nodeController
-func NewNodeController(kubeClient *client.CoreClient, dns dns.Context) (*NodeController, error) {
+func NewNodeController(kubeClient client.CoreV1Interface, dns dns.Context) (*NodeController, error) {
 	scope, err := dns.CreateScope("node")
 	if err != nil {
 		return nil, fmt.Errorf("error building dns scope: %v", err)
@@ -66,12 +63,12 @@ func (c *NodeController) Run() {
 
 func (c *NodeController) runWatcher(stopCh <-chan struct{}) {
 	runOnce := func() (bool, error) {
-		var listOpts api.ListOptions
+		var listOpts v1.ListOptions
 
 		// Note we need to watch all the nodes, to set up alias targets
-		listOpts.LabelSelector = labels.Everything()
+		//listOpts.LabelSelector = labels.Everything()
 		glog.Warningf("querying without field filter")
-		listOpts.FieldSelector = fields.Everything()
+		//listOpts.FieldSelector = fields.Everything()
 
 		nodeList, err := c.kubeClient.Nodes().List(listOpts)
 		if err != nil {
@@ -85,9 +82,9 @@ func (c *NodeController) runWatcher(stopCh <-chan struct{}) {
 		c.scope.MarkReady()
 
 		// Note we need to watch all the nodes, to set up alias targets
-		listOpts.LabelSelector = labels.Everything()
+		//listOpts.LabelSelector = labels.Everything()
 		glog.Warningf("querying without field filter")
-		listOpts.FieldSelector = fields.Everything()
+		//listOpts.FieldSelector = fields.Everything()
 
 		listOpts.Watch = true
 		listOpts.ResourceVersion = nodeList.ResourceVersion
