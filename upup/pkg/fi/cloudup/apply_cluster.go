@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
+	"k8s.io/kubernetes/federation/pkg/dnsprovider/rrstype"
 	k8sapi "k8s.io/kubernetes/pkg/api"
 	"net"
 	"os"
@@ -41,6 +42,11 @@ import (
 
 const (
 	NodeUpVersion = "1.4.1"
+
+	// This IP is from TEST-NET-3
+	// https://en.wikipedia.org/wiki/Reserved_IP_addresses
+	PlaceholderIP  = "203.0.113.123"
+	PlaceholderTTL = 10
 )
 
 const MaxAttemptsWithNoProgress = 3
@@ -641,6 +647,78 @@ func validateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 			hosts = append(hosts, n.Host)
 		}
 		glog.V(2).Infof("Found NS records for %q: %v", dnsName, hosts)
+	}
+
+	if os.Getenv("KOPS_FF_SKIP_DNS_PRECREATE") == "" {
+		// We precreate some DNS names (where they don't exist), with a dummy IP address
+		// This avoids hitting negative TTL on DNS lookups, which tend to be very long
+		// If we get the names wrong here, it doesn't really matter (extra DNS name, slower boot)
+		dnsSuffix := cluster.Name
+
+		var dnsHostnames []string
+		dnsHostnames = append(dnsHostnames, "api."+dnsSuffix)
+		dnsHostnames = append(dnsHostnames, "api.internal."+dnsSuffix)
+		for _, etcdCluster := range cluster.Spec.EtcdClusters {
+			etcClusterName := "etcd-" + etcdCluster.Name
+			if etcdCluster.Name == "main" {
+				// Special case
+				etcClusterName = "etcd"
+			}
+			for _, etcdClusterMember := range etcdCluster.Members {
+				name := etcClusterName + "-" + etcdClusterMember.Name + ".internal." + dnsSuffix
+				dnsHostnames = append(dnsHostnames, name)
+			}
+		}
+
+		rrs, ok := zone.ResourceRecordSets()
+		if !ok {
+			return fmt.Errorf("error getting DNS resource records for %q", zone.Name())
+		}
+
+		records, err := rrs.List()
+		if err != nil {
+			return fmt.Errorf("error listing DNS resource records for %q: %v", zone.Name(), err)
+		}
+
+		recordsMap := make(map[string]dnsprovider.ResourceRecordSet)
+		for _, record := range records {
+			name := strings.TrimSuffix(record.Name(), ".")
+			key := string(record.Type()) + "::" + name
+			recordsMap[key] = record
+		}
+
+		changeset := rrs.StartChangeset()
+		// TODO: Add ChangeSet.IsEmpty() method
+		var created []string
+
+		for _, dnsHostname := range dnsHostnames {
+			dnsRecord := recordsMap["A::"+dnsHostname]
+			found := false
+			if dnsRecord != nil {
+				rrdatas := dnsRecord.Rrdatas()
+				if len(rrdatas) > 0 {
+					glog.V(4).Infof("Found DNS record %s => %s; won't create", dnsHostname, rrdatas)
+					found = true
+				}
+			}
+
+			if found {
+				continue
+			}
+
+			glog.V(2).Infof("Pre-creating DNS record %s => %s", dnsHostnames, PlaceholderIP)
+
+			changeset.Add(rrs.New(dnsHostname, []string{PlaceholderIP}, PlaceholderTTL, rrstype.A))
+			created = append(created, dnsHostname)
+		}
+
+		if len(created) != 0 {
+			err := changeset.Apply()
+			if err != nil {
+				return fmt.Errorf("Error pre-creating DNS records: %v", err)
+			}
+			glog.V(2).Infof("Pre-created DNS names: %v", created)
+		}
 	}
 
 	return nil
