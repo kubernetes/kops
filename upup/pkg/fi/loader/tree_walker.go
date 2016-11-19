@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kubernetes/pkg/util/sets"
 	"os"
 	"path"
 	"strings"
@@ -29,7 +30,7 @@ type TreeWalker struct {
 	Contexts       map[string]Handler
 	Extensions     map[string]Handler
 	DefaultHandler Handler
-	Tags           map[string]struct{}
+	Tags           sets.String
 }
 
 type TreeWalkItem struct {
