@@ -22,7 +22,15 @@ import (
 	"sync"
 )
 
-var PreviewPrivateDNS = New("PreviewPrivateDNS")
+func Bool(b bool) *bool {
+	return &b
+}
+
+// PreviewPrivateDNS turns on the preview of the private hosted zone support
+var PreviewPrivateDNS = New("PreviewPrivateDNS", Bool(false))
+
+// DNSPreCreate controls whether we pre-create DNS records
+var DNSPreCreate = New("DNSPreCreate", Bool(true))
 
 var flags = make(map[string]*FeatureFlag)
 var flagsMutex sync.Mutex
@@ -30,8 +38,19 @@ var flagsMutex sync.Mutex
 var initFlags sync.Once
 
 type FeatureFlag struct {
-	Key     string
-	Enabled bool
+	Key          string
+	enabled      *bool
+	defaultValue *bool
+}
+
+func (f *FeatureFlag) Enabled() bool {
+	if f.enabled != nil {
+		return *f.enabled
+	}
+	if f.defaultValue != nil {
+		return *f.defaultValue
+	}
+	return false
 }
 
 func readFlags() {
@@ -42,13 +61,22 @@ func readFlags() {
 		if s == "" {
 			continue
 		}
-		ff := New(s)
-		ff.Enabled = true
+		enabled := true
+		var ff *FeatureFlag
+		if s[0] == '+' || s[0] == '-' {
+			ff = New(s[1:], nil)
+			if s[0] == '-' {
+				enabled = false
+			}
+		} else {
+			ff = New(s, nil)
+		}
+		ff.enabled = &enabled
 	}
 
 }
 
-func New(key string) *FeatureFlag {
+func New(key string, defaultValue *bool) *FeatureFlag {
 	initFlags.Do(readFlags)
 
 	flagsMutex.Lock()
@@ -60,6 +88,10 @@ func New(key string) *FeatureFlag {
 			Key: key,
 		}
 		flags[key] = f
+	}
+
+	if f.defaultValue == nil {
+		f.defaultValue = defaultValue
 	}
 
 	return f

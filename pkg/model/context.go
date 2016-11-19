@@ -155,7 +155,7 @@ func (m *KopsModelContext) UseLoadBalancerForAPI() bool {
 }
 
 func (m *KopsModelContext) UsePrivateDNS() bool {
-	if featureflag.PreviewPrivateDNS.Enabled {
+	if featureflag.PreviewPrivateDNS.Enabled() {
 		glog.Infof("PreviewPrivateDNS enabled; using private DNS")
 		return true
 	}
