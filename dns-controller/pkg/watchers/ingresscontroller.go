@@ -22,26 +22,23 @@ import (
 
 	"github.com/golang/glog"
 
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
-	client_extensions "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3/typed/extensions/v1beta1"
-	"k8s.io/kubernetes/pkg/fields"
-	"k8s.io/kubernetes/pkg/labels"
-
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/util"
+	"k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
+	client_extensions "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5/typed/extensions/v1beta1"
 	"k8s.io/kubernetes/pkg/watch"
 )
 
 // IngressController watches for Ingress objects with dns labels
 type IngressController struct {
 	util.Stoppable
-	kubeClient *client_extensions.ExtensionsClient
+	kubeClient client_extensions.ExtensionsV1beta1Interface
 	scope      dns.Scope
 }
 
 // newIngressController creates a ingressController
-func NewIngressController(kubeClient *client_extensions.ExtensionsClient, dns dns.Context) (*IngressController, error) {
+func NewIngressController(kubeClient client_extensions.ExtensionsV1beta1Interface, dns dns.Context) (*IngressController, error) {
 	scope, err := dns.CreateScope("ingress")
 	if err != nil {
 		return nil, fmt.Errorf("error building dns scope: %v", err)
@@ -67,11 +64,11 @@ func (c *IngressController) Run() {
 
 func (c *IngressController) runWatcher(stopCh <-chan struct{}) {
 	runOnce := func() (bool, error) {
-		var listOpts api.ListOptions
+		var listOpts v1.ListOptions
 		glog.Warningf("querying without label filter")
-		listOpts.LabelSelector = labels.Everything()
+		//listOpts.LabelSelector = labels.Everything()
 		glog.Warningf("querying without field filter")
-		listOpts.FieldSelector = fields.Everything()
+		//listOpts.FieldSelector = fields.Everything()
 		ingressList, err := c.kubeClient.Ingresses("").List(listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error listing ingresss: %v", err)
@@ -84,9 +81,9 @@ func (c *IngressController) runWatcher(stopCh <-chan struct{}) {
 		c.scope.MarkReady()
 
 		glog.Warningf("querying without label filter")
-		listOpts.LabelSelector = labels.Everything()
+		//listOpts.LabelSelector = labels.Everything()
 		glog.Warningf("querying without field filter")
-		listOpts.FieldSelector = fields.Everything()
+		//listOpts.FieldSelector = fields.Everything()
 		listOpts.Watch = true
 		listOpts.ResourceVersion = ingressList.ResourceVersion
 		watcher, err := c.kubeClient.Ingresses("").Watch(listOpts)

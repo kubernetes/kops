@@ -95,7 +95,7 @@ ginkgo:
 #   make verify
 #   make verify BRANCH=branch_x
 .PHONY: verify
-verify:
+verify: verify_generated_files
 	KUBE_VERIFY_GIT_BRANCH=$(BRANCH) hack/make-rules/verify.sh -v
 	hack/make-rules/vet.sh
 
@@ -181,7 +181,7 @@ test-e2e: ginkgo generated_files
 # Example:
 #   make test-e2e-node FOCUS=Kubelet SKIP=container
 #   make test-e2e-node REMOTE=true DELETE_INSTANCES=true
-#   make test-e2e-node TEST_ARGS="--cgroups-per-qos=true"
+#   make test-e2e-node TEST_ARGS="--experimental-cgroups-per-qos=true"
 # Build and run tests.
 .PHONY: test-e2e-node
 test-e2e-node: ginkgo generated_files
@@ -293,4 +293,12 @@ $(notdir $(abspath $(wildcard federation/cmd/*/))): generated_files
 #   make generated_files
 .PHONY: generated_files
 generated_files:
-	$(MAKE) -f Makefile.$@ $@ CALLED_FROM_MAIN_MAKEFILE=1
+	$(MAKE) -f Makefile.generated_files $@ CALLED_FROM_MAIN_MAKEFILE=1
+
+# Verify auto-generated files needed for the build.
+#
+# Example:
+#   make verify_generated_files
+.PHONY: verify_generated_files
+verify_generated_files:
+	$(MAKE) -f Makefile.generated_files $@ CALLED_FROM_MAIN_MAKEFILE=1
