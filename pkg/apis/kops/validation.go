@@ -319,9 +319,8 @@ func (c *Cluster) Validate(strict bool) error {
 	} else {
 		return fmt.Errorf("Topology requires non-nil values for Masters and Nodes")
 	}
-
 	// Bastion
-	if !c.Spec.Topology.BypassBastion {
+	if c.Spec.Bastion.Enable {
 		if c.Spec.Topology.Masters == TopologyPublic || c.Spec.Topology.Nodes == TopologyPublic {
 			return fmt.Errorf("Bastion supports only Private Masters and Nodes")
 		}
