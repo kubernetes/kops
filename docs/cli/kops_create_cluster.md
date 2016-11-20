@@ -16,6 +16,7 @@ kops create cluster
 ```
       --admin-access string         Restrict access to admin endpoints (SSH, HTTPS) to this CIDR.  If not set, access will not be restricted by IP.
       --associate-public-ip         Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'. (default true)
+      --bastion                     Specify --bastion=[true|false] to turn enable/disable bastion setup. Default to 'false' when topology is 'public' and defaults to 'true' if topology is 'private'.
       --channel string              Channel for default versions and configuration to use (default "stable")
       --cloud string                Cloud provider to use - gce, aws
       --dns-zone string             DNS hosted zone to use (defaults to longest matching zone)
@@ -32,6 +33,7 @@ kops create cluster
       --project string              Project to use (must be set on GCE)
       --ssh-public-key string       SSH public key to use (default "~/.ssh/id_rsa.pub")
       --target string               Target - direct, terraform (default "direct")
+  -t, --topology string             Controls network topology for the cluster. public|private. Default is 'public'. (default "public")
       --vpc string                  Set to use a shared VPC
       --yes                         Specify --yes to immediately create the cluster
       --zones string                Zones in which to run the cluster

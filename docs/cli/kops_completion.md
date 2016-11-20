@@ -18,8 +18,8 @@ kops completion
 
 ```
 
-	# load in the kops completion code for bash (depends on the bash-completion framework).
-	source <(kops completion bash)
+# load in the kops completion code for bash (depends on the bash-completion framework).
+source <(kops completion bash)
 ```
 
 ### Options
