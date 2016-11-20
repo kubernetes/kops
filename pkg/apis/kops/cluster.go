@@ -83,6 +83,13 @@ type ClusterSpec struct {
 	// to port out to GCE later if needed
 	Topology *TopologySpec `json:"topology,omitempty"`
 
+	// Bastion provide an external facing point of entry into a network
+	// containing private network instances. This host can provide a single
+	// point of fortification or audit and can be started and stopped to enable
+	// or disable inbound SSH communication from the Internet, some call bastion
+	// as the "jump server".
+	Bastion *BastionSpec `json:"topology,omitempty"`
+
 	// SecretStore is the VFS path to where secrets are stored
 	SecretStore string `json:"secretStore,omitempty"`
 	// KeyStore is the VFS path to where SSL keys and certificates are stored

@@ -31,16 +31,17 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"fmt"
-	"github.com/golang/glog"
-	api "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kubernetes/pkg/util/sets"
 	"math/big"
 	"net"
 	"sort"
 	"strings"
 	"text/template"
+
+	"github.com/golang/glog"
+	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kubernetes/pkg/util/sets"
 )
 
 type TemplateFunctions struct {
@@ -183,7 +184,7 @@ func (tf *TemplateFunctions) IsTopologyPrivateMasters() bool {
 }
 
 func (tf *TemplateFunctions) WithBastion() bool {
-	return !tf.cluster.Spec.Topology.BypassBastion
+	return tf.cluster.Spec.Bastion.Enable
 }
 
 // This function is replacing existing yaml
