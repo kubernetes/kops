@@ -18,11 +18,12 @@ package cloudup
 
 import (
 	"fmt"
+	"strings"
+	"testing"
+
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/util/sets"
-	"strings"
-	"testing"
 )
 
 func buildMinimalCluster() *api.Cluster {
@@ -38,6 +39,10 @@ func buildMinimalCluster() *api.Cluster {
 		Masters: api.TopologyPublic,
 		Nodes:   api.TopologyPublic,
 	}
+	c.Spec.Bastion = &api.BastionSpec{
+		Enable: false,
+	}
+
 	c.Spec.NetworkCIDR = "172.20.0.0/16"
 	c.Spec.NonMasqueradeCIDR = "100.64.0.0/10"
 	c.Spec.CloudProvider = "aws"
@@ -307,6 +312,14 @@ func TestPopulateCluster_TopologyInvalidMatchingValues_Required(t *testing.T) {
 	c.Spec.Topology.Masters = api.TopologyPublic
 	c.Spec.Topology.Nodes = api.TopologyPrivate
 	expectErrorFromPopulateCluster(t, c, "Topology")
+}
+
+func TestPopulateCluster_BastionInvalidMatchingValues_Required(t *testing.T) {
+	c := buildMinimalCluster()
+	c.Spec.Topology.Masters = api.TopologyPublic
+	c.Spec.Topology.Nodes = api.TopologyPublic
+	c.Spec.Bastion.Enable = true
+	expectErrorFromPopulateCluster(t, c, "Bastion")
 }
 
 func expectErrorFromPopulateCluster(t *testing.T, c *api.Cluster, message string) {

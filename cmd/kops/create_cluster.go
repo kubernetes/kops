@@ -122,7 +122,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVarP(&options.Topology, "topology", "t", "public", "Controls network topology for the cluster. public|private. Default is 'public'.")
 
 	// Bastion
-	cmd.Flags().BoolVar(&options.Bastion, "bastion", false, "Specify --bastion=[true|false] to turn enable/disable bastion setup. Default is 'false'.")
+	cmd.Flags().BoolVar(&options.Bastion, "bastion", false, "Specify --bastion=[true|false] to turn enable/disable bastion setup. Default to 'false' when topology is 'public' and defaults to 'true' if topology is 'private'.")
 
 	return cmd
 }
@@ -386,15 +386,22 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 	// Network Topology
 	switch c.Topology {
 	case api.TopologyPublic:
-		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPublic, Nodes: api.TopologyPublic, BypassBastion: !c.Bastion}
+		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPublic, Nodes: api.TopologyPublic}
+		cluster.Spec.Bastion = &api.BastionSpec{Enable: c.Bastion}
 	case api.TopologyPrivate:
 		if !supportsPrivateTopology(cluster.Spec.Networking) {
 			return fmt.Errorf("Invalid networking option %s. Currently only '--networking cni', '--networking kopeio-vxlan', '--networking weave' are supported for private topologies", c.Networking)
 		}
-		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPrivate, Nodes: api.TopologyPrivate, BypassBastion: !c.Bastion}
+		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPrivate, Nodes: api.TopologyPrivate}
+		if cmd.Flags().Changed("Bastion") {
+			cluster.Spec.Bastion = &api.BastionSpec{Enable: c.Bastion}
+		} else {
+			cluster.Spec.Bastion = &api.BastionSpec{Enable: true}
+		}
 	case "":
 		glog.Warningf("Empty topology. Defaulting to public topology without bastion")
-		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPublic, Nodes: api.TopologyPublic, BypassBastion: false}
+		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPublic, Nodes: api.TopologyPublic}
+		cluster.Spec.Bastion = &api.BastionSpec{Enable: false}
 	default:
 		return fmt.Errorf("Invalid topology %s.", c.Topology)
 	}
