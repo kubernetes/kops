@@ -138,21 +138,35 @@ func (c *ServiceController) updateServiceRecords(service *v1.Service) {
 	specExternal := service.Annotations[AnnotationNameDnsExternal]
 	if specExternal != "" {
 		var ingresses []dns.Record
-		for i := range service.Status.LoadBalancer.Ingress {
-			ingress := &service.Status.LoadBalancer.Ingress[i]
-			if ingress.Hostname != "" {
-				// TODO: Support ELB aliases
-				ingresses = append(ingresses, dns.Record{
-					RecordType: dns.RecordTypeCNAME,
-					Value:      ingress.Hostname,
-				})
+
+		if service.Spec.Type == v1.ServiceTypeLoadBalancer {
+			for i := range service.Status.LoadBalancer.Ingress {
+				ingress := &service.Status.LoadBalancer.Ingress[i]
+				if ingress.Hostname != "" {
+					// TODO: Support ELB aliases
+					ingresses = append(ingresses, dns.Record{
+						RecordType: dns.RecordTypeCNAME,
+						Value:      ingress.Hostname,
+					})
+					glog.V(4).Infof("Found CNAME record for service %s/%s: %q", service.Namespace, service.Name, ingress.Hostname)
+				}
+				if ingress.IP != "" {
+					ingresses = append(ingresses, dns.Record{
+						RecordType: dns.RecordTypeA,
+						Value:      ingress.IP,
+					})
+					glog.V(4).Infof("Found A record for service %s/%s: %q", service.Namespace, service.Name, ingress.IP)
+				}
 			}
-			if ingress.IP != "" {
-				ingresses = append(ingresses, dns.Record{
-					RecordType: dns.RecordTypeA,
-					Value:      ingress.IP,
-				})
-			}
+		} else if service.Spec.Type == v1.ServiceTypeNodePort {
+			ingresses = append(ingresses, dns.Record{
+				RecordType: dns.RecordTypeAlias,
+				Value:      dns.AliasForNodesInRole("node"),
+			})
+			glog.V(4).Infof("Setting internal alias for NodePort service %s/%s", service.Namespace, service.Name)
+		} else {
+			// TODO: Emit event so that users are informed of this
+			glog.V(2).Infof("Cannot expose service %s/%s of type %q", service.Namespace, service.Name, service.Spec.Type)
 		}
 
 		tokens := strings.Split(specExternal, ",")
@@ -168,7 +182,7 @@ func (c *ServiceController) updateServiceRecords(service *v1.Service) {
 			}
 		}
 	} else {
-		glog.V(4).Infof("Service %q did not have %s annotation", service.Name, AnnotationNameDnsInternal)
+		glog.V(8).Infof("Service %s/%s did not have %s annotation", service.Namespace, service.Name, AnnotationNameDnsExternal)
 	}
 
 	c.scope.Replace(service.Name, records)
