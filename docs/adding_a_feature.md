@@ -71,8 +71,6 @@ Each file in the tree describes a Task.
 On the nodeup side, Tasks can manage files, systemd services, packages etc.
 On the `kops update cluster` side, Tasks manage cloud resources: instances, networks, disks etc.
 
-
-
 ## Validation
 
 We should add some validation that the value entered is valid.  We only accept nil or `external` right now.
@@ -176,6 +174,8 @@ Values:
 * unset means to use the default policy, which is currently to apply OS security updates unless they require a reboot
 ```
 
+Additionally, consider adding documentation of your new feature to the docs in [/docs](/). If your feature touches configuration options in `config` or `cluster.spec`, document them in [cluster_spec.md](cluster_spec.md).
+
 ## Testing
 
 
@@ -220,4 +220,4 @@ very often.
 ## Other steps
 
 * We could also create a CLI flag on `create cluster`.  This doesn't seem worth it in this case; this is a relatively advanced option
-for people that already have an external software update mechanism.  All the flag would do is save the default
+for people that already have an external software update mechanism.  All the flag would do is save the default.
