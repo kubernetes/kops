@@ -287,7 +287,7 @@ func (c *Cluster) Validate(strict bool) error {
 		if strict && c.Spec.MasterKubelet.APIServers == "" {
 			return field.Required(masterKubeletPath.Child("APIServers"), "")
 		}
-		if c.Spec.Kubelet.APIServers != "" && !isValidAPIServersURL(c.Spec.MasterKubelet.APIServers) {
+		if c.Spec.MasterKubelet.APIServers != "" && !isValidAPIServersURL(c.Spec.MasterKubelet.APIServers) {
 			return field.Invalid(masterKubeletPath.Child("APIServers"), c.Spec.MasterKubelet.APIServers, "Not a valid APIServer URL")
 		}
 	}
