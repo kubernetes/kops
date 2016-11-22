@@ -55,7 +55,7 @@ See [building notes](/docs/build.md) for more information.
 
 # Getting involved!
 
-Wan't to contribute to kops? We would love the extra help from the community. We have a quickstart guide on [adding a feature](/docs/adding_a_feature.md).
+Want to contribute to kops? We would love the extra help from the community. We have a quickstart guide on [adding a feature](/docs/adding_a_feature.md).
 
 Kops also has time set aside every other week to offer help and guidance to the community. Kops maintainers have agreed to set aside time specifically dedicated to working with newcomers, helping with PRs, and discussing new features.
 
