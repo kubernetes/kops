@@ -42,10 +42,14 @@ func buildMinimalCluster() *api.Cluster {
 	c.Spec.Bastion = &api.BastionSpec{
 		Enable: false,
 	}
-
 	c.Spec.NetworkCIDR = "172.20.0.0/16"
 	c.Spec.NonMasqueradeCIDR = "100.64.0.0/10"
 	c.Spec.CloudProvider = "aws"
+
+	// Default bastion
+	c.Spec.Bastion = &api.BastionSpec{
+		Enable: false,
+	}
 
 	c.Spec.ConfigBase = "s3://unittest-bucket/"
 
@@ -319,6 +323,15 @@ func TestPopulateCluster_BastionInvalidMatchingValues_Required(t *testing.T) {
 	c.Spec.Topology.Masters = api.TopologyPublic
 	c.Spec.Topology.Nodes = api.TopologyPublic
 	c.Spec.Bastion.Enable = true
+	expectErrorFromPopulateCluster(t, c, "Bastion")
+}
+
+func TestPopulateCluster_BastionInvalidMachineTypeNil_Required(t *testing.T) {
+	c := buildMinimalCluster()
+	c.Spec.Topology.Masters = api.TopologyPrivate
+	c.Spec.Topology.Nodes = api.TopologyPrivate
+	c.Spec.Bastion.Enable = true
+	c.Spec.Bastion.MachineType = ""
 	expectErrorFromPopulateCluster(t, c, "Bastion")
 }
 
