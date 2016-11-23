@@ -102,7 +102,7 @@ launchConfiguration/bastion.{{ ClusterName }}:
    - securityGroup/bastion.{{ ClusterName }}
   iamInstanceProfile: iamInstanceProfile/masters.{{ ClusterName }}
   imageId: {{ GetBastionImageId }}
-  instanceType: t2.small
+  instanceType: {{ GetBastionMachineType }}
   associatePublicIP: false
   rootVolumeSize: 20
   rootVolumeType: gp2

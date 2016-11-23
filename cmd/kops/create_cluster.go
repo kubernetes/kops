@@ -406,6 +406,8 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 		return fmt.Errorf("Invalid topology %s.", c.Topology)
 	}
 
+	cluster.Spec.Bastion.MachineType = cloudup.DefaultBastionMachineType(cluster)
+
 	sshPublicKeys := make(map[string][]byte)
 	if c.SSHPublicKey != "" {
 		c.SSHPublicKey = utils.ExpandPath(c.SSHPublicKey)

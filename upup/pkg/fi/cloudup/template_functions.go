@@ -199,6 +199,10 @@ func (tf *TemplateFunctions) GetBastionZone() (string, error) {
 	return name, nil
 }
 
+func (tf *TemplateFunctions) GetBastionMachineType() string {
+	return tf.cluster.BastionMachineType()
+}
+
 // Will attempt to calculate a meaningful name for an ELB given a prefix
 // Will never return a string longer than 32 chars
 func (tf *TemplateFunctions) GetELBName32(prefix string) (string, error) {
