@@ -319,12 +319,17 @@ func (c *Cluster) Validate(strict bool) error {
 	} else {
 		return fmt.Errorf("Topology requires non-nil values for Masters and Nodes")
 	}
+
 	// Bastion
 	if c.Spec.Bastion.Enable {
 		if c.Spec.Topology.Masters == TopologyPublic || c.Spec.Topology.Nodes == TopologyPublic {
 			return fmt.Errorf("Bastion supports only Private Masters and Nodes")
 		}
+		if c.Spec.Bastion.MachineType == "" {
+			return fmt.Errorf("Bastion MachineType can not be empty")
+		}
 	}
+
 	// Etcd
 	{
 		if len(c.Spec.EtcdClusters) == 0 {
