@@ -553,6 +553,9 @@ func (c *Cluster) IsTopologyPrivateMasters() bool {
 	return (c.Spec.Topology.Masters == TopologyPrivate && c.Spec.Topology.Nodes == TopologyPublic)
 }
 
-func (c *Cluster) BastionMachineType() string {
+func (c *Cluster) GetBastionMachineType() string {
 	return c.Spec.Bastion.MachineType
+}
+func (c *Cluster) GetBastionPublicName() string {
+	return c.Spec.Bastion.PublicName
 }

@@ -20,6 +20,7 @@ type BastionSpec struct {
 	// Controls if a private topology should deploy a bastion host or not
 	// The bastion host is designed to be a simple, and secure bridge between
 	// the public subnet and the private subnet
-	Enable      bool   `json:"masters,omitempty"`
-	MachineType string `json:"masters,omitempty"`
+	Enable      bool   `json:"Enable,omitempty"`
+	MachineType string `json:"MachineType,omitempty"`
+	PublicName  string `json:"Name,omitempty"`
 }

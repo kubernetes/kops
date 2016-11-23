@@ -99,6 +99,8 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["GetBastionImageId"] = tf.GetBastionImageId
 	dest["GetBastionZone"] = tf.GetBastionZone
 	dest["GetELBName32"] = tf.GetELBName32
+	dest["IsBastionDNS"] = tf.IsBastionDNS
+	dest["GetBastionDNS"] = tf.GetBastionDNS
 
 	dest["SharedZone"] = tf.SharedZone
 	dest["WellKnownServiceIP"] = tf.WellKnownServiceIP
@@ -187,6 +189,18 @@ func (tf *TemplateFunctions) WithBastion() bool {
 	return tf.cluster.Spec.Bastion.Enable
 }
 
+func (tf *TemplateFunctions) IsBastionDNS() bool {
+	if tf.cluster.Spec.Bastion.PublicName != "" {
+		return false
+	} else {
+		return true
+	}
+}
+
+func (tf *TemplateFunctions) GetBastionDNS() string {
+	return tf.cluster.GetBastionPublicName()
+}
+
 // This function is replacing existing yaml
 func (tf *TemplateFunctions) GetBastionZone() (string, error) {
 	var name string
@@ -200,7 +214,7 @@ func (tf *TemplateFunctions) GetBastionZone() (string, error) {
 }
 
 func (tf *TemplateFunctions) GetBastionMachineType() string {
-	return tf.cluster.BastionMachineType()
+	return tf.cluster.GetBastionMachineType()
 }
 
 // Will attempt to calculate a meaningful name for an ELB given a prefix
