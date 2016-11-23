@@ -326,7 +326,7 @@ func TestPopulateCluster_BastionInvalidMatchingValues_Required(t *testing.T) {
 	expectErrorFromPopulateCluster(t, c, "Bastion")
 }
 
-func TestPopulateCluster_BastionInvalidMachineTypeNil_Required(t *testing.T) {
+func TestPopulateCluster_BastionMachineTypeInvalidNil_Required(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.Topology.Masters = api.TopologyPrivate
 	c.Spec.Topology.Nodes = api.TopologyPrivate
