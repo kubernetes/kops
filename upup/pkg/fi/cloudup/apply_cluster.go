@@ -18,6 +18,10 @@ package cloudup
 
 import (
 	"fmt"
+	"net"
+	"os"
+	"strings"
+
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
@@ -34,9 +38,6 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	k8sapi "k8s.io/kubernetes/pkg/api"
-	"net"
-	"os"
-	"strings"
 )
 
 const (

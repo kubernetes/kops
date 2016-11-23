@@ -116,23 +116,17 @@ autoscalingGroup/bastion.{{ ClusterName }}:
     Name: bastion-{{ GetBastionZone }}.{{ ClusterName }}
     KubernetesCluster: {{ ClusterName }}
 
-# ---------------------------------------------------------------
-# TODO Kris
-#
-# So as it stands we are *NOT* defining a friendly CNAME for the
-# bastion ELB. I think this is a good thing.
-#
-# If we came up with a formula EG: bastion.<clusterName> we could
-# be exposing ourselves to a few threats :)
-#
-# I think it's best in this situation to err on the side of
-# caution and force the end user to define something convenient
-# on their own.
-#
-# TLDR; If you want a friendly CNAME for your bastion - you have
-# to build it yourself. Kops won't support that
-#
-# Right?
-# ---------------------------------------------------------------
-
+{{ if IsBastionDNS }}
+# ------------------------------------------------------------------------
+# By default Bastion is not reachable from outside because of security concerns.
+# But if the user specifies bastion name using edit cluster, we configure
+# the bastion DNS entry for it to be reachable from outside.
+# BastionPublicName --> Bastion LoadBalancer
+# ------------------------------------------------------------------------
+dnsZone/{{ .DNSZone }}: {}
+dnsName/{{ GetBastionDNS }}:
+  Zone: dnsZone/{{ .DNSZone }}
+  ResourceType: "A"
+  TargetLoadBalancer: loadBalancer/bastion.{{ ClusterName }}
+{{ end }}
 {{ end }}
