@@ -97,6 +97,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["IsTopologyPrivateMasters"] = tf.IsTopologyPrivateMasters
 	dest["WithBastion"] = tf.WithBastion
 	dest["GetBastionImageId"] = tf.GetBastionImageId
+	dest["GetBastionMachineType"] = tf.GetBastionMachineType
 	dest["GetBastionZone"] = tf.GetBastionZone
 	dest["GetELBName32"] = tf.GetELBName32
 	dest["IsBastionDNS"] = tf.IsBastionDNS
