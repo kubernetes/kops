@@ -28,9 +28,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"time"
-
-	"github.com/golang/glog"
 )
 
 // not used too much yet :)
@@ -78,22 +75,6 @@ func (c *ValidateClusterCmd) Run(args []string) error {
 		return err
 	}
 
-	nodeAA := &api.NodeAPIAdapter{}
-
-	timeout, err := time.ParseDuration("30s")
-
-	if err != nil {
-		return fmt.Errorf("Cannot set timeout %q: %v", cluster.Name, err)
-	}
-
-	nodeAA.BuildNodeAPIAdapter(cluster.Name, timeout, "")
-
-	nodes, err := nodeAA.GetAllNodes()
-
-	if err != nil {
-		return fmt.Errorf("Cannot get nodes for %q: %v", cluster.Name, err)
-	}
-
 	list, err := clientset.InstanceGroups(cluster.Name).List(k8sapi.ListOptions{})
 	if err != nil {
 		return fmt.Errorf("Cannot get nodes for %q: %v", cluster.Name, err)
@@ -101,22 +82,20 @@ func (c *ValidateClusterCmd) Run(args []string) error {
 
 	fmt.Printf("Validating cluster %v\n\n", cluster.Name)
 
-	var instancegroups []*api.InstanceGroup
-	validationCluster := &api.ValidationCluster{}
+	var instanceGroups []*api.InstanceGroup
 	for i := range list.Items {
 		ig := &list.Items[i]
-		instancegroups = append(instancegroups, ig)
-		if ig.Spec.Role == api.InstanceGroupRoleMaster {
-			//validationCluster.MastersInstanceGroups = append(validationCluster.MastersInstanceGroups, ig)
-			validationCluster.MastersCount += *ig.Spec.MinSize
-		} else {
-			//validationCluster.NodesInstanceGroups = append(validationCluster.NodesInstanceGroups, ig)
-			validationCluster.NodesCount += *ig.Spec.MinSize
-		}
+		instanceGroups = append(instanceGroups, ig)
 	}
 
-	if len(instancegroups) == 0 {
+	if len(instanceGroups) == 0 {
 		return errors.New("No InstanceGroup objects found\n")
+	}
+
+	validationCluster, validationFailed := api.ValidateCluster(cluster.Name, list)
+
+	if validationCluster.NodeList == nil {
+		return fmt.Errorf("Cannot get nodes for %q: %v", cluster.Name, validationFailed)
 	}
 
 	t := &tables.Table{}
@@ -140,7 +119,7 @@ func (c *ValidateClusterCmd) Run(args []string) error {
 	})
 
 	fmt.Println("INSTANCE GROUPS")
-	err = t.Render(instancegroups, os.Stdout, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "ZONES")
+	err = t.Render(instanceGroups, os.Stdout, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "ZONES")
 
 	if err != nil {
 		return fmt.Errorf("Cannot render nodes for %q: %v", cluster.Name, err)
@@ -164,6 +143,7 @@ func (c *ValidateClusterCmd) Run(args []string) error {
 		return role
 	})
 
+	nodes := validationCluster.NodeList
 	fmt.Println("\nNODE STATUS")
 	err = t.Render(nodes.Items, os.Stdout, "NAME", "ROLE", "READY")
 
@@ -171,62 +151,18 @@ func (c *ValidateClusterCmd) Run(args []string) error {
 		return fmt.Errorf("Cannot render nodes for %q: %v", cluster.Name, err)
 	}
 
-	for _, node := range nodes.Items {
-
-		role := "node"
-		if val, ok := node.ObjectMeta.Labels["kubernetes.io/role"]; ok {
-			role = val
-		}
-
-		n := &api.ValidationNode{
-			Zone:     node.ObjectMeta.Labels["failure-domain.beta.kubernetes.io/zone"],
-			Hostname: node.ObjectMeta.Labels["kubernetes.io/hostname"],
-			Role:     role,
-			Status:   api.GetNodeConditionStatus(node.Status.Conditions),
-		}
-
-		if n.Role == "master" {
-			if n.Status == v1.ConditionTrue {
-				validationCluster.MastersReady = append(validationCluster.MastersReady, n)
-			} else {
-				validationCluster.MastersNotReady = append(validationCluster.MastersNotReady, n)
-			}
-		} else if n.Role == "node" {
-			if n.Status == v1.ConditionTrue {
-				validationCluster.NodesReady = append(validationCluster.NodesReady, n)
-			} else {
-				validationCluster.NodesNotReady = append(validationCluster.NodesNotReady, n)
-			}
-
-		}
-
-	}
-
-	mastersReady := true
-	nodesReady := true
-	if len(validationCluster.MastersNotReady) != 0 || validationCluster.MastersCount !=
-		len(validationCluster.MastersReady) {
-		mastersReady = false
-	}
-
-	if len(validationCluster.NodesNotReady) != 0 || validationCluster.NodesCount !=
-		len(validationCluster.NodesReady) {
-		nodesReady = false
-	}
-
-
-	if mastersReady && nodesReady {
+	if validationFailed == nil {
 		fmt.Printf("\nYour cluster %s is ready\n", cluster.Name)
 		return nil
 	} else {
 		// do we need to print which instance group is not ready?
 		// nodes are going to be a pain
-		glog.Infof("cluster - masters ready: %v, nodes ready: %v", mastersReady, nodesReady)
-		glog.Infof("mastersNotReady %v", len(validationCluster.MastersNotReady))
-		glog.Infof("mastersCount %v, mastersReady %v", validationCluster.MastersCount, len(validationCluster.MastersReady))
-		glog.Infof("nodesNotReady %v", len(validationCluster.NodesNotReady))
-		glog.Infof("nodesCount %v, nodesReady %v", validationCluster.NodesCount, len(validationCluster.NodesReady))
-		return fmt.Errorf("You cluster is NOT ready %s", cluster.Name)
+		fmt.Printf("cluster - masters ready: %v, nodes ready: %v", validationCluster.MastersReady, validationCluster.NodesReady)
+		fmt.Printf("mastersNotReady %v", len(validationCluster.MastersNotReadyArray))
+		fmt.Printf("mastersCount %v, mastersReady %v", validationCluster.MastersCount, len(validationCluster.MastersReadyArray))
+		fmt.Printf("nodesNotReady %v", len(validationCluster.NodesNotReadyArray))
+		fmt.Printf("nodesCount %v, nodesReady %v", validationCluster.NodesCount, len(validationCluster.NodesReadyArray))
+		return fmt.Errorf("\nYou cluster %s is NOT ready.", cluster.Name)
 	}
 
 }
