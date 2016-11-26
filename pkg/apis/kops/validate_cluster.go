@@ -22,9 +22,7 @@ import (
 
 	"fmt"
 
-	"github.com/golang/glog"
-	//client_simple "k8s.io/kops/pkg/client/simple"
-	//k8s_api "k8s.io/kubernetes/pkg/api"
+	//"github.com/golang/glog"
 	"k8s.io/kubernetes/pkg/api/v1"
 )
 
@@ -35,17 +33,17 @@ const (
 
 // A cluster to validate
 type ValidationCluster struct {
-	MastersReady    []*ValidationNode
-	MastersNotReady []*ValidationNode
-	// Leaving here if we are to determine which nodes are down
-	//MastersInstanceGroups []*api.InstanceGroup
-	MastersCount int
+	MastersReady         bool
+	MastersReadyArray    []*ValidationNode
+	MastersNotReadyArray []*ValidationNode
+	MastersCount         int
 
-	NodesReady    []*ValidationNode
-	NodesNotReady []*ValidationNode
-	// Leaving here if we are to determine which nodes are down
-	//NodesInstanceGroups []*api.InstanceGroup
-	NodesCount int
+	NodesReady         bool
+	NodesReadyArray    []*ValidationNode
+	NodesNotReadyArray []*ValidationNode
+	NodesCount         int
+
+	NodeList *v1.NodeList
 }
 
 // A K8s node to be validated
@@ -57,23 +55,24 @@ type ValidationNode struct {
 }
 
 // ValidateClusterWithIg validate a k8s clsuter with a provided instance group list
-func ValidateClusterWithIg(clusterName string, instanceGroupList *InstanceGroupList) (*v1.NodeList, error) {
+func ValidateCluster(clusterName string, instanceGroupList *InstanceGroupList) (*ValidationCluster, error) {
 
-	var instancegroups []*InstanceGroup
+	var instanceGroups []*InstanceGroup
 	validationCluster := &ValidationCluster{}
 	for i := range instanceGroupList.Items {
 		ig := &instanceGroupList.Items[i]
-		instancegroups = append(instancegroups, ig)
+		instanceGroups = append(instanceGroups, ig)
 		if ig.Spec.Role == InstanceGroupRoleMaster {
-			// Leaving here if we are to determine which nodes are down
-			//validationCluster.mastersInstanceGroups = append(validationCluster.mastersInstanceGroups, ig)
 			validationCluster.MastersCount += *ig.Spec.MinSize
-		} else {
-			// Leaving here if we are to determine which nodes are down
-			//validationCluster.nodesInstanceGroups = append(validationCluster.nodesInstanceGroups, ig)
+		} else if ig.Spec.Role == InstanceGroupRoleNode {
 			validationCluster.NodesCount += *ig.Spec.MinSize
 		}
 	}
+
+	if len(instanceGroups) == 0 {
+		return validationCluster, errors.New("No InstanceGroup objects found\n")
+	}
+
 	nodeAA := &NodeAPIAdapter{}
 
 	timeout, err := time.ParseDuration("30s")
@@ -84,15 +83,13 @@ func ValidateClusterWithIg(clusterName string, instanceGroupList *InstanceGroupL
 
 	nodeAA.BuildNodeAPIAdapter(clusterName, timeout, "")
 
-	nodes, err := nodeAA.GetAllNodes()
+	validationCluster.NodeList, err = nodeAA.GetAllNodes()
 
 	if err != nil {
 		return nil, fmt.Errorf("Cannot get nodes for %q: %v", clusterName, err)
 	}
 
-	if len(instancegroups) == 0 {
-		return nodes, errors.New("No InstanceGroup objects found\n")
-	}
+	nodes := validationCluster.NodeList
 
 	for _, node := range nodes.Items {
 
@@ -110,58 +107,43 @@ func ValidateClusterWithIg(clusterName string, instanceGroupList *InstanceGroupL
 
 		ready, err := IsNodeOrMasterReady(&node)
 		if err != nil {
-			return nodes, fmt.Errorf("Cannot test if node is ready: %s", node.Name)
+			return validationCluster, fmt.Errorf("Cannot test if node is ready: %s", node.Name)
 		}
 		if n.Role == Master {
 			if ready {
-				validationCluster.MastersReady = append(validationCluster.MastersReady, n)
+				validationCluster.MastersReadyArray = append(validationCluster.MastersReadyArray, n)
 			} else {
-				validationCluster.MastersNotReady = append(validationCluster.MastersNotReady, n)
+				validationCluster.MastersNotReadyArray = append(validationCluster.MastersNotReadyArray, n)
 			}
 		} else if n.Role == Node {
 			if ready {
-				validationCluster.NodesReady = append(validationCluster.NodesReady, n)
+				validationCluster.NodesReadyArray = append(validationCluster.NodesReadyArray, n)
 			} else {
-				validationCluster.NodesNotReady = append(validationCluster.NodesNotReady, n)
+				validationCluster.NodesNotReadyArray = append(validationCluster.NodesNotReadyArray, n)
 			}
 
 		}
 
 	}
 
-	mastersReady := true
-	nodesReady := true
-	if len(validationCluster.MastersNotReady) != 0 || validationCluster.MastersCount !=
-		len(validationCluster.MastersReady) {
-		mastersReady = false
+	validationCluster.MastersReady = true
+	if len(validationCluster.MastersNotReadyArray) != 0 || validationCluster.MastersCount !=
+		len(validationCluster.MastersReadyArray) {
+		validationCluster.MastersReady = false
 	}
 
-	if len(validationCluster.NodesNotReady) != 0 || validationCluster.NodesCount !=
-		len(validationCluster.NodesReady) {
-		nodesReady = false
+	validationCluster.NodesReady = true
+	if len(validationCluster.NodesNotReadyArray) != 0 || validationCluster.NodesCount !=
+		len(validationCluster.NodesReadyArray) {
+		validationCluster.NodesReady = false
 	}
 
-	glog.Infof("validationCluster %+v", validationCluster)
-
-	if mastersReady && nodesReady {
-		return nodes, nil
+	if validationCluster.MastersReady && validationCluster.NodesReady {
+		return validationCluster, nil
 	} else {
-		return nodes, fmt.Errorf("You cluster is NOT ready %s", clusterName)
+		return validationCluster, fmt.Errorf("You cluster is NOT ready %s", clusterName)
 	}
 }
-
-// ValidateCluster does what it is named, validate a K8s cluster
-/*
-func FullValidateCluster(clusterName string, clientset client_simple.Clientset) (*v1.NodeList, error) {
-
-	list, err := clientset.InstanceGroups(clusterName).List(k8s_api.ListOptions{})
-	if err != nil {
-		return nil, fmt.Errorf("Cannot get instnacegroups for %q: %v", clusterName, err)
-	}
-
-	return ValidateClusterWithIg(clusterName, list)
-
-}*/
 
 func GetNodeConditionStatus(nodeConditions []v1.NodeCondition) v1.ConditionStatus {
 	s := v1.ConditionUnknown
