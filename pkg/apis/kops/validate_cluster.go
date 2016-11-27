@@ -18,11 +18,9 @@ package kops
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
-	"fmt"
-
-	//"github.com/golang/glog"
 	"k8s.io/kubernetes/pkg/api/v1"
 )
 
@@ -33,25 +31,25 @@ const (
 
 // A cluster to validate
 type ValidationCluster struct {
-	MastersReady         bool
-	MastersReadyArray    []*ValidationNode
-	MastersNotReadyArray []*ValidationNode
-	MastersCount         int
+	MastersReady         bool              `json:"mastersReady,omitempty"`
+	MastersReadyArray    []*ValidationNode `json:"mastersReadyArray,omitempty"`
+	MastersNotReadyArray []*ValidationNode `json:"mastersNotReadyArray,omitempty"`
+	MastersCount         int               `json:"mastersCount,omitempty"`
 
-	NodesReady         bool
-	NodesReadyArray    []*ValidationNode
-	NodesNotReadyArray []*ValidationNode
-	NodesCount         int
+	NodesReady         bool              `json:"nodesReady,omitempty"`
+	NodesReadyArray    []*ValidationNode `json:"nodesReadyArray,omitempty"`
+	NodesNotReadyArray []*ValidationNode `json:"nodesNotReadyArray,omitempty"`
+	NodesCount         int               `json:"nodesCount,omitempty"`
 
-	NodeList *v1.NodeList
+	NodeList *v1.NodeList `json:"nodeList,omitempty"`
 }
 
 // A K8s node to be validated
 type ValidationNode struct {
-	Zone     string
-	Role     string
-	Hostname string
-	Status   v1.ConditionStatus
+	Zone     string             `json:"zone,omitempty"`
+	Role     string             `json:"role,omitempty"`
+	Hostname string             `json:"hostname,omitempty"`
+	Status   v1.ConditionStatus `json:"status,omitempty"`
 }
 
 // ValidateClusterWithIg validate a k8s clsuter with a provided instance group list
@@ -59,6 +57,7 @@ func ValidateCluster(clusterName string, instanceGroupList *InstanceGroupList) (
 
 	var instanceGroups []*InstanceGroup
 	validationCluster := &ValidationCluster{}
+
 	for i := range instanceGroupList.Items {
 		ig := &instanceGroupList.Items[i]
 		instanceGroups = append(instanceGroups, ig)
@@ -89,7 +88,19 @@ func ValidateCluster(clusterName string, instanceGroupList *InstanceGroupList) (
 		return nil, fmt.Errorf("Cannot get nodes for %q: %v", clusterName, err)
 	}
 
+	return validateTheNodes(clusterName,validationCluster)
+
+}
+
+
+
+
+func validateTheNodes(clusterName string, validationCluster *ValidationCluster) (*ValidationCluster, error)  {
 	nodes := validationCluster.NodeList
+
+	if nodes == nil || nodes.Items == nil {
+		return validationCluster, errors.New("No nodes found in validationCluster")
+	}
 
 	for _, node := range nodes.Items {
 
@@ -143,16 +154,4 @@ func ValidateCluster(clusterName string, instanceGroupList *InstanceGroupList) (
 	} else {
 		return validationCluster, fmt.Errorf("You cluster is NOT ready %s", clusterName)
 	}
-}
-
-func GetNodeConditionStatus(nodeConditions []v1.NodeCondition) v1.ConditionStatus {
-	s := v1.ConditionUnknown
-	for _, element := range nodeConditions {
-		if element.Type == "Ready" {
-			s = element.Status
-			break
-		}
-	}
-	return s
-
 }

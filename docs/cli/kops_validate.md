@@ -1,14 +1,16 @@
-## kops edit instancegroup
+## kops validate
 
-Edit instancegroup
+validate a kubernetes cluster
 
 ### Synopsis
 
 
-Edit an instancegroup configuration.
+validate a kubernetes cluster
+
+### Options
 
 ```
-kops edit instancegroup
+  -o, --output string   output format.  One of: table, yaml (default "table")
 ```
 
 ### Options inherited from parent commands
@@ -27,5 +29,6 @@ kops edit instancegroup
 ```
 
 ### SEE ALSO
-* [kops edit](kops_edit.md)	 - edit items
+* [kops](kops.md)	 - kops is kubernetes ops
+* [kops validate cluster](kops_validate_cluster.md)	 - Validate cluster
 
