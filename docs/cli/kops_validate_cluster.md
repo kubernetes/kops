@@ -1,14 +1,14 @@
-## kops edit instancegroup
+## kops validate cluster
 
-Edit instancegroup
+Validate cluster
 
 ### Synopsis
 
 
-Edit an instancegroup configuration.
+Validate a kubernetes cluster
 
 ```
-kops edit instancegroup
+kops validate cluster
 ```
 
 ### Options inherited from parent commands
@@ -20,6 +20,7 @@ kops edit instancegroup
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster
+  -o, --output string                    output format.  One of: table, yaml (default "table")
       --state string                     Location of state storage (default "s3://oscar-ai-k8s-dev")
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
@@ -27,5 +28,5 @@ kops edit instancegroup
 ```
 
 ### SEE ALSO
-* [kops edit](kops_edit.md)	 - edit items
+* [kops validate](kops_validate.md)	 - validate a kubernetes cluster
 

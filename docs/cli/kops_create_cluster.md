@@ -25,18 +25,17 @@ kops create cluster
       --master-zones string         Zones in which to run masters (must be an odd number)
       --model string                Models to apply (separate multiple models with commas) (default "config,proto,cloudup")
       --network-cidr string         Set to override the default network CIDR
-      --networking string           Networking mode to use.  kubenet (default), classic, external, cni. (default "kubenet")
+      --networking string           Networking mode to use.  kubenet (default), classic, external, cni, kopeio-vxlan, weave. (default "kubenet")
       --node-count int              Set the number of nodes
       --node-size string            Set instance size for nodes
       --out string                  Path to write any local output
       --project string              Project to use (must be set on GCE)
       --ssh-public-key string       SSH public key to use (default "~/.ssh/id_rsa.pub")
       --target string               Target - direct, terraform (default "direct")
+  -t, --topology string             Controls network topology for the cluster. public|private. Default is 'public'. (default "public")
       --vpc string                  Set to use a shared VPC
       --yes                         Specify --yes to immediately create the cluster
       --zones string                Zones in which to run the cluster
-      --topology string             Specify --topology=[public|private] to enable/disable public/private networking for all master and nodes. Default is 'public'
-
 ```
 
 ### Options inherited from parent commands
@@ -48,7 +47,7 @@ kops create cluster
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster
-      --state string                     Location of state storage
+      --state string                     Location of state storage (default "s3://oscar-ai-k8s-dev")
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
@@ -56,3 +55,4 @@ kops create cluster
 
 ### SEE ALSO
 * [kops create](kops_create.md)	 - Create a resource by filename or stdin
+

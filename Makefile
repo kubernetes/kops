@@ -77,6 +77,7 @@ codegen: kops-gobindata
 
 test:
 	go test k8s.io/kops/upup/pkg/... -args -v=1 -logtostderr
+	go test k8s.io/kops/pkg/... -args -v=1 -logtostderr
 
 crossbuild:
 	mkdir -p .build/dist/
@@ -199,6 +200,7 @@ gofmt:
 	gofmt -w -s cmd/
 	gofmt -w -s examples/
 	gofmt -w -s federation/
+	gofmt -w -s pkg/
 	gofmt -w -s util/
 	gofmt -w -s upup/pkg/
 	gofmt -w -s pkg/
@@ -211,6 +213,7 @@ gofmt:
 govet:
 	go vet \
 	  k8s.io/kops/cmd/... \
+	  k8s.io/kops/pkg/... \
 	  k8s.io/kops/channels/... \
 	  k8s.io/kops/examples/... \
 	  k8s.io/kops/federation/... \

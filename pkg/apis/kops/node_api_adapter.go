@@ -344,6 +344,19 @@ func isNodeStatusDefined(node *v1.Node) error {
 	return nil
 }
 
+// Get The Status of a Node
+func GetNodeConditionStatus(nodeConditions []v1.NodeCondition) v1.ConditionStatus {
+	s := v1.ConditionUnknown
+	for _, element := range nodeConditions {
+		if element.Type == "Ready" {
+			s = element.Status
+			break
+		}
+	}
+	return s
+
+}
+
 // Node is ready if:
 // 1) it's Ready condition is set to true
 // 2) doesn't have NetworkUnavailable condition set to true
