@@ -32,7 +32,6 @@ import (
 
 // not used too much yet :)
 type ValidateClusterCmd struct {
-	FullSpec bool
 }
 
 var validateClusterCmd ValidateClusterCmd
@@ -53,29 +52,27 @@ func init() {
 	}
 
 	validateCmd.cobraCommand.AddCommand(cmd)
-
-	//cmd.Flags().BoolVar(&validateClusterCmd.FullSpec, "full", false, "Validate a cluster")
 }
 
-// Run a validation
+// Validate Your Kubernetes Cluster
 func (c *ValidateClusterCmd) Run(args []string) error {
 
 	err := rootCommand.ProcessArgs(args)
 	if err != nil {
-		return err
+		return fmt.Errorf("Process args filed %v", err)
 	}
 
 	cluster, err := rootCommand.Cluster()
 	if err != nil {
-		return err
+		return fmt.Errorf("Cannot get cluster for %v", err)
 	}
 
-	clientset, err := rootCommand.Clientset()
+	clientSet, err := rootCommand.Clientset()
 	if err != nil {
-		return err
+		return fmt.Errorf("Cannot get clientSet for %q: %v", cluster.Name, err)
 	}
 
-	list, err := clientset.InstanceGroups(cluster.Name).List(k8sapi.ListOptions{})
+	list, err := clientSet.InstanceGroups(cluster.Name).List(k8sapi.ListOptions{})
 	if err != nil {
 		return fmt.Errorf("Cannot get nodes for %q: %v", cluster.Name, err)
 	}
@@ -143,9 +140,8 @@ func (c *ValidateClusterCmd) Run(args []string) error {
 		return role
 	})
 
-	nodes := validationCluster.NodeList
 	fmt.Println("\nNODE STATUS")
-	err = t.Render(nodes.Items, os.Stdout, "NAME", "ROLE", "READY")
+	err = t.Render(validationCluster.NodeList.Items, os.Stdout, "NAME", "ROLE", "READY")
 
 	if err != nil {
 		return fmt.Errorf("Cannot render nodes for %q: %v", cluster.Name, err)
