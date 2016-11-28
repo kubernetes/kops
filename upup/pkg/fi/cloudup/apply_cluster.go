@@ -649,6 +649,7 @@ func validateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 		glog.V(2).Infof("Found NS records for %q: %v", dnsName, hosts)
 	}
 
+	// TODO: Move to update
 	if os.Getenv("KOPS_FF_SKIP_DNS_PRECREATE") == "" {
 		// We precreate some DNS names (where they don't exist), with a dummy IP address
 		// This avoids hitting negative TTL on DNS lookups, which tend to be very long
