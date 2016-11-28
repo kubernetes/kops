@@ -19,9 +19,9 @@ limitations under the License.
 package install
 
 import (
-	"k8s.io/kubernetes/pkg/apimachinery/announced"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
+	"k8s.io/kubernetes/pkg/apimachinery/announced"
 )
 
 func init() {
@@ -33,7 +33,7 @@ func init() {
 			AddInternalObjectsToScheme: kops.AddToScheme,
 		},
 		announced.VersionToSchemeFunc{
-			v1alpha1.SchemeGroupVersion.Version:       v1alpha1.AddToScheme,
+			v1alpha1.SchemeGroupVersion.Version: v1alpha1.AddToScheme,
 		},
 	).Announce().RegisterAndEnable(); err != nil {
 		panic(err)

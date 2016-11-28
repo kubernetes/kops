@@ -40,7 +40,7 @@ func newFederationVFS(c *VFSClientset) *FederationVFS {
 var _ simple.FederationInterface = &FederationVFS{}
 
 func (c *FederationVFS) Get(name string) (*api.Federation, error) {
-	o, err := c.get(name,)
+	o, err := c.get(name)
 	if err != nil {
 		return nil, err
 	}
