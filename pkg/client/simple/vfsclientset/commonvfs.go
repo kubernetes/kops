@@ -19,6 +19,7 @@ package vfsclientset
 import (
 	"bytes"
 	"fmt"
+	"github.com/golang/glog"
 	kops "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/api"
@@ -27,14 +28,13 @@ import (
 	"os"
 	"reflect"
 	"time"
-	"github.com/golang/glog"
 )
 
 type commonVFS struct {
-	kind      string
-	basePath vfs.Path
-	decoder runtime.Decoder
-	encoder runtime.Encoder
+	kind               string
+	basePath           vfs.Path
+	decoder            runtime.Decoder
+	encoder            runtime.Encoder
 	defaultReadVersion *unversioned.GroupVersionKind
 }
 
@@ -101,7 +101,7 @@ func (c *commonVFS) serialize(o runtime.Object) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-func (c*commonVFS) readConfig(configPath vfs.Path) (runtime.Object, error) {
+func (c *commonVFS) readConfig(configPath vfs.Path) (runtime.Object, error) {
 	data, err := configPath.ReadFile()
 	if err != nil {
 		if os.IsNotExist(err) {
