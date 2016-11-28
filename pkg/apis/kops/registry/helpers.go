@@ -18,8 +18,8 @@ package registry
 
 import (
 	"fmt"
-	"k8s.io/kops/pkg/client/simple"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/client/simple"
 )
 
 func CreateClusterConfig(clientset simple.Clientset, cluster *api.Cluster, groups []*api.InstanceGroup) error {
