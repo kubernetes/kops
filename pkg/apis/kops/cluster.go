@@ -23,7 +23,6 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"net"
-	"strconv"
 	"strings"
 )
 
@@ -464,9 +463,12 @@ func (z *ClusterZoneSpec) assignCIDR(c *Cluster) error {
 
 	if len(lastCharMap) == len(c.Spec.Zones) {
 		// Last char of zones are unique (GCE, AWS)
-		// At least on AWS, we also want 'a' to be 1, so that we don't collide with the lowest range,
+		// At least on AWS, we also want 'a' to end up as #1, so that we don't collide with the lowest range,
 		// because kube-up uses that range
 		index = int(z.Name[len(z.Name)-1])
+		if index >= 'a' {
+			index -= 'a'
+		}
 	} else {
 		glog.Warningf("Last char of zone names not unique")
 
@@ -485,41 +487,64 @@ func (z *ClusterZoneSpec) assignCIDR(c *Cluster) error {
 	if err != nil {
 		return fmt.Errorf("Invalid NetworkCIDR: %q", c.Spec.NetworkCIDR)
 	}
-	networkLength, _ := cidr.Mask.Size()
 
-	// We assume a maximum of 8 subnets per network
+	// We split the network range into 8 subnets
+	// But we then reserve the lowest one for the private block
+	// (and we split _that_ into 8 further subnets, leaving the first one unused/for future use)
+	// Note that this limits us to 7 zones
 	// TODO: Does this make sense on GCE?
 	// TODO: Should we limit this to say 1000 IPs per subnet? (any reason to?)
-	index = index%8 - 1
-	networkLength += 3
+	index = 1 + index%7
 
-	ip4 := cidr.IP.To4()
-	if ip4 != nil {
-		n := binary.BigEndian.Uint32(ip4)
-		n += uint32(index) << uint(32-networkLength)
-		subnetIP := make(net.IP, len(ip4))
-		binary.BigEndian.PutUint32(subnetIP, n)
-		subnetCIDR := subnetIP.String() + "/" + strconv.Itoa(networkLength)
-		z.CIDR = subnetCIDR
-		glog.V(2).Infof("Computed CIDR for subnet in zone %q as %q", z.Name, subnetCIDR)
-		glog.Infof("Assigned CIDR %s to zone %s", subnetCIDR, z.Name)
-
-		if needsPrivateBlock {
-			m := binary.BigEndian.Uint32(ip4)
-			// All Private CIDR blocks are at the end of our range
-			m += uint32(index+len(c.Spec.Zones)) << uint(32-networkLength)
-			privSubnetIp := make(net.IP, len(ip4))
-			binary.BigEndian.PutUint32(privSubnetIp, m)
-			privCIDR := privSubnetIp.String() + "/" + strconv.Itoa(networkLength)
-			z.PrivateCIDR = privCIDR
-			glog.V(2).Infof("Computed Private CIDR for subnet in zone %q as %q", z.Name, privCIDR)
-			glog.Infof("Assigned Private CIDR %s to zone %s", privCIDR, z.Name)
-		}
-
-		return nil
+	subnets, err := splitInto8Subnets(cidr)
+	if err != nil {
+		return err
 	}
 
-	return fmt.Errorf("Unexpected IP address type for NetworkCIDR: %s", c.Spec.NetworkCIDR)
+	privateSubnets, err := splitInto8Subnets(subnets[0])
+	if err != nil {
+		return err
+	}
+
+	subnetCIDR := subnets[index].String()
+	z.CIDR = subnetCIDR
+	glog.V(2).Infof("Computed CIDR for subnet in zone %q as %q", z.Name, subnetCIDR)
+	glog.Infof("Assigned CIDR %s to zone %s", subnetCIDR, z.Name)
+
+	if needsPrivateBlock {
+		privCIDR := privateSubnets[index].String()
+		z.PrivateCIDR = privCIDR
+		glog.V(2).Infof("Computed Private CIDR for subnet in zone %q as %q", z.Name, privCIDR)
+		glog.Infof("Assigned Private CIDR %s to zone %s", privCIDR, z.Name)
+	}
+
+	return nil
+}
+
+// splitInto8Subnets splits the parent IPNet into 8 subnets
+func splitInto8Subnets(parent *net.IPNet) ([]*net.IPNet, error) {
+	networkLength, _ := parent.Mask.Size()
+	networkLength += 3
+
+	var subnets []*net.IPNet
+	for i := 0; i < 8; i++ {
+		ip4 := parent.IP.To4()
+		if ip4 != nil {
+			n := binary.BigEndian.Uint32(ip4)
+			n += uint32(i) << uint(32-networkLength)
+			subnetIP := make(net.IP, len(ip4))
+			binary.BigEndian.PutUint32(subnetIP, n)
+
+			subnets = append(subnets, &net.IPNet{
+				IP:   subnetIP,
+				Mask: net.CIDRMask(networkLength, 32),
+			})
+		} else {
+			return nil, fmt.Errorf("Unexpected IP address type: %s", parent)
+		}
+	}
+
+	return subnets, nil
 }
 
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
