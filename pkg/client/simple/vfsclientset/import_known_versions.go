@@ -20,9 +20,9 @@ package vfsclientset
 import (
 	"fmt"
 
+	_ "k8s.io/kops/pkg/apis/kops/install"
 	_ "k8s.io/kubernetes/pkg/api/install"
 	"k8s.io/kubernetes/pkg/apimachinery/registered"
-	_ "k8s.io/kops/pkg/apis/kops/install"
 )
 
 func init() {

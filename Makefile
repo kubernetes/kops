@@ -201,6 +201,7 @@ gofmt:
 	gofmt -w -s federation/
 	gofmt -w -s util/
 	gofmt -w -s upup/pkg/
+	gofmt -w -s pkg/
 	gofmt -w -s protokube/cmd
 	gofmt -w -s protokube/pkg
 	gofmt -w -s dns-controller/cmd
