@@ -226,3 +226,6 @@
 [submodule "_vendor/github.com/dgrijalva/jwt-go"]
 	path = _vendor/github.com/dgrijalva/jwt-go
 	url = https://github.com/dgrijalva/jwt-go
+[submodule "_vendor/github.com/sergi/go-diff"]
+	path = _vendor/github.com/sergi/go-diff
+	url = https://github.com/sergi/go-diff.git
