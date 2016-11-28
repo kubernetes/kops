@@ -25,7 +25,7 @@ import (
 
 type KubeletConfig struct {
 	unversioned.TypeMeta `json:",inline"`
-	ObjectMeta    `json:"metadata,omitempty"`
+	ObjectMeta           `json:"metadata,omitempty"`
 
 	Spec ClusterSpec `json:"spec,omitempty"`
 }
@@ -392,6 +392,15 @@ type KubeAPIServerConfig struct {
     // for KubeAPIServer, concatenated with commas. ex: `--runtime-config=key1=value1,key2=value2`.
     // Use this to enable alpha resources on kube-apiserver
 	RuntimeConfig         map[string]string `json:"runtimeConfig,omitempty" flag:"runtime-config"`
+
+	OIDCIssuerURL     string  `json:"oidcIssuerURL,omitempty" flag:"oidc-issuer-url"`
+	OIDCUsernameClaim string  `json:"oidcUsernameClaim,omitempty" flag:"oidc-username-claim"`
+	OIDCClientID      string  `json:"oidcClientID,omitempty" flag:"oidc-client-id"`
+	OIDCCAFile        *string `json:"odicCA,omitempty" flag:"oidc-ca-file"`
+	OIDCGroupsClaim   *string `json:"oidcGroupsClaim,omitempty" flag:"oidc-groups-claim"`
+
+	AuthorizationMode          *string `json:"authorizationMode,omitempty" flag:"authorization-mode"`
+	AuthorizationRBACSuperUser *string `json:"authorizationRbacSuperUser,omitempty" flag:"authorization-rbac-super-user"`
 }
 
 type KubeControllerManagerConfig struct {
