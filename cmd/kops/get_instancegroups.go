@@ -112,7 +112,7 @@ func (c *GetInstanceGroupsCmd) Run(args []string) error {
 			return intPointerToString(c.Spec.MinSize)
 		})
 		t.AddColumn("MAX", func(c *api.InstanceGroup) string {
-			return intPointerToString(c.Spec.MinSize)
+			return intPointerToString(c.Spec.MaxSize)
 		})
 		return t.Render(instancegroups, os.Stdout, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "ZONES")
 	} else if output == OutputYaml {
