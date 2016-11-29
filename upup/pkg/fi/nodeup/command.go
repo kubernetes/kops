@@ -23,6 +23,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
@@ -37,7 +38,7 @@ import (
 )
 
 // We should probably retry for a long time - there is not really any great fallback
-const MaxAttemptsWithNoProgress = 100
+const MaxTaskDuration = 365 * 24 * time.Hour
 
 type NodeUpCommand struct {
 	config         *NodeUpConfig
@@ -230,7 +231,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 	defer context.Close()
 
-	err = context.RunTasks(MaxAttemptsWithNoProgress)
+	err = context.RunTasks(MaxTaskDuration)
 	if err != nil {
 		glog.Exitf("error running tasks: %v", err)
 	}
