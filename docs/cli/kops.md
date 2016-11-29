@@ -37,5 +37,6 @@ It allows you to create, destroy, upgrade and maintain clusters.
 * [kops toolbox](kops_toolbox.md)	 - Misc infrequently used commands
 * [kops update](kops_update.md)	 - update clusters
 * [kops upgrade](kops_upgrade.md)	 - upgrade clusters
+* [kops validate](kops_validate.md)	 - Validate Cluster
 * [kops version](kops_version.md)	 - Print the client version information
 
