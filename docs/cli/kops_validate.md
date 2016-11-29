@@ -1,17 +1,11 @@
 ## kops validate
 
-validate a kubernetes cluster
+Validate Cluster
 
 ### Synopsis
 
 
-validate a kubernetes cluster
-
-### Options
-
-```
-  -o, --output string   output format.  One of: table, yaml (default "table")
-```
+Validate a Kubernetes Cluster
 
 ### Options inherited from parent commands
 
