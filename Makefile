@@ -112,7 +112,7 @@ gcs-upload: version-dist
 	@echo "== Logging gcloud info =="
 	@gcloud info
 	@echo "== Uploading kops =="
-	gsutil -m rsync -r .build/upload/kops ${GCS_LOCATION}
+	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m rsync -r .build/upload/kops ${GCS_LOCATION}
 
 gcs-publish-ci: gcs-upload
 	echo "${GCS_URL}/${VERSION}" > .build/upload/${LATEST_FILE}
