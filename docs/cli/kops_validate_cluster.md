@@ -1,31 +1,14 @@
-## kops completion
+## kops validate cluster
 
-Output shell completion code for the given shell (bash)
+Validate cluster
 
 ### Synopsis
 
 
-Output shell completion code for the given shell (bash).
-
-This command prints shell code which must be evaluation to provide interactive
-completion of kops commands.
+Validate a kubernetes cluster
 
 ```
-kops completion
-```
-
-### Examples
-
-```
-
-# load in the kops completion code for bash (depends on the bash-completion framework).
-source <(kops completion bash)
-```
-
-### Options
-
-```
-      --shell string   target shell (bash).
+kops validate cluster
 ```
 
 ### Options inherited from parent commands
@@ -44,5 +27,5 @@ source <(kops completion bash)
 ```
 
 ### SEE ALSO
-* [kops](kops.md)	 - kops is kubernetes ops
+* [kops validate](kops_validate.md)	 - Validate Cluster
 
