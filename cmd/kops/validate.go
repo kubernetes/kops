@@ -31,8 +31,8 @@ var validateCmd = ValidateCmd{
 	cobraCommand: &cobra.Command{
 		Use:        "validate",
 		SuggestFor: []string{"list"},
-		Short:      "validate a kubernetes cluster",
-		Long:       `validate a kubernetes cluster`,
+		Short:      "Validate Cluster",
+		Long:       `Validate a Kubernetes Cluster`,
 	},
 }
 
@@ -40,6 +40,4 @@ func init() {
 	cmd := validateCmd.cobraCommand
 
 	rootCommand.AddCommand(cmd)
-
-	cmd.PersistentFlags().StringVarP(&validateCmd.output, "output", "o", OutputTable, "output format.  One of: table, yaml")
 }

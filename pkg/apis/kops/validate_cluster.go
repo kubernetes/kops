@@ -17,7 +17,6 @@ limitations under the License.
 package kops
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -69,7 +68,7 @@ func ValidateCluster(clusterName string, instanceGroupList *InstanceGroupList) (
 	}
 
 	if len(instanceGroups) == 0 {
-		return validationCluster, errors.New("No InstanceGroup objects found\n")
+		return validationCluster, fmt.Errorf("No InstanceGroup objects found\n")
 	}
 
 	nodeAA := &NodeAPIAdapter{}
@@ -88,18 +87,15 @@ func ValidateCluster(clusterName string, instanceGroupList *InstanceGroupList) (
 		return nil, fmt.Errorf("Cannot get nodes for %q: %v", clusterName, err)
 	}
 
-	return validateTheNodes(clusterName,validationCluster)
+	return validateTheNodes(clusterName, validationCluster)
 
 }
 
-
-
-
-func validateTheNodes(clusterName string, validationCluster *ValidationCluster) (*ValidationCluster, error)  {
+func validateTheNodes(clusterName string, validationCluster *ValidationCluster) (*ValidationCluster, error) {
 	nodes := validationCluster.NodeList
 
 	if nodes == nil || nodes.Items == nil {
-		return validationCluster, errors.New("No nodes found in validationCluster")
+		return validationCluster, fmt.Errorf("No nodes found in validationCluster")
 	}
 
 	for _, node := range nodes.Items {
@@ -152,6 +148,6 @@ func validateTheNodes(clusterName string, validationCluster *ValidationCluster) 
 	if validationCluster.MastersReady && validationCluster.NodesReady {
 		return validationCluster, nil
 	} else {
-		return validationCluster, fmt.Errorf("You cluster is NOT ready %s", clusterName)
+		return validationCluster, fmt.Errorf("Your cluster is NOT ready %s", clusterName)
 	}
 }

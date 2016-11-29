@@ -210,11 +210,9 @@ func dummyNode(nodeMap map[string]string) v1.Node {
 
 // MakeNodeList constructs api.NodeList from list of node names and a NodeResource.
 func makeNodeList(nodes []map[string]string) *v1.NodeList {
-	list := v1.NodeList{
-		Items: make([]v1.Node, len(nodes)),
-	}
-	for i := range nodes {
-		list.Items[i] = dummyNode(nodes[i])
+	var list v1.NodeList
+	for _, node := range nodes {
+		list.Items = append(list.Items, dummyNode(node))
 	}
 	return &list
 }
