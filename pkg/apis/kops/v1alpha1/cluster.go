@@ -137,6 +137,12 @@ type ClusterSpec struct {
 	//   missing: default policy (currently OS security upgrades that do not require a reboot)
 	UpdatePolicy *string `json:"updatePolicy,omitempty"`
 
+	// Install Helm
+	// Valid values:
+	//   'true' Install the tiller manifest to enable helm https://github.com/kubernetes/helm
+	//   'false' Don't install it
+	EnableHelm *bool `json:"enableHelm,omitempty"`
+
 	//HairpinMode                   string `json:",omitempty"`
 	//
 	//OpencontrailTag               string `json:",omitempty"`
