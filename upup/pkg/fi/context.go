@@ -18,12 +18,14 @@ package fi
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"io/ioutil"
-	"k8s.io/kops/util/pkg/vfs"
 	"os"
 	"reflect"
 	"strings"
+	"time"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 type Context struct {
@@ -64,11 +66,11 @@ func (c *Context) AllTasks() map[string]Task {
 	return c.tasks
 }
 
-func (c *Context) RunTasks(maxAttemptsWithNoProgress int) error {
+func (c *Context) RunTasks(maxTaskDuration time.Duration) error {
 	e := &executor{
 		context: c,
 	}
-	return e.RunTasks(c.tasks, maxAttemptsWithNoProgress)
+	return e.RunTasks(c.tasks, maxTaskDuration)
 }
 
 func (c *Context) Close() {
