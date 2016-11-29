@@ -59,7 +59,7 @@ func (c *ValidateClusterCmd) Run(args []string) error {
 
 	err := rootCommand.ProcessArgs(args)
 	if err != nil {
-		return fmt.Errorf("Process args filed %v", err)
+		return fmt.Errorf("Process args failed %v", err)
 	}
 
 	cluster, err := rootCommand.Cluster()
@@ -80,9 +80,8 @@ func (c *ValidateClusterCmd) Run(args []string) error {
 	fmt.Printf("Validating cluster %v\n\n", cluster.Name)
 
 	var instanceGroups []*api.InstanceGroup
-	for i := range list.Items {
-		ig := &list.Items[i]
-		instanceGroups = append(instanceGroups, ig)
+	for _, ig := range list.Items {
+		instanceGroups = append(instanceGroups, &ig)
 	}
 
 	if len(instanceGroups) == 0 {
@@ -158,7 +157,7 @@ func (c *ValidateClusterCmd) Run(args []string) error {
 		fmt.Printf("mastersCount %v, mastersReady %v", validationCluster.MastersCount, len(validationCluster.MastersReadyArray))
 		fmt.Printf("nodesNotReady %v", len(validationCluster.NodesNotReadyArray))
 		fmt.Printf("nodesCount %v, nodesReady %v", validationCluster.NodesCount, len(validationCluster.NodesReadyArray))
-		return fmt.Errorf("\nYou cluster %s is NOT ready.", cluster.Name)
+		return fmt.Errorf("\nYour cluster %s is NOT ready.", cluster.Name)
 	}
 
 }

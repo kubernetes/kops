@@ -163,8 +163,7 @@ func (nodeAA *NodeAPIAdapter) WaitForNodeToBe(conditionType v1.NodeConditionType
 			glog.V(4).Infof("Couldn't get node %s", nodeAA.nodeName)
 			continue
 		}
-		var iSet bool
-		iSet, err = IsNodeConditionSetAsExpected(node, conditionType, wantTrue)
+		iSet, err := IsNodeConditionSetAsExpected(node, conditionType, wantTrue)
 
 		if err != nil {
 			glog.V(4).Infof("IsNodeConditionSetAsExpected failed for node %s, %v", nodeAA.nodeName, err)
