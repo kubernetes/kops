@@ -47,21 +47,21 @@ type LoadBalancerCrossZoneLoadBalancing struct {
 	Enabled *bool
 }
 
+//go:generate fitask -type=LoadBalancerConnectionSettings
 type LoadBalancerConnectionSettings struct {
+	Name        *string
 	IdleTimeout *int64
 }
 
+//go:generate fitask -type=LoadBalancerAttributes
 type LoadBalancerAttributes struct {
+	Name                   *string
 	LoadBalancer           *LoadBalancer
 	AccessLog              *LoadBalancerAccessLog
 	AdditionalAttributes   []*LoadBalancerAdditionalAttribute
 	ConnectionDraining     *LoadBalancerConnectionDraining
 	ConnectionSettings     *LoadBalancerConnectionSettings
 	CrossZoneLoadBalancing *LoadBalancerCrossZoneLoadBalancing
-}
-
-func (e *LoadBalancerAttributes) String() string {
-	return fi.TaskAsString(e)
 }
 
 func findELBAttributes(cloud awsup.AWSCloud, name string) (*elb.LoadBalancerAttributes, error) {
@@ -135,6 +135,10 @@ func (e *LoadBalancerAttributes) Find(c *fi.Context) (*LoadBalancerAttributes, e
 }
 
 func (e *LoadBalancerAttributes) Run(c *fi.Context) error {
+	return fi.DefaultDeltaRunMethod(e, c)
+}
+
+func (e *LoadBalancerConnectionSettings) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

@@ -133,7 +133,6 @@ autoscalingGroup/bastion.{{ ClusterName }}:
 # the bastion DNS entry for it to be reachable from outside.
 # BastionPublicName --> Bastion LoadBalancer
 # ------------------------------------------------------------------------
-dnsZone/{{ .DNSZone }}: {}
 dnsName/{{ GetBastionDNS }}:
   Zone: dnsZone/{{ .DNSZone }}
   ResourceType: "A"
