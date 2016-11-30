@@ -21,6 +21,7 @@ import (
 	"net"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
@@ -44,7 +45,7 @@ const (
 	NodeUpVersion = "1.4.1"
 )
 
-const MaxAttemptsWithNoProgress = 3
+const MaxTaskDuration = 10 * time.Minute
 
 var CloudupModels = []string{"config", "proto", "cloudup"}
 
@@ -562,7 +563,7 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 	defer context.Close()
 
-	err = context.RunTasks(MaxAttemptsWithNoProgress)
+	err = context.RunTasks(MaxTaskDuration)
 	if err != nil {
 		return fmt.Errorf("error running tasks: %v", err)
 	}

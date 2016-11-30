@@ -30,7 +30,7 @@ const DefaultChannel = "stable"
 
 type Channel struct {
 	unversioned.TypeMeta `json:",inline"`
-	ObjectMeta    `json:"metadata,omitempty"`
+	ObjectMeta           `json:"metadata,omitempty"`
 
 	Spec ChannelSpec `json:"spec,omitempty"`
 }

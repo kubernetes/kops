@@ -23,7 +23,7 @@ import (
 
 var (
 	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
-	AddToScheme = SchemeBuilder.AddToScheme
+	AddToScheme   = SchemeBuilder.AddToScheme
 )
 
 // GroupName is the group name use in this package
