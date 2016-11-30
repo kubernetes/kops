@@ -73,11 +73,15 @@ rm kubernetes/kubernetes-src.tar.gz
 find kubernetes/server/bin -type f -name "*.tar" | xargs -I {} /bin/bash -c "sha1sum {} | cut -f1 -d ' ' > {}.sha1"
 find kubernetes/server/bin -type f -name "kube???" | xargs -I {} /bin/bash -c "sha1sum {} | cut -f1 -d ' ' > {}.sha1"
 
-aws s3 sync  --acl public-read  kubernetes/server/bin/ s3://${S3_BUCKET_NAME}/kubernetes/dev/bin/linux/amd64/
+aws s3 sync  --acl public-read  kubernetes/server/bin/ s3://${S3_BUCKET_NAME}/kubernetes/dev/v1.6.0-dev/bin/linux/amd64/
 ```
+
+(note the `v1.6.0-dev`: we insert a kubernetes version so that kops can
+automatically detect which k8s version is in use, which it uses to control
+flags that are not compatible between versions)
 
 Then:
 
-* `kops create cluster ... --kubernetes-version https://${S3_BUCKET_NAME}.s3.amazonaws.com/kubernetes/dev/`
+* `kops create cluster ... --kubernetes-version https://${S3_BUCKET_NAME}.s3.amazonaws.com/kubernetes/dev/v1.6.0-dev/`
 
-* for an existing cluster: `kops edit cluster` and set `KubernetesVersion` to `https://${S3_BUCKET_NAME}.s3.amazonaws.com/kubernetes/dev/`
+* for an existing cluster: `kops edit cluster` and set `KubernetesVersion` to `https://${S3_BUCKET_NAME}.s3.amazonaws.com/kubernetes/dev/v1.6.0-dev/`
