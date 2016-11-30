@@ -30,7 +30,7 @@ MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
 DNS_CONTROLLER_TAG=1.4.1
-PROTOKUBE_TAG=1.4.0
+PROTOKUBE_TAG=1.4.1
 
 ifndef VERSION
   VERSION := git-$(shell git describe --always)
@@ -77,6 +77,7 @@ codegen: kops-gobindata
 
 test:
 	go test k8s.io/kops/upup/pkg/... -args -v=1 -logtostderr
+	go test k8s.io/kops/pkg/... -args -v=1 -logtostderr
 
 crossbuild:
 	mkdir -p .build/dist/
@@ -112,7 +113,7 @@ gcs-upload: version-dist
 	@echo "== Logging gcloud info =="
 	@gcloud info
 	@echo "== Uploading kops =="
-	gsutil -m rsync -r .build/upload/kops ${GCS_LOCATION}
+	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r .build/upload/kops/* ${GCS_LOCATION}
 
 gcs-publish-ci: gcs-upload
 	echo "${GCS_URL}/${VERSION}" > .build/upload/${LATEST_FILE}
@@ -199,8 +200,10 @@ gofmt:
 	gofmt -w -s cmd/
 	gofmt -w -s examples/
 	gofmt -w -s federation/
+	gofmt -w -s pkg/
 	gofmt -w -s util/
 	gofmt -w -s upup/pkg/
+	gofmt -w -s pkg/
 	gofmt -w -s protokube/cmd
 	gofmt -w -s protokube/pkg
 	gofmt -w -s dns-controller/cmd
@@ -210,6 +213,7 @@ gofmt:
 govet:
 	go vet \
 	  k8s.io/kops/cmd/... \
+	  k8s.io/kops/pkg/... \
 	  k8s.io/kops/channels/... \
 	  k8s.io/kops/examples/... \
 	  k8s.io/kops/federation/... \

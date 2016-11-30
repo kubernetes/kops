@@ -20,18 +20,15 @@ import (
 	"fmt"
 
 	"encoding/base64"
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
-	"strings"
-	"time"
 )
-
-const IAMPropagationRetryAttempts = 30
-const IAMPropagationRetryInterval = 10 * time.Second
 
 //go:generate fitask -type=LaunchConfiguration
 type LaunchConfiguration struct {
@@ -287,15 +284,7 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 		if awsup.AWSErrorCode(err) == "ValidationError" {
 			message := awsup.AWSErrorMessage(err)
 			if strings.Contains(message, "not authorized") || strings.Contains(message, "Invalid IamInstance") {
-				if attempt == IAMPropagationRetryAttempts {
-					// IAM instance profile creation is notoriously async
-					return fmt.Errorf("IAM instance profile not yet created/propagated")
-				} else {
-					glog.Infof("Waiting for IAM to replicate")
-					glog.V(2).Infof("IAM error was %v", err)
-					time.Sleep(IAMPropagationRetryInterval)
-					continue
-				}
+				return fmt.Errorf("IAM instance profile not yet created/propagated (original error: %v)", message)
 			}
 			glog.V(4).Infof("ErrorCode=%q, Message=%q", awsup.AWSErrorCode(err), awsup.AWSErrorMessage(err))
 			return fmt.Errorf("error creating AutoscalingLaunchConfiguration: %v", err)

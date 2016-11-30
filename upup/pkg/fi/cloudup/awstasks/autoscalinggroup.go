@@ -19,15 +19,16 @@ package awstasks
 import (
 	"fmt"
 
+	"reflect"
+	"sort"
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
-	"reflect"
-	"sort"
-	"strings"
 )
 
 //go:generate fitask -type=AutoscalingGroup
@@ -56,6 +57,15 @@ func findAutoscalingGroup(cloud awsup.AWSCloud, name string) (*autoscaling.Group
 	var found []*autoscaling.Group
 	err := cloud.Autoscaling().DescribeAutoScalingGroupsPages(request, func(p *autoscaling.DescribeAutoScalingGroupsOutput, lastPage bool) (shouldContinue bool) {
 		for _, g := range p.AutoScalingGroups {
+			// Check for "Delete in progress" (the only use of
+			// .Status). We won't be able to update or create while
+			// this is true, but filtering it out here makes the error
+			// messages slightly clearer.
+			if g.Status != nil {
+				glog.Warningf("Skipping AutoScalingGroup %v: %v", *g.AutoScalingGroupName, *g.Status)
+				continue
+			}
+
 			if aws.StringValue(g.AutoScalingGroupName) == name {
 				found = append(found, g)
 			} else {

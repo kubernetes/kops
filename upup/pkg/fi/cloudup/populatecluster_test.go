@@ -28,6 +28,7 @@ import (
 func buildMinimalCluster() *api.Cluster {
 	c := &api.Cluster{}
 	c.Name = "testcluster.test.com"
+	c.Spec.KubernetesVersion = "1.4.6"
 	c.Spec.Zones = []*api.ClusterZoneSpec{
 		{Name: "us-mock-1a", CIDR: "172.20.1.0/24"},
 		{Name: "us-mock-1b", CIDR: "172.20.2.0/24"},

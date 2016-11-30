@@ -14,22 +14,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package kops
+package main
 
-const (
-	TopologyPublic  = "public"
-	TopologyPrivate = "private"
+import (
+	"github.com/spf13/cobra"
 )
 
-type TopologySpec struct {
-	// The environment to launch the Kubernetes masters in public|private
-	Masters string `json:"masters,omitempty"`
+// ValidateCmd represents the get command
+type ValidateCmd struct {
+	output string
 
-	// The environment to launch the Kubernetes nodes in public|private
-	Nodes string `json:"nodes,omitempty"`
+	cobraCommand *cobra.Command
+}
 
-	// Controls if a private topology should deploy a bastion host or not
-	// The bastion host is designed to be a simple, and secure bridge between
-	// the public subnet and the private subnet
-	BypassBastion bool `json:"bypassBastion,omitempty"`
+var validateCmd = ValidateCmd{
+	cobraCommand: &cobra.Command{
+		Use:        "validate",
+		SuggestFor: []string{"list"},
+		Short:      "Validate Cluster",
+		Long:       `Validate a Kubernetes Cluster`,
+	},
+}
+
+func init() {
+	cmd := validateCmd.cobraCommand
+
+	rootCommand.AddCommand(cmd)
 }

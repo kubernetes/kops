@@ -9,3 +9,7 @@ managedFile/{{ ClusterName }}-addons-bootstrap-core:
 managedFile/{{ ClusterName }}-addons-bootstrap-dns-controller:
   location: addons/dns-controller/v1.4.1.yaml
   contents: resources/addons/dns-controller/v1.4.1.yaml
+
+managedFile/{{ ClusterName }}-addons-limit-range:
+  location: addons/limit-range/v1.5.0.yaml
+  contents: resources/addons/limit-range/v1.5.0.yaml
