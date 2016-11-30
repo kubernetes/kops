@@ -19,18 +19,19 @@ package nodeup
 import (
 	"encoding/base64"
 	"fmt"
+	"text/template"
+
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/util/sets"
-	"text/template"
 )
 
 const TagMaster = "_kubernetes_master"
 
-const DefaultProtokubeImage = "kope/protokube:1.4"
+const DefaultProtokubeImage = "b.gcr.io/kops-images/protokube:1.4.1"
 
 // templateFunctions is a simple helper-class for the functions accessible to templates
 type templateFunctions struct {
