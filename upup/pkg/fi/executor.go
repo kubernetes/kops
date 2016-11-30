@@ -18,10 +18,11 @@ package fi
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/golang/glog"
 )
 
 type executor struct {
@@ -32,12 +33,14 @@ type taskState struct {
 	done         bool
 	key          string
 	task         Task
+	deadline     time.Time
+	lastError    error
 	dependencies []*taskState
 }
 
 // RunTasks executes all the tasks, considering their dependencies
 // It will perform some re-execution on error, retrying as long as progress is still being made
-func (e *executor) RunTasks(taskMap map[string]Task, maxAttemptsWithNoProgress int) error {
+func (e *executor) RunTasks(taskMap map[string]Task, maxTaskDuration time.Duration) error {
 	dependencies := FindTaskDependencies(taskMap)
 
 	taskStates := make(map[string]*taskState)
@@ -60,7 +63,6 @@ func (e *executor) RunTasks(taskMap map[string]Task, maxAttemptsWithNoProgress i
 		}
 	}
 
-	noProgressCount := 0
 	for {
 		var canRun []*taskState
 		doneCount := 0
@@ -77,6 +79,11 @@ func (e *executor) RunTasks(taskMap map[string]Task, maxAttemptsWithNoProgress i
 				}
 			}
 			if ready {
+				if ts.deadline.IsZero() {
+					ts.deadline = time.Now().Add(maxTaskDuration)
+				} else if time.Now().After(ts.deadline) {
+					return fmt.Errorf("deadline exceeded executing task %v. Example error: %v", ts.key, ts.lastError)
+				}
 				canRun = append(canRun, ts)
 			}
 		}
@@ -93,33 +100,28 @@ func (e *executor) RunTasks(taskMap map[string]Task, maxAttemptsWithNoProgress i
 			tasks = append(tasks, ts)
 		}
 
-		errors := e.forkJoin(tasks)
-		for i, err := range errors {
+		taskErrors := e.forkJoin(tasks)
+		var errors []error
+		for i, err := range taskErrors {
 			ts := tasks[i]
 			if err != nil {
-				glog.Warningf("error running task %q: %v", ts.key, err)
+				glog.Warningf("error running task %q (%v remaining to succeed): %v", ts.key, ts.deadline.Sub(time.Now()), err)
 				errors = append(errors, err)
+				ts.lastError = err
 			} else {
 				ts.done = true
+				ts.lastError = nil
 				progress = true
 			}
 		}
 
 		if !progress {
-			if len(errors) != 0 {
-				noProgressCount++
-				if noProgressCount == maxAttemptsWithNoProgress {
-					return fmt.Errorf("did not make any progress executing task.  Example error: %v", errors[0])
-				} else {
-					glog.Infof("No progress made, sleeping before retrying failed tasks")
-					time.Sleep(10 * time.Second)
-				}
-			} else {
+			if len(errors) == 0 {
 				// Logic error!
 				panic("did not make progress executing tasks; but no errors reported")
 			}
-		} else {
-			noProgressCount = 0
+			glog.Infof("No progress made, sleeping before retrying %d failed task(s)", len(errors))
+			time.Sleep(10 * time.Second)
 		}
 	}
 

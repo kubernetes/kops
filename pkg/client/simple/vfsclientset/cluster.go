@@ -21,6 +21,7 @@ import (
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/util/pkg/vfs"
 	k8sapi "k8s.io/kubernetes/pkg/api"
@@ -28,14 +29,13 @@ import (
 	"os"
 	"strings"
 	"time"
-	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 )
 
 type ClusterVFS struct {
 	commonVFS
 }
 
-func newClusterVFS(basePath vfs.Path) (*ClusterVFS) {
+func newClusterVFS(basePath vfs.Path) *ClusterVFS {
 	c := &ClusterVFS{}
 	c.init("Cluster", basePath, v1alpha1.SchemeGroupVersion)
 	defaultReadVersion := v1alpha1.SchemeGroupVersion.WithKind("Cluster")

@@ -287,23 +287,34 @@ func (c *Cluster) Validate(strict bool) error {
 		if strict && c.Spec.MasterKubelet.APIServers == "" {
 			return field.Required(masterKubeletPath.Child("APIServers"), "")
 		}
-		if c.Spec.Kubelet.APIServers != "" && !isValidAPIServersURL(c.Spec.MasterKubelet.APIServers) {
+		if c.Spec.MasterKubelet.APIServers != "" && !isValidAPIServersURL(c.Spec.MasterKubelet.APIServers) {
 			return field.Invalid(masterKubeletPath.Child("APIServers"), c.Spec.MasterKubelet.APIServers, "Not a valid APIServer URL")
 		}
 	}
 
 	// Topology support
+	if c.Spec.Topology == nil {
+		// This is a case of an older cluster making changes with newer code.. Adding this in for backwards
+		// compatibility.. Putting this in validation because it can be called from a few places in the code
+		// base.. all of which make the assumption that the validation should work for their current
+		// representation of the cluster..
+		// @kris-nova
+		// #960
+		// #943
+		c.Spec.Topology = &TopologySpec{Masters: TopologyPublic, Nodes: TopologyPublic}
+	}
+
 	if c.Spec.Topology.Masters != "" && c.Spec.Topology.Nodes != "" {
 		if c.Spec.Topology.Masters != TopologyPublic && c.Spec.Topology.Masters != TopologyPrivate {
 			return fmt.Errorf("Invalid Masters value for Topology")
 		} else if c.Spec.Topology.Nodes != TopologyPublic && c.Spec.Topology.Nodes != TopologyPrivate {
 			return fmt.Errorf("Invalid Nodes value for Topology")
-		// Until we support other topologies - these must match
+			// Until we support other topologies - these must match
 		} else if c.Spec.Topology.Masters != c.Spec.Topology.Nodes {
 			return fmt.Errorf("Topology Nodes must match Topology Masters")
 		}
 
-	}else{
+	} else {
 		return fmt.Errorf("Topology requires non-nil values for Masters and Nodes")
 	}
 
