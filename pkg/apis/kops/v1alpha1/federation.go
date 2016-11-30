@@ -22,7 +22,7 @@ import (
 
 type Federation struct {
 	unversioned.TypeMeta `json:",inline"`
-	ObjectMeta    `json:"metadata,omitempty"`
+	ObjectMeta           `json:"metadata,omitempty"`
 
 	Spec FederationSpec `json:"spec"`
 }
@@ -31,7 +31,7 @@ type FederationSpec struct {
 	Controllers []string `json:"controllers,omitempty"`
 	Members     []string `json:"members,omitempty"`
 
-	DNSName     string `json:"dnsName,omitempty"`
+	DNSName string `json:"dnsName,omitempty"`
 }
 
 type FederationList struct {
