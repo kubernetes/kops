@@ -1,39 +1,39 @@
-This is an overview of how we added a feature:
+## Adding a Feature
 
-To make auto-upgrading on the nodes an option.
+###Making auto-upgrading on the nodes an option
 
-Auto-upgrades are configured by nodeup.  nodeup is driven by the nodeup model (which is at [upup/models/nodeup/](https://github.com/kubernetes/kops/tree/master/upup/models/nodeup) )
+Auto-upgrades are configured by nodeup, which is driven by the nodeup model (which is at [upup/models/nodeup/](https://github.com/kubernetes/kops/tree/master/upup/models/nodeup))
 
-Inside the nodeup model there are folders which serve three roles:
 
-1) A folder with a well-known name means that items under that folder are treated as items of that type:
 
-* files
-* packages
-* services
+####Inside the nodeup model there are folders which serve three roles:
+
+1) A folder with a well-known name means that items in that folder are treated as items of that type, such as files, 		packages, or services.
 
 2) A folder starting with an underscore is a tag: nodeup will only descend into that folder if a tag with
-the same name is configured.
+	   the same name is configured.
 
 3) Remaining folders are just structural, for organization.
 
-So auto-upgrades are currently always enabled, so the folder `auto-upgrades` configures them.
 
-To make auto-upgrades option, we will rename it to a "tag" folder (`_automatic_upgrades`), and then plumb through
+
+
+Auto-upgrades are currently always enabled, so the folder `auto-upgrades` configures them.
+
+To make auto-upgrades an option, we rename it to a "tag" folder (`_automatic_upgrades`), and then plumb through
 the tag.  The rename is a simple file rename.
 
-## Passing the `_automatic_upgrades` tag to nodeup
+## Passing the `_automatic_upgrades` Tag to Nodeup
 
-Tags reach nodeup from the `NodeUpConfig`.  And this is in turn populated by the `RenderNodeUpConfig` template function,
+Tags reach nodeup from the `NodeUpConfig`.  This is in turn is populated by the `RenderNodeUpConfig` template function,
 in `apply_cluster.go`.
 
-(`RenderNodeUpConfig` is called inline from the instance startup script on AWS, in a heredoc.  On GCE,
-it is rendered into its own resource, because GCE supports multiple resources for an instance)
+`RenderNodeUpConfig` is called inline from the instance startup script on AWS in a heredoc.  On GCE
+it is rendered into its own resource, because GCE supports multiple resources for an instance.
 
 If you look at the code for RenderNodeUpConfig, you can see that it in turn gets the tags by calling `buildNodeupTags`.
 
-We want to make this optional, and it doesn't really make sense to have automatic upgrades at the instance group level:
-either you trust upgrades or you don't.  At least that's a working theory; if we need to go the other way later we can
+We want to make this optional and it doesn't really make sense to have automatic upgrades at the instance group level; either you trust upgrades or you don't.  At least that's a working theory; if we need to go the other way later we can
 easily use the cluster value as the default.
 
 So we need to add a field to ClusterSpec:
@@ -54,28 +54,28 @@ A few things to note here:
 for strings than it is for booleans, where false can be very different from unset.
 
 * We only define the value we care about for no - `external` to disable upgrades.  We could probably define an
-actual value for enabled upgrades, but it isn't yet clear what that policy should be or what it should be called,
+actual value for enabled upgrades, but it isn't clear yet what that policy should be or what it should be called,
 so we leave the nil value as meaning "default policy, whatever it may be in future".
 
 
-So, we just need to check if `UpdatePolicy` is not nil and == `external`; we add the tag `_automatic_upgrades`,
+So, we just need to check if `UpdatePolicy` is not nil and == `external`.  We add the tag `_automatic_upgrades`,
 which enabled automatic upgrades, only if that is _not_ the case!
 
-## How it works
+## How it Works
 
-Everything is driven by a local configuration directory tree, called the "model".  The model represents
+Everything is driven by a local configuration directory tree called the "model".  The model represents
 the desired state of the world.
 
 Each file in the tree describes a Task.
 
-On the nodeup side, Tasks can manage files, systemd services, packages etc.
+On the nodeup side, Tasks can manage files, system services, packages etc.
 On the `kops update cluster` side, Tasks manage cloud resources: instances, networks, disks etc.
 
 ## Validation
 
-We should add some validation that the value entered is valid.  We only accept nil or `external` right now.
+We should add some validation that the value entered is valid.  We currently only accept nil or `external`.
 
-Validation is done in validation.go, and is fairly simple - we just return an error if something is not valid:
+Validation is done in validation.go and is fairly simple - we just return an error if something is not valid:
 
 ```
 	// UpdatePolicy
@@ -110,7 +110,7 @@ func TestValidateFull_UpdatePolicy_Invalid(t *testing.T) {
 ```
 
 
-And we should test the nodeup tag building:
+We should also test the nodeup tag building:
 
 ```
 func TestBuildTags_UpdatePolicy_Nil(t *testing.T) {
@@ -179,15 +179,15 @@ Additionally, consider adding documentation of your new feature to the docs in [
 ## Testing
 
 
-You can `make` and run `kops` locally.  But `nodeup` is pulled from an S3 bucket.
+You can `make` and run `kops` locally, but `nodeup` is pulled from an S3 bucket.
 
-To rapidly test a nodeup change, you can build it, scp it to a running machine, and
+To rapidly test a nodeup change you can build it, scp it to a running machine, and
 run it over SSH with the output viewable locally:
 
 `make push-aws-run TARGET=admin@<publicip>`
 
 
-For more complete testing though, you will likely want to do a private build of
+For more complete testing, you will likely want to do a private build of
 nodeup and launch a cluster from scratch.
 
 To do this, you can repoint the nodeup source url by setting the `NODEUP_URL` env var,
@@ -204,20 +204,19 @@ kops create cluster <clustername> --zones us-east-1b
 ...
 ```
 
-## Using the feature
+## Using the Feature
 
-Users would simply `kops edit cluster`, and add a value like:
+Users would simply execute `kops edit cluster` and add a value like:
 ```
   spec:
     updatePolicy: external
 ```
 
-Then `kops update cluster --yes` would create the new NodeUpConfig, which is included in the instance startup script
-and thus requires a new LaunchConfiguration, and thus a `kops rolling update`.  We're working on changing settings
-without requiring a reboot, but likely for this particular setting it isn't the sort of thing you need to change
+Then `kops update cluster --yes` would create the new NodeUpConfig, which is included in the instance startup script.
+It requires a new LaunchConfiguration and thus a `kops rolling update`.  We're working on changing settings
+without requiring a reboot, but it is likely that for this particular setting it isn't the sort of thing you need to change
 very often.
 
-## Other steps
+## Other Steps
 
-* We could also create a CLI flag on `create cluster`.  This doesn't seem worth it in this case; this is a relatively advanced option
-for people that already have an external software update mechanism.  All the flag would do is save the default.
+We could also create a CLI flag on `create cluster`.  This doesn't seem worth it in this case; this is a relatively advanced option for people that already have an external software update mechanism.  All the flag would do is save the default.

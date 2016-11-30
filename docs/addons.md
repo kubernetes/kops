@@ -1,8 +1,8 @@
-## Installing Kubernetes Addons
+# Installing Kubernetes Addons
 
-With kops you manage addons by using kubectl.
+With kops addons are managed by using kubectl.
 
-Addons in kubernetes are traditionally done by copying files to `/etc/kubernetes/addons` on the master.  But this
+Addons in kubernetes are traditionally done by copying files to `/etc/kubernetes/addons` on the master.  However, this
 doesn't really make sense in HA master configurations.  We also have kubectl available, and addons is just a thin
 wrapper over calling kubectl.
 
@@ -17,7 +17,7 @@ Install using:
 kubectl create -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.4.0.yaml
 ```
 
-And then navigate to `https://api.<clustername>/ui`
+Then navigate to `https://api.<clustername>/ui`
 
 (`/ui` is an alias to `https://<clustername>/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard`)
 
