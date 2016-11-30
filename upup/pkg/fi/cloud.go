@@ -103,6 +103,9 @@ var zonesToCloud = map[string]CloudProviderID{
 	"sa-east-1c": CloudProviderAWS,
 	"sa-east-1d": CloudProviderAWS,
 	"sa-east-1e": CloudProviderAWS,
+
+	"cn-north-1a": CloudProviderAWS,
+	"cn-north-1b": CloudProviderAWS,
 }
 
 // GuessCloudForZone tries to infer the cloudprovider from the zone name

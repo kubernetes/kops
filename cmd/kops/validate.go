@@ -14,29 +14,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package main
 
 import (
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"github.com/spf13/cobra"
 )
 
-type Federation struct {
-	unversioned.TypeMeta `json:",inline"`
-	ObjectMeta           `json:"metadata,omitempty"`
+// ValidateCmd represents the get command
+type ValidateCmd struct {
+	output string
 
-	Spec FederationSpec `json:"spec"`
+	cobraCommand *cobra.Command
 }
 
-type FederationSpec struct {
-	Controllers []string `json:"controllers,omitempty"`
-	Members     []string `json:"members,omitempty"`
-
-	DNSName string `json:"dnsName,omitempty"`
+var validateCmd = ValidateCmd{
+	cobraCommand: &cobra.Command{
+		Use:        "validate",
+		SuggestFor: []string{"list"},
+		Short:      "Validate Cluster",
+		Long:       `Validate a Kubernetes Cluster`,
+	},
 }
 
-type FederationList struct {
-	unversioned.TypeMeta `json:",inline"`
-	unversioned.ListMeta `json:"metadata,omitempty"`
+func init() {
+	cmd := validateCmd.cobraCommand
 
-	Items []Federation `json:"items"`
+	rootCommand.AddCommand(cmd)
 }
