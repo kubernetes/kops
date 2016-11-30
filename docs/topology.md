@@ -36,10 +36,26 @@ kops create cluster ... --topology public|private
 
 # Troubleshooting
 
-- Right now we require `-networking cni` for all private topologies.
-- Right now a manual install of weave is required for private topologies.
-- Right now upgrading from a public cluster to a private cluster is considered very **experimental**
+### 1) Unable to forward agent to master via bastion
+
+Verify your local agent is configured correctly
 
 ```
-kubectl create -f https://git.io/weave-kube
+$ ssh-add -L
+ssh-rsa <PUBLIC_RSA_HASH> /Users/kris/.ssh/id_rsa
+```
+
+If that command returns no results, add the agent to `ssh-agent`
+
+```
+ssh-add ~/.ssh/id_rsa
+```
+
+Check the agent is now added using `ssh-add -L`
+
+SSH into the bastion, then into a master
+
+```
+ssh -A admin@<bastion_elb_a_record>
+ssh admin@<master_ip>
 ```
