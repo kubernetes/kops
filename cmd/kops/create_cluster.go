@@ -386,27 +386,35 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 	// Network Topology
 	switch c.Topology {
 	case api.TopologyPublic:
-		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPublic, Nodes: api.TopologyPublic}
-		cluster.Spec.Bastion = &api.BastionSpec{Enable: c.Bastion}
+		cluster.Spec.Topology = &api.TopologySpec{
+			Masters: api.TopologyPublic,
+			Nodes:   api.TopologyPublic,
+			Bastion: &api.BastionSpec{Enable: c.Bastion},
+		}
 	case api.TopologyPrivate:
 		if !supportsPrivateTopology(cluster.Spec.Networking) {
 			return fmt.Errorf("Invalid networking option %s. Currently only '--networking cni', '--networking kopeio-vxlan', '--networking weave' are supported for private topologies", c.Networking)
 		}
-		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPrivate, Nodes: api.TopologyPrivate}
-		if cmd.Flags().Changed("Bastion") {
-			cluster.Spec.Bastion = &api.BastionSpec{Enable: c.Bastion}
-		} else {
-			cluster.Spec.Bastion = &api.BastionSpec{Enable: true}
+		cluster.Spec.Topology = &api.TopologySpec{
+			Masters: api.TopologyPrivate,
+			Nodes:   api.TopologyPrivate,
 		}
+		if cmd.Flags().Changed("Bastion") {
+			cluster.Spec.Topology.Bastion = &api.BastionSpec{Enable: c.Bastion}
+		} else {
+			cluster.Spec.Topology.Bastion = &api.BastionSpec{Enable: true}
+		}
+		cluster.Spec.Topology.Bastion.MachineType = cloudup.DefaultBastionMachineType(cluster)
 	case "":
 		glog.Warningf("Empty topology. Defaulting to public topology without bastion")
-		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPublic, Nodes: api.TopologyPublic}
-		cluster.Spec.Bastion = &api.BastionSpec{Enable: false}
+		cluster.Spec.Topology = &api.TopologySpec{
+			Masters: api.TopologyPublic,
+			Nodes:   api.TopologyPublic,
+			Bastion: &api.BastionSpec{Enable: false},
+		}
 	default:
 		return fmt.Errorf("Invalid topology %s.", c.Topology)
 	}
-
-	cluster.Spec.Bastion.MachineType = cloudup.DefaultBastionMachineType(cluster)
 
 	sshPublicKeys := make(map[string][]byte)
 	if c.SSHPublicKey != "" {

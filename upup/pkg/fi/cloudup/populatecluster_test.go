@@ -40,7 +40,7 @@ func buildMinimalCluster() *api.Cluster {
 		Masters: api.TopologyPublic,
 		Nodes:   api.TopologyPublic,
 	}
-	c.Spec.Bastion = &api.BastionSpec{
+	c.Spec.Topology.Bastion = &api.BastionSpec{
 		Enable: false,
 	}
 	c.Spec.NetworkCIDR = "172.20.0.0/16"
@@ -48,7 +48,7 @@ func buildMinimalCluster() *api.Cluster {
 	c.Spec.CloudProvider = "aws"
 
 	// Default bastion
-	c.Spec.Bastion = &api.BastionSpec{
+	c.Spec.Topology.Bastion = &api.BastionSpec{
 		Enable: false,
 	}
 
@@ -323,7 +323,7 @@ func TestPopulateCluster_BastionInvalidMatchingValues_Required(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.Topology.Masters = api.TopologyPublic
 	c.Spec.Topology.Nodes = api.TopologyPublic
-	c.Spec.Bastion.Enable = true
+	c.Spec.Topology.Bastion.Enable = true
 	expectErrorFromPopulateCluster(t, c, "Bastion")
 }
 
@@ -331,8 +331,8 @@ func TestPopulateCluster_BastionMachineTypeInvalidNil_Required(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.Topology.Masters = api.TopologyPrivate
 	c.Spec.Topology.Nodes = api.TopologyPrivate
-	c.Spec.Bastion.Enable = true
-	c.Spec.Bastion.MachineType = ""
+	c.Spec.Topology.Bastion.Enable = true
+	c.Spec.Topology.Bastion.MachineType = ""
 	expectErrorFromPopulateCluster(t, c, "Bastion")
 }
 

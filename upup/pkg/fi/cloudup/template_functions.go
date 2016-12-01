@@ -187,11 +187,11 @@ func (tf *TemplateFunctions) IsTopologyPrivateMasters() bool {
 }
 
 func (tf *TemplateFunctions) WithBastion() bool {
-	return tf.cluster.Spec.Bastion.Enable
+	return tf.cluster.Spec.Topology.Bastion.Enable
 }
 
 func (tf *TemplateFunctions) IsBastionDNS() bool {
-	if tf.cluster.Spec.Bastion.PublicName != "" {
+	if tf.cluster.Spec.Topology.Bastion.PublicName != "" {
 		return false
 	} else {
 		return true
