@@ -45,7 +45,7 @@ kops update cluster ${CLUSTER_NAME}
 Review the changes to make sure they are OK -  the Kubernetes settings might not be ones you want on a shared VPC (in which case,
 open an issue!)
 
-There is currently a [bug[(https://github.com/kubernetes/kops/issues/476) where kops will tell you that it will modify the VPC and InternetGateway names:
+There is currently a [bug](https://github.com/kubernetes/kops/issues/476) where kops will tell you that it will modify the VPC and InternetGateway names:
 
 ```
 Will modify resources:
