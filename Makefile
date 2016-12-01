@@ -78,6 +78,7 @@ codegen: kops-gobindata
 test:
 	go test k8s.io/kops/upup/pkg/... -args -v=1 -logtostderr
 	go test k8s.io/kops/pkg/... -args -v=1 -logtostderr
+	go test k8s.io/kops/dns-controller/pkg/... -args -v=1 -logtostderr
 
 crossbuild:
 	mkdir -p .build/dist/
