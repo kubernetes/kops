@@ -220,7 +220,7 @@ func (c *populateClusterSpec) run() error {
 	// We want topology to pass through
 	// Otherwise we were losing the pointer
 	cluster.Spec.Topology = c.InputCluster.Spec.Topology
-	cluster.Spec.Bastion = c.InputCluster.Spec.Bastion
+	cluster.Spec.Topology.Bastion = c.InputCluster.Spec.Topology.Bastion
 
 	if cluster.Spec.DNSZone == "" {
 		dns, err := cloud.DNS()
@@ -261,7 +261,7 @@ func (c *populateClusterSpec) run() error {
 	}
 
 	completed.Topology = c.InputCluster.Spec.Topology
-	completed.Bastion = c.InputCluster.Spec.Bastion
+	completed.Topology.Bastion = c.InputCluster.Spec.Topology.Bastion
 
 	fullCluster := &api.Cluster{}
 	*fullCluster = *cluster
