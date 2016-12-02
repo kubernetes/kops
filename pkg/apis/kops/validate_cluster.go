@@ -51,7 +51,7 @@ type ValidationNode struct {
 	Status   v1.ConditionStatus `json:"status,omitempty"`
 }
 
-// ValidateClusterWithIg validate a k8s clsuter with a provided instance group list
+// ValidateCluster validate a k8s cluster with a provided instance group list
 func ValidateCluster(clusterName string, instanceGroupList *InstanceGroupList) (*ValidationCluster, error) {
 
 	var instanceGroups []*InstanceGroup

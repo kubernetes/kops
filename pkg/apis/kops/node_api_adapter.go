@@ -258,7 +258,6 @@ func (nodeAA *NodeAPIAdapter) getClient() (*release_1_5.Clientset, error) {
 
 // TODO: remove slient bool ... but what is `wantTrue` defined as
 func isNodeConditionSetAsExpected(node *v1.Node, conditionType v1.NodeConditionType, wantTrue, silent bool) (bool, error) {
-
 	if err := isNodeStatusDefined(node); err != nil {
 		return false, err
 	}
@@ -347,7 +346,7 @@ func isNodeStatusDefined(node *v1.Node) error {
 func GetNodeConditionStatus(nodeConditions []v1.NodeCondition) v1.ConditionStatus {
 	s := v1.ConditionUnknown
 	for _, element := range nodeConditions {
-		if element.Type == "Ready" {
+		if element.Type == v1.NodeReady {
 			s = element.Status
 			break
 		}
@@ -357,28 +356,25 @@ func GetNodeConditionStatus(nodeConditions []v1.NodeCondition) v1.ConditionStatu
 }
 
 // Node is ready if:
-// 1) it's Ready condition is set to true
+// 1) its Ready condition is set to true
 // 2) doesn't have NetworkUnavailable condition set to true
 func IsNodeOrMasterReady(node *v1.Node) (bool, error) {
 	nodeReady, err := IsNodeConditionSetAsExpected(node, v1.NodeReady, true)
-
 	if err != nil {
 		return false, err
 	}
 
-	networkUnval, err := IsNodeConditionUnset(node, v1.NodeNetworkUnavailable)
-
+	networkUnavailable, err := IsNodeConditionUnset(node, v1.NodeNetworkUnavailable)
 	if err != nil {
 		return false, err
 	}
 
-	networkUnvalSilent, err := IsNodeConditionSetAsExpectedSilent(node, v1.NodeNetworkUnavailable, false)
-
+	networkUnavailableSilent, err := IsNodeConditionSetAsExpectedSilent(node, v1.NodeNetworkUnavailable, false)
 	if err != nil {
 		return false, err
 	}
 
-	networkReady := networkUnval || networkUnvalSilent
+	networkReady := networkUnavailable || networkUnavailableSilent
 
 	return nodeReady && networkReady, nil
 }
