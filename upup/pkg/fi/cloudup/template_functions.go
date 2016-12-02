@@ -191,7 +191,7 @@ func (tf *TemplateFunctions) WithBastion() bool {
 }
 
 func (tf *TemplateFunctions) IsBastionDNS() bool {
-	if tf.cluster.Spec.Topology.Bastion.PublicName != "" {
+	if tf.cluster.Spec.Topology.Bastion.PublicName == "" {
 		return false
 	} else {
 		return true
