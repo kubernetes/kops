@@ -17,67 +17,64 @@ limitations under the License.
 package main
 
 import (
-	"strings"
-
+	"fmt"
 	"github.com/spf13/cobra"
+	"io"
+	"k8s.io/kops"
+	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/tables"
 	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/v1"
-
-	"errors"
-	"fmt"
 	"os"
+	"strings"
 )
 
-// not used too much yet :)
-type ValidateClusterCmd struct {
+type ValidateClusterOptions struct {
+	// No options yet
 }
 
-var validateClusterCmd ValidateClusterCmd
+func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
+	options := &ValidateClusterOptions{}
 
-// Init darn it
-func init() {
 	cmd := &cobra.Command{
-		Use:     "cluster",
-		Aliases: []string{"cluster"},
-		Short:   "Validate cluster",
-		Long:    `Validate a kubernetes cluster`,
+		Use: "cluster",
+		//Aliases: []string{"cluster"},
+		Short: "Validate cluster",
+		Long:  `Validate a kubernetes cluster`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := validateClusterCmd.Run(args)
+			err := RunValidateCluster(f, cmd, args, os.Stdout, options)
 			if err != nil {
 				exitWithError(err)
 			}
 		},
 	}
 
-	validateCmd.cobraCommand.AddCommand(cmd)
+	return cmd
 }
 
-// Validate Your Kubernetes Cluster
-func (c *ValidateClusterCmd) Run(args []string) error {
-
+func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, options *ValidateClusterOptions) error {
 	err := rootCommand.ProcessArgs(args)
 	if err != nil {
-		return fmt.Errorf("Process args failed %v", err)
+		return err
 	}
 
 	cluster, err := rootCommand.Cluster()
 	if err != nil {
-		return fmt.Errorf("Cannot get cluster for %v", err)
+		return err
 	}
 
-	clientSet, err := rootCommand.Clientset()
+	clientSet, err := f.Clientset()
 	if err != nil {
-		return fmt.Errorf("Cannot get clientSet for %q: %v", cluster.Name, err)
+		return err
 	}
 
 	list, err := clientSet.InstanceGroups(cluster.Name).List(k8sapi.ListOptions{})
 	if err != nil {
-		return fmt.Errorf("Cannot get nodes for %q: %v", cluster.Name, err)
+		return fmt.Errorf("cannot get InstanceGroups for %q: %v", cluster.Name, err)
 	}
 
-	fmt.Printf("Validating cluster %v\n\n", cluster.Name)
+	fmt.Fprintf(out, "Validating cluster %v\n\n", cluster.Name)
 
 	var instanceGroups []*api.InstanceGroup
 	for _, ig := range list.Items {
@@ -85,13 +82,13 @@ func (c *ValidateClusterCmd) Run(args []string) error {
 	}
 
 	if len(instanceGroups) == 0 {
-		return errors.New("No InstanceGroup objects found\n")
+		return fmt.Errorf("no InstanceGroup objects found\n")
 	}
 
 	validationCluster, validationFailed := api.ValidateCluster(cluster.Name, list)
 
 	if validationCluster.NodeList == nil {
-		return fmt.Errorf("Cannot get nodes for %q: %v", cluster.Name, validationFailed)
+		return fmt.Errorf("cannot get nodes for %q: %v", cluster.Name, validationFailed)
 	}
 
 	t := &tables.Table{}
@@ -114,11 +111,11 @@ func (c *ValidateClusterCmd) Run(args []string) error {
 		return intPointerToString(c.Spec.MaxSize)
 	})
 
-	fmt.Println("INSTANCE GROUPS")
-	err = t.Render(instanceGroups, os.Stdout, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "ZONES")
+	fmt.Fprintln(out, "INSTANCE GROUPS")
+	err = t.Render(instanceGroups, out, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "ZONES")
 
 	if err != nil {
-		return fmt.Errorf("Cannot render nodes for %q: %v", cluster.Name, err)
+		return fmt.Errorf("cannot render nodes for %q: %v", cluster.Name, err)
 	}
 
 	t = &tables.Table{}
@@ -132,31 +129,33 @@ func (c *ValidateClusterCmd) Run(args []string) error {
 	})
 
 	t.AddColumn("ROLE", func(n v1.Node) string {
+		// TODO: Maybe print the instance group role instead?
+		// TODO: Maybe include the instance group name?
 		role := "node"
-		if val, ok := n.ObjectMeta.Labels["kubernetes.io/role"]; ok {
+		if val, ok := n.ObjectMeta.Labels[api.RoleLabelName]; ok {
 			role = val
 		}
 		return role
 	})
 
-	fmt.Println("\nNODE STATUS")
-	err = t.Render(validationCluster.NodeList.Items, os.Stdout, "NAME", "ROLE", "READY")
+	fmt.Fprintln(out, "\nNODE STATUS")
+	err = t.Render(validationCluster.NodeList.Items, out, "NAME", "ROLE", "READY")
 
 	if err != nil {
-		return fmt.Errorf("Cannot render nodes for %q: %v", cluster.Name, err)
+		return fmt.Errorf("cannot render nodes for %q: %v", cluster.Name, err)
 	}
 
 	if validationFailed == nil {
-		fmt.Printf("\nYour cluster %s is ready\n", cluster.Name)
+		fmt.Fprintf(out, "\nYour cluster %s is ready\n", cluster.Name)
 		return nil
 	} else {
 		// do we need to print which instance group is not ready?
 		// nodes are going to be a pain
-		fmt.Printf("cluster - masters ready: %v, nodes ready: %v", validationCluster.MastersReady, validationCluster.NodesReady)
-		fmt.Printf("mastersNotReady %v", len(validationCluster.MastersNotReadyArray))
-		fmt.Printf("mastersCount %v, mastersReady %v", validationCluster.MastersCount, len(validationCluster.MastersReadyArray))
-		fmt.Printf("nodesNotReady %v", len(validationCluster.NodesNotReadyArray))
-		fmt.Printf("nodesCount %v, nodesReady %v", validationCluster.NodesCount, len(validationCluster.NodesReadyArray))
+		fmt.Fprintf(out, "cluster - masters ready: %v, nodes ready: %v", validationCluster.MastersReady, validationCluster.NodesReady)
+		fmt.Fprintf(out, "mastersNotReady %v", len(validationCluster.MastersNotReadyArray))
+		fmt.Fprintf(out, "mastersCount %v, mastersReady %v", validationCluster.MastersCount, len(validationCluster.MastersReadyArray))
+		fmt.Fprintf(out, "nodesNotReady %v", len(validationCluster.NodesNotReadyArray))
+		fmt.Fprintf(out, "nodesCount %v, nodesReady %v", validationCluster.NodesCount, len(validationCluster.NodesReadyArray))
 		return fmt.Errorf("\nYour cluster %s is NOT ready.", cluster.Name)
 	}
 
