@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package kops
+package validation
 
 import (
 	"testing"
@@ -27,7 +27,6 @@ import (
 )
 
 func Test_ValidateClusterPositive(t *testing.T) {
-
 	nodeList, err := dummyClient("true", "true").Core().Nodes().List(v1.ListOptions{})
 
 	if err != nil {
@@ -44,7 +43,6 @@ func Test_ValidateClusterPositive(t *testing.T) {
 }
 
 func Test_ValidateClusterMasterAndNodeNotReady(t *testing.T) {
-
 	nodeList, err := dummyClient("false", "false").Core().Nodes().List(v1.ListOptions{})
 
 	if err != nil {
@@ -61,7 +59,6 @@ func Test_ValidateClusterMasterAndNodeNotReady(t *testing.T) {
 }
 
 func Test_ValidateClusterNodeNotReady(t *testing.T) {
-
 	nodeList, err := dummyClient("true", "false").Core().Nodes().List(v1.ListOptions{})
 
 	if err != nil {
@@ -78,7 +75,6 @@ func Test_ValidateClusterNodeNotReady(t *testing.T) {
 }
 
 func Test_ValidateClusterMastersNotEnough(t *testing.T) {
-
 	nodeList, err := dummyClient("true", "true").Core().Nodes().List(v1.ListOptions{})
 
 	if err != nil {
