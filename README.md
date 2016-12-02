@@ -10,9 +10,9 @@ We like to think of it as `kubectl` for clusters.
 
 kops lets you deploy production grade (and HA) Kubernetes clusters in the cloud from the command line.
 
-#### Quickstart
+#### Launching a Kubernetes cluster in AWS
 
-Launching a Kubernetes cluster on [AWS](/docs/aws.md).
+Check out our tutorial on launching a Kubernetes cluster in [AWS](/docs/aws.md)
 
 ### Example on AWS
 
