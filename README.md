@@ -6,7 +6,7 @@ The easiest way to get a production Kubernetes cluster up and running.
 
 # What is kops?
 
-We like to think of it as `kubectl` for clusters. 
+We like to think of it as `kubectl` for clusters.
 
 kops lets you deploy production grade (and HA) Kubernetes clusters in the cloud from the command line.
 
@@ -35,12 +35,22 @@ Launching a Kubernetes cluster on [AWS](/docs/aws.md).
 # Installation
 
 ### Recommended
- 
+
 Download the [latest release](https://github.com/kubernetes/kops/releases/latest)
 
 ### History
 
 View our [changelog](HISTORY.md)
+
+### From Homebrew (Latest Stable Release)
+```
+brew update && brew install kops
+```
+
+### From Homebrew (HEAD of master)
+```
+brew update && brew install --HEAD kops
+```
 
 ### From Source
 
@@ -69,18 +79,18 @@ We recommend letting us know **beforehand** if you plan on attending so we can h
 
 Reach out to us on [kubernetes slack](https://github.com/kubernetes/community#slack-chat). A great place to get involved or ask questions is [#sig-cluster-lifecycle](https://kubernetes.slack.com/?redir=%2Fmessages%2Fsig-cluster-lifecycle%2F)
 
-# Other Resources 
+# Other Resources
 
  - Create [kubecfg settings for kubectl](/docs/tips.md#create-kubecfg-settings-for-kubectl)
  - Set up [add-ons](docs/addons.md), to add important functionality to Kubernetes
- - Learn about [InstanceGroups](docs/instance_groups.md), which let you change instance types, cluster sizes etc.. 
+ - Learn about [InstanceGroups](docs/instance_groups.md), which let you change instance types, cluster sizes etc..
  - Read about [networking options](docs/networking.md), including a 50 node limit in the default configuration.
  - Look at our [other interesting modes](/docs/commands.md#other-interesting-modes).
 
 # Bugs
 
-If you think you have found a bug : 
+If you think you have found a bug :
 
-- Set `--v=8` and save the log output 
+- Set `--v=8` and save the log output
 - Open a [new issue](https://github.com/kubernetes/kops/issues/new)
 - Feel free to reach out to the kops community on [kubernetes slack](https://github.com/kubernetes/community#slack-chat)
