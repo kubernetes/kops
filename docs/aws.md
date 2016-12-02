@@ -25,21 +25,20 @@ git checkout release
 make
 ```
 
+See our [installation guide](build.md) for more information
+
 ## Install kubectl
 
 It is a good idea to grab a fresh copy of `kubectl` now if you don't already have it.
 
-[Kubernetes Latest Release](https://github.com/kubernetes/kubernetes/releases/latest)
-[Installation Guide](http://kubernetes.io/docs/user-guide/prereqs/)
+* [Kubernetes Latest Release](https://github.com/kubernetes/kubernetes/releases/latest)
+
+* [Installation Guide](http://kubernetes.io/docs/user-guide/prereqs/)
 
 ```
 wget -O https://github.com/kubernetes/kubernetes/releases/download/v1.4.6/kubernetes.tar.gz
 sudo cp kubernetes/platforms/darwin/amd64/kubectl /usr/local/bin/kubectl
 ```
-
-
-See our [installation guide](build.md) for more information
-
 
 ## Setup your environment
 
