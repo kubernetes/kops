@@ -20,12 +20,14 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"io"
-	"k8s.io/kops"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/util/pkg/tables"
 	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 	"os"
 	"strings"
 )
@@ -85,7 +87,21 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		return fmt.Errorf("no InstanceGroup objects found\n")
 	}
 
-	validationCluster, validationFailed := api.ValidateCluster(cluster.Name, list)
+	// TODO: Refactor into util.Factory
+	contextName := cluster.Name
+	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		clientcmd.NewDefaultClientConfigLoadingRules(),
+		&clientcmd.ConfigOverrides{CurrentContext: contextName}).ClientConfig()
+	if err != nil {
+		return fmt.Errorf("cannot load kubecfg settings for %q: %v", contextName, err)
+	}
+
+	k8sClient, err := release_1_5.NewForConfig(config)
+	if err != nil {
+		return fmt.Errorf("cannot build kube client for %q: %v", contextName, err)
+	}
+
+	validationCluster, validationFailed := validation.ValidateCluster(cluster.Name, list, k8sClient)
 
 	if validationCluster.NodeList == nil {
 		return fmt.Errorf("cannot get nodes for %q: %v", cluster.Name, validationFailed)
@@ -125,7 +141,7 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 	})
 
 	t.AddColumn("READY", func(n v1.Node) v1.ConditionStatus {
-		return api.GetNodeConditionStatus(n.Status.Conditions)
+		return validation.GetNodeConditionStatus(&n)
 	})
 
 	t.AddColumn("ROLE", func(n v1.Node) string {
