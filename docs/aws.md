@@ -6,9 +6,9 @@
 
 
 
-## Getting Started
+# Getting Started
 
-#### kops
+## Install kops
 
 From Homebrew:
 
@@ -25,7 +25,7 @@ git checkout release
 make
 ```
 
-#### kubectl
+## Install kubectl
 
 It is a good idea to grab a fresh copy of `kubectl` now if you don't already have it.
 
@@ -41,7 +41,7 @@ sudo cp kubernetes/platforms/darwin/amd64/kubectl /usr/local/bin/kubectl
 See our [installation guide](build.md) for more information
 
 
-#### Your environment
+## Setup your environment
 
 1) Set up a DNS hosted zone in Route 53, e.g. `mydomain.com`, and set up the DNS nameservers as normal so that domains will resolve.  You can reuse an existing domain name (e.g. `mydomain.com`), or you can create a "child" hosted zone (e.g. `myclusters.mydomain.com`) if you want to isolate them.
 
@@ -54,7 +54,7 @@ See our [installation guide](build.md) for more information
 4) Pick an S3 bucket that you'll use to store your cluster configuration - this is called your state store.  You can `export KOPS_STATE_STORE=s3://<mystatestorebucket>` and then kops will use this location by default.  We suggest putting this in your bash profile or similar.  A single registry can hold multiple clusters, and it can also be shared amongst your ops team (which is much easier than passing around kubecfg files!)
 
 
-#### Create your first cluster
+## Create your first cluster
 
 Before we create a cluster, we need to generate a `cluster config`
 
@@ -83,7 +83,7 @@ kops update cluster ${NAME} --yes
 
 Think of the `--yes` flag as a way of saying "*Yes! I am very sure I want to create this cluster, and I understand it will cost me money*". You will notice this flag in a few other places as well.
 
-# Accessing your cluster
+## Accessing your cluster
 
 A friendly reminder that kops runs asynchronously, and it will take your cluster a few minutes to come online.
 
@@ -97,12 +97,12 @@ kubectl get nodes
 
 You will see a list of nodes that should match the `--zones` flag defined earlier. This is a great sign that your Kubernetes cluster is online and working.
 
-# What's next?
+## What's next?
 
 Kops has a ton of great features, and an amazing support team. We recommend researching [other interesting modes](commands.md#other-interesting-modes) to learn more about generating Terraform configurations, or running your cluster in HA (Highly Available). Also be sure to check out how to run a[private network topology](topology.md) in AWS.
 
 Explore the program, and work on getting your `cluster config` hammered out!
 
-# Feedback
+## Feedback
 
 We love feedback from the community, and if you are reading this we would love to hear from you and get your thoughts. Read more about [getting involved](https://github.com/kubernetes/kops/blob/master/README.md#getting-involved) to find out how to track us down.
