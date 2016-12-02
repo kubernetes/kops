@@ -88,12 +88,12 @@ loadBalancerAttachment/bastion-elb-attachment.{{ ClusterName }}:
 # By default ELB has an idle timeout of 60 seconds to close connection
 # Modified the idle timeout for bastion elb
 # --------------------------------------------------------------------
-loadBalancerConnectionSettings/bastion.{{ ClusterName }}:
-  idleTimeout: 120
 loadBalancerAttributes/bastion.{{ ClusterName }}:
   loadBalancer: loadBalancer/bastion.{{ ClusterName }}
   connectionSettings: loadBalancerConnectionSettings/bastion.{{ ClusterName }}
-
+loadBalancerConnectionSettings/bastion.{{ ClusterName }}:
+  loadBalancer: loadBalancer/bastion.{{ ClusterName }}
+  idleTimeout: 120
 # ---------------------------------------------------------------
 # ASG - The Bastion itself
 #

@@ -47,16 +47,11 @@ type LoadBalancerCrossZoneLoadBalancing struct {
 	Enabled *bool
 }
 
-//go:generate fitask -type=LoadBalancerConnectionSettings
-type LoadBalancerConnectionSettings struct {
-	Name        *string
-	IdleTimeout *int64
-}
-
 //go:generate fitask -type=LoadBalancerAttributes
 type LoadBalancerAttributes struct {
-	Name                   *string
-	LoadBalancer           *LoadBalancer
+	Name         *string
+	LoadBalancer *LoadBalancer
+
 	AccessLog              *LoadBalancerAccessLog
 	AdditionalAttributes   []*LoadBalancerAdditionalAttribute
 	ConnectionDraining     *LoadBalancerConnectionDraining
@@ -102,6 +97,7 @@ func (e *LoadBalancerAttributes) Find(c *fi.Context) (*LoadBalancerAttributes, e
 	}
 
 	actual := &LoadBalancerAttributes{}
+	actual.Name = e.Name
 	actual.LoadBalancer = e.LoadBalancer
 
 	if lbAttributes != nil {
@@ -124,7 +120,9 @@ func (e *LoadBalancerAttributes) Find(c *fi.Context) (*LoadBalancerAttributes, e
 			Timeout: lbAttributes.ConnectionDraining.Timeout,
 		}
 		actual.ConnectionSettings = &LoadBalancerConnectionSettings{
-			IdleTimeout: lbAttributes.ConnectionSettings.IdleTimeout,
+			Name:         e.Name,
+			LoadBalancer: e.LoadBalancer,
+			IdleTimeout:  lbAttributes.ConnectionSettings.IdleTimeout,
 		}
 		actual.CrossZoneLoadBalancing = &LoadBalancerCrossZoneLoadBalancing{
 			Enabled: lbAttributes.CrossZoneLoadBalancing.Enabled,
@@ -138,31 +136,38 @@ func (e *LoadBalancerAttributes) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
-func (e *LoadBalancerConnectionSettings) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
-}
-
 func (s *LoadBalancerAttributes) CheckChanges(a, e, changes *LoadBalancerAttributes) error {
 	if a == nil {
+		if e.Name == nil {
+			return fi.RequiredField("Name")
+		}
 		if e.LoadBalancer == nil {
 			return fi.RequiredField("LoadBalancer")
 		}
-		if e.AccessLog.Enabled == nil {
-			return fi.RequiredField("Acceslog.Enabled")
-		}
-		if *e.AccessLog.Enabled {
-			if e.AccessLog.S3BucketName == nil {
-				return fi.RequiredField("Acceslog.S3Bucket")
+		if e.AccessLog != nil {
+			if e.AccessLog.Enabled == nil {
+				return fi.RequiredField("Acceslog.Enabled")
+			}
+			if *e.AccessLog.Enabled {
+				if e.AccessLog.S3BucketName == nil {
+					return fi.RequiredField("Acceslog.S3Bucket")
+				}
 			}
 		}
-		if e.ConnectionDraining.Enabled == nil {
-			return fi.RequiredField("ConnectionDraining.Enabled")
+		if e.ConnectionDraining != nil {
+			if e.ConnectionDraining.Enabled == nil {
+				return fi.RequiredField("ConnectionDraining.Enabled")
+			}
 		}
-		if e.ConnectionSettings.IdleTimeout == nil {
-			return fi.RequiredField("ConnectionSettings.IdleTimeout")
+		if e.ConnectionSettings != nil {
+			if e.ConnectionSettings.IdleTimeout == nil {
+				return fi.RequiredField("ConnectionSettings.IdleTimeout")
+			}
 		}
-		if e.CrossZoneLoadBalancing.Enabled == nil {
-			return fi.RequiredField("CrossZoneLoadBalancing.Enabled")
+		if e.CrossZoneLoadBalancing != nil {
+			if e.CrossZoneLoadBalancing.Enabled == nil {
+				return fi.RequiredField("CrossZoneLoadBalancing.Enabled")
+			}
 		}
 	}
 	return nil
