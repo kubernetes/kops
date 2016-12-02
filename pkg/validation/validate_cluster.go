@@ -14,18 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package kops
+package validation
 
 import (
 	"fmt"
 	"time"
 
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kubernetes/pkg/api/v1"
-)
-
-const (
-	Node   = "node"
-	Master = "master"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
 )
 
 // A cluster to validate
@@ -52,37 +49,35 @@ type ValidationNode struct {
 }
 
 // ValidateCluster validate a k8s cluster with a provided instance group list
-func ValidateCluster(clusterName string, instanceGroupList *InstanceGroupList) (*ValidationCluster, error) {
-
-	var instanceGroups []*InstanceGroup
+func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupList, clusterKubernetesClient release_1_5.Interface) (*ValidationCluster, error) {
+	var instanceGroups []*kops.InstanceGroup
 	validationCluster := &ValidationCluster{}
 
 	for i := range instanceGroupList.Items {
 		ig := &instanceGroupList.Items[i]
 		instanceGroups = append(instanceGroups, ig)
-		if ig.Spec.Role == InstanceGroupRoleMaster {
+		if ig.Spec.Role == kops.InstanceGroupRoleMaster {
 			validationCluster.MastersCount += *ig.Spec.MinSize
-		} else if ig.Spec.Role == InstanceGroupRoleNode {
+		} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
 			validationCluster.NodesCount += *ig.Spec.MinSize
 		}
 	}
 
 	if len(instanceGroups) == 0 {
-		return validationCluster, fmt.Errorf("No InstanceGroup objects found\n")
+		return validationCluster, fmt.Errorf("No InstanceGroup objects found")
 	}
 
-	nodeAA := &NodeAPIAdapter{}
-
 	timeout, err := time.ParseDuration("30s")
-
 	if err != nil {
 		return nil, fmt.Errorf("Cannot set timeout %q: %v", clusterName, err)
 	}
 
-	nodeAA.BuildNodeAPIAdapter(clusterName, timeout, "")
+	nodeAA, err := NewNodeAPIAdapter(clusterKubernetesClient, timeout)
+	if err != nil {
+		return nil, fmt.Errorf("error building node adapter for %q: %v", clusterName, err)
+	}
 
 	validationCluster.NodeList, err = nodeAA.GetAllNodes()
-
 	if err != nil {
 		return nil, fmt.Errorf("Cannot get nodes for %q: %v", clusterName, err)
 	}
@@ -91,38 +86,44 @@ func ValidateCluster(clusterName string, instanceGroupList *InstanceGroupList) (
 
 }
 
+func getRoleNode(node *v1.Node) string {
+	role := kops.RoleNodeLabelValue
+	if val, ok := node.ObjectMeta.Labels[kops.RoleLabelName]; ok {
+		role = val
+	}
+
+	return role
+}
+
 func validateTheNodes(clusterName string, validationCluster *ValidationCluster) (*ValidationCluster, error) {
 	nodes := validationCluster.NodeList
 
-	if nodes == nil || nodes.Items == nil {
+	if nodes == nil || len(nodes.Items) == 0 {
 		return validationCluster, fmt.Errorf("No nodes found in validationCluster")
 	}
 
-	for _, node := range nodes.Items {
+	for i := range nodes.Items {
+		node := &nodes.Items[i]
 
-		role := Node
-		if val, ok := node.ObjectMeta.Labels["kubernetes.io/role"]; ok {
-			role = val
-		}
+		role := getRoleNode(node)
 
 		n := &ValidationNode{
 			Zone:     node.ObjectMeta.Labels["failure-domain.beta.kubernetes.io/zone"],
 			Hostname: node.ObjectMeta.Labels["kubernetes.io/hostname"],
 			Role:     role,
-			Status:   GetNodeConditionStatus(node.Status.Conditions),
+			Status:   GetNodeConditionStatus(node),
 		}
 
-		ready, err := IsNodeOrMasterReady(&node)
-		if err != nil {
-			return validationCluster, fmt.Errorf("Cannot test if node is ready: %s", node.Name)
-		}
-		if n.Role == Master {
+		ready := IsNodeOrMasterReady(node)
+
+		// TODO: Use instance group role instead...
+		if n.Role == kops.RoleMasterLabelValue {
 			if ready {
 				validationCluster.MastersReadyArray = append(validationCluster.MastersReadyArray, n)
 			} else {
 				validationCluster.MastersNotReadyArray = append(validationCluster.MastersNotReadyArray, n)
 			}
-		} else if n.Role == Node {
+		} else if n.Role == kops.RoleNodeLabelValue {
 			if ready {
 				validationCluster.NodesReadyArray = append(validationCluster.NodesReadyArray, n)
 			} else {
@@ -130,7 +131,6 @@ func validateTheNodes(clusterName string, validationCluster *ValidationCluster) 
 			}
 
 		}
-
 	}
 
 	validationCluster.MastersReady = true
@@ -148,6 +148,7 @@ func validateTheNodes(clusterName string, validationCluster *ValidationCluster) 
 	if validationCluster.MastersReady && validationCluster.NodesReady {
 		return validationCluster, nil
 	} else {
+		// TODO: This isn't an error...
 		return validationCluster, fmt.Errorf("Your cluster is NOT ready %s", clusterName)
 	}
 }
