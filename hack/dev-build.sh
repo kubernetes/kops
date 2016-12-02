@@ -45,6 +45,7 @@ KOPS_DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 [ -z "$KOPS_STATE_STORE" ] && echo "Need to set KOPS_STATE_STORE" && exit 1;
 [ -z "$CLUSTER_NAME" ] && echo "Need to set CLUSTER_NAME" && exit 1;
 [ -z "$NODEUP_BUCKET" ] && echo "Need to set NODEUP_BUCKET" && exit 1;
+[ -z "$IMAGE" ] && echo "Need to set IMAGE or use the image list https://github.com/kubernetes/kops/blob/master/channels/stable" && exit 1;
 
 
 # Cluster config
@@ -96,7 +97,7 @@ NODEUP_URL=${NODEUP_URL} kops create cluster \
   --topology $TOPOLOGY \
   --networking $NETWORKING \
   -v $VERBOSITY \
-  --image "k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-11-16" \
+  --image $IMAGE \
   --yes
 
 echo ==========
