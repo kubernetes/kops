@@ -105,3 +105,10 @@ Explore the program, and work on getting your `cluster config` hammered out!
 ## Feedback
 
 We love feedback from the community, and if you are reading this we would love to hear from you and get your thoughts. Read more about [getting involved](https://github.com/kubernetes/kops/blob/master/README.md#getting-involved) to find out how to track us down.
+
+
+###### Legal
+
+*AWS Trademark used with limited permission under the [AWS Trademark Guidelines](https://aws.amazon.com/trademark-guidelines/)*
+
+*Kubernetes Logo used with permission under the [Kubernetes Branding Guidelines](https://github.com/kubernetes/kubernetes/blob/master/logo/usage_guidelines.md)*
