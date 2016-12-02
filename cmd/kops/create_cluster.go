@@ -379,8 +379,10 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 	}
 
 	//Bastion
-	if c.Topology == api.TopologyPublic && c.Bastion == true {
-		return fmt.Errorf("Bastion supports --topology='private' only.")
+	if c.Topology != "" {
+		if c.Topology == api.TopologyPublic && c.Bastion == true {
+			return fmt.Errorf("Bastion supports --topology='private' only.")
+		}
 	}
 
 	// Network Topology
@@ -404,7 +406,6 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 		} else {
 			cluster.Spec.Topology.Bastion = &api.BastionSpec{Enable: true}
 		}
-		cluster.Spec.Topology.Bastion.MachineType = cloudup.DefaultBastionMachineType(cluster)
 	case "":
 		glog.Warningf("Empty topology. Defaulting to public topology without bastion")
 		cluster.Spec.Topology = &api.TopologySpec{
@@ -415,6 +416,7 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 	default:
 		return fmt.Errorf("Invalid topology %s.", c.Topology)
 	}
+	cluster.Spec.Topology.Bastion.MachineType = cloudup.DefaultBastionMachineType(cluster)
 
 	sshPublicKeys := make(map[string][]byte)
 	if c.SSHPublicKey != "" {
