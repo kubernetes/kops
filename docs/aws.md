@@ -10,13 +10,13 @@
 
 From Homebrew:
 
-```
+```bash
 brew install kops
 ```
 
 From Source:
 
-```
+```bash
 go get -d k8s.io/kops
 cd ${GOPATH}/src/k8s.io/kops/
 git checkout release
@@ -33,7 +33,7 @@ It is a good idea to grab a fresh copy of `kubectl` now if you don't already hav
 
 * [Installation Guide](http://kubernetes.io/docs/user-guide/prereqs/)
 
-```
+```bash
 wget -O https://github.com/kubernetes/kubernetes/releases/download/v1.4.6/kubernetes.tar.gz
 sudo cp kubernetes/platforms/darwin/amd64/kubectl /usr/local/bin/kubectl
 ```
@@ -57,7 +57,8 @@ Before we create a cluster, we need to generate a `cluster config`
 
 In these examples we assume you have already exported `KOPS_STATE_STORE`, otherwise you will need to append each command with `--state s3://<mystatestorebucket>`
 
-```
+```bash
+export NAME=cluster1.testclusters.mydomain.com
 kops create cluster --zones=us-east-1c ${NAME}
 ```
 
@@ -65,7 +66,7 @@ Notice in this example we defined a single AWS Availability Zone. These represen
 
 We can customize our cluster by editing our `cluster config`
 
-```
+```bash
 kops edit cluster ${NAME}
 ```
 
@@ -74,7 +75,7 @@ This will open up the cluster manifest YAML file in your favorite text editor. H
 
 Lets go ahead and create the cluster in AWS!
 
-```
+```bash
 kops update cluster ${NAME} --yes
 ```
 
@@ -88,7 +89,7 @@ Remember when you installed `kubectl` earlier? The configuration for your cluste
 
 A simple Kubernetes API call can be used to check if the API is online and listening. Let's use `kubectl`
 
-```
+```bash
 kubectl get nodes
 ```
 
