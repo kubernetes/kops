@@ -18,8 +18,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"io"
+	"os"
+	"strings"
+
+	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/validation"
@@ -28,8 +31,6 @@ import (
 	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
-	"os"
-	"strings"
 )
 
 type ValidateClusterOptions struct {

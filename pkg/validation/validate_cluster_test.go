@@ -17,9 +17,8 @@ limitations under the License.
 package validation
 
 import (
-	"testing"
-
 	"fmt"
+	"testing"
 
 	"k8s.io/kubernetes/pkg/api/resource"
 	"k8s.io/kubernetes/pkg/api/v1"

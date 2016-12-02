@@ -19,8 +19,8 @@ package validation
 import (
 	"testing"
 	"time"
-	//k8sapi "k8s.io/kubernetes/pkg/api"
-	k8sapi "k8s.io/kubernetes/pkg/api/v1"
+
+	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5/fake"
 )
 
@@ -33,7 +33,7 @@ import (
 //}
 
 func TestWaitForNodeToBeReady(t *testing.T) {
-	conditions := []k8sapi.NodeCondition{{Type: "Ready", Status: "True"}}
+	conditions := []v1.NodeCondition{{Type: "Ready", Status: "True"}}
 	nodeName := "node-foo"
 	nodeAA := setupNodeAA(t, conditions, nodeName)
 
@@ -47,7 +47,7 @@ func TestWaitForNodeToBeReady(t *testing.T) {
 }
 
 func TestWaitForNodeToBeNotReady(t *testing.T) {
-	conditions := []k8sapi.NodeCondition{{Type: "Ready", Status: "False"}}
+	conditions := []v1.NodeCondition{{Type: "Ready", Status: "False"}}
 	nodeName := "node-foo"
 	nodeAA := setupNodeAA(t, conditions, nodeName)
 
@@ -64,11 +64,11 @@ func TestWaitForNodeToBeNotReady(t *testing.T) {
 //
 //}
 
-func setupNodeAA(t *testing.T, conditions []k8sapi.NodeCondition, nodeName string) *NodeAPIAdapter {
-	node := &k8sapi.Node{
-		ObjectMeta: k8sapi.ObjectMeta{Name: nodeName},
-		Spec:       k8sapi.NodeSpec{Unschedulable: false},
-		Status:     k8sapi.NodeStatus{Conditions: conditions},
+func setupNodeAA(t *testing.T, conditions []v1.NodeCondition, nodeName string) *NodeAPIAdapter {
+	node := &v1.Node{
+		ObjectMeta: v1.ObjectMeta{Name: nodeName},
+		Spec:       v1.NodeSpec{Unschedulable: false},
+		Status:     v1.NodeStatus{Conditions: conditions},
 	}
 
 	c := fake.NewSimpleClientset(node)
