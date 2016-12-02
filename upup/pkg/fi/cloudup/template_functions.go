@@ -214,8 +214,12 @@ func (tf *TemplateFunctions) GetBastionZone() (string, error) {
 	return name, nil
 }
 
-func (tf *TemplateFunctions) GetBastionMachineType() string {
-	return tf.cluster.GetBastionMachineType()
+func (tf *TemplateFunctions) GetBastionMachineType() (string, error) {
+	defaultMachineType := tf.cluster.GetBastionMachineType()
+	if defaultMachineType == "" {
+		return "", fmt.Errorf("DefaultMachineType for bastion can not be empty")
+	}
+	return defaultMachineType, nil
 }
 
 // Will attempt to calculate a meaningful name for an ELB given a prefix
