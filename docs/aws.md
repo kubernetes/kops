@@ -98,7 +98,7 @@ You will see a list of nodes that should match the `--zones` flag defined earlie
 
 ## What's next?
 
-Kops has a ton of great features, and an amazing support team. We recommend researching [other interesting modes](commands.md#other-interesting-modes) to learn more about generating Terraform configurations, or running your cluster in HA (Highly Available). Also be sure to check out how to run a[private network topology](topology.md) in AWS.
+Kops has a ton of great features, and an amazing support team. We recommend researching [other interesting modes](commands.md#other-interesting-modes) to learn more about generating Terraform configurations, or running your cluster in HA (Highly Available). Also be sure to check out how to run a [private network topology](topology.md) in AWS.
 
 Explore the program, and work on getting your `cluster config` hammered out!
 
