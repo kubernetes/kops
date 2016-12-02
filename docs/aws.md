@@ -1,5 +1,3 @@
-# Kubernetes on AWS
-
 <p align="center">
   <img src="img/k8s-aws.png"> </image>
 </p>

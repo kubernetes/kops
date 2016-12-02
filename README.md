@@ -12,7 +12,7 @@ kops lets you deploy production grade (and HA) Kubernetes clusters in the cloud 
 
 #### Launching a Kubernetes cluster in AWS
 
-Check out our tutorial on launching a Kubernetes cluster in [AWS](/docs/aws.md)
+Check out our [tutorial](/docs/aws.md) on launching a Kubernetes cluster in AWS.
 
 ### Example on AWS
 
