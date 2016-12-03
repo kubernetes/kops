@@ -401,7 +401,7 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 			Masters: api.TopologyPrivate,
 			Nodes:   api.TopologyPrivate,
 		}
-		if cmd.Flags().Changed("Bastion") {
+		if cmd.Flags().Changed("bastion") {
 			cluster.Spec.Topology.Bastion = &api.BastionSpec{Enable: c.Bastion}
 		} else {
 			cluster.Spec.Topology.Bastion = &api.BastionSpec{Enable: true}

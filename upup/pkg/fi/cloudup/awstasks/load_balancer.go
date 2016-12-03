@@ -80,8 +80,6 @@ func findELB(cloud awsup.AWSCloud, name string) (*elb.LoadBalancerDescription, e
 	var found []*elb.LoadBalancerDescription
 	err := cloud.ELB().DescribeLoadBalancersPages(request, func(p *elb.DescribeLoadBalancersOutput, lastPage bool) (shouldContinue bool) {
 		for _, lb := range p.LoadBalancerDescriptions {
-			fmt.Println(aws.StringValue(lb.LoadBalancerName))
-			fmt.Println(name)
 			if aws.StringValue(lb.LoadBalancerName) == name {
 				found = append(found, lb)
 			} else {
