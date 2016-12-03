@@ -563,7 +563,7 @@ func (c *awsCloudImplementation) DescribeAvailabilityZones() ([]*ec2.Availabilit
 	request := &ec2.DescribeAvailabilityZonesInput{}
 	response, err := c.EC2().DescribeAvailabilityZones(request)
 	if err != nil {
-		return nil, fmt.Errorf("Got an error while querying for valid AZs in %q (verify your AWS credentials?)", c.region)
+		return nil, fmt.Errorf("error querying for valid AZs in %q - verify your AWS credentials.  Error: %v", c.region, err)
 	}
 
 	return response.AvailabilityZones, nil
