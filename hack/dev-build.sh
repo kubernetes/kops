@@ -23,16 +23,17 @@
 #
 # This script (by design) will handle building a full kops cluster in AWS,
 # with a custom version of the Nodeup binary compiled at runtime.
-# 
+#
 # This script and Makefile uses aws client
 # https://aws.amazon.com/cli/
-# and make sure you `aws configure` 
+# and make sure you `aws configure`
 #
 # Example usage
 #
 # KOPS_STATE_STORE="s3://my-dev-s3-state \
 # CLUSTER_NAME="fullcluster.name.mydomain.io" \
 # NODEUP_BUCKET="s3-devel-bucket-name-store-nodeup" \
+# IMAGE="kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21" \
 # ./dev-build.sh
 #
 ###############################################################################
@@ -40,13 +41,20 @@
 KOPS_DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 #
+# Check that required binaries are installed
+#
+command -v make >/dev/null 2>&1 || { echo >&2 "I require make but it's not installed.  Aborting."; exit 1; }
+command -v go >/dev/null 2>&1 || { echo >&2 "I require go but it's not installed.  Aborting."; exit 1; }
+command -v docker >/dev/null 2>&1 || { echo >&2 "I require docker but it's not installed.  Aborting."; exit 1; }
+command -v aws >/dev/null 2>&1 || { echo >&2 "I require aws but it's not installed.  Aborting."; exit 1; }
+
+#
 # Check that expected vars are set
 #
 [ -z "$KOPS_STATE_STORE" ] && echo "Need to set KOPS_STATE_STORE" && exit 1;
 [ -z "$CLUSTER_NAME" ] && echo "Need to set CLUSTER_NAME" && exit 1;
 [ -z "$NODEUP_BUCKET" ] && echo "Need to set NODEUP_BUCKET" && exit 1;
-[ -z "$IMAGE" ] && echo "Need to set IMAGE or use the image list https://github.com/kubernetes/kops/blob/master/channels/stable" && exit 1;
-
+[ -z "$IMAGE" ] && echo "Need to set IMAGE or use the image listed here https://github.com/kubernetes/kops/blob/master/channels/stable" && exit 1;
 
 # Cluster config
 NODE_COUNT=${NODE_COUNT:-3}
@@ -59,6 +67,7 @@ MASTER_SIZE=${MASTER_SIZE:-m4.large}
 TOPOLOGY=${TOPOLOGY:-private}
 NETWORKING=${NETWORKING:-weave}
 
+# How verbose go logging is
 VERBOSITY=${VERBOSITY:-10}
 
 cd $KOPS_DIRECTORY/..
