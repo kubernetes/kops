@@ -95,18 +95,27 @@ func (e *LoadBalancerAttributes) Find(c *fi.Context) (*LoadBalancerAttributes, e
 	if lbAttributes == nil {
 		return nil, nil
 	}
+	fmt.Println("LoadBalancer Attributes: Yo", lbAttributes)
 
 	actual := &LoadBalancerAttributes{}
 	actual.Name = e.Name
 	actual.LoadBalancer = e.LoadBalancer
 
 	if lbAttributes != nil {
-		actual.AccessLog = &LoadBalancerAccessLog{
-			EmitInterval:   lbAttributes.AccessLog.EmitInterval,
-			Enabled:        lbAttributes.AccessLog.Enabled,
-			S3BucketName:   lbAttributes.AccessLog.S3BucketName,
-			S3BucketPrefix: lbAttributes.AccessLog.S3BucketPrefix,
+		actual.AccessLog = &LoadBalancerAccessLog{}
+		if lbAttributes.AccessLog.EmitInterval != nil {
+			actual.AccessLog.EmitInterval = lbAttributes.AccessLog.EmitInterval
 		}
+		if lbAttributes.AccessLog.Enabled != nil {
+			actual.AccessLog.Enabled = lbAttributes.AccessLog.Enabled
+		}
+		if lbAttributes.AccessLog.S3BucketName != nil {
+			actual.AccessLog.S3BucketName = lbAttributes.AccessLog.S3BucketName
+		}
+		if lbAttributes.AccessLog.S3BucketPrefix != nil {
+			actual.AccessLog.S3BucketPrefix = lbAttributes.AccessLog.S3BucketPrefix
+		}
+
 		var additionalAttributes []*LoadBalancerAdditionalAttribute
 		for index, additionalAttribute := range lbAttributes.AdditionalAttributes {
 			additionalAttributes[index] = &LoadBalancerAdditionalAttribute{
@@ -115,21 +124,28 @@ func (e *LoadBalancerAttributes) Find(c *fi.Context) (*LoadBalancerAttributes, e
 			}
 		}
 		actual.AdditionalAttributes = additionalAttributes
-		actual.ConnectionDraining = &LoadBalancerConnectionDraining{
-			Enabled: lbAttributes.ConnectionDraining.Enabled,
-			Timeout: lbAttributes.ConnectionDraining.Timeout,
+
+		actual.ConnectionDraining = &LoadBalancerConnectionDraining{}
+		if lbAttributes.ConnectionDraining.Enabled != nil {
+			actual.ConnectionDraining.Enabled = lbAttributes.ConnectionDraining.Enabled
 		}
-		actual.ConnectionSettings = &LoadBalancerConnectionSettings{
-			Name:         e.Name,
-			LoadBalancer: e.LoadBalancer,
-			IdleTimeout:  lbAttributes.ConnectionSettings.IdleTimeout,
+		if lbAttributes.ConnectionDraining.Timeout != nil {
+			actual.ConnectionDraining.Timeout = lbAttributes.ConnectionDraining.Timeout
 		}
-		actual.CrossZoneLoadBalancing = &LoadBalancerCrossZoneLoadBalancing{
-			Enabled: lbAttributes.CrossZoneLoadBalancing.Enabled,
+
+		actual.ConnectionSettings = &LoadBalancerConnectionSettings{}
+		actual.ConnectionSettings.Name = e.Name
+		actual.ConnectionSettings.LoadBalancer = e.LoadBalancer
+		if lbAttributes.ConnectionSettings.IdleTimeout != nil {
+			actual.ConnectionSettings.IdleTimeout = lbAttributes.ConnectionSettings.IdleTimeout
+		}
+
+		actual.CrossZoneLoadBalancing = &LoadBalancerCrossZoneLoadBalancing{}
+		if lbAttributes.CrossZoneLoadBalancing.Enabled != nil {
+			actual.CrossZoneLoadBalancing.Enabled = lbAttributes.CrossZoneLoadBalancing.Enabled
 		}
 	}
 	return actual, nil
-
 }
 
 func (e *LoadBalancerAttributes) Run(c *fi.Context) error {
@@ -181,28 +197,49 @@ func (_ *LoadBalancerAttributes) RenderAWS(t *awsup.AWSAPITarget, a, e, changes 
 			Value: additionalAttribute.Value,
 		}
 	}
+	request := &elb.ModifyLoadBalancerAttributesInput{}
+	request.LoadBalancerName = e.LoadBalancer.ID
+	request.LoadBalancerAttributes = &elb.LoadBalancerAttributes{}
 
-	request := &elb.ModifyLoadBalancerAttributesInput{
-		LoadBalancerAttributes: &elb.LoadBalancerAttributes{
-			AccessLog: &elb.AccessLog{
-				EmitInterval:   e.AccessLog.EmitInterval,
-				Enabled:        e.AccessLog.Enabled,
-				S3BucketName:   e.AccessLog.S3BucketName,
-				S3BucketPrefix: e.AccessLog.S3BucketPrefix,
-			},
-			AdditionalAttributes: additionalAttributes,
-			ConnectionDraining: &elb.ConnectionDraining{
-				Enabled: e.ConnectionDraining.Enabled,
-				Timeout: e.ConnectionDraining.Timeout,
-			},
-			ConnectionSettings: &elb.ConnectionSettings{
-				IdleTimeout: e.ConnectionSettings.IdleTimeout,
-			},
-			CrossZoneLoadBalancing: &elb.CrossZoneLoadBalancing{
-				Enabled: e.CrossZoneLoadBalancing.Enabled,
-			},
-		},
-		LoadBalancerName: e.LoadBalancer.Name,
+	// Setting mandatory attributes to default values if empty
+	request.LoadBalancerAttributes.AccessLog = &elb.AccessLog{}
+	if e.AccessLog == nil || e.AccessLog.Enabled == nil {
+		request.LoadBalancerAttributes.AccessLog.Enabled = fi.Bool(false)
+	}
+	request.LoadBalancerAttributes.ConnectionDraining = &elb.ConnectionDraining{}
+	if e.ConnectionDraining == nil || e.ConnectionDraining.Enabled == nil {
+		request.LoadBalancerAttributes.ConnectionDraining.Enabled = fi.Bool(false)
+	}
+	if e.ConnectionDraining == nil || e.ConnectionDraining.Timeout == nil {
+		request.LoadBalancerAttributes.ConnectionDraining.Timeout = fi.Int64(300)
+	}
+	request.LoadBalancerAttributes.ConnectionSettings = &elb.ConnectionSettings{}
+	if e.ConnectionSettings == nil || e.ConnectionSettings.IdleTimeout == nil {
+		request.LoadBalancerAttributes.ConnectionSettings.IdleTimeout = fi.Int64(60)
+	}
+	request.LoadBalancerAttributes.CrossZoneLoadBalancing = &elb.CrossZoneLoadBalancing{}
+	if e.CrossZoneLoadBalancing == nil || e.CrossZoneLoadBalancing.Enabled == nil {
+		request.LoadBalancerAttributes.CrossZoneLoadBalancing.Enabled = fi.Bool(false)
+	}
+
+	// Setting non mandatory values only if not empty
+	if len(additionalAttributes) != 0 {
+		request.LoadBalancerAttributes.AdditionalAttributes = additionalAttributes
+	}
+	if e.AccessLog != nil && e.AccessLog.EmitInterval != nil {
+		request.LoadBalancerAttributes.AccessLog.EmitInterval = e.AccessLog.EmitInterval
+	}
+	if e.AccessLog != nil && e.AccessLog.S3BucketName != nil {
+		request.LoadBalancerAttributes.AccessLog.S3BucketName = e.AccessLog.S3BucketName
+	}
+	if e.AccessLog != nil && e.AccessLog.S3BucketPrefix != nil {
+		request.LoadBalancerAttributes.AccessLog.S3BucketPrefix = e.AccessLog.S3BucketPrefix
+	}
+	if e.ConnectionDraining != nil && e.ConnectionDraining.Timeout != nil {
+		request.LoadBalancerAttributes.ConnectionDraining.Timeout = e.ConnectionDraining.Timeout
+	}
+	if e.ConnectionSettings != nil && e.ConnectionSettings.IdleTimeout != nil {
+		request.LoadBalancerAttributes.ConnectionSettings.IdleTimeout = e.ConnectionSettings.IdleTimeout
 	}
 
 	glog.V(2).Infof("Configuring ELB attributes for ELB %q", *e.LoadBalancer.ID)
