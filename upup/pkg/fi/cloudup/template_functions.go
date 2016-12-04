@@ -31,17 +31,16 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"fmt"
-	"math/big"
-	"net"
-	"sort"
-	"strings"
-	"text/template"
-
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/util/sets"
+	"math/big"
+	"net"
+	"sort"
+	"strings"
+	"text/template"
 )
 
 type TemplateFunctions struct {
@@ -144,8 +143,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["GetInstanceGroup"] = tf.GetInstanceGroup
 
 	dest["CloudTags"] = tf.CloudTags
-
-	dest["APIServerCount"] = tf.APIServerCount
 
 	dest["KubeDNS"] = func() *api.KubeDNSConfig {
 		return tf.cluster.Spec.KubeDNS
@@ -371,22 +368,6 @@ func (tf *TemplateFunctions) GetInstanceGroup(name string) (*api.InstanceGroup, 
 		}
 	}
 	return nil, fmt.Errorf("InstanceGroup %q not found", name)
-}
-
-// APIServerCount returns the value for the apiserver --apiserver-count flag
-func (tf *TemplateFunctions) APIServerCount() int {
-	count := 0
-	for _, ig := range tf.instanceGroups {
-		if !ig.IsMaster() {
-			continue
-		}
-		size := fi.IntValue(ig.Spec.MaxSize)
-		if size == 0 {
-			size = fi.IntValue(ig.Spec.MinSize)
-		}
-		count += size
-	}
-	return count
 }
 
 func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
