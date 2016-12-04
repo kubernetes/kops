@@ -48,6 +48,8 @@ type KubeconfigBuilder struct {
 	ClientKey  []byte
 }
 
+const KUBE_CFG_ENV = clientcmd.RecommendedConfigPathEnvVar + "=%s"
+
 // Create new KubeconfigBuilder
 func NewKubeconfigBuilder() *KubeconfigBuilder {
 	c := &KubeconfigBuilder{}
@@ -201,11 +203,11 @@ func (c *KubeconfigBuilder) getKubectlPath(kubeConfig string) string {
 	return kubeConfig
 }
 
+
 func (c *KubeconfigBuilder) execKubectl(args ...string) error {
 	cmd := exec.Command(c.KubectlPath, args...)
 	env := os.Environ()
-	//fmt.Printf("KUBECONFIG=%s\n", c.KubeconfigPath)
-	env = append(env, fmt.Sprintf("KUBECONFIG=%s", c.KubeconfigPath))
+	env = append(env, fmt.Sprintf(KUBE_CFG_ENV, c.KubeconfigPath))
 	cmd.Env = env
 
 	glog.V(2).Infof("Running command: %s", strings.Join(cmd.Args, " "))
