@@ -22,13 +22,14 @@ import (
 
 	"github.com/golang/glog"
 
-	"k8s.io/kops/dns-controller/pkg/util"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider/rrstype"
 	"sort"
 	"strings"
 	"sync"
 	"sync/atomic"
+
+	"k8s.io/kops/dns-controller/pkg/util"
+	"k8s.io/kubernetes/federation/pkg/dnsprovider"
+	"k8s.io/kubernetes/federation/pkg/dnsprovider/rrstype"
 )
 
 // DNSController applies the desired DNS state to the DNS backend

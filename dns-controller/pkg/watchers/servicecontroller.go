@@ -22,12 +22,13 @@ import (
 
 	"github.com/golang/glog"
 
+	"strings"
+
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/util"
 	"k8s.io/kubernetes/pkg/api/v1"
 	client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5/typed/core/v1"
 	"k8s.io/kubernetes/pkg/watch"
-	"strings"
 )
 
 // ServiceController watches for services with dns annotations
@@ -136,7 +137,8 @@ func (c *ServiceController) updateServiceRecords(service *v1.Service) {
 	var records []dns.Record
 
 	specExternal := service.Annotations[AnnotationNameDnsExternal]
-	if specExternal != "" {
+	specInternal := service.Annotations[AnnotationNameDnsInternal]
+	if len(specExternal) != 0 || len(specInternal) != 0 {
 		var ingresses []dns.Record
 
 		if service.Spec.Type == v1.ServiceTypeLoadBalancer {
@@ -159,9 +161,18 @@ func (c *ServiceController) updateServiceRecords(service *v1.Service) {
 				}
 			}
 		} else if service.Spec.Type == v1.ServiceTypeNodePort {
+			var roleType string
+			if len(specExternal) != 0 && len(specInternal) != 0 {
+				glog.Warningln("DNS Records not possible for both Internal and Externals IPs.")
+				return
+			} else if len(specInternal) != 0 {
+				roleType = dns.RoleTypeInternal
+			} else {
+				roleType = dns.RoleTypeExternal
+			}
 			ingresses = append(ingresses, dns.Record{
 				RecordType: dns.RecordTypeAlias,
-				Value:      dns.AliasForNodesInRole("node"),
+				Value:      dns.AliasForNodesInRole("node", roleType),
 			})
 			glog.V(4).Infof("Setting internal alias for NodePort service %s/%s", service.Namespace, service.Name)
 		} else {
@@ -169,7 +180,16 @@ func (c *ServiceController) updateServiceRecords(service *v1.Service) {
 			glog.V(2).Infof("Cannot expose service %s/%s of type %q", service.Namespace, service.Name, service.Spec.Type)
 		}
 
-		tokens := strings.Split(specExternal, ",")
+		var tokens []string
+
+		if len(specExternal) != 0 {
+			tokens = append(tokens, strings.Split(specExternal, ",")...)
+		}
+
+		if len(specInternal) != 0 {
+			tokens = append(tokens, strings.Split(specInternal, ",")...)
+		}
+
 		for _, token := range tokens {
 			token = strings.TrimSpace(token)
 

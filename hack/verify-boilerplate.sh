@@ -24,10 +24,27 @@ boiler="${KUBE_ROOT}/hack/boilerplate/boilerplate.py"
 
 files_need_boilerplate=($(${boiler} "$@"))
 
-if [[ ${#files_need_boilerplate[@]} -gt 0 ]]; then
-  for file in "${files_need_boilerplate[@]}"; do
+TO_REMOVE=(${PWD}/federation/model/bindata.go ${PWD}/upup/models/bindata.go)
+TEMP_ARRAY=()
+for pkg in "${files_need_boilerplate[@]}"; do
+    for remove in "${TO_REMOVE[@]}"; do
+        KEEP=true
+        if [[ ${pkg} == ${remove} ]]; then
+            KEEP=false
+            break
+        fi
+    done
+    if ${KEEP}; then
+        TEMP_ARRAY+=(${pkg})
+    fi
+done
+
+if [[ ${#TEMP_ARRAY[@]} -gt 0 ]]; then
+  for file in "${TEMP_ARRAY[@]}"; do
     echo "Boilerplate header is wrong for: ${file}"
   done
-
+  echo "Execute hack/update-header.sh to update headers"
   exit 1
 fi
+
+echo "Boilerplate headers validated"
