@@ -307,3 +307,6 @@ func (c *Cluster) GetBastionMachineType() string {
 func (c *Cluster) GetBastionPublicName() string {
 	return c.Spec.Topology.Bastion.PublicName
 }
+func (c *Cluster) GetBastionIdleTimeout() int {
+	return c.Spec.Topology.Bastion.IdleTimeout
+}

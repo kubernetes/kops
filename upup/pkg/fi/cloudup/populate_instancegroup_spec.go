@@ -40,6 +40,10 @@ const DefaultMasterMachineTypeGCE = "n1-standard-1"
 const DefaultBastionMachineTypeAWS = "t2.medium"
 const DefaultBastionMasterMachineTypeGCE = "n1-standard-1"
 
+// Default LoadBalancing IdleTimeout for bastion hosts
+const DefaultBastionIdleTimeoutAWS = 120
+const DefaultBastionIdleTimeoutGCE = 120
+
 // PopulateInstanceGroupSpec sets default values in the InstanceGroup
 // The InstanceGroup is simpler than the cluster spec, so we just populate in place (like the rest of k8s)
 func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup, channel *api.Channel) (*api.InstanceGroup, error) {
@@ -169,6 +173,19 @@ func DefaultBastionMachineType(cluster *api.Cluster) string {
 	default:
 		glog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q", cluster.Spec.CloudProvider)
 		return ""
+	}
+}
+
+// defaultIdleTimeout returns the default Idletimeout for bastion loadbalancer, based on the cloudprovider
+func DefaultBastionIdleTimeout(cluster *api.Cluster) int {
+	switch fi.CloudProviderID(cluster.Spec.CloudProvider) {
+	case fi.CloudProviderAWS:
+		return DefaultBastionIdleTimeoutAWS
+	case fi.CloudProviderGCE:
+		return DefaultBastionIdleTimeoutGCE
+	default:
+		glog.V(2).Infof("Cannot set default IdleTimeout for CloudProvider=%q", cluster.Spec.CloudProvider)
+		return 0
 	}
 }
 
