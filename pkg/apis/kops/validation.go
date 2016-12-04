@@ -327,6 +327,9 @@ func (c *Cluster) Validate(strict bool) error {
 		if c.Spec.Topology.Bastion.MachineType == "" {
 			return fmt.Errorf("Bastion MachineType can not be empty")
 		}
+		if c.Spec.Topology.Bastion.IdleTimeout <= 0 {
+			return fmt.Errorf("Bastion IdleTimeout should be greater than zero")
+		}
 	}
 
 	// Etcd

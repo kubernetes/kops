@@ -336,6 +336,26 @@ func TestPopulateCluster_BastionMachineTypeInvalidNil_Required(t *testing.T) {
 	expectErrorFromPopulateCluster(t, c, "Bastion")
 }
 
+func TestPopulateCluster_BastionIdleTimeoutInvalidNil_Required(t *testing.T) {
+	c := buildMinimalCluster()
+	c.Spec.Topology.Masters = api.TopologyPrivate
+	c.Spec.Topology.Nodes = api.TopologyPrivate
+	c.Spec.Topology.Bastion.Enable = true
+	c.Spec.Topology.Bastion.MachineType = "t2.small"
+	c.Spec.Topology.Bastion.IdleTimeout = 0
+	expectErrorFromPopulateCluster(t, c, "Bastion")
+}
+
+func TestPopulateCluster_BastionIdleTimeoutInvalidNegative_Required(t *testing.T) {
+	c := buildMinimalCluster()
+	c.Spec.Topology.Masters = api.TopologyPrivate
+	c.Spec.Topology.Nodes = api.TopologyPrivate
+	c.Spec.Topology.Bastion.Enable = true
+	c.Spec.Topology.Bastion.MachineType = "t2.small"
+	c.Spec.Topology.Bastion.IdleTimeout = -1
+	expectErrorFromPopulateCluster(t, c, "Bastion")
+}
+
 func expectErrorFromPopulateCluster(t *testing.T, c *api.Cluster, message string) {
 	_, err := PopulateClusterSpec(c)
 	if err == nil {

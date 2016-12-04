@@ -98,6 +98,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["WithBastion"] = tf.WithBastion
 	dest["GetBastionImageId"] = tf.GetBastionImageId
 	dest["GetBastionMachineType"] = tf.GetBastionMachineType
+	dest["GetBastionIdleTimeout"] = tf.GetBastionIdleTimeout
 	dest["GetBastionZone"] = tf.GetBastionZone
 	dest["GetELBName32"] = tf.GetELBName32
 	dest["IsBastionDNS"] = tf.IsBastionDNS
@@ -220,6 +221,14 @@ func (tf *TemplateFunctions) GetBastionMachineType() (string, error) {
 		return "", fmt.Errorf("DefaultMachineType for bastion can not be empty")
 	}
 	return defaultMachineType, nil
+}
+
+func (tf *TemplateFunctions) GetBastionIdleTimeout() (int, error) {
+	timeout := tf.cluster.GetBastionIdleTimeout()
+	if timeout <= 0 {
+		return 0, fmt.Errorf("IdleTimeout for Bastion can not be negative")
+	}
+	return timeout, nil
 }
 
 // Will attempt to calculate a meaningful name for an ELB given a prefix

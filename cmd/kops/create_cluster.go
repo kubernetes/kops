@@ -417,6 +417,7 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 		return fmt.Errorf("Invalid topology %s.", c.Topology)
 	}
 	cluster.Spec.Topology.Bastion.MachineType = cloudup.DefaultBastionMachineType(cluster)
+	cluster.Spec.Topology.Bastion.IdleTimeout = cloudup.DefaultBastionIdleTimeout(cluster)
 
 	sshPublicKeys := make(map[string][]byte)
 	if c.SSHPublicKey != "" {
