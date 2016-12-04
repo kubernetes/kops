@@ -68,7 +68,7 @@ We should lock down the `master` branch on a given date. The lockdown is designe
 Kops uses [semantic versioning](http://semver.org/) to version the code base.
 
 ```
-major.minor.path
+major.minor.patch
 ```
 
 Our goal is to keep `major.minor` in sync (within reason) to the Kubernetes codebase. But to release our own patch versions as needed.
