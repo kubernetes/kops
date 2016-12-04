@@ -188,7 +188,7 @@ func (tf *TemplateFunctions) IsTopologyPrivateMasters() bool {
 }
 
 func (tf *TemplateFunctions) WithBastion() bool {
-	return tf.cluster.Spec.Topology.Bastion.Enable
+	return tf.cluster.Spec.Topology.Bastion != nil && tf.cluster.Spec.Topology.Bastion.Enable
 }
 
 func (tf *TemplateFunctions) IsBastionDNS() bool {
