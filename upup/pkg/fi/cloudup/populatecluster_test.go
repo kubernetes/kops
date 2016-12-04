@@ -320,3 +320,16 @@ func expectErrorFromPopulateCluster(t *testing.T, c *api.Cluster, message string
 		t.Fatalf("Expected error %q, got %q", message, actualMessage)
 	}
 }
+
+func TestPopulateCluster_APIServerCount(t *testing.T) {
+	c := buildMinimalCluster()
+
+	full, err := build(c)
+	if err != nil {
+		t.Fatalf("error during build: %v", err)
+	}
+
+	if fi.IntValue(full.Spec.KubeAPIServer.APIServerCount) != 3 {
+		t.Fatalf("Unexpected APIServerCount: %v", fi.IntValue(full.Spec.KubeAPIServer.APIServerCount))
+	}
+}

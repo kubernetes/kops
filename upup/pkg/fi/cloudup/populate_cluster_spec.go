@@ -22,6 +22,7 @@ import (
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -247,7 +248,9 @@ func (c *populateClusterSpec) run() error {
 
 	tf.AddTo(templateFunctions)
 
-	codeModels := []loader.OptionsBuilder{}
+	codeModels := []loader.OptionsBuilder{
+		&components.KubeAPIServerOptionsBuilder{Cluster: cluster},
+	}
 	specBuilder := &SpecBuilder{
 		OptionsLoader: loader.NewOptionsLoader(templateFunctions, codeModels),
 		Tags:          tags,
