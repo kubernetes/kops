@@ -25,6 +25,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
 //go:generate fitask -type=ElasticIP
@@ -39,7 +40,7 @@ type ElasticIP struct {
 	// Allow support for associated subnets
 	// If you need another resource to tag on (ebs volume)
 	// you must add it
-	Subnet *Subnet
+	Subnet   *Subnet
 }
 
 var _ fi.HasAddress = &ElasticIP{}
@@ -204,4 +205,16 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 	return nil
 }
 
-// Starting work on Terraform here
+type terraformElasticIP struct {
+	PublicIP         *string           `json:"public_ip,omitempty"`
+
+}
+
+func (_ *ElasticIP) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ElasticIP) error {
+	//cloud := t.Cloud.(awsup.AWSCloud)
+
+
+	tf := &terraformElasticIP{}
+
+	return t.RenderResource("aws_eip", *e.Name, tf)
+}

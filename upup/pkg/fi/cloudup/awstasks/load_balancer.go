@@ -27,6 +27,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
 //go:generate fitask -type=LoadBalancer
@@ -268,4 +269,20 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 	}
 
 	return t.AddELBTags(*e.ID, t.Cloud.BuildTags(e.Name))
+}
+
+
+type terraformLoadBalancer struct {
+	Tags map[string]string `json:"tags,omitempty"`
+}
+
+func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LoadBalancer) error {
+	return nil
+	cloud := t.Cloud.(awsup.AWSCloud)
+
+	tf := &terraformLoadBalancer{
+		Tags: cloud.BuildTags(e.Name),
+	}
+
+	return t.RenderResource("aws_elb", "", tf)
 }

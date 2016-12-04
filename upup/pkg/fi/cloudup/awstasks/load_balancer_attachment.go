@@ -25,11 +25,12 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
 type LoadBalancerAttachment struct {
-	Name         *string
-	LoadBalancer *LoadBalancer
+	Name             *string
+	LoadBalancer     *LoadBalancer
 
 	// LoadBalancerAttachments now support ASGs or direct instances
 	AutoscalingGroup *AutoscalingGroup
@@ -38,7 +39,7 @@ type LoadBalancerAttachment struct {
 	// Here be dragons..
 	// This will *NOT* unmarshal.. for some reason this pointer is initiated as nil
 	// instead of a pointer to Instance with nil members..
-	Instance *Instance
+	Instance         *Instance
 }
 
 func (e *LoadBalancerAttachment) Find(c *fi.Context) (*LoadBalancerAttachment, error) {
@@ -123,5 +124,20 @@ func (_ *LoadBalancerAttachment) RenderAWS(t *awsup.AWSAPITarget, a, e, changes 
 			return fmt.Errorf("error attaching instance to ELB: %v", err)
 		}
 	}
+	return nil
+}
+
+type terraformLoadBalancerAttachment struct {
+	Tags map[string]string `json:"tags,omitempty"`
+}
+
+func (_ *LoadBalancerAttachment) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LoadBalancerAttachment) error {
+	//cloud := t.Cloud.(awsup.AWSCloud)
+	//
+	//tf := &terraformLoadBalancerAttachment{
+	//	Tags: cloud.BuildTags(e.Name),
+	//}
+	//
+	//return t.RenderResource("aws_elb", "", tf)
 	return nil
 }

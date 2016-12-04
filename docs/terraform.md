@@ -1,4 +1,4 @@
-## Building Kubernetes clusters with terraform
+# Building Kubernetes clusters with terraform
 
 Kops can generate terraform configurations, and you can then apply them using the terraform plan/apply tools. 
 This is very handy if you are already using terraform, or if you want to check in the terraform output into

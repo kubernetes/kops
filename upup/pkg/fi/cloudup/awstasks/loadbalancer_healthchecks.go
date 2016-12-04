@@ -23,9 +23,11 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
 type LoadBalancerHealthChecks struct {
+	Name *string
 	LoadBalancer *LoadBalancer
 
 	Target *string
@@ -102,5 +104,23 @@ func (_ *LoadBalancerHealthChecks) RenderAWS(t *awsup.AWSAPITarget, a, e, change
 		return fmt.Errorf("error attaching autoscaling group to ELB: %v", err)
 	}
 
+	return nil
+}
+
+type terraformLoadBalancerHealthChecks struct {
+	Tags map[string]string `json:"tags,omitempty"`
+}
+
+
+// Kris TODO - Health checks are a part of aws_elb in terraform
+// *Wipes ceiling with eyes*
+func (_ *LoadBalancerHealthChecks) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LoadBalancerHealthChecks) error {
+	//cloud := t.Cloud.(awsup.AWSCloud)
+	//
+	//tf := &terraformLoadBalancerHealthChecks{
+	//	Tags: cloud.BuildTags(e.Name),
+	//}
+	//
+	//return t.RenderResource("aws_elb", *e.Name, tf)
 	return nil
 }
