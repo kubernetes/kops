@@ -39,11 +39,20 @@ func NewFactory(options *FactoryOptions) *Factory {
 	}
 }
 
+const (
+STATE_ERROR = `Please set the --state flag or export KOPS_STATE_STORE.
+A valid value follows the format s3://<bucket>.
+A s3 bucket is required to store cluster state information.`
+
+INVALID_STATE_ERROR = `Unable to read state store s3 bucket.
+Please use a valid s3 bucket uri when setting --state or KOPS_STATE_STORE evn var.
+A valid value follows the format s3://<bucket>.`
+)
 func (f *Factory) Clientset() (simple.Clientset, error) {
 	if f.clientset == nil {
 		registryPath := f.options.RegistryPath
 		if registryPath == "" {
-			return nil, field.Required(field.NewPath("RegistryPath"), "Please set the --state flag, or `export KOPS_STATE_STORE=s3://<bucket>`")
+			return nil, field.Required(field.NewPath("State Store"), STATE_ERROR)
 		}
 		basePath, err := vfs.Context.BuildVfsPath(registryPath)
 		if err != nil {
@@ -51,7 +60,7 @@ func (f *Factory) Clientset() (simple.Clientset, error) {
 		}
 
 		if !vfs.IsClusterReadable(basePath) {
-			return nil, field.Invalid(field.NewPath("RegistryPath"), registryPath, "Not cloud-reachable - please use an S3 bucket when setting --state or KOPS_STATE_STORE")
+			return nil, field.Invalid(field.NewPath("State Store"), registryPath, INVALID_STATE_ERROR)
 		}
 
 		f.clientset = vfsclientset.NewVFSClientset(basePath)
