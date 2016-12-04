@@ -95,7 +95,6 @@ func (e *LoadBalancerAttributes) Find(c *fi.Context) (*LoadBalancerAttributes, e
 	if lbAttributes == nil {
 		return nil, nil
 	}
-	fmt.Println("LoadBalancer Attributes: Yo", lbAttributes)
 
 	actual := &LoadBalancerAttributes{}
 	actual.Name = e.Name
