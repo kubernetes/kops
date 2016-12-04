@@ -31,16 +31,17 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"fmt"
-	"github.com/golang/glog"
-	api "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kubernetes/pkg/util/sets"
 	"math/big"
 	"net"
 	"sort"
 	"strings"
 	"text/template"
+
+	"github.com/golang/glog"
+	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kubernetes/pkg/util/sets"
 )
 
 type TemplateFunctions struct {
@@ -96,8 +97,12 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["IsTopologyPrivateMasters"] = tf.IsTopologyPrivateMasters
 	dest["WithBastion"] = tf.WithBastion
 	dest["GetBastionImageId"] = tf.GetBastionImageId
+	dest["GetBastionMachineType"] = tf.GetBastionMachineType
+	dest["GetBastionIdleTimeout"] = tf.GetBastionIdleTimeout
 	dest["GetBastionZone"] = tf.GetBastionZone
 	dest["GetELBName32"] = tf.GetELBName32
+	dest["IsBastionDNS"] = tf.IsBastionDNS
+	dest["GetBastionDNS"] = tf.GetBastionDNS
 
 	dest["SharedZone"] = tf.SharedZone
 	dest["WellKnownServiceIP"] = tf.WellKnownServiceIP
@@ -183,7 +188,19 @@ func (tf *TemplateFunctions) IsTopologyPrivateMasters() bool {
 }
 
 func (tf *TemplateFunctions) WithBastion() bool {
-	return !tf.cluster.Spec.Topology.BypassBastion
+	return tf.cluster.Spec.Topology.Bastion.Enable
+}
+
+func (tf *TemplateFunctions) IsBastionDNS() bool {
+	if tf.cluster.Spec.Topology.Bastion.PublicName == "" {
+		return false
+	} else {
+		return true
+	}
+}
+
+func (tf *TemplateFunctions) GetBastionDNS() string {
+	return tf.cluster.GetBastionPublicName()
 }
 
 // This function is replacing existing yaml
@@ -196,6 +213,22 @@ func (tf *TemplateFunctions) GetBastionZone() (string, error) {
 		name = tf.cluster.Spec.Zones[0].Name
 	}
 	return name, nil
+}
+
+func (tf *TemplateFunctions) GetBastionMachineType() (string, error) {
+	defaultMachineType := tf.cluster.GetBastionMachineType()
+	if defaultMachineType == "" {
+		return "", fmt.Errorf("DefaultMachineType for bastion can not be empty")
+	}
+	return defaultMachineType, nil
+}
+
+func (tf *TemplateFunctions) GetBastionIdleTimeout() (int, error) {
+	timeout := tf.cluster.GetBastionIdleTimeout()
+	if timeout <= 0 {
+		return 0, fmt.Errorf("IdleTimeout for Bastion can not be negative")
+	}
+	return timeout, nil
 }
 
 // Will attempt to calculate a meaningful name for an ELB given a prefix
