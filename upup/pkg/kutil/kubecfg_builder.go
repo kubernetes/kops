@@ -190,6 +190,7 @@ func (c *KubeconfigBuilder) WriteKubecfg() error {
 		path = split[0]
 	}
 	fmt.Printf("Wrote config for %s to %q\n", c.Context, path)
+	fmt.Printf("You kubectl context is change to %s\n", c.Context)
 	return nil
 }
 
