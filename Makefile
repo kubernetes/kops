@@ -223,8 +223,11 @@ govet:
 # --------------------------------------------------
 # Continuous integration targets
 
-ci: kops nodeup-gocode examples test govet
+verify-boilerplate:
 	sh -c hack/verify-boilerplate.sh
+
+ci: kops nodeup-gocode examples test govet verify-boilerplate
+	echo "Done!"
 
 # --------------------------------------------------
 # channel tool
