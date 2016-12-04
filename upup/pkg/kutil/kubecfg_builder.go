@@ -48,18 +48,16 @@ type KubeconfigBuilder struct {
 	ClientKey  []byte
 }
 
+// Create new KubeconfigBuilder
 func NewKubeconfigBuilder() *KubeconfigBuilder {
 	c := &KubeconfigBuilder{}
 	c.KubectlPath = "kubectl" // default to in-path
-
-	kubeconfig := os.Getenv(clientcmd.RecommendedConfigPathEnvVar)
-	if kubeconfig == "" {
-		kubeconfig = clientcmd.RecommendedHomeFile
-	}
-	c.KubeconfigPath = kubeconfig
+	kubeConfig := os.Getenv(clientcmd.RecommendedConfigPathEnvVar)
+	c.KubeconfigPath = c.getKubectlPath(kubeConfig)
 	return c
 }
 
+// Create new Rest Client
 func (c *KubeconfigBuilder) BuildRestConfig() (*restclient.Config, error) {
 	restConfig := &restclient.Config{
 		Host: "https://" + c.KubeMasterIP,
@@ -79,6 +77,7 @@ func (c *KubeconfigBuilder) BuildRestConfig() (*restclient.Config, error) {
 	return restConfig, nil
 }
 
+// Write out a new kubeconfig
 func (c *KubeconfigBuilder) WriteKubecfg() error {
 	tmpdir, err := ioutil.TempDir("", "k8s")
 	if err != nil {
@@ -183,15 +182,23 @@ func (c *KubeconfigBuilder) WriteKubecfg() error {
 			return err
 		}
 	}
-
-	split := strings.Split(c.KubeconfigPath, ":")
-	path := c.KubeconfigPath
-	if len(split) > 1 {
-		path = split[0]
-	}
-	fmt.Printf("Wrote config for %s to %q\n", c.Context, path)
+	fmt.Printf("Wrote config for %s to %q\n", c.Context, c.KubeconfigPath)
 	fmt.Printf("You kubectl context is change to %s\n", c.Context)
 	return nil
+}
+
+func (c *KubeconfigBuilder) getKubectlPath(kubeConfig string) string {
+
+	if kubeConfig == "" {
+		return clientcmd.RecommendedHomeFile
+	}
+
+	split := strings.Split(kubeConfig, ":")
+	if len(split) > 1 {
+		return split[0]
+	}
+
+	return kubeConfig
 }
 
 func (c *KubeconfigBuilder) execKubectl(args ...string) error {
