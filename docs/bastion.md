@@ -60,7 +60,3 @@ topology:
         IdleTimeOut: 75
 ```
 [More information](http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/config-idle-timeout.html)
-
-### Improve access to bastion instances
-
-Current: `ssh to the bastion: ssh -i ~/.ssh/id_rsa admin@api.mydomain.com`

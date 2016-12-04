@@ -14,19 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-/*
-Copyright 2016 The Kubernetes Authors.
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-    http://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package awstasks
 
 import (
@@ -36,6 +23,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	//"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"fmt"
+
+	"github.com/aws/aws-sdk-go/aws"
 )
 
 //go:generate fitask -type=NatGateway
@@ -141,6 +130,29 @@ func (s *NatGateway) CheckChanges(a, e, changes *NatGateway) error {
 
 func (e *NatGateway) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
+}
+
+func (e *NatGateway) waitAvailable(cloud awsup.AWSCloud) error {
+	// It takes 'forever' (up to 5 min...) for a NatGateway to become available after it has been created
+	// We have to wait until it is actually up
+
+	// TODO: Cache availability status
+
+	id := aws.StringValue(e.ID)
+	if id == "" {
+		return fmt.Errorf("NAT Gateway %q did not have ID", e.Name)
+	}
+
+	glog.Infof("Waiting for NAT Gateway %q to be available", id)
+	params := &ec2.DescribeNatGatewaysInput{
+		NatGatewayIds: []*string{e.ID},
+	}
+	err := cloud.EC2().WaitUntilNatGatewayAvailable(params)
+	if err != nil {
+		return fmt.Errorf("error waiting for NAT Gateway %q to be available: %v", id, err)
+	}
+
+	return nil
 }
 
 func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway) error {

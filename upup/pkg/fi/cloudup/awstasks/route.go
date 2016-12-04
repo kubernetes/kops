@@ -155,15 +155,10 @@ func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
 		} else if e.InternetGateway != nil {
 			request.GatewayId = checkNotNil(e.InternetGateway.ID)
 		} else if e.NatGateway != nil {
-			// It takes 'forever' (up to 5 min...) for a NatGateway to become available after it has been created
-			// We have to wait untill it is actualy up
-			params := &ec2.DescribeNatGatewaysInput{
-				NatGatewayIds: []*string{e.NatGateway.ID},
+			if err := e.NatGateway.waitAvailable(t.Cloud); err != nil {
+				return err
 			}
-			err := t.Cloud.EC2().WaitUntilNatGatewayAvailable(params)
-			if err != nil {
-				return fmt.Errorf("error creating Route: %v", err)
-			}
+
 			request.NatGatewayId = checkNotNil(e.NatGateway.ID)
 		}
 
@@ -191,15 +186,10 @@ func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
 		} else if e.InternetGateway != nil {
 			request.GatewayId = checkNotNil(e.InternetGateway.ID)
 		} else if e.NatGateway != nil {
-			// It takes 'forever' (up to 5 min...) for a NatGateway to become available after it has been created
-			// We have to wait untill it is actualy up
-			params := &ec2.DescribeNatGatewaysInput{
-				NatGatewayIds: []*string{e.NatGateway.ID},
+			if err := e.NatGateway.waitAvailable(t.Cloud); err != nil {
+				return err
 			}
-			err := t.Cloud.EC2().WaitUntilNatGatewayAvailable(params)
-			if err != nil {
-				return fmt.Errorf("error creating Route: %v", err)
-			}
+
 			request.NatGatewayId = checkNotNil(e.NatGateway.ID)
 		}
 
