@@ -1,7 +1,5 @@
 language: go
 go:
-  #- 1.5  go test arguments are different in 1.5 :-(
-  - 1.6
   - 1.7
   - tip
 
