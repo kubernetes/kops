@@ -83,12 +83,22 @@ loadBalancerAttachment/bastion-elb-attachment.{{ ClusterName }}:
   loadBalancer: loadBalancer/bastion.{{ ClusterName }}
   autoscalingGroup: autoscalingGroup/bastion.{{ ClusterName }}
 
-
+# ---------------------------------------------------------------------
+# Loadbalaner attributes are configurable now
+# By default ELB has an idle timeout of 60 seconds to close connection
+# Modified the idle timeout for bastion elb
+# --------------------------------------------------------------------
+loadBalancerAttributes/bastion.{{ ClusterName }}:
+  loadBalancer: loadBalancer/bastion.{{ ClusterName }}
+  connectionSettings: loadBalancerConnectionSettings/bastion.{{ ClusterName }}
+loadBalancerConnectionSettings/bastion.{{ ClusterName }}:
+  loadBalancer: loadBalancer/bastion.{{ ClusterName }}
+  idleTimeout: {{ GetBastionIdleTimeout }}
 # ---------------------------------------------------------------
 # ASG - The Bastion itself
 #
-# Define the bastion host. Hard coding to a t2.small for now.
-# we probably want to abstract this out in a later feature.
+# Define the bastion host.
+# Machine type configurable.
 #
 # The bastion host will live in one of the utility subnets
 # created in the private topology. The bastion host will have
@@ -102,7 +112,7 @@ launchConfiguration/bastion.{{ ClusterName }}:
    - securityGroup/bastion.{{ ClusterName }}
   iamInstanceProfile: iamInstanceProfile/masters.{{ ClusterName }}
   imageId: {{ GetBastionImageId }}
-  instanceType: t2.small
+  instanceType: {{ GetBastionMachineType }}
   associatePublicIP: false
   rootVolumeSize: 20
   rootVolumeType: gp2
@@ -116,23 +126,16 @@ autoscalingGroup/bastion.{{ ClusterName }}:
     Name: bastion-{{ GetBastionZone }}.{{ ClusterName }}
     KubernetesCluster: {{ ClusterName }}
 
-# ---------------------------------------------------------------
-# TODO Kris
-#
-# So as it stands we are *NOT* defining a friendly CNAME for the
-# bastion ELB. I think this is a good thing.
-#
-# If we came up with a formula EG: bastion.<clusterName> we could
-# be exposing ourselves to a few threats :)
-#
-# I think it's best in this situation to err on the side of
-# caution and force the end user to define something convenient
-# on their own.
-#
-# TLDR; If you want a friendly CNAME for your bastion - you have
-# to build it yourself. Kops won't support that
-#
-# Right?
-# ---------------------------------------------------------------
-
+{{ if IsBastionDNS }}
+# ------------------------------------------------------------------------
+# By default Bastion is not reachable from outside because of security concerns.
+# But if the user specifies bastion name using edit cluster, we configure
+# the bastion DNS entry for it to be reachable from outside.
+# BastionPublicName --> Bastion LoadBalancer
+# ------------------------------------------------------------------------
+dnsName/{{ GetBastionDNS }}:
+  Zone: dnsZone/{{ .DNSZone }}
+  ResourceType: "A"
+  TargetLoadBalancer: loadBalancer/bastion.{{ ClusterName }}
+{{ end }}
 {{ end }}
