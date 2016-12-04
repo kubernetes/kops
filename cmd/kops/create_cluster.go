@@ -19,10 +19,12 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/golang/glog"
-	"github.com/spf13/cobra"
 	"io"
 	"io/ioutil"
+	"strings"
+
+	"github.com/golang/glog"
+	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
@@ -32,7 +34,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kubernetes/pkg/util/sets"
-	"strings"
 )
 
 type CreateClusterOptions struct {
@@ -62,6 +63,9 @@ type CreateClusterOptions struct {
 
 	// The network topology to use
 	Topology string
+
+	// Enable/Disable Bastion Host complete setup
+	Bastion bool
 }
 
 func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
@@ -117,6 +121,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	// Network topology
 	cmd.Flags().StringVarP(&options.Topology, "topology", "t", "public", "Controls network topology for the cluster. public|private. Default is 'public'.")
 
+	// Bastion
+	cmd.Flags().BoolVar(&options.Bastion, "bastion", false, "Specify --bastion=[true|false] to turn enable/disable bastion setup. Default to 'false' when topology is 'public' and defaults to 'true' if topology is 'private'.")
+
 	return cmd
 }
 
@@ -139,7 +146,6 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 		isDryrun = true
 		targetName = cloudup.TargetDryRun
 	}
-
 	clusterName := rootCommand.clusterName
 	if clusterName == "" {
 		return fmt.Errorf("--name is required")
@@ -175,6 +181,7 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 	if err != nil {
 		return err
 	}
+
 	if channel.Spec.Cluster != nil {
 		cluster.Spec = *channel.Spec.Cluster
 	}
@@ -211,7 +218,6 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 		for _, zone := range cluster.Spec.Zones {
 			existingZones[zone.Name] = zone
 		}
-
 		for _, zone := range parseZoneList(c.Zones) {
 			if existingZones[zone] == nil {
 				cluster.Spec.Zones = append(cluster.Spec.Zones, &api.ClusterZoneSpec{
@@ -372,21 +378,46 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 		}
 	}
 
+	//Bastion
+	if c.Topology != "" {
+		if c.Topology == api.TopologyPublic && c.Bastion == true {
+			return fmt.Errorf("Bastion supports --topology='private' only.")
+		}
+	}
+
 	// Network Topology
 	switch c.Topology {
 	case api.TopologyPublic:
-		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPublic, Nodes: api.TopologyPublic, BypassBastion: false}
+		cluster.Spec.Topology = &api.TopologySpec{
+			Masters: api.TopologyPublic,
+			Nodes:   api.TopologyPublic,
+			Bastion: &api.BastionSpec{Enable: c.Bastion},
+		}
 	case api.TopologyPrivate:
 		if !supportsPrivateTopology(cluster.Spec.Networking) {
 			return fmt.Errorf("Invalid networking option %s. Currently only '--networking cni', '--networking kopeio-vxlan', '--networking weave' are supported for private topologies", c.Networking)
 		}
-		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPrivate, Nodes: api.TopologyPrivate, BypassBastion: false}
+		cluster.Spec.Topology = &api.TopologySpec{
+			Masters: api.TopologyPrivate,
+			Nodes:   api.TopologyPrivate,
+		}
+		if cmd.Flags().Changed("bastion") {
+			cluster.Spec.Topology.Bastion = &api.BastionSpec{Enable: c.Bastion}
+		} else {
+			cluster.Spec.Topology.Bastion = &api.BastionSpec{Enable: true}
+		}
 	case "":
-		glog.Warningf("Empty topology. Defaulting to public topology.")
-		cluster.Spec.Topology = &api.TopologySpec{Masters: api.TopologyPublic, Nodes: api.TopologyPublic, BypassBastion: false}
+		glog.Warningf("Empty topology. Defaulting to public topology without bastion")
+		cluster.Spec.Topology = &api.TopologySpec{
+			Masters: api.TopologyPublic,
+			Nodes:   api.TopologyPublic,
+			Bastion: &api.BastionSpec{Enable: false},
+		}
 	default:
 		return fmt.Errorf("Invalid topology %s.", c.Topology)
 	}
+	cluster.Spec.Topology.Bastion.MachineType = cloudup.DefaultBastionMachineType(cluster)
+	cluster.Spec.Topology.Bastion.IdleTimeout = cloudup.DefaultBastionIdleTimeout(cluster)
 
 	sshPublicKeys := make(map[string][]byte)
 	if c.SSHPublicKey != "" {

@@ -301,3 +301,12 @@ type ClusterZoneSpec struct {
 //	// Assets that NodeUp should use.  This is a "search-path" for resolving dependencies.
 //	Assets     []string `json:",omitempty"`
 //}
+func (c *Cluster) GetBastionMachineType() string {
+	return c.Spec.Topology.Bastion.MachineType
+}
+func (c *Cluster) GetBastionPublicName() string {
+	return c.Spec.Topology.Bastion.PublicName
+}
+func (c *Cluster) GetBastionIdleTimeout() int {
+	return c.Spec.Topology.Bastion.IdleTimeout
+}

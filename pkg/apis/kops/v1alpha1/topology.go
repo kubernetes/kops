@@ -28,8 +28,10 @@ type TopologySpec struct {
 	// The environment to launch the Kubernetes nodes in public|private
 	Nodes string `json:"nodes,omitempty"`
 
-	// Controls if a private topology should deploy a bastion host or not
-	// The bastion host is designed to be a simple, and secure bridge between
-	// the public subnet and the private subnet
-	BypassBastion bool `json:"bypassBastion,omitempty"`
+	// Bastion provide an external facing point of entry into a network
+	// containing private network instances. This host can provide a single
+	// point of fortification or audit and can be started and stopped to enable
+	// or disable inbound SSH communication from the Internet, some call bastion
+	// as the "jump server".
+	Bastion *BastionSpec `json:"bastion,omitempty"`
 }
