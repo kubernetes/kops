@@ -204,4 +204,4 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 	return nil
 }
 
-// TODO Kris - We need to support EIP for Terraform
+// Starting work on Terraform here
