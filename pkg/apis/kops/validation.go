@@ -320,7 +320,7 @@ func (c *Cluster) Validate(strict bool) error {
 	}
 
 	// Bastion
-	if c.Spec.Topology.Bastion.Enable {
+	if c.Spec.Topology.Bastion != nil && c.Spec.Topology.Bastion.Enable {
 		if c.Spec.Topology.Masters == TopologyPublic || c.Spec.Topology.Nodes == TopologyPublic {
 			return fmt.Errorf("Bastion supports only Private Masters and Nodes")
 		}
