@@ -93,7 +93,7 @@ loadBalancerAttributes/bastion.{{ ClusterName }}:
   connectionSettings: loadBalancerConnectionSettings/bastion.{{ ClusterName }}
 loadBalancerConnectionSettings/bastion.{{ ClusterName }}:
   loadBalancer: loadBalancer/bastion.{{ ClusterName }}
-  idleTimeout: 120
+  idleTimeout: {{ GetBastionIdleTimeout }}
 # ---------------------------------------------------------------
 # ASG - The Bastion itself
 #
