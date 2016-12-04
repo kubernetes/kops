@@ -24,6 +24,9 @@ const (
 
 	RecordTypeA     = "A"
 	RecordTypeCNAME = "CNAME"
+
+	RoleTypeExternal = "external"
+	RoleTypeInternal = "internal"
 )
 
 type Record struct {
@@ -38,6 +41,6 @@ type Record struct {
 }
 
 // AliasForNodesInRole returns the alias for nodes in the given role
-func AliasForNodesInRole(role string) string {
-	return "node/role=" + role + "/external"
+func AliasForNodesInRole(role, roleType string) string {
+	return "node/role=" + role + "/" + roleType
 }

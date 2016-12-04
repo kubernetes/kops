@@ -14,25 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package dns
 
-import (
-	"io"
+import "testing"
 
-	"github.com/spf13/cobra"
-	"k8s.io/kops/cmd/kops/util"
-)
-
-func NewCmdValidate(f *util.Factory, out io.Writer) *cobra.Command {
-	cmd := &cobra.Command{
-		Use: "validate",
-		//SuggestFor: []string{"val"},
-		Short: "Validate Cluster",
-		Long:  `Validate a Kubernetes Cluster`,
+func TestAliasForNodesInRole(t *testing.T) {
+	cases := []struct {
+		role, roleType, expected string
+	}{
+		{"node", RoleTypeExternal, "node/role=node/external"},
+		{"node", RoleTypeInternal, "node/role=node/internal"},
 	}
 
-	// create subcommands
-	cmd.AddCommand(NewCmdValidateCluster(f, out))
-
-	return cmd
+	for _, c := range cases {
+		if actual := AliasForNodesInRole(c.role, c.roleType); actual != c.expected {
+			t.Errorf("AliasForNodesInRole(%#v, %#v) expected %#v, but got %#v", c.role, c.roleType, c.expected, actual)
+		}
+	}
 }

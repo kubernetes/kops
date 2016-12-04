@@ -213,6 +213,7 @@ func (c *NodeController) updateNodeRecords(node *v1.Node) {
 	}
 
 	// node/role=<role>/external -> ExternalIP
+	// node/role=<role>/internal -> InternalIP
 	{
 		role := node.Labels["kubernetes.io/role"]
 		if role == "" {
@@ -220,12 +221,15 @@ func (c *NodeController) updateNodeRecords(node *v1.Node) {
 		}
 
 		for _, a := range node.Status.Addresses {
-			if a.Type != v1.NodeExternalIP {
-				continue
+			var roleType string
+			if a.Type == v1.NodeInternalIP {
+				roleType = dns.RoleTypeInternal
+			} else if a.Type == v1.NodeExternalIP {
+				roleType = dns.RoleTypeExternal
 			}
 			records = append(records, dns.Record{
 				RecordType:  dns.RecordTypeA,
-				FQDN:        dns.AliasForNodesInRole(role),
+				FQDN:        dns.AliasForNodesInRole(role, roleType),
 				Value:       a.Address,
 				AliasTarget: true,
 			})
