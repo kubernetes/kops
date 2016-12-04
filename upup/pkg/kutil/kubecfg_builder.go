@@ -189,6 +189,7 @@ func (c *KubeconfigBuilder) WriteKubecfg() error {
 	return nil
 }
 
+// get the correct path.  Handle empty and multiple values.
 func (c *KubeconfigBuilder) getKubectlPath(kubeConfig string) string {
 
 	if kubeConfig == "" {
