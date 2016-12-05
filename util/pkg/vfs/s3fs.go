@@ -309,8 +309,8 @@ func (p *S3Path) Hash(a hashing.HashAlgorithm) (*hashing.Hash, error) {
 	return &hashing.Hash{Algorithm: hashing.HashAlgorithmMD5, HashValue: md5Bytes}, nil
 }
 
-func (p *S3Path) CreateBucket() error {
-	client, err := p.client()
+func (p *S3Path) CreateNewBucket() error {
+	awsClient, err := p.client()
 	if err != nil {
 		return fmt.Errorf("Unable to create client: %v", err)
 	}
@@ -320,6 +320,7 @@ func (p *S3Path) CreateBucket() error {
 		bucketName += "/"
 	}
 
+
 	input := &s3.CreateBucketInput{
 		Bucket: aws.String(bucketName),
 		CreateBucketConfiguration: &s3.CreateBucketConfiguration{
@@ -327,13 +328,13 @@ func (p *S3Path) CreateBucket() error {
 		},
 	}
 
-	_, err = client.CreateBucket(input)
+	_, err = awsClient.CreateBucket(input)
 
 	if err != nil {
 		return fmt.Errorf("Unable to create S3 bucket: %v in %s , %v", "s3://"+p.bucket+"/", p.region, err)
 	}
 
-	if err = client.WaitUntilBucketExists(&s3.HeadBucketInput{Bucket: aws.String(bucketName)}); err != nil {
+	if err = awsClient.WaitUntilBucketExists(&s3.HeadBucketInput{Bucket: aws.String(bucketName)}); err != nil {
 		return nil
 	}
 

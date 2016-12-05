@@ -123,18 +123,18 @@ func (t *KopsTest) createBucket() (*KopsTest, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Unable to create s3 bucket name: %v", err)
 	}
-	bucketName := strings.ToLower("kops-testing-" + string(bytes[:]))
-	s3Context := vfs.NewS3Context()
+	bucketName := strings.ToLower("kops-testing-" + string(bytes[:])) + "/"
+	vfsContext := vfs.NewS3Context()
 
 	// TODO: pass in region or pick it up from profile
-	s3 := vfs.NewS3PathWithRegion(s3Context, bucketName, "key","us-west-1")
+	vfsPath := vfs.NewS3PathWithRegion(vfsContext, bucketName, "key","us-west-1")
 
-	err = s3.CreateBucket()
+	err = vfsPath.CreateNewBucket()
 	if err != nil {
 		return  nil,fmt.Errorf("Unable to create s3 bucket: %v", err)
 	}
 
-	t.StateStore = s3.Path()
+	t.StateStore = vfsPath.Path()
 	return t, nil
 }
 
