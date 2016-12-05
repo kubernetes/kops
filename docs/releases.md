@@ -27,8 +27,12 @@
 
 #### 5. AWS support
 
+* Build and release new AMI
 * Build and release new nodeup binary to S3
-* Verify/Validate all AMIs are updated
+* Build and release new kops binary to S3
+* Build and release new protokube docker image
+* Build and release new dnscontroller docker image
+* Need to pull a tag for channels
 
 #### 6. Update release branch
 
