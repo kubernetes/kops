@@ -58,7 +58,6 @@ type CreateClusterOptions struct {
 	AdminAccess       string
 	Networking        string
 	AssociatePublicIP bool
-	IgnoreNSCheck     bool
 
 	// Channel is the location of the api.Channel to use for our defaults
 	Channel string
@@ -145,8 +144,6 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	// Bastion
 	cmd.Flags().BoolVar(&options.Bastion, "bastion", options.Bastion, "Specify --bastion=[true|false] to turn enable/disable bastion setup. Default to 'false' when topology is 'public' and defaults to 'true' if topology is 'private'.")
-
-	cmd.Flags().BoolVar(&options.IgnoreNSCheck, "ignore-ns-check", false, "Specify --ignore-ns-check=[true|false] to ignore NS record checks. Default is 'false'.")
 
 	return cmd
 }
@@ -454,6 +451,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.Topology = &api.TopologySpec{
 			Masters: api.TopologyPrivate,
 			Nodes:   api.TopologyPrivate,
+			DNS:     api.TopologyPrivate,
 		}
 
 		for i := range cluster.Spec.Subnets {
