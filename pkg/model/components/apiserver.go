@@ -23,6 +23,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
+// KubeAPIServerOptionsBuilder adds options for the apiserver to the model
 type KubeAPIServerOptionsBuilder struct {
 	Cluster *kops.Cluster
 }
