@@ -75,7 +75,7 @@ codegen: kops-gobindata
 	PATH=${GOPATH_1ST}/bin:${PATH} go generate k8s.io/kops/upup/pkg/fi/cloudup/gcetasks
 	PATH=${GOPATH_1ST}/bin:${PATH} go generate k8s.io/kops/upup/pkg/fi/fitasks
 
-test:
+unit-test:
 	go test k8s.io/kops/upup/pkg/... -args -v=1 -logtostderr
 	go test k8s.io/kops/pkg/... -args -v=1 -logtostderr
 	go test k8s.io/kops/dns-controller/pkg/... -args -v=1 -logtostderr
@@ -228,7 +228,7 @@ govet:
 verify-boilerplate:
 	sh -c hack/verify-boilerplate.sh
 
-ci: kops nodeup-gocode examples test govet verify-boilerplate
+ci: kops nodeup-gocode examples unit-test govet verify-boilerplate
 	echo "Done!"
 
 # --------------------------------------------------
