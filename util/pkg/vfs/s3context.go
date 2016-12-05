@@ -67,7 +67,7 @@ func (s *S3Context) getRegionForBucket(bucket string) (string, error) {
 	}
 
 	// Probe to find correct region for bucket
-	awsRegion := os.Getenv("KOPS_AWS_REGION")
+	awsRegion := os.Getenv("AWS_REGION")
 	if awsRegion == "" {
 		awsRegion = "us-east-1"
 	}
