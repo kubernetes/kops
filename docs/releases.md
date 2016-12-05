@@ -42,7 +42,7 @@
 #### 7. Manual test and validate
 
 * Maintainers should now give the repository a once over to validate everything looks in place.
-* At least 1 maintainer must run the recently released code to verify success.
+* A majority of the maintainers must run the recently released code to verify success.
 
 #### 8. Announce the release
 
