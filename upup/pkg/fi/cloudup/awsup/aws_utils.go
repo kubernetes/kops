@@ -38,7 +38,7 @@ func ValidateRegion(region string) error {
 		glog.V(2).Infof("Querying EC2 for all valid regions")
 
 		request := &ec2.DescribeRegionsInput{}
-		awsRegion := os.Getenv("KOPS_AWS_REGION")
+		awsRegion := os.Getenv("AWS_REGION")
 		if awsRegion == "" {
 			awsRegion = "us-east-1"
 		}
