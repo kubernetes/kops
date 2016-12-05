@@ -433,6 +433,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.Topology = &api.TopologySpec{
 			Masters: api.TopologyPublic,
 			Nodes:   api.TopologyPublic,
+			DNS:     api.TopologyPublic,
 			//Bastion: &api.BastionSpec{Enable: c.Bastion},
 		}
 

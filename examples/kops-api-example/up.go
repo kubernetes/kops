@@ -40,6 +40,7 @@ func up() error {
 	}
 	cluster.Spec.Topology.Masters = api.TopologyPublic
 	cluster.Spec.Topology.Nodes = api.TopologyPublic
+	cluster.Spec.Topology.DNS = api.TopologyPublic
 
 	for _, z := range nodeZones {
 		cluster.Spec.Subnets = append(cluster.Spec.Subnets, api.ClusterSubnetSpec{
