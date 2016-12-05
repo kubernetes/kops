@@ -20,16 +20,17 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/golang/glog"
 	"io/ioutil"
-	"k8s.io/kops/util/pkg/hashing"
 	"os"
 	"path"
 	"strings"
 	"sync"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/golang/glog"
+	"k8s.io/kops/util/pkg/hashing"
 )
 
 type S3Path struct {
@@ -51,6 +52,17 @@ func NewS3Path(s3Context *S3Context, bucket string, key string) *S3Path {
 		s3Context: s3Context,
 		bucket:    bucket,
 		key:       key,
+	}
+}
+
+func NewS3PathWithRegion(s3Context *S3Context, bucket string, key string, region string) *S3Path {
+	bucket = strings.TrimSuffix(bucket, "/")
+	key = strings.TrimPrefix(key, "/")
+	return &S3Path{
+		s3Context: s3Context,
+		bucket:    bucket,
+		key:       key,
+		region:    region,
 	}
 }
 
@@ -109,15 +121,16 @@ func (p *S3Path) WriteFile(data []byte) error {
 
 	glog.V(4).Infof("Writing file %q", p)
 
-	request := &s3.PutObjectInput{}
-	request.Body = bytes.NewReader(data)
-	request.Bucket = aws.String(p.bucket)
-	request.Key = aws.String(p.key)
-	request.ServerSideEncryption = aws.String("AES256")
-
 	// We don't need Content-MD5: https://github.com/aws/aws-sdk-go/issues/208
 
-	_, err = client.PutObject(request)
+	_, err = client.PutObject(
+		&s3.PutObjectInput{
+			Body:                 bytes.NewReader(data),
+			Bucket:               aws.String(p.bucket),
+			Key:                  aws.String(p.key),
+			ServerSideEncryption: aws.String("AES256"),
+		})
+
 	if err != nil {
 		return fmt.Errorf("error writing %s: %v", p, err)
 	}
@@ -294,6 +307,56 @@ func (p *S3Path) Hash(a hashing.HashAlgorithm) (*hashing.Hash, error) {
 	}
 
 	return &hashing.Hash{Algorithm: hashing.HashAlgorithmMD5, HashValue: md5Bytes}, nil
+}
+
+func (p *S3Path) CreateBucket() error {
+	client, err := p.client()
+	if err != nil {
+		return fmt.Errorf("Unable to create client: %v", err)
+	}
+	bucketName := "s3://"+p.bucket
+
+	if !strings.HasSuffix(bucketName, "/") {
+		bucketName += "/"
+	}
+
+	input := &s3.CreateBucketInput{
+		Bucket: aws.String(bucketName),
+		CreateBucketConfiguration: &s3.CreateBucketConfiguration{
+			LocationConstraint: aws.String(p.region),
+		},
+	}
+
+	_, err = client.CreateBucket(input)
+
+	if err != nil {
+		return fmt.Errorf("Unable to create S3 bucket: %v in %s , %v", "s3://"+p.bucket+"/", p.region, err)
+	}
+
+	if err = client.WaitUntilBucketExists(&s3.HeadBucketInput{Bucket: aws.String(bucketName)}); err != nil {
+		return nil
+	}
+
+	return nil
+
+}
+
+func (p *S3Path) DeleteBucket() error {
+	client, err := p.client()
+	if err != nil {
+		return fmt.Errorf("Unable to create client: %v", err)
+	}
+
+	input := &s3.DeleteBucketInput{Bucket: &p.bucket}
+
+	_, err = client.DeleteBucket(input)
+
+	if err != nil {
+		return fmt.Errorf("Unable to delete S3 bucket, %v", err)
+	}
+
+	return nil
+
 }
 
 // AWSErrorCode returns the aws error code, if it is an awserr.Error, otherwise ""

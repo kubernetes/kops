@@ -284,15 +284,16 @@ func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, interval 
 		time.Sleep(interval)
 
 		// Wait until the cluster is happy
+		// TODO: do we need to respect cloud only??
 		for i := 0; i < retries; i++ {
 
 			_, validateDidNotPass := validate.ValidateCluster(u.Node.ClusterName, instanceGroupList, k8sClient)
 
 			if validateDidNotPass != nil {
-				glog.V(2).Infof("Unable to validate kuberetes cluster %s", u.Node.ClusterName)
+				glog.V(2).Infof("Unable to validate kuberetes cluster %s, %v.", u.Node.ClusterName, validateDidNotPass)
 				time.Sleep(interval)
 			} else {
-				glog.V(2).Infof("Cluster %s is validated, updating more", u.Node.ClusterName)
+				glog.V(2).Infof("Cluster %s is validated and proceeding.", u.Node.ClusterName)
 				break
 			}
 		}
