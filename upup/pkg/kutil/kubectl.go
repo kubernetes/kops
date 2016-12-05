@@ -20,26 +20,18 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/golang/glog"
 	"io/ioutil"
-	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/golang/glog"
+	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 )
 
 type Kubectl struct {
 	KubectlPath string
 }
-
-//func (k *Kubectl) GetCurrentContext() (string, error) {
-//	s, err := k.execKubectl("config", "current-context")
-//	if err != nil {
-//		return "", err
-//	}
-//	s = strings.TrimSpace(s)
-//	return s, nil
-//}
 
 func (k *Kubectl) GetCurrentContext() (string, error) {
 	pathOptions := clientcmd.NewDefaultPathOptions()
@@ -51,12 +43,6 @@ func (k *Kubectl) GetCurrentContext() (string, error) {
 
 	return config.CurrentContext, nil
 
-	//s, err := k.execKubectl("config", "current-context")
-	//if err != nil {
-	//	return "", err
-	//}
-	//s = strings.TrimSpace(s)
-	//return s, nil
 }
 
 func (k *Kubectl) GetConfig(minify bool) (*KubectlConfig, error) {
@@ -109,6 +95,25 @@ func (k *Kubectl) Apply(context string, data []byte) error {
 
 	_, _, err = k.execKubectl("apply", "--context", context, "-f", localManifestFile.Name())
 	return err
+}
+
+// Calls kubectl to cordon node
+func (k *Kubectl) Cordon(nodeName string) (stdout string, err error) {
+
+	if nodeName == "" {
+		return "", fmt.Errorf("a node name is required")
+	}
+
+	stdout, stderr, err := k.execKubectl("cordon", nodeName)
+
+	if err != nil {
+		return "", fmt.Errorf("error running cordon: %v", err)
+	} else if stderr != "" {
+		return "", fmt.Errorf("error running cordon: %s", stderr)
+	}
+
+	return stdout, nil
+
 }
 
 func (k *Kubectl) execKubectl(args ...string) (string, string, error) {
