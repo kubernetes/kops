@@ -37,6 +37,7 @@
 #### 6. Update release branch
 
 * Merge the `master` branch into the `release` branch. [More information](releases.md#branch-strategy)
+* Create a `tag` from the newly merged `release` branch.
 
 #### 7. Manual test and validate
 
