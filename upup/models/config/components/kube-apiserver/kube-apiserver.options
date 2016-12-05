@@ -16,4 +16,3 @@ KubeAPIServer:
   LogLevel: 2
   AllowPrivileged: true
   Image: {{ Image "kube-apiserver" }}
-  APIServerCount: {{ APIServerCount }}
