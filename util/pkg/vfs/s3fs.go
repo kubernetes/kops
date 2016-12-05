@@ -20,16 +20,17 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/golang/glog"
 	"io/ioutil"
-	"k8s.io/kops/util/pkg/hashing"
 	"os"
 	"path"
 	"strings"
 	"sync"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/golang/glog"
+	"k8s.io/kops/util/pkg/hashing"
 )
 
 type S3Path struct {
@@ -294,6 +295,41 @@ func (p *S3Path) Hash(a hashing.HashAlgorithm) (*hashing.Hash, error) {
 	}
 
 	return &hashing.Hash{Algorithm: hashing.HashAlgorithmMD5, HashValue: md5Bytes}, nil
+}
+
+func (p *S3Path) CreateBucket() error {
+	client, err := p.client()
+	if err != nil {
+		return fmt.Errorf("Unable to create client: %v", err)
+	}
+	input := &s3.CreateBucketInput{Bucket: &p.bucket}
+
+	_, err = client.CreateBucket(input)
+
+	if err != nil {
+		return fmt.Errorf("Unable to create S3 bucket, %v", err)
+	}
+
+	return nil
+
+}
+
+func (p *S3Path) DeleteBucket() error {
+	client, err := p.client()
+	if err != nil {
+		return fmt.Errorf("Unable to create client: %v", err)
+	}
+
+	input := &s3.DeleteBucketInput{Bucket: &p.bucket}
+
+	_, err = client.DeleteBucket(input)
+
+	if err != nil {
+		return fmt.Errorf("Unable to delete S3 bucket, %v", err)
+	}
+
+	return nil
+
 }
 
 // AWSErrorCode returns the aws error code, if it is an awserr.Error, otherwise ""

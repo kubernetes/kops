@@ -205,6 +205,7 @@ gofmt:
 	gofmt -w -s protokube/pkg
 	gofmt -w -s dns-controller/cmd
 	gofmt -w -s dns-controller/pkg
+	gofmt -w -s test/
 
 
 govet:
@@ -217,7 +218,8 @@ govet:
 	  k8s.io/kops/util/... \
 	  k8s.io/kops/upup/... \
 	  k8s.io/kops/protokube/... \
-	  k8s.io/kops/dns-controller/...
+	  k8s.io/kops/dns-controller/... \
+	  k8s.io/kops/test/...
 
 
 # --------------------------------------------------
@@ -228,6 +230,12 @@ verify-boilerplate:
 
 ci: kops nodeup-gocode examples test govet verify-boilerplate
 	echo "Done!"
+
+# --------------------------------------------------
+# E2E integration targets
+
+e2e: kops nodeup-gocode govet verify-boilerplate
+	go test -v -timeout 1200s k8s.io/kops/test
 
 # --------------------------------------------------
 # channel tool
