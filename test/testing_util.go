@@ -50,13 +50,17 @@ type KopsTest struct {
 
 // Basic Pre Test
 func (t *KopsTest) Pre() (*KopsTest, error) {
-	err := t.basicPreCheck()
+	t, err := t.basicPreCheck()
 	if err != nil {
 		return nil, fmt.Errorf("error in precheck %v", err)
 	}
-	err = t.createBucket()
+	t, err = t.createBucket()
 	if err != nil {
 		return nil, fmt.Errorf("error in create bucket %v", err)
+	}
+	t, err = t.createClusterName()
+	if err != nil {
+		return nil, fmt.Errorf("error in create cluster name %v", err)
 	}
 
 	// TODO: setup dynamically
@@ -83,40 +87,40 @@ func (t *KopsTest) Post() error {
 }
 
 // Base setup function to check that a template, and nic information is set
-func (t *KopsTest) basicPreCheck() error {
+func (t *KopsTest) basicPreCheck() (*KopsTest, error) {
 
 	if v := os.Getenv("KOPS_TEST_IMAGE"); v == "" {
-		return fmt.Errorf("env variable KOPS_TEST_IMAGE must be set for acceptance tests")
+		return nil, fmt.Errorf("env variable KOPS_TEST_IMAGE must be set for acceptance tests")
 	}
 
 	t.Image = os.Getenv("KOPS_TEST_IMAGE")
 
 	if v := os.Getenv("KOPS_TEST_DOMAIN"); v == "" {
-		return fmt.Errorf("env variable KOPS_TEST_DOMAIN must be set for acceptance tests")
+		return nil, fmt.Errorf("env variable KOPS_TEST_DOMAIN must be set for acceptance tests")
 	}
 
 	t.DomainName = os.Getenv("KOPS_TEST_DOMAIN")
 
 	if v := os.Getenv("KOPS_TEST_NODEUP_URL"); v == "" {
-		return fmt.Errorf("env variable KOPS_TEST_NODEUP_URL must be set for acceptance tests")
+		return nil, fmt.Errorf("env variable KOPS_TEST_NODEUP_URL must be set for acceptance tests")
 	}
 
 	t.NodeUpURL = os.Getenv("KOPS_NODEUP_URL")
 
 	if v := os.Getenv("KOPS_TEST_K8S_VERSION"); v == "" {
-		return fmt.Errorf("env variable KOPS_TEST_K8S_VERSION must be set for acceptance tests")
+		return nil, fmt.Errorf("env variable KOPS_TEST_K8S_VERSION must be set for acceptance tests")
 	}
 
 	t.K8sVersion = os.Getenv("KOPS_TEST_K8S_VERSION")
 
-	return nil
+	return t, nil
 }
 
-func (t *KopsTest) createBucket() error {
+func (t *KopsTest) createBucket() (*KopsTest, error) {
 
 	bytes, err := exec.Command("uuidgen").Output()
 	if err != nil {
-		return fmt.Errorf("Unable to create s3 bucket name: %v", err)
+		return nil, fmt.Errorf("Unable to create s3 bucket name: %v", err)
 	}
 	bucketName := string(bytes[:])
 	s3Context := vfs.NewS3Context()
@@ -125,22 +129,24 @@ func (t *KopsTest) createBucket() error {
 
 	err = s3.CreateBucket()
 	if err != nil {
-		return fmt.Errorf("Unable to create s3 bucket: %v", err)
+		return  nil,fmt.Errorf("Unable to create s3 bucket: %v", err)
 	}
 
 	t.StateStore = s3.Path()
-	return nil
+	return t, nil
 }
 
-func (t *KopsTest) createClusterName() error {
+func (t *KopsTest) createClusterName() (*KopsTest, error) {
 
-	cluster, err := exec.Command("uuidgen").Output()
+	bytes, err := exec.Command("uuidgen").Output()
 	if err != nil {
-		return fmt.Errorf("Unable to create s3 bucket name: %v", err)
+		return  nil,fmt.Errorf("Unable to create s3 bucket name: %v", err)
 	}
 
+	cluster := string(bytes[:])
+
 	t.ClusterName = fmt.Sprintf("kops-testing-%s.%s", cluster, t.DomainName)
-	return nil
+	return t, nil
 }
 
 func (t *KopsTest) deleteBucket() error {

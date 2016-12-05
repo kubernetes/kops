@@ -114,9 +114,10 @@ const CREATE_CLUSTER = `create cluster \
   --master-size %s \
   --topology %s \
   --networking %s \
+  --kubernetes-version %s \
   -v %c \
   --image %s \
-  --yes
+  --yes \
 `
 const DELETE_CLUSTER = `delete cluster \
   --name %s \
@@ -139,6 +140,7 @@ func CreateCluster(kopsTesting *KopsTest) error {
 		kopsTesting.NodeSize,
 		kopsTesting.MasterSize,
 		kopsTesting.Topology,
+		kopsTesting.K8sVersion,
 		kopsTesting.Networking,
 		kopsTesting.Verbosity,
 		kopsTesting.Image )

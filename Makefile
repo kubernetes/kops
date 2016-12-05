@@ -234,7 +234,7 @@ ci: kops nodeup-gocode examples unit-test govet verify-boilerplate
 # --------------------------------------------------
 # E2E integration targets
 
-e2e: kops nodeup-gocode govet verify-boilerplate
+e2e: govet verify-boilerplate upload
 	go test -v -timeout 1200s k8s.io/kops/test
 
 # --------------------------------------------------
