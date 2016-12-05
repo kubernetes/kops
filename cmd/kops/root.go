@@ -110,6 +110,7 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.AddCommand(NewCmdCreate(f, out))
 	cmd.AddCommand(NewCmdEdit(f, out))
 	cmd.AddCommand(NewCmdUpdate(f, out))
+	cmd.AddCommand(NewCmdReplace(f, out))
 
 	return cmd
 }
