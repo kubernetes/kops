@@ -33,7 +33,7 @@ func (e *LoadBalancerConnectionSettings) Find(c *fi.Context) (*LoadBalancerConne
 	cloud := c.Cloud.(awsup.AWSCloud)
 	elbName := fi.StringValue(e.LoadBalancer.ID)
 
-	lb, err := findELB(cloud, elbName)
+	lb, err := findLoadBalancer(cloud, elbName)
 	if err != nil {
 		return nil, err
 	}
