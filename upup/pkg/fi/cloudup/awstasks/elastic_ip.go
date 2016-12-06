@@ -42,6 +42,12 @@ type ElasticIP struct {
 	Subnet *Subnet
 }
 
+var _ fi.CompareWithID = &ElasticIP{}
+
+func (e *ElasticIP) CompareWithID() *string {
+	return e.ID
+}
+
 var _ fi.HasAddress = &ElasticIP{}
 
 func (e *ElasticIP) FindAddress(context *fi.Context) (*string, error) {
