@@ -37,7 +37,7 @@ type ClusterVFS struct {
 
 func newClusterVFS(basePath vfs.Path) *ClusterVFS {
 	c := &ClusterVFS{}
-	c.init("Cluster", basePath, v1alpha1.SchemeGroupVersion)
+	c.init("Cluster", basePath, StoreVersion)
 	defaultReadVersion := v1alpha1.SchemeGroupVersion.WithKind("Cluster")
 	c.defaultReadVersion = &defaultReadVersion
 	return c
