@@ -32,6 +32,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kops/pkg/model"
 )
 
 var EtcdClusters = []string{"main", "events"}
@@ -42,12 +43,12 @@ type populateClusterSpec struct {
 	InputCluster *api.Cluster
 
 	// ModelStore is the location where models are found
-	ModelStore vfs.Path
+	ModelStore   vfs.Path
 	// Models is a list of cloudup models to apply
-	Models []string
+	Models       []string
 
 	// fullCluster holds the built completed cluster spec
-	fullCluster *api.Cluster
+	fullCluster  *api.Cluster
 }
 
 func findModelStore() (vfs.Path, error) {
@@ -109,13 +110,13 @@ func (c *populateClusterSpec) run() error {
 	// TODO: Move to validate?
 	// Check that instance groups are defined in valid zones
 	{
-		clusterZones := make(map[string]*api.ClusterZoneSpec)
-		for _, z := range cluster.Spec.Zones {
-			if clusterZones[z.Name] != nil {
-				return fmt.Errorf("Zones contained a duplicate value: %v", z.Name)
-			}
-			clusterZones[z.Name] = z
-		}
+		//clusterSubnets := make(map[string]*api.ClusterSubnetSpec)
+		//for _, subnet := range cluster.Spec.Subnets {
+		//	if clusterSubnets[subnet.SubnetName] != nil {
+		//		return fmt.Errorf("Subnets contained a duplicate value: %v", subnet.SubnetName)
+		//	}
+		//	clusterSubnets[subnet.SubnetName] = subnet
+		//}
 
 		// Check etcd configuration
 		{
@@ -129,12 +130,12 @@ func (c *populateClusterSpec) run() error {
 						return fmt.Errorf("EtcdMember #%d of etcd-cluster %s did not specify a Name", i, etcd.Name)
 					}
 
-					if fi.StringValue(m.Zone) == "" {
-						return fmt.Errorf("EtcdMember %s:%s did not specify a Zone", etcd.Name, m.Name)
+					if fi.StringValue(m.InstanceGroup) == "" {
+						return fmt.Errorf("EtcdMember %s:%s did not specify a InstanceGroup", etcd.Name, m.Name)
 					}
 				}
 
-				etcdZones := make(map[string]*api.EtcdMemberSpec)
+				etcdInstanceGroups := make(map[string]*api.EtcdMemberSpec)
 				etcdNames := make(map[string]*api.EtcdMemberSpec)
 
 				for _, m := range etcd.Members {
@@ -142,20 +143,20 @@ func (c *populateClusterSpec) run() error {
 						return fmt.Errorf("EtcdMembers found with same name %q in etcd-cluster %q", m.Name, etcd.Name)
 					}
 
-					zone := fi.StringValue(m.Zone)
+					instanceGroupName := fi.StringValue(m.InstanceGroup)
 
-					if etcdZones[zone] != nil {
+					if etcdInstanceGroups[instanceGroupName] != nil {
 						// Maybe this should just be a warning
-						return fmt.Errorf("EtcdMembers are in the same zone %q in etcd-cluster %q", zone, etcd.Name)
+						return fmt.Errorf("EtcdMembers are in the same InstanceGroup %q in etcd-cluster %q", instanceGroupName, etcd.Name)
 					}
 
-					if clusterZones[zone] == nil {
-						return fmt.Errorf("EtcdMembers for %q is configured in zone %q, but that is not configured at the k8s-cluster level", etcd.Name, m.Zone)
-					}
-					etcdZones[zone] = m
+					//if clusterSubnets[zone] == nil {
+					//	return fmt.Errorf("EtcdMembers for %q is configured in zone %q, but that is not configured at the k8s-cluster level", etcd.Name, m.Zone)
+					//}
+					etcdInstanceGroups[instanceGroupName] = m
 				}
 
-				if (len(etcdZones) % 2) == 0 {
+				if (len(etcdInstanceGroups) % 2) == 0 {
 					// Not technically a requirement, but doesn't really make sense to allow
 					return fmt.Errorf("There should be an odd number of master-zones, for etcd's quorum.  Hint: Use --zones and --master-zones to declare node zones and master zones separately.")
 				}
@@ -220,8 +221,9 @@ func (c *populateClusterSpec) run() error {
 	//
 	// We want topology to pass through
 	// Otherwise we were losing the pointer
+	// TODO: This should not be needed...
 	cluster.Spec.Topology = c.InputCluster.Spec.Topology
-	cluster.Spec.Topology.Bastion = c.InputCluster.Spec.Topology.Bastion
+	//cluster.Spec.Topology.Bastion = c.InputCluster.Spec.Topology.Bastion
 
 	if cluster.Spec.DNSZone == "" {
 		dns, err := cloud.DNS()
@@ -241,30 +243,48 @@ func (c *populateClusterSpec) run() error {
 		return err
 	}
 
+	modelContext := &model.KopsModelContext{
+		Cluster: cluster,
+	}
 	tf := &TemplateFunctions{
 		cluster: cluster,
 		tags:    tags,
+		modelContext: modelContext,
 	}
 
 	templateFunctions := make(template.FuncMap)
 
 	tf.AddTo(templateFunctions)
 
-	codeModels := []loader.OptionsBuilder{
-		&components.KubeAPIServerOptionsBuilder{Cluster: cluster},
+	var fileModels []string
+	var codeModels []loader.OptionsBuilder
+	for _, m := range c.Models {
+		switch m {
+		case "proto":
+		// No proto code options; no file model
+
+		case "cloudup":
+			codeModels = append(codeModels, &components.KubeAPIServerOptionsBuilder{Cluster: cluster})
+			fileModels = append(fileModels, m)
+
+		default:
+			fileModels = append(fileModels, m)
+		}
 	}
+
 	specBuilder := &SpecBuilder{
 		OptionsLoader: loader.NewOptionsLoader(templateFunctions, codeModels),
 		Tags:          tags,
 	}
 
-	completed, err := specBuilder.BuildCompleteSpec(&cluster.Spec, c.ModelStore, c.Models)
+	completed, err := specBuilder.BuildCompleteSpec(&cluster.Spec, c.ModelStore, fileModels)
 	if err != nil {
 		return fmt.Errorf("error building complete spec: %v", err)
 	}
 
+	// TODO: This should not be needed...
 	completed.Topology = c.InputCluster.Spec.Topology
-	completed.Topology.Bastion = c.InputCluster.Spec.Topology.Bastion
+	//completed.Topology.Bastion = c.InputCluster.Spec.Topology.Bastion
 
 	fullCluster := &api.Cluster{}
 	*fullCluster = *cluster
@@ -303,21 +323,21 @@ func (c *populateClusterSpec) assignSubnets(cluster *api.Cluster) error {
 		ip4 := ip.To4()
 		if ip4 != nil {
 			n := binary.BigEndian.Uint32(ip4)
-			n += uint32(1 << uint(nmBits-nmOnes-1))
+			n += uint32(1 << uint(nmBits - nmOnes - 1))
 			ip = make(net.IP, len(ip4))
 			binary.BigEndian.PutUint32(ip, n)
 		} else {
 			return fmt.Errorf("IPV6 subnet computations not yet implements")
 		}
 
-		cidr := net.IPNet{IP: ip, Mask: net.CIDRMask(nmOnes+1, nmBits)}
+		cidr := net.IPNet{IP: ip, Mask: net.CIDRMask(nmOnes + 1, nmBits)}
 		cluster.Spec.KubeControllerManager.ClusterCIDR = cidr.String()
 		glog.V(2).Infof("Defaulted KubeControllerManager.ClusterCIDR to %v", cluster.Spec.KubeControllerManager.ClusterCIDR)
 	}
 
 	if cluster.Spec.ServiceClusterIPRange == "" {
 		// Allocate from the '0' subnet; but only carve off 1/4 of that (i.e. add 1 + 2 bits to the netmask)
-		cidr := net.IPNet{IP: nonMasqueradeCIDR.IP.Mask(nonMasqueradeCIDR.Mask), Mask: net.CIDRMask(nmOnes+3, nmBits)}
+		cidr := net.IPNet{IP: nonMasqueradeCIDR.IP.Mask(nonMasqueradeCIDR.Mask), Mask: net.CIDRMask(nmOnes + 3, nmBits)}
 		cluster.Spec.ServiceClusterIPRange = cidr.String()
 		glog.V(2).Infof("Defaulted ServiceClusterIPRange to %v", cluster.Spec.ServiceClusterIPRange)
 	}

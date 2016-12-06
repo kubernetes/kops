@@ -39,6 +39,7 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	k8sapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kops/pkg/model"
 )
 
 const (
@@ -50,32 +51,32 @@ const DefaultMaxTaskDuration = 10 * time.Minute
 var CloudupModels = []string{"config", "proto", "cloudup"}
 
 type ApplyClusterCmd struct {
-	Cluster *api.Cluster
+	Cluster        *api.Cluster
 
 	InstanceGroups []*api.InstanceGroup
 
 	// NodeUpSource is the location from which we download nodeup
-	NodeUpSource string
+	NodeUpSource   string
 
 	// Models is a list of cloudup models to apply
-	Models []string
+	Models         []string
 
 	// TargetName specifies how we are operating e.g. direct to GCE, or AWS, or dry-run, or terraform
-	TargetName string
+	TargetName     string
 
 	// Target is the fi.Target we will operate against
-	Target fi.Target
+	Target         fi.Target
 
 	// OutDir is a local directory in which we place output, can cache files etc
-	OutDir string
+	OutDir         string
 
 	// Assets is a list of sources for files (primarily when not using everything containerized)
 	// Formats:
 	//  raw url: http://... or https://...
 	//  url with hash: <hex>@http://... or <hex>@https://...
-	Assets []string
+	Assets         []string
 
-	Clientset simple.Clientset
+	Clientset      simple.Clientset
 
 	// DryRun is true if this is only a dry run
 	DryRun bool
@@ -179,7 +180,7 @@ func (c *ApplyClusterCmd) Run() error {
 			if err != nil {
 				return err
 			}
-			c.Assets = append(c.Assets, hash.Hex()+"@"+defaultKubeletAsset)
+			c.Assets = append(c.Assets, hash.Hex() + "@" + defaultKubeletAsset)
 		}
 
 		{
@@ -190,7 +191,7 @@ func (c *ApplyClusterCmd) Run() error {
 			if err != nil {
 				return err
 			}
-			c.Assets = append(c.Assets, hash.Hex()+"@"+defaultKubectlAsset)
+			c.Assets = append(c.Assets, hash.Hex() + "@" + defaultKubectlAsset)
 		}
 
 		if usesCNI(cluster) {
@@ -236,6 +237,11 @@ func (c *ApplyClusterCmd) Run() error {
 		for _, k := range keys {
 			sshPublicKeys = append(sshPublicKeys, k.Data)
 		}
+	}
+
+	modelContext := &model.KopsModelContext{
+		Cluster: cluster,
+		InstanceGroups: c.InstanceGroups,
 	}
 
 	switch fi.CloudProviderID(cluster.Spec.CloudProvider) {
@@ -308,21 +314,15 @@ func (c *ApplyClusterCmd) Run() error {
 				return fmt.Errorf("SSH public key must be specified when running with AWS (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
 			}
 
+			modelContext.SSHPublicKeys = sshPublicKeys
+
 			if len(sshPublicKeys) != 1 {
 				return fmt.Errorf("Exactly one 'admin' SSH public key can be specified when running with AWS; please delete a key using `kops delete secret`")
 			} else {
 				l.Resources["ssh-public-key"] = fi.NewStringResource(string(sshPublicKeys[0]))
 
 				// SSHKeyName computes a unique SSH key name, combining the cluster name and the SSH public key fingerprint
-				l.TemplateFunctions["SSHKeyName"] = func() (string, error) {
-					fingerprint, err := awstasks.ComputeOpenSSHKeyFingerprint(string(sshPublicKeys[0]))
-					if err != nil {
-						return "", err
-					}
-
-					name := "kubernetes." + cluster.ObjectMeta.Name + "-" + fingerprint
-					return name, nil
-				}
+				l.TemplateFunctions["SSHKeyName"] = modelContext.SSHKeyName
 			}
 
 			l.TemplateFunctions["MachineTypeInfo"] = awsup.GetMachineTypeInfo
@@ -347,15 +347,36 @@ func (c *ApplyClusterCmd) Run() error {
 		instanceGroups: c.InstanceGroups,
 		tags:           clusterTags,
 		region:         region,
+		modelContext: modelContext,
 	}
 
 	l.Tags = clusterTags
 	l.WorkDir = c.OutDir
 	l.ModelStore = modelStore
 
-	l.Builders = []TaskBuilder{
-		&BootstrapChannelBuilder{cluster: cluster},
+	var fileModels []string
+	var codeBuilders []fi.ModelBuilder
+	for _, m := range c.Models {
+		switch m {
+		case "proto":
+			// No proto code options; no file model
+
+		case "cloudup":
+			codeBuilders = append(codeBuilders,
+				&BootstrapChannelBuilder{cluster: cluster},
+				&model.BastionModelBuilder{KopsModelContext: modelContext},
+				&model.ExternalAccessModelBuilder{KopsModelContext: modelContext},
+				&model.DNSModelBuilder{KopsModelContext: modelContext},
+				&model.MasterVolumeBuilder{KopsModelContext: modelContext},
+			)
+			fileModels = append(fileModels, m)
+
+		default:
+			fileModels = append(fileModels, m)
+		}
 	}
+
+	l.Builders =  codeBuilders
 
 	l.TemplateFunctions["CA"] = func() fi.CAStore {
 		return keyStore
@@ -496,7 +517,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 	tf.AddTo(l.TemplateFunctions)
 
-	taskMap, err := l.BuildTasks(modelStore, c.Models)
+	taskMap, err := l.BuildTasks(modelStore, fileModels)
 	if err != nil {
 		return fmt.Errorf("error building tasks: %v", err)
 	}

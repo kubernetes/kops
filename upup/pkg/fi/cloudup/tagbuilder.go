@@ -159,6 +159,10 @@ func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTa
 		}
 
 		tags.Insert("_protokube")
+
+	case api.InstanceGroupRoleBastion:
+		// No tags
+
 	default:
 		return nil, fmt.Errorf("Unrecognized role: %v", role)
 	}

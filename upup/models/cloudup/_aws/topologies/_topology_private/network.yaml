@@ -240,14 +240,3 @@ securityGroupRule/https-api-elb:
   fromPort: 443
   toPort: 443
 
-# ---------------------------------------------------------------
-# DNS - Api
-#
-# This will point our DNS to the load balancer, and put the pieces
-# together for kubectl to be work
-# ---------------------------------------------------------------
-dnsZone/{{ .DNSZone }}: {}
-dnsName/{{ .MasterPublicName }}:
-  Zone: dnsZone/{{ .DNSZone }}
-  ResourceType: "A"
-  TargetLoadBalancer: loadBalancer/api.{{ ClusterName }}

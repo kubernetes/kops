@@ -14,5 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// +k8s:conversion-gen=k8s.io/kops/pkg/apis/kops
-package v1alpha1
+package model
+
+func s(v string) *string {
+	return &v
+}
+
+func i64(v int64) *int64 {
+	return &v
+}

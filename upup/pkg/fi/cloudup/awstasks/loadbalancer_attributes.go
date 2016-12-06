@@ -94,6 +94,78 @@ func findELBAttributes(cloud awsup.AWSCloud, name string) (*elb.LoadBalancerAttr
 	return response.LoadBalancerAttributes, nil
 }
 
+func (e *LoadBalancerAttributes) Find(c *fi.Context) (*LoadBalancerAttributes, error) {
+	cloud := c.Cloud.(awsup.AWSCloud)
+
+	elbName := fi.StringValue(e.LoadBalancer.ID)
+
+	lb, err := findLoadBalancer(cloud, elbName)
+	if err != nil {
+		return nil, err
+	}
+	if lb == nil {
+		return nil, nil
+	}
+
+	lbAttributes, err := findELBAttributes(cloud, elbName)
+	if err != nil {
+		return nil, err
+	}
+	if lbAttributes == nil {
+		return nil, nil
+	}
+
+	actual := &LoadBalancerAttributes{}
+	actual.Name = e.Name
+	actual.LoadBalancer = e.LoadBalancer
+
+	if lbAttributes != nil {
+		actual.AccessLog = &LoadBalancerAccessLog{}
+		if lbAttributes.AccessLog.EmitInterval != nil {
+			actual.AccessLog.EmitInterval = lbAttributes.AccessLog.EmitInterval
+		}
+		if lbAttributes.AccessLog.Enabled != nil {
+			actual.AccessLog.Enabled = lbAttributes.AccessLog.Enabled
+		}
+		if lbAttributes.AccessLog.S3BucketName != nil {
+			actual.AccessLog.S3BucketName = lbAttributes.AccessLog.S3BucketName
+		}
+		if lbAttributes.AccessLog.S3BucketPrefix != nil {
+			actual.AccessLog.S3BucketPrefix = lbAttributes.AccessLog.S3BucketPrefix
+		}
+
+		var additionalAttributes []*LoadBalancerAdditionalAttribute
+		for index, additionalAttribute := range lbAttributes.AdditionalAttributes {
+			additionalAttributes[index] = &LoadBalancerAdditionalAttribute{
+				Key:   additionalAttribute.Key,
+				Value: additionalAttribute.Value,
+			}
+		}
+		actual.AdditionalAttributes = additionalAttributes
+
+		actual.ConnectionDraining = &LoadBalancerConnectionDraining{}
+		if lbAttributes.ConnectionDraining.Enabled != nil {
+			actual.ConnectionDraining.Enabled = lbAttributes.ConnectionDraining.Enabled
+		}
+		if lbAttributes.ConnectionDraining.Timeout != nil {
+			actual.ConnectionDraining.Timeout = lbAttributes.ConnectionDraining.Timeout
+		}
+
+		actual.ConnectionSettings = &LoadBalancerConnectionSettings{}
+		//actual.ConnectionSettings.Name = e.Name
+		//actual.ConnectionSettings.LoadBalancer = e.LoadBalancer
+		if lbAttributes.ConnectionSettings.IdleTimeout != nil {
+			actual.ConnectionSettings.IdleTimeout = lbAttributes.ConnectionSettings.IdleTimeout
+		}
+
+		actual.CrossZoneLoadBalancing = &LoadBalancerCrossZoneLoadBalancing{}
+		if lbAttributes.CrossZoneLoadBalancing.Enabled != nil {
+			actual.CrossZoneLoadBalancing.Enabled = lbAttributes.CrossZoneLoadBalancing.Enabled
+		}
+	}
+	return actual, nil
+}
+
 func (_ *LoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget, a, e, changes *LoadBalancer) error {
 	id := fi.StringValue(e.ID)
 
