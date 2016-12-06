@@ -24,9 +24,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/elb"
+	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"strings"
 )
 
 //go:generate fitask -type=LoadBalancer
@@ -73,21 +75,17 @@ func (e *LoadBalancerListener) GetDependencies(tasks map[string]fi.Task) []fi.Ta
 	return nil
 }
 
-func findELB(cloud awsup.AWSCloud, name string) (*elb.LoadBalancerDescription, error) {
+func findLoadBalancer(cloud awsup.AWSCloud, name string) (*elb.LoadBalancerDescription, error) {
 	request := &elb.DescribeLoadBalancersInput{
 		LoadBalancerNames: []*string{&name},
 	}
-	var found []*elb.LoadBalancerDescription
-	err := cloud.ELB().DescribeLoadBalancersPages(request, func(p *elb.DescribeLoadBalancersOutput, lastPage bool) (shouldContinue bool) {
-		for _, lb := range p.LoadBalancerDescriptions {
-			if aws.StringValue(lb.LoadBalancerName) == name {
-				found = append(found, lb)
-			} else {
-				glog.Warningf("Got ELB with unexpected name")
-			}
+	found, err := describeLoadBalancers(cloud, request, func(lb *elb.LoadBalancerDescription) bool {
+		if aws.StringValue(lb.LoadBalancerName) == name {
+			return true
 		}
 
-		return true
+		glog.Warningf("Got ELB with unexpected name: %q", lb.LoadBalancerName)
+		return false
 	})
 
 	if err != nil {
@@ -111,6 +109,62 @@ func findELB(cloud awsup.AWSCloud, name string) (*elb.LoadBalancerDescription, e
 	return found[0], nil
 }
 
+func findLoadBalancerByAlias(cloud awsup.AWSCloud, alias *route53.AliasTarget) (*elb.LoadBalancerDescription, error) {
+	// TODO: Any way to avoid listing all ELBs?
+	request := &elb.DescribeLoadBalancersInput{}
+
+	dnsName := aws.StringValue(alias.DNSName)
+	matchDnsName := strings.TrimSuffix(dnsName, ".")
+	if matchDnsName == "" {
+		return nil, fmt.Errorf("DNSName not set on AliasTarget")
+	}
+
+	matchHostedZoneId := aws.StringValue(alias.HostedZoneId)
+
+	found, err := describeLoadBalancers(cloud, request, func(lb *elb.LoadBalancerDescription) bool {
+		if matchHostedZoneId != aws.StringValue(lb.CanonicalHostedZoneNameID) {
+			return false
+		}
+
+		lbDnsName := aws.StringValue(lb.DNSName)
+		lbDnsName = strings.TrimSuffix(lbDnsName, ".")
+		return lbDnsName == matchDnsName || "dualstack."+lbDnsName == matchDnsName
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("error listing ELBs: %v", err)
+	}
+
+	if len(found) == 0 {
+		return nil, nil
+	}
+
+	if len(found) != 1 {
+		return nil, fmt.Errorf("Found multiple ELBs with DNSName %q", dnsName)
+	}
+
+	return found[0], nil
+}
+
+func describeLoadBalancers(cloud awsup.AWSCloud, request *elb.DescribeLoadBalancersInput, filter func(*elb.LoadBalancerDescription) bool) ([]*elb.LoadBalancerDescription, error) {
+	var found []*elb.LoadBalancerDescription
+	err := cloud.ELB().DescribeLoadBalancersPages(request, func(p *elb.DescribeLoadBalancersOutput, lastPage bool) (shouldContinue bool) {
+		for _, lb := range p.LoadBalancerDescriptions {
+			if filter(lb) {
+				found = append(found, lb)
+			}
+		}
+
+		return true
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("error listing ELBs: %v", err)
+	}
+
+	return found, nil
+}
+
 func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
@@ -119,7 +173,7 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 		elbName = fi.StringValue(e.Name)
 	}
 
-	lb, err := findELB(cloud, elbName)
+	lb, err := findLoadBalancer(cloud, elbName)
 	if err != nil {
 		return nil, err
 	}
@@ -230,7 +284,7 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 		e.DNSName = response.DNSName
 		e.ID = elbName
 
-		lb, err := findELB(t.Cloud, *e.ID)
+		lb, err := findLoadBalancer(t.Cloud, *e.ID)
 		if err != nil {
 			return err
 		}

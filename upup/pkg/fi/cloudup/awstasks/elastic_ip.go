@@ -125,8 +125,10 @@ func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
 			ID:       a.AllocationId,
 			PublicIP: a.PublicIp,
 		}
-
 		actual.Subnet = e.Subnet
+
+		// ElasticIP don't have a Name (no tags), so we set the name to avoid spurious changes
+		actual.Name = e.Name
 
 		e.ID = actual.ID
 
