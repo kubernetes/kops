@@ -67,9 +67,9 @@ func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroup
 			var asgName string
 			switch g.Spec.Role {
 			case api.InstanceGroupRoleMaster:
-				asgName = g.Name + ".masters." + cluster.Name
+				asgName = g.ObjectMeta.Name + ".masters." + cluster.ObjectMeta.Name
 			case api.InstanceGroupRoleNode:
-				asgName = g.Name + "." + cluster.Name
+				asgName = g.ObjectMeta.Name + "." + cluster.ObjectMeta.Name
 			default:
 				glog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)
 				continue
@@ -89,7 +89,7 @@ func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroup
 			continue
 		}
 		group := buildCloudInstanceGroup(instancegroup, asg, nodeMap)
-		groups[instancegroup.Name] = group
+		groups[instancegroup.ObjectMeta.Name] = group
 	}
 
 	return groups, nil
@@ -112,7 +112,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 		case api.InstanceGroupRoleMaster:
 			masterGroups[k] = group
 		default:
-			return fmt.Errorf("unknown group type for group %q", group.InstanceGroup.Name)
+			return fmt.Errorf("unknown group type for group %q", group.InstanceGroup.ObjectMeta.Name)
 		}
 	}
 

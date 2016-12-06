@@ -69,7 +69,7 @@ func (c *GetClustersCmd) Run(args []string) error {
 		m := make(map[string]*api.Cluster)
 		for i := range clusterList.Items {
 			c := &clusterList.Items[i]
-			m[c.Name] = c
+			m[c.ObjectMeta.Name] = c
 		}
 		for _, arg := range args {
 			ig := m[arg]
@@ -104,7 +104,7 @@ func (c *GetClustersCmd) Run(args []string) error {
 
 		t := &tables.Table{}
 		t.AddColumn("NAME", func(c *api.Cluster) string {
-			return c.Name
+			return c.ObjectMeta.Name
 		})
 		t.AddColumn("CLOUD", func(c *api.Cluster) string {
 			return c.Spec.CloudProvider
@@ -143,12 +143,12 @@ func fullClusterSpecs(clusters []*api.Cluster) ([]*api.Cluster, error) {
 	for _, cluster := range clusters {
 		configBase, err := registry.ConfigBase(cluster)
 		if err != nil {
-			return nil, fmt.Errorf("error reading full cluster spec for %q: %v", cluster.Name, err)
+			return nil, fmt.Errorf("error reading full cluster spec for %q: %v", cluster.ObjectMeta.Name, err)
 		}
 		fullSpec := &api.Cluster{}
 		err = registry.ReadConfigDeprecated(configBase.Join(registry.PathClusterCompleted), fullSpec)
 		if err != nil {
-			return nil, fmt.Errorf("error reading full cluster spec for %q: %v", cluster.Name, err)
+			return nil, fmt.Errorf("error reading full cluster spec for %q: %v", cluster.ObjectMeta.Name, err)
 		}
 		fullSpecs = append(fullSpecs, fullSpec)
 	}

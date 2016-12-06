@@ -84,7 +84,7 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 		return err
 	}
 
-	contextName := cluster.Name
+	contextName := cluster.ObjectMeta.Name
 	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 		clientcmd.NewDefaultClientConfigLoadingRules(),
 		&clientcmd.ConfigOverrides{CurrentContext: contextName}).ClientConfig()
@@ -112,7 +112,7 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 		}
 	}
 
-	list, err := clientset.InstanceGroups(cluster.Name).List(k8sapi.ListOptions{})
+	list, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).List(k8sapi.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -142,7 +142,7 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 	{
 		t := &tables.Table{}
 		t.AddColumn("NAME", func(r *kutil.CloudInstanceGroup) string {
-			return r.InstanceGroup.Name
+			return r.InstanceGroup.ObjectMeta.Name
 		})
 		t.AddColumn("STATUS", func(r *kutil.CloudInstanceGroup) string {
 			return r.Status

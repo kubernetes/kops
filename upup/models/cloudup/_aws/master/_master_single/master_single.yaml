@@ -29,7 +29,7 @@ instance/master.{{ ClusterName }}:
   imageId: {{ $.MasterImage }}
   instanceType: {{ $.MasterMachineType }}
   associatePublicIP: true
-  userData: resources/nodeup.sh {{ $.Name }}
+  userData: resources/nodeup.sh {{ $.ObjectMeta.Name }}
   blockDeviceMappings:
     # Map all the ephemeral devices
     {{ range $d := (MachineTypeInfo $.MasterMachineType).EphemeralDevices }}

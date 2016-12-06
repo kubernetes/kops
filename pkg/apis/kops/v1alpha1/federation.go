@@ -17,12 +17,13 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 )
 
 type Federation struct {
 	unversioned.TypeMeta `json:",inline"`
-	ObjectMeta           `json:"metadata,omitempty"`
+	ObjectMeta           api.ObjectMeta `json:"metadata,omitempty"`
 
 	Spec FederationSpec `json:"spec"`
 }
