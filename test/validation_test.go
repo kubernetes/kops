@@ -17,9 +17,9 @@ limitations under the License.
 package test
 
 import (
+	"fmt"
 	"testing"
 	"time"
-	"fmt"
 )
 
 const (
@@ -27,7 +27,7 @@ const (
 	// It usually takes ~about~ 2 minutes - so we bake in
 	// an extra 60 seconds for good measure
 	ApiTimeoutIterations = 300
-	ApiTimeoutDuration = time.Second * 10
+	ApiTimeoutDuration   = time.Second * 10
 )
 
 const KOPS_VALIDATE_CLUSTER = `validate cluster --name %s --state %s -v %d`

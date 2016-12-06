@@ -43,7 +43,7 @@ func TestRollingUpdate(t *testing.T) {
 
 	kopsUpgradeCommand := fmt.Sprintf(UPGRADE_CLUSTER, TestClusterName, TestStateStore, TestVerbosity)
 	banner("starting: " + kopsUpgradeCommand)
-	stdoutExec, stderr := ExecOutput(KopsPath, kopsUpgradeCommand,[]string{})
+	stdoutExec, stderr := ExecOutput(KopsPath, kopsUpgradeCommand, []string{})
 	if stderr != nil {
 		t.Errorf("Unable to upgrade cluster: %v", stderr)
 	}
@@ -51,7 +51,7 @@ func TestRollingUpdate(t *testing.T) {
 
 	kopsUpdateCommand := fmt.Sprintf(UPDATE_CLUSTER, TestClusterName, TestStateStore, TestVerbosity)
 	banner("starting: " + kopsUpdateCommand)
-	stdoutExec, stderr = ExecOutput(KopsPath, kopsUpdateCommand,[]string{})
+	stdoutExec, stderr = ExecOutput(KopsPath, kopsUpdateCommand, []string{})
 	if stderr != nil {
 		t.Errorf("Unable to update cluster: %v", stderr)
 	}
@@ -60,7 +60,7 @@ func TestRollingUpdate(t *testing.T) {
 
 	kopsRollingUpdateCommand := fmt.Sprintf(ROLLING_UPDATE_CLUSTER, TestClusterName, TestStateStore, TestVerbosity)
 	banner("starting: " + kopsRollingUpdateCommand)
-	stdoutExec, stderr = ExecOutput(KopsPath, kopsRollingUpdateCommand,[]string{})
+	stdoutExec, stderr = ExecOutput(KopsPath, kopsRollingUpdateCommand, []string{})
 	if stderr != nil {
 		t.Errorf("Unable to rolling-update cluster: %v", stderr)
 	}

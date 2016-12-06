@@ -18,8 +18,8 @@ package test
 
 import (
 	"fmt"
-	"strings"
 	"os"
+	"strings"
 
 	"k8s.io/kops/util/pkg/vfs"
 )

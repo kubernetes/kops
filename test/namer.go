@@ -127,11 +127,10 @@ func random(min, max int) int {
 	return rand.Intn(max-min) + min
 }
 
-
 // A fancy concurrent function for checking all AWS regions for a cluster
 func GetFQN(name string) (string, error) {
 	ch := make(chan string)
-	for region, _ := range AwsRegions {
+	for region := range AwsRegions {
 		go concurrentNameSearch(name, region, ch)
 	}
 	var names []string
@@ -150,7 +149,6 @@ func GetFQN(name string) (string, error) {
 	return "", nil
 
 }
-
 
 func concurrentNameSearch(name, region string, ch chan string) {
 	aws, err := NewAws(region)

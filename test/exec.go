@@ -19,9 +19,9 @@ package test
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
-	"os"
 )
 
 // Will execute a command given a raw command string
@@ -32,7 +32,7 @@ func ExecOutput(c, args string, env []string) (string, error) {
 		return "", fmt.Errorf("Invalid command: %s", c)
 	}
 
-	args = strings.Replace(args,"\n", " ", -1)
+	args = strings.Replace(args, "\n", " ", -1)
 	argsSlice := strings.Split(args, " ")
 
 	cmd := exec.Command(c, argsSlice...)
@@ -51,11 +51,11 @@ func ExecOutput(c, args string, env []string) (string, error) {
 
 		edge("Error")
 		fmt.Printf("Execution failed: %s %s\n", c, args)
-		fmt.Printf("Execution Error: %s",err.Error())
+		fmt.Printf("Execution Error: %s", err.Error())
 		edge("Error")
-		fmt.Printf("Execution stderr: \n%s\n",stderr.String())
+		fmt.Printf("Execution stderr: \n%s\n", stderr.String())
 		edge("Error")
-		fmt.Printf("Execution stdout: \n%s\n",stdout.String())
+		fmt.Printf("Execution stdout: \n%s\n", stdout.String())
 		edge("Error")
 
 		return "", fmt.Errorf("Execution Error: \n %s %s %s\n", stdout.String(), err.Error(), stderr.String())

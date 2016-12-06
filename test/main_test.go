@@ -21,11 +21,11 @@ limitations under the License.
 package test
 
 import (
-	"testing"
-	"fmt"
 	"flag"
+	"fmt"
 	"os"
 	"os/user"
+	"testing"
 )
 
 var TestClusterName, TestStateStore, HomeDirectory string
@@ -36,7 +36,7 @@ func TestMain(m *testing.M) {
 	flag.Parse()
 
 	existingPath := os.Getenv("PATH")
-	os.Setenv("PATH", existingPath + ":/go/bin/")
+	os.Setenv("PATH", existingPath+":/go/bin/")
 
 	// Get the users $HOME directory
 	usr, err := user.Current()
@@ -88,7 +88,6 @@ func TestMain(m *testing.M) {
 	}
 
 	banner(fmt.Sprintf("Validated Cluster: %s", TestClusterName))
-
 
 	// Run tests
 	n := m.Run()
@@ -158,15 +157,15 @@ func CreateCluster(kopsTesting *KopsTest) error {
 		kopsTesting.Networking,
 		kopsTesting.K8sVersion,
 		kopsTesting.Verbosity,
-		kopsTesting.Image )
+		kopsTesting.Image)
 
 	env := []string{
-		fmt.Sprintf("NODE_UP_URL=%s",kopsTesting.NodeUpURL),
+		fmt.Sprintf("NODE_UP_URL=%s", kopsTesting.NodeUpURL),
 		fmt.Sprintf("PATH=%s", os.Getenv("PATH")),
 	}
 
 	banner(kopsCreateCommand)
-	stdoutExec, err := ExecOutput(KopsPath, kopsCreateCommand,env)
+	stdoutExec, err := ExecOutput(KopsPath, kopsCreateCommand, env)
 
 	if err != nil {
 		return fmt.Errorf("Unable to create cluster: %v\n", err)
@@ -182,7 +181,7 @@ func CreateCluster(kopsTesting *KopsTest) error {
 func DeleteCluster(kopsTest *KopsTest) error {
 	kopsDeleteCommand := fmt.Sprintf(DELETE_CLUSTER, kopsTest.ClusterName, kopsTest.StateStore, kopsTest.Verbosity)
 	banner(kopsDeleteCommand)
-	stdoutExec, err := ExecOutput(KopsPath, kopsDeleteCommand,[]string{})
+	stdoutExec, err := ExecOutput(KopsPath, kopsDeleteCommand, []string{})
 	if err != nil {
 		return fmt.Errorf("Unable to delete cluster: %v\n", err)
 	}
