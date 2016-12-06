@@ -132,17 +132,31 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 	if raw == nil {
 		c := &awsCloudImplementation{region: region}
 
-		config := aws.NewConfig().WithRegion(region).WithMaxRetries(ClientMaxRetries)
+		config := aws.NewConfig().WithRegion(region)
+
+		// Add some logging of retries
+		config.Retryer = newLoggingRetryer(ClientMaxRetries)
 
 		// This avoids a confusing error message when we fail to get credentials
 		// e.g. https://github.com/kubernetes/kops/issues/605
 		config = config.WithCredentialsChainVerboseErrors(true)
 
+		requestLogger := newRequestLogger(2)
+
 		c.ec2 = ec2.New(session.New(), config)
+		c.ec2.Handlers.Send.PushFront(requestLogger)
+
 		c.iam = iam.New(session.New(), config)
+		c.iam.Handlers.Send.PushFront(requestLogger)
+
 		c.elb = elb.New(session.New(), config)
+		c.elb.Handlers.Send.PushFront(requestLogger)
+
 		c.autoscaling = autoscaling.New(session.New(), config)
+		c.autoscaling.Handlers.Send.PushFront(requestLogger)
+
 		c.route53 = route53.New(session.New(), config)
+		c.route53.Handlers.Send.PushFront(requestLogger)
 
 		awsCloudInstances[region] = c
 		raw = c
@@ -563,7 +577,7 @@ func (c *awsCloudImplementation) DescribeAvailabilityZones() ([]*ec2.Availabilit
 	request := &ec2.DescribeAvailabilityZonesInput{}
 	response, err := c.EC2().DescribeAvailabilityZones(request)
 	if err != nil {
-		return nil, fmt.Errorf("Got an error while querying for valid AZs in %q (verify your AWS credentials?)", c.region)
+		return nil, fmt.Errorf("error querying for valid AZs in %q - verify your AWS credentials.  Error: %v", c.region, err)
 	}
 
 	return response.AvailabilityZones, nil

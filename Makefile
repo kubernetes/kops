@@ -157,8 +157,6 @@ protokube-image: protokube-build-in-docker
 protokube-push: protokube-image
 	docker push ${DOCKER_REGISTRY}/protokube:${PROTOKUBE_TAG}
 
-
-
 nodeup: nodeup-dist
 
 nodeup-gocode: kops-gobindata
@@ -170,8 +168,6 @@ nodeup-dist:
 	mkdir -p .build/dist
 	docker cp nodeup-build-${UNIQUE}:/go/bin/nodeup .build/dist/
 	(sha1sum .build/dist/nodeup | cut -d' ' -f1) > .build/dist/nodeup.sha1
-
-
 
 dns-controller-gocode:
 	go install k8s.io/kops/dns-controller/cmd/dns-controller
@@ -227,9 +223,11 @@ govet:
 # --------------------------------------------------
 # Continuous integration targets
 
-ci: kops nodeup-gocode examples test govet
-	echo "Done"
+verify-boilerplate:
+	sh -c hack/verify-boilerplate.sh
 
+ci: kops nodeup-gocode examples test govet verify-boilerplate
+	echo "Done!"
 
 # --------------------------------------------------
 # channel tool

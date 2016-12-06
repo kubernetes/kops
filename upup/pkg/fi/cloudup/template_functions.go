@@ -33,7 +33,6 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/util/sets"
 	"math/big"
@@ -96,8 +95,12 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["IsTopologyPrivateMasters"] = tf.IsTopologyPrivateMasters
 	dest["WithBastion"] = tf.WithBastion
 	dest["GetBastionImageId"] = tf.GetBastionImageId
+	dest["GetBastionMachineType"] = tf.GetBastionMachineType
+	dest["GetBastionIdleTimeout"] = tf.GetBastionIdleTimeout
 	dest["GetBastionZone"] = tf.GetBastionZone
 	dest["GetELBName32"] = tf.GetELBName32
+	dest["IsBastionDNS"] = tf.IsBastionDNS
+	dest["GetBastionDNS"] = tf.GetBastionDNS
 
 	dest["SharedZone"] = tf.SharedZone
 	dest["WellKnownServiceIP"] = tf.WellKnownServiceIP
@@ -140,8 +143,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 
 	dest["CloudTags"] = tf.CloudTags
 
-	dest["APIServerCount"] = tf.APIServerCount
-
 	dest["KubeDNS"] = func() *api.KubeDNSConfig {
 		return tf.cluster.Spec.KubeDNS
 	}
@@ -183,7 +184,19 @@ func (tf *TemplateFunctions) IsTopologyPrivateMasters() bool {
 }
 
 func (tf *TemplateFunctions) WithBastion() bool {
-	return !tf.cluster.Spec.Topology.BypassBastion
+	return tf.cluster.Spec.Topology.Bastion != nil && tf.cluster.Spec.Topology.Bastion.Enable
+}
+
+func (tf *TemplateFunctions) IsBastionDNS() bool {
+	if tf.cluster.Spec.Topology.Bastion.PublicName == "" {
+		return false
+	} else {
+		return true
+	}
+}
+
+func (tf *TemplateFunctions) GetBastionDNS() string {
+	return tf.cluster.GetBastionPublicName()
 }
 
 // This function is replacing existing yaml
@@ -196,6 +209,22 @@ func (tf *TemplateFunctions) GetBastionZone() (string, error) {
 		name = tf.cluster.Spec.Zones[0].Name
 	}
 	return name, nil
+}
+
+func (tf *TemplateFunctions) GetBastionMachineType() (string, error) {
+	defaultMachineType := tf.cluster.GetBastionMachineType()
+	if defaultMachineType == "" {
+		return "", fmt.Errorf("DefaultMachineType for bastion can not be empty")
+	}
+	return defaultMachineType, nil
+}
+
+func (tf *TemplateFunctions) GetBastionIdleTimeout() (int, error) {
+	timeout := tf.cluster.GetBastionIdleTimeout()
+	if timeout <= 0 {
+		return 0, fmt.Errorf("IdleTimeout for Bastion can not be negative")
+	}
+	return timeout, nil
 }
 
 // Will attempt to calculate a meaningful name for an ELB given a prefix
@@ -338,22 +367,6 @@ func (tf *TemplateFunctions) GetInstanceGroup(name string) (*api.InstanceGroup, 
 		}
 	}
 	return nil, fmt.Errorf("InstanceGroup %q not found", name)
-}
-
-// APIServerCount returns the value for the apiserver --apiserver-count flag
-func (tf *TemplateFunctions) APIServerCount() int {
-	count := 0
-	for _, ig := range tf.instanceGroups {
-		if !ig.IsMaster() {
-			continue
-		}
-		size := fi.IntValue(ig.Spec.MaxSize)
-		if size == 0 {
-			size = fi.IntValue(ig.Spec.MinSize)
-		}
-		count += size
-	}
-	return count
 }
 
 func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
