@@ -61,14 +61,12 @@ func (e *ElasticIP) FindAddress(context *fi.Context) (*string, error) {
 	return actual.PublicIP, nil
 }
 
-//
-// Find (public wrapper for find()
-//
+// Find is a public wrapper for find()
 func (e *ElasticIP) Find(context *fi.Context) (*ElasticIP, error) {
 	return e.find(context.Cloud.(awsup.AWSCloud))
 }
 
-// Will attempt to look up the elastic IP from AWS
+// find will attempt to look up the elastic IP from AWS
 func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
 	publicIP := e.PublicIP
 	allocationID := e.ID
@@ -143,7 +141,7 @@ func (e *ElasticIP) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
-// Validation for the resource. EIPs are simple, so virtually no
+// CheckChanges validates the resource. EIPs are simple, so virtually no
 // validation
 func (s *ElasticIP) CheckChanges(a, e, changes *ElasticIP) error {
 	// This is a new EIP
@@ -167,7 +165,7 @@ func (s *ElasticIP) CheckChanges(a, e, changes *ElasticIP) error {
 	return nil
 }
 
-// Here is where we actually apply changes to AWS
+// RenderAWS is where we actually apply changes to AWS
 func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) error {
 
 	var publicIp *string
