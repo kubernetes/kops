@@ -16,6 +16,7 @@ kops create cluster
 ```
       --admin-access string         Restrict access to admin endpoints (SSH, HTTPS) to this CIDR.  If not set, access will not be restricted by IP.
       --associate-public-ip         Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'. (default true)
+      --bastion                     Specify --bastion=[true|false] to turn enable/disable bastion setup. Default to 'false' when topology is 'public' and defaults to 'true' if topology is 'private'.
       --channel string              Channel for default versions and configuration to use (default "stable")
       --cloud string                Cloud provider to use - gce, aws
       --dns-zone string             DNS hosted zone to use (defaults to longest matching zone)
@@ -55,4 +56,3 @@ kops create cluster
 
 ### SEE ALSO
 * [kops create](kops_create.md)	 - Create a resource by filename or stdin
-

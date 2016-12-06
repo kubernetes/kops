@@ -18,13 +18,14 @@ package kops
 
 import (
 	"fmt"
+	"net"
+	"net/url"
+	"strings"
+
 	"github.com/blang/semver"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/util/validation"
 	"k8s.io/kubernetes/pkg/util/validation/field"
-	"net"
-	"net/url"
-	"strings"
 )
 
 func (c *Cluster) Validate(strict bool) error {
@@ -316,6 +317,19 @@ func (c *Cluster) Validate(strict bool) error {
 
 	} else {
 		return fmt.Errorf("Topology requires non-nil values for Masters and Nodes")
+	}
+
+	// Bastion
+	if c.Spec.Topology.Bastion != nil && c.Spec.Topology.Bastion.Enable {
+		if c.Spec.Topology.Masters == TopologyPublic || c.Spec.Topology.Nodes == TopologyPublic {
+			return fmt.Errorf("Bastion supports only Private Masters and Nodes")
+		}
+		if c.Spec.Topology.Bastion.MachineType == "" {
+			return fmt.Errorf("Bastion MachineType can not be empty")
+		}
+		if c.Spec.Topology.Bastion.IdleTimeout <= 0 {
+			return fmt.Errorf("Bastion IdleTimeout should be greater than zero")
+		}
 	}
 
 	// Etcd

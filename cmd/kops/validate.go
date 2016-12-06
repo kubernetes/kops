@@ -17,27 +17,22 @@ limitations under the License.
 package main
 
 import (
+	"io"
+
 	"github.com/spf13/cobra"
+	"k8s.io/kops/cmd/kops/util"
 )
 
-// ValidateCmd represents the get command
-type ValidateCmd struct {
-	output string
+func NewCmdValidate(f *util.Factory, out io.Writer) *cobra.Command {
+	cmd := &cobra.Command{
+		Use: "validate",
+		//SuggestFor: []string{"val"},
+		Short: "Validate Cluster",
+		Long:  `Validate a Kubernetes Cluster`,
+	}
 
-	cobraCommand *cobra.Command
-}
+	// create subcommands
+	cmd.AddCommand(NewCmdValidateCluster(f, out))
 
-var validateCmd = ValidateCmd{
-	cobraCommand: &cobra.Command{
-		Use:        "validate",
-		SuggestFor: []string{"list"},
-		Short:      "Validate Cluster",
-		Long:       `Validate a Kubernetes Cluster`,
-	},
-}
-
-func init() {
-	cmd := validateCmd.cobraCommand
-
-	rootCommand.AddCommand(cmd)
+	return cmd
 }

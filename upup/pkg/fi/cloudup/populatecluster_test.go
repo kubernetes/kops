@@ -18,11 +18,12 @@ package cloudup
 
 import (
 	"fmt"
+	"strings"
+	"testing"
+
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/util/sets"
-	"strings"
-	"testing"
 )
 
 func buildMinimalCluster() *api.Cluster {
@@ -39,9 +40,17 @@ func buildMinimalCluster() *api.Cluster {
 		Masters: api.TopologyPublic,
 		Nodes:   api.TopologyPublic,
 	}
+	c.Spec.Topology.Bastion = &api.BastionSpec{
+		Enable: false,
+	}
 	c.Spec.NetworkCIDR = "172.20.0.0/16"
 	c.Spec.NonMasqueradeCIDR = "100.64.0.0/10"
 	c.Spec.CloudProvider = "aws"
+
+	// Default bastion
+	c.Spec.Topology.Bastion = &api.BastionSpec{
+		Enable: false,
+	}
 
 	c.Spec.ConfigBase = "s3://unittest-bucket/"
 
@@ -310,6 +319,43 @@ func TestPopulateCluster_TopologyInvalidMatchingValues_Required(t *testing.T) {
 	expectErrorFromPopulateCluster(t, c, "Topology")
 }
 
+func TestPopulateCluster_BastionInvalidMatchingValues_Required(t *testing.T) {
+	c := buildMinimalCluster()
+	c.Spec.Topology.Masters = api.TopologyPublic
+	c.Spec.Topology.Nodes = api.TopologyPublic
+	c.Spec.Topology.Bastion.Enable = true
+	expectErrorFromPopulateCluster(t, c, "Bastion")
+}
+
+func TestPopulateCluster_BastionMachineTypeInvalidNil_Required(t *testing.T) {
+	c := buildMinimalCluster()
+	c.Spec.Topology.Masters = api.TopologyPrivate
+	c.Spec.Topology.Nodes = api.TopologyPrivate
+	c.Spec.Topology.Bastion.Enable = true
+	c.Spec.Topology.Bastion.MachineType = ""
+	expectErrorFromPopulateCluster(t, c, "Bastion")
+}
+
+func TestPopulateCluster_BastionIdleTimeoutInvalidNil_Required(t *testing.T) {
+	c := buildMinimalCluster()
+	c.Spec.Topology.Masters = api.TopologyPrivate
+	c.Spec.Topology.Nodes = api.TopologyPrivate
+	c.Spec.Topology.Bastion.Enable = true
+	c.Spec.Topology.Bastion.MachineType = "t2.small"
+	c.Spec.Topology.Bastion.IdleTimeout = 0
+	expectErrorFromPopulateCluster(t, c, "Bastion")
+}
+
+func TestPopulateCluster_BastionIdleTimeoutInvalidNegative_Required(t *testing.T) {
+	c := buildMinimalCluster()
+	c.Spec.Topology.Masters = api.TopologyPrivate
+	c.Spec.Topology.Nodes = api.TopologyPrivate
+	c.Spec.Topology.Bastion.Enable = true
+	c.Spec.Topology.Bastion.MachineType = "t2.small"
+	c.Spec.Topology.Bastion.IdleTimeout = -1
+	expectErrorFromPopulateCluster(t, c, "Bastion")
+}
+
 func expectErrorFromPopulateCluster(t *testing.T, c *api.Cluster, message string) {
 	_, err := PopulateClusterSpec(c)
 	if err == nil {
@@ -318,5 +364,18 @@ func expectErrorFromPopulateCluster(t *testing.T, c *api.Cluster, message string
 	actualMessage := fmt.Sprintf("%v", err)
 	if !strings.Contains(actualMessage, message) {
 		t.Fatalf("Expected error %q, got %q", message, actualMessage)
+	}
+}
+
+func TestPopulateCluster_APIServerCount(t *testing.T) {
+	c := buildMinimalCluster()
+
+	full, err := build(c)
+	if err != nil {
+		t.Fatalf("error during build: %v", err)
+	}
+
+	if fi.IntValue(full.Spec.KubeAPIServer.APIServerCount) != 3 {
+		t.Fatalf("Unexpected APIServerCount: %v", fi.IntValue(full.Spec.KubeAPIServer.APIServerCount))
 	}
 }
