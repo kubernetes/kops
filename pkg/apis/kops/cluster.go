@@ -19,11 +19,12 @@ package kops
 import (
 	"encoding/binary"
 	"fmt"
+	"net"
+	"strings"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/api/unversioned"
-	"net"
-	"strings"
 )
 
 type Cluster struct {
@@ -570,4 +571,14 @@ func (c *Cluster) IsTopologyPublic() bool {
 }
 func (c *Cluster) IsTopologyPrivateMasters() bool {
 	return (c.Spec.Topology.Masters == TopologyPrivate && c.Spec.Topology.Nodes == TopologyPublic)
+}
+
+func (c *Cluster) GetBastionMachineType() string {
+	return c.Spec.Topology.Bastion.MachineType
+}
+func (c *Cluster) GetBastionPublicName() string {
+	return c.Spec.Topology.Bastion.PublicName
+}
+func (c *Cluster) GetBastionIdleTimeout() int {
+	return c.Spec.Topology.Bastion.IdleTimeout
 }

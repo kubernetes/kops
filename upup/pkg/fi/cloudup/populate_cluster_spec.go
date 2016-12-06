@@ -19,17 +19,19 @@ package cloudup
 import (
 	"encoding/binary"
 	"fmt"
+	"net"
+	"strings"
+	"text/template"
+
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
-	"net"
-	"strings"
-	"text/template"
 )
 
 var EtcdClusters = []string{"main", "events"}
@@ -219,6 +221,7 @@ func (c *populateClusterSpec) run() error {
 	// We want topology to pass through
 	// Otherwise we were losing the pointer
 	cluster.Spec.Topology = c.InputCluster.Spec.Topology
+	cluster.Spec.Topology.Bastion = c.InputCluster.Spec.Topology.Bastion
 
 	if cluster.Spec.DNSZone == "" {
 		dns, err := cloud.DNS()
@@ -247,7 +250,9 @@ func (c *populateClusterSpec) run() error {
 
 	tf.AddTo(templateFunctions)
 
-	codeModels := []loader.OptionsBuilder{}
+	codeModels := []loader.OptionsBuilder{
+		&components.KubeAPIServerOptionsBuilder{Cluster: cluster},
+	}
 	specBuilder := &SpecBuilder{
 		OptionsLoader: loader.NewOptionsLoader(templateFunctions, codeModels),
 		Tags:          tags,
@@ -259,6 +264,7 @@ func (c *populateClusterSpec) run() error {
 	}
 
 	completed.Topology = c.InputCluster.Spec.Topology
+	completed.Topology.Bastion = c.InputCluster.Spec.Topology.Bastion
 
 	fullCluster := &api.Cluster{}
 	*fullCluster = *cluster

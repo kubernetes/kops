@@ -300,9 +300,15 @@ func (c *ApplyClusterCmd) Run() error {
 				"vpcDHDCPOptionsAssociation": &awstasks.VPCDHCPOptionsAssociation{},
 
 				// ELB
-				"loadBalancer":             &awstasks.LoadBalancer{},
-				"loadBalancerAttachment":   &awstasks.LoadBalancerAttachment{},
-				"loadBalancerHealthChecks": &awstasks.LoadBalancerHealthChecks{},
+				"loadBalancer":                       &awstasks.LoadBalancer{},
+				"loadBalancerAttachment":             &awstasks.LoadBalancerAttachment{},
+				"loadBalancerHealthChecks":           &awstasks.LoadBalancerHealthChecks{},
+				"loadBalancerAccessLog":              &awstasks.LoadBalancerAccessLog{},
+				"loadBalancerAdditionalAttribute":    &awstasks.LoadBalancerAdditionalAttribute{},
+				"loadBalancerConnectionDraining":     &awstasks.LoadBalancerConnectionDraining{},
+				"loadBalancerCrossZoneLoadBalancing": &awstasks.LoadBalancerCrossZoneLoadBalancing{},
+				"loadBalancerConnectionSettings":     &awstasks.LoadBalancerConnectionSettings{},
+				"loadBalancerAttributes":             &awstasks.LoadBalancerAttributes{},
 
 				// Autoscaling
 				"autoscalingGroup":    &awstasks.AutoscalingGroup{},
