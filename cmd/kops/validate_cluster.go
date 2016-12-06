@@ -104,7 +104,7 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 
 	validationCluster, validationFailed := validation.ValidateCluster(cluster.Name, list, k8sClient)
 
-	if validationCluster.NodeList == nil {
+	if validationCluster == nil || validationCluster.NodeList == nil {
 		return fmt.Errorf("cannot get nodes for %q: %v", cluster.Name, validationFailed)
 	}
 
