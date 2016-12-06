@@ -339,7 +339,7 @@ func (p *S3Path) EnsureBucketExists(bucketName, region string) error {
 			if _, ok := err.(awserr.Error); ok {
 				if reqErr, ok := err.(awserr.RequestFailure); ok {
 					// A service error occurred
-					return fmt.Errorf("Bucket %s does not exists and cannot be created: %s, %s, %s, %s",
+					return fmt.Errorf("Bucket %s does not exists and cannot be created: %s, %s, %d, %s",
 						bucketName, reqErr.Code(), reqErr.Message(), reqErr.StatusCode(),
 						reqErr.RequestID())
 				}
@@ -356,7 +356,7 @@ func (p *S3Path) EnsureBucketExists(bucketName, region string) error {
 			if _, ok := err.(awserr.Error); ok {
 				if reqErr, ok := err.(awserr.RequestFailure); ok {
 					// A service error occurred
-					return fmt.Errorf("Cannot wait for bucket %s to be created: %s, %s, %s, %s",
+					return fmt.Errorf("Cannot wait for bucket %s to be created: %s, %s, %d, %s",
 						bucketName, reqErr.Code(), reqErr.Message(), reqErr.StatusCode(),
 						reqErr.RequestID())
 				}
@@ -390,7 +390,7 @@ func (p *S3Path) DeleteBucket(bucket string) error {
 		if _, ok := err.(awserr.Error); ok {
 			if reqErr, ok := err.(awserr.RequestFailure); ok {
 				// A service error occurred
-				return fmt.Errorf("Bucket %s cannot deleted: %s, %s, %s, %s", bucket, reqErr.Code(),
+				return fmt.Errorf("Bucket %s cannot deleted: %s, %s, %d, %s", bucket, reqErr.Code(),
 					reqErr.Message(), reqErr.StatusCode(), reqErr.RequestID())
 			}
 		} else {

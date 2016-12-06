@@ -22,6 +22,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
@@ -79,9 +80,10 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 
 	fmt.Fprintf(out, "Validating cluster %v\n\n", cluster.Name)
 
-	var instanceGroups []*api.InstanceGroup
+	var instanceGroups []api.InstanceGroup
 	for _, ig := range list.Items {
-		instanceGroups = append(instanceGroups, &ig)
+		instanceGroups = append(instanceGroups, ig)
+		glog.V(2).Infof("instance group: %#v\n\n", ig.Spec)
 	}
 
 	if len(instanceGroups) == 0 {

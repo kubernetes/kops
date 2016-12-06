@@ -27,7 +27,7 @@ const (
 	// It usually takes ~about~ 2 minutes - so we bake in
 	// an extra 60 seconds for good measure
 	ApiTimeoutIterations = 300
-	ApiTimeoutDuration = time.Second * 1
+	ApiTimeoutDuration = time.Second * 10
 )
 
 const KOPS_VALIDATE_CLUSTER = `validate cluster --name %s --state %s -v %d`
@@ -48,6 +48,7 @@ func Validate() error {
 		stdoutExec, stderr = ExecOutput(KopsPath, kopsValidationCommand, []string{})
 		if stderr != nil {
 			if i == ApiTimeoutIterations {
+				banner(fmt.Sprintf("Validate Error: Unable to validate cluster %s, %s", TestClusterName, stderr))
 				return fmt.Errorf("Unable to validate after timeout: %v", stderr)
 			}
 			time.Sleep(ApiTimeoutDuration)
@@ -55,6 +56,6 @@ func Validate() error {
 		}
 	}
 
-	banner(stdoutExec)
+	banner(fmt.Sprintf("Validate Suceeded: cluster is up: %s\n%s\n", TestClusterName, stdoutExec))
 	return nil
 }

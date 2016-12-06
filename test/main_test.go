@@ -74,6 +74,8 @@ func TestMain(m *testing.M) {
 		os.Exit(-1)
 	}
 
+	banner(fmt.Sprintf("Created Cluster: %s", TestClusterName))
+
 	err = Validate()
 
 	if err != nil {
@@ -85,7 +87,8 @@ func TestMain(m *testing.M) {
 		os.Exit(-1)
 	}
 
-	banner(fmt.Sprintf("Created Cluster: %s", TestClusterName))
+	banner(fmt.Sprintf("Validated Cluster: %s", TestClusterName))
+
 
 	// Run tests
 	n := m.Run()
@@ -106,6 +109,7 @@ func TestMain(m *testing.M) {
 		banner(fmt.Sprintf("Test Cleanup Failure: %v", err))
 		os.Exit(-1)
 	}
+	banner(fmt.Sprintf("Deleted StateStore S3 bucket: %s", TestClusterName))
 	os.Exit(n)
 }
 

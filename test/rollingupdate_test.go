@@ -27,6 +27,12 @@ const UPGRADE_CLUSTER = `upgrade cluster
 --yes
 -v %d`
 
+const UPDATE_CLUSTER = `update cluster
+--name %s
+--state %s
+--yes
+-v %d`
+
 const ROLLING_UPDATE_CLUSTER = `rolling-update cluster
 --name %s
 --state %s
@@ -36,23 +42,37 @@ const ROLLING_UPDATE_CLUSTER = `rolling-update cluster
 func TestRollingUpdate(t *testing.T) {
 
 	kopsUpgradeCommand := fmt.Sprintf(UPGRADE_CLUSTER, TestClusterName, TestStateStore, TestVerbosity)
+	banner("starting: " + kopsUpgradeCommand)
 	stdoutExec, stderr := ExecOutput(KopsPath, kopsUpgradeCommand,[]string{})
 	if stderr != nil {
 		t.Errorf("Unable to upgrade cluster: %v", stderr)
 	}
-	banner(stdoutExec)
+	banner("upgrade worked:" + stdoutExec)
+
+	kopsUpdateCommand := fmt.Sprintf(UPDATE_CLUSTER, TestClusterName, TestStateStore, TestVerbosity)
+	banner("starting: " + kopsUpdateCommand)
+	stdoutExec, stderr = ExecOutput(KopsPath, kopsUpdateCommand,[]string{})
+	if stderr != nil {
+		t.Errorf("Unable to update cluster: %v", stderr)
+	}
+
+	banner("update worked: " + stdoutExec)
 
 	kopsRollingUpdateCommand := fmt.Sprintf(ROLLING_UPDATE_CLUSTER, TestClusterName, TestStateStore, TestVerbosity)
+	banner("starting: " + kopsRollingUpdateCommand)
 	stdoutExec, stderr = ExecOutput(KopsPath, kopsRollingUpdateCommand,[]string{})
 	if stderr != nil {
 		t.Errorf("Unable to rolling-update cluster: %v", stderr)
 	}
 
-	banner(stdoutExec)
+	banner("rolling-updated worked: " + stdoutExec)
 
+	banner("starting: Validate")
 	err := Validate()
 	if err != nil {
 		t.Error(err)
 	}
+
+	banner("finished test")
 
 }
