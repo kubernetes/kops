@@ -228,7 +228,7 @@ func (c *populateClusterSpec) run() error {
 		if err != nil {
 			return fmt.Errorf("error getting DNS for cloud: %v", err)
 		}
-		dnsZone, err := FindDNSHostedZone(dns, cluster.Name)
+		dnsZone, err := FindDNSHostedZone(dns, cluster.ObjectMeta.Name)
 		if err != nil {
 			return fmt.Errorf("Error determining default DNS zone; please specify --dns-zone: %v", err)
 		}

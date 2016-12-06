@@ -63,7 +63,7 @@ func (c *ConvertImportedCmd) Run() error {
 		return err
 	}
 
-	list, err := clientset.InstanceGroups(cluster.Name).List(k8sapi.ListOptions{})
+	list, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).List(k8sapi.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -72,15 +72,15 @@ func (c *ConvertImportedCmd) Run() error {
 		instanceGroups = append(instanceGroups, &list.Items[i])
 	}
 
-	if cluster.Annotations[api.AnnotationNameManagement] != api.AnnotationValueManagementImported {
-		return fmt.Errorf("cluster %q does not appear to be a cluster imported using kops import", cluster.Name)
+	if cluster.ObjectMeta.Annotations[api.AnnotationNameManagement] != api.AnnotationValueManagementImported {
+		return fmt.Errorf("cluster %q does not appear to be a cluster imported using kops import", cluster.ObjectMeta.Name)
 	}
 
 	if c.NewClusterName == "" {
 		return fmt.Errorf("--newname is required for converting an imported cluster")
 	}
 
-	oldClusterName := cluster.Name
+	oldClusterName := cluster.ObjectMeta.Name
 	if oldClusterName == "" {
 		return fmt.Errorf("(Old) ClusterName must be set in configuration")
 	}

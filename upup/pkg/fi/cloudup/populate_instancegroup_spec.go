@@ -87,7 +87,7 @@ func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup, c
 
 	if ig.IsMaster() {
 		if len(ig.Spec.Zones) == 0 {
-			return nil, fmt.Errorf("Master InstanceGroup %s did not specify any Zones", ig.Name)
+			return nil, fmt.Errorf("Master InstanceGroup %s did not specify any Zones", ig.ObjectMeta.Name)
 		}
 	} else {
 		if len(ig.Spec.Zones) == 0 {

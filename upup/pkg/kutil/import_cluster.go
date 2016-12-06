@@ -52,13 +52,13 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	var instanceGroups []*api.InstanceGroup
 
 	cluster := &api.Cluster{}
-	cluster.Annotations = make(map[string]string)
+	cluster.ObjectMeta.Annotations = make(map[string]string)
 
 	// This annotation relaxes some validation (e.g. cluster name as full-dns name)
-	cluster.Annotations[api.AnnotationNameManagement] = api.AnnotationValueManagementImported
+	cluster.ObjectMeta.Annotations[api.AnnotationNameManagement] = api.AnnotationValueManagementImported
 
 	cluster.Spec.CloudProvider = string(fi.CloudProviderAWS)
-	cluster.Name = clusterName
+	cluster.ObjectMeta.Name = clusterName
 
 	cluster.Spec.KubeControllerManager = &api.KubeControllerManagerConfig{}
 
@@ -185,7 +185,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 		return fmt.Errorf("cannot find zone %q for master.  Please report this issue", aws.StringValue(masterInstance.Placement.AvailabilityZone))
 	}
 	masterGroup.Spec.Zones = []string{masterZone.Name}
-	masterGroup.Name = "master-" + masterZone.Name
+	masterGroup.ObjectMeta.Name = "master-" + masterZone.Name
 
 	userData, err := GetInstanceUserData(awsCloud, aws.StringValue(masterInstance.InstanceId))
 	if err != nil {
@@ -261,7 +261,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 
 	nodeGroup := &api.InstanceGroup{}
 	nodeGroup.Spec.Role = api.InstanceGroupRoleNode
-	nodeGroup.Name = "nodes"
+	nodeGroup.ObjectMeta.Name = "nodes"
 	for _, zone := range zones {
 		nodeGroup.Spec.Zones = append(nodeGroup.Spec.Zones, zone.Name)
 	}

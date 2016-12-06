@@ -76,7 +76,7 @@ func BuildCloud(cluster *api.Cluster) (fi.Cloud, error) {
 				return nil, err
 			}
 
-			cloudTags := map[string]string{awsup.TagClusterName: cluster.Name}
+			cloudTags := map[string]string{awsup.TagClusterName: cluster.ObjectMeta.Name}
 
 			awsCloud, err := awsup.NewAWSCloud(region, cloudTags)
 			if err != nil {
