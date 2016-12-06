@@ -27,12 +27,13 @@ import (
 	"github.com/spf13/viper"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/upup/pkg/kutil"
-	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 	"k8s.io/kubernetes/pkg/util/validation/field"
+
+	// Register our APIs
+	_ "k8s.io/kops/pkg/apis/kops/install"
 )
 
 type Factory interface {
@@ -63,26 +64,11 @@ It allows you to create, destroy, upgrade and maintain clusters.`,
 }
 
 func Execute() {
-	if err := initializeSchemas(); err != nil {
-		exitWithError(fmt.Errorf("initialization error: %v", err))
-	}
-
 	goflag.Set("logtostderr", "true")
 	goflag.CommandLine.Parse([]string{})
 	if err := rootCommand.cobraCommand.Execute(); err != nil {
 		exitWithError(err)
 	}
-}
-
-func initializeSchemas() error {
-	scheme := k8sapi.Scheme //runtime.NewScheme()
-	if err := kopsapi.AddToScheme(scheme); err != nil {
-		return err
-	}
-	if err := v1alpha1.AddToScheme(scheme); err != nil {
-		return err
-	}
-	return nil
 }
 
 func init() {

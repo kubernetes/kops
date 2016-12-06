@@ -107,8 +107,8 @@ func (c *GetInstanceGroupsCmd) Run(args []string) error {
 		t.AddColumn("MACHINETYPE", func(c *api.InstanceGroup) string {
 			return c.Spec.MachineType
 		})
-		t.AddColumn("ZONES", func(c *api.InstanceGroup) string {
-			return strings.Join(c.Spec.Zones, ",")
+		t.AddColumn("SUBNETS", func(c *api.InstanceGroup) string {
+			return strings.Join(c.Spec.Subnets, ",")
 		})
 		t.AddColumn("MIN", func(c *api.InstanceGroup) string {
 			return intPointerToString(c.Spec.MinSize)
@@ -116,7 +116,7 @@ func (c *GetInstanceGroupsCmd) Run(args []string) error {
 		t.AddColumn("MAX", func(c *api.InstanceGroup) string {
 			return intPointerToString(c.Spec.MaxSize)
 		})
-		return t.Render(instancegroups, os.Stdout, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "ZONES")
+		return t.Render(instancegroups, os.Stdout, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "SUBNETS")
 
 	case OutputYaml:
 		for _, ig := range instancegroups {

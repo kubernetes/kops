@@ -36,7 +36,7 @@ func newInstanceGroupVFS(c *VFSClientset, clusterName string) *InstanceGroupVFS 
 	kind := "InstanceGroup"
 
 	r := &InstanceGroupVFS{}
-	r.init(kind, c.basePath.Join(clusterName, "instancegroup"), v1alpha1.SchemeGroupVersion)
+	r.init(kind, c.basePath.Join(clusterName, "instancegroup"), StoreVersion)
 	defaultReadVersion := v1alpha1.SchemeGroupVersion.WithKind(kind)
 	r.defaultReadVersion = &defaultReadVersion
 	return r

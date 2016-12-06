@@ -33,7 +33,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/upup/pkg/kutil"
-	"k8s.io/kubernetes/pkg/util/sets"
 )
 
 type CreateClusterOptions struct {
@@ -229,20 +228,21 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	glog.V(4).Infof("networking mode=%s => %s", c.Networking, fi.DebugAsJsonString(cluster.Spec.Networking))
 
 	if c.Zones != "" {
-		existingZones := make(map[string]*api.ClusterZoneSpec)
-		for _, zone := range cluster.Spec.Zones {
-			existingZones[zone.Name] = zone
+		existingSubnets := make(map[string]*api.ClusterSubnetSpec)
+		for i := range cluster.Spec.Subnets {
+			subnet := &cluster.Spec.Subnets[i]
+			existingSubnets[subnet.SubnetName] = subnet
 		}
-		for _, zone := range parseZoneList(c.Zones) {
-			if existingZones[zone] == nil {
-				cluster.Spec.Zones = append(cluster.Spec.Zones, &api.ClusterZoneSpec{
-					Name: zone,
+		for _, subnetName := range parseZoneList(c.Zones) {
+			if existingSubnets[subnetName] == nil {
+				cluster.Spec.Subnets = append(cluster.Spec.Subnets, api.ClusterSubnetSpec{
+					SubnetName: subnetName,
 				})
 			}
 		}
 	}
 
-	if len(cluster.Spec.Zones) == 0 {
+	if len(cluster.Spec.Subnets) == 0 {
 		return fmt.Errorf("must specify at least one zone for the cluster (use --zones)")
 	}
 
@@ -255,13 +255,13 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			// We default to single-master (not HA), unless the user explicitly specifies it
 			// HA master is a little slower, not as well tested yet, and requires more resources
 			// Probably best not to make it the silent default!
-			for _, zone := range cluster.Spec.Zones {
+			for _, subnet := range cluster.Spec.Subnets {
 				g := &api.InstanceGroup{}
 				g.Spec.Role = api.InstanceGroupRoleMaster
-				g.Spec.Zones = []string{zone.Name}
+				g.Spec.Subnets = []string{subnet.SubnetName}
 				g.Spec.MinSize = fi.Int(1)
 				g.Spec.MaxSize = fi.Int(1)
-				g.ObjectMeta.Name = "master-" + zone.Name // Subsequent masters (if we support that) could be <zone>-1, <zone>-2
+				g.ObjectMeta.Name = "master-" + subnet.SubnetName // Subsequent masters (if we support that) could be <zone>-1, <zone>-2
 				instanceGroups = append(instanceGroups, g)
 				masters = append(masters, g)
 
@@ -272,13 +272,13 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	} else {
 		if len(masters) == 0 {
 			// Use the specified master zones (this is how the user gets HA master)
-			for _, zone := range parseZoneList(c.MasterZones) {
+			for _, subnetName := range parseZoneList(c.MasterZones) {
 				g := &api.InstanceGroup{}
 				g.Spec.Role = api.InstanceGroupRoleMaster
-				g.Spec.Zones = []string{zone}
+				g.Spec.Subnets = []string{subnetName}
 				g.Spec.MinSize = fi.Int(1)
 				g.Spec.MaxSize = fi.Int(1)
-				g.ObjectMeta.Name = "master-" + zone
+				g.ObjectMeta.Name = "master-" + subnetName
 				instanceGroups = append(instanceGroups, g)
 				masters = append(masters, g)
 			}
@@ -289,21 +289,38 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	}
 
 	if len(cluster.Spec.EtcdClusters) == 0 {
-		zones := sets.NewString()
-		for _, group := range masters {
-			for _, zone := range group.Spec.Zones {
-				zones.Insert(zone)
+		subnetMap := make(map[string]*api.ClusterSubnetSpec)
+		for i := range cluster.Spec.Subnets {
+			subnet := &cluster.Spec.Subnets[i]
+			subnetMap[subnet.SubnetName] = subnet
+		}
+
+		masterInstanceGroups := make(map[string]*api.InstanceGroup)
+		for _, ig := range masters {
+			if len(ig.Spec.Subnets) != 1 {
+				return fmt.Errorf("unexpected subnets for master instance group %q (expected exactly only, found %d)", ig.ObjectMeta.Name, len(ig.Spec.Subnets))
+			}
+			for _, subnetName := range ig.Spec.Subnets {
+				subnet := subnetMap[subnetName]
+				if subnet == nil {
+					return fmt.Errorf("cannot find subnet %q (declared in instance group %q, not found in cluster)", subnetName, ig.ObjectMeta.Name)
+				}
+
+				if masterInstanceGroups[subnetName] != nil {
+					return fmt.Errorf("found two master instance groups in subnet %q", subnetName)
+				}
+
+				masterInstanceGroups[subnetName] = ig
 			}
 		}
-		etcdZones := zones.List()
 
 		for _, etcdCluster := range cloudup.EtcdClusters {
 			etcd := &api.EtcdClusterSpec{}
 			etcd.Name = etcdCluster
-			for _, zone := range etcdZones {
+			for _, ig := range masterInstanceGroups {
 				m := &api.EtcdMemberSpec{}
-				m.Name = zone
-				m.Zone = fi.String(zone)
+				m.Name = ig.ObjectMeta.Name
+				m.InstanceGroup = fi.String(ig.ObjectMeta.Name)
 				etcd.Members = append(etcd.Members, m)
 			}
 			cluster.Spec.EtcdClusters = append(cluster.Spec.EtcdClusters, etcd)
@@ -380,10 +397,10 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	}
 
 	if cluster.Spec.CloudProvider == "" {
-		for _, zone := range cluster.Spec.Zones {
-			cloud, known := fi.GuessCloudForZone(zone.Name)
+		for _, subnet := range cluster.Spec.Subnets {
+			cloud, known := fi.GuessCloudForZone(subnet.Zone)
 			if known {
-				glog.Infof("Inferred --cloud=%s from zone %q", cloud, zone.Name)
+				glog.Infof("Inferred --cloud=%s from zone %q", cloud, subnet.Zone)
 				cluster.Spec.CloudProvider = string(cloud)
 				break
 			}
@@ -393,21 +410,25 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 	}
 
-	//Bastion
-	if c.Topology != "" {
-		if c.Topology == api.TopologyPublic && c.Bastion == true {
-			return fmt.Errorf("Bastion supports --topology='private' only.")
-		}
+	// Network Topology
+	if c.Topology == "" {
+		// The flag default should have set this, but we might be being called as a library
+		glog.Infof("Empty topology. Defaulting to public topology")
+		c.Topology = api.TopologyPublic
 	}
 
-	// Network Topology
 	switch c.Topology {
 	case api.TopologyPublic:
 		cluster.Spec.Topology = &api.TopologySpec{
 			Masters: api.TopologyPublic,
 			Nodes:   api.TopologyPublic,
-			Bastion: &api.BastionSpec{Enable: c.Bastion},
+			//Bastion: &api.BastionSpec{Enable: c.Bastion},
 		}
+
+		if c.Bastion {
+			return fmt.Errorf("Bastion supports --topology='private' only.")
+		}
+
 	case api.TopologyPrivate:
 		if !supportsPrivateTopology(cluster.Spec.Networking) {
 			return fmt.Errorf("Invalid networking option %s. Currently only '--networking cni', '--networking kopeio-vxlan', '--networking weave' are supported for private topologies", c.Networking)
@@ -416,19 +437,17 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			Masters: api.TopologyPrivate,
 			Nodes:   api.TopologyPrivate,
 		}
-		cluster.Spec.Topology.Bastion = &api.BastionSpec{Enable: c.Bastion}
-	case "":
-		glog.Warningf("Empty topology. Defaulting to public topology without bastion")
-		cluster.Spec.Topology = &api.TopologySpec{
-			Masters: api.TopologyPublic,
-			Nodes:   api.TopologyPublic,
-			Bastion: &api.BastionSpec{Enable: false},
+
+		if c.Bastion {
+			bastionGroup := &api.InstanceGroup{}
+			bastionGroup.Spec.Role = api.InstanceGroupRoleBastion
+			bastionGroup.ObjectMeta.Name = "bastions"
+			instanceGroups = append(instanceGroups, bastionGroup)
 		}
+
 	default:
 		return fmt.Errorf("Invalid topology %s.", c.Topology)
 	}
-	cluster.Spec.Topology.Bastion.MachineType = cloudup.DefaultBastionMachineType(cluster)
-	cluster.Spec.Topology.Bastion.IdleTimeout = cloudup.DefaultBastionIdleTimeout(cluster)
 
 	sshPublicKeys := make(map[string][]byte)
 	if c.SSHPublicKey != "" {
@@ -443,7 +462,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	}
 
 	if c.AdminAccess != "" {
-		cluster.Spec.AdminAccess = []string{c.AdminAccess}
+		cluster.Spec.SSHAccess = []string{c.AdminAccess}
+		cluster.Spec.APIAccess = []string{c.AdminAccess}
 	}
 
 	err = cluster.PerformAssignments()
