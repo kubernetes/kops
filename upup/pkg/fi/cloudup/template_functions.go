@@ -117,7 +117,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	}
 
 	dest["ClusterName"] = func() string {
-		return tf.cluster.Name
+		return tf.cluster.ObjectMeta.Name
 	}
 
 	dest["HasTag"] = tf.HasTag
@@ -231,7 +231,7 @@ func (tf *TemplateFunctions) GetBastionIdleTimeout() (int, error) {
 // Will never return a string longer than 32 chars
 func (tf *TemplateFunctions) GetELBName32(prefix string) (string, error) {
 	var returnString string
-	c := tf.cluster.Name
+	c := tf.cluster.ObjectMeta.Name
 	s := strings.Split(c, ".")
 	if len(s) > 0 {
 		returnString = fmt.Sprintf("%s-%s", prefix, s[0])
@@ -362,7 +362,7 @@ func (tf *TemplateFunctions) CloudTags(ig *api.InstanceGroup) (map[string]string
 // GetInstanceGroup returns the instance group with the specified name
 func (tf *TemplateFunctions) GetInstanceGroup(name string) (*api.InstanceGroup, error) {
 	for _, ig := range tf.instanceGroups {
-		if ig.Name == name {
+		if ig.ObjectMeta.Name == name {
 			return ig, nil
 		}
 	}

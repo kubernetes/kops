@@ -84,7 +84,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		return err
 	}
 
-	existing, err := clientset.InstanceGroups(cluster.Name).Get(groupName)
+	existing, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).Get(groupName)
 	if err != nil {
 		return err
 	}
@@ -95,7 +95,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 
 	// Populate some defaults
 	ig := &api.InstanceGroup{}
-	ig.Name = groupName
+	ig.ObjectMeta.Name = groupName
 	ig.Spec.Role = api.InstanceGroupRole(options.Role)
 
 	ig, err = cloudup.PopulateInstanceGroupSpec(cluster, ig, channel)
@@ -138,7 +138,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		return err
 	}
 
-	_, err = clientset.InstanceGroups(cluster.Name).Create(group)
+	_, err = clientset.InstanceGroups(cluster.ObjectMeta.Name).Create(group)
 	if err != nil {
 		return fmt.Errorf("error storing InstanceGroup: %v", err)
 	}

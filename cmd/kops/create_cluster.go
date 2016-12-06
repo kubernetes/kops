@@ -246,7 +246,7 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 				g.Spec.Zones = []string{zone.Name}
 				g.Spec.MinSize = fi.Int(1)
 				g.Spec.MaxSize = fi.Int(1)
-				g.Name = "master-" + zone.Name // Subsequent masters (if we support that) could be <zone>-1, <zone>-2
+				g.ObjectMeta.Name = "master-" + zone.Name // Subsequent masters (if we support that) could be <zone>-1, <zone>-2
 				instanceGroups = append(instanceGroups, g)
 				masters = append(masters, g)
 
@@ -263,7 +263,7 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 				g.Spec.Zones = []string{zone}
 				g.Spec.MinSize = fi.Int(1)
 				g.Spec.MaxSize = fi.Int(1)
-				g.Name = "master-" + zone
+				g.ObjectMeta.Name = "master-" + zone
 				instanceGroups = append(instanceGroups, g)
 				masters = append(masters, g)
 			}
@@ -298,7 +298,7 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 	if len(nodes) == 0 {
 		g := &api.InstanceGroup{}
 		g.Spec.Role = api.InstanceGroupRoleNode
-		g.Name = "nodes"
+		g.ObjectMeta.Name = "nodes"
 		instanceGroups = append(instanceGroups, g)
 		nodes = append(nodes, g)
 	}
@@ -345,7 +345,7 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 	}
 
 	if clusterName != "" {
-		cluster.Name = clusterName
+		cluster.ObjectMeta.Name = clusterName
 	}
 
 	if c.KubernetesVersion != "" {
@@ -522,10 +522,10 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 		fmt.Fprintf(&sb, " * list clusters with: kops get cluster\n")
 		fmt.Fprintf(&sb, " * edit this cluster with: kops edit cluster %s\n", clusterName)
 		if len(nodes) > 0 {
-			fmt.Fprintf(&sb, " * edit your node instance group: kops edit ig --name=%s %s\n", clusterName, nodes[0].Name)
+			fmt.Fprintf(&sb, " * edit your node instance group: kops edit ig --name=%s %s\n", clusterName, nodes[0].ObjectMeta.Name)
 		}
 		if len(masters) > 0 {
-			fmt.Fprintf(&sb, " * edit your master instance group: kops edit ig --name=%s %s\n", clusterName, masters[0].Name)
+			fmt.Fprintf(&sb, " * edit your master instance group: kops edit ig --name=%s %s\n", clusterName, masters[0].ObjectMeta.Name)
 		}
 		fmt.Fprintf(&sb, "\n")
 		fmt.Fprintf(&sb, "Finally configure your cluster with: kops update cluster %s --yes\n", clusterName)
@@ -539,7 +539,7 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 		glog.Infof("Exporting kubecfg for cluster")
 
 		x := &kutil.CreateKubecfg{
-			ContextName:  cluster.Name,
+			ContextName:  cluster.ObjectMeta.Name,
 			KeyStore:     keyStore,
 			SecretStore:  secretStore,
 			KubeMasterIP: cluster.Spec.MasterPublicName,

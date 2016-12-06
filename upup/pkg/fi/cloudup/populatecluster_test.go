@@ -28,7 +28,7 @@ import (
 
 func buildMinimalCluster() *api.Cluster {
 	c := &api.Cluster{}
-	c.Name = "testcluster.test.com"
+	c.ObjectMeta.Name = "testcluster.test.com"
 	c.Spec.KubernetesVersion = "1.4.6"
 	c.Spec.Zones = []*api.ClusterZoneSpec{
 		{Name: "us-mock-1a", CIDR: "172.20.1.0/24"},
@@ -265,7 +265,7 @@ func TestPopulateCluster_IsolateMastersFalse(t *testing.T) {
 
 func TestPopulateCluster_Name_Required(t *testing.T) {
 	c := buildMinimalCluster()
-	c.Name = ""
+	c.ObjectMeta.Name = ""
 
 	expectErrorFromPopulateCluster(t, c, "Name")
 }

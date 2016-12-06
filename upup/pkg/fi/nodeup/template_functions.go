@@ -94,7 +94,7 @@ func newTemplateFunctions(nodeupConfig *NodeUpConfig, cluster *api.Cluster, inst
 			// TODO: Remove this once we have a stable release
 			glog.Warningf("Building a synthetic instance group")
 			instanceGroup = &api.InstanceGroup{}
-			instanceGroup.Name = "synthetic"
+			instanceGroup.ObjectMeta.Name = "synthetic"
 			if t.IsMaster() {
 				instanceGroup.Spec.Role = api.InstanceGroupRoleMaster
 			} else {
@@ -150,7 +150,7 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 	}
 
 	dest["ClusterName"] = func() string {
-		return t.cluster.Name
+		return t.cluster.ObjectMeta.Name
 	}
 
 	dest["ProtokubeImage"] = t.ProtokubeImage
