@@ -21,9 +21,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	//"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"fmt"
-
 	"github.com/aws/aws-sdk-go/aws"
 )
 
@@ -43,12 +41,11 @@ func (e *NatGateway) CompareWithID() *string {
 
 func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
-	ID := e.ID
-	ElasticIp := e.ElasticIp
-	Subnet := e.Subnet
+
+	id := e.ID
 
 	// Find via tag on foreign resource
-	if ID == nil && ElasticIp == nil && Subnet != nil {
+	if id == nil && e.Subnet != nil {
 		var filters []*ec2.Filter
 		filters = append(filters, awsup.NewEC2Filter("key", "AssociatedNatgateway"))
 		filters = append(filters, awsup.NewEC2Filter("resource-id", *e.Subnet.ID))
@@ -70,13 +67,14 @@ func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 			return nil, fmt.Errorf("found multiple tags for: %v", e)
 		}
 		t := response.Tags[0]
-		ID = t.Value
-		glog.V(2).Infof("Found nat gateway via tag: %v", *ID)
+		id = t.Value
+		glog.V(2).Infof("Found nat gateway via tag: %v", *id)
 	}
 
-	if ID != nil {
+
+	if id != nil {
 		request := &ec2.DescribeNatGatewaysInput{}
-		request.NatGatewayIds = []*string{ID}
+		request.NatGatewayIds = []*string{id}
 		response, err := cloud.EC2().DescribeNatGateways(request)
 		if err != nil {
 			return nil, fmt.Errorf("error listing NAT Gateways: %v", err)
@@ -94,7 +92,15 @@ func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 			ID: a.NatGatewayId,
 		}
 		actual.Subnet = e.Subnet
-		actual.ElasticIp = e.ElasticIp
+		if len(a.NatGatewayAddresses) == 0 {
+			// Not sure if this ever happens
+			actual.ElasticIp = nil
+		} else if len(a.NatGatewayAddresses) == 1 {
+			actual.ElasticIp = &ElasticIP{ID: a.NatGatewayAddresses[0].AllocationId}
+		} else {
+			return nil, fmt.Errorf("found multiple elastic IPs attached to NatGateway %q", aws.StringValue(a.NatGatewayId))
+		}
+
 		e.ID = actual.ID
 		return actual, nil
 	}
@@ -181,6 +187,7 @@ func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway)
 	} else if e.Subnet.ID == nil {
 		return fmt.Errorf("Subnet ID not set")
 	}
+
 	tags := make(map[string]string)
 	tags["AssociatedNatgateway"] = *id
 	err := t.AddAWSTags(*e.Subnet.ID, tags)
