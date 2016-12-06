@@ -115,7 +115,7 @@ func RunUpdateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 	}
 
 	if c.SSHPublicKey != "" {
-		fmt.Fprintf(out, "--ssh-public-key on update is deprecated - please use `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub` instead\n", cluster.Name)
+		fmt.Fprintf(out, "--ssh-public-key on update is deprecated - please use `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub` instead\n", cluster.ObjectMeta.Name)
 
 		c.SSHPublicKey = utils.ExpandPath(c.SSHPublicKey)
 		authorized, err := ioutil.ReadFile(c.SSHPublicKey)
@@ -153,7 +153,7 @@ func RunUpdateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 
 	// TODO: Only if not yet set?
 	if !isDryrun {
-		hasKubecfg, err := hasKubecfg(cluster.Name)
+		hasKubecfg, err := hasKubecfg(cluster.ObjectMeta.Name)
 		if err != nil {
 			glog.Warningf("error reading kubecfg: %v", err)
 			hasKubecfg = true
@@ -168,7 +168,7 @@ func RunUpdateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 		if kubecfgCert != nil {
 			glog.Infof("Exporting kubecfg for cluster")
 			x := &kutil.CreateKubecfg{
-				ContextName:  cluster.Name,
+				ContextName:  cluster.ObjectMeta.Name,
 				KeyStore:     keyStore,
 				SecretStore:  secretStore,
 				KubeMasterIP: cluster.Spec.MasterPublicName,

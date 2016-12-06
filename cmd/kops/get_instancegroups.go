@@ -70,7 +70,7 @@ func (c *GetInstanceGroupsCmd) Run(args []string) error {
 		m := make(map[string]*api.InstanceGroup)
 		for i := range list.Items {
 			ig := &list.Items[i]
-			m[ig.Name] = ig
+			m[ig.ObjectMeta.Name] = ig
 		}
 		instancegroups = make([]*api.InstanceGroup, 0, len(args))
 		for _, arg := range args {
@@ -97,7 +97,7 @@ func (c *GetInstanceGroupsCmd) Run(args []string) error {
 	if output == OutputTable {
 		t := &tables.Table{}
 		t.AddColumn("NAME", func(c *api.InstanceGroup) string {
-			return c.Name
+			return c.ObjectMeta.Name
 		})
 		t.AddColumn("ROLE", func(c *api.InstanceGroup) string {
 			return string(c.Spec.Role)
@@ -119,7 +119,7 @@ func (c *GetInstanceGroupsCmd) Run(args []string) error {
 		for _, ig := range instancegroups {
 			y, err := api.ToYaml(ig)
 			if err != nil {
-				return fmt.Errorf("error marshaling yaml for %q: %v", ig.Name, err)
+				return fmt.Errorf("error marshaling yaml for %q: %v", ig.ObjectMeta.Name, err)
 			}
 			_, err = os.Stdout.Write(y)
 			if err != nil {

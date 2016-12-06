@@ -47,7 +47,7 @@ func (o *FederationConfiguration) extractKubecfg(c *fi.Context, f *kopsapi.Feder
 
 	k := kutil.NewKubeconfigBuilder()
 	k.KubeMasterIP = masterName
-	k.Context = "federation-" + f.Name
+	k.Context = "federation-" + f.ObjectMeta.Name
 
 	// CA Cert
 	caCert, _, err := c.Keystore.FindKeypair(fi.CertificateId_CA)

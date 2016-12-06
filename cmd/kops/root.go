@@ -239,8 +239,8 @@ func (c *RootCmd) Cluster() (*kopsapi.Cluster, error) {
 		return nil, fmt.Errorf("cluster %q not found", clusterName)
 	}
 
-	if clusterName != cluster.Name {
-		return nil, fmt.Errorf("cluster name did not match expected name: %v vs %v", clusterName, cluster.Name)
+	if clusterName != cluster.ObjectMeta.Name {
+		return nil, fmt.Errorf("cluster name did not match expected name: %v vs %v", clusterName, cluster.ObjectMeta.Name)
 	}
 	return cluster, nil
 }

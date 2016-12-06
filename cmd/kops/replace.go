@@ -93,7 +93,7 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *UpdateOpt
 			}
 
 		case *kopsapi.InstanceGroup:
-			clusterName := v.Labels[ClusterNameLabel]
+			clusterName := v.ObjectMeta.Labels[ClusterNameLabel]
 			if clusterName == "" {
 				return fmt.Errorf("must specify %q label with cluster name to replace instanceGroup", ClusterNameLabel)
 			}

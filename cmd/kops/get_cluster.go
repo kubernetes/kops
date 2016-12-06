@@ -68,7 +68,7 @@ func (c *GetClustersCmd) Run(args []string) error {
 		m := make(map[string]*api.Cluster)
 		for i := range clusterList.Items {
 			c := &clusterList.Items[i]
-			m[c.Name] = c
+			m[c.ObjectMeta.Name] = c
 		}
 		for _, arg := range args {
 			ig := m[arg]
@@ -94,7 +94,7 @@ func (c *GetClustersCmd) Run(args []string) error {
 	if output == OutputTable {
 		t := &tables.Table{}
 		t.AddColumn("NAME", func(c *api.Cluster) string {
-			return c.Name
+			return c.ObjectMeta.Name
 		})
 		t.AddColumn("CLOUD", func(c *api.Cluster) string {
 			return c.Spec.CloudProvider
@@ -113,12 +113,12 @@ func (c *GetClustersCmd) Run(args []string) error {
 			for _, cluster := range clusters {
 				configBase, err := registry.ConfigBase(cluster)
 				if err != nil {
-					return fmt.Errorf("error reading full cluster spec for %q: %v", cluster.Name, err)
+					return fmt.Errorf("error reading full cluster spec for %q: %v", cluster.ObjectMeta.Name, err)
 				}
 				fullSpec := &api.Cluster{}
 				err = registry.ReadConfigDeprecated(configBase.Join(registry.PathClusterCompleted), fullSpec)
 				if err != nil {
-					return fmt.Errorf("error reading full cluster spec for %q: %v", cluster.Name, err)
+					return fmt.Errorf("error reading full cluster spec for %q: %v", cluster.ObjectMeta.Name, err)
 				}
 				fullSpecs = append(fullSpecs, fullSpec)
 			}
@@ -128,7 +128,7 @@ func (c *GetClustersCmd) Run(args []string) error {
 		for _, cluster := range clusters {
 			y, err := api.ToYaml(cluster)
 			if err != nil {
-				return fmt.Errorf("error marshaling yaml for %q: %v", cluster.Name, err)
+				return fmt.Errorf("error marshaling yaml for %q: %v", cluster.ObjectMeta.Name, err)
 			}
 			_, err = os.Stdout.Write(y)
 			if err != nil {

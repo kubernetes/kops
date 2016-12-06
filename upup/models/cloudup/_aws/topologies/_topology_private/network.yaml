@@ -217,9 +217,9 @@ securityGroupRule/kube-proxy-api-elb:
 # Attach each master ASG to the ELB
 # ---------------------------------------------------------------
 {{ range $m := Masters }}
-loadBalancerAttachment/api-elb-attachment.{{ $m.Name }}.{{ ClusterName }}:
+loadBalancerAttachment/api-elb-attachment.{{ $m.ObjectMeta.Name }}.{{ ClusterName }}:
   loadBalancer: loadBalancer/api.{{ ClusterName }}
-  autoscalingGroup: autoscalingGroup/{{ $m.Name }}.masters.{{ ClusterName }}
+  autoscalingGroup: autoscalingGroup/{{ $m.ObjectMeta.Name }}.masters.{{ ClusterName }}
 {{ end }}
 
 

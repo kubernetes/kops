@@ -80,7 +80,7 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		return err
 	}
 
-	list, err := clientset.InstanceGroups(cluster.Name).List(k8sapi.ListOptions{})
+	list, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).List(k8sapi.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -90,7 +90,7 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		instanceGroups = append(instanceGroups, &list.Items[i])
 	}
 
-	if cluster.Annotations[api.AnnotationNameManagement] == api.AnnotationValueManagementImported {
+	if cluster.ObjectMeta.Annotations[api.AnnotationNameManagement] == api.AnnotationValueManagementImported {
 		return fmt.Errorf("upgrade is not for use with imported clusters (did you mean `kops toolbox convert-imported`?)")
 	}
 
@@ -181,7 +181,7 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 				if ig.Spec.Image != image.Name {
 					target := ig
 					actions = append(actions, &upgradeAction{
-						Item:     "InstanceGroup/" + target.Name,
+						Item:     "InstanceGroup/" + target.ObjectMeta.Name,
 						Property: "Image",
 						Old:      target.Spec.Image,
 						New:      image.Name,
@@ -275,16 +275,16 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		}
 
 		for _, g := range instanceGroups {
-			_, err := clientset.InstanceGroups(cluster.Name).Update(g)
+			_, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).Update(g)
 			if err != nil {
-				return fmt.Errorf("error writing InstanceGroup %q: %v", g.Name, err)
+				return fmt.Errorf("error writing InstanceGroup %q: %v", g.ObjectMeta.Name, err)
 			}
 		}
 
 		fmt.Printf("\nUpdates applied to configuration.\n")
 
 		// TODO: automate this step
-		fmt.Printf("You can now apply these changes, using `kops update cluster %s`\n", cluster.Name)
+		fmt.Printf("You can now apply these changes, using `kops update cluster %s`\n", cluster.ObjectMeta.Name)
 	}
 
 	return nil

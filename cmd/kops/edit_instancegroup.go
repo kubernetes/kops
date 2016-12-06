@@ -82,7 +82,7 @@ func RunEditInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, ou
 		return fmt.Errorf("name is required")
 	}
 
-	oldGroup, err := clientset.InstanceGroups(cluster.Name).Get(groupName)
+	oldGroup, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).Get(groupName)
 	if err != nil {
 		return fmt.Errorf("error reading InstanceGroup %q: %v", groupName, err)
 	}
@@ -150,7 +150,7 @@ func RunEditInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, ou
 	}
 
 	// Note we perform as much validation as we can, before writing a bad config
-	_, err = clientset.InstanceGroups(cluster.Name).Update(fullGroup)
+	_, err = clientset.InstanceGroups(cluster.ObjectMeta.Name).Update(fullGroup)
 	if err != nil {
 		return err
 	}

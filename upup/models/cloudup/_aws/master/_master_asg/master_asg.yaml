@@ -1,7 +1,7 @@
 {{ range $m := Masters }}
 
 # ASG for master
-launchConfiguration/{{ $m.Name }}.masters.{{ ClusterName }}:
+launchConfiguration/{{ $m.ObjectMeta.Name }}.masters.{{ ClusterName }}:
   sshKey: sshKey/{{ SSHKeyName }}
   securityGroups:
     - securityGroup/masters.{{ ClusterName }}
@@ -14,14 +14,14 @@ launchConfiguration/{{ $m.Name }}.masters.{{ ClusterName }}:
   {{ if IsTopologyPrivate }}
   associatePublicIP: false
   {{ end }}
-  userData: resources/nodeup.sh {{ $m.Name }}
+  userData: resources/nodeup.sh {{ $m.ObjectMeta.Name }}
   rootVolumeSize: {{ or $m.Spec.RootVolumeSize "20" }}
   rootVolumeType: {{ or $m.Spec.RootVolumeType "gp2" }}
 {{ if $m.Spec.MaxPrice }}
   spotPrice: "{{ $m.Spec.MaxPrice }}"
 {{ end }}
 
-autoscalingGroup/{{ $m.Name }}.masters.{{ ClusterName }}:
+autoscalingGroup/{{ $m.ObjectMeta.Name }}.masters.{{ ClusterName }}:
   minSize: {{ $m.Spec.MinSize }}
   maxSize: {{ $m.Spec.MaxSize }}
   subnets:
@@ -34,7 +34,7 @@ autoscalingGroup/{{ $m.Name }}.masters.{{ ClusterName }}:
   {{ end }}
 
   {{ end }}
-  launchConfiguration: launchConfiguration/{{ $m.Name }}.masters.{{ ClusterName }}
+  launchConfiguration: launchConfiguration/{{ $m.ObjectMeta.Name }}.masters.{{ ClusterName }}
   tags:
   {{ range $k, $v := CloudTags $m }}
     {{ $k }}: "{{ $v }}"
@@ -42,9 +42,9 @@ autoscalingGroup/{{ $m.Name }}.masters.{{ ClusterName }}:
 
 {{ if HasTag "_master_lb" }}
 # Attach ASG to ELB
-loadBalancerAttachment/masters.{{ $m.Name }}.{{ ClusterName }}:
+loadBalancerAttachment/masters.{{ $m.ObjectMeta.Name }}.{{ ClusterName }}:
   loadBalancer: loadBalancer/api.{{ ClusterName }}
-  autoscalingGroup: autoscalingGroup/{{ $m.Name }}.{{ ClusterName }}
+  autoscalingGroup: autoscalingGroup/{{ $m.ObjectMeta.Name }}.{{ ClusterName }}
 {{ end }}
 
 {{ end }}

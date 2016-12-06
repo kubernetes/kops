@@ -99,7 +99,7 @@ func RunCreate(f *util.Factory, cmd *cobra.Command, out io.Writer, c *CreateOpti
 			_, err = clientset.Federations().Create(v)
 			if err != nil {
 				if errors.IsAlreadyExists(err) {
-					return fmt.Errorf("federation %q already exists", v.Name)
+					return fmt.Errorf("federation %q already exists", v.ObjectMeta.Name)
 				}
 				return fmt.Errorf("error creating federation: %v", err)
 			}
@@ -108,20 +108,20 @@ func RunCreate(f *util.Factory, cmd *cobra.Command, out io.Writer, c *CreateOpti
 			_, err = clientset.Clusters().Create(v)
 			if err != nil {
 				if errors.IsAlreadyExists(err) {
-					return fmt.Errorf("cluster %q already exists", v.Name)
+					return fmt.Errorf("cluster %q already exists", v.ObjectMeta.Name)
 				}
 				return fmt.Errorf("error creating cluster: %v", err)
 			}
 
 		case *kopsapi.InstanceGroup:
-			clusterName := v.Labels[ClusterNameLabel]
+			clusterName := v.ObjectMeta.Labels[ClusterNameLabel]
 			if clusterName == "" {
 				return fmt.Errorf("must specify %q label with cluster name to create instanceGroup", ClusterNameLabel)
 			}
 			_, err = clientset.InstanceGroups(clusterName).Create(v)
 			if err != nil {
 				if errors.IsAlreadyExists(err) {
-					return fmt.Errorf("instanceGroup %q already exists", v.Name)
+					return fmt.Errorf("instanceGroup %q already exists", v.ObjectMeta.Name)
 				}
 				return fmt.Errorf("error creating instanceGroup: %v", err)
 			}

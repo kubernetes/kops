@@ -84,7 +84,7 @@ type ApplyClusterCmd struct {
 func (c *ApplyClusterCmd) Run() error {
 
 	if c.InstanceGroups == nil {
-		list, err := c.Clientset.InstanceGroups(c.Cluster.Name).List(k8sapi.ListOptions{})
+		list, err := c.Clientset.InstanceGroups(c.Cluster.ObjectMeta.Name).List(k8sapi.ListOptions{})
 		if err != nil {
 			return err
 		}
@@ -320,7 +320,7 @@ func (c *ApplyClusterCmd) Run() error {
 			})
 
 			if len(sshPublicKeys) == 0 {
-				return fmt.Errorf("SSH public key must be specified when running with AWS (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.Name)
+				return fmt.Errorf("SSH public key must be specified when running with AWS (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
 			}
 
 			if len(sshPublicKeys) != 1 {
@@ -335,7 +335,7 @@ func (c *ApplyClusterCmd) Run() error {
 						return "", err
 					}
 
-					name := "kubernetes." + cluster.Name + "-" + fingerprint
+					name := "kubernetes." + cluster.ObjectMeta.Name + "-" + fingerprint
 					return name, nil
 				}
 			}
@@ -387,7 +387,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 		role := ig.Spec.Role
 		if role == "" {
-			return "", fmt.Errorf("cannot determine role for instance group: %v", ig.Name)
+			return "", fmt.Errorf("cannot determine role for instance group: %v", ig.ObjectMeta.Name)
 		}
 
 		nodeUpTags, err := buildNodeupTags(role, tf.cluster, tf.tags)
@@ -402,11 +402,11 @@ func (c *ApplyClusterCmd) Run() error {
 
 		config.Assets = c.Assets
 
-		config.ClusterName = cluster.Name
+		config.ClusterName = cluster.ObjectMeta.Name
 
 		config.ConfigBase = fi.String(configBase.Path())
 
-		config.InstanceGroupName = ig.Name
+		config.InstanceGroupName = ig.ObjectMeta.Name
 
 		var images []*nodeup.Image
 
@@ -550,9 +550,9 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 		for _, g := range c.InstanceGroups {
-			_, err := c.Clientset.InstanceGroups(c.Cluster.Name).Update(g)
+			_, err := c.Clientset.InstanceGroups(c.Cluster.ObjectMeta.Name).Update(g)
 			if err != nil {
-				return fmt.Errorf("error writing InstanceGroup %q to registry: %v", g.Name, err)
+				return fmt.Errorf("error writing InstanceGroup %q to registry: %v", g.ObjectMeta.Name, err)
 			}
 		}
 	}

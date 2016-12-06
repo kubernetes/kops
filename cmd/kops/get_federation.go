@@ -73,7 +73,7 @@ func RunGetFederations(context Factory, out io.Writer, options *GetFederationOpt
 	if output == OutputTable {
 		t := &tables.Table{}
 		t.AddColumn("NAME", func(f *api.Federation) string {
-			return f.Name
+			return f.ObjectMeta.Name
 		})
 		t.AddColumn("CONTROLLERS", func(f *api.Federation) string {
 			return strings.Join(f.Spec.Controllers, ",")
@@ -86,7 +86,7 @@ func RunGetFederations(context Factory, out io.Writer, options *GetFederationOpt
 		for _, f := range federations {
 			y, err := api.ToYaml(f)
 			if err != nil {
-				return fmt.Errorf("error marshaling yaml for %q: %v", f.Name, err)
+				return fmt.Errorf("error marshaling yaml for %q: %v", f.ObjectMeta.Name, err)
 			}
 			_, err = out.Write(y)
 			if err != nil {

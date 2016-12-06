@@ -156,7 +156,7 @@ func (o *ApplyFederationOperation) Run() error {
 			return fmt.Errorf("error reading cluster %q: %v", member, err)
 		}
 
-		clusterName := strings.Replace(cluster.Name, ".", "-", -1)
+		clusterName := strings.Replace(cluster.ObjectMeta.Name, ".", "-", -1)
 
 		a := &FederationCluster{
 			FederationNamespace: o.namespace,
@@ -164,7 +164,7 @@ func (o *ApplyFederationOperation) Run() error {
 			ControllerKubernetesClients: controllerKubernetesClients,
 			FederationClient:            federationControllerClient,
 
-			ClusterSecretName: "secret-" + cluster.Name,
+			ClusterSecretName: "secret-" + cluster.ObjectMeta.Name,
 			ClusterName:       clusterName,
 			ApiserverHostname: cluster.Spec.MasterPublicName,
 		}
@@ -210,7 +210,7 @@ func (o *ApplyFederationOperation) buildApiserverKeypair() *fitasks.Keypair {
 	keypairName := "secret-" + o.apiserverHostName
 	keypair := &fitasks.Keypair{
 		Name:    fi.String(keypairName),
-		Subject: "cn=" + o.Federation.Name,
+		Subject: "cn=" + o.Federation.ObjectMeta.Name,
 		Type:    "server",
 	}
 

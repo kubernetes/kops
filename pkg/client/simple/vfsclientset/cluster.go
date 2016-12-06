@@ -90,11 +90,11 @@ func (r *ClusterVFS) Create(c *api.Cluster) (*api.Cluster, error) {
 		return nil, err
 	}
 
-	if c.CreationTimestamp.IsZero() {
-		c.CreationTimestamp = unversioned.NewTime(time.Now().UTC())
+	if c.ObjectMeta.CreationTimestamp.IsZero() {
+		c.ObjectMeta.CreationTimestamp = unversioned.NewTime(time.Now().UTC())
 	}
 
-	clusterName := c.Name
+	clusterName := c.ObjectMeta.Name
 	if clusterName == "" {
 		return nil, fmt.Errorf("clusterName is required")
 	}
@@ -104,7 +104,7 @@ func (r *ClusterVFS) Create(c *api.Cluster) (*api.Cluster, error) {
 		if os.IsExist(err) {
 			return nil, err
 		}
-		return nil, fmt.Errorf("error writing Cluster %q: %v", c.Name, err)
+		return nil, fmt.Errorf("error writing Cluster %q: %v", c.ObjectMeta.Name, err)
 	}
 
 	return c, nil
@@ -116,7 +116,7 @@ func (r *ClusterVFS) Update(c *api.Cluster) (*api.Cluster, error) {
 		return nil, err
 	}
 
-	clusterName := c.Name
+	clusterName := c.ObjectMeta.Name
 	if clusterName == "" {
 		return nil, fmt.Errorf("clusterName is required")
 	}
@@ -171,11 +171,11 @@ func (r *ClusterVFS) find(clusterName string) (*api.Cluster, error) {
 
 	c := o.(*api.Cluster)
 
-	if c.Name == "" {
-		c.Name = clusterName
+	if c.ObjectMeta.Name == "" {
+		c.ObjectMeta.Name = clusterName
 	}
-	if c.Name != clusterName {
-		glog.Warningf("Name of cluster does not match: %q vs %q", c.Name, clusterName)
+	if c.ObjectMeta.Name != clusterName {
+		glog.Warningf("Name of cluster does not match: %q vs %q", c.ObjectMeta.Name, clusterName)
 	}
 
 	// TODO: Split this out into real version updates / schema changes
