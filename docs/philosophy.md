@@ -12,7 +12,7 @@ kops can:
 * create a cluster
 * upgrade a cluster
 * reconfigure the components
-* add, remove or reconfigure groups of machines (NodeSets)
+* add, remove or reconfigure groups of machines (InstanceGroups)
 * manage cluster add-ons
 * delete a cluster
 

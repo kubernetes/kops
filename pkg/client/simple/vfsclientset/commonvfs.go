@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	kops "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
@@ -29,6 +30,8 @@ import (
 	"reflect"
 	"time"
 )
+
+var StoreVersion = v1alpha1.SchemeGroupVersion
 
 type commonVFS struct {
 	kind               string
