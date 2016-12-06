@@ -162,13 +162,13 @@ func CreateCluster(kopsTesting *KopsTest) error {
 	}
 
 	banner(kopsCreateCommand)
-	stdout, stderr := ExecOutput(KopsPath, kopsCreateCommand,env)
+	stdoutExec, err := ExecOutput(KopsPath, kopsCreateCommand,env)
 
-	if stderr != nil {
-		return fmt.Errorf("Unable to create cluster: %v\n%s", stderr, stdout)
+	if err != nil {
+		return fmt.Errorf("Unable to create cluster: %v\n", err)
 	}
 
-	banner(stdout)
+	banner(stdoutExec)
 	TestClusterName = kopsTesting.ClusterName
 	return nil
 }
@@ -178,10 +178,10 @@ func CreateCluster(kopsTesting *KopsTest) error {
 func DeleteCluster(kopsTest *KopsTest) error {
 	kopsDeleteCommand := fmt.Sprintf(DELETE_CLUSTER, kopsTest.ClusterName, kopsTest.StateStore, kopsTest.Verbosity)
 	banner(kopsDeleteCommand)
-	stdout, stderr := ExecOutput(KopsPath, kopsDeleteCommand,[]string{})
-	if stderr != nil {
-		return fmt.Errorf("Unable to delete cluster: %v\n%s", stderr, stdout)
+	stdoutExec, err := ExecOutput(KopsPath, kopsDeleteCommand,[]string{})
+	if err != nil {
+		return fmt.Errorf("Unable to delete cluster: %v\n", err)
 	}
-	banner(stdout)
+	banner(stdoutExec)
 	return nil
 }

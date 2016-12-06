@@ -48,18 +48,26 @@ func ExecOutput(c, args string, env []string) (string, error) {
 
 	err := cmd.Run()
 	if err != nil {
-		return "", fmt.Errorf("Execution Error: \n %s %s %s", stdout.String(), err.Error(), stderr.String())
+
+		edge("Error")
+		fmt.Printf("Execution failed: %s %s\n", c, args)
+		fmt.Printf("Execution Error: %s",err.Error())
+		edge("Error")
+		fmt.Printf("Execution stderr: \n%s\n",stderr.String())
+		edge("Error")
+		fmt.Printf("Execution stdout: \n%s\n",stdout.String())
+		edge("Error")
+
+		return "", fmt.Errorf("Execution Error: \n %s %s %s\n", stdout.String(), err.Error(), stderr.String())
 	}
-	if stderr.String() != "" {
-		// Edge case, we have stdout AND stderr
-		return stdout.String(), fmt.Errorf("%s", stderr.String())
-	}
+
+	edge("Success")
+	fmt.Printf("Command Succeded: %s %s\n", c, args)
+	edge("Success")
+
 	return stdout.String(), nil
 }
 
-/*
-func banner(msg string) {
-	fmt.Println("---------------------------------------------------------------------------------------------------------")
-	fmt.Println(msg)
-	fmt.Println("---------------------------------------------------------------------------------------------------------")
-}*/
+func edge(msg string) {
+	fmt.Printf("%s: ==================================================================================================\n", msg)
+}
