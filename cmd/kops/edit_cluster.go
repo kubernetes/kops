@@ -74,7 +74,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 		return err
 	}
 
-	list, err := clientset.InstanceGroups(oldCluster.Name).List(k8sapi.ListOptions{})
+	list, err := clientset.InstanceGroups(oldCluster.ObjectMeta.Name).List(k8sapi.ListOptions{})
 	if err != nil {
 		return err
 	}

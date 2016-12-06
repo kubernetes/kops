@@ -16,19 +16,15 @@ limitations under the License.
 
 package v1alpha1
 
-import (
-	"k8s.io/kubernetes/pkg/api/unversioned"
-)
-
 // Configuration for each component
 // Wherever possible, we try to use the types & names in https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
 
-type KubeletConfig struct {
-	unversioned.TypeMeta `json:",inline"`
-	ObjectMeta           `json:"metadata,omitempty"`
-
-	Spec ClusterSpec `json:"spec,omitempty"`
-}
+//type KubeletConfig struct {
+//	unversioned.TypeMeta `json:",inline"`
+//	ObjectMeta  api.ObjectMeta           `json:"metadata,omitempty"`
+//
+//	Spec ClusterSpec `json:"spec,omitempty"`
+//}
 
 type KubeletConfigSpec struct {
 	APIServers string `json:"apiServers,omitempty" flag:"api-servers"`

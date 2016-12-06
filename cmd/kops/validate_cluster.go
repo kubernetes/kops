@@ -73,12 +73,12 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		return err
 	}
 
-	list, err := clientSet.InstanceGroups(cluster.Name).List(k8sapi.ListOptions{})
+	list, err := clientSet.InstanceGroups(cluster.ObjectMeta.Name).List(k8sapi.ListOptions{})
 	if err != nil {
-		return fmt.Errorf("cannot get InstanceGroups for %q: %v", cluster.Name, err)
+		return fmt.Errorf("cannot get InstanceGroups for %q: %v", cluster.ObjectMeta.Name, err)
 	}
 
-	fmt.Fprintf(out, "Validating cluster %v\n\n", cluster.Name)
+	fmt.Fprintf(out, "Validating cluster %v\n\n", cluster.ObjectMeta.Name)
 
 	var instanceGroups []api.InstanceGroup
 	for _, ig := range list.Items {
@@ -91,7 +91,7 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 	}
 
 	// TODO: Refactor into util.Factory
-	contextName := cluster.Name
+	contextName := cluster.ObjectMeta.Name
 	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 		clientcmd.NewDefaultClientConfigLoadingRules(),
 		&clientcmd.ConfigOverrides{CurrentContext: contextName}).ClientConfig()
@@ -104,7 +104,7 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		return fmt.Errorf("Cannot build kube api client for %q: %v\n", contextName, err)
 	}
 
-	validationCluster, validationFailed := validation.ValidateCluster(cluster.Name, list, k8sClient)
+	validationCluster, validationFailed := validation.ValidateCluster(cluster.ObjectMeta.Name, list, k8sClient)
 
 	if validationCluster == nil || validationCluster.NodeList == nil || validationCluster.NodeList.Items == nil {
 		// validationFailed error is already formatted
@@ -113,7 +113,7 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 
 	t := &tables.Table{}
 	t.AddColumn("NAME", func(c api.InstanceGroup) string {
-		return c.Name
+		return c.ObjectMeta.Name
 	})
 	t.AddColumn("ROLE", func(c api.InstanceGroup) string {
 		return string(c.Spec.Role)
@@ -135,7 +135,7 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 	err = t.Render(instanceGroups, out, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "ZONES")
 
 	if err != nil {
-		return fmt.Errorf("cannot render nodes for %q: %v", cluster.Name, err)
+		return fmt.Errorf("cannot render nodes for %q: %v", cluster.ObjectMeta.Name, err)
 	}
 
 	t = &tables.Table{}
@@ -162,11 +162,11 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 	err = t.Render(validationCluster.NodeList.Items, out, "NAME", "ROLE", "READY")
 
 	if err != nil {
-		return fmt.Errorf("cannot render nodes for %q: %v", cluster.Name, err)
+		return fmt.Errorf("cannot render nodes for %q: %v", cluster.ObjectMeta.Name, err)
 	}
 
 	if validationFailed == nil {
-		fmt.Fprintf(out, "\nYour cluster %s is ready\n", cluster.Name)
+		fmt.Fprintf(out, "\nYour cluster %s is ready\n", cluster.ObjectMeta.Name)
 		return nil
 	} else {
 		// do we need to print which instance group is not ready?
@@ -174,6 +174,6 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		fmt.Fprint(out, "\nValidation Failed\n")
 		fmt.Fprintf(out, "Master(s) Not Ready %d out of %d.\n", len(validationCluster.MastersNotReadyArray), validationCluster.MastersCount)
 		fmt.Fprintf(out, "Node(s) Not Ready   %d out of %d.\n", len(validationCluster.NodesNotReadyArray), validationCluster.NodesCount)
-		return fmt.Errorf("Your cluster %s is NOT ready.\n", cluster.Name)
+		return fmt.Errorf("Your cluster %s is NOT ready.\n", cluster.ObjectMeta.Name)
 	}
 }

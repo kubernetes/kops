@@ -39,7 +39,7 @@ func (b *BootstrapChannelBuilder) BuildTasks(l *Loader) error {
 		return fmt.Errorf("error serializing addons yaml: %v", err)
 	}
 
-	name := b.cluster.Name + "-addons-bootstrap"
+	name := b.cluster.ObjectMeta.Name + "-addons-bootstrap"
 
 	l.tasks[name] = &fitasks.ManagedFile{
 		Name:     fi.String(name),
@@ -48,7 +48,7 @@ func (b *BootstrapChannelBuilder) BuildTasks(l *Loader) error {
 	}
 
 	for key, resource := range manifests {
-		name := b.cluster.Name + "-addons-" + key
+		name := b.cluster.ObjectMeta.Name + "-addons-" + key
 		l.tasks[name] = &fitasks.ManagedFile{
 			Name:     fi.String(name),
 			Location: fi.String(resource),

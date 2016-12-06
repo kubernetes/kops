@@ -71,7 +71,7 @@ func (c *GetInstanceGroupsCmd) Run(args []string) error {
 		m := make(map[string]*api.InstanceGroup)
 		for i := range list.Items {
 			ig := &list.Items[i]
-			m[ig.Name] = ig
+			m[ig.ObjectMeta.Name] = ig
 		}
 		instancegroups = make([]*api.InstanceGroup, 0, len(args))
 		for _, arg := range args {
@@ -99,7 +99,7 @@ func (c *GetInstanceGroupsCmd) Run(args []string) error {
 	case OutputTable:
 		t := &tables.Table{}
 		t.AddColumn("NAME", func(c *api.InstanceGroup) string {
-			return c.Name
+			return c.ObjectMeta.Name
 		})
 		t.AddColumn("ROLE", func(c *api.InstanceGroup) string {
 			return string(c.Spec.Role)
