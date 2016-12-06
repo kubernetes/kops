@@ -47,6 +47,10 @@ type LoadBalancerCrossZoneLoadBalancing struct {
 	Enabled *bool
 }
 
+type LoadBalancerConnectionSettings struct {
+	IdleTimeout *int64
+}
+
 //go:generate fitask -type=LoadBalancerAttributes
 type LoadBalancerAttributes struct {
 	Name         *string
@@ -133,8 +137,8 @@ func (e *LoadBalancerAttributes) Find(c *fi.Context) (*LoadBalancerAttributes, e
 		}
 
 		actual.ConnectionSettings = &LoadBalancerConnectionSettings{}
-		actual.ConnectionSettings.Name = e.Name
-		actual.ConnectionSettings.LoadBalancer = e.LoadBalancer
+		//actual.ConnectionSettings.Name = e.Name
+		//actual.ConnectionSettings.LoadBalancer = e.LoadBalancer
 		if lbAttributes.ConnectionSettings.IdleTimeout != nil {
 			actual.ConnectionSettings.IdleTimeout = lbAttributes.ConnectionSettings.IdleTimeout
 		}
@@ -174,11 +178,11 @@ func (s *LoadBalancerAttributes) CheckChanges(a, e, changes *LoadBalancerAttribu
 				return fi.RequiredField("ConnectionDraining.Enabled")
 			}
 		}
-		if e.ConnectionSettings != nil {
-			if e.ConnectionSettings.IdleTimeout == nil {
-				return fi.RequiredField("ConnectionSettings.IdleTimeout")
-			}
-		}
+		//if e.ConnectionSettings != nil {
+		//	if e.ConnectionSettings.IdleTimeout == nil {
+		//		return fi.RequiredField("ConnectionSettings.IdleTimeout")
+		//	}
+		//}
 		if e.CrossZoneLoadBalancing != nil {
 			if e.CrossZoneLoadBalancing.Enabled == nil {
 				return fi.RequiredField("CrossZoneLoadBalancing.Enabled")

@@ -55,13 +55,9 @@ type Loader struct {
 
 	Resources map[string]fi.Resource
 
-	Builders []TaskBuilder
+	Builders []fi.ModelBuilder
 
 	tasks map[string]fi.Task
-}
-
-type TaskBuilder interface {
-	BuildTasks(l *Loader) error
 }
 
 type templateResource struct {
@@ -172,10 +168,14 @@ func (l *Loader) BuildTasks(modelStore vfs.Path, models []string) (map[string]fi
 	}
 
 	for _, builder := range l.Builders {
-		err := builder.BuildTasks(l)
+		context := &fi.ModelBuilderContext{
+			Tasks: l.tasks,
+		}
+		err := builder.Build(context)
 		if err != nil {
 			return nil, err
 		}
+		l.tasks = context.Tasks
 	}
 
 	err := l.processDeferrals()

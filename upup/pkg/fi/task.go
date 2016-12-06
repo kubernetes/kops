@@ -34,3 +34,17 @@ func TaskAsString(t Task) string {
 type HasCheckExisting interface {
 	CheckExisting(c *Context) bool
 }
+
+// ModelBuilder allows for plugins that configure an aspect of the model, based on the configuration
+type ModelBuilder interface {
+	Build(context *ModelBuilderContext) error
+}
+
+// ModelBuilderContext is a context object that holds state we want to pass to ModelBuilder
+type ModelBuilderContext struct {
+	Tasks map[string]Task
+}
+
+func (c *ModelBuilderContext) AddTask(task Task) {
+
+}

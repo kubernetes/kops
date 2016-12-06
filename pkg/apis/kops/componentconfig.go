@@ -16,16 +16,6 @@ limitations under the License.
 
 package kops
 
-// Configuration for each component
-// Wherever possible, we try to use the types & names in https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
-
-//type KubeletConfig struct {
-//	unversioned.TypeMeta `json:",inline"`
-//	ObjectMeta api.ObjectMeta           `json:"metadata,omitempty"`
-//
-//	Spec ClusterSpec `json:"spec,omitempty"`
-//}
-
 type KubeletConfigSpec struct {
 	APIServers string `json:"apiServers,omitempty" flag:"api-servers"`
 

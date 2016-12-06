@@ -21,6 +21,7 @@ const (
 	TopologyPrivate = "private"
 )
 
+// +k8s:conversion-gen=false
 type TopologySpec struct {
 	// The environment to launch the Kubernetes masters in public|private
 	Masters string `json:"masters,omitempty"`

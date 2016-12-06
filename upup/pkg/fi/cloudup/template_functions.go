@@ -37,9 +37,9 @@ import (
 	"k8s.io/kubernetes/pkg/util/sets"
 	"math/big"
 	"net"
-	"sort"
 	"strings"
 	"text/template"
+	"k8s.io/kops/pkg/model"
 )
 
 type TemplateFunctions struct {
@@ -48,6 +48,8 @@ type TemplateFunctions struct {
 
 	tags   sets.String
 	region string
+
+	modelContext *model.KopsModelContext
 }
 
 func (tf *TemplateFunctions) WellKnownServiceIP(id int) (net.IP, error) {
@@ -86,25 +88,16 @@ func (tf *TemplateFunctions) WellKnownServiceIP(id int) (net.IP, error) {
 // If we are trying to get a new function implemented it MUST
 // be defined here.
 func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
-	dest["EtcdClusterMemberTags"] = tf.EtcdClusterMemberTags
 	dest["SharedVPC"] = tf.SharedVPC
 
 	// Network topology definitions
 	dest["IsTopologyPublic"] = tf.IsTopologyPublic
 	dest["IsTopologyPrivate"] = tf.IsTopologyPrivate
 	dest["IsTopologyPrivateMasters"] = tf.IsTopologyPrivateMasters
-	dest["WithBastion"] = tf.WithBastion
-	dest["GetBastionImageId"] = tf.GetBastionImageId
-	dest["GetBastionMachineType"] = tf.GetBastionMachineType
-	dest["GetBastionIdleTimeout"] = tf.GetBastionIdleTimeout
-	dest["GetBastionZone"] = tf.GetBastionZone
-	dest["GetELBName32"] = tf.GetELBName32
-	dest["IsBastionDNS"] = tf.IsBastionDNS
-	dest["GetBastionDNS"] = tf.GetBastionDNS
+	dest["GetELBName32"] = tf.modelContext.GetELBName32
 
 	dest["SharedZone"] = tf.SharedZone
 	dest["WellKnownServiceIP"] = tf.WellKnownServiceIP
-	dest["AdminCIDR"] = tf.AdminCIDR
 
 	dest["Base64Encode"] = func(s string) string {
 		return base64.StdEncoding.EncodeToString([]byte(s))
@@ -116,9 +109,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 		return strings.Join(a, sep)
 	}
 
-	dest["ClusterName"] = func() string {
-		return tf.cluster.ObjectMeta.Name
-	}
+	dest["ClusterName"] = tf.modelContext.ClusterName
 
 	dest["HasTag"] = tf.HasTag
 
@@ -150,26 +141,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["DnsControllerArgv"] = tf.DnsControllerArgv
 }
 
-func (tf *TemplateFunctions) EtcdClusterMemberTags(etcd *api.EtcdClusterSpec, m *api.EtcdMemberSpec) map[string]string {
-	tags := make(map[string]string)
-
-	var allMembers []string
-
-	for _, m := range etcd.Members {
-		allMembers = append(allMembers, m.Name)
-	}
-
-	sort.Strings(allMembers)
-
-	// This is the configuration of the etcd cluster
-	tags["k8s.io/etcd/"+etcd.Name] = m.Name + "/" + strings.Join(allMembers, ",")
-
-	// This says "only mount on a master"
-	tags["k8s.io/role/master"] = "1"
-
-	return tags
-}
-
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
 func (tf *TemplateFunctions) SharedVPC() bool {
 	return tf.cluster.SharedVPC()
@@ -183,95 +154,9 @@ func (tf *TemplateFunctions) IsTopologyPrivateMasters() bool {
 	return tf.cluster.IsTopologyPrivateMasters()
 }
 
-func (tf *TemplateFunctions) WithBastion() bool {
-	return tf.cluster.Spec.Topology.Bastion != nil && tf.cluster.Spec.Topology.Bastion.Enable
-}
-
-func (tf *TemplateFunctions) IsBastionDNS() bool {
-	if tf.cluster.Spec.Topology.Bastion.PublicName == "" {
-		return false
-	} else {
-		return true
-	}
-}
-
-func (tf *TemplateFunctions) GetBastionDNS() string {
-	return tf.cluster.GetBastionPublicName()
-}
-
-// This function is replacing existing yaml
-func (tf *TemplateFunctions) GetBastionZone() (string, error) {
-	var name string
-	if len(tf.cluster.Spec.Zones) < 1 {
-		return "", fmt.Errorf("Unable to detect zone name for bastion")
-	} else {
-		// If we have a list, always use the first one
-		name = tf.cluster.Spec.Zones[0].Name
-	}
-	return name, nil
-}
-
-func (tf *TemplateFunctions) GetBastionMachineType() (string, error) {
-	defaultMachineType := tf.cluster.GetBastionMachineType()
-	if defaultMachineType == "" {
-		return "", fmt.Errorf("DefaultMachineType for bastion can not be empty")
-	}
-	return defaultMachineType, nil
-}
-
-func (tf *TemplateFunctions) GetBastionIdleTimeout() (int, error) {
-	timeout := tf.cluster.GetBastionIdleTimeout()
-	if timeout <= 0 {
-		return 0, fmt.Errorf("IdleTimeout for Bastion can not be negative")
-	}
-	return timeout, nil
-}
-
-// Will attempt to calculate a meaningful name for an ELB given a prefix
-// Will never return a string longer than 32 chars
-func (tf *TemplateFunctions) GetELBName32(prefix string) (string, error) {
-	var returnString string
-	c := tf.cluster.ObjectMeta.Name
-	s := strings.Split(c, ".")
-	if len(s) > 0 {
-		returnString = fmt.Sprintf("%s-%s", prefix, s[0])
-	} else {
-		returnString = fmt.Sprintf("%s-%s", prefix, c)
-	}
-	if len(returnString) > 32 {
-		returnString = returnString[:32]
-	}
-	return returnString, nil
-}
-
-func (tf *TemplateFunctions) GetBastionImageId() (string, error) {
-	if len(tf.instanceGroups) == 0 {
-		return "", fmt.Errorf("Unable to find AMI in instance group")
-	} else if len(tf.instanceGroups) > 0 {
-		ami := tf.instanceGroups[0].Spec.Image
-		for i := 1; i < len(tf.instanceGroups); i++ {
-			// If we can't be sure all AMIs are the same, we don't know which one to use for the bastion host
-			if tf.instanceGroups[i].Spec.Image != ami {
-				return "", fmt.Errorf("Unable to use multiple image id's with a private bastion")
-			}
-		}
-		return ami, nil
-	}
-	return "", nil
-}
-
 // SharedZone is a simple helper function which makes the templates for a shared Zone clearer
-func (tf *TemplateFunctions) SharedZone(zone *api.ClusterZoneSpec) bool {
+func (tf *TemplateFunctions) SharedZone(zone *api.ClusterSubnetSpec) bool {
 	return zone.ProviderID != ""
-}
-
-// AdminCIDR returns the CIDRs that are allowed to access the admin ports of the cluster
-// (22, 443 on master and 22 on nodes)
-func (tf *TemplateFunctions) AdminCIDR() []string {
-	if len(tf.cluster.Spec.AdminAccess) == 0 {
-		return []string{"0.0.0.0/0"}
-	}
-	return tf.cluster.Spec.AdminAccess
 }
 
 // IAMServiceEC2 returns the name of the IAM service for EC2 in the current region

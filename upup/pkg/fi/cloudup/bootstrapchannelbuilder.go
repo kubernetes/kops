@@ -30,9 +30,9 @@ type BootstrapChannelBuilder struct {
 	cluster *kops.Cluster
 }
 
-var _ TaskBuilder = &BootstrapChannelBuilder{}
+var _ fi.ModelBuilder = &BootstrapChannelBuilder{}
 
-func (b *BootstrapChannelBuilder) BuildTasks(l *Loader) error {
+func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 	addons, manifests := b.buildManifest()
 	addonsYAML, err := utils.YamlMarshal(addons)
 	if err != nil {
@@ -41,7 +41,9 @@ func (b *BootstrapChannelBuilder) BuildTasks(l *Loader) error {
 
 	name := b.cluster.ObjectMeta.Name + "-addons-bootstrap"
 
-	l.tasks[name] = &fitasks.ManagedFile{
+	tasks := c.Tasks
+
+	tasks[name] = &fitasks.ManagedFile{
 		Name:     fi.String(name),
 		Location: fi.String("addons/bootstrap-channel.yaml"),
 		Contents: fi.WrapResource(fi.NewBytesResource(addonsYAML)),
@@ -49,7 +51,7 @@ func (b *BootstrapChannelBuilder) BuildTasks(l *Loader) error {
 
 	for key, resource := range manifests {
 		name := b.cluster.ObjectMeta.Name + "-addons-" + key
-		l.tasks[name] = &fitasks.ManagedFile{
+		tasks[name] = &fitasks.ManagedFile{
 			Name:     fi.String(name),
 			Location: fi.String(resource),
 			Contents: &fi.ResourceHolder{Name: resource},
