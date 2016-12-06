@@ -30,7 +30,7 @@ const (
 	ApiTimeoutDuration = time.Second * 1
 )
 
-const KOPS_VALIDATE_CLUSTER = `validate cluster --name %s --state % -v %c`
+const KOPS_VALIDATE_CLUSTER = `validate cluster --name %s --state % -v %d`
 
 func TestValidate(t *testing.T) {
 	err := Validate()
@@ -42,7 +42,7 @@ func TestValidate(t *testing.T) {
 func Validate() error {
 	kopsValidationCommand := fmt.Sprintf(KOPS_VALIDATE_CLUSTER, TestClusterName, TestStateStore, TestVerbosity)
 	for i := 0; i <= ApiTimeoutIterations; i++ {
-		_ , stderr := ExecOuput(KopsPath, kopsValidationCommand, []string{})
+		_ , stderr := ExecOutput(KopsPath, kopsValidationCommand, []string{})
 		if stderr != nil {
 			if i == ApiTimeoutIterations {
 				return fmt.Errorf("Unable to validate after timeout: %v", stderr)

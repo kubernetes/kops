@@ -17,13 +17,11 @@ limitations under the License.
 package test
 
 import (
-	"os"
-	"os/exec"
-
 	"fmt"
+	"strings"
+	"os"
 
 	"k8s.io/kops/util/pkg/vfs"
-	"strings"
 )
 
 // KopsTest
@@ -46,24 +44,12 @@ type KopsTest struct {
 	Networking  string
 	Topology    string
 
-	K8sVersion  string
+	K8sVersion string
+	AWSRegion  string
 }
 
 // Basic Pre Test
 func (t *KopsTest) Pre() (*KopsTest, error) {
-	t, err := t.basicPreCheck()
-	if err != nil {
-		return nil, fmt.Errorf("error in precheck %v", err)
-	}
-	t, err = t.createBucket()
-	if err != nil {
-		return nil, fmt.Errorf("error in create bucket %v", err)
-	}
-	t, err = t.createClusterName()
-	if err != nil {
-		return nil, fmt.Errorf("error in create cluster name %v", err)
-	}
-
 	// TODO: setup dynamically
 	t.NodeCount = 3
 	t.MasterCount = 3
@@ -74,12 +60,25 @@ func (t *KopsTest) Pre() (*KopsTest, error) {
 	t.Verbosity = 10
 	t.Networking = "weave"
 	t.Topology = "private"
+	t.AWSRegion = "eu-west-1"
+
+	t, err := t.basicPreCheck()
+	if err != nil {
+		return nil, fmt.Errorf("error in precheck %v", err)
+	}
+	t, err = t.createBucketAndNames()
+	if err != nil {
+		return nil, fmt.Errorf("error in create bucket %v", err)
+	}
 
 	return t, nil
 }
 
 // Basic Post Test
 func (t *KopsTest) Post() error {
+	if t.S3BucketName == "" {
+		return fmt.Errorf("error in deleting bucket bucket name not defined")
+	}
 	err := t.deleteBucket()
 	if err != nil {
 		return fmt.Errorf("error in deleting bucket %v", err)
@@ -106,7 +105,7 @@ func (t *KopsTest) basicPreCheck() (*KopsTest, error) {
 		return nil, fmt.Errorf("env variable KOPS_TEST_NODEUP_URL must be set for acceptance tests")
 	}
 
-	t.NodeUpURL = os.Getenv("KOPS_NODEUP_URL")
+	t.NodeUpURL = os.Getenv("KOPS_TEST_NODEUP_URL")
 
 	if v := os.Getenv("KOPS_TEST_K8S_VERSION"); v == "" {
 		return nil, fmt.Errorf("env variable KOPS_TEST_K8S_VERSION must be set for acceptance tests")
@@ -117,37 +116,28 @@ func (t *KopsTest) basicPreCheck() (*KopsTest, error) {
 	return t, nil
 }
 
-func (t *KopsTest) createBucket() (*KopsTest, error) {
+func (t *KopsTest) createBucketAndNames() (*KopsTest, error) {
 
-	bytes, err := exec.Command("uuidgen").Output()
+	name, err := GetRandomClusterName(t.DomainName)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to create s3 bucket name: %v", err)
-	}
-	bucketName := strings.ToLower("kops-testing-" + string(bytes[:])) + "/"
-	vfsContext := vfs.NewS3Context()
-
-	// TODO: pass in region or pick it up from profile
-	vfsPath := vfs.NewS3PathWithRegion(vfsContext, bucketName, "key","us-west-1")
-
-	err = vfsPath.CreateNewBucket()
-	if err != nil {
-		return  nil,fmt.Errorf("Unable to create s3 bucket: %v", err)
+		return nil, fmt.Errorf("Unable to create name: %v", err)
 	}
 
-	t.StateStore = vfsPath.Path()
-	return t, nil
-}
+	bucketName := "kops-test-" + strings.Replace(name, "."+t.DomainName, "", -1)
+	s3Context := vfs.NewS3Context()
 
-func (t *KopsTest) createClusterName() (*KopsTest, error) {
+	s3 := vfs.NewS3PathWithRegion(s3Context, bucketName, t.AWSRegion)
 
-	bytes, err := exec.Command("uuidgen").Output()
+	// TODO pass in region
+	err = s3.EnsureBucketExists(bucketName, t.AWSRegion)
 	if err != nil {
-		return  nil,fmt.Errorf("Unable to create s3 bucket name: %v", err)
+		return nil, fmt.Errorf("Unable to create s3 bucket: %v", err)
 	}
 
-	cluster := strings.ToLower("kops-testing-cluser"+string(bytes[:]))
+	t.S3BucketName = bucketName
+	t.StateStore = "s3://" + bucketName // refactor to a method
 
-	t.ClusterName = fmt.Sprintf("kops-testing-%s.%s", cluster, t.DomainName)
+	t.ClusterName = fmt.Sprintf("kops-test-%s", name)
 	return t, nil
 }
 
@@ -155,9 +145,9 @@ func (t *KopsTest) deleteBucket() error {
 
 	s3Context := vfs.NewS3Context()
 
-	s3 := vfs.NewS3Path(s3Context, t.S3BucketName, "key")
+	s3 := vfs.NewS3PathWithRegion(s3Context, t.S3BucketName, t.AWSRegion)
 
-	err := s3.DeleteBucket()
+	err := s3.DeleteBucket(t.S3BucketName)
 	if err != nil {
 		return fmt.Errorf("Unable to create s3 bucket: %v", err)
 	}

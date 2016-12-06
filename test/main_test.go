@@ -14,6 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+////
+// This awesome tweaked code is from the heart and mind of @kris-nova
+////
+
 package test
 
 import (
@@ -24,10 +28,9 @@ import (
 	"os/user"
 )
 
-var TestClusterName, TestStateStore string
+var TestClusterName, TestStateStore, HomeDirectory string
 var TestVerbosity int
 var KopsPath = "kops"
-var HomeDirectory string
 
 func TestMain(m *testing.M) {
 	flag.Parse()
@@ -63,6 +66,11 @@ func TestMain(m *testing.M) {
 
 	if err != nil {
 		banner(fmt.Sprintf("Create Cluster Failure: %v", err))
+		err = kopsTesting.Post()
+		if err != nil {
+			banner(fmt.Sprintf("Test Cleanup Failure: %v", err))
+		}
+
 		os.Exit(-1)
 	}
 
@@ -70,6 +78,10 @@ func TestMain(m *testing.M) {
 
 	if err != nil {
 		banner(fmt.Sprintf("Validate Cluster Failure: %v", err))
+		err = kopsTesting.Post()
+		if err != nil {
+			banner(fmt.Sprintf("Test Cleanup Failure: %v", err))
+		}
 		os.Exit(-1)
 	}
 
@@ -82,49 +94,48 @@ func TestMain(m *testing.M) {
 	err = DeleteCluster(kopsTesting)
 	if err != nil {
 		banner(fmt.Sprintf("Delete Cluster Failure: %v", err))
-		kopsTesting.Post()
+		err := kopsTesting.Post()
 		if err != nil {
-			banner(fmt.Sprintf("Delete S3 Bucket Failure: %v", err))
+			banner(fmt.Sprintf("Test Cleanup Failure: %v", err))
 		}
 		os.Exit(-1)
 	}
 	banner(fmt.Sprintf("Deleted Cluster: %s", TestClusterName))
 	kopsTesting.Post()
 	if err != nil {
-		banner(fmt.Sprintf("Delete S3 Bucket Failure: %v", err))
+		banner(fmt.Sprintf("Test Cleanup Failure: %v", err))
 		os.Exit(-1)
 	}
 	os.Exit(n)
 }
 
 func banner(msg string) {
-	fmt.Println("-------------------------------------------------------------------")
+	fmt.Println("---------------------------------------------------------------------------------------------------------")
 	fmt.Println(msg)
-	fmt.Println("-------------------------------------------------------------------")
+	fmt.Println("---------------------------------------------------------------------------------------------------------")
 }
 
-const CREATE_CLUSTER = `create cluster \
-  --name %s \
-  --state %s \
-  --node-count %c \
-  --zones %s \
-  --master-zones %s \
-  --cloud aws \
-  --node-size %s \
-  --master-size %s \
-  --topology %s \
-  --networking %s \
-  --kubernetes-version %s \
-  -v %c \
-  --image %s \
-  --yes \
-`
-const DELETE_CLUSTER = `delete cluster \
-  --name %s \
-  --state %s \
-  -v %c \
-  --yes
-`
+const CREATE_CLUSTER = `create cluster
+--name %s
+--state %s
+--node-count %d
+--zones %s
+--master-zones %s
+--cloud aws
+--node-size %s
+--master-size %s
+--topology %s
+--networking %s
+--kubernetes-version %s
+-v %d
+--image %s
+--yes`
+
+const DELETE_CLUSTER = `delete cluster
+--name %s
+--state %s
+-v %d
+--yes`
 
 // CreateCluster will actually create a Kops kubernetes cluster
 // and store the name - we should be able to use the name for other test cases
@@ -140,8 +151,8 @@ func CreateCluster(kopsTesting *KopsTest) error {
 		kopsTesting.NodeSize,
 		kopsTesting.MasterSize,
 		kopsTesting.Topology,
-		kopsTesting.K8sVersion,
 		kopsTesting.Networking,
+		kopsTesting.K8sVersion,
 		kopsTesting.Verbosity,
 		kopsTesting.Image )
 
@@ -150,11 +161,14 @@ func CreateCluster(kopsTesting *KopsTest) error {
 		fmt.Sprintf("PATH=%s", os.Getenv("PATH")),
 	}
 
-	stdout, stderr := ExecOuput(KopsPath, kopsCreateCommand,env)
+	banner(kopsCreateCommand)
+	stdout, stderr := ExecOutput(KopsPath, kopsCreateCommand,env)
 
 	if stderr != nil {
 		return fmt.Errorf("Unable to create cluster: %v\n%s", stderr, stdout)
 	}
+
+	banner(stdout)
 	TestClusterName = kopsTesting.ClusterName
 	return nil
 }
@@ -163,9 +177,11 @@ func CreateCluster(kopsTesting *KopsTest) error {
 // testing process
 func DeleteCluster(kopsTest *KopsTest) error {
 	kopsDeleteCommand := fmt.Sprintf(DELETE_CLUSTER, kopsTest.ClusterName, kopsTest.StateStore, kopsTest.Verbosity)
-	stdout, stderr := ExecOuput(KopsPath, kopsDeleteCommand,[]string{})
+	banner(kopsDeleteCommand)
+	stdout, stderr := ExecOutput(KopsPath, kopsDeleteCommand,[]string{})
 	if stderr != nil {
 		return fmt.Errorf("Unable to delete cluster: %v\n%s", stderr, stdout)
 	}
+	banner(stdout)
 	return nil
 }

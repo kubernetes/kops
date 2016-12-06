@@ -21,30 +21,30 @@ import (
 	"testing"
 )
 
-const UPGRADE_CLUSTER = `upgrade cluster \
---name %s \
---state %s \
---yes \
--v %c`
+const UPGRADE_CLUSTER = `upgrade cluster
+--name %s
+--state %s
+--yes
+-v %d`
 
-const ROLLING_UPDATE_CLUSTER = `rolling-update cluster \
---name %s \
---state %s \
---yes \
--v %c`
+const ROLLING_UPDATE_CLUSTER = `rolling-update cluster
+--name %s
+--state %s
+--yes
+-v %d`
 
 func TestRollingUpdate(t *testing.T) {
 
 	kopsUpgradeCommand := fmt.Sprintf(UPGRADE_CLUSTER, TestClusterName, TestStateStore, TestVerbosity)
-	stdout, stderr := ExecOuput(KopsPath, kopsUpgradeCommand,[]string{})
+	stdout, stderr := ExecOutput(KopsPath, kopsUpgradeCommand,[]string{})
 	if stderr != nil {
-		t.Errorf("Unable to delete cluster: %v\n%s", stderr, stdout)
+		t.Errorf("Unable to upgrade cluster: %v\n%s", stderr, stdout)
 	}
 
 	kopsRollingUpdateCommand := fmt.Sprintf(ROLLING_UPDATE_CLUSTER, TestClusterName, TestStateStore, TestVerbosity)
-	stdout, stderr = ExecOuput(KopsPath, kopsRollingUpdateCommand,[]string{})
+	stdout, stderr = ExecOutput(KopsPath, kopsRollingUpdateCommand,[]string{})
 	if stderr != nil {
-		t.Errorf("Unable to delete cluster: %v\n%s", stderr, stdout)
+		t.Errorf("Unable to rolling-update cluster: %v\n%s", stderr, stdout)
 	}
 
 	err := Validate()

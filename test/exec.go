@@ -21,14 +21,18 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
+	"os"
 )
 
 // Will execute a command given a raw command string
-func ExecOuput(c, args string, env []string) (string, error) {
+func ExecOutput(c, args string, env []string) (string, error) {
+
 	cmdSlice := strings.Split(c, " ")
 	if len(cmdSlice) > 1 {
 		return "", fmt.Errorf("Invalid command: %s", c)
 	}
+
+	args = strings.Replace(args,"\n", " ", -1)
 	argsSlice := strings.Split(args, " ")
 
 	cmd := exec.Command(c, argsSlice...)
@@ -39,7 +43,7 @@ func ExecOuput(c, args string, env []string) (string, error) {
 	cmd.Stderr = &stderr
 
 	if len(env) != 0 {
-		cmd.Env = env
+		cmd.Env = append(os.Environ(), env...)
 	}
 
 	err := cmd.Run()
@@ -52,3 +56,10 @@ func ExecOuput(c, args string, env []string) (string, error) {
 	}
 	return stdout.String(), nil
 }
+
+/*
+func banner(msg string) {
+	fmt.Println("---------------------------------------------------------------------------------------------------------")
+	fmt.Println(msg)
+	fmt.Println("---------------------------------------------------------------------------------------------------------")
+}*/
