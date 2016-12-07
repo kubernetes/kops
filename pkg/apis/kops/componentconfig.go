@@ -388,7 +388,7 @@ type KubeAPIServerConfig struct {
 	TokenAuthFile         		string   `json:"tokenAuthFile,omitempty" flag:"token-auth-file"`
 	AllowPrivileged       		*bool    `json:"allowPrivileged,omitempty" flag:"allow-privileged"`
 	APIServerCount        		*int     `json:"apiServerCount,omitempty" flag:"apiserver-count"`
-	KubletPreferredAddressTypes	[]string `json:"kubletPreferredAddressTypes,omitempty" flag:"kubelet-preferred-address-types"`
+	KubeletPreferredAddressTypes	[]string `json:"kubeletPreferredAddressTypes,omitempty" flag:"kubelet-preferred-address-types"`
 	// keys and values in RuntimeConfig are parsed into the `--runtime-config` parameter
 	// for KubeAPIServer, concatenated with commas. ex: `--runtime-config=key1=value1,key2=value2`.
 	// Use this to enable alpha resources on kube-apiserver
