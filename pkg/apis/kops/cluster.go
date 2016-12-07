@@ -329,12 +329,7 @@ func (c *Cluster) PerformAssignments() error {
 		}
 	}
 
-	err := c.ensureKubernetesVersion()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.ensureKubernetesVersion()
 }
 
 // FillDefaults populates default values.
