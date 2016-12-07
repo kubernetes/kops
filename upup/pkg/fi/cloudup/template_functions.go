@@ -96,7 +96,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["IsTopologyPrivateMasters"] = tf.IsTopologyPrivateMasters
 	dest["GetELBName32"] = tf.modelContext.GetELBName32
 
-	dest["SharedZone"] = tf.SharedZone
 	dest["WellKnownServiceIP"] = tf.WellKnownServiceIP
 
 	dest["Base64Encode"] = func(s string) string {
@@ -117,12 +116,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 
 	dest["Image"] = tf.Image
 
-	dest["IAMMasterPolicy"] = func() (string, error) {
-		return tf.buildAWSIAMPolicy(api.InstanceGroupRoleMaster)
-	}
-	dest["IAMNodePolicy"] = func() (string, error) {
-		return tf.buildAWSIAMPolicy(api.InstanceGroupRoleNode)
-	}
 	dest["WithDefaultBool"] = func(v *bool, defaultValue bool) bool {
 		if v != nil {
 			return *v
@@ -132,7 +125,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 
 	dest["GetInstanceGroup"] = tf.GetInstanceGroup
 
-	dest["CloudTags"] = tf.CloudTags
+	dest["CloudTags"] = tf.modelContext.CloudTagsForInstanceGroup
 
 	dest["KubeDNS"] = func() *api.KubeDNSConfig {
 		return tf.cluster.Spec.KubeDNS
@@ -152,11 +145,6 @@ func (tf *TemplateFunctions) IsTopologyPrivate() bool { return tf.cluster.IsTopo
 func (tf *TemplateFunctions) IsTopologyPublic() bool  { return tf.cluster.IsTopologyPublic() }
 func (tf *TemplateFunctions) IsTopologyPrivateMasters() bool {
 	return tf.cluster.IsTopologyPrivateMasters()
-}
-
-// SharedZone is a simple helper function which makes the templates for a shared Zone clearer
-func (tf *TemplateFunctions) SharedZone(zone *api.ClusterSubnetSpec) bool {
-	return zone.ProviderID != ""
 }
 
 // IAMServiceEC2 returns the name of the IAM service for EC2 in the current region
@@ -201,47 +189,6 @@ func (tf *TemplateFunctions) Image(component string) (string, error) {
 func (tf *TemplateFunctions) HasTag(tag string) bool {
 	_, found := tf.tags[tag]
 	return found
-}
-
-// buildAWSIAMPolicy produces the AWS IAM policy for the given role
-func (tf *TemplateFunctions) buildAWSIAMPolicy(role api.InstanceGroupRole) (string, error) {
-	b := &IAMPolicyBuilder{
-		Cluster: tf.cluster,
-		Role:    role,
-		Region:  tf.region,
-	}
-
-	policy, err := b.BuildAWSIAMPolicy()
-	if err != nil {
-		return "", fmt.Errorf("error building IAM policy: %v", err)
-	}
-	json, err := policy.AsJSON()
-	if err != nil {
-		return "", fmt.Errorf("error building IAM policy: %v", err)
-	}
-	return json, nil
-}
-
-// CloudTags computes the tags to apply to instances in the specified InstanceGroup
-func (tf *TemplateFunctions) CloudTags(ig *api.InstanceGroup) (map[string]string, error) {
-	labels := make(map[string]string)
-
-	// Apply any user-specified labels
-	for k, v := range ig.Spec.CloudLabels {
-		labels[k] = v
-	}
-
-	// The system tags take priority because the cluster likely breaks without them...
-
-	if ig.Spec.Role == api.InstanceGroupRoleMaster {
-		labels["k8s.io/role/master"] = "1"
-	}
-
-	if ig.Spec.Role == api.InstanceGroupRoleNode {
-		labels["k8s.io/role/node"] = "1"
-	}
-
-	return labels, nil
 }
 
 // GetInstanceGroup returns the instance group with the specified name

@@ -25,22 +25,15 @@ import (
 )
 
 const BastionELBSecurityGroupPrefix = "bastion"
-const BastionELBIdleTimeout = 2 * time.Minute
+const BastionELBDefaultIdleTimeout = 2 * time.Minute
 
+
+// BastionModelBuilder adds model objects to support bastions
 //
-//type BastionSpec struct {
-//	// Controls if a private topology should deploy a bastion host or not
-//	// The bastion host is designed to be a simple, and secure bridge between
-//	// the public subnet and the private subnet
-//	Enable      bool   `json:"enable,omitempty"`
-//	MachineType string `json:"machineType,omitempty"`
-//	PublicName  string `json:"name,omitempty"`
-//	// Bastion's Loadbalancer idle timeout
-//	IdleTimeout int `json:"idleTimeout,omitempty"`
-//}
+// Bastion instances live in the utility subnets created in the private topology.
+// All traffic goes through an ELB, and the ELB has port 22 open to SSHAccess.
+// Bastion instances have access to all internal master and node instances.
 
-
-// BastionModelBuilder add model objects to support bastions
 type BastionModelBuilder struct {
 	*KopsModelContext
 }
@@ -48,11 +41,10 @@ type BastionModelBuilder struct {
 var _ fi.ModelBuilder = &BastionModelBuilder{}
 
 func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	//{{ if and WithBastion IsTopologyPrivate }}
-	//securityGroupRule/bastion-to-master:
-	//securityGroup: securityGroup/masters.{{ ClusterName }}
-	//sourceGroup: securityGroup/bastion.{{ ClusterName }}
-	//{{ end }}
+	if !b.Cluster.IsTopologyPrivate() {
+		return nil
+	}
+
 	var bastionGroups []*kops.InstanceGroup
 	for _, ig := range b.InstanceGroups {
 		if ig.Spec.Role == kops.InstanceGroupRoleBastion {
@@ -64,15 +56,6 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-	//	-{{ if and WithBastion IsTopologyPrivate }}
-	//-securityGroupRule/bastion-to-master:
-	//-  securityGroup: securityGroup/masters.{{ ClusterName }}
-	//-  sourceGroup: securityGroup/bastion.{{ ClusterName }}
-	//-{{ end }}
-
-	// TODO: Replace with objects and LinkTo functions
-	//bastionSecurityGroupName := b.SecurityGroupName(kops.InstanceGroupRoleBastion)
-	//bastionELBSecurityGroupName := b.ELBSecurityGroupName("bastion")
 
 	// Create security group for bastion instances
 	{
@@ -85,19 +68,16 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-
-
-	//// Allow traffic from bastion instances to egress freely
-	//{
-	//	r := &awstasks.SecurityGroupRule{
-	//		Name: "bastion-egress",
-	//		SecurityGroup: &awstasks.SecurityGroup{Name: bastionSGName},
-	//		Egress: true,
-	//		CIDR: "0.0.0.0/0",
-	//	}
-	//
-	//	c.Tasks[r.Name] = r
-	//}
+	// Allow traffic from bastion instances to egress freely
+	{
+		t := &awstasks.SecurityGroupRule{
+			Name: s("bastion-egress"),
+			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleBastion),
+			Egress: fi.Bool(true),
+			CIDR: s("0.0.0.0/0"),
+		}
+		c.AddTask(t)
+	}
 
 	//-# TODO Kris - I don't think we need to open these
 	//-#securityGroupRule/all-node-to-bastion:
@@ -111,7 +91,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Allow incoming SSH traffic to bastions, through the ELB
 	// TODO: Could we get away without an ELB here?  Tricky if dns-controller is broken though...
 	{
-		rule := &awstasks.SecurityGroupRule{
+		t := &awstasks.SecurityGroupRule{
 			Name: s("ssh-external-to-bastion"),
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleBastion),
 			SourceGroup: b.LinkToELBSecurityGroup(BastionELBSecurityGroupPrefix),
@@ -119,33 +99,29 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			FromPort: i64(22),
 			ToPort: i64(22),
 		}
-		c.AddTask(rule)
+		c.AddTask(t)
 	}
 
 
 	// Allow bastion nodes to reach masters
 	{
-		rule := &awstasks.SecurityGroupRule{
+		t := &awstasks.SecurityGroupRule{
 			Name: s("bastion-to-master"),
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 			SourceGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleBastion),
 		}
-		c.AddTask(rule)
+		c.AddTask(t)
 	}
 
-
 	// Allow bastion nodes to reach nodes
-	// If we are creating a bastion, we need to poke a hole in the
-	// firewall for it to talk to our masters
 	{
-		rule := &awstasks.SecurityGroupRule{
+		t := &awstasks.SecurityGroupRule{
 			Name: s("bastion-to-nodes"),
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
 			SourceGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleBastion),
 		}
-		c.AddTask(rule)
+		c.AddTask(t)
 	}
-
 
 
 	// Create security group for bastion ELB
@@ -159,14 +135,17 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	// Allow ELB egress
-	//{
-	//	-securityGroupRule/bastion-elb-egress:
-	//	-  securityGroup: securityGroup/bastion-elb.{{ ClusterName }}
-	//	-  egress: true
-	//	-  cidr: 0.0.0.0/0
-	//}
+	// Allow traffic from ELB to egress freely
+	{
+		t := &awstasks.SecurityGroupRule{
+			Name: s("bastion-elb-egress"),
+			SecurityGroup: b.LinkToELBSecurityGroup(BastionELBSecurityGroupPrefix),
+			Egress: fi.Bool(true),
+			CIDR: s("0.0.0.0/0"),
+		}
 
+		c.AddTask(t)
+	}
 
 	// Allow external access to ELB
 	for _, sshAccess := range b.Cluster.Spec.SSHAccess {
@@ -183,10 +162,6 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	var elbSubnets []*awstasks.Subnet
 	{
-		//	{{ range $zone :=.Zones }}
-		//- subnet/utility-{{ $zone.Name }}.{{ ClusterName }}
-		//{{ end }}
-
 		zones := sets.NewString()
 		for _, ig := range bastionGroups {
 			subnets, err := b.GatherSubnets(ig)
@@ -199,7 +174,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		for zoneName := range zones {
-			utilitySubnet, err := b.LinkToPublicSubnetInZone(zoneName)
+			utilitySubnet, err := b.LinkToUtilitySubnetInZone(zoneName)
 			if err != nil {
 				return err
 			}
@@ -249,26 +224,19 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Build ELB attributes
 	{
-		//idleTimeout := GetBastionIdleTimeout()
-		idleTimeout := BastionELBIdleTimeout
+		// Loadbalancer attributes are configurable now
+		// By default ELB has an idle timeout of 60 seconds to close connection
+		//  Modified the idle timeout for bastion elb
 
-		//-loadBalancerConnectionSettings/bastion.{{ ClusterName }}:
-		//-  loadBalancer: loadBalancer/bastion.{{ ClusterName }}
-		//-  idleTimeout: {{ GetBastionIdleTimeout }}
+		idleTimeout := BastionELBDefaultIdleTimeout
+		if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.Bastion != nil && b.Cluster.Spec.Topology.Bastion.IdleTimeout != 0 {
+			idleTimeout = time.Second * time.Duration(b.Cluster.Spec.Topology.Bastion.IdleTimeout)
+		}
+
 		elbSettings := &awstasks.LoadBalancerConnectionSettings{
-			//Name: elb.Name,
-			//LoadBalancer: elb,
 			IdleTimeout: i64(int64(idleTimeout.Seconds())),
 		}
 
-		//		-# ---------------------------------------------------------------------
-		//		-# Loadbalancer attributes are configurable now
-		//	-# By default ELB has an idle timeout of 60 seconds to close connection
-		//-# Modified the idle timeout for bastion elb
-		//-# --------------------------------------------------------------------
-		//-loadBalancerAttributes/bastion.{{ ClusterName }}:
-		//-  loadBalancer: loadBalancer/bastion.{{ ClusterName }}
-		//-  connectionSettings: loadBalancerConnectionSettings/bastion.{{ ClusterName }}
 		t := &awstasks.LoadBalancerAttributes{
 			Name: elb.Name,
 			LoadBalancer: elb,
@@ -277,23 +245,12 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	// TODO: Re-enable bastion DNS
-	bastionDNS := "" //getBastionDNS()
+	bastionDNS := b.Cluster.Spec.Topology.Bastion.PublicName
 	if bastionDNS != "" {
-		//-{{ if IsBastionDNS }}
-		//-# ------------------------------------------------------------------------
-		//-# By default Bastion is not reachable from outside because of security concerns.
-		//-# But if the user specifies bastion name using edit cluster, we configure
-		//-# the bastion DNS entry for it to be reachable from outside.
-		//-# BastionPublicName --> Bastion LoadBalancer
-		//-# ------------------------------------------------------------------------
-		//-dnsName/{{ GetBastionDNS }}:
-		//-  Zone: dnsZone/{{ .DNSZone }}
-		//-  ResourceType: "A"
-		//-  TargetLoadBalancer: loadBalancer/bastion.{{ ClusterName }}
-		//-{{ end }}
-		//-{{ end }}
-
+		// By default Bastion is not reachable from outside because of security concerns.
+		// But if the user specifies bastion name using edit cluster, we configure
+		// the bastion DNS entry for it to be reachable from outside.
+		// BastionPublicName --> Bastion LoadBalancer
 		t := &awstasks.DNSName{
 			Name: s(bastionDNS),
 			Zone: b.LinkToDNSZone(),
@@ -306,19 +263,6 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 }
 
 func (b*BastionModelBuilder) buildASG(ig *kops.InstanceGroup) (*awstasks.AutoscalingGroup, error) {
-	//-# ---------------------------------------------------------------
-	//-# ASG - The Bastion itself
-	//-#
-	//-# Define the bastion host.
-	//-# Machine type configurable.
-	//-#
-	//-# The bastion host will live in one of the utility subnets
-	//-# created in the private topology. The bastion host will have
-	//-# port 22 TCP open to 0.0.0.0/0. And will have internal SSH
-	//-# access to all private subnets.
-	//-#
-	//-# ---------------------------------------------------------------
-
 	name := ig.ObjectMeta.Name + "." + b.ClusterName()
 
 	sshKey, err := b.LinkToSSHKey()
@@ -367,73 +311,3 @@ func (b*BastionModelBuilder) buildASG(ig *kops.InstanceGroup) (*awstasks.Autosca
 
 	return asg, nil
 }
-
-//func (tf *TemplateFunctions) IsBastionDNS() bool {
-//	if tf.cluster.Spec.Topology.Bastion.PublicName == "" {
-//		return false
-//	} else {
-//		return true
-//	}
-//}
-//
-//func (tf *TemplateFunctions) GetBastionDNS() string {
-//	return tf.cluster.GetBastionPublicName()
-//}
-
-//// This function is replacing existing yaml
-//func (tf *TemplateFunctions) GetBastionZone() (string, error) {
-//	var name string
-//	if len(tf.cluster.Spec.Zones) < 1 {
-//		return "", fmt.Errorf("Unable to detect zone name for bastion")
-//	} else {
-//		// If we have a list, always use the first one
-//		name = tf.cluster.Spec.Zones[0].Name
-//	}
-//	return name, nil
-//}
-
-//func (tf *TemplateFunctions) GetBastionMachineType() (string, error) {
-//	defaultMachineType := tf.cluster.GetBastionMachineType()
-//	if defaultMachineType == "" {
-//		return "", fmt.Errorf("DefaultMachineType for bastion can not be empty")
-//	}
-//	return defaultMachineType, nil
-//}
-
-//func (tf *TemplateFunctions) GetBastionIdleTimeout() (int, error) {
-//	timeout := tf.cluster.GetBastionIdleTimeout()
-//	if timeout <= 0 {
-//		return 0, fmt.Errorf("IdleTimeout for Bastion can not be negative")
-//	}
-//	return timeout, nil
-//}
-
-
-//func (tf *TemplateFunctions) GetBastionImageId() (string, error) {
-//	if len(tf.instanceGroups) == 0 {
-//		return "", fmt.Errorf("Unable to find AMI in instance group")
-//	} else if len(tf.instanceGroups) > 0 {
-//		ami := tf.instanceGroups[0].Spec.Image
-//		for i := 1; i < len(tf.instanceGroups); i++ {
-//			// If we can't be sure all AMIs are the same, we don't know which one to use for the bastion host
-//			if tf.instanceGroups[i].Spec.Image != ami {
-//				return "", fmt.Errorf("Unable to use multiple image id's with a private bastion")
-//			}
-//		}
-//		return ami, nil
-//	}
-//	return "", nil
-//}
-
-
-//func (c *Cluster) GetBastionMachineType() string {
-//	return c.Spec.Topology.Bastion.MachineType
-//}
-//func (c *Cluster) GetBastionPublicName() string {
-//	return c.Spec.Topology.Bastion.PublicName
-//}
-//func (c *Cluster) GetBastionIdleTimeout() int {
-//	return c.Spec.Topology.Bastion.IdleTimeout
-//}
-
-

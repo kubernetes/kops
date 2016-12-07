@@ -21,6 +21,8 @@ package v1alpha1
 import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kubernetes/pkg/conversion"
+	"fmt"
+	"reflect"
 )
 
 func Convert_v1alpha1_BastionSpec_To_kops_BastionSpec(in *BastionSpec, out *kops.BastionSpec, s conversion.Scope) error {
@@ -46,22 +48,47 @@ func Convert_kops_BastionSpec_To_v1alpha1_BastionSpec(in *kops.BastionSpec, out 
 }
 
 func Convert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops.ClusterSpec, s conversion.Scope) error {
+	topologyPrivate := false
+	if in.Topology != nil && in.Topology.Masters == TopologyPrivate {
+		topologyPrivate = true
+	}
+
 	if in.Zones != nil {
-		in, out := &in.Zones, &out.Subnets
-		*out = make([]kops.ClusterSubnetSpec, len(*in))
-		for i := range *in {
-			if (*in)[i] == nil {
-				continue
-			}
-			if err := Convert_v1alpha1_Zone_To_kops_ClusterSubnetSpec((*in)[i], &(*out)[i], s); err != nil {
-				return err
+		for _, z := range in.Zones {
+			if topologyPrivate {
+				// A private zone is mapped to a private- and a utility- subnet
+				if z.PrivateCIDR != "" {
+					out.Subnets = append(out.Subnets, kops.ClusterSubnetSpec{
+						SubnetName: z.Name,
+						CIDR: z.PrivateCIDR,
+						ProviderID: z.ProviderID,
+						Zone: z.Name,
+						Type: kops.SubnetTypePrivate,
+					})
+				}
+
+				if z.CIDR != "" {
+					out.Subnets = append(out.Subnets, kops.ClusterSubnetSpec{
+						SubnetName: "utility-" + z.Name,
+						CIDR: z.CIDR,
+						Zone: z.Name,
+						Type: kops.SubnetTypeUtility,
+					})
+				}
+			} else {
+				out.Subnets = append(out.Subnets, kops.ClusterSubnetSpec{
+					SubnetName: z.Name,
+					CIDR: z.CIDR,
+					ProviderID: z.ProviderID,
+					Zone: z.Name,
+					Type: kops.SubnetTypePublic,
+				})
 			}
 		}
 	} else {
 		out.Subnets = nil
 	}
 
-	// TODO: not perfect round-tripping ?
 	out.SSHAccess = in.AdminAccess
 	out.APIAccess = in.AdminAccess
 
@@ -69,39 +96,75 @@ func Convert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 }
 
 func Convert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, out *ClusterSpec, s conversion.Scope) error {
+	topologyPrivate := false
+	if in.Topology != nil && in.Topology.Masters == TopologyPrivate {
+		topologyPrivate = true
+	}
+
 	if in.Subnets != nil {
-		in, out := &in.Subnets, &out.Zones
-		*out = make([]*ClusterZoneSpec, len(*in))
-		for i := range *in {
-			(*out)[i] = &ClusterZoneSpec{}
-			if err := Convert_kops_ClusterSubnetSpec_To_v1alpha1_Zone(&(*in)[i], (*out)[i], s); err != nil {
-				return err
+		zoneMap := make(map[string]*ClusterZoneSpec)
+
+		for _, s := range in.Subnets {
+			// TODO: Cope with utility- prefix
+			if s.Zone != s.SubnetName {
+				return fmt.Errorf("cannot convert to v1alpha1 when subnet Zone != Name")
 			}
+
+			zone := zoneMap[s.Zone]
+			if zone == nil {
+				zone = &ClusterZoneSpec{
+					Name: s.Zone,
+				}
+				zoneMap[s.Zone] = zone
+			}
+
+			if topologyPrivate {
+				subnetType := s.Type
+				if subnetType == "" {
+					subnetType = kops.SubnetTypePrivate
+				}
+				switch (subnetType) {
+				case kops.SubnetTypePrivate:
+					if zone.PrivateCIDR != "" || zone.ProviderID != "" {
+						return fmt.Errorf("cannot convert to v1alpha1: duplicate zone: %v", zone)
+					}
+					zone.PrivateCIDR = s.CIDR
+					zone.ProviderID = s.ProviderID
+
+				case kops.SubnetTypeUtility:
+					if zone.CIDR != "" {
+						return fmt.Errorf("cannot convert to v1alpha1: duplicate zone: %v", zone)
+					}
+					zone.CIDR = s.CIDR
+
+				case kops.SubnetTypePublic:
+					return fmt.Errorf("cannot convert to v1alpha1 when subnet type is public")
+
+				default:
+					return fmt.Errorf("unknown SubnetType: %v", subnetType)
+				}
+			} else {
+				if zone.CIDR != "" || zone.ProviderID != "" {
+					return fmt.Errorf("cannot convert to v1alpha1: duplicate zone: %v", zone)
+				}
+				zone.CIDR = s.CIDR
+				zone.ProviderID = s.ProviderID
+			}
+		}
+
+		for _, z := range zoneMap {
+			out.Zones = append(out.Zones, z)
 		}
 	} else {
 		out.Zones = nil
 	}
 
-	// TODO: not perfect round-tripping ?
+	if !reflect.DeepEqual(in.SSHAccess, in.APIAccess) {
+		return fmt.Errorf("cannot convert to v1alpha1: SSHAccess != APIAccesss")
+	}
 	out.AdminAccess = in.SSHAccess
 
 	return autoConvert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in, out, s)
-}
-
-func Convert_v1alpha1_Zone_To_kops_ClusterSubnetSpec(in *ClusterZoneSpec, out *kops.ClusterSubnetSpec, s conversion.Scope) error {
-	out.CIDR = in.CIDR
-	out.ProviderID = in.ProviderID
-	out.SubnetName = in.Name
-	out.Zone = in.Name
-	return nil
-}
-
-func Convert_kops_ClusterSubnetSpec_To_v1alpha1_Zone(in *kops.ClusterSubnetSpec, out *ClusterZoneSpec, s conversion.Scope) error {
-	out.CIDR = in.CIDR
-	out.ProviderID = in.ProviderID
-	out.Name = in.SubnetName
-
-	return nil
 }
 
 func Convert_v1alpha1_EtcdMemberSpec_To_kops_EtcdMemberSpec(in *EtcdMemberSpec, out *kops.EtcdMemberSpec, s conversion.Scope) error {

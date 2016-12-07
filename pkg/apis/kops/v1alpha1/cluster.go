@@ -56,10 +56,6 @@ type ClusterSpec struct {
 	// The version of kubernetes to install (optional, and can be a "spec" like stable)
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
 
-	//
-	//// The Node initializer technique to use: cloudinit or nodeup
-	//NodeInit                      string `json:",omitempty"`
-
 	// Configuration of zones we are targeting
 	Zones []*ClusterZoneSpec `json:"zones,omitempty"`
 	//Region                        string        `json:",omitempty"`
@@ -88,7 +84,7 @@ type ClusterSpec struct {
 	SecretStore string `json:"secretStore,omitempty"`
 	// KeyStore is the VFS path to where SSL keys and certificates are stored
 	KeyStore string `json:"keyStore,omitempty"`
-	// ConfigStore is the VFS path to where the configuration (CloudConfig, NodeSetConfig etc) is stored
+	// ConfigStore is the VFS path to where the configuration (Cluster, InstanceGroupss etc) is stored
 	ConfigStore string `json:"configStore,omitempty"`
 
 	// DNSZone is the DNS zone we should use when configuring DNS
@@ -217,13 +213,6 @@ type ClusterSpec struct {
 	//KubeProxyTestLogLevel         string `json:",omitempty"`
 
 	//NodeUp                        *NodeUpConfig `json:",omitempty"`
-
-	// nodeSets is a list of all the NodeSets in the cluster.
-	// It is not exported: we populate it from other files
-	//nodeSets                      []*NodeSetConfig `json:",omitempty"`
-
-	//// Masters is the configuration for each master in the cluster
-	//Masters []*MasterConfig `json:",omitempty"`
 
 	// EtcdClusters stores the configuration for each cluster
 	EtcdClusters []*EtcdClusterSpec `json:"etcdClusters,omitempty"`

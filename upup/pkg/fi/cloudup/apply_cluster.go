@@ -318,11 +318,6 @@ func (c *ApplyClusterCmd) Run() error {
 
 			if len(sshPublicKeys) != 1 {
 				return fmt.Errorf("Exactly one 'admin' SSH public key can be specified when running with AWS; please delete a key using `kops delete secret`")
-			} else {
-				l.Resources["ssh-public-key"] = fi.NewStringResource(string(sshPublicKeys[0]))
-
-				// SSHKeyName computes a unique SSH key name, combining the cluster name and the SSH public key fingerprint
-				l.TemplateFunctions["SSHKeyName"] = modelContext.SSHKeyName
 			}
 
 			l.TemplateFunctions["MachineTypeInfo"] = awsup.GetMachineTypeInfo
@@ -331,6 +326,8 @@ func (c *ApplyClusterCmd) Run() error {
 	default:
 		return fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
 	}
+
+	modelContext.Region = region
 
 	err = validateDNS(cluster, cloud)
 	if err != nil {
@@ -364,10 +361,15 @@ func (c *ApplyClusterCmd) Run() error {
 		case "cloudup":
 			codeBuilders = append(codeBuilders,
 				&BootstrapChannelBuilder{cluster: cluster},
+				&model.APILoadBalancerBuilder{KopsModelContext: modelContext},
+				&model.AutoscalingGroupModelBuilder{KopsModelContext: modelContext},
 				&model.BastionModelBuilder{KopsModelContext: modelContext},
-				&model.ExternalAccessModelBuilder{KopsModelContext: modelContext},
 				&model.DNSModelBuilder{KopsModelContext: modelContext},
+				&model.FirewallModelBuilder{KopsModelContext: modelContext},
+				&model.IAMModelBuilder{KopsModelContext: modelContext},
 				&model.MasterVolumeBuilder{KopsModelContext: modelContext},
+				&model.NetworkModelBuilder{KopsModelContext: modelContext},
+				&model.SSHKeyModelBuilder{KopsModelContext: modelContext},
 			)
 			fileModels = append(fileModels, m)
 
@@ -487,26 +489,7 @@ func (c *ApplyClusterCmd) Run() error {
 	l.TemplateFunctions["Region"] = func() string {
 		return region
 	}
-	l.TemplateFunctions["NodeSets"] = func() []*api.InstanceGroup {
-		var groups []*api.InstanceGroup
-		for _, ig := range c.InstanceGroups {
-			if ig.IsMaster() {
-				continue
-			}
-			groups = append(groups, ig)
-		}
-		return groups
-	}
-	l.TemplateFunctions["Masters"] = func() []*api.InstanceGroup {
-		var groups []*api.InstanceGroup
-		for _, ig := range c.InstanceGroups {
-			if !ig.IsMaster() {
-				continue
-			}
-			groups = append(groups, ig)
-		}
-		return groups
-	}
+	l.TemplateFunctions["Masters"] = tf.modelContext.MasterInstanceGroups
 	//l.TemplateFunctions["NodeUp"] = c.populateNodeUpConfig
 	l.TemplateFunctions["NodeUpSource"] = func() string {
 		return c.NodeUpSource

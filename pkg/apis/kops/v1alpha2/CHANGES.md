@@ -11,3 +11,5 @@
 * Drop multizone
 
 * Rename Bastion name -> hostname or something
+
+* Do we need topology at all?
