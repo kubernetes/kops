@@ -452,7 +452,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 		config.Channels = channels
 
-		yaml, err := api.ToYaml(config)
+		yaml, err := api.ToRawYaml(config)
 		if err != nil {
 			return "", err
 		}

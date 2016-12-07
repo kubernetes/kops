@@ -71,7 +71,7 @@ func LoadChannel(location string) (*Channel, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error reading channel %q: %v", resolved, err)
 	}
-	err = ParseYaml(channelBytes, channel)
+	err = ParseRawYaml(channelBytes, channel)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing channel %q: %v", resolved, err)
 	}
