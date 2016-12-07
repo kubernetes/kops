@@ -27,7 +27,8 @@ with other infrastructure (but not a second cluster!), but this is not really re
 Two different providers are currently built into kops:
 
 1. kopeio-vxlan
-2. [weave](https://github.com/weaveworks/weave)
+2. [weave](https://github.com/weaveworks/weave-kube)
+3. [Calico](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/installation/hosted/)
 
 The manifests for the providers are included with kops, and you simply use `--networking provider-name`.
 Replace the provider name with the names listed above with you `kops cluster create`.  For instance
@@ -44,7 +45,6 @@ and libraries for writing plugins to configure network interfaces in Linux conta
 has built in support for CNI networking components.  Various solutions exist that
 support Kubernetes CNI networking, listed in alphabetical order:
 
-- [Calico](http://docs.projectcalico.org/v1.5/getting-started/kubernetes/installation/hosted/)
 - [Canal](https://github.com/tigera/canal/tree/master/k8s-install/kubeadm)
 - [Romana](https://github.com/romana/romana/tree/master/containerize#using-kops)
 
@@ -65,9 +65,7 @@ The `--networking` option accepts the three different values defined above: `kub
 
 ### Weave Example for CNI
 
-Weave is currently the only tested CNI provider.
-
-#### Installation of CNI on a new Cluster
+#### Installation Weave on a new Cluster
 
 The following command setups a cluster, in HA mode, that is ready for a CNI installation.
 
@@ -93,6 +91,41 @@ $ kubectl create -f https://git.io/weave-kube
 ```
 
 The above daemonset installation requires K8s 1.4.x or above.
+
+### Calico Example for CNI and Network Policy
+
+#### Installing Calico on a new Cluster
+
+The following command setups a cluster, in HA mode, with Calico as the CNI and Network Policy provider.
+
+```console
+$ export $ZONES=mylistofzones
+$ kops create cluster \
+  --zones $ZONES \
+  --master-zones $ZONES \
+  --master-size m4.large \
+  --node-size m4.large \
+  --networking calico \
+  --yes \
+  --name myclustername.mydns.io
+```
+
+The above will deploy a daemonset installation which requires K8s 1.4.x or above.
+
+#### More information about Calico
+
+For Calico specific documentation please visit the [Calico Docs](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/). 
+
+#### Getting help with Calico
+
+For help with Calico or to report any issues:
+
+- [Calico Github](https://github.com/projectcalico/calico)
+- [Calico Users Slack](https://calicousers.slack.com)
+
+#### Calico Backend
+
+Calico currently uses etcd as a backend for storing information about workloads and policies.  Calico does not interfere with normal etcd operations and does not require special handling when upgrading etcd.  For more information please visit the [etcd Docs](https://coreos.com/etcd/docs/latest/)
 
 ### Validating CNI Installation
 
