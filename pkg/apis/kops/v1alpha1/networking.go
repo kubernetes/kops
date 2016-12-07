@@ -24,6 +24,7 @@ type NetworkingSpec struct {
 	CNI      *CNINetworkingSpec      `json:"cni,omitempty"`
 	Kopeio   *KopeioNetworkingSpec   `json:"kopeio,omitempty"`
 	Weave    *WeaveNetworkingSpec    `json:"weave,omitempty"`
+	Calico   *CalicoNetworkingSpec   `json:"calico,omitempty"`
 }
 
 // ClassicNetworkingSpec is the specification of classic networking mode, integrated into kubernetes
@@ -51,4 +52,8 @@ type KopeioNetworkingSpec struct {
 
 // Weave declares that we want Weave networking
 type WeaveNetworkingSpec struct {
+}
+
+// Calico declares that we want Calico networking
+type CalicoNetworkingSpec struct {
 }
