@@ -23,6 +23,7 @@ import (
 )
 
 type KopsModelContext struct {
+	Region string
 	Cluster        *kops.Cluster
 	InstanceGroups []*kops.InstanceGroup
 
@@ -37,6 +38,8 @@ func (m *KopsModelContext) GetELBName32(prefix string) (string, error) {
 	c := m.Cluster.ObjectMeta.Name
 	s := strings.Split(c, ".")
 
+	// TODO: We used to have this...
+	//master-{{ replace .ClusterName "." "-" }}
 	// TODO: strings.Split cannot return empty
 	if len(s) > 0 {
 		returnString = fmt.Sprintf("%s-%s", prefix, s[0])
@@ -89,11 +92,66 @@ func (m*KopsModelContext) FindInstanceGroup(name string) (*kops.InstanceGroup) {
 
 // FindSubnet returns the subnet with the matching Name (or nil if not found)
 func (m*KopsModelContext) FindSubnet(name string) (*kops.ClusterSubnetSpec) {
-	for  i := range m.Cluster.Spec.Subnets {
+	for i := range m.Cluster.Spec.Subnets {
 		s := &m.Cluster.Spec.Subnets[i]
 		if s.SubnetName == name {
 			return s
 		}
 	}
 	return nil
+}
+
+// MasterInstanceGroups returns InstanceGroups with the master role
+func (m*KopsModelContext) MasterInstanceGroups() []*kops.InstanceGroup {
+	var groups []*kops.InstanceGroup
+	for _, ig := range m.InstanceGroups {
+		if !ig.IsMaster() {
+			continue
+		}
+		groups = append(groups, ig)
+	}
+	return groups
+}
+
+
+// NodeInstanceGroups returns InstanceGroups with the node role
+func (m*KopsModelContext) NodeInstanceGroups() []*kops.InstanceGroup {
+	var groups []*kops.InstanceGroup
+	for _, ig := range m.InstanceGroups {
+		if ig.Spec.Role != kops.InstanceGroupRoleNode {
+			continue
+		}
+		groups = append(groups, ig)
+	}
+	return groups
+}
+
+// CloudTagsForInstanceGroup computes the tags to apply to instances in the specified InstanceGroup
+func (m *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (map[string]string, error) {
+	labels := make(map[string]string)
+
+	// Apply any user-specified labels
+	for k, v := range ig.Spec.CloudLabels {
+		labels[k] = v
+	}
+
+	// The system tags take priority because the cluster likely breaks without them...
+
+	if ig.Spec.Role == kops.InstanceGroupRoleMaster {
+		labels["k8s.io/role/master"] = "1"
+	}
+
+	if ig.Spec.Role == kops.InstanceGroupRoleNode {
+		labels["k8s.io/role/node"] = "1"
+	}
+
+	if ig.Spec.Role == kops.InstanceGroupRoleBastion {
+		labels["k8s.io/role/bastion"] = "1"
+	}
+
+	return labels, nil
+}
+
+func (m*KopsModelContext) UseLoadBalancerForAPI() bool {
+	return false
 }

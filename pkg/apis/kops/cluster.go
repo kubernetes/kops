@@ -89,7 +89,7 @@ type ClusterSpec struct {
 	SecretStore string `json:"secretStore,omitempty"`
 	// KeyStore is the VFS path to where SSL keys and certificates are stored
 	KeyStore string `json:"keyStore,omitempty"`
-	// ConfigStore is the VFS path to where the configuration (CloudConfig, NodeSetConfig etc) is stored
+	// ConfigStore is the VFS path to where the configuration (Cluster, InstanceGroups etc) is stored
 	ConfigStore string `json:"configStore,omitempty"`
 
 	// DNSZone is the DNS zone we should use when configuring DNS
@@ -221,10 +221,6 @@ type ClusterSpec struct {
 
 	//NodeUp                        *NodeUpConfig `json:",omitempty"`
 
-	// nodeSets is a list of all the NodeSets in the cluster.
-	// It is not exported: we populate it from other files
-	//nodeSets                      []*NodeSetConfig `json:",omitempty"`
-
 	//// Masters is the configuration for each master in the cluster
 	//Masters []*MasterConfig `json:",omitempty"`
 
@@ -284,6 +280,17 @@ type EtcdMemberSpec struct {
 	EncryptedVolume *bool   `json:"encryptedVolume,omitempty"`
 }
 
+
+// SubnetType string describes subnet types (public, private, utility)
+type SubnetType string
+
+const (
+	SubnetTypePublic SubnetType = "Public"
+	SubnetTypePrivate SubnetType = "Private"
+	SubnetTypeUtility SubnetType = "Utility"
+)
+
+
 type ClusterSubnetSpec struct {
 	// TODO: Rename
 	SubnetName string `json:"name,omitempty"`
@@ -294,6 +301,8 @@ type ClusterSubnetSpec struct {
 
 	// ProviderID is the cloud provider id for the objects associated with the zone (the subnet on AWS)
 	ProviderID string `json:"id,omitempty"`
+
+	Type SubnetType `json:"type,omitempty"`
 }
 
 //type NodeUpConfig struct {
@@ -307,7 +316,7 @@ type ClusterSubnetSpec struct {
 //}
 
 // PerformAssignments populates values that are required and immutable
-// For example, it assigns stable Keys to NodeSets & Masters, and
+// For example, it assigns stable Keys to InstanceGroups & Masters, and
 // it assigns CIDRs to subnets
 // We also assign KubernetesVersion, because we want it to be explicit
 func (c *Cluster) PerformAssignments() error {

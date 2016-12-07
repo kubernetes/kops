@@ -28,6 +28,12 @@ func (b *KopsModelContext) SecurityGroupName(role kops.InstanceGroupRole) string
 	case kops.InstanceGroupRoleBastion:
 		return "bastion." + b.ClusterName()
 
+	case kops.InstanceGroupRoleNode:
+		return "nodes." + b.ClusterName()
+
+	case kops.InstanceGroupRoleMaster:
+		return "masters." + b.ClusterName()
+
 	default:
 		glog.Fatalf("unknown role: %v", role)
 		return ""
@@ -39,6 +45,26 @@ func (b*KopsModelContext) LinkToSecurityGroup(role kops.InstanceGroupRole) (*aws
 	return &awstasks.SecurityGroup{Name: &name}
 }
 
+func (b *KopsModelContext) AutoscalingGroupName(ig *kops.InstanceGroup) string {
+	switch (ig.Spec.Role) {
+	case kops.InstanceGroupRoleNode:
+		return ig.ObjectMeta.Name + "." + b.ClusterName()
+	case kops.InstanceGroupRoleMaster:
+		return ig.ObjectMeta.Name + ".masters." + b.ClusterName()
+	case kops.InstanceGroupRoleBastion:
+		return ig.ObjectMeta.Name + ".bastions." + b.ClusterName()
+
+	default:
+		glog.Fatalf("unknown InstanceGroup Role: %v", ig.Spec.Role)
+		return ""
+	}
+}
+
+func (b*KopsModelContext) LinkToAutoscalingGroup(ig *kops.InstanceGroup) (*awstasks.AutoscalingGroup) {
+	name := b.AutoscalingGroupName(ig)
+	return &awstasks.AutoscalingGroup{Name: &name}
+}
+
 func (b *KopsModelContext) ELBSecurityGroupName(prefix string) string {
 	return prefix + ".elb." + b.ClusterName()
 }
@@ -46,6 +72,15 @@ func (b *KopsModelContext) ELBSecurityGroupName(prefix string) string {
 func (b*KopsModelContext) LinkToELBSecurityGroup(prefix string) (*awstasks.SecurityGroup) {
 	name := b.ELBSecurityGroupName(prefix)
 	return &awstasks.SecurityGroup{Name: &name}
+}
+
+func (b *KopsModelContext) ELBName(prefix string) string {
+	return prefix + "." + b.ClusterName()
+}
+
+func (b*KopsModelContext) LinkToELB(prefix string) (*awstasks.LoadBalancer) {
+	name := b.ELBName(prefix)
+	return &awstasks.LoadBalancer{Name: &name}
 }
 
 func (b*KopsModelContext) LinkToVPC() (*awstasks.VPC) {
@@ -58,10 +93,10 @@ func (b*KopsModelContext) LinkToDNSZone() (*awstasks.DNSZone) {
 	return &awstasks.DNSZone{Name: &name}
 }
 
-func (b*KopsModelContext) LinkToIAMInstanceProfile(ig *kops.InstanceGroup) (*awstasks.IAMInstanceProfile) {
+func (b*KopsModelContext) IAMName(role kops.InstanceGroupRole) (string) {
 	var name string
 
-	switch (ig.Spec.Role) {
+	switch (role) {
 	case kops.InstanceGroupRoleMaster:
 		name = "masters." + b.ClusterName()
 
@@ -72,15 +107,19 @@ func (b*KopsModelContext) LinkToIAMInstanceProfile(ig *kops.InstanceGroup) (*aws
 		name = "nodes." + b.ClusterName()
 
 	default:
-		glog.Fatalf("unknown InstanceGroup Role: %q", ig.Spec.Role)
+		glog.Fatalf("unknown InstanceGroup Role: %q", role)
 	}
 
-	return &awstasks.IAMInstanceProfile{Name: &name}
-
+	return name
 }
 
+func (b*KopsModelContext) LinkToIAMInstanceProfile(ig *kops.InstanceGroup) (*awstasks.IAMInstanceProfile) {
+	name := b.IAMName(ig.Spec.Role)
+	return &awstasks.IAMInstanceProfile{Name: &name}
+}
+
+// SSHKeyName computes a unique SSH key name, combining the cluster name and the SSH public key fingerprint
 func (c*KopsModelContext) SSHKeyName() (string, error) {
-	// SSHKeyName computes a unique SSH key name, combining the cluster name and the SSH public key fingerprint
 	fingerprint, err := awstasks.ComputeOpenSSHKeyFingerprint(string(c.SSHPublicKeys[0]))
 	if err != nil {
 		return "", err
@@ -138,17 +177,49 @@ func (b*KopsModelContext) LinkToPublicSubnetInZone(zoneName string) (*awstasks.S
 	return b.LinkToSubnet(matches[0]), nil
 }
 
+func (b*KopsModelContext) LinkToUtilitySubnetInZone(zoneName string) (*awstasks.Subnet, error) {
+	var matches []*kops.ClusterSubnetSpec
+	for i := range b.Cluster.Spec.Subnets {
+		s := &b.Cluster.Spec.Subnets[i]
+		if s.Zone != zoneName {
+			continue
+		}
+		if !b.IsUtilitySubnet(s) {
+			continue
+		}
+		matches = append(matches, s)
+	}
+	if len(matches) == 0 {
+		return nil, fmt.Errorf("could not find utility subnet in zone: %q", zoneName)
+	}
+	if len(matches) > 1 {
+		// TODO: Support this
+		return nil, fmt.Errorf("found multiple utility subnets in zone: %q", zoneName)
+	}
+
+	return b.LinkToSubnet(matches[0]), nil
+}
+
+func (b*KopsModelContext) NamePrivateRouteTableInZone(zoneName string) (string) {
+	return "private-" + zoneName + "." + b.ClusterName()
+}
+
 func (b*KopsModelContext) IsSimpleTopology() bool {
 	glog.Fatalf("IsSimpleToplogy not implemented")
 	return false
 }
 
-func (b*KopsModelContext) IsPublicSubnet(z *kops.ClusterSubnetSpec) bool {
+func (b*KopsModelContext) IsPublicSubnet(s *kops.ClusterSubnetSpec) bool {
 	glog.Fatalf("IsPublicSubnet not implemented")
 	return false
 }
 
-func (b*KopsModelContext) IsPrivateSubnet(z *kops.ClusterSubnetSpec) bool {
+func (b*KopsModelContext) IsUtilitySubnet(s *kops.ClusterSubnetSpec) bool {
+	glog.Fatalf("IsUtilitySubnet not implemented")
+	return false
+}
+
+func (b*KopsModelContext) IsPrivateSubnet(s *kops.ClusterSubnetSpec) bool {
 	glog.Fatalf("IsPrivateSubnet not implemented")
 	return false
 }
