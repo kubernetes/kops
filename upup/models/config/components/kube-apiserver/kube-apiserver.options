@@ -16,3 +16,7 @@ KubeAPIServer:
   LogLevel: 2
   AllowPrivileged: true
   Image: {{ Image "kube-apiserver" }}
+  KubletPreferredAddressTypes:
+  - Hostname
+  - InternalIP
+  - ExternalIP
