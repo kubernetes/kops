@@ -106,27 +106,27 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 
 	validationCluster, validationFailed := validation.ValidateCluster(cluster.Name, list, k8sClient)
 
-	if validationCluster == nil || validationCluster.NodeList == nil {
+	if validationCluster == nil || validationCluster.NodeList == nil || validationCluster.NodeList.Items == nil {
 		return fmt.Errorf("cannot get nodes for %q: %v", cluster.Name, validationFailed)
 	}
 
 	t := &tables.Table{}
-	t.AddColumn("NAME", func(c *api.InstanceGroup) string {
+	t.AddColumn("NAME", func(c api.InstanceGroup) string {
 		return c.Name
 	})
-	t.AddColumn("ROLE", func(c *api.InstanceGroup) string {
+	t.AddColumn("ROLE", func(c api.InstanceGroup) string {
 		return string(c.Spec.Role)
 	})
-	t.AddColumn("MACHINETYPE", func(c *api.InstanceGroup) string {
+	t.AddColumn("MACHINETYPE", func(c api.InstanceGroup) string {
 		return c.Spec.MachineType
 	})
-	t.AddColumn("ZONES", func(c *api.InstanceGroup) string {
+	t.AddColumn("ZONES", func(c api.InstanceGroup) string {
 		return strings.Join(c.Spec.Zones, ",")
 	})
-	t.AddColumn("MIN", func(c *api.InstanceGroup) string {
+	t.AddColumn("MIN", func(c api.InstanceGroup) string {
 		return intPointerToString(c.Spec.MinSize)
 	})
-	t.AddColumn("MAX", func(c *api.InstanceGroup) string {
+	t.AddColumn("MAX", func(c api.InstanceGroup) string {
 		return intPointerToString(c.Spec.MaxSize)
 	})
 
