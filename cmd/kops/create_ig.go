@@ -95,7 +95,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		edit = editor.NewDefaultEditor(editorEnvs)
 	)
 
-	raw, err := api.ToYaml(ig)
+	raw, err := api.ToVersionedYaml(ig)
 	if err != nil {
 		return err
 	}
@@ -112,10 +112,13 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		return fmt.Errorf("error launching editor: %v", err)
 	}
 
-	group := &api.InstanceGroup{}
-	err = api.ParseYaml(edited, group)
+	obj, _, err := api.ParseVersionedYaml(edited)
 	if err != nil {
 		return fmt.Errorf("error parsing yaml: %v", err)
+	}
+	group, ok := obj.(*api.InstanceGroup)
+	if !ok {
+		return fmt.Errorf("unexpected object type: %T", obj)
 	}
 
 	err = group.Validate()
