@@ -49,6 +49,7 @@ func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 		var filters []*ec2.Filter
 		filters = append(filters, awsup.NewEC2Filter("key", "AssociatedNatgateway"))
 		if e.Subnet.ID == nil {
+			glog.V(2).Infof("Unable to find subnet, bypassing Find() for NGW")
 			return nil, nil
 		}
 		filters = append(filters, awsup.NewEC2Filter("resource-id", *e.Subnet.ID))
