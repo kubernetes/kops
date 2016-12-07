@@ -28,6 +28,7 @@ Two different providers are currently built into kops:
 
 1. kopeio-vxlan
 2. [weave](https://github.com/weaveworks/weave-kube)
+3. [Calico](http://docs.projectcalico.org/v1.5/getting-started/kubernetes/installation/hosted/)
 
 The manifests for the providers are included with kops, and you simply use `--networking provider-name`.
 Replace the provider name with the names listed above with you `kops cluster create`.  For instance
@@ -44,7 +45,6 @@ and libraries for writing plugins to configure network interfaces in Linux conta
 has built in support for CNI networking components.  Various solutions exist that
 support Kubernetes CNI networking, listed in alphabetical order:
 
-- [Calico](http://docs.projectcalico.org/v1.5/getting-started/kubernetes/installation/hosted/)
 - [Canal](https://github.com/tigera/canal/tree/master/k8s-install/kubeadm)
 - [Romana](https://github.com/romana/romana/tree/master/containerize#using-kops)
 

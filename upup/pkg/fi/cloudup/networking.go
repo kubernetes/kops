@@ -48,6 +48,11 @@ func usesCNI(c *api.Cluster) bool {
 		return true
 	}
 
+	if networkConfig.Calico != nil {
+		//  Calico uses CNI
+		return true
+	}
+
 	if networkConfig.CNI != nil {
 		// CNI definitely uses CNI!
 		return true

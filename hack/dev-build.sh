@@ -56,7 +56,7 @@ MASTER_SIZE=${MASTER_SIZE:-m4.large}
 
 # NETWORK
 TOPOLOGY=${TOPOLOGY:-private}
-NETWORKING=${NETWORKING:-weave}
+NETWORKING=${NETWORKING:-calico}
 
 VERBOSITY=${VERBOSITY:-10}
 
@@ -65,7 +65,7 @@ cd $KOPS_DIRECTORY/..
 GIT_VER=git-$(git describe --always)
 [ -z "$GIT_VER" ] && echo "we do not have GIT_VER something is very wrong" && exit 1;
 
-NODEUP_URL="https://s3-us-west-1.amazonaws.com/${NODEUP_BUCKET}/kops/${GIT_VER}/linux/amd64/nodeup"
+NODEUP_URL="https://${NODEUP_BUCKET}.s3-us-west-2.amazonaws.com/kops/${GIT_VER}/linux/amd64/nodeup"
 
 echo ==========
 echo "Starting build"
@@ -96,7 +96,6 @@ NODEUP_URL=${NODEUP_URL} kops create cluster \
   --topology $TOPOLOGY \
   --networking $NETWORKING \
   -v $VERBOSITY \
-  --image "k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-11-16" \
   --yes
 
 echo ==========
