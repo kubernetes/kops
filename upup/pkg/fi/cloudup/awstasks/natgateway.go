@@ -192,14 +192,16 @@ func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway)
 }
 
 type terraformNatGateway struct {
-	Tags map[string]string `json:"tags,omitempty"`
+	AllocationId *terraform.Literal `json:"allocation_id"`
+	SubnetId     *terraform.Literal `json:"subnet_id"`
 }
 
 func (_ *NatGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *NatGateway) error {
-	cloud := t.Cloud.(awsup.AWSCloud)
+	//cloud := t.Cloud.(awsup.AWSCloud)
 
 	tf := &terraformNatGateway{
-		Tags: cloud.BuildTags(e.Name),
+		AllocationId: e.ElasticIp.TerraformLink(),
+		SubnetId: e.Subnet.TerraformLink(),
 	}
 
 	return t.RenderResource("aws_nat_gateway", *e.Name, tf)
@@ -209,3 +211,5 @@ func (_ *NatGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 //func (e *NATGateway) TerraformLink() *terraform.Literal {
 //	return terraform.LiteralProperty("aws_natgateway", *e.AllocationID, "id")
 //}
+
+

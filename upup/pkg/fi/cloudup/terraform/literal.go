@@ -36,6 +36,11 @@ func LiteralSelfLink(resourceType, resourceName string) *Literal {
 	return LiteralProperty(resourceType, resourceName, "self_link")
 }
 
+// Will generate a Terraform literal string for a Terraform resource
+//
+//     resourceType The name of the Terraform resource (aws_elb, aws_nat_gateway)
+//     resourceName The value of the Terraform name. This is the friendly name, that the user defines for the object.
+//     prop The name of the property we are attempting to return. This is a property of the calling resource.
 func LiteralProperty(resourceType, resourceName, prop string) *Literal {
 	tfName := tfSanitize(resourceName)
 

@@ -30,10 +30,10 @@ import (
 
 //go:generate fitask -type=DNSName
 type DNSName struct {
-	Name         *string
-	ID           *string
-	Zone         *DNSZone
-	ResourceType *string
+	Name               *string
+	ID                 *string
+	Zone               *DNSZone
+	ResourceType       *string
 
 	TargetLoadBalancer *LoadBalancer
 }
@@ -151,33 +151,38 @@ func (_ *DNSName) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSName) error
 }
 
 type terraformRoute53Record struct {
-	Name    *string  `json:"name"`
-	Type    *string  `json:"type"`
-	TTL     *string  `json:"ttl"`
-	Records []string `json:"records"`
+	Name    *string  `json:"name,omitempty"`
+	Type    *string  `json:"type,omitempty"`
+	TTL     *string  `json:"ttl,omitempty"`
+	Records []string `json:"records,omitempty"`
 
-	Alias  *terraformAlias    `json:"alias"`
-	ZoneID *terraform.Literal `json:"zone_id"`
+	Alias   *terraformAlias    `json:"alias,omitempty"`
+	ZoneID  *terraform.Literal `json:"zone_id,omitempty"`
 }
 
 type terraformAlias struct {
-	Name                 *string `json:"name"`
-	HostedZoneId         *string `json:"zone_id"`
-	EvaluateTargetHealth *bool   `json:"evaluate_target_health"`
+	Name                 *string `json:"name,omitempty"`
+	HostedZoneId         *terraform.Literal `json:"zone_id,omitempty"`
+	EvaluateTargetHealth *bool   `json:"evaluate_target_health,omitempty"`
 }
 
+
+// Looks like right now we are making assumptions on this always being an aliased DNS record
+// Which is fine in the case of everything having a public ELB in front of it..
 func (_ *DNSName) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *DNSName) error {
 	tf := &terraformRoute53Record{
 		Name:   e.Name,
-		ZoneID: e.Zone.TerraformLink(),
 		Type:   e.ResourceType,
+		ZoneID: e.Zone.TerraformLink(),
+
 	}
 
 	if e.TargetLoadBalancer != nil {
 		tf.Alias = &terraformAlias{
-			Name:                 e.TargetLoadBalancer.DNSName,
+			Name:  e.Name,
 			EvaluateTargetHealth: aws.Bool(false),
-			HostedZoneId:         e.TargetLoadBalancer.HostedZoneId,
+			HostedZoneId: e.Zone.TerraformLink(),
+
 		}
 	}
 

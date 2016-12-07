@@ -206,8 +206,7 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 }
 
 type terraformElasticIP struct {
-	PublicIP         *string           `json:"public_ip,omitempty"`
-
+	PublicIP *string           `json:"public_ip,omitempty"`
 }
 
 func (_ *ElasticIP) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ElasticIP) error {
@@ -217,4 +216,8 @@ func (_ *ElasticIP) RenderTerraform(t *terraform.TerraformTarget, a, e, changes 
 	tf := &terraformElasticIP{}
 
 	return t.RenderResource("aws_eip", *e.Name, tf)
+}
+
+func (e *ElasticIP) TerraformLink() *terraform.Literal {
+	return terraform.LiteralProperty("aws_eip", *e.Name, "id")
 }
