@@ -210,7 +210,11 @@ func isTagsEventualConsistencyError(err error) bool {
 }
 
 // GetTags will fetch the tags for the specified resource, retrying (up to MaxDescribeTagsAttempts) if it hits an eventual-consistency type error
-func (c *awsCloudImplementation) GetTags(resourceId string) (map[string]string, error) {
+func (c *awsCloudImplementation) GetTags(resourceID string) (map[string]string, error) {
+	return getTags(c, resourceID)
+}
+
+func getTags(c AWSCloud, resourceId string) (map[string]string, error) {
 	tags := map[string]string{}
 
 	request := &ec2.DescribeTagsInput{
@@ -256,6 +260,10 @@ func (c *awsCloudImplementation) GetTags(resourceId string) (map[string]string, 
 
 // CreateTags will add tags to the specified resource, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
 func (c *awsCloudImplementation) CreateTags(resourceId string, tags map[string]string) error {
+	return createTags(c, resourceId, tags)
+}
+
+func createTags(c AWSCloud, resourceId string, tags map[string]string) error {
 	if len(tags) == 0 {
 		return nil
 	}
@@ -341,6 +349,10 @@ func (c *awsCloudImplementation) DeleteTags(resourceId string, tags map[string]s
 }
 
 func (c *awsCloudImplementation) AddAWSTags(id string, expected map[string]string) error {
+	return addAWSTags(c, id, expected)
+}
+
+func addAWSTags(c AWSCloud, id string, expected map[string]string) error {
 	actual, err := c.GetTags(id)
 	if err != nil {
 		return fmt.Errorf("unexpected error fetching tags for resource: %v", err)
@@ -423,13 +435,17 @@ func (c *awsCloudImplementation) CreateELBTags(loadBalancerName string, tags map
 }
 
 func (c *awsCloudImplementation) BuildTags(name *string) map[string]string {
+	return buildTags(c.tags, name)
+}
+
+func buildTags(commonTags map[string]string, name *string) map[string]string {
 	tags := make(map[string]string)
 	if name != nil {
 		tags["Name"] = *name
 	} else {
 		glog.Warningf("Name not set when filtering by name")
 	}
-	for k, v := range c.tags {
+	for k, v := range commonTags {
 		tags[k] = v
 	}
 	return tags
@@ -445,6 +461,10 @@ func (c *awsCloudImplementation) AddTags(name *string, tags map[string]string) {
 }
 
 func (c *awsCloudImplementation) BuildFilters(name *string) []*ec2.Filter {
+	return buildFilters(c.tags, name)
+}
+
+func buildFilters(commonTags map[string]string, name *string) []*ec2.Filter {
 	filters := []*ec2.Filter{}
 
 	merged := make(map[string]string)
@@ -453,7 +473,7 @@ func (c *awsCloudImplementation) BuildFilters(name *string) []*ec2.Filter {
 	} else {
 		glog.Warningf("Name not set when filtering by name")
 	}
-	for k, v := range c.tags {
+	for k, v := range commonTags {
 		merged[k] = v
 	}
 
