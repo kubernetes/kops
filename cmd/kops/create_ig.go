@@ -27,13 +27,17 @@ import (
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type CreateInstanceGroupOptions struct {
+	Role string
 }
 
 func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
-	options := &CreateInstanceGroupOptions{}
+	options := &CreateInstanceGroupOptions{
+		Role: string(api.InstanceGroupRoleNode),
+	}
 
 	cmd := &cobra.Command{
 		Use:     "instancegroup",
@@ -48,10 +52,18 @@ func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 		},
 	}
 
+	// TODO: Create Enum helper - or is there one in k8s already?
+	var allRoles []string
+	for _, r := range api.AllInstanceGroupRoles {
+		allRoles = append(allRoles, string(r))
+	}
+
+	cmd.Flags().StringVar(&options.Role, "role", options.Role, "Type of instance group to create ("+strings.Join(allRoles, ",")+")")
+
 	return cmd
 }
 
-func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, c *CreateInstanceGroupOptions) error {
+func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, options *CreateInstanceGroupOptions) error {
 	if len(args) == 0 {
 		return fmt.Errorf("Specify name of instance group to create")
 	}
@@ -84,7 +96,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 	// Populate some defaults
 	ig := &api.InstanceGroup{}
 	ig.Name = groupName
-	ig.Spec.Role = api.InstanceGroupRoleNode
+	ig.Spec.Role = api.InstanceGroupRole(options.Role)
 
 	ig, err = cloudup.PopulateInstanceGroupSpec(cluster, ig, channel)
 	if err != nil {
