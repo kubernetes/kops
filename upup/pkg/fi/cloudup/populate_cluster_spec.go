@@ -26,13 +26,13 @@ import (
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kops/pkg/model"
 )
 
 var EtcdClusters = []string{"main", "events"}
@@ -43,12 +43,12 @@ type populateClusterSpec struct {
 	InputCluster *api.Cluster
 
 	// ModelStore is the location where models are found
-	ModelStore   vfs.Path
+	ModelStore vfs.Path
 	// Models is a list of cloudup models to apply
-	Models       []string
+	Models []string
 
 	// fullCluster holds the built completed cluster spec
-	fullCluster  *api.Cluster
+	fullCluster *api.Cluster
 }
 
 func findModelStore() (vfs.Path, error) {
@@ -247,8 +247,8 @@ func (c *populateClusterSpec) run() error {
 		Cluster: cluster,
 	}
 	tf := &TemplateFunctions{
-		cluster: cluster,
-		tags:    tags,
+		cluster:      cluster,
+		tags:         tags,
 		modelContext: modelContext,
 	}
 
@@ -323,21 +323,21 @@ func (c *populateClusterSpec) assignSubnets(cluster *api.Cluster) error {
 		ip4 := ip.To4()
 		if ip4 != nil {
 			n := binary.BigEndian.Uint32(ip4)
-			n += uint32(1 << uint(nmBits - nmOnes - 1))
+			n += uint32(1 << uint(nmBits-nmOnes-1))
 			ip = make(net.IP, len(ip4))
 			binary.BigEndian.PutUint32(ip, n)
 		} else {
 			return fmt.Errorf("IPV6 subnet computations not yet implements")
 		}
 
-		cidr := net.IPNet{IP: ip, Mask: net.CIDRMask(nmOnes + 1, nmBits)}
+		cidr := net.IPNet{IP: ip, Mask: net.CIDRMask(nmOnes+1, nmBits)}
 		cluster.Spec.KubeControllerManager.ClusterCIDR = cidr.String()
 		glog.V(2).Infof("Defaulted KubeControllerManager.ClusterCIDR to %v", cluster.Spec.KubeControllerManager.ClusterCIDR)
 	}
 
 	if cluster.Spec.ServiceClusterIPRange == "" {
 		// Allocate from the '0' subnet; but only carve off 1/4 of that (i.e. add 1 + 2 bits to the netmask)
-		cidr := net.IPNet{IP: nonMasqueradeCIDR.IP.Mask(nonMasqueradeCIDR.Mask), Mask: net.CIDRMask(nmOnes + 3, nmBits)}
+		cidr := net.IPNet{IP: nonMasqueradeCIDR.IP.Mask(nonMasqueradeCIDR.Mask), Mask: net.CIDRMask(nmOnes+3, nmBits)}
 		cluster.Spec.ServiceClusterIPRange = cidr.String()
 		glog.V(2).Infof("Defaulted ServiceClusterIPRange to %v", cluster.Spec.ServiceClusterIPRange)
 	}

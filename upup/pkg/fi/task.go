@@ -78,6 +78,6 @@ func buildTaskKey(task Task) string {
 func TypeNameForTask(task interface{}) string {
 	typeName := fmt.Sprintf("%T", task)
 	lastDot := strings.LastIndex(typeName, ".")
-	typeName = typeName[lastDot + 1:]
+	typeName = typeName[lastDot+1:]
 	return typeName
 }

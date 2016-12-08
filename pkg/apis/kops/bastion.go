@@ -23,7 +23,7 @@ type BastionSpec struct {
 	//Enable      bool   `json:"enable,omitempty"`
 	//MachineType string `json:"machineType,omitempty"`
 
-	PublicName  string `json:"name,omitempty"`
+	PublicName string `json:"name,omitempty"`
 	// Bastion's Loadbalancer idle timeout
 	IdleTimeout int `json:"idleTimeout,omitempty"`
 }

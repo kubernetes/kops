@@ -1,8 +1,8 @@
 package model
 
 import (
-	"k8s.io/kops/upup/pkg/fi"
 	"fmt"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"sort"
 	"strings"
@@ -73,20 +73,20 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 				sort.Strings(allMembers)
 
 				// This is the configuration of the etcd cluster
-				tags["k8s.io/etcd/" + etcd.Name] = m.Name + "/" + strings.Join(allMembers, ",")
+				tags["k8s.io/etcd/"+etcd.Name] = m.Name + "/" + strings.Join(allMembers, ",")
 
 				// This says "only mount on a master"
 				tags["k8s.io/role/master"] = "1"
 			}
 
 			t := &awstasks.EBSVolume{
-				Name: s(name),
+				Name:             s(name),
 				AvailabilityZone: s(subnet.Zone),
-				SizeGB: fi.Int64(volumeSize),
-				VolumeType: s(volumeType),
-				KmsKeyId: m.KmsKeyId,
-				Encrypted: fi.Bool(encrypted),
-				Tags: tags,
+				SizeGB:           fi.Int64(volumeSize),
+				VolumeType:       s(volumeType),
+				KmsKeyId:         m.KmsKeyId,
+				Encrypted:        fi.Bool(encrypted),
+				Tags:             tags,
 			}
 
 			c.AddTask(t)
@@ -94,4 +94,3 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 	return nil
 }
-

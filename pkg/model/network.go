@@ -1,11 +1,11 @@
 package model
 
 import (
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+	"fmt"
 	"github.com/kopeio/gladish/pkg/sets"
 	"k8s.io/kops/pkg/apis/kops"
-	"fmt"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
 
 // NetworkModelBuilder configures network objects
@@ -21,10 +21,10 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// VPC that holds everything for the cluster
 	{
 		t := &awstasks.VPC{
-			Name: s(b.ClusterName()),
+			Name:               s(b.ClusterName()),
 			EnableDNSHostnames: fi.Bool(true),
-			EnableDNSSupport: fi.Bool(true),
-			Shared: fi.Bool(sharedVPC),
+			EnableDNSSupport:   fi.Bool(true),
+			Shared:             fi.Bool(sharedVPC),
 		}
 
 		if b.Cluster.Spec.NetworkID != "" {
@@ -38,7 +38,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	if !sharedVPC {
 		dhcp := &awstasks.DHCPOptions{
-			Name: s(b.ClusterName()),
+			Name:              s(b.ClusterName()),
 			DomainNameServers: s("AmazonProvidedDNS"),
 		}
 		if b.Region == "us-east-1" {
@@ -51,7 +51,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(&awstasks.VPCDHCPOptionsAssociation{
 			Name: s(b.ClusterName()),
 
-			VPC: b.LinkToVPC(),
+			VPC:         b.LinkToVPC(),
 			DHCPOptions: dhcp,
 		})
 	} else {
@@ -64,22 +64,22 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		// The internet gateway is the main entry point to the cluster.
 		igw := &awstasks.InternetGateway{
-			Name: s(b.ClusterName()),
-			VPC: b.LinkToVPC(),
+			Name:   s(b.ClusterName()),
+			VPC:    b.LinkToVPC(),
 			Shared: fi.Bool(sharedVPC),
 		}
 		c.AddTask(igw)
 
 		publicRouteTable = &awstasks.RouteTable{
 			Name: s(b.ClusterName()),
-			VPC: b.LinkToVPC(),
+			VPC:  b.LinkToVPC(),
 		}
 		c.AddTask(publicRouteTable)
 
 		c.AddTask(&awstasks.Route{
-			Name: s("0.0.0.0/0"),
-			CIDR: s("0.0.0.0/0"),
-			RouteTable: publicRouteTable,
+			Name:            s("0.0.0.0/0"),
+			CIDR:            s("0.0.0.0/0"),
+			RouteTable:      publicRouteTable,
 			InternetGateway: igw,
 		})
 	}
@@ -91,25 +91,25 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		sharedSubnet := subnetSpec.ProviderID != ""
 
 		subnet := &awstasks.Subnet{
-			Name: s(subnetSpec.SubnetName + "." + b.ClusterName()),
-			VPC: b.LinkToVPC(),
+			Name:             s(subnetSpec.SubnetName + "." + b.ClusterName()),
+			VPC:              b.LinkToVPC(),
 			AvailabilityZone: s(subnetSpec.Zone),
-			CIDR: s(subnetSpec.CIDR),
-			Shared: fi.Bool(sharedSubnet),
+			CIDR:             s(subnetSpec.CIDR),
+			Shared:           fi.Bool(sharedSubnet),
 		}
 		if subnetSpec.ProviderID != "" {
 			subnet.ID = s(subnetSpec.ProviderID)
 		}
 		c.AddTask(subnet)
 
-		switch (subnetSpec.Type) {
+		switch subnetSpec.Type {
 		case kops.SubnetTypePublic:
 		case kops.SubnetTypeUtility:
 			if !sharedSubnet {
 				c.AddTask(&awstasks.RouteTableAssociation{
-					Name: s(subnetSpec.SubnetName + "." + b.ClusterName()),
+					Name:       s(subnetSpec.SubnetName + "." + b.ClusterName()),
 					RouteTable: publicRouteTable,
-					Subnet: subnet,
+					Subnet:     subnet,
 				})
 			}
 
@@ -121,9 +121,9 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				//
 				// Map the Private subnet to the Private route table
 				c.AddTask(&awstasks.RouteTableAssociation{
-					Name: s("private-" + subnetSpec.SubnetName + "." + b.ClusterName()),
-					RouteTable: &awstasks.RouteTable{Name: s(b.NamePrivateRouteTableInZone(subnetSpec.Zone)) },
-					Subnet: subnet,
+					Name:       s("private-" + subnetSpec.SubnetName + "." + b.ClusterName()),
+					RouteTable: &awstasks.RouteTable{Name: s(b.NamePrivateRouteTableInZone(subnetSpec.Zone))},
+					Subnet:     subnet,
 				})
 
 				privateZones.Insert(subnetSpec.Zone)
@@ -143,11 +143,10 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// subnet needs a NGW, lets create it. We tie it to a subnet
 		// so we can track it in AWS
 		eip := &awstasks.ElasticIP{
-			Name: s(zone + "." + b.ClusterName()),
+			Name:   s(zone + "." + b.ClusterName()),
 			Subnet: utilitySubnet,
 		}
 		c.AddTask(eip)
-
 
 		// NAT Gateway
 		//
@@ -157,8 +156,8 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// using a network address translation (NAT) gateway that resides
 		// in the public subnet.
 		ngw := &awstasks.NatGateway{
-			Name: s(zone + "." + b.ClusterName()),
-			Subnet: utilitySubnet,
+			Name:      s(zone + "." + b.ClusterName()),
+			Subnet:    utilitySubnet,
 			ElasticIp: eip,
 		}
 		c.AddTask(ngw)
@@ -168,7 +167,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// The private route table that will route to the NAT Gateway
 		rt := &awstasks.RouteTable{
 			Name: s(b.NamePrivateRouteTableInZone(zone)),
-			VPC: b.LinkToVPC(),
+			VPC:  b.LinkToVPC(),
 		}
 		c.AddTask(rt)
 
@@ -177,14 +176,13 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// Routes for the private route table.
 		// Will route to the NAT Gateway
 		c.AddTask(&awstasks.Route{
-			Name: s("private-" + zone + "-0.0.0.0/0"),
-			CIDR: s("0.0.0.0/0"),
+			Name:       s("private-" + zone + "-0.0.0.0/0"),
+			CIDR:       s("0.0.0.0/0"),
 			RouteTable: rt,
 			NatGateway: ngw,
 		})
 
 		// Elastic IP
-
 
 	}
 

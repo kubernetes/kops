@@ -1,11 +1,11 @@
 package model
 
 import (
-	"k8s.io/kops/upup/pkg/fi"
-	"io"
-	"text/template"
-	"fmt"
 	"bytes"
+	"fmt"
+	"io"
+	"k8s.io/kops/upup/pkg/fi"
+	"text/template"
 )
 
 type templateResource struct {
@@ -13,16 +13,16 @@ type templateResource struct {
 	definition string
 	context    interface{}
 
-	parsed     *template.Template
+	parsed *template.Template
 }
 
 var _ fi.Resource = &templateResource{}
 
 func NewTemplateResource(key string, definition string, functions template.FuncMap, context interface{}) (*templateResource, error) {
 	r := &templateResource{
-		key: key,
+		key:        key,
 		definition: definition,
-		context: context,
+		context:    context,
 	}
 
 	t := template.New(key)

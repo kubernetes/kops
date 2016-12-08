@@ -17,16 +17,15 @@ limitations under the License.
 package model
 
 import (
+	"github.com/kopeio/gladish/pkg/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
-	"github.com/kopeio/gladish/pkg/sets"
 	"time"
 )
 
 const BastionELBSecurityGroupPrefix = "bastion"
 const BastionELBDefaultIdleTimeout = 2 * time.Minute
-
 
 // BastionModelBuilder adds model objects to support bastions
 //
@@ -56,14 +55,13 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-
 	// Create security group for bastion instances
 	{
 		t := &awstasks.SecurityGroup{
-			Name: s(b.SecurityGroupName(kops.InstanceGroupRoleBastion)),
-			VPC: b.LinkToVPC(),
-			Description: s("Security group for bastion"),
-			RemoveExtraRules: []string{"22" },
+			Name:             s(b.SecurityGroupName(kops.InstanceGroupRoleBastion)),
+			VPC:              b.LinkToVPC(),
+			Description:      s("Security group for bastion"),
+			RemoveExtraRules: []string{"port=22"},
 		}
 		c.AddTask(t)
 	}
@@ -71,10 +69,10 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Allow traffic from bastion instances to egress freely
 	{
 		t := &awstasks.SecurityGroupRule{
-			Name: s("bastion-egress"),
+			Name:          s("bastion-egress"),
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleBastion),
-			Egress: fi.Bool(true),
-			CIDR: s("0.0.0.0/0"),
+			Egress:        fi.Bool(true),
+			CIDR:          s("0.0.0.0/0"),
 		}
 		c.AddTask(t)
 	}
@@ -87,28 +85,26 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	//-#  securityGroup: securityGroup/bastion.{{ ClusterName }}
 	//-#  sourceGroup: securityGroup/masters.{{ ClusterName }}
 
-
 	// Allow incoming SSH traffic to bastions, through the ELB
 	// TODO: Could we get away without an ELB here?  Tricky if dns-controller is broken though...
 	{
 		t := &awstasks.SecurityGroupRule{
-			Name: s("ssh-external-to-bastion"),
+			Name:          s("ssh-external-to-bastion"),
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleBastion),
-			SourceGroup: b.LinkToELBSecurityGroup(BastionELBSecurityGroupPrefix),
-			Protocol: s("tcp"),
-			FromPort: i64(22),
-			ToPort: i64(22),
+			SourceGroup:   b.LinkToELBSecurityGroup(BastionELBSecurityGroupPrefix),
+			Protocol:      s("tcp"),
+			FromPort:      i64(22),
+			ToPort:        i64(22),
 		}
 		c.AddTask(t)
 	}
 
-
 	// Allow bastion nodes to reach masters
 	{
 		t := &awstasks.SecurityGroupRule{
-			Name: s("bastion-to-master"),
+			Name:          s("bastion-to-master"),
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
-			SourceGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleBastion),
+			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleBastion),
 		}
 		c.AddTask(t)
 	}
@@ -116,21 +112,20 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Allow bastion nodes to reach nodes
 	{
 		t := &awstasks.SecurityGroupRule{
-			Name: s("bastion-to-nodes"),
+			Name:          s("bastion-to-nodes"),
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
-			SourceGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleBastion),
+			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleBastion),
 		}
 		c.AddTask(t)
 	}
 
-
 	// Create security group for bastion ELB
 	{
 		t := &awstasks.SecurityGroup{
-			Name: s(b.ELBSecurityGroupName(BastionELBSecurityGroupPrefix)),
-			VPC: b.LinkToVPC(),
-			Description: s("Security group for bastion ELB"),
-			RemoveExtraRules: []string{"22"},
+			Name:             s(b.ELBSecurityGroupName(BastionELBSecurityGroupPrefix)),
+			VPC:              b.LinkToVPC(),
+			Description:      s("Security group for bastion ELB"),
+			RemoveExtraRules: []string{"port=22"},
 		}
 		c.AddTask(t)
 	}
@@ -138,10 +133,10 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Allow traffic from ELB to egress freely
 	{
 		t := &awstasks.SecurityGroupRule{
-			Name: s("bastion-elb-egress"),
+			Name:          s("bastion-elb-egress"),
 			SecurityGroup: b.LinkToELBSecurityGroup(BastionELBSecurityGroupPrefix),
-			Egress: fi.Bool(true),
-			CIDR: s("0.0.0.0/0"),
+			Egress:        fi.Bool(true),
+			CIDR:          s("0.0.0.0/0"),
 		}
 
 		c.AddTask(t)
@@ -150,12 +145,12 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Allow external access to ELB
 	for _, sshAccess := range b.Cluster.Spec.SSHAccess {
 		t := &awstasks.SecurityGroupRule{
-			Name: s("ssh-external-to-bastion-elb-" + sshAccess),
+			Name:          s("ssh-external-to-bastion-elb-" + sshAccess),
 			SecurityGroup: b.LinkToELBSecurityGroup(BastionELBSecurityGroupPrefix),
-			Protocol: s("tcp"),
-			FromPort: i64(22),
-			ToPort: i64(22),
-			CIDR: s(sshAccess),
+			Protocol:      s("tcp"),
+			FromPort:      i64(22),
+			ToPort:        i64(22),
+			CIDR:          s(sshAccess),
 		}
 		c.AddTask(t)
 	}
@@ -192,7 +187,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		elb = &awstasks.LoadBalancer{
 			Name: s("bastion." + b.ClusterName()),
-			ID: s(elbID),
+			ID:   s(elbID),
 			SecurityGroups: []*awstasks.SecurityGroup{
 				b.LinkToELBSecurityGroup(BastionELBSecurityGroupPrefix),
 			},
@@ -206,17 +201,17 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	for _, ig := range bastionGroups {
-		asg, err := b.buildASG(ig)
-		if err != nil {
-			return err
-		}
+		//asg, err := b.buildASG(ig)
+		//if err != nil {
+		//	return err
+		//}
 
 		// Attach the ELB to the ASG
 		{
 			t := &awstasks.LoadBalancerAttachment{
-				Name: s("bastion-elb-attachment"),
-				LoadBalancer: elb,
-				AutoscalingGroup: asg,
+				Name:             s("bastion-elb-attachment"),
+				LoadBalancer:     elb,
+				AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
 			}
 			c.AddTask(t)
 		}
@@ -238,8 +233,8 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		t := &awstasks.LoadBalancerAttributes{
-			Name: elb.Name,
-			LoadBalancer: elb,
+			Name:               elb.Name,
+			LoadBalancer:       elb,
 			ConnectionSettings: elbSettings,
 		}
 		c.AddTask(t)
@@ -252,9 +247,9 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// the bastion DNS entry for it to be reachable from outside.
 		// BastionPublicName --> Bastion LoadBalancer
 		t := &awstasks.DNSName{
-			Name: s(bastionDNS),
-			Zone: b.LinkToDNSZone(),
-			ResourceType: s("A"),
+			Name:               s(bastionDNS),
+			Zone:               b.LinkToDNSZone(),
+			ResourceType:       s("A"),
 			TargetLoadBalancer: elb,
 		}
 		c.AddTask(t)
@@ -262,52 +257,52 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b*BastionModelBuilder) buildASG(ig *kops.InstanceGroup) (*awstasks.AutoscalingGroup, error) {
-	name := ig.ObjectMeta.Name + "." + b.ClusterName()
-
-	sshKey, err := b.LinkToSSHKey()
-	if err != nil {
-		return nil, err
-	}
-
-	lc := &awstasks.LaunchConfiguration{
-		Name:  s(name),
-		SSHKey: sshKey,
-		SecurityGroups: []*awstasks.SecurityGroup{
-			b.LinkToSecurityGroup(ig.Spec.Role),
-		},
-		IAMInstanceProfile: b.LinkToIAMInstanceProfile(ig),
-		ImageID: s(ig.Spec.Image),
-		InstanceType: s(ig.Spec.MachineType),
-		AssociatePublicIP: fi.Bool(false),
-		RootVolumeSize: i64(20),
-		RootVolumeType:s("gp2"),
-	}
-
-	var subnets []*awstasks.Subnet
-	{
-		subnetSpecs, err := b.GatherSubnets(ig)
-		if err != nil {
-			return nil, err
-		}
-		for _, subnetSpec := range subnetSpecs {
-			subnet := b.LinkToSubnet(subnetSpec)
-			subnets = append(subnets, subnet)
-		}
-	}
-
-	asg := &awstasks.AutoscalingGroup{
-		Name: s(name),
-		MinSize: i64(1),
-		MaxSize: i64(1),
-		LaunchConfiguration: lc,
-		Tags: map[string]string{
-			"Name": name,
-			// TODO: Aren't these added automatically?
-			"KubernetesCluster": b.ClusterName(),
-		},
-		Subnets: subnets,
-	}
-
-	return asg, nil
-}
+//func (b*BastionModelBuilder) buildASG(ig *kops.InstanceGroup) (*awstasks.AutoscalingGroup, error) {
+//	name := ig.ObjectMeta.Name + "." + b.ClusterName()
+//
+//	sshKey, err := b.LinkToSSHKey()
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	lc := &awstasks.LaunchConfiguration{
+//		Name:  s(name),
+//		SSHKey: sshKey,
+//		SecurityGroups: []*awstasks.SecurityGroup{
+//			b.LinkToSecurityGroup(ig.Spec.Role),
+//		},
+//		IAMInstanceProfile: b.LinkToIAMInstanceProfile(ig),
+//		ImageID: s(ig.Spec.Image),
+//		InstanceType: s(ig.Spec.MachineType),
+//		AssociatePublicIP: fi.Bool(false),
+//		RootVolumeSize: i64(20),
+//		RootVolumeType:s("gp2"),
+//	}
+//
+//	var subnets []*awstasks.Subnet
+//	{
+//		subnetSpecs, err := b.GatherSubnets(ig)
+//		if err != nil {
+//			return nil, err
+//		}
+//		for _, subnetSpec := range subnetSpecs {
+//			subnet := b.LinkToSubnet(subnetSpec)
+//			subnets = append(subnets, subnet)
+//		}
+//	}
+//
+//	asg := &awstasks.AutoscalingGroup{
+//		Name: s(name),
+//		MinSize: i64(1),
+//		MaxSize: i64(1),
+//		LaunchConfiguration: lc,
+//		Tags: map[string]string{
+//			"Name": name,
+//			// TODO: Aren't these added automatically?
+//			"KubernetesCluster": b.ClusterName(),
+//		},
+//		Subnets: subnets,
+//	}
+//
+//	return asg, nil
+//}

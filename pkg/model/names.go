@@ -17,14 +17,14 @@ limitations under the License.
 package model
 
 import (
-	"k8s.io/kops/pkg/apis/kops"
-	"github.com/golang/glog"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"fmt"
+	"github.com/golang/glog"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
 
 func (b *KopsModelContext) SecurityGroupName(role kops.InstanceGroupRole) string {
-	switch (role) {
+	switch role {
 	case kops.InstanceGroupRoleBastion:
 		return "bastion." + b.ClusterName()
 
@@ -40,13 +40,13 @@ func (b *KopsModelContext) SecurityGroupName(role kops.InstanceGroupRole) string
 	}
 }
 
-func (b*KopsModelContext) LinkToSecurityGroup(role kops.InstanceGroupRole) (*awstasks.SecurityGroup) {
+func (b *KopsModelContext) LinkToSecurityGroup(role kops.InstanceGroupRole) *awstasks.SecurityGroup {
 	name := b.SecurityGroupName(role)
 	return &awstasks.SecurityGroup{Name: &name}
 }
 
 func (b *KopsModelContext) AutoscalingGroupName(ig *kops.InstanceGroup) string {
-	switch (ig.Spec.Role) {
+	switch ig.Spec.Role {
 	case kops.InstanceGroupRoleNode:
 		return ig.ObjectMeta.Name + "." + b.ClusterName()
 	case kops.InstanceGroupRoleMaster:
@@ -60,7 +60,7 @@ func (b *KopsModelContext) AutoscalingGroupName(ig *kops.InstanceGroup) string {
 	}
 }
 
-func (b*KopsModelContext) LinkToAutoscalingGroup(ig *kops.InstanceGroup) (*awstasks.AutoscalingGroup) {
+func (b *KopsModelContext) LinkToAutoscalingGroup(ig *kops.InstanceGroup) *awstasks.AutoscalingGroup {
 	name := b.AutoscalingGroupName(ig)
 	return &awstasks.AutoscalingGroup{Name: &name}
 }
@@ -69,7 +69,7 @@ func (b *KopsModelContext) ELBSecurityGroupName(prefix string) string {
 	return prefix + ".elb." + b.ClusterName()
 }
 
-func (b*KopsModelContext) LinkToELBSecurityGroup(prefix string) (*awstasks.SecurityGroup) {
+func (b *KopsModelContext) LinkToELBSecurityGroup(prefix string) *awstasks.SecurityGroup {
 	name := b.ELBSecurityGroupName(prefix)
 	return &awstasks.SecurityGroup{Name: &name}
 }
@@ -78,25 +78,25 @@ func (b *KopsModelContext) ELBName(prefix string) string {
 	return prefix + "." + b.ClusterName()
 }
 
-func (b*KopsModelContext) LinkToELB(prefix string) (*awstasks.LoadBalancer) {
+func (b *KopsModelContext) LinkToELB(prefix string) *awstasks.LoadBalancer {
 	name := b.ELBName(prefix)
 	return &awstasks.LoadBalancer{Name: &name}
 }
 
-func (b*KopsModelContext) LinkToVPC() (*awstasks.VPC) {
+func (b *KopsModelContext) LinkToVPC() *awstasks.VPC {
 	name := b.ClusterName()
 	return &awstasks.VPC{Name: &name}
 }
 
-func (b*KopsModelContext) LinkToDNSZone() (*awstasks.DNSZone) {
+func (b *KopsModelContext) LinkToDNSZone() *awstasks.DNSZone {
 	name := b.Cluster.Spec.DNSZone
 	return &awstasks.DNSZone{Name: &name}
 }
 
-func (b*KopsModelContext) IAMName(role kops.InstanceGroupRole) (string) {
+func (b *KopsModelContext) IAMName(role kops.InstanceGroupRole) string {
 	var name string
 
-	switch (role) {
+	switch role {
 	case kops.InstanceGroupRoleMaster:
 		name = "masters." + b.ClusterName()
 
@@ -113,13 +113,13 @@ func (b*KopsModelContext) IAMName(role kops.InstanceGroupRole) (string) {
 	return name
 }
 
-func (b*KopsModelContext) LinkToIAMInstanceProfile(ig *kops.InstanceGroup) (*awstasks.IAMInstanceProfile) {
+func (b *KopsModelContext) LinkToIAMInstanceProfile(ig *kops.InstanceGroup) *awstasks.IAMInstanceProfile {
 	name := b.IAMName(ig.Spec.Role)
 	return &awstasks.IAMInstanceProfile{Name: &name}
 }
 
 // SSHKeyName computes a unique SSH key name, combining the cluster name and the SSH public key fingerprint
-func (c*KopsModelContext) SSHKeyName() (string, error) {
+func (c *KopsModelContext) SSHKeyName() (string, error) {
 	fingerprint, err := awstasks.ComputeOpenSSHKeyFingerprint(string(c.SSHPublicKeys[0]))
 	if err != nil {
 		return "", err
@@ -129,7 +129,7 @@ func (c*KopsModelContext) SSHKeyName() (string, error) {
 	return name, nil
 }
 
-func (b*KopsModelContext) LinkToSSHKey() (*awstasks.SSHKey, error) {
+func (b *KopsModelContext) LinkToSSHKey() (*awstasks.SSHKey, error) {
 	sshKeyName, err := b.SSHKeyName()
 	if err != nil {
 		return nil, err
@@ -138,7 +138,7 @@ func (b*KopsModelContext) LinkToSSHKey() (*awstasks.SSHKey, error) {
 	return &awstasks.SSHKey{Name: &sshKeyName}, nil
 }
 
-func (b*KopsModelContext) LinkToSubnet(z *kops.ClusterSubnetSpec) (*awstasks.Subnet) {
+func (b *KopsModelContext) LinkToSubnet(z *kops.ClusterSubnetSpec) *awstasks.Subnet {
 	//var name string
 	//
 	//if b.Cluster.IsTopologyPublic() {
@@ -155,7 +155,7 @@ func (b*KopsModelContext) LinkToSubnet(z *kops.ClusterSubnetSpec) (*awstasks.Sub
 	return &awstasks.Subnet{Name: &name}
 }
 
-func (b*KopsModelContext) LinkToPublicSubnetInZone(zoneName string) (*awstasks.Subnet, error) {
+func (b *KopsModelContext) LinkToPublicSubnetInZone(zoneName string) (*awstasks.Subnet, error) {
 	var matches []*kops.ClusterSubnetSpec
 	for i := range b.Cluster.Spec.Subnets {
 		z := &b.Cluster.Spec.Subnets[i]
@@ -178,7 +178,7 @@ func (b*KopsModelContext) LinkToPublicSubnetInZone(zoneName string) (*awstasks.S
 	return b.LinkToSubnet(matches[0]), nil
 }
 
-func (b*KopsModelContext) LinkToUtilitySubnetInZone(zoneName string) (*awstasks.Subnet, error) {
+func (b *KopsModelContext) LinkToUtilitySubnetInZone(zoneName string) (*awstasks.Subnet, error) {
 	var matches []*kops.ClusterSubnetSpec
 	for i := range b.Cluster.Spec.Subnets {
 		s := &b.Cluster.Spec.Subnets[i]
@@ -201,6 +201,6 @@ func (b*KopsModelContext) LinkToUtilitySubnetInZone(zoneName string) (*awstasks.
 	return b.LinkToSubnet(matches[0]), nil
 }
 
-func (b*KopsModelContext) NamePrivateRouteTableInZone(zoneName string) (string) {
+func (b *KopsModelContext) NamePrivateRouteTableInZone(zoneName string) string {
 	return "private-" + zoneName + "." + b.ClusterName()
 }
