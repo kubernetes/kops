@@ -163,7 +163,6 @@ func defaultMasterMachineType(cluster *api.Cluster) string {
 	}
 }
 
-
 // defaultImage returns the default Image, based on the cloudprovider
 func defaultImage(cluster *api.Cluster, channel *api.Channel) string {
 	if channel != nil {

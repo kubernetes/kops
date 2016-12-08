@@ -18,8 +18,8 @@ package v1alpha1
 
 import (
 	"k8s.io/kubernetes/pkg/api/unversioned"
-	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/pkg/runtime"
 )
 
 var (
@@ -70,7 +70,6 @@ func (obj *InstanceGroup) GetObjectKind() unversioned.ObjectKind {
 func (obj *Federation) GetObjectKind() unversioned.ObjectKind {
 	return &obj.TypeMeta
 }
-
 
 func addConversionFuncs(scheme *runtime.Scheme) error {
 	// Add non-generated conversion functions

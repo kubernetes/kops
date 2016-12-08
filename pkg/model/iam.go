@@ -1,11 +1,11 @@
 package model
 
 import (
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+	"fmt"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model/iam"
-	"fmt"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"text/template"
 )
 
@@ -39,7 +39,7 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 
 			iamRole = &awstasks.IAMRole{
-				Name: s(name),
+				Name:               s(name),
 				RolePolicyDocument: fi.WrapResource(rolePolicy),
 			}
 			c.AddTask(iamRole)
@@ -52,8 +52,8 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		{
 			t := &awstasks.IAMRolePolicy{
-				Name: s(name),
-				Role: iamRole,
+				Name:           s(name),
+				Role:           iamRole,
 				PolicyDocument: fi.WrapResource(fi.NewStringResource(policy)),
 			}
 			c.AddTask(t)
@@ -72,7 +72,7 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				Name: s(name),
 
 				InstanceProfile: iamInstanceProfile,
-				Role: iamRole,
+				Role:            iamRole,
 			}
 			c.AddTask(iamInstanceProfileRole)
 		}
@@ -80,7 +80,6 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	return nil
 }
-
 
 // buildAWSIAMPolicy produces the AWS IAM policy for the given role
 func (b *IAMModelBuilder) buildAWSIAMPolicy(role kops.InstanceGroupRole) (string, error) {
@@ -100,7 +99,6 @@ func (b *IAMModelBuilder) buildAWSIAMPolicy(role kops.InstanceGroupRole) (string
 	}
 	return json, nil
 }
-
 
 // buildAWSIAMRolePolicy produces the AWS IAM role policy for the given role
 func (b *IAMModelBuilder) buildAWSIAMRolePolicy(role kops.InstanceGroupRole) (fi.Resource, error) {
@@ -123,4 +121,3 @@ func (b *IAMModelBuilder) buildAWSIAMRolePolicy(role kops.InstanceGroupRole) (fi
 	}
 	return templateResource, nil
 }
-

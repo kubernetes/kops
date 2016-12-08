@@ -1,18 +1,16 @@
 package model
 
 import (
-	"k8s.io/kops/upup/pkg/fi"
-	"github.com/golang/glog"
 	"fmt"
+	"github.com/golang/glog"
+	"k8s.io/kops/upup/pkg/fi"
 )
-
 
 // ExternalAccessModelBuilder configures security group rules for external access
 // (SSHAccess, APIAccess)
 type ExternalAccessModelBuilder struct {
 	*KopsModelContext
 }
-
 
 var _ fi.ModelBuilder = &ExternalAccessModelBuilder{}
 

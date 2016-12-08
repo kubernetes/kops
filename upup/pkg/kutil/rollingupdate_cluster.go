@@ -35,8 +35,8 @@ import (
 type RollingUpdateCluster struct {
 	Cloud fi.Cloud
 
-	MasterInterval time.Duration
-	NodeInterval   time.Duration
+	MasterInterval  time.Duration
+	NodeInterval    time.Duration
 	BastionInterval time.Duration
 
 	Force bool

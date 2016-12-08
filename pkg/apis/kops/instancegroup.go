@@ -51,7 +51,7 @@ const (
 var AllInstanceGroupRoles = []InstanceGroupRole{
 	InstanceGroupRoleNode,
 	InstanceGroupRoleMaster,
-	InstanceGroupRoleMaster,
+	InstanceGroupRoleBastion,
 }
 
 type InstanceGroupSpec struct {

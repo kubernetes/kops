@@ -38,7 +38,7 @@ type ImportCluster struct {
 	ClusterName string
 	Cloud       fi.Cloud
 
-	Clientset   simple.Clientset
+	Clientset simple.Clientset
 }
 
 func (x *ImportCluster) ImportAWSCluster() error {
@@ -104,7 +104,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 		}
 
 		role, _ := awsup.FindEC2Tag(instance.Tags, "Role")
-		if role == clusterName + "-master" {
+		if role == clusterName+"-master" {
 			if masterInstance != nil {
 				masterState := aws.StringValue(masterInstance.State.Name)
 
@@ -135,7 +135,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 
 	masterGroup.Spec.MachineType = aws.StringValue(masterInstance.InstanceType)
 
-	masterInstanceGroups := []*api.InstanceGroup{ masterGroup}
+	masterInstanceGroups := []*api.InstanceGroup{masterGroup}
 	instanceGroups = append(instanceGroups, masterGroup)
 
 	awsSubnets, err := DescribeSubnets(x.Cloud)
@@ -357,7 +357,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 
 		for _, ig := range masterInstanceGroups {
 			etcdCluster.Members = append(etcdCluster.Members, &api.EtcdMemberSpec{
-				Name: ig.ObjectMeta.Name,
+				Name:          ig.ObjectMeta.Name,
 				InstanceGroup: fi.String(ig.ObjectMeta.Name),
 			})
 		}
@@ -776,15 +776,15 @@ func ParseUserDataConfiguration(raw []byte) (*UserDataConfiguration, error) {
 			v := ""
 			if sep != -1 {
 				k = line[0:sep]
-				v = line[sep + 1:]
+				v = line[sep+1:]
 			}
 
 			if k == "" {
 				glog.V(4).Infof("Unknown line: %s", line)
 			}
 
-			if len(v) >= 2 && v[0] == '\'' && v[len(v) - 1] == '\'' {
-				v = v[1 : len(v) - 1]
+			if len(v) >= 2 && v[0] == '\'' && v[len(v)-1] == '\'' {
+				v = v[1 : len(v)-1]
 			}
 			settings[k] = v
 		}
@@ -795,17 +795,17 @@ func ParseUserDataConfiguration(raw []byte) (*UserDataConfiguration, error) {
 			v := ""
 			if sep != -1 {
 				k = line[0:sep]
-				v = line[sep + 2:]
+				v = line[sep+2:]
 			}
 
 			if k == "" {
 				glog.V(4).Infof("Unknown line: %s", line)
 			}
 
-			if len(v) >= 2 && v[0] == '"' && v[len(v) - 1] == '"' {
-				v = v[1 : len(v) - 1]
-			} else if len(v) >= 2 && v[0] == '\'' && v[len(v) - 1] == '\'' {
-				v = v[1 : len(v) - 1]
+			if len(v) >= 2 && v[0] == '"' && v[len(v)-1] == '"' {
+				v = v[1 : len(v)-1]
+			} else if len(v) >= 2 && v[0] == '\'' && v[len(v)-1] == '\'' {
+				v = v[1 : len(v)-1]
 			}
 			settings[k] = v
 		}

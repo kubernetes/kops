@@ -27,9 +27,9 @@ import (
 func init() {
 	if err := announced.NewGroupMetaFactory(
 		&announced.GroupMetaFactoryArgs{
-			GroupName:                  kops.GroupName,
-			VersionPreferenceOrder:     []string{v1alpha1.SchemeGroupVersion.Version},
-			ImportPrefix:               "k8s.io/kops/pkg/apis/kops",
+			GroupName:              kops.GroupName,
+			VersionPreferenceOrder: []string{v1alpha1.SchemeGroupVersion.Version},
+			ImportPrefix:           "k8s.io/kops/pkg/apis/kops",
 			// ?? RootScopedKinds:            sets.NewString("NodeMetrics"),
 			AddInternalObjectsToScheme: kops.AddToScheme,
 		},

@@ -27,6 +27,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -39,7 +40,6 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	k8sapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kops/pkg/model"
 )
 
 const (
@@ -51,35 +51,35 @@ const MaxTaskDuration = 10 * time.Minute
 var CloudupModels = []string{"config", "proto", "cloudup"}
 
 type ApplyClusterCmd struct {
-	Cluster        *api.Cluster
+	Cluster *api.Cluster
 
 	InstanceGroups []*api.InstanceGroup
 
 	// NodeUpSource is the location from which we download nodeup
-	NodeUpSource   string
+	NodeUpSource string
 
 	// Models is a list of cloudup models to apply
-	Models         []string
+	Models []string
 
 	// TargetName specifies how we are operating e.g. direct to GCE, or AWS, or dry-run, or terraform
-	TargetName     string
+	TargetName string
 
 	// Target is the fi.Target we will operate against
-	Target         fi.Target
+	Target fi.Target
 
 	// OutDir is a local directory in which we place output, can cache files etc
-	OutDir         string
+	OutDir string
 
 	// Assets is a list of sources for files (primarily when not using everything containerized)
 	// Formats:
 	//  raw url: http://... or https://...
 	//  url with hash: <hex>@http://... or <hex>@https://...
-	Assets         []string
+	Assets []string
 
-	Clientset      simple.Clientset
+	Clientset simple.Clientset
 
 	// DryRun is true if this is only a dry run
-	DryRun         bool
+	DryRun bool
 }
 
 func (c *ApplyClusterCmd) Run() error {
@@ -175,7 +175,7 @@ func (c *ApplyClusterCmd) Run() error {
 			if err != nil {
 				return err
 			}
-			c.Assets = append(c.Assets, hash.Hex() + "@" + defaultKubeletAsset)
+			c.Assets = append(c.Assets, hash.Hex()+"@"+defaultKubeletAsset)
 		}
 
 		{
@@ -186,7 +186,7 @@ func (c *ApplyClusterCmd) Run() error {
 			if err != nil {
 				return err
 			}
-			c.Assets = append(c.Assets, hash.Hex() + "@" + defaultKubectlAsset)
+			c.Assets = append(c.Assets, hash.Hex()+"@"+defaultKubectlAsset)
 		}
 
 		if usesCNI(cluster) {
@@ -204,7 +204,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 			glog.V(2).Infof("Adding default CNI asset: %s", defaultCNIAsset)
 
-			c.Assets = append(c.Assets, hashString + "@" + defaultCNIAsset)
+			c.Assets = append(c.Assets, hashString+"@"+defaultCNIAsset)
 		}
 	}
 
@@ -248,7 +248,7 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	modelContext := &model.KopsModelContext{
-		Cluster: cluster,
+		Cluster:        cluster,
 		InstanceGroups: c.InstanceGroups,
 	}
 
@@ -354,7 +354,7 @@ func (c *ApplyClusterCmd) Run() error {
 		instanceGroups: c.InstanceGroups,
 		tags:           clusterTags,
 		region:         region,
-		modelContext: modelContext,
+		modelContext:   modelContext,
 	}
 
 	l.Tags = clusterTags
@@ -385,7 +385,6 @@ func (c *ApplyClusterCmd) Run() error {
 			fileModels = append(fileModels, m)
 		}
 	}
-
 
 	l.TemplateFunctions["CA"] = func() fi.CAStore {
 		return keyStore
@@ -471,10 +470,10 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	l.Builders = append(l.Builders, &model.AutoscalingGroupModelBuilder{
-		KopsModelContext: modelContext,
+		KopsModelContext:    modelContext,
 		NodeUpConfigBuilder: renderNodeUpConfig,
-		NodeUpSourceHash: "",
-		NodeUpSource: c.NodeUpSource,
+		NodeUpSourceHash:    "",
+		NodeUpSource:        c.NodeUpSource,
 	})
 
 	//// TotalNodeCount computes the total count of nodes

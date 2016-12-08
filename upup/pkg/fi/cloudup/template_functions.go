@@ -33,13 +33,13 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/util/sets"
 	"math/big"
 	"net"
 	"strings"
 	"text/template"
-	"k8s.io/kops/pkg/model"
 )
 
 type TemplateFunctions struct {

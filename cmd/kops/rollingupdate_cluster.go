@@ -33,13 +33,13 @@ import (
 )
 
 type RollingUpdateClusterCmd struct {
-	Yes            bool
-	Force          bool
-	CloudOnly      bool
+	Yes       bool
+	Force     bool
+	CloudOnly bool
 
-	MasterInterval time.Duration
-	NodeInterval   time.Duration
-	BastionInterval   time.Duration
+	MasterInterval  time.Duration
+	NodeInterval    time.Duration
+	BastionInterval time.Duration
 
 	cobraCommand *cobra.Command
 }

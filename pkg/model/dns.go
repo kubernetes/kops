@@ -24,9 +24,9 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(dnsZone)
 
 		dnsName := &awstasks.DNSName{
-			Name: s(b.Cluster.Spec.MasterPublicName),
-			Zone: dnsZone,
-			ResourceType: s("A"),
+			Name:               s(b.Cluster.Spec.MasterPublicName),
+			Zone:               dnsZone,
+			ResourceType:       s("A"),
 			TargetLoadBalancer: b.LinkToELB("api"),
 		}
 		c.AddTask(dnsName)

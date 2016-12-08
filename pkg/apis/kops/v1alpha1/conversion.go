@@ -19,9 +19,9 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"fmt"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kubernetes/pkg/conversion"
-	"fmt"
 	"reflect"
 	"strings"
 )
@@ -61,28 +61,28 @@ func Convert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 				if z.PrivateCIDR != "" {
 					out.Subnets = append(out.Subnets, kops.ClusterSubnetSpec{
 						SubnetName: z.Name,
-						CIDR: z.PrivateCIDR,
+						CIDR:       z.PrivateCIDR,
 						ProviderID: z.ProviderID,
-						Zone: z.Name,
-						Type: kops.SubnetTypePrivate,
+						Zone:       z.Name,
+						Type:       kops.SubnetTypePrivate,
 					})
 				}
 
 				if z.CIDR != "" {
 					out.Subnets = append(out.Subnets, kops.ClusterSubnetSpec{
 						SubnetName: "utility-" + z.Name,
-						CIDR: z.CIDR,
-						Zone: z.Name,
-						Type: kops.SubnetTypeUtility,
+						CIDR:       z.CIDR,
+						Zone:       z.Name,
+						Type:       kops.SubnetTypeUtility,
 					})
 				}
 			} else {
 				out.Subnets = append(out.Subnets, kops.ClusterSubnetSpec{
 					SubnetName: z.Name,
-					CIDR: z.CIDR,
+					CIDR:       z.CIDR,
 					ProviderID: z.ProviderID,
-					Zone: z.Name,
-					Type: kops.SubnetTypePublic,
+					Zone:       z.Name,
+					Type:       kops.SubnetTypePublic,
 				})
 			}
 		}
@@ -136,7 +136,7 @@ func Convert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, out 
 				if subnetType == "" {
 					subnetType = kops.SubnetTypePrivate
 				}
-				switch (subnetType) {
+				switch subnetType {
 				case kops.SubnetTypePrivate:
 					if zone.PrivateCIDR != "" || zone.ProviderID != "" {
 						return fmt.Errorf("cannot convert to v1alpha1: duplicate zone: %v", zone)
@@ -179,7 +179,6 @@ func Convert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, out 
 
 	return autoConvert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in, out, s)
 }
-
 
 //func Convert_v1alpha1_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdClusterSpec, out *kops.EtcdClusterSpec, s conversion.Scope) error {
 //	out.Name = in.Name
@@ -273,4 +272,3 @@ func Convert_kops_TopologySpec_To_v1alpha1_TopologySpec(in *kops.TopologySpec, o
 	}
 	return nil
 }
-

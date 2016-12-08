@@ -1,11 +1,10 @@
 package model
 
 import (
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
-	"k8s.io/kops/pkg/apis/kops"
 )
-
 
 // FirewallModelBuilder configures firewall network objects
 type FirewallModelBuilder struct {
@@ -24,14 +23,14 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b*FirewallModelBuilder) buildNodeRules(c*fi.ModelBuilderContext) error {
+func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) error {
 	name := "nodes." + b.ClusterName()
 
 	{
 		t := &awstasks.SecurityGroup{
-			Name: s(name),
-			VPC: b.LinkToVPC(),
-			Description: s("Security group for nodes"),
+			Name:             s(name),
+			VPC:              b.LinkToVPC(),
+			Description:      s("Security group for nodes"),
 			RemoveExtraRules: []string{"port=22"},
 		}
 		c.AddTask(t)
@@ -40,10 +39,10 @@ func (b*FirewallModelBuilder) buildNodeRules(c*fi.ModelBuilderContext) error {
 	// Allow full egress
 	{
 		t := &awstasks.SecurityGroupRule{
-			Name: s("node-egress"),
-			SecurityGroup:b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
-			Egress: fi.Bool(true),
-			CIDR: s("0.0.0.0/0"),
+			Name:          s("node-egress"),
+			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
+			Egress:        fi.Bool(true),
+			CIDR:          s("0.0.0.0/0"),
 		}
 		c.AddTask(t)
 	}
@@ -51,9 +50,9 @@ func (b*FirewallModelBuilder) buildNodeRules(c*fi.ModelBuilderContext) error {
 	// Nodes can talk to nodes
 	{
 		t := &awstasks.SecurityGroupRule{
-			Name: s("all-node-to-node"),
+			Name:          s("all-node-to-node"),
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
-			SourceGroup:b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
+			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
 		}
 		c.AddTask(t)
 	}
@@ -61,9 +60,9 @@ func (b*FirewallModelBuilder) buildNodeRules(c*fi.ModelBuilderContext) error {
 	// Nodes can talk to master nodes
 	{
 		t := &awstasks.SecurityGroupRule{
-			Name: s("all-node-to-master"),
+			Name:          s("all-node-to-master"),
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
-			SourceGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
+			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
 		}
 		c.AddTask(t)
 	}
@@ -71,13 +70,13 @@ func (b*FirewallModelBuilder) buildNodeRules(c*fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b*FirewallModelBuilder) buildMasterRules(c*fi.ModelBuilderContext) error {
+func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext) error {
 	name := "masters." + b.ClusterName()
 
 	{
 		t := &awstasks.SecurityGroup{
-			Name: s(name),
-			VPC: b.LinkToVPC(),
+			Name:        s(name),
+			VPC:         b.LinkToVPC(),
 			Description: s("Security group for masters"),
 			RemoveExtraRules: []string{
 				"port=22",
@@ -90,10 +89,10 @@ func (b*FirewallModelBuilder) buildMasterRules(c*fi.ModelBuilderContext) error {
 	// Allow full egress
 	{
 		t := &awstasks.SecurityGroupRule{
-			Name: s("master-egress"),
+			Name:          s("master-egress"),
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
-			Egress: fi.Bool(true),
-			CIDR: s("0.0.0.0/0"),
+			Egress:        fi.Bool(true),
+			CIDR:          s("0.0.0.0/0"),
 		}
 		c.AddTask(t)
 	}
@@ -101,9 +100,9 @@ func (b*FirewallModelBuilder) buildMasterRules(c*fi.ModelBuilderContext) error {
 	// Masters can talk to masters
 	{
 		t := &awstasks.SecurityGroupRule{
-			Name: s("all-master-to-master"),
+			Name:          s("all-master-to-master"),
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
-			SourceGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
+			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 		}
 		c.AddTask(t)
 	}
@@ -111,13 +110,12 @@ func (b*FirewallModelBuilder) buildMasterRules(c*fi.ModelBuilderContext) error {
 	// Masters can talk to nodes
 	{
 		t := &awstasks.SecurityGroupRule{
-			Name: s("all-master-to-node"),
+			Name:          s("all-master-to-node"),
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
-			SourceGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
+			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 		}
 		c.AddTask(t)
 	}
 
 	return nil
 }
-

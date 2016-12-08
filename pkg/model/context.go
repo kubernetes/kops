@@ -17,19 +17,18 @@ limitations under the License.
 package model
 
 import (
+	"fmt"
 	"k8s.io/kops/pkg/apis/kops"
 	"strings"
-	"fmt"
 )
 
 type KopsModelContext struct {
-	Region string
+	Region         string
 	Cluster        *kops.Cluster
 	InstanceGroups []*kops.InstanceGroup
 
-	SSHPublicKeys  [][]byte
+	SSHPublicKeys [][]byte
 }
-
 
 // Will attempt to calculate a meaningful name for an ELB given a prefix
 // Will never return a string longer than 32 chars
@@ -52,12 +51,12 @@ func (m *KopsModelContext) GetELBName32(prefix string) (string, error) {
 	return returnString, nil
 }
 
-func (m*KopsModelContext) ClusterName() string {
+func (m *KopsModelContext) ClusterName() string {
 	return m.Cluster.ObjectMeta.Name
 }
 
 // GatherSubnets maps the subnet names in an InstanceGroup to the ClusterSubnetSpec objects (which are stored on the Cluster)
-func (m*KopsModelContext) GatherSubnets(ig *kops.InstanceGroup) ([]*kops.ClusterSubnetSpec, error) {
+func (m *KopsModelContext) GatherSubnets(ig *kops.InstanceGroup) ([]*kops.ClusterSubnetSpec, error) {
 	var subnets []*kops.ClusterSubnetSpec
 	for _, subnetName := range ig.Spec.Subnets {
 		var matches []*kops.ClusterSubnetSpec
@@ -78,9 +77,8 @@ func (m*KopsModelContext) GatherSubnets(ig *kops.InstanceGroup) ([]*kops.Cluster
 	return subnets, nil
 }
 
-
 // FindInstanceGroup returns the instance group with the matching Name (or nil if not found)
-func (m*KopsModelContext) FindInstanceGroup(name string) (*kops.InstanceGroup) {
+func (m *KopsModelContext) FindInstanceGroup(name string) *kops.InstanceGroup {
 	for _, ig := range m.InstanceGroups {
 		if ig.ObjectMeta.Name == name {
 			return ig
@@ -89,9 +87,8 @@ func (m*KopsModelContext) FindInstanceGroup(name string) (*kops.InstanceGroup) {
 	return nil
 }
 
-
 // FindSubnet returns the subnet with the matching Name (or nil if not found)
-func (m*KopsModelContext) FindSubnet(name string) (*kops.ClusterSubnetSpec) {
+func (m *KopsModelContext) FindSubnet(name string) *kops.ClusterSubnetSpec {
 	for i := range m.Cluster.Spec.Subnets {
 		s := &m.Cluster.Spec.Subnets[i]
 		if s.SubnetName == name {
@@ -102,7 +99,7 @@ func (m*KopsModelContext) FindSubnet(name string) (*kops.ClusterSubnetSpec) {
 }
 
 // MasterInstanceGroups returns InstanceGroups with the master role
-func (m*KopsModelContext) MasterInstanceGroups() []*kops.InstanceGroup {
+func (m *KopsModelContext) MasterInstanceGroups() []*kops.InstanceGroup {
 	var groups []*kops.InstanceGroup
 	for _, ig := range m.InstanceGroups {
 		if !ig.IsMaster() {
@@ -113,9 +110,8 @@ func (m*KopsModelContext) MasterInstanceGroups() []*kops.InstanceGroup {
 	return groups
 }
 
-
 // NodeInstanceGroups returns InstanceGroups with the node role
-func (m*KopsModelContext) NodeInstanceGroups() []*kops.InstanceGroup {
+func (m *KopsModelContext) NodeInstanceGroups() []*kops.InstanceGroup {
 	var groups []*kops.InstanceGroup
 	for _, ig := range m.InstanceGroups {
 		if ig.Spec.Role != kops.InstanceGroupRoleNode {
@@ -152,6 +148,6 @@ func (m *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 	return labels, nil
 }
 
-func (m*KopsModelContext) UseLoadBalancerForAPI() bool {
+func (m *KopsModelContext) UseLoadBalancerForAPI() bool {
 	return false
 }

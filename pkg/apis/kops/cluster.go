@@ -270,7 +270,7 @@ type EtcdClusterSpec struct {
 
 type EtcdMemberSpec struct {
 	// Name is the name of the member within the etcd cluster
-	Name string  `json:"name,omitempty"`
+	Name          string  `json:"name,omitempty"`
 	InstanceGroup *string `json:"instanceGroup,omitempty"`
 
 	VolumeType      *string `json:"volumeType,omitempty"`
@@ -279,16 +279,14 @@ type EtcdMemberSpec struct {
 	EncryptedVolume *bool   `json:"encryptedVolume,omitempty"`
 }
 
-
 // SubnetType string describes subnet types (public, private, utility)
 type SubnetType string
 
 const (
-	SubnetTypePublic SubnetType = "Public"
+	SubnetTypePublic  SubnetType = "Public"
 	SubnetTypePrivate SubnetType = "Private"
 	SubnetTypeUtility SubnetType = "Utility"
 )
-
 
 type ClusterSubnetSpec struct {
 	// TODO: Rename
@@ -296,7 +294,7 @@ type ClusterSubnetSpec struct {
 
 	Zone string `json:"zone,omitempty"`
 
-	CIDR        string `json:"cidr,omitempty"`
+	CIDR string `json:"cidr,omitempty"`
 
 	// ProviderID is the cloud provider id for the objects associated with the zone (the subnet on AWS)
 	ProviderID string `json:"id,omitempty"`

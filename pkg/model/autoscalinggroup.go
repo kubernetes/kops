@@ -1,12 +1,11 @@
 package model
 
 import (
-	"k8s.io/kops/upup/pkg/fi"
-	"github.com/golang/glog"
 	"fmt"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model/resources"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/nodeup"
 	"text/template"
 )
@@ -16,20 +15,20 @@ const (
 	DefaultVolumeType = "gp2"
 )
 
-// AutoscalingGroupModelBuilder configures network objects
+// AutoscalingGroupModelBuilder configures AutoscalingGroup objects
 type AutoscalingGroupModelBuilder struct {
 	*KopsModelContext
 
-	NodeUpSource        string
-	NodeUpSourceHash    string
+	NodeUpSource     string
+	NodeUpSourceHash string
 
-	NodeUpConfigBuilder func(ig*kops.InstanceGroup) (*nodeup.NodeUpConfig, error)
+	NodeUpConfigBuilder func(ig *kops.InstanceGroup) (*nodeup.NodeUpConfig, error)
 }
 
 var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
 
 func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	for _, ig := range b.NodeInstanceGroups() {
+	for _, ig := range b.InstanceGroups {
 		name := b.AutoscalingGroupName(ig)
 
 		// LaunchConfiguration
@@ -51,8 +50,8 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					b.LinkToSecurityGroup(ig.Spec.Role),
 				},
 				IAMInstanceProfile: b.LinkToIAMInstanceProfile(ig),
-				ImageID: s(ig.Spec.Image),
-				InstanceType: s(ig.Spec.MachineType),
+				ImageID:            s(ig.Spec.Image),
+				InstanceType:       s(ig.Spec.MachineType),
 
 				RootVolumeSize: i64(volumeSize),
 				RootVolumeType: s(volumeType),
@@ -90,7 +89,6 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			launchConfiguration = t
 		}
 
-
 		// AutoscalingGroup
 		{
 			t := &awstasks.AutoscalingGroup{
@@ -115,21 +113,12 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			t.MinSize = i64(int64(minSize))
 			t.MaxSize = i64(int64(maxSize))
 
-			glog.Warningf("Need to implement private subnets")
-			//subnets:
-			//{{ range $z := $m.Spec.Zones }}
-			//{{ if IsTopologyPublic }}
-			//- subnet/{{ $z }}.{{ ClusterName }}
-			//{{ end }}
-			//{{ if IsTopologyPrivate }}
-			//- subnet/private-{{ $z }}.{{ ClusterName }}
-			//{{ end }}
-			//
-			//{{ end }}
-
 			subnets, err := b.GatherSubnets(ig)
 			if err != nil {
 				return err
+			}
+			if len(subnets) == 0 {
+				return fmt.Errorf("could not determine any subnets for InstanceGroup %q; subnets was %s", ig.ObjectMeta.Name, ig.Spec.Subnets)
 			}
 			for _, subnet := range subnets {
 				t.Subnets = append(t.Subnets, b.LinkToSubnet(subnet))
@@ -148,11 +137,19 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
+func (b *AutoscalingGroupModelBuilder) resourceNodeUp(ig *kops.InstanceGroup) (*fi.ResourceHolder, error) {
+	if ig.Spec.Role == kops.InstanceGroupRoleBastion {
+		// Bastions are just bare machines (currently), used as SSH jump-hosts
+		return nil, nil
+	}
 
-func (b*AutoscalingGroupModelBuilder) resourceNodeUp(ig *kops.InstanceGroup) (*fi.ResourceHolder, error) {
 	functions := template.FuncMap{
-		"NodeUpSource": func() string { return b.NodeUpSource },
-		"NodeUpSourceHash": func() string { return b.NodeUpSourceHash },
+		"NodeUpSource": func() string {
+			return b.NodeUpSource
+		},
+		"NodeUpSourceHash": func() string {
+			return b.NodeUpSourceHash
+		},
 		"KubeEnv": func() (string, error) {
 			config, err := b.NodeUpConfigBuilder(ig)
 			if err != nil {

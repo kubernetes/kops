@@ -131,9 +131,31 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 						fieldName := changes.Type().Field(i).Name
 						fieldValue := ValueAsString(field)
 
-						// The field name is already printed above, no need to repeat it.
-						// Additionally, ignore any output that is not informative
-						if fieldName != "Name" && fieldValue != "<nil>" && fieldValue != "id:<nil>" && fieldValue != "<resource>" {
+						shouldPrint := true
+						if fieldName == "Name" {
+							// The field name is already printed above, no need to repeat it.
+							shouldPrint = false
+						}
+						if fieldValue == "<nil>" || fieldValue == "<resource>" {
+							// Uninformative
+							shouldPrint = false
+						}
+						if fieldValue == "id:<nil>" {
+							// Uninformative, but we can often print the name instead
+							name := ""
+							if field.CanInterface() {
+								hasName, ok := field.Interface().(HasName)
+								if ok {
+									name = StringValue(hasName.GetName())
+								}
+							}
+							if name != "" {
+								fieldValue = "name:" + name
+							} else {
+								shouldPrint = false
+							}
+						}
+						if shouldPrint {
 							fmt.Fprintf(b, "  \t%-20s\t%s\n", fieldName, fieldValue)
 						}
 					}
