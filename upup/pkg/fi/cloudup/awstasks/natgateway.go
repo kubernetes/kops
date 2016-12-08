@@ -17,12 +17,12 @@ limitations under the License.
 package awstasks
 
 import (
+	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
 )
 
 //go:generate fitask -type=NatGateway
@@ -75,7 +75,6 @@ func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 		glog.V(2).Infof("Found nat gateway via tag: %v", *id)
 	}
 
-
 	if id != nil {
 		request := &ec2.DescribeNatGatewaysInput{}
 		request.NatGatewayIds = []*string{id}
@@ -104,6 +103,9 @@ func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 		} else {
 			return nil, fmt.Errorf("found multiple elastic IPs attached to NatGateway %q", aws.StringValue(a.NatGatewayId))
 		}
+
+		// NATGateways don't have a Name (no tags), so we set the name to avoid spurious changes
+		actual.Name = e.Name
 
 		e.ID = actual.ID
 		return actual, nil
