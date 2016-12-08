@@ -96,6 +96,23 @@ func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
 	actual.Name = e.Name
 	actual.ResourceType = e.ResourceType
 
+	if found.AliasTarget != nil {
+		dnsName := aws.StringValue(found.AliasTarget.DNSName)
+		glog.Infof("AliasTarget for %q is %q", aws.StringValue(found.Name), dnsName)
+		if dnsName != "" {
+			// TODO: check "looks like" an ELB?
+			lb, err := findLoadBalancerByAlias(cloud, found.AliasTarget)
+			if err != nil {
+				return nil, fmt.Errorf("error mapping DNSName %q to LoadBalancer: %v", dnsName, err)
+			}
+			if lb == nil {
+				glog.Warningf("Unable to find load balancer with DNS name: %q", dnsName)
+			} else {
+				actual.TargetLoadBalancer = &LoadBalancer{ID: lb.LoadBalancerName}
+			}
+		}
+	}
+
 	return actual, nil
 }
 

@@ -80,7 +80,7 @@ func (e *LoadBalancerAttributes) Find(c *fi.Context) (*LoadBalancerAttributes, e
 
 	elbName := fi.StringValue(e.LoadBalancer.ID)
 
-	lb, err := findELB(cloud, elbName)
+	lb, err := findLoadBalancer(cloud, elbName)
 	if err != nil {
 		return nil, err
 	}
