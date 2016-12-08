@@ -1,4 +1,6 @@
-#!/bin/bash
+package resources
+
+var AWSNodeUpTemplate = `#!/bin/bash
 # Copyright 2016 The Kubernetes Authors All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -120,8 +122,9 @@ echo "== nodeup node config starting =="
 ensure-install-dir
 
 cat > kube_env.yaml << __EOF_KUBE_ENV
-{{ RenderNodeUpConfig (GetInstanceGroup (index Args 0)) }}
+{{ KubeEnv }}
 __EOF_KUBE_ENV
 
 download-release
 echo "== nodeup node config done =="
+`

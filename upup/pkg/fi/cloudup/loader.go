@@ -40,24 +40,24 @@ const (
 )
 
 type Loader struct {
-	Cluster *api.Cluster
+	Cluster           *api.Cluster
 
-	WorkDir string
+	WorkDir           string
 
-	ModelStore vfs.Path
+	ModelStore        vfs.Path
 
 	Tags              sets.String
 	TemplateFunctions template.FuncMap
 
-	typeMap map[string]reflect.Type
+	typeMap           map[string]reflect.Type
 
-	templates []*template.Template
+	templates         []*template.Template
 
-	Resources map[string]fi.Resource
+	Resources         map[string]fi.Resource
 
-	Builders []fi.ModelBuilder
+	Builders          []fi.ModelBuilder
 
-	tasks map[string]fi.Task
+	tasks             map[string]fi.Task
 }
 
 type templateResource struct {
@@ -207,7 +207,11 @@ func (l *Loader) processDeferrals() error {
 					if hn, ok := intf.(fi.HasName); ok {
 						name := hn.GetName()
 						if name != nil {
-							primary := l.tasks[*name]
+							typeNameForTask := fi.TypeNameForTask(intf)
+							primary := l.tasks[typeNameForTask + "/" + *name]
+							if primary == nil {
+								primary = l.tasks[*name]
+							}
 							if primary == nil {
 								keys := sets.NewString()
 								for k := range l.tasks {
@@ -218,7 +222,7 @@ func (l *Loader) processDeferrals() error {
 									glog.Infof("  %s", k)
 								}
 
-								return fmt.Errorf("Unable to find task %q, referenced from %s:%s", *name, taskKey, path)
+								return fmt.Errorf("Unable to find task %q, referenced from %s:%s", typeNameForTask + "/" + *name, taskKey, path)
 							}
 
 							glog.V(11).Infof("Replacing task %q at %s:%s", *name, taskKey, path)
@@ -358,7 +362,7 @@ func (l *Loader) loadObjectMap(key string, data map[string]interface{}) (map[str
 
 		if name == "" {
 			firstSlash := strings.Index(k, "/")
-			name = k[firstSlash+1:]
+			name = k[firstSlash + 1:]
 			inferredName = true
 		}
 

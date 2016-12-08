@@ -24,7 +24,6 @@ import (
 	kops "k8s.io/kops/pkg/apis/kops"
 	conversion "k8s.io/kubernetes/pkg/conversion"
 	runtime "k8s.io/kubernetes/pkg/runtime"
-	unsafe "unsafe"
 )
 
 func init() {
@@ -216,18 +215,101 @@ func autoConvert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange
 	out.NonMasqueradeCIDR = in.NonMasqueradeCIDR
 	// WARNING: in.AdminAccess requires manual conversion: does not exist in peer-type
-	out.IsolateMasters = (*bool)(unsafe.Pointer(in.IsolateMasters))
-	out.UpdatePolicy = (*string)(unsafe.Pointer(in.UpdatePolicy))
-	out.EtcdClusters = *(*[]*kops.EtcdClusterSpec)(unsafe.Pointer(&in.EtcdClusters))
-	out.Docker = (*kops.DockerConfig)(unsafe.Pointer(in.Docker))
-	out.KubeDNS = (*kops.KubeDNSConfig)(unsafe.Pointer(in.KubeDNS))
-	out.KubeAPIServer = (*kops.KubeAPIServerConfig)(unsafe.Pointer(in.KubeAPIServer))
-	out.KubeControllerManager = (*kops.KubeControllerManagerConfig)(unsafe.Pointer(in.KubeControllerManager))
-	out.KubeScheduler = (*kops.KubeSchedulerConfig)(unsafe.Pointer(in.KubeScheduler))
-	out.KubeProxy = (*kops.KubeProxyConfig)(unsafe.Pointer(in.KubeProxy))
-	out.Kubelet = (*kops.KubeletConfigSpec)(unsafe.Pointer(in.Kubelet))
-	out.MasterKubelet = (*kops.KubeletConfigSpec)(unsafe.Pointer(in.MasterKubelet))
-	out.Networking = (*kops.NetworkingSpec)(unsafe.Pointer(in.Networking))
+	out.IsolateMasters = in.IsolateMasters
+	out.UpdatePolicy = in.UpdatePolicy
+	if in.EtcdClusters != nil {
+		in, out := &in.EtcdClusters, &out.EtcdClusters
+		*out = make([]*kops.EtcdClusterSpec, len(*in))
+		for i := range *in {
+			// TODO: Inefficient conversion - can we improve it?
+			if err := s.Convert(&(*in)[i], &(*out)[i], 0); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.EtcdClusters = nil
+	}
+	if in.Docker != nil {
+		in, out := &in.Docker, &out.Docker
+		*out = new(kops.DockerConfig)
+		if err := Convert_v1alpha1_DockerConfig_To_kops_DockerConfig(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Docker = nil
+	}
+	if in.KubeDNS != nil {
+		in, out := &in.KubeDNS, &out.KubeDNS
+		*out = new(kops.KubeDNSConfig)
+		if err := Convert_v1alpha1_KubeDNSConfig_To_kops_KubeDNSConfig(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.KubeDNS = nil
+	}
+	if in.KubeAPIServer != nil {
+		in, out := &in.KubeAPIServer, &out.KubeAPIServer
+		*out = new(kops.KubeAPIServerConfig)
+		if err := Convert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.KubeAPIServer = nil
+	}
+	if in.KubeControllerManager != nil {
+		in, out := &in.KubeControllerManager, &out.KubeControllerManager
+		*out = new(kops.KubeControllerManagerConfig)
+		if err := Convert_v1alpha1_KubeControllerManagerConfig_To_kops_KubeControllerManagerConfig(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.KubeControllerManager = nil
+	}
+	if in.KubeScheduler != nil {
+		in, out := &in.KubeScheduler, &out.KubeScheduler
+		*out = new(kops.KubeSchedulerConfig)
+		if err := Convert_v1alpha1_KubeSchedulerConfig_To_kops_KubeSchedulerConfig(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.KubeScheduler = nil
+	}
+	if in.KubeProxy != nil {
+		in, out := &in.KubeProxy, &out.KubeProxy
+		*out = new(kops.KubeProxyConfig)
+		if err := Convert_v1alpha1_KubeProxyConfig_To_kops_KubeProxyConfig(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.KubeProxy = nil
+	}
+	if in.Kubelet != nil {
+		in, out := &in.Kubelet, &out.Kubelet
+		*out = new(kops.KubeletConfigSpec)
+		if err := Convert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Kubelet = nil
+	}
+	if in.MasterKubelet != nil {
+		in, out := &in.MasterKubelet, &out.MasterKubelet
+		*out = new(kops.KubeletConfigSpec)
+		if err := Convert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.MasterKubelet = nil
+	}
+	if in.Networking != nil {
+		in, out := &in.Networking, &out.Networking
+		*out = new(kops.NetworkingSpec)
+		if err := Convert_v1alpha1_NetworkingSpec_To_kops_NetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Networking = nil
+	}
 	return nil
 }
 
@@ -261,29 +343,112 @@ func autoConvert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, 
 	out.NonMasqueradeCIDR = in.NonMasqueradeCIDR
 	// WARNING: in.SSHAccess requires manual conversion: does not exist in peer-type
 	// WARNING: in.APIAccess requires manual conversion: does not exist in peer-type
-	out.IsolateMasters = (*bool)(unsafe.Pointer(in.IsolateMasters))
-	out.UpdatePolicy = (*string)(unsafe.Pointer(in.UpdatePolicy))
-	out.EtcdClusters = *(*[]*EtcdClusterSpec)(unsafe.Pointer(&in.EtcdClusters))
-	out.Docker = (*DockerConfig)(unsafe.Pointer(in.Docker))
-	out.KubeDNS = (*KubeDNSConfig)(unsafe.Pointer(in.KubeDNS))
-	out.KubeAPIServer = (*KubeAPIServerConfig)(unsafe.Pointer(in.KubeAPIServer))
-	out.KubeControllerManager = (*KubeControllerManagerConfig)(unsafe.Pointer(in.KubeControllerManager))
-	out.KubeScheduler = (*KubeSchedulerConfig)(unsafe.Pointer(in.KubeScheduler))
-	out.KubeProxy = (*KubeProxyConfig)(unsafe.Pointer(in.KubeProxy))
-	out.Kubelet = (*KubeletConfigSpec)(unsafe.Pointer(in.Kubelet))
-	out.MasterKubelet = (*KubeletConfigSpec)(unsafe.Pointer(in.MasterKubelet))
-	out.Networking = (*NetworkingSpec)(unsafe.Pointer(in.Networking))
+	out.IsolateMasters = in.IsolateMasters
+	out.UpdatePolicy = in.UpdatePolicy
+	if in.EtcdClusters != nil {
+		in, out := &in.EtcdClusters, &out.EtcdClusters
+		*out = make([]*EtcdClusterSpec, len(*in))
+		for i := range *in {
+			// TODO: Inefficient conversion - can we improve it?
+			if err := s.Convert(&(*in)[i], &(*out)[i], 0); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.EtcdClusters = nil
+	}
+	if in.Docker != nil {
+		in, out := &in.Docker, &out.Docker
+		*out = new(DockerConfig)
+		if err := Convert_kops_DockerConfig_To_v1alpha1_DockerConfig(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Docker = nil
+	}
+	if in.KubeDNS != nil {
+		in, out := &in.KubeDNS, &out.KubeDNS
+		*out = new(KubeDNSConfig)
+		if err := Convert_kops_KubeDNSConfig_To_v1alpha1_KubeDNSConfig(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.KubeDNS = nil
+	}
+	if in.KubeAPIServer != nil {
+		in, out := &in.KubeAPIServer, &out.KubeAPIServer
+		*out = new(KubeAPIServerConfig)
+		if err := Convert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.KubeAPIServer = nil
+	}
+	if in.KubeControllerManager != nil {
+		in, out := &in.KubeControllerManager, &out.KubeControllerManager
+		*out = new(KubeControllerManagerConfig)
+		if err := Convert_kops_KubeControllerManagerConfig_To_v1alpha1_KubeControllerManagerConfig(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.KubeControllerManager = nil
+	}
+	if in.KubeScheduler != nil {
+		in, out := &in.KubeScheduler, &out.KubeScheduler
+		*out = new(KubeSchedulerConfig)
+		if err := Convert_kops_KubeSchedulerConfig_To_v1alpha1_KubeSchedulerConfig(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.KubeScheduler = nil
+	}
+	if in.KubeProxy != nil {
+		in, out := &in.KubeProxy, &out.KubeProxy
+		*out = new(KubeProxyConfig)
+		if err := Convert_kops_KubeProxyConfig_To_v1alpha1_KubeProxyConfig(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.KubeProxy = nil
+	}
+	if in.Kubelet != nil {
+		in, out := &in.Kubelet, &out.Kubelet
+		*out = new(KubeletConfigSpec)
+		if err := Convert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Kubelet = nil
+	}
+	if in.MasterKubelet != nil {
+		in, out := &in.MasterKubelet, &out.MasterKubelet
+		*out = new(KubeletConfigSpec)
+		if err := Convert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.MasterKubelet = nil
+	}
+	if in.Networking != nil {
+		in, out := &in.Networking, &out.Networking
+		*out = new(NetworkingSpec)
+		if err := Convert_kops_NetworkingSpec_To_v1alpha1_NetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Networking = nil
+	}
 	return nil
 }
 
 func autoConvert_v1alpha1_DockerConfig_To_kops_DockerConfig(in *DockerConfig, out *kops.DockerConfig, s conversion.Scope) error {
-	out.Bridge = (*string)(unsafe.Pointer(in.Bridge))
-	out.LogLevel = (*string)(unsafe.Pointer(in.LogLevel))
-	out.IPTables = (*bool)(unsafe.Pointer(in.IPTables))
-	out.IPMasq = (*bool)(unsafe.Pointer(in.IPMasq))
-	out.Storage = (*string)(unsafe.Pointer(in.Storage))
-	out.InsecureRegistry = (*string)(unsafe.Pointer(in.InsecureRegistry))
-	out.MTU = (*int)(unsafe.Pointer(in.MTU))
+	out.Bridge = in.Bridge
+	out.LogLevel = in.LogLevel
+	out.IPTables = in.IPTables
+	out.IPMasq = in.IPMasq
+	out.Storage = in.Storage
+	out.InsecureRegistry = in.InsecureRegistry
+	out.MTU = in.MTU
 	return nil
 }
 
@@ -292,13 +457,13 @@ func Convert_v1alpha1_DockerConfig_To_kops_DockerConfig(in *DockerConfig, out *k
 }
 
 func autoConvert_kops_DockerConfig_To_v1alpha1_DockerConfig(in *kops.DockerConfig, out *DockerConfig, s conversion.Scope) error {
-	out.Bridge = (*string)(unsafe.Pointer(in.Bridge))
-	out.LogLevel = (*string)(unsafe.Pointer(in.LogLevel))
-	out.IPTables = (*bool)(unsafe.Pointer(in.IPTables))
-	out.IPMasq = (*bool)(unsafe.Pointer(in.IPMasq))
-	out.Storage = (*string)(unsafe.Pointer(in.Storage))
-	out.InsecureRegistry = (*string)(unsafe.Pointer(in.InsecureRegistry))
-	out.MTU = (*int)(unsafe.Pointer(in.MTU))
+	out.Bridge = in.Bridge
+	out.LogLevel = in.LogLevel
+	out.IPTables = in.IPTables
+	out.IPMasq = in.IPMasq
+	out.Storage = in.Storage
+	out.InsecureRegistry = in.InsecureRegistry
+	out.MTU = in.MTU
 	return nil
 }
 
@@ -308,7 +473,18 @@ func Convert_kops_DockerConfig_To_v1alpha1_DockerConfig(in *kops.DockerConfig, o
 
 func autoConvert_v1alpha1_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdClusterSpec, out *kops.EtcdClusterSpec, s conversion.Scope) error {
 	out.Name = in.Name
-	out.Members = *(*[]*kops.EtcdMemberSpec)(unsafe.Pointer(&in.Members))
+	if in.Members != nil {
+		in, out := &in.Members, &out.Members
+		*out = make([]*kops.EtcdMemberSpec, len(*in))
+		for i := range *in {
+			// TODO: Inefficient conversion - can we improve it?
+			if err := s.Convert(&(*in)[i], &(*out)[i], 0); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Members = nil
+	}
 	return nil
 }
 
@@ -318,7 +494,18 @@ func Convert_v1alpha1_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdClusterSpe
 
 func autoConvert_kops_EtcdClusterSpec_To_v1alpha1_EtcdClusterSpec(in *kops.EtcdClusterSpec, out *EtcdClusterSpec, s conversion.Scope) error {
 	out.Name = in.Name
-	out.Members = *(*[]*EtcdMemberSpec)(unsafe.Pointer(&in.Members))
+	if in.Members != nil {
+		in, out := &in.Members, &out.Members
+		*out = make([]*EtcdMemberSpec, len(*in))
+		for i := range *in {
+			// TODO: Inefficient conversion - can we improve it?
+			if err := s.Convert(&(*in)[i], &(*out)[i], 0); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Members = nil
+	}
 	return nil
 }
 
@@ -329,20 +516,20 @@ func Convert_kops_EtcdClusterSpec_To_v1alpha1_EtcdClusterSpec(in *kops.EtcdClust
 func autoConvert_v1alpha1_EtcdMemberSpec_To_kops_EtcdMemberSpec(in *EtcdMemberSpec, out *kops.EtcdMemberSpec, s conversion.Scope) error {
 	out.Name = in.Name
 	// WARNING: in.Zone requires manual conversion: does not exist in peer-type
-	out.VolumeType = (*string)(unsafe.Pointer(in.VolumeType))
-	out.VolumeSize = (*int)(unsafe.Pointer(in.VolumeSize))
-	out.KmsKeyId = (*string)(unsafe.Pointer(in.KmsKeyId))
-	out.EncryptedVolume = (*bool)(unsafe.Pointer(in.EncryptedVolume))
+	out.VolumeType = in.VolumeType
+	out.VolumeSize = in.VolumeSize
+	out.KmsKeyId = in.KmsKeyId
+	out.EncryptedVolume = in.EncryptedVolume
 	return nil
 }
 
 func autoConvert_kops_EtcdMemberSpec_To_v1alpha1_EtcdMemberSpec(in *kops.EtcdMemberSpec, out *EtcdMemberSpec, s conversion.Scope) error {
 	out.Name = in.Name
 	// WARNING: in.InstanceGroup requires manual conversion: does not exist in peer-type
-	out.VolumeType = (*string)(unsafe.Pointer(in.VolumeType))
-	out.VolumeSize = (*int)(unsafe.Pointer(in.VolumeSize))
-	out.KmsKeyId = (*string)(unsafe.Pointer(in.KmsKeyId))
-	out.EncryptedVolume = (*bool)(unsafe.Pointer(in.EncryptedVolume))
+	out.VolumeType = in.VolumeType
+	out.VolumeSize = in.VolumeSize
+	out.KmsKeyId = in.KmsKeyId
+	out.EncryptedVolume = in.EncryptedVolume
 	return nil
 }
 
@@ -388,7 +575,17 @@ func Convert_kops_Federation_To_v1alpha1_Federation(in *kops.Federation, out *Fe
 
 func autoConvert_v1alpha1_FederationList_To_kops_FederationList(in *FederationList, out *kops.FederationList, s conversion.Scope) error {
 	out.ListMeta = in.ListMeta
-	out.Items = *(*[]kops.Federation)(unsafe.Pointer(&in.Items))
+	if in.Items != nil {
+		in, out := &in.Items, &out.Items
+		*out = make([]kops.Federation, len(*in))
+		for i := range *in {
+			if err := Convert_v1alpha1_Federation_To_kops_Federation(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Items = nil
+	}
 	return nil
 }
 
@@ -398,7 +595,17 @@ func Convert_v1alpha1_FederationList_To_kops_FederationList(in *FederationList, 
 
 func autoConvert_kops_FederationList_To_v1alpha1_FederationList(in *kops.FederationList, out *FederationList, s conversion.Scope) error {
 	out.ListMeta = in.ListMeta
-	out.Items = *(*[]Federation)(unsafe.Pointer(&in.Items))
+	if in.Items != nil {
+		in, out := &in.Items, &out.Items
+		*out = make([]Federation, len(*in))
+		for i := range *in {
+			if err := Convert_kops_Federation_To_v1alpha1_Federation(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Items = nil
+	}
 	return nil
 }
 
@@ -407,8 +614,8 @@ func Convert_kops_FederationList_To_v1alpha1_FederationList(in *kops.FederationL
 }
 
 func autoConvert_v1alpha1_FederationSpec_To_kops_FederationSpec(in *FederationSpec, out *kops.FederationSpec, s conversion.Scope) error {
-	out.Controllers = *(*[]string)(unsafe.Pointer(&in.Controllers))
-	out.Members = *(*[]string)(unsafe.Pointer(&in.Members))
+	out.Controllers = in.Controllers
+	out.Members = in.Members
 	out.DNSName = in.DNSName
 	return nil
 }
@@ -418,8 +625,8 @@ func Convert_v1alpha1_FederationSpec_To_kops_FederationSpec(in *FederationSpec, 
 }
 
 func autoConvert_kops_FederationSpec_To_v1alpha1_FederationSpec(in *kops.FederationSpec, out *FederationSpec, s conversion.Scope) error {
-	out.Controllers = *(*[]string)(unsafe.Pointer(&in.Controllers))
-	out.Members = *(*[]string)(unsafe.Pointer(&in.Members))
+	out.Controllers = in.Controllers
+	out.Members = in.Members
 	out.DNSName = in.DNSName
 	return nil
 }
@@ -454,7 +661,17 @@ func Convert_kops_InstanceGroup_To_v1alpha1_InstanceGroup(in *kops.InstanceGroup
 
 func autoConvert_v1alpha1_InstanceGroupList_To_kops_InstanceGroupList(in *InstanceGroupList, out *kops.InstanceGroupList, s conversion.Scope) error {
 	out.ListMeta = in.ListMeta
-	out.Items = *(*[]kops.InstanceGroup)(unsafe.Pointer(&in.Items))
+	if in.Items != nil {
+		in, out := &in.Items, &out.Items
+		*out = make([]kops.InstanceGroup, len(*in))
+		for i := range *in {
+			if err := Convert_v1alpha1_InstanceGroup_To_kops_InstanceGroup(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Items = nil
+	}
 	return nil
 }
 
@@ -464,7 +681,17 @@ func Convert_v1alpha1_InstanceGroupList_To_kops_InstanceGroupList(in *InstanceGr
 
 func autoConvert_kops_InstanceGroupList_To_v1alpha1_InstanceGroupList(in *kops.InstanceGroupList, out *InstanceGroupList, s conversion.Scope) error {
 	out.ListMeta = in.ListMeta
-	out.Items = *(*[]InstanceGroup)(unsafe.Pointer(&in.Items))
+	if in.Items != nil {
+		in, out := &in.Items, &out.Items
+		*out = make([]InstanceGroup, len(*in))
+		for i := range *in {
+			if err := Convert_kops_InstanceGroup_To_v1alpha1_InstanceGroup(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Items = nil
+	}
 	return nil
 }
 
@@ -475,32 +702,32 @@ func Convert_kops_InstanceGroupList_To_v1alpha1_InstanceGroupList(in *kops.Insta
 func autoConvert_v1alpha1_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *InstanceGroupSpec, out *kops.InstanceGroupSpec, s conversion.Scope) error {
 	out.Role = kops.InstanceGroupRole(in.Role)
 	out.Image = in.Image
-	out.MinSize = (*int)(unsafe.Pointer(in.MinSize))
-	out.MaxSize = (*int)(unsafe.Pointer(in.MaxSize))
+	out.MinSize = in.MinSize
+	out.MaxSize = in.MaxSize
 	out.MachineType = in.MachineType
-	out.RootVolumeSize = (*int)(unsafe.Pointer(in.RootVolumeSize))
-	out.RootVolumeType = (*string)(unsafe.Pointer(in.RootVolumeType))
+	out.RootVolumeSize = in.RootVolumeSize
+	out.RootVolumeType = in.RootVolumeType
 	// WARNING: in.Zones requires manual conversion: does not exist in peer-type
-	out.MaxPrice = (*string)(unsafe.Pointer(in.MaxPrice))
-	out.AssociatePublicIP = (*bool)(unsafe.Pointer(in.AssociatePublicIP))
-	out.CloudLabels = *(*map[string]string)(unsafe.Pointer(&in.CloudLabels))
-	out.NodeLabels = *(*map[string]string)(unsafe.Pointer(&in.NodeLabels))
+	out.MaxPrice = in.MaxPrice
+	out.AssociatePublicIP = in.AssociatePublicIP
+	out.CloudLabels = in.CloudLabels
+	out.NodeLabels = in.NodeLabels
 	return nil
 }
 
 func autoConvert_kops_InstanceGroupSpec_To_v1alpha1_InstanceGroupSpec(in *kops.InstanceGroupSpec, out *InstanceGroupSpec, s conversion.Scope) error {
 	out.Role = InstanceGroupRole(in.Role)
 	out.Image = in.Image
-	out.MinSize = (*int)(unsafe.Pointer(in.MinSize))
-	out.MaxSize = (*int)(unsafe.Pointer(in.MaxSize))
+	out.MinSize = in.MinSize
+	out.MaxSize = in.MaxSize
 	out.MachineType = in.MachineType
-	out.RootVolumeSize = (*int)(unsafe.Pointer(in.RootVolumeSize))
-	out.RootVolumeType = (*string)(unsafe.Pointer(in.RootVolumeType))
+	out.RootVolumeSize = in.RootVolumeSize
+	out.RootVolumeType = in.RootVolumeType
 	// WARNING: in.Subnets requires manual conversion: does not exist in peer-type
-	out.MaxPrice = (*string)(unsafe.Pointer(in.MaxPrice))
-	out.AssociatePublicIP = (*bool)(unsafe.Pointer(in.AssociatePublicIP))
-	out.CloudLabels = *(*map[string]string)(unsafe.Pointer(&in.CloudLabels))
-	out.NodeLabels = *(*map[string]string)(unsafe.Pointer(&in.NodeLabels))
+	out.MaxPrice = in.MaxPrice
+	out.AssociatePublicIP = in.AssociatePublicIP
+	out.CloudLabels = in.CloudLabels
+	out.NodeLabels = in.NodeLabels
 	return nil
 }
 
@@ -528,18 +755,18 @@ func autoConvert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.CloudProvider = in.CloudProvider
 	out.SecurePort = in.SecurePort
 	out.Address = in.Address
-	out.EtcdServers = *(*[]string)(unsafe.Pointer(&in.EtcdServers))
-	out.EtcdServersOverrides = *(*[]string)(unsafe.Pointer(&in.EtcdServersOverrides))
-	out.AdmissionControl = *(*[]string)(unsafe.Pointer(&in.AdmissionControl))
+	out.EtcdServers = in.EtcdServers
+	out.EtcdServersOverrides = in.EtcdServersOverrides
+	out.AdmissionControl = in.AdmissionControl
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange
 	out.ClientCAFile = in.ClientCAFile
 	out.BasicAuthFile = in.BasicAuthFile
 	out.TLSCertFile = in.TLSCertFile
 	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
 	out.TokenAuthFile = in.TokenAuthFile
-	out.AllowPrivileged = (*bool)(unsafe.Pointer(in.AllowPrivileged))
-	out.APIServerCount = (*int)(unsafe.Pointer(in.APIServerCount))
-	out.RuntimeConfig = *(*map[string]string)(unsafe.Pointer(&in.RuntimeConfig))
+	out.AllowPrivileged = in.AllowPrivileged
+	out.APIServerCount = in.APIServerCount
+	out.RuntimeConfig = in.RuntimeConfig
 	return nil
 }
 
@@ -555,18 +782,18 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *ko
 	out.CloudProvider = in.CloudProvider
 	out.SecurePort = in.SecurePort
 	out.Address = in.Address
-	out.EtcdServers = *(*[]string)(unsafe.Pointer(&in.EtcdServers))
-	out.EtcdServersOverrides = *(*[]string)(unsafe.Pointer(&in.EtcdServersOverrides))
-	out.AdmissionControl = *(*[]string)(unsafe.Pointer(&in.AdmissionControl))
+	out.EtcdServers = in.EtcdServers
+	out.EtcdServersOverrides = in.EtcdServersOverrides
+	out.AdmissionControl = in.AdmissionControl
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange
 	out.ClientCAFile = in.ClientCAFile
 	out.BasicAuthFile = in.BasicAuthFile
 	out.TLSCertFile = in.TLSCertFile
 	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
 	out.TokenAuthFile = in.TokenAuthFile
-	out.AllowPrivileged = (*bool)(unsafe.Pointer(in.AllowPrivileged))
-	out.APIServerCount = (*int)(unsafe.Pointer(in.APIServerCount))
-	out.RuntimeConfig = *(*map[string]string)(unsafe.Pointer(&in.RuntimeConfig))
+	out.AllowPrivileged = in.AllowPrivileged
+	out.APIServerCount = in.APIServerCount
+	out.RuntimeConfig = in.RuntimeConfig
 	return nil
 }
 
@@ -583,10 +810,18 @@ func autoConvert_v1alpha1_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.CloudProvider = in.CloudProvider
 	out.ClusterName = in.ClusterName
 	out.ClusterCIDR = in.ClusterCIDR
-	out.AllocateNodeCIDRs = (*bool)(unsafe.Pointer(in.AllocateNodeCIDRs))
-	out.ConfigureCloudRoutes = (*bool)(unsafe.Pointer(in.ConfigureCloudRoutes))
+	out.AllocateNodeCIDRs = in.AllocateNodeCIDRs
+	out.ConfigureCloudRoutes = in.ConfigureCloudRoutes
 	out.RootCAFile = in.RootCAFile
-	out.LeaderElection = (*kops.LeaderElectionConfiguration)(unsafe.Pointer(in.LeaderElection))
+	if in.LeaderElection != nil {
+		in, out := &in.LeaderElection, &out.LeaderElection
+		*out = new(kops.LeaderElectionConfiguration)
+		if err := Convert_v1alpha1_LeaderElectionConfiguration_To_kops_LeaderElectionConfiguration(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.LeaderElection = nil
+	}
 	return nil
 }
 
@@ -603,10 +838,18 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha1_KubeControllerMana
 	out.CloudProvider = in.CloudProvider
 	out.ClusterName = in.ClusterName
 	out.ClusterCIDR = in.ClusterCIDR
-	out.AllocateNodeCIDRs = (*bool)(unsafe.Pointer(in.AllocateNodeCIDRs))
-	out.ConfigureCloudRoutes = (*bool)(unsafe.Pointer(in.ConfigureCloudRoutes))
+	out.AllocateNodeCIDRs = in.AllocateNodeCIDRs
+	out.ConfigureCloudRoutes = in.ConfigureCloudRoutes
 	out.RootCAFile = in.RootCAFile
-	out.LeaderElection = (*LeaderElectionConfiguration)(unsafe.Pointer(in.LeaderElection))
+	if in.LeaderElection != nil {
+		in, out := &in.LeaderElection, &out.LeaderElection
+		*out = new(LeaderElectionConfiguration)
+		if err := Convert_kops_LeaderElectionConfiguration_To_v1alpha1_LeaderElectionConfiguration(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.LeaderElection = nil
+	}
 	return nil
 }
 
@@ -666,7 +909,15 @@ func autoConvert_v1alpha1_KubeSchedulerConfig_To_kops_KubeSchedulerConfig(in *Ku
 	out.Master = in.Master
 	out.LogLevel = in.LogLevel
 	out.Image = in.Image
-	out.LeaderElection = (*kops.LeaderElectionConfiguration)(unsafe.Pointer(in.LeaderElection))
+	if in.LeaderElection != nil {
+		in, out := &in.LeaderElection, &out.LeaderElection
+		*out = new(kops.LeaderElectionConfiguration)
+		if err := Convert_v1alpha1_LeaderElectionConfiguration_To_kops_LeaderElectionConfiguration(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.LeaderElection = nil
+	}
 	return nil
 }
 
@@ -678,7 +929,15 @@ func autoConvert_kops_KubeSchedulerConfig_To_v1alpha1_KubeSchedulerConfig(in *ko
 	out.Master = in.Master
 	out.LogLevel = in.LogLevel
 	out.Image = in.Image
-	out.LeaderElection = (*LeaderElectionConfiguration)(unsafe.Pointer(in.LeaderElection))
+	if in.LeaderElection != nil {
+		in, out := &in.LeaderElection, &out.LeaderElection
+		*out = new(LeaderElectionConfiguration)
+		if err := Convert_kops_LeaderElectionConfiguration_To_v1alpha1_LeaderElectionConfiguration(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.LeaderElection = nil
+	}
 	return nil
 }
 
@@ -688,11 +947,11 @@ func Convert_kops_KubeSchedulerConfig_To_v1alpha1_KubeSchedulerConfig(in *kops.K
 
 func autoConvert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *KubeletConfigSpec, out *kops.KubeletConfigSpec, s conversion.Scope) error {
 	out.APIServers = in.APIServers
-	out.LogLevel = (*int)(unsafe.Pointer(in.LogLevel))
+	out.LogLevel = in.LogLevel
 	out.Config = in.Config
 	out.HostnameOverride = in.HostnameOverride
-	out.AllowPrivileged = (*bool)(unsafe.Pointer(in.AllowPrivileged))
-	out.EnableDebuggingHandlers = (*bool)(unsafe.Pointer(in.EnableDebuggingHandlers))
+	out.AllowPrivileged = in.AllowPrivileged
+	out.EnableDebuggingHandlers = in.EnableDebuggingHandlers
 	out.ClusterDomain = in.ClusterDomain
 	out.ClusterDNS = in.ClusterDNS
 	out.NetworkPluginName = in.NetworkPluginName
@@ -701,15 +960,15 @@ func autoConvert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.RuntimeCgroups = in.RuntimeCgroups
 	out.SystemCgroups = in.SystemCgroups
 	out.CgroupRoot = in.CgroupRoot
-	out.ConfigureCBR0 = (*bool)(unsafe.Pointer(in.ConfigureCBR0))
+	out.ConfigureCBR0 = in.ConfigureCBR0
 	out.HairpinMode = in.HairpinMode
-	out.BabysitDaemons = (*bool)(unsafe.Pointer(in.BabysitDaemons))
+	out.BabysitDaemons = in.BabysitDaemons
 	out.PodCIDR = in.PodCIDR
-	out.ReconcileCIDR = (*bool)(unsafe.Pointer(in.ReconcileCIDR))
-	out.RegisterSchedulable = (*bool)(unsafe.Pointer(in.RegisterSchedulable))
-	out.NodeLabels = *(*map[string]string)(unsafe.Pointer(&in.NodeLabels))
+	out.ReconcileCIDR = in.ReconcileCIDR
+	out.RegisterSchedulable = in.RegisterSchedulable
+	out.NodeLabels = in.NodeLabels
 	out.NonMasqueradeCIDR = in.NonMasqueradeCIDR
-	out.NetworkPluginMTU = (*int32)(unsafe.Pointer(in.NetworkPluginMTU))
+	out.NetworkPluginMTU = in.NetworkPluginMTU
 	return nil
 }
 
@@ -719,11 +978,11 @@ func Convert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *KubeletCon
 
 func autoConvert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec(in *kops.KubeletConfigSpec, out *KubeletConfigSpec, s conversion.Scope) error {
 	out.APIServers = in.APIServers
-	out.LogLevel = (*int)(unsafe.Pointer(in.LogLevel))
+	out.LogLevel = in.LogLevel
 	out.Config = in.Config
 	out.HostnameOverride = in.HostnameOverride
-	out.AllowPrivileged = (*bool)(unsafe.Pointer(in.AllowPrivileged))
-	out.EnableDebuggingHandlers = (*bool)(unsafe.Pointer(in.EnableDebuggingHandlers))
+	out.AllowPrivileged = in.AllowPrivileged
+	out.EnableDebuggingHandlers = in.EnableDebuggingHandlers
 	out.ClusterDomain = in.ClusterDomain
 	out.ClusterDNS = in.ClusterDNS
 	out.NetworkPluginName = in.NetworkPluginName
@@ -732,15 +991,15 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec(in *kops.K
 	out.RuntimeCgroups = in.RuntimeCgroups
 	out.SystemCgroups = in.SystemCgroups
 	out.CgroupRoot = in.CgroupRoot
-	out.ConfigureCBR0 = (*bool)(unsafe.Pointer(in.ConfigureCBR0))
+	out.ConfigureCBR0 = in.ConfigureCBR0
 	out.HairpinMode = in.HairpinMode
-	out.BabysitDaemons = (*bool)(unsafe.Pointer(in.BabysitDaemons))
+	out.BabysitDaemons = in.BabysitDaemons
 	out.PodCIDR = in.PodCIDR
-	out.ReconcileCIDR = (*bool)(unsafe.Pointer(in.ReconcileCIDR))
-	out.RegisterSchedulable = (*bool)(unsafe.Pointer(in.RegisterSchedulable))
-	out.NodeLabels = *(*map[string]string)(unsafe.Pointer(&in.NodeLabels))
+	out.ReconcileCIDR = in.ReconcileCIDR
+	out.RegisterSchedulable = in.RegisterSchedulable
+	out.NodeLabels = in.NodeLabels
 	out.NonMasqueradeCIDR = in.NonMasqueradeCIDR
-	out.NetworkPluginMTU = (*int32)(unsafe.Pointer(in.NetworkPluginMTU))
+	out.NetworkPluginMTU = in.NetworkPluginMTU
 	return nil
 }
 
@@ -765,7 +1024,7 @@ func Convert_kops_KubenetNetworkingSpec_To_v1alpha1_KubenetNetworkingSpec(in *ko
 }
 
 func autoConvert_v1alpha1_LeaderElectionConfiguration_To_kops_LeaderElectionConfiguration(in *LeaderElectionConfiguration, out *kops.LeaderElectionConfiguration, s conversion.Scope) error {
-	out.LeaderElect = (*bool)(unsafe.Pointer(in.LeaderElect))
+	out.LeaderElect = in.LeaderElect
 	return nil
 }
 
@@ -774,7 +1033,7 @@ func Convert_v1alpha1_LeaderElectionConfiguration_To_kops_LeaderElectionConfigur
 }
 
 func autoConvert_kops_LeaderElectionConfiguration_To_v1alpha1_LeaderElectionConfiguration(in *kops.LeaderElectionConfiguration, out *LeaderElectionConfiguration, s conversion.Scope) error {
-	out.LeaderElect = (*bool)(unsafe.Pointer(in.LeaderElect))
+	out.LeaderElect = in.LeaderElect
 	return nil
 }
 
@@ -783,12 +1042,60 @@ func Convert_kops_LeaderElectionConfiguration_To_v1alpha1_LeaderElectionConfigur
 }
 
 func autoConvert_v1alpha1_NetworkingSpec_To_kops_NetworkingSpec(in *NetworkingSpec, out *kops.NetworkingSpec, s conversion.Scope) error {
-	out.Classic = (*kops.ClassicNetworkingSpec)(unsafe.Pointer(in.Classic))
-	out.Kubenet = (*kops.KubenetNetworkingSpec)(unsafe.Pointer(in.Kubenet))
-	out.External = (*kops.ExternalNetworkingSpec)(unsafe.Pointer(in.External))
-	out.CNI = (*kops.CNINetworkingSpec)(unsafe.Pointer(in.CNI))
-	out.Kopeio = (*kops.KopeioNetworkingSpec)(unsafe.Pointer(in.Kopeio))
-	out.Weave = (*kops.WeaveNetworkingSpec)(unsafe.Pointer(in.Weave))
+	if in.Classic != nil {
+		in, out := &in.Classic, &out.Classic
+		*out = new(kops.ClassicNetworkingSpec)
+		if err := Convert_v1alpha1_ClassicNetworkingSpec_To_kops_ClassicNetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Classic = nil
+	}
+	if in.Kubenet != nil {
+		in, out := &in.Kubenet, &out.Kubenet
+		*out = new(kops.KubenetNetworkingSpec)
+		if err := Convert_v1alpha1_KubenetNetworkingSpec_To_kops_KubenetNetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Kubenet = nil
+	}
+	if in.External != nil {
+		in, out := &in.External, &out.External
+		*out = new(kops.ExternalNetworkingSpec)
+		if err := Convert_v1alpha1_ExternalNetworkingSpec_To_kops_ExternalNetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.External = nil
+	}
+	if in.CNI != nil {
+		in, out := &in.CNI, &out.CNI
+		*out = new(kops.CNINetworkingSpec)
+		if err := Convert_v1alpha1_CNINetworkingSpec_To_kops_CNINetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.CNI = nil
+	}
+	if in.Kopeio != nil {
+		in, out := &in.Kopeio, &out.Kopeio
+		*out = new(kops.KopeioNetworkingSpec)
+		if err := Convert_v1alpha1_KopeioNetworkingSpec_To_kops_KopeioNetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Kopeio = nil
+	}
+	if in.Weave != nil {
+		in, out := &in.Weave, &out.Weave
+		*out = new(kops.WeaveNetworkingSpec)
+		if err := Convert_v1alpha1_WeaveNetworkingSpec_To_kops_WeaveNetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Weave = nil
+	}
 	return nil
 }
 
@@ -797,12 +1104,60 @@ func Convert_v1alpha1_NetworkingSpec_To_kops_NetworkingSpec(in *NetworkingSpec, 
 }
 
 func autoConvert_kops_NetworkingSpec_To_v1alpha1_NetworkingSpec(in *kops.NetworkingSpec, out *NetworkingSpec, s conversion.Scope) error {
-	out.Classic = (*ClassicNetworkingSpec)(unsafe.Pointer(in.Classic))
-	out.Kubenet = (*KubenetNetworkingSpec)(unsafe.Pointer(in.Kubenet))
-	out.External = (*ExternalNetworkingSpec)(unsafe.Pointer(in.External))
-	out.CNI = (*CNINetworkingSpec)(unsafe.Pointer(in.CNI))
-	out.Kopeio = (*KopeioNetworkingSpec)(unsafe.Pointer(in.Kopeio))
-	out.Weave = (*WeaveNetworkingSpec)(unsafe.Pointer(in.Weave))
+	if in.Classic != nil {
+		in, out := &in.Classic, &out.Classic
+		*out = new(ClassicNetworkingSpec)
+		if err := Convert_kops_ClassicNetworkingSpec_To_v1alpha1_ClassicNetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Classic = nil
+	}
+	if in.Kubenet != nil {
+		in, out := &in.Kubenet, &out.Kubenet
+		*out = new(KubenetNetworkingSpec)
+		if err := Convert_kops_KubenetNetworkingSpec_To_v1alpha1_KubenetNetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Kubenet = nil
+	}
+	if in.External != nil {
+		in, out := &in.External, &out.External
+		*out = new(ExternalNetworkingSpec)
+		if err := Convert_kops_ExternalNetworkingSpec_To_v1alpha1_ExternalNetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.External = nil
+	}
+	if in.CNI != nil {
+		in, out := &in.CNI, &out.CNI
+		*out = new(CNINetworkingSpec)
+		if err := Convert_kops_CNINetworkingSpec_To_v1alpha1_CNINetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.CNI = nil
+	}
+	if in.Kopeio != nil {
+		in, out := &in.Kopeio, &out.Kopeio
+		*out = new(KopeioNetworkingSpec)
+		if err := Convert_kops_KopeioNetworkingSpec_To_v1alpha1_KopeioNetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Kopeio = nil
+	}
+	if in.Weave != nil {
+		in, out := &in.Weave, &out.Weave
+		*out = new(WeaveNetworkingSpec)
+		if err := Convert_kops_WeaveNetworkingSpec_To_v1alpha1_WeaveNetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Weave = nil
+	}
 	return nil
 }
 

@@ -28,18 +28,18 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			igName := fi.StringValue(m.InstanceGroup)
 			if igName == "" {
-				return fmt.Errorf("InstanceGroup not set on etcd %q/%q", m.Name, etcd.Name)
+				return fmt.Errorf("InstanceGroup not set on etcd %s/%s", m.Name, etcd.Name)
 			}
 			ig := b.FindInstanceGroup(igName)
 			if ig == nil {
-				return fmt.Errorf("InstanceGroup not found: %q", igName)
+				return fmt.Errorf("InstanceGroup not found (for etcd %s/%s): %q", m.Name, etcd.Name, igName)
 			}
 
 			if len(ig.Spec.Subnets) == 0 {
-				return fmt.Errorf("Must specify a subnet for instancegroup %q used by etcd %q/%q", igName, m.Name, etcd.Name)
+				return fmt.Errorf("Must specify a subnet for instancegroup %q used by etcd %s/%s", igName, m.Name, etcd.Name)
 			}
 			if len(ig.Spec.Subnets) != 1 {
-				return fmt.Errorf("Must specify a unique subnet for instancegroup %q used by etcd %q/%q", igName, m.Name, etcd.Name)
+				return fmt.Errorf("Must specify a unique subnet for instancegroup %q used by etcd %s/%s", igName, m.Name, etcd.Name)
 			}
 
 			subnet := b.FindSubnet(ig.Spec.Subnets[0])

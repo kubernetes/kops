@@ -23,6 +23,7 @@ import (
 	"k8s.io/kubernetes/pkg/conversion"
 	"fmt"
 	"reflect"
+	"strings"
 )
 
 func Convert_v1alpha1_BastionSpec_To_kops_BastionSpec(in *BastionSpec, out *kops.BastionSpec, s conversion.Scope) error {
@@ -91,6 +92,18 @@ func Convert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 
 	out.SSHAccess = in.AdminAccess
 	out.APIAccess = in.AdminAccess
+
+	//if in.EtcdClusters != nil {
+	//	for _, i := range in.EtcdClusters {
+	//		o := &kops.EtcdClusterSpec{}
+	//		if err := Convert_v1alpha1_EtcdCluster_To_kops_EtcdClusters(i, o, s); err != nil {
+	//			return err
+	//		}
+	//	}
+	//
+	//} else {
+	//	out.EtcdClusters = nil
+	//}
 
 	return autoConvert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in, out, s)
 }
@@ -167,13 +180,55 @@ func Convert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, out 
 	return autoConvert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in, out, s)
 }
 
+
+//func Convert_v1alpha1_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdClusterSpec, out *kops.EtcdClusterSpec, s conversion.Scope) error {
+//	out.Name = in.Name
+//	// INFO: in.Members opted out of conversion generation
+//	return nil
+//}
+//
+
+//func Convert_kops_EtcdClusterSpec_To_v1alpha1_EtcdClusterSpec(in *kops.EtcdClusterSpec, out *EtcdClusterSpec, s conversion.Scope) error {
+//	out.Name = in.Name
+//	if in.Members != nil {
+//		for _, inMember := range  in.Members {
+//			outMember := &EtcdMemberSpec{}
+//			if err := Convert_kops_EtcdMemberSpec_To_v1alpha1_EtcdMemberSpec(inMember, outMember, s); err != nil {
+//				return err
+//			}
+//			out.Members = append(out.Members, outMember)
+//		}
+//
+//	} else {
+//		out.Members = nil
+//	}
+//	return nil
+//}
+
 func Convert_v1alpha1_EtcdMemberSpec_To_kops_EtcdMemberSpec(in *EtcdMemberSpec, out *kops.EtcdMemberSpec, s conversion.Scope) error {
-	out.InstanceGroup = in.Zone
+	if in.Zone != nil {
+		instanceGroup := "master-" + *in.Zone
+		out.InstanceGroup = &instanceGroup
+	} else {
+		out.InstanceGroup = nil
+	}
 
 	return autoConvert_v1alpha1_EtcdMemberSpec_To_kops_EtcdMemberSpec(in, out, s)
 }
 
 func Convert_kops_EtcdMemberSpec_To_v1alpha1_EtcdMemberSpec(in *kops.EtcdMemberSpec, out *EtcdMemberSpec, s conversion.Scope) error {
+	if in.InstanceGroup != nil {
+		zone := *in.InstanceGroup
+		if !strings.HasPrefix(zone, "master-") {
+			return fmt.Errorf("cannot convert etc instance group name %q to v1alpha1: need master- prefix", zone)
+		} else {
+			zone = zone[7:]
+		}
+		out.Zone = &zone
+	} else {
+		out.Zone = nil
+	}
+
 	out.Zone = in.InstanceGroup
 
 	return autoConvert_kops_EtcdMemberSpec_To_v1alpha1_EtcdMemberSpec(in, out, s)

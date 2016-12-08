@@ -367,17 +367,15 @@ func (c *ApplyClusterCmd) Run() error {
 	l.ModelStore = modelStore
 
 	var fileModels []string
-	var codeBuilders []fi.ModelBuilder
 	for _, m := range c.Models {
 		switch m {
 		case "proto":
-			// No proto code options; no file model
+		// No proto code options; no file model
 
 		case "cloudup":
-			codeBuilders = append(codeBuilders,
+			l.Builders = append(l.Builders,
 				&BootstrapChannelBuilder{cluster: cluster},
 				&model.APILoadBalancerBuilder{KopsModelContext: modelContext},
-				&model.AutoscalingGroupModelBuilder{KopsModelContext: modelContext},
 				&model.BastionModelBuilder{KopsModelContext: modelContext},
 				&model.DNSModelBuilder{KopsModelContext: modelContext},
 				&model.FirewallModelBuilder{KopsModelContext: modelContext},
@@ -393,7 +391,6 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 	}
 
-	l.Builders =  codeBuilders
 
 	l.TemplateFunctions["CA"] = func() fi.CAStore {
 		return keyStore
@@ -403,19 +400,19 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	// RenderNodeUpConfig returns the NodeUp config, in YAML format
-	l.TemplateFunctions["RenderNodeUpConfig"] = func(ig *api.InstanceGroup) (string, error) {
+	renderNodeUpConfig := func(ig *api.InstanceGroup) (*nodeup.NodeUpConfig, error) {
 		if ig == nil {
-			return "", fmt.Errorf("instanceGroup cannot be nil")
+			return nil, fmt.Errorf("instanceGroup cannot be nil")
 		}
 
 		role := ig.Spec.Role
 		if role == "" {
-			return "", fmt.Errorf("cannot determine role for instance group: %v", ig.ObjectMeta.Name)
+			return nil, fmt.Errorf("cannot determine role for instance group: %v", ig.ObjectMeta.Name)
 		}
 
 		nodeUpTags, err := buildNodeupTags(role, tf.cluster, tf.tags)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
 		config := &nodeup.NodeUpConfig{}
@@ -449,7 +446,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 				hash, err := findHash(imagePath)
 				if err != nil {
-					return "", err
+					return nil, err
 				}
 				image := &nodeup.Image{
 					Source: imagePath,
@@ -475,13 +472,15 @@ func (c *ApplyClusterCmd) Run() error {
 
 		config.Channels = channels
 
-		yaml, err := api.ToYaml(config)
-		if err != nil {
-			return "", err
-		}
-
-		return string(yaml), nil
+		return config, nil
 	}
+
+	l.Builders = append(l.Builders, &model.AutoscalingGroupModelBuilder{
+		KopsModelContext: modelContext,
+		NodeUpConfigBuilder: renderNodeUpConfig,
+		NodeUpSourceHash: "",
+		NodeUpSource: c.NodeUpSource,
+	})
 
 	//// TotalNodeCount computes the total count of nodes
 	//l.TemplateFunctions["TotalNodeCount"] = func() (int, error) {
@@ -505,13 +504,6 @@ func (c *ApplyClusterCmd) Run() error {
 		return region
 	}
 	l.TemplateFunctions["Masters"] = tf.modelContext.MasterInstanceGroups
-	//l.TemplateFunctions["NodeUp"] = c.populateNodeUpConfig
-	l.TemplateFunctions["NodeUpSource"] = func() string {
-		return c.NodeUpSource
-	}
-	l.TemplateFunctions["NodeUpSourceHash"] = func() string {
-		return ""
-	}
 
 	tf.AddTo(l.TemplateFunctions)
 

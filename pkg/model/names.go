@@ -139,17 +139,18 @@ func (b*KopsModelContext) LinkToSSHKey() (*awstasks.SSHKey, error) {
 }
 
 func (b*KopsModelContext) LinkToSubnet(z *kops.ClusterSubnetSpec) (*awstasks.Subnet) {
-	var name string
-
-	if b.IsSimpleTopology() {
-		name = z.SubnetName + "." + b.ClusterName()
-	} else if b.IsPublicSubnet(z) {
-		name = "public-" + z.SubnetName + "." + b.ClusterName()
-	} else if b.IsPrivateSubnet(z) {
-		name = "private-" + z.SubnetName + "." + b.ClusterName()
-	} else {
-		glog.Fatalf("unreachable?")
-	}
+	//var name string
+	//
+	//if b.Cluster.IsTopologyPublic() {
+	//	name = z.SubnetName + "." + b.ClusterName()
+	//} else if z.Type == kops.SubnetTypePublic {
+	//	name = z.SubnetName + "." + b.ClusterName()
+	//} else if z.Type == kops.SubnetTypePrivate {
+	//	name = "private-" + z.SubnetName + "." + b.ClusterName()
+	//} else {
+	//	glog.Fatalf("unable to construct link to subnet %q of type %q", z.SubnetName, z.Type)
+	//}
+	name := z.SubnetName + "." + b.ClusterName()
 
 	return &awstasks.Subnet{Name: &name}
 }
@@ -161,7 +162,7 @@ func (b*KopsModelContext) LinkToPublicSubnetInZone(zoneName string) (*awstasks.S
 		if z.Zone != zoneName {
 			continue
 		}
-		if !b.IsPublicSubnet(z) {
+		if z.Type != kops.SubnetTypePublic {
 			continue
 		}
 		matches = append(matches, z)
@@ -184,7 +185,7 @@ func (b*KopsModelContext) LinkToUtilitySubnetInZone(zoneName string) (*awstasks.
 		if s.Zone != zoneName {
 			continue
 		}
-		if !b.IsUtilitySubnet(s) {
+		if s.Type != kops.SubnetTypeUtility {
 			continue
 		}
 		matches = append(matches, s)
@@ -202,24 +203,4 @@ func (b*KopsModelContext) LinkToUtilitySubnetInZone(zoneName string) (*awstasks.
 
 func (b*KopsModelContext) NamePrivateRouteTableInZone(zoneName string) (string) {
 	return "private-" + zoneName + "." + b.ClusterName()
-}
-
-func (b*KopsModelContext) IsSimpleTopology() bool {
-	glog.Fatalf("IsSimpleToplogy not implemented")
-	return false
-}
-
-func (b*KopsModelContext) IsPublicSubnet(s *kops.ClusterSubnetSpec) bool {
-	glog.Fatalf("IsPublicSubnet not implemented")
-	return false
-}
-
-func (b*KopsModelContext) IsUtilitySubnet(s *kops.ClusterSubnetSpec) bool {
-	glog.Fatalf("IsUtilitySubnet not implemented")
-	return false
-}
-
-func (b*KopsModelContext) IsPrivateSubnet(s *kops.ClusterSubnetSpec) bool {
-	glog.Fatalf("IsPrivateSubnet not implemented")
-	return false
 }
