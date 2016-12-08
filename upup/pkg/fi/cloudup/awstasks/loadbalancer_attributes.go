@@ -26,31 +26,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
-type LoadBalancerAccessLog struct {
-	EmitInterval   *int64
-	Enabled        *bool
-	S3BucketName   *string
-	S3BucketPrefix *string
-}
-
-type LoadBalancerAdditionalAttribute struct {
-	Key   *string
-	Value *string
-}
-
-type LoadBalancerConnectionDraining struct {
-	Enabled *bool
-	Timeout *int64
-}
-
-type LoadBalancerCrossZoneLoadBalancing struct {
-	Enabled *bool
-}
-
-type LoadBalancerConnectionSettings struct {
-	IdleTimeout *int64
-}
-
 //go:generate fitask -type=LoadBalancerAttributes
 type LoadBalancerAttributes struct {
 	Name         *string
@@ -61,6 +36,51 @@ type LoadBalancerAttributes struct {
 	ConnectionDraining     *LoadBalancerConnectionDraining
 	ConnectionSettings     *LoadBalancerConnectionSettings
 	CrossZoneLoadBalancing *LoadBalancerCrossZoneLoadBalancing
+}
+
+type LoadBalancerAccessLog struct {
+	EmitInterval   *int64
+	Enabled        *bool
+	S3BucketName   *string
+	S3BucketPrefix *string
+}
+
+func (_ *LoadBalancerAccessLog) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	return nil
+}
+
+type LoadBalancerAdditionalAttribute struct {
+	Key   *string
+	Value *string
+}
+
+func (_ *LoadBalancerAdditionalAttribute) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	return nil
+}
+
+type LoadBalancerConnectionDraining struct {
+	Enabled *bool
+	Timeout *int64
+}
+
+func (_ *LoadBalancerConnectionDraining) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	return nil
+}
+
+type LoadBalancerCrossZoneLoadBalancing struct {
+	Enabled *bool
+}
+
+func (_ *LoadBalancerCrossZoneLoadBalancing) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	return nil
+}
+
+type LoadBalancerConnectionSettings struct {
+	IdleTimeout *int64
+}
+
+func (_ *LoadBalancerConnectionSettings) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	return nil
 }
 
 func findELBAttributes(cloud awsup.AWSCloud, name string) (*elb.LoadBalancerAttributes, error) {

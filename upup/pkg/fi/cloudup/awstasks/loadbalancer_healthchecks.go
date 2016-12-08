@@ -25,7 +25,9 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
+//go:generate fitask -type=LoadBalancerAttachment
 type LoadBalancerHealthChecks struct {
+	Name         *string
 	LoadBalancer *LoadBalancer
 
 	Target *string
@@ -35,10 +37,6 @@ type LoadBalancerHealthChecks struct {
 
 	Interval *int64
 	Timeout  *int64
-}
-
-func (e *LoadBalancerHealthChecks) String() string {
-	return fi.TaskAsString(e)
 }
 
 func (e *LoadBalancerHealthChecks) Find(c *fi.Context) (*LoadBalancerHealthChecks, error) {
@@ -64,6 +62,10 @@ func (e *LoadBalancerHealthChecks) Find(c *fi.Context) (*LoadBalancerHealthCheck
 		actual.Interval = lb.HealthCheck.Interval
 		actual.Timeout = lb.HealthCheck.Timeout
 	}
+
+	// Prevent spurious changes
+	actual.Name = e.Name
+
 	return actual, nil
 
 }

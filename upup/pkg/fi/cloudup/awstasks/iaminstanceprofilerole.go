@@ -30,7 +30,7 @@ import (
 
 //go:generate fitask -type=IAMInstanceProfileRole
 type IAMInstanceProfileRole struct {
-	Name *string
+	Name            *string
 	InstanceProfile *IAMInstanceProfile
 	Role            *IAMRole
 }

@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
+//go:generate fitask -type=LoadBalancerAttachment
 type LoadBalancerAttachment struct {
 	Name         *string
 	LoadBalancer *LoadBalancer
