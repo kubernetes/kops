@@ -112,8 +112,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 
 	dest["HasTag"] = tf.HasTag
 
-	dest["IAMServiceEC2"] = tf.IAMServiceEC2
-
 	dest["Image"] = tf.Image
 
 	dest["WithDefaultBool"] = func(v *bool, defaultValue bool) bool {
@@ -145,17 +143,6 @@ func (tf *TemplateFunctions) IsTopologyPrivate() bool { return tf.cluster.IsTopo
 func (tf *TemplateFunctions) IsTopologyPublic() bool  { return tf.cluster.IsTopologyPublic() }
 func (tf *TemplateFunctions) IsTopologyPrivateMasters() bool {
 	return tf.cluster.IsTopologyPrivateMasters()
-}
-
-// IAMServiceEC2 returns the name of the IAM service for EC2 in the current region
-// it is ec2.amazonaws.com everywhere but in cn-north, where it is ec2.amazonaws.com.cn
-func (tf *TemplateFunctions) IAMServiceEC2() string {
-	switch tf.region {
-	case "cn-north-1":
-		return "ec2.amazonaws.com.cn"
-	default:
-		return "ec2.amazonaws.com"
-	}
 }
 
 // Image returns the docker image name for the specified component

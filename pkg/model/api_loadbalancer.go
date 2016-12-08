@@ -4,6 +4,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/pkg/apis/kops"
+	"fmt"
 )
 
 // APILoadBalancerBuilder builds a LoadBalancer for accessing the API
@@ -30,12 +31,24 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		var elbSubnets []*awstasks.Subnet
 		for i := range b.Cluster.Spec.Subnets {
 			subnet := &b.Cluster.Spec.Subnets[i]
-			if b.Cluster.IsTopologyPublic() && !b.IsPublicSubnet(subnet) {
+
+			switch (subnet.Type) {
+			case kops.SubnetTypePublic:
+				if !b.Cluster.IsTopologyPublic() {
+					continue
+				}
+			case kops.SubnetTypeUtility:
+				if !b.Cluster.IsTopologyPrivate() {
+					continue
+				}
+
+			case kops.SubnetTypePrivate:
 				continue
+
+			default:
+				return fmt.Errorf("subnet %q had unknown type %q", subnet.SubnetName, subnet.Type)
 			}
-			if b.Cluster.IsTopologyPrivate() && !b.IsUtilitySubnet(subnet) {
-				continue
-			}
+
 			elbSubnets = append(elbSubnets, b.LinkToSubnet(subnet))
 		}
 

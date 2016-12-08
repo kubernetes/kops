@@ -6,6 +6,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model/iam"
 	"fmt"
+	"text/template"
 )
 
 // IAMModelBuilder configures IAM objects
@@ -15,7 +16,7 @@ type IAMModelBuilder struct {
 
 var _ fi.ModelBuilder = &IAMModelBuilder{}
 
-const RolePolicy = `{
+const RolePolicyTemplate = `{
   "Version": "2012-10-17",
   "Statement": [
     {
@@ -32,10 +33,14 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		var iamRole *awstasks.IAMRole
 		{
+			rolePolicy, err := b.buildAWSIAMRolePolicy(role)
+			if err != nil {
+				return err
+			}
 
 			iamRole = &awstasks.IAMRole{
 				Name: s(name),
-				RolePolicyDocument: fi.WrapResource(fi.NewStringResource(RolePolicy)),
+				RolePolicyDocument: fi.WrapResource(rolePolicy),
 			}
 			c.AddTask(iamRole)
 
@@ -64,6 +69,8 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		{
 			iamInstanceProfileRole := &awstasks.IAMInstanceProfileRole{
+				Name: s(name),
+
 				InstanceProfile: iamInstanceProfile,
 				Role: iamRole,
 			}
@@ -92,5 +99,28 @@ func (b *IAMModelBuilder) buildAWSIAMPolicy(role kops.InstanceGroupRole) (string
 		return "", fmt.Errorf("error building IAM policy: %v", err)
 	}
 	return json, nil
+}
+
+
+// buildAWSIAMRolePolicy produces the AWS IAM role policy for the given role
+func (b *IAMModelBuilder) buildAWSIAMRolePolicy(role kops.InstanceGroupRole) (fi.Resource, error) {
+	functions := template.FuncMap{
+		"IAMServiceEC2": func() string {
+			// IAMServiceEC2 returns the name of the IAM service for EC2 in the current region
+			// it is ec2.amazonaws.com everywhere but in cn-north, where it is ec2.amazonaws.com.cn
+			switch b.Region {
+			case "cn-north-1":
+				return "ec2.amazonaws.com.cn"
+			default:
+				return "ec2.amazonaws.com"
+			}
+		},
+	}
+
+	templateResource, err := NewTemplateResource("AWSIAMRolePolicy", RolePolicyTemplate, functions, nil)
+	if err != nil {
+		return nil, err
+	}
+	return templateResource, nil
 }
 

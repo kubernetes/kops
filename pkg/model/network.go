@@ -4,6 +4,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"github.com/kopeio/gladish/pkg/sets"
+	"k8s.io/kops/pkg/apis/kops"
+	"fmt"
 )
 
 // NetworkModelBuilder configures network objects
@@ -47,6 +49,8 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(dhcp)
 
 		c.AddTask(&awstasks.VPCDHCPOptionsAssociation{
+			Name: s(b.ClusterName()),
+
 			VPC: b.LinkToVPC(),
 			DHCPOptions: dhcp,
 		})
@@ -54,8 +58,10 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// TODO: would be good to create these as shared, to verify them
 	}
 
+	// We always have a public route table, though for private networks it is only used for NGWs and ELBs
 	var publicRouteTable *awstasks.RouteTable
-	if b.Cluster.IsTopologyPublic() {
+	//if b.Cluster.IsTopologyPublic()
+	{
 		// The internet gateway is the main entry point to the cluster.
 		igw := &awstasks.InternetGateway{
 			Name: s(b.ClusterName()),
@@ -88,6 +94,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Name: s(subnetSpec.SubnetName + "." + b.ClusterName()),
 			VPC: b.LinkToVPC(),
 			AvailabilityZone: s(subnetSpec.Zone),
+			CIDR: s(subnetSpec.CIDR),
 			Shared: fi.Bool(sharedSubnet),
 		}
 		if subnetSpec.ProviderID != "" {
@@ -95,7 +102,9 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		c.AddTask(subnet)
 
-		if b.IsPublicSubnet(subnetSpec) || b.IsUtilitySubnet(subnetSpec) {
+		switch (subnetSpec.Type) {
+		case kops.SubnetTypePublic:
+		case kops.SubnetTypeUtility:
 			if !sharedSubnet {
 				c.AddTask(&awstasks.RouteTableAssociation{
 					Name: s(subnetSpec.SubnetName + "." + b.ClusterName()),
@@ -103,7 +112,8 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					Subnet: subnet,
 				})
 			}
-		} else {
+
+		case kops.SubnetTypePrivate:
 			// Private subnets get a Network Gateway, and their own route table to associate them with the network gateway
 
 			if !sharedSubnet {
@@ -118,6 +128,9 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 				privateZones.Insert(subnetSpec.Zone)
 			}
+
+		default:
+			return fmt.Errorf("subnet %q has unknown type %q", subnetSpec.SubnetName, subnetSpec.Type)
 		}
 	}
 
@@ -164,7 +177,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// Routes for the private route table.
 		// Will route to the NAT Gateway
 		c.AddTask(&awstasks.Route{
-			Name: s("0.0.0.0/0"),
+			Name: s("private-" + zone + "-0.0.0.0/0"),
 			CIDR: s("0.0.0.0/0"),
 			RouteTable: rt,
 			NatGateway: ngw,

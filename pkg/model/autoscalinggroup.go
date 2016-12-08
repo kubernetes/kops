@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/model/resources"
+	"k8s.io/kops/upup/pkg/fi/nodeup"
+	"text/template"
 )
 
 const (
@@ -16,6 +19,11 @@ const (
 // AutoscalingGroupModelBuilder configures network objects
 type AutoscalingGroupModelBuilder struct {
 	*KopsModelContext
+
+	NodeUpSource        string
+	NodeUpSourceHash    string
+
+	NodeUpConfigBuilder func(ig*kops.InstanceGroup) (*nodeup.NodeUpConfig, error)
 }
 
 var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
@@ -140,28 +148,29 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
+
 func (b*AutoscalingGroupModelBuilder) resourceNodeUp(ig *kops.InstanceGroup) (*fi.ResourceHolder, error) {
-	//var r fi.Resource
+	functions := template.FuncMap{
+		"NodeUpSource": func() string { return b.NodeUpSource },
+		"NodeUpSourceHash": func() string { return b.NodeUpSourceHash },
+		"KubeEnv": func() (string, error) {
+			config, err := b.NodeUpConfigBuilder(ig)
+			if err != nil {
+				return "", err
+			}
 
-	return nil, fmt.Errorf("not implemented")
-	//return fi.WrapResource(r)
-	//
-	//	var _ Resource = &VFSResource{}
-	//
-	//	func NewVFSResource(path vfs.Path) *VFSResource {
-	//	return &VFSResource{Path: path}
-	//}
-	//
-	//func (r *VFSResource) Open() (io.Reader, error) {
-	//	data, err := r.Path.ReadFile()
-	//	if err != nil {
-	//		if os.IsNotExist(err) {
-	//			return nil, err
-	//		}
-	//		return nil, fmt.Errorf("error opening file %q: %v", r.Path, err)
-	//	}
-	//	b := bytes.NewBuffer(data)
-	//	return b, err
-	//}
+			data, err := kops.ToYaml(config)
+			if err != nil {
+				return "", err
+			}
 
+			return string(data), nil
+		},
+	}
+
+	templateResource, err := NewTemplateResource("nodeup", resources.AWSNodeUpTemplate, functions, nil)
+	if err != nil {
+		return nil, err
+	}
+	return fi.WrapResource(templateResource), nil
 }

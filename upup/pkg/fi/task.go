@@ -18,6 +18,8 @@ package fi
 
 import (
 	"fmt"
+	"github.com/golang/glog"
+	"strings"
 )
 
 type Task interface {
@@ -46,5 +48,36 @@ type ModelBuilderContext struct {
 }
 
 func (c *ModelBuilderContext) AddTask(task Task) {
+	key := buildTaskKey(task)
 
+	existing, found := c.Tasks[key]
+	if found {
+		glog.Fatalf("found duplicate tasks with name %q: %v and %v", key, task, existing)
+	}
+	c.Tasks[key] = task
+}
+
+func buildTaskKey(task Task) string {
+	hasName, ok := task.(HasName)
+	if !ok {
+		glog.Fatalf("task %T does not implement HasName", task)
+	}
+
+	name := StringValue(hasName.GetName())
+	if name == "" {
+		glog.Fatalf("task %T (%v) did not have a Name", task, task)
+	}
+
+	typeName := TypeNameForTask(task)
+
+	key := typeName + "/" + name
+
+	return key
+}
+
+func TypeNameForTask(task interface{}) string {
+	typeName := fmt.Sprintf("%T", task)
+	lastDot := strings.LastIndex(typeName, ".")
+	typeName = typeName[lastDot + 1:]
+	return typeName
 }
