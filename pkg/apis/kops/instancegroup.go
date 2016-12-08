@@ -43,14 +43,15 @@ type InstanceGroupList struct {
 type InstanceGroupRole string
 
 const (
-	InstanceGroupRoleMaster InstanceGroupRole = "Master"
-	InstanceGroupRoleNode   InstanceGroupRole = "Node"
+	InstanceGroupRoleMaster  InstanceGroupRole = "Master"
+	InstanceGroupRoleNode    InstanceGroupRole = "Node"
 	InstanceGroupRoleBastion InstanceGroupRole = "Bastion"
 )
 
 var AllInstanceGroupRoles = []InstanceGroupRole{
 	InstanceGroupRoleNode,
 	InstanceGroupRoleMaster,
+	InstanceGroupRoleBastion,
 }
 
 type InstanceGroupSpec struct {
