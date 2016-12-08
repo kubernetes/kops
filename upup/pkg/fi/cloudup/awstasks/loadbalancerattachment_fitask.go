@@ -47,7 +47,6 @@ func (o *LoadBalancerAttachment) UnmarshalJSON(data []byte) error {
 
 var _ fi.HasName = &LoadBalancerAttachment{}
 
-// GetName returns the Name of the object, implementing fi.HasName
 func (o *LoadBalancerAttachment) GetName() *string {
 	return o.Name
 }

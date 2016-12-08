@@ -21,7 +21,11 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-type LoadBalancerHealthCheck struct {
+//go:generate fitask -type=LoadBalancerAttachment
+type LoadBalancerHealthChecks struct {
+	Name         *string
+	LoadBalancer *LoadBalancer
+
 	Target *string
 
 	HealthyThreshold   *int64
@@ -31,9 +35,9 @@ type LoadBalancerHealthCheck struct {
 	Timeout  *int64
 }
 
-var _ fi.HasDependencies = &LoadBalancerListener{}
+var _ fi.HasDependencies = &LoadBalancerHealthChecks{}
 
-func (e *LoadBalancerHealthCheck) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (e *LoadBalancerHealthChecks) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	return nil
 }
 

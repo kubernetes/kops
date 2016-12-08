@@ -26,6 +26,18 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
+//go:generate fitask -type=LoadBalancerAttributes
+type LoadBalancerAttributes struct {
+	Name         *string
+	LoadBalancer *LoadBalancer
+
+	AccessLog              *LoadBalancerAccessLog
+	AdditionalAttributes   []*LoadBalancerAdditionalAttribute
+	ConnectionDraining     *LoadBalancerConnectionDraining
+	ConnectionSettings     *LoadBalancerConnectionSettings
+	CrossZoneLoadBalancing *LoadBalancerCrossZoneLoadBalancing
+}
+
 type LoadBalancerAccessLog struct {
 	EmitInterval   *int64
 	Enabled        *bool
