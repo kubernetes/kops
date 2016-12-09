@@ -31,42 +31,12 @@ func (m *MockEC2) AcceptVpcPeeringConnection(*ec2.AcceptVpcPeeringConnectionInpu
 	return nil, nil
 }
 
-func (m *MockEC2) AllocateAddressRequest(*ec2.AllocateAddressInput) (*request.Request, *ec2.AllocateAddressOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
-func (m *MockEC2) AllocateAddress(*ec2.AllocateAddressInput) (*ec2.AllocateAddressOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-
 func (m *MockEC2) AllocateHostsRequest(*ec2.AllocateHostsInput) (*request.Request, *ec2.AllocateHostsOutput) {
 	panic("Not implemented")
 	return nil, nil
 }
 
 func (m *MockEC2) AllocateHosts(*ec2.AllocateHostsInput) (*ec2.AllocateHostsOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-
-func (m *MockEC2) AssignPrivateIpAddressesRequest(*ec2.AssignPrivateIpAddressesInput) (*request.Request, *ec2.AssignPrivateIpAddressesOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
-func (m *MockEC2) AssignPrivateIpAddresses(*ec2.AssignPrivateIpAddressesInput) (*ec2.AssignPrivateIpAddressesOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-
-func (m *MockEC2) AssociateAddressRequest(*ec2.AssociateAddressInput) (*request.Request, *ec2.AssociateAddressOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
-func (m *MockEC2) AssociateAddress(*ec2.AssociateAddressInput) (*ec2.AssociateAddressOutput, error) {
 	panic("Not implemented")
 	return nil, nil
 }
@@ -376,35 +346,11 @@ func (m *MockEC2) CreateSpotDatafeedSubscription(*ec2.CreateSpotDatafeedSubscrip
 	panic("Not implemented")
 	return nil, nil
 }
-func (m *MockEC2) CreateSubnetRequest(*ec2.CreateSubnetInput) (*request.Request, *ec2.CreateSubnetOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) CreateSubnet(*ec2.CreateSubnetInput) (*ec2.CreateSubnetOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) CreateTagsRequest(*ec2.CreateTagsInput) (*request.Request, *ec2.CreateTagsOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) CreateTags(*ec2.CreateTagsInput) (*ec2.CreateTagsOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
 func (m *MockEC2) CreateVolumeRequest(*ec2.CreateVolumeInput) (*request.Request, *ec2.Volume) {
 	panic("Not implemented")
 	return nil, nil
 }
 func (m *MockEC2) CreateVolume(*ec2.CreateVolumeInput) (*ec2.Volume, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) CreateVpcRequest(*ec2.CreateVpcInput) (*request.Request, *ec2.CreateVpcOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) CreateVpc(*ec2.CreateVpcInput) (*ec2.CreateVpcOutput, error) {
 	panic("Not implemented")
 	return nil, nil
 }
@@ -653,14 +599,6 @@ func (m *MockEC2) DescribeAccountAttributesRequest(*ec2.DescribeAccountAttribute
 	return nil, nil
 }
 func (m *MockEC2) DescribeAccountAttributes(*ec2.DescribeAccountAttributesInput) (*ec2.DescribeAccountAttributesOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DescribeAddressesRequest(*ec2.DescribeAddressesInput) (*request.Request, *ec2.DescribeAddressesOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DescribeAddresses(*ec2.DescribeAddressesInput) (*ec2.DescribeAddressesOutput, error) {
 	panic("Not implemented")
 	return nil, nil
 }
@@ -1052,26 +990,6 @@ func (m *MockEC2) DescribeStaleSecurityGroups(*ec2.DescribeStaleSecurityGroupsIn
 	panic("Not implemented")
 	return nil, nil
 }
-func (m *MockEC2) DescribeSubnetsRequest(*ec2.DescribeSubnetsInput) (*request.Request, *ec2.DescribeSubnetsOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DescribeSubnets(*ec2.DescribeSubnetsInput) (*ec2.DescribeSubnetsOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DescribeTagsRequest(*ec2.DescribeTagsInput) (*request.Request, *ec2.DescribeTagsOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DescribeTags(*ec2.DescribeTagsInput) (*ec2.DescribeTagsOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DescribeTagsPages(*ec2.DescribeTagsInput, func(*ec2.DescribeTagsOutput, bool) bool) error {
-	panic("Not implemented")
-	return nil
-}
 func (m *MockEC2) DescribeVolumeAttributeRequest(*ec2.DescribeVolumeAttributeInput) (*request.Request, *ec2.DescribeVolumeAttributeOutput) {
 	panic("Not implemented")
 	return nil, nil
@@ -1103,14 +1021,6 @@ func (m *MockEC2) DescribeVolumes(*ec2.DescribeVolumesInput) (*ec2.DescribeVolum
 func (m *MockEC2) DescribeVolumesPages(*ec2.DescribeVolumesInput, func(*ec2.DescribeVolumesOutput, bool) bool) error {
 	panic("Not implemented")
 	return nil
-}
-func (m *MockEC2) DescribeVpcAttributeRequest(*ec2.DescribeVpcAttributeInput) (*request.Request, *ec2.DescribeVpcAttributeOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DescribeVpcAttribute(*ec2.DescribeVpcAttributeInput) (*ec2.DescribeVpcAttributeOutput, error) {
-	panic("Not implemented")
-	return nil, nil
 }
 func (m *MockEC2) DescribeVpcClassicLinkRequest(*ec2.DescribeVpcClassicLinkInput) (*request.Request, *ec2.DescribeVpcClassicLinkOutput) {
 	panic("Not implemented")
@@ -1149,14 +1059,6 @@ func (m *MockEC2) DescribeVpcPeeringConnectionsRequest(*ec2.DescribeVpcPeeringCo
 	return nil, nil
 }
 func (m *MockEC2) DescribeVpcPeeringConnections(*ec2.DescribeVpcPeeringConnectionsInput) (*ec2.DescribeVpcPeeringConnectionsOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DescribeVpcsRequest(*ec2.DescribeVpcsInput) (*request.Request, *ec2.DescribeVpcsOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DescribeVpcs(*ec2.DescribeVpcsInput) (*ec2.DescribeVpcsOutput, error) {
 	panic("Not implemented")
 	return nil, nil
 }
@@ -1525,14 +1427,6 @@ func (m *MockEC2) RejectVpcPeeringConnectionRequest(*ec2.RejectVpcPeeringConnect
 	return nil, nil
 }
 func (m *MockEC2) RejectVpcPeeringConnection(*ec2.RejectVpcPeeringConnectionInput) (*ec2.RejectVpcPeeringConnectionOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) ReleaseAddressRequest(*ec2.ReleaseAddressInput) (*request.Request, *ec2.ReleaseAddressOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) ReleaseAddress(*ec2.ReleaseAddressInput) (*ec2.ReleaseAddressOutput, error) {
 	panic("Not implemented")
 	return nil, nil
 }
