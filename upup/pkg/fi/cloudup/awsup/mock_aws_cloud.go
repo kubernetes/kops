@@ -87,17 +87,15 @@ func (c *MockAWSCloud) AddTags(name *string, tags map[string]string) {
 }
 
 func (c *MockAWSCloud) BuildFilters(name *string) []*ec2.Filter {
-	glog.Fatalf("MockAWSCloud BuildFilters not implemented")
-	return nil
+	return buildFilters(c.tags, name)
 }
 
 func (c *MockAWSCloud) AddAWSTags(id string, expected map[string]string) error {
-	return fmt.Errorf("MockAWSCloud AddAWSTags not implemented")
+	return addAWSTags(c, id, expected)
 }
 
 func (c *MockAWSCloud) BuildTags(name *string) map[string]string {
-	glog.Fatalf("MockAWSCloud BuildTags not implemented")
-	return nil
+	return buildTags(c.tags, name)
 }
 
 func (c *MockAWSCloud) Tags() map[string]string {
@@ -106,11 +104,11 @@ func (c *MockAWSCloud) Tags() map[string]string {
 }
 
 func (c *MockAWSCloud) CreateTags(resourceId string, tags map[string]string) error {
-	return fmt.Errorf("MockAWSCloud CreateTags not implemented")
+	return createTags(c, resourceId, tags)
 }
 
 func (c *MockAWSCloud) GetTags(resourceID string) (map[string]string, error) {
-	return nil, fmt.Errorf("MockAWSCloud GetTags not implemented")
+	return getTags(c, resourceID)
 }
 
 func (c *MockAWSCloud) GetELBTags(loadBalancerName string) (map[string]string, error) {

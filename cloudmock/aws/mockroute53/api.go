@@ -14,26 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package mockec2
+package mockroute53
 
 import (
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 )
 
-type MockEC2 struct {
-	addressNumber int
-	Addresses     []*ec2.Address
-
-	RouteTables []*ec2.RouteTable
-
-	subnetNumber int
-	Subnets      []*ec2.Subnet
-
-	Tags []*ec2.TagDescription
-
-	vpcNumber int
-	Vpcs      map[string]*vpcInfo
+type MockRoute53 struct {
 }
 
-var _ ec2iface.EC2API = &MockEC2{}
+var _ route53iface.Route53API = &MockRoute53{}
