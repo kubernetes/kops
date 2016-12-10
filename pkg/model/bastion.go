@@ -60,7 +60,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		t := &awstasks.SecurityGroup{
 			Name:             s(b.SecurityGroupName(kops.InstanceGroupRoleBastion)),
 			VPC:              b.LinkToVPC(),
-			Description:      s("Security group for bastion"),
+			Description:      s("Security group for bastions"),
 			RemoveExtraRules: []string{"port=22"},
 		}
 		c.AddTask(t)
@@ -89,7 +89,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// TODO: Could we get away without an ELB here?  Tricky if dns-controller is broken though...
 	{
 		t := &awstasks.SecurityGroupRule{
-			Name:          s("ssh-external-to-bastion"),
+			Name:          s("ssh-elb-to-bastion"),
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleBastion),
 			SourceGroup:   b.LinkToELBSecurityGroup(BastionELBSecurityGroupPrefix),
 			Protocol:      s("tcp"),

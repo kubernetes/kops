@@ -26,7 +26,7 @@ import (
 func (b *KopsModelContext) SecurityGroupName(role kops.InstanceGroupRole) string {
 	switch role {
 	case kops.InstanceGroupRoleBastion:
-		return "bastion." + b.ClusterName()
+		return "bastions." + b.ClusterName()
 
 	case kops.InstanceGroupRoleNode:
 		return "nodes." + b.ClusterName()
@@ -66,7 +66,7 @@ func (b *KopsModelContext) LinkToAutoscalingGroup(ig *kops.InstanceGroup) *awsta
 }
 
 func (b *KopsModelContext) ELBSecurityGroupName(prefix string) string {
-	return prefix + ".elb." + b.ClusterName()
+	return prefix + "-elb." + b.ClusterName()
 }
 
 func (b *KopsModelContext) LinkToELBSecurityGroup(prefix string) *awstasks.SecurityGroup {
