@@ -307,6 +307,7 @@ func (c *ApplyClusterCmd) Run() error {
 				// ELB
 				"loadBalancer":                       &awstasks.LoadBalancer{},
 				"loadBalancerAttachment":             &awstasks.LoadBalancerAttachment{},
+				"loadBalancerHealthCheck":            &awstasks.LoadBalancerHealthCheck{},
 				"loadBalancerHealthChecks":           &awstasks.LoadBalancerHealthChecks{},
 				"loadBalancerAccessLog":              &awstasks.LoadBalancerAccessLog{},
 				"loadBalancerAdditionalAttribute":    &awstasks.LoadBalancerAdditionalAttribute{},
