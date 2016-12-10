@@ -364,20 +364,26 @@ func ValueAsString(value reflect.Value) string {
 				fmt.Fprintf(b, "<resource>")
 			} else if compareWithID, ok := intf.(CompareWithID); ok {
 				id := compareWithID.CompareWithID()
+				name := ""
+				hasName, ok := intf.(HasName)
+				if ok {
+					name = StringValue(hasName.GetName())
+				}
 				if id == nil {
 					// Uninformative, but we can often print the name instead
-					name := ""
-					hasName, ok := intf.(HasName)
-					if ok {
-						name = StringValue(hasName.GetName())
-					}
 					if name != "" {
 						fmt.Fprintf(b, "name:%s", name)
 					} else {
 						fmt.Fprintf(b, "id:<nil>")
 					}
 				} else {
-					fmt.Fprintf(b, "id:%s", *id)
+					// Uninformative, but we can often print the name instead
+					if name != "" {
+						fmt.Fprintf(b, "name:%s id:%s", name, *id)
+					} else {
+						fmt.Fprintf(b, "id:%s", *id)
+					}
+
 				}
 			} else {
 				glog.V(4).Infof("Unhandled kind in asString for %q: %T", path, v.Interface())
