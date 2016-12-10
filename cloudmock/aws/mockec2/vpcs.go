@@ -30,6 +30,18 @@ type vpcInfo struct {
 	attributes ec2.DescribeVpcAttributeOutput
 }
 
+func (m *MockEC2) FindVpc(id string) *ec2.Vpc {
+	vpc := m.Vpcs[id]
+	if vpc == nil {
+		return nil
+	}
+
+	copy := vpc.main
+	copy.Tags = m.getTags(ec2.ResourceTypeVpc, *vpc.main.VpcId)
+
+	return &copy
+}
+
 func (m *MockEC2) CreateVpcRequest(*ec2.CreateVpcInput) (*request.Request, *ec2.CreateVpcOutput) {
 	panic("Not implemented")
 	return nil, nil
@@ -46,6 +58,7 @@ func (m *MockEC2) CreateVpc(request *ec2.CreateVpcInput) (*ec2.CreateVpcOutput, 
 		main: ec2.Vpc{
 			VpcId:     s(id),
 			CidrBlock: request.CidrBlock,
+			IsDefault: aws.Bool(false),
 		},
 		attributes: ec2.DescribeVpcAttributeOutput{
 			EnableDnsHostnames: &ec2.AttributeBooleanValue{Value: aws.Bool(false)},
