@@ -70,6 +70,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Configure fast-recovery health-checks
 	{
 		t := &awstasks.LoadBalancerHealthChecks{
+			Name:         elb.Name,
 			LoadBalancer: elb,
 
 			Target:             s("TCP:443"),
@@ -100,7 +101,6 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Egress:        fi.Bool(true),
 			CIDR:          s("0.0.0.0/0"),
 		}
-
 		c.AddTask(t)
 	}
 
@@ -108,7 +108,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		for _, cidr := range b.Cluster.Spec.APIAccess {
 			t := &awstasks.SecurityGroupRule{
-				Name:          s("https-api-elb"),
+				Name:          s("https-api-elb-" + cidr),
 				SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 				SourceGroup:   b.LinkToELBSecurityGroup("api"),
 				CIDR:          s(cidr),
@@ -116,7 +116,6 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				ToPort:        i64(443),
 				Protocol:      s("tcp"),
 			}
-
 			c.AddTask(t)
 		}
 	}
