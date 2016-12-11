@@ -117,7 +117,7 @@ func (t *TreeWalker) walkDirectory(parent *TreeWalkItem) error {
 				// Only descend into the tag directory if we have the tag
 				_, found := t.Tags[fileName]
 				if !found {
-					glog.V(2).Infof("Skipping directory as tag not present: %q", f)
+					glog.V(2).Infof("Skipping directory %q as tag %q not present", f, fileName)
 					continue
 				} else {
 					i.Tags = append(i.Tags, fileName)
