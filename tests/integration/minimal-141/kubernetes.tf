@@ -82,24 +82,24 @@ resource "aws_iam_instance_profile" "nodes-minimal-141-example-com" {
 
 resource "aws_iam_role" "masters-minimal-141-example-com" {
   name = "masters.minimal-141.example.com"
-  assume_role_policy = "${file("data/aws_iam_role_masters.minimal-141.example.com_policy")}"
+  assume_role_policy = "${file("${path.module}/data/aws_iam_role_masters.minimal-141.example.com_policy")}"
 }
 
 resource "aws_iam_role" "nodes-minimal-141-example-com" {
   name = "nodes.minimal-141.example.com"
-  assume_role_policy = "${file("data/aws_iam_role_nodes.minimal-141.example.com_policy")}"
+  assume_role_policy = "${file("${path.module}/data/aws_iam_role_nodes.minimal-141.example.com_policy")}"
 }
 
 resource "aws_iam_role_policy" "masters-minimal-141-example-com" {
   name = "masters.minimal-141.example.com"
   role = "${aws_iam_role.masters-minimal-141-example-com.name}"
-  policy = "${file("data/aws_iam_role_policy_masters.minimal-141.example.com_policy")}"
+  policy = "${file("${path.module}/data/aws_iam_role_policy_masters.minimal-141.example.com_policy")}"
 }
 
 resource "aws_iam_role_policy" "nodes-minimal-141-example-com" {
   name = "nodes.minimal-141.example.com"
   role = "${aws_iam_role.nodes-minimal-141-example-com.name}"
-  policy = "${file("data/aws_iam_role_policy_nodes.minimal-141.example.com_policy")}"
+  policy = "${file("${path.module}/data/aws_iam_role_policy_nodes.minimal-141.example.com_policy")}"
 }
 
 resource "aws_internet_gateway" "minimal-141-example-com" {
@@ -112,7 +112,7 @@ resource "aws_internet_gateway" "minimal-141-example-com" {
 
 resource "aws_key_pair" "kubernetes-minimal-141-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157" {
   key_name = "kubernetes.minimal-141.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57"
-  public_key = "${file("data/aws_key_pair_kubernetes.minimal-141.example.com-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key")}"
+  public_key = "${file("${path.module}/data/aws_key_pair_kubernetes.minimal-141.example.com-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key")}"
 }
 
 resource "aws_launch_configuration" "master-us-test-1a-masters-minimal-141-example-com" {
@@ -123,7 +123,7 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-minimal-141-examp
   iam_instance_profile = "${aws_iam_instance_profile.masters-minimal-141-example-com.id}"
   security_groups = ["${aws_security_group.masters-minimal-141-example-com.id}"]
   associate_public_ip_address = true
-  user_data = "${file("data/aws_launch_configuration_master-us-test-1a.masters.minimal-141.example.com_user_data")}"
+  user_data = "${file("${path.module}/data/aws_launch_configuration_master-us-test-1a.masters.minimal-141.example.com_user_data")}"
   root_block_device = {
     volume_type = "gp2"
     volume_size = 20
@@ -146,7 +146,7 @@ resource "aws_launch_configuration" "nodes-minimal-141-example-com" {
   iam_instance_profile = "${aws_iam_instance_profile.nodes-minimal-141-example-com.id}"
   security_groups = ["${aws_security_group.nodes-minimal-141-example-com.id}"]
   associate_public_ip_address = true
-  user_data = "${file("data/aws_launch_configuration_nodes.minimal-141.example.com_user_data")}"
+  user_data = "${file("${path.module}/data/aws_launch_configuration_nodes.minimal-141.example.com_user_data")}"
   root_block_device = {
     volume_type = "gp2"
     volume_size = 20
