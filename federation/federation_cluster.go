@@ -128,7 +128,7 @@ func (o *FederationCluster) ensureFederationSecret(k8s release_1_5.Interface, ca
 			kubeconfig.CurrentContext = o.ClusterName
 			kubeconfig.Contexts = append(kubeconfig.Contexts, context)
 
-			kubeconfigData, err = kopsapi.ToYaml(kubeconfig)
+			kubeconfigData, err = kopsapi.ToRawYaml(kubeconfig)
 			if err != nil {
 				return nil, fmt.Errorf("error building kubeconfig: %v", err)
 			}
