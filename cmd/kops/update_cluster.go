@@ -41,6 +41,7 @@ type UpdateClusterOptions struct {
 	OutDir          string
 	SSHPublicKey    string
 	MaxTaskDuration time.Duration
+	CreateKubecfg   bool
 }
 
 func (o *UpdateClusterOptions) InitDefaults() {
@@ -50,6 +51,7 @@ func (o *UpdateClusterOptions) InitDefaults() {
 	o.SSHPublicKey = ""
 	o.OutDir = ""
 	o.MaxTaskDuration = cloudup.DefaultMaxTaskDuration
+	o.CreateKubecfg = true
 }
 
 func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
@@ -167,7 +169,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 	}
 
 	// TODO: Only if not yet set?
-	if !isDryrun {
+	if !isDryrun && c.CreateKubecfg {
 		hasKubecfg, err := hasKubecfg(cluster.Name)
 		if err != nil {
 			glog.Warningf("error reading kubecfg: %v", err)
