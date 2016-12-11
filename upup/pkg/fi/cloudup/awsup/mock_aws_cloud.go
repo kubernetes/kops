@@ -77,7 +77,7 @@ func (c *MockCloud) DNS() (dnsprovider.Interface, error) {
 	if c.MockRoute53 == nil {
 		return nil, fmt.Errorf("MockRoute53 not set")
 	}
-	return dnsproviderroute53.NewInterfaceWithStub(c.MockRoute53), nil
+	return dnsproviderroute53.New(c.MockRoute53), nil
 }
 
 func (c *MockAWSCloud) Region() string {
