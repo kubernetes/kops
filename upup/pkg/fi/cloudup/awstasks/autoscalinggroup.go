@@ -213,13 +213,6 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			changes.Subnets = nil
 		}
 
-		// Temporary workaround for user-added tags, until we have #241
-		// TODO: Remove once we have #241
-		if changes.Tags != nil {
-			glog.Warning("Ignoring tag changes until we have #241: %v", changes.Tags)
-			changes.Tags = nil
-		}
-
 		empty := &AutoscalingGroup{}
 		if !reflect.DeepEqual(empty, changes) {
 			glog.Warningf("cannot apply changes to AutoScalingGroup: %v", changes)
