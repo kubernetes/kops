@@ -17,10 +17,12 @@ limitations under the License.
 package mockroute53
 
 import (
+	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 )
 
 type MockRoute53 struct {
+	Zones []*route53.HostedZone
 }
 
 var _ route53iface.Route53API = &MockRoute53{}
