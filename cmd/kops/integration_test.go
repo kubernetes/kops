@@ -36,17 +36,18 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 	"os"
 	"path"
+	"reflect"
 	"sort"
 	"strings"
 	"testing"
 	"time"
-	"reflect"
 )
 
 // TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestMinimal(t *testing.T) {
 	runTest(t, "minimal.example.com", "../../tests/integration/minimal")
 }
+
 // TestMinimal_141 runs the test on a configuration from 1.4.1 release
 func TestMinimal_141(t *testing.T) {
 	runTest(t, "minimal-141.example.com", "../../tests/integration/minimal-141")
@@ -132,6 +133,9 @@ func runTest(t *testing.T, clusterName string, srcDir string) {
 		options.Target = "terraform"
 		options.OutDir = path.Join(tempDir, "out")
 		options.MaxTaskDuration = 30 * time.Second
+
+		// We don't test it here, and it adds a dependency on kubectl
+		options.CreateKubecfg = false
 
 		err := RunUpdateCluster(factory, clusterName, &stdout, options)
 		if err != nil {
