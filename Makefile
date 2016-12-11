@@ -75,7 +75,7 @@ codegen: kops-gobindata
 	PATH=${GOPATH_1ST}/bin:${PATH} go generate k8s.io/kops/upup/pkg/fi/cloudup/gcetasks
 	PATH=${GOPATH_1ST}/bin:${PATH} go generate k8s.io/kops/upup/pkg/fi/fitasks
 
-test:
+unit-test:
 	go test k8s.io/kops/upup/pkg/... -args -v=1 -logtostderr
 	go test k8s.io/kops/pkg/... -args -v=1 -logtostderr
 	go test k8s.io/kops/dns-controller/pkg/... -args -v=1 -logtostderr
@@ -205,6 +205,7 @@ gofmt:
 	gofmt -w -s protokube/pkg
 	gofmt -w -s dns-controller/cmd
 	gofmt -w -s dns-controller/pkg
+	gofmt -w -s test/
 
 
 govet:
@@ -217,7 +218,8 @@ govet:
 	  k8s.io/kops/util/... \
 	  k8s.io/kops/upup/... \
 	  k8s.io/kops/protokube/... \
-	  k8s.io/kops/dns-controller/...
+	  k8s.io/kops/dns-controller/... \
+	  k8s.io/kops/test/...
 
 
 # --------------------------------------------------
@@ -226,8 +228,14 @@ govet:
 verify-boilerplate:
 	sh -c hack/verify-boilerplate.sh
 
-ci: kops nodeup-gocode examples test govet verify-boilerplate
+ci: kops nodeup-gocode examples unit-test govet verify-boilerplate
 	echo "Done!"
+
+# --------------------------------------------------
+# E2E integration targets
+
+e2e: govet verify-boilerplate upload
+	go test -v -timeout 1200s k8s.io/kops/test
 
 # --------------------------------------------------
 # channel tool

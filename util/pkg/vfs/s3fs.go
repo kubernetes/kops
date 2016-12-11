@@ -20,16 +20,17 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/golang/glog"
 	"io/ioutil"
-	"k8s.io/kops/util/pkg/hashing"
 	"os"
 	"path"
 	"strings"
 	"sync"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/golang/glog"
+	"k8s.io/kops/util/pkg/hashing"
 )
 
 type S3Path struct {
@@ -51,6 +52,15 @@ func NewS3Path(s3Context *S3Context, bucket string, key string) *S3Path {
 		s3Context: s3Context,
 		bucket:    bucket,
 		key:       key,
+	}
+}
+
+func NewS3PathWithRegion(s3Context *S3Context, bucket string, region string) *S3Path {
+	bucket = strings.TrimSuffix(bucket, "/")
+	return &S3Path{
+		s3Context: s3Context,
+		bucket:    bucket,
+		region:    region,
 	}
 }
 
@@ -109,15 +119,16 @@ func (p *S3Path) WriteFile(data []byte) error {
 
 	glog.V(4).Infof("Writing file %q", p)
 
-	request := &s3.PutObjectInput{}
-	request.Body = bytes.NewReader(data)
-	request.Bucket = aws.String(p.bucket)
-	request.Key = aws.String(p.key)
-	request.ServerSideEncryption = aws.String("AES256")
-
 	// We don't need Content-MD5: https://github.com/aws/aws-sdk-go/issues/208
 
-	_, err = client.PutObject(request)
+	_, err = client.PutObject(
+		&s3.PutObjectInput{
+			Body:                 bytes.NewReader(data),
+			Bucket:               aws.String(p.bucket),
+			Key:                  aws.String(p.key),
+			ServerSideEncryption: aws.String("AES256"),
+		})
+
 	if err != nil {
 		return fmt.Errorf("error writing %s: %v", p, err)
 	}
@@ -294,6 +305,106 @@ func (p *S3Path) Hash(a hashing.HashAlgorithm) (*hashing.Hash, error) {
 	}
 
 	return &hashing.Hash{Algorithm: hashing.HashAlgorithmMD5, HashValue: md5Bytes}, nil
+}
+
+func (p *S3Path) EnsureBucketExists(bucketName, region string) error {
+
+	if bucketName == "" {
+		return fmt.Errorf("error in createing bucket - bucket name not defined")
+	}
+	if bucketName == "" {
+		return fmt.Errorf("error in creating bucket - region name not defined")
+	}
+
+	awsS3Client, err := p.client()
+	if err != nil {
+		return fmt.Errorf("Unable to create client: %v", err)
+	}
+	result, err := awsS3Client.ListBuckets(&s3.ListBucketsInput{})
+	if err != nil {
+		return fmt.Errorf("AWS ListBuckets failure: %v", err)
+	}
+
+	bucketExists := false
+	for _, bucket := range result.Buckets {
+		if *bucket.Name == bucketName {
+			bucketExists = true
+		}
+	}
+	if !bucketExists {
+		request := s3.CreateBucketInput{}
+		request.Bucket = &bucketName
+		_, err := awsS3Client.CreateBucket(&request)
+		if err != nil {
+			if _, ok := err.(awserr.Error); ok {
+				if reqErr, ok := err.(awserr.RequestFailure); ok {
+					// A service error occurred
+					return fmt.Errorf("Bucket %s does not exists and cannot be created: %s, %s, %d, %s",
+						bucketName, reqErr.Code(), reqErr.Message(), reqErr.StatusCode(),
+						reqErr.RequestID())
+				}
+			} else {
+				// This case should never be hit, the SDK should always return an
+				// error which satisfies the awserr.Error interface.
+				return fmt.Errorf("Bucket %s does not exists and cannot be created: %v", bucketName, err)
+			}
+		}
+
+		awsS3Client.WaitUntilBucketExists(&s3.HeadBucketInput{Bucket: aws.String(bucketName)})
+
+		if err != nil {
+			if _, ok := err.(awserr.Error); ok {
+				if reqErr, ok := err.(awserr.RequestFailure); ok {
+					// A service error occurred
+					return fmt.Errorf("Cannot wait for bucket %s to be created: %s, %s, %d, %s",
+						bucketName, reqErr.Code(), reqErr.Message(), reqErr.StatusCode(),
+						reqErr.RequestID())
+				}
+			} else {
+				// This case should never be hit, the SDK should always return an
+				// error which satisfies the awserr.Error interface.
+				return fmt.Errorf("Cannot wait for bucket %s to be created: %v", bucketName, err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func (p *S3Path) DeleteBucket(bucket string) error {
+	if bucket == "" {
+		return fmt.Errorf("error in deleting bucket bucket name not defined")
+	}
+	client, err := p.client()
+	if err != nil {
+		return fmt.Errorf("Unable to create client: %v", err)
+	}
+
+	input := &s3.DeleteBucketInput{
+		Bucket: aws.String(bucket),
+	}
+
+	_, err = client.DeleteBucket(input)
+
+	if err != nil {
+		if _, ok := err.(awserr.Error); ok {
+			if reqErr, ok := err.(awserr.RequestFailure); ok {
+				// A service error occurred
+				return fmt.Errorf("Bucket %s cannot deleted: %s, %s, %d, %s", bucket, reqErr.Code(),
+					reqErr.Message(), reqErr.StatusCode(), reqErr.RequestID())
+			}
+		} else {
+			// This case should never be hit, the SDK should always return an
+			// error which satisfies the awserr.Error interface.
+			return fmt.Errorf("Bucket %s does not exists and cannot be created: %v", bucket, err)
+		}
+	}
+	if err != nil {
+		return fmt.Errorf("Unable to delete S3 bucket, %v", err)
+	}
+
+	return nil
+
 }
 
 // AWSErrorCode returns the aws error code, if it is an awserr.Error, otherwise ""

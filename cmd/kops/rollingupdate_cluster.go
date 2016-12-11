@@ -205,5 +205,5 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 		return nil
 	}
 
-	return d.RollingUpdate(groups, k8sClient)
+	return d.RollingUpdate(groups, list, k8sClient)
 }

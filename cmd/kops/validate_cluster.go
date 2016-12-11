@@ -22,6 +22,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
@@ -79,9 +80,10 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 
 	fmt.Fprintf(out, "Validating cluster %v\n\n", cluster.Name)
 
-	var instanceGroups []*api.InstanceGroup
+	var instanceGroups []api.InstanceGroup
 	for _, ig := range list.Items {
-		instanceGroups = append(instanceGroups, &ig)
+		instanceGroups = append(instanceGroups, ig)
+		glog.V(2).Infof("instance group: %#v\n\n", ig.Spec)
 	}
 
 	if len(instanceGroups) == 0 {
@@ -104,27 +106,27 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 
 	validationCluster, validationFailed := validation.ValidateCluster(cluster.Name, list, k8sClient)
 
-	if validationCluster.NodeList == nil {
+	if validationCluster == nil || validationCluster.NodeList == nil || validationCluster.NodeList.Items == nil {
 		return fmt.Errorf("cannot get nodes for %q: %v", cluster.Name, validationFailed)
 	}
 
 	t := &tables.Table{}
-	t.AddColumn("NAME", func(c *api.InstanceGroup) string {
+	t.AddColumn("NAME", func(c api.InstanceGroup) string {
 		return c.Name
 	})
-	t.AddColumn("ROLE", func(c *api.InstanceGroup) string {
+	t.AddColumn("ROLE", func(c api.InstanceGroup) string {
 		return string(c.Spec.Role)
 	})
-	t.AddColumn("MACHINETYPE", func(c *api.InstanceGroup) string {
+	t.AddColumn("MACHINETYPE", func(c api.InstanceGroup) string {
 		return c.Spec.MachineType
 	})
-	t.AddColumn("ZONES", func(c *api.InstanceGroup) string {
+	t.AddColumn("ZONES", func(c api.InstanceGroup) string {
 		return strings.Join(c.Spec.Zones, ",")
 	})
-	t.AddColumn("MIN", func(c *api.InstanceGroup) string {
+	t.AddColumn("MIN", func(c api.InstanceGroup) string {
 		return intPointerToString(c.Spec.MinSize)
 	})
-	t.AddColumn("MAX", func(c *api.InstanceGroup) string {
+	t.AddColumn("MAX", func(c api.InstanceGroup) string {
 		return intPointerToString(c.Spec.MaxSize)
 	})
 
