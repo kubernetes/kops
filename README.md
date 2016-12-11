@@ -37,6 +37,8 @@ Launching a Kubernetes cluster on [AWS](/docs/aws.md).
 ### Recommended
 
 Download the [latest release](https://github.com/kubernetes/kops/releases/latest)
+chmod +x kops-linux-amd64  -  (Add execution permissions )
+ln -s ./kops-linux-amd64 /usr/bin/kops - (optional, makes kops available from any path).
 
 ### History
 
