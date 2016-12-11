@@ -75,7 +75,7 @@ cd $KOPS_DIRECTORY/..
 GIT_VER=git-$(git describe --always)
 [ -z "$GIT_VER" ] && echo "we do not have GIT_VER something is very wrong" && exit 1;
 
-NODEUP_URL="https://${NODEUP_BUCKET}.amazonaws.com/kops/${GIT_VER}/linux/amd64/nodeup"
+NODEUP_URL="https://${NODEUP_BUCKET}.s3.amazonaws.com/kops/${GIT_VER}/linux/amd64/nodeup"
 
 echo ==========
 echo "Starting build"
