@@ -1,3 +1,9 @@
+## 1.4.2
+
+* API Machinery
+* Private Network Topologies in AWS
+* Deprecating Model YAML manifests
+
 ## Stable Channel:
 
 * Update to kubernetes 1.4.3 (highly recommended update)

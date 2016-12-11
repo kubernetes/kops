@@ -2,7 +2,11 @@
 
 [![Build Status](https://travis-ci.org/kubernetes/kops.svg?branch=master)](https://travis-ci.org/kubernetes/kops) [![Go Report Card](https://goreportcard.com/badge/k8s.io/kops)](https://goreportcard.com/report/k8s.io/kops)
 
-The easiest way to get a production Kubernetes cluster up and running.  
+The easiest way to get a production Kubernetes cluster up and running.
+
+# Version 1.4.2 is here!
+
+See the official [release notes](HISTORY.md) for more information on what changed
 
 # What is kops?
 
