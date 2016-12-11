@@ -126,7 +126,7 @@ func (c *GetClustersCmd) Run(args []string) error {
 		}
 
 		for _, cluster := range clusters {
-			y, err := api.ToYaml(cluster)
+			y, err := api.ToVersionedYaml(cluster)
 			if err != nil {
 				return fmt.Errorf("error marshaling yaml for %q: %v", cluster.Name, err)
 			}

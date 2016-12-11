@@ -204,7 +204,6 @@ func (c *KubeconfigBuilder) getKubectlPath(kubeConfig string) string {
 	return kubeConfig
 }
 
-
 func (c *KubeconfigBuilder) execKubectl(args ...string) error {
 	cmd := exec.Command(c.KubectlPath, args...)
 	env := os.Environ()
