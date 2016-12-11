@@ -287,27 +287,7 @@ func (m *MockRoute53) ListHealthChecks(*route53.ListHealthChecksInput) (*route53
 }
 func (m *MockRoute53) ListHealthChecksPages(*route53.ListHealthChecksInput, func(*route53.ListHealthChecksOutput, bool) bool) error {
 	panic("MockRoute53 function not implemented")
-	return nil, nil
-}
-func (m *MockRoute53) ListHostedZonesRequest(*route53.ListHostedZonesInput) (*request.Request, *route53.ListHostedZonesOutput) {
-	panic("MockRoute53 function not implemented")
-	return nil, nil
-}
-func (m *MockRoute53) ListHostedZones(*route53.ListHostedZonesInput) (*route53.ListHostedZonesOutput, error) {
-	panic("MockRoute53 function not implemented")
-	return nil, nil
-}
-func (m *MockRoute53) ListHostedZonesPages(*route53.ListHostedZonesInput, func(*route53.ListHostedZonesOutput, bool) bool) error {
-	panic("MockRoute53 function not implemented")
-	return nil, nil
-}
-func (m *MockRoute53) ListHostedZonesByNameRequest(*route53.ListHostedZonesByNameInput) (*request.Request, *route53.ListHostedZonesByNameOutput) {
-	panic("MockRoute53 function not implemented")
-	return nil, nil
-}
-func (m *MockRoute53) ListHostedZonesByName(*route53.ListHostedZonesByNameInput) (*route53.ListHostedZonesByNameOutput, error) {
-	panic("MockRoute53 function not implemented")
-	return nil, nil
+	return nil
 }
 func (m *MockRoute53) ListResourceRecordSetsRequest(*route53.ListResourceRecordSetsInput) (*request.Request, *route53.ListResourceRecordSetsOutput) {
 	panic("MockRoute53 function not implemented")
@@ -319,7 +299,7 @@ func (m *MockRoute53) ListResourceRecordSets(*route53.ListResourceRecordSetsInpu
 }
 func (m *MockRoute53) ListResourceRecordSetsPages(*route53.ListResourceRecordSetsInput, func(*route53.ListResourceRecordSetsOutput, bool) bool) error {
 	panic("MockRoute53 function not implemented")
-	return nil, nil
+	return nil
 }
 func (m *MockRoute53) ListReusableDelegationSetsRequest(*route53.ListReusableDelegationSetsInput) (*request.Request, *route53.ListReusableDelegationSetsOutput) {
 	panic("MockRoute53 function not implemented")
@@ -385,6 +365,17 @@ func (m *MockRoute53) ListTrafficPolicyVersions(*route53.ListTrafficPolicyVersio
 	panic("MockRoute53 function not implemented")
 	return nil, nil
 }
+
+func (m *MockRoute53) TestDNSAnswerRequest(*route53.TestDNSAnswerInput) (*request.Request, *route53.TestDNSAnswerOutput) {
+	panic("MockRoute53 function not implemented")
+	return nil, nil
+}
+
+func (m *MockRoute53) TestDNSAnswer(*route53.TestDNSAnswerInput) (*route53.TestDNSAnswerOutput, error) {
+	panic("MockRoute53 function not implemented")
+	return nil, nil
+}
+
 func (m *MockRoute53) UpdateHealthCheckRequest(*route53.UpdateHealthCheckInput) (*request.Request, *route53.UpdateHealthCheckOutput) {
 	panic("MockRoute53 function not implemented")
 	return nil, nil
@@ -416,4 +407,9 @@ func (m *MockRoute53) UpdateTrafficPolicyInstanceRequest(*route53.UpdateTrafficP
 func (m *MockRoute53) UpdateTrafficPolicyInstance(*route53.UpdateTrafficPolicyInstanceInput) (*route53.UpdateTrafficPolicyInstanceOutput, error) {
 	panic("MockRoute53 function not implemented")
 	return nil, nil
+}
+
+func (m *MockRoute53) WaitUntilResourceRecordSetsChanged(*route53.GetChangeInput) error {
+	panic("MockRoute53 WaitUntilResourceRecordSetsChanged function not implemented")
+	return nil
 }

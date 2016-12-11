@@ -20,12 +20,14 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync"
 )
 
 type MemFSPath struct {
 	context  *MemFSContext
 	location string
 
+	mutex    sync.Mutex
 	contents []byte
 	children map[string]*MemFSPath
 }
@@ -62,6 +64,9 @@ func NewMemFSPath(context *MemFSContext, location string) *MemFSPath {
 }
 
 func (p *MemFSPath) Join(relativePath ...string) Path {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
 	joined := path.Join(relativePath...)
 	tokens := strings.Split(joined, "/")
 	current := p
@@ -130,7 +135,7 @@ func (p *MemFSPath) Base() string {
 }
 
 func (p *MemFSPath) Path() string {
-	return p.location
+	return "memfs://" + p.location
 }
 
 func (p *MemFSPath) String() string {
