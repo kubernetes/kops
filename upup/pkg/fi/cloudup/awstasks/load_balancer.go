@@ -49,6 +49,7 @@ type LoadBalancer struct {
 
 	Listeners map[string]*LoadBalancerListener
 
+	Scheme      *string
 	HealthCheck LoadBalancerHealthCheck
 }
 
@@ -190,6 +191,7 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	actual.ID = lb.LoadBalancerName
 	actual.DNSName = lb.DNSName
 	actual.HostedZoneId = lb.CanonicalHostedZoneNameID
+	actual.Scheme = lb.Scheme
 
 	for _, subnet := range lb.Subnets {
 		actual.Subnets = append(actual.Subnets, &Subnet{ID: subnet})
@@ -259,6 +261,7 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 	if a == nil {
 		request := &elb.CreateLoadBalancerInput{}
 		request.LoadBalancerName = elbName
+		request.Scheme = e.Scheme
 
 		for _, subnet := range e.Subnets {
 			request.Subnets = append(request.Subnets, subnet.ID)
@@ -334,6 +337,7 @@ type terraformLoadBalancer struct {
 	Listener       []*terraformLoadBalancerListener  `json:"listener"`
 	SecurityGroups []*terraform.Literal              `json:"security_groups"`
 	Subnets        []*terraform.Literal              `json:"subnets"`
+	Internal       bool                              `json:"internal,omitempty"`
 	HealthCheck    *terraformLoadBalancerHealthCheck `json:"health_check"`
 }
 
@@ -359,7 +363,8 @@ func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 	}
 
 	tf := &terraformLoadBalancer{
-		Name: elbName,
+		Name:     elbName,
+		Internal: *e.Scheme == "internal",
 	}
 
 	for _, subnet := range e.Subnets {
