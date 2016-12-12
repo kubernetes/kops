@@ -11,7 +11,7 @@
 From Homebrew:
 
 ```bash
-brew install kops
+brew update && brew install --HEAD kops
 ```
 
 From Source:
@@ -40,46 +40,140 @@ sudo cp kubernetes/platforms/darwin/amd64/kubectl /usr/local/bin/kubectl
 
 ## Setup your environment
 
-1) Set up a DNS hosted zone in Route 53, e.g. `mydomain.com`, and set up the DNS nameservers as normal so that domains will resolve.  You can reuse an existing domain name (e.g. `mydomain.com`), or you can create a "child" hosted zone (e.g. `myclusters.mydomain.com`) if you want to isolate them.
-
-**Note**: that with AWS Route53, you can have subdomains in a single hosted zone, so you can have `cluster1.testclusters.mydomain.com` under `mydomain.com`.
-
-2) Pick a DNS name under this zone to be the name of your cluster.  kops will set up DNS so your cluster can be reached on this name.  For example, if your zone was `mydomain.com`, a good name would be `kubernetes.mydomain.com`, or `dev.k8s.mydomain.com`, or even `dev.k8s.myproject.mydomain.com`. We'll call this `NAME`.
-
-3) Kops uses the [Official AWS Go SDK](https://github.com/aws/aws-sdk-go). You will need to set up your AWS credentials as defined [here](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html)
-
-4) Pick an S3 bucket that you'll use to store your cluster configuration - this is called your state store.  You can `export KOPS_STATE_STORE=s3://<mystatestorebucket>` and then kops will use this location by default.  We suggest putting this in your bash profile or similar.  A single registry can hold multiple clusters, and it can also be shared amongst your ops team (which is much easier than passing around kubecfg files!)
+#### Setting up a kops IAM user
 
 
-## Create your first cluster
+In this example we will be using a dedicated IAM user to use with kops. This user will need basic API security credentials in order to use kops. Create the user and credentials using the AWS console. [More information](http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.html).
 
-Before we create a cluster, we need to generate a `cluster config`
-
-In these examples we assume you have already exported `KOPS_STATE_STORE`, otherwise you will need to append each command with `--state s3://<mystatestorebucket>`
+Kubernetes kops uses the official AWS Go SDK, so all we need to do here is set up your system to use the official AWS supported methods of registering security credentials defined [here](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials). Here is an example using the aws command line tool to set up your security credentials.
 
 ```bash
-export NAME=cluster1.testclusters.mydomain.com
-kops create cluster --zones=us-east-1c ${NAME}
+brew update && brew install awscli
+aws configure
+aws iam list-users
 ```
 
-Notice in this example we defined a single AWS Availability Zone. These represent the nodes in your cluster, that are typically recommended to run each in their own Availability Zone. Best practices dictate uses more than one here.
+We should now be able to pull a list of IAM users from the API, verifying that our credentials are working as expected.
 
-We can customize our cluster by editing our `cluster config`
+We will now need to set up DNS for cluster, find one of the scenarios below that match your situation.
+
+#### Setting up DNS for your cluster, with amazon as your registrar
+
+If you bought your domain with AWS, then you should already have a hosted zone in Route53.
+
+If you plan on using your base domain, then no more work is needed. If you plan on using a subdomain to build your clusters on you will need to create a 2nd hosted zone in Route53.
+
+```bash
+ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.kubernetes.com --caller-reference $ID
+```
+
+
+#### Setting up DNS for your cluster, with another registrar.
+
+If you bought your domain elsewhere, and would like to dedicate the entire domain to AWS you should follow the guide [here](http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/domain-transfer-to-route-53.html)
+
+If you bought your domain elsewhere, but **only want to use a subdomain in AWS Route53** you must modify your registrar's NS (NameServer) records. See the example below.
+
+###### Setting up a subdomain for clusters, with another registrar
+
+Here we will be creating a hosted zone in AWS Route53, and migrating the subdomain's NS records to your other registrar.
+
+1. Create the subdomain
+
+```bash
+ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.kubernetes.com --caller-reference $ID
+```
+
+2. Note your hosted zone ID
+
+```bash
+aws route53 list-hosted-zones | jq '.HostedZones[] | select(.Name=="subdomain.kubernetes.com") | .Id'
+```
+
+3. Note your nameservers for the subdomain
+
+```bash
+aws route53 get-hosted-zone --id "/hostedzone/Z1K7H5F7891012" | jq .DelegationSet.NameServers
+```
+
+4. You will now go to your registrars page and log in. You will need to create a new **subdomain**, and use the 4 NS records listed above for the new subdomain. This **MUST** be done in order to use your cluster. Do **NOT** change your top level NS record, or you might take your site offline.
+
+ - Information on adding NS records with [Godaddy.com](https://www.godaddy.com/help/set-custom-nameservers-for-domains-registered-with-godaddy-12317)
+ - Information on adding NS records with [Google Cloud Platform](https://cloud.google.com/dns/update-name-servers)
+
+
+#### Testing your DNS setup
+
+You should now able to dig your domain (or subdomain) and see the AWS Name Servers on the other end. This **MUST** be completed before moving on.
+
+```bash
+dig ns subdomain.kubernetes.com
+```
+
+```
+;; ANSWER SECTION:
+k8s.example.com.        172800  IN  NS  ns-613.awsdns-13.net.
+k8s.example.com.        172800  IN  NS  ns-75.awsdns-04.org.
+k8s.example.com.        172800  IN  NS  ns-1022.awsdns-35.com.
+k8s.example.com.        172800  IN  NS  ns-1149.awsdns-27.co.uk.
+```
+
+#### Setting up a state store for your cluster
+
+
+In this example we will be creating a dedicated S3 bucket for kops to use. This is where kops will store the state of your cluster and the representation of your cluster, and serves as the source of truth for our cluster configuration throughout the process. We will call this kubernetes-com-state-store. We recommend keeping the creation confined to us-east-1, otherwise more input will be needed here.
+
+```bash
+aws s3api create-bucket --bucket nivenly-com-state-store --region us-east-1
+```
+
+## Creating your first cluster
+
+#### Setup your environment for kops
+
+Okay! We are ready to start creating our first cluster. Lets first set up a few environmental variables to make this process as clean as possible.
+
+```bash
+export NAME=myfirstcluster.nivenly.com
+export KOPS_STATE_STORE=s3://nivenly-com-state-store
+```
+
+Note: You don’t have to use environmental variables here. You can always define the values using the –name and –state flags later.
+
+#### Form your create cluster command
+
+We will need to note which availability zones are available to us. In this example we will be deploying our cluster to the us-west-1 region.
+
+```bash
+aws ec2 describe-availability-zones --region us-west-1
+```
+
+Lets form our create cluster command. This is the most basic example, a more verbose example on can be found [here]()
+
+```bash
+kops create cluster \
+    --zones us-west-2a \
+    ${NAME}
+```
+
+kops will deploy these instances using AWS auto scaling groups, so each instance should be ephemeral and will rebuild itself if taken offline for any reason.
+
+#### Cluster Configuration
+
+We now have created the underlying cluster configuration, lets take a look at every aspect that will define our cluster.
 
 ```bash
 kops edit cluster ${NAME}
 ```
 
-This will open up the cluster manifest YAML file in your favorite text editor. Here is where a user can define very specific parts of their cluster. For now, lets leave this as default.
+This will open up the cluster config (that is actually stored in the S3 bucket we created earlier!) in your favorite text editor. Here is where we can optionally really tweak our cluster for our use case. In this tutorial, we leave it default for now.
 
-
-Lets go ahead and create the cluster in AWS!
+#### Apply the changes
 
 ```bash
 kops update cluster ${NAME} --yes
 ```
 
-Think of the `--yes` flag as a way of saying "*Yes! I am very sure I want to create this cluster, and I understand it will cost me money*". You will notice this flag in a few other places as well.
 
 ## Accessing your cluster
 
@@ -92,8 +186,8 @@ A simple Kubernetes API call can be used to check if the API is online and liste
 ```bash
 kubectl get nodes
 ```
-
 You will see a list of nodes that should match the `--zones` flag defined earlier. This is a great sign that your Kubernetes cluster is online and working.
+
 
 ## What's next?
 
