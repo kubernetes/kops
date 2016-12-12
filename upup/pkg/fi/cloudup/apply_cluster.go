@@ -45,7 +45,7 @@ const (
 	NodeUpVersion = "1.4.1"
 )
 
-const MaxTaskDuration = 10 * time.Minute
+const DefaultMaxTaskDuration = 10 * time.Minute
 
 var CloudupModels = []string{"config", "proto", "cloudup"}
 
@@ -79,9 +79,14 @@ type ApplyClusterCmd struct {
 
 	// DryRun is true if this is only a dry run
 	DryRun bool
+
+	MaxTaskDuration time.Duration
 }
 
 func (c *ApplyClusterCmd) Run() error {
+	if c.MaxTaskDuration == 0 {
+		c.MaxTaskDuration = DefaultMaxTaskDuration
+	}
 
 	if c.InstanceGroups == nil {
 		list, err := c.Clientset.InstanceGroups(c.Cluster.Name).List(k8sapi.ListOptions{})
@@ -563,7 +568,7 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 	defer context.Close()
 
-	err = context.RunTasks(MaxTaskDuration)
+	err = context.RunTasks(c.MaxTaskDuration)
 	if err != nil {
 		return fmt.Errorf("error running tasks: %v", err)
 	}
