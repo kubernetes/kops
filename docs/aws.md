@@ -125,7 +125,7 @@ k8s.example.com.        172800  IN  NS  ns-1149.awsdns-27.co.uk.
 In this example we will be creating a dedicated S3 bucket for kops to use. This is where kops will store the state of your cluster and the representation of your cluster, and serves as the source of truth for our cluster configuration throughout the process. We will call this kubernetes-com-state-store. We recommend keeping the creation confined to us-east-1, otherwise more input will be needed here.
 
 ```bash
-aws s3api create-bucket --bucket nivenly-com-state-store --region us-east-1
+aws s3api create-bucket --bucket kubernetes-com-state-store --region us-east-1
 ```
 
 ## Creating your first cluster
@@ -135,8 +135,8 @@ aws s3api create-bucket --bucket nivenly-com-state-store --region us-east-1
 Okay! We are ready to start creating our first cluster. Lets first set up a few environmental variables to make this process as clean as possible.
 
 ```bash
-export NAME=myfirstcluster.nivenly.com
-export KOPS_STATE_STORE=s3://nivenly-com-state-store
+export NAME=myfirstcluster.kubernetes.com
+export KOPS_STATE_STORE=s3://kubernetes-com-state-store
 ```
 
 Note: You don’t have to use environmental variables here. You can always define the values using the –name and –state flags later.
