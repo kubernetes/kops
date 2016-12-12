@@ -276,15 +276,10 @@ func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, interval 
 	if force {
 		update = append(update, n.Ready...)
 	}
+
 	for _, u := range update {
 		instanceID := aws.StringValue(u.ASGInstance.InstanceId)
 		glog.Infof("Stopping instance %q in AWS ASG %q", instanceID, n.ASGName)
-
-		// TODO: Evacuate through k8s first?
-
-		// TODO: Temporarily increase size of ASG?
-
-		// TODO: Remove from ASG first so status is immediately updated?
 
 		// TODO: Batch termination, like a rolling-update
 

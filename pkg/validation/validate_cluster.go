@@ -49,6 +49,7 @@ type ValidationNode struct {
 	Status   v1.ConditionStatus `json:"status,omitempty"`
 }
 
+// TODO: change this to the client that drain usages
 // ValidateCluster validate a k8s cluster with a provided instance group list
 func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupList, clusterKubernetesClient k8s_clientset.Interface) (*ValidationCluster, error) {
 	var instanceGroups []*kops.InstanceGroup
@@ -148,6 +149,6 @@ func validateTheNodes(clusterName string, validationCluster *ValidationCluster) 
 		return validationCluster, nil
 	} else {
 		// TODO: This isn't an error...
-		return validationCluster, fmt.Errorf("Your cluster is NOT ready %s", clusterName)
+		return validationCluster, fmt.Errorf("Your cluster is NOT ready")
 	}
 }
