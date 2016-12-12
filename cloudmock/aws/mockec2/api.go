@@ -27,6 +27,8 @@ type MockEC2 struct {
 
 	RouteTables []*ec2.RouteTable
 
+	Images []*ec2.Image
+
 	subnetNumber int
 	Subnets      []*ec2.Subnet
 

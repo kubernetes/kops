@@ -96,6 +96,9 @@ func IsClusterReadable(p Path) bool {
 	case *FSPath:
 		return false
 
+	case *MemFSPath:
+		return false
+
 	default:
 		glog.Fatalf("IsClusterReadable not implemented for type %T", p)
 		return false

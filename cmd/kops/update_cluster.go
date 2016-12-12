@@ -31,46 +31,62 @@ import (
 	"k8s.io/kops/upup/pkg/kutil"
 	"os"
 	"strings"
+	"time"
 )
 
 type UpdateClusterOptions struct {
-	Yes          bool
-	Target       string
-	Models       string
-	OutDir       string
-	SSHPublicKey string
+	Yes             bool
+	Target          string
+	Models          string
+	OutDir          string
+	SSHPublicKey    string
+	MaxTaskDuration time.Duration
+	CreateKubecfg   bool
+}
+
+func (o *UpdateClusterOptions) InitDefaults() {
+	o.Yes = false
+	o.Target = "direct"
+	o.Models = strings.Join(cloudup.CloudupModels, ",")
+	o.SSHPublicKey = ""
+	o.OutDir = ""
+	o.MaxTaskDuration = cloudup.DefaultMaxTaskDuration
+	o.CreateKubecfg = true
 }
 
 func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &UpdateClusterOptions{}
+	options.InitDefaults()
 
 	cmd := &cobra.Command{
 		Use:   "cluster",
 		Short: "Update cluster",
 		Long:  `Updates a k8s cluster.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := RunUpdateCluster(f, cmd, args, os.Stdout, options)
+			err := rootCommand.ProcessArgs(args)
+			if err != nil {
+				exitWithError(err)
+			}
+
+			clusterName := rootCommand.ClusterName()
+
+			err = RunUpdateCluster(f, clusterName, os.Stdout, options)
 			if err != nil {
 				exitWithError(err)
 			}
 		},
 	}
 
-	cmd.Flags().BoolVar(&options.Yes, "yes", false, "Actually create cloud resources")
-	cmd.Flags().StringVar(&options.Target, "target", "direct", "Target - direct, terraform")
-	cmd.Flags().StringVar(&options.Models, "model", strings.Join(cloudup.CloudupModels, ","), "Models to apply (separate multiple models with commas)")
-	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", "", "SSH public key to use (deprecated: use kops create secret instead)")
-	cmd.Flags().StringVar(&options.OutDir, "out", "", "Path to write any local output")
+	cmd.Flags().BoolVar(&options.Yes, "yes", options.Yes, "Actually create cloud resources")
+	cmd.Flags().StringVar(&options.Target, "target", options.Target, "Target - direct, terraform")
+	cmd.Flags().StringVar(&options.Models, "model", options.Models, "Models to apply (separate multiple models with commas)")
+	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", options.SSHPublicKey, "SSH public key to use (deprecated: use kops create secret instead)")
+	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
 
 	return cmd
 }
 
-func RunUpdateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, c *UpdateClusterOptions) error {
-	err := rootCommand.ProcessArgs(args)
-	if err != nil {
-		return err
-	}
-
+func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *UpdateClusterOptions) error {
 	isDryrun := false
 	targetName := c.Target
 
@@ -94,7 +110,7 @@ func RunUpdateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 		}
 	}
 
-	cluster, err := rootCommand.Cluster()
+	cluster, err := GetCluster(f, clusterName)
 	if err != nil {
 		return err
 	}
@@ -129,12 +145,13 @@ func RunUpdateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 	}
 
 	applyCmd := &cloudup.ApplyClusterCmd{
-		Cluster:    cluster,
-		Models:     strings.Split(c.Models, ","),
-		Clientset:  clientset,
-		TargetName: targetName,
-		OutDir:     c.OutDir,
-		DryRun:     isDryrun,
+		Cluster:         cluster,
+		Models:          strings.Split(c.Models, ","),
+		Clientset:       clientset,
+		TargetName:      targetName,
+		OutDir:          c.OutDir,
+		DryRun:          isDryrun,
+		MaxTaskDuration: c.MaxTaskDuration,
 	}
 	err = applyCmd.Run()
 	if err != nil {
@@ -152,7 +169,7 @@ func RunUpdateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 	}
 
 	// TODO: Only if not yet set?
-	if !isDryrun {
+	if !isDryrun && c.CreateKubecfg {
 		hasKubecfg, err := hasKubecfg(cluster.Name)
 		if err != nil {
 			glog.Warningf("error reading kubecfg: %v", err)
