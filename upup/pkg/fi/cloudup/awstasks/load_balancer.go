@@ -21,6 +21,8 @@ import (
 
 	"strconv"
 
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/elb"
@@ -28,7 +30,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"strings"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
 //go:generate fitask -type=LoadBalancer
@@ -46,6 +48,9 @@ type LoadBalancer struct {
 	SecurityGroups []*SecurityGroup
 
 	Listeners map[string]*LoadBalancerListener
+
+	Scheme      *string
+	HealthCheck LoadBalancerHealthCheck
 }
 
 var _ fi.CompareWithID = &LoadBalancer{}
@@ -186,6 +191,8 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	actual.ID = lb.LoadBalancerName
 	actual.DNSName = lb.DNSName
 	actual.HostedZoneId = lb.CanonicalHostedZoneNameID
+	actual.Scheme = lb.Scheme
+
 	for _, subnet := range lb.Subnets {
 		actual.Subnets = append(actual.Subnets, &Subnet{ID: subnet})
 	}
@@ -254,6 +261,7 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 	if a == nil {
 		request := &elb.CreateLoadBalancerInput{}
 		request.LoadBalancerName = elbName
+		request.Scheme = e.Scheme
 
 		for _, subnet := range e.Subnets {
 			request.Subnets = append(request.Subnets, subnet.ID)
@@ -322,4 +330,80 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 	}
 
 	return t.AddELBTags(*e.ID, t.Cloud.BuildTags(e.Name))
+}
+
+type terraformLoadBalancer struct {
+	Name           *string                           `json:"name"`
+	Listener       []*terraformLoadBalancerListener  `json:"listener"`
+	SecurityGroups []*terraform.Literal              `json:"security_groups"`
+	Subnets        []*terraform.Literal              `json:"subnets"`
+	Internal       bool                              `json:"internal,omitempty"`
+	HealthCheck    *terraformLoadBalancerHealthCheck `json:"health_check"`
+}
+
+type terraformLoadBalancerListener struct {
+	InstancePort     int    `json:"instance_port"`
+	InstanceProtocol string `json:"instance_protocol"`
+	LBPort           int64  `json:"lb_port"`
+	LBProtocol       string `json:"lb_protocol"`
+}
+
+type terraformLoadBalancerHealthCheck struct {
+	Target             *string `json:"target"`
+	HealthyThreshold   *int64  `json:"healthy_threshold"`
+	UnhealthyThreshold *int64  `json:"unhealthy_threshold"`
+	Interval           *int64  `json:"interval"`
+	Timeout            *int64  `json:"timeout"`
+}
+
+func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LoadBalancer) error {
+	elbName := e.ID
+	if elbName == nil {
+		elbName = e.Name
+	}
+
+	tf := &terraformLoadBalancer{
+		Name:     elbName,
+		Internal: *e.Scheme == "internal",
+	}
+
+	for _, subnet := range e.Subnets {
+		tf.Subnets = append(tf.Subnets, subnet.TerraformLink())
+	}
+
+	for _, sg := range e.SecurityGroups {
+		tf.SecurityGroups = append(tf.SecurityGroups, sg.TerraformLink())
+	}
+
+	for loadBalancerPort, listener := range e.Listeners {
+		loadBalancerPortInt, err := strconv.ParseInt(loadBalancerPort, 10, 64)
+		if err != nil {
+			return fmt.Errorf("error parsing load balancer listener port: %q", loadBalancerPort)
+		}
+
+		tf.Listener = append(tf.Listener, &terraformLoadBalancerListener{
+			InstanceProtocol: "TCP",
+			InstancePort:     listener.InstancePort,
+			LBPort:           loadBalancerPortInt,
+			LBProtocol:       "TCP",
+		})
+	}
+
+	tf.HealthCheck = &terraformLoadBalancerHealthCheck{
+		Target:             e.HealthCheck.Target,
+		HealthyThreshold:   e.HealthCheck.HealthyThreshold,
+		UnhealthyThreshold: e.HealthCheck.UnhealthyThreshold,
+		Interval:           e.HealthCheck.Interval,
+		Timeout:            e.HealthCheck.Timeout,
+	}
+
+	return t.RenderResource("aws_elb", *e.Name, tf)
+}
+
+func (e *LoadBalancer) TerraformLink(params ...string) *terraform.Literal {
+	prop := "id"
+	if len(params) > 0 {
+		prop = params[0]
+	}
+	return terraform.LiteralProperty("aws_elb", *e.Name, prop)
 }

@@ -18,11 +18,13 @@ package awstasks
 
 import (
 	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
 //go:generate fitask -type=NatGateway
@@ -203,24 +205,20 @@ func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway)
 	return nil
 }
 
-// TODO Kris - We need to support NGW for Terraform
+type terraformNATGateway struct {
+	AllocationID *terraform.Literal `json:"allocation_id,omitempty"`
+	SubnetID     *terraform.Literal `json:"subnet_id,omitempty"`
+}
 
-//type terraformNATGateway struct {
-//	AllocationId *string           `json:"AllocationID,omitempty"`
-//	SubnetID     *bool             `json:"SubnetID,omitempty"`
-//}
-//
-//func (_ *NATGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *NATGateway) error {
-//	//	cloud := t.Cloud.(awsup.AWSCloud)
-//
-//	tf := &terraformNatGateway{
-//		AllocationId:  e.AllocationID,
-//		//SubnetID:      e.SubnetID,
-//	}
-//
-//	return t.RenderResource("aws_natgateway", *e.AllocationID, tf)
-//}
-//
-//func (e *NATGateway) TerraformLink() *terraform.Literal {
-//	return terraform.LiteralProperty("aws_natgateway", *e.AllocationID, "id")
-//}
+func (_ *NatGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *NatGateway) error {
+	tf := &terraformNATGateway{
+		AllocationID: e.ElasticIp.TerraformLink(),
+		SubnetID:     e.Subnet.TerraformLink(),
+	}
+
+	return t.RenderResource("aws_nat_gateway", *e.Name, tf)
+}
+
+func (e *NatGateway) TerraformLink() *terraform.Literal {
+	return terraform.LiteralProperty("aws_nat_gateway", *e.Name, "id")
+}
