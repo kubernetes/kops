@@ -24,6 +24,7 @@ package kutil
 // TODO: remove kubectl dependencies
 // TODO: when we upgrade there are multiple calls that take metav1.GetOptions{}
 // TODO: can we use our own client instead of building it again
+// TODO: refactor our client to be like this client
 
 import (
 	"errors"
@@ -46,6 +47,7 @@ import (
 	"k8s.io/kubernetes/pkg/apis/policy"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/client/restclient"
+	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 	"k8s.io/kubernetes/pkg/fields"
 	"k8s.io/kubernetes/pkg/kubectl"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
@@ -104,9 +106,12 @@ const (
 )
 
 // Create a NewDrainOptions
-func NewDrainOptions(command *DrainCommand) (*DrainOptions, error) {
+func NewDrainOptions(command *DrainCommand, clusterName string) (*DrainOptions, error) {
 
-	f := cmdutil.NewFactory(nil)
+	config := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		clientcmd.NewDefaultClientConfigLoadingRules(),
+		&clientcmd.ConfigOverrides{CurrentContext: clusterName})
+	f := cmdutil.NewFactory(config)
 
 	if command != nil {
 		duration, err := time.ParseDuration(fmt.Sprintf("%ds", command.GracePeriodSeconds))
@@ -144,22 +149,27 @@ func NewDrainOptions(command *DrainCommand) (*DrainOptions, error) {
 // SetupDrain populates some fields from the factory, grabs command line
 // arguments and looks up the node using Builder
 func (o *DrainOptions) SetupDrain(nodeName string) error {
+
+	if nodeName == "" {
+		return fmt.Errorf("nodeName cannot be empty")
+	}
+
 	var err error
 
 	if o.client, err = o.factory.ClientSet(); err != nil {
-		return err
+		return fmt.Errorf("client or clientset nil %v", err)
 	}
 
 	o.restClient, err = o.factory.RESTClient()
 	if err != nil {
-		return err
+		return fmt.Errorf("rest client problem %v", err)
 	}
 
 	o.mapper, o.typer = o.factory.Object()
 
 	cmdNamespace, _, err := o.factory.DefaultNamespace()
 	if err != nil {
-		return err
+		return fmt.Errorf("DefaultNamespace problem %v", err)
 	}
 
 	r := o.factory.NewBuilder().
@@ -168,28 +178,43 @@ func (o *DrainOptions) SetupDrain(nodeName string) error {
 		Do()
 
 	if err = r.Err(); err != nil {
-		return err
+		return fmt.Errorf("NewBuilder problem %v", err)
 	}
 
-	return r.Visit(func(info *resource.Info, err error) error {
+	err = r.Visit(func(info *resource.Info, err error) error {
 		if err != nil {
-			return err
+			return fmt.Errorf("Internal vistor problem %v", err)
 		}
+		glog.V(2).Infof("info %v", info)
 		o.nodeInfo = info
 		return nil
 	})
+
+	if err != nil {
+		glog.Fatalf("Error getting nodeInfo %v", err)
+		return fmt.Errorf("Vistor problem %v", err)
+	}
+
+	if err = r.Err(); err != nil {
+		return fmt.Errorf("Vistor problem %v", err)
+	}
+
+	return nil
 }
 
 // RunDrain runs the 'drain' command
 func (o *DrainOptions) RunDrain() error {
+	if o.nodeInfo == nil {
+		return fmt.Errorf("nodeInfo is not setup")
+	}
 	if err := o.RunCordonOrUncordon(true); err != nil {
-		glog.V(2).Infof("Error draining node %s - %v", o.nodeInfo.Name, err)
+		glog.V(2).Infof("Error cordon node %v - %v", o.nodeInfo.Name, err)
 		return err
 	}
 
 	err := o.deleteOrEvictPodsSimple()
 	if err == nil {
-		glog.V(2).Infof("Drained node %s - %v", o.nodeInfo.Name, err)
+		glog.V(2).Infof("Drained node %s", o.nodeInfo.Name)
 	} else {
 		glog.V(2).Infof("Error draining node %s - %v", o.nodeInfo.Name, err)
 	}
@@ -387,6 +412,7 @@ func (o *DrainOptions) evictPod(pod api.Pod, policyGroupVersion string) error {
 		gracePeriodSeconds := int64(o.GracePeriodSeconds)
 		deleteOptions.GracePeriodSeconds = &gracePeriodSeconds
 	}
+
 	eviction := &policy.Eviction{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: policyGroupVersion,
@@ -410,7 +436,7 @@ func (o *DrainOptions) deleteOrEvictPods(pods []api.Pod) error {
 
 	policyGroupVersion, err := SupportEviction(o.client)
 	if err != nil {
-		return err
+		return fmt.Errorf("error deleteOrEvictPods ~ SupportEviction: %v", err)
 	}
 
 	getPodFn := func(namespace, name string) (*api.Pod, error) {
@@ -418,7 +444,14 @@ func (o *DrainOptions) deleteOrEvictPods(pods []api.Pod) error {
 	}
 
 	if len(policyGroupVersion) > 0 {
-		return o.evictPods(pods, policyGroupVersion, getPodFn)
+		err = o.evictPods(pods, policyGroupVersion, getPodFn)
+
+		if err != nil {
+			glog.Warningf("Error attempting to evict pod, will delete pod - err: %v", err)
+			return o.deletePods(pods, getPodFn)
+		}
+
+		return nil
 	} else {
 		return o.deletePods(pods, getPodFn)
 	}
@@ -559,7 +592,15 @@ func SupportEviction(clientset *internalclientset.Clientset) (string, error) {
 func (o *DrainOptions) RunCordonOrUncordon(desired bool) error {
 	cmdNamespace, _, err := o.factory.DefaultNamespace()
 	if err != nil {
+		glog.V(2).Infof("Error node %s - %v", o.nodeInfo.Name, err)
 		return err
+	}
+
+	if o.nodeInfo == nil {
+		return fmt.Errorf("nodeInfo nil")
+	}
+	if o.nodeInfo.Mapping == nil {
+		return fmt.Errorf("Mapping nil")
 	}
 
 	if o.nodeInfo.Mapping.GroupVersionKind.Kind == "Node" {
