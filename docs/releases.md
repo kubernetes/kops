@@ -49,7 +49,7 @@
 * Announce the new release on twitter under the *k8sops* account
 * Announce the new release on slack
 
-##### 9. Clean up
+#### 9. Clean up
 
 * Validate the release milestone has been cleaned in github.
 * All remaining issues need to be bumped to the backlog, or the next milestone
