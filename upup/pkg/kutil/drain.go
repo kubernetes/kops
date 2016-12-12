@@ -22,11 +22,12 @@ package kutil
 ////
 
 // TODO: remove kubectl dependencies
+// TODO: when we upgrade there are multiple calls that take metav1.GetOptions{}
+// TODO: can we use our own client instead of building it again
 
 import (
 	"errors"
 	"fmt"
-	"io"
 	"math"
 	"reflect"
 	"strings"
@@ -39,7 +40,9 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 	apierrors "k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/meta"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	// TODO: replace when we push version
+	//metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+	metav1 "k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apis/policy"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/client/restclient"
@@ -65,8 +68,6 @@ type DrainOptions struct {
 	DeleteLocalData    bool
 	mapper             meta.RESTMapper
 	nodeInfo           *resource.Info
-	out                io.Writer
-	errOut             io.Writer
 	typer              runtime.ObjectTyper
 }
 
@@ -104,6 +105,7 @@ const (
 
 // Create a NewDrainOptions
 func NewDrainOptions(command *DrainCommand) (*DrainOptions, error) {
+
 	f := cmdutil.NewFactory(nil)
 
 	if command != nil {
@@ -169,7 +171,6 @@ func (o *DrainOptions) SetupDrain(nodeName string) error {
 		return err
 	}
 
-	//fmt.Printf("SetupDrain() node: %s ", o.nodeInfo.Name)
 	return r.Visit(func(info *resource.Info, err error) error {
 		if err != nil {
 			return err
@@ -207,9 +208,9 @@ func (o *DrainOptions) deleteOrEvictPodsSimple() error {
 		if newErr != nil {
 			return newErr
 		}
-		fmt.Fprintf(o.errOut, "There are pending pods when an error occurred: %v\n", err)
+		glog.Fatalf("There are pending pods when an error occurred: %v\n", err)
 		for _, pendingPod := range pendingPods {
-			fmt.Fprintf(o.errOut, "%s/%s\n", "pod", pendingPod.Name)
+			glog.Fatalf("%s/%s\n", "pod", pendingPod.Name)
 		}
 	}
 	return err
@@ -366,7 +367,7 @@ func (o *DrainOptions) getPodsForDeletion() (pods []api.Pod, err error) {
 		return []api.Pod{}, errors.New(fs.Message())
 	}
 	if len(ws) > 0 {
-		fmt.Fprintf(o.errOut, "WARNING: %s\n", ws.Message())
+		glog.Warningf("WARNING: %s\n", ws.Message())
 	}
 	return pods, nil
 }
@@ -387,7 +388,7 @@ func (o *DrainOptions) evictPod(pod api.Pod, policyGroupVersion string) error {
 		deleteOptions.GracePeriodSeconds = &gracePeriodSeconds
 	}
 	eviction := &policy.Eviction{
-		TypeMeta: unversioned.TypeMeta{
+		TypeMeta: metav1.TypeMeta{
 			APIVersion: policyGroupVersion,
 			Kind:       EvictionKind,
 		},
@@ -504,8 +505,7 @@ func (o *DrainOptions) waitForDelete(pods []api.Pod, interval, timeout time.Dura
 		for i, pod := range pods {
 			p, err := getPodFn(pod.Namespace, pod.Name)
 			if apierrors.IsNotFound(err) || (p != nil && p.ObjectMeta.UID != pod.ObjectMeta.UID) {
-				// TODO: remove
-				cmdutil.PrintSuccess(o.mapper, false, o.out, "pod", pod.Name, false, verbStr)
+				glog.V(2).Infof("Deleted pod %s, %s", pod.Name, verbStr)
 				continue
 			} else if err != nil {
 				return false, err
@@ -565,8 +565,7 @@ func (o *DrainOptions) RunCordonOrUncordon(desired bool) error {
 	if o.nodeInfo.Mapping.GroupVersionKind.Kind == "Node" {
 		unsched := reflect.ValueOf(o.nodeInfo.Object).Elem().FieldByName("Spec").FieldByName("Unschedulable")
 		if unsched.Bool() == desired {
-			// TODO: remove
-			cmdutil.PrintSuccess(o.mapper, false, o.out, o.nodeInfo.Mapping.Resource, o.nodeInfo.Name, false, already(desired))
+			glog.V(2).Infof("Node is already: %s", already(desired))
 		} else {
 			helper := resource.NewHelper(o.restClient, o.nodeInfo.Mapping)
 			unsched.SetBool(desired)
@@ -588,12 +587,10 @@ func (o *DrainOptions) RunCordonOrUncordon(desired bool) error {
 			if err != nil {
 				return err
 			}
-			// TODO: remove
-			cmdutil.PrintSuccess(o.mapper, false, o.out, o.nodeInfo.Mapping.Resource, o.nodeInfo.Name, false, changed(desired))
+			glog.V(2).Infof("Node %s is : %s", o.nodeInfo.Name, changed(desired))
 		}
 	} else {
-		// TODO: remove
-		cmdutil.PrintSuccess(o.mapper, false, o.out, o.nodeInfo.Mapping.Resource, o.nodeInfo.Name, false, "skipped")
+		glog.V(2).Infof("Node %s is : skipped", o.nodeInfo.Name)
 	}
 
 	return nil

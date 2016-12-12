@@ -266,7 +266,7 @@ func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, interval 
 		// Drain the Node
 		var err error
 
-		// Drain was setup correctly
+		// Drain setup
 		if drainErr != nil {
 			err = drain.SetupDrain(u.Node.Name)
 		} else {
@@ -275,6 +275,7 @@ func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, interval 
 
 		// Setup Failed
 		if err != nil {
+			// TODO: do we fail here??
 			glog.Fatalf("Error setting up drain: %v",drainErr)
 		} else {
 

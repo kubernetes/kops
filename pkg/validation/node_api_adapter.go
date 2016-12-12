@@ -41,6 +41,7 @@ const (
 // TODO: should we pool the api client connection? My initial thought is no.
 type NodeAPIAdapter struct {
 	// K8s API client this sucker talks to K8s directly - not kubectl, hard api call
+	// TODO: change this to the client that drain usages
 	client release_1_5.Interface
 
 	//TODO: convert to arg on WaitForNodeToBe
