@@ -117,7 +117,7 @@ resource "aws_key_pair" "kubernetes-minimal-141-example-com-c4a6ed9aa889b9e2c39c
 
 resource "aws_launch_configuration" "master-us-test-1a-masters-minimal-141-example-com" {
   name_prefix = "master-us-test-1a.masters.minimal-141.example.com-"
-  image_id = "ami-12345"
+  image_id = "ami-12345678"
   instance_type = "m3.medium"
   key_name = "${aws_key_pair.kubernetes-minimal-141-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
   iam_instance_profile = "${aws_iam_instance_profile.masters-minimal-141-example-com.id}"
@@ -140,7 +140,7 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-minimal-141-examp
 
 resource "aws_launch_configuration" "nodes-minimal-141-example-com" {
   name_prefix = "nodes.minimal-141.example.com-"
-  image_id = "ami-12345"
+  image_id = "ami-12345678"
   instance_type = "t2.medium"
   key_name = "${aws_key_pair.kubernetes-minimal-141-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
   iam_instance_profile = "${aws_iam_instance_profile.nodes-minimal-141-example-com.id}"
