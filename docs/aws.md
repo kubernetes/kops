@@ -29,9 +29,14 @@ See our [installation guide](build.md) for more information
 
 It is a good idea to grab a fresh copy of `kubectl` now if you don't already have it.
 
+```
+brew install kubernetes-cli
+```
+
 * [Kubernetes Latest Release](https://github.com/kubernetes/kubernetes/releases/latest)
 
 * [Installation Guide](http://kubernetes.io/docs/user-guide/prereqs/)
+
 
 ```bash
 wget -O https://github.com/kubernetes/kubernetes/releases/download/v1.4.6/kubernetes.tar.gz
