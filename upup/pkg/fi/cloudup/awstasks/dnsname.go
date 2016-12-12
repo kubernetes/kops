@@ -19,13 +19,14 @@ package awstasks
 import (
 	"fmt"
 
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
-	"strings"
 )
 
 //go:generate fitask -type=DNSName
@@ -170,17 +171,17 @@ func (_ *DNSName) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSName) error
 type terraformRoute53Record struct {
 	Name    *string  `json:"name"`
 	Type    *string  `json:"type"`
-	TTL     *string  `json:"ttl"`
-	Records []string `json:"records"`
+	TTL     *string  `json:"ttl,omitempty"`
+	Records []string `json:"records,omitempty"`
 
-	Alias  *terraformAlias    `json:"alias"`
+	Alias  *terraformAlias    `json:"alias,omitempty"`
 	ZoneID *terraform.Literal `json:"zone_id"`
 }
 
 type terraformAlias struct {
-	Name                 *string `json:"name"`
-	HostedZoneId         *string `json:"zone_id"`
-	EvaluateTargetHealth *bool   `json:"evaluate_target_health"`
+	Name                 *terraform.Literal `json:"name"`
+	ZoneID               *terraform.Literal `json:"zone_id"`
+	EvaluateTargetHealth *bool              `json:"evaluate_target_health"`
 }
 
 func (_ *DNSName) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *DNSName) error {
@@ -192,9 +193,9 @@ func (_ *DNSName) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *D
 
 	if e.TargetLoadBalancer != nil {
 		tf.Alias = &terraformAlias{
-			Name:                 e.TargetLoadBalancer.DNSName,
+			Name:                 e.TargetLoadBalancer.TerraformLink("dns_name"),
 			EvaluateTargetHealth: aws.Bool(false),
-			HostedZoneId:         e.TargetLoadBalancer.HostedZoneId,
+			ZoneID:               e.TargetLoadBalancer.TerraformLink("zone_id"),
 		}
 	}
 

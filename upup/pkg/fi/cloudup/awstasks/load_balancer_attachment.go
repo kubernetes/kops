@@ -25,6 +25,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
 type LoadBalancerAttachment struct {
@@ -122,6 +123,36 @@ func (_ *LoadBalancerAttachment) RenderAWS(t *awsup.AWSAPITarget, a, e, changes 
 		if err != nil {
 			return fmt.Errorf("error attaching instance to ELB: %v", err)
 		}
+	}
+	return nil
+}
+
+type terraformLoadBalancerAttachment struct {
+	ELB              *terraform.Literal `json:"elb"`
+	Instance         *terraform.Literal `json:"instance,omitempty"`
+	AutoscalingGroup *terraform.Literal `json:"autoscaling_group_name,omitempty"`
+}
+
+func (_ *LoadBalancerAttachment) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LoadBalancerAttachment) error {
+	tf := &terraformLoadBalancerAttachment{
+		ELB: e.LoadBalancer.TerraformLink(),
+	}
+
+	if e.AutoscalingGroup != nil && e.Instance == nil {
+		tf.AutoscalingGroup = e.AutoscalingGroup.TerraformLink()
+		return t.RenderResource("aws_autoscaling_attachment", *e.AutoscalingGroup.Name, tf)
+	} else if e.AutoscalingGroup == nil && e.Instance != nil {
+		tf.Instance = e.Instance.TerraformLink()
+		return t.RenderResource("aws_elb_attachment", *e.LoadBalancer.Name, tf)
+	}
+	return nil
+}
+
+func (e *LoadBalancerAttachment) TerraformLink() *terraform.Literal {
+	if e.AutoscalingGroup != nil && e.Instance == nil {
+		return terraform.LiteralProperty("aws_autoscaling_attachment", *e.AutoscalingGroup.Name, "id")
+	} else if e.AutoscalingGroup == nil && e.Instance != nil {
+		return terraform.LiteralProperty("aws_elb_attachment", *e.LoadBalancer.Name, "id")
 	}
 	return nil
 }

@@ -219,6 +219,7 @@ type terraformRoute struct {
 	RouteTableID      *terraform.Literal `json:"route_table_id"`
 	CIDR              *string            `json:"destination_cidr_block,omitempty"`
 	InternetGatewayID *terraform.Literal `json:"gateway_id,omitempty"`
+	NATGatewayID      *terraform.Literal `json:"nat_gateway_id,omitempty"`
 	InstanceID        *terraform.Literal `json:"instance_id,omitempty"`
 	// TODO Kris - Add terraform support for NAT Gateway routes
 }
@@ -229,8 +230,12 @@ func (_ *Route) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Rou
 		RouteTableID: e.RouteTable.TerraformLink(),
 	}
 
-	if e.InternetGateway != nil {
+	if e.InternetGateway == nil && e.NatGateway == nil {
+		return fmt.Errorf("missing target for route")
+	} else if e.InternetGateway != nil {
 		tf.InternetGatewayID = e.InternetGateway.TerraformLink()
+	} else if e.NatGateway != nil {
+		tf.NATGatewayID = e.NatGateway.TerraformLink()
 	}
 
 	if e.Instance != nil {
