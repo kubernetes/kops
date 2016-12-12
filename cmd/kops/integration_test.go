@@ -53,6 +53,11 @@ func TestMinimal_141(t *testing.T) {
 	runTest(t, "minimal-141.example.com", "../../tests/integration/minimal-141")
 }
 
+// TestPrivateWeave runs the test on a configuration with private topology, weave networking
+func TestPrivateWeave(t *testing.T) {
+	runTest(t, "privateweave.example.com", "../../tests/integration/privateweave")
+}
+
 func runTest(t *testing.T, clusterName string, srcDir string) {
 	var stdout bytes.Buffer
 
@@ -71,12 +76,12 @@ func runTest(t *testing.T, clusterName string, srcDir string) {
 	cloud.MockRoute53 = mockRoute53
 
 	mockRoute53.Zones = append(mockRoute53.Zones, &route53.HostedZone{
-		Id:   aws.String("123"),
+		Id:   aws.String("/hostedzone/Z1AFAKE1ZON3YO"),
 		Name: aws.String("example.com."),
 	})
 
 	mockEC2.Images = append(mockEC2.Images, &ec2.Image{
-		ImageId: aws.String("ami-12345"),
+		ImageId: aws.String("ami-12345678"),
 		Name:    aws.String("k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21"),
 		OwnerId: aws.String(awsup.WellKnownAccountKopeio),
 	})
