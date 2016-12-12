@@ -21,7 +21,6 @@ package kutil
 // https://github.com/kubernetes/kubernetes/blob/master/pkg/kubectl/cmd/drain.go
 ////
 
-
 // TODO: remove kubectl dependencies
 
 import (
@@ -35,13 +34,15 @@ import (
 
 	"github.com/jonboulle/clockwork"
 
+	"github.com/golang/glog"
+
 	"k8s.io/kubernetes/pkg/api"
 	apierrors "k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/meta"
+	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apis/policy"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/client/restclient"
-	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/fields"
 	"k8s.io/kubernetes/pkg/kubectl"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
@@ -51,6 +52,7 @@ import (
 	"k8s.io/kubernetes/pkg/util/wait"
 )
 
+// DrainOptions For Draining Node
 type DrainOptions struct {
 	client             *internalclientset.Clientset
 	restClient         *restclient.RESTClient
@@ -68,6 +70,7 @@ type DrainOptions struct {
 	typer              runtime.ObjectTyper
 }
 
+// Allow tweaking default options for draining nodes
 type DrainCommand struct {
 	Force              bool
 	IgnoreDaemonsets   bool
@@ -100,31 +103,39 @@ const (
 )
 
 // Create a NewDrainOptions
-func NewDrainOptions(command *DrainCommand) *DrainOptions {
+func NewDrainOptions(command *DrainCommand) (*DrainOptions, error) {
 	f := cmdutil.NewFactory(nil)
 
 	if command != nil {
-		return &DrainOptions{
-			factory: f,
-			backOff: clockwork.NewRealClock(),
-			Force: command.Force,
-			IgnoreDaemonsets: command.IgnoreDaemonsets,
-			DeleteLocalData: command.DeleteLocalData,
-			GracePeriodSeconds: command.GracePeriodSeconds,
-			Timeout: command.GracePeriodSeconds,
+		duration, err := time.ParseDuration(fmt.Sprintf("%ds", command.GracePeriodSeconds))
+		if err != nil {
+			return nil, err
 		}
+		return &DrainOptions{
+			factory:            f,
+			backOff:            clockwork.NewRealClock(),
+			Force:              command.Force,
+			IgnoreDaemonsets:   command.IgnoreDaemonsets,
+			DeleteLocalData:    command.DeleteLocalData,
+			GracePeriodSeconds: command.GracePeriodSeconds,
+			Timeout:            duration,
+		}, nil
 	}
 
 	// return will defaults
-	return &DrainOptions{
-		factory: f,
-		backOff: clockwork.NewRealClock(),
-		Force: true,
-		IgnoreDaemonsets: true,
-		DeleteLocalData: true,
-		GracePeriodSeconds: -1,
-		Timeout: 0,
+	duration, err := time.ParseDuration("0s")
+	if err != nil {
+		return nil, err
 	}
+	return &DrainOptions{
+		factory:            f,
+		backOff:            clockwork.NewRealClock(),
+		Force:              true,
+		IgnoreDaemonsets:   true,
+		DeleteLocalData:    true,
+		GracePeriodSeconds: -1,
+		Timeout:            duration,
+	}, nil
 
 }
 
@@ -158,6 +169,7 @@ func (o *DrainOptions) SetupDrain(nodeName string) error {
 		return err
 	}
 
+	//fmt.Printf("SetupDrain() node: %s ", o.nodeInfo.Name)
 	return r.Visit(func(info *resource.Info, err error) error {
 		if err != nil {
 			return err
@@ -170,12 +182,15 @@ func (o *DrainOptions) SetupDrain(nodeName string) error {
 // RunDrain runs the 'drain' command
 func (o *DrainOptions) RunDrain() error {
 	if err := o.RunCordonOrUncordon(true); err != nil {
+		glog.V(2).Infof("Error draining node %s - %v", o.nodeInfo.Name, err)
 		return err
 	}
 
 	err := o.deleteOrEvictPodsSimple()
 	if err == nil {
-		cmdutil.PrintSuccess(o.mapper, false, o.out, "node", o.nodeInfo.Name, false, "drained")
+		glog.V(2).Infof("Drained node %s - %v", o.nodeInfo.Name, err)
+	} else {
+		glog.V(2).Infof("Error draining node %s - %v", o.nodeInfo.Name, err)
 	}
 	return err
 }
@@ -212,7 +227,7 @@ func (o *DrainOptions) getController(sr *api.SerializedReference) (interface{}, 
 		return o.client.Extensions().ReplicaSets(sr.Reference.Namespace).Get(sr.Reference.Name)
 	case "PetSet":
 		// TODO: how the heck do you write this
-		return "PetSet"
+		return "PetSet", nil
 	case "StatefulSet":
 		return o.client.Apps().StatefulSets(sr.Reference.Namespace).Get(sr.Reference.Name)
 	}
@@ -489,6 +504,7 @@ func (o *DrainOptions) waitForDelete(pods []api.Pod, interval, timeout time.Dura
 		for i, pod := range pods {
 			p, err := getPodFn(pod.Namespace, pod.Name)
 			if apierrors.IsNotFound(err) || (p != nil && p.ObjectMeta.UID != pod.ObjectMeta.UID) {
+				// TODO: remove
 				cmdutil.PrintSuccess(o.mapper, false, o.out, "pod", pod.Name, false, verbStr)
 				continue
 			} else if err != nil {
@@ -549,6 +565,7 @@ func (o *DrainOptions) RunCordonOrUncordon(desired bool) error {
 	if o.nodeInfo.Mapping.GroupVersionKind.Kind == "Node" {
 		unsched := reflect.ValueOf(o.nodeInfo.Object).Elem().FieldByName("Spec").FieldByName("Unschedulable")
 		if unsched.Bool() == desired {
+			// TODO: remove
 			cmdutil.PrintSuccess(o.mapper, false, o.out, o.nodeInfo.Mapping.Resource, o.nodeInfo.Name, false, already(desired))
 		} else {
 			helper := resource.NewHelper(o.restClient, o.nodeInfo.Mapping)
@@ -571,9 +588,11 @@ func (o *DrainOptions) RunCordonOrUncordon(desired bool) error {
 			if err != nil {
 				return err
 			}
+			// TODO: remove
 			cmdutil.PrintSuccess(o.mapper, false, o.out, o.nodeInfo.Mapping.Resource, o.nodeInfo.Name, false, changed(desired))
 		}
 	} else {
+		// TODO: remove
 		cmdutil.PrintSuccess(o.mapper, false, o.out, o.nodeInfo.Mapping.Resource, o.nodeInfo.Name, false, "skipped")
 	}
 

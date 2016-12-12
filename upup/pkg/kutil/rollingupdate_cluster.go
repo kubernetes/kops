@@ -255,18 +255,36 @@ func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, interval 
 		update = append(update, n.Ready...)
 	}
 
-	drain := NewDrainOptions(nil)
+	drain, drainErr := NewDrainOptions(nil)
+	if drainErr != nil {
+		glog.Fatalf("Error creating drain: %v",drainErr)
+	}
 	for _, u := range update {
 		instanceID := aws.StringValue(u.ASGInstance.InstanceId)
 		glog.Infof("Stopping instance %q in AWS ASG %q", instanceID, n.ASGName)
 
 		// Drain the Node
-		drain.SetupDrain(u.Node.Name)
-		err := drain.RunDrain()
+		var err error
 
+		// Drain was setup correctly
+		if drainErr != nil {
+			err = drain.SetupDrain(u.Node.Name)
+		} else {
+			glog.Infof("Skipping drain for %s", u.Node.Name)
+		}
+
+		// Setup Failed
 		if err != nil {
-			// what do we do here??
-			glog.V(2).Infof("Drain failed %s - %q in AWS ASG %q", u.Node.Name, instanceID, n.ASGName)
+			glog.Fatalf("Error setting up drain: %v",drainErr)
+		} else {
+
+			// Drain it
+			err = drain.RunDrain()
+
+			if err != nil {
+				// TODO: fail here??
+				glog.Fatalf("Drain failed %s - %q in AWS ASG %q", u.Node.Name, instanceID, n.ASGName)
+			}
 		}
 
 		// TODO: Temporarily increase size of ASG?
