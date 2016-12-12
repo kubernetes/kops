@@ -18,17 +18,19 @@ package kutil
 
 import (
 	"fmt"
+	"sync"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
+	validate "k8s.io/kops/pkg/validation"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
-	"sync"
-	"time"
 )
 
 // RollingUpdateCluster restarts cluster nodes
@@ -41,6 +43,10 @@ type RollingUpdateCluster struct {
 	Force bool
 }
 
+// TODO move retries to RollingUpdateCluster
+const retries = 8
+
+// Find CloudInstanceGroups
 func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroups []*api.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*CloudInstanceGroup, error) {
 	awsCloud := cloud.(awsup.AWSCloud)
 
@@ -95,7 +101,8 @@ func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroup
 	return groups, nil
 }
 
-func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, k8sClient *release_1_5.Clientset) error {
+// Perform a rolling update on a K8s Cluster
+func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, instanceGroups *api.InstanceGroupList, k8sClient *release_1_5.Clientset) error {
 	if len(groups) == 0 {
 		return nil
 	}
@@ -135,7 +142,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 			defer wg.Done()
 
 			for k, group := range masterGroups {
-				err := group.RollingUpdate(c.Cloud, c.Force, c.MasterInterval, k8sClient)
+				err := group.RollingUpdate(c.Cloud, c.Force, c.MasterInterval, instanceGroups, k8sClient)
 
 				resultsMutex.Lock()
 				results[k] = err
@@ -161,7 +168,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 
 				defer wg.Done()
 
-				err := group.RollingUpdate(c.Cloud, c.Force, c.NodeInterval, k8sClient)
+				err := group.RollingUpdate(c.Cloud, c.Force, c.NodeInterval, instanceGroups, k8sClient)
 
 				resultsMutex.Lock()
 				results[k] = err
@@ -239,35 +246,61 @@ func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group, nodeMa
 	return n
 }
 
-func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, interval time.Duration, k8sClient *release_1_5.Clientset) error {
+// Performs a rolling update on a list of nodes
+func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, interval time.Duration, instanceGroupList *api.InstanceGroupList, k8sClient *release_1_5.Clientset) error {
 	c := cloud.(awsup.AWSCloud)
 
 	update := n.NeedUpdate
 	if force {
 		update = append(update, n.Ready...)
 	}
+
+	drain := NewDrainOptions(nil)
 	for _, u := range update {
 		instanceID := aws.StringValue(u.ASGInstance.InstanceId)
 		glog.Infof("Stopping instance %q in AWS ASG %q", instanceID, n.ASGName)
 
-		// TODO: Evacuate through k8s first?
+		// Drain the Node
+		drain.SetupDrain(u.Node.Name)
+		err := drain.RunDrain()
+
+		if err != nil {
+			// what do we do here??
+			glog.V(2).Infof("Drain failed %s - %q in AWS ASG %q", u.Node.Name, instanceID, n.ASGName)
+		}
 
 		// TODO: Temporarily increase size of ASG?
-
 		// TODO: Remove from ASG first so status is immediately updated?
-
 		// TODO: Batch termination, like a rolling-update
 
 		request := &ec2.TerminateInstancesInput{
 			InstanceIds: []*string{u.ASGInstance.InstanceId},
 		}
-		_, err := c.EC2().TerminateInstances(request)
+		_, err = c.EC2().TerminateInstances(request)
 		if err != nil {
 			return fmt.Errorf("error deleting instance %q: %v", instanceID, err)
 		}
 
-		// TODO: Wait for node to appear back in k8s
+		// Wait for new EC2 instances to be created
 		time.Sleep(interval)
+
+		// Wait until the cluster is happy
+		// TODO: do we need to respect cloud only??
+		for i := 0; i < retries; i++ {
+
+			_, validateDidNotPass := validate.ValidateCluster(u.Node.ClusterName, instanceGroupList, k8sClient)
+
+			if validateDidNotPass != nil {
+				glog.V(2).Infof("Unable to validate kuberetes cluster %s, %v.", u.Node.ClusterName, validateDidNotPass)
+				time.Sleep(interval)
+			} else {
+				glog.V(2).Infof("Cluster %s is validated proceeding with next step in rolling update",
+					u.Node.ClusterName)
+				break
+			}
+		}
+
+		// TODO: what do we do if validation fails?
 	}
 
 	return nil

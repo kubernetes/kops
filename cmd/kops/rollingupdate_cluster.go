@@ -18,6 +18,10 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strconv"
+	"time"
+
 	"github.com/spf13/cobra"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -27,11 +31,9 @@ import (
 	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
-	"os"
-	"strconv"
-	"time"
 )
 
+// Command Object for a Rolling Update
 type RollingUpdateClusterCmd struct {
 	Yes            bool
 	Force          bool
@@ -68,6 +70,7 @@ func init() {
 	}
 }
 
+// Run the Cobra Command - Do a rolling update for a Cluster
 func (c *RollingUpdateClusterCmd) Run(args []string) error {
 	err := rootCommand.ProcessArgs(args)
 	if err != nil {
@@ -205,5 +208,5 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 		return nil
 	}
 
-	return d.RollingUpdate(groups, k8sClient)
+	return d.RollingUpdate(groups, list, k8sClient)
 }
