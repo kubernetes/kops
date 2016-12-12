@@ -9,7 +9,7 @@
 
 #### 2. Merge the release notes
 
-* `HISTORY.md` serves as our official changelog.
+* `CHANGELOG.md` serves as our official changelog.
 * Before the release, the maintainers had opened a PR with the proposed changelog. This should now be merged.
 
 

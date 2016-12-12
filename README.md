@@ -4,10 +4,6 @@
 
 The easiest way to get a production Kubernetes cluster up and running.
 
-# Version 1.4.2 is here!
-
-See the official [release notes](HISTORY.md) for more information on what changed
-
 # What is kops?
 
 We like to think of it as `kubectl` for clusters.
@@ -28,6 +24,8 @@ Launching a Kubernetes cluster on [AWS](/docs/aws.md).
 ### Features
 
 * Automated Kubernetes cluster [CRUD](/docs/commands.md) for the cloud ([AWS](/docs/aws.md))
+* Support for public and private network topologies
+* Robust kubernetes based library and API built into the code
 * HA (Highly Available) Kubernetes clusters
 * Uses a state-sync model for **dry-run** and automatic **idempotency**
 * Custom support for `kubectl` [add-ons](docs/addons.md)
@@ -38,15 +36,17 @@ Launching a Kubernetes cluster on [AWS](/docs/aws.md).
 
 # Installation
 
-### Recommended
+### Version 1.4.2 is here!
 
-Download the [latest release](https://github.com/kubernetes/kops/releases/latest)
-chmod +x kops-linux-amd64  -  (Add execution permissions )
-ln -s ./kops-linux-amd64 /usr/bin/kops - (optional, makes kops available from any path).
+See the official [release notes](CHANGELOG.md) for more information on what changed
 
-### History
+Download [v1.4.2](https://github.com/kubernetes/kops/releases/latest)
 
-View our [changelog](HISTORY.md)
+```
+wget -O https://github.com/kubernetes/kops/releases/download/v1.4.1/kops-darwin-amd64
+chmod +x kops-linux-amd64
+ln -s ./kops-linux-amd64 /usr/bin/kops
+```
 
 ### From Homebrew (Latest Stable Release)
 ```
