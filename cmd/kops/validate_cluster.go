@@ -96,18 +96,19 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		clientcmd.NewDefaultClientConfigLoadingRules(),
 		&clientcmd.ConfigOverrides{CurrentContext: contextName}).ClientConfig()
 	if err != nil {
-		return fmt.Errorf("cannot load kubecfg settings for %q: %v", contextName, err)
+		return fmt.Errorf("Cannot load kubecfg settings for %q: %v\n", contextName, err)
 	}
 
 	k8sClient, err := release_1_5.NewForConfig(config)
 	if err != nil {
-		return fmt.Errorf("cannot build kube client for %q: %v", contextName, err)
+		return fmt.Errorf("Cannot build kube api client for %q: %v\n", contextName, err)
 	}
 
 	validationCluster, validationFailed := validation.ValidateCluster(cluster.Name, list, k8sClient)
 
 	if validationCluster == nil || validationCluster.NodeList == nil || validationCluster.NodeList.Items == nil {
-		return fmt.Errorf("cannot get nodes for %q: %v", cluster.Name, validationFailed)
+		// validationFailed error is already formatted
+		return validationFailed
 	}
 
 	t := &tables.Table{}
@@ -170,8 +171,9 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 	} else {
 		// do we need to print which instance group is not ready?
 		// nodes are going to be a pain
-		fmt.Fprintf(out, "Master(s) Not Ready %d out of %d.\n", len(validationCluster.MastersNotReadyArray), validationCluster.MastersCount)
+		fmt.Fprintf(out, "\nYour cluster %s is NOT ready.\n", cluster.Name)
+		fmt.Fprintf(out, "\nMaster(s) Not Ready %d out of %d.\n", len(validationCluster.MastersNotReadyArray), validationCluster.MastersCount)
 		fmt.Fprintf(out, "Node(s) Not Ready   %d out of %d.\n", len(validationCluster.NodesNotReadyArray), validationCluster.NodesCount)
-		return fmt.Errorf("\nYour cluster %s is NOT ready.\n", cluster.Name)
+		return fmt.Errorf("Your cluster %s is NOT ready.\n", cluster.Name)
 	}
 }
