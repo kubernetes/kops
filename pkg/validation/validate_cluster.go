@@ -48,6 +48,7 @@ type ValidationNode struct {
 	Status   v1.ConditionStatus `json:"status,omitempty"`
 }
 
+// TODO: change this to the client that drain usages
 // ValidateCluster validate a k8s cluster with a provided instance group list
 func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupList, clusterKubernetesClient release_1_5.Interface) (*ValidationCluster, error) {
 	var instanceGroups []*kops.InstanceGroup

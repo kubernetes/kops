@@ -18,6 +18,10 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strconv"
+	"time"
+
 	"github.com/spf13/cobra"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -27,16 +31,16 @@ import (
 	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
-	"os"
-	"strconv"
-	"time"
 )
 
+// Command Object for a Rolling Update
 type RollingUpdateClusterCmd struct {
 	Yes       bool
 	Force     bool
 	CloudOnly bool
 
+	ForceDrain      bool
+	FailOnValidate  bool
 	MasterInterval  time.Duration
 	NodeInterval    time.Duration
 	BastionInterval time.Duration
@@ -63,6 +67,8 @@ func init() {
 	cmd.Flags().DurationVar(&rollingupdateCluster.MasterInterval, "master-interval", 5*time.Minute, "Time to wait between restarting masters")
 	cmd.Flags().DurationVar(&rollingupdateCluster.NodeInterval, "node-interval", 2*time.Minute, "Time to wait between restarting nodes")
 	cmd.Flags().DurationVar(&rollingupdateCluster.BastionInterval, "bastion-interval", 5*time.Minute, "Time to wait between restarting bastions")
+	cmd.Flags().BoolVar(&rollingupdateCluster.ForceDrain, "force-drain", true, "The node will be upgraded if the drain fails, if set to false the rolling update will fail if a drain fails.")
+	cmd.Flags().BoolVar(&rollingupdateCluster.FailOnValidate, "validate", true, "Validate the cluster, and if the validation fails stop the rolling-update.")
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		err := rollingupdateCluster.Run(args)
@@ -72,6 +78,7 @@ func init() {
 	}
 }
 
+// Run the Cobra Command - Do a rolling update for a Cluster
 func (c *RollingUpdateClusterCmd) Run(args []string) error {
 	err := rootCommand.ProcessArgs(args)
 	if err != nil {
@@ -209,5 +216,5 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 		return nil
 	}
 
-	return d.RollingUpdate(groups, k8sClient)
+	return d.RollingUpdate(groups, list, k8sClient, c.ForceDrain, c.FailOnValidate)
 }
