@@ -20,11 +20,13 @@ import (
 	//"fmt"
 	//
 	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
 //go:generate fitask -type=ElasticIP
@@ -210,4 +212,18 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 	return nil
 }
 
-// TODO Kris - We need to support EIP for Terraform
+type terraformElasticIP struct {
+	VPC *bool `json:"vpc"`
+}
+
+func (_ *ElasticIP) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ElasticIP) error {
+	tf := &terraformElasticIP{
+		VPC: aws.Bool(true),
+	}
+
+	return t.RenderResource("aws_eip", *e.Name, tf)
+}
+
+func (e *ElasticIP) TerraformLink() *terraform.Literal {
+	return terraform.LiteralProperty("aws_eip", *e.Name, "id")
+}
