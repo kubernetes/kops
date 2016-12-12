@@ -23,9 +23,11 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kops/util/pkg/tables"
@@ -40,6 +42,8 @@ type RollingUpdateOptions struct {
 	Force     bool
 	CloudOnly bool
 
+	ForceDrain      bool
+	FailOnValidate  bool
 	MasterInterval  time.Duration
 	NodeInterval    time.Duration
 	BastionInterval time.Duration
@@ -72,6 +76,9 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 This command updates the running instances to match the cloud specifications.
 
+Use KOPS_FEATURE_FLAGS="+ValidiateAndDrainRollingUpdate" to use beta code that drains the nodes
+and validates the cluser.
+
 To perform rolling update, you need to update the cloud resources first with "kops update cluster"`,
 	}
 
@@ -79,11 +86,13 @@ To perform rolling update, you need to update the cloud resources first with "ko
 	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force rolling update, even if no changes")
 	cmd.Flags().BoolVar(&options.CloudOnly, "cloudonly", options.CloudOnly, "Perform rolling update without confirming progress with k8s")
 
-	cmd.Flags().DurationVar(&options.MasterInterval, "master-interval", options.MasterInterval, "Time to wait between restarting masters")
-	cmd.Flags().DurationVar(&options.NodeInterval, "node-interval", options.NodeInterval, "Time to wait between restarting nodes")
-	cmd.Flags().DurationVar(&options.BastionInterval, "bastion-interval", options.BastionInterval, "Time to wait between restarting bastions")
-
+	cmd.Flags().DurationVar(&options.MasterInterval, "master-interval", 5*time.Minute, "Time to wait between restarting masters")
+	cmd.Flags().DurationVar(&options.NodeInterval, "node-interval", 2*time.Minute, "Time to wait between restarting nodes")
+	cmd.Flags().DurationVar(&options.BastionInterval, "bastion-interval", 5*time.Minute, "Time to wait between restarting bastions")
 	cmd.Flags().StringSliceVar(&options.InstanceGroups, "instance-group", options.InstanceGroups, "List of instance groups to update (defaults to all if not specified)")
+
+	cmd.Flags().BoolVar(&options.ForceDrain, "force-drain", true, "The node will be upgraded if the drain fails, if set to false the rolling update will fail if a drain fails.")
+	cmd.Flags().BoolVar(&options.FailOnValidate, "validate", true, "Validate the cluster, and if the validation fails stop the rolling-update.")
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		err := rootCommand.ProcessArgs(args)
@@ -264,5 +273,27 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		return nil
 	}
 
-	return d.RollingUpdate(groups, k8sClient)
+	if featureflag.DrainAndValidateRollingUpdate.Enabled() {
+		d := &kutil.RollingUpdateClusterDV{
+			MasterInterval: options.MasterInterval,
+			NodeInterval:   options.NodeInterval,
+			Force:          options.Force,
+			K8sClient:      k8sClient,
+			ForceDrain:     options.ForceDrain,
+			FailOnValidate: options.FailOnValidate,
+			CloudOnly:      options.CloudOnly,
+			ClusterName:    options.ClusterName,
+			Cloud:          cloud,
+		}
+		glog.V(2).Infof("New rolling update with drain and validate enabled")
+		return d.RollingUpdateDrainValidate(groups, list)
+	} else {
+		d := &kutil.RollingUpdateCluster{
+			MasterInterval: options.MasterInterval,
+			NodeInterval:   options.NodeInterval,
+			Force:          options.Force,
+			Cloud:          cloud,
+		}
+		return d.RollingUpdate(groups, k8sClient)
+	}
 }
