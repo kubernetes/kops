@@ -40,7 +40,7 @@ sudo cp kubernetes/platforms/darwin/amd64/kubectl /usr/local/bin/kubectl
 
 ## Setup your environment
 
-#### Setting up a kops IAM user
+### Setting up a kops IAM user
 
 
 In this example we will be using a dedicated IAM user to use with kops. This user will need basic API security credentials in order to use kops. Create the user and credentials using the AWS console. [More information](http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.html).
@@ -55,9 +55,11 @@ aws iam list-users
 
 We should now be able to pull a list of IAM users from the API, verifying that our credentials are working as expected.
 
-We will now need to set up DNS for cluster, find one of the scenarios below that match your situation.
+## Configure DNS
 
-#### Setting up DNS for your cluster, with amazon as your registrar
+We will now need to set up DNS for cluster, find one of the scenarios below (A,B,C) that match your situation.
+
+### (A) Setting up DNS for your cluster, with amazon as your registrar
 
 If you bought your domain with AWS, then you should already have a hosted zone in Route53.
 
@@ -67,42 +69,41 @@ If you plan on using your base domain, then no more work is needed. If you plan 
 ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.kubernetes.com --caller-reference $ID
 ```
 
-
-#### Setting up DNS for your cluster, with another registrar.
+### (B) Setting up DNS for your cluster, with another registrar.
 
 If you bought your domain elsewhere, and would like to dedicate the entire domain to AWS you should follow the guide [here](http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/domain-transfer-to-route-53.html)
 
-If you bought your domain elsewhere, but **only want to use a subdomain in AWS Route53** you must modify your registrar's NS (NameServer) records. See the example below.
+### (C) Setting up a subdomain for clusters, with another registrar while keeping your top level domain the same
 
-###### Setting up a subdomain for clusters, with another registrar
+If you bought your domain elsewhere, but **only want to use a subdomain in AWS Route53** you must modify your registrar's NS (NameServer) records. See the example below.
 
 Here we will be creating a hosted zone in AWS Route53, and migrating the subdomain's NS records to your other registrar.
 
-1. Create the subdomain
+  - Create the subdomain
 
 ```bash
 ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.kubernetes.com --caller-reference $ID
 ```
 
-2. Note your hosted zone ID
+  - Note your hosted zone ID
 
 ```bash
 aws route53 list-hosted-zones | jq '.HostedZones[] | select(.Name=="subdomain.kubernetes.com") | .Id'
 ```
 
-3. Note your nameservers for the subdomain
+  - Note your nameservers for the subdomain
 
 ```bash
 aws route53 get-hosted-zone --id "/hostedzone/Z1K7H5F7891012" | jq .DelegationSet.NameServers
 ```
 
-4. You will now go to your registrars page and log in. You will need to create a new **subdomain**, and use the 4 NS records listed above for the new subdomain. This **MUST** be done in order to use your cluster. Do **NOT** change your top level NS record, or you might take your site offline.
+  - You will now go to your registrars page and log in. You will need to create a new **subdomain**, and use the 4 NS records listed above for the new subdomain. This **MUST** be done in order to use your cluster. Do **NOT** change your top level NS record, or you might take your site offline.
 
  - Information on adding NS records with [Godaddy.com](https://www.godaddy.com/help/set-custom-nameservers-for-domains-registered-with-godaddy-12317)
  - Information on adding NS records with [Google Cloud Platform](https://cloud.google.com/dns/update-name-servers)
 
 
-#### Testing your DNS setup
+## Testing your DNS setup
 
 You should now able to dig your domain (or subdomain) and see the AWS Name Servers on the other end. This **MUST** be completed before moving on.
 
@@ -118,7 +119,7 @@ k8s.example.com.        172800  IN  NS  ns-1022.awsdns-35.com.
 k8s.example.com.        172800  IN  NS  ns-1149.awsdns-27.co.uk.
 ```
 
-#### Setting up a state store for your cluster
+## Setting up a state store for your cluster
 
 
 In this example we will be creating a dedicated S3 bucket for kops to use. This is where kops will store the state of your cluster and the representation of your cluster, and serves as the source of truth for our cluster configuration throughout the process. We will call this kubernetes-com-state-store. We recommend keeping the creation confined to us-east-1, otherwise more input will be needed here.
