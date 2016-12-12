@@ -25,6 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"github.com/spf13/cobra"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/validation"
@@ -32,11 +33,10 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kubernetes/pkg/api/v1"
 	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
+	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 	"k8s.io/kubernetes/pkg/kubectl/cmd"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
-	"github.com/spf13/cobra"
 	"os"
-	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 )
 
 // RollingUpdateCluster is a struct containing cluster information for a rolling update.
@@ -50,7 +50,7 @@ type RollingUpdateCluster struct {
 	Force bool
 
 	K8sClient        *k8s_clientset.Clientset
-	ClientConfig  clientcmd.ClientConfig
+	ClientConfig     clientcmd.ClientConfig
 	FailOnDrainError bool
 	FailOnValidate   bool
 	CloudOnly        bool
@@ -464,8 +464,6 @@ func (n *CloudInstanceGroup) DeleteAWSInstance(u *CloudInstanceGroupInstance, in
 
 }
 
-
-
 // DrainNode drains a K8s node.
 func (n *CloudInstanceGroup) DrainNode(u *CloudInstanceGroupInstance, rollingUpdateData *RollingUpdateCluster) error {
 	if rollingUpdateData.ClientConfig == nil {
@@ -476,12 +474,12 @@ func (n *CloudInstanceGroup) DrainNode(u *CloudInstanceGroupInstance, rollingUpd
 	// TODO: Send out somewhere else, also DrainOptions has errout
 	out := os.Stdout
 
-	options := &cmd.DrainOptions{factory: f, out: out}
+	options := &cmd.DrainOptions{Factory: f, Out: out}
 
 	cmd := &cobra.Command{
-		Use:     "cordon NODE",
+		Use: "cordon NODE",
 	}
-	args := []string{ u.Node.Name }
+	args := []string{u.Node.Name}
 	err := options.SetupDrain(cmd, args)
 	if err != nil {
 		return fmt.Errorf("error setting up drain: %v", err)
