@@ -24,6 +24,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
 type LoadBalancerAccessLog struct {
@@ -248,5 +249,10 @@ func (_ *LoadBalancerAttributes) RenderAWS(t *awsup.AWSAPITarget, a, e, changes 
 		return fmt.Errorf("error configuring ELB attributes for ELB: %v", err)
 	}
 
+	return nil
+}
+
+func (_ *LoadBalancerAttributes) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LoadBalancerAttributes) error {
+	glog.Warning("LoadBalancerAttributes RenderTerraform not implemented")
 	return nil
 }

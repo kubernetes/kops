@@ -100,7 +100,6 @@ func (s *LoadBalancerAttachment) CheckChanges(a, e, changes *LoadBalancerAttachm
 }
 
 func (_ *LoadBalancerAttachment) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalancerAttachment) error {
-
 	if e.AutoscalingGroup != nil && e.Instance == nil {
 		request := &autoscaling.AttachLoadBalancersInput{}
 		request.AutoScalingGroupName = e.AutoscalingGroup.Name
