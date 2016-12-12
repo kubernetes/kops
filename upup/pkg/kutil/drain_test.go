@@ -258,7 +258,8 @@ func TestDrain(t *testing.T) {
 				args:         []string{"node"},
 				expectFatal:  true,
 				expectDelete: false,
-			},*/
+			},
+			*/
 		{
 			description:  "DS-managed pod with --ignore-daemonsets",
 			node:         node,

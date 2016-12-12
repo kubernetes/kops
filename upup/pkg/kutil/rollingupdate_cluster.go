@@ -255,47 +255,37 @@ func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, interval 
 		update = append(update, n.Ready...)
 	}
 
-	drain, drainErr := NewDrainOptions(nil)
-	if drainErr != nil {
-		glog.Fatalf("Error creating drain: %v",drainErr)
-	}
 	for _, u := range update {
-		instanceID := aws.StringValue(u.ASGInstance.InstanceId)
-		glog.Infof("Stopping instance %q in AWS ASG %q", instanceID, n.ASGName)
 
-		// Drain the Node
-		var err error
+		drain, drainErr := NewDrainOptions(nil, u.Node.ClusterName)
 
-		// Drain setup
 		if drainErr != nil {
-			err = drain.SetupDrain(u.Node.Name)
+			glog.Warningf("Error creating drain: %v", drainErr)
 		} else {
-			glog.Infof("Skipping drain for %s", u.Node.Name)
-		}
+			drainErr = drain.SetupDrain(u.Node.Name)
+			if drainErr != nil {
+				glog.Warningf("setupErr: %v", drainErr)
+			} else {
+				drainErr = drain.RunDrain()
 
-		// Setup Failed
-		if err != nil {
-			// TODO: do we fail here??
-			glog.Fatalf("Error setting up drain: %v",drainErr)
-		} else {
-
-			// Drain it
-			err = drain.RunDrain()
-
-			if err != nil {
-				// TODO: fail here??
-				glog.Fatalf("Drain failed %s - %q in AWS ASG %q", u.Node.Name, instanceID, n.ASGName)
-			}
+				if drainErr != nil {
+					// TODO: fail here??
+					glog.Warningf("Drain failed %s", u.Node.Name)
+				}
+		  }
 		}
 
 		// TODO: Temporarily increase size of ASG?
 		// TODO: Remove from ASG first so status is immediately updated?
 		// TODO: Batch termination, like a rolling-update
 
+		instanceID := aws.StringValue(u.ASGInstance.InstanceId)
+		glog.Infof("Stopping instance %q in AWS ASG %q", instanceID, n.ASGName)
+
 		request := &ec2.TerminateInstancesInput{
 			InstanceIds: []*string{u.ASGInstance.InstanceId},
 		}
-		_, err = c.EC2().TerminateInstances(request)
+		_, err := c.EC2().TerminateInstances(request)
 		if err != nil {
 			return fmt.Errorf("error deleting instance %q: %v", instanceID, err)
 		}
