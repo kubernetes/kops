@@ -20,18 +20,60 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
+	"github.com/aws/aws-sdk-go/aws"
+	"fmt"
+	"strings"
 )
 
 type zoneInfo struct {
 }
 
+func (m *MockRoute53) GetHostedZoneRequest(*route53.GetHostedZoneInput) (*request.Request, *route53.GetHostedZoneOutput) {
+	panic("MockRoute53 GetHostedZoneRequest not implemented")
+	return nil, nil
+}
+func (m *MockRoute53) GetHostedZone(request *route53.GetHostedZoneInput) (*route53.GetHostedZoneOutput, error) {
+	glog.Infof("GetHostedZone %v", request)
+
+	findID := aws.StringValue(request.Id)
+	if !strings.Contains(findID, "/") {
+		findID = "/hostedzone/" + findID
+	}
+
+	for _, z := range m.Zones {
+		if *z.Id != findID {
+			continue
+		}
+
+		copy := *z
+		response := &route53.GetHostedZoneOutput{
+			// DelegationSet ???
+			HostedZone: &copy,
+			// VPCs
+		}
+		return response, nil
+	}
+
+	// TODO: Correct error
+	return nil, fmt.Errorf("NOT FOUND")
+}
+
+func (m *MockRoute53) GetHostedZoneCountRequest(*route53.GetHostedZoneCountInput) (*request.Request, *route53.GetHostedZoneCountOutput) {
+	panic("MockRoute53 GetHostedZoneCountRequest not implemented")
+	return nil, nil
+}
+func (m *MockRoute53) GetHostedZoneCount(*route53.GetHostedZoneCountInput) (*route53.GetHostedZoneCountOutput, error) {
+	panic("MockRoute53 GetHostedZoneCount not implemented")
+	return nil, nil
+}
+
 func (m *MockRoute53) ListHostedZonesRequest(*route53.ListHostedZonesInput) (*request.Request, *route53.ListHostedZonesOutput) {
-	panic("MockRoute53 function not implemented")
+	panic("MockRoute53 ListHostedZonesRequest not implemented")
 	return nil, nil
 }
 
 func (m *MockRoute53) ListHostedZones(*route53.ListHostedZonesInput) (*route53.ListHostedZonesOutput, error) {
-	panic("MockRoute53 function not implemented")
+	panic("MockRoute53 ListHostedZones not implemented")
 	return nil, nil
 }
 
@@ -50,11 +92,11 @@ func (m *MockRoute53) ListHostedZonesPages(request *route53.ListHostedZonesInput
 }
 
 func (m *MockRoute53) ListHostedZonesByNameRequest(*route53.ListHostedZonesByNameInput) (*request.Request, *route53.ListHostedZonesByNameOutput) {
-	panic("MockRoute53 function not implemented")
+	panic("MockRoute53 ListHostedZonesByNameRequest not implemented")
 	return nil, nil
 }
 
 func (m *MockRoute53) ListHostedZonesByName(*route53.ListHostedZonesByNameInput) (*route53.ListHostedZonesByNameOutput, error) {
-	panic("MockRoute53 function not implemented")
+	panic("MockRoute53 ListHostedZonesByName not implemented")
 	return nil, nil
 }
