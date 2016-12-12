@@ -95,7 +95,8 @@ This command updates a kubernetes cluseter to match the cloud, and kops specific
 To perform rolling update, you need to update the cloud resources first with "kops update cluster"
 
 Use KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate" to use beta code that drains the nodes
-and validates the cluser.`,
+and validates the cluser.  New flags for Drain and Validation operations will be shown when
+the environment variable is set.`,
 	}
 
 	cmd.Flags().BoolVar(&options.Yes, "yes", options.Yes, "perform rolling update without confirmation")
@@ -107,9 +108,11 @@ and validates the cluser.`,
 	cmd.Flags().DurationVar(&options.BastionInterval, "bastion-interval", options.BastionInterval, "Time to wait between restarting bastions")
 	cmd.Flags().StringSliceVar(&options.InstanceGroups, "instance-group", options.InstanceGroups, "List of instance groups to update (defaults to all if not specified)")
 
-	cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", true, "The rolling-update will fail if draining a node fails. Enable with KOPS_FEATURE_FLAGS='+DrainAndValidateRollingUpdate'")
-	cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate-error", true, "The rolling-update will fail if the cluster fails to validate. Enable with KOPS_FEATURE_FLAGS='+DrainAndValidateRollingUpdate'")
-	cmd.Flags().IntVar(&options.ValidateRetries, "validate-retries", 8, "The number of times that a node will be validated.  Between validation kops sleeps the master-interval/2 or node-interval/2 duration. Enable with KOPS_FEATURE_FLAGS='+DrainAndValidateRollingUpdate'")
+	if featureflag.DrainAndValidateRollingUpdate.Enabled() {
+		cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", true, "The rolling-update will fail if draining a node fails.")
+		cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate-error", true, "The rolling-update will fail if the cluster fails to validate.")
+		cmd.Flags().IntVar(&options.ValidateRetries, "validate-retries", 8, "The number of times that a node will be validated.  Between validation kops sleeps the master-interval/2 or node-interval/2 duration.")
+	}
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		err := rootCommand.ProcessArgs(args)
@@ -298,7 +301,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		Force:            options.Force,
 		Cloud:            cloud,
 		K8sClient:        k8sClient,
-		ClientConfig:        kutil.NewClientConfig(config, "kube-system"),
+		ClientConfig:     kutil.NewClientConfig(config, "kube-system"),
 		FailOnDrainError: options.FailOnDrainError,
 		FailOnValidate:   options.FailOnValidate,
 		CloudOnly:        options.CloudOnly,
