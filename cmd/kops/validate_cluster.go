@@ -171,7 +171,8 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 	} else {
 		// do we need to print which instance group is not ready?
 		// nodes are going to be a pain
-		fmt.Fprint(out, "\nValidation Failed\n")
+		// FIXME: format still not making sense
+		// FIXME: not sending back how many are running with less than IG are running
 		fmt.Fprintf(out, "Master(s) Not Ready %d out of %d.\n", len(validationCluster.MastersNotReadyArray), validationCluster.MastersCount)
 		fmt.Fprintf(out, "Node(s) Not Ready   %d out of %d.\n", len(validationCluster.NodesNotReadyArray), validationCluster.NodesCount)
 		return fmt.Errorf("Your cluster %s is NOT ready.\n", cluster.ObjectMeta.Name)
