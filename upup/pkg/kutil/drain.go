@@ -183,7 +183,7 @@ func (o *DrainOptions) SetupDrain(nodeName string) error {
 
 	err = r.Visit(func(info *resource.Info, err error) error {
 		if err != nil {
-			return fmt.Errorf("Internal vistor problem %v", err)
+			return fmt.Errorf("internal vistor problem %v", err)
 		}
 		glog.V(2).Infof("info %v", info)
 		o.nodeInfo = info
@@ -192,11 +192,11 @@ func (o *DrainOptions) SetupDrain(nodeName string) error {
 
 	if err != nil {
 		glog.Fatalf("Error getting nodeInfo %v", err)
-		return fmt.Errorf("Vistor problem %v", err)
+		return fmt.Errorf("vistor problem %v", err)
 	}
 
 	if err = r.Err(); err != nil {
-		return fmt.Errorf("Vistor problem %v", err)
+		return fmt.Errorf("vistor problem %v", err)
 	}
 
 	return nil
@@ -257,7 +257,7 @@ func (o *DrainOptions) getController(sr *api.SerializedReference) (interface{}, 
 	case "StatefulSet":
 		return o.client.Apps().StatefulSets(sr.Reference.Namespace).Get(sr.Reference.Name)
 	}
-	return nil, fmt.Errorf("Unknown controller kind %q", sr.Reference.Kind)
+	return nil, fmt.Errorf("unknown controller kind %q", sr.Reference.Kind)
 }
 
 func (o *DrainOptions) getPodCreator(pod api.Pod) (*api.SerializedReference, error) {
@@ -372,6 +372,8 @@ func (o *DrainOptions) getPodsForDeletion() (pods []api.Pod, err error) {
 
 	for _, pod := range podList.Items {
 		podOk := true
+		// FIXME: The localStorageFilter is coming back with daemonsets
+		// FIXME: The filters are not excluding each other
 		for _, filt := range []podFilter{mirrorPodFilter, o.localStorageFilter, o.unreplicatedFilter, o.daemonsetFilter} {
 			filterOk, w, f := filt(pod)
 
@@ -503,7 +505,7 @@ func (o *DrainOptions) evictPods(pods []api.Pod, policyGroupVersion string, getP
 				return nil
 			}
 		case <-time.After(globalTimeout):
-			return fmt.Errorf("Drain did not complete within %v", globalTimeout)
+			return fmt.Errorf("drain did not complete within %v", globalTimeout)
 		}
 	}
 }
