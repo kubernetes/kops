@@ -149,7 +149,7 @@ We will need to note which availability zones are available to us. In this examp
 aws ec2 describe-availability-zones --region us-west-1
 ```
 
-Lets form our create cluster command. This is the most basic example, a more verbose example on can be found [here]()
+Lets form our create cluster command. This is the most basic example, a more verbose example on can be found [here](advanced_create.md)
 
 ```bash
 kops create cluster \
