@@ -362,9 +362,10 @@ func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 		elbName = e.Name
 	}
 
+	internal := fi.StringValue(e.Scheme) == "internal"
 	tf := &terraformLoadBalancer{
 		Name:     elbName,
-		Internal: *e.Scheme == "internal",
+		Internal: internal,
 	}
 
 	for _, subnet := range e.Subnets {

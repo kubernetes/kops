@@ -205,22 +205,6 @@ func (m *MockRoute53) GetHealthCheckStatus(*route53.GetHealthCheckStatusInput) (
 	panic("MockRoute53 function not implemented")
 	return nil, nil
 }
-func (m *MockRoute53) GetHostedZoneRequest(*route53.GetHostedZoneInput) (*request.Request, *route53.GetHostedZoneOutput) {
-	panic("MockRoute53 function not implemented")
-	return nil, nil
-}
-func (m *MockRoute53) GetHostedZone(*route53.GetHostedZoneInput) (*route53.GetHostedZoneOutput, error) {
-	panic("MockRoute53 function not implemented")
-	return nil, nil
-}
-func (m *MockRoute53) GetHostedZoneCountRequest(*route53.GetHostedZoneCountInput) (*request.Request, *route53.GetHostedZoneCountOutput) {
-	panic("MockRoute53 function not implemented")
-	return nil, nil
-}
-func (m *MockRoute53) GetHostedZoneCount(*route53.GetHostedZoneCountInput) (*route53.GetHostedZoneCountOutput, error) {
-	panic("MockRoute53 function not implemented")
-	return nil, nil
-}
 func (m *MockRoute53) GetReusableDelegationSetRequest(*route53.GetReusableDelegationSetInput) (*request.Request, *route53.GetReusableDelegationSetOutput) {
 	panic("MockRoute53 function not implemented")
 	return nil, nil
