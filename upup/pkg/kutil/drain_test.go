@@ -14,6 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+////
+// Based off of drain in kubectl
+// https://github.com/kubernetes/kubernetes/blob/master/pkg/kubectl/cmd/drain_test.go
+///
+
+////
+// TODO: implement negative test cases that are commented out
+////
+
 package kutil
 
 import (
@@ -33,18 +42,18 @@ import (
 
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/testapi"
+	// TODO: replace when we push version
+	//metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	metav1 "k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apimachinery/registered"
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/apis/policy"
+	"k8s.io/kubernetes/pkg/client/restclient"
 	"k8s.io/kubernetes/pkg/client/restclient/fake"
 	cmdtesting "k8s.io/kubernetes/pkg/kubectl/cmd/testing"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/runtime"
-	// TODO: replace when we push version
-	//metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/client/restclient"
 )
 
 const (
@@ -238,17 +247,18 @@ func TestDrain(t *testing.T) {
 			expectFatal:  false,
 			expectDelete: true,
 		},
+		// TODO implement a way to init with correct params
 		/*
-		{
-			description:  "DS-managed pod",
-			node:         node,
-			expected:     cordoned_node,
-			pods:         []api.Pod{ds_pod},
-			rcs:          []api.ReplicationController{rc},
-			args:         []string{"node"},
-			expectFatal:  true,
-			expectDelete: false,
-		},*/
+			{
+				description:  "DS-managed pod",
+				node:         node,
+				expected:     cordoned_node,
+				pods:         []api.Pod{ds_pod},
+				rcs:          []api.ReplicationController{rc},
+				args:         []string{"node"},
+				expectFatal:  true,
+				expectDelete: false,
+			},*/
 		{
 			description:  "DS-managed pod with --ignore-daemonsets",
 			node:         node,
@@ -279,17 +289,18 @@ func TestDrain(t *testing.T) {
 			expectFatal:  false,
 			expectDelete: true,
 		},
+		// TODO implement a way to init with correct params
 		/*
-		{
-			description:  "naked pod",
-			node:         node,
-			expected:     cordoned_node,
-			pods:         []api.Pod{naked_pod},
-			rcs:          []api.ReplicationController{},
-			args:         []string{"node"},
-			expectFatal:  true,
-			expectDelete: false,
-		},*/
+			{
+				description:  "naked pod",
+				node:         node,
+				expected:     cordoned_node,
+				pods:         []api.Pod{naked_pod},
+				rcs:          []api.ReplicationController{},
+				args:         []string{"node"},
+				expectFatal:  true,
+				expectDelete: false,
+			},*/
 		{
 			description:  "naked pod with --force",
 			node:         node,
@@ -300,16 +311,17 @@ func TestDrain(t *testing.T) {
 			expectFatal:  false,
 			expectDelete: true,
 		},
+		// TODO implement a way to init with correct params
 		/*
-		{
-			description:  "pod with EmptyDir",
-			node:         node,
-			expected:     cordoned_node,
-			pods:         []api.Pod{emptydir_pod},
-			args:         []string{"node", "--force"},
-			expectFatal:  true,
-			expectDelete: false,
-		},*/
+			{
+				description:  "pod with EmptyDir",
+				node:         node,
+				expected:     cordoned_node,
+				pods:         []api.Pod{emptydir_pod},
+				args:         []string{"node", "--force"},
+				expectFatal:  true,
+				expectDelete: false,
+			},*/
 		{
 			description:  "pod with EmptyDir and --delete-local-data",
 			node:         node,
@@ -431,8 +443,6 @@ func TestDrain(t *testing.T) {
 				}),
 			}
 			tf.ClientConfig = defaultClientConfig()
-			buf := bytes.NewBuffer([]byte{})
-			errBuf := bytes.NewBuffer([]byte{})
 			duration, _ := time.ParseDuration("0s")
 			cmd := &DrainOptions{
 				factory:            f,
@@ -442,8 +452,6 @@ func TestDrain(t *testing.T) {
 				DeleteLocalData:    true,
 				GracePeriodSeconds: -1,
 				Timeout:            duration,
-				out:                buf,
-				errOut:             errBuf,
 			}
 
 			saw_fatal := false
