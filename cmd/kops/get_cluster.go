@@ -17,14 +17,16 @@ limitations under the License.
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/spf13/cobra"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/util/pkg/tables"
 	k8sapi "k8s.io/kubernetes/pkg/api"
-	"os"
-	"strings"
 )
 
 type GetClustersCmd struct {
@@ -90,8 +92,9 @@ func (c *GetClustersCmd) Run(args []string) error {
 		return nil
 	}
 
-	output := getCmd.output
-	if output == OutputTable {
+	switch getCmd.output {
+	case OutputTable:
+
 		t := &tables.Table{}
 		t.AddColumn("NAME", func(c *api.Cluster) string {
 			return c.Name
@@ -107,22 +110,15 @@ func (c *GetClustersCmd) Run(args []string) error {
 			return strings.Join(zoneNames, ",")
 		})
 		return t.Render(clusters, os.Stdout, "NAME", "CLOUD", "ZONES")
-	} else if output == OutputYaml {
+
+	case OutputYaml:
+
 		if c.FullSpec {
-			var fullSpecs []*api.Cluster
-			for _, cluster := range clusters {
-				configBase, err := registry.ConfigBase(cluster)
-				if err != nil {
-					return fmt.Errorf("error reading full cluster spec for %q: %v", cluster.Name, err)
-				}
-				fullSpec := &api.Cluster{}
-				err = registry.ReadConfigDeprecated(configBase.Join(registry.PathClusterCompleted), fullSpec)
-				if err != nil {
-					return fmt.Errorf("error reading full cluster spec for %q: %v", cluster.Name, err)
-				}
-				fullSpecs = append(fullSpecs, fullSpec)
+			var err error
+			clusters, err = fullClusterSpecs(clusters)
+			if err != nil {
+				return err
 			}
-			clusters = fullSpecs
 		}
 
 		for _, cluster := range clusters {
@@ -136,7 +132,45 @@ func (c *GetClustersCmd) Run(args []string) error {
 			}
 		}
 		return nil
-	} else {
-		return fmt.Errorf("Unknown output format: %q", output)
+	case OutputJSON:
+		if c.FullSpec {
+			var err error
+			clusters, err = fullClusterSpecs(clusters)
+			if err != nil {
+				return err
+			}
+		}
+
+		for _, cluster := range clusters {
+			j, err := json.MarshalIndent(cluster, "", "  ")
+			if err != nil {
+				return fmt.Errorf("error marshaling json for %q: %v", cluster.Name, err)
+			}
+			_, err = os.Stdout.Write(j)
+			if err != nil {
+				return fmt.Errorf("error writing to stdout: %v", err)
+			}
+		}
+		return nil
+
+	default:
+		return fmt.Errorf("Unknown output format: %q", getCmd.output)
 	}
+}
+
+func fullClusterSpecs(clusters []*api.Cluster) ([]*api.Cluster, error) {
+	var fullSpecs []*api.Cluster
+	for _, cluster := range clusters {
+		configBase, err := registry.ConfigBase(cluster)
+		if err != nil {
+			return nil, fmt.Errorf("error reading full cluster spec for %q: %v", cluster.Name, err)
+		}
+		fullSpec := &api.Cluster{}
+		err = registry.ReadConfigDeprecated(configBase.Join(registry.PathClusterCompleted), fullSpec)
+		if err != nil {
+			return nil, fmt.Errorf("error reading full cluster spec for %q: %v", cluster.Name, err)
+		}
+		fullSpecs = append(fullSpecs, fullSpec)
+	}
+	return fullSpecs, nil
 }
