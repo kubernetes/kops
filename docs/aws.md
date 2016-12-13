@@ -29,19 +29,18 @@ See our [installation guide](build.md) for more information
 
 It is a good idea to grab a fresh copy of `kubectl` now if you don't already have it.
 
+#### OS X
+
 ```
 brew install kubernetes-cli
 ```
+
+#### Other Platforms
 
 * [Kubernetes Latest Release](https://github.com/kubernetes/kubernetes/releases/latest)
 
 * [Installation Guide](http://kubernetes.io/docs/user-guide/prereqs/)
 
-
-```bash
-wget -O https://github.com/kubernetes/kubernetes/releases/download/v1.4.6/kubernetes.tar.gz
-sudo cp kubernetes/platforms/darwin/amd64/kubectl /usr/local/bin/kubectl
-```
 
 ## Setup your environment
 
@@ -52,11 +51,17 @@ In this example we will be using a dedicated IAM user to use with kops. This use
 
 Kubernetes kops uses the official AWS Go SDK, so all we need to do here is set up your system to use the official AWS supported methods of registering security credentials defined [here](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials). Here is an example using the aws command line tool to set up your security credentials.
 
+#### OS X
+
 ```bash
 brew update && brew install awscli
-aws configure
+aws configure # Input your credentials here
 aws iam list-users
 ```
+
+#### Other Platforms
+
+Official documentation [here](http://docs.aws.amazon.com/cli/latest/userguide/installing.html)
 
 We should now be able to pull a list of IAM users from the API, verifying that our credentials are working as expected.
 
@@ -64,7 +69,7 @@ We should now be able to pull a list of IAM users from the API, verifying that o
 
 We will now need to set up DNS for cluster, find one of the scenarios below (A,B,C) that match your situation.
 
-### (A) Setting up DNS for your cluster, with amazon as your registrar
+### (A) Setting up DNS for your cluster, with AWS as your registrar
 
 If you bought your domain with AWS, then you should already have a hosted zone in Route53.
 
@@ -83,6 +88,8 @@ If you bought your domain elsewhere, and would like to dedicate the entire domai
 If you bought your domain elsewhere, but **only want to use a subdomain in AWS Route53** you must modify your registrar's NS (NameServer) records. See the example below.
 
 Here we will be creating a hosted zone in AWS Route53, and migrating the subdomain's NS records to your other registrar.
+
+You might need to grab [jq](https://github.com/stedolan/jq/wiki/Installation) for some of these.
 
   - Create the subdomain
 
@@ -151,7 +158,7 @@ Note: You don’t have to use environmental variables here. You can always defin
 We will need to note which availability zones are available to us. In this example we will be deploying our cluster to the us-west-1 region.
 
 ```bash
-aws ec2 describe-availability-zones --region us-west-1
+aws ec2 describe-availability-zones --region us-west-2
 ```
 
 Lets form our create cluster command. This is the most basic example, a more verbose example on can be found [here](advanced_create.md)
@@ -170,6 +177,12 @@ We now have created the underlying cluster configuration, lets take a look at ev
 
 ```bash
 kops edit cluster ${NAME}
+```
+
+This will open in your text editor of choice. You can always change your editor of choice
+
+```bash
+cat "export EDITOR=/usr/bin/emacs" ~/.bash_profile && source ~/.bash_profile
 ```
 
 This will open up the cluster config (that is actually stored in the S3 bucket we created earlier!) in your favorite text editor. Here is where we can optionally really tweak our cluster for our use case. In this tutorial, we leave it default for now.
@@ -192,7 +205,21 @@ A simple Kubernetes API call can be used to check if the API is online and liste
 ```bash
 kubectl get nodes
 ```
+
 You will see a list of nodes that should match the `--zones` flag defined earlier. This is a great sign that your Kubernetes cluster is online and working.
+
+Also kops ships with a handy validation tool that can be ran to ensure your cluster is working as expected.
+
+```bash
+kops validate cluster
+```
+
+Another great one liner
+
+```
+kubectl -n kube-system get po
+```
+
 
 
 ## What's next?
