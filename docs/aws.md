@@ -118,10 +118,10 @@ dig ns subdomain.kubernetes.com
 
 ```
 ;; ANSWER SECTION:
-k8s.example.com.        172800  IN  NS  ns-613.awsdns-13.net.
-k8s.example.com.        172800  IN  NS  ns-75.awsdns-04.org.
-k8s.example.com.        172800  IN  NS  ns-1022.awsdns-35.com.
-k8s.example.com.        172800  IN  NS  ns-1149.awsdns-27.co.uk.
+subdomain.kubernetes.com.        172800  IN  NS  ns-613.awsdns-13.net.
+subdomain.kubernetes.com.        172800  IN  NS  ns-75.awsdns-04.org.
+subdomain.kubernetes.com.        172800  IN  NS  ns-1022.awsdns-35.com.
+subdomain.kubernetes.com.        172800  IN  NS  ns-1149.awsdns-27.co.uk.
 ```
 
 ## Setting up a state store for your cluster
