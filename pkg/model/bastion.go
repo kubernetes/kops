@@ -17,11 +17,11 @@ limitations under the License.
 package model
 
 import (
-	"github.com/kopeio/gladish/pkg/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"time"
+	"k8s.io/kubernetes/pkg/util/sets"
 )
 
 const BastionELBSecurityGroupPrefix = "bastion"

@@ -313,6 +313,7 @@ func TestPopulateCluster_TopologyInvalidMatchingValues_Required(t *testing.T) {
 
 func TestPopulateCluster_BastionInvalidMatchingValues_Required(t *testing.T) {
 	c := buildMinimalCluster()
+	addEtcdClusters(c)
 	c.Spec.Topology.Masters = api.TopologyPublic
 	c.Spec.Topology.Nodes = api.TopologyPublic
 	c.Spec.Topology.Bastion = &api.BastionSpec{
@@ -322,6 +323,7 @@ func TestPopulateCluster_BastionInvalidMatchingValues_Required(t *testing.T) {
 
 func TestPopulateCluster_BastionMachineTypeInvalidNil_Required(t *testing.T) {
 	c := buildMinimalCluster()
+	addEtcdClusters(c)
 	c.Spec.Topology.Masters = api.TopologyPrivate
 	c.Spec.Topology.Nodes = api.TopologyPrivate
 	c.Spec.Topology.Bastion = &api.BastionSpec{
@@ -332,6 +334,8 @@ func TestPopulateCluster_BastionMachineTypeInvalidNil_Required(t *testing.T) {
 
 func TestPopulateCluster_BastionIdleTimeoutInvalidNil_Required(t *testing.T) {
 	c := buildMinimalCluster()
+	addEtcdClusters(c)
+
 	c.Spec.Topology.Masters = api.TopologyPrivate
 	c.Spec.Topology.Nodes = api.TopologyPrivate
 	c.Spec.Topology.Bastion = &api.BastionSpec{
@@ -343,6 +347,8 @@ func TestPopulateCluster_BastionIdleTimeoutInvalidNil_Required(t *testing.T) {
 
 func TestPopulateCluster_BastionIdleTimeoutInvalidNegative_Required(t *testing.T) {
 	c := buildMinimalCluster()
+	addEtcdClusters(c)
+
 	c.Spec.Topology.Masters = api.TopologyPrivate
 	c.Spec.Topology.Nodes = api.TopologyPrivate
 	c.Spec.Topology.Bastion = &api.BastionSpec{
