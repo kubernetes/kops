@@ -224,8 +224,8 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		//  Modified the idle timeout for bastion elb
 
 		idleTimeout := BastionELBDefaultIdleTimeout
-		if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.Bastion != nil && b.Cluster.Spec.Topology.Bastion.IdleTimeout != 0 {
-			idleTimeout = time.Second * time.Duration(b.Cluster.Spec.Topology.Bastion.IdleTimeout)
+		if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.Bastion != nil && b.Cluster.Spec.Topology.Bastion.IdleTimeout != nil {
+			idleTimeout = time.Second * time.Duration(*b.Cluster.Spec.Topology.Bastion.IdleTimeout)
 		}
 
 		elbSettings := &awstasks.LoadBalancerConnectionSettings{

@@ -32,7 +32,7 @@ func Convert_v1alpha1_BastionSpec_To_kops_BastionSpec(in *BastionSpec, out *kops
 
 	if !in.Enable {
 		out.PublicName = ""
-		out.IdleTimeout = 0
+		out.IdleTimeout = nil
 	}
 
 	return nil
@@ -118,17 +118,23 @@ func Convert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, out 
 		zoneMap := make(map[string]*ClusterZoneSpec)
 
 		for _, s := range in.Subnets {
-			// TODO: Cope with utility- prefix
-			if s.Zone != s.SubnetName {
-				return fmt.Errorf("cannot convert to v1alpha1 when subnet Zone != Name")
+			zoneName := s.SubnetName
+			if s.Type == kops.SubnetTypeUtility {
+				if !strings.HasPrefix(zoneName, "utility-") {
+					return fmt.Errorf("cannot convert subnet to v1alpha1 when subnet with Type=utility does not have name starting with utility-: %q", zoneName)
+				}
+				zoneName = strings.TrimPrefix(zoneName, "utility-")
+			}
+			if s.Zone != zoneName {
+				return fmt.Errorf("cannot convert to v1alpha1 when subnet Zone != Name: %q != %q", s.Zone, s.SubnetName)
 			}
 
-			zone := zoneMap[s.Zone]
+			zone := zoneMap[zoneName]
 			if zone == nil {
 				zone = &ClusterZoneSpec{
 					Name: s.Zone,
 				}
-				zoneMap[s.Zone] = zone
+				zoneMap[zoneName] = zone
 			}
 
 			if topologyPrivate {
@@ -220,15 +226,12 @@ func Convert_kops_EtcdMemberSpec_To_v1alpha1_EtcdMemberSpec(in *kops.EtcdMemberS
 		zone := *in.InstanceGroup
 		if !strings.HasPrefix(zone, "master-") {
 			return fmt.Errorf("cannot convert etc instance group name %q to v1alpha1: need master- prefix", zone)
-		} else {
-			zone = zone[7:]
 		}
+		zone = strings.TrimPrefix(zone, "master-")
 		out.Zone = &zone
 	} else {
 		out.Zone = nil
 	}
-
-	out.Zone = in.InstanceGroup
 
 	return autoConvert_kops_EtcdMemberSpec_To_v1alpha1_EtcdMemberSpec(in, out, s)
 }

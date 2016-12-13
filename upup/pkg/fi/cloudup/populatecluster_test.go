@@ -305,6 +305,7 @@ func TestPopulateCluster_TopologyInvalidValue_Required(t *testing.T) {
 }
 
 func TestPopulateCluster_TopologyInvalidMatchingValues_Required(t *testing.T) {
+	// We can't have a bastion with public masters / nodes
 	c := buildMinimalCluster()
 	c.Spec.Topology.Masters = api.TopologyPublic
 	c.Spec.Topology.Nodes = api.TopologyPrivate
@@ -312,6 +313,7 @@ func TestPopulateCluster_TopologyInvalidMatchingValues_Required(t *testing.T) {
 }
 
 func TestPopulateCluster_BastionInvalidMatchingValues_Required(t *testing.T) {
+	// We can't have a bastion with public masters / nodes
 	c := buildMinimalCluster()
 	addEtcdClusters(c)
 	c.Spec.Topology.Masters = api.TopologyPublic
@@ -333,6 +335,7 @@ func TestPopulateCluster_BastionMachineTypeInvalidNil_Required(t *testing.T) {
 }
 
 func TestPopulateCluster_BastionIdleTimeoutInvalidNil_Required(t *testing.T) {
+	// IdleTimeout cannot be nil
 	c := buildMinimalCluster()
 	addEtcdClusters(c)
 
@@ -341,7 +344,7 @@ func TestPopulateCluster_BastionIdleTimeoutInvalidNil_Required(t *testing.T) {
 	c.Spec.Topology.Bastion = &api.BastionSpec{
 	}
 	//c.Spec.Topology.Bastion.MachineType = "t2.small"
-	c.Spec.Topology.Bastion.IdleTimeout = 0
+	c.Spec.Topology.Bastion.IdleTimeout = nil
 	expectErrorFromPopulateCluster(t, c, "Bastion")
 }
 
@@ -354,7 +357,7 @@ func TestPopulateCluster_BastionIdleTimeoutInvalidNegative_Required(t *testing.T
 	c.Spec.Topology.Bastion = &api.BastionSpec{
 	}
 	//c.Spec.Topology.Bastion.MachineType = "t2.small"
-	c.Spec.Topology.Bastion.IdleTimeout = -1
+	c.Spec.Topology.Bastion.IdleTimeout = fi.Int64(-1)
 	expectErrorFromPopulateCluster(t, c, "Bastion")
 }
 

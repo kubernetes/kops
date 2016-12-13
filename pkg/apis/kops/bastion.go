@@ -24,6 +24,6 @@ type BastionSpec struct {
 	//MachineType string `json:"machineType,omitempty"`
 
 	PublicName string `json:"name,omitempty"`
-	// Bastion's Loadbalancer idle timeout
-	IdleTimeout int `json:"idleTimeout,omitempty"`
+	// IdleTimeout is the bastion's Loadbalancer idle timeout
+	IdleTimeout *int64 `json:"idleTimeout,omitempty"`
 }
