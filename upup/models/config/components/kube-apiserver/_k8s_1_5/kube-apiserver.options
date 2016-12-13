@@ -7,3 +7,5 @@ KubeAPIServer:
   - PersistentVolumeLabel
   - DefaultStorageClass
   - ResourceQuota
+  # Stick with the pre-1.5 anonymous authentication modes
+  AnonymousAuth: false
