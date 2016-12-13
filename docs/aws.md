@@ -220,8 +220,6 @@ Another great one liner
 kubectl -n kube-system get po
 ```
 
-
-
 ## What's next?
 
 Kops has a ton of great features, and an amazing support team. We recommend researching [other interesting modes](commands.md#other-interesting-modes) to learn more about generating Terraform configurations, or running your cluster in HA (Highly Available). Also be sure to check out how to run a [private network topology](topology.md) in AWS.
