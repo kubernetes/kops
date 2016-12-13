@@ -42,7 +42,7 @@ import (
 )
 
 const (
-	NodeUpVersion = "1.4.1"
+	NodeUpVersion = "1.4.2"
 )
 
 const DefaultMaxTaskDuration = 10 * time.Minute
