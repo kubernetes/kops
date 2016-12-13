@@ -30,27 +30,19 @@ func buildMinimalCluster() *api.Cluster {
 	c := &api.Cluster{}
 	c.ObjectMeta.Name = "testcluster.test.com"
 	c.Spec.KubernetesVersion = "1.4.6"
-	c.Spec.Zones = []*api.ClusterZoneSpec{
-		{Name: "us-mock-1a", CIDR: "172.20.1.0/24"},
-		{Name: "us-mock-1b", CIDR: "172.20.2.0/24"},
-		{Name: "us-mock-1c", CIDR: "172.20.3.0/24"},
+	c.Spec.Subnets = []api.ClusterSubnetSpec{
+		{SubnetName: "subnet-us-mock-1a", Zone: "us-mock-1a", CIDR: "172.20.1.0/24"},
+		{SubnetName: "subnet-us-mock-1b", Zone: "us-mock-1b", CIDR: "172.20.2.0/24"},
+		{SubnetName: "subnet-us-mock-1c", Zone: "us-mock-1c", CIDR: "172.20.3.0/24"},
 	}
 	// Default to public topology
 	c.Spec.Topology = &api.TopologySpec{
 		Masters: api.TopologyPublic,
 		Nodes:   api.TopologyPublic,
 	}
-	c.Spec.Topology.Bastion = &api.BastionSpec{
-		Enable: false,
-	}
 	c.Spec.NetworkCIDR = "172.20.0.0/16"
 	c.Spec.NonMasqueradeCIDR = "100.64.0.0/10"
 	c.Spec.CloudProvider = "aws"
-
-	// Default bastion
-	c.Spec.Topology.Bastion = &api.BastionSpec{
-		Enable: false,
-	}
 
 	c.Spec.ConfigBase = "s3://unittest-bucket/"
 
@@ -62,11 +54,11 @@ func buildMinimalCluster() *api.Cluster {
 }
 
 func addEtcdClusters(c *api.Cluster) {
-	zones := sets.NewString()
-	for _, z := range c.Spec.Zones {
-		zones.Insert(z.Name)
+	subnetNames := sets.NewString()
+	for _, z := range c.Spec.Subnets {
+		subnetNames.Insert(z.SubnetName)
 	}
-	etcdZones := zones.List()
+	etcdZones := subnetNames.List()
 
 	for _, etcdCluster := range EtcdClusters {
 		etcd := &api.EtcdClusterSpec{}
@@ -74,7 +66,7 @@ func addEtcdClusters(c *api.Cluster) {
 		for _, zone := range etcdZones {
 			m := &api.EtcdMemberSpec{}
 			m.Name = zone
-			m.Zone = fi.String(zone)
+			m.InstanceGroup = fi.String(zone)
 			etcd.Members = append(etcd.Members, m)
 		}
 		c.Spec.EtcdClusters = append(c.Spec.EtcdClusters, etcd)
@@ -195,10 +187,10 @@ func TestPopulateCluster_CNI(t *testing.T) {
 func TestPopulateCluster_Custom_CIDR(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.NetworkCIDR = "172.20.2.0/24"
-	c.Spec.Zones = []*api.ClusterZoneSpec{
-		{Name: "us-mock-1a", CIDR: "172.20.2.0/27"},
-		{Name: "us-mock-1b", CIDR: "172.20.2.32/27"},
-		{Name: "us-mock-1c", CIDR: "172.20.2.64/27"},
+	c.Spec.Subnets = []api.ClusterSubnetSpec{
+		{SubnetName: "subnet-us-mock-1a", Zone: "us-mock-1a", CIDR: "172.20.2.0/27"},
+		{SubnetName: "subnet-us-mock-1b", Zone: "us-mock-1b", CIDR: "172.20.2.32/27"},
+		{SubnetName: "subnet-us-mock-1c", Zone: "us-mock-1c", CIDR: "172.20.2.64/27"},
 	}
 
 	err := c.PerformAssignments()
@@ -272,9 +264,9 @@ func TestPopulateCluster_Name_Required(t *testing.T) {
 
 func TestPopulateCluster_Zone_Required(t *testing.T) {
 	c := buildMinimalCluster()
-	c.Spec.Zones = nil
+	c.Spec.Subnets = nil
 
-	expectErrorFromPopulateCluster(t, c, "Zone")
+	expectErrorFromPopulateCluster(t, c, "Subnet")
 }
 
 func TestPopulateCluster_NetworkCIDR_Required(t *testing.T) {
@@ -323,7 +315,8 @@ func TestPopulateCluster_BastionInvalidMatchingValues_Required(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.Topology.Masters = api.TopologyPublic
 	c.Spec.Topology.Nodes = api.TopologyPublic
-	c.Spec.Topology.Bastion.Enable = true
+	c.Spec.Topology.Bastion = &api.BastionSpec{
+	}
 	expectErrorFromPopulateCluster(t, c, "Bastion")
 }
 
@@ -331,8 +324,9 @@ func TestPopulateCluster_BastionMachineTypeInvalidNil_Required(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.Topology.Masters = api.TopologyPrivate
 	c.Spec.Topology.Nodes = api.TopologyPrivate
-	c.Spec.Topology.Bastion.Enable = true
-	c.Spec.Topology.Bastion.MachineType = ""
+	c.Spec.Topology.Bastion = &api.BastionSpec{
+	}
+	//c.Spec.Topology.Bastion.MachineType = ""
 	expectErrorFromPopulateCluster(t, c, "Bastion")
 }
 
@@ -340,8 +334,9 @@ func TestPopulateCluster_BastionIdleTimeoutInvalidNil_Required(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.Topology.Masters = api.TopologyPrivate
 	c.Spec.Topology.Nodes = api.TopologyPrivate
-	c.Spec.Topology.Bastion.Enable = true
-	c.Spec.Topology.Bastion.MachineType = "t2.small"
+	c.Spec.Topology.Bastion = &api.BastionSpec{
+	}
+	//c.Spec.Topology.Bastion.MachineType = "t2.small"
 	c.Spec.Topology.Bastion.IdleTimeout = 0
 	expectErrorFromPopulateCluster(t, c, "Bastion")
 }
@@ -350,8 +345,9 @@ func TestPopulateCluster_BastionIdleTimeoutInvalidNegative_Required(t *testing.T
 	c := buildMinimalCluster()
 	c.Spec.Topology.Masters = api.TopologyPrivate
 	c.Spec.Topology.Nodes = api.TopologyPrivate
-	c.Spec.Topology.Bastion.Enable = true
-	c.Spec.Topology.Bastion.MachineType = "t2.small"
+	c.Spec.Topology.Bastion = &api.BastionSpec{
+	}
+	//c.Spec.Topology.Bastion.MachineType = "t2.small"
 	c.Spec.Topology.Bastion.IdleTimeout = -1
 	expectErrorFromPopulateCluster(t, c, "Bastion")
 }

@@ -156,7 +156,7 @@ func (b *AutoscalingGroupModelBuilder) resourceNodeUp(ig *kops.InstanceGroup) (*
 				return "", err
 			}
 
-			data, err := kops.ToYaml(config)
+			data, err := kops.ToRawYaml(config)
 			if err != nil {
 				return "", err
 			}

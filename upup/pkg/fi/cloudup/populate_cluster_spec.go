@@ -260,10 +260,7 @@ func (c *populateClusterSpec) run() error {
 	var codeModels []loader.OptionsBuilder
 	for _, m := range c.Models {
 		switch m {
-		case "proto":
-		// No proto code options; no file model
-
-		case "cloudup":
+		case "config":
 			codeModels = append(codeModels, &components.KubeAPIServerOptionsBuilder{Cluster: cluster})
 			fileModels = append(fileModels, m)
 

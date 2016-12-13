@@ -21,7 +21,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-//go:generate fitask -type=LoadBalancerHealthChecks
+//go:generate fitask -type=LoadBalancerAttachment
 type LoadBalancerHealthChecks struct {
 	Name         *string
 	LoadBalancer *LoadBalancer
