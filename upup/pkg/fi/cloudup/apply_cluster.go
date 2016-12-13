@@ -165,7 +165,8 @@ func (c *ApplyClusterCmd) Run() error {
 	// Fail on 1.5
 	// TODO Kris - we need to un-patch this after we start supporting 1.5
 	if strings.Contains(cluster.Spec.KubernetesVersion, "1.5"){
-		return fmt.Errorf("kubernetes versions 1.5* are currently not supported")
+		glog.V(2).Infof("Kubernetes versions 1.5* not supported, using 1.4.7")
+		cluster.Spec.KubernetesVersion = "1.4.7"
 	}
 
 	if len(c.Assets) == 0 {
