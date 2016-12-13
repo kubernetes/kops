@@ -374,6 +374,8 @@ type KubeAPIServerConfig struct {
 	AllowPrivileged       *bool             `json:"allowPrivileged,omitempty" flag:"allow-privileged"`
 	APIServerCount        *int              `json:"apiServerCount,omitempty" flag:"apiserver-count"`
 	RuntimeConfig         map[string]string `json:"runtimeConfig,omitempty" flag:"runtime-config"`
+
+	AnonymousAuth *bool `json:"anonymousAuth,omitempty" flag:"anonymous-auth"`
 }
 
 type KubeControllerManagerConfig struct {
