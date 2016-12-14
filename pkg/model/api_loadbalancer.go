@@ -62,24 +62,18 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Listeners: map[string]*awstasks.LoadBalancerListener{
 				"443": {InstancePort: 443},
 			},
+
+			// Configure fast-recovery health-checks
+			HealthCheck: &awstasks.LoadBalancerHealthCheck{
+				Target:             s("TCP:443"),
+				Timeout:            i64(5),
+				Interval:           i64(10),
+				HealthyThreshold:   i64(2),
+				UnhealthyThreshold: i64(3),
+			},
 		}
 
 		c.AddTask(elb)
-	}
-
-	// Configure fast-recovery health-checks
-	{
-		t := &awstasks.LoadBalancerHealthChecks{
-			Name:         elb.Name,
-			LoadBalancer: elb,
-
-			Target:             s("TCP:443"),
-			Timeout:            i64(5),
-			Interval:           i64(10),
-			HealthyThreshold:   i64(2),
-			UnhealthyThreshold: i64(3),
-		}
-		c.AddTask(t)
 	}
 
 	// Create security group for API ELB
