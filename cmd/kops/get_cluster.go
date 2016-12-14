@@ -91,6 +91,14 @@ func (c *GetClustersCmd) Run(args []string) error {
 		return nil
 	}
 
+	if c.FullSpec {
+		var err error
+		clusters, err = fullClusterSpecs(clusters)
+		if err != nil {
+			return err
+		}
+	}
+
 	switch getCmd.output {
 	case OutputTable:
 
@@ -111,15 +119,6 @@ func (c *GetClustersCmd) Run(args []string) error {
 		return t.Render(clusters, os.Stdout, "NAME", "CLOUD", "ZONES")
 
 	case OutputYaml:
-
-		if c.FullSpec {
-			var err error
-			clusters, err = fullClusterSpecs(clusters)
-			if err != nil {
-				return err
-			}
-		}
-
 		for _, cluster := range clusters {
 			if err := marshalToStdout(cluster, marshalYaml); err != nil {
 				return err
@@ -127,14 +126,6 @@ func (c *GetClustersCmd) Run(args []string) error {
 		}
 		return nil
 	case OutputJSON:
-		if c.FullSpec {
-			var err error
-			clusters, err = fullClusterSpecs(clusters)
-			if err != nil {
-				return err
-			}
-		}
-
 		for _, cluster := range clusters {
 			if err := marshalToStdout(cluster, marshalJSON); err != nil {
 				return err
