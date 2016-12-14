@@ -38,6 +38,7 @@ type ValidateClusterOptions struct {
 	// No options yet
 }
 
+// Create new cobra.Command struct
 func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &ValidateClusterOptions{}
 
@@ -57,6 +58,7 @@ func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
+// Validate K8s cluster
 func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, options *ValidateClusterOptions) error {
 	err := rootCommand.ProcessArgs(args)
 	if err != nil {
@@ -89,6 +91,7 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 	if len(instanceGroups) == 0 {
 		return fmt.Errorf("no InstanceGroup objects found\n")
 	}
+
 
 	// TODO: Refactor into util.Factory
 	contextName := cluster.Name
@@ -158,7 +161,12 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		return role
 	})
 
+	if validationCluster.NodeList == nil || validationCluster.NodeList.Items == nil {
+		return fmt.Errorf("cannot render nodes for %q: Items are empty", cluster.Name)
+	}
+
 	fmt.Fprintln(out, "\nNODE STATUS")
+
 	err = t.Render(validationCluster.NodeList.Items, out, "NAME", "ROLE", "READY")
 
 	if err != nil {
