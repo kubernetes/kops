@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	NodeUpVersion = "1.4.2"
+	NodeUpVersion = "1.4.3"
 )
 
 const MaxAttemptsWithNoProgress = 3
