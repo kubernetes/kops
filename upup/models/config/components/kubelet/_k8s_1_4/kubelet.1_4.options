@@ -1,0 +1,3 @@
+Kubelet:
+  # ConfigureCBR0 was removed from 1.5
+  ConfigureCBR0: true
