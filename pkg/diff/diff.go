@@ -78,8 +78,9 @@ type lineRecord struct {
 func buildDiffLines(lString, rString string) []lineRecord {
 	dmp := diffmatchpatch.New()
 	diffs := dmp.DiffMain(lString, rString, false)
-	// No need to cleanup, we're going to do a line based diff
-	//diffs = dmp.DiffCleanupSemantic(diffs)
+
+	// We do need to cleanup, as otherwise we get some spurious changes on complex diffs
+	diffs = dmp.DiffCleanupSemantic(diffs)
 
 	l := ""
 	r := ""
