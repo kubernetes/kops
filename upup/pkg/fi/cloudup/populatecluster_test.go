@@ -395,7 +395,7 @@ func TestPopulateCluster_UnsupportedVersion_1_5_0(t *testing.T) {
 
 	_, err = PopulateClusterSpec(c)
 	if !strings.Contains(err.Error(), "unsupported kubernetes version" ){
-		t.Fatal("Failed ensuring unsupported list: %v", err)
+		t.Fatalf("Failed ensuring unsupported list: %v", err)
 	}
 }
 
