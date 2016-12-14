@@ -64,6 +64,11 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 		Version: IAMPolicyDefaultVersion,
 	}
 
+	// Don't give bastions any permissions (yet)
+	if b.Role == api.InstanceGroupRoleBastion {
+		return p, nil
+	}
+
 	if b.Role == api.InstanceGroupRoleNode {
 		p.Statement = append(p.Statement, &IAMStatement{
 			Effect:   IAMStatementEffectAllow,

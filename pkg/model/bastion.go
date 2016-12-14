@@ -86,7 +86,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	//-#  sourceGroup: securityGroup/masters.{{ ClusterName }}
 
 	// Allow incoming SSH traffic to bastions, through the ELB
-	// TODO: Could we get away without an ELB here?  Tricky if dns-controller is broken though...
+	// TODO: Could we get away without an ELB here?  Tricky to fix if dns-controller breaks though...
 	{
 		t := &awstasks.SecurityGroupRule{
 			Name:          s("ssh-elb-to-bastion"),
@@ -102,7 +102,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Allow bastion nodes to reach masters
 	{
 		t := &awstasks.SecurityGroupRule{
-			Name:          s("bastion-to-master"),
+			Name:          s("all-bastion-to-master"),
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleBastion),
 		}
@@ -112,7 +112,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Allow bastion nodes to reach nodes
 	{
 		t := &awstasks.SecurityGroupRule{
-			Name:          s("bastion-to-nodes"),
+			Name:          s("all-bastion-to-node"),
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
 			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleBastion),
 		}
@@ -194,6 +194,14 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Subnets: elbSubnets,
 			Listeners: map[string]*awstasks.LoadBalancerListener{
 				"22": {InstancePort: 22},
+			},
+
+			HealthCheck: &awstasks.LoadBalancerHealthCheck{
+				Target:             s("TCP:22"),
+				Timeout:            i64(5),
+				Interval:           i64(10),
+				HealthyThreshold:   i64(2),
+				UnhealthyThreshold: i64(2),
 			},
 		}
 

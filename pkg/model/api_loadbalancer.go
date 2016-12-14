@@ -69,7 +69,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				Timeout:            i64(5),
 				Interval:           i64(10),
 				HealthyThreshold:   i64(2),
-				UnhealthyThreshold: i64(3),
+				UnhealthyThreshold: i64(2),
 			},
 		}
 
