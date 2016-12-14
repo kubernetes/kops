@@ -17,20 +17,16 @@ limitations under the License.
 package awstasks
 
 import (
-	"bytes"
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"os"
 	"reflect"
 	"testing"
-	"time"
 )
 
-const defaultDeadline = 2 * time.Second
-
-func TestElasticIPCreate(t *testing.T) {
+func TestVPCCreate(t *testing.T) {
 	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
 	c := &mockec2.MockEC2{}
 	cloud.MockEC2 = c
@@ -39,28 +35,16 @@ func TestElasticIPCreate(t *testing.T) {
 	buildTasks := func() map[string]fi.Task {
 		vpc1 := &VPC{
 			Name: s("vpc1"),
-			CIDR: s("172.20.0.0/16"),
+			CIDR: s("172.21.0.0/16"),
 		}
-		subnet1 := &Subnet{
-			Name: s("subnet1"),
-			VPC:  vpc1,
-			CIDR: s("172.20.1.0/24"),
-		}
-		eip1 := &ElasticIP{
-			Name:   s("eip1"),
-			Subnet: subnet1,
-		}
-
 		return map[string]fi.Task{
-			"eip1":    eip1,
-			"subnet1": subnet1,
-			"vpc1":    vpc1,
+			"vpc1": vpc1,
 		}
 	}
 
 	{
 		allTasks := buildTasks()
-		eip1 := allTasks["eip1"].(*ElasticIP)
+		vpc1 := allTasks["vpc1"].(*VPC)
 
 		target := &awsup.AWSAPITarget{
 			Cloud: cloud,
@@ -75,48 +59,45 @@ func TestElasticIPCreate(t *testing.T) {
 			t.Fatalf("unexpected error during Run: %v", err)
 		}
 
-		if fi.StringValue(eip1.ID) == "" {
+		if fi.StringValue(vpc1.ID) == "" {
 			t.Fatalf("ID not set after create")
 		}
 
-		if len(c.Addresses) != 1 {
-			t.Fatalf("Expected exactly one ElasticIP; found %v", c.Addresses)
+		if len(c.Vpcs) != 1 {
+			t.Fatalf("Expected exactly one Vpc; found %v", c.Vpcs)
 		}
 
-		expected := &ec2.Address{
-			AllocationId: eip1.ID,
-			Domain:       s("vpc"),
-			PublicIp:     s("192.0.2.1"),
+		expected := &ec2.Vpc{
+			CidrBlock: s("172.21.0.0/16"),
+			IsDefault: fi.Bool(false),
+			VpcId:     vpc1.ID,
+			Tags: buildTags(map[string]string{
+				"Name": "vpc1",
+			}),
 		}
-		actual := c.Addresses[0]
+		actual := c.FindVpc(*vpc1.ID)
+		if actual == nil {
+			t.Fatalf("VPC created but then not found")
+		}
 		if !reflect.DeepEqual(actual, expected) {
-			t.Fatalf("Unexpected ElasticIP: expected=%v actual=%v", expected, actual)
+			t.Fatalf("Unexpected VPC: expected=%v actual=%v", expected, actual)
 		}
 	}
 
 	{
 		allTasks := buildTasks()
+
 		checkNoChanges(t, cloud, allTasks)
 	}
 }
 
-func checkNoChanges(t *testing.T, cloud fi.Cloud, allTasks map[string]fi.Task) {
-	target := fi.NewDryRunTarget(os.Stderr)
-	context, err := fi.NewContext(target, cloud, nil, nil, nil, true, allTasks)
-	if err != nil {
-		t.Fatalf("error building context: %v", err)
+func buildTags(tags map[string]string) []*ec2.Tag {
+	var t []*ec2.Tag
+	for k, v := range tags {
+		t = append(t, &ec2.Tag{
+			Key:   aws.String(k),
+			Value: aws.String(v),
+		})
 	}
-
-	if err := context.RunTasks(defaultDeadline); err != nil {
-		t.Fatalf("unexpected error during Run: %v", err)
-	}
-
-	if target.HasChanges() {
-		var b bytes.Buffer
-		if err := target.PrintReport(allTasks, &b); err != nil {
-			t.Fatalf("error building report: %v", err)
-		}
-		t.Fatalf("Target had changes after executing: %v", b.String())
-	}
-
+	return t
 }
