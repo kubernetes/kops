@@ -142,6 +142,8 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		if err != nil {
 			return fmt.Errorf("error addding SSH public key: %v", err)
 		}
+
+		glog.Infof("Using SSH public key: %v\n", c.SSHPublicKey)
 	}
 
 	applyCmd := &cloudup.ApplyClusterCmd{

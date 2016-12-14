@@ -427,7 +427,10 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 			return fmt.Errorf("error reading SSH key file %q: %v", c.SSHPublicKey, err)
 		}
 		sshPublicKeys[fi.SecretNameSSHPrimary] = authorized
+
+		glog.Infof("Using SSH public key: %v\n", c.SSHPublicKey)
 	}
+
 
 	if c.AdminAccess != "" {
 		cluster.Spec.AdminAccess = []string{c.AdminAccess}
