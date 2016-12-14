@@ -21,8 +21,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/rlmcpherson/kops/upup/pkg/api"
 	"github.com/spf13/cobra"
+	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kubernetes/pkg/runtime"
 )
 
 // GetCmd represents the get command
@@ -55,10 +56,10 @@ func init() {
 	cmd.PersistentFlags().StringVarP(&getCmd.output, "output", "o", OutputTable, "output format.  One of: table, yaml, json")
 }
 
-type marshalFunc func(v interface{}) ([]byte, error)
+type marshalFunc func(obj runtime.Object) ([]byte, error)
 
-func marshalToStdout(item interface{}, marshal marshalFunc) error {
-	b, err := marshal(item)
+func marshalToStdout(obj runtime.Object, marshal marshalFunc) error {
+	b, err := marshal(obj)
 	if err != nil {
 		return err
 	}
@@ -70,8 +71,8 @@ func marshalToStdout(item interface{}, marshal marshalFunc) error {
 }
 
 // v must be a pointer to a marshalable object
-func marshalYaml(v interface{}) ([]byte, error) {
-	y, err := api.ToYaml(v)
+func marshalYaml(obj runtime.Object) ([]byte, error) {
+	y, err := api.ToVersionedYaml(obj)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling yaml: %v", err)
 	}
@@ -79,8 +80,8 @@ func marshalYaml(v interface{}) ([]byte, error) {
 }
 
 // v must be a pointer to a marshalable object
-func marshalJSON(v interface{}) ([]byte, error) {
-	j, err := json.Marshal(v)
+func marshalJSON(obj runtime.Object) ([]byte, error) {
+	j, err := json.MarshalIndent(obj, "", "  ")
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling json: %v", err)
 	}
