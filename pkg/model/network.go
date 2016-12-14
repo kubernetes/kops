@@ -103,8 +103,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(subnet)
 
 		switch subnetSpec.Type {
-		case kops.SubnetTypePublic:
-		case kops.SubnetTypeUtility:
+		case kops.SubnetTypePublic, kops.SubnetTypeUtility:
 			if !sharedSubnet {
 				c.AddTask(&awstasks.RouteTableAssociation{
 					Name:       s(subnetSpec.SubnetName + "." + b.ClusterName()),
@@ -181,8 +180,6 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			RouteTable: rt,
 			NatGateway: ngw,
 		})
-
-		// Elastic IP
 
 	}
 

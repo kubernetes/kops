@@ -363,6 +363,7 @@ func (c *ApplyClusterCmd) Run() error {
 				&model.APILoadBalancerBuilder{KopsModelContext: modelContext},
 				&model.BastionModelBuilder{KopsModelContext: modelContext},
 				&model.DNSModelBuilder{KopsModelContext: modelContext},
+				&model.ExternalAccessModelBuilder{KopsModelContext: modelContext},
 				&model.FirewallModelBuilder{KopsModelContext: modelContext},
 				&model.IAMModelBuilder{KopsModelContext: modelContext},
 				&model.MasterVolumeBuilder{KopsModelContext: modelContext},

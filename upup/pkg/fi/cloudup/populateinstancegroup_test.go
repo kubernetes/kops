@@ -74,7 +74,7 @@ func Test_defaultMasterMachineType(t *testing.T) {
 		cluster.Spec.Subnets = []api.ClusterSubnetSpec{
 			{
 				SubnetName: "subnet-" + zone,
-				Zone: zone,
+				Zone:       zone,
 			},
 		}
 		actual := defaultMasterMachineType(cluster)

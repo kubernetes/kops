@@ -28,7 +28,22 @@ const RolePolicyTemplate = `{
 }`
 
 func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	for _, role := range []kops.InstanceGroupRole{kops.InstanceGroupRoleNode, kops.InstanceGroupRoleMaster, kops.InstanceGroupRoleBastion} {
+	// Collect the roles in use
+	var roles []kops.InstanceGroupRole
+	for _, ig := range b.InstanceGroups {
+		found := false
+		for _, r := range roles {
+			if r == ig.Spec.Role {
+				found = true
+			}
+		}
+		if !found {
+			roles = append(roles, ig.Spec.Role)
+		}
+	}
+
+	// Generate IAM objects etc for each role
+	for _, role := range roles {
 		name := b.IAMName(role)
 
 		var iamRole *awstasks.IAMRole
