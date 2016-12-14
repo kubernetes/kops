@@ -1,3 +1,15 @@
+TODO
+
+* Remove PublicIPAddress / address topology conflict
+
+* Rename Bastion name -> hostname or something
+
+* Do we need topology at all?  Can it be inferred?
+
+* Rename utility subnet -> dmz?
+
+DONE
+
 * Rename zones -> subnets
 
 * Split out the utility subnet from zones
@@ -6,10 +18,4 @@
 
 * Split AdminAccess -> SSHAccess & APIAccess
 
-* Remove PublicIPAddress / address topology conflict
-
-* Drop multizone
-
-* Rename Bastion name -> hostname or something
-
-* Do we need topology at all?
+* Dropped Multizone

@@ -252,6 +252,7 @@ apimachinery:
 	#go install ./cmd/libs/go2idl/conversion-gen
 	~/k8s/bin/conversion-gen  --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha1 --v=8  --output-file-base=zz_generated.conversion
 	#go install github.com/ugorji/go/codec/codecgen
-	# codecgen work only if invoked from directory where the file is located.
+	# codecgen works only if invoked from directory where the file is located.
+	cd pkg/apis/kops/v1alpha2/ && ~/k8s/bin/codecgen -d 1234 -o types.generated.go instancegroup.go cluster.go federation.go
 	cd pkg/apis/kops/v1alpha1/ && ~/k8s/bin/codecgen -d 1234 -o types.generated.go instancegroup.go cluster.go federation.go
 	cd pkg/apis/kops/ && ~/k8s/bin/codecgen -d 1234 -o types.generated.go instancegroup.go cluster.go federation.go
