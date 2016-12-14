@@ -209,10 +209,15 @@ func (l *Loader) processDeferrals() error {
 						if name != nil {
 							primary := l.tasks[*name]
 							if primary == nil {
-								glog.Infof("Known tasks:")
+								keys := sets.NewString()
 								for k := range l.tasks {
+									keys.Insert(k)
+								}
+								glog.Infof("Known tasks:")
+								for _, k := range keys.List() {
 									glog.Infof("  %s", k)
 								}
+
 								return fmt.Errorf("Unable to find task %q, referenced from %s:%s", *name, taskKey, path)
 							}
 

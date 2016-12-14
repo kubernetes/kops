@@ -19,6 +19,7 @@ package awstasks
 import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
 //go:generate fitask -type=LoadBalancerConnectionSettings
@@ -33,7 +34,7 @@ func (e *LoadBalancerConnectionSettings) Find(c *fi.Context) (*LoadBalancerConne
 	cloud := c.Cloud.(awsup.AWSCloud)
 	elbName := fi.StringValue(e.LoadBalancer.ID)
 
-	lb, err := findELB(cloud, elbName)
+	lb, err := findLoadBalancer(cloud, elbName)
 	if err != nil {
 		return nil, err
 	}
@@ -80,5 +81,9 @@ func (s *LoadBalancerConnectionSettings) CheckChanges(a, e, changes *LoadBalance
 }
 
 func (_ *LoadBalancerConnectionSettings) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalancerConnectionSettings) error {
+	return nil
+}
+
+func (_ *LoadBalancerConnectionSettings) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LoadBalancerConnectionSettings) error {
 	return nil
 }

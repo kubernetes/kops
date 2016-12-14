@@ -24,10 +24,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/iam"
-	"github.com/aws/aws-sdk-go/service/route53"
+	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
+	dnsproviderroute53 "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
 )
 
 type MockAWSCloud struct {
@@ -40,12 +41,13 @@ type MockAWSCloud struct {
 
 var _ fi.Cloud = (*MockAWSCloud)(nil)
 
-func InstallMockAWSCloud(region string, zoneLetters string) {
+func InstallMockAWSCloud(region string, zoneLetters string) *MockAWSCloud {
 	i := BuildMockAWSCloud(region, zoneLetters)
 	awsCloudInstances[region] = i
 	allRegions = []*ec2.Region{
 		{RegionName: aws.String(region)},
 	}
+	return i
 }
 
 func BuildMockAWSCloud(region string, zoneLetters string) *MockAWSCloud {
@@ -63,7 +65,8 @@ func BuildMockAWSCloud(region string, zoneLetters string) *MockAWSCloud {
 }
 
 type MockCloud struct {
-	MockEC2 ec2iface.EC2API
+	MockEC2     ec2iface.EC2API
+	MockRoute53 route53iface.Route53API
 }
 
 func (c *MockCloud) ProviderID() fi.CloudProviderID {
@@ -71,7 +74,10 @@ func (c *MockCloud) ProviderID() fi.CloudProviderID {
 }
 
 func (c *MockCloud) DNS() (dnsprovider.Interface, error) {
-	return nil, fmt.Errorf("MockCloud DNS not implemented")
+	if c.MockRoute53 == nil {
+		return nil, fmt.Errorf("MockRoute53 not set")
+	}
+	return dnsproviderroute53.New(c.MockRoute53), nil
 }
 
 func (c *MockAWSCloud) Region() string {
@@ -83,21 +89,24 @@ func (c *MockAWSCloud) DescribeAvailabilityZones() ([]*ec2.AvailabilityZone, err
 }
 
 func (c *MockAWSCloud) AddTags(name *string, tags map[string]string) {
-	glog.Fatalf("MockAWSCloud AddTags not implemented")
+	if name != nil {
+		tags["Name"] = *name
+	}
+	for k, v := range c.tags {
+		tags[k] = v
+	}
 }
 
 func (c *MockAWSCloud) BuildFilters(name *string) []*ec2.Filter {
-	glog.Fatalf("MockAWSCloud BuildFilters not implemented")
-	return nil
+	return buildFilters(c.tags, name)
 }
 
 func (c *MockAWSCloud) AddAWSTags(id string, expected map[string]string) error {
-	return fmt.Errorf("MockAWSCloud AddAWSTags not implemented")
+	return addAWSTags(c, id, expected)
 }
 
 func (c *MockAWSCloud) BuildTags(name *string) map[string]string {
-	glog.Fatalf("MockAWSCloud BuildTags not implemented")
-	return nil
+	return buildTags(c.tags, name)
 }
 
 func (c *MockAWSCloud) Tags() map[string]string {
@@ -106,11 +115,11 @@ func (c *MockAWSCloud) Tags() map[string]string {
 }
 
 func (c *MockAWSCloud) CreateTags(resourceId string, tags map[string]string) error {
-	return fmt.Errorf("MockAWSCloud CreateTags not implemented")
+	return createTags(c, resourceId, tags)
 }
 
 func (c *MockAWSCloud) GetTags(resourceID string) (map[string]string, error) {
-	return nil, fmt.Errorf("MockAWSCloud GetTags not implemented")
+	return getTags(c, resourceID)
 }
 
 func (c *MockAWSCloud) GetELBTags(loadBalancerName string) (map[string]string, error) {
@@ -130,7 +139,7 @@ func (c *MockAWSCloud) DescribeVPC(vpcID string) (*ec2.Vpc, error) {
 }
 
 func (c *MockAWSCloud) ResolveImage(name string) (*ec2.Image, error) {
-	return nil, fmt.Errorf("MockAWSCloud ResolveImage not implemented")
+	return resolveImage(c.MockEC2, name)
 }
 
 func (c *MockAWSCloud) WithTags(tags map[string]string) AWSCloud {
@@ -162,7 +171,9 @@ func (c *MockAWSCloud) Autoscaling() *autoscaling.AutoScaling {
 	return nil
 }
 
-func (c *MockAWSCloud) Route53() *route53.Route53 {
-	glog.Fatalf("MockAWSCloud Route53 not implemented")
-	return nil
+func (c *MockAWSCloud) Route53() route53iface.Route53API {
+	if c.MockRoute53 == nil {
+		glog.Fatalf("MockRoute53 not set")
+	}
+	return c.MockRoute53
 }

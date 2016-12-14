@@ -32,6 +32,7 @@ import (
 	"k8s.io/kops/upup/pkg/kutil"
 	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
+	"k8s.io/kubernetes/pkg/util/validation/field"
 )
 
 type Factory interface {
@@ -108,6 +109,7 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.PersistentFlags().StringVarP(&rootCommand.clusterName, "name", "", "", "Name of cluster")
 
 	// create subcommands
+	cmd.AddCommand(NewCmdCompletion(f, out))
 	cmd.AddCommand(NewCmdCreate(f, out))
 	cmd.AddCommand(NewCmdEdit(f, out))
 	cmd.AddCommand(NewCmdUpdate(f, out))
@@ -220,14 +222,22 @@ func (c *RootCmd) Clientset() (simple.Clientset, error) {
 }
 
 func (c *RootCmd) Cluster() (*kopsapi.Cluster, error) {
-	clientset, err := c.Clientset()
-	if err != nil {
-		return nil, err
-	}
-
 	clusterName := c.ClusterName()
 	if clusterName == "" {
 		return nil, fmt.Errorf("--name is required")
+	}
+
+	return GetCluster(c.factory, clusterName)
+}
+
+func GetCluster(factory *util.Factory, clusterName string) (*kopsapi.Cluster, error) {
+	if clusterName == "" {
+		return nil, field.Required(field.NewPath("ClusterName"), "Cluster name is required")
+	}
+
+	clientset, err := factory.Clientset()
+	if err != nil {
+		return nil, err
 	}
 
 	cluster, err := clientset.Clusters().Get(clusterName)
