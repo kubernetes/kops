@@ -190,6 +190,13 @@ loadBalancer/api.{{ ClusterName }}:
   {{ end }}
   listeners:
     443: { instancePort: 443 }
+  #scheme: internal
+  healthCheck:
+    target: TCP:443
+    healthyThreshold: 2
+    unhealthyThreshold: 2
+    interval: 10
+    timeout: 5
 
 # ---------------------------------------------------------------
 # Kube-Proxy - Healthz - 10249

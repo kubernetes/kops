@@ -22,6 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/golang/glog"
+	"os"
 	"sync"
 )
 
@@ -66,7 +67,11 @@ func (s *S3Context) getRegionForBucket(bucket string) (string, error) {
 	}
 
 	// Probe to find correct region for bucket
-	s3Client, err := s.getClient("us-east-1")
+	awsRegion := os.Getenv("AWS_REGION")
+	if awsRegion == "" {
+		awsRegion = "us-east-1"
+	}
+	s3Client, err := s.getClient(awsRegion)
 	if err != nil {
 		return "", fmt.Errorf("unable to get client for querying s3 bucket location: %v", err)
 	}

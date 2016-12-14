@@ -148,6 +148,12 @@ func (e *SecurityGroupRule) matches(rule *ec2.IpPermission) bool {
 			if e.SourceGroup == nil {
 				continue
 			}
+
+			if e.SourceGroup.ID == nil {
+				glog.Warningf("SourceGroup had nil ID: %v", e.SourceGroup)
+				continue
+			}
+
 			if aws.StringValue(spec.GroupId) == *e.SourceGroup.ID {
 				match = true
 				break

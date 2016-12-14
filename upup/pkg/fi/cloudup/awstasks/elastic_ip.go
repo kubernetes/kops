@@ -20,11 +20,13 @@ import (
 	//"fmt"
 	//
 	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
 //go:generate fitask -type=ElasticIP
@@ -61,14 +63,12 @@ func (e *ElasticIP) FindAddress(context *fi.Context) (*string, error) {
 	return actual.PublicIP, nil
 }
 
-//
-// Find (public wrapper for find()
-//
+// Find is a public wrapper for find()
 func (e *ElasticIP) Find(context *fi.Context) (*ElasticIP, error) {
 	return e.find(context.Cloud.(awsup.AWSCloud))
 }
 
-// Will attempt to look up the elastic IP from AWS
+// find will attempt to look up the elastic IP from AWS
 func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
 	publicIP := e.PublicIP
 	allocationID := e.ID
@@ -125,8 +125,10 @@ func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
 			ID:       a.AllocationId,
 			PublicIP: a.PublicIp,
 		}
-
 		actual.Subnet = e.Subnet
+
+		// ElasticIP don't have a Name (no tags), so we set the name to avoid spurious changes
+		actual.Name = e.Name
 
 		e.ID = actual.ID
 
@@ -143,7 +145,7 @@ func (e *ElasticIP) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
-// Validation for the resource. EIPs are simple, so virtually no
+// CheckChanges validates the resource. EIPs are simple, so virtually no
 // validation
 func (s *ElasticIP) CheckChanges(a, e, changes *ElasticIP) error {
 	// This is a new EIP
@@ -167,7 +169,7 @@ func (s *ElasticIP) CheckChanges(a, e, changes *ElasticIP) error {
 	return nil
 }
 
-// Here is where we actually apply changes to AWS
+// RenderAWS is where we actually apply changes to AWS
 func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) error {
 
 	var publicIp *string
@@ -210,4 +212,18 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 	return nil
 }
 
-// TODO Kris - We need to support EIP for Terraform
+type terraformElasticIP struct {
+	VPC *bool `json:"vpc"`
+}
+
+func (_ *ElasticIP) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ElasticIP) error {
+	tf := &terraformElasticIP{
+		VPC: aws.Bool(true),
+	}
+
+	return t.RenderResource("aws_eip", *e.Name, tf)
+}
+
+func (e *ElasticIP) TerraformLink() *terraform.Literal {
+	return terraform.LiteralProperty("aws_eip", *e.Name, "id")
+}

@@ -43,6 +43,11 @@ const (
 	InstanceGroupRoleNode   InstanceGroupRole = "Node"
 )
 
+var AllInstanceGroupRoles = []InstanceGroupRole{
+	InstanceGroupRoleNode,
+	InstanceGroupRoleMaster,
+}
+
 type InstanceGroupSpec struct {
 	// Type determines the role of instances in this group: masters or nodes
 	Role InstanceGroupRole `json:"role,omitempty"`

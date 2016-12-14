@@ -117,7 +117,7 @@ func (c *GetInstanceGroupsCmd) Run(args []string) error {
 		return t.Render(instancegroups, os.Stdout, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "ZONES")
 	} else if output == OutputYaml {
 		for _, ig := range instancegroups {
-			y, err := api.ToYaml(ig)
+			y, err := api.ToVersionedYaml(ig)
 			if err != nil {
 				return fmt.Errorf("error marshaling yaml for %q: %v", ig.Name, err)
 			}

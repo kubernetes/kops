@@ -82,9 +82,14 @@ func (t *DryRunTarget) Delete(deletion Deletion) error {
 	return nil
 }
 
-func IdForTask(taskMap map[string]Task, t Task) string {
+func idForTask(taskMap map[string]Task, t Task) string {
 	for k, v := range taskMap {
 		if v == t {
+			// Skip task type, if present (taskType/taskName)
+			firstSlash := strings.Index(k, "/")
+			if firstSlash != -1 {
+				k = k[firstSlash+1:]
+			}
 			return k
 		}
 	}
@@ -111,7 +116,7 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 			fmt.Fprintf(b, "Will create resources:\n")
 			for _, r := range creates {
 				taskName := getTaskName(r.changes)
-				fmt.Fprintf(b, "  %-20s\t%s\n", taskName, IdForTask(taskMap, r.e))
+				fmt.Fprintf(b, "  %s/%s\n", taskName, idForTask(taskMap, r.e))
 
 				changes := reflect.ValueOf(r.changes)
 				if changes.Kind() == reflect.Ptr && !changes.IsNil() {
@@ -217,7 +222,7 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 				}
 
 				taskName := getTaskName(r.changes)
-				fmt.Fprintf(b, "  %-20s\t%s\n", taskName, IdForTask(taskMap, r.e))
+				fmt.Fprintf(b, "  %s/%s\n", taskName, idForTask(taskMap, r.e))
 				for _, change := range changeList {
 					lines := strings.Split(change.Description, "\n")
 					if len(lines) == 1 {
@@ -338,7 +343,17 @@ func ValueAsString(value reflect.Value) string {
 			} else if compareWithID, ok := intf.(CompareWithID); ok {
 				id := compareWithID.CompareWithID()
 				if id == nil {
-					fmt.Fprintf(b, "id:<nil>")
+					// Uninformative, but we can often print the name instead
+					name := ""
+					hasName, ok := intf.(HasName)
+					if ok {
+						name = StringValue(hasName.GetName())
+					}
+					if name != "" {
+						fmt.Fprintf(b, "name:%s", name)
+					} else {
+						fmt.Fprintf(b, "id:<nil>")
+					}
 				} else {
 					fmt.Fprintf(b, "id:%s", *id)
 				}
