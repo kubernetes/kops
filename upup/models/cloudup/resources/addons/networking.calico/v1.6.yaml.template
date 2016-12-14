@@ -6,7 +6,11 @@ metadata:
   namespace: kube-system
 data:
   # The calico-etcd PetSet service IP:port
-  etcd_endpoints: "http://100.64.0.136:6666"
+  etcd_endpoints: "{{ $cluster := index .EtcdClusters 0 -}}
+                      {{- range $j, $member := $cluster.Members -}}
+                          {{- if $j }},{{ end -}}
+                          http://etcd-{{ $member.Name }}.internal.{{ ClusterName }}:4001
+                      {{- end }}"
 
   # True enables BGP networking, false tells Calico to enforce
   # policy only, using native networking.
@@ -66,6 +70,9 @@ spec:
       containers:
         - name: calico-etcd
           image: quay.io/coreos/etcd:v3.0.15
+          resources:
+            requests:
+              cpu: 10m
           env:
             - name: CALICO_ETCD_IP
               valueFrom:
@@ -144,6 +151,9 @@ spec:
         # host.
         - name: calico-node
           image: quay.io/calico/node:v0.23.0
+          resources:
+            requests:
+              cpu: 10m
           env:
             # The location of the Calico etcd cluster.
             - name: ETCD_ENDPOINTS
@@ -180,6 +190,9 @@ spec:
         # and CNI network config file on each node.
         - name: install-cni
           image: calico/cni:v1.4.3
+          resources:
+            requests:
+              cpu: 10m
           imagePullPolicy: Always
           command: ["/install-cni.sh"]
           env:
@@ -248,6 +261,9 @@ spec:
       containers:
         - name: calico-policy-controller
           image: calico/kube-policy-controller:v0.4.0
+          resources:
+            requests:
+              cpu: 10m
           env:
             # The location of the Calico etcd cluster.
             - name: ETCD_ENDPOINTS
@@ -295,7 +311,7 @@ spec:
           args:
           - "pool"
           - "add"
-          - "192.168.0.0/16"
+          - "{{ .NonMasqueradeCIDR }}"
           - "--ipip"
           - "--nat-outgoing"
           env:
