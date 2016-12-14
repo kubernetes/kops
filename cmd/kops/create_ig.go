@@ -96,7 +96,12 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 	// Populate some defaults
 	ig := &api.InstanceGroup{}
 	ig.ObjectMeta.Name = groupName
-	ig.Spec.Role = api.InstanceGroupRole(options.Role)
+
+	role, ok := api.ParseInstanceGroupRole(options.Role, true)
+	if !ok {
+		return fmt.Errorf("unknown role %q", options.Role)
+	}
+	ig.Spec.Role = role
 
 	ig, err = cloudup.PopulateInstanceGroupSpec(cluster, ig, channel)
 	if err != nil {

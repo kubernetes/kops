@@ -22,6 +22,27 @@ import (
 	"strings"
 )
 
+// ParseInstanceGroupRole converts a string to an InstanceGroupRole
+func ParseInstanceGroupRole(input string, lenient bool) (InstanceGroupRole, bool) {
+	findRole := strings.ToLower(input)
+	if lenient {
+		// Accept pluralized "bastions" for "bastion"
+		findRole = strings.TrimSuffix(findRole, "s")
+	}
+
+	for _, role := range AllInstanceGroupRoles {
+		s := string(role)
+		s = strings.ToLower(s)
+		if lenient {
+			s = strings.TrimSuffix(s, "s")
+		}
+		if s == findRole {
+			return role, true
+		}
+	}
+	return "", false
+}
+
 // ParseRawYaml parses an object just using yaml, without the full api machinery
 // Deprecated: prefer using the API machinery
 func ParseRawYaml(data []byte, dest interface{}) error {
