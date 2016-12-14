@@ -26,20 +26,20 @@ import (
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
-const DefaultNodeMachineTypeAWS = "t2.medium"
-const DefaultNodeMachineTypeGCE = "n1-standard-2"
+// Default Machine types for various types of instance group machine
+const (
+	DefaultNodeMachineTypeAWS = "t2.medium"
+	DefaultNodeMachineTypeGCE = "n1-standard-2"
 
-const DefaultMasterMachineTypeAWS = "m3.medium"
+	DefaultBastionMachineTypeAWS = "t2.micro"
+	DefaultBastionMachineTypeGCE = "f1-micro"
 
-// us-east-2 does not (currently) support the m3 family; the c4 large is the cheapest non-burstable instance
-const DefaultMasterMachineTypeAWS_USEAST2 = "c4.large"
+	DefaultMasterMachineTypeAWS = "m3.medium"
+	DefaultMasterMachineTypeGCE = "n1-standard-1"
+	// us-east-2 does not (currently) support the m3 family; the c4 large is the cheapest non-burstable instance
+	DefaultMasterMachineTypeAWS_USEAST2 = "c4.large"
+)
 
-const DefaultMasterMachineTypeGCE = "n1-standard-1"
-
-//// Default Machine type for bastion hosts
-//const DefaultBastionMachineTypeAWS = "t2.medium"
-//const DefaultBastionMasterMachineTypeGCE = "n1-standard-1"
-//
 //// Default LoadBalancing IdleTimeout for bastion hosts
 //const DefaultBastionIdleTimeoutAWS = 120
 //const DefaultBastionIdleTimeoutGCE = 120
@@ -55,9 +55,20 @@ func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup, c
 	ig := &api.InstanceGroup{}
 	utils.JsonMergeStruct(ig, input)
 
+	// TODO: Clean up
 	if ig.IsMaster() {
 		if ig.Spec.MachineType == "" {
 			ig.Spec.MachineType = defaultMasterMachineType(cluster)
+		}
+		if ig.Spec.MinSize == nil {
+			ig.Spec.MinSize = fi.Int(1)
+		}
+		if ig.Spec.MaxSize == nil {
+			ig.Spec.MaxSize = fi.Int(1)
+		}
+	} else if ig.Spec.Role == api.InstanceGroupRoleBastion {
+		if ig.Spec.MachineType == "" {
+			ig.Spec.MachineType = defaultBastionMachineType(cluster)
 		}
 		if ig.Spec.MinSize == nil {
 			ig.Spec.MinSize = fi.Int(1)
@@ -157,6 +168,19 @@ func defaultMasterMachineType(cluster *api.Cluster) string {
 		return DefaultMasterMachineTypeAWS
 	case fi.CloudProviderGCE:
 		return DefaultMasterMachineTypeGCE
+	default:
+		glog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q", cluster.Spec.CloudProvider)
+		return ""
+	}
+}
+
+// defaultBastionMachineType returns the default MachineType for bastions, based on the cloudprovider
+func defaultBastionMachineType(cluster *api.Cluster) string {
+	switch fi.CloudProviderID(cluster.Spec.CloudProvider) {
+	case fi.CloudProviderAWS:
+		return DefaultBastionMachineTypeAWS
+	case fi.CloudProviderGCE:
+		return DefaultBastionMachineTypeGCE
 	default:
 		glog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q", cluster.Spec.CloudProvider)
 		return ""
