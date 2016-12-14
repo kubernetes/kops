@@ -19,9 +19,9 @@ package main
 import (
 	"fmt"
 	"io"
-	"os"
 
 	"github.com/spf13/cobra"
+	"k8s.io/kops/cmd/kops/util"
 )
 
 const boilerPlate = `
@@ -40,9 +40,8 @@ const boilerPlate = `
 # limitations under the License.
 `
 
-type CompletionCmd struct {
-	cobraCommand *cobra.Command
-	Shell        string
+type CompletionOptions struct {
+	Shell string
 }
 
 var (
@@ -56,44 +55,49 @@ completion of kops commands.`
 source <(kops completion bash)`
 )
 
-var completionCmd = CompletionCmd{
-	cobraCommand: &cobra.Command{
+func NewCmdCompletion(f *util.Factory, out io.Writer) *cobra.Command {
+	options := &CompletionOptions{}
+
+	cmd := &cobra.Command{
 		Use:     "completion",
 		Short:   "Output shell completion code for the given shell (bash)",
 		Long:    longDescription,
 		Example: example,
-	},
-}
-
-func init() {
-	cmd := completionCmd.cobraCommand
-	rootCommand.cobraCommand.AddCommand(cmd)
-
-	cmd.Run = func(cmd *cobra.Command, args []string) {
-		err := completionCmd.Run(os.Stdout)
-		if err != nil {
-			exitWithError(err)
-		}
+		Run: func(cmd *cobra.Command, args []string) {
+			err := RunCompletion(f, cmd, args, out, options)
+			if err != nil {
+				exitWithError(err)
+			}
+		},
 	}
 
-	cmd.Flags().StringVar(&completionCmd.Shell, "shell", "", "target shell (bash).")
+	cmd.Flags().StringVar(&options.Shell, "shell", "", "target shell (bash).")
+
+	return cmd
 }
 
-func (c *CompletionCmd) Run(w io.Writer) error {
+func RunCompletion(f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, c *CompletionOptions) error {
+	if len(args) != 0 {
+		if c.Shell != "" {
+			return fmt.Errorf("cannot specify shell both as a flag and a positional argument")
+		}
+		c.Shell = args[0]
+	}
+
 	if c.Shell == "" {
-		return fmt.Errorf("--shell is required")
+		return fmt.Errorf("shell is required")
 	}
 
 	if c.Shell != "bash" {
 		return fmt.Errorf("only bash shell is supported for kops completion")
 	}
 
-	_, err := w.Write([]byte(boilerPlate))
+	_, err := out.Write([]byte(boilerPlate))
 	if err != nil {
 		return err
 	}
 
-	err = rootCommand.cobraCommand.GenBashCompletion(w)
+	err = rootCommand.cobraCommand.GenBashCompletion(out)
 	if err != nil {
 		return err
 	}

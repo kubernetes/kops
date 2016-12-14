@@ -27,6 +27,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/route53"
+	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
@@ -55,6 +56,8 @@ const DeleteTagsLogInterval = 10 // this is in "retry intervals"
 
 const TagClusterName = "KubernetesCluster"
 
+const WellKnownAccountKopeio = "383156758163"
+
 type AWSCloud interface {
 	fi.Cloud
 
@@ -64,7 +67,7 @@ type AWSCloud interface {
 	IAM() *iam.IAM
 	ELB() *elb.ELB
 	Autoscaling() *autoscaling.AutoScaling
-	Route53() *route53.Route53
+	Route53() route53iface.Route53API
 
 	// TODO: Document and rationalize these tags/filters methods
 	AddTags(name *string, tags map[string]string)
@@ -210,7 +213,11 @@ func isTagsEventualConsistencyError(err error) bool {
 }
 
 // GetTags will fetch the tags for the specified resource, retrying (up to MaxDescribeTagsAttempts) if it hits an eventual-consistency type error
-func (c *awsCloudImplementation) GetTags(resourceId string) (map[string]string, error) {
+func (c *awsCloudImplementation) GetTags(resourceID string) (map[string]string, error) {
+	return getTags(c, resourceID)
+}
+
+func getTags(c AWSCloud, resourceId string) (map[string]string, error) {
 	tags := map[string]string{}
 
 	request := &ec2.DescribeTagsInput{
@@ -256,6 +263,10 @@ func (c *awsCloudImplementation) GetTags(resourceId string) (map[string]string, 
 
 // CreateTags will add tags to the specified resource, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
 func (c *awsCloudImplementation) CreateTags(resourceId string, tags map[string]string) error {
+	return createTags(c, resourceId, tags)
+}
+
+func createTags(c AWSCloud, resourceId string, tags map[string]string) error {
 	if len(tags) == 0 {
 		return nil
 	}
@@ -341,6 +352,10 @@ func (c *awsCloudImplementation) DeleteTags(resourceId string, tags map[string]s
 }
 
 func (c *awsCloudImplementation) AddAWSTags(id string, expected map[string]string) error {
+	return addAWSTags(c, id, expected)
+}
+
+func addAWSTags(c AWSCloud, id string, expected map[string]string) error {
 	actual, err := c.GetTags(id)
 	if err != nil {
 		return fmt.Errorf("unexpected error fetching tags for resource: %v", err)
@@ -423,13 +438,17 @@ func (c *awsCloudImplementation) CreateELBTags(loadBalancerName string, tags map
 }
 
 func (c *awsCloudImplementation) BuildTags(name *string) map[string]string {
+	return buildTags(c.tags, name)
+}
+
+func buildTags(commonTags map[string]string, name *string) map[string]string {
 	tags := make(map[string]string)
 	if name != nil {
 		tags["Name"] = *name
 	} else {
 		glog.Warningf("Name not set when filtering by name")
 	}
-	for k, v := range c.tags {
+	for k, v := range commonTags {
 		tags[k] = v
 	}
 	return tags
@@ -445,6 +464,10 @@ func (c *awsCloudImplementation) AddTags(name *string, tags map[string]string) {
 }
 
 func (c *awsCloudImplementation) BuildFilters(name *string) []*ec2.Filter {
+	return buildFilters(c.tags, name)
+}
+
+func buildFilters(commonTags map[string]string, name *string) []*ec2.Filter {
 	filters := []*ec2.Filter{}
 
 	merged := make(map[string]string)
@@ -453,7 +476,7 @@ func (c *awsCloudImplementation) BuildFilters(name *string) []*ec2.Filter {
 	} else {
 		glog.Warningf("Name not set when filtering by name")
 	}
-	for k, v := range c.tags {
+	for k, v := range commonTags {
 		merged[k] = v
 	}
 
@@ -523,6 +546,10 @@ func (t *awsCloudImplementation) DescribeVPC(vpcID string) (*ec2.Vpc, error) {
 // owner/name in which case we find the image with the specified name, owned by owner
 // name in which case we find the image with the specified name, with the current owner
 func (c *awsCloudImplementation) ResolveImage(name string) (*ec2.Image, error) {
+	return resolveImage(c.ec2, name)
+}
+
+func resolveImage(ec2Client ec2iface.EC2API, name string) (*ec2.Image, error) {
 	// TODO: Cache this result during a single execution (we get called multiple times)
 	glog.V(2).Infof("Calling DescribeImages to resolve name %q", name)
 	request := &ec2.DescribeImagesInput{}
@@ -543,7 +570,7 @@ func (c *awsCloudImplementation) ResolveImage(name string) (*ec2.Image, error) {
 			// Check for well known owner aliases
 			switch owner {
 			case "kope.io":
-				owner = "383156758163"
+				owner = WellKnownAccountKopeio
 			case "redhat.com":
 				owner = "309956199498"
 			}
@@ -555,7 +582,7 @@ func (c *awsCloudImplementation) ResolveImage(name string) (*ec2.Image, error) {
 		}
 	}
 
-	response, err := c.EC2().DescribeImages(request)
+	response, err := ec2Client.DescribeImages(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing images: %v", err)
 	}
@@ -644,6 +671,6 @@ func (c *awsCloudImplementation) Autoscaling() *autoscaling.AutoScaling {
 	return c.autoscaling
 }
 
-func (c *awsCloudImplementation) Route53() *route53.Route53 {
+func (c *awsCloudImplementation) Route53() route53iface.Route53API {
 	return c.route53
 }

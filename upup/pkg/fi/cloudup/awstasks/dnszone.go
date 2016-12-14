@@ -86,7 +86,7 @@ func (e *DNSZone) findExisting(cloud awsup.AWSCloud) (*route53.HostedZone, error
 				}
 				// Otherwise continue ... maybe the name was not an id after all...
 			} else {
-				return nil, fmt.Errorf("error fetching DNS HostedZone %q: %v", *e.ID, err)
+				return nil, fmt.Errorf("error fetching DNS HostedZone %q: %v", findID, err)
 			}
 		} else {
 			return response.HostedZone, nil

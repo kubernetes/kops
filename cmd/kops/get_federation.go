@@ -84,7 +84,7 @@ func RunGetFederations(context Factory, out io.Writer, options *GetFederationOpt
 		return t.Render(federations, out, "NAME", "CONTROLLERS", "MEMBERS")
 	} else if output == OutputYaml {
 		for _, f := range federations {
-			y, err := api.ToYaml(f)
+			y, err := api.ToVersionedYaml(f)
 			if err != nil {
 				return fmt.Errorf("error marshaling yaml for %q: %v", f.Name, err)
 			}

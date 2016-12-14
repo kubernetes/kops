@@ -22,7 +22,20 @@ import (
 )
 
 type MockEC2 struct {
+	addressNumber int
+	Addresses     []*ec2.Address
+
 	RouteTables []*ec2.RouteTable
+
+	Images []*ec2.Image
+
+	subnetNumber int
+	Subnets      []*ec2.Subnet
+
+	Tags []*ec2.TagDescription
+
+	vpcNumber int
+	Vpcs      map[string]*vpcInfo
 }
 
 var _ ec2iface.EC2API = &MockEC2{}
