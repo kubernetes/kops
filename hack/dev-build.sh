@@ -65,7 +65,7 @@ MASTER_SIZE=${MASTER_SIZE:-m4.large}
 
 # NETWORK
 TOPOLOGY=${TOPOLOGY:-private}
-NETWORKING=${NETWORKING:-calico}
+NETWORKING=${NETWORKING:-weave}
 
 # How verbose go logging is
 VERBOSITY=${VERBOSITY:-10}
