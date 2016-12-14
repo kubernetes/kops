@@ -31,12 +31,12 @@ import (
 	"k8s.io/kubernetes/pkg/kubectl/resource"
 )
 
-type UpdateOptions struct {
+type ReplaceOptions struct {
 	resource.FilenameOptions
 }
 
 func NewCmdReplace(f *util.Factory, out io.Writer) *cobra.Command {
-	options := &UpdateOptions{}
+	options := &ReplaceOptions{}
 
 	cmd := &cobra.Command{
 		Use:   "replace -f FILENAME",
@@ -57,7 +57,7 @@ func NewCmdReplace(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *UpdateOptions) error {
+func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *ReplaceOptions) error {
 	clientset, err := f.Clientset()
 	if err != nil {
 		return err

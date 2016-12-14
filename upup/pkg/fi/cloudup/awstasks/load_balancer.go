@@ -21,12 +21,16 @@ import (
 
 	"strconv"
 
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/elb"
+	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
 //go:generate fitask -type=LoadBalancer
@@ -44,6 +48,9 @@ type LoadBalancer struct {
 	SecurityGroups []*SecurityGroup
 
 	Listeners map[string]*LoadBalancerListener
+
+	Scheme      *string
+	HealthCheck LoadBalancerHealthCheck
 }
 
 var _ fi.CompareWithID = &LoadBalancer{}
@@ -73,21 +80,17 @@ func (e *LoadBalancerListener) GetDependencies(tasks map[string]fi.Task) []fi.Ta
 	return nil
 }
 
-func findELB(cloud awsup.AWSCloud, name string) (*elb.LoadBalancerDescription, error) {
+func findLoadBalancer(cloud awsup.AWSCloud, name string) (*elb.LoadBalancerDescription, error) {
 	request := &elb.DescribeLoadBalancersInput{
 		LoadBalancerNames: []*string{&name},
 	}
-	var found []*elb.LoadBalancerDescription
-	err := cloud.ELB().DescribeLoadBalancersPages(request, func(p *elb.DescribeLoadBalancersOutput, lastPage bool) (shouldContinue bool) {
-		for _, lb := range p.LoadBalancerDescriptions {
-			if aws.StringValue(lb.LoadBalancerName) == name {
-				found = append(found, lb)
-			} else {
-				glog.Warningf("Got ELB with unexpected name")
-			}
+	found, err := describeLoadBalancers(cloud, request, func(lb *elb.LoadBalancerDescription) bool {
+		if aws.StringValue(lb.LoadBalancerName) == name {
+			return true
 		}
 
-		return true
+		glog.Warningf("Got ELB with unexpected name: %q", lb.LoadBalancerName)
+		return false
 	})
 
 	if err != nil {
@@ -111,6 +114,62 @@ func findELB(cloud awsup.AWSCloud, name string) (*elb.LoadBalancerDescription, e
 	return found[0], nil
 }
 
+func findLoadBalancerByAlias(cloud awsup.AWSCloud, alias *route53.AliasTarget) (*elb.LoadBalancerDescription, error) {
+	// TODO: Any way to avoid listing all ELBs?
+	request := &elb.DescribeLoadBalancersInput{}
+
+	dnsName := aws.StringValue(alias.DNSName)
+	matchDnsName := strings.TrimSuffix(dnsName, ".")
+	if matchDnsName == "" {
+		return nil, fmt.Errorf("DNSName not set on AliasTarget")
+	}
+
+	matchHostedZoneId := aws.StringValue(alias.HostedZoneId)
+
+	found, err := describeLoadBalancers(cloud, request, func(lb *elb.LoadBalancerDescription) bool {
+		if matchHostedZoneId != aws.StringValue(lb.CanonicalHostedZoneNameID) {
+			return false
+		}
+
+		lbDnsName := aws.StringValue(lb.DNSName)
+		lbDnsName = strings.TrimSuffix(lbDnsName, ".")
+		return lbDnsName == matchDnsName || "dualstack."+lbDnsName == matchDnsName
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("error listing ELBs: %v", err)
+	}
+
+	if len(found) == 0 {
+		return nil, nil
+	}
+
+	if len(found) != 1 {
+		return nil, fmt.Errorf("Found multiple ELBs with DNSName %q", dnsName)
+	}
+
+	return found[0], nil
+}
+
+func describeLoadBalancers(cloud awsup.AWSCloud, request *elb.DescribeLoadBalancersInput, filter func(*elb.LoadBalancerDescription) bool) ([]*elb.LoadBalancerDescription, error) {
+	var found []*elb.LoadBalancerDescription
+	err := cloud.ELB().DescribeLoadBalancersPages(request, func(p *elb.DescribeLoadBalancersOutput, lastPage bool) (shouldContinue bool) {
+		for _, lb := range p.LoadBalancerDescriptions {
+			if filter(lb) {
+				found = append(found, lb)
+			}
+		}
+
+		return true
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return found, nil
+}
+
 func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
@@ -119,7 +178,7 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 		elbName = fi.StringValue(e.Name)
 	}
 
-	lb, err := findELB(cloud, elbName)
+	lb, err := findLoadBalancer(cloud, elbName)
 	if err != nil {
 		return nil, err
 	}
@@ -132,6 +191,8 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	actual.ID = lb.LoadBalancerName
 	actual.DNSName = lb.DNSName
 	actual.HostedZoneId = lb.CanonicalHostedZoneNameID
+	actual.Scheme = lb.Scheme
+
 	for _, subnet := range lb.Subnets {
 		actual.Subnets = append(actual.Subnets, &Subnet{ID: subnet})
 	}
@@ -200,6 +261,7 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 	if a == nil {
 		request := &elb.CreateLoadBalancerInput{}
 		request.LoadBalancerName = elbName
+		request.Scheme = e.Scheme
 
 		for _, subnet := range e.Subnets {
 			request.Subnets = append(request.Subnets, subnet.ID)
@@ -230,7 +292,7 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 		e.DNSName = response.DNSName
 		e.ID = elbName
 
-		lb, err := findELB(t.Cloud, *e.ID)
+		lb, err := findLoadBalancer(t.Cloud, *e.ID)
 		if err != nil {
 			return err
 		}
@@ -268,4 +330,81 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 	}
 
 	return t.AddELBTags(*e.ID, t.Cloud.BuildTags(e.Name))
+}
+
+type terraformLoadBalancer struct {
+	Name           *string                           `json:"name"`
+	Listener       []*terraformLoadBalancerListener  `json:"listener"`
+	SecurityGroups []*terraform.Literal              `json:"security_groups"`
+	Subnets        []*terraform.Literal              `json:"subnets"`
+	Internal       bool                              `json:"internal,omitempty"`
+	HealthCheck    *terraformLoadBalancerHealthCheck `json:"health_check"`
+}
+
+type terraformLoadBalancerListener struct {
+	InstancePort     int    `json:"instance_port"`
+	InstanceProtocol string `json:"instance_protocol"`
+	LBPort           int64  `json:"lb_port"`
+	LBProtocol       string `json:"lb_protocol"`
+}
+
+type terraformLoadBalancerHealthCheck struct {
+	Target             *string `json:"target"`
+	HealthyThreshold   *int64  `json:"healthy_threshold"`
+	UnhealthyThreshold *int64  `json:"unhealthy_threshold"`
+	Interval           *int64  `json:"interval"`
+	Timeout            *int64  `json:"timeout"`
+}
+
+func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LoadBalancer) error {
+	elbName := e.ID
+	if elbName == nil {
+		elbName = e.Name
+	}
+
+	internal := fi.StringValue(e.Scheme) == "internal"
+	tf := &terraformLoadBalancer{
+		Name:     elbName,
+		Internal: internal,
+	}
+
+	for _, subnet := range e.Subnets {
+		tf.Subnets = append(tf.Subnets, subnet.TerraformLink())
+	}
+
+	for _, sg := range e.SecurityGroups {
+		tf.SecurityGroups = append(tf.SecurityGroups, sg.TerraformLink())
+	}
+
+	for loadBalancerPort, listener := range e.Listeners {
+		loadBalancerPortInt, err := strconv.ParseInt(loadBalancerPort, 10, 64)
+		if err != nil {
+			return fmt.Errorf("error parsing load balancer listener port: %q", loadBalancerPort)
+		}
+
+		tf.Listener = append(tf.Listener, &terraformLoadBalancerListener{
+			InstanceProtocol: "TCP",
+			InstancePort:     listener.InstancePort,
+			LBPort:           loadBalancerPortInt,
+			LBProtocol:       "TCP",
+		})
+	}
+
+	tf.HealthCheck = &terraformLoadBalancerHealthCheck{
+		Target:             e.HealthCheck.Target,
+		HealthyThreshold:   e.HealthCheck.HealthyThreshold,
+		UnhealthyThreshold: e.HealthCheck.UnhealthyThreshold,
+		Interval:           e.HealthCheck.Interval,
+		Timeout:            e.HealthCheck.Timeout,
+	}
+
+	return t.RenderResource("aws_elb", *e.Name, tf)
+}
+
+func (e *LoadBalancer) TerraformLink(params ...string) *terraform.Literal {
+	prop := "id"
+	if len(params) > 0 {
+		prop = params[0]
+	}
+	return terraform.LiteralProperty("aws_elb", *e.Name, prop)
 }

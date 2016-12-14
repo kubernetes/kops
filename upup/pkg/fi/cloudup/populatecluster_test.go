@@ -379,3 +379,49 @@ func TestPopulateCluster_APIServerCount(t *testing.T) {
 		t.Fatalf("Unexpected APIServerCount: %v", fi.IntValue(full.Spec.KubeAPIServer.APIServerCount))
 	}
 }
+
+func TestPopulateCluster_AnonymousAuth(t *testing.T) {
+	c := buildMinimalCluster()
+	c.Spec.KubernetesVersion = "1.5.0"
+
+	err := c.PerformAssignments()
+	if err != nil {
+		t.Fatalf("error from PerformAssignments: %v", err)
+	}
+
+	addEtcdClusters(c)
+
+	full, err := PopulateClusterSpec(c)
+	if err != nil {
+		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
+	}
+
+	if full.Spec.KubeAPIServer.AnonymousAuth == nil {
+		t.Fatalf("AnonymousAuth not specified")
+	}
+
+	if fi.BoolValue(full.Spec.KubeAPIServer.AnonymousAuth) != false {
+		t.Fatalf("Unexpected AnonymousAuth: %v", fi.BoolValue(full.Spec.KubeAPIServer.AnonymousAuth))
+	}
+}
+
+func TestPopulateCluster_AnonymousAuth_14(t *testing.T) {
+	c := buildMinimalCluster()
+	c.Spec.KubernetesVersion = "1.4.0"
+
+	err := c.PerformAssignments()
+	if err != nil {
+		t.Fatalf("error from PerformAssignments: %v", err)
+	}
+
+	addEtcdClusters(c)
+
+	full, err := PopulateClusterSpec(c)
+	if err != nil {
+		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
+	}
+
+	if full.Spec.KubeAPIServer.AnonymousAuth != nil {
+		t.Fatalf("AnonymousAuth is not supported in 1.4")
+	}
+}

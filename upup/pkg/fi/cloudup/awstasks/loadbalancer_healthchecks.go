@@ -23,11 +23,10 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-type LoadBalancerHealthChecks struct {
-	LoadBalancer *LoadBalancer
-
+type LoadBalancerHealthCheck struct {
 	Target *string
 
 	HealthyThreshold   *int64
@@ -35,6 +34,18 @@ type LoadBalancerHealthChecks struct {
 
 	Interval *int64
 	Timeout  *int64
+}
+
+var _ fi.HasDependencies = &LoadBalancerHealthCheck{}
+
+func (e *LoadBalancerHealthCheck) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	return nil
+}
+
+type LoadBalancerHealthChecks struct {
+	LoadBalancerHealthCheck
+
+	LoadBalancer *LoadBalancer
 }
 
 func (e *LoadBalancerHealthChecks) String() string {
@@ -46,7 +57,7 @@ func (e *LoadBalancerHealthChecks) Find(c *fi.Context) (*LoadBalancerHealthCheck
 
 	elbName := fi.StringValue(e.LoadBalancer.ID)
 
-	lb, err := findELB(cloud, elbName)
+	lb, err := findLoadBalancer(cloud, elbName)
 	if err != nil {
 		return nil, err
 	}
@@ -102,5 +113,10 @@ func (_ *LoadBalancerHealthChecks) RenderAWS(t *awsup.AWSAPITarget, a, e, change
 		return fmt.Errorf("error attaching autoscaling group to ELB: %v", err)
 	}
 
+	return nil
+}
+
+func (_ *LoadBalancerHealthChecks) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LoadBalancerHealthChecks) error {
+	// This happens in the load balancer definition
 	return nil
 }

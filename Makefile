@@ -23,7 +23,7 @@ GCS_URL=$(GCS_LOCATION:gs://%=https://storage.googleapis.com/%)
 LATEST_FILE?=latest-ci.txt
 GOPATH_1ST=$(shell echo ${GOPATH} | cut -d : -f 1)
 UNIQUE:=$(shell date +%s)
-GOVERSION=1.7.1
+GOVERSION=1.7.4
 
 # See http://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
@@ -76,9 +76,10 @@ codegen: kops-gobindata
 	PATH=${GOPATH_1ST}/bin:${PATH} go generate k8s.io/kops/upup/pkg/fi/fitasks
 
 test:
-	go test k8s.io/kops/upup/pkg/... -args -v=1 -logtostderr
 	go test k8s.io/kops/pkg/... -args -v=1 -logtostderr
+	go test k8s.io/kops/upup/pkg/... -args -v=1 -logtostderr
 	go test k8s.io/kops/dns-controller/pkg/... -args -v=1 -logtostderr
+	go test k8s.io/kops/cmd/... -args -v=1 -logtostderr
 
 crossbuild:
 	mkdir -p .build/dist/
@@ -201,6 +202,7 @@ gofmt:
 	gofmt -w -s util/
 	gofmt -w -s upup/pkg/
 	gofmt -w -s pkg/
+	gofmt -w -s tests/
 	gofmt -w -s protokube/cmd
 	gofmt -w -s protokube/pkg
 	gofmt -w -s dns-controller/cmd

@@ -185,7 +185,7 @@ func (c *KubeconfigBuilder) WriteKubecfg() error {
 		}
 	}
 	fmt.Printf("Wrote config for %s to %q\n", c.Context, c.KubeconfigPath)
-	fmt.Printf("Kop has changed your kubectl context to %s\n", c.Context)
+	fmt.Printf("Kops has changed your kubectl context to %s\n", c.Context)
 	return nil
 }
 
@@ -203,7 +203,6 @@ func (c *KubeconfigBuilder) getKubectlPath(kubeConfig string) string {
 
 	return kubeConfig
 }
-
 
 func (c *KubeconfigBuilder) execKubectl(args ...string) error {
 	cmd := exec.Command(c.KubectlPath, args...)
