@@ -121,7 +121,10 @@ func buildDiffLines(lString, rString string) []lineRecord {
 			}
 
 		case diffmatchpatch.DiffEqual:
-			if len(lines) > 0 {
+			if len(lines) == 1 {
+				l += lines[0]
+				r += lines[0]
+			} else if len(lines) > 1 {
 				if l != "" || r != "" {
 					l += lines[0]
 					r += lines[0]
