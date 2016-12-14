@@ -45,14 +45,14 @@ spec:
   networkID: vpc-abcdefg1
 ```
 
-## Blacklisted Values
+## Unsupported Values
 
-Kops will sometimes blacklist certain key values for directives. If kops detects a blacklisted value, the program will terminate with an error message.
+Kops will sometimes discontinue support for certain key values for directives. If kops detects an unsupported value, the program will terminate with an error message.
 
-If you are **sure** you want to use a blacklisted value (not recommended) you may bypass all blacklisting by setting
+If you are **sure** you want to use an unsupported value (not recommended) you may bypass all unsupported validation by setting
 
 ```
-export KOPS_BYPASS_BLACKLIST=1
+export KOPS_BYPASS_UNSUPPORTED=1
 ```
 
-Remember these values are blacklisted for a reason, and usually that reason if for the potential safety of your cluster. Please only use this override if you are very sure you know what you are doing.
+Remember these values are unsupported for a reason, and usually that reason if for the potential safety of your cluster. Please only use this override if you are very sure you know what you are doing.

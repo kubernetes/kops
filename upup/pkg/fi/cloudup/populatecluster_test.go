@@ -24,6 +24,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/util/sets"
+	"os"
 )
 
 func buildMinimalCluster() *api.Cluster {
@@ -380,11 +381,36 @@ func TestPopulateCluster_APIServerCount(t *testing.T) {
 	}
 }
 
-func TestPopulateCluster_AnonymousAuth(t *testing.T) {
+func TestPopulateCluster_UnsupportedVersion_1_5_0(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.KubernetesVersion = "1.5.0"
 
+
 	err := c.PerformAssignments()
+	if err != nil {
+		t.Fatalf("error from PerformAssignments: %v", err)
+	}
+
+	addEtcdClusters(c)
+
+	_, err = PopulateClusterSpec(c)
+	if !strings.Contains(err.Error(), "unsupported kubernetes version" ){
+		t.Fatal("Failed ensuring unsupported list: %v", err)
+	}
+}
+
+func TestPopulateCluster_AnonymousAuth(t *testing.T) {
+
+	// Bypass the unsupported versions for this test
+	err := os.Setenv("KOPS_BYPASS_UNSUPPORTED", "1")
+	if err != nil {
+		t.Fatalf("Unable to set KOPS_BYPASS_UNSUPPORTED")
+	}
+	c := buildMinimalCluster()
+	c.Spec.KubernetesVersion = "1.5.0"
+
+
+	err = c.PerformAssignments()
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
