@@ -196,5 +196,4 @@ func (c *GetSecretsCommand) Run(args []string) error {
 	default:
 		return fmt.Errorf("Unknown output format: %q", getCmd.output)
 	}
-	return nil
 }
