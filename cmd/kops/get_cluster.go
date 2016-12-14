@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -122,13 +121,8 @@ func (c *GetClustersCmd) Run(args []string) error {
 		}
 
 		for _, cluster := range clusters {
-			y, err := api.ToVersionedYaml(cluster)
-			if err != nil {
-				return fmt.Errorf("error marshaling yaml for %q: %v", cluster.Name, err)
-			}
-			_, err = os.Stdout.Write(y)
-			if err != nil {
-				return fmt.Errorf("error writing to stdout: %v", err)
+			if err := marshalToStdout(cluster, marshalYaml); err != nil {
+				return err
 			}
 		}
 		return nil
@@ -142,13 +136,8 @@ func (c *GetClustersCmd) Run(args []string) error {
 		}
 
 		for _, cluster := range clusters {
-			j, err := json.MarshalIndent(cluster, "", "  ")
-			if err != nil {
-				return fmt.Errorf("error marshaling json for %q: %v", cluster.Name, err)
-			}
-			_, err = os.Stdout.Write(j)
-			if err != nil {
-				return fmt.Errorf("error writing to stdout: %v", err)
+			if err := marshalToStdout(cluster, marshalJSON); err != nil {
+				return err
 			}
 		}
 		return nil
