@@ -87,13 +87,13 @@ func RunGetFederations(context Factory, out io.Writer, options *GetFederationOpt
 
 	case OutputYaml:
 		for _, f := range federations {
-			if err := marshalToStdout(f, marshalYaml); err != nil {
+			if err := marshalToWriter(f, marshalYaml, os.Stdout); err != nil {
 				return err
 			}
 		}
 	case OutputJSON:
 		for _, f := range federations {
-			if err := marshalToStdout(f, marshalJSON); err != nil {
+			if err := marshalToWriter(f, marshalJSON, os.Stdout); err != nil {
 				return err
 			}
 		}

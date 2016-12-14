@@ -120,13 +120,13 @@ func (c *GetInstanceGroupsCmd) Run(args []string) error {
 
 	case OutputYaml:
 		for _, ig := range instancegroups {
-			if err := marshalToStdout(ig, marshalYaml); err != nil {
+			if err := marshalToWriter(ig, marshalYaml, os.Stdout); err != nil {
 				return err
 			}
 		}
 	case OutputJSON:
 		for _, ig := range instancegroups {
-			if err := marshalToStdout(ig, marshalJSON); err != nil {
+			if err := marshalToWriter(ig, marshalJSON, os.Stdout); err != nil {
 				return err
 			}
 		}
