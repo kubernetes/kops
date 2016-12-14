@@ -120,14 +120,14 @@ func (c *GetClustersCmd) Run(args []string) error {
 
 	case OutputYaml:
 		for _, cluster := range clusters {
-			if err := marshalToStdout(cluster, marshalYaml); err != nil {
+			if err := marshalToWriter(cluster, marshalYaml, os.Stdout); err != nil {
 				return err
 			}
 		}
 		return nil
 	case OutputJSON:
 		for _, cluster := range clusters {
-			if err := marshalToStdout(cluster, marshalJSON); err != nil {
+			if err := marshalToWriter(cluster, marshalJSON, os.Stdout); err != nil {
 				return err
 			}
 		}
