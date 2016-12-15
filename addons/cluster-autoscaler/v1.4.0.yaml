@@ -16,8 +16,8 @@ spec:
         k8s-app: cluster-autoscaler
     spec:
         containers:
-          - image:
-            name: {{IMAGE}}
+          - name: cluster-autoscaler
+            image: {{IMAGE}}
             resources:
               limits:
                 cpu: 100m
