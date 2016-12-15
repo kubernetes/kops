@@ -117,3 +117,22 @@ F2`
 		t.Fatalf("unexpected diff.  expected=%v, actual=%v", expectedDiff, actual)
 	}
 }
+
+
+func Test_Diff_ChangedLine(t *testing.T) {
+	l := `ABC123
+Line2
+Line3`
+	r := `ABCDEF
+Line2
+Line3`
+	expectedDiff := `+ ABCDEF
+- ABC123
+  Line2
+  Line3
+`
+	actual := FormatDiff(l, r)
+	if actual != expectedDiff {
+		t.Fatalf("unexpected diff.  expected=%v, actual=%v", expectedDiff, actual)
+	}
+}
