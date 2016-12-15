@@ -195,9 +195,6 @@ func (c *ApplyClusterCmd) Run() error {
 
 		if usesCNI(cluster) {
 			cniAsset, cniAssetHashString := findCNIAssets(cluster)
-
-			glog.V(2).Infof("Adding CNI asset: %s", cniAsset)
-
 			c.Assets = append(c.Assets, cniAssetHashString+"@"+cniAsset)
 		}
 	}
