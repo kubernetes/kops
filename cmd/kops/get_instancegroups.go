@@ -18,13 +18,14 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strconv"
+	"strings"
+
 	"github.com/spf13/cobra"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/tables"
 	k8sapi "k8s.io/kubernetes/pkg/api"
-	"os"
-	"strconv"
-	"strings"
 )
 
 type GetInstanceGroupsCmd struct {
@@ -93,8 +94,9 @@ func (c *GetInstanceGroupsCmd) Run(args []string) error {
 		return nil
 	}
 
-	output := getCmd.output
-	if output == OutputTable {
+	switch getCmd.output {
+
+	case OutputTable:
 		t := &tables.Table{}
 		t.AddColumn("NAME", func(c *api.InstanceGroup) string {
 			return c.Name
@@ -115,21 +117,23 @@ func (c *GetInstanceGroupsCmd) Run(args []string) error {
 			return intPointerToString(c.Spec.MaxSize)
 		})
 		return t.Render(instancegroups, os.Stdout, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "ZONES")
-	} else if output == OutputYaml {
+
+	case OutputYaml:
 		for _, ig := range instancegroups {
-			y, err := api.ToVersionedYaml(ig)
-			if err != nil {
-				return fmt.Errorf("error marshaling yaml for %q: %v", ig.Name, err)
-			}
-			_, err = os.Stdout.Write(y)
-			if err != nil {
-				return fmt.Errorf("error writing to stdout: %v", err)
+			if err := marshalToWriter(ig, marshalYaml, os.Stdout); err != nil {
+				return err
 			}
 		}
-		return nil
-	} else {
-		return fmt.Errorf("Unknown output format: %q", output)
+	case OutputJSON:
+		for _, ig := range instancegroups {
+			if err := marshalToWriter(ig, marshalJSON, os.Stdout); err != nil {
+				return err
+			}
+		}
+	default:
+		return fmt.Errorf("Unknown output format: %q", getCmd.output)
 	}
+	return nil
 }
 
 func intPointerToString(v *int) string {
