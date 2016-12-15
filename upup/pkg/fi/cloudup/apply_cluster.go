@@ -194,21 +194,11 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 		if usesCNI(cluster) {
-			// TODO: we really need to sort this out:
-			// https://github.com/kubernetes/kops/issues/724
-			// https://github.com/kubernetes/kops/issues/626
-			// https://github.com/kubernetes/kubernetes/issues/30338
+			cniAsset, cniAssetHashString := findCNIAssets(cluster)
 
-			// CNI version for 1.3
-			//defaultCNIAsset = "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-8a936732094c0941e1543ef5d292a1f4fffa1ac5.tar.gz"
-			//hashString := "86966c78cc9265ee23f7892c5cad0ec7590cec93"
+			glog.V(2).Infof("Adding CNI asset: %s", cniAsset)
 
-			defaultCNIAsset := "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-07a8a28637e97b22eb8dfe710eeae1344f69d16e.tar.gz"
-			hashString := "19d49f7b2b99cd2493d5ae0ace896c64e289ccbb"
-
-			glog.V(2).Infof("Adding default CNI asset: %s", defaultCNIAsset)
-
-			c.Assets = append(c.Assets, hashString+"@"+defaultCNIAsset)
+			c.Assets = append(c.Assets, cniAssetHashString+"@"+cniAsset)
 		}
 	}
 
