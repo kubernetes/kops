@@ -27,13 +27,13 @@ func CreateClusterConfig(clientset simple.Clientset, cluster *api.Cluster, group
 	{
 		names := map[string]bool{}
 		for i, ns := range groups {
-			if ns.Name == "" {
+			if ns.ObjectMeta.Name == "" {
 				return fmt.Errorf("InstanceGroup #%d did not have a Name", i+1)
 			}
-			if names[ns.Name] {
-				return fmt.Errorf("Duplicate InstanceGroup Name found: %q", ns.Name)
+			if names[ns.ObjectMeta.Name] {
+				return fmt.Errorf("Duplicate InstanceGroup Name found: %q", ns.ObjectMeta.Name)
 			}
-			names[ns.Name] = true
+			names[ns.ObjectMeta.Name] = true
 		}
 	}
 
@@ -43,7 +43,7 @@ func CreateClusterConfig(clientset simple.Clientset, cluster *api.Cluster, group
 	}
 
 	for _, ig := range groups {
-		_, err = clientset.InstanceGroups(cluster.Name).Create(ig)
+		_, err = clientset.InstanceGroups(cluster.ObjectMeta.Name).Create(ig)
 		if err != nil {
 			return fmt.Errorf("error writing updated instancegroup configuration: %v", err)
 		}

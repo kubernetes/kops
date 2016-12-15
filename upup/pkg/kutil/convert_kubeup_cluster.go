@@ -72,7 +72,7 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 	newTags["KubernetesCluster"] = newClusterName
 
 	// Build completed cluster (force errors asap)
-	cluster.Name = newClusterName
+	cluster.ObjectMeta.Name = newClusterName
 
 	newConfigBase, err := x.Clientset.Clusters().(*vfsclientset.ClusterVFS).ConfigBase(newClusterName)
 	if err != nil {
@@ -95,9 +95,9 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 		return fmt.Errorf("error populating cluster defaults: %v", err)
 	}
 
-	if cluster.Annotations != nil {
+	if cluster.ObjectMeta.Annotations != nil {
 		// Remove the management annotation for the new cluster
-		delete(cluster.Annotations, api.AnnotationNameManagement)
+		delete(cluster.ObjectMeta.Annotations, api.AnnotationNameManagement)
 	}
 
 	fullCluster, err := cloudup.PopulateClusterSpec(cluster)

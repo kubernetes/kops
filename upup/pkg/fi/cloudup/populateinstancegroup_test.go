@@ -25,7 +25,7 @@ import (
 
 func buildMinimalNodeInstanceGroup(zones ...string) *api.InstanceGroup {
 	g := &api.InstanceGroup{}
-	g.Name = "nodes"
+	g.ObjectMeta.Name = "nodes"
 	g.Spec.Role = api.InstanceGroupRoleNode
 	g.Spec.Zones = zones
 
@@ -34,7 +34,7 @@ func buildMinimalNodeInstanceGroup(zones ...string) *api.InstanceGroup {
 
 func buildMinimalMasterInstanceGroup(zones ...string) *api.InstanceGroup {
 	g := &api.InstanceGroup{}
-	g.Name = "master"
+	g.ObjectMeta.Name = "master"
 	g.Spec.Role = api.InstanceGroupRoleMaster
 	g.Spec.Zones = zones
 
@@ -44,7 +44,7 @@ func buildMinimalMasterInstanceGroup(zones ...string) *api.InstanceGroup {
 func TestPopulateInstanceGroup_Name_Required(t *testing.T) {
 	cluster := buildMinimalCluster()
 	g := buildMinimalNodeInstanceGroup()
-	g.Name = ""
+	g.ObjectMeta.Name = ""
 
 	channel := &api.Channel{}
 
