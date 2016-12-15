@@ -46,7 +46,7 @@ securityGroupRule/all-node-to-master:
 #
 # The AutoScaleGroup for the Nodes
 # ---------------------------------------------------------------
-launchConfiguration/{{ $ig.Name }}.{{ ClusterName }}:
+launchConfiguration/{{ $ig.ObjectMeta.Name }}.{{ ClusterName }}:
   sshKey: sshKey/{{ SSHKeyName }}
   securityGroups:
     - securityGroup/nodes.{{ ClusterName }}
@@ -54,14 +54,14 @@ launchConfiguration/{{ $ig.Name }}.{{ ClusterName }}:
   imageId: {{ $ig.Spec.Image }}
   instanceType: {{ $ig.Spec.MachineType }}
   associatePublicIP: false
-  userData: resources/nodeup.sh {{ $ig.Name }}
+  userData: resources/nodeup.sh {{ $ig.ObjectMeta.Name }}
   rootVolumeSize: {{ or $ig.Spec.RootVolumeSize "20" }}
   rootVolumeType: {{ or $ig.Spec.RootVolumeType "gp2" }}
 {{ if $ig.Spec.MaxPrice }}
   spotPrice: "{{ $ig.Spec.MaxPrice }}"
 {{ end }}
-autoscalingGroup/{{ $ig.Name }}.{{ ClusterName }}:
-  launchConfiguration: launchConfiguration/{{ $ig.Name }}.{{ ClusterName }}
+autoscalingGroup/{{ $ig.ObjectMeta.Name }}.{{ ClusterName }}:
+  launchConfiguration: launchConfiguration/{{ $ig.ObjectMeta.Name }}.{{ ClusterName }}
   minSize: {{ or $ig.Spec.MinSize 2 }}
   maxSize: {{ or $ig.Spec.MaxSize 2 }}
   subnets:

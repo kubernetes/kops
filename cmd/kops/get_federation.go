@@ -75,7 +75,7 @@ func RunGetFederations(context Factory, out io.Writer, options *GetFederationOpt
 
 		t := &tables.Table{}
 		t.AddColumn("NAME", func(f *api.Federation) string {
-			return f.Name
+			return f.ObjectMeta.Name
 		})
 		t.AddColumn("CONTROLLERS", func(f *api.Federation) string {
 			return strings.Join(f.Spec.Controllers, ",")

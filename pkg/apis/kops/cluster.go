@@ -24,17 +24,21 @@ import (
 
 	"github.com/golang/glog"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 )
 
 type Cluster struct {
 	unversioned.TypeMeta `json:",inline"`
-	ObjectMeta           `json:"metadata,omitempty"`
+	ObjectMeta           api.ObjectMeta `json:"metadata,omitempty"`
 
 	Spec ClusterSpec `json:"spec,omitempty"`
 }
 
 type ClusterList struct {
+	unversioned.TypeMeta `json:",inline"`
+	unversioned.ListMeta `json:"metadata,omitempty"`
+
 	Items []Cluster `json:"items"`
 }
 
@@ -318,8 +322,8 @@ func (c *Cluster) PerformAssignments() error {
 	}
 
 	// TODO: Unclear this should be here - it isn't too hard to change
-	if c.Spec.MasterPublicName == "" && c.Name != "" {
-		c.Spec.MasterPublicName = "api." + c.Name
+	if c.Spec.MasterPublicName == "" && c.ObjectMeta.Name != "" {
+		c.Spec.MasterPublicName = "api." + c.ObjectMeta.Name
 	}
 
 	for _, zone := range c.Spec.Zones {
@@ -371,16 +375,16 @@ func (c *Cluster) FillDefaults() error {
 		return err
 	}
 
-	if c.Name == "" {
+	if c.ObjectMeta.Name == "" {
 		return fmt.Errorf("cluster Name not set in FillDefaults")
 	}
 
 	if c.Spec.MasterInternalName == "" {
-		c.Spec.MasterInternalName = "api.internal." + c.Name
+		c.Spec.MasterInternalName = "api.internal." + c.ObjectMeta.Name
 	}
 
 	if c.Spec.MasterPublicName == "" {
-		c.Spec.MasterPublicName = "api." + c.Name
+		c.Spec.MasterPublicName = "api." + c.ObjectMeta.Name
 	}
 
 	return nil

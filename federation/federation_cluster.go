@@ -52,7 +52,7 @@ func (o *FederationCluster) Run(cluster *kopsapi.Cluster) error {
 	}
 
 	k := kutil.CreateKubecfg{
-		ContextName:  cluster.Name,
+		ContextName:  cluster.ObjectMeta.Name,
 		KeyStore:     keyStore,
 		SecretStore:  secretStore,
 		KubeMasterIP: cluster.Spec.MasterPublicName,
@@ -60,7 +60,7 @@ func (o *FederationCluster) Run(cluster *kopsapi.Cluster) error {
 
 	kubeconfig, err := k.ExtractKubeconfig()
 	if err != nil {
-		return fmt.Errorf("error building connection information for cluster %q: %v", cluster.Name, err)
+		return fmt.Errorf("error building connection information for cluster %q: %v", cluster.ObjectMeta.Name, err)
 	}
 
 	user := kutil.KubectlUser{

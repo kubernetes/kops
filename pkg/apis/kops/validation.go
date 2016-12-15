@@ -35,20 +35,20 @@ func (c *Cluster) Validate(strict bool) error {
 
 	specPath := field.NewPath("Cluster").Child("Spec")
 
-	if c.Name == "" {
+	if c.ObjectMeta.Name == "" {
 		return field.Required(field.NewPath("Name"), "Cluster Name is required (e.g. --name=mycluster.myzone.com)")
 	}
 
 	{
 		// Must be a dns name
-		errs := validation.IsDNS1123Subdomain(c.Name)
+		errs := validation.IsDNS1123Subdomain(c.ObjectMeta.Name)
 		if len(errs) != 0 {
 			return fmt.Errorf("Cluster Name must be a valid DNS name (e.g. --name=mycluster.myzone.com) errors: %s", strings.Join(errs, ", "))
 		}
 
-		if !strings.Contains(c.Name, ".") {
+		if !strings.Contains(c.ObjectMeta.Name, ".") {
 			// Tolerate if this is a cluster we are importing for upgrade
-			if c.Annotations[AnnotationNameManagement] != AnnotationValueManagementImported {
+			if c.ObjectMeta.Annotations[AnnotationNameManagement] != AnnotationValueManagementImported {
 				return fmt.Errorf("Cluster Name must be a fully-qualified DNS name (e.g. --name=mycluster.myzone.com)")
 			}
 		}
