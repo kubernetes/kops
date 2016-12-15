@@ -67,7 +67,7 @@ func (c *ExportKubecfgCommand) Run(args []string) error {
 		return err
 	}
 
-	clusterName := cluster.Name
+	clusterName := cluster.ObjectMeta.Name
 
 	master := cluster.Spec.MasterPublicName
 	if master == "" {

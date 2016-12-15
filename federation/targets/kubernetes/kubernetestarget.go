@@ -34,7 +34,7 @@ type KubernetesTarget struct {
 
 func NewKubernetesTarget(clientset simple.Clientset, keystore fi.Keystore, cluster *kopsapi.Cluster) (*KubernetesTarget, error) {
 	b := &kutil.CreateKubecfg{
-		ContextName:  cluster.Name,
+		ContextName:  cluster.ObjectMeta.Name,
 		KeyStore:     keystore,
 		SecretStore:  nil,
 		KubeMasterIP: cluster.Spec.MasterPublicName,
@@ -42,12 +42,12 @@ func NewKubernetesTarget(clientset simple.Clientset, keystore fi.Keystore, clust
 
 	kubeconfig, err := b.ExtractKubeconfig()
 	if err != nil {
-		return nil, fmt.Errorf("error building credentials for cluster %q: %v", cluster.Name, err)
+		return nil, fmt.Errorf("error building credentials for cluster %q: %v", cluster.ObjectMeta.Name, err)
 	}
 
 	clientConfig, err := kubeconfig.BuildRestConfig()
 	if err != nil {
-		return nil, fmt.Errorf("error building configuration for cluster %q: %v", cluster.Name, err)
+		return nil, fmt.Errorf("error building configuration for cluster %q: %v", cluster.ObjectMeta.Name, err)
 	}
 
 	k8sClient, err := release_1_5.NewForConfig(clientConfig)
@@ -70,7 +70,7 @@ func (t *KubernetesTarget) Finish(taskMap map[string]fi.Task) error {
 }
 
 func (t *KubernetesTarget) Apply(manifest []byte) error {
-	context := t.cluster.Name
+	context := t.cluster.ObjectMeta.Name
 
 	// Would be nice if we could use RunApply from kubectl's code directly...
 	// ... but that seems really hard
