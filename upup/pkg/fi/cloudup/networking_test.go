@@ -25,20 +25,20 @@ import (
 func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 
 	desiredCNIVersion := "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-TEST-VERSION.tar.gz"
-	os.Setenv(CNI_VERSION_URL, desiredCNIVersion)
+	os.Setenv(ENV_VAR_CNI_VERSION_URL, desiredCNIVersion)
 	defer func(){
-		os.Unsetenv(CNI_VERSION_URL)
+		os.Unsetenv(ENV_VAR_CNI_VERSION_URL)
 	}()
 
 	cluster := &api.Cluster{}
 	cniAsset, cniAssetHashString := findCNIAssets(cluster)
 
 	if cniAsset != desiredCNIVersion {
-		t.Errorf("Expected CNI version from Environment variable %v, but got %v instead\n", desiredCNIVersion, cniAsset)
+		t.Errorf("Expected CNI version from Environment variable %q, but got %q instead", desiredCNIVersion, cniAsset)
 	}
 
 	if cniAssetHashString != "" {
-		t.Errorf("Expected Empty CNI Version Hash String, but got %v instead\n", cniAssetHashString)
+		t.Errorf("Expected Empty CNI Version Hash String, but got %q instead", cniAssetHashString)
 	}
 }
 
@@ -48,11 +48,11 @@ func Test_FindCNIAssetDefaultValue(t *testing.T) {
 	cniAsset, cniAssetHashString := findCNIAssets(cluster)
 
 	if cniAsset != defaultCNIAsset {
-		 t.Errorf("Expected default CNI version %v and got %v\n", defaultCNIAsset, cniAsset)
+		 t.Errorf("Expected default CNI version %q and got %q", defaultCNIAsset, cniAsset)
 	}
 
 	if cniAssetHashString != defaultCNIAssetHashString {
-		t.Errorf("Expected default CNI Version Hash String %v and got %v\n", defaultCNIAssetHashString, cniAssetHashString)
+		t.Errorf("Expected default CNI Version Hash String %q and got %q", defaultCNIAssetHashString, cniAssetHashString)
 	}
 
 }
