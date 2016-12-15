@@ -134,6 +134,11 @@ type ClusterSpec struct {
 	//   missing: default policy (currently OS security upgrades that do not require a reboot)
 	UpdatePolicy *string `json:"updatePolicy,omitempty"`
 
+	// Additional permissions to add to the master role
+	AdditionalMasterPermissions *string `json:"additionalMasterPermissions,omitempty"`
+	// Additional permissions to add to the node role
+	AdditionalNodePermissions *string `json:"additionalNodePermissions,omitempty"`
+
 	// EtcdClusters stores the configuration for each cluster
 	EtcdClusters []*EtcdClusterSpec `json:"etcdClusters,omitempty"`
 
