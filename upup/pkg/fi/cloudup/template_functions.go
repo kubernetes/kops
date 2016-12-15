@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/api"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 	"math/big"
 	"net"
@@ -247,17 +246,36 @@ func (tf *TemplateFunctions) GetInstanceGroup(name string) (*api.InstanceGroup, 
 
 // APIServerCount returns the value for the apiserver --apiserver-count flag
 func (tf *TemplateFunctions) APIServerCount() int {
-	count := 0
-	for _, ig := range tf.instanceGroups {
-		if !ig.IsMaster() {
-			continue
-		}
-		size := fi.IntValue(ig.Spec.MaxSize)
-		if size == 0 {
-			size = fi.IntValue(ig.Spec.MinSize)
-		}
-		count += size
+	// The --apiserver-count flag is (generally agreed) to be something we need to get rid of in k8s
+
+	// We should do something like this:
+
+	//count := 0
+	//for _, ig := range b.InstanceGroups {
+	//	if !ig.IsMaster() {
+	//		continue
+	//	}
+	//	size := fi.IntValue(ig.Spec.MaxSize)
+	//	if size == 0 {
+	//		size = fi.IntValue(ig.Spec.MinSize)
+	//	}
+	//	count += size
+	//}
+
+	// But if we do, we end up with a weird dependency on InstanceGroups.  We actually could tolerate
+	// that in kops, but we don't really want to.
+
+	// So instead, we assume that the etcd cluster size is the API Server Count.
+	// We can re-examine this when we allow separate etcd clusters - at which time hopefully
+	// the flag won't exist
+
+	counts := make(map[string]int)
+	for _, etcdCluster := range tf.cluster.Spec.EtcdClusters {
+		counts[etcdCluster.Name] = len(etcdCluster.Members)
 	}
+
+	count := counts["main"]
+
 	return count
 }
 
