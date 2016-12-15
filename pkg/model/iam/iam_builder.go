@@ -100,6 +100,12 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 			Action:   []string{"route53:*"},
 			Resource: []string{"*"},
 		})
+
+		if b.Cluster.Spec.AdditionalNodePermissions != nil {
+			additionalNodePermissions := make([]*IAMStatement, 0)
+			json.Unmarshal([]byte(*b.Cluster.Spec.AdditionalNodePermissions), &additionalNodePermissions)
+			p.Statement = append(p.Statement, additionalNodePermissions...)
+		}
 	}
 
 	{
@@ -165,6 +171,12 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 				},
 				Resource: kmsKeyIDs.List(),
 			})
+		}
+
+		if b.Cluster.Spec.AdditionalMasterPermissions != nil {
+			additionalMasterPermissions := make([]*IAMStatement, 0)
+			json.Unmarshal([]byte(*b.Cluster.Spec.AdditionalMasterPermissions), &additionalMasterPermissions)
+			p.Statement = append(p.Statement, additionalMasterPermissions...)
 		}
 	}
 
