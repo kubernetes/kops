@@ -24,5 +24,4 @@ node restart), but currently you must:
 * `kops update cluster $NAME` to preview, then `kops update cluster $NAME --yes`
 * `kops rolling-update cluster $NAME` to preview, then `kops rolling-update cluster $NAME --yes`
 
-
-upgrade uses the latest Kuberentes stable release, published at `https://storage.googleapis.com/kubernetes-release/release/stable.txt`
+Upgrade uses the latest Kubernetes version considered stable by kops, defined in `https://github.com/kubernetes/kops/blob/master/channels/stable`.
