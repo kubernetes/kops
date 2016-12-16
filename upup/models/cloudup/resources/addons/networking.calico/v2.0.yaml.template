@@ -36,6 +36,18 @@ data:
         }
     }
 
+  # The default IP Pool to be created for the cluster.
+  # Pod IP addresses will be assigned from this pool.
+  ippool.yaml: |
+      apiVersion: v1
+      kind: ipPool
+      metadata:
+        cidr: {{ .NonMasqueradeCIDR }}
+      spec:
+        ipip:
+          enabled: true
+        nat-outgoing: true
+
 ---
 
 # This manifest installs the calico/node container, as well
@@ -63,7 +75,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: quay.io/calico/node:v0.23.0
+          image: quay.io/calico/node:v1.0.0
           resources:
             requests:
               cpu: 10m
@@ -102,7 +114,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v1.4.3
+          image: calico/cni:v1.5.5
           resources:
             requests:
               cpu: 10m
@@ -173,7 +185,7 @@ spec:
       hostNetwork: true
       containers:
         - name: calico-policy-controller
-          image: calico/kube-policy-controller:v0.4.0
+          image: calico/kube-policy-controller:v0.5.1
           resources:
             requests:
               cpu: 10m
@@ -220,13 +232,14 @@ spec:
       containers:
         # Writes basic configuration to datastore.
         - name: configure-calico
-          image: calico/ctl:v0.23.0
+          image: calico/ctl:v1.0.0
           args:
-          - "pool"
-          - "add"
-          - "{{ .NonMasqueradeCIDR }}"
-          - "--ipip"
-          - "--nat-outgoing"
+          - apply
+          - -f
+          - /etc/config/calico/ippool.yaml
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/config
           env:
             # The location of the etcd cluster.
             - name: ETCD_ENDPOINTS
@@ -234,3 +247,10 @@ spec:
                 configMapKeyRef:
                   name: calico-config
                   key: etcd_endpoints
+      volumes:
+       - name: config-volume
+         configMap:
+           name: calico-config
+           items:
+            - key: ippool.yaml
+              path: calico/ippool.yaml
