@@ -35,7 +35,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"os"
 )
 
 const (
@@ -1312,14 +1311,6 @@ func ListAutoScalingGroups(cloud fi.Cloud, clusterName string) ([]*ResourceTrack
 
 	return trackers, nil
 }
-
-//func ListBastionLaunchConfigurations(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
-//	c := cloud.(awsup.AWSCloud)
-//
-//	glog.V(2).Infof("Listing all Autoscaling LaunchConfigurations for cluster %q", clusterName)
-//	var trackers []*ResourceTracker
-//	request := &autoscaling.DescribeLaunchConfigurationsInput{}
-//}
 
 func ListAutoScalingLaunchConfigurations(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
 	c := cloud.(awsup.AWSCloud)
