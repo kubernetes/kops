@@ -35,6 +35,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"os"
 )
 
 const (
@@ -119,6 +120,8 @@ func (c *DeleteCluster) ListResources() (map[string]*ResourceTracker, error) {
 		// ASG
 		ListAutoScalingGroups,
 		ListAutoScalingLaunchConfigurations,
+		// LC
+
 		// Route 53
 		ListRoute53Records,
 		// IAM
@@ -1310,6 +1313,14 @@ func ListAutoScalingGroups(cloud fi.Cloud, clusterName string) ([]*ResourceTrack
 	return trackers, nil
 }
 
+//func ListBastionLaunchConfigurations(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
+//	c := cloud.(awsup.AWSCloud)
+//
+//	glog.V(2).Infof("Listing all Autoscaling LaunchConfigurations for cluster %q", clusterName)
+//	var trackers []*ResourceTracker
+//	request := &autoscaling.DescribeLaunchConfigurationsInput{}
+//}
+
 func ListAutoScalingLaunchConfigurations(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
 	c := cloud.(awsup.AWSCloud)
 
@@ -1336,9 +1347,12 @@ func ListAutoScalingLaunchConfigurations(cloud fi.Cloud, clusterName string) ([]
 				continue
 			}
 
-			glog.V(8).Infof("UserData: %s", string(userData))
+			//I finally found what was polluting logs with the bash scripts.
+			//glog.V(8).Infof("UserData: %s", string(userData))
 
-			if extractClusterName(userData) == clusterName {
+			// Adding in strings.Contains() here on cluster name, making the grand assumption that if our clustername string is present
+			// in the name of the LC, it's safe to delete. This solves the bastion LC problem.
+			if extractClusterName(userData) == clusterName || strings.Contains(*t.LaunchConfigurationName, clusterName) {
 				tracker := &ResourceTracker{
 					Name:    aws.StringValue(t.LaunchConfigurationName),
 					ID:      aws.StringValue(t.LaunchConfigurationName),
