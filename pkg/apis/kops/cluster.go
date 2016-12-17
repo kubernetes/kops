@@ -17,13 +17,8 @@ limitations under the License.
 package kops
 
 import (
-	"encoding/binary"
 	"fmt"
-	"net"
-	"strings"
 
-	"github.com/golang/glog"
-	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 )
@@ -312,35 +307,6 @@ type ClusterSubnetSpec struct {
 //	Assets     []string `json:",omitempty"`
 //}
 
-// PerformAssignments populates values that are required and immutable
-// For example, it assigns stable Keys to InstanceGroups & Masters, and
-// it assigns CIDRs to subnets
-// We also assign KubernetesVersion, because we want it to be explicit
-func (c *Cluster) PerformAssignments() error {
-	if c.Spec.NetworkCIDR == "" && !c.SharedVPC() {
-		// TODO: Choose non-overlapping networking CIDRs for VPCs?
-		c.Spec.NetworkCIDR = "172.20.0.0/16"
-	}
-
-	if c.Spec.NonMasqueradeCIDR == "" {
-		c.Spec.NonMasqueradeCIDR = "100.64.0.0/10"
-	}
-
-	// TODO: Unclear this should be here - it isn't too hard to change
-	if c.Spec.MasterPublicName == "" && c.ObjectMeta.Name != "" {
-		c.Spec.MasterPublicName = "api." + c.ObjectMeta.Name
-	}
-
-	for _, subnet := range c.Spec.Subnets {
-		err := subnet.performAssignments(c)
-		if err != nil {
-			return err
-		}
-	}
-
-	return c.ensureKubernetesVersion()
-}
-
 // FillDefaults populates default values.
 // This is different from PerformAssignments, because these values are changeable, and thus we don't need to
 // store them (i.e. we don't need to 'lock them')
@@ -380,11 +346,6 @@ func (c *Cluster) FillDefaults() error {
 		c.Spec.Channel = DefaultChannel
 	}
 
-	err := c.ensureKubernetesVersion()
-	if err != nil {
-		return err
-	}
-
 	if c.ObjectMeta.Name == "" {
 		return fmt.Errorf("cluster Name not set in FillDefaults")
 	}
@@ -398,164 +359,6 @@ func (c *Cluster) FillDefaults() error {
 	}
 
 	return nil
-}
-
-// ensureKubernetesVersion populates KubernetesVersion, if it is not already set
-// It will be populated with the latest stable kubernetes version, or the version from the channel
-func (c *Cluster) ensureKubernetesVersion() error {
-	if c.Spec.KubernetesVersion == "" {
-		if c.Spec.Channel != "" {
-			channel, err := LoadChannel(c.Spec.Channel)
-			if err != nil {
-				return err
-			}
-			if channel.Spec.Cluster.KubernetesVersion != "" {
-				c.Spec.KubernetesVersion = channel.Spec.Cluster.KubernetesVersion
-			}
-		}
-	}
-
-	if c.Spec.KubernetesVersion == "" {
-		latestVersion, err := FindLatestKubernetesVersion()
-		if err != nil {
-			return err
-		}
-		glog.Infof("Using kubernetes latest stable version: %s", latestVersion)
-		c.Spec.KubernetesVersion = latestVersion
-	}
-	return nil
-}
-
-// FindLatestKubernetesVersion returns the latest kubernetes version,
-// as stored at https://storage.googleapis.com/kubernetes-release/release/stable.txt
-// This shouldn't be used any more; we prefer reading the stable channel
-func FindLatestKubernetesVersion() (string, error) {
-	stableURL := "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
-	glog.Warningf("Loading latest kubernetes version from %q", stableURL)
-	b, err := vfs.Context.ReadFile(stableURL)
-	if err != nil {
-		return "", fmt.Errorf("KubernetesVersion not specified, and unable to download latest version from %q: %v", stableURL, err)
-	}
-	latestVersion := strings.TrimSpace(string(b))
-	return latestVersion, nil
-}
-
-func (z *ClusterSubnetSpec) performAssignments(c *Cluster) error {
-	if z.CIDR == "" {
-		err := z.assignCIDR(c)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// Will generate a CIDR block based on the last character in
-// the cluster.Spec.Zones structure.
-//
-func (z *ClusterSubnetSpec) assignCIDR(c *Cluster) error {
-	//// TODO: We probably could query for the existing subnets & allocate appropriately
-	//// for now we'll require users to set CIDRs themselves
-	//
-	//// Used in calculating private subnet blocks (if needed only)
-	//needsPrivateBlock := false
-	//if c.Spec.Topology.Masters == TopologyPrivate || c.Spec.Topology.Nodes == TopologyPrivate {
-	//	needsPrivateBlock = true
-	//}
-	//
-	//lastCharMap := make(map[byte]bool)
-	//for _, subnet := range c.Spec.Subnets {
-	//	lastChar := subnet.Zone[len(subnet.Zone)-1]
-	//	lastCharMap[lastChar] = true
-	//}
-	//
-	//index := -1
-	//
-	//if len(lastCharMap) == len(c.Spec.Zones) {
-	//	// Last char of zones are unique (GCE, AWS)
-	//	// At least on AWS, we also want 'a' to end up as #1, so that we don't collide with the lowest range,
-	//	// because kube-up uses that range
-	//	index = int(z.Name[len(z.Name)-1])
-	//	if index >= 'a' {
-	//		index -= 'a'
-	//	}
-	//} else {
-	//	glog.Warningf("Last char of zone names not unique")
-	//
-	//	for i, nodeZone := range c.Spec.Zones {
-	//		if nodeZone.Name == z.Name {
-	//			index = i
-	//			break
-	//		}
-	//	}
-	//	if index == -1 {
-	//		return fmt.Errorf("zone not configured: %q", z.Name)
-	//	}
-	//}
-	//
-	//_, cidr, err := net.ParseCIDR(c.Spec.NetworkCIDR)
-	//if err != nil {
-	//	return fmt.Errorf("Invalid NetworkCIDR: %q", c.Spec.NetworkCIDR)
-	//}
-	//
-	//// We split the network range into 8 subnets
-	//// But we then reserve the lowest one for the private block
-	//// (and we split _that_ into 8 further subnets, leaving the first one unused/for future use)
-	//// Note that this limits us to 7 zones
-	//// TODO: Does this make sense on GCE?
-	//// TODO: Should we limit this to say 1000 IPs per subnet? (any reason to?)
-	//index = 1 + index%7
-	//
-	//subnets, err := splitInto8Subnets(cidr)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//privateSubnets, err := splitInto8Subnets(subnets[0])
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//subnetCIDR := subnets[index].String()
-	//z.CIDR = subnetCIDR
-	//glog.V(2).Infof("Computed CIDR for subnet in zone %q as %q", z.Name, subnetCIDR)
-	//glog.Infof("Assigned CIDR %s to zone %s", subnetCIDR, z.Name)
-	//
-	//if needsPrivateBlock {
-	//	privCIDR := privateSubnets[index].String()
-	//	z.PrivateCIDR = privCIDR
-	//	glog.V(2).Infof("Computed Private CIDR for subnet in zone %q as %q", z.Name, privCIDR)
-	//	glog.Infof("Assigned Private CIDR %s to zone %s", privCIDR, z.Name)
-	//}
-	//
-	//return nil
-	return fmt.Errorf("TODO: REIMPLEMENT")
-}
-
-// splitInto8Subnets splits the parent IPNet into 8 subnets
-func splitInto8Subnets(parent *net.IPNet) ([]*net.IPNet, error) {
-	networkLength, _ := parent.Mask.Size()
-	networkLength += 3
-
-	var subnets []*net.IPNet
-	for i := 0; i < 8; i++ {
-		ip4 := parent.IP.To4()
-		if ip4 != nil {
-			n := binary.BigEndian.Uint32(ip4)
-			n += uint32(i) << uint(32-networkLength)
-			subnetIP := make(net.IP, len(ip4))
-			binary.BigEndian.PutUint32(subnetIP, n)
-
-			subnets = append(subnets, &net.IPNet{
-				IP:   subnetIP,
-				Mask: net.CIDRMask(networkLength, 32),
-			})
-		} else {
-			return nil, fmt.Errorf("Unexpected IP address type: %s", parent)
-		}
-	}
-
-	return subnets, nil
 }
 
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
