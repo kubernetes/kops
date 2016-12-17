@@ -76,7 +76,7 @@ func addEtcdClusters(c *api.Cluster) {
 func TestPopulateCluster_Default_NoError(t *testing.T) {
 	c := buildMinimalCluster()
 
-	err := c.PerformAssignments()
+	err := PerformAssignments(c)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -96,7 +96,7 @@ func TestPopulateCluster_Docker_Spec(t *testing.T) {
 		InsecureRegistry: fi.String("myregistry.com:1234"),
 	}
 
-	err := c.PerformAssignments()
+	err := PerformAssignments(c)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -118,7 +118,7 @@ func TestPopulateCluster_Docker_Spec(t *testing.T) {
 }
 
 func build(c *api.Cluster) (*api.Cluster, error) {
-	err := c.PerformAssignments()
+	err := PerformAssignments(c)
 	if err != nil {
 		return nil, fmt.Errorf("error from PerformAssignments: %v", err)
 	}
@@ -193,7 +193,7 @@ func TestPopulateCluster_Custom_CIDR(t *testing.T) {
 		{SubnetName: "subnet-us-mock-1c", Zone: "us-mock-1c", CIDR: "172.20.2.64/27"},
 	}
 
-	err := c.PerformAssignments()
+	err := PerformAssignments(c)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -213,7 +213,7 @@ func TestPopulateCluster_IsolateMasters(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.IsolateMasters = fi.Bool(true)
 
-	err := c.PerformAssignments()
+	err := PerformAssignments(c)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -236,7 +236,7 @@ func TestPopulateCluster_IsolateMastersFalse(t *testing.T) {
 	c := buildMinimalCluster()
 	// default: c.Spec.IsolateMasters = fi.Bool(false)
 
-	err := c.PerformAssignments()
+	err := PerformAssignments(c)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -385,7 +385,7 @@ func TestPopulateCluster_AnonymousAuth(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.KubernetesVersion = "1.5.0"
 
-	err := c.PerformAssignments()
+	err := PerformAssignments(c)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
@@ -410,7 +410,7 @@ func TestPopulateCluster_AnonymousAuth_14(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.KubernetesVersion = "1.4.0"
 
-	err := c.PerformAssignments()
+	err := PerformAssignments(c)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}

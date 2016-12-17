@@ -185,6 +185,11 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return err
 		}
 
+		idleTimeout := BastionELBDefaultIdleTimeout
+		if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.Bastion != nil && b.Cluster.Spec.Topology.Bastion.IdleTimeout != nil {
+			idleTimeout = time.Second * time.Duration(*b.Cluster.Spec.Topology.Bastion.IdleTimeout)
+		}
+
 		elb = &awstasks.LoadBalancer{
 			Name: s("bastion." + b.ClusterName()),
 			ID:   s(elbID),
@@ -203,47 +208,23 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				HealthyThreshold:   i64(2),
 				UnhealthyThreshold: i64(2),
 			},
+
+			ConnectionSettings: &awstasks.LoadBalancerConnectionSettings{
+				IdleTimeout: i64(int64(idleTimeout.Seconds())),
+			},
 		}
 
 		c.AddTask(elb)
 	}
 
 	for _, ig := range bastionGroups {
-		//asg, err := b.buildASG(ig)
-		//if err != nil {
-		//	return err
-		//}
+		// We build the ASG when we iterate over the instance groups
 
 		// Attach the ELB to the ASG
-		{
-			t := &awstasks.LoadBalancerAttachment{
-				Name:             s("bastion-elb-attachment"),
-				LoadBalancer:     elb,
-				AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
-			}
-			c.AddTask(t)
-		}
-	}
-
-	// Build ELB attributes
-	{
-		// Loadbalancer attributes are configurable now
-		// By default ELB has an idle timeout of 60 seconds to close connection
-		//  Modified the idle timeout for bastion elb
-
-		idleTimeout := BastionELBDefaultIdleTimeout
-		if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.Bastion != nil && b.Cluster.Spec.Topology.Bastion.IdleTimeout != nil {
-			idleTimeout = time.Second * time.Duration(*b.Cluster.Spec.Topology.Bastion.IdleTimeout)
-		}
-
-		elbSettings := &awstasks.LoadBalancerConnectionSettings{
-			IdleTimeout: i64(int64(idleTimeout.Seconds())),
-		}
-
-		t := &awstasks.LoadBalancerAttributes{
-			Name:               elb.Name,
-			LoadBalancer:       elb,
-			ConnectionSettings: elbSettings,
+		t := &awstasks.LoadBalancerAttachment{
+			Name:             s("bastion-elb-attachment"),
+			LoadBalancer:     elb,
+			AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
 		}
 		c.AddTask(t)
 	}
