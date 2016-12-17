@@ -107,9 +107,15 @@ func (c *populateClusterSpec) run() error {
 		return err
 	}
 
+	err = PerformAssignments(cluster)
+	if err != nil {
+		return err
+	}
+
 	// TODO: Move to validate?
 	// Check that instance groups are defined in valid zones
 	{
+		// TODO: Check that instance groups referenced here exist
 		//clusterSubnets := make(map[string]*api.ClusterSubnetSpec)
 		//for _, subnet := range cluster.Spec.Subnets {
 		//	if clusterSubnets[subnet.SubnetName] != nil {
