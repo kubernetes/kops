@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
+//go:generate fitask -type=LoadBalancerAttachment
 type LoadBalancerAttachment struct {
 	Name         *string
 	LoadBalancer *LoadBalancer
@@ -73,6 +74,10 @@ func (e *LoadBalancerAttachment) Find(c *fi.Context) (*LoadBalancerAttachment, e
 			actual := &LoadBalancerAttachment{}
 			actual.LoadBalancer = e.LoadBalancer
 			actual.AutoscalingGroup = e.AutoscalingGroup
+
+			// Prevent spurious changes
+			actual.Name = e.Name // ELB attachments don't have tags
+
 			return actual, nil
 		}
 	} else {
