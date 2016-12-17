@@ -17,11 +17,11 @@ limitations under the License.
 package mockroute53
 
 import (
+	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
-	"github.com/aws/aws-sdk-go/aws"
-	"fmt"
 	"strings"
 )
 
