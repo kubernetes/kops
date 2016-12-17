@@ -386,6 +386,7 @@ func (l *Loader) loadObjectMap(key string, data map[string]interface{}) (map[str
 		}
 		err = json.Unmarshal(jsonValue, o.Interface())
 		if err != nil {
+			glog.V(2).Infof("JSON was %q", string(jsonValue))
 			return nil, fmt.Errorf("error parsing %q: %v", key, err)
 		}
 		glog.V(4).Infof("Built %s:%s => %v", key, k, o.Interface())
