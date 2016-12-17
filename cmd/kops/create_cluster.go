@@ -451,7 +451,7 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 		cluster.Spec.APIAccess = []string{c.AdminAccess}
 	}
 
-	err = cluster.PerformAssignments()
+	err = cloudup.PerformAssignments(cluster)
 	if err != nil {
 		return fmt.Errorf("error populating configuration: %v", err)
 	}
