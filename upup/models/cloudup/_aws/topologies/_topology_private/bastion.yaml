@@ -79,20 +79,13 @@ loadBalancer/bastion.{{ ClusterName }}:
   {{ end }}
   listeners:
     22: { instancePort: 22 }
+  connectionSettings:
+    idleTimeout: {{ GetBastionIdleTimeout }}
 
 loadBalancerAttachment/bastion-elb-attachment.{{ ClusterName }}:
   loadBalancer: loadBalancer/bastion.{{ ClusterName }}
   autoscalingGroup: autoscalingGroup/bastion.{{ ClusterName }}
 
-# ---------------------------------------------------------------------
-# Loadbalaner attributes are configurable now
-# By default ELB has an idle timeout of 60 seconds to close connection
-# Modified the idle timeout for bastion elb
-# --------------------------------------------------------------------
-loadBalancerAttributes/bastion.{{ ClusterName }}:
-  loadBalancer: loadBalancer/bastion.{{ ClusterName }}
-  connectionSettings:
-    idleTimeout: {{ GetBastionIdleTimeout }}
 
 # ---------------------------------------------------------------
 # ASG - The Bastion itself
