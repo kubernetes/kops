@@ -198,18 +198,6 @@ loadBalancer/api.{{ ClusterName }}:
     interval: 10
     timeout: 5
 
-# ---------------------------------------------------------------
-# Kube-Proxy - Healthz - 10249
-#
-# HealthCheck for the kubernetes API via the kube-proxy
-# ---------------------------------------------------------------
-loadBalancerHealthChecks/api.{{ ClusterName }}:
-  loadBalancer: loadBalancer/api.{{ ClusterName }}
-  target: TCP:443
-  healthyThreshold: 2
-  unhealthyThreshold: 2
-  interval: 10
-  timeout: 5
 securityGroupRule/kube-proxy-api-elb:
   securityGroup: securityGroup/masters.{{ ClusterName }}
   sourceGroup: securityGroup/api-elb.{{ ClusterName }}

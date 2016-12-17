@@ -49,8 +49,9 @@ type LoadBalancer struct {
 
 	Listeners map[string]*LoadBalancerListener
 
-	Scheme      *string
-	HealthCheck LoadBalancerHealthCheck
+	Scheme *string
+
+	HealthCheck *LoadBalancerHealthCheck
 }
 
 var _ fi.CompareWithID = &LoadBalancer{}
@@ -212,6 +213,12 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 		actual.Listeners[loadBalancerPort] = actualListener
 	}
 
+	healthcheck, err := findHealthCheck(lb)
+	if err != nil {
+		return nil, err
+	}
+	actual.HealthCheck = healthcheck
+
 	// Avoid spurious mismatches
 	if subnetSlicesEqualIgnoreOrder(actual.Subnets, e.Subnets) {
 		actual.Subnets = e.Subnets
@@ -329,6 +336,24 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 		}
 	}
 
+	if changes.HealthCheck != nil && e.HealthCheck != nil {
+		request := &elb.ConfigureHealthCheckInput{}
+		request.LoadBalancerName = e.ID
+		request.HealthCheck = &elb.HealthCheck{
+			Target:             e.HealthCheck.Target,
+			HealthyThreshold:   e.HealthCheck.HealthyThreshold,
+			UnhealthyThreshold: e.HealthCheck.UnhealthyThreshold,
+			Interval:           e.HealthCheck.Interval,
+			Timeout:            e.HealthCheck.Timeout,
+		}
+
+		glog.V(2).Infof("Configuring health checks on ELB %q", *e.ID)
+
+		_, err := t.Cloud.ELB().ConfigureHealthCheck(request)
+		if err != nil {
+			return fmt.Errorf("error configuring health checks on ELB: %v", err)
+		}
+	}
 	return t.AddELBTags(*e.ID, t.Cloud.BuildTags(e.Name))
 }
 
@@ -337,8 +362,8 @@ type terraformLoadBalancer struct {
 	Listener       []*terraformLoadBalancerListener  `json:"listener"`
 	SecurityGroups []*terraform.Literal              `json:"security_groups"`
 	Subnets        []*terraform.Literal              `json:"subnets"`
-	Internal       bool                              `json:"internal,omitempty"`
-	HealthCheck    *terraformLoadBalancerHealthCheck `json:"health_check"`
+	Internal       *bool                             `json:"internal,omitempty"`
+	HealthCheck    *terraformLoadBalancerHealthCheck `json:"health_check,omitempty"`
 }
 
 type terraformLoadBalancerListener struct {
@@ -362,10 +387,11 @@ func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 		elbName = e.Name
 	}
 
-	internal := fi.StringValue(e.Scheme) == "internal"
 	tf := &terraformLoadBalancer{
-		Name:     elbName,
-		Internal: internal,
+		Name: elbName,
+	}
+	if fi.StringValue(e.Scheme) == "internal" {
+		tf.Internal = fi.Bool(true)
 	}
 
 	for _, subnet := range e.Subnets {
@@ -390,12 +416,14 @@ func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 		})
 	}
 
-	tf.HealthCheck = &terraformLoadBalancerHealthCheck{
-		Target:             e.HealthCheck.Target,
-		HealthyThreshold:   e.HealthCheck.HealthyThreshold,
-		UnhealthyThreshold: e.HealthCheck.UnhealthyThreshold,
-		Interval:           e.HealthCheck.Interval,
-		Timeout:            e.HealthCheck.Timeout,
+	if e.HealthCheck != nil {
+		tf.HealthCheck = &terraformLoadBalancerHealthCheck{
+			Target:             e.HealthCheck.Target,
+			HealthyThreshold:   e.HealthCheck.HealthyThreshold,
+			UnhealthyThreshold: e.HealthCheck.UnhealthyThreshold,
+			Interval:           e.HealthCheck.Interval,
+			Timeout:            e.HealthCheck.Timeout,
+		}
 	}
 
 	return t.RenderResource("aws_elb", *e.Name, tf)

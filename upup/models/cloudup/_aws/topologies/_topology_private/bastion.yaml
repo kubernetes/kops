@@ -79,6 +79,7 @@ loadBalancer/bastion.{{ ClusterName }}:
   {{ end }}
   listeners:
     22: { instancePort: 22 }
+
 loadBalancerAttachment/bastion-elb-attachment.{{ ClusterName }}:
   loadBalancer: loadBalancer/bastion.{{ ClusterName }}
   autoscalingGroup: autoscalingGroup/bastion.{{ ClusterName }}
@@ -90,10 +91,9 @@ loadBalancerAttachment/bastion-elb-attachment.{{ ClusterName }}:
 # --------------------------------------------------------------------
 loadBalancerAttributes/bastion.{{ ClusterName }}:
   loadBalancer: loadBalancer/bastion.{{ ClusterName }}
-  connectionSettings: loadBalancerConnectionSettings/bastion.{{ ClusterName }}
-loadBalancerConnectionSettings/bastion.{{ ClusterName }}:
-  loadBalancer: loadBalancer/bastion.{{ ClusterName }}
-  idleTimeout: {{ GetBastionIdleTimeout }}
+  connectionSettings:
+    idleTimeout: {{ GetBastionIdleTimeout }}
+
 # ---------------------------------------------------------------
 # ASG - The Bastion itself
 #
