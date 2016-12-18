@@ -178,7 +178,7 @@ func runTest(t *testing.T, clusterName string, srcDir string) {
 
 		if !bytes.Equal(actualTF, expectedTF) {
 			diffString := diff.FormatDiff(string(expectedTF), string(actualTF))
-			t.Log("diff:\n", diffString)
+			t.Logf("diff:\n%s\n", diffString)
 
 			t.Fatalf("terraform output differed from expected")
 		}
