@@ -17,16 +17,16 @@ limitations under the License.
 package cloudup
 
 import (
-	"testing"
 	api "k8s.io/kops/pkg/apis/kops"
 	"os"
+	"testing"
 )
 
 func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 
 	desiredCNIVersion := "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-TEST-VERSION.tar.gz"
 	os.Setenv(ENV_VAR_CNI_VERSION_URL, desiredCNIVersion)
-	defer func(){
+	defer func() {
 		os.Unsetenv(ENV_VAR_CNI_VERSION_URL)
 	}()
 
@@ -48,7 +48,7 @@ func Test_FindCNIAssetDefaultValue(t *testing.T) {
 	cniAsset, cniAssetHashString := findCNIAssets(cluster)
 
 	if cniAsset != defaultCNIAsset {
-		 t.Errorf("Expected default CNI version %q and got %q", defaultCNIAsset, cniAsset)
+		t.Errorf("Expected default CNI version %q and got %q", defaultCNIAsset, cniAsset)
 	}
 
 	if cniAssetHashString != defaultCNIAssetHashString {
