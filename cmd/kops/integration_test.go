@@ -67,39 +67,10 @@ func runTest(t *testing.T, clusterName string, srcDir string) {
 	factoryOptions := &util.FactoryOptions{}
 	factoryOptions.RegistryPath = "memfs://tests"
 
-	vfs.Context.ResetMemfsContext(true)
+	h := NewIntegrationTestHarness(t)
+	defer h.Close()
 
-	cloud := awsup.InstallMockAWSCloud("us-test-1", "abc")
-	mockEC2 := &mockec2.MockEC2{}
-	cloud.MockEC2 = mockEC2
-	mockRoute53 := &mockroute53.MockRoute53{}
-	cloud.MockRoute53 = mockRoute53
-
-	mockRoute53.Zones = append(mockRoute53.Zones, &route53.HostedZone{
-		Id:   aws.String("/hostedzone/Z1AFAKE1ZON3YO"),
-		Name: aws.String("example.com."),
-	})
-
-	mockEC2.Images = append(mockEC2.Images, &ec2.Image{
-		ImageId: aws.String("ami-12345678"),
-		Name:    aws.String("k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21"),
-		OwnerId: aws.String(awsup.WellKnownAccountKopeio),
-	})
-
-	tempDir, err := ioutil.TempDir("", "test")
-	if err != nil {
-		t.Fatalf("failed to create temp dir: %v", err)
-	}
-	defer func() {
-		if os.Getenv("KEEP_TEMP_DIR") != "" {
-			glog.Infof("NOT removing temp directory, because KEEP_TEMP_DIR is set: %s", tempDir)
-			return
-		}
-		err := os.RemoveAll(tempDir)
-		if err != nil {
-			t.Fatalf("failed to remove temp dir %q: %v", tempDir, err)
-		}
-	}()
+	h.SetupMockAWS()
 
 	factory := util.NewFactory(factoryOptions)
 
@@ -114,13 +85,6 @@ func runTest(t *testing.T, clusterName string, srcDir string) {
 	}
 
 	{
-		//publicKeyPath := path.Join(tempDir, "id_rsa.pub")
-		//privateKeyPath := path.Join(tempDir, "id_rsa")
-		//
-		//if err := MakeSSHKeyPair(publicKeyPath, privateKeyPath); err != nil {
-		//	t.Fatalf("error making SSH keypair: %v", err)
-		//}
-
 		options := &CreateSecretPublickeyOptions{}
 		options.ClusterName = clusterName
 		options.Name = "admin"
@@ -136,7 +100,7 @@ func runTest(t *testing.T, clusterName string, srcDir string) {
 		options := &UpdateClusterOptions{}
 		options.InitDefaults()
 		options.Target = "terraform"
-		options.OutDir = path.Join(tempDir, "out")
+		options.OutDir = path.Join(h.TempDir, "out")
 		options.MaxTaskDuration = 30 * time.Second
 
 		// We don't test it here, and it adds a dependency on kubectl
@@ -150,7 +114,7 @@ func runTest(t *testing.T, clusterName string, srcDir string) {
 
 	// Compare main files
 	{
-		files, err := ioutil.ReadDir(path.Join(tempDir, "out"))
+		files, err := ioutil.ReadDir(path.Join(h.TempDir, "out"))
 		if err != nil {
 			t.Fatalf("failed to read dir: %v", err)
 		}
@@ -167,7 +131,7 @@ func runTest(t *testing.T, clusterName string, srcDir string) {
 			t.Fatalf("unexpected files.  actual=%q, expected=%q", actualFilenames, expectedFilenames)
 		}
 
-		actualTF, err := ioutil.ReadFile(path.Join(tempDir, "out", "kubernetes.tf"))
+		actualTF, err := ioutil.ReadFile(path.Join(h.TempDir, "out", "kubernetes.tf"))
 		if err != nil {
 			t.Fatalf("unexpected error reading actual terraform output: %v", err)
 		}
@@ -186,7 +150,7 @@ func runTest(t *testing.T, clusterName string, srcDir string) {
 
 	// Compare data files
 	{
-		files, err := ioutil.ReadDir(path.Join(tempDir, "out", "data"))
+		files, err := ioutil.ReadDir(path.Join(h.TempDir, "out", "data"))
 		if err != nil {
 			t.Fatalf("failed to read data dir: %v", err)
 		}
@@ -212,6 +176,56 @@ func runTest(t *testing.T, clusterName string, srcDir string) {
 
 		// TODO: any verification of data files?
 	}
+}
+
+type IntegrationTestHarness struct {
+	TempDir string
+	T       *testing.T
+}
+
+func NewIntegrationTestHarness(t *testing.T) *IntegrationTestHarness {
+	h := &IntegrationTestHarness{}
+	tempDir, err := ioutil.TempDir("", "test")
+	if err != nil {
+		t.Fatalf("failed to create temp dir: %v", err)
+	}
+	h.TempDir = tempDir
+
+	vfs.Context.ResetMemfsContext(true)
+
+	return h
+}
+
+func (h *IntegrationTestHarness) Close() {
+	if h.TempDir != "" {
+		if os.Getenv("KEEP_TEMP_DIR") != "" {
+			glog.Infof("NOT removing temp directory, because KEEP_TEMP_DIR is set: %s", h.TempDir)
+		} else {
+			err := os.RemoveAll(h.TempDir)
+			if err != nil {
+				h.T.Fatalf("failed to remove temp dir %q: %v", h.TempDir, err)
+			}
+		}
+	}
+}
+
+func (h *IntegrationTestHarness) SetupMockAWS() {
+	cloud := awsup.InstallMockAWSCloud("us-test-1", "abc")
+	mockEC2 := &mockec2.MockEC2{}
+	cloud.MockEC2 = mockEC2
+	mockRoute53 := &mockroute53.MockRoute53{}
+	cloud.MockRoute53 = mockRoute53
+
+	mockRoute53.Zones = append(mockRoute53.Zones, &route53.HostedZone{
+		Id:   aws.String("/hostedzone/Z1AFAKE1ZON3YO"),
+		Name: aws.String("example.com."),
+	})
+
+	mockEC2.Images = append(mockEC2.Images, &ec2.Image{
+		ImageId: aws.String("ami-12345678"),
+		Name:    aws.String("k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21"),
+		OwnerId: aws.String(awsup.WellKnownAccountKopeio),
+	})
 }
 
 func MakeSSHKeyPair(publicKeyPath string, privateKeyPath string) error {
