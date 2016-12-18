@@ -18,6 +18,7 @@ package kutil
 
 import (
 	"fmt"
+	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/upup/pkg/fi"
@@ -34,15 +35,18 @@ func (c *DeleteInstanceGroup) DeleteInstanceGroup(group *api.InstanceGroup) erro
 	groups, err := FindCloudInstanceGroups(c.Cloud, c.Cluster, []*api.InstanceGroup{group}, false, nil)
 	cig := groups[group.ObjectMeta.Name]
 	if cig == nil {
-		return fmt.Errorf("InstanceGroup not found in cloud")
-	}
-	if len(groups) != 1 {
-		return fmt.Errorf("Multiple InstanceGroup resources found in cloud")
-	}
+		glog.Warningf("AutoScalingGroup %q not found in cloud - skipping delete", group.ObjectMeta.Name)
+	} else {
+		if len(groups) != 1 {
+			return fmt.Errorf("Multiple InstanceGroup resources found in cloud")
+		}
 
-	err = cig.Delete(c.Cloud)
-	if err != nil {
-		return fmt.Errorf("error deleting cloud resources for InstanceGroup: %v", err)
+		glog.Infof("Deleting AutoScalingGroup %q", group.ObjectMeta.Name)
+
+		err = cig.Delete(c.Cloud)
+		if err != nil {
+			return fmt.Errorf("error deleting cloud resources for InstanceGroup: %v", err)
+		}
 	}
 
 	err = c.Clientset.InstanceGroups(c.Cluster.ObjectMeta.Name).Delete(group.ObjectMeta.Name, nil)
