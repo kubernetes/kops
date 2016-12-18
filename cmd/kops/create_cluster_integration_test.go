@@ -18,17 +18,11 @@ package main
 
 import (
 	"bytes"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
 	"io/ioutil"
-	"k8s.io/kops/cloudmock/aws/mockec2"
-	"k8s.io/kops/cloudmock/aws/mockroute53"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/diff"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/util/pkg/vfs"
 	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"path"
@@ -58,18 +52,18 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string) {
 	factoryOptions := &util.FactoryOptions{}
 	factoryOptions.RegistryPath = "memfs://tests"
 
-	vfs.Context.ResetMemfsContext(true)
+	h := NewIntegrationTestHarness(t)
+	defer h.Close()
 
-	cloud := awsup.InstallMockAWSCloud("us-test-1", "abc")
-	mockEC2 := &mockec2.MockEC2{}
-	cloud.MockEC2 = mockEC2
-	mockRoute53 := &mockroute53.MockRoute53{}
-	cloud.MockRoute53 = mockRoute53
+	h.SetupMockAWS()
 
-	mockRoute53.Zones = append(mockRoute53.Zones, &route53.HostedZone{
-		Id:   aws.String("/hostedzone/Z1AFAKE1ZON3YO"),
-		Name: aws.String("example.com."),
-	})
+	publicKeyPath := path.Join(h.TempDir, "id_rsa.pub")
+	privateKeyPath := path.Join(h.TempDir, "id_rsa")
+	{
+		if err := MakeSSHKeyPair(publicKeyPath, privateKeyPath); err != nil {
+			t.Fatalf("error making SSH keypair: %v", err)
+		}
+	}
 
 	factory := util.NewFactory(factoryOptions)
 
