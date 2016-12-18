@@ -27,6 +27,7 @@ import (
 	"k8s.io/kubernetes/pkg/runtime"
 	"os"
 	"reflect"
+	"sort"
 	"time"
 )
 
@@ -196,6 +197,10 @@ func (c *commonVFS) listNames() ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error listing %s in state store: %v", c.kind, err)
 	}
+
+	// Seems to be an assumption in k8s APIs that items are always returned sorted
+	sort.Strings(keys)
+
 	return keys, nil
 }
 
