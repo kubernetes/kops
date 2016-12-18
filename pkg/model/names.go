@@ -26,7 +26,7 @@ import (
 func (b *KopsModelContext) SecurityGroupName(role kops.InstanceGroupRole) string {
 	switch role {
 	case kops.InstanceGroupRoleBastion:
-		return "bastions." + b.ClusterName()
+		return "bastion." + b.ClusterName()
 
 	case kops.InstanceGroupRoleNode:
 		return "nodes." + b.ClusterName()
