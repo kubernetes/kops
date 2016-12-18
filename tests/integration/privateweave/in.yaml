@@ -82,7 +82,7 @@ apiVersion: kops/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2016-12-14T15:32:41Z"
-  name: bastions
+  name: bastion
   labels:
     kops.k8s.io/cluster: privateweave.example.com
 spec:
