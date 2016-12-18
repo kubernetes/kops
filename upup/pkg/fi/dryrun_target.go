@@ -131,9 +131,31 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 						fieldName := changes.Type().Field(i).Name
 						fieldValue := ValueAsString(field)
 
-						// The field name is already printed above, no need to repeat it.
-						// Additionally, ignore any output that is not informative
-						if fieldName != "Name" && fieldValue != "<nil>" && fieldValue != "id:<nil>" && fieldValue != "<resource>" {
+						shouldPrint := true
+						if fieldName == "Name" {
+							// The field name is already printed above, no need to repeat it.
+							shouldPrint = false
+						}
+						if fieldValue == "<nil>" || fieldValue == "<resource>" {
+							// Uninformative
+							shouldPrint = false
+						}
+						if fieldValue == "id:<nil>" {
+							// Uninformative, but we can often print the name instead
+							name := ""
+							if field.CanInterface() {
+								hasName, ok := field.Interface().(HasName)
+								if ok {
+									name = StringValue(hasName.GetName())
+								}
+							}
+							if name != "" {
+								fieldValue = "name:" + name
+							} else {
+								shouldPrint = false
+							}
+						}
+						if shouldPrint {
 							fmt.Fprintf(b, "  \t%-20s\t%s\n", fieldName, fieldValue)
 						}
 					}
@@ -342,20 +364,26 @@ func ValueAsString(value reflect.Value) string {
 				fmt.Fprintf(b, "<resource>")
 			} else if compareWithID, ok := intf.(CompareWithID); ok {
 				id := compareWithID.CompareWithID()
+				name := ""
+				hasName, ok := intf.(HasName)
+				if ok {
+					name = StringValue(hasName.GetName())
+				}
 				if id == nil {
 					// Uninformative, but we can often print the name instead
-					name := ""
-					hasName, ok := intf.(HasName)
-					if ok {
-						name = StringValue(hasName.GetName())
-					}
 					if name != "" {
 						fmt.Fprintf(b, "name:%s", name)
 					} else {
 						fmt.Fprintf(b, "id:<nil>")
 					}
 				} else {
-					fmt.Fprintf(b, "id:%s", *id)
+					// Uninformative, but we can often print the name instead
+					if name != "" {
+						fmt.Fprintf(b, "name:%s id:%s", name, *id)
+					} else {
+						fmt.Fprintf(b, "id:%s", *id)
+					}
+
 				}
 			} else {
 				glog.V(4).Infof("Unhandled kind in asString for %q: %T", path, v.Interface())

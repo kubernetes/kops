@@ -47,8 +47,8 @@ func encoder() runtime.Encoder {
 
 func preferredAPIVersion() unversioned.GroupVersion {
 	// Avoid circular dependency
-	// return v1alpha1.SchemeGroupVersion
-	return unversioned.GroupVersion{Group: GroupName, Version: "v1alpha1"}
+	// return v1alpha2.SchemeGroupVersion
+	return unversioned.GroupVersion{Group: GroupName, Version: "v1alpha2"}
 }
 
 // ToVersionedYaml encodes the object to YAML, in our preferred API version

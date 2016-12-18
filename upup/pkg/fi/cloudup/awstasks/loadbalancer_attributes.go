@@ -24,29 +24,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
-
-type LoadBalancerAccessLog struct {
-	EmitInterval   *int64
-	Enabled        *bool
-	S3BucketName   *string
-	S3BucketPrefix *string
-}
-
-type LoadBalancerAdditionalAttribute struct {
-	Key   *string
-	Value *string
-}
-
-type LoadBalancerConnectionDraining struct {
-	Enabled *bool
-	Timeout *int64
-}
-
-type LoadBalancerCrossZoneLoadBalancing struct {
-	Enabled *bool
-}
 
 //go:generate fitask -type=LoadBalancerAttributes
 type LoadBalancerAttributes struct {
@@ -58,6 +36,58 @@ type LoadBalancerAttributes struct {
 	ConnectionDraining     *LoadBalancerConnectionDraining
 	ConnectionSettings     *LoadBalancerConnectionSettings
 	CrossZoneLoadBalancing *LoadBalancerCrossZoneLoadBalancing
+}
+
+type LoadBalancerAccessLog struct {
+	EmitInterval   *int64
+	Enabled        *bool
+	S3BucketName   *string
+	S3BucketPrefix *string
+}
+
+func (_ *LoadBalancerAccessLog) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	return nil
+}
+
+type terraformLoadBalancerAccessLog struct {
+	EmitInterval   *int64  `json:"internal,omitempty"`
+	Enabled        *bool   `json:"enabled,omitempty"`
+	S3BucketName   *string `json:"bucket,omitempty"`
+	S3BucketPrefix *string `json:"bucekt_prefix,omitempty"`
+}
+
+//type LoadBalancerAdditionalAttribute struct {
+//	Key   *string
+//	Value *string
+//}
+//
+//func (_ *LoadBalancerAdditionalAttribute) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+//	return nil
+//}
+
+type LoadBalancerConnectionDraining struct {
+	Enabled *bool
+	Timeout *int64
+}
+
+func (_ *LoadBalancerConnectionDraining) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	return nil
+}
+
+type LoadBalancerCrossZoneLoadBalancing struct {
+	Enabled *bool
+}
+
+func (_ *LoadBalancerCrossZoneLoadBalancing) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	return nil
+}
+
+type LoadBalancerConnectionSettings struct {
+	IdleTimeout *int64
+}
+
+func (_ *LoadBalancerConnectionSettings) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	return nil
 }
 
 func findELBAttributes(cloud awsup.AWSCloud, name string) (*elb.LoadBalancerAttributes, error) {
@@ -134,8 +164,8 @@ func (e *LoadBalancerAttributes) Find(c *fi.Context) (*LoadBalancerAttributes, e
 		}
 
 		actual.ConnectionSettings = &LoadBalancerConnectionSettings{}
-		actual.ConnectionSettings.Name = e.Name
-		actual.ConnectionSettings.LoadBalancer = e.LoadBalancer
+		//actual.ConnectionSettings.Name = e.Name
+		//actual.ConnectionSettings.LoadBalancer = e.LoadBalancer
 		if lbAttributes.ConnectionSettings.IdleTimeout != nil {
 			actual.ConnectionSettings.IdleTimeout = lbAttributes.ConnectionSettings.IdleTimeout
 		}
@@ -148,57 +178,11 @@ func (e *LoadBalancerAttributes) Find(c *fi.Context) (*LoadBalancerAttributes, e
 	return actual, nil
 }
 
-func (e *LoadBalancerAttributes) Run(c *fi.Context) error {
-	return fi.DefaultDeltaRunMethod(e, c)
-}
+func (_ *LoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget, a, e, changes *LoadBalancer) error {
+	id := fi.StringValue(e.ID)
 
-func (s *LoadBalancerAttributes) CheckChanges(a, e, changes *LoadBalancerAttributes) error {
-	if a == nil {
-		if e.Name == nil {
-			return fi.RequiredField("Name")
-		}
-		if e.LoadBalancer == nil {
-			return fi.RequiredField("LoadBalancer")
-		}
-		if e.AccessLog != nil {
-			if e.AccessLog.Enabled == nil {
-				return fi.RequiredField("Acceslog.Enabled")
-			}
-			if *e.AccessLog.Enabled {
-				if e.AccessLog.S3BucketName == nil {
-					return fi.RequiredField("Acceslog.S3Bucket")
-				}
-			}
-		}
-		if e.ConnectionDraining != nil {
-			if e.ConnectionDraining.Enabled == nil {
-				return fi.RequiredField("ConnectionDraining.Enabled")
-			}
-		}
-		if e.ConnectionSettings != nil {
-			if e.ConnectionSettings.IdleTimeout == nil {
-				return fi.RequiredField("ConnectionSettings.IdleTimeout")
-			}
-		}
-		if e.CrossZoneLoadBalancing != nil {
-			if e.CrossZoneLoadBalancing.Enabled == nil {
-				return fi.RequiredField("CrossZoneLoadBalancing.Enabled")
-			}
-		}
-	}
-	return nil
-}
-
-func (_ *LoadBalancerAttributes) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalancerAttributes) error {
-	var additionalAttributes []*elb.AdditionalAttribute
-	for index, additionalAttribute := range e.AdditionalAttributes {
-		additionalAttributes[index] = &elb.AdditionalAttribute{
-			Key:   additionalAttribute.Key,
-			Value: additionalAttribute.Value,
-		}
-	}
 	request := &elb.ModifyLoadBalancerAttributesInput{}
-	request.LoadBalancerName = e.LoadBalancer.ID
+	request.LoadBalancerName = e.ID
 	request.LoadBalancerAttributes = &elb.LoadBalancerAttributes{}
 
 	// Setting mandatory attributes to default values if empty
@@ -223,9 +207,19 @@ func (_ *LoadBalancerAttributes) RenderAWS(t *awsup.AWSAPITarget, a, e, changes 
 	}
 
 	// Setting non mandatory values only if not empty
-	if len(additionalAttributes) != 0 {
-		request.LoadBalancerAttributes.AdditionalAttributes = additionalAttributes
-	}
+
+	// We don't map AdditionalAttributes (yet)
+	//if len(e.AdditionalAttributes) != 0 {
+	//	var additionalAttributes []*elb.AdditionalAttribute
+	//	for index, additionalAttribute := range e.AdditionalAttributes {
+	//		additionalAttributes[index] = &elb.AdditionalAttribute{
+	//			Key:   additionalAttribute.Key,
+	//			Value: additionalAttribute.Value,
+	//		}
+	//	}
+	//	request.LoadBalancerAttributes.AdditionalAttributes = additionalAttributes
+	//}
+
 	if e.AccessLog != nil && e.AccessLog.EmitInterval != nil {
 		request.LoadBalancerAttributes.AccessLog.EmitInterval = e.AccessLog.EmitInterval
 	}
@@ -242,17 +236,12 @@ func (_ *LoadBalancerAttributes) RenderAWS(t *awsup.AWSAPITarget, a, e, changes 
 		request.LoadBalancerAttributes.ConnectionSettings.IdleTimeout = e.ConnectionSettings.IdleTimeout
 	}
 
-	glog.V(2).Infof("Configuring ELB attributes for ELB %q", *e.LoadBalancer.ID)
+	glog.V(2).Infof("Configuring ELB attributes for ELB %q", id)
 
 	_, err := t.Cloud.ELB().ModifyLoadBalancerAttributes(request)
 	if err != nil {
-		return fmt.Errorf("error configuring ELB attributes for ELB: %v", err)
+		return fmt.Errorf("error configuring ELB attributes for ELB %q: %v", id, err)
 	}
 
-	return nil
-}
-
-func (_ *LoadBalancerAttributes) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LoadBalancerAttributes) error {
-	glog.Warning("LoadBalancerAttributes RenderTerraform not implemented")
 	return nil
 }

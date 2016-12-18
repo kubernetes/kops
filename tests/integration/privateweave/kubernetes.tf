@@ -131,13 +131,7 @@ resource "aws_elb" "bastion-privateweave-example-com" {
   }
   security_groups = ["${aws_security_group.bastion-elb-privateweave-example-com.id}"]
   subnets = ["${aws_subnet.utility-us-test-1a-privateweave-example-com.id}"]
-  health_check = {
-    target = 
-    healthy_threshold = 
-    unhealthy_threshold = 
-    interval = 
-    timeout = 
-  }
+  idle_timeout = 120
 }
 
 resource "aws_iam_instance_profile" "masters-privateweave-example-com" {

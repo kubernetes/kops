@@ -53,7 +53,7 @@ func InvokeMethod(target interface{}, name string, args ...interface{}) ([]refle
 	for _, a := range args {
 		argValues = append(argValues, reflect.ValueOf(a))
 	}
-	glog.V(8).Infof("Calling method %s on %T", method.Name, target)
+	glog.V(12).Infof("Calling method %s on %T", method.Name, target)
 	m := v.MethodByName(method.Name)
 	rv := m.Call(argValues)
 	return rv, nil
