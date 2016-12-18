@@ -37,6 +37,7 @@ import (
 )
 
 type CreateClusterOptions struct {
+	ClusterName       string
 	Yes               bool
 	Target            string
 	Models            string
@@ -68,6 +69,17 @@ type CreateClusterOptions struct {
 	Bastion bool
 }
 
+func (o *CreateClusterOptions) InitDefaults() {
+	o.Yes = false
+	o.Target = cloudup.TargetDirect
+	o.Models = strings.Join(cloudup.CloudupModels, ",")
+	o.SSHPublicKey = "~/.ssh/id_rsa.pub"
+	o.Networking = "kubenet"
+	o.AssociatePublicIP = true
+	o.Channel = api.DefaultChannel
+	o.Topology = "public"
+}
+
 func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateClusterOptions{}
 
@@ -76,63 +88,66 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Short: "Create cluster",
 		Long:  `Creates a k8s cluster.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := RunCreateCluster(f, cmd, args, out, options)
+			err := rootCommand.ProcessArgs(args)
+			if err != nil {
+				exitWithError(err)
+				return
+			}
+
+			options.ClusterName = rootCommand.clusterName
+
+			err = RunCreateCluster(f, out, options)
 			if err != nil {
 				exitWithError(err)
 			}
 		},
 	}
 
-	cmd.Flags().BoolVar(&options.Yes, "yes", false, "Specify --yes to immediately create the cluster")
-	cmd.Flags().StringVar(&options.Target, "target", cloudup.TargetDirect, "Target - direct, terraform")
-	cmd.Flags().StringVar(&options.Models, "model", "config,proto,cloudup", "Models to apply (separate multiple models with commas)")
+	cmd.Flags().BoolVar(&options.Yes, "yes", options.Yes, "Specify --yes to immediately create the cluster")
+	cmd.Flags().StringVar(&options.Target, "target", options.Target, "Target - direct, terraform")
+	cmd.Flags().StringVar(&options.Models, "model", options.Models, "Models to apply (separate multiple models with commas)")
 
-	cmd.Flags().StringVar(&options.Cloud, "cloud", "", "Cloud provider to use - gce, aws")
+	cmd.Flags().StringVar(&options.Cloud, "cloud", options.Cloud, "Cloud provider to use - gce, aws")
 
-	cmd.Flags().StringVar(&options.Zones, "zones", "", "Zones in which to run the cluster")
-	cmd.Flags().StringVar(&options.MasterZones, "master-zones", "", "Zones in which to run masters (must be an odd number)")
+	cmd.Flags().StringVar(&options.Zones, "zones", options.Zones, "Zones in which to run the cluster")
+	cmd.Flags().StringVar(&options.MasterZones, "master-zones", options.MasterZones, "Zones in which to run masters (must be an odd number)")
 
-	cmd.Flags().StringVar(&options.Project, "project", "", "Project to use (must be set on GCE)")
-	cmd.Flags().StringVar(&options.KubernetesVersion, "kubernetes-version", "", "Version of kubernetes to run (defaults to version in channel)")
+	cmd.Flags().StringVar(&options.Project, "project", options.Project, "Project to use (must be set on GCE)")
+	cmd.Flags().StringVar(&options.KubernetesVersion, "kubernetes-version", options.KubernetesVersion, "Version of kubernetes to run (defaults to version in channel)")
 
-	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", "~/.ssh/id_rsa.pub", "SSH public key to use")
+	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", options.SSHPublicKey, "SSH public key to use")
 
-	cmd.Flags().StringVar(&options.NodeSize, "node-size", "", "Set instance size for nodes")
+	cmd.Flags().StringVar(&options.NodeSize, "node-size", options.NodeSize, "Set instance size for nodes")
 
-	cmd.Flags().StringVar(&options.MasterSize, "master-size", "", "Set instance size for masters")
+	cmd.Flags().StringVar(&options.MasterSize, "master-size", options.MasterSize, "Set instance size for masters")
 
-	cmd.Flags().StringVar(&options.VPCID, "vpc", "", "Set to use a shared VPC")
-	cmd.Flags().StringVar(&options.NetworkCIDR, "network-cidr", "", "Set to override the default network CIDR")
+	cmd.Flags().StringVar(&options.VPCID, "vpc", options.VPCID, "Set to use a shared VPC")
+	cmd.Flags().StringVar(&options.NetworkCIDR, "network-cidr", options.NetworkCIDR, "Set to override the default network CIDR")
 
-	cmd.Flags().IntVar(&options.NodeCount, "node-count", 0, "Set the number of nodes")
+	cmd.Flags().IntVar(&options.NodeCount, "node-count", options.NodeCount, "Set the number of nodes")
 
-	cmd.Flags().StringVar(&options.Image, "image", "", "Image to use")
+	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Image to use")
 
-	cmd.Flags().StringVar(&options.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external, cni, kopeio-vxlan, weave.")
+	cmd.Flags().StringVar(&options.Networking, "networking", options.Networking, "Networking mode to use.  kubenet (default), classic, external, cni, kopeio-vxlan, weave.")
 
-	cmd.Flags().StringVar(&options.DNSZone, "dns-zone", "", "DNS hosted zone to use (defaults to longest matching zone)")
-	cmd.Flags().StringVar(&options.OutDir, "out", "", "Path to write any local output")
-	cmd.Flags().StringVar(&options.AdminAccess, "admin-access", "", "Restrict access to admin endpoints (SSH, HTTPS) to this CIDR.  If not set, access will not be restricted by IP.")
+	cmd.Flags().StringVar(&options.DNSZone, "dns-zone", options.DNSZone, "DNS hosted zone to use (defaults to longest matching zone)")
+	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
+	cmd.Flags().StringVar(&options.AdminAccess, "admin-access", options.AdminAccess, "Restrict access to admin endpoints (SSH, HTTPS) to this CIDR.  If not set, access will not be restricted by IP.")
 
-	cmd.Flags().BoolVar(&options.AssociatePublicIP, "associate-public-ip", true, "Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.")
+	cmd.Flags().BoolVar(&options.AssociatePublicIP, "associate-public-ip", options.AssociatePublicIP, "Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.")
 
-	cmd.Flags().StringVar(&options.Channel, "channel", api.DefaultChannel, "Channel for default versions and configuration to use")
+	cmd.Flags().StringVar(&options.Channel, "channel", options.Channel, "Channel for default versions and configuration to use")
 
 	// Network topology
-	cmd.Flags().StringVarP(&options.Topology, "topology", "t", "public", "Controls network topology for the cluster. public|private. Default is 'public'.")
+	cmd.Flags().StringVarP(&options.Topology, "topology", "t", options.Topology, "Controls network topology for the cluster. public|private. Default is 'public'.")
 
 	// Bastion
-	cmd.Flags().BoolVar(&options.Bastion, "bastion", false, "Specify --bastion=[true|false] to turn enable/disable bastion setup. Default to 'false' when topology is 'public' and defaults to 'true' if topology is 'private'.")
+	cmd.Flags().BoolVar(&options.Bastion, "bastion", options.Bastion, "Specify --bastion=[true|false] to turn enable/disable bastion setup. Default to 'false' when topology is 'public' and defaults to 'true' if topology is 'private'.")
 
 	return cmd
 }
 
-func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, c *CreateClusterOptions) error {
-	err := rootCommand.ProcessArgs(args)
-	if err != nil {
-		return err
-	}
-
+func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) error {
 	isDryrun := false
 	// direct requires --yes (others do not, because they don't make changes)
 	targetName := c.Target
@@ -146,7 +161,7 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 		isDryrun = true
 		targetName = cloudup.TargetDryRun
 	}
-	clusterName := rootCommand.clusterName
+	clusterName := c.ClusterName
 	if clusterName == "" {
 		return fmt.Errorf("--name is required")
 	}
@@ -161,7 +176,7 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 		}
 	}
 
-	clientset, err := rootCommand.Clientset()
+	clientset, err := f.Clientset()
 	if err != nil {
 		return err
 	}
@@ -401,11 +416,7 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 			Masters: api.TopologyPrivate,
 			Nodes:   api.TopologyPrivate,
 		}
-		if cmd.Flags().Changed("bastion") {
-			cluster.Spec.Topology.Bastion = &api.BastionSpec{Enable: c.Bastion}
-		} else {
-			cluster.Spec.Topology.Bastion = &api.BastionSpec{Enable: true}
-		}
+		cluster.Spec.Topology.Bastion = &api.BastionSpec{Enable: c.Bastion}
 	case "":
 		glog.Warningf("Empty topology. Defaulting to public topology without bastion")
 		cluster.Spec.Topology = &api.TopologySpec{
@@ -497,59 +508,61 @@ func RunCreateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 		}
 	}
 
-	if isDryrun {
-		fmt.Print("Previewing changes that will be made:\n\n")
-	}
-
-	applyCmd := &cloudup.ApplyClusterCmd{
-		Cluster:    fullCluster,
-		Models:     strings.Split(c.Models, ","),
-		Clientset:  clientset,
-		TargetName: targetName,
-		OutDir:     c.OutDir,
-		DryRun:     isDryrun,
-	}
-
-	err = applyCmd.Run()
-	if err != nil {
-		return err
-	}
-
-	if isDryrun {
-		var sb bytes.Buffer
-		fmt.Fprintf(&sb, "\n")
-		fmt.Fprintf(&sb, "Cluster configuration has been created.\n")
-		fmt.Fprintf(&sb, "\n")
-		fmt.Fprintf(&sb, "Suggestions:\n")
-		fmt.Fprintf(&sb, " * list clusters with: kops get cluster\n")
-		fmt.Fprintf(&sb, " * edit this cluster with: kops edit cluster %s\n", clusterName)
-		if len(nodes) > 0 {
-			fmt.Fprintf(&sb, " * edit your node instance group: kops edit ig --name=%s %s\n", clusterName, nodes[0].ObjectMeta.Name)
-		}
-		if len(masters) > 0 {
-			fmt.Fprintf(&sb, " * edit your master instance group: kops edit ig --name=%s %s\n", clusterName, masters[0].ObjectMeta.Name)
-		}
-		fmt.Fprintf(&sb, "\n")
-		fmt.Fprintf(&sb, "Finally configure your cluster with: kops update cluster %s --yes\n", clusterName)
-		fmt.Fprintf(&sb, "\n")
-
-		_, err := out.Write(sb.Bytes())
-		if err != nil {
-			return fmt.Errorf("error writing to output: %v", err)
-		}
-	} else {
-		glog.Infof("Exporting kubecfg for cluster")
-
-		x := &kutil.CreateKubecfg{
-			ContextName:  cluster.ObjectMeta.Name,
-			KeyStore:     keyStore,
-			SecretStore:  secretStore,
-			KubeMasterIP: cluster.Spec.MasterPublicName,
+	if targetName != "" {
+		if isDryrun {
+			fmt.Print("Previewing changes that will be made:\n\n")
 		}
 
-		err = x.WriteKubecfg()
+		applyCmd := &cloudup.ApplyClusterCmd{
+			Cluster:    fullCluster,
+			Models:     strings.Split(c.Models, ","),
+			Clientset:  clientset,
+			TargetName: targetName,
+			OutDir:     c.OutDir,
+			DryRun:     isDryrun,
+		}
+
+		err = applyCmd.Run()
 		if err != nil {
 			return err
+		}
+
+		if isDryrun {
+			var sb bytes.Buffer
+			fmt.Fprintf(&sb, "\n")
+			fmt.Fprintf(&sb, "Cluster configuration has been created.\n")
+			fmt.Fprintf(&sb, "\n")
+			fmt.Fprintf(&sb, "Suggestions:\n")
+			fmt.Fprintf(&sb, " * list clusters with: kops get cluster\n")
+			fmt.Fprintf(&sb, " * edit this cluster with: kops edit cluster %s\n", clusterName)
+			if len(nodes) > 0 {
+				fmt.Fprintf(&sb, " * edit your node instance group: kops edit ig --name=%s %s\n", clusterName, nodes[0].ObjectMeta.Name)
+			}
+			if len(masters) > 0 {
+				fmt.Fprintf(&sb, " * edit your master instance group: kops edit ig --name=%s %s\n", clusterName, masters[0].ObjectMeta.Name)
+			}
+			fmt.Fprintf(&sb, "\n")
+			fmt.Fprintf(&sb, "Finally configure your cluster with: kops update cluster %s --yes\n", clusterName)
+			fmt.Fprintf(&sb, "\n")
+
+			_, err := out.Write(sb.Bytes())
+			if err != nil {
+				return fmt.Errorf("error writing to output: %v", err)
+			}
+		} else {
+			glog.Infof("Exporting kubecfg for cluster")
+
+			x := &kutil.CreateKubecfg{
+				ContextName:  cluster.ObjectMeta.Name,
+				KeyStore:     keyStore,
+				SecretStore:  secretStore,
+				KubeMasterIP: cluster.Spec.MasterPublicName,
+			}
+
+			err = x.WriteKubecfg()
+			if err != nil {
+				return err
+			}
 		}
 	}
 
