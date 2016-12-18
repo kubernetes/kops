@@ -60,7 +60,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		t := &awstasks.SecurityGroup{
 			Name:             s(b.SecurityGroupName(kops.InstanceGroupRoleBastion)),
 			VPC:              b.LinkToVPC(),
-			Description:      s("Security group for bastions"),
+			Description:      s("Security group for bastion"),
 			RemoveExtraRules: []string{"port=22"},
 		}
 		c.AddTask(t)
