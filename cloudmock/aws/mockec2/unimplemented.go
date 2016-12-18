@@ -966,38 +966,6 @@ func (m *MockEC2) DescribeStaleSecurityGroups(*ec2.DescribeStaleSecurityGroupsIn
 	panic("Not implemented")
 	return nil, nil
 }
-func (m *MockEC2) DescribeVolumeAttributeRequest(*ec2.DescribeVolumeAttributeInput) (*request.Request, *ec2.DescribeVolumeAttributeOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DescribeVolumeAttribute(*ec2.DescribeVolumeAttributeInput) (*ec2.DescribeVolumeAttributeOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DescribeVolumeStatusRequest(*ec2.DescribeVolumeStatusInput) (*request.Request, *ec2.DescribeVolumeStatusOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DescribeVolumeStatus(*ec2.DescribeVolumeStatusInput) (*ec2.DescribeVolumeStatusOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DescribeVolumeStatusPages(*ec2.DescribeVolumeStatusInput, func(*ec2.DescribeVolumeStatusOutput, bool) bool) error {
-	panic("Not implemented")
-	return nil
-}
-func (m *MockEC2) DescribeVolumesRequest(*ec2.DescribeVolumesInput) (*request.Request, *ec2.DescribeVolumesOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DescribeVolumes(*ec2.DescribeVolumesInput) (*ec2.DescribeVolumesOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DescribeVolumesPages(*ec2.DescribeVolumesInput, func(*ec2.DescribeVolumesOutput, bool) bool) error {
-	panic("Not implemented")
-	return nil
-}
 func (m *MockEC2) DescribeVpcClassicLinkRequest(*ec2.DescribeVpcClassicLinkInput) (*request.Request, *ec2.DescribeVpcClassicLinkOutput) {
 	panic("Not implemented")
 	return nil, nil
