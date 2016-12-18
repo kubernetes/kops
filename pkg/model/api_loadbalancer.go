@@ -98,13 +98,12 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	// Allow HTTPS to the master instances from the ELB
+	// Allow traffic into the ELB from APIAccess CIDRs
 	{
 		for _, cidr := range b.Cluster.Spec.APIAccess {
 			t := &awstasks.SecurityGroupRule{
 				Name:          s("https-api-elb-" + cidr),
-				SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
-				SourceGroup:   b.LinkToELBSecurityGroup("api"),
+				SecurityGroup: b.LinkToELBSecurityGroup("api"),
 				CIDR:          s(cidr),
 				FromPort:      i64(443),
 				ToPort:        i64(443),
@@ -112,6 +111,19 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 			c.AddTask(t)
 		}
+	}
+
+	// Allow HTTPS to the master instances from the ELB
+	{
+		t := &awstasks.SecurityGroupRule{
+			Name:          s("https-elb-to-master"),
+			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
+			SourceGroup:   b.LinkToELBSecurityGroup("api"),
+			FromPort:      i64(443),
+			ToPort:        i64(443),
+			Protocol:      s("tcp"),
+		}
+		c.AddTask(t)
 	}
 
 	for _, ig := range b.MasterInstanceGroups() {
