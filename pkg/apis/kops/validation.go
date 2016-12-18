@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/util/validation"
 	"k8s.io/kubernetes/pkg/util/validation/field"
+	"os"
 )
 
 func (c *Cluster) Validate(strict bool) error {
@@ -377,6 +378,42 @@ func (c *Cluster) Validate(strict bool) error {
 		}
 	}
 
+	// Unsupported Values
+	err = c.isValidAgainstUnsupported()
+	if err != nil {
+		return fmt.Errorf("Unable to validate against unsupported value: %v", err)
+	}
+
+	return nil
+}
+
+type ClusterSpecUnsupported struct {
+	KubernetesVersions []string
+}
+
+// Todo Kris - We need to get this into a yaml file that can be read in at compile time.. or do we?
+// If we decide to put this in a model of sorts, we will need to generate the bin data for it..
+// kind of sounds like we are walking down the model path again - so trying things out like this for now
+var ClusterUnsupported = ClusterSpecUnsupported{KubernetesVersions: []string{"1.5.0", "v1.5.0"}}
+
+
+// Will validate our cluster against the unsupported values
+func (c *Cluster) isValidAgainstUnsupported() (error) {
+
+	isb := os.Getenv("KOPS_BYPASS_UNSUPPORTED")
+	if isb != "" {
+		// They are sure they want to bypass the validation check
+		return nil
+	}
+
+	// --------------------------------------------------------------------------------
+	// Kubernetes Version
+	//
+	for _, unsupportedVersion := range ClusterUnsupported.KubernetesVersions {
+		if c.Spec.KubernetesVersion == unsupportedVersion {
+			return fmt.Errorf("unsupported kubernetes version %s detected. Bypass by setting $KOPS_BYPASS_UNSUPPORTED=1", unsupportedVersion)
+		}
+	}
 	return nil
 }
 

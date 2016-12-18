@@ -44,3 +44,15 @@ On AWS, this is the id of the VPC the cluster is created in. If creating a clust
 spec:
   networkID: vpc-abcdefg1
 ```
+
+## Unsupported Values
+
+Kops will sometimes discontinue support for certain key values for directives. If kops detects an unsupported value, the program will terminate with an error message.
+
+If you are **sure** you want to use an unsupported value (not recommended) you may bypass all unsupported validation by setting
+
+```
+export KOPS_BYPASS_UNSUPPORTED=1
+```
+
+Remember these values are unsupported for a reason, and usually that reason if for the potential safety of your cluster. Please only use this override if you are very sure you know what you are doing.
