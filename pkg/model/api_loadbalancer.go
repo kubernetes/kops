@@ -81,7 +81,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		t := &awstasks.SecurityGroup{
 			Name:             s(b.ELBSecurityGroupName("api")),
 			VPC:              b.LinkToVPC(),
-			Description:      s("Security group for ELB in front of API"),
+			Description:      s("Security group for api ELB"),
 			RemoveExtraRules: []string{"port=443"},
 		}
 		c.AddTask(t)

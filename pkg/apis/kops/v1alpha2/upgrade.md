@@ -6,6 +6,6 @@ Rename your private subnet.  It will be called something like `private-us-east-1
 Rename your route table  It will be called something like `main-cluster.example.com`, rename it to 
                           `cluster.example.com`
 
-Create an instance group for the bastions
+Create an instance group for the bastions.  A name of `bastion` will minimize changes.
 
-`kops create ig bastions --role bastions`
+`kops create ig bastion --role bastions`
