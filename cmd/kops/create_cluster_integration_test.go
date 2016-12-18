@@ -39,16 +39,21 @@ import (
 
 var MagicTimestamp = unversioned.Time{Time: time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC)}
 
-// TestMinimal runs kops create cluster minimal.example.com --zones us-test-1a
+// TestCreateClusterMinimal runs kops create cluster minimal.example.com --zones us-test-1a
 func TestCreateClusterMinimal(t *testing.T) {
-	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal", 2)
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal")
 }
 
-func runCreateClusterIntegrationTest(t *testing.T, srcDir string, expectedInstanceGroups int) {
+// TestCreateClusterHA runs kops create cluster ha.example.com --zones us-test-1a,us-test-1b,us-test-1c --master-zones us-test-1a,us-test-1b,us-test-1c
+func TestCreateClusterHA(t *testing.T) {
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha")
+}
+
+func runCreateClusterIntegrationTest(t *testing.T, srcDir string) {
 	var stdout bytes.Buffer
 
 	optionsYAML := "options.yaml"
-	expectedClusterPath := "cluster.yaml"
+	expectedClusterPath := "expected.yaml"
 
 	factoryOptions := &util.FactoryOptions{}
 	factoryOptions.RegistryPath = "memfs://tests"
@@ -105,28 +110,18 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, expectedInstan
 	if len(clusters.Items) != 1 {
 		t.Fatalf("expected one cluster, found %d", len(clusters.Items))
 	}
+
+	var yamlAll []string
+
 	for _, cluster := range clusters.Items {
 		cluster.ObjectMeta.CreationTimestamp = MagicTimestamp
 		actualYAMLBytes, err := kops.ToVersionedYaml(&cluster)
 		if err != nil {
 			t.Fatalf("unexpected error serializing cluster: %v", err)
 		}
-		expectedYAMLBytes, err := ioutil.ReadFile(path.Join(srcDir, expectedClusterPath))
-		if err != nil {
-			t.Fatalf("unexpected error reading expected cluster: %v", err)
-		}
-
 		actualYAML := strings.TrimSpace(string(actualYAMLBytes))
-		expectedYAML := strings.TrimSpace(string(expectedYAMLBytes))
 
-		if actualYAML != expectedYAML {
-			glog.Infof("Actual cluster:\n%s\n", actualYAML)
-
-			diffString := diff.FormatDiff(expectedYAML, actualYAML)
-			t.Logf("diff:\n%s\n", diffString)
-
-			t.Fatalf("cluster differed from expected")
-		}
+		yamlAll = append(yamlAll, actualYAML)
 	}
 
 	// Compare instance groups
@@ -136,9 +131,6 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, expectedInstan
 		t.Fatalf("error listing instance groups: %v", err)
 	}
 
-	if len(instanceGroups.Items) != expectedInstanceGroups {
-		t.Fatalf("expected %d instance groups, found %d", expectedInstanceGroups, len(instanceGroups.Items))
-	}
 	for _, ig := range instanceGroups.Items {
 		ig.ObjectMeta.CreationTimestamp = MagicTimestamp
 
@@ -146,21 +138,27 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, expectedInstan
 		if err != nil {
 			t.Fatalf("unexpected error serializing InstanceGroup: %v", err)
 		}
-		expectedYAMLBytes, err := ioutil.ReadFile(path.Join(srcDir, ig.ObjectMeta.Name+".yaml"))
-		if err != nil {
-			t.Fatalf("unexpected error reading expected InstanceGroup: %v", err)
-		}
 
 		actualYAML := strings.TrimSpace(string(actualYAMLBytes))
-		expectedYAML := strings.TrimSpace(string(expectedYAMLBytes))
 
-		if actualYAML != expectedYAML {
-			glog.Infof("Actual IG %q:\n%s\n", ig.ObjectMeta.Name, actualYAML)
-
-			diffString := diff.FormatDiff(expectedYAML, actualYAML)
-			t.Logf("diff:\n%s\n", diffString)
-
-			t.Fatalf("instance group %q differed from expected", ig.ObjectMeta.Name)
-		}
+		yamlAll = append(yamlAll, actualYAML)
 	}
+
+	expectedYAMLBytes, err := ioutil.ReadFile(path.Join(srcDir, expectedClusterPath))
+	if err != nil {
+		t.Fatalf("unexpected error reading expected YAML: %v", err)
+	}
+
+	expectedYAML := strings.TrimSpace(string(expectedYAMLBytes))
+
+	actualYAML := strings.Join(yamlAll, "\n\n---\n\n")
+	if actualYAML != expectedYAML {
+		glog.Infof("Actual YAML:\n%s\n", actualYAML)
+
+		diffString := diff.FormatDiff(expectedYAML, actualYAML)
+		t.Logf("diff:\n%s\n", diffString)
+
+		t.Fatalf("YAML differed from expected")
+	}
+
 }
