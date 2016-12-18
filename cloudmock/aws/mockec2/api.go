@@ -32,6 +32,9 @@ type MockEC2 struct {
 	subnetNumber int
 	Subnets      []*ec2.Subnet
 
+	volumeNumber int
+	Volumes      []*ec2.Volume
+
 	Tags []*ec2.TagDescription
 
 	vpcNumber int
