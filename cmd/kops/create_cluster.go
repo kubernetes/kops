@@ -430,6 +430,10 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			return fmt.Errorf("Bastion supports --topology='private' only.")
 		}
 
+		for i := range cluster.Spec.Subnets {
+			cluster.Spec.Subnets[i].Type = api.SubnetTypePublic
+		}
+
 	case api.TopologyPrivate:
 		if !supportsPrivateTopology(cluster.Spec.Networking) {
 			return fmt.Errorf("Invalid networking option %s. Currently only '--networking cni', '--networking kopeio-vxlan', '--networking weave' are supported for private topologies", c.Networking)
@@ -439,11 +443,29 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			Nodes:   api.TopologyPrivate,
 		}
 
+		for i := range cluster.Spec.Subnets {
+			cluster.Spec.Subnets[i].Type = api.SubnetTypePrivate
+		}
+
 		if c.Bastion {
 			bastionGroup := &api.InstanceGroup{}
 			bastionGroup.Spec.Role = api.InstanceGroupRoleBastion
 			bastionGroup.ObjectMeta.Name = "bastions"
 			instanceGroups = append(instanceGroups, bastionGroup)
+
+			var bastionSubnets []api.ClusterSubnetSpec
+			for _, s := range cluster.Spec.Subnets {
+				if s.Type == api.SubnetTypeUtility {
+					continue
+				}
+				subnet := api.ClusterSubnetSpec{
+					SubnetName: "utility-" + s.SubnetName,
+					Zone:       s.Zone,
+					Type:       api.SubnetTypeUtility,
+				}
+				bastionSubnets = append(bastionSubnets, subnet)
+			}
+			cluster.Spec.Subnets = append(cluster.Spec.Subnets, bastionSubnets...)
 		}
 
 	default:
