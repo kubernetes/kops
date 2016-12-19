@@ -1,0 +1,9 @@
+kind: Addons
+metadata:
+  name: helm-tiller
+spec:
+  addons:
+  - version: 2.0.0
+    selector:
+      k8s-addon: helm-tiller.addons.k8s.io
+    manifest: v2.0.0.20161128.yaml

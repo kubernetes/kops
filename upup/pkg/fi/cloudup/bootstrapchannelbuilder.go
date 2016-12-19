@@ -32,6 +32,7 @@ type BootstrapChannelBuilder struct {
 
 var _ TaskBuilder = &BootstrapChannelBuilder{}
 
+// Create the tasks for the manifests
 func (b *BootstrapChannelBuilder) BuildTasks(l *Loader) error {
 	addons, manifests := b.buildManifest()
 	addonsYAML, err := utils.YamlMarshal(addons)
@@ -59,6 +60,7 @@ func (b *BootstrapChannelBuilder) BuildTasks(l *Loader) error {
 	return nil
 }
 
+// Build the manifests
 func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[string]string) {
 	manifests := make(map[string]string)
 
@@ -94,6 +96,16 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		Selector: map[string]string{"k8s-addon": "limit-range.addons.k8s.io"},
 		Manifest: fi.String("limit-range/v1.5.0.yaml"),
 	})
+
+	// install helm
+	if *b.cluster.Spec.EnableHelm {
+		addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+			Name:     fi.String("helm-tiller"),
+			Version:  fi.String("2.0.0"),
+			Selector: map[string]string{"k8s-addon": "helm-tiller.addons.k8s.io"},
+			Manifest: fi.String("helm-tiller/v2.0.0.20161128.yaml"),
+		})
+	}
 
 	if b.cluster.Spec.Networking.Kopeio != nil {
 		key := "networking.kope.io"

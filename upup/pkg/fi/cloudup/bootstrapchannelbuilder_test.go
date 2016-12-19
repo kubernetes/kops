@@ -30,8 +30,11 @@ func TestBootstrapChanelBuilder_buildManifest(t *testing.T) {
 	c := buildDefaultCluster(t)
 
 	c.Spec.Networking.Weave = &api.WeaveNetworkingSpec{}
+	enable := true
+	c.Spec.EnableHelm = &enable
 
 	bcb := BootstrapChannelBuilder{cluster: c}
+
 	a, m := bcb.buildManifest()
 
 	if a == nil {
@@ -42,7 +45,7 @@ func TestBootstrapChanelBuilder_buildManifest(t *testing.T) {
 		t.Fatal("Manifests are nil")
 	}
 
-	var hasLimit, hasWeave bool
+	var hasLimit, hasWeave, hasHelm bool
 
 	for _, value := range a.Spec.Addons {
 		if *value.Name == "networking.weave" {
@@ -53,6 +56,10 @@ func TestBootstrapChanelBuilder_buildManifest(t *testing.T) {
 			hasLimit = true
 		}
 
+		if *value.Name == "helm-tiller" {
+			hasHelm = true
+		}
+
 	}
 
 	if !hasWeave {
@@ -61,5 +68,9 @@ func TestBootstrapChanelBuilder_buildManifest(t *testing.T) {
 
 	if !hasLimit {
 		t.Fatal("unable to find limit-builder")
+	}
+
+	if !hasHelm {
+		t.Fatal("unable to find helm-tiller")
 	}
 }
