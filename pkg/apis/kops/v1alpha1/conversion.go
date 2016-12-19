@@ -26,20 +26,20 @@ import (
 )
 
 func Convert_v1alpha1_BastionSpec_To_kops_BastionSpec(in *BastionSpec, out *kops.BastionSpec, s conversion.Scope) error {
-	out.PublicName = in.PublicName
-	out.IdleTimeout = in.IdleTimeout
+	out.BastionPublicName = in.PublicName
+	out.IdleTimeoutSeconds = in.IdleTimeout
 
 	if !in.Enable {
-		out.PublicName = ""
-		out.IdleTimeout = nil
+		out.BastionPublicName = ""
+		out.IdleTimeoutSeconds = nil
 	}
 
 	return nil
 }
 
 func Convert_kops_BastionSpec_To_v1alpha1_BastionSpec(in *kops.BastionSpec, out *BastionSpec, s conversion.Scope) error {
-	out.PublicName = in.PublicName
-	out.IdleTimeout = in.IdleTimeout
+	out.PublicName = in.BastionPublicName
+	out.IdleTimeout = in.IdleTimeoutSeconds
 
 	out.Enable = true
 	out.MachineType = ""
@@ -90,7 +90,7 @@ func Convert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 	}
 
 	out.SSHAccess = in.AdminAccess
-	out.APIAccess = in.AdminAccess
+	out.KubernetesAPIAccess = in.AdminAccess
 
 	return autoConvert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in, out, s)
 }
@@ -180,8 +180,8 @@ func Convert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, out 
 		out.Zones = nil
 	}
 
-	if !reflect.DeepEqual(in.SSHAccess, in.APIAccess) {
-		return fmt.Errorf("cannot convert to v1alpha1: SSHAccess != APIAccesss")
+	if !reflect.DeepEqual(in.SSHAccess, in.KubernetesAPIAccess) {
+		return fmt.Errorf("cannot convert to v1alpha1: SSHAccess != KubernetesAPIAccess")
 	}
 	out.AdminAccess = in.SSHAccess
 

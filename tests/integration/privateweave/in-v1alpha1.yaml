@@ -28,7 +28,7 @@ spec:
   topology:
     bastion:
       enable: true
-      idleTimeout: 120
+      idleTimeout: 300
       machineType: t2.medium
     masters: private
     nodes: private

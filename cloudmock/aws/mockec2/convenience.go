@@ -16,6 +16,9 @@ limitations under the License.
 
 package mockec2
 
+import "github.com/aws/aws-sdk-go/aws"
+
+// s is a helper that builds a *string from a string value
 func s(v string) *string {
-	return &v
+	return aws.String(v)
 }

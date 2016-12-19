@@ -16,7 +16,9 @@ limitations under the License.
 
 package awstasks
 
-// TODO: Maybe use a static import ("macros")?
+import "github.com/aws/aws-sdk-go/aws"
+
+// s is a helper that builds a *string from a string value
 func s(v string) *string {
-	return &v
+	return aws.String(v)
 }

@@ -143,7 +143,7 @@ resource "aws_elb" "bastion-privateweave-example-com" {
     interval = 10
     timeout = 5
   }
-  idle_timeout = 120
+  idle_timeout = 300
 }
 
 resource "aws_iam_instance_profile" "bastions-privateweave-example-com" {
