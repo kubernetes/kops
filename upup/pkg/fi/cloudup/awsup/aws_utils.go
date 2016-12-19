@@ -72,16 +72,16 @@ func FindRegion(cluster *kops.Cluster) (string, error) {
 	region := ""
 
 	nodeZones := make(map[string]bool)
-	for _, zone := range cluster.Spec.Zones {
-		if len(zone.Name) <= 2 {
-			return "", fmt.Errorf("Invalid AWS zone: %q", zone.Name)
+	for _, subnet := range cluster.Spec.Subnets {
+		if len(subnet.Zone) <= 2 {
+			return "", fmt.Errorf("invalid AWS zone: %q in subnet %q", subnet.Zone, subnet.Name)
 		}
 
-		nodeZones[zone.Name] = true
+		nodeZones[subnet.Zone] = true
 
-		zoneRegion := zone.Name[:len(zone.Name)-1]
+		zoneRegion := subnet.Zone[:len(subnet.Zone)-1]
 		if region != "" && zoneRegion != region {
-			return "", fmt.Errorf("Clusters cannot span multiple regions (found zone %q, but region is %q)", zone.Name, region)
+			return "", fmt.Errorf("Clusters cannot span multiple regions (found zone %q, but region is %q)", subnet.Zone, region)
 		}
 
 		region = zoneRegion

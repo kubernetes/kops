@@ -18,6 +18,8 @@ package main
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	api "k8s.io/kops/pkg/apis/kops"
@@ -25,7 +27,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/tables"
 	k8sapi "k8s.io/kubernetes/pkg/api"
-	"os"
 )
 
 type UpgradeClusterCmd struct {
@@ -253,7 +254,7 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		}
 
 		// TODO: DRY this chunk
-		err = cluster.PerformAssignments()
+		err = cloudup.PerformAssignments(cluster)
 		if err != nil {
 			return fmt.Errorf("error populating configuration: %v", err)
 		}

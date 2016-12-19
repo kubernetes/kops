@@ -45,23 +45,26 @@ import (
 
 // TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestMinimal(t *testing.T) {
-	runTest(t, "minimal.example.com", "../../tests/integration/minimal")
+	runTest(t, "minimal.example.com", "../../tests/integration/minimal", "v1alpha0", false)
+	runTest(t, "minimal.example.com", "../../tests/integration/minimal", "v1alpha1", false)
+	runTest(t, "minimal.example.com", "../../tests/integration/minimal", "v1alpha2", false)
 }
 
 // TestMinimal_141 runs the test on a configuration from 1.4.1 release
 func TestMinimal_141(t *testing.T) {
-	runTest(t, "minimal-141.example.com", "../../tests/integration/minimal-141")
+	runTest(t, "minimal-141.example.com", "../../tests/integration/minimal-141", "v1alpha0", false)
 }
 
 // TestPrivateWeave runs the test on a configuration with private topology, weave networking
 func TestPrivateWeave(t *testing.T) {
-	runTest(t, "privateweave.example.com", "../../tests/integration/privateweave")
+	runTest(t, "privateweave.example.com", "../../tests/integration/privateweave", "v1alpha1", true)
+	runTest(t, "privateweave.example.com", "../../tests/integration/privateweave", "v1alpha2", true)
 }
 
-func runTest(t *testing.T, clusterName string, srcDir string) {
+func runTest(t *testing.T, clusterName string, srcDir string, version string, private bool) {
 	var stdout bytes.Buffer
 
-	inputYAML := "in.yaml"
+	inputYAML := "in-" + version + ".yaml"
 	expectedTFPath := "kubernetes.tf"
 
 	factoryOptions := &util.FactoryOptions{}
@@ -168,6 +171,16 @@ func runTest(t *testing.T, clusterName string, srcDir string) {
 			"aws_key_pair_kubernetes." + clusterName + "-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key",
 			"aws_launch_configuration_master-us-test-1a.masters." + clusterName + "_user_data",
 			"aws_launch_configuration_nodes." + clusterName + "_user_data",
+		}
+
+		if private {
+			expectedFilenames = append(expectedFilenames, []string{
+				"aws_iam_role_bastions." + clusterName + "_policy",
+				"aws_iam_role_policy_bastions." + clusterName + "_policy",
+
+				// bastions don't have any userdata
+				// "aws_launch_configuration_bastions." + clusterName + "_user_data",
+			}...)
 		}
 		sort.Strings(expectedFilenames)
 		if !reflect.DeepEqual(actualFilenames, expectedFilenames) {

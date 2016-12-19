@@ -16,6 +16,7 @@ limitations under the License.
 
 package v1alpha1
 
+// +k8s:conversion-gen=false
 type BastionSpec struct {
 	// Controls if a private topology should deploy a bastion host or not
 	// The bastion host is designed to be a simple, and secure bridge between
@@ -23,6 +24,6 @@ type BastionSpec struct {
 	Enable      bool   `json:"enable,omitempty"`
 	MachineType string `json:"machineType,omitempty"`
 	PublicName  string `json:"name,omitempty"`
-	// Bastion's Loadbalancer idle timeout
-	IdleTimeout int `json:"idleTimeout,omitempty"`
+	// IdleTimeout is the bastion's Loadbalancer idle timeout
+	IdleTimeout *int64 `json:"idleTimeout,omitempty"`
 }

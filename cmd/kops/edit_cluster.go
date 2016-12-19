@@ -118,7 +118,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 	if !ok {
 		return fmt.Errorf("object was not of expected type: %T", newObj)
 	}
-	err = newCluster.PerformAssignments()
+	err = cloudup.PerformAssignments(newCluster)
 	if err != nil {
 		return fmt.Errorf("error populating configuration: %v", err)
 	}

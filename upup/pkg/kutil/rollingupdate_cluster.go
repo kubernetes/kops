@@ -35,8 +35,9 @@ import (
 type RollingUpdateCluster struct {
 	Cloud fi.Cloud
 
-	MasterInterval time.Duration
-	NodeInterval   time.Duration
+	MasterInterval  time.Duration
+	NodeInterval    time.Duration
+	BastionInterval time.Duration
 
 	Force bool
 }
@@ -69,6 +70,8 @@ func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroup
 			case api.InstanceGroupRoleMaster:
 				asgName = g.ObjectMeta.Name + ".masters." + cluster.ObjectMeta.Name
 			case api.InstanceGroupRoleNode:
+				asgName = g.ObjectMeta.Name + "." + cluster.ObjectMeta.Name
+			case api.InstanceGroupRoleBastion:
 				asgName = g.ObjectMeta.Name + "." + cluster.ObjectMeta.Name
 			default:
 				glog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)
@@ -105,15 +108,42 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 
 	masterGroups := make(map[string]*CloudInstanceGroup)
 	nodeGroups := make(map[string]*CloudInstanceGroup)
+	bastionGroups := make(map[string]*CloudInstanceGroup)
 	for k, group := range groups {
 		switch group.InstanceGroup.Spec.Role {
 		case api.InstanceGroupRoleNode:
 			nodeGroups[k] = group
 		case api.InstanceGroupRoleMaster:
 			masterGroups[k] = group
+		case api.InstanceGroupRoleBastion:
+			bastionGroups[k] = group
 		default:
 			return fmt.Errorf("unknown group type for group %q", group.InstanceGroup.ObjectMeta.Name)
 		}
+	}
+
+	// Upgrade bastions first; if these go down we can't see anything
+	{
+		var wg sync.WaitGroup
+
+		for k, bastionGroup := range bastionGroups {
+			wg.Add(1)
+			go func(k string, group *CloudInstanceGroup) {
+				resultsMutex.Lock()
+				results[k] = fmt.Errorf("function panic")
+				resultsMutex.Unlock()
+
+				defer wg.Done()
+
+				err := group.RollingUpdate(c.Cloud, c.Force, c.BastionInterval, k8sClient)
+
+				resultsMutex.Lock()
+				results[k] = err
+				resultsMutex.Unlock()
+			}(k, bastionGroup)
+		}
+
+		wg.Wait()
 	}
 
 	// Upgrade master first
