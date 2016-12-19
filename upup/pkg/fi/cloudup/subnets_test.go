@@ -136,7 +136,7 @@ func Test_AssignSubnets(t *testing.T) {
 
 		err := assignCIDRsToSubnets(c)
 		if err != nil {
-			t.Fatalf("unexpected error on test %d", i+1, err)
+			t.Fatalf("unexpected error on test %d: %v", i+1, err)
 		}
 
 		var actual []string
