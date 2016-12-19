@@ -19,6 +19,10 @@ package awstasks
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"k8s.io/kops/cloudmock/aws/mockec2"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"reflect"
 	"testing"
 )
 
@@ -85,5 +89,72 @@ func testMatches(t *testing.T, rule *PortRemovalRule, permission *ec2.IpPermissi
 func testNotMatches(t *testing.T, rule *PortRemovalRule, permission *ec2.IpPermission) {
 	if rule.Matches(permission) {
 		t.Fatalf("rule %q unexpectedly matched permission %q", rule, permission)
+	}
+}
+
+func TestSecurityGroupCreate(t *testing.T) {
+	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
+	c := &mockec2.MockEC2{}
+	cloud.MockEC2 = c
+
+	// We define a function so we can rebuild the tasks, because we modify in-place when running
+	buildTasks := func() map[string]fi.Task {
+		vpc1 := &VPC{
+			Name: s("vpc1"),
+			CIDR: s("172.20.0.0/16"),
+		}
+		sg1 := &SecurityGroup{
+			Name:        s("sg1"),
+			Description: s("Description"),
+			VPC:         vpc1,
+		}
+
+		return map[string]fi.Task{
+			"sg1":  sg1,
+			"vpc1": vpc1,
+		}
+	}
+
+	{
+		allTasks := buildTasks()
+		sg1 := allTasks["sg1"].(*SecurityGroup)
+		vpc1 := allTasks["vpc1"].(*VPC)
+
+		target := &awsup.AWSAPITarget{
+			Cloud: cloud,
+		}
+
+		context, err := fi.NewContext(target, cloud, nil, nil, nil, true, allTasks)
+		if err != nil {
+			t.Fatalf("error building context: %v", err)
+		}
+
+		if err := context.RunTasks(defaultDeadline); err != nil {
+			t.Fatalf("unexpected error during Run: %v", err)
+		}
+
+		if fi.StringValue(sg1.ID) == "" {
+			t.Fatalf("ID not set after create")
+		}
+
+		if len(c.SecurityGroups) != 1 {
+			t.Fatalf("Expected exactly one SecurityGroup; found %v", c.SecurityGroups)
+		}
+
+		expected := &ec2.SecurityGroup{
+			Description: s("Description"),
+			GroupId:     sg1.ID,
+			VpcId:       vpc1.ID,
+			GroupName:   s("sg1"),
+		}
+		actual := c.SecurityGroups[0]
+		if !reflect.DeepEqual(actual, expected) {
+			t.Fatalf("Unexpected SecurityGroup: expected=%v actual=%v", expected, actual)
+		}
+	}
+
+	{
+		allTasks := buildTasks()
+		checkNoChanges(t, cloud, allTasks)
 	}
 }
