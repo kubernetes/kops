@@ -118,7 +118,6 @@ F2`
 	}
 }
 
-
 func Test_Diff_ChangedLine(t *testing.T) {
 	l := `ABC123
 Line2
