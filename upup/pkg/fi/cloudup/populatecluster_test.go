@@ -31,9 +31,9 @@ func buildMinimalCluster() *api.Cluster {
 	c.ObjectMeta.Name = "testcluster.test.com"
 	c.Spec.KubernetesVersion = "1.4.6"
 	c.Spec.Subnets = []api.ClusterSubnetSpec{
-		{SubnetName: "subnet-us-mock-1a", Zone: "us-mock-1a", CIDR: "172.20.1.0/24"},
-		{SubnetName: "subnet-us-mock-1b", Zone: "us-mock-1b", CIDR: "172.20.2.0/24"},
-		{SubnetName: "subnet-us-mock-1c", Zone: "us-mock-1c", CIDR: "172.20.3.0/24"},
+		{Name: "subnet-us-mock-1a", Zone: "us-mock-1a", CIDR: "172.20.1.0/24"},
+		{Name: "subnet-us-mock-1b", Zone: "us-mock-1b", CIDR: "172.20.2.0/24"},
+		{Name: "subnet-us-mock-1c", Zone: "us-mock-1c", CIDR: "172.20.3.0/24"},
 	}
 	// Default to public topology
 	c.Spec.Topology = &api.TopologySpec{
@@ -56,7 +56,7 @@ func buildMinimalCluster() *api.Cluster {
 func addEtcdClusters(c *api.Cluster) {
 	subnetNames := sets.NewString()
 	for _, z := range c.Spec.Subnets {
-		subnetNames.Insert(z.SubnetName)
+		subnetNames.Insert(z.Name)
 	}
 	etcdZones := subnetNames.List()
 
@@ -188,9 +188,9 @@ func TestPopulateCluster_Custom_CIDR(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.NetworkCIDR = "172.20.2.0/24"
 	c.Spec.Subnets = []api.ClusterSubnetSpec{
-		{SubnetName: "subnet-us-mock-1a", Zone: "us-mock-1a", CIDR: "172.20.2.0/27"},
-		{SubnetName: "subnet-us-mock-1b", Zone: "us-mock-1b", CIDR: "172.20.2.32/27"},
-		{SubnetName: "subnet-us-mock-1c", Zone: "us-mock-1c", CIDR: "172.20.2.64/27"},
+		{Name: "subnet-us-mock-1a", Zone: "us-mock-1a", CIDR: "172.20.2.0/27"},
+		{Name: "subnet-us-mock-1b", Zone: "us-mock-1b", CIDR: "172.20.2.32/27"},
+		{Name: "subnet-us-mock-1c", Zone: "us-mock-1c", CIDR: "172.20.2.64/27"},
 	}
 
 	err := PerformAssignments(c)

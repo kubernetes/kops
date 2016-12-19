@@ -93,7 +93,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 
 			subnet := subnets[subnetName]
 			if subnet == nil {
-				subnet = &api.ClusterSubnetSpec{SubnetName: subnetName}
+				subnet = &api.ClusterSubnetSpec{Name: subnetName}
 				subnets[subnetName] = subnet
 			}
 
@@ -190,8 +190,8 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	if masterSubnet == nil {
 		return fmt.Errorf("cannot find subnet %q for master.  Please report this issue", aws.StringValue(masterInstance.Placement.AvailabilityZone))
 	}
-	masterGroup.Spec.Subnets = []string{masterSubnet.SubnetName}
-	masterGroup.ObjectMeta.Name = "master-" + masterSubnet.SubnetName
+	masterGroup.Spec.Subnets = []string{masterSubnet.Name}
+	masterGroup.ObjectMeta.Name = "master-" + masterSubnet.Name
 
 	userData, err := GetInstanceUserData(awsCloud, aws.StringValue(masterInstance.InstanceId))
 	if err != nil {
@@ -269,7 +269,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	nodeGroup.Spec.Role = api.InstanceGroupRoleNode
 	nodeGroup.ObjectMeta.Name = "nodes"
 	for _, subnet := range subnets {
-		nodeGroup.Spec.Subnets = append(nodeGroup.Spec.Subnets, subnet.SubnetName)
+		nodeGroup.Spec.Subnets = append(nodeGroup.Spec.Subnets, subnet.Name)
 	}
 	instanceGroups = append(instanceGroups, nodeGroup)
 

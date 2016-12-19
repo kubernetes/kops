@@ -53,7 +53,7 @@ func TestDeepValidate_BadZone(t *testing.T) {
 	t.Skipf("Zone validation not checked by DeepValidate")
 	c := buildDefaultCluster(t)
 	c.Spec.Subnets = []api.ClusterSubnetSpec{
-		{SubnetName: "subnet-badzone", Zone: "us-mock-1z", CIDR: "172.20.1.0/24"},
+		{Name: "subnet-badzone", Zone: "us-mock-1z", CIDR: "172.20.1.0/24"},
 	}
 	var groups []*api.InstanceGroup
 	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1z"))
@@ -65,8 +65,8 @@ func TestDeepValidate_MixedRegion(t *testing.T) {
 	t.Skipf("Region validation not checked by DeepValidate")
 	c := buildDefaultCluster(t)
 	c.Spec.Subnets = []api.ClusterSubnetSpec{
-		{SubnetName: "mock1a", Zone: "us-mock-1a", CIDR: "172.20.1.0/24"},
-		{SubnetName: "west1b", Zone: "us-west-1b", CIDR: "172.20.2.0/24"},
+		{Name: "mock1a", Zone: "us-mock-1a", CIDR: "172.20.1.0/24"},
+		{Name: "west1b", Zone: "us-west-1b", CIDR: "172.20.2.0/24"},
 	}
 	var groups []*api.InstanceGroup
 	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1a"))
@@ -79,7 +79,7 @@ func TestDeepValidate_RegionAsZone(t *testing.T) {
 	t.Skipf("Region validation not checked by DeepValidate")
 	c := buildDefaultCluster(t)
 	c.Spec.Subnets = []api.ClusterSubnetSpec{
-		{SubnetName: "mock1", Zone: "us-mock-1", CIDR: "172.20.1.0/24"},
+		{Name: "mock1", Zone: "us-mock-1", CIDR: "172.20.1.0/24"},
 	}
 	var groups []*api.InstanceGroup
 	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1"))
@@ -100,8 +100,8 @@ func TestDeepValidate_NotIncludedZone(t *testing.T) {
 func TestDeepValidate_DuplicateZones(t *testing.T) {
 	c := buildDefaultCluster(t)
 	c.Spec.Subnets = []api.ClusterSubnetSpec{
-		{SubnetName: "dup1", Zone: "us-mock-1a", CIDR: "172.20.1.0/24"},
-		{SubnetName: "dup1", Zone: "us-mock-1a", CIDR: "172.20.2.0/24"},
+		{Name: "dup1", Zone: "us-mock-1a", CIDR: "172.20.1.0/24"},
+		{Name: "dup1", Zone: "us-mock-1a", CIDR: "172.20.2.0/24"},
 	}
 	var groups []*api.InstanceGroup
 	groups = append(groups, buildMinimalMasterInstanceGroup("dup1"))
@@ -112,8 +112,8 @@ func TestDeepValidate_DuplicateZones(t *testing.T) {
 func TestDeepValidate_ExtraMasterZone(t *testing.T) {
 	c := buildDefaultCluster(t)
 	c.Spec.Subnets = []api.ClusterSubnetSpec{
-		{SubnetName: "mock1a", Zone: "us-mock-1a", CIDR: "172.20.1.0/24"},
-		{SubnetName: "mock1b", Zone: "us-mock-1b", CIDR: "172.20.2.0/24"},
+		{Name: "mock1a", Zone: "us-mock-1a", CIDR: "172.20.1.0/24"},
+		{Name: "mock1b", Zone: "us-mock-1b", CIDR: "172.20.2.0/24"},
 	}
 	var groups []*api.InstanceGroup
 	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1a", "subnet-us-mock-1b", "subnet-us-mock-1c"))

@@ -118,10 +118,10 @@ func (c *populateClusterSpec) run() error {
 		// TODO: Check that instance groups referenced here exist
 		//clusterSubnets := make(map[string]*api.ClusterSubnetSpec)
 		//for _, subnet := range cluster.Spec.Subnets {
-		//	if clusterSubnets[subnet.SubnetName] != nil {
-		//		return fmt.Errorf("Subnets contained a duplicate value: %v", subnet.SubnetName)
+		//	if clusterSubnets[subnet.Name] != nil {
+		//		return fmt.Errorf("Subnets contained a duplicate value: %v", subnet.Name)
 		//	}
-		//	clusterSubnets[subnet.SubnetName] = subnet
+		//	clusterSubnets[subnet.Name] = subnet
 		//}
 
 		// Check etcd configuration
