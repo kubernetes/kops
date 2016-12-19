@@ -25,7 +25,7 @@ import (
 )
 
 // ExternalAccessModelBuilder configures security group rules for external access
-// (SSHAccess, APIAccess)
+// (SSHAccess, KubernetesAPIAccess)
 type ExternalAccessModelBuilder struct {
 	*KopsModelContext
 }
@@ -33,8 +33,8 @@ type ExternalAccessModelBuilder struct {
 var _ fi.ModelBuilder = &ExternalAccessModelBuilder{}
 
 func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	if len(b.Cluster.Spec.APIAccess) == 0 {
-		glog.Warningf("APIAccess is empty")
+	if len(b.Cluster.Spec.KubernetesAPIAccess) == 0 {
+		glog.Warningf("KubernetesAPIAccess is empty")
 	}
 
 	if len(b.Cluster.Spec.SSHAccess) == 0 {
@@ -68,7 +68,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// We need to open security groups directly to the master nodes (instead of via the ELB)
 
 		// HTTPS to the master is allowed (for API access)
-		for i, apiAccess := range b.Cluster.Spec.APIAccess {
+		for i, apiAccess := range b.Cluster.Spec.KubernetesAPIAccess {
 			t := &awstasks.SecurityGroupRule{
 				Name:          s("https-external-to-master-" + strconv.Itoa(i)),
 				SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),

@@ -25,7 +25,7 @@ import (
 )
 
 const BastionELBSecurityGroupPrefix = "bastion"
-const BastionELBDefaultIdleTimeout = 2 * time.Minute
+const BastionELBDefaultIdleTimeout = 5 * time.Minute
 
 // BastionModelBuilder adds model objects to support bastions
 //
@@ -186,8 +186,8 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		idleTimeout := BastionELBDefaultIdleTimeout
-		if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.Bastion != nil && b.Cluster.Spec.Topology.Bastion.IdleTimeout != nil {
-			idleTimeout = time.Second * time.Duration(*b.Cluster.Spec.Topology.Bastion.IdleTimeout)
+		if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.Bastion != nil && b.Cluster.Spec.Topology.Bastion.IdleTimeoutSeconds != nil {
+			idleTimeout = time.Second * time.Duration(*b.Cluster.Spec.Topology.Bastion.IdleTimeoutSeconds)
 		}
 
 		elb = &awstasks.LoadBalancer{
@@ -229,17 +229,17 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	bastionDNS := ""
+	bastionPublicName := ""
 	if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.Bastion != nil {
-		bastionDNS = b.Cluster.Spec.Topology.Bastion.PublicName
+		bastionPublicName = b.Cluster.Spec.Topology.Bastion.BastionPublicName
 	}
-	if bastionDNS != "" {
+	if bastionPublicName != "" {
 		// By default Bastion is not reachable from outside because of security concerns.
 		// But if the user specifies bastion name using edit cluster, we configure
 		// the bastion DNS entry for it to be reachable from outside.
 		// BastionPublicName --> Bastion LoadBalancer
 		t := &awstasks.DNSName{
-			Name:               s(bastionDNS),
+			Name:               s(bastionPublicName),
 			Zone:               b.LinkToDNSZone(),
 			ResourceType:       s("A"),
 			TargetLoadBalancer: elb,

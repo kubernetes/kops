@@ -342,7 +342,7 @@ func autoConvert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, 
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange
 	out.NonMasqueradeCIDR = in.NonMasqueradeCIDR
 	// WARNING: in.SSHAccess requires manual conversion: does not exist in peer-type
-	// WARNING: in.APIAccess requires manual conversion: does not exist in peer-type
+	// WARNING: in.KubernetesAPIAccess requires manual conversion: does not exist in peer-type
 	out.IsolateMasters = in.IsolateMasters
 	out.UpdatePolicy = in.UpdatePolicy
 	if in.EtcdClusters != nil {

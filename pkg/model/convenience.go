@@ -16,10 +16,14 @@ limitations under the License.
 
 package model
 
+import "k8s.io/kops/upup/pkg/fi"
+
+// s is a helper that builds a *string from a string value
 func s(v string) *string {
-	return &v
+	return fi.String(v)
 }
 
+// i64 is a helper that builds a *int64 from an int64 value
 func i64(v int64) *int64 {
-	return &v
+	return fi.Int64(v)
 }

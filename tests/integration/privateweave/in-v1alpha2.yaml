@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: "2016-12-12T04:13:14Z"
   name: privateweave.example.com
 spec:
-  apiAccess:
+  kubernetesApiAccess:
   - 0.0.0.0/0
   channel: stable
   cloudProvider: aws
