@@ -11,15 +11,12 @@ loadBalancer/api.{{ ClusterName }}:
 {{ end }}
   listeners:
     443: { instancePort: 443 }
-
-# Configure fast-recovery health-checks
-loadBalancerHealthChecks/api.{{ ClusterName }}:
-  loadBalancer: loadBalancer/api.{{ ClusterName }}
-  target: "TCP:443"
-  timeout: 5
-  interval: 10
-  healthyThreshold: 2
-  unhealthyThreshold: 3
+  healthCheck:
+    target: "TCP:443"
+    timeout: 5
+    interval: 10
+    healthyThreshold: 2
+    unhealthyThreshold: 3
 
 # Security group for master ELB
 securityGroup/api.{{ ClusterName }}:
