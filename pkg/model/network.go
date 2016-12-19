@@ -60,7 +60,6 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// We always have a public route table, though for private networks it is only used for NGWs and ELBs
 	var publicRouteTable *awstasks.RouteTable
-	//if b.Cluster.IsTopologyPublic()
 	{
 		// The internet gateway is the main entry point to the cluster.
 		igw := &awstasks.InternetGateway{

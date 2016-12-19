@@ -140,17 +140,6 @@ func (b *KopsModelContext) LinkToSSHKey() (*awstasks.SSHKey, error) {
 }
 
 func (b *KopsModelContext) LinkToSubnet(z *kops.ClusterSubnetSpec) *awstasks.Subnet {
-	//var name string
-	//
-	//if b.Cluster.IsTopologyPublic() {
-	//	name = z.SubnetName + "." + b.ClusterName()
-	//} else if z.Type == kops.SubnetTypePublic {
-	//	name = z.SubnetName + "." + b.ClusterName()
-	//} else if z.Type == kops.SubnetTypePrivate {
-	//	name = "private-" + z.SubnetName + "." + b.ClusterName()
-	//} else {
-	//	glog.Fatalf("unable to construct link to subnet %q of type %q", z.SubnetName, z.Type)
-	//}
 	name := z.SubnetName + "." + b.ClusterName()
 
 	return &awstasks.Subnet{Name: &name}
