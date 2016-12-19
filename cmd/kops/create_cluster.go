@@ -237,6 +237,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			if existingSubnets[subnetName] == nil {
 				cluster.Spec.Subnets = append(cluster.Spec.Subnets, api.ClusterSubnetSpec{
 					SubnetName: subnetName,
+					Zone:       subnetName,
 				})
 			}
 		}
