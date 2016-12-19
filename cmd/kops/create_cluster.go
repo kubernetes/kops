@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/upup/pkg/kutil"
+	"sort"
 )
 
 type CreateClusterOptions struct {
@@ -296,11 +297,14 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			subnetMap[subnet.SubnetName] = subnet
 		}
 
+		var masterSubnetNames []string
 		masterInstanceGroups := make(map[string]*api.InstanceGroup)
 		for _, ig := range masters {
 			if len(ig.Spec.Subnets) != 1 {
 				return fmt.Errorf("unexpected subnets for master instance group %q (expected exactly only, found %d)", ig.ObjectMeta.Name, len(ig.Spec.Subnets))
 			}
+			masterSubnetNames = append(masterSubnetNames, ig.Spec.Subnets[0])
+
 			for _, subnetName := range ig.Spec.Subnets {
 				subnet := subnetMap[subnetName]
 				if subnet == nil {
@@ -315,10 +319,13 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			}
 		}
 
+		sort.Strings(masterSubnetNames)
+
 		for _, etcdCluster := range cloudup.EtcdClusters {
 			etcd := &api.EtcdClusterSpec{}
 			etcd.Name = etcdCluster
-			for _, ig := range masterInstanceGroups {
+			for _, masterSubnetName := range masterSubnetNames {
+				ig := masterInstanceGroups[masterSubnetName]
 				m := &api.EtcdMemberSpec{}
 				m.Name = ig.ObjectMeta.Name
 				m.InstanceGroup = fi.String(ig.ObjectMeta.Name)

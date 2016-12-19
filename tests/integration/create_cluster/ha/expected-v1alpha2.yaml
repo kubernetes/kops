@@ -1,4 +1,4 @@
-apiVersion: kops/v1alpha1
+apiVersion: kops/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
@@ -9,20 +9,20 @@ spec:
   configBase: memfs://tests/ha.example.com
   etcdClusters:
   - etcdMembers:
-    - name: us-test-1a
-      zone: us-test-1a
-    - name: us-test-1b
-      zone: us-test-1b
-    - name: us-test-1c
-      zone: us-test-1c
+    - instanceGroup: master-us-test-1a
+      name: us-test-1a
+    - instanceGroup: master-us-test-1b
+      name: us-test-1b
+    - instanceGroup: master-us-test-1c
+      name: us-test-1c
     name: main
   - etcdMembers:
-    - name: us-test-1a
-      zone: us-test-1a
-    - name: us-test-1b
-      zone: us-test-1b
-    - name: us-test-1c
-      zone: us-test-1c
+    - instanceGroup: master-us-test-1a
+      name: us-test-1a
+    - instanceGroup: master-us-test-1b
+      name: us-test-1b
+    - instanceGroup: master-us-test-1c
+      name: us-test-1c
     name: events
   kubernetesVersion: v1.4.6
   masterPublicName: api.ha.example.com
@@ -30,23 +30,26 @@ spec:
   networking:
     kubenet: {}
   nonMasqueradeCIDR: 100.64.0.0/10
-  topology:
-    bastion:
-      idleTimeout: 120
-      machineType: t2.medium
-    masters: public
-    nodes: public
-  zones:
+  subnets:
   - cidr: 172.20.32.0/19
     name: us-test-1a
+    type: Public
+    zone: us-test-1a
   - cidr: 172.20.64.0/19
     name: us-test-1b
+    type: Public
+    zone: us-test-1b
   - cidr: 172.20.96.0/19
     name: us-test-1c
+    type: Public
+    zone: us-test-1c
+  topology:
+    masters: public
+    nodes: public
 
 ---
 
-apiVersion: kops/v1alpha1
+apiVersion: kops/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
@@ -58,12 +61,12 @@ spec:
   maxSize: 1
   minSize: 1
   role: Master
-  zones:
+  subnets:
   - us-test-1a
 
 ---
 
-apiVersion: kops/v1alpha1
+apiVersion: kops/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
@@ -75,12 +78,12 @@ spec:
   maxSize: 1
   minSize: 1
   role: Master
-  zones:
+  subnets:
   - us-test-1b
 
 ---
 
-apiVersion: kops/v1alpha1
+apiVersion: kops/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
@@ -92,12 +95,12 @@ spec:
   maxSize: 1
   minSize: 1
   role: Master
-  zones:
+  subnets:
   - us-test-1c
 
 ---
 
-apiVersion: kops/v1alpha1
+apiVersion: kops/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
@@ -109,7 +112,7 @@ spec:
   maxSize: 2
   minSize: 2
   role: Node
-  zones:
+  subnets:
   - us-test-1a
   - us-test-1b
   - us-test-1c
