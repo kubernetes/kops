@@ -17,12 +17,7 @@ limitations under the License.
 package kops
 
 type BastionSpec struct {
-	// Controls if a private topology should deploy a bastion host or not
-	// The bastion host is designed to be a simple, and secure bridge between
-	// the public subnet and the private subnet
-	Enable      bool   `json:"enable,omitempty"`
-	MachineType string `json:"machineType,omitempty"`
-	PublicName  string `json:"name,omitempty"`
-	// Bastion's Loadbalancer idle timeout
-	IdleTimeout int `json:"idleTimeout,omitempty"`
+	BastionPublicName string `json:"bastionPublicName,omitempty"`
+	// IdleTimeoutSeconds is the bastion's Loadbalancer idle timeout
+	IdleTimeoutSeconds *int64 `json:"idleTimeoutSeconds,omitempty"`
 }

@@ -22,6 +22,9 @@ import (
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/util/validation/field"
+
+	// Register our APIs
+	_ "k8s.io/kops/pkg/apis/kops/install"
 )
 
 type FactoryOptions struct {

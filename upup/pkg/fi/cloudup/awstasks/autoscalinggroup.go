@@ -157,6 +157,17 @@ func (e *AutoscalingGroup) buildTags(cloud fi.Cloud) map[string]string {
 }
 
 func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *AutoscalingGroup) error {
+	tags := []*autoscaling.Tag{}
+	for k, v := range e.buildTags(t.Cloud) {
+		tags = append(tags, &autoscaling.Tag{
+			Key:               aws.String(k),
+			Value:             aws.String(v),
+			ResourceId:        e.Name,
+			ResourceType:      aws.String("auto-scaling-group"),
+			PropagateAtLaunch: aws.Bool(true),
+		})
+	}
+
 	if a == nil {
 		glog.V(2).Infof("Creating autoscaling Group with Name:%q", *e.Name)
 
@@ -172,15 +183,6 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		}
 		request.VPCZoneIdentifier = aws.String(strings.Join(subnetIDs, ","))
 
-		tags := []*autoscaling.Tag{}
-		for k, v := range e.buildTags(t.Cloud) {
-			tags = append(tags, &autoscaling.Tag{
-				Key:          aws.String(k),
-				Value:        aws.String(v),
-				ResourceId:   e.Name,
-				ResourceType: aws.String("auto-scaling-group"),
-			})
-		}
 		request.Tags = tags
 
 		_, err := t.Cloud.Autoscaling().CreateAutoScalingGroup(request)
@@ -213,6 +215,13 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			changes.Subnets = nil
 		}
 
+		var tagsRequest *autoscaling.CreateOrUpdateTagsInput
+		if changes.Tags != nil {
+			tagsRequest = &autoscaling.CreateOrUpdateTagsInput{}
+			tagsRequest.Tags = tags
+			changes.Tags = nil
+		}
+
 		empty := &AutoscalingGroup{}
 		if !reflect.DeepEqual(empty, changes) {
 			glog.Warningf("cannot apply changes to AutoScalingGroup: %v", changes)
@@ -223,6 +232,13 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		_, err := t.Cloud.Autoscaling().UpdateAutoScalingGroup(request)
 		if err != nil {
 			return fmt.Errorf("error updating AutoscalingGroup: %v", err)
+		}
+
+		if tagsRequest != nil {
+			_, err := t.Cloud.Autoscaling().CreateOrUpdateTags(tagsRequest)
+			if err != nil {
+				return fmt.Errorf("error updating AutoscalingGroup tags: %v", err)
+			}
 		}
 	}
 

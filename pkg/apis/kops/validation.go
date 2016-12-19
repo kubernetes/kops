@@ -54,9 +54,9 @@ func (c *Cluster) Validate(strict bool) error {
 		}
 	}
 
-	if len(c.Spec.Zones) == 0 {
+	if len(c.Spec.Subnets) == 0 {
 		// TODO: Auto choose zones from region?
-		return fmt.Errorf("must configure at least one Zone (use --zones)")
+		return fmt.Errorf("must configure at least one Subnet (use --zones)")
 	}
 
 	if strict && c.Spec.Kubelet == nil {
@@ -214,21 +214,21 @@ func (c *Cluster) Validate(strict bool) error {
 		}
 	}
 
-	// Check that the zone CIDRs are all consistent
+	// Check that the subnet CIDRs are all consistent
 	{
-		for _, z := range c.Spec.Zones {
-			if z.CIDR == "" {
+		for _, s := range c.Spec.Subnets {
+			if s.CIDR == "" {
 				if strict {
-					return fmt.Errorf("Zone %q did not have a CIDR set", z.Name)
+					return fmt.Errorf("Subnet %q did not have a CIDR set", s.Name)
 				}
 			} else {
-				_, zoneCIDR, err := net.ParseCIDR(z.CIDR)
+				_, subnetCIDR, err := net.ParseCIDR(s.CIDR)
 				if err != nil {
-					return fmt.Errorf("Zone %q had an invalid CIDR: %q", z.Name, z.CIDR)
+					return fmt.Errorf("Subnet %q had an invalid CIDR: %q", s.Name, s.CIDR)
 				}
 
-				if !isSubnet(networkCIDR, zoneCIDR) {
-					return fmt.Errorf("Zone %q had a CIDR %q that was not a subnet of the NetworkCIDR %q", z.Name, z.CIDR, c.Spec.NetworkCIDR)
+				if !isSubnet(networkCIDR, subnetCIDR) {
+					return fmt.Errorf("Subnet %q had a CIDR %q that was not a subnet of the NetworkCIDR %q", s.Name, s.CIDR, c.Spec.NetworkCIDR)
 				}
 			}
 		}
@@ -245,14 +245,24 @@ func (c *Cluster) Validate(strict bool) error {
 	}
 
 	// AdminAccess
-	if strict && len(c.Spec.AdminAccess) == 0 {
-		return fmt.Errorf("AdminAccess not configured")
+	if strict && len(c.Spec.SSHAccess) == 0 {
+		return fmt.Errorf("SSHAccess not configured")
+	}
+	for _, cidr := range c.Spec.SSHAccess {
+		_, _, err := net.ParseCIDR(cidr)
+		if err != nil {
+			return fmt.Errorf("SSHAccess rule %q could not be parsed (invalid CIDR)", cidr)
+		}
 	}
 
-	for _, adminAccess := range c.Spec.AdminAccess {
-		_, _, err := net.ParseCIDR(adminAccess)
+	// AdminAccess
+	if strict && len(c.Spec.KubernetesAPIAccess) == 0 {
+		return fmt.Errorf("KubernetesAPIAccess not configured")
+	}
+	for _, cidr := range c.Spec.KubernetesAPIAccess {
+		_, _, err := net.ParseCIDR(cidr)
 		if err != nil {
-			return fmt.Errorf("AdminAccess rule %q could not be parsed (invalid CIDR)", adminAccess)
+			return fmt.Errorf("KubernetesAPIAccess rule %q could not be parsed (invalid CIDR)", cidr)
 		}
 	}
 
@@ -319,16 +329,13 @@ func (c *Cluster) Validate(strict bool) error {
 		return fmt.Errorf("Topology requires non-nil values for Masters and Nodes")
 	}
 
-	// Bastion
-	if c.Spec.Topology.Bastion != nil && c.Spec.Topology.Bastion.Enable {
+	if c.Spec.Topology.Bastion != nil {
+		bastion := c.Spec.Topology.Bastion
 		if c.Spec.Topology.Masters == TopologyPublic || c.Spec.Topology.Nodes == TopologyPublic {
 			return fmt.Errorf("Bastion supports only Private Masters and Nodes")
 		}
-		if c.Spec.Topology.Bastion.MachineType == "" {
-			return fmt.Errorf("Bastion MachineType can not be empty")
-		}
-		if c.Spec.Topology.Bastion.IdleTimeout <= 0 {
-			return fmt.Errorf("Bastion IdleTimeout should be greater than zero")
+		if bastion.IdleTimeoutSeconds != nil && *bastion.IdleTimeoutSeconds <= 0 {
+			return fmt.Errorf("Bastion IdleTimeoutSeconds should be greater than zero")
 		}
 	}
 
@@ -352,8 +359,8 @@ func (c *Cluster) Validate(strict bool) error {
 				if m.Name == "" {
 					return fmt.Errorf("EtcdMember did not have Name in cluster %q", etcd.Name)
 				}
-				if fi.StringValue(m.Zone) == "" {
-					return fmt.Errorf("EtcdMember did not have Zone in cluster %q", etcd.Name)
+				if fi.StringValue(m.InstanceGroup) == "" {
+					return fmt.Errorf("EtcdMember did not have InstanceGroup in cluster %q", etcd.Name)
 				}
 			}
 		}

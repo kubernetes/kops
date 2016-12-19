@@ -62,6 +62,7 @@ func LoadChannel(location string) (*Channel, error) {
 		if err != nil {
 			return nil, fmt.Errorf("invalid base channel location: %q", DefaultChannelBase)
 		}
+		glog.V(4).Infof("resolving %q against default channel location %q", location, DefaultChannelBase)
 		u = base.ResolveReference(u)
 	}
 

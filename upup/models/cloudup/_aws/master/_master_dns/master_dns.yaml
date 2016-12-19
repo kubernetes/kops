@@ -1,4 +1,0 @@
-# Configuration for a DNS name for the master
-
-dnsZone/{{ .DNSZone }}: {}
-

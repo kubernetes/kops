@@ -45,8 +45,11 @@ func Resource(resource string) unversioned.GroupResource {
 func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&Cluster{},
+		&ClusterList{},
 		&InstanceGroup{},
+		&InstanceGroupList{},
 		&Federation{},
+		&FederationList{},
 	)
 	return nil
 }

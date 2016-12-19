@@ -138,7 +138,7 @@ func RunEditInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, ou
 
 	// We need the full cluster spec to perform deep validation
 	// Note that we don't write it back though
-	err = cluster.PerformAssignments()
+	err = cloudup.PerformAssignments(cluster)
 	if err != nil {
 		return fmt.Errorf("error populating configuration: %v", err)
 	}

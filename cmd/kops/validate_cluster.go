@@ -121,8 +121,8 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 	t.AddColumn("MACHINETYPE", func(c api.InstanceGroup) string {
 		return c.Spec.MachineType
 	})
-	t.AddColumn("ZONES", func(c api.InstanceGroup) string {
-		return strings.Join(c.Spec.Zones, ",")
+	t.AddColumn("SUBNETS", func(c api.InstanceGroup) string {
+		return strings.Join(c.Spec.Subnets, ",")
 	})
 	t.AddColumn("MIN", func(c api.InstanceGroup) string {
 		return intPointerToString(c.Spec.MinSize)
@@ -132,7 +132,7 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 	})
 
 	fmt.Fprintln(out, "INSTANCE GROUPS")
-	err = t.Render(instanceGroups, out, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "ZONES")
+	err = t.Render(instanceGroups, out, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "SUBNETS")
 
 	if err != nil {
 		return fmt.Errorf("cannot render nodes for %q: %v", cluster.ObjectMeta.Name, err)

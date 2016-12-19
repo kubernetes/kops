@@ -31,7 +31,7 @@ func newFederationVFS(c *VFSClientset) *FederationVFS {
 	kind := "Federation"
 
 	r := &FederationVFS{}
-	r.init(kind, c.basePath.Join("_federation"), v1alpha1.SchemeGroupVersion)
+	r.init(kind, c.basePath.Join("_federation"), StoreVersion)
 	defaultReadVersion := v1alpha1.SchemeGroupVersion.WithKind(kind)
 	r.defaultReadVersion = &defaultReadVersion
 	return r

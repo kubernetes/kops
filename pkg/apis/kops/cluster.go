@@ -17,13 +17,8 @@ limitations under the License.
 package kops
 
 import (
-	"encoding/binary"
 	"fmt"
-	"net"
-	"strings"
 
-	"github.com/golang/glog"
-	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 )
@@ -62,9 +57,8 @@ type ClusterSpec struct {
 	//// The Node initializer technique to use: cloudinit or nodeup
 	//NodeInit                      string `json:",omitempty"`
 
-	// Configuration of zones we are targeting
-	Zones []*ClusterZoneSpec `json:"zones,omitempty"`
-	//Region                        string        `json:",omitempty"`
+	// Configuration of subnets we are targeting
+	Subnets []ClusterSubnetSpec `json:"subnets,omitempty"`
 
 	// Project is the cloud project we should use, required on GCE
 	Project string `json:"project,omitempty"`
@@ -90,7 +84,7 @@ type ClusterSpec struct {
 	SecretStore string `json:"secretStore,omitempty"`
 	// KeyStore is the VFS path to where SSL keys and certificates are stored
 	KeyStore string `json:"keyStore,omitempty"`
-	// ConfigStore is the VFS path to where the configuration (CloudConfig, NodeSetConfig etc) is stored
+	// ConfigStore is the VFS path to where the configuration (Cluster, InstanceGroups etc) is stored
 	ConfigStore string `json:"configStore,omitempty"`
 
 	// DNSZone is the DNS zone we should use when configuring DNS
@@ -109,8 +103,6 @@ type ClusterSpec struct {
 	// ClusterName is a unique identifier for the cluster, and currently must be a DNS name
 	//ClusterName       string `json:",omitempty"`
 
-	Multizone *bool `json:"multizone,omitempty"`
-
 	//ClusterIPRange                string `json:",omitempty"`
 
 	// ServiceClusterIPRange is the CIDR, from the internal network, where we allocate IPs for services
@@ -121,9 +113,13 @@ type ClusterSpec struct {
 	// It cannot overlap ServiceClusterIPRange
 	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty"`
 
-	// AdminAccess determines the permitted access to the admin endpoints (SSH & master HTTPS)
+	// SSHAccess determines the permitted access to SSH
 	// Currently only a single CIDR is supported (though a richer grammar could be added in future)
-	AdminAccess []string `json:"adminAccess,omitempty"`
+	SSHAccess []string `json:"sshAccess,omitempty"`
+
+	// KubernetesAPIAccess determines the permitted access to the Kubernetes API endpoints (master HTTPS)
+	// Currently only a single CIDR is supported (though a richer grammar could be added in future)
+	KubernetesAPIAccess []string `json:"kubernetesApiAccess,omitempty"`
 
 	// IsolatesMasters determines whether we should lock down masters so that they are not on the pod network.
 	// true is the kube-up behaviour, but it is very surprising: it means that daemonsets only work on the master
@@ -220,10 +216,6 @@ type ClusterSpec struct {
 
 	//NodeUp                        *NodeUpConfig `json:",omitempty"`
 
-	// nodeSets is a list of all the NodeSets in the cluster.
-	// It is not exported: we populate it from other files
-	//nodeSets                      []*NodeSetConfig `json:",omitempty"`
-
 	//// Masters is the configuration for each master in the cluster
 	//Masters []*MasterConfig `json:",omitempty"`
 
@@ -273,8 +265,8 @@ type EtcdClusterSpec struct {
 
 type EtcdMemberSpec struct {
 	// Name is the name of the member within the etcd cluster
-	Name string  `json:"name,omitempty"`
-	Zone *string `json:"zone,omitempty"`
+	Name          string  `json:"name,omitempty"`
+	InstanceGroup *string `json:"instanceGroup,omitempty"`
 
 	VolumeType      *string `json:"volumeType,omitempty"`
 	VolumeSize      *int    `json:"volumeSize,omitempty"`
@@ -282,19 +274,26 @@ type EtcdMemberSpec struct {
 	EncryptedVolume *bool   `json:"encryptedVolume,omitempty"`
 }
 
-type ClusterZoneSpec struct {
+// SubnetType string describes subnet types (public, private, utility)
+type SubnetType string
+
+const (
+	SubnetTypePublic  SubnetType = "Public"
+	SubnetTypePrivate SubnetType = "Private"
+	SubnetTypeUtility SubnetType = "Utility"
+)
+
+type ClusterSubnetSpec struct {
 	Name string `json:"name,omitempty"`
 
-	// For Private network topologies we need to have 2
-	// CIDR blocks.
-	// 1 - Utility (Public) Subnets
-	// 2 - Operating (Private) Subnets
+	Zone string `json:"zone,omitempty"`
 
-	PrivateCIDR string `json:"privateCIDR,omitempty"`
-	CIDR        string `json:"cidr,omitempty"`
+	CIDR string `json:"cidr,omitempty"`
 
 	// ProviderID is the cloud provider id for the objects associated with the zone (the subnet on AWS)
 	ProviderID string `json:"id,omitempty"`
+
+	Type SubnetType `json:"type,omitempty"`
 }
 
 //type NodeUpConfig struct {
@@ -307,41 +306,17 @@ type ClusterZoneSpec struct {
 //	Assets     []string `json:",omitempty"`
 //}
 
-// PerformAssignments populates values that are required and immutable
-// For example, it assigns stable Keys to NodeSets & Masters, and
-// it assigns CIDRs to subnets
-// We also assign KubernetesVersion, because we want it to be explicit
-func (c *Cluster) PerformAssignments() error {
-	if c.Spec.NetworkCIDR == "" && !c.SharedVPC() {
-		// TODO: Choose non-overlapping networking CIDRs for VPCs?
-		c.Spec.NetworkCIDR = "172.20.0.0/16"
-	}
-
-	if c.Spec.NonMasqueradeCIDR == "" {
-		c.Spec.NonMasqueradeCIDR = "100.64.0.0/10"
-	}
-
-	// TODO: Unclear this should be here - it isn't too hard to change
-	if c.Spec.MasterPublicName == "" && c.ObjectMeta.Name != "" {
-		c.Spec.MasterPublicName = "api." + c.ObjectMeta.Name
-	}
-
-	for _, zone := range c.Spec.Zones {
-		err := zone.performAssignments(c)
-		if err != nil {
-			return err
-		}
-	}
-
-	return c.ensureKubernetesVersion()
-}
-
 // FillDefaults populates default values.
 // This is different from PerformAssignments, because these values are changeable, and thus we don't need to
 // store them (i.e. we don't need to 'lock them')
 func (c *Cluster) FillDefaults() error {
-	if len(c.Spec.AdminAccess) == 0 {
-		c.Spec.AdminAccess = append(c.Spec.AdminAccess, "0.0.0.0/0")
+	// TODO: Move elsewhere
+	if len(c.Spec.SSHAccess) == 0 {
+		c.Spec.SSHAccess = append(c.Spec.SSHAccess, "0.0.0.0/0")
+	}
+
+	if len(c.Spec.KubernetesAPIAccess) == 0 {
+		c.Spec.KubernetesAPIAccess = append(c.Spec.KubernetesAPIAccess, "0.0.0.0/0")
 	}
 
 	if c.Spec.Networking == nil {
@@ -370,11 +345,6 @@ func (c *Cluster) FillDefaults() error {
 		c.Spec.Channel = DefaultChannel
 	}
 
-	err := c.ensureKubernetesVersion()
-	if err != nil {
-		return err
-	}
-
 	if c.ObjectMeta.Name == "" {
 		return fmt.Errorf("cluster Name not set in FillDefaults")
 	}
@@ -388,163 +358,6 @@ func (c *Cluster) FillDefaults() error {
 	}
 
 	return nil
-}
-
-// ensureKubernetesVersion populates KubernetesVersion, if it is not already set
-// It will be populated with the latest stable kubernetes version, or the version from the channel
-func (c *Cluster) ensureKubernetesVersion() error {
-	if c.Spec.KubernetesVersion == "" {
-		if c.Spec.Channel != "" {
-			channel, err := LoadChannel(c.Spec.Channel)
-			if err != nil {
-				return err
-			}
-			if channel.Spec.Cluster.KubernetesVersion != "" {
-				c.Spec.KubernetesVersion = channel.Spec.Cluster.KubernetesVersion
-			}
-		}
-	}
-
-	if c.Spec.KubernetesVersion == "" {
-		latestVersion, err := FindLatestKubernetesVersion()
-		if err != nil {
-			return err
-		}
-		glog.Infof("Using kubernetes latest stable version: %s", latestVersion)
-		c.Spec.KubernetesVersion = latestVersion
-	}
-	return nil
-}
-
-// FindLatestKubernetesVersion returns the latest kubernetes version,
-// as stored at https://storage.googleapis.com/kubernetes-release/release/stable.txt
-// This shouldn't be used any more; we prefer reading the stable channel
-func FindLatestKubernetesVersion() (string, error) {
-	stableURL := "https://storage.googleapis.com/kubernetes-release/release/stable.txt"
-	glog.Warningf("Loading latest kubernetes version from %q", stableURL)
-	b, err := vfs.Context.ReadFile(stableURL)
-	if err != nil {
-		return "", fmt.Errorf("KubernetesVersion not specified, and unable to download latest version from %q: %v", stableURL, err)
-	}
-	latestVersion := strings.TrimSpace(string(b))
-	return latestVersion, nil
-}
-
-func (z *ClusterZoneSpec) performAssignments(c *Cluster) error {
-	if z.CIDR == "" {
-		err := z.assignCIDR(c)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// Will generate a CIDR block based on the last character in
-// the cluster.Spec.Zones structure.
-//
-func (z *ClusterZoneSpec) assignCIDR(c *Cluster) error {
-	// TODO: We probably could query for the existing subnets & allocate appropriately
-	// for now we'll require users to set CIDRs themselves
-
-	// Used in calculating private subnet blocks (if needed only)
-	needsPrivateBlock := false
-	if c.Spec.Topology.Masters == TopologyPrivate || c.Spec.Topology.Nodes == TopologyPrivate {
-		needsPrivateBlock = true
-	}
-
-	lastCharMap := make(map[byte]bool)
-	for _, nodeZone := range c.Spec.Zones {
-		lastChar := nodeZone.Name[len(nodeZone.Name)-1]
-		lastCharMap[lastChar] = true
-	}
-
-	index := -1
-
-	if len(lastCharMap) == len(c.Spec.Zones) {
-		// Last char of zones are unique (GCE, AWS)
-		// At least on AWS, we also want 'a' to end up as #1, so that we don't collide with the lowest range,
-		// because kube-up uses that range
-		index = int(z.Name[len(z.Name)-1])
-		if index >= 'a' {
-			index -= 'a'
-		}
-	} else {
-		glog.Warningf("Last char of zone names not unique")
-
-		for i, nodeZone := range c.Spec.Zones {
-			if nodeZone.Name == z.Name {
-				index = i
-				break
-			}
-		}
-		if index == -1 {
-			return fmt.Errorf("zone not configured: %q", z.Name)
-		}
-	}
-
-	_, cidr, err := net.ParseCIDR(c.Spec.NetworkCIDR)
-	if err != nil {
-		return fmt.Errorf("Invalid NetworkCIDR: %q", c.Spec.NetworkCIDR)
-	}
-
-	// We split the network range into 8 subnets
-	// But we then reserve the lowest one for the private block
-	// (and we split _that_ into 8 further subnets, leaving the first one unused/for future use)
-	// Note that this limits us to 7 zones
-	// TODO: Does this make sense on GCE?
-	// TODO: Should we limit this to say 1000 IPs per subnet? (any reason to?)
-	index = 1 + index%7
-
-	subnets, err := splitInto8Subnets(cidr)
-	if err != nil {
-		return err
-	}
-
-	privateSubnets, err := splitInto8Subnets(subnets[0])
-	if err != nil {
-		return err
-	}
-
-	subnetCIDR := subnets[index].String()
-	z.CIDR = subnetCIDR
-	glog.V(2).Infof("Computed CIDR for subnet in zone %q as %q", z.Name, subnetCIDR)
-	glog.Infof("Assigned CIDR %s to zone %s", subnetCIDR, z.Name)
-
-	if needsPrivateBlock {
-		privCIDR := privateSubnets[index].String()
-		z.PrivateCIDR = privCIDR
-		glog.V(2).Infof("Computed Private CIDR for subnet in zone %q as %q", z.Name, privCIDR)
-		glog.Infof("Assigned Private CIDR %s to zone %s", privCIDR, z.Name)
-	}
-
-	return nil
-}
-
-// splitInto8Subnets splits the parent IPNet into 8 subnets
-func splitInto8Subnets(parent *net.IPNet) ([]*net.IPNet, error) {
-	networkLength, _ := parent.Mask.Size()
-	networkLength += 3
-
-	var subnets []*net.IPNet
-	for i := 0; i < 8; i++ {
-		ip4 := parent.IP.To4()
-		if ip4 != nil {
-			n := binary.BigEndian.Uint32(ip4)
-			n += uint32(i) << uint(32-networkLength)
-			subnetIP := make(net.IP, len(ip4))
-			binary.BigEndian.PutUint32(subnetIP, n)
-
-			subnets = append(subnets, &net.IPNet{
-				IP:   subnetIP,
-				Mask: net.CIDRMask(networkLength, 32),
-			})
-		} else {
-			return nil, fmt.Errorf("Unexpected IP address type: %s", parent)
-		}
-	}
-
-	return subnets, nil
 }
 
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
@@ -570,14 +383,4 @@ func (c *Cluster) IsTopologyPublic() bool {
 }
 func (c *Cluster) IsTopologyPrivateMasters() bool {
 	return (c.Spec.Topology.Masters == TopologyPrivate && c.Spec.Topology.Nodes == TopologyPublic)
-}
-
-func (c *Cluster) GetBastionMachineType() string {
-	return c.Spec.Topology.Bastion.MachineType
-}
-func (c *Cluster) GetBastionPublicName() string {
-	return c.Spec.Topology.Bastion.PublicName
-}
-func (c *Cluster) GetBastionIdleTimeout() int {
-	return c.Spec.Topology.Bastion.IdleTimeout
 }

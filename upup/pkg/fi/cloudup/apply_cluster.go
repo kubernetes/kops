@@ -27,6 +27,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -238,6 +239,11 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 	}
 
+	modelContext := &model.KopsModelContext{
+		Cluster:        cluster,
+		InstanceGroups: c.InstanceGroups,
+	}
+
 	switch fi.CloudProviderID(cluster.Spec.CloudProvider) {
 	case fi.CloudProviderGCE:
 		{
@@ -292,16 +298,8 @@ func (c *ApplyClusterCmd) Run() error {
 				"vpcDHDCPOptionsAssociation": &awstasks.VPCDHCPOptionsAssociation{},
 
 				// ELB
-				"loadBalancer":                       &awstasks.LoadBalancer{},
-				"loadBalancerAttachment":             &awstasks.LoadBalancerAttachment{},
-				"loadBalancerHealthCheck":            &awstasks.LoadBalancerHealthCheck{},
-				"loadBalancerHealthChecks":           &awstasks.LoadBalancerHealthChecks{},
-				"loadBalancerAccessLog":              &awstasks.LoadBalancerAccessLog{},
-				"loadBalancerAdditionalAttribute":    &awstasks.LoadBalancerAdditionalAttribute{},
-				"loadBalancerConnectionDraining":     &awstasks.LoadBalancerConnectionDraining{},
-				"loadBalancerCrossZoneLoadBalancing": &awstasks.LoadBalancerCrossZoneLoadBalancing{},
-				"loadBalancerConnectionSettings":     &awstasks.LoadBalancerConnectionSettings{},
-				"loadBalancerAttributes":             &awstasks.LoadBalancerAttributes{},
+				"loadBalancer":           &awstasks.LoadBalancer{},
+				"loadBalancerAttachment": &awstasks.LoadBalancerAttachment{},
 
 				// Autoscaling
 				"autoscalingGroup":    &awstasks.AutoscalingGroup{},
@@ -316,21 +314,10 @@ func (c *ApplyClusterCmd) Run() error {
 				return fmt.Errorf("SSH public key must be specified when running with AWS (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
 			}
 
+			modelContext.SSHPublicKeys = sshPublicKeys
+
 			if len(sshPublicKeys) != 1 {
 				return fmt.Errorf("Exactly one 'admin' SSH public key can be specified when running with AWS; please delete a key using `kops delete secret`")
-			} else {
-				l.Resources["ssh-public-key"] = fi.NewStringResource(string(sshPublicKeys[0]))
-
-				// SSHKeyName computes a unique SSH key name, combining the cluster name and the SSH public key fingerprint
-				l.TemplateFunctions["SSHKeyName"] = func() (string, error) {
-					fingerprint, err := awstasks.ComputeOpenSSHKeyFingerprint(string(sshPublicKeys[0]))
-					if err != nil {
-						return "", err
-					}
-
-					name := "kubernetes." + cluster.ObjectMeta.Name + "-" + fingerprint
-					return name, nil
-				}
 			}
 
 			l.TemplateFunctions["MachineTypeInfo"] = awsup.GetMachineTypeInfo
@@ -339,6 +326,8 @@ func (c *ApplyClusterCmd) Run() error {
 	default:
 		return fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
 	}
+
+	modelContext.Region = region
 
 	err = validateDNS(cluster, cloud)
 	if err != nil {
@@ -355,14 +344,37 @@ func (c *ApplyClusterCmd) Run() error {
 		instanceGroups: c.InstanceGroups,
 		tags:           clusterTags,
 		region:         region,
+		modelContext:   modelContext,
 	}
 
 	l.Tags = clusterTags
 	l.WorkDir = c.OutDir
 	l.ModelStore = modelStore
 
-	l.Builders = []TaskBuilder{
-		&BootstrapChannelBuilder{cluster: cluster},
+	var fileModels []string
+	for _, m := range c.Models {
+		switch m {
+		case "proto":
+		// No proto code options; no file model
+
+		case "cloudup":
+			l.Builders = append(l.Builders,
+				&BootstrapChannelBuilder{cluster: cluster},
+				&model.APILoadBalancerBuilder{KopsModelContext: modelContext},
+				&model.BastionModelBuilder{KopsModelContext: modelContext},
+				&model.DNSModelBuilder{KopsModelContext: modelContext},
+				&model.ExternalAccessModelBuilder{KopsModelContext: modelContext},
+				&model.FirewallModelBuilder{KopsModelContext: modelContext},
+				&model.IAMModelBuilder{KopsModelContext: modelContext},
+				&model.MasterVolumeBuilder{KopsModelContext: modelContext},
+				&model.NetworkModelBuilder{KopsModelContext: modelContext},
+				&model.SSHKeyModelBuilder{KopsModelContext: modelContext},
+			)
+			fileModels = append(fileModels, m)
+
+		default:
+			fileModels = append(fileModels, m)
+		}
 	}
 
 	l.TemplateFunctions["CA"] = func() fi.CAStore {
@@ -373,19 +385,19 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	// RenderNodeUpConfig returns the NodeUp config, in YAML format
-	l.TemplateFunctions["RenderNodeUpConfig"] = func(ig *api.InstanceGroup) (string, error) {
+	renderNodeUpConfig := func(ig *api.InstanceGroup) (*nodeup.NodeUpConfig, error) {
 		if ig == nil {
-			return "", fmt.Errorf("instanceGroup cannot be nil")
+			return nil, fmt.Errorf("instanceGroup cannot be nil")
 		}
 
 		role := ig.Spec.Role
 		if role == "" {
-			return "", fmt.Errorf("cannot determine role for instance group: %v", ig.ObjectMeta.Name)
+			return nil, fmt.Errorf("cannot determine role for instance group: %v", ig.ObjectMeta.Name)
 		}
 
 		nodeUpTags, err := buildNodeupTags(role, tf.cluster, tf.tags)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
 		config := &nodeup.NodeUpConfig{}
@@ -419,7 +431,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 				hash, err := findHash(imagePath)
 				if err != nil {
-					return "", err
+					return nil, err
 				}
 				image := &nodeup.Image{
 					Source: imagePath,
@@ -445,13 +457,15 @@ func (c *ApplyClusterCmd) Run() error {
 
 		config.Channels = channels
 
-		yaml, err := api.ToRawYaml(config)
-		if err != nil {
-			return "", err
-		}
-
-		return string(yaml), nil
+		return config, nil
 	}
+
+	l.Builders = append(l.Builders, &model.AutoscalingGroupModelBuilder{
+		KopsModelContext:    modelContext,
+		NodeUpConfigBuilder: renderNodeUpConfig,
+		NodeUpSourceHash:    "",
+		NodeUpSource:        c.NodeUpSource,
+	})
 
 	//// TotalNodeCount computes the total count of nodes
 	//l.TemplateFunctions["TotalNodeCount"] = func() (int, error) {
@@ -474,37 +488,11 @@ func (c *ApplyClusterCmd) Run() error {
 	l.TemplateFunctions["Region"] = func() string {
 		return region
 	}
-	l.TemplateFunctions["NodeSets"] = func() []*api.InstanceGroup {
-		var groups []*api.InstanceGroup
-		for _, ig := range c.InstanceGroups {
-			if ig.IsMaster() {
-				continue
-			}
-			groups = append(groups, ig)
-		}
-		return groups
-	}
-	l.TemplateFunctions["Masters"] = func() []*api.InstanceGroup {
-		var groups []*api.InstanceGroup
-		for _, ig := range c.InstanceGroups {
-			if !ig.IsMaster() {
-				continue
-			}
-			groups = append(groups, ig)
-		}
-		return groups
-	}
-	//l.TemplateFunctions["NodeUp"] = c.populateNodeUpConfig
-	l.TemplateFunctions["NodeUpSource"] = func() string {
-		return c.NodeUpSource
-	}
-	l.TemplateFunctions["NodeUpSourceHash"] = func() string {
-		return ""
-	}
+	l.TemplateFunctions["Masters"] = tf.modelContext.MasterInstanceGroups
 
 	tf.AddTo(l.TemplateFunctions)
 
-	taskMap, err := l.BuildTasks(modelStore, c.Models)
+	taskMap, err := l.BuildTasks(modelStore, fileModels)
 	if err != nil {
 		return fmt.Errorf("error building tasks: %v", err)
 	}

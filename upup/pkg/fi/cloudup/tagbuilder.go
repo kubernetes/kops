@@ -32,10 +32,6 @@ import (
 )
 
 func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
-	// TODO: Make these configurable?
-	useMasterASG := true
-	useMasterLB := false
-
 	tags := sets.NewString()
 
 	networking := cluster.Spec.Networking
@@ -56,18 +52,6 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 		tags.Insert("_networking_kubenet", "_networking_external")
 	} else {
 		return nil, fmt.Errorf("No networking mode set")
-	}
-
-	if useMasterASG {
-		tags.Insert("_master_asg")
-	} else {
-		tags.Insert("_master_single")
-	}
-
-	if useMasterLB {
-		tags.Insert("_master_lb")
-	} else if cluster.Spec.Topology.Masters == api.TopologyPublic {
-		tags.Insert("_not_master_lb")
 	}
 
 	// Network Topologies
@@ -159,6 +143,10 @@ func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTa
 		}
 
 		tags.Insert("_protokube")
+
+	case api.InstanceGroupRoleBastion:
+		// No tags
+
 	default:
 		return nil, fmt.Errorf("Unrecognized role: %v", role)
 	}

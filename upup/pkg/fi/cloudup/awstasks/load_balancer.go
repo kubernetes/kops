@@ -49,8 +49,14 @@ type LoadBalancer struct {
 
 	Listeners map[string]*LoadBalancerListener
 
-	Scheme      *string
-	HealthCheck LoadBalancerHealthCheck
+	Scheme *string
+
+	HealthCheck *LoadBalancerHealthCheck
+	AccessLog   *LoadBalancerAccessLog
+	//AdditionalAttributes   []*LoadBalancerAdditionalAttribute
+	ConnectionDraining     *LoadBalancerConnectionDraining
+	ConnectionSettings     *LoadBalancerConnectionSettings
+	CrossZoneLoadBalancing *LoadBalancerCrossZoneLoadBalancing
 }
 
 var _ fi.CompareWithID = &LoadBalancer{}
@@ -212,6 +218,61 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 		actual.Listeners[loadBalancerPort] = actualListener
 	}
 
+	healthcheck, err := findHealthCheck(lb)
+	if err != nil {
+		return nil, err
+	}
+	actual.HealthCheck = healthcheck
+
+	// Extract attributes
+	lbAttributes, err := findELBAttributes(cloud, elbName)
+	if err != nil {
+		return nil, err
+	}
+	if lbAttributes != nil {
+		actual.AccessLog = &LoadBalancerAccessLog{}
+		if lbAttributes.AccessLog.EmitInterval != nil {
+			actual.AccessLog.EmitInterval = lbAttributes.AccessLog.EmitInterval
+		}
+		if lbAttributes.AccessLog.Enabled != nil {
+			actual.AccessLog.Enabled = lbAttributes.AccessLog.Enabled
+		}
+		if lbAttributes.AccessLog.S3BucketName != nil {
+			actual.AccessLog.S3BucketName = lbAttributes.AccessLog.S3BucketName
+		}
+		if lbAttributes.AccessLog.S3BucketPrefix != nil {
+			actual.AccessLog.S3BucketPrefix = lbAttributes.AccessLog.S3BucketPrefix
+		}
+
+		// We don't map AdditionalAttributes - yet
+		//var additionalAttributes []*LoadBalancerAdditionalAttribute
+		//for index, additionalAttribute := range lbAttributes.AdditionalAttributes {
+		//	additionalAttributes[index] = &LoadBalancerAdditionalAttribute{
+		//		Key:   additionalAttribute.Key,
+		//		Value: additionalAttribute.Value,
+		//	}
+		//}
+		//actual.AdditionalAttributes = additionalAttributes
+
+		actual.ConnectionDraining = &LoadBalancerConnectionDraining{}
+		if lbAttributes.ConnectionDraining.Enabled != nil {
+			actual.ConnectionDraining.Enabled = lbAttributes.ConnectionDraining.Enabled
+		}
+		if lbAttributes.ConnectionDraining.Timeout != nil {
+			actual.ConnectionDraining.Timeout = lbAttributes.ConnectionDraining.Timeout
+		}
+
+		actual.ConnectionSettings = &LoadBalancerConnectionSettings{}
+		if lbAttributes.ConnectionSettings.IdleTimeout != nil {
+			actual.ConnectionSettings.IdleTimeout = lbAttributes.ConnectionSettings.IdleTimeout
+		}
+
+		actual.CrossZoneLoadBalancing = &LoadBalancerCrossZoneLoadBalancing{}
+		if lbAttributes.CrossZoneLoadBalancing.Enabled != nil {
+			actual.CrossZoneLoadBalancing.Enabled = lbAttributes.CrossZoneLoadBalancing.Enabled
+		}
+	}
+
 	// Avoid spurious mismatches
 	if subnetSlicesEqualIgnoreOrder(actual.Subnets, e.Subnets) {
 		actual.Subnets = e.Subnets
@@ -244,7 +305,34 @@ func (s *LoadBalancer) CheckChanges(a, e, changes *LoadBalancer) error {
 		if len(e.Subnets) == 0 {
 			return fi.RequiredField("Subnets")
 		}
+
+		if e.AccessLog != nil {
+			if e.AccessLog.Enabled == nil {
+				return fi.RequiredField("Acceslog.Enabled")
+			}
+			if *e.AccessLog.Enabled {
+				if e.AccessLog.S3BucketName == nil {
+					return fi.RequiredField("Acceslog.S3Bucket")
+				}
+			}
+		}
+		if e.ConnectionDraining != nil {
+			if e.ConnectionDraining.Enabled == nil {
+				return fi.RequiredField("ConnectionDraining.Enabled")
+			}
+		}
+		//if e.ConnectionSettings != nil {
+		//	if e.ConnectionSettings.IdleTimeout == nil {
+		//		return fi.RequiredField("ConnectionSettings.IdleTimeout")
+		//	}
+		//}
+		if e.CrossZoneLoadBalancing != nil {
+			if e.CrossZoneLoadBalancing.Enabled == nil {
+				return fi.RequiredField("CrossZoneLoadBalancing.Enabled")
+			}
+		}
 	}
+
 	return nil
 }
 
@@ -329,16 +417,43 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 		}
 	}
 
+	if changes.HealthCheck != nil && e.HealthCheck != nil {
+		request := &elb.ConfigureHealthCheckInput{}
+		request.LoadBalancerName = e.ID
+		request.HealthCheck = &elb.HealthCheck{
+			Target:             e.HealthCheck.Target,
+			HealthyThreshold:   e.HealthCheck.HealthyThreshold,
+			UnhealthyThreshold: e.HealthCheck.UnhealthyThreshold,
+			Interval:           e.HealthCheck.Interval,
+			Timeout:            e.HealthCheck.Timeout,
+		}
+
+		glog.V(2).Infof("Configuring health checks on ELB %q", *e.ID)
+
+		_, err := t.Cloud.ELB().ConfigureHealthCheck(request)
+		if err != nil {
+			return fmt.Errorf("error configuring health checks on ELB: %v", err)
+		}
+	}
 	return t.AddELBTags(*e.ID, t.Cloud.BuildTags(e.Name))
 }
 
 type terraformLoadBalancer struct {
-	Name           *string                           `json:"name"`
-	Listener       []*terraformLoadBalancerListener  `json:"listener"`
-	SecurityGroups []*terraform.Literal              `json:"security_groups"`
-	Subnets        []*terraform.Literal              `json:"subnets"`
-	Internal       bool                              `json:"internal,omitempty"`
-	HealthCheck    *terraformLoadBalancerHealthCheck `json:"health_check"`
+	Name           *string                          `json:"name"`
+	Listener       []*terraformLoadBalancerListener `json:"listener"`
+	SecurityGroups []*terraform.Literal             `json:"security_groups"`
+	Subnets        []*terraform.Literal             `json:"subnets"`
+	Internal       *bool                            `json:"internal,omitempty"`
+
+	HealthCheck *terraformLoadBalancerHealthCheck `json:"health_check,omitempty"`
+	AccessLog   *terraformLoadBalancerAccessLog   `json:"access_logs,omitempty"`
+
+	ConnectionDraining        *bool  `json:"connection_draining,omitempty"`
+	ConnectionDrainingTimeout *int64 `json:"connection_draining_timeout,omitempty"`
+
+	CrossZoneLoadBalancing *bool `json:"cross_zone_load_balancing,omitempty"`
+
+	IdleTimeout *int64 `json:"idle_timeout,omitempty"`
 }
 
 type terraformLoadBalancerListener struct {
@@ -362,10 +477,11 @@ func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 		elbName = e.Name
 	}
 
-	internal := fi.StringValue(e.Scheme) == "internal"
 	tf := &terraformLoadBalancer{
-		Name:     elbName,
-		Internal: internal,
+		Name: elbName,
+	}
+	if fi.StringValue(e.Scheme) == "internal" {
+		tf.Internal = fi.Bool(true)
 	}
 
 	for _, subnet := range e.Subnets {
@@ -390,12 +506,36 @@ func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 		})
 	}
 
-	tf.HealthCheck = &terraformLoadBalancerHealthCheck{
-		Target:             e.HealthCheck.Target,
-		HealthyThreshold:   e.HealthCheck.HealthyThreshold,
-		UnhealthyThreshold: e.HealthCheck.UnhealthyThreshold,
-		Interval:           e.HealthCheck.Interval,
-		Timeout:            e.HealthCheck.Timeout,
+	if e.HealthCheck != nil {
+		tf.HealthCheck = &terraformLoadBalancerHealthCheck{
+			Target:             e.HealthCheck.Target,
+			HealthyThreshold:   e.HealthCheck.HealthyThreshold,
+			UnhealthyThreshold: e.HealthCheck.UnhealthyThreshold,
+			Interval:           e.HealthCheck.Interval,
+			Timeout:            e.HealthCheck.Timeout,
+		}
+	}
+
+	if e.AccessLog != nil {
+		tf.AccessLog = &terraformLoadBalancerAccessLog{
+			EmitInterval:   e.AccessLog.EmitInterval,
+			Enabled:        e.AccessLog.Enabled,
+			S3BucketName:   e.AccessLog.S3BucketName,
+			S3BucketPrefix: e.AccessLog.S3BucketPrefix,
+		}
+	}
+
+	if e.ConnectionDraining != nil {
+		tf.ConnectionDraining = e.ConnectionDraining.Enabled
+		tf.ConnectionDrainingTimeout = e.ConnectionDraining.Timeout
+	}
+
+	if e.ConnectionSettings != nil {
+		tf.IdleTimeout = e.ConnectionSettings.IdleTimeout
+	}
+
+	if e.CrossZoneLoadBalancing != nil {
+		tf.CrossZoneLoadBalancing = e.CrossZoneLoadBalancing.Enabled
 	}
 
 	return t.RenderResource("aws_elb", *e.Name, tf)

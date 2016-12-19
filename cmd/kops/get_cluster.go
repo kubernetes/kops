@@ -109,14 +109,14 @@ func (c *GetClustersCmd) Run(args []string) error {
 		t.AddColumn("CLOUD", func(c *api.Cluster) string {
 			return c.Spec.CloudProvider
 		})
-		t.AddColumn("ZONES", func(c *api.Cluster) string {
-			var zoneNames []string
-			for _, z := range c.Spec.Zones {
-				zoneNames = append(zoneNames, z.Name)
+		t.AddColumn("SUBNETS", func(c *api.Cluster) string {
+			var subnetNames []string
+			for _, s := range c.Spec.Subnets {
+				subnetNames = append(subnetNames, s.Name)
 			}
-			return strings.Join(zoneNames, ",")
+			return strings.Join(subnetNames, ",")
 		})
-		return t.Render(clusters, os.Stdout, "NAME", "CLOUD", "ZONES")
+		return t.Render(clusters, os.Stdout, "NAME", "CLOUD", "SUBNETS")
 
 	case OutputYaml:
 		for _, cluster := range clusters {

@@ -37,16 +37,16 @@ func BuildCloud(cluster *api.Cluster) (fi.Cloud, error) {
 	case "gce":
 		{
 			nodeZones := make(map[string]bool)
-			for _, zone := range cluster.Spec.Zones {
-				nodeZones[zone.Name] = true
+			for _, subnet := range cluster.Spec.Subnets {
+				nodeZones[subnet.Zone] = true
 
-				tokens := strings.Split(zone.Name, "-")
+				tokens := strings.Split(subnet.Zone, "-")
 				if len(tokens) <= 2 {
-					return nil, fmt.Errorf("Invalid GCE Zone: %v", zone.Name)
+					return nil, fmt.Errorf("Invalid GCE Zone: %v", subnet.Zone)
 				}
 				zoneRegion := tokens[0] + "-" + tokens[1]
 				if region != "" && zoneRegion != region {
-					return nil, fmt.Errorf("Clusters cannot span multiple regions (found zone %q, but region is %q)", zone.Name, region)
+					return nil, fmt.Errorf("Clusters cannot span multiple regions (found zone %q, but region is %q)", subnet.Zone, region)
 				}
 
 				region = zoneRegion
@@ -84,8 +84,8 @@ func BuildCloud(cluster *api.Cluster) (fi.Cloud, error) {
 			}
 
 			var zoneNames []string
-			for _, z := range cluster.Spec.Zones {
-				zoneNames = append(zoneNames, z.Name)
+			for _, subnet := range cluster.Spec.Subnets {
+				zoneNames = append(zoneNames, subnet.Zone)
 			}
 			err = awsup.ValidateZones(zoneNames, awsCloud)
 			if err != nil {
