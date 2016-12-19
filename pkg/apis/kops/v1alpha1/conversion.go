@@ -21,6 +21,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kubernetes/pkg/conversion"
 	"reflect"
+	"sort"
 	"strings"
 )
 
@@ -94,6 +95,19 @@ func Convert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 	return autoConvert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in, out, s)
 }
 
+// ByName implements sort.Interface for []*ClusterZoneSpec on the Name field.
+type ByName []*ClusterZoneSpec
+
+func (a ByName) Len() int {
+	return len(a)
+}
+func (a ByName) Swap(i, j int) {
+	a[i], a[j] = a[j], a[i]
+}
+func (a ByName) Less(i, j int) bool {
+	return a[i].Name < a[j].Name
+}
+
 func Convert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, out *ClusterSpec, s conversion.Scope) error {
 	topologyPrivate := false
 	if in.Topology != nil && in.Topology.Masters == TopologyPrivate {
@@ -160,6 +174,8 @@ func Convert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, out 
 		for _, z := range zoneMap {
 			out.Zones = append(out.Zones, z)
 		}
+
+		sort.Sort(ByName(out.Zones))
 	} else {
 		out.Zones = nil
 	}
@@ -184,6 +200,11 @@ func Convert_v1alpha1_EtcdMemberSpec_To_kops_EtcdMemberSpec(in *EtcdMemberSpec, 
 }
 
 func Convert_kops_EtcdMemberSpec_To_v1alpha1_EtcdMemberSpec(in *kops.EtcdMemberSpec, out *EtcdMemberSpec, s conversion.Scope) error {
+	err := autoConvert_kops_EtcdMemberSpec_To_v1alpha1_EtcdMemberSpec(in, out, s)
+	if err != nil {
+		return err
+	}
+
 	if in.InstanceGroup != nil {
 		zone := *in.InstanceGroup
 		if !strings.HasPrefix(zone, "master-") {
@@ -191,11 +212,12 @@ func Convert_kops_EtcdMemberSpec_To_v1alpha1_EtcdMemberSpec(in *kops.EtcdMemberS
 		}
 		zone = strings.TrimPrefix(zone, "master-")
 		out.Zone = &zone
+		out.Name = zone
 	} else {
 		out.Zone = nil
 	}
 
-	return autoConvert_kops_EtcdMemberSpec_To_v1alpha1_EtcdMemberSpec(in, out, s)
+	return nil
 }
 
 func Convert_v1alpha1_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *InstanceGroupSpec, out *kops.InstanceGroupSpec, s conversion.Scope) error {

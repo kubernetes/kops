@@ -229,7 +229,10 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	bastionDNS := b.Cluster.Spec.Topology.Bastion.PublicName
+	bastionDNS := ""
+	if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.Bastion != nil {
+		bastionDNS = b.Cluster.Spec.Topology.Bastion.PublicName
+	}
 	if bastionDNS != "" {
 		// By default Bastion is not reachable from outside because of security concerns.
 		// But if the user specifies bastion name using edit cluster, we configure
