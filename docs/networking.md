@@ -27,7 +27,7 @@ with other infrastructure (but not a second cluster!), but this is not really re
 Two different providers are currently built into kops:
 
 1. kopeio-vxlan
-2. [weave](https://github.com/weaveworks/weave-kube)
+2. [weave](https://github.com/weaveworks/weave)
 
 The manifests for the providers are included with kops, and you simply use `--networking provider-name`.
 Replace the provider name with the names listed above with you `kops cluster create`.  For instance
