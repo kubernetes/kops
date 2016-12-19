@@ -348,12 +348,6 @@ func (x *ImportCluster) ImportAWSCluster() error {
 		etcdCluster := &api.EtcdClusterSpec{
 			Name: etcdClusterName,
 		}
-		//for _, subnetName := range masterGroup.Spec.Subnets {
-		//	etcdCluster.Members = append(etcdCluster.Members, &api.EtcdMemberSpec{
-		//		Name: subnetName,
-		//		InstanceGroup: fi.String(masterGroup.Name),
-		//	})
-		//}
 
 		for _, ig := range masterInstanceGroups {
 			etcdCluster.Members = append(etcdCluster.Members, &api.EtcdMemberSpec{
