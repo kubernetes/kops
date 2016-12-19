@@ -35,19 +35,21 @@ var MagicTimestamp = unversioned.Time{Time: time.Date(2017, 1, 1, 0, 0, 0, 0, ti
 
 // TestCreateClusterMinimal runs kops create cluster minimal.example.com --zones us-test-1a
 func TestCreateClusterMinimal(t *testing.T) {
-	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal", "v1alpha1")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal", "v1alpha2")
 }
 
 // TestCreateClusterHA runs kops create cluster ha.example.com --zones us-test-1a,us-test-1b,us-test-1c --master-zones us-test-1a,us-test-1b,us-test-1c
 func TestCreateClusterHA(t *testing.T) {
-	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha", "v1alpha1")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha", "v1alpha2")
 }
 
-func runCreateClusterIntegrationTest(t *testing.T, srcDir string) {
+func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string) {
 	var stdout bytes.Buffer
 
 	optionsYAML := "options.yaml"
-	expectedClusterPath := "expected.yaml"
+	expectedClusterPath := "expected-" + version + ".yaml"
 
 	factoryOptions := &util.FactoryOptions{}
 	factoryOptions.RegistryPath = "memfs://tests"
@@ -112,7 +114,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string) {
 
 	for _, cluster := range clusters.Items {
 		cluster.ObjectMeta.CreationTimestamp = MagicTimestamp
-		actualYAMLBytes, err := kops.ToVersionedYaml(&cluster)
+		actualYAMLBytes, err := kops.ToVersionedYamlWithVersion(&cluster, version)
 		if err != nil {
 			t.Fatalf("unexpected error serializing cluster: %v", err)
 		}
@@ -131,7 +133,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string) {
 	for _, ig := range instanceGroups.Items {
 		ig.ObjectMeta.CreationTimestamp = MagicTimestamp
 
-		actualYAMLBytes, err := kops.ToVersionedYaml(&ig)
+		actualYAMLBytes, err := kops.ToVersionedYamlWithVersion(&ig, version)
 		if err != nil {
 			t.Fatalf("unexpected error serializing InstanceGroup: %v", err)
 		}

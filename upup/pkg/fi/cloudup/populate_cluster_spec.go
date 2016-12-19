@@ -26,6 +26,7 @@ import (
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
@@ -106,16 +107,22 @@ func (c *populateClusterSpec) run() error {
 		return err
 	}
 
+	err = PerformAssignments(cluster)
+	if err != nil {
+		return err
+	}
+
 	// TODO: Move to validate?
 	// Check that instance groups are defined in valid zones
 	{
-		clusterZones := make(map[string]*api.ClusterZoneSpec)
-		for _, z := range cluster.Spec.Zones {
-			if clusterZones[z.Name] != nil {
-				return fmt.Errorf("Zones contained a duplicate value: %v", z.Name)
-			}
-			clusterZones[z.Name] = z
-		}
+		// TODO: Check that instance groups referenced here exist
+		//clusterSubnets := make(map[string]*api.ClusterSubnetSpec)
+		//for _, subnet := range cluster.Spec.Subnets {
+		//	if clusterSubnets[subnet.Name] != nil {
+		//		return fmt.Errorf("Subnets contained a duplicate value: %v", subnet.Name)
+		//	}
+		//	clusterSubnets[subnet.Name] = subnet
+		//}
 
 		// Check etcd configuration
 		{
@@ -129,12 +136,12 @@ func (c *populateClusterSpec) run() error {
 						return fmt.Errorf("EtcdMember #%d of etcd-cluster %s did not specify a Name", i, etcd.Name)
 					}
 
-					if fi.StringValue(m.Zone) == "" {
-						return fmt.Errorf("EtcdMember %s:%s did not specify a Zone", etcd.Name, m.Name)
+					if fi.StringValue(m.InstanceGroup) == "" {
+						return fmt.Errorf("EtcdMember %s:%s did not specify a InstanceGroup", etcd.Name, m.Name)
 					}
 				}
 
-				etcdZones := make(map[string]*api.EtcdMemberSpec)
+				etcdInstanceGroups := make(map[string]*api.EtcdMemberSpec)
 				etcdNames := make(map[string]*api.EtcdMemberSpec)
 
 				for _, m := range etcd.Members {
@@ -142,20 +149,20 @@ func (c *populateClusterSpec) run() error {
 						return fmt.Errorf("EtcdMembers found with same name %q in etcd-cluster %q", m.Name, etcd.Name)
 					}
 
-					zone := fi.StringValue(m.Zone)
+					instanceGroupName := fi.StringValue(m.InstanceGroup)
 
-					if etcdZones[zone] != nil {
+					if etcdInstanceGroups[instanceGroupName] != nil {
 						// Maybe this should just be a warning
-						return fmt.Errorf("EtcdMembers are in the same zone %q in etcd-cluster %q", zone, etcd.Name)
+						return fmt.Errorf("EtcdMembers are in the same InstanceGroup %q in etcd-cluster %q", instanceGroupName, etcd.Name)
 					}
 
-					if clusterZones[zone] == nil {
-						return fmt.Errorf("EtcdMembers for %q is configured in zone %q, but that is not configured at the k8s-cluster level", etcd.Name, m.Zone)
-					}
-					etcdZones[zone] = m
+					//if clusterSubnets[zone] == nil {
+					//	return fmt.Errorf("EtcdMembers for %q is configured in zone %q, but that is not configured at the k8s-cluster level", etcd.Name, m.Zone)
+					//}
+					etcdInstanceGroups[instanceGroupName] = m
 				}
 
-				if (len(etcdZones) % 2) == 0 {
+				if (len(etcdInstanceGroups) % 2) == 0 {
 					// Not technically a requirement, but doesn't really make sense to allow
 					return fmt.Errorf("There should be an odd number of master-zones, for etcd's quorum.  Hint: Use --zones and --master-zones to declare node zones and master zones separately.")
 				}
@@ -220,8 +227,9 @@ func (c *populateClusterSpec) run() error {
 	//
 	// We want topology to pass through
 	// Otherwise we were losing the pointer
+	// TODO: This should not be needed...
 	cluster.Spec.Topology = c.InputCluster.Spec.Topology
-	cluster.Spec.Topology.Bastion = c.InputCluster.Spec.Topology.Bastion
+	//cluster.Spec.Topology.Bastion = c.InputCluster.Spec.Topology.Bastion
 
 	if cluster.Spec.DNSZone == "" {
 		dns, err := cloud.DNS()
@@ -241,30 +249,45 @@ func (c *populateClusterSpec) run() error {
 		return err
 	}
 
+	modelContext := &model.KopsModelContext{
+		Cluster: cluster,
+	}
 	tf := &TemplateFunctions{
-		cluster: cluster,
-		tags:    tags,
+		cluster:      cluster,
+		tags:         tags,
+		modelContext: modelContext,
 	}
 
 	templateFunctions := make(template.FuncMap)
 
 	tf.AddTo(templateFunctions)
 
-	codeModels := []loader.OptionsBuilder{
-		&components.KubeAPIServerOptionsBuilder{Cluster: cluster},
+	var fileModels []string
+	var codeModels []loader.OptionsBuilder
+	for _, m := range c.Models {
+		switch m {
+		case "config":
+			codeModels = append(codeModels, &components.KubeAPIServerOptionsBuilder{Cluster: cluster})
+			fileModels = append(fileModels, m)
+
+		default:
+			fileModels = append(fileModels, m)
+		}
 	}
+
 	specBuilder := &SpecBuilder{
 		OptionsLoader: loader.NewOptionsLoader(templateFunctions, codeModels),
 		Tags:          tags,
 	}
 
-	completed, err := specBuilder.BuildCompleteSpec(&cluster.Spec, c.ModelStore, c.Models)
+	completed, err := specBuilder.BuildCompleteSpec(&cluster.Spec, c.ModelStore, fileModels)
 	if err != nil {
 		return fmt.Errorf("error building complete spec: %v", err)
 	}
 
+	// TODO: This should not be needed...
 	completed.Topology = c.InputCluster.Spec.Topology
-	completed.Topology.Bastion = c.InputCluster.Spec.Topology.Bastion
+	//completed.Topology.Bastion = c.InputCluster.Spec.Topology.Bastion
 
 	fullCluster := &api.Cluster{}
 	*fullCluster = *cluster

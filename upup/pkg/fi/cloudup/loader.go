@@ -55,13 +55,9 @@ type Loader struct {
 
 	Resources map[string]fi.Resource
 
-	Builders []TaskBuilder
+	Builders []fi.ModelBuilder
 
 	tasks map[string]fi.Task
-}
-
-type TaskBuilder interface {
-	BuildTasks(l *Loader) error
 }
 
 type templateResource struct {
@@ -172,10 +168,14 @@ func (l *Loader) BuildTasks(modelStore vfs.Path, models []string) (map[string]fi
 	}
 
 	for _, builder := range l.Builders {
-		err := builder.BuildTasks(l)
+		context := &fi.ModelBuilderContext{
+			Tasks: l.tasks,
+		}
+		err := builder.Build(context)
 		if err != nil {
 			return nil, err
 		}
+		l.tasks = context.Tasks
 	}
 
 	err := l.processDeferrals()
@@ -207,7 +207,11 @@ func (l *Loader) processDeferrals() error {
 					if hn, ok := intf.(fi.HasName); ok {
 						name := hn.GetName()
 						if name != nil {
-							primary := l.tasks[*name]
+							typeNameForTask := fi.TypeNameForTask(intf)
+							primary := l.tasks[typeNameForTask+"/"+*name]
+							if primary == nil {
+								primary = l.tasks[*name]
+							}
 							if primary == nil {
 								keys := sets.NewString()
 								for k := range l.tasks {
@@ -218,7 +222,7 @@ func (l *Loader) processDeferrals() error {
 									glog.Infof("  %s", k)
 								}
 
-								return fmt.Errorf("Unable to find task %q, referenced from %s:%s", *name, taskKey, path)
+								return fmt.Errorf("Unable to find task %q, referenced from %s:%s", typeNameForTask+"/"+*name, taskKey, path)
 							}
 
 							glog.V(11).Infof("Replacing task %q at %s:%s", *name, taskKey, path)
@@ -386,6 +390,7 @@ func (l *Loader) loadObjectMap(key string, data map[string]interface{}) (map[str
 		}
 		err = json.Unmarshal(jsonValue, o.Interface())
 		if err != nil {
+			glog.V(2).Infof("JSON was %q", string(jsonValue))
 			return nil, fmt.Errorf("error parsing %q: %v", key, err)
 		}
 		glog.V(4).Infof("Built %s:%s => %v", key, k, o.Interface())

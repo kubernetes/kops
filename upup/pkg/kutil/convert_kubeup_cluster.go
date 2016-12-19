@@ -90,7 +90,7 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 		cluster.Spec.KubernetesVersion = x.Channel.Spec.Cluster.KubernetesVersion
 	}
 
-	err = cluster.PerformAssignments()
+	err = cloudup.PerformAssignments(cluster)
 	if err != nil {
 		return fmt.Errorf("error populating cluster defaults: %v", err)
 	}

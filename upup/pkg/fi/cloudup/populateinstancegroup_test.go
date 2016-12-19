@@ -23,20 +23,20 @@ import (
 	"testing"
 )
 
-func buildMinimalNodeInstanceGroup(zones ...string) *api.InstanceGroup {
+func buildMinimalNodeInstanceGroup(subnets ...string) *api.InstanceGroup {
 	g := &api.InstanceGroup{}
 	g.ObjectMeta.Name = "nodes"
 	g.Spec.Role = api.InstanceGroupRoleNode
-	g.Spec.Zones = zones
+	g.Spec.Subnets = subnets
 
 	return g
 }
 
-func buildMinimalMasterInstanceGroup(zones ...string) *api.InstanceGroup {
+func buildMinimalMasterInstanceGroup(subnets ...string) *api.InstanceGroup {
 	g := &api.InstanceGroup{}
 	g.ObjectMeta.Name = "master"
 	g.Spec.Role = api.InstanceGroupRoleMaster
-	g.Spec.Zones = zones
+	g.Spec.Subnets = subnets
 
 	return g
 }
@@ -71,9 +71,10 @@ func Test_defaultMasterMachineType(t *testing.T) {
 	}
 
 	for zone, expected := range tests {
-		cluster.Spec.Zones = []*api.ClusterZoneSpec{
+		cluster.Spec.Subnets = []api.ClusterSubnetSpec{
 			{
-				Name: zone,
+				Name: "subnet-" + zone,
+				Zone: zone,
 			},
 		}
 		actual := defaultMasterMachineType(cluster)

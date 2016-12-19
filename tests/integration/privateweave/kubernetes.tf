@@ -13,7 +13,7 @@ resource "aws_autoscaling_group" "bastion-privateweave-example-com" {
   launch_configuration = "${aws_launch_configuration.bastion-privateweave-example-com.id}"
   max_size = 1
   min_size = 1
-  vpc_zone_identifier = ["${aws_subnet.private-us-test-1a-privateweave-example-com.id}"]
+  vpc_zone_identifier = ["${aws_subnet.utility-us-test-1a-privateweave-example-com.id}"]
   tag = {
     key = "KubernetesCluster"
     value = "privateweave.example.com"
@@ -24,6 +24,11 @@ resource "aws_autoscaling_group" "bastion-privateweave-example-com" {
     value = "bastion.privateweave.example.com"
     propagate_at_launch = true
   }
+  tag = {
+    key = "k8s.io/role/bastion"
+    value = "1"
+    propagate_at_launch = true
+  }
 }
 
 resource "aws_autoscaling_group" "master-us-test-1a-masters-privateweave-example-com" {
@@ -31,7 +36,7 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-privateweave-example
   launch_configuration = "${aws_launch_configuration.master-us-test-1a-masters-privateweave-example-com.id}"
   max_size = 1
   min_size = 1
-  vpc_zone_identifier = ["${aws_subnet.private-us-test-1a-privateweave-example-com.id}"]
+  vpc_zone_identifier = ["${aws_subnet.us-test-1a-privateweave-example-com.id}"]
   tag = {
     key = "KubernetesCluster"
     value = "privateweave.example.com"
@@ -54,7 +59,7 @@ resource "aws_autoscaling_group" "nodes-privateweave-example-com" {
   launch_configuration = "${aws_launch_configuration.nodes-privateweave-example-com.id}"
   max_size = 2
   min_size = 2
-  vpc_zone_identifier = ["${aws_subnet.private-us-test-1a-privateweave-example-com.id}"]
+  vpc_zone_identifier = ["${aws_subnet.us-test-1a-privateweave-example-com.id}"]
   tag = {
     key = "KubernetesCluster"
     value = "privateweave.example.com"
@@ -132,12 +137,18 @@ resource "aws_elb" "bastion-privateweave-example-com" {
   security_groups = ["${aws_security_group.bastion-elb-privateweave-example-com.id}"]
   subnets = ["${aws_subnet.utility-us-test-1a-privateweave-example-com.id}"]
   health_check = {
-    target = 
-    healthy_threshold = 
-    unhealthy_threshold = 
-    interval = 
-    timeout = 
+    target = "TCP:22"
+    healthy_threshold = 2
+    unhealthy_threshold = 2
+    interval = 10
+    timeout = 5
   }
+  idle_timeout = 300
+}
+
+resource "aws_iam_instance_profile" "bastions-privateweave-example-com" {
+  name = "bastions.privateweave.example.com"
+  roles = ["${aws_iam_role.bastions-privateweave-example-com.name}"]
 }
 
 resource "aws_iam_instance_profile" "masters-privateweave-example-com" {
@@ -150,6 +161,11 @@ resource "aws_iam_instance_profile" "nodes-privateweave-example-com" {
   roles = ["${aws_iam_role.nodes-privateweave-example-com.name}"]
 }
 
+resource "aws_iam_role" "bastions-privateweave-example-com" {
+  name = "bastions.privateweave.example.com"
+  assume_role_policy = "${file("${path.module}/data/aws_iam_role_bastions.privateweave.example.com_policy")}"
+}
+
 resource "aws_iam_role" "masters-privateweave-example-com" {
   name = "masters.privateweave.example.com"
   assume_role_policy = "${file("${path.module}/data/aws_iam_role_masters.privateweave.example.com_policy")}"
@@ -158,6 +174,12 @@ resource "aws_iam_role" "masters-privateweave-example-com" {
 resource "aws_iam_role" "nodes-privateweave-example-com" {
   name = "nodes.privateweave.example.com"
   assume_role_policy = "${file("${path.module}/data/aws_iam_role_nodes.privateweave.example.com_policy")}"
+}
+
+resource "aws_iam_role_policy" "bastions-privateweave-example-com" {
+  name = "bastions.privateweave.example.com"
+  role = "${aws_iam_role.bastions-privateweave-example-com.name}"
+  policy = "${file("${path.module}/data/aws_iam_role_policy_bastions.privateweave.example.com_policy")}"
 }
 
 resource "aws_iam_role_policy" "masters-privateweave-example-com" {
@@ -188,9 +210,9 @@ resource "aws_key_pair" "kubernetes-privateweave-example-com-c4a6ed9aa889b9e2c39
 resource "aws_launch_configuration" "bastion-privateweave-example-com" {
   name_prefix = "bastion.privateweave.example.com-"
   image_id = "ami-12345678"
-  instance_type = "t2.medium"
+  instance_type = "t2.micro"
   key_name = "${aws_key_pair.kubernetes-privateweave-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
-  iam_instance_profile = "${aws_iam_instance_profile.masters-privateweave-example-com.id}"
+  iam_instance_profile = "${aws_iam_instance_profile.bastions-privateweave-example-com.id}"
   security_groups = ["${aws_security_group.bastion-privateweave-example-com.id}"]
   associate_public_ip_address = false
   root_block_device = {
@@ -250,16 +272,16 @@ resource "aws_nat_gateway" "us-test-1a-privateweave-example-com" {
   subnet_id = "${aws_subnet.utility-us-test-1a-privateweave-example-com.id}"
 }
 
-resource "aws_route" "private-us-test-1a-privateweave-example-com" {
+resource "aws_route" "0-0-0-0--0" {
+  route_table_id = "${aws_route_table.privateweave-example-com.id}"
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id = "${aws_internet_gateway.privateweave-example-com.id}"
+}
+
+resource "aws_route" "private-us-test-1a-0-0-0-0--0" {
   route_table_id = "${aws_route_table.private-us-test-1a-privateweave-example-com.id}"
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id = "${aws_nat_gateway.us-test-1a-privateweave-example-com.id}"
-}
-
-resource "aws_route" "wan" {
-  route_table_id = "${aws_route_table.main-privateweave-example-com.id}"
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id = "${aws_internet_gateway.privateweave-example-com.id}"
 }
 
 resource "aws_route53_record" "api-privateweave-example-com" {
@@ -273,14 +295,6 @@ resource "aws_route53_record" "api-privateweave-example-com" {
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
 }
 
-resource "aws_route_table" "main-privateweave-example-com" {
-  vpc_id = "${aws_vpc.privateweave-example-com.id}"
-  tags = {
-    KubernetesCluster = "privateweave.example.com"
-    Name = "main-privateweave.example.com"
-  }
-}
-
 resource "aws_route_table" "private-us-test-1a-privateweave-example-com" {
   vpc_id = "${aws_vpc.privateweave-example-com.id}"
   tags = {
@@ -289,14 +303,22 @@ resource "aws_route_table" "private-us-test-1a-privateweave-example-com" {
   }
 }
 
-resource "aws_route_table_association" "main-us-test-1a-privateweave-example-com" {
-  subnet_id = "${aws_subnet.utility-us-test-1a-privateweave-example-com.id}"
-  route_table_id = "${aws_route_table.main-privateweave-example-com.id}"
+resource "aws_route_table" "privateweave-example-com" {
+  vpc_id = "${aws_vpc.privateweave-example-com.id}"
+  tags = {
+    KubernetesCluster = "privateweave.example.com"
+    Name = "privateweave.example.com"
+  }
 }
 
 resource "aws_route_table_association" "private-us-test-1a-privateweave-example-com" {
-  subnet_id = "${aws_subnet.private-us-test-1a-privateweave-example-com.id}"
+  subnet_id = "${aws_subnet.us-test-1a-privateweave-example-com.id}"
   route_table_id = "${aws_route_table.private-us-test-1a-privateweave-example-com.id}"
+}
+
+resource "aws_route_table_association" "utility-us-test-1a-privateweave-example-com" {
+  subnet_id = "${aws_subnet.utility-us-test-1a-privateweave-example-com.id}"
+  route_table_id = "${aws_route_table.privateweave-example-com.id}"
 }
 
 resource "aws_security_group" "api-elb-privateweave-example-com" {
@@ -350,6 +372,15 @@ resource "aws_security_group" "nodes-privateweave-example-com" {
 }
 
 resource "aws_security_group_rule" "all-bastion-to-master" {
+  type = "ingress"
+  security_group_id = "${aws_security_group.masters-privateweave-example-com.id}"
+  source_security_group_id = "${aws_security_group.bastion-privateweave-example-com.id}"
+  from_port = 0
+  to_port = 0
+  protocol = "-1"
+}
+
+resource "aws_security_group_rule" "all-bastion-to-node" {
   type = "ingress"
   security_group_id = "${aws_security_group.nodes-privateweave-example-com.id}"
   source_security_group_id = "${aws_security_group.bastion-privateweave-example-com.id}"
@@ -405,7 +436,7 @@ resource "aws_security_group_rule" "api-elb-egress" {
 
 resource "aws_security_group_rule" "bastion-egress" {
   type = "egress"
-  security_group_id = "${aws_security_group.nodes-privateweave-example-com.id}"
+  security_group_id = "${aws_security_group.bastion-privateweave-example-com.id}"
   from_port = 0
   to_port = 0
   protocol = "-1"
@@ -421,16 +452,7 @@ resource "aws_security_group_rule" "bastion-elb-egress" {
   cidr_blocks = ["0.0.0.0/0"]
 }
 
-resource "aws_security_group_rule" "bastion-to-master" {
-  type = "ingress"
-  security_group_id = "${aws_security_group.masters-privateweave-example-com.id}"
-  source_security_group_id = "${aws_security_group.bastion-privateweave-example-com.id}"
-  from_port = 0
-  to_port = 0
-  protocol = "-1"
-}
-
-resource "aws_security_group_rule" "https-api-elb" {
+resource "aws_security_group_rule" "https-api-elb-0-0-0-0--0" {
   type = "ingress"
   security_group_id = "${aws_security_group.api-elb-privateweave-example-com.id}"
   from_port = 443
@@ -439,7 +461,7 @@ resource "aws_security_group_rule" "https-api-elb" {
   cidr_blocks = ["0.0.0.0/0"]
 }
 
-resource "aws_security_group_rule" "kube-proxy-api-elb" {
+resource "aws_security_group_rule" "https-elb-to-master" {
   type = "ingress"
   security_group_id = "${aws_security_group.masters-privateweave-example-com.id}"
   source_security_group_id = "${aws_security_group.api-elb-privateweave-example-com.id}"
@@ -466,7 +488,7 @@ resource "aws_security_group_rule" "node-egress" {
   cidr_blocks = ["0.0.0.0/0"]
 }
 
-resource "aws_security_group_rule" "ssh-external-to-bastion" {
+resource "aws_security_group_rule" "ssh-elb-to-bastion" {
   type = "ingress"
   security_group_id = "${aws_security_group.bastion-privateweave-example-com.id}"
   source_security_group_id = "${aws_security_group.bastion-elb-privateweave-example-com.id}"
@@ -475,7 +497,7 @@ resource "aws_security_group_rule" "ssh-external-to-bastion" {
   protocol = "tcp"
 }
 
-resource "aws_security_group_rule" "ssh-external-to-bastion-elb" {
+resource "aws_security_group_rule" "ssh-external-to-bastion-elb-0-0-0-0--0" {
   type = "ingress"
   security_group_id = "${aws_security_group.bastion-elb-privateweave-example-com.id}"
   from_port = 22
@@ -484,19 +506,19 @@ resource "aws_security_group_rule" "ssh-external-to-bastion-elb" {
   cidr_blocks = ["0.0.0.0/0"]
 }
 
-resource "aws_subnet" "private-us-test-1a-privateweave-example-com" {
+resource "aws_subnet" "us-test-1a-privateweave-example-com" {
   vpc_id = "${aws_vpc.privateweave-example-com.id}"
-  cidr_block = "172.20.4.0/22"
+  cidr_block = "172.20.32.0/19"
   availability_zone = "us-test-1a"
   tags = {
     KubernetesCluster = "privateweave.example.com"
-    Name = "private-us-test-1a.privateweave.example.com"
+    Name = "us-test-1a.privateweave.example.com"
   }
 }
 
 resource "aws_subnet" "utility-us-test-1a-privateweave-example-com" {
   vpc_id = "${aws_vpc.privateweave-example-com.id}"
-  cidr_block = "172.20.32.0/19"
+  cidr_block = "172.20.4.0/22"
   availability_zone = "us-test-1a"
   tags = {
     KubernetesCluster = "privateweave.example.com"

@@ -32,15 +32,15 @@ const MockAWSRegion = "us-mock-1"
 func buildDefaultCluster(t *testing.T) *api.Cluster {
 	c := buildMinimalCluster()
 
-	err := c.PerformAssignments()
+	err := PerformAssignments(c)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
 
 	if len(c.Spec.EtcdClusters) == 0 {
 		zones := sets.NewString()
-		for _, z := range c.Spec.Zones {
-			zones.Insert(z.Name)
+		for _, z := range c.Spec.Subnets {
+			zones.Insert(z.Zone)
 		}
 		etcdZones := zones.List()
 
@@ -50,7 +50,7 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 			for _, zone := range etcdZones {
 				m := &api.EtcdMemberSpec{}
 				m.Name = zone
-				m.Zone = fi.String(zone)
+				m.InstanceGroup = fi.String(zone)
 				etcd.Members = append(etcd.Members, m)
 			}
 			c.Spec.EtcdClusters = append(c.Spec.EtcdClusters, etcd)

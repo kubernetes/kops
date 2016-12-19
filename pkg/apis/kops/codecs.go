@@ -33,7 +33,7 @@ func decoder() runtime.Decoder {
 	return codec
 }
 
-func encoder() runtime.Encoder {
+func encoder(version string) runtime.Encoder {
 	// TODO: Which is better way to build yaml?
 	//yaml := json.NewYAMLSerializer(json.DefaultMetaFactory, k8sapi.Scheme, k8sapi.Scheme)
 
@@ -42,19 +42,23 @@ func encoder() runtime.Encoder {
 	if !ok {
 		glog.Fatalf("no YAML serializer registered")
 	}
-	return k8sapi.Codecs.EncoderForVersion(yaml.Serializer, preferredAPIVersion())
+	gv := unversioned.GroupVersion{Group: GroupName, Version: version}
+	return k8sapi.Codecs.EncoderForVersion(yaml.Serializer, gv)
 }
 
-func preferredAPIVersion() unversioned.GroupVersion {
-	// Avoid circular dependency
-	// return v1alpha1.SchemeGroupVersion
-	return unversioned.GroupVersion{Group: GroupName, Version: "v1alpha1"}
+func preferredAPIVersion() string {
+	return "v1alpha2"
 }
 
 // ToVersionedYaml encodes the object to YAML, in our preferred API version
 func ToVersionedYaml(obj runtime.Object) ([]byte, error) {
+	return ToVersionedYamlWithVersion(obj, preferredAPIVersion())
+}
+
+// ToVersionedYamlWithVersion encodes the object to YAML, in a specified API version
+func ToVersionedYamlWithVersion(obj runtime.Object, version string) ([]byte, error) {
 	var w bytes.Buffer
-	err := encoder().Encode(obj, &w)
+	err := encoder(version).Encode(obj, &w)
 	if err != nil {
 		return nil, fmt.Errorf("error encoding %T: %v", obj, err)
 	}

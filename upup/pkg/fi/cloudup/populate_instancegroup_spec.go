@@ -26,23 +26,19 @@ import (
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
-const DefaultNodeMachineTypeAWS = "t2.medium"
-const DefaultNodeMachineTypeGCE = "n1-standard-2"
+// Default Machine types for various types of instance group machine
+const (
+	DefaultNodeMachineTypeAWS = "t2.medium"
+	DefaultNodeMachineTypeGCE = "n1-standard-2"
 
-const DefaultMasterMachineTypeAWS = "m3.medium"
+	DefaultBastionMachineTypeAWS = "t2.micro"
+	DefaultBastionMachineTypeGCE = "f1-micro"
 
-// us-east-2 does not (currently) support the m3 family; the c4 large is the cheapest non-burstable instance
-const DefaultMasterMachineTypeAWS_USEAST2 = "c4.large"
-
-const DefaultMasterMachineTypeGCE = "n1-standard-1"
-
-// Default Machine type for bastion hosts
-const DefaultBastionMachineTypeAWS = "t2.medium"
-const DefaultBastionMasterMachineTypeGCE = "n1-standard-1"
-
-// Default LoadBalancing IdleTimeout for bastion hosts
-const DefaultBastionIdleTimeoutAWS = 120
-const DefaultBastionIdleTimeoutGCE = 120
+	DefaultMasterMachineTypeAWS = "m3.medium"
+	DefaultMasterMachineTypeGCE = "n1-standard-1"
+	// us-east-2 does not (currently) support the m3 family; the c4 large is the cheapest non-burstable instance
+	DefaultMasterMachineTypeAWS_USEAST2 = "c4.large"
+)
 
 // PopulateInstanceGroupSpec sets default values in the InstanceGroup
 // The InstanceGroup is simpler than the cluster spec, so we just populate in place (like the rest of k8s)
@@ -55,9 +51,20 @@ func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup, c
 	ig := &api.InstanceGroup{}
 	utils.JsonMergeStruct(ig, input)
 
+	// TODO: Clean up
 	if ig.IsMaster() {
 		if ig.Spec.MachineType == "" {
 			ig.Spec.MachineType = defaultMasterMachineType(cluster)
+		}
+		if ig.Spec.MinSize == nil {
+			ig.Spec.MinSize = fi.Int(1)
+		}
+		if ig.Spec.MaxSize == nil {
+			ig.Spec.MaxSize = fi.Int(1)
+		}
+	} else if ig.Spec.Role == api.InstanceGroupRoleBastion {
+		if ig.Spec.MachineType == "" {
+			ig.Spec.MachineType = defaultBastionMachineType(cluster)
 		}
 		if ig.Spec.MinSize == nil {
 			ig.Spec.MinSize = fi.Int(1)
@@ -86,15 +93,29 @@ func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup, c
 	}
 
 	if ig.IsMaster() {
-		if len(ig.Spec.Zones) == 0 {
-			return nil, fmt.Errorf("Master InstanceGroup %s did not specify any Zones", ig.ObjectMeta.Name)
+		if len(ig.Spec.Subnets) == 0 {
+			return nil, fmt.Errorf("Master InstanceGroup %s did not specify any Subnets", ig.ObjectMeta.Name)
 		}
-	} else {
-		if len(ig.Spec.Zones) == 0 {
-			for _, z := range cluster.Spec.Zones {
-				ig.Spec.Zones = append(ig.Spec.Zones, z.Name)
+	} else if ig.Spec.Role == api.InstanceGroupRoleBastion {
+		if len(ig.Spec.Subnets) == 0 {
+			for _, subnet := range cluster.Spec.Subnets {
+				if subnet.Type == api.SubnetTypeUtility {
+					ig.Spec.Subnets = append(ig.Spec.Subnets, subnet.Name)
+				}
 			}
 		}
+	} else {
+		if len(ig.Spec.Subnets) == 0 {
+			for _, subnet := range cluster.Spec.Subnets {
+				if subnet.Type != api.SubnetTypeUtility {
+					ig.Spec.Subnets = append(ig.Spec.Subnets, subnet.Name)
+				}
+			}
+		}
+	}
+
+	if len(ig.Spec.Subnets) == 0 {
+		return nil, fmt.Errorf("unable to infer any Subnets for InstanceGroup %s ", ig.ObjectMeta.Name)
 	}
 
 	return ig, nil
@@ -163,29 +184,16 @@ func defaultMasterMachineType(cluster *api.Cluster) string {
 	}
 }
 
-// defaultBastionMachineType returns the default MachineType for bastion host, based on the cloudprovider
-func DefaultBastionMachineType(cluster *api.Cluster) string {
+// defaultBastionMachineType returns the default MachineType for bastions, based on the cloudprovider
+func defaultBastionMachineType(cluster *api.Cluster) string {
 	switch fi.CloudProviderID(cluster.Spec.CloudProvider) {
 	case fi.CloudProviderAWS:
 		return DefaultBastionMachineTypeAWS
 	case fi.CloudProviderGCE:
-		return DefaultBastionMasterMachineTypeGCE
+		return DefaultBastionMachineTypeGCE
 	default:
 		glog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q", cluster.Spec.CloudProvider)
 		return ""
-	}
-}
-
-// defaultIdleTimeout returns the default Idletimeout for bastion loadbalancer, based on the cloudprovider
-func DefaultBastionIdleTimeout(cluster *api.Cluster) int {
-	switch fi.CloudProviderID(cluster.Spec.CloudProvider) {
-	case fi.CloudProviderAWS:
-		return DefaultBastionIdleTimeoutAWS
-	case fi.CloudProviderGCE:
-		return DefaultBastionIdleTimeoutGCE
-	default:
-		glog.V(2).Infof("Cannot set default IdleTimeout for CloudProvider=%q", cluster.Spec.CloudProvider)
-		return 0
 	}
 }
 

@@ -86,17 +86,17 @@ func (c *ConvertImportedCmd) Run() error {
 	}
 
 	// TODO: Switch to cloudup.BuildCloud
-	if len(cluster.Spec.Zones) == 0 {
-		return fmt.Errorf("Configuration must include Zones")
+	if len(cluster.Spec.Subnets) == 0 {
+		return fmt.Errorf("Configuration must include Subnets")
 	}
 
 	region := ""
-	for _, zone := range cluster.Spec.Zones {
-		if len(zone.Name) <= 2 {
-			return fmt.Errorf("Invalid AWS zone: %q", zone.Name)
+	for _, subnet := range cluster.Spec.Subnets {
+		if len(subnet.Name) <= 2 {
+			return fmt.Errorf("Invalid AWS zone: %q", subnet.Zone)
 		}
 
-		zoneRegion := zone.Name[:len(zone.Name)-1]
+		zoneRegion := subnet.Zone[:len(subnet.Zone)-1]
 		if region != "" && zoneRegion != region {
 			return fmt.Errorf("Clusters cannot span multiple regions")
 		}
