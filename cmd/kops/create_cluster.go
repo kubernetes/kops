@@ -82,6 +82,7 @@ func (o *CreateClusterOptions) InitDefaults() {
 
 func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateClusterOptions{}
+	options.InitDefaults()
 
 	cmd := &cobra.Command{
 		Use:   "cluster",
@@ -454,25 +455,25 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			cluster.Spec.Subnets[i].Type = api.SubnetTypePrivate
 		}
 
+		var utilitySubnets []api.ClusterSubnetSpec
+		for _, s := range cluster.Spec.Subnets {
+			if s.Type == api.SubnetTypeUtility {
+				continue
+			}
+			subnet := api.ClusterSubnetSpec{
+				SubnetName: "utility-" + s.SubnetName,
+				Zone:       s.Zone,
+				Type:       api.SubnetTypeUtility,
+			}
+			utilitySubnets = append(utilitySubnets, subnet)
+		}
+		cluster.Spec.Subnets = append(cluster.Spec.Subnets, utilitySubnets...)
+
 		if c.Bastion {
 			bastionGroup := &api.InstanceGroup{}
 			bastionGroup.Spec.Role = api.InstanceGroupRoleBastion
 			bastionGroup.ObjectMeta.Name = "bastions"
 			instanceGroups = append(instanceGroups, bastionGroup)
-
-			var bastionSubnets []api.ClusterSubnetSpec
-			for _, s := range cluster.Spec.Subnets {
-				if s.Type == api.SubnetTypeUtility {
-					continue
-				}
-				subnet := api.ClusterSubnetSpec{
-					SubnetName: "utility-" + s.SubnetName,
-					Zone:       s.Zone,
-					Type:       api.SubnetTypeUtility,
-				}
-				bastionSubnets = append(bastionSubnets, subnet)
-			}
-			cluster.Spec.Subnets = append(cluster.Spec.Subnets, bastionSubnets...)
 		}
 
 	default:
