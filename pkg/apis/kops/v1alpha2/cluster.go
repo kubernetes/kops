@@ -134,89 +134,6 @@ type ClusterSpec struct {
 	//   missing: default policy (currently OS security upgrades that do not require a reboot)
 	UpdatePolicy *string `json:"updatePolicy,omitempty"`
 
-	//HairpinMode                   string `json:",omitempty"`
-	//
-	//OpencontrailTag               string `json:",omitempty"`
-	//OpencontrailKubernetesTag     string `json:",omitempty"`
-	//OpencontrailPublicSubnet      string `json:",omitempty"`
-	//
-	//EnableClusterMonitoring       string `json:",omitempty"`
-	//EnableL7LoadBalancing         string `json:",omitempty"`
-	//EnableClusterUI               *bool  `json:",omitempty"`
-	//
-	//EnableClusterDNS              *bool  `json:",omitempty"`
-	//DNSReplicas                   int    `json:",omitempty"`
-	//DNSServerIP                   string `json:",omitempty"`
-
-	//EnableClusterLogging          *bool  `json:",omitempty"`
-	//EnableNodeLogging             *bool  `json:",omitempty"`
-	//LoggingDestination            string `json:",omitempty"`
-	//ElasticsearchLoggingReplicas  int    `json:",omitempty"`
-	//
-	//EnableClusterRegistry         *bool  `json:",omitempty"`
-	//ClusterRegistryDisk           string `json:",omitempty"`
-	//ClusterRegistryDiskSize       int    `json:",omitempty"`
-	//
-	//EnableCustomMetrics           *bool `json:",omitempty"`
-	//
-	//RegisterMasterKubelet         *bool  `json:",omitempty"`
-
-	//// Image is the default image spec to use for the cluster
-	//Image                     string `json:",omitempty"`
-
-	//KubeUser                      string `json:",omitempty"`
-	//
-	//// These are moved to CAStore / SecretStore
-	////KubePassword			string
-	////KubeletToken                  string
-	////KubeProxyToken                string
-	////BearerToken                   string
-	////CACert                        []byte
-	////CAKey                         []byte
-	////KubeletCert                   []byte
-	////KubeletKey                    []byte
-	////MasterCert                    []byte
-	////MasterKey                     []byte
-	////KubecfgCert                   []byte
-	////KubecfgKey                    []byte
-	//
-	//AdmissionControl              string `json:",omitempty"`
-	//
-	//KubeImageTag                  string `json:",omitempty"`
-	//KubeDockerRegistry            string `json:",omitempty"`
-	//KubeAddonRegistry             string `json:",omitempty"`
-	//
-	//KubeletPort                   int `json:",omitempty"`
-	//
-	//KubeApiserverRequestTimeout   int `json:",omitempty"`
-	//
-	//TerminatedPodGcThreshold      string `json:",omitempty"`
-	//
-	//EnableManifestURL             *bool  `json:",omitempty"`
-	//ManifestURL                   string `json:",omitempty"`
-	//ManifestURLHeader             string `json:",omitempty"`
-	//
-	//TestCluster                   string `json:",omitempty"`
-	//
-	//E2EStorageTestEnvironment     string `json:",omitempty"`
-	//KubeletTestArgs               string `json:",omitempty"`
-	//KubeletTestLogLevel           string `json:",omitempty"`
-	//DockerTestArgs                string `json:",omitempty"`
-	//DockerTestLogLevel            string `json:",omitempty"`
-	//ApiserverTestArgs             string `json:",omitempty"`
-	//ApiserverTestLogLevel         string `json:",omitempty"`
-	//ControllerManagerTestArgs     string `json:",omitempty"`
-	//ControllerManagerTestLogLevel string `json:",omitempty"`
-	//SchedulerTestArgs             string `json:",omitempty"`
-	//SchedulerTestLogLevel         string `json:",omitempty"`
-	//KubeProxyTestArgs             string `json:",omitempty"`
-	//KubeProxyTestLogLevel         string `json:",omitempty"`
-
-	//NodeUp                        *NodeUpConfig `json:",omitempty"`
-
-	//// Masters is the configuration for each master in the cluster
-	//Masters []*MasterConfig `json:",omitempty"`
-
 	// EtcdClusters stores the configuration for each cluster
 	EtcdClusters []*EtcdClusterSpec `json:"etcdClusters,omitempty"`
 
@@ -242,16 +159,6 @@ type KubeDNSConfig struct {
 	Domain   string `json:"domain,omitempty"`
 	ServerIP string `json:"serverIP,omitempty"`
 }
-
-//
-//type MasterConfig struct {
-//	Name string `json:",omitempty"`
-//
-//	Image       string `json:",omitempty"`
-//	Zone        string `json:",omitempty"`
-//	MachineType string `json:",omitempty"`
-//}
-//
 
 type EtcdClusterSpec struct {
 	// Name is the name of the etcd cluster (main, events etc)

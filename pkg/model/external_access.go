@@ -23,15 +23,6 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	if len(b.Cluster.Spec.SSHAccess) == 0 {
 		glog.Warningf("SSHAccess is empty")
-
-		//// AdminCIDR returns the CIDRs that are allowed to access the admin ports of the cluster
-		//// (22, 443 on master and 22 on nodes)
-		//func (tf *TemplateFunctions) AdminCIDR() []string {
-		//	if len(tf.cluster.Spec.AdminAccess) == 0 {
-		//		return []string{"0.0.0.0/0"}
-		//	}
-		//	return tf.cluster.Spec.AdminAccess
-		//}
 	}
 
 	// SSH is open to AdminCIDR set
@@ -73,18 +64,6 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			c.AddTask(t)
 		}
 	}
-
-	//upup/models/cloudup/_aws/master/_master_lb/master_lb.yaml:
-	//# HTTPS to the master ELB is allowed (for API access)
-	//# One security group rule is necessary per admin CIDR
-	//{{ range $index, $cidr := AdminCIDR }}
-	//securityGroupRule/https-external-to-api-{{ $index }}:
-	//securityGroup: securityGroup/api.{{ ClusterName }}
-	//cidr: {{ $cidr }}
-	//protocol: tcp
-	//fromPort: 443
-	//toPort: 443
-	//{{ end }}
 
 	return nil
 }
