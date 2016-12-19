@@ -98,14 +98,28 @@ func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup, c
 
 	if ig.IsMaster() {
 		if len(ig.Spec.Subnets) == 0 {
-			return nil, fmt.Errorf("Master InstanceGroup %s did not specify any Zones", ig.ObjectMeta.Name)
+			return nil, fmt.Errorf("Master InstanceGroup %s did not specify any Subnets", ig.ObjectMeta.Name)
+		}
+	} else if ig.Spec.Role == api.InstanceGroupRoleBastion {
+		if len(ig.Spec.Subnets) == 0 {
+			for _, subnet := range cluster.Spec.Subnets {
+				if subnet.Type == api.SubnetTypeUtility {
+					ig.Spec.Subnets = append(ig.Spec.Subnets, subnet.SubnetName)
+				}
+			}
 		}
 	} else {
 		if len(ig.Spec.Subnets) == 0 {
 			for _, subnet := range cluster.Spec.Subnets {
-				ig.Spec.Subnets = append(ig.Spec.Subnets, subnet.SubnetName)
+				if subnet.Type != api.SubnetTypeUtility {
+					ig.Spec.Subnets = append(ig.Spec.Subnets, subnet.SubnetName)
+				}
 			}
 		}
+	}
+
+	if len(ig.Spec.Subnets) == 0 {
+		return nil, fmt.Errorf("unable to infer any Subnets for InstanceGroup %s ", ig.ObjectMeta.Name)
 	}
 
 	return ig, nil
