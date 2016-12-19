@@ -330,10 +330,11 @@ func (c *Cluster) Validate(strict bool) error {
 	}
 
 	if c.Spec.Topology.Bastion != nil {
+		bastion := c.Spec.Topology.Bastion
 		if c.Spec.Topology.Masters == TopologyPublic || c.Spec.Topology.Nodes == TopologyPublic {
 			return fmt.Errorf("Bastion supports only Private Masters and Nodes")
 		}
-		if fi.Int64Value(c.Spec.Topology.Bastion.IdleTimeout) <= int64(0) {
+		if bastion.IdleTimeout != nil && *bastion.IdleTimeout <= 0 {
 			return fmt.Errorf("Bastion IdleTimeout should be greater than zero")
 		}
 	}
