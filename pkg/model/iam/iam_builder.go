@@ -66,6 +66,13 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 
 	// Don't give bastions any permissions (yet)
 	if b.Role == api.InstanceGroupRoleBastion {
+		p.Statement = append(p.Statement, &IAMStatement{
+			// We grant a trivial (?) permission (DescribeRegions), because empty policies are not allowed
+			Effect:   IAMStatementEffectAllow,
+			Action:   []string{"ec2:DescribeRegions"},
+			Resource: []string{"*"},
+		})
+
 		return p, nil
 	}
 
