@@ -256,13 +256,13 @@ func (c *Cluster) Validate(strict bool) error {
 	}
 
 	// AdminAccess
-	if strict && len(c.Spec.APIAccess) == 0 {
-		return fmt.Errorf("APIAccess not configured")
+	if strict && len(c.Spec.KubernetesAPIAccess) == 0 {
+		return fmt.Errorf("KubernetesAPIAccess not configured")
 	}
-	for _, cidr := range c.Spec.APIAccess {
+	for _, cidr := range c.Spec.KubernetesAPIAccess {
 		_, _, err := net.ParseCIDR(cidr)
 		if err != nil {
-			return fmt.Errorf("APIAccess rule %q could not be parsed (invalid CIDR)", cidr)
+			return fmt.Errorf("KubernetesAPIAccess rule %q could not be parsed (invalid CIDR)", cidr)
 		}
 	}
 
@@ -334,8 +334,8 @@ func (c *Cluster) Validate(strict bool) error {
 		if c.Spec.Topology.Masters == TopologyPublic || c.Spec.Topology.Nodes == TopologyPublic {
 			return fmt.Errorf("Bastion supports only Private Masters and Nodes")
 		}
-		if bastion.IdleTimeout != nil && *bastion.IdleTimeout <= 0 {
-			return fmt.Errorf("Bastion IdleTimeout should be greater than zero")
+		if bastion.IdleTimeoutSeconds != nil && *bastion.IdleTimeoutSeconds <= 0 {
+			return fmt.Errorf("Bastion IdleTimeoutSeconds should be greater than zero")
 		}
 	}
 

@@ -114,9 +114,9 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	// Allow traffic into the ELB from APIAccess CIDRs
+	// Allow traffic into the ELB from KubernetesAPIAccess CIDRs
 	{
-		for _, cidr := range b.Cluster.Spec.APIAccess {
+		for _, cidr := range b.Cluster.Spec.KubernetesAPIAccess {
 			t := &awstasks.SecurityGroupRule{
 				Name:          s("https-api-elb-" + cidr),
 				SecurityGroup: b.LinkToELBSecurityGroup("api"),

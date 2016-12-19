@@ -115,9 +115,9 @@ type ClusterSpec struct {
 	// Currently only a single CIDR is supported (though a richer grammar could be added in future)
 	SSHAccess []string `json:"sshAccess,omitempty"`
 
-	// APIAccess determines the permitted access to the API endpoints (master HTTPS)
+	// KubernetesAPIAccess determines the permitted access to the API endpoints (master HTTPS)
 	// Currently only a single CIDR is supported (though a richer grammar could be added in future)
-	APIAccess []string `json:"apiAccess,omitempty"`
+	KubernetesAPIAccess []string `json:"kubernetesApiAccess,omitempty"`
 
 	// IsolatesMasters determines whether we should lock down masters so that they are not on the pod network.
 	// true is the kube-up behaviour, but it is very surprising: it means that daemonsets only work on the master

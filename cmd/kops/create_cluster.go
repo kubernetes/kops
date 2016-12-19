@@ -235,7 +235,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			subnet := &cluster.Spec.Subnets[i]
 			existingSubnets[subnet.Name] = subnet
 		}
-		for _, subnetName := range parseZoneList(c.Zones) {
+		for _, zoneName := range parseZoneList(c.Zones) {
+			// We create default subnets named the same as the zones
+			subnetName := zoneName
 			if existingSubnets[subnetName] == nil {
 				cluster.Spec.Subnets = append(cluster.Spec.Subnets, api.ClusterSubnetSpec{
 					Name: subnetName,
@@ -494,7 +496,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 	if c.AdminAccess != "" {
 		cluster.Spec.SSHAccess = []string{c.AdminAccess}
-		cluster.Spec.APIAccess = []string{c.AdminAccess}
+		cluster.Spec.KubernetesAPIAccess = []string{c.AdminAccess}
 	}
 
 	err = cloudup.PerformAssignments(cluster)

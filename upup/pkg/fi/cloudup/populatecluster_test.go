@@ -329,7 +329,7 @@ func TestPopulateCluster_BastionIdleTimeoutInvalidNegative_Required(t *testing.T
 	c.Spec.Topology.Masters = api.TopologyPrivate
 	c.Spec.Topology.Nodes = api.TopologyPrivate
 	c.Spec.Topology.Bastion = &api.BastionSpec{}
-	c.Spec.Topology.Bastion.IdleTimeout = fi.Int64(-1)
+	c.Spec.Topology.Bastion.IdleTimeoutSeconds = fi.Int64(-1)
 	expectErrorFromPopulateCluster(t, c, "Bastion")
 }
 
