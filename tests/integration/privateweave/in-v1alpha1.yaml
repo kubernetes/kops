@@ -1,12 +1,14 @@
 apiVersion: kops/v1alpha1
 kind: Cluster
 metadata:
-  creationTimestamp: "2017-01-01T00:00:00Z"
-  name: minimal.example.com
+  creationTimestamp: "2016-12-12T04:13:14Z"
+  name: privateweave.example.com
 spec:
+  adminAccess:
+  - 0.0.0.0/0
   channel: stable
   cloudProvider: aws
-  configBase: memfs://tests/minimal.example.com
+  configBase: memfs://clusters.example.com/privateweave.example.com
   etcdClusters:
   - etcdMembers:
     - name: us-test-1a
@@ -17,28 +19,33 @@ spec:
       zone: us-test-1a
     name: events
   kubernetesVersion: v1.4.6
-  masterPublicName: api.minimal.example.com
+  masterInternalName: api.internal.privateweave.example.com
+  masterPublicName: api.privateweave.example.com
   networkCIDR: 172.20.0.0/16
   networking:
-    kubenet: {}
+    weave: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   topology:
     bastion:
+      enable: true
       idleTimeout: 120
       machineType: t2.medium
-    masters: public
-    nodes: public
+    masters: private
+    nodes: private
   zones:
-  - cidr: 172.20.32.0/19
+  - cidr: 172.20.4.0/22
     name: us-test-1a
+    privateCIDR: 172.20.32.0/19
 
 ---
 
 apiVersion: kops/v1alpha1
 kind: InstanceGroup
 metadata:
-  creationTimestamp: "2017-01-01T00:00:00Z"
+  creationTimestamp: "2016-12-12T04:13:15Z"
   name: master-us-test-1a
+  labels:
+    kops.k8s.io/cluster: privateweave.example.com
 spec:
   associatePublicIp: true
   image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
@@ -54,8 +61,10 @@ spec:
 apiVersion: kops/v1alpha1
 kind: InstanceGroup
 metadata:
-  creationTimestamp: "2017-01-01T00:00:00Z"
+  creationTimestamp: "2016-12-12T04:13:15Z"
   name: nodes
+  labels:
+    kops.k8s.io/cluster: privateweave.example.com
 spec:
   associatePublicIp: true
   image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
@@ -65,3 +74,23 @@ spec:
   role: Node
   zones:
   - us-test-1a
+
+
+---
+
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2016-12-14T15:32:41Z"
+  name: bastion
+  labels:
+    kops.k8s.io/cluster: privateweave.example.com
+spec:
+  associatePublicIp: true
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  machineType: t2.micro
+  maxSize: 1
+  minSize: 1
+  role: Bastion
+  subnets:
+  - utility-us-test-1a

@@ -508,7 +508,7 @@ resource "aws_security_group_rule" "ssh-external-to-bastion-elb-0-0-0-0--0" {
 
 resource "aws_subnet" "us-test-1a-privateweave-example-com" {
   vpc_id = "${aws_vpc.privateweave-example-com.id}"
-  cidr_block = "172.20.4.0/22"
+  cidr_block = "172.20.32.0/19"
   availability_zone = "us-test-1a"
   tags = {
     KubernetesCluster = "privateweave.example.com"
@@ -518,7 +518,7 @@ resource "aws_subnet" "us-test-1a-privateweave-example-com" {
 
 resource "aws_subnet" "utility-us-test-1a-privateweave-example-com" {
   vpc_id = "${aws_vpc.privateweave-example-com.id}"
-  cidr_block = "172.20.32.0/19"
+  cidr_block = "172.20.4.0/22"
   availability_zone = "us-test-1a"
   tags = {
     KubernetesCluster = "privateweave.example.com"
