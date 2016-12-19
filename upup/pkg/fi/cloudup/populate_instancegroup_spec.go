@@ -100,7 +100,7 @@ func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup, c
 		if len(ig.Spec.Subnets) == 0 {
 			for _, subnet := range cluster.Spec.Subnets {
 				if subnet.Type == api.SubnetTypeUtility {
-					ig.Spec.Subnets = append(ig.Spec.Subnets, subnet.SubnetName)
+					ig.Spec.Subnets = append(ig.Spec.Subnets, subnet.Name)
 				}
 			}
 		}
@@ -108,7 +108,7 @@ func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup, c
 		if len(ig.Spec.Subnets) == 0 {
 			for _, subnet := range cluster.Spec.Subnets {
 				if subnet.Type != api.SubnetTypeUtility {
-					ig.Spec.Subnets = append(ig.Spec.Subnets, subnet.SubnetName)
+					ig.Spec.Subnets = append(ig.Spec.Subnets, subnet.Name)
 				}
 			}
 		}

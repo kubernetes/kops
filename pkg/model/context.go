@@ -62,7 +62,7 @@ func (m *KopsModelContext) GatherSubnets(ig *kops.InstanceGroup) ([]*kops.Cluste
 		var matches []*kops.ClusterSubnetSpec
 		for i := range m.Cluster.Spec.Subnets {
 			clusterSubnet := &m.Cluster.Spec.Subnets[i]
-			if clusterSubnet.SubnetName == subnetName {
+			if clusterSubnet.Name == subnetName {
 				matches = append(matches, clusterSubnet)
 			}
 		}
@@ -91,7 +91,7 @@ func (m *KopsModelContext) FindInstanceGroup(name string) *kops.InstanceGroup {
 func (m *KopsModelContext) FindSubnet(name string) *kops.ClusterSubnetSpec {
 	for i := range m.Cluster.Spec.Subnets {
 		s := &m.Cluster.Spec.Subnets[i]
-		if s.SubnetName == name {
+		if s.Name == name {
 			return s
 		}
 	}

@@ -46,7 +46,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				continue
 
 			default:
-				return fmt.Errorf("subnet %q had unknown type %q", subnet.SubnetName, subnet.Type)
+				return fmt.Errorf("subnet %q had unknown type %q", subnet.Name, subnet.Type)
 			}
 
 			elbSubnets = append(elbSubnets, b.LinkToSubnet(subnet))

@@ -90,7 +90,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		sharedSubnet := subnetSpec.ProviderID != ""
 
 		subnet := &awstasks.Subnet{
-			Name:             s(subnetSpec.SubnetName + "." + b.ClusterName()),
+			Name:             s(subnetSpec.Name + "." + b.ClusterName()),
 			VPC:              b.LinkToVPC(),
 			AvailabilityZone: s(subnetSpec.Zone),
 			CIDR:             s(subnetSpec.CIDR),
@@ -105,7 +105,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		case kops.SubnetTypePublic, kops.SubnetTypeUtility:
 			if !sharedSubnet {
 				c.AddTask(&awstasks.RouteTableAssociation{
-					Name:       s(subnetSpec.SubnetName + "." + b.ClusterName()),
+					Name:       s(subnetSpec.Name + "." + b.ClusterName()),
 					RouteTable: publicRouteTable,
 					Subnet:     subnet,
 				})
@@ -119,7 +119,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				//
 				// Map the Private subnet to the Private route table
 				c.AddTask(&awstasks.RouteTableAssociation{
-					Name:       s("private-" + subnetSpec.SubnetName + "." + b.ClusterName()),
+					Name:       s("private-" + subnetSpec.Name + "." + b.ClusterName()),
 					RouteTable: &awstasks.RouteTable{Name: s(b.NamePrivateRouteTableInZone(subnetSpec.Zone))},
 					Subnet:     subnet,
 				})
@@ -128,7 +128,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 
 		default:
-			return fmt.Errorf("subnet %q has unknown type %q", subnetSpec.SubnetName, subnetSpec.Type)
+			return fmt.Errorf("subnet %q has unknown type %q", subnetSpec.Name, subnetSpec.Type)
 		}
 	}
 

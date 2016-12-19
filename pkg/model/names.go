@@ -140,7 +140,7 @@ func (b *KopsModelContext) LinkToSSHKey() (*awstasks.SSHKey, error) {
 }
 
 func (b *KopsModelContext) LinkToSubnet(z *kops.ClusterSubnetSpec) *awstasks.Subnet {
-	name := z.SubnetName + "." + b.ClusterName()
+	name := z.Name + "." + b.ClusterName()
 
 	return &awstasks.Subnet{Name: &name}
 }

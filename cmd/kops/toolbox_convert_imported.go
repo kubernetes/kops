@@ -92,7 +92,7 @@ func (c *ConvertImportedCmd) Run() error {
 
 	region := ""
 	for _, subnet := range cluster.Spec.Subnets {
-		if len(subnet.SubnetName) <= 2 {
+		if len(subnet.Name) <= 2 {
 			return fmt.Errorf("Invalid AWS zone: %q", subnet.Zone)
 		}
 

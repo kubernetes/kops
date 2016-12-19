@@ -63,13 +63,13 @@ func assignCIDRsToSubnets(c *kops.Cluster) error {
 			littleSubnets = append(littleSubnets, subnet)
 
 		default:
-			return fmt.Errorf("subnet %q has unknown type %q", subnet.SubnetName, subnet.Type)
+			return fmt.Errorf("subnet %q has unknown type %q", subnet.Name, subnet.Type)
 		}
 
 		if subnet.CIDR != "" {
 			_, subnetCIDR, err := net.ParseCIDR(subnet.CIDR)
 			if err != nil {
-				return fmt.Errorf("subnet %q has unexpected CIDR %q", subnet.SubnetName, subnet.CIDR)
+				return fmt.Errorf("subnet %q has unexpected CIDR %q", subnet.Name, subnet.CIDR)
 			}
 
 			reserved = append(reserved, subnetCIDR)
@@ -113,10 +113,10 @@ func assignCIDRsToSubnets(c *kops.Cluster) error {
 		}
 
 		if len(bigCIDRs) == 0 {
-			return fmt.Errorf("insufficient (big) CIDRs remaining for automatic CIDR allocation to subnet %q", subnet.SubnetName)
+			return fmt.Errorf("insufficient (big) CIDRs remaining for automatic CIDR allocation to subnet %q", subnet.Name)
 		}
 		subnet.CIDR = bigCIDRs[0].String()
-		glog.Infof("Assigned CIDR %s to subnet %s", subnet.CIDR, subnet.SubnetName)
+		glog.Infof("Assigned CIDR %s to subnet %s", subnet.CIDR, subnet.Name)
 
 		bigCIDRs = bigCIDRs[1:]
 	}
@@ -127,10 +127,10 @@ func assignCIDRsToSubnets(c *kops.Cluster) error {
 		}
 
 		if len(littleCIDRs) == 0 {
-			return fmt.Errorf("insufficient (little) CIDRs remaining for automatic CIDR allocation to subnet %q", subnet.SubnetName)
+			return fmt.Errorf("insufficient (little) CIDRs remaining for automatic CIDR allocation to subnet %q", subnet.Name)
 		}
 		subnet.CIDR = littleCIDRs[0].String()
-		glog.Infof("Assigned CIDR %s to subnet %s", subnet.CIDR, subnet.SubnetName)
+		glog.Infof("Assigned CIDR %s to subnet %s", subnet.CIDR, subnet.Name)
 
 		littleCIDRs = littleCIDRs[1:]
 	}
