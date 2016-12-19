@@ -13,11 +13,6 @@ import (
 // it assigns CIDRs to subnets
 // We also assign KubernetesVersion, because we want it to be explicit
 func PerformAssignments(c *kops.Cluster) error {
-	err := assignCIDRsToSubnets(c)
-	if err != nil {
-		return err
-	}
-
 	if c.Spec.NetworkCIDR == "" && !c.SharedVPC() {
 		// TODO: Choose non-overlapping networking CIDRs for VPCs?
 		c.Spec.NetworkCIDR = "172.20.0.0/16"
@@ -30,6 +25,11 @@ func PerformAssignments(c *kops.Cluster) error {
 	// TODO: Unclear this should be here - it isn't too hard to change
 	if c.Spec.MasterPublicName == "" && c.ObjectMeta.Name != "" {
 		c.Spec.MasterPublicName = "api." + c.ObjectMeta.Name
+	}
+
+	err := assignCIDRsToSubnets(c)
+	if err != nil {
+		return err
 	}
 
 	return ensureKubernetesVersion(c)
