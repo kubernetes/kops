@@ -168,10 +168,10 @@ func (g *InstanceGroup) CrossValidate(cluster *Cluster, strict bool) error {
 		clusterSubnets := make(map[string]*ClusterSubnetSpec)
 		for i := range cluster.Spec.Subnets {
 			s := &cluster.Spec.Subnets[i]
-			if clusterSubnets[s.SubnetName] != nil {
-				return fmt.Errorf("Subnets contained a duplicate value: %v", s.SubnetName)
+			if clusterSubnets[s.Name] != nil {
+				return fmt.Errorf("Subnets contained a duplicate value: %v", s.Name)
 			}
-			clusterSubnets[s.SubnetName] = s
+			clusterSubnets[s.Name] = s
 		}
 
 		for _, z := range g.Spec.Subnets {

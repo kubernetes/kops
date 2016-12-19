@@ -284,8 +284,7 @@ const (
 )
 
 type ClusterSubnetSpec struct {
-	// TODO: Rename
-	SubnetName string `json:"name,omitempty"`
+	Name string `json:"name,omitempty"`
 
 	Zone string `json:"zone,omitempty"`
 

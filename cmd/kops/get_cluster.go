@@ -112,7 +112,7 @@ func (c *GetClustersCmd) Run(args []string) error {
 		t.AddColumn("SUBNETS", func(c *api.Cluster) string {
 			var subnetNames []string
 			for _, s := range c.Spec.Subnets {
-				subnetNames = append(subnetNames, s.SubnetName)
+				subnetNames = append(subnetNames, s.Name)
 			}
 			return strings.Join(subnetNames, ",")
 		})

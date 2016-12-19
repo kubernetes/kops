@@ -59,7 +59,7 @@ func Convert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 				// A private zone is mapped to a private- and a utility- subnet
 				if z.PrivateCIDR != "" {
 					out.Subnets = append(out.Subnets, kops.ClusterSubnetSpec{
-						SubnetName: z.Name,
+						Name:       z.Name,
 						CIDR:       z.PrivateCIDR,
 						ProviderID: z.ProviderID,
 						Zone:       z.Name,
@@ -69,15 +69,15 @@ func Convert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 
 				if z.CIDR != "" {
 					out.Subnets = append(out.Subnets, kops.ClusterSubnetSpec{
-						SubnetName: "utility-" + z.Name,
-						CIDR:       z.CIDR,
-						Zone:       z.Name,
-						Type:       kops.SubnetTypeUtility,
+						Name: "utility-" + z.Name,
+						CIDR: z.CIDR,
+						Zone: z.Name,
+						Type: kops.SubnetTypeUtility,
 					})
 				}
 			} else {
 				out.Subnets = append(out.Subnets, kops.ClusterSubnetSpec{
-					SubnetName: z.Name,
+					Name:       z.Name,
 					CIDR:       z.CIDR,
 					ProviderID: z.ProviderID,
 					Zone:       z.Name,
@@ -118,7 +118,7 @@ func Convert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, out 
 		zoneMap := make(map[string]*ClusterZoneSpec)
 
 		for _, s := range in.Subnets {
-			zoneName := s.SubnetName
+			zoneName := s.Name
 			if s.Type == kops.SubnetTypeUtility {
 				if !strings.HasPrefix(zoneName, "utility-") {
 					return fmt.Errorf("cannot convert subnet to v1alpha1 when subnet with Type=utility does not have name starting with utility-: %q", zoneName)
@@ -126,7 +126,7 @@ func Convert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, out 
 				zoneName = strings.TrimPrefix(zoneName, "utility-")
 			}
 			if s.Zone != zoneName {
-				return fmt.Errorf("cannot convert to v1alpha1 when subnet Zone != Name: %q != %q", s.Zone, s.SubnetName)
+				return fmt.Errorf("cannot convert to v1alpha1 when subnet Zone != Name: %q != %q", s.Zone, s.Name)
 			}
 
 			zone := zoneMap[zoneName]

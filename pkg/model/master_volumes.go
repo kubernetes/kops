@@ -48,7 +48,7 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 
 			if subnet.Zone == "" {
-				return fmt.Errorf("Subnet %q did not specify a zone", subnet.SubnetName)
+				return fmt.Errorf("Subnet %q did not specify a zone", subnet.Name)
 			}
 
 			volumeSize := int64(fi.IntValue(m.VolumeSize))

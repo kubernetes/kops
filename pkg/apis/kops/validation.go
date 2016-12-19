@@ -219,16 +219,16 @@ func (c *Cluster) Validate(strict bool) error {
 		for _, s := range c.Spec.Subnets {
 			if s.CIDR == "" {
 				if strict {
-					return fmt.Errorf("Subnet %q did not have a CIDR set", s.SubnetName)
+					return fmt.Errorf("Subnet %q did not have a CIDR set", s.Name)
 				}
 			} else {
 				_, subnetCIDR, err := net.ParseCIDR(s.CIDR)
 				if err != nil {
-					return fmt.Errorf("Subnet %q had an invalid CIDR: %q", s.SubnetName, s.CIDR)
+					return fmt.Errorf("Subnet %q had an invalid CIDR: %q", s.Name, s.CIDR)
 				}
 
 				if !isSubnet(networkCIDR, subnetCIDR) {
-					return fmt.Errorf("Subnet %q had a CIDR %q that was not a subnet of the NetworkCIDR %q", s.SubnetName, s.CIDR, c.Spec.NetworkCIDR)
+					return fmt.Errorf("Subnet %q had a CIDR %q that was not a subnet of the NetworkCIDR %q", s.Name, s.CIDR, c.Spec.NetworkCIDR)
 				}
 			}
 		}

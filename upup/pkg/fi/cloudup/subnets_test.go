@@ -65,62 +65,62 @@ func Test_AssignSubnets(t *testing.T) {
 	}{
 		{
 			subnets: []kops.ClusterSubnetSpec{
-				{SubnetName: "a", Zone: "a", CIDR: "10.1.0.0/16", Type: kops.SubnetTypePublic},
+				{Name: "a", Zone: "a", CIDR: "10.1.0.0/16", Type: kops.SubnetTypePublic},
 			},
 			expected: []string{"10.1.0.0/16"},
 		},
 		{
 			subnets: []kops.ClusterSubnetSpec{
-				{SubnetName: "a", Zone: "a", CIDR: "", Type: kops.SubnetTypePublic},
+				{Name: "a", Zone: "a", CIDR: "", Type: kops.SubnetTypePublic},
 			},
 			expected: []string{"10.32.0.0/11"},
 		},
 		{
 			subnets: []kops.ClusterSubnetSpec{
-				{SubnetName: "a", Zone: "a", CIDR: "", Type: kops.SubnetTypePublic},
-				{SubnetName: "b", Zone: "b", CIDR: "", Type: kops.SubnetTypePublic},
+				{Name: "a", Zone: "a", CIDR: "", Type: kops.SubnetTypePublic},
+				{Name: "b", Zone: "b", CIDR: "", Type: kops.SubnetTypePublic},
 			},
 			expected: []string{"10.32.0.0/11", "10.64.0.0/11"},
 		},
 		{
 			subnets: []kops.ClusterSubnetSpec{
-				{SubnetName: "a", Zone: "b", CIDR: "", Type: kops.SubnetTypePublic},
-				{SubnetName: "b", Zone: "a", CIDR: "", Type: kops.SubnetTypePublic},
+				{Name: "a", Zone: "b", CIDR: "", Type: kops.SubnetTypePublic},
+				{Name: "b", Zone: "a", CIDR: "", Type: kops.SubnetTypePublic},
 			},
 			expected: []string{"10.64.0.0/11", "10.32.0.0/11"},
 		},
 		{
 			subnets: []kops.ClusterSubnetSpec{
-				{SubnetName: "a", Zone: "a", CIDR: "10.64.0.0/11", Type: kops.SubnetTypePublic},
-				{SubnetName: "b", Zone: "b", CIDR: "", Type: kops.SubnetTypePublic},
+				{Name: "a", Zone: "a", CIDR: "10.64.0.0/11", Type: kops.SubnetTypePublic},
+				{Name: "b", Zone: "b", CIDR: "", Type: kops.SubnetTypePublic},
 			},
 			expected: []string{"10.64.0.0/11", "10.32.0.0/11"},
 		},
 		{
 			subnets: []kops.ClusterSubnetSpec{
-				{SubnetName: "a", Zone: "a", CIDR: "10.0.0.0/9", Type: kops.SubnetTypePublic},
-				{SubnetName: "b", Zone: "b", CIDR: "", Type: kops.SubnetTypePublic},
+				{Name: "a", Zone: "a", CIDR: "10.0.0.0/9", Type: kops.SubnetTypePublic},
+				{Name: "b", Zone: "b", CIDR: "", Type: kops.SubnetTypePublic},
 			},
 			expected: []string{"10.0.0.0/9", "10.160.0.0/11"},
 		},
 
 		{
 			subnets: []kops.ClusterSubnetSpec{
-				{SubnetName: "a", Zone: "a", CIDR: "", Type: kops.SubnetTypePublic},
-				{SubnetName: "a", Zone: "a", CIDR: "", Type: kops.SubnetTypeUtility},
+				{Name: "a", Zone: "a", CIDR: "", Type: kops.SubnetTypePublic},
+				{Name: "a", Zone: "a", CIDR: "", Type: kops.SubnetTypeUtility},
 			},
 			expected: []string{"10.32.0.0/11", "10.0.0.0/14"},
 		},
 		{
 			subnets: []kops.ClusterSubnetSpec{
-				{SubnetName: "a", Zone: "a", CIDR: "", Type: kops.SubnetTypePublic},
-				{SubnetName: "a", Zone: "a", CIDR: "", Type: kops.SubnetTypeUtility},
-				{SubnetName: "b", Zone: "b", CIDR: "", Type: kops.SubnetTypePublic},
-				{SubnetName: "b", Zone: "b", CIDR: "", Type: kops.SubnetTypePrivate},
-				{SubnetName: "b", Zone: "b", CIDR: "", Type: kops.SubnetTypeUtility},
-				{SubnetName: "c", Zone: "c", CIDR: "", Type: kops.SubnetTypePublic},
-				{SubnetName: "c", Zone: "c", CIDR: "", Type: kops.SubnetTypePrivate},
-				{SubnetName: "c", Zone: "c", CIDR: "", Type: kops.SubnetTypeUtility},
+				{Name: "a", Zone: "a", CIDR: "", Type: kops.SubnetTypePublic},
+				{Name: "a", Zone: "a", CIDR: "", Type: kops.SubnetTypeUtility},
+				{Name: "b", Zone: "b", CIDR: "", Type: kops.SubnetTypePublic},
+				{Name: "b", Zone: "b", CIDR: "", Type: kops.SubnetTypePrivate},
+				{Name: "b", Zone: "b", CIDR: "", Type: kops.SubnetTypeUtility},
+				{Name: "c", Zone: "c", CIDR: "", Type: kops.SubnetTypePublic},
+				{Name: "c", Zone: "c", CIDR: "", Type: kops.SubnetTypePrivate},
+				{Name: "c", Zone: "c", CIDR: "", Type: kops.SubnetTypeUtility},
 			},
 			expected: []string{
 				"10.32.0.0/11", "10.0.0.0/14",

@@ -233,13 +233,13 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		existingSubnets := make(map[string]*api.ClusterSubnetSpec)
 		for i := range cluster.Spec.Subnets {
 			subnet := &cluster.Spec.Subnets[i]
-			existingSubnets[subnet.SubnetName] = subnet
+			existingSubnets[subnet.Name] = subnet
 		}
 		for _, subnetName := range parseZoneList(c.Zones) {
 			if existingSubnets[subnetName] == nil {
 				cluster.Spec.Subnets = append(cluster.Spec.Subnets, api.ClusterSubnetSpec{
-					SubnetName: subnetName,
-					Zone:       subnetName,
+					Name: subnetName,
+					Zone: subnetName,
 				})
 			}
 		}
@@ -261,10 +261,10 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			for _, subnet := range cluster.Spec.Subnets {
 				g := &api.InstanceGroup{}
 				g.Spec.Role = api.InstanceGroupRoleMaster
-				g.Spec.Subnets = []string{subnet.SubnetName}
+				g.Spec.Subnets = []string{subnet.Name}
 				g.Spec.MinSize = fi.Int(1)
 				g.Spec.MaxSize = fi.Int(1)
-				g.ObjectMeta.Name = "master-" + subnet.SubnetName // Subsequent masters (if we support that) could be <zone>-1, <zone>-2
+				g.ObjectMeta.Name = "master-" + subnet.Name // Subsequent masters (if we support that) could be <zone>-1, <zone>-2
 				instanceGroups = append(instanceGroups, g)
 				masters = append(masters, g)
 
@@ -295,16 +295,16 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		subnetMap := make(map[string]*api.ClusterSubnetSpec)
 		for i := range cluster.Spec.Subnets {
 			subnet := &cluster.Spec.Subnets[i]
-			subnetMap[subnet.SubnetName] = subnet
+			subnetMap[subnet.Name] = subnet
 		}
 
-		var masterSubnetNames []string
+		var masterNames []string
 		masterInstanceGroups := make(map[string]*api.InstanceGroup)
 		for _, ig := range masters {
 			if len(ig.Spec.Subnets) != 1 {
 				return fmt.Errorf("unexpected subnets for master instance group %q (expected exactly only, found %d)", ig.ObjectMeta.Name, len(ig.Spec.Subnets))
 			}
-			masterSubnetNames = append(masterSubnetNames, ig.Spec.Subnets[0])
+			masterNames = append(masterNames, ig.Spec.Subnets[0])
 
 			for _, subnetName := range ig.Spec.Subnets {
 				subnet := subnetMap[subnetName]
@@ -320,13 +320,13 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			}
 		}
 
-		sort.Strings(masterSubnetNames)
+		sort.Strings(masterNames)
 
 		for _, etcdCluster := range cloudup.EtcdClusters {
 			etcd := &api.EtcdClusterSpec{}
 			etcd.Name = etcdCluster
-			for _, masterSubnetName := range masterSubnetNames {
-				ig := masterInstanceGroups[masterSubnetName]
+			for _, masterName := range masterNames {
+				ig := masterInstanceGroups[masterName]
 				m := &api.EtcdMemberSpec{}
 				m.Name = ig.ObjectMeta.Name
 				m.InstanceGroup = fi.String(ig.ObjectMeta.Name)
@@ -461,9 +461,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				continue
 			}
 			subnet := api.ClusterSubnetSpec{
-				SubnetName: "utility-" + s.SubnetName,
-				Zone:       s.Zone,
-				Type:       api.SubnetTypeUtility,
+				Name: "utility-" + s.Name,
+				Zone: s.Zone,
+				Type: api.SubnetTypeUtility,
 			}
 			utilitySubnets = append(utilitySubnets, subnet)
 		}
