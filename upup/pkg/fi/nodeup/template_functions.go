@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/util/sets"
+	"runtime"
 )
 
 const TagMaster = "_kubernetes_master"
@@ -113,6 +114,7 @@ func newTemplateFunctions(nodeupConfig *NodeUpConfig, cluster *api.Cluster, inst
 }
 
 func (t *templateFunctions) populate(dest template.FuncMap) {
+	dest["Arch"] = func() string { return runtime.GOARCH }
 
 	dest["IsTopologyPublic"] = t.cluster.IsTopologyPublic
 	dest["IsTopologyPrivate"] = t.cluster.IsTopologyPrivate
