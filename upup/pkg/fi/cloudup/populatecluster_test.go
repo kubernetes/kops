@@ -402,3 +402,33 @@ func TestPopulateCluster_AnonymousAuth_14(t *testing.T) {
 		t.Fatalf("AnonymousAuth is not supported in 1.4")
 	}
 }
+
+func TestPopulateCluster_DockerVersion(t *testing.T) {
+	grid := []struct {
+		KubernetesVersion string
+		DockerVersion     string
+	}{
+		{
+			KubernetesVersion: "1.4.6",
+			DockerVersion:     "1.11.2",
+		},
+		{
+			KubernetesVersion: "1.5.1",
+			DockerVersion:     "1.12.3",
+		},
+	}
+
+	for _, test := range grid {
+		c := buildMinimalCluster()
+		c.Spec.KubernetesVersion = test.KubernetesVersion
+
+		full, err := build(c)
+		if err != nil {
+			t.Fatalf("error during build: %v", err)
+		}
+
+		if fi.StringValue(full.Spec.Docker.Version) != test.DockerVersion {
+			t.Fatalf("Unexpected DockerVersion: %v", fi.StringValue(full.Spec.Docker.Version))
+		}
+	}
+}

@@ -32,6 +32,8 @@ import (
 )
 
 type Loader struct {
+	Builders []fi.ModelBuilder
+
 	templates []*template.Template
 	config    *NodeUpConfig
 	cluster   *api.Cluster
@@ -121,6 +123,17 @@ func (l *Loader) Build(baseDir vfs.Path) (map[string]fi.Task, error) {
 	err = tw.Walk(baseDir)
 	if err != nil {
 		return nil, err
+	}
+
+	for _, builder := range l.Builders {
+		context := &fi.ModelBuilderContext{
+			Tasks: l.tasks,
+		}
+		err := builder.Build(context)
+		if err != nil {
+			return nil, err
+		}
+		l.tasks = context.Tasks
 	}
 
 	// If there is a package task, we need an update packages task

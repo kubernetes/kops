@@ -1,7 +1,0 @@
-{
-  "version": "1.11.2-0~xenial",
-  "source": "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.11.2-0~xenial_amd64.deb",
-  "hash": "194bfa864f0424d1bbdc7d499ccfa0445ce09b9f",
-
-  "preventStart": true
-}

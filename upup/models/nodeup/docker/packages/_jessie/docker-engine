@@ -1,7 +1,0 @@
-{
-  "version": "1.11.2-0~jessie",
-  "source": "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.11.2-0~jessie_amd64.deb",
-  "hash": "c312f1f6fa0b34df4589bb812e4f7af8e28fd51d",
-
-  "preventStart": true
-}

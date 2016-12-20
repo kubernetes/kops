@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"k8s.io/kops/nodeup/pkg/model"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/upup/pkg/fi"
@@ -172,10 +173,12 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	//	c.Config.Tags = append(c.Config.Tags, "_not_config_store")
 	//}
 
-	osTags, err := FindOSTags(c.FSRoot)
+	distribution, err := FindDistribution(c.FSRoot)
 	if err != nil {
-		return fmt.Errorf("error determining OS tags: %v", err)
+		return fmt.Errorf("error determining OS distribution: %v", err)
 	}
+
+	osTags := distribution.BuildTags()
 
 	tags := sets.NewString()
 	tags.Insert(osTags...)
@@ -184,8 +187,15 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	glog.Infof("Config tags: %v", c.config.Tags)
 	glog.Infof("OS tags: %v", osTags)
 
+	modelContext := &model.NodeupModelContext{
+		Cluster:      c.cluster,
+		Distribution: distribution,
+		Architecture: model.ArchitectureAmd64,
+	}
+
 	loader := NewLoader(c.config, c.cluster, assets, tags)
 
+	loader.Builders = append(loader.Builders, &model.DockerBuilder{NodeupModelContext: modelContext})
 	tf, err := newTemplateFunctions(c.config, c.cluster, c.instanceGroup, tags)
 	if err != nil {
 		return fmt.Errorf("error initializing: %v", err)

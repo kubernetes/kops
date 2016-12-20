@@ -198,7 +198,7 @@ gofmt:
 	gofmt -w -s cmd/
 	gofmt -w -s examples/
 	gofmt -w -s federation/
-	gofmt -w -s pkg/
+	gofmt -w -s nodeup/
 	gofmt -w -s util/
 	gofmt -w -s upup/pkg/
 	gofmt -w -s pkg/
@@ -216,6 +216,7 @@ govet:
 	  k8s.io/kops/channels/... \
 	  k8s.io/kops/examples/... \
 	  k8s.io/kops/federation/... \
+	  k8s.io/kops/nodeup/... \
 	  k8s.io/kops/util/... \
 	  k8s.io/kops/upup/... \
 	  k8s.io/kops/protokube/... \
