@@ -36,13 +36,13 @@ import (
 type Package struct {
 	Name string
 
-	Version      *string `json:"version"`
-	Source       *string `json:"source"`
-	Hash         *string `json:"hash"`
-	PreventStart *bool   `json:"preventStart"`
+	Version      *string `json:"version,omitempty"`
+	Source       *string `json:"source,omitempty"`
+	Hash         *string `json:"hash,omitempty"`
+	PreventStart *bool   `json:"preventStart,omitempty"`
 
 	// Healthy is true if the package installation did not fail
-	Healthy *bool `json:"healthy"`
+	Healthy *bool `json:"healthy,omitempty"`
 }
 
 const (
