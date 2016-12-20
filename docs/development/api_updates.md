@@ -1,0 +1,20 @@
+# API machinery
+
+Kops uses the Kubernetes API machinery.  It is well designed, and very powerful, but you have to
+jump through some hoops to use it.
+
+Recommended reading: [kubernetes API changes doc](https://github.com/kubernetes/kubernetes/blob/master/docs/devel/api_changes.md)
+
+## Updating the generated API code
+
+You will need a few tools from kubernetes (these will likely be moved to a shared repo soon):
+
+```
+go get k8s.io/kubernetes
+cd ${GOPATH}/src/k8s.io/kubernetes
+git checkout master
+git pull
+go install ./cmd/libs/go2idl/conversion-gen
+```
+
+Then you can run `make apimachinery` to update the generated API machinery code (conversion functions)
