@@ -9,7 +9,7 @@ At some point you will almost definitely want to upgrade the Kubernetes version 
 
 ## `kube-up` -> `kops`, with downtime
 
-`kops` lets you upgrade an existing 1.2 cluster, installed using `kube-up`, to a cluster managed by `kops` running the latest kubernetes version (or the version of your choice).
+`kops` lets you upgrade an existing 1.x cluster, installed using `kube-up`, to a cluster managed by `kops` running the latest kubernetes version (or the version of your choice).
 
 **This is an experimental and slightly risky procedure, so we recommend backing up important data before proceeding. 
 Take a snapshot of your EBS volumes; export all your data from kubectl etc.**
@@ -151,7 +151,7 @@ This should work even without being SSH-ed into the master, although it can take
 
 * If you're using a manually created ELB, the auto-scaling groups change, so you will need to reconfigure your ELBs to include the new auto-scaling group(s).
 
-* It is recommended to delete old kubernetes system services that we imported (and replace them with newer versions):
+* It is recommended to delete any old kubernetes system services that we might have imported (and replace them with newer versions):
 
 ```
 kubectl delete rc -lk8s-app=kube-dns --namespace=kube-system
@@ -186,8 +186,9 @@ You will also need to release the old ElasticIP manually.
 This method provides zero-downtime when migrating a cluster from `kube-up` to `kops`. It does so by creating a logically separate `kops`-managed cluster in the existing `kube-up` VPC and then swapping the DNS entries (or your reverse proxy's upstream) to point to the new cluster's services.
 
 Limitations:
-- We're spinning up two identical clusters. Due to the default limit of 50 entries in a VPC's route table, if your cluster contains more than ~25 nodes, this strategy, as-is, will not work.
-    - If you have more than ~25 nodes in your cluster, you could slowly shift traffic from one to the other, scaling down the number of nodes on the old cluster, and scaling up the number of nodes on the new cluster. This is currently out of scope for this document.
+- If you're using the default networking (`kubenet`), there is a account limit of 50 entries in a VPC's route table. If your cluster contains more than ~25 nodes, this strategy, as-is, will not work.
+    + Shifting to a CNI-compatible overlay network like `weave`, `kopeio-vxlan`, `calico`, `canal`, `romana`, and similar. See the [kops networking docs](networking.md) for more information.
+    + One solution is to gradually shift traffic from one cluster to the other, scaling down the number of nodes on the old cluster, and scaling up the number of nodes on the new cluster.
 
 ### Steps
 
