@@ -76,6 +76,16 @@ func (p *Package) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	return deps
 }
 
+var _ fi.HasName = &Package{}
+
+func (f *Package) GetName() *string {
+	return &f.Name
+}
+
+func (f *Package) SetName(name string) {
+	f.Name = name
+}
+
 // isOSPackage returns true if this is an OS provided package (as opposed to a bare .deb, for example)
 func (p *Package) isOSPackage() bool {
 	return fi.StringValue(p.Source) == ""
