@@ -1,6 +1,6 @@
 ## Upgrading Kubernetes
 
-Upgrading Kubernetes is easy with kops.  The cluster spec contains a `KubernetesVersion`, so you can simply edit it with `kops edit`, and apply the updated configuration to your cluster.
+Upgrading Kubernetes is easy with kops. The cluster spec contains a `KubernetesVersion`, so you can simply edit it with `kops edit`, and apply the updated configuration to your cluster.
 
 The `kops upgrade` command also automates checking for and applying updates.
 
