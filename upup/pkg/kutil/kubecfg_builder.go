@@ -189,6 +189,14 @@ func (c *KubeconfigBuilder) WriteKubecfg() error {
 	return nil
 }
 
+func (c *KubeconfigBuilder) DeleteKubeConfig() {
+	c.execKubectl("config", "unset", fmt.Sprintf("clusters.%s", c.Context))
+	c.execKubectl("config", "unset", fmt.Sprintf("users.%s", c.Context))
+	c.execKubectl("config", "unset", fmt.Sprintf("users.%s-basic-auth", c.Context))
+	c.execKubectl("config", "unset", fmt.Sprintf("contexts.%s", c.Context))
+	fmt.Printf("Deleted kubectl config for %s\n", c.Context)
+}
+
 // get the correct path.  Handle empty and multiple values.
 func (c *KubeconfigBuilder) getKubectlPath(kubeConfig string) string {
 
