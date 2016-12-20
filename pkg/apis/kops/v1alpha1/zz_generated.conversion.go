@@ -199,8 +199,7 @@ func autoConvert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	if in.Topology != nil {
 		in, out := &in.Topology, &out.Topology
 		*out = new(kops.TopologySpec)
-		// TODO: Inefficient conversion - can we improve it?
-		if err := s.Convert(*in, *out, 0); err != nil {
+		if err := Convert_v1alpha1_TopologySpec_To_kops_TopologySpec(*in, *out, s); err != nil {
 			return err
 		}
 	} else {
@@ -327,8 +326,7 @@ func autoConvert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, 
 	if in.Topology != nil {
 		in, out := &in.Topology, &out.Topology
 		*out = new(TopologySpec)
-		// TODO: Inefficient conversion - can we improve it?
-		if err := s.Convert(*in, *out, 0); err != nil {
+		if err := Convert_kops_TopologySpec_To_v1alpha1_TopologySpec(*in, *out, s); err != nil {
 			return err
 		}
 	} else {
@@ -449,6 +447,7 @@ func autoConvert_v1alpha1_DockerConfig_To_kops_DockerConfig(in *DockerConfig, ou
 	out.Storage = in.Storage
 	out.InsecureRegistry = in.InsecureRegistry
 	out.MTU = in.MTU
+	out.Version = in.Version
 	return nil
 }
 
@@ -464,6 +463,7 @@ func autoConvert_kops_DockerConfig_To_v1alpha1_DockerConfig(in *kops.DockerConfi
 	out.Storage = in.Storage
 	out.InsecureRegistry = in.InsecureRegistry
 	out.MTU = in.MTU
+	out.Version = in.Version
 	return nil
 }
 
@@ -767,6 +767,8 @@ func autoConvert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.AllowPrivileged = in.AllowPrivileged
 	out.APIServerCount = in.APIServerCount
 	out.RuntimeConfig = in.RuntimeConfig
+	out.AnonymousAuth = in.AnonymousAuth
+	out.KubeletPreferredAddressTypes = in.KubeletPreferredAddressTypes
 	return nil
 }
 
@@ -794,6 +796,8 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *ko
 	out.AllowPrivileged = in.AllowPrivileged
 	out.APIServerCount = in.APIServerCount
 	out.RuntimeConfig = in.RuntimeConfig
+	out.AnonymousAuth = in.AnonymousAuth
+	out.KubeletPreferredAddressTypes = in.KubeletPreferredAddressTypes
 	return nil
 }
 
