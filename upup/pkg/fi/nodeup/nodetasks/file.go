@@ -52,6 +52,7 @@ type File struct {
 
 var _ fi.Task = &File{}
 var _ fi.HasDependencies = &File{}
+var _ fi.HasName = &File{}
 
 func NewFileTask(name string, src fi.Resource, destPath string, meta string) (*File, error) {
 	f := &File{
@@ -96,6 +97,16 @@ func (f *File) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	}
 
 	return deps
+}
+
+var _ fi.HasName = &File{}
+
+func (f *File) GetName() *string {
+	return &f.Path
+}
+
+func (f *File) SetName(name string) {
+	glog.Fatalf("SetName not supported for File task")
 }
 
 func (f *File) String() string {
