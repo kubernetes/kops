@@ -54,3 +54,20 @@ Values:
 ## out
 
 `out` determines the directory into which kubectl will write the target output.  It defaults to `out/terraform`
+
+# YAML-only Arguments
+
+Certain arguments can only be passed via YAML, eg, `kops edit cluster`. The following documents some of the more interesting or lesser-known options.
+
+## kubeletPreferredAddressTypes
+
+The apiserver can now select which type of kubelet-reported address to use for apiserver->node communications, using the --kubelet-preferred-address-types flag. (https://github.com/kubernetes/kubernetes/pull/35497, @liggitt)
+
+Example:
+
+```
+kubeAPIServer:
+	kubeletPreferredAddressTypes:
+	- InternalIP
+	- ExternalIP
+```
