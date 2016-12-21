@@ -156,6 +156,11 @@ func Convert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, out 
 					}
 					zone.CIDR = s.CIDR
 
+					// We simple can't express this in v1alpha1
+					if s.ProviderID != "" {
+						return fmt.Errorf("cannot convert to v1alpha1: utility subnet had ProviderID %v", s.Name)
+					}
+
 				case kops.SubnetTypePublic:
 					return fmt.Errorf("cannot convert to v1alpha1 when subnet type is public")
 
