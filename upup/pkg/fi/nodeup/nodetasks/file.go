@@ -36,11 +36,11 @@ const FileType_Directory = "directory"
 const FileType_File = "file"
 
 type File struct {
-	Path     string
-	Contents fi.Resource
+	Path     string      `json:"path,omitempty"`
+	Contents fi.Resource `json:"contents,omitempty"`
 
-	Mode        *string `json:"mode"`
-	IfNotExists bool    `json:"ifNotExists"`
+	Mode        *string `json:"mode,omitempty"`
+	IfNotExists bool    `json:"ifNotExists,omitempty"`
 
 	OnChangeExecute []string `json:"onChangeExecute,omitempty"`
 
