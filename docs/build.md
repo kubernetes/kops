@@ -13,7 +13,7 @@ make
 
 ## Cross Compiling
 
-Cross compiling for things like `nodeup` can be done as follows: `GOOS=linux GOARCH=386 make nodeup`
+Cross compiling for things like `nodeup` are now done automatically via `make nodeup`. `make push-aws-run TARGET=admin@$TARGET` will automatically choose the linux amd64 build from your `.build` directory.
 
 
 ## Troubleshooting 
