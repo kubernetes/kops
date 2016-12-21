@@ -11,6 +11,10 @@ make
 * The `master` branch  _should_ also be functional, but is where active development happens, so may be less stable.
 
 
+## Cross Compiling
+
+Cross compiling for things like `nodeup` can be done as follows: `GOOS=linux GOARCH=386 make nodeup`
+
 
 ## Troubleshooting 
 
