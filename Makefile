@@ -48,6 +48,16 @@ ifdef STATIC_BUILD
   EXTRA_LDFLAGS=-s
 endif
 
+# Cross compile commands
+
+ifdef GOOS
+  CROSSBUILD_GOOS=-e GOOS=${GOOS} -e CGO_ENABLED=0
+endif
+
+ifdef GOOS
+  CROSSBUILD_GOARCH=-e GOARCH=${GOARCH} -e CGO_ENABLED=0
+endif
+
 kops: kops-gobindata
 	go install ${EXTRA_BUILDFLAGS} -ldflags "-X main.BuildVersion=${VERSION} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/...
 
@@ -165,7 +175,7 @@ nodeup-gocode: kops-gobindata
 
 nodeup-dist:
 	docker pull golang:${GOVERSION} # Keep golang image up to date
-	docker run --name=nodeup-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile nodeup-gocode
+	docker run --name=nodeup-build-${UNIQUE} ${CROSSBUILD_GOOS} ${CROSSBUILD_GOARCH} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile nodeup-gocode
 	mkdir -p .build/dist
 	docker cp nodeup-build-${UNIQUE}:/go/bin/nodeup .build/dist/
 	(sha1sum .build/dist/nodeup | cut -d' ' -f1) > .build/dist/nodeup.sha1
