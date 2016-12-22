@@ -61,6 +61,12 @@ func TestPrivateWeave(t *testing.T) {
 	runTest(t, "privateweave.example.com", "../../tests/integration/privateweave", "v1alpha2", true)
 }
 
+// TestPrivateCalico runs the test on a configuration with private topology, calico networking
+func TestPrivateCalico(t *testing.T) {
+	runTest(t, "privatecalico.example.com", "../../tests/integration/privatecalico", "v1alpha1", true)
+	runTest(t, "privatecalico.example.com", "../../tests/integration/privatecalico", "v1alpha2", true)
+}
+
 func runTest(t *testing.T, clusterName string, srcDir string, version string, private bool) {
 	var stdout bytes.Buffer
 
