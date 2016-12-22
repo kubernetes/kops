@@ -93,7 +93,11 @@ func (x *ImportCluster) ImportAWSCluster() error {
 
 			subnet := subnets[subnetName]
 			if subnet == nil {
-				subnet = &api.ClusterSubnetSpec{Name: subnetName}
+				subnet = &api.ClusterSubnetSpec{
+					Name: subnetName,
+					Zone: zoneName,
+					Type: api.SubnetTypePublic,
+				}
 				subnets[subnetName] = subnet
 			}
 
