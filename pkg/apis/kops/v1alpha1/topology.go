@@ -35,7 +35,4 @@ type TopologySpec struct {
 	// or disable inbound SSH communication from the Internet, some call bastion
 	// as the "jump server".
 	Bastion *BastionSpec `json:"bastion,omitempty"`
-
-	// DNS Hosted Zone can be specified as public|private
-	DNS string `json:"dns,omitempty"`
 }
