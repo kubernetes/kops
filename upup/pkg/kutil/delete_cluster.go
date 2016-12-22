@@ -20,7 +20,6 @@ import (
 	"bufio"
 	"bytes"
 	"compress/gzip"
-	"encoding/base64"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
@@ -32,6 +31,7 @@ import (
 	"io"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kubernetes/pkg/util/sets"
 	"strings"
 	"sync"
 	"time"
@@ -118,8 +118,6 @@ func (c *DeleteCluster) ListResources() (map[string]*ResourceTracker, error) {
 		ListELBs,
 		// ASG
 		ListAutoScalingGroups,
-		ListAutoScalingLaunchConfigurations,
-		// LC
 
 		// Route 53
 		ListRoute53Records,
@@ -163,6 +161,26 @@ func (c *DeleteCluster) ListResources() (map[string]*ResourceTracker, error) {
 					}
 				}
 			}
+		}
+	}
+
+	{
+		// We delete a launch configuration if it is bound to one of the tagged security groups
+		securityGroups := sets.NewString()
+		for k := range resources {
+			if !strings.HasPrefix(k, "security-group:") {
+				continue
+			}
+			id := strings.TrimPrefix(k, "security-group:")
+			securityGroups.Insert(id)
+		}
+		lcs, err := FindAutoScalingLaunchConfigurations(cloud, securityGroups)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, t := range lcs {
+			resources[t.Type+":"+t.ID] = t
 		}
 	}
 
@@ -726,6 +744,11 @@ func DeleteKeypair(cloud fi.Cloud, r *ResourceTracker) error {
 }
 
 func ListKeypairs(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
+	if !strings.Contains(clusterName, ".") {
+		glog.Infof("cluster %q is legacy (kube-up) cluster; won't delete keypairs", clusterName)
+		return nil, nil
+	}
+
 	c := cloud.(awsup.AWSCloud)
 
 	keypairName := "kubernetes." + clusterName
@@ -1312,52 +1335,40 @@ func ListAutoScalingGroups(cloud fi.Cloud, clusterName string) ([]*ResourceTrack
 	return trackers, nil
 }
 
-func ListAutoScalingLaunchConfigurations(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
+func FindAutoScalingLaunchConfigurations(cloud fi.Cloud, securityGroups sets.String) ([]*ResourceTracker, error) {
 	c := cloud.(awsup.AWSCloud)
 
-	glog.V(2).Infof("Listing all Autoscaling LaunchConfigurations for cluster %q", clusterName)
+	glog.V(2).Infof("Finding all Autoscaling LaunchConfigurations by security group")
 
 	var trackers []*ResourceTracker
 
 	request := &autoscaling.DescribeLaunchConfigurationsInput{}
 	err := c.Autoscaling().DescribeLaunchConfigurationsPages(request, func(p *autoscaling.DescribeLaunchConfigurationsOutput, lastPage bool) bool {
 		for _, t := range p.LaunchConfigurations {
-			if t.UserData == nil {
-				continue
-			}
-
-			b, err := base64.StdEncoding.DecodeString(aws.StringValue(t.UserData))
-			if err != nil {
-				glog.Infof("Ignoring autoscaling LaunchConfiguration with invalid UserData: %v", *t.LaunchConfigurationName)
-				continue
-			}
-
-			userData, err := UserDataToString(b)
-			if err != nil {
-				glog.Infof("Ignoring autoscaling LaunchConfiguration with invalid UserData: %v", *t.LaunchConfigurationName)
-				continue
-			}
-
-			//I finally found what was polluting logs with the bash scripts.
-			//glog.V(8).Infof("UserData: %s", string(userData))
-
-			// Adding in strings.Contains() here on cluster name, making the grand assumption that if our clustername string is present
-			// in the name of the LC, it's safe to delete. This solves the bastion LC problem.
-			if extractClusterName(userData) == clusterName || strings.Contains(*t.LaunchConfigurationName, clusterName) {
-				tracker := &ResourceTracker{
-					Name:    aws.StringValue(t.LaunchConfigurationName),
-					ID:      aws.StringValue(t.LaunchConfigurationName),
-					Type:    TypeAutoscalingLaunchConfig,
-					deleter: DeleteAutoscalingLaunchConfiguration,
+			found := false
+			for _, sg := range t.SecurityGroups {
+				if securityGroups.Has(aws.StringValue(sg)) {
+					found = true
+					break
 				}
-
-				var blocks []string
-				//blocks = append(blocks, TypeAutoscalingLaunchConfig + ":" + aws.StringValue(asg.LaunchConfigurationName))
-
-				tracker.blocks = blocks
-
-				trackers = append(trackers, tracker)
 			}
+			if !found {
+				continue
+			}
+
+			tracker := &ResourceTracker{
+				Name:    aws.StringValue(t.LaunchConfigurationName),
+				ID:      aws.StringValue(t.LaunchConfigurationName),
+				Type:    TypeAutoscalingLaunchConfig,
+				deleter: DeleteAutoscalingLaunchConfiguration,
+			}
+
+			var blocks []string
+			//blocks = append(blocks, TypeAutoscalingLaunchConfig + ":" + aws.StringValue(asg.LaunchConfigurationName))
+
+			tracker.blocks = blocks
+
+			trackers = append(trackers, tracker)
 		}
 		return true
 	})
