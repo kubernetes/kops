@@ -11,6 +11,10 @@ make
 * The `master` branch  _should_ also be functional, but is where active development happens, so may be less stable.
 
 
+## Cross Compiling
+
+Cross compiling for things like `nodeup` are now done automatically via `make nodeup`. `make push-aws-run TARGET=admin@$TARGET` will automatically choose the linux amd64 build from your `.build` directory.
+
 
 ## Troubleshooting 
 
