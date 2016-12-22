@@ -83,7 +83,7 @@ test:
 
 crossbuild-nodeup:
 	mkdir -p .build/dist/
-	GOOS=darwin GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/darwin/amd64/nodeup -ldflags "${EXTRA_LDFLAGS} -X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/nodeup
+	#GOOS=darwin GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/darwin/amd64/nodeup -ldflags "${EXTRA_LDFLAGS} -X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/nodeup
 	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/linux/amd64/nodeup -ldflags "${EXTRA_LDFLAGS} -X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/nodeup
 	#GOOS=windows GOARCH=amd64 go build -o .build/dist/windows/amd64/kops -ldflags "-X main.BuildVersion=${VERSION}" -v k8s.io/kops/cmd/kops/...
 
@@ -136,9 +136,9 @@ gen-cli-docs:
 	@kops genhelpdocs --out docs/cli
 
 # Will always push a linux-based build up to the server
-push: nodeup-gocode
+push: crossbuild-nodeup
 	scp -C .build/dist/linux/amd64/nodeup  ${TARGET}:/tmp/
-	
+
 push-gce-dry: push
 	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=metadata://gce/config --dryrun --v=8
 
@@ -174,10 +174,12 @@ nodeup: nodeup-dist
 nodeup-gocode: kops-gobindata
 	go install ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS} -X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/nodeup
 
-nodeup-dist: crossbuild-nodeup-in-docker
-	mkdir -p .build/dist/
-	(sha1sum .build/dist/darwin/amd64/nodeup | cut -d' ' -f1) > .build/dist/darwin/amd64/nodeup.sha1
-	(sha1sum .build/dist/linux/amd64/nodeup | cut -d' ' -f1) > .build/dist/linux/amd64/nodeup.sha1
+nodeup-dist:
+	docker pull golang:${GOVERSION} # Keep golang image up to date
+	docker run --name=nodeup-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile nodeup-gocode
+	mkdir -p .build/dist
+	docker cp nodeup-build-${UNIQUE}:/go/bin/nodeup .build/dist/
+	(sha1sum .build/dist/nodeup | cut -d' ' -f1) > .build/dist/nodeup.sha1
 
 dns-controller-gocode:
 	go install k8s.io/kops/dns-controller/cmd/dns-controller
