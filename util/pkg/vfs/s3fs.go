@@ -115,6 +115,12 @@ func (p *S3Path) WriteFile(data []byte) error {
 	request.Key = aws.String(p.key)
 	request.ServerSideEncryption = aws.String("AES256")
 
+	acl := os.Getenv("KOPS_STATE_S3_ACL")
+	if acl != "" {
+		request.ACL = aws.String(acl)
+	}
+
+
 	// We don't need Content-MD5: https://github.com/aws/aws-sdk-go/issues/208
 
 	_, err = client.PutObject(request)
