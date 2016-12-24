@@ -76,7 +76,7 @@ but it's better to avoid the later confusion!)
 
 ## Running in a shared subnet
 
-You can also use a shared subnet. Doing so is not recommended unless you are using external networking.
+You can also use a shared subnet. Doing so is not recommended unless you are using external networking ([kope-routing](https://github.com/kopeio/kope-routing)).
 
 Edit your cluster to add the ID of the subnet:
 
