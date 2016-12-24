@@ -23,7 +23,7 @@ spec:
       hostPID: true
       containers:
         - name: weave
-          image: weaveworks/weave-kube:1.8.1
+          image: weaveworks/weave-kube:1.8.2
           command:
             - /home/weave/launch.sh
           livenessProbe:
@@ -47,7 +47,7 @@ spec:
             requests:
               cpu: 10m
         - name: weave-npc
-          image: weaveworks/weave-npc:1.8.1
+          image: weaveworks/weave-npc:1.8.2
           resources:
             requests:
               cpu: 10m
