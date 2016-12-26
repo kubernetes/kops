@@ -473,6 +473,12 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 		cluster.Spec.Subnets = append(cluster.Spec.Subnets, utilitySubnets...)
 
+		// Default to a DNS name for the bastion
+		cluster.Spec.Topology.Bastion = &api.BastionSpec{
+			BastionPublicName: "bastion-" + clusterName,
+		}
+
+
 		if c.Bastion {
 			bastionGroup := &api.InstanceGroup{}
 			bastionGroup.Spec.Role = api.InstanceGroupRoleBastion
