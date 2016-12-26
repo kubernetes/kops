@@ -31,14 +31,18 @@ type APILoadBalancerBuilder struct {
 var _ fi.ModelBuilder = &APILoadBalancerBuilder{}
 
 func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
-	// Configuration where an ELB fronts the master (apiservers in particular)
-
+	// Configuration where an ELB fronts the API
 	if !b.UseLoadBalancerForAPI() {
 		return nil
 	}
 
+	elbSpec := b.Cluster.Spec.API.ELB
+	if elbSpec == nil {
+		return nil
+	}
+
 	var elb *awstasks.LoadBalancer
-	{
+	if elbSpec != nil {
 		elbID, err := b.GetELBName32("api")
 		if err != nil {
 			return err
@@ -50,11 +54,12 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			switch subnet.Type {
 			case kops.SubnetTypePublic:
-				if !b.Cluster.IsTopologyPublic() {
+				if b.Cluster.Spec.Topology.Masters != kops.TopologyPublic {
 					continue
 				}
+
 			case kops.SubnetTypeUtility:
-				if !b.Cluster.IsTopologyPrivate() {
+				if b.Cluster.Spec.Topology.Masters != kops.TopologyPrivate {
 					continue
 				}
 
@@ -87,6 +92,15 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				HealthyThreshold:   i64(2),
 				UnhealthyThreshold: i64(2),
 			},
+		}
+
+		switch elbSpec.Type {
+		case kops.ELBTypeInternal:
+			elb.Scheme = s("internal")
+		case kops.ELBTypePublic:
+			elb.Scheme = nil
+		default:
+			return fmt.Errorf("unknown elb Type: %q", elbSpec.Type)
 		}
 
 		c.AddTask(elb)
