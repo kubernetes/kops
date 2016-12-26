@@ -24,8 +24,7 @@ import (
 
 var (
 	// TODO: Defaulting functions
-	//SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes, addDefaultingFuncs, addConversionFuncs)
-	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes, addConversionFuncs)
+	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes, addDefaultingFuncs, addConversionFuncs)
 	//SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
 	AddToScheme = SchemeBuilder.AddToScheme
 )

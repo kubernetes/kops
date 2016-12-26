@@ -229,6 +229,33 @@ type ClusterSpec struct {
 
 	// Networking configuration
 	Networking *NetworkingSpec `json:"networking,omitempty"`
+
+	// API field controls how the API is exposed outside the cluster
+	API *PublishSpec `json:"api,omitempty"`
+}
+
+type PublishSpec struct {
+	DNS *DNSPublishSpec `json:"dns,omitempty"`
+	ELB *ELBPublishSpec `json:"elb,omitempty"`
+}
+
+func (s *PublishSpec) IsEmpty() bool {
+	return s.DNS == nil && s.ELB == nil
+}
+
+type DNSPublishSpec struct {
+}
+
+// ELBType string describes ELB types (public, internal)
+type ELBType string
+
+const (
+	ELBTypePublic   ELBType = "Public"
+	ELBTypeInternal ELBType = "Internal"
+)
+
+type ELBPublishSpec struct {
+	Type ELBType `json:"type,omitempty"`
 }
 
 type KubeDNSConfig struct {

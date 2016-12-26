@@ -151,7 +151,10 @@ func (m *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 }
 
 func (m *KopsModelContext) UseLoadBalancerForAPI() bool {
-	return m.Cluster.Spec.Topology.Masters == kops.TopologyPrivate
+	if m.Cluster.Spec.API == nil {
+		return false
+	}
+	return m.Cluster.Spec.API.ELB != nil
 }
 
 func (m *KopsModelContext) UsePrivateDNS() bool {
