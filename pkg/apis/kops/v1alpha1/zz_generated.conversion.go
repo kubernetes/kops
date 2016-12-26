@@ -36,6 +36,8 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 	return scheme.AddGeneratedConversionFuncs(
 		Convert_v1alpha1_CNINetworkingSpec_To_kops_CNINetworkingSpec,
 		Convert_kops_CNINetworkingSpec_To_v1alpha1_CNINetworkingSpec,
+		Convert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec,
+		Convert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec,
 		Convert_v1alpha1_ClassicNetworkingSpec_To_kops_ClassicNetworkingSpec,
 		Convert_kops_ClassicNetworkingSpec_To_v1alpha1_ClassicNetworkingSpec,
 		Convert_v1alpha1_Cluster_To_kops_Cluster,
@@ -44,8 +46,12 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_kops_ClusterList_To_v1alpha1_ClusterList,
 		Convert_v1alpha1_ClusterSpec_To_kops_ClusterSpec,
 		Convert_kops_ClusterSpec_To_v1alpha1_ClusterSpec,
+		Convert_v1alpha1_DNSPublishSpec_To_kops_DNSPublishSpec,
+		Convert_kops_DNSPublishSpec_To_v1alpha1_DNSPublishSpec,
 		Convert_v1alpha1_DockerConfig_To_kops_DockerConfig,
 		Convert_kops_DockerConfig_To_v1alpha1_DockerConfig,
+		Convert_v1alpha1_ELBPublishSpec_To_kops_ELBPublishSpec,
+		Convert_kops_ELBPublishSpec_To_v1alpha1_ELBPublishSpec,
 		Convert_v1alpha1_EtcdClusterSpec_To_kops_EtcdClusterSpec,
 		Convert_kops_EtcdClusterSpec_To_v1alpha1_EtcdClusterSpec,
 		Convert_v1alpha1_EtcdMemberSpec_To_kops_EtcdMemberSpec,
@@ -84,10 +90,10 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_kops_LeaderElectionConfiguration_To_v1alpha1_LeaderElectionConfiguration,
 		Convert_v1alpha1_NetworkingSpec_To_kops_NetworkingSpec,
 		Convert_kops_NetworkingSpec_To_v1alpha1_NetworkingSpec,
+		Convert_v1alpha1_PublishSpec_To_kops_PublishSpec,
+		Convert_kops_PublishSpec_To_v1alpha1_PublishSpec,
 		Convert_v1alpha1_WeaveNetworkingSpec_To_kops_WeaveNetworkingSpec,
 		Convert_kops_WeaveNetworkingSpec_To_v1alpha1_WeaveNetworkingSpec,
-		Convert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec,
-		Convert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec,
 	)
 }
 
@@ -105,6 +111,22 @@ func autoConvert_kops_CNINetworkingSpec_To_v1alpha1_CNINetworkingSpec(in *kops.C
 
 func Convert_kops_CNINetworkingSpec_To_v1alpha1_CNINetworkingSpec(in *kops.CNINetworkingSpec, out *CNINetworkingSpec, s conversion.Scope) error {
 	return autoConvert_kops_CNINetworkingSpec_To_v1alpha1_CNINetworkingSpec(in, out, s)
+}
+
+func autoConvert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *CalicoNetworkingSpec, out *kops.CalicoNetworkingSpec, s conversion.Scope) error {
+	return nil
+}
+
+func Convert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *CalicoNetworkingSpec, out *kops.CalicoNetworkingSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in, out, s)
+}
+
+func autoConvert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec(in *kops.CalicoNetworkingSpec, out *CalicoNetworkingSpec, s conversion.Scope) error {
+	return nil
+}
+
+func Convert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec(in *kops.CalicoNetworkingSpec, out *CalicoNetworkingSpec, s conversion.Scope) error {
+	return autoConvert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec(in, out, s)
 }
 
 func autoConvert_v1alpha1_ClassicNetworkingSpec_To_kops_ClassicNetworkingSpec(in *ClassicNetworkingSpec, out *kops.ClassicNetworkingSpec, s conversion.Scope) error {
@@ -311,6 +333,15 @@ func autoConvert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	} else {
 		out.Networking = nil
 	}
+	if in.API != nil {
+		in, out := &in.API, &out.API
+		*out = new(kops.PublishSpec)
+		if err := Convert_v1alpha1_PublishSpec_To_kops_PublishSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.API = nil
+	}
 	return nil
 }
 
@@ -438,7 +469,32 @@ func autoConvert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, 
 	} else {
 		out.Networking = nil
 	}
+	if in.API != nil {
+		in, out := &in.API, &out.API
+		*out = new(PublishSpec)
+		if err := Convert_kops_PublishSpec_To_v1alpha1_PublishSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.API = nil
+	}
 	return nil
+}
+
+func autoConvert_v1alpha1_DNSPublishSpec_To_kops_DNSPublishSpec(in *DNSPublishSpec, out *kops.DNSPublishSpec, s conversion.Scope) error {
+	return nil
+}
+
+func Convert_v1alpha1_DNSPublishSpec_To_kops_DNSPublishSpec(in *DNSPublishSpec, out *kops.DNSPublishSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha1_DNSPublishSpec_To_kops_DNSPublishSpec(in, out, s)
+}
+
+func autoConvert_kops_DNSPublishSpec_To_v1alpha1_DNSPublishSpec(in *kops.DNSPublishSpec, out *DNSPublishSpec, s conversion.Scope) error {
+	return nil
+}
+
+func Convert_kops_DNSPublishSpec_To_v1alpha1_DNSPublishSpec(in *kops.DNSPublishSpec, out *DNSPublishSpec, s conversion.Scope) error {
+	return autoConvert_kops_DNSPublishSpec_To_v1alpha1_DNSPublishSpec(in, out, s)
 }
 
 func autoConvert_v1alpha1_DockerConfig_To_kops_DockerConfig(in *DockerConfig, out *kops.DockerConfig, s conversion.Scope) error {
@@ -471,6 +527,24 @@ func autoConvert_kops_DockerConfig_To_v1alpha1_DockerConfig(in *kops.DockerConfi
 
 func Convert_kops_DockerConfig_To_v1alpha1_DockerConfig(in *kops.DockerConfig, out *DockerConfig, s conversion.Scope) error {
 	return autoConvert_kops_DockerConfig_To_v1alpha1_DockerConfig(in, out, s)
+}
+
+func autoConvert_v1alpha1_ELBPublishSpec_To_kops_ELBPublishSpec(in *ELBPublishSpec, out *kops.ELBPublishSpec, s conversion.Scope) error {
+	out.Type = kops.ELBType(in.Type)
+	return nil
+}
+
+func Convert_v1alpha1_ELBPublishSpec_To_kops_ELBPublishSpec(in *ELBPublishSpec, out *kops.ELBPublishSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha1_ELBPublishSpec_To_kops_ELBPublishSpec(in, out, s)
+}
+
+func autoConvert_kops_ELBPublishSpec_To_v1alpha1_ELBPublishSpec(in *kops.ELBPublishSpec, out *ELBPublishSpec, s conversion.Scope) error {
+	out.Type = ELBType(in.Type)
+	return nil
+}
+
+func Convert_kops_ELBPublishSpec_To_v1alpha1_ELBPublishSpec(in *kops.ELBPublishSpec, out *ELBPublishSpec, s conversion.Scope) error {
+	return autoConvert_kops_ELBPublishSpec_To_v1alpha1_ELBPublishSpec(in, out, s)
 }
 
 func autoConvert_v1alpha1_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdClusterSpec, out *kops.EtcdClusterSpec, s conversion.Scope) error {
@@ -1180,13 +1254,65 @@ func autoConvert_kops_NetworkingSpec_To_v1alpha1_NetworkingSpec(in *kops.Network
 			return err
 		}
 	} else {
-		out.Weave = nil
+		out.Calico = nil
 	}
 	return nil
 }
 
 func Convert_kops_NetworkingSpec_To_v1alpha1_NetworkingSpec(in *kops.NetworkingSpec, out *NetworkingSpec, s conversion.Scope) error {
 	return autoConvert_kops_NetworkingSpec_To_v1alpha1_NetworkingSpec(in, out, s)
+}
+
+func autoConvert_v1alpha1_PublishSpec_To_kops_PublishSpec(in *PublishSpec, out *kops.PublishSpec, s conversion.Scope) error {
+	if in.DNS != nil {
+		in, out := &in.DNS, &out.DNS
+		*out = new(kops.DNSPublishSpec)
+		if err := Convert_v1alpha1_DNSPublishSpec_To_kops_DNSPublishSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.DNS = nil
+	}
+	if in.ELB != nil {
+		in, out := &in.ELB, &out.ELB
+		*out = new(kops.ELBPublishSpec)
+		if err := Convert_v1alpha1_ELBPublishSpec_To_kops_ELBPublishSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.ELB = nil
+	}
+	return nil
+}
+
+func Convert_v1alpha1_PublishSpec_To_kops_PublishSpec(in *PublishSpec, out *kops.PublishSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha1_PublishSpec_To_kops_PublishSpec(in, out, s)
+}
+
+func autoConvert_kops_PublishSpec_To_v1alpha1_PublishSpec(in *kops.PublishSpec, out *PublishSpec, s conversion.Scope) error {
+	if in.DNS != nil {
+		in, out := &in.DNS, &out.DNS
+		*out = new(DNSPublishSpec)
+		if err := Convert_kops_DNSPublishSpec_To_v1alpha1_DNSPublishSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.DNS = nil
+	}
+	if in.ELB != nil {
+		in, out := &in.ELB, &out.ELB
+		*out = new(ELBPublishSpec)
+		if err := Convert_kops_ELBPublishSpec_To_v1alpha1_ELBPublishSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.ELB = nil
+	}
+	return nil
+}
+
+func Convert_kops_PublishSpec_To_v1alpha1_PublishSpec(in *kops.PublishSpec, out *PublishSpec, s conversion.Scope) error {
+	return autoConvert_kops_PublishSpec_To_v1alpha1_PublishSpec(in, out, s)
 }
 
 func autoConvert_v1alpha1_WeaveNetworkingSpec_To_kops_WeaveNetworkingSpec(in *WeaveNetworkingSpec, out *kops.WeaveNetworkingSpec, s conversion.Scope) error {
@@ -1203,20 +1329,4 @@ func autoConvert_kops_WeaveNetworkingSpec_To_v1alpha1_WeaveNetworkingSpec(in *ko
 
 func Convert_kops_WeaveNetworkingSpec_To_v1alpha1_WeaveNetworkingSpec(in *kops.WeaveNetworkingSpec, out *WeaveNetworkingSpec, s conversion.Scope) error {
 	return autoConvert_kops_WeaveNetworkingSpec_To_v1alpha1_WeaveNetworkingSpec(in, out, s)
-}
-
-func autoConvert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec(in *kops.CalicoNetworkingSpec, out *CalicoNetworkingSpec, s conversion.Scope) error {
-	return nil
-}
-
-func Convert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec(in *kops.CalicoNetworkingSpec, out *CalicoNetworkingSpec, s conversion.Scope) error {
-	return autoConvert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec(in, out, s)
-}
-
-func autoConvert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *CalicoNetworkingSpec, out *kops.CalicoNetworkingSpec, s conversion.Scope) error {
-	return nil
-}
-
-func Convert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *CalicoNetworkingSpec, out *kops.CalicoNetworkingSpec, s conversion.Scope) error {
-	return autoConvert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in, out, s)
 }
