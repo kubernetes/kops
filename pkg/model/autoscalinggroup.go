@@ -89,14 +89,47 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			{
 				associatePublicIP := true
-				if b.Cluster.IsTopologyPublic() {
+				switch ig.Spec.Role {
+				case kops.InstanceGroupRoleMaster:
+					switch b.Cluster.Spec.Topology.Masters {
+					case kops.TopologyPrivate:
+						associatePublicIP = false
+						// TODO: We probably should honor AssociatePublicIP
+
+					case kops.TopologyPublic:
+						associatePublicIP = true
+						if ig.Spec.AssociatePublicIP != nil {
+							associatePublicIP = *ig.Spec.AssociatePublicIP
+						}
+
+					default:
+						return fmt.Errorf("unhandled master topology %q", b.Cluster.Spec.Topology.Masters)
+					}
+
+				case kops.InstanceGroupRoleNode:
+					switch b.Cluster.Spec.Topology.Nodes {
+					case kops.TopologyPrivate:
+						associatePublicIP = false
+						// TODO: We probably should honor AssociatePublicIP
+
+					case kops.TopologyPublic:
+						associatePublicIP = true
+						if ig.Spec.AssociatePublicIP != nil {
+							associatePublicIP = *ig.Spec.AssociatePublicIP
+						}
+
+					default:
+						return fmt.Errorf("unhandled master topology %q", b.Cluster.Spec.Topology.Masters)
+					}
+
+				case kops.InstanceGroupRoleBastion:
 					associatePublicIP = true
 					if ig.Spec.AssociatePublicIP != nil {
 						associatePublicIP = *ig.Spec.AssociatePublicIP
 					}
-				}
-				if b.Cluster.IsTopologyPrivate() {
-					associatePublicIP = false
+
+				default:
+					return fmt.Errorf("Unknown instance group role %q", ig.Spec.Role)
 				}
 				t.AssociatePublicIP = &associatePublicIP
 			}

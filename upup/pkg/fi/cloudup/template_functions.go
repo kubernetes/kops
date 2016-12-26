@@ -91,9 +91,9 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["SharedVPC"] = tf.SharedVPC
 
 	// Network topology definitions
-	dest["IsTopologyPublic"] = tf.IsTopologyPublic
-	dest["IsTopologyPrivate"] = tf.IsTopologyPrivate
-	dest["IsTopologyPrivateMasters"] = tf.IsTopologyPrivateMasters
+	//dest["IsTopologyPublic"] = tf.IsTopologyPublic
+	//dest["IsTopologyPrivate"] = tf.IsTopologyPrivate
+	//dest["IsTopologyPrivateMasters"] = tf.IsTopologyPrivateMasters
 	dest["GetELBName32"] = tf.modelContext.GetELBName32
 
 	dest["WellKnownServiceIP"] = tf.WellKnownServiceIP
@@ -137,13 +137,13 @@ func (tf *TemplateFunctions) SharedVPC() bool {
 	return tf.cluster.SharedVPC()
 }
 
-// These are the network topology functions. They are boolean logic for checking which type of
-// topology this cluster is set to be deployed with.
-func (tf *TemplateFunctions) IsTopologyPrivate() bool { return tf.cluster.IsTopologyPrivate() }
-func (tf *TemplateFunctions) IsTopologyPublic() bool  { return tf.cluster.IsTopologyPublic() }
-func (tf *TemplateFunctions) IsTopologyPrivateMasters() bool {
-	return tf.cluster.IsTopologyPrivateMasters()
-}
+//// These are the network topology functions. They are boolean logic for checking which type of
+//// topology this cluster is set to be deployed with.
+//func (tf *TemplateFunctions) IsTopologyPrivate() bool { return tf.cluster.IsTopologyPrivate() }
+//func (tf *TemplateFunctions) IsTopologyPublic() bool  { return tf.cluster.IsTopologyPublic() }
+//func (tf *TemplateFunctions) IsTopologyPrivateMasters() bool {
+//	return tf.cluster.IsTopologyPrivateMasters()
+//}
 
 // Image returns the docker image name for the specified component
 func (tf *TemplateFunctions) Image(component string) (string, error) {

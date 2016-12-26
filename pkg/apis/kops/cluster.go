@@ -233,6 +233,33 @@ type ClusterSpec struct {
 
 	// Networking configuration
 	Networking *NetworkingSpec `json:"networking,omitempty"`
+
+	// API field controls how the API is exposed outside the cluster
+	API *PublishSpec `json:"api,omitempty"`
+}
+
+type PublishSpec struct {
+	DNS *DNSPublishSpec `json:"dns,omitempty"`
+	ELB *ELBPublishSpec `json:"elb,omitempty"`
+}
+
+func (s *PublishSpec) IsEmpty() bool {
+	return s.DNS == nil && s.ELB == nil
+}
+
+type DNSPublishSpec struct {
+}
+
+// ELBType string describes ELB types (public, internal)
+type ELBType string
+
+const (
+	ELBTypePublic   ELBType = "Public"
+	ELBTypeInternal ELBType = "Internal"
+)
+
+type ELBPublishSpec struct {
+	Type ELBType `json:"type,omitempty"`
 }
 
 type KubeDNSConfig struct {
@@ -366,22 +393,22 @@ func (c *Cluster) SharedVPC() bool {
 	return c.Spec.NetworkID != ""
 }
 
-// --------------------------------------------------------------------------------------------
-// Network Topology functions for template parsing
-//
-// Each of these functions can be used in the model templates
-// The go template package currently only supports boolean
-// operations, so the logic is mapped here as *Cluster functions.
-//
-// A function will need to be defined for all new topologies, if we plan to use them in the
-// model templates.
-// --------------------------------------------------------------------------------------------
-func (c *Cluster) IsTopologyPrivate() bool {
-	return (c.Spec.Topology.Masters == TopologyPrivate && c.Spec.Topology.Nodes == TopologyPrivate)
-}
-func (c *Cluster) IsTopologyPublic() bool {
-	return (c.Spec.Topology.Masters == TopologyPublic && c.Spec.Topology.Nodes == TopologyPublic)
-}
-func (c *Cluster) IsTopologyPrivateMasters() bool {
-	return (c.Spec.Topology.Masters == TopologyPrivate && c.Spec.Topology.Nodes == TopologyPublic)
-}
+//// --------------------------------------------------------------------------------------------
+//// Network Topology functions for template parsing
+////
+//// Each of these functions can be used in the model templates
+//// The go template package currently only supports boolean
+//// operations, so the logic is mapped here as *Cluster functions.
+////
+//// A function will need to be defined for all new topologies, if we plan to use them in the
+//// model templates.
+//// --------------------------------------------------------------------------------------------
+//func (c *Cluster) IsTopologyPrivate() bool {
+//	return (c.Spec.Topology.Masters == TopologyPrivate && c.Spec.Topology.Nodes == TopologyPrivate)
+//}
+//func (c *Cluster) IsTopologyPublic() bool {
+//	return (c.Spec.Topology.Masters == TopologyPublic && c.Spec.Topology.Nodes == TopologyPublic)
+//}
+//func (c *Cluster) IsTopologyPrivateMasters() bool {
+//	return (c.Spec.Topology.Masters == TopologyPrivate && c.Spec.Topology.Nodes == TopologyPublic)
+//}

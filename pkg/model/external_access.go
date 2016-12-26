@@ -42,7 +42,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// SSH is open to AdminCIDR set
-	if b.Cluster.IsTopologyPublic() {
+	if b.Cluster.Spec.Topology.Masters == kops.TopologyPublic {
 		for i, sshAccess := range b.Cluster.Spec.SSHAccess {
 			c.AddTask(&awstasks.SecurityGroupRule{
 				Name:          s("ssh-external-to-master-" + strconv.Itoa(i)),
@@ -52,7 +52,12 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				ToPort:        i64(22),
 				CIDR:          s(sshAccess),
 			})
+		}
+	}
 
+	// SSH is open to AdminCIDR set
+	if b.Cluster.Spec.Topology.Nodes == kops.TopologyPublic {
+		for i, sshAccess := range b.Cluster.Spec.SSHAccess {
 			c.AddTask(&awstasks.SecurityGroupRule{
 				Name:          s("ssh-external-to-node-" + strconv.Itoa(i)),
 				SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
@@ -62,7 +67,9 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				CIDR:          s(sshAccess),
 			})
 		}
+	}
 
+	if !b.UseLoadBalancerForAPI() {
 		// Configuration for the master, when not using a Loadbalancer (ELB)
 		// We expect that either the IP address is published, or DNS is set up to point to the IPs
 		// We need to open security groups directly to the master nodes (instead of via the ELB)

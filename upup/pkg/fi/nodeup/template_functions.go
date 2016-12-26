@@ -114,8 +114,8 @@ func newTemplateFunctions(nodeupConfig *NodeUpConfig, cluster *api.Cluster, inst
 
 func (t *templateFunctions) populate(dest template.FuncMap) {
 
-	dest["IsTopologyPublic"] = t.cluster.IsTopologyPublic
-	dest["IsTopologyPrivate"] = t.cluster.IsTopologyPrivate
+	//dest["IsTopologyPublic"] = t.cluster.IsTopologyPublic
+	//dest["IsTopologyPrivate"] = t.cluster.IsTopologyPrivate
 
 	dest["CACertificatePool"] = t.CACertificatePool
 	dest["CACertificate"] = t.CACertificate
@@ -156,6 +156,8 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 	dest["ProtokubeImage"] = t.ProtokubeImage
 
 	dest["ProtokubeFlags"] = t.ProtokubeFlags
+
+	dest["BuildAPIServerAnnotations"] = t.BuildAPIServerAnnotations
 }
 
 // IsMaster returns true if we are tagged as a master
@@ -280,4 +282,13 @@ func (t *templateFunctions) KubeProxyConfig() *api.KubeProxyConfig {
 	}
 
 	return config
+}
+
+func (t *templateFunctions) BuildAPIServerAnnotations() map[string]string {
+	annotations := make(map[string]string)
+	annotations["dns.alpha.kubernetes.io/internal"] = t.cluster.Spec.MasterInternalName
+	if t.cluster.Spec.API != nil && t.cluster.Spec.API.DNS != nil {
+		annotations["dns.alpha.kubernetes.io/external"] = t.cluster.Spec.MasterPublicName
+	}
+	return annotations
 }
