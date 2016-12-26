@@ -12,7 +12,7 @@ We like to think of it as `kubectl` for clusters.
 options that support HA Masters. Kubernetes Operations supports deploying
 Kubernetes on Amazon Web Services (AWS) and support for more platforms is planned.
 
-## Launching a Kubernetes hosted on AWS
+## Launching a Kubernetes cluster hosted on AWS
 
 Check out our [tutorial](/docs/aws.md) for launching a Kubernetes cluster hosted
 on AWS.
@@ -37,6 +37,7 @@ on AWS.
 `kubectl` is required, see [here](http://kubernetes.io/docs/user-guide/prereqs/).
 
 <!-- Move this to an install guide -->
+    <!-- RE: Move this to an install guide. I like the idea of having the instal on the front page - especially if it's an easy install. It makes the tool look excitng and fun. Also, there is a link below towards the install guide. @kris-nova -->
 
 ### OSX From Homebrew (Latest Stable Release)
 
@@ -109,13 +110,26 @@ A great place to get involved or ask questions is [#sig-cluster-lifecycle](https
 
 View our [changelog](HISTORY.md)
 
-## Issues
+## GitHub Issues
 
-If you think you have found a bug or want to recommend a new feature follow the
-instructions below.
 
-- Set `--v=10` command line option and save the log output
+#### Bugs
+
+If you think you have found a bug please follow the instructions below.
+
+- Please spend a small amount of time giving due diligence to the issue tracker. Your issue might be a duplicate.
+- Set `-v 10` command line option and save the log output. Please paste this into your issue.
 - Note you version of `kops`, and the command line options you are using
 - Open a [new issue](https://github.com/kubernetes/kops/issues/new)
-- Feel free to reach out to the kops community on
-[kubernetes slack](https://github.com/kubernetes/community#slack-chat)
+- Remember users might be searching for your issue in the future, so please give it a meaningful title to helps others.
+- Feel free to reach out to the kops community on [kubernetes slack](https://github.com/kubernetes/community#slack-chat)
+
+#### Features
+
+We also use the issue tracker to track features. If you have an idea for a feature, or think you can help kops become even more awesome follow the steps below.
+
+- Open a [new issue](https://github.com/kubernetes/kops/issues/new)
+- Remember users might be searching for your issue in the future, so please give it a meaningful title to helps others.
+- Clearly define the use case, using concrete examples. EG: I type `this` and kops does `that`.
+- Some of our larger features will require some design. If you would like to include a technical design for your feature please include it in the issue.
+- After the new feature is well understood, and the design agreed upon we can start coding the feature. We would love for you to code it. So please open up a **WIP** *(work in progress)* pull request, and happy coding.
