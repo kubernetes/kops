@@ -1,0 +1,66 @@
+/*
+Copyright 2016 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package featureflag
+
+import (
+	"os"
+	"strings"
+	"sync"
+)
+
+var PreviewPrivateDNS = New("PreviewPrivateDNS")
+
+var flags = make(map[string]*FeatureFlag)
+var flagsMutex sync.Mutex
+
+var initFlags sync.Once
+
+type FeatureFlag struct {
+	Key     string
+	Enabled bool
+}
+
+func readFlags() {
+	f := os.Getenv("KOPS_FEATURE_FLAGS")
+	f = strings.TrimSpace(f)
+	for _, s := range strings.Split(f, ",") {
+		s = strings.TrimSpace(s)
+		if s == "" {
+			continue
+		}
+		ff := New(s)
+		ff.Enabled = true
+	}
+
+}
+
+func New(key string) *FeatureFlag {
+	initFlags.Do(readFlags)
+
+	flagsMutex.Lock()
+	defer flagsMutex.Unlock()
+
+	f := flags[key]
+	if f == nil {
+		f = &FeatureFlag{
+			Key: key,
+		}
+		flags[key] = f
+	}
+
+	return f
+}
