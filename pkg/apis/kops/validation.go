@@ -303,6 +303,11 @@ func (c *Cluster) Validate(strict bool) error {
 		}
 	}
 
+	// Topology support
+	if c.Spec.Topology == nil {
+		c.Spec.Topology = &TopologySpec{Masters: TopologyPublic, Nodes: TopologyPublic}
+	}
+
 	if c.Spec.Topology.Masters != "" && c.Spec.Topology.Nodes != "" {
 		if c.Spec.Topology.Masters != TopologyPublic && c.Spec.Topology.Masters != TopologyPrivate {
 			return fmt.Errorf("Invalid Masters value for Topology")
