@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"math/rand"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -34,6 +35,9 @@ import (
 type DNSZone struct {
 	Name *string
 	ID   *string
+
+	Private    *bool
+	PrivateVPC *VPC
 }
 
 var _ fi.CompareWithID = &DNSZone{}
@@ -56,7 +60,22 @@ func (e *DNSZone) Find(c *fi.Context) (*DNSZone, error) {
 
 	actual := &DNSZone{}
 	actual.Name = e.Name
-	actual.ID = z.Id
+	actual.ID = z.HostedZone.Id
+	actual.Private = z.HostedZone.Config.PrivateZone
+
+	// If the zone is private, but we don't want it to be, that will be an error
+	// e.PrivateVPC won't be set, so we can't find the "right" VPC (without cheating)
+	if e.PrivateVPC != nil {
+		for _, vpc := range z.VPCs {
+			if cloud.Region() != aws.StringValue(vpc.VPCRegion) {
+				continue
+			}
+
+			if aws.StringValue(e.PrivateVPC.ID) == aws.StringValue(vpc.VPCId) {
+				actual.PrivateVPC = e.PrivateVPC
+			}
+		}
+	}
 
 	if e.ID == nil {
 		e.ID = actual.ID
@@ -65,7 +84,7 @@ func (e *DNSZone) Find(c *fi.Context) (*DNSZone, error) {
 	return actual, nil
 }
 
-func (e *DNSZone) findExisting(cloud awsup.AWSCloud) (*route53.HostedZone, error) {
+func (e *DNSZone) findExisting(cloud awsup.AWSCloud) (*route53.GetHostedZoneOutput, error) {
 	findID := ""
 	if e.ID != nil {
 		findID = *e.ID
@@ -89,7 +108,7 @@ func (e *DNSZone) findExisting(cloud awsup.AWSCloud) (*route53.HostedZone, error
 				return nil, fmt.Errorf("error fetching DNS HostedZone %q: %v", findID, err)
 			}
 		} else {
-			return response.HostedZone, nil
+			return response, nil
 		}
 	}
 
@@ -115,14 +134,23 @@ func (e *DNSZone) findExisting(cloud awsup.AWSCloud) (*route53.HostedZone, error
 			zones = append(zones, zone)
 		}
 	}
+
 	if len(zones) == 0 {
 		return nil, nil
-	}
-	if len(zones) != 1 {
+	} else if len(zones) != 1 {
 		return nil, fmt.Errorf("found multiple hosted zones matched name %q", findName)
-	}
+	} else {
+		request := &route53.GetHostedZoneInput{
+			Id: zones[0].Id,
+		}
 
-	return zones[0], nil
+		response, err := cloud.Route53().GetHostedZone(request)
+		if err != nil {
+			return nil, fmt.Errorf("error fetching DNS HostedZone by id %q: %v", *request.Id, err)
+		}
+
+		return response, nil
+	}
 }
 
 func (e *DNSZone) Run(c *fi.Context) error {
@@ -137,20 +165,52 @@ func (s *DNSZone) CheckChanges(a, e, changes *DNSZone) error {
 }
 
 func (_ *DNSZone) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSZone) error {
+	name := aws.StringValue(e.Name)
 	if a == nil {
 		request := &route53.CreateHostedZoneInput{}
 		request.Name = e.Name
 		nonce := rand.Int63()
 		request.CallerReference = aws.String(strconv.FormatInt(nonce, 10))
 
-		glog.V(2).Infof("Creating Route53 HostedZone with Name %q", e.Name)
+		if e.PrivateVPC != nil {
+			request.VPC = &route53.VPC{
+				VPCId:     e.PrivateVPC.ID,
+				VPCRegion: aws.String(t.Cloud.Region()),
+			}
+		}
+
+		glog.V(2).Infof("Creating Route53 HostedZone with Name %q", name)
 
 		response, err := t.Cloud.Route53().CreateHostedZone(request)
 		if err != nil {
-			return fmt.Errorf("error creating DNS HostedZone: %v", err)
+			return fmt.Errorf("error creating DNS HostedZone %q: %v", name, err)
 		}
 
 		e.ID = response.HostedZone.Id
+	} else {
+		if changes.PrivateVPC != nil {
+			request := &route53.AssociateVPCWithHostedZoneInput{
+				HostedZoneId: a.ID,
+				VPC: &route53.VPC{
+					VPCId:     e.PrivateVPC.ID,
+					VPCRegion: aws.String(t.Cloud.Region()),
+				},
+			}
+
+			changes.PrivateVPC = nil
+
+			glog.V(2).Infof("Updating DNSZone %q", name)
+
+			_, err := t.Cloud.Route53().AssociateVPCWithHostedZone(request)
+			if err != nil {
+				return fmt.Errorf("error associating VPC with hosted zone %q: %v", name, err)
+			}
+		}
+
+		empty := &DNSZone{}
+		if !reflect.DeepEqual(empty, changes) {
+			glog.Warningf("cannot apply changes to DNSZone %q: %v", name, changes)
+		}
 	}
 
 	// We don't tag the zone - we expect it to be shared
@@ -159,6 +219,7 @@ func (_ *DNSZone) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSZone) error
 
 type terraformRoute53Zone struct {
 	Name      *string              `json:"name"`
+	VPCID     *terraform.Literal   `json:"vpc_id,omitempty"`
 	Tags      map[string]string    `json:"tags,omitempty"`
 	Lifecycle *terraform.Lifecycle `json:"lifecycle,omitempty"`
 }
@@ -176,9 +237,9 @@ func (_ *DNSZone) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *D
 	}
 
 	if z != nil {
-		glog.Infof("Existing zone %q found; will configure TF to reuse", aws.StringValue(z.Name))
+		glog.Infof("Existing zone %q found; will configure TF to reuse", aws.StringValue(z.HostedZone.Name))
 
-		e.ID = z.Id
+		e.ID = z.HostedZone.Id
 	}
 
 	if z == nil {
@@ -200,6 +261,11 @@ func (_ *DNSZone) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *D
 		//
 		//return t.RenderResource("aws_route53_zone", *e.Name, tf)
 	} else {
+		// Same problem here also...
+		if e.PrivateVPC != nil {
+			return fmt.Errorf("Route53 private hosted zones are not supported for terraform")
+		}
+
 		return nil
 	}
 }
