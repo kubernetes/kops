@@ -1,8 +1,7 @@
 # Kubernetes Operations (kops)
 
-[![Build Status](https://travis-ci.org/kubernetes/kops.svg?branch=master)](https://travis-ci.org/kubernetes/kops) [![Go Report Card](https://goreportcard.com/badge/k8s.io/kops)](https://goreportcard.com/report/k8s.io/kops) [![GoDoc Widget]][GoDoc]
+[![Build Status](https://travis-ci.org/kubernetes/kops.svg?branch=master)](https://travis-ci.org/kubernetes/kops) [![Go Report Card](https://goreportcard.com/badge/k8s.io/kops)](https://goreportcard.com/report/k8s.io/kops) [![GoDoc Widget]](https://godoc.org/k8s.io/kops)
 
-https://godoc.org/k8s.io/kops
 
 The easiest way to get a production grade Kubernetes cluster up and running.
 
