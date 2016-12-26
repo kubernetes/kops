@@ -54,10 +54,12 @@ Kubernetes kops uses the official AWS Go SDK, so all we need to do here is set u
 #### OS X
 
 ```bash
-brew update && brew install awscli
+pip install awscli
 aws configure # Input your credentials here
 aws iam list-users
 ```
+
+PyPi is the officially supported `aws cli` download avenue, and kops suggests using it. [More information](https://pypi.python.org/pypi/awscli) on the package. 
 
 #### Other Platforms
 
