@@ -303,18 +303,6 @@ func (c *Cluster) Validate(strict bool) error {
 		}
 	}
 
-	// Topology support
-	if c.Spec.Topology == nil {
-		// This is a case of an older cluster making changes with newer code.. Adding this in for backwards
-		// compatibility.. Putting this in validation because it can be called from a few places in the code
-		// base.. all of which make the assumption that the validation should work for their current
-		// representation of the cluster..
-		// @kris-nova
-		// #960
-		// #943
-		c.Spec.Topology = &TopologySpec{Masters: TopologyPublic, Nodes: TopologyPublic}
-	}
-
 	if c.Spec.Topology.Masters != "" && c.Spec.Topology.Nodes != "" {
 		if c.Spec.Topology.Masters != TopologyPublic && c.Spec.Topology.Masters != TopologyPrivate {
 			return fmt.Errorf("Invalid Masters value for Topology")
