@@ -314,6 +314,11 @@ func (c *Cluster) FillDefaults() error {
 		c.Spec.SSHAccess = append(c.Spec.SSHAccess, "0.0.0.0/0")
 	}
 
+	// Topology support
+	if c.Spec.Topology == nil {
+		c.Spec.Topology = &TopologySpec{Masters: TopologyPublic, Nodes: TopologyPublic}
+	}
+
 	if len(c.Spec.KubernetesAPIAccess) == 0 {
 		c.Spec.KubernetesAPIAccess = append(c.Spec.KubernetesAPIAccess, "0.0.0.0/0")
 	}
