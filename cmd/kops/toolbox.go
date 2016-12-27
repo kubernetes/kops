@@ -18,6 +18,8 @@ package main
 
 import (
 	"github.com/spf13/cobra"
+	"io"
+	"k8s.io/kops/cmd/kops/util"
 )
 
 func NewCmdToolbox(f *util.Factory, out io.Writer) *cobra.Command {
@@ -26,8 +28,8 @@ func NewCmdToolbox(f *util.Factory, out io.Writer) *cobra.Command {
 		Short: "Misc infrequently used commands",
 	}
 
-	// create subcommands
 	cmd.AddCommand(NewCmdToolboxConvertImported(f, out))
+	cmd.AddCommand(NewCmdToolboxDump(f, out))
 
 	return cmd
 }

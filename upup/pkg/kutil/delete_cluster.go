@@ -65,6 +65,8 @@ type ResourceTracker struct {
 	groupKey     string
 	groupDeleter func(cloud fi.Cloud, trackers []*ResourceTracker) error
 
+	Dumper func(r *ResourceTracker) (interface{}, error)
+
 	obj interface{}
 }
 
@@ -1213,6 +1215,14 @@ func DeleteVPC(cloud fi.Cloud, r *ResourceTracker) error {
 	return nil
 }
 
+func DumpVPC(r *ResourceTracker) (interface{}, error) {
+	data := make(map[string]interface{})
+	data["id"] = r.ID
+	data["type"] = ec2.ResourceTypeVpc
+	data["raw"] = r.obj
+	return data, nil
+}
+
 func DescribeVPCs(cloud fi.Cloud) ([]*ec2.Vpc, error) {
 	c := cloud.(awsup.AWSCloud)
 
@@ -1239,8 +1249,10 @@ func ListVPCs(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
 		tracker := &ResourceTracker{
 			Name:    FindName(v.Tags),
 			ID:      aws.StringValue(v.VpcId),
-			Type:    "vpc",
+			Type:    ec2.ResourceTypeVpc,
 			deleter: DeleteVPC,
+			Dumper:  DumpVPC,
+			obj:     v,
 		}
 
 		var blocks []string
