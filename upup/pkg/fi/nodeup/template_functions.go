@@ -31,7 +31,7 @@ import (
 
 const TagMaster = "_kubernetes_master"
 
-const DefaultProtokubeImage = "b.gcr.io/kops-images/protokube:1.4.1"
+const DefaultProtokubeImage = "b.gcr.io/kops-images/protokube:1.5.0"
 
 // templateFunctions is a simple helper-class for the functions accessible to templates
 type templateFunctions struct {
