@@ -214,7 +214,7 @@ resource "aws_launch_configuration" "bastion-privateweave-example-com" {
   key_name = "${aws_key_pair.kubernetes-privateweave-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
   iam_instance_profile = "${aws_iam_instance_profile.bastions-privateweave-example-com.id}"
   security_groups = ["${aws_security_group.bastion-privateweave-example-com.id}"]
-  associate_public_ip_address = false
+  associate_public_ip_address = true
   root_block_device = {
     volume_type = "gp2"
     volume_size = 20
