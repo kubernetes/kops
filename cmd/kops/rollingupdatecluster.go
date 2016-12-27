@@ -44,6 +44,10 @@ type RollingUpdateOptions struct {
 	BastionInterval time.Duration
 
 	ClusterName string
+
+	// InstanceGroups is the list of instance groups to rolling-update;
+	// if not specified all instance groups will be updated
+	InstanceGroups []string
 }
 
 func (o *RollingUpdateOptions) InitDefaults() {
@@ -74,22 +78,27 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().DurationVar(&options.NodeInterval, "node-interval", options.NodeInterval, "Time to wait between restarting nodes")
 	cmd.Flags().DurationVar(&options.BastionInterval, "bastion-interval", options.BastionInterval, "Time to wait between restarting bastions")
 
+	cmd.Flags().StringSliceVar(&options.InstanceGroups, "instance-group", options.InstanceGroups, "List of instance groups to update (defaults to all if not specified)")
+
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		err := rootCommand.ProcessArgs(args)
 		if err != nil {
-			return err
+			exitWithError(err)
+			return
 		}
 
 		clusterName := rootCommand.ClusterName()
 		if clusterName == "" {
-			return nil, fmt.Errorf("--name is required")
+			exitWithError(fmt.Errorf("--name is required"))
+			return
 		}
 
 		options.ClusterName = clusterName
 
-		err = RunRollingUpdateCluster(&rootCommand, os.Stdout, options)
+		err = RunRollingUpdateCluster(f, os.Stdout, &options)
 		if err != nil {
 			exitWithError(err)
+			return
 		}
 	}
 
@@ -139,9 +148,31 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 	if err != nil {
 		return err
 	}
-	var instancegroups []*api.InstanceGroup
+
+	var instanceGroups []*api.InstanceGroup
 	for i := range list.Items {
-		instancegroups = append(instancegroups, &list.Items[i])
+		instanceGroups = append(instanceGroups, &list.Items[i])
+	}
+
+	if len(options.InstanceGroups) != 0 {
+		var filtered []*api.InstanceGroup
+
+		for _, instanceGroupName := range options.InstanceGroups {
+			var found *api.InstanceGroup
+			for _, ig := range instanceGroups {
+				if ig.ObjectMeta.Name == instanceGroupName {
+					found = ig
+					break
+				}
+			}
+			if found == nil {
+				return fmt.Errorf("InstanceGroup %q not found", instanceGroupName)
+			}
+
+			filtered = append(filtered, found)
+		}
+
+		instanceGroups = filtered
 	}
 
 	cloud, err := cloudup.BuildCloud(cluster)
@@ -157,7 +188,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 	d.Cloud = cloud
 
 	warnUnmatched := true
-	groups, err := kutil.FindCloudInstanceGroups(cloud, cluster, instancegroups, warnUnmatched, nodes)
+	groups, err := kutil.FindCloudInstanceGroups(cloud, cluster, instanceGroups, warnUnmatched, nodes)
 	if err != nil {
 		return err
 	}
