@@ -18,7 +18,9 @@ package model
 
 import (
 	"fmt"
+	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"strings"
 )
 
@@ -150,4 +152,12 @@ func (m *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 
 func (m *KopsModelContext) UseLoadBalancerForAPI() bool {
 	return m.Cluster.Spec.Topology.Masters == kops.TopologyPrivate
+}
+
+func (m *KopsModelContext) UsePrivateDNS() bool {
+	if featureflag.PreviewPrivateDNS.Enabled {
+		glog.Infof("PreviewPrivateDNS enabled; using private DNS")
+		return true
+	}
+	return false
 }
