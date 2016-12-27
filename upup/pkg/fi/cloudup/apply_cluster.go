@@ -577,6 +577,19 @@ func findHash(url string) (*hashing.Hash, error) {
 }
 
 func validateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
+	kopsModelContext := &model.KopsModelContext{
+		//Region: cloud.Region(),
+		Cluster: cluster,
+		//InstanceGroups []*kops.InstanceGroup
+
+		//SSHPublicKeys [][]byte
+	}
+
+	if kopsModelContext.UsePrivateDNS() {
+		glog.Infof("Private DNS: skipping DNS validation")
+		return nil
+	}
+
 	dns, err := cloud.DNS()
 	if err != nil {
 		return fmt.Errorf("error building DNS provider: %v", err)

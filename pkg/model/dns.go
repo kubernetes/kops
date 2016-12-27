@@ -29,23 +29,41 @@ type DNSModelBuilder struct {
 var _ fi.ModelBuilder = &DNSModelBuilder{}
 
 func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	if b.UseLoadBalancerForAPI() {
+	if b.UsePrivateDNS() {
+		// This is only exposed as a feature flag currently
+		// TODO: We may still need a public zone to publish an ELB
+
+		// Configuration for a DNS zone, attached to our VPC
+		dnsZone := &awstasks.DNSZone{
+			Name:       s(b.Cluster.Spec.DNSZone),
+			Private:    fi.Bool(true),
+			PrivateVPC: b.LinkToVPC(),
+		}
+		c.AddTask(dnsZone)
+	} else if b.UseLoadBalancerForAPI() {
 		// This will point our DNS to the load balancer, and put the pieces
 		// together for kubectl to be work
 
 		// Configuration for a DNS name for the master
 		dnsZone := &awstasks.DNSZone{
-			Name: s(b.Cluster.Spec.DNSZone),
+			Name:    s(b.Cluster.Spec.DNSZone),
+			Private: fi.Bool(false),
 		}
 		c.AddTask(dnsZone)
+	}
+
+	if b.UseLoadBalancerForAPI() {
+		// This will point our DNS to the load balancer, and put the pieces
+		// together for kubectl to be work
 
 		dnsName := &awstasks.DNSName{
 			Name:               s(b.Cluster.Spec.MasterPublicName),
-			Zone:               dnsZone,
+			Zone:               &awstasks.DNSZone{Name: s(b.Cluster.Spec.DNSZone)},
 			ResourceType:       s("A"),
 			TargetLoadBalancer: b.LinkToELB("api"),
 		}
 		c.AddTask(dnsName)
 	}
+
 	return nil
 }
