@@ -1,3 +1,0 @@
-Kubelet:
-  NetworkPluginName: cni
-  ConfigureCBR0: false
