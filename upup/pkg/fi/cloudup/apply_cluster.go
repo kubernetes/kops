@@ -548,8 +548,7 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	if !dryRun {
-		err = precreateDNS(cluster, cloud)
-		if err != nil {
+		if err := precreateDNS(cluster, cloud); err != nil {
 			return err
 		}
 	}

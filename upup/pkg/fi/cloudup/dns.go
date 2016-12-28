@@ -76,11 +76,8 @@ func findZone(cluster *api.Cluster, cloud fi.Cloud) (dnsprovider.Zone, error) {
 
 func validateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 	kopsModelContext := &model.KopsModelContext{
-		//Region: cloud.Region(),
 		Cluster: cluster,
-		//InstanceGroups []*kops.InstanceGroup
-
-		//SSHPublicKeys [][]byte
+		// We are not initializing a lot of the fields here; revisit once UsePrivateDNS is "real"
 	}
 
 	if kopsModelContext.UsePrivateDNS() {
