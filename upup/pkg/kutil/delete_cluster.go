@@ -468,8 +468,10 @@ func ListInstances(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, erro
 				tracker := &ResourceTracker{
 					Name:    FindName(instance.Tags),
 					ID:      id,
-					Type:    "instance",
+					Type:    ec2.ResourceTypeInstance,
 					deleter: DeleteInstance,
+					Dumper:  DumpInstance,
+					obj:     instance,
 				}
 
 				var blocks []string
@@ -500,6 +502,14 @@ func ListInstances(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, erro
 	}
 
 	return trackers, nil
+}
+
+func DumpInstance(r *ResourceTracker) (interface{}, error) {
+	data := make(map[string]interface{})
+	data["id"] = r.ID
+	data["type"] = ec2.ResourceTypeInstance
+	data["raw"] = r.obj
+	return data, nil
 }
 
 func DeleteSecurityGroup(cloud fi.Cloud, t *ResourceTracker) error {
