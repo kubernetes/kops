@@ -44,6 +44,19 @@ type RollingUpdateCluster struct {
 	Force bool
 }
 
+// RollingUpdateData is used to pass information to perform a rolling update
+type RollingUpdateData struct {
+	Cloud             fi.Cloud
+	Force             bool
+	Interval          time.Duration
+	InstanceGroupList *api.InstanceGroupList
+	K8sClient         *release_1_5.Clientset
+
+	ForceDrain     bool
+	FailOnValidate bool
+	IsBastion      bool
+}
+
 // TODO move retries to RollingUpdateCluster
 const retries = 8
 
@@ -142,7 +155,18 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 
 				defer wg.Done()
 
-				err := group.RollingUpdate(c.Cloud, c.Force, c.BastionInterval, k8sClient)
+				rollingUpdateData := &RollingUpdateData{
+					Cloud: c.Cloud,
+					Force: c.Force,
+					Interval: c.MasterInterval,
+					InstanceGroupList: instanceGroups,
+					K8sClient: k8sClient,
+					ForceDrain: forceDrain,
+					FailOnValidate: failOnValidate,
+					IsBastion: true,
+				}
+
+				err := group.RollingUpdate(rollingUpdateData)
 
 				resultsMutex.Lock()
 				results[k] = err
@@ -172,8 +196,18 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 			defer wg.Done()
 
 			for k, group := range masterGroups {
-				err := group.RollingUpdate(c.Cloud, c.Force, c.MasterInterval, instanceGroups, k8sClient, forceDrain, failOnValidate)
+				rollingUpdateData := &RollingUpdateData{
+					Cloud: c.Cloud,
+					Force: c.Force,
+					Interval: c.MasterInterval,
+					InstanceGroupList: instanceGroups,
+					K8sClient: k8sClient,
+					ForceDrain: forceDrain,
+					FailOnValidate: failOnValidate,
+					IsBastion: false,
+				}
 
+				err := group.RollingUpdate(rollingUpdateData)
 				resultsMutex.Lock()
 				results[k] = err
 				resultsMutex.Unlock()
@@ -198,7 +232,18 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 
 				defer wg.Done()
 
-				err := group.RollingUpdate(c.Cloud, c.Force, c.NodeInterval, instanceGroups, k8sClient, forceDrain, failOnValidate)
+				rollingUpdateData := &RollingUpdateData{
+					Cloud: c.Cloud,
+					Force: c.Force,
+					Interval: c.NodeInterval,
+					InstanceGroupList: instanceGroups,
+					K8sClient: k8sClient,
+					ForceDrain: forceDrain,
+					FailOnValidate: failOnValidate,
+					IsBastion: false,
+				}
+
+				err := group.RollingUpdate(rollingUpdateData)
 
 				resultsMutex.Lock()
 				results[k] = err
@@ -281,32 +326,34 @@ func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group, nodeMa
 ////
 
 // Performs a rolling update on a list of nodes
-func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, interval time.Duration, instanceGroupList *api.InstanceGroupList, k8sClient *release_1_5.Clientset, forceDrain bool, failOnValidate bool) error {
-	c := cloud.(awsup.AWSCloud)
+func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData) error {
+	c := rollingUpdateData.Cloud.(awsup.AWSCloud)
 
 	update := n.NeedUpdate
-	if force {
+	if rollingUpdateData.Force {
 		update = append(update, n.Ready...)
 	}
 
 	for _, u := range update {
 
-		drain, drainErr := NewDrainOptions(nil, u.Node.ClusterName)
+		if !rollingUpdateData.IsBastion {
+			drain, drainErr := NewDrainOptions(nil, u.Node.ClusterName)
 
-		// FIXME forceDrain <- name stinks
+			// FIXME forceDrain <- name stinks
 
-		if drainErr != nil {
-			glog.Warningf("Error creating drain: %v", drainErr)
-			if forceDrain == false {
-				return drainErr
-			}
-		} else {
-			drainErr = drain.DrainTheNode(u.Node.Name)
 			if drainErr != nil {
-				glog.Warningf("setupErr: %v", drainErr)
-			}
-			if forceDrain == false {
-				return drainErr
+				glog.Warningf("Error creating drain: %v", drainErr)
+				if rollingUpdateData.ForceDrain == false {
+					return drainErr
+				}
+			} else {
+				drainErr = drain.DrainTheNode(u.Node.Name)
+				if drainErr != nil {
+					glog.Warningf("setupErr: %v", drainErr)
+				}
+				if rollingUpdateData.ForceDrain == false {
+					return drainErr
+				}
 			}
 		}
 
@@ -325,28 +372,30 @@ func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, interval 
 			return fmt.Errorf("error deleting instance %q: %v", instanceID, err)
 		}
 
-		// Wait for new EC2 instances to be created
-		time.Sleep(interval)
+		if !rollingUpdateData.IsBastion {
+			// Wait for new EC2 instances to be created
+			time.Sleep(rollingUpdateData.Interval)
 
-		// Wait until the cluster is happy
-		// TODO: do we need to respect cloud only??
-		var validateDidNotPass error
-		for i := 0; i <= retries; i++ {
+			// Wait until the cluster is happy
+			// TODO: do we need to respect cloud only??
+			var validateDidNotPass error
+			for i := 0; i <= retries; i++ {
 
-			_, validateDidNotPass = validate.ValidateCluster(u.Node.ClusterName, instanceGroupList, k8sClient)
+				_, validateDidNotPass = validate.ValidateCluster(u.Node.ClusterName, rollingUpdateData.InstanceGroupList, rollingUpdateData.K8sClient)
 
-			if validateDidNotPass != nil {
-				glog.V(2).Infof("Unable to validate k8s cluster %s, %v.", u.Node.ClusterName, validateDidNotPass)
-				time.Sleep(interval)
-			} else {
-				glog.V(2).Infof("Cluster %s is validated proceeding with next step in rolling update",
-					u.Node.ClusterName)
-				break
+				if validateDidNotPass != nil {
+					glog.V(2).Infof("Unable to validate k8s cluster %s, %v.", u.Node.ClusterName, validateDidNotPass)
+					time.Sleep(rollingUpdateData.Interval)
+				} else {
+					glog.V(2).Infof("Cluster %s is validated proceeding with next step in rolling update",
+						u.Node.ClusterName)
+					break
+				}
 			}
-		}
 
-		if validateDidNotPass != nil && failOnValidate {
-			return fmt.Errorf("validation timed out while performing rolling update: %v" , validateDidNotPass)
+			if validateDidNotPass != nil && rollingUpdateData.FailOnValidate {
+				return fmt.Errorf("validation timed out while performing rolling update: %v", validateDidNotPass)
+			}
 		}
 
 	}
