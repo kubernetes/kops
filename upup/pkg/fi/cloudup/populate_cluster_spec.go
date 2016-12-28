@@ -269,6 +269,7 @@ func (c *populateClusterSpec) run() error {
 		case "config":
 			codeModels = append(codeModels, &components.KubeAPIServerOptionsBuilder{Cluster: cluster})
 			codeModels = append(codeModels, &components.DockerOptionsBuilder{Cluster: cluster})
+			codeModels = append(codeModels, &components.KubeletOptionsBuilder{Cluster: cluster})
 			fileModels = append(fileModels, m)
 
 		default:
