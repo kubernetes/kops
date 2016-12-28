@@ -25,7 +25,7 @@ import (
 
 // DockerOptionsBuilder adds options for docker to the model
 type DockerOptionsBuilder struct {
-	Cluster *kops.Cluster
+	Context *OptionsContext
 }
 
 var _ loader.OptionsBuilder = &DockerOptionsBuilder{}

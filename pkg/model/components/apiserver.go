@@ -25,7 +25,7 @@ import (
 
 // KubeAPIServerOptionsBuilder adds options for the apiserver to the model
 type KubeAPIServerOptionsBuilder struct {
-	Cluster *kops.Cluster
+	Context *OptionsContext
 }
 
 var _ loader.OptionsBuilder = &KubeAPIServerOptionsBuilder{}
@@ -72,7 +72,7 @@ func (b *KubeAPIServerOptionsBuilder) buildAPIServerCount() int {
 	// the flag won't exist
 
 	counts := make(map[string]int)
-	for _, etcdCluster := range b.Cluster.Spec.EtcdClusters {
+	for _, etcdCluster := range b.Context.Cluster.Spec.EtcdClusters {
 		counts[etcdCluster.Name] = len(etcdCluster.Members)
 	}
 
