@@ -36,6 +36,8 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 	return scheme.AddGeneratedConversionFuncs(
 		Convert_v1alpha1_CNINetworkingSpec_To_kops_CNINetworkingSpec,
 		Convert_kops_CNINetworkingSpec_To_v1alpha1_CNINetworkingSpec,
+		Convert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec,
+		Convert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec,
 		Convert_v1alpha1_ClassicNetworkingSpec_To_kops_ClassicNetworkingSpec,
 		Convert_kops_ClassicNetworkingSpec_To_v1alpha1_ClassicNetworkingSpec,
 		Convert_v1alpha1_Cluster_To_kops_Cluster,
@@ -86,8 +88,6 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_kops_NetworkingSpec_To_v1alpha1_NetworkingSpec,
 		Convert_v1alpha1_WeaveNetworkingSpec_To_kops_WeaveNetworkingSpec,
 		Convert_kops_WeaveNetworkingSpec_To_v1alpha1_WeaveNetworkingSpec,
-		Convert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec,
-		Convert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec,
 	)
 }
 
@@ -105,6 +105,22 @@ func autoConvert_kops_CNINetworkingSpec_To_v1alpha1_CNINetworkingSpec(in *kops.C
 
 func Convert_kops_CNINetworkingSpec_To_v1alpha1_CNINetworkingSpec(in *kops.CNINetworkingSpec, out *CNINetworkingSpec, s conversion.Scope) error {
 	return autoConvert_kops_CNINetworkingSpec_To_v1alpha1_CNINetworkingSpec(in, out, s)
+}
+
+func autoConvert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *CalicoNetworkingSpec, out *kops.CalicoNetworkingSpec, s conversion.Scope) error {
+	return nil
+}
+
+func Convert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *CalicoNetworkingSpec, out *kops.CalicoNetworkingSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in, out, s)
+}
+
+func autoConvert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec(in *kops.CalicoNetworkingSpec, out *CalicoNetworkingSpec, s conversion.Scope) error {
+	return nil
+}
+
+func Convert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec(in *kops.CalicoNetworkingSpec, out *CalicoNetworkingSpec, s conversion.Scope) error {
+	return autoConvert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec(in, out, s)
 }
 
 func autoConvert_v1alpha1_ClassicNetworkingSpec_To_kops_ClassicNetworkingSpec(in *ClassicNetworkingSpec, out *kops.ClassicNetworkingSpec, s conversion.Scope) error {
@@ -1180,7 +1196,7 @@ func autoConvert_kops_NetworkingSpec_To_v1alpha1_NetworkingSpec(in *kops.Network
 			return err
 		}
 	} else {
-		out.Weave = nil
+		out.Calico = nil
 	}
 	return nil
 }
@@ -1203,20 +1219,4 @@ func autoConvert_kops_WeaveNetworkingSpec_To_v1alpha1_WeaveNetworkingSpec(in *ko
 
 func Convert_kops_WeaveNetworkingSpec_To_v1alpha1_WeaveNetworkingSpec(in *kops.WeaveNetworkingSpec, out *WeaveNetworkingSpec, s conversion.Scope) error {
 	return autoConvert_kops_WeaveNetworkingSpec_To_v1alpha1_WeaveNetworkingSpec(in, out, s)
-}
-
-func autoConvert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec(in *kops.CalicoNetworkingSpec, out *CalicoNetworkingSpec, s conversion.Scope) error {
-	return nil
-}
-
-func Convert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec(in *kops.CalicoNetworkingSpec, out *CalicoNetworkingSpec, s conversion.Scope) error {
-	return autoConvert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec(in, out, s)
-}
-
-func autoConvert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *CalicoNetworkingSpec, out *kops.CalicoNetworkingSpec, s conversion.Scope) error {
-	return nil
-}
-
-func Convert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *CalicoNetworkingSpec, out *kops.CalicoNetworkingSpec, s conversion.Scope) error {
-	return autoConvert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in, out, s)
 }
