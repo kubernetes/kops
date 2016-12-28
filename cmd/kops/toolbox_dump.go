@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -99,27 +100,39 @@ func RunToolboxDump(f *util.Factory, out io.Writer, options *ToolboxDumpOptions)
 
 	data := make(map[string]interface{})
 
+	dumpedResources := []interface{}{}
+	for k, r := range resources {
+		if r.Dumper == nil {
+			glog.V(8).Infof("skipping dump of %q (no Dumper)", k)
+			continue
+		}
+
+		o, err := r.Dumper(r)
+		if err != nil {
+			return fmt.Errorf("error dumping %q: %v", k, err)
+		}
+		if o != nil {
+			dumpedResources = append(dumpedResources, o)
+		}
+	}
+	data["resources"] = dumpedResources
+
 	switch options.Output {
 	case OutputYaml:
-		dumpedResources := []interface{}{}
-		for k, r := range resources {
-			if r.Dumper == nil {
-				glog.V(8).Infof("skipping dump of %q (no Dumper)", k)
-				continue
-			}
-
-			o, err := r.Dumper(r)
-			if err != nil {
-				return fmt.Errorf("error dumping %q: %v", k, err)
-			}
-			if o != nil {
-				dumpedResources = append(dumpedResources, o)
-			}
-		}
-		data["resources"] = dumpedResources
 		b, err := kops.ToRawYaml(data)
 		if err != nil {
 			return fmt.Errorf("error marshaling yaml: %v", err)
+		}
+		_, err = out.Write(b)
+		if err != nil {
+			return fmt.Errorf("error writing to stdout: %v", err)
+		}
+		return nil
+
+	case OutputJSON:
+		b, err := json.MarshalIndent(data, "", "  ")
+		if err != nil {
+			return fmt.Errorf("error marshaling json: %v", err)
 		}
 		_, err = out.Write(b)
 		if err != nil {
