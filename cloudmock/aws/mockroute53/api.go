@@ -17,12 +17,41 @@ limitations under the License.
 package mockroute53
 
 import (
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
+	"strings"
 )
 
+type zoneInfo struct {
+	ID         string
+	hostedZone *route53.HostedZone
+	records    []*route53.ResourceRecordSet
+}
+
 type MockRoute53 struct {
-	Zones []*route53.HostedZone
+	Zones []*zoneInfo
 }
 
 var _ route53iface.Route53API = &MockRoute53{}
+
+func (m *MockRoute53) findZone(hostedZoneId string) *zoneInfo {
+	if !strings.Contains(hostedZoneId, "/") {
+		hostedZoneId = "/hostedzone/" + hostedZoneId
+	}
+
+	for _, z := range m.Zones {
+		if z.ID == hostedZoneId {
+			return z
+		}
+	}
+	return nil
+}
+
+func (m *MockRoute53) MockCreateZone(z *route53.HostedZone) {
+	zi := &zoneInfo{
+		ID:         aws.StringValue(z.Id),
+		hostedZone: z,
+	}
+	m.Zones = append(m.Zones, zi)
+}
