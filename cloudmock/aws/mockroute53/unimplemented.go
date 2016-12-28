@@ -29,14 +29,6 @@ func (m *MockRoute53) AssociateVPCWithHostedZone(*route53.AssociateVPCWithHosted
 	panic("MockRoute53 function not implemented")
 	return nil, nil
 }
-func (m *MockRoute53) ChangeResourceRecordSetsRequest(*route53.ChangeResourceRecordSetsInput) (*request.Request, *route53.ChangeResourceRecordSetsOutput) {
-	panic("MockRoute53 function not implemented")
-	return nil, nil
-}
-func (m *MockRoute53) ChangeResourceRecordSets(*route53.ChangeResourceRecordSetsInput) (*route53.ChangeResourceRecordSetsOutput, error) {
-	panic("MockRoute53 function not implemented")
-	return nil, nil
-}
 func (m *MockRoute53) ChangeTagsForResourceRequest(*route53.ChangeTagsForResourceInput) (*request.Request, *route53.ChangeTagsForResourceOutput) {
 	panic("MockRoute53 function not implemented")
 	return nil, nil
@@ -270,18 +262,6 @@ func (m *MockRoute53) ListHealthChecks(*route53.ListHealthChecksInput) (*route53
 	return nil, nil
 }
 func (m *MockRoute53) ListHealthChecksPages(*route53.ListHealthChecksInput, func(*route53.ListHealthChecksOutput, bool) bool) error {
-	panic("MockRoute53 function not implemented")
-	return nil
-}
-func (m *MockRoute53) ListResourceRecordSetsRequest(*route53.ListResourceRecordSetsInput) (*request.Request, *route53.ListResourceRecordSetsOutput) {
-	panic("MockRoute53 function not implemented")
-	return nil, nil
-}
-func (m *MockRoute53) ListResourceRecordSets(*route53.ListResourceRecordSetsInput) (*route53.ListResourceRecordSetsOutput, error) {
-	panic("MockRoute53 function not implemented")
-	return nil, nil
-}
-func (m *MockRoute53) ListResourceRecordSetsPages(*route53.ListResourceRecordSetsInput, func(*route53.ListResourceRecordSetsOutput, bool) bool) error {
 	panic("MockRoute53 function not implemented")
 	return nil
 }

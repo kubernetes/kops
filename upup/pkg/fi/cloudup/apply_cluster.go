@@ -18,7 +18,6 @@ package cloudup
 
 import (
 	"fmt"
-	"net"
 	"os"
 	"strings"
 	"time"
@@ -38,7 +37,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	k8sapi "k8s.io/kubernetes/pkg/api"
 )
 
@@ -548,6 +546,13 @@ func (c *ApplyClusterCmd) Run() error {
 	if err != nil {
 		return fmt.Errorf("error running tasks: %v", err)
 	}
+
+	if !dryRun {
+		if err := precreateDNS(cluster, cloud); err != nil {
+			return err
+		}
+	}
+
 	err = target.Finish(taskMap) //This will finish the apply, and print the changes
 	if err != nil {
 		return fmt.Errorf("error closing target: %v", err)
@@ -574,78 +579,6 @@ func findHash(url string) (*hashing.Hash, error) {
 		return hashing.FromString(hashString)
 	}
 	return nil, fmt.Errorf("cannot determine hash for %v (have you specified a valid KubernetesVersion?)", url)
-}
-
-func validateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
-	kopsModelContext := &model.KopsModelContext{
-		//Region: cloud.Region(),
-		Cluster: cluster,
-		//InstanceGroups []*kops.InstanceGroup
-
-		//SSHPublicKeys [][]byte
-	}
-
-	if kopsModelContext.UsePrivateDNS() {
-		glog.Infof("Private DNS: skipping DNS validation")
-		return nil
-	}
-
-	dns, err := cloud.DNS()
-	if err != nil {
-		return fmt.Errorf("error building DNS provider: %v", err)
-	}
-
-	zonesProvider, ok := dns.Zones()
-	if !ok {
-		return fmt.Errorf("error getting DNS zones provider")
-	}
-
-	zones, err := zonesProvider.List()
-	if err != nil {
-		return fmt.Errorf("error listing DNS zones: %v", err)
-	}
-
-	var matches []dnsprovider.Zone
-	findName := strings.TrimSuffix(cluster.Spec.DNSZone, ".")
-	for _, zone := range zones {
-		id := zone.ID()
-		name := strings.TrimSuffix(zone.Name(), ".")
-		if id == cluster.Spec.DNSZone || name == findName {
-			matches = append(matches, zone)
-		}
-	}
-	if len(matches) == 0 {
-		return fmt.Errorf("cannot find DNS Zone %q.  Please pre-create the zone and set up NS records so that it resolves.", cluster.Spec.DNSZone)
-	}
-
-	if len(matches) > 1 {
-		return fmt.Errorf("found multiple DNS Zones matching %q", cluster.Spec.DNSZone)
-	}
-
-	zone := matches[0]
-	dnsName := strings.TrimSuffix(zone.Name(), ".")
-
-	glog.V(2).Infof("Doing DNS lookup to verify NS records for %q", dnsName)
-	ns, err := net.LookupNS(dnsName)
-	if err != nil {
-		return fmt.Errorf("error doing DNS lookup for NS records for %q: %v", dnsName, err)
-	}
-
-	if len(ns) == 0 {
-		if os.Getenv("DNS_IGNORE_NS_CHECK") == "" {
-			return fmt.Errorf("NS records not found for %q - please make sure they are correctly configured", dnsName)
-		} else {
-			glog.Warningf("Ignoring failed NS record check because DNS_IGNORE_NS_CHECK is set")
-		}
-	} else {
-		var hosts []string
-		for _, n := range ns {
-			hosts = append(hosts, n.Host)
-		}
-		glog.V(2).Infof("Found NS records for %q: %v", dnsName, hosts)
-	}
-
-	return nil
 }
 
 // upgradeSpecs ensures that fields are fully populated / defaulted
