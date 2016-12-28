@@ -25,6 +25,7 @@ spec:
       nodeSelector:
         kubernetes.io/role: master
       dnsPolicy: Default  # Don't use cluster DNS (we are likely running before kube-dns)
+      hostNetwork: true
       containers:
       - name: dns-controller
         image: kope/dns-controller:1.4.1
