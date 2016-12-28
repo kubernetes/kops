@@ -44,12 +44,81 @@ spec:
 
 ### Running the kubernetes e2e test suite
 
-The [e2e](../e2e/README.md) directory has a docker image and some scripts which make it easy to run
-the kubernetes e2e tests, using kops.
+The simple way:
+
+```
+# cd wherever you tend to put git repos
+git clone https://github.com/kubernetes/test-infra.git
+export KOPS_E2E_STATE_STORE=s3://your-kops-state-store # Change to your state store path
+export KOPS_E2E_CLUSTER_NAME=e2e.cluster.name          # Change to an FQDN for your e2e cluster name
+test-infra/jobs/ci-kubernetes-e2e-kops-aws.sh |& tee /tmp/testlog
+```
+
+This will:
+* Bring up a cluster using the latest `kops` build from `master`
+* Run the default series of tests (which the Kubernetes team is [also
+running here](https://k8s-testgrid.appspot.com/google-aws#kops-aws))
+* Tear down the cluster
+* Pipes all output to `/tmp/testlog`
+
+That's not terribly useful, though - it just shows how to replicate the existing
+job, but not with your custom code. To test a custom `kops` build, you can do
+the following:
+
+```
+# cd to your kops repo
+export BUILD_BUCKET=your-kops-builds # Change to a bucket for kops builds
+make upload S3_BUCKET=s3://${BUILD_BUCKET}
+
+# That will output s3 paths a it's uploading. Copy the relevant
+# kops/git-<foo> path and then:
+export KOPS_URL=http://${BUILD_BUCKET}.s3.amazonaws.com/kops/git-<foo>
+```
+
+Then follow the test directions above.
+
+To override the test list for the job, you need to familiar with the
+`ginkgo.focus` and `ginkgo.skip`
+flags. Using these flags, you can do:
+
+```
+export GINKGO_TEST_ARGS="--ginkgo.focus=\[Feature:Performance\]"
+```
+
+and follow the instructions above. [Here are some other examples from the `e2e.go` documentation.](https://github.com/kubernetes/community/blob/master/contributors/devel/e2e-tests.md#building-and-running-the-tests).
+
+If you want to test against an existing cluster, you can do:
+
+```
+export E2E_UP=false; export E2E_DOWN=false
+```
+
+and follow the instructions above. This is particularly useful for testing the
+myriad of `kops` configuration/topology options without having to modify the
+testing infrastructure. *Note:* This is also the only way currently to test a
+custom Kubernetes build
+(see
+[kubernetes/test-infra#1454](https://github.com/kubernetes/test-infra/issues/1454)).
+
 
 ### Uploading a custom build
 
-If you want to upload a custom build, here is one way to do so:
+If you want to upload a custom Kubernetes build, here is a simple way (note:
+this assumes you've run `make quick-release` in the Kubernetes repo first):
+
+
+```
+# cd wherever you tend to put git repos
+git clone https://github.com/kubernetes/release.git
+
+# cd back to your kubernetes repo
+/path/to/release/push-build.sh # Fix /path/to/release with wherever you cloned the release repo
+```
+
+That will upload the release to a GCS bucket and make it public. You can then
+use the outputted URL in `kops` with `--kubernetes-version`.
+
+If you need it private in S3, here's a manual way:
 
 ```
 make quick-release
