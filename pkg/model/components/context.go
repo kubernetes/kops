@@ -22,10 +22,12 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 )
 
+// OptionsContext is the context object for options builders
 type OptionsContext struct {
 	Cluster *kops.Cluster
 }
 
+// KubernetesVersion parses the semver version of kubernetes, from the cluster spec
 func (c *OptionsContext) KubernetesVersion() (*semver.Version, error) {
 	kubernetesVersion := c.Cluster.Spec.KubernetesVersion
 
