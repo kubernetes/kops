@@ -478,7 +478,6 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			BastionPublicName: "bastion-" + clusterName,
 		}
 
-
 		if c.Bastion {
 			bastionGroup := &api.InstanceGroup{}
 			bastionGroup.Spec.Role = api.InstanceGroupRoleBastion
