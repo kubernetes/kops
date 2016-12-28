@@ -14,6 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Package featureflag implements simple feature-flagging.
+// Feature flags can become an anti-pattern if abused.
+// We should try to use them for two use-cases:
+// * `Preview` feature flags enable a piece of functionality we haven't yet fully baked.  The user needs to 'opt-in'.
+//   We expect these flags to be removed at some time.  Normally these will default to false.
+// * Escape-hatch feature flags turn off a default that we consider risky (e.g. pre-creating DNS records).
+//   This lets us ship a behaviour, and if we encounter unusual circumstances in the field, we can
+//   allow the user to turn the behaviour off.  Normally these will default to true.
 package featureflag
 
 import (
@@ -22,7 +30,15 @@ import (
 	"sync"
 )
 
-var PreviewPrivateDNS = New("PreviewPrivateDNS")
+func Bool(b bool) *bool {
+	return &b
+}
+
+// PreviewPrivateDNS turns on the preview of the private hosted zone support.
+var PreviewPrivateDNS = New("PreviewPrivateDNS", Bool(false))
+
+// DNSPreCreate controls whether we pre-create DNS records.
+var DNSPreCreate = New("DNSPreCreate", Bool(true))
 
 var flags = make(map[string]*FeatureFlag)
 var flagsMutex sync.Mutex
@@ -30,8 +46,19 @@ var flagsMutex sync.Mutex
 var initFlags sync.Once
 
 type FeatureFlag struct {
-	Key     string
-	Enabled bool
+	Key          string
+	enabled      *bool
+	defaultValue *bool
+}
+
+func (f *FeatureFlag) Enabled() bool {
+	if f.enabled != nil {
+		return *f.enabled
+	}
+	if f.defaultValue != nil {
+		return *f.defaultValue
+	}
+	return false
 }
 
 func readFlags() {
@@ -42,13 +69,22 @@ func readFlags() {
 		if s == "" {
 			continue
 		}
-		ff := New(s)
-		ff.Enabled = true
+		enabled := true
+		var ff *FeatureFlag
+		if s[0] == '+' || s[0] == '-' {
+			ff = New(s[1:], nil)
+			if s[0] == '-' {
+				enabled = false
+			}
+		} else {
+			ff = New(s, nil)
+		}
+		ff.enabled = &enabled
 	}
 
 }
 
-func New(key string) *FeatureFlag {
+func New(key string, defaultValue *bool) *FeatureFlag {
 	initFlags.Do(readFlags)
 
 	flagsMutex.Lock()
@@ -60,6 +96,10 @@ func New(key string) *FeatureFlag {
 			Key: key,
 		}
 		flags[key] = f
+	}
+
+	if f.defaultValue == nil {
+		f.defaultValue = defaultValue
 	}
 
 	return f
