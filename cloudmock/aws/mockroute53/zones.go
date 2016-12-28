@@ -18,44 +18,36 @@ package mockroute53
 
 import (
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
-	"strings"
 )
-
-type zoneInfo struct {
-}
 
 func (m *MockRoute53) GetHostedZoneRequest(*route53.GetHostedZoneInput) (*request.Request, *route53.GetHostedZoneOutput) {
 	panic("MockRoute53 GetHostedZoneRequest not implemented")
 	return nil, nil
 }
+
 func (m *MockRoute53) GetHostedZone(request *route53.GetHostedZoneInput) (*route53.GetHostedZoneOutput, error) {
 	glog.Infof("GetHostedZone %v", request)
 
-	findID := aws.StringValue(request.Id)
-	if !strings.Contains(findID, "/") {
-		findID = "/hostedzone/" + findID
+	if request.Id == nil {
+		// TODO: Use correct error
+		return nil, fmt.Errorf("Id is required FOUND")
+	}
+	zone := m.findZone(*request.Id)
+	if zone == nil {
+		// TODO: Use correct error
+		return nil, fmt.Errorf("NOT FOUND")
 	}
 
-	for _, z := range m.Zones {
-		if *z.Id != findID {
-			continue
-		}
-
-		copy := *z
-		response := &route53.GetHostedZoneOutput{
-			// DelegationSet ???
-			HostedZone: &copy,
-			// VPCs
-		}
-		return response, nil
+	copy := *zone.hostedZone
+	response := &route53.GetHostedZoneOutput{
+		// DelegationSet ???
+		HostedZone: &copy,
+		// VPCs
 	}
-
-	// TODO: Correct error
-	return nil, fmt.Errorf("NOT FOUND")
+	return response, nil
 }
 
 func (m *MockRoute53) GetHostedZoneCountRequest(*route53.GetHostedZoneCountInput) (*request.Request, *route53.GetHostedZoneCountOutput) {
@@ -82,7 +74,7 @@ func (m *MockRoute53) ListHostedZonesPages(request *route53.ListHostedZonesInput
 
 	page := &route53.ListHostedZonesOutput{}
 	for _, zone := range m.Zones {
-		copy := *zone
+		copy := *zone.hostedZone
 		page.HostedZones = append(page.HostedZones, &copy)
 	}
 	lastPage := true

@@ -235,7 +235,7 @@ func (h *IntegrationTestHarness) SetupMockAWS() {
 	mockRoute53 := &mockroute53.MockRoute53{}
 	cloud.MockRoute53 = mockRoute53
 
-	mockRoute53.Zones = append(mockRoute53.Zones, &route53.HostedZone{
+	mockRoute53.MockCreateZone(&route53.HostedZone{
 		Id:   aws.String("/hostedzone/Z1AFAKE1ZON3YO"),
 		Name: aws.String("example.com."),
 	})
