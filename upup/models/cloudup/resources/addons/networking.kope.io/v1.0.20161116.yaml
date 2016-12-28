@@ -17,7 +17,7 @@ spec:
       containers:
         - resources:
             requests:
-              cpu: 0.20
+              cpu: 20m
           securityContext:
             privileged: true
           image: kopeio/networking-agent:1.0.20161116
