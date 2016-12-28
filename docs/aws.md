@@ -155,7 +155,7 @@ Note: You don’t have to use environmental variables here. You can always defin
 
 #### Form your create cluster command
 
-We will need to note which availability zones are available to us. In this example we will be deploying our cluster to the us-west-1 region.
+We will need to note which availability zones are available to us. In this example we will be deploying our cluster to the us-west-2 region.
 
 ```bash
 aws ec2 describe-availability-zones --region us-west-2
