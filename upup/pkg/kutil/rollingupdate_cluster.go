@@ -26,7 +26,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"sync"
 	"time"
 )
@@ -98,7 +98,7 @@ func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroup
 	return groups, nil
 }
 
-func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, k8sClient *release_1_5.Clientset) error {
+func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, k8sClient *k8s_clientset.Clientset) error {
 	if len(groups) == 0 {
 		return nil
 	}
@@ -269,7 +269,7 @@ func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group, nodeMa
 	return n
 }
 
-func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, interval time.Duration, k8sClient *release_1_5.Clientset) error {
+func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, interval time.Duration, k8sClient *k8s_clientset.Clientset) error {
 	c := cloud.(awsup.AWSCloud)
 
 	update := n.NeedUpdate
