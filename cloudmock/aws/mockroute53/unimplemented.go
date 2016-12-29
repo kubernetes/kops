@@ -141,14 +141,6 @@ func (m *MockRoute53) GetChange(*route53.GetChangeInput) (*route53.GetChangeOutp
 	panic("MockRoute53 function not implemented")
 	return nil, nil
 }
-func (m *MockRoute53) GetChangeDetailsRequest(*route53.GetChangeDetailsInput) (*request.Request, *route53.GetChangeDetailsOutput) {
-	panic("MockRoute53 function not implemented")
-	return nil, nil
-}
-func (m *MockRoute53) GetChangeDetails(*route53.GetChangeDetailsInput) (*route53.GetChangeDetailsOutput, error) {
-	panic("MockRoute53 function not implemented")
-	return nil, nil
-}
 func (m *MockRoute53) GetCheckerIpRangesRequest(*route53.GetCheckerIpRangesInput) (*request.Request, *route53.GetCheckerIpRangesOutput) {
 	panic("MockRoute53 function not implemented")
 	return nil, nil
@@ -226,22 +218,6 @@ func (m *MockRoute53) GetTrafficPolicyInstanceCountRequest(*route53.GetTrafficPo
 	return nil, nil
 }
 func (m *MockRoute53) GetTrafficPolicyInstanceCount(*route53.GetTrafficPolicyInstanceCountInput) (*route53.GetTrafficPolicyInstanceCountOutput, error) {
-	panic("MockRoute53 function not implemented")
-	return nil, nil
-}
-func (m *MockRoute53) ListChangeBatchesByHostedZoneRequest(*route53.ListChangeBatchesByHostedZoneInput) (*request.Request, *route53.ListChangeBatchesByHostedZoneOutput) {
-	panic("MockRoute53 function not implemented")
-	return nil, nil
-}
-func (m *MockRoute53) ListChangeBatchesByHostedZone(*route53.ListChangeBatchesByHostedZoneInput) (*route53.ListChangeBatchesByHostedZoneOutput, error) {
-	panic("MockRoute53 function not implemented")
-	return nil, nil
-}
-func (m *MockRoute53) ListChangeBatchesByRRSetRequest(*route53.ListChangeBatchesByRRSetInput) (*request.Request, *route53.ListChangeBatchesByRRSetOutput) {
-	panic("MockRoute53 function not implemented")
-	return nil, nil
-}
-func (m *MockRoute53) ListChangeBatchesByRRSet(*route53.ListChangeBatchesByRRSetInput) (*route53.ListChangeBatchesByRRSetOutput, error) {
 	panic("MockRoute53 function not implemented")
 	return nil, nil
 }
@@ -376,4 +352,34 @@ func (m *MockRoute53) UpdateTrafficPolicyInstance(*route53.UpdateTrafficPolicyIn
 func (m *MockRoute53) WaitUntilResourceRecordSetsChanged(*route53.GetChangeInput) error {
 	panic("MockRoute53 WaitUntilResourceRecordSetsChanged function not implemented")
 	return nil
+}
+
+func (m *MockRoute53) CreateVPCAssociationAuthorizationRequest(*route53.CreateVPCAssociationAuthorizationInput) (*request.Request, *route53.CreateVPCAssociationAuthorizationOutput) {
+	panic("MockRoute53 CreateVPCAssociationAuthorizationRequest function not implemented")
+	return nil, nil
+}
+
+func (m *MockRoute53) CreateVPCAssociationAuthorization(*route53.CreateVPCAssociationAuthorizationInput) (*route53.CreateVPCAssociationAuthorizationOutput, error) {
+	panic("MockRoute53 CreateVPCAssociationAuthorization function not implemented")
+	return nil, nil
+}
+
+func (m *MockRoute53) DeleteVPCAssociationAuthorizationRequest(*route53.DeleteVPCAssociationAuthorizationInput) (*request.Request, *route53.DeleteVPCAssociationAuthorizationOutput) {
+	panic("MockRoute53 DeleteVPCAssociationAuthorizationRequest function not implemented")
+	return nil, nil
+}
+
+func (m *MockRoute53) DeleteVPCAssociationAuthorization(*route53.DeleteVPCAssociationAuthorizationInput) (*route53.DeleteVPCAssociationAuthorizationOutput, error) {
+	panic("MockRoute53 DeleteVPCAssociationAuthorization function not implemented")
+	return nil, nil
+}
+
+func (m *MockRoute53) ListVPCAssociationAuthorizationsRequest(*route53.ListVPCAssociationAuthorizationsInput) (*request.Request, *route53.ListVPCAssociationAuthorizationsOutput) {
+	panic("MockRoute53 ListVPCAssociationAuthorizationsRequest function not implemented")
+	return nil, nil
+}
+
+func (m *MockRoute53) ListVPCAssociationAuthorizations(*route53.ListVPCAssociationAuthorizationsInput) (*route53.ListVPCAssociationAuthorizationsOutput, error) {
+	panic("MockRoute53 ListVPCAssociationAuthorizations function not implemented")
+	return nil, nil
 }
