@@ -22,8 +22,11 @@ Check out our [tutorial](/docs/aws.md) for launching a Kubernetes cluster hosted
 on AWS.
 
 <p align="center">
-  <img src="/docs/img/demo.gif" width="885" > </image>
+  <a href="https://asciinema.org/a/97298">
+  <img src="https://asciinema.org/a/97298.png" width="885"></image>
+  </a>
 </p>
+
 
 ## Features
 
