@@ -38,7 +38,6 @@ const opAcceptCertificateTransfer = "AcceptCertificateTransfer"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) AcceptCertificateTransferRequest(input *AcceptCertificateTransferInput) (req *request.Request, output *AcceptCertificateTransferOutput) {
 	op := &request.Operation{
 		Name:       opAcceptCertificateTransfer,
@@ -127,7 +126,6 @@ const opAttachPrincipalPolicy = "AttachPrincipalPolicy"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) AttachPrincipalPolicyRequest(input *AttachPrincipalPolicyInput) (req *request.Request, output *AttachPrincipalPolicyOutput) {
 	op := &request.Operation{
 		Name:       opAttachPrincipalPolicy,
@@ -212,7 +210,6 @@ const opAttachThingPrincipal = "AttachThingPrincipal"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) AttachThingPrincipalRequest(input *AttachThingPrincipalInput) (req *request.Request, output *AttachThingPrincipalOutput) {
 	op := &request.Operation{
 		Name:       opAttachThingPrincipal,
@@ -291,7 +288,6 @@ const opCancelCertificateTransfer = "CancelCertificateTransfer"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) CancelCertificateTransferRequest(input *CancelCertificateTransferInput) (req *request.Request, output *CancelCertificateTransferOutput) {
 	op := &request.Operation{
 		Name:       opCancelCertificateTransfer,
@@ -385,7 +381,6 @@ const opCreateCertificateFromCsr = "CreateCertificateFromCsr"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) CreateCertificateFromCsrRequest(input *CreateCertificateFromCsrInput) (req *request.Request, output *CreateCertificateFromCsrOutput) {
 	op := &request.Operation{
 		Name:       opCreateCertificateFromCsr,
@@ -498,7 +493,6 @@ const opCreateKeysAndCertificate = "CreateKeysAndCertificate"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) CreateKeysAndCertificateRequest(input *CreateKeysAndCertificateInput) (req *request.Request, output *CreateKeysAndCertificateOutput) {
 	op := &request.Operation{
 		Name:       opCreateKeysAndCertificate,
@@ -578,7 +572,6 @@ const opCreatePolicy = "CreatePolicy"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) CreatePolicyRequest(input *CreatePolicyInput) (req *request.Request, output *CreatePolicyOutput) {
 	op := &request.Operation{
 		Name:       opCreatePolicy,
@@ -664,7 +657,6 @@ const opCreatePolicyVersion = "CreatePolicyVersion"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) CreatePolicyVersionRequest(input *CreatePolicyVersionInput) (req *request.Request, output *CreatePolicyVersionOutput) {
 	op := &request.Operation{
 		Name:       opCreatePolicyVersion,
@@ -756,7 +748,6 @@ const opCreateThing = "CreateThing"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) CreateThingRequest(input *CreateThingInput) (req *request.Request, output *CreateThingOutput) {
 	op := &request.Operation{
 		Name:       opCreateThing,
@@ -838,7 +829,6 @@ const opCreateThingType = "CreateThingType"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) CreateThingTypeRequest(input *CreateThingTypeInput) (req *request.Request, output *CreateThingTypeOutput) {
 	op := &request.Operation{
 		Name:       opCreateThingType,
@@ -917,7 +907,6 @@ const opCreateTopicRule = "CreateTopicRule"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) CreateTopicRuleRequest(input *CreateTopicRuleInput) (req *request.Request, output *CreateTopicRuleOutput) {
 	op := &request.Operation{
 		Name:       opCreateTopicRule,
@@ -997,7 +986,6 @@ const opDeleteCACertificate = "DeleteCACertificate"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DeleteCACertificateRequest(input *DeleteCACertificateInput) (req *request.Request, output *DeleteCACertificateOutput) {
 	op := &request.Operation{
 		Name:       opDeleteCACertificate,
@@ -1079,7 +1067,6 @@ const opDeleteCertificate = "DeleteCertificate"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DeleteCertificateRequest(input *DeleteCertificateInput) (req *request.Request, output *DeleteCertificateOutput) {
 	op := &request.Operation{
 		Name:       opDeleteCertificate,
@@ -1171,7 +1158,6 @@ const opDeletePolicy = "DeletePolicy"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DeletePolicyRequest(input *DeletePolicyInput) (req *request.Request, output *DeletePolicyOutput) {
 	op := &request.Operation{
 		Name:       opDeletePolicy,
@@ -1265,7 +1251,6 @@ const opDeletePolicyVersion = "DeletePolicyVersion"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DeletePolicyVersionRequest(input *DeletePolicyVersionInput) (req *request.Request, output *DeletePolicyVersionOutput) {
 	op := &request.Operation{
 		Name:       opDeletePolicyVersion,
@@ -1352,7 +1337,6 @@ const opDeleteRegistrationCode = "DeleteRegistrationCode"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DeleteRegistrationCodeRequest(input *DeleteRegistrationCodeInput) (req *request.Request, output *DeleteRegistrationCodeOutput) {
 	op := &request.Operation{
 		Name:       opDeleteRegistrationCode,
@@ -1428,7 +1412,6 @@ const opDeleteThing = "DeleteThing"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DeleteThingRequest(input *DeleteThingInput) (req *request.Request, output *DeleteThingOutput) {
 	op := &request.Operation{
 		Name:       opDeleteThing,
@@ -1511,7 +1494,6 @@ const opDeleteThingType = "DeleteThingType"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DeleteThingTypeRequest(input *DeleteThingTypeInput) (req *request.Request, output *DeleteThingTypeOutput) {
 	op := &request.Operation{
 		Name:       opDeleteThingType,
@@ -1594,7 +1576,6 @@ const opDeleteTopicRule = "DeleteTopicRule"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DeleteTopicRuleRequest(input *DeleteTopicRuleInput) (req *request.Request, output *DeleteTopicRuleOutput) {
 	op := &request.Operation{
 		Name:       opDeleteTopicRule,
@@ -1669,7 +1650,6 @@ const opDeprecateThingType = "DeprecateThingType"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DeprecateThingTypeRequest(input *DeprecateThingTypeInput) (req *request.Request, output *DeprecateThingTypeOutput) {
 	op := &request.Operation{
 		Name:       opDeprecateThingType,
@@ -1749,7 +1729,6 @@ const opDescribeCACertificate = "DescribeCACertificate"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DescribeCACertificateRequest(input *DescribeCACertificateInput) (req *request.Request, output *DescribeCACertificateOutput) {
 	op := &request.Operation{
 		Name:       opDescribeCACertificate,
@@ -1828,7 +1807,6 @@ const opDescribeCertificate = "DescribeCertificate"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DescribeCertificateRequest(input *DescribeCertificateInput) (req *request.Request, output *DescribeCertificateOutput) {
 	op := &request.Operation{
 		Name:       opDescribeCertificate,
@@ -1907,7 +1885,6 @@ const opDescribeEndpoint = "DescribeEndpoint"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DescribeEndpointRequest(input *DescribeEndpointInput) (req *request.Request, output *DescribeEndpointOutput) {
 	op := &request.Operation{
 		Name:       opDescribeEndpoint,
@@ -1977,7 +1954,6 @@ const opDescribeThing = "DescribeThing"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DescribeThingRequest(input *DescribeThingInput) (req *request.Request, output *DescribeThingOutput) {
 	op := &request.Operation{
 		Name:       opDescribeThing,
@@ -2056,7 +2032,6 @@ const opDescribeThingType = "DescribeThingType"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DescribeThingTypeRequest(input *DescribeThingTypeInput) (req *request.Request, output *DescribeThingTypeOutput) {
 	op := &request.Operation{
 		Name:       opDescribeThingType,
@@ -2135,7 +2110,6 @@ const opDetachPrincipalPolicy = "DetachPrincipalPolicy"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DetachPrincipalPolicyRequest(input *DetachPrincipalPolicyInput) (req *request.Request, output *DetachPrincipalPolicyOutput) {
 	op := &request.Operation{
 		Name:       opDetachPrincipalPolicy,
@@ -2216,7 +2190,6 @@ const opDetachThingPrincipal = "DetachThingPrincipal"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DetachThingPrincipalRequest(input *DetachThingPrincipalInput) (req *request.Request, output *DetachThingPrincipalOutput) {
 	op := &request.Operation{
 		Name:       opDetachThingPrincipal,
@@ -2295,7 +2268,6 @@ const opDisableTopicRule = "DisableTopicRule"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) DisableTopicRuleRequest(input *DisableTopicRuleInput) (req *request.Request, output *DisableTopicRuleOutput) {
 	op := &request.Operation{
 		Name:       opDisableTopicRule,
@@ -2370,7 +2342,6 @@ const opEnableTopicRule = "EnableTopicRule"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) EnableTopicRuleRequest(input *EnableTopicRuleInput) (req *request.Request, output *EnableTopicRuleOutput) {
 	op := &request.Operation{
 		Name:       opEnableTopicRule,
@@ -2445,7 +2416,6 @@ const opGetLoggingOptions = "GetLoggingOptions"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) GetLoggingOptionsRequest(input *GetLoggingOptionsInput) (req *request.Request, output *GetLoggingOptionsOutput) {
 	op := &request.Operation{
 		Name:       opGetLoggingOptions,
@@ -2515,7 +2485,6 @@ const opGetPolicy = "GetPolicy"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) GetPolicyRequest(input *GetPolicyInput) (req *request.Request, output *GetPolicyOutput) {
 	op := &request.Operation{
 		Name:       opGetPolicy,
@@ -2595,7 +2564,6 @@ const opGetPolicyVersion = "GetPolicyVersion"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) GetPolicyVersionRequest(input *GetPolicyVersionInput) (req *request.Request, output *GetPolicyVersionOutput) {
 	op := &request.Operation{
 		Name:       opGetPolicyVersion,
@@ -2674,7 +2642,6 @@ const opGetRegistrationCode = "GetRegistrationCode"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) GetRegistrationCodeRequest(input *GetRegistrationCodeInput) (req *request.Request, output *GetRegistrationCodeOutput) {
 	op := &request.Operation{
 		Name:       opGetRegistrationCode,
@@ -2750,7 +2717,6 @@ const opGetTopicRule = "GetTopicRule"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) GetTopicRuleRequest(input *GetTopicRuleInput) (req *request.Request, output *GetTopicRuleOutput) {
 	op := &request.Operation{
 		Name:       opGetTopicRule,
@@ -2823,7 +2789,6 @@ const opListCACertificates = "ListCACertificates"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListCACertificatesRequest(input *ListCACertificatesInput) (req *request.Request, output *ListCACertificatesOutput) {
 	op := &request.Operation{
 		Name:       opListCACertificates,
@@ -2902,7 +2867,6 @@ const opListCertificates = "ListCertificates"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListCertificatesRequest(input *ListCertificatesInput) (req *request.Request, output *ListCertificatesOutput) {
 	op := &request.Operation{
 		Name:       opListCertificates,
@@ -2981,7 +2945,6 @@ const opListCertificatesByCA = "ListCertificatesByCA"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListCertificatesByCARequest(input *ListCertificatesByCAInput) (req *request.Request, output *ListCertificatesByCAOutput) {
 	op := &request.Operation{
 		Name:       opListCertificatesByCA,
@@ -3057,7 +3020,6 @@ const opListOutgoingCertificates = "ListOutgoingCertificates"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListOutgoingCertificatesRequest(input *ListOutgoingCertificatesInput) (req *request.Request, output *ListOutgoingCertificatesOutput) {
 	op := &request.Operation{
 		Name:       opListOutgoingCertificates,
@@ -3133,7 +3095,6 @@ const opListPolicies = "ListPolicies"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListPoliciesRequest(input *ListPoliciesInput) (req *request.Request, output *ListPoliciesOutput) {
 	op := &request.Operation{
 		Name:       opListPolicies,
@@ -3209,7 +3170,6 @@ const opListPolicyPrincipals = "ListPolicyPrincipals"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListPolicyPrincipalsRequest(input *ListPolicyPrincipalsInput) (req *request.Request, output *ListPolicyPrincipalsOutput) {
 	op := &request.Operation{
 		Name:       opListPolicyPrincipals,
@@ -3288,7 +3248,6 @@ const opListPolicyVersions = "ListPolicyVersions"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListPolicyVersionsRequest(input *ListPolicyVersionsInput) (req *request.Request, output *ListPolicyVersionsOutput) {
 	op := &request.Operation{
 		Name:       opListPolicyVersions,
@@ -3367,7 +3326,6 @@ const opListPrincipalPolicies = "ListPrincipalPolicies"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListPrincipalPoliciesRequest(input *ListPrincipalPoliciesInput) (req *request.Request, output *ListPrincipalPoliciesOutput) {
 	op := &request.Operation{
 		Name:       opListPrincipalPolicies,
@@ -3447,7 +3405,6 @@ const opListPrincipalThings = "ListPrincipalThings"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListPrincipalThingsRequest(input *ListPrincipalThingsInput) (req *request.Request, output *ListPrincipalThingsOutput) {
 	op := &request.Operation{
 		Name:       opListPrincipalThings,
@@ -3526,7 +3483,6 @@ const opListThingPrincipals = "ListThingPrincipals"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListThingPrincipalsRequest(input *ListThingPrincipalsInput) (req *request.Request, output *ListThingPrincipalsOutput) {
 	op := &request.Operation{
 		Name:       opListThingPrincipals,
@@ -3605,7 +3561,6 @@ const opListThingTypes = "ListThingTypes"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListThingTypesRequest(input *ListThingTypesInput) (req *request.Request, output *ListThingTypesOutput) {
 	op := &request.Operation{
 		Name:       opListThingTypes,
@@ -3681,7 +3636,6 @@ const opListThings = "ListThings"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListThingsRequest(input *ListThingsInput) (req *request.Request, output *ListThingsOutput) {
 	op := &request.Operation{
 		Name:       opListThings,
@@ -3760,7 +3714,6 @@ const opListTopicRules = "ListTopicRules"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ListTopicRulesRequest(input *ListTopicRulesInput) (req *request.Request, output *ListTopicRulesOutput) {
 	op := &request.Operation{
 		Name:       opListTopicRules,
@@ -3830,7 +3783,6 @@ const opRegisterCACertificate = "RegisterCACertificate"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) RegisterCACertificateRequest(input *RegisterCACertificateInput) (req *request.Request, output *RegisterCACertificateOutput) {
 	op := &request.Operation{
 		Name:       opRegisterCACertificate,
@@ -3924,7 +3876,6 @@ const opRegisterCertificate = "RegisterCertificate"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) RegisterCertificateRequest(input *RegisterCertificateInput) (req *request.Request, output *RegisterCertificateOutput) {
 	op := &request.Operation{
 		Name:       opRegisterCertificate,
@@ -4016,7 +3967,6 @@ const opRejectCertificateTransfer = "RejectCertificateTransfer"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) RejectCertificateTransferRequest(input *RejectCertificateTransferInput) (req *request.Request, output *RejectCertificateTransferOutput) {
 	op := &request.Operation{
 		Name:       opRejectCertificateTransfer,
@@ -4109,7 +4059,6 @@ const opReplaceTopicRule = "ReplaceTopicRule"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) ReplaceTopicRuleRequest(input *ReplaceTopicRuleInput) (req *request.Request, output *ReplaceTopicRuleOutput) {
 	op := &request.Operation{
 		Name:       opReplaceTopicRule,
@@ -4189,7 +4138,6 @@ const opSetDefaultPolicyVersion = "SetDefaultPolicyVersion"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) SetDefaultPolicyVersionRequest(input *SetDefaultPolicyVersionInput) (req *request.Request, output *SetDefaultPolicyVersionOutput) {
 	op := &request.Operation{
 		Name:       opSetDefaultPolicyVersion,
@@ -4273,7 +4221,6 @@ const opSetLoggingOptions = "SetLoggingOptions"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) SetLoggingOptionsRequest(input *SetLoggingOptionsInput) (req *request.Request, output *SetLoggingOptionsOutput) {
 	op := &request.Operation{
 		Name:       opSetLoggingOptions,
@@ -4345,7 +4292,6 @@ const opTransferCertificate = "TransferCertificate"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) TransferCertificateRequest(input *TransferCertificateInput) (req *request.Request, output *TransferCertificateOutput) {
 	op := &request.Operation{
 		Name:       opTransferCertificate,
@@ -4442,7 +4388,6 @@ const opUpdateCACertificate = "UpdateCACertificate"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) UpdateCACertificateRequest(input *UpdateCACertificateInput) (req *request.Request, output *UpdateCACertificateOutput) {
 	op := &request.Operation{
 		Name:       opUpdateCACertificate,
@@ -4523,7 +4468,6 @@ const opUpdateCertificate = "UpdateCertificate"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) UpdateCertificateRequest(input *UpdateCertificateInput) (req *request.Request, output *UpdateCertificateOutput) {
 	op := &request.Operation{
 		Name:       opUpdateCertificate,
@@ -4613,7 +4557,6 @@ const opUpdateThing = "UpdateThing"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *IoT) UpdateThingRequest(input *UpdateThingInput) (req *request.Request, output *UpdateThingOutput) {
 	op := &request.Operation{
 		Name:       opUpdateThing,

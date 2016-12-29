@@ -1,6 +1,7 @@
 {
   "version":"2.0",
   "metadata":{
+    "uid":"elasticache-2015-02-02",
     "apiVersion":"2015-02-02",
     "endpointPrefix":"elasticache",
     "protocol":"query",
@@ -1255,7 +1256,8 @@
         "NotificationTopicArn":{"shape":"String"},
         "AutoMinorVersionUpgrade":{"shape":"BooleanOptional"},
         "SnapshotRetentionLimit":{"shape":"IntegerOptional"},
-        "SnapshotWindow":{"shape":"String"}
+        "SnapshotWindow":{"shape":"String"},
+        "AuthToken":{"shape":"String"}
       }
     },
     "CreateCacheClusterResult":{
@@ -1350,7 +1352,8 @@
         "NotificationTopicArn":{"shape":"String"},
         "AutoMinorVersionUpgrade":{"shape":"BooleanOptional"},
         "SnapshotRetentionLimit":{"shape":"IntegerOptional"},
-        "SnapshotWindow":{"shape":"String"}
+        "SnapshotWindow":{"shape":"String"},
+        "AuthToken":{"shape":"String"}
       }
     },
     "CreateReplicationGroupResult":{
