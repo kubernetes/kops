@@ -9,7 +9,8 @@
     "serviceFullName":"AWS CodeDeploy",
     "signatureVersion":"v4",
     "targetPrefix":"CodeDeploy_20141006",
-    "timestampFormat":"unixTimestamp"
+    "timestampFormat":"unixTimestamp",
+    "uid":"codedeploy-2014-10-06"
   },
   "operations":{
     "AddTagsToOnPremisesInstances":{

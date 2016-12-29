@@ -36,6 +36,7 @@ const opGenerateDataSet = "GenerateDataSet"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/marketplacecommerceanalytics-2015-07-01/GenerateDataSet
 func (c *MarketplaceCommerceAnalytics) GenerateDataSetRequest(input *GenerateDataSetInput) (req *request.Request, output *GenerateDataSetOutput) {
 	op := &request.Operation{
 		Name:       opGenerateDataSet,
@@ -77,6 +78,7 @@ func (c *MarketplaceCommerceAnalytics) GenerateDataSetRequest(input *GenerateDat
 //   * Exception
 //   This exception is thrown when an internal service error occurs.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/marketplacecommerceanalytics-2015-07-01/GenerateDataSet
 func (c *MarketplaceCommerceAnalytics) GenerateDataSet(input *GenerateDataSetInput) (*GenerateDataSetOutput, error) {
 	req, out := c.GenerateDataSetRequest(input)
 	err := req.Send()
@@ -109,6 +111,7 @@ const opStartSupportDataExport = "StartSupportDataExport"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/marketplacecommerceanalytics-2015-07-01/StartSupportDataExport
 func (c *MarketplaceCommerceAnalytics) StartSupportDataExportRequest(input *StartSupportDataExportInput) (req *request.Request, output *StartSupportDataExportOutput) {
 	op := &request.Operation{
 		Name:       opStartSupportDataExport,
@@ -151,6 +154,7 @@ func (c *MarketplaceCommerceAnalytics) StartSupportDataExportRequest(input *Star
 //   * Exception
 //   This exception is thrown when an internal service error occurs.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/marketplacecommerceanalytics-2015-07-01/StartSupportDataExport
 func (c *MarketplaceCommerceAnalytics) StartSupportDataExport(input *StartSupportDataExportInput) (*StartSupportDataExportOutput, error) {
 	req, out := c.StartSupportDataExportRequest(input)
 	err := req.Send()
@@ -158,6 +162,7 @@ func (c *MarketplaceCommerceAnalytics) StartSupportDataExport(input *StartSuppor
 }
 
 // Container for the parameters to the GenerateDataSet operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/marketplacecommerceanalytics-2015-07-01/GenerateDataSetRequest
 type GenerateDataSetInput struct {
 	_ struct{} `type:"structure"`
 
@@ -216,6 +221,8 @@ type GenerateDataSetInput struct {
 	// 2015-10-01.
 	// customer_profile_by_geography - Available daily by 5:00 PM Pacific Time since
 	// 2015-10-01.
+	// sales_compensation_billed_revenue - Available monthly on the 4th day of the
+	// month by 5:00 PM Pacific Time since 2016-12.
 	//
 	// DataSetType is a required field
 	DataSetType *string `locationName:"dataSetType" min:"1" type:"string" required:"true" enum:"DataSetType"`
@@ -339,6 +346,7 @@ func (s *GenerateDataSetInput) SetSnsTopicArn(v string) *GenerateDataSetInput {
 }
 
 // Container for the result of the GenerateDataSet operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/marketplacecommerceanalytics-2015-07-01/GenerateDataSetResult
 type GenerateDataSetOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -365,6 +373,7 @@ func (s *GenerateDataSetOutput) SetDataSetRequestId(v string) *GenerateDataSetOu
 }
 
 // Container for the parameters to the StartSupportDataExport operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/marketplacecommerceanalytics-2015-07-01/StartSupportDataExportRequest
 type StartSupportDataExportInput struct {
 	_ struct{} `type:"structure"`
 
@@ -374,11 +383,10 @@ type StartSupportDataExportInput struct {
 
 	// Specifies the data set type to be written to the output csv file. The data
 	// set types customer_support_contacts_data and test_customer_support_contacts_data
-	// both result in a csv file containing the following fields: Product Id, Customer
-	// Guid, Subscription Guid, Subscription Start Date, Organization, AWS Account
-	// Id, Given Name, Surname, Telephone Number, Email, Title, Country Code, ZIP
-	// Code, Operation Type, and Operation Time. Currently, only the test_customer_support_contacts_data
-	// value is supported
+	// both result in a csv file containing the following fields: Product Id, Product
+	// Code, Customer Guid, Subscription Guid, Subscription Start Date, Organization,
+	// AWS Account Id, Given Name, Surname, Telephone Number, Email, Title, Country
+	// Code, ZIP Code, Operation Type, and Operation Time.
 	//
 	// customer_support_contacts_data Customer support contact data. The data set
 	// will contain all changes (Creates, Updates, and Deletes) to customer support
@@ -402,8 +410,8 @@ type StartSupportDataExportInput struct {
 	// prefix is provided, the data set will be published to the S3 bucket root.
 	DestinationS3Prefix *string `locationName:"destinationS3Prefix" type:"string"`
 
-	// The start date from which to retrieve the data set. This parameter only affects
-	// the customer_support_contacts_data data set type.
+	// The start date from which to retrieve the data set in UTC. This parameter
+	// only affects the customer_support_contacts_data data set type.
 	//
 	// FromDate is a required field
 	FromDate *time.Time `locationName:"fromDate" type:"timestamp" timestampFormat:"unix" required:"true"`
@@ -514,6 +522,7 @@ func (s *StartSupportDataExportInput) SetSnsTopicArn(v string) *StartSupportData
 }
 
 // Container for the result of the StartSupportDataExport operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/marketplacecommerceanalytics-2015-07-01/StartSupportDataExportResult
 type StartSupportDataExportOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -593,6 +602,9 @@ const (
 
 	// DataSetTypeCustomerProfileByGeography is a DataSetType enum value
 	DataSetTypeCustomerProfileByGeography = "customer_profile_by_geography"
+
+	// DataSetTypeSalesCompensationBilledRevenue is a DataSetType enum value
+	DataSetTypeSalesCompensationBilledRevenue = "sales_compensation_billed_revenue"
 )
 
 const (

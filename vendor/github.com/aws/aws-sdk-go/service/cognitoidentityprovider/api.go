@@ -40,6 +40,7 @@ const opAddCustomAttributes = "AddCustomAttributes"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AddCustomAttributes
 func (c *CognitoIdentityProvider) AddCustomAttributesRequest(input *AddCustomAttributesInput) (req *request.Request, output *AddCustomAttributesOutput) {
 	op := &request.Operation{
 		Name:       opAddCustomAttributes,
@@ -91,8 +92,97 @@ func (c *CognitoIdentityProvider) AddCustomAttributesRequest(input *AddCustomAtt
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AddCustomAttributes
 func (c *CognitoIdentityProvider) AddCustomAttributes(input *AddCustomAttributesInput) (*AddCustomAttributesOutput, error) {
 	req, out := c.AddCustomAttributesRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opAdminAddUserToGroup = "AdminAddUserToGroup"
+
+// AdminAddUserToGroupRequest generates a "aws/request.Request" representing the
+// client's request for the AdminAddUserToGroup operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See AdminAddUserToGroup for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the AdminAddUserToGroup method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the AdminAddUserToGroupRequest method.
+//    req, resp := client.AdminAddUserToGroupRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminAddUserToGroup
+func (c *CognitoIdentityProvider) AdminAddUserToGroupRequest(input *AdminAddUserToGroupInput) (req *request.Request, output *AdminAddUserToGroupOutput) {
+	op := &request.Operation{
+		Name:       opAdminAddUserToGroup,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &AdminAddUserToGroupInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	output = &AdminAddUserToGroupOutput{}
+	req.Data = output
+	return
+}
+
+// AdminAddUserToGroup API operation for Amazon Cognito Identity Provider.
+//
+// Adds the specified user to the specified group.
+//
+// Requires developer credentials.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity Provider's
+// API operation AdminAddUserToGroup for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   This exception is thrown when the Amazon Cognito service encounters an invalid
+//   parameter.
+//
+//   * ResourceNotFoundException
+//   This exception is thrown when the Amazon Cognito service cannot find the
+//   requested resource.
+//
+//   * TooManyRequestsException
+//   This exception gets thrown when the user has made too many requests for a
+//   given operation.
+//
+//   * NotAuthorizedException
+//   This exception gets thrown when a user is not authorized.
+//
+//   * UserNotFoundException
+//   This exception is thrown when a user is not found.
+//
+//   * InternalErrorException
+//   This exception is thrown when Amazon Cognito encounters an internal error.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminAddUserToGroup
+func (c *CognitoIdentityProvider) AdminAddUserToGroup(input *AdminAddUserToGroupInput) (*AdminAddUserToGroupOutput, error) {
+	req, out := c.AdminAddUserToGroupRequest(input)
 	err := req.Send()
 	return out, err
 }
@@ -123,6 +213,7 @@ const opAdminConfirmSignUp = "AdminConfirmSignUp"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminConfirmSignUp
 func (c *CognitoIdentityProvider) AdminConfirmSignUpRequest(input *AdminConfirmSignUpInput) (req *request.Request, output *AdminConfirmSignUpOutput) {
 	op := &request.Operation{
 		Name:       opAdminConfirmSignUp,
@@ -144,6 +235,8 @@ func (c *CognitoIdentityProvider) AdminConfirmSignUpRequest(input *AdminConfirmS
 //
 // Confirms user registration as an admin without using a confirmation code.
 // Works on any user.
+//
+// Requires developer credentials.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -194,6 +287,7 @@ func (c *CognitoIdentityProvider) AdminConfirmSignUpRequest(input *AdminConfirmS
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminConfirmSignUp
 func (c *CognitoIdentityProvider) AdminConfirmSignUp(input *AdminConfirmSignUpInput) (*AdminConfirmSignUpOutput, error) {
 	req, out := c.AdminConfirmSignUpRequest(input)
 	err := req.Send()
@@ -226,6 +320,7 @@ const opAdminCreateUser = "AdminCreateUser"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminCreateUser
 func (c *CognitoIdentityProvider) AdminCreateUserRequest(input *AdminCreateUserInput) (req *request.Request, output *AdminCreateUserOutput) {
 	op := &request.Operation{
 		Name:       opAdminCreateUser,
@@ -321,6 +416,7 @@ func (c *CognitoIdentityProvider) AdminCreateUserRequest(input *AdminCreateUserI
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminCreateUser
 func (c *CognitoIdentityProvider) AdminCreateUser(input *AdminCreateUserInput) (*AdminCreateUserOutput, error) {
 	req, out := c.AdminCreateUserRequest(input)
 	err := req.Send()
@@ -353,6 +449,7 @@ const opAdminDeleteUser = "AdminDeleteUser"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminDeleteUser
 func (c *CognitoIdentityProvider) AdminDeleteUserRequest(input *AdminDeleteUserInput) (req *request.Request, output *AdminDeleteUserOutput) {
 	op := &request.Operation{
 		Name:       opAdminDeleteUser,
@@ -375,6 +472,8 @@ func (c *CognitoIdentityProvider) AdminDeleteUserRequest(input *AdminDeleteUserI
 // AdminDeleteUser API operation for Amazon Cognito Identity Provider.
 //
 // Deletes a user as an administrator. Works on any user.
+//
+// Requires developer credentials.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -405,6 +504,7 @@ func (c *CognitoIdentityProvider) AdminDeleteUserRequest(input *AdminDeleteUserI
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminDeleteUser
 func (c *CognitoIdentityProvider) AdminDeleteUser(input *AdminDeleteUserInput) (*AdminDeleteUserOutput, error) {
 	req, out := c.AdminDeleteUserRequest(input)
 	err := req.Send()
@@ -437,6 +537,7 @@ const opAdminDeleteUserAttributes = "AdminDeleteUserAttributes"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminDeleteUserAttributes
 func (c *CognitoIdentityProvider) AdminDeleteUserAttributesRequest(input *AdminDeleteUserAttributesInput) (req *request.Request, output *AdminDeleteUserAttributesOutput) {
 	op := &request.Operation{
 		Name:       opAdminDeleteUserAttributes,
@@ -458,6 +559,8 @@ func (c *CognitoIdentityProvider) AdminDeleteUserAttributesRequest(input *AdminD
 //
 // Deletes the user attributes in a user pool as an administrator. Works on
 // any user.
+//
+// Requires developer credentials.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -488,6 +591,7 @@ func (c *CognitoIdentityProvider) AdminDeleteUserAttributesRequest(input *AdminD
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminDeleteUserAttributes
 func (c *CognitoIdentityProvider) AdminDeleteUserAttributes(input *AdminDeleteUserAttributesInput) (*AdminDeleteUserAttributesOutput, error) {
 	req, out := c.AdminDeleteUserAttributesRequest(input)
 	err := req.Send()
@@ -520,6 +624,7 @@ const opAdminDisableUser = "AdminDisableUser"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminDisableUser
 func (c *CognitoIdentityProvider) AdminDisableUserRequest(input *AdminDisableUserInput) (req *request.Request, output *AdminDisableUserOutput) {
 	op := &request.Operation{
 		Name:       opAdminDisableUser,
@@ -540,6 +645,8 @@ func (c *CognitoIdentityProvider) AdminDisableUserRequest(input *AdminDisableUse
 // AdminDisableUser API operation for Amazon Cognito Identity Provider.
 //
 // Disables the specified user as an administrator. Works on any user.
+//
+// Requires developer credentials.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -570,6 +677,7 @@ func (c *CognitoIdentityProvider) AdminDisableUserRequest(input *AdminDisableUse
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminDisableUser
 func (c *CognitoIdentityProvider) AdminDisableUser(input *AdminDisableUserInput) (*AdminDisableUserOutput, error) {
 	req, out := c.AdminDisableUserRequest(input)
 	err := req.Send()
@@ -602,6 +710,7 @@ const opAdminEnableUser = "AdminEnableUser"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminEnableUser
 func (c *CognitoIdentityProvider) AdminEnableUserRequest(input *AdminEnableUserInput) (req *request.Request, output *AdminEnableUserOutput) {
 	op := &request.Operation{
 		Name:       opAdminEnableUser,
@@ -622,6 +731,8 @@ func (c *CognitoIdentityProvider) AdminEnableUserRequest(input *AdminEnableUserI
 // AdminEnableUser API operation for Amazon Cognito Identity Provider.
 //
 // Enables the specified user as an administrator. Works on any user.
+//
+// Requires developer credentials.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -652,6 +763,7 @@ func (c *CognitoIdentityProvider) AdminEnableUserRequest(input *AdminEnableUserI
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminEnableUser
 func (c *CognitoIdentityProvider) AdminEnableUser(input *AdminEnableUserInput) (*AdminEnableUserOutput, error) {
 	req, out := c.AdminEnableUserRequest(input)
 	err := req.Send()
@@ -684,6 +796,7 @@ const opAdminForgetDevice = "AdminForgetDevice"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminForgetDevice
 func (c *CognitoIdentityProvider) AdminForgetDeviceRequest(input *AdminForgetDeviceInput) (req *request.Request, output *AdminForgetDeviceOutput) {
 	op := &request.Operation{
 		Name:       opAdminForgetDevice,
@@ -706,6 +819,8 @@ func (c *CognitoIdentityProvider) AdminForgetDeviceRequest(input *AdminForgetDev
 // AdminForgetDevice API operation for Amazon Cognito Identity Provider.
 //
 // Forgets the device, as an administrator.
+//
+// Requires developer credentials.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -739,6 +854,7 @@ func (c *CognitoIdentityProvider) AdminForgetDeviceRequest(input *AdminForgetDev
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminForgetDevice
 func (c *CognitoIdentityProvider) AdminForgetDevice(input *AdminForgetDeviceInput) (*AdminForgetDeviceOutput, error) {
 	req, out := c.AdminForgetDeviceRequest(input)
 	err := req.Send()
@@ -771,6 +887,7 @@ const opAdminGetDevice = "AdminGetDevice"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminGetDevice
 func (c *CognitoIdentityProvider) AdminGetDeviceRequest(input *AdminGetDeviceInput) (req *request.Request, output *AdminGetDeviceOutput) {
 	op := &request.Operation{
 		Name:       opAdminGetDevice,
@@ -791,6 +908,8 @@ func (c *CognitoIdentityProvider) AdminGetDeviceRequest(input *AdminGetDeviceInp
 // AdminGetDevice API operation for Amazon Cognito Identity Provider.
 //
 // Gets the device, as an administrator.
+//
+// Requires developer credentials.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -821,6 +940,7 @@ func (c *CognitoIdentityProvider) AdminGetDeviceRequest(input *AdminGetDeviceInp
 //   * NotAuthorizedException
 //   This exception gets thrown when a user is not authorized.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminGetDevice
 func (c *CognitoIdentityProvider) AdminGetDevice(input *AdminGetDeviceInput) (*AdminGetDeviceOutput, error) {
 	req, out := c.AdminGetDeviceRequest(input)
 	err := req.Send()
@@ -853,6 +973,7 @@ const opAdminGetUser = "AdminGetUser"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminGetUser
 func (c *CognitoIdentityProvider) AdminGetUserRequest(input *AdminGetUserInput) (req *request.Request, output *AdminGetUserOutput) {
 	op := &request.Operation{
 		Name:       opAdminGetUser,
@@ -874,6 +995,8 @@ func (c *CognitoIdentityProvider) AdminGetUserRequest(input *AdminGetUserInput) 
 //
 // Gets the specified user by user name in a user pool as an administrator.
 // Works on any user.
+//
+// Requires developer credentials.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -904,6 +1027,7 @@ func (c *CognitoIdentityProvider) AdminGetUserRequest(input *AdminGetUserInput) 
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminGetUser
 func (c *CognitoIdentityProvider) AdminGetUser(input *AdminGetUserInput) (*AdminGetUserOutput, error) {
 	req, out := c.AdminGetUserRequest(input)
 	err := req.Send()
@@ -936,6 +1060,7 @@ const opAdminInitiateAuth = "AdminInitiateAuth"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminInitiateAuth
 func (c *CognitoIdentityProvider) AdminInitiateAuthRequest(input *AdminInitiateAuthInput) (req *request.Request, output *AdminInitiateAuthOutput) {
 	op := &request.Operation{
 		Name:       opAdminInitiateAuth,
@@ -956,6 +1081,8 @@ func (c *CognitoIdentityProvider) AdminInitiateAuthRequest(input *AdminInitiateA
 // AdminInitiateAuth API operation for Amazon Cognito Identity Provider.
 //
 // Initiates the authentication flow, as an administrator.
+//
+// Requires developer credentials.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1021,6 +1148,7 @@ func (c *CognitoIdentityProvider) AdminInitiateAuthRequest(input *AdminInitiateA
 //   * UserNotConfirmedException
 //   This exception is thrown when a user is not confirmed successfully.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminInitiateAuth
 func (c *CognitoIdentityProvider) AdminInitiateAuth(input *AdminInitiateAuthInput) (*AdminInitiateAuthOutput, error) {
 	req, out := c.AdminInitiateAuthRequest(input)
 	err := req.Send()
@@ -1053,6 +1181,7 @@ const opAdminListDevices = "AdminListDevices"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminListDevices
 func (c *CognitoIdentityProvider) AdminListDevicesRequest(input *AdminListDevicesInput) (req *request.Request, output *AdminListDevicesOutput) {
 	op := &request.Operation{
 		Name:       opAdminListDevices,
@@ -1073,6 +1202,8 @@ func (c *CognitoIdentityProvider) AdminListDevicesRequest(input *AdminListDevice
 // AdminListDevices API operation for Amazon Cognito Identity Provider.
 //
 // Lists devices, as an administrator.
+//
+// Requires developer credentials.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1103,8 +1234,183 @@ func (c *CognitoIdentityProvider) AdminListDevicesRequest(input *AdminListDevice
 //   * NotAuthorizedException
 //   This exception gets thrown when a user is not authorized.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminListDevices
 func (c *CognitoIdentityProvider) AdminListDevices(input *AdminListDevicesInput) (*AdminListDevicesOutput, error) {
 	req, out := c.AdminListDevicesRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opAdminListGroupsForUser = "AdminListGroupsForUser"
+
+// AdminListGroupsForUserRequest generates a "aws/request.Request" representing the
+// client's request for the AdminListGroupsForUser operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See AdminListGroupsForUser for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the AdminListGroupsForUser method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the AdminListGroupsForUserRequest method.
+//    req, resp := client.AdminListGroupsForUserRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminListGroupsForUser
+func (c *CognitoIdentityProvider) AdminListGroupsForUserRequest(input *AdminListGroupsForUserInput) (req *request.Request, output *AdminListGroupsForUserOutput) {
+	op := &request.Operation{
+		Name:       opAdminListGroupsForUser,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &AdminListGroupsForUserInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &AdminListGroupsForUserOutput{}
+	req.Data = output
+	return
+}
+
+// AdminListGroupsForUser API operation for Amazon Cognito Identity Provider.
+//
+// Lists the groups that the user belongs to.
+//
+// Requires developer credentials.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity Provider's
+// API operation AdminListGroupsForUser for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   This exception is thrown when the Amazon Cognito service encounters an invalid
+//   parameter.
+//
+//   * ResourceNotFoundException
+//   This exception is thrown when the Amazon Cognito service cannot find the
+//   requested resource.
+//
+//   * TooManyRequestsException
+//   This exception gets thrown when the user has made too many requests for a
+//   given operation.
+//
+//   * NotAuthorizedException
+//   This exception gets thrown when a user is not authorized.
+//
+//   * UserNotFoundException
+//   This exception is thrown when a user is not found.
+//
+//   * InternalErrorException
+//   This exception is thrown when Amazon Cognito encounters an internal error.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminListGroupsForUser
+func (c *CognitoIdentityProvider) AdminListGroupsForUser(input *AdminListGroupsForUserInput) (*AdminListGroupsForUserOutput, error) {
+	req, out := c.AdminListGroupsForUserRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opAdminRemoveUserFromGroup = "AdminRemoveUserFromGroup"
+
+// AdminRemoveUserFromGroupRequest generates a "aws/request.Request" representing the
+// client's request for the AdminRemoveUserFromGroup operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See AdminRemoveUserFromGroup for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the AdminRemoveUserFromGroup method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the AdminRemoveUserFromGroupRequest method.
+//    req, resp := client.AdminRemoveUserFromGroupRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminRemoveUserFromGroup
+func (c *CognitoIdentityProvider) AdminRemoveUserFromGroupRequest(input *AdminRemoveUserFromGroupInput) (req *request.Request, output *AdminRemoveUserFromGroupOutput) {
+	op := &request.Operation{
+		Name:       opAdminRemoveUserFromGroup,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &AdminRemoveUserFromGroupInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	output = &AdminRemoveUserFromGroupOutput{}
+	req.Data = output
+	return
+}
+
+// AdminRemoveUserFromGroup API operation for Amazon Cognito Identity Provider.
+//
+// Removes the specified user from the specified group.
+//
+// Requires developer credentials.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity Provider's
+// API operation AdminRemoveUserFromGroup for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   This exception is thrown when the Amazon Cognito service encounters an invalid
+//   parameter.
+//
+//   * ResourceNotFoundException
+//   This exception is thrown when the Amazon Cognito service cannot find the
+//   requested resource.
+//
+//   * TooManyRequestsException
+//   This exception gets thrown when the user has made too many requests for a
+//   given operation.
+//
+//   * NotAuthorizedException
+//   This exception gets thrown when a user is not authorized.
+//
+//   * UserNotFoundException
+//   This exception is thrown when a user is not found.
+//
+//   * InternalErrorException
+//   This exception is thrown when Amazon Cognito encounters an internal error.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminRemoveUserFromGroup
+func (c *CognitoIdentityProvider) AdminRemoveUserFromGroup(input *AdminRemoveUserFromGroupInput) (*AdminRemoveUserFromGroupOutput, error) {
+	req, out := c.AdminRemoveUserFromGroupRequest(input)
 	err := req.Send()
 	return out, err
 }
@@ -1135,6 +1441,7 @@ const opAdminResetUserPassword = "AdminResetUserPassword"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminResetUserPassword
 func (c *CognitoIdentityProvider) AdminResetUserPasswordRequest(input *AdminResetUserPasswordInput) (req *request.Request, output *AdminResetUserPasswordOutput) {
 	op := &request.Operation{
 		Name:       opAdminResetUserPassword,
@@ -1166,6 +1473,8 @@ func (c *CognitoIdentityProvider) AdminResetUserPasswordRequest(input *AdminRese
 // is selected and a verified email exists for the user, calling this API will
 // also result in sending a message to the end user with the code to change
 // their password.
+//
+// Requires developer credentials.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1212,6 +1521,7 @@ func (c *CognitoIdentityProvider) AdminResetUserPasswordRequest(input *AdminRese
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminResetUserPassword
 func (c *CognitoIdentityProvider) AdminResetUserPassword(input *AdminResetUserPasswordInput) (*AdminResetUserPasswordOutput, error) {
 	req, out := c.AdminResetUserPasswordRequest(input)
 	err := req.Send()
@@ -1244,6 +1554,7 @@ const opAdminRespondToAuthChallenge = "AdminRespondToAuthChallenge"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminRespondToAuthChallenge
 func (c *CognitoIdentityProvider) AdminRespondToAuthChallengeRequest(input *AdminRespondToAuthChallengeInput) (req *request.Request, output *AdminRespondToAuthChallengeOutput) {
 	op := &request.Operation{
 		Name:       opAdminRespondToAuthChallenge,
@@ -1264,6 +1575,8 @@ func (c *CognitoIdentityProvider) AdminRespondToAuthChallengeRequest(input *Admi
 // AdminRespondToAuthChallenge API operation for Amazon Cognito Identity Provider.
 //
 // Responds to an authentication challenge, as an administrator.
+//
+// Requires developer credentials.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1346,6 +1659,7 @@ func (c *CognitoIdentityProvider) AdminRespondToAuthChallengeRequest(input *Admi
 //   * UserNotConfirmedException
 //   This exception is thrown when a user is not confirmed successfully.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminRespondToAuthChallenge
 func (c *CognitoIdentityProvider) AdminRespondToAuthChallenge(input *AdminRespondToAuthChallengeInput) (*AdminRespondToAuthChallengeOutput, error) {
 	req, out := c.AdminRespondToAuthChallengeRequest(input)
 	err := req.Send()
@@ -1378,6 +1692,7 @@ const opAdminSetUserSettings = "AdminSetUserSettings"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminSetUserSettings
 func (c *CognitoIdentityProvider) AdminSetUserSettingsRequest(input *AdminSetUserSettingsInput) (req *request.Request, output *AdminSetUserSettingsOutput) {
 	op := &request.Operation{
 		Name:       opAdminSetUserSettings,
@@ -1398,6 +1713,8 @@ func (c *CognitoIdentityProvider) AdminSetUserSettingsRequest(input *AdminSetUse
 // AdminSetUserSettings API operation for Amazon Cognito Identity Provider.
 //
 // Sets all the user settings for a specified user name. Works on any user.
+//
+// Requires developer credentials.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1424,6 +1741,7 @@ func (c *CognitoIdentityProvider) AdminSetUserSettingsRequest(input *AdminSetUse
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminSetUserSettings
 func (c *CognitoIdentityProvider) AdminSetUserSettings(input *AdminSetUserSettingsInput) (*AdminSetUserSettingsOutput, error) {
 	req, out := c.AdminSetUserSettingsRequest(input)
 	err := req.Send()
@@ -1456,6 +1774,7 @@ const opAdminUpdateDeviceStatus = "AdminUpdateDeviceStatus"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminUpdateDeviceStatus
 func (c *CognitoIdentityProvider) AdminUpdateDeviceStatusRequest(input *AdminUpdateDeviceStatusInput) (req *request.Request, output *AdminUpdateDeviceStatusOutput) {
 	op := &request.Operation{
 		Name:       opAdminUpdateDeviceStatus,
@@ -1476,6 +1795,8 @@ func (c *CognitoIdentityProvider) AdminUpdateDeviceStatusRequest(input *AdminUpd
 // AdminUpdateDeviceStatus API operation for Amazon Cognito Identity Provider.
 //
 // Updates the device status as an administrator.
+//
+// Requires developer credentials.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1509,6 +1830,7 @@ func (c *CognitoIdentityProvider) AdminUpdateDeviceStatusRequest(input *AdminUpd
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminUpdateDeviceStatus
 func (c *CognitoIdentityProvider) AdminUpdateDeviceStatus(input *AdminUpdateDeviceStatusInput) (*AdminUpdateDeviceStatusOutput, error) {
 	req, out := c.AdminUpdateDeviceStatusRequest(input)
 	err := req.Send()
@@ -1541,6 +1863,7 @@ const opAdminUpdateUserAttributes = "AdminUpdateUserAttributes"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminUpdateUserAttributes
 func (c *CognitoIdentityProvider) AdminUpdateUserAttributesRequest(input *AdminUpdateUserAttributesInput) (req *request.Request, output *AdminUpdateUserAttributesOutput) {
 	op := &request.Operation{
 		Name:       opAdminUpdateUserAttributes,
@@ -1562,6 +1885,8 @@ func (c *CognitoIdentityProvider) AdminUpdateUserAttributesRequest(input *AdminU
 //
 // Updates the specified user's attributes, including developer attributes,
 // as an administrator. Works on any user.
+//
+// Requires developer credentials.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1610,6 +1935,7 @@ func (c *CognitoIdentityProvider) AdminUpdateUserAttributesRequest(input *AdminU
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminUpdateUserAttributes
 func (c *CognitoIdentityProvider) AdminUpdateUserAttributes(input *AdminUpdateUserAttributesInput) (*AdminUpdateUserAttributesOutput, error) {
 	req, out := c.AdminUpdateUserAttributesRequest(input)
 	err := req.Send()
@@ -1642,6 +1968,7 @@ const opAdminUserGlobalSignOut = "AdminUserGlobalSignOut"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminUserGlobalSignOut
 func (c *CognitoIdentityProvider) AdminUserGlobalSignOutRequest(input *AdminUserGlobalSignOutInput) (req *request.Request, output *AdminUserGlobalSignOutOutput) {
 	op := &request.Operation{
 		Name:       opAdminUserGlobalSignOut,
@@ -1662,6 +1989,8 @@ func (c *CognitoIdentityProvider) AdminUserGlobalSignOutRequest(input *AdminUser
 // AdminUserGlobalSignOut API operation for Amazon Cognito Identity Provider.
 //
 // Signs out users from all devices, as an administrator.
+//
+// Requires developer credentials.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1692,6 +2021,7 @@ func (c *CognitoIdentityProvider) AdminUserGlobalSignOutRequest(input *AdminUser
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminUserGlobalSignOut
 func (c *CognitoIdentityProvider) AdminUserGlobalSignOut(input *AdminUserGlobalSignOutInput) (*AdminUserGlobalSignOutOutput, error) {
 	req, out := c.AdminUserGlobalSignOutRequest(input)
 	err := req.Send()
@@ -1724,6 +2054,7 @@ const opChangePassword = "ChangePassword"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ChangePassword
 func (c *CognitoIdentityProvider) ChangePasswordRequest(input *ChangePasswordInput) (req *request.Request, output *ChangePasswordOutput) {
 	op := &request.Operation{
 		Name:       opChangePassword,
@@ -1789,6 +2120,7 @@ func (c *CognitoIdentityProvider) ChangePasswordRequest(input *ChangePasswordInp
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ChangePassword
 func (c *CognitoIdentityProvider) ChangePassword(input *ChangePasswordInput) (*ChangePasswordOutput, error) {
 	req, out := c.ChangePasswordRequest(input)
 	err := req.Send()
@@ -1821,6 +2153,7 @@ const opConfirmDevice = "ConfirmDevice"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ConfirmDevice
 func (c *CognitoIdentityProvider) ConfirmDeviceRequest(input *ConfirmDeviceInput) (req *request.Request, output *ConfirmDeviceOutput) {
 	op := &request.Operation{
 		Name:       opConfirmDevice,
@@ -1893,6 +2226,7 @@ func (c *CognitoIdentityProvider) ConfirmDeviceRequest(input *ConfirmDeviceInput
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ConfirmDevice
 func (c *CognitoIdentityProvider) ConfirmDevice(input *ConfirmDeviceInput) (*ConfirmDeviceOutput, error) {
 	req, out := c.ConfirmDeviceRequest(input)
 	err := req.Send()
@@ -1925,6 +2259,7 @@ const opConfirmForgotPassword = "ConfirmForgotPassword"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ConfirmForgotPassword
 func (c *CognitoIdentityProvider) ConfirmForgotPasswordRequest(input *ConfirmForgotPasswordInput) (req *request.Request, output *ConfirmForgotPasswordOutput) {
 	op := &request.Operation{
 		Name:       opConfirmForgotPassword,
@@ -2011,6 +2346,7 @@ func (c *CognitoIdentityProvider) ConfirmForgotPasswordRequest(input *ConfirmFor
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ConfirmForgotPassword
 func (c *CognitoIdentityProvider) ConfirmForgotPassword(input *ConfirmForgotPasswordInput) (*ConfirmForgotPasswordOutput, error) {
 	req, out := c.ConfirmForgotPasswordRequest(input)
 	err := req.Send()
@@ -2043,6 +2379,7 @@ const opConfirmSignUp = "ConfirmSignUp"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ConfirmSignUp
 func (c *CognitoIdentityProvider) ConfirmSignUpRequest(input *ConfirmSignUpInput) (req *request.Request, output *ConfirmSignUpOutput) {
 	op := &request.Operation{
 		Name:       opConfirmSignUp,
@@ -2128,8 +2465,100 @@ func (c *CognitoIdentityProvider) ConfirmSignUpRequest(input *ConfirmSignUpInput
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ConfirmSignUp
 func (c *CognitoIdentityProvider) ConfirmSignUp(input *ConfirmSignUpInput) (*ConfirmSignUpOutput, error) {
 	req, out := c.ConfirmSignUpRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opCreateGroup = "CreateGroup"
+
+// CreateGroupRequest generates a "aws/request.Request" representing the
+// client's request for the CreateGroup operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See CreateGroup for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the CreateGroup method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the CreateGroupRequest method.
+//    req, resp := client.CreateGroupRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/CreateGroup
+func (c *CognitoIdentityProvider) CreateGroupRequest(input *CreateGroupInput) (req *request.Request, output *CreateGroupOutput) {
+	op := &request.Operation{
+		Name:       opCreateGroup,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateGroupInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &CreateGroupOutput{}
+	req.Data = output
+	return
+}
+
+// CreateGroup API operation for Amazon Cognito Identity Provider.
+//
+// Creates a new group in the specified user pool.
+//
+// Requires developer credentials.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity Provider's
+// API operation CreateGroup for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   This exception is thrown when the Amazon Cognito service encounters an invalid
+//   parameter.
+//
+//   * GroupExistsException
+//   This exception is thrown when Amazon Cognito encounters a group that already
+//   exists in the user pool.
+//
+//   * ResourceNotFoundException
+//   This exception is thrown when the Amazon Cognito service cannot find the
+//   requested resource.
+//
+//   * TooManyRequestsException
+//   This exception gets thrown when the user has made too many requests for a
+//   given operation.
+//
+//   * LimitExceededException
+//   This exception is thrown when a user exceeds the limit for a requested AWS
+//   resource.
+//
+//   * NotAuthorizedException
+//   This exception gets thrown when a user is not authorized.
+//
+//   * InternalErrorException
+//   This exception is thrown when Amazon Cognito encounters an internal error.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/CreateGroup
+func (c *CognitoIdentityProvider) CreateGroup(input *CreateGroupInput) (*CreateGroupOutput, error) {
+	req, out := c.CreateGroupRequest(input)
 	err := req.Send()
 	return out, err
 }
@@ -2160,6 +2589,7 @@ const opCreateUserImportJob = "CreateUserImportJob"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/CreateUserImportJob
 func (c *CognitoIdentityProvider) CreateUserImportJobRequest(input *CreateUserImportJobInput) (req *request.Request, output *CreateUserImportJobOutput) {
 	op := &request.Operation{
 		Name:       opCreateUserImportJob,
@@ -2214,6 +2644,7 @@ func (c *CognitoIdentityProvider) CreateUserImportJobRequest(input *CreateUserIm
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/CreateUserImportJob
 func (c *CognitoIdentityProvider) CreateUserImportJob(input *CreateUserImportJobInput) (*CreateUserImportJobOutput, error) {
 	req, out := c.CreateUserImportJobRequest(input)
 	err := req.Send()
@@ -2246,6 +2677,7 @@ const opCreateUserPool = "CreateUserPool"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/CreateUserPool
 func (c *CognitoIdentityProvider) CreateUserPoolRequest(input *CreateUserPoolInput) (req *request.Request, output *CreateUserPoolOutput) {
 	op := &request.Operation{
 		Name:       opCreateUserPool,
@@ -2305,9 +2737,13 @@ func (c *CognitoIdentityProvider) CreateUserPoolRequest(input *CreateUserPoolInp
 //   * NotAuthorizedException
 //   This exception gets thrown when a user is not authorized.
 //
+//   * UserPoolTaggingException
+//   This exception gets thrown when a user pool tag cannot be set or updated.
+//
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/CreateUserPool
 func (c *CognitoIdentityProvider) CreateUserPool(input *CreateUserPoolInput) (*CreateUserPoolOutput, error) {
 	req, out := c.CreateUserPoolRequest(input)
 	err := req.Send()
@@ -2340,6 +2776,7 @@ const opCreateUserPoolClient = "CreateUserPoolClient"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/CreateUserPoolClient
 func (c *CognitoIdentityProvider) CreateUserPoolClientRequest(input *CreateUserPoolClientInput) (req *request.Request, output *CreateUserPoolClientOutput) {
 	op := &request.Operation{
 		Name:       opCreateUserPoolClient,
@@ -2391,8 +2828,94 @@ func (c *CognitoIdentityProvider) CreateUserPoolClientRequest(input *CreateUserP
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/CreateUserPoolClient
 func (c *CognitoIdentityProvider) CreateUserPoolClient(input *CreateUserPoolClientInput) (*CreateUserPoolClientOutput, error) {
 	req, out := c.CreateUserPoolClientRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opDeleteGroup = "DeleteGroup"
+
+// DeleteGroupRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteGroup operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See DeleteGroup for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the DeleteGroup method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the DeleteGroupRequest method.
+//    req, resp := client.DeleteGroupRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DeleteGroup
+func (c *CognitoIdentityProvider) DeleteGroupRequest(input *DeleteGroupInput) (req *request.Request, output *DeleteGroupOutput) {
+	op := &request.Operation{
+		Name:       opDeleteGroup,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteGroupInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	output = &DeleteGroupOutput{}
+	req.Data = output
+	return
+}
+
+// DeleteGroup API operation for Amazon Cognito Identity Provider.
+//
+// Deletes a group. Currently only groups with no members can be deleted.
+//
+// Requires developer credentials.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity Provider's
+// API operation DeleteGroup for usage and error information.
+//
+// Returned Error Codes:
+//   * ResourceNotFoundException
+//   This exception is thrown when the Amazon Cognito service cannot find the
+//   requested resource.
+//
+//   * InvalidParameterException
+//   This exception is thrown when the Amazon Cognito service encounters an invalid
+//   parameter.
+//
+//   * TooManyRequestsException
+//   This exception gets thrown when the user has made too many requests for a
+//   given operation.
+//
+//   * NotAuthorizedException
+//   This exception gets thrown when a user is not authorized.
+//
+//   * InternalErrorException
+//   This exception is thrown when Amazon Cognito encounters an internal error.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DeleteGroup
+func (c *CognitoIdentityProvider) DeleteGroup(input *DeleteGroupInput) (*DeleteGroupOutput, error) {
+	req, out := c.DeleteGroupRequest(input)
 	err := req.Send()
 	return out, err
 }
@@ -2423,6 +2946,7 @@ const opDeleteUser = "DeleteUser"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DeleteUser
 func (c *CognitoIdentityProvider) DeleteUserRequest(input *DeleteUserInput) (req *request.Request, output *DeleteUserOutput) {
 	op := &request.Operation{
 		Name:       opDeleteUser,
@@ -2482,6 +3006,7 @@ func (c *CognitoIdentityProvider) DeleteUserRequest(input *DeleteUserInput) (req
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DeleteUser
 func (c *CognitoIdentityProvider) DeleteUser(input *DeleteUserInput) (*DeleteUserOutput, error) {
 	req, out := c.DeleteUserRequest(input)
 	err := req.Send()
@@ -2514,6 +3039,7 @@ const opDeleteUserAttributes = "DeleteUserAttributes"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DeleteUserAttributes
 func (c *CognitoIdentityProvider) DeleteUserAttributesRequest(input *DeleteUserAttributesInput) (req *request.Request, output *DeleteUserAttributesOutput) {
 	op := &request.Operation{
 		Name:       opDeleteUserAttributes,
@@ -2571,6 +3097,7 @@ func (c *CognitoIdentityProvider) DeleteUserAttributesRequest(input *DeleteUserA
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DeleteUserAttributes
 func (c *CognitoIdentityProvider) DeleteUserAttributes(input *DeleteUserAttributesInput) (*DeleteUserAttributesOutput, error) {
 	req, out := c.DeleteUserAttributesRequest(input)
 	err := req.Send()
@@ -2603,6 +3130,7 @@ const opDeleteUserPool = "DeleteUserPool"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DeleteUserPool
 func (c *CognitoIdentityProvider) DeleteUserPoolRequest(input *DeleteUserPoolInput) (req *request.Request, output *DeleteUserPoolOutput) {
 	op := &request.Operation{
 		Name:       opDeleteUserPool,
@@ -2656,6 +3184,7 @@ func (c *CognitoIdentityProvider) DeleteUserPoolRequest(input *DeleteUserPoolInp
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DeleteUserPool
 func (c *CognitoIdentityProvider) DeleteUserPool(input *DeleteUserPoolInput) (*DeleteUserPoolOutput, error) {
 	req, out := c.DeleteUserPoolRequest(input)
 	err := req.Send()
@@ -2688,6 +3217,7 @@ const opDeleteUserPoolClient = "DeleteUserPoolClient"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DeleteUserPoolClient
 func (c *CognitoIdentityProvider) DeleteUserPoolClientRequest(input *DeleteUserPoolClientInput) (req *request.Request, output *DeleteUserPoolClientOutput) {
 	op := &request.Operation{
 		Name:       opDeleteUserPoolClient,
@@ -2737,6 +3267,7 @@ func (c *CognitoIdentityProvider) DeleteUserPoolClientRequest(input *DeleteUserP
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DeleteUserPoolClient
 func (c *CognitoIdentityProvider) DeleteUserPoolClient(input *DeleteUserPoolClientInput) (*DeleteUserPoolClientOutput, error) {
 	req, out := c.DeleteUserPoolClientRequest(input)
 	err := req.Send()
@@ -2769,6 +3300,7 @@ const opDescribeUserImportJob = "DescribeUserImportJob"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DescribeUserImportJob
 func (c *CognitoIdentityProvider) DescribeUserImportJobRequest(input *DescribeUserImportJobInput) (req *request.Request, output *DescribeUserImportJobOutput) {
 	op := &request.Operation{
 		Name:       opDescribeUserImportJob,
@@ -2816,6 +3348,7 @@ func (c *CognitoIdentityProvider) DescribeUserImportJobRequest(input *DescribeUs
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DescribeUserImportJob
 func (c *CognitoIdentityProvider) DescribeUserImportJob(input *DescribeUserImportJobInput) (*DescribeUserImportJobOutput, error) {
 	req, out := c.DescribeUserImportJobRequest(input)
 	err := req.Send()
@@ -2848,6 +3381,7 @@ const opDescribeUserPool = "DescribeUserPool"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DescribeUserPool
 func (c *CognitoIdentityProvider) DescribeUserPoolRequest(input *DescribeUserPoolInput) (req *request.Request, output *DescribeUserPoolOutput) {
 	op := &request.Operation{
 		Name:       opDescribeUserPool,
@@ -2893,9 +3427,13 @@ func (c *CognitoIdentityProvider) DescribeUserPoolRequest(input *DescribeUserPoo
 //   * NotAuthorizedException
 //   This exception gets thrown when a user is not authorized.
 //
+//   * UserPoolTaggingException
+//   This exception gets thrown when a user pool tag cannot be set or updated.
+//
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DescribeUserPool
 func (c *CognitoIdentityProvider) DescribeUserPool(input *DescribeUserPoolInput) (*DescribeUserPoolOutput, error) {
 	req, out := c.DescribeUserPoolRequest(input)
 	err := req.Send()
@@ -2928,6 +3466,7 @@ const opDescribeUserPoolClient = "DescribeUserPoolClient"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DescribeUserPoolClient
 func (c *CognitoIdentityProvider) DescribeUserPoolClientRequest(input *DescribeUserPoolClientInput) (req *request.Request, output *DescribeUserPoolClientOutput) {
 	op := &request.Operation{
 		Name:       opDescribeUserPoolClient,
@@ -2976,6 +3515,7 @@ func (c *CognitoIdentityProvider) DescribeUserPoolClientRequest(input *DescribeU
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DescribeUserPoolClient
 func (c *CognitoIdentityProvider) DescribeUserPoolClient(input *DescribeUserPoolClientInput) (*DescribeUserPoolClientOutput, error) {
 	req, out := c.DescribeUserPoolClientRequest(input)
 	err := req.Send()
@@ -3008,6 +3548,7 @@ const opForgetDevice = "ForgetDevice"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ForgetDevice
 func (c *CognitoIdentityProvider) ForgetDeviceRequest(input *ForgetDeviceInput) (req *request.Request, output *ForgetDeviceOutput) {
 	op := &request.Operation{
 		Name:       opForgetDevice,
@@ -3069,6 +3610,7 @@ func (c *CognitoIdentityProvider) ForgetDeviceRequest(input *ForgetDeviceInput) 
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ForgetDevice
 func (c *CognitoIdentityProvider) ForgetDevice(input *ForgetDeviceInput) (*ForgetDeviceOutput, error) {
 	req, out := c.ForgetDeviceRequest(input)
 	err := req.Send()
@@ -3101,6 +3643,7 @@ const opForgotPassword = "ForgotPassword"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ForgotPassword
 func (c *CognitoIdentityProvider) ForgotPasswordRequest(input *ForgotPasswordInput) (req *request.Request, output *ForgotPasswordOutput) {
 	op := &request.Operation{
 		Name:       opForgotPassword,
@@ -3188,6 +3731,7 @@ func (c *CognitoIdentityProvider) ForgotPasswordRequest(input *ForgotPasswordInp
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ForgotPassword
 func (c *CognitoIdentityProvider) ForgotPassword(input *ForgotPasswordInput) (*ForgotPasswordOutput, error) {
 	req, out := c.ForgotPasswordRequest(input)
 	err := req.Send()
@@ -3220,6 +3764,7 @@ const opGetCSVHeader = "GetCSVHeader"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/GetCSVHeader
 func (c *CognitoIdentityProvider) GetCSVHeaderRequest(input *GetCSVHeaderInput) (req *request.Request, output *GetCSVHeaderOutput) {
 	op := &request.Operation{
 		Name:       opGetCSVHeader,
@@ -3268,6 +3813,7 @@ func (c *CognitoIdentityProvider) GetCSVHeaderRequest(input *GetCSVHeaderInput) 
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/GetCSVHeader
 func (c *CognitoIdentityProvider) GetCSVHeader(input *GetCSVHeaderInput) (*GetCSVHeaderOutput, error) {
 	req, out := c.GetCSVHeaderRequest(input)
 	err := req.Send()
@@ -3300,6 +3846,7 @@ const opGetDevice = "GetDevice"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/GetDevice
 func (c *CognitoIdentityProvider) GetDeviceRequest(input *GetDeviceInput) (req *request.Request, output *GetDeviceOutput) {
 	op := &request.Operation{
 		Name:       opGetDevice,
@@ -3359,8 +3906,92 @@ func (c *CognitoIdentityProvider) GetDeviceRequest(input *GetDeviceInput) (req *
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/GetDevice
 func (c *CognitoIdentityProvider) GetDevice(input *GetDeviceInput) (*GetDeviceOutput, error) {
 	req, out := c.GetDeviceRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opGetGroup = "GetGroup"
+
+// GetGroupRequest generates a "aws/request.Request" representing the
+// client's request for the GetGroup operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See GetGroup for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the GetGroup method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the GetGroupRequest method.
+//    req, resp := client.GetGroupRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/GetGroup
+func (c *CognitoIdentityProvider) GetGroupRequest(input *GetGroupInput) (req *request.Request, output *GetGroupOutput) {
+	op := &request.Operation{
+		Name:       opGetGroup,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetGroupInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &GetGroupOutput{}
+	req.Data = output
+	return
+}
+
+// GetGroup API operation for Amazon Cognito Identity Provider.
+//
+// Gets a group.
+//
+// Requires developer credentials.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity Provider's
+// API operation GetGroup for usage and error information.
+//
+// Returned Error Codes:
+//   * ResourceNotFoundException
+//   This exception is thrown when the Amazon Cognito service cannot find the
+//   requested resource.
+//
+//   * InvalidParameterException
+//   This exception is thrown when the Amazon Cognito service encounters an invalid
+//   parameter.
+//
+//   * TooManyRequestsException
+//   This exception gets thrown when the user has made too many requests for a
+//   given operation.
+//
+//   * NotAuthorizedException
+//   This exception gets thrown when a user is not authorized.
+//
+//   * InternalErrorException
+//   This exception is thrown when Amazon Cognito encounters an internal error.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/GetGroup
+func (c *CognitoIdentityProvider) GetGroup(input *GetGroupInput) (*GetGroupOutput, error) {
+	req, out := c.GetGroupRequest(input)
 	err := req.Send()
 	return out, err
 }
@@ -3391,6 +4022,7 @@ const opGetUser = "GetUser"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/GetUser
 func (c *CognitoIdentityProvider) GetUserRequest(input *GetUserInput) (req *request.Request, output *GetUserOutput) {
 	op := &request.Operation{
 		Name:       opGetUser,
@@ -3448,6 +4080,7 @@ func (c *CognitoIdentityProvider) GetUserRequest(input *GetUserInput) (req *requ
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/GetUser
 func (c *CognitoIdentityProvider) GetUser(input *GetUserInput) (*GetUserOutput, error) {
 	req, out := c.GetUserRequest(input)
 	err := req.Send()
@@ -3480,6 +4113,7 @@ const opGetUserAttributeVerificationCode = "GetUserAttributeVerificationCode"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/GetUserAttributeVerificationCode
 func (c *CognitoIdentityProvider) GetUserAttributeVerificationCodeRequest(input *GetUserAttributeVerificationCodeInput) (req *request.Request, output *GetUserAttributeVerificationCodeOutput) {
 	op := &request.Operation{
 		Name:       opGetUserAttributeVerificationCode,
@@ -3570,6 +4204,7 @@ func (c *CognitoIdentityProvider) GetUserAttributeVerificationCodeRequest(input 
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/GetUserAttributeVerificationCode
 func (c *CognitoIdentityProvider) GetUserAttributeVerificationCode(input *GetUserAttributeVerificationCodeInput) (*GetUserAttributeVerificationCodeOutput, error) {
 	req, out := c.GetUserAttributeVerificationCodeRequest(input)
 	err := req.Send()
@@ -3602,6 +4237,7 @@ const opGlobalSignOut = "GlobalSignOut"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/GlobalSignOut
 func (c *CognitoIdentityProvider) GlobalSignOutRequest(input *GlobalSignOutInput) (req *request.Request, output *GlobalSignOutOutput) {
 	op := &request.Operation{
 		Name:       opGlobalSignOut,
@@ -3655,6 +4291,7 @@ func (c *CognitoIdentityProvider) GlobalSignOutRequest(input *GlobalSignOutInput
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/GlobalSignOut
 func (c *CognitoIdentityProvider) GlobalSignOut(input *GlobalSignOutInput) (*GlobalSignOutOutput, error) {
 	req, out := c.GlobalSignOutRequest(input)
 	err := req.Send()
@@ -3687,6 +4324,7 @@ const opInitiateAuth = "InitiateAuth"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/InitiateAuth
 func (c *CognitoIdentityProvider) InitiateAuthRequest(input *InitiateAuthInput) (req *request.Request, output *InitiateAuthOutput) {
 	op := &request.Operation{
 		Name:       opInitiateAuth,
@@ -3758,6 +4396,7 @@ func (c *CognitoIdentityProvider) InitiateAuthRequest(input *InitiateAuthInput) 
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/InitiateAuth
 func (c *CognitoIdentityProvider) InitiateAuth(input *InitiateAuthInput) (*InitiateAuthOutput, error) {
 	req, out := c.InitiateAuthRequest(input)
 	err := req.Send()
@@ -3790,6 +4429,7 @@ const opListDevices = "ListDevices"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListDevices
 func (c *CognitoIdentityProvider) ListDevicesRequest(input *ListDevicesInput) (req *request.Request, output *ListDevicesOutput) {
 	op := &request.Operation{
 		Name:       opListDevices,
@@ -3849,8 +4489,92 @@ func (c *CognitoIdentityProvider) ListDevicesRequest(input *ListDevicesInput) (r
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListDevices
 func (c *CognitoIdentityProvider) ListDevices(input *ListDevicesInput) (*ListDevicesOutput, error) {
 	req, out := c.ListDevicesRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opListGroups = "ListGroups"
+
+// ListGroupsRequest generates a "aws/request.Request" representing the
+// client's request for the ListGroups operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See ListGroups for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the ListGroups method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the ListGroupsRequest method.
+//    req, resp := client.ListGroupsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListGroups
+func (c *CognitoIdentityProvider) ListGroupsRequest(input *ListGroupsInput) (req *request.Request, output *ListGroupsOutput) {
+	op := &request.Operation{
+		Name:       opListGroups,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ListGroupsInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &ListGroupsOutput{}
+	req.Data = output
+	return
+}
+
+// ListGroups API operation for Amazon Cognito Identity Provider.
+//
+// Lists the groups associated with a user pool.
+//
+// Requires developer credentials.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity Provider's
+// API operation ListGroups for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   This exception is thrown when the Amazon Cognito service encounters an invalid
+//   parameter.
+//
+//   * ResourceNotFoundException
+//   This exception is thrown when the Amazon Cognito service cannot find the
+//   requested resource.
+//
+//   * TooManyRequestsException
+//   This exception gets thrown when the user has made too many requests for a
+//   given operation.
+//
+//   * NotAuthorizedException
+//   This exception gets thrown when a user is not authorized.
+//
+//   * InternalErrorException
+//   This exception is thrown when Amazon Cognito encounters an internal error.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListGroups
+func (c *CognitoIdentityProvider) ListGroups(input *ListGroupsInput) (*ListGroupsOutput, error) {
+	req, out := c.ListGroupsRequest(input)
 	err := req.Send()
 	return out, err
 }
@@ -3881,6 +4605,7 @@ const opListUserImportJobs = "ListUserImportJobs"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListUserImportJobs
 func (c *CognitoIdentityProvider) ListUserImportJobsRequest(input *ListUserImportJobsInput) (req *request.Request, output *ListUserImportJobsOutput) {
 	op := &request.Operation{
 		Name:       opListUserImportJobs,
@@ -3928,6 +4653,7 @@ func (c *CognitoIdentityProvider) ListUserImportJobsRequest(input *ListUserImpor
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListUserImportJobs
 func (c *CognitoIdentityProvider) ListUserImportJobs(input *ListUserImportJobsInput) (*ListUserImportJobsOutput, error) {
 	req, out := c.ListUserImportJobsRequest(input)
 	err := req.Send()
@@ -3960,6 +4686,7 @@ const opListUserPoolClients = "ListUserPoolClients"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListUserPoolClients
 func (c *CognitoIdentityProvider) ListUserPoolClientsRequest(input *ListUserPoolClientsInput) (req *request.Request, output *ListUserPoolClientsOutput) {
 	op := &request.Operation{
 		Name:       opListUserPoolClients,
@@ -4007,6 +4734,7 @@ func (c *CognitoIdentityProvider) ListUserPoolClientsRequest(input *ListUserPool
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListUserPoolClients
 func (c *CognitoIdentityProvider) ListUserPoolClients(input *ListUserPoolClientsInput) (*ListUserPoolClientsOutput, error) {
 	req, out := c.ListUserPoolClientsRequest(input)
 	err := req.Send()
@@ -4039,6 +4767,7 @@ const opListUserPools = "ListUserPools"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListUserPools
 func (c *CognitoIdentityProvider) ListUserPoolsRequest(input *ListUserPoolsInput) (req *request.Request, output *ListUserPoolsOutput) {
 	op := &request.Operation{
 		Name:       opListUserPools,
@@ -4082,6 +4811,7 @@ func (c *CognitoIdentityProvider) ListUserPoolsRequest(input *ListUserPoolsInput
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListUserPools
 func (c *CognitoIdentityProvider) ListUserPools(input *ListUserPoolsInput) (*ListUserPoolsOutput, error) {
 	req, out := c.ListUserPoolsRequest(input)
 	err := req.Send()
@@ -4114,6 +4844,7 @@ const opListUsers = "ListUsers"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListUsers
 func (c *CognitoIdentityProvider) ListUsersRequest(input *ListUsersInput) (req *request.Request, output *ListUsersOutput) {
 	op := &request.Operation{
 		Name:       opListUsers,
@@ -4161,8 +4892,92 @@ func (c *CognitoIdentityProvider) ListUsersRequest(input *ListUsersInput) (req *
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListUsers
 func (c *CognitoIdentityProvider) ListUsers(input *ListUsersInput) (*ListUsersOutput, error) {
 	req, out := c.ListUsersRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opListUsersInGroup = "ListUsersInGroup"
+
+// ListUsersInGroupRequest generates a "aws/request.Request" representing the
+// client's request for the ListUsersInGroup operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See ListUsersInGroup for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the ListUsersInGroup method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the ListUsersInGroupRequest method.
+//    req, resp := client.ListUsersInGroupRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListUsersInGroup
+func (c *CognitoIdentityProvider) ListUsersInGroupRequest(input *ListUsersInGroupInput) (req *request.Request, output *ListUsersInGroupOutput) {
+	op := &request.Operation{
+		Name:       opListUsersInGroup,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ListUsersInGroupInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &ListUsersInGroupOutput{}
+	req.Data = output
+	return
+}
+
+// ListUsersInGroup API operation for Amazon Cognito Identity Provider.
+//
+// Lists the users in the specified group.
+//
+// Requires developer credentials.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity Provider's
+// API operation ListUsersInGroup for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   This exception is thrown when the Amazon Cognito service encounters an invalid
+//   parameter.
+//
+//   * ResourceNotFoundException
+//   This exception is thrown when the Amazon Cognito service cannot find the
+//   requested resource.
+//
+//   * TooManyRequestsException
+//   This exception gets thrown when the user has made too many requests for a
+//   given operation.
+//
+//   * NotAuthorizedException
+//   This exception gets thrown when a user is not authorized.
+//
+//   * InternalErrorException
+//   This exception is thrown when Amazon Cognito encounters an internal error.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListUsersInGroup
+func (c *CognitoIdentityProvider) ListUsersInGroup(input *ListUsersInGroupInput) (*ListUsersInGroupOutput, error) {
+	req, out := c.ListUsersInGroupRequest(input)
 	err := req.Send()
 	return out, err
 }
@@ -4193,6 +5008,7 @@ const opResendConfirmationCode = "ResendConfirmationCode"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ResendConfirmationCode
 func (c *CognitoIdentityProvider) ResendConfirmationCodeRequest(input *ResendConfirmationCodeInput) (req *request.Request, output *ResendConfirmationCodeOutput) {
 	op := &request.Operation{
 		Name:       opResendConfirmationCode,
@@ -4278,6 +5094,7 @@ func (c *CognitoIdentityProvider) ResendConfirmationCodeRequest(input *ResendCon
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ResendConfirmationCode
 func (c *CognitoIdentityProvider) ResendConfirmationCode(input *ResendConfirmationCodeInput) (*ResendConfirmationCodeOutput, error) {
 	req, out := c.ResendConfirmationCodeRequest(input)
 	err := req.Send()
@@ -4310,6 +5127,7 @@ const opRespondToAuthChallenge = "RespondToAuthChallenge"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/RespondToAuthChallenge
 func (c *CognitoIdentityProvider) RespondToAuthChallengeRequest(input *RespondToAuthChallengeInput) (req *request.Request, output *RespondToAuthChallengeOutput) {
 	op := &request.Operation{
 		Name:       opRespondToAuthChallenge,
@@ -4412,6 +5230,7 @@ func (c *CognitoIdentityProvider) RespondToAuthChallengeRequest(input *RespondTo
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/RespondToAuthChallenge
 func (c *CognitoIdentityProvider) RespondToAuthChallenge(input *RespondToAuthChallengeInput) (*RespondToAuthChallengeOutput, error) {
 	req, out := c.RespondToAuthChallengeRequest(input)
 	err := req.Send()
@@ -4444,6 +5263,7 @@ const opSetUserSettings = "SetUserSettings"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/SetUserSettings
 func (c *CognitoIdentityProvider) SetUserSettingsRequest(input *SetUserSettingsInput) (req *request.Request, output *SetUserSettingsOutput) {
 	op := &request.Operation{
 		Name:       opSetUserSettings,
@@ -4499,6 +5319,7 @@ func (c *CognitoIdentityProvider) SetUserSettingsRequest(input *SetUserSettingsI
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/SetUserSettings
 func (c *CognitoIdentityProvider) SetUserSettings(input *SetUserSettingsInput) (*SetUserSettingsOutput, error) {
 	req, out := c.SetUserSettingsRequest(input)
 	err := req.Send()
@@ -4531,6 +5352,7 @@ const opSignUp = "SignUp"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/SignUp
 func (c *CognitoIdentityProvider) SignUpRequest(input *SignUpInput) (req *request.Request, output *SignUpOutput) {
 	op := &request.Operation{
 		Name:       opSignUp,
@@ -4617,6 +5439,7 @@ func (c *CognitoIdentityProvider) SignUpRequest(input *SignUpInput) (req *reques
 //   * CodeDeliveryFailureException
 //   This exception is thrown when a verification code fails to deliver successfully.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/SignUp
 func (c *CognitoIdentityProvider) SignUp(input *SignUpInput) (*SignUpOutput, error) {
 	req, out := c.SignUpRequest(input)
 	err := req.Send()
@@ -4649,6 +5472,7 @@ const opStartUserImportJob = "StartUserImportJob"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/StartUserImportJob
 func (c *CognitoIdentityProvider) StartUserImportJobRequest(input *StartUserImportJobInput) (req *request.Request, output *StartUserImportJobOutput) {
 	op := &request.Operation{
 		Name:       opStartUserImportJob,
@@ -4699,6 +5523,7 @@ func (c *CognitoIdentityProvider) StartUserImportJobRequest(input *StartUserImpo
 //   * NotAuthorizedException
 //   This exception gets thrown when a user is not authorized.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/StartUserImportJob
 func (c *CognitoIdentityProvider) StartUserImportJob(input *StartUserImportJobInput) (*StartUserImportJobOutput, error) {
 	req, out := c.StartUserImportJobRequest(input)
 	err := req.Send()
@@ -4731,6 +5556,7 @@ const opStopUserImportJob = "StopUserImportJob"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/StopUserImportJob
 func (c *CognitoIdentityProvider) StopUserImportJobRequest(input *StopUserImportJobInput) (req *request.Request, output *StopUserImportJobOutput) {
 	op := &request.Operation{
 		Name:       opStopUserImportJob,
@@ -4781,6 +5607,7 @@ func (c *CognitoIdentityProvider) StopUserImportJobRequest(input *StopUserImport
 //   * NotAuthorizedException
 //   This exception gets thrown when a user is not authorized.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/StopUserImportJob
 func (c *CognitoIdentityProvider) StopUserImportJob(input *StopUserImportJobInput) (*StopUserImportJobOutput, error) {
 	req, out := c.StopUserImportJobRequest(input)
 	err := req.Send()
@@ -4813,6 +5640,7 @@ const opUpdateDeviceStatus = "UpdateDeviceStatus"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UpdateDeviceStatus
 func (c *CognitoIdentityProvider) UpdateDeviceStatusRequest(input *UpdateDeviceStatusInput) (req *request.Request, output *UpdateDeviceStatusOutput) {
 	op := &request.Operation{
 		Name:       opUpdateDeviceStatus,
@@ -4872,8 +5700,92 @@ func (c *CognitoIdentityProvider) UpdateDeviceStatusRequest(input *UpdateDeviceS
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UpdateDeviceStatus
 func (c *CognitoIdentityProvider) UpdateDeviceStatus(input *UpdateDeviceStatusInput) (*UpdateDeviceStatusOutput, error) {
 	req, out := c.UpdateDeviceStatusRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opUpdateGroup = "UpdateGroup"
+
+// UpdateGroupRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateGroup operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See UpdateGroup for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the UpdateGroup method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the UpdateGroupRequest method.
+//    req, resp := client.UpdateGroupRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UpdateGroup
+func (c *CognitoIdentityProvider) UpdateGroupRequest(input *UpdateGroupInput) (req *request.Request, output *UpdateGroupOutput) {
+	op := &request.Operation{
+		Name:       opUpdateGroup,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &UpdateGroupInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &UpdateGroupOutput{}
+	req.Data = output
+	return
+}
+
+// UpdateGroup API operation for Amazon Cognito Identity Provider.
+//
+// Updates the specified group with the specified attributes.
+//
+// Requires developer credentials.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity Provider's
+// API operation UpdateGroup for usage and error information.
+//
+// Returned Error Codes:
+//   * ResourceNotFoundException
+//   This exception is thrown when the Amazon Cognito service cannot find the
+//   requested resource.
+//
+//   * InvalidParameterException
+//   This exception is thrown when the Amazon Cognito service encounters an invalid
+//   parameter.
+//
+//   * TooManyRequestsException
+//   This exception gets thrown when the user has made too many requests for a
+//   given operation.
+//
+//   * NotAuthorizedException
+//   This exception gets thrown when a user is not authorized.
+//
+//   * InternalErrorException
+//   This exception is thrown when Amazon Cognito encounters an internal error.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UpdateGroup
+func (c *CognitoIdentityProvider) UpdateGroup(input *UpdateGroupInput) (*UpdateGroupOutput, error) {
+	req, out := c.UpdateGroupRequest(input)
 	err := req.Send()
 	return out, err
 }
@@ -4904,6 +5816,7 @@ const opUpdateUserAttributes = "UpdateUserAttributes"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UpdateUserAttributes
 func (c *CognitoIdentityProvider) UpdateUserAttributesRequest(input *UpdateUserAttributesInput) (req *request.Request, output *UpdateUserAttributesOutput) {
 	op := &request.Operation{
 		Name:       opUpdateUserAttributes,
@@ -5003,6 +5916,7 @@ func (c *CognitoIdentityProvider) UpdateUserAttributesRequest(input *UpdateUserA
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UpdateUserAttributes
 func (c *CognitoIdentityProvider) UpdateUserAttributes(input *UpdateUserAttributesInput) (*UpdateUserAttributesOutput, error) {
 	req, out := c.UpdateUserAttributesRequest(input)
 	err := req.Send()
@@ -5035,6 +5949,7 @@ const opUpdateUserPool = "UpdateUserPool"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UpdateUserPool
 func (c *CognitoIdentityProvider) UpdateUserPoolRequest(input *UpdateUserPoolInput) (req *request.Request, output *UpdateUserPoolOutput) {
 	op := &request.Operation{
 		Name:       opUpdateUserPool,
@@ -5099,10 +6014,14 @@ func (c *CognitoIdentityProvider) UpdateUserPoolRequest(input *UpdateUserPoolInp
 //   or the external ID provided in the role does not match what is provided in
 //   the SMS configuration for the user pool.
 //
+//   * UserPoolTaggingException
+//   This exception gets thrown when a user pool tag cannot be set or updated.
+//
 //   * InvalidEmailRoleAccessPolicyException
 //   This exception is thrown when Amazon Cognito is not allowed to use your email
 //   identity. HTTP status code: 400.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UpdateUserPool
 func (c *CognitoIdentityProvider) UpdateUserPool(input *UpdateUserPoolInput) (*UpdateUserPoolOutput, error) {
 	req, out := c.UpdateUserPoolRequest(input)
 	err := req.Send()
@@ -5135,6 +6054,7 @@ const opUpdateUserPoolClient = "UpdateUserPoolClient"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UpdateUserPoolClient
 func (c *CognitoIdentityProvider) UpdateUserPoolClientRequest(input *UpdateUserPoolClientInput) (req *request.Request, output *UpdateUserPoolClientOutput) {
 	op := &request.Operation{
 		Name:       opUpdateUserPoolClient,
@@ -5183,6 +6103,7 @@ func (c *CognitoIdentityProvider) UpdateUserPoolClientRequest(input *UpdateUserP
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UpdateUserPoolClient
 func (c *CognitoIdentityProvider) UpdateUserPoolClient(input *UpdateUserPoolClientInput) (*UpdateUserPoolClientOutput, error) {
 	req, out := c.UpdateUserPoolClientRequest(input)
 	err := req.Send()
@@ -5215,6 +6136,7 @@ const opVerifyUserAttribute = "VerifyUserAttribute"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/VerifyUserAttribute
 func (c *CognitoIdentityProvider) VerifyUserAttributeRequest(input *VerifyUserAttributeInput) (req *request.Request, output *VerifyUserAttributeOutput) {
 	op := &request.Operation{
 		Name:       opVerifyUserAttribute,
@@ -5283,6 +6205,7 @@ func (c *CognitoIdentityProvider) VerifyUserAttributeRequest(input *VerifyUserAt
 //   * InternalErrorException
 //   This exception is thrown when Amazon Cognito encounters an internal error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/VerifyUserAttribute
 func (c *CognitoIdentityProvider) VerifyUserAttribute(input *VerifyUserAttributeInput) (*VerifyUserAttributeOutput, error) {
 	req, out := c.VerifyUserAttributeRequest(input)
 	err := req.Send()
@@ -5290,6 +6213,7 @@ func (c *CognitoIdentityProvider) VerifyUserAttribute(input *VerifyUserAttribute
 }
 
 // Represents the request to add custom attributes.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AddCustomAttributesRequest
 type AddCustomAttributesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5359,6 +6283,7 @@ func (s *AddCustomAttributesInput) SetUserPoolId(v string) *AddCustomAttributesI
 }
 
 // Represents the response from the server for the request to add custom attributes.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AddCustomAttributesResponse
 type AddCustomAttributesOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5373,7 +6298,99 @@ func (s AddCustomAttributesOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminAddUserToGroupRequest
+type AdminAddUserToGroupInput struct {
+	_ struct{} `type:"structure"`
+
+	// The group name.
+	//
+	// GroupName is a required field
+	GroupName *string `min:"1" type:"string" required:"true"`
+
+	// The user pool ID for the user pool.
+	//
+	// UserPoolId is a required field
+	UserPoolId *string `min:"1" type:"string" required:"true"`
+
+	// The username for the user.
+	//
+	// Username is a required field
+	Username *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s AdminAddUserToGroupInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AdminAddUserToGroupInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AdminAddUserToGroupInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AdminAddUserToGroupInput"}
+	if s.GroupName == nil {
+		invalidParams.Add(request.NewErrParamRequired("GroupName"))
+	}
+	if s.GroupName != nil && len(*s.GroupName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GroupName", 1))
+	}
+	if s.UserPoolId == nil {
+		invalidParams.Add(request.NewErrParamRequired("UserPoolId"))
+	}
+	if s.UserPoolId != nil && len(*s.UserPoolId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("UserPoolId", 1))
+	}
+	if s.Username == nil {
+		invalidParams.Add(request.NewErrParamRequired("Username"))
+	}
+	if s.Username != nil && len(*s.Username) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Username", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGroupName sets the GroupName field's value.
+func (s *AdminAddUserToGroupInput) SetGroupName(v string) *AdminAddUserToGroupInput {
+	s.GroupName = &v
+	return s
+}
+
+// SetUserPoolId sets the UserPoolId field's value.
+func (s *AdminAddUserToGroupInput) SetUserPoolId(v string) *AdminAddUserToGroupInput {
+	s.UserPoolId = &v
+	return s
+}
+
+// SetUsername sets the Username field's value.
+func (s *AdminAddUserToGroupInput) SetUsername(v string) *AdminAddUserToGroupInput {
+	s.Username = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminAddUserToGroupOutput
+type AdminAddUserToGroupOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s AdminAddUserToGroupOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AdminAddUserToGroupOutput) GoString() string {
+	return s.String()
+}
+
 // Represents the request to confirm user registration.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminConfirmSignUpRequest
 type AdminConfirmSignUpInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5433,6 +6450,7 @@ func (s *AdminConfirmSignUpInput) SetUsername(v string) *AdminConfirmSignUpInput
 }
 
 // Represents the response from the server for the request to confirm registration.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminConfirmSignUpResponse
 type AdminConfirmSignUpOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5448,6 +6466,7 @@ func (s AdminConfirmSignUpOutput) GoString() string {
 }
 
 // The type of configuration for creating a new user profile.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminCreateUserConfigType
 type AdminCreateUserConfigType struct {
 	_ struct{} `type:"structure"`
 
@@ -5461,6 +6480,7 @@ type AdminCreateUserConfigType struct {
 	// The user account expiration limit, in days, after which the account is no
 	// longer usable. To reset the account after that time limit, you must call
 	// AdminCreateUser again, specifying "RESEND" for the MessageAction parameter.
+	// The default value for this paameter is 7.
 	UnusedAccountValidityDays *int64 `type:"integer"`
 }
 
@@ -5508,6 +6528,7 @@ func (s *AdminCreateUserConfigType) SetUnusedAccountValidityDays(v int64) *Admin
 }
 
 // Represents the request to create a user in the specified user pool.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminCreateUserRequest
 type AdminCreateUserInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5708,6 +6729,7 @@ func (s *AdminCreateUserInput) SetValidationData(v []*AttributeType) *AdminCreat
 }
 
 // Represents the response from the server to the request to create the user.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminCreateUserResponse
 type AdminCreateUserOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5732,6 +6754,7 @@ func (s *AdminCreateUserOutput) SetUser(v *UserType) *AdminCreateUserOutput {
 }
 
 // Represents the request to delete user attributes as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminDeleteUserAttributesRequest
 type AdminDeleteUserAttributesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5806,6 +6829,7 @@ func (s *AdminDeleteUserAttributesInput) SetUsername(v string) *AdminDeleteUserA
 
 // Represents the response received from the server for a request to delete
 // user attributes.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminDeleteUserAttributesResponse
 type AdminDeleteUserAttributesOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5821,6 +6845,7 @@ func (s AdminDeleteUserAttributesOutput) GoString() string {
 }
 
 // Represents the request to delete a user as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminDeleteUserRequest
 type AdminDeleteUserInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5879,6 +6904,7 @@ func (s *AdminDeleteUserInput) SetUsername(v string) *AdminDeleteUserInput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminDeleteUserOutput
 type AdminDeleteUserOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5894,6 +6920,7 @@ func (s AdminDeleteUserOutput) GoString() string {
 }
 
 // Represents the request to disable any user as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminDisableUserRequest
 type AdminDisableUserInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5954,6 +6981,7 @@ func (s *AdminDisableUserInput) SetUsername(v string) *AdminDisableUserInput {
 
 // Represents the response received from the server to disable the user as an
 // administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminDisableUserResponse
 type AdminDisableUserOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5969,6 +6997,7 @@ func (s AdminDisableUserOutput) GoString() string {
 }
 
 // Represents the request that enables the user as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminEnableUserRequest
 type AdminEnableUserInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6029,6 +7058,7 @@ func (s *AdminEnableUserInput) SetUsername(v string) *AdminEnableUserInput {
 
 // Represents the response from the server for the request to enable a user
 // as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminEnableUserResponse
 type AdminEnableUserOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -6044,6 +7074,7 @@ func (s AdminEnableUserOutput) GoString() string {
 }
 
 // Sends the forgot device request, as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminForgetDeviceRequest
 type AdminForgetDeviceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6119,6 +7150,7 @@ func (s *AdminForgetDeviceInput) SetUsername(v string) *AdminForgetDeviceInput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminForgetDeviceOutput
 type AdminForgetDeviceOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -6134,6 +7166,7 @@ func (s AdminForgetDeviceOutput) GoString() string {
 }
 
 // Represents the request to get the device, as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminGetDeviceRequest
 type AdminGetDeviceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6210,6 +7243,7 @@ func (s *AdminGetDeviceInput) SetUsername(v string) *AdminGetDeviceInput {
 }
 
 // Gets the device response, as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminGetDeviceResponse
 type AdminGetDeviceOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6236,6 +7270,7 @@ func (s *AdminGetDeviceOutput) SetDevice(v *DeviceType) *AdminGetDeviceOutput {
 }
 
 // Represents the request to get the specified user as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminGetUserRequest
 type AdminGetUserInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6297,6 +7332,7 @@ func (s *AdminGetUserInput) SetUsername(v string) *AdminGetUserInput {
 
 // Represents the response from the server from the request to get the specified
 // user as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminGetUserResponse
 type AdminGetUserOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6387,6 +7423,7 @@ func (s *AdminGetUserOutput) SetUsername(v string) *AdminGetUserOutput {
 }
 
 // Initiates the authorization request, as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminInitiateAuthRequest
 type AdminInitiateAuthInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6478,10 +7515,11 @@ func (s *AdminInitiateAuthInput) SetUserPoolId(v string) *AdminInitiateAuthInput
 }
 
 // Initiates the authentication response, as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminInitiateAuthResponse
 type AdminInitiateAuthOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The result type of the authentication result.
+	// The result of the authentication response.
 	AuthenticationResult *AuthenticationResultType `type:"structure"`
 
 	// The name of the challenge.
@@ -6529,6 +7567,7 @@ func (s *AdminInitiateAuthOutput) SetSession(v string) *AdminInitiateAuthOutput 
 }
 
 // Represents the request to list devices, as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminListDevicesRequest
 type AdminListDevicesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6609,6 +7648,7 @@ func (s *AdminListDevicesInput) SetUsername(v string) *AdminListDevicesInput {
 }
 
 // Lists the device's response, as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminListDevicesResponse
 type AdminListDevicesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6641,7 +7681,214 @@ func (s *AdminListDevicesOutput) SetPaginationToken(v string) *AdminListDevicesO
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminListGroupsForUserRequest
+type AdminListGroupsForUserInput struct {
+	_ struct{} `type:"structure"`
+
+	// The limit of the request to list groups.
+	Limit *int64 `type:"integer"`
+
+	// An identifier that was returned from the previous call to this operation,
+	// which can be used to return the next set of items in the list.
+	NextToken *string `min:"1" type:"string"`
+
+	// The user pool ID for the user pool.
+	//
+	// UserPoolId is a required field
+	UserPoolId *string `min:"1" type:"string" required:"true"`
+
+	// The username for the user.
+	//
+	// Username is a required field
+	Username *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s AdminListGroupsForUserInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AdminListGroupsForUserInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AdminListGroupsForUserInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AdminListGroupsForUserInput"}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+	if s.UserPoolId == nil {
+		invalidParams.Add(request.NewErrParamRequired("UserPoolId"))
+	}
+	if s.UserPoolId != nil && len(*s.UserPoolId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("UserPoolId", 1))
+	}
+	if s.Username == nil {
+		invalidParams.Add(request.NewErrParamRequired("Username"))
+	}
+	if s.Username != nil && len(*s.Username) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Username", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetLimit sets the Limit field's value.
+func (s *AdminListGroupsForUserInput) SetLimit(v int64) *AdminListGroupsForUserInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *AdminListGroupsForUserInput) SetNextToken(v string) *AdminListGroupsForUserInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetUserPoolId sets the UserPoolId field's value.
+func (s *AdminListGroupsForUserInput) SetUserPoolId(v string) *AdminListGroupsForUserInput {
+	s.UserPoolId = &v
+	return s
+}
+
+// SetUsername sets the Username field's value.
+func (s *AdminListGroupsForUserInput) SetUsername(v string) *AdminListGroupsForUserInput {
+	s.Username = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminListGroupsForUserResponse
+type AdminListGroupsForUserOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The groups that the user belongs to.
+	Groups []*GroupType `type:"list"`
+
+	// An identifier that was returned from the previous call to this operation,
+	// which can be used to return the next set of items in the list.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation
+func (s AdminListGroupsForUserOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AdminListGroupsForUserOutput) GoString() string {
+	return s.String()
+}
+
+// SetGroups sets the Groups field's value.
+func (s *AdminListGroupsForUserOutput) SetGroups(v []*GroupType) *AdminListGroupsForUserOutput {
+	s.Groups = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *AdminListGroupsForUserOutput) SetNextToken(v string) *AdminListGroupsForUserOutput {
+	s.NextToken = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminRemoveUserFromGroupRequest
+type AdminRemoveUserFromGroupInput struct {
+	_ struct{} `type:"structure"`
+
+	// The group name.
+	//
+	// GroupName is a required field
+	GroupName *string `min:"1" type:"string" required:"true"`
+
+	// The user pool ID for the user pool.
+	//
+	// UserPoolId is a required field
+	UserPoolId *string `min:"1" type:"string" required:"true"`
+
+	// The username for the user.
+	//
+	// Username is a required field
+	Username *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s AdminRemoveUserFromGroupInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AdminRemoveUserFromGroupInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AdminRemoveUserFromGroupInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AdminRemoveUserFromGroupInput"}
+	if s.GroupName == nil {
+		invalidParams.Add(request.NewErrParamRequired("GroupName"))
+	}
+	if s.GroupName != nil && len(*s.GroupName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GroupName", 1))
+	}
+	if s.UserPoolId == nil {
+		invalidParams.Add(request.NewErrParamRequired("UserPoolId"))
+	}
+	if s.UserPoolId != nil && len(*s.UserPoolId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("UserPoolId", 1))
+	}
+	if s.Username == nil {
+		invalidParams.Add(request.NewErrParamRequired("Username"))
+	}
+	if s.Username != nil && len(*s.Username) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Username", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGroupName sets the GroupName field's value.
+func (s *AdminRemoveUserFromGroupInput) SetGroupName(v string) *AdminRemoveUserFromGroupInput {
+	s.GroupName = &v
+	return s
+}
+
+// SetUserPoolId sets the UserPoolId field's value.
+func (s *AdminRemoveUserFromGroupInput) SetUserPoolId(v string) *AdminRemoveUserFromGroupInput {
+	s.UserPoolId = &v
+	return s
+}
+
+// SetUsername sets the Username field's value.
+func (s *AdminRemoveUserFromGroupInput) SetUsername(v string) *AdminRemoveUserFromGroupInput {
+	s.Username = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminRemoveUserFromGroupOutput
+type AdminRemoveUserFromGroupOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s AdminRemoveUserFromGroupOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AdminRemoveUserFromGroupOutput) GoString() string {
+	return s.String()
+}
+
 // Represents the request to reset a user's password as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminResetUserPasswordRequest
 type AdminResetUserPasswordInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6701,6 +7948,7 @@ func (s *AdminResetUserPasswordInput) SetUsername(v string) *AdminResetUserPassw
 }
 
 // Represents the response from the server to reset a user password as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminResetUserPasswordResponse
 type AdminResetUserPasswordOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -6716,6 +7964,7 @@ func (s AdminResetUserPasswordOutput) GoString() string {
 }
 
 // The request to respond to the authentication challenge, as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminRespondToAuthChallengeRequest
 type AdminRespondToAuthChallengeInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6810,10 +8059,11 @@ func (s *AdminRespondToAuthChallengeInput) SetUserPoolId(v string) *AdminRespond
 }
 
 // Responds to the authentication challenge, as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminRespondToAuthChallengeResponse
 type AdminRespondToAuthChallengeOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The result type of the authentication result.
+	// The result returned by the server in response to the authentication request.
 	AuthenticationResult *AuthenticationResultType `type:"structure"`
 
 	// The name of the challenge.
@@ -6861,6 +8111,7 @@ func (s *AdminRespondToAuthChallengeOutput) SetSession(v string) *AdminRespondTo
 }
 
 // Represents the request to set user settings as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminSetUserSettingsRequest
 type AdminSetUserSettingsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6945,6 +8196,7 @@ func (s *AdminSetUserSettingsInput) SetUsername(v string) *AdminSetUserSettingsI
 }
 
 // Represents the response from the server to set user settings as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminSetUserSettingsResponse
 type AdminSetUserSettingsOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -6960,6 +8212,7 @@ func (s AdminSetUserSettingsOutput) GoString() string {
 }
 
 // The request to update the device status, as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminUpdateDeviceStatusRequest
 type AdminUpdateDeviceStatusInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7045,6 +8298,7 @@ func (s *AdminUpdateDeviceStatusInput) SetUsername(v string) *AdminUpdateDeviceS
 }
 
 // The status response from the request to update the device, as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminUpdateDeviceStatusResponse
 type AdminUpdateDeviceStatusOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -7060,6 +8314,7 @@ func (s AdminUpdateDeviceStatusOutput) GoString() string {
 }
 
 // Represents the request to update the user's attributes as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminUpdateUserAttributesRequest
 type AdminUpdateUserAttributesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7144,6 +8399,7 @@ func (s *AdminUpdateUserAttributesInput) SetUsername(v string) *AdminUpdateUserA
 
 // Represents the response from the server for the request to update user attributes
 // as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminUpdateUserAttributesResponse
 type AdminUpdateUserAttributesOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -7159,6 +8415,7 @@ func (s AdminUpdateUserAttributesOutput) GoString() string {
 }
 
 // The request to sign out of all devices, as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminUserGlobalSignOutRequest
 type AdminUserGlobalSignOutInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7218,6 +8475,7 @@ func (s *AdminUserGlobalSignOutInput) SetUsername(v string) *AdminUserGlobalSign
 }
 
 // The global sign-out response, as an administrator.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AdminUserGlobalSignOutResponse
 type AdminUserGlobalSignOutOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -7233,6 +8491,7 @@ func (s AdminUserGlobalSignOutOutput) GoString() string {
 }
 
 // Specifies whether the attribute is standard or custom.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AttributeType
 type AttributeType struct {
 	_ struct{} `type:"structure"`
 
@@ -7284,6 +8543,7 @@ func (s *AttributeType) SetValue(v string) *AttributeType {
 }
 
 // The result type of the authentication result.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/AuthenticationResultType
 type AuthenticationResultType struct {
 	_ struct{} `type:"structure"`
 
@@ -7353,6 +8613,7 @@ func (s *AuthenticationResultType) SetTokenType(v string) *AuthenticationResultT
 }
 
 // Represents the request to change a user password.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ChangePasswordRequest
 type ChangePasswordInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7421,6 +8682,7 @@ func (s *ChangePasswordInput) SetProposedPassword(v string) *ChangePasswordInput
 }
 
 // The response from the server to the change password request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ChangePasswordResponse
 type ChangePasswordOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -7436,6 +8698,7 @@ func (s ChangePasswordOutput) GoString() string {
 }
 
 // The type of code delivery details being returned from the server.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/CodeDeliveryDetailsType
 type CodeDeliveryDetailsType struct {
 	_ struct{} `type:"structure"`
 
@@ -7478,6 +8741,7 @@ func (s *CodeDeliveryDetailsType) SetDestination(v string) *CodeDeliveryDetailsT
 }
 
 // Confirms the device request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ConfirmDeviceRequest
 type ConfirmDeviceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7555,6 +8819,7 @@ func (s *ConfirmDeviceInput) SetDeviceSecretVerifierConfig(v *DeviceSecretVerifi
 }
 
 // Confirms the device response.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ConfirmDeviceResponse
 type ConfirmDeviceOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7580,6 +8845,7 @@ func (s *ConfirmDeviceOutput) SetUserConfirmationNecessary(v bool) *ConfirmDevic
 }
 
 // The request representing the confirmation for a password reset.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ConfirmForgotPasswordRequest
 type ConfirmForgotPasswordInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7688,6 +8954,7 @@ func (s *ConfirmForgotPasswordInput) SetUsername(v string) *ConfirmForgotPasswor
 
 // The response from the server that results from a user's request to retrieve
 // a forgotten password.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ConfirmForgotPasswordResponse
 type ConfirmForgotPasswordOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -7703,6 +8970,7 @@ func (s ConfirmForgotPasswordOutput) GoString() string {
 }
 
 // Represents the request to confirm registration of a user.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ConfirmSignUpRequest
 type ConfirmSignUpInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7806,6 +9074,7 @@ func (s *ConfirmSignUpInput) SetUsername(v string) *ConfirmSignUpInput {
 }
 
 // Represents the response from the server for the registration confirmation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ConfirmSignUpResponse
 type ConfirmSignUpOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -7820,7 +9089,135 @@ func (s ConfirmSignUpOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/CreateGroupRequest
+type CreateGroupInput struct {
+	_ struct{} `type:"structure"`
+
+	// A string containing the description of the group.
+	Description *string `type:"string"`
+
+	// The name of the group. Must be unique.
+	//
+	// GroupName is a required field
+	GroupName *string `min:"1" type:"string" required:"true"`
+
+	// A nonnegative integer value that specifies the precedence of this group relative
+	// to the other groups that a user can belong to in the user pool. Zero is the
+	// highest precedence value. Groups with lower Precedence values take precedence
+	// over groups with higher or null Precedence values. If a user belongs to two
+	// or more groups, it is the group with the lowest precedence value whose role
+	// ARN will be used in the cognito:roles and cognito:preferred_role claims in
+	// the user's tokens.
+	//
+	// Two groups can have the same Precedence value. If this happens, neither group
+	// takes precedence over the other. If two groups with the same Precedence have
+	// the same role ARN, that role is used in the cognito:preferred_role claim
+	// in tokens for users in each group. If the two groups have different role
+	// ARNs, the cognito:preferred_role claim is not set in users' tokens.
+	//
+	// The default Precedence value is null.
+	Precedence *int64 `type:"integer"`
+
+	// The role ARN for the group.
+	RoleArn *string `min:"20" type:"string"`
+
+	// The user pool ID for the user pool.
+	//
+	// UserPoolId is a required field
+	UserPoolId *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s CreateGroupInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateGroupInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateGroupInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateGroupInput"}
+	if s.GroupName == nil {
+		invalidParams.Add(request.NewErrParamRequired("GroupName"))
+	}
+	if s.GroupName != nil && len(*s.GroupName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GroupName", 1))
+	}
+	if s.RoleArn != nil && len(*s.RoleArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("RoleArn", 20))
+	}
+	if s.UserPoolId == nil {
+		invalidParams.Add(request.NewErrParamRequired("UserPoolId"))
+	}
+	if s.UserPoolId != nil && len(*s.UserPoolId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("UserPoolId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateGroupInput) SetDescription(v string) *CreateGroupInput {
+	s.Description = &v
+	return s
+}
+
+// SetGroupName sets the GroupName field's value.
+func (s *CreateGroupInput) SetGroupName(v string) *CreateGroupInput {
+	s.GroupName = &v
+	return s
+}
+
+// SetPrecedence sets the Precedence field's value.
+func (s *CreateGroupInput) SetPrecedence(v int64) *CreateGroupInput {
+	s.Precedence = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *CreateGroupInput) SetRoleArn(v string) *CreateGroupInput {
+	s.RoleArn = &v
+	return s
+}
+
+// SetUserPoolId sets the UserPoolId field's value.
+func (s *CreateGroupInput) SetUserPoolId(v string) *CreateGroupInput {
+	s.UserPoolId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/CreateGroupResponse
+type CreateGroupOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The group object for the group.
+	Group *GroupType `type:"structure"`
+}
+
+// String returns the string representation
+func (s CreateGroupOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateGroupOutput) GoString() string {
+	return s.String()
+}
+
+// SetGroup sets the Group field's value.
+func (s *CreateGroupOutput) SetGroup(v *GroupType) *CreateGroupOutput {
+	s.Group = v
+	return s
+}
+
 // Represents the request to create the user import job.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/CreateUserImportJobRequest
 type CreateUserImportJobInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7898,6 +9295,7 @@ func (s *CreateUserImportJobInput) SetUserPoolId(v string) *CreateUserImportJobI
 
 // Represents the response from the server to the request to create the user
 // import job.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/CreateUserImportJobResponse
 type CreateUserImportJobOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -7922,6 +9320,7 @@ func (s *CreateUserImportJobOutput) SetUserImportJob(v *UserImportJobType) *Crea
 }
 
 // Represents the request to create a user pool client.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/CreateUserPoolClientRequest
 type CreateUserPoolClientInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7940,7 +9339,7 @@ type CreateUserPoolClientInput struct {
 	// The read attributes.
 	ReadAttributes []*string `type:"list"`
 
-	// Refreshes the token validity.
+	// The validity of the refresh token, in days.
 	RefreshTokenValidity *int64 `type:"integer"`
 
 	// The user pool ID for the user pool where you want to create a user pool client.
@@ -8027,6 +9426,7 @@ func (s *CreateUserPoolClientInput) SetWriteAttributes(v []*string) *CreateUserP
 }
 
 // Represents the response from the server to create a user pool client.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/CreateUserPoolClientResponse
 type CreateUserPoolClientOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -8051,6 +9451,7 @@ func (s *CreateUserPoolClientOutput) SetUserPoolClient(v *UserPoolClientType) *C
 }
 
 // Represents the request to create a user pool.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/CreateUserPoolRequest
 type CreateUserPoolInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8090,6 +9491,10 @@ type CreateUserPoolInput struct {
 	// PoolName is a required field
 	PoolName *string `min:"1" type:"string" required:"true"`
 
+	// An array of schema attributes for the new user pool. These attributes can
+	// be standard or custom attributes.
+	Schema []*SchemaAttributeType `min:"1" type:"list"`
+
 	// A string representing the SMS authentication message.
 	SmsAuthenticationMessage *string `min:"6" type:"string"`
 
@@ -8098,6 +9503,10 @@ type CreateUserPoolInput struct {
 
 	// A string representing the SMS verification message.
 	SmsVerificationMessage *string `min:"6" type:"string"`
+
+	// The cost allocation tags for the user pool. For more information, see Adding
+	// Cost Allocation Tags to Your User Pool (http://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-cost-allocation-tagging.html)
+	UserPoolTags map[string]*string `type:"map"`
 }
 
 // String returns the string representation
@@ -8125,6 +9534,9 @@ func (s *CreateUserPoolInput) Validate() error {
 	if s.PoolName != nil && len(*s.PoolName) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("PoolName", 1))
 	}
+	if s.Schema != nil && len(s.Schema) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Schema", 1))
+	}
 	if s.SmsAuthenticationMessage != nil && len(*s.SmsAuthenticationMessage) < 6 {
 		invalidParams.Add(request.NewErrParamMinLen("SmsAuthenticationMessage", 6))
 	}
@@ -8149,6 +9561,16 @@ func (s *CreateUserPoolInput) Validate() error {
 	if s.Policies != nil {
 		if err := s.Policies.Validate(); err != nil {
 			invalidParams.AddNested("Policies", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Schema != nil {
+		for i, v := range s.Schema {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Schema", i), err.(request.ErrInvalidParams))
+			}
 		}
 	}
 	if s.SmsConfiguration != nil {
@@ -8229,6 +9651,12 @@ func (s *CreateUserPoolInput) SetPoolName(v string) *CreateUserPoolInput {
 	return s
 }
 
+// SetSchema sets the Schema field's value.
+func (s *CreateUserPoolInput) SetSchema(v []*SchemaAttributeType) *CreateUserPoolInput {
+	s.Schema = v
+	return s
+}
+
 // SetSmsAuthenticationMessage sets the SmsAuthenticationMessage field's value.
 func (s *CreateUserPoolInput) SetSmsAuthenticationMessage(v string) *CreateUserPoolInput {
 	s.SmsAuthenticationMessage = &v
@@ -8247,8 +9675,15 @@ func (s *CreateUserPoolInput) SetSmsVerificationMessage(v string) *CreateUserPoo
 	return s
 }
 
+// SetUserPoolTags sets the UserPoolTags field's value.
+func (s *CreateUserPoolInput) SetUserPoolTags(v map[string]*string) *CreateUserPoolInput {
+	s.UserPoolTags = v
+	return s
+}
+
 // Represents the response from the server for the request to create a user
 // pool.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/CreateUserPoolResponse
 type CreateUserPoolOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -8272,7 +9707,82 @@ func (s *CreateUserPoolOutput) SetUserPool(v *UserPoolType) *CreateUserPoolOutpu
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DeleteGroupRequest
+type DeleteGroupInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the group.
+	//
+	// GroupName is a required field
+	GroupName *string `min:"1" type:"string" required:"true"`
+
+	// The user pool ID for the user pool.
+	//
+	// UserPoolId is a required field
+	UserPoolId *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteGroupInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteGroupInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteGroupInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteGroupInput"}
+	if s.GroupName == nil {
+		invalidParams.Add(request.NewErrParamRequired("GroupName"))
+	}
+	if s.GroupName != nil && len(*s.GroupName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GroupName", 1))
+	}
+	if s.UserPoolId == nil {
+		invalidParams.Add(request.NewErrParamRequired("UserPoolId"))
+	}
+	if s.UserPoolId != nil && len(*s.UserPoolId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("UserPoolId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGroupName sets the GroupName field's value.
+func (s *DeleteGroupInput) SetGroupName(v string) *DeleteGroupInput {
+	s.GroupName = &v
+	return s
+}
+
+// SetUserPoolId sets the UserPoolId field's value.
+func (s *DeleteGroupInput) SetUserPoolId(v string) *DeleteGroupInput {
+	s.UserPoolId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DeleteGroupOutput
+type DeleteGroupOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteGroupOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteGroupOutput) GoString() string {
+	return s.String()
+}
+
 // Represents the request to delete user attributes.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DeleteUserAttributesRequest
 type DeleteUserAttributesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8321,6 +9831,7 @@ func (s *DeleteUserAttributesInput) SetUserAttributeNames(v []*string) *DeleteUs
 }
 
 // Represents the response from the server to delete user attributes.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DeleteUserAttributesResponse
 type DeleteUserAttributesOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -8336,6 +9847,7 @@ func (s DeleteUserAttributesOutput) GoString() string {
 }
 
 // Represents the request to delete a user.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DeleteUserRequest
 type DeleteUserInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8359,6 +9871,7 @@ func (s *DeleteUserInput) SetAccessToken(v string) *DeleteUserInput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DeleteUserOutput
 type DeleteUserOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -8374,6 +9887,7 @@ func (s DeleteUserOutput) GoString() string {
 }
 
 // Represents the request to delete a user pool client.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DeleteUserPoolClientRequest
 type DeleteUserPoolClientInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8432,6 +9946,7 @@ func (s *DeleteUserPoolClientInput) SetUserPoolId(v string) *DeleteUserPoolClien
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DeleteUserPoolClientOutput
 type DeleteUserPoolClientOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -8447,6 +9962,7 @@ func (s DeleteUserPoolClientOutput) GoString() string {
 }
 
 // Represents the request to delete a user pool.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DeleteUserPoolRequest
 type DeleteUserPoolInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8488,6 +10004,7 @@ func (s *DeleteUserPoolInput) SetUserPoolId(v string) *DeleteUserPoolInput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DeleteUserPoolOutput
 type DeleteUserPoolOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -8503,6 +10020,7 @@ func (s DeleteUserPoolOutput) GoString() string {
 }
 
 // Represents the request to describe the user import job.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DescribeUserImportJobRequest
 type DescribeUserImportJobInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8563,6 +10081,7 @@ func (s *DescribeUserImportJobInput) SetUserPoolId(v string) *DescribeUserImport
 
 // Represents the response from the server to the request to describe the user
 // import job.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DescribeUserImportJobResponse
 type DescribeUserImportJobOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -8587,6 +10106,7 @@ func (s *DescribeUserImportJobOutput) SetUserImportJob(v *UserImportJobType) *De
 }
 
 // Represents the request to describe a user pool client.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DescribeUserPoolClientRequest
 type DescribeUserPoolClientInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8647,6 +10167,7 @@ func (s *DescribeUserPoolClientInput) SetUserPoolId(v string) *DescribeUserPoolC
 
 // Represents the response from the server from a request to describe the user
 // pool client.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DescribeUserPoolClientResponse
 type DescribeUserPoolClientOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -8671,6 +10192,7 @@ func (s *DescribeUserPoolClientOutput) SetUserPoolClient(v *UserPoolClientType) 
 }
 
 // Represents the request to describe the user pool.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DescribeUserPoolRequest
 type DescribeUserPoolInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8713,6 +10235,7 @@ func (s *DescribeUserPoolInput) SetUserPoolId(v string) *DescribeUserPoolInput {
 }
 
 // Represents the response to describe the user pool.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DescribeUserPoolResponse
 type DescribeUserPoolOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -8737,6 +10260,7 @@ func (s *DescribeUserPoolOutput) SetUserPool(v *UserPoolType) *DescribeUserPoolO
 }
 
 // The type of configuration for the user pool's device tracking.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DeviceConfigurationType
 type DeviceConfigurationType struct {
 	_ struct{} `type:"structure"`
 
@@ -8771,6 +10295,7 @@ func (s *DeviceConfigurationType) SetDeviceOnlyRememberedOnUserPrompt(v bool) *D
 }
 
 // The device verifier against which it will be authenticated.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DeviceSecretVerifierConfigType
 type DeviceSecretVerifierConfigType struct {
 	_ struct{} `type:"structure"`
 
@@ -8804,6 +10329,7 @@ func (s *DeviceSecretVerifierConfigType) SetSalt(v string) *DeviceSecretVerifier
 }
 
 // The device type.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/DeviceType
 type DeviceType struct {
 	_ struct{} `type:"structure"`
 
@@ -8864,6 +10390,7 @@ func (s *DeviceType) SetDeviceLastModifiedDate(v time.Time) *DeviceType {
 }
 
 // The email configuration type.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/EmailConfigurationType
 type EmailConfigurationType struct {
 	_ struct{} `type:"structure"`
 
@@ -8910,6 +10437,7 @@ func (s *EmailConfigurationType) SetSourceArn(v string) *EmailConfigurationType 
 }
 
 // Represents the request to forget the device.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ForgetDeviceRequest
 type ForgetDeviceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8960,6 +10488,7 @@ func (s *ForgetDeviceInput) SetDeviceKey(v string) *ForgetDeviceInput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ForgetDeviceOutput
 type ForgetDeviceOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -8975,6 +10504,7 @@ func (s ForgetDeviceOutput) GoString() string {
 }
 
 // Represents the request to reset a user's password.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ForgotPasswordRequest
 type ForgotPasswordInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8987,8 +10517,8 @@ type ForgotPasswordInput struct {
 	// key of a user pool client and username plus the client ID in the message.
 	SecretHash *string `min:"1" type:"string"`
 
-	// The user name of the user for whom you want to enter a code to retrieve a
-	// forgotten password.
+	// The user name of the user for whom you want to enter a code to reset a forgotten
+	// password.
 	//
 	// Username is a required field
 	Username *string `min:"1" type:"string" required:"true"`
@@ -9049,10 +10579,12 @@ func (s *ForgotPasswordInput) SetUsername(v string) *ForgotPasswordInput {
 
 // Respresents the response from the server regarding the request to reset a
 // password.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ForgotPasswordResponse
 type ForgotPasswordOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The type of code delivery details being returned from the server.
+	// The code delivery details returned by the server in response to the request
+	// to reset a password.
 	CodeDeliveryDetails *CodeDeliveryDetailsType `type:"structure"`
 }
 
@@ -9074,6 +10606,7 @@ func (s *ForgotPasswordOutput) SetCodeDeliveryDetails(v *CodeDeliveryDetailsType
 
 // Represents the request to get the header information for the .csv file for
 // the user import job.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/GetCSVHeaderRequest
 type GetCSVHeaderInput struct {
 	_ struct{} `type:"structure"`
 
@@ -9117,6 +10650,7 @@ func (s *GetCSVHeaderInput) SetUserPoolId(v string) *GetCSVHeaderInput {
 
 // Represents the response from the server to the request to get the header
 // information for the .csv file for the user import job.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/GetCSVHeaderResponse
 type GetCSVHeaderOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -9150,6 +10684,7 @@ func (s *GetCSVHeaderOutput) SetUserPoolId(v string) *GetCSVHeaderOutput {
 }
 
 // Represents the request to get the device.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/GetDeviceRequest
 type GetDeviceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -9201,6 +10736,7 @@ func (s *GetDeviceInput) SetDeviceKey(v string) *GetDeviceInput {
 }
 
 // Gets the device response.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/GetDeviceResponse
 type GetDeviceOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -9226,7 +10762,91 @@ func (s *GetDeviceOutput) SetDevice(v *DeviceType) *GetDeviceOutput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/GetGroupRequest
+type GetGroupInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the group.
+	//
+	// GroupName is a required field
+	GroupName *string `min:"1" type:"string" required:"true"`
+
+	// The user pool ID for the user pool.
+	//
+	// UserPoolId is a required field
+	UserPoolId *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s GetGroupInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetGroupInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetGroupInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetGroupInput"}
+	if s.GroupName == nil {
+		invalidParams.Add(request.NewErrParamRequired("GroupName"))
+	}
+	if s.GroupName != nil && len(*s.GroupName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GroupName", 1))
+	}
+	if s.UserPoolId == nil {
+		invalidParams.Add(request.NewErrParamRequired("UserPoolId"))
+	}
+	if s.UserPoolId != nil && len(*s.UserPoolId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("UserPoolId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGroupName sets the GroupName field's value.
+func (s *GetGroupInput) SetGroupName(v string) *GetGroupInput {
+	s.GroupName = &v
+	return s
+}
+
+// SetUserPoolId sets the UserPoolId field's value.
+func (s *GetGroupInput) SetUserPoolId(v string) *GetGroupInput {
+	s.UserPoolId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/GetGroupResponse
+type GetGroupOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The group object for the group.
+	Group *GroupType `type:"structure"`
+}
+
+// String returns the string representation
+func (s GetGroupOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetGroupOutput) GoString() string {
+	return s.String()
+}
+
+// SetGroup sets the Group field's value.
+func (s *GetGroupOutput) SetGroup(v *GroupType) *GetGroupOutput {
+	s.Group = v
+	return s
+}
+
 // Represents the request to get user attribute verification.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/GetUserAttributeVerificationCodeRequest
 type GetUserAttributeVerificationCodeInput struct {
 	_ struct{} `type:"structure"`
 
@@ -9281,11 +10901,12 @@ func (s *GetUserAttributeVerificationCodeInput) SetAttributeName(v string) *GetU
 
 // The verification code response returned by the server response to get the
 // user attribute verification code.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/GetUserAttributeVerificationCodeResponse
 type GetUserAttributeVerificationCodeOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The code delivery details returned by the server response to get the user
-	// attribute verification code.
+	// The code delivery details returned by the server in response to the request
+	// to get the user attribute verification code.
 	CodeDeliveryDetails *CodeDeliveryDetailsType `type:"structure"`
 }
 
@@ -9306,6 +10927,7 @@ func (s *GetUserAttributeVerificationCodeOutput) SetCodeDeliveryDetails(v *CodeD
 }
 
 // Represents the request to get information about the user.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/GetUserRequest
 type GetUserInput struct {
 	_ struct{} `type:"structure"`
 
@@ -9332,6 +10954,7 @@ func (s *GetUserInput) SetAccessToken(v string) *GetUserInput {
 
 // Represents the response from the server from the request to get information
 // about the user.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/GetUserResponse
 type GetUserOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -9378,6 +11001,7 @@ func (s *GetUserOutput) SetUsername(v string) *GetUserOutput {
 }
 
 // Represents the request to sign out all devices.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/GlobalSignOutRequest
 type GlobalSignOutInput struct {
 	_ struct{} `type:"structure"`
 
@@ -9402,6 +11026,7 @@ func (s *GlobalSignOutInput) SetAccessToken(v string) *GlobalSignOutInput {
 }
 
 // The response to the request to sign out all devices.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/GlobalSignOutResponse
 type GlobalSignOutOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -9416,7 +11041,100 @@ func (s GlobalSignOutOutput) GoString() string {
 	return s.String()
 }
 
+// The group type.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/GroupType
+type GroupType struct {
+	_ struct{} `type:"structure"`
+
+	// The date the group was created.
+	CreationDate *time.Time `type:"timestamp" timestampFormat:"unix"`
+
+	// A string containing the description of the group.
+	Description *string `type:"string"`
+
+	// The name of the group.
+	GroupName *string `min:"1" type:"string"`
+
+	// The date the group was last modified.
+	LastModifiedDate *time.Time `type:"timestamp" timestampFormat:"unix"`
+
+	// A nonnegative integer value that specifies the precedence of this group relative
+	// to the other groups that a user can belong to in the user pool. If a user
+	// belongs to two or more groups, it is the group with the highest precedence
+	// whose role ARN will be used in the cognito:roles and cognito:preferred_role
+	// claims in the user's tokens. Groups with higher Precedence values take precedence
+	// over groups with lower Precedence values or with null Precedence values.
+	//
+	// Two groups can have the same Precedence value. If this happens, neither group
+	// takes precedence over the other. If two groups with the same Precedence have
+	// the same role ARN, that role is used in the cognito:preferred_role claim
+	// in tokens for users in each group. If the two groups have different role
+	// ARNs, the cognito:preferred_role claim is not set in users' tokens.
+	//
+	// The default Precedence value is null.
+	Precedence *int64 `type:"integer"`
+
+	// The role ARN for the group.
+	RoleArn *string `min:"20" type:"string"`
+
+	// The user pool ID for the user pool.
+	UserPoolId *string `min:"1" type:"string"`
+}
+
+// String returns the string representation
+func (s GroupType) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GroupType) GoString() string {
+	return s.String()
+}
+
+// SetCreationDate sets the CreationDate field's value.
+func (s *GroupType) SetCreationDate(v time.Time) *GroupType {
+	s.CreationDate = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *GroupType) SetDescription(v string) *GroupType {
+	s.Description = &v
+	return s
+}
+
+// SetGroupName sets the GroupName field's value.
+func (s *GroupType) SetGroupName(v string) *GroupType {
+	s.GroupName = &v
+	return s
+}
+
+// SetLastModifiedDate sets the LastModifiedDate field's value.
+func (s *GroupType) SetLastModifiedDate(v time.Time) *GroupType {
+	s.LastModifiedDate = &v
+	return s
+}
+
+// SetPrecedence sets the Precedence field's value.
+func (s *GroupType) SetPrecedence(v int64) *GroupType {
+	s.Precedence = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *GroupType) SetRoleArn(v string) *GroupType {
+	s.RoleArn = &v
+	return s
+}
+
+// SetUserPoolId sets the UserPoolId field's value.
+func (s *GroupType) SetUserPoolId(v string) *GroupType {
+	s.UserPoolId = &v
+	return s
+}
+
 // Initiates the authentication request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/InitiateAuthRequest
 type InitiateAuthInput struct {
 	_ struct{} `type:"structure"`
 
@@ -9491,10 +11209,12 @@ func (s *InitiateAuthInput) SetClientMetadata(v map[string]*string) *InitiateAut
 }
 
 // Initiates the authentication response.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/InitiateAuthResponse
 type InitiateAuthOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The result type of the authentication result.
+	// The result returned by the server in response to the request to initiate
+	// authentication.
 	AuthenticationResult *AuthenticationResultType `type:"structure"`
 
 	// The name of the challenge.
@@ -9542,6 +11262,7 @@ func (s *InitiateAuthOutput) SetSession(v string) *InitiateAuthOutput {
 }
 
 // Specifies the type of configuration for AWS Lambda triggers.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/LambdaConfigType
 type LambdaConfigType struct {
 	_ struct{} `type:"structure"`
 
@@ -9663,6 +11384,7 @@ func (s *LambdaConfigType) SetVerifyAuthChallengeResponse(v string) *LambdaConfi
 }
 
 // Represents the request to list the devices.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListDevicesRequest
 type ListDevicesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -9723,6 +11445,7 @@ func (s *ListDevicesInput) SetPaginationToken(v string) *ListDevicesInput {
 }
 
 // Represents the response to list devices.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListDevicesResponse
 type ListDevicesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -9755,7 +11478,106 @@ func (s *ListDevicesOutput) SetPaginationToken(v string) *ListDevicesOutput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListGroupsRequest
+type ListGroupsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The limit of the request to list groups.
+	Limit *int64 `type:"integer"`
+
+	// An identifier that was returned from the previous call to this operation,
+	// which can be used to return the next set of items in the list.
+	NextToken *string `min:"1" type:"string"`
+
+	// The user pool ID for the user pool.
+	//
+	// UserPoolId is a required field
+	UserPoolId *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s ListGroupsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ListGroupsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListGroupsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListGroupsInput"}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+	if s.UserPoolId == nil {
+		invalidParams.Add(request.NewErrParamRequired("UserPoolId"))
+	}
+	if s.UserPoolId != nil && len(*s.UserPoolId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("UserPoolId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetLimit sets the Limit field's value.
+func (s *ListGroupsInput) SetLimit(v int64) *ListGroupsInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListGroupsInput) SetNextToken(v string) *ListGroupsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetUserPoolId sets the UserPoolId field's value.
+func (s *ListGroupsInput) SetUserPoolId(v string) *ListGroupsInput {
+	s.UserPoolId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListGroupsResponse
+type ListGroupsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The group objects for the groups.
+	Groups []*GroupType `type:"list"`
+
+	// An identifier that was returned from the previous call to this operation,
+	// which can be used to return the next set of items in the list.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation
+func (s ListGroupsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ListGroupsOutput) GoString() string {
+	return s.String()
+}
+
+// SetGroups sets the Groups field's value.
+func (s *ListGroupsOutput) SetGroups(v []*GroupType) *ListGroupsOutput {
+	s.Groups = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListGroupsOutput) SetNextToken(v string) *ListGroupsOutput {
+	s.NextToken = &v
+	return s
+}
+
 // Represents the request to list the user import jobs.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListUserImportJobsRequest
 type ListUserImportJobsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -9829,6 +11651,7 @@ func (s *ListUserImportJobsInput) SetUserPoolId(v string) *ListUserImportJobsInp
 
 // Represents the response from the server to the request to list the user import
 // jobs.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListUserImportJobsResponse
 type ListUserImportJobsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -9863,6 +11686,7 @@ func (s *ListUserImportJobsOutput) SetUserImportJobs(v []*UserImportJobType) *Li
 }
 
 // Represents the request to list the user pool clients.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListUserPoolClientsRequest
 type ListUserPoolClientsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -9931,6 +11755,7 @@ func (s *ListUserPoolClientsInput) SetUserPoolId(v string) *ListUserPoolClientsI
 }
 
 // Represents the response from the server that lists user pool clients.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListUserPoolClientsResponse
 type ListUserPoolClientsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -9965,6 +11790,7 @@ func (s *ListUserPoolClientsOutput) SetUserPoolClients(v []*UserPoolClientDescri
 }
 
 // Represents the request to list user pools.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListUserPoolsRequest
 type ListUserPoolsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -10021,6 +11847,7 @@ func (s *ListUserPoolsInput) SetNextToken(v string) *ListUserPoolsInput {
 }
 
 // Represents the response to list user pools.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListUserPoolsResponse
 type ListUserPoolsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -10054,7 +11881,123 @@ func (s *ListUserPoolsOutput) SetUserPools(v []*UserPoolDescriptionType) *ListUs
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListUsersInGroupRequest
+type ListUsersInGroupInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the group.
+	//
+	// GroupName is a required field
+	GroupName *string `min:"1" type:"string" required:"true"`
+
+	// The limit of the request to list users.
+	Limit *int64 `type:"integer"`
+
+	// An identifier that was returned from the previous call to this operation,
+	// which can be used to return the next set of items in the list.
+	NextToken *string `min:"1" type:"string"`
+
+	// The user pool ID for the user pool.
+	//
+	// UserPoolId is a required field
+	UserPoolId *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s ListUsersInGroupInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ListUsersInGroupInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListUsersInGroupInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListUsersInGroupInput"}
+	if s.GroupName == nil {
+		invalidParams.Add(request.NewErrParamRequired("GroupName"))
+	}
+	if s.GroupName != nil && len(*s.GroupName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GroupName", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+	if s.UserPoolId == nil {
+		invalidParams.Add(request.NewErrParamRequired("UserPoolId"))
+	}
+	if s.UserPoolId != nil && len(*s.UserPoolId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("UserPoolId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGroupName sets the GroupName field's value.
+func (s *ListUsersInGroupInput) SetGroupName(v string) *ListUsersInGroupInput {
+	s.GroupName = &v
+	return s
+}
+
+// SetLimit sets the Limit field's value.
+func (s *ListUsersInGroupInput) SetLimit(v int64) *ListUsersInGroupInput {
+	s.Limit = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListUsersInGroupInput) SetNextToken(v string) *ListUsersInGroupInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetUserPoolId sets the UserPoolId field's value.
+func (s *ListUsersInGroupInput) SetUserPoolId(v string) *ListUsersInGroupInput {
+	s.UserPoolId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListUsersInGroupResponse
+type ListUsersInGroupOutput struct {
+	_ struct{} `type:"structure"`
+
+	// An identifier that was returned from the previous call to this operation,
+	// which can be used to return the next set of items in the list.
+	NextToken *string `min:"1" type:"string"`
+
+	// The users returned in the request to list users.
+	Users []*UserType `type:"list"`
+}
+
+// String returns the string representation
+func (s ListUsersInGroupOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ListUsersInGroupOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListUsersInGroupOutput) SetNextToken(v string) *ListUsersInGroupOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetUsers sets the Users field's value.
+func (s *ListUsersInGroupOutput) SetUsers(v []*UserType) *ListUsersInGroupOutput {
+	s.Users = v
+	return s
+}
+
 // Represents the request to list users.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListUsersRequest
 type ListUsersInput struct {
 	_ struct{} `type:"structure"`
 
@@ -10137,6 +12080,7 @@ func (s *ListUsersInput) SetUserPoolId(v string) *ListUsersInput {
 }
 
 // The response from the request to list users.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ListUsersResponse
 type ListUsersOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -10171,6 +12115,7 @@ func (s *ListUsersOutput) SetUsers(v []*UserType) *ListUsersOutput {
 }
 
 // Specifies the different settings for multi-factor authentication (MFA).
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/MFAOptionType
 type MFAOptionType struct {
 	_ struct{} `type:"structure"`
 
@@ -10217,6 +12162,7 @@ func (s *MFAOptionType) SetDeliveryMedium(v string) *MFAOptionType {
 }
 
 // The message template structure.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/MessageTemplateType
 type MessageTemplateType struct {
 	_ struct{} `type:"structure"`
 
@@ -10278,6 +12224,7 @@ func (s *MessageTemplateType) SetSMSMessage(v string) *MessageTemplateType {
 }
 
 // The new device metadata type.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/NewDeviceMetadataType
 type NewDeviceMetadataType struct {
 	_ struct{} `type:"structure"`
 
@@ -10312,6 +12259,7 @@ func (s *NewDeviceMetadataType) SetDeviceKey(v string) *NewDeviceMetadataType {
 
 // The minimum and maximum value of an attribute that is of the number data
 // type.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/NumberAttributeConstraintsType
 type NumberAttributeConstraintsType struct {
 	_ struct{} `type:"structure"`
 
@@ -10345,6 +12293,7 @@ func (s *NumberAttributeConstraintsType) SetMinValue(v string) *NumberAttributeC
 }
 
 // The password policy type.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/PasswordPolicyType
 type PasswordPolicyType struct {
 	_ struct{} `type:"structure"`
 
@@ -10423,6 +12372,7 @@ func (s *PasswordPolicyType) SetRequireUppercase(v bool) *PasswordPolicyType {
 }
 
 // Represents the request to resend the confirmation code.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ResendConfirmationCodeRequest
 type ResendConfirmationCodeInput struct {
 	_ struct{} `type:"structure"`
 
@@ -10494,12 +12444,14 @@ func (s *ResendConfirmationCodeInput) SetUsername(v string) *ResendConfirmationC
 	return s
 }
 
-// The response from the server when the Amazon Cognito service makes the request
-// to resend a confirmation code.
+// The response from the server when the Amazon Cognito Your User Pools service
+// makes the request to resend a confirmation code.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/ResendConfirmationCodeResponse
 type ResendConfirmationCodeOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The type of code delivery details being returned from the server.
+	// The code delivery details returned by the server in response to the request
+	// to resend the confirmation code.
 	CodeDeliveryDetails *CodeDeliveryDetailsType `type:"structure"`
 }
 
@@ -10520,6 +12472,7 @@ func (s *ResendConfirmationCodeOutput) SetCodeDeliveryDetails(v *CodeDeliveryDet
 }
 
 // The request to respond to an authentication challenge.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/RespondToAuthChallengeRequest
 type RespondToAuthChallengeInput struct {
 	_ struct{} `type:"structure"`
 
@@ -10597,10 +12550,12 @@ func (s *RespondToAuthChallengeInput) SetSession(v string) *RespondToAuthChallen
 }
 
 // The response to respond to the authentication challenge.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/RespondToAuthChallengeResponse
 type RespondToAuthChallengeOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The result type of the authentication result.
+	// The result returned by the server in response to the request to respond to
+	// the authentication challenge.
 	AuthenticationResult *AuthenticationResultType `type:"structure"`
 
 	// The challenge name.
@@ -10648,6 +12603,7 @@ func (s *RespondToAuthChallengeOutput) SetSession(v string) *RespondToAuthChalle
 }
 
 // Contains information about the schema attribute.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/SchemaAttributeType
 type SchemaAttributeType struct {
 	_ struct{} `type:"structure"`
 
@@ -10741,6 +12697,7 @@ func (s *SchemaAttributeType) SetStringAttributeConstraints(v *StringAttributeCo
 }
 
 // Represents the request to set user settings.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/SetUserSettingsRequest
 type SetUserSettingsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -10804,6 +12761,7 @@ func (s *SetUserSettingsInput) SetMFAOptions(v []*MFAOptionType) *SetUserSetting
 }
 
 // The response from the server for a set user settings request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/SetUserSettingsResponse
 type SetUserSettingsOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -10819,6 +12777,7 @@ func (s SetUserSettingsOutput) GoString() string {
 }
 
 // Represents the request to register a user.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/SignUpRequest
 type SignUpInput struct {
 	_ struct{} `type:"structure"`
 
@@ -10946,10 +12905,12 @@ func (s *SignUpInput) SetValidationData(v []*AttributeType) *SignUpInput {
 }
 
 // The response from the server for a registration request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/SignUpResponse
 type SignUpOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The type of code delivery details being returned from the server.
+	// The code delivery details returned by the server response to the user registration
+	// request.
 	CodeDeliveryDetails *CodeDeliveryDetailsType `type:"structure"`
 
 	// A response from the server indicating that a user registration has been confirmed.
@@ -10979,6 +12940,7 @@ func (s *SignUpOutput) SetUserConfirmed(v bool) *SignUpOutput {
 }
 
 // The SMS configuratoin type.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/SmsConfigurationType
 type SmsConfigurationType struct {
 	_ struct{} `type:"structure"`
 
@@ -10987,7 +12949,9 @@ type SmsConfigurationType struct {
 
 	// The Amazon Resource Name (ARN) of the Amazon Simple Notification Service
 	// (SNS) caller.
-	SnsCallerArn *string `min:"20" type:"string"`
+	//
+	// SnsCallerArn is a required field
+	SnsCallerArn *string `min:"20" type:"string" required:"true"`
 }
 
 // String returns the string representation
@@ -11003,6 +12967,9 @@ func (s SmsConfigurationType) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *SmsConfigurationType) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "SmsConfigurationType"}
+	if s.SnsCallerArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("SnsCallerArn"))
+	}
 	if s.SnsCallerArn != nil && len(*s.SnsCallerArn) < 20 {
 		invalidParams.Add(request.NewErrParamMinLen("SnsCallerArn", 20))
 	}
@@ -11026,6 +12993,7 @@ func (s *SmsConfigurationType) SetSnsCallerArn(v string) *SmsConfigurationType {
 }
 
 // Represents the request to start the user import job.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/StartUserImportJobRequest
 type StartUserImportJobInput struct {
 	_ struct{} `type:"structure"`
 
@@ -11086,6 +13054,7 @@ func (s *StartUserImportJobInput) SetUserPoolId(v string) *StartUserImportJobInp
 
 // Represents the response from the server to the request to start the user
 // import job.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/StartUserImportJobResponse
 type StartUserImportJobOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -11110,6 +13079,7 @@ func (s *StartUserImportJobOutput) SetUserImportJob(v *UserImportJobType) *Start
 }
 
 // Represents the request to stop the user import job.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/StopUserImportJobRequest
 type StopUserImportJobInput struct {
 	_ struct{} `type:"structure"`
 
@@ -11170,6 +13140,7 @@ func (s *StopUserImportJobInput) SetUserPoolId(v string) *StopUserImportJobInput
 
 // Represents the response from the server to the request to stop the user import
 // job.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/StopUserImportJobResponse
 type StopUserImportJobOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -11194,6 +13165,7 @@ func (s *StopUserImportJobOutput) SetUserImportJob(v *UserImportJobType) *StopUs
 }
 
 // The type of constraints associated with an attribute of the string type.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/StringAttributeConstraintsType
 type StringAttributeConstraintsType struct {
 	_ struct{} `type:"structure"`
 
@@ -11227,6 +13199,7 @@ func (s *StringAttributeConstraintsType) SetMinLength(v string) *StringAttribute
 }
 
 // Represents the request to update the device status.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UpdateDeviceStatusRequest
 type UpdateDeviceStatusInput struct {
 	_ struct{} `type:"structure"`
 
@@ -11292,6 +13265,7 @@ func (s *UpdateDeviceStatusInput) SetDeviceRememberedStatus(v string) *UpdateDev
 }
 
 // The response to the request to update the device status.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UpdateDeviceStatusResponse
 type UpdateDeviceStatusOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -11306,7 +13280,123 @@ func (s UpdateDeviceStatusOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UpdateGroupRequest
+type UpdateGroupInput struct {
+	_ struct{} `type:"structure"`
+
+	// A string containing the new description of the group.
+	Description *string `type:"string"`
+
+	// The name of the group.
+	//
+	// GroupName is a required field
+	GroupName *string `min:"1" type:"string" required:"true"`
+
+	// The new precedence value for the group. For more information about this parameter,
+	// see CreateGroupRequest (API_CreateGroupRequeste.html).
+	Precedence *int64 `type:"integer"`
+
+	// The new role ARN for the group. This is used for setting the cognito:roles
+	// and cognito:preferred_role claims in the token.
+	RoleArn *string `min:"20" type:"string"`
+
+	// The user pool ID for the user pool.
+	//
+	// UserPoolId is a required field
+	UserPoolId *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s UpdateGroupInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s UpdateGroupInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateGroupInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateGroupInput"}
+	if s.GroupName == nil {
+		invalidParams.Add(request.NewErrParamRequired("GroupName"))
+	}
+	if s.GroupName != nil && len(*s.GroupName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GroupName", 1))
+	}
+	if s.RoleArn != nil && len(*s.RoleArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("RoleArn", 20))
+	}
+	if s.UserPoolId == nil {
+		invalidParams.Add(request.NewErrParamRequired("UserPoolId"))
+	}
+	if s.UserPoolId != nil && len(*s.UserPoolId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("UserPoolId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDescription sets the Description field's value.
+func (s *UpdateGroupInput) SetDescription(v string) *UpdateGroupInput {
+	s.Description = &v
+	return s
+}
+
+// SetGroupName sets the GroupName field's value.
+func (s *UpdateGroupInput) SetGroupName(v string) *UpdateGroupInput {
+	s.GroupName = &v
+	return s
+}
+
+// SetPrecedence sets the Precedence field's value.
+func (s *UpdateGroupInput) SetPrecedence(v int64) *UpdateGroupInput {
+	s.Precedence = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *UpdateGroupInput) SetRoleArn(v string) *UpdateGroupInput {
+	s.RoleArn = &v
+	return s
+}
+
+// SetUserPoolId sets the UserPoolId field's value.
+func (s *UpdateGroupInput) SetUserPoolId(v string) *UpdateGroupInput {
+	s.UserPoolId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UpdateGroupResponse
+type UpdateGroupOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The group object for the group.
+	Group *GroupType `type:"structure"`
+}
+
+// String returns the string representation
+func (s UpdateGroupOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s UpdateGroupOutput) GoString() string {
+	return s.String()
+}
+
+// SetGroup sets the Group field's value.
+func (s *UpdateGroupOutput) SetGroup(v *GroupType) *UpdateGroupOutput {
+	s.Group = v
+	return s
+}
+
 // Represents the request to update user attributes.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UpdateUserAttributesRequest
 type UpdateUserAttributesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -11365,6 +13455,7 @@ func (s *UpdateUserAttributesInput) SetUserAttributes(v []*AttributeType) *Updat
 }
 
 // Represents the response from the server for the request to update user attributes.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UpdateUserAttributesResponse
 type UpdateUserAttributesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -11390,6 +13481,7 @@ func (s *UpdateUserAttributesOutput) SetCodeDeliveryDetailsList(v []*CodeDeliver
 }
 
 // Represents the request to update the user pool client.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UpdateUserPoolClientRequest
 type UpdateUserPoolClientInput struct {
 	_ struct{} `type:"structure"`
 
@@ -11407,7 +13499,7 @@ type UpdateUserPoolClientInput struct {
 	// The read-only attributes of the user pool.
 	ReadAttributes []*string `type:"list"`
 
-	// The validity of the refresh token.
+	// The validity of the refresh token, in days.
 	RefreshTokenValidity *int64 `type:"integer"`
 
 	// The user pool ID for the user pool where you want to update the user pool
@@ -11499,6 +13591,7 @@ func (s *UpdateUserPoolClientInput) SetWriteAttributes(v []*string) *UpdateUserP
 
 // Represents the response from the server to the request to update the user
 // pool client.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UpdateUserPoolClientResponse
 type UpdateUserPoolClientOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -11524,6 +13617,7 @@ func (s *UpdateUserPoolClientOutput) SetUserPoolClient(v *UserPoolClientType) *U
 }
 
 // Represents the request to update the user pool.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UpdateUserPoolRequest
 type UpdateUserPoolInput struct {
 	_ struct{} `type:"structure"`
 
@@ -11577,6 +13671,10 @@ type UpdateUserPoolInput struct {
 	//
 	// UserPoolId is a required field
 	UserPoolId *string `min:"1" type:"string" required:"true"`
+
+	// The cost allocation tags for the user pool. For more information, see Adding
+	// Cost Allocation Tags to Your User Pool (http://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-cost-allocation-tagging.html)
+	UserPoolTags map[string]*string `type:"map"`
 }
 
 // String returns the string representation
@@ -11720,8 +13818,15 @@ func (s *UpdateUserPoolInput) SetUserPoolId(v string) *UpdateUserPoolInput {
 	return s
 }
 
+// SetUserPoolTags sets the UserPoolTags field's value.
+func (s *UpdateUserPoolInput) SetUserPoolTags(v map[string]*string) *UpdateUserPoolInput {
+	s.UserPoolTags = v
+	return s
+}
+
 // Represents the response from the server when you make a request to update
 // the user pool.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UpdateUserPoolResponse
 type UpdateUserPoolOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -11737,6 +13842,7 @@ func (s UpdateUserPoolOutput) GoString() string {
 }
 
 // The user import job type.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UserImportJobType
 type UserImportJobType struct {
 	_ struct{} `type:"structure"`
 
@@ -11891,7 +13997,8 @@ func (s *UserImportJobType) SetUserPoolId(v string) *UserImportJobType {
 	return s
 }
 
-// The description of the user poool client.
+// The description of the user pool client.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UserPoolClientDescription
 type UserPoolClientDescription struct {
 	_ struct{} `type:"structure"`
 
@@ -11935,6 +14042,7 @@ func (s *UserPoolClientDescription) SetUserPoolId(v string) *UserPoolClientDescr
 }
 
 // A user pool of the client type.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UserPoolClientType
 type UserPoolClientType struct {
 	_ struct{} `type:"structure"`
 
@@ -11959,7 +14067,7 @@ type UserPoolClientType struct {
 	// The Read-only attributes.
 	ReadAttributes []*string `type:"list"`
 
-	// The validity of the refresh token.
+	// The validity of the refresh token, in days.
 	RefreshTokenValidity *int64 `type:"integer"`
 
 	// The user pool ID for the user pool client.
@@ -12040,6 +14148,7 @@ func (s *UserPoolClientType) SetWriteAttributes(v []*string) *UserPoolClientType
 }
 
 // A user pool description.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UserPoolDescriptionType
 type UserPoolDescriptionType struct {
 	_ struct{} `type:"structure"`
 
@@ -12109,6 +14218,7 @@ func (s *UserPoolDescriptionType) SetStatus(v string) *UserPoolDescriptionType {
 }
 
 // The type of policy in a user pool.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UserPoolPolicyType
 type UserPoolPolicyType struct {
 	_ struct{} `type:"structure"`
 
@@ -12148,6 +14258,7 @@ func (s *UserPoolPolicyType) SetPasswordPolicy(v *PasswordPolicyType) *UserPoolP
 }
 
 // A container with information about the user pool type.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UserPoolType
 type UserPoolType struct {
 	_ struct{} `type:"structure"`
 
@@ -12224,6 +14335,10 @@ type UserPoolType struct {
 
 	// The status of a user pool.
 	Status *string `type:"string" enum:"StatusType"`
+
+	// The cost allocation tags for the user pool. For more information, see Adding
+	// Cost Allocation Tags to Your User Pool (http://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-cost-allocation-tagging.html)
+	UserPoolTags map[string]*string `type:"map"`
 }
 
 // String returns the string representation
@@ -12368,7 +14483,14 @@ func (s *UserPoolType) SetStatus(v string) *UserPoolType {
 	return s
 }
 
+// SetUserPoolTags sets the UserPoolTags field's value.
+func (s *UserPoolType) SetUserPoolTags(v map[string]*string) *UserPoolType {
+	s.UserPoolTags = v
+	return s
+}
+
 // The user type.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/UserType
 type UserType struct {
 	_ struct{} `type:"structure"`
 
@@ -12457,6 +14579,7 @@ func (s *UserType) SetUsername(v string) *UserType {
 }
 
 // Represents the request to verify user attributes.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/VerifyUserAttributeRequest
 type VerifyUserAttributeInput struct {
 	_ struct{} `type:"structure"`
 
@@ -12526,6 +14649,7 @@ func (s *VerifyUserAttributeInput) SetCode(v string) *VerifyUserAttributeInput {
 
 // A container representing the response from the server from the request to
 // verify user attributes.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-idp-2016-04-18/VerifyUserAttributeResponse
 type VerifyUserAttributeOutput struct {
 	_ struct{} `type:"structure"`
 }
