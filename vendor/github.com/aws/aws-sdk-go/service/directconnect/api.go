@@ -37,6 +37,7 @@ const opAllocateConnectionOnInterconnect = "AllocateConnectionOnInterconnect"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AllocateConnectionOnInterconnect
 func (c *DirectConnect) AllocateConnectionOnInterconnectRequest(input *AllocateConnectionOnInterconnectInput) (req *request.Request, output *Connection) {
 	op := &request.Operation{
 		Name:       opAllocateConnectionOnInterconnect,
@@ -79,6 +80,7 @@ func (c *DirectConnect) AllocateConnectionOnInterconnectRequest(input *AllocateC
 //   The API was called with invalid parameters. The error message will contain
 //   additional details about the cause.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AllocateConnectionOnInterconnect
 func (c *DirectConnect) AllocateConnectionOnInterconnect(input *AllocateConnectionOnInterconnectInput) (*Connection, error) {
 	req, out := c.AllocateConnectionOnInterconnectRequest(input)
 	err := req.Send()
@@ -111,6 +113,7 @@ const opAllocatePrivateVirtualInterface = "AllocatePrivateVirtualInterface"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AllocatePrivateVirtualInterface
 func (c *DirectConnect) AllocatePrivateVirtualInterfaceRequest(input *AllocatePrivateVirtualInterfaceInput) (req *request.Request, output *VirtualInterface) {
 	op := &request.Operation{
 		Name:       opAllocatePrivateVirtualInterface,
@@ -156,6 +159,7 @@ func (c *DirectConnect) AllocatePrivateVirtualInterfaceRequest(input *AllocatePr
 //   The API was called with invalid parameters. The error message will contain
 //   additional details about the cause.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AllocatePrivateVirtualInterface
 func (c *DirectConnect) AllocatePrivateVirtualInterface(input *AllocatePrivateVirtualInterfaceInput) (*VirtualInterface, error) {
 	req, out := c.AllocatePrivateVirtualInterfaceRequest(input)
 	err := req.Send()
@@ -188,6 +192,7 @@ const opAllocatePublicVirtualInterface = "AllocatePublicVirtualInterface"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AllocatePublicVirtualInterface
 func (c *DirectConnect) AllocatePublicVirtualInterfaceRequest(input *AllocatePublicVirtualInterfaceInput) (req *request.Request, output *VirtualInterface) {
 	op := &request.Operation{
 		Name:       opAllocatePublicVirtualInterface,
@@ -217,6 +222,10 @@ func (c *DirectConnect) AllocatePublicVirtualInterfaceRequest(input *AllocatePub
 // has been completed, the virtual interface will be in 'Confirming' state,
 // and will not be available for handling traffic.
 //
+// When creating an IPv6 public virtual interface (addressFamily is 'ipv6'),
+// the customer and amazon address fields should be left blank to use auto-assigned
+// IPv6 space. Custom IPv6 Addresses are currently not supported.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -233,6 +242,7 @@ func (c *DirectConnect) AllocatePublicVirtualInterfaceRequest(input *AllocatePub
 //   The API was called with invalid parameters. The error message will contain
 //   additional details about the cause.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AllocatePublicVirtualInterface
 func (c *DirectConnect) AllocatePublicVirtualInterface(input *AllocatePublicVirtualInterfaceInput) (*VirtualInterface, error) {
 	req, out := c.AllocatePublicVirtualInterfaceRequest(input)
 	err := req.Send()
@@ -265,6 +275,7 @@ const opConfirmConnection = "ConfirmConnection"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/ConfirmConnection
 func (c *DirectConnect) ConfirmConnectionRequest(input *ConfirmConnectionInput) (req *request.Request, output *ConfirmConnectionOutput) {
 	op := &request.Operation{
 		Name:       opConfirmConnection,
@@ -306,6 +317,7 @@ func (c *DirectConnect) ConfirmConnectionRequest(input *ConfirmConnectionInput) 
 //   The API was called with invalid parameters. The error message will contain
 //   additional details about the cause.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/ConfirmConnection
 func (c *DirectConnect) ConfirmConnection(input *ConfirmConnectionInput) (*ConfirmConnectionOutput, error) {
 	req, out := c.ConfirmConnectionRequest(input)
 	err := req.Send()
@@ -338,6 +350,7 @@ const opConfirmPrivateVirtualInterface = "ConfirmPrivateVirtualInterface"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/ConfirmPrivateVirtualInterface
 func (c *DirectConnect) ConfirmPrivateVirtualInterfaceRequest(input *ConfirmPrivateVirtualInterfaceInput) (req *request.Request, output *ConfirmPrivateVirtualInterfaceOutput) {
 	op := &request.Operation{
 		Name:       opConfirmPrivateVirtualInterface,
@@ -379,6 +392,7 @@ func (c *DirectConnect) ConfirmPrivateVirtualInterfaceRequest(input *ConfirmPriv
 //   The API was called with invalid parameters. The error message will contain
 //   additional details about the cause.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/ConfirmPrivateVirtualInterface
 func (c *DirectConnect) ConfirmPrivateVirtualInterface(input *ConfirmPrivateVirtualInterfaceInput) (*ConfirmPrivateVirtualInterfaceOutput, error) {
 	req, out := c.ConfirmPrivateVirtualInterfaceRequest(input)
 	err := req.Send()
@@ -411,6 +425,7 @@ const opConfirmPublicVirtualInterface = "ConfirmPublicVirtualInterface"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/ConfirmPublicVirtualInterface
 func (c *DirectConnect) ConfirmPublicVirtualInterfaceRequest(input *ConfirmPublicVirtualInterfaceInput) (req *request.Request, output *ConfirmPublicVirtualInterfaceOutput) {
 	op := &request.Operation{
 		Name:       opConfirmPublicVirtualInterface,
@@ -451,8 +466,92 @@ func (c *DirectConnect) ConfirmPublicVirtualInterfaceRequest(input *ConfirmPubli
 //   The API was called with invalid parameters. The error message will contain
 //   additional details about the cause.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/ConfirmPublicVirtualInterface
 func (c *DirectConnect) ConfirmPublicVirtualInterface(input *ConfirmPublicVirtualInterfaceInput) (*ConfirmPublicVirtualInterfaceOutput, error) {
 	req, out := c.ConfirmPublicVirtualInterfaceRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opCreateBGPPeer = "CreateBGPPeer"
+
+// CreateBGPPeerRequest generates a "aws/request.Request" representing the
+// client's request for the CreateBGPPeer operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See CreateBGPPeer for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the CreateBGPPeer method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the CreateBGPPeerRequest method.
+//    req, resp := client.CreateBGPPeerRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateBGPPeer
+func (c *DirectConnect) CreateBGPPeerRequest(input *CreateBGPPeerInput) (req *request.Request, output *CreateBGPPeerOutput) {
+	op := &request.Operation{
+		Name:       opCreateBGPPeer,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateBGPPeerInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &CreateBGPPeerOutput{}
+	req.Data = output
+	return
+}
+
+// CreateBGPPeer API operation for AWS Direct Connect.
+//
+// Creates a new BGP peer on a specified virtual interface. The BGP peer cannot
+// be in the same address family (IPv4/IPv6) of an existing BGP peer on the
+// virtual interface.
+//
+// You must create a BGP peer for the corresponding address family in order
+// to access AWS resources that also use that address family.
+//
+// When creating a IPv6 BGP peer, the Amazon address and customer address fields
+// must be left blank. IPv6 addresses are automatically assigned from Amazon's
+// pool of IPv6 addresses; you cannot specify custom IPv6 addresses.
+//
+// For a public virtual interface, the Autonomous System Number (ASN) must be
+// private or already whitelisted for the virtual interface.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation CreateBGPPeer for usage and error information.
+//
+// Returned Error Codes:
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateBGPPeer
+func (c *DirectConnect) CreateBGPPeer(input *CreateBGPPeerInput) (*CreateBGPPeerOutput, error) {
+	req, out := c.CreateBGPPeerRequest(input)
 	err := req.Send()
 	return out, err
 }
@@ -483,6 +582,7 @@ const opCreateConnection = "CreateConnection"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateConnection
 func (c *DirectConnect) CreateConnectionRequest(input *CreateConnectionInput) (req *request.Request, output *Connection) {
 	op := &request.Operation{
 		Name:       opCreateConnection,
@@ -529,6 +629,7 @@ func (c *DirectConnect) CreateConnectionRequest(input *CreateConnectionInput) (r
 //   The API was called with invalid parameters. The error message will contain
 //   additional details about the cause.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateConnection
 func (c *DirectConnect) CreateConnection(input *CreateConnectionInput) (*Connection, error) {
 	req, out := c.CreateConnectionRequest(input)
 	err := req.Send()
@@ -561,6 +662,7 @@ const opCreateInterconnect = "CreateInterconnect"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateInterconnect
 func (c *DirectConnect) CreateInterconnectRequest(input *CreateInterconnectInput) (req *request.Request, output *Interconnect) {
 	op := &request.Operation{
 		Name:       opCreateInterconnect,
@@ -615,6 +717,7 @@ func (c *DirectConnect) CreateInterconnectRequest(input *CreateInterconnectInput
 //   The API was called with invalid parameters. The error message will contain
 //   additional details about the cause.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateInterconnect
 func (c *DirectConnect) CreateInterconnect(input *CreateInterconnectInput) (*Interconnect, error) {
 	req, out := c.CreateInterconnectRequest(input)
 	err := req.Send()
@@ -647,6 +750,7 @@ const opCreatePrivateVirtualInterface = "CreatePrivateVirtualInterface"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreatePrivateVirtualInterface
 func (c *DirectConnect) CreatePrivateVirtualInterfaceRequest(input *CreatePrivateVirtualInterfaceInput) (req *request.Request, output *VirtualInterface) {
 	op := &request.Operation{
 		Name:       opCreatePrivateVirtualInterface,
@@ -686,6 +790,7 @@ func (c *DirectConnect) CreatePrivateVirtualInterfaceRequest(input *CreatePrivat
 //   The API was called with invalid parameters. The error message will contain
 //   additional details about the cause.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreatePrivateVirtualInterface
 func (c *DirectConnect) CreatePrivateVirtualInterface(input *CreatePrivateVirtualInterfaceInput) (*VirtualInterface, error) {
 	req, out := c.CreatePrivateVirtualInterfaceRequest(input)
 	err := req.Send()
@@ -718,6 +823,7 @@ const opCreatePublicVirtualInterface = "CreatePublicVirtualInterface"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreatePublicVirtualInterface
 func (c *DirectConnect) CreatePublicVirtualInterfaceRequest(input *CreatePublicVirtualInterfaceInput) (req *request.Request, output *VirtualInterface) {
 	op := &request.Operation{
 		Name:       opCreatePublicVirtualInterface,
@@ -742,6 +848,10 @@ func (c *DirectConnect) CreatePublicVirtualInterfaceRequest(input *CreatePublicV
 // sending traffic to public services of AWS such as Amazon Simple Storage Service
 // (Amazon S3).
 //
+// When creating an IPv6 public virtual interface (addressFamily is 'ipv6'),
+// the customer and amazon address fields should be left blank to use auto-assigned
+// IPv6 space. Custom IPv6 Addresses are currently not supported.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -758,8 +868,82 @@ func (c *DirectConnect) CreatePublicVirtualInterfaceRequest(input *CreatePublicV
 //   The API was called with invalid parameters. The error message will contain
 //   additional details about the cause.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreatePublicVirtualInterface
 func (c *DirectConnect) CreatePublicVirtualInterface(input *CreatePublicVirtualInterfaceInput) (*VirtualInterface, error) {
 	req, out := c.CreatePublicVirtualInterfaceRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opDeleteBGPPeer = "DeleteBGPPeer"
+
+// DeleteBGPPeerRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteBGPPeer operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See DeleteBGPPeer for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the DeleteBGPPeer method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the DeleteBGPPeerRequest method.
+//    req, resp := client.DeleteBGPPeerRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteBGPPeer
+func (c *DirectConnect) DeleteBGPPeerRequest(input *DeleteBGPPeerInput) (req *request.Request, output *DeleteBGPPeerOutput) {
+	op := &request.Operation{
+		Name:       opDeleteBGPPeer,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteBGPPeerInput{}
+	}
+
+	req = c.newRequest(op, input, output)
+	output = &DeleteBGPPeerOutput{}
+	req.Data = output
+	return
+}
+
+// DeleteBGPPeer API operation for AWS Direct Connect.
+//
+// Deletes a BGP peer on the specified virtual interface that matches the specified
+// customer address and ASN. You cannot delete the last BGP peer from a virtual
+// interface.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Direct Connect's
+// API operation DeleteBGPPeer for usage and error information.
+//
+// Returned Error Codes:
+//   * ServerException
+//   A server-side error occurred during the API call. The error message will
+//   contain additional details about the cause.
+//
+//   * ClientException
+//   The API was called with invalid parameters. The error message will contain
+//   additional details about the cause.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteBGPPeer
+func (c *DirectConnect) DeleteBGPPeer(input *DeleteBGPPeerInput) (*DeleteBGPPeerOutput, error) {
+	req, out := c.DeleteBGPPeerRequest(input)
 	err := req.Send()
 	return out, err
 }
@@ -790,6 +974,7 @@ const opDeleteConnection = "DeleteConnection"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteConnection
 func (c *DirectConnect) DeleteConnectionRequest(input *DeleteConnectionInput) (req *request.Request, output *Connection) {
 	op := &request.Operation{
 		Name:       opDeleteConnection,
@@ -832,6 +1017,7 @@ func (c *DirectConnect) DeleteConnectionRequest(input *DeleteConnectionInput) (r
 //   The API was called with invalid parameters. The error message will contain
 //   additional details about the cause.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteConnection
 func (c *DirectConnect) DeleteConnection(input *DeleteConnectionInput) (*Connection, error) {
 	req, out := c.DeleteConnectionRequest(input)
 	err := req.Send()
@@ -864,6 +1050,7 @@ const opDeleteInterconnect = "DeleteInterconnect"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteInterconnect
 func (c *DirectConnect) DeleteInterconnectRequest(input *DeleteInterconnectInput) (req *request.Request, output *DeleteInterconnectOutput) {
 	op := &request.Operation{
 		Name:       opDeleteInterconnect,
@@ -903,6 +1090,7 @@ func (c *DirectConnect) DeleteInterconnectRequest(input *DeleteInterconnectInput
 //   The API was called with invalid parameters. The error message will contain
 //   additional details about the cause.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteInterconnect
 func (c *DirectConnect) DeleteInterconnect(input *DeleteInterconnectInput) (*DeleteInterconnectOutput, error) {
 	req, out := c.DeleteInterconnectRequest(input)
 	err := req.Send()
@@ -935,6 +1123,7 @@ const opDeleteVirtualInterface = "DeleteVirtualInterface"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteVirtualInterface
 func (c *DirectConnect) DeleteVirtualInterfaceRequest(input *DeleteVirtualInterfaceInput) (req *request.Request, output *DeleteVirtualInterfaceOutput) {
 	op := &request.Operation{
 		Name:       opDeleteVirtualInterface,
@@ -972,6 +1161,7 @@ func (c *DirectConnect) DeleteVirtualInterfaceRequest(input *DeleteVirtualInterf
 //   The API was called with invalid parameters. The error message will contain
 //   additional details about the cause.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteVirtualInterface
 func (c *DirectConnect) DeleteVirtualInterface(input *DeleteVirtualInterfaceInput) (*DeleteVirtualInterfaceOutput, error) {
 	req, out := c.DeleteVirtualInterfaceRequest(input)
 	err := req.Send()
@@ -1004,6 +1194,7 @@ const opDescribeConnectionLoa = "DescribeConnectionLoa"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeConnectionLoa
 func (c *DirectConnect) DescribeConnectionLoaRequest(input *DescribeConnectionLoaInput) (req *request.Request, output *DescribeConnectionLoaOutput) {
 	op := &request.Operation{
 		Name:       opDescribeConnectionLoa,
@@ -1047,6 +1238,7 @@ func (c *DirectConnect) DescribeConnectionLoaRequest(input *DescribeConnectionLo
 //   The API was called with invalid parameters. The error message will contain
 //   additional details about the cause.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeConnectionLoa
 func (c *DirectConnect) DescribeConnectionLoa(input *DescribeConnectionLoaInput) (*DescribeConnectionLoaOutput, error) {
 	req, out := c.DescribeConnectionLoaRequest(input)
 	err := req.Send()
@@ -1079,6 +1271,7 @@ const opDescribeConnections = "DescribeConnections"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeConnections
 func (c *DirectConnect) DescribeConnectionsRequest(input *DescribeConnectionsInput) (req *request.Request, output *Connections) {
 	op := &request.Operation{
 		Name:       opDescribeConnections,
@@ -1118,6 +1311,7 @@ func (c *DirectConnect) DescribeConnectionsRequest(input *DescribeConnectionsInp
 //   The API was called with invalid parameters. The error message will contain
 //   additional details about the cause.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeConnections
 func (c *DirectConnect) DescribeConnections(input *DescribeConnectionsInput) (*Connections, error) {
 	req, out := c.DescribeConnectionsRequest(input)
 	err := req.Send()
@@ -1150,6 +1344,7 @@ const opDescribeConnectionsOnInterconnect = "DescribeConnectionsOnInterconnect"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeConnectionsOnInterconnect
 func (c *DirectConnect) DescribeConnectionsOnInterconnectRequest(input *DescribeConnectionsOnInterconnectInput) (req *request.Request, output *Connections) {
 	op := &request.Operation{
 		Name:       opDescribeConnectionsOnInterconnect,
@@ -1189,6 +1384,7 @@ func (c *DirectConnect) DescribeConnectionsOnInterconnectRequest(input *Describe
 //   The API was called with invalid parameters. The error message will contain
 //   additional details about the cause.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeConnectionsOnInterconnect
 func (c *DirectConnect) DescribeConnectionsOnInterconnect(input *DescribeConnectionsOnInterconnectInput) (*Connections, error) {
 	req, out := c.DescribeConnectionsOnInterconnectRequest(input)
 	err := req.Send()
@@ -1221,6 +1417,7 @@ const opDescribeInterconnectLoa = "DescribeInterconnectLoa"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeInterconnectLoa
 func (c *DirectConnect) DescribeInterconnectLoaRequest(input *DescribeInterconnectLoaInput) (req *request.Request, output *DescribeInterconnectLoaOutput) {
 	op := &request.Operation{
 		Name:       opDescribeInterconnectLoa,
@@ -1264,6 +1461,7 @@ func (c *DirectConnect) DescribeInterconnectLoaRequest(input *DescribeInterconne
 //   The API was called with invalid parameters. The error message will contain
 //   additional details about the cause.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeInterconnectLoa
 func (c *DirectConnect) DescribeInterconnectLoa(input *DescribeInterconnectLoaInput) (*DescribeInterconnectLoaOutput, error) {
 	req, out := c.DescribeInterconnectLoaRequest(input)
 	err := req.Send()
@@ -1296,6 +1494,7 @@ const opDescribeInterconnects = "DescribeInterconnects"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeInterconnects
 func (c *DirectConnect) DescribeInterconnectsRequest(input *DescribeInterconnectsInput) (req *request.Request, output *DescribeInterconnectsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeInterconnects,
@@ -1335,6 +1534,7 @@ func (c *DirectConnect) DescribeInterconnectsRequest(input *DescribeInterconnect
 //   The API was called with invalid parameters. The error message will contain
 //   additional details about the cause.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeInterconnects
 func (c *DirectConnect) DescribeInterconnects(input *DescribeInterconnectsInput) (*DescribeInterconnectsOutput, error) {
 	req, out := c.DescribeInterconnectsRequest(input)
 	err := req.Send()
@@ -1367,6 +1567,7 @@ const opDescribeLocations = "DescribeLocations"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeLocations
 func (c *DirectConnect) DescribeLocationsRequest(input *DescribeLocationsInput) (req *request.Request, output *DescribeLocationsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeLocations,
@@ -1406,6 +1607,7 @@ func (c *DirectConnect) DescribeLocationsRequest(input *DescribeLocationsInput) 
 //   The API was called with invalid parameters. The error message will contain
 //   additional details about the cause.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeLocations
 func (c *DirectConnect) DescribeLocations(input *DescribeLocationsInput) (*DescribeLocationsOutput, error) {
 	req, out := c.DescribeLocationsRequest(input)
 	err := req.Send()
@@ -1438,6 +1640,7 @@ const opDescribeTags = "DescribeTags"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeTags
 func (c *DirectConnect) DescribeTagsRequest(input *DescribeTagsInput) (req *request.Request, output *DescribeTagsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeTags,
@@ -1475,6 +1678,7 @@ func (c *DirectConnect) DescribeTagsRequest(input *DescribeTagsInput) (req *requ
 //   The API was called with invalid parameters. The error message will contain
 //   additional details about the cause.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeTags
 func (c *DirectConnect) DescribeTags(input *DescribeTagsInput) (*DescribeTagsOutput, error) {
 	req, out := c.DescribeTagsRequest(input)
 	err := req.Send()
@@ -1507,6 +1711,7 @@ const opDescribeVirtualGateways = "DescribeVirtualGateways"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeVirtualGateways
 func (c *DirectConnect) DescribeVirtualGatewaysRequest(input *DescribeVirtualGatewaysInput) (req *request.Request, output *DescribeVirtualGatewaysOutput) {
 	op := &request.Operation{
 		Name:       opDescribeVirtualGateways,
@@ -1550,6 +1755,7 @@ func (c *DirectConnect) DescribeVirtualGatewaysRequest(input *DescribeVirtualGat
 //   The API was called with invalid parameters. The error message will contain
 //   additional details about the cause.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeVirtualGateways
 func (c *DirectConnect) DescribeVirtualGateways(input *DescribeVirtualGatewaysInput) (*DescribeVirtualGatewaysOutput, error) {
 	req, out := c.DescribeVirtualGatewaysRequest(input)
 	err := req.Send()
@@ -1582,6 +1788,7 @@ const opDescribeVirtualInterfaces = "DescribeVirtualInterfaces"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeVirtualInterfaces
 func (c *DirectConnect) DescribeVirtualInterfacesRequest(input *DescribeVirtualInterfacesInput) (req *request.Request, output *DescribeVirtualInterfacesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeVirtualInterfaces,
@@ -1630,6 +1837,7 @@ func (c *DirectConnect) DescribeVirtualInterfacesRequest(input *DescribeVirtualI
 //   The API was called with invalid parameters. The error message will contain
 //   additional details about the cause.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeVirtualInterfaces
 func (c *DirectConnect) DescribeVirtualInterfaces(input *DescribeVirtualInterfacesInput) (*DescribeVirtualInterfacesOutput, error) {
 	req, out := c.DescribeVirtualInterfacesRequest(input)
 	err := req.Send()
@@ -1662,6 +1870,7 @@ const opTagResource = "TagResource"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/TagResource
 func (c *DirectConnect) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
 	op := &request.Operation{
 		Name:       opTagResource,
@@ -1711,6 +1920,7 @@ func (c *DirectConnect) TagResourceRequest(input *TagResourceInput) (req *reques
 //   The API was called with invalid parameters. The error message will contain
 //   additional details about the cause.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/TagResource
 func (c *DirectConnect) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
 	req, out := c.TagResourceRequest(input)
 	err := req.Send()
@@ -1743,6 +1953,7 @@ const opUntagResource = "UntagResource"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/UntagResource
 func (c *DirectConnect) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
 	op := &request.Operation{
 		Name:       opUntagResource,
@@ -1780,6 +1991,7 @@ func (c *DirectConnect) UntagResourceRequest(input *UntagResourceInput) (req *re
 //   The API was called with invalid parameters. The error message will contain
 //   additional details about the cause.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/UntagResource
 func (c *DirectConnect) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
 	req, out := c.UntagResourceRequest(input)
 	err := req.Send()
@@ -1787,6 +1999,7 @@ func (c *DirectConnect) UntagResource(input *UntagResourceInput) (*UntagResource
 }
 
 // Container for the parameters to the AllocateConnectionOnInterconnect operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AllocateConnectionOnInterconnectRequest
 type AllocateConnectionOnInterconnectInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1904,6 +2117,7 @@ func (s *AllocateConnectionOnInterconnectInput) SetVlan(v int64) *AllocateConnec
 }
 
 // Container for the parameters to the AllocatePrivateVirtualInterface operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AllocatePrivateVirtualInterfaceRequest
 type AllocatePrivateVirtualInterfaceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1982,6 +2196,7 @@ func (s *AllocatePrivateVirtualInterfaceInput) SetOwnerAccount(v string) *Alloca
 }
 
 // Container for the parameters to the AllocatePublicVirtualInterface operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/AllocatePublicVirtualInterfaceRequest
 type AllocatePublicVirtualInterfaceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2059,7 +2274,116 @@ func (s *AllocatePublicVirtualInterfaceInput) SetOwnerAccount(v string) *Allocat
 	return s
 }
 
+// A structure containing information about a BGP peer.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/BGPPeer
+type BGPPeer struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates the address family for the BGP peer.
+	//
+	//    * ipv4: IPv4 address family
+	//
+	//    * ipv6: IPv6 address family
+	AddressFamily *string `locationName:"addressFamily" type:"string" enum:"AddressFamily"`
+
+	// IP address assigned to the Amazon interface.
+	//
+	// Example: 192.168.1.1/30 or 2001:db8::1/125
+	AmazonAddress *string `locationName:"amazonAddress" type:"string"`
+
+	// Autonomous system (AS) number for Border Gateway Protocol (BGP) configuration.
+	//
+	// Example: 65000
+	Asn *int64 `locationName:"asn" type:"integer"`
+
+	// Authentication key for BGP configuration.
+	//
+	// Example: asdf34example
+	AuthKey *string `locationName:"authKey" type:"string"`
+
+	// The state of the BGP peer.
+	//
+	//    * Verifying: The BGP peering addresses or ASN require validation before
+	//    the BGP peer can be created. This state only applies to BGP peers on a
+	//    public virtual interface.
+	//
+	//    * Pending: The BGP peer has been created, and is in this state until it
+	//    is ready to be established.
+	//
+	//    * Available: The BGP peer can be established.
+	//
+	//    * Deleting: The BGP peer is in the process of being deleted.
+	//
+	//    * Deleted: The BGP peer has been deleted and cannot be established.
+	BgpPeerState *string `locationName:"bgpPeerState" type:"string" enum:"BGPPeerState"`
+
+	// The Up/Down state of the BGP peer.
+	//
+	//    * Up: The BGP peer is established.
+	//
+	//    * Down: The BGP peer is down.
+	BgpStatus *string `locationName:"bgpStatus" type:"string" enum:"BGPStatus"`
+
+	// IP address assigned to the customer interface.
+	//
+	// Example: 192.168.1.2/30 or 2001:db8::2/125
+	CustomerAddress *string `locationName:"customerAddress" type:"string"`
+}
+
+// String returns the string representation
+func (s BGPPeer) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s BGPPeer) GoString() string {
+	return s.String()
+}
+
+// SetAddressFamily sets the AddressFamily field's value.
+func (s *BGPPeer) SetAddressFamily(v string) *BGPPeer {
+	s.AddressFamily = &v
+	return s
+}
+
+// SetAmazonAddress sets the AmazonAddress field's value.
+func (s *BGPPeer) SetAmazonAddress(v string) *BGPPeer {
+	s.AmazonAddress = &v
+	return s
+}
+
+// SetAsn sets the Asn field's value.
+func (s *BGPPeer) SetAsn(v int64) *BGPPeer {
+	s.Asn = &v
+	return s
+}
+
+// SetAuthKey sets the AuthKey field's value.
+func (s *BGPPeer) SetAuthKey(v string) *BGPPeer {
+	s.AuthKey = &v
+	return s
+}
+
+// SetBgpPeerState sets the BgpPeerState field's value.
+func (s *BGPPeer) SetBgpPeerState(v string) *BGPPeer {
+	s.BgpPeerState = &v
+	return s
+}
+
+// SetBgpStatus sets the BgpStatus field's value.
+func (s *BGPPeer) SetBgpStatus(v string) *BGPPeer {
+	s.BgpStatus = &v
+	return s
+}
+
+// SetCustomerAddress sets the CustomerAddress field's value.
+func (s *BGPPeer) SetCustomerAddress(v string) *BGPPeer {
+	s.CustomerAddress = &v
+	return s
+}
+
 // Container for the parameters to the ConfirmConnection operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/ConfirmConnectionRequest
 type ConfirmConnectionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2103,6 +2427,7 @@ func (s *ConfirmConnectionInput) SetConnectionId(v string) *ConfirmConnectionInp
 }
 
 // The response received when ConfirmConnection is called.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/ConfirmConnectionResponse
 type ConfirmConnectionOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2148,6 +2473,7 @@ func (s *ConfirmConnectionOutput) SetConnectionState(v string) *ConfirmConnectio
 }
 
 // Container for the parameters to the ConfirmPrivateVirtualInterface operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/ConfirmPrivateVirtualInterfaceRequest
 type ConfirmPrivateVirtualInterfaceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2211,6 +2537,7 @@ func (s *ConfirmPrivateVirtualInterfaceInput) SetVirtualInterfaceId(v string) *C
 }
 
 // The response received when ConfirmPrivateVirtualInterface is called.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/ConfirmPrivateVirtualInterfaceResponse
 type ConfirmPrivateVirtualInterfaceOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2262,6 +2589,7 @@ func (s *ConfirmPrivateVirtualInterfaceOutput) SetVirtualInterfaceState(v string
 }
 
 // Container for the parameters to the ConfirmPublicVirtualInterface operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/ConfirmPublicVirtualInterfaceRequest
 type ConfirmPublicVirtualInterfaceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2305,6 +2633,7 @@ func (s *ConfirmPublicVirtualInterfaceInput) SetVirtualInterfaceId(v string) *Co
 }
 
 // The response received when ConfirmPublicVirtualInterface is called.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/ConfirmPublicVirtualInterfaceResponse
 type ConfirmPublicVirtualInterfaceOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2357,6 +2686,7 @@ func (s *ConfirmPublicVirtualInterfaceOutput) SetVirtualInterfaceState(v string)
 
 // A connection represents the physical network connection between the AWS Direct
 // Connect location and the customer.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/Connection
 type Connection struct {
 	_ struct{} `type:"structure"`
 
@@ -2505,6 +2835,7 @@ func (s *Connection) SetVlan(v int64) *Connection {
 }
 
 // A structure containing a list of connections.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/Connections
 type Connections struct {
 	_ struct{} `type:"structure"`
 
@@ -2528,7 +2859,74 @@ func (s *Connections) SetConnections(v []*Connection) *Connections {
 	return s
 }
 
+// Container for the parameters to the CreateBGPPeer operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateBGPPeerRequest
+type CreateBGPPeerInput struct {
+	_ struct{} `type:"structure"`
+
+	// Detailed information for the BGP peer to be created.
+	//
+	// Default: None
+	NewBGPPeer *NewBGPPeer `locationName:"newBGPPeer" type:"structure"`
+
+	// The ID of the virtual interface on which the BGP peer will be provisioned.
+	//
+	// Example: dxvif-456abc78
+	//
+	// Default: None
+	VirtualInterfaceId *string `locationName:"virtualInterfaceId" type:"string"`
+}
+
+// String returns the string representation
+func (s CreateBGPPeerInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateBGPPeerInput) GoString() string {
+	return s.String()
+}
+
+// SetNewBGPPeer sets the NewBGPPeer field's value.
+func (s *CreateBGPPeerInput) SetNewBGPPeer(v *NewBGPPeer) *CreateBGPPeerInput {
+	s.NewBGPPeer = v
+	return s
+}
+
+// SetVirtualInterfaceId sets the VirtualInterfaceId field's value.
+func (s *CreateBGPPeerInput) SetVirtualInterfaceId(v string) *CreateBGPPeerInput {
+	s.VirtualInterfaceId = &v
+	return s
+}
+
+// The response received when CreateBGPPeer is called.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateBGPPeerResponse
+type CreateBGPPeerOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A virtual interface (VLAN) transmits the traffic between the AWS Direct Connect
+	// location and the customer.
+	VirtualInterface *VirtualInterface `locationName:"virtualInterface" type:"structure"`
+}
+
+// String returns the string representation
+func (s CreateBGPPeerOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateBGPPeerOutput) GoString() string {
+	return s.String()
+}
+
+// SetVirtualInterface sets the VirtualInterface field's value.
+func (s *CreateBGPPeerOutput) SetVirtualInterface(v *VirtualInterface) *CreateBGPPeerOutput {
+	s.VirtualInterface = v
+	return s
+}
+
 // Container for the parameters to the CreateConnection operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateConnectionRequest
 type CreateConnectionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2608,6 +3006,7 @@ func (s *CreateConnectionInput) SetLocation(v string) *CreateConnectionInput {
 }
 
 // Container for the parameters to the CreateInterconnect operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreateInterconnectRequest
 type CreateInterconnectInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2689,6 +3088,7 @@ func (s *CreateInterconnectInput) SetLocation(v string) *CreateInterconnectInput
 }
 
 // Container for the parameters to the CreatePrivateVirtualInterface operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreatePrivateVirtualInterfaceRequest
 type CreatePrivateVirtualInterfaceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2753,6 +3153,7 @@ func (s *CreatePrivateVirtualInterfaceInput) SetNewPrivateVirtualInterface(v *Ne
 }
 
 // Container for the parameters to the CreatePublicVirtualInterface operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/CreatePublicVirtualInterfaceRequest
 type CreatePublicVirtualInterfaceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2816,7 +3217,85 @@ func (s *CreatePublicVirtualInterfaceInput) SetNewPublicVirtualInterface(v *NewP
 	return s
 }
 
+// Container for the parameters to the DeleteBGPPeer operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteBGPPeerRequest
+type DeleteBGPPeerInput struct {
+	_ struct{} `type:"structure"`
+
+	// Autonomous system (AS) number for Border Gateway Protocol (BGP) configuration.
+	//
+	// Example: 65000
+	Asn *int64 `locationName:"asn" type:"integer"`
+
+	// IP address assigned to the customer interface.
+	//
+	// Example: 192.168.1.2/30 or 2001:db8::2/125
+	CustomerAddress *string `locationName:"customerAddress" type:"string"`
+
+	// The ID of the virtual interface from which the BGP peer will be deleted.
+	//
+	// Example: dxvif-456abc78
+	//
+	// Default: None
+	VirtualInterfaceId *string `locationName:"virtualInterfaceId" type:"string"`
+}
+
+// String returns the string representation
+func (s DeleteBGPPeerInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteBGPPeerInput) GoString() string {
+	return s.String()
+}
+
+// SetAsn sets the Asn field's value.
+func (s *DeleteBGPPeerInput) SetAsn(v int64) *DeleteBGPPeerInput {
+	s.Asn = &v
+	return s
+}
+
+// SetCustomerAddress sets the CustomerAddress field's value.
+func (s *DeleteBGPPeerInput) SetCustomerAddress(v string) *DeleteBGPPeerInput {
+	s.CustomerAddress = &v
+	return s
+}
+
+// SetVirtualInterfaceId sets the VirtualInterfaceId field's value.
+func (s *DeleteBGPPeerInput) SetVirtualInterfaceId(v string) *DeleteBGPPeerInput {
+	s.VirtualInterfaceId = &v
+	return s
+}
+
+// The response received when DeleteBGPPeer is called.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteBGPPeerResponse
+type DeleteBGPPeerOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A virtual interface (VLAN) transmits the traffic between the AWS Direct Connect
+	// location and the customer.
+	VirtualInterface *VirtualInterface `locationName:"virtualInterface" type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteBGPPeerOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteBGPPeerOutput) GoString() string {
+	return s.String()
+}
+
+// SetVirtualInterface sets the VirtualInterface field's value.
+func (s *DeleteBGPPeerOutput) SetVirtualInterface(v *VirtualInterface) *DeleteBGPPeerOutput {
+	s.VirtualInterface = v
+	return s
+}
+
 // Container for the parameters to the DeleteConnection operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteConnectionRequest
 type DeleteConnectionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2860,6 +3339,7 @@ func (s *DeleteConnectionInput) SetConnectionId(v string) *DeleteConnectionInput
 }
 
 // Container for the parameters to the DeleteInterconnect operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteInterconnectRequest
 type DeleteInterconnectInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2901,6 +3381,7 @@ func (s *DeleteInterconnectInput) SetInterconnectId(v string) *DeleteInterconnec
 }
 
 // The response received when DeleteInterconnect is called.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteInterconnectResponse
 type DeleteInterconnectOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2940,6 +3421,7 @@ func (s *DeleteInterconnectOutput) SetInterconnectState(v string) *DeleteInterco
 }
 
 // Container for the parameters to the DeleteVirtualInterface operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteVirtualInterfaceRequest
 type DeleteVirtualInterfaceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2983,6 +3465,7 @@ func (s *DeleteVirtualInterfaceInput) SetVirtualInterfaceId(v string) *DeleteVir
 }
 
 // The response received when DeleteVirtualInterface is called.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DeleteVirtualInterfaceResponse
 type DeleteVirtualInterfaceOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3034,6 +3517,7 @@ func (s *DeleteVirtualInterfaceOutput) SetVirtualInterfaceState(v string) *Delet
 }
 
 // Container for the parameters to the DescribeConnectionLoa operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeConnectionLoaRequest
 type DescribeConnectionLoaInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3102,6 +3586,7 @@ func (s *DescribeConnectionLoaInput) SetProviderName(v string) *DescribeConnecti
 }
 
 // The response received when DescribeConnectionLoa is called.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeConnectionLoaResponse
 type DescribeConnectionLoaOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3127,6 +3612,7 @@ func (s *DescribeConnectionLoaOutput) SetLoa(v *Loa) *DescribeConnectionLoaOutpu
 }
 
 // Container for the parameters to the DescribeConnections operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeConnectionsRequest
 type DescribeConnectionsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3155,6 +3641,7 @@ func (s *DescribeConnectionsInput) SetConnectionId(v string) *DescribeConnection
 }
 
 // Container for the parameters to the DescribeConnectionsOnInterconnect operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeConnectionsOnInterconnectRequest
 type DescribeConnectionsOnInterconnectInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3198,6 +3685,7 @@ func (s *DescribeConnectionsOnInterconnectInput) SetInterconnectId(v string) *De
 }
 
 // Container for the parameters to the DescribeInterconnectLoa operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeInterconnectLoaRequest
 type DescribeInterconnectLoaInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3264,6 +3752,7 @@ func (s *DescribeInterconnectLoaInput) SetProviderName(v string) *DescribeInterc
 }
 
 // The response received when DescribeInterconnectLoa is called.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeInterconnectLoaResponse
 type DescribeInterconnectLoaOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3289,6 +3778,7 @@ func (s *DescribeInterconnectLoaOutput) SetLoa(v *Loa) *DescribeInterconnectLoaO
 }
 
 // Container for the parameters to the DescribeInterconnects operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeInterconnectsRequest
 type DescribeInterconnectsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3315,6 +3805,7 @@ func (s *DescribeInterconnectsInput) SetInterconnectId(v string) *DescribeInterc
 }
 
 // A structure containing a list of interconnects.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/Interconnects
 type DescribeInterconnectsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3338,6 +3829,7 @@ func (s *DescribeInterconnectsOutput) SetInterconnects(v []*Interconnect) *Descr
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeLocationsInput
 type DescribeLocationsInput struct {
 	_ struct{} `type:"structure"`
 }
@@ -3356,6 +3848,7 @@ func (s DescribeLocationsInput) GoString() string {
 // to be connected. Generally, these are colocation hubs where many network
 // providers have equipment, and where cross connects can be delivered. Locations
 // include a name and facility code, and must be provided when creating a connection.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/Locations
 type DescribeLocationsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3381,6 +3874,7 @@ func (s *DescribeLocationsOutput) SetLocations(v []*Location) *DescribeLocations
 }
 
 // Container for the parameters to the DescribeTags operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeTagsRequest
 type DescribeTagsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3420,6 +3914,7 @@ func (s *DescribeTagsInput) SetResourceArns(v []*string) *DescribeTagsInput {
 }
 
 // The response received when DescribeTags is called.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeTagsResponse
 type DescribeTagsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3443,6 +3938,7 @@ func (s *DescribeTagsOutput) SetResourceTags(v []*ResourceTag) *DescribeTagsOutp
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeVirtualGatewaysInput
 type DescribeVirtualGatewaysInput struct {
 	_ struct{} `type:"structure"`
 }
@@ -3458,6 +3954,7 @@ func (s DescribeVirtualGatewaysInput) GoString() string {
 }
 
 // A structure containing a list of virtual private gateways.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/VirtualGateways
 type DescribeVirtualGatewaysOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3482,6 +3979,7 @@ func (s *DescribeVirtualGatewaysOutput) SetVirtualGateways(v []*VirtualGateway) 
 }
 
 // Container for the parameters to the DescribeVirtualInterfaces operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/DescribeVirtualInterfacesRequest
 type DescribeVirtualInterfacesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3523,6 +4021,7 @@ func (s *DescribeVirtualInterfacesInput) SetVirtualInterfaceId(v string) *Descri
 }
 
 // A structure containing a list of virtual interfaces.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/VirtualInterfaces
 type DescribeVirtualInterfacesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3558,6 +4057,7 @@ func (s *DescribeVirtualInterfacesOutput) SetVirtualInterfaces(v []*VirtualInter
 // The resources of the interconnect, including bandwidth and VLAN numbers,
 // are shared by all of the hosted connections on the interconnect, and the
 // owner of the interconnect determines how these resources are assigned.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/Interconnect
 type Interconnect struct {
 	_ struct{} `type:"structure"`
 
@@ -3668,6 +4168,7 @@ func (s *Interconnect) SetRegion(v string) *Interconnect {
 
 // A structure containing the Letter of Authorization - Connecting Facility
 // Assignment (LOA-CFA) for a connection.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/Loa
 type Loa struct {
 	_ struct{} `type:"structure"`
 
@@ -3707,6 +4208,7 @@ func (s *Loa) SetLoaContentType(v string) *Loa {
 
 // An AWS Direct Connect location where connections and interconnects can be
 // requested.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/Location
 type Location struct {
 	_ struct{} `type:"structure"`
 
@@ -3740,13 +4242,94 @@ func (s *Location) SetLocationName(v string) *Location {
 	return s
 }
 
-// A structure containing information about a new private virtual interface.
-type NewPrivateVirtualInterface struct {
+// A structure containing information about a new BGP peer.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/NewBGPPeer
+type NewBGPPeer struct {
 	_ struct{} `type:"structure"`
+
+	// Indicates the address family for the BGP peer.
+	//
+	//    * ipv4: IPv4 address family
+	//
+	//    * ipv6: IPv6 address family
+	AddressFamily *string `locationName:"addressFamily" type:"string" enum:"AddressFamily"`
 
 	// IP address assigned to the Amazon interface.
 	//
-	// Example: 192.168.1.1/30
+	// Example: 192.168.1.1/30 or 2001:db8::1/125
+	AmazonAddress *string `locationName:"amazonAddress" type:"string"`
+
+	// Autonomous system (AS) number for Border Gateway Protocol (BGP) configuration.
+	//
+	// Example: 65000
+	Asn *int64 `locationName:"asn" type:"integer"`
+
+	// Authentication key for BGP configuration.
+	//
+	// Example: asdf34example
+	AuthKey *string `locationName:"authKey" type:"string"`
+
+	// IP address assigned to the customer interface.
+	//
+	// Example: 192.168.1.2/30 or 2001:db8::2/125
+	CustomerAddress *string `locationName:"customerAddress" type:"string"`
+}
+
+// String returns the string representation
+func (s NewBGPPeer) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s NewBGPPeer) GoString() string {
+	return s.String()
+}
+
+// SetAddressFamily sets the AddressFamily field's value.
+func (s *NewBGPPeer) SetAddressFamily(v string) *NewBGPPeer {
+	s.AddressFamily = &v
+	return s
+}
+
+// SetAmazonAddress sets the AmazonAddress field's value.
+func (s *NewBGPPeer) SetAmazonAddress(v string) *NewBGPPeer {
+	s.AmazonAddress = &v
+	return s
+}
+
+// SetAsn sets the Asn field's value.
+func (s *NewBGPPeer) SetAsn(v int64) *NewBGPPeer {
+	s.Asn = &v
+	return s
+}
+
+// SetAuthKey sets the AuthKey field's value.
+func (s *NewBGPPeer) SetAuthKey(v string) *NewBGPPeer {
+	s.AuthKey = &v
+	return s
+}
+
+// SetCustomerAddress sets the CustomerAddress field's value.
+func (s *NewBGPPeer) SetCustomerAddress(v string) *NewBGPPeer {
+	s.CustomerAddress = &v
+	return s
+}
+
+// A structure containing information about a new private virtual interface.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/NewPrivateVirtualInterface
+type NewPrivateVirtualInterface struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates the address family for the BGP peer.
+	//
+	//    * ipv4: IPv4 address family
+	//
+	//    * ipv6: IPv6 address family
+	AddressFamily *string `locationName:"addressFamily" type:"string" enum:"AddressFamily"`
+
+	// IP address assigned to the Amazon interface.
+	//
+	// Example: 192.168.1.1/30 or 2001:db8::1/125
 	AmazonAddress *string `locationName:"amazonAddress" type:"string"`
 
 	// Autonomous system (AS) number for Border Gateway Protocol (BGP) configuration.
@@ -3763,7 +4346,7 @@ type NewPrivateVirtualInterface struct {
 
 	// IP address assigned to the customer interface.
 	//
-	// Example: 192.168.1.2/30
+	// Example: 192.168.1.2/30 or 2001:db8::2/125
 	CustomerAddress *string `locationName:"customerAddress" type:"string"`
 
 	// The ID of the virtual private gateway to a VPC. This only applies to private
@@ -3821,6 +4404,12 @@ func (s *NewPrivateVirtualInterface) Validate() error {
 	return nil
 }
 
+// SetAddressFamily sets the AddressFamily field's value.
+func (s *NewPrivateVirtualInterface) SetAddressFamily(v string) *NewPrivateVirtualInterface {
+	s.AddressFamily = &v
+	return s
+}
+
 // SetAmazonAddress sets the AmazonAddress field's value.
 func (s *NewPrivateVirtualInterface) SetAmazonAddress(v string) *NewPrivateVirtualInterface {
 	s.AmazonAddress = &v
@@ -3865,12 +4454,20 @@ func (s *NewPrivateVirtualInterface) SetVlan(v int64) *NewPrivateVirtualInterfac
 
 // A structure containing information about a private virtual interface that
 // will be provisioned on a connection.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/NewPrivateVirtualInterfaceAllocation
 type NewPrivateVirtualInterfaceAllocation struct {
 	_ struct{} `type:"structure"`
 
+	// Indicates the address family for the BGP peer.
+	//
+	//    * ipv4: IPv4 address family
+	//
+	//    * ipv6: IPv6 address family
+	AddressFamily *string `locationName:"addressFamily" type:"string" enum:"AddressFamily"`
+
 	// IP address assigned to the Amazon interface.
 	//
-	// Example: 192.168.1.1/30
+	// Example: 192.168.1.1/30 or 2001:db8::1/125
 	AmazonAddress *string `locationName:"amazonAddress" type:"string"`
 
 	// Autonomous system (AS) number for Border Gateway Protocol (BGP) configuration.
@@ -3887,7 +4484,7 @@ type NewPrivateVirtualInterfaceAllocation struct {
 
 	// IP address assigned to the customer interface.
 	//
-	// Example: 192.168.1.2/30
+	// Example: 192.168.1.2/30 or 2001:db8::2/125
 	CustomerAddress *string `locationName:"customerAddress" type:"string"`
 
 	// The name of the virtual interface assigned by the customer.
@@ -3934,6 +4531,12 @@ func (s *NewPrivateVirtualInterfaceAllocation) Validate() error {
 	return nil
 }
 
+// SetAddressFamily sets the AddressFamily field's value.
+func (s *NewPrivateVirtualInterfaceAllocation) SetAddressFamily(v string) *NewPrivateVirtualInterfaceAllocation {
+	s.AddressFamily = &v
+	return s
+}
+
 // SetAmazonAddress sets the AmazonAddress field's value.
 func (s *NewPrivateVirtualInterfaceAllocation) SetAmazonAddress(v string) *NewPrivateVirtualInterfaceAllocation {
 	s.AmazonAddress = &v
@@ -3971,15 +4574,21 @@ func (s *NewPrivateVirtualInterfaceAllocation) SetVlan(v int64) *NewPrivateVirtu
 }
 
 // A structure containing information about a new public virtual interface.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/NewPublicVirtualInterface
 type NewPublicVirtualInterface struct {
 	_ struct{} `type:"structure"`
 
+	// Indicates the address family for the BGP peer.
+	//
+	//    * ipv4: IPv4 address family
+	//
+	//    * ipv6: IPv6 address family
+	AddressFamily *string `locationName:"addressFamily" type:"string" enum:"AddressFamily"`
+
 	// IP address assigned to the Amazon interface.
 	//
-	// Example: 192.168.1.1/30
-	//
-	// AmazonAddress is a required field
-	AmazonAddress *string `locationName:"amazonAddress" type:"string" required:"true"`
+	// Example: 192.168.1.1/30 or 2001:db8::1/125
+	AmazonAddress *string `locationName:"amazonAddress" type:"string"`
 
 	// Autonomous system (AS) number for Border Gateway Protocol (BGP) configuration.
 	//
@@ -3995,16 +4604,12 @@ type NewPublicVirtualInterface struct {
 
 	// IP address assigned to the customer interface.
 	//
-	// Example: 192.168.1.2/30
-	//
-	// CustomerAddress is a required field
-	CustomerAddress *string `locationName:"customerAddress" type:"string" required:"true"`
+	// Example: 192.168.1.2/30 or 2001:db8::2/125
+	CustomerAddress *string `locationName:"customerAddress" type:"string"`
 
 	// A list of routes to be advertised to the AWS network in this region (public
 	// virtual interface).
-	//
-	// RouteFilterPrefixes is a required field
-	RouteFilterPrefixes []*RouteFilterPrefix `locationName:"routeFilterPrefixes" type:"list" required:"true"`
+	RouteFilterPrefixes []*RouteFilterPrefix `locationName:"routeFilterPrefixes" type:"list"`
 
 	// The name of the virtual interface assigned by the customer.
 	//
@@ -4034,17 +4639,8 @@ func (s NewPublicVirtualInterface) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *NewPublicVirtualInterface) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "NewPublicVirtualInterface"}
-	if s.AmazonAddress == nil {
-		invalidParams.Add(request.NewErrParamRequired("AmazonAddress"))
-	}
 	if s.Asn == nil {
 		invalidParams.Add(request.NewErrParamRequired("Asn"))
-	}
-	if s.CustomerAddress == nil {
-		invalidParams.Add(request.NewErrParamRequired("CustomerAddress"))
-	}
-	if s.RouteFilterPrefixes == nil {
-		invalidParams.Add(request.NewErrParamRequired("RouteFilterPrefixes"))
 	}
 	if s.VirtualInterfaceName == nil {
 		invalidParams.Add(request.NewErrParamRequired("VirtualInterfaceName"))
@@ -4057,6 +4653,12 @@ func (s *NewPublicVirtualInterface) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAddressFamily sets the AddressFamily field's value.
+func (s *NewPublicVirtualInterface) SetAddressFamily(v string) *NewPublicVirtualInterface {
+	s.AddressFamily = &v
+	return s
 }
 
 // SetAmazonAddress sets the AmazonAddress field's value.
@@ -4103,15 +4705,21 @@ func (s *NewPublicVirtualInterface) SetVlan(v int64) *NewPublicVirtualInterface 
 
 // A structure containing information about a public virtual interface that
 // will be provisioned on a connection.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/NewPublicVirtualInterfaceAllocation
 type NewPublicVirtualInterfaceAllocation struct {
 	_ struct{} `type:"structure"`
 
+	// Indicates the address family for the BGP peer.
+	//
+	//    * ipv4: IPv4 address family
+	//
+	//    * ipv6: IPv6 address family
+	AddressFamily *string `locationName:"addressFamily" type:"string" enum:"AddressFamily"`
+
 	// IP address assigned to the Amazon interface.
 	//
-	// Example: 192.168.1.1/30
-	//
-	// AmazonAddress is a required field
-	AmazonAddress *string `locationName:"amazonAddress" type:"string" required:"true"`
+	// Example: 192.168.1.1/30 or 2001:db8::1/125
+	AmazonAddress *string `locationName:"amazonAddress" type:"string"`
 
 	// Autonomous system (AS) number for Border Gateway Protocol (BGP) configuration.
 	//
@@ -4127,16 +4735,12 @@ type NewPublicVirtualInterfaceAllocation struct {
 
 	// IP address assigned to the customer interface.
 	//
-	// Example: 192.168.1.2/30
-	//
-	// CustomerAddress is a required field
-	CustomerAddress *string `locationName:"customerAddress" type:"string" required:"true"`
+	// Example: 192.168.1.2/30 or 2001:db8::2/125
+	CustomerAddress *string `locationName:"customerAddress" type:"string"`
 
 	// A list of routes to be advertised to the AWS network in this region (public
 	// virtual interface).
-	//
-	// RouteFilterPrefixes is a required field
-	RouteFilterPrefixes []*RouteFilterPrefix `locationName:"routeFilterPrefixes" type:"list" required:"true"`
+	RouteFilterPrefixes []*RouteFilterPrefix `locationName:"routeFilterPrefixes" type:"list"`
 
 	// The name of the virtual interface assigned by the customer.
 	//
@@ -4166,17 +4770,8 @@ func (s NewPublicVirtualInterfaceAllocation) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *NewPublicVirtualInterfaceAllocation) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "NewPublicVirtualInterfaceAllocation"}
-	if s.AmazonAddress == nil {
-		invalidParams.Add(request.NewErrParamRequired("AmazonAddress"))
-	}
 	if s.Asn == nil {
 		invalidParams.Add(request.NewErrParamRequired("Asn"))
-	}
-	if s.CustomerAddress == nil {
-		invalidParams.Add(request.NewErrParamRequired("CustomerAddress"))
-	}
-	if s.RouteFilterPrefixes == nil {
-		invalidParams.Add(request.NewErrParamRequired("RouteFilterPrefixes"))
 	}
 	if s.VirtualInterfaceName == nil {
 		invalidParams.Add(request.NewErrParamRequired("VirtualInterfaceName"))
@@ -4189,6 +4784,12 @@ func (s *NewPublicVirtualInterfaceAllocation) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAddressFamily sets the AddressFamily field's value.
+func (s *NewPublicVirtualInterfaceAllocation) SetAddressFamily(v string) *NewPublicVirtualInterfaceAllocation {
+	s.AddressFamily = &v
+	return s
 }
 
 // SetAmazonAddress sets the AmazonAddress field's value.
@@ -4234,6 +4835,7 @@ func (s *NewPublicVirtualInterfaceAllocation) SetVlan(v int64) *NewPublicVirtual
 }
 
 // The tags associated with a Direct Connect resource.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/ResourceTag
 type ResourceTag struct {
 	_ struct{} `type:"structure"`
 
@@ -4268,13 +4870,16 @@ func (s *ResourceTag) SetTags(v []*Tag) *ResourceTag {
 
 // A route filter prefix that the customer can advertise through Border Gateway
 // Protocol (BGP) over a public virtual interface.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/RouteFilterPrefix
 type RouteFilterPrefix struct {
 	_ struct{} `type:"structure"`
 
 	// CIDR notation for the advertised route. Multiple routes are separated by
 	// commas.
 	//
-	// Example: 10.10.10.0/24,10.10.11.0/24
+	// IPv6 CIDRs must be at least a /64 or shorter
+	//
+	// Example: 10.10.10.0/24,10.10.11.0/24,2001:db8::/64
 	Cidr *string `locationName:"cidr" type:"string"`
 }
 
@@ -4295,6 +4900,7 @@ func (s *RouteFilterPrefix) SetCidr(v string) *RouteFilterPrefix {
 }
 
 // Information about a tag.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/Tag
 type Tag struct {
 	_ struct{} `type:"structure"`
 
@@ -4346,6 +4952,7 @@ func (s *Tag) SetValue(v string) *Tag {
 }
 
 // Container for the parameters to the TagResource operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/TagResourceRequest
 type TagResourceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4414,6 +5021,7 @@ func (s *TagResourceInput) SetTags(v []*Tag) *TagResourceInput {
 }
 
 // The response received when TagResource is called.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/TagResourceResponse
 type TagResourceOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4429,6 +5037,7 @@ func (s TagResourceOutput) GoString() string {
 }
 
 // Container for the parameters to the UntagResource operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/UntagResourceRequest
 type UntagResourceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4482,6 +5091,7 @@ func (s *UntagResourceInput) SetTagKeys(v []*string) *UntagResourceInput {
 }
 
 // The response received when UntagResource is called.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/UntagResourceResponse
 type UntagResourceOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4501,6 +5111,7 @@ func (s UntagResourceOutput) GoString() string {
 //
 // Virtual private gateways can be managed using the Amazon Virtual Private
 // Cloud (Amazon VPC) console or the Amazon EC2 CreateVpnGateway action (http://docs.aws.amazon.com/AWSEC2/latest/APIReference/ApiReference-query-CreateVpnGateway.html).
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/VirtualGateway
 type VirtualGateway struct {
 	_ struct{} `type:"structure"`
 
@@ -4547,12 +5158,20 @@ func (s *VirtualGateway) SetVirtualGatewayState(v string) *VirtualGateway {
 
 // A virtual interface (VLAN) transmits the traffic between the AWS Direct Connect
 // location and the customer.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/directconnect-2012-10-25/VirtualInterface
 type VirtualInterface struct {
 	_ struct{} `type:"structure"`
 
+	// Indicates the address family for the BGP peer.
+	//
+	//    * ipv4: IPv4 address family
+	//
+	//    * ipv6: IPv6 address family
+	AddressFamily *string `locationName:"addressFamily" type:"string" enum:"AddressFamily"`
+
 	// IP address assigned to the Amazon interface.
 	//
-	// Example: 192.168.1.1/30
+	// Example: 192.168.1.1/30 or 2001:db8::1/125
 	AmazonAddress *string `locationName:"amazonAddress" type:"string"`
 
 	// Autonomous system (AS) number for Border Gateway Protocol (BGP) configuration.
@@ -4565,6 +5184,9 @@ type VirtualInterface struct {
 	// Example: asdf34example
 	AuthKey *string `locationName:"authKey" type:"string"`
 
+	// A list of the BGP peers configured on this virtual interface.
+	BgpPeers []*BGPPeer `locationName:"bgpPeers" type:"list"`
+
 	// ID of the connection.
 	//
 	// Example: dxcon-fg5678gh
@@ -4574,7 +5196,7 @@ type VirtualInterface struct {
 
 	// IP address assigned to the customer interface.
 	//
-	// Example: 192.168.1.2/30
+	// Example: 192.168.1.2/30 or 2001:db8::2/125
 	CustomerAddress *string `locationName:"customerAddress" type:"string"`
 
 	// Information for generating the customer router configuration.
@@ -4664,6 +5286,12 @@ func (s VirtualInterface) GoString() string {
 	return s.String()
 }
 
+// SetAddressFamily sets the AddressFamily field's value.
+func (s *VirtualInterface) SetAddressFamily(v string) *VirtualInterface {
+	s.AddressFamily = &v
+	return s
+}
+
 // SetAmazonAddress sets the AmazonAddress field's value.
 func (s *VirtualInterface) SetAmazonAddress(v string) *VirtualInterface {
 	s.AmazonAddress = &v
@@ -4679,6 +5307,12 @@ func (s *VirtualInterface) SetAsn(v int64) *VirtualInterface {
 // SetAuthKey sets the AuthKey field's value.
 func (s *VirtualInterface) SetAuthKey(v string) *VirtualInterface {
 	s.AuthKey = &v
+	return s
+}
+
+// SetBgpPeers sets the BgpPeers field's value.
+func (s *VirtualInterface) SetBgpPeers(v []*BGPPeer) *VirtualInterface {
+	s.BgpPeers = v
 	return s
 }
 
@@ -4753,6 +5387,63 @@ func (s *VirtualInterface) SetVlan(v int64) *VirtualInterface {
 	s.Vlan = &v
 	return s
 }
+
+// Indicates the address family for the BGP peer.
+//
+//    * ipv4: IPv4 address family
+//
+//    * ipv6: IPv6 address family
+const (
+	// AddressFamilyIpv4 is a AddressFamily enum value
+	AddressFamilyIpv4 = "ipv4"
+
+	// AddressFamilyIpv6 is a AddressFamily enum value
+	AddressFamilyIpv6 = "ipv6"
+)
+
+// The state of the BGP peer.
+//
+//    * Verifying: The BGP peering addresses or ASN require validation before
+//    the BGP peer can be created. This state only applies to BGP peers on a
+//    public virtual interface.
+//
+//    * Pending: The BGP peer has been created, and is in this state until it
+//    is ready to be established.
+//
+//    * Available: The BGP peer can be established.
+//
+//    * Deleting: The BGP peer is in the process of being deleted.
+//
+//    * Deleted: The BGP peer has been deleted and cannot be established.
+const (
+	// BGPPeerStateVerifying is a BGPPeerState enum value
+	BGPPeerStateVerifying = "verifying"
+
+	// BGPPeerStatePending is a BGPPeerState enum value
+	BGPPeerStatePending = "pending"
+
+	// BGPPeerStateAvailable is a BGPPeerState enum value
+	BGPPeerStateAvailable = "available"
+
+	// BGPPeerStateDeleting is a BGPPeerState enum value
+	BGPPeerStateDeleting = "deleting"
+
+	// BGPPeerStateDeleted is a BGPPeerState enum value
+	BGPPeerStateDeleted = "deleted"
+)
+
+// The Up/Down state of the BGP peer.
+//
+//    * Up: The BGP peer is established.
+//
+//    * Down: The BGP peer is down.
+const (
+	// BGPStatusUp is a BGPStatus enum value
+	BGPStatusUp = "up"
+
+	// BGPStatusDown is a BGPStatus enum value
+	BGPStatusDown = "down"
+)
 
 // State of the connection.
 //

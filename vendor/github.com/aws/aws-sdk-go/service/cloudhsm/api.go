@@ -36,6 +36,7 @@ const opAddTagsToResource = "AddTagsToResource"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/AddTagsToResource
 func (c *CloudHSM) AddTagsToResourceRequest(input *AddTagsToResourceInput) (req *request.Request, output *AddTagsToResourceOutput) {
 	op := &request.Operation{
 		Name:       opAddTagsToResource,
@@ -76,6 +77,7 @@ func (c *CloudHSM) AddTagsToResourceRequest(input *AddTagsToResourceInput) (req 
 //   * InvalidRequestException
 //   Indicates that one or more of the request parameters are not valid.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/AddTagsToResource
 func (c *CloudHSM) AddTagsToResource(input *AddTagsToResourceInput) (*AddTagsToResourceOutput, error) {
 	req, out := c.AddTagsToResourceRequest(input)
 	err := req.Send()
@@ -108,6 +110,7 @@ const opCreateHapg = "CreateHapg"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/CreateHapg
 func (c *CloudHSM) CreateHapgRequest(input *CreateHapgInput) (req *request.Request, output *CreateHapgOutput) {
 	op := &request.Operation{
 		Name:       opCreateHapg,
@@ -147,6 +150,7 @@ func (c *CloudHSM) CreateHapgRequest(input *CreateHapgInput) (req *request.Reque
 //   * InvalidRequestException
 //   Indicates that one or more of the request parameters are not valid.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/CreateHapg
 func (c *CloudHSM) CreateHapg(input *CreateHapgInput) (*CreateHapgOutput, error) {
 	req, out := c.CreateHapgRequest(input)
 	err := req.Send()
@@ -179,6 +183,7 @@ const opCreateHsm = "CreateHsm"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/CreateHsm
 func (c *CloudHSM) CreateHsmRequest(input *CreateHsmInput) (req *request.Request, output *CreateHsmOutput) {
 	op := &request.Operation{
 		Name:       opCreateHsm,
@@ -227,6 +232,7 @@ func (c *CloudHSM) CreateHsmRequest(input *CreateHsmInput) (req *request.Request
 //   * InvalidRequestException
 //   Indicates that one or more of the request parameters are not valid.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/CreateHsm
 func (c *CloudHSM) CreateHsm(input *CreateHsmInput) (*CreateHsmOutput, error) {
 	req, out := c.CreateHsmRequest(input)
 	err := req.Send()
@@ -259,6 +265,7 @@ const opCreateLunaClient = "CreateLunaClient"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/CreateLunaClient
 func (c *CloudHSM) CreateLunaClientRequest(input *CreateLunaClientInput) (req *request.Request, output *CreateLunaClientOutput) {
 	op := &request.Operation{
 		Name:       opCreateLunaClient,
@@ -297,6 +304,7 @@ func (c *CloudHSM) CreateLunaClientRequest(input *CreateLunaClientInput) (req *r
 //   * InvalidRequestException
 //   Indicates that one or more of the request parameters are not valid.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/CreateLunaClient
 func (c *CloudHSM) CreateLunaClient(input *CreateLunaClientInput) (*CreateLunaClientOutput, error) {
 	req, out := c.CreateLunaClientRequest(input)
 	err := req.Send()
@@ -329,6 +337,7 @@ const opDeleteHapg = "DeleteHapg"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DeleteHapg
 func (c *CloudHSM) DeleteHapgRequest(input *DeleteHapgInput) (req *request.Request, output *DeleteHapgOutput) {
 	op := &request.Operation{
 		Name:       opDeleteHapg,
@@ -367,6 +376,7 @@ func (c *CloudHSM) DeleteHapgRequest(input *DeleteHapgInput) (req *request.Reque
 //   * InvalidRequestException
 //   Indicates that one or more of the request parameters are not valid.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DeleteHapg
 func (c *CloudHSM) DeleteHapg(input *DeleteHapgInput) (*DeleteHapgOutput, error) {
 	req, out := c.DeleteHapgRequest(input)
 	err := req.Send()
@@ -399,6 +409,7 @@ const opDeleteHsm = "DeleteHsm"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DeleteHsm
 func (c *CloudHSM) DeleteHsmRequest(input *DeleteHsmInput) (req *request.Request, output *DeleteHsmOutput) {
 	op := &request.Operation{
 		Name:       opDeleteHsm,
@@ -438,6 +449,7 @@ func (c *CloudHSM) DeleteHsmRequest(input *DeleteHsmInput) (req *request.Request
 //   * InvalidRequestException
 //   Indicates that one or more of the request parameters are not valid.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DeleteHsm
 func (c *CloudHSM) DeleteHsm(input *DeleteHsmInput) (*DeleteHsmOutput, error) {
 	req, out := c.DeleteHsmRequest(input)
 	err := req.Send()
@@ -470,6 +482,7 @@ const opDeleteLunaClient = "DeleteLunaClient"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DeleteLunaClient
 func (c *CloudHSM) DeleteLunaClientRequest(input *DeleteLunaClientInput) (req *request.Request, output *DeleteLunaClientOutput) {
 	op := &request.Operation{
 		Name:       opDeleteLunaClient,
@@ -508,6 +521,7 @@ func (c *CloudHSM) DeleteLunaClientRequest(input *DeleteLunaClientInput) (req *r
 //   * InvalidRequestException
 //   Indicates that one or more of the request parameters are not valid.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DeleteLunaClient
 func (c *CloudHSM) DeleteLunaClient(input *DeleteLunaClientInput) (*DeleteLunaClientOutput, error) {
 	req, out := c.DeleteLunaClientRequest(input)
 	err := req.Send()
@@ -540,6 +554,7 @@ const opDescribeHapg = "DescribeHapg"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DescribeHapg
 func (c *CloudHSM) DescribeHapgRequest(input *DescribeHapgInput) (req *request.Request, output *DescribeHapgOutput) {
 	op := &request.Operation{
 		Name:       opDescribeHapg,
@@ -578,6 +593,7 @@ func (c *CloudHSM) DescribeHapgRequest(input *DescribeHapgInput) (req *request.R
 //   * InvalidRequestException
 //   Indicates that one or more of the request parameters are not valid.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DescribeHapg
 func (c *CloudHSM) DescribeHapg(input *DescribeHapgInput) (*DescribeHapgOutput, error) {
 	req, out := c.DescribeHapgRequest(input)
 	err := req.Send()
@@ -610,6 +626,7 @@ const opDescribeHsm = "DescribeHsm"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DescribeHsm
 func (c *CloudHSM) DescribeHsmRequest(input *DescribeHsmInput) (req *request.Request, output *DescribeHsmOutput) {
 	op := &request.Operation{
 		Name:       opDescribeHsm,
@@ -649,6 +666,7 @@ func (c *CloudHSM) DescribeHsmRequest(input *DescribeHsmInput) (req *request.Req
 //   * InvalidRequestException
 //   Indicates that one or more of the request parameters are not valid.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DescribeHsm
 func (c *CloudHSM) DescribeHsm(input *DescribeHsmInput) (*DescribeHsmOutput, error) {
 	req, out := c.DescribeHsmRequest(input)
 	err := req.Send()
@@ -681,6 +699,7 @@ const opDescribeLunaClient = "DescribeLunaClient"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DescribeLunaClient
 func (c *CloudHSM) DescribeLunaClientRequest(input *DescribeLunaClientInput) (req *request.Request, output *DescribeLunaClientOutput) {
 	op := &request.Operation{
 		Name:       opDescribeLunaClient,
@@ -719,6 +738,7 @@ func (c *CloudHSM) DescribeLunaClientRequest(input *DescribeLunaClientInput) (re
 //   * InvalidRequestException
 //   Indicates that one or more of the request parameters are not valid.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DescribeLunaClient
 func (c *CloudHSM) DescribeLunaClient(input *DescribeLunaClientInput) (*DescribeLunaClientOutput, error) {
 	req, out := c.DescribeLunaClientRequest(input)
 	err := req.Send()
@@ -751,6 +771,7 @@ const opGetConfig = "GetConfig"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/GetConfig
 func (c *CloudHSM) GetConfigRequest(input *GetConfigInput) (req *request.Request, output *GetConfigOutput) {
 	op := &request.Operation{
 		Name:       opGetConfig,
@@ -790,6 +811,7 @@ func (c *CloudHSM) GetConfigRequest(input *GetConfigInput) (req *request.Request
 //   * InvalidRequestException
 //   Indicates that one or more of the request parameters are not valid.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/GetConfig
 func (c *CloudHSM) GetConfig(input *GetConfigInput) (*GetConfigOutput, error) {
 	req, out := c.GetConfigRequest(input)
 	err := req.Send()
@@ -822,6 +844,7 @@ const opListAvailableZones = "ListAvailableZones"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListAvailableZones
 func (c *CloudHSM) ListAvailableZonesRequest(input *ListAvailableZonesInput) (req *request.Request, output *ListAvailableZonesOutput) {
 	op := &request.Operation{
 		Name:       opListAvailableZones,
@@ -860,6 +883,7 @@ func (c *CloudHSM) ListAvailableZonesRequest(input *ListAvailableZonesInput) (re
 //   * InvalidRequestException
 //   Indicates that one or more of the request parameters are not valid.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListAvailableZones
 func (c *CloudHSM) ListAvailableZones(input *ListAvailableZonesInput) (*ListAvailableZonesOutput, error) {
 	req, out := c.ListAvailableZonesRequest(input)
 	err := req.Send()
@@ -892,6 +916,7 @@ const opListHapgs = "ListHapgs"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListHapgs
 func (c *CloudHSM) ListHapgsRequest(input *ListHapgsInput) (req *request.Request, output *ListHapgsOutput) {
 	op := &request.Operation{
 		Name:       opListHapgs,
@@ -935,6 +960,7 @@ func (c *CloudHSM) ListHapgsRequest(input *ListHapgsInput) (req *request.Request
 //   * InvalidRequestException
 //   Indicates that one or more of the request parameters are not valid.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListHapgs
 func (c *CloudHSM) ListHapgs(input *ListHapgsInput) (*ListHapgsOutput, error) {
 	req, out := c.ListHapgsRequest(input)
 	err := req.Send()
@@ -967,6 +993,7 @@ const opListHsms = "ListHsms"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListHsms
 func (c *CloudHSM) ListHsmsRequest(input *ListHsmsInput) (req *request.Request, output *ListHsmsOutput) {
 	op := &request.Operation{
 		Name:       opListHsms,
@@ -1011,6 +1038,7 @@ func (c *CloudHSM) ListHsmsRequest(input *ListHsmsInput) (req *request.Request, 
 //   * InvalidRequestException
 //   Indicates that one or more of the request parameters are not valid.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListHsms
 func (c *CloudHSM) ListHsms(input *ListHsmsInput) (*ListHsmsOutput, error) {
 	req, out := c.ListHsmsRequest(input)
 	err := req.Send()
@@ -1043,6 +1071,7 @@ const opListLunaClients = "ListLunaClients"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListLunaClients
 func (c *CloudHSM) ListLunaClientsRequest(input *ListLunaClientsInput) (req *request.Request, output *ListLunaClientsOutput) {
 	op := &request.Operation{
 		Name:       opListLunaClients,
@@ -1086,6 +1115,7 @@ func (c *CloudHSM) ListLunaClientsRequest(input *ListLunaClientsInput) (req *req
 //   * InvalidRequestException
 //   Indicates that one or more of the request parameters are not valid.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListLunaClients
 func (c *CloudHSM) ListLunaClients(input *ListLunaClientsInput) (*ListLunaClientsOutput, error) {
 	req, out := c.ListLunaClientsRequest(input)
 	err := req.Send()
@@ -1118,6 +1148,7 @@ const opListTagsForResource = "ListTagsForResource"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListTagsForResource
 func (c *CloudHSM) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
 	op := &request.Operation{
 		Name:       opListTagsForResource,
@@ -1156,6 +1187,7 @@ func (c *CloudHSM) ListTagsForResourceRequest(input *ListTagsForResourceInput) (
 //   * InvalidRequestException
 //   Indicates that one or more of the request parameters are not valid.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListTagsForResource
 func (c *CloudHSM) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
 	req, out := c.ListTagsForResourceRequest(input)
 	err := req.Send()
@@ -1188,6 +1220,7 @@ const opModifyHapg = "ModifyHapg"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ModifyHapg
 func (c *CloudHSM) ModifyHapgRequest(input *ModifyHapgInput) (req *request.Request, output *ModifyHapgOutput) {
 	op := &request.Operation{
 		Name:       opModifyHapg,
@@ -1226,6 +1259,7 @@ func (c *CloudHSM) ModifyHapgRequest(input *ModifyHapgInput) (req *request.Reque
 //   * InvalidRequestException
 //   Indicates that one or more of the request parameters are not valid.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ModifyHapg
 func (c *CloudHSM) ModifyHapg(input *ModifyHapgInput) (*ModifyHapgOutput, error) {
 	req, out := c.ModifyHapgRequest(input)
 	err := req.Send()
@@ -1258,6 +1292,7 @@ const opModifyHsm = "ModifyHsm"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ModifyHsm
 func (c *CloudHSM) ModifyHsmRequest(input *ModifyHsmInput) (req *request.Request, output *ModifyHsmOutput) {
 	op := &request.Operation{
 		Name:       opModifyHsm,
@@ -1302,6 +1337,7 @@ func (c *CloudHSM) ModifyHsmRequest(input *ModifyHsmInput) (req *request.Request
 //   * InvalidRequestException
 //   Indicates that one or more of the request parameters are not valid.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ModifyHsm
 func (c *CloudHSM) ModifyHsm(input *ModifyHsmInput) (*ModifyHsmOutput, error) {
 	req, out := c.ModifyHsmRequest(input)
 	err := req.Send()
@@ -1334,6 +1370,7 @@ const opModifyLunaClient = "ModifyLunaClient"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ModifyLunaClient
 func (c *CloudHSM) ModifyLunaClientRequest(input *ModifyLunaClientInput) (req *request.Request, output *ModifyLunaClientOutput) {
 	op := &request.Operation{
 		Name:       opModifyLunaClient,
@@ -1369,6 +1406,7 @@ func (c *CloudHSM) ModifyLunaClientRequest(input *ModifyLunaClientInput) (req *r
 //   * CloudHsmServiceException
 //   Indicates that an exception occurred in the AWS CloudHSM service.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ModifyLunaClient
 func (c *CloudHSM) ModifyLunaClient(input *ModifyLunaClientInput) (*ModifyLunaClientOutput, error) {
 	req, out := c.ModifyLunaClientRequest(input)
 	err := req.Send()
@@ -1401,6 +1439,7 @@ const opRemoveTagsFromResource = "RemoveTagsFromResource"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/RemoveTagsFromResource
 func (c *CloudHSM) RemoveTagsFromResourceRequest(input *RemoveTagsFromResourceInput) (req *request.Request, output *RemoveTagsFromResourceOutput) {
 	op := &request.Operation{
 		Name:       opRemoveTagsFromResource,
@@ -1442,12 +1481,14 @@ func (c *CloudHSM) RemoveTagsFromResourceRequest(input *RemoveTagsFromResourceIn
 //   * InvalidRequestException
 //   Indicates that one or more of the request parameters are not valid.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/RemoveTagsFromResource
 func (c *CloudHSM) RemoveTagsFromResource(input *RemoveTagsFromResourceInput) (*RemoveTagsFromResourceOutput, error) {
 	req, out := c.RemoveTagsFromResourceRequest(input)
 	err := req.Send()
 	return out, err
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/AddTagsToResourceRequest
 type AddTagsToResourceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1510,6 +1551,7 @@ func (s *AddTagsToResourceInput) SetTagList(v []*Tag) *AddTagsToResourceInput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/AddTagsToResourceResponse
 type AddTagsToResourceOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1536,6 +1578,7 @@ func (s *AddTagsToResourceOutput) SetStatus(v string) *AddTagsToResourceOutput {
 }
 
 // Contains the inputs for the CreateHapgRequest action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/CreateHapgRequest
 type CreateHapgInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1575,6 +1618,7 @@ func (s *CreateHapgInput) SetLabel(v string) *CreateHapgInput {
 }
 
 // Contains the output of the CreateHAPartitionGroup action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/CreateHapgResponse
 type CreateHapgOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1599,6 +1643,7 @@ func (s *CreateHapgOutput) SetHapgArn(v string) *CreateHapgOutput {
 }
 
 // Contains the inputs for the CreateHsm operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/CreateHsmRequest
 type CreateHsmInput struct {
 	_ struct{} `locationName:"CreateHsmRequest" type:"structure"`
 
@@ -1725,6 +1770,7 @@ func (s *CreateHsmInput) SetSyslogIp(v string) *CreateHsmInput {
 }
 
 // Contains the output of the CreateHsm operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/CreateHsmResponse
 type CreateHsmOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1749,6 +1795,7 @@ func (s *CreateHsmOutput) SetHsmArn(v string) *CreateHsmOutput {
 }
 
 // Contains the inputs for the CreateLunaClient action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/CreateLunaClientRequest
 type CreateLunaClientInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1801,6 +1848,7 @@ func (s *CreateLunaClientInput) SetLabel(v string) *CreateLunaClientInput {
 }
 
 // Contains the output of the CreateLunaClient action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/CreateLunaClientResponse
 type CreateLunaClientOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1825,6 +1873,7 @@ func (s *CreateLunaClientOutput) SetClientArn(v string) *CreateLunaClientOutput 
 }
 
 // Contains the inputs for the DeleteHapg action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DeleteHapgRequest
 type DeleteHapgInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1864,6 +1913,7 @@ func (s *DeleteHapgInput) SetHapgArn(v string) *DeleteHapgInput {
 }
 
 // Contains the output of the DeleteHapg action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DeleteHapgResponse
 type DeleteHapgOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1890,6 +1940,7 @@ func (s *DeleteHapgOutput) SetStatus(v string) *DeleteHapgOutput {
 }
 
 // Contains the inputs for the DeleteHsm operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DeleteHsmRequest
 type DeleteHsmInput struct {
 	_ struct{} `locationName:"DeleteHsmRequest" type:"structure"`
 
@@ -1929,6 +1980,7 @@ func (s *DeleteHsmInput) SetHsmArn(v string) *DeleteHsmInput {
 }
 
 // Contains the output of the DeleteHsm operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DeleteHsmResponse
 type DeleteHsmOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1954,6 +2006,7 @@ func (s *DeleteHsmOutput) SetStatus(v string) *DeleteHsmOutput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DeleteLunaClientRequest
 type DeleteLunaClientInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1992,6 +2045,7 @@ func (s *DeleteLunaClientInput) SetClientArn(v string) *DeleteLunaClientInput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DeleteLunaClientResponse
 type DeleteLunaClientOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2018,6 +2072,7 @@ func (s *DeleteLunaClientOutput) SetStatus(v string) *DeleteLunaClientOutput {
 }
 
 // Contains the inputs for the DescribeHapg action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DescribeHapgRequest
 type DescribeHapgInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2057,6 +2112,7 @@ func (s *DescribeHapgInput) SetHapgArn(v string) *DescribeHapgInput {
 }
 
 // Contains the output of the DescribeHapg action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DescribeHapgResponse
 type DescribeHapgOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2154,6 +2210,7 @@ func (s *DescribeHapgOutput) SetState(v string) *DescribeHapgOutput {
 }
 
 // Contains the inputs for the DescribeHsm operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DescribeHsmRequest
 type DescribeHsmInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2189,6 +2246,7 @@ func (s *DescribeHsmInput) SetHsmSerialNumber(v string) *DescribeHsmInput {
 }
 
 // Contains the output of the DescribeHsm operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DescribeHsmResponse
 type DescribeHsmOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2395,6 +2453,7 @@ func (s *DescribeHsmOutput) SetVpcId(v string) *DescribeHsmOutput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DescribeLunaClientRequest
 type DescribeLunaClientInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2427,6 +2486,7 @@ func (s *DescribeLunaClientInput) SetClientArn(v string) *DescribeLunaClientInpu
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DescribeLunaClientResponse
 type DescribeLunaClientOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2486,6 +2546,7 @@ func (s *DescribeLunaClientOutput) SetLastModifiedTimestamp(v string) *DescribeL
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/GetConfigRequest
 type GetConfigInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2553,6 +2614,7 @@ func (s *GetConfigInput) SetHapgList(v []*string) *GetConfigInput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/GetConfigResponse
 type GetConfigOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2595,6 +2657,7 @@ func (s *GetConfigOutput) SetConfigType(v string) *GetConfigOutput {
 }
 
 // Contains the inputs for the ListAvailableZones action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListAvailableZonesRequest
 type ListAvailableZonesInput struct {
 	_ struct{} `type:"structure"`
 }
@@ -2609,6 +2672,7 @@ func (s ListAvailableZonesInput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListAvailableZonesResponse
 type ListAvailableZonesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2632,6 +2696,7 @@ func (s *ListAvailableZonesOutput) SetAZList(v []*string) *ListAvailableZonesOut
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListHapgsRequest
 type ListHapgsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2656,6 +2721,7 @@ func (s *ListHapgsInput) SetNextToken(v string) *ListHapgsInput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListHapgsResponse
 type ListHapgsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2691,6 +2757,7 @@ func (s *ListHapgsOutput) SetNextToken(v string) *ListHapgsOutput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListHsmsRequest
 type ListHsmsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2716,6 +2783,7 @@ func (s *ListHsmsInput) SetNextToken(v string) *ListHsmsInput {
 }
 
 // Contains the output of the ListHsms operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListHsmsResponse
 type ListHsmsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2749,6 +2817,7 @@ func (s *ListHsmsOutput) SetNextToken(v string) *ListHsmsOutput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListLunaClientsRequest
 type ListLunaClientsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2773,6 +2842,7 @@ func (s *ListLunaClientsInput) SetNextToken(v string) *ListLunaClientsInput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListLunaClientsResponse
 type ListLunaClientsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2808,6 +2878,7 @@ func (s *ListLunaClientsOutput) SetNextToken(v string) *ListLunaClientsOutput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListTagsForResourceRequest
 type ListTagsForResourceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2846,6 +2917,7 @@ func (s *ListTagsForResourceInput) SetResourceArn(v string) *ListTagsForResource
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListTagsForResourceResponse
 type ListTagsForResourceOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2871,6 +2943,7 @@ func (s *ListTagsForResourceOutput) SetTagList(v []*Tag) *ListTagsForResourceOut
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ModifyHapgRequest
 type ModifyHapgInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2928,6 +3001,7 @@ func (s *ModifyHapgInput) SetPartitionSerialList(v []*string) *ModifyHapgInput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ModifyHapgResponse
 type ModifyHapgOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2952,6 +3026,7 @@ func (s *ModifyHapgOutput) SetHapgArn(v string) *ModifyHapgOutput {
 }
 
 // Contains the inputs for the ModifyHsm operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ModifyHsmRequest
 type ModifyHsmInput struct {
 	_ struct{} `locationName:"ModifyHsmRequest" type:"structure"`
 
@@ -3042,6 +3117,7 @@ func (s *ModifyHsmInput) SetSyslogIp(v string) *ModifyHsmInput {
 }
 
 // Contains the output of the ModifyHsm operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ModifyHsmResponse
 type ModifyHsmOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3065,6 +3141,7 @@ func (s *ModifyHsmOutput) SetHsmArn(v string) *ModifyHsmOutput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ModifyLunaClientRequest
 type ModifyLunaClientInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3120,6 +3197,7 @@ func (s *ModifyLunaClientInput) SetClientArn(v string) *ModifyLunaClientInput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ModifyLunaClientResponse
 type ModifyLunaClientOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3143,6 +3221,7 @@ func (s *ModifyLunaClientOutput) SetClientArn(v string) *ModifyLunaClientOutput 
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/RemoveTagsFromResourceRequest
 type RemoveTagsFromResourceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3198,6 +3277,7 @@ func (s *RemoveTagsFromResourceInput) SetTagKeyList(v []*string) *RemoveTagsFrom
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/RemoveTagsFromResourceResponse
 type RemoveTagsFromResourceOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3225,6 +3305,7 @@ func (s *RemoveTagsFromResourceOutput) SetStatus(v string) *RemoveTagsFromResour
 
 // A key-value pair that identifies or specifies metadata about an AWS CloudHSM
 // resource.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/Tag
 type Tag struct {
 	_ struct{} `type:"structure"`
 

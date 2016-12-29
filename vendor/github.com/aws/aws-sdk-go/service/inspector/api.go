@@ -39,6 +39,7 @@ const opAddAttributesToFindings = "AddAttributesToFindings"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/AddAttributesToFindings
 func (c *Inspector) AddAttributesToFindingsRequest(input *AddAttributesToFindingsInput) (req *request.Request, output *AddAttributesToFindingsOutput) {
 	op := &request.Operation{
 		Name:       opAddAttributesToFindings,
@@ -83,6 +84,7 @@ func (c *Inspector) AddAttributesToFindingsRequest(input *AddAttributesToFinding
 //   The request was rejected because it referenced an entity that does not exist.
 //   The error code describes the entity.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/AddAttributesToFindings
 func (c *Inspector) AddAttributesToFindings(input *AddAttributesToFindingsInput) (*AddAttributesToFindingsOutput, error) {
 	req, out := c.AddAttributesToFindingsRequest(input)
 	err := req.Send()
@@ -115,6 +117,7 @@ const opCreateAssessmentTarget = "CreateAssessmentTarget"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/CreateAssessmentTarget
 func (c *Inspector) CreateAssessmentTargetRequest(input *CreateAssessmentTargetInput) (req *request.Request, output *CreateAssessmentTargetOutput) {
 	op := &request.Operation{
 		Name:       opCreateAssessmentTarget,
@@ -165,6 +168,7 @@ func (c *Inspector) CreateAssessmentTargetRequest(input *CreateAssessmentTargetI
 //   The request was rejected because it referenced an entity that does not exist.
 //   The error code describes the entity.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/CreateAssessmentTarget
 func (c *Inspector) CreateAssessmentTarget(input *CreateAssessmentTargetInput) (*CreateAssessmentTargetOutput, error) {
 	req, out := c.CreateAssessmentTargetRequest(input)
 	err := req.Send()
@@ -197,6 +201,7 @@ const opCreateAssessmentTemplate = "CreateAssessmentTemplate"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/CreateAssessmentTemplate
 func (c *Inspector) CreateAssessmentTemplateRequest(input *CreateAssessmentTemplateInput) (req *request.Request, output *CreateAssessmentTemplateOutput) {
 	op := &request.Operation{
 		Name:       opCreateAssessmentTemplate,
@@ -245,6 +250,7 @@ func (c *Inspector) CreateAssessmentTemplateRequest(input *CreateAssessmentTempl
 //   The request was rejected because it referenced an entity that does not exist.
 //   The error code describes the entity.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/CreateAssessmentTemplate
 func (c *Inspector) CreateAssessmentTemplate(input *CreateAssessmentTemplateInput) (*CreateAssessmentTemplateOutput, error) {
 	req, out := c.CreateAssessmentTemplateRequest(input)
 	err := req.Send()
@@ -277,6 +283,7 @@ const opCreateResourceGroup = "CreateResourceGroup"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/CreateResourceGroup
 func (c *Inspector) CreateResourceGroupRequest(input *CreateResourceGroupInput) (req *request.Request, output *CreateResourceGroupOutput) {
 	op := &request.Operation{
 		Name:       opCreateResourceGroup,
@@ -323,6 +330,7 @@ func (c *Inspector) CreateResourceGroupRequest(input *CreateResourceGroupInput) 
 //   * AccessDeniedException
 //   You do not have required permissions to access the requested resource.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/CreateResourceGroup
 func (c *Inspector) CreateResourceGroup(input *CreateResourceGroupInput) (*CreateResourceGroupOutput, error) {
 	req, out := c.CreateResourceGroupRequest(input)
 	err := req.Send()
@@ -355,6 +363,7 @@ const opDeleteAssessmentRun = "DeleteAssessmentRun"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DeleteAssessmentRun
 func (c *Inspector) DeleteAssessmentRunRequest(input *DeleteAssessmentRunInput) (req *request.Request, output *DeleteAssessmentRunOutput) {
 	op := &request.Operation{
 		Name:       opDeleteAssessmentRun,
@@ -405,6 +414,7 @@ func (c *Inspector) DeleteAssessmentRunRequest(input *DeleteAssessmentRunInput) 
 //   The request was rejected because it referenced an entity that does not exist.
 //   The error code describes the entity.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DeleteAssessmentRun
 func (c *Inspector) DeleteAssessmentRun(input *DeleteAssessmentRunInput) (*DeleteAssessmentRunOutput, error) {
 	req, out := c.DeleteAssessmentRunRequest(input)
 	err := req.Send()
@@ -437,6 +447,7 @@ const opDeleteAssessmentTarget = "DeleteAssessmentTarget"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DeleteAssessmentTarget
 func (c *Inspector) DeleteAssessmentTargetRequest(input *DeleteAssessmentTargetInput) (req *request.Request, output *DeleteAssessmentTargetOutput) {
 	op := &request.Operation{
 		Name:       opDeleteAssessmentTarget,
@@ -487,6 +498,7 @@ func (c *Inspector) DeleteAssessmentTargetRequest(input *DeleteAssessmentTargetI
 //   The request was rejected because it referenced an entity that does not exist.
 //   The error code describes the entity.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DeleteAssessmentTarget
 func (c *Inspector) DeleteAssessmentTarget(input *DeleteAssessmentTargetInput) (*DeleteAssessmentTargetOutput, error) {
 	req, out := c.DeleteAssessmentTargetRequest(input)
 	err := req.Send()
@@ -519,6 +531,7 @@ const opDeleteAssessmentTemplate = "DeleteAssessmentTemplate"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DeleteAssessmentTemplate
 func (c *Inspector) DeleteAssessmentTemplateRequest(input *DeleteAssessmentTemplateInput) (req *request.Request, output *DeleteAssessmentTemplateOutput) {
 	op := &request.Operation{
 		Name:       opDeleteAssessmentTemplate,
@@ -569,6 +582,7 @@ func (c *Inspector) DeleteAssessmentTemplateRequest(input *DeleteAssessmentTempl
 //   The request was rejected because it referenced an entity that does not exist.
 //   The error code describes the entity.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DeleteAssessmentTemplate
 func (c *Inspector) DeleteAssessmentTemplate(input *DeleteAssessmentTemplateInput) (*DeleteAssessmentTemplateOutput, error) {
 	req, out := c.DeleteAssessmentTemplateRequest(input)
 	err := req.Send()
@@ -601,6 +615,7 @@ const opDescribeAssessmentRuns = "DescribeAssessmentRuns"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeAssessmentRuns
 func (c *Inspector) DescribeAssessmentRunsRequest(input *DescribeAssessmentRunsInput) (req *request.Request, output *DescribeAssessmentRunsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeAssessmentRuns,
@@ -638,6 +653,7 @@ func (c *Inspector) DescribeAssessmentRunsRequest(input *DescribeAssessmentRunsI
 //   The request was rejected because an invalid or out-of-range value was supplied
 //   for an input parameter.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeAssessmentRuns
 func (c *Inspector) DescribeAssessmentRuns(input *DescribeAssessmentRunsInput) (*DescribeAssessmentRunsOutput, error) {
 	req, out := c.DescribeAssessmentRunsRequest(input)
 	err := req.Send()
@@ -670,6 +686,7 @@ const opDescribeAssessmentTargets = "DescribeAssessmentTargets"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeAssessmentTargets
 func (c *Inspector) DescribeAssessmentTargetsRequest(input *DescribeAssessmentTargetsInput) (req *request.Request, output *DescribeAssessmentTargetsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeAssessmentTargets,
@@ -707,6 +724,7 @@ func (c *Inspector) DescribeAssessmentTargetsRequest(input *DescribeAssessmentTa
 //   The request was rejected because an invalid or out-of-range value was supplied
 //   for an input parameter.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeAssessmentTargets
 func (c *Inspector) DescribeAssessmentTargets(input *DescribeAssessmentTargetsInput) (*DescribeAssessmentTargetsOutput, error) {
 	req, out := c.DescribeAssessmentTargetsRequest(input)
 	err := req.Send()
@@ -739,6 +757,7 @@ const opDescribeAssessmentTemplates = "DescribeAssessmentTemplates"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeAssessmentTemplates
 func (c *Inspector) DescribeAssessmentTemplatesRequest(input *DescribeAssessmentTemplatesInput) (req *request.Request, output *DescribeAssessmentTemplatesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeAssessmentTemplates,
@@ -776,6 +795,7 @@ func (c *Inspector) DescribeAssessmentTemplatesRequest(input *DescribeAssessment
 //   The request was rejected because an invalid or out-of-range value was supplied
 //   for an input parameter.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeAssessmentTemplates
 func (c *Inspector) DescribeAssessmentTemplates(input *DescribeAssessmentTemplatesInput) (*DescribeAssessmentTemplatesOutput, error) {
 	req, out := c.DescribeAssessmentTemplatesRequest(input)
 	err := req.Send()
@@ -808,6 +828,7 @@ const opDescribeCrossAccountAccessRole = "DescribeCrossAccountAccessRole"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeCrossAccountAccessRole
 func (c *Inspector) DescribeCrossAccountAccessRoleRequest(input *DescribeCrossAccountAccessRoleInput) (req *request.Request, output *DescribeCrossAccountAccessRoleOutput) {
 	op := &request.Operation{
 		Name:       opDescribeCrossAccountAccessRole,
@@ -840,6 +861,7 @@ func (c *Inspector) DescribeCrossAccountAccessRoleRequest(input *DescribeCrossAc
 //   * InternalException
 //   Internal server error.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeCrossAccountAccessRole
 func (c *Inspector) DescribeCrossAccountAccessRole(input *DescribeCrossAccountAccessRoleInput) (*DescribeCrossAccountAccessRoleOutput, error) {
 	req, out := c.DescribeCrossAccountAccessRoleRequest(input)
 	err := req.Send()
@@ -872,6 +894,7 @@ const opDescribeFindings = "DescribeFindings"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeFindings
 func (c *Inspector) DescribeFindingsRequest(input *DescribeFindingsInput) (req *request.Request, output *DescribeFindingsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeFindings,
@@ -908,6 +931,7 @@ func (c *Inspector) DescribeFindingsRequest(input *DescribeFindingsInput) (req *
 //   The request was rejected because an invalid or out-of-range value was supplied
 //   for an input parameter.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeFindings
 func (c *Inspector) DescribeFindings(input *DescribeFindingsInput) (*DescribeFindingsOutput, error) {
 	req, out := c.DescribeFindingsRequest(input)
 	err := req.Send()
@@ -940,6 +964,7 @@ const opDescribeResourceGroups = "DescribeResourceGroups"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeResourceGroups
 func (c *Inspector) DescribeResourceGroupsRequest(input *DescribeResourceGroupsInput) (req *request.Request, output *DescribeResourceGroupsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeResourceGroups,
@@ -977,6 +1002,7 @@ func (c *Inspector) DescribeResourceGroupsRequest(input *DescribeResourceGroupsI
 //   The request was rejected because an invalid or out-of-range value was supplied
 //   for an input parameter.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeResourceGroups
 func (c *Inspector) DescribeResourceGroups(input *DescribeResourceGroupsInput) (*DescribeResourceGroupsOutput, error) {
 	req, out := c.DescribeResourceGroupsRequest(input)
 	err := req.Send()
@@ -1009,6 +1035,7 @@ const opDescribeRulesPackages = "DescribeRulesPackages"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeRulesPackages
 func (c *Inspector) DescribeRulesPackagesRequest(input *DescribeRulesPackagesInput) (req *request.Request, output *DescribeRulesPackagesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeRulesPackages,
@@ -1046,6 +1073,7 @@ func (c *Inspector) DescribeRulesPackagesRequest(input *DescribeRulesPackagesInp
 //   The request was rejected because an invalid or out-of-range value was supplied
 //   for an input parameter.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeRulesPackages
 func (c *Inspector) DescribeRulesPackages(input *DescribeRulesPackagesInput) (*DescribeRulesPackagesOutput, error) {
 	req, out := c.DescribeRulesPackagesRequest(input)
 	err := req.Send()
@@ -1078,6 +1106,7 @@ const opGetTelemetryMetadata = "GetTelemetryMetadata"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/GetTelemetryMetadata
 func (c *Inspector) GetTelemetryMetadataRequest(input *GetTelemetryMetadataInput) (req *request.Request, output *GetTelemetryMetadataOutput) {
 	op := &request.Operation{
 		Name:       opGetTelemetryMetadata,
@@ -1122,6 +1151,7 @@ func (c *Inspector) GetTelemetryMetadataRequest(input *GetTelemetryMetadataInput
 //   The request was rejected because it referenced an entity that does not exist.
 //   The error code describes the entity.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/GetTelemetryMetadata
 func (c *Inspector) GetTelemetryMetadata(input *GetTelemetryMetadataInput) (*GetTelemetryMetadataOutput, error) {
 	req, out := c.GetTelemetryMetadataRequest(input)
 	err := req.Send()
@@ -1154,6 +1184,7 @@ const opListAssessmentRunAgents = "ListAssessmentRunAgents"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListAssessmentRunAgents
 func (c *Inspector) ListAssessmentRunAgentsRequest(input *ListAssessmentRunAgentsInput) (req *request.Request, output *ListAssessmentRunAgentsOutput) {
 	op := &request.Operation{
 		Name:       opListAssessmentRunAgents,
@@ -1198,6 +1229,7 @@ func (c *Inspector) ListAssessmentRunAgentsRequest(input *ListAssessmentRunAgent
 //   The request was rejected because it referenced an entity that does not exist.
 //   The error code describes the entity.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListAssessmentRunAgents
 func (c *Inspector) ListAssessmentRunAgents(input *ListAssessmentRunAgentsInput) (*ListAssessmentRunAgentsOutput, error) {
 	req, out := c.ListAssessmentRunAgentsRequest(input)
 	err := req.Send()
@@ -1230,6 +1262,7 @@ const opListAssessmentRuns = "ListAssessmentRuns"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListAssessmentRuns
 func (c *Inspector) ListAssessmentRunsRequest(input *ListAssessmentRunsInput) (req *request.Request, output *ListAssessmentRunsOutput) {
 	op := &request.Operation{
 		Name:       opListAssessmentRuns,
@@ -1274,6 +1307,7 @@ func (c *Inspector) ListAssessmentRunsRequest(input *ListAssessmentRunsInput) (r
 //   The request was rejected because it referenced an entity that does not exist.
 //   The error code describes the entity.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListAssessmentRuns
 func (c *Inspector) ListAssessmentRuns(input *ListAssessmentRunsInput) (*ListAssessmentRunsOutput, error) {
 	req, out := c.ListAssessmentRunsRequest(input)
 	err := req.Send()
@@ -1306,6 +1340,7 @@ const opListAssessmentTargets = "ListAssessmentTargets"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListAssessmentTargets
 func (c *Inspector) ListAssessmentTargetsRequest(input *ListAssessmentTargetsInput) (req *request.Request, output *ListAssessmentTargetsOutput) {
 	op := &request.Operation{
 		Name:       opListAssessmentTargets,
@@ -1347,6 +1382,7 @@ func (c *Inspector) ListAssessmentTargetsRequest(input *ListAssessmentTargetsInp
 //   * AccessDeniedException
 //   You do not have required permissions to access the requested resource.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListAssessmentTargets
 func (c *Inspector) ListAssessmentTargets(input *ListAssessmentTargetsInput) (*ListAssessmentTargetsOutput, error) {
 	req, out := c.ListAssessmentTargetsRequest(input)
 	err := req.Send()
@@ -1379,6 +1415,7 @@ const opListAssessmentTemplates = "ListAssessmentTemplates"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListAssessmentTemplates
 func (c *Inspector) ListAssessmentTemplatesRequest(input *ListAssessmentTemplatesInput) (req *request.Request, output *ListAssessmentTemplatesOutput) {
 	op := &request.Operation{
 		Name:       opListAssessmentTemplates,
@@ -1423,6 +1460,7 @@ func (c *Inspector) ListAssessmentTemplatesRequest(input *ListAssessmentTemplate
 //   The request was rejected because it referenced an entity that does not exist.
 //   The error code describes the entity.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListAssessmentTemplates
 func (c *Inspector) ListAssessmentTemplates(input *ListAssessmentTemplatesInput) (*ListAssessmentTemplatesOutput, error) {
 	req, out := c.ListAssessmentTemplatesRequest(input)
 	err := req.Send()
@@ -1455,6 +1493,7 @@ const opListEventSubscriptions = "ListEventSubscriptions"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListEventSubscriptions
 func (c *Inspector) ListEventSubscriptionsRequest(input *ListEventSubscriptionsInput) (req *request.Request, output *ListEventSubscriptionsOutput) {
 	op := &request.Operation{
 		Name:       opListEventSubscriptions,
@@ -1500,6 +1539,7 @@ func (c *Inspector) ListEventSubscriptionsRequest(input *ListEventSubscriptionsI
 //   The request was rejected because it referenced an entity that does not exist.
 //   The error code describes the entity.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListEventSubscriptions
 func (c *Inspector) ListEventSubscriptions(input *ListEventSubscriptionsInput) (*ListEventSubscriptionsOutput, error) {
 	req, out := c.ListEventSubscriptionsRequest(input)
 	err := req.Send()
@@ -1532,6 +1572,7 @@ const opListFindings = "ListFindings"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListFindings
 func (c *Inspector) ListFindingsRequest(input *ListFindingsInput) (req *request.Request, output *ListFindingsOutput) {
 	op := &request.Operation{
 		Name:       opListFindings,
@@ -1576,6 +1617,7 @@ func (c *Inspector) ListFindingsRequest(input *ListFindingsInput) (req *request.
 //   The request was rejected because it referenced an entity that does not exist.
 //   The error code describes the entity.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListFindings
 func (c *Inspector) ListFindings(input *ListFindingsInput) (*ListFindingsOutput, error) {
 	req, out := c.ListFindingsRequest(input)
 	err := req.Send()
@@ -1608,6 +1650,7 @@ const opListRulesPackages = "ListRulesPackages"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListRulesPackages
 func (c *Inspector) ListRulesPackagesRequest(input *ListRulesPackagesInput) (req *request.Request, output *ListRulesPackagesOutput) {
 	op := &request.Operation{
 		Name:       opListRulesPackages,
@@ -1647,6 +1690,7 @@ func (c *Inspector) ListRulesPackagesRequest(input *ListRulesPackagesInput) (req
 //   * AccessDeniedException
 //   You do not have required permissions to access the requested resource.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListRulesPackages
 func (c *Inspector) ListRulesPackages(input *ListRulesPackagesInput) (*ListRulesPackagesOutput, error) {
 	req, out := c.ListRulesPackagesRequest(input)
 	err := req.Send()
@@ -1679,6 +1723,7 @@ const opListTagsForResource = "ListTagsForResource"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListTagsForResource
 func (c *Inspector) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
 	op := &request.Operation{
 		Name:       opListTagsForResource,
@@ -1722,6 +1767,7 @@ func (c *Inspector) ListTagsForResourceRequest(input *ListTagsForResourceInput) 
 //   The request was rejected because it referenced an entity that does not exist.
 //   The error code describes the entity.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListTagsForResource
 func (c *Inspector) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
 	req, out := c.ListTagsForResourceRequest(input)
 	err := req.Send()
@@ -1754,6 +1800,7 @@ const opPreviewAgents = "PreviewAgents"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/PreviewAgents
 func (c *Inspector) PreviewAgentsRequest(input *PreviewAgentsInput) (req *request.Request, output *PreviewAgentsOutput) {
 	op := &request.Operation{
 		Name:       opPreviewAgents,
@@ -1802,6 +1849,7 @@ func (c *Inspector) PreviewAgentsRequest(input *PreviewAgentsInput) (req *reques
 //   Amazon Inspector cannot assume the cross-account role that it needs to list
 //   your EC2 instances during the assessment run.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/PreviewAgents
 func (c *Inspector) PreviewAgents(input *PreviewAgentsInput) (*PreviewAgentsOutput, error) {
 	req, out := c.PreviewAgentsRequest(input)
 	err := req.Send()
@@ -1834,6 +1882,7 @@ const opRegisterCrossAccountAccessRole = "RegisterCrossAccountAccessRole"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/RegisterCrossAccountAccessRole
 func (c *Inspector) RegisterCrossAccountAccessRoleRequest(input *RegisterCrossAccountAccessRoleInput) (req *request.Request, output *RegisterCrossAccountAccessRoleOutput) {
 	op := &request.Operation{
 		Name:       opRegisterCrossAccountAccessRole,
@@ -1880,6 +1929,7 @@ func (c *Inspector) RegisterCrossAccountAccessRoleRequest(input *RegisterCrossAc
 //   Amazon Inspector cannot assume the cross-account role that it needs to list
 //   your EC2 instances during the assessment run.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/RegisterCrossAccountAccessRole
 func (c *Inspector) RegisterCrossAccountAccessRole(input *RegisterCrossAccountAccessRoleInput) (*RegisterCrossAccountAccessRoleOutput, error) {
 	req, out := c.RegisterCrossAccountAccessRoleRequest(input)
 	err := req.Send()
@@ -1912,6 +1962,7 @@ const opRemoveAttributesFromFindings = "RemoveAttributesFromFindings"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/RemoveAttributesFromFindings
 func (c *Inspector) RemoveAttributesFromFindingsRequest(input *RemoveAttributesFromFindingsInput) (req *request.Request, output *RemoveAttributesFromFindingsOutput) {
 	op := &request.Operation{
 		Name:       opRemoveAttributesFromFindings,
@@ -1957,6 +2008,7 @@ func (c *Inspector) RemoveAttributesFromFindingsRequest(input *RemoveAttributesF
 //   The request was rejected because it referenced an entity that does not exist.
 //   The error code describes the entity.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/RemoveAttributesFromFindings
 func (c *Inspector) RemoveAttributesFromFindings(input *RemoveAttributesFromFindingsInput) (*RemoveAttributesFromFindingsOutput, error) {
 	req, out := c.RemoveAttributesFromFindingsRequest(input)
 	err := req.Send()
@@ -1989,6 +2041,7 @@ const opSetTagsForResource = "SetTagsForResource"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/SetTagsForResource
 func (c *Inspector) SetTagsForResourceRequest(input *SetTagsForResourceInput) (req *request.Request, output *SetTagsForResourceOutput) {
 	op := &request.Operation{
 		Name:       opSetTagsForResource,
@@ -2035,6 +2088,7 @@ func (c *Inspector) SetTagsForResourceRequest(input *SetTagsForResourceInput) (r
 //   The request was rejected because it referenced an entity that does not exist.
 //   The error code describes the entity.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/SetTagsForResource
 func (c *Inspector) SetTagsForResource(input *SetTagsForResourceInput) (*SetTagsForResourceOutput, error) {
 	req, out := c.SetTagsForResourceRequest(input)
 	err := req.Send()
@@ -2067,6 +2121,7 @@ const opStartAssessmentRun = "StartAssessmentRun"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/StartAssessmentRun
 func (c *Inspector) StartAssessmentRunRequest(input *StartAssessmentRunInput) (req *request.Request, output *StartAssessmentRunOutput) {
 	op := &request.Operation{
 		Name:       opStartAssessmentRun,
@@ -2124,6 +2179,7 @@ func (c *Inspector) StartAssessmentRunRequest(input *StartAssessmentRunInput) (r
 //   You started an assessment run, but one of the instances is already participating
 //   in another assessment run.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/StartAssessmentRun
 func (c *Inspector) StartAssessmentRun(input *StartAssessmentRunInput) (*StartAssessmentRunOutput, error) {
 	req, out := c.StartAssessmentRunRequest(input)
 	err := req.Send()
@@ -2156,6 +2212,7 @@ const opStopAssessmentRun = "StopAssessmentRun"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/StopAssessmentRun
 func (c *Inspector) StopAssessmentRunRequest(input *StopAssessmentRunInput) (req *request.Request, output *StopAssessmentRunOutput) {
 	op := &request.Operation{
 		Name:       opStopAssessmentRun,
@@ -2201,6 +2258,7 @@ func (c *Inspector) StopAssessmentRunRequest(input *StopAssessmentRunInput) (req
 //   The request was rejected because it referenced an entity that does not exist.
 //   The error code describes the entity.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/StopAssessmentRun
 func (c *Inspector) StopAssessmentRun(input *StopAssessmentRunInput) (*StopAssessmentRunOutput, error) {
 	req, out := c.StopAssessmentRunRequest(input)
 	err := req.Send()
@@ -2233,6 +2291,7 @@ const opSubscribeToEvent = "SubscribeToEvent"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/SubscribeToEvent
 func (c *Inspector) SubscribeToEventRequest(input *SubscribeToEventInput) (req *request.Request, output *SubscribeToEventOutput) {
 	op := &request.Operation{
 		Name:       opSubscribeToEvent,
@@ -2283,6 +2342,7 @@ func (c *Inspector) SubscribeToEventRequest(input *SubscribeToEventInput) (req *
 //   The request was rejected because it referenced an entity that does not exist.
 //   The error code describes the entity.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/SubscribeToEvent
 func (c *Inspector) SubscribeToEvent(input *SubscribeToEventInput) (*SubscribeToEventOutput, error) {
 	req, out := c.SubscribeToEventRequest(input)
 	err := req.Send()
@@ -2315,6 +2375,7 @@ const opUnsubscribeFromEvent = "UnsubscribeFromEvent"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/UnsubscribeFromEvent
 func (c *Inspector) UnsubscribeFromEventRequest(input *UnsubscribeFromEventInput) (req *request.Request, output *UnsubscribeFromEventOutput) {
 	op := &request.Operation{
 		Name:       opUnsubscribeFromEvent,
@@ -2361,6 +2422,7 @@ func (c *Inspector) UnsubscribeFromEventRequest(input *UnsubscribeFromEventInput
 //   The request was rejected because it referenced an entity that does not exist.
 //   The error code describes the entity.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/UnsubscribeFromEvent
 func (c *Inspector) UnsubscribeFromEvent(input *UnsubscribeFromEventInput) (*UnsubscribeFromEventOutput, error) {
 	req, out := c.UnsubscribeFromEventRequest(input)
 	err := req.Send()
@@ -2393,6 +2455,7 @@ const opUpdateAssessmentTarget = "UpdateAssessmentTarget"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/UpdateAssessmentTarget
 func (c *Inspector) UpdateAssessmentTargetRequest(input *UpdateAssessmentTargetInput) (req *request.Request, output *UpdateAssessmentTargetOutput) {
 	op := &request.Operation{
 		Name:       opUpdateAssessmentTarget,
@@ -2439,12 +2502,14 @@ func (c *Inspector) UpdateAssessmentTargetRequest(input *UpdateAssessmentTargetI
 //   The request was rejected because it referenced an entity that does not exist.
 //   The error code describes the entity.
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/UpdateAssessmentTarget
 func (c *Inspector) UpdateAssessmentTarget(input *UpdateAssessmentTargetInput) (*UpdateAssessmentTargetOutput, error) {
 	req, out := c.UpdateAssessmentTargetRequest(input)
 	err := req.Send()
 	return out, err
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/AddAttributesToFindingsRequest
 type AddAttributesToFindingsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2510,6 +2575,7 @@ func (s *AddAttributesToFindingsInput) SetFindingArns(v []*string) *AddAttribute
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/AddAttributesToFindingsResponse
 type AddAttributesToFindingsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2539,6 +2605,7 @@ func (s *AddAttributesToFindingsOutput) SetFailedItems(v map[string]*FailedItemD
 // Used in the exception error that is thrown if you start an assessment run
 // for an assessment target that includes an EC2 instance that is already participating
 // in another started assessment run.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/AgentAlreadyRunningAssessment
 type AgentAlreadyRunningAssessment struct {
 	_ struct{} `type:"structure"`
 
@@ -2578,6 +2645,7 @@ func (s *AgentAlreadyRunningAssessment) SetAssessmentRunArn(v string) *AgentAlre
 
 // Contains information about an Amazon Inspector agent. This data type is used
 // as a request parameter in the ListAssessmentRunAgents action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/AgentFilter
 type AgentFilter struct {
 	_ struct{} `type:"structure"`
 
@@ -2632,6 +2700,7 @@ func (s *AgentFilter) SetAgentHealths(v []*string) *AgentFilter {
 }
 
 // Used as a response element in the PreviewAgents action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/AgentPreview
 type AgentPreview struct {
 	_ struct{} `type:"structure"`
 
@@ -2670,6 +2739,7 @@ func (s *AgentPreview) SetAutoScalingGroup(v string) *AgentPreview {
 // of the assessment run .
 //
 // Used as the response element in the DescribeAssessmentRuns action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/AssessmentRun
 type AssessmentRun struct {
 	_ struct{} `type:"structure"`
 
@@ -2840,6 +2910,7 @@ func (s *AssessmentRun) SetUserAttributesForFindings(v []*Attribute) *Assessment
 
 // Contains information about an Amazon Inspector agent. This data type is used
 // as a response element in the ListAssessmentRunAgents action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/AssessmentRunAgent
 type AssessmentRunAgent struct {
 	_ struct{} `type:"structure"`
 
@@ -2929,6 +3000,7 @@ func (s *AssessmentRunAgent) SetTelemetryMetadata(v []*TelemetryMetadata) *Asses
 }
 
 // Used as the request parameter in the ListAssessmentRuns action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/AssessmentRunFilter
 type AssessmentRunFilter struct {
 	_ struct{} `type:"structure"`
 
@@ -3041,6 +3113,7 @@ func (s *AssessmentRunFilter) SetStates(v []*string) *AssessmentRunFilter {
 }
 
 // Used as one of the elements of the AssessmentRun data type.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/AssessmentRunNotification
 type AssessmentRunNotification struct {
 	_ struct{} `type:"structure"`
 
@@ -3115,6 +3188,7 @@ func (s *AssessmentRunNotification) SetSnsTopicArn(v string) *AssessmentRunNotif
 }
 
 // Used as one of the elements of the AssessmentRun data type.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/AssessmentRunStateChange
 type AssessmentRunStateChange struct {
 	_ struct{} `type:"structure"`
 
@@ -3153,6 +3227,7 @@ func (s *AssessmentRunStateChange) SetStateChangedAt(v time.Time) *AssessmentRun
 
 // Contains information about an Amazon Inspector application. This data type
 // is used as the response element in the DescribeAssessmentTargets action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/AssessmentTarget
 type AssessmentTarget struct {
 	_ struct{} `type:"structure"`
 
@@ -3224,6 +3299,7 @@ func (s *AssessmentTarget) SetUpdatedAt(v time.Time) *AssessmentTarget {
 }
 
 // Used as the request parameter in the ListAssessmentTargets action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/AssessmentTargetFilter
 type AssessmentTargetFilter struct {
 	_ struct{} `type:"structure"`
 
@@ -3265,6 +3341,7 @@ func (s *AssessmentTargetFilter) SetAssessmentTargetNamePattern(v string) *Asses
 // Contains information about an Amazon Inspector assessment template. This
 // data type is used as the response element in the DescribeAssessmentTemplates
 // action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/AssessmentTemplate
 type AssessmentTemplate struct {
 	_ struct{} `type:"structure"`
 
@@ -3360,6 +3437,7 @@ func (s *AssessmentTemplate) SetUserAttributesForFindings(v []*Attribute) *Asses
 }
 
 // Used as the request parameter in the ListAssessmentTemplates action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/AssessmentTemplateFilter
 type AssessmentTemplateFilter struct {
 	_ struct{} `type:"structure"`
 
@@ -3426,6 +3504,7 @@ func (s *AssessmentTemplateFilter) SetRulesPackageArns(v []*string) *AssessmentT
 }
 
 // A collection of attributes of the host from which the finding is generated.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/AssetAttributes
 type AssetAttributes struct {
 	_ struct{} `type:"structure"`
 
@@ -3500,6 +3579,7 @@ func (s *AssetAttributes) SetSchemaVersion(v int64) *AssetAttributes {
 
 // This data type is used as a request parameter in the AddAttributesToFindings
 // and CreateAssessmentTemplate actions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/Attribute
 type Attribute struct {
 	_ struct{} `type:"structure"`
 
@@ -3553,6 +3633,7 @@ func (s *Attribute) SetValue(v string) *Attribute {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/CreateAssessmentTargetRequest
 type CreateAssessmentTargetInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3613,6 +3694,7 @@ func (s *CreateAssessmentTargetInput) SetResourceGroupArn(v string) *CreateAsses
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/CreateAssessmentTargetResponse
 type CreateAssessmentTargetOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3638,6 +3720,7 @@ func (s *CreateAssessmentTargetOutput) SetAssessmentTargetArn(v string) *CreateA
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/CreateAssessmentTemplateRequest
 type CreateAssessmentTemplateInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3753,6 +3836,7 @@ func (s *CreateAssessmentTemplateInput) SetUserAttributesForFindings(v []*Attrib
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/CreateAssessmentTemplateResponse
 type CreateAssessmentTemplateOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3778,6 +3862,7 @@ func (s *CreateAssessmentTemplateOutput) SetAssessmentTemplateArn(v string) *Cre
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/CreateResourceGroupRequest
 type CreateResourceGroupInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3831,6 +3916,7 @@ func (s *CreateResourceGroupInput) SetResourceGroupTags(v []*ResourceGroupTag) *
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/CreateResourceGroupResponse
 type CreateResourceGroupOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3856,6 +3942,7 @@ func (s *CreateResourceGroupOutput) SetResourceGroupArn(v string) *CreateResourc
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DeleteAssessmentRunRequest
 type DeleteAssessmentRunInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3897,6 +3984,7 @@ func (s *DeleteAssessmentRunInput) SetAssessmentRunArn(v string) *DeleteAssessme
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DeleteAssessmentRunOutput
 type DeleteAssessmentRunOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -3911,6 +3999,7 @@ func (s DeleteAssessmentRunOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DeleteAssessmentTargetRequest
 type DeleteAssessmentTargetInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3952,6 +4041,7 @@ func (s *DeleteAssessmentTargetInput) SetAssessmentTargetArn(v string) *DeleteAs
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DeleteAssessmentTargetOutput
 type DeleteAssessmentTargetOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -3966,6 +4056,7 @@ func (s DeleteAssessmentTargetOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DeleteAssessmentTemplateRequest
 type DeleteAssessmentTemplateInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4007,6 +4098,7 @@ func (s *DeleteAssessmentTemplateInput) SetAssessmentTemplateArn(v string) *Dele
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DeleteAssessmentTemplateOutput
 type DeleteAssessmentTemplateOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4021,6 +4113,7 @@ func (s DeleteAssessmentTemplateOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeAssessmentRunsRequest
 type DescribeAssessmentRunsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4062,6 +4155,7 @@ func (s *DescribeAssessmentRunsInput) SetAssessmentRunArns(v []*string) *Describ
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeAssessmentRunsResponse
 type DescribeAssessmentRunsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4099,6 +4193,7 @@ func (s *DescribeAssessmentRunsOutput) SetFailedItems(v map[string]*FailedItemDe
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeAssessmentTargetsRequest
 type DescribeAssessmentTargetsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4140,6 +4235,7 @@ func (s *DescribeAssessmentTargetsInput) SetAssessmentTargetArns(v []*string) *D
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeAssessmentTargetsResponse
 type DescribeAssessmentTargetsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4177,11 +4273,10 @@ func (s *DescribeAssessmentTargetsOutput) SetFailedItems(v map[string]*FailedIte
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeAssessmentTemplatesRequest
 type DescribeAssessmentTemplatesInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ARN that specifiesthe assessment templates that you want to describe.
-	//
 	// AssessmentTemplateArns is a required field
 	AssessmentTemplateArns []*string `locationName:"assessmentTemplateArns" min:"1" type:"list" required:"true"`
 }
@@ -4218,6 +4313,7 @@ func (s *DescribeAssessmentTemplatesInput) SetAssessmentTemplateArns(v []*string
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeAssessmentTemplatesResponse
 type DescribeAssessmentTemplatesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4255,6 +4351,7 @@ func (s *DescribeAssessmentTemplatesOutput) SetFailedItems(v map[string]*FailedI
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeCrossAccountAccessRoleInput
 type DescribeCrossAccountAccessRoleInput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4269,6 +4366,7 @@ func (s DescribeCrossAccountAccessRoleInput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeCrossAccountAccessRoleResponse
 type DescribeCrossAccountAccessRoleOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4318,6 +4416,7 @@ func (s *DescribeCrossAccountAccessRoleOutput) SetValid(v bool) *DescribeCrossAc
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeFindingsRequest
 type DescribeFindingsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4369,6 +4468,7 @@ func (s *DescribeFindingsInput) SetLocale(v string) *DescribeFindingsInput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeFindingsResponse
 type DescribeFindingsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4406,6 +4506,7 @@ func (s *DescribeFindingsOutput) SetFindings(v []*Finding) *DescribeFindingsOutp
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeResourceGroupsRequest
 type DescribeResourceGroupsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4447,6 +4548,7 @@ func (s *DescribeResourceGroupsInput) SetResourceGroupArns(v []*string) *Describ
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeResourceGroupsResponse
 type DescribeResourceGroupsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4484,6 +4586,7 @@ func (s *DescribeResourceGroupsOutput) SetResourceGroups(v []*ResourceGroup) *De
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeRulesPackagesRequest
 type DescribeRulesPackagesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4534,6 +4637,7 @@ func (s *DescribeRulesPackagesInput) SetRulesPackageArns(v []*string) *DescribeR
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeRulesPackagesResponse
 type DescribeRulesPackagesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4572,6 +4676,7 @@ func (s *DescribeRulesPackagesOutput) SetRulesPackages(v []*RulesPackage) *Descr
 }
 
 // This data type is used in the AssessmentTemplateFilter data type.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DurationRange
 type DurationRange struct {
 	_ struct{} `type:"structure"`
 
@@ -4622,6 +4727,7 @@ func (s *DurationRange) SetMinSeconds(v int64) *DurationRange {
 }
 
 // This data type is used in the Subscription data type.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/EventSubscription
 type EventSubscription struct {
 	_ struct{} `type:"structure"`
 
@@ -4660,6 +4766,7 @@ func (s *EventSubscription) SetSubscribedAt(v time.Time) *EventSubscription {
 }
 
 // Includes details about the failed items.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/FailedItemDetails
 type FailedItemDetails struct {
 	_ struct{} `type:"structure"`
 
@@ -4699,6 +4806,7 @@ func (s *FailedItemDetails) SetRetryable(v bool) *FailedItemDetails {
 
 // Contains information about an Amazon Inspector finding. This data type is
 // used as the response element in the DescribeFindings action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/Finding
 type Finding struct {
 	_ struct{} `type:"structure"`
 
@@ -4886,6 +4994,7 @@ func (s *Finding) SetUserAttributes(v []*Attribute) *Finding {
 }
 
 // This data type is used as a request parameter in the ListFindings action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/FindingFilter
 type FindingFilter struct {
 	_ struct{} `type:"structure"`
 
@@ -5016,6 +5125,7 @@ func (s *FindingFilter) SetUserAttributes(v []*Attribute) *FindingFilter {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/GetTelemetryMetadataRequest
 type GetTelemetryMetadataInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5058,6 +5168,7 @@ func (s *GetTelemetryMetadataInput) SetAssessmentRunArn(v string) *GetTelemetryM
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/GetTelemetryMetadataResponse
 type GetTelemetryMetadataOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5083,6 +5194,7 @@ func (s *GetTelemetryMetadataOutput) SetTelemetryMetadata(v []*TelemetryMetadata
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListAssessmentRunAgentsRequest
 type ListAssessmentRunAgentsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5168,6 +5280,7 @@ func (s *ListAssessmentRunAgentsInput) SetNextToken(v string) *ListAssessmentRun
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListAssessmentRunAgentsResponse
 type ListAssessmentRunAgentsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5205,6 +5318,7 @@ func (s *ListAssessmentRunAgentsOutput) SetNextToken(v string) *ListAssessmentRu
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListAssessmentRunsRequest
 type ListAssessmentRunsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5283,6 +5397,7 @@ func (s *ListAssessmentRunsInput) SetNextToken(v string) *ListAssessmentRunsInpu
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListAssessmentRunsResponse
 type ListAssessmentRunsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5321,6 +5436,7 @@ func (s *ListAssessmentRunsOutput) SetNextToken(v string) *ListAssessmentRunsOut
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListAssessmentTargetsRequest
 type ListAssessmentTargetsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5389,6 +5505,7 @@ func (s *ListAssessmentTargetsInput) SetNextToken(v string) *ListAssessmentTarge
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListAssessmentTargetsResponse
 type ListAssessmentTargetsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5427,6 +5544,7 @@ func (s *ListAssessmentTargetsOutput) SetNextToken(v string) *ListAssessmentTarg
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListAssessmentTemplatesRequest
 type ListAssessmentTemplatesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5505,6 +5623,7 @@ func (s *ListAssessmentTemplatesInput) SetNextToken(v string) *ListAssessmentTem
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListAssessmentTemplatesResponse
 type ListAssessmentTemplatesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5542,6 +5661,7 @@ func (s *ListAssessmentTemplatesOutput) SetNextToken(v string) *ListAssessmentTe
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListEventSubscriptionsRequest
 type ListEventSubscriptionsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5604,6 +5724,7 @@ func (s *ListEventSubscriptionsInput) SetResourceArn(v string) *ListEventSubscri
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListEventSubscriptionsResponse
 type ListEventSubscriptionsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5641,6 +5762,7 @@ func (s *ListEventSubscriptionsOutput) SetSubscriptions(v []*Subscription) *List
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListFindingsRequest
 type ListFindingsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5719,6 +5841,7 @@ func (s *ListFindingsInput) SetNextToken(v string) *ListFindingsInput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListFindingsResponse
 type ListFindingsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5756,6 +5879,7 @@ func (s *ListFindingsOutput) SetNextToken(v string) *ListFindingsOutput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListRulesPackagesRequest
 type ListRulesPackagesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5805,6 +5929,7 @@ func (s *ListRulesPackagesInput) SetNextToken(v string) *ListRulesPackagesInput 
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListRulesPackagesResponse
 type ListRulesPackagesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5842,6 +5967,7 @@ func (s *ListRulesPackagesOutput) SetRulesPackageArns(v []*string) *ListRulesPac
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListTagsForResourceRequest
 type ListTagsForResourceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5883,6 +6009,7 @@ func (s *ListTagsForResourceInput) SetResourceArn(v string) *ListTagsForResource
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListTagsForResourceResponse
 type ListTagsForResourceOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5908,6 +6035,7 @@ func (s *ListTagsForResourceOutput) SetTags(v []*Tag) *ListTagsForResourceOutput
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/PreviewAgentsRequest
 type PreviewAgentsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5974,6 +6102,7 @@ func (s *PreviewAgentsInput) SetPreviewAgentsArn(v string) *PreviewAgentsInput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/PreviewAgentsResponse
 type PreviewAgentsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6011,6 +6140,7 @@ func (s *PreviewAgentsOutput) SetNextToken(v string) *PreviewAgentsOutput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/RegisterCrossAccountAccessRoleRequest
 type RegisterCrossAccountAccessRoleInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6053,6 +6183,7 @@ func (s *RegisterCrossAccountAccessRoleInput) SetRoleArn(v string) *RegisterCros
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/RegisterCrossAccountAccessRoleOutput
 type RegisterCrossAccountAccessRoleOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -6067,6 +6198,7 @@ func (s RegisterCrossAccountAccessRoleOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/RemoveAttributesFromFindingsRequest
 type RemoveAttributesFromFindingsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6122,6 +6254,7 @@ func (s *RemoveAttributesFromFindingsInput) SetFindingArns(v []*string) *RemoveA
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/RemoveAttributesFromFindingsResponse
 type RemoveAttributesFromFindingsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6152,6 +6285,7 @@ func (s *RemoveAttributesFromFindingsOutput) SetFailedItems(v map[string]*Failed
 // set of tags that, when queried, identify the AWS resources that make up the
 // assessment target. This data type is used as the response element in the
 // DescribeResourceGroups action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ResourceGroup
 type ResourceGroup struct {
 	_ struct{} `type:"structure"`
 
@@ -6201,6 +6335,7 @@ func (s *ResourceGroup) SetTags(v []*ResourceGroupTag) *ResourceGroup {
 }
 
 // This data type is used as one of the elements of the ResourceGroup data type.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ResourceGroupTag
 type ResourceGroupTag struct {
 	_ struct{} `type:"structure"`
 
@@ -6256,6 +6391,7 @@ func (s *ResourceGroupTag) SetValue(v string) *ResourceGroupTag {
 
 // Contains information about an Amazon Inspector rules package. This data type
 // is used as the response element in the DescribeRulesPackages action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/RulesPackage
 type RulesPackage struct {
 	_ struct{} `type:"structure"`
 
@@ -6324,6 +6460,7 @@ func (s *RulesPackage) SetVersion(v string) *RulesPackage {
 }
 
 // This data type is used in the Finding data type.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/InspectorServiceAttributes
 type ServiceAttributes struct {
 	_ struct{} `type:"structure"`
 
@@ -6367,6 +6504,7 @@ func (s *ServiceAttributes) SetSchemaVersion(v int64) *ServiceAttributes {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/SetTagsForResourceRequest
 type SetTagsForResourceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6428,6 +6566,7 @@ func (s *SetTagsForResourceInput) SetTags(v []*Tag) *SetTagsForResourceInput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/SetTagsForResourceOutput
 type SetTagsForResourceOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -6442,12 +6581,12 @@ func (s SetTagsForResourceOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/StartAssessmentRunRequest
 type StartAssessmentRunInput struct {
 	_ struct{} `type:"structure"`
 
-	// You can specify the name for the assessment run, or you can use the auto-generated
-	// name that is based on the assessment template name. The name must be unique
-	// for the assessment template.
+	// You can specify the name for the assessment run. The name must be unique
+	// for the assessment template whose ARN is used to start the assessment run.
 	AssessmentRunName *string `locationName:"assessmentRunName" min:"1" type:"string"`
 
 	// The ARN of the assessment template of the assessment run that you want to
@@ -6498,6 +6637,7 @@ func (s *StartAssessmentRunInput) SetAssessmentTemplateArn(v string) *StartAsses
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/StartAssessmentRunResponse
 type StartAssessmentRunOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6523,6 +6663,7 @@ func (s *StartAssessmentRunOutput) SetAssessmentRunArn(v string) *StartAssessmen
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/StopAssessmentRunRequest
 type StopAssessmentRunInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6564,6 +6705,7 @@ func (s *StopAssessmentRunInput) SetAssessmentRunArn(v string) *StopAssessmentRu
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/StopAssessmentRunOutput
 type StopAssessmentRunOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -6578,6 +6720,7 @@ func (s StopAssessmentRunOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/SubscribeToEventRequest
 type SubscribeToEventInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6651,6 +6794,7 @@ func (s *SubscribeToEventInput) SetTopicArn(v string) *SubscribeToEventInput {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/SubscribeToEventOutput
 type SubscribeToEventOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -6667,6 +6811,7 @@ func (s SubscribeToEventOutput) GoString() string {
 
 // This data type is used as a response element in the ListEventSubscriptions
 // action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/Subscription
 type Subscription struct {
 	_ struct{} `type:"structure"`
 
@@ -6719,6 +6864,7 @@ func (s *Subscription) SetTopicArn(v string) *Subscription {
 // A key and value pair. This data type is used as a request parameter in the
 // SetTagsForResource action and a response element in the ListTagsForResource
 // action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/Tag
 type Tag struct {
 	_ struct{} `type:"structure"`
 
@@ -6775,6 +6921,7 @@ func (s *Tag) SetValue(v string) *Tag {
 // The metadata about the Amazon Inspector application data metrics collected
 // by the agent. This data type is used as the response element in the GetTelemetryMetadata
 // action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/TelemetryMetadata
 type TelemetryMetadata struct {
 	_ struct{} `type:"structure"`
 
@@ -6821,6 +6968,7 @@ func (s *TelemetryMetadata) SetMessageType(v string) *TelemetryMetadata {
 }
 
 // This data type is used in the AssessmentRunFilter data type.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/TimestampRange
 type TimestampRange struct {
 	_ struct{} `type:"structure"`
 
@@ -6853,6 +7001,7 @@ func (s *TimestampRange) SetEndDate(v time.Time) *TimestampRange {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/UnsubscribeFromEventRequest
 type UnsubscribeFromEventInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6926,6 +7075,7 @@ func (s *UnsubscribeFromEventInput) SetTopicArn(v string) *UnsubscribeFromEventI
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/UnsubscribeFromEventOutput
 type UnsubscribeFromEventOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -6940,6 +7090,7 @@ func (s UnsubscribeFromEventOutput) GoString() string {
 	return s.String()
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/UpdateAssessmentTargetRequest
 type UpdateAssessmentTargetInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7016,6 +7167,7 @@ func (s *UpdateAssessmentTargetInput) SetResourceGroupArn(v string) *UpdateAsses
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/UpdateAssessmentTargetOutput
 type UpdateAssessmentTargetOutput struct {
 	_ struct{} `type:"structure"`
 }
