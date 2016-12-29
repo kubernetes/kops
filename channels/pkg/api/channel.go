@@ -18,12 +18,12 @@ package api
 
 import (
 	k8sapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/apis/meta/v1"
 )
 
 type Addons struct {
-	unversioned.TypeMeta `json:",inline"`
-	k8sapi.ObjectMeta    `json:"metadata,omitempty"`
+	v1.TypeMeta       `json:",inline"`
+	k8sapi.ObjectMeta `json:"metadata,omitempty"`
 
 	Spec AddonsSpec `json:"spec,omitempty"`
 }

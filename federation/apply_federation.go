@@ -32,10 +32,11 @@ import (
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/k8sapi"
 	"k8s.io/kops/upup/pkg/kutil"
-	"k8s.io/kubernetes/federation/client/clientset_generated/federation_release_1_5"
+	federation_clientset "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset"
 	"k8s.io/kubernetes/pkg/api/errors"
 	k8sapiv1 "k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	meta_v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"strings"
 	"text/template"
 )
@@ -111,7 +112,7 @@ func (o *ApplyFederationOperation) Run() error {
 
 	// TODO: sync clusters
 
-	var controllerKubernetesClients []release_1_5.Interface
+	var controllerKubernetesClients []k8s_clientset.Interface
 	for _, controller := range o.Federation.Spec.Controllers {
 		cluster, err := o.KopsClient.Clusters().Get(controller)
 		if err != nil {
@@ -140,7 +141,7 @@ func (o *ApplyFederationOperation) Run() error {
 	if err != nil {
 		return err
 	}
-	federationControllerClient, err := federation_release_1_5.NewForConfig(federationRestConfig)
+	federationControllerClient, err := federation_clientset.NewForConfig(federationRestConfig)
 	if err != nil {
 		return err
 	}
@@ -360,7 +361,7 @@ func (o *ApplyFederationOperation) executeTemplate(key string, templateDefinitio
 func (o *ApplyFederationOperation) EnsureNamespace(c *fi.Context) error {
 	k8s := c.Target.(*kubernetes.KubernetesTarget).KubernetesClient
 
-	ns, err := k8s.Core().Namespaces().Get(o.namespace)
+	ns, err := k8s.Core().Namespaces().Get(o.namespace, meta_v1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			ns = nil
@@ -380,7 +381,7 @@ func (o *ApplyFederationOperation) EnsureNamespace(c *fi.Context) error {
 	return nil
 }
 
-func (o *ApplyFederationOperation) ensureFederationNamespace(k8s federation_release_1_5.Interface, name string) (*k8sapiv1.Namespace, error) {
+func (o *ApplyFederationOperation) ensureFederationNamespace(k8s federation_clientset.Interface, name string) (*k8sapiv1.Namespace, error) {
 	return mutateNamespace(k8s, name, func(n *k8sapiv1.Namespace) (*k8sapiv1.Namespace, error) {
 		if n == nil {
 			n = &k8sapiv1.Namespace{}
