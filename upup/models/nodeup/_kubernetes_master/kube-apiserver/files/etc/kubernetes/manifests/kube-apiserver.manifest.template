@@ -8,6 +8,8 @@ metadata:
     dns.alpha.kubernetes.io/internal: {{ .MasterInternalName }}
   name: kube-apiserver
   namespace: kube-system
+  labels:
+    k8s-app: kube-apiserver
 spec:
   hostNetwork: true
   containers:

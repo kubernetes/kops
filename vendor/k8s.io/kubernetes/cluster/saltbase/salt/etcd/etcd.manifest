@@ -32,7 +32,10 @@
 "kind": "Pod",
 "metadata": {
   "name":"etcd-server{{ suffix }}",
-  "namespace": "kube-system"
+  "namespace": "kube-system",
+  "labels": {
+    "k8s-app" : "etcd-server{{ suffix }}"
+  }
 },
 "spec":{
 "hostNetwork": true,

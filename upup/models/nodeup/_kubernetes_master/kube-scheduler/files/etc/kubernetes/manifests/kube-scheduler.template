@@ -3,7 +3,10 @@
 "kind": "Pod",
 "metadata": {
   "name":"kube-scheduler",
-  "namespace": "kube-system"
+  "namespace": "kube-system",
+  "labels": {
+    "k8s-app" : "kube-scheduler"
+  }
 },
 "spec":{
 "hostNetwork": true,
