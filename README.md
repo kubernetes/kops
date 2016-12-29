@@ -40,9 +40,6 @@ on AWS.
 
 `kubectl` is required, see [here](http://kubernetes.io/docs/user-guide/prereqs/).
 
-<!-- Move this to an install guide -->
-    <!-- RE: Move this to an install guide. I like the idea of having the instal on the front page - especially if it's an easy install. It makes the tool look excitng and fun. Also, there is a link below towards the install guide. @kris-nova -->
-
 ### OSX From Homebrew (Latest Stable Release)
 
 ```console
