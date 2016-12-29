@@ -304,33 +304,31 @@ func (c *Cluster) Validate(strict bool) error {
 	}
 
 	// Topology support
-	if c.Spec.Topology == nil {
-		c.Spec.Topology = &TopologySpec{Masters: TopologyPublic, Nodes: TopologyPublic}
-	}
+	if c.Spec.Topology != nil {
+		if c.Spec.Topology.Masters != "" && c.Spec.Topology.Nodes != "" {
+			if c.Spec.Topology.Masters != TopologyPublic && c.Spec.Topology.Masters != TopologyPrivate {
+				return fmt.Errorf("Invalid Masters value for Topology")
+			} else if c.Spec.Topology.Nodes != TopologyPublic && c.Spec.Topology.Nodes != TopologyPrivate {
+				return fmt.Errorf("Invalid Nodes value for Topology")
+				// Until we support other topologies - these must match
+			} else if c.Spec.Topology.Masters != c.Spec.Topology.Nodes {
+				return fmt.Errorf("Topology Nodes must match Topology Masters")
+			}
 
-	if c.Spec.Topology.Masters != "" && c.Spec.Topology.Nodes != "" {
-		if c.Spec.Topology.Masters != TopologyPublic && c.Spec.Topology.Masters != TopologyPrivate {
-			return fmt.Errorf("Invalid Masters value for Topology")
-		} else if c.Spec.Topology.Nodes != TopologyPublic && c.Spec.Topology.Nodes != TopologyPrivate {
-			return fmt.Errorf("Invalid Nodes value for Topology")
-			// Until we support other topologies - these must match
-		} else if c.Spec.Topology.Masters != c.Spec.Topology.Nodes {
-			return fmt.Errorf("Topology Nodes must match Topology Masters")
+		} else {
+			return fmt.Errorf("Topology requires non-nil values for Masters and Nodes")
 		}
-
-	} else {
-		return fmt.Errorf("Topology requires non-nil values for Masters and Nodes")
-	}
-
-	if c.Spec.Topology.Bastion != nil {
-		bastion := c.Spec.Topology.Bastion
-		if c.Spec.Topology.Masters == TopologyPublic || c.Spec.Topology.Nodes == TopologyPublic {
-			return fmt.Errorf("Bastion supports only Private Masters and Nodes")
-		}
-		if bastion.IdleTimeoutSeconds != nil && *bastion.IdleTimeoutSeconds <= 0 {
-			return fmt.Errorf("Bastion IdleTimeoutSeconds should be greater than zero")
+		if c.Spec.Topology.Bastion != nil {
+			bastion := c.Spec.Topology.Bastion
+			if c.Spec.Topology.Masters == TopologyPublic || c.Spec.Topology.Nodes == TopologyPublic {
+				return fmt.Errorf("Bastion supports only Private Masters and Nodes")
+			}
+			if bastion.IdleTimeoutSeconds != nil && *bastion.IdleTimeoutSeconds <= 0 {
+				return fmt.Errorf("Bastion IdleTimeoutSeconds should be greater than zero")
+			}
 		}
 	}
+
 
 	// Etcd
 	{

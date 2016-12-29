@@ -24,7 +24,7 @@ spec:
     - name: us-test-1c
       zone: us-test-1c
     name: events
-  kubernetesVersion: v1.4.6
+  kubernetesVersion: v1.4.7
   masterPublicName: api.ha.example.com
   networkCIDR: 172.20.0.0/16
   networking:
