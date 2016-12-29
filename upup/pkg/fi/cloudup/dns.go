@@ -181,12 +181,17 @@ func precreateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 	var created []string
 
 	for _, dnsHostname := range dnsHostnames {
+		dnsHostname = strings.TrimSuffix(dnsHostname, ".")
 		dnsRecord := recordsMap["A::"+dnsHostname]
 		found := false
 		if dnsRecord != nil {
 			rrdatas := dnsRecord.Rrdatas()
 			if len(rrdatas) > 0 {
 				glog.V(4).Infof("Found DNS record %s => %s; won't create", dnsHostname, rrdatas)
+				found = true
+			} else {
+				// This is probably an alias target; leave it alone...
+				glog.V(4).Infof("Found DNS record %s, but no records", dnsHostname)
 				found = true
 			}
 		}
@@ -195,7 +200,7 @@ func precreateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 			continue
 		}
 
-		glog.V(2).Infof("Pre-creating DNS record %s => %s", dnsHostnames, PlaceholderIP)
+		glog.V(2).Infof("Pre-creating DNS record %s => %s", dnsHostname, PlaceholderIP)
 
 		changeset.Add(rrs.New(dnsHostname, []string{PlaceholderIP}, PlaceholderTTL, rrstype.A))
 		created = append(created, dnsHostname)
