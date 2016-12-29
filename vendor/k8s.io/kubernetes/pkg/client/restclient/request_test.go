@@ -22,23 +22,26 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"os"
 	"reflect"
 	"strings"
+	"syscall"
 	"testing"
 	"time"
 
 	"k8s.io/kubernetes/pkg/api"
 	apierrors "k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/testapi"
-	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/apimachinery/registered"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 	"k8s.io/kubernetes/pkg/runtime/serializer/streaming"
 	"k8s.io/kubernetes/pkg/util/clock"
 	"k8s.io/kubernetes/pkg/util/diff"
@@ -270,8 +273,8 @@ func TestRequestURI(t *testing.T) {
 
 type NotAnAPIObject struct{}
 
-func (obj NotAnAPIObject) GroupVersionKind() *unversioned.GroupVersionKind       { return nil }
-func (obj NotAnAPIObject) SetGroupVersionKind(gvk *unversioned.GroupVersionKind) {}
+func (obj NotAnAPIObject) GroupVersionKind() *schema.GroupVersionKind       { return nil }
+func (obj NotAnAPIObject) SetGroupVersionKind(gvk *schema.GroupVersionKind) {}
 
 func defaultContentConfig() ContentConfig {
 	return ContentConfig{
@@ -327,7 +330,7 @@ func TestResultIntoWithErrReturnsErr(t *testing.T) {
 
 func TestURLTemplate(t *testing.T) {
 	uri, _ := url.Parse("http://localhost")
-	r := NewRequest(nil, "POST", uri, "", ContentConfig{GroupVersion: &unversioned.GroupVersion{Group: "test"}}, Serializers{}, nil, nil)
+	r := NewRequest(nil, "POST", uri, "", ContentConfig{GroupVersion: &schema.GroupVersion{Group: "test"}}, Serializers{}, nil, nil)
 	r.Prefix("pre1").Resource("r1").Namespace("ns").Name("nm").Param("p0", "v0")
 	full := r.URL()
 	if full.String() != "http://localhost/pre1/namespaces/ns/r1/nm?p0=v0" {
@@ -634,7 +637,7 @@ func TestTransformUnstructuredError(t *testing.T) {
 			Res:   &http.Response{StatusCode: http.StatusBadRequest, Body: ioutil.NopCloser(bytes.NewReader([]byte(`{"kind":"Status","apiVersion":"v1","status":"Failure","code":404}`)))},
 			ErrFn: apierrors.IsBadRequest,
 			Transformed: &apierrors.StatusError{
-				ErrStatus: unversioned.Status{Status: unversioned.StatusFailure, Code: http.StatusNotFound},
+				ErrStatus: metav1.Status{Status: metav1.StatusFailure, Code: http.StatusNotFound},
 			},
 		},
 		{
@@ -656,7 +659,7 @@ func TestTransformUnstructuredError(t *testing.T) {
 			Res:   &http.Response{StatusCode: http.StatusBadRequest, Body: ioutil.NopCloser(bytes.NewReader([]byte(`{"kind":"Status","status":"Failure","code":404}`)))},
 			ErrFn: apierrors.IsBadRequest,
 			Transformed: &apierrors.StatusError{
-				ErrStatus: unversioned.Status{Status: unversioned.StatusFailure, Code: http.StatusNotFound},
+				ErrStatus: metav1.Status{Status: metav1.StatusFailure, Code: http.StatusNotFound},
 			},
 		},
 		{
@@ -782,9 +785,9 @@ func TestRequestWatch(t *testing.T) {
 				client: clientFunc(func(req *http.Request) (*http.Response, error) {
 					return &http.Response{
 						StatusCode: http.StatusUnauthorized,
-						Body: ioutil.NopCloser(bytes.NewReader([]byte(runtime.EncodeOrDie(testapi.Default.Codec(), &unversioned.Status{
-							Status: unversioned.StatusFailure,
-							Reason: unversioned.StatusReasonUnauthorized,
+						Body: ioutil.NopCloser(bytes.NewReader([]byte(runtime.EncodeOrDie(testapi.Default.Codec(), &metav1.Status{
+							Status: metav1.StatusFailure,
+							Reason: metav1.StatusReasonUnauthorized,
 						})))),
 					}, nil
 				}),
@@ -888,9 +891,9 @@ func TestRequestStream(t *testing.T) {
 				client: clientFunc(func(req *http.Request) (*http.Response, error) {
 					return &http.Response{
 						StatusCode: http.StatusUnauthorized,
-						Body: ioutil.NopCloser(bytes.NewReader([]byte(runtime.EncodeOrDie(testapi.Default.Codec(), &unversioned.Status{
-							Status: unversioned.StatusFailure,
-							Reason: unversioned.StatusReasonUnauthorized,
+						Body: ioutil.NopCloser(bytes.NewReader([]byte(runtime.EncodeOrDie(testapi.Default.Codec(), &metav1.Status{
+							Status: metav1.StatusFailure,
+							Reason: metav1.StatusReasonUnauthorized,
 						})))),
 					}, nil
 				}),
@@ -1119,6 +1122,35 @@ func TestCheckRetryClosesBody(t *testing.T) {
 	}
 }
 
+func TestConnectionResetByPeerIsRetried(t *testing.T) {
+	count := 0
+	backoff := &testBackoffManager{}
+	req := &Request{
+		verb: "GET",
+		client: clientFunc(func(req *http.Request) (*http.Response, error) {
+			count++
+			if count >= 3 {
+				return &http.Response{
+					StatusCode: 200,
+					Body:       ioutil.NopCloser(bytes.NewReader([]byte{})),
+				}, nil
+			}
+			return nil, &net.OpError{Err: syscall.ECONNRESET}
+		}),
+		backoffMgr: backoff,
+	}
+	// We expect two retries of "connection reset by peer" and the success.
+	_, err := req.Do().Raw()
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	// We have a sleep before each retry (including the initial one) and for
+	// every "retry-after" call - thus 5 together.
+	if len(backoff.sleeps) != 5 {
+		t.Errorf("Expected 5 retries, got: %d", len(backoff.sleeps))
+	}
+}
+
 func TestCheckRetryHandles429And5xx(t *testing.T) {
 	count := 0
 	ch := make(chan struct{})
@@ -1221,7 +1253,7 @@ func TestDoRequestNewWayReader(t *testing.T) {
 	}
 	tmpStr := string(reqBodyExpected)
 	requestURL := testapi.Default.ResourcePathWithPrefix("foo", "bar", "", "baz")
-	requestURL += "?" + unversioned.LabelSelectorQueryParam(registered.GroupOrDie(api.GroupName).GroupVersion.String()) + "=name%3Dfoo&timeout=1s"
+	requestURL += "?" + metav1.LabelSelectorQueryParam(registered.GroupOrDie(api.GroupName).GroupVersion.String()) + "=name%3Dfoo&timeout=1s"
 	fakeHandler.ValidateRequest(t, requestURL, "POST", &tmpStr)
 }
 
@@ -1261,7 +1293,7 @@ func TestDoRequestNewWayObj(t *testing.T) {
 	}
 	tmpStr := string(reqBodyExpected)
 	requestURL := testapi.Default.ResourcePath("foo", "", "bar/baz")
-	requestURL += "?" + unversioned.LabelSelectorQueryParam(registered.GroupOrDie(api.GroupName).GroupVersion.String()) + "=name%3Dfoo&timeout=1s"
+	requestURL += "?" + metav1.LabelSelectorQueryParam(registered.GroupOrDie(api.GroupName).GroupVersion.String()) + "=name%3Dfoo&timeout=1s"
 	fakeHandler.ValidateRequest(t, requestURL, "POST", &tmpStr)
 }
 
@@ -1412,7 +1444,7 @@ func TestAbsPath(t *testing.T) {
 		{"/p1/api/p2", "/api/r1", "/api/", "/p1/api/p2/api/"},
 	} {
 		u, _ := url.Parse("http://localhost:123" + tc.configPrefix)
-		r := NewRequest(nil, "POST", u, "", ContentConfig{GroupVersion: &unversioned.GroupVersion{Group: "test"}}, Serializers{}, nil, nil).Prefix(tc.resourcePrefix).AbsPath(tc.absPath)
+		r := NewRequest(nil, "POST", u, "", ContentConfig{GroupVersion: &schema.GroupVersion{Group: "test"}}, Serializers{}, nil, nil).Prefix(tc.resourcePrefix).AbsPath(tc.absPath)
 		if r.pathPrefix != tc.wantsAbsPath {
 			t.Errorf("test case %d failed, unexpected path: %q, expected %q", i, r.pathPrefix, tc.wantsAbsPath)
 		}
@@ -1432,7 +1464,7 @@ func TestUintParam(t *testing.T) {
 
 	for _, item := range table {
 		u, _ := url.Parse("http://localhost")
-		r := NewRequest(nil, "GET", u, "", ContentConfig{GroupVersion: &unversioned.GroupVersion{Group: "test"}}, Serializers{}, nil, nil).AbsPath("").UintParam(item.name, item.testVal)
+		r := NewRequest(nil, "GET", u, "", ContentConfig{GroupVersion: &schema.GroupVersion{Group: "test"}}, Serializers{}, nil, nil).AbsPath("").UintParam(item.name, item.testVal)
 		if e, a := item.expectStr, r.URL().String(); e != a {
 			t.Errorf("expected %v, got %v", e, a)
 		}

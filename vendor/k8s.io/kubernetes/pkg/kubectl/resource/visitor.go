@@ -26,13 +26,16 @@ import (
 	"path/filepath"
 	"time"
 
+	"golang.org/x/text/encoding/unicode"
+	"golang.org/x/text/transform"
+
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/meta"
-	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/api/validation"
 	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 	utilerrors "k8s.io/kubernetes/pkg/util/errors"
 	"k8s.io/kubernetes/pkg/util/yaml"
 	"k8s.io/kubernetes/pkg/watch"
@@ -81,9 +84,9 @@ type Info struct {
 	// Optional, this is the provided object in a versioned type before defaulting
 	// and conversions into its corresponding internal type. This is useful for
 	// reflecting on user intent which may be lost after defaulting and conversions.
-	VersionedObject interface{}
+	VersionedObject runtime.Object
 	// Optional, this is the most recent value returned by the server if available
-	runtime.Object
+	Object runtime.Object
 	// Optional, this is the most recent resource version the server knows about for
 	// this type of resource. It may not match the resource version of the object,
 	// but if set it should be equal to or newer than the resource version of the
@@ -263,7 +266,7 @@ func readHttpWithRetries(get httpget, duration time.Duration, u string, attempts
 		}
 
 		// Error - Set the error condition from the StatusCode
-		if statusCode != 200 {
+		if statusCode != http.StatusOK {
 			err = fmt.Errorf("unable to read URL %q, server reported %s, status code=%d", u, status, statusCode)
 		}
 
@@ -393,7 +396,7 @@ func (v FlattenListVisitor) Visit(fn VisitorFunc) error {
 		}
 
 		// If we have a GroupVersionKind on the list, prioritize that when asking for info on the objects contained in the list
-		var preferredGVKs []unversioned.GroupVersionKind
+		var preferredGVKs []schema.GroupVersionKind
 		if info.Mapping != nil && !info.Mapping.GroupVersionKind.Empty() {
 			preferredGVKs = append(preferredGVKs, info.Mapping.GroupVersionKind)
 		}
@@ -489,7 +492,11 @@ func (v *FileVisitor) Visit(fn VisitorFunc) error {
 		}
 	}
 	defer f.Close()
-	v.StreamVisitor.Reader = f
+
+	// TODO: Consider adding a flag to force to UTF16, apparently some
+	// Windows tools don't write the BOM
+	utf16bom := unicode.BOMOverride(unicode.UTF8.NewDecoder())
+	v.StreamVisitor.Reader = transform.NewReader(f, utf16bom)
 
 	return v.StreamVisitor.Visit(fn)
 }

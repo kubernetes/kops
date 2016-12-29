@@ -30,13 +30,14 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/meta"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/apis/meta/v1/unstructured"
 	"k8s.io/kubernetes/pkg/kubectl"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 	"k8s.io/kubernetes/pkg/util/crlf"
 	"k8s.io/kubernetes/pkg/util/strategicpatch"
 	"k8s.io/kubernetes/pkg/util/validation/field"
@@ -291,7 +292,7 @@ func runEdit(f cmdutil.Factory, out, errOut io.Writer, cmd *cobra.Command, args 
 
 			switch editMode {
 			case NormalEditMode:
-				err = visitToPatch(originalObj, updates, f, mapper, resourceMapper, encoder, out, errOut, defaultVersion, &results, file)
+				err = visitToPatch(originalObj, updates, mapper, resourceMapper, encoder, out, errOut, defaultVersion, &results, file)
 			case EditBeforeCreateMode:
 				err = visitToCreate(updates, mapper, resourceMapper, out, errOut, defaultVersion, &results, file)
 			default:
@@ -399,7 +400,7 @@ func getMapperAndResult(f cmdutil.Factory, args []string, options *resource.File
 			ResourceTypeOrNameArgs(true, args...).
 			Latest()
 	case EditBeforeCreateMode:
-		b = resource.NewBuilder(mapper, typer, resource.ClientMapperFunc(f.UnstructuredClientForMapping), runtime.UnstructuredJSONScheme)
+		b = resource.NewBuilder(mapper, typer, resource.ClientMapperFunc(f.UnstructuredClientForMapping), unstructured.UnstructuredJSONScheme)
 	default:
 		return nil, nil, nil, "", fmt.Errorf("Not supported edit mode %q", editMode)
 	}
@@ -415,22 +416,20 @@ func getMapperAndResult(f cmdutil.Factory, args []string, options *resource.File
 	return mapper, resourceMapper, r, cmdNamespace, err
 }
 
-func visitToPatch(originalObj runtime.Object, updates *resource.Info,
-	f cmdutil.Factory,
-	mapper meta.RESTMapper, resourceMapper *resource.Mapper,
+func visitToPatch(
+	originalObj runtime.Object,
+	updates *resource.Info,
+	mapper meta.RESTMapper,
+	resourceMapper *resource.Mapper,
 	encoder runtime.Encoder,
 	out, errOut io.Writer,
-	defaultVersion unversioned.GroupVersion,
+	defaultVersion schema.GroupVersion,
 	results *editResults,
-	file string) error {
-
-	smPatchVersion, err := cmdutil.GetServerSupportedSMPatchVersionFromFactory(f)
-	if err != nil {
-		return err
-	}
+	file string,
+) error {
 
 	patchVisitor := resource.NewFlattenListVisitor(updates, resourceMapper)
-	err = patchVisitor.Visit(func(info *resource.Info, incomingErr error) error {
+	err := patchVisitor.Visit(func(info *resource.Info, incomingErr error) error {
 		currOriginalObj := originalObj
 
 		// if we're editing a list, then navigate the list to find the item that we're currently trying to edit
@@ -491,7 +490,7 @@ func visitToPatch(originalObj runtime.Object, updates *resource.Info,
 
 		preconditions := []strategicpatch.PreconditionFunc{strategicpatch.RequireKeyUnchanged("apiVersion"),
 			strategicpatch.RequireKeyUnchanged("kind"), strategicpatch.RequireMetadataKeyUnchanged("name")}
-		patch, err := strategicpatch.CreateTwoWayMergePatch(originalJS, editedJS, currOriginalObj, smPatchVersion, preconditions...)
+		patch, err := strategicpatch.CreateTwoWayMergePatch(originalJS, editedJS, currOriginalObj, preconditions...)
 		if err != nil {
 			glog.V(4).Infof("Unable to calculate diff, no merge is possible: %v", err)
 			if strategicpatch.IsPreconditionFailed(err) {
@@ -513,7 +512,7 @@ func visitToPatch(originalObj runtime.Object, updates *resource.Info,
 	return err
 }
 
-func visitToCreate(updates *resource.Info, mapper meta.RESTMapper, resourceMapper *resource.Mapper, out, errOut io.Writer, defaultVersion unversioned.GroupVersion, results *editResults, file string) error {
+func visitToCreate(updates *resource.Info, mapper meta.RESTMapper, resourceMapper *resource.Mapper, out, errOut io.Writer, defaultVersion schema.GroupVersion, results *editResults, file string) error {
 	createVisitor := resource.NewFlattenListVisitor(updates, resourceMapper)
 	err := createVisitor.Visit(func(info *resource.Info, incomingErr error) error {
 		results.version = defaultVersion
@@ -605,7 +604,7 @@ type editResults struct {
 	edit      []*resource.Info
 	file      string
 
-	version unversioned.GroupVersion
+	version schema.GroupVersion
 }
 
 func (r *editResults) addError(err error, info *resource.Info) string {

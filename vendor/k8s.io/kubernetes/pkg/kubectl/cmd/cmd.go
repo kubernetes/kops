@@ -27,6 +27,7 @@ import (
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/util/flag"
+	"k8s.io/kubernetes/pkg/util/i18n"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -170,7 +171,10 @@ __custom_func() {
 	// TODO: This should be populated using the discovery information from apiserver.
 	valid_resources = `Valid resource types include:
 
+    * all
     * clusters (valid only for federation apiservers)
+    * clusterrolebindings
+    * clusterroles
     * componentstatuses (aka 'cs')
     * configmaps (aka 'cm')
     * daemonsets (aka 'ds')
@@ -187,14 +191,18 @@ __custom_func() {
     * persistentvolumeclaims (aka 'pvc')
     * persistentvolumes (aka 'pv')
     * pods (aka 'po')
+    * poddisruptionbudgets (aka 'pdb')
     * podsecuritypolicies (aka 'psp')
     * podtemplates
     * replicasets (aka 'rs')
     * replicationcontrollers (aka 'rc')
     * resourcequotas (aka 'quota')
+    * rolebindings
+    * roles
     * secrets
     * serviceaccounts (aka 'sa')
     * services (aka 'svc')
+    * statefulsets
     * storageclasses
     * thirdpartyresources
     `
@@ -217,6 +225,13 @@ func NewKubectlCommand(f cmdutil.Factory, in io.Reader, out, err io.Writer) *cob
 	f.BindFlags(cmds.PersistentFlags())
 	f.BindExternalFlags(cmds.PersistentFlags())
 
+	// Sending in 'nil' for the getLanguageFn() results in using
+	// the LANG environment variable.
+	//
+	// TODO: Consider adding a flag or file preference for setting
+	// the language, instead of just loading from the LANG env. variable.
+	i18n.LoadTranslations("kubectl", nil)
+
 	// From this point and forward we get warnings on flags that contain "_" separators
 	cmds.SetGlobalNormalizationFunc(flag.WarnWordSepNormalizeFunc)
 
@@ -236,7 +251,7 @@ func NewKubectlCommand(f cmdutil.Factory, in io.Reader, out, err io.Writer) *cob
 				NewCmdGet(f, out, err),
 				NewCmdExplain(f, out, err),
 				NewCmdEdit(f, out, err),
-				NewCmdDelete(f, out),
+				NewCmdDelete(f, out, err),
 			},
 		},
 		{
@@ -275,7 +290,7 @@ func NewKubectlCommand(f cmdutil.Factory, in io.Reader, out, err io.Writer) *cob
 		{
 			Message: "Advanced Commands:",
 			Commands: []*cobra.Command{
-				NewCmdApply(f, out),
+				NewCmdApply(f, out, err),
 				NewCmdPatch(f, out),
 				NewCmdReplace(f, out),
 				NewCmdConvert(f, out),

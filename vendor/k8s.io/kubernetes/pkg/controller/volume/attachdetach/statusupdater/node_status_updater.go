@@ -25,10 +25,10 @@ import (
 	"github.com/golang/glog"
 
 	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
 	kcache "k8s.io/kubernetes/pkg/client/cache"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
+	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/controller/volume/attachdetach/cache"
-	"k8s.io/kubernetes/pkg/conversion"
 	"k8s.io/kubernetes/pkg/util/strategicpatch"
 )
 
@@ -42,7 +42,7 @@ type NodeStatusUpdater interface {
 
 // NewNodeStatusUpdater returns a new instance of NodeStatusUpdater.
 func NewNodeStatusUpdater(
-	kubeClient internalclientset.Interface,
+	kubeClient clientset.Interface,
 	nodeInformer kcache.SharedInformer,
 	actualStateOfWorld cache.ActualStateOfWorld) NodeStatusUpdater {
 	return &nodeStatusUpdater{
@@ -53,23 +53,21 @@ func NewNodeStatusUpdater(
 }
 
 type nodeStatusUpdater struct {
-	kubeClient         internalclientset.Interface
+	kubeClient         clientset.Interface
 	nodeInformer       kcache.SharedInformer
 	actualStateOfWorld cache.ActualStateOfWorld
 }
 
 func (nsu *nodeStatusUpdater) UpdateNodeStatuses() error {
-	smPatchVersion, err := strategicpatch.GetServerSupportedSMPatchVersion(nsu.kubeClient.Discovery())
-	if err != nil {
-		return err
-	}
+	// TODO: investigate right behavior if nodeName is empty
+	// kubernetes/kubernetes/issues/37777
 	nodesToUpdate := nsu.actualStateOfWorld.GetVolumesToReportAttached()
 	for nodeName, attachedVolumes := range nodesToUpdate {
 		nodeObj, exists, err := nsu.nodeInformer.GetStore().GetByKey(string(nodeName))
 		if nodeObj == nil || !exists || err != nil {
 			// If node does not exist, its status cannot be updated, log error and
 			// reset flag statusUpdateNeeded back to true to indicate this node status
-			// needs to be udpated again
+			// needs to be updated again
 			glog.V(2).Infof(
 				"Could not update node status. Failed to find node %q in NodeInformer cache. %v",
 				nodeName,
@@ -78,14 +76,14 @@ func (nsu *nodeStatusUpdater) UpdateNodeStatuses() error {
 			continue
 		}
 
-		clonedNode, err := conversion.NewCloner().DeepCopy(nodeObj)
+		clonedNode, err := api.Scheme.DeepCopy(nodeObj)
 		if err != nil {
 			return fmt.Errorf("error cloning node %q: %v",
 				nodeName,
 				err)
 		}
 
-		node, ok := clonedNode.(*api.Node)
+		node, ok := clonedNode.(*v1.Node)
 		if !ok || node == nil {
 			return fmt.Errorf(
 				"failed to cast %q object %#v to Node",
@@ -93,6 +91,7 @@ func (nsu *nodeStatusUpdater) UpdateNodeStatuses() error {
 				clonedNode)
 		}
 
+		// TODO: Change to pkg/util/node.UpdateNodeStatus.
 		oldData, err := json.Marshal(node)
 		if err != nil {
 			return fmt.Errorf(
@@ -112,7 +111,7 @@ func (nsu *nodeStatusUpdater) UpdateNodeStatuses() error {
 		}
 
 		patchBytes, err :=
-			strategicpatch.CreateStrategicMergePatch(oldData, newData, node, smPatchVersion)
+			strategicpatch.CreateStrategicMergePatch(oldData, newData, node)
 		if err != nil {
 			return fmt.Errorf(
 				"failed to CreateStrategicMergePatch for node %q. %v",
@@ -123,7 +122,7 @@ func (nsu *nodeStatusUpdater) UpdateNodeStatuses() error {
 		_, err = nsu.kubeClient.Core().Nodes().PatchStatus(string(nodeName), patchBytes)
 		if err != nil {
 			// If update node status fails, reset flag statusUpdateNeeded back to true
-			// to indicate this node status needs to be udpated again
+			// to indicate this node status needs to be updated again
 			nsu.actualStateOfWorld.SetNodeStatusUpdateNeeded(nodeName)
 			return fmt.Errorf(
 				"failed to kubeClient.Core().Nodes().Patch for node %q. %v",
