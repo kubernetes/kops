@@ -53,8 +53,23 @@ Kubernetes kops uses the official AWS Go SDK, so all we need to do here is set u
 
 #### OS X
 
+##### Installing aws cli
+
+The officially supported way of installing the tool is with `pip` as in
+
 ```bash
 pip install awscli
+```
+
+You can also grab the tool with homebrew, although this is not officially supported.
+
+```bash
+brew update && brew install awscli
+```
+
+Now configure the tool, and verify it works.
+
+```bash
 aws configure # Input your credentials here
 aws iam list-users
 ```
