@@ -26,16 +26,18 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/meta"
 	"k8s.io/kubernetes/pkg/api/rest"
-	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apimachinery/registered"
 	"k8s.io/kubernetes/pkg/apis/extensions"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/apiserver"
+	apiserverhandlers "k8s.io/kubernetes/pkg/apiserver/handlers"
 	"k8s.io/kubernetes/pkg/genericapiserver"
 	extensionsrest "k8s.io/kubernetes/pkg/registry/extensions/rest"
 	"k8s.io/kubernetes/pkg/registry/extensions/thirdpartyresourcedata"
 	thirdpartyresourcedataetcd "k8s.io/kubernetes/pkg/registry/extensions/thirdpartyresourcedata/etcd"
 	"k8s.io/kubernetes/pkg/registry/generic"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 	"k8s.io/kubernetes/pkg/storage/storagebackend"
 )
 
@@ -46,11 +48,11 @@ type dynamicLister struct {
 	path string
 }
 
-func (d dynamicLister) ListAPIResources() []unversioned.APIResource {
+func (d dynamicLister) ListAPIResources() []metav1.APIResource {
 	return d.m.getExistingThirdPartyResources(d.path)
 }
 
-var _ apiserver.APIResourceLister = &dynamicLister{}
+var _ apiserverhandlers.APIResourceLister = &dynamicLister{}
 
 type ThirdPartyResourceServer struct {
 	genericAPIServer *genericapiserver.GenericAPIServer
@@ -88,7 +90,7 @@ func NewThirdPartyResourceServer(genericAPIServer *genericapiserver.GenericAPISe
 type thirdPartyEntry struct {
 	// Map from plural resource name to entry
 	storage map[string]*thirdpartyresourcedataetcd.REST
-	group   unversioned.APIGroup
+	group   metav1.APIGroup
 }
 
 // HasThirdPartyResource returns true if a particular third party resource currently installed.
@@ -104,7 +106,7 @@ func (m *ThirdPartyResourceServer) HasThirdPartyResource(rsrc *extensions.ThirdP
 	if entry == nil {
 		return false, nil
 	}
-	plural, _ := meta.KindToResource(unversioned.GroupVersionKind{
+	plural, _ := meta.KindToResource(schema.GroupVersionKind{
 		Group:   group,
 		Version: rsrc.Versions[0].Name,
 		Kind:    kind,
@@ -193,14 +195,14 @@ func (m *ThirdPartyResourceServer) ListThirdPartyResources() []string {
 	return result
 }
 
-func (m *ThirdPartyResourceServer) getExistingThirdPartyResources(path string) []unversioned.APIResource {
-	result := []unversioned.APIResource{}
+func (m *ThirdPartyResourceServer) getExistingThirdPartyResources(path string) []metav1.APIResource {
+	result := []metav1.APIResource{}
 	m.thirdPartyResourcesLock.Lock()
 	defer m.thirdPartyResourcesLock.Unlock()
 	entry := m.thirdPartyResources[path]
 	if entry != nil {
 		for key, obj := range entry.storage {
-			result = append(result, unversioned.APIResource{
+			result = append(result, metav1.APIResource{
 				Name:       key,
 				Namespaced: true,
 				Kind:       obj.Kind(),
@@ -217,7 +219,7 @@ func (m *ThirdPartyResourceServer) hasThirdPartyGroupStorage(path string) bool {
 	return found
 }
 
-func (m *ThirdPartyResourceServer) addThirdPartyResourceStorage(path, resource string, storage *thirdpartyresourcedataetcd.REST, apiGroup unversioned.APIGroup) {
+func (m *ThirdPartyResourceServer) addThirdPartyResourceStorage(path, resource string, storage *thirdpartyresourcedataetcd.REST, apiGroup metav1.APIGroup) {
 	m.thirdPartyResourcesLock.Lock()
 	defer m.thirdPartyResourcesLock.Unlock()
 	entry, found := m.thirdPartyResources[path]
@@ -246,20 +248,23 @@ func (m *ThirdPartyResourceServer) InstallThirdPartyResource(rsrc *extensions.Th
 	if err != nil {
 		return err
 	}
-	plural, _ := meta.KindToResource(unversioned.GroupVersionKind{
+	if len(rsrc.Versions) == 0 {
+		return fmt.Errorf("ThirdPartyResource %s has no defined versions", rsrc.Name)
+	}
+	plural, _ := meta.KindToResource(schema.GroupVersionKind{
 		Group:   group,
 		Version: rsrc.Versions[0].Name,
 		Kind:    kind,
 	})
 	path := extensionsrest.MakeThirdPartyPath(group)
 
-	groupVersion := unversioned.GroupVersionForDiscovery{
+	groupVersion := metav1.GroupVersionForDiscovery{
 		GroupVersion: group + "/" + rsrc.Versions[0].Name,
 		Version:      rsrc.Versions[0].Name,
 	}
-	apiGroup := unversioned.APIGroup{
+	apiGroup := metav1.APIGroup{
 		Name:             group,
-		Versions:         []unversioned.GroupVersionForDiscovery{groupVersion},
+		Versions:         []metav1.GroupVersionForDiscovery{groupVersion},
 		PreferredVersion: groupVersion,
 	}
 
@@ -297,8 +302,8 @@ func (m *ThirdPartyResourceServer) thirdpartyapi(group, kind, version, pluralRes
 	}
 
 	optionsExternalVersion := registered.GroupOrDie(api.GroupName).GroupVersion
-	internalVersion := unversioned.GroupVersion{Group: group, Version: runtime.APIVersionInternal}
-	externalVersion := unversioned.GroupVersion{Group: group, Version: version}
+	internalVersion := schema.GroupVersion{Group: group, Version: runtime.APIVersionInternal}
+	externalVersion := schema.GroupVersion{Group: group, Version: version}
 
 	apiRoot := extensionsrest.MakeThirdPartyPath("")
 	return &apiserver.APIGroupVersion{

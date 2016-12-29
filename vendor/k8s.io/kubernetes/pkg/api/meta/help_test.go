@@ -22,9 +22,10 @@ import (
 
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/meta"
-	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/pkg/apis/meta/v1/unstructured"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 	"k8s.io/kubernetes/pkg/util/diff"
 
 	"github.com/google/gofuzz"
@@ -232,8 +233,8 @@ type fakePtrInterfaceList struct {
 	Items *[]runtime.Object
 }
 
-func (obj fakePtrInterfaceList) GetObjectKind() unversioned.ObjectKind {
-	return unversioned.EmptyObjectKind
+func (obj fakePtrInterfaceList) GetObjectKind() schema.ObjectKind {
+	return schema.EmptyObjectKind
 }
 
 func TestExtractListOfInterfacePtrs(t *testing.T) {
@@ -253,8 +254,8 @@ type fakePtrValueList struct {
 	Items []*api.Pod
 }
 
-func (obj fakePtrValueList) GetObjectKind() unversioned.ObjectKind {
-	return unversioned.EmptyObjectKind
+func (obj fakePtrValueList) GetObjectKind() schema.ObjectKind {
+	return schema.EmptyObjectKind
 }
 
 func TestSetList(t *testing.T) {
@@ -300,11 +301,11 @@ func TestSetListToRuntimeObjectArray(t *testing.T) {
 }
 
 func TestSetListToMatchingType(t *testing.T) {
-	pl := &runtime.UnstructuredList{}
+	pl := &unstructured.UnstructuredList{}
 	list := []runtime.Object{
-		&runtime.Unstructured{Object: map[string]interface{}{"foo": 1}},
-		&runtime.Unstructured{Object: map[string]interface{}{"foo": 2}},
-		&runtime.Unstructured{Object: map[string]interface{}{"foo": 3}},
+		&unstructured.Unstructured{Object: map[string]interface{}{"foo": 1}},
+		&unstructured.Unstructured{Object: map[string]interface{}{"foo": 2}},
+		&unstructured.Unstructured{Object: map[string]interface{}{"foo": 3}},
 	}
 	err := meta.SetList(pl, list)
 	if err != nil {

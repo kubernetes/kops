@@ -4,10 +4,8 @@ licenses(["notice"])
 
 load(
     "@io_bazel_rules_go//go:def.bzl",
-    "go_binary",
     "go_library",
     "go_test",
-    "cgo_library",
 )
 
 go_library(
@@ -17,6 +15,8 @@ go_library(
     deps = [
         "//pkg/api:go_default_library",
         "//pkg/api/service:go_default_library",
+        "//pkg/api/v1:go_default_library",
+        "//pkg/client/record:go_default_library",
         "//pkg/proxy:go_default_library",
         "//pkg/proxy/healthcheck:go_default_library",
         "//pkg/types:go_default_library",
@@ -27,7 +27,7 @@ go_library(
         "//pkg/util/sets:go_default_library",
         "//pkg/util/slice:go_default_library",
         "//pkg/util/sysctl:go_default_library",
-        "//vendor:github.com/coreos/go-semver/semver",
+        "//pkg/util/version:go_default_library",
         "//vendor:github.com/davecgh/go-spew/spew",
         "//vendor:github.com/golang/glog",
     ],

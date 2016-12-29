@@ -4,22 +4,25 @@ licenses(["notice"])
 
 load(
     "@io_bazel_rules_go//go:def.bzl",
-    "go_binary",
     "go_library",
     "go_test",
-    "cgo_library",
 )
 
 go_library(
     name = "go_default_library",
-    srcs = ["options.go"],
+    srcs = [
+        "options.go",
+        "validation.go",
+    ],
     tags = ["automanaged"],
     deps = [
         "//pkg/api:go_default_library",
         "//pkg/api/validation:go_default_library",
         "//pkg/genericapiserver/options:go_default_library",
+        "//pkg/kubeapiserver/options:go_default_library",
         "//pkg/kubelet/client:go_default_library",
         "//pkg/master/ports:go_default_library",
+        "//pkg/util/net:go_default_library",
         "//vendor:github.com/spf13/pflag",
     ],
 )

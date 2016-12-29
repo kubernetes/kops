@@ -27,7 +27,7 @@ import (
 
 	fed "k8s.io/kubernetes/federation/apis/federation"
 	fedv1 "k8s.io/kubernetes/federation/apis/federation/v1beta1"
-	fedclientset "k8s.io/kubernetes/federation/client/clientset_generated/federation_release_1_5"
+	fedclientset "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset"
 	fedutil "k8s.io/kubernetes/federation/pkg/federation-controller/util"
 	"k8s.io/kubernetes/federation/pkg/federation-controller/util/deletionhelper"
 	"k8s.io/kubernetes/federation/pkg/federation-controller/util/eventsink"
@@ -38,10 +38,9 @@ import (
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	extensionsv1 "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
 	"k8s.io/kubernetes/pkg/client/cache"
-	kubeclientset "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	kubeclientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/client/record"
 	"k8s.io/kubernetes/pkg/controller"
-	"k8s.io/kubernetes/pkg/conversion"
 	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/util/flowcontrol"
 	"k8s.io/kubernetes/pkg/util/wait"
@@ -104,7 +103,7 @@ type DeploymentController struct {
 func NewDeploymentController(federationClient fedclientset.Interface) *DeploymentController {
 	broadcaster := record.NewBroadcaster()
 	broadcaster.StartRecordingToSink(eventsink.NewFederatedEventSink(federationClient))
-	recorder := broadcaster.NewRecorder(api.EventSource{Component: "federated-deployment-controller"})
+	recorder := broadcaster.NewRecorder(apiv1.EventSource{Component: "federated-deployment-controller"})
 
 	fdc := &DeploymentController{
 		fedClient:           federationClient,
@@ -123,13 +122,11 @@ func NewDeploymentController(federationClient fedclientset.Interface) *Deploymen
 	deploymentFedInformerFactory := func(cluster *fedv1.Cluster, clientset kubeclientset.Interface) (cache.Store, cache.ControllerInterface) {
 		return cache.NewInformer(
 			&cache.ListWatch{
-				ListFunc: func(options api.ListOptions) (runtime.Object, error) {
-					versionedOptions := fedutil.VersionizeV1ListOptions(options)
-					return clientset.Extensions().Deployments(apiv1.NamespaceAll).List(versionedOptions)
+				ListFunc: func(options apiv1.ListOptions) (runtime.Object, error) {
+					return clientset.Extensions().Deployments(apiv1.NamespaceAll).List(options)
 				},
-				WatchFunc: func(options api.ListOptions) (watch.Interface, error) {
-					versionedOptions := fedutil.VersionizeV1ListOptions(options)
-					return clientset.Extensions().Deployments(apiv1.NamespaceAll).Watch(versionedOptions)
+				WatchFunc: func(options apiv1.ListOptions) (watch.Interface, error) {
+					return clientset.Extensions().Deployments(apiv1.NamespaceAll).Watch(options)
 				},
 			},
 			&extensionsv1.Deployment{},
@@ -152,13 +149,11 @@ func NewDeploymentController(federationClient fedclientset.Interface) *Deploymen
 	podFedInformerFactory := func(cluster *fedv1.Cluster, clientset kubeclientset.Interface) (cache.Store, cache.ControllerInterface) {
 		return cache.NewInformer(
 			&cache.ListWatch{
-				ListFunc: func(options api.ListOptions) (runtime.Object, error) {
-					versionedOptions := fedutil.VersionizeV1ListOptions(options)
-					return clientset.Core().Pods(apiv1.NamespaceAll).List(versionedOptions)
+				ListFunc: func(options apiv1.ListOptions) (runtime.Object, error) {
+					return clientset.Core().Pods(apiv1.NamespaceAll).List(options)
 				},
-				WatchFunc: func(options api.ListOptions) (watch.Interface, error) {
-					versionedOptions := fedutil.VersionizeV1ListOptions(options)
-					return clientset.Core().Pods(apiv1.NamespaceAll).Watch(versionedOptions)
+				WatchFunc: func(options apiv1.ListOptions) (watch.Interface, error) {
+					return clientset.Core().Pods(apiv1.NamespaceAll).Watch(options)
 				},
 			},
 			&apiv1.Pod{},
@@ -174,13 +169,11 @@ func NewDeploymentController(federationClient fedclientset.Interface) *Deploymen
 
 	fdc.deploymentStore, fdc.deploymentController = cache.NewInformer(
 		&cache.ListWatch{
-			ListFunc: func(options api.ListOptions) (runtime.Object, error) {
-				versionedOptions := fedutil.VersionizeV1ListOptions(options)
-				return fdc.fedClient.Extensions().Deployments(apiv1.NamespaceAll).List(versionedOptions)
+			ListFunc: func(options apiv1.ListOptions) (runtime.Object, error) {
+				return fdc.fedClient.Extensions().Deployments(apiv1.NamespaceAll).List(options)
 			},
-			WatchFunc: func(options api.ListOptions) (watch.Interface, error) {
-				versionedOptions := fedutil.VersionizeV1ListOptions(options)
-				return fdc.fedClient.Extensions().Deployments(apiv1.NamespaceAll).Watch(versionedOptions)
+			WatchFunc: func(options apiv1.ListOptions) (watch.Interface, error) {
+				return fdc.fedClient.Extensions().Deployments(apiv1.NamespaceAll).Watch(options)
 			},
 		},
 		&extensionsv1.Deployment{},
@@ -490,7 +483,7 @@ func (fdc *DeploymentController) reconcileDeployment(key string) (reconciliation
 		// don't delete local deployments for now. Do not reconcile it anymore.
 		return statusAllOk, nil
 	}
-	obj, err := conversion.NewCloner().DeepCopy(objFromStore)
+	obj, err := api.Scheme.DeepCopy(objFromStore)
 	fd, ok := obj.(*extensionsv1.Deployment)
 	if err != nil || !ok {
 		glog.Errorf("Error in retrieving obj from store: %v, %v", ok, err)
@@ -561,10 +554,8 @@ func (fdc *DeploymentController) reconcileDeployment(key string) (reconciliation
 			return statusError, err
 		}
 
-		ld := &extensionsv1.Deployment{
-			ObjectMeta: fedutil.CopyObjectMeta(fd.ObjectMeta),
-			Spec:       fd.Spec,
-		}
+		// The object can be modified.
+		ld := fedutil.DeepCopyDeployment(fd)
 		specReplicas := int32(replicas)
 		ld.Spec.Replicas = &specReplicas
 
@@ -584,7 +575,7 @@ func (fdc *DeploymentController) reconcileDeployment(key string) (reconciliation
 
 			currentLd := ldObj.(*extensionsv1.Deployment)
 			// Update existing replica set, if needed.
-			if !fedutil.ObjectMetaAndSpecEquivalent(ld, currentLd) {
+			if !fedutil.DeploymentEquivalent(ld, currentLd) {
 				fdc.eventRecorder.Eventf(fd, api.EventTypeNormal, "UpdateInCluster",
 					"Updating deployment in cluster %s", clusterName)
 
