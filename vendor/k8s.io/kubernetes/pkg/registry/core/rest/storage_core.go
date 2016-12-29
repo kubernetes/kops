@@ -29,9 +29,7 @@ import (
 
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/rest"
-	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apimachinery/registered"
-	"k8s.io/kubernetes/pkg/apiserver"
 	policyclient "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/policy/internalversion"
 	"k8s.io/kubernetes/pkg/client/restclient"
 	"k8s.io/kubernetes/pkg/genericapiserver"
@@ -44,9 +42,7 @@ import (
 	endpointsetcd "k8s.io/kubernetes/pkg/registry/core/endpoint/etcd"
 	eventetcd "k8s.io/kubernetes/pkg/registry/core/event/etcd"
 	limitrangeetcd "k8s.io/kubernetes/pkg/registry/core/limitrange/etcd"
-	"k8s.io/kubernetes/pkg/registry/core/namespace"
 	namespaceetcd "k8s.io/kubernetes/pkg/registry/core/namespace/etcd"
-	"k8s.io/kubernetes/pkg/registry/core/node"
 	nodeetcd "k8s.io/kubernetes/pkg/registry/core/node/etcd"
 	pvetcd "k8s.io/kubernetes/pkg/registry/core/persistentvolume/etcd"
 	pvcetcd "k8s.io/kubernetes/pkg/registry/core/persistentvolumeclaim/etcd"
@@ -59,9 +55,11 @@ import (
 	"k8s.io/kubernetes/pkg/registry/core/service/allocator"
 	etcdallocator "k8s.io/kubernetes/pkg/registry/core/service/allocator/etcd"
 	serviceetcd "k8s.io/kubernetes/pkg/registry/core/service/etcd"
-	ipallocator "k8s.io/kubernetes/pkg/registry/core/service/ipallocator"
+	"k8s.io/kubernetes/pkg/registry/core/service/ipallocator"
 	"k8s.io/kubernetes/pkg/registry/core/service/portallocator"
 	serviceaccountetcd "k8s.io/kubernetes/pkg/registry/core/serviceaccount/etcd"
+	"k8s.io/kubernetes/pkg/registry/generic"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 	etcdutil "k8s.io/kubernetes/pkg/storage/etcd/util"
 	utilnet "k8s.io/kubernetes/pkg/util/net"
 )
@@ -86,29 +84,25 @@ type LegacyRESTStorageProvider struct {
 // master.go for wiring controllers.
 // TODO remove this by running the controller as a poststarthook
 type LegacyRESTStorage struct {
-	NodeRegistry              node.Registry
-	NamespaceRegistry         namespace.Registry
-	ServiceRegistry           service.Registry
-	EndpointRegistry          endpoint.Registry
 	ServiceClusterIPAllocator rangeallocation.RangeRegistry
 	ServiceNodePortAllocator  rangeallocation.RangeRegistry
 }
 
-func (c LegacyRESTStorageProvider) NewLegacyRESTStorage(restOptionsGetter genericapiserver.RESTOptionsGetter) (LegacyRESTStorage, genericapiserver.APIGroupInfo, error) {
+func (c LegacyRESTStorageProvider) NewLegacyRESTStorage(restOptionsGetter generic.RESTOptionsGetter) (LegacyRESTStorage, genericapiserver.APIGroupInfo, error) {
 	apiGroupInfo := genericapiserver.APIGroupInfo{
 		GroupMeta:                    *registered.GroupOrDie(api.GroupName),
 		VersionedResourcesStorageMap: map[string]map[string]rest.Storage{},
 		Scheme:                      api.Scheme,
 		ParameterCodec:              api.ParameterCodec,
 		NegotiatedSerializer:        api.Codecs,
-		SubresourceGroupVersionKind: map[string]unversioned.GroupVersionKind{},
+		SubresourceGroupVersionKind: map[string]schema.GroupVersionKind{},
 	}
-	if autoscalingGroupVersion := (unversioned.GroupVersion{Group: "autoscaling", Version: "v1"}); registered.IsEnabledVersion(autoscalingGroupVersion) {
+	if autoscalingGroupVersion := (schema.GroupVersion{Group: "autoscaling", Version: "v1"}); registered.IsEnabledVersion(autoscalingGroupVersion) {
 		apiGroupInfo.SubresourceGroupVersionKind["replicationcontrollers/scale"] = autoscalingGroupVersion.WithKind("Scale")
 	}
 
 	var podDisruptionClient policyclient.PodDisruptionBudgetsGetter
-	if policyGroupVersion := (unversioned.GroupVersion{Group: "policy", Version: "v1beta1"}); registered.IsEnabledVersion(policyGroupVersion) {
+	if policyGroupVersion := (schema.GroupVersion{Group: "policy", Version: "v1beta1"}); registered.IsEnabledVersion(policyGroupVersion) {
 		apiGroupInfo.SubresourceGroupVersionKind["pods/eviction"] = policyGroupVersion.WithKind("Eviction")
 
 		var err error
@@ -119,39 +113,37 @@ func (c LegacyRESTStorageProvider) NewLegacyRESTStorage(restOptionsGetter generi
 	}
 	restStorage := LegacyRESTStorage{}
 
-	podTemplateStorage := podtemplateetcd.NewREST(restOptionsGetter(api.Resource("podTemplates")))
+	podTemplateStorage := podtemplateetcd.NewREST(restOptionsGetter)
 
-	eventStorage := eventetcd.NewREST(restOptionsGetter(api.Resource("events")), uint64(c.EventTTL.Seconds()))
-	limitRangeStorage := limitrangeetcd.NewREST(restOptionsGetter(api.Resource("limitRanges")))
+	eventStorage := eventetcd.NewREST(restOptionsGetter, uint64(c.EventTTL.Seconds()))
+	limitRangeStorage := limitrangeetcd.NewREST(restOptionsGetter)
 
-	resourceQuotaStorage, resourceQuotaStatusStorage := resourcequotaetcd.NewREST(restOptionsGetter(api.Resource("resourceQuotas")))
-	secretStorage := secretetcd.NewREST(restOptionsGetter(api.Resource("secrets")))
-	serviceAccountStorage := serviceaccountetcd.NewREST(restOptionsGetter(api.Resource("serviceAccounts")))
-	persistentVolumeStorage, persistentVolumeStatusStorage := pvetcd.NewREST(restOptionsGetter(api.Resource("persistentVolumes")))
-	persistentVolumeClaimStorage, persistentVolumeClaimStatusStorage := pvcetcd.NewREST(restOptionsGetter(api.Resource("persistentVolumeClaims")))
-	configMapStorage := configmapetcd.NewREST(restOptionsGetter(api.Resource("configMaps")))
+	resourceQuotaStorage, resourceQuotaStatusStorage := resourcequotaetcd.NewREST(restOptionsGetter)
+	secretStorage := secretetcd.NewREST(restOptionsGetter)
+	serviceAccountStorage := serviceaccountetcd.NewREST(restOptionsGetter)
+	persistentVolumeStorage, persistentVolumeStatusStorage := pvetcd.NewREST(restOptionsGetter)
+	persistentVolumeClaimStorage, persistentVolumeClaimStatusStorage := pvcetcd.NewREST(restOptionsGetter)
+	configMapStorage := configmapetcd.NewREST(restOptionsGetter)
 
-	namespaceStorage, namespaceStatusStorage, namespaceFinalizeStorage := namespaceetcd.NewREST(restOptionsGetter(api.Resource("namespaces")))
-	restStorage.NamespaceRegistry = namespace.NewRegistry(namespaceStorage)
+	namespaceStorage, namespaceStatusStorage, namespaceFinalizeStorage := namespaceetcd.NewREST(restOptionsGetter)
 
-	endpointsStorage := endpointsetcd.NewREST(restOptionsGetter(api.Resource("endpoints")))
-	restStorage.EndpointRegistry = endpoint.NewRegistry(endpointsStorage)
+	endpointsStorage := endpointsetcd.NewREST(restOptionsGetter)
+	endpointRegistry := endpoint.NewRegistry(endpointsStorage)
 
-	nodeStorage, err := nodeetcd.NewStorage(restOptionsGetter(api.Resource("nodes")), c.KubeletClientConfig, c.ProxyTransport)
+	nodeStorage, err := nodeetcd.NewStorage(restOptionsGetter, c.KubeletClientConfig, c.ProxyTransport)
 	if err != nil {
 		return LegacyRESTStorage{}, genericapiserver.APIGroupInfo{}, err
 	}
-	restStorage.NodeRegistry = node.NewRegistry(nodeStorage.Node)
 
 	podStorage := podetcd.NewStorage(
-		restOptionsGetter(api.Resource("pods")),
+		restOptionsGetter,
 		nodeStorage.KubeletConnectionInfo,
 		c.ProxyTransport,
 		podDisruptionClient,
 	)
 
-	serviceRESTStorage, serviceStatusStorage := serviceetcd.NewREST(restOptionsGetter(api.Resource("services")))
-	restStorage.ServiceRegistry = service.NewRegistry(serviceRESTStorage)
+	serviceRESTStorage, serviceStatusStorage := serviceetcd.NewREST(restOptionsGetter)
+	serviceRegistry := service.NewRegistry(serviceRESTStorage)
 
 	var serviceClusterIPRegistry rangeallocation.RangeRegistry
 	serviceClusterIPRange := c.ServiceIPRange
@@ -183,9 +175,9 @@ func (c LegacyRESTStorageProvider) NewLegacyRESTStorage(restOptionsGetter generi
 	})
 	restStorage.ServiceNodePortAllocator = serviceNodePortRegistry
 
-	controllerStorage := controlleretcd.NewStorage(restOptionsGetter(api.Resource("replicationControllers")))
+	controllerStorage := controlleretcd.NewStorage(restOptionsGetter)
 
-	serviceRest := service.NewStorage(restStorage.ServiceRegistry, restStorage.EndpointRegistry, ServiceClusterIPAllocator, ServiceNodePortAllocator, c.ProxyTransport)
+	serviceRest := service.NewStorage(serviceRegistry, endpointRegistry, ServiceClusterIPAllocator, ServiceNodePortAllocator, c.ProxyTransport)
 
 	restStorageMap := map[string]rest.Storage{
 		"pods":             podStorage.Pod,
@@ -231,10 +223,10 @@ func (c LegacyRESTStorageProvider) NewLegacyRESTStorage(restOptionsGetter generi
 
 		"componentStatuses": componentstatus.NewStorage(componentStatusStorage{c.StorageFactory}.serversToValidate),
 	}
-	if registered.IsEnabledVersion(unversioned.GroupVersion{Group: "autoscaling", Version: "v1"}) {
+	if registered.IsEnabledVersion(schema.GroupVersion{Group: "autoscaling", Version: "v1"}) {
 		restStorageMap["replicationControllers/scale"] = controllerStorage.Scale
 	}
-	if registered.IsEnabledVersion(unversioned.GroupVersion{Group: "policy", Version: "v1beta1"}) {
+	if registered.IsEnabledVersion(schema.GroupVersion{Group: "policy", Version: "v1beta1"}) {
 		restStorageMap["pods/eviction"] = podStorage.Eviction
 	}
 	apiGroupInfo.VersionedResourcesStorageMap["v1"] = restStorageMap
@@ -250,8 +242,8 @@ type componentStatusStorage struct {
 	storageFactory genericapiserver.StorageFactory
 }
 
-func (s componentStatusStorage) serversToValidate() map[string]apiserver.Server {
-	serversToValidate := map[string]apiserver.Server{
+func (s componentStatusStorage) serversToValidate() map[string]componentstatus.Server {
+	serversToValidate := map[string]componentstatus.Server{
 		"controller-manager": {Addr: "127.0.0.1", Port: ports.ControllerManagerPort, Path: "/healthz"},
 		"scheduler":          {Addr: "127.0.0.1", Port: ports.SchedulerPort, Path: "/healthz"},
 	}
@@ -277,7 +269,7 @@ func (s componentStatusStorage) serversToValidate() map[string]apiserver.Server 
 			port = 2379
 		}
 		// TODO: etcd health checking should be abstracted in the storage tier
-		serversToValidate[fmt.Sprintf("etcd-%d", ix)] = apiserver.Server{
+		serversToValidate[fmt.Sprintf("etcd-%d", ix)] = componentstatus.Server{
 			Addr:        addr,
 			EnableHTTPS: etcdUrl.Scheme == "https",
 			Port:        port,

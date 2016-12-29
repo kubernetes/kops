@@ -21,8 +21,8 @@ import (
 	"strings"
 	"testing"
 
-	"k8s.io/kubernetes/pkg/api"
-	serviceapi "k8s.io/kubernetes/pkg/api/service"
+	"k8s.io/kubernetes/pkg/api/v1"
+	serviceapi "k8s.io/kubernetes/pkg/api/v1/service"
 	"k8s.io/kubernetes/pkg/types"
 
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
@@ -38,9 +38,9 @@ func TestReconcileLoadBalancerAddPort(t *testing.T) {
 	svc := getTestService("servicea", 80)
 	pip := getTestPublicIP()
 	lb := getTestLoadBalancer()
-	hosts := []string{}
+	nodes := []*v1.Node{}
 
-	lb, updated, err := az.reconcileLoadBalancer(lb, &pip, testClusterName, &svc, hosts)
+	lb, updated, err := az.reconcileLoadBalancer(lb, &pip, testClusterName, &svc, nodes)
 	if err != nil {
 		t.Errorf("Unexpected error: %q", err)
 	}
@@ -50,7 +50,7 @@ func TestReconcileLoadBalancerAddPort(t *testing.T) {
 	}
 
 	// ensure we got a frontend ip configuration
-	if len(*lb.Properties.FrontendIPConfigurations) != 1 {
+	if len(*lb.FrontendIPConfigurations) != 1 {
 		t.Error("Expected the loadbalancer to have a frontend ip configuration")
 	}
 
@@ -67,9 +67,9 @@ func TestReconcileLoadBalancerNodeHealth(t *testing.T) {
 	pip := getTestPublicIP()
 	lb := getTestLoadBalancer()
 
-	hosts := []string{}
+	nodes := []*v1.Node{}
 
-	lb, updated, err := az.reconcileLoadBalancer(lb, &pip, testClusterName, &svc, hosts)
+	lb, updated, err := az.reconcileLoadBalancer(lb, &pip, testClusterName, &svc, nodes)
 	if err != nil {
 		t.Errorf("Unexpected error: %q", err)
 	}
@@ -79,7 +79,7 @@ func TestReconcileLoadBalancerNodeHealth(t *testing.T) {
 	}
 
 	// ensure we got a frontend ip configuration
-	if len(*lb.Properties.FrontendIPConfigurations) != 1 {
+	if len(*lb.FrontendIPConfigurations) != 1 {
 		t.Error("Expected the loadbalancer to have a frontend ip configuration")
 	}
 
@@ -92,15 +92,15 @@ func TestReconcileLoadBalancerRemoveAllPortsRemovesFrontendConfig(t *testing.T) 
 	svc := getTestService("servicea", 80)
 	lb := getTestLoadBalancer()
 	pip := getTestPublicIP()
-	hosts := []string{}
+	nodes := []*v1.Node{}
 
-	lb, updated, err := az.reconcileLoadBalancer(lb, &pip, testClusterName, &svc, hosts)
+	lb, updated, err := az.reconcileLoadBalancer(lb, &pip, testClusterName, &svc, nodes)
 	if err != nil {
 		t.Errorf("Unexpected error: %q", err)
 	}
 
 	svcUpdated := getTestService("servicea")
-	lb, updated, err = az.reconcileLoadBalancer(lb, nil, testClusterName, &svcUpdated, hosts)
+	lb, updated, err = az.reconcileLoadBalancer(lb, nil, testClusterName, &svcUpdated, nodes)
 	if err != nil {
 		t.Errorf("Unexpected error: %q", err)
 	}
@@ -110,7 +110,7 @@ func TestReconcileLoadBalancerRemoveAllPortsRemovesFrontendConfig(t *testing.T) 
 	}
 
 	// ensure we abandoned the frontend ip configuration
-	if len(*lb.Properties.FrontendIPConfigurations) != 0 {
+	if len(*lb.FrontendIPConfigurations) != 0 {
 		t.Error("Expected the loadbalancer to have no frontend ip configuration")
 	}
 
@@ -122,12 +122,12 @@ func TestReconcileLoadBalancerRemovesPort(t *testing.T) {
 	az := getTestCloud()
 	svc := getTestService("servicea", 80, 443)
 	pip := getTestPublicIP()
-	hosts := []string{}
+	nodes := []*v1.Node{}
 
 	existingLoadBalancer := getTestLoadBalancer(svc)
 
 	svcUpdated := getTestService("servicea", 80)
-	updatedLoadBalancer, _, err := az.reconcileLoadBalancer(existingLoadBalancer, &pip, testClusterName, &svcUpdated, hosts)
+	updatedLoadBalancer, _, err := az.reconcileLoadBalancer(existingLoadBalancer, &pip, testClusterName, &svcUpdated, nodes)
 	if err != nil {
 		t.Errorf("Unexpected error: %q", err)
 	}
@@ -141,16 +141,16 @@ func TestReconcileLoadBalancerMultipleServices(t *testing.T) {
 	svc1 := getTestService("servicea", 80, 443)
 	svc2 := getTestService("serviceb", 80)
 	pip := getTestPublicIP()
-	hosts := []string{}
+	nodes := []*v1.Node{}
 
 	existingLoadBalancer := getTestLoadBalancer()
 
-	updatedLoadBalancer, _, err := az.reconcileLoadBalancer(existingLoadBalancer, &pip, testClusterName, &svc1, hosts)
+	updatedLoadBalancer, _, err := az.reconcileLoadBalancer(existingLoadBalancer, &pip, testClusterName, &svc1, nodes)
 	if err != nil {
 		t.Errorf("Unexpected error: %q", err)
 	}
 
-	updatedLoadBalancer, _, err = az.reconcileLoadBalancer(updatedLoadBalancer, &pip, testClusterName, &svc2, hosts)
+	updatedLoadBalancer, _, err = az.reconcileLoadBalancer(updatedLoadBalancer, &pip, testClusterName, &svc2, nodes)
 	if err != nil {
 		t.Errorf("Unexpected error: %q", err)
 	}
@@ -229,20 +229,20 @@ func getTestPublicIP() network.PublicIPAddress {
 	return pip
 }
 
-func getTestService(identifier string, requestedPorts ...int32) api.Service {
-	ports := []api.ServicePort{}
+func getTestService(identifier string, requestedPorts ...int32) v1.Service {
+	ports := []v1.ServicePort{}
 	for _, port := range requestedPorts {
-		ports = append(ports, api.ServicePort{
+		ports = append(ports, v1.ServicePort{
 			Name:     fmt.Sprintf("port-%d", port),
-			Protocol: api.ProtocolTCP,
+			Protocol: v1.ProtocolTCP,
 			Port:     port,
 			NodePort: getBackendPort(port),
 		})
 	}
 
-	svc := api.Service{
-		Spec: api.ServiceSpec{
-			Type:  api.ServiceTypeLoadBalancer,
+	svc := v1.Service{
+		Spec: v1.ServiceSpec{
+			Type:  v1.ServiceTypeLoadBalancer,
 			Ports: ports,
 		},
 	}
@@ -253,7 +253,7 @@ func getTestService(identifier string, requestedPorts ...int32) api.Service {
 	return svc
 }
 
-func getTestLoadBalancer(services ...api.Service) network.LoadBalancer {
+func getTestLoadBalancer(services ...v1.Service) network.LoadBalancer {
 	rules := []network.LoadBalancingRule{}
 	probes := []network.Probe{}
 
@@ -262,14 +262,14 @@ func getTestLoadBalancer(services ...api.Service) network.LoadBalancer {
 			ruleName := getRuleName(&service, port)
 			rules = append(rules, network.LoadBalancingRule{
 				Name: to.StringPtr(ruleName),
-				Properties: &network.LoadBalancingRulePropertiesFormat{
+				LoadBalancingRulePropertiesFormat: &network.LoadBalancingRulePropertiesFormat{
 					FrontendPort: to.Int32Ptr(port.Port),
 					BackendPort:  to.Int32Ptr(port.Port),
 				},
 			})
 			probes = append(probes, network.Probe{
 				Name: to.StringPtr(ruleName),
-				Properties: &network.ProbePropertiesFormat{
+				ProbePropertiesFormat: &network.ProbePropertiesFormat{
 					Port: to.Int32Ptr(port.NodePort),
 				},
 			})
@@ -277,7 +277,7 @@ func getTestLoadBalancer(services ...api.Service) network.LoadBalancer {
 	}
 
 	lb := network.LoadBalancer{
-		Properties: &network.LoadBalancerPropertiesFormat{
+		LoadBalancerPropertiesFormat: &network.LoadBalancerPropertiesFormat{
 			LoadBalancingRules: &rules,
 			Probes:             &probes,
 		},
@@ -286,14 +286,14 @@ func getTestLoadBalancer(services ...api.Service) network.LoadBalancer {
 	return lb
 }
 
-func getServiceSourceRanges(service *api.Service) []string {
+func getServiceSourceRanges(service *v1.Service) []string {
 	if len(service.Spec.LoadBalancerSourceRanges) == 0 {
 		return []string{"Internet"}
 	}
 	return service.Spec.LoadBalancerSourceRanges
 }
 
-func getTestSecurityGroup(services ...api.Service) network.SecurityGroup {
+func getTestSecurityGroup(services ...v1.Service) network.SecurityGroup {
 	rules := []network.SecurityRule{}
 
 	for _, service := range services {
@@ -304,7 +304,7 @@ func getTestSecurityGroup(services ...api.Service) network.SecurityGroup {
 			for _, src := range sources {
 				rules = append(rules, network.SecurityRule{
 					Name: to.StringPtr(ruleName),
-					Properties: &network.SecurityRulePropertiesFormat{
+					SecurityRulePropertiesFormat: &network.SecurityRulePropertiesFormat{
 						SourceAddressPrefix:  to.StringPtr(src),
 						DestinationPortRange: to.StringPtr(fmt.Sprintf("%d", port.Port)),
 					},
@@ -314,7 +314,7 @@ func getTestSecurityGroup(services ...api.Service) network.SecurityGroup {
 	}
 
 	sg := network.SecurityGroup{
-		Properties: &network.SecurityGroupPropertiesFormat{
+		SecurityGroupPropertiesFormat: &network.SecurityGroupPropertiesFormat{
 			SecurityRules: &rules,
 		},
 	}
@@ -322,17 +322,17 @@ func getTestSecurityGroup(services ...api.Service) network.SecurityGroup {
 	return sg
 }
 
-func validateLoadBalancer(t *testing.T, loadBalancer network.LoadBalancer, services ...api.Service) {
+func validateLoadBalancer(t *testing.T, loadBalancer network.LoadBalancer, services ...v1.Service) {
 	expectedRuleCount := 0
 	for _, svc := range services {
 		for _, wantedRule := range svc.Spec.Ports {
 			expectedRuleCount++
 			wantedRuleName := getRuleName(&svc, wantedRule)
 			foundRule := false
-			for _, actualRule := range *loadBalancer.Properties.LoadBalancingRules {
+			for _, actualRule := range *loadBalancer.LoadBalancingRules {
 				if strings.EqualFold(*actualRule.Name, wantedRuleName) &&
-					*actualRule.Properties.FrontendPort == wantedRule.Port &&
-					*actualRule.Properties.BackendPort == wantedRule.Port {
+					*actualRule.FrontendPort == wantedRule.Port &&
+					*actualRule.BackendPort == wantedRule.Port {
 					foundRule = true
 					break
 				}
@@ -344,44 +344,44 @@ func validateLoadBalancer(t *testing.T, loadBalancer network.LoadBalancer, servi
 			foundProbe := false
 			if serviceapi.NeedsHealthCheck(&svc) {
 				path, port := serviceapi.GetServiceHealthCheckPathPort(&svc)
-				for _, actualProbe := range *loadBalancer.Properties.Probes {
+				for _, actualProbe := range *loadBalancer.Probes {
 					if strings.EqualFold(*actualProbe.Name, wantedRuleName) &&
-						*actualProbe.Properties.Port == port &&
-						*actualProbe.Properties.RequestPath == path &&
-						actualProbe.Properties.Protocol == network.ProbeProtocolHTTP {
+						*actualProbe.Port == port &&
+						*actualProbe.RequestPath == path &&
+						actualProbe.Protocol == network.ProbeProtocolHTTP {
 						foundProbe = true
 						break
 					}
 				}
 			} else {
-				for _, actualProbe := range *loadBalancer.Properties.Probes {
+				for _, actualProbe := range *loadBalancer.Probes {
 					if strings.EqualFold(*actualProbe.Name, wantedRuleName) &&
-						*actualProbe.Properties.Port == wantedRule.NodePort {
+						*actualProbe.Port == wantedRule.NodePort {
 						foundProbe = true
 						break
 					}
 				}
 			}
 			if !foundProbe {
-				for _, actualProbe := range *loadBalancer.Properties.Probes {
-					t.Logf("Probe: %s %d", *actualProbe.Name, *actualProbe.Properties.Port)
+				for _, actualProbe := range *loadBalancer.Probes {
+					t.Logf("Probe: %s %d", *actualProbe.Name, *actualProbe.Port)
 				}
 				t.Errorf("Expected loadbalancer probe but didn't find it: %q", wantedRuleName)
 			}
 		}
 	}
 
-	lenRules := len(*loadBalancer.Properties.LoadBalancingRules)
+	lenRules := len(*loadBalancer.LoadBalancingRules)
 	if lenRules != expectedRuleCount {
-		t.Errorf("Expected the loadbalancer to have %d rules. Found %d.\n%v", expectedRuleCount, lenRules, loadBalancer.Properties.LoadBalancingRules)
+		t.Errorf("Expected the loadbalancer to have %d rules. Found %d.\n%v", expectedRuleCount, lenRules, loadBalancer.LoadBalancingRules)
 	}
-	lenProbes := len(*loadBalancer.Properties.Probes)
+	lenProbes := len(*loadBalancer.Probes)
 	if lenProbes != expectedRuleCount {
 		t.Errorf("Expected the loadbalancer to have %d probes. Found %d.", expectedRuleCount, lenProbes)
 	}
 }
 
-func validateSecurityGroup(t *testing.T, securityGroup network.SecurityGroup, services ...api.Service) {
+func validateSecurityGroup(t *testing.T, securityGroup network.SecurityGroup, services ...v1.Service) {
 	expectedRuleCount := 0
 	for _, svc := range services {
 		for _, wantedRule := range svc.Spec.Ports {
@@ -391,10 +391,10 @@ func validateSecurityGroup(t *testing.T, securityGroup network.SecurityGroup, se
 				expectedRuleCount++
 				wantedRuleName := getRuleName(&svc, wantedRule)
 				foundRule := false
-				for _, actualRule := range *securityGroup.Properties.SecurityRules {
+				for _, actualRule := range *securityGroup.SecurityRules {
 					if strings.EqualFold(*actualRule.Name, wantedRuleName) &&
-						*actualRule.Properties.SourceAddressPrefix == source &&
-						*actualRule.Properties.DestinationPortRange == fmt.Sprintf("%d", wantedRule.Port) {
+						*actualRule.SourceAddressPrefix == source &&
+						*actualRule.DestinationPortRange == fmt.Sprintf("%d", wantedRule.Port) {
 						foundRule = true
 						break
 					}
@@ -406,7 +406,7 @@ func validateSecurityGroup(t *testing.T, securityGroup network.SecurityGroup, se
 		}
 	}
 
-	lenRules := len(*securityGroup.Properties.SecurityRules)
+	lenRules := len(*securityGroup.SecurityRules)
 	if lenRules != expectedRuleCount {
 		t.Errorf("Expected the loadbalancer to have %d rules. Found %d.\n", expectedRuleCount, lenRules)
 	}
@@ -420,7 +420,7 @@ func TestSecurityRulePriorityPicksNextAvailablePriority(t *testing.T) {
 	var i int32
 	for i = loadBalancerMinimumPriority; i < expectedPriority; i++ {
 		rules = append(rules, network.SecurityRule{
-			Properties: &network.SecurityRulePropertiesFormat{
+			SecurityRulePropertiesFormat: &network.SecurityRulePropertiesFormat{
 				Priority: to.Int32Ptr(i),
 			},
 		})
@@ -442,7 +442,7 @@ func TestSecurityRulePriorityFailsIfExhausted(t *testing.T) {
 	var i int32
 	for i = loadBalancerMinimumPriority; i < loadBalancerMaximumPriority; i++ {
 		rules = append(rules, network.SecurityRule{
-			Properties: &network.SecurityRulePropertiesFormat{
+			SecurityRulePropertiesFormat: &network.SecurityRulePropertiesFormat{
 				Priority: to.Int32Ptr(i),
 			},
 		})
@@ -455,7 +455,7 @@ func TestSecurityRulePriorityFailsIfExhausted(t *testing.T) {
 }
 
 func TestProtocolTranslationTCP(t *testing.T) {
-	proto := api.ProtocolTCP
+	proto := v1.ProtocolTCP
 	transportProto, securityGroupProto, probeProto, err := getProtocolsFromKubernetesProtocol(proto)
 	if err != nil {
 		t.Error(err)
@@ -473,7 +473,7 @@ func TestProtocolTranslationTCP(t *testing.T) {
 }
 
 func TestProtocolTranslationUDP(t *testing.T) {
-	proto := api.ProtocolUDP
+	proto := v1.ProtocolUDP
 	_, _, _, err := getProtocolsFromKubernetesProtocol(proto)
 	if err == nil {
 		t.Error("Expected an error. UDP is unsupported.")
