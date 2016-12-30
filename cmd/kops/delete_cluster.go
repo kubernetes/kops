@@ -189,6 +189,10 @@ func (c *DeleteClusterCmd) Run(args []string) error {
 		}
 	}
 
+	b := kutil.NewKubeconfigBuilder()
+	b.Context = cluster.ObjectMeta.Name
+	b.DeleteKubeConfig()
+
 	fmt.Printf("\nCluster deleted\n")
 	return nil
 }
