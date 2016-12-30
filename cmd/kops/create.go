@@ -32,6 +32,7 @@ import (
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
+	"k8s.io/kops/upup/pkg/fi/cloudup"
 )
 
 // TODO: Move to field on instancegroup?
@@ -115,6 +116,12 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 				}
 
 			case *kopsapi.Cluster:
+				// Adding a PerformAssignments() call here as the user might be trying to use
+				// the new `-f` feature, with an old cluster definition.
+				err = cloudup.PerformAssignments(v)
+				if err != nil {
+					return fmt.Errorf("error populating configuration: %v", err)
+				}
 				_, err = clientset.Clusters().Create(v)
 				if err != nil {
 					if errors.IsAlreadyExists(err) {
