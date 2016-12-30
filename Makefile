@@ -164,7 +164,7 @@ protokube-builder-image:
 	docker build -t protokube-builder images/protokube-builder
 
 protokube-build-in-docker: protokube-builder-image
-	docker run -it -e VERSION=${VERSION} -v `pwd`:/src protokube-builder /onbuild.sh
+	docker run -t -e VERSION=${VERSION} -v `pwd`:/src protokube-builder /onbuild.sh
 
 protokube-image: protokube-build-in-docker
 	docker build -t protokube:${VERSION} -f images/protokube/Dockerfile .
@@ -197,7 +197,7 @@ dns-controller-builder-image:
 	docker build -t dns-controller-builder images/dns-controller-builder
 
 dns-controller-build-in-docker: dns-controller-builder-image
-	docker run -it -e VERSION=${VERSION} -v `pwd`:/src dns-controller-builder /onbuild.sh
+	docker run -t -e VERSION=${VERSION} -v `pwd`:/src dns-controller-builder /onbuild.sh
 
 dns-controller-image: dns-controller-build-in-docker
 	docker build -t ${DOCKER_REGISTRY}/dns-controller:${DNS_CONTROLLER_TAG}  -f images/dns-controller/Dockerfile .
