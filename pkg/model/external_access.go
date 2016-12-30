@@ -57,9 +57,9 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// SSH is open to AdminCIDR set
 	if b.Cluster.Spec.Topology.Nodes == kops.TopologyPublic {
-		for i, sshAccess := range b.Cluster.Spec.SSHAccess {
+		for _, sshAccess := range b.Cluster.Spec.SSHAccess {
 			c.AddTask(&awstasks.SecurityGroupRule{
-				Name:          s("ssh-external-to-node-" + strconv.Itoa(i)),
+				Name:          s("ssh-external-to-node-" + sshAccess),
 				SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
 				Protocol:      s("tcp"),
 				FromPort:      i64(22),
@@ -75,9 +75,9 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// We need to open security groups directly to the master nodes (instead of via the ELB)
 
 		// HTTPS to the master is allowed (for API access)
-		for i, apiAccess := range b.Cluster.Spec.KubernetesAPIAccess {
+		for _, apiAccess := range b.Cluster.Spec.KubernetesAPIAccess {
 			t := &awstasks.SecurityGroupRule{
-				Name:          s("https-external-to-master-" + strconv.Itoa(i)),
+				Name:          s("https-external-to-master-" + apiAccess),
 				SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 				Protocol:      s("tcp"),
 				FromPort:      i64(443),

@@ -38,11 +38,12 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	elbSpec := b.Cluster.Spec.API.ELB
 	if elbSpec == nil {
+		// Skipping API ELB creation; not requested in Spec
 		return nil
 	}
 
 	var elb *awstasks.LoadBalancer
-	if elbSpec != nil {
+	{
 		elbID, err := b.GetELBName32("api")
 		if err != nil {
 			return err
