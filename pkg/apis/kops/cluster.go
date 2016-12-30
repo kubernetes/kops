@@ -397,23 +397,3 @@ func (c *Cluster) FillDefaults() error {
 func (c *Cluster) SharedVPC() bool {
 	return c.Spec.NetworkID != ""
 }
-
-//// --------------------------------------------------------------------------------------------
-//// Network Topology functions for template parsing
-////
-//// Each of these functions can be used in the model templates
-//// The go template package currently only supports boolean
-//// operations, so the logic is mapped here as *Cluster functions.
-////
-//// A function will need to be defined for all new topologies, if we plan to use them in the
-//// model templates.
-//// --------------------------------------------------------------------------------------------
-//func (c *Cluster) IsTopologyPrivate() bool {
-//	return (c.Spec.Topology.Masters == TopologyPrivate && c.Spec.Topology.Nodes == TopologyPrivate)
-//}
-//func (c *Cluster) IsTopologyPublic() bool {
-//	return (c.Spec.Topology.Masters == TopologyPublic && c.Spec.Topology.Nodes == TopologyPublic)
-//}
-//func (c *Cluster) IsTopologyPrivateMasters() bool {
-//	return (c.Spec.Topology.Masters == TopologyPrivate && c.Spec.Topology.Nodes == TopologyPublic)
-//}
