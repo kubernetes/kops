@@ -16,31 +16,16 @@
 
 . $(dirname "${BASH_SOURCE}")/common.sh
 
-BAD_HEADERS=$(${KUBE_ROOT}/hack/verify-boilerplate.sh | awk '{ print $6}')
-FORMATS="sh go Makefile Dockerfile"
+# Check that the .packages file contains all packages
+packages_file="${KUBE_ROOT}/hack/.packages"
+if ! diff -u "${packages_file}" <(go list k8s.io/kops/... | grep -v vendor); then
+	{
+		echo
+		echo "hack/.packages is not in up to date. Please run:"
+		echo
+		echo "  go list k8s.io/kops/... | grep -v vendor > hack/.packages"
+		echo
+	} >&2
+	false
+fi
 
-for i in ${FORMATS}
-do
-	:
-	for j in ${BAD_HEADERS}
-	do
-		:
-	        HEADER=$(cat ${KUBE_ROOT}/hack/boilerplate/boilerplate.${i}.txt | sed 's/YEAR/2016/')
-			value=$(<${j})
-			if [[ "$j" != *$i ]]
-            then
-                continue
-            fi
-
-			if [[ ${value} == *"# Copyright"* ]]
-			then
-				echo "Bad header in ${j} ${i}"
-			else
-				text="$HEADER
-
-$value"
-				echo ${j}
-				echo "$text" > ${j}
-			fi
-	done
-done

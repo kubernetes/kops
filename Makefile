@@ -241,7 +241,15 @@ govet:
 verify-boilerplate:
 	sh -c hack/verify-boilerplate.sh
 
-ci: kops nodeup-gocode examples test govet verify-boilerplate
+.PHONY: verify-gofmt
+verify-gofmt:
+	hack/verify-gofmt.sh
+
+.PHONY: verify-packages
+verify-packages:
+	hack/verify-packages.sh
+
+ci: kops nodeup-gocode examples test govet verify-boilerplate verify-gofmt verify-packages
 	echo "Done!"
 
 # --------------------------------------------------
