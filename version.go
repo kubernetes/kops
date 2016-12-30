@@ -14,40 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package kops
 
-import (
-	"fmt"
+// This should be replaced by the makefile
+var Version = "dev"
 
-	"github.com/spf13/cobra"
-	"k8s.io/kops"
-)
-
-type VersionCmd struct {
-	cobraCommand *cobra.Command
+func DefaultProtokubeImageName() string {
+	return "protokube:" + Version
 }
 
-var versionCmd = VersionCmd{
-	cobraCommand: &cobra.Command{
-		Use:   "version",
-		Short: "Print the client version information",
-	},
+func DefaultBaseUrl() string {
+	return "https://kubeupv2.s3.amazonaws.com/kops/" + Version + "/"
 }
 
-func init() {
-	cmd := versionCmd.cobraCommand
-	rootCommand.cobraCommand.AddCommand(cmd)
-
-	cmd.Run = func(cmd *cobra.Command, args []string) {
-		err := versionCmd.Run()
-		if err != nil {
-			exitWithError(err)
-		}
-	}
+func DefaultNodeUpLocation() string {
+	return DefaultBaseUrl() + "linux/amd64/nodeup"
 }
 
-func (c *VersionCmd) Run() error {
-	fmt.Printf("Version %s\n", kops.Version)
-
-	return nil
+func DefaultProtokubeImageSource() string {
+	return DefaultBaseUrl() + "images/protokube.tar.gz"
 }

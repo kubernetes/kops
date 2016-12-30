@@ -199,6 +199,7 @@ export S3_BUCKET_NAME=<yourbucketname>
 make upload S3_BUCKET=s3://${S3_BUCKET_NAME} VERSION=dev
 
 export NODEUP_URL=https://${S3_BUCKET_NAME}.s3.amazonaws.com/kops/dev/linux/amd64/nodeup
+export PROTOKUBE_IMAGE=https://${S3_BUCKET_NAME}.s3.amazonaws.com/kops/dev/images/protokube.tar.gz
 
 kops create cluster <clustername> --zones us-east-1b
 ...
