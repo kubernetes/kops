@@ -329,7 +329,6 @@ func (c *Cluster) Validate(strict bool) error {
 		}
 	}
 
-
 	// Etcd
 	{
 		if len(c.Spec.EtcdClusters) == 0 {
