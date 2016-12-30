@@ -7,6 +7,7 @@
     "serviceAbbreviation":"Elastic Beanstalk",
     "serviceFullName":"AWS Elastic Beanstalk",
     "signatureVersion":"v4",
+    "uid":"elasticbeanstalk-2010-12-01",
     "xmlNamespace":"http://elasticbeanstalk.amazonaws.com/docs/2010-12-01/"
   },
   "operations":{
@@ -95,7 +96,8 @@
         {"shape":"TooManyApplicationsException"},
         {"shape":"TooManyApplicationVersionsException"},
         {"shape":"InsufficientPrivilegesException"},
-        {"shape":"S3LocationNotInServiceRegionException"}
+        {"shape":"S3LocationNotInServiceRegionException"},
+        {"shape":"CodeBuildNotInServiceRegionException"}
       ]
     },
     "CreateConfigurationTemplate":{
@@ -431,6 +433,21 @@
         "resultWrapper":"UpdateApplicationResult"
       }
     },
+    "UpdateApplicationResourceLifecycle":{
+      "name":"UpdateApplicationResourceLifecycle",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateApplicationResourceLifecycleMessage"},
+      "output":{
+        "shape":"ApplicationResourceLifecycleDescriptionMessage",
+        "resultWrapper":"UpdateApplicationResourceLifecycleResult"
+      },
+      "errors":[
+        {"shape":"InsufficientPrivilegesException"}
+      ]
+    },
     "UpdateApplicationVersion":{
       "name":"UpdateApplicationVersion",
       "http":{
@@ -534,7 +551,8 @@
         "DateCreated":{"shape":"CreationDate"},
         "DateUpdated":{"shape":"UpdateDate"},
         "Versions":{"shape":"VersionLabelsList"},
-        "ConfigurationTemplates":{"shape":"ConfigurationTemplateNamesList"}
+        "ConfigurationTemplates":{"shape":"ConfigurationTemplateNamesList"},
+        "ResourceLifecycleConfig":{"shape":"ApplicationResourceLifecycleConfig"}
       }
     },
     "ApplicationDescriptionList":{
@@ -571,6 +589,20 @@
       "type":"list",
       "member":{"shape":"ApplicationName"}
     },
+    "ApplicationResourceLifecycleConfig":{
+      "type":"structure",
+      "members":{
+        "ServiceRole":{"shape":"String"},
+        "VersionLifecycleConfig":{"shape":"ApplicationVersionLifecycleConfig"}
+      }
+    },
+    "ApplicationResourceLifecycleDescriptionMessage":{
+      "type":"structure",
+      "members":{
+        "ApplicationName":{"shape":"ApplicationName"},
+        "ResourceLifecycleConfig":{"shape":"ApplicationResourceLifecycleConfig"}
+      }
+    },
     "ApplicationVersionDescription":{
       "type":"structure",
       "members":{
@@ -578,6 +610,7 @@
         "Description":{"shape":"Description"},
         "VersionLabel":{"shape":"VersionLabel"},
         "SourceBuildInformation":{"shape":"SourceBuildInformation"},
+        "BuildArn":{"shape":"String"},
         "SourceBundle":{"shape":"S3Location"},
         "DateCreated":{"shape":"CreationDate"},
         "DateUpdated":{"shape":"UpdateDate"},
@@ -601,6 +634,13 @@
         "NextToken":{"shape":"Token"}
       }
     },
+    "ApplicationVersionLifecycleConfig":{
+      "type":"structure",
+      "members":{
+        "MaxCountRule":{"shape":"MaxCountRule"},
+        "MaxAgeRule":{"shape":"MaxAgeRule"}
+      }
+    },
     "ApplicationVersionProccess":{"type":"boolean"},
     "ApplicationVersionStatus":{
       "type":"string",
@@ -608,7 +648,8 @@
         "Processed",
         "Unprocessed",
         "Failed",
-        "Processing"
+        "Processing",
+        "Building"
       ]
     },
     "ApplyEnvironmentManagedActionRequest":{
@@ -648,6 +689,22 @@
       "type":"list",
       "member":{"shape":"SolutionStackName"}
     },
+    "BoxedBoolean":{"type":"boolean"},
+    "BoxedInt":{"type":"integer"},
+    "BuildConfiguration":{
+      "type":"structure",
+      "required":[
+        "CodeBuildServiceRole",
+        "Image"
+      ],
+      "members":{
+        "ArtifactName":{"shape":"String"},
+        "CodeBuildServiceRole":{"shape":"NonEmptyString"},
+        "ComputeType":{"shape":"ComputeType"},
+        "Image":{"shape":"NonEmptyString"},
+        "TimeoutInMinutes":{"shape":"BoxedInt"}
+      }
+    },
     "CPUUtilization":{
       "type":"structure",
       "members":{
@@ -684,6 +741,17 @@
       }
     },
     "CnameAvailability":{"type":"boolean"},
+    "CodeBuildNotInServiceRegionException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"CodeBuildNotInServiceRegionException",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
     "ComposeEnvironmentsMessage":{
       "type":"structure",
       "members":{
@@ -691,6 +759,14 @@
         "GroupName":{"shape":"GroupName"},
         "VersionLabels":{"shape":"VersionLabels"}
       }
+    },
+    "ComputeType":{
+      "type":"string",
+      "enum":[
+        "BUILD_GENERAL1_SMALL",
+        "BUILD_GENERAL1_MEDIUM",
+        "BUILD_GENERAL1_LARGE"
+      ]
     },
     "ConfigurationDeploymentStatus":{
       "type":"string",
@@ -800,7 +876,8 @@
       "required":["ApplicationName"],
       "members":{
         "ApplicationName":{"shape":"ApplicationName"},
-        "Description":{"shape":"Description"}
+        "Description":{"shape":"Description"},
+        "ResourceLifecycleConfig":{"shape":"ApplicationResourceLifecycleConfig"}
       }
     },
     "CreateApplicationVersionMessage":{
@@ -815,6 +892,7 @@
         "Description":{"shape":"Description"},
         "SourceBuildInformation":{"shape":"SourceBuildInformation"},
         "SourceBundle":{"shape":"S3Location"},
+        "BuildConfiguration":{"shape":"BuildConfiguration"},
         "AutoCreateApplication":{"shape":"AutoCreateApplication"},
         "Process":{"shape":"ApplicationVersionProccess"}
       }
@@ -1480,6 +1558,24 @@
       "max":100,
       "min":1
     },
+    "MaxAgeRule":{
+      "type":"structure",
+      "required":["Enabled"],
+      "members":{
+        "Enabled":{"shape":"BoxedBoolean"},
+        "MaxAgeInDays":{"shape":"BoxedInt"},
+        "DeleteSourceFromS3":{"shape":"BoxedBoolean"}
+      }
+    },
+    "MaxCountRule":{
+      "type":"structure",
+      "required":["Enabled"],
+      "members":{
+        "Enabled":{"shape":"BoxedBoolean"},
+        "MaxCount":{"shape":"BoxedInt"},
+        "DeleteSourceFromS3":{"shape":"BoxedBoolean"}
+      }
+    },
     "MaxRecords":{
       "type":"integer",
       "max":1000,
@@ -1490,6 +1586,10 @@
       "type":"string",
       "max":100,
       "min":1
+    },
+    "NonEmptyString":{
+      "type":"string",
+      "pattern":".*\\S.*"
     },
     "NullableDouble":{"type":"double"},
     "NullableInteger":{"type":"integer"},
@@ -1695,11 +1795,17 @@
     },
     "SourceRepository":{
       "type":"string",
-      "enum":["CodeCommit"]
+      "enum":[
+        "CodeCommit",
+        "S3"
+      ]
     },
     "SourceType":{
       "type":"string",
-      "enum":["Git"]
+      "enum":[
+        "Git",
+        "Zip"
+      ]
     },
     "StatusCodes":{
       "type":"structure",
@@ -1829,6 +1935,17 @@
       "members":{
         "ApplicationName":{"shape":"ApplicationName"},
         "Description":{"shape":"Description"}
+      }
+    },
+    "UpdateApplicationResourceLifecycleMessage":{
+      "type":"structure",
+      "required":[
+        "ApplicationName",
+        "ResourceLifecycleConfig"
+      ],
+      "members":{
+        "ApplicationName":{"shape":"ApplicationName"},
+        "ResourceLifecycleConfig":{"shape":"ApplicationResourceLifecycleConfig"}
       }
     },
     "UpdateApplicationVersionMessage":{
