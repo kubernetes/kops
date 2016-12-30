@@ -143,6 +143,4 @@ func RunToolboxDump(f *util.Factory, out io.Writer, options *ToolboxDumpOptions)
 	default:
 		return fmt.Errorf("Unsupported output format: %q", options.Output)
 	}
-
-	return nil
 }
