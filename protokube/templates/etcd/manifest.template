@@ -4,6 +4,8 @@ kind: Pod
 metadata:
   name: {{ .PodName }}
   namespace: kube-system
+  labels:
+    k8s-app: {{ .PodName }}
 spec:
   hostNetwork: true
   containers:
