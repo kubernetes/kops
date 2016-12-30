@@ -19,11 +19,70 @@ package cloudup
 import (
 	"testing"
 
+	"io/ioutil"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/diff"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/fitasks"
+	"path"
+	"strings"
+
+	// Register our APIs
+	_ "k8s.io/kops/pkg/apis/kops/install"
 )
 
 func TestBootstrapChanelBuilder_BuildTasks(t *testing.T) {
-	// TODO need to figure out how to mock Loader
+	runChannelBuilderTest(t, "simple")
+	runChannelBuilderTest(t, "kopeio-vxlan")
+}
+
+func runChannelBuilderTest(t *testing.T, key string) {
+	basedir := path.Join("tests/bootstrapchannelbuilder/", key)
+
+	clusterYamlPath := path.Join(basedir, "cluster.yaml")
+	clusterYaml, err := ioutil.ReadFile(clusterYamlPath)
+	if err != nil {
+		t.Fatalf("error reading cluster yaml file %q: %v", clusterYamlPath, err)
+	}
+	obj, _, err := api.ParseVersionedYaml(clusterYaml)
+	if err != nil {
+		t.Fatalf("error parsing cluster yaml %q: %v", clusterYamlPath, err)
+	}
+	cluster := obj.(*api.Cluster)
+	bcb := BootstrapChannelBuilder{cluster: cluster}
+
+	context := &fi.ModelBuilderContext{
+		Tasks: make(map[string]fi.Task),
+	}
+	err = bcb.Build(context)
+	if err != nil {
+		t.Fatalf("error from BootstrapChannelBuilder Build: %v", err)
+	}
+
+	name := cluster.ObjectMeta.Name + "-addons-bootstrap"
+	manifestTask := context.Tasks[name]
+	if manifestTask == nil {
+		t.Fatalf("manifest task not found (%q)", name)
+	}
+
+	manifestFileTask := manifestTask.(*fitasks.ManagedFile)
+	actualManifest, err := manifestFileTask.Contents.AsString()
+	if err != nil {
+		t.Fatalf("error getting manifest as string: %v", err)
+	}
+
+	expectedManifestPath := path.Join(basedir, "manifest.yaml")
+	expectedManifest, err := ioutil.ReadFile(expectedManifestPath)
+	if err != nil {
+		t.Fatalf("error reading file %q: %v", expectedManifestPath, err)
+	}
+
+	if strings.TrimSpace(string(expectedManifest)) != strings.TrimSpace(actualManifest) {
+		diffString := diff.FormatDiff(string(expectedManifest), actualManifest)
+		t.Logf("diff:\n%s\n", diffString)
+
+		t.Fatalf("manifest differed from expected for test %q", key)
+	}
 }
 
 func TestBootstrapChanelBuilder_buildManifest(t *testing.T) {
@@ -49,7 +108,7 @@ func TestBootstrapChanelBuilder_buildManifest(t *testing.T) {
 			hasWeave = true
 		}
 
-		if *value.Name == "limit-range" {
+		if *value.Name == "limit-range.addons.k8s.io" {
 			hasLimit = true
 		}
 
