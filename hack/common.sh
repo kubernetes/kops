@@ -14,33 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. $(dirname "${BASH_SOURCE}")/common.sh
+# common.sh has helper functions, and is sourced by the other scripts in this directory
+set -o errexit
+set -o nounset
+set -o pipefail
 
-BAD_HEADERS=$(${KUBE_ROOT}/hack/verify-boilerplate.sh | awk '{ print $6}')
-FORMATS="sh go Makefile Dockerfile"
-
-for i in ${FORMATS}
-do
-	:
-	for j in ${BAD_HEADERS}
-	do
-		:
-	        HEADER=$(cat ${KUBE_ROOT}/hack/boilerplate/boilerplate.${i}.txt | sed 's/YEAR/2016/')
-			value=$(<${j})
-			if [[ "$j" != *$i ]]
-            then
-                continue
-            fi
-
-			if [[ ${value} == *"# Copyright"* ]]
-			then
-				echo "Bad header in ${j} ${i}"
-			else
-				text="$HEADER
-
-$value"
-				echo ${j}
-				echo "$text" > ${j}
-			fi
-	done
-done
+KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
