@@ -29,6 +29,13 @@ import (
 // it assigns CIDRs to subnets
 // We also assign KubernetesVersion, because we want it to be explicit
 func PerformAssignments(c *kops.Cluster) error {
+
+	// Topology support
+	// TODO Kris: Unsure if this needs to be here, or if the API conversion code will handle it
+	if c.Spec.Topology == nil {
+		c.Spec.Topology = &kops.TopologySpec{Masters: kops.TopologyPublic, Nodes: kops.TopologyPublic}
+	}
+
 	if c.Spec.NetworkCIDR == "" && !c.SharedVPC() {
 		// TODO: Choose non-overlapping networking CIDRs for VPCs?
 		c.Spec.NetworkCIDR = "172.20.0.0/16"
