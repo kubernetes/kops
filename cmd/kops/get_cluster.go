@@ -22,39 +22,56 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"io"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/util/pkg/tables"
 	k8sapi "k8s.io/kubernetes/pkg/api"
 )
 
-type GetClustersCmd struct {
+type GetClusterOptions struct {
+	// FullSpec determines if we should output the completed (fully populated) spec
 	FullSpec bool
+
+	// ClusterNames is a list of cluster names to show; if not specified all clusters will be shown
+	ClusterNames []string
 }
 
-var getClustersCmd GetClustersCmd
-
 func init() {
+	var options GetClusterOptions
+
 	cmd := &cobra.Command{
 		Use:     "clusters",
 		Aliases: []string{"cluster"},
 		Short:   "get clusters",
 		Long:    `List or get clusters.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := getClustersCmd.Run(args)
+			if len(args) != 0 {
+				options.ClusterNames = append(options.ClusterNames, args...)
+			}
+
+			if rootCommand.clusterName != "" {
+				if len(args) != 0 {
+					exitWithError(fmt.Errorf("cannot mix --name for cluster with positional arguments"))
+				}
+
+				options.ClusterNames = append(options.ClusterNames, rootCommand.clusterName)
+			}
+
+			err := RunGetClusters(&rootCommand, os.Stdout, &options)
 			if err != nil {
 				exitWithError(err)
 			}
 		},
 	}
 
-	getCmd.cobraCommand.AddCommand(cmd)
+	cmd.Flags().BoolVar(&options.FullSpec, "full", options.FullSpec, "Show fully populated configuration")
 
-	cmd.Flags().BoolVar(&getClustersCmd.FullSpec, "full", false, "Show fully populated configuration")
+	getCmd.cobraCommand.AddCommand(cmd)
 }
 
-func (c *GetClustersCmd) Run(args []string) error {
-	client, err := rootCommand.Clientset()
+func RunGetClusters(context Factory, out io.Writer, options *GetClusterOptions) error {
+	client, err := context.Clientset()
 	if err != nil {
 		return err
 	}
@@ -65,19 +82,19 @@ func (c *GetClustersCmd) Run(args []string) error {
 	}
 
 	var clusters []*api.Cluster
-	if len(args) != 0 {
+	if len(options.ClusterNames) != 0 {
 		m := make(map[string]*api.Cluster)
 		for i := range clusterList.Items {
 			c := &clusterList.Items[i]
 			m[c.ObjectMeta.Name] = c
 		}
-		for _, arg := range args {
-			ig := m[arg]
-			if ig == nil {
-				return fmt.Errorf("cluster not found %q", arg)
+		for _, clusterName := range options.ClusterNames {
+			c := m[clusterName]
+			if c == nil {
+				return fmt.Errorf("cluster not found %q", clusterName)
 			}
 
-			clusters = append(clusters, ig)
+			clusters = append(clusters, c)
 		}
 	} else {
 		for i := range clusterList.Items {
@@ -91,7 +108,7 @@ func (c *GetClustersCmd) Run(args []string) error {
 		return nil
 	}
 
-	if c.FullSpec {
+	if options.FullSpec {
 		var err error
 		clusters, err = fullClusterSpecs(clusters)
 		if err != nil {
@@ -116,18 +133,18 @@ func (c *GetClustersCmd) Run(args []string) error {
 			}
 			return strings.Join(subnetNames, ",")
 		})
-		return t.Render(clusters, os.Stdout, "NAME", "CLOUD", "SUBNETS")
+		return t.Render(clusters, out, "NAME", "CLOUD", "SUBNETS")
 
 	case OutputYaml:
 		for _, cluster := range clusters {
-			if err := marshalToWriter(cluster, marshalYaml, os.Stdout); err != nil {
+			if err := marshalToWriter(cluster, marshalYaml, out); err != nil {
 				return err
 			}
 		}
 		return nil
 	case OutputJSON:
 		for _, cluster := range clusters {
-			if err := marshalToWriter(cluster, marshalJSON, os.Stdout); err != nil {
+			if err := marshalToWriter(cluster, marshalJSON, out); err != nil {
 				return err
 			}
 		}
