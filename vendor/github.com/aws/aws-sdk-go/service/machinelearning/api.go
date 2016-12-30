@@ -36,7 +36,6 @@ const opAddTags = "AddTags"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) AddTagsRequest(input *AddTagsInput) (req *request.Request, output *AddTagsOutput) {
 	op := &request.Operation{
 		Name:       opAddTags,
@@ -115,7 +114,6 @@ const opCreateBatchPrediction = "CreateBatchPrediction"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) CreateBatchPredictionRequest(input *CreateBatchPredictionInput) (req *request.Request, output *CreateBatchPredictionOutput) {
 	op := &request.Operation{
 		Name:       opCreateBatchPrediction,
@@ -201,7 +199,6 @@ const opCreateDataSourceFromRDS = "CreateDataSourceFromRDS"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) CreateDataSourceFromRDSRequest(input *CreateDataSourceFromRDSInput) (req *request.Request, output *CreateDataSourceFromRDSOutput) {
 	op := &request.Operation{
 		Name:       opCreateDataSourceFromRDS,
@@ -287,7 +284,6 @@ const opCreateDataSourceFromRedshift = "CreateDataSourceFromRedshift"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) CreateDataSourceFromRedshiftRequest(input *CreateDataSourceFromRedshiftInput) (req *request.Request, output *CreateDataSourceFromRedshiftOutput) {
 	op := &request.Operation{
 		Name:       opCreateDataSourceFromRedshift,
@@ -392,7 +388,6 @@ const opCreateDataSourceFromS3 = "CreateDataSourceFromS3"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) CreateDataSourceFromS3Request(input *CreateDataSourceFromS3Input) (req *request.Request, output *CreateDataSourceFromS3Output) {
 	op := &request.Operation{
 		Name:       opCreateDataSourceFromS3,
@@ -492,7 +487,6 @@ const opCreateEvaluation = "CreateEvaluation"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) CreateEvaluationRequest(input *CreateEvaluationInput) (req *request.Request, output *CreateEvaluationOutput) {
 	op := &request.Operation{
 		Name:       opCreateEvaluation,
@@ -580,7 +574,6 @@ const opCreateMLModel = "CreateMLModel"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) CreateMLModelRequest(input *CreateMLModelInput) (req *request.Request, output *CreateMLModelOutput) {
 	op := &request.Operation{
 		Name:       opCreateMLModel,
@@ -669,7 +662,6 @@ const opCreateRealtimeEndpoint = "CreateRealtimeEndpoint"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) CreateRealtimeEndpointRequest(input *CreateRealtimeEndpointInput) (req *request.Request, output *CreateRealtimeEndpointOutput) {
 	op := &request.Operation{
 		Name:       opCreateRealtimeEndpoint,
@@ -742,7 +734,6 @@ const opDeleteBatchPrediction = "DeleteBatchPrediction"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) DeleteBatchPredictionRequest(input *DeleteBatchPredictionInput) (req *request.Request, output *DeleteBatchPredictionOutput) {
 	op := &request.Operation{
 		Name:       opDeleteBatchPrediction,
@@ -818,7 +809,6 @@ const opDeleteDataSource = "DeleteDataSource"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) DeleteDataSourceRequest(input *DeleteDataSourceInput) (req *request.Request, output *DeleteDataSourceOutput) {
 	op := &request.Operation{
 		Name:       opDeleteDataSource,
@@ -894,7 +884,6 @@ const opDeleteEvaluation = "DeleteEvaluation"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) DeleteEvaluationRequest(input *DeleteEvaluationInput) (req *request.Request, output *DeleteEvaluationOutput) {
 	op := &request.Operation{
 		Name:       opDeleteEvaluation,
@@ -970,7 +959,6 @@ const opDeleteMLModel = "DeleteMLModel"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) DeleteMLModelRequest(input *DeleteMLModelInput) (req *request.Request, output *DeleteMLModelOutput) {
 	op := &request.Operation{
 		Name:       opDeleteMLModel,
@@ -1046,7 +1034,6 @@ const opDeleteRealtimeEndpoint = "DeleteRealtimeEndpoint"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) DeleteRealtimeEndpointRequest(input *DeleteRealtimeEndpointInput) (req *request.Request, output *DeleteRealtimeEndpointOutput) {
 	op := &request.Operation{
 		Name:       opDeleteRealtimeEndpoint,
@@ -1117,7 +1104,6 @@ const opDeleteTags = "DeleteTags"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) DeleteTagsRequest(input *DeleteTagsInput) (req *request.Request, output *DeleteTagsOutput) {
 	op := &request.Operation{
 		Name:       opDeleteTags,
@@ -1194,7 +1180,6 @@ const opDescribeBatchPredictions = "DescribeBatchPredictions"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) DescribeBatchPredictionsRequest(input *DescribeBatchPredictionsInput) (req *request.Request, output *DescribeBatchPredictionsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeBatchPredictions,
@@ -1294,7 +1279,6 @@ const opDescribeDataSources = "DescribeDataSources"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) DescribeDataSourcesRequest(input *DescribeDataSourcesInput) (req *request.Request, output *DescribeDataSourcesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeDataSources,
@@ -1393,7 +1377,6 @@ const opDescribeEvaluations = "DescribeEvaluations"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) DescribeEvaluationsRequest(input *DescribeEvaluationsInput) (req *request.Request, output *DescribeEvaluationsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeEvaluations,
@@ -1493,7 +1476,6 @@ const opDescribeMLModels = "DescribeMLModels"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) DescribeMLModelsRequest(input *DescribeMLModelsInput) (req *request.Request, output *DescribeMLModelsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeMLModels,
@@ -1592,7 +1574,6 @@ const opDescribeTags = "DescribeTags"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) DescribeTagsRequest(input *DescribeTagsInput) (req *request.Request, output *DescribeTagsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeTags,
@@ -1663,7 +1644,6 @@ const opGetBatchPrediction = "GetBatchPrediction"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) GetBatchPredictionRequest(input *GetBatchPredictionInput) (req *request.Request, output *GetBatchPredictionOutput) {
 	op := &request.Operation{
 		Name:       opGetBatchPrediction,
@@ -1735,7 +1715,6 @@ const opGetDataSource = "GetDataSource"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) GetDataSourceRequest(input *GetDataSourceInput) (req *request.Request, output *GetDataSourceOutput) {
 	op := &request.Operation{
 		Name:       opGetDataSource,
@@ -1811,7 +1790,6 @@ const opGetEvaluation = "GetEvaluation"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) GetEvaluationRequest(input *GetEvaluationInput) (req *request.Request, output *GetEvaluationOutput) {
 	op := &request.Operation{
 		Name:       opGetEvaluation,
@@ -1883,7 +1861,6 @@ const opGetMLModel = "GetMLModel"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) GetMLModelRequest(input *GetMLModelInput) (req *request.Request, output *GetMLModelOutput) {
 	op := &request.Operation{
 		Name:       opGetMLModel,
@@ -1957,7 +1934,6 @@ const opPredict = "Predict"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) PredictRequest(input *PredictInput) (req *request.Request, output *PredictOutput) {
 	op := &request.Operation{
 		Name:       opPredict,
@@ -2038,7 +2014,6 @@ const opUpdateBatchPrediction = "UpdateBatchPrediction"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) UpdateBatchPredictionRequest(input *UpdateBatchPredictionInput) (req *request.Request, output *UpdateBatchPredictionOutput) {
 	op := &request.Operation{
 		Name:       opUpdateBatchPrediction,
@@ -2112,7 +2087,6 @@ const opUpdateDataSource = "UpdateDataSource"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) UpdateDataSourceRequest(input *UpdateDataSourceInput) (req *request.Request, output *UpdateDataSourceOutput) {
 	op := &request.Operation{
 		Name:       opUpdateDataSource,
@@ -2186,7 +2160,6 @@ const opUpdateEvaluation = "UpdateEvaluation"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) UpdateEvaluationRequest(input *UpdateEvaluationInput) (req *request.Request, output *UpdateEvaluationOutput) {
 	op := &request.Operation{
 		Name:       opUpdateEvaluation,
@@ -2260,7 +2233,6 @@ const opUpdateMLModel = "UpdateMLModel"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
-//
 func (c *MachineLearning) UpdateMLModelRequest(input *UpdateMLModelInput) (req *request.Request, output *UpdateMLModelOutput) {
 	op := &request.Operation{
 		Name:       opUpdateMLModel,

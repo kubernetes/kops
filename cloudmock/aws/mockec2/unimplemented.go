@@ -1688,3 +1688,93 @@ func (m *MockEC2) WaitUntilVpnConnectionDeleted(*ec2.DescribeVpnConnectionsInput
 	panic("Not implemented")
 	return nil
 }
+
+func (m *MockEC2) AssignIpv6AddressesRequest(*ec2.AssignIpv6AddressesInput) (*request.Request, *ec2.AssignIpv6AddressesOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) AssignIpv6Addresses(*ec2.AssignIpv6AddressesInput) (*ec2.AssignIpv6AddressesOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) AssociateSubnetCidrBlockRequest(*ec2.AssociateSubnetCidrBlockInput) (*request.Request, *ec2.AssociateSubnetCidrBlockOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) AssociateSubnetCidrBlock(*ec2.AssociateSubnetCidrBlockInput) (*ec2.AssociateSubnetCidrBlockOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) AssociateVpcCidrBlockRequest(*ec2.AssociateVpcCidrBlockInput) (*request.Request, *ec2.AssociateVpcCidrBlockOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) AssociateVpcCidrBlock(*ec2.AssociateVpcCidrBlockInput) (*ec2.AssociateVpcCidrBlockOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) CreateEgressOnlyInternetGatewayRequest(*ec2.CreateEgressOnlyInternetGatewayInput) (*request.Request, *ec2.CreateEgressOnlyInternetGatewayOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) CreateEgressOnlyInternetGateway(*ec2.CreateEgressOnlyInternetGatewayInput) (*ec2.CreateEgressOnlyInternetGatewayOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DeleteEgressOnlyInternetGatewayRequest(*ec2.DeleteEgressOnlyInternetGatewayInput) (*request.Request, *ec2.DeleteEgressOnlyInternetGatewayOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DeleteEgressOnlyInternetGateway(*ec2.DeleteEgressOnlyInternetGatewayInput) (*ec2.DeleteEgressOnlyInternetGatewayOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DescribeEgressOnlyInternetGatewaysRequest(*ec2.DescribeEgressOnlyInternetGatewaysInput) (*request.Request, *ec2.DescribeEgressOnlyInternetGatewaysOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DescribeEgressOnlyInternetGateways(*ec2.DescribeEgressOnlyInternetGatewaysInput) (*ec2.DescribeEgressOnlyInternetGatewaysOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DisassociateSubnetCidrBlockRequest(*ec2.DisassociateSubnetCidrBlockInput) (*request.Request, *ec2.DisassociateSubnetCidrBlockOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DisassociateSubnetCidrBlock(*ec2.DisassociateSubnetCidrBlockInput) (*ec2.DisassociateSubnetCidrBlockOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DisassociateVpcCidrBlockRequest(*ec2.DisassociateVpcCidrBlockInput) (*request.Request, *ec2.DisassociateVpcCidrBlockOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DisassociateVpcCidrBlock(*ec2.DisassociateVpcCidrBlockInput) (*ec2.DisassociateVpcCidrBlockOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) UnassignIpv6AddressesRequest(*ec2.UnassignIpv6AddressesInput) (*request.Request, *ec2.UnassignIpv6AddressesOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) UnassignIpv6Addresses(*ec2.UnassignIpv6AddressesInput) (*ec2.UnassignIpv6AddressesOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}

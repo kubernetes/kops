@@ -135,6 +135,21 @@ func ExampleElasticBeanstalk_CreateApplication() {
 	params := &elasticbeanstalk.CreateApplicationInput{
 		ApplicationName: aws.String("ApplicationName"), // Required
 		Description:     aws.String("Description"),
+		ResourceLifecycleConfig: &elasticbeanstalk.ApplicationResourceLifecycleConfig{
+			ServiceRole: aws.String("String"),
+			VersionLifecycleConfig: &elasticbeanstalk.ApplicationVersionLifecycleConfig{
+				MaxAgeRule: &elasticbeanstalk.MaxAgeRule{
+					Enabled:            aws.Bool(true), // Required
+					DeleteSourceFromS3: aws.Bool(true),
+					MaxAgeInDays:       aws.Int64(1),
+				},
+				MaxCountRule: &elasticbeanstalk.MaxCountRule{
+					Enabled:            aws.Bool(true), // Required
+					DeleteSourceFromS3: aws.Bool(true),
+					MaxCount:           aws.Int64(1),
+				},
+			},
+		},
 	}
 	resp, err := svc.CreateApplication(params)
 
@@ -162,8 +177,15 @@ func ExampleElasticBeanstalk_CreateApplicationVersion() {
 		ApplicationName:       aws.String("ApplicationName"), // Required
 		VersionLabel:          aws.String("VersionLabel"),    // Required
 		AutoCreateApplication: aws.Bool(true),
-		Description:           aws.String("Description"),
-		Process:               aws.Bool(true),
+		BuildConfiguration: &elasticbeanstalk.BuildConfiguration{
+			CodeBuildServiceRole: aws.String("NonEmptyString"), // Required
+			Image:                aws.String("NonEmptyString"), // Required
+			ArtifactName:         aws.String("String"),
+			ComputeType:          aws.String("ComputeType"),
+			TimeoutInMinutes:     aws.Int64(1),
+		},
+		Description: aws.String("Description"),
+		Process:     aws.Bool(true),
 		SourceBuildInformation: &elasticbeanstalk.SourceBuildInformation{
 			SourceLocation:   aws.String("SourceLocation"),   // Required
 			SourceRepository: aws.String("SourceRepository"), // Required
@@ -952,6 +974,46 @@ func ExampleElasticBeanstalk_UpdateApplication() {
 		Description:     aws.String("Description"),
 	}
 	resp, err := svc.UpdateApplication(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
+func ExampleElasticBeanstalk_UpdateApplicationResourceLifecycle() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := elasticbeanstalk.New(sess)
+
+	params := &elasticbeanstalk.UpdateApplicationResourceLifecycleInput{
+		ApplicationName: aws.String("ApplicationName"), // Required
+		ResourceLifecycleConfig: &elasticbeanstalk.ApplicationResourceLifecycleConfig{ // Required
+			ServiceRole: aws.String("String"),
+			VersionLifecycleConfig: &elasticbeanstalk.ApplicationVersionLifecycleConfig{
+				MaxAgeRule: &elasticbeanstalk.MaxAgeRule{
+					Enabled:            aws.Bool(true), // Required
+					DeleteSourceFromS3: aws.Bool(true),
+					MaxAgeInDays:       aws.Int64(1),
+				},
+				MaxCountRule: &elasticbeanstalk.MaxCountRule{
+					Enabled:            aws.Bool(true), // Required
+					DeleteSourceFromS3: aws.Bool(true),
+					MaxCount:           aws.Int64(1),
+				},
+			},
+		},
+	}
+	resp, err := svc.UpdateApplicationResourceLifecycle(params)
 
 	if err != nil {
 		// Print the error, cast err to awserr.Error to get the Code and
