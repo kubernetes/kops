@@ -18,7 +18,7 @@
 
 GOFMT="gofmt -s -w"
 
-bad_files=$(cat ${KUBE_ROOT}/hack/.packages | grep -v "^k8s.io/kops$" | sed -e s-^k8s.io/kops/-- | xargs -I {} $GOFMT -l {})
+bad_files=$(git ls-files "*.go" | grep -v vendor | xargs -I {} $GOFMT -l {})
 if [[ -n "${bad_files}" ]]; then
   echo "!!! '$GOFMT' needs to be run on the following files: "
   echo "${bad_files}"
