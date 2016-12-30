@@ -90,6 +90,9 @@ func (tf *TemplateFunctions) WellKnownServiceIP(id int) (net.IP, error) {
 func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["SharedVPC"] = tf.SharedVPC
 
+	// Remember that we may be on a different arch from the target.  Hard-code for now.
+	dest["Arch"] = func() string { return "amd64" }
+
 	// Network topology definitions
 	dest["IsTopologyPublic"] = tf.IsTopologyPublic
 	dest["IsTopologyPrivate"] = tf.IsTopologyPrivate

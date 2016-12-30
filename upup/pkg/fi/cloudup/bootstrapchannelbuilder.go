@@ -68,34 +68,65 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 	addons.Kind = "Addons"
 	addons.Name = "bootstrap"
 
-	addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-		// TODO I think these should be const
-		Name:     fi.String("kube-dns"),
-		Version:  fi.String("1.4.0"),
-		Selector: map[string]string{"k8s-addon": "kube-dns.addons.k8s.io"},
-		Manifest: fi.String("kube-dns/v1.4.0.yaml"),
-	})
+	{
+		key := "core.addons.k8s.io"
+		version := "1.4.0"
 
-	addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-		Name:     fi.String("core"),
-		Version:  fi.String("1.4.0"),
-		Selector: map[string]string{"k8s-addon": "core.addons.k8s.io"},
-		Manifest: fi.String("core/v1.4.0.yaml"),
-	})
+		location := key + "/v" + version + ".yaml"
 
-	addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-		Name:     fi.String("dns-controller"),
-		Version:  fi.String("1.4.1"),
-		Selector: map[string]string{"k8s-addon": "dns-controller.addons.k8s.io"},
-		Manifest: fi.String("dns-controller/v1.4.1.yaml"),
-	})
+		addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+			Name:     fi.String(key),
+			Version:  fi.String(version),
+			Selector: map[string]string{"k8s-addon": key},
+			Manifest: fi.String(location),
+		})
+		manifests[key] = "addons/" + location
+	}
 
-	addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-		Name:     fi.String("limit-range"),
-		Version:  fi.String("1.5.0"),
-		Selector: map[string]string{"k8s-addon": "limit-range.addons.k8s.io"},
-		Manifest: fi.String("limit-range/v1.5.0.yaml"),
-	})
+	{
+		key := "kube-dns.addons.k8s.io"
+		version := "1.5.0"
+
+		location := key + "/v" + version + ".yaml"
+
+		addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+			Name:     fi.String(key),
+			Version:  fi.String(version),
+			Selector: map[string]string{"k8s-addon": key},
+			Manifest: fi.String(location),
+		})
+		manifests[key] = "addons/" + location
+	}
+
+	{
+		key := "limit-range.addons.k8s.io"
+		version := "1.5.0"
+
+		location := key + "/v" + version + ".yaml"
+
+		addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+			Name:     fi.String(key),
+			Version:  fi.String(version),
+			Selector: map[string]string{"k8s-addon": key},
+			Manifest: fi.String(location),
+		})
+		manifests[key] = "addons/" + location
+	}
+
+	{
+		key := "dns-controller.addons.k8s.io"
+		version := "1.4.1"
+
+		location := key + "/v" + version + ".yaml"
+
+		addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+			Name:     fi.String(key),
+			Version:  fi.String(version),
+			Selector: map[string]string{"k8s-addon": key},
+			Manifest: fi.String(location),
+		})
+		manifests[key] = "addons/" + location
+	}
 
 	if b.cluster.Spec.Networking.Kopeio != nil {
 		key := "networking.kope.io"
