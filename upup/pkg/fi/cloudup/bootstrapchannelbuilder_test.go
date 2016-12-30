@@ -71,25 +71,6 @@ func runChannelBuilderTest(t *testing.T, key string) {
 		t.Fatalf("error getting manifest as string: %v", err)
 	}
 
-	//var keys []string
-	//for key := range context.Tasks {
-	//	keys = append(keys, key)
-	//}
-	//sort.Strings(keys)
-	//
-	//var yamls []string
-	//for _, key := range keys {
-	//	task := context.Tasks[key]
-	//	yaml, err := api.ToRawYaml(task)
-	//	if err != nil {
-	//		t.Fatalf("error serializing task: %v", err)
-	//	}
-	//	yamls = append(yamls, strings.TrimSpace(string(yaml)))
-	//}
-	//
-	//actualYaml := strings.Join(yamls, "\n---\n")
-
-	//tasksYamlPath := path.Join(basedir, "tasks.yaml")
 	expectedManifestPath := path.Join(basedir, "manifest.yaml")
 	expectedManifest, err := ioutil.ReadFile(expectedManifestPath)
 	if err != nil {
