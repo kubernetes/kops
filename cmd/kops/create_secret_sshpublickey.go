@@ -48,7 +48,7 @@ func NewCmdCreateSecretPublicKey(f *util.Factory, out io.Writer) *cobra.Command 
 			}
 			options.Name = args[0]
 
-			err := rootCommand.ProcessArgs(args)
+			err := rootCommand.ProcessArgs(args[1:])
 			if err != nil {
 				exitWithError(err)
 			}

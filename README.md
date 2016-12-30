@@ -38,7 +38,7 @@ on AWS.
 * Based on a simple meta-model defined in a directory tree
 * Command line [autocomplete](/docs/cli/kops_completion.md)
 * Community support
-
+* [Upgrade from kube-up](/docs/upgrade_from_kubeup.md)
 ## Installing
 
 `kubectl` is required, see [here](http://kubernetes.io/docs/user-guide/prereqs/).
@@ -123,7 +123,7 @@ If you think you have found a bug please follow the instructions below.
 
 - Please spend a small amount of time giving due diligence to the issue tracker. Your issue might be a duplicate.
 - Set `-v 10` command line option and save the log output. Please paste this into your issue.
-- Note you version of `kops`, and the command line options you are using
+- Note the version of kops you are running (from `kops version`), and the command line options you are using
 - Open a [new issue](https://github.com/kubernetes/kops/issues/new)
 - Remember users might be searching for your issue in the future, so please give it a meaningful title to helps others.
 - Feel free to reach out to the kops community on [kubernetes slack](https://github.com/kubernetes/community#slack-chat)
