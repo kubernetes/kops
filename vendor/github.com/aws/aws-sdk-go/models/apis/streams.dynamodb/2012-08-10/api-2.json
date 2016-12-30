@@ -1,6 +1,7 @@
 {
   "version":"2.0",
   "metadata":{
+    "uid":"streams-dynamodb-2012-08-10",
     "apiVersion":"2012-08-10",
     "endpointPrefix":"streams.dynamodb",
     "jsonVersion":"1.0",

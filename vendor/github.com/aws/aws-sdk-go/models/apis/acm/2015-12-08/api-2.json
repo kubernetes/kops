@@ -8,7 +8,8 @@
     "serviceAbbreviation":"ACM",
     "serviceFullName":"AWS Certificate Manager",
     "signatureVersion":"v4",
-    "targetPrefix":"CertificateManager"
+    "targetPrefix":"CertificateManager",
+    "uid":"acm-2015-12-08"
   },
   "operations":{
     "AddTagsToCertificate":{

@@ -8,7 +8,8 @@
     "serviceFullName":"Application Auto Scaling",
     "signatureVersion":"v4",
     "signingName":"application-autoscaling",
-    "targetPrefix":"AnyScaleFrontendService"
+    "targetPrefix":"AnyScaleFrontendService",
+    "uid":"application-autoscaling-2016-02-06"
   },
   "operations":{
     "DeleteScalingPolicy":{
@@ -365,7 +366,8 @@
       "type":"string",
       "enum":[
         "ecs:service:DesiredCount",
-        "ec2:spot-fleet-request:TargetCapacity"
+        "ec2:spot-fleet-request:TargetCapacity",
+        "elasticmapreduce:instancegroup:InstanceCount"
       ]
     },
     "ScalableTarget":{
@@ -466,6 +468,7 @@
       "type":"string",
       "enum":[
         "ecs",
+        "elasticmapreduce",
         "ec2"
       ]
     },

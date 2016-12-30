@@ -8,7 +8,8 @@
     "serviceFullName":"AWS Marketplace Commerce Analytics",
     "signatureVersion":"v4",
     "signingName":"marketplacecommerceanalytics",
-    "targetPrefix":"MarketplaceCommerceAnalytics20150701"
+    "targetPrefix":"MarketplaceCommerceAnalytics20150701",
+    "uid":"marketplacecommerceanalytics-2015-07-01"
   },
   "operations":{
     "GenerateDataSet":{
@@ -66,7 +67,8 @@
         "disbursed_amount_by_age_of_disbursed_funds",
         "customer_profile_by_industry",
         "customer_profile_by_revenue",
-        "customer_profile_by_geography"
+        "customer_profile_by_geography",
+        "sales_compensation_billed_revenue"
       ],
       "max":255,
       "min":1
