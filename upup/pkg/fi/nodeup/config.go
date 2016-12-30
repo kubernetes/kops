@@ -54,6 +54,9 @@ type NodeUpConfig struct {
 
 // Image is a docker image we should pre-load
 type Image struct {
+	// Name is the name of the tagged image
+	Name string `json:"name,omitempty"`
+
 	// Source is the URL from which we should download the image
 	Source string `json:"source,omitempty"`
 
