@@ -116,9 +116,6 @@ func newTemplateFunctions(nodeupConfig *NodeUpConfig, cluster *api.Cluster, inst
 func (t *templateFunctions) populate(dest template.FuncMap) {
 	dest["Arch"] = func() string { return runtime.GOARCH }
 
-	//dest["IsTopologyPublic"] = t.cluster.IsTopologyPublic
-	//dest["IsTopologyPrivate"] = t.cluster.IsTopologyPrivate
-
 	dest["CACertificatePool"] = t.CACertificatePool
 	dest["CACertificate"] = t.CACertificate
 	dest["PrivateKey"] = t.PrivateKey

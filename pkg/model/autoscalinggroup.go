@@ -94,7 +94,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					switch b.Cluster.Spec.Topology.Masters {
 					case kops.TopologyPrivate:
 						associatePublicIP = false
-						// TODO: We probably should honor AssociatePublicIP
+						// TODO: what if AssociatePublicIP is set
 
 					case kops.TopologyPublic:
 						associatePublicIP = true
