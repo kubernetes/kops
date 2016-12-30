@@ -321,11 +321,8 @@ func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group, nodeMa
 	return n
 }
 
-////
-// TODO refactor this class to use the struct.  We are passing around WAY too many variables with these functions
-////
 
-// Performs a rolling update on a list of nodes
+// Performs a rolling update on a list of ec2 instances.
 func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData) error {
 	c := rollingUpdateData.Cloud.(awsup.AWSCloud)
 
@@ -337,22 +334,22 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData)
 	for _, u := range update {
 
 		if !rollingUpdateData.IsBastion {
-			drain, drainErr := NewDrainOptions(nil, u.Node.ClusterName)
+			drain, err := NewDrainOptions(nil, u.Node.ClusterName)
 
 			// FIXME forceDrain <- name stinks
 
-			if drainErr != nil {
-				glog.Warningf("Error creating drain: %v", drainErr)
+			if err != nil {
+				glog.Warningf("Error creating drain: %v", err)
 				if rollingUpdateData.ForceDrain == false {
-					return drainErr
+					return err
 				}
 			} else {
-				drainErr = drain.DrainTheNode(u.Node.Name)
-				if drainErr != nil {
-					glog.Warningf("setupErr: %v", drainErr)
+				err = drain.DrainTheNode(u.Node.Name)
+				if err != nil {
+					glog.Warningf("setupErr: %v", err)
 				}
 				if rollingUpdateData.ForceDrain == false {
-					return drainErr
+					return err
 				}
 			}
 		}
