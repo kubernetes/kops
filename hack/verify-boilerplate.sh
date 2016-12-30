@@ -15,11 +15,8 @@
 # limitations under the License.
 
 
-set -o errexit
-set -o nounset
-set -o pipefail
+. $(dirname "${BASH_SOURCE}")/common.sh
 
-KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
 boiler="${KUBE_ROOT}/hack/boilerplate/boilerplate.py"
 
 files_need_boilerplate=($(${boiler} "$@"))
