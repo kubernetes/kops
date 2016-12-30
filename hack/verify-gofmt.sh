@@ -16,31 +16,12 @@
 
 . $(dirname "${BASH_SOURCE}")/common.sh
 
-BAD_HEADERS=$(${KUBE_ROOT}/hack/verify-boilerplate.sh | awk '{ print $6}')
-FORMATS="sh go Makefile Dockerfile"
+GOFMT="gofmt -s -w"
 
-for i in ${FORMATS}
-do
-	:
-	for j in ${BAD_HEADERS}
-	do
-		:
-	        HEADER=$(cat ${KUBE_ROOT}/hack/boilerplate/boilerplate.${i}.txt | sed 's/YEAR/2016/')
-			value=$(<${j})
-			if [[ "$j" != *$i ]]
-            then
-                continue
-            fi
-
-			if [[ ${value} == *"# Copyright"* ]]
-			then
-				echo "Bad header in ${j} ${i}"
-			else
-				text="$HEADER
-
-$value"
-				echo ${j}
-				echo "$text" > ${j}
-			fi
-	done
-done
+bad_files=$(git ls-files "*.go" | grep -v vendor | xargs -I {} $GOFMT -l {})
+if [[ -n "${bad_files}" ]]; then
+  echo "!!! '$GOFMT' needs to be run on the following files: "
+  echo "${bad_files}"
+  echo "!!! Please run: make gofmt"
+  exit 1
+fi
