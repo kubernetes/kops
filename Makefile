@@ -84,9 +84,7 @@ test:
 
 crossbuild-nodeup:
 	mkdir -p .build/dist/
-	#GOOS=darwin GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/darwin/amd64/nodeup -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION}" k8s.io/kops/cmd/nodeup
 	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/linux/amd64/nodeup -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION}" k8s.io/kops/cmd/nodeup
-	#GOOS=windows GOARCH=amd64 go build -o .build/dist/windows/amd64/kops -ldflags "-X k8s.io/kops.Version=${VERSION}" -v k8s.io/kops/cmd/kops/...
 
 crossbuild-nodeup-in-docker:
 	docker pull golang:${GOVERSION} # Keep golang image up to date
@@ -97,7 +95,6 @@ crossbuild:
 	mkdir -p .build/dist/
 	GOOS=darwin GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/darwin/amd64/kops -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION}" k8s.io/kops/cmd/kops
 	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/linux/amd64/kops -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION}" k8s.io/kops/cmd/kops
-	#GOOS=windows GOARCH=amd64 go build -o .build/dist/windows/amd64/kops -ldflags "-X k8s.io/kops.Version=${VERSION}" -v k8s.io/kops/cmd/kops/...
 
 crossbuild-in-docker:
 	docker pull golang:${GOVERSION} # Keep golang image up to date
