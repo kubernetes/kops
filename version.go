@@ -17,4 +17,9 @@ limitations under the License.
 package kops
 
 // This should be replaced by the makefile
-var Version = "dev"
+var Version = "1.5.0"
+
+// DefaultProtokubeImageName is the name of the protokube image, as we would pass to "docker run"
+func DefaultProtokubeImageName() string {
+	return "protokube:" + Version
+}
