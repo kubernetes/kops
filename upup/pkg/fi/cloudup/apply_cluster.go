@@ -438,7 +438,7 @@ func (c *ApplyClusterCmd) Run() error {
 			}
 
 			config.ProtokubeImage = &nodeup.Image{
-				Name:   ProtokubeImageName(),
+				Name:   kops.DefaultProtokubeImageName(),
 				Source: location,
 				Hash:   hash.Hex(),
 			}

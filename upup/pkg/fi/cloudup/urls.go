@@ -23,11 +23,6 @@ import (
 	"strings"
 )
 
-// ProtokubeImageName is the name of the protokube image, as referenced by docker
-func ProtokubeImageName() string {
-	return "protokube:" + kops.Version
-}
-
 // baseUrl caches the BaseUrl value
 var baseUrl string
 
