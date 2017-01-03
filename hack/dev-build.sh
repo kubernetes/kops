@@ -75,7 +75,7 @@ cd $KOPS_DIRECTORY/..
 GIT_VER=git-$(git describe --always)
 [ -z "$GIT_VER" ] && echo "we do not have GIT_VER something is very wrong" && exit 1;
 
-KOPS_URL="https://${NODEUP_BUCKET}.s3.amazonaws.com/kops/${GIT_VER}/"
+KOPS_BASE_URL="https://${NODEUP_BUCKET}.s3.amazonaws.com/kops/${GIT_VER}/"
 
 echo ==========
 echo "Starting build"
@@ -94,7 +94,7 @@ kops delete cluster \
 echo ==========
 echo "Creating cluster ${CLUSTER_NAME}"
 
-KOPS_URL=${KOPS_URL} kops create cluster \
+KOPS_BASE_URL=${KOPS_BASE_URL} kops create cluster \
   --name $CLUSTER_NAME \
   --state $KOPS_STATE_STORE \
   --node-count $NODE_COUNT \
