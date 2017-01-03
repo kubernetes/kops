@@ -43,6 +43,8 @@ func ValidateRegion(region string) error {
 			awsRegion = "us-east-1"
 		}
 		config := aws.NewConfig().WithRegion(awsRegion)
+		config = config.WithCredentialsChainVerboseErrors(true)
+
 		client := ec2.New(session.New(), config)
 
 		response, err := client.DescribeRegions(request)
