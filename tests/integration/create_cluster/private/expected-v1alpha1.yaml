@@ -25,7 +25,7 @@ spec:
   topology:
     bastion:
       enable: true
-      name: bastion-private.example.com
+      name: bastion.private.example.com
     masters: private
     nodes: private
   zones:
