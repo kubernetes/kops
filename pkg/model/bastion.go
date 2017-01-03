@@ -99,22 +99,28 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	// Allow bastion nodes to reach masters
+	// Allow bastion nodes to SSH to masters
 	{
 		t := &awstasks.SecurityGroupRule{
-			Name:          s("all-bastion-to-master"),
+			Name:          s("bastion-to-master-ssh"),
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleBastion),
+			Protocol:      s("tcp"),
+			FromPort:      i64(22),
+			ToPort:        i64(22),
 		}
 		c.AddTask(t)
 	}
 
-	// Allow bastion nodes to reach nodes
+	// Allow bastion nodes to SSH to nodes
 	{
 		t := &awstasks.SecurityGroupRule{
-			Name:          s("all-bastion-to-node"),
+			Name:          s("bastion-to-node-ssh"),
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
 			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleBastion),
+			Protocol:      s("tcp"),
+			FromPort:      i64(22),
+			ToPort:        i64(22),
 		}
 		c.AddTask(t)
 	}
