@@ -86,7 +86,13 @@ func RunGetFederations(context Factory, out io.Writer, options *GetFederationOpt
 		return t.Render(federations, out, "NAME", "CONTROLLERS", "MEMBERS")
 
 	case OutputYaml:
-		for _, f := range federations {
+		for i, f := range federations {
+			if i != 0 {
+				_, err = out.Write([]byte("\n\n---\n\n"))
+				if err != nil {
+					return fmt.Errorf("error writing to stdout: %v", err)
+				}
+			}
 			if err := marshalToWriter(f, marshalYaml, os.Stdout); err != nil {
 				return err
 			}
