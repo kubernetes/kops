@@ -18,6 +18,7 @@ package components
 
 import (
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -48,6 +49,30 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	if kubernetesVersion.Major == 1 && kubernetesVersion.Minor <= 4 {
 		// We bootstrap with a fake CIDR, but then this will be replaced (unless we're running with _isolated_master)
 		options.MasterKubelet.PodCIDR = "10.123.45.0/28"
+	}
+
+	// 1.5 deprecates the reconcile cidr option (and 1.6 removes it)
+	if kubernetesVersion.Major == 1 && kubernetesVersion.Minor <= 4 {
+		options.MasterKubelet.ReconcileCIDR = fi.Bool(true)
+
+		if fi.BoolValue(b.Context.Cluster.Spec.IsolateMasters) {
+			options.MasterKubelet.ReconcileCIDR = fi.Bool(false)
+		}
+
+		usesKubenet, err := b.Context.UsesKubenet()
+		if err != nil {
+			return err
+		}
+		if usesKubenet {
+			options.Kubelet.ReconcileCIDR = fi.Bool(true)
+		}
+	}
+
+	// IsolateMasters enables the legacy behaviour, where master pods on a separate network
+	// In newer versions of kubernetes, most of that functionality has been removed though
+	if fi.BoolValue(b.Context.Cluster.Spec.IsolateMasters) {
+		options.MasterKubelet.EnableDebuggingHandlers = fi.Bool(false)
+		options.MasterKubelet.HairpinMode = "none"
 	}
 
 	return nil
