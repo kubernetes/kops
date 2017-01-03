@@ -21,7 +21,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
-	"strconv"
 )
 
 // ExternalAccessModelBuilder configures security group rules for external access
@@ -43,9 +42,9 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// SSH is open to AdminCIDR set
 	if b.Cluster.Spec.Topology.Masters == kops.TopologyPublic {
-		for i, sshAccess := range b.Cluster.Spec.SSHAccess {
+		for _, sshAccess := range b.Cluster.Spec.SSHAccess {
 			c.AddTask(&awstasks.SecurityGroupRule{
-				Name:          s("ssh-external-to-master-" + strconv.Itoa(i)),
+				Name:          s("ssh-external-to-master-" + sshAccess),
 				SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 				Protocol:      s("tcp"),
 				FromPort:      i64(22),
