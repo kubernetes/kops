@@ -67,10 +67,6 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 		return nil, fmt.Errorf("Unable to parse topology. Unsupported topology configuration. Masters and nodes must match!")
 	}
 
-	if fi.BoolValue(cluster.Spec.IsolateMasters) {
-		tags.Insert("_isolate_masters")
-	}
-
 	switch cluster.Spec.CloudProvider {
 	case "gce":
 		{

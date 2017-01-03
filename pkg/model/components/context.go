@@ -42,3 +42,23 @@ func (c *OptionsContext) KubernetesVersion() (*semver.Version, error) {
 
 	return sv, nil
 }
+
+// UsesKubenet returns true if our networking is derived from kubenet
+func (c *OptionsContext) UsesKubenet() (bool, error) {
+	networking := c.Cluster.Spec.Networking
+	if networking == nil || networking.Classic != nil {
+		return false, nil
+	} else if networking.Kubenet != nil {
+		return true, nil
+	} else if networking.External != nil {
+		// external is based on kubenet
+		return true, nil
+	} else if networking.CNI != nil || networking.Weave != nil || networking.Calico != nil {
+		return false, nil
+	} else if networking.Kopeio != nil {
+		// Kopeio is based on kubenet / external
+		return true, nil
+	} else {
+		return false, fmt.Errorf("No networking mode set")
+	}
+}
