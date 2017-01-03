@@ -61,8 +61,7 @@ func (f *FeatureFlag) Enabled() bool {
 	return false
 }
 
-func readFlags() {
-	f := os.Getenv("KOPS_FEATURE_FLAGS")
+func parseFlags(f string) {
 	f = strings.TrimSpace(f)
 	for _, s := range strings.Split(f, ",") {
 		s = strings.TrimSpace(s)
@@ -81,7 +80,10 @@ func readFlags() {
 		}
 		ff.enabled = &enabled
 	}
+}
 
+func readFlags() {
+	parseFlags(os.Getenv("KOPS_FEATURE_FLAGS"))
 }
 
 func New(key string, defaultValue *bool) *FeatureFlag {
