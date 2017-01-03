@@ -36,8 +36,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-	elbSpec := b.Cluster.Spec.API.ELB
-	if elbSpec == nil {
+	lbSpec := b.Cluster.Spec.API.LoadBalancer
+	if lbSpec == nil {
 		// Skipping API ELB creation; not requested in Spec
 		return nil
 	}
@@ -95,13 +95,13 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			},
 		}
 
-		switch elbSpec.Type {
-		case kops.ELBTypeInternal:
+		switch lbSpec.Type {
+		case kops.LoadBalancerTypeInternal:
 			elb.Scheme = s("internal")
-		case kops.ELBTypePublic:
+		case kops.LoadBalancerTypePublic:
 			elb.Scheme = nil
 		default:
-			return fmt.Errorf("unknown elb Type: %q", elbSpec.Type)
+			return fmt.Errorf("unknown elb Type: %q", lbSpec.Type)
 		}
 
 		c.AddTask(elb)
