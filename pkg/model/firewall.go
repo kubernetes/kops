@@ -80,6 +80,7 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) error {
 
 	udpPorts := []int64{}
 	tcpPorts := []int64{}
+	protocols := []string{}
 
 	// allow access to API
 	tcpPorts = append(tcpPorts, 443)
@@ -94,8 +95,15 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) error {
 		}
 
 		if b.Cluster.Spec.Networking.Weave != nil {
-			// VXLAN over UDP
-			udpPorts = append(udpPorts, 4789)
+			udpPorts = append(udpPorts, 6783)
+			tcpPorts = append(tcpPorts, 6783)
+			udpPorts = append(udpPorts, 6784)
+		}
+
+		if b.Cluster.Spec.Networking.Calico != nil {
+			tcpPorts = append(tcpPorts, 179)
+			// Protocol 4 is IPIP
+			protocols = append(protocols, "4")
 		}
 	}
 
@@ -117,6 +125,14 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) error {
 			FromPort:      i64(tcpPort),
 			ToPort:        i64(tcpPort),
 			Protocol:      s("tcp"),
+		})
+	}
+	for _, protocol := range protocols {
+		c.AddTask(&awstasks.SecurityGroupRule{
+			Name:          s(fmt.Sprintf("node-to-master-protocol-%s", protocol)),
+			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
+			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
+			Protocol:      s(protocol),
 		})
 	}
 
