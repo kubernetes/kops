@@ -4,6 +4,9 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   name: private.example.com
 spec:
+  api:
+    loadBalancer:
+      type: Public
   channel: stable
   cloudProvider: aws
   configBase: memfs://tests/private.example.com

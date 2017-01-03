@@ -154,7 +154,7 @@ func (m *KopsModelContext) UseLoadBalancerForAPI() bool {
 	if m.Cluster.Spec.API == nil {
 		return false
 	}
-	return m.Cluster.Spec.API.ELB != nil
+	return m.Cluster.Spec.API.LoadBalancer != nil
 }
 
 func (m *KopsModelContext) UsePrivateDNS() bool {

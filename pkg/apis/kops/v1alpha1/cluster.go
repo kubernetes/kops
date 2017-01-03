@@ -231,31 +231,31 @@ type ClusterSpec struct {
 	Networking *NetworkingSpec `json:"networking,omitempty"`
 
 	// API field controls how the API is exposed outside the cluster
-	API *PublishSpec `json:"api,omitempty"`
+	API *AccessSpec `json:"api,omitempty"`
 }
 
-type PublishSpec struct {
-	DNS *DNSPublishSpec `json:"dns,omitempty"`
-	ELB *ELBPublishSpec `json:"elb,omitempty"`
+type AccessSpec struct {
+	DNS          *DNSAccessSpec          `json:"dns,omitempty"`
+	LoadBalancer *LoadBalancerAccessSpec `json:"loadBalancer,omitempty"`
 }
 
-func (s *PublishSpec) IsEmpty() bool {
-	return s.DNS == nil && s.ELB == nil
+func (s *AccessSpec) IsEmpty() bool {
+	return s.DNS == nil && s.LoadBalancer == nil
 }
 
-type DNSPublishSpec struct {
+type DNSAccessSpec struct {
 }
 
-// ELBType string describes ELB types (public, internal)
-type ELBType string
+// LoadBalancerType string describes LoadBalancer types (public, internal)
+type LoadBalancerType string
 
 const (
-	ELBTypePublic   ELBType = "Public"
-	ELBTypeInternal ELBType = "Internal"
+	LoadBalancerTypePublic   LoadBalancerType = "Public"
+	LoadBalancerTypeInternal LoadBalancerType = "Internal"
 )
 
-type ELBPublishSpec struct {
-	Type ELBType `json:"type,omitempty"`
+type LoadBalancerAccessSpec struct {
+	Type LoadBalancerType `json:"type,omitempty"`
 }
 
 type KubeDNSConfig struct {

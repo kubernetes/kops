@@ -42,23 +42,23 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 	}
 
 	if obj.API == nil {
-		obj.API = &PublishSpec{}
+		obj.API = &AccessSpec{}
 	}
 
 	if obj.API.IsEmpty() {
 		switch obj.Topology.Masters {
 		case TopologyPublic:
-			obj.API.DNS = &DNSPublishSpec{}
+			obj.API.DNS = &DNSAccessSpec{}
 
 		case TopologyPrivate:
-			obj.API.ELB = &ELBPublishSpec{}
+			obj.API.LoadBalancer = &LoadBalancerAccessSpec{}
 
 		default:
 			glog.Infof("unknown master topology type: %q", obj.Topology.Masters)
 		}
 	}
 
-	if obj.API.ELB != nil && obj.API.ELB.Type == "" {
-		obj.API.ELB.Type = ELBTypePublic
+	if obj.API.LoadBalancer != nil && obj.API.LoadBalancer.Type == "" {
+		obj.API.LoadBalancer.Type = LoadBalancerTypePublic
 	}
 }
