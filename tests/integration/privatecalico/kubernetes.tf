@@ -371,24 +371,6 @@ resource "aws_security_group" "nodes-privatecalico-example-com" {
   }
 }
 
-resource "aws_security_group_rule" "all-bastion-to-master" {
-  type = "ingress"
-  security_group_id = "${aws_security_group.masters-privatecalico-example-com.id}"
-  source_security_group_id = "${aws_security_group.bastion-privatecalico-example-com.id}"
-  from_port = 0
-  to_port = 0
-  protocol = "-1"
-}
-
-resource "aws_security_group_rule" "all-bastion-to-node" {
-  type = "ingress"
-  security_group_id = "${aws_security_group.nodes-privatecalico-example-com.id}"
-  source_security_group_id = "${aws_security_group.bastion-privatecalico-example-com.id}"
-  from_port = 0
-  to_port = 0
-  protocol = "-1"
-}
-
 resource "aws_security_group_rule" "all-master-to-master" {
   type = "ingress"
   security_group_id = "${aws_security_group.masters-privatecalico-example-com.id}"
@@ -450,6 +432,24 @@ resource "aws_security_group_rule" "bastion-elb-egress" {
   to_port = 0
   protocol = "-1"
   cidr_blocks = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "bastion-to-master-ssh" {
+  type = "ingress"
+  security_group_id = "${aws_security_group.masters-privatecalico-example-com.id}"
+  source_security_group_id = "${aws_security_group.bastion-privatecalico-example-com.id}"
+  from_port = 22
+  to_port = 22
+  protocol = "tcp"
+}
+
+resource "aws_security_group_rule" "bastion-to-node-ssh" {
+  type = "ingress"
+  security_group_id = "${aws_security_group.nodes-privatecalico-example-com.id}"
+  source_security_group_id = "${aws_security_group.bastion-privatecalico-example-com.id}"
+  from_port = 22
+  to_port = 22
+  protocol = "tcp"
 }
 
 resource "aws_security_group_rule" "https-api-elb-0-0-0-0--0" {
