@@ -52,6 +52,7 @@ func NewRoute53DNSProvider(zoneName string) (*Route53DNSProvider, error) {
 	})
 
 	config := aws.NewConfig()
+	config = config.WithCredentialsChainVerboseErrors(true)
 
 	p.client = route53.New(s, config)
 
