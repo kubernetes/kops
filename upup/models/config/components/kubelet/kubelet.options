@@ -13,7 +13,6 @@ MasterKubelet:
   RegisterSchedulable: false
   APIServers: http://127.0.0.1:8080
   # Replace the CIDR with a CIDR allocated by KCM (the default, but included for clarity)
-  ReconcileCIDR: true
   # We _do_ allow debugging handlers, so we can do logs
   # This does allow more access than we would like though
   EnableDebuggingHandlers: true
