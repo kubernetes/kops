@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM debian:jessie
+FROM gcr.io/google_containers/debian-base-amd64:0.1
 
 # ca-certificates: Needed to talk to EC2 API
-RUN apt-get update && apt-get install --yes ca-certificates
+RUN apt-get update && apt-get install --yes ca-certificates \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
 COPY /.build/artifacts/dns-controller /usr/bin/dns-controller
 
