@@ -19,20 +19,20 @@ package nodeup
 import (
 	"encoding/base64"
 	"fmt"
-	"runtime"
-	"strings"
 	"text/template"
 
 	"github.com/golang/glog"
-	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/util/sets"
+	"runtime"
 )
 
 const TagMaster = "_kubernetes_master"
+
+const DefaultProtokubeImage = "b.gcr.io/kops-images/protokube:1.5.0"
 
 // templateFunctions is a simple helper-class for the functions accessible to templates
 type templateFunctions struct {
@@ -155,8 +155,7 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 		return t.cluster.ObjectMeta.Name
 	}
 
-	dest["ProtokubeImageName"] = t.ProtokubeImageName
-	dest["ProtokubeImagePullCommand"] = t.ProtokubeImagePullCommand
+	dest["ProtokubeImage"] = t.ProtokubeImage
 
 	dest["ProtokubeFlags"] = t.ProtokubeFlags
 }
@@ -236,34 +235,17 @@ func (t *templateFunctions) GetToken(key string) (string, error) {
 	return string(token.Data), nil
 }
 
-// ProtokubeImageName returns the docker image for protokube
-func (t *templateFunctions) ProtokubeImageName() string {
-	name := ""
-	if t.nodeupConfig.ProtokubeImage != nil && t.nodeupConfig.ProtokubeImage.Name != "" {
-		name = t.nodeupConfig.ProtokubeImage.Name
-	}
-	if name == "" {
-		// use current default corresponding to this version of nodeup
-		name = kops.DefaultProtokubeImageName()
-	}
-	return name
-}
-
-// ProtokubeImagePullCommand returns the command to pull the image
-func (t *templateFunctions) ProtokubeImagePullCommand() string {
-	source := ""
+// ProtokubeImage returns the docker image for protokube
+func (t *templateFunctions) ProtokubeImage() string {
+	image := ""
 	if t.nodeupConfig.ProtokubeImage != nil {
-		source = t.nodeupConfig.ProtokubeImage.Source
+		image = t.nodeupConfig.ProtokubeImage.Source
 	}
-	if source == "" {
-		// Nothing to pull; return dummy value
-		return "/bin/true"
+	if image == "" {
+		// use current default corresponding to this version of nodeup
+		image = DefaultProtokubeImage
 	}
-	if strings.HasPrefix(source, "http:") || strings.HasPrefix(source, "https:") || strings.HasPrefix(source, "s3:") {
-		// We preloaded the image; return a dummy value
-		return "/bin/true"
-	}
-	return "/usr/bin/docker pull " + t.nodeupConfig.ProtokubeImage.Source
+	return image
 }
 
 // ProtokubeFlags returns the flags object for protokube
