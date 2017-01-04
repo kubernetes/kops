@@ -787,6 +787,7 @@ func autoConvert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.RuntimeConfig = in.RuntimeConfig
 	out.AnonymousAuth = in.AnonymousAuth
 	out.KubeletPreferredAddressTypes = in.KubeletPreferredAddressTypes
+	out.StorageBackend = in.StorageBackend
 	return nil
 }
 
@@ -816,6 +817,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *ko
 	out.RuntimeConfig = in.RuntimeConfig
 	out.AnonymousAuth = in.AnonymousAuth
 	out.KubeletPreferredAddressTypes = in.KubeletPreferredAddressTypes
+	out.StorageBackend = in.StorageBackend
 	return nil
 }
 
