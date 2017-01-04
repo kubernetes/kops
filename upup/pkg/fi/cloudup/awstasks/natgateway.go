@@ -80,7 +80,7 @@ func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 	if id != nil {
 		request := &ec2.DescribeNatGatewaysInput{}
 		request.NatGatewayIds = []*string{id}
-		response, err := cloud.EC2().DescribeNatGateways(request)
+		response, err := cloud.EC2().DescribeNatGateways(request) // <--- This actually calls the AWS API
 		if err != nil {
 			return nil, fmt.Errorf("error listing NAT Gateways: %v", err)
 		}
@@ -169,7 +169,14 @@ func (e *NatGateway) waitAvailable(cloud awsup.AWSCloud) error {
 	return nil
 }
 
+// Kris and Eric
+// This is big, this actually will create the resource...
 func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway) error {
+
+	// Kris thinks the pattern here is
+	// if a != nil
+	// 	return // Don't tag
+	// Suggest looking at other tasks to see how they handle it (subnets)
 
 	// New NGW
 	var id *string
