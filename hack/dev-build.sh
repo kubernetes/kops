@@ -73,7 +73,6 @@ VERBOSITY=${VERBOSITY:-10}
 cd $KOPS_DIRECTORY/..
 
 GIT_VER=git-$(git describe --always)
-GET_VER=git-fbbfa98
 [ -z "$GIT_VER" ] && echo "we do not have GIT_VER something is very wrong" && exit 1;
 
 KOPS_BASE_URL="https://${NODEUP_BUCKET}.s3.amazonaws.com/kops/${GIT_VER}/"
@@ -81,8 +80,7 @@ KOPS_BASE_URL="https://${NODEUP_BUCKET}.s3.amazonaws.com/kops/${GIT_VER}/"
 echo ==========
 echo "Starting build"
 
-make
-# make ci && S3_BUCKET=s3://${NODEUP_BUCKET} make upload
+make ci && S3_BUCKET=s3://${NODEUP_BUCKET} make upload
 
 echo ==========
 echo "Deleting cluster ${CLUSTER_NAME}. Elle est finie."
