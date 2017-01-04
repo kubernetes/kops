@@ -213,6 +213,12 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			Hash:   image.Hash,
 		}
 	}
+	if c.config.ProtokubeImage != nil {
+		taskMap["LoadImage.protokube"] = &nodetasks.LoadImageTask{
+			Source: c.config.ProtokubeImage.Source,
+			Hash:   c.config.ProtokubeImage.Hash,
+		}
+	}
 
 	var cloud fi.Cloud
 	var keyStore fi.Keystore
