@@ -28,6 +28,8 @@ spec:
     kubenet: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   topology:
+    dns:
+      type: Public
     masters: public
     nodes: public
   zones:

@@ -29,6 +29,8 @@ spec:
     bastion:
       enable: true
       name: bastion-private.example.com
+    dns:
+      type: Public
     masters: private
     nodes: private
   zones:
