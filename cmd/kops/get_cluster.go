@@ -136,7 +136,13 @@ func RunGetClusters(context Factory, out io.Writer, options *GetClusterOptions) 
 		return t.Render(clusters, out, "NAME", "CLOUD", "SUBNETS")
 
 	case OutputYaml:
-		for _, cluster := range clusters {
+		for i, cluster := range clusters {
+			if i != 0 {
+				_, err = out.Write([]byte("\n\n---\n\n"))
+				if err != nil {
+					return fmt.Errorf("error writing to stdout: %v", err)
+				}
+			}
 			if err := marshalToWriter(cluster, marshalYaml, out); err != nil {
 				return err
 			}
