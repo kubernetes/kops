@@ -31,9 +31,7 @@ MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
 DNS_CONTROLLER_TAG=1.4.1
 
-ifndef VERSION
-  VERSION := git-$(shell git describe --always)
-endif
+VERSION?=1.5.0-alpha1
 
 
 # Go exports:
