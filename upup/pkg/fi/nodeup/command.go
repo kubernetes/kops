@@ -196,6 +196,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader := NewLoader(c.config, c.cluster, assets, tags)
 
 	loader.Builders = append(loader.Builders, &model.DockerBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.SysctlBuilder{NodeupModelContext: modelContext})
 	tf, err := newTemplateFunctions(c.config, c.cluster, c.instanceGroup, tags)
 	if err != nil {
 		return fmt.Errorf("error initializing: %v", err)
