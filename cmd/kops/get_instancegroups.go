@@ -51,6 +51,8 @@ func init() {
 }
 
 func (c *GetInstanceGroupsCmd) Run(args []string) error {
+	out := os.Stdout
+
 	clusterName := rootCommand.ClusterName()
 	if clusterName == "" {
 		return fmt.Errorf("--name is required")
@@ -119,8 +121,14 @@ func (c *GetInstanceGroupsCmd) Run(args []string) error {
 		return t.Render(instancegroups, os.Stdout, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "SUBNETS")
 
 	case OutputYaml:
-		for _, ig := range instancegroups {
-			if err := marshalToWriter(ig, marshalYaml, os.Stdout); err != nil {
+		for i, ig := range instancegroups {
+			if i != 0 {
+				_, err = out.Write([]byte("\n\n---\n\n"))
+				if err != nil {
+					return fmt.Errorf("error writing to stdout: %v", err)
+				}
+			}
+			if err := marshalToWriter(ig, marshalYaml, out); err != nil {
 				return err
 			}
 		}
