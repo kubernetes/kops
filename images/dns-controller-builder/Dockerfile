@@ -12,16 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM debian:jessie
+FROM gcr.io/google_containers/debian-base-amd64:0.1
 
 # Install packages:
 #  curl (to download golang)
 #  git (for getting the current head)
 #  gcc make (for compilation)
-RUN apt-get update && apt-get install --yes curl git gcc make
+RUN apt-get update \
+  && apt-get install --yes --no-install-recommends \
+    curl ca-certificates git gcc make bash \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
 # Install golang
-RUN curl -L https://storage.googleapis.com/golang/go1.7.3.linux-amd64.tar.gz | tar zx -C /usr/local
+RUN curl -sSL https://storage.googleapis.com/golang/go1.7.3.linux-amd64.tar.gz | tar zx -C /usr/local
 ENV PATH $PATH:/usr/local/go/bin
 
 COPY onbuild.sh /onbuild.sh
