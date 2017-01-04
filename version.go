@@ -14,40 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package kops
 
-import (
-	"fmt"
+// This should be replaced by the makefile
+var Version = "1.5.0"
 
-	"github.com/spf13/cobra"
-	"k8s.io/kops"
-)
-
-type VersionCmd struct {
-	cobraCommand *cobra.Command
-}
-
-var versionCmd = VersionCmd{
-	cobraCommand: &cobra.Command{
-		Use:   "version",
-		Short: "Print the client version information",
-	},
-}
-
-func init() {
-	cmd := versionCmd.cobraCommand
-	rootCommand.cobraCommand.AddCommand(cmd)
-
-	cmd.Run = func(cmd *cobra.Command, args []string) {
-		err := versionCmd.Run()
-		if err != nil {
-			exitWithError(err)
-		}
-	}
-}
-
-func (c *VersionCmd) Run() error {
-	fmt.Printf("Version %s\n", kops.Version)
-
-	return nil
+// DefaultProtokubeImageName is the name of the protokube image, as we would pass to "docker run"
+func DefaultProtokubeImageName() string {
+	return "protokube:" + Version
 }

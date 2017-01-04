@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/client/simple"
@@ -38,10 +39,6 @@ import (
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
 	k8sapi "k8s.io/kubernetes/pkg/api"
-)
-
-const (
-	NodeUpVersion = "1.4.2"
 )
 
 const DefaultMaxTaskDuration = 10 * time.Minute
@@ -199,14 +196,7 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	if c.NodeUpSource == "" {
-		location := os.Getenv("NODEUP_URL")
-		if location == "" {
-			location = "https://kubeupv2.s3.amazonaws.com/kops/" + NodeUpVersion + "/linux/amd64/nodeup"
-			glog.V(2).Infof("Using default nodeup location: %q", location)
-		} else {
-			glog.Warningf("Using nodeup location from NODEUP_URL env var: %q", location)
-		}
-		c.NodeUpSource = location
+		c.NodeUpSource = NodeUpLocation()
 	}
 
 	checkExisting := true
@@ -439,20 +429,22 @@ func (c *ApplyClusterCmd) Run() error {
 			}
 		}
 
-		config.Images = images
-
 		{
-			protokubeImage := os.Getenv("PROTOKUBE_IMAGE")
-			if protokubeImage != "" {
-				glog.Warningf("Using protokube image specified in PROTOKUBE_IMAGE env var: %q", protokubeImage)
-			} else {
-				protokubeImage = nodeup.DefaultProtokubeImage
+			location := ProtokubeImageSource()
+
+			hash, err := findHash(location)
+			if err != nil {
+				return nil, err
 			}
+
 			config.ProtokubeImage = &nodeup.Image{
-				Source: protokubeImage,
+				Name:   kops.DefaultProtokubeImageName(),
+				Source: location,
+				Hash:   hash.Hex(),
 			}
 		}
 
+		config.Images = images
 		config.Channels = channels
 
 		return config, nil
