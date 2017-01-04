@@ -117,6 +117,24 @@ func TestPopulateCluster_Docker_Spec(t *testing.T) {
 	}
 }
 
+func TestPopulateCluster_StorageDefault(t *testing.T) {
+	c := buildMinimalCluster()
+	err := PerformAssignments(c)
+	if err != nil {
+		t.Fatalf("error from PerformAssignments: %v", err)
+	}
+
+	addEtcdClusters(c)
+	full, err := PopulateClusterSpec(c)
+	if err != nil {
+		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
+	}
+
+	if fi.StringValue(full.Spec.KubeAPIServer.StorageBackend) != "etcd2" {
+		t.Fatalf("Unexpected StorageBackend: %v", full.Spec.KubeAPIServer.StorageBackend)
+	}
+}
+
 func build(c *api.Cluster) (*api.Cluster, error) {
 	err := PerformAssignments(c)
 	if err != nil {
