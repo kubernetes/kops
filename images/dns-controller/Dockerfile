@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM debian:jessie
+FROM gcr.io/google_containers/ubuntu-slim:0.6
 
 # ca-certificates: Needed to talk to EC2 API
 RUN apt-get update && apt-get install --yes ca-certificates
