@@ -247,6 +247,14 @@ func Convert_v1alpha1_TopologySpec_To_kops_TopologySpec(in *TopologySpec, out *k
 	} else {
 		out.Bastion = nil
 	}
+	if in.DNS != nil {
+		out.DNS = new(kops.DNSSpec)
+		if err := Convert_v1alpha1_DNSSpec_To_kops_DNSSpec(in.DNS, out.DNS, s); err != nil {
+			return err
+		}
+	} else {
+		out.DNS = nil
+	}
 	return nil
 }
 
@@ -260,6 +268,14 @@ func Convert_kops_TopologySpec_To_v1alpha1_TopologySpec(in *kops.TopologySpec, o
 		}
 	} else {
 		out.Bastion = nil
+	}
+	if in.DNS != nil {
+		out.DNS = new(DNSSpec)
+		if err := Convert_kops_DNSSpec_To_v1alpha1_DNSSpec(in.DNS, out.DNS, s); err != nil {
+			return err
+		}
+	} else {
+		out.DNS = nil
 	}
 	return nil
 }
