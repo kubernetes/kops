@@ -322,7 +322,7 @@ func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group, nodeMa
 }
 
 
-// Performs a rolling update on a list of ec2 instances.
+// RollingUpdate performs a rolling update on a list of ec2 instances.
 func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData) error {
 	c := rollingUpdateData.Cloud.(awsup.AWSCloud)
 
@@ -330,6 +330,15 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData)
 	if rollingUpdateData.Force {
 		update = append(update, n.Ready...)
 	}
+
+	if !rollingUpdateData.IsBastion {
+		// Validate the cluster if the node is not a bastion
+		_, err := validate.ValidateCluster(update[0].Node.ClusterName, rollingUpdateData.InstanceGroupList, rollingUpdateData.K8sClient)
+		if err != nil {
+			return fmt.Errorf("Cluster %s does not pass validateion", update[0].Node.ClusterName)
+		}
+	}
+
 
 	for _, u := range update {
 
@@ -358,6 +367,9 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData)
 		// TODO: Remove from ASG first so status is immediately updated?
 		// TODO: Batch termination, like a rolling-update
 
+		// TODO: check if an asg is running the correct number of instances
+		// TODO: if not the cluster will not validate
+
 		instanceID := aws.StringValue(u.ASGInstance.InstanceId)
 		glog.Infof("Stopping instance %q in AWS ASG %q", instanceID, n.ASGName)
 
@@ -375,13 +387,12 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData)
 
 			// Wait until the cluster is happy
 			// TODO: do we need to respect cloud only??
-			var validateDidNotPass error
 			for i := 0; i <= retries; i++ {
 
-				_, validateDidNotPass = validate.ValidateCluster(u.Node.ClusterName, rollingUpdateData.InstanceGroupList, rollingUpdateData.K8sClient)
+				_, err = validate.ValidateCluster(u.Node.ClusterName, rollingUpdateData.InstanceGroupList, rollingUpdateData.K8sClient)
 
-				if validateDidNotPass != nil {
-					glog.V(2).Infof("Unable to validate k8s cluster %s, %v.", u.Node.ClusterName, validateDidNotPass)
+				if err != nil {
+					glog.V(2).Infof("Unable to validate k8s cluster %s, %v.", u.Node.ClusterName, err)
 					time.Sleep(rollingUpdateData.Interval)
 				} else {
 					glog.V(2).Infof("Cluster %s is validated proceeding with next step in rolling update",
@@ -390,8 +401,8 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData)
 				}
 			}
 
-			if validateDidNotPass != nil && rollingUpdateData.FailOnValidate {
-				return fmt.Errorf("validation timed out while performing rolling update: %v", validateDidNotPass)
+			if err != nil && rollingUpdateData.FailOnValidate {
+				return fmt.Errorf("validation timed out while performing rolling update: %v", err)
 			}
 		}
 

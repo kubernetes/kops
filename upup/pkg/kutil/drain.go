@@ -139,7 +139,7 @@ func NewDrainOptions(command *DrainCommand, clusterName string) (*DrainOptions, 
 		backOff:            clockwork.NewRealClock(),
 		Force:              true,
 		IgnoreDaemonsets:   true,
-		DeleteLocalData:    true,
+		DeleteLocalData:    false, // TODO: should this be true?
 		GracePeriodSeconds: -1,
 		Timeout:            duration,
 	}, nil
@@ -412,6 +412,7 @@ func (o *DrainOptions) getPodsForDeletion() (pods []api.Pod, err error) {
 	if len(ws) > 0 {
 		glog.Warningf("WARNING: %s\n", ws.Message())
 	}
+	glog.V(2).Infof("Pods to delete: %v", pods)
 	return pods, nil
 }
 
