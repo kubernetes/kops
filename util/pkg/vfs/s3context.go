@@ -46,6 +46,8 @@ func (s *S3Context) getClient(region string) (*s3.S3, error) {
 	s3Client := s.clients[region]
 	if s3Client == nil {
 		config := aws.NewConfig().WithRegion(region)
+		config = config.WithCredentialsChainVerboseErrors(true)
+
 		session := session.New()
 		s3Client = s3.New(session, config)
 	}
