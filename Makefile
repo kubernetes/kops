@@ -171,6 +171,8 @@ protokube-export: protokube-image
 	docker save protokube:${VERSION} | gzip -c  > .build/dist/images/protokube.tar.gz
 	(sha1sum .build/dist/images/protokube.tar.gz | cut -d' ' -f1) > .build/dist/images/protokube.tar.gz.sha1
 
+# protokube-push is no longer used (we upload a docker image tar file to S3 instead),
+# but we're keeping it around in case it is useful for development etc
 protokube-push: protokube-image
 	docker tag protokube:${VERSION} ${DOCKER_REGISTRY}/protokube:${VERSION}
 	docker push ${DOCKER_REGISTRY}/protokube:${VERSION}
