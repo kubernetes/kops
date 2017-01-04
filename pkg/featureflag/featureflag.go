@@ -61,8 +61,7 @@ func (f *FeatureFlag) Enabled() bool {
 	return false
 }
 
-func readFlags() {
-	f := os.Getenv("KOPS_FEATURE_FLAGS")
+func ParseFlags(f string) {
 	f = strings.TrimSpace(f)
 	for _, s := range strings.Split(f, ",") {
 		s = strings.TrimSpace(s)
@@ -81,11 +80,14 @@ func readFlags() {
 		}
 		ff.enabled = &enabled
 	}
+}
 
+func readEnv() {
+	ParseFlags(os.Getenv("KOPS_FEATURE_FLAGS"))
 }
 
 func New(key string, defaultValue *bool) *FeatureFlag {
-	initFlags.Do(readFlags)
+	initFlags.Do(readEnv)
 
 	flagsMutex.Lock()
 	defer flagsMutex.Unlock()
