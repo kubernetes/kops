@@ -30,11 +30,11 @@ MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
 DNS_CONTROLLER_TAG=1.4.1
-PROTOKUBE_TAG=1.5.0
 
 ifndef VERSION
   VERSION := git-$(shell git describe --always)
 endif
+
 
 # Go exports:
 
@@ -49,7 +49,7 @@ ifdef STATIC_BUILD
 endif
 
 kops: kops-gobindata
-	go install ${EXTRA_BUILDFLAGS} -ldflags "-X main.BuildVersion=${VERSION} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/...
+	go install ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/...
 
 gobindata-tool:
 	go build ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS}" -o ${GOPATH_1ST}/bin/go-bindata k8s.io/kops/vendor/github.com/jteeuwen/go-bindata/go-bindata
@@ -84,9 +84,7 @@ test:
 
 crossbuild-nodeup:
 	mkdir -p .build/dist/
-	#GOOS=darwin GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/darwin/amd64/nodeup -ldflags "${EXTRA_LDFLAGS} -X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/nodeup
-	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/linux/amd64/nodeup -ldflags "${EXTRA_LDFLAGS} -X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/nodeup
-	#GOOS=windows GOARCH=amd64 go build -o .build/dist/windows/amd64/kops -ldflags "-X main.BuildVersion=${VERSION}" -v k8s.io/kops/cmd/kops/...
+	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/linux/amd64/nodeup -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION}" k8s.io/kops/cmd/nodeup
 
 crossbuild-nodeup-in-docker:
 	docker pull golang:${GOVERSION} # Keep golang image up to date
@@ -95,9 +93,8 @@ crossbuild-nodeup-in-docker:
 
 crossbuild:
 	mkdir -p .build/dist/
-	GOOS=darwin GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/darwin/amd64/kops -ldflags "${EXTRA_LDFLAGS} -X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/kops
-	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/linux/amd64/kops -ldflags "${EXTRA_LDFLAGS} -X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/kops
-	#GOOS=windows GOARCH=amd64 go build -o .build/dist/windows/amd64/kops -ldflags "-X main.BuildVersion=${VERSION}" -v k8s.io/kops/cmd/kops/...
+	GOOS=darwin GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/darwin/amd64/kops -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION}" k8s.io/kops/cmd/kops
+	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/linux/amd64/kops -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION}" k8s.io/kops/cmd/kops
 
 crossbuild-in-docker:
 	docker pull golang:${GOVERSION} # Keep golang image up to date
@@ -109,12 +106,15 @@ kops-dist: crossbuild-in-docker
 	(sha1sum .build/dist/darwin/amd64/kops | cut -d' ' -f1) > .build/dist/darwin/amd64/kops.sha1
 	(sha1sum .build/dist/linux/amd64/kops | cut -d' ' -f1) > .build/dist/linux/amd64/kops.sha1
 
-version-dist: nodeup-dist kops-dist
+version-dist: nodeup-dist kops-dist protokube-export
 	rm -rf .build/upload
 	mkdir -p .build/upload/kops/${VERSION}/linux/amd64/
 	mkdir -p .build/upload/kops/${VERSION}/darwin/amd64/
+	mkdir -p .build/upload/kops/${VERSION}/images/
 	cp .build/dist/nodeup .build/upload/kops/${VERSION}/linux/amd64/nodeup
 	cp .build/dist/nodeup.sha1 .build/upload/kops/${VERSION}/linux/amd64/nodeup.sha1
+	cp .build/dist/images/protokube.tar.gz .build/upload/kops/${VERSION}/images/protokube.tar.gz
+	cp .build/dist/images/protokube.tar.gz.sha1 .build/upload/kops/${VERSION}/images/protokube.tar.gz.sha1
 	cp .build/dist/linux/amd64/kops .build/upload/kops/${VERSION}/linux/amd64/kops
 	cp .build/dist/linux/amd64/kops.sha1 .build/upload/kops/${VERSION}/linux/amd64/kops.sha1
 	cp .build/dist/darwin/amd64/kops .build/upload/kops/${VERSION}/darwin/amd64/kops
@@ -154,7 +154,6 @@ push-aws-run: push
 	ssh -t ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8
 
 
-
 protokube-gocode:
 	go install k8s.io/kops/protokube/cmd/protokube
 
@@ -162,18 +161,26 @@ protokube-builder-image:
 	docker build -t protokube-builder images/protokube-builder
 
 protokube-build-in-docker: protokube-builder-image
-	docker run -it -e VERSION=${VERSION} -v `pwd`:/src protokube-builder /onbuild.sh
+	docker run -t -e VERSION=${VERSION} -v `pwd`:/src protokube-builder /onbuild.sh
 
 protokube-image: protokube-build-in-docker
-	docker build -t ${DOCKER_REGISTRY}/protokube:${PROTOKUBE_TAG} -f images/protokube/Dockerfile .
+	docker build -t protokube:${VERSION} -f images/protokube/Dockerfile .
 
+protokube-export: protokube-image
+	mkdir -p .build/dist/images
+	docker save protokube:${VERSION} | gzip -c  > .build/dist/images/protokube.tar.gz
+	(sha1sum .build/dist/images/protokube.tar.gz | cut -d' ' -f1) > .build/dist/images/protokube.tar.gz.sha1
+
+# protokube-push is no longer used (we upload a docker image tar file to S3 instead),
+# but we're keeping it around in case it is useful for development etc
 protokube-push: protokube-image
-	docker push ${DOCKER_REGISTRY}/protokube:${PROTOKUBE_TAG}
+	docker tag protokube:${VERSION} ${DOCKER_REGISTRY}/protokube:${VERSION}
+	docker push ${DOCKER_REGISTRY}/protokube:${VERSION}
 
 nodeup: nodeup-dist
 
 nodeup-gocode: kops-gobindata
-	go install ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS} -X main.BuildVersion=${VERSION}" k8s.io/kops/cmd/nodeup
+	go install ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION}" k8s.io/kops/cmd/nodeup
 
 nodeup-dist:
 	docker pull golang:${GOVERSION} # Keep golang image up to date
@@ -189,7 +196,7 @@ dns-controller-builder-image:
 	docker build -t dns-controller-builder images/dns-controller-builder
 
 dns-controller-build-in-docker: dns-controller-builder-image
-	docker run -it -e VERSION=${VERSION} -v `pwd`:/src dns-controller-builder /onbuild.sh
+	docker run -t -e VERSION=${VERSION} -v `pwd`:/src dns-controller-builder /onbuild.sh
 
 dns-controller-image: dns-controller-build-in-docker
 	docker build -t ${DOCKER_REGISTRY}/dns-controller:${DNS_CONTROLLER_TAG}  -f images/dns-controller/Dockerfile .
@@ -258,7 +265,7 @@ ci: kops nodeup-gocode examples test govet verify-boilerplate verify-gofmt verif
 channels: channels-gocode
 
 channels-gocode:
-	go install ${EXTRA_BUILDFLAGS} -ldflags "-X main.BuildVersion=${VERSION} ${EXTRA_LDFLAGS}" k8s.io/kops/channels/cmd/channels
+	go install ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} ${EXTRA_LDFLAGS}" k8s.io/kops/channels/cmd/channels
 
 # --------------------------------------------------
 # API / embedding examples
