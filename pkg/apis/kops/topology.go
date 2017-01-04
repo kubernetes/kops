@@ -34,4 +34,18 @@ type TopologySpec struct {
 	// or disable inbound SSH communication from the Internet, some call bastion
 	// as the "jump server".
 	Bastion *BastionSpec `json:"bastion,omitempty"`
+
+	// DNS configures options relating to DNS, in particular whether we use a public or a private hosted zone
+	DNS *DNSSpec `json:"dns,omitempty"`
 }
+
+type DNSSpec struct {
+	Type DNSType `json:"type,omitempty"`
+}
+
+type DNSType string
+
+const (
+	DNSTypePublic  DNSType = "Public"
+	DNSTypePrivate DNSType = "Private"
+)

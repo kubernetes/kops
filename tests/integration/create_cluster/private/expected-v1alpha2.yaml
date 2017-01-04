@@ -37,6 +37,8 @@ spec:
   topology:
     bastion:
       bastionPublicName: bastion-private.example.com
+    dns:
+      type: Public
     masters: private
     nodes: private
 

@@ -34,7 +34,7 @@ import (
 )
 
 // TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
-func TestMinimal(t *testing.T) {
+func ConversionTestMinimal(t *testing.T) {
 	runTest(t, "minimal", "v1alpha1", "v1alpha2")
 	runTest(t, "minimal", "v1alpha2", "v1alpha1")
 
