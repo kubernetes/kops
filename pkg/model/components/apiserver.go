@@ -44,6 +44,11 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		options.KubeAPIServer.APIServerCount = fi.Int(count)
 	}
 
+	if options.KubeAPIServer.StorageBackend == nil {
+		// For the moment, we continue to use etcd2
+		options.KubeAPIServer.StorageBackend = fi.String("etcd2")
+	}
+
 	return nil
 }
 
