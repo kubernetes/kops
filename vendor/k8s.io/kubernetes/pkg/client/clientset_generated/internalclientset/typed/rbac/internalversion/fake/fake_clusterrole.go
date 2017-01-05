@@ -18,10 +18,11 @@ package fake
 
 import (
 	api "k8s.io/kubernetes/pkg/api"
-	unversioned "k8s.io/kubernetes/pkg/api/unversioned"
+	v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	rbac "k8s.io/kubernetes/pkg/apis/rbac"
 	core "k8s.io/kubernetes/pkg/client/testing/core"
 	labels "k8s.io/kubernetes/pkg/labels"
+	schema "k8s.io/kubernetes/pkg/runtime/schema"
 	watch "k8s.io/kubernetes/pkg/watch"
 )
 
@@ -30,7 +31,7 @@ type FakeClusterRoles struct {
 	Fake *FakeRbac
 }
 
-var clusterrolesResource = unversioned.GroupVersionResource{Group: "rbac.authorization.k8s.io", Version: "", Resource: "clusterroles"}
+var clusterrolesResource = schema.GroupVersionResource{Group: "rbac.authorization.k8s.io", Version: "", Resource: "clusterroles"}
 
 func (c *FakeClusterRoles) Create(clusterRole *rbac.ClusterRole) (result *rbac.ClusterRole, err error) {
 	obj, err := c.Fake.
@@ -63,7 +64,7 @@ func (c *FakeClusterRoles) DeleteCollection(options *api.DeleteOptions, listOpti
 	return err
 }
 
-func (c *FakeClusterRoles) Get(name string) (result *rbac.ClusterRole, err error) {
+func (c *FakeClusterRoles) Get(name string, options v1.GetOptions) (result *rbac.ClusterRole, err error) {
 	obj, err := c.Fake.
 		Invokes(core.NewRootGetAction(clusterrolesResource, name), &rbac.ClusterRole{})
 	if obj == nil {

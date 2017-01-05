@@ -17,16 +17,23 @@ limitations under the License.
 package e2e_node
 
 import (
-	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/kubelet"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
-	"k8s.io/kubernetes/pkg/util/uuid"
 	"k8s.io/kubernetes/test/e2e/framework"
 
 	. "github.com/onsi/ginkgo"
 )
 
-const logString = "This is the expected log content of this node e2e test"
+const (
+	logString = "This is the expected log content of this node e2e test"
+
+	logPodName    = "logger-pod"
+	logContName   = "logger-container"
+	checkPodName  = "checker-pod"
+	checkContName = "checker-container"
+)
 
 var _ = framework.KubeDescribe("ContainerLogPath", func() {
 	f := framework.NewDefaultFramework("kubelet-container-log-path")
@@ -39,19 +46,14 @@ var _ = framework.KubeDescribe("ContainerLogPath", func() {
 				logDirVolumeName := "log-dir-vol"
 				logDir := kubelet.ContainerLogsDir
 
-				logPodName := "logger-" + string(uuid.NewUUID())
-				logContName := "logger-c-" + string(uuid.NewUUID())
-				checkPodName := "checker" + string(uuid.NewUUID())
-				checkContName := "checker-c-" + string(uuid.NewUUID())
-
-				logPod := &api.Pod{
-					ObjectMeta: api.ObjectMeta{
+				logPod := &v1.Pod{
+					ObjectMeta: v1.ObjectMeta{
 						Name: logPodName,
 					},
-					Spec: api.PodSpec{
+					Spec: v1.PodSpec{
 						// this pod is expected to exit successfully
-						RestartPolicy: api.RestartPolicyNever,
-						Containers: []api.Container{
+						RestartPolicy: v1.RestartPolicyNever,
+						Containers: []v1.Container{
 							{
 								Image:   "gcr.io/google_containers/busybox:1.24",
 								Name:    logContName,
@@ -66,27 +68,27 @@ var _ = framework.KubeDescribe("ContainerLogPath", func() {
 				framework.ExpectNoError(err, "Failed waiting for pod: %s to enter success state", logPodName)
 
 				// get containerID from created Pod
-				createdLogPod, err := podClient.Get(logPodName)
+				createdLogPod, err := podClient.Get(logPodName, metav1.GetOptions{})
 				logConID := kubecontainer.ParseContainerID(createdLogPod.Status.ContainerStatuses[0].ContainerID)
 				framework.ExpectNoError(err, "Failed to get pod: %s", logPodName)
 
 				expectedlogFile := logDir + "/" + logPodName + "_" + ns + "_" + logContName + "-" + logConID.ID + ".log"
 
-				checkPod := &api.Pod{
-					ObjectMeta: api.ObjectMeta{
+				checkPod := &v1.Pod{
+					ObjectMeta: v1.ObjectMeta{
 						Name: checkPodName,
 					},
-					Spec: api.PodSpec{
+					Spec: v1.PodSpec{
 						// this pod is expected to exit successfully
-						RestartPolicy: api.RestartPolicyNever,
-						Containers: []api.Container{
+						RestartPolicy: v1.RestartPolicyNever,
+						Containers: []v1.Container{
 							{
 								Image: "gcr.io/google_containers/busybox:1.24",
 								Name:  checkContName,
 								// If we find expected log file and contains right content, exit 0
 								// else, keep checking until test timeout
 								Command: []string{"sh", "-c", "while true; do if [ -e " + expectedlogFile + " ] && grep -q " + logString + " " + expectedlogFile + "; then exit 0; fi; sleep 1; done"},
-								VolumeMounts: []api.VolumeMount{
+								VolumeMounts: []v1.VolumeMount{
 									{
 										Name: logDirVolumeName,
 										// mount ContainerLogsDir to the same path in container
@@ -96,11 +98,11 @@ var _ = framework.KubeDescribe("ContainerLogPath", func() {
 								},
 							},
 						},
-						Volumes: []api.Volume{
+						Volumes: []v1.Volume{
 							{
 								Name: logDirVolumeName,
-								VolumeSource: api.VolumeSource{
-									HostPath: &api.HostPathVolumeSource{
+								VolumeSource: v1.VolumeSource{
+									HostPath: &v1.HostPathVolumeSource{
 										Path: expectedlogFile,
 									},
 								},

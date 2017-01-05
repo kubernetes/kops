@@ -29,8 +29,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.APIVersions"
+        "$ref": "#/definitions/v1.APIVersions"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     }
@@ -59,8 +62,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.APIResourceList"
+        "$ref": "#/definitions/v1.APIResourceList"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     }
@@ -91,6 +97,9 @@
        "schema": {
         "$ref": "#/definitions/v1.ConfigMapList"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -119,7 +128,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -165,6 +174,9 @@
        "schema": {
         "$ref": "#/definitions/v1.EventList"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -193,7 +205,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -251,7 +263,7 @@
       {
        "uniqueItems": true,
        "type": "string",
-       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
        "name": "resourceVersion",
        "in": "query"
       },
@@ -276,6 +288,9 @@
        "schema": {
         "$ref": "#/definitions/v1.NamespaceList"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -312,6 +327,9 @@
        "schema": {
         "$ref": "#/definitions/v1.Namespace"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -350,7 +368,7 @@
       {
        "uniqueItems": true,
        "type": "string",
-       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
        "name": "resourceVersion",
        "in": "query"
       },
@@ -373,8 +391,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.Status"
+        "$ref": "#/definitions/v1.Status"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -426,7 +447,7 @@
       {
        "uniqueItems": true,
        "type": "string",
-       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
        "name": "resourceVersion",
        "in": "query"
       },
@@ -451,6 +472,9 @@
        "schema": {
         "$ref": "#/definitions/v1.ConfigMapList"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -487,6 +511,9 @@
        "schema": {
         "$ref": "#/definitions/v1.ConfigMap"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -525,7 +552,7 @@
       {
        "uniqueItems": true,
        "type": "string",
-       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
        "name": "resourceVersion",
        "in": "query"
       },
@@ -548,8 +575,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.Status"
+        "$ref": "#/definitions/v1.Status"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -593,14 +623,14 @@
       {
        "uniqueItems": true,
        "type": "boolean",
-       "description": "Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'",
+       "description": "Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'.",
        "name": "exact",
        "in": "query"
       },
       {
        "uniqueItems": true,
        "type": "boolean",
-       "description": "Should this value be exported.  Export strips fields that a user can not specify.`",
+       "description": "Should this value be exported.  Export strips fields that a user can not specify.",
        "name": "export",
        "in": "query"
       }
@@ -611,6 +641,9 @@
        "schema": {
         "$ref": "#/definitions/v1.ConfigMap"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -647,6 +680,9 @@
        "schema": {
         "$ref": "#/definitions/v1.ConfigMap"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -695,8 +731,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.Status"
+        "$ref": "#/definitions/v1.Status"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -725,7 +764,7 @@
        "in": "body",
        "required": true,
        "schema": {
-        "$ref": "#/definitions/unversioned.Patch"
+        "$ref": "#/definitions/v1.Patch"
        }
       }
      ],
@@ -735,6 +774,9 @@
        "schema": {
         "$ref": "#/definitions/v1.ConfigMap"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -802,7 +844,7 @@
       {
        "uniqueItems": true,
        "type": "string",
-       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
        "name": "resourceVersion",
        "in": "query"
       },
@@ -827,6 +869,9 @@
        "schema": {
         "$ref": "#/definitions/v1.EventList"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -863,6 +908,9 @@
        "schema": {
         "$ref": "#/definitions/v1.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -901,7 +949,7 @@
       {
        "uniqueItems": true,
        "type": "string",
-       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
        "name": "resourceVersion",
        "in": "query"
       },
@@ -924,8 +972,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.Status"
+        "$ref": "#/definitions/v1.Status"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -969,14 +1020,14 @@
       {
        "uniqueItems": true,
        "type": "boolean",
-       "description": "Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'",
+       "description": "Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'.",
        "name": "exact",
        "in": "query"
       },
       {
        "uniqueItems": true,
        "type": "boolean",
-       "description": "Should this value be exported.  Export strips fields that a user can not specify.`",
+       "description": "Should this value be exported.  Export strips fields that a user can not specify.",
        "name": "export",
        "in": "query"
       }
@@ -987,6 +1038,9 @@
        "schema": {
         "$ref": "#/definitions/v1.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -1023,6 +1077,9 @@
        "schema": {
         "$ref": "#/definitions/v1.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -1071,8 +1128,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.Status"
+        "$ref": "#/definitions/v1.Status"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -1101,7 +1161,7 @@
        "in": "body",
        "required": true,
        "schema": {
-        "$ref": "#/definitions/unversioned.Patch"
+        "$ref": "#/definitions/v1.Patch"
        }
       }
      ],
@@ -1111,6 +1171,9 @@
        "schema": {
         "$ref": "#/definitions/v1.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -1178,7 +1241,7 @@
       {
        "uniqueItems": true,
        "type": "string",
-       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
        "name": "resourceVersion",
        "in": "query"
       },
@@ -1203,6 +1266,9 @@
        "schema": {
         "$ref": "#/definitions/v1.SecretList"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -1239,6 +1305,9 @@
        "schema": {
         "$ref": "#/definitions/v1.Secret"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -1277,7 +1346,7 @@
       {
        "uniqueItems": true,
        "type": "string",
-       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
        "name": "resourceVersion",
        "in": "query"
       },
@@ -1300,8 +1369,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.Status"
+        "$ref": "#/definitions/v1.Status"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -1345,14 +1417,14 @@
       {
        "uniqueItems": true,
        "type": "boolean",
-       "description": "Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'",
+       "description": "Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'.",
        "name": "exact",
        "in": "query"
       },
       {
        "uniqueItems": true,
        "type": "boolean",
-       "description": "Should this value be exported.  Export strips fields that a user can not specify.`",
+       "description": "Should this value be exported.  Export strips fields that a user can not specify.",
        "name": "export",
        "in": "query"
       }
@@ -1363,6 +1435,9 @@
        "schema": {
         "$ref": "#/definitions/v1.Secret"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -1399,6 +1474,9 @@
        "schema": {
         "$ref": "#/definitions/v1.Secret"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -1447,8 +1525,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.Status"
+        "$ref": "#/definitions/v1.Status"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -1477,7 +1558,7 @@
        "in": "body",
        "required": true,
        "schema": {
-        "$ref": "#/definitions/unversioned.Patch"
+        "$ref": "#/definitions/v1.Patch"
        }
       }
      ],
@@ -1487,6 +1568,9 @@
        "schema": {
         "$ref": "#/definitions/v1.Secret"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -1554,7 +1638,7 @@
       {
        "uniqueItems": true,
        "type": "string",
-       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
        "name": "resourceVersion",
        "in": "query"
       },
@@ -1579,6 +1663,9 @@
        "schema": {
         "$ref": "#/definitions/v1.ServiceList"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -1615,6 +1702,9 @@
        "schema": {
         "$ref": "#/definitions/v1.Service"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -1653,7 +1743,7 @@
       {
        "uniqueItems": true,
        "type": "string",
-       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
        "name": "resourceVersion",
        "in": "query"
       },
@@ -1676,8 +1766,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.Status"
+        "$ref": "#/definitions/v1.Status"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -1721,14 +1814,14 @@
       {
        "uniqueItems": true,
        "type": "boolean",
-       "description": "Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'",
+       "description": "Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'.",
        "name": "exact",
        "in": "query"
       },
       {
        "uniqueItems": true,
        "type": "boolean",
-       "description": "Should this value be exported.  Export strips fields that a user can not specify.`",
+       "description": "Should this value be exported.  Export strips fields that a user can not specify.",
        "name": "export",
        "in": "query"
       }
@@ -1739,6 +1832,9 @@
        "schema": {
         "$ref": "#/definitions/v1.Service"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -1775,6 +1871,9 @@
        "schema": {
         "$ref": "#/definitions/v1.Service"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -1823,8 +1922,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.Status"
+        "$ref": "#/definitions/v1.Status"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -1853,7 +1955,7 @@
        "in": "body",
        "required": true,
        "schema": {
-        "$ref": "#/definitions/unversioned.Patch"
+        "$ref": "#/definitions/v1.Patch"
        }
       }
      ],
@@ -1863,6 +1965,9 @@
        "schema": {
         "$ref": "#/definitions/v1.Service"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -1916,6 +2021,9 @@
        "schema": {
         "$ref": "#/definitions/v1.Service"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -1952,6 +2060,9 @@
        "schema": {
         "$ref": "#/definitions/v1.Service"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -1980,7 +2091,7 @@
        "in": "body",
        "required": true,
        "schema": {
-        "$ref": "#/definitions/unversioned.Patch"
+        "$ref": "#/definitions/v1.Patch"
        }
       }
      ],
@@ -1990,6 +2101,9 @@
        "schema": {
         "$ref": "#/definitions/v1.Service"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -2041,14 +2155,14 @@
       {
        "uniqueItems": true,
        "type": "boolean",
-       "description": "Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'",
+       "description": "Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'.",
        "name": "exact",
        "in": "query"
       },
       {
        "uniqueItems": true,
        "type": "boolean",
-       "description": "Should this value be exported.  Export strips fields that a user can not specify.`",
+       "description": "Should this value be exported.  Export strips fields that a user can not specify.",
        "name": "export",
        "in": "query"
       }
@@ -2059,6 +2173,9 @@
        "schema": {
         "$ref": "#/definitions/v1.Namespace"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -2095,6 +2212,9 @@
        "schema": {
         "$ref": "#/definitions/v1.Namespace"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -2143,8 +2263,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.Status"
+        "$ref": "#/definitions/v1.Status"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -2173,7 +2296,7 @@
        "in": "body",
        "required": true,
        "schema": {
-        "$ref": "#/definitions/unversioned.Patch"
+        "$ref": "#/definitions/v1.Patch"
        }
       }
      ],
@@ -2183,6 +2306,9 @@
        "schema": {
         "$ref": "#/definitions/v1.Namespace"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -2228,6 +2354,9 @@
        "schema": {
         "$ref": "#/definitions/v1.Namespace"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -2281,6 +2410,9 @@
        "schema": {
         "$ref": "#/definitions/v1.Namespace"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -2317,6 +2449,9 @@
        "schema": {
         "$ref": "#/definitions/v1.Namespace"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -2345,7 +2480,7 @@
        "in": "body",
        "required": true,
        "schema": {
-        "$ref": "#/definitions/unversioned.Patch"
+        "$ref": "#/definitions/v1.Patch"
        }
       }
      ],
@@ -2355,6 +2490,9 @@
        "schema": {
         "$ref": "#/definitions/v1.Namespace"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -2402,6 +2540,9 @@
        "schema": {
         "$ref": "#/definitions/v1.SecretList"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -2430,7 +2571,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -2476,6 +2617,9 @@
        "schema": {
         "$ref": "#/definitions/v1.ServiceList"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -2504,7 +2648,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -2550,6 +2694,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -2578,7 +2725,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -2624,6 +2771,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -2652,7 +2802,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -2698,6 +2848,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -2726,7 +2879,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -2772,6 +2925,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -2808,7 +2964,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -2854,6 +3010,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -2898,7 +3057,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -2944,6 +3103,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -2980,7 +3142,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -3026,6 +3188,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -3070,7 +3235,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -3116,6 +3281,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -3152,7 +3320,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -3198,6 +3366,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -3242,7 +3413,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -3288,6 +3459,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -3324,7 +3498,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -3370,6 +3544,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -3414,7 +3591,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -3460,6 +3637,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -3496,7 +3676,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -3542,6 +3722,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -3570,7 +3753,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -3616,6 +3799,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -3644,7 +3830,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -3688,8 +3874,975 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.APIGroupList"
+        "$ref": "#/definitions/v1.APIGroupList"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
+      }
+     }
+    }
+   },
+   "/apis/batch/": {
+    "get": {
+     "description": "get information of a group",
+     "consumes": [
+      "application/json",
+      "application/yaml",
+      "application/vnd.kubernetes.protobuf"
+     ],
+     "produces": [
+      "application/json",
+      "application/yaml",
+      "application/vnd.kubernetes.protobuf"
+     ],
+     "schemes": [
+      "https"
+     ],
+     "tags": [
+      "batch"
+     ],
+     "operationId": "getBatchAPIGroup",
+     "responses": {
+      "200": {
+       "description": "OK",
+       "schema": {
+        "$ref": "#/definitions/v1.APIGroup"
+       }
+      },
+      "401": {
+       "description": "Unauthorized"
+      }
+     }
+    }
+   },
+   "/apis/batch/v1/": {
+    "get": {
+     "description": "get available resources",
+     "consumes": [
+      "application/json",
+      "application/yaml",
+      "application/vnd.kubernetes.protobuf"
+     ],
+     "produces": [
+      "application/json",
+      "application/yaml",
+      "application/vnd.kubernetes.protobuf"
+     ],
+     "schemes": [
+      "https"
+     ],
+     "tags": [
+      "batch_v1"
+     ],
+     "operationId": "getBatchV1APIResources",
+     "responses": {
+      "200": {
+       "description": "OK",
+       "schema": {
+        "$ref": "#/definitions/v1.APIResourceList"
+       }
+      },
+      "401": {
+       "description": "Unauthorized"
+      }
+     }
+    }
+   },
+   "/apis/batch/v1/jobs": {
+    "get": {
+     "description": "list or watch objects of kind Job",
+     "consumes": [
+      "*/*"
+     ],
+     "produces": [
+      "application/json",
+      "application/yaml",
+      "application/vnd.kubernetes.protobuf",
+      "application/json;stream=watch",
+      "application/vnd.kubernetes.protobuf;stream=watch"
+     ],
+     "schemes": [
+      "https"
+     ],
+     "tags": [
+      "batch_v1"
+     ],
+     "operationId": "listBatchV1JobForAllNamespaces",
+     "responses": {
+      "200": {
+       "description": "OK",
+       "schema": {
+        "$ref": "#/definitions/v1.JobList"
+       }
+      },
+      "401": {
+       "description": "Unauthorized"
+      }
+     }
+    },
+    "parameters": [
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "A selector to restrict the list of returned objects by their fields. Defaults to everything.",
+      "name": "fieldSelector",
+      "in": "query"
+     },
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
+      "name": "labelSelector",
+      "in": "query"
+     },
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "If 'true', then the output is pretty printed.",
+      "name": "pretty",
+      "in": "query"
+     },
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
+      "name": "resourceVersion",
+      "in": "query"
+     },
+     {
+      "uniqueItems": true,
+      "type": "integer",
+      "description": "Timeout for the list/watch call.",
+      "name": "timeoutSeconds",
+      "in": "query"
+     },
+     {
+      "uniqueItems": true,
+      "type": "boolean",
+      "description": "Watch for changes to the described resources and return them as a stream of add, update, and remove notifications. Specify resourceVersion.",
+      "name": "watch",
+      "in": "query"
+     }
+    ]
+   },
+   "/apis/batch/v1/namespaces/{namespace}/jobs": {
+    "get": {
+     "description": "list or watch objects of kind Job",
+     "consumes": [
+      "*/*"
+     ],
+     "produces": [
+      "application/json",
+      "application/yaml",
+      "application/vnd.kubernetes.protobuf",
+      "application/json;stream=watch",
+      "application/vnd.kubernetes.protobuf;stream=watch"
+     ],
+     "schemes": [
+      "https"
+     ],
+     "tags": [
+      "batch_v1"
+     ],
+     "operationId": "listBatchV1NamespacedJob",
+     "parameters": [
+      {
+       "uniqueItems": true,
+       "type": "string",
+       "description": "A selector to restrict the list of returned objects by their fields. Defaults to everything.",
+       "name": "fieldSelector",
+       "in": "query"
+      },
+      {
+       "uniqueItems": true,
+       "type": "string",
+       "description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
+       "name": "labelSelector",
+       "in": "query"
+      },
+      {
+       "uniqueItems": true,
+       "type": "string",
+       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
+       "name": "resourceVersion",
+       "in": "query"
+      },
+      {
+       "uniqueItems": true,
+       "type": "integer",
+       "description": "Timeout for the list/watch call.",
+       "name": "timeoutSeconds",
+       "in": "query"
+      },
+      {
+       "uniqueItems": true,
+       "type": "boolean",
+       "description": "Watch for changes to the described resources and return them as a stream of add, update, and remove notifications. Specify resourceVersion.",
+       "name": "watch",
+       "in": "query"
+      }
+     ],
+     "responses": {
+      "200": {
+       "description": "OK",
+       "schema": {
+        "$ref": "#/definitions/v1.JobList"
+       }
+      },
+      "401": {
+       "description": "Unauthorized"
+      }
+     }
+    },
+    "post": {
+     "description": "create a Job",
+     "consumes": [
+      "*/*"
+     ],
+     "produces": [
+      "application/json",
+      "application/yaml",
+      "application/vnd.kubernetes.protobuf"
+     ],
+     "schemes": [
+      "https"
+     ],
+     "tags": [
+      "batch_v1"
+     ],
+     "operationId": "createBatchV1NamespacedJob",
+     "parameters": [
+      {
+       "name": "body",
+       "in": "body",
+       "required": true,
+       "schema": {
+        "$ref": "#/definitions/v1.Job"
+       }
+      }
+     ],
+     "responses": {
+      "200": {
+       "description": "OK",
+       "schema": {
+        "$ref": "#/definitions/v1.Job"
+       }
+      },
+      "401": {
+       "description": "Unauthorized"
+      }
+     }
+    },
+    "delete": {
+     "description": "delete collection of Job",
+     "consumes": [
+      "*/*"
+     ],
+     "produces": [
+      "application/json",
+      "application/yaml",
+      "application/vnd.kubernetes.protobuf"
+     ],
+     "schemes": [
+      "https"
+     ],
+     "tags": [
+      "batch_v1"
+     ],
+     "operationId": "deleteBatchV1CollectionNamespacedJob",
+     "parameters": [
+      {
+       "uniqueItems": true,
+       "type": "string",
+       "description": "A selector to restrict the list of returned objects by their fields. Defaults to everything.",
+       "name": "fieldSelector",
+       "in": "query"
+      },
+      {
+       "uniqueItems": true,
+       "type": "string",
+       "description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
+       "name": "labelSelector",
+       "in": "query"
+      },
+      {
+       "uniqueItems": true,
+       "type": "string",
+       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
+       "name": "resourceVersion",
+       "in": "query"
+      },
+      {
+       "uniqueItems": true,
+       "type": "integer",
+       "description": "Timeout for the list/watch call.",
+       "name": "timeoutSeconds",
+       "in": "query"
+      },
+      {
+       "uniqueItems": true,
+       "type": "boolean",
+       "description": "Watch for changes to the described resources and return them as a stream of add, update, and remove notifications. Specify resourceVersion.",
+       "name": "watch",
+       "in": "query"
+      }
+     ],
+     "responses": {
+      "200": {
+       "description": "OK",
+       "schema": {
+        "$ref": "#/definitions/v1.Status"
+       }
+      },
+      "401": {
+       "description": "Unauthorized"
+      }
+     }
+    },
+    "parameters": [
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "object name and auth scope, such as for teams and projects",
+      "name": "namespace",
+      "in": "path",
+      "required": true
+     },
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "If 'true', then the output is pretty printed.",
+      "name": "pretty",
+      "in": "query"
+     }
+    ]
+   },
+   "/apis/batch/v1/namespaces/{namespace}/jobs/{name}": {
+    "get": {
+     "description": "read the specified Job",
+     "consumes": [
+      "*/*"
+     ],
+     "produces": [
+      "application/json",
+      "application/yaml",
+      "application/vnd.kubernetes.protobuf"
+     ],
+     "schemes": [
+      "https"
+     ],
+     "tags": [
+      "batch_v1"
+     ],
+     "operationId": "readBatchV1NamespacedJob",
+     "parameters": [
+      {
+       "uniqueItems": true,
+       "type": "boolean",
+       "description": "Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'.",
+       "name": "exact",
+       "in": "query"
+      },
+      {
+       "uniqueItems": true,
+       "type": "boolean",
+       "description": "Should this value be exported.  Export strips fields that a user can not specify.",
+       "name": "export",
+       "in": "query"
+      }
+     ],
+     "responses": {
+      "200": {
+       "description": "OK",
+       "schema": {
+        "$ref": "#/definitions/v1.Job"
+       }
+      },
+      "401": {
+       "description": "Unauthorized"
+      }
+     }
+    },
+    "put": {
+     "description": "replace the specified Job",
+     "consumes": [
+      "*/*"
+     ],
+     "produces": [
+      "application/json",
+      "application/yaml",
+      "application/vnd.kubernetes.protobuf"
+     ],
+     "schemes": [
+      "https"
+     ],
+     "tags": [
+      "batch_v1"
+     ],
+     "operationId": "replaceBatchV1NamespacedJob",
+     "parameters": [
+      {
+       "name": "body",
+       "in": "body",
+       "required": true,
+       "schema": {
+        "$ref": "#/definitions/v1.Job"
+       }
+      }
+     ],
+     "responses": {
+      "200": {
+       "description": "OK",
+       "schema": {
+        "$ref": "#/definitions/v1.Job"
+       }
+      },
+      "401": {
+       "description": "Unauthorized"
+      }
+     }
+    },
+    "delete": {
+     "description": "delete a Job",
+     "consumes": [
+      "*/*"
+     ],
+     "produces": [
+      "application/json",
+      "application/yaml",
+      "application/vnd.kubernetes.protobuf"
+     ],
+     "schemes": [
+      "https"
+     ],
+     "tags": [
+      "batch_v1"
+     ],
+     "operationId": "deleteBatchV1NamespacedJob",
+     "parameters": [
+      {
+       "name": "body",
+       "in": "body",
+       "required": true,
+       "schema": {
+        "$ref": "#/definitions/v1.DeleteOptions"
+       }
+      },
+      {
+       "uniqueItems": true,
+       "type": "integer",
+       "description": "The duration in seconds before the object should be deleted. Value must be non-negative integer. The value zero indicates delete immediately. If this value is nil, the default grace period for the specified type will be used. Defaults to a per object value if not specified. zero means delete immediately.",
+       "name": "gracePeriodSeconds",
+       "in": "query"
+      },
+      {
+       "uniqueItems": true,
+       "type": "boolean",
+       "description": "Should the dependent objects be orphaned. If true/false, the \"orphan\" finalizer will be added to/removed from the object's finalizers list.",
+       "name": "orphanDependents",
+       "in": "query"
+      }
+     ],
+     "responses": {
+      "200": {
+       "description": "OK",
+       "schema": {
+        "$ref": "#/definitions/v1.Status"
+       }
+      },
+      "401": {
+       "description": "Unauthorized"
+      }
+     }
+    },
+    "patch": {
+     "description": "partially update the specified Job",
+     "consumes": [
+      "application/json-patch+json",
+      "application/merge-patch+json",
+      "application/strategic-merge-patch+json"
+     ],
+     "produces": [
+      "application/json",
+      "application/yaml",
+      "application/vnd.kubernetes.protobuf"
+     ],
+     "schemes": [
+      "https"
+     ],
+     "tags": [
+      "batch_v1"
+     ],
+     "operationId": "patchBatchV1NamespacedJob",
+     "parameters": [
+      {
+       "name": "body",
+       "in": "body",
+       "required": true,
+       "schema": {
+        "$ref": "#/definitions/v1.Patch"
+       }
+      }
+     ],
+     "responses": {
+      "200": {
+       "description": "OK",
+       "schema": {
+        "$ref": "#/definitions/v1.Job"
+       }
+      },
+      "401": {
+       "description": "Unauthorized"
+      }
+     }
+    },
+    "parameters": [
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "name of the Job",
+      "name": "name",
+      "in": "path",
+      "required": true
+     },
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "object name and auth scope, such as for teams and projects",
+      "name": "namespace",
+      "in": "path",
+      "required": true
+     },
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "If 'true', then the output is pretty printed.",
+      "name": "pretty",
+      "in": "query"
+     }
+    ]
+   },
+   "/apis/batch/v1/namespaces/{namespace}/jobs/{name}/status": {
+    "get": {
+     "description": "read status of the specified Job",
+     "consumes": [
+      "*/*"
+     ],
+     "produces": [
+      "application/json",
+      "application/yaml",
+      "application/vnd.kubernetes.protobuf"
+     ],
+     "schemes": [
+      "https"
+     ],
+     "tags": [
+      "batch_v1"
+     ],
+     "operationId": "readBatchV1NamespacedJobStatus",
+     "responses": {
+      "200": {
+       "description": "OK",
+       "schema": {
+        "$ref": "#/definitions/v1.Job"
+       }
+      },
+      "401": {
+       "description": "Unauthorized"
+      }
+     }
+    },
+    "put": {
+     "description": "replace status of the specified Job",
+     "consumes": [
+      "*/*"
+     ],
+     "produces": [
+      "application/json",
+      "application/yaml",
+      "application/vnd.kubernetes.protobuf"
+     ],
+     "schemes": [
+      "https"
+     ],
+     "tags": [
+      "batch_v1"
+     ],
+     "operationId": "replaceBatchV1NamespacedJobStatus",
+     "parameters": [
+      {
+       "name": "body",
+       "in": "body",
+       "required": true,
+       "schema": {
+        "$ref": "#/definitions/v1.Job"
+       }
+      }
+     ],
+     "responses": {
+      "200": {
+       "description": "OK",
+       "schema": {
+        "$ref": "#/definitions/v1.Job"
+       }
+      },
+      "401": {
+       "description": "Unauthorized"
+      }
+     }
+    },
+    "patch": {
+     "description": "partially update status of the specified Job",
+     "consumes": [
+      "application/json-patch+json",
+      "application/merge-patch+json",
+      "application/strategic-merge-patch+json"
+     ],
+     "produces": [
+      "application/json",
+      "application/yaml",
+      "application/vnd.kubernetes.protobuf"
+     ],
+     "schemes": [
+      "https"
+     ],
+     "tags": [
+      "batch_v1"
+     ],
+     "operationId": "patchBatchV1NamespacedJobStatus",
+     "parameters": [
+      {
+       "name": "body",
+       "in": "body",
+       "required": true,
+       "schema": {
+        "$ref": "#/definitions/v1.Patch"
+       }
+      }
+     ],
+     "responses": {
+      "200": {
+       "description": "OK",
+       "schema": {
+        "$ref": "#/definitions/v1.Job"
+       }
+      },
+      "401": {
+       "description": "Unauthorized"
+      }
+     }
+    },
+    "parameters": [
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "name of the Job",
+      "name": "name",
+      "in": "path",
+      "required": true
+     },
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "object name and auth scope, such as for teams and projects",
+      "name": "namespace",
+      "in": "path",
+      "required": true
+     },
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "If 'true', then the output is pretty printed.",
+      "name": "pretty",
+      "in": "query"
+     }
+    ]
+   },
+   "/apis/batch/v1/watch/jobs": {
+    "get": {
+     "description": "watch individual changes to a list of Job",
+     "consumes": [
+      "*/*"
+     ],
+     "produces": [
+      "application/json",
+      "application/yaml",
+      "application/vnd.kubernetes.protobuf",
+      "application/json;stream=watch",
+      "application/vnd.kubernetes.protobuf;stream=watch"
+     ],
+     "schemes": [
+      "https"
+     ],
+     "tags": [
+      "batch_v1"
+     ],
+     "operationId": "watchBatchV1JobListForAllNamespaces",
+     "responses": {
+      "200": {
+       "description": "OK",
+       "schema": {
+        "$ref": "#/definitions/versioned.Event"
+       }
+      },
+      "401": {
+       "description": "Unauthorized"
+      }
+     }
+    },
+    "parameters": [
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "A selector to restrict the list of returned objects by their fields. Defaults to everything.",
+      "name": "fieldSelector",
+      "in": "query"
+     },
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
+      "name": "labelSelector",
+      "in": "query"
+     },
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "If 'true', then the output is pretty printed.",
+      "name": "pretty",
+      "in": "query"
+     },
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
+      "name": "resourceVersion",
+      "in": "query"
+     },
+     {
+      "uniqueItems": true,
+      "type": "integer",
+      "description": "Timeout for the list/watch call.",
+      "name": "timeoutSeconds",
+      "in": "query"
+     },
+     {
+      "uniqueItems": true,
+      "type": "boolean",
+      "description": "Watch for changes to the described resources and return them as a stream of add, update, and remove notifications. Specify resourceVersion.",
+      "name": "watch",
+      "in": "query"
+     }
+    ]
+   },
+   "/apis/batch/v1/watch/namespaces/{namespace}/jobs": {
+    "get": {
+     "description": "watch individual changes to a list of Job",
+     "consumes": [
+      "*/*"
+     ],
+     "produces": [
+      "application/json",
+      "application/yaml",
+      "application/vnd.kubernetes.protobuf",
+      "application/json;stream=watch",
+      "application/vnd.kubernetes.protobuf;stream=watch"
+     ],
+     "schemes": [
+      "https"
+     ],
+     "tags": [
+      "batch_v1"
+     ],
+     "operationId": "watchBatchV1NamespacedJobList",
+     "responses": {
+      "200": {
+       "description": "OK",
+       "schema": {
+        "$ref": "#/definitions/versioned.Event"
+       }
+      },
+      "401": {
+       "description": "Unauthorized"
+      }
+     }
+    },
+    "parameters": [
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "A selector to restrict the list of returned objects by their fields. Defaults to everything.",
+      "name": "fieldSelector",
+      "in": "query"
+     },
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
+      "name": "labelSelector",
+      "in": "query"
+     },
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "object name and auth scope, such as for teams and projects",
+      "name": "namespace",
+      "in": "path",
+      "required": true
+     },
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "If 'true', then the output is pretty printed.",
+      "name": "pretty",
+      "in": "query"
+     },
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
+      "name": "resourceVersion",
+      "in": "query"
+     },
+     {
+      "uniqueItems": true,
+      "type": "integer",
+      "description": "Timeout for the list/watch call.",
+      "name": "timeoutSeconds",
+      "in": "query"
+     },
+     {
+      "uniqueItems": true,
+      "type": "boolean",
+      "description": "Watch for changes to the described resources and return them as a stream of add, update, and remove notifications. Specify resourceVersion.",
+      "name": "watch",
+      "in": "query"
+     }
+    ]
+   },
+   "/apis/batch/v1/watch/namespaces/{namespace}/jobs/{name}": {
+    "get": {
+     "description": "watch changes to an object of kind Job",
+     "consumes": [
+      "*/*"
+     ],
+     "produces": [
+      "application/json",
+      "application/yaml",
+      "application/vnd.kubernetes.protobuf",
+      "application/json;stream=watch",
+      "application/vnd.kubernetes.protobuf;stream=watch"
+     ],
+     "schemes": [
+      "https"
+     ],
+     "tags": [
+      "batch_v1"
+     ],
+     "operationId": "watchBatchV1NamespacedJob",
+     "responses": {
+      "200": {
+       "description": "OK",
+       "schema": {
+        "$ref": "#/definitions/versioned.Event"
+       }
+      },
+      "401": {
+       "description": "Unauthorized"
+      }
+     }
+    },
+    "parameters": [
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "A selector to restrict the list of returned objects by their fields. Defaults to everything.",
+      "name": "fieldSelector",
+      "in": "query"
+     },
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
+      "name": "labelSelector",
+      "in": "query"
+     },
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "name of the Job",
+      "name": "name",
+      "in": "path",
+      "required": true
+     },
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "object name and auth scope, such as for teams and projects",
+      "name": "namespace",
+      "in": "path",
+      "required": true
+     },
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "If 'true', then the output is pretty printed.",
+      "name": "pretty",
+      "in": "query"
+     },
+     {
+      "uniqueItems": true,
+      "type": "string",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
+      "name": "resourceVersion",
+      "in": "query"
+     },
+     {
+      "uniqueItems": true,
+      "type": "integer",
+      "description": "Timeout for the list/watch call.",
+      "name": "timeoutSeconds",
+      "in": "query"
+     },
+     {
+      "uniqueItems": true,
+      "type": "boolean",
+      "description": "Watch for changes to the described resources and return them as a stream of add, update, and remove notifications. Specify resourceVersion.",
+      "name": "watch",
+      "in": "query"
+     }
+    ]
+   },
+   "/apis/batch/v2alpha1/": {
+    "get": {
+     "description": "get available resources",
+     "consumes": [
+      "application/json",
+      "application/yaml",
+      "application/vnd.kubernetes.protobuf"
+     ],
+     "produces": [
+      "application/json",
+      "application/yaml",
+      "application/vnd.kubernetes.protobuf"
+     ],
+     "schemes": [
+      "https"
+     ],
+     "tags": [
+      "batch_v2alpha1"
+     ],
+     "operationId": "getBatchV2alpha1APIResources",
+     "responses": {
+      "200": {
+       "description": "OK",
+       "schema": {
+        "$ref": "#/definitions/v1.APIResourceList"
+       }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     }
@@ -3718,8 +4871,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.APIGroup"
+        "$ref": "#/definitions/v1.APIGroup"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     }
@@ -3748,8 +4904,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.APIResourceList"
+        "$ref": "#/definitions/v1.APIResourceList"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     }
@@ -3780,6 +4939,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.DaemonSetList"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -3808,7 +4970,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -3854,6 +5016,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.DeploymentList"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -3882,7 +5047,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -3928,6 +5093,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.IngressList"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -3956,7 +5124,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -4014,7 +5182,7 @@
       {
        "uniqueItems": true,
        "type": "string",
-       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
        "name": "resourceVersion",
        "in": "query"
       },
@@ -4039,6 +5207,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.DaemonSetList"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -4075,6 +5246,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.DaemonSet"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -4113,7 +5287,7 @@
       {
        "uniqueItems": true,
        "type": "string",
-       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
        "name": "resourceVersion",
        "in": "query"
       },
@@ -4136,8 +5310,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.Status"
+        "$ref": "#/definitions/v1.Status"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -4181,7 +5358,7 @@
       {
        "uniqueItems": true,
        "type": "boolean",
-       "description": "Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'",
+       "description": "Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'.",
        "name": "exact",
        "in": "query"
       },
@@ -4199,6 +5376,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.DaemonSet"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -4235,6 +5415,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.DaemonSet"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -4283,8 +5466,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.Status"
+        "$ref": "#/definitions/v1.Status"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -4313,7 +5499,7 @@
        "in": "body",
        "required": true,
        "schema": {
-        "$ref": "#/definitions/unversioned.Patch"
+        "$ref": "#/definitions/v1.Patch"
        }
       }
      ],
@@ -4323,6 +5509,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.DaemonSet"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -4376,6 +5565,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.DaemonSet"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -4412,6 +5604,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.DaemonSet"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -4440,7 +5635,7 @@
        "in": "body",
        "required": true,
        "schema": {
-        "$ref": "#/definitions/unversioned.Patch"
+        "$ref": "#/definitions/v1.Patch"
        }
       }
      ],
@@ -4450,6 +5645,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.DaemonSet"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -4517,7 +5715,7 @@
       {
        "uniqueItems": true,
        "type": "string",
-       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
        "name": "resourceVersion",
        "in": "query"
       },
@@ -4542,6 +5740,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.DeploymentList"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -4578,6 +5779,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.Deployment"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -4616,7 +5820,7 @@
       {
        "uniqueItems": true,
        "type": "string",
-       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
        "name": "resourceVersion",
        "in": "query"
       },
@@ -4639,8 +5843,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.Status"
+        "$ref": "#/definitions/v1.Status"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -4684,7 +5891,7 @@
       {
        "uniqueItems": true,
        "type": "boolean",
-       "description": "Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'",
+       "description": "Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'.",
        "name": "exact",
        "in": "query"
       },
@@ -4702,6 +5909,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.Deployment"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -4738,6 +5948,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.Deployment"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -4786,8 +5999,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.Status"
+        "$ref": "#/definitions/v1.Status"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -4816,7 +6032,7 @@
        "in": "body",
        "required": true,
        "schema": {
-        "$ref": "#/definitions/unversioned.Patch"
+        "$ref": "#/definitions/v1.Patch"
        }
       }
      ],
@@ -4826,6 +6042,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.Deployment"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -4879,6 +6098,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.DeploymentRollback"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -4940,6 +6162,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.Scale"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -4976,6 +6201,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.Scale"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -5004,7 +6232,7 @@
        "in": "body",
        "required": true,
        "schema": {
-        "$ref": "#/definitions/unversioned.Patch"
+        "$ref": "#/definitions/v1.Patch"
        }
       }
      ],
@@ -5014,6 +6242,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.Scale"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -5067,6 +6298,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.Deployment"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -5103,6 +6337,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.Deployment"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -5131,7 +6368,7 @@
        "in": "body",
        "required": true,
        "schema": {
-        "$ref": "#/definitions/unversioned.Patch"
+        "$ref": "#/definitions/v1.Patch"
        }
       }
      ],
@@ -5141,6 +6378,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.Deployment"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -5208,7 +6448,7 @@
       {
        "uniqueItems": true,
        "type": "string",
-       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
        "name": "resourceVersion",
        "in": "query"
       },
@@ -5233,6 +6473,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.IngressList"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -5269,6 +6512,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.Ingress"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -5307,7 +6553,7 @@
       {
        "uniqueItems": true,
        "type": "string",
-       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
        "name": "resourceVersion",
        "in": "query"
       },
@@ -5330,8 +6576,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.Status"
+        "$ref": "#/definitions/v1.Status"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -5375,7 +6624,7 @@
       {
        "uniqueItems": true,
        "type": "boolean",
-       "description": "Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'",
+       "description": "Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'.",
        "name": "exact",
        "in": "query"
       },
@@ -5393,6 +6642,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.Ingress"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -5429,6 +6681,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.Ingress"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -5477,8 +6732,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.Status"
+        "$ref": "#/definitions/v1.Status"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -5507,7 +6765,7 @@
        "in": "body",
        "required": true,
        "schema": {
-        "$ref": "#/definitions/unversioned.Patch"
+        "$ref": "#/definitions/v1.Patch"
        }
       }
      ],
@@ -5517,6 +6775,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.Ingress"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -5570,6 +6831,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.Ingress"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -5606,6 +6870,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.Ingress"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -5634,7 +6901,7 @@
        "in": "body",
        "required": true,
        "schema": {
-        "$ref": "#/definitions/unversioned.Patch"
+        "$ref": "#/definitions/v1.Patch"
        }
       }
      ],
@@ -5644,6 +6911,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.Ingress"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -5711,7 +6981,7 @@
       {
        "uniqueItems": true,
        "type": "string",
-       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
        "name": "resourceVersion",
        "in": "query"
       },
@@ -5736,6 +7006,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.ReplicaSetList"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -5772,6 +7045,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.ReplicaSet"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -5810,7 +7086,7 @@
       {
        "uniqueItems": true,
        "type": "string",
-       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
        "name": "resourceVersion",
        "in": "query"
       },
@@ -5833,8 +7109,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.Status"
+        "$ref": "#/definitions/v1.Status"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -5878,7 +7157,7 @@
       {
        "uniqueItems": true,
        "type": "boolean",
-       "description": "Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'",
+       "description": "Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'.",
        "name": "exact",
        "in": "query"
       },
@@ -5896,6 +7175,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.ReplicaSet"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -5932,6 +7214,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.ReplicaSet"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -5980,8 +7265,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.Status"
+        "$ref": "#/definitions/v1.Status"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -6010,7 +7298,7 @@
        "in": "body",
        "required": true,
        "schema": {
-        "$ref": "#/definitions/unversioned.Patch"
+        "$ref": "#/definitions/v1.Patch"
        }
       }
      ],
@@ -6020,6 +7308,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.ReplicaSet"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -6073,6 +7364,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.Scale"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -6109,6 +7403,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.Scale"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -6137,7 +7434,7 @@
        "in": "body",
        "required": true,
        "schema": {
-        "$ref": "#/definitions/unversioned.Patch"
+        "$ref": "#/definitions/v1.Patch"
        }
       }
      ],
@@ -6147,6 +7444,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.Scale"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -6200,6 +7500,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.ReplicaSet"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -6236,6 +7539,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.ReplicaSet"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -6264,7 +7570,7 @@
        "in": "body",
        "required": true,
        "schema": {
-        "$ref": "#/definitions/unversioned.Patch"
+        "$ref": "#/definitions/v1.Patch"
        }
       }
      ],
@@ -6274,6 +7580,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.ReplicaSet"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -6329,6 +7638,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.ReplicaSetList"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -6357,7 +7669,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -6403,6 +7715,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -6431,7 +7746,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -6477,6 +7792,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -6505,7 +7823,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -6551,6 +7869,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -6579,7 +7900,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -6625,6 +7946,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -6661,7 +7985,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -6707,6 +8031,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -6751,7 +8078,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -6797,6 +8124,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -6833,7 +8163,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -6879,6 +8209,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -6923,7 +8256,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -6969,6 +8302,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -7005,7 +8341,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -7051,6 +8387,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -7095,7 +8434,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -7141,6 +8480,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -7177,7 +8519,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -7223,6 +8565,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -7267,7 +8612,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -7313,6 +8658,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -7341,7 +8689,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -7385,8 +8733,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.APIGroup"
+        "$ref": "#/definitions/v1.APIGroup"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     }
@@ -7415,8 +8766,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.APIResourceList"
+        "$ref": "#/definitions/v1.APIResourceList"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     }
@@ -7459,7 +8813,7 @@
       {
        "uniqueItems": true,
        "type": "string",
-       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
        "name": "resourceVersion",
        "in": "query"
       },
@@ -7484,6 +8838,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.ClusterList"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -7520,6 +8877,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.Cluster"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -7558,7 +8918,7 @@
       {
        "uniqueItems": true,
        "type": "string",
-       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+       "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
        "name": "resourceVersion",
        "in": "query"
       },
@@ -7581,8 +8941,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.Status"
+        "$ref": "#/definitions/v1.Status"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -7618,7 +8981,7 @@
       {
        "uniqueItems": true,
        "type": "boolean",
-       "description": "Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'",
+       "description": "Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'.",
        "name": "exact",
        "in": "query"
       },
@@ -7636,6 +8999,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.Cluster"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -7672,6 +9038,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.Cluster"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -7720,8 +9089,11 @@
       "200": {
        "description": "OK",
        "schema": {
-        "$ref": "#/definitions/unversioned.Status"
+        "$ref": "#/definitions/v1.Status"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -7750,7 +9122,7 @@
        "in": "body",
        "required": true,
        "schema": {
-        "$ref": "#/definitions/unversioned.Patch"
+        "$ref": "#/definitions/v1.Patch"
        }
       }
      ],
@@ -7760,6 +9132,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.Cluster"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -7805,6 +9180,9 @@
        "schema": {
         "$ref": "#/definitions/v1beta1.Cluster"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -7860,6 +9238,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -7888,7 +9269,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -7934,6 +9315,9 @@
        "schema": {
         "$ref": "#/definitions/versioned.Event"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -7970,7 +9354,7 @@
      {
       "uniqueItems": true,
       "type": "string",
-      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history.",
+      "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
       "name": "resourceVersion",
       "in": "query"
      },
@@ -8000,8 +9384,8 @@
      ],
      "operationId": "logFileListHandler",
      "responses": {
-      "default": {
-       "description": "Default Response."
+      "401": {
+       "description": "Unauthorized"
       }
      }
     }
@@ -8016,8 +9400,8 @@
      ],
      "operationId": "logFileHandler",
      "responses": {
-      "default": {
-       "description": "Default Response."
+      "401": {
+       "description": "Unauthorized"
       }
      }
     },
@@ -8054,6 +9438,9 @@
        "schema": {
         "$ref": "#/definitions/version.Info"
        }
+      },
+      "401": {
+       "description": "Unauthorized"
       }
      }
     }
@@ -8080,7 +9467,7 @@
      }
     }
    },
-   "unversioned.APIGroup": {
+   "v1.APIGroup": {
     "description": "APIGroup contains the name, the supported versions, and the preferred version of a group.",
     "required": [
      "name",
@@ -8094,25 +9481,25 @@
      },
      "preferredVersion": {
       "description": "preferredVersion is the version preferred by the API server, which probably is the storage version.",
-      "$ref": "#/definitions/unversioned.GroupVersionForDiscovery"
+      "$ref": "#/definitions/v1.GroupVersionForDiscovery"
      },
      "serverAddressByClientCIDRs": {
       "description": "a map of client CIDR to server address that is serving this group. This is to help clients reach servers in the most network-efficient way possible. Clients can use the appropriate server address as per the CIDR that they match. In case of multiple matches, clients should use the longest matching CIDR. The server returns only those CIDRs that it thinks that the client can match. For example: the master will return an internal IP CIDR only, if the client reaches the server using an internal IP. Server looks at X-Forwarded-For header or X-Real-Ip header or request.RemoteAddr (in that order) to get the client IP.",
       "type": "array",
       "items": {
-       "$ref": "#/definitions/unversioned.ServerAddressByClientCIDR"
+       "$ref": "#/definitions/v1.ServerAddressByClientCIDR"
       }
      },
      "versions": {
       "description": "versions are the versions supported in this group.",
       "type": "array",
       "items": {
-       "$ref": "#/definitions/unversioned.GroupVersionForDiscovery"
+       "$ref": "#/definitions/v1.GroupVersionForDiscovery"
       }
      }
     }
    },
-   "unversioned.APIGroupList": {
+   "v1.APIGroupList": {
     "description": "APIGroupList is a list of APIGroup, to allow clients to discover the API at /apis.",
     "required": [
      "groups"
@@ -8122,17 +9509,18 @@
       "description": "groups is a list of APIGroup.",
       "type": "array",
       "items": {
-       "$ref": "#/definitions/unversioned.APIGroup"
+       "$ref": "#/definitions/v1.APIGroup"
       }
      }
     }
    },
-   "unversioned.APIResource": {
+   "v1.APIResource": {
     "description": "APIResource specifies the name of a resource and whether it is namespaced.",
     "required": [
      "name",
      "namespaced",
-     "kind"
+     "kind",
+     "verbs"
     ],
     "properties": {
      "kind": {
@@ -8146,10 +9534,17 @@
      "namespaced": {
       "description": "namespaced indicates if a resource is namespaced or not.",
       "type": "boolean"
+     },
+     "verbs": {
+      "description": "verbs is a list of supported kube verbs (this includes get, list, watch, create, update, patch, delete, deletecollection, and proxy)",
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
      }
     }
    },
-   "unversioned.APIResourceList": {
+   "v1.APIResourceList": {
     "description": "APIResourceList is a list of APIResource, it is used to expose the name of the resources supported in a specific group and version, and if the resource is namespaced.",
     "required": [
      "groupVersion",
@@ -8164,12 +9559,12 @@
       "description": "resources contains the name of the resources and if they are namespaced.",
       "type": "array",
       "items": {
-       "$ref": "#/definitions/unversioned.APIResource"
+       "$ref": "#/definitions/v1.APIResource"
       }
      }
     }
    },
-   "unversioned.APIVersions": {
+   "v1.APIVersions": {
     "description": "APIVersions lists the versions that are available, to allow clients to discover the API at /api, which is the root path of the legacy v1 API.",
     "required": [
      "versions",
@@ -8180,7 +9575,7 @@
       "description": "a map of client CIDR to server address that is serving this group. This is to help clients reach servers in the most network-efficient way possible. Clients can use the appropriate server address as per the CIDR that they match. In case of multiple matches, clients should use the longest matching CIDR. The server returns only those CIDRs that it thinks that the client can match. For example: the master will return an internal IP CIDR only, if the client reaches the server using an internal IP. Server looks at X-Forwarded-For header or X-Real-Ip header or request.RemoteAddr (in that order) to get the client IP.",
       "type": "array",
       "items": {
-       "$ref": "#/definitions/unversioned.ServerAddressByClientCIDR"
+       "$ref": "#/definitions/v1.ServerAddressByClientCIDR"
       }
      },
      "versions": {
@@ -8192,178 +9587,22 @@
      }
     }
    },
-   "unversioned.GroupVersionForDiscovery": {
-    "description": "GroupVersion contains the \"group/version\" and \"version\" string of a version. It is made a struct to keep extensibility.",
-    "required": [
-     "groupVersion",
-     "version"
-    ],
+   "v1.Affinity": {
+    "description": "Affinity is a group of affinity scheduling rules.",
     "properties": {
-     "groupVersion": {
-      "description": "groupVersion specifies the API group and version in the form \"group/version\"",
-      "type": "string"
+     "nodeAffinity": {
+      "description": "Describes node affinity scheduling rules for the pod.",
+      "$ref": "#/definitions/v1.NodeAffinity"
      },
-     "version": {
-      "description": "version specifies the version in the form of \"version\". This is to save the clients the trouble of splitting the GroupVersion.",
-      "type": "string"
+     "podAffinity": {
+      "description": "Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).",
+      "$ref": "#/definitions/v1.PodAffinity"
+     },
+     "podAntiAffinity": {
+      "description": "Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).",
+      "$ref": "#/definitions/v1.PodAntiAffinity"
      }
     }
-   },
-   "unversioned.LabelSelector": {
-    "description": "A label selector is a label query over a set of resources. The result of matchLabels and matchExpressions are ANDed. An empty label selector matches all objects. A null label selector matches no objects.",
-    "properties": {
-     "matchExpressions": {
-      "description": "matchExpressions is a list of label selector requirements. The requirements are ANDed.",
-      "type": "array",
-      "items": {
-       "$ref": "#/definitions/unversioned.LabelSelectorRequirement"
-      }
-     },
-     "matchLabels": {
-      "description": "matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is \"key\", the operator is \"In\", and the values array contains only \"value\". The requirements are ANDed.",
-      "type": "object",
-      "additionalProperties": {
-       "type": "string"
-      }
-     }
-    }
-   },
-   "unversioned.LabelSelectorRequirement": {
-    "description": "A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.",
-    "required": [
-     "key",
-     "operator"
-    ],
-    "properties": {
-     "key": {
-      "description": "key is the label key that the selector applies to.",
-      "type": "string"
-     },
-     "operator": {
-      "description": "operator represents a key's relationship to a set of values. Valid operators ard In, NotIn, Exists and DoesNotExist.",
-      "type": "string"
-     },
-     "values": {
-      "description": "values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.",
-      "type": "array",
-      "items": {
-       "type": "string"
-      }
-     }
-    }
-   },
-   "unversioned.ListMeta": {
-    "description": "ListMeta describes metadata that synthetic resources must have, including lists and various status objects. A resource may have only one of {ObjectMeta, ListMeta}.",
-    "properties": {
-     "resourceVersion": {
-      "description": "String that identifies the server's internal version of this object that can be used by clients to determine when objects have changed. Value must be treated as opaque by clients and passed unmodified back to the server. Populated by the system. Read-only. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#concurrency-control-and-consistency",
-      "type": "string"
-     },
-     "selfLink": {
-      "description": "SelfLink is a URL representing this object. Populated by the system. Read-only.",
-      "type": "string"
-     }
-    }
-   },
-   "unversioned.Patch": {
-    "description": "Patch is provided to give a concrete name and type to the Kubernetes PATCH request body."
-   },
-   "unversioned.ServerAddressByClientCIDR": {
-    "description": "ServerAddressByClientCIDR helps the client to determine the server address that they should use, depending on the clientCIDR that they match.",
-    "required": [
-     "clientCIDR",
-     "serverAddress"
-    ],
-    "properties": {
-     "clientCIDR": {
-      "description": "The CIDR with which clients can match their IP to figure out the server address that they should use.",
-      "type": "string"
-     },
-     "serverAddress": {
-      "description": "Address of this server, suitable for a client that matches the above CIDR. This can be a hostname, hostname:port, IP or IP:port.",
-      "type": "string"
-     }
-    }
-   },
-   "unversioned.Status": {
-    "description": "Status is a return value for calls that don't return other objects.",
-    "properties": {
-     "code": {
-      "description": "Suggested HTTP return code for this status, 0 if not set.",
-      "type": "integer",
-      "format": "int32"
-     },
-     "details": {
-      "description": "Extended data associated with the reason.  Each reason may define its own extended details. This field is optional and the data returned is not guaranteed to conform to any schema except that defined by the reason type.",
-      "$ref": "#/definitions/unversioned.StatusDetails"
-     },
-     "message": {
-      "description": "A human-readable description of the status of this operation.",
-      "type": "string"
-     },
-     "metadata": {
-      "description": "Standard list metadata. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#types-kinds",
-      "$ref": "#/definitions/unversioned.ListMeta"
-     },
-     "reason": {
-      "description": "A machine-readable description of why this operation is in the \"Failure\" status. If this value is empty there is no information available. A Reason clarifies an HTTP status code but does not override it.",
-      "type": "string"
-     },
-     "status": {
-      "description": "Status of the operation. One of: \"Success\" or \"Failure\". More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#spec-and-status",
-      "type": "string"
-     }
-    }
-   },
-   "unversioned.StatusCause": {
-    "description": "StatusCause provides more information about an api.Status failure, including cases when multiple errors are encountered.",
-    "properties": {
-     "field": {
-      "description": "The field of the resource that has caused this error, as named by its JSON serialization. May include dot and postfix notation for nested attributes. Arrays are zero-indexed.  Fields may appear more than once in an array of causes due to fields having multiple errors. Optional.\n\nExamples:\n  \"name\" - the field \"name\" on the current resource\n  \"items[0].name\" - the field \"name\" on the first array entry in \"items\"",
-      "type": "string"
-     },
-     "message": {
-      "description": "A human-readable description of the cause of the error.  This field may be presented as-is to a reader.",
-      "type": "string"
-     },
-     "reason": {
-      "description": "A machine-readable description of the cause of the error. If this value is empty there is no information available.",
-      "type": "string"
-     }
-    }
-   },
-   "unversioned.StatusDetails": {
-    "description": "StatusDetails is a set of additional properties that MAY be set by the server to provide additional information about a response. The Reason field of a Status object defines what attributes will be set. Clients must ignore fields that do not match the defined type of each attribute, and should assume that any attribute may be empty, invalid, or under defined.",
-    "properties": {
-     "causes": {
-      "description": "The Causes array includes more details associated with the StatusReason failure. Not all StatusReasons may provide detailed causes.",
-      "type": "array",
-      "items": {
-       "$ref": "#/definitions/unversioned.StatusCause"
-      }
-     },
-     "group": {
-      "description": "The group attribute of the resource associated with the status StatusReason.",
-      "type": "string"
-     },
-     "kind": {
-      "description": "The kind attribute of the resource associated with the status StatusReason. On some operations may differ from the requested resource Kind. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#types-kinds",
-      "type": "string"
-     },
-     "name": {
-      "description": "The name attribute of the resource associated with the status StatusReason (when there is a single name which can be described).",
-      "type": "string"
-     },
-     "retryAfterSeconds": {
-      "description": "If specified, the time in seconds before the operation should be retried.",
-      "type": "integer",
-      "format": "int32"
-     }
-    }
-   },
-   "unversioned.Time": {
-    "type": "string",
-    "format": "date-time"
    },
    "v1.Capabilities": {
     "description": "Adds and removes POSIX capabilities from running containers.",
@@ -8427,7 +9666,7 @@
      },
      "metadata": {
       "description": "More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#metadata",
-      "$ref": "#/definitions/unversioned.ListMeta"
+      "$ref": "#/definitions/v1.ListMeta"
      }
     }
    },
@@ -8629,7 +9868,7 @@
      },
      "firstTimestamp": {
       "description": "The time at which the event was first recorded. (Time of server receipt is in TypeMeta.)",
-      "$ref": "#/definitions/unversioned.Time"
+      "$ref": "#/definitions/v1.Time"
      },
      "involvedObject": {
       "description": "The object that this event is about.",
@@ -8637,7 +9876,7 @@
      },
      "lastTimestamp": {
       "description": "The time at which the most recent occurrence of this event was recorded.",
-      "$ref": "#/definitions/unversioned.Time"
+      "$ref": "#/definitions/v1.Time"
      },
      "message": {
       "description": "A human-readable description of the status of this operation.",
@@ -8676,7 +9915,7 @@
      },
      "metadata": {
       "description": "Standard list metadata. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#types-kinds",
-      "$ref": "#/definitions/unversioned.ListMeta"
+      "$ref": "#/definitions/v1.ListMeta"
      }
     }
    },
@@ -8702,6 +9941,23 @@
       "items": {
        "type": "string"
       }
+     }
+    }
+   },
+   "v1.GroupVersionForDiscovery": {
+    "description": "GroupVersion contains the \"group/version\" and \"version\" string of a version. It is made a struct to keep extensibility.",
+    "required": [
+     "groupVersion",
+     "version"
+    ],
+    "properties": {
+     "groupVersion": {
+      "description": "groupVersion specifies the API group and version in the form \"group/version\"",
+      "type": "string"
+     },
+     "version": {
+      "description": "version specifies the version in the form of \"version\". This is to save the clients the trouble of splitting the GroupVersion.",
+      "type": "string"
      }
     }
    },
@@ -8770,6 +10026,188 @@
      }
     }
    },
+   "v1.Job": {
+    "description": "Job represents the configuration of a single job.",
+    "properties": {
+     "metadata": {
+      "description": "Standard object's metadata. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#metadata",
+      "$ref": "#/definitions/v1.ObjectMeta"
+     },
+     "spec": {
+      "description": "Spec is a structure defining the expected behavior of a job. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#spec-and-status",
+      "$ref": "#/definitions/v1.JobSpec"
+     },
+     "status": {
+      "description": "Status is a structure describing current status of a job. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#spec-and-status",
+      "$ref": "#/definitions/v1.JobStatus"
+     }
+    }
+   },
+   "v1.JobCondition": {
+    "description": "JobCondition describes current state of a job.",
+    "required": [
+     "type",
+     "status"
+    ],
+    "properties": {
+     "lastProbeTime": {
+      "description": "Last time the condition was checked.",
+      "$ref": "#/definitions/v1.Time"
+     },
+     "lastTransitionTime": {
+      "description": "Last time the condition transit from one status to another.",
+      "$ref": "#/definitions/v1.Time"
+     },
+     "message": {
+      "description": "Human readable message indicating details about last transition.",
+      "type": "string"
+     },
+     "reason": {
+      "description": "(brief) reason for the condition's last transition.",
+      "type": "string"
+     },
+     "status": {
+      "description": "Status of the condition, one of True, False, Unknown.",
+      "type": "string"
+     },
+     "type": {
+      "description": "Type of job condition, Complete or Failed.",
+      "type": "string"
+     }
+    }
+   },
+   "v1.JobList": {
+    "description": "JobList is a collection of jobs.",
+    "required": [
+     "items"
+    ],
+    "properties": {
+     "items": {
+      "description": "Items is the list of Job.",
+      "type": "array",
+      "items": {
+       "$ref": "#/definitions/v1.Job"
+      }
+     },
+     "metadata": {
+      "description": "Standard list metadata More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#metadata",
+      "$ref": "#/definitions/v1.ListMeta"
+     }
+    }
+   },
+   "v1.JobSpec": {
+    "description": "JobSpec describes how the job execution will look like.",
+    "required": [
+     "template"
+    ],
+    "properties": {
+     "activeDeadlineSeconds": {
+      "description": "Optional duration in seconds relative to the startTime that the job may be active before the system tries to terminate it; value must be positive integer",
+      "type": "integer",
+      "format": "int64"
+     },
+     "completions": {
+      "description": "Completions specifies the desired number of successfully finished pods the job should be run with.  Setting to nil means that the success of any pod signals the success of all pods, and allows parallelism to have any positive value.  Setting to 1 means that parallelism is limited to 1 and the success of that pod signals the success of the job. More info: http://kubernetes.io/docs/user-guide/jobs",
+      "type": "integer",
+      "format": "int32"
+     },
+     "manualSelector": {
+      "description": "ManualSelector controls generation of pod labels and pod selectors. Leave `manualSelector` unset unless you are certain what you are doing. When false or unset, the system pick labels unique to this job and appends those labels to the pod template.  When true, the user is responsible for picking unique labels and specifying the selector.  Failure to pick a unique label may cause this and other jobs to not function correctly.  However, You may see `manualSelector=true` in jobs that were created with the old `extensions/v1beta1` API. More info: http://releases.k8s.io/HEAD/docs/design/selector-generation.md",
+      "type": "boolean"
+     },
+     "parallelism": {
+      "description": "Parallelism specifies the maximum desired number of pods the job should run at any given time. The actual number of pods running in steady state will be less than this number when ((.spec.completions - .status.successful) \u003c .spec.parallelism), i.e. when the work left to do is less than max parallelism. More info: http://kubernetes.io/docs/user-guide/jobs",
+      "type": "integer",
+      "format": "int32"
+     },
+     "selector": {
+      "description": "Selector is a label query over pods that should match the pod count. Normally, the system sets this field for you. More info: http://kubernetes.io/docs/user-guide/labels#label-selectors",
+      "$ref": "#/definitions/v1.LabelSelector"
+     },
+     "template": {
+      "description": "Template is the object that describes the pod that will be created when executing a job. More info: http://kubernetes.io/docs/user-guide/jobs",
+      "$ref": "#/definitions/v1.PodTemplateSpec"
+     }
+    }
+   },
+   "v1.JobStatus": {
+    "description": "JobStatus represents the current state of a Job.",
+    "properties": {
+     "active": {
+      "description": "Active is the number of actively running pods.",
+      "type": "integer",
+      "format": "int32"
+     },
+     "completionTime": {
+      "description": "CompletionTime represents time when the job was completed. It is not guaranteed to be set in happens-before order across separate operations. It is represented in RFC3339 form and is in UTC.",
+      "$ref": "#/definitions/v1.Time"
+     },
+     "conditions": {
+      "description": "Conditions represent the latest available observations of an object's current state. More info: http://kubernetes.io/docs/user-guide/jobs",
+      "type": "array",
+      "items": {
+       "$ref": "#/definitions/v1.JobCondition"
+      }
+     },
+     "failed": {
+      "description": "Failed is the number of pods which reached Phase Failed.",
+      "type": "integer",
+      "format": "int32"
+     },
+     "startTime": {
+      "description": "StartTime represents time when the job was acknowledged by the Job Manager. It is not guaranteed to be set in happens-before order across separate operations. It is represented in RFC3339 form and is in UTC.",
+      "$ref": "#/definitions/v1.Time"
+     },
+     "succeeded": {
+      "description": "Succeeded is the number of pods which reached Phase Succeeded.",
+      "type": "integer",
+      "format": "int32"
+     }
+    }
+   },
+   "v1.LabelSelector": {
+    "description": "A label selector is a label query over a set of resources. The result of matchLabels and matchExpressions are ANDed. An empty label selector matches all objects. A null label selector matches no objects.",
+    "properties": {
+     "matchExpressions": {
+      "description": "matchExpressions is a list of label selector requirements. The requirements are ANDed.",
+      "type": "array",
+      "items": {
+       "$ref": "#/definitions/v1.LabelSelectorRequirement"
+      }
+     },
+     "matchLabels": {
+      "description": "matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is \"key\", the operator is \"In\", and the values array contains only \"value\". The requirements are ANDed.",
+      "type": "object",
+      "additionalProperties": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "v1.LabelSelectorRequirement": {
+    "description": "A label selector requirement is a selector that contains values, a key, and an operator that relates the key and values.",
+    "required": [
+     "key",
+     "operator"
+    ],
+    "properties": {
+     "key": {
+      "description": "key is the label key that the selector applies to.",
+      "type": "string"
+     },
+     "operator": {
+      "description": "operator represents a key's relationship to a set of values. Valid operators ard In, NotIn, Exists and DoesNotExist.",
+      "type": "string"
+     },
+     "values": {
+      "description": "values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.",
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     }
+    }
+   },
    "v1.Lifecycle": {
     "description": "Lifecycle describes actions that the management system should take in response to container lifecycle events. For the PostStart and PreStop lifecycle handlers, management of the container blocks until the action is complete, unless the container process fails, in which case the handler is aborted.",
     "properties": {
@@ -8780,6 +10218,19 @@
      "preStop": {
       "description": "PreStop is called immediately before a container is terminated. The container is terminated after the handler completes. The reason for termination is passed to the handler. Regardless of the outcome of the handler, the container is eventually terminated. Other management of the container blocks until the hook completes. More info: http://kubernetes.io/docs/user-guide/container-environment#hook-details",
       "$ref": "#/definitions/v1.Handler"
+     }
+    }
+   },
+   "v1.ListMeta": {
+    "description": "ListMeta describes metadata that synthetic resources must have, including lists and various status objects. A resource may have only one of {ObjectMeta, ListMeta}.",
+    "properties": {
+     "resourceVersion": {
+      "description": "String that identifies the server's internal version of this object that can be used by clients to determine when objects have changed. Value must be treated as opaque by clients and passed unmodified back to the server. Populated by the system. Read-only. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#concurrency-control-and-consistency",
+      "type": "string"
+     },
+     "selfLink": {
+      "description": "SelfLink is a URL representing this object. Populated by the system. Read-only.",
+      "type": "string"
      }
     }
    },
@@ -8849,7 +10300,7 @@
      },
      "metadata": {
       "description": "Standard list metadata. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#types-kinds",
-      "$ref": "#/definitions/unversioned.ListMeta"
+      "$ref": "#/definitions/v1.ListMeta"
      }
     }
    },
@@ -8871,6 +10322,76 @@
      "phase": {
       "description": "Phase is the current lifecycle phase of the namespace. More info: http://releases.k8s.io/HEAD/docs/design/namespaces.md#phases",
       "type": "string"
+     }
+    }
+   },
+   "v1.NodeAffinity": {
+    "description": "Node affinity is a group of node affinity scheduling rules.",
+    "properties": {
+     "preferredDuringSchedulingIgnoredDuringExecution": {
+      "description": "The scheduler will prefer to schedule pods to nodes that satisfy the affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding \"weight\" to the sum if the node matches the corresponding matchExpressions; the node(s) with the highest sum are the most preferred.",
+      "type": "array",
+      "items": {
+       "$ref": "#/definitions/v1.PreferredSchedulingTerm"
+      }
+     },
+     "requiredDuringSchedulingIgnoredDuringExecution": {
+      "description": "If the affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to an update), the system may or may not try to eventually evict the pod from its node.",
+      "$ref": "#/definitions/v1.NodeSelector"
+     }
+    }
+   },
+   "v1.NodeSelector": {
+    "description": "A node selector represents the union of the results of one or more label queries over a set of nodes; that is, it represents the OR of the selectors represented by the node selector terms.",
+    "required": [
+     "nodeSelectorTerms"
+    ],
+    "properties": {
+     "nodeSelectorTerms": {
+      "description": "Required. A list of node selector terms. The terms are ORed.",
+      "type": "array",
+      "items": {
+       "$ref": "#/definitions/v1.NodeSelectorTerm"
+      }
+     }
+    }
+   },
+   "v1.NodeSelectorRequirement": {
+    "description": "A node selector requirement is a selector that contains values, a key, and an operator that relates the key and values.",
+    "required": [
+     "key",
+     "operator"
+    ],
+    "properties": {
+     "key": {
+      "description": "The label key that the selector applies to.",
+      "type": "string"
+     },
+     "operator": {
+      "description": "Represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.",
+      "type": "string"
+     },
+     "values": {
+      "description": "An array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. If the operator is Gt or Lt, the values array must have a single element, which will be interpreted as an integer. This array is replaced during a strategic merge patch.",
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "v1.NodeSelectorTerm": {
+    "description": "A null or empty node selector term matches no objects.",
+    "required": [
+     "matchExpressions"
+    ],
+    "properties": {
+     "matchExpressions": {
+      "description": "Required. A list of node selector requirements. The requirements are ANDed.",
+      "type": "array",
+      "items": {
+       "$ref": "#/definitions/v1.NodeSelectorRequirement"
+      }
      }
     }
    },
@@ -8906,7 +10427,7 @@
      },
      "creationTimestamp": {
       "description": "CreationTimestamp is a timestamp representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations. Clients may not set this value. It is represented in RFC3339 form and is in UTC.\n\nPopulated by the system. Read-only. Null for lists. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#metadata",
-      "$ref": "#/definitions/unversioned.Time"
+      "$ref": "#/definitions/v1.Time"
      },
      "deletionGracePeriodSeconds": {
       "description": "Number of seconds allowed for this object to gracefully terminate before it will be removed from the system. Only set when deletionTimestamp is also set. May only be shortened. Read-only.",
@@ -8915,7 +10436,7 @@
      },
      "deletionTimestamp": {
       "description": "DeletionTimestamp is RFC 3339 date and time at which this resource will be deleted. This field is set by the server when a graceful deletion is requested by the user, and is not directly settable by a client. The resource is expected to be deleted (no longer visible from resource lists, and not reachable by name) after the time in this field. Once set, this value may not be unset or be set further into the future, although it may be shortened or the resource may be deleted prior to this time. For example, a user may request that a pod is deleted in 30 seconds. The Kubelet will react by sending a graceful termination signal to the containers in the pod. After that 30 seconds, the Kubelet will send a hard termination signal (SIGKILL) to the container and after cleanup, remove the pod from the API. In the presence of network partitions, this object may still exist after this timestamp, until an administrator or automated process can determine the resource is fully terminated. If not set, graceful deletion of the object has not been requested.\n\nPopulated by the system when a graceful deletion is requested. Read-only. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#metadata",
-      "$ref": "#/definitions/unversioned.Time"
+      "$ref": "#/definitions/v1.Time"
      },
      "finalizers": {
       "description": "Must be empty before the object is deleted from the registry. Each entry is an identifier for the responsible component that will remove the entry from the list. If the deletionTimestamp of the object is non-nil, entries in this list can only be removed.",
@@ -9033,6 +10554,70 @@
      }
     }
    },
+   "v1.Patch": {
+    "description": "Patch is provided to give a concrete name and type to the Kubernetes PATCH request body."
+   },
+   "v1.PodAffinity": {
+    "description": "Pod affinity is a group of inter pod affinity scheduling rules.",
+    "properties": {
+     "preferredDuringSchedulingIgnoredDuringExecution": {
+      "description": "The scheduler will prefer to schedule pods to nodes that satisfy the affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding \"weight\" to the sum if the node has pods which matches the corresponding podAffinityTerm; the node(s) with the highest sum are the most preferred.",
+      "type": "array",
+      "items": {
+       "$ref": "#/definitions/v1.WeightedPodAffinityTerm"
+      }
+     },
+     "requiredDuringSchedulingIgnoredDuringExecution": {
+      "description": "NOT YET IMPLEMENTED. TODO: Uncomment field once it is implemented. If the affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to a pod label update), the system will try to eventually evict the pod from its node. When there are multiple elements, the lists of nodes corresponding to each podAffinityTerm are intersected, i.e. all terms must be satisfied. RequiredDuringSchedulingRequiredDuringExecution []PodAffinityTerm  `json:\"requiredDuringSchedulingRequiredDuringExecution,omitempty\"` If the affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to a pod label update), the system may or may not try to eventually evict the pod from its node. When there are multiple elements, the lists of nodes corresponding to each podAffinityTerm are intersected, i.e. all terms must be satisfied.",
+      "type": "array",
+      "items": {
+       "$ref": "#/definitions/v1.PodAffinityTerm"
+      }
+     }
+    }
+   },
+   "v1.PodAffinityTerm": {
+    "description": "Defines a set of pods (namely those matching the labelSelector relative to the given namespace(s)) that this pod should be co-located (affinity) or not co-located (anti-affinity) with, where co-located is defined as running on a node whose value of the label with key \u003ctopologyKey\u003e tches that of any node on which a pod of the set of pods is running",
+    "required": [
+     "namespaces"
+    ],
+    "properties": {
+     "labelSelector": {
+      "description": "A label query over a set of resources, in this case pods.",
+      "$ref": "#/definitions/v1.LabelSelector"
+     },
+     "namespaces": {
+      "description": "namespaces specifies which namespaces the labelSelector applies to (matches against); nil list means \"this pod's namespace,\" empty list means \"all namespaces\" The json tag here is not \"omitempty\" since we need to distinguish nil and empty. See https://golang.org/pkg/encoding/json/#Marshal for more details.",
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "topologyKey": {
+      "description": "This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching the labelSelector in the specified namespaces, where co-located is defined as running on a node whose value of the label with key topologyKey matches that of any node on which any of the selected pods is running. For PreferredDuringScheduling pod anti-affinity, empty topologyKey is interpreted as \"all topologies\" (\"all topologies\" here means all the topologyKeys indicated by scheduler command-line argument --failure-domains); for affinity and for RequiredDuringScheduling pod anti-affinity, empty topologyKey is not allowed.",
+      "type": "string"
+     }
+    }
+   },
+   "v1.PodAntiAffinity": {
+    "description": "Pod anti affinity is a group of inter pod anti affinity scheduling rules.",
+    "properties": {
+     "preferredDuringSchedulingIgnoredDuringExecution": {
+      "description": "The scheduler will prefer to schedule pods to nodes that satisfy the anti-affinity expressions specified by this field, but it may choose a node that violates one or more of the expressions. The node that is most preferred is the one with the greatest sum of weights, i.e. for each node that meets all of the scheduling requirements (resource request, requiredDuringScheduling anti-affinity expressions, etc.), compute a sum by iterating through the elements of this field and adding \"weight\" to the sum if the node has pods which matches the corresponding podAffinityTerm; the node(s) with the highest sum are the most preferred.",
+      "type": "array",
+      "items": {
+       "$ref": "#/definitions/v1.WeightedPodAffinityTerm"
+      }
+     },
+     "requiredDuringSchedulingIgnoredDuringExecution": {
+      "description": "NOT YET IMPLEMENTED. TODO: Uncomment field once it is implemented. If the anti-affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the anti-affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to a pod label update), the system will try to eventually evict the pod from its node. When there are multiple elements, the lists of nodes corresponding to each podAffinityTerm are intersected, i.e. all terms must be satisfied. RequiredDuringSchedulingRequiredDuringExecution []PodAffinityTerm  `json:\"requiredDuringSchedulingRequiredDuringExecution,omitempty\"` If the anti-affinity requirements specified by this field are not met at scheduling time, the pod will not be scheduled onto the node. If the anti-affinity requirements specified by this field cease to be met at some point during pod execution (e.g. due to a pod label update), the system may or may not try to eventually evict the pod from its node. When there are multiple elements, the lists of nodes corresponding to each podAffinityTerm are intersected, i.e. all terms must be satisfied.",
+      "type": "array",
+      "items": {
+       "$ref": "#/definitions/v1.PodAffinityTerm"
+      }
+     }
+    }
+   },
    "v1.PodSecurityContext": {
     "description": "PodSecurityContext holds pod-level security attributes and common container settings. Some fields are also present in container.securityContext.  Field values of container.securityContext take precedence over field values of PodSecurityContext.",
     "properties": {
@@ -9074,6 +10659,10 @@
       "description": "Optional duration in seconds the pod may be active on the node relative to StartTime before the system will actively try to mark it failed and kill associated containers. Value must be a positive integer.",
       "type": "integer",
       "format": "int64"
+     },
+     "affinity": {
+      "description": "If specified, the pod's scheduling constraints",
+      "$ref": "#/definitions/v1.Affinity"
      },
      "containers": {
       "description": "List of containers belonging to the pod. Containers cannot currently be added or removed. There must be at least one container in a Pod. Cannot be updated. More info: http://kubernetes.io/docs/user-guide/containers",
@@ -9176,6 +10765,24 @@
      }
     }
    },
+   "v1.PreferredSchedulingTerm": {
+    "description": "An empty preferred scheduling term matches all objects with implicit weight 0 (i.e. it's a no-op). A null preferred scheduling term matches no objects (i.e. is also a no-op).",
+    "required": [
+     "weight",
+     "preference"
+    ],
+    "properties": {
+     "preference": {
+      "description": "A node selector term, associated with the corresponding weight.",
+      "$ref": "#/definitions/v1.NodeSelectorTerm"
+     },
+     "weight": {
+      "description": "Weight associated with matching the corresponding nodeSelectorTerm, in the range 1-100.",
+      "type": "integer",
+      "format": "int32"
+     }
+    }
+   },
    "v1.Probe": {
     "description": "Probe describes a health check to be performed against a container to determine whether it is alive or ready to receive traffic.",
     "properties": {
@@ -9273,11 +10880,8 @@
       "description": "Data contains the secret data. Each key must be a valid DNS_SUBDOMAIN or leading dot followed by valid DNS_SUBDOMAIN. The serialized form of the secret data is a base64 encoded string, representing the arbitrary (possibly non-string) data value here. Described in https://tools.ietf.org/html/rfc4648#section-4",
       "type": "object",
       "additionalProperties": {
-       "type": "array",
-       "items": {
-        "type": "integer",
-        "format": "byte"
-       }
+       "type": "string",
+       "format": "byte"
       }
      },
      "metadata": {
@@ -9324,7 +10928,7 @@
      },
      "metadata": {
       "description": "Standard list metadata. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#types-kinds",
-      "$ref": "#/definitions/unversioned.ListMeta"
+      "$ref": "#/definitions/v1.ListMeta"
      }
     }
    },
@@ -9355,6 +10959,23 @@
      "seLinuxOptions": {
       "description": "The SELinux context to be applied to the container. If unspecified, the container runtime will allocate a random SELinux context for each container.  May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.",
       "$ref": "#/definitions/v1.SELinuxOptions"
+     }
+    }
+   },
+   "v1.ServerAddressByClientCIDR": {
+    "description": "ServerAddressByClientCIDR helps the client to determine the server address that they should use, depending on the clientCIDR that they match.",
+    "required": [
+     "clientCIDR",
+     "serverAddress"
+    ],
+    "properties": {
+     "clientCIDR": {
+      "description": "The CIDR with which clients can match their IP to figure out the server address that they should use.",
+      "type": "string"
+     },
+     "serverAddress": {
+      "description": "Address of this server, suitable for a client that matches the above CIDR. This can be a hostname, hostname:port, IP or IP:port.",
+      "type": "string"
      }
     }
    },
@@ -9390,7 +11011,7 @@
      },
      "metadata": {
       "description": "Standard list metadata. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#types-kinds",
-      "$ref": "#/definitions/unversioned.ListMeta"
+      "$ref": "#/definitions/v1.ListMeta"
      }
     }
    },
@@ -9426,9 +11047,6 @@
    },
    "v1.ServiceSpec": {
     "description": "ServiceSpec describes the attributes that a user creates on a service.",
-    "required": [
-     "ports"
-    ],
     "properties": {
      "clusterIP": {
       "description": "clusterIP is the IP address of the service and is usually assigned randomly by the master. If an address is specified manually and is not in use by others, it will be allocated to the service; otherwise, creation of the service will fail. This field can not be changed through updates. Valid values are \"None\", empty string (\"\"), or a valid IP address. \"None\" can be specified for headless services when proxying is not required. Only applies to types ClusterIP, NodePort, and LoadBalancer. Ignored if type is ExternalName. More info: http://kubernetes.io/docs/user-guide/services#virtual-ips-and-service-proxies",
@@ -9496,6 +11114,82 @@
      }
     }
    },
+   "v1.Status": {
+    "description": "Status is a return value for calls that don't return other objects.",
+    "properties": {
+     "code": {
+      "description": "Suggested HTTP return code for this status, 0 if not set.",
+      "type": "integer",
+      "format": "int32"
+     },
+     "details": {
+      "description": "Extended data associated with the reason.  Each reason may define its own extended details. This field is optional and the data returned is not guaranteed to conform to any schema except that defined by the reason type.",
+      "$ref": "#/definitions/v1.StatusDetails"
+     },
+     "message": {
+      "description": "A human-readable description of the status of this operation.",
+      "type": "string"
+     },
+     "metadata": {
+      "description": "Standard list metadata. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#types-kinds",
+      "$ref": "#/definitions/v1.ListMeta"
+     },
+     "reason": {
+      "description": "A machine-readable description of why this operation is in the \"Failure\" status. If this value is empty there is no information available. A Reason clarifies an HTTP status code but does not override it.",
+      "type": "string"
+     },
+     "status": {
+      "description": "Status of the operation. One of: \"Success\" or \"Failure\". More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#spec-and-status",
+      "type": "string"
+     }
+    }
+   },
+   "v1.StatusCause": {
+    "description": "StatusCause provides more information about an api.Status failure, including cases when multiple errors are encountered.",
+    "properties": {
+     "field": {
+      "description": "The field of the resource that has caused this error, as named by its JSON serialization. May include dot and postfix notation for nested attributes. Arrays are zero-indexed.  Fields may appear more than once in an array of causes due to fields having multiple errors. Optional.\n\nExamples:\n  \"name\" - the field \"name\" on the current resource\n  \"items[0].name\" - the field \"name\" on the first array entry in \"items\"",
+      "type": "string"
+     },
+     "message": {
+      "description": "A human-readable description of the cause of the error.  This field may be presented as-is to a reader.",
+      "type": "string"
+     },
+     "reason": {
+      "description": "A machine-readable description of the cause of the error. If this value is empty there is no information available.",
+      "type": "string"
+     }
+    }
+   },
+   "v1.StatusDetails": {
+    "description": "StatusDetails is a set of additional properties that MAY be set by the server to provide additional information about a response. The Reason field of a Status object defines what attributes will be set. Clients must ignore fields that do not match the defined type of each attribute, and should assume that any attribute may be empty, invalid, or under defined.",
+    "properties": {
+     "causes": {
+      "description": "The Causes array includes more details associated with the StatusReason failure. Not all StatusReasons may provide detailed causes.",
+      "type": "array",
+      "items": {
+       "$ref": "#/definitions/v1.StatusCause"
+      }
+     },
+     "group": {
+      "description": "The group attribute of the resource associated with the status StatusReason.",
+      "type": "string"
+     },
+     "kind": {
+      "description": "The kind attribute of the resource associated with the status StatusReason. On some operations may differ from the requested resource Kind. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#types-kinds",
+      "type": "string"
+     },
+     "name": {
+      "description": "The name attribute of the resource associated with the status StatusReason (when there is a single name which can be described).",
+      "type": "string"
+     },
+     "retryAfterSeconds": {
+      "description": "If specified, the time in seconds before the operation should be retried.",
+      "type": "integer",
+      "format": "int32"
+     }
+    }
+   },
    "v1.TCPSocketAction": {
     "description": "TCPSocketAction describes an action based on opening a socket",
     "required": [
@@ -9507,6 +11201,10 @@
       "$ref": "#/definitions/intstr.IntOrString"
      }
     }
+   },
+   "v1.Time": {
+    "type": "string",
+    "format": "date-time"
    },
    "v1.Volume": {
     "description": "Volume represents a named volume in a pod that may be accessed by any container in the pod.",
@@ -9545,6 +11243,24 @@
      }
     }
    },
+   "v1.WeightedPodAffinityTerm": {
+    "description": "The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)",
+    "required": [
+     "weight",
+     "podAffinityTerm"
+    ],
+    "properties": {
+     "podAffinityTerm": {
+      "description": "Required. A pod affinity term, associated with the corresponding weight.",
+      "$ref": "#/definitions/v1.PodAffinityTerm"
+     },
+     "weight": {
+      "description": "weight associated with matching the corresponding podAffinityTerm, in the range 1-100.",
+      "type": "integer",
+      "format": "int32"
+     }
+    }
+   },
    "v1beta1.Cluster": {
     "description": "Information about a registered cluster in a federated kubernetes setup. Clusters are not namespaced and have unique names in the federation.",
     "properties": {
@@ -9571,11 +11287,11 @@
     "properties": {
      "lastProbeTime": {
       "description": "Last time the condition was checked.",
-      "$ref": "#/definitions/unversioned.Time"
+      "$ref": "#/definitions/v1.Time"
      },
      "lastTransitionTime": {
       "description": "Last time the condition transit from one status to another.",
-      "$ref": "#/definitions/unversioned.Time"
+      "$ref": "#/definitions/v1.Time"
      },
      "message": {
       "description": "Human readable message indicating details about last transition.",
@@ -9610,7 +11326,7 @@
      },
      "metadata": {
       "description": "Standard list metadata. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#types-kinds",
-      "$ref": "#/definitions/unversioned.ListMeta"
+      "$ref": "#/definitions/v1.ListMeta"
      }
     }
    },
@@ -9634,7 +11350,7 @@
     }
    },
    "v1beta1.ClusterStatus": {
-    "description": "ClusterStatus is information about the current status of a cluster updated by cluster controller peridocally.",
+    "description": "ClusterStatus is information about the current status of a cluster updated by cluster controller periodically.",
     "properties": {
      "conditions": {
       "description": "Conditions is an array of current cluster conditions.",
@@ -9688,7 +11404,7 @@
      },
      "metadata": {
       "description": "Standard list metadata. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#metadata",
-      "$ref": "#/definitions/unversioned.ListMeta"
+      "$ref": "#/definitions/v1.ListMeta"
      }
     }
    },
@@ -9700,7 +11416,7 @@
     "properties": {
      "selector": {
       "description": "Selector is a label query over pods that are managed by the daemon set. Must match in order to be controlled. If empty, defaulted to labels on Pod template. More info: http://kubernetes.io/docs/user-guide/labels#label-selectors",
-      "$ref": "#/definitions/unversioned.LabelSelector"
+      "$ref": "#/definitions/v1.LabelSelector"
      },
      "template": {
       "description": "Template is the object that describes the pod that will be created. The DaemonSet will create exactly one copy of this pod on every node that matches the template's node selector (or on every node if no node selector is specified). More info: http://kubernetes.io/docs/user-guide/replication-controller#pod-template",
@@ -9760,20 +11476,16 @@
     "description": "DeploymentCondition describes the state of a deployment at a certain point.",
     "required": [
      "type",
-     "status",
-     "lastUpdateTime",
-     "lastTransitionTime",
-     "reason",
-     "message"
+     "status"
     ],
     "properties": {
      "lastTransitionTime": {
       "description": "Last time the condition transitioned from one status to another.",
-      "$ref": "#/definitions/unversioned.Time"
+      "$ref": "#/definitions/v1.Time"
      },
      "lastUpdateTime": {
       "description": "The last time this condition was updated.",
-      "$ref": "#/definitions/unversioned.Time"
+      "$ref": "#/definitions/v1.Time"
      },
      "message": {
       "description": "A human readable message indicating details about the transition.",
@@ -9808,7 +11520,7 @@
      },
      "metadata": {
       "description": "Standard list metadata.",
-      "$ref": "#/definitions/unversioned.ListMeta"
+      "$ref": "#/definitions/v1.ListMeta"
      }
     }
    },
@@ -9839,8 +11551,7 @@
    "v1beta1.DeploymentSpec": {
     "description": "DeploymentSpec is the specification of the desired behavior of the Deployment.",
     "required": [
-     "template",
-     "progressDeadlineSeconds"
+     "template"
     ],
     "properties": {
      "minReadySeconds": {
@@ -9873,7 +11584,7 @@
      },
      "selector": {
       "description": "Label selector for pods. Existing ReplicaSets whose pods are selected by this will be the ones affected by this deployment.",
-      "$ref": "#/definitions/unversioned.LabelSelector"
+      "$ref": "#/definitions/v1.LabelSelector"
      },
      "strategy": {
       "description": "The deployment strategy to use to replace existing pods with new ones.",
@@ -9887,9 +11598,6 @@
    },
    "v1beta1.DeploymentStatus": {
     "description": "DeploymentStatus is the most recently observed status of the Deployment.",
-    "required": [
-     "conditions"
-    ],
     "properties": {
      "availableReplicas": {
       "description": "Total number of available pods (ready for at least minReadySeconds) targeted by this deployment.",
@@ -9987,7 +11695,7 @@
      },
      "metadata": {
       "description": "Standard object's metadata. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#metadata",
-      "$ref": "#/definitions/unversioned.ListMeta"
+      "$ref": "#/definitions/v1.ListMeta"
      }
     }
    },
@@ -10074,7 +11782,7 @@
     "properties": {
      "lastTransitionTime": {
       "description": "The last time the condition transitioned from one status to another.",
-      "$ref": "#/definitions/unversioned.Time"
+      "$ref": "#/definitions/v1.Time"
      },
      "message": {
       "description": "A human readable message indicating details about the transition.",
@@ -10109,7 +11817,7 @@
      },
      "metadata": {
       "description": "Standard list metadata. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#types-kinds",
-      "$ref": "#/definitions/unversioned.ListMeta"
+      "$ref": "#/definitions/v1.ListMeta"
      }
     }
    },
@@ -10128,7 +11836,7 @@
      },
      "selector": {
       "description": "Selector is a label query over pods that should match the replica count. If the selector is empty, it is defaulted to the labels present on the pod template. Label keys and values that must match in order to be controlled by this replica set. More info: http://kubernetes.io/docs/user-guide/labels#label-selectors",
-      "$ref": "#/definitions/unversioned.LabelSelector"
+      "$ref": "#/definitions/v1.LabelSelector"
      },
      "template": {
       "description": "Template is the object that describes the pod that will be created if insufficient replicas are detected. More info: http://kubernetes.io/docs/user-guide/replication-controller#pod-template",
@@ -10193,7 +11901,7 @@
       "$ref": "#/definitions/intstr.IntOrString"
      },
      "maxUnavailable": {
-      "description": "The maximum number of pods that can be unavailable during the update. Value can be an absolute number (ex: 5) or a percentage of desired pods (ex: 10%). Absolute number is calculated from percentage by rounding up. This can not be 0 if MaxSurge is 0. By default, a fixed value of 1 is used. Example: when this is set to 30%, the old RC can be scaled down to 70% of desired pods immediately when the rolling update starts. Once new pods are ready, old RC can be scaled down further, followed by scaling up the new RC, ensuring that the total number of pods available at all times during the update is at least 70% of desired pods.",
+      "description": "The maximum number of pods that can be unavailable during the update. Value can be an absolute number (ex: 5) or a percentage of desired pods (ex: 10%). Absolute number is calculated from percentage by rounding down. This can not be 0 if MaxSurge is 0. By default, a fixed value of 1 is used. Example: when this is set to 30%, the old RC can be scaled down to 70% of desired pods immediately when the rolling update starts. Once new pods are ready, old RC can be scaled down further, followed by scaling up the new RC, ensuring that the total number of pods available at all times during the update is at least 70% of desired pods.",
       "$ref": "#/definitions/intstr.IntOrString"
      }
     }
@@ -10333,5 +12041,10 @@
     "name": "authorization",
     "in": "header"
    }
-  }
+  },
+  "security": [
+   {
+    "BearerToken": []
+   }
+  ]
  }

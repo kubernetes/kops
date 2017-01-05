@@ -22,12 +22,14 @@ import (
 	"net/http"
 
 	"k8s.io/kubernetes/pkg/api"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
+	"k8s.io/kubernetes/pkg/api/v1"
+	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/util/wait"
 	utilyaml "k8s.io/kubernetes/pkg/util/yaml"
 	"k8s.io/kubernetes/test/e2e/framework"
+	"k8s.io/kubernetes/test/e2e/generated"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -102,7 +104,7 @@ func (h *haproxyControllerTester) start(namespace string) (err error) {
 	if err != nil {
 		return
 	}
-	if err = framework.WaitForRCPodsRunning(h.client, namespace, rc.Name); err != nil {
+	if err = framework.WaitForControlledPodsRunning(h.client, namespace, rc.Name, api.Kind("ReplicationController")); err != nil {
 		return
 	}
 	h.rcName = rc.Name
@@ -111,7 +113,7 @@ func (h *haproxyControllerTester) start(namespace string) (err error) {
 	// Find the pods of the rc we just created.
 	labelSelector := labels.SelectorFromSet(
 		labels.Set(map[string]string{"name": h.rcName}))
-	options := api.ListOptions{LabelSelector: labelSelector}
+	options := v1.ListOptions{LabelSelector: labelSelector.String()}
 	pods, err := h.client.Core().Pods(h.rcNamespace).List(options)
 	if err != nil {
 		return err
@@ -169,7 +171,7 @@ func (s *ingManager) start(namespace string) (err error) {
 		if err != nil {
 			return
 		}
-		if err = framework.WaitForRCPodsRunning(s.client, rc.Namespace, rc.Name); err != nil {
+		if err = framework.WaitForControlledPodsRunning(s.client, rc.Namespace, rc.Name, api.Kind("ReplicationController")); err != nil {
 			return
 		}
 	}
@@ -262,10 +264,10 @@ func simpleGET(c *http.Client, url, host string) (string, error) {
 }
 
 // rcFromManifest reads a .json/yaml file and returns the rc in it.
-func rcFromManifest(fileName string) *api.ReplicationController {
-	var controller api.ReplicationController
+func rcFromManifest(fileName string) *v1.ReplicationController {
+	var controller v1.ReplicationController
 	framework.Logf("Parsing rc from %v", fileName)
-	data := framework.ReadOrDie(fileName)
+	data := generated.ReadOrDie(fileName)
 
 	json, err := utilyaml.ToJSON(data)
 	Expect(err).NotTo(HaveOccurred())
@@ -275,10 +277,10 @@ func rcFromManifest(fileName string) *api.ReplicationController {
 }
 
 // svcFromManifest reads a .json/yaml file and returns the rc in it.
-func svcFromManifest(fileName string) *api.Service {
-	var svc api.Service
+func svcFromManifest(fileName string) *v1.Service {
+	var svc v1.Service
 	framework.Logf("Parsing service from %v", fileName)
-	data := framework.ReadOrDie(fileName)
+	data := generated.ReadOrDie(fileName)
 
 	json, err := utilyaml.ToJSON(data)
 	Expect(err).NotTo(HaveOccurred())
