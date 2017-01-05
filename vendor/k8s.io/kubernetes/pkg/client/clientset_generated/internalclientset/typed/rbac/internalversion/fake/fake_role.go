@@ -18,10 +18,11 @@ package fake
 
 import (
 	api "k8s.io/kubernetes/pkg/api"
-	unversioned "k8s.io/kubernetes/pkg/api/unversioned"
+	v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	rbac "k8s.io/kubernetes/pkg/apis/rbac"
 	core "k8s.io/kubernetes/pkg/client/testing/core"
 	labels "k8s.io/kubernetes/pkg/labels"
+	schema "k8s.io/kubernetes/pkg/runtime/schema"
 	watch "k8s.io/kubernetes/pkg/watch"
 )
 
@@ -31,7 +32,7 @@ type FakeRoles struct {
 	ns   string
 }
 
-var rolesResource = unversioned.GroupVersionResource{Group: "rbac.authorization.k8s.io", Version: "", Resource: "roles"}
+var rolesResource = schema.GroupVersionResource{Group: "rbac.authorization.k8s.io", Version: "", Resource: "roles"}
 
 func (c *FakeRoles) Create(role *rbac.Role) (result *rbac.Role, err error) {
 	obj, err := c.Fake.
@@ -67,7 +68,7 @@ func (c *FakeRoles) DeleteCollection(options *api.DeleteOptions, listOptions api
 	return err
 }
 
-func (c *FakeRoles) Get(name string) (result *rbac.Role, err error) {
+func (c *FakeRoles) Get(name string, options v1.GetOptions) (result *rbac.Role, err error) {
 	obj, err := c.Fake.
 		Invokes(core.NewGetAction(rolesResource, c.ns, name), &rbac.Role{})
 

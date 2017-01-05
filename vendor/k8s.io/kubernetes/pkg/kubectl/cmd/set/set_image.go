@@ -28,7 +28,6 @@ import (
 	"k8s.io/kubernetes/pkg/kubectl/resource"
 	"k8s.io/kubernetes/pkg/runtime"
 	utilerrors "k8s.io/kubernetes/pkg/util/errors"
-	"k8s.io/kubernetes/pkg/util/strategicpatch"
 )
 
 // ImageOptions is the start of the data required to perform the operation.  As new fields are added, add them here instead of
@@ -36,20 +35,22 @@ import (
 type ImageOptions struct {
 	resource.FilenameOptions
 
-	f           cmdutil.Factory
-	Mapper      meta.RESTMapper
-	Typer       runtime.ObjectTyper
-	Infos       []*resource.Info
-	Encoder     runtime.Encoder
-	Selector    string
-	Out         io.Writer
-	Err         io.Writer
-	ShortOutput bool
-	All         bool
-	Record      bool
-	ChangeCause string
-	Local       bool
-	Cmd         *cobra.Command
+	Mapper       meta.RESTMapper
+	Typer        runtime.ObjectTyper
+	Infos        []*resource.Info
+	Encoder      runtime.Encoder
+	Selector     string
+	Out          io.Writer
+	Err          io.Writer
+	DryRun       bool
+	ShortOutput  bool
+	All          bool
+	Record       bool
+	Output       string
+	ChangeCause  string
+	Local        bool
+	Cmd          *cobra.Command
+	ResolveImage func(in string) (string, error)
 
 	PrintObject            func(cmd *cobra.Command, mapper meta.RESTMapper, obj runtime.Object, out io.Writer) error
 	UpdatePodSpecForObject func(obj runtime.Object, fn func(*api.PodSpec) error) (bool, error)
@@ -103,14 +104,14 @@ func NewCmdImage(f cmdutil.Factory, out, err io.Writer) *cobra.Command {
 	usage := "identifying the resource to get from a server."
 	cmdutil.AddFilenameOptionFlags(cmd, &options.FilenameOptions, usage)
 	cmd.Flags().BoolVar(&options.All, "all", false, "select all resources in the namespace of the specified resource types")
-	cmd.Flags().StringVarP(&options.Selector, "selector", "l", "", "Selector (label query) to filter on")
+	cmd.Flags().StringVarP(&options.Selector, "selector", "l", "", "Selector (label query) to filter on, supports '=', '==', and '!='.")
 	cmd.Flags().BoolVar(&options.Local, "local", false, "If true, set image will NOT contact api-server but run locally.")
 	cmdutil.AddRecordFlag(cmd)
+	cmdutil.AddDryRunFlag(cmd)
 	return cmd
 }
 
 func (o *ImageOptions) Complete(f cmdutil.Factory, cmd *cobra.Command, args []string) error {
-	o.f = f
 	o.Mapper, o.Typer = f.Object()
 	o.UpdatePodSpecForObject = f.UpdatePodSpecForObject
 	o.Encoder = f.JSONEncoder()
@@ -118,6 +119,9 @@ func (o *ImageOptions) Complete(f cmdutil.Factory, cmd *cobra.Command, args []st
 	o.Record = cmdutil.GetRecordFlag(cmd)
 	o.ChangeCause = f.Command()
 	o.PrintObject = f.PrintObject
+	o.DryRun = cmdutil.GetDryRunFlag(cmd)
+	o.Output = cmdutil.GetFlagString(cmd, "output")
+	o.ResolveImage = f.ResolveImage
 	o.Cmd = cmd
 
 	cmdNamespace, enforceNamespace, err := f.DefaultNamespace()
@@ -165,16 +169,31 @@ func (o *ImageOptions) Validate() error {
 func (o *ImageOptions) Run() error {
 	allErrs := []error{}
 
-	patches := CalculatePatches(o.f, o.Infos, o.Encoder, o.Local, func(info *resource.Info) (bool, error) {
+	patches := CalculatePatches(o.Infos, o.Encoder, func(info *resource.Info) ([]byte, error) {
 		transformed := false
 		_, err := o.UpdatePodSpecForObject(info.Object, func(spec *api.PodSpec) error {
 			for name, image := range o.ContainerImages {
-				containerFound := false
+				var (
+					containerFound bool
+					err            error
+					resolved       string
+				)
 				// Find the container to update, and update its image
 				for i, c := range spec.Containers {
 					if c.Name == name || name == "*" {
-						spec.Containers[i].Image = image
 						containerFound = true
+						if len(resolved) == 0 {
+							if resolved, err = o.ResolveImage(image); err != nil {
+								allErrs = append(allErrs, fmt.Errorf("error: unable to resolve image %q for container %q: %v", image, name, err))
+								// Do not loop again if the image resolving failed for wildcard case as we
+								// will report the same error again for the next container.
+								if name == "*" {
+									break
+								}
+								continue
+							}
+						}
+						spec.Containers[i].Image = resolved
 						// Perform updates
 						transformed = true
 					}
@@ -186,17 +205,12 @@ func (o *ImageOptions) Run() error {
 			}
 			return nil
 		})
-		return transformed, err
+		if transformed && err == nil {
+			return runtime.Encode(o.Encoder, info.Object)
+		}
+		return nil, err
 	})
 
-	smPatchVersion := strategicpatch.SMPatchVersionLatest
-	var err error
-	if !o.Local {
-		smPatchVersion, err = cmdutil.GetServerSupportedSMPatchVersionFromFactory(o.f)
-		if err != nil {
-			return err
-		}
-	}
 	for _, patch := range patches {
 		info := patch.Info
 		if patch.Err != nil {
@@ -209,7 +223,7 @@ func (o *ImageOptions) Run() error {
 			continue
 		}
 
-		if o.Local {
+		if o.PrintObject != nil && (o.Local || o.DryRun) {
 			return o.PrintObject(o.Cmd, o.Mapper, info.Object, o.Out)
 		}
 
@@ -223,7 +237,7 @@ func (o *ImageOptions) Run() error {
 
 		// record this change (for rollout history)
 		if o.Record || cmdutil.ContainsChangeCause(info) {
-			if patch, err := cmdutil.ChangeResourcePatch(info, o.ChangeCause, smPatchVersion); err == nil {
+			if patch, err := cmdutil.ChangeResourcePatch(info, o.ChangeCause); err == nil {
 				if obj, err = resource.NewHelper(info.Client, info.Mapping).Patch(info.Namespace, info.Name, api.StrategicMergePatchType, patch); err != nil {
 					fmt.Fprintf(o.Err, "WARNING: changes to %s/%s can't be recorded: %v\n", info.Mapping.Resource, info.Name, err)
 				}
@@ -231,7 +245,11 @@ func (o *ImageOptions) Run() error {
 		}
 
 		info.Refresh(obj, true)
-		cmdutil.PrintSuccess(o.Mapper, o.ShortOutput, o.Out, info.Mapping.Resource, info.Name, false, "image updated")
+
+		if len(o.Output) > 0 {
+			return o.PrintObject(o.Cmd, o.Mapper, obj, o.Out)
+		}
+		cmdutil.PrintSuccess(o.Mapper, o.ShortOutput, o.Out, info.Mapping.Resource, info.Name, o.DryRun, "image updated")
 	}
 	return utilerrors.NewAggregate(allErrs)
 }

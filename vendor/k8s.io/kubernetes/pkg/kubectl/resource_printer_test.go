@@ -28,14 +28,15 @@ import (
 
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/testapi"
-	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/apimachinery/registered"
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/extensions"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/apis/policy"
 	kubectltesting "k8s.io/kubernetes/pkg/kubectl/testing"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 	yamlserializer "k8s.io/kubernetes/pkg/runtime/serializer/yaml"
 	"k8s.io/kubernetes/pkg/util/diff"
 	"k8s.io/kubernetes/pkg/util/intstr"
@@ -90,11 +91,11 @@ type TestPrintType struct {
 	Data string
 }
 
-func (obj *TestPrintType) GetObjectKind() unversioned.ObjectKind { return unversioned.EmptyObjectKind }
+func (obj *TestPrintType) GetObjectKind() schema.ObjectKind { return schema.EmptyObjectKind }
 
 type TestUnknownType struct{}
 
-func (obj *TestUnknownType) GetObjectKind() unversioned.ObjectKind { return unversioned.EmptyObjectKind }
+func (obj *TestUnknownType) GetObjectKind() schema.ObjectKind { return schema.EmptyObjectKind }
 
 func TestPrinter(t *testing.T) {
 	//test inputs
@@ -117,23 +118,27 @@ func TestPrinter(t *testing.T) {
 		Format         string
 		FormatArgument string
 		Input          runtime.Object
+		OutputVersions []schema.GroupVersion
 		Expect         string
 	}{
-		{"test json", "json", "", simpleTest, "{\n    \"Data\": \"foo\"\n}\n"},
-		{"test yaml", "yaml", "", simpleTest, "Data: foo\n"},
+		{"test json", "json", "", simpleTest, nil, "{\n    \"Data\": \"foo\"\n}\n"},
+		{"test yaml", "yaml", "", simpleTest, nil, "Data: foo\n"},
 		{"test template", "template", "{{if .id}}{{.id}}{{end}}{{if .metadata.name}}{{.metadata.name}}{{end}}",
-			podTest, "foo"},
-		{"test jsonpath", "jsonpath", "{.metadata.name}", podTest, "foo"},
-		{"test jsonpath list", "jsonpath", "{.items[*].metadata.name}", podListTest, "foo bar"},
-		{"test jsonpath empty list", "jsonpath", "{.items[*].metadata.name}", emptyListTest, ""},
-		{"test name", "name", "", podTest, "pod/foo\n"},
-		{"emits versioned objects", "template", "{{.kind}}", testapi, "Pod"},
+			podTest, []schema.GroupVersion{v1.SchemeGroupVersion}, "foo"},
+		{"test jsonpath", "jsonpath", "{.metadata.name}", podTest, []schema.GroupVersion{v1.SchemeGroupVersion}, "foo"},
+		{"test jsonpath list", "jsonpath", "{.items[*].metadata.name}", podListTest, []schema.GroupVersion{v1.SchemeGroupVersion}, "foo bar"},
+		{"test jsonpath empty list", "jsonpath", "{.items[*].metadata.name}", emptyListTest, []schema.GroupVersion{v1.SchemeGroupVersion}, ""},
+		{"test name", "name", "", podTest, []schema.GroupVersion{v1.SchemeGroupVersion}, "pod/foo\n"},
+		{"emits versioned objects", "template", "{{.kind}}", testapi, []schema.GroupVersion{v1.SchemeGroupVersion}, "Pod"},
 	}
 	for _, test := range printerTests {
 		buf := bytes.NewBuffer([]byte{})
-		printer, found, err := GetPrinter(test.Format, test.FormatArgument, false)
-		if err != nil || !found {
+		printer, generic, err := GetPrinter(test.Format, test.FormatArgument, false)
+		if err != nil {
 			t.Errorf("in %s, unexpected error: %#v", test.Name, err)
+		}
+		if generic && len(test.OutputVersions) > 0 {
+			printer = NewVersionedPrinter(printer, api.Scheme, test.OutputVersions...)
 		}
 		if err := printer.PrintObj(test.Input, buf); err != nil {
 			t.Errorf("in %s, unexpected error: %#v", test.Name, err)
@@ -250,9 +255,7 @@ func ErrorPrintHandler(obj *TestPrintType, w io.Writer, options PrintOptions) er
 
 func TestCustomTypePrinting(t *testing.T) {
 	columns := []string{"Data"}
-	printer := NewHumanReadablePrinter(PrintOptions{
-		ColumnLabels: []string{},
-	})
+	printer := NewHumanReadablePrinter(PrintOptions{})
 	printer.Handler(columns, PrintCustomType)
 
 	obj := TestPrintType{"test object"}
@@ -269,9 +272,7 @@ func TestCustomTypePrinting(t *testing.T) {
 
 func TestCustomTypePrintingWithKind(t *testing.T) {
 	columns := []string{"Data"}
-	printer := NewHumanReadablePrinter(PrintOptions{
-		ColumnLabels: []string{},
-	})
+	printer := NewHumanReadablePrinter(PrintOptions{})
 	printer.Handler(columns, PrintCustomType)
 	printer.EnsurePrintWithKind("test")
 
@@ -289,9 +290,7 @@ func TestCustomTypePrintingWithKind(t *testing.T) {
 
 func TestPrintHandlerError(t *testing.T) {
 	columns := []string{"Data"}
-	printer := NewHumanReadablePrinter(PrintOptions{
-		ColumnLabels: []string{},
-	})
+	printer := NewHumanReadablePrinter(PrintOptions{})
 	printer.Handler(columns, ErrorPrintHandler)
 	obj := TestPrintType{"test object"}
 	buffer := &bytes.Buffer{}
@@ -302,9 +301,7 @@ func TestPrintHandlerError(t *testing.T) {
 }
 
 func TestUnknownTypePrinting(t *testing.T) {
-	printer := NewHumanReadablePrinter(PrintOptions{
-		ColumnLabels: []string{},
-	})
+	printer := NewHumanReadablePrinter(PrintOptions{})
 	buffer := &bytes.Buffer{}
 	err := printer.PrintObj(&TestUnknownType{}, buffer)
 	if err == nil {
@@ -335,7 +332,7 @@ func TestNamePrinter(t *testing.T) {
 	}{
 		"singleObject": {
 			&api.Pod{
-				TypeMeta: unversioned.TypeMeta{
+				TypeMeta: metav1.TypeMeta{
 					Kind: "Pod",
 				},
 				ObjectMeta: api.ObjectMeta{
@@ -345,7 +342,7 @@ func TestNamePrinter(t *testing.T) {
 			"pod/foo\n"},
 		"List": {
 			&v1.List{
-				TypeMeta: unversioned.TypeMeta{
+				TypeMeta: metav1.TypeMeta{
 					Kind: "List",
 				},
 				Items: []runtime.RawExtension{
@@ -432,7 +429,7 @@ func TestTemplateStrings(t *testing.T) {
 							Name: "bar",
 							State: api.ContainerState{
 								Running: &api.ContainerStateRunning{
-									StartedAt: unversioned.Time{},
+									StartedAt: metav1.Time{},
 								},
 							},
 						},
@@ -449,7 +446,7 @@ func TestTemplateStrings(t *testing.T) {
 							Name: "foo",
 							State: api.ContainerState{
 								Running: &api.ContainerStateRunning{
-									StartedAt: unversioned.Time{},
+									StartedAt: metav1.Time{},
 								},
 							},
 						},
@@ -457,7 +454,7 @@ func TestTemplateStrings(t *testing.T) {
 							Name: "bar",
 							State: api.ContainerState{
 								Running: &api.ContainerStateRunning{
-									StartedAt: unversioned.Time{},
+									StartedAt: metav1.Time{},
 								},
 							},
 						},
@@ -495,31 +492,42 @@ func TestTemplateStrings(t *testing.T) {
 
 func TestPrinters(t *testing.T) {
 	om := func(name string) api.ObjectMeta { return api.ObjectMeta{Name: name} }
-	templatePrinter, err := NewTemplatePrinter([]byte("{{.name}}"))
+
+	var (
+		err              error
+		templatePrinter  ResourcePrinter
+		templatePrinter2 ResourcePrinter
+		jsonpathPrinter  ResourcePrinter
+	)
+
+	templatePrinter, err = NewTemplatePrinter([]byte("{{.name}}"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	templatePrinter2, err := NewTemplatePrinter([]byte("{{len .items}}"))
+	templatePrinter = NewVersionedPrinter(templatePrinter, api.Scheme, v1.SchemeGroupVersion)
+
+	templatePrinter2, err = NewTemplatePrinter([]byte("{{len .items}}"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	jsonpathPrinter, err := NewJSONPathPrinter("{.metadata.name}")
+	templatePrinter2 = NewVersionedPrinter(templatePrinter2, api.Scheme, v1.SchemeGroupVersion)
+
+	jsonpathPrinter, err = NewJSONPathPrinter("{.metadata.name}")
 	if err != nil {
 		t.Fatal(err)
 	}
+	jsonpathPrinter = NewVersionedPrinter(jsonpathPrinter, api.Scheme, v1.SchemeGroupVersion)
+
 	printers := map[string]ResourcePrinter{
 		"humanReadable": NewHumanReadablePrinter(PrintOptions{
-			NoHeaders:    true,
-			ColumnLabels: []string{},
+			NoHeaders: true,
 		}),
-		"humanReadableHeaders": NewHumanReadablePrinter(PrintOptions{
-			ColumnLabels: []string{},
-		}),
-		"json":      &JSONPrinter{},
-		"yaml":      &YAMLPrinter{},
-		"template":  templatePrinter,
-		"template2": templatePrinter2,
-		"jsonpath":  jsonpathPrinter,
+		"humanReadableHeaders": NewHumanReadablePrinter(PrintOptions{}),
+		"json":                 &JSONPrinter{},
+		"yaml":                 &YAMLPrinter{},
+		"template":             templatePrinter,
+		"template2":            templatePrinter2,
+		"jsonpath":             jsonpathPrinter,
 		"name": &NamePrinter{
 			Typer:   api.Scheme,
 			Decoder: api.Codecs.UniversalDecoder(),
@@ -557,33 +565,31 @@ func TestPrinters(t *testing.T) {
 
 func TestPrintEventsResultSorted(t *testing.T) {
 	// Arrange
-	printer := NewHumanReadablePrinter(PrintOptions{
-		ColumnLabels: []string{},
-	})
+	printer := NewHumanReadablePrinter(PrintOptions{})
 
 	obj := api.EventList{
 		Items: []api.Event{
 			{
 				Source:         api.EventSource{Component: "kubelet"},
 				Message:        "Item 1",
-				FirstTimestamp: unversioned.NewTime(time.Date(2014, time.January, 15, 0, 0, 0, 0, time.UTC)),
-				LastTimestamp:  unversioned.NewTime(time.Date(2014, time.January, 15, 0, 0, 0, 0, time.UTC)),
+				FirstTimestamp: metav1.NewTime(time.Date(2014, time.January, 15, 0, 0, 0, 0, time.UTC)),
+				LastTimestamp:  metav1.NewTime(time.Date(2014, time.January, 15, 0, 0, 0, 0, time.UTC)),
 				Count:          1,
 				Type:           api.EventTypeNormal,
 			},
 			{
 				Source:         api.EventSource{Component: "scheduler"},
 				Message:        "Item 2",
-				FirstTimestamp: unversioned.NewTime(time.Date(1987, time.June, 17, 0, 0, 0, 0, time.UTC)),
-				LastTimestamp:  unversioned.NewTime(time.Date(1987, time.June, 17, 0, 0, 0, 0, time.UTC)),
+				FirstTimestamp: metav1.NewTime(time.Date(1987, time.June, 17, 0, 0, 0, 0, time.UTC)),
+				LastTimestamp:  metav1.NewTime(time.Date(1987, time.June, 17, 0, 0, 0, 0, time.UTC)),
 				Count:          1,
 				Type:           api.EventTypeNormal,
 			},
 			{
 				Source:         api.EventSource{Component: "kubelet"},
 				Message:        "Item 3",
-				FirstTimestamp: unversioned.NewTime(time.Date(2002, time.December, 25, 0, 0, 0, 0, time.UTC)),
-				LastTimestamp:  unversioned.NewTime(time.Date(2002, time.December, 25, 0, 0, 0, 0, time.UTC)),
+				FirstTimestamp: metav1.NewTime(time.Date(2002, time.December, 25, 0, 0, 0, 0, time.UTC)),
+				LastTimestamp:  metav1.NewTime(time.Date(2002, time.December, 25, 0, 0, 0, 0, time.UTC)),
 				Count:          1,
 				Type:           api.EventTypeNormal,
 			},
@@ -603,9 +609,7 @@ func TestPrintEventsResultSorted(t *testing.T) {
 }
 
 func TestPrintNodeStatus(t *testing.T) {
-	printer := NewHumanReadablePrinter(PrintOptions{
-		ColumnLabels: []string{},
-	})
+	printer := NewHumanReadablePrinter(PrintOptions{})
 	table := []struct {
 		node   api.Node
 		status string
@@ -725,8 +729,7 @@ func TestPrintNodeStatus(t *testing.T) {
 
 func TestPrintNodeExternalIP(t *testing.T) {
 	printer := NewHumanReadablePrinter(PrintOptions{
-		ColumnLabels: []string{},
-		Wide:         true,
+		Wide: true,
 	})
 	table := []struct {
 		node       api.Node
@@ -785,7 +788,7 @@ func TestPrintHunmanReadableIngressWithColumnLabels(t *testing.T) {
 	ingress := extensions.Ingress{
 		ObjectMeta: api.ObjectMeta{
 			Name:              "test1",
-			CreationTimestamp: unversioned.Time{Time: time.Now().AddDate(-10, 0, 0)},
+			CreationTimestamp: metav1.Time{Time: time.Now().AddDate(-10, 0, 0)},
 			Labels: map[string]string{
 				"app_name": "kubectl_test_ingress",
 			},
@@ -933,7 +936,7 @@ func TestPrintHumanReadableService(t *testing.T) {
 	for _, svc := range tests {
 		for _, wide := range []bool{false, true} {
 			buff := bytes.Buffer{}
-			printService(&svc, &buff, PrintOptions{false, false, false, wide, false, false, false, "", []string{}})
+			printService(&svc, &buff, PrintOptions{Wide: wide})
 			output := string(buff.Bytes())
 			ip := svc.Spec.ClusterIP
 			if !strings.Contains(output, ip) {
@@ -1085,8 +1088,8 @@ func TestPrintHumanReadableWithNamespace(t *testing.T) {
 				ObjectMeta:     api.ObjectMeta{Name: name, Namespace: namespaceName},
 				Source:         api.EventSource{Component: "kubelet"},
 				Message:        "Item 1",
-				FirstTimestamp: unversioned.NewTime(time.Date(2014, time.January, 15, 0, 0, 0, 0, time.UTC)),
-				LastTimestamp:  unversioned.NewTime(time.Date(2014, time.January, 15, 0, 0, 0, 0, time.UTC)),
+				FirstTimestamp: metav1.NewTime(time.Date(2014, time.January, 15, 0, 0, 0, 0, time.UTC)),
+				LastTimestamp:  metav1.NewTime(time.Date(2014, time.January, 15, 0, 0, 0, 0, time.UTC)),
 				Count:          1,
 				Type:           api.EventTypeNormal,
 			},
@@ -1119,7 +1122,6 @@ func TestPrintHumanReadableWithNamespace(t *testing.T) {
 			// Expect output to include namespace when requested.
 			printer := NewHumanReadablePrinter(PrintOptions{
 				WithNamespace: true,
-				ColumnLabels:  []string{},
 			})
 			buffer := &bytes.Buffer{}
 			err := printer.PrintObj(test.obj, buffer)
@@ -1134,7 +1136,6 @@ func TestPrintHumanReadableWithNamespace(t *testing.T) {
 			// Expect error when trying to get all namespaces for un-namespaced object.
 			printer := NewHumanReadablePrinter(PrintOptions{
 				WithNamespace: true,
-				ColumnLabels:  []string{},
 			})
 			buffer := &bytes.Buffer{}
 			err := printer.PrintObj(test.obj, buffer)
@@ -1231,7 +1232,7 @@ func TestPrintPod(t *testing.T) {
 	buf := bytes.NewBuffer([]byte{})
 	printer := HumanReadablePrinter{}
 	for _, test := range tests {
-		printer.printPod(&test.pod, buf, PrintOptions{false, false, false, false, true, false, false, "", []string{}})
+		printer.printPod(&test.pod, buf, PrintOptions{ShowAll: true})
 		// We ignore time
 		if !strings.HasPrefix(buf.String(), test.expect) {
 			t.Fatalf("Expected: %s, got: %s", test.expect, buf.String())
@@ -1325,7 +1326,7 @@ func TestPrintNonTerminatedPod(t *testing.T) {
 	buf := bytes.NewBuffer([]byte{})
 	printer := HumanReadablePrinter{}
 	for _, test := range tests {
-		printer.printPod(&test.pod, buf, PrintOptions{false, false, false, false, false, false, false, "", []string{}})
+		printer.printPod(&test.pod, buf, PrintOptions{})
 		// We ignore time
 		if !strings.HasPrefix(buf.String(), test.expect) {
 			t.Fatalf("Expected: %s, got: %s", test.expect, buf.String())
@@ -1386,7 +1387,7 @@ func TestPrintPodWithLabels(t *testing.T) {
 	buf := bytes.NewBuffer([]byte{})
 	printer := HumanReadablePrinter{}
 	for _, test := range tests {
-		printer.printPod(&test.pod, buf, PrintOptions{false, false, false, false, false, false, false, "", test.labelColumns})
+		printer.printPod(&test.pod, buf, PrintOptions{ColumnLabels: test.labelColumns})
 		// We ignore time
 		if !strings.HasPrefix(buf.String(), test.startsWith) || !strings.HasSuffix(buf.String(), test.endsWith) {
 			t.Fatalf("Expected to start with: %s and end with: %s, but got: %s", test.startsWith, test.endsWith, buf.String())
@@ -1401,16 +1402,16 @@ type stringTestList []struct {
 
 func TestTranslateTimestamp(t *testing.T) {
 	tl := stringTestList{
-		{"a while from now", translateTimestamp(unversioned.Time{Time: time.Now().Add(2.1e9)}), "<invalid>"},
-		{"almost now", translateTimestamp(unversioned.Time{Time: time.Now().Add(1.9e9)}), "0s"},
-		{"now", translateTimestamp(unversioned.Time{Time: time.Now()}), "0s"},
-		{"unknown", translateTimestamp(unversioned.Time{}), "<unknown>"},
-		{"30 seconds ago", translateTimestamp(unversioned.Time{Time: time.Now().Add(-3e10)}), "30s"},
-		{"5 minutes ago", translateTimestamp(unversioned.Time{Time: time.Now().Add(-3e11)}), "5m"},
-		{"an hour ago", translateTimestamp(unversioned.Time{Time: time.Now().Add(-6e12)}), "1h"},
-		{"2 days ago", translateTimestamp(unversioned.Time{Time: time.Now().UTC().AddDate(0, 0, -2)}), "2d"},
-		{"months ago", translateTimestamp(unversioned.Time{Time: time.Now().UTC().AddDate(0, 0, -90)}), "90d"},
-		{"10 years ago", translateTimestamp(unversioned.Time{Time: time.Now().UTC().AddDate(-10, 0, 0)}), "10y"},
+		{"a while from now", translateTimestamp(metav1.Time{Time: time.Now().Add(2.1e9)}), "<invalid>"},
+		{"almost now", translateTimestamp(metav1.Time{Time: time.Now().Add(1.9e9)}), "0s"},
+		{"now", translateTimestamp(metav1.Time{Time: time.Now()}), "0s"},
+		{"unknown", translateTimestamp(metav1.Time{}), "<unknown>"},
+		{"30 seconds ago", translateTimestamp(metav1.Time{Time: time.Now().Add(-3e10)}), "30s"},
+		{"5 minutes ago", translateTimestamp(metav1.Time{Time: time.Now().Add(-3e11)}), "5m"},
+		{"an hour ago", translateTimestamp(metav1.Time{Time: time.Now().Add(-6e12)}), "1h"},
+		{"2 days ago", translateTimestamp(metav1.Time{Time: time.Now().UTC().AddDate(0, 0, -2)}), "2d"},
+		{"months ago", translateTimestamp(metav1.Time{Time: time.Now().UTC().AddDate(0, 0, -90)}), "90d"},
+		{"10 years ago", translateTimestamp(metav1.Time{Time: time.Now().UTC().AddDate(-10, 0, 0)}), "10y"},
 	}
 	for _, test := range tl {
 		if test.got != test.exp {
@@ -1424,18 +1425,31 @@ func TestPrintDeployment(t *testing.T) {
 	tests := []struct {
 		deployment extensions.Deployment
 		expect     string
+		wideExpect string
 	}{
 		{
 			extensions.Deployment{
 				ObjectMeta: api.ObjectMeta{
 					Name:              "test1",
-					CreationTimestamp: unversioned.Time{Time: time.Now().Add(1.9e9)},
+					CreationTimestamp: metav1.Time{Time: time.Now().Add(1.9e9)},
 				},
 				Spec: extensions.DeploymentSpec{
 					Replicas: 5,
 					Template: api.PodTemplateSpec{
-						Spec: api.PodSpec{Containers: make([]api.Container, 2)},
+						Spec: api.PodSpec{
+							Containers: []api.Container{
+								{
+									Name:  "fake-container1",
+									Image: "fake-image1",
+								},
+								{
+									Name:  "fake-container2",
+									Image: "fake-image2",
+								},
+							},
+						},
 					},
+					Selector: &metav1.LabelSelector{MatchLabels: map[string]string{"foo": "bar"}},
 				},
 				Status: extensions.DeploymentStatus{
 					Replicas:            10,
@@ -1445,14 +1459,21 @@ func TestPrintDeployment(t *testing.T) {
 				},
 			},
 			"test1\t5\t10\t2\t1\t0s\n",
+			"test1\t5\t10\t2\t1\t0s\tfake-container1,fake-container2\tfake-image1,fake-image2\tfoo=bar\n",
 		},
 	}
 
 	buf := bytes.NewBuffer([]byte{})
 	for _, test := range tests {
-		printDeployment(&test.deployment, buf, PrintOptions{false, false, false, false, true, false, false, "", []string{}})
+		printDeployment(&test.deployment, buf, PrintOptions{})
 		if buf.String() != test.expect {
 			t.Fatalf("Expected: %s, got: %s", test.expect, buf.String())
+		}
+		buf.Reset()
+		// print deployment with '-o wide' option
+		printDeployment(&test.deployment, buf, PrintOptions{Wide: true})
+		if buf.String() != test.wideExpect {
+			t.Fatalf("Expected: %s, got: %s", test.wideExpect, buf.String())
 		}
 		buf.Reset()
 	}
@@ -1467,7 +1488,7 @@ func TestPrintDaemonSet(t *testing.T) {
 			extensions.DaemonSet{
 				ObjectMeta: api.ObjectMeta{
 					Name:              "test1",
-					CreationTimestamp: unversioned.Time{Time: time.Now().Add(1.9e9)},
+					CreationTimestamp: metav1.Time{Time: time.Now().Add(1.9e9)},
 				},
 				Spec: extensions.DaemonSetSpec{
 					Template: api.PodTemplateSpec{
@@ -1486,7 +1507,7 @@ func TestPrintDaemonSet(t *testing.T) {
 
 	buf := bytes.NewBuffer([]byte{})
 	for _, test := range tests {
-		printDaemonSet(&test.ds, buf, PrintOptions{false, false, false, false, false, false, false, "", []string{}})
+		printDaemonSet(&test.ds, buf, PrintOptions{})
 		if !strings.HasPrefix(buf.String(), test.startsWith) {
 			t.Fatalf("Expected to start with %s but got %s", test.startsWith, buf.String())
 		}
@@ -1504,7 +1525,7 @@ func TestPrintJob(t *testing.T) {
 			batch.Job{
 				ObjectMeta: api.ObjectMeta{
 					Name:              "job1",
-					CreationTimestamp: unversioned.Time{Time: time.Now().Add(1.9e9)},
+					CreationTimestamp: metav1.Time{Time: time.Now().Add(1.9e9)},
 				},
 				Spec: batch.JobSpec{
 					Completions: &completions,
@@ -1519,7 +1540,7 @@ func TestPrintJob(t *testing.T) {
 			batch.Job{
 				ObjectMeta: api.ObjectMeta{
 					Name:              "job2",
-					CreationTimestamp: unversioned.Time{Time: time.Now().AddDate(-10, 0, 0)},
+					CreationTimestamp: metav1.Time{Time: time.Now().AddDate(-10, 0, 0)},
 				},
 				Spec: batch.JobSpec{
 					Completions: nil,
@@ -1534,7 +1555,7 @@ func TestPrintJob(t *testing.T) {
 
 	buf := bytes.NewBuffer([]byte{})
 	for _, test := range tests {
-		printJob(&test.job, buf, PrintOptions{false, false, false, false, true, false, false, "", []string{}})
+		printJob(&test.job, buf, PrintOptions{})
 		if buf.String() != test.expect {
 			t.Fatalf("Expected: %s, got: %s", test.expect, buf.String())
 		}
@@ -1595,7 +1616,7 @@ func TestPrintPodShowLabels(t *testing.T) {
 	printer := HumanReadablePrinter{}
 
 	for _, test := range tests {
-		printer.printPod(&test.pod, buf, PrintOptions{false, false, false, false, false, test.showLabels, false, "", []string{}})
+		printer.printPod(&test.pod, buf, PrintOptions{ShowLabels: test.showLabels})
 		// We ignore time
 		if !strings.HasPrefix(buf.String(), test.startsWith) || !strings.HasSuffix(buf.String(), test.endsWith) {
 			t.Fatalf("Expected to start with: %s and end with: %s, but got: %s", test.startsWith, test.endsWith, buf.String())
@@ -1645,7 +1666,7 @@ func TestPrintService(t *testing.T) {
 
 	buf := bytes.NewBuffer([]byte{})
 	for _, test := range tests {
-		printService(&test.service, buf, PrintOptions{false, false, false, false, true, false, false, "", []string{}})
+		printService(&test.service, buf, PrintOptions{})
 		// We ignore time
 		if buf.String() != test.expect {
 			t.Fatalf("Expected: %s, got: %s %d", test.expect, buf.String(), strings.Compare(test.expect, buf.String()))
@@ -1664,7 +1685,7 @@ func TestPrintPodDisruptionBudget(t *testing.T) {
 				ObjectMeta: api.ObjectMeta{
 					Namespace:         "ns1",
 					Name:              "pdb1",
-					CreationTimestamp: unversioned.Time{Time: time.Now().Add(1.9e9)},
+					CreationTimestamp: metav1.Time{Time: time.Now().Add(1.9e9)},
 				},
 				Spec: policy.PodDisruptionBudgetSpec{
 					MinAvailable: intstr.FromInt(22),
@@ -1678,7 +1699,7 @@ func TestPrintPodDisruptionBudget(t *testing.T) {
 
 	buf := bytes.NewBuffer([]byte{})
 	for _, test := range tests {
-		printPodDisruptionBudget(&test.pdb, buf, PrintOptions{false, false, false, false, true, false, false, "", []string{}})
+		printPodDisruptionBudget(&test.pdb, buf, PrintOptions{})
 		if buf.String() != test.expect {
 			t.Fatalf("Expected: %s, got: %s", test.expect, buf.String())
 		}

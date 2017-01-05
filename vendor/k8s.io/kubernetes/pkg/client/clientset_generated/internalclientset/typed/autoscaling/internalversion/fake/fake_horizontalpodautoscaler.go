@@ -18,10 +18,11 @@ package fake
 
 import (
 	api "k8s.io/kubernetes/pkg/api"
-	unversioned "k8s.io/kubernetes/pkg/api/unversioned"
 	autoscaling "k8s.io/kubernetes/pkg/apis/autoscaling"
+	v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	core "k8s.io/kubernetes/pkg/client/testing/core"
 	labels "k8s.io/kubernetes/pkg/labels"
+	schema "k8s.io/kubernetes/pkg/runtime/schema"
 	watch "k8s.io/kubernetes/pkg/watch"
 )
 
@@ -31,7 +32,7 @@ type FakeHorizontalPodAutoscalers struct {
 	ns   string
 }
 
-var horizontalpodautoscalersResource = unversioned.GroupVersionResource{Group: "autoscaling", Version: "", Resource: "horizontalpodautoscalers"}
+var horizontalpodautoscalersResource = schema.GroupVersionResource{Group: "autoscaling", Version: "", Resource: "horizontalpodautoscalers"}
 
 func (c *FakeHorizontalPodAutoscalers) Create(horizontalPodAutoscaler *autoscaling.HorizontalPodAutoscaler) (result *autoscaling.HorizontalPodAutoscaler, err error) {
 	obj, err := c.Fake.
@@ -77,7 +78,7 @@ func (c *FakeHorizontalPodAutoscalers) DeleteCollection(options *api.DeleteOptio
 	return err
 }
 
-func (c *FakeHorizontalPodAutoscalers) Get(name string) (result *autoscaling.HorizontalPodAutoscaler, err error) {
+func (c *FakeHorizontalPodAutoscalers) Get(name string, options v1.GetOptions) (result *autoscaling.HorizontalPodAutoscaler, err error) {
 	obj, err := c.Fake.
 		Invokes(core.NewGetAction(horizontalpodautoscalersResource, c.ns, name), &autoscaling.HorizontalPodAutoscaler{})
 

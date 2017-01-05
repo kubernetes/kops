@@ -21,18 +21,18 @@ import (
 )
 
 const (
-	DefaultServiceDNSDomain  = "cluster.local"
-	DefaultServicesSubnet    = "10.96.0.0/12"
-	DefaultKubernetesVersion = "v1.4.4"
-	DefaultAPIBindPort       = 6443
-	DefaultDiscoveryBindPort = 9898
+	DefaultServiceDNSDomain          = "cluster.local"
+	DefaultServicesSubnet            = "10.96.0.0/12"
+	DefaultKubernetesVersion         = "stable"
+	DefaultKubernetesFallbackVersion = "v1.5.0"
+	DefaultAPIBindPort               = 6443
+	DefaultDiscoveryBindPort         = 9898
 )
 
 func addDefaultingFuncs(scheme *runtime.Scheme) error {
 	RegisterDefaults(scheme)
 	return scheme.AddDefaultingFuncs(
 		SetDefaults_MasterConfiguration,
-		SetDefaults_NodeConfiguration,
 	)
 }
 
@@ -41,12 +41,8 @@ func SetDefaults_MasterConfiguration(obj *MasterConfiguration) {
 		obj.KubernetesVersion = DefaultKubernetesVersion
 	}
 
-	if obj.API.BindPort == 0 {
-		obj.API.BindPort = DefaultAPIBindPort
-	}
-
-	if obj.Discovery.BindPort == 0 {
-		obj.Discovery.BindPort = DefaultDiscoveryBindPort
+	if obj.API.Port == 0 {
+		obj.API.Port = DefaultAPIBindPort
 	}
 
 	if obj.Networking.ServiceSubnet == "" {
@@ -56,14 +52,8 @@ func SetDefaults_MasterConfiguration(obj *MasterConfiguration) {
 	if obj.Networking.DNSDomain == "" {
 		obj.Networking.DNSDomain = DefaultServiceDNSDomain
 	}
-}
 
-func SetDefaults_NodeConfiguration(obj *NodeConfiguration) {
-	if obj.APIPort == 0 {
-		obj.APIPort = DefaultAPIBindPort
-	}
-
-	if obj.DiscoveryPort == 0 {
-		obj.DiscoveryPort = DefaultDiscoveryBindPort
+	if obj.Discovery.Token == nil && obj.Discovery.File == nil && obj.Discovery.HTTPS == nil {
+		obj.Discovery.Token = &TokenDiscovery{}
 	}
 }

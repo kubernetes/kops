@@ -25,7 +25,7 @@ import (
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/util/pkg/vfs"
 	k8sapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/apis/meta/v1"
 	"os"
 	"strings"
 	"time"
@@ -91,7 +91,7 @@ func (r *ClusterVFS) Create(c *api.Cluster) (*api.Cluster, error) {
 	}
 
 	if c.ObjectMeta.CreationTimestamp.IsZero() {
-		c.ObjectMeta.CreationTimestamp = unversioned.NewTime(time.Now().UTC())
+		c.ObjectMeta.CreationTimestamp = v1.NewTime(time.Now().UTC())
 	}
 
 	clusterName := c.ObjectMeta.Name

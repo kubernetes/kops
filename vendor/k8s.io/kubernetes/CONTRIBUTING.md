@@ -12,7 +12,7 @@ please feel free to send a Pull Request.
 ## Filing issues
 
 If you have a question about Kubernetes or have a problem using it, please
-start with the [troubleshooting guide](docs/troubleshooting.md).  If that
+start with the [troubleshooting guide](http://kubernetes.io/docs/troubleshooting/).  If that
 doesn't answer your questions, or if you think you found a bug, please [file an
 issue](https://github.com/kubernetes/kubernetes/issues/new).
 
@@ -23,25 +23,12 @@ issue](https://github.com/kubernetes/kubernetes/issues/new).
 We'd love to accept your patches! Before we can take them, we have to jump a
 couple of legal hurdles.
 
+The Cloud Native Computing Foundation (CNCF) CLA [must be signed](https://github.com/kubernetes/community/blob/master/CLA.md) by all contributors.
 Please fill out either the individual or corporate Contributor License
-Agreement (CLA).  As of Q4 2016, we're transitioning from Google's CLA to the
-Cloud Native Computing Foundation (CNCF) CLA.
+Agreement (CLA).
 
-Google:
-  * If you are an individual writing original source code and you're sure you
-    own the intellectual property, then you'll need to sign an [individual
-    CLA](http://code.google.com/legal/individual-cla-v1.0.html).
-  * If you work for a company that wants to allow you to contribute your work,
-    then you'll need to sign a [corporate
-    CLA](http://code.google.com/legal/corporate-cla-v1.0.html).
-
-CNCF:
-  * To contribute as an individual or as am employee of a signed organization,
-    [go here](https://identity.linuxfoundation.org/projects/cncf).
-  * To sign up as an organization, [go
-    here](https://identity.linuxfoundation.org/node/285/organization-signup).
-
-Once you are CLA'ed, we'll be able to accept your pull requests.
+Once you are CLA'ed, we'll be able to accept your pull requests. For any issues that you face during this process,
+please add a comment [here](https://github.com/kubernetes/kubernetes/issues/27796) explaining the issue and we will help get it sorted out.
 
 ***NOTE***: Only original source code from you and other people that have
 signed the CLA can be accepted into the repository. This policy does not
@@ -81,6 +68,46 @@ If you want to work on a bigger idea, we STRONGLY recommend that you start with
 some bugs or smaller features.  We have a [feature development
 process](https://github.com/kubernetes/features/blob/master/README.md), but
 navigating the Kubernetes system as a newcomer can be very challenging.
+
+### Downloading the project
+
+There are a few ways you can download this code.  You must download it into a
+GOPATH - see [golang.org](https://golang.org/doc/code.html) for more info on
+how Go works with code.  This project expects to be found at the Go package
+`k8s.io/kubernetes`.
+
+1. You can `git clone` the repo.  If you do this, you MUST make sure it is in
+   the GOPATH as `k8s.io/kubernetes` or it may not build.  E.g.: `git clone
+   https://github.com/kubernetes/kubernetes $GOPATH/src/k8s.io/kubernetes`
+1. You can use `go get` to fetch the repo.  This will automatically put it into
+   your GOPATH in the right place. E.g.: `go get -d k8s.io/kubernetes`
+1. You can download an archive of the source.  If you do this, you MUST make
+   sure it is unpacked into the GOPATH as `k8s.io/kubernetes` or it may not
+   build. See [rel.k8s.io](http://rel.k8s.io) for a list of available releases.
+
+### Building the project
+
+There are a few things you need to build and test this project:
+
+1. `make` - the human interface to the Kubernetes build is `make`, so you must
+   have this tool installed on your machine.  We try not to use too many crazy
+   features of `Makefile`s and other tools, so most commonly available versions
+   should work.
+1. `docker` - some parts of the build/test system depend on `docker`.  You
+   need a relatively recent version of Docker installed, and available to you.
+1. `go` - Kubernetes is written in Go (aka golang), so you need a relatively
+   recent version of the [Go toolchain](https://golang.org/dl/) installed.
+   While Linux is the primary platform for Kubernetes, it should compile on a
+   Mac, too.  Windows is in progress.
+
+To build Kubernetes, simply type `make`.  This should figure out what it needs
+to do and not need any input from you.  If you want to just build a subset of
+code, you can pass the `WHAT` variable to `make`: e.g. `make
+WHAT="cmd/kubelet"`.
+
+To run basic tests, simply type `make test`.  This will run all of the unit
+tests in the project.  If you want to just test a subset of the project, you
+can pass the `WHAT` variable to `make`: e.g. `make test WHAT=pkg/kubelet`.
 
 ### Protocols for Collaborative Development
 
