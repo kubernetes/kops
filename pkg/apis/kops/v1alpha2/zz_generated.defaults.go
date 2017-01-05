@@ -28,16 +28,9 @@ import (
 // Public to allow building arbitrary schemes.
 // All generated defaulters are covering - they call all nested defaulters.
 func RegisterDefaults(scheme *runtime.Scheme) error {
-	scheme.AddTypeDefaultingFunc(&Channel{}, func(obj interface{}) { SetObjectDefaults_Channel(obj.(*Channel)) })
 	scheme.AddTypeDefaultingFunc(&Cluster{}, func(obj interface{}) { SetObjectDefaults_Cluster(obj.(*Cluster)) })
 	scheme.AddTypeDefaultingFunc(&ClusterList{}, func(obj interface{}) { SetObjectDefaults_ClusterList(obj.(*ClusterList)) })
 	return nil
-}
-
-func SetObjectDefaults_Channel(in *Channel) {
-	if in.Spec.Cluster != nil {
-		SetDefaults_ClusterSpec(in.Spec.Cluster)
-	}
 }
 
 func SetObjectDefaults_Cluster(in *Cluster) {
