@@ -156,8 +156,6 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		MaxTaskDuration: c.MaxTaskDuration,
 	}
 
-
-	// Kris and Eric start here
 	err = applyCmd.Run()
 
 
