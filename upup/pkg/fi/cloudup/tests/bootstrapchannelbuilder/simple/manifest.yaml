@@ -24,3 +24,8 @@ spec:
     selector:
       k8s-addon: dns-controller.addons.k8s.io
     version: 1.4.1
+  - manifest: storage-aws/v1.5.0.yaml
+    name: storage-aws
+    selector:
+      k8s-addon: storage-aws.addons.k8s.io
+    version: 1.5.0
