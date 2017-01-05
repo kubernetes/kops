@@ -114,7 +114,6 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	//	new task, but this task will use existing ID
 
 	for i := range b.Cluster.Spec.Subnets {
-		fmt.Printf("b.Cluster.Spec.Subnets: %+v\n", b.Cluster.Spec.Subnets)
 		subnetSpec := &b.Cluster.Spec.Subnets[i]
 		sharedSubnet := subnetSpec.ProviderID != ""
 
@@ -175,7 +174,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		ngwId := b.Cluster.Spec.Subnets[i].NgwId
 
 		// Was an elasticIp also allocated? This needs to be the ElasticIP
-		// associated with the NAT Gateway ngwEips look like: ngw-eip: eipalloc-e1fc20df
+		// associated with the NAT Gateway ngwEips look like: ngwEip: eipalloc-e1fc20df
 		ngwEip := b.Cluster.Spec.Subnets[i].NgwEip
 
 		if ngwId != "" && ngwEip == "" {
@@ -185,21 +184,23 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// Every NGW needs a public (Elastic) IP address, every private
 		// subnet needs a NGW, lets create it. We tie it to a subnet
 		// so we can track it in AWS
-		//var eip = &awstasks.ElasticIP{}
-		/*if ngwEip == "" {
+		var eip = &awstasks.ElasticIP{}
+		fmt.Printf("Echoing ngwEip: %v", ngwEip)
+		if ngwEip == "" {
 			eip = &awstasks.ElasticIP{
 				Name:      s(zone + "." + b.ClusterName()),
 				Subnet:    utilitySubnet,
 			}
-		} else {*/
-			eip := &awstasks.ElasticIP{
+
+		} else {
+			eip = &awstasks.ElasticIP{
 				Name:      s(zone + "." + b.ClusterName()),
 				Subnet:    utilitySubnet,
 				ID:        s(ngwEip),
 			}
-		//}
-		c.AddTask(eip)
 
+		}
+		c.AddTask(eip)
 		// NAT Gateway
 		//
 		// All private subnets will need a NGW, one per zone
@@ -207,14 +208,20 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// The instances in the private subnet can access the Internet by
 		// using a network address translation (NAT) gateway that resides
 		// in the public subnet.
-
-
-
-		ngw := &awstasks.NatGateway{
-			Name:      s(zone + "." + b.ClusterName()),
-			Subnet:    utilitySubnet,
-			ElasticIp: eip,
-			ID:        s(ngwId),
+		var ngw = &awstasks.NatGateway{}
+		if ngwId == "" {
+			ngw = &awstasks.NatGateway{
+				Name:      s(zone + "." + b.ClusterName()),
+				Subnet:    utilitySubnet,
+				ElasticIp: eip,
+			}
+		} else {
+			ngw = &awstasks.NatGateway{
+				Name:      s(zone + "." + b.ClusterName()),
+				Subnet:    utilitySubnet,
+				ElasticIp: eip,
+				ID:        s(ngwId),
+			}
 		}
 		c.AddTask(ngw)
 
