@@ -150,6 +150,13 @@ func (m *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 	return labels, nil
 }
 
+func (m *KopsModelContext) UsesBastionDns() bool {
+	if m.Cluster.Spec.Topology.Bastion != nil && m.Cluster.Spec.Topology.Bastion.BastionPublicName != "" {
+		return true
+	}
+	return false
+}
+
 func (m *KopsModelContext) UseLoadBalancerForAPI() bool {
 	if m.Cluster.Spec.API == nil {
 		return false
