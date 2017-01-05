@@ -38,7 +38,8 @@ var deleteCmd = &cobra.Command{
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		flag.Parse()
 		args = flag.Args()
-		if !confirmDelete {
+
+		if !confirmDelete && len(args) >= 3 {
 			fmt.Printf(
 				"Do you really want to %s? This action cannot be undone. (Y/n)\n",
 				strings.Join(args, " "),
