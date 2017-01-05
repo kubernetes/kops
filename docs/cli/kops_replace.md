@@ -1,20 +1,20 @@
-## kops get secrets
+## kops replace
 
-get secrets
+Replace a resource by filename or stdin
 
 ### Synopsis
 
 
-List or get secrets.
+Replace a resource by filename or stdin
 
 ```
-kops get secrets
+kops replace -f FILENAME
 ```
 
 ### Options
 
 ```
-      --type string   Filter by secret type
+  -f, --filename stringSlice   Filename to use to replace the resource
 ```
 
 ### Options inherited from parent commands
@@ -26,7 +26,6 @@ kops get secrets
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster
-  -o, --output string                    output format.  One of: table, yaml, json (default "table")
       --state string                     Location of state storage
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
@@ -34,5 +33,5 @@ kops get secrets
 ```
 
 ### SEE ALSO
-* [kops get](kops_get.md)	 - list or get objects
+* [kops](kops.md)	 - kops is kubernetes ops
 
