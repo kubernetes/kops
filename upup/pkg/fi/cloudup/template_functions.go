@@ -211,7 +211,9 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 	}
 	// permit wildcard updates
 	argv = append(argv, "--zone=*/*")
-	argv = append(argv, "-v=8")
+
+	// Verbose, but not crazy logging
+	argv = append(argv, "-v=2")
 
 	return argv, nil
 }
