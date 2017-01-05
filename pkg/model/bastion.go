@@ -73,14 +73,6 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	//-# TODO Kris - I don't think we need to open these
-	//-#securityGroupRule/all-node-to-bastion:
-	//-#  securityGroup: securityGroup/bastion.{{ ClusterName }}
-	//-#  sourceGroup: securityGroup/nodes.{{ ClusterName }}
-	//-#securityGroupRule/all-master-to-bastion:
-	//-#  securityGroup: securityGroup/bastion.{{ ClusterName }}
-	//-#  sourceGroup: securityGroup/masters.{{ ClusterName }}
-
 	// Allow incoming SSH traffic to bastions, through the ELB
 	// TODO: Could we get away without an ELB here?  Tricky to fix if dns-controller breaks though...
 	{
@@ -236,10 +228,8 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		bastionPublicName = b.Cluster.Spec.Topology.Bastion.BastionPublicName
 	}
 	if bastionPublicName != "" {
-		// By default Bastion is not reachable from outside because of security concerns.
-		// But if the user specifies bastion name using edit cluster, we configure
-		// the bastion DNS entry for it to be reachable from outside.
-		// BastionPublicName --> Bastion LoadBalancer
+		// Here we implement the bastion CNAME logic
+		// By default bastions will create a CNAME that follows the `bastion-$clustername` formula
 		t := &awstasks.DNSName{
 			Name:               s(bastionPublicName),
 			Zone:               b.LinkToDNSZone(),
@@ -247,6 +237,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			TargetLoadBalancer: elb,
 		}
 		c.AddTask(t)
+
 	}
 	return nil
 }
