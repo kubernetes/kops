@@ -30,9 +30,9 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/errors"
-	"k8s.io/kubernetes/pkg/api/unversioned"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 )
 
 // TODO: Move to field on instancegroup?
@@ -96,7 +96,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 		sections := bytes.Split(contents, []byte("\n---\n"))
 
 		for _, section := range sections {
-			defaults := &unversioned.GroupVersionKind{
+			defaults := &schema.GroupVersionKind{
 				Group:   v1alpha1.SchemeGroupVersion.Group,
 				Version: v1alpha1.SchemeGroupVersion.Version,
 			}

@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -33,8 +32,9 @@ import (
 	"golang.org/x/net/websocket"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/rest"
-	apitesting "k8s.io/kubernetes/pkg/api/testing"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+	"k8s.io/kubernetes/pkg/apiserver/handlers"
 	apiservertesting "k8s.io/kubernetes/pkg/apiserver/testing"
 	"k8s.io/kubernetes/pkg/fields"
 	"k8s.io/kubernetes/pkg/labels"
@@ -69,9 +69,9 @@ var watchTestTable = []struct {
 	t   watch.EventType
 	obj runtime.Object
 }{
-	{watch.Added, &apiservertesting.Simple{ObjectMeta: api.ObjectMeta{Name: "foo"}}},
-	{watch.Modified, &apiservertesting.Simple{ObjectMeta: api.ObjectMeta{Name: "bar"}}},
-	{watch.Deleted, &apiservertesting.Simple{ObjectMeta: api.ObjectMeta{Name: "bar"}}},
+	{watch.Added, &apiservertesting.Simple{ObjectMeta: apiv1.ObjectMeta{Name: "foo"}}},
+	{watch.Modified, &apiservertesting.Simple{ObjectMeta: apiv1.ObjectMeta{Name: "bar"}}},
+	{watch.Deleted, &apiservertesting.Simple{ObjectMeta: apiv1.ObjectMeta{Name: "bar"}}},
 }
 
 var podWatchTestTable = []struct {
@@ -578,16 +578,16 @@ func TestWatchHTTPTimeout(t *testing.T) {
 	serializer := info.StreamSerializer
 
 	// Setup a new watchserver
-	watchServer := &WatchServer{
-		watching: watcher,
+	watchServer := &handlers.WatchServer{
+		Watching: watcher,
 
-		mediaType:       "testcase/json",
-		framer:          serializer.Framer,
-		encoder:         newCodec,
-		embeddedEncoder: newCodec,
+		MediaType:       "testcase/json",
+		Framer:          serializer.Framer,
+		Encoder:         newCodec,
+		EmbeddedEncoder: newCodec,
 
-		fixup: func(obj runtime.Object) {},
-		t:     &fakeTimeoutFactory{timeoutCh, done},
+		Fixup:          func(obj runtime.Object) {},
+		TimeoutFactory: &fakeTimeoutFactory{timeoutCh, done},
 	}
 
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
@@ -603,7 +603,7 @@ func TestWatchHTTPTimeout(t *testing.T) {
 	req, _ := http.NewRequest("GET", dest.String(), nil)
 	client := http.Client{}
 	resp, err := client.Do(req)
-	watcher.Add(&apiservertesting.Simple{TypeMeta: unversioned.TypeMeta{APIVersion: newGroupVersion.String()}})
+	watcher.Add(&apiservertesting.Simple{TypeMeta: metav1.TypeMeta{APIVersion: newGroupVersion.String()}})
 
 	// Make sure we can actually watch an endpoint
 	decoder := json.NewDecoder(resp.Body)
@@ -629,18 +629,6 @@ func TestWatchHTTPTimeout(t *testing.T) {
 	if err != io.EOF {
 		t.Errorf("Unexpected non-error")
 	}
-}
-
-const benchmarkSeed = 100
-
-func benchmarkItems() []api.Pod {
-	apiObjectFuzzer := apitesting.FuzzerFor(nil, api.SchemeGroupVersion, rand.NewSource(benchmarkSeed))
-	items := make([]api.Pod, 3)
-	for i := range items {
-		apiObjectFuzzer.Fuzz(&items[i])
-		items[i].Spec.InitContainers, items[i].Status.InitContainerStatuses = nil, nil
-	}
-	return items
 }
 
 // BenchmarkWatchHTTP measures the cost of serving a watch.

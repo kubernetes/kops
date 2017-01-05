@@ -17,28 +17,28 @@ limitations under the License.
 package v1
 
 import (
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 )
 
 // +genclient=true
 
 type TestType struct {
-	unversioned.TypeMeta `json:",inline"`
+	metav1.TypeMeta `json:",inline"`
 	// ---
 	// the next tag removes the field from openapi spec. Adding unversioned objectMeta bring in a whole set of
 	// unversioned objects in the generate file that is not used anywhere other than this test type.
 	// +k8s:openapi-gen=false
 	// +optional
-	api.ObjectMeta `json:"metadata,omitempty"`
+	apiv1.ObjectMeta `json:"metadata,omitempty"`
 	// +optional
 	Status TestTypeStatus `json:"status,omitempty"`
 }
 
 type TestTypeList struct {
-	unversioned.TypeMeta `json:",inline"`
+	metav1.TypeMeta `json:",inline"`
 	// +optional
-	unversioned.ListMeta `json:"metadata,omitempty"`
+	metav1.ListMeta `json:"metadata,omitempty"`
 
 	Items []TestType `json:"items"`
 }

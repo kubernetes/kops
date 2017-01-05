@@ -66,7 +66,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	addons := &channelsapi.Addons{}
 	addons.Kind = "Addons"
-	addons.Name = "bootstrap"
+	addons.ObjectMeta.Name = "bootstrap"
 
 	{
 		key := "core.addons.k8s.io"

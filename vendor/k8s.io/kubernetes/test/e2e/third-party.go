@@ -23,9 +23,10 @@ import (
 	"time"
 
 	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/apimachinery/registered"
-	"k8s.io/kubernetes/pkg/apis/extensions"
+	extensions "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/util/wait"
 	"k8s.io/kubernetes/test/e2e/framework"
@@ -44,16 +45,16 @@ var data = `{
 }`
 
 type Foo struct {
-	unversioned.TypeMeta `json:",inline"`
-	api.ObjectMeta       `json:"metadata,omitempty" description:"standard object metadata"`
+	metav1.TypeMeta `json:",inline"`
+	v1.ObjectMeta   `json:"metadata,omitempty" description:"standard object metadata"`
 
 	SomeField  string `json:"someField"`
 	OtherField int    `json:"otherField"`
 }
 
 type FooList struct {
-	unversioned.TypeMeta `json:",inline"`
-	unversioned.ListMeta `json:"metadata,omitempty" description:"standard list metadata; see http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#metadata"`
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty" description:"standard list metadata; see http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#metadata"`
 
 	Items []Foo `json:"items"`
 }
@@ -64,7 +65,7 @@ var _ = Describe("ThirdParty resources [Flaky] [Disruptive]", func() {
 	f := framework.NewDefaultFramework("thirdparty")
 
 	rsrc := &extensions.ThirdPartyResource{
-		ObjectMeta: api.ObjectMeta{
+		ObjectMeta: v1.ObjectMeta{
 			Name: "foo.company.com",
 		},
 		Versions: []extensions.APIVersion{
@@ -88,14 +89,14 @@ var _ = Describe("ThirdParty resources [Flaky] [Disruptive]", func() {
 				if err != nil {
 					return false, err
 				}
-				meta := unversioned.TypeMeta{}
+				meta := metav1.TypeMeta{}
 				if err := json.Unmarshal(data, &meta); err != nil {
 					return false, err
 				}
 				if meta.Kind == "FooList" {
 					return true, nil
 				}
-				status := unversioned.Status{}
+				status := metav1.Status{}
 				if err := runtime.DecodeInto(api.Codecs.LegacyCodec(registered.EnabledVersions()...), data, &status); err != nil {
 					return false, err
 				}
@@ -117,10 +118,10 @@ var _ = Describe("ThirdParty resources [Flaky] [Disruptive]", func() {
 				framework.Failf("unexpected object before create: %v", list)
 			}
 			foo := &Foo{
-				TypeMeta: unversioned.TypeMeta{
+				TypeMeta: metav1.TypeMeta{
 					Kind: "Foo",
 				},
-				ObjectMeta: api.ObjectMeta{
+				ObjectMeta: v1.ObjectMeta{
 					Name: "foo",
 				},
 				SomeField:  "bar",
@@ -160,7 +161,15 @@ var _ = Describe("ThirdParty resources [Flaky] [Disruptive]", func() {
 				framework.Failf("expected: %#v, saw in list: %#v", foo, list.Items[0])
 			}
 
-			if _, err := f.ClientSet.Extensions().RESTClient().Delete().AbsPath("/apis/company.com/v1/namespaces/default/foos/foo").DoRaw(); err != nil {
+			// Need to manually do the serialization because otherwise the
+			// Content-Type header is set to protobuf, the thirdparty codec in
+			// the API server side only accepts JSON.
+			deleteOptionsData, err := json.Marshal(v1.NewDeleteOptions(10))
+			framework.ExpectNoError(err)
+			if _, err := f.ClientSet.Core().RESTClient().Delete().
+				AbsPath("/apis/company.com/v1/namespaces/default/foos/foo").
+				Body(deleteOptionsData).
+				DoRaw(); err != nil {
 				framework.Failf("failed to delete: %v", err)
 			}
 

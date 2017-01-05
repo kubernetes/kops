@@ -4,10 +4,8 @@ licenses(["notice"])
 
 load(
     "@io_bazel_rules_go//go:def.bzl",
-    "go_binary",
     "go_library",
     "go_test",
-    "cgo_library",
 )
 
 go_library(
@@ -17,7 +15,7 @@ go_library(
         "labels.go",
     ],
     tags = ["automanaged"],
-    deps = ["//pkg/api/unversioned:go_default_library"],
+    deps = ["//pkg/apis/meta/v1:go_default_library"],
 )
 
 go_test(
@@ -25,5 +23,5 @@ go_test(
     srcs = ["labels_test.go"],
     library = "go_default_library",
     tags = ["automanaged"],
-    deps = ["//pkg/api/unversioned:go_default_library"],
+    deps = ["//pkg/apis/meta/v1:go_default_library"],
 )
