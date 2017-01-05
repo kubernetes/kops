@@ -149,6 +149,33 @@ type ClusterSpec struct {
 
 	// Networking configuration
 	Networking *NetworkingSpec `json:"networking,omitempty"`
+
+	// API field controls how the API is exposed outside the cluster
+	API *AccessSpec `json:"api,omitempty"`
+}
+
+type AccessSpec struct {
+	DNS          *DNSAccessSpec          `json:"dns,omitempty"`
+	LoadBalancer *LoadBalancerAccessSpec `json:"loadBalancer,omitempty"`
+}
+
+func (s *AccessSpec) IsEmpty() bool {
+	return s.DNS == nil && s.LoadBalancer == nil
+}
+
+type DNSAccessSpec struct {
+}
+
+// LoadBalancerType string describes LoadBalancer types (public, internal)
+type LoadBalancerType string
+
+const (
+	LoadBalancerTypePublic   LoadBalancerType = "Public"
+	LoadBalancerTypeInternal LoadBalancerType = "Internal"
+)
+
+type LoadBalancerAccessSpec struct {
+	Type LoadBalancerType `json:"type,omitempty"`
 }
 
 type KubeDNSConfig struct {
