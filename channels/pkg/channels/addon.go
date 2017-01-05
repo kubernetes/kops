@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"k8s.io/kops/channels/pkg/api"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/util/validation/field"
 	"net/url"
 )
@@ -57,7 +57,7 @@ func (a *Addon) buildChannel() *Channel {
 	}
 	return channel
 }
-func (a *Addon) GetRequiredUpdates(k8sClient *release_1_5.Clientset) (*AddonUpdate, error) {
+func (a *Addon) GetRequiredUpdates(k8sClient *clientset.Clientset) (*AddonUpdate, error) {
 	newVersion := a.ChannelVersion()
 
 	channel := a.buildChannel()
@@ -78,7 +78,7 @@ func (a *Addon) GetRequiredUpdates(k8sClient *release_1_5.Clientset) (*AddonUpda
 	}, nil
 }
 
-func (a *Addon) EnsureUpdated(k8sClient *release_1_5.Clientset) (*AddonUpdate, error) {
+func (a *Addon) EnsureUpdated(k8sClient *clientset.Clientset) (*AddonUpdate, error) {
 	required, err := a.GetRequiredUpdates(k8sClient)
 	if err != nil {
 		return nil, err
