@@ -475,7 +475,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 		// Default to a DNS name for the bastion
 		cluster.Spec.Topology.Bastion = &api.BastionSpec{
-			BastionPublicName: "bastion-" + clusterName,
+			BastionPublicName: "bastion." + c.DNSZone,
 		}
 
 		if c.Bastion {
