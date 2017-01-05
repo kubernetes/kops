@@ -6,6 +6,7 @@ metadata:
     storageclass.beta.kubernetes.io/is-default-class: "true"
   labels:
     kubernetes.io/cluster-service: "true"
+    k8s-addon: storage-aws.addons.k8s.io
 provisioner: kubernetes.io/aws-ebs
 parameters:
   type: gp2
