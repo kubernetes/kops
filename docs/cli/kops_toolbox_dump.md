@@ -1,20 +1,20 @@
-## kops get secrets
+## kops toolbox dump
 
-get secrets
+Dump information about a cluster
 
 ### Synopsis
 
 
-List or get secrets.
+Dump information about a cluster
 
 ```
-kops get secrets
+kops toolbox dump
 ```
 
 ### Options
 
 ```
-      --type string   Filter by secret type
+  -o, --output string   output format.  One of: yaml, json (default "yaml")
 ```
 
 ### Options inherited from parent commands
@@ -26,7 +26,6 @@ kops get secrets
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster
-  -o, --output string                    output format.  One of: table, yaml, json (default "table")
       --state string                     Location of state storage
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
@@ -34,5 +33,5 @@ kops get secrets
 ```
 
 ### SEE ALSO
-* [kops get](kops_get.md)	 - list or get objects
+* [kops toolbox](kops_toolbox.md)	 - Misc infrequently used commands
 

@@ -78,6 +78,7 @@ func (o *CreateClusterOptions) InitDefaults() {
 	o.AssociatePublicIP = true
 	o.Channel = api.DefaultChannel
 	o.Topology = "public"
+	o.Bastion = false
 }
 
 func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
@@ -143,7 +144,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVarP(&options.Topology, "topology", "t", options.Topology, "Controls network topology for the cluster. public|private. Default is 'public'.")
 
 	// Bastion
-	cmd.Flags().BoolVar(&options.Bastion, "bastion", options.Bastion, "Specify --bastion=[true|false] to turn enable/disable bastion setup. Default to 'false' when topology is 'public' and defaults to 'true' if topology is 'private'.")
+	cmd.Flags().BoolVar(&options.Bastion, "bastion", options.Bastion, "Pass the --bastion flag to enable a bastion instance group. Only applies to private topology.")
 
 	return cmd
 }
@@ -473,16 +474,23 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 		cluster.Spec.Subnets = append(cluster.Spec.Subnets, utilitySubnets...)
 
-		// Default to a DNS name for the bastion
-		cluster.Spec.Topology.Bastion = &api.BastionSpec{
-			BastionPublicName: "bastion-" + clusterName,
-		}
-
 		if c.Bastion {
 			bastionGroup := &api.InstanceGroup{}
 			bastionGroup.Spec.Role = api.InstanceGroupRoleBastion
 			bastionGroup.ObjectMeta.Name = "bastions"
 			instanceGroups = append(instanceGroups, bastionGroup)
+
+			// Logic to handle default bastion names
+			if c.DNSZone != "" {
+				cluster.Spec.Topology.Bastion = &api.BastionSpec{
+					BastionPublicName: "bastion-" + c.DNSZone,
+				}
+			} else {
+				// Use default zone and cluster name
+				cluster.Spec.Topology.Bastion = &api.BastionSpec{
+					BastionPublicName: "bastion-" + clusterName,
+				}
+			}
 		}
 
 	default:
