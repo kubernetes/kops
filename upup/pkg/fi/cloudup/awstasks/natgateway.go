@@ -177,8 +177,11 @@ func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway)
 	// if a != nil
 	// 	return // Don't tag
 	// Suggest looking at other tasks to see how they handle it (subnets)
-
+	//if a != nil {
+	//	return nil
+	//}
 	// New NGW
+
 	var id *string
 	if a == nil {
 		glog.V(2).Infof("Creating Nat Gateway")
