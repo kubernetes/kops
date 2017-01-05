@@ -401,6 +401,9 @@ type KubeAPIServerConfig struct {
 	// If set, the OpenID server's certificate will be verified by one of the authorities in the oidc-ca-file
 	// otherwise the host's root CA set will be used.
 	OIDCCAFile *string `json:"oidcCAFile,omitempty" flag:"oidc-ca-file"`
+
+	AuthorizationMode          *string `json:"authorizationMode,omitempty" flag:"authorization-mode"`
+	AuthorizationRBACSuperUser *string `json:"authorizationRbacSuperUser,omitempty" flag:"authorization-rbac-super-user"`
 }
 
 type KubeControllerManagerConfig struct {
