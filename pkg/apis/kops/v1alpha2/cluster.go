@@ -197,7 +197,6 @@ type ClusterSubnetSpec struct {
 
 	// ProviderID is the cloud provider id for the objects associated with the zone (the subnet on AWS)
 
-	// Kris and Eric prototyping
 	// TODO Change ProviderID -> SubnetId
 
 	ProviderID string `json:"subnetId,omitempty"`

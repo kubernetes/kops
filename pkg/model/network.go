@@ -34,9 +34,6 @@ var _ fi.ModelBuilder = &NetworkModelBuilder{}
 
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
-	// Kris and Eric - debug.PrintStack() to connect this to
-	// We need to connect this function to /go/src/k8s.io/kops/upup/pkg/fi/executor.go
-	//debug.PrintStack()
 	sharedVPC := b.Cluster.SharedVPC()
 
 	// VPC that holds everything for the cluster
@@ -105,13 +102,6 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	privateZones := sets.NewString()
-
-	// Kris and Eric
-	//
-	// If NgwId == nil
-	// 	no change
-	// else
-	//	new task, but this task will use existing ID
 
 	for i := range b.Cluster.Spec.Subnets {
 		subnetSpec := &b.Cluster.Spec.Subnets[i]
@@ -185,7 +175,6 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// subnet needs a NGW, lets create it. We tie it to a subnet
 		// so we can track it in AWS
 		var eip = &awstasks.ElasticIP{}
-		fmt.Printf("Echoing ngwEip: %v", ngwEip)
 		if ngwEip == "" {
 			eip = &awstasks.ElasticIP{
 				Name:      s(zone + "." + b.ClusterName()),
