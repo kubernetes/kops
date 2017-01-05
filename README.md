@@ -39,6 +39,8 @@ on AWS.
 * Command line [autocomplete](/docs/cli/kops_completion.md)
 * Community support
 * [Upgrade from kube-up](/docs/upgrade_from_kubeup.md)
+
+
 ## Installing
 
 `kubectl` is required, see [here](http://kubernetes.io/docs/user-guide/prereqs/).
