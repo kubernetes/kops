@@ -65,5 +65,16 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(dnsName)
 	}
 
+	// Check and see if we are using a bastion DNS record that points to the hosted zone
+	// If we are, we need to make sure we include the hosted zone as a task
+	if b.UsesBastionDns() {
+		dnsZone := &awstasks.DNSZone{
+			Name:       s(b.Cluster.Spec.DNSZone),
+			Private:    fi.Bool(true),
+			PrivateVPC: b.LinkToVPC(),
+		}
+		c.AddTask(dnsZone)
+	}
+
 	return nil
 }
