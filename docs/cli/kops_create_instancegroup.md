@@ -11,6 +11,12 @@ Create an instancegroup configuration.
 kops create instancegroup
 ```
 
+### Options
+
+```
+      --role string   Type of instance group to create (Node,Master,Bastion) (default "Node")
+```
+
 ### Options inherited from parent commands
 
 ```
