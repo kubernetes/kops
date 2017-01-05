@@ -40,10 +40,6 @@ type BastionModelBuilder struct {
 var _ fi.ModelBuilder = &BastionModelBuilder{}
 
 func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	if !b.Cluster.IsTopologyPrivate() {
-		return nil
-	}
-
 	var bastionGroups []*kops.InstanceGroup
 	for _, ig := range b.InstanceGroups {
 		if ig.Spec.Role == kops.InstanceGroupRoleBastion {
