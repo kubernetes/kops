@@ -128,12 +128,20 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		manifests[key] = "addons/" + location
 	}
 
-	addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-		Name:     fi.String("storage-aws"),
-		Version:  fi.String("1.5.0"),
-		Selector: map[string]string{"k8s-addon": "storage-aws.addons.k8s.io"},
-		Manifest: fi.String("storage-aws/v1.5.0.yaml"),
-	})
+	{
+		key := "storage-aws.addons.k8s.io"
+		version := "1.5.0"
+
+		location := key + "/v" + version + ".yaml"
+
+		addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+			Name:     fi.String(key),
+			Version:  fi.String(version),
+			Selector: map[string]string{"k8s-addon": key},
+			Manifest: fi.String(location),
+		})
+		manifests[key] = "addons/" + location
+	}
 
 	if b.cluster.Spec.Networking.Kopeio != nil {
 		key := "networking.kope.io"
