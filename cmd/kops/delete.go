@@ -36,15 +36,18 @@ var deleteCmd = &cobra.Command{
 	Long:       `Delete clusters`,
 	SuggestFor: []string{"rm"},
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		// cobra doesn't give you the full arg list even though it should.
 		flag.Parse()
 		args = flag.Args()
 
+		// args should be [delete, resource, resource name]
+		// if there are less args than 3 confirming isnt necessary as the child command will fail
 		if !confirmDelete && len(args) >= 3 {
-			fmt.Printf(
-				"Do you really want to %s? This action cannot be undone. (Y/n)\n",
+			message := fmt.Sprintf(
+				"Do you really want to %s? This action cannot be undone. (Y/n)",
 				strings.Join(args, " "),
 			)
-			if !ui.GetConfirm() {
+			if !ui.GetConfirm(os.Stdout, message, "") {
 				os.Exit(1)
 			}
 
