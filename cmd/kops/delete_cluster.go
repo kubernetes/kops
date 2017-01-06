@@ -56,9 +56,12 @@ func init() {
 	}
 
 	deleteCmd.AddCommand(cmd)
-	argString := strings.ToLower(strings.Join(os.Args, " "))
-	if strings.Contains(argString, "--yes") || strings.Contains(argString, "-y") {
-		deleteCluster.Yes = true
+	for _, arg := range os.Args {
+		arg = strings.ToLower(arg)
+		if arg == "-y" || arg == "--yes" {
+			deleteCluster.Yes = true
+			break
+		}
 	}
 
 	cmd.Flags().BoolVar(&deleteCluster.Unregister, "unregister", false, "Don't delete cloud resources, just unregister the cluster")
