@@ -167,8 +167,14 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// associated with the NAT Gateway ngwEips look like: ngwEip: eipalloc-e1fc20df
 		ngwEip := b.Cluster.Spec.Subnets[i].NgwEip
 
+
+		// If these get triggered, something has gone wrong in pkg/apis/kops/validation.go
 		if ngwId != "" && ngwEip == "" {
-			return fmt.Errorf("Must specify the associated ElasticIP when specifying NAT Gateways.")
+			return fmt.Errorf("must specify the associated ElasticIP when specifying NAT Gateways")
+		}
+
+		if ngwEip != "" && ngwId == "" {
+			return fmt.Errorf("must specify a NAT Gateway when specifying ElasticIP")
 		}
 
 		// Every NGW needs a public (Elastic) IP address, every private
