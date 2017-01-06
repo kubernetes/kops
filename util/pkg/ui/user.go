@@ -2,45 +2,44 @@ package ui
 
 import (
 	"fmt"
-	"log"
+	"io"
 	"strings"
 )
 
-// GetConfirm prompts a user for a yes or no answer
-func GetConfirm() bool {
+// GetConfirm prompts a user for a yes or no answer.
+// In order to test this function som extra parameters are reqired:
+//
+// out: an io.Writer that allows you to direct prints to stdout or another location
+// message: the string that will be printed just before prompting for a yes or no.
+// answer: "", "yes", or "no" - this allows for easier testing
+func GetConfirm(out io.Writer, message string, answer string) bool {
+	fmt.Fprintln(out, message)
+
+	// these are the acceptable answers
 	okayResponses := []string{"y", "yes"}
 	nokayResponses := []string{"n", "no"}
+	response := answer
 
-	var response string
-	_, err := fmt.Scanln(&response)
-	if err != nil {
-		log.Fatal(err)
+	// only prompt user if you predefined answer was passed in
+	if answer == "" {
+		_, err := fmt.Scanln(&response)
+		if err != nil {
+			return false
+		}
 	}
 
 	responseLower := strings.ToLower(response)
-
-	if containsString(okayResponses, responseLower) {
+	// make sure the response is valid
+	if ContainsString(okayResponses, responseLower) {
 		return true
-	} else if containsString(nokayResponses, responseLower) {
+	} else if ContainsString(nokayResponses, responseLower) {
 		return false
 	} else {
-		fmt.Println("Please type yes or no and then press enter:")
-		return GetConfirm()
+		return GetConfirm(out, "Please type yes or no and then press enter:", answer)
 	}
 }
 
-// containsString returns true if slice contains element
-func containsString(slice []string, element string) bool {
-	return !(posString(slice, element) == -1)
-}
-
-// posString returns the first index of element in slice.
-// If slice does not contain element, returns -1.
-func posString(slice []string, element string) int {
-	for index, elem := range slice {
-		if elem == element {
-			return index
-		}
-	}
-	return -1
+// ContainsString returns true if slice contains the element
+func ContainsString(slice []string, element string) bool {
+	return !(strings.Index(strings.Join(slice, " "), element) == -1)
 }
