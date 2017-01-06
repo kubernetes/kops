@@ -6,22 +6,29 @@ import (
 	"strings"
 )
 
+type ConfirmArgs struct {
+	Out     io.Writer
+	Message string
+	Default string
+	TestVal string
+}
+
 // GetConfirm prompts a user for a yes or no answer.
 // In order to test this function som extra parameters are reqired:
 //
 // out: an io.Writer that allows you to direct prints to stdout or another location
 // message: the string that will be printed just before prompting for a yes or no.
 // answer: "", "yes", or "no" - this allows for easier testing
-func GetConfirm(out io.Writer, message string, answer string) bool {
-	fmt.Fprintln(out, message)
+func GetConfirm(c *ConfirmArgs) bool {
+	fmt.Fprintln(c.Out, c.Message)
 
 	// these are the acceptable answers
 	okayResponses := []string{"y", "yes"}
 	nokayResponses := []string{"n", "no"}
-	response := answer
+	response := c.TestVal
 
 	// only prompt user if you predefined answer was passed in
-	if answer == "" {
+	if response == "" {
 		_, err := fmt.Scanln(&response)
 		if err != nil {
 			return false
@@ -35,7 +42,7 @@ func GetConfirm(out io.Writer, message string, answer string) bool {
 	} else if ContainsString(nokayResponses, responseLower) {
 		return false
 	} else {
-		return GetConfirm(out, "Please type yes or no and then press enter:", answer)
+		return GetConfirm(c)
 	}
 }
 

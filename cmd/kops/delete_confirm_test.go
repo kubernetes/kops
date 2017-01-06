@@ -43,11 +43,14 @@ func TestContainsString(t *testing.T) {
 
 // TestConfirmation attempts to test the majority of the ui.GetConfirm function used in the 'kogs delete' commands
 func TestConfirmation(t *testing.T) {
-	var answer bool
 	var out bytes.Buffer
-	message := "Are you sure you want to remove?"
+	c := &ui.ConfirmArgs{
+		Message: "Are you sure you want to remove?",
+		Out:     &out,
+		TestVal: "no",
+	}
 
-	answer = ui.GetConfirm(&out, message, "no")
+	answer := ui.GetConfirm(c)
 	if !strings.Contains(out.String(), "Are you sure") {
 		t.Fatal("Confirmation not in output")
 	}
@@ -55,7 +58,8 @@ func TestConfirmation(t *testing.T) {
 		t.Fatal("Confirmation should have been denied.")
 	}
 
-	answer = ui.GetConfirm(&out, message, "yes")
+	c.TestVal = "yes"
+	answer = ui.GetConfirm(c)
 	if answer != true {
 		t.Fatal("Confirmation should have been approved.")
 	}
