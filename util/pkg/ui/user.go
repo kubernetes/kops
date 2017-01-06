@@ -6,11 +6,12 @@ import (
 	"strings"
 )
 
+// ConfirmArgs encapsulates the arguments that can he passed to GetConfirm
 type ConfirmArgs struct {
-	Out     io.Writer
-	Message string
-	Default string
-	TestVal string
+	Out     io.Writer // os.Stdout or &bytes.Buffer used to putput the message above the confirmation
+	Message string    // what you want to say to the user before confirming
+	Default string    // if you hit enter instead of yes or no shoudl it approve or deny
+	TestVal string    // if you need to test without the interactive prompt then set the user response here
 }
 
 // GetConfirm prompts a user for a yes or no answer.
@@ -20,6 +21,18 @@ type ConfirmArgs struct {
 // message: the string that will be printed just before prompting for a yes or no.
 // answer: "", "yes", or "no" - this allows for easier testing
 func GetConfirm(c *ConfirmArgs) bool {
+	if c.Default != "" {
+		c.Default = strings.ToLower(c.Default)
+	}
+	answerTemplate := "(%s/%s)"
+	switch c.Default {
+	case "yes", "y":
+		c.Message = c.Message + fmt.Sprintf(answerTemplate, "Y", "n")
+	case "no", "n":
+		c.Message = c.Message + fmt.Sprintf(answerTemplate, "y", "N")
+	default:
+		c.Message = c.Message + fmt.Sprintf(answerTemplate, "y", "n")
+	}
 	fmt.Fprintln(c.Out, c.Message)
 
 	// these are the acceptable answers
@@ -41,9 +54,13 @@ func GetConfirm(c *ConfirmArgs) bool {
 		return true
 	} else if ContainsString(nokayResponses, responseLower) {
 		return false
-	} else {
-		return GetConfirm(c)
+	} else if c.Default != "" {
+		if string(c.Default[0]) == "y" {
+			return true
+		}
+		return false
 	}
+	return GetConfirm(c)
 }
 
 // ContainsString returns true if slice contains the element
