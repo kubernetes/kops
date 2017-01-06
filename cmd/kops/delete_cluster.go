@@ -19,6 +19,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 	api "k8s.io/kops/pkg/apis/kops"
@@ -55,8 +56,11 @@ func init() {
 	}
 
 	deleteCmd.AddCommand(cmd)
+	argString := strings.ToLower(strings.Join(os.Args, " "))
+	if strings.Contains(argString, "--yes") || strings.Contains(argString, "-y") {
+		deleteCluster.Yes = true
+	}
 
-	deleteCluster.Yes = confirmDelete
 	cmd.Flags().BoolVar(&deleteCluster.Unregister, "unregister", false, "Don't delete cloud resources, just unregister the cluster")
 	cmd.Flags().BoolVar(&deleteCluster.External, "external", false, "Delete an external cluster")
 
