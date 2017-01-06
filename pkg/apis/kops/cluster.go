@@ -290,10 +290,10 @@ type ClusterSubnetSpec struct {
 	CIDR string `json:"cidr,omitempty"`
 
 	// ProviderID is the cloud provider id for the objects associated with the zone (the subnet on AWS)
-	ProviderID string `json:"subnetId,omitempty"`
-	NgwId string `json:"ngwId,omitempty"`
-	NgwEip string `json:"ngwEip,omitempty"`
-	Type SubnetType `json:"type,omitempty"`
+	ProviderID string     `json:"subnetId,omitempty"`
+	NgwId      string     `json:"ngwId,omitempty"`
+	NgwEip     string     `json:"ngwEip,omitempty"`
+	Type       SubnetType `json:"type,omitempty"`
 }
 
 //type NodeUpConfig struct {
