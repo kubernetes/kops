@@ -42,10 +42,17 @@ var deleteCmd = &cobra.Command{
 		// if there are less args than 3 confirming isnt necessary as the child command will fail
 		if !confirmDelete && len(args) >= 3 {
 			message := fmt.Sprintf(
-				"Do you really want to %s? This action cannot be undone. (Y/n)",
+				"Do you really want to %s? This action cannot be undone.",
 				strings.Join(args, " "),
 			)
-			if !ui.GetConfirm(os.Stdout, message, "") {
+
+			c := &ui.ConfirmArgs{
+				Out:     os.Stdout,
+				Message: message,
+				Default: "no",
+			}
+
+			if !ui.GetConfirm(c) {
 				os.Exit(1)
 			}
 
@@ -55,6 +62,5 @@ var deleteCmd = &cobra.Command{
 
 func init() {
 	deleteCmd.PersistentFlags().BoolVarP(&confirmDelete, "yes", "y", false, "Auto confirm deletetion.")
-
 	rootCommand.AddCommand(deleteCmd)
 }
