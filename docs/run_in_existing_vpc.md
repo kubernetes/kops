@@ -11,10 +11,10 @@ export KOPS_STATE_STORE=s3://<somes3bucket>
 export CLUSTER_NAME=<sharedvpc.mydomain.com>
 
 kops create cluster --zones=us-east-1b --name=${CLUSTER_NAME} \
-  --vpc=vpc-a80734c1 --network-cidr=10.100.0.0/16
+  --vpc=${VPC_ID} --network-cidr=${NETWORK_CIDR}
 ```
 
-Then `kops edit cluster ${CLUSTER_NAME}` should show you something like:
+Then `kops edit cluster ${CLUSTER_NAME}` will show you something like:
 
 ```
 metadata:
@@ -22,12 +22,14 @@ metadata:
   name: ${CLUSTER_NAME}
 spec:
   cloudProvider: aws
-  networkCIDR: 10.100.0.0/16
-  networkID: vpc-a80734c1
+  networkCIDR: ${NETWORK_CIDR}
+  networkID: ${VPC_ID}
   nonMasqueradeCIDR: 100.64.0.0/10
-  zones:
-  - cidr: 10.100.32.0/19
-    name: eu-central-1a
+  subnets:
+  - cidr: 172.20.32.0/19
+    name: us-east-1b
+    type: Public
+    zone: us-east-1b
 ```
 
 
@@ -74,11 +76,13 @@ probably remove that tag to indicate that the resources are not owned by that cl
 deleting the cluster won't try to delete the VPC.  (Deleting the VPC won't succeed anyway, because it's in use,
 but it's better to avoid the later confusion!)
 
-## Running in a shared subnet
+## Advanced Options for Creating Clusters in Existing VPCs
 
-You can also use a shared subnet. Doing so is not recommended unless you are using external networking ([kope-routing](https://github.com/kopeio/kope-routing)).
+### Shared Subnets
 
-Edit your cluster to add the ID of the subnet:
+`kops` can create a cluster in shared subnets in both public and private network [topologies](docs/topology.md). Doing so is not recommended unless you are using [external networking](docs/networking.md#supported-cni-networking)
+
+After creating a basic cluster spec, edit your cluster to add the ID of the subnet:
 
 `kops edit cluster ${CLUSTER_NAME}`
 
@@ -88,13 +92,15 @@ metadata:
   name: ${CLUSTER_NAME}
 spec:
   cloudProvider: aws
-  networkCIDR: 10.100.0.0/16
-  networkID: vpc-a80734c1
+  networkCIDR: ${NETWORK_CIDR}
+  networkID: ${VPC_ID}
   nonMasqueradeCIDR: 100.64.0.0/10
-  zones:
-  - cidr: 10.100.32.0/19
-    name: eu-central-1a
-    id: subnet-1234567 # Replace this with the ID of your subnet
+  subnets:
+  - cidr: 172.20.32.0/19
+    name: us-east-1b
+    subnetID: <subnet-id123>
+    type: Public
+    zone: us-east-1b
 ```
 
 Make sure that the CIDR matches the CIDR of your subnet. Then update your cluster through the normal update procedure:
@@ -103,4 +109,29 @@ Make sure that the CIDR matches the CIDR of your subnet. Then update your cluste
 kops update cluster ${CLUSTER_NAME}
 # Review changes
 kops update cluster ${CLUSTER_NAME} --yes
+```
+
+### Shared NAT Gateways
+
+On AWS in private [topology](docs/topology.md), `kops` creates one NAT Gateway (NGW) per private subnet. If your shared VPC is already set up with an NGW in the subnet that `kops` deploys private resources to, it is possible to specify the ID and have `kops`/`kubernetes` use it.
+
+After creating a basic cluster spec, edit your cluster to specify NGW:
+
+`kops edit cluster ${CLUSTER_NAME}`
+
+Please note, ngwID and ngwEip are a pair. You must specify both the NGW ID as well as the EIP Allocation ID associated with it.
+```yaml
+spec:
+  subnets:
+  - cidr: 10.20.64.0/21
+    name: us-east-1a
+    ngwEip: eipalloc-12345
+    ngwId: nat-987654321
+    type: Private
+    zone: us-east-1a
+  - cidr: 10.20.32.0/21
+    name: utility-us-east-1a
+    subnetId: subnet-12345
+    type: Utility
+    zone: us-east-1a
 ```
