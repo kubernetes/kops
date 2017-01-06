@@ -48,14 +48,24 @@ func TestConfirmation(t *testing.T) {
 		Message: "Are you sure you want to remove?",
 		Out:     &out,
 		TestVal: "no",
+		Default: "no",
 	}
 
 	answer := ui.GetConfirm(c)
 	if !strings.Contains(out.String(), "Are you sure") {
 		t.Fatal("Confirmation not in output")
 	}
+	if !strings.Contains(out.String(), "y/N") {
+		t.Fatal("Default 'No' was not set")
+	}
 	if answer == true {
 		t.Fatal("Confirmation should have been denied.")
+	}
+
+	c.Default = "yes"
+	answer = ui.GetConfirm(c)
+	if !strings.Contains(out.String(), "Y/n") {
+		t.Fatal("Default 'Yes' was not set")
 	}
 
 	c.TestVal = "yes"
