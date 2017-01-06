@@ -153,7 +153,6 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	for i, zone := range privateZones.List() {
 
-
 		utilitySubnet, err := b.LinkToUtilitySubnetInZone(zone)
 		if err != nil {
 			return err
@@ -166,7 +165,6 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// Was an elasticIp also allocated? This needs to be the ElasticIP
 		// associated with the NAT Gateway ngwEips look like: ngwEip: eipalloc-e1fc20df
 		ngwEip := b.Cluster.Spec.Subnets[i].NgwEip
-
 
 		// If these get triggered, something has gone wrong in pkg/apis/kops/validation.go
 		if ngwId != "" && ngwEip == "" {
@@ -183,15 +181,15 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		var eip = &awstasks.ElasticIP{}
 		if ngwEip == "" {
 			eip = &awstasks.ElasticIP{
-				Name:      s(zone + "." + b.ClusterName()),
-				Subnet:    utilitySubnet,
+				Name:   s(zone + "." + b.ClusterName()),
+				Subnet: utilitySubnet,
 			}
 
 		} else {
 			eip = &awstasks.ElasticIP{
-				Name:      s(zone + "." + b.ClusterName()),
-				Subnet:    utilitySubnet,
-				ID:        s(ngwEip),
+				Name:   s(zone + "." + b.ClusterName()),
+				Subnet: utilitySubnet,
+				ID:     s(ngwEip),
 			}
 
 		}
