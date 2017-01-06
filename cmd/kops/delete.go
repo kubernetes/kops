@@ -24,7 +24,6 @@ import (
 	"k8s.io/kops/util/pkg/ui"
 
 	"github.com/spf13/cobra"
-	flag "github.com/spf13/pflag"
 )
 
 var confirmDelete bool
@@ -37,8 +36,7 @@ var deleteCmd = &cobra.Command{
 	SuggestFor: []string{"rm"},
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		// cobra doesn't give you the full arg list even though it should.
-		flag.Parse()
-		args = flag.Args()
+		args = os.Args
 
 		// args should be [delete, resource, resource name]
 		// if there are less args than 3 confirming isnt necessary as the child command will fail
