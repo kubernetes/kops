@@ -19,6 +19,7 @@ package model
 import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+	"strings"
 )
 
 // DNSModelBuilder builds DNS related model objects
@@ -29,16 +30,29 @@ type DNSModelBuilder struct {
 var _ fi.ModelBuilder = &DNSModelBuilder{}
 
 func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	if b.UsePrivateDNS() {
-		// This is only exposed as a feature flag currently
+	// Add a HostedZone if we are going to publish a dns record that depends on it
+	if b.UsePrivateDNS() || b.UsesBastionDns() {
+		// UsePrivateDNS is only exposed as a feature flag currently
 		// TODO: We may still need a public zone to publish an ELB
+
+		// Check to see if we are using a bastion DNS record that points to the hosted zone
+		// If we are, we need to make sure we include the hosted zone as a task
 
 		// Configuration for a DNS zone, attached to our VPC
 		dnsZone := &awstasks.DNSZone{
-			Name:       s(b.Cluster.Spec.DNSZone),
+			Name:       s("private-" + b.Cluster.Spec.DNSZone),
 			Private:    fi.Bool(true),
 			PrivateVPC: b.LinkToVPC(),
 		}
+
+		if !strings.Contains(b.Cluster.Spec.DNSZone, ".") {
+			// Looks like a hosted zone ID
+			dnsZone.ZoneID = s(b.Cluster.Spec.DNSZone)
+		} else {
+			// Looks like a normal ddns name
+			dnsZone.DNSName = s(b.Cluster.Spec.DNSZone)
+		}
+
 		c.AddTask(dnsZone)
 	} else if b.UseLoadBalancerForAPI() {
 		// This will point our DNS to the load balancer, and put the pieces
@@ -49,6 +63,15 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Name:    s(b.Cluster.Spec.DNSZone),
 			Private: fi.Bool(false),
 		}
+
+		if !strings.Contains(b.Cluster.Spec.DNSZone, ".") {
+			// Looks like a hosted zone ID
+			dnsZone.ZoneID = s(b.Cluster.Spec.DNSZone)
+		} else {
+			// Looks like a normal ddns name
+			dnsZone.DNSName = s(b.Cluster.Spec.DNSZone)
+		}
+
 		c.AddTask(dnsZone)
 	}
 
@@ -63,17 +86,6 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			TargetLoadBalancer: b.LinkToELB("api"),
 		}
 		c.AddTask(dnsName)
-	}
-
-	// Check and see if we are using a bastion DNS record that points to the hosted zone
-	// If we are, we need to make sure we include the hosted zone as a task
-	if b.UsesBastionDns() {
-		dnsZone := &awstasks.DNSZone{
-			Name:       s(b.Cluster.Spec.DNSZone),
-			Private:    fi.Bool(true),
-			PrivateVPC: b.LinkToVPC(),
-		}
-		c.AddTask(dnsZone)
 	}
 
 	return nil
