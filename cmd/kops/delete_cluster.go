@@ -56,6 +56,8 @@ func init() {
 	}
 
 	deleteCmd.AddCommand(cmd)
+
+	// had to do this because this init function is running before the flag is set
 	for _, arg := range os.Args {
 		arg = strings.ToLower(arg)
 		if arg == "-y" || arg == "--yes" {
