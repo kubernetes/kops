@@ -332,7 +332,13 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			for _, masterName := range masterNames {
 				ig := masterInstanceGroups[masterName]
 				m := &api.EtcdMemberSpec{}
-				m.Name = ig.ObjectMeta.Name
+
+				name := ig.ObjectMeta.Name
+				// We expect the IG to have a `master-` prefix, but this is both superfluous
+				// and not how we named things previously
+				name = strings.TrimPrefix(name, "master-")
+				m.Name = name
+
 				m.InstanceGroup = fi.String(ig.ObjectMeta.Name)
 				etcd.Members = append(etcd.Members, m)
 			}
