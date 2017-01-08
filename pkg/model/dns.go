@@ -31,7 +31,7 @@ var _ fi.ModelBuilder = &DNSModelBuilder{}
 
 func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Add a HostedZone if we are going to publish a dns record that depends on it
-	if b.UsePrivateDNS() || b.UsesBastionDns() {
+	if b.UsePrivateDNS() {
 		// UsePrivateDNS is only exposed as a feature flag currently
 		// TODO: We may still need a public zone to publish an ELB
 
@@ -54,7 +54,9 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		c.AddTask(dnsZone)
-	} else if b.UseLoadBalancerForAPI() {
+	}
+
+	if b.UseLoadBalancerForAPI() {
 		// This will point our DNS to the load balancer, and put the pieces
 		// together for kubectl to be work
 
@@ -73,19 +75,34 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		c.AddTask(dnsZone)
-	}
 
-	if b.UseLoadBalancerForAPI() {
-		// This will point our DNS to the load balancer, and put the pieces
-		// together for kubectl to be work
-
-		dnsName := &awstasks.DNSName{
+		apiDnsName := &awstasks.DNSName{
 			Name:               s(b.Cluster.Spec.MasterPublicName),
 			Zone:               &awstasks.DNSZone{Name: s(b.Cluster.Spec.DNSZone)},
 			ResourceType:       s("A"),
 			TargetLoadBalancer: b.LinkToELB("api"),
 		}
-		c.AddTask(dnsName)
+		c.AddTask(apiDnsName)
+	}
+
+	if b.UsesBastionDns() {
+		// Pulling this down into it's own if statement. The DNS configuration here
+		// is similar to others, but I would like to keep it on it's own in case we need
+		// to change anything.
+		dnsZone := &awstasks.DNSZone{
+			Name:    s(b.Cluster.Spec.DNSZone),
+			Private: fi.Bool(false),
+		}
+
+		if !strings.Contains(b.Cluster.Spec.DNSZone, ".") {
+			// Looks like a hosted zone ID
+			dnsZone.ZoneID = s(b.Cluster.Spec.DNSZone)
+		} else {
+			// Looks like a normal ddns name
+			dnsZone.DNSName = s(b.Cluster.Spec.DNSZone)
+		}
+
+		c.AddTask(dnsZone)
 	}
 
 	return nil
