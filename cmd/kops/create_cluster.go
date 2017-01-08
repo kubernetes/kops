@@ -78,6 +78,7 @@ func (o *CreateClusterOptions) InitDefaults() {
 	o.AssociatePublicIP = true
 	o.Channel = api.DefaultChannel
 	o.Topology = "public"
+	o.Bastion = false
 }
 
 func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
@@ -143,7 +144,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVarP(&options.Topology, "topology", "t", options.Topology, "Controls network topology for the cluster. public|private. Default is 'public'.")
 
 	// Bastion
-	cmd.Flags().BoolVar(&options.Bastion, "bastion", options.Bastion, "Specify --bastion=[true|false] to turn enable/disable bastion setup. Default to 'false' when topology is 'public' and defaults to 'true' if topology is 'private'.")
+	cmd.Flags().BoolVar(&options.Bastion, "bastion", options.Bastion, "Pass the --bastion flag to enable a bastion instance group. Only applies to private topology.")
 
 	return cmd
 }
@@ -332,7 +333,13 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			for _, masterName := range masterNames {
 				ig := masterInstanceGroups[masterName]
 				m := &api.EtcdMemberSpec{}
-				m.Name = ig.ObjectMeta.Name
+
+				name := ig.ObjectMeta.Name
+				// We expect the IG to have a `master-` prefix, but this is both superfluous
+				// and not how we named things previously
+				name = strings.TrimPrefix(name, "master-")
+				m.Name = name
+
 				m.InstanceGroup = fi.String(ig.ObjectMeta.Name)
 				etcd.Members = append(etcd.Members, m)
 			}
@@ -473,16 +480,23 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 		cluster.Spec.Subnets = append(cluster.Spec.Subnets, utilitySubnets...)
 
-		// Default to a DNS name for the bastion
-		cluster.Spec.Topology.Bastion = &api.BastionSpec{
-			BastionPublicName: "bastion-" + clusterName,
-		}
-
 		if c.Bastion {
 			bastionGroup := &api.InstanceGroup{}
 			bastionGroup.Spec.Role = api.InstanceGroupRoleBastion
 			bastionGroup.ObjectMeta.Name = "bastions"
 			instanceGroups = append(instanceGroups, bastionGroup)
+
+			// Logic to handle default bastion names
+			if c.DNSZone != "" {
+				cluster.Spec.Topology.Bastion = &api.BastionSpec{
+					BastionPublicName: "bastion-" + c.DNSZone,
+				}
+			} else {
+				// Use default zone and cluster name
+				cluster.Spec.Topology.Bastion = &api.BastionSpec{
+					BastionPublicName: "bastion-" + clusterName,
+				}
+			}
 		}
 
 	default:

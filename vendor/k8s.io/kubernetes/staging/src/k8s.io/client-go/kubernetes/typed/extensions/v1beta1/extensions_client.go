@@ -19,8 +19,8 @@ package v1beta1
 import (
 	fmt "fmt"
 	api "k8s.io/client-go/pkg/api"
-	unversioned "k8s.io/client-go/pkg/api/unversioned"
 	registered "k8s.io/client-go/pkg/apimachinery/registered"
+	schema "k8s.io/client-go/pkg/runtime/schema"
 	serializer "k8s.io/client-go/pkg/runtime/serializer"
 	rest "k8s.io/client-go/rest"
 )
@@ -30,7 +30,6 @@ type ExtensionsV1beta1Interface interface {
 	DaemonSetsGetter
 	DeploymentsGetter
 	IngressesGetter
-	JobsGetter
 	PodSecurityPoliciesGetter
 	ReplicaSetsGetter
 	ScalesGetter
@@ -52,10 +51,6 @@ func (c *ExtensionsV1beta1Client) Deployments(namespace string) DeploymentInterf
 
 func (c *ExtensionsV1beta1Client) Ingresses(namespace string) IngressInterface {
 	return newIngresses(c, namespace)
-}
-
-func (c *ExtensionsV1beta1Client) Jobs(namespace string) JobInterface {
-	return newJobs(c, namespace)
 }
 
 func (c *ExtensionsV1beta1Client) PodSecurityPolicies() PodSecurityPolicyInterface {
@@ -103,7 +98,7 @@ func New(c rest.Interface) *ExtensionsV1beta1Client {
 }
 
 func setConfigDefaults(config *rest.Config) error {
-	gv, err := unversioned.ParseGroupVersion("extensions/v1beta1")
+	gv, err := schema.ParseGroupVersion("extensions/v1beta1")
 	if err != nil {
 		return err
 	}

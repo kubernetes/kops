@@ -25,7 +25,7 @@ import (
 	"k8s.io/kops/util/pkg/tables"
 	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 	"os"
 	"strconv"
@@ -97,9 +97,9 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 	}
 
 	var nodes []v1.Node
-	var k8sClient *release_1_5.Clientset
+	var k8sClient *k8s_clientset.Clientset
 	if !c.CloudOnly {
-		k8sClient, err = release_1_5.NewForConfig(config)
+		k8sClient, err = k8s_clientset.NewForConfig(config)
 		if err != nil {
 			return fmt.Errorf("cannot build kube client for %q: %v", contextName, err)
 		}

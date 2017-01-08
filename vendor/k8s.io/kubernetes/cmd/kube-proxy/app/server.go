@@ -30,6 +30,8 @@ import (
 
 	"k8s.io/kubernetes/cmd/kube-proxy/app/options"
 	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	unversionedcore "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/core/internalversion"
 	"k8s.io/kubernetes/pkg/client/record"
@@ -205,7 +207,7 @@ func NewProxyServerDefault(config *options.ProxyServerConfig) (*ProxyServer, err
 	// Create event recorder
 	hostname := nodeutil.GetHostname(config.HostnameOverride)
 	eventBroadcaster := record.NewBroadcaster()
-	recorder := eventBroadcaster.NewRecorder(api.EventSource{Component: "kube-proxy", Host: hostname})
+	recorder := eventBroadcaster.NewRecorder(v1.EventSource{Component: "kube-proxy", Host: hostname})
 
 	var proxier proxy.ProxyProvider
 	var endpointsHandler proxyconfig.EndpointsConfigHandler
@@ -217,7 +219,19 @@ func NewProxyServerDefault(config *options.ProxyServerConfig) (*ProxyServer, err
 			// IPTablesMasqueradeBit must be specified or defaulted.
 			return nil, fmt.Errorf("Unable to read IPTablesMasqueradeBit from config")
 		}
-		proxierIPTables, err := iptables.NewProxier(iptInterface, utilsysctl.New(), execer, config.IPTablesSyncPeriod.Duration, config.IPTablesMinSyncPeriod.Duration, config.MasqueradeAll, int(*config.IPTablesMasqueradeBit), config.ClusterCIDR, hostname, getNodeIP(client, hostname))
+		proxierIPTables, err := iptables.NewProxier(
+			iptInterface,
+			utilsysctl.New(),
+			execer,
+			config.IPTablesSyncPeriod.Duration,
+			config.IPTablesMinSyncPeriod.Duration,
+			config.MasqueradeAll,
+			int(*config.IPTablesMasqueradeBit),
+			config.ClusterCIDR,
+			hostname,
+			getNodeIP(client, hostname),
+			recorder,
+		)
 		if err != nil {
 			glog.Fatalf("Unable to create proxier: %v", err)
 		}
@@ -290,7 +304,7 @@ func NewProxyServerDefault(config *options.ProxyServerConfig) (*ProxyServer, err
 		endpointsConfig.Channel("api"),
 	)
 
-	config.NodeRef = &api.ObjectReference{
+	config.NodeRef = &v1.ObjectReference{
 		Kind:      "Node",
 		Name:      hostname,
 		UID:       types.UID(hostname),
@@ -382,24 +396,24 @@ func getConntrackMax(config *options.ProxyServerConfig) (int, error) {
 		if config.ConntrackMaxPerCore > 0 {
 			return -1, fmt.Errorf("invalid config: ConntrackMax and ConntrackMaxPerCore are mutually exclusive")
 		}
-		glog.V(3).Infof("getConntrackMax: using absolute conntrax-max (deprecated)")
+		glog.V(3).Infof("getConntrackMax: using absolute conntrack-max (deprecated)")
 		return int(config.ConntrackMax), nil
 	}
 	if config.ConntrackMaxPerCore > 0 {
 		floor := int(config.ConntrackMin)
 		scaled := int(config.ConntrackMaxPerCore) * runtime.NumCPU()
 		if scaled > floor {
-			glog.V(3).Infof("getConntrackMax: using scaled conntrax-max-per-core")
+			glog.V(3).Infof("getConntrackMax: using scaled conntrack-max-per-core")
 			return scaled, nil
 		}
-		glog.V(3).Infof("getConntrackMax: using conntrax-min")
+		glog.V(3).Infof("getConntrackMax: using conntrack-min")
 		return floor, nil
 	}
 	return 0, nil
 }
 
 type nodeGetter interface {
-	Get(hostname string) (*api.Node, error)
+	Get(hostname string, options metav1.GetOptions) (*api.Node, error)
 }
 
 func getProxyMode(proxyMode string, client nodeGetter, hostname string, iptver iptables.IPTablesVersioner, kcompat iptables.KernelCompatTester) string {
@@ -416,7 +430,7 @@ func getProxyMode(proxyMode string, client nodeGetter, hostname string, iptver i
 		glog.Errorf("nodeGetter is nil: assuming iptables proxy")
 		return tryIPTablesProxy(iptver, kcompat)
 	}
-	node, err := client.Get(hostname)
+	node, err := client.Get(hostname, metav1.GetOptions{})
 	if err != nil {
 		glog.Errorf("Can't get Node %q, assuming iptables proxy, err: %v", hostname, err)
 		return tryIPTablesProxy(iptver, kcompat)
@@ -463,12 +477,12 @@ func (s *ProxyServer) birthCry() {
 
 func getNodeIP(client clientset.Interface, hostname string) net.IP {
 	var nodeIP net.IP
-	node, err := client.Core().Nodes().Get(hostname)
+	node, err := client.Core().Nodes().Get(hostname, metav1.GetOptions{})
 	if err != nil {
 		glog.Warningf("Failed to retrieve node info: %v", err)
 		return nil
 	}
-	nodeIP, err = nodeutil.GetNodeHostIP(node)
+	nodeIP, err = nodeutil.InternalGetNodeHostIP(node)
 	if err != nil {
 		glog.Warningf("Failed to retrieve node IP: %v", err)
 		return nil

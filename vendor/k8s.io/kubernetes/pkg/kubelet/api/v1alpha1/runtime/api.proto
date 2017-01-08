@@ -71,7 +71,8 @@ service ImageService {
     // ListImages lists existing images.
     rpc ListImages(ListImagesRequest) returns (ListImagesResponse) {}
     // ImageStatus returns the status of the image. If the image is not
-    // present, returns nil.
+    // present, returns a response with ImageStatusResponse.Image set to
+    // nil.
     rpc ImageStatus(ImageStatusRequest) returns (ImageStatusResponse) {}
     // PullImage pulls an image with authentication config.
     rpc PullImage(PullImageRequest) returns (PullImageResponse) {}
@@ -167,6 +168,12 @@ message LinuxSandboxSecurityContext {
     // List of groups applied to the first process run in the sandbox, in
     // addition to the sandbox's primary GID.
     repeated int64 supplemental_groups = 5;
+    // Indicates whether the sandbox will be asked to run a privileged
+    // container. If a privileged container is to be executed within it, this
+    // MUST be true.
+    // This allows a sandbox to take additional security precautions if no
+    // privileged containers are expected to be run.
+    optional bool privileged = 6;
 }
 
 // LinuxPodSandboxConfig holds platform-specific configurations for Linux
@@ -227,14 +234,29 @@ message PodSandboxConfig {
     repeated PortMapping port_mappings = 5;
     // Key-value pairs that may be used to scope and select individual resources.
     map<string, string> labels = 6;
-    // Annotations is an unstructured key value map that may be set by external
-    // tools to store and retrieve arbitrary metadata. There are a few features are
-    // driven by annotations, Runtimes could support them optionally:
+    // Unstructured key-value map that may be set by the kubelet to store and
+    // retrieve arbitrary metadata. This will include any annotations set on a
+    // pod through the Kubernetes API.
+    //
+    // Annotations MUST NOT be altered by the runtime; the annotations stored
+    // here MUST be returned in the PodSandboxStatus associated with the pod
+    // this PodSandboxConfig creates.
+    //
+    // In general, in order to preserve a well-defined interface between the
+    // kubelet and the container runtime, annotations SHOULD NOT influence
+    // runtime behaviour. For legacy reasons, there are some annotations which
+    // currently explicitly break this rule, listed below; in future versions
+    // of the interface these will be promoted to typed features.
+    //
+    // Annotations can also be useful for runtime authors to experiment with
+    // new features that are opaque to the Kubernetes APIs (both user-facing
+    // and the CRI). Whenever possible, however, runtime authors SHOULD
+    // consider proposing new typed fields for any new features instead.
     //
     // 1. AppArmor
     //
     //    key: container.apparmor.security.beta.kubernetes.io/<container_name>
-    //    description: apparmor profile for the container.
+    //    description: apparmor profile for a container in this pod.
     //    value:
     //      * runtime/default: equivalent to not specifying a profile.
     //      * localhost/<profile_name>: profile loaded on the node
@@ -248,14 +270,15 @@ message PodSandboxConfig {
     //      value: see below.
     //
     //      key: security.alpha.kubernetes.io/seccomp/container/<container name>
-    //      description: the seccomp profile for the container (overides pod).
-    //      values: see below
+    //      description: the seccomp profile for the container (overrides pod).
+    //      value: see below
     //
     //      The value of seccomp is runtime agnostic:
     //      * runtime/default: the default profile for the container runtime
     //      * unconfined: unconfined profile, ie, no seccomp sandboxing
     //      * localhost/<profile-name>: the profile installed to the node's
-    //        local seccomp profile root
+    //        local seccomp profile root. Note that profile root is set in
+    //        kubelet, and it is not passed in CRI yet, see https://issues.k8s.io/36997.
     //
     // 3. Sysctls
     //
@@ -340,10 +363,12 @@ message PodSandboxStatus {
     optional PodSandboxNetworkStatus network = 5;
     // Linux-specific status to a pod sandbox.
     optional LinuxPodSandboxStatus linux = 6;
-    // Labels are key value pairs that may be used to scope and select individual resources.
+    // Labels are key-value pairs that may be used to scope and select individual resources.
     map<string, string> labels = 7;
-    // Annotations is an unstructured key value map that may be set by external
-    // tools to store and retrieve arbitrary metadata.
+    // Unstructured key-value map holding arbitrary metadata.
+    // Annotations MUST NOT be altered by the runtime; the value of this field
+    // MUST be identical to that of the corresponding PodSandboxConfig used to
+    // instantiate the pod sandbox this status represents.
     map<string, string> annotations = 8;
 }
 
@@ -383,8 +408,10 @@ message PodSandbox {
     optional int64 created_at = 4;
     // Labels of the PodSandbox.
     map<string, string> labels = 5;
-    // Annotations is an unstructured key value map that may be set by external
-    // tools to store and retrieve arbitrary metadata.
+    // Unstructured key-value map holding arbitrary metadata.
+    // Annotations MUST NOT be altered by the runtime; the value of this field
+    // MUST be identical to that of the corresponding PodSandboxConfig used to
+    // instantiate this PodSandbox.
     map<string, string> annotations = 6;
 }
 
@@ -444,6 +471,22 @@ message LinuxContainerSecurityContext {
     // Capabilities to add or drop.
     optional Capability capabilities = 1;
     // If set, run container in privileged mode.
+    // Privileged mode is incompatible with the following options. If
+    // privileged is set, the following features MAY have no effect:
+    // 1. capabilities
+    // 2. selinux_options
+    // 4. seccomp
+    // 5. apparmor
+    //
+    // Privileged mode implies the following specific options are applied:
+    // 1. All capabilities are added.
+    // 2. Sensitive paths, such as kernel module paths within sysfs, are not masked.
+    // 3. Any sysfs and procfs mounts are mounted RW.
+    // 4. Apparmor confinement is not applied.
+    // 5. Seccomp restrictions are not applied.
+    // 6. The device cgroup does not restrict access to any devices.
+    // 7. All devices from the host's /dev are available within the container.
+    // 8. SELinux restrictions are not applied (e.g. label=disabled).
     optional bool privileged = 2;
     // Configurations for the container's namespaces.
     // Only used if the container uses namespace for isolation.
@@ -527,8 +570,16 @@ message ContainerConfig {
     //     prefix ::= DNS_SUBDOMAIN
     //     name ::= DNS_LABEL
     map<string, string> labels = 9;
-    // Annotations is an unstructured key value map that may be set by external
-    // tools to store and retrieve arbitrary metadata.
+    // Unstructured key-value map that may be used by the kubelet to store and
+    // retrieve arbitrary metadata.
+    //
+    // Annotations MUST NOT be altered by the runtime; the annotations stored
+    // here MUST be returned in the ContainerStatus associated with the container
+    // this ContainerConfig creates.
+    //
+    // In general, in order to preserve a well-defined interface between the
+    // kubelet and the container runtime, annotations SHOULD NOT influence
+    // runtime behaviour.
     map<string, string> annotations = 10;
     // Path relative to PodSandboxConfig.LogDirectory for container to store
     // the log (STDOUT and STDERR) on the host.
@@ -641,8 +692,10 @@ message Container {
     optional int64 created_at = 7;
     // Key-value pairs that may be used to scope and select individual resources.
     map<string, string> labels = 8;
-    // Annotations is an unstructured key value map that may be set by external
-    // tools to store and retrieve arbitrary metadata.
+    // Unstructured key-value map holding arbitrary metadata.
+    // Annotations MUST NOT be altered by the runtime; the value of this field
+    // MUST be identical to that of the corresponding ContainerConfig used to
+    // instantiate this Container.
     map<string, string> annotations = 9;
 }
 
@@ -684,7 +737,10 @@ message ContainerStatus {
     optional string message = 11;
     // Key-value pairs that may be used to scope and select individual resources.
     map<string,string> labels = 12;
-    // Annotations is an unstructured key value map.
+    // Unstructured key-value map holding arbitrary metadata.
+    // Annotations MUST NOT be altered by the runtime; the value of this field
+    // MUST be identical to that of the corresponding ContainerConfig used to
+    // instantiate the Container this status represents.
     map<string,string> annotations = 13;
     // Mounts for the container.
     repeated Mount mounts = 14;
@@ -718,7 +774,7 @@ message ExecRequest {
     optional string container_id = 1;
     // Command to execute.
     repeated string cmd = 2;
-    // Whether use tty.
+    // Whether to exec the command in a TTY.
     optional bool tty = 3;
     // Whether to stream stdin.
     optional bool stdin = 4;
@@ -734,6 +790,9 @@ message AttachRequest {
     optional string container_id = 1;
     // Whether to stream stdin.
     optional bool stdin = 2;
+    // Whether the process being attached is running in a TTY.
+    // This must match the TTY setting in the ContainerConfig.
+    optional bool tty = 3;
 }
 
 message AttachResponse {

@@ -94,9 +94,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["Arch"] = func() string { return "amd64" }
 
 	// Network topology definitions
-	dest["IsTopologyPublic"] = tf.IsTopologyPublic
-	dest["IsTopologyPrivate"] = tf.IsTopologyPrivate
-	dest["IsTopologyPrivateMasters"] = tf.IsTopologyPrivateMasters
 	dest["GetELBName32"] = tf.modelContext.GetELBName32
 
 	dest["WellKnownServiceIP"] = tf.WellKnownServiceIP
@@ -138,14 +135,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
 func (tf *TemplateFunctions) SharedVPC() bool {
 	return tf.cluster.SharedVPC()
-}
-
-// These are the network topology functions. They are boolean logic for checking which type of
-// topology this cluster is set to be deployed with.
-func (tf *TemplateFunctions) IsTopologyPrivate() bool { return tf.cluster.IsTopologyPrivate() }
-func (tf *TemplateFunctions) IsTopologyPublic() bool  { return tf.cluster.IsTopologyPublic() }
-func (tf *TemplateFunctions) IsTopologyPrivateMasters() bool {
-	return tf.cluster.IsTopologyPrivateMasters()
 }
 
 // Image returns the docker image name for the specified component
@@ -211,7 +200,9 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 	}
 	// permit wildcard updates
 	argv = append(argv, "--zone=*/*")
-	argv = append(argv, "-v=8")
+
+	// Verbose, but not crazy logging
+	argv = append(argv, "-v=2")
 
 	return argv, nil
 }

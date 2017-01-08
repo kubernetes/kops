@@ -21,8 +21,8 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	k8sapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 )
 
 func decoder() runtime.Decoder {
@@ -42,7 +42,7 @@ func encoder(version string) runtime.Encoder {
 	if !ok {
 		glog.Fatalf("no YAML serializer registered")
 	}
-	gv := unversioned.GroupVersion{Group: GroupName, Version: version}
+	gv := schema.GroupVersion{Group: GroupName, Version: version}
 	return k8sapi.Codecs.EncoderForVersion(yaml.Serializer, gv)
 }
 
@@ -65,6 +65,6 @@ func ToVersionedYamlWithVersion(obj runtime.Object, version string) ([]byte, err
 	return w.Bytes(), nil
 }
 
-func ParseVersionedYaml(data []byte) (runtime.Object, *unversioned.GroupVersionKind, error) {
+func ParseVersionedYaml(data []byte) (runtime.Object, *schema.GroupVersionKind, error) {
 	return decoder().Decode(data, nil, nil)
 }

@@ -2,61 +2,84 @@
 
 Bastion provide an external facing point of entry into a network containing private network instances. This host can provide a single point of fortification or audit and can be started and stopped to enable or disable inbound SSH communication from the Internet, some call bastion as the "jump server".
 
-Note: Bastion will get setup for the cluster(by default) only when `--topology="private"`.
-
 * [More information on bastion from aws](http://docs.aws.amazon.com/quickstart/latest/linux-bastion/architecture.html)
 * [More information on bastion from gce](https://cloud.google.com/solutions/connecting-securely#bastion)
 
 ## AWS
 
-### Specify instance type of bastion
+### Enable/Disable bastion
 
-Instance types in AWS comprise varying combinations of CPU, memory, storage, and networking capacity and give you the flexibility to choose the appropriate mix of resources for your applications.
+To enable a bastion instance group, a user will need to set the `--bastion` flag on cluster create
 
-- **Defaults** to `t2.medium`
-- **Configure:** Bastion Instance type can be modified using `kops edit cluster`
 ```
-topology:
+kops create cluster --topology private --networking $provider --bastion $NAME
+```
+
+### Configure the bastion instance group
+
+You can edit the bastion instance group to make changes. By default the name of the bastion instance group will be `bastions` and you can specify the name of the cluster with `--name` as in:
+
+```
+kops edit ig bastions --name $KOPS_NAME
+```
+
+You should now be able to edit and configure your bastion instance group.
+
+```
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-05T13:37:07Z"
+  name: bastions
+spec:
+  associatePublicIp: true
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  machineType: t2.micro
+  maxSize: 1
+  minSize: 1
+  role: Bastion
+  subnets:
+  - utility-us-east-2a
+```
+
+**Note**: If you want to turn off the bastion server, you must set the instance group `maxSize` and `minSize` fields to `0`.
+
+If you do not want the bastion instance group created at all, simply drop the `--bastion` flag off of your create command. The instance group will never be created.
+
+
+### Using a public CNAME to access your bastion
+
+By default the bastion instance group will create a public CNAME alias that will point to the bastion ELB. 
+
+The default bastion name is `bastion-$NAME` as in
+
+```
+bastion-example.kubernetes.com
+```
+
+Unless a user is using `--dns-zone` which will inherently use the `basion-$ZONE` syntax.
+
+You can define a custom bastion CNAME by editing the main cluster config `kops edit cluster $NAME` and modifying the following block
+
+```
+spec:
+  topology:
     bastion:
-        MachineType: c4.large
+      bastionPublicName: bastion-example.kubernetes.com
 ```
-[More information](https://aws.amazon.com/ec2/instance-types/)
 
 
-### Turn on/off bastion
+### Changing your ELB idle timeout
 
-To turn on/off bastion host setup completely.
-- **Defaults** to `false` if the topology selected is `public`
-- **Defaults** to `true` if the topology selected is `private`
-- **Configure:**
+The bastion is accessed via an AWS ELB. The ELB is required to gain secure access into the private network and connect the user to the ASG that the bastion lives in. Kops will by default set the bastion ELB idle timeout to 5 minutes. This is important for SSH connections to the bastion that you plan to keep open.
+
+You can increase the ELB idle timeout by editing the main cluster config `kops edit cluster $NAME` and modifyng the following block
+
 ```
-kops create cluster --bastion=[true|false]
-```
-OR using `kops edit cluster`
-```
-topology:
+spec:
+  topology:
     bastion:
-        Enable: true
+      idleTimeoutSeconds: 1200
 ```
 
-### Reach bastion from outside of vpc using a name
-
-- **Default:** CNAME for the bastion is only created when the user explicitly define it using `kops edit cluster`
-- **Configure:** Bastion friendly CNAME can be configured using `kops edit cluster`
-```
-topology:
-    bastion:
-        PublicName: jumper
-```
-
-### High idle timeout for bastion ASG's ELB. (Configurable LoadBalancer Attributes)
-
-By default, elastic load balancing sets the idle timeout to `60` seconds.
-- **Default:** Bastion ELB in kops will have `120` seconds as their default timeout.
-- **Configure:** This value can be configured using `kops edit cluster`
-```
-topology:
-    bastion:
-        IdleTimeOut: 75
-```
-[More information](http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/config-idle-timeout.html)
+Where the maximum value is 1200 seconds (20 minutes) allowed by AWS. [More information](http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/config-idle-timeout.html)

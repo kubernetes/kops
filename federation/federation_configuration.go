@@ -26,7 +26,8 @@ import (
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	meta_v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 )
 
 const UserAdmin = "admin"
@@ -339,9 +340,9 @@ func (o *FederationConfiguration) ensureSecretKubeconfig(c *fi.Context, caCert *
 	return err
 }
 
-func findSecret(k8s release_1_5.Interface, namespace, name string) (*v1.Secret, error) {
+func findSecret(k8s k8s_clientset.Interface, namespace, name string) (*v1.Secret, error) {
 	glog.V(2).Infof("querying k8s for secret %s/%s", namespace, name)
-	s, err := k8s.Core().Secrets(namespace).Get(name)
+	s, err := k8s.Core().Secrets(namespace).Get(name, meta_v1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil, nil
@@ -352,7 +353,7 @@ func findSecret(k8s release_1_5.Interface, namespace, name string) (*v1.Secret, 
 	return s, nil
 }
 
-func mutateSecret(k8s release_1_5.Interface, namespace string, name string, fn func(s *v1.Secret) (*v1.Secret, error)) (*v1.Secret, error) {
+func mutateSecret(k8s k8s_clientset.Interface, namespace string, name string, fn func(s *v1.Secret) (*v1.Secret, error)) (*v1.Secret, error) {
 	existing, err := findSecret(k8s, namespace, name)
 	if err != nil {
 		return nil, err

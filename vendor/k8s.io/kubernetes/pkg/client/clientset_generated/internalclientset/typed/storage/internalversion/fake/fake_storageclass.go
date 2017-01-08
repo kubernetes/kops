@@ -18,10 +18,11 @@ package fake
 
 import (
 	api "k8s.io/kubernetes/pkg/api"
-	unversioned "k8s.io/kubernetes/pkg/api/unversioned"
+	v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	storage "k8s.io/kubernetes/pkg/apis/storage"
 	core "k8s.io/kubernetes/pkg/client/testing/core"
 	labels "k8s.io/kubernetes/pkg/labels"
+	schema "k8s.io/kubernetes/pkg/runtime/schema"
 	watch "k8s.io/kubernetes/pkg/watch"
 )
 
@@ -30,7 +31,7 @@ type FakeStorageClasses struct {
 	Fake *FakeStorage
 }
 
-var storageclassesResource = unversioned.GroupVersionResource{Group: "storage.k8s.io", Version: "", Resource: "storageclasses"}
+var storageclassesResource = schema.GroupVersionResource{Group: "storage.k8s.io", Version: "", Resource: "storageclasses"}
 
 func (c *FakeStorageClasses) Create(storageClass *storage.StorageClass) (result *storage.StorageClass, err error) {
 	obj, err := c.Fake.
@@ -63,7 +64,7 @@ func (c *FakeStorageClasses) DeleteCollection(options *api.DeleteOptions, listOp
 	return err
 }
 
-func (c *FakeStorageClasses) Get(name string) (result *storage.StorageClass, err error) {
+func (c *FakeStorageClasses) Get(name string, options v1.GetOptions) (result *storage.StorageClass, err error) {
 	obj, err := c.Fake.
 		Invokes(core.NewRootGetAction(storageclassesResource, name), &storage.StorageClass{})
 	if obj == nil {

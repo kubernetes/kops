@@ -4,7 +4,34 @@ This list is not complete, but aims to document any keys that are less than self
 
 ## spec
 
-### adminAccess
+
+### api
+
+This object configures how we expose the API:
+
+* `dns` will allow direct access to master instances, and configure DNS to point directly to the master nodes.
+* `loadBalancer` will configure a load balancer (ELB) in front of the master nodes, and configure DNS to point to the ELB.
+
+DNS example:
+
+```yaml
+spec:
+  api:
+    dns: {}
+```
+
+
+When configuring a LoadBalancer, you can also choose to have a public ELB or an internal (VPC only) ELB.  The `type`
+field should be `Public` or `Internal`.
+
+```yaml
+spec:
+  api:
+    loadBalancer:
+      type: Public
+```
+
+### sshAccess
 
 This array configures the CIDRs that are able to ssh into nodes. On AWS this is manifested as inbound security group rules on the `nodes` and `master` security groups.
 
@@ -12,7 +39,19 @@ Use this key to restrict cluster access to an office ip address range, for examp
 
 ```yaml
 spec:
-  adminAccess:
+  sshAccess:
+    - 12.34.56.78/32
+```
+
+### apiAccess
+
+This array configures the CIDRs that are able to access the kubernetes API. On AWS this is manifested as inbound security group rules on the ELB or master security groups.
+
+Use this key to restrict cluster access to an office ip address range, for example.
+
+```yaml
+spec:
+  apiAccess:
     - 12.34.56.78/32
 ```
 

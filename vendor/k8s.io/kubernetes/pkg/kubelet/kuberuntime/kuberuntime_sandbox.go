@@ -23,8 +23,8 @@ import (
 	"sort"
 
 	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/api"
-	runtimeApi "k8s.io/kubernetes/pkg/kubelet/api/v1alpha1/runtime"
+	"k8s.io/kubernetes/pkg/api/v1"
+	runtimeapi "k8s.io/kubernetes/pkg/kubelet/api/v1alpha1/runtime"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
 	"k8s.io/kubernetes/pkg/kubelet/types"
 	"k8s.io/kubernetes/pkg/kubelet/util/format"
@@ -32,7 +32,7 @@ import (
 )
 
 // createPodSandbox creates a pod sandbox and returns (podSandBoxID, message, error).
-func (m *kubeGenericRuntimeManager) createPodSandbox(pod *api.Pod, attempt uint32) (string, string, error) {
+func (m *kubeGenericRuntimeManager) createPodSandbox(pod *v1.Pod, attempt uint32) (string, string, error) {
 	podSandboxConfig, err := m.generatePodSandboxConfig(pod, attempt)
 	if err != nil {
 		message := fmt.Sprintf("GeneratePodSandboxConfig for pod %q failed: %v", format.Pod(pod), err)
@@ -58,13 +58,13 @@ func (m *kubeGenericRuntimeManager) createPodSandbox(pod *api.Pod, attempt uint3
 	return podSandBoxID, "", nil
 }
 
-// generatePodSandboxConfig generates pod sandbox config from api.Pod.
-func (m *kubeGenericRuntimeManager) generatePodSandboxConfig(pod *api.Pod, attempt uint32) (*runtimeApi.PodSandboxConfig, error) {
+// generatePodSandboxConfig generates pod sandbox config from v1.Pod.
+func (m *kubeGenericRuntimeManager) generatePodSandboxConfig(pod *v1.Pod, attempt uint32) (*runtimeapi.PodSandboxConfig, error) {
 	// TODO: deprecating podsandbox resource requirements in favor of the pod level cgroup
 	// Refer https://github.com/kubernetes/kubernetes/issues/29871
 	podUID := string(pod.UID)
-	podSandboxConfig := &runtimeApi.PodSandboxConfig{
-		Metadata: &runtimeApi.PodSandboxMetadata{
+	podSandboxConfig := &runtimeapi.PodSandboxConfig{
+		Metadata: &runtimeapi.PodSandboxMetadata{
 			Name:      &pod.Name,
 			Namespace: &pod.Namespace,
 			Uid:       &podUID,
@@ -79,7 +79,7 @@ func (m *kubeGenericRuntimeManager) generatePodSandboxConfig(pod *api.Pod, attem
 		if err != nil {
 			return nil, err
 		}
-		podSandboxConfig.DnsConfig = &runtimeApi.DNSConfig{
+		podSandboxConfig.DnsConfig = &runtimeapi.DNSConfig{
 			Servers:  dnsServers,
 			Searches: dnsSearches,
 			Options:  defaultDNSOptions,
@@ -96,7 +96,7 @@ func (m *kubeGenericRuntimeManager) generatePodSandboxConfig(pod *api.Pod, attem
 	podSandboxConfig.LogDirectory = &logDir
 
 	cgroupParent := ""
-	portMappings := []*runtimeApi.PortMapping{}
+	portMappings := []*runtimeapi.PortMapping{}
 	for _, c := range pod.Spec.Containers {
 		// TODO: use a separate interface to only generate portmappings
 		opts, err := m.runtimeHelper.GenerateRunContainerOptions(pod, &c, "")
@@ -109,7 +109,7 @@ func (m *kubeGenericRuntimeManager) generatePodSandboxConfig(pod *api.Pod, attem
 			hostPort := int32(port.HostPort)
 			containerPort := int32(port.ContainerPort)
 			protocol := toRuntimeProtocol(port.Protocol)
-			portMappings = append(portMappings, &runtimeApi.PortMapping{
+			portMappings = append(portMappings, &runtimeapi.PortMapping{
 				HostIp:        &port.HostIP,
 				HostPort:      &hostPort,
 				ContainerPort: &containerPort,
@@ -128,25 +128,23 @@ func (m *kubeGenericRuntimeManager) generatePodSandboxConfig(pod *api.Pod, attem
 	return podSandboxConfig, nil
 }
 
-// generatePodSandboxLinuxConfig generates LinuxPodSandboxConfig from api.Pod.
-func (m *kubeGenericRuntimeManager) generatePodSandboxLinuxConfig(pod *api.Pod, cgroupParent string) *runtimeApi.LinuxPodSandboxConfig {
-	if pod.Spec.SecurityContext == nil && cgroupParent == "" {
-		return nil
+// generatePodSandboxLinuxConfig generates LinuxPodSandboxConfig from v1.Pod.
+func (m *kubeGenericRuntimeManager) generatePodSandboxLinuxConfig(pod *v1.Pod, cgroupParent string) *runtimeapi.LinuxPodSandboxConfig {
+	lc := &runtimeapi.LinuxPodSandboxConfig{
+		SecurityContext: &runtimeapi.LinuxSandboxSecurityContext{},
 	}
 
-	lc := &runtimeApi.LinuxPodSandboxConfig{}
 	if cgroupParent != "" {
 		lc.CgroupParent = &cgroupParent
 	}
+
 	if pod.Spec.SecurityContext != nil {
 		sc := pod.Spec.SecurityContext
-		lc.SecurityContext = &runtimeApi.LinuxSandboxSecurityContext{
-			NamespaceOptions: &runtimeApi.NamespaceOption{
-				HostNetwork: &sc.HostNetwork,
-				HostIpc:     &sc.HostIPC,
-				HostPid:     &sc.HostPID,
-			},
-			RunAsUser: sc.RunAsUser,
+		lc.SecurityContext.RunAsUser = sc.RunAsUser
+		lc.SecurityContext.NamespaceOptions = &runtimeapi.NamespaceOption{
+			HostNetwork: &pod.Spec.HostNetwork,
+			HostIpc:     &pod.Spec.HostIPC,
+			HostPid:     &pod.Spec.HostPID,
 		}
 
 		if sc.FSGroup != nil {
@@ -159,7 +157,7 @@ func (m *kubeGenericRuntimeManager) generatePodSandboxLinuxConfig(pod *api.Pod, 
 			lc.SecurityContext.SupplementalGroups = append(lc.SecurityContext.SupplementalGroups, sc.SupplementalGroups...)
 		}
 		if sc.SELinuxOptions != nil {
-			lc.SecurityContext.SelinuxOptions = &runtimeApi.SELinuxOption{
+			lc.SecurityContext.SelinuxOptions = &runtimeapi.SELinuxOption{
 				User:  &sc.SELinuxOptions.User,
 				Role:  &sc.SELinuxOptions.Role,
 				Type:  &sc.SELinuxOptions.Type,
@@ -168,15 +166,20 @@ func (m *kubeGenericRuntimeManager) generatePodSandboxLinuxConfig(pod *api.Pod, 
 		}
 	}
 
+	if kubecontainer.HasPrivilegedContainer(pod) {
+		privileged := true
+		lc.SecurityContext.Privileged = &privileged
+	}
+
 	return lc
 }
 
 // getKubeletSandboxes lists all (or just the running) sandboxes managed by kubelet.
-func (m *kubeGenericRuntimeManager) getKubeletSandboxes(all bool) ([]*runtimeApi.PodSandbox, error) {
-	var filter *runtimeApi.PodSandboxFilter
+func (m *kubeGenericRuntimeManager) getKubeletSandboxes(all bool) ([]*runtimeapi.PodSandbox, error) {
+	var filter *runtimeapi.PodSandboxFilter
 	if !all {
-		readyState := runtimeApi.PodSandboxState_SANDBOX_READY
-		filter = &runtimeApi.PodSandboxFilter{
+		readyState := runtimeapi.PodSandboxState_SANDBOX_READY
+		filter = &runtimeapi.PodSandboxFilter{
 			State: &readyState,
 		}
 	}
@@ -187,7 +190,7 @@ func (m *kubeGenericRuntimeManager) getKubeletSandboxes(all bool) ([]*runtimeApi
 		return nil, err
 	}
 
-	result := []*runtimeApi.PodSandbox{}
+	result := []*runtimeapi.PodSandbox{}
 	for _, s := range resp {
 		if !isManagedByKubelet(s.Labels) {
 			glog.V(5).Infof("Sandbox %s is not managed by kubelet", kubecontainer.BuildPodFullName(
@@ -202,7 +205,7 @@ func (m *kubeGenericRuntimeManager) getKubeletSandboxes(all bool) ([]*runtimeApi
 }
 
 // determinePodSandboxIP determines the IP address of the given pod sandbox.
-func (m *kubeGenericRuntimeManager) determinePodSandboxIP(podNamespace, podName string, podSandbox *runtimeApi.PodSandboxStatus) string {
+func (m *kubeGenericRuntimeManager) determinePodSandboxIP(podNamespace, podName string, podSandbox *runtimeapi.PodSandboxStatus) string {
 	if podSandbox.Network == nil {
 		glog.Warningf("Pod Sandbox status doesn't have network information, cannot report IP")
 		return ""
@@ -217,8 +220,8 @@ func (m *kubeGenericRuntimeManager) determinePodSandboxIP(podNamespace, podName 
 
 // getPodSandboxID gets the sandbox id by podUID and returns ([]sandboxID, error).
 // Param state could be nil in order to get all sandboxes belonging to same pod.
-func (m *kubeGenericRuntimeManager) getSandboxIDByPodUID(podUID kubetypes.UID, state *runtimeApi.PodSandboxState) ([]string, error) {
-	filter := &runtimeApi.PodSandboxFilter{
+func (m *kubeGenericRuntimeManager) getSandboxIDByPodUID(podUID kubetypes.UID, state *runtimeapi.PodSandboxState) ([]string, error) {
+	filter := &runtimeapi.PodSandboxFilter{
 		State:         state,
 		LabelSelector: map[string]string{types.KubernetesPodUIDLabel: string(podUID)},
 	}
@@ -252,7 +255,7 @@ func (m *kubeGenericRuntimeManager) GetPortForward(podName, podNamespace string,
 		return nil, fmt.Errorf("failed to find sandboxID for pod %s", format.PodDesc(podName, podNamespace, podUID))
 	}
 	// TODO: Port is unused for now, but we may need it in the future.
-	req := &runtimeApi.PortForwardRequest{
+	req := &runtimeapi.PortForwardRequest{
 		PodSandboxId: &sandboxIDs[0],
 	}
 	resp, err := m.runtimeService.PortForward(req)

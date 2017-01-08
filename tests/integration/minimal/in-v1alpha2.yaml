@@ -12,11 +12,11 @@ spec:
   etcdClusters:
   - etcdMembers:
     - instanceGroup: master-us-test-1a
-      name: master-us-test-1a
+      name: us-test-1a
     name: main
   - etcdMembers:
     - instanceGroup: master-us-test-1a
-      name: master-us-test-1a
+      name: us-test-1a
     name: events
   kubernetesVersion: v1.4.6
   masterInternalName: api.internal.minimal.example.com
