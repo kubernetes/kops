@@ -217,7 +217,6 @@ func Convert_kops_EtcdMemberSpec_To_v1alpha1_EtcdMemberSpec(in *kops.EtcdMemberS
 		}
 		zone = strings.TrimPrefix(zone, "master-")
 		out.Zone = &zone
-		out.Name = zone
 	} else {
 		out.Zone = nil
 	}
