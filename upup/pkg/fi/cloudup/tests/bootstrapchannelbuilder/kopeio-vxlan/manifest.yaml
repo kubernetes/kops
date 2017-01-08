@@ -32,6 +32,6 @@ spec:
   - manifest: networking.kope.io/v1.0.20161116.yaml
     name: networking.kope.io
     selector:
-      k8s-addon: networking.kope.io
+      role.kubernetes.io/networking: "1"
     version: 1.0.20161116
 
