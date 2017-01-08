@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -101,6 +102,11 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) error {
 		}
 
 		if b.Cluster.Spec.Networking.Calico != nil {
+			// Calico needs to access etcd
+			// TODO: Remove, replace with etcd in calico manifest
+			glog.Warningf("Opening etcd port on masters for access from the nodes, for calico.  This is unsafe in untrusted environments.")
+			tcpPorts = append(tcpPorts, 4001)
+
 			tcpPorts = append(tcpPorts, 179)
 			// Protocol 4 is IPIP
 			protocols = append(protocols, "4")
@@ -148,8 +154,14 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext) error
 			VPC:         b.LinkToVPC(),
 			Description: s("Security group for masters"),
 			RemoveExtraRules: []string{
-				"port=22",
-				"port=443",
+				"port=22",   // SSH
+				"port=443",  // k8s api
+				"port=4001", // etcd
+				"port=4789", // VXLAN
+				"port=179",  // Calico
+
+				// TODO: UDP vs TCP
+				// TODO: Protocol 4 for calico
 			},
 		}
 		c.AddTask(t)
