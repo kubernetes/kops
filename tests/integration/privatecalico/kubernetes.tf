@@ -124,6 +124,10 @@ resource "aws_elb" "api-privatecalico-example-com" {
     interval = 10
     timeout = 5
   }
+  tags = {
+    KubernetesCluster = "privatecalico.example.com"
+    Name = "api.privatecalico.example.com"
+  }
 }
 
 resource "aws_elb" "bastion-privatecalico-example-com" {
@@ -144,6 +148,10 @@ resource "aws_elb" "bastion-privatecalico-example-com" {
     timeout = 5
   }
   idle_timeout = 300
+  tags = {
+    KubernetesCluster = "privatecalico.example.com"
+    Name = "bastion.privatecalico.example.com"
+  }
 }
 
 resource "aws_iam_instance_profile" "bastions-privatecalico-example-com" {
@@ -214,7 +222,7 @@ resource "aws_launch_configuration" "bastion-privatecalico-example-com" {
   key_name = "${aws_key_pair.kubernetes-privatecalico-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
   iam_instance_profile = "${aws_iam_instance_profile.bastions-privatecalico-example-com.id}"
   security_groups = ["${aws_security_group.bastion-privatecalico-example-com.id}"]
-  associate_public_ip_address = false
+  associate_public_ip_address = true
   root_block_device = {
     volume_type = "gp2"
     volume_size = 20

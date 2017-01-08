@@ -23,17 +23,18 @@ import (
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kubernetes/federation/apis/federation/v1beta1"
-	"k8s.io/kubernetes/federation/client/clientset_generated/federation_release_1_5"
+	"k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset"
 	"k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	meta_v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 )
 
 type FederationCluster struct {
 	FederationNamespace string
 
-	ControllerKubernetesClients []release_1_5.Interface
-	FederationClient            federation_release_1_5.Interface
+	ControllerKubernetesClients []k8s_clientset.Interface
+	FederationClient            federation_clientset.Interface
 
 	ClusterSecretName string
 
@@ -88,7 +89,7 @@ func (o *FederationCluster) Run(cluster *kopsapi.Cluster) error {
 	return nil
 }
 
-func (o *FederationCluster) ensureFederationSecret(k8s release_1_5.Interface, caCertData []byte, user kutil.KubectlUser) error {
+func (o *FederationCluster) ensureFederationSecret(k8s k8s_clientset.Interface, caCertData []byte, user kutil.KubectlUser) error {
 	_, err := mutateSecret(k8s, o.FederationNamespace, o.ClusterSecretName, func(s *v1.Secret) (*v1.Secret, error) {
 		var kubeconfigData []byte
 		var err error
@@ -149,7 +150,7 @@ func (o *FederationCluster) ensureFederationSecret(k8s release_1_5.Interface, ca
 	return err
 }
 
-func (o *FederationCluster) ensureFederationCluster(federationClient federation_release_1_5.Interface) error {
+func (o *FederationCluster) ensureFederationCluster(federationClient federation_clientset.Interface) error {
 	_, err := mutateCluster(federationClient, o.ClusterName, func(c *v1beta1.Cluster) (*v1beta1.Cluster, error) {
 		if c == nil {
 			c = &v1beta1.Cluster{}
@@ -176,9 +177,9 @@ func (o *FederationCluster) ensureFederationCluster(federationClient federation_
 	return err
 }
 
-func findCluster(k8s federation_release_1_5.Interface, name string) (*v1beta1.Cluster, error) {
+func findCluster(k8s federation_clientset.Interface, name string) (*v1beta1.Cluster, error) {
 	glog.V(2).Infof("querying k8s for federation cluster %s", name)
-	c, err := k8s.Federation().Clusters().Get(name)
+	c, err := k8s.Federation().Clusters().Get(name, meta_v1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil, nil
@@ -189,7 +190,7 @@ func findCluster(k8s federation_release_1_5.Interface, name string) (*v1beta1.Cl
 	return c, nil
 }
 
-func mutateCluster(k8s federation_release_1_5.Interface, name string, fn func(s *v1beta1.Cluster) (*v1beta1.Cluster, error)) (*v1beta1.Cluster, error) {
+func mutateCluster(k8s federation_clientset.Interface, name string, fn func(s *v1beta1.Cluster) (*v1beta1.Cluster, error)) (*v1beta1.Cluster, error) {
 	existing, err := findCluster(k8s, name)
 	if err != nil {
 		return nil, err

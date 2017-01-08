@@ -17,20 +17,20 @@ limitations under the License.
 package v1alpha2
 
 import (
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/api/v1"
+	meta_v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 )
 
 type Cluster struct {
-	unversioned.TypeMeta `json:",inline"`
-	ObjectMeta           api.ObjectMeta `json:"metadata,omitempty"`
+	meta_v1.TypeMeta `json:",inline"`
+	ObjectMeta       v1.ObjectMeta `json:"metadata,omitempty"`
 
 	Spec ClusterSpec `json:"spec,omitempty"`
 }
 
 type ClusterList struct {
-	unversioned.TypeMeta `json:",inline"`
-	unversioned.ListMeta `json:"metadata,omitempty"`
+	meta_v1.TypeMeta `json:",inline"`
+	meta_v1.ListMeta `json:"metadata,omitempty"`
 
 	Items []Cluster `json:"items"`
 }
@@ -149,6 +149,33 @@ type ClusterSpec struct {
 
 	// Networking configuration
 	Networking *NetworkingSpec `json:"networking,omitempty"`
+
+	// API field controls how the API is exposed outside the cluster
+	API *AccessSpec `json:"api,omitempty"`
+}
+
+type AccessSpec struct {
+	DNS          *DNSAccessSpec          `json:"dns,omitempty"`
+	LoadBalancer *LoadBalancerAccessSpec `json:"loadBalancer,omitempty"`
+}
+
+func (s *AccessSpec) IsEmpty() bool {
+	return s.DNS == nil && s.LoadBalancer == nil
+}
+
+type DNSAccessSpec struct {
+}
+
+// LoadBalancerType string describes LoadBalancer types (public, internal)
+type LoadBalancerType string
+
+const (
+	LoadBalancerTypePublic   LoadBalancerType = "Public"
+	LoadBalancerTypeInternal LoadBalancerType = "Internal"
+)
+
+type LoadBalancerAccessSpec struct {
+	Type LoadBalancerType `json:"type,omitempty"`
 }
 
 type KubeDNSConfig struct {

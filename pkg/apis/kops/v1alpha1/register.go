@@ -17,15 +17,13 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 )
 
 var (
-	// TODO: Defaulting functions
-	//SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes, addDefaultingFuncs, addConversionFuncs)
-	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes, addConversionFuncs)
+	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes, addDefaultingFuncs, addConversionFuncs)
 	//SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
 	AddToScheme = SchemeBuilder.AddToScheme
 )
@@ -34,15 +32,15 @@ var (
 const GroupName = "kops"
 
 // SchemeGroupVersion is group version used to register these objects
-var SchemeGroupVersion = unversioned.GroupVersion{Group: GroupName, Version: "v1alpha1"}
+var SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: "v1alpha1"}
 
 // Kind takes an unqualified kind and returns a Group qualified GroupKind
-func Kind(kind string) unversioned.GroupKind {
+func Kind(kind string) schema.GroupKind {
 	return SchemeGroupVersion.WithKind(kind).GroupKind()
 }
 
 // Resource takes an unqualified resource and returns a Group qualified GroupResource
-func Resource(resource string) unversioned.GroupResource {
+func Resource(resource string) schema.GroupResource {
 	return SchemeGroupVersion.WithResource(resource).GroupResource()
 }
 
@@ -61,13 +59,13 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 	return nil
 }
 
-func (obj *Cluster) GetObjectKind() unversioned.ObjectKind {
+func (obj *Cluster) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
-func (obj *InstanceGroup) GetObjectKind() unversioned.ObjectKind {
+func (obj *InstanceGroup) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
-func (obj *Federation) GetObjectKind() unversioned.ObjectKind {
+func (obj *Federation) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
 

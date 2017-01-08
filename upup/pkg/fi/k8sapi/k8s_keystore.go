@@ -25,13 +25,14 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	meta_v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"math/big"
 	"time"
 )
 
 type KubernetesKeystore struct {
-	client    release_1_5.Interface
+	client    k8s_clientset.Interface
 	namespace string
 
 	//mutex     sync.Mutex
@@ -41,7 +42,7 @@ type KubernetesKeystore struct {
 
 var _ fi.Keystore = &KubernetesKeystore{}
 
-func NewKubernetesKeystore(client release_1_5.Interface, namespace string) fi.Keystore {
+func NewKubernetesKeystore(client k8s_clientset.Interface, namespace string) fi.Keystore {
 	c := &KubernetesKeystore{
 		client:    client,
 		namespace: namespace,
@@ -78,7 +79,7 @@ func (c *KubernetesKeystore) issueCert(id string, serial *big.Int, privateKey *f
 }
 
 func (c *KubernetesKeystore) findSecret(id string) (*v1.Secret, error) {
-	secret, err := c.client.Core().Secrets(c.namespace).Get(id)
+	secret, err := c.client.Core().Secrets(c.namespace).Get(id, meta_v1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil, nil

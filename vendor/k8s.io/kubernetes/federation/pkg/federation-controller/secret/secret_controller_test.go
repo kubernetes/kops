@@ -22,45 +22,46 @@ import (
 	"testing"
 	"time"
 
-	federation_api "k8s.io/kubernetes/federation/apis/federation/v1beta1"
-	fake_fedclientset "k8s.io/kubernetes/federation/client/clientset_generated/federation_release_1_5/fake"
+	federationapi "k8s.io/kubernetes/federation/apis/federation/v1beta1"
+	fakefedclientset "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/fake"
 	"k8s.io/kubernetes/federation/pkg/federation-controller/util"
 	"k8s.io/kubernetes/federation/pkg/federation-controller/util/deletionhelper"
 	. "k8s.io/kubernetes/federation/pkg/federation-controller/util/test"
-	api_v1 "k8s.io/kubernetes/pkg/api/v1"
-	kubeclientset "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
-	fake_kubeclientset "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5/fake"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	kubeclientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
+	fakekubeclientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
 	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/types"
 	"k8s.io/kubernetes/pkg/util/wait"
 
+	"github.com/golang/glog"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSecretController(t *testing.T) {
-	cluster1 := NewCluster("cluster1", api_v1.ConditionTrue)
-	cluster2 := NewCluster("cluster2", api_v1.ConditionTrue)
+	cluster1 := NewCluster("cluster1", apiv1.ConditionTrue)
+	cluster2 := NewCluster("cluster2", apiv1.ConditionTrue)
 
-	fakeClient := &fake_fedclientset.Clientset{}
-	RegisterFakeList("clusters", &fakeClient.Fake, &federation_api.ClusterList{Items: []federation_api.Cluster{*cluster1}})
-	RegisterFakeList("secrets", &fakeClient.Fake, &api_v1.SecretList{Items: []api_v1.Secret{}})
+	fakeClient := &fakefedclientset.Clientset{}
+	RegisterFakeList("clusters", &fakeClient.Fake, &federationapi.ClusterList{Items: []federationapi.Cluster{*cluster1}})
+	RegisterFakeList("secrets", &fakeClient.Fake, &apiv1.SecretList{Items: []apiv1.Secret{}})
 	secretWatch := RegisterFakeWatch("secrets", &fakeClient.Fake)
 	secretUpdateChan := RegisterFakeCopyOnUpdate("secrets", &fakeClient.Fake, secretWatch)
 	clusterWatch := RegisterFakeWatch("clusters", &fakeClient.Fake)
 
-	cluster1Client := &fake_kubeclientset.Clientset{}
+	cluster1Client := &fakekubeclientset.Clientset{}
 	cluster1Watch := RegisterFakeWatch("secrets", &cluster1Client.Fake)
-	RegisterFakeList("secrets", &cluster1Client.Fake, &api_v1.SecretList{Items: []api_v1.Secret{}})
+	RegisterFakeList("secrets", &cluster1Client.Fake, &apiv1.SecretList{Items: []apiv1.Secret{}})
 	cluster1CreateChan := RegisterFakeCopyOnCreate("secrets", &cluster1Client.Fake, cluster1Watch)
-	//	cluster1UpdateChan := RegisterFakeCopyOnUpdate("secrets", &cluster1Client.Fake, cluster1Watch)
+	cluster1UpdateChan := RegisterFakeCopyOnUpdate("secrets", &cluster1Client.Fake, cluster1Watch)
 
-	cluster2Client := &fake_kubeclientset.Clientset{}
+	cluster2Client := &fakekubeclientset.Clientset{}
 	cluster2Watch := RegisterFakeWatch("secrets", &cluster2Client.Fake)
-	RegisterFakeList("secrets", &cluster2Client.Fake, &api_v1.SecretList{Items: []api_v1.Secret{}})
+	RegisterFakeList("secrets", &cluster2Client.Fake, &apiv1.SecretList{Items: []apiv1.Secret{}})
 	cluster2CreateChan := RegisterFakeCopyOnCreate("secrets", &cluster2Client.Fake, cluster2Watch)
 
 	secretController := NewSecretController(fakeClient)
-	informerClientFactory := func(cluster *federation_api.Cluster) (kubeclientset.Interface, error) {
+	informerClientFactory := func(cluster *federationapi.Cluster) (kubeclientset.Interface, error) {
 		switch cluster.Name {
 		case cluster1.Name:
 			return cluster1Client, nil
@@ -80,8 +81,8 @@ func TestSecretController(t *testing.T) {
 	stop := make(chan struct{})
 	secretController.Run(stop)
 
-	secret1 := api_v1.Secret{
-		ObjectMeta: api_v1.ObjectMeta{
+	secret1 := apiv1.Secret{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      "test-secret",
 			Namespace: "ns",
 			SelfLink:  "/api/v1/namespaces/ns/secrets/test-secret",
@@ -90,7 +91,7 @@ func TestSecretController(t *testing.T) {
 			"A": []byte("ala ma kota"),
 			"B": []byte("quick brown fox"),
 		},
-		Type: api_v1.SecretTypeOpaque,
+		Type: apiv1.SecretTypeOpaque,
 	}
 
 	// Test add federated secret.
@@ -99,7 +100,7 @@ func TestSecretController(t *testing.T) {
 	updatedSecret := GetSecretFromChan(secretUpdateChan)
 	assert.True(t, secretController.hasFinalizerFunc(updatedSecret, deletionhelper.FinalizerDeleteFromUnderlyingClusters))
 	updatedSecret = GetSecretFromChan(secretUpdateChan)
-	assert.True(t, secretController.hasFinalizerFunc(updatedSecret, api_v1.FinalizerOrphan))
+	assert.True(t, secretController.hasFinalizerFunc(updatedSecret, apiv1.FinalizerOrphan))
 	secret1 = *updatedSecret
 
 	// Verify that the secret is created in underlying cluster1.
@@ -116,38 +117,45 @@ func TestSecretController(t *testing.T) {
 		cluster1.Name, types.NamespacedName{Namespace: secret1.Namespace, Name: secret1.Name}.String(), wait.ForeverTestTimeout)
 	assert.Nil(t, err, "secret should have appeared in the informer store")
 
-	/*
-		        // TODO: Uncomment this once we have figured out why this is flaky.
-			// Test update federated secret.
-			secret1.Annotations = map[string]string{
-				"A": "B",
+	checkAll := func(expected apiv1.Secret) CheckingFunction {
+		return func(obj runtime.Object) error {
+			glog.V(4).Infof("Checking %v", obj)
+			s := obj.(*apiv1.Secret)
+			if err := CompareObjectMeta(expected.ObjectMeta, s.ObjectMeta); err != nil {
+				return err
 			}
-			secretWatch.Modify(&secret1)
-			updatedSecret = GetSecretFromChan(cluster1UpdateChan)
-			assert.NotNil(t, updatedSecret)
-			assert.Equal(t, secret1.Name, updatedSecret.Name)
-			assert.Equal(t, secret1.Namespace, updatedSecret.Namespace)
-			assert.True(t, secretsEqual(secret1, *updatedSecret),
-				fmt.Sprintf("expected: %v, actual: %v", secret1, *updatedSecret))
-			// Wait for the secret to be updated in the informer store.
-			err = WaitForSecretStoreUpdate(
-				secretController.secretFederatedInformer.GetTargetStore(),
-				cluster1.Name, types.NamespacedName{Namespace: secret1.Namespace, Name: secret1.Name}.String(),
-				updatedSecret, wait.ForeverTestTimeout)
-			assert.Nil(t, err, "secret should have been updated in the informer store")
+			if !reflect.DeepEqual(expected.Data, s.Data) {
+				return fmt.Errorf("Data is different expected:%v actual:%v", expected.Data, s.Data)
+			}
+			if expected.Type != s.Type {
+				return fmt.Errorf("Type is different expected:%v actual:%v", expected.Type, s.Type)
+			}
+			return nil
+		}
+	}
 
-				// Test update federated secret.
-				secret1.Data = map[string][]byte{
-					"config": []byte("myconfigurationfile"),
-				}
-				secretWatch.Modify(&secret1)
-				updatedSecret2 := GetSecretFromChan(cluster1UpdateChan)
-				assert.NotNil(t, updatedSecret2)
-				assert.Equal(t, secret1.Name, updatedSecret2.Name)
-				assert.Equal(t, secret1.Namespace, updatedSecret.Namespace)
-				assert.True(t, secretsEqual(secret1, *updatedSecret2),
-					fmt.Sprintf("expected: %v, actual: %v", secret1, *updatedSecret2))
-	*/
+	// Test update federated secret.
+	secret1.Annotations = map[string]string{
+		"A": "B",
+	}
+	secretWatch.Modify(&secret1)
+	err = CheckObjectFromChan(cluster1UpdateChan, checkAll(secret1))
+	assert.NoError(t, err)
+
+	// Wait for the secret to be updated in the informer store.
+	err = WaitForSecretStoreUpdate(
+		secretController.secretFederatedInformer.GetTargetStore(),
+		cluster1.Name, types.NamespacedName{Namespace: secret1.Namespace, Name: secret1.Name}.String(),
+		&secret1, wait.ForeverTestTimeout)
+	assert.NoError(t, err, "secret should have been updated in the informer store")
+
+	// Test update federated secret.
+	secret1.Data = map[string][]byte{
+		"config": []byte("myconfigurationfile"),
+	}
+	secretWatch.Modify(&secret1)
+	err = CheckObjectFromChan(cluster1UpdateChan, checkAll(secret1))
+	assert.NoError(t, err)
 
 	// Test add cluster
 	clusterWatch.Add(cluster2)
@@ -161,14 +169,14 @@ func TestSecretController(t *testing.T) {
 	close(stop)
 }
 
-func setClientFactory(informer util.FederatedInformer, informerClientFactory func(*federation_api.Cluster) (kubeclientset.Interface, error)) {
+func setClientFactory(informer util.FederatedInformer, informerClientFactory func(*federationapi.Cluster) (kubeclientset.Interface, error)) {
 	testInformer := ToFederatedInformerForTestOnly(informer)
 	testInformer.SetClientFactory(informerClientFactory)
 }
 
-func secretsEqual(a, b api_v1.Secret) bool {
+func secretsEqual(a, b apiv1.Secret) bool {
 	// Clear the SelfLink and ObjectMeta.Finalizers since they will be different
-	// in resoure in federation control plane and resource in underlying cluster.
+	// in resource in federation control plane and resource in underlying cluster.
 	a.SelfLink = ""
 	b.SelfLink = ""
 	a.ObjectMeta.Finalizers = []string{}
@@ -176,20 +184,24 @@ func secretsEqual(a, b api_v1.Secret) bool {
 	return reflect.DeepEqual(a, b)
 }
 
-func GetSecretFromChan(c chan runtime.Object) *api_v1.Secret {
-	secret := GetObjectFromChan(c).(*api_v1.Secret)
+func GetSecretFromChan(c chan runtime.Object) *apiv1.Secret {
+	secret := GetObjectFromChan(c).(*apiv1.Secret)
 	return secret
 }
 
 // Wait till the store is updated with latest secret.
-func WaitForSecretStoreUpdate(store util.FederatedReadOnlyStore, clusterName, key string, desiredSecret *api_v1.Secret, timeout time.Duration) error {
-	retryInterval := 100 * time.Millisecond
+func WaitForSecretStoreUpdate(store util.FederatedReadOnlyStore, clusterName, key string, desiredSecret *apiv1.Secret, timeout time.Duration) error {
+	retryInterval := 200 * time.Millisecond
 	err := wait.PollImmediate(retryInterval, timeout, func() (bool, error) {
 		obj, found, err := store.GetByKey(clusterName, key)
 		if !found || err != nil {
+			glog.Infof("%s is not in the store", key)
 			return false, err
 		}
-		equal := secretsEqual(*obj.(*api_v1.Secret), *desiredSecret)
+		equal := secretsEqual(*obj.(*apiv1.Secret), *desiredSecret)
+		if !equal {
+			glog.Infof("wrong content in the store expected:\n%v\nactual:\n%v\n", *desiredSecret, *obj.(*apiv1.Secret))
+		}
 		return equal, err
 	})
 	return err

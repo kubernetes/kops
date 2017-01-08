@@ -22,12 +22,12 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"k8s.io/kubernetes/pkg/api"
 	apierrs "k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/resource"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/apimachinery/registered"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/types"
 	"k8s.io/kubernetes/pkg/volume/util/volumehelper"
 	"k8s.io/kubernetes/test/e2e/framework"
@@ -49,6 +49,21 @@ type pvmap map[string]pvval
 type pvcval struct{}
 type pvcmap map[types.NamespacedName]pvcval
 
+// Configuration for a persistent volume.  To create PVs for varying storage options (NFS, ceph, glusterFS, etc.)
+// define the pvSource as below.  prebind holds a pre-bound PVC if there is one.
+// pvSource: api.PersistentVolumeSource{
+// 	NFS: &api.NFSVolumeSource{
+// 		.
+// 		.
+// 		.
+// 	},
+// }
+type persistentVolumeConfig struct {
+	pvSource   v1.PersistentVolumeSource
+	prebind    *v1.PersistentVolumeClaim
+	namePrefix string
+}
+
 // Delete the nfs-server pod. Only done once per KubeDescription().
 func nfsServerPodCleanup(c clientset.Interface, config VolumeTestConfig) {
 	defer GinkgoRecover()
@@ -62,34 +77,44 @@ func nfsServerPodCleanup(c clientset.Interface, config VolumeTestConfig) {
 	}
 }
 
-// Cleanup up pvs and pvcs in multi-pv-pvc test cases. All entries found in the pv and
+// Clean up a pv and pvc in a single pv/pvc test case.
+func pvPvcCleanup(c clientset.Interface, ns string, pv *v1.PersistentVolume, pvc *v1.PersistentVolumeClaim) {
+	deletePersistentVolumeClaim(c, pvc.Name, ns)
+	deletePersistentVolume(c, pv.Name)
+}
+
+// Clean up pvs and pvcs in multi-pv-pvc test cases. All entries found in the pv and
 // claims maps are deleted.
-// Note: this is the only code that deletes PV objects.
-func pvPvcCleanup(c clientset.Interface, ns string, pvols pvmap, claims pvcmap) {
+func pvPvcMapCleanup(c clientset.Interface, ns string, pvols pvmap, claims pvcmap) {
+	for pvcKey := range claims {
+		deletePersistentVolumeClaim(c, pvcKey.Name, ns)
+		delete(claims, pvcKey)
+	}
 
-	if c != nil && len(ns) > 0 {
-		for pvcKey := range claims {
-			_, err := c.Core().PersistentVolumeClaims(pvcKey.Namespace).Get(pvcKey.Name)
-			if !apierrs.IsNotFound(err) {
-				Expect(err).NotTo(HaveOccurred())
-				framework.Logf("   deleting PVC %v ...", pvcKey)
-				err = c.Core().PersistentVolumeClaims(pvcKey.Namespace).Delete(pvcKey.Name, nil)
-				Expect(err).NotTo(HaveOccurred())
-				framework.Logf("   deleted  PVC %v", pvcKey)
-			}
-			delete(claims, pvcKey)
+	for pvKey := range pvols {
+		deletePersistentVolume(c, pvKey)
+		delete(pvols, pvKey)
+	}
+}
+
+// Delete the PV.
+func deletePersistentVolume(c clientset.Interface, pvName string) {
+	if c != nil && len(pvName) > 0 {
+		framework.Logf("Deleting PersistentVolume %v", pvName)
+		err := c.Core().PersistentVolumes().Delete(pvName, nil)
+		if err != nil && !apierrs.IsNotFound(err) {
+			Expect(err).NotTo(HaveOccurred())
 		}
+	}
+}
 
-		for name := range pvols {
-			_, err := c.Core().PersistentVolumes().Get(name)
-			if !apierrs.IsNotFound(err) {
-				Expect(err).NotTo(HaveOccurred())
-				framework.Logf("   deleting PV %v ...", name)
-				err = c.Core().PersistentVolumes().Delete(name, nil)
-				Expect(err).NotTo(HaveOccurred())
-				framework.Logf("   deleted  PV %v", name)
-			}
-			delete(pvols, name)
+// Delete the Claim
+func deletePersistentVolumeClaim(c clientset.Interface, pvcName string, ns string) {
+	if c != nil && len(pvcName) > 0 {
+		framework.Logf("Deleting PersistentVolumeClaim %v", pvcName)
+		err := c.Core().PersistentVolumeClaims(ns).Delete(pvcName, nil)
+		if err != nil && !apierrs.IsNotFound(err) {
+			Expect(err).NotTo(HaveOccurred())
 		}
 	}
 }
@@ -97,32 +122,30 @@ func pvPvcCleanup(c clientset.Interface, ns string, pvols pvmap, claims pvcmap) 
 // Delete the PVC and wait for the PV to become Available again. Validate that the PV
 // has recycled (assumption here about reclaimPolicy). Caller tells this func which
 // phase value to expect for the pv bound to the to-be-deleted claim.
-func deletePVCandValidatePV(c clientset.Interface, ns string, pvc *api.PersistentVolumeClaim, pv *api.PersistentVolume, expctPVPhase api.PersistentVolumePhase) {
+func deletePVCandValidatePV(c clientset.Interface, ns string, pvc *v1.PersistentVolumeClaim, pv *v1.PersistentVolume, expctPVPhase v1.PersistentVolumePhase) {
 
 	pvname := pvc.Spec.VolumeName
 	framework.Logf("Deleting PVC %v to trigger recycling of PV %v", pvc.Name, pvname)
-
-	err := c.Core().PersistentVolumeClaims(ns).Delete(pvc.Name, nil)
-	Expect(err).NotTo(HaveOccurred())
+	deletePersistentVolumeClaim(c, pvc.Name, ns)
 
 	// Check that the PVC is really deleted.
-	pvc, err = c.Core().PersistentVolumeClaims(ns).Get(pvc.Name)
+	pvc, err := c.Core().PersistentVolumeClaims(ns).Get(pvc.Name, metav1.GetOptions{})
 	Expect(apierrs.IsNotFound(err)).To(BeTrue())
 
-	// Wait for the PV's phase to return to the expected Phase
+	// Wait for the PV's phase to return to Available
 	framework.Logf("Waiting for recycling process to complete.")
 	err = framework.WaitForPersistentVolumePhase(expctPVPhase, c, pv.Name, 1*time.Second, 300*time.Second)
 	Expect(err).NotTo(HaveOccurred())
 
 	// examine the pv's ClaimRef and UID and compare to expected values
-	pv, err = c.Core().PersistentVolumes().Get(pv.Name)
+	pv, err = c.Core().PersistentVolumes().Get(pv.Name, metav1.GetOptions{})
 	Expect(err).NotTo(HaveOccurred())
 	cr := pv.Spec.ClaimRef
-	if expctPVPhase == api.VolumeAvailable {
+	if expctPVPhase == v1.VolumeAvailable {
 		if cr != nil { // may be ok if cr != nil
 			Expect(len(cr.UID)).To(BeZero())
 		}
-	} else if expctPVPhase == api.VolumeBound {
+	} else if expctPVPhase == v1.VolumeBound {
 		Expect(cr).NotTo(BeNil())
 		Expect(len(cr.UID)).NotTo(BeZero())
 	}
@@ -137,10 +160,10 @@ func deletePVCandValidatePV(c clientset.Interface, ns string, pvc *api.Persisten
 func deletePVCandValidatePVGroup(c clientset.Interface, ns string, pvols pvmap, claims pvcmap) {
 
 	var boundPVs, deletedPVCs int
-	var expctPVPhase api.PersistentVolumePhase
+	var expctPVPhase v1.PersistentVolumePhase
 
 	for pvName := range pvols {
-		pv, err := c.Core().PersistentVolumes().Get(pvName)
+		pv, err := c.Core().PersistentVolumes().Get(pvName, metav1.GetOptions{})
 		Expect(apierrs.IsNotFound(err)).To(BeFalse())
 		cr := pv.Spec.ClaimRef
 		// if pv is bound then delete the pvc it is bound to
@@ -151,16 +174,16 @@ func deletePVCandValidatePVGroup(c clientset.Interface, ns string, pvols pvmap, 
 			pvcKey := makePvcKey(ns, cr.Name)
 			_, found := claims[pvcKey]
 			Expect(found).To(BeTrue())
-			pvc, err := c.Core().PersistentVolumeClaims(ns).Get(cr.Name)
+			pvc, err := c.Core().PersistentVolumeClaims(ns).Get(cr.Name, metav1.GetOptions{})
 			Expect(apierrs.IsNotFound(err)).To(BeFalse())
 
 			// what Phase do we expect the PV that was bound to the claim to
 			// be in after that claim is deleted?
-			expctPVPhase = api.VolumeAvailable
+			expctPVPhase = v1.VolumeAvailable
 			if len(claims) > len(pvols) {
 				// there are excess pvcs so expect the previously bound
 				// PV to become bound again
-				expctPVPhase = api.VolumeBound
+				expctPVPhase = v1.VolumeBound
 			}
 
 			deletePVCandValidatePV(c, ns, pvc, pv, expctPVPhase)
@@ -172,7 +195,7 @@ func deletePVCandValidatePVGroup(c clientset.Interface, ns string, pvols pvmap, 
 }
 
 // create the PV resource. Fails test on error.
-func createPV(c clientset.Interface, pv *api.PersistentVolume) *api.PersistentVolume {
+func createPV(c clientset.Interface, pv *v1.PersistentVolume) *v1.PersistentVolume {
 
 	pv, err := c.Core().PersistentVolumes().Create(pv)
 	Expect(err).NotTo(HaveOccurred())
@@ -180,7 +203,7 @@ func createPV(c clientset.Interface, pv *api.PersistentVolume) *api.PersistentVo
 }
 
 // create the PVC resource. Fails test on error.
-func createPVC(c clientset.Interface, ns string, pvc *api.PersistentVolumeClaim) *api.PersistentVolumeClaim {
+func createPVC(c clientset.Interface, ns string, pvc *v1.PersistentVolumeClaim) *v1.PersistentVolumeClaim {
 
 	pvc, err := c.Core().PersistentVolumeClaims(ns).Create(pvc)
 	Expect(err).NotTo(HaveOccurred())
@@ -193,19 +216,18 @@ func createPVC(c clientset.Interface, ns string, pvc *api.PersistentVolumeClaim)
 // Note: in the pre-bind case the real PVC name, which is generated, is not
 //   known until after the PVC is instantiated. This is why the pvc is created
 //   before the pv.
-func createPVCPV(c clientset.Interface, serverIP, ns string, preBind bool) (*api.PersistentVolume, *api.PersistentVolumeClaim) {
+func createPVCPV(c clientset.Interface, pvConfig persistentVolumeConfig, ns string, preBind bool) (*v1.PersistentVolume, *v1.PersistentVolumeClaim) {
 
-	var bindTo *api.PersistentVolumeClaim
 	var preBindMsg string
 
 	// make the pvc definition first
 	pvc := makePersistentVolumeClaim(ns)
 	if preBind {
 		preBindMsg = " pre-bound"
-		bindTo = pvc
+		pvConfig.prebind = pvc
 	}
 	// make the pv spec
-	pv := makePersistentVolume(serverIP, bindTo)
+	pv := makePersistentVolume(pvConfig)
 
 	By(fmt.Sprintf("Creating a PVC followed by a%s PV", preBindMsg))
 	// instantiate the pvc
@@ -227,7 +249,8 @@ func createPVCPV(c clientset.Interface, serverIP, ns string, preBind bool) (*api
 // Note: in the pre-bind case the real PV name, which is generated, is not
 //   known until after the PV is instantiated. This is why the pv is created
 //   before the pvc.
-func createPVPVC(c clientset.Interface, serverIP, ns string, preBind bool) (*api.PersistentVolume, *api.PersistentVolumeClaim) {
+
+func createPVPVC(c clientset.Interface, pvConfig persistentVolumeConfig, ns string, preBind bool) (*v1.PersistentVolume, *v1.PersistentVolumeClaim) {
 
 	preBindMsg := ""
 	if preBind {
@@ -236,7 +259,7 @@ func createPVPVC(c clientset.Interface, serverIP, ns string, preBind bool) (*api
 	framework.Logf("Creating a PV followed by a%s PVC", preBindMsg)
 
 	// make the pv and pvc definitions
-	pv := makePersistentVolume(serverIP, nil)
+	pv := makePersistentVolume(pvConfig)
 	pvc := makePersistentVolumeClaim(ns)
 
 	// instantiate the pv
@@ -253,11 +276,11 @@ func createPVPVC(c clientset.Interface, serverIP, ns string, preBind bool) (*api
 // Create the desired number of PVs and PVCs and return them in separate maps. If the
 // number of PVs != the number of PVCs then the min of those two counts is the number of
 // PVs expected to bind.
-func createPVsPVCs(numpvs, numpvcs int, c clientset.Interface, ns, serverIP string) (pvmap, pvcmap) {
+func createPVsPVCs(numpvs, numpvcs int, c clientset.Interface, ns string, pvConfig persistentVolumeConfig) (pvmap, pvcmap) {
 
 	var i int
-	var pv *api.PersistentVolume
-	var pvc *api.PersistentVolumeClaim
+	var pv *v1.PersistentVolume
+	var pvc *v1.PersistentVolumeClaim
 	pvMap := make(pvmap, numpvs)
 	pvcMap := make(pvcmap, numpvcs)
 
@@ -271,14 +294,14 @@ func createPVsPVCs(numpvs, numpvcs int, c clientset.Interface, ns, serverIP stri
 
 	// create pvs and pvcs
 	for i = 0; i < pvsToCreate; i++ {
-		pv, pvc = createPVPVC(c, serverIP, ns, false)
+		pv, pvc = createPVPVC(c, pvConfig, ns, false)
 		pvMap[pv.Name] = pvval{}
 		pvcMap[makePvcKey(ns, pvc.Name)] = pvcval{}
 	}
 
 	// create extra pvs or pvcs as needed
 	for i = 0; i < extraPVs; i++ {
-		pv = makePersistentVolume(serverIP, nil)
+		pv = makePersistentVolume(pvConfig)
 		pv = createPV(c, pv)
 		pvMap[pv.Name] = pvval{}
 	}
@@ -292,24 +315,24 @@ func createPVsPVCs(numpvs, numpvcs int, c clientset.Interface, ns, serverIP stri
 }
 
 // Wait for the pv and pvc to bind to each other.
-func waitOnPVandPVC(c clientset.Interface, ns string, pv *api.PersistentVolume, pvc *api.PersistentVolumeClaim) {
+func waitOnPVandPVC(c clientset.Interface, ns string, pv *v1.PersistentVolume, pvc *v1.PersistentVolumeClaim) {
 
 	// Wait for newly created PVC to bind to the PV
 	framework.Logf("Waiting for PV %v to bind to PVC %v", pv.Name, pvc.Name)
-	err := framework.WaitForPersistentVolumeClaimPhase(api.ClaimBound, c, ns, pvc.Name, 3*time.Second, 300*time.Second)
+	err := framework.WaitForPersistentVolumeClaimPhase(v1.ClaimBound, c, ns, pvc.Name, 3*time.Second, 300*time.Second)
 	Expect(err).NotTo(HaveOccurred())
 
 	// Wait for PersistentVolume.Status.Phase to be Bound, which it should be
 	// since the PVC is already bound.
-	err = framework.WaitForPersistentVolumePhase(api.VolumeBound, c, pv.Name, 3*time.Second, 300*time.Second)
+	err = framework.WaitForPersistentVolumePhase(v1.VolumeBound, c, pv.Name, 3*time.Second, 300*time.Second)
 	Expect(err).NotTo(HaveOccurred())
 
 	// Re-get the pv and pvc objects
-	pv, err = c.Core().PersistentVolumes().Get(pv.Name)
+	pv, err = c.Core().PersistentVolumes().Get(pv.Name, metav1.GetOptions{})
 	Expect(err).NotTo(HaveOccurred())
 
 	// Re-get the pvc and
-	pvc, err = c.Core().PersistentVolumeClaims(ns).Get(pvc.Name)
+	pvc, err = c.Core().PersistentVolumeClaims(ns).Get(pvc.Name, metav1.GetOptions{})
 	Expect(err).NotTo(HaveOccurred())
 
 	// The pv and pvc are both bound, but to each other?
@@ -335,7 +358,7 @@ func waitAndVerifyBinds(c clientset.Interface, ns string, pvols pvmap, claims pv
 	}
 
 	for pvName := range pvols {
-		err := framework.WaitForPersistentVolumePhase(api.VolumeBound, c, pvName, 3*time.Second, 180*time.Second)
+		err := framework.WaitForPersistentVolumePhase(v1.VolumeBound, c, pvName, 3*time.Second, 180*time.Second)
 		if err != nil && len(pvols) > len(claims) {
 			framework.Logf("WARN: pv %v is not bound after max wait", pvName)
 			framework.Logf("      This may be ok since there are more pvs than pvcs")
@@ -343,7 +366,7 @@ func waitAndVerifyBinds(c clientset.Interface, ns string, pvols pvmap, claims pv
 		}
 		Expect(err).NotTo(HaveOccurred())
 
-		pv, err := c.Core().PersistentVolumes().Get(pvName)
+		pv, err := c.Core().PersistentVolumes().Get(pvName, metav1.GetOptions{})
 		Expect(err).NotTo(HaveOccurred())
 		if cr := pv.Spec.ClaimRef; cr != nil && len(cr.Name) > 0 {
 			// Assert bound pvc is a test resource. Failing assertion could
@@ -352,7 +375,7 @@ func waitAndVerifyBinds(c clientset.Interface, ns string, pvols pvmap, claims pv
 			_, found := claims[pvcKey]
 			Expect(found).To(BeTrue())
 
-			err = framework.WaitForPersistentVolumeClaimPhase(api.ClaimBound, c, ns, cr.Name, 3*time.Second, 180*time.Second)
+			err = framework.WaitForPersistentVolumeClaimPhase(v1.ClaimBound, c, ns, cr.Name, 3*time.Second, 180*time.Second)
 			Expect(err).NotTo(HaveOccurred())
 			actualBinds++
 		}
@@ -364,7 +387,7 @@ func waitAndVerifyBinds(c clientset.Interface, ns string, pvols pvmap, claims pv
 }
 
 // Test the pod's exit code to be zero.
-func testPodSuccessOrFail(c clientset.Interface, ns string, pod *api.Pod) {
+func testPodSuccessOrFail(c clientset.Interface, ns string, pod *v1.Pod) {
 
 	By("Pod should terminate with exitcode 0 (success)")
 	err := framework.WaitForPodSuccessInNamespace(c, pod.Name, ns)
@@ -373,18 +396,22 @@ func testPodSuccessOrFail(c clientset.Interface, ns string, pod *api.Pod) {
 }
 
 // Delete the passed in pod.
-func deletePod(f *framework.Framework, c clientset.Interface, ns string, pod *api.Pod) {
-
-	framework.Logf("Deleting pod %v", pod.Name)
-	err := c.Core().Pods(ns).Delete(pod.Name, nil)
-	Expect(err).NotTo(HaveOccurred())
-
-	// Wait for pod to terminate.  Expect apierr NotFound
-	err = f.WaitForPodTerminated(pod.Name, "")
-	Expect(err).To(HaveOccurred())
-	Expect(apierrs.IsNotFound(err)).To(BeTrue())
-
-	framework.Logf("Ignore \"not found\" error above. Pod %v successfully deleted", pod.Name)
+func deletePod(f *framework.Framework, c clientset.Interface, ns string, pod *v1.Pod) {
+	if c != nil {
+		if pod != nil && len(pod.Name) > 0 {
+			framework.Logf("Deleting pod %v", pod.Name)
+			err := c.Core().Pods(ns).Delete(pod.Name, nil)
+			if err != nil && !apierrs.IsNotFound(err) {
+				Expect(err).NotTo(HaveOccurred())
+			}
+			// Wait for pod to terminate.  Expect apierr NotFound
+			err = f.WaitForPodTerminated(pod.Name, "")
+			if err != nil && !apierrs.IsNotFound(err) {
+				Expect(err).NotTo(HaveOccurred())
+			}
+			framework.Logf("Ignore \"not found\" error above. Pod %v successfully deleted", pod.Name)
+		}
+	}
 }
 
 // Create the test pod, wait for (hopefully) success, and then delete the pod.
@@ -408,7 +435,7 @@ func createWaitAndDeletePod(f *framework.Framework, c clientset.Interface, ns st
 
 // Validate PV/PVC, create and verify writer pod, delete the PVC, and validate the PV's
 // phase. Note: the PV is deleted in the AfterEach, not here.
-func completeTest(f *framework.Framework, c clientset.Interface, ns string, pv *api.PersistentVolume, pvc *api.PersistentVolumeClaim) {
+func completeTest(f *framework.Framework, c clientset.Interface, ns string, pv *v1.PersistentVolume, pvc *v1.PersistentVolumeClaim) {
 
 	// 1. verify that the PV and PVC have binded correctly
 	By("Validating the PV-PVC binding")
@@ -421,7 +448,7 @@ func completeTest(f *framework.Framework, c clientset.Interface, ns string, pv *
 
 	// 3. delete the PVC, wait for PV to become "Available"
 	By("Deleting the PVC to invoke the recycler")
-	deletePVCandValidatePV(c, ns, pvc, pv, api.VolumeAvailable)
+	deletePVCandValidatePV(c, ns, pvc, pv, v1.VolumeAvailable)
 }
 
 // Validate pairs of PVs and PVCs, create and verify writer pod, delete PVC and validate
@@ -435,7 +462,7 @@ func completeMultiTest(f *framework.Framework, c clientset.Interface, ns string,
 	// 1. verify each PV permits write access to a client pod
 	By("Checking pod has write access to PersistentVolumes")
 	for pvcKey := range claims {
-		pvc, err := c.Core().PersistentVolumeClaims(pvcKey.Namespace).Get(pvcKey.Name)
+		pvc, err := c.Core().PersistentVolumeClaims(pvcKey.Namespace).Get(pvcKey.Name, metav1.GetOptions{})
 		Expect(err).NotTo(HaveOccurred())
 		if len(pvc.Spec.VolumeName) == 0 {
 			continue // claim is not bound
@@ -458,162 +485,269 @@ var _ = framework.KubeDescribe("PersistentVolumes", func() {
 	f := framework.NewDefaultFramework("pv")
 	var c clientset.Interface
 	var ns string
-	var NFSconfig VolumeTestConfig
-	var serverIP string
-	var nfsServerPod *api.Pod
-
-	// config for the nfs-server pod in the default namespace
-	NFSconfig = VolumeTestConfig{
-		namespace:   api.NamespaceDefault,
-		prefix:      "nfs",
-		serverImage: "gcr.io/google_containers/volume-nfs:0.7",
-		serverPorts: []int{2049},
-		serverArgs:  []string{"-G", "777", "/exports"},
-	}
 
 	BeforeEach(func() {
 		c = f.ClientSet
 		ns = f.Namespace.Name
-
-		// If it doesn't exist, create the nfs server pod in the "default" ns.
-		// The "default" ns is used so that individual tests can delete their
-		// ns without impacting the nfs-server pod.
-		if nfsServerPod == nil {
-			nfsServerPod = startVolumeServer(c, NFSconfig)
-			serverIP = nfsServerPod.Status.PodIP
-			framework.Logf("NFS server IP address: %v", serverIP)
-		}
 	})
 
-	// Execute after *all* the tests have run
-	AddCleanupAction(func() {
-		if nfsServerPod != nil && c != nil {
-			framework.Logf("AfterSuite: deleting nfs-server pod: %v", nfsServerPod.Name)
-			nfsServerPodCleanup(c, NFSconfig)
-			nfsServerPod = nil
+	///////////////////////////////////////////////////////////////////////
+	//				NFS
+	///////////////////////////////////////////////////////////////////////
+	// Testing configurations of a single a PV/PVC pair, multiple evenly paired PVs/PVCs,
+	// and multiple unevenly paired PV/PVCs
+	framework.KubeDescribe("PersistentVolumes:NFS", func() {
+
+		var (
+			NFSconfig    VolumeTestConfig
+			nfsServerPod *v1.Pod
+			serverIP     string
+			pvConfig     persistentVolumeConfig
+		)
+
+		// config for the nfs-server pod in the default namespace
+		NFSconfig = VolumeTestConfig{
+			namespace:   v1.NamespaceDefault,
+			prefix:      "nfs",
+			serverImage: "gcr.io/google_containers/volume-nfs:0.7",
+			serverPorts: []int{2049},
+			serverArgs:  []string{"-G", "777", "/exports"},
 		}
+
+		BeforeEach(func() {
+			// If it doesn't exist, create the nfs server pod in the "default" ns.
+			// The "default" ns is used so that individual tests can delete their
+			// ns without impacting the nfs-server pod.
+			if nfsServerPod == nil {
+				nfsServerPod = startVolumeServer(c, NFSconfig)
+				serverIP = nfsServerPod.Status.PodIP
+				framework.Logf("NFS server IP address: %v", serverIP)
+			}
+			pvConfig = persistentVolumeConfig{
+				namePrefix: "nfs-",
+				pvSource: v1.PersistentVolumeSource{
+					NFS: &v1.NFSVolumeSource{
+						Server:   serverIP,
+						Path:     "/exports",
+						ReadOnly: false,
+					},
+				},
+			}
+		})
+
+		// Execute after *all* the tests have run
+		AddCleanupAction(func() {
+			if nfsServerPod != nil && c != nil {
+				framework.Logf("AfterSuite: nfs-server pod %v is non-nil, deleting pod", nfsServerPod.Name)
+				nfsServerPodCleanup(c, NFSconfig)
+				nfsServerPod = nil
+			}
+		})
+
+		Context("with Single PV - PVC pairs", func() {
+
+			var pv *v1.PersistentVolume
+			var pvc *v1.PersistentVolumeClaim
+
+			// Note: this is the only code where the pv is deleted.
+			AfterEach(func() {
+				framework.Logf("AfterEach: Cleaning up test resources.")
+				pvPvcCleanup(c, ns, pv, pvc)
+			})
+
+			// Individual tests follow:
+			//
+			// Create an nfs PV, then a claim that matches the PV, and a pod that
+			// contains the claim. Verify that the PV and PVC bind correctly, and
+			// that the pod can write to the nfs volume.
+			It("should create a non-pre-bound PV and PVC: test write access [Flaky]", func() {
+				pv, pvc = createPVPVC(c, pvConfig, ns, false)
+				completeTest(f, c, ns, pv, pvc)
+			})
+
+			// Create a claim first, then a nfs PV that matches the claim, and a
+			// pod that contains the claim. Verify that the PV and PVC bind
+			// correctly, and that the pod can write to the nfs volume.
+			It("create a PVC and non-pre-bound PV: test write access [Flaky]", func() {
+				pv, pvc = createPVCPV(c, pvConfig, ns, false)
+				completeTest(f, c, ns, pv, pvc)
+			})
+
+			// Create a claim first, then a pre-bound nfs PV that matches the claim,
+			// and a pod that contains the claim. Verify that the PV and PVC bind
+			// correctly, and that the pod can write to the nfs volume.
+			It("create a PVC and a pre-bound PV: test write access [Flaky]", func() {
+				pv, pvc = createPVCPV(c, pvConfig, ns, true)
+				completeTest(f, c, ns, pv, pvc)
+			})
+
+			// Create a nfs PV first, then a pre-bound PVC that matches the PV,
+			// and a pod that contains the claim. Verify that the PV and PVC bind
+			// correctly, and that the pod can write to the nfs volume.
+			It("create a PV and a pre-bound PVC: test write access [Flaky]", func() {
+				pv, pvc = createPVPVC(c, pvConfig, ns, true)
+				completeTest(f, c, ns, pv, pvc)
+			})
+		})
+
+		// Create multiple pvs and pvcs, all in the same namespace. The PVs-PVCs are
+		// verified to bind, though it's not known in advanced which PV will bind to
+		// which claim. For each pv-pvc pair create a pod that writes to the nfs mount.
+		// Note: when the number of PVs exceeds the number of PVCs the max binding wait
+		//   time will occur for each PV in excess. This is expected but the delta
+		//   should be kept small so that the tests aren't unnecessarily slow.
+		// Note: future tests may wish to incorporate the following:
+		//   a) pre-binding, b) create pvcs before pvs, c) create pvcs and pods
+		//   in different namespaces.
+		Context("with multiple PVs and PVCs all in same ns", func() {
+
+			// define the maximum number of PVs and PVCs supported by these tests
+			const maxNumPVs = 10
+			const maxNumPVCs = 10
+			// create the pv and pvc maps to be reused in the It blocks
+			pvols := make(pvmap, maxNumPVs)
+			claims := make(pvcmap, maxNumPVCs)
+
+			AfterEach(func() {
+				framework.Logf("AfterEach: deleting %v PVCs and %v PVs...", len(claims), len(pvols))
+				pvPvcMapCleanup(c, ns, pvols, claims)
+			})
+
+			// Create 2 PVs and 4 PVCs.
+			// Note: PVs are created before claims and no pre-binding
+			It("should create 2 PVs and 4 PVCs: test write access[Flaky]", func() {
+				numPVs, numPVCs := 2, 4
+				pvols, claims = createPVsPVCs(numPVs, numPVCs, c, ns, pvConfig)
+				waitAndVerifyBinds(c, ns, pvols, claims, true)
+				completeMultiTest(f, c, ns, pvols, claims)
+			})
+
+			// Create 3 PVs and 3 PVCs.
+			// Note: PVs are created before claims and no pre-binding
+			It("should create 3 PVs and 3 PVCs: test write access[Flaky]", func() {
+				numPVs, numPVCs := 3, 3
+				pvols, claims = createPVsPVCs(numPVs, numPVCs, c, ns, pvConfig)
+				waitAndVerifyBinds(c, ns, pvols, claims, true)
+				completeMultiTest(f, c, ns, pvols, claims)
+			})
+
+			// Create 4 PVs and 2 PVCs.
+			// Note: PVs are created before claims and no pre-binding.
+			It("should create 4 PVs and 2 PVCs: test write access[Flaky]", func() {
+				numPVs, numPVCs := 4, 2
+				pvols, claims = createPVsPVCs(numPVs, numPVCs, c, ns, pvConfig)
+				waitAndVerifyBinds(c, ns, pvols, claims, true)
+				completeMultiTest(f, c, ns, pvols, claims)
+			})
+		})
 	})
+	///////////////////////////////////////////////////////////////////////
+	//				GCE PD
+	///////////////////////////////////////////////////////////////////////
+	// Testing configurations of single a PV/PVC pair attached to a GCE PD
+	framework.KubeDescribe("PersistentVolumes:GCEPD", func() {
 
-	Context("with Single PV - PVC pairs", func() {
+		var (
+			diskName  string
+			err       error
+			pv        *v1.PersistentVolume
+			pvc       *v1.PersistentVolumeClaim
+			clientPod *v1.Pod
+			pvConfig  persistentVolumeConfig
+		)
 
-		var pv *api.PersistentVolume
-		var pvc *api.PersistentVolumeClaim
+		BeforeEach(func() {
+			framework.SkipUnlessProviderIs("gce")
+			if diskName == "" {
+				diskName, err = createPDWithRetry()
+				Expect(err).NotTo(HaveOccurred())
+				pvConfig = persistentVolumeConfig{
+					namePrefix: "gce-",
+					pvSource: v1.PersistentVolumeSource{
+						GCEPersistentDisk: &v1.GCEPersistentDiskVolumeSource{
+							PDName:   diskName,
+							FSType:   "ext3",
+							ReadOnly: false,
+						},
+					},
+					prebind: nil,
+				}
+			}
+		})
 
-		// Note: this is the only code where the pv is deleted.
 		AfterEach(func() {
-			if c != nil && len(ns) > 0 {
-				if pvc != nil && len(pvc.Name) > 0 {
-					_, err := c.Core().PersistentVolumeClaims(ns).Get(pvc.Name)
-					if !apierrs.IsNotFound(err) {
-						Expect(err).NotTo(HaveOccurred())
-						framework.Logf("AfterEach: deleting PVC %v", pvc.Name)
-						err = c.Core().PersistentVolumeClaims(ns).Delete(pvc.Name, nil)
-						Expect(err).NotTo(HaveOccurred())
-						framework.Logf("AfterEach: deleted PVC %v", pvc.Name)
-					}
-				}
+			framework.Logf("AfterEach: Cleaning up test resources")
+			if c != nil {
+				deletePod(f, c, ns, clientPod)
+				pvPvcCleanup(c, ns, pv, pvc)
+				clientPod = nil
 				pvc = nil
-
-				if pv != nil && len(pv.Name) > 0 {
-					_, err := c.Core().PersistentVolumes().Get(pv.Name)
-					if !apierrs.IsNotFound(err) {
-						Expect(err).NotTo(HaveOccurred())
-						framework.Logf("AfterEach: deleting PV %v", pv.Name)
-						err := c.Core().PersistentVolumes().Delete(pv.Name, nil)
-						Expect(err).NotTo(HaveOccurred())
-						framework.Logf("AfterEach: deleted PV %v", pv.Name)
-					}
-				}
 				pv = nil
 			}
 		})
 
-		// Individual tests follow:
-		//
-		// Create an nfs PV, then a claim that matches the PV, and a pod that
-		// contains the claim. Verify that the PV and PVC bind correctly, and
-		// that the pod can write to the nfs volume.
-		It("should create a non-pre-bound PV and PVC: test write access [Flaky]", func() {
-			pv, pvc = createPVPVC(c, serverIP, ns, false)
-			completeTest(f, c, ns, pv, pvc)
+		AddCleanupAction(func() {
+			if len(diskName) > 0 {
+				deletePDWithRetry(diskName)
+			}
 		})
 
-		// Create a claim first, then a nfs PV that matches the claim, and a
-		// pod that contains the claim. Verify that the PV and PVC bind
-		// correctly, and that the pod can write to the nfs volume.
-		It("create a PVC and non-pre-bound PV: test write access [Flaky]", func() {
-			pv, pvc = createPVCPV(c, serverIP, ns, false)
-			completeTest(f, c, ns, pv, pvc)
+		// Attach a persistent disk to a pod using a PVC.
+		// Delete the PVC and then the pod.  Expect the pod to succeed in unmounting and detaching PD on delete.
+		It("should test that deleting a PVC before the pod does not cause pod deletion to fail on PD detach", func() {
+			By("Creating the PV and PVC")
+			pv, pvc = createPVPVC(c, pvConfig, ns, false)
+			waitOnPVandPVC(c, ns, pv, pvc)
+
+			By("Creating the Client Pod")
+			clientPod = createClientPod(c, ns, pvc)
+			node := types.NodeName(clientPod.Spec.NodeName)
+
+			By("Deleting the Claim")
+			deletePersistentVolumeClaim(c, pvc.Name, ns)
+			verifyGCEDiskAttached(diskName, node)
+
+			By("Deleting the Pod")
+			deletePod(f, c, ns, clientPod)
+
+			By("Verifying Persistent Disk detach")
+			err = waitForPDDetach(diskName, node)
+			Expect(err).NotTo(HaveOccurred())
 		})
 
-		// Create a claim first, then a pre-bound nfs PV that matches the claim,
-		// and a pod that contains the claim. Verify that the PV and PVC bind
-		// correctly, and that the pod can write to the nfs volume.
-		It("create a PVC and a pre-bound PV: test write access [Flaky]", func() {
-			pv, pvc = createPVCPV(c, serverIP, ns, true)
-			completeTest(f, c, ns, pv, pvc)
-		})
+		// Attach a persistent disk to a pod using a PVC.
+		// Delete the PV and then the pod.  Expect the pod to succeed in unmounting and detaching PD on delete.
+		It("should test that deleting the PV before the pod does not cause pod deletion to fail on PD detach", func() {
+			By("Creating the PV and PVC")
+			pv, pvc = createPVPVC(c, pvConfig, ns, false)
+			waitOnPVandPVC(c, ns, pv, pvc)
 
-		// Create a nfs PV first, then a pre-bound PVC that matches the PV,
-		// and a pod that contains the claim. Verify that the PV and PVC bind
-		// correctly, and that the pod can write to the nfs volume.
-		It("create a PV and a pre-bound PVC: test write access [Flaky]", func() {
-			pv, pvc = createPVPVC(c, serverIP, ns, true)
-			completeTest(f, c, ns, pv, pvc)
-		})
-	})
+			By("Creating the Client Pod")
+			clientPod = createClientPod(c, ns, pvc)
+			node := types.NodeName(clientPod.Spec.NodeName)
 
-	// Create multiple pvs and pvcs, all in the same namespace. The PVs-PVCs are
-	// verified to bind, though it's not known in advanced which PV will bind to
-	// which claim. For each pv-pvc pair create a pod that writes to the nfs mount.
-	// Note: when the number of PVs exceeds the number of PVCs the max binding wait
-	//   time will occur for each PV in excess. This is expected but the delta
-	//   should be kept small so that the tests aren't unnecessarily slow.
-	// Note: future tests may wish to incorporate the following:
-	//   a) pre-binding, b) create pvcs before pvs, c) create pvcs and pods
-	//   in different namespaces.
-	Context("with multiple PVs and PVCs all in same ns", func() {
+			By("Deleting the Persistent Volume")
+			deletePersistentVolume(c, pv.Name)
+			verifyGCEDiskAttached(diskName, node)
 
-		// define the maximum number of PVs and PVCs supported by these tests
-		const maxNumPVs = 10
-		const maxNumPVCs = 10
-		// create the pv and pvc maps to be reused in the It blocks
-		pvols := make(pvmap, maxNumPVs)
-		claims := make(pvcmap, maxNumPVCs)
+			By("Deleting the client pod")
+			deletePod(f, c, ns, clientPod)
 
-		AfterEach(func() {
-			framework.Logf("AfterEach: deleting %v PVCs and %v PVs...", len(claims), len(pvols))
-			pvPvcCleanup(c, ns, pvols, claims)
-		})
-
-		// Create 2 PVs and 4 PVCs.
-		// Note: PVs are created before claims and no pre-binding
-		It("should create 2 PVs and 4 PVCs: test write access[Flaky]", func() {
-			numPVs, numPVCs := 2, 4
-			pvols, claims = createPVsPVCs(numPVs, numPVCs, c, ns, serverIP)
-			waitAndVerifyBinds(c, ns, pvols, claims, true)
-			completeMultiTest(f, c, ns, pvols, claims)
-		})
-
-		// Create 3 PVs and 3 PVCs.
-		// Note: PVs are created before claims and no pre-binding
-		It("should create 3 PVs and 3 PVCs: test write access[Flaky]", func() {
-			numPVs, numPVCs := 3, 3
-			pvols, claims = createPVsPVCs(numPVs, numPVCs, c, ns, serverIP)
-			waitAndVerifyBinds(c, ns, pvols, claims, true)
-			completeMultiTest(f, c, ns, pvols, claims)
-		})
-
-		// Create 4 PVs and 2 PVCs.
-		// Note: PVs are created before claims and no pre-binding.
-		It("should create 4 PVs and 2 PVCs: test write access[Flaky]", func() {
-			numPVs, numPVCs := 4, 2
-			pvols, claims = createPVsPVCs(numPVs, numPVCs, c, ns, serverIP)
-			waitAndVerifyBinds(c, ns, pvols, claims, true)
-			completeMultiTest(f, c, ns, pvols, claims)
+			By("Verifying Persistent Disk detaches")
+			err = waitForPDDetach(diskName, node)
+			Expect(err).NotTo(HaveOccurred())
 		})
 	})
 })
+
+// Sanity check for GCE testing.  Verify the persistent disk attached to the node.
+func verifyGCEDiskAttached(diskName string, nodeName types.NodeName) bool {
+	gceCloud, err := getGCECloud()
+	Expect(err).NotTo(HaveOccurred())
+	isAttached, err := gceCloud.DiskIsAttached(diskName, nodeName)
+	Expect(err).NotTo(HaveOccurred())
+	return isAttached
+}
 
 // Return a pvckey struct.
 func makePvcKey(ns, name string) types.NamespacedName {
@@ -627,41 +761,36 @@ func makePvcKey(ns, name string) types.NamespacedName {
 //   (instantiated) and thus the PV's ClaimRef cannot be completely filled-in in
 //   this func. Therefore, the ClaimRef's name is added later in
 //   createPVCPV.
-func makePersistentVolume(serverIP string, pvc *api.PersistentVolumeClaim) *api.PersistentVolume {
+
+func makePersistentVolume(pvConfig persistentVolumeConfig) *v1.PersistentVolume {
 	// Specs are expected to match this test's PersistentVolumeClaim
 
-	var claimRef *api.ObjectReference
+	var claimRef *v1.ObjectReference
 
-	if pvc != nil {
-		claimRef = &api.ObjectReference{
-			Name:      pvc.Name,
-			Namespace: pvc.Namespace,
+	if pvConfig.prebind != nil {
+		claimRef = &v1.ObjectReference{
+			Name:      pvConfig.prebind.Name,
+			Namespace: pvConfig.prebind.Namespace,
 		}
 	}
 
-	return &api.PersistentVolume{
-		ObjectMeta: api.ObjectMeta{
-			GenerateName: "nfs-",
+	return &v1.PersistentVolume{
+		ObjectMeta: v1.ObjectMeta{
+			GenerateName: pvConfig.namePrefix,
 			Annotations: map[string]string{
 				volumehelper.VolumeGidAnnotationKey: "777",
 			},
 		},
-		Spec: api.PersistentVolumeSpec{
-			PersistentVolumeReclaimPolicy: api.PersistentVolumeReclaimRecycle,
-			Capacity: api.ResourceList{
-				api.ResourceName(api.ResourceStorage): resource.MustParse("2Gi"),
+		Spec: v1.PersistentVolumeSpec{
+			PersistentVolumeReclaimPolicy: v1.PersistentVolumeReclaimRecycle,
+			Capacity: v1.ResourceList{
+				v1.ResourceName(v1.ResourceStorage): resource.MustParse("2Gi"),
 			},
-			PersistentVolumeSource: api.PersistentVolumeSource{
-				NFS: &api.NFSVolumeSource{
-					Server:   serverIP,
-					Path:     "/exports",
-					ReadOnly: false,
-				},
-			},
-			AccessModes: []api.PersistentVolumeAccessMode{
-				api.ReadWriteOnce,
-				api.ReadOnlyMany,
-				api.ReadWriteMany,
+			PersistentVolumeSource: pvConfig.pvSource,
+			AccessModes: []v1.PersistentVolumeAccessMode{
+				v1.ReadWriteOnce,
+				v1.ReadOnlyMany,
+				v1.ReadWriteMany,
 			},
 			ClaimRef: claimRef,
 		},
@@ -672,23 +801,26 @@ func makePersistentVolume(serverIP string, pvc *api.PersistentVolumeClaim) *api.
 // Note: if this PVC is intended to be pre-bound to a PV, whose name is not
 //   known until the PV is instantiated, then the func createPVPVC will add
 //   pvc.Spec.VolumeName to this claim.
-func makePersistentVolumeClaim(ns string) *api.PersistentVolumeClaim {
+func makePersistentVolumeClaim(ns string) *v1.PersistentVolumeClaim {
 	// Specs are expected to match this test's PersistentVolume
 
-	return &api.PersistentVolumeClaim{
-		ObjectMeta: api.ObjectMeta{
+	return &v1.PersistentVolumeClaim{
+		ObjectMeta: v1.ObjectMeta{
 			GenerateName: "pvc-",
 			Namespace:    ns,
-		},
-		Spec: api.PersistentVolumeClaimSpec{
-			AccessModes: []api.PersistentVolumeAccessMode{
-				api.ReadWriteOnce,
-				api.ReadOnlyMany,
-				api.ReadWriteMany,
+			Annotations: map[string]string{
+				"volume.beta.kubernetes.io/storage-class": "",
 			},
-			Resources: api.ResourceRequirements{
-				Requests: api.ResourceList{
-					api.ResourceName(api.ResourceStorage): resource.MustParse("1Gi"),
+		},
+		Spec: v1.PersistentVolumeClaimSpec{
+			AccessModes: []v1.PersistentVolumeAccessMode{
+				v1.ReadWriteOnce,
+				v1.ReadOnlyMany,
+				v1.ReadWriteMany,
+			},
+			Resources: v1.ResourceRequirements{
+				Requests: v1.ResourceList{
+					v1.ResourceName(v1.ResourceStorage): resource.MustParse("1Gi"),
 				},
 			},
 		},
@@ -697,44 +829,51 @@ func makePersistentVolumeClaim(ns string) *api.PersistentVolumeClaim {
 
 // Returns a pod definition based on the namespace. The pod references the PVC's
 // name.
-func makeWritePod(ns string, pvcName string) *api.Pod {
-	// Prepare pod that mounts the NFS volume again and
-	// checks that /mnt/index.html was scrubbed there
+func makeWritePod(ns string, pvcName string) *v1.Pod {
+	return makePod(ns, pvcName, "touch /mnt/SUCCESS && (id -G | grep -E '\\b777\\b')")
+}
 
+// Returns a pod definition based on the namespace. The pod references the PVC's
+// name.  A slice of BASH commands can be supplied as args to be run by the pod
+func makePod(ns string, pvcName string, command ...string) *v1.Pod {
+
+	if len(command) == 0 {
+		command = []string{"while true; do sleep 1; done"}
+	}
 	var isPrivileged bool = true
-	return &api.Pod{
-		TypeMeta: unversioned.TypeMeta{
+	return &v1.Pod{
+		TypeMeta: metav1.TypeMeta{
 			Kind:       "Pod",
-			APIVersion: registered.GroupOrDie(api.GroupName).GroupVersion.String(),
+			APIVersion: registered.GroupOrDie(v1.GroupName).GroupVersion.String(),
 		},
-		ObjectMeta: api.ObjectMeta{
-			GenerateName: "write-pod-",
+		ObjectMeta: v1.ObjectMeta{
+			GenerateName: "client-",
 			Namespace:    ns,
 		},
-		Spec: api.PodSpec{
-			Containers: []api.Container{
+		Spec: v1.PodSpec{
+			Containers: []v1.Container{
 				{
 					Name:    "write-pod",
 					Image:   "gcr.io/google_containers/busybox:1.24",
-					Command: []string{"/bin/sh"},
-					Args:    []string{"-c", "touch /mnt/SUCCESS && (id -G | grep -E '\\b777\\b')"},
-					VolumeMounts: []api.VolumeMount{
+					Command: []string{"/bin/sh", "-c"},
+					Args:    command,
+					VolumeMounts: []v1.VolumeMount{
 						{
-							Name:      "nfs-pvc",
+							Name:      pvcName,
 							MountPath: "/mnt",
 						},
 					},
-					SecurityContext: &api.SecurityContext{
+					SecurityContext: &v1.SecurityContext{
 						Privileged: &isPrivileged,
 					},
 				},
 			},
-			RestartPolicy: api.RestartPolicyOnFailure,
-			Volumes: []api.Volume{
+			RestartPolicy: v1.RestartPolicyOnFailure,
+			Volumes: []v1.Volume{
 				{
-					Name: "nfs-pvc",
-					VolumeSource: api.VolumeSource{
-						PersistentVolumeClaim: &api.PersistentVolumeClaimVolumeSource{
+					Name: pvcName,
+					VolumeSource: v1.VolumeSource{
+						PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
 							ClaimName: pvcName,
 						},
 					},
@@ -742,4 +881,18 @@ func makeWritePod(ns string, pvcName string) *api.Pod {
 			},
 		},
 	}
+}
+
+// Define and create a pod with a mounted PV.  Pod runs infinite loop until killed.
+func createClientPod(c clientset.Interface, ns string, pvc *v1.PersistentVolumeClaim) *v1.Pod {
+	clientPod := makePod(ns, pvc.Name)
+	clientPod, err := c.Core().Pods(ns).Create(clientPod)
+	Expect(err).NotTo(HaveOccurred())
+
+	// Verify the pod is running before returning it
+	err = framework.WaitForPodRunningInNamespace(c, clientPod)
+	Expect(err).NotTo(HaveOccurred())
+	clientPod, err = c.Core().Pods(ns).Get(clientPod.Name, metav1.GetOptions{})
+	Expect(apierrs.IsNotFound(err)).To(BeFalse())
+	return clientPod
 }

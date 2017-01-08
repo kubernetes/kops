@@ -28,24 +28,26 @@ import (
 	"strings"
 	"time"
 
+	jsonpatch "github.com/evanphx/json-patch"
+	"github.com/golang/glog"
+	"github.com/spf13/cobra"
+
 	"k8s.io/kubernetes/pkg/api"
 	kerrors "k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/meta"
-	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apimachinery/registered"
 	"k8s.io/kubernetes/pkg/apis/extensions"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+	"k8s.io/kubernetes/pkg/apis/meta/v1/unstructured"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 	"k8s.io/kubernetes/pkg/kubectl"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 	utilerrors "k8s.io/kubernetes/pkg/util/errors"
 	utilexec "k8s.io/kubernetes/pkg/util/exec"
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/kubernetes/pkg/util/strategicpatch"
-
-	jsonpatch "github.com/evanphx/json-patch"
-	"github.com/golang/glog"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -177,7 +179,7 @@ func checkErr(prefix string, err error, handleErr func(string, int)) {
 	}
 }
 
-func statusCausesToAggrError(scs []unversioned.StatusCause) utilerrors.Aggregate {
+func statusCausesToAggrError(scs []metav1.StatusCause) utilerrors.Aggregate {
 	errs := make([]error, 0, len(scs))
 	errorMsgs := sets.NewString()
 	for _, sc := range scs {
@@ -206,7 +208,7 @@ func StandardErrorMessage(err error) (string, bool) {
 	switch {
 	case isStatus:
 		switch s := status.Status(); {
-		case s.Reason == unversioned.StatusReasonUnauthorized:
+		case s.Reason == metav1.StatusReasonUnauthorized:
 			return fmt.Sprintf("error: You must be logged in to the server (%s)", s.Message), true
 		case len(s.Reason) > 0:
 			return fmt.Sprintf("Error from server (%s): %s", s.Reason, err.Error()), true
@@ -521,19 +523,25 @@ func RecordChangeCause(obj runtime.Object, changeCause string) error {
 
 // ChangeResourcePatch creates a strategic merge patch between the origin input resource info
 // and the annotated with change-cause input resource info.
-func ChangeResourcePatch(info *resource.Info, changeCause string, smPatchVersion strategicpatch.StrategicMergePatchVersion) ([]byte, error) {
-	oldData, err := json.Marshal(info.Object)
+func ChangeResourcePatch(info *resource.Info, changeCause string) ([]byte, error) {
+	// Get a versioned object
+	obj, err := info.Mapping.ConvertToVersion(info.Object, info.Mapping.GroupVersionKind.GroupVersion())
 	if err != nil {
 		return nil, err
 	}
-	if err := RecordChangeCause(info.Object, changeCause); err != nil {
-		return nil, err
-	}
-	newData, err := json.Marshal(info.Object)
+
+	oldData, err := json.Marshal(obj)
 	if err != nil {
 		return nil, err
 	}
-	return strategicpatch.CreateTwoWayMergePatch(oldData, newData, info.Object, smPatchVersion)
+	if err := RecordChangeCause(obj, changeCause); err != nil {
+		return nil, err
+	}
+	newData, err := json.Marshal(obj)
+	if err != nil {
+		return nil, err
+	}
+	return strategicpatch.CreateTwoWayMergePatch(oldData, newData, obj)
 }
 
 // containsChangeCause checks if input resource info contains change-cause annotation.
@@ -614,7 +622,7 @@ func ParsePairs(pairArgs []string, pairType string, supportRemove bool) (newPair
 
 // MaybeConvertObject attempts to convert an object to a specific group/version.  If the object is
 // a third party resource it is simply passed through.
-func MaybeConvertObject(obj runtime.Object, gv unversioned.GroupVersion, converter runtime.ObjectConvertor) (runtime.Object, error) {
+func MaybeConvertObject(obj runtime.Object, gv schema.GroupVersion, converter runtime.ObjectConvertor) (runtime.Object, error) {
 	switch obj.(type) {
 	case *extensions.ThirdPartyResourceData:
 		// conversion is not supported for 3rd party objects
@@ -628,12 +636,8 @@ func MaybeConvertObject(obj runtime.Object, gv unversioned.GroupVersion, convert
 // with multiple resource kinds, in which case it will
 // return true, indicating resource kind will be
 // included as part of printer output
-func MustPrintWithKinds(objs []runtime.Object, infos []*resource.Info, sorter *kubectl.RuntimeSort, printAll bool) bool {
+func MustPrintWithKinds(objs []runtime.Object, infos []*resource.Info, sorter *kubectl.RuntimeSort) bool {
 	var lastMap *meta.RESTMapping
-
-	if len(infos) == 1 && printAll {
-		return true
-	}
 
 	for ix := range objs {
 		var mapping *meta.RESTMapping
@@ -660,7 +664,7 @@ func FilterResourceList(obj runtime.Object, filterFuncs kubectl.Filters, filterO
 	if err != nil {
 		return 0, []runtime.Object{obj}, utilerrors.NewAggregate([]error{err})
 	}
-	if errs := runtime.DecodeList(items, api.Codecs.UniversalDecoder(), runtime.UnstructuredJSONScheme); len(errs) > 0 {
+	if errs := runtime.DecodeList(items, api.Codecs.UniversalDecoder(), unstructured.UnstructuredJSONScheme); len(errs) > 0 {
 		return 0, []runtime.Object{obj}, utilerrors.NewAggregate(errs)
 	}
 
@@ -688,7 +692,7 @@ func PrintFilterCount(hiddenObjNum int, resource string, options *kubectl.PrintO
 
 // ObjectListToVersionedObject receives a list of api objects and a group version
 // and squashes the list's items into a single versioned runtime.Object.
-func ObjectListToVersionedObject(objects []runtime.Object, version unversioned.GroupVersion) (runtime.Object, error) {
+func ObjectListToVersionedObject(objects []runtime.Object, version schema.GroupVersion) (runtime.Object, error) {
 	objectList := &api.List{Items: objects}
 	converted, err := resource.TryConvert(api.Scheme, objectList, version, registered.GroupOrDie(api.GroupName).GroupVersion)
 	if err != nil {
@@ -724,14 +728,4 @@ func RequireNoArguments(c *cobra.Command, args []string) {
 	if len(args) > 0 {
 		CheckErr(UsageError(c, fmt.Sprintf(`unknown command %q`, strings.Join(args, " "))))
 	}
-}
-
-// GetServerSupportedSMPatchVersionFromFactory is a wrapper of GetServerSupportedSMPatchVersion(),
-// It takes a Factory, returns the max version the server supports.
-func GetServerSupportedSMPatchVersionFromFactory(f Factory) (strategicpatch.StrategicMergePatchVersion, error) {
-	clientSet, err := f.ClientSet()
-	if err != nil {
-		return strategicpatch.Unknown, err
-	}
-	return strategicpatch.GetServerSupportedSMPatchVersion(clientSet.Discovery())
 }

@@ -19,20 +19,20 @@ package nodeup
 import (
 	"encoding/base64"
 	"fmt"
+	"runtime"
+	"strings"
 	"text/template"
 
 	"github.com/golang/glog"
+	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/util/sets"
-	"runtime"
 )
 
 const TagMaster = "_kubernetes_master"
-
-const DefaultProtokubeImage = "b.gcr.io/kops-images/protokube:1.5.0"
 
 // templateFunctions is a simple helper-class for the functions accessible to templates
 type templateFunctions struct {
@@ -116,9 +116,6 @@ func newTemplateFunctions(nodeupConfig *NodeUpConfig, cluster *api.Cluster, inst
 func (t *templateFunctions) populate(dest template.FuncMap) {
 	dest["Arch"] = func() string { return runtime.GOARCH }
 
-	dest["IsTopologyPublic"] = t.cluster.IsTopologyPublic
-	dest["IsTopologyPrivate"] = t.cluster.IsTopologyPrivate
-
 	dest["CACertificatePool"] = t.CACertificatePool
 	dest["CACertificate"] = t.CACertificate
 	dest["PrivateKey"] = t.PrivateKey
@@ -155,9 +152,12 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 		return t.cluster.ObjectMeta.Name
 	}
 
-	dest["ProtokubeImage"] = t.ProtokubeImage
+	dest["ProtokubeImageName"] = t.ProtokubeImageName
+	dest["ProtokubeImagePullCommand"] = t.ProtokubeImagePullCommand
 
 	dest["ProtokubeFlags"] = t.ProtokubeFlags
+
+	dest["BuildAPIServerAnnotations"] = t.BuildAPIServerAnnotations
 }
 
 // IsMaster returns true if we are tagged as a master
@@ -235,17 +235,34 @@ func (t *templateFunctions) GetToken(key string) (string, error) {
 	return string(token.Data), nil
 }
 
-// ProtokubeImage returns the docker image for protokube
-func (t *templateFunctions) ProtokubeImage() string {
-	image := ""
-	if t.nodeupConfig.ProtokubeImage != nil {
-		image = t.nodeupConfig.ProtokubeImage.Source
+// ProtokubeImageName returns the docker image for protokube
+func (t *templateFunctions) ProtokubeImageName() string {
+	name := ""
+	if t.nodeupConfig.ProtokubeImage != nil && t.nodeupConfig.ProtokubeImage.Name != "" {
+		name = t.nodeupConfig.ProtokubeImage.Name
 	}
-	if image == "" {
+	if name == "" {
 		// use current default corresponding to this version of nodeup
-		image = DefaultProtokubeImage
+		name = kops.DefaultProtokubeImageName()
 	}
-	return image
+	return name
+}
+
+// ProtokubeImagePullCommand returns the command to pull the image
+func (t *templateFunctions) ProtokubeImagePullCommand() string {
+	source := ""
+	if t.nodeupConfig.ProtokubeImage != nil {
+		source = t.nodeupConfig.ProtokubeImage.Source
+	}
+	if source == "" {
+		// Nothing to pull; return dummy value
+		return "/bin/true"
+	}
+	if strings.HasPrefix(source, "http:") || strings.HasPrefix(source, "https:") || strings.HasPrefix(source, "s3:") {
+		// We preloaded the image; return a dummy value
+		return "/bin/true"
+	}
+	return "/usr/bin/docker pull " + t.nodeupConfig.ProtokubeImage.Source
 }
 
 // ProtokubeFlags returns the flags object for protokube
@@ -261,8 +278,20 @@ func (t *templateFunctions) ProtokubeFlags() *ProtokubeFlags {
 
 	f.LogLevel = fi.Int(8)
 	f.Containerized = fi.Bool(true)
-	if t.cluster.Spec.DNSZone != "" {
-		f.DNSZoneName = fi.String(t.cluster.Spec.DNSZone)
+
+	zone := t.cluster.Spec.DNSZone
+	if zone != "" {
+		if strings.Contains(zone, ".") {
+			// match by name
+			f.Zone = append(f.Zone, zone)
+		} else {
+			// match by id
+			f.Zone = append(f.Zone, "*/"+zone)
+		}
+	} else {
+		glog.Warningf("DNSZone not specified; protokube won't be able to update DNS")
+		// TODO: Should we permit wildcard updates if zone is not specified?
+		//argv = append(argv, "--zone=*/*")
 	}
 
 	return f
@@ -282,4 +311,13 @@ func (t *templateFunctions) KubeProxyConfig() *api.KubeProxyConfig {
 	}
 
 	return config
+}
+
+func (t *templateFunctions) BuildAPIServerAnnotations() map[string]string {
+	annotations := make(map[string]string)
+	annotations["dns.alpha.kubernetes.io/internal"] = t.cluster.Spec.MasterInternalName
+	if t.cluster.Spec.API != nil && t.cluster.Spec.API.DNS != nil {
+		annotations["dns.alpha.kubernetes.io/external"] = t.cluster.Spec.MasterPublicName
+	}
+	return annotations
 }

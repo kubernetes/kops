@@ -382,6 +382,8 @@ type KubeAPIServerConfig struct {
 	AnonymousAuth *bool `json:"anonymousAuth,omitempty" flag:"anonymous-auth"`
 
 	KubeletPreferredAddressTypes []string `json:"kubeletPreferredAddressTypes,omitempty" flag:"kubelet-preferred-address-types"`
+
+	StorageBackend *string `json:"storageBackend,omitempty" flag:"storage-backend"`
 }
 
 type KubeControllerManagerConfig struct {

@@ -66,7 +66,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	addons := &channelsapi.Addons{}
 	addons.Kind = "Addons"
-	addons.Name = "bootstrap"
+	addons.ObjectMeta.Name = "bootstrap"
 
 	{
 		key := "core.addons.k8s.io"
@@ -116,6 +116,21 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 	{
 		key := "dns-controller.addons.k8s.io"
 		version := "1.4.1"
+
+		location := key + "/v" + version + ".yaml"
+
+		addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+			Name:     fi.String(key),
+			Version:  fi.String(version),
+			Selector: map[string]string{"k8s-addon": key},
+			Manifest: fi.String(location),
+		})
+		manifests[key] = "addons/" + location
+	}
+
+	{
+		key := "storage-aws.addons.k8s.io"
+		version := "1.5.0"
 
 		location := key + "/v" + version + ".yaml"
 

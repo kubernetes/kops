@@ -14,4 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// +k8s:conversion-gen=k8s.io/kops/pkg/apis/kops
+// +k8s:defaulter-gen=TypeMeta
 package v1alpha2 // import "k8s.io/kops/pkg/apis/kops/v1alpha2"

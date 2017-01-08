@@ -24,39 +24,39 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/api/v1"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 )
 
 func TestLogOptions(t *testing.T) {
 	var (
 		line         = int64(8)
 		bytes        = int64(64)
-		timestamp    = unversioned.Now()
+		timestamp    = metav1.Now()
 		sinceseconds = int64(10)
 	)
 	for c, test := range []struct {
-		apiOpts *api.PodLogOptions
+		apiOpts *v1.PodLogOptions
 		expect  *logOptions
 	}{
 		{ // empty options
-			apiOpts: &api.PodLogOptions{},
+			apiOpts: &v1.PodLogOptions{},
 			expect:  &logOptions{tail: -1, bytes: -1},
 		},
 		{ // test tail lines
-			apiOpts: &api.PodLogOptions{TailLines: &line},
+			apiOpts: &v1.PodLogOptions{TailLines: &line},
 			expect:  &logOptions{tail: line, bytes: -1},
 		},
 		{ // test limit bytes
-			apiOpts: &api.PodLogOptions{LimitBytes: &bytes},
+			apiOpts: &v1.PodLogOptions{LimitBytes: &bytes},
 			expect:  &logOptions{tail: -1, bytes: bytes},
 		},
 		{ // test since timestamp
-			apiOpts: &api.PodLogOptions{SinceTime: &timestamp},
+			apiOpts: &v1.PodLogOptions{SinceTime: &timestamp},
 			expect:  &logOptions{tail: -1, bytes: -1, since: timestamp.Time},
 		},
 		{ // test since seconds
-			apiOpts: &api.PodLogOptions{SinceSeconds: &sinceseconds},
+			apiOpts: &v1.PodLogOptions{SinceSeconds: &sinceseconds},
 			expect:  &logOptions{tail: -1, bytes: -1, since: timestamp.Add(-10 * time.Second)},
 		},
 	} {
