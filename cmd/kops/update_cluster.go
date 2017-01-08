@@ -206,7 +206,10 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 			if c.Target == cloudup.TargetTerraform {
 				fmt.Printf("\n")
 				fmt.Printf("Terraform output has been placed into %s\n", c.OutDir)
-				fmt.Printf("You likely want to run terraform plan and apply in that directory\n")
+				fmt.Printf("Run these commands to apply the configuration:\n")
+				fmt.Printf("   cd %s\n", c.OutDir)
+				fmt.Printf("   terraform plan\n")
+				fmt.Printf("   terraform apply\n")
 				fmt.Printf("\n")
 			} else {
 				fmt.Printf("\n")
