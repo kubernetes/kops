@@ -136,7 +136,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				// Map the Private subnet to the Private route table
 				c.AddTask(&awstasks.RouteTableAssociation{
 					Name:       s("private-" + subnetSpec.Name + "." + b.ClusterName()),
-					RouteTable: &awstasks.RouteTable{Name: s(b.NamePrivateRouteTableInZone(subnetSpec.Zone))},
+					RouteTable: b.LinkToPrivateRouteTableInZone(subnetSpec.Zone),
 					Subnet:     subnet,
 				})
 
@@ -153,12 +153,13 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		if err != nil {
 			return err
 		}
+
 		// Every NGW needs a public (Elastic) IP address, every private
 		// subnet needs a NGW, lets create it. We tie it to a subnet
 		// so we can track it in AWS
 		eip := &awstasks.ElasticIP{
-			Name:   s(zone + "." + b.ClusterName()),
-			Subnet: utilitySubnet,
+			Name: s(zone + "." + b.ClusterName()),
+			AssociatedNatGatewayRouteTable: b.LinkToPrivateRouteTableInZone(zone),
 		}
 		c.AddTask(eip)
 
@@ -172,7 +173,9 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		ngw := &awstasks.NatGateway{
 			Name:      s(zone + "." + b.ClusterName()),
 			Subnet:    utilitySubnet,
-			ElasticIp: eip,
+			ElasticIP: eip,
+
+			AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone),
 		}
 		c.AddTask(ngw)
 

@@ -42,6 +42,26 @@ func (e *RouteTable) CompareWithID() *string {
 func (e *RouteTable) Find(c *fi.Context) (*RouteTable, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
+	rt, err := e.findEc2RouteTable(cloud)
+	if err != nil {
+		return nil, err
+	}
+	if rt == nil {
+		return nil, nil
+	}
+
+	actual := &RouteTable{
+		ID:   rt.RouteTableId,
+		VPC:  &VPC{ID: rt.VpcId},
+		Name: e.Name,
+	}
+	glog.V(2).Infof("found matching RouteTable %q", *actual.ID)
+	e.ID = actual.ID
+
+	return actual, nil
+}
+
+func (e *RouteTable) findEc2RouteTable(cloud awsup.AWSCloud) (*ec2.RouteTable, error) {
 	request := &ec2.DescribeRouteTablesInput{}
 	if e.ID != nil {
 		request.RouteTableIds = []*string{e.ID}
@@ -62,15 +82,7 @@ func (e *RouteTable) Find(c *fi.Context) (*RouteTable, error) {
 	}
 	rt := response.RouteTables[0]
 
-	actual := &RouteTable{
-		ID:   rt.RouteTableId,
-		VPC:  &VPC{ID: rt.VpcId},
-		Name: e.Name,
-	}
-	glog.V(2).Infof("found matching RouteTable %q", *actual.ID)
-	e.ID = actual.ID
-
-	return actual, nil
+	return rt, nil
 }
 
 func (e *RouteTable) Run(c *fi.Context) error {
