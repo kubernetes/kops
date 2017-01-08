@@ -39,6 +39,8 @@ import (
 
 const (
 	TypeAutoscalingLaunchConfig = "autoscaling-config"
+	TypeNatGateway              = "nat-gateway"
+	TypeElasticIp               = "elastic-ip"
 )
 
 // DeleteCluster implements deletion of cluster cloud resources
@@ -188,6 +190,26 @@ func (c *DeleteCluster) ListResources() (map[string]*ResourceTracker, error) {
 
 	if err := addUntaggedRouteTables(cloud, c.ClusterName, resources); err != nil {
 		return nil, err
+	}
+
+	{
+		// We delete a NAT gateway if it is linked to our route table
+		routeTableIds := sets.NewString()
+		for k := range resources {
+			if !strings.HasPrefix(k, ec2.ResourceTypeRouteTable+":") {
+				continue
+			}
+			id := strings.TrimPrefix(k, ec2.ResourceTypeRouteTable+":")
+			routeTableIds.Insert(id)
+		}
+		natGateways, err := FindNatGateways(cloud, routeTableIds)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, t := range natGateways {
+			resources[t.Type+":"+t.ID] = t
+		}
 	}
 
 	for k, t := range resources {
@@ -704,7 +726,7 @@ func ListVolumes(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 			tracker := &ResourceTracker{
 				Name:    ip,
 				ID:      aws.StringValue(address.AllocationId),
-				Type:    "elastic-ip",
+				Type:    TypeElasticIp,
 				deleter: DeleteElasticIP,
 			}
 
@@ -889,7 +911,7 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 				tracker := &ResourceTracker{
 					Name:    ip,
 					ID:      aws.StringValue(address.AllocationId),
-					Type:    "elastic-ip",
+					Type:    TypeElasticIp,
 					deleter: DeleteElasticIP,
 				}
 
@@ -904,7 +926,7 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 			request := &ec2.DescribeNatGatewaysInput{}
 			response, err := c.EC2().DescribeNatGateways(request)
 			if err != nil {
-				return nil, fmt.Errorf("error describing nat gateways: %v", err)
+				return nil, fmt.Errorf("error describing NatGateways: %v", err)
 			}
 
 			for _, ngw := range response.NatGateways {
@@ -916,8 +938,8 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 				tracker := &ResourceTracker{
 					Name:    id,
 					ID:      aws.StringValue(ngw.NatGatewayId),
-					Type:    "natgateway",
-					deleter: DeleteNGW,
+					Type:    TypeNatGateway,
+					deleter: DeleteNatGateway,
 				}
 
 				trackers = append(trackers, tracker)
@@ -1014,7 +1036,7 @@ func buildTrackerForRouteTable(rt *ec2.RouteTable) *ResourceTracker {
 	tracker := &ResourceTracker{
 		Name:    FindName(rt.Tags),
 		ID:      aws.StringValue(rt.RouteTableId),
-		Type:    "route-table",
+		Type:    ec2.ResourceTypeRouteTable,
 		deleter: DeleteRouteTable,
 	}
 
@@ -1401,6 +1423,102 @@ func FindAutoScalingLaunchConfigurations(cloud fi.Cloud, securityGroups sets.Str
 	return trackers, nil
 }
 
+func FindNatGateways(cloud fi.Cloud, routeTableIds sets.String) ([]*ResourceTracker, error) {
+	if len(routeTableIds) == 0 {
+		return nil, nil
+	}
+
+	c := cloud.(awsup.AWSCloud)
+
+	natGatewayIds := sets.NewString()
+
+	{
+		request := &ec2.DescribeRouteTablesInput{}
+		for routeTableId := range routeTableIds {
+			request.RouteTableIds = append(request.RouteTableIds, aws.String(routeTableId))
+		}
+		response, err := c.EC2().DescribeRouteTables(request)
+		if err != nil {
+			return nil, fmt.Errorf("error from DescribeRouteTables: %v", err)
+		}
+
+		for _, rt := range response.RouteTables {
+			for _, route := range rt.Routes {
+				if route.NatGatewayId != nil {
+					natGatewayIds.Insert(*route.NatGatewayId)
+				}
+			}
+		}
+	}
+
+	{
+		// We could do this to find if a NAT gateway is shared
+
+		//request := &ec2.DescribeRouteTablesInput{}
+		//request.Filters = append(request.Filters, awsup.NewEC2Filter("route.nat-gateway-id", natGatewayId))
+		//response, err := c.EC2().DescribeRouteTables(request)
+		//if err != nil {
+		//	return fmt.Errorf("error from DescribeRouteTables: %v", err)
+		//}
+		//
+		//for _, rt := range response.RouteTables {
+		//	routeTableId := aws.StringValue(rt.RouteTableId)
+		//}
+	}
+
+	var trackers []*ResourceTracker
+
+	{
+		request := &ec2.DescribeNatGatewaysInput{}
+		for natGatewayId := range natGatewayIds {
+			request.NatGatewayIds = append(request.NatGatewayIds, aws.String(natGatewayId))
+		}
+		response, err := c.EC2().DescribeNatGateways(request)
+		if err != nil {
+			return nil, fmt.Errorf("error from DescribeNatGateways: %v", err)
+		}
+
+		if response.NextToken != nil {
+			return nil, fmt.Errorf("NextToken set from DescribeNatGateways, but pagination not implemented")
+		}
+
+		for _, t := range response.NatGateways {
+			ngwTracker := &ResourceTracker{
+				Name:    aws.StringValue(t.NatGatewayId),
+				ID:      aws.StringValue(t.NatGatewayId),
+				Type:    TypeNatGateway,
+				deleter: DeleteNatGateway,
+			}
+			trackers = append(trackers, ngwTracker)
+
+			// If we're deleting the NatGateway, we should delete the ElasticIP also
+			for _, address := range t.NatGatewayAddresses {
+				if address.AllocationId != nil {
+					name := aws.StringValue(address.PublicIp)
+					if name == "" {
+						name = aws.StringValue(address.PrivateIp)
+					}
+					if name == "" {
+						name = aws.StringValue(address.AllocationId)
+					}
+
+					eipTracker := &ResourceTracker{
+						Name:    name,
+						ID:      aws.StringValue(address.AllocationId),
+						Type:    TypeElasticIp,
+						deleter: DeleteElasticIP,
+					}
+					trackers = append(trackers, eipTracker)
+
+					ngwTracker.blocks = append(ngwTracker.blocks, eipTracker.Type+":"+eipTracker.ID)
+				}
+			}
+		}
+	}
+
+	return trackers, nil
+}
+
 // extractClusterName performs string-matching / parsing to determine the ClusterName in some instance-data
 // It returns "" if it could not be (uniquely) determined
 func extractClusterName(userData string) string {
@@ -1593,12 +1711,12 @@ func DeleteElasticIP(cloud fi.Cloud, t *ResourceTracker) error {
 	return nil
 }
 
-func DeleteNGW(cloud fi.Cloud, t *ResourceTracker) error {
+func DeleteNatGateway(cloud fi.Cloud, t *ResourceTracker) error {
 	c := cloud.(awsup.AWSCloud)
 
 	id := t.ID
 
-	glog.V(2).Infof("Removing NGW %s", t.Name)
+	glog.V(2).Infof("Removing NatGateway %s", t.Name)
 	request := &ec2.DeleteNatGatewayInput{
 		NatGatewayId: &id,
 	}
