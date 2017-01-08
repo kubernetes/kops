@@ -80,6 +80,7 @@ test:
 	go test k8s.io/kops/dns-controller/pkg/... -args -v=1 -logtostderr
 	go test k8s.io/kops/cmd/... -args -v=1 -logtostderr
 	go test k8s.io/kops/tests/... -args -v=1 -logtostderr
+	go test k8s.io/kops/util/... -args -v=1 -logtostderr
 
 crossbuild-nodeup:
 	mkdir -p .build/dist/
