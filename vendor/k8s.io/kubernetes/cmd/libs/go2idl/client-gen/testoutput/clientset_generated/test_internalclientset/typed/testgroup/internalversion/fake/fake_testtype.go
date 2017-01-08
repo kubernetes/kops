@@ -19,9 +19,10 @@ package fake
 import (
 	testgroup "k8s.io/kubernetes/cmd/libs/go2idl/client-gen/test_apis/testgroup"
 	api "k8s.io/kubernetes/pkg/api"
-	unversioned "k8s.io/kubernetes/pkg/api/unversioned"
+	v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	core "k8s.io/kubernetes/pkg/client/testing/core"
 	labels "k8s.io/kubernetes/pkg/labels"
+	schema "k8s.io/kubernetes/pkg/runtime/schema"
 	watch "k8s.io/kubernetes/pkg/watch"
 )
 
@@ -31,7 +32,7 @@ type FakeTestTypes struct {
 	ns   string
 }
 
-var testtypesResource = unversioned.GroupVersionResource{Group: "testgroup.k8s.io", Version: "", Resource: "testtypes"}
+var testtypesResource = schema.GroupVersionResource{Group: "testgroup.k8s.io", Version: "", Resource: "testtypes"}
 
 func (c *FakeTestTypes) Create(testType *testgroup.TestType) (result *testgroup.TestType, err error) {
 	obj, err := c.Fake.
@@ -77,7 +78,7 @@ func (c *FakeTestTypes) DeleteCollection(options *api.DeleteOptions, listOptions
 	return err
 }
 
-func (c *FakeTestTypes) Get(name string) (result *testgroup.TestType, err error) {
+func (c *FakeTestTypes) Get(name string, options v1.GetOptions) (result *testgroup.TestType, err error) {
 	obj, err := c.Fake.
 		Invokes(core.NewGetAction(testtypesResource, c.ns, name), &testgroup.TestType{})
 

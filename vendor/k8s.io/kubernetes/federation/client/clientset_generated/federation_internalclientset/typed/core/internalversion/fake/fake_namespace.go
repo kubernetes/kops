@@ -18,9 +18,10 @@ package fake
 
 import (
 	api "k8s.io/kubernetes/pkg/api"
-	unversioned "k8s.io/kubernetes/pkg/api/unversioned"
+	v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	core "k8s.io/kubernetes/pkg/client/testing/core"
 	labels "k8s.io/kubernetes/pkg/labels"
+	schema "k8s.io/kubernetes/pkg/runtime/schema"
 	watch "k8s.io/kubernetes/pkg/watch"
 )
 
@@ -29,7 +30,7 @@ type FakeNamespaces struct {
 	Fake *FakeCore
 }
 
-var namespacesResource = unversioned.GroupVersionResource{Group: "", Version: "", Resource: "namespaces"}
+var namespacesResource = schema.GroupVersionResource{Group: "", Version: "", Resource: "namespaces"}
 
 func (c *FakeNamespaces) Create(namespace *api.Namespace) (result *api.Namespace, err error) {
 	obj, err := c.Fake.
@@ -71,7 +72,7 @@ func (c *FakeNamespaces) DeleteCollection(options *api.DeleteOptions, listOption
 	return err
 }
 
-func (c *FakeNamespaces) Get(name string) (result *api.Namespace, err error) {
+func (c *FakeNamespaces) Get(name string, options v1.GetOptions) (result *api.Namespace, err error) {
 	obj, err := c.Fake.
 		Invokes(core.NewRootGetAction(namespacesResource, name), &api.Namespace{})
 	if obj == nil {

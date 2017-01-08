@@ -26,11 +26,13 @@ import (
 	"sync"
 	"time"
 
-	"k8s.io/kubernetes/pkg/api"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
+	"k8s.io/kubernetes/pkg/api/v1"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/util/wait"
 	"k8s.io/kubernetes/test/e2e/framework"
+	"k8s.io/kubernetes/test/e2e/generated"
 	testutils "k8s.io/kubernetes/test/utils"
 
 	. "github.com/onsi/ginkgo"
@@ -47,13 +49,14 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 	// Reusable cluster state function.  This won't be adversly affected by lazy initialization of framework.
 	clusterState := func(selectorKey string, selectorValue string) *framework.ClusterVerification {
 		return f.NewClusterVerification(
+			f.Namespace,
 			framework.PodStateVerification{
 				Selectors:   map[string]string{selectorKey: selectorValue},
-				ValidPhases: []api.PodPhase{api.PodRunning},
+				ValidPhases: []v1.PodPhase{v1.PodRunning},
 			})
 	}
 	// Customized ForEach wrapper for this test.
-	forEachPod := func(selectorKey string, selectorValue string, fn func(api.Pod)) {
+	forEachPod := func(selectorKey string, selectorValue string, fn func(v1.Pod)) {
 		clusterState(selectorKey, selectorValue).ForEach(fn)
 	}
 	var c clientset.Interface
@@ -113,7 +116,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 				label := labels.SelectorFromSet(labels.Set(map[string]string{selectorKey: selectorValue}))
 				err = testutils.WaitForPodsWithLabelRunning(c, ns, label)
 				Expect(err).NotTo(HaveOccurred())
-				forEachPod(selectorKey, selectorValue, func(pod api.Pod) {
+				forEachPod(selectorKey, selectorValue, func(pod v1.Pod) {
 					if pod.Name != bootstrapPodName {
 						_, err := framework.LookForStringInLog(ns, pod.Name, "redis", expectedOnServer, serverStartTimeout)
 						Expect(err).NotTo(HaveOccurred())
@@ -123,7 +126,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 				label = labels.SelectorFromSet(labels.Set(map[string]string{selectorKey: selectorValue}))
 				err = testutils.WaitForPodsWithLabelRunning(c, ns, label)
 				Expect(err).NotTo(HaveOccurred())
-				forEachPod(selectorKey, selectorValue, func(pod api.Pod) {
+				forEachPod(selectorKey, selectorValue, func(pod v1.Pod) {
 					if pod.Name != bootstrapPodName {
 						_, err := framework.LookForStringInLog(ns, pod.Name, "sentinel", expectedOnSentinel, serverStartTimeout)
 						Expect(err).NotTo(HaveOccurred())
@@ -164,7 +167,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 
 				framework.Logf("Now polling for Master startup...")
 				// Only one master pod: But its a natural way to look up pod names.
-				forEachPod(selectorKey, selectorValue, func(pod api.Pod) {
+				forEachPod(selectorKey, selectorValue, func(pod v1.Pod) {
 					framework.Logf("Now waiting for master to startup in %v", pod.Name)
 					_, err := framework.LookForStringInLog(ns, pod.Name, "spark-master", "Starting Spark master at", serverStartTimeout)
 					Expect(err).NotTo(HaveOccurred())
@@ -173,7 +176,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 				By("waiting for master endpoint")
 				err = framework.WaitForEndpoint(c, ns, "spark-master")
 				Expect(err).NotTo(HaveOccurred())
-				forEachPod(selectorKey, selectorValue, func(pod api.Pod) {
+				forEachPod(selectorKey, selectorValue, func(pod v1.Pod) {
 					_, maErr := framework.LookForStringInLog(f.Namespace.Name, pod.Name, "spark-master", "Starting Spark master at", serverStartTimeout)
 					if maErr != nil {
 						framework.Failf("Didn't find target string. error:", maErr)
@@ -194,7 +197,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 
 				framework.Logf("Now polling for worker startup...")
 				forEachPod(selectorKey, selectorValue,
-					func(pod api.Pod) {
+					func(pod v1.Pod) {
 						_, slaveErr := framework.LookForStringInLog(ns, pod.Name, "spark-worker", "Successfully registered with master", serverStartTimeout)
 						Expect(slaveErr).NotTo(HaveOccurred())
 					})
@@ -226,7 +229,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 			label := labels.SelectorFromSet(labels.Set(map[string]string{"app": "cassandra"}))
 			err = testutils.WaitForPodsWithLabelRunning(c, ns, label)
 			Expect(err).NotTo(HaveOccurred())
-			forEachPod("app", "cassandra", func(pod api.Pod) {
+			forEachPod("app", "cassandra", func(pod v1.Pod) {
 				framework.Logf("Verifying pod %v ", pod.Name)
 				// TODO how do we do this better?  Ready Probe?
 				_, err = framework.LookForStringInLog(ns, pod.Name, "cassandra", "Starting listening for CQL clients", serverStartTimeout)
@@ -234,7 +237,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 			})
 
 			By("Finding each node in the nodetool status lines")
-			forEachPod("app", "cassandra", func(pod api.Pod) {
+			forEachPod("app", "cassandra", func(pod v1.Pod) {
 				output := framework.RunKubectlOrDie("exec", pod.Name, nsFlag, "--", "nodetool", "status")
 				matched, _ := regexp.MatchString("UN.*"+pod.Status.PodIP, output)
 				if matched != true {
@@ -281,11 +284,11 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 			label := labels.SelectorFromSet(labels.Set(map[string]string{"app": "cassandra"}))
 			err = wait.PollImmediate(statefulsetPoll, statefulsetTimeout,
 				func() (bool, error) {
-					podList, err := c.Core().Pods(ns).List(api.ListOptions{LabelSelector: label})
+					podList, err := c.Core().Pods(ns).List(v1.ListOptions{LabelSelector: label.String()})
 					if err != nil {
 						return false, fmt.Errorf("Unable to get list of pods in statefulset %s", label)
 					}
-					ExpectNoError(err)
+					framework.ExpectNoError(err)
 					if len(podList.Items) < numPets {
 						framework.Logf("Found %d pets, waiting for %d", len(podList.Items), numPets)
 						return false, nil
@@ -294,9 +297,9 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 						return false, fmt.Errorf("Too many pods scheduled, expected %d got %d", numPets, len(podList.Items))
 					}
 					for _, p := range podList.Items {
-						isReady := api.IsPodReady(&p)
-						if p.Status.Phase != api.PodRunning || !isReady {
-							framework.Logf("Waiting for pod %v to enter %v - Ready=True, currently %v - Ready=%v", p.Name, api.PodRunning, p.Status.Phase, isReady)
+						isReady := v1.IsPodReady(&p)
+						if p.Status.Phase != v1.PodRunning || !isReady {
+							framework.Logf("Waiting for pod %v to enter %v - Ready=True, currently %v - Ready=%v", p.Name, v1.PodRunning, p.Status.Phase, isReady)
 							return false, nil
 						}
 					}
@@ -305,7 +308,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Finding each node in the nodetool status lines")
-			forEachPod("app", "cassandra", func(pod api.Pod) {
+			forEachPod("app", "cassandra", func(pod v1.Pod) {
 				output := framework.RunKubectlOrDie("exec", pod.Name, nsFlag, "--", "nodetool", "status")
 				matched, _ := regexp.MatchString("UN.*"+pod.Status.PodIP, output)
 				if matched != true {
@@ -357,7 +360,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 			label := labels.SelectorFromSet(labels.Set(map[string]string{"name": "storm-worker"}))
 			err = testutils.WaitForPodsWithLabelRunning(c, ns, label)
 			Expect(err).NotTo(HaveOccurred())
-			forEachPod("name", "storm-worker", func(pod api.Pod) {
+			forEachPod("name", "storm-worker", func(pod v1.Pod) {
 				//do nothing, just wait for the pod to be running
 			})
 			// TODO: Add logging configuration to nimbus & workers images and then
@@ -379,7 +382,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 		It("liveness pods should be automatically restarted", func() {
 			mkpath := func(file string) string {
 				path := filepath.Join("test/fixtures/doc-yaml/user-guide/liveness", file)
-				ExpectNoError(framework.CreateFileForGoBinData(path, path))
+				framework.ExpectNoError(createFileForGoBinData(path, path))
 				return path
 			}
 			execYaml := mkpath("exec-liveness.yaml")
@@ -396,9 +399,9 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 				err := framework.WaitForPodNameRunningInNamespace(c, podName, ns)
 				Expect(err).NotTo(HaveOccurred())
 				for t := time.Now(); time.Since(t) < timeout; time.Sleep(framework.Poll) {
-					pod, err := c.Core().Pods(ns).Get(podName)
+					pod, err := c.Core().Pods(ns).Get(podName, metav1.GetOptions{})
 					framework.ExpectNoError(err, fmt.Sprintf("getting pod %s", podName))
-					stat := api.GetExistingContainerStatus(pod.Status.ContainerStatuses, podName)
+					stat := v1.GetExistingContainerStatus(pod.Status.ContainerStatuses, podName)
 					framework.Logf("Pod: %s, restart count:%d", stat.Name, stat.RestartCount)
 					if stat.RestartCount > 0 {
 						framework.Logf("Saw %v restart, succeeded...", podName)
@@ -431,7 +434,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 		It("should create a pod that reads a secret", func() {
 			mkpath := func(file string) string {
 				path := filepath.Join("test/fixtures/doc-yaml/user-guide/secrets", file)
-				ExpectNoError(framework.CreateFileForGoBinData(path, path))
+				framework.ExpectNoError(createFileForGoBinData(path, path))
 				return path
 			}
 			secretYaml := mkpath("secret.yaml")
@@ -456,7 +459,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 		It("should create a pod that prints his name and namespace", func() {
 			mkpath := func(file string) string {
 				path := filepath.Join("test/fixtures/doc-yaml/user-guide/downward-api", file)
-				ExpectNoError(framework.CreateFileForGoBinData(path, path))
+				framework.ExpectNoError(createFileForGoBinData(path, path))
 				return path
 			}
 			podYaml := mkpath("dapi-pod.yaml")
@@ -494,7 +497,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 			err := testutils.WaitForPodsWithLabelRunning(c, ns, label)
 			Expect(err).NotTo(HaveOccurred())
 			checkDbInstances := func() {
-				forEachPod("db", "rethinkdb", func(pod api.Pod) {
+				forEachPod("db", "rethinkdb", func(pod v1.Pod) {
 					_, err = framework.LookForStringInLog(ns, pod.Name, "rethinkdb", "Server ready", serverStartTimeout)
 					Expect(err).NotTo(HaveOccurred())
 				})
@@ -504,7 +507,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			By("scaling rethinkdb")
-			framework.ScaleRC(f.ClientSet, ns, "rethinkdb-rc", 2, true)
+			framework.ScaleRC(f.ClientSet, f.InternalClientset, ns, "rethinkdb-rc", 2, true)
 			checkDbInstances()
 
 			By("starting admin")
@@ -536,7 +539,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 			label := labels.SelectorFromSet(labels.Set(map[string]string{"name": "hazelcast"}))
 			err := testutils.WaitForPodsWithLabelRunning(c, ns, label)
 			Expect(err).NotTo(HaveOccurred())
-			forEachPod("name", "hazelcast", func(pod api.Pod) {
+			forEachPod("name", "hazelcast", func(pod v1.Pod) {
 				_, err := framework.LookForStringInLog(ns, pod.Name, "hazelcast", "Members [1]", serverStartTimeout)
 				Expect(err).NotTo(HaveOccurred())
 				_, err = framework.LookForStringInLog(ns, pod.Name, "hazelcast", "is STARTED", serverStartTimeout)
@@ -547,8 +550,8 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			By("scaling hazelcast")
-			framework.ScaleRC(f.ClientSet, ns, "hazelcast", 2, true)
-			forEachPod("name", "hazelcast", func(pod api.Pod) {
+			framework.ScaleRC(f.ClientSet, f.InternalClientset, ns, "hazelcast", 2, true)
+			forEachPod("name", "hazelcast", func(pod v1.Pod) {
 				_, err := framework.LookForStringInLog(ns, pod.Name, "hazelcast", "Members [2]", serverStartTimeout)
 				Expect(err).NotTo(HaveOccurred())
 			})
@@ -585,4 +588,21 @@ func prepareResourceWithReplacedString(inputFile, old, new string) string {
 	Expect(err).NotTo(HaveOccurred())
 	podYaml := strings.Replace(string(data), old, new, 1)
 	return podYaml
+}
+
+func createFileForGoBinData(gobindataPath, outputFilename string) error {
+	data := generated.ReadOrDie(gobindataPath)
+	if len(data) == 0 {
+		return fmt.Errorf("Failed to read gobindata from %v", gobindataPath)
+	}
+	fullPath := filepath.Join(framework.TestContext.OutputDir, outputFilename)
+	err := os.MkdirAll(filepath.Dir(fullPath), 0777)
+	if err != nil {
+		return fmt.Errorf("Error while creating directory %v: %v", filepath.Dir(fullPath), err)
+	}
+	err = ioutil.WriteFile(fullPath, data, 0644)
+	if err != nil {
+		return fmt.Errorf("Error while trying to write to file %v: %v", fullPath, err)
+	}
+	return nil
 }

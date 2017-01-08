@@ -18,11 +18,11 @@ package protokube
 
 import (
 	"fmt"
+	"github.com/golang/glog"
+	"k8s.io/kops/dns-controller/pkg/dns"
 	"net"
 	"os/exec"
 	"time"
-
-	"github.com/golang/glog"
 )
 
 type KubeBoot struct {
@@ -35,7 +35,7 @@ type KubeBoot struct {
 	volumeMounter   *VolumeMountController
 	etcdControllers map[string]*EtcdController
 
-	DNS DNSProvider
+	DNSScope dns.Scope
 
 	ModelDir string
 

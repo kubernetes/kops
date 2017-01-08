@@ -22,7 +22,7 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 )
 
 // A cluster to validate
@@ -49,7 +49,7 @@ type ValidationNode struct {
 }
 
 // ValidateCluster validate a k8s cluster with a provided instance group list
-func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupList, clusterKubernetesClient release_1_5.Interface) (*ValidationCluster, error) {
+func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupList, clusterKubernetesClient k8s_clientset.Interface) (*ValidationCluster, error) {
 	var instanceGroups []*kops.InstanceGroup
 	validationCluster := &ValidationCluster{}
 

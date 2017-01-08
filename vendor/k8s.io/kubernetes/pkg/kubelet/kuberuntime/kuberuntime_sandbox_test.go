@@ -22,26 +22,26 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"k8s.io/kubernetes/pkg/api"
-	runtimeApi "k8s.io/kubernetes/pkg/kubelet/api/v1alpha1/runtime"
+	"k8s.io/kubernetes/pkg/api/v1"
+	runtimeapi "k8s.io/kubernetes/pkg/kubelet/api/v1alpha1/runtime"
 	containertest "k8s.io/kubernetes/pkg/kubelet/container/testing"
 )
 
 // TestCreatePodSandbox tests creating sandbox and its corresponding pod log directory.
 func TestCreatePodSandbox(t *testing.T) {
 	fakeRuntime, _, m, err := createTestRuntimeManager()
-	pod := &api.Pod{
-		ObjectMeta: api.ObjectMeta{
+	pod := &v1.Pod{
+		ObjectMeta: v1.ObjectMeta{
 			UID:       "12345678",
 			Name:      "bar",
 			Namespace: "new",
 		},
-		Spec: api.PodSpec{
-			Containers: []api.Container{
+		Spec: v1.PodSpec{
+			Containers: []v1.Container{
 				{
 					Name:            "foo",
 					Image:           "busybox",
-					ImagePullPolicy: api.PullIfNotPresent,
+					ImagePullPolicy: v1.PullIfNotPresent,
 				},
 			},
 		},
@@ -57,7 +57,7 @@ func TestCreatePodSandbox(t *testing.T) {
 	id, _, err := m.createPodSandbox(pod, 1)
 	assert.NoError(t, err)
 	fakeRuntime.AssertCalls([]string{"RunPodSandbox"})
-	sandboxes, err := fakeRuntime.ListPodSandbox(&runtimeApi.PodSandboxFilter{Id: &id})
+	sandboxes, err := fakeRuntime.ListPodSandbox(&runtimeapi.PodSandboxFilter{Id: &id})
 	assert.NoError(t, err)
 	assert.Equal(t, len(sandboxes), 1)
 	// TODO Check pod sandbox configuration

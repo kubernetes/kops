@@ -33,17 +33,14 @@ type Storage struct {
 	rest.StandardStorage
 
 	ruleResolver validation.AuthorizationRuleResolver
-
-	// user which skips privilege escalation checks
-	superUser string
 }
 
-func NewStorage(s rest.StandardStorage, ruleResolver validation.AuthorizationRuleResolver, superUser string) *Storage {
-	return &Storage{s, ruleResolver, superUser}
+func NewStorage(s rest.StandardStorage, ruleResolver validation.AuthorizationRuleResolver) *Storage {
+	return &Storage{s, ruleResolver}
 }
 
 func (s *Storage) Create(ctx api.Context, obj runtime.Object) (runtime.Object, error) {
-	if rbacregistry.EscalationAllowed(ctx, s.superUser) {
+	if rbacregistry.EscalationAllowed(ctx) {
 		return s.StandardStorage.Create(ctx, obj)
 	}
 
@@ -59,11 +56,11 @@ func (s *Storage) Create(ctx api.Context, obj runtime.Object) (runtime.Object, e
 }
 
 func (s *Storage) Update(ctx api.Context, name string, obj rest.UpdatedObjectInfo) (runtime.Object, bool, error) {
-	if rbacregistry.EscalationAllowed(ctx, s.superUser) {
+	if rbacregistry.EscalationAllowed(ctx) {
 		return s.StandardStorage.Update(ctx, name, obj)
 	}
 
-	nonEscalatingInfo := wrapUpdatedObjectInfo(obj, func(ctx api.Context, obj runtime.Object, oldObj runtime.Object) (runtime.Object, error) {
+	nonEscalatingInfo := rest.WrapUpdatedObjectInfo(obj, func(ctx api.Context, obj runtime.Object, oldObj runtime.Object) (runtime.Object, error) {
 		clusterRoleBinding := obj.(*rbac.ClusterRoleBinding)
 
 		rules, err := s.ruleResolver.GetRoleReferenceRules(clusterRoleBinding.RoleRef, clusterRoleBinding.Namespace)
@@ -77,27 +74,4 @@ func (s *Storage) Update(ctx api.Context, name string, obj rest.UpdatedObjectInf
 	})
 
 	return s.StandardStorage.Update(ctx, name, nonEscalatingInfo)
-}
-
-// TODO(ericchiang): This logic is copied from #26240. Replace with once that PR is merged into master.
-type wrappedUpdatedObjectInfo struct {
-	objInfo rest.UpdatedObjectInfo
-
-	transformFunc rest.TransformFunc
-}
-
-func wrapUpdatedObjectInfo(objInfo rest.UpdatedObjectInfo, transformFunc rest.TransformFunc) rest.UpdatedObjectInfo {
-	return &wrappedUpdatedObjectInfo{objInfo, transformFunc}
-}
-
-func (i *wrappedUpdatedObjectInfo) Preconditions() *api.Preconditions {
-	return i.objInfo.Preconditions()
-}
-
-func (i *wrappedUpdatedObjectInfo) UpdatedObject(ctx api.Context, oldObj runtime.Object) (runtime.Object, error) {
-	obj, err := i.objInfo.UpdatedObject(ctx, oldObj)
-	if err != nil {
-		return obj, err
-	}
-	return i.transformFunc(ctx, obj, oldObj)
 }
