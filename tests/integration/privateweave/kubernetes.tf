@@ -124,6 +124,10 @@ resource "aws_elb" "api-privateweave-example-com" {
     interval = 10
     timeout = 5
   }
+  tags = {
+    KubernetesCluster = "privateweave.example.com"
+    Name = "api.privateweave.example.com"
+  }
 }
 
 resource "aws_elb" "bastion-privateweave-example-com" {
@@ -144,6 +148,10 @@ resource "aws_elb" "bastion-privateweave-example-com" {
     timeout = 5
   }
   idle_timeout = 300
+  tags = {
+    KubernetesCluster = "privateweave.example.com"
+    Name = "bastion.privateweave.example.com"
+  }
 }
 
 resource "aws_iam_instance_profile" "bastions-privateweave-example-com" {
