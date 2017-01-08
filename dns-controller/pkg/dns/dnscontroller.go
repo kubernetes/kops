@@ -257,6 +257,8 @@ func (c *DNSController) runOnce() error {
 		ttl := DefaultTTL
 		glog.Infof("Using default TTL of %v", ttl)
 
+		glog.V(4).Infof("updating records for %s: %v -> %v", k, newValues, oldValues)
+
 		err := op.updateRecords(k, newValues, int64(ttl.Seconds()))
 		if err != nil {
 			glog.Infof("error updating records for %s: %v", k, err)
