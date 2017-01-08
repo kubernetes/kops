@@ -143,6 +143,19 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		manifests[key] = "addons/" + location
 	}
 
+	// The role.kubernetes.io/networking is used to label anything related to a networking addin,
+	// so that if we switch networking plugins (e.g. calico -> weave or vice-versa), we'll replace the
+	// old networking plugin, and there won't be old pods "floating around".
+
+	// This means whenever we create or update a networking plugin, we should be sure that:
+	// 1. the selector is role.kubernetes.io/networking=1
+	// 2. every object in the manifest is labeleled with role.kubernetes.io/networking=1
+
+	// TODO: Some way to test/enforce this?
+
+	// TODO: Create "empty" configurations for others, so we can delete e.g. the kopeio configuration
+	// if we switch to kubenet?
+
 	if b.cluster.Spec.Networking.Kopeio != nil {
 		key := "networking.kope.io"
 		version := "1.0.20161116"
@@ -153,7 +166,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 			Name:     fi.String(key),
 			Version:  fi.String(version),
-			Selector: map[string]string{"k8s-addon": key},
+			Selector: map[string]string{"role.kubernetes.io/networking": "1"},
 			Manifest: fi.String(location),
 		})
 
@@ -170,7 +183,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 			Name:     fi.String(key),
 			Version:  fi.String(version),
-			Selector: map[string]string{"k8s-addon": key},
+			Selector: map[string]string{"role.kubernetes.io/networking": "1"},
 			Manifest: fi.String(location),
 		})
 
@@ -187,7 +200,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 			Name:     fi.String(key),
 			Version:  fi.String(version),
-			Selector: map[string]string{"k8s-addon": key},
+			Selector: map[string]string{"role.kubernetes.io/networking": "1"},
 			Manifest: fi.String(location),
 		})
 
