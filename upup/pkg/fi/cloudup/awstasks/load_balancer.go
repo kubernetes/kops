@@ -454,6 +454,8 @@ type terraformLoadBalancer struct {
 	CrossZoneLoadBalancing *bool `json:"cross_zone_load_balancing,omitempty"`
 
 	IdleTimeout *int64 `json:"idle_timeout,omitempty"`
+
+	Tags map[string]string `json:"tags,omitempty"`
 }
 
 type terraformLoadBalancerListener struct {
@@ -472,6 +474,8 @@ type terraformLoadBalancerHealthCheck struct {
 }
 
 func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LoadBalancer) error {
+	cloud := t.Cloud.(awsup.AWSCloud)
+
 	elbName := e.ID
 	if elbName == nil {
 		elbName = e.Name
@@ -537,6 +541,8 @@ func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 	if e.CrossZoneLoadBalancing != nil {
 		tf.CrossZoneLoadBalancing = e.CrossZoneLoadBalancing.Enabled
 	}
+
+	tf.Tags = cloud.BuildTags(e.Name)
 
 	return t.RenderResource("aws_elb", *e.Name, tf)
 }
