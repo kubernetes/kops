@@ -121,38 +121,18 @@ func precreateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 		return nil
 	}
 
-	glog.Infof("Pre-creating DNS records")
-
 	// We precreate some DNS names (where they don't exist), with a dummy IP address
 	// This avoids hitting negative TTL on DNS lookups, which tend to be very long
 	// If we get the names wrong here, it doesn't really matter (extra DNS name, slower boot)
-	dnsSuffix := cluster.Spec.MasterPublicName
 
-	var dnsHostnames []string
+	dnsHostnames := buildPrecreateDNSHostnames(cluster)
 
-	if cluster.Spec.MasterPublicName != "" {
-		dnsHostnames = append(dnsHostnames, cluster.Spec.MasterPublicName)
-	} else {
-		glog.Warningf("cannot pre-create MasterPublicName - not set")
+	if len(dnsHostnames) == 0 {
+		glog.Infof("No DNS records to pre-create")
+		return nil
 	}
 
-	if cluster.Spec.MasterInternalName != "" {
-		dnsHostnames = append(dnsHostnames, cluster.Spec.MasterInternalName)
-	} else {
-		glog.Warningf("cannot pre-create MasterInternalName - not set")
-	}
-
-	for _, etcdCluster := range cluster.Spec.EtcdClusters {
-		etcClusterName := "etcd-" + etcdCluster.Name
-		if etcdCluster.Name == "main" {
-			// Special case
-			etcClusterName = "etcd"
-		}
-		for _, etcdClusterMember := range etcdCluster.Members {
-			name := etcClusterName + "-" + etcdClusterMember.Name + ".internal." + dnsSuffix
-			dnsHostnames = append(dnsHostnames, name)
-		}
-	}
+	glog.Infof("Pre-creating DNS records")
 
 	zone, err := findZone(cluster, cloud)
 	if err != nil {
@@ -215,4 +195,37 @@ func precreateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 	}
 
 	return nil
+}
+
+// buildPrecreateDNSHostnames returns the hostnames we should precreate
+func buildPrecreateDNSHostnames(cluster *api.Cluster) []string {
+	dnsInternalSuffix := ".internal." + cluster.ObjectMeta.Name
+
+	var dnsHostnames []string
+
+	if cluster.Spec.MasterPublicName != "" {
+		dnsHostnames = append(dnsHostnames, cluster.Spec.MasterPublicName)
+	} else {
+		glog.Warningf("cannot pre-create MasterPublicName - not set")
+	}
+
+	if cluster.Spec.MasterInternalName != "" {
+		dnsHostnames = append(dnsHostnames, cluster.Spec.MasterInternalName)
+	} else {
+		glog.Warningf("cannot pre-create MasterInternalName - not set")
+	}
+
+	for _, etcdCluster := range cluster.Spec.EtcdClusters {
+		etcClusterName := "etcd-" + etcdCluster.Name
+		if etcdCluster.Name == "main" {
+			// Special case
+			etcClusterName = "etcd"
+		}
+		for _, etcdClusterMember := range etcdCluster.Members {
+			name := etcClusterName + "-" + etcdClusterMember.Name + dnsInternalSuffix
+			dnsHostnames = append(dnsHostnames, name)
+		}
+	}
+
+	return dnsHostnames
 }
