@@ -105,6 +105,8 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 	if c.OutDir == "" {
 		if c.Target == cloudup.TargetTerraform {
 			c.OutDir = "out/terraform"
+		} else if c.Target == cloudup.TargetTerraformModule {
+			c.OutDir = "out/terraform/" + clusterName
 		} else {
 			c.OutDir = "out"
 		}
@@ -203,7 +205,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 
 		if !hasKubecfg {
 			// Assume initial creation
-			if c.Target == cloudup.TargetTerraform {
+			if c.Target == cloudup.TargetTerraform || c.Target == cloudup.TargetTerraformModule {
 				fmt.Printf("\n")
 				fmt.Printf("Terraform output has been placed into %s\n", c.OutDir)
 				fmt.Printf("Run these commands to apply the configuration:\n")

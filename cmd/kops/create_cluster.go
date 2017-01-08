@@ -173,6 +173,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	if c.OutDir == "" {
 		if c.Target == cloudup.TargetTerraform {
 			c.OutDir = "out/terraform"
+		} else if c.Target == cloudup.TargetTerraformModule {
+			c.OutDir = "out/terraform/" + clusterName
 		} else {
 			c.OutDir = "out"
 		}

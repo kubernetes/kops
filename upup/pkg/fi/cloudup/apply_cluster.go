@@ -502,9 +502,11 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 	case TargetTerraform:
+	case TargetTerraformModule:
 		checkExisting = false
 		outDir := c.OutDir
-		target = terraform.NewTerraformTarget(cloud, region, project, outDir)
+		module := c.TargetName == TargetTerraformModule
+		target = terraform.NewTerraformTarget(cloud, region, project, outDir, module)
 
 	case TargetDryRun:
 		target = fi.NewDryRunTarget(os.Stdout)
