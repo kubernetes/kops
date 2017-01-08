@@ -130,8 +130,11 @@ func (c *VFSContext) buildS3Path(p string) (*S3Path, error) {
 	}
 
 	bucket := strings.TrimSuffix(u.Host, "/")
+	if bucket == "" {
+		return nil, fmt.Errorf("invalid s3 path: %q", err)
+	}
 
-	s3path := NewS3Path(c.s3Context, bucket, u.Path)
+	s3path := newS3Path(c.s3Context, bucket, u.Path)
 	return s3path, nil
 }
 
