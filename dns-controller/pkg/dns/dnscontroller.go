@@ -480,17 +480,42 @@ func (s *DNSControllerScope) MarkReady() {
 }
 
 func (s *DNSControllerScope) Replace(recordName string, records []Record) {
-	glog.V(2).Infof("Update %s/%s: %v", s.ScopeName, recordName, records)
-
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
+	existing, exists := s.Records[recordName]
+
 	if len(records) == 0 {
+		if !exists {
+			glog.V(6).Infof("skipping spurious removal of record %s/%s", s.ScopeName, recordName)
+			return
+		}
+
 		delete(s.Records, recordName)
 	} else {
+		if recordsSliceEquals(existing, records) {
+			glog.V(6).Infof("skipping spurious update of record %s/%s=%s", s.ScopeName, recordName, records)
+			return
+		}
+
 		s.Records[recordName] = records
 	}
+
+	glog.V(2).Infof("Update %s/%s: %v", s.ScopeName, recordName, records)
 	s.parent.recordChange()
+}
+
+// recordsSliceEquals compares two []Record
+func recordsSliceEquals(l, r []Record) bool {
+	if len(l) != len(r) {
+		return false
+	}
+	for i := range l {
+		if l[i] != r[i] {
+			return false
+		}
+	}
+	return true
 }
 
 // CreateScope creates a scope object.
