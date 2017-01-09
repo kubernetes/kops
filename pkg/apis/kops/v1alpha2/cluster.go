@@ -227,8 +227,11 @@ type ClusterSubnetSpec struct {
 	// TODO Change ProviderID -> SubnetId
 
 	ProviderID string     `json:"subnetId,omitempty"`
+
 	NgwId      string     `json:"ngwId,omitempty"`
 	NgwEip     string     `json:"ngwEip,omitempty"`
-	EgressIP   string     `json:"egressIP,omitempty"`
+
+	// TODO: ACTIVATE EGRESSIP AND WRITE THE LOGIC TO ALLOW SMARTER AND BROADER SPECING OF EXISTING COMPONENTS
+	// EgressIP   string     `json:"egressIP,omitempty"`
 	Type       SubnetType `json:"type,omitempty"`
 }

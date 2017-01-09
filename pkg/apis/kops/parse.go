@@ -46,6 +46,7 @@ func ParseInstanceGroupRole(input string, lenient bool) (InstanceGroupRole, bool
 // ParseRawYaml parses an object just using yaml, without the full api machinery
 // Deprecated: prefer using the API machinery
 func ParseRawYaml(data []byte, dest interface{}) error {
+
 	// Yaml can't parse empty strings
 	configString := string(data)
 	configString = strings.TrimSpace(configString)
