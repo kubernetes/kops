@@ -14,7 +14,7 @@ The [dashboard project](https://github.com/kubernetes/dashboard) provides a nice
 
 Install using:
 ```
-kubectl create -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml
+kubectl create -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.5.0.yaml
 ```
 
 And then navigate to `https://api.<clustername>/ui`
