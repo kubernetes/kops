@@ -67,6 +67,9 @@ type CreateClusterOptions struct {
 
 	// Enable/Disable Bastion Host complete setup
 	Bastion bool
+
+	NgwIds  string
+	NgwEips string
 }
 
 func (o *CreateClusterOptions) InitDefaults() {
@@ -501,6 +504,32 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 	default:
 		return fmt.Errorf("Invalid topology %s.", c.Topology)
+	}
+
+	// NAT Gateway/ElasticIP
+	if c.NgwIds != "" {
+		ngwEipList := make([]string, 0)
+		// Perhaps abstract parseZoneList into something more general
+		// But it works for processing comma-delimited strings for now
+		for _, ngwEip := range parseZoneList(c.NgwEips) {
+			ngwEipList = append(ngwEipList, ngwEip)
+		}
+
+		ngwIdList := make([]string, 0)
+		for _, ngwId := range parseZoneList(c.NgwIds) {
+			ngwIdList = append(ngwIdList, ngwId)
+		}
+
+		gatewayIndex := 0
+		for i := range cluster.Spec.Subnets {
+			subnet := &cluster.Spec.Subnets[i]
+			if subnet.Type == api.SubnetTypePrivate {
+				subnet.NgwId = ngwIdList[gatewayIndex]
+				subnet.NgwEip = ngwEipList[gatewayIndex]
+				gatewayIndex++
+			}
+			// fmt.Printf("This is cluster.Spec.Subnets %+v\n", subnet)
+		}
 	}
 
 	sshPublicKeys := make(map[string][]byte)
