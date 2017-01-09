@@ -41,6 +41,14 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 		obj.Topology.Nodes = TopologyPublic
 	}
 
+	if obj.Topology.DNS == nil {
+		obj.Topology.DNS = &DNSSpec{}
+	}
+
+	if obj.Topology.DNS.Type == "" {
+		obj.Topology.DNS.Type = DNSTypePublic
+	}
+
 	if obj.API == nil {
 		obj.API = &AccessSpec{}
 	}
