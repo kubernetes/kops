@@ -36,7 +36,7 @@ spec:
     zone: us-test-1a
   topology:
     bastion:
-      bastionPublicName: bastion-private.example.com
+      bastionPublicName: bastion.private.example.com
     dns:
       type: Public
     masters: private
