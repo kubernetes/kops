@@ -43,7 +43,7 @@ type S3Path struct {
 var _ Path = &S3Path{}
 var _ HasHash = &S3Path{}
 
-func NewS3Path(s3Context *S3Context, bucket string, key string) *S3Path {
+func newS3Path(s3Context *S3Context, bucket string, key string) *S3Path {
 	bucket = strings.TrimSuffix(bucket, "/")
 	key = strings.TrimPrefix(key, "/")
 
