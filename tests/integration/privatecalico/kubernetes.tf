@@ -487,7 +487,7 @@ resource "aws_security_group_rule" "node-egress" {
   cidr_blocks = ["0.0.0.0/0"]
 }
 
-resource "aws_security_group_rule" "node-to-master-protocol-4" {
+resource "aws_security_group_rule" "node-to-master-protocol-ipip" {
   type = "ingress"
   security_group_id = "${aws_security_group.masters-privatecalico-example-com.id}"
   source_security_group_id = "${aws_security_group.nodes-privatecalico-example-com.id}"
