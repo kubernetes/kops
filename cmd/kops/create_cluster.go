@@ -493,16 +493,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			bastionGroup.ObjectMeta.Name = "bastions"
 			instanceGroups = append(instanceGroups, bastionGroup)
 
-			// Logic to handle default bastion names
-			if c.DNSZone != "" {
-				cluster.Spec.Topology.Bastion = &api.BastionSpec{
-					BastionPublicName: "bastion-" + c.DNSZone,
-				}
-			} else {
-				// Use default zone and cluster name
-				cluster.Spec.Topology.Bastion = &api.BastionSpec{
-					BastionPublicName: "bastion-" + clusterName,
-				}
+			cluster.Spec.Topology.Bastion = &api.BastionSpec{
+				BastionPublicName: "bastion." + clusterName,
 			}
 		}
 
