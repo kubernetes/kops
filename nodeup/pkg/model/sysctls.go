@@ -55,10 +55,6 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 			"net.core.somaxconn = 32768",
 			"",
 
-			"# Increase number of incoming connections backlog",
-			"net.core.netdev_max_backlog = 5000",
-			"",
-
 			"# Maximum Socket Receive Buffer",
 			"net.core.rmem_max = 16777216",
 			"",
@@ -106,7 +102,8 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 			"# AWS settings",
 			"",
 			"# Issue #23395",
-			"net.ipv4.neigh.default.gc_thresh1=0")
+			"net.ipv4.neigh.default.gc_thresh1=0",
+			"")
 	}
 
 	if b.Cluster.Spec.CloudProvider == string(fi.CloudProviderGCE) {
