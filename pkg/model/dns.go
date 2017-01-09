@@ -54,9 +54,7 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		c.AddTask(dnsZone)
-	}
-
-	if b.UseLoadBalancerForAPI() {
+	} else if b.UseLoadBalancerForAPI() {
 		// This will point our DNS to the load balancer, and put the pieces
 		// together for kubectl to be work
 
@@ -83,9 +81,7 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			TargetLoadBalancer: b.LinkToELB("api"),
 		}
 		c.AddTask(apiDnsName)
-	}
-
-	if b.UsesBastionDns() {
+	} else if b.UsesBastionDns() {
 		// Pulling this down into it's own if statement. The DNS configuration here
 		// is similar to others, but I would like to keep it on it's own in case we need
 		// to change anything.
@@ -102,7 +98,9 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			dnsZone.DNSName = s(b.Cluster.Spec.DNSZone)
 		}
 
+		//if !c.HasTask(dnsZone) {
 		c.AddTask(dnsZone)
+		//}
 	}
 
 	return nil
