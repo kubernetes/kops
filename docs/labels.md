@@ -15,6 +15,7 @@ An example:
 
 ```
 ...
+spec: 
   nodeLabels:
     spot: "false"
   cloudLabels:
