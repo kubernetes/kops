@@ -90,8 +90,13 @@ func (b *KopsModelContext) LinkToVPC() *awstasks.VPC {
 }
 
 func (b *KopsModelContext) LinkToDNSZone() *awstasks.DNSZone {
-	name := b.Cluster.Spec.DNSZone
+	name := b.NameForDNSZone()
 	return &awstasks.DNSZone{Name: &name}
+}
+
+func (b *KopsModelContext) NameForDNSZone() string {
+	name := b.Cluster.Spec.DNSZone
+	return name
 }
 
 func (b *KopsModelContext) IAMName(role kops.InstanceGroupRole) string {
