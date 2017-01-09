@@ -102,7 +102,9 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			dnsZone.DNSName = s(b.Cluster.Spec.DNSZone)
 		}
 
-		c.AddTask(dnsZone)
+		if !c.HasTask(dnsZone) {
+			c.AddTask(dnsZone)
+		}
 	}
 
 	return nil

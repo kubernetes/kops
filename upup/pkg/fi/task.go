@@ -57,6 +57,15 @@ func (c *ModelBuilderContext) AddTask(task Task) {
 	c.Tasks[key] = task
 }
 
+func (c *ModelBuilderContext) HasTask(task Task) bool {
+	key := buildTaskKey(task)
+	_, found := c.Tasks[key]
+	if found {
+		return true
+	}
+	return false
+}
+
 func buildTaskKey(task Task) string {
 	hasName, ok := task.(HasName)
 	if !ok {
