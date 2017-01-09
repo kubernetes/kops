@@ -276,7 +276,7 @@ func (t *templateFunctions) ProtokubeFlags() *ProtokubeFlags {
 		f.Channels = t.nodeupConfig.Channels
 	}
 
-	f.LogLevel = fi.Int(8)
+	f.LogLevel = fi.Int(4)
 	f.Containerized = fi.Bool(true)
 
 	zone := t.cluster.Spec.DNSZone
