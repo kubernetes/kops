@@ -135,10 +135,8 @@ type ClusterSpec struct {
 	//   missing: default policy (currently OS security upgrades that do not require a reboot)
 	UpdatePolicy *string `json:"updatePolicy,omitempty"`
 
-	// Additional permissions to add to the master role
-	AdditionalMasterPermissions *string `json:"additionalMasterPermissions,omitempty"`
-	// Additional permissions to add to the node role
-	AdditionalNodePermissions *string `json:"additionalNodePermissions,omitempty"`
+	// Additional policies to add for roles
+	AdditionalPolicies *map[string]string `json:"additionalPolicies,omitempty"`
 
 	//HairpinMode                   string `json:",omitempty"`
 	//

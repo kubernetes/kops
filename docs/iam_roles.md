@@ -43,28 +43,29 @@ ecr:ListImages
 ecr:BatchGetImage
 ```
 
-## Adding Additional Permissions
+## Adding Additional Policies
 
-Sometimes you may need to extend the kops IAM roles to add additional permissions. You can do this
-through the `additionalMasterPermissions` and `additionalNodePermissions` spec fields. For instance, let's say you want
-to add DynamoDB and Elasicsearch permissions to your nodes.
+Sometimes you may need to extend the kops IAM roles to add additional policies. You can do this
+through the `additionalPolicies` spec field. For instance, let's say you want
+to add DynamoDB and Elasticsearch permissions to your nodes.
 
 Edit your cluster via `kops edit cluster ${CLUSTER_NAME}` and add the following to the spec:
 
 ```
-additionalNodePermissions: |
-  [
-    {
-      "Effect": "Allow",
-      "Action": ["dynamodb:*"],
-      "Resource": ["*"]
-    },
-    {
-      "Effect": "Allow",
-      "Action": ["es:*"],
-      "Resource": ["*"]
-    }
-  ]
+  additionalPolicies:
+    node: |
+      [
+        {
+          "Effect": "Allow",
+          "Action": ["dynamodb:*"],
+          "Resource": ["*"]
+        },
+        {
+          "Effect": "Allow",
+          "Action": ["es:*"],
+          "Resource": ["*"]
+        }
+      ]
 ```
 
 After you're finished editing, your cluster spec should look something like this:
@@ -81,19 +82,20 @@ spec:
   zones:
   - cidr: 10.100.32.0/19
     name: eu-central-1a
-  additionalNodePermissions: |
-    [
-      {
-        "Effect": "Allow",
-        "Action": ["dynamodb:*"],
-        "Resource": ["*"]
-      },
-      {
-        "Effect": "Allow",
-        "Action": ["es:*"],
-        "Resource": ["*"]
-      }
-    ]
+  additionalPolicies:
+    node: |
+      [
+        {
+          "Effect": "Allow",
+          "Action": ["dynamodb:*"],
+          "Resource": ["*"]
+        },
+        {
+          "Effect": "Allow",
+          "Action": ["es:*"],
+          "Resource": ["*"]
+        }
+      ]
 ```
 
 Now you can update to have the changes take effect:
