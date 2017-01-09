@@ -31,7 +31,23 @@ MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
 DNS_CONTROLLER_TAG=1.4.1
 
-VERSION?=1.5.0-alpha1
+ifndef VERSION
+  # To keep both CI and end-users building from source happy,
+  # we expect that CI sets CI=1.
+  #
+  # For end users, they need only build kops, and they can use the last
+  # released version of nodeup/protokube.
+  # For CI, we continue to build a synthetic version from the git SHA, so
+  # we never cross versions.
+  #
+  # We expect that if you are uploading nodeup/protokube, you will set
+  # VERSION (along with S3_BUCKET), either directly or by setting CI=1
+  ifndef CI
+    VERSION=1.5.0-alpha1
+  else
+    VERSION := git-$(shell git describe --always)
+  endif
+endif
 
 
 # Go exports:
