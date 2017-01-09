@@ -22,6 +22,13 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+	"strconv"
+)
+
+type Protocol int
+
+const (
+	ProtocolIPIP Protocol = 4
 )
 
 // FirewallModelBuilder configures firewall network objects
@@ -81,7 +88,7 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) error {
 
 	udpPorts := []int64{}
 	tcpPorts := []int64{}
-	protocols := []string{}
+	protocols := []Protocol{}
 
 	// allow access to API
 	tcpPorts = append(tcpPorts, 443)
@@ -108,8 +115,7 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) error {
 			tcpPorts = append(tcpPorts, 4001)
 
 			tcpPorts = append(tcpPorts, 179)
-			// Protocol 4 is IPIP
-			protocols = append(protocols, "4")
+			protocols = append(protocols, ProtocolIPIP)
 		}
 	}
 
@@ -134,11 +140,20 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) error {
 		})
 	}
 	for _, protocol := range protocols {
+		awsName := strconv.Itoa(int(protocol))
+		name := awsName
+		switch protocol {
+		case ProtocolIPIP:
+			name = "ipip"
+		default:
+			glog.Warningf("unknown protocol %q - naming by number", awsName)
+		}
+
 		c.AddTask(&awstasks.SecurityGroupRule{
-			Name:          s(fmt.Sprintf("node-to-master-protocol-%s", protocol)),
+			Name:          s("node-to-master-protocol-" + name),
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
-			Protocol:      s(protocol),
+			Protocol:      s(awsName),
 		})
 	}
 
