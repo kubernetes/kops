@@ -46,6 +46,8 @@ spec:
     type: Public
     zone: us-test-1c
   topology:
+    dns:
+      type: Public
     masters: public
     nodes: public
 
