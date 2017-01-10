@@ -29,7 +29,7 @@ GOVERSION=1.7.4
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
-DNS_CONTROLLER_TAG=1.4.1
+DNS_CONTROLLER_TAG=1.5.0
 
 ifndef VERSION
   # To keep both CI and end-users building from source happy,
@@ -43,7 +43,7 @@ ifndef VERSION
   # We expect that if you are uploading nodeup/protokube, you will set
   # VERSION (along with S3_BUCKET), either directly or by setting CI=1
   ifndef CI
-    VERSION=1.5.0-alpha1
+    VERSION=1.5.0-alpha2
   else
     VERSION := git-$(shell git describe --always)
   endif
