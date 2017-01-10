@@ -31,7 +31,23 @@ MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
 DNS_CONTROLLER_TAG=1.4.1
 
-VERSION?=1.5.0-alpha1
+ifndef VERSION
+  # To keep both CI and end-users building from source happy,
+  # we expect that CI sets CI=1.
+  #
+  # For end users, they need only build kops, and they can use the last
+  # released version of nodeup/protokube.
+  # For CI, we continue to build a synthetic version from the git SHA, so
+  # we never cross versions.
+  #
+  # We expect that if you are uploading nodeup/protokube, you will set
+  # VERSION (along with S3_BUCKET), either directly or by setting CI=1
+  ifndef CI
+    VERSION=1.5.0-alpha1
+  else
+    VERSION := git-$(shell git describe --always)
+  endif
+endif
 
 
 # Go exports:
@@ -80,6 +96,7 @@ test:
 	go test k8s.io/kops/dns-controller/pkg/... -args -v=1 -logtostderr
 	go test k8s.io/kops/cmd/... -args -v=1 -logtostderr
 	go test k8s.io/kops/tests/... -args -v=1 -logtostderr
+	go test k8s.io/kops/util/... -args -v=1 -logtostderr
 
 crossbuild-nodeup:
 	mkdir -p .build/dist/
@@ -123,11 +140,11 @@ upload: kops version-dist
 	aws s3 sync --acl public-read .build/upload/ ${S3_BUCKET}
 
 gcs-upload: version-dist
-	@echo "== Logging gcloud info =="
-	@gcloud info
 	@echo "== Uploading kops =="
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r .build/upload/kops/* ${GCS_LOCATION}
 
+# In CI testing, always upload the CI version.
+gcs-publish-ci: VERSION := git-$(shell git describe --always)
 gcs-publish-ci: gcs-upload
 	echo "${GCS_URL}/${VERSION}" > .build/upload/${LATEST_FILE}
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp .build/upload/${LATEST_FILE} ${GCS_LOCATION}

@@ -205,9 +205,19 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 
 		if !hasKubecfg {
 			// Assume initial creation
-			fmt.Printf("\n")
-			fmt.Printf("Cluster is starting.  It should be ready in a few minutes.\n")
-			fmt.Printf("\n")
+			if c.Target == cloudup.TargetTerraform {
+				fmt.Printf("\n")
+				fmt.Printf("Terraform output has been placed into %s\n", c.OutDir)
+				fmt.Printf("Run these commands to apply the configuration:\n")
+				fmt.Printf("   cd %s\n", c.OutDir)
+				fmt.Printf("   terraform plan\n")
+				fmt.Printf("   terraform apply\n")
+				fmt.Printf("\n")
+			} else {
+				fmt.Printf("\n")
+				fmt.Printf("Cluster is starting.  It should be ready in a few minutes.\n")
+				fmt.Printf("\n")
+			}
 			fmt.Printf("Suggestions:\n")
 			fmt.Printf(" * list nodes: kubectl get nodes --show-labels\n")
 			if cluster.Spec.Topology.Masters == kops.TopologyPublic {

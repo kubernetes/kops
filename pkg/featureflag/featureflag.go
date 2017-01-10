@@ -34,9 +34,6 @@ func Bool(b bool) *bool {
 	return &b
 }
 
-// PreviewPrivateDNS turns on the preview of the private hosted zone support.
-var PreviewPrivateDNS = New("PreviewPrivateDNS", Bool(false))
-
 // DNSPreCreate controls whether we pre-create DNS records.
 var DNSPreCreate = New("DNSPreCreate", Bool(true))
 

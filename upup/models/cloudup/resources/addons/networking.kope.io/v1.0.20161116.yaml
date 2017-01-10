@@ -5,11 +5,13 @@ metadata:
   namespace: kube-system
   labels:
     k8s-addon: networking.addons.k8s.io
+    role.kubernetes.io/networking: "1"
 spec:
   template:
     metadata:
       labels:
         name: kopeio-networking-agent
+        role.kubernetes.io/networking: "1"
     spec:
       hostPID: true
       hostIPC: true

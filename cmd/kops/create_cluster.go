@@ -65,6 +65,9 @@ type CreateClusterOptions struct {
 	// The network topology to use
 	Topology string
 
+	// The DNS type to use (public/private)
+	DNSType string
+
 	// Enable/Disable Bastion Host complete setup
 	Bastion bool
 
@@ -80,7 +83,8 @@ func (o *CreateClusterOptions) InitDefaults() {
 	o.Networking = "kubenet"
 	o.AssociatePublicIP = true
 	o.Channel = api.DefaultChannel
-	o.Topology = "public"
+	o.Topology = api.TopologyPublic
+	o.DNSType = string(api.DNSTypePublic)
 	o.Bastion = false
 }
 
@@ -145,6 +149,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	// Network topology
 	cmd.Flags().StringVarP(&options.Topology, "topology", "t", options.Topology, "Controls network topology for the cluster. public|private. Default is 'public'.")
+
+	// DNS
+	cmd.Flags().StringVar(&options.DNSType, "dns", options.DNSType, "DNS hosted zone to use: public|private. Default is 'public'.")
 
 	// Bastion
 	cmd.Flags().BoolVar(&options.Bastion, "bastion", options.Bastion, "Pass the --bastion flag to enable a bastion instance group. Only applies to private topology.")
@@ -458,7 +465,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 	case api.TopologyPrivate:
 		if !supportsPrivateTopology(cluster.Spec.Networking) {
-			return fmt.Errorf("Invalid networking option %s. Currently only '--networking cni', '--networking kopeio-vxlan', '--networking weave', '--networking calico' are supported for private topologies", c.Networking)
+			return fmt.Errorf("Invalid networking option %s. Currently only '--networking kopeio-vxlan', '--networking weave', '--networking calico' (or '--networking cni') are supported for private topologies", c.Networking)
 		}
 		cluster.Spec.Topology = &api.TopologySpec{
 			Masters: api.TopologyPrivate,
@@ -489,22 +496,15 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			bastionGroup.ObjectMeta.Name = "bastions"
 			instanceGroups = append(instanceGroups, bastionGroup)
 
-			// Logic to handle default bastion names
-			if c.DNSZone != "" {
-				cluster.Spec.Topology.Bastion = &api.BastionSpec{
-					BastionPublicName: "bastion-" + c.DNSZone,
-				}
-			} else {
-				// Use default zone and cluster name
-				cluster.Spec.Topology.Bastion = &api.BastionSpec{
-					BastionPublicName: "bastion-" + clusterName,
-				}
+			cluster.Spec.Topology.Bastion = &api.BastionSpec{
+				BastionPublicName: "bastion." + clusterName,
 			}
 		}
 
 	default:
 		return fmt.Errorf("Invalid topology %s.", c.Topology)
 	}
+
 
 	// NAT Gateway/ElasticIP
 	if c.NgwIds != "" {
@@ -530,6 +530,28 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			}
 			// fmt.Printf("This is cluster.Spec.Subnets %+v\n", subnet)
 		}
+    
+	// DNS
+	if c.DNSType == "" {
+		// The flag default should have set this, but we might be being called as a library
+		glog.Infof("Empty DNS. Defaulting to public DNS")
+		c.DNSType = string(api.DNSTypePublic)
+	}
+
+	if cluster.Spec.Topology == nil {
+		cluster.Spec.Topology = &api.TopologySpec{}
+	}
+	if cluster.Spec.Topology.DNS == nil {
+		cluster.Spec.Topology.DNS = &api.DNSSpec{}
+	}
+	switch strings.ToLower(c.DNSType) {
+	case "public":
+		cluster.Spec.Topology.DNS.Type = api.DNSTypePublic
+	case "private":
+		cluster.Spec.Topology.DNS.Type = api.DNSTypePrivate
+	default:
+		return fmt.Errorf("unknown DNSType: %q", c.DNSType)
+
 	}
 
 	sshPublicKeys := make(map[string][]byte)

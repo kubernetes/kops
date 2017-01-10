@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/featureflag"
 	"strings"
 )
 
@@ -165,9 +164,19 @@ func (m *KopsModelContext) UseLoadBalancerForAPI() bool {
 }
 
 func (m *KopsModelContext) UsePrivateDNS() bool {
-	if featureflag.PreviewPrivateDNS.Enabled() {
-		glog.Infof("PreviewPrivateDNS enabled; using private DNS")
-		return true
+	topology := m.Cluster.Spec.Topology
+	if topology != nil && topology.DNS != nil {
+		switch topology.DNS.Type {
+		case kops.DNSTypePublic:
+			return false
+		case kops.DNSTypePrivate:
+			return true
+
+		default:
+			glog.Warningf("Unknown DNS type %q", topology.DNS.Type)
+			return false
+		}
 	}
+
 	return false
 }
