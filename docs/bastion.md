@@ -11,7 +11,7 @@ Bastion provide an external facing point of entry into a network containing priv
 
 To enable a bastion instance group, a user will need to set the `--bastion` flag on cluster create
 
-```
+```yaml
 kops create cluster --topology private --networking $provider --bastion $NAME
 ```
 
@@ -19,13 +19,13 @@ kops create cluster --topology private --networking $provider --bastion $NAME
 
 You can edit the bastion instance group to make changes. By default the name of the bastion instance group will be `bastions` and you can specify the name of the cluster with `--name` as in:
 
-```
+```yaml
 kops edit ig bastions --name $KOPS_NAME
 ```
 
 You should now be able to edit and configure your bastion instance group.
 
-```
+```yaml
 apiVersion: kops/v1alpha2
 kind: InstanceGroup
 metadata:
@@ -51,21 +51,21 @@ If you do not want the bastion instance group created at all, simply drop the `-
 
 By default the bastion instance group will create a public CNAME alias that will point to the bastion ELB. 
 
-The default bastion name is `bastion-$NAME` as in
+The default bastion name is `bastion.$NAME` as in
 
-```
-bastion-example.kubernetes.com
+```yaml
+bastion.example.kubernetes.com
 ```
 
 Unless a user is using `--dns-zone` which will inherently use the `basion-$ZONE` syntax.
 
 You can define a custom bastion CNAME by editing the main cluster config `kops edit cluster $NAME` and modifying the following block
 
-```
+```yaml
 spec:
   topology:
     bastion:
-      bastionPublicName: bastion-example.kubernetes.com
+      bastionPublicName: bastion.example.kubernetes.com
 ```
 
 
@@ -75,7 +75,7 @@ The bastion is accessed via an AWS ELB. The ELB is required to gain secure acces
 
 You can increase the ELB idle timeout by editing the main cluster config `kops edit cluster $NAME` and modifyng the following block
 
-```
+```yaml
 spec:
   topology:
     bastion:
@@ -83,3 +83,22 @@ spec:
 ```
 
 Where the maximum value is 1200 seconds (20 minutes) allowed by AWS. [More information](http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/config-idle-timeout.html)
+
+### Using the bastion
+
+Once your cluster is setup and you need to SSH into the bastion you can access a cluster resource using the following steps
+
+```bash
+# Verify you have an SSH agent running. This should match whatever you built your cluster with.
+ssh-add -l 
+# If you need to add an agent
+ssh-add path/to/public/key
+
+# Now you can SSH into the bastion
+ssh -A admin@<bastion-ELB-address>
+
+# Where <bastion-ELB-address> is usually bastion.$clustername (bastion.example.kubernetes.cluster) unless otherwise specified
+
+```
+
+Now that you can successfully SSH into the bastion with a forwarded SSH agent. You can SSH into any of your cluster resources using their local IP address. You can get their local IP address from the cloud console.

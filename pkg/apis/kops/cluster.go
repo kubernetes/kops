@@ -348,6 +348,7 @@ func (c *Cluster) FillDefaults() error {
 	// Topology support
 	if c.Spec.Topology == nil {
 		c.Spec.Topology = &TopologySpec{Masters: TopologyPublic, Nodes: TopologyPublic}
+		c.Spec.Topology.DNS = &DNSSpec{Type: DNSTypePublic}
 	}
 
 	if len(c.Spec.KubernetesAPIAccess) == 0 {

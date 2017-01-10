@@ -397,15 +397,6 @@ resource "aws_security_group_rule" "all-master-to-node" {
   protocol = "-1"
 }
 
-resource "aws_security_group_rule" "all-node-to-master" {
-  type = "ingress"
-  security_group_id = "${aws_security_group.masters-privateweave-example-com.id}"
-  source_security_group_id = "${aws_security_group.nodes-privateweave-example-com.id}"
-  from_port = 0
-  to_port = 0
-  protocol = "-1"
-}
-
 resource "aws_security_group_rule" "all-node-to-node" {
   type = "ingress"
   security_group_id = "${aws_security_group.nodes-privateweave-example-com.id}"
@@ -494,6 +485,51 @@ resource "aws_security_group_rule" "node-egress" {
   to_port = 0
   protocol = "-1"
   cidr_blocks = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "node-to-master-tcp-4194" {
+  type = "ingress"
+  security_group_id = "${aws_security_group.masters-privateweave-example-com.id}"
+  source_security_group_id = "${aws_security_group.nodes-privateweave-example-com.id}"
+  from_port = 4194
+  to_port = 4194
+  protocol = "tcp"
+}
+
+resource "aws_security_group_rule" "node-to-master-tcp-443" {
+  type = "ingress"
+  security_group_id = "${aws_security_group.masters-privateweave-example-com.id}"
+  source_security_group_id = "${aws_security_group.nodes-privateweave-example-com.id}"
+  from_port = 443
+  to_port = 443
+  protocol = "tcp"
+}
+
+resource "aws_security_group_rule" "node-to-master-tcp-6783" {
+  type = "ingress"
+  security_group_id = "${aws_security_group.masters-privateweave-example-com.id}"
+  source_security_group_id = "${aws_security_group.nodes-privateweave-example-com.id}"
+  from_port = 6783
+  to_port = 6783
+  protocol = "tcp"
+}
+
+resource "aws_security_group_rule" "node-to-master-udp-6783" {
+  type = "ingress"
+  security_group_id = "${aws_security_group.masters-privateweave-example-com.id}"
+  source_security_group_id = "${aws_security_group.nodes-privateweave-example-com.id}"
+  from_port = 6783
+  to_port = 6783
+  protocol = "udp"
+}
+
+resource "aws_security_group_rule" "node-to-master-udp-6784" {
+  type = "ingress"
+  security_group_id = "${aws_security_group.masters-privateweave-example-com.id}"
+  source_security_group_id = "${aws_security_group.nodes-privateweave-example-com.id}"
+  from_port = 6784
+  to_port = 6784
+  protocol = "udp"
 }
 
 resource "aws_security_group_rule" "ssh-elb-to-bastion" {

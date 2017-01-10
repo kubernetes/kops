@@ -146,7 +146,7 @@ func (c *DNSController) snapshotIfChangedAndReady() *snapshot {
 	aliasTargets := make(map[string][]Record)
 
 	if c.lastSuccessfulSnapshot != nil && s.changeCount == c.lastSuccessfulSnapshot.changeCount {
-		glog.V(4).Infof("No changes since DNS values last successfully applied")
+		glog.V(6).Infof("No changes since DNS values last successfully applied")
 		return nil
 	}
 
@@ -256,6 +256,8 @@ func (c *DNSController) runOnce() error {
 
 		ttl := DefaultTTL
 		glog.Infof("Using default TTL of %v", ttl)
+
+		glog.V(4).Infof("updating records for %s: %v -> %v", k, newValues, oldValues)
 
 		err := op.updateRecords(k, newValues, int64(ttl.Seconds()))
 		if err != nil {
@@ -480,17 +482,42 @@ func (s *DNSControllerScope) MarkReady() {
 }
 
 func (s *DNSControllerScope) Replace(recordName string, records []Record) {
-	glog.V(2).Infof("Update %s/%s: %v", s.ScopeName, recordName, records)
-
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
+	existing, exists := s.Records[recordName]
+
 	if len(records) == 0 {
+		if !exists {
+			glog.V(6).Infof("skipping spurious removal of record %s/%s", s.ScopeName, recordName)
+			return
+		}
+
 		delete(s.Records, recordName)
 	} else {
+		if recordsSliceEquals(existing, records) {
+			glog.V(6).Infof("skipping spurious update of record %s/%s=%s", s.ScopeName, recordName, records)
+			return
+		}
+
 		s.Records[recordName] = records
 	}
+
+	glog.V(2).Infof("Update %s/%s: %v", s.ScopeName, recordName, records)
 	s.parent.recordChange()
+}
+
+// recordsSliceEquals compares two []Record
+func recordsSliceEquals(l, r []Record) bool {
+	if len(l) != len(r) {
+		return false
+	}
+	for i := range l {
+		if l[i] != r[i] {
+			return false
+		}
+	}
+	return true
 }
 
 // CreateScope creates a scope object.

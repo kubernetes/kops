@@ -3,11 +3,14 @@ kind: DaemonSet
 metadata:
   name: weave-net
   namespace: kube-system
+  labels:
+    role.kubernetes.io/networking: "1"
 spec:
   template:
     metadata:
       labels:
         name: weave-net
+        role.kubernetes.io/networking: "1"
       annotations:
         scheduler.alpha.kubernetes.io/tolerations: |
           [
