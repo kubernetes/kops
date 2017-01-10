@@ -32,7 +32,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
-	"k8s.io/kops/upup/pkg/kutil"
 	"sort"
 )
 
@@ -586,11 +585,6 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return err
 	}
 
-	secretStore, err := registry.SecretStore(cluster)
-	if err != nil {
-		return err
-	}
-
 	err = registry.WriteConfigDeprecated(configBase.Join(registry.PathClusterCompleted), fullCluster)
 	if err != nil {
 		return fmt.Errorf("error writing completed cluster spec: %v", err)
@@ -605,19 +599,26 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 	if targetName != "" {
 		if isDryrun {
-			fmt.Print("Previewing changes that will be made:\n\n")
+			fmt.Fprintf(out, "Previewing changes that will be made:\n\n")
 		}
 
-		applyCmd := &cloudup.ApplyClusterCmd{
-			Cluster:    fullCluster,
-			Models:     strings.Split(c.Models, ","),
-			Clientset:  clientset,
-			TargetName: targetName,
-			OutDir:     c.OutDir,
-			DryRun:     isDryrun,
-		}
+		// TODO: Maybe just embed UpdateClusterOptions in CreateClusterOptions?
+		updateClusterOptions := &UpdateClusterOptions{}
+		updateClusterOptions.InitDefaults()
 
-		err = applyCmd.Run()
+		updateClusterOptions.Yes = c.Yes
+		updateClusterOptions.Target = c.Target
+		updateClusterOptions.Models = c.Models
+		updateClusterOptions.OutDir = c.OutDir
+
+		// SSHPublicKey has already been mapped
+		updateClusterOptions.SSHPublicKey = ""
+
+		// No equivalent options:
+		//  updateClusterOptions.MaxTaskDuration = c.MaxTaskDuration
+		//  updateClusterOptions.CreateKubecfg = c.CreateKubecfg
+
+		err := RunUpdateCluster(f, clusterName, out, updateClusterOptions)
 		if err != nil {
 			return err
 		}
@@ -643,20 +644,6 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			_, err := out.Write(sb.Bytes())
 			if err != nil {
 				return fmt.Errorf("error writing to output: %v", err)
-			}
-		} else {
-			glog.Infof("Exporting kubecfg for cluster")
-
-			x := &kutil.CreateKubecfg{
-				ContextName:  cluster.ObjectMeta.Name,
-				KeyStore:     keyStore,
-				SecretStore:  secretStore,
-				KubeMasterIP: cluster.Spec.MasterPublicName,
-			}
-
-			err = x.WriteKubecfg()
-			if err != nil {
-				return err
 			}
 		}
 	}
