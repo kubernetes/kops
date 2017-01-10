@@ -18,7 +18,7 @@ package main
 
 import (
 	"bytes"
-	"fmt"
+	//"fmt"
 	"github.com/golang/glog"
 	"io/ioutil"
 	"k8s.io/kops/cmd/kops/util"
