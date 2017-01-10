@@ -43,7 +43,7 @@ ifndef VERSION
   # We expect that if you are uploading nodeup/protokube, you will set
   # VERSION (along with S3_BUCKET), either directly or by setting CI=1
   ifndef CI
-    VERSION=1.5.0-alpha2
+    VERSION=1.5.0-alpha3
   else
     VERSION := git-$(shell git describe --always)
   endif
