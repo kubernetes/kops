@@ -223,14 +223,6 @@ func (c *populateClusterSpec) run() error {
 		return err
 	}
 
-	// Hard coding topology here
-	//
-	// We want topology to pass through
-	// Otherwise we were losing the pointer
-	// TODO: This should not be needed...
-	cluster.Spec.Topology = c.InputCluster.Spec.Topology
-	//cluster.Spec.Topology.Bastion = c.InputCluster.Spec.Topology.Bastion
-
 	if cluster.Spec.DNSZone == "" {
 		dns, err := cloud.DNS()
 		if err != nil {
@@ -238,7 +230,7 @@ func (c *populateClusterSpec) run() error {
 		}
 		dnsZone, err := FindDNSHostedZone(dns, cluster.ObjectMeta.Name)
 		if err != nil {
-			return fmt.Errorf("Error determining default DNS zone; please specify --dns-zone: %v", err)
+			return fmt.Errorf("error determining default DNS zone: %v", err)
 		}
 		glog.Infof("Defaulting DNS zone to: %s", dnsZone)
 		cluster.Spec.DNSZone = dnsZone

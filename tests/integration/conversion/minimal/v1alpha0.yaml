@@ -28,6 +28,8 @@ spec:
     bastion:
       idleTimeout: 120
       machineType: t2.medium
+    dns:
+      type: Public
     masters: public
     nodes: public
   zones:
