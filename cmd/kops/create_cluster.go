@@ -505,7 +505,6 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return fmt.Errorf("Invalid topology %s.", c.Topology)
 	}
 
-
 	// NAT Gateway/ElasticIP
 	if c.NgwIds != "" {
 		ngwEipList := make([]string, 0)
@@ -530,7 +529,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			}
 			// fmt.Printf("This is cluster.Spec.Subnets %+v\n", subnet)
 		}
-    
+	}
+
 	// DNS
 	if c.DNSType == "" {
 		// The flag default should have set this, but we might be being called as a library
