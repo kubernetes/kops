@@ -146,7 +146,7 @@ func (c *DNSController) snapshotIfChangedAndReady() *snapshot {
 	aliasTargets := make(map[string][]Record)
 
 	if c.lastSuccessfulSnapshot != nil && s.changeCount == c.lastSuccessfulSnapshot.changeCount {
-		glog.V(4).Infof("No changes since DNS values last successfully applied")
+		glog.V(6).Infof("No changes since DNS values last successfully applied")
 		return nil
 	}
 
