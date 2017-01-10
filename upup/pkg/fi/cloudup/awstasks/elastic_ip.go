@@ -201,7 +201,6 @@ func (s *ElasticIP) CheckChanges(a, e, changes *ElasticIP) error {
 
 // RenderAWS is where we actually apply changes to AWS
 func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) error {
-
 	var publicIp *string
 	var eipId *string
 
@@ -227,18 +226,23 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 	}
 
 	// Tag the associated subnet
-	if e.TagOnSubnet == nil {
-		return fmt.Errorf("Subnet not set")
-	} else if e.TagOnSubnet.ID == nil {
-		return fmt.Errorf("Subnet ID not set")
+	if e.TagOnSubnet != nil {
+		if e.TagOnSubnet.ID == nil {
+			return fmt.Errorf("Subnet ID not set")
+		}
+		tags := make(map[string]string)
+		tags["AssociatedElasticIp"] = *publicIp
+		tags["AssociatedElasticIpAllocationId"] = *eipId // Leaving this in for reference, even though we don't use it
+		err := t.AddAWSTags(*e.TagOnSubnet.ID, tags)
+		if err != nil {
+			return fmt.Errorf("Unable to tag subnet %v", err)
+		}
+	} else {
+		// TODO: Figure out what we can do.  We're sort of stuck between wanting to have one code-path with
+		// terraform, and having a bigger "window of loss" here before we create the NATGateway
+		glog.V(2).Infof("ElasticIP %q not tagged on subnet; risk of leaking", fi.StringValue(publicIp))
 	}
-	tags := make(map[string]string)
-	tags["AssociatedElasticIp"] = *publicIp
-	tags["AssociatedElasticIpAllocationId"] = *eipId // Leaving this in for reference, even though we don't use it
-	err := t.AddAWSTags(*e.TagOnSubnet.ID, tags)
-	if err != nil {
-		return fmt.Errorf("Unable to tag subnet %v", err)
-	}
+
 	return nil
 }
 
