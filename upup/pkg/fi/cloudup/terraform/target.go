@@ -36,6 +36,9 @@ type TerraformTarget struct {
 
 	outDir string
 
+	// module will create a terraform module
+	module bool
+
 	// mutex protects the following items (resources & files)
 	mutex sync.Mutex
 	// resources is a list of TF items that should be created
@@ -44,12 +47,13 @@ type TerraformTarget struct {
 	files map[string][]byte
 }
 
-func NewTerraformTarget(cloud fi.Cloud, region, project string, outDir string) *TerraformTarget {
+func NewTerraformTarget(cloud fi.Cloud, region, project string, outDir string, module bool) *TerraformTarget {
 	return &TerraformTarget{
 		Cloud:   cloud,
 		Region:  region,
 		Project: project,
 		outDir:  outDir,
+		module:  module,
 		files:   make(map[string][]byte),
 	}
 }
