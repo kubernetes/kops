@@ -139,6 +139,12 @@ type KubeAPIServerConfig struct {
 	KubeletPreferredAddressTypes []string `json:"kubeletPreferredAddressTypes,omitempty" flag:"kubelet-preferred-address-types"`
 
 	StorageBackend *string `json:"storageBackend,omitempty" flag:"storage-backend"`
+
+   OIDCUsernameClaim *string `json:"OIDCUsernameClaim,omitempty" flag:"oidc-username-claim"`
+   OIDCGroupsClaim   *string `json:"OIDCGroupsClaim,omitempty" flag:"oidc-groups-claim"`
+   OIDCIssuerURL     *string `json:"OIDCIssuerURL,omitempty" flag:"oidc-issuer-url"`
+   OIDCClientID      *string `json:"OIDCClientID,omitempty" flag:"oidc-client-id"`
+   OIDCCAFile        *string `json:"OIDCCAFile,omitempty" flag:"oidc-ca-file"`
 }
 
 type KubeControllerManagerConfig struct {
