@@ -53,7 +53,11 @@ var deleteCmd = &cobra.Command{
 				Retries: 2,
 			}
 
-			if !ui.GetConfirm(c) {
+			confirmed, err := ui.GetConfirm(c)
+			if err != nil {
+				exitWithError(err)
+			}
+			if !confirmed {
 				os.Exit(1)
 			}
 

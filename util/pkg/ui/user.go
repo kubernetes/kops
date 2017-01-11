@@ -38,7 +38,7 @@ type ConfirmArgs struct {
 // out: an io.Writer that allows you to direct prints to stdout or another location
 // message: the string that will be printed just before prompting for a yes or no.
 // answer: "", "yes", or "no" - this allows for easier testing
-func GetConfirm(c *ConfirmArgs) bool {
+func GetConfirm(c *ConfirmArgs) (bool, error) {
 	if c.Default != "" {
 		c.Default = strings.ToLower(c.Default)
 	}
@@ -62,28 +62,28 @@ func GetConfirm(c *ConfirmArgs) bool {
 	if response == "" {
 		_, err := fmt.Scanln(&response)
 		if err != nil {
-			return false
+			return false, err
 		}
 	}
 
 	responseLower := strings.ToLower(response)
 	// make sure the response is valid
 	if ContainsString(okayResponses, responseLower) {
-		return true
+		return true, nil
 	} else if ContainsString(nokayResponses, responseLower) {
-		return false
+		return false, nil
 	} else if c.Default != "" && response == "" {
 		if string(c.Default[0]) == "y" {
-			return true
+			return true, nil
 		}
-		return false
+		return false, nil
 	}
 
 	fmt.Printf("invalid response: %s\n\n", response)
 
 	// if c.RetryCount exceeds the requested number of retries then five up
 	if c.RetryCount >= c.Retries {
-		return false
+		return false, nil
 	}
 
 	c.RetryCount++
