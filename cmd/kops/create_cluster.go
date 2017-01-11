@@ -36,27 +36,29 @@ import (
 )
 
 type CreateClusterOptions struct {
-	ClusterName       string
-	Yes               bool
-	Target            string
-	Models            string
-	Cloud             string
-	Zones             string
-	MasterZones       string
-	NodeSize          string
-	MasterSize        string
-	NodeCount         int
-	Project           string
-	KubernetesVersion string
-	OutDir            string
-	Image             string
-	SSHPublicKey      string
-	VPCID             string
-	NetworkCIDR       string
-	DNSZone           string
-	AdminAccess       string
-	Networking        string
-	AssociatePublicIP bool
+	ClusterName            string
+	Yes                    bool
+	Target                 string
+	Models                 string
+	Cloud                  string
+	Zones                  string
+	MasterZones            string
+	NodeSize               string
+	MasterSize             string
+	NodeCount              int
+	Project                string
+	KubernetesVersion      string
+	OutDir                 string
+	Image                  string
+	SSHPublicKey           string
+	VPCID                  string
+	NetworkCIDR            string
+	DNSZone                string
+	AdminAccess            string
+	NodeSecurityGroupIDs   string
+	MasterSecurityGroupIDs string
+	Networking             string
+	AssociatePublicIP      bool
 
 	// Channel is the location of the api.Channel to use for our defaults
 	Channel string
@@ -138,6 +140,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.DNSZone, "dns-zone", options.DNSZone, "DNS hosted zone to use (defaults to longest matching zone)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
 	cmd.Flags().StringVar(&options.AdminAccess, "admin-access", options.AdminAccess, "Restrict access to admin endpoints (SSH, HTTPS) to this CIDR.  If not set, access will not be restricted by IP.")
+
+	cmd.Flags().StringVar(&options.NodeSecurityGroupIDs, "node-security-groups", options.NodeSecurityGroupIDs, "Add precreated additional security groups to nodes.")
+	cmd.Flags().StringVar(&options.MasterSecurityGroupIDs, "master-security-groups", options.MasterSecurityGroupIDs, "Add precreated additional security groups to masters.")
 
 	cmd.Flags().BoolVar(&options.AssociatePublicIP, "associate-public-ip", options.AssociatePublicIP, "Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.")
 
@@ -356,6 +361,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	if len(nodes) == 0 {
 		g := &api.InstanceGroup{}
 		g.Spec.Role = api.InstanceGroupRoleNode
+
 		g.ObjectMeta.Name = "nodes"
 		instanceGroups = append(instanceGroups, g)
 		nodes = append(nodes, g)
@@ -381,6 +387,22 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		for _, group := range nodes {
 			group.Spec.MinSize = fi.Int(c.NodeCount)
 			group.Spec.MaxSize = fi.Int(c.NodeCount)
+		}
+	}
+
+	if len(c.NodeSecurityGroupIDs) > 0 {
+		for _, sgID := range parseInputList(c.NodeSecurityGroupIDs) {
+			for _, group := range nodes {
+				group.Spec.AdditionalSecurityGroupIDs = append(group.Spec.AdditionalSecurityGroupIDs, sgID)
+			}
+		}
+	}
+
+	if len(c.MasterSecurityGroupIDs) > 0 {
+		for _, sgID := range parseInputList(c.MasterSecurityGroupIDs) {
+			for _, group := range masters {
+				group.Spec.AdditionalSecurityGroupIDs = append(group.Spec.AdditionalSecurityGroupIDs, sgID)
+			}
 		}
 	}
 
