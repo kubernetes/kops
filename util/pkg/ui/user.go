@@ -24,10 +24,12 @@ import (
 
 // ConfirmArgs encapsulates the arguments that can he passed to GetConfirm
 type ConfirmArgs struct {
-	Out     io.Writer // os.Stdout or &bytes.Buffer used to putput the message above the confirmation
-	Message string    // what you want to say to the user before confirming
-	Default string    // if you hit enter instead of yes or no shoudl it approve or deny
-	TestVal string    // if you need to test without the interactive prompt then set the user response here
+	Out        io.Writer // os.Stdout or &bytes.Buffer used to putput the message above the confirmation
+	Message    string    // what you want to say to the user before confirming
+	Default    string    // if you hit enter instead of yes or no shoudl it approve or deny
+	TestVal    string    // if you need to test without the interactive prompt then set the user response here
+	Retries    int       // how many tines to ask for a valid confirmation before giving up
+	RetryCount int       // how many attempts have been made
 }
 
 // GetConfirm prompts a user for a yes or no answer.
@@ -70,16 +72,30 @@ func GetConfirm(c *ConfirmArgs) bool {
 		return true
 	} else if ContainsString(nokayResponses, responseLower) {
 		return false
-	} else if c.Default != "" {
+	} else if c.Default != "" && response == "" {
 		if string(c.Default[0]) == "y" {
 			return true
 		}
 		return false
 	}
+
+	fmt.Printf("invalid response: %s\n\n", response)
+
+	// if c.RetryCount exceeds the requested number of retries then five up
+	if c.RetryCount >= c.Retries {
+		return false
+	}
+
+	c.RetryCount++
 	return GetConfirm(c)
 }
 
 // ContainsString returns true if slice contains the element
 func ContainsString(slice []string, element string) bool {
-	return !(strings.Index(strings.Join(slice, " "), element) == -1)
+	for _, arg := range slice {
+		if arg == element {
+			return true
+		}
+	}
+	return false
 }

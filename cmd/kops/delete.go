@@ -50,6 +50,7 @@ var deleteCmd = &cobra.Command{
 				Out:     os.Stdout,
 				Message: message,
 				Default: "no",
+				Retries: 2,
 			}
 
 			if !ui.GetConfirm(c) {
