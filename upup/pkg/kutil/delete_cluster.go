@@ -1815,7 +1815,7 @@ func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*ResourceTracker,
 
 				remove := false
 				// TODO: Compute the actual set of names?
-				if prefix == ".api" || prefix == ".api.internal" {
+				if prefix == ".api" || prefix == ".api.internal" || prefix == ".bastion" {
 					remove = true
 				} else if strings.HasPrefix(prefix, ".etcd-") {
 					remove = true
@@ -1900,6 +1900,7 @@ func ListIAMRoles(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error
 	remove := make(map[string]bool)
 	remove["masters."+clusterName] = true
 	remove["nodes."+clusterName] = true
+	remove["bastions."+clusterName] = true
 
 	var roles []*iam.Role
 	// Find roles matching remove map
@@ -1977,6 +1978,7 @@ func ListIAMInstanceProfiles(cloud fi.Cloud, clusterName string) ([]*ResourceTra
 	remove := make(map[string]bool)
 	remove["masters."+clusterName] = true
 	remove["nodes."+clusterName] = true
+	remove["bastions."+clusterName] = true
 
 	var profiles []*iam.InstanceProfile
 
