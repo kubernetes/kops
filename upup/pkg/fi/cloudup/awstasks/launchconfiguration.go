@@ -238,7 +238,7 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 		securityGroupIDs = append(securityGroupIDs, sg.ID)
 	}
 
-	for i, _ := range e.AdditionalSecurityGroupIDs {
+	for i := range e.AdditionalSecurityGroupIDs {
 		securityGroupIDs = append(securityGroupIDs, &e.AdditionalSecurityGroupIDs[i])
 	}
 
