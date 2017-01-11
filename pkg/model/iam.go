@@ -17,15 +17,15 @@ limitations under the License.
 package model
 
 import (
+	"encoding/json"
 	"fmt"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
-	"text/template"
-	"strings"
 	"reflect"
-	"encoding/json"
+	"strings"
+	"text/template"
 )
 
 // IAMModelBuilder configures IAM objects
