@@ -1468,7 +1468,7 @@ func FindNatGateways(cloud fi.Cloud, routeTableIds sets.String) ([]*ResourceTrac
 
 	var trackers []*ResourceTracker
 
-	{
+	if len(natGatewayIds) != 0 {
 		request := &ec2.DescribeNatGatewaysInput{}
 		for natGatewayId := range natGatewayIds {
 			request.NatGatewayIds = append(request.NatGatewayIds, aws.String(natGatewayId))
