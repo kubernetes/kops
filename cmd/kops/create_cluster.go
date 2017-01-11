@@ -244,7 +244,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			subnet := &cluster.Spec.Subnets[i]
 			existingSubnets[subnet.Name] = subnet
 		}
-		for _, zoneName := range parseZoneList(c.Zones) {
+		for _, zoneName := range parseInputList(c.Zones) {
 			// We create default subnets named the same as the zones
 			subnetName := zoneName
 			if existingSubnets[subnetName] == nil {
@@ -286,7 +286,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	} else {
 		if len(masters) == 0 {
 			// Use the specified master zones (this is how the user gets HA master)
-			for _, subnetName := range parseZoneList(c.MasterZones) {
+			for _, subnetName := range parseInputList(c.MasterZones) {
 				g := &api.InstanceGroup{}
 				g.Spec.Role = api.InstanceGroupRoleMaster
 				g.Spec.Subnets = []string{subnetName}
@@ -651,7 +651,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	return nil
 }
 
-func parseZoneList(s string) []string {
+func parseInputList(s string) []string {
 	var filtered []string
 	for _, v := range strings.Split(s, ",") {
 		v = strings.TrimSpace(v)
