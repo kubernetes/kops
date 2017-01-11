@@ -334,7 +334,7 @@ func (b *DockerBuilder) buildSystemdService(dockerVersion semver.Version) *nodet
 
 	// Having non-zero Limit*s causes performance problems due to accounting overhead
 	// in the kernel. We recommend using cgroups to do container-local accounting.
-	// TODO: Should we set this?
+	// TODO: Should we set this? https://github.com/kubernetes/kubernetes/issues/39682
 	//service.Set("Service", "LimitNOFILE", "infinity")
 	//service.Set("Service", "LimitNPROC", "infinity")
 	//service.Set("Service", "LimitCORE", "infinity")
@@ -360,6 +360,7 @@ func (b *DockerBuilder) buildSystemdService(dockerVersion semver.Version) *nodet
 	manifest.Set("Install", "WantedBy", "multi-user.target")
 
 	manifestString := manifest.Render()
+	glog.V(8).Infof("Built service manifest %q\n%s", "docker", manifestString)
 
 	service := &nodetasks.Service{
 		Name:       "docker",
