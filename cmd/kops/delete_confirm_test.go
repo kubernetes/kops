@@ -51,7 +51,10 @@ func TestConfirmation(t *testing.T) {
 		Default: "no",
 	}
 
-	answer := ui.GetConfirm(c)
+	answer, err := ui.GetConfirm(c)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if !strings.Contains(out.String(), "Are you sure") {
 		t.Fatal("Confirmation not in output")
 	}
@@ -63,13 +66,19 @@ func TestConfirmation(t *testing.T) {
 	}
 
 	c.Default = "yes"
-	answer = ui.GetConfirm(c)
+	answer, err = ui.GetConfirm(c)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if !strings.Contains(out.String(), "Y/n") {
 		t.Fatal("Default 'Yes' was not set")
 	}
 
 	c.TestVal = "yes"
-	answer = ui.GetConfirm(c)
+	answer, err = ui.GetConfirm(c)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if answer != true {
 		t.Fatal("Confirmation should have been approved.")
 	}
