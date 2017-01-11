@@ -10,6 +10,8 @@ kops create cluster \
     --dns-zone kubernetes.com \
     --node-size t2.medium \
     --master-size t2.medium \
+    --node-security-groups i-123456 \
+    --master-security-groups i-123456,i-123457 \
     --topology private \
     --networking weave \
     --image 293135079892/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-11-16 \
