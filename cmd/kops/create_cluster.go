@@ -37,27 +37,29 @@ import (
 )
 
 type CreateClusterOptions struct {
-	ClusterName       string
-	Yes               bool
-	Target            string
-	Models            string
-	Cloud             string
-	Zones             string
-	MasterZones       string
-	NodeSize          string
-	MasterSize        string
-	NodeCount         int32
-	Project           string
-	KubernetesVersion string
-	OutDir            string
-	Image             string
-	SSHPublicKey      string
-	VPCID             string
-	NetworkCIDR       string
-	DNSZone           string
-	AdminAccess       []string
-	Networking        string
-	AssociatePublicIP *bool
+	ClusterName            string
+	Yes                    bool
+	Target                 string
+	Models                 string
+	Cloud                  string
+	Zones                  string
+	MasterZones            string
+	NodeSize               string
+	MasterSize             string
+	NodeCount              int32
+	Project                string
+	KubernetesVersion      string
+	OutDir                 string
+	Image                  string
+	SSHPublicKey           string
+	VPCID                  string
+	NetworkCIDR            string
+	DNSZone                string
+	AdminAccess            []string
+	Networking             string
+	NodeSecurityGroupIDs   string
+	MasterSecurityGroupIDs string
+	AssociatePublicIP      *bool
 
 	// Channel is the location of the api.Channel to use for our defaults
 	Channel string
@@ -153,6 +155,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	// TODO: Can we deprecate this flag - it is awkward?
 	cmd.Flags().BoolVar(&associatePublicIP, "associate-public-ip", false, "Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.")
+
+	cmd.Flags().StringVar(&options.NodeSecurityGroupIDs, "node-security-groups", options.NodeSecurityGroupIDs, "Add precreated additional security groups to nodes.")
+	cmd.Flags().StringVar(&options.MasterSecurityGroupIDs, "master-security-groups", options.MasterSecurityGroupIDs, "Add precreated additional security groups to masters.")
 
 	cmd.Flags().StringVar(&options.Channel, "channel", options.Channel, "Channel for default versions and configuration to use")
 
@@ -370,6 +375,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	if len(nodes) == 0 {
 		g := &api.InstanceGroup{}
 		g.Spec.Role = api.InstanceGroupRoleNode
+
 		g.ObjectMeta.Name = "nodes"
 		instanceGroups = append(instanceGroups, g)
 		nodes = append(nodes, g)
@@ -397,6 +403,22 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		for _, group := range nodes {
 			group.Spec.MinSize = fi.Int32(c.NodeCount)
 			group.Spec.MaxSize = fi.Int32(c.NodeCount)
+		}
+	}
+
+	if len(c.NodeSecurityGroupIDs) > 0 {
+		for _, sgID := range parseInputList(c.NodeSecurityGroupIDs) {
+			for _, group := range nodes {
+				group.Spec.AdditionalSecurityGroupIDs = append(group.Spec.AdditionalSecurityGroupIDs, sgID)
+			}
+		}
+	}
+
+	if len(c.MasterSecurityGroupIDs) > 0 {
+		for _, sgID := range parseInputList(c.MasterSecurityGroupIDs) {
+			for _, group := range masters {
+				group.Spec.AdditionalSecurityGroupIDs = append(group.Spec.AdditionalSecurityGroupIDs, sgID)
+			}
 		}
 	}
 
