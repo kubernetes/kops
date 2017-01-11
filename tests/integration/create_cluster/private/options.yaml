@@ -4,3 +4,5 @@ Cloud: aws
 Topology: private
 Networking: kopeio-vxlan
 Bastion: true
+NodeSecurityGroupIDs: i-exampleid, i-exampleid2
+MasterSecurityGroupIDs: i-exampleid3, i-exampleid4
