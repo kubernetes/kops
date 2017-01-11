@@ -17,10 +17,10 @@ limitations under the License.
 package vfsclientset
 
 import (
-	"k8s.io/kops/pkg/client/simple"
 	api "k8s.io/kops/pkg/apis/kops"
-	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
+	"k8s.io/kops/pkg/client/simple"
+	k8sapi "k8s.io/kubernetes/pkg/api"
 )
 
 type FederationVFS struct {
@@ -28,24 +28,26 @@ type FederationVFS struct {
 }
 
 func newFederationVFS(c *VFSClientset) *FederationVFS {
-	key := "_federation"
+	kind := "Federation"
 
 	r := &FederationVFS{}
-	r.init(key, c.basePath.Join(key), v1alpha1.SchemeGroupVersion)
+	r.init(kind, c.basePath.Join("_federation"), StoreVersion)
+	defaultReadVersion := v1alpha1.SchemeGroupVersion.WithKind(kind)
+	r.defaultReadVersion = &defaultReadVersion
 	return r
 }
+
 var _ simple.FederationInterface = &FederationVFS{}
 
 func (c *FederationVFS) Get(name string) (*api.Federation, error) {
-	v := &api.Federation{}
-	found, err := c.get(name, v)
+	o, err := c.get(name)
 	if err != nil {
-		return nil ,err
+		return nil, err
 	}
-	if !found {
+	if o == nil {
 		return nil, nil
 	}
-	return v, nil
+	return o.(*api.Federation), nil
 }
 
 func (c *FederationVFS) List(options k8sapi.ListOptions) (*api.FederationList, error) {
@@ -74,6 +76,6 @@ func (c *FederationVFS) Update(g *api.Federation) (*api.Federation, error) {
 	return g, nil
 }
 
-func (c *FederationVFS) Delete(name string, options *k8sapi.DeleteOptions) (error) {
+func (c *FederationVFS) Delete(name string, options *k8sapi.DeleteOptions) error {
 	return c.delete(name, options)
 }

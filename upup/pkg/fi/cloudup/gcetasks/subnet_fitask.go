@@ -29,6 +29,7 @@ import (
 // JSON marshalling boilerplate
 type realSubnet Subnet
 
+// UnmarshalJSON implements conversion to JSON, supporitng an alternate specification of the object as a string
 func (o *Subnet) UnmarshalJSON(data []byte) error {
 	var jsonName string
 	if err := json.Unmarshal(data, &jsonName); err == nil {
@@ -46,14 +47,17 @@ func (o *Subnet) UnmarshalJSON(data []byte) error {
 
 var _ fi.HasName = &Subnet{}
 
-func (e *Subnet) GetName() *string {
-	return e.Name
+// GetName returns the Name of the object, implementing fi.HasName
+func (o *Subnet) GetName() *string {
+	return o.Name
 }
 
-func (e *Subnet) SetName(name string) {
-	e.Name = &name
+// SetName sets the Name of the object, implementing fi.SetName
+func (o *Subnet) SetName(name string) {
+	o.Name = &name
 }
 
-func (e *Subnet) String() string {
-	return fi.TaskAsString(e)
+// String is the stringer function for the task, producing readable output using fi.TaskAsString
+func (o *Subnet) String() string {
+	return fi.TaskAsString(o)
 }

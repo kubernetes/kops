@@ -18,10 +18,16 @@ package cloudup
 
 import (
 	"fmt"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/golang/glog"
+	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -32,18 +38,10 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	k8sapi "k8s.io/kubernetes/pkg/api"
-	"net"
-	"os"
-	"strings"
 )
 
-const (
-	NodeUpVersion = "1.4.1"
-)
-
-const MaxAttemptsWithNoProgress = 3
+const DefaultMaxTaskDuration = 10 * time.Minute
 
 var CloudupModels = []string{"config", "proto", "cloudup"}
 
@@ -77,11 +75,17 @@ type ApplyClusterCmd struct {
 
 	// DryRun is true if this is only a dry run
 	DryRun bool
+
+	MaxTaskDuration time.Duration
 }
 
 func (c *ApplyClusterCmd) Run() error {
+	if c.MaxTaskDuration == 0 {
+		c.MaxTaskDuration = DefaultMaxTaskDuration
+	}
+
 	if c.InstanceGroups == nil {
-		list, err := c.Clientset.InstanceGroups(c.Cluster.Name).List(k8sapi.ListOptions{})
+		list, err := c.Clientset.InstanceGroups(c.Cluster.ObjectMeta.Name).List(k8sapi.ListOptions{})
 		if err != nil {
 			return err
 		}
@@ -186,33 +190,13 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 		if usesCNI(cluster) {
-			// TODO: we really need to sort this out:
-			// https://github.com/kubernetes/kops/issues/724
-			// https://github.com/kubernetes/kops/issues/626
-			// https://github.com/kubernetes/kubernetes/issues/30338
-
-			// CNI version for 1.3
-			//defaultCNIAsset = "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-8a936732094c0941e1543ef5d292a1f4fffa1ac5.tar.gz"
-			//hashString := "86966c78cc9265ee23f7892c5cad0ec7590cec93"
-
-			defaultCNIAsset := "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-07a8a28637e97b22eb8dfe710eeae1344f69d16e.tar.gz"
-			hashString := "19d49f7b2b99cd2493d5ae0ace896c64e289ccbb"
-
-			glog.V(2).Infof("Adding default CNI asset: %s", defaultCNIAsset)
-
-			c.Assets = append(c.Assets, hashString+"@"+defaultCNIAsset)
+			cniAsset, cniAssetHashString := findCNIAssets(cluster)
+			c.Assets = append(c.Assets, cniAssetHashString+"@"+cniAsset)
 		}
 	}
 
 	if c.NodeUpSource == "" {
-		location := os.Getenv("NODEUP_URL")
-		if location == "" {
-			location = "https://kubeupv2.s3.amazonaws.com/kops/" + NodeUpVersion + "/linux/amd64/nodeup"
-			glog.V(2).Infof("Using default nodeup location: %q", location)
-		} else {
-			glog.Warningf("Using nodeup location from NODEUP_URL env var: %q", location)
-		}
-		c.NodeUpSource = location
+		c.NodeUpSource = NodeUpLocation()
 	}
 
 	checkExisting := true
@@ -241,6 +225,11 @@ func (c *ApplyClusterCmd) Run() error {
 		for _, k := range keys {
 			sshPublicKeys = append(sshPublicKeys, k.Data)
 		}
+	}
+
+	modelContext := &model.KopsModelContext{
+		Cluster:        cluster,
+		InstanceGroups: c.InstanceGroups,
 	}
 
 	switch fi.CloudProviderID(cluster.Spec.CloudProvider) {
@@ -293,12 +282,12 @@ func (c *ApplyClusterCmd) Run() error {
 				"securityGroupRule":     &awstasks.SecurityGroupRule{},
 				"subnet":                &awstasks.Subnet{},
 				"vpc":                   &awstasks.VPC{},
+				"ngw":                   &awstasks.NatGateway{},
 				"vpcDHDCPOptionsAssociation": &awstasks.VPCDHCPOptionsAssociation{},
 
 				// ELB
-				"loadBalancer":             &awstasks.LoadBalancer{},
-				"loadBalancerAttachment":   &awstasks.LoadBalancerAttachment{},
-				"loadBalancerHealthChecks": &awstasks.LoadBalancerHealthChecks{},
+				"loadBalancer":           &awstasks.LoadBalancer{},
+				"loadBalancerAttachment": &awstasks.LoadBalancerAttachment{},
 
 				// Autoscaling
 				"autoscalingGroup":    &awstasks.AutoscalingGroup{},
@@ -310,24 +299,13 @@ func (c *ApplyClusterCmd) Run() error {
 			})
 
 			if len(sshPublicKeys) == 0 {
-				return fmt.Errorf("SSH public key must be specified when running with AWS (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.Name)
+				return fmt.Errorf("SSH public key must be specified when running with AWS (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
 			}
+
+			modelContext.SSHPublicKeys = sshPublicKeys
 
 			if len(sshPublicKeys) != 1 {
 				return fmt.Errorf("Exactly one 'admin' SSH public key can be specified when running with AWS; please delete a key using `kops delete secret`")
-			} else {
-				l.Resources["ssh-public-key"] = fi.NewStringResource(string(sshPublicKeys[0]))
-
-				// SSHKeyName computes a unique SSH key name, combining the cluster name and the SSH public key fingerprint
-				l.TemplateFunctions["SSHKeyName"] = func() (string, error) {
-					fingerprint, err := awstasks.ComputeOpenSSHKeyFingerprint(string(sshPublicKeys[0]))
-					if err != nil {
-						return "", err
-					}
-
-					name := "kubernetes." + cluster.Name + "-" + fingerprint
-					return name, nil
-				}
 			}
 
 			l.TemplateFunctions["MachineTypeInfo"] = awsup.GetMachineTypeInfo
@@ -336,6 +314,8 @@ func (c *ApplyClusterCmd) Run() error {
 	default:
 		return fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
 	}
+
+	modelContext.Region = region
 
 	err = validateDNS(cluster, cloud)
 	if err != nil {
@@ -352,11 +332,38 @@ func (c *ApplyClusterCmd) Run() error {
 		instanceGroups: c.InstanceGroups,
 		tags:           clusterTags,
 		region:         region,
+		modelContext:   modelContext,
 	}
 
 	l.Tags = clusterTags
 	l.WorkDir = c.OutDir
 	l.ModelStore = modelStore
+
+	var fileModels []string
+	for _, m := range c.Models {
+		switch m {
+		case "proto":
+		// No proto code options; no file model
+
+		case "cloudup":
+			l.Builders = append(l.Builders,
+				&BootstrapChannelBuilder{cluster: cluster},
+				&model.APILoadBalancerBuilder{KopsModelContext: modelContext},
+				&model.BastionModelBuilder{KopsModelContext: modelContext},
+				&model.DNSModelBuilder{KopsModelContext: modelContext},
+				&model.ExternalAccessModelBuilder{KopsModelContext: modelContext},
+				&model.FirewallModelBuilder{KopsModelContext: modelContext},
+				&model.IAMModelBuilder{KopsModelContext: modelContext},
+				&model.MasterVolumeBuilder{KopsModelContext: modelContext},
+				&model.NetworkModelBuilder{KopsModelContext: modelContext},
+				&model.SSHKeyModelBuilder{KopsModelContext: modelContext},
+			)
+			fileModels = append(fileModels, m)
+
+		default:
+			fileModels = append(fileModels, m)
+		}
+	}
 
 	l.TemplateFunctions["CA"] = func() fi.CAStore {
 		return keyStore
@@ -366,33 +373,33 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	// RenderNodeUpConfig returns the NodeUp config, in YAML format
-	l.TemplateFunctions["RenderNodeUpConfig"] = func(ig *api.InstanceGroup) (string, error) {
+	renderNodeUpConfig := func(ig *api.InstanceGroup) (*nodeup.NodeUpConfig, error) {
 		if ig == nil {
-			return "", fmt.Errorf("instanceGroup cannot be nil")
+			return nil, fmt.Errorf("instanceGroup cannot be nil")
 		}
 
 		role := ig.Spec.Role
 		if role == "" {
-			return "", fmt.Errorf("cannot determine role for instance group: %v", ig.Name)
+			return nil, fmt.Errorf("cannot determine role for instance group: %v", ig.ObjectMeta.Name)
 		}
 
 		nodeUpTags, err := buildNodeupTags(role, tf.cluster, tf.tags)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
 		config := &nodeup.NodeUpConfig{}
-		for _, tag := range nodeUpTags {
+		for _, tag := range nodeUpTags.List() {
 			config.Tags = append(config.Tags, tag)
 		}
 
 		config.Assets = c.Assets
 
-		config.ClusterName = cluster.Name
+		config.ClusterName = cluster.ObjectMeta.Name
 
 		config.ConfigBase = fi.String(configBase.Path())
 
-		config.InstanceGroupName = ig.Name
+		config.InstanceGroupName = ig.ObjectMeta.Name
 
 		var images []*nodeup.Image
 
@@ -412,7 +419,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 				hash, err := findHash(imagePath)
 				if err != nil {
-					return "", err
+					return nil, err
 				}
 				image := &nodeup.Image{
 					Source: imagePath,
@@ -422,29 +429,33 @@ func (c *ApplyClusterCmd) Run() error {
 			}
 		}
 
-		config.Images = images
-
 		{
-			protokubeImage := os.Getenv("PROTOKUBE_IMAGE")
-			if protokubeImage != "" {
-				glog.Warningf("Using protokube image specified in PROTOKUBE_IMAGE env var: %q", protokubeImage)
-			} else {
-				protokubeImage = nodeup.DefaultProtokubeImage
+			location := ProtokubeImageSource()
+
+			hash, err := findHash(location)
+			if err != nil {
+				return nil, err
 			}
+
 			config.ProtokubeImage = &nodeup.Image{
-				Source: protokubeImage,
+				Name:   kops.DefaultProtokubeImageName(),
+				Source: location,
+				Hash:   hash.Hex(),
 			}
 		}
 
+		config.Images = images
 		config.Channels = channels
 
-		yaml, err := api.ToYaml(config)
-		if err != nil {
-			return "", err
-		}
-
-		return string(yaml), nil
+		return config, nil
 	}
+
+	l.Builders = append(l.Builders, &model.AutoscalingGroupModelBuilder{
+		KopsModelContext:    modelContext,
+		NodeUpConfigBuilder: renderNodeUpConfig,
+		NodeUpSourceHash:    "",
+		NodeUpSource:        c.NodeUpSource,
+	})
 
 	//// TotalNodeCount computes the total count of nodes
 	//l.TemplateFunctions["TotalNodeCount"] = func() (int, error) {
@@ -467,37 +478,11 @@ func (c *ApplyClusterCmd) Run() error {
 	l.TemplateFunctions["Region"] = func() string {
 		return region
 	}
-	l.TemplateFunctions["NodeSets"] = func() []*api.InstanceGroup {
-		var groups []*api.InstanceGroup
-		for _, ig := range c.InstanceGroups {
-			if ig.IsMaster() {
-				continue
-			}
-			groups = append(groups, ig)
-		}
-		return groups
-	}
-	l.TemplateFunctions["Masters"] = func() []*api.InstanceGroup {
-		var groups []*api.InstanceGroup
-		for _, ig := range c.InstanceGroups {
-			if !ig.IsMaster() {
-				continue
-			}
-			groups = append(groups, ig)
-		}
-		return groups
-	}
-	//l.TemplateFunctions["NodeUp"] = c.populateNodeUpConfig
-	l.TemplateFunctions["NodeUpSource"] = func() string {
-		return c.NodeUpSource
-	}
-	l.TemplateFunctions["NodeUpSourceHash"] = func() string {
-		return ""
-	}
+	l.TemplateFunctions["Masters"] = tf.modelContext.MasterInstanceGroups
 
 	tf.AddTo(l.TemplateFunctions)
 
-	taskMap, err := l.BuildTasks(modelStore, c.Models)
+	taskMap, err := l.BuildTasks(modelStore, fileModels)
 	if err != nil {
 		return fmt.Errorf("error building tasks: %v", err)
 	}
@@ -530,15 +515,15 @@ func (c *ApplyClusterCmd) Run() error {
 	c.Target = target
 
 	if !dryRun {
-		err = registry.WriteConfig(configBase.Join(registry.PathClusterCompleted), c.Cluster)
+		err = registry.WriteConfigDeprecated(configBase.Join(registry.PathClusterCompleted), c.Cluster)
 		if err != nil {
 			return fmt.Errorf("error writing completed cluster spec: %v", err)
 		}
 
 		for _, g := range c.InstanceGroups {
-			_, err := c.Clientset.InstanceGroups(c.Cluster.Name).Update(g)
+			_, err := c.Clientset.InstanceGroups(c.Cluster.ObjectMeta.Name).Update(g)
 			if err != nil {
-				return fmt.Errorf("error writing InstanceGroup %q to registry: %v", g.Name, err)
+				return fmt.Errorf("error writing InstanceGroup %q to registry: %v", g.ObjectMeta.Name, err)
 			}
 		}
 	}
@@ -549,12 +534,18 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 	defer context.Close()
 
-	err = context.RunTasks(MaxAttemptsWithNoProgress)
+	err = context.RunTasks(c.MaxTaskDuration)
 	if err != nil {
 		return fmt.Errorf("error running tasks: %v", err)
 	}
 
-	err = target.Finish(taskMap)
+	if !dryRun {
+		if err := precreateDNS(cluster, cloud); err != nil {
+			return err
+		}
+	}
+
+	err = target.Finish(taskMap) //This will finish the apply, and print the changes
 	if err != nil {
 		return fmt.Errorf("error closing target: %v", err)
 	}
@@ -580,65 +571,6 @@ func findHash(url string) (*hashing.Hash, error) {
 		return hashing.FromString(hashString)
 	}
 	return nil, fmt.Errorf("cannot determine hash for %v (have you specified a valid KubernetesVersion?)", url)
-}
-
-func validateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
-	dns, err := cloud.DNS()
-	if err != nil {
-		return fmt.Errorf("error building DNS provider: %v", err)
-	}
-
-	zonesProvider, ok := dns.Zones()
-	if !ok {
-		return fmt.Errorf("error getting DNS zones provider")
-	}
-
-	zones, err := zonesProvider.List()
-	if err != nil {
-		return fmt.Errorf("error listing DNS zones: %v", err)
-	}
-
-	var matches []dnsprovider.Zone
-	findName := strings.TrimSuffix(cluster.Spec.DNSZone, ".")
-	for _, zone := range zones {
-		id := zone.ID()
-		name := strings.TrimSuffix(zone.Name(), ".")
-		if id == cluster.Spec.DNSZone || name == findName {
-			matches = append(matches, zone)
-		}
-	}
-	if len(matches) == 0 {
-		return fmt.Errorf("cannot find DNS Zone %q.  Please pre-create the zone and set up NS records so that it resolves.", cluster.Spec.DNSZone)
-	}
-
-	if len(matches) > 1 {
-		return fmt.Errorf("found multiple DNS Zones matching %q", cluster.Spec.DNSZone)
-	}
-
-	zone := matches[0]
-	dnsName := strings.TrimSuffix(zone.Name(), ".")
-
-	glog.V(2).Infof("Doing DNS lookup to verify NS records for %q", dnsName)
-	ns, err := net.LookupNS(dnsName)
-	if err != nil {
-		return fmt.Errorf("error doing DNS lookup for NS records for %q: %v", dnsName, err)
-	}
-
-	if len(ns) == 0 {
-		if os.Getenv("DNS_IGNORE_NS_CHECK") == "" {
-			return fmt.Errorf("NS records not found for %q - please make sure they are correctly configured", dnsName)
-		} else {
-			glog.Warningf("Ignoring failed NS record check because DNS_IGNORE_NS_CHECK is set")
-		}
-	} else {
-		var hosts []string
-		for _, n := range ns {
-			hosts = append(hosts, n.Host)
-		}
-		glog.V(2).Infof("Found NS records for %q: %v", dnsName, hosts)
-	}
-
-	return nil
 }
 
 // upgradeSpecs ensures that fields are fully populated / defaulted

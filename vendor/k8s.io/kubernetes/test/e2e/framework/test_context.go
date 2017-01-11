@@ -23,6 +23,7 @@ import (
 
 	"github.com/onsi/ginkgo/config"
 	"github.com/spf13/viper"
+	"k8s.io/kubernetes/pkg/apis/componentconfig"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 	"k8s.io/kubernetes/pkg/cloudprovider"
 )
@@ -55,6 +56,7 @@ type TestContextType struct {
 	NodeOSDistro             string
 	VerifyServiceAccount     bool
 	DeleteNamespace          bool
+	DeleteNamespaceOnFailure bool
 	AllowedNotReadyNodes     int
 	CleanStart               bool
 	// If set to 'true' or 'all' framework will start a goroutine monitoring resource usage of system add-ons.
@@ -65,6 +67,8 @@ type TestContextType struct {
 	GatherMetricsAfterTest            bool
 	// Currently supported values are 'hr' for human-readable and 'json'. It's a comma separated list.
 	OutputPrintType string
+	// NodeSchedulableTimeout is the timeout for waiting for all nodes to be schedulable.
+	NodeSchedulableTimeout time.Duration
 	// CreateTestingNS is responsible for creating namespace used for executing e2e tests.
 	// It accepts namespace base name, which will be prepended with e2e prefix, kube client
 	// and labels to be applied to a namespace.
@@ -99,20 +103,16 @@ type TestContextType struct {
 
 // NodeTestContextType is part of TestContextType, it is shared by all node e2e test.
 type NodeTestContextType struct {
-	// Name of the node to run tests on (node e2e suite only).
+	// NodeE2E indicates whether it is running node e2e.
+	NodeE2E bool
+	// Name of the node to run tests on.
 	NodeName string
-	// DisableKubenet disables kubenet when starting kubelet.
-	DisableKubenet bool
-	// Whether to enable the QoS Cgroup Hierarchy or not
-	CgroupsPerQOS bool
-	// The hard eviction thresholds
-	EvictionHard string
-	// ManifestPath is the static pod manifest path.
-	ManifestPath string
+	// NodeConformance indicates whether the test is running in node conformance mode.
+	NodeConformance bool
 	// PrepullImages indicates whether node e2e framework should prepull images.
 	PrepullImages bool
-	// RuntimeIntegrationType indicates how runtime is integrated with Kubelet. This is mainly used for CRI validation test.
-	RuntimeIntegrationType string
+	// KubeletConfig is the kubelet configuration the test is running against.
+	KubeletConfig componentconfig.KubeletConfiguration
 }
 
 type CloudConfig struct {
@@ -148,6 +148,7 @@ func RegisterCommonFlags() {
 	flag.StringVar(&TestContext.OutputPrintType, "output-print-type", "hr", "Comma separated list: 'hr' for human readable summaries 'json' for JSON ones.")
 	flag.BoolVar(&TestContext.DumpLogsOnFailure, "dump-logs-on-failure", true, "If set to true test will dump data about the namespace in which test was running.")
 	flag.BoolVar(&TestContext.DeleteNamespace, "delete-namespace", true, "If true tests will delete namespace after completion. It is only designed to make debugging easier, DO NOT turn it off by default.")
+	flag.BoolVar(&TestContext.DeleteNamespaceOnFailure, "delete-namespace-on-failure", true, "If true, framework will delete test namespace on failure. Used only during test debugging.")
 	flag.IntVar(&TestContext.AllowedNotReadyNodes, "allowed-not-ready-nodes", 0, "If non-zero, framework will allow for that many non-ready nodes when checking for all ready nodes.")
 	flag.StringVar(&TestContext.Host, "host", "http://127.0.0.1:8080", "The host, or apiserver, to connect to")
 	flag.StringVar(&TestContext.ReportPrefix, "report-prefix", "", "Optional prefix for JUnit XML reports. Default is empty, which doesn't prepend anything to the default name.")
@@ -162,7 +163,7 @@ func RegisterClusterFlags() {
 	flag.StringVar(&TestContext.KubeConfig, clientcmd.RecommendedConfigPathFlag, os.Getenv(clientcmd.RecommendedConfigPathEnvVar), "Path to kubeconfig containing embedded authinfo.")
 	flag.StringVar(&TestContext.KubeContext, clientcmd.FlagContext, "", "kubeconfig context to use/override. If unset, will use value from 'current-context'")
 	flag.StringVar(&TestContext.KubeAPIContentType, "kube-api-content-type", "application/vnd.kubernetes.protobuf", "ContentType used to communicate with apiserver")
-	flag.StringVar(&federatedKubeContext, "federated-kube-context", "federation-cluster", "kubeconfig context for federation-cluster.")
+	flag.StringVar(&federatedKubeContext, "federated-kube-context", "e2e-federation", "kubeconfig context for federation.")
 
 	flag.StringVar(&TestContext.KubeVolumeDir, "volume-dir", "/var/lib/kubelet", "Path to the directory containing the kubelet volumes.")
 	flag.StringVar(&TestContext.CertDir, "cert-dir", "", "Path to the directory containing the certs. Default is empty, which doesn't use certs.")
@@ -188,6 +189,7 @@ func RegisterClusterFlags() {
 	flag.StringVar(&cloudConfig.ClusterTag, "cluster-tag", "", "Tag used to identify resources.  Only required if provider is aws.")
 	flag.IntVar(&TestContext.MinStartupPods, "minStartupPods", 0, "The number of pods which we need to see in 'Running' state with a 'Ready' condition of true, before we try running tests. This is useful in any cluster which needs some base pod-based services running before it can be used.")
 	flag.DurationVar(&TestContext.SystemPodsStartupTimeout, "system-pods-startup-timeout", 10*time.Minute, "Timeout for waiting for all system pods to be running before starting tests.")
+	flag.DurationVar(&TestContext.NodeSchedulableTimeout, "node-schedulable-timeout", 4*time.Hour, "Timeout for waiting for all nodes to be schedulable.")
 	flag.StringVar(&TestContext.UpgradeTarget, "upgrade-target", "ci/latest", "Version to upgrade to (e.g. 'release/stable', 'release/latest', 'ci/latest', '0.19.1', '0.19.1-669-gabac8c8') if doing an upgrade test.")
 	flag.StringVar(&TestContext.UpgradeImage, "upgrade-image", "", "Image to upgrade to (e.g. 'container_vm' or 'gci') if doing an upgrade test.")
 	flag.StringVar(&TestContext.PrometheusPushGateway, "prom-push-gateway", "", "The URL to prometheus gateway, so that metrics can be pushed during e2es and scraped by prometheus. Typically something like 127.0.0.1:9091.")
@@ -197,48 +199,45 @@ func RegisterClusterFlags() {
 
 // Register flags specific to the node e2e test suite.
 func RegisterNodeFlags() {
-	flag.StringVar(&TestContext.NodeName, "node-name", "", "Name of the node to run tests on (node e2e suite only).")
-	// TODO(random-liu): Remove kubelet related flags when we move the kubelet start logic out of the test.
-	// TODO(random-liu): Find someway to get kubelet configuration, and automatic config and filter test based on the configuration.
-	flag.BoolVar(&TestContext.DisableKubenet, "disable-kubenet", false, "If true, start kubelet without kubenet. (default false)")
-	// TODO: uncomment this when the flag is re-enabled in kubelet
-	//flag.BoolVar(&TestContext.CgroupsPerQOS, "cgroups-per-qos", false, "Enable creation of QoS cgroup hierarchy, if true top level QoS and pod cgroups are created.")
-	flag.StringVar(&TestContext.EvictionHard, "eviction-hard", "memory.available<250Mi,imagefs.available<10%", "The hard eviction thresholds. If set, pods get evicted when the specified resources drop below the thresholds.")
-	flag.StringVar(&TestContext.ManifestPath, "manifest-path", "", "The path to the static pod manifest file.")
+	// Mark the test as node e2e when node flags are registered.
+	TestContext.NodeE2E = true
+	flag.StringVar(&TestContext.NodeName, "node-name", "", "Name of the node to run tests on.")
+	// TODO(random-liu): Move kubelet start logic out of the test.
+	// TODO(random-liu): Move log fetch logic out of the test.
+	// There are different ways to start kubelet (systemd, initd, docker, rkt, manually started etc.)
+	// and manage logs (journald, upstart etc.).
+	// For different situation we need to mount different things into the container, run different commands.
+	// It is hard and unnecessary to deal with the complexity inside the test suite.
+	flag.BoolVar(&TestContext.NodeConformance, "conformance", false, "If true, the test suite will not start kubelet, and fetch system log (kernel, docker, kubelet log etc.) to the report directory.")
 	flag.BoolVar(&TestContext.PrepullImages, "prepull-images", true, "If true, prepull images so image pull failures do not cause test failures.")
-	flag.StringVar(&TestContext.RuntimeIntegrationType, "runtime-integration-type", "", "Choose the integration path for the container runtime, mainly used for CRI validation.")
 }
 
-// Enable viper configuration management of flags.
+// overwriteFlagsWithViperConfig finds and writes values to flags using viper as input.
+func overwriteFlagsWithViperConfig() {
+	viperFlagSetter := func(f *flag.Flag) {
+		if viper.IsSet(f.Name) {
+			f.Value.Set(viper.GetString(f.Name))
+		}
+	}
+	flag.VisitAll(viperFlagSetter)
+}
+
+// ViperizeFlags sets up all flag and config processing. Future configuration info should be added to viper, not to flags.
 func ViperizeFlags() {
-	// TODO @jayunit100: Maybe a more elegant viper-flag integration for the future?
-	// For now, we layer it on top, because 'flag' deps of 'go test' make pflag wrappers
-	// fragile, seeming to force 'flag' to have deep awareness of pflag params.
+
+	// Part 1: Set regular flags.
+	// TODO: Future, lets eliminate e2e 'flag' deps entirely in favor of viper only,
+	// since go test 'flag's are sort of incompatible w/ flag, glog, etc.
 	RegisterCommonFlags()
 	RegisterClusterFlags()
-
 	flag.Parse()
 
-	// Add viper in a minimal way.
-	// Flag interop isnt possible, since 'go test' coupling to flag.Parse.
+	// Part 2: Set Viper provided flags.
 	// This must be done after common flags are registered, since Viper is a flag option.
 	viper.SetConfigName(TestContext.Viper)
 	viper.AddConfigPath(".")
 	viper.ReadInConfig()
 
+	// TODO Consider wether or not we want to use overwriteFlagsWithViperConfig().
 	viper.Unmarshal(&TestContext)
-
-	/** This can be used to overwrite a flag value.
-	*
-	*	viperFlagSetter := func(f *flag.Flag) {
-	*		if viper.IsSet(f.Name) {
-	*			glog.V(4).Infof("[viper config] Overwriting, found a settting for %v %v", f.Name, f.Value)
-	*			viper.Unmarshal(&TestContext)
-	*			// f.Value.Set(viper.GetString(f.Name))
-	*		}
-	*	}
-	*	// Each flag that we've declared can be set via viper.
-	*	flag.VisitAll(viperFlagSetter)
-	*
-	 */
 }

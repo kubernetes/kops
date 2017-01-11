@@ -18,15 +18,15 @@ For example, a complete setup might be:
 ```
 export KOPS_STATE_STORE=s3://<somes3bucket>
 export CLUSTER_NAME=<kubernetes.mydomain.com>
-${GOPATH}/bin/kops create cluster ${NAME} --zones us-east-1c
-${GOPATH}/bin/kops update cluster ${NAME} --target=terraform
+${GOPATH}/bin/kops create cluster ${CLUSTER_NAME} --zones us-east-1c
+${GOPATH}/bin/kops update cluster ${CLUSTER_NAME} --target=terraform
 
 cd out/terraform
 terraform plan
 terraform apply
 ```
 
-When you eventually `terraform delete` the cluster, you should still run `kops delete cluster ${CLUSTER_NAME}`,
+When you eventually `terraform destroy` the cluster, you should still run `kops delete cluster ${CLUSTER_NAME}`,
 to remove the kops cluster specification and any dynamically created Kubernetes resources (ELBs or volumes).
 
 ### Workaround for Terraform versions before 0.7

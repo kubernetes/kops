@@ -19,6 +19,7 @@
 set -e
 
 SSH_OPTS="-oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -oLogLevel=ERROR -C"
+source "${KUBE_ROOT}/cluster/common.sh"
 
 MASTER=""
 MASTER_IP=""
@@ -70,7 +71,7 @@ function setClusterInfo() {
 # Sanity check on $CNI_PLUGIN_CONF and $CNI_PLUGIN_EXES
 function check-CNI-config() {
   if [ -z "$CNI_PLUGIN_CONF" ] && [ -n "$CNI_PLUGIN_EXES" ]; then
-    echo "Warning: CNI_PLUGIN_CONF is emtpy but CNI_PLUGIN_EXES is not (it is $CNI_PLUGIN_EXES); Flannel will be used" >& 2
+    echo "Warning: CNI_PLUGIN_CONF is empty but CNI_PLUGIN_EXES is not (it is $CNI_PLUGIN_EXES); Flannel will be used" >& 2
   elif [ -n "$CNI_PLUGIN_CONF" ] && [ -z "$CNI_PLUGIN_EXES" ]; then
     echo "Warning: CNI_PLUGIN_EXES is empty but CNI_PLUGIN_CONF is not (it is $CNI_PLUGIN_CONF); Flannel will be used" & 2
   elif [ -n "$CNI_PLUGIN_CONF" ] && [ -n "$CNI_PLUGIN_EXES" ]; then
@@ -224,7 +225,7 @@ function create-etcd-opts() {
   cat <<EOF > ~/kube/default/etcd
 ETCD_OPTS="\
  -name infra\
- -listen-client-urls http://127.0.0.1:4001,http://${1}:4001\
+ --listen-client-urls=http://127.0.0.1:4001,http://${1}:4001\
  -advertise-client-urls http://${1}:4001"
 EOF
 }
@@ -296,7 +297,7 @@ KUBELET_OPTS="\
  --logtostderr=true \
  --cluster-dns=${3} \
  --cluster-domain=${4} \
- --config=${5} \
+ --pod-manifest-path=${5} \
  --allow-privileged=${6}
  $cni_opts"
 EOF
@@ -413,8 +414,6 @@ function kube-up() {
   export CONTEXT="ubuntu"
   export KUBE_SERVER="http://${KUBE_MASTER_IP}:8080"
 
-  source "${KUBE_ROOT}/cluster/common.sh"
-
   # set kubernetes user and password
   load-or-gen-kube-basicauth
 
@@ -479,10 +478,10 @@ function provision-master() {
       '${SERVICE_NODE_PORT_RANGE}' \
       '${MASTER_IP}' \
       '${ALLOW_PRIVILEGED}'
-    create-kube-controller-manager-opts '${NODE_IPS}'
+    create-kube-controller-manager-opts
     create-kube-scheduler-opts
     create-flanneld-opts '127.0.0.1' '${MASTER_IP}'
-    FLANNEL_OTHER_NET_CONFIG='${FLANNEL_OTHER_NET_CONFIG}' sudo -E -p '[sudo] password to start master: ' -- /bin/bash -ce '
+    FLANNEL_BACKEND='${FLANNEL_BACKEND}' FLANNEL_OTHER_NET_CONFIG='${FLANNEL_OTHER_NET_CONFIG}' sudo -E -p '[sudo] password to start master: ' -- /bin/bash -ce '
       ${BASH_DEBUG_FLAGS}
 
       cp ~/kube/default/* /etc/default/
@@ -494,7 +493,7 @@ function provision-master() {
       mkdir -p /opt/bin/
       cp ~/kube/master/* /opt/bin/
       service etcd start
-      if ${NEED_RECONFIG_DOCKER}; then FLANNEL_NET=\"${FLANNEL_NET}\" KUBE_CONFIG_FILE=\"${KUBE_CONFIG_FILE}\" DOCKER_OPTS=\"${DOCKER_OPTS}\" ~/kube/reconfDocker.sh a; fi
+      if ${NEED_RECONFIG_DOCKER}; then FLANNEL_NET=\"${FLANNEL_NET}\" KUBE_CONFIG_FILE=\"${KUBE_CONFIG_FILE}\" DOCKER_OPTS=\"${DOCKER_OPTS}\" DEBUG=\"$DEBUG\" ~/kube/reconfDocker.sh a; fi
       '" || {
       echo "Deploying master on machine ${MASTER_IP} failed"
       exit 1
@@ -546,7 +545,7 @@ function provision-node() {
     BASH_DEBUG_FLAGS="set -x"
   fi
 
-  # remote login to node and configue k8s node
+  # remote login to node and configure k8s node
   ssh $SSH_OPTS -t "$1" "
     set +e
     ${BASH_DEBUG_FLAGS}
@@ -558,7 +557,7 @@ function provision-node() {
       '${MASTER_IP}' \
       '${DNS_SERVER_IP}' \
       '${DNS_DOMAIN}' \
-      '${KUBELET_CONFIG}' \
+      '${KUBELET_POD_MANIFEST_PATH}' \
       '${ALLOW_PRIVILEGED}' \
       '${CNI_PLUGIN_CONF}'
     create-kube-proxy-opts \
@@ -575,7 +574,7 @@ function provision-node() {
       mkdir -p /opt/bin/
       cp ~/kube/minion/* /opt/bin
       ${SERVICE_STARTS}
-      if ${NEED_RECONFIG_DOCKER}; then KUBE_CONFIG_FILE=\"${KUBE_CONFIG_FILE}\" DOCKER_OPTS=\"${DOCKER_OPTS}\" ~/kube/reconfDocker.sh i; fi
+      if ${NEED_RECONFIG_DOCKER}; then KUBE_CONFIG_FILE=\"${KUBE_CONFIG_FILE}\" DOCKER_OPTS=\"${DOCKER_OPTS}\" DEBUG=\"$DEBUG\" ~/kube/reconfDocker.sh i; fi
       '" || {
       echo "Deploying node on machine ${1#*@} failed"
       exit 1
@@ -639,7 +638,7 @@ function provision-masterandnode() {
     BASH_DEBUG_FLAGS="set -x"
   fi
 
-  # remote login to the master/node and configue k8s
+  # remote login to the master/node and configure k8s
   ssh $SSH_OPTS -t "$MASTER" "
     set +e
     ${BASH_DEBUG_FLAGS}
@@ -653,14 +652,14 @@ function provision-masterandnode() {
       '${SERVICE_NODE_PORT_RANGE}' \
       '${MASTER_IP}' \
       '${ALLOW_PRIVILEGED}'
-    create-kube-controller-manager-opts '${NODE_IPS}'
+    create-kube-controller-manager-opts
     create-kube-scheduler-opts
     create-kubelet-opts \
       '${MASTER_IP}' \
       '${MASTER_IP}' \
       '${DNS_SERVER_IP}' \
       '${DNS_DOMAIN}' \
-      '${KUBELET_CONFIG}' \
+      '${KUBELET_POD_MANIFEST_PATH}' \
       '${ALLOW_PRIVILEGED}' \
       '${CNI_PLUGIN_CONF}'
     create-kube-proxy-opts \
@@ -669,7 +668,7 @@ function provision-masterandnode() {
       '${KUBE_PROXY_EXTRA_OPTS}'
     create-flanneld-opts '127.0.0.1' '${MASTER_IP}'
 
-    FLANNEL_OTHER_NET_CONFIG='${FLANNEL_OTHER_NET_CONFIG}' sudo -E -p '[sudo] password to start master: ' -- /bin/bash -ce '
+    FLANNEL_BACKEND='${FLANNEL_BACKEND}' FLANNEL_OTHER_NET_CONFIG='${FLANNEL_OTHER_NET_CONFIG}' sudo -E -p '[sudo] password to start master: ' -- /bin/bash -ce '
       ${BASH_DEBUG_FLAGS}
       cp ~/kube/default/* /etc/default/
       cp ~/kube/init_conf/* /etc/init/
@@ -682,7 +681,7 @@ function provision-masterandnode() {
       cp ~/kube/minion/* /opt/bin/
 
       service etcd start
-      if ${NEED_RECONFIG_DOCKER}; then FLANNEL_NET=\"${FLANNEL_NET}\" KUBE_CONFIG_FILE=\"${KUBE_CONFIG_FILE}\" DOCKER_OPTS=\"${DOCKER_OPTS}\" ~/kube/reconfDocker.sh ai; fi
+      if ${NEED_RECONFIG_DOCKER}; then FLANNEL_NET=\"${FLANNEL_NET}\" KUBE_CONFIG_FILE=\"${KUBE_CONFIG_FILE}\" DOCKER_OPTS=\"${DOCKER_OPTS}\" DEBUG=\"$DEBUG\" ~/kube/reconfDocker.sh ai; fi
       '" || {
       echo "Deploying master and node on machine ${MASTER_IP} failed"
       exit 1
@@ -709,8 +708,6 @@ function kube-down() {
 
   export KUBE_CONFIG_FILE=${KUBE_CONFIG_FILE:-${KUBE_ROOT}/cluster/ubuntu/config-default.sh}
   source "${KUBE_CONFIG_FILE}"
-
-  source "${KUBE_ROOT}/cluster/common.sh"
 
   tear_down_alive_resources
   check-pods-torn-down

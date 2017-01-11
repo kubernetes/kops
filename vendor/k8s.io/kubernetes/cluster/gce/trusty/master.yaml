@@ -65,6 +65,8 @@ script
 	create_master_auth
 	echo "Creating master instance kubelet auth file"
 	create_master_kubelet_auth
+	echo "Creating auth files for etcd"
+	create-master-etcd-auth
 	echo "Assemble kubelet command line"
 	# Kubelet command flags will be written in /etc/default/kubelet
 	assemble_kubelet_flags
@@ -185,7 +187,7 @@ script
 	. /etc/kube-configure-helper.sh
 	. /etc/kube-env
 	start_etcd_servers
-	start_fluentd
+	start_fluentd_static_pod
 	compute_master_manifest_variables
 	start_kube_apiserver
 	start_kube_controller_manager
@@ -205,7 +207,7 @@ Content-Disposition: attachment; filename="kube-master-health-monitoring.conf"
 
 #upstart-job
 
-description "Kubenetes master health monitoring"
+description "Kubernetes master health monitoring"
 
 start on stopped kube-docker
 

@@ -30,12 +30,17 @@ import (
 	dockercontainer "github.com/docker/engine-api/types/container"
 	"k8s.io/kubernetes/pkg/util/clock"
 
-	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
 )
 
 type calledDetail struct {
 	name      string
 	arguments []interface{}
+}
+
+// NewCalledDetail create a new call detail item.
+func NewCalledDetail(name string, arguments []interface{}) calledDetail {
+	return calledDetail{name: name, arguments: arguments}
 }
 
 // FakeDockerClient is a simple fake docker client, so that kubelet can be run for testing without requiring a real docker setup.
@@ -86,6 +91,8 @@ func newClientWithVersionAndClock(version, apiVersion string, c clock.Clock) *Fa
 		Errors:       make(map[string]error),
 		ContainerMap: make(map[string]*dockertypes.ContainerJSON),
 		Clock:        c,
+		// default this to an empty result, so that we never have a nil non-error response from InspectImage
+		Image: &dockertypes.ImageInspect{},
 	}
 }
 
@@ -210,7 +217,7 @@ func (f *FakeDockerClient) AssertCalls(calls []string) (err error) {
 	return
 }
 
-func (f *FakeDockerClient) AssertCallDetails(calls []calledDetail) (err error) {
+func (f *FakeDockerClient) AssertCallDetails(calls ...calledDetail) (err error) {
 	f.Lock()
 	defer f.Unlock()
 
@@ -310,9 +317,19 @@ func (f *FakeDockerClient) InspectContainer(id string) (*dockertypes.ContainerJS
 	return nil, fmt.Errorf("container %q not found", id)
 }
 
-// InspectImage is a test-spy implementation of DockerInterface.InspectImage.
+// InspectImageByRef is a test-spy implementation of DockerInterface.InspectImageByRef.
 // It adds an entry "inspect" to the internal method call record.
-func (f *FakeDockerClient) InspectImage(name string) (*dockertypes.ImageInspect, error) {
+func (f *FakeDockerClient) InspectImageByRef(name string) (*dockertypes.ImageInspect, error) {
+	f.Lock()
+	defer f.Unlock()
+	f.called = append(f.called, calledDetail{name: "inspect_image"})
+	err := f.popError("inspect_image")
+	return f.Image, err
+}
+
+// InspectImageByID is a test-spy implementation of DockerInterface.InspectImageByID.
+// It adds an entry "inspect" to the internal method call record.
+func (f *FakeDockerClient) InspectImageByID(name string) (*dockertypes.ImageInspect, error) {
 	f.Lock()
 	defer f.Unlock()
 	f.called = append(f.called, calledDetail{name: "inspect_image"})
@@ -563,7 +580,7 @@ type FakeDockerPuller struct {
 }
 
 // Pull records the image pull attempt, and optionally injects an error.
-func (f *FakeDockerPuller) Pull(image string, secrets []api.Secret) (err error) {
+func (f *FakeDockerPuller) Pull(image string, secrets []v1.Secret) (err error) {
 	f.Lock()
 	defer f.Unlock()
 	f.ImagesPulled = append(f.ImagesPulled, image)

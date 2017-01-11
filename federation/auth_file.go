@@ -17,9 +17,9 @@ limitations under the License.
 package federation
 
 import (
-	"strings"
-	"fmt"
 	"bytes"
+	"fmt"
+	"strings"
 )
 
 type AuthFile struct {
@@ -48,7 +48,7 @@ func ParseAuthFile(data []byte) (*AuthFile, error) {
 	return parsed, nil
 }
 
-func (a*AuthFile) FindUser(user string) *AuthFileLine {
+func (a *AuthFile) FindUser(user string) *AuthFileLine {
 	for _, line := range a.Lines {
 		if line.User == user {
 			return line
@@ -57,7 +57,7 @@ func (a*AuthFile) FindUser(user string) *AuthFileLine {
 	return nil
 }
 
-func (a*AuthFile) Add(line *AuthFileLine) error {
+func (a *AuthFile) Add(line *AuthFileLine) error {
 	existing := a.FindUser(line.User)
 	if existing != nil {
 		return fmt.Errorf("user %q already exists in file", line.User)
@@ -66,7 +66,7 @@ func (a*AuthFile) Add(line *AuthFileLine) error {
 	return nil
 }
 
-func (a*AuthFile) Encode() string {
+func (a *AuthFile) Encode() string {
 	var b bytes.Buffer
 
 	for _, line := range a.Lines {
@@ -82,8 +82,8 @@ func ParseAuthFileLine(line string) (*AuthFileLine, error) {
 	}
 	parsed := &AuthFileLine{
 		Secret: tokens[0],
-		User: tokens[1],
-		Role: tokens[2],
+		User:   tokens[1],
+		Role:   tokens[2],
 	}
 	return parsed, nil
 }

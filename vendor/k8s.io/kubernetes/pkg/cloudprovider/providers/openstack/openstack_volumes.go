@@ -52,18 +52,21 @@ func (os *OpenStack) AttachDisk(instanceID string, diskName string) (string, err
 		if instanceID == disk.Attachments[0]["server_id"] {
 			glog.V(4).Infof("Disk: %q is already attached to compute: %q", diskName, instanceID)
 			return disk.ID, nil
-		} else {
-			errMsg := fmt.Sprintf("Disk %q is attached to a different compute: %q, should be detached before proceeding", diskName, disk.Attachments[0]["server_id"])
-			glog.Errorf(errMsg)
-			return "", errors.New(errMsg)
+		}
+
+		glog.V(2).Infof("Disk %q is attached to a different compute (%q), detaching", diskName, disk.Attachments[0]["server_id"])
+		err = os.DetachDisk(fmt.Sprintf("%s", disk.Attachments[0]["server_id"]), diskName)
+		if err != nil {
+			return "", err
 		}
 	}
+
 	// add read only flag here if possible spothanis
 	_, err = volumeattach.Create(cClient, instanceID, &volumeattach.CreateOpts{
 		VolumeID: disk.ID,
 	}).Extract()
 	if err != nil {
-		glog.Errorf("Failed to attach %s volume to %s compute", diskName, instanceID)
+		glog.Errorf("Failed to attach %s volume to %s compute: %v", diskName, instanceID, err)
 		return "", err
 	}
 	glog.V(2).Infof("Successfully attached %s volume to %s compute", diskName, instanceID)
@@ -169,16 +172,25 @@ func (os *OpenStack) CreateVolume(name string, size int, vtype, availability str
 
 // GetDevicePath returns the path of an attached block storage volume, specified by its id.
 func (os *OpenStack) GetDevicePath(diskId string) string {
+	// Build a list of candidate device paths
+	candidateDeviceNodes := []string{
+		// KVM
+		fmt.Sprintf("virtio-%s", diskId[:20]),
+		// ESXi
+		fmt.Sprintf("wwn-0x%s", strings.Replace(diskId, "-", "", -1)),
+	}
+
 	files, _ := ioutil.ReadDir("/dev/disk/by-id/")
+
 	for _, f := range files {
-		if strings.Contains(f.Name(), "virtio-") {
-			devid_prefix := f.Name()[len("virtio-"):len(f.Name())]
-			if strings.Contains(diskId, devid_prefix) {
+		for _, c := range candidateDeviceNodes {
+			if c == f.Name() {
 				glog.V(4).Infof("Found disk attached as %q; full devicepath: %s\n", f.Name(), path.Join("/dev/disk/by-id/", f.Name()))
 				return path.Join("/dev/disk/by-id/", f.Name())
 			}
 		}
 	}
+
 	glog.Warningf("Failed to find device for the diskid: %q\n", diskId)
 	return ""
 }
@@ -208,8 +220,10 @@ func (os *OpenStack) DeleteVolume(volumeName string) error {
 	return err
 }
 
-// Get device path of attached volume to the compute running kubelet
+// Get device path of attached volume to the compute running kubelet, as known by cinder
 func (os *OpenStack) GetAttachmentDiskPath(instanceID string, diskName string) (string, error) {
+	// See issue #33128 - Cinder does not always tell you the right device path, as such
+	// we must only use this value as a last resort.
 	disk, err := os.getVolume(diskName)
 	if err != nil {
 		return "", err
@@ -240,6 +254,24 @@ func (os *OpenStack) DiskIsAttached(diskName, instanceID string) (bool, error) {
 	return false, nil
 }
 
+// query if a list of volumes are attached to a compute instance
+func (os *OpenStack) DisksAreAttached(diskNames []string, instanceID string) (map[string]bool, error) {
+	attached := make(map[string]bool)
+	for _, diskName := range diskNames {
+		attached[diskName] = false
+	}
+	for _, diskName := range diskNames {
+		disk, err := os.getVolume(diskName)
+		if err != nil {
+			continue
+		}
+		if len(disk.Attachments) > 0 && disk.Attachments[0]["server_id"] != nil && instanceID == disk.Attachments[0]["server_id"] {
+			attached[diskName] = true
+		}
+	}
+	return attached, nil
+}
+
 // diskIsUsed returns true a disk is attached to any node.
 func (os *OpenStack) diskIsUsed(diskName string) (bool, error) {
 	disk, err := os.getVolume(diskName)
@@ -250,4 +282,9 @@ func (os *OpenStack) diskIsUsed(diskName string) (bool, error) {
 		return true, nil
 	}
 	return false, nil
+}
+
+// query if we should trust the cinder provide deviceName, See issue #33128
+func (os *OpenStack) ShouldTrustDevicePath() bool {
+	return os.bsOpts.TrustDevicePath
 }

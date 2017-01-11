@@ -1,10 +1,9 @@
 ### addon-manager
 
-The `addon-manager` periodically checks for Kubernetes manifest changes in the `/etc/kubernetes/addons` directory,
-and when there's a new or changed addon, the `addon-manager` automatically `kubectl create`s it.
+The `addon-manager` periodically `kubectl apply`s the Kubernetes manifest in the `/etc/kubernetes/addons` directory,
+and handles any added / updated / deleted addon.
 
-It supports `ReplicationControllers`, `Deployments`, `DaemonSets`, `ConfigMaps`, `Services`, `PersistentVolumes` and
-`PersistentVolumeClaims`.
+It supports all types of resource.
 
 The `addon-manager` is built for multiple architectures.
 
@@ -30,6 +29,9 @@ $ make push ARCH=arm64
 
 $ make push ARCH=ppc64le
 # ---> gcr.io/google-containers/kube-addon-manager-ppc64le:VERSION
+
+$ make push ARCH=s390x
+# ---> gcr.io/google-containers/kube-addon-manager-s390x:VERSION
 ```
 
 If you don't want to push the images, run `make` or `make build` instead

@@ -29,6 +29,7 @@ import (
 // JSON marshalling boilerplate
 type realManagedInstanceGroup ManagedInstanceGroup
 
+// UnmarshalJSON implements conversion to JSON, supporitng an alternate specification of the object as a string
 func (o *ManagedInstanceGroup) UnmarshalJSON(data []byte) error {
 	var jsonName string
 	if err := json.Unmarshal(data, &jsonName); err == nil {
@@ -46,14 +47,17 @@ func (o *ManagedInstanceGroup) UnmarshalJSON(data []byte) error {
 
 var _ fi.HasName = &ManagedInstanceGroup{}
 
-func (e *ManagedInstanceGroup) GetName() *string {
-	return e.Name
+// GetName returns the Name of the object, implementing fi.HasName
+func (o *ManagedInstanceGroup) GetName() *string {
+	return o.Name
 }
 
-func (e *ManagedInstanceGroup) SetName(name string) {
-	e.Name = &name
+// SetName sets the Name of the object, implementing fi.SetName
+func (o *ManagedInstanceGroup) SetName(name string) {
+	o.Name = &name
 }
 
-func (e *ManagedInstanceGroup) String() string {
-	return fi.TaskAsString(e)
+// String is the stringer function for the task, producing readable output using fi.TaskAsString
+func (o *ManagedInstanceGroup) String() string {
+	return fi.TaskAsString(o)
 }

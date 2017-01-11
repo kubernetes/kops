@@ -6,11 +6,11 @@ package directconnect
 import (
 	"github.com/aws/aws-sdk-go/awstesting/integration/smoke"
 	"github.com/aws/aws-sdk-go/service/directconnect"
-	. "github.com/lsegal/gucumber"
+	"github.com/gucumber/gucumber"
 )
 
 func init() {
-	Before("@directconnect", func() {
-		World["client"] = directconnect.New(smoke.Session)
+	gucumber.Before("@directconnect", func() {
+		gucumber.World["client"] = directconnect.New(smoke.Session)
 	})
 }

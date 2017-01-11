@@ -19,53 +19,54 @@ package scheduler
 import (
 	"fmt"
 	"testing"
+	"time"
 
-	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/pkg/util/wait"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm"
 	schedulerapi "k8s.io/kubernetes/plugin/pkg/scheduler/api"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
-	schedulertesting "k8s.io/kubernetes/plugin/pkg/scheduler/testing"
 )
 
-type fitPredicate func(pod *api.Pod, node *api.Node) (bool, error)
-type priorityFunc func(pod *api.Pod, nodes []*api.Node) (*schedulerapi.HostPriorityList, error)
+type fitPredicate func(pod *v1.Pod, node *v1.Node) (bool, error)
+type priorityFunc func(pod *v1.Pod, nodes []*v1.Node) (*schedulerapi.HostPriorityList, error)
 
 type priorityConfig struct {
 	function priorityFunc
 	weight   int
 }
 
-func errorPredicateExtender(pod *api.Pod, node *api.Node) (bool, error) {
+func errorPredicateExtender(pod *v1.Pod, node *v1.Node) (bool, error) {
 	return false, fmt.Errorf("Some error")
 }
 
-func falsePredicateExtender(pod *api.Pod, node *api.Node) (bool, error) {
+func falsePredicateExtender(pod *v1.Pod, node *v1.Node) (bool, error) {
 	return false, nil
 }
 
-func truePredicateExtender(pod *api.Pod, node *api.Node) (bool, error) {
+func truePredicateExtender(pod *v1.Pod, node *v1.Node) (bool, error) {
 	return true, nil
 }
 
-func machine1PredicateExtender(pod *api.Pod, node *api.Node) (bool, error) {
+func machine1PredicateExtender(pod *v1.Pod, node *v1.Node) (bool, error) {
 	if node.Name == "machine1" {
 		return true, nil
 	}
 	return false, nil
 }
 
-func machine2PredicateExtender(pod *api.Pod, node *api.Node) (bool, error) {
+func machine2PredicateExtender(pod *v1.Pod, node *v1.Node) (bool, error) {
 	if node.Name == "machine2" {
 		return true, nil
 	}
 	return false, nil
 }
 
-func errorPrioritizerExtender(pod *api.Pod, nodes []*api.Node) (*schedulerapi.HostPriorityList, error) {
+func errorPrioritizerExtender(pod *v1.Pod, nodes []*v1.Node) (*schedulerapi.HostPriorityList, error) {
 	return &schedulerapi.HostPriorityList{}, fmt.Errorf("Some error")
 }
 
-func machine1PrioritizerExtender(pod *api.Pod, nodes []*api.Node) (*schedulerapi.HostPriorityList, error) {
+func machine1PrioritizerExtender(pod *v1.Pod, nodes []*v1.Node) (*schedulerapi.HostPriorityList, error) {
 	result := schedulerapi.HostPriorityList{}
 	for _, node := range nodes {
 		score := 1
@@ -77,7 +78,7 @@ func machine1PrioritizerExtender(pod *api.Pod, nodes []*api.Node) (*schedulerapi
 	return &result, nil
 }
 
-func machine2PrioritizerExtender(pod *api.Pod, nodes []*api.Node) (*schedulerapi.HostPriorityList, error) {
+func machine2PrioritizerExtender(pod *v1.Pod, nodes []*v1.Node) (*schedulerapi.HostPriorityList, error) {
 	result := schedulerapi.HostPriorityList{}
 	for _, node := range nodes {
 		score := 1
@@ -89,7 +90,7 @@ func machine2PrioritizerExtender(pod *api.Pod, nodes []*api.Node) (*schedulerapi
 	return &result, nil
 }
 
-func machine2Prioritizer(_ *api.Pod, nodeNameToInfo map[string]*schedulercache.NodeInfo, nodes []*api.Node) (schedulerapi.HostPriorityList, error) {
+func machine2Prioritizer(_ *v1.Pod, nodeNameToInfo map[string]*schedulercache.NodeInfo, nodes []*v1.Node) (schedulerapi.HostPriorityList, error) {
 	result := []schedulerapi.HostPriority{}
 	for _, node := range nodes {
 		score := 1
@@ -107,15 +108,15 @@ type FakeExtender struct {
 	weight       int
 }
 
-func (f *FakeExtender) Filter(pod *api.Pod, nodes []*api.Node) ([]*api.Node, schedulerapi.FailedNodesMap, error) {
-	filtered := []*api.Node{}
+func (f *FakeExtender) Filter(pod *v1.Pod, nodes []*v1.Node) ([]*v1.Node, schedulerapi.FailedNodesMap, error) {
+	filtered := []*v1.Node{}
 	failedNodesMap := schedulerapi.FailedNodesMap{}
 	for _, node := range nodes {
 		fits := true
 		for _, predicate := range f.predicates {
 			fit, err := predicate(pod, node)
 			if err != nil {
-				return []*api.Node{}, schedulerapi.FailedNodesMap{}, err
+				return []*v1.Node{}, schedulerapi.FailedNodesMap{}, err
 			}
 			if !fit {
 				fits = false
@@ -131,7 +132,7 @@ func (f *FakeExtender) Filter(pod *api.Pod, nodes []*api.Node) ([]*api.Node, sch
 	return filtered, failedNodesMap, nil
 }
 
-func (f *FakeExtender) Prioritize(pod *api.Pod, nodes []*api.Node) (*schedulerapi.HostPriorityList, int, error) {
+func (f *FakeExtender) Prioritize(pod *v1.Pod, nodes []*v1.Node) (*schedulerapi.HostPriorityList, int, error) {
 	result := schedulerapi.HostPriorityList{}
 	combinedScores := map[string]int{}
 	for _, prioritizer := range f.prioritizers {
@@ -163,14 +164,12 @@ func TestGenericSchedulerWithExtenders(t *testing.T) {
 		extenderPredicates   []fitPredicate
 		extenderPrioritizers []priorityConfig
 		nodes                []string
-		pod                  *api.Pod
-		pods                 []*api.Pod
 		expectedHost         string
 		expectsErr           bool
 	}{
 		{
 			predicates:   map[string]algorithm.FitPredicate{"true": truePredicate},
-			prioritizers: []algorithm.PriorityConfig{{Function: EqualPriority, Weight: 1}},
+			prioritizers: []algorithm.PriorityConfig{{Map: EqualPriorityMap, Weight: 1}},
 			extenders: []FakeExtender{
 				{
 					predicates: []fitPredicate{truePredicateExtender},
@@ -185,7 +184,7 @@ func TestGenericSchedulerWithExtenders(t *testing.T) {
 		},
 		{
 			predicates:   map[string]algorithm.FitPredicate{"true": truePredicate},
-			prioritizers: []algorithm.PriorityConfig{{Function: EqualPriority, Weight: 1}},
+			prioritizers: []algorithm.PriorityConfig{{Map: EqualPriorityMap, Weight: 1}},
 			extenders: []FakeExtender{
 				{
 					predicates: []fitPredicate{truePredicateExtender},
@@ -200,7 +199,7 @@ func TestGenericSchedulerWithExtenders(t *testing.T) {
 		},
 		{
 			predicates:   map[string]algorithm.FitPredicate{"true": truePredicate},
-			prioritizers: []algorithm.PriorityConfig{{Function: EqualPriority, Weight: 1}},
+			prioritizers: []algorithm.PriorityConfig{{Map: EqualPriorityMap, Weight: 1}},
 			extenders: []FakeExtender{
 				{
 					predicates: []fitPredicate{truePredicateExtender},
@@ -215,7 +214,7 @@ func TestGenericSchedulerWithExtenders(t *testing.T) {
 		},
 		{
 			predicates:   map[string]algorithm.FitPredicate{"true": truePredicate},
-			prioritizers: []algorithm.PriorityConfig{{Function: EqualPriority, Weight: 1}},
+			prioritizers: []algorithm.PriorityConfig{{Map: EqualPriorityMap, Weight: 1}},
 			extenders: []FakeExtender{
 				{
 					predicates: []fitPredicate{machine2PredicateExtender},
@@ -230,7 +229,7 @@ func TestGenericSchedulerWithExtenders(t *testing.T) {
 		},
 		{
 			predicates:   map[string]algorithm.FitPredicate{"true": truePredicate},
-			prioritizers: []algorithm.PriorityConfig{{Function: EqualPriority, Weight: 1}},
+			prioritizers: []algorithm.PriorityConfig{{Map: EqualPriorityMap, Weight: 1}},
 			extenders: []FakeExtender{
 				{
 					predicates:   []fitPredicate{truePredicateExtender},
@@ -244,7 +243,7 @@ func TestGenericSchedulerWithExtenders(t *testing.T) {
 		},
 		{
 			predicates:   map[string]algorithm.FitPredicate{"true": truePredicate},
-			prioritizers: []algorithm.PriorityConfig{{Function: EqualPriority, Weight: 1}},
+			prioritizers: []algorithm.PriorityConfig{{Map: EqualPriorityMap, Weight: 1}},
 			extenders: []FakeExtender{
 				{
 					predicates:   []fitPredicate{truePredicateExtender},
@@ -282,10 +281,14 @@ func TestGenericSchedulerWithExtenders(t *testing.T) {
 		for ii := range test.extenders {
 			extenders = append(extenders, &test.extenders[ii])
 		}
+		cache := schedulercache.New(time.Duration(0), wait.NeverStop)
+		for _, name := range test.nodes {
+			cache.AddNode(&v1.Node{ObjectMeta: v1.ObjectMeta{Name: name}})
+		}
 		scheduler := NewGenericScheduler(
-			schedulertesting.PodsToCache(test.pods), test.predicates, algorithm.EmptyMetadataProducer,
-			test.prioritizers, extenders)
-		machine, err := scheduler.Schedule(test.pod, algorithm.FakeNodeLister(makeNodeList(test.nodes)))
+			cache, test.predicates, algorithm.EmptyMetadataProducer, test.prioritizers, algorithm.EmptyMetadataProducer, extenders)
+		podIgnored := &v1.Pod{}
+		machine, err := scheduler.Schedule(podIgnored, algorithm.FakeNodeLister(makeNodeList(test.nodes)))
 		if test.expectsErr {
 			if err == nil {
 				t.Errorf("Unexpected non-error for %s, machine %s", test.name, machine)
@@ -293,6 +296,7 @@ func TestGenericSchedulerWithExtenders(t *testing.T) {
 		} else {
 			if err != nil {
 				t.Errorf("Unexpected error: %v", err)
+				continue
 			}
 			if test.expectedHost != machine {
 				t.Errorf("Failed : %s, Expected: %s, Saw: %s", test.name, test.expectedHost, machine)

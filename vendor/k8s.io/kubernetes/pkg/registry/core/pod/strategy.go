@@ -28,12 +28,14 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/validation"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/fields"
 	"k8s.io/kubernetes/pkg/kubelet/client"
 	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/registry/generic"
 	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/storage"
+	"k8s.io/kubernetes/pkg/types"
 	utilnet "k8s.io/kubernetes/pkg/util/net"
 	"k8s.io/kubernetes/pkg/util/validation/field"
 )
@@ -154,30 +156,21 @@ func (podStatusStrategy) ValidateUpdate(ctx api.Context, obj, old runtime.Object
 	return validation.ValidatePodStatusUpdate(obj.(*api.Pod), old.(*api.Pod))
 }
 
+// GetAttrs returns labels and fields of a given object for filtering purposes.
+func GetAttrs(obj runtime.Object) (labels.Set, fields.Set, error) {
+	pod, ok := obj.(*api.Pod)
+	if !ok {
+		return nil, nil, fmt.Errorf("not a pod")
+	}
+	return labels.Set(pod.ObjectMeta.Labels), PodToSelectableFields(pod), nil
+}
+
 // MatchPod returns a generic matcher for a given label and field selector.
 func MatchPod(label labels.Selector, field fields.Selector) storage.SelectionPredicate {
 	return storage.SelectionPredicate{
-		Label: label,
-		Field: field,
-		GetAttrs: func(obj runtime.Object) (labels.Set, fields.Set, error) {
-			pod, ok := obj.(*api.Pod)
-			if !ok {
-				return nil, nil, fmt.Errorf("not a pod")
-			}
-
-			// podLabels is already sitting there ready to be used.
-			// podFields is not available directly and requires allocation of a map.
-			// Only bother if the fields might be useful to determining the match.
-			// One common case is for a replication controller to set up a watch
-			// based on labels alone; in that case we can avoid allocating the field map.
-			// This is especially important in the apiserver.
-			podLabels := labels.Set(pod.ObjectMeta.Labels)
-			var podFields fields.Set
-			if !field.Empty() && label.Matches(podLabels) {
-				podFields = PodToSelectableFields(pod)
-			}
-			return podLabels, podFields, nil
-		},
+		Label:       label,
+		Field:       field,
+		GetAttrs:    GetAttrs,
 		IndexFields: []string{"spec.nodeName"},
 	}
 }
@@ -191,22 +184,24 @@ func NodeNameTriggerFunc(obj runtime.Object) []storage.MatchValue {
 // PodToSelectableFields returns a field set that represents the object
 // TODO: fields are not labels, and the validation rules for them do not apply.
 func PodToSelectableFields(pod *api.Pod) fields.Set {
-	objectMetaFieldsSet := generic.ObjectMetaFieldsSet(&pod.ObjectMeta, true)
-	podSpecificFieldsSet := fields.Set{
-		"spec.nodeName":      pod.Spec.NodeName,
-		"spec.restartPolicy": string(pod.Spec.RestartPolicy),
-		"status.phase":       string(pod.Status.Phase),
-	}
-	return generic.MergeFieldsSets(objectMetaFieldsSet, podSpecificFieldsSet)
+	// The purpose of allocation with a given number of elements is to reduce
+	// amount of allocations needed to create the fields.Set. If you add any
+	// field here or the number of object-meta related fields changes, this should
+	// be adjusted.
+	podSpecificFieldsSet := make(fields.Set, 5)
+	podSpecificFieldsSet["spec.nodeName"] = pod.Spec.NodeName
+	podSpecificFieldsSet["spec.restartPolicy"] = string(pod.Spec.RestartPolicy)
+	podSpecificFieldsSet["status.phase"] = string(pod.Status.Phase)
+	return generic.AddObjectMetaFieldsSet(podSpecificFieldsSet, &pod.ObjectMeta, true)
 }
 
 // ResourceGetter is an interface for retrieving resources by ResourceLocation.
 type ResourceGetter interface {
-	Get(api.Context, string) (runtime.Object, error)
+	Get(api.Context, string, *metav1.GetOptions) (runtime.Object, error)
 }
 
 func getPod(getter ResourceGetter, ctx api.Context, name string) (*api.Pod, error) {
-	obj, err := getter.Get(ctx, name)
+	obj, err := getter.Get(ctx, name, &metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -299,12 +294,12 @@ func LogLocation(
 			return nil, nil, errors.NewBadRequest(fmt.Sprintf("container %s is not valid for pod %s", container, name))
 		}
 	}
-	nodeHost := pod.Spec.NodeName
-	if len(nodeHost) == 0 {
+	nodeName := types.NodeName(pod.Spec.NodeName)
+	if len(nodeName) == 0 {
 		// If pod has not been assigned a host, return an empty location
 		return nil, nil, nil
 	}
-	nodeScheme, nodePort, nodeTransport, err := connInfo.GetConnectionInfo(ctx, nodeHost)
+	nodeInfo, err := connInfo.GetConnectionInfo(ctx, nodeName)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -331,12 +326,12 @@ func LogLocation(
 		params.Add("limitBytes", strconv.FormatInt(*opts.LimitBytes, 10))
 	}
 	loc := &url.URL{
-		Scheme:   nodeScheme,
-		Host:     fmt.Sprintf("%s:%d", nodeHost, nodePort),
+		Scheme:   nodeInfo.Scheme,
+		Host:     net.JoinHostPort(nodeInfo.Hostname, nodeInfo.Port),
 		Path:     fmt.Sprintf("/containerLogs/%s/%s/%s", pod.Namespace, pod.Name, container),
 		RawQuery: params.Encode(),
 	}
-	return loc, nodeTransport, nil
+	return loc, nodeInfo.Transport, nil
 }
 
 func podHasContainerWithName(pod *api.Pod, containerName string) bool {
@@ -450,12 +445,12 @@ func streamLocation(
 			return nil, nil, errors.NewBadRequest(fmt.Sprintf("container %s is not valid for pod %s", container, name))
 		}
 	}
-	nodeHost := pod.Spec.NodeName
-	if len(nodeHost) == 0 {
+	nodeName := types.NodeName(pod.Spec.NodeName)
+	if len(nodeName) == 0 {
 		// If pod has not been assigned a host, return an empty location
 		return nil, nil, errors.NewBadRequest(fmt.Sprintf("pod %s does not have a host assigned", name))
 	}
-	nodeScheme, nodePort, nodeTransport, err := connInfo.GetConnectionInfo(ctx, nodeHost)
+	nodeInfo, err := connInfo.GetConnectionInfo(ctx, nodeName)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -464,12 +459,12 @@ func streamLocation(
 		return nil, nil, err
 	}
 	loc := &url.URL{
-		Scheme:   nodeScheme,
-		Host:     fmt.Sprintf("%s:%d", nodeHost, nodePort),
+		Scheme:   nodeInfo.Scheme,
+		Host:     net.JoinHostPort(nodeInfo.Hostname, nodeInfo.Port),
 		Path:     fmt.Sprintf("/%s/%s/%s/%s", path, pod.Namespace, pod.Name, container),
 		RawQuery: params.Encode(),
 	}
-	return loc, nodeTransport, nil
+	return loc, nodeInfo.Transport, nil
 }
 
 // PortForwardLocation returns the port-forward URL for a pod.
@@ -484,19 +479,19 @@ func PortForwardLocation(
 		return nil, nil, err
 	}
 
-	nodeHost := pod.Spec.NodeName
-	if len(nodeHost) == 0 {
+	nodeName := types.NodeName(pod.Spec.NodeName)
+	if len(nodeName) == 0 {
 		// If pod has not been assigned a host, return an empty location
 		return nil, nil, errors.NewBadRequest(fmt.Sprintf("pod %s does not have a host assigned", name))
 	}
-	nodeScheme, nodePort, nodeTransport, err := connInfo.GetConnectionInfo(ctx, nodeHost)
+	nodeInfo, err := connInfo.GetConnectionInfo(ctx, nodeName)
 	if err != nil {
 		return nil, nil, err
 	}
 	loc := &url.URL{
-		Scheme: nodeScheme,
-		Host:   fmt.Sprintf("%s:%d", nodeHost, nodePort),
+		Scheme: nodeInfo.Scheme,
+		Host:   net.JoinHostPort(nodeInfo.Hostname, nodeInfo.Port),
 		Path:   fmt.Sprintf("/portForward/%s/%s", pod.Namespace, pod.Name),
 	}
-	return loc, nodeTransport, nil
+	return loc, nodeInfo.Transport, nil
 }

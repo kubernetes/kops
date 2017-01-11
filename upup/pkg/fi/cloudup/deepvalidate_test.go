@@ -27,50 +27,50 @@ import (
 func TestDeepValidate_OK(t *testing.T) {
 	c := buildDefaultCluster(t)
 	var groups []*api.InstanceGroup
-	groups = append(groups, buildMinimalMasterInstanceGroup("us-mock-1a"))
-	groups = append(groups, buildMinimalNodeInstanceGroup("us-mock-1a"))
+	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1a"))
+	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-mock-1a"))
 	err := api.DeepValidate(c, groups, true)
 	if err != nil {
-		t.Fatalf("Expected no error from DeepValidate")
+		t.Fatalf("Expected no error from DeepValidate, got %v", err)
 	}
 }
 
 func TestDeepValidate_NoNodeZones(t *testing.T) {
 	c := buildDefaultCluster(t)
 	var groups []*api.InstanceGroup
-	groups = append(groups, buildMinimalMasterInstanceGroup("us-mock-1a"))
+	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1a"))
 	expectErrorFromDeepValidate(t, c, groups, "must configure at least one Node InstanceGroup")
 }
 
 func TestDeepValidate_NoMasterZones(t *testing.T) {
 	c := buildDefaultCluster(t)
 	var groups []*api.InstanceGroup
-	groups = append(groups, buildMinimalNodeInstanceGroup("us-mock-1a"))
+	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-mock-1a"))
 	expectErrorFromDeepValidate(t, c, groups, "must configure at least one Master InstanceGroup")
 }
 
 func TestDeepValidate_BadZone(t *testing.T) {
 	t.Skipf("Zone validation not checked by DeepValidate")
 	c := buildDefaultCluster(t)
-	c.Spec.Zones = []*api.ClusterZoneSpec{
-		{Name: "us-mock-1z", CIDR: "172.20.1.0/24"},
+	c.Spec.Subnets = []api.ClusterSubnetSpec{
+		{Name: "subnet-badzone", Zone: "us-mock-1z", CIDR: "172.20.1.0/24"},
 	}
 	var groups []*api.InstanceGroup
-	groups = append(groups, buildMinimalMasterInstanceGroup("us-mock-1z"))
-	groups = append(groups, buildMinimalNodeInstanceGroup("us-mock-1z"))
+	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1z"))
+	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-mock-1z"))
 	expectErrorFromDeepValidate(t, c, groups, "Zone is not a recognized AZ")
 }
 
 func TestDeepValidate_MixedRegion(t *testing.T) {
 	t.Skipf("Region validation not checked by DeepValidate")
 	c := buildDefaultCluster(t)
-	c.Spec.Zones = []*api.ClusterZoneSpec{
-		{Name: "us-mock-1a", CIDR: "172.20.1.0/24"},
-		{Name: "us-west-1b", CIDR: "172.20.2.0/24"},
+	c.Spec.Subnets = []api.ClusterSubnetSpec{
+		{Name: "mock1a", Zone: "us-mock-1a", CIDR: "172.20.1.0/24"},
+		{Name: "west1b", Zone: "us-west-1b", CIDR: "172.20.2.0/24"},
 	}
 	var groups []*api.InstanceGroup
-	groups = append(groups, buildMinimalMasterInstanceGroup("us-mock-1a"))
-	groups = append(groups, buildMinimalNodeInstanceGroup("us-mock-1a", "us-west-1b"))
+	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1a"))
+	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-mock-1a", "subnet-us-west-1b"))
 
 	expectErrorFromDeepValidate(t, c, groups, "Clusters cannot span multiple regions")
 }
@@ -78,12 +78,12 @@ func TestDeepValidate_MixedRegion(t *testing.T) {
 func TestDeepValidate_RegionAsZone(t *testing.T) {
 	t.Skipf("Region validation not checked by DeepValidate")
 	c := buildDefaultCluster(t)
-	c.Spec.Zones = []*api.ClusterZoneSpec{
-		{Name: "us-mock-1", CIDR: "172.20.1.0/24"},
+	c.Spec.Subnets = []api.ClusterSubnetSpec{
+		{Name: "mock1", Zone: "us-mock-1", CIDR: "172.20.1.0/24"},
 	}
 	var groups []*api.InstanceGroup
-	groups = append(groups, buildMinimalMasterInstanceGroup("us-mock-1"))
-	groups = append(groups, buildMinimalNodeInstanceGroup("us-mock-1"))
+	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1"))
+	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-mock-1"))
 
 	expectErrorFromDeepValidate(t, c, groups, "Region is not a recognized EC2 region: \"us-east-\" (check you have specified valid zones?)")
 }
@@ -91,35 +91,35 @@ func TestDeepValidate_RegionAsZone(t *testing.T) {
 func TestDeepValidate_NotIncludedZone(t *testing.T) {
 	c := buildDefaultCluster(t)
 	var groups []*api.InstanceGroup
-	groups = append(groups, buildMinimalMasterInstanceGroup("us-mock-1d"))
-	groups = append(groups, buildMinimalNodeInstanceGroup("us-mock-1d"))
+	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1d"))
+	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-mock-1d"))
 
-	expectErrorFromDeepValidate(t, c, groups, "not configured as a Zone in the cluster")
+	expectErrorFromDeepValidate(t, c, groups, "not configured as a Subnet in the cluster")
 }
 
 func TestDeepValidate_DuplicateZones(t *testing.T) {
 	c := buildDefaultCluster(t)
-	c.Spec.Zones = []*api.ClusterZoneSpec{
-		{Name: "us-mock-1a", CIDR: "172.20.1.0/24"},
-		{Name: "us-mock-1a", CIDR: "172.20.2.0/24"},
+	c.Spec.Subnets = []api.ClusterSubnetSpec{
+		{Name: "dup1", Zone: "us-mock-1a", CIDR: "172.20.1.0/24"},
+		{Name: "dup1", Zone: "us-mock-1a", CIDR: "172.20.2.0/24"},
 	}
 	var groups []*api.InstanceGroup
-	groups = append(groups, buildMinimalMasterInstanceGroup("us-mock-1a"))
-	groups = append(groups, buildMinimalNodeInstanceGroup("us-mock-1a"))
-	expectErrorFromDeepValidate(t, c, groups, "Zones contained a duplicate value: us-mock-1a")
+	groups = append(groups, buildMinimalMasterInstanceGroup("dup1"))
+	groups = append(groups, buildMinimalNodeInstanceGroup("dup1"))
+	expectErrorFromDeepValidate(t, c, groups, "Subnets contained a duplicate value: dup1")
 }
 
 func TestDeepValidate_ExtraMasterZone(t *testing.T) {
 	c := buildDefaultCluster(t)
-	c.Spec.Zones = []*api.ClusterZoneSpec{
-		{Name: "us-mock-1a", CIDR: "172.20.1.0/24"},
-		{Name: "us-mock-1b", CIDR: "172.20.2.0/24"},
+	c.Spec.Subnets = []api.ClusterSubnetSpec{
+		{Name: "mock1a", Zone: "us-mock-1a", CIDR: "172.20.1.0/24"},
+		{Name: "mock1b", Zone: "us-mock-1b", CIDR: "172.20.2.0/24"},
 	}
 	var groups []*api.InstanceGroup
-	groups = append(groups, buildMinimalMasterInstanceGroup("us-mock-1a", "us-mock-1b", "us-mock-1c"))
-	groups = append(groups, buildMinimalNodeInstanceGroup("us-mock-1a", "us-mock-1b"))
+	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1a", "subnet-us-mock-1b", "subnet-us-mock-1c"))
+	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-mock-1a", "subnet-us-mock-1b"))
 
-	expectErrorFromDeepValidate(t, c, groups, "is not configured as a Zone in the cluster")
+	expectErrorFromDeepValidate(t, c, groups, "is not configured as a Subnet in the cluster")
 }
 
 func TestDeepValidate_EvenEtcdClusterSize(t *testing.T) {
@@ -128,15 +128,15 @@ func TestDeepValidate_EvenEtcdClusterSize(t *testing.T) {
 		{
 			Name: "main",
 			Members: []*api.EtcdMemberSpec{
-				{Name: "us-mock-1a", Zone: fi.String("us-mock-1a")},
-				{Name: "us-mock-1b", Zone: fi.String("us-mock-1b")},
+				{Name: "us-mock-1a", InstanceGroup: fi.String("us-mock-1a")},
+				{Name: "us-mock-1b", InstanceGroup: fi.String("us-mock-1b")},
 			},
 		},
 	}
 
 	var groups []*api.InstanceGroup
-	groups = append(groups, buildMinimalMasterInstanceGroup("us-mock-1a", "us-mock-1b", "us-mock-1c", "us-mock-1d"))
-	groups = append(groups, buildMinimalNodeInstanceGroup("us-mock-1a"))
+	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1a", "subnet-us-mock-1b", "subnet-us-mock-1c", "subnet-us-mock-1d"))
+	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-mock-1a"))
 
 	expectErrorFromDeepValidate(t, c, groups, "There should be an odd number of master-zones, for etcd's quorum.  Hint: Use --zones and --master-zones to declare node zones and master zones separately.")
 }
@@ -144,7 +144,7 @@ func TestDeepValidate_EvenEtcdClusterSize(t *testing.T) {
 func expectErrorFromDeepValidate(t *testing.T, c *api.Cluster, groups []*api.InstanceGroup, message string) {
 	err := api.DeepValidate(c, groups, true)
 	if err == nil {
-		t.Fatalf("Expected error from DeepValidate (strict=true)")
+		t.Fatalf("Expected error %q from DeepValidate (strict=true), not no error raised", message)
 	}
 	actualMessage := fmt.Sprintf("%v", err)
 	if !strings.Contains(actualMessage, message) {

@@ -18,9 +18,15 @@ package nodeup
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"io"
 	"io/ioutil"
+	"os/exec"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/nodeup/pkg/model"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/upup/pkg/fi"
@@ -29,13 +35,11 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
-	"os/exec"
-	"strconv"
-	"strings"
+	"k8s.io/kubernetes/pkg/util/sets"
 )
 
 // We should probably retry for a long time - there is not really any great fallback
-const MaxAttemptsWithNoProgress = 100
+const MaxTaskDuration = 365 * 24 * time.Hour
 
 type NodeUpCommand struct {
 	config         *NodeUpConfig
@@ -123,7 +127,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 		err = utils.YamlUnmarshal(b, c.cluster)
 		if err != nil {
-			return fmt.Errorf("error parsing Cluster %q: %v", clusterLocation, err)
+			return fmt.Errorf("error parsing Cluster %q: %v", p, err)
 		}
 	}
 
@@ -169,24 +173,30 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	//	c.Config.Tags = append(c.Config.Tags, "_not_config_store")
 	//}
 
-	osTags, err := FindOSTags(c.FSRoot)
+	distribution, err := FindDistribution(c.FSRoot)
 	if err != nil {
-		return fmt.Errorf("error determining OS tags: %v", err)
+		return fmt.Errorf("error determining OS distribution: %v", err)
 	}
 
-	tags := make(map[string]struct{})
-	for _, tag := range osTags {
-		tags[tag] = struct{}{}
-	}
-	for _, tag := range c.config.Tags {
-		tags[tag] = struct{}{}
-	}
+	osTags := distribution.BuildTags()
+
+	tags := sets.NewString()
+	tags.Insert(osTags...)
+	tags.Insert(c.config.Tags...)
 
 	glog.Infof("Config tags: %v", c.config.Tags)
 	glog.Infof("OS tags: %v", osTags)
 
+	modelContext := &model.NodeupModelContext{
+		Cluster:      c.cluster,
+		Distribution: distribution,
+		Architecture: model.ArchitectureAmd64,
+	}
+
 	loader := NewLoader(c.config, c.cluster, assets, tags)
 
+	loader.Builders = append(loader.Builders, &model.DockerBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.SysctlBuilder{NodeupModelContext: modelContext})
 	tf, err := newTemplateFunctions(c.config, c.cluster, c.instanceGroup, tags)
 	if err != nil {
 		return fmt.Errorf("error initializing: %v", err)
@@ -202,6 +212,12 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		taskMap["LoadImage."+strconv.Itoa(i)] = &nodetasks.LoadImageTask{
 			Source: image.Source,
 			Hash:   image.Hash,
+		}
+	}
+	if c.config.ProtokubeImage != nil {
+		taskMap["LoadImage.protokube"] = &nodetasks.LoadImageTask{
+			Source: c.config.ProtokubeImage.Source,
+			Hash:   c.config.ProtokubeImage.Hash,
 		}
 	}
 
@@ -232,7 +248,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 	defer context.Close()
 
-	err = context.RunTasks(MaxAttemptsWithNoProgress)
+	err = context.RunTasks(MaxTaskDuration)
 	if err != nil {
 		glog.Exitf("error running tasks: %v", err)
 	}

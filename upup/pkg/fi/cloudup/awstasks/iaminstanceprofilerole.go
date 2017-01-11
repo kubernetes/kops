@@ -28,13 +28,11 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
+//go:generate fitask -type=IAMInstanceProfileRole
 type IAMInstanceProfileRole struct {
+	Name            *string
 	InstanceProfile *IAMInstanceProfile
 	Role            *IAMRole
-}
-
-func (e *IAMInstanceProfileRole) String() string {
-	return fi.TaskAsString(e)
 }
 
 func (e *IAMInstanceProfileRole) Find(c *fi.Context) (*IAMInstanceProfileRole, error) {
@@ -67,6 +65,10 @@ func (e *IAMInstanceProfileRole) Find(c *fi.Context) (*IAMInstanceProfileRole, e
 		actual := &IAMInstanceProfileRole{}
 		actual.InstanceProfile = &IAMInstanceProfile{ID: ip.InstanceProfileId, Name: ip.InstanceProfileName}
 		actual.Role = &IAMRole{ID: role.RoleId, Name: role.RoleName}
+
+		// Prevent spurious changes
+		actual.Name = e.Name
+
 		return actual, nil
 	}
 	return nil, nil

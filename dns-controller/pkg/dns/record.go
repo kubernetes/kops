@@ -24,6 +24,9 @@ const (
 
 	RecordTypeA     = "A"
 	RecordTypeCNAME = "CNAME"
+
+	RoleTypeExternal = "external"
+	RoleTypeInternal = "internal"
 )
 
 type Record struct {
@@ -35,4 +38,9 @@ type Record struct {
 	// but will be used as an expansion for Records with type=RecordTypeAlias,
 	// where the referring record has Value = our FQDN
 	AliasTarget bool
+}
+
+// AliasForNodesInRole returns the alias for nodes in the given role
+func AliasForNodesInRole(role, roleType string) string {
+	return "node/role=" + role + "/" + roleType
 }

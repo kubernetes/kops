@@ -1,3 +1,5 @@
+#!/bin/bash -ex
+
 # Copyright 2016 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,8 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-#!/bin/bash -ex
 
 mkdir -p /go
 export GOPATH=/go
@@ -34,5 +34,5 @@ cp /go/bin/channels /src/.build/artifacts/
 
 # channels uses protokube
 cd /src/.build/artifacts/
-curl -O https://storage.googleapis.com/kubernetes-release/release/v1.3.7/bin/linux/amd64/kubectl
+curl -O https://storage.googleapis.com/kubernetes-release/release/v1.5.1/bin/linux/amd64/kubectl
 chmod +x kubectl

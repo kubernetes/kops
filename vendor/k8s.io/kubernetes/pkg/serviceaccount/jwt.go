@@ -21,11 +21,12 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rsa"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"io/ioutil"
 
-	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/auth/authenticator"
 	"k8s.io/kubernetes/pkg/auth/user"
 
@@ -46,14 +47,14 @@ const (
 
 // ServiceAccountTokenGetter defines functions to retrieve a named service account and secret
 type ServiceAccountTokenGetter interface {
-	GetServiceAccount(namespace, name string) (*api.ServiceAccount, error)
-	GetSecret(namespace, name string) (*api.Secret, error)
+	GetServiceAccount(namespace, name string) (*v1.ServiceAccount, error)
+	GetSecret(namespace, name string) (*v1.Secret, error)
 }
 
 type TokenGenerator interface {
 	// GenerateToken generates a token which will identify the given ServiceAccount.
 	// The returned token will be stored in the given (and yet-unpersisted) Secret.
-	GenerateToken(serviceAccount api.ServiceAccount, secret api.Secret) (string, error)
+	GenerateToken(serviceAccount v1.ServiceAccount, secret v1.Secret) (string, error)
 }
 
 // ReadPrivateKey is a helper function for reading a private key from a PEM-encoded file
@@ -80,37 +81,60 @@ func ReadPrivateKeyFromPEM(data []byte) (interface{}, error) {
 	return nil, fmt.Errorf("data does not contain a valid RSA or ECDSA private key")
 }
 
-// ReadPublicKey is a helper function for reading an rsa.PublicKey or ecdsa.PublicKey from a PEM-encoded file.
+// ReadPublicKeys is a helper function for reading an array of rsa.PublicKey or ecdsa.PublicKey from a PEM-encoded file.
 // Reads public keys from both public and private key files.
-func ReadPublicKey(file string) (interface{}, error) {
+func ReadPublicKeys(file string) ([]interface{}, error) {
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}
-	key, err := ReadPublicKeyFromPEM(data)
+	keys, err := ReadPublicKeysFromPEM(data)
 	if err != nil {
 		return nil, fmt.Errorf("error reading public key file %s: %v", file, err)
 	}
-	return key, nil
+	return keys, nil
 }
 
-// ReadPublicKeyFromPEM is a helper function for reading an rsa.PublicKey or ecdsa.PublicKey from a PEM-encoded byte array.
+// ReadPublicKeysFromPEM is a helper function for reading an array of rsa.PublicKey or ecdsa.PublicKey from a PEM-encoded byte array.
 // Reads public keys from both public and private key files.
-func ReadPublicKeyFromPEM(data []byte) (interface{}, error) {
-	if privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(data); err == nil {
-		return &privateKey.PublicKey, nil
-	}
-	if publicKey, err := jwt.ParseRSAPublicKeyFromPEM(data); err == nil {
-		return publicKey, nil
+func ReadPublicKeysFromPEM(data []byte) ([]interface{}, error) {
+	var block *pem.Block
+	keys := []interface{}{}
+	for {
+		// read the next block
+		block, data = pem.Decode(data)
+		if block == nil {
+			break
+		}
+
+		// get PEM bytes for just this block
+		blockData := pem.EncodeToMemory(block)
+		if privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(blockData); err == nil {
+			keys = append(keys, &privateKey.PublicKey)
+			continue
+		}
+		if publicKey, err := jwt.ParseRSAPublicKeyFromPEM(blockData); err == nil {
+			keys = append(keys, publicKey)
+			continue
+		}
+
+		if privateKey, err := jwt.ParseECPrivateKeyFromPEM(blockData); err == nil {
+			keys = append(keys, &privateKey.PublicKey)
+			continue
+		}
+		if publicKey, err := jwt.ParseECPublicKeyFromPEM(blockData); err == nil {
+			keys = append(keys, publicKey)
+			continue
+		}
+
+		// tolerate non-key PEM blocks for backwards compatibility
+		// originally, only the first PEM block was parsed and expected to be a key block
 	}
 
-	if privateKey, err := jwt.ParseECPrivateKeyFromPEM(data); err == nil {
-		return &privateKey.PublicKey, nil
+	if len(keys) == 0 {
+		return nil, fmt.Errorf("data does not contain a valid RSA or ECDSA key")
 	}
-	if publicKey, err := jwt.ParseECPublicKeyFromPEM(data); err == nil {
-		return publicKey, nil
-	}
-	return nil, fmt.Errorf("data does not contain a valid RSA or ECDSA key")
+	return keys, nil
 }
 
 // JWTTokenGenerator returns a TokenGenerator that generates signed JWT tokens, using the given privateKey.
@@ -124,7 +148,7 @@ type jwtTokenGenerator struct {
 	privateKey interface{}
 }
 
-func (j *jwtTokenGenerator) GenerateToken(serviceAccount api.ServiceAccount, secret api.Secret) (string, error) {
+func (j *jwtTokenGenerator) GenerateToken(serviceAccount v1.ServiceAccount, secret v1.Secret) (string, error) {
 	var method jwt.SigningMethod
 	switch privateKey := j.privateKey.(type) {
 	case *rsa.PrivateKey:
@@ -275,7 +299,7 @@ func (j *jwtTokenAuthenticator) AuthenticateToken(token string) (user.Info, bool
 				glog.V(4).Infof("Could not retrieve token %s/%s for service account %s/%s: %v", namespace, secretName, namespace, serviceAccountName, err)
 				return nil, false, errors.New("Token has been invalidated")
 			}
-			if bytes.Compare(secret.Data[api.ServiceAccountTokenKey], []byte(token)) != 0 {
+			if bytes.Compare(secret.Data[v1.ServiceAccountTokenKey], []byte(token)) != 0 {
 				glog.V(4).Infof("Token contents no longer matches %s/%s for service account %s/%s", namespace, secretName, namespace, serviceAccountName)
 				return nil, false, errors.New("Token does not match server's copy")
 			}

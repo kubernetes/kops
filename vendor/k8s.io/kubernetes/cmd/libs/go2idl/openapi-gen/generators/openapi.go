@@ -36,6 +36,7 @@ import (
 
 // This is the comment tag that carries parameters for open API generation.
 const tagName = "k8s:openapi-gen"
+const tagOptional = "optional"
 
 // Known values for the tag.
 const (
@@ -54,6 +55,16 @@ func hasOpenAPITagValue(comments []string, value string) bool {
 		}
 	}
 	return false
+}
+
+// hasOptionalTag returns true if the member has +optional in its comments or
+// omitempty in its json tags.
+func hasOptionalTag(m *types.Member) bool {
+	hasOptionalCommentTag := types.ExtractCommentTags(
+		"+", m.CommentLines)[tagOptional] != nil
+	hasOptionalJsonTag := strings.Contains(
+		reflect.StructTag(m.Tags).Get("json"), "omitempty")
+	return hasOptionalCommentTag || hasOptionalJsonTag
 }
 
 // NameSystems returns the name system used by the generators in this package.
@@ -225,30 +236,6 @@ func getReferableName(m *types.Member) string {
 	}
 }
 
-func optionIndex(s, optionName string) int {
-	ret := 0
-	for s != "" {
-		var next string
-		i := strings.Index(s, ",")
-		if i >= 0 {
-			s, next = s[:i], s[i+1:]
-		}
-		if s == optionName {
-			return ret
-		}
-		s = next
-		ret++
-	}
-	return -1
-}
-
-func isPropertyRequired(m *types.Member) bool {
-	// A property is required if it does not have omitempty value in its json tag (documentation and implementation
-	// of json package requires omitempty to be at location 1 or higher.
-	// TODO: Move optional field definition from tags to comments.
-	return optionIndex(reflect.StructTag(m.Tags).Get("json"), "omitempty") < 1
-}
-
 type openAPITypeWriter struct {
 	*generator.SnippetWriter
 	refTypes               map[string]*types.Type
@@ -306,7 +293,7 @@ func (g openAPITypeWriter) generate(t *types.Type) error {
 			if name == "" {
 				continue
 			}
-			if isPropertyRequired(&m) {
+			if !hasOptionalTag(&m) {
 				required = append(required, name)
 			}
 			if err := g.generateProperty(&m); err != nil {
@@ -464,10 +451,15 @@ func (g openAPITypeWriter) generateMapProperty(t *types.Type) error {
 	}
 	g.Do("Type: []string{\"object\"},\n", nil)
 	g.Do("AdditionalProperties: &spec.SchemaOrBool{\nSchema: &spec.Schema{\nSchemaProps: spec.SchemaProps{\n", nil)
+	typeString, format := common.GetOpenAPITypeFormat(elemType.String())
+	if typeString != "" {
+		g.generateSimpleProperty(typeString, format)
+		g.Do("},\n},\n},\n", nil)
+		return nil
+	}
 	switch elemType.Kind {
 	case types.Builtin:
-		typeString, format := common.GetOpenAPITypeFormat(elemType.String())
-		g.generateSimpleProperty(typeString, format)
+		return fmt.Errorf("please add type %v to getOpenAPITypeFormat function.", elemType)
 	case types.Struct:
 		g.generateReferenceProperty(t.Elem)
 	case types.Slice, types.Array:
@@ -483,10 +475,15 @@ func (g openAPITypeWriter) generateSliceProperty(t *types.Type) error {
 	elemType := resolveAliasAndPtrType(t.Elem)
 	g.Do("Type: []string{\"array\"},\n", nil)
 	g.Do("Items: &spec.SchemaOrArray{\nSchema: &spec.Schema{\nSchemaProps: spec.SchemaProps{\n", nil)
+	typeString, format := common.GetOpenAPITypeFormat(elemType.String())
+	if typeString != "" {
+		g.generateSimpleProperty(typeString, format)
+		g.Do("},\n},\n},\n", nil)
+		return nil
+	}
 	switch elemType.Kind {
 	case types.Builtin:
-		typeString, format := common.GetOpenAPITypeFormat(elemType.String())
-		g.generateSimpleProperty(typeString, format)
+		return fmt.Errorf("please add type %v to getOpenAPITypeFormat function.", elemType)
 	case types.Struct:
 		g.generateReferenceProperty(t.Elem)
 	default:

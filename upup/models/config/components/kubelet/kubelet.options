@@ -12,10 +12,7 @@ Kubelet:
 MasterKubelet:
   RegisterSchedulable: false
   APIServers: http://127.0.0.1:8080
-  # We bootstrap with a fake CIDR, but then this will be replaced (unless we're running with _isolated_master)
-  PodCIDR: 10.123.45.0/28
   # Replace the CIDR with a CIDR allocated by KCM (the default, but included for clarity)
-  ReconcileCIDR: true
   # We _do_ allow debugging handlers, so we can do logs
   # This does allow more access than we would like though
   EnableDebuggingHandlers: true

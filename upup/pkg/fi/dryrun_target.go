@@ -25,6 +25,7 @@ import (
 	"sync"
 
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
@@ -81,9 +82,14 @@ func (t *DryRunTarget) Delete(deletion Deletion) error {
 	return nil
 }
 
-func IdForTask(taskMap map[string]Task, t Task) string {
+func idForTask(taskMap map[string]Task, t Task) string {
 	for k, v := range taskMap {
 		if v == t {
+			// Skip task type, if present (taskType/taskName)
+			firstSlash := strings.Index(k, "/")
+			if firstSlash != -1 {
+				k = k[firstSlash+1:]
+			}
 			return k
 		}
 	}
@@ -110,7 +116,7 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 			fmt.Fprintf(b, "Will create resources:\n")
 			for _, r := range creates {
 				taskName := getTaskName(r.changes)
-				fmt.Fprintf(b, "  %-20s\t%s\n", taskName, IdForTask(taskMap, r.e))
+				fmt.Fprintf(b, "  %s/%s\n", taskName, idForTask(taskMap, r.e))
 
 				changes := reflect.ValueOf(r.changes)
 				if changes.Kind() == reflect.Ptr && !changes.IsNil() {
@@ -125,9 +131,31 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 						fieldName := changes.Type().Field(i).Name
 						fieldValue := ValueAsString(field)
 
-						// The field name is already printed above, no need to repeat it.
-						// Additionally, ignore any output that is not informative
-						if fieldName != "Name" && fieldValue != "<nil>" && fieldValue != "id:<nil>" && fieldValue != "<resource>" {
+						shouldPrint := true
+						if fieldName == "Name" {
+							// The field name is already printed above, no need to repeat it.
+							shouldPrint = false
+						}
+						if fieldValue == "<nil>" || fieldValue == "<resource>" {
+							// Uninformative
+							shouldPrint = false
+						}
+						if fieldValue == "id:<nil>" {
+							// Uninformative, but we can often print the name instead
+							name := ""
+							if field.CanInterface() {
+								hasName, ok := field.Interface().(HasName)
+								if ok {
+									name = StringValue(hasName.GetName())
+								}
+							}
+							if name != "" {
+								fieldValue = "name:" + name
+							} else {
+								shouldPrint = false
+							}
+						}
+						if shouldPrint {
 							fmt.Fprintf(b, "  \t%-20s\t%s\n", fieldName, fieldValue)
 						}
 					}
@@ -141,7 +169,11 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 			fmt.Fprintf(b, "Will modify resources:\n")
 			// We can't use our reflection helpers here - we want corresponding values from a,e,c
 			for _, r := range updates {
-				var changeList []string
+				type change struct {
+					FieldName   string
+					Description string
+				}
+				var changeList []change
 
 				valC := reflect.ValueOf(r.changes)
 				valA := reflect.ValueOf(r.a)
@@ -186,14 +218,22 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 							switch fieldValE.Interface().(type) {
 							//case SimpleUnit:
 							//	ignored = true
-							default:
+							case Resource, ResourceHolder:
+								resA, okA := tryResourceAsString(fieldValA)
+								resE, okE := tryResourceAsString(fieldValE)
+								if okA && okE {
+									description = diff.FormatDiff(resA, resE)
+								}
+							}
+
+							if !ignored && description == "" {
 								description = fmt.Sprintf(" %v -> %v", ValueAsString(fieldValA), ValueAsString(fieldValE))
 							}
 						}
 						if ignored {
 							continue
 						}
-						changeList = append(changeList, fmt.Sprintf("%-20s\t%s", valC.Type().Field(i).Name, description))
+						changeList = append(changeList, change{FieldName: valC.Type().Field(i).Name, Description: description})
 					}
 				} else {
 					return fmt.Errorf("unhandled change type: %v", valC.Type())
@@ -204,9 +244,17 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 				}
 
 				taskName := getTaskName(r.changes)
-				fmt.Fprintf(b, "  %-20s\t%s\n", taskName, IdForTask(taskMap, r.e))
-				for _, f := range changeList {
-					fmt.Fprintf(b, "  \t%s\n", f)
+				fmt.Fprintf(b, "  %s/%s\n", taskName, idForTask(taskMap, r.e))
+				for _, change := range changeList {
+					lines := strings.Split(change.Description, "\n")
+					if len(lines) == 1 {
+						fmt.Fprintf(b, "  \t%-20s\t%s\n", change.FieldName, change.Description)
+					} else {
+						fmt.Fprintf(b, "  \t%-20s\n", change.FieldName)
+						for _, line := range lines {
+							fmt.Fprintf(b, "  \t%-20s\t%s\n", "", line)
+						}
+					}
 				}
 				fmt.Fprintf(b, "\n")
 			}
@@ -222,6 +270,31 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 
 	_, err := out.Write(b.Bytes())
 	return err
+}
+
+func tryResourceAsString(v reflect.Value) (string, bool) {
+	if !v.CanInterface() {
+		return "", false
+	}
+
+	intf := v.Interface()
+	if res, ok := intf.(Resource); ok {
+		s, err := ResourceAsString(res)
+		if err != nil {
+			glog.Warningf("error converting to resource: %v", err)
+			return "", false
+		}
+		return s, true
+	}
+	if res, ok := intf.(*ResourceHolder); ok {
+		s, err := res.AsString()
+		if err != nil {
+			glog.Warningf("error converting to resource: %v", err)
+			return "", false
+		}
+		return s, true
+	}
+	return "", false
 }
 
 func getTaskName(t Task) string {
@@ -291,10 +364,26 @@ func ValueAsString(value reflect.Value) string {
 				fmt.Fprintf(b, "<resource>")
 			} else if compareWithID, ok := intf.(CompareWithID); ok {
 				id := compareWithID.CompareWithID()
+				name := ""
+				hasName, ok := intf.(HasName)
+				if ok {
+					name = StringValue(hasName.GetName())
+				}
 				if id == nil {
-					fmt.Fprintf(b, "id:<nil>")
+					// Uninformative, but we can often print the name instead
+					if name != "" {
+						fmt.Fprintf(b, "name:%s", name)
+					} else {
+						fmt.Fprintf(b, "id:<nil>")
+					}
 				} else {
-					fmt.Fprintf(b, "id:%s", *id)
+					// Uninformative, but we can often print the name instead
+					if name != "" {
+						fmt.Fprintf(b, "name:%s id:%s", name, *id)
+					} else {
+						fmt.Fprintf(b, "id:%s", *id)
+					}
+
 				}
 			} else {
 				glog.V(4).Infof("Unhandled kind in asString for %q: %T", path, v.Interface())

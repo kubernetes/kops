@@ -18,9 +18,10 @@ package apparmor
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
-	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -73,7 +74,7 @@ func TestValidateProfile(t *testing.T) {
 		if test.expectValid {
 			assert.NoError(t, err, "Profile %s should be valid", test.profile)
 		} else {
-			assert.Error(t, err, "Profile %s should not be valid", test.profile)
+			assert.Error(t, err, fmt.Sprintf("Profile %s should not be valid", test.profile))
 		}
 	}
 }
@@ -127,24 +128,24 @@ func TestValidateValidHost(t *testing.T) {
 		if test.expectValid {
 			assert.NoError(t, err, "Pod with profile %q should be valid", test.profile)
 		} else {
-			assert.Error(t, err, "Pod with profile %q should trigger a validation error", test.profile)
+			assert.Error(t, err, fmt.Sprintf("Pod with profile %q should trigger a validation error", test.profile))
 		}
 	}
 
 	// Test multi-container pod.
-	pod := &api.Pod{
-		ObjectMeta: api.ObjectMeta{
+	pod := &v1.Pod{
+		ObjectMeta: v1.ObjectMeta{
 			Annotations: map[string]string{
 				ContainerAnnotationKeyPrefix + "init":  ProfileNamePrefix + "foo-container",
 				ContainerAnnotationKeyPrefix + "test1": ProfileRuntimeDefault,
 				ContainerAnnotationKeyPrefix + "test2": ProfileNamePrefix + "docker-default",
 			},
 		},
-		Spec: api.PodSpec{
-			InitContainers: []api.Container{
+		Spec: v1.PodSpec{
+			InitContainers: []v1.Container{
 				{Name: "init"},
 			},
-			Containers: []api.Container{
+			Containers: []v1.Container{
 				{Name: "test1"},
 				{Name: "test2"},
 				{Name: "no-profile"},
@@ -154,7 +155,7 @@ func TestValidateValidHost(t *testing.T) {
 	assert.NoError(t, v.Validate(pod), "Multi-container pod should validate")
 	for k, val := range pod.Annotations {
 		pod.Annotations[k] = val + "-bad"
-		assert.Error(t, v.Validate(pod), "Multi-container pod with invalid profile %s:%s", k, pod.Annotations[k])
+		assert.Error(t, v.Validate(pod), fmt.Sprintf("Multi-container pod with invalid profile %s:%s", k, pod.Annotations[k]))
 		pod.Annotations[k] = val // Restore.
 	}
 }
@@ -171,7 +172,7 @@ func TestParseProfileName(t *testing.T) {
 	}
 }
 
-func getPodWithProfile(profile string) *api.Pod {
+func getPodWithProfile(profile string) *v1.Pod {
 	annotations := map[string]string{
 		ContainerAnnotationKeyPrefix + "test": profile,
 	}
@@ -180,12 +181,12 @@ func getPodWithProfile(profile string) *api.Pod {
 			"foo": "bar",
 		}
 	}
-	return &api.Pod{
-		ObjectMeta: api.ObjectMeta{
+	return &v1.Pod{
+		ObjectMeta: v1.ObjectMeta{
 			Annotations: annotations,
 		},
-		Spec: api.PodSpec{
-			Containers: []api.Container{
+		Spec: v1.PodSpec{
+			Containers: []v1.Container{
 				{
 					Name: "test",
 				},

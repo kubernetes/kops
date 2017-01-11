@@ -15,4 +15,4 @@ limitations under the License.
 */
 
 // Package kops is the parent package for the kops kubernetes-ops tool..
-package kops
+package kops // import "k8s.io/kops"

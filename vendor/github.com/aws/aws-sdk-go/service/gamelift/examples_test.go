@@ -16,10 +16,16 @@ var _ time.Duration
 var _ bytes.Buffer
 
 func ExampleGameLift_CreateAlias() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.CreateAliasInput{
-		Name: aws.String("NonZeroAndMaxString"), // Required
+		Name: aws.String("NonBlankAndLengthConstraintString"), // Required
 		RoutingStrategy: &gamelift.RoutingStrategy{ // Required
 			FleetId: aws.String("FleetId"),
 			Message: aws.String("FreeText"),
@@ -41,10 +47,17 @@ func ExampleGameLift_CreateAlias() {
 }
 
 func ExampleGameLift_CreateBuild() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.CreateBuildInput{
-		Name: aws.String("NonZeroAndMaxString"),
+		Name:            aws.String("NonZeroAndMaxString"),
+		OperatingSystem: aws.String("OperatingSystem"),
 		StorageLocation: &gamelift.S3Location{
 			Bucket:  aws.String("NonEmptyString"),
 			Key:     aws.String("NonEmptyString"),
@@ -66,7 +79,13 @@ func ExampleGameLift_CreateBuild() {
 }
 
 func ExampleGameLift_CreateFleet() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.CreateFleetInput{
 		BuildId:         aws.String("BuildId"),             // Required
@@ -87,6 +106,10 @@ func ExampleGameLift_CreateFleet() {
 			// More values...
 		},
 		NewGameSessionProtectionPolicy: aws.String("ProtectionPolicy"),
+		ResourceCreationLimitPolicy: &gamelift.ResourceCreationLimitPolicy{
+			NewGameSessionsPerCreator: aws.Int64(1),
+			PolicyPeriodInMinutes:     aws.Int64(1),
+		},
 		RuntimeConfiguration: &gamelift.RuntimeConfiguration{
 			ServerProcesses: []*gamelift.ServerProcess{
 				{ // Required
@@ -114,11 +137,18 @@ func ExampleGameLift_CreateFleet() {
 }
 
 func ExampleGameLift_CreateGameSession() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.CreateGameSessionInput{
 		MaximumPlayerSessionCount: aws.Int64(1), // Required
 		AliasId:                   aws.String("AliasId"),
+		CreatorId:                 aws.String("NonZeroAndMaxString"),
 		FleetId:                   aws.String("FleetId"),
 		GameProperties: []*gamelift.GameProperty{
 			{ // Required
@@ -127,7 +157,8 @@ func ExampleGameLift_CreateGameSession() {
 			},
 			// More values...
 		},
-		Name: aws.String("NonZeroAndMaxString"),
+		GameSessionId: aws.String("IdStringModel"),
+		Name:          aws.String("NonZeroAndMaxString"),
 	}
 	resp, err := svc.CreateGameSession(params)
 
@@ -143,10 +174,16 @@ func ExampleGameLift_CreateGameSession() {
 }
 
 func ExampleGameLift_CreatePlayerSession() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.CreatePlayerSessionInput{
-		GameSessionId: aws.String("GameSessionId"),       // Required
+		GameSessionId: aws.String("ArnStringModel"),      // Required
 		PlayerId:      aws.String("NonZeroAndMaxString"), // Required
 	}
 	resp, err := svc.CreatePlayerSession(params)
@@ -163,10 +200,16 @@ func ExampleGameLift_CreatePlayerSession() {
 }
 
 func ExampleGameLift_CreatePlayerSessions() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.CreatePlayerSessionsInput{
-		GameSessionId: aws.String("GameSessionId"), // Required
+		GameSessionId: aws.String("ArnStringModel"), // Required
 		PlayerIds: []*string{ // Required
 			aws.String("NonZeroAndMaxString"), // Required
 			// More values...
@@ -186,7 +229,13 @@ func ExampleGameLift_CreatePlayerSessions() {
 }
 
 func ExampleGameLift_DeleteAlias() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.DeleteAliasInput{
 		AliasId: aws.String("AliasId"), // Required
@@ -205,7 +254,13 @@ func ExampleGameLift_DeleteAlias() {
 }
 
 func ExampleGameLift_DeleteBuild() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.DeleteBuildInput{
 		BuildId: aws.String("BuildId"), // Required
@@ -224,7 +279,13 @@ func ExampleGameLift_DeleteBuild() {
 }
 
 func ExampleGameLift_DeleteFleet() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.DeleteFleetInput{
 		FleetId: aws.String("FleetId"), // Required
@@ -243,7 +304,13 @@ func ExampleGameLift_DeleteFleet() {
 }
 
 func ExampleGameLift_DeleteScalingPolicy() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.DeleteScalingPolicyInput{
 		FleetId: aws.String("FleetId"),             // Required
@@ -263,7 +330,13 @@ func ExampleGameLift_DeleteScalingPolicy() {
 }
 
 func ExampleGameLift_DescribeAlias() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.DescribeAliasInput{
 		AliasId: aws.String("AliasId"), // Required
@@ -282,7 +355,13 @@ func ExampleGameLift_DescribeAlias() {
 }
 
 func ExampleGameLift_DescribeBuild() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.DescribeBuildInput{
 		BuildId: aws.String("BuildId"), // Required
@@ -301,7 +380,13 @@ func ExampleGameLift_DescribeBuild() {
 }
 
 func ExampleGameLift_DescribeEC2InstanceLimits() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.DescribeEC2InstanceLimitsInput{
 		EC2InstanceType: aws.String("EC2InstanceType"),
@@ -320,7 +405,13 @@ func ExampleGameLift_DescribeEC2InstanceLimits() {
 }
 
 func ExampleGameLift_DescribeFleetAttributes() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.DescribeFleetAttributesInput{
 		FleetIds: []*string{
@@ -344,7 +435,13 @@ func ExampleGameLift_DescribeFleetAttributes() {
 }
 
 func ExampleGameLift_DescribeFleetCapacity() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.DescribeFleetCapacityInput{
 		FleetIds: []*string{
@@ -368,7 +465,13 @@ func ExampleGameLift_DescribeFleetCapacity() {
 }
 
 func ExampleGameLift_DescribeFleetEvents() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.DescribeFleetEventsInput{
 		FleetId:   aws.String("FleetId"), // Required
@@ -391,7 +494,13 @@ func ExampleGameLift_DescribeFleetEvents() {
 }
 
 func ExampleGameLift_DescribeFleetPortSettings() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.DescribeFleetPortSettingsInput{
 		FleetId: aws.String("FleetId"), // Required
@@ -410,7 +519,13 @@ func ExampleGameLift_DescribeFleetPortSettings() {
 }
 
 func ExampleGameLift_DescribeFleetUtilization() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.DescribeFleetUtilizationInput{
 		FleetIds: []*string{
@@ -434,12 +549,18 @@ func ExampleGameLift_DescribeFleetUtilization() {
 }
 
 func ExampleGameLift_DescribeGameSessionDetails() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.DescribeGameSessionDetailsInput{
 		AliasId:       aws.String("AliasId"),
 		FleetId:       aws.String("FleetId"),
-		GameSessionId: aws.String("GameSessionId"),
+		GameSessionId: aws.String("ArnStringModel"),
 		Limit:         aws.Int64(1),
 		NextToken:     aws.String("NonZeroAndMaxString"),
 		StatusFilter:  aws.String("NonZeroAndMaxString"),
@@ -458,12 +579,18 @@ func ExampleGameLift_DescribeGameSessionDetails() {
 }
 
 func ExampleGameLift_DescribeGameSessions() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.DescribeGameSessionsInput{
 		AliasId:       aws.String("AliasId"),
 		FleetId:       aws.String("FleetId"),
-		GameSessionId: aws.String("GameSessionId"),
+		GameSessionId: aws.String("ArnStringModel"),
 		Limit:         aws.Int64(1),
 		NextToken:     aws.String("NonZeroAndMaxString"),
 		StatusFilter:  aws.String("NonZeroAndMaxString"),
@@ -481,11 +608,45 @@ func ExampleGameLift_DescribeGameSessions() {
 	fmt.Println(resp)
 }
 
+func ExampleGameLift_DescribeInstances() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
+
+	params := &gamelift.DescribeInstancesInput{
+		FleetId:    aws.String("FleetId"), // Required
+		InstanceId: aws.String("InstanceId"),
+		Limit:      aws.Int64(1),
+		NextToken:  aws.String("NonZeroAndMaxString"),
+	}
+	resp, err := svc.DescribeInstances(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
 func ExampleGameLift_DescribePlayerSessions() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.DescribePlayerSessionsInput{
-		GameSessionId:             aws.String("GameSessionId"),
+		GameSessionId:             aws.String("ArnStringModel"),
 		Limit:                     aws.Int64(1),
 		NextToken:                 aws.String("NonZeroAndMaxString"),
 		PlayerId:                  aws.String("NonZeroAndMaxString"),
@@ -506,7 +667,13 @@ func ExampleGameLift_DescribePlayerSessions() {
 }
 
 func ExampleGameLift_DescribeRuntimeConfiguration() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.DescribeRuntimeConfigurationInput{
 		FleetId: aws.String("FleetId"), // Required
@@ -525,7 +692,13 @@ func ExampleGameLift_DescribeRuntimeConfiguration() {
 }
 
 func ExampleGameLift_DescribeScalingPolicies() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.DescribeScalingPoliciesInput{
 		FleetId:      aws.String("FleetId"), // Required
@@ -547,10 +720,16 @@ func ExampleGameLift_DescribeScalingPolicies() {
 }
 
 func ExampleGameLift_GetGameSessionLogUrl() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.GetGameSessionLogUrlInput{
-		GameSessionId: aws.String("GameSessionId"), // Required
+		GameSessionId: aws.String("ArnStringModel"), // Required
 	}
 	resp, err := svc.GetGameSessionLogUrl(params)
 
@@ -565,8 +744,40 @@ func ExampleGameLift_GetGameSessionLogUrl() {
 	fmt.Println(resp)
 }
 
+func ExampleGameLift_GetInstanceAccess() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
+
+	params := &gamelift.GetInstanceAccessInput{
+		FleetId:    aws.String("FleetId"),    // Required
+		InstanceId: aws.String("InstanceId"), // Required
+	}
+	resp, err := svc.GetInstanceAccess(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
 func ExampleGameLift_ListAliases() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.ListAliasesInput{
 		Limit:               aws.Int64(1),
@@ -588,7 +799,13 @@ func ExampleGameLift_ListAliases() {
 }
 
 func ExampleGameLift_ListBuilds() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.ListBuildsInput{
 		Limit:     aws.Int64(1),
@@ -609,7 +826,13 @@ func ExampleGameLift_ListBuilds() {
 }
 
 func ExampleGameLift_ListFleets() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.ListFleetsInput{
 		BuildId:   aws.String("BuildId"),
@@ -630,7 +853,13 @@ func ExampleGameLift_ListFleets() {
 }
 
 func ExampleGameLift_PutScalingPolicy() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.PutScalingPolicyInput{
 		ComparisonOperator:    aws.String("ComparisonOperatorType"), // Required
@@ -656,7 +885,13 @@ func ExampleGameLift_PutScalingPolicy() {
 }
 
 func ExampleGameLift_RequestUploadCredentials() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.RequestUploadCredentialsInput{
 		BuildId: aws.String("BuildId"), // Required
@@ -675,7 +910,13 @@ func ExampleGameLift_RequestUploadCredentials() {
 }
 
 func ExampleGameLift_ResolveAlias() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.ResolveAliasInput{
 		AliasId: aws.String("AliasId"), // Required
@@ -693,13 +934,49 @@ func ExampleGameLift_ResolveAlias() {
 	fmt.Println(resp)
 }
 
+func ExampleGameLift_SearchGameSessions() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
+
+	params := &gamelift.SearchGameSessionsInput{
+		AliasId:          aws.String("AliasId"),
+		FilterExpression: aws.String("NonZeroAndMaxString"),
+		FleetId:          aws.String("FleetId"),
+		Limit:            aws.Int64(1),
+		NextToken:        aws.String("NonZeroAndMaxString"),
+		SortExpression:   aws.String("NonZeroAndMaxString"),
+	}
+	resp, err := svc.SearchGameSessions(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
 func ExampleGameLift_UpdateAlias() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.UpdateAliasInput{
 		AliasId:     aws.String("AliasId"), // Required
 		Description: aws.String("NonZeroAndMaxString"),
-		Name:        aws.String("NonZeroAndMaxString"),
+		Name:        aws.String("NonBlankAndLengthConstraintString"),
 		RoutingStrategy: &gamelift.RoutingStrategy{
 			FleetId: aws.String("FleetId"),
 			Message: aws.String("FreeText"),
@@ -720,7 +997,13 @@ func ExampleGameLift_UpdateAlias() {
 }
 
 func ExampleGameLift_UpdateBuild() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.UpdateBuildInput{
 		BuildId: aws.String("BuildId"), // Required
@@ -741,13 +1024,23 @@ func ExampleGameLift_UpdateBuild() {
 }
 
 func ExampleGameLift_UpdateFleetAttributes() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.UpdateFleetAttributesInput{
 		FleetId:     aws.String("FleetId"), // Required
 		Description: aws.String("NonZeroAndMaxString"),
 		Name:        aws.String("NonZeroAndMaxString"),
 		NewGameSessionProtectionPolicy: aws.String("ProtectionPolicy"),
+		ResourceCreationLimitPolicy: &gamelift.ResourceCreationLimitPolicy{
+			NewGameSessionsPerCreator: aws.Int64(1),
+			PolicyPeriodInMinutes:     aws.Int64(1),
+		},
 	}
 	resp, err := svc.UpdateFleetAttributes(params)
 
@@ -763,7 +1056,13 @@ func ExampleGameLift_UpdateFleetAttributes() {
 }
 
 func ExampleGameLift_UpdateFleetCapacity() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.UpdateFleetCapacityInput{
 		FleetId:          aws.String("FleetId"), // Required
@@ -785,7 +1084,13 @@ func ExampleGameLift_UpdateFleetCapacity() {
 }
 
 func ExampleGameLift_UpdateFleetPortSettings() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.UpdateFleetPortSettingsInput{
 		FleetId: aws.String("FleetId"), // Required
@@ -822,10 +1127,16 @@ func ExampleGameLift_UpdateFleetPortSettings() {
 }
 
 func ExampleGameLift_UpdateGameSession() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.UpdateGameSessionInput{
-		GameSessionId:             aws.String("GameSessionId"), // Required
+		GameSessionId:             aws.String("ArnStringModel"), // Required
 		MaximumPlayerSessionCount: aws.Int64(1),
 		Name: aws.String("NonZeroAndMaxString"),
 		PlayerSessionCreationPolicy: aws.String("PlayerSessionCreationPolicy"),
@@ -845,7 +1156,13 @@ func ExampleGameLift_UpdateGameSession() {
 }
 
 func ExampleGameLift_UpdateRuntimeConfiguration() {
-	svc := gamelift.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := gamelift.New(sess)
 
 	params := &gamelift.UpdateRuntimeConfigurationInput{
 		FleetId: aws.String("FleetId"), // Required

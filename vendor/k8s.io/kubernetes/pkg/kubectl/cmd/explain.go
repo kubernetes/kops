@@ -20,31 +20,31 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/renstrom/dedent"
 	"github.com/spf13/cobra"
 
-	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apimachinery/registered"
 	"k8s.io/kubernetes/pkg/kubectl"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 )
 
 var (
-	explainExamples = dedent.Dedent(`
+	explainLong = templates.LongDesc(`
+		Documentation of resources.
+
+		` + valid_resources)
+
+	explainExamples = templates.Examples(`
 		# Get the documentation of the resource and its fields
 		kubectl explain pods
 
 		# Get the documentation of a specific field of a resource
 		kubectl explain pods.spec.containers`)
-
-	explainLong = dedent.Dedent(`
-		Documentation of resources.
-
-		`) + valid_resources
 )
 
 // NewCmdExplain returns a cobra command for swagger docs
-func NewCmdExplain(f *cmdutil.Factory, out, cmdErr io.Writer) *cobra.Command {
+func NewCmdExplain(f cmdutil.Factory, out, cmdErr io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "explain RESOURCE",
 		Short:   "Documentation of resources",
@@ -61,7 +61,7 @@ func NewCmdExplain(f *cmdutil.Factory, out, cmdErr io.Writer) *cobra.Command {
 }
 
 // RunExplain executes the appropriate steps to print a model's documentation
-func RunExplain(f *cmdutil.Factory, out, cmdErr io.Writer, cmd *cobra.Command, args []string) error {
+func RunExplain(f cmdutil.Factory, out, cmdErr io.Writer, cmd *cobra.Command, args []string) error {
 	if len(args) == 0 {
 		fmt.Fprint(cmdErr, "You must specify the type of resource to explain. ", valid_resources)
 		return cmdutil.UsageError(cmd, "Required resource not specified.")
@@ -72,7 +72,7 @@ func RunExplain(f *cmdutil.Factory, out, cmdErr io.Writer, cmd *cobra.Command, a
 
 	recursive := cmdutil.GetFlagBool(cmd, "recursive")
 	apiVersionString := cmdutil.GetFlagString(cmd, "api-version")
-	apiVersion := unversioned.GroupVersion{}
+	apiVersion := schema.GroupVersion{}
 
 	mapper, _ := f.Object()
 	// TODO: After we figured out the new syntax to separate group and resource, allow
@@ -84,8 +84,8 @@ func RunExplain(f *cmdutil.Factory, out, cmdErr io.Writer, cmd *cobra.Command, a
 	}
 
 	// TODO: We should deduce the group for a resource by discovering the supported resources at server.
-	fullySpecifiedGVR, groupResource := unversioned.ParseResourceArg(inModel)
-	gvk := unversioned.GroupVersionKind{}
+	fullySpecifiedGVR, groupResource := schema.ParseResourceArg(inModel)
+	gvk := schema.GroupVersionKind{}
 	if fullySpecifiedGVR != nil {
 		gvk, _ = mapper.KindFor(*fullySpecifiedGVR)
 	}
@@ -104,7 +104,7 @@ func RunExplain(f *cmdutil.Factory, out, cmdErr io.Writer, cmd *cobra.Command, a
 		apiVersion = groupMeta.GroupVersion
 
 	} else {
-		apiVersion, err = unversioned.ParseGroupVersion(apiVersionString)
+		apiVersion, err = schema.ParseGroupVersion(apiVersionString)
 		if err != nil {
 			return nil
 		}

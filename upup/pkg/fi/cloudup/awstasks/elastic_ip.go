@@ -17,6 +17,8 @@ limitations under the License.
 package awstasks
 
 import (
+	//"fmt"
+	//
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -24,19 +26,31 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
 //go:generate fitask -type=ElasticIP
-type ElasticIP struct {
-	Name *string
 
+// Elastic IP
+// Representation the EIP AWS task
+type ElasticIP struct {
+	Name     *string
 	ID       *string
 	PublicIP *string
 
-	// Because ElasticIPs don't supporting tagging (sadly), we instead tag on
-	// a different resource
-	TagUsingKey   *string
-	TagOnResource fi.Task
+	// ElasticIPs don't support tags.  We instead find it via a related resource.
+
+	// TagOnSubnet tags a subnet with the ElasticIP.  Deprecated: doesn't round-trip with terraform.
+	TagOnSubnet *Subnet
+
+	// AssociatedNatGatewayRouteTable follows the RouteTable -> NatGateway -> ElasticIP
+	AssociatedNatGatewayRouteTable *RouteTable
+}
+
+var _ fi.CompareWithID = &ElasticIP{}
+
+func (e *ElasticIP) CompareWithID() *string {
+	return e.ID
 }
 
 var _ fi.HasAddress = &ElasticIP{}
@@ -52,41 +66,47 @@ func (e *ElasticIP) FindAddress(context *fi.Context) (*string, error) {
 	return actual.PublicIP, nil
 }
 
+// Find is a public wrapper for find()
 func (e *ElasticIP) Find(context *fi.Context) (*ElasticIP, error) {
 	return e.find(context.Cloud.(awsup.AWSCloud))
 }
 
-func (e *ElasticIP) findTagOnResourceID(cloud awsup.AWSCloud) (*string, error) {
-	if e.TagOnResource == nil {
-		return nil, nil
-	}
-
-	var tagOnResource TaggableResource
-	var ok bool
-	if tagOnResource, ok = e.TagOnResource.(TaggableResource); !ok {
-		return nil, fmt.Errorf("TagOnResource must implement TaggableResource (type is %T)", e.TagOnResource)
-	}
-
-	id, err := tagOnResource.FindResourceID(cloud)
-	if err != nil {
-		return nil, fmt.Errorf("error trying to find id of TagOnResource: %v", err)
-	}
-	return id, err
-}
-
+// find will attempt to look up the elastic IP from AWS
 func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
 	publicIP := e.PublicIP
 	allocationID := e.ID
 
-	tagOnResourceID, err := e.findTagOnResourceID(cloud)
-	if err != nil {
-		return nil, err
+	// Find via RouteTable -> NatGateway -> ElasticIP
+	if allocationID == nil && publicIP == nil && e.AssociatedNatGatewayRouteTable != nil {
+		ngw, err := findNatGatewayFromRouteTable(cloud, e.AssociatedNatGatewayRouteTable)
+		if err != nil {
+			return nil, fmt.Errorf("error finding AssociatedNatGatewayRouteTable: %v", err)
+		}
+
+		if ngw == nil {
+			glog.V(2).Infof("AssociatedNatGatewayRouteTable not found")
+		} else {
+			if len(ngw.NatGatewayAddresses) == 0 {
+				return nil, fmt.Errorf("NatGateway %q has no addresses", *ngw.NatGatewayId)
+			}
+			if len(ngw.NatGatewayAddresses) > 1 {
+				return nil, fmt.Errorf("NatGateway %q has multiple addresses", *ngw.NatGatewayId)
+			}
+			allocationID = ngw.NatGatewayAddresses[0].AllocationId
+			if allocationID == nil {
+				return nil, fmt.Errorf("NatGateway %q has nil addresses", *ngw.NatGatewayId)
+			} else {
+				glog.V(2).Infof("Found ElasticIP AllocationID %q via NatGateway", *allocationID)
+			}
+		}
 	}
-	// Find via tag on foreign resource
-	if allocationID == nil && publicIP == nil && e.TagUsingKey != nil && tagOnResourceID != nil {
+
+	// Find via tag on subnet
+	// TODO: Deprecated, because doesn't round-trip with terraform
+	if allocationID == nil && publicIP == nil && e.TagOnSubnet != nil && e.TagOnSubnet.ID != nil {
 		var filters []*ec2.Filter
-		filters = append(filters, awsup.NewEC2Filter("key", *e.TagUsingKey))
-		filters = append(filters, awsup.NewEC2Filter("resource-id", *tagOnResourceID))
+		filters = append(filters, awsup.NewEC2Filter("key", "AssociatedElasticIp"))
+		filters = append(filters, awsup.NewEC2Filter("resource-id", *e.TagOnSubnet.ID))
 
 		request := &ec2.DescribeTagsInput{
 			Filters: filters,
@@ -134,39 +154,58 @@ func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
 			ID:       a.AllocationId,
 			PublicIP: a.PublicIp,
 		}
+		actual.TagOnSubnet = e.TagOnSubnet
+		actual.AssociatedNatGatewayRouteTable = e.AssociatedNatGatewayRouteTable
 
-		// These two are weird properties; we copy them so they don't come up as changes
-		actual.TagUsingKey = e.TagUsingKey
-		actual.TagOnResource = e.TagOnResource
+		// ElasticIP don't have a Name (no tags), so we set the name to avoid spurious changes
+		actual.Name = e.Name
 
 		e.ID = actual.ID
 
 		return actual, nil
 	}
-
 	return nil, nil
 }
 
+// The Run() function is called to execute this task.
+// This is the main entry point of the task, and will actually
+// connect our internal resource representation to an actual
+// resource in AWS
 func (e *ElasticIP) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
+// CheckChanges validates the resource. EIPs are simple, so virtually no
+// validation
 func (s *ElasticIP) CheckChanges(a, e, changes *ElasticIP) error {
+	// This is a new EIP
+	if a == nil {
+		// No logic for EIPs - they are just created
+	}
+
+	// This is an existing EIP
+	// We should never be changing this
+	if a != nil {
+		if changes.PublicIP != nil {
+			return fi.CannotChangeField("PublicIP")
+		}
+		if changes.TagOnSubnet != nil {
+			return fi.CannotChangeField("TagOnSubnet")
+		}
+		if changes.ID != nil {
+			return fi.CannotChangeField("ID")
+		}
+	}
 	return nil
 }
 
+// RenderAWS is where we actually apply changes to AWS
 func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) error {
-	var publicIP *string
+	var publicIp *string
+	var eipId *string
 
-	tagOnResourceID, err := e.findTagOnResourceID(t.Cloud)
-	if err != nil {
-		return err
-	}
-
+	// If this is a new ElasticIP
 	if a == nil {
-		if tagOnResourceID == nil || e.TagUsingKey == nil {
-			return fmt.Errorf("cannot create ElasticIP without TagOnResource being set (would leak)")
-		}
 		glog.V(2).Infof("Creating ElasticIP for VPC")
 
 		request := &ec2.AllocateAddressInput{}
@@ -179,19 +218,46 @@ func (_ *ElasticIP) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *ElasticIP) e
 
 		e.ID = response.AllocationId
 		e.PublicIP = response.PublicIp
-		publicIP = response.PublicIp
+		publicIp = e.PublicIP
+		eipId = response.AllocationId
 	} else {
-		publicIP = a.PublicIP
+		publicIp = a.PublicIP
+		eipId = a.ID
 	}
 
-	if publicIP != nil && e.TagUsingKey != nil && tagOnResourceID != nil {
-		tags := map[string]string{
-			*e.TagUsingKey: *publicIP,
+	// Tag the associated subnet
+	if e.TagOnSubnet != nil {
+		if e.TagOnSubnet.ID == nil {
+			return fmt.Errorf("Subnet ID not set")
 		}
-		err := t.AddAWSTags(*tagOnResourceID, tags)
+		tags := make(map[string]string)
+		tags["AssociatedElasticIp"] = *publicIp
+		tags["AssociatedElasticIpAllocationId"] = *eipId // Leaving this in for reference, even though we don't use it
+		err := t.AddAWSTags(*e.TagOnSubnet.ID, tags)
 		if err != nil {
-			return fmt.Errorf("error adding tags to resource for ElasticIP: %v", err)
+			return fmt.Errorf("Unable to tag subnet %v", err)
 		}
+	} else {
+		// TODO: Figure out what we can do.  We're sort of stuck between wanting to have one code-path with
+		// terraform, and having a bigger "window of loss" here before we create the NATGateway
+		glog.V(2).Infof("ElasticIP %q not tagged on subnet; risk of leaking", fi.StringValue(publicIp))
 	}
+
 	return nil
+}
+
+type terraformElasticIP struct {
+	VPC *bool `json:"vpc"`
+}
+
+func (_ *ElasticIP) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *ElasticIP) error {
+	tf := &terraformElasticIP{
+		VPC: aws.Bool(true),
+	}
+
+	return t.RenderResource("aws_eip", *e.Name, tf)
+}
+
+func (e *ElasticIP) TerraformLink() *terraform.Literal {
+	return terraform.LiteralProperty("aws_eip", *e.Name, "id")
 }

@@ -45,6 +45,19 @@ kops update cluster ${CLUSTER_NAME}
 Review the changes to make sure they are OK -  the Kubernetes settings might not be ones you want on a shared VPC (in which case,
 open an issue!)
 
+There is currently a [bug](https://github.com/kubernetes/kops/issues/476) where kops will tell you that it will modify the VPC and InternetGateway names:
+
+```
+Will modify resources:
+  VPC    vpc/k8s.somefoo.com
+    Name baz -> k8s.somefoo.com
+
+  InternetGateway    internetGateway/k8s.somefoo.com
+    Name baz -> k8s.somefoo.com
+```
+
+This will not actually happen and you can safely ignore the message.
+
 Note also the Kubernetes VPCs (currently) require `EnableDNSHostnames=true`.  kops will detect the required change,
  but refuse to make it automatically because it is a shared VPC.  Please review the implications and make the change
  to the VPC manually.
@@ -57,13 +70,13 @@ kops update cluster ${CLUSTER_NAME} --yes
 
 
 Finally, if your shared VPC has a KubernetesCluster tag (because it was created with kops), you should
-probably remove that tag to indicate to indicate that the resources are not owned by that cluster, and so
+probably remove that tag to indicate that the resources are not owned by that cluster, and so
 deleting the cluster won't try to delete the VPC.  (Deleting the VPC won't succeed anyway, because it's in use,
 but it's better to avoid the later confusion!)
 
 ## Running in a shared subnet
 
-You can also use a shared subnet. Doing so is not recommended unless you are using external networking.
+You can also use a shared subnet. Doing so is not recommended unless you are using external networking ([kope-routing](https://github.com/kopeio/kope-routing)).
 
 Edit your cluster to add the ID of the subnet:
 

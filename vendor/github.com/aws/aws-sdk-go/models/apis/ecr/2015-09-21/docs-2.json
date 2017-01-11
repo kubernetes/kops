@@ -2,22 +2,23 @@
   "version": "2.0",
   "service": "<p>Amazon EC2 Container Registry (Amazon ECR) is a managed AWS Docker registry service. Customers can use the familiar Docker CLI to push, pull, and manage images. Amazon ECR provides a secure, scalable, and reliable registry. Amazon ECR supports private Docker repositories with resource-based permissions using AWS IAM so that specific users or Amazon EC2 instances can access repositories and images. Developers can use the Docker CLI to author and manage images.</p>",
   "operations": {
-    "BatchCheckLayerAvailability": "<p>Check the availability of multiple image layers in a specified registry and repository.</p> <note> <p>This operation is used by the Amazon ECR proxy, and it is not intended for general use by customers. Use the <code>docker</code> CLI to pull, tag, and push images.</p> </note>",
-    "BatchDeleteImage": "<p>Deletes a list of specified images within a specified repository. Images are specified with either <code>imageTag</code> or <code>imageDigest</code>.</p>",
+    "BatchCheckLayerAvailability": "<p>Check the availability of multiple image layers in a specified registry and repository.</p> <note> <p>This operation is used by the Amazon ECR proxy, and it is not intended for general use by customers for pulling and pushing images. In most cases, you should use the <code>docker</code> CLI to pull, tag, and push images.</p> </note>",
+    "BatchDeleteImage": "<p>Deletes a list of specified images within a specified repository. Images are specified with either <code>imageTag</code> or <code>imageDigest</code>.</p> <p>You can remove a tag from an image by specifying the image's tag in your request. When you remove the last tag from an image, the image is deleted from your repository.</p> <p>You can completely delete an image (and all of its tags) by specifying the image's digest in your request.</p>",
     "BatchGetImage": "<p>Gets detailed information for specified images within a specified repository. Images are specified with either <code>imageTag</code> or <code>imageDigest</code>.</p>",
-    "CompleteLayerUpload": "<p>Inform Amazon ECR that the image layer upload for a specified registry, repository name, and upload ID, has completed. You can optionally provide a <code>sha256</code> digest of the image layer for data validation purposes.</p> <note> <p>This operation is used by the Amazon ECR proxy, and it is not intended for general use by customers. Use the <code>docker</code> CLI to pull, tag, and push images.</p> </note>",
+    "CompleteLayerUpload": "<p>Inform Amazon ECR that the image layer upload for a specified registry, repository name, and upload ID, has completed. You can optionally provide a <code>sha256</code> digest of the image layer for data validation purposes.</p> <note> <p>This operation is used by the Amazon ECR proxy, and it is not intended for general use by customers for pulling and pushing images. In most cases, you should use the <code>docker</code> CLI to pull, tag, and push images.</p> </note>",
     "CreateRepository": "<p>Creates an image repository.</p>",
     "DeleteRepository": "<p>Deletes an existing image repository. If a repository contains images, you must use the <code>force</code> option to delete it.</p>",
     "DeleteRepositoryPolicy": "<p>Deletes the repository policy from a specified repository.</p>",
+    "DescribeImages": "<p>Returns metadata about the images in a repository, including image size, image tags, and creation date.</p> <note> <p>Beginning with Docker version 1.9, the Docker client compresses image layers before pushing them to a V2 Docker registry. The output of the <code>docker images</code> command shows the uncompressed image size, so it may return a larger image size than the image sizes returned by <a>DescribeImages</a>.</p> </note>",
     "DescribeRepositories": "<p>Describes image repositories in a registry.</p>",
     "GetAuthorizationToken": "<p>Retrieves a token that is valid for a specified registry for 12 hours. This command allows you to use the <code>docker</code> CLI to push and pull images with Amazon ECR. If you do not specify a registry, the default registry is assumed.</p> <p>The <code>authorizationToken</code> returned for each registry specified is a base64 encoded string that can be decoded and used in a <code>docker login</code> command to authenticate to a registry. The AWS CLI offers an <code>aws ecr get-login</code> command that simplifies the login process.</p>",
-    "GetDownloadUrlForLayer": "<p>Retrieves the pre-signed Amazon S3 download URL corresponding to an image layer. You can only get URLs for image layers that are referenced in an image.</p> <note> <p>This operation is used by the Amazon ECR proxy, and it is not intended for general use by customers. Use the <code>docker</code> CLI to pull, tag, and push images.</p> </note>",
+    "GetDownloadUrlForLayer": "<p>Retrieves the pre-signed Amazon S3 download URL corresponding to an image layer. You can only get URLs for image layers that are referenced in an image.</p> <note> <p>This operation is used by the Amazon ECR proxy, and it is not intended for general use by customers for pulling and pushing images. In most cases, you should use the <code>docker</code> CLI to pull, tag, and push images.</p> </note>",
     "GetRepositoryPolicy": "<p>Retrieves the repository policy for a specified repository.</p>",
-    "InitiateLayerUpload": "<p>Notify Amazon ECR that you intend to upload an image layer.</p> <note> <p>This operation is used by the Amazon ECR proxy, and it is not intended for general use by customers. Use the <code>docker</code> CLI to pull, tag, and push images.</p> </note>",
-    "ListImages": "<p>Lists all the image IDs for a given repository.</p>",
-    "PutImage": "<p>Creates or updates the image manifest associated with an image.</p> <note> <p>This operation is used by the Amazon ECR proxy, and it is not intended for general use by customers. Use the <code>docker</code> CLI to pull, tag, and push images.</p> </note>",
+    "InitiateLayerUpload": "<p>Notify Amazon ECR that you intend to upload an image layer.</p> <note> <p>This operation is used by the Amazon ECR proxy, and it is not intended for general use by customers for pulling and pushing images. In most cases, you should use the <code>docker</code> CLI to pull, tag, and push images.</p> </note>",
+    "ListImages": "<p>Lists all the image IDs for a given repository.</p> <p>You can filter images based on whether or not they are tagged by setting the <code>tagStatus</code> parameter to <code>TAGGED</code> or <code>UNTAGGED</code>. For example, you can filter your results to return only <code>UNTAGGED</code> images and then pipe that result to a <a>BatchDeleteImage</a> operation to delete them. Or, you can filter your results to return only <code>TAGGED</code> images to list all of the tags in your repository.</p>",
+    "PutImage": "<p>Creates or updates the image manifest and tags associated with an image.</p> <note> <p>This operation is used by the Amazon ECR proxy, and it is not intended for general use by customers for pulling and pushing images. In most cases, you should use the <code>docker</code> CLI to pull, tag, and push images.</p> </note>",
     "SetRepositoryPolicy": "<p>Applies a repository policy on a specified repository to control access permissions.</p>",
-    "UploadLayerPart": "<p>Uploads an image layer part to Amazon ECR.</p> <note> <p>This operation is used by the Amazon ECR proxy, and it is not intended for general use by customers. Use the <code>docker</code> CLI to pull, tag, and push images.</p> </note>"
+    "UploadLayerPart": "<p>Uploads an image layer part to Amazon ECR.</p> <note> <p>This operation is used by the Amazon ECR proxy, and it is not intended for general use by customers for pulling and pushing images. In most cases, you should use the <code>docker</code> CLI to pull, tag, and push images.</p> </note>"
   },
   "shapes": {
     "Arn": {
@@ -107,6 +108,12 @@
       "refs": {
       }
     },
+    "CreationTimestamp": {
+      "base": null,
+      "refs": {
+        "Repository$createdAt": "<p>The date and time, in JavaScript date/time format, when the repository was created.</p>"
+      }
+    },
     "DeleteRepositoryPolicyRequest": {
       "base": null,
       "refs": {
@@ -123,6 +130,22 @@
       }
     },
     "DeleteRepositoryResponse": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "DescribeImagesFilter": {
+      "base": "<p>An object representing a filter on a <a>DescribeImages</a> operation.</p>",
+      "refs": {
+        "DescribeImagesRequest$filter": "<p>The filter key and value with which to filter your <code>DescribeImages</code> results.</p>"
+      }
+    },
+    "DescribeImagesRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "DescribeImagesResponse": {
       "base": null,
       "refs": {
       }
@@ -147,6 +170,7 @@
       "refs": {
         "EmptyUploadException$message": "<p>The error message associated with the exception.</p>",
         "ImageAlreadyExistsException$message": "<p>The error message associated with the exception.</p>",
+        "ImageNotFoundException$message": null,
         "InvalidLayerException$message": "<p>The error message associated with the exception.</p>",
         "InvalidLayerPartException$message": "<p>The error message associated with the exception.</p>",
         "InvalidParameterException$message": "<p>The error message associated with the exception.</p>",
@@ -213,7 +237,7 @@
       }
     },
     "Image": {
-      "base": "<p>Object representing an image.</p>",
+      "base": "<p>An object representing an Amazon ECR image.</p>",
       "refs": {
         "ImageList$member": null,
         "PutImageResponse$image": "<p>Details of the image uploaded.</p>"
@@ -224,14 +248,27 @@
       "refs": {
       }
     },
+    "ImageDetail": {
+      "base": "<p>An object that describes an image returned by a <a>DescribeImages</a> operation.</p>",
+      "refs": {
+        "ImageDetailList$member": null
+      }
+    },
+    "ImageDetailList": {
+      "base": null,
+      "refs": {
+        "DescribeImagesResponse$imageDetails": "<p>A list of <a>ImageDetail</a> objects that contain data about the image.</p>"
+      }
+    },
     "ImageDigest": {
       "base": null,
       "refs": {
+        "ImageDetail$imageDigest": "<p>The <code>sha256</code> digest of the image manifest.</p>",
         "ImageIdentifier$imageDigest": "<p>The <code>sha256</code> digest of the image manifest.</p>"
       }
     },
     "ImageFailure": {
-      "base": null,
+      "base": "<p>An object representing an Amazon ECR image failure.</p>",
       "refs": {
         "ImageFailureList$member": null
       }
@@ -256,7 +293,7 @@
       }
     },
     "ImageIdentifier": {
-      "base": null,
+      "base": "<p>An object with identifying information for an Amazon ECR image.</p>",
       "refs": {
         "Image$imageId": "<p>An object containing the image tag and image digest associated with an image.</p>",
         "ImageFailure$imageId": "<p>The image ID associated with the failure.</p>",
@@ -269,6 +306,7 @@
         "BatchDeleteImageRequest$imageIds": "<p>A list of image ID references that correspond to images to delete. The format of the <code>imageIds</code> reference is <code>imageTag=tag</code> or <code>imageDigest=digest</code>.</p>",
         "BatchDeleteImageResponse$imageIds": "<p>The image IDs of the deleted images.</p>",
         "BatchGetImageRequest$imageIds": "<p>A list of image ID references that correspond to images to describe. The format of the <code>imageIds</code> reference is <code>imageTag=tag</code> or <code>imageDigest=digest</code>.</p>",
+        "DescribeImagesRequest$imageIds": "<p>The list of image IDs for the requested repository.</p>",
         "ListImagesResponse$imageIds": "<p>The list of image IDs for the requested repository.</p>"
       }
     },
@@ -285,10 +323,29 @@
         "PutImageRequest$imageManifest": "<p>The image manifest corresponding to the image to be uploaded.</p>"
       }
     },
+    "ImageNotFoundException": {
+      "base": "<p>The image requested does not exist in the specified repository.</p>",
+      "refs": {
+      }
+    },
+    "ImageSizeInBytes": {
+      "base": null,
+      "refs": {
+        "ImageDetail$imageSizeInBytes": "<p>The size, in bytes, of the image in the repository.</p> <note> <p>Beginning with Docker version 1.9, the Docker client compresses image layers before pushing them to a V2 Docker registry. The output of the <code>docker images</code> command shows the uncompressed image size, so it may return a larger image size than the image sizes returned by <a>DescribeImages</a>.</p> </note>"
+      }
+    },
     "ImageTag": {
       "base": null,
       "refs": {
-        "ImageIdentifier$imageTag": "<p>The tag used for the image.</p>"
+        "ImageIdentifier$imageTag": "<p>The tag used for the image.</p>",
+        "ImageTagList$member": null,
+        "PutImageRequest$imageTag": "<p>The tag to associate with the image. This parameter is required for images that use the Docker Image Manifest V2 Schema 2 or OCI formats.</p>"
+      }
+    },
+    "ImageTagList": {
+      "base": null,
+      "refs": {
+        "ImageDetail$imageTags": "<p>The list of tags associated with this image.</p>"
       }
     },
     "InitiateLayerUploadRequest": {
@@ -317,7 +374,7 @@
       }
     },
     "Layer": {
-      "base": null,
+      "base": "<p>An object representing an Amazon ECR image layer.</p>",
       "refs": {
         "LayerList$member": null
       }
@@ -330,7 +387,7 @@
     "LayerAvailability": {
       "base": null,
       "refs": {
-        "Layer$layerAvailability": "<p>The availability status of the image layer. Valid values are <code>AVAILABLE</code> and <code>UNAVAILABLE</code>.</p>"
+        "Layer$layerAvailability": "<p>The availability status of the image layer.</p>"
       }
     },
     "LayerDigest": {
@@ -350,7 +407,7 @@
       }
     },
     "LayerFailure": {
-      "base": null,
+      "base": "<p>An object representing an Amazon ECR image layer failure.</p>",
       "refs": {
         "LayerFailureList$member": null
       }
@@ -411,6 +468,12 @@
       "refs": {
       }
     },
+    "ListImagesFilter": {
+      "base": "<p>An object representing a filter on a <a>ListImages</a> operation.</p>",
+      "refs": {
+        "ListImagesRequest$filter": "<p>The filter key and value with which to filter your <code>ListImages</code> results.</p>"
+      }
+    },
     "ListImagesRequest": {
       "base": null,
       "refs": {
@@ -424,16 +487,32 @@
     "MaxResults": {
       "base": null,
       "refs": {
+        "DescribeImagesRequest$maxResults": "<p>The maximum number of repository results returned by <code>DescribeImages</code> in paginated output. When this parameter is used, <code>DescribeImages</code> only returns <code>maxResults</code> results in a single page along with a <code>nextToken</code> response element. The remaining results of the initial request can be seen by sending another <code>DescribeImages</code> request with the returned <code>nextToken</code> value. This value can be between 1 and 100. If this parameter is not used, then <code>DescribeImages</code> returns up to 100 results and a <code>nextToken</code> value, if applicable.</p>",
         "DescribeRepositoriesRequest$maxResults": "<p>The maximum number of repository results returned by <code>DescribeRepositories</code> in paginated output. When this parameter is used, <code>DescribeRepositories</code> only returns <code>maxResults</code> results in a single page along with a <code>nextToken</code> response element. The remaining results of the initial request can be seen by sending another <code>DescribeRepositories</code> request with the returned <code>nextToken</code> value. This value can be between 1 and 100. If this parameter is not used, then <code>DescribeRepositories</code> returns up to 100 results and a <code>nextToken</code> value, if applicable.</p>",
         "ListImagesRequest$maxResults": "<p>The maximum number of image results returned by <code>ListImages</code> in paginated output. When this parameter is used, <code>ListImages</code> only returns <code>maxResults</code> results in a single page along with a <code>nextToken</code> response element. The remaining results of the initial request can be seen by sending another <code>ListImages</code> request with the returned <code>nextToken</code> value. This value can be between 1 and 100. If this parameter is not used, then <code>ListImages</code> returns up to 100 results and a <code>nextToken</code> value, if applicable.</p>"
+      }
+    },
+    "MediaType": {
+      "base": null,
+      "refs": {
+        "Layer$mediaType": "<p>The media type of the layer, such as <code>application/vnd.docker.image.rootfs.diff.tar.gzip</code> or <code>application/vnd.oci.image.layer.v1.tar+gzip</code>.</p>",
+        "MediaTypeList$member": null
+      }
+    },
+    "MediaTypeList": {
+      "base": null,
+      "refs": {
+        "BatchGetImageRequest$acceptedMediaTypes": "<p>The accepted media types for the request.</p> <p>Valid values: <code>application/vnd.docker.distribution.manifest.v1+json</code> | <code>application/vnd.docker.distribution.manifest.v2+json</code> | <code>application/vnd.oci.image.manifest.v1+json</code> </p>"
       }
     },
     "NextToken": {
       "base": null,
       "refs": {
-        "DescribeRepositoriesRequest$nextToken": "<p>The <code>nextToken</code> value returned from a previous paginated <code>DescribeRepositories</code> request where <code>maxResults</code> was used and the results exceeded the value of that parameter. Pagination continues from the end of the previous results that returned the <code>nextToken</code> value. This value is <code>null</code> when there are no more results to return.</p>",
+        "DescribeImagesRequest$nextToken": "<p>The <code>nextToken</code> value returned from a previous paginated <code>DescribeImages</code> request where <code>maxResults</code> was used and the results exceeded the value of that parameter. Pagination continues from the end of the previous results that returned the <code>nextToken</code> value. This value is <code>null</code> when there are no more results to return.</p>",
+        "DescribeImagesResponse$nextToken": "<p>The <code>nextToken</code> value to include in a future <code>DescribeImages</code> request. When the results of a <code>DescribeImages</code> request exceed <code>maxResults</code>, this value can be used to retrieve the next page of results. This value is <code>null</code> when there are no more results to return.</p>",
+        "DescribeRepositoriesRequest$nextToken": "<p>The <code>nextToken</code> value returned from a previous paginated <code>DescribeRepositories</code> request where <code>maxResults</code> was used and the results exceeded the value of that parameter. Pagination continues from the end of the previous results that returned the <code>nextToken</code> value. This value is <code>null</code> when there are no more results to return.</p> <note> <p>This token should be treated as an opaque identifier that is only used to retrieve the next items in a list and not for other programmatic purposes.</p> </note>",
         "DescribeRepositoriesResponse$nextToken": "<p>The <code>nextToken</code> value to include in a future <code>DescribeRepositories</code> request. When the results of a <code>DescribeRepositories</code> request exceed <code>maxResults</code>, this value can be used to retrieve the next page of results. This value is <code>null</code> when there are no more results to return.</p>",
-        "ListImagesRequest$nextToken": "<p>The <code>nextToken</code> value returned from a previous paginated <code>ListImages</code> request where <code>maxResults</code> was used and the results exceeded the value of that parameter. Pagination continues from the end of the previous results that returned the <code>nextToken</code> value. This value is <code>null</code> when there are no more results to return.</p>",
+        "ListImagesRequest$nextToken": "<p>The <code>nextToken</code> value returned from a previous paginated <code>ListImages</code> request where <code>maxResults</code> was used and the results exceeded the value of that parameter. Pagination continues from the end of the previous results that returned the <code>nextToken</code> value. This value is <code>null</code> when there are no more results to return.</p> <note> <p>This token should be treated as an opaque identifier that is only used to retrieve the next items in a list and not for other programmatic purposes.</p> </note>",
         "ListImagesResponse$nextToken": "<p>The <code>nextToken</code> value to include in a future <code>ListImages</code> request. When the results of a <code>ListImages</code> request exceed <code>maxResults</code>, this value can be used to retrieve the next page of results. This value is <code>null</code> when there are no more results to return.</p>"
       }
     },
@@ -451,6 +530,12 @@
       "base": null,
       "refs": {
         "AuthorizationData$proxyEndpoint": "<p>The registry URL to use for this authorization token in a <code>docker login</code> command. The Amazon ECR registry URL format is <code>https://aws_account_id.dkr.ecr.region.amazonaws.com</code>. For example, <code>https://012345678910.dkr.ecr.us-east-1.amazonaws.com</code>.. </p>"
+      }
+    },
+    "PushTimestamp": {
+      "base": null,
+      "refs": {
+        "ImageDetail$imagePushedAt": "<p>The date and time, expressed in standard JavaScript date format, at which the current image was pushed to the repository. </p>"
       }
     },
     "PutImageRequest": {
@@ -474,12 +559,14 @@
         "DeleteRepositoryPolicyRequest$registryId": "<p>The AWS account ID associated with the registry that contains the repository policy to delete. If you do not specify a registry, the default registry is assumed.</p>",
         "DeleteRepositoryPolicyResponse$registryId": "<p>The registry ID associated with the request.</p>",
         "DeleteRepositoryRequest$registryId": "<p>The AWS account ID associated with the registry that contains the repository to delete. If you do not specify a registry, the default registry is assumed.</p>",
+        "DescribeImagesRequest$registryId": "<p>The AWS account ID associated with the registry that contains the repository in which to describe images. If you do not specify a registry, the default registry is assumed.</p>",
         "DescribeRepositoriesRequest$registryId": "<p>The AWS account ID associated with the registry that contains the repositories to be described. If you do not specify a registry, the default registry is assumed.</p>",
         "GetAuthorizationTokenRegistryIdList$member": null,
         "GetDownloadUrlForLayerRequest$registryId": "<p>The AWS account ID associated with the registry that contains the image layer to download. If you do not specify a registry, the default registry is assumed.</p>",
         "GetRepositoryPolicyRequest$registryId": "<p>The AWS account ID associated with the registry that contains the repository. If you do not specify a registry, the default registry is assumed.</p>",
         "GetRepositoryPolicyResponse$registryId": "<p>The registry ID associated with the request.</p>",
         "Image$registryId": "<p>The AWS account ID associated with the registry containing the image.</p>",
+        "ImageDetail$registryId": "<p>The AWS account ID associated with the registry to which this image belongs.</p>",
         "InitiateLayerUploadRequest$registryId": "<p>The AWS account ID associated with the registry that you intend to upload layers to. If you do not specify a registry, the default registry is assumed.</p>",
         "InvalidLayerPartException$registryId": "<p>The registry ID associated with the exception.</p>",
         "ListImagesRequest$registryId": "<p>The AWS account ID associated with the registry that contains the repository to list images in. If you do not specify a registry, the default registry is assumed.</p>",
@@ -492,10 +579,10 @@
       }
     },
     "Repository": {
-      "base": "<p>Object representing a repository.</p>",
+      "base": "<p>An object representing a repository.</p>",
       "refs": {
-        "CreateRepositoryResponse$repository": null,
-        "DeleteRepositoryResponse$repository": null,
+        "CreateRepositoryResponse$repository": "<p>The repository that was created.</p>",
+        "DeleteRepositoryResponse$repository": "<p>The repository that was deleted.</p>",
         "RepositoryList$member": null
       }
     },
@@ -522,10 +609,12 @@
         "DeleteRepositoryPolicyRequest$repositoryName": "<p>The name of the repository that is associated with the repository policy to delete.</p>",
         "DeleteRepositoryPolicyResponse$repositoryName": "<p>The repository name associated with the request.</p>",
         "DeleteRepositoryRequest$repositoryName": "<p>The name of the repository to delete.</p>",
+        "DescribeImagesRequest$repositoryName": "<p>A list of repositories to describe. If this parameter is omitted, then all repositories in a registry are described.</p>",
         "GetDownloadUrlForLayerRequest$repositoryName": "<p>The name of the repository that is associated with the image layer to download.</p>",
         "GetRepositoryPolicyRequest$repositoryName": "<p>The name of the repository whose policy you want to retrieve.</p>",
         "GetRepositoryPolicyResponse$repositoryName": "<p>The repository name associated with the request.</p>",
         "Image$repositoryName": "<p>The name of the repository associated with the image.</p>",
+        "ImageDetail$repositoryName": "<p>The name of the repository to which this image belongs.</p>",
         "InitiateLayerUploadRequest$repositoryName": "<p>The name of the repository that you intend to upload layers to.</p>",
         "InvalidLayerPartException$repositoryName": "<p>The repository name associated with the exception.</p>",
         "ListImagesRequest$repositoryName": "<p>The repository whose image IDs are to be listed.</p>",
@@ -581,6 +670,13 @@
     "SetRepositoryPolicyResponse": {
       "base": null,
       "refs": {
+      }
+    },
+    "TagStatus": {
+      "base": null,
+      "refs": {
+        "DescribeImagesFilter$tagStatus": "<p>The tag status with which to filter your <a>DescribeImages</a> results. You can filter results based on whether they are <code>TAGGED</code> or <code>UNTAGGED</code>.</p>",
+        "ListImagesFilter$tagStatus": "<p>The tag status with which to filter your <a>ListImages</a> results. You can filter results based on whether they are <code>TAGGED</code> or <code>UNTAGGED</code>.</p>"
       }
     },
     "UploadId": {

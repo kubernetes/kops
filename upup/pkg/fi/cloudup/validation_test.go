@@ -32,15 +32,15 @@ const MockAWSRegion = "us-mock-1"
 func buildDefaultCluster(t *testing.T) *api.Cluster {
 	c := buildMinimalCluster()
 
-	err := c.PerformAssignments()
+	err := PerformAssignments(c)
 	if err != nil {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
 
 	if len(c.Spec.EtcdClusters) == 0 {
 		zones := sets.NewString()
-		for _, z := range c.Spec.Zones {
-			zones.Insert(z.Name)
+		for _, z := range c.Spec.Subnets {
+			zones.Insert(z.Zone)
 		}
 		etcdZones := zones.List()
 
@@ -50,7 +50,7 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 			for _, zone := range etcdZones {
 				m := &api.EtcdMemberSpec{}
 				m.Name = zone
-				m.Zone = fi.String(zone)
+				m.InstanceGroup = fi.String(zone)
 				etcd.Members = append(etcd.Members, m)
 			}
 			c.Spec.EtcdClusters = append(c.Spec.EtcdClusters, etcd)
@@ -118,19 +118,19 @@ func TestValidateFull_Default_Validates(t *testing.T) {
 
 func TestValidateFull_ClusterName_InvalidDNS_NoDot(t *testing.T) {
 	c := buildDefaultCluster(t)
-	c.Name = "test"
+	c.ObjectMeta.Name = "test"
 	expectErrorFromValidate(t, c, "DNS name")
 }
 
 func TestValidateFull_ClusterName_InvalidDNS_Invalid(t *testing.T) {
 	c := buildDefaultCluster(t)
-	c.Name = "test.-"
+	c.ObjectMeta.Name = "test.-"
 	expectErrorFromValidate(t, c, "DNS name")
 }
 
 func TestValidateFull_ClusterName_Required(t *testing.T) {
 	c := buildDefaultCluster(t)
-	c.Name = ""
+	c.ObjectMeta.Name = ""
 	expectErrorFromValidate(t, c, "Name")
 }
 
@@ -170,9 +170,9 @@ func TestValidate_ClusterName_Import(t *testing.T) {
 	c := buildDefaultCluster(t)
 
 	// When we import a cluster, it likely won't have a valid name until we convert it
-	c.Annotations = make(map[string]string)
-	c.Annotations[api.AnnotationNameManagement] = api.AnnotationValueManagementImported
-	c.Name = "kubernetes"
+	c.ObjectMeta.Annotations = make(map[string]string)
+	c.ObjectMeta.Annotations[api.AnnotationNameManagement] = api.AnnotationValueManagementImported
+	c.ObjectMeta.Name = "kubernetes"
 
 	expectNoErrorFromValidate(t, c)
 }

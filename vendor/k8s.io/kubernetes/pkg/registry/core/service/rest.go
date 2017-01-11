@@ -29,8 +29,8 @@ import (
 	"k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/rest"
 	apiservice "k8s.io/kubernetes/pkg/api/service"
-	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/api/validation"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/registry/core/endpoint"
 	"k8s.io/kubernetes/pkg/registry/core/service/ipallocator"
 	"k8s.io/kubernetes/pkg/registry/core/service/portallocator"
@@ -161,10 +161,10 @@ func (rs *REST) Create(ctx api.Context, obj runtime.Object) (runtime.Object, err
 	if shouldCheckOrAssignHealthCheckNodePort(service) {
 		var healthCheckNodePort int
 		var err error
-		if l, ok := service.Annotations[apiservice.AnnotationHealthCheckNodePort]; ok {
+		if l, ok := service.Annotations[apiservice.BetaAnnotationHealthCheckNodePort]; ok {
 			healthCheckNodePort, err = strconv.Atoi(l)
 			if err != nil || healthCheckNodePort <= 0 {
-				return nil, errors.NewInternalError(fmt.Errorf("Failed to parse annotation %v: %v", apiservice.AnnotationHealthCheckNodePort, err))
+				return nil, errors.NewInternalError(fmt.Errorf("Failed to parse annotation %v: %v", apiservice.BetaAnnotationHealthCheckNodePort, err))
 			}
 		}
 		if healthCheckNodePort > 0 {
@@ -183,7 +183,7 @@ func (rs *REST) Create(ctx api.Context, obj runtime.Object) (runtime.Object, err
 				return nil, errors.NewInternalError(fmt.Errorf("failed to allocate a nodePort: %v", err))
 			}
 			// Insert the newly allocated health check port as an annotation (plan of record for Alpha)
-			service.Annotations[apiservice.AnnotationHealthCheckNodePort] = fmt.Sprintf("%d", healthCheckNodePort)
+			service.Annotations[apiservice.BetaAnnotationHealthCheckNodePort] = fmt.Sprintf("%d", healthCheckNodePort)
 		}
 	}
 
@@ -206,7 +206,7 @@ func (rs *REST) Create(ctx api.Context, obj runtime.Object) (runtime.Object, err
 }
 
 func (rs *REST) Delete(ctx api.Context, id string) (runtime.Object, error) {
-	service, err := rs.registry.GetService(ctx, id)
+	service, err := rs.registry.GetService(ctx, id, &metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -245,11 +245,11 @@ func (rs *REST) Delete(ctx api.Context, id string) (runtime.Object, error) {
 			}
 		}
 	}
-	return &unversioned.Status{Status: unversioned.StatusSuccess}, nil
+	return &metav1.Status{Status: metav1.StatusSuccess}, nil
 }
 
-func (rs *REST) Get(ctx api.Context, id string) (runtime.Object, error) {
-	return rs.registry.GetService(ctx, id)
+func (rs *REST) Get(ctx api.Context, id string, options *metav1.GetOptions) (runtime.Object, error) {
+	return rs.registry.GetService(ctx, id, options)
 }
 
 func (rs *REST) List(ctx api.Context, options *api.ListOptions) (runtime.Object, error) {
@@ -264,7 +264,7 @@ func (rs *REST) Watch(ctx api.Context, options *api.ListOptions) (watch.Interfac
 
 // Export returns Service stripped of cluster-specific information.
 // It implements rest.Exporter.
-func (rs *REST) Export(ctx api.Context, name string, opts unversioned.ExportOptions) (runtime.Object, error) {
+func (rs *REST) Export(ctx api.Context, name string, opts metav1.ExportOptions) (runtime.Object, error) {
 	return rs.registry.ExportService(ctx, name, opts)
 }
 
@@ -313,7 +313,7 @@ func (rs *REST) healthCheckNodePortUpdate(oldService, service *api.Service) (boo
 				errmsg := fmt.Sprintf("Failed to allocate requested HealthCheck nodePort %v:%v",
 					requestedHealthCheckNodePort, err)
 				el := field.ErrorList{field.Invalid(field.NewPath("metadata", "annotations"),
-					apiservice.AnnotationHealthCheckNodePort, errmsg)}
+					apiservice.BetaAnnotationHealthCheckNodePort, errmsg)}
 				return false, errors.NewInvalid(api.Kind("Service"), service.Name, el)
 			}
 			glog.Infof("Reserved user requested nodePort: %d", requestedHealthCheckNodePort)
@@ -327,7 +327,7 @@ func (rs *REST) healthCheckNodePortUpdate(oldService, service *api.Service) (boo
 				return false, errors.NewInternalError(fmt.Errorf("failed to allocate a nodePort: %v", err))
 			}
 			// Insert the newly allocated health check port as an annotation (plan of record for Alpha)
-			service.Annotations[apiservice.AnnotationHealthCheckNodePort] = fmt.Sprintf("%d", healthCheckNodePort)
+			service.Annotations[apiservice.BetaAnnotationHealthCheckNodePort] = fmt.Sprintf("%d", healthCheckNodePort)
 			glog.Infof("Reserved health check nodePort: %d", healthCheckNodePort)
 		}
 
@@ -338,29 +338,30 @@ func (rs *REST) healthCheckNodePortUpdate(oldService, service *api.Service) (boo
 			glog.Warningf("Error releasing service health check %s node port %d: %v", service.Name, oldHealthCheckNodePort, err)
 			return false, errors.NewInternalError(fmt.Errorf("failed to free health check nodePort: %v", err))
 		} else {
-			delete(service.Annotations, apiservice.AnnotationHealthCheckNodePort)
+			delete(service.Annotations, apiservice.BetaAnnotationHealthCheckNodePort)
+			delete(service.Annotations, apiservice.AlphaAnnotationHealthCheckNodePort)
 			glog.Infof("Freed health check nodePort: %d", oldHealthCheckNodePort)
 		}
 
 	case !oldServiceHasHealthCheckNodePort && !assignHealthCheckNodePort:
-		if _, ok := service.Annotations[apiservice.AnnotationHealthCheckNodePort]; ok {
+		if _, ok := service.Annotations[apiservice.BetaAnnotationHealthCheckNodePort]; ok {
 			glog.Warningf("Attempt to insert health check node port annotation DENIED")
 			el := field.ErrorList{field.Invalid(field.NewPath("metadata", "annotations"),
-				apiservice.AnnotationHealthCheckNodePort, "Cannot insert healthcheck nodePort annotation")}
+				apiservice.BetaAnnotationHealthCheckNodePort, "Cannot insert healthcheck nodePort annotation")}
 			return false, errors.NewInvalid(api.Kind("Service"), service.Name, el)
 		}
 
 	case oldServiceHasHealthCheckNodePort && assignHealthCheckNodePort:
-		if _, ok := service.Annotations[apiservice.AnnotationHealthCheckNodePort]; !ok {
+		if _, ok := service.Annotations[apiservice.BetaAnnotationHealthCheckNodePort]; !ok {
 			glog.Warningf("Attempt to delete health check node port annotation DENIED")
 			el := field.ErrorList{field.Invalid(field.NewPath("metadata", "annotations"),
-				apiservice.AnnotationHealthCheckNodePort, "Cannot delete healthcheck nodePort annotation")}
+				apiservice.BetaAnnotationHealthCheckNodePort, "Cannot delete healthcheck nodePort annotation")}
 			return false, errors.NewInvalid(api.Kind("Service"), service.Name, el)
 		}
 		if oldHealthCheckNodePort != requestedHealthCheckNodePort {
 			glog.Warningf("Attempt to change value of health check node port annotation DENIED")
 			el := field.ErrorList{field.Invalid(field.NewPath("metadata", "annotations"),
-				apiservice.AnnotationHealthCheckNodePort, "Cannot change healthcheck nodePort during update")}
+				apiservice.BetaAnnotationHealthCheckNodePort, "Cannot change healthcheck nodePort during update")}
 			return false, errors.NewInvalid(api.Kind("Service"), service.Name, el)
 		}
 	}
@@ -368,7 +369,7 @@ func (rs *REST) healthCheckNodePortUpdate(oldService, service *api.Service) (boo
 }
 
 func (rs *REST) Update(ctx api.Context, name string, objInfo rest.UpdatedObjectInfo) (runtime.Object, bool, error) {
-	oldService, err := rs.registry.GetService(ctx, name)
+	oldService, err := rs.registry.GetService(ctx, name, &metav1.GetOptions{})
 	if err != nil {
 		return nil, false, err
 	}
@@ -475,7 +476,7 @@ func (rs *REST) ResourceLocation(ctx api.Context, id string) (*url.URL, http.Rou
 
 	// If a port *number* was specified, find the corresponding service port name
 	if portNum, err := strconv.ParseInt(portStr, 10, 64); err == nil {
-		svc, err := rs.registry.GetService(ctx, svcName)
+		svc, err := rs.registry.GetService(ctx, svcName, &metav1.GetOptions{})
 		if err != nil {
 			return nil, nil, err
 		}
@@ -493,7 +494,7 @@ func (rs *REST) ResourceLocation(ctx api.Context, id string) (*url.URL, http.Rou
 		}
 	}
 
-	eps, err := rs.endpoints.GetEndpoints(ctx, svcName)
+	eps, err := rs.endpoints.GetEndpoints(ctx, svcName, &metav1.GetOptions{})
 	if err != nil {
 		return nil, nil, err
 	}

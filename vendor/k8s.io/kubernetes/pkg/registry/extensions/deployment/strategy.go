@@ -22,9 +22,10 @@ import (
 	"time"
 
 	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/api/rest"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/apis/extensions/validation"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/controller/deployment/util"
 	"k8s.io/kubernetes/pkg/fields"
 	"k8s.io/kubernetes/pkg/labels"
@@ -43,6 +44,12 @@ type deploymentStrategy struct {
 // Strategy is the default logic that applies when creating and updating Deployment
 // objects via the REST API.
 var Strategy = deploymentStrategy{api.Scheme, api.SimpleNameGenerator}
+
+// DefaultGarbageCollectionPolicy returns Orphan because that's the default
+// behavior before the server-side garbage collection is implemented.
+func (deploymentStrategy) DefaultGarbageCollectionPolicy() rest.GarbageCollectionPolicy {
+	return rest.OrphanDependents
+}
 
 // NamespaceScoped is true for deployment.
 func (deploymentStrategy) NamespaceScoped() bool {
@@ -90,7 +97,7 @@ func (deploymentStrategy) PrepareForUpdate(ctx api.Context, obj, old runtime.Obj
 		if newDeployment.Annotations == nil {
 			newDeployment.Annotations = make(map[string]string)
 		}
-		now := unversioned.Now()
+		now := metav1.Now()
 		newDeployment.Annotations[util.SelectorUpdateAnnotation] = now.Format(time.RFC3339)
 	}
 }
@@ -128,19 +135,22 @@ func DeploymentToSelectableFields(deployment *extensions.Deployment) fields.Set 
 	return generic.ObjectMetaFieldsSet(&deployment.ObjectMeta, true)
 }
 
+// GetAttrs returns labels and fields of a given object for filtering purposes.
+func GetAttrs(obj runtime.Object) (labels.Set, fields.Set, error) {
+	deployment, ok := obj.(*extensions.Deployment)
+	if !ok {
+		return nil, nil, fmt.Errorf("given object is not a deployment.")
+	}
+	return labels.Set(deployment.ObjectMeta.Labels), DeploymentToSelectableFields(deployment), nil
+}
+
 // MatchDeployment is the filter used by the generic etcd backend to route
 // watch events from etcd to clients of the apiserver only interested in specific
 // labels/fields.
 func MatchDeployment(label labels.Selector, field fields.Selector) apistorage.SelectionPredicate {
 	return apistorage.SelectionPredicate{
-		Label: label,
-		Field: field,
-		GetAttrs: func(obj runtime.Object) (labels.Set, fields.Set, error) {
-			deployment, ok := obj.(*extensions.Deployment)
-			if !ok {
-				return nil, nil, fmt.Errorf("given object is not a deployment.")
-			}
-			return labels.Set(deployment.ObjectMeta.Labels), DeploymentToSelectableFields(deployment), nil
-		},
+		Label:    label,
+		Field:    field,
+		GetAttrs: GetAttrs,
 	}
 }

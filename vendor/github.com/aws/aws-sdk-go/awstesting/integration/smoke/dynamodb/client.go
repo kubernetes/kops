@@ -6,11 +6,11 @@ package dynamodb
 import (
 	"github.com/aws/aws-sdk-go/awstesting/integration/smoke"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-	. "github.com/lsegal/gucumber"
+	"github.com/gucumber/gucumber"
 )
 
 func init() {
-	Before("@dynamodb", func() {
-		World["client"] = dynamodb.New(smoke.Session)
+	gucumber.Before("@dynamodb", func() {
+		gucumber.World["client"] = dynamodb.New(smoke.Session)
 	})
 }

@@ -28,7 +28,8 @@ import (
 // VFSContext is a 'context' for VFS, that is normally a singleton
 // but allows us to configure S3 credentials, for example
 type VFSContext struct {
-	s3Context *S3Context
+	s3Context    *S3Context
+	memfsContext *MemFSContext
 }
 
 var Context = VFSContext{
@@ -85,6 +86,10 @@ func (c *VFSContext) BuildVfsPath(p string) (Path, error) {
 		return c.buildS3Path(p)
 	}
 
+	if strings.HasPrefix(p, "memfs://") {
+		return c.buildMemFSPath(p)
+	}
+
 	return nil, fmt.Errorf("unknown / unhandled path type: %q", p)
 }
 
@@ -125,7 +130,30 @@ func (c *VFSContext) buildS3Path(p string) (*S3Path, error) {
 	}
 
 	bucket := strings.TrimSuffix(u.Host, "/")
+	if bucket == "" {
+		return nil, fmt.Errorf("invalid s3 path: %q", err)
+	}
 
-	s3path := NewS3Path(c.s3Context, bucket, u.Path)
+	s3path := newS3Path(c.s3Context, bucket, u.Path)
 	return s3path, nil
+}
+
+func (c *VFSContext) buildMemFSPath(p string) (*MemFSPath, error) {
+	if !strings.HasPrefix(p, "memfs://") {
+		return nil, fmt.Errorf("memfs path not recognized: %q", p)
+	}
+	location := strings.TrimPrefix(p, "memfs://")
+	if c.memfsContext == nil {
+		// We only initialize this in unit tests etc
+		return nil, fmt.Errorf("memfs context not initialized")
+	}
+	fspath := NewMemFSPath(c.memfsContext, location)
+	return fspath, nil
+}
+
+func (c *VFSContext) ResetMemfsContext(clusterReadable bool) {
+	c.memfsContext = NewMemFSContext()
+	if clusterReadable {
+		c.memfsContext.MarkClusterReadable()
+	}
 }

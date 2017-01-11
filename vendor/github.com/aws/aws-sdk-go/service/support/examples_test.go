@@ -16,7 +16,13 @@ var _ time.Duration
 var _ bytes.Buffer
 
 func ExampleSupport_AddAttachmentsToSet() {
-	svc := support.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := support.New(sess)
 
 	params := &support.AddAttachmentsToSetInput{
 		Attachments: []*support.Attachment{ // Required
@@ -42,7 +48,13 @@ func ExampleSupport_AddAttachmentsToSet() {
 }
 
 func ExampleSupport_AddCommunicationToCase() {
-	svc := support.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := support.New(sess)
 
 	params := &support.AddCommunicationToCaseInput{
 		CommunicationBody: aws.String("CommunicationBody"), // Required
@@ -67,7 +79,13 @@ func ExampleSupport_AddCommunicationToCase() {
 }
 
 func ExampleSupport_CreateCase() {
-	svc := support.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := support.New(sess)
 
 	params := &support.CreateCaseInput{
 		CommunicationBody: aws.String("CommunicationBody"), // Required
@@ -97,7 +115,13 @@ func ExampleSupport_CreateCase() {
 }
 
 func ExampleSupport_DescribeAttachment() {
-	svc := support.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := support.New(sess)
 
 	params := &support.DescribeAttachmentInput{
 		AttachmentId: aws.String("AttachmentId"), // Required
@@ -116,7 +140,13 @@ func ExampleSupport_DescribeAttachment() {
 }
 
 func ExampleSupport_DescribeCases() {
-	svc := support.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := support.New(sess)
 
 	params := &support.DescribeCasesInput{
 		AfterTime:  aws.String("AfterTime"),
@@ -146,7 +176,13 @@ func ExampleSupport_DescribeCases() {
 }
 
 func ExampleSupport_DescribeCommunications() {
-	svc := support.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := support.New(sess)
 
 	params := &support.DescribeCommunicationsInput{
 		CaseId:     aws.String("CaseId"), // Required
@@ -169,7 +205,13 @@ func ExampleSupport_DescribeCommunications() {
 }
 
 func ExampleSupport_DescribeServices() {
-	svc := support.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := support.New(sess)
 
 	params := &support.DescribeServicesInput{
 		Language: aws.String("Language"),
@@ -192,7 +234,13 @@ func ExampleSupport_DescribeServices() {
 }
 
 func ExampleSupport_DescribeSeverityLevels() {
-	svc := support.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := support.New(sess)
 
 	params := &support.DescribeSeverityLevelsInput{
 		Language: aws.String("Language"),
@@ -211,7 +259,13 @@ func ExampleSupport_DescribeSeverityLevels() {
 }
 
 func ExampleSupport_DescribeTrustedAdvisorCheckRefreshStatuses() {
-	svc := support.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := support.New(sess)
 
 	params := &support.DescribeTrustedAdvisorCheckRefreshStatusesInput{
 		CheckIds: []*string{ // Required
@@ -233,7 +287,13 @@ func ExampleSupport_DescribeTrustedAdvisorCheckRefreshStatuses() {
 }
 
 func ExampleSupport_DescribeTrustedAdvisorCheckResult() {
-	svc := support.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := support.New(sess)
 
 	params := &support.DescribeTrustedAdvisorCheckResultInput{
 		CheckId:  aws.String("String"), // Required
@@ -253,7 +313,13 @@ func ExampleSupport_DescribeTrustedAdvisorCheckResult() {
 }
 
 func ExampleSupport_DescribeTrustedAdvisorCheckSummaries() {
-	svc := support.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := support.New(sess)
 
 	params := &support.DescribeTrustedAdvisorCheckSummariesInput{
 		CheckIds: []*string{ // Required
@@ -275,7 +341,13 @@ func ExampleSupport_DescribeTrustedAdvisorCheckSummaries() {
 }
 
 func ExampleSupport_DescribeTrustedAdvisorChecks() {
-	svc := support.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := support.New(sess)
 
 	params := &support.DescribeTrustedAdvisorChecksInput{
 		Language: aws.String("String"), // Required
@@ -294,7 +366,13 @@ func ExampleSupport_DescribeTrustedAdvisorChecks() {
 }
 
 func ExampleSupport_RefreshTrustedAdvisorCheck() {
-	svc := support.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := support.New(sess)
 
 	params := &support.RefreshTrustedAdvisorCheckInput{
 		CheckId: aws.String("String"), // Required
@@ -313,7 +391,13 @@ func ExampleSupport_RefreshTrustedAdvisorCheck() {
 }
 
 func ExampleSupport_ResolveCase() {
-	svc := support.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := support.New(sess)
 
 	params := &support.ResolveCaseInput{
 		CaseId: aws.String("CaseId"),

@@ -4,8 +4,10 @@ metadata:
   name: slow
 provisioner: kubernetes.io/glusterfs
 parameters:
-  endpoint: "glusterfs-cluster"
   resturl: "http://127.0.0.1:8081"
+  clusterid: "630372ccdc720a92c681fb928f27b53f"
   restuser: "admin"
   secretNamespace: "default"
   secretName: "heketi-secret"
+  gidMin: "40000"
+  gidMax: "50000"

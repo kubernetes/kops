@@ -4,7 +4,7 @@
 package performance
 
 import (
-	"github.com/lsegal/gucumber"
+	"github.com/gucumber/gucumber"
 )
 
 func init() {

@@ -17,12 +17,14 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"io"
 	"io/ioutil"
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -30,46 +32,62 @@ import (
 	"k8s.io/kops/upup/pkg/kutil"
 	"os"
 	"strings"
+	"time"
 )
 
 type UpdateClusterOptions struct {
-	Yes          bool
-	Target       string
-	Models       string
-	OutDir       string
-	SSHPublicKey string
+	Yes             bool
+	Target          string
+	Models          string
+	OutDir          string
+	SSHPublicKey    string
+	MaxTaskDuration time.Duration
+	CreateKubecfg   bool
+}
+
+func (o *UpdateClusterOptions) InitDefaults() {
+	o.Yes = false
+	o.Target = "direct"
+	o.Models = strings.Join(cloudup.CloudupModels, ",")
+	o.SSHPublicKey = ""
+	o.OutDir = ""
+	o.MaxTaskDuration = cloudup.DefaultMaxTaskDuration
+	o.CreateKubecfg = true
 }
 
 func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &UpdateClusterOptions{}
+	options.InitDefaults()
 
 	cmd := &cobra.Command{
 		Use:   "cluster",
 		Short: "Update cluster",
 		Long:  `Updates a k8s cluster.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := RunUpdateCluster(f, cmd, args, os.Stdout, options)
+			err := rootCommand.ProcessArgs(args)
+			if err != nil {
+				exitWithError(err)
+			}
+
+			clusterName := rootCommand.ClusterName()
+
+			err = RunUpdateCluster(f, clusterName, os.Stdout, options)
 			if err != nil {
 				exitWithError(err)
 			}
 		},
 	}
 
-	cmd.Flags().BoolVar(&options.Yes, "yes", false, "Actually create cloud resources")
-	cmd.Flags().StringVar(&options.Target, "target", "direct", "Target - direct, terraform")
-	cmd.Flags().StringVar(&options.Models, "model", strings.Join(cloudup.CloudupModels, ","), "Models to apply (separate multiple models with commas)")
-	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", "", "SSH public key to use (deprecated: use kops create secret instead)")
-	cmd.Flags().StringVar(&options.OutDir, "out", "", "Path to write any local output")
+	cmd.Flags().BoolVar(&options.Yes, "yes", options.Yes, "Actually create cloud resources")
+	cmd.Flags().StringVar(&options.Target, "target", options.Target, "Target - direct, terraform")
+	cmd.Flags().StringVar(&options.Models, "model", options.Models, "Models to apply (separate multiple models with commas)")
+	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", options.SSHPublicKey, "SSH public key to use (deprecated: use kops create secret instead)")
+	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
 
 	return cmd
 }
 
-func RunUpdateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, c *UpdateClusterOptions) error {
-	err := rootCommand.ProcessArgs(args)
-	if err != nil {
-		return err
-	}
-
+func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *UpdateClusterOptions) error {
 	isDryrun := false
 	targetName := c.Target
 
@@ -93,7 +111,7 @@ func RunUpdateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 		}
 	}
 
-	cluster, err := rootCommand.Cluster()
+	cluster, err := GetCluster(f, clusterName)
 	if err != nil {
 		return err
 	}
@@ -114,7 +132,7 @@ func RunUpdateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 	}
 
 	if c.SSHPublicKey != "" {
-		fmt.Fprintf(out, "--ssh-public-key on update is deprecated - please use `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub` instead\n", cluster.Name)
+		fmt.Fprintf(out, "--ssh-public-key on update is deprecated - please use `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub` instead\n", cluster.ObjectMeta.Name)
 
 		c.SSHPublicKey = utils.ExpandPath(c.SSHPublicKey)
 		authorized, err := ioutil.ReadFile(c.SSHPublicKey)
@@ -125,15 +143,18 @@ func RunUpdateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 		if err != nil {
 			return fmt.Errorf("error addding SSH public key: %v", err)
 		}
+
+		glog.Infof("Using SSH public key: %v\n", c.SSHPublicKey)
 	}
 
 	applyCmd := &cloudup.ApplyClusterCmd{
-		Cluster:    cluster,
-		Models:     strings.Split(c.Models, ","),
-		Clientset:  clientset,
-		TargetName: targetName,
-		OutDir:     c.OutDir,
-		DryRun:     isDryrun,
+		Cluster:         cluster,
+		Models:          strings.Split(c.Models, ","),
+		Clientset:       clientset,
+		TargetName:      targetName,
+		OutDir:          c.OutDir,
+		DryRun:          isDryrun,
+		MaxTaskDuration: c.MaxTaskDuration,
 	}
 	err = applyCmd.Run()
 	if err != nil {
@@ -143,16 +164,16 @@ func RunUpdateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 	if isDryrun {
 		target := applyCmd.Target.(*fi.DryRunTarget)
 		if target.HasChanges() {
-			fmt.Printf("Must specify --yes to apply changes\n")
+			fmt.Fprintf(out, "Must specify --yes to apply changes\n")
 		} else {
-			fmt.Printf("No changes need to be applied\n")
+			fmt.Fprintf(out, "No changes need to be applied\n")
 		}
 		return nil
 	}
 
 	// TODO: Only if not yet set?
-	if !isDryrun {
-		hasKubecfg, err := hasKubecfg(cluster.Name)
+	if !isDryrun && c.CreateKubecfg {
+		hasKubecfg, err := hasKubecfg(cluster.ObjectMeta.Name)
 		if err != nil {
 			glog.Warningf("error reading kubecfg: %v", err)
 			hasKubecfg = true
@@ -167,7 +188,7 @@ func RunUpdateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 		if kubecfgCert != nil {
 			glog.Infof("Exporting kubecfg for cluster")
 			x := &kutil.CreateKubecfg{
-				ContextName:  cluster.Name,
+				ContextName:  cluster.ObjectMeta.Name,
 				KeyStore:     keyStore,
 				SecretStore:  secretStore,
 				KubeMasterIP: cluster.Spec.MasterPublicName,
@@ -182,15 +203,36 @@ func RunUpdateCluster(f *util.Factory, cmd *cobra.Command, args []string, out io
 		}
 
 		if !hasKubecfg {
+			sb := new(bytes.Buffer)
+
 			// Assume initial creation
-			fmt.Printf("\n")
-			fmt.Printf("Cluster is starting.  It should be ready in a few minutes.\n")
-			fmt.Printf("\n")
-			fmt.Printf("Suggestions:\n")
-			fmt.Printf(" * list nodes: kubectl get nodes --show-labels\n")
-			fmt.Printf(" * ssh to the master: ssh -i ~/.ssh/id_rsa admin@%s\n", cluster.Spec.MasterPublicName)
-			fmt.Printf(" * read about installing addons: https://github.com/kubernetes/kops/blob/master/docs/addons.md\n")
-			fmt.Printf("\n")
+			if c.Target == cloudup.TargetTerraform {
+				fmt.Fprintf(sb, "\n")
+				fmt.Fprintf(sb, "Terraform output has been placed into %s\n", c.OutDir)
+				fmt.Fprintf(sb, "Run these commands to apply the configuration:\n")
+				fmt.Fprintf(sb, "   cd %s\n", c.OutDir)
+				fmt.Fprintf(sb, "   terraform plan\n")
+				fmt.Fprintf(sb, "   terraform apply\n")
+				fmt.Fprintf(sb, "\n")
+			} else {
+				fmt.Fprintf(sb, "\n")
+				fmt.Fprintf(sb, "Cluster is starting.  It should be ready in a few minutes.\n")
+				fmt.Fprintf(sb, "\n")
+			}
+			fmt.Fprintf(sb, "Suggestions:\n")
+			fmt.Fprintf(sb, " * list nodes: kubectl get nodes --show-labels\n")
+			if cluster.Spec.Topology.Masters == kops.TopologyPublic {
+				fmt.Fprintf(sb, " * ssh to the master: ssh -i ~/.ssh/id_rsa admin@%s\n", cluster.Spec.MasterPublicName)
+			} else {
+				fmt.Fprintf(sb, " * ssh to the bastion: ssh -i ~/.ssh/id_rsa admin@%s\n", cluster.Spec.MasterPublicName)
+			}
+			fmt.Fprintf(sb, " * read about installing addons: https://github.com/kubernetes/kops/blob/master/docs/addons.md\n")
+			fmt.Fprintf(sb, "\n")
+
+			_, err := out.Write(sb.Bytes())
+			if err != nil {
+				return fmt.Errorf("error writing to output: %v", err)
+			}
 		}
 	}
 

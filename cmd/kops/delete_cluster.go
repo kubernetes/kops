@@ -107,7 +107,7 @@ func (c *DeleteClusterCmd) Run(args []string) error {
 			return fmt.Errorf("cluster %q not found", clusterName)
 		}
 
-		if clusterName != cluster.Name {
+		if clusterName != cluster.ObjectMeta.Name {
 			return fmt.Errorf("sanity check failed: cluster name mismatch")
 		}
 
@@ -188,6 +188,10 @@ func (c *DeleteClusterCmd) Run(args []string) error {
 			return fmt.Errorf("error removing cluster from state store: %v", err)
 		}
 	}
+
+	b := kutil.NewKubeconfigBuilder()
+	b.Context = cluster.ObjectMeta.Name
+	b.DeleteKubeConfig()
 
 	fmt.Printf("\nCluster deleted\n")
 	return nil

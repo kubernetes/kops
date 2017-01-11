@@ -25,9 +25,11 @@ import (
 	"k8s.io/kubernetes/pkg/api/meta"
 	"k8s.io/kubernetes/pkg/api/rest/resttest"
 	"k8s.io/kubernetes/pkg/api/testapi"
+	"k8s.io/kubernetes/pkg/apimachinery/registered"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/fields"
 	"k8s.io/kubernetes/pkg/labels"
-	"k8s.io/kubernetes/pkg/registry/generic/registry"
+	genericregistry "k8s.io/kubernetes/pkg/registry/generic/registry"
 	"k8s.io/kubernetes/pkg/runtime"
 	etcdstorage "k8s.io/kubernetes/pkg/storage/etcd"
 	etcdtesting "k8s.io/kubernetes/pkg/storage/etcd/testing"
@@ -43,11 +45,11 @@ func NewEtcdStorage(t *testing.T, group string) (*storagebackend.Config, *etcdte
 
 type Tester struct {
 	tester  *resttest.Tester
-	storage *registry.Store
+	storage *genericregistry.Store
 }
 type UpdateFunc func(runtime.Object) runtime.Object
 
-func New(t *testing.T, storage *registry.Store) *Tester {
+func New(t *testing.T, storage *genericregistry.Store) *Tester {
 	return &Tester{
 		tester:  resttest.New(t, storage),
 		storage: storage,
@@ -161,7 +163,7 @@ func getCodec(obj runtime.Object) (runtime.Codec, error) {
 	// split the schemes for internal objects.
 	// TODO: caesarxuchao: we should add a map from kind to group in Scheme.
 	var codec runtime.Codec
-	if api.Scheme.Recognizes(testapi.Default.GroupVersion().WithKind(fqKind.Kind)) {
+	if api.Scheme.Recognizes(registered.GroupOrDie(api.GroupName).GroupVersion.WithKind(fqKind.Kind)) {
 		codec = testapi.Default.Codec()
 	} else if api.Scheme.Recognizes(testapi.Extensions.GroupVersion().WithKind(fqKind.Kind)) {
 		codec = testapi.Extensions.Codec()
@@ -179,7 +181,7 @@ func (t *Tester) getObject(ctx api.Context, obj runtime.Object) (runtime.Object,
 		return nil, err
 	}
 
-	result, err := t.storage.Get(ctx, accessor.GetName())
+	result, err := t.storage.Get(ctx, accessor.GetName(), &metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}

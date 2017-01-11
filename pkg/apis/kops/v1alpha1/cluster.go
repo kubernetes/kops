@@ -17,12 +17,13 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/api/v1"
+	meta_v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 )
 
 type Cluster struct {
-	unversioned.TypeMeta `json:",inline"`
-	ObjectMeta           `json:"metadata,omitempty"`
+	meta_v1.TypeMeta `json:",inline"`
+	ObjectMeta       v1.ObjectMeta `json:"metadata,omitempty"`
 
 	// Spec defines the behavior of a Cluster.
 	Spec ClusterSpec `json:"spec,omitempty"`
@@ -33,8 +34,8 @@ type Cluster struct {
 }
 
 type ClusterList struct {
-	unversioned.TypeMeta `json:",inline"`
-	unversioned.ListMeta `json:"metadata,omitempty"`
+	meta_v1.TypeMeta `json:",inline"`
+	meta_v1.ListMeta `json:"metadata,omitempty"`
 
 	Items []Cluster `json:"items"`
 }
@@ -55,10 +56,6 @@ type ClusterSpec struct {
 	// The version of kubernetes to install (optional, and can be a "spec" like stable)
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
 
-	//
-	//// The Node initializer technique to use: cloudinit or nodeup
-	//NodeInit                      string `json:",omitempty"`
-
 	// Configuration of zones we are targeting
 	Zones []*ClusterZoneSpec `json:"zones,omitempty"`
 	//Region                        string        `json:",omitempty"`
@@ -78,11 +75,16 @@ type ClusterSpec struct {
 	// NetworkID is an identifier of a network, if we want to reuse/share an existing network (e.g. an AWS VPC)
 	NetworkID string `json:"networkID,omitempty"`
 
+	// Topology defines the type of network topology to use on the cluster - default public
+	// This is heavily weighted towards AWS for the time being, but should also be agnostic enough
+	// to port out to GCE later if needed
+	Topology *TopologySpec `json:"topology,omitempty"`
+
 	// SecretStore is the VFS path to where secrets are stored
 	SecretStore string `json:"secretStore,omitempty"`
 	// KeyStore is the VFS path to where SSL keys and certificates are stored
 	KeyStore string `json:"keyStore,omitempty"`
-	// ConfigStore is the VFS path to where the configuration (CloudConfig, NodeSetConfig etc) is stored
+	// ConfigStore is the VFS path to where the configuration (Cluster, InstanceGroupss etc) is stored
 	ConfigStore string `json:"configStore,omitempty"`
 
 	// DNSZone is the DNS zone we should use when configuring DNS
@@ -212,13 +214,6 @@ type ClusterSpec struct {
 
 	//NodeUp                        *NodeUpConfig `json:",omitempty"`
 
-	// nodeSets is a list of all the NodeSets in the cluster.
-	// It is not exported: we populate it from other files
-	//nodeSets                      []*NodeSetConfig `json:",omitempty"`
-
-	//// Masters is the configuration for each master in the cluster
-	//Masters []*MasterConfig `json:",omitempty"`
-
 	// EtcdClusters stores the configuration for each cluster
 	EtcdClusters []*EtcdClusterSpec `json:"etcdClusters,omitempty"`
 
@@ -234,6 +229,33 @@ type ClusterSpec struct {
 
 	// Networking configuration
 	Networking *NetworkingSpec `json:"networking,omitempty"`
+
+	// API field controls how the API is exposed outside the cluster
+	API *AccessSpec `json:"api,omitempty"`
+}
+
+type AccessSpec struct {
+	DNS          *DNSAccessSpec          `json:"dns,omitempty"`
+	LoadBalancer *LoadBalancerAccessSpec `json:"loadBalancer,omitempty"`
+}
+
+func (s *AccessSpec) IsEmpty() bool {
+	return s.DNS == nil && s.LoadBalancer == nil
+}
+
+type DNSAccessSpec struct {
+}
+
+// LoadBalancerType string describes LoadBalancer types (public, internal)
+type LoadBalancerType string
+
+const (
+	LoadBalancerTypePublic   LoadBalancerType = "Public"
+	LoadBalancerTypeInternal LoadBalancerType = "Internal"
+)
+
+type LoadBalancerAccessSpec struct {
+	Type LoadBalancerType `json:"type,omitempty"`
 }
 
 type KubeDNSConfig struct {
@@ -245,7 +267,6 @@ type KubeDNSConfig struct {
 	ServerIP string `json:"serverIP,omitempty"`
 }
 
-//
 //type MasterConfig struct {
 //	Name string `json:",omitempty"`
 //
@@ -253,7 +274,6 @@ type KubeDNSConfig struct {
 //	Zone        string `json:",omitempty"`
 //	MachineType string `json:",omitempty"`
 //}
-//
 
 type EtcdClusterSpec struct {
 	// Name is the name of the etcd cluster (main, events etc)
@@ -276,18 +296,15 @@ type EtcdMemberSpec struct {
 
 type ClusterZoneSpec struct {
 	Name string `json:"name,omitempty"`
-	CIDR string `json:"cidr,omitempty"`
+
+	// For Private network topologies we need to have 2
+	// CIDR blocks.
+	// 1 - Utility (Public) Subnets
+	// 2 - Operating (Private) Subnets
+
+	PrivateCIDR string `json:"privateCIDR,omitempty"`
+	CIDR        string `json:"cidr,omitempty"`
 
 	// ProviderID is the cloud provider id for the objects associated with the zone (the subnet on AWS)
 	ProviderID string `json:"id,omitempty"`
 }
-
-//type NodeUpConfig struct {
-//	Source     string `json:",omitempty"`
-//	SourceHash string `json:",omitempty"`
-//
-//	Tags       []string `json:",omitempty"`
-//
-//	// Assets that NodeUp should use.  This is a "search-path" for resolving dependencies.
-//	Assets     []string `json:",omitempty"`
-//}

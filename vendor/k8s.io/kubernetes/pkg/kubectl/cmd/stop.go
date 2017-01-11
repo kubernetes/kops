@@ -20,14 +20,14 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/renstrom/dedent"
 	"github.com/spf13/cobra"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
 )
 
 var (
-	stop_long = dedent.Dedent(`
+	stop_long = templates.LongDesc(`
 		Deprecated: Gracefully shut down a resource by name or filename.
 
 		The stop command is deprecated, all its functionalities are covered by delete command.
@@ -35,7 +35,8 @@ var (
 
 		Attempts to shut down and delete a resource that supports graceful termination.
 		If the resource is scalable it will be scaled to 0 before deletion.`)
-	stop_example = dedent.Dedent(`
+
+	stop_example = templates.Examples(`
 		# Shut down foo.
 		kubectl stop replicationcontroller foo
 
@@ -49,7 +50,7 @@ var (
 		kubectl stop -f path/to/resources`)
 )
 
-func NewCmdStop(f *cmdutil.Factory, out io.Writer) *cobra.Command {
+func NewCmdStop(f cmdutil.Factory, out io.Writer) *cobra.Command {
 	options := &resource.FilenameOptions{}
 
 	cmd := &cobra.Command{
@@ -75,7 +76,7 @@ func NewCmdStop(f *cmdutil.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunStop(f *cmdutil.Factory, cmd *cobra.Command, args []string, out io.Writer, options *resource.FilenameOptions) error {
+func RunStop(f cmdutil.Factory, cmd *cobra.Command, args []string, out io.Writer, options *resource.FilenameOptions) error {
 	cmdNamespace, enforceNamespace, err := f.DefaultNamespace()
 	if err != nil {
 		return err
@@ -95,5 +96,13 @@ func RunStop(f *cmdutil.Factory, cmd *cobra.Command, args []string, out io.Write
 		return r.Err()
 	}
 	shortOutput := cmdutil.GetFlagString(cmd, "output") == "name"
-	return ReapResult(r, f, out, false, cmdutil.GetFlagBool(cmd, "ignore-not-found"), cmdutil.GetFlagDuration(cmd, "timeout"), cmdutil.GetFlagInt(cmd, "grace-period"), shortOutput, mapper, false)
+	gracePeriod := cmdutil.GetFlagInt(cmd, "grace-period")
+	waitForDeletion := false
+	if gracePeriod == 0 {
+		// To preserve backwards compatibility, but prevent accidental data loss, we convert --grace-period=0
+		// into --grace-period=1 and wait until the object is successfully deleted.
+		gracePeriod = 1
+		waitForDeletion = true
+	}
+	return ReapResult(r, f, out, false, cmdutil.GetFlagBool(cmd, "ignore-not-found"), cmdutil.GetFlagDuration(cmd, "timeout"), gracePeriod, waitForDeletion, shortOutput, mapper, false)
 }

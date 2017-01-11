@@ -19,17 +19,20 @@ package cloudup
 import (
 	"encoding/binary"
 	"fmt"
+	"net"
+	"strings"
+	"text/template"
+
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
-	"net"
-	"strings"
-	"text/template"
 )
 
 var EtcdClusters = []string{"main", "events"}
@@ -73,6 +76,16 @@ func PopulateClusterSpec(cluster *api.Cluster) (*api.Cluster, error) {
 	return c.fullCluster, nil
 }
 
+//
+// Here be dragons
+//
+// This function has some `interesting` things going on.
+// In an effort to let the cluster.Spec fall through I am
+// hard coding topology in two places.. It seems and feels
+// very wrong.. but at least now my new cluster.Spec.Topology
+// struct is falling through..
+// @kris-nova
+//
 func (c *populateClusterSpec) run() error {
 	err := c.InputCluster.Validate(false)
 	if err != nil {
@@ -81,6 +94,7 @@ func (c *populateClusterSpec) run() error {
 
 	// Copy cluster & instance groups, so we can modify them freely
 	cluster := &api.Cluster{}
+
 	utils.JsonMergeStruct(cluster, c.InputCluster)
 
 	err = c.assignSubnets(cluster)
@@ -93,16 +107,22 @@ func (c *populateClusterSpec) run() error {
 		return err
 	}
 
+	err = PerformAssignments(cluster)
+	if err != nil {
+		return err
+	}
+
 	// TODO: Move to validate?
 	// Check that instance groups are defined in valid zones
 	{
-		clusterZones := make(map[string]*api.ClusterZoneSpec)
-		for _, z := range cluster.Spec.Zones {
-			if clusterZones[z.Name] != nil {
-				return fmt.Errorf("Zones contained a duplicate value: %v", z.Name)
-			}
-			clusterZones[z.Name] = z
-		}
+		// TODO: Check that instance groups referenced here exist
+		//clusterSubnets := make(map[string]*api.ClusterSubnetSpec)
+		//for _, subnet := range cluster.Spec.Subnets {
+		//	if clusterSubnets[subnet.Name] != nil {
+		//		return fmt.Errorf("Subnets contained a duplicate value: %v", subnet.Name)
+		//	}
+		//	clusterSubnets[subnet.Name] = subnet
+		//}
 
 		// Check etcd configuration
 		{
@@ -116,12 +136,12 @@ func (c *populateClusterSpec) run() error {
 						return fmt.Errorf("EtcdMember #%d of etcd-cluster %s did not specify a Name", i, etcd.Name)
 					}
 
-					if fi.StringValue(m.Zone) == "" {
-						return fmt.Errorf("EtcdMember %s:%s did not specify a Zone", etcd.Name, m.Name)
+					if fi.StringValue(m.InstanceGroup) == "" {
+						return fmt.Errorf("EtcdMember %s:%s did not specify a InstanceGroup", etcd.Name, m.Name)
 					}
 				}
 
-				etcdZones := make(map[string]*api.EtcdMemberSpec)
+				etcdInstanceGroups := make(map[string]*api.EtcdMemberSpec)
 				etcdNames := make(map[string]*api.EtcdMemberSpec)
 
 				for _, m := range etcd.Members {
@@ -129,20 +149,20 @@ func (c *populateClusterSpec) run() error {
 						return fmt.Errorf("EtcdMembers found with same name %q in etcd-cluster %q", m.Name, etcd.Name)
 					}
 
-					zone := fi.StringValue(m.Zone)
+					instanceGroupName := fi.StringValue(m.InstanceGroup)
 
-					if etcdZones[zone] != nil {
+					if etcdInstanceGroups[instanceGroupName] != nil {
 						// Maybe this should just be a warning
-						return fmt.Errorf("EtcdMembers are in the same zone %q in etcd-cluster %q", zone, etcd.Name)
+						return fmt.Errorf("EtcdMembers are in the same InstanceGroup %q in etcd-cluster %q", instanceGroupName, etcd.Name)
 					}
 
-					if clusterZones[zone] == nil {
-						return fmt.Errorf("EtcdMembers for %q is configured in zone %q, but that is not configured at the k8s-cluster level", etcd.Name, m.Zone)
-					}
-					etcdZones[zone] = m
+					//if clusterSubnets[zone] == nil {
+					//	return fmt.Errorf("EtcdMembers for %q is configured in zone %q, but that is not configured at the k8s-cluster level", etcd.Name, m.Zone)
+					//}
+					etcdInstanceGroups[instanceGroupName] = m
 				}
 
-				if (len(etcdZones) % 2) == 0 {
+				if (len(etcdInstanceGroups) % 2) == 0 {
 					// Not technically a requirement, but doesn't really make sense to allow
 					return fmt.Errorf("There should be an odd number of master-zones, for etcd's quorum.  Hint: Use --zones and --master-zones to declare node zones and master zones separately.")
 				}
@@ -198,7 +218,6 @@ func (c *populateClusterSpec) run() error {
 		glog.V(2).Infof("Normalizing kubernetes version: %q -> %q", cluster.Spec.KubernetesVersion, versionWithoutV)
 		cluster.Spec.KubernetesVersion = versionWithoutV
 	}
-
 	cloud, err := BuildCloud(cluster)
 	if err != nil {
 		return err
@@ -209,36 +228,64 @@ func (c *populateClusterSpec) run() error {
 		if err != nil {
 			return fmt.Errorf("error getting DNS for cloud: %v", err)
 		}
-		dnsZone, err := FindDNSHostedZone(dns, cluster.Name)
+		dnsZone, err := FindDNSHostedZone(dns, cluster.ObjectMeta.Name)
 		if err != nil {
-			return fmt.Errorf("Error determining default DNS zone; please specify --dns-zone: %v", err)
+			return fmt.Errorf("error determining default DNS zone: %v", err)
 		}
 		glog.Infof("Defaulting DNS zone to: %s", dnsZone)
 		cluster.Spec.DNSZone = dnsZone
 	}
-
 	tags, err := buildCloudupTags(cluster)
+
 	if err != nil {
 		return err
 	}
 
+	modelContext := &model.KopsModelContext{
+		Cluster: cluster,
+	}
 	tf := &TemplateFunctions{
-		cluster: cluster,
-		tags:    tags,
+		cluster:      cluster,
+		tags:         tags,
+		modelContext: modelContext,
 	}
 
 	templateFunctions := make(template.FuncMap)
 
 	tf.AddTo(templateFunctions)
 
+	optionsContext := &components.OptionsContext{
+		Cluster: cluster,
+	}
+	var fileModels []string
+	var codeModels []loader.OptionsBuilder
+	for _, m := range c.Models {
+		switch m {
+		case "config":
+			codeModels = append(codeModels, &components.KubeAPIServerOptionsBuilder{Context: optionsContext})
+			codeModels = append(codeModels, &components.DockerOptionsBuilder{Context: optionsContext})
+			codeModels = append(codeModels, &components.NetworkingOptionsBuilder{Context: optionsContext})
+			codeModels = append(codeModels, &components.KubeletOptionsBuilder{Context: optionsContext})
+			fileModels = append(fileModels, m)
+
+		default:
+			fileModels = append(fileModels, m)
+		}
+	}
+
 	specBuilder := &SpecBuilder{
-		OptionsLoader: loader.NewOptionsLoader(templateFunctions),
+		OptionsLoader: loader.NewOptionsLoader(templateFunctions, codeModels),
 		Tags:          tags,
 	}
-	completed, err := specBuilder.BuildCompleteSpec(&cluster.Spec, c.ModelStore, c.Models)
+
+	completed, err := specBuilder.BuildCompleteSpec(&cluster.Spec, c.ModelStore, fileModels)
 	if err != nil {
 		return fmt.Errorf("error building complete spec: %v", err)
 	}
+
+	// TODO: This should not be needed...
+	completed.Topology = c.InputCluster.Spec.Topology
+	//completed.Topology.Bastion = c.InputCluster.Spec.Topology.Bastion
 
 	fullCluster := &api.Cluster{}
 	*fullCluster = *cluster
@@ -251,7 +298,6 @@ func (c *populateClusterSpec) run() error {
 	}
 
 	c.fullCluster = fullCluster
-
 	return nil
 }
 

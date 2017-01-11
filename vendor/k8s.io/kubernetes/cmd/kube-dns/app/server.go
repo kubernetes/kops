@@ -29,90 +29,91 @@ import (
 	"github.com/spf13/pflag"
 
 	"k8s.io/kubernetes/cmd/kube-dns/app/options"
-	"k8s.io/kubernetes/pkg/api/unversioned"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	"k8s.io/kubernetes/pkg/client/restclient"
-	kclientcmd "k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
-	kdns "k8s.io/kubernetes/pkg/dns"
-	"k8s.io/kubernetes/pkg/version"
+	"k8s.io/kubernetes/pkg/dns"
+	dnsconfig "k8s.io/kubernetes/pkg/dns/config"
+
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 type KubeDNSServer struct {
 	// DNS domain name.
-	domain      string
-	healthzPort int
-	dnsPort     int
-	kd          *kdns.KubeDNS
+	domain         string
+	healthzPort    int
+	dnsBindAddress string
+	dnsPort        int
+	kd             *dns.KubeDNS
 }
 
 func NewKubeDNSServerDefault(config *options.KubeDNSConfig) *KubeDNSServer {
-	ks := KubeDNSServer{
-		domain: config.ClusterDomain,
-	}
-
 	kubeClient, err := newKubeClient(config)
 	if err != nil {
 		glog.Fatalf("Failed to create a kubernetes client: %v", err)
 	}
-	ks.healthzPort = config.HealthzPort
-	ks.dnsPort = config.DNSPort
-	ks.kd, err = kdns.NewKubeDNS(kubeClient, config.ClusterDomain, config.Federations)
-	if err != nil {
-		glog.Fatalf("Failed to start kubeDNS: %v", err)
+
+	var configSync dnsconfig.Sync
+	if config.ConfigMap == "" {
+		glog.V(0).Infof("ConfigMap not configured, using values from command line flags")
+		configSync = dnsconfig.NewNopSync(
+			&dnsconfig.Config{Federations: config.Federations})
+	} else {
+		glog.V(0).Infof("Using configuration read from ConfigMap: %v:%v",
+			config.ConfigMapNs, config.ConfigMap)
+		configSync = dnsconfig.NewSync(
+			kubeClient, config.ConfigMapNs, config.ConfigMap)
 	}
-	return &ks
+
+	return &KubeDNSServer{
+		domain:         config.ClusterDomain,
+		healthzPort:    config.HealthzPort,
+		dnsBindAddress: config.DNSBindAddress,
+		dnsPort:        config.DNSPort,
+		kd:             dns.NewKubeDNS(kubeClient, config.ClusterDomain, config.InitialSyncTimeout, configSync),
+	}
 }
 
-// TODO: evaluate using pkg/client/clientcmd
-func newKubeClient(dnsConfig *options.KubeDNSConfig) (clientset.Interface, error) {
-	var (
-		config *restclient.Config
-		err    error
-	)
+func newKubeClient(dnsConfig *options.KubeDNSConfig) (kubernetes.Interface, error) {
+	var config *rest.Config
+	var err error
 
-	if dnsConfig.KubeMasterURL != "" && dnsConfig.KubeConfigFile == "" {
-		// Only --kube-master-url was provided.
-		config = &restclient.Config{
-			Host:          dnsConfig.KubeMasterURL,
-			ContentConfig: restclient.ContentConfig{GroupVersion: &unversioned.GroupVersion{Version: "v1"}},
+	if dnsConfig.KubeConfigFile == "" {
+		config, err = rest.InClusterConfig()
+		if err != nil {
+			return nil, err
 		}
 	} else {
-		// We either have:
-		//  1) --kube-master-url and --kubecfg-file
-		//  2) just --kubecfg-file
-		//  3) neither flag
-		// In any case, the logic is the same.  If (3), this will automatically
-		// fall back on the service account token.
-		overrides := &kclientcmd.ConfigOverrides{}
-		overrides.ClusterInfo.Server = dnsConfig.KubeMasterURL                                // might be "", but that is OK
-		rules := &kclientcmd.ClientConfigLoadingRules{ExplicitPath: dnsConfig.KubeConfigFile} // might be "", but that is OK
-		if config, err = kclientcmd.NewNonInteractiveDeferredLoadingClientConfig(rules, overrides).ClientConfig(); err != nil {
+		config, err = clientcmd.BuildConfigFromFlags(
+			dnsConfig.KubeMasterURL, dnsConfig.KubeConfigFile)
+		if err != nil {
 			return nil, err
 		}
 	}
 
-	glog.Infof("Using %s for kubernetes master, kubernetes API: %v", config.Host, config.GroupVersion)
-	return clientset.NewForConfig(config)
+	return kubernetes.NewForConfig(config)
 }
 
 func (server *KubeDNSServer) Run() {
-	glog.Infof("%+v", version.Get())
 	pflag.VisitAll(func(flag *pflag.Flag) {
-		glog.Infof("FLAG: --%s=%q", flag.Name, flag.Value)
+		glog.V(0).Infof("FLAG: --%s=%q", flag.Name, flag.Value)
 	})
 	setupSignalHandlers()
 	server.startSkyDNSServer()
 	server.kd.Start()
-	server.setupHealthzHandlers()
-	glog.Infof("Setting up Healthz Handler(/readiness, /cache) on port :%d", server.healthzPort)
+	server.setupHandlers()
+
+	glog.V(0).Infof("Status HTTP port %v", server.healthzPort)
 	glog.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", server.healthzPort), nil))
 }
 
 // setupHealthzHandlers sets up a readiness and liveness endpoint for kube2sky.
-func (server *KubeDNSServer) setupHealthzHandlers() {
+func (server *KubeDNSServer) setupHandlers() {
+	glog.V(0).Infof("Setting up Healthz Handler (/readiness)")
 	http.HandleFunc("/readiness", func(w http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(w, "ok\n")
 	})
+
+	glog.V(0).Infof("Setting up cache handler (/cache)")
 	http.HandleFunc("/cache", func(w http.ResponseWriter, req *http.Request) {
 		serializedJSON, err := server.kd.GetCacheAsJSON()
 		if err == nil {
@@ -124,25 +125,32 @@ func (server *KubeDNSServer) setupHealthzHandlers() {
 	})
 }
 
-// setupSignalHandlers runs a goroutine that waits on SIGINT or SIGTERM and logs it
-// program will be terminated by SIGKILL when grace period ends.
+// setupSignalHandlers installs signal handler to ignore SIGINT and
+// SIGTERM. This daemon will be killed by SIGKILL after the grace
+// period to allow for some manner of graceful shutdown.
 func setupSignalHandlers() {
 	sigChan := make(chan os.Signal)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
-		glog.Infof("Received signal: %s, will exit when the grace period ends", <-sigChan)
+		glog.V(0).Infof("Ignoring signal %v (can only be terminated by SIGKILL)", <-sigChan)
 	}()
 }
 
 func (d *KubeDNSServer) startSkyDNSServer() {
-	glog.Infof("Starting SkyDNS server. Listening on port:%d", d.dnsPort)
-	skydnsConfig := &server.Config{Domain: d.domain, DnsAddr: fmt.Sprintf("0.0.0.0:%d", d.dnsPort)}
+	glog.V(0).Infof("Starting SkyDNS server (%v:%v)", d.dnsBindAddress, d.dnsPort)
+	skydnsConfig := &server.Config{
+		Domain:  d.domain,
+		DnsAddr: fmt.Sprintf("%s:%d", d.dnsBindAddress, d.dnsPort),
+	}
 	server.SetDefaults(skydnsConfig)
 	s := server.New(d.kd, skydnsConfig)
 	if err := metrics.Metrics(); err != nil {
-		glog.Fatalf("skydns: %s", err)
+		glog.Fatalf("Skydns metrics error: %s", err)
+	} else if metrics.Port != "" {
+		glog.V(0).Infof("Skydns metrics enabled (%v:%v)", metrics.Path, metrics.Port)
+	} else {
+		glog.V(0).Infof("Skydns metrics not enabled")
 	}
-	glog.Infof("skydns: metrics enabled on : %s:%s", metrics.Path, metrics.Port)
 
 	go s.Run()
 }

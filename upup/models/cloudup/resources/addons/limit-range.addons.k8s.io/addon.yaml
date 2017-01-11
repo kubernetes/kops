@@ -1,0 +1,9 @@
+kind: Addons
+metadata:
+  name: limit-range
+spec:
+  addons:
+  - version: 1.5.0
+    selector:
+      k8s-addon: limit-range.addons.k8s.io
+    manifest: v1.5.0.yaml

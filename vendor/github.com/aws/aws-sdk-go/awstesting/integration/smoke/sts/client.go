@@ -6,11 +6,11 @@ package sts
 import (
 	"github.com/aws/aws-sdk-go/awstesting/integration/smoke"
 	"github.com/aws/aws-sdk-go/service/sts"
-	. "github.com/lsegal/gucumber"
+	"github.com/gucumber/gucumber"
 )
 
 func init() {
-	Before("@sts", func() {
-		World["client"] = sts.New(smoke.Session)
+	gucumber.Before("@sts", func() {
+		gucumber.World["client"] = sts.New(smoke.Session)
 	})
 }

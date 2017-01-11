@@ -19,15 +19,21 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"net"
+	"io/ioutil"
 
 	"github.com/renstrom/dedent"
 	"github.com/spf13/cobra"
 
-	kubeadmapi "k8s.io/kubernetes/cmd/kubeadm/app/api"
+	kubeadmapi "k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm"
+	kubeadmapiext "k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/v1alpha1"
+	"k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/validation"
+	"k8s.io/kubernetes/cmd/kubeadm/app/discovery"
 	kubenode "k8s.io/kubernetes/cmd/kubeadm/app/node"
+	"k8s.io/kubernetes/cmd/kubeadm/app/preflight"
 	kubeadmutil "k8s.io/kubernetes/cmd/kubeadm/app/util"
-	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
+	"k8s.io/kubernetes/pkg/api"
+	clientcmdapi "k8s.io/kubernetes/pkg/client/unversioned/clientcmd/api"
+	"k8s.io/kubernetes/pkg/runtime"
 )
 
 var (
@@ -42,52 +48,118 @@ var (
 )
 
 // NewCmdJoin returns "kubeadm join" command.
-func NewCmdJoin(out io.Writer, s *kubeadmapi.KubeadmConfig) *cobra.Command {
+func NewCmdJoin(out io.Writer) *cobra.Command {
+	versioned := &kubeadmapiext.NodeConfiguration{}
+	api.Scheme.Default(versioned)
+	cfg := kubeadmapi.NodeConfiguration{}
+	api.Scheme.Convert(versioned, &cfg, nil)
+
+	var skipPreFlight bool
+	var cfgPath string
+
 	cmd := &cobra.Command{
-		Use:   "join",
-		Short: "Run this on any machine you wish to join an existing cluster.",
+		Use:   "join <master address>",
+		Short: "Run this on any machine you wish to join an existing cluster",
 		Run: func(cmd *cobra.Command, args []string) {
-			err := RunJoin(out, cmd, args, s)
-			cmdutil.CheckErr(err)
+			j, err := NewJoin(cfgPath, args, &cfg, skipPreFlight)
+			kubeadmutil.CheckErr(err)
+			kubeadmutil.CheckErr(j.Validate())
+			kubeadmutil.CheckErr(j.Run(out))
 		},
 	}
 
-	cmd.PersistentFlags().StringVar(
-		&s.Secrets.GivenToken, "token", "",
-		"(required) Shared secret used to secure bootstrap. Must match the output of 'kubeadm init'",
+	cmd.PersistentFlags().StringVar(&cfgPath, "config", cfgPath, "Path to kubeadm config file")
+
+	cmd.PersistentFlags().BoolVar(
+		&skipPreFlight, "skip-preflight-checks", false,
+		"skip preflight checks normally run before modifying the system",
+	)
+
+	cmd.PersistentFlags().Var(
+		discovery.NewDiscoveryValue(&cfg.Discovery), "discovery",
+		"The discovery method kubeadm will use for connecting nodes to the master",
 	)
 
 	return cmd
 }
 
-// RunJoin executes worked node provisioning and tries to join an existing cluster.
-func RunJoin(out io.Writer, cmd *cobra.Command, args []string, s *kubeadmapi.KubeadmConfig) error {
-	// TODO(phase1+) this we are missing args from the help text, there should be a way to tell cobra about it
-	if len(args) == 0 {
-		return fmt.Errorf("<cmd/join> must specify master IP address (see --help)")
-	}
-	for _, i := range args {
-		addr := net.ParseIP(i) // TODO(phase1+) should allow resolvable names too
-		if addr == nil {
-			return fmt.Errorf("<cmd/join> failed to parse argument (%q) as an IP address", i)
-		}
-		s.JoinFlags.MasterAddrs = append(s.JoinFlags.MasterAddrs, addr)
-	}
+type Join struct {
+	cfg *kubeadmapi.NodeConfiguration
+}
 
-	ok, err := kubeadmutil.UseGivenTokenIfValid(s)
-	if !ok {
+func NewJoin(cfgPath string, args []string, cfg *kubeadmapi.NodeConfiguration, skipPreFlight bool) (*Join, error) {
+
+	fmt.Println("[kubeadm] WARNING: kubeadm is in alpha, please do not use it for production clusters.")
+
+	if cfgPath != "" {
+		b, err := ioutil.ReadFile(cfgPath)
 		if err != nil {
-			return fmt.Errorf("<cmd/join> %v (see --help)\n", err)
+			return nil, fmt.Errorf("unable to read config from %q [%v]", cfgPath, err)
 		}
-		return fmt.Errorf("Must specify --token (see --help)\n")
+		if err := runtime.DecodeInto(api.Codecs.UniversalDecoder(), b, cfg); err != nil {
+			return nil, fmt.Errorf("unable to decode config from %q [%v]", cfgPath, err)
+		}
 	}
 
-	kubeconfig, err := kubenode.RetrieveTrustedClusterInfo(s)
+	if !skipPreFlight {
+		fmt.Println("[preflight] Running pre-flight checks")
+
+		// First, check if we're root separately from the other preflight checks and fail fast
+		if err := preflight.RunRootCheckOnly(); err != nil {
+			return nil, err
+		}
+
+		// Then continue with the others...
+		if err := preflight.RunJoinNodeChecks(cfg); err != nil {
+			return nil, err
+		}
+	} else {
+		fmt.Println("[preflight] Skipping pre-flight checks")
+	}
+
+	// Try to start the kubelet service in case it's inactive
+	preflight.TryStartKubelet()
+
+	return &Join{cfg: cfg}, nil
+}
+
+func (j *Join) Validate() error {
+	return validation.ValidateNodeConfiguration(j.cfg).ToAggregate()
+}
+
+// Run executes worked node provisioning and tries to join an existing cluster.
+func (j *Join) Run(out io.Writer) error {
+	clusterInfo, err := kubenode.RetrieveTrustedClusterInfo(j.cfg.Discovery.Token)
 	if err != nil {
 		return err
 	}
 
-	err = kubeadmutil.WriteKubeconfigIfNotExists(s, "kubelet", kubeconfig)
+	var cfg *clientcmdapi.Config
+	// TODO: delete this first block when we move Token to the discovery interface
+	if j.cfg.Discovery.Token != nil {
+		connectionDetails, err := kubenode.EstablishMasterConnection(j.cfg.Discovery.Token, clusterInfo)
+		if err != nil {
+			return err
+		}
+		err = kubenode.CheckForNodeNameDuplicates(connectionDetails)
+		if err != nil {
+			return err
+		}
+		cfg, err = kubenode.PerformTLSBootstrapDeprecated(connectionDetails)
+		if err != nil {
+			return err
+		}
+	} else {
+		cfg, err = discovery.For(j.cfg.Discovery)
+		if err != nil {
+			return err
+		}
+		if err := kubenode.PerformTLSBootstrap(cfg); err != nil {
+			return err
+		}
+	}
+
+	err = kubeadmutil.WriteKubeconfigIfNotExists("kubelet", cfg)
 	if err != nil {
 		return err
 	}

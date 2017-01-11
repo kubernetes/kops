@@ -22,6 +22,7 @@ import (
 	"k8s.io/kubernetes/pkg/util/exec"
 	"k8s.io/kubernetes/pkg/util/mount"
 	"os"
+	"sort"
 	"time"
 )
 
@@ -105,7 +106,7 @@ func (k *VolumeMountController) safeFormatAndMount(device string, mountpoint str
 
 	// If we are containerized, we still first SafeFormatAndMount in our namespace
 	// This is because SafeFormatAndMount doesn't seem to work in a container
-	safeFormatAndMount := &mount.SafeFormatAndMount{Interface: mount.New(), Runner: exec.New()}
+	safeFormatAndMount := &mount.SafeFormatAndMount{Interface: mount.New(""), Runner: exec.New()}
 
 	// Check if it is already mounted
 	mounts, err := safeFormatAndMount.List()
@@ -193,6 +194,8 @@ func (k *VolumeMountController) attachMasterVolumes() ([]*Volume, error) {
 	}
 
 	if len(tryAttach) != 0 {
+		sort.Stable(ByEtcdClusterName(tryAttach))
+
 		for _, v := range tryAttach {
 			glog.V(2).Infof("Trying to mount master volume: %q", v.ID)
 
@@ -209,4 +212,27 @@ func (k *VolumeMountController) attachMasterVolumes() ([]*Volume, error) {
 	}
 
 	return attached, nil
+}
+
+// ByEtcdClusterName sorts volumes so that we mount in a consistent order,
+// and in particular we try to mount the main etcd volume before the events etcd volume
+type ByEtcdClusterName []*Volume
+
+func (a ByEtcdClusterName) Len() int {
+	return len(a)
+}
+func (a ByEtcdClusterName) Swap(i, j int) {
+	a[i], a[j] = a[j], a[i]
+}
+func (a ByEtcdClusterName) Less(i, j int) bool {
+	nameI := ""
+	if len(a[i].Info.EtcdClusters) > 0 {
+		nameI = a[i].Info.EtcdClusters[0].ClusterKey
+	}
+	nameJ := ""
+	if len(a[j].Info.EtcdClusters) > 0 {
+		nameJ = a[j].Info.EtcdClusters[0].ClusterKey
+	}
+	// reverse so "main" comes before "events"
+	return nameI > nameJ
 }

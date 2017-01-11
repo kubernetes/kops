@@ -48,18 +48,18 @@ type KubeconfigBuilder struct {
 	ClientKey  []byte
 }
 
+const KUBE_CFG_ENV = clientcmd.RecommendedConfigPathEnvVar + "=%s"
+
+// Create new KubeconfigBuilder
 func NewKubeconfigBuilder() *KubeconfigBuilder {
 	c := &KubeconfigBuilder{}
 	c.KubectlPath = "kubectl" // default to in-path
-
-	kubeconfig := os.Getenv(clientcmd.RecommendedConfigPathEnvVar)
-	if kubeconfig == "" {
-		kubeconfig = clientcmd.RecommendedHomeFile
-	}
-	c.KubeconfigPath = kubeconfig
+	kubeConfig := os.Getenv(clientcmd.RecommendedConfigPathEnvVar)
+	c.KubeconfigPath = c.getKubectlPath(kubeConfig)
 	return c
 }
 
+// Create new Rest Client
 func (c *KubeconfigBuilder) BuildRestConfig() (*restclient.Config, error) {
 	restConfig := &restclient.Config{
 		Host: "https://" + c.KubeMasterIP,
@@ -79,6 +79,7 @@ func (c *KubeconfigBuilder) BuildRestConfig() (*restclient.Config, error) {
 	return restConfig, nil
 }
 
+// Write out a new kubeconfig
 func (c *KubeconfigBuilder) WriteKubecfg() error {
 	tmpdir, err := ioutil.TempDir("", "k8s")
 	if err != nil {
@@ -183,20 +184,38 @@ func (c *KubeconfigBuilder) WriteKubecfg() error {
 			return err
 		}
 	}
-
-	split := strings.Split(c.KubeconfigPath, ":")
-	path := c.KubeconfigPath
-	if len(split) > 1 {
-		path = split[0]
-	}
-	fmt.Printf("Wrote config for %s to %q\n", c.Context, path)
+	fmt.Printf("Wrote config for %s to %q\n", c.Context, c.KubeconfigPath)
+	fmt.Printf("Kops has changed your kubectl context to %s\n", c.Context)
 	return nil
+}
+
+func (c *KubeconfigBuilder) DeleteKubeConfig() {
+	c.execKubectl("config", "unset", fmt.Sprintf("clusters.%s", c.Context))
+	c.execKubectl("config", "unset", fmt.Sprintf("users.%s", c.Context))
+	c.execKubectl("config", "unset", fmt.Sprintf("users.%s-basic-auth", c.Context))
+	c.execKubectl("config", "unset", fmt.Sprintf("contexts.%s", c.Context))
+	fmt.Printf("Deleted kubectl config for %s\n", c.Context)
+}
+
+// get the correct path.  Handle empty and multiple values.
+func (c *KubeconfigBuilder) getKubectlPath(kubeConfig string) string {
+
+	if kubeConfig == "" {
+		return clientcmd.RecommendedHomeFile
+	}
+
+	split := strings.Split(kubeConfig, ":")
+	if len(split) > 1 {
+		return split[0]
+	}
+
+	return kubeConfig
 }
 
 func (c *KubeconfigBuilder) execKubectl(args ...string) error {
 	cmd := exec.Command(c.KubectlPath, args...)
 	env := os.Environ()
-	env = append(env, fmt.Sprintf("KUBECONFIG=%s", c.KubeconfigPath))
+	env = append(env, fmt.Sprintf(KUBE_CFG_ENV, c.KubeconfigPath))
 	cmd.Env = env
 
 	glog.V(2).Infof("Running command: %s", strings.Join(cmd.Args, " "))

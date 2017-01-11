@@ -7,6 +7,7 @@
     "serviceAbbreviation":"Amazon SQS",
     "serviceFullName":"Amazon Simple Queue Service",
     "signatureVersion":"v4",
+    "uid":"sqs-2012-11-05",
     "xmlNamespace":"http://queue.amazonaws.com/doc/2012-11-05/"
   },
   "operations":{
@@ -277,19 +278,6 @@
         "Actions":{"shape":"ActionNameList"}
       }
     },
-    "AttributeMap":{
-      "type":"map",
-      "key":{
-        "shape":"QueueAttributeName",
-        "locationName":"Name"
-      },
-      "value":{
-        "shape":"String",
-        "locationName":"Value"
-      },
-      "flattened":true,
-      "locationName":"Attribute"
-    },
     "AttributeNameList":{
       "type":"list",
       "member":{
@@ -427,7 +415,7 @@
       "members":{
         "QueueName":{"shape":"String"},
         "Attributes":{
-          "shape":"AttributeMap",
+          "shape":"QueueAttributeMap",
           "locationName":"Attribute"
         }
       }
@@ -535,7 +523,7 @@
       "type":"structure",
       "members":{
         "Attributes":{
-          "shape":"AttributeMap",
+          "shape":"QueueAttributeMap",
           "locationName":"Attribute"
         }
       }
@@ -618,27 +606,15 @@
         "MD5OfBody":{"shape":"String"},
         "Body":{"shape":"String"},
         "Attributes":{
-          "shape":"AttributeMap",
+          "shape":"MessageSystemAttributeMap",
           "locationName":"Attribute"
         },
         "MD5OfMessageAttributes":{"shape":"String"},
         "MessageAttributes":{
-          "shape":"MessageAttributeMap",
+          "shape":"MessageBodyAttributeMap",
           "locationName":"MessageAttribute"
         }
       }
-    },
-    "MessageAttributeMap":{
-      "type":"map",
-      "key":{
-        "shape":"String",
-        "locationName":"Name"
-      },
-      "value":{
-        "shape":"MessageAttributeValue",
-        "locationName":"Value"
-      },
-      "flattened":true
     },
     "MessageAttributeName":{"type":"string"},
     "MessageAttributeNameList":{
@@ -668,6 +644,18 @@
         "DataType":{"shape":"String"}
       }
     },
+    "MessageBodyAttributeMap":{
+      "type":"map",
+      "key":{
+        "shape":"String",
+        "locationName":"Name"
+      },
+      "value":{
+        "shape":"MessageAttributeValue",
+        "locationName":"Value"
+      },
+      "flattened":true
+    },
     "MessageList":{
       "type":"list",
       "member":{
@@ -686,6 +674,31 @@
         "senderFault":true
       },
       "exception":true
+    },
+    "MessageSystemAttributeMap":{
+      "type":"map",
+      "key":{
+        "shape":"MessageSystemAttributeName",
+        "locationName":"Name"
+      },
+      "value":{
+        "shape":"String",
+        "locationName":"Value"
+      },
+      "flattened":true,
+      "locationName":"Attribute"
+    },
+    "MessageSystemAttributeName":{
+      "type":"string",
+      "enum":[
+        "SenderId",
+        "SentTimestamp",
+        "ApproximateReceiveCount",
+        "ApproximateFirstReceiveTimestamp",
+        "SequenceNumber",
+        "MessageDeduplicationId",
+        "MessageGroupId"
+      ]
     },
     "OverLimit":{
       "type":"structure",
@@ -716,9 +729,23 @@
         "QueueUrl":{"shape":"String"}
       }
     },
+    "QueueAttributeMap":{
+      "type":"map",
+      "key":{
+        "shape":"QueueAttributeName",
+        "locationName":"Name"
+      },
+      "value":{
+        "shape":"String",
+        "locationName":"Value"
+      },
+      "flattened":true,
+      "locationName":"Attribute"
+    },
     "QueueAttributeName":{
       "type":"string",
       "enum":[
+        "All",
         "Policy",
         "VisibilityTimeout",
         "MaximumMessageSize",
@@ -731,7 +758,9 @@
         "ApproximateNumberOfMessagesDelayed",
         "DelaySeconds",
         "ReceiveMessageWaitTimeSeconds",
-        "RedrivePolicy"
+        "RedrivePolicy",
+        "FifoQueue",
+        "ContentBasedDeduplication"
       ]
     },
     "QueueDeletedRecently":{
@@ -790,7 +819,8 @@
         "MessageAttributeNames":{"shape":"MessageAttributeNameList"},
         "MaxNumberOfMessages":{"shape":"Integer"},
         "VisibilityTimeout":{"shape":"Integer"},
-        "WaitTimeSeconds":{"shape":"Integer"}
+        "WaitTimeSeconds":{"shape":"Integer"},
+        "ReceiveRequestAttemptId":{"shape":"String"}
       }
     },
     "ReceiveMessageResult":{
@@ -832,9 +862,11 @@
         "MessageBody":{"shape":"String"},
         "DelaySeconds":{"shape":"Integer"},
         "MessageAttributes":{
-          "shape":"MessageAttributeMap",
+          "shape":"MessageBodyAttributeMap",
           "locationName":"MessageAttribute"
-        }
+        },
+        "MessageDeduplicationId":{"shape":"String"},
+        "MessageGroupId":{"shape":"String"}
       }
     },
     "SendMessageBatchRequestEntryList":{
@@ -867,7 +899,8 @@
         "Id":{"shape":"String"},
         "MessageId":{"shape":"String"},
         "MD5OfMessageBody":{"shape":"String"},
-        "MD5OfMessageAttributes":{"shape":"String"}
+        "MD5OfMessageAttributes":{"shape":"String"},
+        "SequenceNumber":{"shape":"String"}
       }
     },
     "SendMessageBatchResultEntryList":{
@@ -889,9 +922,11 @@
         "MessageBody":{"shape":"String"},
         "DelaySeconds":{"shape":"Integer"},
         "MessageAttributes":{
-          "shape":"MessageAttributeMap",
+          "shape":"MessageBodyAttributeMap",
           "locationName":"MessageAttribute"
-        }
+        },
+        "MessageDeduplicationId":{"shape":"String"},
+        "MessageGroupId":{"shape":"String"}
       }
     },
     "SendMessageResult":{
@@ -899,7 +934,8 @@
       "members":{
         "MD5OfMessageBody":{"shape":"String"},
         "MD5OfMessageAttributes":{"shape":"String"},
-        "MessageId":{"shape":"String"}
+        "MessageId":{"shape":"String"},
+        "SequenceNumber":{"shape":"String"}
       }
     },
     "SetQueueAttributesRequest":{
@@ -911,7 +947,7 @@
       "members":{
         "QueueUrl":{"shape":"String"},
         "Attributes":{
-          "shape":"AttributeMap",
+          "shape":"QueueAttributeMap",
           "locationName":"Attribute"
         }
       }

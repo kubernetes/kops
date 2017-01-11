@@ -19,13 +19,14 @@ package awstasks
 import (
 	"fmt"
 
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
-	"strings"
 )
 
 //go:generate fitask -type=DNSName
@@ -53,7 +54,7 @@ func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
 	}
 
 	request := &route53.ListResourceRecordSetsInput{
-		HostedZoneId: e.Zone.ID,
+		HostedZoneId: e.Zone.ZoneID,
 		// TODO: Start at correct name?
 	}
 
@@ -96,6 +97,23 @@ func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
 	actual.Name = e.Name
 	actual.ResourceType = e.ResourceType
 
+	if found.AliasTarget != nil {
+		dnsName := aws.StringValue(found.AliasTarget.DNSName)
+		glog.Infof("AliasTarget for %q is %q", aws.StringValue(found.Name), dnsName)
+		if dnsName != "" {
+			// TODO: check "looks like" an ELB?
+			lb, err := findLoadBalancerByAlias(cloud, found.AliasTarget)
+			if err != nil {
+				return nil, fmt.Errorf("error mapping DNSName %q to LoadBalancer: %v", dnsName, err)
+			}
+			if lb == nil {
+				glog.Warningf("Unable to find load balancer with DNS name: %q", dnsName)
+			} else {
+				actual.TargetLoadBalancer = &LoadBalancer{ID: lb.LoadBalancerName}
+			}
+		}
+	}
+
 	return actual, nil
 }
 
@@ -135,7 +153,7 @@ func (_ *DNSName) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSName) error
 	changeBatch.Changes = []*route53.Change{change}
 
 	request := &route53.ChangeResourceRecordSetsInput{}
-	request.HostedZoneId = e.Zone.ID
+	request.HostedZoneId = e.Zone.ZoneID
 	request.ChangeBatch = changeBatch
 
 	glog.V(2).Infof("Updating DNS record %q", *e.Name)
@@ -153,17 +171,17 @@ func (_ *DNSName) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSName) error
 type terraformRoute53Record struct {
 	Name    *string  `json:"name"`
 	Type    *string  `json:"type"`
-	TTL     *string  `json:"ttl"`
-	Records []string `json:"records"`
+	TTL     *string  `json:"ttl,omitempty"`
+	Records []string `json:"records,omitempty"`
 
-	Alias  *terraformAlias    `json:"alias"`
+	Alias  *terraformAlias    `json:"alias,omitempty"`
 	ZoneID *terraform.Literal `json:"zone_id"`
 }
 
 type terraformAlias struct {
-	Name                 *string `json:"name"`
-	HostedZoneId         *string `json:"zone_id"`
-	EvaluateTargetHealth *bool   `json:"evaluate_target_health"`
+	Name                 *terraform.Literal `json:"name"`
+	ZoneID               *terraform.Literal `json:"zone_id"`
+	EvaluateTargetHealth *bool              `json:"evaluate_target_health"`
 }
 
 func (_ *DNSName) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *DNSName) error {
@@ -175,9 +193,9 @@ func (_ *DNSName) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *D
 
 	if e.TargetLoadBalancer != nil {
 		tf.Alias = &terraformAlias{
-			Name:                 e.TargetLoadBalancer.DNSName,
+			Name:                 e.TargetLoadBalancer.TerraformLink("dns_name"),
 			EvaluateTargetHealth: aws.Bool(false),
-			HostedZoneId:         e.TargetLoadBalancer.HostedZoneId,
+			ZoneID:               e.TargetLoadBalancer.TerraformLink("zone_id"),
 		}
 	}
 

@@ -22,15 +22,14 @@ import (
 	"github.com/renstrom/dedent"
 	"github.com/spf13/cobra"
 
-	kubeadmapi "k8s.io/kubernetes/cmd/kubeadm/app/api"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/util/flag"
 )
 
-func NewKubeadmCommand(f *cmdutil.Factory, in io.Reader, out, err io.Writer, envParams map[string]string) *cobra.Command {
+func NewKubeadmCommand(f cmdutil.Factory, in io.Reader, out, err io.Writer) *cobra.Command {
 	cmds := &cobra.Command{
 		Use:   "kubeadm",
-		Short: "kubeadm: easily bootstrap a secure Kubernetes cluster.",
+		Short: "kubeadm: easily bootstrap a secure Kubernetes cluster",
 		Long: dedent.Dedent(`
 			kubeadm: easily bootstrap a secure Kubernetes cluster.
 
@@ -38,14 +37,14 @@ func NewKubeadmCommand(f *cmdutil.Factory, in io.Reader, out, err io.Writer, env
 			    │ KUBEADM IS ALPHA, DO NOT USE IT FOR PRODUCTION CLUSTERS! │
 			    │                                                          │
 			    │ But, please try it out! Give us feedback at:             │
-			    │ https://github.com/kubernetes/kubernetes/issues          │
+			    │ https://github.com/kubernetes/kubeadm/issues             │
 			    │ and at-mention @kubernetes/sig-cluster-lifecycle         │
 			    └──────────────────────────────────────────────────────────┘
 
 			Example usage:
 
 			    Create a two-machine cluster with one master (which controls the cluster),
-			    and one node (where workloads, like pods and replica sets run).
+			    and one node (where your workloads, like Pods and ReplicaSets run).
 
 			    ┌──────────────────────────────────────────────────────────┐
 			    │  On the first machine                                    │
@@ -70,21 +69,26 @@ func NewKubeadmCommand(f *cmdutil.Factory, in io.Reader, out, err io.Writer, env
 	//
 	// TODO(phase2) create an abstraction that defines files and the content that needs to
 	// be written to disc and write it all in one go at the end as we have a lot of
-	// crapy little files written from different parts of this code; this could also
-	// be useful for testing
-	// by having this model we can allow users to create some files before `kubeadm init` runs, e.g. PKI assets, we
-	// would then be able to look at files users has given an diff or validate if those are sane, we could also warn
-	// if any of the files had been deprecated
-
-	s := new(kubeadmapi.KubeadmConfig)
-	s.EnvParams = envParams
+	// crappy little files written from different parts of this code; this could also
+	// be useful for testing by having this model we can allow users to create some files before
+	// `kubeadm init` runs, e.g. PKI assets, we would then be able to look at files users has
+	// given an diff or validate if those are sane, we could also warn if any of the files had been deprecated
 
 	cmds.ResetFlags()
 	cmds.SetGlobalNormalizationFunc(flag.WarnWordSepNormalizeFunc)
 
-	cmds.AddCommand(NewCmdInit(out, s))
-	cmds.AddCommand(NewCmdJoin(out, s))
+	cmds.AddCommand(NewCmdInit(out))
+	cmds.AddCommand(NewCmdJoin(out))
+	cmds.AddCommand(NewCmdReset(out))
 	cmds.AddCommand(NewCmdVersion(out))
+
+	// Wrap not yet usable/supported commands in experimental sub-command:
+	experimentalCmd := &cobra.Command{
+		Use:   "ex",
+		Short: "Experimental sub-commands not yet fully functional.",
+	}
+	experimentalCmd.AddCommand(NewCmdToken(out, err))
+	cmds.AddCommand(experimentalCmd)
 
 	return cmds
 }

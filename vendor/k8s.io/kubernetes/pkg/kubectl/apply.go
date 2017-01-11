@@ -17,8 +17,6 @@ limitations under the License.
 package kubectl
 
 import (
-	"encoding/json"
-
 	"k8s.io/kubernetes/pkg/api/annotations"
 	"k8s.io/kubernetes/pkg/api/meta"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
@@ -71,7 +69,7 @@ func SetOriginalConfiguration(info *resource.Info, original []byte) error {
 }
 
 // GetModifiedConfiguration retrieves the modified configuration of the object.
-// If annotate is true, it embeds the result as an anotation in the modified
+// If annotate is true, it embeds the result as an annotation in the modified
 // configuration. If an object was read from the command input, it will use that
 // version of the object. Otherwise, it will use the version from the server.
 func GetModifiedConfiguration(info *resource.Info, annotate bool, codec runtime.Encoder) ([]byte, error) {
@@ -96,7 +94,7 @@ func GetModifiedConfiguration(info *resource.Info, annotate bool, codec runtime.
 		accessor.SetAnnotations(annots)
 		// TODO: this needs to be abstracted - there should be no assumption that versioned object
 		// can be marshalled to JSON.
-		modified, err = json.Marshal(info.VersionedObject)
+		modified, err = runtime.Encode(codec, info.VersionedObject)
 		if err != nil {
 			return nil, err
 		}
@@ -106,7 +104,7 @@ func GetModifiedConfiguration(info *resource.Info, annotate bool, codec runtime.
 			accessor.SetAnnotations(annots)
 			// TODO: this needs to be abstracted - there should be no assumption that versioned object
 			// can be marshalled to JSON.
-			modified, err = json.Marshal(info.VersionedObject)
+			modified, err = runtime.Encode(codec, info.VersionedObject)
 			if err != nil {
 				return nil, err
 			}

@@ -23,6 +23,10 @@ source "${KUBE_ROOT}/hack/lib/init.sh"
 
 kube::golang::setup_env
 
+# start the cache mutation detector by default so that cache mutators will be found
+KUBE_CACHE_MUTATION_DETECTOR="${KUBE_CACHE_MUTATION_DETECTOR:-true}"
+export KUBE_CACHE_MUTATION_DETECTOR
+
 kube::test::find_dirs() {
   (
     cd ${KUBE_ROOT}
@@ -31,6 +35,7 @@ kube::test::find_dirs() {
           -path './_artifacts/*' \
           -o -path './_output/*' \
           -o -path './_gopath/*' \
+          -o -path './cmd/kubeadm/test/*' \
           -o -path './contrib/podex/*' \
           -o -path './output/*' \
           -o -path './release/*' \
@@ -43,12 +48,13 @@ kube::test::find_dirs() {
           -o -path './staging/*' \
           -o -path './vendor/*' \
         \) -prune \
-      \) -name '*_test.go' -print0 | xargs -0n1 dirname | sed 's|^\./||' | sort -u
+      \) -name '*_test.go' -print0 | xargs -0n1 dirname | sed 's|^\./||' | LC_ALL=C sort -u
 
     find -L . \
         -path './_output' -prune \
         -o -path './vendor/k8s.io/client-go/*' \
-      -name '*_test.go' -print0 | xargs -0n1 dirname | sed 's|^\./||' | sort -u
+        -o -path './test/e2e_node/system/*' \
+      -name '*_test.go' -print0 | xargs -0n1 dirname | sed 's|^\./||' | LC_ALL=C sort -u
   )
 }
 
@@ -225,31 +231,42 @@ runTests() {
   # must make sure the output from PARALLEL runs is not mixed. To achieve this,
   # we spawn a subshell for each PARALLEL process, redirecting the output to
   # separate files.
-  # cmd/libs/go2idl/generator is fragile when run under coverage, so ignore it for now.
-  # see: https://github.com/kubernetes/kubernetes/issues/24967
+
+  # ignore paths:
+  # cmd/libs/go2idl/generator: is fragile when run under coverage, so ignore it for now.
+  #                            https://github.com/kubernetes/kubernetes/issues/24967
+  # vendor/k8s.io/client-go/1.4/rest: causes cover internal errors
+  #                            https://github.com/golang/go/issues/16540
+  cover_ignore_dirs="cmd/libs/go2idl/generator|vendor/k8s.io/client-go/1.4/rest"
+  for path in $(echo $cover_ignore_dirs | sed 's/|/ /g'); do
+      echo -e "skipped\tk8s.io/kubernetes/$path"
+  done
   #
   # `go test` does not install the things it builds. `go test -i` installs
   # the build artifacts but doesn't run the tests.  The two together provide
   # a large speedup for tests that do not need to be rebuilt.
-  printf "%s\n" "${@}" | grep -v "cmd/libs/go2idl/generator"| xargs -I{} -n1 -P${KUBE_COVERPROCS} \
-    bash -c "set -o pipefail; _pkg=\"{}\"; _pkg_out=\${_pkg//\//_}; \
-        go test -i ${goflags[@]:+${goflags[@]}} \
-          ${KUBE_RACE} \
-          ${KUBE_TIMEOUT} \
-          -cover -covermode=\"${KUBE_COVERMODE}\" \
-          -coverprofile=\"${cover_report_dir}/\${_pkg}/${cover_profile}\" \
-          \"${KUBE_GO_PACKAGE}/\${_pkg}\" \
-          ${testargs[@]:+${testargs[@]}}
-        go test ${goflags[@]:+${goflags[@]}} \
-          ${KUBE_RACE} \
-          ${KUBE_TIMEOUT} \
-          -cover -covermode=\"${KUBE_COVERMODE}\" \
-          -coverprofile=\"${cover_report_dir}/\${_pkg}/${cover_profile}\" \
-          \"${KUBE_GO_PACKAGE}/\${_pkg}\" \
-          ${testargs[@]:+${testargs[@]}} \
-        | tee ${junit_filename_prefix:+\"${junit_filename_prefix}-\$_pkg_out.stdout\"} \
-        | grep \"${go_test_grep_pattern}\"" \
-      && test_result=$? || test_result=$?
+  printf "%s\n" "${@}" \
+    | grep -Ev $cover_ignore_dirs \
+    | xargs -I{} -n 1 -P ${KUBE_COVERPROCS} \
+    bash -c "set -o pipefail; _pkg=\"\$0\"; _pkg_out=\${_pkg//\//_}; \
+      go test -i ${goflags[@]:+${goflags[@]}} \
+        ${KUBE_RACE} \
+        ${KUBE_TIMEOUT} \
+        -cover -covermode=\"${KUBE_COVERMODE}\" \
+        -coverprofile=\"${cover_report_dir}/\${_pkg}/${cover_profile}\" \
+        \"${KUBE_GO_PACKAGE}/\${_pkg}\" \
+        ${testargs[@]:+${testargs[@]}}
+      go test ${goflags[@]:+${goflags[@]}} \
+        ${KUBE_RACE} \
+        ${KUBE_TIMEOUT} \
+        -cover -covermode=\"${KUBE_COVERMODE}\" \
+        -coverprofile=\"${cover_report_dir}/\${_pkg}/${cover_profile}\" \
+        \"${KUBE_GO_PACKAGE}/\${_pkg}\" \
+        ${testargs[@]:+${testargs[@]}} \
+      | tee ${junit_filename_prefix:+\"${junit_filename_prefix}-\$_pkg_out.stdout\"} \
+      | grep \"${go_test_grep_pattern}\"" \
+    {} \
+    && test_result=$? || test_result=$?
 
   produceJUnitXMLReport "${junit_filename_prefix}"
 

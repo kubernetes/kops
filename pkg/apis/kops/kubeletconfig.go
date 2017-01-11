@@ -20,6 +20,7 @@ import "k8s.io/kops/upup/pkg/fi/utils"
 
 const RoleLabelName = "kubernetes.io/role"
 const RoleMasterLabelValue = "master"
+const RoleNodeLabelValue = "node"
 
 // NodeLabels are defined in the InstanceGroup, but set flags on the kubelet config.
 // We have a conflict here: on the one hand we want an easy to use abstract specification

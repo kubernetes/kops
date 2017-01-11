@@ -17,6 +17,7 @@ limitations under the License.
 package validation
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -24,9 +25,10 @@ import (
 	"strings"
 
 	"github.com/emicklei/go-restful/swagger"
+	ejson "github.com/exponent-io/jsonpath"
 	"github.com/golang/glog"
 	apiutil "k8s.io/kubernetes/pkg/api/util"
-	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/apis/meta/v1/unstructured"
 	utilerrors "k8s.io/kubernetes/pkg/util/errors"
 	"k8s.io/kubernetes/pkg/util/yaml"
 )
@@ -61,6 +63,69 @@ type Schema interface {
 type NullSchema struct{}
 
 func (NullSchema) ValidateBytes(data []byte) error { return nil }
+
+type NoDoubleKeySchema struct{}
+
+func (NoDoubleKeySchema) ValidateBytes(data []byte) error {
+	var list []error = nil
+	if err := validateNoDuplicateKeys(data, "metadata", "labels"); err != nil {
+		list = append(list, err)
+	}
+	if err := validateNoDuplicateKeys(data, "metadata", "annotations"); err != nil {
+		list = append(list, err)
+	}
+	return utilerrors.NewAggregate(list)
+}
+
+func validateNoDuplicateKeys(data []byte, path ...string) error {
+	r := ejson.NewDecoder(bytes.NewReader(data))
+	// This is Go being unfriendly. The 'path ...string' comes in as a
+	// []string, and SeekTo takes ...interface{}, so we can't just pass
+	// the path straight in, we have to copy it.  *sigh*
+	ifacePath := []interface{}{}
+	for ix := range path {
+		ifacePath = append(ifacePath, path[ix])
+	}
+	found, err := r.SeekTo(ifacePath...)
+	if err != nil {
+		return err
+	}
+	if !found {
+		return nil
+	}
+	seen := map[string]bool{}
+	for {
+		tok, err := r.Token()
+		if err != nil {
+			return err
+		}
+		switch t := tok.(type) {
+		case json.Delim:
+			if t.String() == "}" {
+				return nil
+			}
+		case ejson.KeyString:
+			if seen[string(t)] {
+				return fmt.Errorf("duplicate key: %s", string(t))
+			} else {
+				seen[string(t)] = true
+			}
+		}
+	}
+}
+
+type ConjunctiveSchema []Schema
+
+func (c ConjunctiveSchema) ValidateBytes(data []byte) error {
+	var list []error = nil
+	schemas := []Schema(c)
+	for ix := range schemas {
+		if err := schemas[ix].ValidateBytes(data); err != nil {
+			list = append(list, err)
+		}
+	}
+	return utilerrors.NewAggregate(list)
+}
 
 type SwaggerSchema struct {
 	api      swagger.ApiDeclaration
@@ -190,7 +255,7 @@ func (s *SwaggerSchema) ValidateObject(obj interface{}, fieldName, typeName stri
 		if !mapOk {
 			return append(allErrs, fmt.Errorf("field %s: expected object of type map[string]interface{}, but the actual type is %T", fieldName, obj))
 		}
-		if delegated, err := s.delegateIfDifferentApiVersion(runtime.Unstructured{Object: fields}); delegated {
+		if delegated, err := s.delegateIfDifferentApiVersion(&unstructured.Unstructured{Object: fields}); delegated {
 			if err != nil {
 				allErrs = append(allErrs, err)
 			}
@@ -261,7 +326,7 @@ func (s *SwaggerSchema) ValidateObject(obj interface{}, fieldName, typeName stri
 // current SwaggerSchema.
 // First return value is true if the validation was delegated (by a different ApiGroup SwaggerSchema)
 // Second return value is the result of the delegated validation if performed.
-func (s *SwaggerSchema) delegateIfDifferentApiVersion(obj runtime.Unstructured) (bool, error) {
+func (s *SwaggerSchema) delegateIfDifferentApiVersion(obj *unstructured.Unstructured) (bool, error) {
 	// Never delegate objects in the same ApiVersion or we will get infinite recursion
 	if !s.isDifferentApiVersion(obj) {
 		return false, nil
@@ -279,7 +344,7 @@ func (s *SwaggerSchema) delegateIfDifferentApiVersion(obj runtime.Unstructured) 
 
 // isDifferentApiVersion Returns true if obj lives in a different ApiVersion than the SwaggerSchema does.
 // The SwaggerSchema will not be able to process objects in different ApiVersions unless they are vendored.
-func (s *SwaggerSchema) isDifferentApiVersion(obj runtime.Unstructured) bool {
+func (s *SwaggerSchema) isDifferentApiVersion(obj *unstructured.Unstructured) bool {
 	groupVersion := obj.GetAPIVersion()
 	return len(groupVersion) > 0 && s.api.ApiVersion != groupVersion
 }

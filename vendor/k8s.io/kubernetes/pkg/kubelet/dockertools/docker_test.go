@@ -33,7 +33,7 @@ import (
 	dockernat "github.com/docker/go-connections/nat"
 	cadvisorapi "github.com/google/cadvisor/info/v1"
 	"github.com/stretchr/testify/assert"
-	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/apis/componentconfig"
 	"k8s.io/kubernetes/pkg/client/record"
 	"k8s.io/kubernetes/pkg/credentialprovider"
@@ -118,7 +118,7 @@ func TestGetContainerID(t *testing.T) {
 }
 
 func verifyPackUnpack(t *testing.T, podNamespace, podUID, podName, containerName string) {
-	container := &api.Container{Name: containerName}
+	container := &v1.Container{Name: containerName}
 	hasher := adler32.New()
 	hashutil.DeepHashObject(hasher, *container)
 	computedHash := uint64(hasher.Sum32())
@@ -142,7 +142,7 @@ func TestContainerNaming(t *testing.T) {
 	// No Container name
 	verifyPackUnpack(t, "other", podUID, "name", "")
 
-	container := &api.Container{Name: "container"}
+	container := &v1.Container{Name: "container"}
 	podName := "foo"
 	podNamespace := "test"
 	name := fmt.Sprintf("k8s_%s_%s_%s_%s_42", container.Name, podName, podNamespace, podUID)
@@ -315,6 +315,85 @@ func TestMatchImageTagOrSHA(t *testing.T) {
 	}
 }
 
+func TestMatchImageIDOnly(t *testing.T) {
+	for i, testCase := range []struct {
+		Inspected dockertypes.ImageInspect
+		Image     string
+		Output    bool
+	}{
+		// shouldn't match names or tagged names
+		{
+			Inspected: dockertypes.ImageInspect{RepoTags: []string{"ubuntu:latest"}},
+			Image:     "ubuntu",
+			Output:    false,
+		},
+		{
+			Inspected: dockertypes.ImageInspect{RepoTags: []string{"colemickens/hyperkube-amd64:217.9beff63"}},
+			Image:     "colemickens/hyperkube-amd64:217.9beff63",
+			Output:    false,
+		},
+		// should match name@digest refs if they refer to the image ID (but only the full ID)
+		{
+			Inspected: dockertypes.ImageInspect{
+				ID: "sha256:2208f7a29005d226d1ee33a63e33af1f47af6156c740d7d23c7948e8d282d53d",
+			},
+			Image:  "myimage@sha256:2208f7a29005d226d1ee33a63e33af1f47af6156c740d7d23c7948e8d282d53d",
+			Output: true,
+		},
+		{
+			Inspected: dockertypes.ImageInspect{
+				ID: "sha256:2208f7a29005d226d1ee33a63e33af1f47af6156c740d7d23c7948e8d282d53d",
+			},
+			Image:  "myimage@sha256:2208f7a29005",
+			Output: false,
+		},
+		{
+			Inspected: dockertypes.ImageInspect{
+				ID: "sha256:2208f7a29005d226d1ee33a63e33af1f47af6156c740d7d23c7948e8d282d53d",
+			},
+			Image:  "myimage@sha256:2208",
+			Output: false,
+		},
+		// should match when the IDs are literally the same
+		{
+			Inspected: dockertypes.ImageInspect{
+				ID: "foobar",
+			},
+			Image:  "foobar",
+			Output: true,
+		},
+		// shouldn't match mismatched IDs
+		{
+			Inspected: dockertypes.ImageInspect{
+				ID: "sha256:2208f7a29005d226d1ee33a63e33af1f47af6156c740d7d23c7948e8d282d53d",
+			},
+			Image:  "myimage@sha256:0000f7a29005d226d1ee33a63e33af1f47af6156c740d7d23c7948e8d282d53d",
+			Output: false,
+		},
+		// shouldn't match invalid IDs or refs
+		{
+			Inspected: dockertypes.ImageInspect{
+				ID: "sha256:unparseable",
+			},
+			Image:  "myimage@sha256:unparseable",
+			Output: false,
+		},
+		// shouldn't match against repo digests
+		{
+			Inspected: dockertypes.ImageInspect{
+				ID:          "sha256:9bbdf247c91345f0789c10f50a57e36a667af1189687ad1de88a6243d05a2227",
+				RepoDigests: []string{"centos/ruby-23-centos7@sha256:940584acbbfb0347272112d2eb95574625c0c60b4e2fdadb139de5859cf754bf"},
+			},
+			Image:  "centos/ruby-23-centos7@sha256:940584acbbfb0347272112d2eb95574625c0c60b4e2fdadb139de5859cf754bf",
+			Output: false,
+		},
+	} {
+		match := matchImageIDOnly(testCase.Inspected, testCase.Image)
+		assert.Equal(t, testCase.Output, match, fmt.Sprintf("%s is not a match (%d)", testCase.Image, i))
+	}
+
+}
+
 func TestPullWithNoSecrets(t *testing.T) {
 	tests := []struct {
 		imageName     string
@@ -337,7 +416,7 @@ func TestPullWithNoSecrets(t *testing.T) {
 			keyring: fakeKeyring,
 		}
 
-		err := dp.Pull(test.imageName, []api.Secret{})
+		err := dp.Pull(test.imageName, []v1.Secret{})
 		if err != nil {
 			t.Errorf("unexpected non-nil err: %s", err)
 			continue
@@ -380,7 +459,7 @@ func TestPullWithJSONError(t *testing.T) {
 			client:  fakeClient,
 			keyring: fakeKeyring,
 		}
-		err := puller.Pull(test.imageName, []api.Secret{})
+		err := puller.Pull(test.imageName, []v1.Secret{})
 		if err == nil || !strings.Contains(err.Error(), test.expectedError) {
 			t.Errorf("%s: expect error %s, got : %s", i, test.expectedError, err)
 			continue
@@ -404,19 +483,19 @@ func TestPullWithSecrets(t *testing.T) {
 
 	tests := map[string]struct {
 		imageName           string
-		passedSecrets       []api.Secret
+		passedSecrets       []v1.Secret
 		builtInDockerConfig credentialprovider.DockerConfig
 		expectedPulls       []string
 	}{
 		"no matching secrets": {
 			"ubuntu",
-			[]api.Secret{},
+			[]v1.Secret{},
 			credentialprovider.DockerConfig(map[string]credentialprovider.DockerConfigEntry{}),
 			[]string{"ubuntu using {}"},
 		},
 		"default keyring secrets": {
 			"ubuntu",
-			[]api.Secret{},
+			[]v1.Secret{},
 			credentialprovider.DockerConfig(map[string]credentialprovider.DockerConfigEntry{
 				"index.docker.io/v1/": {Username: "built-in", Password: "password", Email: "email", Provider: nil},
 			}),
@@ -424,7 +503,7 @@ func TestPullWithSecrets(t *testing.T) {
 		},
 		"default keyring secrets unused": {
 			"ubuntu",
-			[]api.Secret{},
+			[]v1.Secret{},
 			credentialprovider.DockerConfig(map[string]credentialprovider.DockerConfigEntry{
 				"extraneous": {Username: "built-in", Password: "password", Email: "email", Provider: nil},
 			}),
@@ -432,7 +511,7 @@ func TestPullWithSecrets(t *testing.T) {
 		},
 		"builtin keyring secrets, but use passed": {
 			"ubuntu",
-			[]api.Secret{{Type: api.SecretTypeDockercfg, Data: map[string][]byte{api.DockerConfigKey: dockercfgContent}}},
+			[]v1.Secret{{Type: v1.SecretTypeDockercfg, Data: map[string][]byte{v1.DockerConfigKey: dockercfgContent}}},
 			credentialprovider.DockerConfig(map[string]credentialprovider.DockerConfigEntry{
 				"index.docker.io/v1/": {Username: "built-in", Password: "password", Email: "email", Provider: nil},
 			}),
@@ -440,7 +519,7 @@ func TestPullWithSecrets(t *testing.T) {
 		},
 		"builtin keyring secrets, but use passed with new docker config": {
 			"ubuntu",
-			[]api.Secret{{Type: api.SecretTypeDockerConfigJson, Data: map[string][]byte{api.DockerConfigJsonKey: dockerConfigJsonContent}}},
+			[]v1.Secret{{Type: v1.SecretTypeDockerConfigJson, Data: map[string][]byte{v1.DockerConfigJsonKey: dockerConfigJsonContent}}},
 			credentialprovider.DockerConfig(map[string]credentialprovider.DockerConfigEntry{
 				"index.docker.io/v1/": {Username: "built-in", Password: "password", Email: "email", Provider: nil},
 			}),
@@ -485,7 +564,7 @@ func TestDockerKeyringLookupFails(t *testing.T) {
 		keyring: fakeKeyring,
 	}
 
-	err := dp.Pull("host/repository/image:version", []api.Secret{})
+	err := dp.Pull("host/repository/image:version", []v1.Secret{})
 	if err == nil {
 		t.Errorf("unexpected non-error")
 	}
@@ -614,8 +693,14 @@ type imageTrackingDockerClient struct {
 	imageName string
 }
 
-func (f *imageTrackingDockerClient) InspectImage(name string) (image *dockertypes.ImageInspect, err error) {
-	image, err = f.FakeDockerClient.InspectImage(name)
+func (f *imageTrackingDockerClient) InspectImageByID(name string) (image *dockertypes.ImageInspect, err error) {
+	image, err = f.FakeDockerClient.InspectImageByID(name)
+	f.imageName = name
+	return
+}
+
+func (f *imageTrackingDockerClient) InspectImageByRef(name string) (image *dockertypes.ImageInspect, err error) {
+	image, err = f.FakeDockerClient.InspectImageByRef(name)
 	f.imageName = name
 	return
 }
@@ -823,7 +908,7 @@ func TestFindContainersByPod(t *testing.T) {
 }
 
 func TestMakePortsAndBindings(t *testing.T) {
-	portMapping := func(container, host int, protocol api.Protocol, ip string) kubecontainer.PortMapping {
+	portMapping := func(container, host int, protocol v1.Protocol, ip string) kubecontainer.PortMapping {
 		return kubecontainer.PortMapping{
 			ContainerPort: container,
 			HostPort:      host,
@@ -893,61 +978,6 @@ func TestMakePortsAndBindings(t *testing.T) {
 			}
 		default:
 			t.Errorf("Unexpected docker port: %#v with portbindings: %#v", dockerPort, portBindings)
-		}
-	}
-}
-
-func TestMilliCPUToQuota(t *testing.T) {
-	testCases := []struct {
-		input  int64
-		quota  int64
-		period int64
-	}{
-		{
-			input:  int64(0),
-			quota:  int64(0),
-			period: int64(0),
-		},
-		{
-			input:  int64(5),
-			quota:  int64(1000),
-			period: int64(100000),
-		},
-		{
-			input:  int64(9),
-			quota:  int64(1000),
-			period: int64(100000),
-		},
-		{
-			input:  int64(10),
-			quota:  int64(1000),
-			period: int64(100000),
-		},
-		{
-			input:  int64(200),
-			quota:  int64(20000),
-			period: int64(100000),
-		},
-		{
-			input:  int64(500),
-			quota:  int64(50000),
-			period: int64(100000),
-		},
-		{
-			input:  int64(1000),
-			quota:  int64(100000),
-			period: int64(100000),
-		},
-		{
-			input:  int64(1500),
-			quota:  int64(150000),
-			period: int64(100000),
-		},
-	}
-	for _, testCase := range testCases {
-		quota, period := milliCPUToQuota(testCase.input)
-		if quota != testCase.quota || period != testCase.period {
-			t.Errorf("Input %v, expected quota %v period %v, but got quota %v period %v", testCase.input, testCase.quota, testCase.period, quota, period)
 		}
 	}
 }

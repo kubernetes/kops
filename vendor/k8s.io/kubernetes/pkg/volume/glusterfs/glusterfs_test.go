@@ -19,10 +19,13 @@ package glusterfs
 import (
 	"fmt"
 	"os"
+	"reflect"
 	"testing"
 
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
+	"k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
+	"k8s.io/kubernetes/pkg/client/testing/core"
+	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/types"
 	"k8s.io/kubernetes/pkg/util/exec"
 	"k8s.io/kubernetes/pkg/util/mount"
@@ -39,7 +42,7 @@ func TestCanSupport(t *testing.T) {
 	defer os.RemoveAll(tmpDir)
 
 	plugMgr := volume.VolumePluginMgr{}
-	plugMgr.InitPlugins(ProbeVolumePlugins(), volumetest.NewFakeVolumeHost(tmpDir, nil, nil, "" /* rootContext */))
+	plugMgr.InitPlugins(ProbeVolumePlugins(), volumetest.NewFakeVolumeHost(tmpDir, nil, nil))
 	plug, err := plugMgr.FindPluginByName("kubernetes.io/glusterfs")
 	if err != nil {
 		t.Errorf("Can't find the plugin by name")
@@ -47,10 +50,10 @@ func TestCanSupport(t *testing.T) {
 	if plug.GetPluginName() != "kubernetes.io/glusterfs" {
 		t.Errorf("Wrong name: %s", plug.GetPluginName())
 	}
-	if plug.CanSupport(&volume.Spec{PersistentVolume: &api.PersistentVolume{Spec: api.PersistentVolumeSpec{PersistentVolumeSource: api.PersistentVolumeSource{}}}}) {
+	if plug.CanSupport(&volume.Spec{PersistentVolume: &v1.PersistentVolume{Spec: v1.PersistentVolumeSpec{PersistentVolumeSource: v1.PersistentVolumeSource{}}}}) {
 		t.Errorf("Expected false")
 	}
-	if plug.CanSupport(&volume.Spec{Volume: &api.Volume{VolumeSource: api.VolumeSource{}}}) {
+	if plug.CanSupport(&volume.Spec{Volume: &v1.Volume{VolumeSource: v1.VolumeSource{}}}) {
 		t.Errorf("Expected false")
 	}
 }
@@ -63,18 +66,18 @@ func TestGetAccessModes(t *testing.T) {
 	defer os.RemoveAll(tmpDir)
 
 	plugMgr := volume.VolumePluginMgr{}
-	plugMgr.InitPlugins(ProbeVolumePlugins(), volumetest.NewFakeVolumeHost(tmpDir, nil, nil, "" /* rootContext */))
+	plugMgr.InitPlugins(ProbeVolumePlugins(), volumetest.NewFakeVolumeHost(tmpDir, nil, nil))
 
 	plug, err := plugMgr.FindPersistentPluginByName("kubernetes.io/glusterfs")
 	if err != nil {
 		t.Errorf("Can't find the plugin by name")
 	}
-	if !contains(plug.GetAccessModes(), api.ReadWriteOnce) || !contains(plug.GetAccessModes(), api.ReadOnlyMany) || !contains(plug.GetAccessModes(), api.ReadWriteMany) {
-		t.Errorf("Expected three AccessModeTypes:  %s, %s, and %s", api.ReadWriteOnce, api.ReadOnlyMany, api.ReadWriteMany)
+	if !contains(plug.GetAccessModes(), v1.ReadWriteOnce) || !contains(plug.GetAccessModes(), v1.ReadOnlyMany) || !contains(plug.GetAccessModes(), v1.ReadWriteMany) {
+		t.Errorf("Expected three AccessModeTypes:  %s, %s, and %s", v1.ReadWriteOnce, v1.ReadOnlyMany, v1.ReadWriteMany)
 	}
 }
 
-func contains(modes []api.PersistentVolumeAccessMode, mode api.PersistentVolumeAccessMode) bool {
+func contains(modes []v1.PersistentVolumeAccessMode, mode v1.PersistentVolumeAccessMode) bool {
 	for _, m := range modes {
 		if m == mode {
 			return true
@@ -91,13 +94,13 @@ func doTestPlugin(t *testing.T, spec *volume.Spec) {
 	defer os.RemoveAll(tmpDir)
 
 	plugMgr := volume.VolumePluginMgr{}
-	plugMgr.InitPlugins(ProbeVolumePlugins(), volumetest.NewFakeVolumeHost(tmpDir, nil, nil, "" /* rootContext */))
+	plugMgr.InitPlugins(ProbeVolumePlugins(), volumetest.NewFakeVolumeHost(tmpDir, nil, nil))
 	plug, err := plugMgr.FindPluginByName("kubernetes.io/glusterfs")
 	if err != nil {
 		t.Errorf("Can't find the plugin by name")
 	}
-	ep := &api.Endpoints{ObjectMeta: api.ObjectMeta{Name: "foo"}, Subsets: []api.EndpointSubset{{
-		Addresses: []api.EndpointAddress{{IP: "127.0.0.1"}}}}}
+	ep := &v1.Endpoints{ObjectMeta: v1.ObjectMeta{Name: "foo"}, Subsets: []v1.EndpointSubset{{
+		Addresses: []v1.EndpointAddress{{IP: "127.0.0.1"}}}}}
 	var fcmd exec.FakeCmd
 	fcmd = exec.FakeCmd{
 		CombinedOutputScript: []exec.FakeCombinedOutputAction{
@@ -112,7 +115,7 @@ func doTestPlugin(t *testing.T, spec *volume.Spec) {
 			func(cmd string, args ...string) exec.Cmd { return exec.InitFakeCmd(&fcmd, cmd, args...) },
 		},
 	}
-	pod := &api.Pod{ObjectMeta: api.ObjectMeta{UID: types.UID("poduid")}}
+	pod := &v1.Pod{ObjectMeta: v1.ObjectMeta{UID: types.UID("poduid")}}
 	mounter, err := plug.(*glusterfsPlugin).newMounterInternal(spec, ep, pod, &mount.FakeMounter{}, &fake)
 	volumePath := mounter.GetPath()
 	if err != nil {
@@ -154,21 +157,21 @@ func doTestPlugin(t *testing.T, spec *volume.Spec) {
 }
 
 func TestPluginVolume(t *testing.T) {
-	vol := &api.Volume{
+	vol := &v1.Volume{
 		Name:         "vol1",
-		VolumeSource: api.VolumeSource{Glusterfs: &api.GlusterfsVolumeSource{EndpointsName: "ep", Path: "vol", ReadOnly: false}},
+		VolumeSource: v1.VolumeSource{Glusterfs: &v1.GlusterfsVolumeSource{EndpointsName: "ep", Path: "vol", ReadOnly: false}},
 	}
 	doTestPlugin(t, volume.NewSpecFromVolume(vol))
 }
 
 func TestPluginPersistentVolume(t *testing.T) {
-	vol := &api.PersistentVolume{
-		ObjectMeta: api.ObjectMeta{
+	vol := &v1.PersistentVolume{
+		ObjectMeta: v1.ObjectMeta{
 			Name: "vol1",
 		},
-		Spec: api.PersistentVolumeSpec{
-			PersistentVolumeSource: api.PersistentVolumeSource{
-				Glusterfs: &api.GlusterfsVolumeSource{EndpointsName: "ep", Path: "vol", ReadOnly: false},
+		Spec: v1.PersistentVolumeSpec{
+			PersistentVolumeSource: v1.PersistentVolumeSource{
+				Glusterfs: &v1.GlusterfsVolumeSource{EndpointsName: "ep", Path: "vol", ReadOnly: false},
 			},
 		},
 	}
@@ -183,53 +186,53 @@ func TestPersistentClaimReadOnlyFlag(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpDir)
 
-	pv := &api.PersistentVolume{
-		ObjectMeta: api.ObjectMeta{
+	pv := &v1.PersistentVolume{
+		ObjectMeta: v1.ObjectMeta{
 			Name: "pvA",
 		},
-		Spec: api.PersistentVolumeSpec{
-			PersistentVolumeSource: api.PersistentVolumeSource{
-				Glusterfs: &api.GlusterfsVolumeSource{EndpointsName: "ep", Path: "vol", ReadOnly: false},
+		Spec: v1.PersistentVolumeSpec{
+			PersistentVolumeSource: v1.PersistentVolumeSource{
+				Glusterfs: &v1.GlusterfsVolumeSource{EndpointsName: "ep", Path: "vol", ReadOnly: false},
 			},
-			ClaimRef: &api.ObjectReference{
+			ClaimRef: &v1.ObjectReference{
 				Name: "claimA",
 			},
 		},
 	}
 
-	claim := &api.PersistentVolumeClaim{
-		ObjectMeta: api.ObjectMeta{
+	claim := &v1.PersistentVolumeClaim{
+		ObjectMeta: v1.ObjectMeta{
 			Name:      "claimA",
 			Namespace: "nsA",
 		},
-		Spec: api.PersistentVolumeClaimSpec{
+		Spec: v1.PersistentVolumeClaimSpec{
 			VolumeName: "pvA",
 		},
-		Status: api.PersistentVolumeClaimStatus{
-			Phase: api.ClaimBound,
+		Status: v1.PersistentVolumeClaimStatus{
+			Phase: v1.ClaimBound,
 		},
 	}
 
-	ep := &api.Endpoints{
-		ObjectMeta: api.ObjectMeta{
+	ep := &v1.Endpoints{
+		ObjectMeta: v1.ObjectMeta{
 			Namespace: "nsA",
 			Name:      "ep",
 		},
-		Subsets: []api.EndpointSubset{{
-			Addresses: []api.EndpointAddress{{IP: "127.0.0.1"}},
-			Ports:     []api.EndpointPort{{Name: "foo", Port: 80, Protocol: api.ProtocolTCP}},
+		Subsets: []v1.EndpointSubset{{
+			Addresses: []v1.EndpointAddress{{IP: "127.0.0.1"}},
+			Ports:     []v1.EndpointPort{{Name: "foo", Port: 80, Protocol: v1.ProtocolTCP}},
 		}},
 	}
 
 	client := fake.NewSimpleClientset(pv, claim, ep)
 
 	plugMgr := volume.VolumePluginMgr{}
-	plugMgr.InitPlugins(ProbeVolumePlugins(), volumetest.NewFakeVolumeHost(tmpDir, client, nil, "" /* rootContext */))
+	plugMgr.InitPlugins(ProbeVolumePlugins(), volumetest.NewFakeVolumeHost(tmpDir, client, nil))
 	plug, _ := plugMgr.FindPluginByName(glusterfsPluginName)
 
 	// readOnly bool is supplied by persistent-claim volume source when its mounter creates other volumes
 	spec := volume.NewSpecFromPersistentVolume(pv, true)
-	pod := &api.Pod{ObjectMeta: api.ObjectMeta{Namespace: "nsA", UID: types.UID("poduid")}}
+	pod := &v1.Pod{ObjectMeta: v1.ObjectMeta{Namespace: "nsA", UID: types.UID("poduid")}}
 	mounter, _ := plug.NewMounter(spec, pod, volume.VolumeOptions{})
 
 	if !mounter.GetAttributes().ReadOnly {
@@ -237,62 +240,264 @@ func TestPersistentClaimReadOnlyFlag(t *testing.T) {
 	}
 }
 
-func TestAnnotations(t *testing.T) {
-	// Pass a provisioningConfigs through paramToAnnotations and back through
-	// annotationsToParam and check it did not change in the process.
-	tests := []provisioningConfig{
-		{
-		// Everything empty
-		},
-		{
-			// Everything with a value
-			url:             "http://localhost",
-			user:            "admin",
-			secretNamespace: "default",
-			secretName:      "gluster-secret",
-			userKey:         "mykey",
-		},
-		{
-			// No secret
-			url:             "http://localhost",
-			user:            "admin",
-			secretNamespace: "",
-			secretName:      "",
-			userKey:         "",
+func TestParseClassParameters(t *testing.T) {
+	secret := v1.Secret{
+		Type: "kubernetes.io/glusterfs",
+		Data: map[string][]byte{
+			"data": []byte("mypassword"),
 		},
 	}
 
-	for i, test := range tests {
-		provisioner := &glusterfsVolumeProvisioner{
-			provisioningConfig: test,
-		}
-		deleter := &glusterfsVolumeDeleter{}
-
-		pv := &api.PersistentVolume{
-			ObjectMeta: api.ObjectMeta{
-				Name: "pv",
+	tests := []struct {
+		name         string
+		parameters   map[string]string
+		secret       *v1.Secret
+		expectError  bool
+		expectConfig *provisioningConfig
+	}{
+		{
+			"password",
+			map[string]string{
+				"resturl":     "https://localhost:8080",
+				"restuser":    "admin",
+				"restuserkey": "password",
 			},
-		}
+			nil,   // secret
+			false, // expect error
+			&provisioningConfig{
+				url:         "https://localhost:8080",
+				user:        "admin",
+				userKey:     "password",
+				secretValue: "password",
+				gidMin:      2000,
+				gidMax:      2147483647,
+			},
+		},
+		{
+			"secret",
+			map[string]string{
+				"resturl":         "https://localhost:8080",
+				"restuser":        "admin",
+				"secretname":      "mysecret",
+				"secretnamespace": "default",
+			},
+			&secret,
+			false, // expect error
+			&provisioningConfig{
+				url:             "https://localhost:8080",
+				user:            "admin",
+				secretName:      "mysecret",
+				secretNamespace: "default",
+				secretValue:     "mypassword",
+				gidMin:          2000,
+				gidMax:          2147483647,
+			},
+		},
+		{
+			"no authentication",
+			map[string]string{
+				"resturl":         "https://localhost:8080",
+				"restauthenabled": "false",
+			},
+			&secret,
+			false, // expect error
+			&provisioningConfig{
+				url:    "https://localhost:8080",
+				gidMin: 2000,
+				gidMax: 2147483647,
+			},
+		},
+		{
+			"missing secret",
+			map[string]string{
+				"resturl":         "https://localhost:8080",
+				"secretname":      "mysecret",
+				"secretnamespace": "default",
+			},
+			nil,  // secret
+			true, // expect error
+			nil,
+		},
+		{
+			"secret with no namespace",
+			map[string]string{
+				"resturl":    "https://localhost:8080",
+				"secretname": "mysecret",
+			},
+			&secret,
+			true, // expect error
+			nil,
+		},
+		{
+			"missing url",
+			map[string]string{
+				"restuser":    "admin",
+				"restuserkey": "password",
+			},
+			nil,  // secret
+			true, // expect error
+			nil,
+		},
+		{
+			"unknown parameter",
+			map[string]string{
+				"unknown":     "yes",
+				"resturl":     "https://localhost:8080",
+				"restuser":    "admin",
+				"restuserkey": "password",
+			},
+			nil,  // secret
+			true, // expect error
+			nil,
+		},
+		{
+			"invalid gidMin #1",
+			map[string]string{
+				"resturl":         "https://localhost:8080",
+				"restauthenabled": "false",
+				"gidMin":          "0",
+			},
+			&secret,
+			true, // expect error
+			nil,
+		},
+		{
+			"invalid gidMin #2",
+			map[string]string{
+				"resturl":         "https://localhost:8080",
+				"restauthenabled": "false",
+				"gidMin":          "1999",
+			},
+			&secret,
+			true, // expect error
+			nil,
+		},
+		{
+			"invalid gidMin #3",
+			map[string]string{
+				"resturl":         "https://localhost:8080",
+				"restauthenabled": "false",
+				"gidMin":          "1999",
+			},
+			&secret,
+			true, // expect error
+			nil,
+		},
+		{
+			"invalid gidMax #1",
+			map[string]string{
+				"resturl":         "https://localhost:8080",
+				"restauthenabled": "false",
+				"gidMax":          "0",
+			},
+			&secret,
+			true, // expect error
+			nil,
+		},
+		{
+			"invalid gidMax #2",
+			map[string]string{
+				"resturl":         "https://localhost:8080",
+				"restauthenabled": "false",
+				"gidMax":          "1999",
+			},
+			&secret,
+			true, // expect error
+			nil,
+		},
+		{
+			"invalid gidMax #3",
+			map[string]string{
+				"resturl":         "https://localhost:8080",
+				"restauthenabled": "false",
+				"gidMax":          "1999",
+			},
+			&secret,
+			true, // expect error
+			nil,
+		},
+		{
+			"invalid gidMin:gidMax",
+			map[string]string{
+				"resturl":         "https://localhost:8080",
+				"restauthenabled": "false",
+				"gidMin":          "5001",
+				"gidMax":          "5000",
+			},
+			&secret,
+			true, // expect error
+			nil,
+		},
+		{
+			"valid gidMin",
+			map[string]string{
+				"resturl":         "https://localhost:8080",
+				"restauthenabled": "false",
+				"gidMin":          "4000",
+			},
+			&secret,
+			false, // expect error
+			&provisioningConfig{
+				url:    "https://localhost:8080",
+				gidMin: 4000,
+				gidMax: 2147483647,
+			},
+		},
+		{
+			"valid gidMax",
+			map[string]string{
+				"resturl":         "https://localhost:8080",
+				"restauthenabled": "false",
+				"gidMax":          "5000",
+			},
+			&secret,
+			false, // expect error
+			&provisioningConfig{
+				url:    "https://localhost:8080",
+				gidMin: 2000,
+				gidMax: 5000,
+			},
+		},
+		{
+			"valid gidMin:gidMax",
+			map[string]string{
+				"resturl":         "https://localhost:8080",
+				"restauthenabled": "false",
+				"gidMin":          "4000",
+				"gidMax":          "5000",
+			},
+			&secret,
+			false, // expect error
+			&provisioningConfig{
+				url:    "https://localhost:8080",
+				gidMin: 4000,
+				gidMax: 5000,
+			},
+		},
+	}
 
-		provisioner.paramToAnnotations(pv)
-		err := deleter.annotationsToParam(pv)
-		if err != nil {
-			t.Errorf("test %d failed: %v", i, err)
+	for _, test := range tests {
+
+		client := &fake.Clientset{}
+		client.AddReactor("get", "secrets", func(action core.Action) (handled bool, ret runtime.Object, err error) {
+			if test.secret != nil {
+				return true, test.secret, nil
+			}
+			return true, nil, fmt.Errorf("Test %s did not set a secret", test.name)
+		})
+
+		cfg, err := parseClassParameters(test.parameters, client)
+
+		if err != nil && !test.expectError {
+			t.Errorf("Test %s got unexpected error %v", test.name, err)
 		}
-		if test.url != deleter.url {
-			t.Errorf("test %d failed: expected url %q, got %q", i, test.url, deleter.url)
+		if err == nil && test.expectError {
+			t.Errorf("test %s expected error and got none", test.name)
 		}
-		if test.user != deleter.user {
-			t.Errorf("test %d failed: expected user %q, got %q", i, test.user, deleter.user)
-		}
-		if test.userKey != deleter.userKey {
-			t.Errorf("test %d failed: expected userKey %q, got %q", i, test.userKey, deleter.userKey)
-		}
-		if test.secretNamespace != deleter.secretNamespace {
-			t.Errorf("test %d failed: expected secretNamespace %q, got %q", i, test.secretNamespace, deleter.secretNamespace)
-		}
-		if test.secretName != deleter.secretName {
-			t.Errorf("test %d failed: expected secretName %q, got %q", i, test.secretName, deleter.secretName)
+		if test.expectConfig != nil {
+			if !reflect.DeepEqual(cfg, test.expectConfig) {
+				t.Errorf("Test %s returned unexpected data, expected: %+v, got: %+v", test.name, test.expectConfig, cfg)
+			}
 		}
 	}
 }

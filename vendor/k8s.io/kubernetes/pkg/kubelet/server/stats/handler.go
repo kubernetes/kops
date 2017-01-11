@@ -29,7 +29,7 @@ import (
 	cadvisorapiv2 "github.com/google/cadvisor/info/v2"
 
 	"github.com/emicklei/go-restful"
-	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/kubelet/cm"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
 	"k8s.io/kubernetes/pkg/types"
@@ -41,13 +41,13 @@ type StatsProvider interface {
 	GetContainerInfo(podFullName string, uid types.UID, containerName string, req *cadvisorapi.ContainerInfoRequest) (*cadvisorapi.ContainerInfo, error)
 	GetContainerInfoV2(name string, options cadvisorapiv2.RequestOptions) (map[string]cadvisorapiv2.ContainerInfo, error)
 	GetRawContainerInfo(containerName string, req *cadvisorapi.ContainerInfoRequest, subcontainers bool) (map[string]*cadvisorapi.ContainerInfo, error)
-	GetPodByName(namespace, name string) (*api.Pod, bool)
-	GetNode() (*api.Node, error)
+	GetPodByName(namespace, name string) (*v1.Pod, bool)
+	GetNode() (*v1.Node, error)
 	GetNodeConfig() cm.NodeConfig
 	ImagesFsInfo() (cadvisorapiv2.FsInfo, error)
 	RootFsInfo() (cadvisorapiv2.FsInfo, error)
 	ListVolumesForPod(podUID types.UID) (map[string]volume.Volume, bool)
-	GetPods() []*api.Pod
+	GetPods() []*v1.Pod
 }
 
 type handler struct {
@@ -55,11 +55,11 @@ type handler struct {
 	summaryProvider SummaryProvider
 }
 
-func CreateHandlers(provider StatsProvider, summaryProvider SummaryProvider) *restful.WebService {
+func CreateHandlers(rootPath string, provider StatsProvider, summaryProvider SummaryProvider) *restful.WebService {
 	h := &handler{provider, summaryProvider}
 
 	ws := &restful.WebService{}
-	ws.Path("/stats/").
+	ws.Path(rootPath).
 		Produces(restful.MIME_JSON)
 
 	endpoints := []struct {
@@ -88,23 +88,28 @@ func CreateHandlers(provider StatsProvider, summaryProvider SummaryProvider) *re
 type StatsRequest struct {
 	// The name of the container for which to request stats.
 	// Default: /
+	// +optional
 	ContainerName string `json:"containerName,omitempty"`
 
 	// Max number of stats to return.
 	// If start and end time are specified this limit is ignored.
 	// Default: 60
+	// +optional
 	NumStats int `json:"num_stats,omitempty"`
 
 	// Start time for which to query information.
 	// If omitted, the beginning of time is assumed.
+	// +optional
 	Start time.Time `json:"start,omitempty"`
 
 	// End time for which to query information.
 	// If omitted, current time is assumed.
+	// +optional
 	End time.Time `json:"end,omitempty"`
 
 	// Whether to also include information from subcontainers.
 	// Default: false.
+	// +optional
 	Subcontainers bool `json:"subcontainers,omitempty"`
 }
 
@@ -192,7 +197,7 @@ func (h *handler) handlePodContainer(request *restful.Request, response *restful
 
 	// Default parameters.
 	params := map[string]string{
-		"namespace": api.NamespaceDefault,
+		"namespace": v1.NamespaceDefault,
 		"uid":       "",
 	}
 	for k, v := range request.PathParameters() {

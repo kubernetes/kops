@@ -14,9 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o errexit
+. $(dirname "${BASH_SOURCE}")/common.sh
 
-KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
 BAD_HEADERS=$(${KUBE_ROOT}/hack/verify-boilerplate.sh | awk '{ print $6}')
 FORMATS="sh go Makefile Dockerfile"
 
@@ -26,7 +25,7 @@ do
 	for j in ${BAD_HEADERS}
 	do
 		:
-	        HEADER=$(cat ${KUBE_ROOT}/hack/boilerplate/boilerplate.${i}.txt | sed 's/YEAR/2016/')
+	        HEADER=$(cat ${KUBE_ROOT}/hack/boilerplate/boilerplate.${i}.txt | sed 's/YEAR/2017/')
 			value=$(<${j})
 			if [[ "$j" != *$i ]]
             then

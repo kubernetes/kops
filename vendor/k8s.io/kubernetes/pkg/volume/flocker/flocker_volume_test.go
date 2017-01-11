@@ -20,9 +20,8 @@ import (
 	"fmt"
 	"testing"
 
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/resource"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/api/v1"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	utiltesting "k8s.io/kubernetes/pkg/util/testing"
 	"k8s.io/kubernetes/pkg/volume"
 	volumetest "k8s.io/kubernetes/pkg/volume/testing"
@@ -35,7 +34,7 @@ func newTestableProvisioner(assert *assert.Assertions, options volume.VolumeOpti
 	assert.NoError(err, fmt.Sprintf("can't make a temp dir: %v", err))
 
 	plugMgr := volume.VolumePluginMgr{}
-	plugMgr.InitPlugins(ProbeVolumePlugins(), volumetest.NewFakeVolumeHost(tmpDir, nil, nil, "" /* rootContext */))
+	plugMgr.InitPlugins(ProbeVolumePlugins(), volumetest.NewFakeVolumeHost(tmpDir, nil, nil))
 
 	plug, err := plugMgr.FindPluginByName(pluginName)
 	assert.NoError(err, "Can't find the plugin by name")
@@ -48,13 +47,10 @@ func newTestableProvisioner(assert *assert.Assertions, options volume.VolumeOpti
 func TestProvision(t *testing.T) {
 	assert := assert.New(t)
 
-	cap := resource.MustParse("3Gi")
+	pvc := volumetest.CreateTestPVC("3Gi", []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce})
 	options := volume.VolumeOptions{
-		Capacity: cap,
-		AccessModes: []api.PersistentVolumeAccessMode{
-			api.ReadWriteOnce,
-		},
-		PersistentVolumeReclaimPolicy: api.PersistentVolumeReclaimDelete,
+		PVC: pvc,
+		PersistentVolumeReclaimPolicy: v1.PersistentVolumeReclaimDelete,
 	}
 
 	provisioner := newTestableProvisioner(assert, options)
@@ -62,7 +58,7 @@ func TestProvision(t *testing.T) {
 	persistentSpec, err := provisioner.Provision()
 	assert.NoError(err, "Provision() failed: ", err)
 
-	cap = persistentSpec.Spec.Capacity[api.ResourceStorage]
+	cap := persistentSpec.Spec.Capacity[v1.ResourceStorage]
 
 	assert.Equal(int64(3*1024*1024*1024), cap.Value())
 
@@ -78,11 +74,8 @@ func TestProvision(t *testing.T) {
 
 	// parameters are not supported
 	options = volume.VolumeOptions{
-		Capacity: cap,
-		AccessModes: []api.PersistentVolumeAccessMode{
-			api.ReadWriteOnce,
-		},
-		PersistentVolumeReclaimPolicy: api.PersistentVolumeReclaimDelete,
+		PVC: pvc,
+		PersistentVolumeReclaimPolicy: v1.PersistentVolumeReclaimDelete,
 		Parameters: map[string]string{
 			"not-supported-params": "test123",
 		},
@@ -93,13 +86,10 @@ func TestProvision(t *testing.T) {
 	assert.Error(err, "Provision() did not fail with Parameters specified")
 
 	// selectors are not supported
+	pvc.Spec.Selector = &metav1.LabelSelector{MatchLabels: map[string]string{"key": "value"}}
 	options = volume.VolumeOptions{
-		Capacity: cap,
-		AccessModes: []api.PersistentVolumeAccessMode{
-			api.ReadWriteOnce,
-		},
-		PersistentVolumeReclaimPolicy: api.PersistentVolumeReclaimDelete,
-		Selector:                      &unversioned.LabelSelector{MatchLabels: map[string]string{"key": "value"}},
+		PVC: pvc,
+		PersistentVolumeReclaimPolicy: v1.PersistentVolumeReclaimDelete,
 	}
 
 	provisioner = newTestableProvisioner(assert, options)

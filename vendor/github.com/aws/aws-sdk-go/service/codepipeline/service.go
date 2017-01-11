@@ -21,37 +21,40 @@ import (
 // You can use the AWS CodePipeline API to work with pipelines, stages, actions,
 // gates, and transitions, as described below.
 //
-//  Pipelines are models of automated release processes. Each pipeline is uniquely
+// Pipelines are models of automated release processes. Each pipeline is uniquely
 // named, and consists of actions, gates, and stages.
 //
 // You can work with pipelines by calling:
 //
-//    CreatePipeline, which creates a uniquely-named pipeline.
+//    * CreatePipeline, which creates a uniquely-named pipeline.
 //
-//    DeletePipeline, which deletes the specified pipeline.
+//    * DeletePipeline, which deletes the specified pipeline.
 //
-//    GetPipeline, which returns information about a pipeline structure.
+//    * GetPipeline, which returns information about a pipeline structure.
 //
-//    GetPipelineState, which returns information about the current state of
-// the stages and actions of a pipeline.
+//    * GetPipelineExecution, which returns information about a specific execution
+//    of a pipeline.
 //
-//    ListPipelines, which gets a summary of all of the pipelines associated
-// with your account.
+//    * GetPipelineState, which returns information about the current state
+//    of the stages and actions of a pipeline.
 //
-//    StartPipelineExecution, which runs the the most recent revision of an
-// artifact through the pipeline.
+//    * ListPipelines, which gets a summary of all of the pipelines associated
+//    with your account.
 //
-//    UpdatePipeline, which updates a pipeline with edits or changes to the
-// structure of the pipeline.
+//    * StartPipelineExecution, which runs the the most recent revision of an
+//    artifact through the pipeline.
 //
-//   Pipelines include stages, which are which are logical groupings of gates
-// and actions. Each stage contains one or more actions that must complete before
-// the next stage begins. A stage will result in success or failure. If a stage
-// fails, then the pipeline stops at that stage and will remain stopped until
-// either a new version of an artifact appears in the source location, or a
-// user takes action to re-run the most recent artifact through the pipeline.
-// You can call GetPipelineState, which displays the status of a pipeline, including
-// the status of stages in the pipeline, or GetPipeline, which returns the entire
+//    * UpdatePipeline, which updates a pipeline with edits or changes to the
+//    structure of the pipeline.
+//
+// Pipelines include stages, which are logical groupings of gates and actions.
+// Each stage contains one or more actions that must complete before the next
+// stage begins. A stage will result in success or failure. If a stage fails,
+// then the pipeline stops at that stage and will remain stopped until either
+// a new version of an artifact appears in the source location, or a user takes
+// action to re-run the most recent artifact through the pipeline. You can call
+// GetPipelineState, which displays the status of a pipeline, including the
+// status of stages in the pipeline, or GetPipeline, which returns the entire
 // structure of the pipeline, including the stages of that pipeline. For more
 // information about the structure of stages and actions, also refer to the
 // AWS CodePipeline Pipeline Structure Reference (http://docs.aws.amazon.com/codepipeline/latest/userguide/pipeline-structure.html).
@@ -68,56 +71,58 @@ import (
 //
 // You can work with transitions by calling:
 //
-//    DisableStageTransition, which prevents artifacts from transitioning to
-// the next stage in a pipeline.
+//    * DisableStageTransition, which prevents artifacts from transitioning
+//    to the next stage in a pipeline.
 //
-//    EnableStageTransition, which enables transition of artifacts between
-// stages in a pipeline.
+//    * EnableStageTransition, which enables transition of artifacts between
+//    stages in a pipeline.
 //
-//    Using the API to integrate with AWS CodePipeline
+// Using the API to integrate with AWS CodePipeline
 //
 // For third-party integrators or developers who want to create their own integrations
 // with AWS CodePipeline, the expected sequence varies from the standard API
 // user. In order to integrate with AWS CodePipeline, developers will need to
 // work with the following items:
 //
-//  Jobs, which are instances of an action. For example, a job for a source
-// action might import a revision of an artifact from a source.
+// Jobs, which are instances of an action. For example, a job for a source action
+// might import a revision of an artifact from a source.
 //
 // You can work with jobs by calling:
 //
-//    AcknowledgeJob, which confirms whether a job worker has received the
-// specified job,
+//    * AcknowledgeJob, which confirms whether a job worker has received the
+//    specified job,
 //
-//    GetJobDetails, which returns the details of a job,
+//    * GetJobDetails, which returns the details of a job,
 //
-//    PollForJobs, which determines whether there are any jobs to act upon,
+//    * PollForJobs, which determines whether there are any jobs to act upon,
 //
-//    PutJobFailureResult, which provides details of a job failure, and
 //
-//    PutJobSuccessResult, which provides details of a job success.
+//    * PutJobFailureResult, which provides details of a job failure, and
 //
-//    Third party jobs, which are instances of an action created by a partner
-// action and integrated into AWS CodePipeline. Partner actions are created
-// by members of the AWS Partner Network.
+//    * PutJobSuccessResult, which provides details of a job success.
+//
+// Third party jobs, which are instances of an action created by a partner action
+// and integrated into AWS CodePipeline. Partner actions are created by members
+// of the AWS Partner Network.
 //
 // You can work with third party jobs by calling:
 //
-//    AcknowledgeThirdPartyJob, which confirms whether a job worker has received
-// the specified job,
+//    * AcknowledgeThirdPartyJob, which confirms whether a job worker has received
+//    the specified job,
 //
-//    GetThirdPartyJobDetails, which requests the details of a job for a partner
-// action,
+//    * GetThirdPartyJobDetails, which requests the details of a job for a partner
+//    action,
 //
-//    PollForThirdPartyJobs, which determines whether there are any jobs to
-// act upon,
+//    * PollForThirdPartyJobs, which determines whether there are any jobs to
+//    act upon,
 //
-//    PutThirdPartyJobFailureResult, which provides details of a job failure,
-// and
+//    * PutThirdPartyJobFailureResult, which provides details of a job failure,
+//    and
 //
-//    PutThirdPartyJobSuccessResult, which provides details of a job success.
-//The service client's operations are safe to be used concurrently.
+//    * PutThirdPartyJobSuccessResult, which provides details of a job success.
+// The service client's operations are safe to be used concurrently.
 // It is not safe to mutate any of the client's properties though.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09
 type CodePipeline struct {
 	*client.Client
 }
@@ -128,8 +133,11 @@ var initClient func(*client.Client)
 // Used for custom request initialization logic
 var initRequest func(*request.Request)
 
-// A ServiceName is the name of the service the client will make API calls to.
-const ServiceName = "codepipeline"
+// Service information constants
+const (
+	ServiceName = "codepipeline" // Service endpoint prefix API calls made to.
+	EndpointsID = ServiceName    // Service ID for Regions and Endpoints metadata.
+)
 
 // New creates a new instance of the CodePipeline client with a session.
 // If additional configuration is needed for the client instance use the optional
@@ -142,17 +150,18 @@ const ServiceName = "codepipeline"
 //     // Create a CodePipeline client with additional configuration
 //     svc := codepipeline.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *CodePipeline {
-	c := p.ClientConfig(ServiceName, cfgs...)
-	return newClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion)
+	c := p.ClientConfig(EndpointsID, cfgs...)
+	return newClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion, c.SigningName)
 }
 
 // newClient creates, initializes and returns a new service client instance.
-func newClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion string) *CodePipeline {
+func newClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion, signingName string) *CodePipeline {
 	svc := &CodePipeline{
 		Client: client.New(
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   ServiceName,
+				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
 				APIVersion:    "2015-07-09",

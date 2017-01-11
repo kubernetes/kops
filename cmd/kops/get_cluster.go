@@ -18,42 +18,61 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/spf13/cobra"
+	"io"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/util/pkg/tables"
 	k8sapi "k8s.io/kubernetes/pkg/api"
-	"os"
-	"strings"
+	"k8s.io/kubernetes/pkg/util/sets"
 )
 
-type GetClustersCmd struct {
+type GetClusterOptions struct {
+	// FullSpec determines if we should output the completed (fully populated) spec
 	FullSpec bool
+
+	// ClusterNames is a list of cluster names to show; if not specified all clusters will be shown
+	ClusterNames []string
 }
 
-var getClustersCmd GetClustersCmd
-
 func init() {
+	var options GetClusterOptions
+
 	cmd := &cobra.Command{
 		Use:     "clusters",
 		Aliases: []string{"cluster"},
 		Short:   "get clusters",
 		Long:    `List or get clusters.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := getClustersCmd.Run(args)
+			if len(args) != 0 {
+				options.ClusterNames = append(options.ClusterNames, args...)
+			}
+
+			if rootCommand.clusterName != "" {
+				if len(args) != 0 {
+					exitWithError(fmt.Errorf("cannot mix --name for cluster with positional arguments"))
+				}
+
+				options.ClusterNames = append(options.ClusterNames, rootCommand.clusterName)
+			}
+
+			err := RunGetClusters(&rootCommand, os.Stdout, &options)
 			if err != nil {
 				exitWithError(err)
 			}
 		},
 	}
 
-	getCmd.cobraCommand.AddCommand(cmd)
+	cmd.Flags().BoolVar(&options.FullSpec, "full", options.FullSpec, "Show fully populated configuration")
 
-	cmd.Flags().BoolVar(&getClustersCmd.FullSpec, "full", false, "Show fully populated configuration")
+	getCmd.cobraCommand.AddCommand(cmd)
 }
 
-func (c *GetClustersCmd) Run(args []string) error {
-	client, err := rootCommand.Clientset()
+func RunGetClusters(context Factory, out io.Writer, options *GetClusterOptions) error {
+	client, err := context.Clientset()
 	if err != nil {
 		return err
 	}
@@ -64,19 +83,19 @@ func (c *GetClustersCmd) Run(args []string) error {
 	}
 
 	var clusters []*api.Cluster
-	if len(args) != 0 {
+	if len(options.ClusterNames) != 0 {
 		m := make(map[string]*api.Cluster)
 		for i := range clusterList.Items {
 			c := &clusterList.Items[i]
-			m[c.Name] = c
+			m[c.ObjectMeta.Name] = c
 		}
-		for _, arg := range args {
-			ig := m[arg]
-			if ig == nil {
-				return fmt.Errorf("cluster not found %q", arg)
+		for _, clusterName := range options.ClusterNames {
+			c := m[clusterName]
+			if c == nil {
+				return fmt.Errorf("cluster not found %q", clusterName)
 			}
 
-			clusters = append(clusters, ig)
+			clusters = append(clusters, c)
 		}
 	} else {
 		for i := range clusterList.Items {
@@ -90,53 +109,72 @@ func (c *GetClustersCmd) Run(args []string) error {
 		return nil
 	}
 
-	output := getCmd.output
-	if output == OutputTable {
+	if options.FullSpec {
+		var err error
+		clusters, err = fullClusterSpecs(clusters)
+		if err != nil {
+			return err
+		}
+	}
+
+	switch getCmd.output {
+	case OutputTable:
+
 		t := &tables.Table{}
 		t.AddColumn("NAME", func(c *api.Cluster) string {
-			return c.Name
+			return c.ObjectMeta.Name
 		})
 		t.AddColumn("CLOUD", func(c *api.Cluster) string {
 			return c.Spec.CloudProvider
 		})
 		t.AddColumn("ZONES", func(c *api.Cluster) string {
-			var zoneNames []string
-			for _, z := range c.Spec.Zones {
-				zoneNames = append(zoneNames, z.Name)
+			zones := sets.NewString()
+			for _, s := range c.Spec.Subnets {
+				zones.Insert(s.Zone)
 			}
-			return strings.Join(zoneNames, ",")
+			return strings.Join(zones.List(), ",")
 		})
-		return t.Render(clusters, os.Stdout, "NAME", "CLOUD", "ZONES")
-	} else if output == OutputYaml {
-		if c.FullSpec {
-			var fullSpecs []*api.Cluster
-			for _, cluster := range clusters {
-				configBase, err := registry.ConfigBase(cluster)
-				if err != nil {
-					return fmt.Errorf("error reading full cluster spec for %q: %v", cluster.Name, err)
-				}
-				fullSpec := &api.Cluster{}
-				err = registry.ReadConfig(configBase.Join(registry.PathClusterCompleted), fullSpec)
-				if err != nil {
-					return fmt.Errorf("error reading full cluster spec for %q: %v", cluster.Name, err)
-				}
-				fullSpecs = append(fullSpecs, fullSpec)
-			}
-			clusters = fullSpecs
-		}
+		return t.Render(clusters, out, "NAME", "CLOUD", "ZONES")
 
-		for _, cluster := range clusters {
-			y, err := api.ToYaml(cluster)
-			if err != nil {
-				return fmt.Errorf("error marshaling yaml for %q: %v", cluster.Name, err)
+	case OutputYaml:
+		for i, cluster := range clusters {
+			if i != 0 {
+				_, err = out.Write([]byte("\n\n---\n\n"))
+				if err != nil {
+					return fmt.Errorf("error writing to stdout: %v", err)
+				}
 			}
-			_, err = os.Stdout.Write(y)
-			if err != nil {
-				return fmt.Errorf("error writing to stdout: %v", err)
+			if err := marshalToWriter(cluster, marshalYaml, out); err != nil {
+				return err
 			}
 		}
 		return nil
-	} else {
-		return fmt.Errorf("Unknown output format: %q", output)
+	case OutputJSON:
+		for _, cluster := range clusters {
+			if err := marshalToWriter(cluster, marshalJSON, out); err != nil {
+				return err
+			}
+		}
+		return nil
+
+	default:
+		return fmt.Errorf("Unknown output format: %q", getCmd.output)
 	}
+}
+
+func fullClusterSpecs(clusters []*api.Cluster) ([]*api.Cluster, error) {
+	var fullSpecs []*api.Cluster
+	for _, cluster := range clusters {
+		configBase, err := registry.ConfigBase(cluster)
+		if err != nil {
+			return nil, fmt.Errorf("error reading full cluster spec for %q: %v", cluster.ObjectMeta.Name, err)
+		}
+		fullSpec := &api.Cluster{}
+		err = registry.ReadConfigDeprecated(configBase.Join(registry.PathClusterCompleted), fullSpec)
+		if err != nil {
+			return nil, fmt.Errorf("error reading full cluster spec for %q: %v", cluster.ObjectMeta.Name, err)
+		}
+		fullSpecs = append(fullSpecs, fullSpec)
+	}
+	return fullSpecs, nil
 }

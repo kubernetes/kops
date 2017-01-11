@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/cloudprovider"
 
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
@@ -32,7 +32,8 @@ const (
 	loadBalancerMinimumPriority = 500
 	loadBalancerMaximumPriority = 4096
 
-	machineResourceIDTemplate   = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Compute/virtualMachines/%s"
+	machineIDTemplate           = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Compute/virtualMachines/%s"
+	availabilitySetIDTemplate   = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Compute/availabilitySets/%s"
 	frontendIPConfigIDTemplate  = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/loadBalancers/%s/frontendIPConfigurations/%s"
 	backendPoolIDTemplate       = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/loadBalancers/%s/backendAddressPools/%s"
 	loadBalancerRuleIDTemplate  = "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/loadBalancers/%s/loadBalancingRules/%s"
@@ -43,10 +44,19 @@ const (
 // returns the full identifier of a machine
 func (az *Cloud) getMachineID(machineName string) string {
 	return fmt.Sprintf(
-		machineResourceIDTemplate,
+		machineIDTemplate,
 		az.SubscriptionID,
 		az.ResourceGroup,
 		machineName)
+}
+
+// returns the full identifier of an availabilitySet
+func (az *Cloud) getAvailabilitySetID(availabilitySetName string) string {
+	return fmt.Sprintf(
+		availabilitySetIDTemplate,
+		az.SubscriptionID,
+		az.ResourceGroup,
+		availabilitySetName)
 }
 
 // returns the full identifier of a loadbalancer frontendipconfiguration.
@@ -112,9 +122,9 @@ func getLastSegment(ID string) (string, error) {
 
 // returns the equivalent LoadBalancerRule, SecurityRule and LoadBalancerProbe
 // protocol types for the given Kubernetes protocol type.
-func getProtocolsFromKubernetesProtocol(protocol api.Protocol) (network.TransportProtocol, network.SecurityRuleProtocol, network.ProbeProtocol, error) {
+func getProtocolsFromKubernetesProtocol(protocol v1.Protocol) (network.TransportProtocol, network.SecurityRuleProtocol, network.ProbeProtocol, error) {
 	switch protocol {
-	case api.ProtocolTCP:
+	case v1.ProtocolTCP:
 		return network.TransportProtocolTCP, network.TCP, network.ProbeProtocolTCP, nil
 	default:
 		return "", "", "", fmt.Errorf("Only TCP is supported for Azure LoadBalancers")
@@ -123,12 +133,12 @@ func getProtocolsFromKubernetesProtocol(protocol api.Protocol) (network.Transpor
 
 // This returns the full identifier of the primary NIC for the given VM.
 func getPrimaryInterfaceID(machine compute.VirtualMachine) (string, error) {
-	if len(*machine.Properties.NetworkProfile.NetworkInterfaces) == 1 {
-		return *(*machine.Properties.NetworkProfile.NetworkInterfaces)[0].ID, nil
+	if len(*machine.NetworkProfile.NetworkInterfaces) == 1 {
+		return *(*machine.NetworkProfile.NetworkInterfaces)[0].ID, nil
 	}
 
-	for _, ref := range *machine.Properties.NetworkProfile.NetworkInterfaces {
-		if *ref.Properties.Primary {
+	for _, ref := range *machine.NetworkProfile.NetworkInterfaces {
+		if *ref.Primary {
 			return *ref.ID, nil
 		}
 	}
@@ -137,13 +147,16 @@ func getPrimaryInterfaceID(machine compute.VirtualMachine) (string, error) {
 }
 
 func getPrimaryIPConfig(nic network.Interface) (*network.InterfaceIPConfiguration, error) {
-	if len(*nic.Properties.IPConfigurations) == 1 {
-		return &((*nic.Properties.IPConfigurations)[0]), nil
+	if len(*nic.IPConfigurations) == 1 {
+		return &((*nic.IPConfigurations)[0]), nil
 	}
 
-	// we're here because we either have multiple ipconfigs and can't determine the primary:
-	//   https://github.com/Azure/azure-rest-api-specs/issues/305
-	// or somehow we had zero ipconfigs
+	for _, ref := range *nic.IPConfigurations {
+		if *ref.Primary {
+			return &ref, nil
+		}
+	}
+
 	return nil, fmt.Errorf("failed to determine the determine primary ipconfig. nicname=%q", *nic.Name)
 }
 
@@ -155,31 +168,31 @@ func getBackendPoolName(clusterName string) string {
 	return clusterName
 }
 
-func getRuleName(service *api.Service, port api.ServicePort) string {
+func getRuleName(service *v1.Service, port v1.ServicePort) string {
 	return fmt.Sprintf("%s-%s-%d-%d", getRulePrefix(service), port.Protocol, port.Port, port.NodePort)
 }
 
 // This returns a human-readable version of the Service used to tag some resources.
 // This is only used for human-readable convenience, and not to filter.
-func getServiceName(service *api.Service) string {
+func getServiceName(service *v1.Service) string {
 	return fmt.Sprintf("%s/%s", service.Namespace, service.Name)
 }
 
 // This returns a prefix for loadbalancer/security rules.
-func getRulePrefix(service *api.Service) string {
+func getRulePrefix(service *v1.Service) string {
 	return cloudprovider.GetLoadBalancerName(service)
 }
 
-func serviceOwnsRule(service *api.Service, rule string) bool {
+func serviceOwnsRule(service *v1.Service, rule string) bool {
 	prefix := getRulePrefix(service)
 	return strings.HasPrefix(strings.ToUpper(rule), strings.ToUpper(prefix))
 }
 
-func getFrontendIPConfigName(service *api.Service) string {
+func getFrontendIPConfigName(service *v1.Service) string {
 	return cloudprovider.GetLoadBalancerName(service)
 }
 
-func getPublicIPName(clusterName string, service *api.Service) string {
+func getPublicIPName(clusterName string, service *v1.Service) string {
 	return fmt.Sprintf("%s-%s", clusterName, cloudprovider.GetLoadBalancerName(service))
 }
 
@@ -191,7 +204,7 @@ func getNextAvailablePriority(rules []network.SecurityRule) (int32, error) {
 outer:
 	for smallest < loadBalancerMaximumPriority {
 		for _, rule := range rules {
-			if *rule.Properties.Priority == smallest {
+			if *rule.Priority == smallest {
 				smallest += spread
 				continue outer
 			}
@@ -232,6 +245,6 @@ func (az *Cloud) getIPForMachine(nodeName types.NodeName) (string, error) {
 		return "", err
 	}
 
-	targetIP := *ipConfig.Properties.PrivateIPAddress
+	targetIP := *ipConfig.PrivateIPAddress
 	return targetIP, nil
 }

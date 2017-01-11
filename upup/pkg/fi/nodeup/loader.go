@@ -26,11 +26,14 @@ import (
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kubernetes/pkg/util/sets"
 	"strings"
 	"text/template"
 )
 
 type Loader struct {
+	Builders []fi.ModelBuilder
+
 	templates []*template.Template
 	config    *NodeUpConfig
 	cluster   *api.Cluster
@@ -38,11 +41,11 @@ type Loader struct {
 	assets *fi.AssetStore
 	tasks  map[string]fi.Task
 
-	tags              map[string]struct{}
+	tags              sets.String
 	TemplateFunctions template.FuncMap
 }
 
-func NewLoader(config *NodeUpConfig, cluster *api.Cluster, assets *fi.AssetStore, tags map[string]struct{}) *Loader {
+func NewLoader(config *NodeUpConfig, cluster *api.Cluster, assets *fi.AssetStore, tags sets.String) *Loader {
 	l := &Loader{}
 	l.assets = assets
 	l.tasks = make(map[string]fi.Task)
@@ -122,6 +125,17 @@ func (l *Loader) Build(baseDir vfs.Path) (map[string]fi.Task, error) {
 		return nil, err
 	}
 
+	for _, builder := range l.Builders {
+		context := &fi.ModelBuilderContext{
+			Tasks: l.tasks,
+		}
+		err := builder.Build(context)
+		if err != nil {
+			return nil, err
+		}
+		l.tasks = context.Tasks
+	}
+
 	// If there is a package task, we need an update packages task
 	for _, t := range l.tasks {
 		if _, ok := t.(*nodetasks.Package); ok {
@@ -173,7 +187,6 @@ func (r *Loader) handleFile(i *loader.TreeWalkItem) error {
 	var task *nodetasks.File
 	defaultFileType := nodetasks.FileType_File
 
-	var err error
 	if strings.HasSuffix(i.RelativePath, ".template") {
 		contents, err := i.ReadString()
 		if err != nil {
@@ -189,6 +202,9 @@ func (r *Loader) handleFile(i *loader.TreeWalkItem) error {
 		}
 
 		task, err = nodetasks.NewFileTask(name, fi.NewStringResource(expanded), destPath, i.Meta)
+		if err != nil {
+			return fmt.Errorf("error building task %q: %v", i.RelativePath, err)
+		}
 	} else if strings.HasSuffix(i.RelativePath, ".asset") {
 		contents, err := i.ReadBytes()
 		if err != nil {
@@ -213,7 +229,11 @@ func (r *Loader) handleFile(i *loader.TreeWalkItem) error {
 		}
 
 		task, err = nodetasks.NewFileTask(i.Name, asset, destPath, i.Meta)
+		if err != nil {
+			return fmt.Errorf("error building task %q: %v", i.RelativePath, err)
+		}
 	} else {
+		var err error
 		var contents fi.Resource
 		if vfs.IsDirectory(i.Path) {
 			defaultFileType = nodetasks.FileType_Directory
@@ -221,15 +241,15 @@ func (r *Loader) handleFile(i *loader.TreeWalkItem) error {
 			contents = fi.NewVFSResource(i.Path)
 		}
 		task, err = nodetasks.NewFileTask(i.Name, contents, "/"+i.RelativePath, i.Meta)
+		if err != nil {
+			return fmt.Errorf("error building task %q: %v", i.RelativePath, err)
+		}
 	}
 
 	if task.Type == "" {
 		task.Type = defaultFileType
 	}
 
-	if err != nil {
-		return fmt.Errorf("error building task %q: %v", i.RelativePath, err)
-	}
 	glog.V(2).Infof("path %q -> task %v", i.Path, task)
 
 	if task != nil {

@@ -72,6 +72,8 @@ func NewAWSVolumes() (*AWSVolumes, error) {
 	})
 
 	config := aws.NewConfig()
+	config = config.WithCredentialsChainVerboseErrors(true)
+
 	a.metadata = ec2metadata.New(s, config)
 
 	region, err := a.metadata.Region()

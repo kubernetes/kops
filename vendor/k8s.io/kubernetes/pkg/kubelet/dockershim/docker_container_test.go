@@ -18,22 +18,24 @@ package dockershim
 
 import (
 	"fmt"
+	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 
-	runtimeApi "k8s.io/kubernetes/pkg/kubelet/api/v1alpha1/runtime"
+	runtimeapi "k8s.io/kubernetes/pkg/kubelet/api/v1alpha1/runtime"
+	containertest "k8s.io/kubernetes/pkg/kubelet/container/testing"
 )
 
 // A helper to create a basic config.
-func makeContainerConfig(sConfig *runtimeApi.PodSandboxConfig, name, image string, attempt uint32, labels, annotations map[string]string) *runtimeApi.ContainerConfig {
-	return &runtimeApi.ContainerConfig{
-		Metadata: &runtimeApi.ContainerMetadata{
+func makeContainerConfig(sConfig *runtimeapi.PodSandboxConfig, name, image string, attempt uint32, labels, annotations map[string]string) *runtimeapi.ContainerConfig {
+	return &runtimeapi.ContainerConfig{
+		Metadata: &runtimeapi.ContainerMetadata{
 			Name:    &name,
 			Attempt: &attempt,
 		},
-		Image:       &runtimeApi.ImageSpec{Image: &image},
+		Image:       &runtimeapi.ImageSpec{Image: &image},
 		Labels:      labels,
 		Annotations: annotations,
 	}
@@ -42,25 +44,26 @@ func makeContainerConfig(sConfig *runtimeApi.PodSandboxConfig, name, image strin
 // TestListContainers creates several containers and then list them to check
 // whether the correct metadatas, states, and labels are returned.
 func TestListContainers(t *testing.T) {
-	ds, _, _ := newTestDockerSevice()
+	ds, _, _ := newTestDockerService()
 	podName, namespace := "foo", "bar"
 	containerName, image := "sidecar", "logger"
 
-	configs := []*runtimeApi.ContainerConfig{}
-	sConfigs := []*runtimeApi.PodSandboxConfig{}
+	configs := []*runtimeapi.ContainerConfig{}
+	sConfigs := []*runtimeapi.PodSandboxConfig{}
 	for i := 0; i < 3; i++ {
 		s := makeSandboxConfig(fmt.Sprintf("%s%d", podName, i),
 			fmt.Sprintf("%s%d", namespace, i), fmt.Sprintf("%d", i), 0)
 		labels := map[string]string{"abc.xyz": fmt.Sprintf("label%d", i)}
-		annotations := map[string]string{"foo.bar.baz": fmt.Sprintf("annotaion%d", i)}
+		annotations := map[string]string{"foo.bar.baz": fmt.Sprintf("annotation%d", i)}
 		c := makeContainerConfig(s, fmt.Sprintf("%s%d", containerName, i),
 			fmt.Sprintf("%s:v%d", image, i), uint32(i), labels, annotations)
 		sConfigs = append(sConfigs, s)
 		configs = append(configs, c)
 	}
 
-	expected := []*runtimeApi.Container{}
-	state := runtimeApi.ContainerState_RUNNING
+	expected := []*runtimeapi.Container{}
+	state := runtimeapi.ContainerState_CONTAINER_RUNNING
+	var createdAt int64 = 0
 	for i := range configs {
 		// We don't care about the sandbox id; pass a bogus one.
 		sandboxID := fmt.Sprintf("sandboxid%d", i)
@@ -72,14 +75,16 @@ func TestListContainers(t *testing.T) {
 		imageRef := "" // FakeDockerClient doesn't populate ImageRef yet.
 		// Prepend to the expected list because ListContainers returns
 		// the most recent containers first.
-		expected = append([]*runtimeApi.Container{{
-			Metadata:    configs[i].Metadata,
-			Id:          &id,
-			State:       &state,
-			Image:       configs[i].Image,
-			ImageRef:    &imageRef,
-			Labels:      configs[i].Labels,
-			Annotations: configs[i].Annotations,
+		expected = append([]*runtimeapi.Container{{
+			Metadata:     configs[i].Metadata,
+			Id:           &id,
+			PodSandboxId: &sandboxID,
+			State:        &state,
+			CreatedAt:    &createdAt,
+			Image:        configs[i].Image,
+			ImageRef:     &imageRef,
+			Labels:       configs[i].Labels,
+			Annotations:  configs[i].Annotations,
 		}}, expected...)
 	}
 	containers, err := ds.ListContainers(nil)
@@ -91,22 +96,22 @@ func TestListContainers(t *testing.T) {
 // TestContainerStatus tests the basic lifecycle operations and verify that
 // the status returned reflects the operations performed.
 func TestContainerStatus(t *testing.T) {
-	ds, _, fClock := newTestDockerSevice()
+	ds, fDocker, fClock := newTestDockerService()
 	sConfig := makeSandboxConfig("foo", "bar", "1", 0)
 	labels := map[string]string{"abc.xyz": "foo"}
 	annotations := map[string]string{"foo.bar.baz": "abc"}
 	config := makeContainerConfig(sConfig, "pause", "iamimage", 0, labels, annotations)
 
 	var defaultTime time.Time
-	dt := defaultTime.Unix()
+	dt := defaultTime.UnixNano()
 	ct, st, ft := dt, dt, dt
-	state := runtimeApi.ContainerState_CREATED
+	state := runtimeapi.ContainerState_CONTAINER_CREATED
 	// The following variables are not set in FakeDockerClient.
-	imageRef := ""
+	imageRef := DockerImageIDPrefix + ""
 	exitCode := int32(0)
 	var reason, message string
 
-	expected := &runtimeApi.ContainerStatus{
+	expected := &runtimeapi.ContainerStatus{
 		State:       &state,
 		CreatedAt:   &ct,
 		StartedAt:   &st,
@@ -117,15 +122,23 @@ func TestContainerStatus(t *testing.T) {
 		ExitCode:    &exitCode,
 		Reason:      &reason,
 		Message:     &message,
-		Mounts:      []*runtimeApi.Mount{},
+		Mounts:      []*runtimeapi.Mount{},
 		Labels:      config.Labels,
 		Annotations: config.Annotations,
 	}
 
 	// Create the container.
 	fClock.SetTime(time.Now().Add(-1 * time.Hour))
-	*expected.CreatedAt = fClock.Now().Unix()
-	id, err := ds.CreateContainer("sandboxid", config, sConfig)
+	*expected.CreatedAt = fClock.Now().UnixNano()
+	const sandboxId = "sandboxid"
+	id, err := ds.CreateContainer(sandboxId, config, sConfig)
+
+	// Check internal labels
+	c, err := fDocker.InspectContainer(id)
+	assert.NoError(t, err)
+	assert.Equal(t, c.Config.Labels[containerTypeLabelKey], containerTypeLabelContainer)
+	assert.Equal(t, c.Config.Labels[sandboxIDLabelKey], sandboxId)
+
 	// Set the id manually since we don't know the id until it's created.
 	expected.Id = &id
 	assert.NoError(t, err)
@@ -135,8 +148,8 @@ func TestContainerStatus(t *testing.T) {
 
 	// Advance the clock and start the container.
 	fClock.SetTime(time.Now())
-	*expected.StartedAt = fClock.Now().Unix()
-	*expected.State = runtimeApi.ContainerState_RUNNING
+	*expected.StartedAt = fClock.Now().UnixNano()
+	*expected.State = runtimeapi.ContainerState_CONTAINER_RUNNING
 
 	err = ds.StartContainer(id)
 	assert.NoError(t, err)
@@ -145,8 +158,8 @@ func TestContainerStatus(t *testing.T) {
 
 	// Advance the clock and stop the container.
 	fClock.SetTime(time.Now().Add(1 * time.Hour))
-	*expected.FinishedAt = fClock.Now().Unix()
-	*expected.State = runtimeApi.ContainerState_EXITED
+	*expected.FinishedAt = fClock.Now().UnixNano()
+	*expected.State = runtimeapi.ContainerState_CONTAINER_EXITED
 	*expected.Reason = "Completed"
 
 	err = ds.StopContainer(id, 0)
@@ -159,4 +172,46 @@ func TestContainerStatus(t *testing.T) {
 	assert.NoError(t, err)
 	status, err = ds.ContainerStatus(id)
 	assert.Error(t, err, fmt.Sprintf("status of container: %+v", status))
+}
+
+// TestContainerLogPath tests the container log creation logic.
+func TestContainerLogPath(t *testing.T) {
+	ds, fDocker, _ := newTestDockerService()
+	podLogPath := "/pod/1"
+	containerLogPath := "0"
+	kubeletContainerLogPath := filepath.Join(podLogPath, containerLogPath)
+	sConfig := makeSandboxConfig("foo", "bar", "1", 0)
+	sConfig.LogDirectory = &podLogPath
+	config := makeContainerConfig(sConfig, "pause", "iamimage", 0, nil, nil)
+	config.LogPath = &containerLogPath
+
+	const sandboxId = "sandboxid"
+	id, err := ds.CreateContainer(sandboxId, config, sConfig)
+
+	// Check internal container log label
+	c, err := fDocker.InspectContainer(id)
+	assert.NoError(t, err)
+	assert.Equal(t, c.Config.Labels[containerLogPathLabelKey], kubeletContainerLogPath)
+
+	// Set docker container log path
+	dockerContainerLogPath := "/docker/container/log"
+	c.LogPath = dockerContainerLogPath
+
+	// Verify container log symlink creation
+	fakeOS := ds.os.(*containertest.FakeOS)
+	fakeOS.SymlinkFn = func(oldname, newname string) error {
+		assert.Equal(t, dockerContainerLogPath, oldname)
+		assert.Equal(t, kubeletContainerLogPath, newname)
+		return nil
+	}
+	err = ds.StartContainer(id)
+	assert.NoError(t, err)
+
+	err = ds.StopContainer(id, 0)
+	assert.NoError(t, err)
+
+	// Verify container log symlink deletion
+	err = ds.RemoveContainer(id)
+	assert.NoError(t, err)
+	assert.Equal(t, fakeOS.Removes, []string{kubeletContainerLogPath})
 }

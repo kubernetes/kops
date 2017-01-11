@@ -1,5 +1,0 @@
-Kubelet:
-  # The --configure-cbr0 option was deprecated in v1.4 and removed in v1.5.
-  # Only use it when "classic" is allowed (which, by cluster validation,
-  # is only allowed for clusters <v1.4).
-  ConfigureCBR0: true

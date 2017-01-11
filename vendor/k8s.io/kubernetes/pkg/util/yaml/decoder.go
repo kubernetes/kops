@@ -137,7 +137,7 @@ func (d *YAMLDecoder) Close() error {
 }
 
 const yamlSeparator = "\n---"
-const separator = "---\n"
+const separator = "---"
 
 // splitYAMLDocument is a bufio.SplitFunc for splitting YAML streams into individual documents.
 func splitYAMLDocument(data []byte, atEOF bool) (advance int, token []byte, err error) {
@@ -181,6 +181,7 @@ type YAMLOrJSONDecoder struct {
 	bufferSize int
 
 	decoder decoder
+	rawData []byte
 }
 
 // NewYAMLOrJSONDecoder returns a decoder that will process YAML documents
@@ -198,10 +199,11 @@ func NewYAMLOrJSONDecoder(r io.Reader, bufferSize int) *YAMLOrJSONDecoder {
 // provide object, or returns an error.
 func (d *YAMLOrJSONDecoder) Decode(into interface{}) error {
 	if d.decoder == nil {
-		buffer, isJSON := GuessJSONStream(d.r, d.bufferSize)
+		buffer, origData, isJSON := GuessJSONStream(d.r, d.bufferSize)
 		if isJSON {
 			glog.V(4).Infof("decoding stream as JSON")
 			d.decoder = json.NewDecoder(buffer)
+			d.rawData = origData
 		} else {
 			glog.V(4).Infof("decoding stream as YAML")
 			d.decoder = NewYAMLToJSONDecoder(buffer)
@@ -215,6 +217,13 @@ func (d *YAMLOrJSONDecoder) Decode(into interface{}) error {
 				glog.V(4).Infof("reading stream failed: %v", readErr)
 			}
 			js := string(data)
+
+			// if contents from io.Reader are not complete,
+			// use the original raw data to prevent panic
+			if int64(len(js)) <= syntax.Offset {
+				js = string(d.rawData)
+			}
+
 			start := strings.LastIndex(js[:syntax.Offset], "\n") + 1
 			line := strings.Count(js[:start], "\n")
 			return fmt.Errorf("json: line %d: %s", line, syntax.Error())
@@ -246,16 +255,28 @@ func (r *YAMLReader) Read() ([]byte, error) {
 			return nil, err
 		}
 
-		if string(line) == separator || err == io.EOF {
+		sep := len([]byte(separator))
+		if i := bytes.Index(line, []byte(separator)); i == 0 {
+			// We have a potential document terminator
+			i += sep
+			after := line[i:]
+			if len(strings.TrimRightFunc(string(after), unicode.IsSpace)) == 0 {
+				if buffer.Len() != 0 {
+					return buffer.Bytes(), nil
+				}
+				if err == io.EOF {
+					return nil, err
+				}
+			}
+		}
+		if err == io.EOF {
 			if buffer.Len() != 0 {
+				// If we're at EOF, we have a final, non-terminated line. Return it.
 				return buffer.Bytes(), nil
 			}
-			if err == io.EOF {
-				return nil, err
-			}
-		} else {
-			buffer.Write(line)
+			return nil, err
 		}
+		buffer.Write(line)
 	}
 }
 
@@ -284,10 +305,10 @@ func (r *LineReader) Read() ([]byte, error) {
 // GuessJSONStream scans the provided reader up to size, looking
 // for an open brace indicating this is JSON. It will return the
 // bufio.Reader it creates for the consumer.
-func GuessJSONStream(r io.Reader, size int) (io.Reader, bool) {
+func GuessJSONStream(r io.Reader, size int) (io.Reader, []byte, bool) {
 	buffer := bufio.NewReaderSize(r, size)
 	b, _ := buffer.Peek(size)
-	return buffer, hasJSONPrefix(b)
+	return buffer, b, hasJSONPrefix(b)
 }
 
 var jsonPrefix = []byte("{")

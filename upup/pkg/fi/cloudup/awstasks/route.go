@@ -31,10 +31,14 @@ import (
 type Route struct {
 	Name *string
 
-	RouteTable      *RouteTable
+	RouteTable *RouteTable
+	Instance   *Instance
+	CIDR       *string
+
+	// Either an InternetGateway or a NAT Gateway
+	// MUST be provided.
 	InternetGateway *InternetGateway
-	Instance        *Instance
-	CIDR            *string
+	NatGateway      *NatGateway
 }
 
 func (e *Route) Find(c *fi.Context) (*Route, error) {
@@ -76,6 +80,9 @@ func (e *Route) Find(c *fi.Context) (*Route, error) {
 			if r.GatewayId != nil {
 				actual.InternetGateway = &InternetGateway{ID: r.GatewayId}
 			}
+			if r.NatGatewayId != nil {
+				actual.NatGateway = &NatGateway{ID: r.NatGatewayId}
+			}
 			if r.InstanceId != nil {
 				actual.Instance = &Instance{ID: r.InstanceId}
 			}
@@ -115,11 +122,14 @@ func (s *Route) CheckChanges(a, e, changes *Route) error {
 		if e.Instance != nil {
 			targetCount++
 		}
+		if e.NatGateway != nil {
+			targetCount++
+		}
 		if targetCount == 0 {
-			return fmt.Errorf("InternetGateway or Instance is required")
+			return fmt.Errorf("InternetGateway or Instance or NatGateway is required")
 		}
 		if targetCount != 1 {
-			return fmt.Errorf("Cannot set both InternetGateway and Instance")
+			return fmt.Errorf("Cannot set more than 1 InternetGateway or Instance or NatGateway")
 		}
 	}
 
@@ -140,8 +150,16 @@ func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
 		request.RouteTableId = checkNotNil(e.RouteTable.ID)
 		request.DestinationCidrBlock = checkNotNil(e.CIDR)
 
-		if e.InternetGateway != nil {
+		if e.InternetGateway == nil && e.NatGateway == nil {
+			return fmt.Errorf("missing target for route")
+		} else if e.InternetGateway != nil {
 			request.GatewayId = checkNotNil(e.InternetGateway.ID)
+		} else if e.NatGateway != nil {
+			if err := e.NatGateway.waitAvailable(t.Cloud); err != nil {
+				return err
+			}
+
+			request.NatGatewayId = checkNotNil(e.NatGateway.ID)
 		}
 
 		if e.Instance != nil {
@@ -163,8 +181,16 @@ func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
 		request.RouteTableId = checkNotNil(e.RouteTable.ID)
 		request.DestinationCidrBlock = checkNotNil(e.CIDR)
 
-		if e.InternetGateway != nil {
+		if e.InternetGateway == nil && e.NatGateway == nil {
+			return fmt.Errorf("missing target for route")
+		} else if e.InternetGateway != nil {
 			request.GatewayId = checkNotNil(e.InternetGateway.ID)
+		} else if e.NatGateway != nil {
+			if err := e.NatGateway.waitAvailable(t.Cloud); err != nil {
+				return err
+			}
+
+			request.NatGatewayId = checkNotNil(e.NatGateway.ID)
 		}
 
 		if e.Instance != nil {
@@ -193,7 +219,9 @@ type terraformRoute struct {
 	RouteTableID      *terraform.Literal `json:"route_table_id"`
 	CIDR              *string            `json:"destination_cidr_block,omitempty"`
 	InternetGatewayID *terraform.Literal `json:"gateway_id,omitempty"`
+	NATGatewayID      *terraform.Literal `json:"nat_gateway_id,omitempty"`
 	InstanceID        *terraform.Literal `json:"instance_id,omitempty"`
+	// TODO Kris - Add terraform support for NAT Gateway routes
 }
 
 func (_ *Route) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Route) error {
@@ -202,8 +230,12 @@ func (_ *Route) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Rou
 		RouteTableID: e.RouteTable.TerraformLink(),
 	}
 
-	if e.InternetGateway != nil {
+	if e.InternetGateway == nil && e.NatGateway == nil {
+		return fmt.Errorf("missing target for route")
+	} else if e.InternetGateway != nil {
 		tf.InternetGatewayID = e.InternetGateway.TerraformLink()
+	} else if e.NatGateway != nil {
+		tf.NATGatewayID = e.NatGateway.TerraformLink()
 	}
 
 	if e.Instance != nil {

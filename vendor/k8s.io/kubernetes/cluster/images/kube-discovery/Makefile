@@ -37,6 +37,10 @@ endif
 ifeq ($(ARCH),ppc64le)
 	BASEIMAGE?=ppc64le/debian:jessie
 endif
+ifeq ($(ARCH),s390x)
+	BASEIMAGE?=s390x/debian:jessie
+endif
+
 
 all: build
 
@@ -48,6 +52,6 @@ build:
 	rm -rf "${TEMP_DIR}"
 
 push: build
-	gcloud docker push ${REGISTRY}/kube-discovery-${ARCH}:${VERSION}
+	gcloud docker -- push ${REGISTRY}/kube-discovery-${ARCH}:${VERSION}
 
 .PHONY: all

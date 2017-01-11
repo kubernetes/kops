@@ -23,7 +23,8 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"strings"
 )
 
@@ -37,6 +38,17 @@ type Channel struct {
 type ChannelVersion struct {
 	Version *string `json:"version,omitempty"`
 	Channel *string `json:"channel,omitempty"`
+}
+
+func stringValue(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}
+
+func (c *ChannelVersion) String() string {
+	return "Version=" + stringValue(c.Version) + " Channel=" + stringValue(c.Channel)
 }
 
 func ParseChannelVersion(s string) (*ChannelVersion, error) {
@@ -104,8 +116,8 @@ func (c *ChannelVersion) Replaces(existing *ChannelVersion) bool {
 	return true
 }
 
-func (c *Channel) GetInstalledVersion(k8sClient *release_1_3.Clientset) (*ChannelVersion, error) {
-	ns, err := k8sClient.Namespaces().Get(c.Namespace)
+func (c *Channel) GetInstalledVersion(k8sClient *clientset.Clientset) (*ChannelVersion, error) {
+	ns, err := k8sClient.Namespaces().Get(c.Namespace, metav1.GetOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("error querying namespace %q: %v", c.Namespace, err)
 	}
@@ -125,9 +137,9 @@ type annotationPatchMetadata struct {
 	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
-func (c *Channel) SetInstalledVersion(k8sClient *release_1_3.Clientset, version *ChannelVersion) error {
+func (c *Channel) SetInstalledVersion(k8sClient *clientset.Clientset, version *ChannelVersion) error {
 	// Primarily to check it exists
-	_, err := k8sClient.Namespaces().Get(c.Namespace)
+	_, err := k8sClient.Namespaces().Get(c.Namespace, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("error querying namespace %q: %v", c.Namespace, err)
 	}

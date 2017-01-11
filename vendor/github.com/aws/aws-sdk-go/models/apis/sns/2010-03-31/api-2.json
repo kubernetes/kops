@@ -1,6 +1,7 @@
 {
   "version":"2.0",
   "metadata":{
+    "uid":"sns-2010-03-31",
     "apiVersion":"2010-03-31",
     "endpointPrefix":"sns",
     "protocol":"query",
@@ -38,6 +39,7 @@
       "errors":[
         {"shape":"ThrottledException"},
         {"shape":"InternalErrorException"},
+        {"shape":"AuthorizationErrorException"},
         {"shape":"InvalidParameterException"}
       ]
     },
@@ -203,6 +205,7 @@
       "errors":[
         {"shape":"ThrottledException"},
         {"shape":"InternalErrorException"},
+        {"shape":"AuthorizationErrorException"},
         {"shape":"InvalidParameterException"}
       ]
     },
@@ -274,6 +277,7 @@
       "errors":[
         {"shape":"ThrottledException"},
         {"shape":"InternalErrorException"},
+        {"shape":"AuthorizationErrorException"},
         {"shape":"InvalidParameterException"}
       ]
     },
@@ -360,6 +364,7 @@
       "errors":[
         {"shape":"ThrottledException"},
         {"shape":"InternalErrorException"},
+        {"shape":"AuthorizationErrorException"},
         {"shape":"InvalidParameterException"}
       ]
     },
@@ -440,7 +445,8 @@
       "errors":[
         {"shape":"InvalidParameterException"},
         {"shape":"ThrottledException"},
-        {"shape":"InternalErrorException"}
+        {"shape":"InternalErrorException"},
+        {"shape":"AuthorizationErrorException"}
       ]
     },
     "SetSubscriptionAttributes":{

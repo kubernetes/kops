@@ -20,12 +20,12 @@ import (
 	"fmt"
 	"os"
 	"path"
-	goStrings "strings"
+	gostrings "strings"
 
 	"github.com/golang/glog"
 	"github.com/pborman/uuid"
-	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/resource"
+	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/types"
 	"k8s.io/kubernetes/pkg/util/exec"
 	"k8s.io/kubernetes/pkg/util/mount"
@@ -117,15 +117,15 @@ func (plugin *quobytePlugin) RequiresRemount() bool {
 	return false
 }
 
-func (plugin *quobytePlugin) GetAccessModes() []api.PersistentVolumeAccessMode {
-	return []api.PersistentVolumeAccessMode{
-		api.ReadWriteOnce,
-		api.ReadOnlyMany,
-		api.ReadWriteMany,
+func (plugin *quobytePlugin) GetAccessModes() []v1.PersistentVolumeAccessMode {
+	return []v1.PersistentVolumeAccessMode{
+		v1.ReadWriteOnce,
+		v1.ReadOnlyMany,
+		v1.ReadWriteMany,
 	}
 }
 
-func getVolumeSource(spec *volume.Spec) (*api.QuobyteVolumeSource, bool, error) {
+func getVolumeSource(spec *volume.Spec) (*v1.QuobyteVolumeSource, bool, error) {
 	if spec.Volume != nil && spec.Volume.Quobyte != nil {
 		return spec.Volume.Quobyte, spec.Volume.Quobyte.ReadOnly, nil
 	} else if spec.PersistentVolume != nil &&
@@ -137,10 +137,10 @@ func getVolumeSource(spec *volume.Spec) (*api.QuobyteVolumeSource, bool, error) 
 }
 
 func (plugin *quobytePlugin) ConstructVolumeSpec(volumeName, mountPath string) (*volume.Spec, error) {
-	quobyteVolume := &api.Volume{
+	quobyteVolume := &v1.Volume{
 		Name: volumeName,
-		VolumeSource: api.VolumeSource{
-			Quobyte: &api.QuobyteVolumeSource{
+		VolumeSource: v1.VolumeSource{
+			Quobyte: &v1.QuobyteVolumeSource{
 				Volume: volumeName,
 			},
 		},
@@ -148,11 +148,11 @@ func (plugin *quobytePlugin) ConstructVolumeSpec(volumeName, mountPath string) (
 	return volume.NewSpecFromVolume(quobyteVolume), nil
 }
 
-func (plugin *quobytePlugin) NewMounter(spec *volume.Spec, pod *api.Pod, _ volume.VolumeOptions) (volume.Mounter, error) {
+func (plugin *quobytePlugin) NewMounter(spec *volume.Spec, pod *v1.Pod, _ volume.VolumeOptions) (volume.Mounter, error) {
 	return plugin.newMounterInternal(spec, pod, plugin.host.GetMounter())
 }
 
-func (plugin *quobytePlugin) newMounterInternal(spec *volume.Spec, pod *api.Pod, mounter mount.Interface) (volume.Mounter, error) {
+func (plugin *quobytePlugin) newMounterInternal(spec *volume.Spec, pod *v1.Pod, mounter mount.Interface) (volume.Mounter, error) {
 	source, readOnly, err := getVolumeSource(spec)
 	if err != nil {
 		return nil, err
@@ -182,7 +182,7 @@ func (plugin *quobytePlugin) newUnmounterInternal(volName string, podUID types.U
 		&quobyte{
 			volName: volName,
 			mounter: mounter,
-			pod:     &api.Pod{ObjectMeta: api.ObjectMeta{UID: podUID}},
+			pod:     &v1.Pod{ObjectMeta: v1.ObjectMeta{UID: podUID}},
 			plugin:  plugin,
 		},
 	}, nil
@@ -191,7 +191,7 @@ func (plugin *quobytePlugin) newUnmounterInternal(volName string, podUID types.U
 // Quobyte volumes represent a bare host directory mount of an quobyte export.
 type quobyte struct {
 	volName string
-	pod     *api.Pod
+	pod     *v1.Pod
 	user    string
 	group   string
 	volume  string
@@ -218,6 +218,13 @@ func (mounter *quobyteMounter) GetAttributes() volume.Attributes {
 	}
 }
 
+// Checks prior to mount operations to verify that the required components (binaries, etc.)
+// to mount the volume are available on the underlying node.
+// If not, it returns an error
+func (mounter *quobyteMounter) CanMount() error {
+	return nil
+}
+
 // SetUp attaches the disk and bind mounts to the volume path.
 func (mounter *quobyteMounter) SetUp(fsGroup *int64) error {
 	pluginDir := mounter.plugin.host.GetPluginDir(strings.EscapeQualifiedNameForDisk(quobytePluginName))
@@ -240,7 +247,7 @@ func (mounter *quobyteMounter) SetUpAt(dir string, fsGroup *int64) error {
 		options = append(options, "ro")
 	}
 
-	//if a trailling slash is missing we add it here
+	//if a trailing slash is missing we add it here
 	if err := mounter.mounter.Mount(mounter.correctTraillingSlash(mounter.registry), dir, "quobyte", options); err != nil {
 		return fmt.Errorf("quobyte: mount failed: %v", err)
 	}
@@ -286,7 +293,7 @@ func (unmounter *quobyteUnmounter) TearDownAt(dir string) error {
 
 type quobyteVolumeDeleter struct {
 	*quobyteMounter
-	pv *api.PersistentVolume
+	pv *v1.PersistentVolume
 }
 
 func (plugin *quobytePlugin) NewDeleter(spec *volume.Spec) (volume.Deleter, error) {
@@ -320,10 +327,6 @@ func (plugin *quobytePlugin) newDeleterInternal(spec *volume.Spec) (volume.Delet
 }
 
 func (plugin *quobytePlugin) NewProvisioner(options volume.VolumeOptions) (volume.Provisioner, error) {
-	if len(options.AccessModes) == 0 {
-		options.AccessModes = plugin.GetAccessModes()
-	}
-
 	return plugin.newProvisionerInternal(options)
 }
 
@@ -343,25 +346,21 @@ type quobyteVolumeProvisioner struct {
 	options volume.VolumeOptions
 }
 
-func (provisioner *quobyteVolumeProvisioner) Provision() (*api.PersistentVolume, error) {
-	if provisioner.options.Selector != nil {
+func (provisioner *quobyteVolumeProvisioner) Provision() (*v1.PersistentVolume, error) {
+	if provisioner.options.PVC.Spec.Selector != nil {
 		return nil, fmt.Errorf("claim Selector is not supported")
 	}
-	var apiServer, adminSecretName, quobyteUser, quobytePassword string
-	adminSecretNamespace := "default"
 	provisioner.config = "BASE"
 	provisioner.tenant = "DEFAULT"
 
+	cfg, err := parseAPIConfig(provisioner.plugin, provisioner.options.Parameters)
+	if err != nil {
+		return nil, err
+	}
 	for k, v := range provisioner.options.Parameters {
-		switch goStrings.ToLower(k) {
+		switch gostrings.ToLower(k) {
 		case "registry":
 			provisioner.registry = v
-		case "adminsecretname":
-			adminSecretName = v
-		case "adminsecretnamespace":
-			adminSecretNamespace = v
-		case "quobyteapiserver":
-			apiServer = v
 		case "user":
 			provisioner.user = v
 		case "group":
@@ -370,41 +369,22 @@ func (provisioner *quobyteVolumeProvisioner) Provision() (*api.PersistentVolume,
 			provisioner.tenant = v
 		case "quobyteconfig":
 			provisioner.config = v
+		case "adminsecretname",
+			"adminsecretnamespace",
+			"quobyteapiserver":
+			continue
 		default:
 			return nil, fmt.Errorf("invalid option %q for volume plugin %s", k, provisioner.plugin.GetPluginName())
 		}
 	}
 
-	secretMap, err := util.GetSecret(adminSecretNamespace, adminSecretName, provisioner.plugin.host.GetKubeClient())
-	if err != nil {
-		return nil, err
-	}
-
-	var ok bool
-	if quobyteUser, ok = secretMap["user"]; !ok {
-		return nil, fmt.Errorf("Missing \"user\" in secret")
-	}
-
-	if quobytePassword, ok = secretMap["password"]; !ok {
-		return nil, fmt.Errorf("Missing \"password\" in secret")
-	}
-
 	if !validateRegistry(provisioner.registry) {
-		return nil, fmt.Errorf("Quoybte registry missing or malformed: must be a host:port pair or multiple pairs seperated by commas")
-	}
-
-	if len(apiServer) == 0 {
-		return nil, fmt.Errorf("Quoybte API server missing or malformed: must be a http(s)://host:port pair or multiple pairs seperated by commas")
+		return nil, fmt.Errorf("Quoybte registry missing or malformed: must be a host:port pair or multiple pairs separated by commas")
 	}
 
 	// create random image name
 	provisioner.volume = fmt.Sprintf("kubernetes-dynamic-pvc-%s", uuid.NewUUID())
 
-	cfg := &quobyteAPIConfig{
-		quobyteAPIServer: apiServer,
-		quobyteUser:      quobyteUser,
-		quobytePassword:  quobytePassword,
-	}
 	manager := &quobyteVolumeManager{
 		config: cfg,
 	}
@@ -413,20 +393,16 @@ func (provisioner *quobyteVolumeProvisioner) Provision() (*api.PersistentVolume,
 	if err != nil {
 		return nil, err
 	}
-	pv := new(api.PersistentVolume)
+	pv := new(v1.PersistentVolume)
 	pv.Spec.PersistentVolumeSource.Quobyte = vol
 	pv.Spec.PersistentVolumeReclaimPolicy = provisioner.options.PersistentVolumeReclaimPolicy
-	pv.Spec.AccessModes = provisioner.options.AccessModes
-	pv.Spec.Capacity = api.ResourceList{
-		api.ResourceName(api.ResourceStorage): resource.MustParse(fmt.Sprintf("%dGi", sizeGB)),
+	pv.Spec.AccessModes = provisioner.options.PVC.Spec.AccessModes
+	if len(pv.Spec.AccessModes) == 0 {
+		pv.Spec.AccessModes = provisioner.plugin.GetAccessModes()
 	}
-
-	util.AddVolumeAnnotations(pv, map[string]string{
-		annotationQuobyteAPIServer:          apiServer,
-		annotationQuobyteAPISecret:          adminSecretName,
-		annotationQuobyteAPISecretNamespace: adminSecretNamespace,
-	})
-
+	pv.Spec.Capacity = v1.ResourceList{
+		v1.ResourceName(v1.ResourceStorage): resource.MustParse(fmt.Sprintf("%dGi", sizeGB)),
+	}
 	return pv, nil
 }
 
@@ -435,40 +411,63 @@ func (deleter *quobyteVolumeDeleter) GetPath() string {
 }
 
 func (deleter *quobyteVolumeDeleter) Delete() error {
-	var quobyteUser, quobytePassword string
-	annotations, err := util.ParseVolumeAnnotations(deleter.pv, []string{
-		annotationQuobyteAPISecret,
-		annotationQuobyteAPISecretNamespace,
-		annotationQuobyteAPIServer})
-
+	class, err := util.GetClassForVolume(deleter.plugin.host.GetKubeClient(), deleter.pv)
 	if err != nil {
 		return err
 	}
 
-	secretMap, err := util.GetSecret(
-		annotations[annotationQuobyteAPISecretNamespace],
-		annotations[annotationQuobyteAPISecret],
-		deleter.plugin.host.GetKubeClient())
-
+	cfg, err := parseAPIConfig(deleter.plugin, class.Parameters)
 	if err != nil {
 		return err
+	}
+	manager := &quobyteVolumeManager{
+		config: cfg,
+	}
+	return manager.deleteVolume(deleter)
+}
+
+// Parse API configuration (url, username and password) out of class.Parameters.
+func parseAPIConfig(plugin *quobytePlugin, params map[string]string) (*quobyteAPIConfig, error) {
+	var apiServer, secretName string
+	secretNamespace := "default"
+
+	deleteKeys := []string{}
+
+	for k, v := range params {
+		switch gostrings.ToLower(k) {
+		case "adminsecretname":
+			secretName = v
+			deleteKeys = append(deleteKeys, k)
+		case "adminsecretnamespace":
+			secretNamespace = v
+			deleteKeys = append(deleteKeys, k)
+		case "quobyteapiserver":
+			apiServer = v
+			deleteKeys = append(deleteKeys, k)
+		}
+	}
+
+	if len(apiServer) == 0 {
+		return nil, fmt.Errorf("Quoybte API server missing or malformed: must be a http(s)://host:port pair or multiple pairs separated by commas")
+	}
+
+	secretMap, err := util.GetSecretForPV(secretNamespace, secretName, quobytePluginName, plugin.host.GetKubeClient())
+	if err != nil {
+		return nil, err
+	}
+
+	cfg := &quobyteAPIConfig{
+		quobyteAPIServer: apiServer,
 	}
 
 	var ok bool
-	if quobyteUser, ok = secretMap["user"]; !ok {
-		return fmt.Errorf("Missing \"user\" in secret")
+	if cfg.quobyteUser, ok = secretMap["user"]; !ok {
+		return nil, fmt.Errorf("Missing \"user\" in secret %s/%s", secretNamespace, secretName)
 	}
 
-	if quobytePassword, ok = secretMap["password"]; !ok {
-		return fmt.Errorf("Missing \"password\" in secret")
+	if cfg.quobytePassword, ok = secretMap["password"]; !ok {
+		return nil, fmt.Errorf("Missing \"password\" in secret %s/%s", secretNamespace, secretName)
 	}
 
-	manager := &quobyteVolumeManager{
-		config: &quobyteAPIConfig{
-			quobyteUser:      quobyteUser,
-			quobytePassword:  quobytePassword,
-			quobyteAPIServer: annotations[annotationQuobyteAPIServer],
-		},
-	}
-	return manager.deleteVolume(deleter)
+	return cfg, nil
 }

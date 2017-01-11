@@ -22,15 +22,17 @@ import (
 
 	"github.com/golang/glog"
 
-	"k8s.io/kops/dns-controller/pkg/util"
-	"k8s.io/kops/upup/pkg/fi/utils"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider/rrstype"
 	"sort"
 	"strings"
 	"sync"
 	"sync/atomic"
+
+	"k8s.io/kops/dns-controller/pkg/util"
+	"k8s.io/kubernetes/federation/pkg/dnsprovider"
+	"k8s.io/kubernetes/federation/pkg/dnsprovider/rrstype"
 )
+
+const DefaultTTL = time.Minute
 
 // DNSController applies the desired DNS state to the DNS backend
 type DNSController struct {
@@ -144,7 +146,7 @@ func (c *DNSController) snapshotIfChangedAndReady() *snapshot {
 	aliasTargets := make(map[string][]Record)
 
 	if c.lastSuccessfulSnapshot != nil && s.changeCount == c.lastSuccessfulSnapshot.changeCount {
-		glog.V(4).Infof("No changes since DNS values last successfully applied")
+		glog.V(6).Infof("No changes since DNS values last successfully applied")
 		return nil
 	}
 
@@ -247,15 +249,17 @@ func (c *DNSController) runOnce() error {
 		}
 		oldValues := oldValueMap[k]
 
-		if utils.StringSlicesEqual(newValues, oldValues) {
+		if util.StringSlicesEqual(newValues, oldValues) {
 			glog.V(4).Infof("no change to records for %s", k)
 			continue
 		}
 
-		ttl := 60
-		glog.Infof("Using default TTL of %d seconds", ttl)
+		ttl := DefaultTTL
+		glog.Infof("Using default TTL of %v", ttl)
 
-		err := op.updateRecords(k, newValues, int64(ttl))
+		glog.V(4).Infof("updating records for %s: %v -> %v", k, oldValues, newValues)
+
+		err := op.updateRecords(k, newValues, int64(ttl.Seconds()))
 		if err != nil {
 			glog.Infof("error updating records for %s: %v", k, err)
 			errors = append(errors, err)
@@ -362,10 +366,12 @@ func (o *dnsOp) findZone(fqdn string) dnsprovider.Zone {
 func (o *dnsOp) deleteRecords(k recordKey) error {
 	glog.V(2).Infof("Deleting all records for %s", k)
 
-	zone := o.findZone(k.FQDN)
+	fqdn := EnsureDotSuffix(k.FQDN)
+
+	zone := o.findZone(fqdn)
 	if zone == nil {
 		// TODO: Post event into service / pod
-		return fmt.Errorf("no suitable zone found for %q", k.FQDN)
+		return fmt.Errorf("no suitable zone found for %q", fqdn)
 	}
 
 	rrsProvider, ok := zone.ResourceRecordSets()
@@ -383,8 +389,8 @@ func (o *dnsOp) deleteRecords(k recordKey) error {
 	empty := true
 	for _, rr := range rrs {
 		rrName := EnsureDotSuffix(rr.Name())
-		if rrName != k.FQDN {
-			glog.V(8).Infof("Skipping delete of record %q (name != %s)", rrName, k.FQDN)
+		if rrName != fqdn {
+			glog.V(8).Infof("Skipping delete of record %q (name != %s)", rrName, fqdn)
 			continue
 		}
 		if string(rr.Type()) != string(k.RecordType) {
@@ -409,12 +415,14 @@ func (o *dnsOp) deleteRecords(k recordKey) error {
 }
 
 func (o *dnsOp) updateRecords(k recordKey, newRecords []string, ttl int64) error {
-	glog.V(2).Infof("Updating records for %s: %v", k, newRecords)
+	glog.V(2).Infof("applying changes to DNS provider for %s: %v", k, newRecords)
 
-	zone := o.findZone(k.FQDN)
+	fqdn := EnsureDotSuffix(k.FQDN)
+
+	zone := o.findZone(fqdn)
 	if zone == nil {
 		// TODO: Post event into service / pod
-		return fmt.Errorf("no suitable zone found for %q", k.FQDN)
+		return fmt.Errorf("no suitable zone found for %q", fqdn)
 	}
 
 	rrsProvider, ok := zone.ResourceRecordSets()
@@ -429,12 +437,13 @@ func (o *dnsOp) updateRecords(k recordKey, newRecords []string, ttl int64) error
 
 	var existing dnsprovider.ResourceRecordSet
 	for _, rr := range rrs {
-		if rr.Name() != k.FQDN {
-			glog.V(8).Infof("Skipping record %q (name != %s)", rr.Name(), k.FQDN)
+		rrName := EnsureDotSuffix(rr.Name())
+		if rrName != fqdn {
+			glog.V(8).Infof("Skipping record %q (name != %s)", rrName, fqdn)
 			continue
 		}
 		if string(rr.Type()) != string(k.RecordType) {
-			glog.V(8).Infof("Skipping record %q (type %s != %s)", rr.Name(), rr.Type(), k.RecordType)
+			glog.V(8).Infof("Skipping record %q (type %s != %s)", rrName, rr.Type(), k.RecordType)
 			continue
 		}
 
@@ -451,11 +460,11 @@ func (o *dnsOp) updateRecords(k recordKey, newRecords []string, ttl int64) error
 	}
 
 	glog.V(2).Infof("Updating resource record %s %s", k, newRecords)
-	rr := rrsProvider.New(k.FQDN, newRecords, ttl, rrstype.RrsType(k.RecordType))
+	rr := rrsProvider.New(fqdn, newRecords, ttl, rrstype.RrsType(k.RecordType))
 	cs.Add(rr)
 
 	if err := cs.Apply(); err != nil {
-		return fmt.Errorf("error updating resource record %s %s: %v", k.FQDN, rr.Type(), err)
+		return fmt.Errorf("error updating resource record %s %s: %v", fqdn, rr.Type(), err)
 	}
 
 	return nil
@@ -473,17 +482,42 @@ func (s *DNSControllerScope) MarkReady() {
 }
 
 func (s *DNSControllerScope) Replace(recordName string, records []Record) {
-	glog.V(2).Infof("Update %s/%s: %v", s.ScopeName, recordName, records)
-
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
+	existing, exists := s.Records[recordName]
+
 	if len(records) == 0 {
+		if !exists {
+			glog.V(6).Infof("skipping spurious removal of record %s/%s", s.ScopeName, recordName)
+			return
+		}
+
 		delete(s.Records, recordName)
 	} else {
+		if recordsSliceEquals(existing, records) {
+			glog.V(6).Infof("skipping spurious update of record %s/%s=%s", s.ScopeName, recordName, records)
+			return
+		}
+
 		s.Records[recordName] = records
 	}
+
+	glog.V(2).Infof("Update %s/%s: %v", s.ScopeName, recordName, records)
 	s.parent.recordChange()
+}
+
+// recordsSliceEquals compares two []Record
+func recordsSliceEquals(l, r []Record) bool {
+	if len(l) != len(r) {
+		return false
+	}
+	for i := range l {
+		if l[i] != r[i] {
+			return false
+		}
+	}
+	return true
 }
 
 // CreateScope creates a scope object.

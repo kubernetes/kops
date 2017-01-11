@@ -44,6 +44,31 @@ func (e *Subnet) CompareWithID() *string {
 }
 
 func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
+	subnet, err := e.findEc2Subnet(c)
+	if err != nil {
+		return nil, err
+	}
+
+	if subnet == nil {
+		return nil, nil
+	}
+
+	actual := &Subnet{
+		ID:               subnet.SubnetId,
+		AvailabilityZone: subnet.AvailabilityZone,
+		VPC:              &VPC{ID: subnet.VpcId},
+		CIDR:             subnet.CidrBlock,
+		Name:             findNameTag(subnet.Tags),
+		Shared:           e.Shared,
+	}
+
+	glog.V(2).Infof("found matching subnet %q", *actual.ID)
+	e.ID = actual.ID
+
+	return actual, nil
+}
+
+func (e *Subnet) findEc2Subnet(c *fi.Context) (*ec2.Subnet, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	request := &ec2.DescribeSubnetsInput{}
@@ -66,19 +91,7 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 	}
 
 	subnet := response.Subnets[0]
-	actual := &Subnet{
-		ID:               subnet.SubnetId,
-		AvailabilityZone: subnet.AvailabilityZone,
-		VPC:              &VPC{ID: subnet.VpcId},
-		CIDR:             subnet.CidrBlock,
-		Name:             findNameTag(subnet.Tags),
-		Shared:           e.Shared,
-	}
-
-	glog.V(2).Infof("found matching subnet %q", *actual.ID)
-	e.ID = actual.ID
-
-	return actual, nil
+	return subnet, nil
 }
 
 func (e *Subnet) Run(c *fi.Context) error {

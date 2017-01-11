@@ -46,7 +46,7 @@ if [[ -z "${FEDERATION_PUSH_REPO_BASE}" ]]; then
 fi
 
 FEDERATION_IMAGE_REPO_BASE=${FEDERATION_IMAGE_REPO_BASE:-'gcr.io/google_containers'}
-FEDERATION_NAMESPACE=${FEDERATION_NAMESPACE:-federation}
+FEDERATION_NAMESPACE=${FEDERATION_NAMESPACE:-federation-system}
 
 KUBE_PLATFORM=${KUBE_PLATFORM:-linux}
 KUBE_ARCH=${KUBE_ARCH:-amd64}
@@ -65,11 +65,11 @@ function create-federation-api-objects {
     : "${FEDERATION_IMAGE_TAG?Must set FEDERATION_IMAGE_TAG env var}"
 
     export FEDERATION_APISERVER_DEPLOYMENT_NAME="federation-apiserver"
-    export FEDERATION_APISERVER_IMAGE_REPO="${FEDERATION_PUSH_REPO_BASE}/hyperkube"
+    export FEDERATION_APISERVER_IMAGE_REPO="${FEDERATION_PUSH_REPO_BASE}/hyperkube-amd64"
     export FEDERATION_APISERVER_IMAGE_TAG="${FEDERATION_IMAGE_TAG}"
 
     export FEDERATION_CONTROLLER_MANAGER_DEPLOYMENT_NAME="federation-controller-manager"
-    export FEDERATION_CONTROLLER_MANAGER_IMAGE_REPO="${FEDERATION_PUSH_REPO_BASE}/hyperkube"
+    export FEDERATION_CONTROLLER_MANAGER_IMAGE_REPO="${FEDERATION_PUSH_REPO_BASE}/hyperkube-amd64"
     export FEDERATION_CONTROLLER_MANAGER_IMAGE_TAG="${FEDERATION_IMAGE_TAG}"
 
     if [[ -z "${FEDERATION_DNS_PROVIDER:-}" ]]; then
@@ -109,6 +109,7 @@ function create-federation-api-objects {
 
     export FEDERATION_API_HOST=""
     export KUBE_MASTER_IP=""
+    export IS_DNS_NAME="false"
     if [[ "$KUBERNETES_PROVIDER" == "vagrant" ]];then
 	# The vagrant approach is to use a nodeport service, and point kubectl at one of the nodes
 	$template "${manifests_root}/federation-apiserver-nodeport-service.yaml" | $host_kubectl create -f -
@@ -116,12 +117,25 @@ function create-federation-api-objects {
 	FEDERATION_API_HOST=`printf "$node_addresses" | cut -d " " -f1`
 	KUBE_MASTER_IP="${FEDERATION_API_HOST}:${FEDERATION_API_NODEPORT}"
     elif [[ "$KUBERNETES_PROVIDER" == "gce" || "$KUBERNETES_PROVIDER" == "gke" || "$KUBERNETES_PROVIDER" == "aws" ]];then
+
+	# Any providers where ingress is a DNS name should tick this box.
+	# TODO(chom): attempt to do this automatically
+	if [[ "$KUBERNETES_PROVIDER" == "aws" ]];then
+	    IS_DNS_NAME="true"
+	fi
 	# any capable providers should use a loadbalancer service
 	# we check for ingress.ip and ingress.hostname, so should work for any loadbalancer-providing provider
 	# allows 30x5 = 150 seconds for loadbalancer creation
 	$template "${manifests_root}/federation-apiserver-lb-service.yaml" | $host_kubectl create -f -
 	for i in {1..30};do
 	    echo "attempting to get federation-apiserver loadbalancer hostname ($i / 30)"
+	    LB_STATUS=`${host_kubectl} get -o=jsonpath svc/${FEDERATION_APISERVER_DEPLOYMENT_NAME} --template '{.status.loadBalancer}'`
+	    # Check if ingress field has been set in load balancer status.
+	    if [[ "${LB_STATUS}" != *"ingress"* ]]; then
+	        echo "Waiting for load balancer status to be set"
+	        sleep 5
+	        continue
+	    fi
 	    for field in ip hostname;do
 		FEDERATION_API_HOST=`${host_kubectl} get -o=jsonpath svc/${FEDERATION_APISERVER_DEPLOYMENT_NAME} --template '{.status.loadBalancer.ingress[*].'"${field}}"`
 		if [[ ! -z "${FEDERATION_API_HOST// }" ]];then
@@ -151,7 +165,7 @@ function create-federation-api-objects {
     # controller manager can use to talk to the federation-apiserver.
     # Note that the file name should be "kubeconfig" so that the secret key gets the same name.
     KUBECONFIG_DIR=$(dirname ${KUBECONFIG:-$DEFAULT_KUBECONFIG})
-    CONTEXT=federation-cluster \
+    CONTEXT=${FEDERATION_KUBE_CONTEXT} \
 	   KUBE_BEARER_TOKEN="$FEDERATION_API_TOKEN" \
            KUBE_USER="${KUBE_USER}" \
            KUBE_PASSWORD="${KUBE_PASSWORD}" \
@@ -179,7 +193,7 @@ function create-federation-api-objects {
 
     # Create server certificates.
     ensure-temp-dir
-    echo "Creating federation apiserver certs for IP: $FEDERATION_API_HOST"
+    echo "Creating federation apiserver certs for federation api host: ${FEDERATION_API_HOST} ( is this a dns name?: ${IS_DNS_NAME} )"
     MASTER_NAME="federation-apiserver" create-federation-apiserver-certs ${FEDERATION_API_HOST}
     export FEDERATION_APISERVER_CA_CERT_BASE64="${FEDERATION_APISERVER_CA_CERT_BASE64}"
     export FEDERATION_APISERVER_CERT_BASE64="${FEDERATION_APISERVER_CERT_BASE64}"
@@ -193,7 +207,7 @@ function create-federation-api-objects {
     done
 
     # Update the users kubeconfig to include federation-apiserver credentials.
-    CONTEXT=federation-cluster \
+    CONTEXT=${FEDERATION_KUBE_CONTEXT} \
 	   KUBE_BEARER_TOKEN="$FEDERATION_API_TOKEN" \
            KUBE_USER="${KUBE_USER}" \
            KUBE_PASSWORD="${KUBE_PASSWORD}" \
@@ -239,15 +253,23 @@ function create-federation-api-objects {
 }
 
 # Creates the required certificates for federation apiserver.
-# $1: The public IP for the master.
+# $1: The public IP or DNS name for the master.
 #
 # Assumed vars
 #   KUBE_TEMP
 #   MASTER_NAME
-#
+#   IS_DNS_NAME=true|false
 function create-federation-apiserver-certs {
-  local -r primary_cn="${1}"
-  local sans="IP:${1},DNS:${MASTER_NAME}"
+  local primary_cn
+  local sans
+
+  if [[ "${IS_DNS_NAME:-}" == "true" ]];then
+    primary_cn="$(printf "${1}" | sha1sum | tr " -" " ")"
+    sans="DNS:${1},DNS:${MASTER_NAME}"
+  else
+    primary_cn="${1}"
+    sans="IP:${1},DNS:${MASTER_NAME}"
+  fi
 
   echo "Generating certs for alternate-names: ${sans}"
 
@@ -274,7 +296,7 @@ function push-federation-images {
     source "${KUBE_ROOT}/build/common.sh"
     source "${KUBE_ROOT}/hack/lib/util.sh"
 
-    local FEDERATION_BINARIES=${FEDERATION_BINARIES:-"hyperkube"}
+    local FEDERATION_BINARIES=${FEDERATION_BINARIES:-"hyperkube-amd64"}
 
     local bin_dir="${KUBE_ROOT}/_output/${KUBE_BUILD_STAGE}/server/${KUBE_PLATFORM}-${KUBE_ARCH}/kubernetes/server/bin"
 
@@ -318,7 +340,7 @@ function push-federation-images {
         kube::log::status "Pushing ${docker_image_tag}"
         if [[ "${FEDERATION_PUSH_REPO_BASE}" == "gcr.io/"* ]]; then
             echo " -> GCR repository detected. Using gcloud"
-            gcloud docker push "${docker_image_tag}"
+            gcloud docker -- push "${docker_image_tag}"
         else
             docker push "${docker_image_tag}"
         fi
@@ -329,8 +351,9 @@ function push-federation-images {
 }
 
 function cleanup-federation-api-objects {
+  echo "Cleaning Federation control plane objects"
   # Delete all resources with the federated-cluster label.
   $host_kubectl delete pods,svc,rc,deployment,secret -lapp=federated-cluster
   # Delete all resources in FEDERATION_NAMESPACE.
-  $host_kubectl delete pods,svc,rc,deployment,secret --namespace=${FEDERATION_NAMESPACE} --all
+  $host_kubectl delete pvc,pv,pods,svc,rc,deployment,secret --namespace=${FEDERATION_NAMESPACE} --all
 }

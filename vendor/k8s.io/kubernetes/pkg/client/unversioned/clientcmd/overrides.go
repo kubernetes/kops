@@ -33,6 +33,7 @@ type ConfigOverrides struct {
 	ClusterInfo     clientcmdapi.Cluster
 	Context         clientcmdapi.Context
 	CurrentContext  string
+	Timeout         string
 }
 
 // ConfigOverrideFlags holds the flag names to be used for binding command line flags.  Notice that this structure tightly
@@ -42,6 +43,7 @@ type ConfigOverrideFlags struct {
 	ClusterOverrideFlags ClusterOverrideFlags
 	ContextOverrideFlags ContextOverrideFlags
 	CurrentContext       FlagInfo
+	Timeout              FlagInfo
 }
 
 // AuthOverrideFlags holds the flag names to be used for binding command line flags for AuthInfo objects
@@ -121,7 +123,20 @@ const (
 	FlagImpersonate  = "as"
 	FlagUsername     = "username"
 	FlagPassword     = "password"
+	FlagTimeout      = "request-timeout"
 )
+
+// RecommendedConfigOverrideFlags is a convenience method to return recommended flag names prefixed with a string of your choosing
+func RecommendedConfigOverrideFlags(prefix string) ConfigOverrideFlags {
+	return ConfigOverrideFlags{
+		AuthOverrideFlags:    RecommendedAuthOverrideFlags(prefix),
+		ClusterOverrideFlags: RecommendedClusterOverrideFlags(prefix),
+		ContextOverrideFlags: RecommendedContextOverrideFlags(prefix),
+
+		CurrentContext: FlagInfo{prefix + FlagContext, "", "", "The name of the kubeconfig context to use"},
+		Timeout:        FlagInfo{prefix + FlagTimeout, "", "0", "The length of time to wait before giving up on a single server request. Non-zero values should contain a corresponding time unit (e.g. 1s, 2m, 3h). A value of zero means don't timeout requests."},
+	}
+}
 
 // RecommendedAuthOverrideFlags is a convenience method to return recommended flag names prefixed with a string of your choosing
 func RecommendedAuthOverrideFlags(prefix string) AuthOverrideFlags {
@@ -145,16 +160,6 @@ func RecommendedClusterOverrideFlags(prefix string) ClusterOverrideFlags {
 	}
 }
 
-// RecommendedConfigOverrideFlags is a convenience method to return recommended flag names prefixed with a string of your choosing
-func RecommendedConfigOverrideFlags(prefix string) ConfigOverrideFlags {
-	return ConfigOverrideFlags{
-		AuthOverrideFlags:    RecommendedAuthOverrideFlags(prefix),
-		ClusterOverrideFlags: RecommendedClusterOverrideFlags(prefix),
-		ContextOverrideFlags: RecommendedContextOverrideFlags(prefix),
-		CurrentContext:       FlagInfo{prefix + FlagContext, "", "", "The name of the kubeconfig context to use"},
-	}
-}
-
 // RecommendedContextOverrideFlags is a convenience method to return recommended flag names prefixed with a string of your choosing
 func RecommendedContextOverrideFlags(prefix string) ContextOverrideFlags {
 	return ContextOverrideFlags{
@@ -162,6 +167,15 @@ func RecommendedContextOverrideFlags(prefix string) ContextOverrideFlags {
 		AuthInfoName: FlagInfo{prefix + FlagAuthInfoName, "", "", "The name of the kubeconfig user to use"},
 		Namespace:    FlagInfo{prefix + FlagNamespace, "n", "", "If present, the namespace scope for this CLI request"},
 	}
+}
+
+// BindOverrideFlags is a convenience method to bind the specified flags to their associated variables
+func BindOverrideFlags(overrides *ConfigOverrides, flags *pflag.FlagSet, flagNames ConfigOverrideFlags) {
+	BindAuthInfoFlags(&overrides.AuthInfo, flags, flagNames.AuthOverrideFlags)
+	BindClusterFlags(&overrides.ClusterInfo, flags, flagNames.ClusterOverrideFlags)
+	BindContextFlags(&overrides.Context, flags, flagNames.ContextOverrideFlags)
+	flagNames.CurrentContext.BindStringFlag(flags, &overrides.CurrentContext)
+	flagNames.Timeout.BindStringFlag(flags, &overrides.Timeout)
 }
 
 // BindAuthInfoFlags is a convenience method to bind the specified flags to their associated variables
@@ -182,14 +196,6 @@ func BindClusterFlags(clusterInfo *clientcmdapi.Cluster, flags *pflag.FlagSet, f
 	flags.MarkDeprecated(FlagAPIVersion, "flag is no longer respected and will be deleted in the next release")
 	flagNames.CertificateAuthority.BindStringFlag(flags, &clusterInfo.CertificateAuthority)
 	flagNames.InsecureSkipTLSVerify.BindBoolFlag(flags, &clusterInfo.InsecureSkipTLSVerify)
-}
-
-// BindOverrideFlags is a convenience method to bind the specified flags to their associated variables
-func BindOverrideFlags(overrides *ConfigOverrides, flags *pflag.FlagSet, flagNames ConfigOverrideFlags) {
-	BindAuthInfoFlags(&overrides.AuthInfo, flags, flagNames.AuthOverrideFlags)
-	BindClusterFlags(&overrides.ClusterInfo, flags, flagNames.ClusterOverrideFlags)
-	BindContextFlags(&overrides.Context, flags, flagNames.ContextOverrideFlags)
-	flagNames.CurrentContext.BindStringFlag(flags, &overrides.CurrentContext)
 }
 
 // BindFlags is a convenience method to bind the specified flags to their associated variables

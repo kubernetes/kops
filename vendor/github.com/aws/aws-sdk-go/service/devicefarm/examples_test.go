@@ -16,7 +16,13 @@ var _ time.Duration
 var _ bytes.Buffer
 
 func ExampleDeviceFarm_CreateDevicePool() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.CreateDevicePoolInput{
 		Name:       aws.String("Name"),               // Required
@@ -45,7 +51,13 @@ func ExampleDeviceFarm_CreateDevicePool() {
 }
 
 func ExampleDeviceFarm_CreateProject() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.CreateProjectInput{
 		Name: aws.String("Name"), // Required
@@ -64,7 +76,13 @@ func ExampleDeviceFarm_CreateProject() {
 }
 
 func ExampleDeviceFarm_CreateRemoteAccessSession() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.CreateRemoteAccessSessionInput{
 		DeviceArn:  aws.String("AmazonResourceName"), // Required
@@ -88,7 +106,13 @@ func ExampleDeviceFarm_CreateRemoteAccessSession() {
 }
 
 func ExampleDeviceFarm_CreateUpload() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.CreateUploadInput{
 		Name:        aws.String("Name"),               // Required
@@ -110,7 +134,13 @@ func ExampleDeviceFarm_CreateUpload() {
 }
 
 func ExampleDeviceFarm_DeleteDevicePool() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.DeleteDevicePoolInput{
 		Arn: aws.String("AmazonResourceName"), // Required
@@ -129,7 +159,13 @@ func ExampleDeviceFarm_DeleteDevicePool() {
 }
 
 func ExampleDeviceFarm_DeleteProject() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.DeleteProjectInput{
 		Arn: aws.String("AmazonResourceName"), // Required
@@ -148,7 +184,13 @@ func ExampleDeviceFarm_DeleteProject() {
 }
 
 func ExampleDeviceFarm_DeleteRemoteAccessSession() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.DeleteRemoteAccessSessionInput{
 		Arn: aws.String("AmazonResourceName"), // Required
@@ -167,7 +209,13 @@ func ExampleDeviceFarm_DeleteRemoteAccessSession() {
 }
 
 func ExampleDeviceFarm_DeleteRun() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.DeleteRunInput{
 		Arn: aws.String("AmazonResourceName"), // Required
@@ -186,7 +234,13 @@ func ExampleDeviceFarm_DeleteRun() {
 }
 
 func ExampleDeviceFarm_DeleteUpload() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.DeleteUploadInput{
 		Arn: aws.String("AmazonResourceName"), // Required
@@ -205,7 +259,13 @@ func ExampleDeviceFarm_DeleteUpload() {
 }
 
 func ExampleDeviceFarm_GetAccountSettings() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	var params *devicefarm.GetAccountSettingsInput
 	resp, err := svc.GetAccountSettings(params)
@@ -222,7 +282,13 @@ func ExampleDeviceFarm_GetAccountSettings() {
 }
 
 func ExampleDeviceFarm_GetDevice() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.GetDeviceInput{
 		Arn: aws.String("AmazonResourceName"), // Required
@@ -241,7 +307,13 @@ func ExampleDeviceFarm_GetDevice() {
 }
 
 func ExampleDeviceFarm_GetDevicePool() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.GetDevicePoolInput{
 		Arn: aws.String("AmazonResourceName"), // Required
@@ -260,7 +332,13 @@ func ExampleDeviceFarm_GetDevicePool() {
 }
 
 func ExampleDeviceFarm_GetDevicePoolCompatibility() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.GetDevicePoolCompatibilityInput{
 		DevicePoolArn: aws.String("AmazonResourceName"), // Required
@@ -281,7 +359,13 @@ func ExampleDeviceFarm_GetDevicePoolCompatibility() {
 }
 
 func ExampleDeviceFarm_GetJob() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.GetJobInput{
 		Arn: aws.String("AmazonResourceName"), // Required
@@ -300,7 +384,13 @@ func ExampleDeviceFarm_GetJob() {
 }
 
 func ExampleDeviceFarm_GetOfferingStatus() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.GetOfferingStatusInput{
 		NextToken: aws.String("PaginationToken"),
@@ -319,7 +409,13 @@ func ExampleDeviceFarm_GetOfferingStatus() {
 }
 
 func ExampleDeviceFarm_GetProject() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.GetProjectInput{
 		Arn: aws.String("AmazonResourceName"), // Required
@@ -338,7 +434,13 @@ func ExampleDeviceFarm_GetProject() {
 }
 
 func ExampleDeviceFarm_GetRemoteAccessSession() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.GetRemoteAccessSessionInput{
 		Arn: aws.String("AmazonResourceName"), // Required
@@ -357,7 +459,13 @@ func ExampleDeviceFarm_GetRemoteAccessSession() {
 }
 
 func ExampleDeviceFarm_GetRun() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.GetRunInput{
 		Arn: aws.String("AmazonResourceName"), // Required
@@ -376,7 +484,13 @@ func ExampleDeviceFarm_GetRun() {
 }
 
 func ExampleDeviceFarm_GetSuite() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.GetSuiteInput{
 		Arn: aws.String("AmazonResourceName"), // Required
@@ -395,7 +509,13 @@ func ExampleDeviceFarm_GetSuite() {
 }
 
 func ExampleDeviceFarm_GetTest() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.GetTestInput{
 		Arn: aws.String("AmazonResourceName"), // Required
@@ -414,7 +534,13 @@ func ExampleDeviceFarm_GetTest() {
 }
 
 func ExampleDeviceFarm_GetUpload() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.GetUploadInput{
 		Arn: aws.String("AmazonResourceName"), // Required
@@ -433,7 +559,13 @@ func ExampleDeviceFarm_GetUpload() {
 }
 
 func ExampleDeviceFarm_InstallToRemoteAccessSession() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.InstallToRemoteAccessSessionInput{
 		AppArn:                 aws.String("AmazonResourceName"), // Required
@@ -453,7 +585,13 @@ func ExampleDeviceFarm_InstallToRemoteAccessSession() {
 }
 
 func ExampleDeviceFarm_ListArtifacts() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.ListArtifactsInput{
 		Arn:       aws.String("AmazonResourceName"), // Required
@@ -474,7 +612,13 @@ func ExampleDeviceFarm_ListArtifacts() {
 }
 
 func ExampleDeviceFarm_ListDevicePools() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.ListDevicePoolsInput{
 		Arn:       aws.String("AmazonResourceName"), // Required
@@ -495,7 +639,13 @@ func ExampleDeviceFarm_ListDevicePools() {
 }
 
 func ExampleDeviceFarm_ListDevices() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.ListDevicesInput{
 		Arn:       aws.String("AmazonResourceName"),
@@ -515,7 +665,13 @@ func ExampleDeviceFarm_ListDevices() {
 }
 
 func ExampleDeviceFarm_ListJobs() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.ListJobsInput{
 		Arn:       aws.String("AmazonResourceName"), // Required
@@ -535,7 +691,13 @@ func ExampleDeviceFarm_ListJobs() {
 }
 
 func ExampleDeviceFarm_ListOfferingTransactions() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.ListOfferingTransactionsInput{
 		NextToken: aws.String("PaginationToken"),
@@ -554,7 +716,13 @@ func ExampleDeviceFarm_ListOfferingTransactions() {
 }
 
 func ExampleDeviceFarm_ListOfferings() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.ListOfferingsInput{
 		NextToken: aws.String("PaginationToken"),
@@ -573,7 +741,13 @@ func ExampleDeviceFarm_ListOfferings() {
 }
 
 func ExampleDeviceFarm_ListProjects() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.ListProjectsInput{
 		Arn:       aws.String("AmazonResourceName"),
@@ -593,7 +767,13 @@ func ExampleDeviceFarm_ListProjects() {
 }
 
 func ExampleDeviceFarm_ListRemoteAccessSessions() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.ListRemoteAccessSessionsInput{
 		Arn:       aws.String("AmazonResourceName"), // Required
@@ -613,7 +793,13 @@ func ExampleDeviceFarm_ListRemoteAccessSessions() {
 }
 
 func ExampleDeviceFarm_ListRuns() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.ListRunsInput{
 		Arn:       aws.String("AmazonResourceName"), // Required
@@ -633,7 +819,13 @@ func ExampleDeviceFarm_ListRuns() {
 }
 
 func ExampleDeviceFarm_ListSamples() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.ListSamplesInput{
 		Arn:       aws.String("AmazonResourceName"), // Required
@@ -653,7 +845,13 @@ func ExampleDeviceFarm_ListSamples() {
 }
 
 func ExampleDeviceFarm_ListSuites() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.ListSuitesInput{
 		Arn:       aws.String("AmazonResourceName"), // Required
@@ -673,7 +871,13 @@ func ExampleDeviceFarm_ListSuites() {
 }
 
 func ExampleDeviceFarm_ListTests() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.ListTestsInput{
 		Arn:       aws.String("AmazonResourceName"), // Required
@@ -693,7 +897,13 @@ func ExampleDeviceFarm_ListTests() {
 }
 
 func ExampleDeviceFarm_ListUniqueProblems() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.ListUniqueProblemsInput{
 		Arn:       aws.String("AmazonResourceName"), // Required
@@ -713,7 +923,13 @@ func ExampleDeviceFarm_ListUniqueProblems() {
 }
 
 func ExampleDeviceFarm_ListUploads() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.ListUploadsInput{
 		Arn:       aws.String("AmazonResourceName"), // Required
@@ -733,7 +949,13 @@ func ExampleDeviceFarm_ListUploads() {
 }
 
 func ExampleDeviceFarm_PurchaseOffering() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.PurchaseOfferingInput{
 		OfferingId: aws.String("OfferingIdentifier"),
@@ -753,7 +975,13 @@ func ExampleDeviceFarm_PurchaseOffering() {
 }
 
 func ExampleDeviceFarm_RenewOffering() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.RenewOfferingInput{
 		OfferingId: aws.String("OfferingIdentifier"),
@@ -773,7 +1001,13 @@ func ExampleDeviceFarm_RenewOffering() {
 }
 
 func ExampleDeviceFarm_ScheduleRun() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.ScheduleRunInput{
 		DevicePoolArn: aws.String("AmazonResourceName"), // Required
@@ -824,7 +1058,13 @@ func ExampleDeviceFarm_ScheduleRun() {
 }
 
 func ExampleDeviceFarm_StopRemoteAccessSession() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.StopRemoteAccessSessionInput{
 		Arn: aws.String("AmazonResourceName"), // Required
@@ -843,7 +1083,13 @@ func ExampleDeviceFarm_StopRemoteAccessSession() {
 }
 
 func ExampleDeviceFarm_StopRun() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.StopRunInput{
 		Arn: aws.String("AmazonResourceName"), // Required
@@ -862,7 +1108,13 @@ func ExampleDeviceFarm_StopRun() {
 }
 
 func ExampleDeviceFarm_UpdateDevicePool() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.UpdateDevicePoolInput{
 		Arn:         aws.String("AmazonResourceName"), // Required
@@ -891,7 +1143,13 @@ func ExampleDeviceFarm_UpdateDevicePool() {
 }
 
 func ExampleDeviceFarm_UpdateProject() {
-	svc := devicefarm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := devicefarm.New(sess)
 
 	params := &devicefarm.UpdateProjectInput{
 		Arn:  aws.String("AmazonResourceName"), // Required

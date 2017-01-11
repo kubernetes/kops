@@ -13,19 +13,20 @@ import (
 
 // Overview
 //
-//  AWS Service Catalog (https://aws.amazon.com/servicecatalog/) allows organizations
+// AWS Service Catalog (https://aws.amazon.com/servicecatalog/) allows organizations
 // to create and manage catalogs of IT services that are approved for use on
 // AWS. This documentation provides reference material for the AWS Service Catalog
 // end user API. To get the most out of this documentation, you need to be familiar
 // with the terminology discussed in AWS Service Catalog Concepts (http://docs.aws.amazon.com/servicecatalog/latest/userguide/what-is_concepts.html).
 //
-//  Additional Resources
+// Additional Resources
 //
-//    AWS Service Catalog Administrator Guide (http://docs.aws.amazon.com/servicecatalog/latest/adminguide/introduction.html)
+//    * AWS Service Catalog Administrator Guide (http://docs.aws.amazon.com/servicecatalog/latest/adminguide/introduction.html)
 //
-//    AWS Service Catalog User Guide (http://docs.aws.amazon.com/servicecatalog/latest/userguide/introduction.html)
-//The service client's operations are safe to be used concurrently.
+//    * AWS Service Catalog User Guide (http://docs.aws.amazon.com/servicecatalog/latest/userguide/introduction.html)
+// The service client's operations are safe to be used concurrently.
 // It is not safe to mutate any of the client's properties though.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/servicecatalog-2015-12-10
 type ServiceCatalog struct {
 	*client.Client
 }
@@ -36,8 +37,11 @@ var initClient func(*client.Client)
 // Used for custom request initialization logic
 var initRequest func(*request.Request)
 
-// A ServiceName is the name of the service the client will make API calls to.
-const ServiceName = "servicecatalog"
+// Service information constants
+const (
+	ServiceName = "servicecatalog" // Service endpoint prefix API calls made to.
+	EndpointsID = ServiceName      // Service ID for Regions and Endpoints metadata.
+)
 
 // New creates a new instance of the ServiceCatalog client with a session.
 // If additional configuration is needed for the client instance use the optional
@@ -50,17 +54,18 @@ const ServiceName = "servicecatalog"
 //     // Create a ServiceCatalog client with additional configuration
 //     svc := servicecatalog.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *ServiceCatalog {
-	c := p.ClientConfig(ServiceName, cfgs...)
-	return newClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion)
+	c := p.ClientConfig(EndpointsID, cfgs...)
+	return newClient(*c.Config, c.Handlers, c.Endpoint, c.SigningRegion, c.SigningName)
 }
 
 // newClient creates, initializes and returns a new service client instance.
-func newClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion string) *ServiceCatalog {
+func newClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegion, signingName string) *ServiceCatalog {
 	svc := &ServiceCatalog{
 		Client: client.New(
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   ServiceName,
+				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
 				APIVersion:    "2015-12-10",

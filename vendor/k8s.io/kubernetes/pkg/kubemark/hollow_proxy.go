@@ -22,8 +22,9 @@ import (
 	proxyapp "k8s.io/kubernetes/cmd/kube-proxy/app"
 	"k8s.io/kubernetes/cmd/kube-proxy/app/options"
 	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
+	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/client/record"
-	client "k8s.io/kubernetes/pkg/client/unversioned"
 	proxyconfig "k8s.io/kubernetes/pkg/proxy/config"
 	"k8s.io/kubernetes/pkg/types"
 	"k8s.io/kubernetes/pkg/util"
@@ -51,7 +52,7 @@ func (*FakeProxier) SyncLoop() {
 
 func NewHollowProxyOrDie(
 	nodeName string,
-	client *client.Client,
+	client clientset.Interface,
 	endpointsConfig *proxyconfig.EndpointsConfig,
 	serviceConfig *proxyconfig.ServiceConfig,
 	iptInterface utiliptables.Interface,
@@ -62,14 +63,14 @@ func NewHollowProxyOrDie(
 	config := options.NewProxyConfig()
 	config.OOMScoreAdj = util.Int32Ptr(0)
 	config.ResourceContainer = ""
-	config.NodeRef = &api.ObjectReference{
+	config.NodeRef = &v1.ObjectReference{
 		Kind:      "Node",
 		Name:      nodeName,
 		UID:       types.UID(nodeName),
 		Namespace: "",
 	}
 	proxyconfig.NewSourceAPI(
-		client,
+		client.Core().RESTClient(),
 		30*time.Second,
 		serviceConfig.Channel("api"),
 		endpointsConfig.Channel("api"),

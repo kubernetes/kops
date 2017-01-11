@@ -1,5 +1,0 @@
-{
-  "version": "1.11.2",
-  "source": "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.11.2-1.el7.centos.noarch.rpm",
-  "hash": "f6da608fa8eeb2be8071489086ed9ff035f6daba"
-}

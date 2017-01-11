@@ -14,6 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+/******************************************************************************
+Template Functions are what map functions in the models, to internal logic in
+kops. This is the point where we connect static YAML configuration to dynamic
+runtime values in memory.
+
+When defining a new function:
+	- Build the new function here
+	- Define the new function in AddTo()
+		dest["MyNewFunction"] = MyNewFunction // <-- Function Pointer
+******************************************************************************/
+
 package cloudup
 
 import (
@@ -22,11 +33,11 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kubernetes/pkg/util/sets"
 	"math/big"
 	"net"
-	"sort"
 	"strings"
 	"text/template"
 )
@@ -35,8 +46,10 @@ type TemplateFunctions struct {
 	cluster        *api.Cluster
 	instanceGroups []*api.InstanceGroup
 
-	tags   map[string]struct{}
+	tags   sets.String
 	region string
+
+	modelContext *model.KopsModelContext
 }
 
 func (tf *TemplateFunctions) WellKnownServiceIP(id int) (net.IP, error) {
@@ -71,13 +84,19 @@ func (tf *TemplateFunctions) WellKnownServiceIP(id int) (net.IP, error) {
 	return nil, fmt.Errorf("Unexpected IP address type for ServiceClusterIPRange: %s", tf.cluster.Spec.ServiceClusterIPRange)
 }
 
+// This will define the available functions we can use in our YAML models
+// If we are trying to get a new function implemented it MUST
+// be defined here.
 func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
-	dest["EtcdClusterMemberTags"] = tf.EtcdClusterMemberTags
 	dest["SharedVPC"] = tf.SharedVPC
 
-	dest["SharedZone"] = tf.SharedZone
+	// Remember that we may be on a different arch from the target.  Hard-code for now.
+	dest["Arch"] = func() string { return "amd64" }
+
+	// Network topology definitions
+	dest["GetELBName32"] = tf.modelContext.GetELBName32
+
 	dest["WellKnownServiceIP"] = tf.WellKnownServiceIP
-	dest["AdminCIDR"] = tf.AdminCIDR
 
 	dest["Base64Encode"] = func(s string) string {
 		return base64.StdEncoding.EncodeToString([]byte(s))
@@ -89,22 +108,12 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 		return strings.Join(a, sep)
 	}
 
-	dest["ClusterName"] = func() string {
-		return tf.cluster.Name
-	}
+	dest["ClusterName"] = tf.modelContext.ClusterName
 
 	dest["HasTag"] = tf.HasTag
 
-	dest["IAMServiceEC2"] = tf.IAMServiceEC2
-
 	dest["Image"] = tf.Image
 
-	dest["IAMMasterPolicy"] = func() (string, error) {
-		return tf.buildAWSIAMPolicy(api.InstanceGroupRoleMaster)
-	}
-	dest["IAMNodePolicy"] = func() (string, error) {
-		return tf.buildAWSIAMPolicy(api.InstanceGroupRoleNode)
-	}
 	dest["WithDefaultBool"] = func(v *bool, defaultValue bool) bool {
 		if v != nil {
 			return *v
@@ -114,9 +123,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 
 	dest["GetInstanceGroup"] = tf.GetInstanceGroup
 
-	dest["CloudTags"] = tf.CloudTags
-
-	dest["APIServerCount"] = tf.APIServerCount
+	dest["CloudTags"] = tf.modelContext.CloudTagsForInstanceGroup
 
 	dest["KubeDNS"] = func() *api.KubeDNSConfig {
 		return tf.cluster.Spec.KubeDNS
@@ -125,54 +132,9 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["DnsControllerArgv"] = tf.DnsControllerArgv
 }
 
-func (tf *TemplateFunctions) EtcdClusterMemberTags(etcd *api.EtcdClusterSpec, m *api.EtcdMemberSpec) map[string]string {
-	tags := make(map[string]string)
-
-	var allMembers []string
-
-	for _, m := range etcd.Members {
-		allMembers = append(allMembers, m.Name)
-	}
-
-	sort.Strings(allMembers)
-
-	// This is the configuration of the etcd cluster
-	tags["k8s.io/etcd/"+etcd.Name] = m.Name + "/" + strings.Join(allMembers, ",")
-
-	// This says "only mount on a master"
-	tags["k8s.io/role/master"] = "1"
-
-	return tags
-}
-
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
 func (tf *TemplateFunctions) SharedVPC() bool {
 	return tf.cluster.SharedVPC()
-}
-
-// SharedZone is a simple helper function which makes the templates for a shared Zone clearer
-func (tf *TemplateFunctions) SharedZone(zone *api.ClusterZoneSpec) bool {
-	return zone.ProviderID != ""
-}
-
-// AdminCIDR returns the CIDRs that are allowed to access the admin ports of the cluster
-// (22, 443 on master and 22 on nodes)
-func (tf *TemplateFunctions) AdminCIDR() []string {
-	if len(tf.cluster.Spec.AdminAccess) == 0 {
-		return []string{"0.0.0.0/0"}
-	}
-	return tf.cluster.Spec.AdminAccess
-}
-
-// IAMServiceEC2 returns the name of the IAM service for EC2 in the current region
-// it is ec2.amazonaws.com everywhere but in cn-north, where it is ec2.amazonaws.com.cn
-func (tf *TemplateFunctions) IAMServiceEC2() string {
-	switch tf.region {
-	case "cn-north-1":
-		return "ec2.amazonaws.com.cn"
-	default:
-		return "ec2.amazonaws.com"
-	}
 }
 
 // Image returns the docker image name for the specified component
@@ -208,71 +170,14 @@ func (tf *TemplateFunctions) HasTag(tag string) bool {
 	return found
 }
 
-// buildAWSIAMPolicy produces the AWS IAM policy for the given role
-func (tf *TemplateFunctions) buildAWSIAMPolicy(role api.InstanceGroupRole) (string, error) {
-	b := &IAMPolicyBuilder{
-		Cluster: tf.cluster,
-		Role:    role,
-		Region:  tf.region,
-	}
-
-	policy, err := b.BuildAWSIAMPolicy()
-	if err != nil {
-		return "", fmt.Errorf("error building IAM policy: %v", err)
-	}
-	json, err := policy.AsJSON()
-	if err != nil {
-		return "", fmt.Errorf("error building IAM policy: %v", err)
-	}
-	return json, nil
-}
-
-// CloudTags computes the tags to apply to instances in the specified InstanceGroup
-func (tf *TemplateFunctions) CloudTags(ig *api.InstanceGroup) (map[string]string, error) {
-	labels := make(map[string]string)
-
-	// Apply any user-specified labels
-	for k, v := range ig.Spec.CloudLabels {
-		labels[k] = v
-	}
-
-	// The system tags take priority because the cluster likely breaks without them...
-
-	if ig.Spec.Role == api.InstanceGroupRoleMaster {
-		labels["k8s.io/role/master"] = "1"
-	}
-
-	if ig.Spec.Role == api.InstanceGroupRoleNode {
-		labels["k8s.io/role/node"] = "1"
-	}
-
-	return labels, nil
-}
-
 // GetInstanceGroup returns the instance group with the specified name
 func (tf *TemplateFunctions) GetInstanceGroup(name string) (*api.InstanceGroup, error) {
 	for _, ig := range tf.instanceGroups {
-		if ig.Name == name {
+		if ig.ObjectMeta.Name == name {
 			return ig, nil
 		}
 	}
 	return nil, fmt.Errorf("InstanceGroup %q not found", name)
-}
-
-// APIServerCount returns the value for the apiserver --apiserver-count flag
-func (tf *TemplateFunctions) APIServerCount() int {
-	count := 0
-	for _, ig := range tf.instanceGroups {
-		if !ig.IsMaster() {
-			continue
-		}
-		size := fi.IntValue(ig.Spec.MaxSize)
-		if size == 0 {
-			size = fi.IntValue(ig.Spec.MinSize)
-		}
-		count += size
-	}
-	return count
 }
 
 func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
@@ -295,7 +200,9 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 	}
 	// permit wildcard updates
 	argv = append(argv, "--zone=*/*")
-	argv = append(argv, "-v=8")
+
+	// Verbose, but not crazy logging
+	argv = append(argv, "-v=2")
 
 	return argv, nil
 }

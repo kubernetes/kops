@@ -3,7 +3,10 @@
 "kind": "Pod",
 "metadata": {
   "name":"etcd-server",
-  "namespace": "kube-system"
+  "namespace": "kube-system",
+  "labels": {
+    "k8s-app" : "etcd-server"
+  }
 },
 "spec":{
 "hostNetwork": true,

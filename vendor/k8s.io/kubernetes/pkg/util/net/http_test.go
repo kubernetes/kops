@@ -23,6 +23,8 @@ import (
 	"net/url"
 	"os"
 	"reflect"
+	"runtime"
+	"strings"
 	"testing"
 
 	"k8s.io/kubernetes/pkg/util/sets"
@@ -58,6 +60,11 @@ func TestCloneTLSConfig(t *testing.T) {
 		"mutex",
 		"sessionTicketKeys",
 	)
+
+	// See #33936.
+	if strings.HasPrefix(runtime.Version(), "go1.7") {
+		expected.Insert("DynamicRecordSizingDisabled", "Renegotiation")
+	}
 
 	fields := sets.NewString()
 	structType := reflect.TypeOf(tls.Config{})
@@ -214,5 +221,26 @@ func TestProxierWithNoProxyCIDR(t *testing.T) {
 			t.Errorf("%s: expected %v, got %v", test.name, test.expectedDelegated, actualDelegated)
 			continue
 		}
+	}
+}
+
+type fakeTLSClientConfigHolder struct {
+	called bool
+}
+
+func (f *fakeTLSClientConfigHolder) TLSClientConfig() *tls.Config {
+	f.called = true
+	return nil
+}
+func (f *fakeTLSClientConfigHolder) RoundTrip(*http.Request) (*http.Response, error) {
+	return nil, nil
+}
+
+func TestTLSClientConfigHolder(t *testing.T) {
+	rt := &fakeTLSClientConfigHolder{}
+	TLSClientConfig(rt)
+
+	if !rt.called {
+		t.Errorf("didn't find tls config")
 	}
 }

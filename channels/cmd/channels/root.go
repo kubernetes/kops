@@ -23,7 +23,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3"
+	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 )
 
@@ -79,7 +79,7 @@ func (c *RootCmd) AddCommand(cmd *cobra.Command) {
 	c.cobraCommand.AddCommand(cmd)
 }
 
-func (c *RootCmd) KubernetesClient() (*release_1_3.Clientset, error) {
+func (c *RootCmd) KubernetesClient() (*k8s_clientset.Clientset, error) {
 	config := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 		clientcmd.NewDefaultClientConfigLoadingRules(),
 		&clientcmd.ConfigOverrides{})
@@ -96,7 +96,7 @@ func (c *RootCmd) KubernetesClient() (*release_1_3.Clientset, error) {
 		}
 	}
 
-	k8sClient, err := release_1_3.NewForConfig(clientConfig)
+	k8sClient, err := k8s_clientset.NewForConfig(clientConfig)
 	if err != nil {
 		return nil, fmt.Errorf("cannot build kube client: %v", err)
 	}

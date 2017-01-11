@@ -22,13 +22,13 @@ import (
 )
 
 type VFSClientset struct {
-	basePath        vfs.Path
+	basePath vfs.Path
 }
 
 var _ simple.Clientset = &VFSClientset{}
 
 func (c *VFSClientset) Clusters() simple.ClusterInterface {
-	return &ClusterVFS{basePath: c.basePath}
+	return newClusterVFS(c.basePath)
 }
 
 func (c *VFSClientset) InstanceGroups(clusterName string) simple.InstanceGroupInterface {
@@ -39,7 +39,7 @@ func (c *VFSClientset) Federations() simple.FederationInterface {
 	return newFederationVFS(c)
 }
 
-func NewVFSClientset(basePath vfs.Path) (simple.Clientset) {
+func NewVFSClientset(basePath vfs.Path) simple.Clientset {
 	clientset := &VFSClientset{
 		basePath: basePath,
 	}

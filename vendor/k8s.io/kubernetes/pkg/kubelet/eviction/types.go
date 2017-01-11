@@ -19,8 +19,9 @@ package eviction
 import (
 	"time"
 
-	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/resource"
+	"k8s.io/kubernetes/pkg/api/v1"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	statsapi "k8s.io/kubernetes/pkg/kubelet/api/v1alpha1/stats"
 )
 
@@ -68,6 +69,8 @@ type Config struct {
 	MaxPodGracePeriodSeconds int64
 	// Thresholds define the set of conditions monitored to trigger eviction.
 	Thresholds []Threshold
+	// KernelMemcgNotification if true will integrate with the kernel memcg notification to determine if memory thresholds are crossed.
+	KernelMemcgNotification bool
 }
 
 // ThresholdValue is a value holder that abstracts literal versus percentage based quantity
@@ -91,7 +94,7 @@ type Threshold struct {
 	// GracePeriod represents the amount of time that a threshold must be met before eviction is triggered.
 	GracePeriod time.Duration
 	// MinReclaim represents the minimum amount of resource to reclaim if the threshold is met.
-	MinReclaim *resource.Quantity
+	MinReclaim *ThresholdValue
 }
 
 // Manager evaluates when an eviction threshold for node stability has been met on the node.
@@ -125,16 +128,16 @@ type ImageGC interface {
 // pod - the pod to kill
 // status - the desired status to associate with the pod (i.e. why its killed)
 // gracePeriodOverride - the grace period override to use instead of what is on the pod spec
-type KillPodFunc func(pod *api.Pod, status api.PodStatus, gracePeriodOverride *int64) error
+type KillPodFunc func(pod *v1.Pod, status v1.PodStatus, gracePeriodOverride *int64) error
 
 // ActivePodsFunc returns pods bound to the kubelet that are active (i.e. non-terminal state)
-type ActivePodsFunc func() []*api.Pod
+type ActivePodsFunc func() []*v1.Pod
 
 // statsFunc returns the usage stats if known for an input pod.
-type statsFunc func(pod *api.Pod) (statsapi.PodStats, bool)
+type statsFunc func(pod *v1.Pod) (statsapi.PodStats, bool)
 
 // rankFunc sorts the pods in eviction order
-type rankFunc func(pods []*api.Pod, stats statsFunc)
+type rankFunc func(pods []*v1.Pod, stats statsFunc)
 
 // signalObservation is the observed resource usage
 type signalObservation struct {
@@ -142,6 +145,8 @@ type signalObservation struct {
 	capacity *resource.Quantity
 	// The available resource
 	available *resource.Quantity
+	// Time at which the observation was taken
+	time metav1.Time
 }
 
 // signalObservations maps a signal to an observed quantity
@@ -151,10 +156,18 @@ type signalObservations map[Signal]signalObservation
 type thresholdsObservedAt map[Threshold]time.Time
 
 // nodeConditionsObservedAt maps a node condition to a time that it was observed
-type nodeConditionsObservedAt map[api.NodeConditionType]time.Time
+type nodeConditionsObservedAt map[v1.NodeConditionType]time.Time
 
 // nodeReclaimFunc is a function that knows how to reclaim a resource from the node without impacting pods.
 type nodeReclaimFunc func() (*resource.Quantity, error)
 
 // nodeReclaimFuncs is an ordered list of nodeReclaimFunc
 type nodeReclaimFuncs []nodeReclaimFunc
+
+// thresholdNotifierHandlerFunc is a function that takes action in response to a crossed threshold
+type thresholdNotifierHandlerFunc func(thresholdDescription string)
+
+// ThresholdNotifier notifies the user when an attribute crosses a threshold value
+type ThresholdNotifier interface {
+	Start(stopCh <-chan struct{})
+}

@@ -21,7 +21,6 @@ import (
 	k8sapi "k8s.io/kubernetes/pkg/api"
 )
 
-
 // InstanceGroupInterface has methods to work with InstanceGroup resources.
 type InstanceGroupInterface interface {
 	Create(*api.InstanceGroup) (*api.InstanceGroup, error)

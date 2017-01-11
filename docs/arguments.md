@@ -4,8 +4,6 @@
 
 `admin-access` controls the CIDR which can access the admin endpoints (SSH to each node, HTTPS to the master).
 
-It maps to `Cluster.Spec.AdminAccess`
-
 If not specified, no IP level restrictions will apply (though there are still restrictions, for example you need
 a permitted SSH key to access the SSH service!).
 
@@ -13,16 +11,13 @@ Currently this can only be a single CIDR.
 
 Examples:
 
-CLI:
+**CLI:**
+
 `--admin-access=18.0.0.0/8` to restrict to IPs in the 18.0.0.0/8 CIDR
 
-YAML:
+**YAML:**
 
-```
-spec:
-  adminAccess:
-  - 18.0.0.0/8
-```
+See the docs in [cluster_spec.md#adminaccess](cluster_spec.md#adminaccess)
 
 ## dns-zone
 
@@ -59,3 +54,20 @@ Values:
 ## out
 
 `out` determines the directory into which kubectl will write the target output.  It defaults to `out/terraform`
+
+# YAML-only Arguments
+
+Certain arguments can only be passed via YAML, eg, `kops edit cluster`. The following documents some of the more interesting or lesser-known options.
+
+## kubeletPreferredAddressTypes
+
+The apiserver can now select which type of kubelet-reported address to use for apiserver->node communications, using the --kubelet-preferred-address-types flag. (https://github.com/kubernetes/kubernetes/pull/35497, @liggitt)
+
+Example:
+
+```
+kubeAPIServer:
+	kubeletPreferredAddressTypes:
+	- InternalIP
+	- ExternalIP
+```

@@ -1,2 +1,0 @@
-
-{{ RenderNodeUpConfig (GetInstanceGroup (index Args 0)) }}

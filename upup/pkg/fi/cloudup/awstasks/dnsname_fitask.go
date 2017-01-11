@@ -29,6 +29,7 @@ import (
 // JSON marshalling boilerplate
 type realDNSName DNSName
 
+// UnmarshalJSON implements conversion to JSON, supporitng an alternate specification of the object as a string
 func (o *DNSName) UnmarshalJSON(data []byte) error {
 	var jsonName string
 	if err := json.Unmarshal(data, &jsonName); err == nil {
@@ -46,14 +47,17 @@ func (o *DNSName) UnmarshalJSON(data []byte) error {
 
 var _ fi.HasName = &DNSName{}
 
-func (e *DNSName) GetName() *string {
-	return e.Name
+// GetName returns the Name of the object, implementing fi.HasName
+func (o *DNSName) GetName() *string {
+	return o.Name
 }
 
-func (e *DNSName) SetName(name string) {
-	e.Name = &name
+// SetName sets the Name of the object, implementing fi.SetName
+func (o *DNSName) SetName(name string) {
+	o.Name = &name
 }
 
-func (e *DNSName) String() string {
-	return fi.TaskAsString(e)
+// String is the stringer function for the task, producing readable output using fi.TaskAsString
+func (o *DNSName) String() string {
+	return fi.TaskAsString(o)
 }

@@ -82,7 +82,7 @@ func (a *Addons) GetCurrent() ([]*Addon, error) {
 func (a *Addons) All() ([]*Addon, error) {
 	var addons []*Addon
 	for _, s := range a.APIObject.Spec.Addons {
-		name := a.APIObject.Name
+		name := a.APIObject.ObjectMeta.Name
 		if s.Name != nil {
 			name = *s.Name
 		}

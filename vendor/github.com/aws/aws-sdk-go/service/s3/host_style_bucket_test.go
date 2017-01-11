@@ -21,34 +21,40 @@ type s3BucketTest struct {
 
 var (
 	sslTests = []s3BucketTest{
-		{"abc", "https://abc.s3-mock-region.amazonaws.com/", ""},
-		{"a$b$c", "https://s3-mock-region.amazonaws.com/a%24b%24c", ""},
-		{"a.b.c", "https://s3-mock-region.amazonaws.com/a.b.c", ""},
-		{"a..bc", "https://s3-mock-region.amazonaws.com/a..bc", ""},
+		{"abc", "https://abc.s3.mock-region.amazonaws.com/", ""},
+		{"a$b$c", "https://s3.mock-region.amazonaws.com/a%24b%24c", ""},
+		{"a.b.c", "https://s3.mock-region.amazonaws.com/a.b.c", ""},
+		{"a..bc", "https://s3.mock-region.amazonaws.com/a..bc", ""},
 	}
 
 	nosslTests = []s3BucketTest{
-		{"a.b.c", "http://a.b.c.s3-mock-region.amazonaws.com/", ""},
-		{"a..bc", "http://s3-mock-region.amazonaws.com/a..bc", ""},
+		{"a.b.c", "http://a.b.c.s3.mock-region.amazonaws.com/", ""},
+		{"a..bc", "http://s3.mock-region.amazonaws.com/a..bc", ""},
 	}
 
 	forcepathTests = []s3BucketTest{
-		{"abc", "https://s3-mock-region.amazonaws.com/abc", ""},
-		{"a$b$c", "https://s3-mock-region.amazonaws.com/a%24b%24c", ""},
-		{"a.b.c", "https://s3-mock-region.amazonaws.com/a.b.c", ""},
-		{"a..bc", "https://s3-mock-region.amazonaws.com/a..bc", ""},
+		{"abc", "https://s3.mock-region.amazonaws.com/abc", ""},
+		{"a$b$c", "https://s3.mock-region.amazonaws.com/a%24b%24c", ""},
+		{"a.b.c", "https://s3.mock-region.amazonaws.com/a.b.c", ""},
+		{"a..bc", "https://s3.mock-region.amazonaws.com/a..bc", ""},
 	}
 
 	accelerateTests = []s3BucketTest{
 		{"abc", "https://abc.s3-accelerate.amazonaws.com/", ""},
-		{"a.b.c", "https://s3-mock-region.amazonaws.com/%7BBucket%7D", "InvalidParameterException"},
-		{"a$b$c", "https://s3-mock-region.amazonaws.com/%7BBucket%7D", "InvalidParameterException"},
+		{"a.b.c", "https://s3.mock-region.amazonaws.com/%7BBucket%7D", "InvalidParameterException"},
+		{"a$b$c", "https://s3.mock-region.amazonaws.com/%7BBucket%7D", "InvalidParameterException"},
 	}
 
 	accelerateNoSSLTests = []s3BucketTest{
 		{"abc", "http://abc.s3-accelerate.amazonaws.com/", ""},
 		{"a.b.c", "http://a.b.c.s3-accelerate.amazonaws.com/", ""},
-		{"a$b$c", "http://s3-mock-region.amazonaws.com/%7BBucket%7D", "InvalidParameterException"},
+		{"a$b$c", "http://s3.mock-region.amazonaws.com/%7BBucket%7D", "InvalidParameterException"},
+	}
+
+	accelerateDualstack = []s3BucketTest{
+		{"abc", "https://abc.s3-accelerate.dualstack.amazonaws.com/", ""},
+		{"a.b.c", "https://s3.dualstack.mock-region.amazonaws.com/%7BBucket%7D", "InvalidParameterException"},
+		{"a$b$c", "https://s3.dualstack.mock-region.amazonaws.com/%7BBucket%7D", "InvalidParameterException"},
 	}
 )
 
@@ -72,6 +78,14 @@ func TestAccelerateBucketBuild(t *testing.T) {
 func TestAccelerateNoSSLBucketBuild(t *testing.T) {
 	s := s3.New(unit.Session, &aws.Config{S3UseAccelerate: aws.Bool(true), DisableSSL: aws.Bool(true)})
 	runTests(t, s, accelerateNoSSLTests)
+}
+
+func TestAccelerateDualstackBucketBuild(t *testing.T) {
+	s := s3.New(unit.Session, &aws.Config{
+		S3UseAccelerate: aws.Bool(true),
+		UseDualStack:    aws.Bool(true),
+	})
+	runTests(t, s, accelerateDualstack)
 }
 
 func TestHostStyleBucketBuild(t *testing.T) {

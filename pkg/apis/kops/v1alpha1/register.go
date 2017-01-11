@@ -17,12 +17,14 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 )
 
 var (
-	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
+	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes, addDefaultingFuncs, addConversionFuncs)
+	//SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
 	AddToScheme = SchemeBuilder.AddToScheme
 )
 
@@ -30,33 +32,64 @@ var (
 const GroupName = "kops"
 
 // SchemeGroupVersion is group version used to register these objects
-var SchemeGroupVersion = unversioned.GroupVersion{Group: GroupName, Version: "v1alpha1"}
+var SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: "v1alpha1"}
 
 // Kind takes an unqualified kind and returns a Group qualified GroupKind
-func Kind(kind string) unversioned.GroupKind {
+func Kind(kind string) schema.GroupKind {
 	return SchemeGroupVersion.WithKind(kind).GroupKind()
 }
 
 // Resource takes an unqualified resource and returns a Group qualified GroupResource
-func Resource(resource string) unversioned.GroupResource {
+func Resource(resource string) schema.GroupResource {
 	return SchemeGroupVersion.WithResource(resource).GroupResource()
 }
 
 func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&Cluster{},
+		&ClusterList{},
 		&InstanceGroup{},
+		&InstanceGroupList{},
 		&Federation{},
+		&FederationList{},
+		&v1.ListOptions{},
 	)
+	// ?? versionedwatch.AddToGroupVersion(scheme, SchemeGroupVersion)
+
 	return nil
 }
 
-func (obj *Cluster) GetObjectKind() unversioned.ObjectKind {
+func (obj *Cluster) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
-func (obj *InstanceGroup) GetObjectKind() unversioned.ObjectKind {
+func (obj *InstanceGroup) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
-func (obj *Federation) GetObjectKind() unversioned.ObjectKind {
+func (obj *Federation) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
+}
+
+func addConversionFuncs(scheme *runtime.Scheme) error {
+	// Add non-generated conversion functions
+	err := scheme.AddConversionFuncs(
+		Convert_v1alpha1_BastionSpec_To_kops_BastionSpec,
+		Convert_kops_BastionSpec_To_v1alpha1_BastionSpec,
+
+		Convert_v1alpha1_ClusterSpec_To_kops_ClusterSpec,
+		Convert_kops_ClusterSpec_To_v1alpha1_ClusterSpec,
+
+		Convert_v1alpha1_EtcdMemberSpec_To_kops_EtcdMemberSpec,
+		Convert_kops_EtcdMemberSpec_To_v1alpha1_EtcdMemberSpec,
+
+		Convert_v1alpha1_InstanceGroupSpec_To_kops_InstanceGroupSpec,
+		Convert_kops_InstanceGroupSpec_To_v1alpha1_InstanceGroupSpec,
+
+		Convert_v1alpha1_TopologySpec_To_kops_TopologySpec,
+		Convert_kops_TopologySpec_To_v1alpha1_TopologySpec,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

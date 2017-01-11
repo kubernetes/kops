@@ -36,13 +36,13 @@ import (
 type Package struct {
 	Name string
 
-	Version      *string `json:"version"`
-	Source       *string `json:"source"`
-	Hash         *string `json:"hash"`
-	PreventStart *bool   `json:"preventStart"`
+	Version      *string `json:"version,omitempty"`
+	Source       *string `json:"source,omitempty"`
+	Hash         *string `json:"hash,omitempty"`
+	PreventStart *bool   `json:"preventStart,omitempty"`
 
 	// Healthy is true if the package installation did not fail
-	Healthy *bool `json:"healthy"`
+	Healthy *bool `json:"healthy,omitempty"`
 }
 
 const (
@@ -74,6 +74,16 @@ func (p *Package) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	}
 
 	return deps
+}
+
+var _ fi.HasName = &Package{}
+
+func (f *Package) GetName() *string {
+	return &f.Name
+}
+
+func (f *Package) SetName(name string) {
+	f.Name = name
 }
 
 // isOSPackage returns true if this is an OS provided package (as opposed to a bare .deb, for example)

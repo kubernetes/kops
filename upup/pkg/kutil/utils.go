@@ -18,6 +18,7 @@ package kutil
 
 import (
 	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/golang/glog"
@@ -69,6 +70,11 @@ func findAutoscalingGroups(cloud awsup.AWSCloud, tags map[string]string) ([]*aut
 			for _, asg := range p.AutoScalingGroups {
 				if !matchesAsgTags(tags, asg.Tags) {
 					// We used an inexact filter above
+					continue
+				}
+				// Check for "Delete in progress" (the only use of .Status)
+				if asg.Status != nil {
+					glog.Warningf("Skipping ASG %v (which matches tags): %v", *asg.AutoScalingGroupARN, *asg.Status)
 					continue
 				}
 				asgs = append(asgs, asg)

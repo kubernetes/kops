@@ -19,51 +19,69 @@ package main
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"io"
+	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/kutil"
 	k8sapi "k8s.io/kubernetes/pkg/api"
 )
 
-type ConvertImportedCmd struct {
+type ToolboxConvertImportedOptions struct {
 	NewClusterName string
 
 	// Channel is the location of the api.Channel to use for our defaults
 	Channel string
+
+	ClusterName string
 }
 
-var convertImported ConvertImportedCmd
+func (o *ToolboxConvertImportedOptions) InitDefaults() {
+	o.Channel = api.DefaultChannel
+}
 
-func init() {
+func NewCmdToolboxConvertImported(f *util.Factory, out io.Writer) *cobra.Command {
+	options := &ToolboxConvertImportedOptions{}
+
 	cmd := &cobra.Command{
 		Use:   "convert-imported",
 		Short: "Convert an imported cluster into a kops cluster",
 		Run: func(cmd *cobra.Command, args []string) {
-			err := convertImported.Run()
+			if err := rootCommand.ProcessArgs(args); err != nil {
+				exitWithError(err)
+			}
+
+			options.ClusterName = rootCommand.ClusterName()
+
+			err := RunToolboxConvertImported(f, out, options)
 			if err != nil {
 				exitWithError(err)
 			}
 		},
 	}
 
-	toolboxCmd.AddCommand(cmd)
+	cmd.Flags().StringVar(&options.NewClusterName, "newname", options.NewClusterName, "new cluster name")
+	cmd.Flags().StringVar(&options.Channel, "channel", options.Channel, "Channel to use for upgrade")
 
-	cmd.Flags().StringVar(&convertImported.NewClusterName, "newname", "", "new cluster name")
-	cmd.Flags().StringVar(&convertImported.Channel, "channel", api.DefaultChannel, "Channel to use for upgrade")
+	return cmd
 }
 
-func (c *ConvertImportedCmd) Run() error {
-	cluster, err := rootCommand.Cluster()
+func RunToolboxConvertImported(f *util.Factory, out io.Writer, options *ToolboxConvertImportedOptions) error {
+	clientset, err := f.Clientset()
 	if err != nil {
 		return err
 	}
 
-	clientset, err := rootCommand.Clientset()
+	if options.ClusterName == "" {
+		return fmt.Errorf("ClusterName is required")
+	}
+
+	cluster, err := clientset.Clusters().Get(options.ClusterName)
 	if err != nil {
 		return err
 	}
 
-	list, err := clientset.InstanceGroups(cluster.Name).List(k8sapi.ListOptions{})
+	list, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).List(k8sapi.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -72,31 +90,31 @@ func (c *ConvertImportedCmd) Run() error {
 		instanceGroups = append(instanceGroups, &list.Items[i])
 	}
 
-	if cluster.Annotations[api.AnnotationNameManagement] != api.AnnotationValueManagementImported {
-		return fmt.Errorf("cluster %q does not appear to be a cluster imported using kops import", cluster.Name)
+	if cluster.ObjectMeta.Annotations[api.AnnotationNameManagement] != api.AnnotationValueManagementImported {
+		return fmt.Errorf("cluster %q does not appear to be a cluster imported using kops import", cluster.ObjectMeta.Name)
 	}
 
-	if c.NewClusterName == "" {
+	if options.NewClusterName == "" {
 		return fmt.Errorf("--newname is required for converting an imported cluster")
 	}
 
-	oldClusterName := cluster.Name
+	oldClusterName := cluster.ObjectMeta.Name
 	if oldClusterName == "" {
 		return fmt.Errorf("(Old) ClusterName must be set in configuration")
 	}
 
 	// TODO: Switch to cloudup.BuildCloud
-	if len(cluster.Spec.Zones) == 0 {
-		return fmt.Errorf("Configuration must include Zones")
+	if len(cluster.Spec.Subnets) == 0 {
+		return fmt.Errorf("Configuration must include Subnets")
 	}
 
 	region := ""
-	for _, zone := range cluster.Spec.Zones {
-		if len(zone.Name) <= 2 {
-			return fmt.Errorf("Invalid AWS zone: %q", zone.Name)
+	for _, subnet := range cluster.Spec.Subnets {
+		if len(subnet.Name) <= 2 {
+			return fmt.Errorf("Invalid AWS zone: %q", subnet.Zone)
 		}
 
-		zoneRegion := zone.Name[:len(zone.Name)-1]
+		zoneRegion := subnet.Zone[:len(subnet.Zone)-1]
 		if region != "" && zoneRegion != region {
 			return fmt.Errorf("Clusters cannot span multiple regions")
 		}
@@ -110,13 +128,13 @@ func (c *ConvertImportedCmd) Run() error {
 		return fmt.Errorf("error initializing AWS client: %v", err)
 	}
 
-	channel, err := api.LoadChannel(c.Channel)
+	channel, err := api.LoadChannel(options.Channel)
 	if err != nil {
 		return err
 	}
 
 	d := &kutil.ConvertKubeupCluster{
-		NewClusterName: c.NewClusterName,
+		NewClusterName: options.NewClusterName,
 		OldClusterName: oldClusterName,
 		Cloud:          cloud,
 		ClusterConfig:  cluster,

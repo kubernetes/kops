@@ -4,23 +4,26 @@
 package iotdataplane
 
 import (
+	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/awstesting/integration/smoke"
 	"github.com/aws/aws-sdk-go/service/iot"
 	"github.com/aws/aws-sdk-go/service/iotdataplane"
-	. "github.com/lsegal/gucumber"
+	"github.com/gucumber/gucumber"
 )
 
 func init() {
-	Before("@iotdataplane", func() {
+	gucumber.Before("@iotdataplane", func() {
 		svc := iot.New(smoke.Session)
 		result, err := svc.DescribeEndpoint(&iot.DescribeEndpointInput{})
 		if err != nil {
-			World["error"] = err
+			gucumber.World["error"] = err
 			return
 		}
 
-		World["client"] = iotdataplane.New(smoke.Session, aws.NewConfig().
+		fmt.Println("IOT Data endpoint:", *result.EndpointAddress)
+		gucumber.World["client"] = iotdataplane.New(smoke.Session, aws.NewConfig().
 			WithEndpoint(*result.EndpointAddress))
 	})
 }

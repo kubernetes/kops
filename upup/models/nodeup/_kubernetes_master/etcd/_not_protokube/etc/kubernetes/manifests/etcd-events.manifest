@@ -3,7 +3,10 @@
 "kind": "Pod",
 "metadata": {
   "name":"etcd-server-events",
-  "namespace": "kube-system"
+  "namespace": "kube-system",
+  "labels": {
+    "k8s-app" : "etcd-server-events"
+  }
 },
 "spec":{
 "hostNetwork": true,

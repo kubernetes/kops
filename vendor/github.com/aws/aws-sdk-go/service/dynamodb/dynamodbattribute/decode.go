@@ -94,6 +94,22 @@ func UnmarshalList(l []*dynamodb.AttributeValue, out interface{}) error {
 	return NewDecoder().Decode(&dynamodb.AttributeValue{L: l}, out)
 }
 
+// UnmarshalListOfMaps is an alias for Unmarshal func which unmarshals a
+// slice of maps of attribute values.
+//
+// This is useful for when you need to unmarshal the Items from a DynamoDB
+// Query API call.
+//
+// The output value provided must be a non-nil pointer
+func UnmarshalListOfMaps(l []map[string]*dynamodb.AttributeValue, out interface{}) error {
+	items := make([]*dynamodb.AttributeValue, len(l))
+	for i, m := range l {
+		items[i] = &dynamodb.AttributeValue{M: m}
+	}
+
+	return UnmarshalList(items, out)
+}
+
 // A Decoder provides unmarshaling AttributeValues to Go value types.
 type Decoder struct {
 	MarshalOptions
@@ -449,7 +465,10 @@ func (d *Decoder) decodeMap(avMap map[string]*dynamodb.AttributeValue, v reflect
 		fields := unionStructFields(v.Type(), d.MarshalOptions)
 		for k, av := range avMap {
 			if f, ok := fieldByName(fields, k); ok {
-				fv := v.FieldByIndex(f.Index)
+				fv := fieldByIndex(v, f.Index, func(v *reflect.Value) bool {
+					v.Set(reflect.New(v.Type().Elem()))
+					return true // to continue the loop.
+				})
 				if err := d.decode(av, fv, f.tag); err != nil {
 					return err
 				}
@@ -655,7 +674,7 @@ func (e *InvalidUnmarshalError) Message() string {
 		return "cannot unmarshal to nil value"
 	}
 	if e.Type.Kind() != reflect.Ptr {
-		return "cannot unmasrhal to non-pointer value, got " + e.Type.String()
+		return "cannot unmarshal to non-pointer value, got " + e.Type.String()
 	}
 	return "cannot unmarshal to nil value, " + e.Type.String()
 }

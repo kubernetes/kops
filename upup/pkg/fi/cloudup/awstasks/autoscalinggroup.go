@@ -19,15 +19,16 @@ package awstasks
 import (
 	"fmt"
 
+	"reflect"
+	"sort"
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
-	"reflect"
-	"sort"
-	"strings"
 )
 
 //go:generate fitask -type=AutoscalingGroup
@@ -56,6 +57,15 @@ func findAutoscalingGroup(cloud awsup.AWSCloud, name string) (*autoscaling.Group
 	var found []*autoscaling.Group
 	err := cloud.Autoscaling().DescribeAutoScalingGroupsPages(request, func(p *autoscaling.DescribeAutoScalingGroupsOutput, lastPage bool) (shouldContinue bool) {
 		for _, g := range p.AutoScalingGroups {
+			// Check for "Delete in progress" (the only use of
+			// .Status). We won't be able to update or create while
+			// this is true, but filtering it out here makes the error
+			// messages slightly clearer.
+			if g.Status != nil {
+				glog.Warningf("Skipping AutoScalingGroup %v: %v", *g.AutoScalingGroupName, *g.Status)
+				continue
+			}
+
 			if aws.StringValue(g.AutoScalingGroupName) == name {
 				found = append(found, g)
 			} else {
@@ -147,6 +157,17 @@ func (e *AutoscalingGroup) buildTags(cloud fi.Cloud) map[string]string {
 }
 
 func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *AutoscalingGroup) error {
+	tags := []*autoscaling.Tag{}
+	for k, v := range e.buildTags(t.Cloud) {
+		tags = append(tags, &autoscaling.Tag{
+			Key:               aws.String(k),
+			Value:             aws.String(v),
+			ResourceId:        e.Name,
+			ResourceType:      aws.String("auto-scaling-group"),
+			PropagateAtLaunch: aws.Bool(true),
+		})
+	}
+
 	if a == nil {
 		glog.V(2).Infof("Creating autoscaling Group with Name:%q", *e.Name)
 
@@ -162,15 +183,6 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		}
 		request.VPCZoneIdentifier = aws.String(strings.Join(subnetIDs, ","))
 
-		tags := []*autoscaling.Tag{}
-		for k, v := range e.buildTags(t.Cloud) {
-			tags = append(tags, &autoscaling.Tag{
-				Key:          aws.String(k),
-				Value:        aws.String(v),
-				ResourceId:   e.Name,
-				ResourceType: aws.String("auto-scaling-group"),
-			})
-		}
 		request.Tags = tags
 
 		_, err := t.Cloud.Autoscaling().CreateAutoScalingGroup(request)
@@ -203,10 +215,10 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			changes.Subnets = nil
 		}
 
-		// Temporary workaround for user-added tags, until we have #241
-		// TODO: Remove once we have #241
+		var tagsRequest *autoscaling.CreateOrUpdateTagsInput
 		if changes.Tags != nil {
-			glog.Warning("Ignoring tag changes until we have #241: %v", changes.Tags)
+			tagsRequest = &autoscaling.CreateOrUpdateTagsInput{}
+			tagsRequest.Tags = tags
 			changes.Tags = nil
 		}
 
@@ -220,6 +232,13 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		_, err := t.Cloud.Autoscaling().UpdateAutoScalingGroup(request)
 		if err != nil {
 			return fmt.Errorf("error updating AutoscalingGroup: %v", err)
+		}
+
+		if tagsRequest != nil {
+			_, err := t.Cloud.Autoscaling().CreateOrUpdateTags(tagsRequest)
+			if err != nil {
+				return fmt.Errorf("error updating AutoscalingGroup tags: %v", err)
+			}
 		}
 	}
 

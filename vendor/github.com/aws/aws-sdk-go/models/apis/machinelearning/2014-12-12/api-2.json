@@ -1,6 +1,7 @@
 {
   "version":"2.0",
   "metadata":{
+    "uid":"machinelearning-2014-12-12",
     "apiVersion":"2014-12-12",
     "endpointPrefix":"machinelearning",
     "jsonVersion":"1.1",
@@ -811,7 +812,12 @@
         "Name":{"shape":"EntityName"},
         "Status":{"shape":"EntityStatus"},
         "OutputUri":{"shape":"S3Url"},
-        "Message":{"shape":"Message"}
+        "Message":{"shape":"Message"},
+        "ComputeTime":{"shape":"LongType"},
+        "FinishedAt":{"shape":"EpochTime"},
+        "StartedAt":{"shape":"EpochTime"},
+        "TotalRecordCount":{"shape":"LongType"},
+        "InvalidRecordCount":{"shape":"LongType"}
       }
     },
     "BatchPredictionFilterVariable":{
@@ -999,7 +1005,10 @@
         "RedshiftMetadata":{"shape":"RedshiftMetadata"},
         "RDSMetadata":{"shape":"RDSMetadata"},
         "RoleARN":{"shape":"RoleARN"},
-        "ComputeStatistics":{"shape":"ComputeStatistics"}
+        "ComputeStatistics":{"shape":"ComputeStatistics"},
+        "ComputeTime":{"shape":"LongType"},
+        "FinishedAt":{"shape":"EpochTime"},
+        "StartedAt":{"shape":"EpochTime"}
       }
     },
     "DataSourceFilterVariable":{
@@ -1299,7 +1308,10 @@
         "Name":{"shape":"EntityName"},
         "Status":{"shape":"EntityStatus"},
         "PerformanceMetrics":{"shape":"PerformanceMetrics"},
-        "Message":{"shape":"Message"}
+        "Message":{"shape":"Message"},
+        "ComputeTime":{"shape":"LongType"},
+        "FinishedAt":{"shape":"EpochTime"},
+        "StartedAt":{"shape":"EpochTime"}
       }
     },
     "EvaluationFilterVariable":{
@@ -1340,7 +1352,12 @@
         "Status":{"shape":"EntityStatus"},
         "OutputUri":{"shape":"S3Url"},
         "LogUri":{"shape":"PresignedS3Url"},
-        "Message":{"shape":"Message"}
+        "Message":{"shape":"Message"},
+        "ComputeTime":{"shape":"LongType"},
+        "FinishedAt":{"shape":"EpochTime"},
+        "StartedAt":{"shape":"EpochTime"},
+        "TotalRecordCount":{"shape":"LongType"},
+        "InvalidRecordCount":{"shape":"LongType"}
       }
     },
     "GetDataSourceInput":{
@@ -1370,6 +1387,9 @@
         "RDSMetadata":{"shape":"RDSMetadata"},
         "RoleARN":{"shape":"RoleARN"},
         "ComputeStatistics":{"shape":"ComputeStatistics"},
+        "ComputeTime":{"shape":"LongType"},
+        "FinishedAt":{"shape":"EpochTime"},
+        "StartedAt":{"shape":"EpochTime"},
         "DataSourceSchema":{"shape":"DataSchema"}
       }
     },
@@ -1394,7 +1414,10 @@
         "Status":{"shape":"EntityStatus"},
         "PerformanceMetrics":{"shape":"PerformanceMetrics"},
         "LogUri":{"shape":"PresignedS3Url"},
-        "Message":{"shape":"Message"}
+        "Message":{"shape":"Message"},
+        "ComputeTime":{"shape":"LongType"},
+        "FinishedAt":{"shape":"EpochTime"},
+        "StartedAt":{"shape":"EpochTime"}
       }
     },
     "GetMLModelInput":{
@@ -1424,6 +1447,9 @@
         "ScoreThresholdLastUpdatedAt":{"shape":"EpochTime"},
         "LogUri":{"shape":"PresignedS3Url"},
         "Message":{"shape":"Message"},
+        "ComputeTime":{"shape":"LongType"},
+        "FinishedAt":{"shape":"EpochTime"},
+        "StartedAt":{"shape":"EpochTime"},
         "Recipe":{"shape":"Recipe"},
         "Schema":{"shape":"DataSchema"}
       }
@@ -1496,7 +1522,10 @@
         "MLModelType":{"shape":"MLModelType"},
         "ScoreThreshold":{"shape":"ScoreThreshold"},
         "ScoreThresholdLastUpdatedAt":{"shape":"EpochTime"},
-        "Message":{"shape":"Message"}
+        "Message":{"shape":"Message"},
+        "ComputeTime":{"shape":"LongType"},
+        "FinishedAt":{"shape":"EpochTime"},
+        "StartedAt":{"shape":"EpochTime"}
       }
     },
     "MLModelFilterVariable":{
@@ -1835,7 +1864,8 @@
     },
     "TagKeyList":{
       "type":"list",
-      "member":{"shape":"TagKey"}
+      "member":{"shape":"TagKey"},
+      "max":100
     },
     "TagLimitExceededException":{
       "type":"structure",
@@ -1846,7 +1876,8 @@
     },
     "TagList":{
       "type":"list",
-      "member":{"shape":"Tag"}
+      "member":{"shape":"Tag"},
+      "max":100
     },
     "TagValue":{
       "type":"string",

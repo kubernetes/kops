@@ -33,13 +33,13 @@ source "${KUBE_ROOT}/cluster/kube-util.sh"
 function usage() {
   echo "!!! EXPERIMENTAL !!!"
   echo ""
-  echo "${0} [-M|-N|-P] -l -o | <version number or publication>"
+  echo "${0} [-M | -N | -P] [-o] (-l | <version number or publication>)"
   echo "  Upgrades master and nodes by default"
   echo "  -M:  Upgrade master only"
   echo "  -N:  Upgrade nodes only"
   echo "  -P:  Node upgrade prerequisites only (create a new instance template)"
   echo "  -o:  Use os distro sepcified in KUBE_NODE_OS_DISTRIBUTION for new nodes. Options include 'debian' or 'gci'"
-  echo "  -l:  Use local(dev) binaries"
+  echo "  -l:  Use local(dev) binaries. This is only supported for master upgrades."
   echo ""
   echo '  Version number or publication is either a proper version number'
   echo '  (e.g. "v1.0.6", "v1.2.0-alpha.1.881+376438b69c7612") or a version'
@@ -66,6 +66,11 @@ function usage() {
   echo "  release/stable: ${0} ${release_stable}"
   echo "  release/latest: ${0} ${release_latest}"
   echo "  ci/latest:      ${0} ${ci_latest}"
+}
+
+function print-node-version-info() {
+  echo "== $1 Node OS and Kubelet Versions =="
+  "${KUBE_ROOT}/cluster/kubectl.sh" get nodes -o=jsonpath='{range .items[*]}name: "{.metadata.name}", osImage: "{.status.nodeInfo.osImage}", kubeletVersion: "{.status.nodeInfo.kubeletVersion}"{"\n"}{end}'
 }
 
 function upgrade-master() {
@@ -125,6 +130,7 @@ function wait-for-master() {
 function prepare-upgrade() {
   ensure-temp-dir
   detect-project
+  detect-node-names # sets INSTANCE_GROUPS
   write-cluster-name
   tars_from_version
 }
@@ -175,6 +181,16 @@ function upgrade-nodes() {
   do-node-upgrade
 }
 
+function setup-base-image() {
+  if [[ "${env_os_distro}" == "false" ]]; then
+    echo "== Ensuring that new Node base OS image matched the existing Node base OS image"
+    NODE_OS_DISTRIBUTION=$(get-node-os "${NODE_NAMES[0]}")
+    source "${KUBE_ROOT}/cluster/gce/${NODE_OS_DISTRIBUTION}/node-helper.sh"
+    # Reset the node image based on current os distro
+    set-node-image
+fi
+}
+
 # prepare-node-upgrade creates a new instance template suitable for upgrading
 # to KUBE_VERSION and echos a single line with the name of the new template.
 #
@@ -196,9 +212,9 @@ function upgrade-nodes() {
 #   KUBELET_KEY_BASE64
 function prepare-node-upgrade() {
   echo "== Preparing node upgrade (to ${KUBE_VERSION}). ==" >&2
-  SANITIZED_VERSION=$(echo ${KUBE_VERSION} | sed 's/[\.\+]/-/g')
+  setup-base-image
 
-  detect-node-names # sets INSTANCE_GROUPS
+  SANITIZED_VERSION=$(echo ${KUBE_VERSION} | sed 's/[\.\+]/-/g')
 
   # TODO(zmerlynn): Refactor setting scope flags.
   local scope_flags=
@@ -220,13 +236,6 @@ function prepare-node-upgrade() {
   # TODO(zmerlynn): How do we ensure kube-env is written in a ${version}-
   #                 compatible way?
   write-node-env
-
-  if [[ "${env_os_distro}" == "false" ]]; then
-    NODE_OS_DISTRIBUTION=$(get-node-os "${NODE_NAMES[0]}")
-    source "${KUBE_ROOT}/cluster/gce/${NODE_OS_DISTRIBUTION}/node-helper.sh"
-    # Reset the node image based on current os distro
-    set-node-image
-  fi
 
   # TODO(zmerlynn): Get configure-vm script from ${version}. (Must plumb this
   #                 through all create-node-instance-template implementations).
@@ -349,6 +358,12 @@ while getopts ":MNPlho" opt; do
 done
 shift $((OPTIND-1))
 
+if [[ $# -gt 1 ]]; then
+  echo "Error: Only one parameter (<version number or publication>) may be passed after the set of flags!" >&2
+  usage
+  exit 1
+fi
+
 if [[ $# -lt 1 ]] && [[ "${local_binaries}" == "false" ]]; then
   usage
   exit 1
@@ -358,6 +373,8 @@ if [[ "${master_upgrade}" == "false" ]] && [[ "${node_upgrade}" == "false" ]]; t
   echo "Can't specify both -M and -N" >&2
   exit 1
 fi
+
+print-node-version-info "Pre-Upgrade"
 
 if [[ "${local_binaries}" == "false" ]]; then
   set_binary_version ${1}
@@ -385,3 +402,5 @@ fi
 
 echo "== Validating cluster post-upgrade =="
 "${KUBE_ROOT}/cluster/validate-cluster.sh"
+
+print-node-version-info "Post-Upgrade"

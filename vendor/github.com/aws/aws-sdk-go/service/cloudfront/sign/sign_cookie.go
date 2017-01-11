@@ -17,7 +17,7 @@ const (
 	CookieKeyIDName = "CloudFront-Key-Pair-Id"
 )
 
-// A CookieOptions optional additonal options that can be applied to the signed
+// A CookieOptions optional additional options that can be applied to the signed
 // cookies.
 type CookieOptions struct {
 	Path   string

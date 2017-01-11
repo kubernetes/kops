@@ -27,7 +27,9 @@ import (
 )
 
 type CreateSecretPublickeyOptions struct {
-	Pubkey string
+	ClusterName   string
+	Name          string
+	PublicKeyPath string
 }
 
 func NewCmdCreateSecretPublicKey(f *util.Factory, out io.Writer) *cobra.Command {
@@ -38,32 +40,43 @@ func NewCmdCreateSecretPublicKey(f *util.Factory, out io.Writer) *cobra.Command 
 		Short: "Create SSH publickey",
 		Long:  `Create SSH publickey.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := RunCreateSecretPublicKey(f, cmd, args, os.Stdout, options)
+			if len(args) == 0 {
+				exitWithError(fmt.Errorf("syntax: NAME -i <PublicKeyPath>"))
+			}
+			if len(args) != 1 {
+				exitWithError(fmt.Errorf("syntax: NAME -i <PublicKeyPath>"))
+			}
+			options.Name = args[0]
+
+			err := rootCommand.ProcessArgs(args[1:])
+			if err != nil {
+				exitWithError(err)
+			}
+
+			options.ClusterName = rootCommand.ClusterName()
+
+			err = RunCreateSecretPublicKey(f, os.Stdout, options)
 			if err != nil {
 				exitWithError(err)
 			}
 		},
 	}
 
-	cmd.Flags().StringVarP(&options.Pubkey, "pubkey", "i", "", "Path to SSH public key")
+	cmd.Flags().StringVarP(&options.PublicKeyPath, "pubkey", "i", "", "Path to SSH public key")
 
 	return cmd
 }
 
-func RunCreateSecretPublicKey(f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, options *CreateSecretPublickeyOptions) error {
-	if len(args) == 0 {
-		return fmt.Errorf("syntax: NAME -i <PublicKeyPath>")
-	}
-	if len(args) != 1 {
-		return fmt.Errorf("syntax: NAME -i <PublicKeyPath>")
-	}
-	name := args[0]
-
-	if options.Pubkey == "" {
-		return fmt.Errorf("pubkey path is required (use -i)")
+func RunCreateSecretPublicKey(f *util.Factory, out io.Writer, options *CreateSecretPublickeyOptions) error {
+	if options.PublicKeyPath == "" {
+		return fmt.Errorf("public key path is required (use -i)")
 	}
 
-	cluster, err := rootCommand.Cluster()
+	if options.Name == "" {
+		return fmt.Errorf("Name is required")
+	}
+
+	cluster, err := GetCluster(f, options.ClusterName)
 	if err != nil {
 		return err
 	}
@@ -73,12 +86,12 @@ func RunCreateSecretPublicKey(f *util.Factory, cmd *cobra.Command, args []string
 		return err
 	}
 
-	data, err := ioutil.ReadFile(options.Pubkey)
+	data, err := ioutil.ReadFile(options.PublicKeyPath)
 	if err != nil {
-		return fmt.Errorf("error reading SSH public key %v: %v", options.Pubkey, err)
+		return fmt.Errorf("error reading SSH public key %v: %v", options.PublicKeyPath, err)
 	}
 
-	err = keyStore.AddSSHPublicKey(name, data)
+	err = keyStore.AddSSHPublicKey(options.Name, data)
 	if err != nil {
 		return fmt.Errorf("error adding SSH public key: %v", err)
 	}

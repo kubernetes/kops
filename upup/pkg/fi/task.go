@@ -18,6 +18,9 @@ package fi
 
 import (
 	"fmt"
+	"github.com/golang/glog"
+	"reflect"
+	"strings"
 )
 
 type Task interface {
@@ -33,4 +36,73 @@ func TaskAsString(t Task) string {
 
 type HasCheckExisting interface {
 	CheckExisting(c *Context) bool
+}
+
+// ModelBuilder allows for plugins that configure an aspect of the model, based on the configuration
+type ModelBuilder interface {
+	Build(context *ModelBuilderContext) error
+}
+
+// ModelBuilderContext is a context object that holds state we want to pass to ModelBuilder
+type ModelBuilderContext struct {
+	Tasks map[string]Task
+}
+
+func (c *ModelBuilderContext) AddTask(task Task) {
+	key := buildTaskKey(task)
+
+	existing, found := c.Tasks[key]
+	if found {
+		glog.Fatalf("found duplicate tasks with name %q: %v and %v", key, task, existing)
+	}
+	c.Tasks[key] = task
+}
+
+// EnsureTask ensures that the specified task is configured.
+// It adds the task if it does not already exist.
+// If it does exist, it verifies that the existing task reflect.DeepEqual the new task,
+// if they are different an error is returned.
+func (c *ModelBuilderContext) EnsureTask(task Task) error {
+	key := buildTaskKey(task)
+
+	existing, found := c.Tasks[key]
+	if found {
+		if reflect.DeepEqual(task, existing) {
+			glog.V(8).Infof("EnsureTask ignoring identical ")
+			return nil
+		} else {
+			glog.Warningf("EnsureTask found task mismatch for %q", key)
+			glog.Warningf("\tExisting: %v", existing)
+			glog.Warningf("\tNew: %v", task)
+
+			return fmt.Errorf("cannot add different task with same key %q", key)
+		}
+	}
+	c.Tasks[key] = task
+	return nil
+}
+
+func buildTaskKey(task Task) string {
+	hasName, ok := task.(HasName)
+	if !ok {
+		glog.Fatalf("task %T does not implement HasName", task)
+	}
+
+	name := StringValue(hasName.GetName())
+	if name == "" {
+		glog.Fatalf("task %T (%v) did not have a Name", task, task)
+	}
+
+	typeName := TypeNameForTask(task)
+
+	key := typeName + "/" + name
+
+	return key
+}
+
+func TypeNameForTask(task interface{}) string {
+	typeName := fmt.Sprintf("%T", task)
+	lastDot := strings.LastIndex(typeName, ".")
+	typeName = typeName[lastDot+1:]
+	return typeName
 }

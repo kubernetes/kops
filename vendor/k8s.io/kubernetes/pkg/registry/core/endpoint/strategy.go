@@ -26,7 +26,7 @@ import (
 	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/registry/generic"
 	"k8s.io/kubernetes/pkg/runtime"
-	apistorage "k8s.io/kubernetes/pkg/storage"
+	pkgstorage "k8s.io/kubernetes/pkg/storage"
 	"k8s.io/kubernetes/pkg/util/validation/field"
 )
 
@@ -79,17 +79,26 @@ func (endpointsStrategy) AllowUnconditionalUpdate() bool {
 	return true
 }
 
-// MatchEndpoints returns a generic matcher for a given label and field selector.
-func MatchEndpoints(label labels.Selector, field fields.Selector) apistorage.SelectionPredicate {
-	return apistorage.SelectionPredicate{Label: label, Field: field, GetAttrs: EndpointsAttributes}
-}
-
-// EndpointsAttributes returns the attributes of an endpoint such that a
-// SelectionPredicate can match appropriately.
-func EndpointsAttributes(obj runtime.Object) (objLabels labels.Set, objFields fields.Set, err error) {
+// GetAttrs returns labels and fields of a given object for filtering purposes.
+func GetAttrs(obj runtime.Object) (labels.Set, fields.Set, error) {
 	endpoints, ok := obj.(*api.Endpoints)
 	if !ok {
 		return nil, nil, fmt.Errorf("invalid object type %#v", obj)
 	}
-	return endpoints.Labels, generic.ObjectMetaFieldsSet(&endpoints.ObjectMeta, true), nil
+	return endpoints.Labels, EndpointsToSelectableFields(endpoints), nil
+}
+
+// MatchEndpoints returns a generic matcher for a given label and field selector.
+func MatchEndpoints(label labels.Selector, field fields.Selector) pkgstorage.SelectionPredicate {
+	return pkgstorage.SelectionPredicate{
+		Label:    label,
+		Field:    field,
+		GetAttrs: GetAttrs,
+	}
+}
+
+// EndpointsToSelectableFields returns a field set that represents the object
+// TODO: fields are not labels, and the validation rules for them do not apply.
+func EndpointsToSelectableFields(endpoints *api.Endpoints) fields.Set {
+	return generic.ObjectMetaFieldsSet(&endpoints.ObjectMeta, true)
 }

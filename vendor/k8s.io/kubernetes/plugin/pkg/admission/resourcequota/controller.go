@@ -33,6 +33,7 @@ import (
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/kubernetes/pkg/util/wait"
 	"k8s.io/kubernetes/pkg/util/workqueue"
+	_ "k8s.io/kubernetes/pkg/util/workqueue/prometheus" // for workqueue metric registration
 )
 
 // Evaluator is used to see if quota constraints are satisfied.
@@ -315,7 +316,7 @@ func copyQuotas(in []api.ResourceQuota) ([]api.ResourceQuota, error) {
 	return out, nil
 }
 
-// checkRequest verifies that the request does not exceed any quota constraint. it returns back a copy of quotas not yet persisted
+// checkRequest verifies that the request does not exceed any quota constraint. it returns a copy of quotas not yet persisted
 // that capture what the usage would be if the request succeeded.  It return an error if the is insufficient quota to satisfy the request
 func (e *quotaEvaluator) checkRequest(quotas []api.ResourceQuota, a admission.Attributes) ([]api.ResourceQuota, error) {
 	namespace := a.GetNamespace()
@@ -326,8 +327,7 @@ func (e *quotaEvaluator) checkRequest(quotas []api.ResourceQuota, a admission.At
 	}
 
 	op := a.GetOperation()
-	operationResources := evaluator.OperationResources(op)
-	if len(operationResources) == 0 {
+	if !evaluator.Handles(op) {
 		return quotas, nil
 	}
 
@@ -339,14 +339,16 @@ func (e *quotaEvaluator) checkRequest(quotas []api.ResourceQuota, a admission.At
 	interestingQuotaIndexes := []int{}
 	for i := range quotas {
 		resourceQuota := quotas[i]
-		match := evaluator.Matches(&resourceQuota, inputObject)
+		match, err := evaluator.Matches(&resourceQuota, inputObject)
+		if err != nil {
+			return quotas, err
+		}
 		if !match {
 			continue
 		}
 
 		hardResources := quota.ResourceNames(resourceQuota.Status.Hard)
-		evaluatorResources := evaluator.MatchesResources()
-		requiredResources := quota.Intersection(hardResources, evaluatorResources)
+		requiredResources := evaluator.MatchingResources(hardResources)
 		if err := evaluator.Constraints(requiredResources, inputObject); err != nil {
 			return nil, admission.NewForbidden(a, fmt.Errorf("failed quota: %s: %v", resourceQuota.Name, err))
 		}
@@ -360,7 +362,7 @@ func (e *quotaEvaluator) checkRequest(quotas []api.ResourceQuota, a admission.At
 		return quotas, nil
 	}
 
-	// Usage of some resources cannot be counted in isolation. For example when
+	// Usage of some resources cannot be counted in isolation. For example, when
 	// the resource represents a number of unique references to external
 	// resource. In such a case an evaluator needs to process other objects in
 	// the same namespace which needs to be known.
@@ -374,7 +376,10 @@ func (e *quotaEvaluator) checkRequest(quotas []api.ResourceQuota, a admission.At
 	// as a result, we need to measure the usage of this object for quota
 	// on updates, we need to subtract the previous measured usage
 	// if usage shows no change, just return since it has no impact on quota
-	deltaUsage := evaluator.Usage(inputObject)
+	deltaUsage, err := evaluator.Usage(inputObject)
+	if err != nil {
+		return quotas, err
+	}
 
 	// ensure that usage for input object is never negative (this would mean a resource made a negative resource requirement)
 	if negativeUsage := quota.IsNegative(deltaUsage); len(negativeUsage) > 0 {
@@ -391,7 +396,10 @@ func (e *quotaEvaluator) checkRequest(quotas []api.ResourceQuota, a admission.At
 		// then charge based on the delta.  Otherwise, bill the maximum
 		metadata, err := meta.Accessor(prevItem)
 		if err == nil && len(metadata.GetResourceVersion()) > 0 {
-			prevUsage := evaluator.Usage(prevItem)
+			prevUsage, innerErr := evaluator.Usage(prevItem)
+			if innerErr != nil {
+				return quotas, innerErr
+			}
 			deltaUsage = quota.Subtract(deltaUsage, prevUsage)
 		}
 	}
@@ -445,8 +453,7 @@ func (e *quotaEvaluator) Evaluate(a admission.Attributes) error {
 	// for this kind, check if the operation could mutate any quota resources
 	// if no resources tracked by quota are impacted, then just return
 	op := a.GetOperation()
-	operationResources := evaluator.OperationResources(op)
-	if len(operationResources) == 0 {
+	if !evaluator.Handles(op) {
 		return nil
 	}
 

@@ -8,7 +8,8 @@
     "serviceFullName":"AWS Marketplace Commerce Analytics",
     "signatureVersion":"v4",
     "signingName":"marketplacecommerceanalytics",
-    "targetPrefix":"MarketplaceCommerceAnalytics20150701"
+    "targetPrefix":"MarketplaceCommerceAnalytics20150701",
+    "uid":"marketplacecommerceanalytics-2015-07-01"
   },
   "operations":{
     "GenerateDataSet":{
@@ -19,6 +20,18 @@
       },
       "input":{"shape":"GenerateDataSetRequest"},
       "output":{"shape":"GenerateDataSetResult"},
+      "errors":[
+        {"shape":"MarketplaceCommerceAnalyticsException"}
+      ]
+    },
+    "StartSupportDataExport":{
+      "name":"StartSupportDataExport",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StartSupportDataExportRequest"},
+      "output":{"shape":"StartSupportDataExportResult"},
       "errors":[
         {"shape":"MarketplaceCommerceAnalyticsException"}
       ]
@@ -54,7 +67,8 @@
         "disbursed_amount_by_age_of_disbursed_funds",
         "customer_profile_by_industry",
         "customer_profile_by_revenue",
-        "customer_profile_by_geography"
+        "customer_profile_by_geography",
+        "sales_compensation_billed_revenue"
       ],
       "max":255,
       "min":1
@@ -65,6 +79,7 @@
     },
     "DestinationS3Prefix":{"type":"string"},
     "ExceptionMessage":{"type":"string"},
+    "FromDate":{"type":"timestamp"},
     "GenerateDataSetRequest":{
       "type":"structure",
       "required":[
@@ -114,6 +129,40 @@
     },
     "SnsTopicArn":{
       "type":"string",
+      "min":1
+    },
+    "StartSupportDataExportRequest":{
+      "type":"structure",
+      "required":[
+        "dataSetType",
+        "fromDate",
+        "roleNameArn",
+        "destinationS3BucketName",
+        "snsTopicArn"
+      ],
+      "members":{
+        "dataSetType":{"shape":"SupportDataSetType"},
+        "fromDate":{"shape":"FromDate"},
+        "roleNameArn":{"shape":"RoleNameArn"},
+        "destinationS3BucketName":{"shape":"DestinationS3BucketName"},
+        "destinationS3Prefix":{"shape":"DestinationS3Prefix"},
+        "snsTopicArn":{"shape":"SnsTopicArn"},
+        "customerDefinedValues":{"shape":"CustomerDefinedValues"}
+      }
+    },
+    "StartSupportDataExportResult":{
+      "type":"structure",
+      "members":{
+        "dataSetRequestId":{"shape":"DataSetRequestId"}
+      }
+    },
+    "SupportDataSetType":{
+      "type":"string",
+      "enum":[
+        "customer_support_contacts_data",
+        "test_customer_support_contacts_data"
+      ],
+      "max":255,
       "min":1
     }
   }

@@ -331,10 +331,11 @@ runTests() {
   second_port_field="(index .spec.ports 1).port"
   second_port_name="(index .spec.ports 1).name"
   image_field="(index .spec.containers 0).image"
+  container_name_field="(index .spec.template.spec.containers 0).name"
   hpa_min_field=".spec.minReplicas"
   hpa_max_field=".spec.maxReplicas"
   hpa_cpu_field=".spec.targetCPUUtilizationPercentage"
-  petset_replicas_field=".spec.replicas"
+  statefulset_replicas_field=".spec.replicas"
   job_parallelism_field=".spec.parallelism"
   deployment_replicas=".spec.replicas"
   secret_data=".data"
@@ -342,6 +343,7 @@ runTests() {
   deployment_image_field="(index .spec.template.spec.containers 0).image"
   deployment_second_image_field="(index .spec.template.spec.containers 1).image"
   change_cause_annotation='.*kubernetes.io/change-cause.*'
+  pdb_min_available=".spec.minAvailable"
 
   # Passing no arguments to create is an error
   ! kubectl create
@@ -419,6 +421,19 @@ runTests() {
 
   kubectl get "${kube_flags[@]}" --raw /version
 
+  # make sure the server was properly bootstrapped with clusterroles and bindings
+  kube::test::get_object_assert clusterroles/cluster-admin "{{.metadata.name}}" 'cluster-admin'
+  kube::test::get_object_assert clusterrolebindings/cluster-admin "{{.metadata.name}}" 'cluster-admin'
+  kubectl create "${kube_flags[@]}" clusterrolebinding super-admin --clusterrole=admin --user=super-admin
+  kube::test::get_object_assert clusterrolebinding/super-admin "{{range.subjects}}{{.name}}:{{end}}" 'super-admin:'
+  kubectl create "${kube_flags[@]}" rolebinding admin --clusterrole=admin --user=default-admin -n default
+  kube::test::get_object_assert rolebinding/admin "{{range.subjects}}{{.name}}:{{end}}" 'default-admin:'
+  kubectl create "${kube_flags[@]}" rolebinding localrole --role=localrole --group=the-group -n default
+  kube::test::get_object_assert rolebinding/localrole "{{range.subjects}}{{.name}}:{{end}}" 'the-group:'
+  kubectl create "${kube_flags[@]}" rolebinding sarole --role=localrole --serviceaccount=otherns:sa-name -n default
+  kube::test::get_object_assert rolebinding/sarole "{{range.subjects}}{{.namespace}}:{{end}}" 'otherns:'
+  kube::test::get_object_assert rolebinding/sarole "{{range.subjects}}{{.name}}:{{end}}" 'sa-name:'
+
   ###########################
   # POD creation / deletion #
   ###########################
@@ -469,7 +484,7 @@ runTests() {
   # Pre-condition: valid-pod POD exists
   kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" 'valid-pod:'
   # Command
-  kubectl delete pod valid-pod "${kube_flags[@]}" --grace-period=0
+  kubectl delete pod valid-pod "${kube_flags[@]}" --grace-period=0 --force
   # Post-condition: valid-pod POD doesn't exist
   kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" ''
 
@@ -479,6 +494,15 @@ runTests() {
   kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" 'valid-pod:'
   # Command
   kubectl delete pod valid-pod "${kube_flags[@]}" --now
+  # Post-condition: valid-pod POD doesn't exist
+  kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" ''
+
+  ### Delete POD valid-pod by id with --grace-period=0
+  # Pre-condition: valid-pod POD exists
+  kubectl create "${kube_flags[@]}" -f test/fixtures/doc-yaml/admin/limitrange/valid-pod.yaml
+  kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" 'valid-pod:'
+  # Command succeeds without --force by waiting
+  kubectl delete pod valid-pod "${kube_flags[@]}" --grace-period=0
   # Post-condition: valid-pod POD doesn't exist
   kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" ''
 
@@ -495,7 +519,7 @@ runTests() {
   # Pre-condition: valid-pod POD exists
   kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" 'valid-pod:'
   # Command
-  kubectl delete -f test/fixtures/doc-yaml/admin/limitrange/valid-pod.yaml "${kube_flags[@]}" --grace-period=0
+  kubectl delete -f test/fixtures/doc-yaml/admin/limitrange/valid-pod.yaml "${kube_flags[@]}" --grace-period=0 --force
   # Post-condition: valid-pod POD doesn't exist
   kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" ''
 
@@ -512,7 +536,7 @@ runTests() {
   # Pre-condition: valid-pod POD exists
   kube::test::get_object_assert "pods -l'name in (valid-pod)'" '{{range.items}}{{$id_field}}:{{end}}' 'valid-pod:'
   # Command
-  kubectl delete pods -l'name in (valid-pod)' "${kube_flags[@]}" --grace-period=0
+  kubectl delete pods -l'name in (valid-pod)' "${kube_flags[@]}" --grace-period=0 --force
   # Post-condition: valid-pod POD doesn't exist
   kube::test::get_object_assert "pods -l'name in (valid-pod)'" '{{range.items}}{{$id_field}}:{{end}}' ''
 
@@ -545,7 +569,7 @@ runTests() {
   # Pre-condition: valid-pod POD exists
   kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" 'valid-pod:'
   # Command
-  kubectl delete --all pods "${kube_flags[@]}" --grace-period=0 # --all remove all the pods
+  kubectl delete --all pods "${kube_flags[@]}" --grace-period=0 --force # --all remove all the pods
   # Post-condition: no POD exists
   kube::test::get_object_assert "pods -l'name in (valid-pod)'" '{{range.items}}{{$id_field}}:{{end}}' ''
 
@@ -575,6 +599,16 @@ runTests() {
   # Post-condition: configmap exists and has expected values
   kube::test::get_object_assert 'configmap/test-configmap --namespace=test-kubectl-describe-pod' "{{$id_field}}" 'test-configmap'
 
+  ### Create a pod disruption budget
+  # Command
+  kubectl create pdb test-pdb --selector=app=rails --min-available=2 --namespace=test-kubectl-describe-pod
+  # Post-condition: pdb exists and has expected values
+  kube::test::get_object_assert 'pdb/test-pdb --namespace=test-kubectl-describe-pod' "{{$pdb_min_available}}" '2'
+  # Command
+  kubectl create pdb test-pdb-2 --selector=app=rails --min-available=50% --namespace=test-kubectl-describe-pod
+  # Post-condition: pdb exists and has expected values
+  kube::test::get_object_assert 'pdb/test-pdb-2 --namespace=test-kubectl-describe-pod' "{{$pdb_min_available}}" '50%'
+
   # Create a pod that consumes secret, configmap, and downward API keys as envs
   kube::test::get_object_assert 'pods --namespace=test-kubectl-describe-pod' "{{range.items}}{{$id_field}}:{{end}}" ''
   kubectl create -f hack/testdata/pod-with-api-env.yaml --namespace=test-kubectl-describe-pod
@@ -587,6 +621,7 @@ runTests() {
   kubectl delete pod env-test-pod --namespace=test-kubectl-describe-pod
   kubectl delete secret test-secret --namespace=test-kubectl-describe-pod
   kubectl delete configmap test-configmap --namespace=test-kubectl-describe-pod
+  kubectl delete pdb/test-pdb pdb/test-pdb-2 --namespace=test-kubectl-describe-pod
   kubectl delete namespace test-kubectl-describe-pod
 
   ### Create two PODs
@@ -603,7 +638,7 @@ runTests() {
   # Pre-condition: valid-pod and redis-proxy PODs exist
   kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" 'redis-proxy:valid-pod:'
   # Command
-  kubectl delete pods valid-pod redis-proxy "${kube_flags[@]}" --grace-period=0 # delete multiple pods at once
+  kubectl delete pods valid-pod redis-proxy "${kube_flags[@]}" --grace-period=0 --force # delete multiple pods at once
   # Post-condition: no POD exists
   kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" ''
 
@@ -623,6 +658,22 @@ runTests() {
   kubectl label pods valid-pod new-name=new-valid-pod "${kube_flags[@]}"
   # Post-condition: valid-pod is labelled
   kube::test::get_object_assert 'pod valid-pod' "{{range$labels_field}}{{.}}:{{end}}" 'valid-pod:new-valid-pod:'
+
+  ### Label the valid-pod POD with empty label value
+  # Pre-condition: valid-pod does not have label "emptylabel"
+  kube::test::get_object_assert 'pod valid-pod' "{{range$labels_field}}{{.}}:{{end}}" 'valid-pod:new-valid-pod:'
+  # Command
+  kubectl label pods valid-pod emptylabel="" "${kube_flags[@]}"
+  # Post-condition: valid pod contains "emptylabel" with no value
+  kube::test::get_object_assert 'pod valid-pod' "{{${labels_field}.emptylabel}}" ''
+
+  ### Annotate the valid-pod POD with empty annotation value
+  # Pre-condition: valid-pod does not have annotation "emptyannotation"
+  kube::test::get_object_assert 'pod valid-pod' "{{${annotations_field}.emptyannotation}}" '<no value>'
+  # Command
+  kubectl annotate pods valid-pod emptyannotation="" "${kube_flags[@]}"
+  # Post-condition: valid pod contains "emptyannotation" with no value
+  kube::test::get_object_assert 'pod valid-pod' "{{${annotations_field}.emptyannotation}}" ''
 
   ### Record label change
   # Pre-condition: valid-pod does not have record annotation
@@ -649,7 +700,7 @@ runTests() {
   # Pre-condition: valid-pod POD exists
   kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" 'valid-pod:'
   # Command
-  kubectl delete pods -lnew-name=new-valid-pod --grace-period=0 "${kube_flags[@]}"
+  kubectl delete pods -lnew-name=new-valid-pod --grace-period=0 --force "${kube_flags[@]}"
   # Post-condition: valid-pod POD doesn't exist
   kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" ''
 
@@ -677,9 +728,60 @@ runTests() {
   # Cleanup
   kubectl delete pod pod-with-precision "${kube_flags[@]}"
 
+  ### Annotate POD YAML file locally without effecting the live pod.
+  kubectl create -f hack/testdata/pod.yaml "${kube_flags[@]}"
+  # Command
+  kubectl annotate -f hack/testdata/pod.yaml annotatekey=annotatevalue "${kube_flags[@]}"
+
+  # Pre-condition: annotationkey is annotationvalue
+  kube::test::get_object_assert 'pod test-pod' "{{${annotations_field}.annotatekey}}" 'annotatevalue'
+
+  # Command
+  output_message=$(kubectl annotate --local -f hack/testdata/pod.yaml annotatekey=localvalue -o yaml "${kube_flags[@]}")
+  echo $output_message
+
+  # Post-condition: annotationkey is still annotationvalue in the live pod, but command output is the new value
+  kube::test::get_object_assert 'pod test-pod' "{{${annotations_field}.annotatekey}}" 'annotatevalue'
+  kube::test::if_has_string "${output_message}" "localvalue"
+
+  # Cleanup
+  kubectl delete -f hack/testdata/pod.yaml "${kube_flags[@]}"
+
   ### Create valid-pod POD
+  # Pre-condition: no services and no rcs exist
+  kube::test::get_object_assert service "{{range.items}}{{$id_field}}:{{end}}" ''
+  kube::test::get_object_assert rc "{{range.items}}{{$id_field}}:{{end}}" ''
+  ## kubectl create --edit can update the label filed of multiple resources. tmp-editor.sh is a fake editor
+  TEMP=$(mktemp /tmp/tmp-editor-XXXXXXXX.sh)
+  echo -e "#!/bin/bash\n$SED -i \"s/mock/modified/g\" \$1" > ${TEMP}
+  chmod +x ${TEMP}
+  # Command
+  EDITOR=${TEMP} kubectl create --edit -f hack/testdata/multi-resource-json.json "${kube_flags[@]}"
+  # Post-condition: service named modified and rc named modified are created
+  kube::test::get_object_assert service "{{range.items}}{{$id_field}}:{{end}}" 'modified:'
+  kube::test::get_object_assert rc "{{range.items}}{{$id_field}}:{{end}}" 'modified:'
+  # Clean up
+  kubectl delete service/modified "${kube_flags[@]}"
+  kubectl delete rc/modified "${kube_flags[@]}"
+
+  # Pre-condition: no services and no rcs exist
+  kube::test::get_object_assert service "{{range.items}}{{$id_field}}:{{end}}" ''
+  kube::test::get_object_assert rc "{{range.items}}{{$id_field}}:{{end}}" ''
+  # Command
+  EDITOR=${TEMP} kubectl create --edit -f hack/testdata/multi-resource-list.json "${kube_flags[@]}"
+  # Post-condition: service named modified and rc named modified are created
+  kube::test::get_object_assert service "{{range.items}}{{$id_field}}:{{end}}" 'modified:'
+  kube::test::get_object_assert rc "{{range.items}}{{$id_field}}:{{end}}" 'modified:'
+  # Clean up
+  rm ${TEMP}
+  kubectl delete service/modified "${kube_flags[@]}"
+  kubectl delete rc/modified "${kube_flags[@]}"
+
+  ## kubectl create --edit won't create anything if user makes no changes
+  [ "$(EDITOR=cat kubectl create --edit -f test/fixtures/doc-yaml/admin/limitrange/valid-pod.yaml -o json 2>&1 | grep 'Edit cancelled')" ]
+
+  ## Create valid-pod POD
   # Pre-condition: no POD exists
-  create_and_use_new_namespace
   kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" ''
   # Command
   kubectl create -f test/fixtures/doc-yaml/admin/limitrange/valid-pod.yaml "${kube_flags[@]}"
@@ -807,6 +909,17 @@ __EOF__
   [ "$(EDITOR=cat kubectl edit pod/valid-pod | grep 'name: valid-pod')" ]
   [ "$(EDITOR=cat kubectl edit --windows-line-endings pod/valid-pod | file - | grep CRLF)" ]
   [ ! "$(EDITOR=cat kubectl edit --windows-line-endings=false pod/valid-pod | file - | grep CRLF)" ]
+  [ "$(EDITOR=cat kubectl edit ns | grep 'kind: List')" ]
+
+  ### Label POD YAML file locally without effecting the live pod.
+  # Pre-condition: name is valid-pod
+  kube::test::get_object_assert 'pod valid-pod' "{{${labels_field}.name}}" 'valid-pod'
+  # Command
+  output_message=$(kubectl label --local --overwrite -f hack/testdata/pod.yaml name=localonlyvalue -o yaml "${kube_flags[@]}")
+  echo $output_message
+  # Post-condition: name is still valid-pod in the live pod, but command output is the new value
+  kube::test::get_object_assert 'pod valid-pod' "{{${labels_field}.name}}" 'valid-pod'
+  kube::test::if_has_string "${output_message}" "localonlyvalue"
 
   ### Overwriting an existing label is not permitted
   # Pre-condition: name is valid-pod
@@ -828,7 +941,7 @@ __EOF__
   # Pre-condition: valid-pod POD exists
   kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" 'valid-pod:'
   # Command
-  kubectl delete pods -l'name in (valid-pod-super-sayan)' --grace-period=0 "${kube_flags[@]}"
+  kubectl delete pods -l'name in (valid-pod-super-sayan)' --grace-period=0 --force "${kube_flags[@]}"
   # Post-condition: valid-pod POD doesn't exist
   kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" ''
 
@@ -1007,15 +1120,90 @@ __EOF__
   kubectl delete pods selector-test-pod
 
 
+  ## kubectl apply --prune
+  # Pre-Condition: no POD exists
+  kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" ''
+
+  # apply a
+  kubectl apply --prune -l prune-group=true -f hack/testdata/prune/a.yaml "${kube_flags[@]}"
+  # check right pod exists
+  kube::test::get_object_assert 'pods a' "{{${id_field}}}" 'a'
+  # check wrong pod doesn't exist
+  output_message=$(! kubectl get pods b 2>&1 "${kube_flags[@]}")
+  kube::test::if_has_string "${output_message}" 'pods "b" not found'
+
+  # apply b
+  kubectl apply --prune -l prune-group=true -f hack/testdata/prune/b.yaml "${kube_flags[@]}"
+  # check right pod exists
+  kube::test::get_object_assert 'pods b' "{{${id_field}}}" 'b'
+  # check wrong pod doesn't exist
+  output_message=$(! kubectl get pods a 2>&1 "${kube_flags[@]}")
+  kube::test::if_has_string "${output_message}" 'pods "a" not found'
+
+  # cleanup
+  kubectl delete pods b
+
+  # same thing without prune for a sanity check
+  # Pre-Condition: no POD exists
+  kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" ''
+
+  # apply a
+  kubectl apply -l prune-group=true -f hack/testdata/prune/a.yaml "${kube_flags[@]}"
+  # check right pod exists
+  kube::test::get_object_assert 'pods a' "{{${id_field}}}" 'a'
+  # check wrong pod doesn't exist
+  output_message=$(! kubectl get pods b 2>&1 "${kube_flags[@]}")
+  kube::test::if_has_string "${output_message}" 'pods "b" not found'
+
+  # apply b
+  kubectl apply -l prune-group=true -f hack/testdata/prune/b.yaml "${kube_flags[@]}"
+  # check both pods exist
+  kube::test::get_object_assert 'pods a' "{{${id_field}}}" 'a'
+  kube::test::get_object_assert 'pods b' "{{${id_field}}}" 'b'
+  # check wrong pod doesn't exist
+
+  # cleanup
+  kubectl delete pod/a pod/b
+
+  ## kubectl apply --prune requires a --all flag to select everything
+  output_message=$(! kubectl apply --prune -f hack/testdata/prune 2>&1 "${kube_flags[@]}")
+  kube::test::if_has_string "${output_message}" \
+    'all resources selected for prune without explicitly passing --all'
+  # should apply everything
+  kubectl apply --all --prune -f hack/testdata/prune
+  kube::test::get_object_assert 'pods a' "{{${id_field}}}" 'a'
+  kube::test::get_object_assert 'pods b' "{{${id_field}}}" 'b'
+  kubectl delete pod/a pod/b
+
+  ## kubectl apply --prune should fallback to delete for non reapable types
+  kubectl apply --all --prune -f hack/testdata/prune-reap/a.yml 2>&1 "${kube_flags[@]}"
+  kube::test::get_object_assert 'pvc a-pvc' "{{${id_field}}}" 'a-pvc'
+  kubectl apply --all --prune -f hack/testdata/prune-reap/b.yml 2>&1 "${kube_flags[@]}"
+  kube::test::get_object_assert 'pvc b-pvc' "{{${id_field}}}" 'b-pvc'
+  kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" ''
+  kubectl delete pvc b-pvc 2>&1 "${kube_flags[@]}"
+
+  ## kubectl apply --prune --prune-whitelist
+  # Pre-Condition: no POD exists
+  kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" ''
+  # apply pod a
+  kubectl apply --prune -l prune-group=true -f hack/testdata/prune/a.yaml "${kube_flags[@]}"
+  # check right pod exists
+  kube::test::get_object_assert 'pods a' "{{${id_field}}}" 'a'
+  # apply svc and don't prune pod a by overwriting whitelist
+  kubectl apply --prune -l prune-group=true -f hack/testdata/prune/svc.yaml --prune-whitelist core/v1/Service 2>&1 "${kube_flags[@]}"
+  kube::test::get_object_assert 'service prune-svc' "{{${id_field}}}" 'prune-svc'
+  kube::test::get_object_assert 'pods a' "{{${id_field}}}" 'a'
+  # apply svc and prune pod a with default whitelist
+  kubectl apply --prune -l prune-group=true -f hack/testdata/prune/svc.yaml 2>&1 "${kube_flags[@]}"
+  kube::test::get_object_assert 'service prune-svc' "{{${id_field}}}" 'prune-svc'
+  kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" ''
+  # cleanup
+  kubectl delete svc prune-svc 2>&1 "${kube_flags[@]}"
+
   ## kubectl run should create deployments or jobs
   # Pre-Condition: no Job exists
   kube::test::get_object_assert jobs "{{range.items}}{{$id_field}}:{{end}}" ''
-  # Command
-  kubectl run pi --generator=job/v1beta1 "--image=$IMAGE_PERL" --restart=OnFailure -- perl -Mbignum=bpi -wle 'print bpi(20)' "${kube_flags[@]}"
-  # Post-Condition: Job "pi" is created
-  kube::test::get_object_assert jobs "{{range.items}}{{$id_field}}:{{end}}" 'pi:'
-  # Clean up
-  kubectl delete jobs pi "${kube_flags[@]}"
   # Command
   kubectl run pi --generator=job/v1 "--image=$IMAGE_PERL" --restart=OnFailure -- perl -Mbignum=bpi -wle 'print bpi(20)' "${kube_flags[@]}"
   # Post-Condition: Job "pi" is created
@@ -1032,6 +1220,13 @@ __EOF__
   kube::test::get_object_assert deployment "{{range.items}}{{$id_field}}:{{end}}" 'nginx:'
   # Clean up
   kubectl delete deployment nginx "${kube_flags[@]}"
+
+  # Test kubectl create deployment
+  kubectl create deployment test-nginx --image=gcr.io/google-containers/nginx:test-cmd
+  # Post-Condition: Deployment has 2 replicas defined in its spec.
+  kube::test::get_object_assert 'deploy test-nginx' "{{$container_name_field}}" 'nginx'
+  # Clean up
+  kubectl delete deployment test-nginx "${kube_flags[@]}"
 
   ###############
   # Kubectl get #
@@ -1073,12 +1268,45 @@ __EOF__
   kube::test::if_has_string "${output_message}" "/api/v1/namespaces/default/pods 200 OK"
   kube::test::if_has_string "${output_message}" "/api/v1/namespaces/default/replicationcontrollers 200 OK"
   kube::test::if_has_string "${output_message}" "/api/v1/namespaces/default/services 200 OK"
-  kube::test::if_has_string "${output_message}" "/apis/apps/v1alpha1/namespaces/default/petsets 200 OK"
+  kube::test::if_has_string "${output_message}" "/apis/apps/v1beta1/namespaces/default/statefulsets 200 OK"
   kube::test::if_has_string "${output_message}" "/apis/autoscaling/v1/namespaces/default/horizontalpodautoscalers 200"
   kube::test::if_has_string "${output_message}" "/apis/batch/v1/namespaces/default/jobs 200 OK"
   kube::test::if_has_string "${output_message}" "/apis/extensions/v1beta1/namespaces/default/deployments 200 OK"
   kube::test::if_has_string "${output_message}" "/apis/extensions/v1beta1/namespaces/default/replicasets 200 OK"
 
+
+  ##################
+  # Global timeout #
+  ##################
+
+  ### Test global request timeout option
+  # Pre-condition: no POD exists
+  create_and_use_new_namespace
+  kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" ''
+  # Command
+  kubectl create "${kube_flags[@]}" -f test/fixtures/doc-yaml/admin/limitrange/valid-pod.yaml
+  # Post-condition: valid-pod POD is created
+  kubectl get "${kube_flags[@]}" pods -o json
+  kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" 'valid-pod:'
+
+  ## check --request-timeout on 'get pod'
+  output_message=$(kubectl get pod valid-pod --request-timeout=1)
+  kube::test::if_has_string "${output_message}" 'valid-pod'
+
+  ## check --request-timeout on 'get pod' with --watch
+  output_message=$(kubectl get pod valid-pod --request-timeout=1 --watch 2>&1)
+  kube::test::if_has_string "${output_message}" 'Timeout exceeded while reading body'
+
+  ## check --request-timeout value with no time unit
+  output_message=$(kubectl get pod valid-pod --request-timeout=1 2>&1)
+  kube::test::if_has_string "${output_message}" 'valid-pod'
+
+  ## check --request-timeout value with invalid time unit
+  output_message=$(! kubectl get pod valid-pod --request-timeout="1p" 2>&1)
+  kube::test::if_has_string "${output_message}" 'Invalid timeout value'
+
+  # cleanup
+  kubectl delete pods valid-pod "${kube_flags[@]}"
 
   #####################################
   # Third Party Resources             #
@@ -1116,7 +1344,7 @@ __EOF__
   ]
 }
 __EOF__
-  
+
   # Post-Condition: assertion object exist
   kube::test::get_object_assert thirdpartyresources "{{range.items}}{{$id_field}}:{{end}}" 'bar.company.com:foo.company.com:'
 
@@ -1213,8 +1441,10 @@ __EOF__
   echo -e '#!/bin/bash\nsed -i "s/image: busybox/image: prom\/busybox/g" $1' > /tmp/tmp-editor.sh
   chmod +x /tmp/tmp-editor.sh
   output_message=$(! EDITOR=/tmp/tmp-editor.sh kubectl edit -f hack/testdata/recursive/pod --recursive 2>&1 "${kube_flags[@]}")
-  # Post-condition: busybox0 & busybox1 PODs are edited, and since busybox2 is malformed, it should error
-  kube::test::get_object_assert pods "{{range.items}}{{$image_field}}:{{end}}" 'prom/busybox:prom/busybox:'
+  # Post-condition: busybox0 & busybox1 PODs are not edited, and since busybox2 is malformed, it should error
+  # The reason why busybox0 & busybox1 PODs are not edited is because the editor tries to load all objects in
+  # a list but since it contains invalid objects, it will never open.
+  kube::test::get_object_assert pods "{{range.items}}{{$image_field}}:{{end}}" 'busybox:busybox:'
   kube::test::if_has_string "${output_message}" "Object 'Kind' is missing"
   # cleaning
   rm /tmp/tmp-editor.sh
@@ -1298,7 +1528,7 @@ __EOF__
   # Pre-condition: busybox0 & busybox1 PODs exist
   kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" 'busybox0:busybox1:'
   # Command
-  output_message=$(! kubectl delete -f hack/testdata/recursive/pod --recursive --grace-period=0 2>&1 "${kube_flags[@]}")
+  output_message=$(! kubectl delete -f hack/testdata/recursive/pod --recursive --grace-period=0 --force 2>&1 "${kube_flags[@]}")
   # Post-condition: busybox0 & busybox1 PODs are deleted, and since busybox2 is malformed, it should error
   kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" ''
   kube::test::if_has_string "${output_message}" "Object 'Kind' is missing"
@@ -1357,7 +1587,7 @@ __EOF__
   # Pre-condition: busybox0 & busybox1 PODs exist
   kube::test::get_object_assert rc "{{range.items}}{{$id_field}}:{{end}}" 'busybox0:busybox1:'
   # Command
-  output_message=$(! kubectl delete -f hack/testdata/recursive/rc --recursive --grace-period=0 2>&1 "${kube_flags[@]}")
+  output_message=$(! kubectl delete -f hack/testdata/recursive/rc --recursive --grace-period=0 --force 2>&1 "${kube_flags[@]}")
   # Post-condition: busybox0 & busybox1 replication controllers are deleted, and since busybox2 is malformed, it should error
   kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" ''
   kube::test::if_has_string "${output_message}" "Object 'Kind' is missing"
@@ -1397,7 +1627,7 @@ __EOF__
   # Clean up
   unset PRESERVE_ERR_FILE
   rm "${ERROR_FILE}"
-  ! kubectl delete -f hack/testdata/recursive/deployment --recursive "${kube_flags[@]}" --grace-period=0
+  ! kubectl delete -f hack/testdata/recursive/deployment --recursive "${kube_flags[@]}" --grace-period=0 --force
   sleep 1
 
   ### Rollout on multiple replication controllers recursively - these tests ensure that rollouts cannot be performed on resources that don't support it
@@ -1416,17 +1646,17 @@ __EOF__
   ## Attempt to pause the replication controllers recursively
   output_message=$(! kubectl rollout pause -f hack/testdata/recursive/rc --recursive 2>&1 "${kube_flags[@]}")
   # Post-condition: busybox0 & busybox1 should error as they are RC's, and since busybox2 is malformed, it should error
-  kube::test::if_has_string "${output_message}" 'error when pausing "hack/testdata/recursive/rc/busybox.yaml'
-  kube::test::if_has_string "${output_message}" 'error when pausing "hack/testdata/recursive/rc/rc/busybox.yaml'
   kube::test::if_has_string "${output_message}" "Object 'Kind' is missing"
+  kube::test::if_has_string "${output_message}" 'replicationcontrollers "busybox0" pausing is not supported'
+  kube::test::if_has_string "${output_message}" 'replicationcontrollers "busybox1" pausing is not supported'
   ## Attempt to resume the replication controllers recursively
   output_message=$(! kubectl rollout resume -f hack/testdata/recursive/rc --recursive 2>&1 "${kube_flags[@]}")
   # Post-condition: busybox0 & busybox1 should error as they are RC's, and since busybox2 is malformed, it should error
-  kube::test::if_has_string "${output_message}" 'error when resuming "hack/testdata/recursive/rc/busybox.yaml'
-  kube::test::if_has_string "${output_message}" 'error when resuming "hack/testdata/recursive/rc/rc/busybox.yaml'
   kube::test::if_has_string "${output_message}" "Object 'Kind' is missing"
+  kube::test::if_has_string "${output_message}" 'replicationcontrollers "busybox0" resuming is not supported'
+  kube::test::if_has_string "${output_message}" 'replicationcontrollers "busybox0" resuming is not supported'
   # Clean up
-  ! kubectl delete -f hack/testdata/recursive/rc --recursive "${kube_flags[@]}" --grace-period=0
+  ! kubectl delete -f hack/testdata/recursive/rc --recursive "${kube_flags[@]}" --grace-period=0 --force
   sleep 1
 
   ##############
@@ -1444,9 +1674,9 @@ __EOF__
   # Clean up
   kubectl delete namespace my-namespace
 
-  ##############
+  ######################
   # Pods in Namespaces #
-  ##############
+  ######################
 
   ### Create a new namespace
   # Pre-condition: the other namespace does not exist
@@ -1465,20 +1695,23 @@ __EOF__
   kube::test::get_object_assert 'pods --namespace=other' "{{range.items}}{{$id_field}}:{{end}}" 'valid-pod:'
   # Post-condition: verify shorthand `-n other` has the same results as `--namespace=other`
   kube::test::get_object_assert 'pods -n other' "{{range.items}}{{$id_field}}:{{end}}" 'valid-pod:'
+  # Post-condition: a resource cannot be retrieved by name across all namespaces
+  output_message=$(! kubectl get "${kube_flags[@]}" pod valid-pod --all-namespaces 2>&1)
+  kube::test::if_has_string "${output_message}" "a resource cannot be retrieved by name across all namespaces"
 
   ### Delete POD valid-pod in specific namespace
   # Pre-condition: valid-pod POD exists
   kube::test::get_object_assert 'pods --namespace=other' "{{range.items}}{{$id_field}}:{{end}}" 'valid-pod:'
   # Command
-  kubectl delete "${kube_flags[@]}" pod --namespace=other valid-pod --grace-period=0
+  kubectl delete "${kube_flags[@]}" pod --namespace=other valid-pod --grace-period=0 --force
   # Post-condition: valid-pod POD doesn't exist
   kube::test::get_object_assert 'pods --namespace=other' "{{range.items}}{{$id_field}}:{{end}}" ''
   # Clean up
   kubectl delete namespace other
 
-  ##############
+  ###########
   # Secrets #
-  ##############
+  ###########
 
   ### Create a new namespace
   # Pre-condition: the test-secrets namespace does not exist
@@ -1585,6 +1818,51 @@ __EOF__
   kubectl delete namespace test-configmaps
 
   ####################
+  # Client Config    #
+  ####################
+
+  # Command
+  # Pre-condition: kubeconfig "missing" is not a file or directory
+  output_message=$(! kubectl get pod --context="" --kubeconfig=missing 2>&1)
+  kube::test::if_has_string "${output_message}" "missing: no such file or directory"
+
+  # Pre-condition: kubeconfig "missing" is not a file or directory
+  # Command
+  output_message=$(! kubectl get pod --user="" --kubeconfig=missing 2>&1)
+  # Post-condition: --user contains a valid / empty value, missing config file returns error
+  kube::test::if_has_string "${output_message}" "missing: no such file or directory"
+  # Command
+  output_message=$(! kubectl get pod --cluster="" --kubeconfig=missing 2>&1)
+  # Post-condition: --cluster contains a "valid" value, missing config file returns error
+  kube::test::if_has_string "${output_message}" "missing: no such file or directory"
+
+  # Pre-condition: context "missing-context" does not exist
+  # Command
+  output_message=$(! kubectl get pod --context="missing-context" 2>&1)
+  kube::test::if_has_string "${output_message}" 'context "missing-context" does not exist'
+  # Post-condition: invalid or missing context returns error
+
+  # Pre-condition: cluster "missing-cluster" does not exist
+  # Command
+  output_message=$(! kubectl get pod --cluster="missing-cluster" 2>&1)
+  kube::test::if_has_string "${output_message}" 'cluster "missing-cluster" does not exist'
+  # Post-condition: invalid or missing cluster returns error
+
+  # Pre-condition: user "missing-user" does not exist
+  # Command
+  output_message=$(! kubectl get pod --user="missing-user" 2>&1)
+  kube::test::if_has_string "${output_message}" 'auth info "missing-user" does not exist'
+  # Post-condition: invalid or missing user returns error
+
+  # test invalid config
+  kubectl config view | sed -E "s/apiVersion: .*/apiVersion: v-1/g" > "${TMPDIR:-/tmp}"/newconfig.yaml
+  output_message=$(! "${KUBE_OUTPUT_HOSTBIN}/kubectl" get pods --context="" --user="" --kubeconfig="${TMPDIR:-/tmp}"/newconfig.yaml 2>&1)
+  kube::test::if_has_string "${output_message}" "Error loading config file"
+
+  output_message=$(! kubectl get pod --kubeconfig=missing-config 2>&1)
+  kube::test::if_has_string "${output_message}" 'no such file or directory'
+
+  ####################
   # Service Accounts #
   ####################
 
@@ -1662,6 +1940,19 @@ __EOF__
   # Describe command should print events information when show-events=true
   kube::test::describe_resource_events_assert services true
 
+  ### set selector
+  # prove role=master
+  kube::test::get_object_assert 'services redis-master' "{{range$service_selector_field}}{{.}}:{{end}}" "redis:master:backend:"
+
+  # Set command to change the selector.
+  kubectl set selector -f examples/guestbook/redis-master-service.yaml role=padawan
+  # prove role=padawan
+  kube::test::get_object_assert 'services redis-master' "{{range$service_selector_field}}{{.}}:{{end}}" "padawan:"
+  # Set command to reset the selector back to the original one.
+  kubectl set selector -f examples/guestbook/redis-master-service.yaml app=redis,role=master,tier=backend
+  # prove role=master
+  kube::test::get_object_assert 'services redis-master' "{{range$service_selector_field}}{{.}}:{{end}}" "redis:master:backend:"
+
   ### Dump current redis-master service
   output_service=$(kubectl get service redis-master -o json --output-version=v1 "${kube_flags[@]}")
 
@@ -1738,6 +2029,22 @@ __EOF__
   kube::test::get_object_assert services "{{range.items}}{{$id_field}}:{{end}}" 'kubernetes:redis-master:redis-slave:'
   # Command
   kubectl delete services redis-master redis-slave "${kube_flags[@]}" # delete multiple services at once
+  # Post-condition: Only the default kubernetes services exist
+  kube::test::get_object_assert services "{{range.items}}{{$id_field}}:{{end}}" 'kubernetes:'
+
+  ### Create an ExternalName service
+  # Pre-condition: Only the default kubernetes service exist
+  kube::test::get_object_assert services "{{range.items}}{{$id_field}}:{{end}}" 'kubernetes:'
+  # Command
+  kubectl create service externalname beep-boop --external-name bar.com
+  # Post-condition: beep-boop service is created
+  kube::test::get_object_assert services "{{range.items}}{{$id_field}}:{{end}}" 'beep-boop:kubernetes:'
+
+  ### Delete beep-boop service by id
+  # Pre-condition: beep-boop service exists
+  kube::test::get_object_assert services "{{range.items}}{{$id_field}}:{{end}}" 'beep-boop:kubernetes:'
+  # Command
+  kubectl delete service beep-boop "${kube_flags[@]}"
   # Post-condition: Only the default kubernetes services exist
   kube::test::get_object_assert services "{{range.items}}{{$id_field}}:{{end}}" 'kubernetes:'
 
@@ -1966,6 +2273,41 @@ __EOF__
   # Clean up
   kubectl delete rc frontend "${kube_flags[@]}"
 
+  ## Set resource limits/request of a deployment
+  # Pre-condition: no deployment exists
+  kube::test::get_object_assert deployment "{{range.items}}{{$id_field}}:{{end}}" ''
+  # Set resources of a local file without talking to the server
+  kubectl set resources -f hack/testdata/deployment-multicontainer-resources.yaml -c=perl --limits=cpu=300m --requests=cpu=300m --local -o yaml "${kube_flags[@]}"
+  ! kubectl set resources -f hack/testdata/deployment-multicontainer-resources.yaml -c=perl --limits=cpu=300m --requests=cpu=300m --dry-run -o yaml "${kube_flags[@]}"
+  # Create a deployment
+  kubectl create -f hack/testdata/deployment-multicontainer-resources.yaml "${kube_flags[@]}"
+  kube::test::get_object_assert deployment "{{range.items}}{{$id_field}}:{{end}}" 'nginx-deployment-resources:'
+  kube::test::get_object_assert deployment "{{range.items}}{{$deployment_image_field}}:{{end}}" "${IMAGE_DEPLOYMENT_R1}:"
+  kube::test::get_object_assert deployment "{{range.items}}{{$deployment_second_image_field}}:{{end}}" "${IMAGE_PERL}:"
+  # Set the deployment's cpu limits
+  kubectl set resources deployment nginx-deployment-resources --limits=cpu=100m "${kube_flags[@]}"
+  kube::test::get_object_assert deployment "{{range.items}}{{(index .spec.template.spec.containers 0).resources.limits.cpu}}:{{end}}" "100m:"
+  kube::test::get_object_assert deployment "{{range.items}}{{(index .spec.template.spec.containers 1).resources.limits.cpu}}:{{end}}" "100m:"
+  # Set a non-existing container should fail
+  ! kubectl set resources deployment nginx-deployment-resources -c=redis --limits=cpu=100m
+  # Set the limit of a specific container in deployment
+  kubectl set resources deployment nginx-deployment-resources -c=nginx --limits=cpu=200m "${kube_flags[@]}"
+  kube::test::get_object_assert deployment "{{range.items}}{{(index .spec.template.spec.containers 0).resources.limits.cpu}}:{{end}}" "200m:"
+  kube::test::get_object_assert deployment "{{range.items}}{{(index .spec.template.spec.containers 1).resources.limits.cpu}}:{{end}}" "100m:"
+  # Set limits/requests of a deployment specified by a file
+  kubectl set resources -f hack/testdata/deployment-multicontainer-resources.yaml -c=perl --limits=cpu=300m --requests=cpu=300m "${kube_flags[@]}"
+  kube::test::get_object_assert deployment "{{range.items}}{{(index .spec.template.spec.containers 0).resources.limits.cpu}}:{{end}}" "200m:"
+  kube::test::get_object_assert deployment "{{range.items}}{{(index .spec.template.spec.containers 1).resources.limits.cpu}}:{{end}}" "300m:"
+  kube::test::get_object_assert deployment "{{range.items}}{{(index .spec.template.spec.containers 1).resources.requests.cpu}}:{{end}}" "300m:"
+  # Show dry-run works on running deployments
+  kubectl set resources deployment nginx-deployment-resources -c=perl --limits=cpu=400m --requests=cpu=400m --dry-run -o yaml "${kube_flags[@]}"
+  ! kubectl set resources deployment nginx-deployment-resources -c=perl --limits=cpu=400m --requests=cpu=400m --local -o yaml "${kube_flags[@]}"
+  kube::test::get_object_assert deployment "{{range.items}}{{(index .spec.template.spec.containers 0).resources.limits.cpu}}:{{end}}" "200m:"
+  kube::test::get_object_assert deployment "{{range.items}}{{(index .spec.template.spec.containers 1).resources.limits.cpu}}:{{end}}" "300m:"
+  kube::test::get_object_assert deployment "{{range.items}}{{(index .spec.template.spec.containers 1).resources.requests.cpu}}:{{end}}" "300m:"
+  # Clean up
+  kubectl delete deployment nginx-deployment-resources "${kube_flags[@]}"
+
 
   ######################
   # Deployments       #
@@ -2021,6 +2363,18 @@ __EOF__
   kubectl-with-retry rollout resume deployment nginx "${kube_flags[@]}"
   # The resumed deployment can now be rolled back
   kubectl rollout undo deployment nginx "${kube_flags[@]}"
+  # Check that the new replica set has all old revisions stored in an annotation
+  newrs="$(kubectl describe deployment nginx | grep NewReplicaSet | awk '{print $2}')"
+  kubectl get rs "${newrs}" -o yaml | grep "deployment.kubernetes.io/revision-history: 1,3"
+  # Check that trying to watch the status of a superseded revision returns an error
+  ! kubectl rollout status deployment/nginx --revision=3
+  cat hack/testdata/deployment-revision1.yaml | $SED "s/name: nginx$/name: nginx2/" | kubectl create -f - "${kube_flags[@]}"
+  # Newest deployment should be marked as overlapping
+  kubectl get deployment nginx2 -o yaml "${kube_flags[@]}" | grep "deployment.kubernetes.io/error-selector-overlapping-with"
+  # Oldest deployment should not be marked as overlapping
+  ! kubectl get deployment nginx -o yaml "${kube_flags[@]}" | grep "deployment.kubernetes.io/error-selector-overlapping-with"
+  # Deletion of both deployments should not be blocked
+   kubectl delete deployment nginx2 "${kube_flags[@]}"
   # Clean up
   kubectl delete deployment nginx "${kube_flags[@]}"
 
@@ -2168,34 +2522,34 @@ __EOF__
 
 
 
-  ############
-  # Pet Sets #
-  ############
+  #################
+  # Stateful Sets #
+  #################
 
-  kube::log::status "Testing kubectl(${version}:petsets)"
+  kube::log::status "Testing kubectl(${version}:statefulsets)"
 
-  ### Create and stop petset, make sure it doesn't leak pods
-  # Pre-condition: no petset exists
-  kube::test::get_object_assert petset "{{range.items}}{{$id_field}}:{{end}}" ''
-  # Command: create petset
-  kubectl create -f hack/testdata/nginx-petset.yaml "${kube_flags[@]}"
+  ### Create and stop statefulset, make sure it doesn't leak pods
+  # Pre-condition: no statefulset exists
+  kube::test::get_object_assert statefulset "{{range.items}}{{$id_field}}:{{end}}" ''
+  # Command: create statefulset
+  kubectl create -f hack/testdata/nginx-statefulset.yaml "${kube_flags[@]}"
 
-  ### Scale petset test with current-replicas and replicas
+  ### Scale statefulset test with current-replicas and replicas
   # Pre-condition: 0 replicas
-  kube::test::get_object_assert 'petset nginx' "{{$petset_replicas_field}}" '0'
+  kube::test::get_object_assert 'statefulset nginx' "{{$statefulset_replicas_field}}" '0'
   # Command: Scale up
-  kubectl scale --current-replicas=0 --replicas=1 petset nginx "${kube_flags[@]}"
+  kubectl scale --current-replicas=0 --replicas=1 statefulset nginx "${kube_flags[@]}"
   # Post-condition: 1 replica, named nginx-0
-  kube::test::get_object_assert 'petset nginx' "{{$petset_replicas_field}}" '1'
+  kube::test::get_object_assert 'statefulset nginx' "{{$statefulset_replicas_field}}" '1'
   # Typically we'd wait and confirm that N>1 replicas are up, but this framework
   # doesn't start  the scheduler, so pet-0 will block all others.
   # TODO: test robust scaling in an e2e.
-  wait-for-pods-with-label "app=nginx-petset" "nginx-0"
+  wait-for-pods-with-label "app=nginx-statefulset" "nginx-0"
 
   ### Clean up
-  kubectl delete -f hack/testdata/nginx-petset.yaml "${kube_flags[@]}"
-  # Post-condition: no pods from petset controller
-  wait-for-pods-with-label "app=nginx-petset" ""
+  kubectl delete -f hack/testdata/nginx-statefulset.yaml "${kube_flags[@]}"
+  # Post-condition: no pods from statefulset controller
+  wait-for-pods-with-label "app=nginx-statefulset" ""
 
 
   ######################
@@ -2594,9 +2948,47 @@ __EOF__
   # Pre-condition: valid-pod exists
   kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" 'valid-pod:'
   # Command
-  kubectl delete "${kube_flags[@]}" pod valid-pod --grace-period=0
+  kubectl delete "${kube_flags[@]}" pod valid-pod --grace-period=0 --force
   # Post-condition: valid-pod doesn't exist
   kube::test::get_object_assert pods "{{range.items}}{{$id_field}}:{{end}}" ''
+
+  ################
+  # Certificates #
+  ################
+
+  # approve
+  kubectl create -f hack/testdata/csr.yml "${kube_flags[@]}"
+  kube::test::get_object_assert 'csr/foo' '{{range.status.conditions}}{{.type}}{{end}}' ''
+  kubectl certificate approve foo "${kube_flags[@]}"
+  kubectl get csr "${kube_flags[@]}" -o json
+  kube::test::get_object_assert 'csr/foo' '{{range.status.conditions}}{{.type}}{{end}}' 'Approved'
+  kubectl delete -f hack/testdata/csr.yml "${kube_flags[@]}"
+  kube::test::get_object_assert csr "{{range.items}}{{$id_field}}{{end}}" ''
+
+  kubectl create -f hack/testdata/csr.yml "${kube_flags[@]}"
+  kube::test::get_object_assert 'csr/foo' '{{range.status.conditions}}{{.type}}{{end}}' ''
+  kubectl certificate approve -f hack/testdata/csr.yml "${kube_flags[@]}"
+  kubectl get csr "${kube_flags[@]}" -o json
+  kube::test::get_object_assert 'csr/foo' '{{range.status.conditions}}{{.type}}{{end}}' 'Approved'
+  kubectl delete -f hack/testdata/csr.yml "${kube_flags[@]}"
+  kube::test::get_object_assert csr "{{range.items}}{{$id_field}}{{end}}" ''
+
+  # deny
+  kubectl create -f hack/testdata/csr.yml "${kube_flags[@]}"
+  kube::test::get_object_assert 'csr/foo' '{{range.status.conditions}}{{.type}}{{end}}' ''
+  kubectl certificate deny foo "${kube_flags[@]}"
+  kubectl get csr "${kube_flags[@]}" -o json
+  kube::test::get_object_assert 'csr/foo' '{{range.status.conditions}}{{.type}}{{end}}' 'Denied'
+  kubectl delete -f hack/testdata/csr.yml "${kube_flags[@]}"
+  kube::test::get_object_assert csr "{{range.items}}{{$id_field}}{{end}}" ''
+
+  kubectl create -f hack/testdata/csr.yml "${kube_flags[@]}"
+  kube::test::get_object_assert 'csr/foo' '{{range.status.conditions}}{{.type}}{{end}}' ''
+  kubectl certificate deny -f hack/testdata/csr.yml "${kube_flags[@]}"
+  kubectl get csr "${kube_flags[@]}" -o json
+  kube::test::get_object_assert 'csr/foo' '{{range.status.conditions}}{{.type}}{{end}}' 'Denied'
+  kubectl delete -f hack/testdata/csr.yml "${kube_flags[@]}"
+  kube::test::get_object_assert csr "{{range.items}}{{$id_field}}{{end}}" ''
 
   kube::test::clear_all
 }

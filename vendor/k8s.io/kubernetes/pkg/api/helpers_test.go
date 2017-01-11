@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"k8s.io/kubernetes/pkg/api/resource"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/labels"
 )
 
@@ -438,7 +439,7 @@ func TestGetAvoidPodsFromNode(t *testing.T) {
 				PreferAvoidPods: []PreferAvoidPodsEntry{
 					{
 						PodSignature: PodSignature{
-							PodController: &OwnerReference{
+							PodController: &metav1.OwnerReference{
 								APIVersion: "v1",
 								Kind:       "ReplicationController",
 								Name:       "foo",
@@ -507,6 +508,14 @@ func TestSysctlsFromPodAnnotation(t *testing.T) {
 		{
 			annotation: "foo.bar",
 			expectErr:  true,
+		},
+		{
+			annotation: "=123",
+			expectErr:  true,
+		},
+		{
+			annotation:  "foo.bar=",
+			expectValue: []Sysctl{{Name: "foo.bar", Value: ""}},
 		},
 		{
 			annotation:  "foo.bar=42",

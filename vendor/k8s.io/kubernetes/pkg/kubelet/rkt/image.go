@@ -28,11 +28,12 @@ import (
 	"strings"
 
 	appcschema "github.com/appc/spec/schema"
+	appctypes "github.com/appc/spec/schema/types"
 	rktapi "github.com/coreos/rkt/api/v1alpha"
 	dockertypes "github.com/docker/engine-api/types"
 	"github.com/golang/glog"
 	"golang.org/x/net/context"
-	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/credentialprovider"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
 	"k8s.io/kubernetes/pkg/util/parsers"
@@ -44,7 +45,7 @@ import (
 //
 // http://issue.k8s.io/7203
 //
-func (r *Runtime) PullImage(image kubecontainer.ImageSpec, pullSecrets []api.Secret) error {
+func (r *Runtime) PullImage(image kubecontainer.ImageSpec, pullSecrets []v1.Secret) error {
 	img := image.Image
 	// TODO(yifan): The credential operation is a copy from dockertools package,
 	// Need to resolve the code duplication.
@@ -124,7 +125,25 @@ func (r *Runtime) RemoveImage(image kubecontainer.ImageSpec) error {
 }
 
 // buildImageName constructs the image name for kubecontainer.Image.
+// If the annotations contain the docker2aci metadata for this image, those are
+// used instead as they may be more accurate in some cases, namely if a
+// non-appc valid character is present
 func buildImageName(img *rktapi.Image) string {
+	registry := ""
+	repository := ""
+	for _, anno := range img.Annotations {
+		if anno.Key == appcDockerRegistryURL {
+			registry = anno.Value
+		}
+		if anno.Key == appcDockerRepository {
+			repository = anno.Value
+		}
+	}
+	if registry != "" && repository != "" {
+		// TODO(euank): This could do the special casing for dockerhub and library images
+		return fmt.Sprintf("%s/%s:%s", registry, repository, img.Version)
+	}
+
 	return fmt.Sprintf("%s:%s", img.Name, img.Version)
 }
 
@@ -160,19 +179,34 @@ func (r *Runtime) listImages(image string, detail bool) ([]*rktapi.Image, error)
 		return nil, err
 	}
 
+	imageFilters := []*rktapi.ImageFilter{
+		{
+			// TODO(yifan): Add a field in the ImageFilter to match the whole name,
+			// not just keywords.
+			// https://github.com/coreos/rkt/issues/1872#issuecomment-166456938
+			Keywords: []string{repoToPull},
+			Labels:   []*rktapi.KeyValue{{Key: "version", Value: tag}},
+		},
+	}
+
+	// If the repo name is not a valid ACIdentifier (namely if it has a port),
+	// then it will have a different name in the store. Search for both the
+	// original name and this modified name in case we choose to also change the
+	// api-service to do this un-conversion on its end.
+	if appcRepoToPull, err := appctypes.SanitizeACIdentifier(repoToPull); err != nil {
+		glog.Warningf("could not convert %v to an aci identifier: %v", err)
+	} else {
+		imageFilters = append(imageFilters, &rktapi.ImageFilter{
+			Keywords: []string{appcRepoToPull},
+			Labels:   []*rktapi.KeyValue{{Key: "version", Value: tag}},
+		})
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), r.requestTimeout)
 	defer cancel()
 	listResp, err := r.apisvc.ListImages(ctx, &rktapi.ListImagesRequest{
-		Detail: detail,
-		Filters: []*rktapi.ImageFilter{
-			{
-				// TODO(yifan): Add a field in the ImageFilter to match the whole name,
-				// not just keywords.
-				// https://github.com/coreos/rkt/issues/1872#issuecomment-166456938
-				Keywords: []string{repoToPull},
-				Labels:   []*rktapi.KeyValue{{Key: "version", Value: tag}},
-			},
-		},
+		Detail:  detail,
+		Filters: imageFilters,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("couldn't list images: %v", err)

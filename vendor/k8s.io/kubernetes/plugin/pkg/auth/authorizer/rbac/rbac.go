@@ -18,14 +18,13 @@ limitations under the License.
 package rbac
 
 import (
+	"fmt"
+	"github.com/golang/glog"
+
 	"k8s.io/kubernetes/pkg/apis/rbac"
 	"k8s.io/kubernetes/pkg/apis/rbac/validation"
 	"k8s.io/kubernetes/pkg/auth/authorizer"
 	"k8s.io/kubernetes/pkg/auth/user"
-	"k8s.io/kubernetes/pkg/registry/rbac/clusterrole"
-	"k8s.io/kubernetes/pkg/registry/rbac/clusterrolebinding"
-	"k8s.io/kubernetes/pkg/registry/rbac/role"
-	"k8s.io/kubernetes/pkg/registry/rbac/rolebinding"
 )
 
 type RequestToRuleMapper interface {
@@ -37,32 +36,25 @@ type RequestToRuleMapper interface {
 }
 
 type RBACAuthorizer struct {
-	superUser string
-
 	authorizationRuleResolver RequestToRuleMapper
 }
 
 func (r *RBACAuthorizer) Authorize(requestAttributes authorizer.Attributes) (bool, string, error) {
-	if r.superUser != "" && requestAttributes.GetUser() != nil && requestAttributes.GetUser().GetName() == r.superUser {
-		return true, "", nil
-	}
-
 	rules, ruleResolutionError := r.authorizationRuleResolver.RulesFor(requestAttributes.GetUser(), requestAttributes.GetNamespace())
 	if RulesAllow(requestAttributes, rules...) {
 		return true, "", nil
 	}
 
-	return false, "", ruleResolutionError
+	glog.V(2).Infof("RBAC DENY: user %q groups %v cannot %q on \"%v.%v/%v\"", requestAttributes.GetUser().GetName(), requestAttributes.GetUser().GetGroups(),
+		requestAttributes.GetVerb(), requestAttributes.GetResource(), requestAttributes.GetAPIGroup(), requestAttributes.GetSubresource())
+
+	return false, fmt.Sprintf("%v", ruleResolutionError), nil
 }
 
-func New(roleRegistry role.Registry, roleBindingRegistry rolebinding.Registry, clusterRoleRegistry clusterrole.Registry, clusterRoleBindingRegistry clusterrolebinding.Registry, superUser string) *RBACAuthorizer {
+func New(roles validation.RoleGetter, roleBindings validation.RoleBindingLister, clusterRoles validation.ClusterRoleGetter, clusterRoleBindings validation.ClusterRoleBindingLister) *RBACAuthorizer {
 	authorizer := &RBACAuthorizer{
-		superUser: superUser,
 		authorizationRuleResolver: validation.NewDefaultRuleResolver(
-			roleRegistry,
-			roleBindingRegistry,
-			clusterRoleRegistry,
-			clusterRoleBindingRegistry,
+			roles, roleBindings, clusterRoles, clusterRoleBindings,
 		),
 	}
 	return authorizer

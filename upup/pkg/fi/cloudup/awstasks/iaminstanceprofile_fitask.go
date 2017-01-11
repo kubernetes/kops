@@ -29,6 +29,7 @@ import (
 // JSON marshalling boilerplate
 type realIAMInstanceProfile IAMInstanceProfile
 
+// UnmarshalJSON implements conversion to JSON, supporitng an alternate specification of the object as a string
 func (o *IAMInstanceProfile) UnmarshalJSON(data []byte) error {
 	var jsonName string
 	if err := json.Unmarshal(data, &jsonName); err == nil {
@@ -46,14 +47,17 @@ func (o *IAMInstanceProfile) UnmarshalJSON(data []byte) error {
 
 var _ fi.HasName = &IAMInstanceProfile{}
 
-func (e *IAMInstanceProfile) GetName() *string {
-	return e.Name
+// GetName returns the Name of the object, implementing fi.HasName
+func (o *IAMInstanceProfile) GetName() *string {
+	return o.Name
 }
 
-func (e *IAMInstanceProfile) SetName(name string) {
-	e.Name = &name
+// SetName sets the Name of the object, implementing fi.SetName
+func (o *IAMInstanceProfile) SetName(name string) {
+	o.Name = &name
 }
 
-func (e *IAMInstanceProfile) String() string {
-	return fi.TaskAsString(e)
+// String is the stringer function for the task, producing readable output using fi.TaskAsString
+func (o *IAMInstanceProfile) String() string {
+	return fi.TaskAsString(o)
 }

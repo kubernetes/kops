@@ -20,6 +20,8 @@ const opCreateIdentityPool = "CreateIdentityPool"
 // value can be used to capture response data after the request's "Send" method
 // is called.
 //
+// See CreateIdentityPool for usage and error information.
+//
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
 // access properties on the request object before or after sending the request. If
@@ -37,6 +39,7 @@ const opCreateIdentityPool = "CreateIdentityPool"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/CreateIdentityPool
 func (c *CognitoIdentity) CreateIdentityPoolRequest(input *CreateIdentityPoolInput) (req *request.Request, output *IdentityPool) {
 	op := &request.Operation{
 		Name:       opCreateIdentityPool,
@@ -54,12 +57,52 @@ func (c *CognitoIdentity) CreateIdentityPoolRequest(input *CreateIdentityPoolInp
 	return
 }
 
+// CreateIdentityPool API operation for Amazon Cognito Identity.
+//
 // Creates a new identity pool. The identity pool is a store of user identity
 // information that is specific to your AWS account. The limit on identity pools
 // is 60 per account. The keys for SupportedLoginProviders are as follows:
-// Facebook: graph.facebook.com Google: accounts.google.com Amazon: www.amazon.com
-// Twitter: api.twitter.com Digits: www.digits.com  You must use AWS Developer
-// credentials to call this API.
+//
+//    * Facebook: graph.facebook.com
+//
+//    * Google: accounts.google.com
+//
+//    * Amazon: www.amazon.com
+//
+//    * Twitter: api.twitter.com
+//
+//    * Digits: www.digits.com
+//
+// You must use AWS Developer credentials to call this API.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity's
+// API operation CreateIdentityPool for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   Thrown for missing or bad input parameter(s).
+//
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * ResourceConflictException
+//   Thrown when a user tries to use a login which is already linked to another
+//   account.
+//
+//   * TooManyRequestsException
+//   Thrown when a request is throttled.
+//
+//   * InternalErrorException
+//   Thrown when the service encounters an error during processing the request.
+//
+//   * LimitExceededException
+//   Thrown when the total number of user pools has exceeded a preset limit.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/CreateIdentityPool
 func (c *CognitoIdentity) CreateIdentityPool(input *CreateIdentityPoolInput) (*IdentityPool, error) {
 	req, out := c.CreateIdentityPoolRequest(input)
 	err := req.Send()
@@ -72,6 +115,8 @@ const opDeleteIdentities = "DeleteIdentities"
 // client's request for the DeleteIdentities operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DeleteIdentities for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -90,6 +135,7 @@ const opDeleteIdentities = "DeleteIdentities"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/DeleteIdentities
 func (c *CognitoIdentity) DeleteIdentitiesRequest(input *DeleteIdentitiesInput) (req *request.Request, output *DeleteIdentitiesOutput) {
 	op := &request.Operation{
 		Name:       opDeleteIdentities,
@@ -107,10 +153,31 @@ func (c *CognitoIdentity) DeleteIdentitiesRequest(input *DeleteIdentitiesInput) 
 	return
 }
 
+// DeleteIdentities API operation for Amazon Cognito Identity.
+//
 // Deletes identities from an identity pool. You can specify a list of 1-60
 // identities that you want to delete.
 //
 // You must use AWS Developer credentials to call this API.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity's
+// API operation DeleteIdentities for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   Thrown for missing or bad input parameter(s).
+//
+//   * TooManyRequestsException
+//   Thrown when a request is throttled.
+//
+//   * InternalErrorException
+//   Thrown when the service encounters an error during processing the request.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/DeleteIdentities
 func (c *CognitoIdentity) DeleteIdentities(input *DeleteIdentitiesInput) (*DeleteIdentitiesOutput, error) {
 	req, out := c.DeleteIdentitiesRequest(input)
 	err := req.Send()
@@ -123,6 +190,8 @@ const opDeleteIdentityPool = "DeleteIdentityPool"
 // client's request for the DeleteIdentityPool operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DeleteIdentityPool for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -141,6 +210,7 @@ const opDeleteIdentityPool = "DeleteIdentityPool"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/DeleteIdentityPool
 func (c *CognitoIdentity) DeleteIdentityPoolRequest(input *DeleteIdentityPoolInput) (req *request.Request, output *DeleteIdentityPoolOutput) {
 	op := &request.Operation{
 		Name:       opDeleteIdentityPool,
@@ -160,10 +230,38 @@ func (c *CognitoIdentity) DeleteIdentityPoolRequest(input *DeleteIdentityPoolInp
 	return
 }
 
+// DeleteIdentityPool API operation for Amazon Cognito Identity.
+//
 // Deletes a user pool. Once a pool is deleted, users will not be able to authenticate
 // with the pool.
 //
 // You must use AWS Developer credentials to call this API.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity's
+// API operation DeleteIdentityPool for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   Thrown for missing or bad input parameter(s).
+//
+//   * ResourceNotFoundException
+//   Thrown when the requested resource (for example, a dataset or record) does
+//   not exist.
+//
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * TooManyRequestsException
+//   Thrown when a request is throttled.
+//
+//   * InternalErrorException
+//   Thrown when the service encounters an error during processing the request.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/DeleteIdentityPool
 func (c *CognitoIdentity) DeleteIdentityPool(input *DeleteIdentityPoolInput) (*DeleteIdentityPoolOutput, error) {
 	req, out := c.DeleteIdentityPoolRequest(input)
 	err := req.Send()
@@ -176,6 +274,8 @@ const opDescribeIdentity = "DescribeIdentity"
 // client's request for the DescribeIdentity operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeIdentity for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -194,6 +294,7 @@ const opDescribeIdentity = "DescribeIdentity"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/DescribeIdentity
 func (c *CognitoIdentity) DescribeIdentityRequest(input *DescribeIdentityInput) (req *request.Request, output *IdentityDescription) {
 	op := &request.Operation{
 		Name:       opDescribeIdentity,
@@ -211,10 +312,38 @@ func (c *CognitoIdentity) DescribeIdentityRequest(input *DescribeIdentityInput) 
 	return
 }
 
+// DescribeIdentity API operation for Amazon Cognito Identity.
+//
 // Returns metadata related to the given identity, including when the identity
 // was created and any associated linked logins.
 //
 // You must use AWS Developer credentials to call this API.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity's
+// API operation DescribeIdentity for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   Thrown for missing or bad input parameter(s).
+//
+//   * ResourceNotFoundException
+//   Thrown when the requested resource (for example, a dataset or record) does
+//   not exist.
+//
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * TooManyRequestsException
+//   Thrown when a request is throttled.
+//
+//   * InternalErrorException
+//   Thrown when the service encounters an error during processing the request.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/DescribeIdentity
 func (c *CognitoIdentity) DescribeIdentity(input *DescribeIdentityInput) (*IdentityDescription, error) {
 	req, out := c.DescribeIdentityRequest(input)
 	err := req.Send()
@@ -227,6 +356,8 @@ const opDescribeIdentityPool = "DescribeIdentityPool"
 // client's request for the DescribeIdentityPool operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeIdentityPool for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -245,6 +376,7 @@ const opDescribeIdentityPool = "DescribeIdentityPool"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/DescribeIdentityPool
 func (c *CognitoIdentity) DescribeIdentityPoolRequest(input *DescribeIdentityPoolInput) (req *request.Request, output *IdentityPool) {
 	op := &request.Operation{
 		Name:       opDescribeIdentityPool,
@@ -262,10 +394,38 @@ func (c *CognitoIdentity) DescribeIdentityPoolRequest(input *DescribeIdentityPoo
 	return
 }
 
+// DescribeIdentityPool API operation for Amazon Cognito Identity.
+//
 // Gets details about a particular identity pool, including the pool name, ID
 // description, creation date, and current number of users.
 //
 // You must use AWS Developer credentials to call this API.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity's
+// API operation DescribeIdentityPool for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   Thrown for missing or bad input parameter(s).
+//
+//   * ResourceNotFoundException
+//   Thrown when the requested resource (for example, a dataset or record) does
+//   not exist.
+//
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * TooManyRequestsException
+//   Thrown when a request is throttled.
+//
+//   * InternalErrorException
+//   Thrown when the service encounters an error during processing the request.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/DescribeIdentityPool
 func (c *CognitoIdentity) DescribeIdentityPool(input *DescribeIdentityPoolInput) (*IdentityPool, error) {
 	req, out := c.DescribeIdentityPoolRequest(input)
 	err := req.Send()
@@ -278,6 +438,8 @@ const opGetCredentialsForIdentity = "GetCredentialsForIdentity"
 // client's request for the GetCredentialsForIdentity operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See GetCredentialsForIdentity for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -296,6 +458,7 @@ const opGetCredentialsForIdentity = "GetCredentialsForIdentity"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/GetCredentialsForIdentity
 func (c *CognitoIdentity) GetCredentialsForIdentityRequest(input *GetCredentialsForIdentityInput) (req *request.Request, output *GetCredentialsForIdentityOutput) {
 	op := &request.Operation{
 		Name:       opGetCredentialsForIdentity,
@@ -313,12 +476,52 @@ func (c *CognitoIdentity) GetCredentialsForIdentityRequest(input *GetCredentials
 	return
 }
 
+// GetCredentialsForIdentity API operation for Amazon Cognito Identity.
+//
 // Returns credentials for the provided identity ID. Any provided logins will
 // be validated against supported login providers. If the token is for cognito-identity.amazonaws.com,
 // it will be passed through to AWS Security Token Service with the appropriate
 // role for the token.
 //
 // This is a public API. You do not need any credentials to call this API.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity's
+// API operation GetCredentialsForIdentity for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   Thrown for missing or bad input parameter(s).
+//
+//   * ResourceNotFoundException
+//   Thrown when the requested resource (for example, a dataset or record) does
+//   not exist.
+//
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * ResourceConflictException
+//   Thrown when a user tries to use a login which is already linked to another
+//   account.
+//
+//   * TooManyRequestsException
+//   Thrown when a request is throttled.
+//
+//   * InvalidIdentityPoolConfigurationException
+//   Thrown if the identity pool has no role associated for the given auth type
+//   (auth/unauth) or if the AssumeRole fails.
+//
+//   * InternalErrorException
+//   Thrown when the service encounters an error during processing the request.
+//
+//   * ExternalServiceException
+//   An exception thrown when a dependent service such as Facebook or Twitter
+//   is not responding
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/GetCredentialsForIdentity
 func (c *CognitoIdentity) GetCredentialsForIdentity(input *GetCredentialsForIdentityInput) (*GetCredentialsForIdentityOutput, error) {
 	req, out := c.GetCredentialsForIdentityRequest(input)
 	err := req.Send()
@@ -331,6 +534,8 @@ const opGetId = "GetId"
 // client's request for the GetId operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See GetId for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -349,6 +554,7 @@ const opGetId = "GetId"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/GetId
 func (c *CognitoIdentity) GetIdRequest(input *GetIdInput) (req *request.Request, output *GetIdOutput) {
 	op := &request.Operation{
 		Name:       opGetId,
@@ -366,10 +572,49 @@ func (c *CognitoIdentity) GetIdRequest(input *GetIdInput) (req *request.Request,
 	return
 }
 
+// GetId API operation for Amazon Cognito Identity.
+//
 // Generates (or retrieves) a Cognito ID. Supplying multiple logins will create
 // an implicit linked account.
 //
 // This is a public API. You do not need any credentials to call this API.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity's
+// API operation GetId for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   Thrown for missing or bad input parameter(s).
+//
+//   * ResourceNotFoundException
+//   Thrown when the requested resource (for example, a dataset or record) does
+//   not exist.
+//
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * ResourceConflictException
+//   Thrown when a user tries to use a login which is already linked to another
+//   account.
+//
+//   * TooManyRequestsException
+//   Thrown when a request is throttled.
+//
+//   * InternalErrorException
+//   Thrown when the service encounters an error during processing the request.
+//
+//   * LimitExceededException
+//   Thrown when the total number of user pools has exceeded a preset limit.
+//
+//   * ExternalServiceException
+//   An exception thrown when a dependent service such as Facebook or Twitter
+//   is not responding
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/GetId
 func (c *CognitoIdentity) GetId(input *GetIdInput) (*GetIdOutput, error) {
 	req, out := c.GetIdRequest(input)
 	err := req.Send()
@@ -382,6 +627,8 @@ const opGetIdentityPoolRoles = "GetIdentityPoolRoles"
 // client's request for the GetIdentityPoolRoles operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See GetIdentityPoolRoles for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -400,6 +647,7 @@ const opGetIdentityPoolRoles = "GetIdentityPoolRoles"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/GetIdentityPoolRoles
 func (c *CognitoIdentity) GetIdentityPoolRolesRequest(input *GetIdentityPoolRolesInput) (req *request.Request, output *GetIdentityPoolRolesOutput) {
 	op := &request.Operation{
 		Name:       opGetIdentityPoolRoles,
@@ -417,9 +665,41 @@ func (c *CognitoIdentity) GetIdentityPoolRolesRequest(input *GetIdentityPoolRole
 	return
 }
 
+// GetIdentityPoolRoles API operation for Amazon Cognito Identity.
+//
 // Gets the roles for an identity pool.
 //
 // You must use AWS Developer credentials to call this API.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity's
+// API operation GetIdentityPoolRoles for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   Thrown for missing or bad input parameter(s).
+//
+//   * ResourceNotFoundException
+//   Thrown when the requested resource (for example, a dataset or record) does
+//   not exist.
+//
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * ResourceConflictException
+//   Thrown when a user tries to use a login which is already linked to another
+//   account.
+//
+//   * TooManyRequestsException
+//   Thrown when a request is throttled.
+//
+//   * InternalErrorException
+//   Thrown when the service encounters an error during processing the request.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/GetIdentityPoolRoles
 func (c *CognitoIdentity) GetIdentityPoolRoles(input *GetIdentityPoolRolesInput) (*GetIdentityPoolRolesOutput, error) {
 	req, out := c.GetIdentityPoolRolesRequest(input)
 	err := req.Send()
@@ -432,6 +712,8 @@ const opGetOpenIdToken = "GetOpenIdToken"
 // client's request for the GetOpenIdToken operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See GetOpenIdToken for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -450,6 +732,7 @@ const opGetOpenIdToken = "GetOpenIdToken"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/GetOpenIdToken
 func (c *CognitoIdentity) GetOpenIdTokenRequest(input *GetOpenIdTokenInput) (req *request.Request, output *GetOpenIdTokenOutput) {
 	op := &request.Operation{
 		Name:       opGetOpenIdToken,
@@ -467,6 +750,8 @@ func (c *CognitoIdentity) GetOpenIdTokenRequest(input *GetOpenIdTokenInput) (req
 	return
 }
 
+// GetOpenIdToken API operation for Amazon Cognito Identity.
+//
 // Gets an OpenID token, using a known Cognito ID. This known Cognito ID is
 // returned by GetId. You can optionally add additional logins for the identity.
 // Supplying multiple logins creates an implicit link.
@@ -474,6 +759,40 @@ func (c *CognitoIdentity) GetOpenIdTokenRequest(input *GetOpenIdTokenInput) (req
 // The OpenId token is valid for 15 minutes.
 //
 // This is a public API. You do not need any credentials to call this API.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity's
+// API operation GetOpenIdToken for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   Thrown for missing or bad input parameter(s).
+//
+//   * ResourceNotFoundException
+//   Thrown when the requested resource (for example, a dataset or record) does
+//   not exist.
+//
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * ResourceConflictException
+//   Thrown when a user tries to use a login which is already linked to another
+//   account.
+//
+//   * TooManyRequestsException
+//   Thrown when a request is throttled.
+//
+//   * InternalErrorException
+//   Thrown when the service encounters an error during processing the request.
+//
+//   * ExternalServiceException
+//   An exception thrown when a dependent service such as Facebook or Twitter
+//   is not responding
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/GetOpenIdToken
 func (c *CognitoIdentity) GetOpenIdToken(input *GetOpenIdTokenInput) (*GetOpenIdTokenOutput, error) {
 	req, out := c.GetOpenIdTokenRequest(input)
 	err := req.Send()
@@ -486,6 +805,8 @@ const opGetOpenIdTokenForDeveloperIdentity = "GetOpenIdTokenForDeveloperIdentity
 // client's request for the GetOpenIdTokenForDeveloperIdentity operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See GetOpenIdTokenForDeveloperIdentity for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -504,6 +825,7 @@ const opGetOpenIdTokenForDeveloperIdentity = "GetOpenIdTokenForDeveloperIdentity
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/GetOpenIdTokenForDeveloperIdentity
 func (c *CognitoIdentity) GetOpenIdTokenForDeveloperIdentityRequest(input *GetOpenIdTokenForDeveloperIdentityInput) (req *request.Request, output *GetOpenIdTokenForDeveloperIdentityOutput) {
 	op := &request.Operation{
 		Name:       opGetOpenIdTokenForDeveloperIdentity,
@@ -521,6 +843,8 @@ func (c *CognitoIdentity) GetOpenIdTokenForDeveloperIdentityRequest(input *GetOp
 	return
 }
 
+// GetOpenIdTokenForDeveloperIdentity API operation for Amazon Cognito Identity.
+//
 // Registers (or retrieves) a Cognito IdentityId and an OpenID Connect token
 // for a user authenticated by your backend authentication process. Supplying
 // multiple logins will create an implicit linked account. You can only specify
@@ -528,8 +852,8 @@ func (c *CognitoIdentity) GetOpenIdTokenForDeveloperIdentityRequest(input *GetOp
 // identity pool. The developer provider is the "domain" by which Cognito will
 // refer to your users.
 //
-// You can use GetOpenIdTokenForDeveloperIdentity to create a new identity
-// and to link new logins (that is, user credentials issued by a public provider
+// You can use GetOpenIdTokenForDeveloperIdentity to create a new identity and
+// to link new logins (that is, user credentials issued by a public provider
 // or developer provider) to an existing identity. When you want to create a
 // new identity, the IdentityId should be null. When you want to associate a
 // new login with an existing authenticated/unauthenticated identity, you can
@@ -537,6 +861,40 @@ func (c *CognitoIdentity) GetOpenIdTokenForDeveloperIdentityRequest(input *GetOp
 // in the specified IdentityPoolId.
 //
 // You must use AWS Developer credentials to call this API.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity's
+// API operation GetOpenIdTokenForDeveloperIdentity for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   Thrown for missing or bad input parameter(s).
+//
+//   * ResourceNotFoundException
+//   Thrown when the requested resource (for example, a dataset or record) does
+//   not exist.
+//
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * ResourceConflictException
+//   Thrown when a user tries to use a login which is already linked to another
+//   account.
+//
+//   * TooManyRequestsException
+//   Thrown when a request is throttled.
+//
+//   * InternalErrorException
+//   Thrown when the service encounters an error during processing the request.
+//
+//   * DeveloperUserAlreadyRegisteredException
+//   The provided developer user identifier is already registered with Cognito
+//   under a different identity ID.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/GetOpenIdTokenForDeveloperIdentity
 func (c *CognitoIdentity) GetOpenIdTokenForDeveloperIdentity(input *GetOpenIdTokenForDeveloperIdentityInput) (*GetOpenIdTokenForDeveloperIdentityOutput, error) {
 	req, out := c.GetOpenIdTokenForDeveloperIdentityRequest(input)
 	err := req.Send()
@@ -549,6 +907,8 @@ const opListIdentities = "ListIdentities"
 // client's request for the ListIdentities operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See ListIdentities for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -567,6 +927,7 @@ const opListIdentities = "ListIdentities"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/ListIdentities
 func (c *CognitoIdentity) ListIdentitiesRequest(input *ListIdentitiesInput) (req *request.Request, output *ListIdentitiesOutput) {
 	op := &request.Operation{
 		Name:       opListIdentities,
@@ -584,9 +945,37 @@ func (c *CognitoIdentity) ListIdentitiesRequest(input *ListIdentitiesInput) (req
 	return
 }
 
+// ListIdentities API operation for Amazon Cognito Identity.
+//
 // Lists the identities in a pool.
 //
 // You must use AWS Developer credentials to call this API.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity's
+// API operation ListIdentities for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   Thrown for missing or bad input parameter(s).
+//
+//   * ResourceNotFoundException
+//   Thrown when the requested resource (for example, a dataset or record) does
+//   not exist.
+//
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * TooManyRequestsException
+//   Thrown when a request is throttled.
+//
+//   * InternalErrorException
+//   Thrown when the service encounters an error during processing the request.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/ListIdentities
 func (c *CognitoIdentity) ListIdentities(input *ListIdentitiesInput) (*ListIdentitiesOutput, error) {
 	req, out := c.ListIdentitiesRequest(input)
 	err := req.Send()
@@ -599,6 +988,8 @@ const opListIdentityPools = "ListIdentityPools"
 // client's request for the ListIdentityPools operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See ListIdentityPools for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -617,6 +1008,7 @@ const opListIdentityPools = "ListIdentityPools"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/ListIdentityPools
 func (c *CognitoIdentity) ListIdentityPoolsRequest(input *ListIdentityPoolsInput) (req *request.Request, output *ListIdentityPoolsOutput) {
 	op := &request.Operation{
 		Name:       opListIdentityPools,
@@ -634,9 +1026,33 @@ func (c *CognitoIdentity) ListIdentityPoolsRequest(input *ListIdentityPoolsInput
 	return
 }
 
+// ListIdentityPools API operation for Amazon Cognito Identity.
+//
 // Lists all of the Cognito identity pools registered for your account.
 //
 // You must use AWS Developer credentials to call this API.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity's
+// API operation ListIdentityPools for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   Thrown for missing or bad input parameter(s).
+//
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * TooManyRequestsException
+//   Thrown when a request is throttled.
+//
+//   * InternalErrorException
+//   Thrown when the service encounters an error during processing the request.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/ListIdentityPools
 func (c *CognitoIdentity) ListIdentityPools(input *ListIdentityPoolsInput) (*ListIdentityPoolsOutput, error) {
 	req, out := c.ListIdentityPoolsRequest(input)
 	err := req.Send()
@@ -649,6 +1065,8 @@ const opLookupDeveloperIdentity = "LookupDeveloperIdentity"
 // client's request for the LookupDeveloperIdentity operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See LookupDeveloperIdentity for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -667,6 +1085,7 @@ const opLookupDeveloperIdentity = "LookupDeveloperIdentity"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/LookupDeveloperIdentity
 func (c *CognitoIdentity) LookupDeveloperIdentityRequest(input *LookupDeveloperIdentityInput) (req *request.Request, output *LookupDeveloperIdentityOutput) {
 	op := &request.Operation{
 		Name:       opLookupDeveloperIdentity,
@@ -684,6 +1103,8 @@ func (c *CognitoIdentity) LookupDeveloperIdentityRequest(input *LookupDeveloperI
 	return
 }
 
+// LookupDeveloperIdentity API operation for Amazon Cognito Identity.
+//
 // Retrieves the IdentityID associated with a DeveloperUserIdentifier or the
 // list of DeveloperUserIdentifiers associated with an IdentityId for an existing
 // identity. Either IdentityID or DeveloperUserIdentifier must not be null.
@@ -694,6 +1115,36 @@ func (c *CognitoIdentity) LookupDeveloperIdentityRequest(input *LookupDeveloperI
 // the same as the request. Otherwise a ResourceConflictException is thrown.
 //
 // You must use AWS Developer credentials to call this API.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity's
+// API operation LookupDeveloperIdentity for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   Thrown for missing or bad input parameter(s).
+//
+//   * ResourceNotFoundException
+//   Thrown when the requested resource (for example, a dataset or record) does
+//   not exist.
+//
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * ResourceConflictException
+//   Thrown when a user tries to use a login which is already linked to another
+//   account.
+//
+//   * TooManyRequestsException
+//   Thrown when a request is throttled.
+//
+//   * InternalErrorException
+//   Thrown when the service encounters an error during processing the request.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/LookupDeveloperIdentity
 func (c *CognitoIdentity) LookupDeveloperIdentity(input *LookupDeveloperIdentityInput) (*LookupDeveloperIdentityOutput, error) {
 	req, out := c.LookupDeveloperIdentityRequest(input)
 	err := req.Send()
@@ -706,6 +1157,8 @@ const opMergeDeveloperIdentities = "MergeDeveloperIdentities"
 // client's request for the MergeDeveloperIdentities operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See MergeDeveloperIdentities for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -724,6 +1177,7 @@ const opMergeDeveloperIdentities = "MergeDeveloperIdentities"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/MergeDeveloperIdentities
 func (c *CognitoIdentity) MergeDeveloperIdentitiesRequest(input *MergeDeveloperIdentitiesInput) (req *request.Request, output *MergeDeveloperIdentitiesOutput) {
 	op := &request.Operation{
 		Name:       opMergeDeveloperIdentities,
@@ -741,6 +1195,8 @@ func (c *CognitoIdentity) MergeDeveloperIdentitiesRequest(input *MergeDeveloperI
 	return
 }
 
+// MergeDeveloperIdentities API operation for Amazon Cognito Identity.
+//
 // Merges two users having different IdentityIds, existing in the same identity
 // pool, and identified by the same developer provider. You can use this action
 // to request that discrete users be merged and identified as a single user
@@ -750,6 +1206,36 @@ func (c *CognitoIdentity) MergeDeveloperIdentitiesRequest(input *MergeDeveloperI
 // public provider, but as two different users, an exception will be thrown.
 //
 // You must use AWS Developer credentials to call this API.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity's
+// API operation MergeDeveloperIdentities for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   Thrown for missing or bad input parameter(s).
+//
+//   * ResourceNotFoundException
+//   Thrown when the requested resource (for example, a dataset or record) does
+//   not exist.
+//
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * ResourceConflictException
+//   Thrown when a user tries to use a login which is already linked to another
+//   account.
+//
+//   * TooManyRequestsException
+//   Thrown when a request is throttled.
+//
+//   * InternalErrorException
+//   Thrown when the service encounters an error during processing the request.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/MergeDeveloperIdentities
 func (c *CognitoIdentity) MergeDeveloperIdentities(input *MergeDeveloperIdentitiesInput) (*MergeDeveloperIdentitiesOutput, error) {
 	req, out := c.MergeDeveloperIdentitiesRequest(input)
 	err := req.Send()
@@ -762,6 +1248,8 @@ const opSetIdentityPoolRoles = "SetIdentityPoolRoles"
 // client's request for the SetIdentityPoolRoles operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See SetIdentityPoolRoles for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -780,6 +1268,7 @@ const opSetIdentityPoolRoles = "SetIdentityPoolRoles"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/SetIdentityPoolRoles
 func (c *CognitoIdentity) SetIdentityPoolRolesRequest(input *SetIdentityPoolRolesInput) (req *request.Request, output *SetIdentityPoolRolesOutput) {
 	op := &request.Operation{
 		Name:       opSetIdentityPoolRoles,
@@ -799,10 +1288,45 @@ func (c *CognitoIdentity) SetIdentityPoolRolesRequest(input *SetIdentityPoolRole
 	return
 }
 
+// SetIdentityPoolRoles API operation for Amazon Cognito Identity.
+//
 // Sets the roles for an identity pool. These roles are used when making calls
 // to GetCredentialsForIdentity action.
 //
 // You must use AWS Developer credentials to call this API.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity's
+// API operation SetIdentityPoolRoles for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   Thrown for missing or bad input parameter(s).
+//
+//   * ResourceNotFoundException
+//   Thrown when the requested resource (for example, a dataset or record) does
+//   not exist.
+//
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * ResourceConflictException
+//   Thrown when a user tries to use a login which is already linked to another
+//   account.
+//
+//   * TooManyRequestsException
+//   Thrown when a request is throttled.
+//
+//   * InternalErrorException
+//   Thrown when the service encounters an error during processing the request.
+//
+//   * ConcurrentModificationException
+//   Thrown if there are parallel requests to modify a resource.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/SetIdentityPoolRoles
 func (c *CognitoIdentity) SetIdentityPoolRoles(input *SetIdentityPoolRolesInput) (*SetIdentityPoolRolesOutput, error) {
 	req, out := c.SetIdentityPoolRolesRequest(input)
 	err := req.Send()
@@ -815,6 +1339,8 @@ const opUnlinkDeveloperIdentity = "UnlinkDeveloperIdentity"
 // client's request for the UnlinkDeveloperIdentity operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See UnlinkDeveloperIdentity for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -833,6 +1359,7 @@ const opUnlinkDeveloperIdentity = "UnlinkDeveloperIdentity"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/UnlinkDeveloperIdentity
 func (c *CognitoIdentity) UnlinkDeveloperIdentityRequest(input *UnlinkDeveloperIdentityInput) (req *request.Request, output *UnlinkDeveloperIdentityOutput) {
 	op := &request.Operation{
 		Name:       opUnlinkDeveloperIdentity,
@@ -852,12 +1379,44 @@ func (c *CognitoIdentity) UnlinkDeveloperIdentityRequest(input *UnlinkDeveloperI
 	return
 }
 
+// UnlinkDeveloperIdentity API operation for Amazon Cognito Identity.
+//
 // Unlinks a DeveloperUserIdentifier from an existing identity. Unlinked developer
 // users will be considered new identities next time they are seen. If, for
 // a given Cognito identity, you remove all federated identities as well as
 // the developer user identifier, the Cognito identity becomes inaccessible.
 //
 // You must use AWS Developer credentials to call this API.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity's
+// API operation UnlinkDeveloperIdentity for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   Thrown for missing or bad input parameter(s).
+//
+//   * ResourceNotFoundException
+//   Thrown when the requested resource (for example, a dataset or record) does
+//   not exist.
+//
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * ResourceConflictException
+//   Thrown when a user tries to use a login which is already linked to another
+//   account.
+//
+//   * TooManyRequestsException
+//   Thrown when a request is throttled.
+//
+//   * InternalErrorException
+//   Thrown when the service encounters an error during processing the request.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/UnlinkDeveloperIdentity
 func (c *CognitoIdentity) UnlinkDeveloperIdentity(input *UnlinkDeveloperIdentityInput) (*UnlinkDeveloperIdentityOutput, error) {
 	req, out := c.UnlinkDeveloperIdentityRequest(input)
 	err := req.Send()
@@ -870,6 +1429,8 @@ const opUnlinkIdentity = "UnlinkIdentity"
 // client's request for the UnlinkIdentity operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See UnlinkIdentity for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -888,6 +1449,7 @@ const opUnlinkIdentity = "UnlinkIdentity"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/UnlinkIdentity
 func (c *CognitoIdentity) UnlinkIdentityRequest(input *UnlinkIdentityInput) (req *request.Request, output *UnlinkIdentityOutput) {
 	op := &request.Operation{
 		Name:       opUnlinkIdentity,
@@ -907,11 +1469,47 @@ func (c *CognitoIdentity) UnlinkIdentityRequest(input *UnlinkIdentityInput) (req
 	return
 }
 
+// UnlinkIdentity API operation for Amazon Cognito Identity.
+//
 // Unlinks a federated identity from an existing account. Unlinked logins will
 // be considered new identities next time they are seen. Removing the last linked
 // login will make this identity inaccessible.
 //
 // This is a public API. You do not need any credentials to call this API.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity's
+// API operation UnlinkIdentity for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   Thrown for missing or bad input parameter(s).
+//
+//   * ResourceNotFoundException
+//   Thrown when the requested resource (for example, a dataset or record) does
+//   not exist.
+//
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * ResourceConflictException
+//   Thrown when a user tries to use a login which is already linked to another
+//   account.
+//
+//   * TooManyRequestsException
+//   Thrown when a request is throttled.
+//
+//   * InternalErrorException
+//   Thrown when the service encounters an error during processing the request.
+//
+//   * ExternalServiceException
+//   An exception thrown when a dependent service such as Facebook or Twitter
+//   is not responding
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/UnlinkIdentity
 func (c *CognitoIdentity) UnlinkIdentity(input *UnlinkIdentityInput) (*UnlinkIdentityOutput, error) {
 	req, out := c.UnlinkIdentityRequest(input)
 	err := req.Send()
@@ -924,6 +1522,8 @@ const opUpdateIdentityPool = "UpdateIdentityPool"
 // client's request for the UpdateIdentityPool operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See UpdateIdentityPool for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -942,6 +1542,7 @@ const opUpdateIdentityPool = "UpdateIdentityPool"
 //        fmt.Println(resp)
 //    }
 //
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/UpdateIdentityPool
 func (c *CognitoIdentity) UpdateIdentityPoolRequest(input *IdentityPool) (req *request.Request, output *IdentityPool) {
 	op := &request.Operation{
 		Name:       opUpdateIdentityPool,
@@ -959,9 +1560,47 @@ func (c *CognitoIdentity) UpdateIdentityPoolRequest(input *IdentityPool) (req *r
 	return
 }
 
+// UpdateIdentityPool API operation for Amazon Cognito Identity.
+//
 // Updates a user pool.
 //
 // You must use AWS Developer credentials to call this API.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Cognito Identity's
+// API operation UpdateIdentityPool for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidParameterException
+//   Thrown for missing or bad input parameter(s).
+//
+//   * ResourceNotFoundException
+//   Thrown when the requested resource (for example, a dataset or record) does
+//   not exist.
+//
+//   * NotAuthorizedException
+//   Thrown when a user is not authorized to access the requested resource.
+//
+//   * ResourceConflictException
+//   Thrown when a user tries to use a login which is already linked to another
+//   account.
+//
+//   * TooManyRequestsException
+//   Thrown when a request is throttled.
+//
+//   * InternalErrorException
+//   Thrown when the service encounters an error during processing the request.
+//
+//   * ConcurrentModificationException
+//   Thrown if there are parallel requests to modify a resource.
+//
+//   * LimitExceededException
+//   Thrown when the total number of user pools has exceeded a preset limit.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/UpdateIdentityPool
 func (c *CognitoIdentity) UpdateIdentityPool(input *IdentityPool) (*IdentityPool, error) {
 	req, out := c.UpdateIdentityPoolRequest(input)
 	err := req.Send()
@@ -969,13 +1608,16 @@ func (c *CognitoIdentity) UpdateIdentityPool(input *IdentityPool) (*IdentityPool
 }
 
 // Input to the CreateIdentityPool action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/CreateIdentityPoolInput
 type CreateIdentityPoolInput struct {
 	_ struct{} `type:"structure"`
 
 	// TRUE if the identity pool supports unauthenticated logins.
+	//
+	// AllowUnauthenticatedIdentities is a required field
 	AllowUnauthenticatedIdentities *bool `type:"boolean" required:"true"`
 
-	// An array of Amazon Cognito Identity user pools.
+	// An array of Amazon Cognito Identity user pools and their client IDs.
 	CognitoIdentityProviders []*Provider `type:"list"`
 
 	// The "domain" by which Cognito will refer to your users. This name acts as
@@ -988,6 +1630,8 @@ type CreateIdentityPoolInput struct {
 	DeveloperProviderName *string `min:"1" type:"string"`
 
 	// A string that you provide.
+	//
+	// IdentityPoolName is a required field
 	IdentityPoolName *string `min:"1" type:"string" required:"true"`
 
 	// A list of OpendID Connect provider ARNs.
@@ -1043,7 +1687,50 @@ func (s *CreateIdentityPoolInput) Validate() error {
 	return nil
 }
 
+// SetAllowUnauthenticatedIdentities sets the AllowUnauthenticatedIdentities field's value.
+func (s *CreateIdentityPoolInput) SetAllowUnauthenticatedIdentities(v bool) *CreateIdentityPoolInput {
+	s.AllowUnauthenticatedIdentities = &v
+	return s
+}
+
+// SetCognitoIdentityProviders sets the CognitoIdentityProviders field's value.
+func (s *CreateIdentityPoolInput) SetCognitoIdentityProviders(v []*Provider) *CreateIdentityPoolInput {
+	s.CognitoIdentityProviders = v
+	return s
+}
+
+// SetDeveloperProviderName sets the DeveloperProviderName field's value.
+func (s *CreateIdentityPoolInput) SetDeveloperProviderName(v string) *CreateIdentityPoolInput {
+	s.DeveloperProviderName = &v
+	return s
+}
+
+// SetIdentityPoolName sets the IdentityPoolName field's value.
+func (s *CreateIdentityPoolInput) SetIdentityPoolName(v string) *CreateIdentityPoolInput {
+	s.IdentityPoolName = &v
+	return s
+}
+
+// SetOpenIdConnectProviderARNs sets the OpenIdConnectProviderARNs field's value.
+func (s *CreateIdentityPoolInput) SetOpenIdConnectProviderARNs(v []*string) *CreateIdentityPoolInput {
+	s.OpenIdConnectProviderARNs = v
+	return s
+}
+
+// SetSamlProviderARNs sets the SamlProviderARNs field's value.
+func (s *CreateIdentityPoolInput) SetSamlProviderARNs(v []*string) *CreateIdentityPoolInput {
+	s.SamlProviderARNs = v
+	return s
+}
+
+// SetSupportedLoginProviders sets the SupportedLoginProviders field's value.
+func (s *CreateIdentityPoolInput) SetSupportedLoginProviders(v map[string]*string) *CreateIdentityPoolInput {
+	s.SupportedLoginProviders = v
+	return s
+}
+
 // Credentials for the provided identity ID.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/Credentials
 type Credentials struct {
 	_ struct{} `type:"structure"`
 
@@ -1070,11 +1757,38 @@ func (s Credentials) GoString() string {
 	return s.String()
 }
 
+// SetAccessKeyId sets the AccessKeyId field's value.
+func (s *Credentials) SetAccessKeyId(v string) *Credentials {
+	s.AccessKeyId = &v
+	return s
+}
+
+// SetExpiration sets the Expiration field's value.
+func (s *Credentials) SetExpiration(v time.Time) *Credentials {
+	s.Expiration = &v
+	return s
+}
+
+// SetSecretKey sets the SecretKey field's value.
+func (s *Credentials) SetSecretKey(v string) *Credentials {
+	s.SecretKey = &v
+	return s
+}
+
+// SetSessionToken sets the SessionToken field's value.
+func (s *Credentials) SetSessionToken(v string) *Credentials {
+	s.SessionToken = &v
+	return s
+}
+
 // Input to the DeleteIdentities action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/DeleteIdentitiesInput
 type DeleteIdentitiesInput struct {
 	_ struct{} `type:"structure"`
 
 	// A list of 1-60 identities that you want to delete.
+	//
+	// IdentityIdsToDelete is a required field
 	IdentityIdsToDelete []*string `min:"1" type:"list" required:"true"`
 }
 
@@ -1104,7 +1818,14 @@ func (s *DeleteIdentitiesInput) Validate() error {
 	return nil
 }
 
+// SetIdentityIdsToDelete sets the IdentityIdsToDelete field's value.
+func (s *DeleteIdentitiesInput) SetIdentityIdsToDelete(v []*string) *DeleteIdentitiesInput {
+	s.IdentityIdsToDelete = v
+	return s
+}
+
 // Returned in response to a successful DeleteIdentities operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/DeleteIdentitiesResponse
 type DeleteIdentitiesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1123,11 +1844,20 @@ func (s DeleteIdentitiesOutput) GoString() string {
 	return s.String()
 }
 
+// SetUnprocessedIdentityIds sets the UnprocessedIdentityIds field's value.
+func (s *DeleteIdentitiesOutput) SetUnprocessedIdentityIds(v []*UnprocessedIdentityId) *DeleteIdentitiesOutput {
+	s.UnprocessedIdentityIds = v
+	return s
+}
+
 // Input to the DeleteIdentityPool action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/DeleteIdentityPoolInput
 type DeleteIdentityPoolInput struct {
 	_ struct{} `type:"structure"`
 
 	// An identity pool ID in the format REGION:GUID.
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `min:"1" type:"string" required:"true"`
 }
 
@@ -1157,6 +1887,13 @@ func (s *DeleteIdentityPoolInput) Validate() error {
 	return nil
 }
 
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *DeleteIdentityPoolInput) SetIdentityPoolId(v string) *DeleteIdentityPoolInput {
+	s.IdentityPoolId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/DeleteIdentityPoolOutput
 type DeleteIdentityPoolOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -1172,10 +1909,13 @@ func (s DeleteIdentityPoolOutput) GoString() string {
 }
 
 // Input to the DescribeIdentity action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/DescribeIdentityInput
 type DescribeIdentityInput struct {
 	_ struct{} `type:"structure"`
 
 	// A unique identifier in the format REGION:GUID.
+	//
+	// IdentityId is a required field
 	IdentityId *string `min:"1" type:"string" required:"true"`
 }
 
@@ -1205,11 +1945,20 @@ func (s *DescribeIdentityInput) Validate() error {
 	return nil
 }
 
+// SetIdentityId sets the IdentityId field's value.
+func (s *DescribeIdentityInput) SetIdentityId(v string) *DescribeIdentityInput {
+	s.IdentityId = &v
+	return s
+}
+
 // Input to the DescribeIdentityPool action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/DescribeIdentityPoolInput
 type DescribeIdentityPoolInput struct {
 	_ struct{} `type:"structure"`
 
 	// An identity pool ID in the format REGION:GUID.
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `min:"1" type:"string" required:"true"`
 }
 
@@ -1239,7 +1988,14 @@ func (s *DescribeIdentityPoolInput) Validate() error {
 	return nil
 }
 
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *DescribeIdentityPoolInput) SetIdentityPoolId(v string) *DescribeIdentityPoolInput {
+	s.IdentityPoolId = &v
+	return s
+}
+
 // Input to the GetCredentialsForIdentity action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/GetCredentialsForIdentityInput
 type GetCredentialsForIdentityInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1250,6 +2006,8 @@ type GetCredentialsForIdentityInput struct {
 	CustomRoleArn *string `min:"20" type:"string"`
 
 	// A unique identifier in the format REGION:GUID.
+	//
+	// IdentityId is a required field
 	IdentityId *string `min:"1" type:"string" required:"true"`
 
 	// A set of optional name-value pairs that map provider names to provider tokens.
@@ -1285,7 +2043,26 @@ func (s *GetCredentialsForIdentityInput) Validate() error {
 	return nil
 }
 
+// SetCustomRoleArn sets the CustomRoleArn field's value.
+func (s *GetCredentialsForIdentityInput) SetCustomRoleArn(v string) *GetCredentialsForIdentityInput {
+	s.CustomRoleArn = &v
+	return s
+}
+
+// SetIdentityId sets the IdentityId field's value.
+func (s *GetCredentialsForIdentityInput) SetIdentityId(v string) *GetCredentialsForIdentityInput {
+	s.IdentityId = &v
+	return s
+}
+
+// SetLogins sets the Logins field's value.
+func (s *GetCredentialsForIdentityInput) SetLogins(v map[string]*string) *GetCredentialsForIdentityInput {
+	s.Logins = v
+	return s
+}
+
 // Returned in response to a successful GetCredentialsForIdentity operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/GetCredentialsForIdentityResponse
 type GetCredentialsForIdentityOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1306,7 +2083,20 @@ func (s GetCredentialsForIdentityOutput) GoString() string {
 	return s.String()
 }
 
+// SetCredentials sets the Credentials field's value.
+func (s *GetCredentialsForIdentityOutput) SetCredentials(v *Credentials) *GetCredentialsForIdentityOutput {
+	s.Credentials = v
+	return s
+}
+
+// SetIdentityId sets the IdentityId field's value.
+func (s *GetCredentialsForIdentityOutput) SetIdentityId(v string) *GetCredentialsForIdentityOutput {
+	s.IdentityId = &v
+	return s
+}
+
 // Input to the GetId action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/GetIdInput
 type GetIdInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1314,13 +2104,24 @@ type GetIdInput struct {
 	AccountId *string `min:"1" type:"string"`
 
 	// An identity pool ID in the format REGION:GUID.
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `min:"1" type:"string" required:"true"`
 
 	// A set of optional name-value pairs that map provider names to provider tokens.
+	// The available provider names for Logins are as follows:
 	//
-	// The available provider names for Logins are as follows:  Facebook: graph.facebook.com
-	// Google: accounts.google.com Amazon: www.amazon.com Twitter: api.twitter.com
-	// Digits: www.digits.com
+	//    * Facebook: graph.facebook.com
+	//
+	//    * Amazon Cognito Identity Provider: cognito-idp.us-east-1.amazonaws.com/us-east-1_123456789
+	//
+	//    * Google: accounts.google.com
+	//
+	//    * Amazon: www.amazon.com
+	//
+	//    * Twitter: api.twitter.com
+	//
+	//    * Digits: www.digits.com
 	Logins map[string]*string `type:"map"`
 }
 
@@ -1353,7 +2154,26 @@ func (s *GetIdInput) Validate() error {
 	return nil
 }
 
+// SetAccountId sets the AccountId field's value.
+func (s *GetIdInput) SetAccountId(v string) *GetIdInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *GetIdInput) SetIdentityPoolId(v string) *GetIdInput {
+	s.IdentityPoolId = &v
+	return s
+}
+
+// SetLogins sets the Logins field's value.
+func (s *GetIdInput) SetLogins(v map[string]*string) *GetIdInput {
+	s.Logins = v
+	return s
+}
+
 // Returned in response to a GetId request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/GetIdResponse
 type GetIdOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1371,11 +2191,20 @@ func (s GetIdOutput) GoString() string {
 	return s.String()
 }
 
+// SetIdentityId sets the IdentityId field's value.
+func (s *GetIdOutput) SetIdentityId(v string) *GetIdOutput {
+	s.IdentityId = &v
+	return s
+}
+
 // Input to the GetIdentityPoolRoles action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/GetIdentityPoolRolesInput
 type GetIdentityPoolRolesInput struct {
 	_ struct{} `type:"structure"`
 
 	// An identity pool ID in the format REGION:GUID.
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `min:"1" type:"string" required:"true"`
 }
 
@@ -1405,12 +2234,24 @@ func (s *GetIdentityPoolRolesInput) Validate() error {
 	return nil
 }
 
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *GetIdentityPoolRolesInput) SetIdentityPoolId(v string) *GetIdentityPoolRolesInput {
+	s.IdentityPoolId = &v
+	return s
+}
+
 // Returned in response to a successful GetIdentityPoolRoles operation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/GetIdentityPoolRolesResponse
 type GetIdentityPoolRolesOutput struct {
 	_ struct{} `type:"structure"`
 
 	// An identity pool ID in the format REGION:GUID.
 	IdentityPoolId *string `min:"1" type:"string"`
+
+	// How users for a specific identity provider are to mapped to roles. This is
+	// a String-to-RoleMapping object map. The string identifies the identity provider,
+	// for example, "graph.facebook.com" or "cognito-idp-east-1.amazonaws.com/us-east-1_abcdefghi:app_client_id".
+	RoleMappings map[string]*RoleMapping `type:"map"`
 
 	// The map of roles associated with this pool. Currently only authenticated
 	// and unauthenticated roles are supported.
@@ -1427,7 +2268,26 @@ func (s GetIdentityPoolRolesOutput) GoString() string {
 	return s.String()
 }
 
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *GetIdentityPoolRolesOutput) SetIdentityPoolId(v string) *GetIdentityPoolRolesOutput {
+	s.IdentityPoolId = &v
+	return s
+}
+
+// SetRoleMappings sets the RoleMappings field's value.
+func (s *GetIdentityPoolRolesOutput) SetRoleMappings(v map[string]*RoleMapping) *GetIdentityPoolRolesOutput {
+	s.RoleMappings = v
+	return s
+}
+
+// SetRoles sets the Roles field's value.
+func (s *GetIdentityPoolRolesOutput) SetRoles(v map[string]*string) *GetIdentityPoolRolesOutput {
+	s.Roles = v
+	return s
+}
+
 // Input to the GetOpenIdTokenForDeveloperIdentity action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/GetOpenIdTokenForDeveloperIdentityInput
 type GetOpenIdTokenForDeveloperIdentityInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1435,6 +2295,8 @@ type GetOpenIdTokenForDeveloperIdentityInput struct {
 	IdentityId *string `min:"1" type:"string"`
 
 	// An identity pool ID in the format REGION:GUID.
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `min:"1" type:"string" required:"true"`
 
 	// A set of optional name-value pairs that map provider names to provider tokens.
@@ -1446,6 +2308,8 @@ type GetOpenIdTokenForDeveloperIdentityInput struct {
 	// The developer user identifier is an identifier from your backend that uniquely
 	// identifies a user. When you create an identity pool, you can specify the
 	// supported logins.
+	//
+	// Logins is a required field
 	Logins map[string]*string `type:"map" required:"true"`
 
 	// The expiration time of the token, in seconds. You can specify a custom expiration
@@ -1494,7 +2358,32 @@ func (s *GetOpenIdTokenForDeveloperIdentityInput) Validate() error {
 	return nil
 }
 
+// SetIdentityId sets the IdentityId field's value.
+func (s *GetOpenIdTokenForDeveloperIdentityInput) SetIdentityId(v string) *GetOpenIdTokenForDeveloperIdentityInput {
+	s.IdentityId = &v
+	return s
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *GetOpenIdTokenForDeveloperIdentityInput) SetIdentityPoolId(v string) *GetOpenIdTokenForDeveloperIdentityInput {
+	s.IdentityPoolId = &v
+	return s
+}
+
+// SetLogins sets the Logins field's value.
+func (s *GetOpenIdTokenForDeveloperIdentityInput) SetLogins(v map[string]*string) *GetOpenIdTokenForDeveloperIdentityInput {
+	s.Logins = v
+	return s
+}
+
+// SetTokenDuration sets the TokenDuration field's value.
+func (s *GetOpenIdTokenForDeveloperIdentityInput) SetTokenDuration(v int64) *GetOpenIdTokenForDeveloperIdentityInput {
+	s.TokenDuration = &v
+	return s
+}
+
 // Returned in response to a successful GetOpenIdTokenForDeveloperIdentity request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/GetOpenIdTokenForDeveloperIdentityResponse
 type GetOpenIdTokenForDeveloperIdentityOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1515,17 +2404,33 @@ func (s GetOpenIdTokenForDeveloperIdentityOutput) GoString() string {
 	return s.String()
 }
 
+// SetIdentityId sets the IdentityId field's value.
+func (s *GetOpenIdTokenForDeveloperIdentityOutput) SetIdentityId(v string) *GetOpenIdTokenForDeveloperIdentityOutput {
+	s.IdentityId = &v
+	return s
+}
+
+// SetToken sets the Token field's value.
+func (s *GetOpenIdTokenForDeveloperIdentityOutput) SetToken(v string) *GetOpenIdTokenForDeveloperIdentityOutput {
+	s.Token = &v
+	return s
+}
+
 // Input to the GetOpenIdToken action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/GetOpenIdTokenInput
 type GetOpenIdTokenInput struct {
 	_ struct{} `type:"structure"`
 
 	// A unique identifier in the format REGION:GUID.
+	//
+	// IdentityId is a required field
 	IdentityId *string `min:"1" type:"string" required:"true"`
 
 	// A set of optional name-value pairs that map provider names to provider tokens.
 	// When using graph.facebook.com and www.amazon.com, supply the access_token
-	// returned from the provider's authflow. For accounts.google.com or any other
-	// OpenId Connect provider, always include the id_token.
+	// returned from the provider's authflow. For accounts.google.com, an Amazon
+	// Cognito Identity Provider, or any other OpenId Connect provider, always include
+	// the id_token.
 	Logins map[string]*string `type:"map"`
 }
 
@@ -1555,7 +2460,20 @@ func (s *GetOpenIdTokenInput) Validate() error {
 	return nil
 }
 
+// SetIdentityId sets the IdentityId field's value.
+func (s *GetOpenIdTokenInput) SetIdentityId(v string) *GetOpenIdTokenInput {
+	s.IdentityId = &v
+	return s
+}
+
+// SetLogins sets the Logins field's value.
+func (s *GetOpenIdTokenInput) SetLogins(v map[string]*string) *GetOpenIdTokenInput {
+	s.Logins = v
+	return s
+}
+
 // Returned in response to a successful GetOpenIdToken request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/GetOpenIdTokenResponse
 type GetOpenIdTokenOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1577,7 +2495,20 @@ func (s GetOpenIdTokenOutput) GoString() string {
 	return s.String()
 }
 
+// SetIdentityId sets the IdentityId field's value.
+func (s *GetOpenIdTokenOutput) SetIdentityId(v string) *GetOpenIdTokenOutput {
+	s.IdentityId = &v
+	return s
+}
+
+// SetToken sets the Token field's value.
+func (s *GetOpenIdTokenOutput) SetToken(v string) *GetOpenIdTokenOutput {
+	s.Token = &v
+	return s
+}
+
 // A description of the identity.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/IdentityDescription
 type IdentityDescription struct {
 	_ struct{} `type:"structure"`
 
@@ -1604,11 +2535,38 @@ func (s IdentityDescription) GoString() string {
 	return s.String()
 }
 
-// An object representing a Cognito identity pool.
+// SetCreationDate sets the CreationDate field's value.
+func (s *IdentityDescription) SetCreationDate(v time.Time) *IdentityDescription {
+	s.CreationDate = &v
+	return s
+}
+
+// SetIdentityId sets the IdentityId field's value.
+func (s *IdentityDescription) SetIdentityId(v string) *IdentityDescription {
+	s.IdentityId = &v
+	return s
+}
+
+// SetLastModifiedDate sets the LastModifiedDate field's value.
+func (s *IdentityDescription) SetLastModifiedDate(v time.Time) *IdentityDescription {
+	s.LastModifiedDate = &v
+	return s
+}
+
+// SetLogins sets the Logins field's value.
+func (s *IdentityDescription) SetLogins(v []*string) *IdentityDescription {
+	s.Logins = v
+	return s
+}
+
+// An object representing an Amazon Cognito identity pool.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/IdentityPool
 type IdentityPool struct {
 	_ struct{} `type:"structure"`
 
 	// TRUE if the identity pool supports unauthenticated logins.
+	//
+	// AllowUnauthenticatedIdentities is a required field
 	AllowUnauthenticatedIdentities *bool `type:"boolean" required:"true"`
 
 	// A list representing an Amazon Cognito Identity User Pool and its client ID.
@@ -1618,9 +2576,13 @@ type IdentityPool struct {
 	DeveloperProviderName *string `min:"1" type:"string"`
 
 	// An identity pool ID in the format REGION:GUID.
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `min:"1" type:"string" required:"true"`
 
 	// A string that you provide.
+	//
+	// IdentityPoolName is a required field
 	IdentityPoolName *string `min:"1" type:"string" required:"true"`
 
 	// A list of OpendID Connect provider ARNs.
@@ -1682,7 +2644,56 @@ func (s *IdentityPool) Validate() error {
 	return nil
 }
 
+// SetAllowUnauthenticatedIdentities sets the AllowUnauthenticatedIdentities field's value.
+func (s *IdentityPool) SetAllowUnauthenticatedIdentities(v bool) *IdentityPool {
+	s.AllowUnauthenticatedIdentities = &v
+	return s
+}
+
+// SetCognitoIdentityProviders sets the CognitoIdentityProviders field's value.
+func (s *IdentityPool) SetCognitoIdentityProviders(v []*Provider) *IdentityPool {
+	s.CognitoIdentityProviders = v
+	return s
+}
+
+// SetDeveloperProviderName sets the DeveloperProviderName field's value.
+func (s *IdentityPool) SetDeveloperProviderName(v string) *IdentityPool {
+	s.DeveloperProviderName = &v
+	return s
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *IdentityPool) SetIdentityPoolId(v string) *IdentityPool {
+	s.IdentityPoolId = &v
+	return s
+}
+
+// SetIdentityPoolName sets the IdentityPoolName field's value.
+func (s *IdentityPool) SetIdentityPoolName(v string) *IdentityPool {
+	s.IdentityPoolName = &v
+	return s
+}
+
+// SetOpenIdConnectProviderARNs sets the OpenIdConnectProviderARNs field's value.
+func (s *IdentityPool) SetOpenIdConnectProviderARNs(v []*string) *IdentityPool {
+	s.OpenIdConnectProviderARNs = v
+	return s
+}
+
+// SetSamlProviderARNs sets the SamlProviderARNs field's value.
+func (s *IdentityPool) SetSamlProviderARNs(v []*string) *IdentityPool {
+	s.SamlProviderARNs = v
+	return s
+}
+
+// SetSupportedLoginProviders sets the SupportedLoginProviders field's value.
+func (s *IdentityPool) SetSupportedLoginProviders(v map[string]*string) *IdentityPool {
+	s.SupportedLoginProviders = v
+	return s
+}
+
 // A description of the identity pool.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/IdentityPoolShortDescription
 type IdentityPoolShortDescription struct {
 	_ struct{} `type:"structure"`
 
@@ -1703,7 +2714,20 @@ func (s IdentityPoolShortDescription) GoString() string {
 	return s.String()
 }
 
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *IdentityPoolShortDescription) SetIdentityPoolId(v string) *IdentityPoolShortDescription {
+	s.IdentityPoolId = &v
+	return s
+}
+
+// SetIdentityPoolName sets the IdentityPoolName field's value.
+func (s *IdentityPoolShortDescription) SetIdentityPoolName(v string) *IdentityPoolShortDescription {
+	s.IdentityPoolName = &v
+	return s
+}
+
 // Input to the ListIdentities action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/ListIdentitiesInput
 type ListIdentitiesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1713,9 +2737,13 @@ type ListIdentitiesInput struct {
 	HideDisabled *bool `type:"boolean"`
 
 	// An identity pool ID in the format REGION:GUID.
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `min:"1" type:"string" required:"true"`
 
 	// The maximum number of identities to return.
+	//
+	// MaxResults is a required field
 	MaxResults *int64 `min:"1" type:"integer" required:"true"`
 
 	// A pagination token.
@@ -1757,7 +2785,32 @@ func (s *ListIdentitiesInput) Validate() error {
 	return nil
 }
 
+// SetHideDisabled sets the HideDisabled field's value.
+func (s *ListIdentitiesInput) SetHideDisabled(v bool) *ListIdentitiesInput {
+	s.HideDisabled = &v
+	return s
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *ListIdentitiesInput) SetIdentityPoolId(v string) *ListIdentitiesInput {
+	s.IdentityPoolId = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListIdentitiesInput) SetMaxResults(v int64) *ListIdentitiesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListIdentitiesInput) SetNextToken(v string) *ListIdentitiesInput {
+	s.NextToken = &v
+	return s
+}
+
 // The response to a ListIdentities request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/ListIdentitiesResponse
 type ListIdentitiesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1781,11 +2834,32 @@ func (s ListIdentitiesOutput) GoString() string {
 	return s.String()
 }
 
+// SetIdentities sets the Identities field's value.
+func (s *ListIdentitiesOutput) SetIdentities(v []*IdentityDescription) *ListIdentitiesOutput {
+	s.Identities = v
+	return s
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *ListIdentitiesOutput) SetIdentityPoolId(v string) *ListIdentitiesOutput {
+	s.IdentityPoolId = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListIdentitiesOutput) SetNextToken(v string) *ListIdentitiesOutput {
+	s.NextToken = &v
+	return s
+}
+
 // Input to the ListIdentityPools action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/ListIdentityPoolsInput
 type ListIdentityPoolsInput struct {
 	_ struct{} `type:"structure"`
 
 	// The maximum number of identities to return.
+	//
+	// MaxResults is a required field
 	MaxResults *int64 `min:"1" type:"integer" required:"true"`
 
 	// A pagination token.
@@ -1821,7 +2895,20 @@ func (s *ListIdentityPoolsInput) Validate() error {
 	return nil
 }
 
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListIdentityPoolsInput) SetMaxResults(v int64) *ListIdentityPoolsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListIdentityPoolsInput) SetNextToken(v string) *ListIdentityPoolsInput {
+	s.NextToken = &v
+	return s
+}
+
 // The result of a successful ListIdentityPools action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/ListIdentityPoolsResponse
 type ListIdentityPoolsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1842,7 +2929,20 @@ func (s ListIdentityPoolsOutput) GoString() string {
 	return s.String()
 }
 
+// SetIdentityPools sets the IdentityPools field's value.
+func (s *ListIdentityPoolsOutput) SetIdentityPools(v []*IdentityPoolShortDescription) *ListIdentityPoolsOutput {
+	s.IdentityPools = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListIdentityPoolsOutput) SetNextToken(v string) *ListIdentityPoolsOutput {
+	s.NextToken = &v
+	return s
+}
+
 // Input to the LookupDeveloperIdentityInput action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/LookupDeveloperIdentityInput
 type LookupDeveloperIdentityInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1855,6 +2955,8 @@ type LookupDeveloperIdentityInput struct {
 	IdentityId *string `min:"1" type:"string"`
 
 	// An identity pool ID in the format REGION:GUID.
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `min:"1" type:"string" required:"true"`
 
 	// The maximum number of identities to return.
@@ -1907,7 +3009,38 @@ func (s *LookupDeveloperIdentityInput) Validate() error {
 	return nil
 }
 
+// SetDeveloperUserIdentifier sets the DeveloperUserIdentifier field's value.
+func (s *LookupDeveloperIdentityInput) SetDeveloperUserIdentifier(v string) *LookupDeveloperIdentityInput {
+	s.DeveloperUserIdentifier = &v
+	return s
+}
+
+// SetIdentityId sets the IdentityId field's value.
+func (s *LookupDeveloperIdentityInput) SetIdentityId(v string) *LookupDeveloperIdentityInput {
+	s.IdentityId = &v
+	return s
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *LookupDeveloperIdentityInput) SetIdentityPoolId(v string) *LookupDeveloperIdentityInput {
+	s.IdentityPoolId = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *LookupDeveloperIdentityInput) SetMaxResults(v int64) *LookupDeveloperIdentityInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *LookupDeveloperIdentityInput) SetNextToken(v string) *LookupDeveloperIdentityInput {
+	s.NextToken = &v
+	return s
+}
+
 // Returned in response to a successful LookupDeveloperIdentity action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/LookupDeveloperIdentityResponse
 type LookupDeveloperIdentityOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1938,11 +3071,126 @@ func (s LookupDeveloperIdentityOutput) GoString() string {
 	return s.String()
 }
 
+// SetDeveloperUserIdentifierList sets the DeveloperUserIdentifierList field's value.
+func (s *LookupDeveloperIdentityOutput) SetDeveloperUserIdentifierList(v []*string) *LookupDeveloperIdentityOutput {
+	s.DeveloperUserIdentifierList = v
+	return s
+}
+
+// SetIdentityId sets the IdentityId field's value.
+func (s *LookupDeveloperIdentityOutput) SetIdentityId(v string) *LookupDeveloperIdentityOutput {
+	s.IdentityId = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *LookupDeveloperIdentityOutput) SetNextToken(v string) *LookupDeveloperIdentityOutput {
+	s.NextToken = &v
+	return s
+}
+
+// A rule that maps a claim name, a claim value, and a match type to a role
+// ARN.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/MappingRule
+type MappingRule struct {
+	_ struct{} `type:"structure"`
+
+	// The claim name that must be present in the token, for example, "isAdmin"
+	// or "paid".
+	//
+	// Claim is a required field
+	Claim *string `min:"1" type:"string" required:"true"`
+
+	// The match condition that specifies how closely the claim value in the IdP
+	// token must match Value.
+	//
+	// MatchType is a required field
+	MatchType *string `type:"string" required:"true" enum:"MappingRuleMatchType"`
+
+	// The role ARN.
+	//
+	// RoleARN is a required field
+	RoleARN *string `min:"20" type:"string" required:"true"`
+
+	// A brief string that the claim must match, for example, "paid" or "yes".
+	//
+	// Value is a required field
+	Value *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s MappingRule) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s MappingRule) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *MappingRule) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "MappingRule"}
+	if s.Claim == nil {
+		invalidParams.Add(request.NewErrParamRequired("Claim"))
+	}
+	if s.Claim != nil && len(*s.Claim) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Claim", 1))
+	}
+	if s.MatchType == nil {
+		invalidParams.Add(request.NewErrParamRequired("MatchType"))
+	}
+	if s.RoleARN == nil {
+		invalidParams.Add(request.NewErrParamRequired("RoleARN"))
+	}
+	if s.RoleARN != nil && len(*s.RoleARN) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("RoleARN", 20))
+	}
+	if s.Value == nil {
+		invalidParams.Add(request.NewErrParamRequired("Value"))
+	}
+	if s.Value != nil && len(*s.Value) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Value", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClaim sets the Claim field's value.
+func (s *MappingRule) SetClaim(v string) *MappingRule {
+	s.Claim = &v
+	return s
+}
+
+// SetMatchType sets the MatchType field's value.
+func (s *MappingRule) SetMatchType(v string) *MappingRule {
+	s.MatchType = &v
+	return s
+}
+
+// SetRoleARN sets the RoleARN field's value.
+func (s *MappingRule) SetRoleARN(v string) *MappingRule {
+	s.RoleARN = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *MappingRule) SetValue(v string) *MappingRule {
+	s.Value = &v
+	return s
+}
+
 // Input to the MergeDeveloperIdentities action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/MergeDeveloperIdentitiesInput
 type MergeDeveloperIdentitiesInput struct {
 	_ struct{} `type:"structure"`
 
 	// User identifier for the destination user. The value should be a DeveloperUserIdentifier.
+	//
+	// DestinationUserIdentifier is a required field
 	DestinationUserIdentifier *string `min:"1" type:"string" required:"true"`
 
 	// The "domain" by which Cognito will refer to your users. This is a (pseudo)
@@ -1950,12 +3198,18 @@ type MergeDeveloperIdentitiesInput struct {
 	// as a placeholder that allows your backend and the Cognito service to communicate
 	// about the developer provider. For the DeveloperProviderName, you can use
 	// letters as well as period (.), underscore (_), and dash (-).
+	//
+	// DeveloperProviderName is a required field
 	DeveloperProviderName *string `min:"1" type:"string" required:"true"`
 
 	// An identity pool ID in the format REGION:GUID.
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `min:"1" type:"string" required:"true"`
 
 	// User identifier for the source user. The value should be a DeveloperUserIdentifier.
+	//
+	// SourceUserIdentifier is a required field
 	SourceUserIdentifier *string `min:"1" type:"string" required:"true"`
 }
 
@@ -2003,7 +3257,32 @@ func (s *MergeDeveloperIdentitiesInput) Validate() error {
 	return nil
 }
 
+// SetDestinationUserIdentifier sets the DestinationUserIdentifier field's value.
+func (s *MergeDeveloperIdentitiesInput) SetDestinationUserIdentifier(v string) *MergeDeveloperIdentitiesInput {
+	s.DestinationUserIdentifier = &v
+	return s
+}
+
+// SetDeveloperProviderName sets the DeveloperProviderName field's value.
+func (s *MergeDeveloperIdentitiesInput) SetDeveloperProviderName(v string) *MergeDeveloperIdentitiesInput {
+	s.DeveloperProviderName = &v
+	return s
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *MergeDeveloperIdentitiesInput) SetIdentityPoolId(v string) *MergeDeveloperIdentitiesInput {
+	s.IdentityPoolId = &v
+	return s
+}
+
+// SetSourceUserIdentifier sets the SourceUserIdentifier field's value.
+func (s *MergeDeveloperIdentitiesInput) SetSourceUserIdentifier(v string) *MergeDeveloperIdentitiesInput {
+	s.SourceUserIdentifier = &v
+	return s
+}
+
 // Returned in response to a successful MergeDeveloperIdentities action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/MergeDeveloperIdentitiesResponse
 type MergeDeveloperIdentitiesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2021,8 +3300,15 @@ func (s MergeDeveloperIdentitiesOutput) GoString() string {
 	return s.String()
 }
 
+// SetIdentityId sets the IdentityId field's value.
+func (s *MergeDeveloperIdentitiesOutput) SetIdentityId(v string) *MergeDeveloperIdentitiesOutput {
+	s.IdentityId = &v
+	return s
+}
+
 // A provider representing an Amazon Cognito Identity User Pool and its client
 // ID.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/CognitoIdentityProvider
 type Provider struct {
 	_ struct{} `type:"structure"`
 
@@ -2060,16 +3346,166 @@ func (s *Provider) Validate() error {
 	return nil
 }
 
+// SetClientId sets the ClientId field's value.
+func (s *Provider) SetClientId(v string) *Provider {
+	s.ClientId = &v
+	return s
+}
+
+// SetProviderName sets the ProviderName field's value.
+func (s *Provider) SetProviderName(v string) *Provider {
+	s.ProviderName = &v
+	return s
+}
+
+// A role mapping.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/RoleMapping
+type RoleMapping struct {
+	_ struct{} `type:"structure"`
+
+	// If you specify Token or Rules as the Type, AmbiguousRoleResolution is required.
+	//
+	// Specifies the action to be taken if either no rules match the claim value
+	// for the Rules type, or there is no cognito:preferred_role claim and there
+	// are multiple cognito:roles matches for the Token type.
+	AmbiguousRoleResolution *string `type:"string" enum:"AmbiguousRoleResolutionType"`
+
+	// The rules to be used for mapping users to roles.
+	//
+	// If you specify Rules as the role mapping type, RulesConfiguration is required.
+	RulesConfiguration *RulesConfigurationType `type:"structure"`
+
+	// The role mapping type. Token will use cognito:roles and cognito:preferred_role
+	// claims from the Cognito identity provider token to map groups to roles. Rules
+	// will attempt to match claims from the token to map to a role.
+	//
+	// Type is a required field
+	Type *string `type:"string" required:"true" enum:"RoleMappingType"`
+}
+
+// String returns the string representation
+func (s RoleMapping) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s RoleMapping) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RoleMapping) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RoleMapping"}
+	if s.Type == nil {
+		invalidParams.Add(request.NewErrParamRequired("Type"))
+	}
+	if s.RulesConfiguration != nil {
+		if err := s.RulesConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("RulesConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAmbiguousRoleResolution sets the AmbiguousRoleResolution field's value.
+func (s *RoleMapping) SetAmbiguousRoleResolution(v string) *RoleMapping {
+	s.AmbiguousRoleResolution = &v
+	return s
+}
+
+// SetRulesConfiguration sets the RulesConfiguration field's value.
+func (s *RoleMapping) SetRulesConfiguration(v *RulesConfigurationType) *RoleMapping {
+	s.RulesConfiguration = v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *RoleMapping) SetType(v string) *RoleMapping {
+	s.Type = &v
+	return s
+}
+
+// A container for rules.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/RulesConfigurationType
+type RulesConfigurationType struct {
+	_ struct{} `type:"structure"`
+
+	// An array of rules. You can specify up to 25 rules per identity provider.
+	//
+	// Rules are evaluated in order. The first one to match specifies the role.
+	//
+	// Rules is a required field
+	Rules []*MappingRule `min:"1" type:"list" required:"true"`
+}
+
+// String returns the string representation
+func (s RulesConfigurationType) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s RulesConfigurationType) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RulesConfigurationType) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RulesConfigurationType"}
+	if s.Rules == nil {
+		invalidParams.Add(request.NewErrParamRequired("Rules"))
+	}
+	if s.Rules != nil && len(s.Rules) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Rules", 1))
+	}
+	if s.Rules != nil {
+		for i, v := range s.Rules {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Rules", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetRules sets the Rules field's value.
+func (s *RulesConfigurationType) SetRules(v []*MappingRule) *RulesConfigurationType {
+	s.Rules = v
+	return s
+}
+
 // Input to the SetIdentityPoolRoles action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/SetIdentityPoolRolesInput
 type SetIdentityPoolRolesInput struct {
 	_ struct{} `type:"structure"`
 
 	// An identity pool ID in the format REGION:GUID.
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `min:"1" type:"string" required:"true"`
+
+	// How users for a specific identity provider are to mapped to roles. This is
+	// a string to RoleMapping object map. The string identifies the identity provider,
+	// for example, "graph.facebook.com" or "cognito-idp-east-1.amazonaws.com/us-east-1_abcdefghi:app_client_id".
+	//
+	// Up to 25 rules can be specified per identity provider.
+	RoleMappings map[string]*RoleMapping `type:"map"`
 
 	// The map of roles associated with this pool. For a given role, the key will
 	// be either "authenticated" or "unauthenticated" and the value will be the
 	// Role ARN.
+	//
+	// Roles is a required field
 	Roles map[string]*string `type:"map" required:"true"`
 }
 
@@ -2095,6 +3531,16 @@ func (s *SetIdentityPoolRolesInput) Validate() error {
 	if s.Roles == nil {
 		invalidParams.Add(request.NewErrParamRequired("Roles"))
 	}
+	if s.RoleMappings != nil {
+		for i, v := range s.RoleMappings {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "RoleMappings", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -2102,6 +3548,25 @@ func (s *SetIdentityPoolRolesInput) Validate() error {
 	return nil
 }
 
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *SetIdentityPoolRolesInput) SetIdentityPoolId(v string) *SetIdentityPoolRolesInput {
+	s.IdentityPoolId = &v
+	return s
+}
+
+// SetRoleMappings sets the RoleMappings field's value.
+func (s *SetIdentityPoolRolesInput) SetRoleMappings(v map[string]*RoleMapping) *SetIdentityPoolRolesInput {
+	s.RoleMappings = v
+	return s
+}
+
+// SetRoles sets the Roles field's value.
+func (s *SetIdentityPoolRolesInput) SetRoles(v map[string]*string) *SetIdentityPoolRolesInput {
+	s.Roles = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/SetIdentityPoolRolesOutput
 type SetIdentityPoolRolesOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -2117,19 +3582,28 @@ func (s SetIdentityPoolRolesOutput) GoString() string {
 }
 
 // Input to the UnlinkDeveloperIdentity action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/UnlinkDeveloperIdentityInput
 type UnlinkDeveloperIdentityInput struct {
 	_ struct{} `type:"structure"`
 
 	// The "domain" by which Cognito will refer to your users.
+	//
+	// DeveloperProviderName is a required field
 	DeveloperProviderName *string `min:"1" type:"string" required:"true"`
 
 	// A unique ID used by your backend authentication process to identify a user.
+	//
+	// DeveloperUserIdentifier is a required field
 	DeveloperUserIdentifier *string `min:"1" type:"string" required:"true"`
 
 	// A unique identifier in the format REGION:GUID.
+	//
+	// IdentityId is a required field
 	IdentityId *string `min:"1" type:"string" required:"true"`
 
 	// An identity pool ID in the format REGION:GUID.
+	//
+	// IdentityPoolId is a required field
 	IdentityPoolId *string `min:"1" type:"string" required:"true"`
 }
 
@@ -2177,6 +3651,31 @@ func (s *UnlinkDeveloperIdentityInput) Validate() error {
 	return nil
 }
 
+// SetDeveloperProviderName sets the DeveloperProviderName field's value.
+func (s *UnlinkDeveloperIdentityInput) SetDeveloperProviderName(v string) *UnlinkDeveloperIdentityInput {
+	s.DeveloperProviderName = &v
+	return s
+}
+
+// SetDeveloperUserIdentifier sets the DeveloperUserIdentifier field's value.
+func (s *UnlinkDeveloperIdentityInput) SetDeveloperUserIdentifier(v string) *UnlinkDeveloperIdentityInput {
+	s.DeveloperUserIdentifier = &v
+	return s
+}
+
+// SetIdentityId sets the IdentityId field's value.
+func (s *UnlinkDeveloperIdentityInput) SetIdentityId(v string) *UnlinkDeveloperIdentityInput {
+	s.IdentityId = &v
+	return s
+}
+
+// SetIdentityPoolId sets the IdentityPoolId field's value.
+func (s *UnlinkDeveloperIdentityInput) SetIdentityPoolId(v string) *UnlinkDeveloperIdentityInput {
+	s.IdentityPoolId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/UnlinkDeveloperIdentityOutput
 type UnlinkDeveloperIdentityOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -2192,16 +3691,23 @@ func (s UnlinkDeveloperIdentityOutput) GoString() string {
 }
 
 // Input to the UnlinkIdentity action.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/UnlinkIdentityInput
 type UnlinkIdentityInput struct {
 	_ struct{} `type:"structure"`
 
 	// A unique identifier in the format REGION:GUID.
+	//
+	// IdentityId is a required field
 	IdentityId *string `min:"1" type:"string" required:"true"`
 
 	// A set of optional name-value pairs that map provider names to provider tokens.
+	//
+	// Logins is a required field
 	Logins map[string]*string `type:"map" required:"true"`
 
 	// Provider names to unlink from this identity.
+	//
+	// LoginsToRemove is a required field
 	LoginsToRemove []*string `type:"list" required:"true"`
 }
 
@@ -2237,6 +3743,25 @@ func (s *UnlinkIdentityInput) Validate() error {
 	return nil
 }
 
+// SetIdentityId sets the IdentityId field's value.
+func (s *UnlinkIdentityInput) SetIdentityId(v string) *UnlinkIdentityInput {
+	s.IdentityId = &v
+	return s
+}
+
+// SetLogins sets the Logins field's value.
+func (s *UnlinkIdentityInput) SetLogins(v map[string]*string) *UnlinkIdentityInput {
+	s.Logins = v
+	return s
+}
+
+// SetLoginsToRemove sets the LoginsToRemove field's value.
+func (s *UnlinkIdentityInput) SetLoginsToRemove(v []*string) *UnlinkIdentityInput {
+	s.LoginsToRemove = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/UnlinkIdentityOutput
 type UnlinkIdentityOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -2253,6 +3778,7 @@ func (s UnlinkIdentityOutput) GoString() string {
 
 // An array of UnprocessedIdentityId objects, each of which contains an ErrorCode
 // and IdentityId.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/cognito-identity-2014-06-30/UnprocessedIdentityId
 type UnprocessedIdentityId struct {
 	_ struct{} `type:"structure"`
 
@@ -2273,9 +3799,52 @@ func (s UnprocessedIdentityId) GoString() string {
 	return s.String()
 }
 
+// SetErrorCode sets the ErrorCode field's value.
+func (s *UnprocessedIdentityId) SetErrorCode(v string) *UnprocessedIdentityId {
+	s.ErrorCode = &v
+	return s
+}
+
+// SetIdentityId sets the IdentityId field's value.
+func (s *UnprocessedIdentityId) SetIdentityId(v string) *UnprocessedIdentityId {
+	s.IdentityId = &v
+	return s
+}
+
 const (
-	// @enum ErrorCode
+	// AmbiguousRoleResolutionTypeAuthenticatedRole is a AmbiguousRoleResolutionType enum value
+	AmbiguousRoleResolutionTypeAuthenticatedRole = "AuthenticatedRole"
+
+	// AmbiguousRoleResolutionTypeDeny is a AmbiguousRoleResolutionType enum value
+	AmbiguousRoleResolutionTypeDeny = "Deny"
+)
+
+const (
+	// ErrorCodeAccessDenied is a ErrorCode enum value
 	ErrorCodeAccessDenied = "AccessDenied"
-	// @enum ErrorCode
+
+	// ErrorCodeInternalServerError is a ErrorCode enum value
 	ErrorCodeInternalServerError = "InternalServerError"
+)
+
+const (
+	// MappingRuleMatchTypeEquals is a MappingRuleMatchType enum value
+	MappingRuleMatchTypeEquals = "Equals"
+
+	// MappingRuleMatchTypeContains is a MappingRuleMatchType enum value
+	MappingRuleMatchTypeContains = "Contains"
+
+	// MappingRuleMatchTypeStartsWith is a MappingRuleMatchType enum value
+	MappingRuleMatchTypeStartsWith = "StartsWith"
+
+	// MappingRuleMatchTypeNotEqual is a MappingRuleMatchType enum value
+	MappingRuleMatchTypeNotEqual = "NotEqual"
+)
+
+const (
+	// RoleMappingTypeToken is a RoleMappingType enum value
+	RoleMappingTypeToken = "Token"
+
+	// RoleMappingTypeRules is a RoleMappingType enum value
+	RoleMappingTypeRules = "Rules"
 )

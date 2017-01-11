@@ -103,21 +103,20 @@ make -C "${KUBE_ROOT}" WHAT=cmd/kube-apiserver
 make -C "${KUBE_ROOT}" WHAT=cluster/images/etcd/attachlease
 
 kube::etcd::start
+echo "${ETCD_VERSION}/${STORAGE_BACKEND_ETCD2}" > "${ETCD_DIR}/version.txt"
 
 ### BEGIN TEST DEFINITION CUSTOMIZATION ###
 
 # source_file,resource,namespace,name,old_version,new_version
 tests=(
-test/fixtures/doc-yaml/user-guide/job.yaml,jobs,default,pi,extensions/v1beta1,batch/v1
 test/fixtures/doc-yaml/user-guide/horizontal-pod-autoscaling/hpa-php-apache.yaml,horizontalpodautoscalers,default,php-apache,extensions/v1beta1,autoscaling/v1
 )
 
-# need to include extensions/v1beta1 in new api version because its internal types are used by jobs
-# and hpas
+# need to include extensions/v1beta1 in new api version because its internal types are used by hpas
 KUBE_OLD_API_VERSION="v1,extensions/v1beta1"
-KUBE_NEW_API_VERSION="v1,extensions/v1beta1,batch/v1,autoscaling/v1"
-KUBE_OLD_STORAGE_VERSIONS="batch=extensions/v1beta1,autoscaling=extensions/v1beta1"
-KUBE_NEW_STORAGE_VERSIONS="batch/v1,autoscaling/v1"
+KUBE_NEW_API_VERSION="v1,extensions/v1beta1,autoscaling/v1"
+KUBE_OLD_STORAGE_VERSIONS="autoscaling=extensions/v1beta1"
+KUBE_NEW_STORAGE_VERSIONS="autoscaling/v1"
 
 ### END TEST DEFINITION CUSTOMIZATION ###
 
@@ -157,15 +156,16 @@ killApiServer
 # We always perform offline migration, so we need to stop etcd.
 #######################################################
 
-# TODO: Uncomment once we support migration.
-#kube::etcd::stop
-#TARGET_STORAGE="etcd3" \
-#  DATA_DIRECTORY="${ETCD_DIR}" \
-#  ETCD=$(which etcd) \
-#  ETCDCTL=$(which etcdctl) \
-#  ATTACHLEASE="${KUBE_OUTPUT_HOSTBIN}/attachlease" \
-#  ${KUBE_ROOT}/cluster/images/etcd/migrate-if-needed.sh
-#kube::etcd::start
+kube::etcd::stop
+TARGET_STORAGE="etcd3" \
+  TARGET_VERSION="3.0.14" \
+  DATA_DIRECTORY="${ETCD_DIR}" \
+  ETCD=$(which etcd) \
+  ETCDCTL=$(which etcdctl) \
+  ATTACHLEASE="${KUBE_OUTPUT_HOSTBIN}/attachlease" \
+  DO_NOT_MOVE_BINARIES="true" \
+  ${KUBE_ROOT}/cluster/images/etcd/migrate-if-needed.sh
+kube::etcd::start
 
 
 #######################################################
@@ -176,8 +176,7 @@ killApiServer
 
 KUBE_API_VERSIONS="${KUBE_NEW_API_VERSION},${KUBE_OLD_API_VERSION}"
 RUNTIME_CONFIG="api/all=false,api/${KUBE_OLD_API_VERSION}=true,api/${KUBE_NEW_API_VERSION}=true"
-# TODO: Switch to STORAGE_BACKEND_ETCD3 once we support it.
-startApiServer ${STORAGE_BACKEND_ETCD2} ${KUBE_NEW_STORAGE_VERSIONS} ${KUBE_STORAGE_MEDIA_TYPE_JSON}
+startApiServer ${STORAGE_BACKEND_ETCD3} ${KUBE_NEW_STORAGE_VERSIONS} ${KUBE_STORAGE_MEDIA_TYPE_JSON}
 
 # Update etcd objects, so that will now be stored in the new api version.
 kube::log::status "Updating storage versions in etcd"
@@ -192,8 +191,7 @@ for test in ${tests[@]}; do
   new_storage_version=${test_data[5]}
 
   kube::log::status "Verifying ${resource}/${namespace}/${name} has updated storage version ${new_storage_version} in etcd"
-  # note that should use flag --endpoints for etcdctl 3
-  ${ETCDCTL} --endpoint="${ETCD_HOST}:${ETCD_PORT}" get "/${ETCD_PREFIX}/${resource}/${namespace}/${name}" | grep ${new_storage_version}
+  ETCDCTL_API=3 ${ETCDCTL} --endpoints="${ETCD_HOST}:${ETCD_PORT}" get "/${ETCD_PREFIX}/${resource}/${namespace}/${name}" | grep ${new_storage_version}
 done
 
 killApiServer
@@ -209,8 +207,7 @@ RUNTIME_CONFIG="api/all=false,api/${KUBE_NEW_API_VERSION}=true"
 
 # This seems to reduce flakiness.
 sleep 1
-# TODO: Switch to STORAGE_BACKEND_ETCD3 once we support it.
-startApiServer ${STORAGE_BACKEND_ETCD2} ${KUBE_NEW_STORAGE_VERSIONS} ${KUBE_STORAGE_MEDIA_TYPE_PROTOBUF}
+startApiServer ${STORAGE_BACKEND_ETCD3} ${KUBE_NEW_STORAGE_VERSIONS} ${KUBE_STORAGE_MEDIA_TYPE_PROTOBUF}
 
 for test in ${tests[@]}; do
   IFS=',' read -ra test_data <<<"$test"

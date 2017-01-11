@@ -25,7 +25,9 @@ import (
 	admission "k8s.io/kubernetes/pkg/admission"
 	api "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/errors"
+	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/apis/storage"
+	storageutil "k8s.io/kubernetes/pkg/apis/storage/util"
 	"k8s.io/kubernetes/pkg/client/cache"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/runtime"
@@ -61,11 +63,15 @@ func newPlugin(kclient clientset.Interface) *claimDefaulterPlugin {
 	store := cache.NewStore(cache.MetaNamespaceKeyFunc)
 	reflector := cache.NewReflector(
 		&cache.ListWatch{
-			ListFunc: func(options api.ListOptions) (runtime.Object, error) {
-				return kclient.Storage().StorageClasses().List(options)
+			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
+				internalOptions := api.ListOptions{}
+				v1.Convert_v1_ListOptions_To_api_ListOptions(&options, &internalOptions, nil)
+				return kclient.Storage().StorageClasses().List(internalOptions)
 			},
-			WatchFunc: func(options api.ListOptions) (watch.Interface, error) {
-				return kclient.Storage().StorageClasses().Watch(options)
+			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
+				internalOptions := api.ListOptions{}
+				v1.Convert_v1_ListOptions_To_api_ListOptions(&options, &internalOptions, nil)
+				return kclient.Storage().StorageClasses().Watch(internalOptions)
 			},
 		},
 		&storage.StorageClass{},
@@ -94,12 +100,6 @@ func (a *claimDefaulterPlugin) Stop() {
 	}
 }
 
-// This is a stand-in until we have a real field.  This string should be a const somewhere.
-const classAnnotation = "volume.beta.kubernetes.io/storage-class"
-
-// This indicates that a particular StorageClass nominates itself as the system default.
-const isDefaultAnnotation = "storageclass.beta.kubernetes.io/is-default-class"
-
 // Admit sets the default value of a PersistentVolumeClaim's storage class, in case the user did
 // not provide a value.
 //
@@ -121,8 +121,7 @@ func (c *claimDefaulterPlugin) Admit(a admission.Attributes) error {
 		return nil
 	}
 
-	_, found := pvc.Annotations[classAnnotation]
-	if found {
+	if storageutil.HasStorageClassAnnotation(pvc.ObjectMeta) {
 		// The user asked for a class.
 		return nil
 	}
@@ -142,7 +141,7 @@ func (c *claimDefaulterPlugin) Admit(a admission.Attributes) error {
 	if pvc.ObjectMeta.Annotations == nil {
 		pvc.ObjectMeta.Annotations = map[string]string{}
 	}
-	pvc.Annotations[classAnnotation] = def.Name
+	pvc.Annotations[storageutil.StorageClassAnnotation] = def.Name
 	return nil
 }
 
@@ -154,7 +153,7 @@ func getDefaultClass(store cache.Store) (*storage.StorageClass, error) {
 		if !ok {
 			return nil, errors.NewInternalError(fmt.Errorf("error converting stored object to StorageClass: %v", c))
 		}
-		if class.Annotations[isDefaultAnnotation] == "true" {
+		if storageutil.IsDefaultAnnotation(class.ObjectMeta) {
 			defaultClasses = append(defaultClasses, class)
 			glog.V(4).Infof("getDefaultClass added: %s", class.Name)
 		}

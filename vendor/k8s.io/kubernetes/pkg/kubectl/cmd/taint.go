@@ -24,17 +24,18 @@ import (
 	"encoding/json"
 
 	"github.com/golang/glog"
-	"github.com/renstrom/dedent"
 	"github.com/spf13/cobra"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/meta"
 	"k8s.io/kubernetes/pkg/kubectl"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
 	"k8s.io/kubernetes/pkg/runtime"
 	utilerrors "k8s.io/kubernetes/pkg/util/errors"
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/kubernetes/pkg/util/strategicpatch"
+	utiltaints "k8s.io/kubernetes/pkg/util/taints"
 	"k8s.io/kubernetes/pkg/util/validation"
 )
 
@@ -47,21 +48,22 @@ type TaintOptions struct {
 	selector       string
 	overwrite      bool
 	all            bool
-	f              *cmdutil.Factory
+	f              cmdutil.Factory
 	out            io.Writer
 	cmd            *cobra.Command
 }
 
 var (
-	taint_long = dedent.Dedent(`
+	taint_long = templates.LongDesc(`
 		Update the taints on one or more nodes.
 
-		A taint consists of a key, value, and effect. As an argument here, it is expressed as key=value:effect.
-		The key must begin with a letter or number, and may contain letters, numbers, hyphens, dots, and underscores, up to %[1]d characters.
-		The value must begin with a letter or number, and may contain letters, numbers, hyphens, dots, and underscores, up to %[1]d characters.
-		The effect must be NoSchedule or PreferNoSchedule.
-		Currently taint can only apply to node.`)
-	taint_example = dedent.Dedent(`
+		* A taint consists of a key, value, and effect. As an argument here, it is expressed as key=value:effect.
+		* The key must begin with a letter or number, and may contain letters, numbers, hyphens, dots, and underscores, up to %[1]d characters.
+		* The value must begin with a letter or number, and may contain letters, numbers, hyphens, dots, and underscores, up to %[1]d characters.
+		* The effect must be NoSchedule or PreferNoSchedule.
+		* Currently taint can only apply to node.`)
+
+	taint_example = templates.Examples(`
 		# Update node 'foo' with a taint with key 'dedicated' and value 'special-user' and effect 'NoSchedule'.
 		# If a taint with that key and effect already exists, its value is replaced as specified.
 		kubectl taint nodes foo dedicated=special-user:NoSchedule
@@ -73,7 +75,7 @@ var (
 		kubectl taint nodes foo dedicated-`)
 )
 
-func NewCmdTaint(f *cmdutil.Factory, out io.Writer) *cobra.Command {
+func NewCmdTaint(f cmdutil.Factory, out io.Writer) *cobra.Command {
 	options := &TaintOptions{}
 
 	validArgs := []string{"node"}
@@ -102,7 +104,7 @@ func NewCmdTaint(f *cmdutil.Factory, out io.Writer) *cobra.Command {
 
 	cmdutil.AddPrinterFlags(cmd)
 	cmdutil.AddInclude3rdPartyFlags(cmd)
-	cmd.Flags().StringVarP(&options.selector, "selector", "l", "", "Selector (label query) to filter on")
+	cmd.Flags().StringVarP(&options.selector, "selector", "l", "", "Selector (label query) to filter on, supports '=', '==', and '!='.")
 	cmd.Flags().BoolVar(&options.overwrite, "overwrite", false, "If true, allow taints to be overwritten, otherwise reject taint updates that overwrite existing taints.")
 	cmd.Flags().BoolVar(&options.all, "all", false, "select all nodes in the cluster")
 	return cmd
@@ -170,28 +172,10 @@ func parseTaints(spec []string) ([]api.Taint, []api.Taint, error) {
 
 	for _, taintSpec := range spec {
 		if strings.Index(taintSpec, "=") != -1 && strings.Index(taintSpec, ":") != -1 {
-			parts := strings.Split(taintSpec, "=")
-			if len(parts) != 2 || len(parts[1]) == 0 || len(validation.IsQualifiedName(parts[0])) > 0 {
-				return nil, nil, fmt.Errorf("invalid taint spec: %v", taintSpec)
+			newTaint, err := utiltaints.ParseTaint(taintSpec)
+			if err != nil {
+				return nil, nil, err
 			}
-
-			parts2 := strings.Split(parts[1], ":")
-			errs := validation.IsValidLabelValue(parts2[0])
-			if len(parts2) != 2 || len(errs) != 0 {
-				return nil, nil, fmt.Errorf("invalid taint spec: %v, %s", taintSpec, strings.Join(errs, "; "))
-			}
-
-			if parts2[1] != string(api.TaintEffectNoSchedule) && parts2[1] != string(api.TaintEffectPreferNoSchedule) {
-				return nil, nil, fmt.Errorf("invalid taint spec: %v, unsupported taint effect", taintSpec)
-			}
-
-			effect := api.TaintEffect(parts2[1])
-			newTaint := api.Taint{
-				Key:    parts[0],
-				Value:  parts2[0],
-				Effect: effect,
-			}
-
 			// validate if taint is unique by <key, effect>
 			if len(uniqueTaints[newTaint.Effect]) > 0 && uniqueTaints[newTaint.Effect].Has(newTaint.Key) {
 				return nil, nil, fmt.Errorf("duplicated taints with the same key and effect: %v", newTaint)
@@ -220,7 +204,7 @@ func parseTaints(spec []string) ([]api.Taint, []api.Taint, error) {
 }
 
 // Complete adapts from the command line args and factory to the data required.
-func (o *TaintOptions) Complete(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, args []string) (err error) {
+func (o *TaintOptions) Complete(f cmdutil.Factory, out io.Writer, cmd *cobra.Command, args []string) (err error) {
 	namespace, _, err := f.DefaultNamespace()
 	if err != nil {
 		return err

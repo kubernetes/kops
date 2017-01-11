@@ -32,20 +32,23 @@ import (
 	"sync"
 	"time"
 
-	"github.com/coreos/go-semver/semver"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/golang/glog"
 	"k8s.io/kubernetes/pkg/api"
 	apiservice "k8s.io/kubernetes/pkg/api/service"
+	"k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/pkg/client/record"
 	"k8s.io/kubernetes/pkg/proxy"
 	"k8s.io/kubernetes/pkg/proxy/healthcheck"
 	"k8s.io/kubernetes/pkg/types"
 	featuregate "k8s.io/kubernetes/pkg/util/config"
 	utilexec "k8s.io/kubernetes/pkg/util/exec"
+	"k8s.io/kubernetes/pkg/util/flowcontrol"
 	utiliptables "k8s.io/kubernetes/pkg/util/iptables"
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/kubernetes/pkg/util/slice"
 	utilsysctl "k8s.io/kubernetes/pkg/util/sysctl"
+	utilversion "k8s.io/kubernetes/pkg/util/version"
 )
 
 const (
@@ -92,20 +95,19 @@ type KernelCompatTester interface {
 // an error if it fails to get the iptables version without error, in which
 // case it will also return false.
 func CanUseIPTablesProxier(iptver IPTablesVersioner, kcompat KernelCompatTester) (bool, error) {
-	minVersion, err := semver.NewVersion(iptablesMinVersion)
+	minVersion, err := utilversion.ParseGeneric(iptablesMinVersion)
 	if err != nil {
 		return false, err
 	}
-	// returns "X.Y.Z"
 	versionString, err := iptver.GetVersion()
 	if err != nil {
 		return false, err
 	}
-	version, err := semver.NewVersion(versionString)
+	version, err := utilversion.ParseGeneric(versionString)
 	if err != nil {
 		return false, err
 	}
-	if version.LessThan(*minVersion) {
+	if version.LessThan(minVersion) {
 		return false, nil
 	}
 
@@ -137,7 +139,7 @@ type serviceInfo struct {
 	nodePort                 int
 	loadBalancerStatus       api.LoadBalancerStatus
 	sessionAffinityType      api.ServiceAffinity
-	stickyMaxAgeSeconds      int
+	stickyMaxAgeMinutes      int
 	externalIPs              []string
 	loadBalancerSourceRanges []string
 	onlyNodeLocalEndpoints   bool
@@ -154,7 +156,7 @@ type endpointsInfo struct {
 func newServiceInfo(service proxy.ServicePortName) *serviceInfo {
 	return &serviceInfo{
 		sessionAffinityType: api.ServiceAffinityNone, // default
-		stickyMaxAgeSeconds: 180,                     // TODO: paramaterize this in the API.
+		stickyMaxAgeMinutes: 180,                     // TODO: paramaterize this in the API.
 	}
 }
 
@@ -167,9 +169,11 @@ type Proxier struct {
 	portsMap                    map[localPort]closeable
 	haveReceivedServiceUpdate   bool // true once we've seen an OnServiceUpdate event
 	haveReceivedEndpointsUpdate bool // true once we've seen an OnEndpointsUpdate event
+	throttle                    flowcontrol.RateLimiter
 
 	// These are effectively const and do not need the mutex to be held.
 	syncPeriod     time.Duration
+	minSyncPeriod  time.Duration
 	iptables       utiliptables.Interface
 	masqueradeAll  bool
 	masqueradeMark string
@@ -178,6 +182,7 @@ type Proxier struct {
 	hostname       string
 	nodeIP         net.IP
 	portMapper     portOpener
+	recorder       record.EventRecorder
 }
 
 type localPort struct {
@@ -217,7 +222,23 @@ var _ proxy.ProxyProvider = &Proxier{}
 // An error will be returned if iptables fails to update or acquire the initial lock.
 // Once a proxier is created, it will keep iptables up to date in the background and
 // will not terminate if a particular iptables call fails.
-func NewProxier(ipt utiliptables.Interface, sysctl utilsysctl.Interface, exec utilexec.Interface, syncPeriod time.Duration, masqueradeAll bool, masqueradeBit int, clusterCIDR string, hostname string, nodeIP net.IP) (*Proxier, error) {
+func NewProxier(ipt utiliptables.Interface,
+	sysctl utilsysctl.Interface,
+	exec utilexec.Interface,
+	syncPeriod time.Duration,
+	minSyncPeriod time.Duration,
+	masqueradeAll bool,
+	masqueradeBit int,
+	clusterCIDR string,
+	hostname string,
+	nodeIP net.IP,
+	recorder record.EventRecorder,
+) (*Proxier, error) {
+	// check valid user input
+	if minSyncPeriod > syncPeriod {
+		return nil, fmt.Errorf("min-sync (%v) must be < sync(%v)", minSyncPeriod, syncPeriod)
+	}
+
 	// Set the route_localnet sysctl we need for
 	if err := sysctl.SetSysctl(sysctlRouteLocalnet, 1); err != nil {
 		return nil, fmt.Errorf("can't set sysctl %s: %v", sysctlRouteLocalnet, err)
@@ -238,17 +259,31 @@ func NewProxier(ipt utiliptables.Interface, sysctl utilsysctl.Interface, exec ut
 	masqueradeMark := fmt.Sprintf("%#08x/%#08x", masqueradeValue, masqueradeValue)
 
 	if nodeIP == nil {
-		glog.Warningf("invalid nodeIP, initialize kube-proxy with 127.0.0.1 as nodeIP")
+		glog.Warningf("invalid nodeIP, initializing kube-proxy with 127.0.0.1 as nodeIP")
 		nodeIP = net.ParseIP("127.0.0.1")
 	}
 
+	if len(clusterCIDR) == 0 {
+		glog.Warningf("clusterCIDR not specified, unable to distinguish between internal and external traffic")
+	}
+
 	go healthcheck.Run()
+
+	var throttle flowcontrol.RateLimiter
+	// Defaulting back to not limit sync rate when minSyncPeriod is 0.
+	if minSyncPeriod != 0 {
+		syncsPerSecond := float32(time.Second) / float32(minSyncPeriod)
+		// The average use case will process 2 updates in short succession
+		throttle = flowcontrol.NewTokenBucketRateLimiter(syncsPerSecond, 2)
+	}
 
 	return &Proxier{
 		serviceMap:     make(map[proxy.ServicePortName]*serviceInfo),
 		endpointsMap:   make(map[proxy.ServicePortName][]*endpointsInfo),
 		portsMap:       make(map[localPort]closeable),
 		syncPeriod:     syncPeriod,
+		minSyncPeriod:  minSyncPeriod,
+		throttle:       throttle,
 		iptables:       ipt,
 		masqueradeAll:  masqueradeAll,
 		masqueradeMark: masqueradeMark,
@@ -257,6 +292,7 @@ func NewProxier(ipt utiliptables.Interface, sysctl utilsysctl.Interface, exec ut
 		hostname:       hostname,
 		nodeIP:         nodeIP,
 		portMapper:     &listenPortOpener{},
+		recorder:       recorder,
 	}, nil
 }
 
@@ -366,6 +402,9 @@ func (proxier *Proxier) sameConfig(info *serviceInfo, service *api.Service, port
 	if info.onlyNodeLocalEndpoints != onlyNodeLocalEndpoints {
 		return false
 	}
+	if !reflect.DeepEqual(info.loadBalancerSourceRanges, service.Spec.LoadBalancerSourceRanges) {
+		return false
+	}
 	return true
 }
 
@@ -455,18 +494,20 @@ func (proxier *Proxier) OnServiceUpdate(allServices []api.Service) {
 			info.loadBalancerStatus = *api.LoadBalancerStatusDeepCopy(&service.Status.LoadBalancer)
 			info.sessionAffinityType = service.Spec.SessionAffinity
 			info.loadBalancerSourceRanges = service.Spec.LoadBalancerSourceRanges
-			info.onlyNodeLocalEndpoints = apiservice.NeedsHealthCheck(service) && featuregate.DefaultFeatureGate.ExternalTrafficLocalOnly()
+			info.onlyNodeLocalEndpoints = apiservice.NeedsHealthCheck(service) && featuregate.DefaultFeatureGate.ExternalTrafficLocalOnly() && (service.Spec.Type == api.ServiceTypeLoadBalancer || service.Spec.Type == api.ServiceTypeNodePort)
 			if info.onlyNodeLocalEndpoints {
 				p := apiservice.GetServiceHealthCheckNodePort(service)
 				if p == 0 {
 					glog.Errorf("Service does not contain necessary annotation %v",
-						apiservice.AnnotationHealthCheckNodePort)
+						apiservice.BetaAnnotationHealthCheckNodePort)
 				} else {
+					glog.V(4).Infof("Adding health check for %+v, port %v", serviceName.NamespacedName, p)
 					info.healthCheckNodePort = int(p)
 					// Turn on healthcheck responder to listen on the health check nodePort
 					healthcheck.AddServiceListener(serviceName.NamespacedName, info.healthCheckNodePort)
 				}
 			} else {
+				glog.V(4).Infof("Deleting health check for %+v", serviceName.NamespacedName)
 				// Delete healthcheck responders, if any, previously listening for this service
 				healthcheck.DeleteServiceListener(serviceName.NamespacedName, 0)
 			}
@@ -488,6 +529,7 @@ func (proxier *Proxier) OnServiceUpdate(allServices []api.Service) {
 			if info.onlyNodeLocalEndpoints && info.healthCheckNodePort > 0 {
 				// Remove ServiceListener health check nodePorts from the health checker
 				// TODO - Stats
+				glog.V(4).Infof("Deleting health check for %+v, port %v", name.NamespacedName, info.healthCheckNodePort)
 				healthcheck.DeleteServiceListener(name.NamespacedName, info.healthCheckNodePort)
 			}
 		}
@@ -762,6 +804,9 @@ func (proxier *Proxier) execConntrackTool(parameters ...string) error {
 // The only other iptables rules are those that are setup in iptablesInit()
 // assumes proxier.mu is held
 func (proxier *Proxier) syncProxyRules() {
+	if proxier.throttle != nil {
+		proxier.throttle.Accept()
+	}
 	start := time.Now()
 	defer func() {
 		glog.V(4).Infof("syncProxyRules took %v", time.Since(start))
@@ -959,7 +1004,16 @@ func (proxier *Proxier) syncProxyRules() {
 				} else {
 					socket, err := proxier.portMapper.OpenLocalPort(&lp)
 					if err != nil {
-						glog.Errorf("can't open %s, skipping this externalIP: %v", lp.String(), err)
+						msg := fmt.Sprintf("can't open %s, skipping this externalIP: %v", lp.String(), err)
+
+						proxier.recorder.Eventf(
+							&v1.ObjectReference{
+								Kind:      "Node",
+								Name:      proxier.hostname,
+								UID:       types.UID(proxier.hostname),
+								Namespace: "",
+							}, api.EventTypeWarning, err.Error(), msg)
+						glog.Error(msg)
 						continue
 					}
 					replacementPortsMap[lp] = socket
@@ -1077,6 +1131,9 @@ func (proxier *Proxier) syncProxyRules() {
 					glog.Errorf("can't open %s, skipping this nodePort: %v", lp.String(), err)
 					continue
 				}
+				if lp.protocol == "udp" {
+					proxier.clearUdpConntrackForPort(lp.port)
+				}
 				replacementPortsMap[lp] = socket
 			} // We're holding the port, so it's OK to install iptables rules.
 
@@ -1137,7 +1194,7 @@ func (proxier *Proxier) syncProxyRules() {
 					"-A", string(svcChain),
 					"-m", "comment", "--comment", svcName.String(),
 					"-m", "recent", "--name", string(endpointChain),
-					"--rcheck", "--seconds", fmt.Sprintf("%d", svcInfo.stickyMaxAgeSeconds), "--reap",
+					"--rcheck", "--seconds", fmt.Sprintf("%d", svcInfo.stickyMaxAgeMinutes*60), "--reap",
 					"-j", string(endpointChain))
 			}
 		}
@@ -1197,13 +1254,17 @@ func (proxier *Proxier) syncProxyRules() {
 		}
 		// First rule in the chain redirects all pod -> external vip traffic to the
 		// Service's ClusterIP instead. This happens whether or not we have local
-		// endpoints.
-		args = []string{
-			"-A", string(svcXlbChain),
-			"-m", "comment", "--comment",
-			fmt.Sprintf(`"Redirect pods trying to reach external loadbalancer VIP to clusterIP"`),
+		// endpoints; only if clusterCIDR is specified
+		if len(proxier.clusterCIDR) > 0 {
+			args = []string{
+				"-A", string(svcXlbChain),
+				"-m", "comment", "--comment",
+				fmt.Sprintf(`"Redirect pods trying to reach external loadbalancer VIP to clusterIP"`),
+				"-s", proxier.clusterCIDR,
+				"-j", string(svcChain),
+			}
+			writeLine(natRules, args...)
 		}
-		writeLine(natRules, append(args, "-s", proxier.clusterCIDR, "-j", string(svcChain))...)
 
 		numLocalEndpoints := len(localEndpointChains)
 		if numLocalEndpoints == 0 {
@@ -1276,7 +1337,7 @@ func (proxier *Proxier) syncProxyRules() {
 	glog.V(3).Infof("Restoring iptables rules: %s", lines)
 	err = proxier.iptables.RestoreAll(lines, utiliptables.NoFlushTables, utiliptables.RestoreCounters)
 	if err != nil {
-		glog.Errorf("Failed to execute iptables-restore: %v", err)
+		glog.Errorf("Failed to execute iptables-restore: %v\nRules:\n%s", err, lines)
 		// Revert new local ports.
 		revertPorts(replacementPortsMap, proxier.portsMap)
 		return
@@ -1289,6 +1350,24 @@ func (proxier *Proxier) syncProxyRules() {
 		}
 	}
 	proxier.portsMap = replacementPortsMap
+}
+
+// Clear UDP conntrack for port or all conntrack entries when port equal zero.
+// When a packet arrives, it will not go through NAT table again, because it is not "the first" packet.
+// The solution is clearing the conntrack. Known issus:
+// https://github.com/docker/docker/issues/8795
+// https://github.com/kubernetes/kubernetes/issues/31983
+func (proxier *Proxier) clearUdpConntrackForPort(port int) {
+	var err error = nil
+	glog.V(2).Infof("Deleting conntrack entries for udp connections")
+	if port > 0 {
+		err = proxier.execConntrackTool("-D", "-p", "udp", "--dport", strconv.Itoa(port))
+		if err != nil && !strings.Contains(err.Error(), noConnectionToDelete) {
+			glog.Errorf("conntrack return with error: %v", err)
+		}
+	} else {
+		glog.Errorf("Wrong port number. The port number must be greater than zero")
+	}
 }
 
 // Join all words with spaces, terminate with newline and write to buf.

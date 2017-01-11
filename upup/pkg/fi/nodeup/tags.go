@@ -20,22 +20,22 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"io/ioutil"
-	"k8s.io/kops/upup/pkg/fi/nodeup/tags"
+	"k8s.io/kops/nodeup/pkg/model"
 	"os"
 	"path"
 	"strings"
 )
 
-// FindOSTags infers tags from the current distro
+// FindDistribution identifies the distribution on which we are running
 // We will likely remove this when everything is containerized
-func FindOSTags(rootfs string) ([]string, error) {
+func FindDistribution(rootfs string) (model.Distribution, error) {
 	// Ubuntu has /etc/lsb-release (and /etc/debian_version)
 	lsbRelease, err := ioutil.ReadFile(path.Join(rootfs, "etc/lsb-release"))
 	if err == nil {
 		for _, line := range strings.Split(string(lsbRelease), "\n") {
 			line = strings.TrimSpace(line)
 			if line == "DISTRIB_CODENAME=xenial" {
-				return []string{"_xenial", tags.TagOSFamilyDebian, tags.TagSystemd}, nil
+				return model.DistributionXenial, nil
 			}
 		}
 		glog.Warningf("unhandled lsb-release info %q", string(lsbRelease))
@@ -48,9 +48,9 @@ func FindOSTags(rootfs string) ([]string, error) {
 	if err == nil {
 		debianVersion := strings.TrimSpace(string(debianVersionBytes))
 		if strings.HasPrefix(debianVersion, "8.") {
-			return []string{"_jessie", tags.TagOSFamilyDebian, tags.TagSystemd}, nil
+			return model.DistributionJessie, nil
 		} else {
-			return nil, fmt.Errorf("unhandled debian version %q", debianVersion)
+			return "", fmt.Errorf("unhandled debian version %q", debianVersion)
 		}
 	} else if !os.IsNotExist(err) {
 		glog.Warningf("error reading /etc/debian_version: %v", err)
@@ -63,10 +63,10 @@ func FindOSTags(rootfs string) ([]string, error) {
 		for _, line := range strings.Split(string(redhatRelease), "\n") {
 			line = strings.TrimSpace(line)
 			if strings.HasPrefix(line, "Red Hat Enterprise Linux Server release 7.") {
-				return []string{"_rhel7", tags.TagOSFamilyRHEL, tags.TagSystemd}, nil
+				return model.DistributionRhel7, nil
 			}
 			if strings.HasPrefix(line, "CentOS Linux release 7.") {
-				return []string{"_centos7", tags.TagOSFamilyRHEL, tags.TagSystemd}, nil
+				return model.DistributionCentos7, nil
 			}
 		}
 		glog.Warningf("unhandled redhat-release info %q", string(lsbRelease))
@@ -74,7 +74,7 @@ func FindOSTags(rootfs string) ([]string, error) {
 		glog.Warningf("error reading /etc/redhat-release: %v", err)
 	}
 
-	return nil, fmt.Errorf("cannot identify distro")
+	return "", fmt.Errorf("cannot identify distro")
 }
 
 //// FindCloudTags infers tags from the cloud environment

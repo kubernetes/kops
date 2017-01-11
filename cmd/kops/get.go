@@ -17,7 +17,13 @@ limitations under the License.
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+	"io"
+
 	"github.com/spf13/cobra"
+	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kubernetes/pkg/runtime"
 )
 
 // GetCmd represents the get command
@@ -39,6 +45,7 @@ var getCmd = GetCmd{
 const (
 	OutputYaml  = "yaml"
 	OutputTable = "table"
+	OutputJSON  = "json"
 )
 
 func init() {
@@ -46,5 +53,37 @@ func init() {
 
 	rootCommand.AddCommand(cmd)
 
-	cmd.PersistentFlags().StringVarP(&getCmd.output, "output", "o", OutputTable, "output format.  One of: table, yaml")
+	cmd.PersistentFlags().StringVarP(&getCmd.output, "output", "o", OutputTable, "output format.  One of: table, yaml, json")
+}
+
+type marshalFunc func(obj runtime.Object) ([]byte, error)
+
+func marshalToWriter(obj runtime.Object, marshal marshalFunc, w io.Writer) error {
+	b, err := marshal(obj)
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(b)
+	if err != nil {
+		return fmt.Errorf("error writing to stdout: %v", err)
+	}
+	return nil
+}
+
+// obj must be a pointer to a marshalable object
+func marshalYaml(obj runtime.Object) ([]byte, error) {
+	y, err := api.ToVersionedYaml(obj)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling yaml: %v", err)
+	}
+	return y, nil
+}
+
+// obj must be a pointer to a marshalable object
+func marshalJSON(obj runtime.Object) ([]byte, error) {
+	j, err := json.MarshalIndent(obj, "", "  ")
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling json: %v", err)
+	}
+	return j, nil
 }

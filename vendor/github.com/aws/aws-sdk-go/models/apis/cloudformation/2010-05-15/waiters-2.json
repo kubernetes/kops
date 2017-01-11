@@ -25,51 +25,39 @@
       "description": "Wait until stack status is CREATE_COMPLETE.",
       "acceptors": [
         {
+          "argument": "Stacks[].StackStatus",
           "expected": "CREATE_COMPLETE",
           "matcher": "pathAll",
-          "state": "success",
-          "argument": "Stacks[].StackStatus"
+          "state": "success"
         },
         {
+          "argument": "Stacks[].StackStatus",
           "expected": "CREATE_FAILED",
           "matcher": "pathAny",
-          "state": "failure",
-          "argument": "Stacks[].StackStatus"
+          "state": "failure"
         },
         {
+          "argument": "Stacks[].StackStatus",
           "expected": "DELETE_COMPLETE",
           "matcher": "pathAny",
-          "argument": "Stacks[].StackStatus",
           "state": "failure"
         },
         {
-          "expected": "DELETE_IN_PROGRESS",
-          "matcher": "pathAny",
           "argument": "Stacks[].StackStatus",
-          "state": "failure"
-        },
-        {
           "expected": "DELETE_FAILED",
           "matcher": "pathAny",
-          "argument": "Stacks[].StackStatus",
           "state": "failure"
         },
         {
-          "expected": "ROLLBACK_COMPLETE",
-          "matcher": "pathAny",
-          "state": "failure",
-          "argument": "Stacks[].StackStatus"
-        },
-        {
+          "argument": "Stacks[].StackStatus",
           "expected": "ROLLBACK_FAILED",
           "matcher": "pathAny",
-          "state": "failure",
-          "argument": "Stacks[].StackStatus"
+          "state": "failure"
         },
         {
-          "expected": "ROLLBACK_IN_PROGRESS",
-          "matcher": "pathAny",
           "argument": "Stacks[].StackStatus",
+          "expected": "ROLLBACK_COMPLETE",
+          "matcher": "pathAny",
           "state": "failure"
         },
         {
@@ -86,10 +74,10 @@
       "description": "Wait until stack status is DELETE_COMPLETE.",
       "acceptors": [
         {
+          "argument": "Stacks[].StackStatus",
           "expected": "DELETE_COMPLETE",
           "matcher": "pathAll",
-          "state": "success",
-          "argument": "Stacks[].StackStatus"
+          "state": "success"
         },
         {
           "expected": "ValidationError",
@@ -97,14 +85,8 @@
           "state": "success"
         },
         {
-          "expected": "DELETE_FAILED",
-          "matcher": "pathAny",
-          "state": "failure",
-          "argument": "Stacks[].StackStatus"
-        },
-        {
           "argument": "Stacks[].StackStatus",
-          "expected": "CREATE_COMPLETE",
+          "expected": "DELETE_FAILED",
           "matcher": "pathAny",
           "state": "failure"
         },
@@ -116,55 +98,7 @@
         },
         {
           "argument": "Stacks[].StackStatus",
-          "expected": "CREATE_IN_PROGRESS",
-          "matcher": "pathAny",
-          "state": "failure"
-        },
-        {
-          "argument": "Stacks[].StackStatus",
-          "expected": "ROLLBACK_COMPLETE",
-          "matcher": "pathAny",
-          "state": "failure"
-        },
-        {
-          "argument": "Stacks[].StackStatus",
           "expected": "ROLLBACK_FAILED",
-          "matcher": "pathAny",
-          "state": "failure"
-        },
-        {
-          "argument": "Stacks[].StackStatus",
-          "expected": "ROLLBACK_IN_PROGRESS",
-          "matcher": "pathAny",
-          "state": "failure"
-        },
-        {
-          "argument": "Stacks[].StackStatus",
-          "expected": "UPDATE_COMPLETE",
-          "matcher": "pathAny",
-          "state": "failure"
-        },
-        {
-          "argument": "Stacks[].StackStatus",
-          "expected": "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS",
-          "matcher": "pathAny",
-          "state": "failure"
-        },
-        {
-          "argument": "Stacks[].StackStatus",
-          "expected": "UPDATE_IN_PROGRESS",
-          "matcher": "pathAny",
-          "state": "failure"
-        },
-        {
-          "argument": "Stacks[].StackStatus",
-          "expected": "UPDATE_ROLLBACK_COMPLETE",
-          "matcher": "pathAny",
-          "state": "failure"
-        },
-        {
-          "argument": "Stacks[].StackStatus",
-          "expected": "UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS",
           "matcher": "pathAny",
           "state": "failure"
         },
@@ -189,10 +123,10 @@
       "description": "Wait until stack status is UPDATE_COMPLETE.",
       "acceptors": [
         {
+          "argument": "Stacks[].StackStatus",
           "expected": "UPDATE_COMPLETE",
           "matcher": "pathAll",
-          "state": "success",
-          "argument": "Stacks[].StackStatus"
+          "state": "success"
         },
         {
           "expected": "UPDATE_FAILED",
@@ -201,28 +135,16 @@
           "argument": "Stacks[].StackStatus"
         },
         {
+          "argument": "Stacks[].StackStatus",
+          "expected": "UPDATE_ROLLBACK_FAILED",
+          "matcher": "pathAny",
+          "state": "failure"
+        },
+        {
           "expected": "UPDATE_ROLLBACK_COMPLETE",
           "matcher": "pathAny",
           "state": "failure",
           "argument": "Stacks[].StackStatus"
-        },
-        {
-          "expected": "UPDATE_ROLLBACK_FAILED",
-          "matcher": "pathAny",
-          "state": "failure",
-          "argument": "Stacks[].StackStatus"
-        },
-        {
-          "argument": "Stacks[].StackStatus",
-          "expected": "UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS",
-          "matcher": "pathAny",
-          "state": "failure"
-        },
-        {
-          "argument": "Stacks[].StackStatus",
-          "expected": "UPDATE_ROLLBACK_IN_PROGRESS",
-          "matcher": "pathAny",
-          "state": "failure"
         },
         {
           "expected": "ValidationError",

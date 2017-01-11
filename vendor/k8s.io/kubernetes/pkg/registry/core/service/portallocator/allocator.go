@@ -33,14 +33,22 @@ type Interface interface {
 	Allocate(int) error
 	AllocateNext() (int, error)
 	Release(int) error
+	ForEach(func(int))
 }
 
 var (
 	ErrFull              = errors.New("range is full")
-	ErrNotInRange        = errors.New("provided port is not in the valid range")
 	ErrAllocated         = errors.New("provided port is already allocated")
 	ErrMismatchedNetwork = errors.New("the provided port range does not match the current port range")
 )
+
+type ErrNotInRange struct {
+	ValidPorts string
+}
+
+func (e *ErrNotInRange) Error() string {
+	return fmt.Sprintf("provided port is not in the valid range. The range of valid ports is %s", e.ValidPorts)
+}
 
 type PortAllocator struct {
 	portRange net.PortRange
@@ -70,9 +78,27 @@ func NewPortAllocator(pr net.PortRange) *PortAllocator {
 	})
 }
 
+// NewFromSnapshot allocates a PortAllocator and initializes it from a snapshot.
+func NewFromSnapshot(snap *api.RangeAllocation) (*PortAllocator, error) {
+	pr, err := net.ParsePortRange(snap.Range)
+	if err != nil {
+		return nil, err
+	}
+	r := NewPortAllocator(*pr)
+	if err := r.Restore(*pr, snap.Data); err != nil {
+		return nil, err
+	}
+	return r, nil
+}
+
 // Free returns the count of port left in the range.
 func (r *PortAllocator) Free() int {
 	return r.alloc.Free()
+}
+
+// Used returns the count of ports used in the range.
+func (r *PortAllocator) Used() int {
+	return r.portRange.Size - r.alloc.Free()
 }
 
 // Allocate attempts to reserve the provided port. ErrNotInRange or
@@ -82,7 +108,9 @@ func (r *PortAllocator) Free() int {
 func (r *PortAllocator) Allocate(port int) error {
 	ok, offset := r.contains(port)
 	if !ok {
-		return ErrNotInRange
+		// include valid port range in error
+		validPorts := r.portRange.String()
+		return &ErrNotInRange{validPorts}
 	}
 
 	allocated, err := r.alloc.Allocate(offset)
@@ -106,6 +134,13 @@ func (r *PortAllocator) AllocateNext() (int, error) {
 		return 0, ErrFull
 	}
 	return r.portRange.Base + offset, nil
+}
+
+// ForEach calls the provided function for each allocated port.
+func (r *PortAllocator) ForEach(fn func(int)) {
+	r.alloc.ForEach(func(offset int) {
+		fn(r.portRange.Base + offset)
+	})
 }
 
 // Release releases the port back to the pool. Releasing an

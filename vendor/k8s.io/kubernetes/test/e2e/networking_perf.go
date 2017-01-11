@@ -24,7 +24,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/test/e2e/framework"
 )
 
@@ -43,15 +43,13 @@ var _ = framework.KubeDescribe("Networking IPerf [Experimental] [Slow] [Feature:
 
 	// A few simple bandwidth tests which are capped by nodes.
 	// TODO replace the 1 with the scale option implementation
-	runClientServerBandwidthMeasurement(f, 1, gceBandwidthBitsEstimate)
-})
-
-func runClientServerBandwidthMeasurement(f *framework.Framework, numClient int, maxBandwidthBits int64) {
 	// TODO: Make this a function parameter, once we distribute iperf endpoints, possibly via session affinity.
+	numClient := 1
 	numServer := 1
+	maxBandwidthBits := gceBandwidthBitsEstimate
 
 	It(fmt.Sprintf("should transfer ~ 1GB onto the service endpoint %v servers (maximum of %v clients)", numServer, numClient), func() {
-		nodes := framework.GetReadySchedulableNodesOrDie(f.Client)
+		nodes := framework.GetReadySchedulableNodesOrDie(f.ClientSet)
 		totalPods := len(nodes.Items)
 		// for a single service, we expect to divide bandwidth between the network.  Very crude estimate.
 		expectedBandwidth := int(float64(maxBandwidthBits) / float64(totalPods))
@@ -61,9 +59,9 @@ func runClientServerBandwidthMeasurement(f *framework.Framework, numClient int, 
 			8001,
 			8002,
 			appName,
-			func(n api.Node) api.PodSpec {
-				return api.PodSpec{
-					Containers: []api.Container{{
+			func(n v1.Node) v1.PodSpec {
+				return v1.PodSpec{
+					Containers: []v1.Container{{
 						Name:  "iperf-server",
 						Image: "gcr.io/google_containers/iperf:e2e",
 						Args: []string{
@@ -71,10 +69,10 @@ func runClientServerBandwidthMeasurement(f *framework.Framework, numClient int, 
 							"-c",
 							"/usr/local/bin/iperf -s -p 8001 ",
 						},
-						Ports: []api.ContainerPort{{ContainerPort: 8001}},
+						Ports: []v1.ContainerPort{{ContainerPort: 8001}},
 					}},
 					NodeName:      n.Name,
-					RestartPolicy: api.RestartPolicyOnFailure,
+					RestartPolicy: v1.RestartPolicyOnFailure,
 				}
 			},
 			// this will be used to generate the -service name which all iperf clients point at.
@@ -88,9 +86,9 @@ func runClientServerBandwidthMeasurement(f *framework.Framework, numClient int, 
 
 		iperfClientPodLabels := f.CreatePodsPerNodeForSimpleApp(
 			"iperf-e2e-cli",
-			func(n api.Node) api.PodSpec {
-				return api.PodSpec{
-					Containers: []api.Container{
+			func(n v1.Node) v1.PodSpec {
+				return v1.PodSpec{
+					Containers: []v1.Container{
 						{
 							Name:  "iperf-client",
 							Image: "gcr.io/google_containers/iperf:e2e",
@@ -101,7 +99,7 @@ func runClientServerBandwidthMeasurement(f *framework.Framework, numClient int, 
 							},
 						},
 					},
-					RestartPolicy: api.RestartPolicyOnFailure, // let them successfully die.
+					RestartPolicy: v1.RestartPolicyOnFailure, // let them successfully die.
 				}
 			},
 			numClient,
@@ -112,7 +110,7 @@ func runClientServerBandwidthMeasurement(f *framework.Framework, numClient int, 
 
 		// Calculate expected number of clients based on total nodes.
 		expectedCli := func() int {
-			nodes := framework.GetReadySchedulableNodesOrDie(f.Client)
+			nodes := framework.GetReadySchedulableNodesOrDie(f.ClientSet)
 			return int(math.Min(float64(len(nodes.Items)), float64(numClient)))
 		}()
 
@@ -121,9 +119,10 @@ func runClientServerBandwidthMeasurement(f *framework.Framework, numClient int, 
 		iperfResults := &IPerfResults{}
 
 		iperfClusterVerification := f.NewClusterVerification(
+			f.Namespace,
 			framework.PodStateVerification{
 				Selectors:   iperfClientPodLabels,
-				ValidPhases: []api.PodPhase{api.PodSucceeded},
+				ValidPhases: []v1.PodPhase{v1.PodSucceeded},
 			},
 		)
 
@@ -135,7 +134,7 @@ func runClientServerBandwidthMeasurement(f *framework.Framework, numClient int, 
 		} else {
 			// For each builds up a collection of IPerfRecords
 			iperfClusterVerification.ForEach(
-				func(p api.Pod) {
+				func(p v1.Pod) {
 					resultS, err := framework.LookForStringInLog(f.Namespace.Name, p.Name, "iperf-client", "0-", 1*time.Second)
 					if err == nil {
 						framework.Logf(resultS)
@@ -153,4 +152,4 @@ func runClientServerBandwidthMeasurement(f *framework.Framework, numClient int, 
 			framework.Logf("%v had bandwidth %v.  Ratio to expected (%v) was %f", ipClient, bandwidth, expectedBandwidth, float64(bandwidth)/float64(expectedBandwidth))
 		}
 	})
-}
+})

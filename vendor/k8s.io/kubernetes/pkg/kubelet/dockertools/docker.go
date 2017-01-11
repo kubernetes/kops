@@ -31,7 +31,7 @@ import (
 	dockerapi "github.com/docker/engine-api/client"
 	dockertypes "github.com/docker/engine-api/types"
 	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/credentialprovider"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
 	"k8s.io/kubernetes/pkg/kubelet/images"
@@ -43,19 +43,9 @@ import (
 const (
 	PodInfraContainerName = leaky.PodInfraContainerName
 	DockerPrefix          = "docker://"
+	DockerPullablePrefix  = "docker-pullable://"
 	LogSuffix             = "log"
 	ext4MaxFileNameLen    = 255
-)
-
-const (
-	// Taken from lmctfy https://github.com/google/lmctfy/blob/master/lmctfy/controllers/cpu_controller.cc
-	minShares     = 2
-	sharesPerCPU  = 1024
-	milliCPUToCPU = 1000
-
-	// 100000 is equivalent to 100ms
-	quotaPeriod    = 100000
-	minQuotaPeriod = 1000
 )
 
 // DockerInterface is an abstract interface for testability.  It abstracts the interface of docker client.
@@ -66,7 +56,8 @@ type DockerInterface interface {
 	StartContainer(id string) error
 	StopContainer(id string, timeout int) error
 	RemoveContainer(id string, opts dockertypes.ContainerRemoveOptions) error
-	InspectImage(image string) (*dockertypes.ImageInspect, error)
+	InspectImageByRef(imageRef string) (*dockertypes.ImageInspect, error)
+	InspectImageByID(imageID string) (*dockertypes.ImageInspect, error)
 	ListImages(opts dockertypes.ImageListOptions) ([]dockertypes.Image, error)
 	PullImage(image string, auth dockertypes.AuthConfig, opts dockertypes.ImagePullOptions) error
 	RemoveImage(image string, opts dockertypes.ImageRemoveOptions) ([]dockertypes.ImageDelete, error)
@@ -102,7 +93,7 @@ func SetContainerNamePrefix(prefix string) {
 
 // DockerPuller is an abstract interface for testability.  It abstracts image pull operations.
 type DockerPuller interface {
-	Pull(image string, secrets []api.Secret) error
+	Pull(image string, secrets []v1.Secret) error
 	IsImagePresent(image string) (bool, error)
 }
 
@@ -136,7 +127,11 @@ func filterHTTPError(err error, image string) error {
 	}
 }
 
-// Check if the inspected image matches what we are looking for
+// matchImageTagOrSHA checks if the given image specifier is a valid image ref,
+// and that it matches the given image. It should fail on things like image IDs
+// (config digests) and other digest-only references, but succeed on image names
+// (`foo`), tag references (`foo:bar`), and manifest digest references
+// (`foo@sha256:xyz`).
 func matchImageTagOrSHA(inspected dockertypes.ImageInspect, image string) bool {
 	// The image string follows the grammar specified here
 	// https://github.com/docker/distribution/blob/master/reference/reference.go#L4
@@ -193,7 +188,44 @@ func matchImageTagOrSHA(inspected dockertypes.ImageInspect, image string) bool {
 	return false
 }
 
-func (p dockerPuller) Pull(image string, secrets []api.Secret) error {
+// matchImageIDOnly checks that the given image specifier is a digest-only
+// reference, and that it matches the given image.
+func matchImageIDOnly(inspected dockertypes.ImageInspect, image string) bool {
+	// If the image ref is literally equal to the inspected image's ID,
+	// just return true here (this might be the case for Docker 1.9,
+	// where we won't have a digest for the ID)
+	if inspected.ID == image {
+		return true
+	}
+
+	// Otherwise, we should try actual parsing to be more correct
+	ref, err := dockerref.Parse(image)
+	if err != nil {
+		glog.V(4).Infof("couldn't parse image reference %q: %v", image, err)
+		return false
+	}
+
+	digest, isDigested := ref.(dockerref.Digested)
+	if !isDigested {
+		glog.V(4).Infof("the image reference %q was not a digest reference")
+		return false
+	}
+
+	id, err := dockerdigest.ParseDigest(inspected.ID)
+	if err != nil {
+		glog.V(4).Infof("couldn't parse image ID reference %q: %v", id, err)
+		return false
+	}
+
+	if digest.Digest().Algorithm().String() == id.Algorithm().String() && digest.Digest().Hex() == id.Hex() {
+		return true
+	}
+
+	glog.V(4).Infof("The reference %s does not directly refer to the given image's ID (%q)", image, inspected.ID)
+	return false
+}
+
+func (p dockerPuller) Pull(image string, secrets []v1.Secret) error {
 	keyring, err := credentialprovider.MakeDockerKeyring(secrets, p.keyring)
 	if err != nil {
 		return err
@@ -246,7 +278,7 @@ func (p dockerPuller) Pull(image string, secrets []api.Secret) error {
 }
 
 func (p dockerPuller) IsImagePresent(image string) (bool, error) {
-	_, err := p.client.InspectImage(image)
+	_, err := p.client.InspectImageByRef(image)
 	if err == nil {
 		return true, nil
 	}
@@ -261,7 +293,7 @@ func (p dockerPuller) IsImagePresent(image string) (bool, error) {
 // Although rand.Uint32() is not really unique, but it's enough for us because error will
 // only occur when instances of the same container in the same pod have the same UID. The
 // chance is really slim.
-func BuildDockerName(dockerName KubeletContainerName, container *api.Container) (string, string, string) {
+func BuildDockerName(dockerName KubeletContainerName, container *v1.Container) (string, string, string) {
 	containerName := dockerName.ContainerName + "." + strconv.FormatUint(kubecontainer.HashContainer(container), 16)
 	stableName := fmt.Sprintf("%s_%s_%s_%s",
 		containerNamePrefix,
@@ -333,7 +365,7 @@ func getDockerClient(dockerEndpoint string) (*dockerapi.Client, error) {
 // is the timeout for docker requests. If timeout is exceeded, the request
 // will be cancelled and throw out an error. If requestTimeout is 0, a default
 // value will be applied.
-func ConnectToDockerOrDie(dockerEndpoint string, requestTimeout time.Duration) DockerInterface {
+func ConnectToDockerOrDie(dockerEndpoint string, requestTimeout, imagePullProgressDeadline time.Duration) DockerInterface {
 	if dockerEndpoint == "fake://" {
 		return NewFakeDockerClient()
 	}
@@ -342,49 +374,7 @@ func ConnectToDockerOrDie(dockerEndpoint string, requestTimeout time.Duration) D
 		glog.Fatalf("Couldn't connect to docker: %v", err)
 	}
 	glog.Infof("Start docker client with request timeout=%v", requestTimeout)
-	return newKubeDockerClient(client, requestTimeout)
-}
-
-// milliCPUToQuota converts milliCPU to CFS quota and period values
-func milliCPUToQuota(milliCPU int64) (quota int64, period int64) {
-	// CFS quota is measured in two values:
-	//  - cfs_period_us=100ms (the amount of time to measure usage across)
-	//  - cfs_quota=20ms (the amount of cpu time allowed to be used across a period)
-	// so in the above example, you are limited to 20% of a single CPU
-	// for multi-cpu environments, you just scale equivalent amounts
-
-	if milliCPU == 0 {
-		// take the default behavior from docker
-		return
-	}
-
-	// we set the period to 100ms by default
-	period = quotaPeriod
-
-	// we then convert your milliCPU to a value normalized over a period
-	quota = (milliCPU * quotaPeriod) / milliCPUToCPU
-
-	// quota needs to be a minimum of 1ms.
-	if quota < minQuotaPeriod {
-		quota = minQuotaPeriod
-	}
-
-	return
-}
-
-func milliCPUToShares(milliCPU int64) int64 {
-	if milliCPU == 0 {
-		// Docker converts zero milliCPU to unset, which maps to kernel default
-		// for unset: 1024. Return 2 here to really match kernel default for
-		// zero milliCPU.
-		return minShares
-	}
-	// Conceptually (milliCPU / milliCPUToCPU) * sharesPerCPU, but factored to improve rounding.
-	shares := (milliCPU * sharesPerCPU) / milliCPUToCPU
-	if shares < minShares {
-		return minShares
-	}
-	return shares
+	return newKubeDockerClient(client, requestTimeout, imagePullProgressDeadline)
 }
 
 // GetKubeletDockerContainers lists all container or just the running ones.

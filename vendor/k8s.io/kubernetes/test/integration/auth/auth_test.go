@@ -38,6 +38,7 @@ import (
 
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/testapi"
+	"k8s.io/kubernetes/pkg/apimachinery/registered"
 	authenticationv1beta1 "k8s.io/kubernetes/pkg/apis/authentication/v1beta1"
 	"k8s.io/kubernetes/pkg/apis/autoscaling"
 	"k8s.io/kubernetes/pkg/apis/extensions"
@@ -45,6 +46,7 @@ import (
 	"k8s.io/kubernetes/pkg/auth/authenticator/bearertoken"
 	"k8s.io/kubernetes/pkg/auth/authorizer"
 	"k8s.io/kubernetes/pkg/auth/authorizer/abac"
+	"k8s.io/kubernetes/pkg/auth/group"
 	"k8s.io/kubernetes/pkg/auth/user"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd/api/v1"
 	apiserverauthorizer "k8s.io/kubernetes/pkg/genericapiserver/authorizer"
@@ -66,7 +68,7 @@ func getTestTokenAuth() authenticator.Request {
 	tokenAuthenticator := tokentest.New()
 	tokenAuthenticator.Tokens[AliceToken] = &user.DefaultInfo{Name: "alice", UID: "1"}
 	tokenAuthenticator.Tokens[BobToken] = &user.DefaultInfo{Name: "bob", UID: "2"}
-	return bearertoken.New(tokenAuthenticator)
+	return group.NewGroupAdder(bearertoken.New(tokenAuthenticator), []string{user.AllAuthenticated})
 }
 
 func getTestWebhookTokenAuth(serverURL string) (authenticator.Request, error) {
@@ -108,7 +110,7 @@ func timeoutPath(resource, namespace, name string) string {
 var aPod string = `
 {
   "kind": "Pod",
-  "apiVersion": "` + testapi.Default.GroupVersion().String() + `",
+  "apiVersion": "` + registered.GroupOrDie(api.GroupName).GroupVersion.String() + `",
   "metadata": {
     "name": "a",
     "creationTimestamp": null%s
@@ -126,7 +128,7 @@ var aPod string = `
 var aRC string = `
 {
   "kind": "ReplicationController",
-  "apiVersion": "` + testapi.Default.GroupVersion().String() + `",
+  "apiVersion": "` + registered.GroupOrDie(api.GroupName).GroupVersion.String() + `",
   "metadata": {
     "name": "a",
     "labels": {
@@ -159,7 +161,7 @@ var aRC string = `
 var aService string = `
 {
   "kind": "Service",
-  "apiVersion": "` + testapi.Default.GroupVersion().String() + `",
+  "apiVersion": "` + registered.GroupOrDie(api.GroupName).GroupVersion.String() + `",
   "metadata": {
     "name": "a",
     "labels": {
@@ -183,7 +185,7 @@ var aService string = `
 var aNode string = `
 {
   "kind": "Node",
-  "apiVersion": "` + testapi.Default.GroupVersion().String() + `",
+  "apiVersion": "` + registered.GroupOrDie(api.GroupName).GroupVersion.String() + `",
   "metadata": {
     "name": "a"%s
   },
@@ -197,7 +199,7 @@ func aEvent(namespace string) string {
 	return `
 {
   "kind": "Event",
-  "apiVersion": "` + testapi.Default.GroupVersion().String() + `",
+  "apiVersion": "` + registered.GroupOrDie(api.GroupName).GroupVersion.String() + `",
   "metadata": {
     "name": "a"%s
   },
@@ -214,7 +216,7 @@ func aEvent(namespace string) string {
 var aBinding string = `
 {
   "kind": "Binding",
-  "apiVersion": "` + testapi.Default.GroupVersion().String() + `",
+  "apiVersion": "` + registered.GroupOrDie(api.GroupName).GroupVersion.String() + `",
   "metadata": {
     "name": "a"%s
   },
@@ -237,7 +239,7 @@ var emptyEndpoints string = `
 var aEndpoints string = `
 {
   "kind": "Endpoints",
-  "apiVersion": "` + testapi.Default.GroupVersion().String() + `",
+  "apiVersion": "` + registered.GroupOrDie(api.GroupName).GroupVersion.String() + `",
   "metadata": {
     "name": "a"%s
   },
@@ -262,7 +264,7 @@ var aEndpoints string = `
 var deleteNow string = `
 {
   "kind": "DeleteOptions",
-  "apiVersion": "` + testapi.Default.GroupVersion().String() + `",
+  "apiVersion": "` + registered.GroupOrDie(api.GroupName).GroupVersion.String() + `",
   "gracePeriodSeconds": 0%s
 }
 `

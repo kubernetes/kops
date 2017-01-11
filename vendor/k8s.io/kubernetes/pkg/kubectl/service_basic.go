@@ -24,13 +24,16 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/util/intstr"
+	"k8s.io/kubernetes/pkg/util/validation"
 )
 
 type ServiceCommonGeneratorV1 struct {
-	Name      string
-	TCP       []string
-	Type      api.ServiceType
-	ClusterIP string
+	Name         string
+	TCP          []string
+	Type         api.ServiceType
+	ClusterIP    string
+	NodePort     int
+	ExternalName string
 }
 
 type ServiceClusterIPGeneratorV1 struct {
@@ -45,6 +48,11 @@ type ServiceLoadBalancerGeneratorV1 struct {
 	ServiceCommonGeneratorV1
 }
 
+// TODO: is this really necessary?
+type ServiceExternalNameGeneratorV1 struct {
+	ServiceCommonGeneratorV1
+}
+
 func (ServiceClusterIPGeneratorV1) ParamNames() []GeneratorParam {
 	return []GeneratorParam{
 		{"name", true},
@@ -56,12 +64,20 @@ func (ServiceNodePortGeneratorV1) ParamNames() []GeneratorParam {
 	return []GeneratorParam{
 		{"name", true},
 		{"tcp", true},
+		{"nodeport", true},
 	}
 }
 func (ServiceLoadBalancerGeneratorV1) ParamNames() []GeneratorParam {
 	return []GeneratorParam{
 		{"name", true},
 		{"tcp", true},
+	}
+}
+
+func (ServiceExternalNameGeneratorV1) ParamNames() []GeneratorParam {
+	return []GeneratorParam{
+		{"name", true},
+		{"externalname", true},
 	}
 }
 
@@ -98,9 +114,14 @@ func (s ServiceCommonGeneratorV1) GenerateCommon(params map[string]interface{}) 
 	if !isString {
 		return fmt.Errorf("expected string, saw %v for 'clusterip'", clusterip)
 	}
+	externalname, isString := params["externalname"].(string)
+	if !isString {
+		return fmt.Errorf("expected string, saw %v for 'externalname'", externalname)
+	}
 	s.Name = name
 	s.TCP = tcpStrings
 	s.ClusterIP = clusterip
+	s.ExternalName = externalname
 	return nil
 }
 
@@ -143,6 +164,19 @@ func (s ServiceClusterIPGeneratorV1) Generate(params map[string]interface{}) (ru
 	return delegate.StructuredGenerate()
 }
 
+func (s ServiceExternalNameGeneratorV1) Generate(params map[string]interface{}) (runtime.Object, error) {
+	err := ValidateParams(s.ParamNames(), params)
+	if err != nil {
+		return nil, err
+	}
+	delegate := &ServiceCommonGeneratorV1{Type: api.ServiceTypeExternalName, ClusterIP: ""}
+	err = delegate.GenerateCommon(params)
+	if err != nil {
+		return nil, err
+	}
+	return delegate.StructuredGenerate()
+}
+
 // validate validates required fields are set to support structured generation
 func (s ServiceCommonGeneratorV1) validate() error {
 	if len(s.Name) == 0 {
@@ -157,8 +191,13 @@ func (s ServiceCommonGeneratorV1) validate() error {
 	if s.ClusterIP == api.ClusterIPNone && len(s.TCP) > 0 {
 		return fmt.Errorf("can not map ports with clusterip=None")
 	}
-	if s.ClusterIP != api.ClusterIPNone && len(s.TCP) == 0 {
+	if s.ClusterIP != api.ClusterIPNone && len(s.TCP) == 0 && s.Type != api.ServiceTypeExternalName {
 		return fmt.Errorf("at least one tcp port specifier must be provided")
+	}
+	if s.Type == api.ServiceTypeExternalName {
+		if errs := validation.IsDNS1123Subdomain(s.ExternalName); len(errs) != 0 {
+			return fmt.Errorf("invalid service external name %s", s.ExternalName)
+		}
 	}
 	return nil
 }
@@ -174,12 +213,14 @@ func (s ServiceCommonGeneratorV1) StructuredGenerate() (runtime.Object, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		portName := strings.Replace(tcpString, ":", "-", -1)
 		ports = append(ports, api.ServicePort{
 			Name:       portName,
 			Port:       port,
 			TargetPort: targetPort,
 			Protocol:   api.Protocol("TCP"),
+			NodePort:   int32(s.NodePort),
 		})
 	}
 
@@ -195,9 +236,10 @@ func (s ServiceCommonGeneratorV1) StructuredGenerate() (runtime.Object, error) {
 			Labels: labels,
 		},
 		Spec: api.ServiceSpec{
-			Type:     api.ServiceType(s.Type),
-			Selector: selector,
-			Ports:    ports,
+			Type:         api.ServiceType(s.Type),
+			Selector:     selector,
+			Ports:        ports,
+			ExternalName: s.ExternalName,
 		},
 	}
 	if len(s.ClusterIP) > 0 {
