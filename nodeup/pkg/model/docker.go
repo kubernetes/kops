@@ -17,6 +17,8 @@ limitations under the License.
 package model
 
 import (
+	"fmt"
+	"github.com/blang/semver"
 	"github.com/golang/glog"
 	"k8s.io/kops/nodeup/pkg/model/resources"
 	"k8s.io/kops/upup/pkg/fi"
@@ -182,7 +184,7 @@ var dockerVersions = []dockerVersion{
 		Version:       "1.12.3",
 		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.12.3-1.el7.centos.x86_64.rpm",
 		Hash:          "67fbb78cfb9526aaf8142c067c10384df199d8f9",
-		Dependencies:  []string{"libtool-ltdl"},
+		Dependencies:  []string{"libtool-ltdl", "libseccomp"},
 	},
 	{
 		DockerVersion: "1.12.3",
@@ -268,5 +270,104 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
+	dockerSemver, err := semver.Parse(dockerVersion)
+	if err != nil {
+		return fmt.Errorf("error parsing docker version %q as semver: %v", dockerVersion, err)
+	}
+
+	c.AddTask(b.buildSystemdService(dockerSemver))
+
 	return nil
+}
+
+func (b *DockerBuilder) buildSystemdService(dockerVersion semver.Version) *nodetasks.Service {
+	oldDocker := dockerVersion.Major <= 1 && dockerVersion.Minor <= 11
+	usesDockerSocket := true
+	hasDockerBabysitter := false
+
+	var dockerdCommand string
+	if oldDocker {
+		dockerdCommand = "/usr/bin/docker dameon"
+	} else {
+		dockerdCommand = "/usr/bin/dockerd"
+	}
+
+	if b.Distribution.IsDebianFamily() {
+		hasDockerBabysitter = true
+	}
+
+	manifest := &ServiceManifest{}
+	manifest.Set("Unit", "Description", "Docker Application Container Engine")
+	manifest.Set("Unit", "Documentation", "https://docs.docker.com")
+
+	if usesDockerSocket {
+		manifest.Set("Unit", "After", "network.target docker.socket")
+		manifest.Set("Unit", "Requires", "docker.socket")
+	} else {
+		manifest.Set("Unit", "After", "network.target")
+	}
+
+	manifest.Set("Service", "Type", "notify")
+	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/docker")
+
+	if usesDockerSocket {
+		manifest.Set("Service", "ExecStart", dockerdCommand+" -H fd:// \"$DOCKER_OPTS\"")
+	} else {
+		manifest.Set("Service", "ExecStart", dockerdCommand+" \"$DOCKER_OPTS\"")
+	}
+
+	if !oldDocker {
+		// This was added by docker 1.12
+		// TODO: They seem sensible - should we backport them?
+
+		manifest.Set("Service", "ExecReload", "/bin/kill -s HUP $MAINPID")
+		// kill only the docker process, not all processes in the cgroup
+		manifest.Set("Service", "KillMode", "process")
+
+		manifest.Set("Service", "TimeoutStartSec", "0")
+	}
+
+	if oldDocker {
+		// Only in older versions of docker (< 1.12)
+		manifest.Set("Service", "MountFlags", "slave")
+	}
+
+	// Having non-zero Limit*s causes performance problems due to accounting overhead
+	// in the kernel. We recommend using cgroups to do container-local accounting.
+	// TODO: Should we set this? https://github.com/kubernetes/kubernetes/issues/39682
+	//service.Set("Service", "LimitNOFILE", "infinity")
+	//service.Set("Service", "LimitNPROC", "infinity")
+	//service.Set("Service", "LimitCORE", "infinity")
+	manifest.Set("Service", "LimitNOFILE", "1048576")
+	manifest.Set("Service", "LimitNPROC", "1048576")
+	manifest.Set("Service", "LimitCORE", "infinity")
+
+	//# Uncomment TasksMax if your systemd version supports it.
+	//# Only systemd 226 and above support this version.
+	//#TasksMax=infinity
+
+	manifest.Set("Service", "Restart", "always")
+	manifest.Set("Service", "RestartSec", "2s")
+	manifest.Set("Service", "StartLimitInterval", "0")
+
+	// set delegate yes so that systemd does not reset the cgroups of docker containers
+	manifest.Set("Service", "Delegate", "yes")
+
+	if hasDockerBabysitter {
+		manifest.Set("Service", "ExecStartPre", "/opt/kubernetes/helpers/docker-prestart")
+	}
+
+	manifest.Set("Install", "WantedBy", "multi-user.target")
+
+	manifestString := manifest.Render()
+	glog.V(8).Infof("Built service manifest %q\n%s", "docker", manifestString)
+
+	service := &nodetasks.Service{
+		Name:       "docker",
+		Definition: s(manifestString),
+	}
+
+	service.InitDefaults()
+
+	return service
 }
