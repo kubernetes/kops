@@ -469,8 +469,8 @@ func verifyPodStartupLatency(expect, actual framework.LatencyMetric) error {
 	if actual.Perc90 > expect.Perc90 {
 		return fmt.Errorf("too high pod startup latency 90th percentile: %v", actual.Perc90)
 	}
-	if actual.Perc99 > actual.Perc99 {
-		return fmt.Errorf("too high pod startup latency 99th percentil: %v", actual.Perc99)
+	if actual.Perc99 > expect.Perc99 {
+		return fmt.Errorf("too high pod startup latency 99th percentile: %v", actual.Perc99)
 	}
 	return nil
 }
@@ -495,11 +495,12 @@ func newInformerWatchPod(f *framework.Framework, mutex *sync.Mutex, watchTimes m
 		&cache.ListWatch{
 			ListFunc: func(options api.ListOptions) (runtime.Object, error) {
 				options.LabelSelector = labels.SelectorFromSet(labels.Set{"type": podType})
-				return f.Client.Pods(ns).List(options)
+				obj, err := f.ClientSet.Core().Pods(ns).List(options)
+				return runtime.Object(obj), err
 			},
 			WatchFunc: func(options api.ListOptions) (watch.Interface, error) {
 				options.LabelSelector = labels.SelectorFromSet(labels.Set{"type": podType})
-				return f.Client.Pods(ns).Watch(options)
+				return f.ClientSet.Core().Pods(ns).Watch(options)
 			},
 		},
 		&api.Pod{},

@@ -107,7 +107,7 @@ func (c *DeleteClusterCmd) Run(args []string) error {
 			return fmt.Errorf("cluster %q not found", clusterName)
 		}
 
-		if clusterName != cluster.Name {
+		if clusterName != cluster.ObjectMeta.Name {
 			return fmt.Errorf("sanity check failed: cluster name mismatch")
 		}
 

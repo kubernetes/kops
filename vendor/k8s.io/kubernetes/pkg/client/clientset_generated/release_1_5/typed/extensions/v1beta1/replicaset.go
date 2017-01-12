@@ -18,7 +18,9 @@ package v1beta1
 
 import (
 	api "k8s.io/kubernetes/pkg/api"
+	v1 "k8s.io/kubernetes/pkg/api/v1"
 	v1beta1 "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
+	restclient "k8s.io/kubernetes/pkg/client/restclient"
 	watch "k8s.io/kubernetes/pkg/watch"
 )
 
@@ -33,25 +35,25 @@ type ReplicaSetInterface interface {
 	Create(*v1beta1.ReplicaSet) (*v1beta1.ReplicaSet, error)
 	Update(*v1beta1.ReplicaSet) (*v1beta1.ReplicaSet, error)
 	UpdateStatus(*v1beta1.ReplicaSet) (*v1beta1.ReplicaSet, error)
-	Delete(name string, options *api.DeleteOptions) error
-	DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error
+	Delete(name string, options *v1.DeleteOptions) error
+	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
 	Get(name string) (*v1beta1.ReplicaSet, error)
-	List(opts api.ListOptions) (*v1beta1.ReplicaSetList, error)
-	Watch(opts api.ListOptions) (watch.Interface, error)
+	List(opts v1.ListOptions) (*v1beta1.ReplicaSetList, error)
+	Watch(opts v1.ListOptions) (watch.Interface, error)
 	Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1beta1.ReplicaSet, err error)
 	ReplicaSetExpansion
 }
 
 // replicaSets implements ReplicaSetInterface
 type replicaSets struct {
-	client *ExtensionsClient
+	client restclient.Interface
 	ns     string
 }
 
 // newReplicaSets returns a ReplicaSets
-func newReplicaSets(c *ExtensionsClient, namespace string) *replicaSets {
+func newReplicaSets(c *ExtensionsV1beta1Client, namespace string) *replicaSets {
 	return &replicaSets{
-		client: c,
+		client: c.RESTClient(),
 		ns:     namespace,
 	}
 }
@@ -95,7 +97,7 @@ func (c *replicaSets) UpdateStatus(replicaSet *v1beta1.ReplicaSet) (result *v1be
 }
 
 // Delete takes name of the replicaSet and deletes it. Returns an error if one occurs.
-func (c *replicaSets) Delete(name string, options *api.DeleteOptions) error {
+func (c *replicaSets) Delete(name string, options *v1.DeleteOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("replicasets").
@@ -106,7 +108,7 @@ func (c *replicaSets) Delete(name string, options *api.DeleteOptions) error {
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *replicaSets) DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error {
+func (c *replicaSets) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("replicasets").
@@ -129,7 +131,7 @@ func (c *replicaSets) Get(name string) (result *v1beta1.ReplicaSet, err error) {
 }
 
 // List takes label and field selectors, and returns the list of ReplicaSets that match those selectors.
-func (c *replicaSets) List(opts api.ListOptions) (result *v1beta1.ReplicaSetList, err error) {
+func (c *replicaSets) List(opts v1.ListOptions) (result *v1beta1.ReplicaSetList, err error) {
 	result = &v1beta1.ReplicaSetList{}
 	err = c.client.Get().
 		Namespace(c.ns).
@@ -141,7 +143,7 @@ func (c *replicaSets) List(opts api.ListOptions) (result *v1beta1.ReplicaSetList
 }
 
 // Watch returns a watch.Interface that watches the requested replicaSets.
-func (c *replicaSets) Watch(opts api.ListOptions) (watch.Interface, error) {
+func (c *replicaSets) Watch(opts v1.ListOptions) (watch.Interface, error) {
 	return c.client.Get().
 		Prefix("watch").
 		Namespace(c.ns).

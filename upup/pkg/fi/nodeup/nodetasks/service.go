@@ -45,7 +45,7 @@ const (
 type Service struct {
 	Name       string
 	Definition *string
-	Running    *bool
+	Running    *bool `json:"running"`
 
 	// Enabled configures the service to start at boot (or not start at boot)
 	Enabled *bool

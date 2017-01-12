@@ -26,10 +26,7 @@ import (
 	"io"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/v1alpha1"
-	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
-	"k8s.io/kubernetes/pkg/runtime/serializer/json"
 )
 
 type EditFederationOptions struct {
@@ -87,16 +84,10 @@ func RunEditFederation(f *util.Factory, cmd *cobra.Command, args []string, out i
 
 	ext := "yaml"
 
-	var b bytes.Buffer
-
-	yamlSerde := json.NewYAMLSerializer(json.DefaultMetaFactory, k8sapi.Scheme, k8sapi.Scheme)
-	encoder := k8sapi.Codecs.EncoderForVersion(yamlSerde, v1alpha1.SchemeGroupVersion)
-
-	if err := encoder.Encode(old, &b); err != nil {
-		return fmt.Errorf("error parsing Federation: %v", err)
+	raw, err := kopsapi.ToVersionedYaml(old)
+	if err != nil {
+		return err
 	}
-
-	raw := b.Bytes()
 
 	// launch the editor
 	edited, file, err := edit.LaunchTempFile(fmt.Sprintf("%s-edit-", filepath.Base(os.Args[0])), ext, bytes.NewReader(raw))
@@ -114,14 +105,16 @@ func RunEditFederation(f *util.Factory, cmd *cobra.Command, args []string, out i
 		return nil
 	}
 
-	codec := k8sapi.Codecs.UniversalDecoder(kopsapi.SchemeGroupVersion)
-
-	newObj, _, err := codec.Decode(edited, nil, nil)
+	newObj, _, err := kopsapi.ParseVersionedYaml(edited)
 	if err != nil {
-		return fmt.Errorf("error parsing: %v", err)
+		return fmt.Errorf("error parsing config: %v", err)
 	}
 
-	newFed := newObj.(*kopsapi.Federation)
+	newFed, ok := newObj.(*kopsapi.Federation)
+	if !ok {
+		return fmt.Errorf("object was not of expected type: %T", newObj)
+	}
+
 	err = newFed.Validate()
 	if err != nil {
 		return err

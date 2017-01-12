@@ -502,7 +502,8 @@
         "name":{"shape":"String"},
         "image":{"shape":"String"},
         "cpu":{"shape":"Integer"},
-        "memory":{"shape":"Integer"},
+        "memory":{"shape":"BoxedInteger"},
+        "memoryReservation":{"shape":"BoxedInteger"},
         "links":{"shape":"StringList"},
         "portMappings":{"shape":"PortMappingList"},
         "essential":{"shape":"BoxedBoolean"},
@@ -930,6 +931,7 @@
     "LoadBalancer":{
       "type":"structure",
       "members":{
+        "targetGroupArn":{"shape":"String"},
         "loadBalancerName":{"shape":"String"},
         "containerName":{"shape":"String"},
         "containerPort":{"shape":"BoxedInteger"}
@@ -960,7 +962,8 @@
         "journald",
         "gelf",
         "fluentd",
-        "awslogs"
+        "awslogs",
+        "splunk"
       ]
     },
     "Long":{"type":"long"},
@@ -995,6 +998,14 @@
       "type":"list",
       "member":{"shape":"NetworkBinding"}
     },
+    "NetworkMode":{
+      "type":"string",
+      "enum":[
+        "bridge",
+        "host",
+        "none"
+      ]
+    },
     "NoUpdateAvailableException":{
       "type":"structure",
       "members":{
@@ -1004,8 +1015,8 @@
     "PortMapping":{
       "type":"structure",
       "members":{
-        "containerPort":{"shape":"Integer"},
-        "hostPort":{"shape":"Integer"},
+        "containerPort":{"shape":"BoxedInteger"},
+        "hostPort":{"shape":"BoxedInteger"},
         "protocol":{"shape":"TransportProtocol"}
       }
     },
@@ -1040,6 +1051,7 @@
       "members":{
         "family":{"shape":"String"},
         "taskRoleArn":{"shape":"String"},
+        "networkMode":{"shape":"NetworkMode"},
         "containerDefinitions":{"shape":"ContainerDefinitions"},
         "volumes":{"shape":"VolumeList"}
       }
@@ -1248,6 +1260,7 @@
         "containerDefinitions":{"shape":"ContainerDefinitions"},
         "family":{"shape":"String"},
         "taskRoleArn":{"shape":"String"},
+        "networkMode":{"shape":"NetworkMode"},
         "revision":{"shape":"Integer"},
         "volumes":{"shape":"VolumeList"},
         "status":{"shape":"TaskDefinitionStatus"},

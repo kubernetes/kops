@@ -21,24 +21,43 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
+//go:generate fitask -type=LoadBalancerAttachment
 type LoadBalancerAttachment struct {
-	LoadBalancer     *LoadBalancer
-	AutoscalingGroup *AutoscalingGroup
-}
+	Name         *string
+	LoadBalancer *LoadBalancer
 
-func (e *LoadBalancerAttachment) String() string {
-	return fi.TaskAsString(e)
+	// LoadBalancerAttachments now support ASGs or direct instances
+	AutoscalingGroup *AutoscalingGroup
+	Subnet           *Subnet
+
+	// Here be dragons..
+	// This will *NOT* unmarshal.. for some reason this pointer is initiated as nil
+	// instead of a pointer to Instance with nil members..
+	Instance *Instance
 }
 
 func (e *LoadBalancerAttachment) Find(c *fi.Context) (*LoadBalancerAttachment, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
-	if e.AutoscalingGroup != nil {
+	// Instance only
+	if e.Instance != nil && e.AutoscalingGroup == nil {
+		i, err := e.Instance.Find(c)
+		if err != nil {
+			return nil, fmt.Errorf("unable to find instance: %v", err)
+		}
+		actual := &LoadBalancerAttachment{}
+		actual.LoadBalancer = e.LoadBalancer
+		actual.Instance = i
+		return actual, nil
+		// ASG only
+	} else if e.AutoscalingGroup != nil && e.Instance == nil {
 		g, err := findAutoscalingGroup(cloud, *e.AutoscalingGroup.Name)
 		if err != nil {
 			return nil, err
@@ -55,8 +74,15 @@ func (e *LoadBalancerAttachment) Find(c *fi.Context) (*LoadBalancerAttachment, e
 			actual := &LoadBalancerAttachment{}
 			actual.LoadBalancer = e.LoadBalancer
 			actual.AutoscalingGroup = e.AutoscalingGroup
+
+			// Prevent spurious changes
+			actual.Name = e.Name // ELB attachments don't have tags
+
 			return actual, nil
 		}
+	} else {
+		// Invalid request
+		return nil, fmt.Errorf("Must specify either an instance or an ASG")
 	}
 
 	return nil, nil
@@ -79,16 +105,58 @@ func (s *LoadBalancerAttachment) CheckChanges(a, e, changes *LoadBalancerAttachm
 }
 
 func (_ *LoadBalancerAttachment) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalancerAttachment) error {
-	request := &autoscaling.AttachLoadBalancersInput{}
-	request.AutoScalingGroupName = e.AutoscalingGroup.Name
-	request.LoadBalancerNames = []*string{e.LoadBalancer.ID}
+	if e.AutoscalingGroup != nil && e.Instance == nil {
+		request := &autoscaling.AttachLoadBalancersInput{}
+		request.AutoScalingGroupName = e.AutoscalingGroup.Name
+		request.LoadBalancerNames = []*string{e.LoadBalancer.ID}
+		glog.V(2).Infof("Attaching autoscaling group %q to ELB %q", *e.AutoscalingGroup.Name, *e.LoadBalancer.Name)
+		_, err := t.Cloud.Autoscaling().AttachLoadBalancers(request)
+		if err != nil {
+			return fmt.Errorf("error attaching autoscaling group to ELB: %v", err)
+		}
+	} else if e.AutoscalingGroup == nil && e.Instance != nil {
+		request := &elb.RegisterInstancesWithLoadBalancerInput{}
+		var instances []*elb.Instance
+		i := &elb.Instance{
+			InstanceId: e.Instance.ID,
+		}
+		instances = append(instances, i)
+		request.Instances = instances
+		_, err := t.Cloud.ELB().RegisterInstancesWithLoadBalancer(request)
+		glog.V(2).Infof("Attaching instance %q to ELB %q", *e.AutoscalingGroup.Name, *e.LoadBalancer.Name)
+		if err != nil {
+			return fmt.Errorf("error attaching instance to ELB: %v", err)
+		}
+	}
+	return nil
+}
 
-	glog.V(2).Infof("Attaching autoscaling group %q to ELB %q", *e.AutoscalingGroup.Name, *e.LoadBalancer.Name)
+type terraformLoadBalancerAttachment struct {
+	ELB              *terraform.Literal `json:"elb"`
+	Instance         *terraform.Literal `json:"instance,omitempty"`
+	AutoscalingGroup *terraform.Literal `json:"autoscaling_group_name,omitempty"`
+}
 
-	_, err := t.Cloud.Autoscaling().AttachLoadBalancers(request)
-	if err != nil {
-		return fmt.Errorf("error attaching autoscaling group to ELB: %v", err)
+func (_ *LoadBalancerAttachment) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LoadBalancerAttachment) error {
+	tf := &terraformLoadBalancerAttachment{
+		ELB: e.LoadBalancer.TerraformLink(),
 	}
 
+	if e.AutoscalingGroup != nil && e.Instance == nil {
+		tf.AutoscalingGroup = e.AutoscalingGroup.TerraformLink()
+		return t.RenderResource("aws_autoscaling_attachment", *e.AutoscalingGroup.Name, tf)
+	} else if e.AutoscalingGroup == nil && e.Instance != nil {
+		tf.Instance = e.Instance.TerraformLink()
+		return t.RenderResource("aws_elb_attachment", *e.LoadBalancer.Name, tf)
+	}
+	return nil
+}
+
+func (e *LoadBalancerAttachment) TerraformLink() *terraform.Literal {
+	if e.AutoscalingGroup != nil && e.Instance == nil {
+		return terraform.LiteralProperty("aws_autoscaling_attachment", *e.AutoscalingGroup.Name, "id")
+	} else if e.AutoscalingGroup == nil && e.Instance != nil {
+		return terraform.LiteralProperty("aws_elb_attachment", *e.LoadBalancer.Name, "id")
+	}
 	return nil
 }

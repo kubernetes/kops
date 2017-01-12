@@ -202,8 +202,7 @@ func newPlugin() *gcePersistentDiskPlugin {
 	host := volumetest.NewFakeVolumeHost(
 		"/tmp", /* rootDir */
 		nil,    /* kubeClient */
-		nil,    /* plugins */
-		"" /* rootContext */)
+		nil /* plugins */)
 	plugins := ProbeVolumePlugins()
 	plugin := plugins[0]
 	plugin.Init(host)
@@ -351,6 +350,10 @@ func (testcase *testcase) DiskIsAttached(diskName string, nodeName types.NodeNam
 	glog.V(4).Infof("DiskIsAttached call: %s, %s, returning %v, %v", diskName, nodeName, expected.isAttached, expected.ret)
 
 	return expected.isAttached, expected.ret
+}
+
+func (testcase *testcase) DisksAreAttached(diskNames []string, nodeName types.NodeName) (map[string]bool, error) {
+	return nil, errors.New("Not implemented")
 }
 
 func (testcase *testcase) CreateDisk(name string, diskType string, zone string, sizeGb int64, tags map[string]string) error {

@@ -220,9 +220,9 @@ func newTestKubeletWithImageList(
 	require.NoError(t, err, "Failed to initialize eviction manager")
 
 	kubelet.evictionManager = evictionManager
-	kubelet.AddPodAdmitHandler(evictionAdmitHandler)
+	kubelet.admitHandlers.AddPodAdmitHandler(evictionAdmitHandler)
 	// Add this as cleanup predicate pod admitter
-	kubelet.AddPodAdmitHandler(lifecycle.NewPredicateAdmitHandler(kubelet.getNodeAnyWay))
+	kubelet.admitHandlers.AddPodAdmitHandler(lifecycle.NewPredicateAdmitHandler(kubelet.getNodeAnyWay))
 
 	plug := &volumetest.FakeVolumePlugin{PluginName: "fake", Host: nil}
 	kubelet.volumePluginMgr, err =
@@ -239,7 +239,8 @@ func newTestKubeletWithImageList(
 		fakeRuntime,
 		kubelet.mounter,
 		kubelet.getPodsDir(),
-		kubelet.recorder)
+		kubelet.recorder,
+		false /* experimentalCheckNodeCapabilitiesBeforeMount*/)
 	require.NoError(t, err, "Failed to initialize volume manager")
 
 	// enable active deadline handler
@@ -705,7 +706,7 @@ func TestValidateContainerLogStatus(t *testing.T) {
 		podStatus := &api.PodStatus{ContainerStatuses: tc.statuses}
 		_, err := kubelet.validateContainerLogStatus("podName", podStatus, containerName, previous)
 		if !tc.success {
-			assert.Error(t, err, "[case %d] error", i)
+			assert.Error(t, err, fmt.Sprintf("[case %d] error", i))
 		} else {
 			assert.NoError(t, err, "[case %d] error", i)
 		}
@@ -713,13 +714,13 @@ func TestValidateContainerLogStatus(t *testing.T) {
 		previous = true
 		_, err = kubelet.validateContainerLogStatus("podName", podStatus, containerName, previous)
 		if !tc.pSuccess {
-			assert.Error(t, err, "[case %d] error", i)
+			assert.Error(t, err, fmt.Sprintf("[case %d] error", i))
 		} else {
 			assert.NoError(t, err, "[case %d] error", i)
 		}
 		// Access the log of a container that's not in the pod
 		_, err = kubelet.validateContainerLogStatus("podName", podStatus, "blah", false)
-		assert.Error(t, err, "[case %d] invalid container name should cause an error", i)
+		assert.Error(t, err, fmt.Sprintf("[case %d] invalid container name should cause an error", i))
 	}
 }
 
@@ -1052,6 +1053,48 @@ func TestPrivilegedContainerDisallowed(t *testing.T) {
 		updateType: kubetypes.SyncPodUpdate,
 	})
 	assert.Error(t, err, "expected pod infra creation to fail")
+}
+
+func TestNetworkErrorsWithoutHostNetwork(t *testing.T) {
+	testKubelet := newTestKubelet(t, false /* controllerAttachDetachEnabled */)
+	testKubelet.fakeCadvisor.On("VersionInfo").Return(&cadvisorapi.VersionInfo{}, nil)
+	testKubelet.fakeCadvisor.On("MachineInfo").Return(&cadvisorapi.MachineInfo{}, nil)
+	testKubelet.fakeCadvisor.On("ImagesFsInfo").Return(cadvisorapiv2.FsInfo{}, nil)
+	testKubelet.fakeCadvisor.On("RootFsInfo").Return(cadvisorapiv2.FsInfo{}, nil)
+	kubelet := testKubelet.kubelet
+
+	kubelet.runtimeState.setNetworkState(fmt.Errorf("simulated network error"))
+	capabilities.SetForTests(capabilities.Capabilities{
+		PrivilegedSources: capabilities.PrivilegedSources{
+			HostNetworkSources: []string{kubetypes.ApiserverSource, kubetypes.FileSource},
+		},
+	})
+
+	pod := podWithUidNameNsSpec("12345678", "hostnetwork", "new", api.PodSpec{
+		SecurityContext: &api.PodSecurityContext{
+			HostNetwork: false,
+		},
+		Containers: []api.Container{
+			{Name: "foo"},
+		},
+	})
+
+	kubelet.podManager.SetPods([]*api.Pod{pod})
+	err := kubelet.syncPod(syncPodOptions{
+		pod:        pod,
+		podStatus:  &kubecontainer.PodStatus{},
+		updateType: kubetypes.SyncPodUpdate,
+	})
+	assert.Error(t, err, "expected pod with hostNetwork=false to fail when network in error")
+
+	pod.Annotations[kubetypes.ConfigSourceAnnotationKey] = kubetypes.FileSource
+	pod.Spec.SecurityContext.HostNetwork = true
+	err = kubelet.syncPod(syncPodOptions{
+		pod:        pod,
+		podStatus:  &kubecontainer.PodStatus{},
+		updateType: kubetypes.SyncPodUpdate,
+	})
+	assert.NoError(t, err, "expected pod with hostNetwork=true to succeed when network in error")
 }
 
 func TestFilterOutTerminatedPods(t *testing.T) {
@@ -1823,7 +1866,7 @@ func TestHandlePodAdditionsInvokesPodAdmitHandlers(t *testing.T) {
 	podToAdmit := pods[1]
 	podsToReject := []*api.Pod{podToReject}
 
-	kl.AddPodAdmitHandler(&testPodAdmitHandler{podsToReject: podsToReject})
+	kl.admitHandlers.AddPodAdmitHandler(&testPodAdmitHandler{podsToReject: podsToReject})
 
 	kl.HandlePodAdditions(pods)
 	// Check pod status stored in the status map.

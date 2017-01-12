@@ -17,6 +17,8 @@ const opMeterUsage = "MeterUsage"
 // value can be used to capture response data after the request's "Send" method
 // is called.
 //
+// See MeterUsage for usage and error information.
+//
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
 // access properties on the request object before or after sending the request. If
@@ -51,8 +53,46 @@ func (c *MarketplaceMetering) MeterUsageRequest(input *MeterUsageInput) (req *re
 	return
 }
 
+// MeterUsage API operation for AWSMarketplace Metering.
+//
 // API to emit metering records. For identical requests, the API is idempotent.
 // It simply returns the metering record ID.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWSMarketplace Metering's
+// API operation MeterUsage for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServiceErrorException
+//   An internal error has occurred. Retry your request. If the problem persists,
+//   post a message with details on the AWS forums.
+//
+//   * InvalidProductCodeException
+//   The product code passed does not match the product code used for publishing
+//   the product.
+//
+//   * InvalidUsageDimensionException
+//   The usage dimension does not match one of the UsageDimensions associated
+//   with products.
+//
+//   * InvalidEndpointRegionException
+//   The endpoint being called is in a region different from your EC2 instance.
+//   The region of the Metering service endpoint and the region of the EC2 instance
+//   must match.
+//
+//   * TimestampOutOfBoundsException
+//   The timestamp value passed in the meterUsage() is out of allowed range.
+//
+//   * DuplicateRequestException
+//   A metering record has already been emitted by the same EC2 instance for the
+//   given {usageDimension, timestamp} with a different usageQuantity.
+//
+//   * ThrottlingException
+//   The calls to the MeterUsage API are throttled.
+//
 func (c *MarketplaceMetering) MeterUsage(input *MeterUsageInput) (*MeterUsageOutput, error) {
 	req, out := c.MeterUsageRequest(input)
 	err := req.Send()
@@ -65,22 +105,32 @@ type MeterUsageInput struct {
 	// Checks whether you have the permissions required for the action, but does
 	// not make the request. If you have the permissions, the request returns DryRunOperation;
 	// otherwise, it returns UnauthorizedException.
+	//
+	// DryRun is a required field
 	DryRun *bool `type:"boolean" required:"true"`
 
 	// Product code is used to uniquely identify a product in AWS Marketplace. The
 	// product code should be the same as the one used during the publishing of
 	// a new product.
+	//
+	// ProductCode is a required field
 	ProductCode *string `min:"1" type:"string" required:"true"`
 
 	// Timestamp of the hour, recorded in UTC. The seconds and milliseconds portions
 	// of the timestamp will be ignored.
+	//
+	// Timestamp is a required field
 	Timestamp *time.Time `type:"timestamp" timestampFormat:"unix" required:"true"`
 
 	// It will be one of the 'fcp dimension name' provided during the publishing
 	// of the product.
+	//
+	// UsageDimension is a required field
 	UsageDimension *string `min:"1" type:"string" required:"true"`
 
 	// Consumption value for the hour.
+	//
+	// UsageQuantity is a required field
 	UsageQuantity *int64 `type:"integer" required:"true"`
 }
 
@@ -125,6 +175,36 @@ func (s *MeterUsageInput) Validate() error {
 	return nil
 }
 
+// SetDryRun sets the DryRun field's value.
+func (s *MeterUsageInput) SetDryRun(v bool) *MeterUsageInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetProductCode sets the ProductCode field's value.
+func (s *MeterUsageInput) SetProductCode(v string) *MeterUsageInput {
+	s.ProductCode = &v
+	return s
+}
+
+// SetTimestamp sets the Timestamp field's value.
+func (s *MeterUsageInput) SetTimestamp(v time.Time) *MeterUsageInput {
+	s.Timestamp = &v
+	return s
+}
+
+// SetUsageDimension sets the UsageDimension field's value.
+func (s *MeterUsageInput) SetUsageDimension(v string) *MeterUsageInput {
+	s.UsageDimension = &v
+	return s
+}
+
+// SetUsageQuantity sets the UsageQuantity field's value.
+func (s *MeterUsageInput) SetUsageQuantity(v int64) *MeterUsageInput {
+	s.UsageQuantity = &v
+	return s
+}
+
 type MeterUsageOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -139,4 +219,10 @@ func (s MeterUsageOutput) String() string {
 // GoString returns the string representation
 func (s MeterUsageOutput) GoString() string {
 	return s.String()
+}
+
+// SetMeteringRecordId sets the MeteringRecordId field's value.
+func (s *MeterUsageOutput) SetMeteringRecordId(v string) *MeterUsageOutput {
+	s.MeteringRecordId = &v
+	return s
 }

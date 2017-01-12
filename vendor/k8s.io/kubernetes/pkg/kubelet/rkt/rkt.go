@@ -116,9 +116,11 @@ const (
 	defaultDNSOption = "ndots:5"
 
 	// Annotations for the ENTRYPOINT and CMD for an ACI that's converted from Docker image.
-	// TODO(yifan): Import them from docker2aci. See https://github.com/appc/docker2aci/issues/133.
-	appcDockerEntrypoint = "appc.io/docker/entrypoint"
-	appcDockerCmd        = "appc.io/docker/cmd"
+	// Taken from https://github.com/appc/docker2aci/blob/v0.12.3/lib/common/common.go#L33
+	appcDockerEntrypoint  = "appc.io/docker/entrypoint"
+	appcDockerCmd         = "appc.io/docker/cmd"
+	appcDockerRegistryURL = "appc.io/docker/registryurl"
+	appcDockerRepository  = "appc.io/docker/repository"
 
 	// TODO(yifan): Reuse this const with Docker runtime.
 	minimumGracePeriodInSeconds = 2
@@ -179,6 +181,7 @@ type Runtime struct {
 }
 
 var _ kubecontainer.Runtime = &Runtime{}
+var _ kubecontainer.DirectStreamingRuntime = &Runtime{}
 
 // TODO(yifan): This duplicates the podGetter in dockertools.
 type podGetter interface {
@@ -274,7 +277,8 @@ func New(
 		return nil, fmt.Errorf("rkt: cannot get config from rkt api service: %v", err)
 	}
 
-	rkt.runner = lifecycle.NewHandlerRunner(httpClient, rkt, rkt)
+	cmdRunner := kubecontainer.DirectStreamingRunner(rkt)
+	rkt.runner = lifecycle.NewHandlerRunner(httpClient, cmdRunner, rkt)
 
 	rkt.imagePuller = images.NewImageManager(recorder, rkt, imageBackOff, serializeImagePulls, imagePullQPS, imagePullBurst)
 
@@ -1080,7 +1084,7 @@ func (r *Runtime) preparePodArgs(manifest *appcschema.PodManifest, manifestFileN
 }
 
 func (r *Runtime) getSelinuxContext(opt *api.SELinuxOptions) (string, error) {
-	selinuxRunner := selinux.NewSelinuxContextRunner()
+	selinuxRunner := selinux.NewSELinuxRunner()
 	str, err := selinuxRunner.Getfilecon(r.config.Dir)
 	if err != nil {
 		return "", err
@@ -1697,8 +1701,8 @@ func (r *Runtime) APIVersion() (kubecontainer.Version, error) {
 }
 
 // Status returns error if rkt is unhealthy, nil otherwise.
-func (r *Runtime) Status() error {
-	return r.checkVersion(minimumRktBinVersion, minimumRktApiVersion, minimumSystemdVersion)
+func (r *Runtime) Status() (*kubecontainer.RuntimeStatus, error) {
+	return nil, r.checkVersion(minimumRktBinVersion, minimumRktApiVersion, minimumSystemdVersion)
 }
 
 // SyncPod syncs the running pod to match the specified desired pod.
@@ -2034,7 +2038,7 @@ func (r *Runtime) AttachContainer(containerID kubecontainer.ContainerID, stdin i
 // Note: In rkt, the container ID is in the form of "UUID:appName", where UUID is
 // the rkt UUID, and appName is the container name.
 // TODO(yifan): If the rkt is using lkvm as the stage1 image, then this function will fail.
-func (r *Runtime) ExecInContainer(containerID kubecontainer.ContainerID, cmd []string, stdin io.Reader, stdout, stderr io.WriteCloser, tty bool, resize <-chan term.Size) error {
+func (r *Runtime) ExecInContainer(containerID kubecontainer.ContainerID, cmd []string, stdin io.Reader, stdout, stderr io.WriteCloser, tty bool, resize <-chan term.Size, timeout time.Duration) error {
 	glog.V(4).Infof("Rkt execing in container.")
 
 	id, err := parseContainerID(containerID)
@@ -2175,6 +2179,12 @@ func (r *Runtime) PortForward(pod *kubecontainer.Pod, port uint16, stream io.Rea
 	}()
 
 	return command.Run()
+}
+
+// UpdatePodCIDR updates the runtimeconfig with the podCIDR.
+// Currently no-ops, just implemented to satisfy the cri.
+func (r *Runtime) UpdatePodCIDR(podCIDR string) error {
+	return nil
 }
 
 // appStateToContainerState converts rktapi.AppState to kubecontainer.ContainerState.

@@ -18,13 +18,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"io"
+	"os"
+	"strings"
+
+	"github.com/spf13/cobra"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/tables"
 	k8sapi "k8s.io/kubernetes/pkg/api"
-	"os"
-	"strings"
 )
 
 type GetFederationOptions struct {
@@ -68,12 +69,13 @@ func RunGetFederations(context Factory, out io.Writer, options *GetFederationOpt
 		fmt.Fprintf(out, "No federations found\n")
 		return nil
 	}
+	switch getCmd.output {
 
-	output := getCmd.output
-	if output == OutputTable {
+	case OutputTable:
+
 		t := &tables.Table{}
 		t.AddColumn("NAME", func(f *api.Federation) string {
-			return f.Name
+			return f.ObjectMeta.Name
 		})
 		t.AddColumn("CONTROLLERS", func(f *api.Federation) string {
 			return strings.Join(f.Spec.Controllers, ",")
@@ -82,19 +84,21 @@ func RunGetFederations(context Factory, out io.Writer, options *GetFederationOpt
 			return strings.Join(f.Spec.Members, ",")
 		})
 		return t.Render(federations, out, "NAME", "CONTROLLERS", "MEMBERS")
-	} else if output == OutputYaml {
+
+	case OutputYaml:
 		for _, f := range federations {
-			y, err := api.ToYaml(f)
-			if err != nil {
-				return fmt.Errorf("error marshaling yaml for %q: %v", f.Name, err)
-			}
-			_, err = out.Write(y)
-			if err != nil {
-				return fmt.Errorf("error writing to output: %v", err)
+			if err := marshalToWriter(f, marshalYaml, os.Stdout); err != nil {
+				return err
 			}
 		}
-		return nil
-	} else {
-		return fmt.Errorf("Unknown output format: %q", output)
+	case OutputJSON:
+		for _, f := range federations {
+			if err := marshalToWriter(f, marshalJSON, os.Stdout); err != nil {
+				return err
+			}
+		}
+	default:
+		return fmt.Errorf("Unknown output format: %q", getCmd.output)
 	}
+	return nil
 }

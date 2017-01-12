@@ -9,7 +9,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/awstesting"
+	"github.com/aws/aws-sdk-go/awstesting/mock"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,7 +17,7 @@ func TestRequestCancelRetry(t *testing.T) {
 	c := make(chan struct{})
 
 	reqNum := 0
-	s := awstesting.NewMockClient(aws.NewConfig().WithMaxRetries(10))
+	s := mock.NewMockClient(aws.NewConfig().WithMaxRetries(10))
 	s.Handlers.Validate.Clear()
 	s.Handlers.Unmarshal.Clear()
 	s.Handlers.UnmarshalMeta.Clear()

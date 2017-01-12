@@ -14,8 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// CAUTION: If you update code in this file, you may need to also update code
-//          in contrib/mesos/pkg/service/endpoints_controller.go
 package endpoint
 
 import (
@@ -59,9 +57,9 @@ const (
 
 	// An annotation on the Service denoting if the endpoints controller should
 	// go ahead and create endpoints for unready pods. This annotation is
-	// currently only used by PetSets, where we need the pet to be DNS
+	// currently only used by StatefulSets, where we need the pod to be DNS
 	// resolvable during initialization. In this situation we create a headless
-	// service just for the PetSet, and clients shouldn't be using this Service
+	// service just for the StatefulSet, and clients shouldn't be using this Service
 	// for anything so unready endpoints don't matter.
 	TolerateUnreadyEndpointsAnnotation = "service.alpha.kubernetes.io/tolerate-unready-endpoints"
 )
@@ -72,8 +70,8 @@ var (
 
 // NewEndpointController returns a new *EndpointController.
 func NewEndpointController(podInformer cache.SharedIndexInformer, client clientset.Interface) *EndpointController {
-	if client != nil && client.Core().GetRESTClient().GetRateLimiter() != nil {
-		metrics.RegisterMetricAndTrackRateLimiterUsage("endpoint_controller", client.Core().GetRESTClient().GetRateLimiter())
+	if client != nil && client.Core().RESTClient().GetRateLimiter() != nil {
+		metrics.RegisterMetricAndTrackRateLimiterUsage("endpoint_controller", client.Core().RESTClient().GetRateLimiter())
 	}
 	e := &EndpointController{
 		client: client,

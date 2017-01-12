@@ -17,13 +17,14 @@ limitations under the License.
 package kutil
 
 import (
+	"reflect"
+	"sort"
+	"testing"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"reflect"
-	"sort"
-	"testing"
 )
 
 func TestAddUntaggedRouteTables(t *testing.T) {

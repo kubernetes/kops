@@ -16,7 +16,13 @@ var _ time.Duration
 var _ bytes.Buffer
 
 func ExampleDataPipeline_ActivatePipeline() {
-	svc := datapipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := datapipeline.New(sess)
 
 	params := &datapipeline.ActivatePipelineInput{
 		PipelineId: aws.String("id"), // Required
@@ -43,7 +49,13 @@ func ExampleDataPipeline_ActivatePipeline() {
 }
 
 func ExampleDataPipeline_AddTags() {
-	svc := datapipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := datapipeline.New(sess)
 
 	params := &datapipeline.AddTagsInput{
 		PipelineId: aws.String("id"), // Required
@@ -69,7 +81,13 @@ func ExampleDataPipeline_AddTags() {
 }
 
 func ExampleDataPipeline_CreatePipeline() {
-	svc := datapipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := datapipeline.New(sess)
 
 	params := &datapipeline.CreatePipelineInput{
 		Name:        aws.String("id"), // Required
@@ -97,7 +115,13 @@ func ExampleDataPipeline_CreatePipeline() {
 }
 
 func ExampleDataPipeline_DeactivatePipeline() {
-	svc := datapipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := datapipeline.New(sess)
 
 	params := &datapipeline.DeactivatePipelineInput{
 		PipelineId:   aws.String("id"), // Required
@@ -117,7 +141,13 @@ func ExampleDataPipeline_DeactivatePipeline() {
 }
 
 func ExampleDataPipeline_DeletePipeline() {
-	svc := datapipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := datapipeline.New(sess)
 
 	params := &datapipeline.DeletePipelineInput{
 		PipelineId: aws.String("id"), // Required
@@ -136,7 +166,13 @@ func ExampleDataPipeline_DeletePipeline() {
 }
 
 func ExampleDataPipeline_DescribeObjects() {
-	svc := datapipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := datapipeline.New(sess)
 
 	params := &datapipeline.DescribeObjectsInput{
 		ObjectIds: []*string{ // Required
@@ -161,7 +197,13 @@ func ExampleDataPipeline_DescribeObjects() {
 }
 
 func ExampleDataPipeline_DescribePipelines() {
-	svc := datapipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := datapipeline.New(sess)
 
 	params := &datapipeline.DescribePipelinesInput{
 		PipelineIds: []*string{ // Required
@@ -183,7 +225,13 @@ func ExampleDataPipeline_DescribePipelines() {
 }
 
 func ExampleDataPipeline_EvaluateExpression() {
-	svc := datapipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := datapipeline.New(sess)
 
 	params := &datapipeline.EvaluateExpressionInput{
 		Expression: aws.String("longString"), // Required
@@ -204,7 +252,13 @@ func ExampleDataPipeline_EvaluateExpression() {
 }
 
 func ExampleDataPipeline_GetPipelineDefinition() {
-	svc := datapipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := datapipeline.New(sess)
 
 	params := &datapipeline.GetPipelineDefinitionInput{
 		PipelineId: aws.String("id"), // Required
@@ -224,7 +278,13 @@ func ExampleDataPipeline_GetPipelineDefinition() {
 }
 
 func ExampleDataPipeline_ListPipelines() {
-	svc := datapipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := datapipeline.New(sess)
 
 	params := &datapipeline.ListPipelinesInput{
 		Marker: aws.String("string"),
@@ -243,7 +303,13 @@ func ExampleDataPipeline_ListPipelines() {
 }
 
 func ExampleDataPipeline_PollForTask() {
-	svc := datapipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := datapipeline.New(sess)
 
 	params := &datapipeline.PollForTaskInput{
 		WorkerGroup: aws.String("string"), // Required
@@ -267,7 +333,13 @@ func ExampleDataPipeline_PollForTask() {
 }
 
 func ExampleDataPipeline_PutPipelineDefinition() {
-	svc := datapipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := datapipeline.New(sess)
 
 	params := &datapipeline.PutPipelineDefinitionInput{
 		PipelineId: aws.String("id"), // Required
@@ -321,7 +393,13 @@ func ExampleDataPipeline_PutPipelineDefinition() {
 }
 
 func ExampleDataPipeline_QueryObjects() {
-	svc := datapipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := datapipeline.New(sess)
 
 	params := &datapipeline.QueryObjectsInput{
 		PipelineId: aws.String("id"),     // Required
@@ -358,7 +436,13 @@ func ExampleDataPipeline_QueryObjects() {
 }
 
 func ExampleDataPipeline_RemoveTags() {
-	svc := datapipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := datapipeline.New(sess)
 
 	params := &datapipeline.RemoveTagsInput{
 		PipelineId: aws.String("id"), // Required
@@ -381,7 +465,13 @@ func ExampleDataPipeline_RemoveTags() {
 }
 
 func ExampleDataPipeline_ReportTaskProgress() {
-	svc := datapipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := datapipeline.New(sess)
 
 	params := &datapipeline.ReportTaskProgressInput{
 		TaskId: aws.String("taskId"), // Required
@@ -408,7 +498,13 @@ func ExampleDataPipeline_ReportTaskProgress() {
 }
 
 func ExampleDataPipeline_ReportTaskRunnerHeartbeat() {
-	svc := datapipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := datapipeline.New(sess)
 
 	params := &datapipeline.ReportTaskRunnerHeartbeatInput{
 		TaskrunnerId: aws.String("id"), // Required
@@ -429,7 +525,13 @@ func ExampleDataPipeline_ReportTaskRunnerHeartbeat() {
 }
 
 func ExampleDataPipeline_SetStatus() {
-	svc := datapipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := datapipeline.New(sess)
 
 	params := &datapipeline.SetStatusInput{
 		ObjectIds: []*string{ // Required
@@ -453,7 +555,13 @@ func ExampleDataPipeline_SetStatus() {
 }
 
 func ExampleDataPipeline_SetTaskStatus() {
-	svc := datapipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := datapipeline.New(sess)
 
 	params := &datapipeline.SetTaskStatusInput{
 		TaskId:          aws.String("taskId"),     // Required
@@ -476,7 +584,13 @@ func ExampleDataPipeline_SetTaskStatus() {
 }
 
 func ExampleDataPipeline_ValidatePipelineDefinition() {
-	svc := datapipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := datapipeline.New(sess)
 
 	params := &datapipeline.ValidatePipelineDefinitionInput{
 		PipelineId: aws.String("id"), // Required

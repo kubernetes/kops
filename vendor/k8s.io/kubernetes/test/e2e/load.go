@@ -29,14 +29,13 @@ import (
 
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	unversionedcore "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/core/unversioned"
 	"k8s.io/kubernetes/pkg/client/restclient"
 	"k8s.io/kubernetes/pkg/client/transport"
-	client "k8s.io/kubernetes/pkg/client/unversioned"
 	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/util/intstr"
 	utilnet "k8s.io/kubernetes/pkg/util/net"
 	"k8s.io/kubernetes/test/e2e/framework"
+	testutils "k8s.io/kubernetes/test/utils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -63,17 +62,16 @@ const (
 // To run this suite you must explicitly ask for it by setting the
 // -t/--test flag or ginkgo.focus flag.
 var _ = framework.KubeDescribe("Load capacity", func() {
-	var c *client.Client
+	var clientset internalclientset.Interface
 	var nodeCount int
 	var ns string
-	var configs []*framework.RCConfig
-	var namespaces []*api.Namespace
+	var configs []*testutils.RCConfig
 
 	// Gathers metrics before teardown
 	// TODO add flag that allows to skip cleanup on failure
 	AfterEach(func() {
 		// Verify latency metrics
-		highLatencyRequests, err := framework.HighLatencyRequests(c)
+		highLatencyRequests, err := framework.HighLatencyRequests(clientset)
 		framework.ExpectNoError(err, "Too many instances metrics above the threshold")
 		Expect(highLatencyRequests).NotTo(BeNumerically(">", 0))
 	})
@@ -98,25 +96,20 @@ var _ = framework.KubeDescribe("Load capacity", func() {
 	f.NamespaceDeletionTimeout = time.Hour
 
 	BeforeEach(func() {
-		c = f.Client
-
-		// In large clusters we may get to this point but still have a bunch
-		// of nodes without Routes created. Since this would make a node
-		// unschedulable, we need to wait until all of them are schedulable.
-		framework.ExpectNoError(framework.WaitForAllNodesSchedulable(c))
+		clientset = f.ClientSet
 
 		ns = f.Namespace.Name
-		nodes := framework.GetReadySchedulableNodesOrDie(c)
+		nodes := framework.GetReadySchedulableNodesOrDie(clientset)
 		nodeCount = len(nodes.Items)
 		Expect(nodeCount).NotTo(BeZero())
 
 		// Terminating a namespace (deleting the remaining objects from it - which
 		// generally means events) can affect the current run. Thus we wait for all
 		// terminating namespace to be finally deleted before starting this test.
-		err := framework.CheckTestingNSDeletedExcept(c, ns)
+		err := framework.CheckTestingNSDeletedExcept(clientset, ns)
 		framework.ExpectNoError(err)
 
-		framework.ExpectNoError(framework.ResetMetrics(c))
+		framework.ExpectNoError(framework.ResetMetrics(clientset))
 	})
 
 	type Load struct {
@@ -132,17 +125,18 @@ var _ = framework.KubeDescribe("Load capacity", func() {
 	}
 
 	for _, testArg := range loadTests {
-		name := fmt.Sprintf("should be able to handle %v pods per node", testArg.podsPerNode)
+		feature := "ManualPerformance"
 		if testArg.podsPerNode == 30 {
-			name = "[Feature:Performance] " + name
-		} else {
-			name = "[Feature:ManualPerformance] " + name
+			feature = "Performance"
 		}
+		name := fmt.Sprintf("[Feature:%s] should be able to handle %v pods per node", feature, testArg.podsPerNode)
 		itArg := testArg
 
 		It(name, func() {
 			// Create a number of namespaces.
-			namespaces = createNamespaces(f, nodeCount, itArg.podsPerNode)
+			namespaceCount := (nodeCount + nodeCountPerNamespace - 1) / nodeCountPerNamespace
+			namespaces, err := CreateNamespaces(f, namespaceCount, fmt.Sprintf("load-%v-nodepods", itArg.podsPerNode))
+			framework.ExpectNoError(err)
 
 			totalPods := itArg.podsPerNode * nodeCount
 			configs = generateRCConfigs(totalPods, itArg.image, itArg.command, namespaces)
@@ -153,7 +147,7 @@ var _ = framework.KubeDescribe("Load capacity", func() {
 				framework.Logf("Creating services")
 				services := generateServicesForConfigs(configs)
 				for _, service := range services {
-					_, err := c.Services(service.Namespace).Create(service)
+					_, err := clientset.Core().Services(service.Namespace).Create(service)
 					framework.ExpectNoError(err)
 				}
 				framework.Logf("%v Services created.", len(services))
@@ -203,7 +197,7 @@ var _ = framework.KubeDescribe("Load capacity", func() {
 			if createServices == "true" {
 				framework.Logf("Starting to delete services...")
 				for _, service := range services {
-					err := c.Services(ns).Delete(service.Name)
+					err := clientset.Core().Services(ns).Delete(service.Name, nil)
 					framework.ExpectNoError(err)
 				}
 				framework.Logf("Services deleted")
@@ -212,19 +206,8 @@ var _ = framework.KubeDescribe("Load capacity", func() {
 	}
 })
 
-func createNamespaces(f *framework.Framework, nodeCount, podsPerNode int) []*api.Namespace {
-	namespaceCount := (nodeCount + nodeCountPerNamespace - 1) / nodeCountPerNamespace
-	namespaces := []*api.Namespace{}
-	for i := 1; i <= namespaceCount; i++ {
-		namespace, err := f.CreateNamespace(fmt.Sprintf("load-%d-nodepods-%d", podsPerNode, i), nil)
-		framework.ExpectNoError(err)
-		namespaces = append(namespaces, namespace)
-	}
-	return namespaces
-}
-
-func createClients(numberOfClients int) ([]*client.Client, error) {
-	clients := make([]*client.Client, numberOfClients)
+func createClients(numberOfClients int) ([]*internalclientset.Clientset, error) {
+	clients := make([]*internalclientset.Clientset, numberOfClients)
 	for i := 0; i < numberOfClients; i++ {
 		config, err := framework.LoadConfig()
 		Expect(err).NotTo(HaveOccurred())
@@ -260,7 +243,7 @@ func createClients(numberOfClients int) ([]*client.Client, error) {
 		// Transport field.
 		config.TLSClientConfig = restclient.TLSClientConfig{}
 
-		c, err := client.New(config)
+		c, err := internalclientset.NewForConfig(config)
 		if err != nil {
 			return nil, err
 		}
@@ -283,8 +266,8 @@ func computeRCCounts(total int) (int, int, int) {
 	return smallRCCount, mediumRCCount, bigRCCount
 }
 
-func generateRCConfigs(totalPods int, image string, command []string, nss []*api.Namespace) []*framework.RCConfig {
-	configs := make([]*framework.RCConfig, 0)
+func generateRCConfigs(totalPods int, image string, command []string, nss []*api.Namespace) []*testutils.RCConfig {
+	configs := make([]*testutils.RCConfig, 0)
 
 	smallRCCount, mediumRCCount, bigRCCount := computeRCCounts(totalPods)
 	configs = append(configs, generateRCConfigsForGroup(nss, smallRCGroupName, smallRCSize, smallRCCount, image, command)...)
@@ -305,10 +288,10 @@ func generateRCConfigs(totalPods int, image string, command []string, nss []*api
 }
 
 func generateRCConfigsForGroup(
-	nss []*api.Namespace, groupName string, size, count int, image string, command []string) []*framework.RCConfig {
-	configs := make([]*framework.RCConfig, 0, count)
+	nss []*api.Namespace, groupName string, size, count int, image string, command []string) []*testutils.RCConfig {
+	configs := make([]*testutils.RCConfig, 0, count)
 	for i := 1; i <= count; i++ {
-		config := &framework.RCConfig{
+		config := &testutils.RCConfig{
 			Client:     nil, // this will be overwritten later
 			Name:       groupName + "-" + strconv.Itoa(i),
 			Namespace:  nss[i%len(nss)].Name,
@@ -324,7 +307,7 @@ func generateRCConfigsForGroup(
 	return configs
 }
 
-func generateServicesForConfigs(configs []*framework.RCConfig) []*api.Service {
+func generateServicesForConfigs(configs []*testutils.RCConfig) []*api.Service {
 	services := make([]*api.Service, 0, len(configs))
 	for _, config := range configs {
 		serviceName := config.Name + "-svc"
@@ -351,7 +334,7 @@ func sleepUpTo(d time.Duration) {
 	time.Sleep(time.Duration(rand.Int63n(d.Nanoseconds())))
 }
 
-func createAllRC(configs []*framework.RCConfig, creatingTime time.Duration) {
+func createAllRC(configs []*testutils.RCConfig, creatingTime time.Duration) {
 	var wg sync.WaitGroup
 	wg.Add(len(configs))
 	for _, config := range configs {
@@ -360,7 +343,7 @@ func createAllRC(configs []*framework.RCConfig, creatingTime time.Duration) {
 	wg.Wait()
 }
 
-func createRC(wg *sync.WaitGroup, config *framework.RCConfig, creatingTime time.Duration) {
+func createRC(wg *sync.WaitGroup, config *testutils.RCConfig, creatingTime time.Duration) {
 	defer GinkgoRecover()
 	defer wg.Done()
 
@@ -368,7 +351,7 @@ func createRC(wg *sync.WaitGroup, config *framework.RCConfig, creatingTime time.
 	framework.ExpectNoError(framework.RunRC(*config), fmt.Sprintf("creating rc %s", config.Name))
 }
 
-func scaleAllRC(configs []*framework.RCConfig, scalingTime time.Duration) {
+func scaleAllRC(configs []*testutils.RCConfig, scalingTime time.Duration) {
 	var wg sync.WaitGroup
 	wg.Add(len(configs))
 	for _, config := range configs {
@@ -379,24 +362,24 @@ func scaleAllRC(configs []*framework.RCConfig, scalingTime time.Duration) {
 
 // Scales RC to a random size within [0.5*size, 1.5*size] and lists all the pods afterwards.
 // Scaling happens always based on original size, not the current size.
-func scaleRC(wg *sync.WaitGroup, config *framework.RCConfig, scalingTime time.Duration) {
+func scaleRC(wg *sync.WaitGroup, config *testutils.RCConfig, scalingTime time.Duration) {
 	defer GinkgoRecover()
 	defer wg.Done()
 
 	sleepUpTo(scalingTime)
 	newSize := uint(rand.Intn(config.Replicas) + config.Replicas/2)
-	framework.ExpectNoError(framework.ScaleRC(config.Client, coreClientSetFromUnversioned(config.Client), config.Namespace, config.Name, newSize, true),
+	framework.ExpectNoError(framework.ScaleRC(config.Client, config.Namespace, config.Name, newSize, true),
 		fmt.Sprintf("scaling rc %s for the first time", config.Name))
 	selector := labels.SelectorFromSet(labels.Set(map[string]string{"name": config.Name}))
 	options := api.ListOptions{
 		LabelSelector:   selector,
 		ResourceVersion: "0",
 	}
-	_, err := config.Client.Pods(config.Namespace).List(options)
+	_, err := config.Client.Core().Pods(config.Namespace).List(options)
 	framework.ExpectNoError(err, fmt.Sprintf("listing pods from rc %v", config.Name))
 }
 
-func deleteAllRC(configs []*framework.RCConfig, deletingTime time.Duration) {
+func deleteAllRC(configs []*testutils.RCConfig, deletingTime time.Duration) {
 	var wg sync.WaitGroup
 	wg.Add(len(configs))
 	for _, config := range configs {
@@ -405,7 +388,7 @@ func deleteAllRC(configs []*framework.RCConfig, deletingTime time.Duration) {
 	wg.Wait()
 }
 
-func deleteRC(wg *sync.WaitGroup, config *framework.RCConfig, deletingTime time.Duration) {
+func deleteRC(wg *sync.WaitGroup, config *testutils.RCConfig, deletingTime time.Duration) {
 	defer GinkgoRecover()
 	defer wg.Done()
 
@@ -413,17 +396,18 @@ func deleteRC(wg *sync.WaitGroup, config *framework.RCConfig, deletingTime time.
 	if framework.TestContext.GarbageCollectorEnabled {
 		framework.ExpectNoError(framework.DeleteRCAndWaitForGC(config.Client, config.Namespace, config.Name), fmt.Sprintf("deleting rc %s", config.Name))
 	} else {
-		framework.ExpectNoError(framework.DeleteRCAndPods(config.Client, coreClientSetFromUnversioned(config.Client), config.Namespace, config.Name), fmt.Sprintf("deleting rc %s", config.Name))
+		framework.ExpectNoError(framework.DeleteRCAndPods(config.Client, config.Namespace, config.Name), fmt.Sprintf("deleting rc %s", config.Name))
 	}
 }
 
-// coreClientSetFromUnversioned adapts just enough of a a unversioned.Client to work with the scale RC function
-func coreClientSetFromUnversioned(c *client.Client) internalclientset.Interface {
-	var clientset internalclientset.Clientset
-	if c != nil {
-		clientset.CoreClient = unversionedcore.New(c.RESTClient)
-	} else {
-		clientset.CoreClient = unversionedcore.New(nil)
+func CreateNamespaces(f *framework.Framework, namespaceCount int, namePrefix string) ([]*api.Namespace, error) {
+	namespaces := []*api.Namespace{}
+	for i := 1; i <= namespaceCount; i++ {
+		namespace, err := f.CreateNamespace(fmt.Sprintf("%v-%d", namePrefix, i), nil)
+		if err != nil {
+			return []*api.Namespace{}, err
+		}
+		namespaces = append(namespaces, namespace)
 	}
-	return &clientset
+	return namespaces, nil
 }

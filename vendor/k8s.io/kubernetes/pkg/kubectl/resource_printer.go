@@ -30,8 +30,6 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/ghodss/yaml"
-	"github.com/golang/glog"
 	"k8s.io/kubernetes/federation/apis/federation"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/events"
@@ -42,13 +40,19 @@ import (
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/certificates"
 	"k8s.io/kubernetes/pkg/apis/extensions"
+	"k8s.io/kubernetes/pkg/apis/policy"
 	"k8s.io/kubernetes/pkg/apis/rbac"
 	"k8s.io/kubernetes/pkg/apis/storage"
+	storageutil "k8s.io/kubernetes/pkg/apis/storage/util"
 	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/runtime"
 	utilerrors "k8s.io/kubernetes/pkg/util/errors"
 	"k8s.io/kubernetes/pkg/util/jsonpath"
+	"k8s.io/kubernetes/pkg/util/node"
 	"k8s.io/kubernetes/pkg/util/sets"
+
+	"github.com/ghodss/yaml"
+	"github.com/golang/glog"
 )
 
 const (
@@ -238,8 +242,6 @@ func (p *NamePrinter) PrintObj(obj runtime.Object, w io.Writer) error {
 		return nil
 	}
 
-	// TODO: this is wrong, runtime.Unknown and runtime.Unstructured are not handled properly here.
-
 	name := "<unknown>"
 	if acc, err := meta.Accessor(obj); err == nil {
 		if n := acc.GetName(); len(n) > 0 {
@@ -247,12 +249,22 @@ func (p *NamePrinter) PrintObj(obj runtime.Object, w io.Writer) error {
 		}
 	}
 
-	if gvks, _, err := p.Typer.ObjectKinds(obj); err == nil {
-		// TODO: this is wrong, it assumes that meta knows about all Kinds - should take a RESTMapper
-		_, resource := meta.KindToResource(gvks[0])
-		fmt.Fprintf(w, "%s/%s\n", resource.Resource, name)
+	if kind := obj.GetObjectKind().GroupVersionKind(); len(kind.Kind) == 0 {
+		// this is the old code.  It's unnecessary on decoded external objects, but on internal objects
+		// you may have to do it.  Tests are definitely calling it with internals and I'm not sure who else
+		// is
+		if gvks, _, err := p.Typer.ObjectKinds(obj); err == nil {
+			// TODO: this is wrong, it assumes that meta knows about all Kinds - should take a RESTMapper
+			_, resource := meta.KindToResource(gvks[0])
+			fmt.Fprintf(w, "%s/%s\n", resource.Resource, name)
+		} else {
+			fmt.Fprintf(w, "<unknown>/%s\n", name)
+		}
+
 	} else {
-		fmt.Fprintf(w, "<unknown>/%s\n", name)
+		// TODO: this is wrong, it assumes that meta knows about all Kinds - should take a RESTMapper
+		_, resource := meta.KindToResource(kind)
+		fmt.Fprintf(w, "%s/%s\n", resource.Resource, name)
 	}
 
 	return nil
@@ -463,16 +475,17 @@ func (h *HumanReadablePrinter) AfterPrint(output io.Writer, res string) error {
 var (
 	podColumns                   = []string{"NAME", "READY", "STATUS", "RESTARTS", "AGE"}
 	podTemplateColumns           = []string{"TEMPLATE", "CONTAINER(S)", "IMAGE(S)", "PODLABELS"}
+	podDisruptionBudgetColumns   = []string{"NAME", "MIN-AVAILABLE", "ALLOWED-DISRUPTIONS", "AGE"}
 	replicationControllerColumns = []string{"NAME", "DESIRED", "CURRENT", "READY", "AGE"}
 	replicaSetColumns            = []string{"NAME", "DESIRED", "CURRENT", "READY", "AGE"}
 	jobColumns                   = []string{"NAME", "DESIRED", "SUCCESSFUL", "AGE"}
-	scheduledJobColumns          = []string{"NAME", "SCHEDULE", "SUSPEND", "ACTIVE", "LAST-SCHEDULE"}
+	cronJobColumns               = []string{"NAME", "SCHEDULE", "SUSPEND", "ACTIVE", "LAST-SCHEDULE"}
 	serviceColumns               = []string{"NAME", "CLUSTER-IP", "EXTERNAL-IP", "PORT(S)", "AGE"}
 	ingressColumns               = []string{"NAME", "HOSTS", "ADDRESS", "PORTS", "AGE"}
-	petSetColumns                = []string{"NAME", "DESIRED", "CURRENT", "AGE"}
+	statefulSetColumns           = []string{"NAME", "DESIRED", "CURRENT", "AGE"}
 	endpointColumns              = []string{"NAME", "ENDPOINTS", "AGE"}
 	nodeColumns                  = []string{"NAME", "STATUS", "AGE"}
-	daemonSetColumns             = []string{"NAME", "DESIRED", "CURRENT", "NODE-SELECTOR", "AGE"}
+	daemonSetColumns             = []string{"NAME", "DESIRED", "CURRENT", "READY", "NODE-SELECTOR", "AGE"}
 	eventColumns                 = []string{"LASTSEEN", "FIRSTSEEN", "COUNT", "NAME", "KIND", "SUBOBJECT", "TYPE", "REASON", "SOURCE", "MESSAGE"}
 	limitRangeColumns            = []string{"NAME", "AGE"}
 	resourceQuotaColumns         = []string{"NAME", "AGE"}
@@ -488,6 +501,7 @@ var (
 	clusterRoleColumns           = []string{"NAME", "AGE"}
 	clusterRoleBindingColumns    = []string{"NAME", "AGE"}
 	storageClassColumns          = []string{"NAME", "TYPE"}
+	statusColumns                = []string{"STATUS", "REASON", "MESSAGE"}
 
 	// TODO: consider having 'KIND' for third party resource data
 	thirdPartyResourceDataColumns    = []string{"NAME", "LABELS", "DATA"}
@@ -524,6 +538,8 @@ func (h *HumanReadablePrinter) addDefaultHandlers() {
 	h.Handler(podColumns, h.printPod)
 	h.Handler(podTemplateColumns, printPodTemplate)
 	h.Handler(podTemplateColumns, printPodTemplateList)
+	h.Handler(podDisruptionBudgetColumns, printPodDisruptionBudget)
+	h.Handler(podDisruptionBudgetColumns, printPodDisruptionBudgetList)
 	h.Handler(replicationControllerColumns, printReplicationController)
 	h.Handler(replicationControllerColumns, printReplicationControllerList)
 	h.Handler(replicaSetColumns, printReplicaSet)
@@ -532,14 +548,14 @@ func (h *HumanReadablePrinter) addDefaultHandlers() {
 	h.Handler(daemonSetColumns, printDaemonSetList)
 	h.Handler(jobColumns, printJob)
 	h.Handler(jobColumns, printJobList)
-	h.Handler(scheduledJobColumns, printScheduledJob)
-	h.Handler(scheduledJobColumns, printScheduledJobList)
+	h.Handler(cronJobColumns, printCronJob)
+	h.Handler(cronJobColumns, printCronJobList)
 	h.Handler(serviceColumns, printService)
 	h.Handler(serviceColumns, printServiceList)
 	h.Handler(ingressColumns, printIngress)
 	h.Handler(ingressColumns, printIngressList)
-	h.Handler(petSetColumns, printPetSet)
-	h.Handler(petSetColumns, printPetSetList)
+	h.Handler(statefulSetColumns, printStatefulSet)
+	h.Handler(statefulSetColumns, printStatefulSetList)
 	h.Handler(endpointColumns, printEndpoints)
 	h.Handler(endpointColumns, printEndpointsList)
 	h.Handler(nodeColumns, printNode)
@@ -590,6 +606,7 @@ func (h *HumanReadablePrinter) addDefaultHandlers() {
 	h.Handler(certificateSigningRequestColumns, printCertificateSigningRequestList)
 	h.Handler(storageClassColumns, printStorageClass)
 	h.Handler(storageClassColumns, printStorageClassList)
+	h.Handler(statusColumns, printStatus)
 }
 
 func (h *HumanReadablePrinter) unknown(data []byte, w io.Writer) error {
@@ -728,7 +745,10 @@ func printPodBase(pod *api.Pod, w io.Writer, options PrintOptions) error {
 			}
 		}
 	}
-	if pod.DeletionTimestamp != nil {
+
+	if pod.DeletionTimestamp != nil && pod.Status.Reason == node.NodeUnreachablePodReason {
+		reason = "Unknown"
+	} else if pod.DeletionTimestamp != nil {
 		reason = "Terminating"
 	}
 
@@ -806,6 +826,37 @@ func printPodTemplate(pod *api.PodTemplate, w io.Writer, options PrintOptions) e
 func printPodTemplateList(podList *api.PodTemplateList, w io.Writer, options PrintOptions) error {
 	for _, pod := range podList.Items {
 		if err := printPodTemplate(&pod, w, options); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func printPodDisruptionBudget(pdb *policy.PodDisruptionBudget, w io.Writer, options PrintOptions) error {
+	// name, minavailable, selector
+	name := formatResourceName(options.Kind, pdb.Name, options.WithKind)
+	namespace := pdb.Namespace
+
+	if options.WithNamespace {
+		if _, err := fmt.Fprintf(w, "%s\t", namespace); err != nil {
+			return err
+		}
+	}
+	if _, err := fmt.Fprintf(w, "%s\t%s\t%d\t%s\n",
+		name,
+		pdb.Spec.MinAvailable.String(),
+		pdb.Status.PodDisruptionsAllowed,
+		translateTimestamp(pdb.CreationTimestamp),
+	); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func printPodDisruptionBudgetList(pdbList *policy.PodDisruptionBudgetList, w io.Writer, options PrintOptions) error {
+	for _, pdb := range pdbList.Items {
+		if err := printPodDisruptionBudget(&pdb, w, options); err != nil {
 			return err
 		}
 	}
@@ -1012,9 +1063,9 @@ func printJobList(list *batch.JobList, w io.Writer, options PrintOptions) error 
 	return nil
 }
 
-func printScheduledJob(scheduledJob *batch.ScheduledJob, w io.Writer, options PrintOptions) error {
-	name := scheduledJob.Name
-	namespace := scheduledJob.Namespace
+func printCronJob(cronJob *batch.CronJob, w io.Writer, options PrintOptions) error {
+	name := cronJob.Name
+	namespace := cronJob.Namespace
 
 	if options.WithNamespace {
 		if _, err := fmt.Fprintf(w, "%s\t", namespace); err != nil {
@@ -1023,14 +1074,14 @@ func printScheduledJob(scheduledJob *batch.ScheduledJob, w io.Writer, options Pr
 	}
 
 	lastScheduleTime := "<none>"
-	if scheduledJob.Status.LastScheduleTime != nil {
-		lastScheduleTime = scheduledJob.Status.LastScheduleTime.Time.Format(time.RFC1123Z)
+	if cronJob.Status.LastScheduleTime != nil {
+		lastScheduleTime = cronJob.Status.LastScheduleTime.Time.Format(time.RFC1123Z)
 	}
 	if _, err := fmt.Fprintf(w, "%s\t%s\t%s\t%d\t%s\n",
 		name,
-		scheduledJob.Spec.Schedule,
-		printBoolPtr(scheduledJob.Spec.Suspend),
-		len(scheduledJob.Status.Active),
+		cronJob.Spec.Schedule,
+		printBoolPtr(cronJob.Spec.Suspend),
+		len(cronJob.Status.Active),
 		lastScheduleTime,
 	); err != nil {
 		return err
@@ -1039,9 +1090,9 @@ func printScheduledJob(scheduledJob *batch.ScheduledJob, w io.Writer, options Pr
 	return nil
 }
 
-func printScheduledJobList(list *batch.ScheduledJobList, w io.Writer, options PrintOptions) error {
-	for _, scheduledJob := range list.Items {
-		if err := printScheduledJob(&scheduledJob, w, options); err != nil {
+func printCronJobList(list *batch.CronJobList, w io.Writer, options PrintOptions) error {
+	for _, cronJob := range list.Items {
+		if err := printCronJob(&cronJob, w, options); err != nil {
 			return err
 		}
 	}
@@ -1100,6 +1151,9 @@ func makePortString(ports []api.ServicePort) string {
 	for ix := range ports {
 		port := &ports[ix]
 		pieces[ix] = fmt.Sprintf("%d/%s", port.Port, port.Protocol)
+		if port.NodePort > 0 {
+			pieces[ix] = fmt.Sprintf("%d:%d/%s", port.Port, port.NodePort, port.Protocol)
+		}
 	}
 	return strings.Join(pieces, ",")
 }
@@ -1223,7 +1277,7 @@ func printIngressList(ingressList *extensions.IngressList, w io.Writer, options 
 	return nil
 }
 
-func printPetSet(ps *apps.PetSet, w io.Writer, options PrintOptions) error {
+func printStatefulSet(ps *apps.StatefulSet, w io.Writer, options PrintOptions) error {
 	name := formatResourceName(options.Kind, ps.Name, options.WithKind)
 
 	namespace := ps.Namespace
@@ -1262,9 +1316,9 @@ func printPetSet(ps *apps.PetSet, w io.Writer, options PrintOptions) error {
 	return nil
 }
 
-func printPetSetList(petSetList *apps.PetSetList, w io.Writer, options PrintOptions) error {
-	for _, ps := range petSetList.Items {
-		if err := printPetSet(&ps, w, options); err != nil {
+func printStatefulSetList(statefulSetList *apps.StatefulSetList, w io.Writer, options PrintOptions) error {
+	for _, ps := range statefulSetList.Items {
+		if err := printStatefulSet(&ps, w, options); err != nil {
 			return err
 		}
 	}
@@ -1286,15 +1340,17 @@ func printDaemonSet(ds *extensions.DaemonSet, w io.Writer, options PrintOptions)
 
 	desiredScheduled := ds.Status.DesiredNumberScheduled
 	currentScheduled := ds.Status.CurrentNumberScheduled
+	numberReady := ds.Status.NumberReady
 	selector, err := unversioned.LabelSelectorAsSelector(ds.Spec.Selector)
 	if err != nil {
 		// this shouldn't happen if LabelSelector passed validation
 		return err
 	}
-	if _, err := fmt.Fprintf(w, "%s\t%d\t%d\t%s\t%s",
+	if _, err := fmt.Fprintf(w, "%s\t%d\t%d\t%d\t%s\t%s",
 		name,
 		desiredScheduled,
 		currentScheduled,
+		numberReady,
 		labels.FormatLabels(ds.Spec.Template.Spec.NodeSelector),
 		translateTimestamp(ds.CreationTimestamp),
 	); err != nil {
@@ -1470,9 +1526,19 @@ func printNode(node *api.Node, w io.Writer, options PrintOptions) error {
 	if node.Spec.Unschedulable {
 		status = append(status, "SchedulingDisabled")
 	}
+	role := findNodeRole(node)
+	if role != "" {
+		status = append(status, role)
+	}
 
 	if _, err := fmt.Fprintf(w, "%s\t%s\t%s", name, strings.Join(status, ","), translateTimestamp(node.CreationTimestamp)); err != nil {
 		return err
+	}
+
+	if options.Wide {
+		if _, err := fmt.Fprintf(w, "\t%s", getNodeExternalIP(node)); err != nil {
+			return err
+		}
 	}
 	// Display caller specify column labels first.
 	if _, err := fmt.Fprint(w, AppendLabels(node.Labels, options.ColumnLabels)); err != nil {
@@ -1480,6 +1546,33 @@ func printNode(node *api.Node, w io.Writer, options PrintOptions) error {
 	}
 	_, err := fmt.Fprint(w, AppendAllLabels(options.ShowLabels, node.Labels))
 	return err
+}
+
+// Returns first external ip of the node or "<none>" if none is found.
+func getNodeExternalIP(node *api.Node) string {
+	for _, address := range node.Status.Addresses {
+		if address.Type == api.NodeExternalIP {
+			return address.Address
+		}
+	}
+
+	return "<none>"
+}
+
+// findNodeRole returns the role of a given node, or "" if none found.
+// The role is determined by looking in order for:
+// * a kubernetes.io/role label
+// * a kubeadm.alpha.kubernetes.io/role label
+// If no role is found, ("", nil) is returned
+func findNodeRole(node *api.Node) string {
+	if role := node.Labels[unversioned.NodeLabelRole]; role != "" {
+		return role
+	}
+	if role := node.Labels[unversioned.NodeLabelKubeadmAlphaRole]; role != "" {
+		return role
+	}
+	// No role found
+	return ""
 }
 
 func printNodeList(list *api.NodeList, w io.Writer, options PrintOptions) error {
@@ -2063,6 +2156,10 @@ func printNetworkPolicyList(list *extensions.NetworkPolicyList, w io.Writer, opt
 
 func printStorageClass(sc *storage.StorageClass, w io.Writer, options PrintOptions) error {
 	name := sc.Name
+
+	if storageutil.IsDefaultAnnotation(sc.ObjectMeta) {
+		name += " (default)"
+	}
 	provtype := sc.Provisioner
 
 	if _, err := fmt.Fprintf(w, "%s\t%s\t", name, provtype); err != nil {
@@ -2084,6 +2181,14 @@ func printStorageClassList(scList *storage.StorageClassList, w io.Writer, option
 			return err
 		}
 	}
+	return nil
+}
+
+func printStatus(status *unversioned.Status, w io.Writer, options PrintOptions) error {
+	if _, err := fmt.Fprintf(w, "%s\t%s\t%s\n", status.Status, status.Reason, status.Message); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -2179,6 +2284,9 @@ func formatWideHeaders(wide bool, t reflect.Type) []string {
 		if t.String() == "*extensions.ReplicaSet" || t.String() == "*extensions.ReplicaSetList" {
 			return []string{"CONTAINER(S)", "IMAGE(S)", "SELECTOR"}
 		}
+		if t.String() == "*api.Node" || t.String() == "*api.NodeList" {
+			return []string{"EXTERNAL-IP"}
+		}
 	}
 	return nil
 }
@@ -2206,6 +2314,18 @@ func (h *HumanReadablePrinter) PrintObj(obj runtime.Object, output io.Writer) er
 		w = GetNewTabWriter(output)
 		defer w.Flush()
 	}
+
+	// check if the object is unstructured.  If so, let's attempt to convert it to a type we can understand before
+	// trying to print, since the printers are keyed by type.  This is extremely expensive.
+	switch obj.(type) {
+	case *runtime.UnstructuredList, *runtime.Unstructured, *runtime.Unknown:
+		if objBytes, err := runtime.Encode(api.Codecs.LegacyCodec(), obj); err == nil {
+			if decodedObj, err := runtime.Decode(api.Codecs.UniversalDecoder(), objBytes); err == nil {
+				obj = decodedObj
+			}
+		}
+	}
+
 	t := reflect.TypeOf(obj)
 	if handler := h.handlerMap[t]; handler != nil {
 		if !h.options.NoHeaders && t != h.lastType {
@@ -2226,7 +2346,76 @@ func (h *HumanReadablePrinter) PrintObj(obj runtime.Object, output io.Writer) er
 		}
 		return resultValue.Interface().(error)
 	}
+
+	// we don't recognize this type, but we can still attempt to print some reasonable information about.
+	unstructured, ok := obj.(*runtime.Unstructured)
+	if !ok {
+		return fmt.Errorf("error: unknown type %#v", obj)
+	}
+
+	if _, err := meta.Accessor(obj); err == nil {
+		if !h.options.NoHeaders && t != h.lastType {
+			headers := []string{"NAME", "KIND"}
+			headers = append(headers, formatLabelHeaders(h.options.ColumnLabels)...)
+			// LABELS is always the last column.
+			headers = append(headers, formatShowLabelsHeader(h.options.ShowLabels, t)...)
+			if h.options.WithNamespace {
+				headers = append(withNamespacePrefixColumns, headers...)
+			}
+			h.printHeader(headers, w)
+			h.lastType = t
+		}
+		// if the error isn't nil, report the "I don't recognize this" error
+		if err := printUnstructured(unstructured, w, h.options); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	// we failed all reasonable printing efforts, report failure
 	return fmt.Errorf("error: unknown type %#v", obj)
+}
+
+func printUnstructured(unstructured *runtime.Unstructured, w io.Writer, options PrintOptions) error {
+	metadata, err := meta.Accessor(unstructured)
+	if err != nil {
+		return err
+	}
+
+	if options.WithNamespace {
+		if _, err := fmt.Fprintf(w, "%s\t", metadata.GetNamespace()); err != nil {
+			return err
+		}
+	}
+
+	kind := "<missing>"
+	if objKind, ok := unstructured.Object["kind"]; ok {
+		if str, ok := objKind.(string); ok {
+			kind = str
+		}
+	}
+	if objAPIVersion, ok := unstructured.Object["apiVersion"]; ok {
+		if str, ok := objAPIVersion.(string); ok {
+			version, err := unversioned.ParseGroupVersion(str)
+			if err != nil {
+				return err
+			}
+			kind = kind + "." + version.Version + "." + version.Group
+		}
+	}
+	name := formatResourceName(options.Kind, metadata.GetName(), options.WithKind)
+
+	if _, err := fmt.Fprintf(w, "%s\t%s", name, kind); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprint(w, AppendLabels(metadata.GetLabels(), options.ColumnLabels)); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprint(w, AppendAllLabels(options.ShowLabels, metadata.GetLabels())); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // TemplatePrinter is an implementation of ResourcePrinter which formats data with a Go Template.
@@ -2254,10 +2443,18 @@ func (p *TemplatePrinter) AfterPrint(w io.Writer, res string) error {
 
 // PrintObj formats the obj with the Go Template.
 func (p *TemplatePrinter) PrintObj(obj runtime.Object, w io.Writer) error {
-	data, err := json.Marshal(obj)
+	var data []byte
+	var err error
+	if unstructured, ok := obj.(*runtime.Unstructured); ok {
+		data, err = json.Marshal(unstructured.Object)
+	} else {
+		data, err = json.Marshal(obj)
+
+	}
 	if err != nil {
 		return err
 	}
+
 	out := map[string]interface{}{}
 	if err := json.Unmarshal(data, &out); err != nil {
 		return err
@@ -2415,6 +2612,20 @@ func (j *JSONPathPrinter) PrintObj(obj runtime.Object, w io.Writer) error {
 		if err := json.Unmarshal(data, &queryObj); err != nil {
 			return err
 		}
+	}
+
+	if unknown, ok := obj.(*runtime.Unknown); ok {
+		data, err := json.Marshal(unknown)
+		if err != nil {
+			return err
+		}
+		queryObj = map[string]interface{}{}
+		if err := json.Unmarshal(data, &queryObj); err != nil {
+			return err
+		}
+	}
+	if unstructured, ok := obj.(*runtime.Unstructured); ok {
+		queryObj = unstructured.Object
 	}
 
 	if err := j.JSONPath.Execute(w, queryObj); err != nil {

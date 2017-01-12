@@ -20,10 +20,9 @@ import (
 	"strconv"
 	"time"
 
-	clientapi "k8s.io/client-go/1.5/pkg/api"
-	clientv1 "k8s.io/client-go/1.5/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/api"
+	clientv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/pkg/apis/batch/v2alpha1"
 	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/util/intstr"
@@ -87,14 +86,14 @@ func testingPod(name, value string) v1.Pod {
 	}
 }
 
-func observePodCreation(w watch.Interface) {
+func observeCreation(w watch.Interface) {
 	select {
 	case event, _ := <-w.ResultChan():
 		if event.Type != watch.Added {
-			framework.Failf("Failed to observe pod creation: %v", event)
+			framework.Failf("Failed to observe the creation: %v", event)
 		}
-	case <-time.After(framework.PodStartTimeout):
-		framework.Failf("Timeout while waiting for pod creation")
+	case <-time.After(30 * time.Second):
+		framework.Failf("Timeout while waiting for observing the creation")
 	}
 }
 
@@ -129,14 +128,14 @@ var _ = framework.KubeDescribe("Generated release_1_5 clientset", func() {
 		podCopy := testingPod(name, value)
 		pod := &podCopy
 		By("setting up watch")
-		selector := labels.SelectorFromSet(labels.Set(map[string]string{"time": value}))
-		options := api.ListOptions{LabelSelector: selector}
+		selector := labels.SelectorFromSet(labels.Set(map[string]string{"time": value})).String()
+		options := v1.ListOptions{LabelSelector: selector}
 		pods, err := podClient.List(options)
 		if err != nil {
 			framework.Failf("Failed to query for pods: %v", err)
 		}
 		Expect(len(pods.Items)).To(Equal(0))
-		options = api.ListOptions{
+		options = v1.ListOptions{
 			LabelSelector:   selector,
 			ResourceVersion: pods.ListMeta.ResourceVersion,
 		}
@@ -150,13 +149,9 @@ var _ = framework.KubeDescribe("Generated release_1_5 clientset", func() {
 		if err != nil {
 			framework.Failf("Failed to create pod: %v", err)
 		}
-		// We call defer here in case there is a problem with
-		// the test so we can ensure that we clean up after
-		// ourselves
-		defer podClient.Delete(pod.Name, api.NewDeleteOptions(0))
 
 		By("verifying the pod is in kubernetes")
-		options = api.ListOptions{
+		options = v1.ListOptions{
 			LabelSelector:   selector,
 			ResourceVersion: pod.ResourceVersion,
 		}
@@ -167,14 +162,14 @@ var _ = framework.KubeDescribe("Generated release_1_5 clientset", func() {
 		Expect(len(pods.Items)).To(Equal(1))
 
 		By("verifying pod creation was observed")
-		observePodCreation(w)
+		observeCreation(w)
 
 		// We need to wait for the pod to be scheduled, otherwise the deletion
 		// will be carried out immediately rather than gracefully.
 		framework.ExpectNoError(f.WaitForPodRunning(pod.Name))
 
 		By("deleting the pod gracefully")
-		if err := podClient.Delete(pod.Name, api.NewDeleteOptions(30)); err != nil {
+		if err := podClient.Delete(pod.Name, v1.NewDeleteOptions(30)); err != nil {
 			framework.Failf("Failed to delete pod: %v", err)
 		}
 
@@ -184,12 +179,136 @@ var _ = framework.KubeDescribe("Generated release_1_5 clientset", func() {
 		Expect(lastPod.DeletionTimestamp).ToNot(BeNil())
 		Expect(lastPod.Spec.TerminationGracePeriodSeconds).ToNot(BeZero())
 
-		options = api.ListOptions{LabelSelector: selector}
+		options = v1.ListOptions{LabelSelector: selector}
 		pods, err = podClient.List(options)
 		if err != nil {
 			framework.Failf("Failed to list pods to verify deletion: %v", err)
 		}
 		Expect(len(pods.Items)).To(Equal(0))
+	})
+})
+
+func newTestingCronJob(name string, value string) *v2alpha1.CronJob {
+	parallelism := int32(1)
+	completions := int32(1)
+	return &v2alpha1.CronJob{
+		ObjectMeta: v1.ObjectMeta{
+			Name: name,
+			Labels: map[string]string{
+				"time": value,
+			},
+		},
+		Spec: v2alpha1.CronJobSpec{
+			Schedule:          "*/1 * * * ?",
+			ConcurrencyPolicy: v2alpha1.AllowConcurrent,
+			JobTemplate: v2alpha1.JobTemplateSpec{
+				Spec: v2alpha1.JobSpec{
+					Parallelism: &parallelism,
+					Completions: &completions,
+					Template: v1.PodTemplateSpec{
+						Spec: v1.PodSpec{
+							RestartPolicy: v1.RestartPolicyOnFailure,
+							Volumes: []v1.Volume{
+								{
+									Name: "data",
+									VolumeSource: v1.VolumeSource{
+										EmptyDir: &v1.EmptyDirVolumeSource{},
+									},
+								},
+							},
+							Containers: []v1.Container{
+								{
+									Name:  "c",
+									Image: "gcr.io/google_containers/busybox:1.24",
+									VolumeMounts: []v1.VolumeMount{
+										{
+											MountPath: "/data",
+											Name:      "data",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+var _ = framework.KubeDescribe("Generated release_1_5 clientset", func() {
+	f := framework.NewDefaultFramework("clientset")
+	It("should create v2alpha1 cronJobs, delete cronJobs, watch cronJobs", func() {
+		var enabled bool
+		groupList, err := f.ClientSet_1_5.Discovery().ServerGroups()
+		ExpectNoError(err)
+		for _, group := range groupList.Groups {
+			if group.Name == v2alpha1.GroupName {
+				for _, version := range group.Versions {
+					if version.Version == v2alpha1.SchemeGroupVersion.Version {
+						enabled = true
+						break
+					}
+				}
+			}
+		}
+		if !enabled {
+			framework.Logf("%s is not enabled, test skipped", v2alpha1.SchemeGroupVersion)
+			return
+		}
+		cronJobClient := f.ClientSet_1_5.BatchV2alpha1().CronJobs(f.Namespace.Name)
+		By("constructing the cronJob")
+		name := "cronjob" + string(uuid.NewUUID())
+		value := strconv.Itoa(time.Now().Nanosecond())
+		cronJob := newTestingCronJob(name, value)
+		By("setting up watch")
+		selector := labels.SelectorFromSet(labels.Set(map[string]string{"time": value})).String()
+		options := v1.ListOptions{LabelSelector: selector}
+		cronJobs, err := cronJobClient.List(options)
+		if err != nil {
+			framework.Failf("Failed to query for cronJobs: %v", err)
+		}
+		Expect(len(cronJobs.Items)).To(Equal(0))
+		options = v1.ListOptions{
+			LabelSelector:   selector,
+			ResourceVersion: cronJobs.ListMeta.ResourceVersion,
+		}
+		w, err := cronJobClient.Watch(options)
+		if err != nil {
+			framework.Failf("Failed to set up watch: %v", err)
+		}
+
+		By("creating the cronJob")
+		cronJob, err = cronJobClient.Create(cronJob)
+		if err != nil {
+			framework.Failf("Failed to create cronJob: %v", err)
+		}
+
+		By("verifying the cronJob is in kubernetes")
+		options = v1.ListOptions{
+			LabelSelector:   selector,
+			ResourceVersion: cronJob.ResourceVersion,
+		}
+		cronJobs, err = cronJobClient.List(options)
+		if err != nil {
+			framework.Failf("Failed to query for cronJobs: %v", err)
+		}
+		Expect(len(cronJobs.Items)).To(Equal(1))
+
+		By("verifying cronJob creation was observed")
+		observeCreation(w)
+
+		By("deleting the cronJob")
+		if err := cronJobClient.Delete(cronJob.Name, nil); err != nil {
+			framework.Failf("Failed to delete cronJob: %v", err)
+		}
+
+		options = v1.ListOptions{LabelSelector: selector}
+		cronJobs, err = cronJobClient.List(options)
+		if err != nil {
+			framework.Failf("Failed to list cronJobs to verify deletion: %v", err)
+		}
+		Expect(len(cronJobs.Items)).To(Equal(0))
 	})
 })
 
@@ -203,7 +322,7 @@ var _ = framework.KubeDescribe("Staging client repo client", func() {
 		podCopy := stagingClientPod(name, value)
 		pod := &podCopy
 		By("verifying no pod exists before the test")
-		pods, err := podClient.List(clientapi.ListOptions{})
+		pods, err := podClient.List(clientv1.ListOptions{})
 		if err != nil {
 			framework.Failf("Failed to query for pods: %v", err)
 		}
@@ -213,15 +332,11 @@ var _ = framework.KubeDescribe("Staging client repo client", func() {
 		if err != nil {
 			framework.Failf("Failed to create pod: %v", err)
 		}
-		// We call defer here in case there is a problem with
-		// the test so we can ensure that we clean up after
-		// ourselves
-		defer podClient.Delete(pod.Name, clientapi.NewDeleteOptions(0))
 
 		By("verifying the pod is in kubernetes")
 		timeout := 1 * time.Minute
 		if err := wait.PollImmediate(time.Second, timeout, func() (bool, error) {
-			pods, err = podClient.List(clientapi.ListOptions{})
+			pods, err = podClient.List(clientv1.ListOptions{})
 			if err != nil {
 				return false, err
 			}

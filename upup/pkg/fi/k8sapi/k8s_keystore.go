@@ -25,13 +25,13 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
 	"math/big"
 	"time"
 )
 
 type KubernetesKeystore struct {
-	client    release_1_3.Interface
+	client    release_1_5.Interface
 	namespace string
 
 	//mutex     sync.Mutex
@@ -41,7 +41,7 @@ type KubernetesKeystore struct {
 
 var _ fi.Keystore = &KubernetesKeystore{}
 
-func NewKubernetesKeystore(client release_1_3.Interface, namespace string) fi.Keystore {
+func NewKubernetesKeystore(client release_1_5.Interface, namespace string) fi.Keystore {
 	c := &KubernetesKeystore{
 		client:    client,
 		namespace: namespace,

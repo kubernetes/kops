@@ -3,8 +3,7 @@
 # https://github.com/docker-library/golang/blob/master/1.6/wheezy/Dockerfile
 FROM buildpack-deps:wheezy-scm
 
-ENV GOLANG_VERSION tip
-ENV GOLANG_SRC_REPO_URL https://go.googlesource.com/go
+ENV GOLANG_SRC_REPO_URL https://github.com/golang/go
 
 ENV GOLANG_BOOTSTRAP_URL https://storage.googleapis.com/golang/go1.4.3.linux-amd64.tar.gz
 ENV GOLANG_BOOTSTRAP_SHA256 ce3140662f45356eb78bc16a88fc7cfb29fb00e18d7c632608245b789b2086d2

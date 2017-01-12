@@ -18,17 +18,36 @@
     "AcceptLanguage": {
       "base": null,
       "refs": {
-        "DescribeProductInput$AcceptLanguage": "<p>Optional language code. Supported language codes are as follows:</p> <p>\"en\" (English)</p> <p>\"jp\" (Japanese)</p> <p>\"zh\" (Chinese)</p> <p>If no code is specified, \"en\" is used as the default.</p>",
-        "DescribeProductViewInput$AcceptLanguage": "<p>Optional language code. Supported language codes are as follows:</p> <p>\"en\" (English)</p> <p>\"jp\" (Japanese)</p> <p>\"zh\" (Chinese)</p> <p>If no code is specified, \"en\" is used as the default.</p>",
-        "DescribeProvisioningParametersInput$AcceptLanguage": "<p>Optional language code. Supported language codes are as follows:</p> <p>\"en\" (English)</p> <p>\"jp\" (Japanese)</p> <p>\"zh\" (Chinese)</p> <p>If no code is specified, \"en\" is used as the default.</p>",
-        "DescribeRecordInput$AcceptLanguage": "<p>Optional language code. Supported language codes are as follows:</p> <p>\"en\" (English)</p> <p>\"jp\" (Japanese)</p> <p>\"zh\" (Chinese)</p> <p>If no code is specified, \"en\" is used as the default.</p>",
-        "ListLaunchPathsInput$AcceptLanguage": "<p>Optional language code. Supported language codes are as follows:</p> <p>\"en\" (English)</p> <p>\"jp\" (Japanese)</p> <p>\"zh\" (Chinese)</p> <p>If no code is specified, \"en\" is used as the default.</p>",
-        "ListRecordHistoryInput$AcceptLanguage": "<p>Optional language code. Supported language codes are as follows:</p> <p>\"en\" (English)</p> <p>\"jp\" (Japanese)</p> <p>\"zh\" (Chinese)</p> <p>If no code is specified, \"en\" is used as the default.</p>",
-        "ProvisionProductInput$AcceptLanguage": "<p>Optional language code. Supported language codes are as follows:</p> <p>\"en\" (English)</p> <p>\"jp\" (Japanese)</p> <p>\"zh\" (Chinese)</p> <p>If no code is specified, \"en\" is used as the default.</p>",
-        "ScanProvisionedProductsInput$AcceptLanguage": "<p>Optional language code. Supported language codes are as follows:</p> <p>\"en\" (English)</p> <p>\"jp\" (Japanese)</p> <p>\"zh\" (Chinese)</p> <p>If no code is specified, \"en\" is used as the default.</p>",
-        "SearchProductsInput$AcceptLanguage": "<p>Optional language code. Supported language codes are as follows:</p> <p>\"en\" (English)</p> <p>\"jp\" (Japanese)</p> <p>\"zh\" (Chinese)</p> <p>If no code is specified, \"en\" is used as the default.</p>",
-        "TerminateProvisionedProductInput$AcceptLanguage": "<p>Optional language code. Supported language codes are as follows:</p> <p>\"en\" (English)</p> <p>\"jp\" (Japanese)</p> <p>\"zh\" (Chinese)</p> <p>If no code is specified, \"en\" is used as the default.</p>",
-        "UpdateProvisionedProductInput$AcceptLanguage": "<p>Optional language code. Supported language codes are as follows:</p> <p>\"en\" (English)</p> <p>\"jp\" (Japanese)</p> <p>\"zh\" (Chinese)</p> <p>If no code is specified, \"en\" is used as the default.</p>"
+        "DescribeProductInput$AcceptLanguage": "<p>The language code to use for this operation. Supported language codes are as follows:</p> <p>\"en\" (English)</p> <p>\"jp\" (Japanese)</p> <p>\"zh\" (Chinese)</p> <p>If no code is specified, \"en\" is used as the default.</p>",
+        "DescribeProductViewInput$AcceptLanguage": "<p>The language code to use for this operation. Supported language codes are as follows:</p> <p>\"en\" (English)</p> <p>\"jp\" (Japanese)</p> <p>\"zh\" (Chinese)</p> <p>If no code is specified, \"en\" is used as the default.</p>",
+        "DescribeProvisioningParametersInput$AcceptLanguage": "<p>The language code to use for this operation. Supported language codes are as follows:</p> <p>\"en\" (English)</p> <p>\"jp\" (Japanese)</p> <p>\"zh\" (Chinese)</p> <p>If no code is specified, \"en\" is used as the default.</p>",
+        "DescribeRecordInput$AcceptLanguage": "<p>The language code to use for this operation. Supported language codes are as follows:</p> <p>\"en\" (English)</p> <p>\"jp\" (Japanese)</p> <p>\"zh\" (Chinese)</p> <p>If no code is specified, \"en\" is used as the default.</p>",
+        "ListLaunchPathsInput$AcceptLanguage": "<p>The language code to use for this operation. Supported language codes are as follows:</p> <p>\"en\" (English)</p> <p>\"jp\" (Japanese)</p> <p>\"zh\" (Chinese)</p> <p>If no code is specified, \"en\" is used as the default.</p>",
+        "ListRecordHistoryInput$AcceptLanguage": "<p>The language code to use for this operation. Supported language codes are as follows:</p> <p>\"en\" (English)</p> <p>\"jp\" (Japanese)</p> <p>\"zh\" (Chinese)</p> <p>If no code is specified, \"en\" is used as the default.</p>",
+        "ProvisionProductInput$AcceptLanguage": "<p>The language code to use for this operation. Supported language codes are as follows:</p> <p>\"en\" (English)</p> <p>\"jp\" (Japanese)</p> <p>\"zh\" (Chinese)</p> <p>If no code is specified, \"en\" is used as the default.</p>",
+        "ScanProvisionedProductsInput$AcceptLanguage": "<p>The language code to use for this operation. Supported language codes are as follows:</p> <p>\"en\" (English)</p> <p>\"jp\" (Japanese)</p> <p>\"zh\" (Chinese)</p> <p>If no code is specified, \"en\" is used as the default.</p>",
+        "SearchProductsInput$AcceptLanguage": "<p>The language code to use for this operation. Supported language codes are as follows:</p> <p>\"en\" (English)</p> <p>\"jp\" (Japanese)</p> <p>\"zh\" (Chinese)</p> <p>If no code is specified, \"en\" is used as the default.</p>",
+        "TerminateProvisionedProductInput$AcceptLanguage": "<p>The language code to use for this operation. Supported language codes are as follows:</p> <p>\"en\" (English)</p> <p>\"jp\" (Japanese)</p> <p>\"zh\" (Chinese)</p> <p>If no code is specified, \"en\" is used as the default.</p>",
+        "UpdateProvisionedProductInput$AcceptLanguage": "<p>The language code to use for this operation. Supported language codes are as follows:</p> <p>\"en\" (English)</p> <p>\"jp\" (Japanese)</p> <p>\"zh\" (Chinese)</p> <p>If no code is specified, \"en\" is used as the default.</p>"
+      }
+    },
+    "AccessLevelFilter": {
+      "base": "<p>The access level to limit results.</p>",
+      "refs": {
+        "ListRecordHistoryInput$AccessLevelFilter": "<p>The access level for obtaining results. If left unspecified, <code>User</code> level access is used.</p>",
+        "ScanProvisionedProductsInput$AccessLevelFilter": "<p>The access level for obtaining results. If left unspecified, <code>User</code> level access is used.</p>"
+      }
+    },
+    "AccessLevelFilterKey": {
+      "base": null,
+      "refs": {
+        "AccessLevelFilter$Key": "<p>Specifies the access level.</p> <p> <code>Account</code> allows results at the account level. </p> <p> <code>Role</code> allows results based on the federated role of the specified user.</p> <p> <code>User</code> allows results limited to the specified user. </p>"
+      }
+    },
+    "AccessLevelFilterValue": {
+      "base": null,
+      "refs": {
+        "AccessLevelFilter$Value": "<p>Specifies the user to which the access level applies. A value of <code>Self</code> is currently supported.</p>"
       }
     },
     "AllowedValue": {
@@ -204,7 +223,7 @@
     "IgnoreErrors": {
       "base": null,
       "refs": {
-        "TerminateProvisionedProductInput$IgnoreErrors": "<p>Optional Boolean parameter. If set to true, AWS Service Catalog stops managing the specified ProvisionedProduct object even if it cannot delete the underlying resources.</p>"
+        "TerminateProvisionedProductInput$IgnoreErrors": "<p>If set to true, AWS Service Catalog stops managing the specified ProvisionedProduct object even if it cannot delete the underlying resources.</p>"
       }
     },
     "InstructionType": {
@@ -265,7 +284,7 @@
     "ListRecordHistorySearchFilter": {
       "base": "<p>The search filter to limit results when listing request history records.</p>",
       "refs": {
-        "ListRecordHistoryInput$SearchFilter": "<p>(Optional) The filter to limit search results. </p>"
+        "ListRecordHistoryInput$SearchFilter": "<p>The filter to limit search results. </p>"
       }
     },
     "NoEcho": {
@@ -311,15 +330,15 @@
     "PageToken": {
       "base": null,
       "refs": {
-        "DescribeRecordInput$PageToken": "<p>The page token of the first page retrieve. If null, this retrieves the first page of size <code>PageSize</code>.</p>",
+        "DescribeRecordInput$PageToken": "<p>The page token of the first page retrieved. If null, this retrieves the first page of size <code>PageSize</code>.</p>",
         "DescribeRecordOutput$NextPageToken": "<p>The page token to use to retrieve the next page of results for this operation. If there are no more pages, this value is null.</p>",
-        "ListLaunchPathsInput$PageToken": "<p>The page token of the first page retrieve. If null, this retrieves the first page of size <code>PageSize</code>.</p>",
+        "ListLaunchPathsInput$PageToken": "<p>The page token of the first page retrieved. If null, this retrieves the first page of size <code>PageSize</code>.</p>",
         "ListLaunchPathsOutput$NextPageToken": "<p>The page token to use to retrieve the next page of results for this operation. If there are no more pages, this value is null.</p>",
-        "ListRecordHistoryInput$PageToken": "<p>The page token of the first page retrieve. If null, this retrieves the first page of size <code>PageSize</code>.</p>",
+        "ListRecordHistoryInput$PageToken": "<p>The page token of the first page retrieved. If null, this retrieves the first page of size <code>PageSize</code>.</p>",
         "ListRecordHistoryOutput$NextPageToken": "<p>The page token to use to retrieve the next page of results for this operation. If there are no more pages, this value is null.</p>",
-        "ScanProvisionedProductsInput$PageToken": "<p>The page token of the first page retrieve. If null, this retrieves the first page of size <code>PageSize</code>.</p>",
+        "ScanProvisionedProductsInput$PageToken": "<p>The page token of the first page retrieved. If null, this retrieves the first page of size <code>PageSize</code>.</p>",
         "ScanProvisionedProductsOutput$NextPageToken": "<p>The page token to use to retrieve the next page of results for this operation. If there are no more pages, this value is null.</p>",
-        "SearchProductsInput$PageToken": "<p>The page token of the first page retrieve. If null, this retrieves the first page of size <code>PageSize</code>.</p>",
+        "SearchProductsInput$PageToken": "<p>The page token of the first page retrieved. If null, this retrieves the first page of size <code>PageSize</code>.</p>",
         "SearchProductsOutput$NextPageToken": "<p>The page token to use to retrieve the next page of results for this operation. If there are no more pages, this value is null.</p>"
       }
     },
@@ -413,7 +432,7 @@
     "ProductViewFilters": {
       "base": null,
       "refs": {
-        "SearchProductsInput$Filters": "<p>(Optional) The list of filters with which to limit search results. If no search filters are specified, the output is all the products to which the calling user has access. </p>"
+        "SearchProductsInput$Filters": "<p>The list of filters with which to limit search results. If no search filters are specified, the output is all the products to which the calling user has access. </p>"
       }
     },
     "ProductViewName": {
@@ -437,7 +456,7 @@
     "ProductViewSortBy": {
       "base": null,
       "refs": {
-        "SearchProductsInput$SortBy": "<p>(Optional) The sort field specifier. If no value is specified, results are not sorted.</p>"
+        "SearchProductsInput$SortBy": "<p>The sort field specifier. If no value is specified, results are not sorted.</p>"
       }
     },
     "ProductViewSummaries": {
@@ -683,7 +702,7 @@
     "SortOrder": {
       "base": null,
       "refs": {
-        "SearchProductsInput$SortOrder": "<p>(Optional) The sort order specifier. If no value is specified, results are not sorted.</p>"
+        "SearchProductsInput$SortOrder": "<p>The sort order specifier. If no value is specified, results are not sorted.</p>"
       }
     },
     "SupportDescription": {
@@ -705,7 +724,7 @@
       }
     },
     "Tag": {
-      "base": "<p>Optional key/value pairs to associate with this provisioning. These tags are propagated to the resources created in the provisioning.</p>",
+      "base": "<p>Key/value pairs to associate with this provisioning. These tags are entirely discretionary and are propagated to the resources created in the provisioning.</p>",
       "refs": {
         "Tags$member": null
       }
@@ -726,7 +745,7 @@
       "base": null,
       "refs": {
         "LaunchPathSummary$Tags": "<p>List of tags used by this launch path.</p>",
-        "ProvisionProductInput$Tags": "<p>(Optional) A list of tags to use as provisioning options.</p>"
+        "ProvisionProductInput$Tags": "<p>A list of tags to use as provisioning options.</p>"
       }
     },
     "TerminateProvisionedProductInput": {

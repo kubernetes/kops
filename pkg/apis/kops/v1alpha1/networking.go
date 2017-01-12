@@ -21,6 +21,9 @@ type NetworkingSpec struct {
 	Classic  *ClassicNetworkingSpec  `json:"classic,omitempty"`
 	Kubenet  *KubenetNetworkingSpec  `json:"kubenet,omitempty"`
 	External *ExternalNetworkingSpec `json:"external,omitempty"`
+	CNI      *CNINetworkingSpec      `json:"cni,omitempty"`
+	Kopeio   *KopeioNetworkingSpec   `json:"kopeio,omitempty"`
+	Weave    *WeaveNetworkingSpec    `json:"weave,omitempty"`
 }
 
 // ClassicNetworkingSpec is the specification of classic networking mode, integrated into kubernetes
@@ -32,7 +35,20 @@ type KubenetNetworkingSpec struct {
 }
 
 // ExternalNetworkingSpec is the specification for networking that is implemented by a Daemonset
+// It also uses kubenet
+type ExternalNetworkingSpec struct {
+}
+
+// CNI is the specification for networking that is implemented by a Daemonset
 // Networking is not managed by kops - we can create options here that directly configure e.g. weave
 // but this is useful for arbitrary network modes or for modes that don't need additional configuration.
-type ExternalNetworkingSpec struct {
+type CNINetworkingSpec struct {
+}
+
+// Kopeio declares that we want Kopeio networking
+type KopeioNetworkingSpec struct {
+}
+
+// Weave declares that we want Weave networking
+type WeaveNetworkingSpec struct {
 }

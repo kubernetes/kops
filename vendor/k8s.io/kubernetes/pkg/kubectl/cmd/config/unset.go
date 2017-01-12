@@ -22,10 +22,11 @@ import (
 	"io"
 	"reflect"
 
-	"github.com/renstrom/dedent"
 	"github.com/spf13/cobra"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
+	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 )
 
 type unsetOptions struct {
@@ -33,8 +34,9 @@ type unsetOptions struct {
 	propertyName string
 }
 
-var unset_long = dedent.Dedent(`
+var unset_long = templates.LongDesc(`
 	Unsets an individual value in a kubeconfig file
+
 	PROPERTY_NAME is a dot delimited name where each token represents either an attribute name or a map key.  Map keys may not contain dots.`)
 
 func NewCmdConfigUnset(out io.Writer, configAccess clientcmd.ConfigAccess) *cobra.Command {
@@ -49,12 +51,8 @@ func NewCmdConfigUnset(out io.Writer, configAccess clientcmd.ConfigAccess) *cobr
 				return
 			}
 
-			err := options.run()
-			if err != nil {
-				fmt.Fprintf(out, "%v\n", err)
-			} else {
-				fmt.Fprintf(out, "property %q unset.\n", options.propertyName)
-			}
+			cmdutil.CheckErr(options.run())
+			fmt.Fprintf(out, "Property %q unset.\n", options.propertyName)
 		},
 	}
 

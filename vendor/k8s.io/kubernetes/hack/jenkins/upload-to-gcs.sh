@@ -131,7 +131,8 @@ function find_version() {
 function print_started() {
   local metadata_keys=$(compgen -e | grep ^BUILD_METADATA_)
   echo "{"
-  echo "    \"version\": \"${version}\","
+  echo "    \"version\": \"${version}\","  # TODO(fejta): retire
+  echo "    \"job-version\": \"${version}\","
   echo "    \"timestamp\": ${timestamp},"
   if [[ -n "${metadata_keys}" ]]; then
     # Any exported variables of the form BUILD_METADATA_KEY=VALUE
@@ -188,7 +189,11 @@ function update_job_result_cache() {
   local -r version=$(find_version)
   local -r job_results=${gcs_job_path}/jobResultsCache.json
   local -r tmp_results="${WORKSPACE}/_tmp/jobResultsCache.tmp"
-  local -r cache_size=200
+  # TODO: This constraint is insufficient.  The boundary for secondary
+  #       job cache should be date based on the last primary build.
+  #       The issue is we are trying to find a matched green set of results
+  #       at a given hash, but all of the jobs run at wildly different lengths.
+  local -r cache_size=300
   local upload_attempt
 
   if [[ -n "${version}" ]]; then
@@ -276,13 +281,15 @@ function upload_artifacts_and_build_result() {
   echo -e "\n\n\n*** View logs and artifacts at ${results_url} ***\n\n"
 }
 
-if [[ -n "${JENKINS_BUILD_STARTED:-}" ]]; then
-  upload_version
-elif [[ -n "${JENKINS_BUILD_FINISHED:-}" ]]; then
-  upload_artifacts_and_build_result ${JENKINS_BUILD_FINISHED}
-  update_job_result_cache ${JENKINS_BUILD_FINISHED}
-else
-  echo "Called without JENKINS_BUILD_STARTED or JENKINS_BUILD_FINISHED set."
-  echo "Assuming a legacy invocation."
-  upload_artifacts_and_build_result "[UNSET]"
+if [[ -z "${BOOTSTRAP_MIGRATION:-}" ]]; then
+  if [[ -n "${JENKINS_BUILD_STARTED:-}" ]]; then
+    upload_version
+  elif [[ -n "${JENKINS_BUILD_FINISHED:-}" ]]; then
+    upload_artifacts_and_build_result ${JENKINS_BUILD_FINISHED}
+    update_job_result_cache ${JENKINS_BUILD_FINISHED}
+  else
+    echo "ERROR: Called without JENKINS_BUILD_STARTED or JENKINS_BUILD_FINISHED set."
+    echo "ERROR: this should not happen"
+    exit 1
+  fi
 fi

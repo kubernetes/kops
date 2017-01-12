@@ -31,7 +31,7 @@ import (
 	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/client/cache"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	unversionedcore "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/core/unversioned"
+	unversionedcore "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/core/internalversion"
 	"k8s.io/kubernetes/pkg/client/record"
 	"k8s.io/kubernetes/pkg/controller"
 	"k8s.io/kubernetes/pkg/controller/informers"
@@ -130,8 +130,8 @@ func NewReplicationManager(podInformer cache.SharedIndexInformer, kubeClient cli
 
 // newReplicationManager configures a replication manager with the specified event recorder
 func newReplicationManager(eventRecorder record.EventRecorder, podInformer cache.SharedIndexInformer, kubeClient clientset.Interface, resyncPeriod controller.ResyncPeriodFunc, burstReplicas int, lookupCacheSize int, garbageCollectorEnabled bool) *ReplicationManager {
-	if kubeClient != nil && kubeClient.Core().GetRESTClient().GetRateLimiter() != nil {
-		metrics.RegisterMetricAndTrackRateLimiterUsage("replication_controller", kubeClient.Core().GetRESTClient().GetRateLimiter())
+	if kubeClient != nil && kubeClient.Core().RESTClient().GetRateLimiter() != nil {
+		metrics.RegisterMetricAndTrackRateLimiterUsage("replication_controller", kubeClient.Core().RESTClient().GetRateLimiter())
 	}
 
 	rm := &ReplicationManager{
@@ -710,36 +710,10 @@ func (rm *ReplicationManager) syncReplicationController(key string) error {
 	}
 	trace.Step("manageReplicas done")
 
-	// Count the number of pods that have labels matching the labels of the pod
-	// template of the replication controller, the matching pods may have more
-	// labels than are in the template. Because the label of podTemplateSpec is
-	// a superset of the selector of the replication controller, so the possible
-	// matching pods must be part of the filteredPods.
-	fullyLabeledReplicasCount := 0
-	readyReplicasCount := 0
-	availableReplicasCount := 0
-	templateLabel := labels.Set(rc.Spec.Template.Labels).AsSelectorPreValidated()
-	for _, pod := range filteredPods {
-		if templateLabel.Matches(labels.Set(pod.Labels)) {
-			fullyLabeledReplicasCount++
-		}
-		if api.IsPodReady(pod) {
-			readyReplicasCount++
-			if api.IsPodAvailable(pod, rc.Spec.MinReadySeconds, unversioned.Now()) {
-				availableReplicasCount++
-			}
-		}
-	}
+	newStatus := calculateStatus(rc, filteredPods, manageReplicasErr)
 
 	// Always updates status as pods come up or die.
-	if err := updateReplicaCount(
-		rm.kubeClient.Core().ReplicationControllers(rc.Namespace),
-		rc,
-		len(filteredPods),
-		fullyLabeledReplicasCount,
-		readyReplicasCount,
-		availableReplicasCount,
-	); err != nil {
+	if err := updateReplicationControllerStatus(rm.kubeClient.Core().ReplicationControllers(rc.Namespace), rc, newStatus); err != nil {
 		// Multiple things could lead to this update failing.  Returning an error causes a requeue without forcing a hotloop
 		return err
 	}

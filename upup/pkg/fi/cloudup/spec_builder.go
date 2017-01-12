@@ -23,12 +23,13 @@ import (
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kubernetes/pkg/util/sets"
 )
 
 type SpecBuilder struct {
 	OptionsLoader *loader.OptionsLoader
 
-	Tags map[string]struct{}
+	Tags sets.String
 }
 
 func (l *SpecBuilder) BuildCompleteSpec(clusterSpec *api.ClusterSpec, modelStore vfs.Path, models []string) (*api.ClusterSpec, error) {

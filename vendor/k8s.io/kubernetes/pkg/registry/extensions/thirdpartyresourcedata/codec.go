@@ -33,7 +33,6 @@ import (
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
 	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/kubernetes/pkg/util/yaml"
 	"k8s.io/kubernetes/pkg/watch/versioned"
 )
@@ -206,32 +205,13 @@ func NewNegotiatedSerializer(s runtime.NegotiatedSerializer, kind string, encode
 	}
 }
 
-func (t *thirdPartyResourceDataCodecFactory) SupportedMediaTypes() []string {
-	supported := sets.NewString(t.delegate.SupportedMediaTypes()...)
-	return supported.Intersection(sets.NewString("application/json", "application/yaml")).List()
-}
-
-func (t *thirdPartyResourceDataCodecFactory) SerializerForMediaType(mediaType string, params map[string]string) (runtime.SerializerInfo, bool) {
-	switch mediaType {
-	case "application/json", "application/yaml":
-		return t.delegate.SerializerForMediaType(mediaType, params)
-	default:
-		return runtime.SerializerInfo{}, false
+func (t *thirdPartyResourceDataCodecFactory) SupportedMediaTypes() []runtime.SerializerInfo {
+	for _, info := range t.delegate.SupportedMediaTypes() {
+		if info.MediaType == runtime.ContentTypeJSON {
+			return []runtime.SerializerInfo{info}
+		}
 	}
-}
-
-func (t *thirdPartyResourceDataCodecFactory) SupportedStreamingMediaTypes() []string {
-	supported := sets.NewString(t.delegate.SupportedStreamingMediaTypes()...)
-	return supported.Intersection(sets.NewString("application/json", "application/json;stream=watch")).List()
-}
-
-func (t *thirdPartyResourceDataCodecFactory) StreamingSerializerForMediaType(mediaType string, params map[string]string) (runtime.StreamSerializerInfo, bool) {
-	switch mediaType {
-	case "application/json", "application/json;stream=watch":
-		return t.delegate.StreamingSerializerForMediaType(mediaType, params)
-	default:
-		return runtime.StreamSerializerInfo{}, false
-	}
+	return nil
 }
 
 func (t *thirdPartyResourceDataCodecFactory) EncoderForVersion(s runtime.Encoder, gv runtime.GroupVersioner) runtime.Encoder {
@@ -418,7 +398,7 @@ func (t *thirdPartyResourceDataDecoder) Decode(data []byte, gvk *unversioned.Gro
 			return nil, nil, fmt.Errorf("unexpected object for 'kind': %v", kindObj)
 		}
 		if len(t.kind) > 0 && kindStr != t.kind {
-			return nil, nil, fmt.Errorf("kind doesn't match, expecting: %s, got %s", gvk.Kind, kindStr)
+			return nil, nil, fmt.Errorf("kind doesn't match, expecting: %s, got %s", t.kind, kindStr)
 		}
 		actual.Kind = kindStr
 	}
@@ -522,10 +502,13 @@ func (t *thirdPartyResourceDataEncoder) Encode(obj runtime.Object, stream io.Wri
 		}
 
 		encMap := struct {
-			Kind       string               `json:"kind,omitempty"`
-			Items      []json.RawMessage    `json:"items"`
-			Metadata   unversioned.ListMeta `json:"metadata,omitempty"`
-			APIVersion string               `json:"apiVersion,omitempty"`
+			// +optional
+			Kind  string            `json:"kind,omitempty"`
+			Items []json.RawMessage `json:"items"`
+			// +optional
+			Metadata unversioned.ListMeta `json:"metadata,omitempty"`
+			// +optional
+			APIVersion string `json:"apiVersion,omitempty"`
 		}{
 			Kind:       t.gvk.Kind + "List",
 			Items:      listItems,

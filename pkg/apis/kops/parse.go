@@ -22,7 +22,30 @@ import (
 	"strings"
 )
 
-func ParseYaml(data []byte, dest interface{}) error {
+// ParseInstanceGroupRole converts a string to an InstanceGroupRole
+func ParseInstanceGroupRole(input string, lenient bool) (InstanceGroupRole, bool) {
+	findRole := strings.ToLower(input)
+	if lenient {
+		// Accept pluralized "bastions" for "bastion"
+		findRole = strings.TrimSuffix(findRole, "s")
+	}
+
+	for _, role := range AllInstanceGroupRoles {
+		s := string(role)
+		s = strings.ToLower(s)
+		if lenient {
+			s = strings.TrimSuffix(s, "s")
+		}
+		if s == findRole {
+			return role, true
+		}
+	}
+	return "", false
+}
+
+// ParseRawYaml parses an object just using yaml, without the full api machinery
+// Deprecated: prefer using the API machinery
+func ParseRawYaml(data []byte, dest interface{}) error {
 	// Yaml can't parse empty strings
 	configString := string(data)
 	configString = strings.TrimSpace(configString)
@@ -37,8 +60,10 @@ func ParseYaml(data []byte, dest interface{}) error {
 	return nil
 }
 
-func ToYaml(dest interface{}) ([]byte, error) {
-	data, err := utils.YamlMarshal(dest)
+// ToRawYaml marshals an object to yaml, without the full api machinery
+// Deprecated: prefer using the API machinery
+func ToRawYaml(obj interface{}) ([]byte, error) {
+	data, err := utils.YamlMarshal(obj)
 	if err != nil {
 		return nil, fmt.Errorf("error converting to yaml: %v", err)
 	}

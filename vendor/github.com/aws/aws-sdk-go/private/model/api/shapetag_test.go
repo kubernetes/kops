@@ -1,4 +1,4 @@
-// +build 1.6
+// +build 1.6,codegen
 
 package api_test
 

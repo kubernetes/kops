@@ -22,7 +22,8 @@
         {"shape":"NotFoundException"},
         {"shape":"TooManyRequestsException"},
         {"shape":"LimitExceededException"},
-        {"shape":"BadRequestException"}
+        {"shape":"BadRequestException"},
+        {"shape":"ConflictException"}
       ]
     },
     "CreateAuthorizer":{
@@ -164,6 +165,40 @@
         {"shape":"TooManyRequestsException"}
       ]
     },
+    "CreateUsagePlan":{
+      "name":"CreateUsagePlan",
+      "http":{
+        "method":"POST",
+        "requestUri":"/usageplans",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateUsagePlanRequest"},
+      "output":{"shape":"UsagePlan"},
+      "errors":[
+        {"shape":"BadRequestException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"ConflictException"}
+      ]
+    },
+    "CreateUsagePlanKey":{
+      "name":"CreateUsagePlanKey",
+      "http":{
+        "method":"POST",
+        "requestUri":"/usageplans/{usageplanId}/keys",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateUsagePlanKeyRequest"},
+      "output":{"shape":"UsagePlanKey"},
+      "errors":[
+        {"shape":"BadRequestException"},
+        {"shape":"ConflictException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"NotFoundException"},
+        {"shape":"TooManyRequestsException"}
+      ]
+    },
     "DeleteApiKey":{
       "name":"DeleteApiKey",
       "http":{
@@ -263,7 +298,8 @@
       "errors":[
         {"shape":"UnauthorizedException"},
         {"shape":"NotFoundException"},
-        {"shape":"TooManyRequestsException"}
+        {"shape":"TooManyRequestsException"},
+        {"shape":"ConflictException"}
       ]
     },
     "DeleteIntegrationResponse":{
@@ -277,7 +313,9 @@
       "errors":[
         {"shape":"UnauthorizedException"},
         {"shape":"NotFoundException"},
-        {"shape":"TooManyRequestsException"}
+        {"shape":"TooManyRequestsException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ConflictException"}
       ]
     },
     "DeleteMethod":{
@@ -291,7 +329,8 @@
       "errors":[
         {"shape":"UnauthorizedException"},
         {"shape":"NotFoundException"},
-        {"shape":"TooManyRequestsException"}
+        {"shape":"TooManyRequestsException"},
+        {"shape":"ConflictException"}
       ]
     },
     "DeleteMethodResponse":{
@@ -305,7 +344,9 @@
       "errors":[
         {"shape":"UnauthorizedException"},
         {"shape":"NotFoundException"},
-        {"shape":"TooManyRequestsException"}
+        {"shape":"TooManyRequestsException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ConflictException"}
       ]
     },
     "DeleteModel":{
@@ -368,6 +409,37 @@
         {"shape":"NotFoundException"},
         {"shape":"TooManyRequestsException"},
         {"shape":"BadRequestException"}
+      ]
+    },
+    "DeleteUsagePlan":{
+      "name":"DeleteUsagePlan",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/usageplans/{usageplanId}",
+        "responseCode":202
+      },
+      "input":{"shape":"DeleteUsagePlanRequest"},
+      "errors":[
+        {"shape":"UnauthorizedException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"BadRequestException"},
+        {"shape":"NotFoundException"}
+      ]
+    },
+    "DeleteUsagePlanKey":{
+      "name":"DeleteUsagePlanKey",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/usageplans/{usageplanId}/keys/{keyId}",
+        "responseCode":202
+      },
+      "input":{"shape":"DeleteUsagePlanKeyRequest"},
+      "errors":[
+        {"shape":"BadRequestException"},
+        {"shape":"ConflictException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"NotFoundException"},
+        {"shape":"TooManyRequestsException"}
       ]
     },
     "FlushStageAuthorizersCache":{
@@ -818,6 +890,100 @@
         {"shape":"TooManyRequestsException"}
       ]
     },
+    "GetUsage":{
+      "name":"GetUsage",
+      "http":{
+        "method":"GET",
+        "requestUri":"/usageplans/{usageplanId}/usage"
+      },
+      "input":{"shape":"GetUsageRequest"},
+      "output":{"shape":"Usage"},
+      "errors":[
+        {"shape":"BadRequestException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"NotFoundException"},
+        {"shape":"TooManyRequestsException"}
+      ]
+    },
+    "GetUsagePlan":{
+      "name":"GetUsagePlan",
+      "http":{
+        "method":"GET",
+        "requestUri":"/usageplans/{usageplanId}"
+      },
+      "input":{"shape":"GetUsagePlanRequest"},
+      "output":{"shape":"UsagePlan"},
+      "errors":[
+        {"shape":"BadRequestException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"NotFoundException"},
+        {"shape":"TooManyRequestsException"}
+      ]
+    },
+    "GetUsagePlanKey":{
+      "name":"GetUsagePlanKey",
+      "http":{
+        "method":"GET",
+        "requestUri":"/usageplans/{usageplanId}/keys/{keyId}",
+        "responseCode":200
+      },
+      "input":{"shape":"GetUsagePlanKeyRequest"},
+      "output":{"shape":"UsagePlanKey"},
+      "errors":[
+        {"shape":"BadRequestException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"NotFoundException"},
+        {"shape":"TooManyRequestsException"}
+      ]
+    },
+    "GetUsagePlanKeys":{
+      "name":"GetUsagePlanKeys",
+      "http":{
+        "method":"GET",
+        "requestUri":"/usageplans/{usageplanId}/keys"
+      },
+      "input":{"shape":"GetUsagePlanKeysRequest"},
+      "output":{"shape":"UsagePlanKeys"},
+      "errors":[
+        {"shape":"BadRequestException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"NotFoundException"},
+        {"shape":"TooManyRequestsException"}
+      ]
+    },
+    "GetUsagePlans":{
+      "name":"GetUsagePlans",
+      "http":{
+        "method":"GET",
+        "requestUri":"/usageplans"
+      },
+      "input":{"shape":"GetUsagePlansRequest"},
+      "output":{"shape":"UsagePlans"},
+      "errors":[
+        {"shape":"BadRequestException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"ConflictException"}
+      ]
+    },
+    "ImportApiKeys":{
+      "name":"ImportApiKeys",
+      "http":{
+        "method":"POST",
+        "requestUri":"/apikeys?mode=import",
+        "responseCode":201
+      },
+      "input":{"shape":"ImportApiKeysRequest"},
+      "output":{"shape":"ApiKeyIds"},
+      "errors":[
+        {"shape":"UnauthorizedException"},
+        {"shape":"NotFoundException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ConflictException"}
+      ]
+    },
     "ImportRestApi":{
       "name":"ImportRestApi",
       "http":{
@@ -831,7 +997,8 @@
         {"shape":"UnauthorizedException"},
         {"shape":"LimitExceededException"},
         {"shape":"BadRequestException"},
-        {"shape":"TooManyRequestsException"}
+        {"shape":"TooManyRequestsException"},
+        {"shape":"ConflictException"}
       ]
     },
     "PutIntegration":{
@@ -918,7 +1085,8 @@
         {"shape":"LimitExceededException"},
         {"shape":"NotFoundException"},
         {"shape":"BadRequestException"},
-        {"shape":"TooManyRequestsException"}
+        {"shape":"TooManyRequestsException"},
+        {"shape":"ConflictException"}
       ]
     },
     "TestInvokeAuthorizer":{
@@ -978,7 +1146,8 @@
         {"shape":"UnauthorizedException"},
         {"shape":"NotFoundException"},
         {"shape":"BadRequestException"},
-        {"shape":"TooManyRequestsException"}
+        {"shape":"TooManyRequestsException"},
+        {"shape":"ConflictException"}
       ]
     },
     "UpdateAuthorizer":{
@@ -1188,6 +1357,37 @@
         {"shape":"BadRequestException"},
         {"shape":"TooManyRequestsException"}
       ]
+    },
+    "UpdateUsage":{
+      "name":"UpdateUsage",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/usageplans/{usageplanId}/keys/{keyId}/usage"
+      },
+      "input":{"shape":"UpdateUsageRequest"},
+      "output":{"shape":"Usage"},
+      "errors":[
+        {"shape":"UnauthorizedException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"BadRequestException"},
+        {"shape":"NotFoundException"}
+      ]
+    },
+    "UpdateUsagePlan":{
+      "name":"UpdateUsagePlan",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/usageplans/{usageplanId}"
+      },
+      "input":{"shape":"UpdateUsagePlanRequest"},
+      "output":{"shape":"UsagePlan"},
+      "errors":[
+        {"shape":"UnauthorizedException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"BadRequestException"},
+        {"shape":"NotFoundException"},
+        {"shape":"ConflictException"}
+      ]
     }
   },
   "shapes":{
@@ -1195,29 +1395,51 @@
       "type":"structure",
       "members":{
         "cloudwatchRoleArn":{"shape":"String"},
-        "throttleSettings":{"shape":"ThrottleSettings"}
+        "throttleSettings":{"shape":"ThrottleSettings"},
+        "features":{"shape":"ListOfString"},
+        "apiKeyVersion":{"shape":"String"}
       }
     },
     "ApiKey":{
       "type":"structure",
       "members":{
         "id":{"shape":"String"},
+        "value":{"shape":"String"},
         "name":{"shape":"String"},
         "description":{"shape":"String"},
         "enabled":{"shape":"Boolean"},
-        "stageKeys":{"shape":"ListOfString"},
         "createdDate":{"shape":"Timestamp"},
-        "lastUpdatedDate":{"shape":"Timestamp"}
+        "lastUpdatedDate":{"shape":"Timestamp"},
+        "stageKeys":{"shape":"ListOfString"}
+      }
+    },
+    "ApiKeyIds":{
+      "type":"structure",
+      "members":{
+        "ids":{"shape":"ListOfString"},
+        "warnings":{"shape":"ListOfString"}
       }
     },
     "ApiKeys":{
       "type":"structure",
       "members":{
+        "warnings":{"shape":"ListOfString"},
         "position":{"shape":"String"},
         "items":{
           "shape":"ListOfApiKey",
           "locationName":"item"
         }
+      }
+    },
+    "ApiKeysFormat":{
+      "type":"string",
+      "enum":["csv"]
+    },
+    "ApiStage":{
+      "type":"structure",
+      "members":{
+        "apiId":{"shape":"String"},
+        "stage":{"shape":"String"}
       }
     },
     "Authorizer":{
@@ -1226,6 +1448,7 @@
         "id":{"shape":"String"},
         "name":{"shape":"String"},
         "type":{"shape":"AuthorizerType"},
+        "providerARNs":{"shape":"ListOfARNs"},
         "authType":{"shape":"String"},
         "authorizerUri":{"shape":"String"},
         "authorizerCredentials":{"shape":"String"},
@@ -1236,7 +1459,10 @@
     },
     "AuthorizerType":{
       "type":"string",
-      "enum":["TOKEN"]
+      "enum":[
+        "TOKEN",
+        "COGNITO_USER_POOLS"
+      ]
     },
     "Authorizers":{
       "type":"structure",
@@ -1333,6 +1559,8 @@
         "name":{"shape":"String"},
         "description":{"shape":"String"},
         "enabled":{"shape":"Boolean"},
+        "generateDistinctId":{"shape":"Boolean"},
+        "value":{"shape":"String"},
         "stageKeys":{"shape":"ListOfStageKeys"}
       }
     },
@@ -1342,7 +1570,6 @@
         "restApiId",
         "name",
         "type",
-        "authorizerUri",
         "identitySource"
       ],
       "members":{
@@ -1353,6 +1580,7 @@
         },
         "name":{"shape":"String"},
         "type":{"shape":"AuthorizerType"},
+        "providerARNs":{"shape":"ListOfARNs"},
         "authType":{"shape":"String"},
         "authorizerUri":{"shape":"String"},
         "authorizerCredentials":{"shape":"String"},
@@ -1483,6 +1711,34 @@
         "cacheClusterEnabled":{"shape":"Boolean"},
         "cacheClusterSize":{"shape":"CacheClusterSize"},
         "variables":{"shape":"MapOfStringToString"}
+      }
+    },
+    "CreateUsagePlanKeyRequest":{
+      "type":"structure",
+      "required":[
+        "usagePlanId",
+        "keyId",
+        "keyType"
+      ],
+      "members":{
+        "usagePlanId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"usageplanId"
+        },
+        "keyId":{"shape":"String"},
+        "keyType":{"shape":"String"}
+      }
+    },
+    "CreateUsagePlanRequest":{
+      "type":"structure",
+      "required":["name"],
+      "members":{
+        "name":{"shape":"String"},
+        "description":{"shape":"String"},
+        "apiStages":{"shape":"ListOfApiStage"},
+        "throttle":{"shape":"ThrottleSettings"},
+        "quota":{"shape":"QuotaSettings"}
       }
     },
     "DeleteApiKeyRequest":{
@@ -1755,6 +2011,36 @@
         }
       }
     },
+    "DeleteUsagePlanKeyRequest":{
+      "type":"structure",
+      "required":[
+        "usagePlanId",
+        "keyId"
+      ],
+      "members":{
+        "usagePlanId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"usageplanId"
+        },
+        "keyId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"keyId"
+        }
+      }
+    },
+    "DeleteUsagePlanRequest":{
+      "type":"structure",
+      "required":["usagePlanId"],
+      "members":{
+        "usagePlanId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"usageplanId"
+        }
+      }
+    },
     "Deployment":{
       "type":"structure",
       "members":{
@@ -1868,6 +2154,11 @@
           "shape":"String",
           "location":"uri",
           "locationName":"api_Key"
+        },
+        "includeValue":{
+          "shape":"Boolean",
+          "location":"querystring",
+          "locationName":"includeValue"
         }
       }
     },
@@ -1883,6 +2174,16 @@
           "shape":"NullableInteger",
           "location":"querystring",
           "locationName":"limit"
+        },
+        "nameQuery":{
+          "shape":"String",
+          "location":"querystring",
+          "locationName":"name"
+        },
+        "includeValues":{
+          "shape":"Boolean",
+          "location":"querystring",
+          "locationName":"includeValues"
         }
       }
     },
@@ -2398,6 +2699,143 @@
         }
       }
     },
+    "GetUsagePlanKeyRequest":{
+      "type":"structure",
+      "required":[
+        "usagePlanId",
+        "keyId"
+      ],
+      "members":{
+        "usagePlanId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"usageplanId"
+        },
+        "keyId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"keyId"
+        }
+      }
+    },
+    "GetUsagePlanKeysRequest":{
+      "type":"structure",
+      "required":["usagePlanId"],
+      "members":{
+        "usagePlanId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"usageplanId"
+        },
+        "position":{
+          "shape":"String",
+          "location":"querystring",
+          "locationName":"position"
+        },
+        "limit":{
+          "shape":"NullableInteger",
+          "location":"querystring",
+          "locationName":"limit"
+        },
+        "nameQuery":{
+          "shape":"String",
+          "location":"querystring",
+          "locationName":"name"
+        }
+      }
+    },
+    "GetUsagePlanRequest":{
+      "type":"structure",
+      "required":["usagePlanId"],
+      "members":{
+        "usagePlanId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"usageplanId"
+        }
+      }
+    },
+    "GetUsagePlansRequest":{
+      "type":"structure",
+      "members":{
+        "position":{
+          "shape":"String",
+          "location":"querystring",
+          "locationName":"position"
+        },
+        "keyId":{
+          "shape":"String",
+          "location":"querystring",
+          "locationName":"keyId"
+        },
+        "limit":{
+          "shape":"NullableInteger",
+          "location":"querystring",
+          "locationName":"limit"
+        }
+      }
+    },
+    "GetUsageRequest":{
+      "type":"structure",
+      "required":[
+        "usagePlanId",
+        "startDate",
+        "endDate"
+      ],
+      "members":{
+        "usagePlanId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"usageplanId"
+        },
+        "keyId":{
+          "shape":"String",
+          "location":"querystring",
+          "locationName":"keyId"
+        },
+        "startDate":{
+          "shape":"String",
+          "location":"querystring",
+          "locationName":"startDate"
+        },
+        "endDate":{
+          "shape":"String",
+          "location":"querystring",
+          "locationName":"endDate"
+        },
+        "position":{
+          "shape":"String",
+          "location":"querystring",
+          "locationName":"position"
+        },
+        "limit":{
+          "shape":"NullableInteger",
+          "location":"querystring",
+          "locationName":"limit"
+        }
+      }
+    },
+    "ImportApiKeysRequest":{
+      "type":"structure",
+      "required":[
+        "body",
+        "format"
+      ],
+      "members":{
+        "body":{"shape":"Blob"},
+        "format":{
+          "shape":"ApiKeysFormat",
+          "location":"querystring",
+          "locationName":"format"
+        },
+        "failOnWarnings":{
+          "shape":"Boolean",
+          "location":"querystring",
+          "locationName":"failonwarnings"
+        }
+      },
+      "payload":"body"
+    },
     "ImportRestApiRequest":{
       "type":"structure",
       "required":["body"],
@@ -2445,7 +2883,9 @@
       "enum":[
         "HTTP",
         "AWS",
-        "MOCK"
+        "MOCK",
+        "HTTP_PROXY",
+        "AWS_PROXY"
       ]
     },
     "LimitExceededException":{
@@ -2461,9 +2901,17 @@
       "error":{"httpStatusCode":429},
       "exception":true
     },
+    "ListOfARNs":{
+      "type":"list",
+      "member":{"shape":"ProviderARN"}
+    },
     "ListOfApiKey":{
       "type":"list",
       "member":{"shape":"ApiKey"}
+    },
+    "ListOfApiStage":{
+      "type":"list",
+      "member":{"shape":"ApiStage"}
     },
     "ListOfAuthorizer":{
       "type":"list",
@@ -2484,6 +2932,10 @@
     "ListOfDomainName":{
       "type":"list",
       "member":{"shape":"DomainName"}
+    },
+    "ListOfLong":{
+      "type":"list",
+      "member":{"shape":"Long"}
     },
     "ListOfModel":{
       "type":"list",
@@ -2513,6 +2965,18 @@
       "type":"list",
       "member":{"shape":"String"}
     },
+    "ListOfUsage":{
+      "type":"list",
+      "member":{"shape":"ListOfLong"}
+    },
+    "ListOfUsagePlan":{
+      "type":"list",
+      "member":{"shape":"UsagePlan"}
+    },
+    "ListOfUsagePlanKey":{
+      "type":"list",
+      "member":{"shape":"UsagePlanKey"}
+    },
     "Long":{"type":"long"},
     "MapOfHeaderValues":{
       "type":"map",
@@ -2523,6 +2987,11 @@
       "type":"map",
       "key":{"shape":"String"},
       "value":{"shape":"IntegrationResponse"}
+    },
+    "MapOfKeyUsages":{
+      "type":"map",
+      "key":{"shape":"String"},
+      "value":{"shape":"ListOfUsage"}
     },
     "MapOfMethod":{
       "type":"map",
@@ -2632,10 +3101,21 @@
     },
     "NullableBoolean":{"type":"boolean"},
     "NullableInteger":{"type":"integer"},
+    "Op":{
+      "type":"string",
+      "enum":[
+        "add",
+        "remove",
+        "replace",
+        "move",
+        "copy",
+        "test"
+      ]
+    },
     "PatchOperation":{
       "type":"structure",
       "members":{
-        "op":{"shape":"op"},
+        "op":{"shape":"Op"},
         "path":{"shape":"String"},
         "value":{"shape":"String"},
         "from":{"shape":"String"}
@@ -2646,6 +3126,7 @@
       "key":{"shape":"String"},
       "value":{"shape":"MapOfMethodSnapshot"}
     },
+    "ProviderARN":{"type":"string"},
     "PutIntegrationRequest":{
       "type":"structure",
       "required":[
@@ -2819,6 +3300,22 @@
       },
       "payload":"body"
     },
+    "QuotaPeriodType":{
+      "type":"string",
+      "enum":[
+        "DAY",
+        "WEEK",
+        "MONTH"
+      ]
+    },
+    "QuotaSettings":{
+      "type":"structure",
+      "members":{
+        "limit":{"shape":"Integer"},
+        "offset":{"shape":"Integer"},
+        "period":{"shape":"QuotaPeriodType"}
+      }
+    },
     "Resource":{
       "type":"structure",
       "members":{
@@ -2962,7 +3459,8 @@
         "latency":{"shape":"Long"},
         "principalId":{"shape":"String"},
         "policy":{"shape":"String"},
-        "authorization":{"shape":"MapOfStringToList"}
+        "authorization":{"shape":"MapOfStringToList"},
+        "claims":{"shape":"MapOfStringToString"}
       }
     },
     "TestInvokeMethodRequest":{
@@ -3332,16 +3830,90 @@
         "patchOperations":{"shape":"ListOfPatchOperation"}
       }
     },
-    "op":{
-      "type":"string",
-      "enum":[
-        "add",
-        "remove",
-        "replace",
-        "move",
-        "copy",
-        "test"
-      ]
+    "UpdateUsagePlanRequest":{
+      "type":"structure",
+      "required":["usagePlanId"],
+      "members":{
+        "usagePlanId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"usageplanId"
+        },
+        "patchOperations":{"shape":"ListOfPatchOperation"}
+      }
+    },
+    "UpdateUsageRequest":{
+      "type":"structure",
+      "required":[
+        "usagePlanId",
+        "keyId"
+      ],
+      "members":{
+        "usagePlanId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"usageplanId"
+        },
+        "keyId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"keyId"
+        },
+        "patchOperations":{"shape":"ListOfPatchOperation"}
+      }
+    },
+    "Usage":{
+      "type":"structure",
+      "members":{
+        "usagePlanId":{"shape":"String"},
+        "startDate":{"shape":"String"},
+        "endDate":{"shape":"String"},
+        "position":{"shape":"String"},
+        "items":{
+          "shape":"MapOfKeyUsages",
+          "locationName":"values"
+        }
+      }
+    },
+    "UsagePlan":{
+      "type":"structure",
+      "members":{
+        "id":{"shape":"String"},
+        "name":{"shape":"String"},
+        "description":{"shape":"String"},
+        "apiStages":{"shape":"ListOfApiStage"},
+        "throttle":{"shape":"ThrottleSettings"},
+        "quota":{"shape":"QuotaSettings"}
+      }
+    },
+    "UsagePlanKey":{
+      "type":"structure",
+      "members":{
+        "id":{"shape":"String"},
+        "type":{"shape":"String"},
+        "value":{"shape":"String"},
+        "name":{"shape":"String"}
+      }
+    },
+    "UsagePlanKeys":{
+      "type":"structure",
+      "members":{
+        "position":{"shape":"String"},
+        "items":{
+          "shape":"ListOfUsagePlanKey",
+          "locationName":"item"
+        }
+      }
+    },
+    "UsagePlans":{
+      "type":"structure",
+      "members":{
+        "position":{"shape":"String"},
+        "items":{
+          "shape":"ListOfUsagePlan",
+          "locationName":"item"
+        }
+      }
     }
   }
 }

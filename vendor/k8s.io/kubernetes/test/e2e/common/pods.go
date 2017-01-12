@@ -48,7 +48,6 @@ var (
 // testHostIP tests that a pod gets a host IP
 func testHostIP(podClient *framework.PodClient, pod *api.Pod) {
 	By("creating pod")
-	defer podClient.Delete(pod.Name, api.NewDeleteOptions(0))
 	podClient.CreateSync(pod)
 
 	// Try to make sure we get a hostIP for each pod.
@@ -56,7 +55,7 @@ func testHostIP(podClient *framework.PodClient, pod *api.Pod) {
 	t := time.Now()
 	for {
 		p, err := podClient.Get(pod.Name)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).NotTo(HaveOccurred(), "Failed to get pod %q", pod.Name)
 		if p.Status.HostIP != "" {
 			framework.Logf("Pod %s has hostIP: %s", p.Name, p.Status.HostIP)
 			break
@@ -136,7 +135,7 @@ var _ = framework.KubeDescribe("Pods", func() {
 				Containers: []api.Container{
 					{
 						Name:  "test",
-						Image: framework.GetPauseImageName(f.Client),
+						Image: framework.GetPauseImageName(f.ClientSet),
 					},
 				},
 			},
@@ -179,10 +178,6 @@ var _ = framework.KubeDescribe("Pods", func() {
 		Expect(err).NotTo(HaveOccurred(), "failed to set up watch")
 
 		By("submitting the pod to kubernetes")
-		// We call defer here in case there is a problem with
-		// the test so we can ensure that we clean up after
-		// ourselves
-		defer podClient.Delete(pod.Name, api.NewDeleteOptions(0))
 		podClient.Create(pod)
 
 		By("verifying the pod is in kubernetes")
@@ -216,7 +211,7 @@ var _ = framework.KubeDescribe("Pods", func() {
 
 		By("verifying the kubelet observed the termination notice")
 		Expect(wait.Poll(time.Second*5, time.Second*30, func() (bool, error) {
-			podList, err := framework.GetKubeletPods(f.Client, pod.Spec.NodeName)
+			podList, err := framework.GetKubeletPods(f.ClientSet, pod.Spec.NodeName)
 			if err != nil {
 				framework.Logf("Unable to retrieve kubelet pods for node %v: %v", pod.Spec.NodeName, err)
 				return false, nil
@@ -288,10 +283,6 @@ var _ = framework.KubeDescribe("Pods", func() {
 		}
 
 		By("submitting the pod to kubernetes")
-		defer func() {
-			By("deleting the pod")
-			podClient.Delete(pod.Name, api.NewDeleteOptions(0))
-		}()
 		pod = podClient.CreateSync(pod)
 
 		By("verifying the pod is in kubernetes")
@@ -341,10 +332,6 @@ var _ = framework.KubeDescribe("Pods", func() {
 		}
 
 		By("submitting the pod to kubernetes")
-		defer func() {
-			By("deleting the pod")
-			podClient.Delete(pod.Name, api.NewDeleteOptions(0))
-		}()
 		podClient.CreateSync(pod)
 
 		By("verifying the pod is in kubernetes")
@@ -382,7 +369,6 @@ var _ = framework.KubeDescribe("Pods", func() {
 				},
 			},
 		}
-		defer podClient.Delete(serverPod.Name, api.NewDeleteOptions(0))
 		podClient.CreateSync(serverPod)
 
 		// This service exposes port 8080 of the test pod as a service on port 8765
@@ -410,8 +396,7 @@ var _ = framework.KubeDescribe("Pods", func() {
 				},
 			},
 		}
-		defer f.Client.Services(f.Namespace.Name).Delete(svc.Name)
-		_, err := f.Client.Services(f.Namespace.Name).Create(svc)
+		_, err := f.ClientSet.Core().Services(f.Namespace.Name).Create(svc)
 		Expect(err).NotTo(HaveOccurred(), "failed to create service")
 
 		// Make a client pod that verifies that it has the service environment variables.
@@ -473,13 +458,9 @@ var _ = framework.KubeDescribe("Pods", func() {
 		}
 
 		By("submitting the pod to kubernetes")
-		defer func() {
-			By("deleting the pod")
-			podClient.Delete(pod.Name, api.NewDeleteOptions(0))
-		}()
 		pod = podClient.CreateSync(pod)
 
-		req := f.Client.Get().
+		req := f.ClientSet.Core().RESTClient().Get().
 			Namespace(f.Namespace.Name).
 			Resource("pods").
 			Name(pod.Name).
@@ -549,7 +530,7 @@ var _ = framework.KubeDescribe("Pods", func() {
 		By("submitting the pod to kubernetes")
 		podClient.CreateSync(pod)
 
-		req := f.Client.Get().
+		req := f.ClientSet.Core().RESTClient().Get().
 			Namespace(f.Namespace.Name).
 			Resource("pods").
 			Name(pod.Name).
@@ -601,11 +582,6 @@ var _ = framework.KubeDescribe("Pods", func() {
 			},
 		}
 
-		defer func() {
-			By("deleting the pod")
-			podClient.Delete(pod.Name, api.NewDeleteOptions(0))
-		}()
-
 		delay1, delay2 := startPodAndGetBackOffs(podClient, pod, buildBackOffDuration)
 
 		By("updating the image")
@@ -646,11 +622,6 @@ var _ = framework.KubeDescribe("Pods", func() {
 				},
 			},
 		}
-
-		defer func() {
-			By("deleting the pod")
-			podClient.Delete(pod.Name, api.NewDeleteOptions(0))
-		}()
 
 		podClient.CreateSync(pod)
 		time.Sleep(2 * kubelet.MaxContainerBackOff) // it takes slightly more than 2*x to get to a back-off of x

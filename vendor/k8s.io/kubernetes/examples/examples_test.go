@@ -130,11 +130,11 @@ func validateObject(obj runtime.Object) (errors field.ErrorList) {
 			t.Namespace = api.NamespaceDefault
 		}
 		errors = expvalidation.ValidateDaemonSet(t)
-	case *apps.PetSet:
+	case *apps.StatefulSet:
 		if t.Namespace == "" {
 			t.Namespace = api.NamespaceDefault
 		}
-		errors = appsvalidation.ValidatePetSet(t)
+		errors = appsvalidation.ValidateStatefulSet(t)
 	default:
 		errors = field.ErrorList{}
 		errors = append(errors, field.InternalError(field.NewPath(""), fmt.Errorf("no validation defined for %#v", obj)))
@@ -218,10 +218,10 @@ func TestExampleObjectSchemas(t *testing.T) {
 			"rbd-with-secret": &api.Pod{},
 		},
 		"../examples/storage/cassandra": {
-			"cassandra-daemonset":  &extensions.DaemonSet{},
-			"cassandra-controller": &api.ReplicationController{},
-			"cassandra-service":    &api.Service{},
-			"cassandra-petset":     &apps.PetSet{},
+			"cassandra-daemonset":   &extensions.DaemonSet{},
+			"cassandra-controller":  &api.ReplicationController{},
+			"cassandra-service":     &api.Service{},
+			"cassandra-statefulset": &apps.StatefulSet{},
 		},
 		"../examples/cluster-dns": {
 			"dns-backend-rc":      &api.ReplicationController{},
@@ -291,13 +291,14 @@ func TestExampleObjectSchemas(t *testing.T) {
 			"rc":             &api.ReplicationController{},
 		},
 		"../examples/spark": {
-			"namespace-spark-cluster": &api.Namespace{},
-			"spark-master-controller": &api.ReplicationController{},
-			"spark-master-service":    &api.Service{},
-			"spark-webui":             &api.Service{},
-			"spark-worker-controller": &api.ReplicationController{},
-			"zeppelin-controller":     &api.ReplicationController{},
-			"zeppelin-service":        &api.Service{},
+			"namespace-spark-cluster":   &api.Namespace{},
+			"spark-master-controller":   &api.ReplicationController{},
+			"spark-master-service":      &api.Service{},
+			"spark-ui-proxy-controller": &api.ReplicationController{},
+			"spark-ui-proxy-service":    &api.Service{},
+			"spark-worker-controller":   &api.ReplicationController{},
+			"zeppelin-controller":       &api.ReplicationController{},
+			"zeppelin-service":          &api.Service{},
 		},
 		"../examples/spark/spark-gluster": {
 			"spark-master-service":    &api.Service{},

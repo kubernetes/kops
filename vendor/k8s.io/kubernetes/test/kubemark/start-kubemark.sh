@@ -28,6 +28,15 @@ ${APISERVER_TEST_ARGS}
 --storage-backend=${STORAGE_BACKEND}
 --service-cluster-ip-range="${SERVICE_CLUSTER_IP_RANGE}"
 EOF
+if [ -z "${CUSTOM_ADMISSION_PLUGINS:-}"]; then
+ cat >> "${RESOURCE_DIRECTORY}/apiserver_flags" <<EOF
+--admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,ResourceQuota
+EOF
+else
+  cat >> "${RESOURCE_DIRECTORY}/apiserver_flags" <<EOF
+--admission-control=${CUSTOM_ADMISSION_PLUGINS}
+EOF
+fi
 sed -i'' -e "s/\"//g" "${RESOURCE_DIRECTORY}/apiserver_flags"
 
   cat > "${RESOURCE_DIRECTORY}/scheduler_flags" <<EOF
@@ -97,6 +106,7 @@ run-gcloud-compute-with-retries instances create "${MASTER_NAME}" \
   --tags "${MASTER_TAG}" \
   --network "${NETWORK}" \
   --scopes "storage-ro,compute-rw,logging-write" \
+  --boot-disk-size "${MASTER_ROOT_DISK_SIZE}" \
   --disk "name=${MASTER_NAME}-pd,device-name=master-pd,mode=rw,boot=no,auto-delete=no"
 
 run-gcloud-compute-with-retries firewall-rules create "${INSTANCE_PREFIX}-kubemark-master-https" \
@@ -147,7 +157,7 @@ gcloud compute copy-files --zone="${ZONE}" --project="${PROJECT}" \
 
 gcloud compute ssh "${MASTER_NAME}" --zone="${ZONE}" --project="${PROJECT}" \
   --command="chmod a+x configure-kubectl.sh && chmod a+x start-kubemark-master.sh && \
-             sudo ./start-kubemark-master.sh ${EVENT_STORE_IP:-127.0.0.1} ${NUM_NODES:-0} ${TEST_ETCD_VERSION:-}"
+             sudo ./start-kubemark-master.sh ${EVENT_STORE_IP:-127.0.0.1} ${NUM_NODES:-0} ${ETCD_IMAGE:-}"
 
 # create kubeconfig for Kubelet:
 KUBECONFIG_CONTENTS=$(echo "apiVersion: v1

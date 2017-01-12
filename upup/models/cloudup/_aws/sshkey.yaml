@@ -1,2 +1,0 @@
-sshKey/{{ SSHKeyName}}:
-  publicKey: resources/ssh-public-key

@@ -152,6 +152,22 @@
   },
   "shapes":{
     "AcceptLanguage":{"type":"string"},
+    "AccessLevelFilter":{
+      "type":"structure",
+      "members":{
+        "Key":{"shape":"AccessLevelFilterKey"},
+        "Value":{"shape":"AccessLevelFilterValue"}
+      }
+    },
+    "AccessLevelFilterKey":{
+      "type":"string",
+      "enum":[
+        "Account",
+        "Role",
+        "User"
+      ]
+    },
+    "AccessLevelFilterValue":{"type":"string"},
     "AllowedValue":{"type":"string"},
     "AllowedValues":{
       "type":"list",
@@ -253,7 +269,10 @@
     "ErrorCode":{"type":"string"},
     "ErrorDescription":{"type":"string"},
     "HasDefaultPath":{"type":"boolean"},
-    "Id":{"type":"string"},
+    "Id":{
+      "type":"string",
+      "min":1
+    },
     "IdempotencyToken":{
       "type":"string",
       "max":128,
@@ -304,6 +323,7 @@
       "type":"structure",
       "members":{
         "AcceptLanguage":{"shape":"AcceptLanguage"},
+        "AccessLevelFilter":{"shape":"AccessLevelFilter"},
         "SearchFilter":{"shape":"ListRecordHistorySearchFilter"},
         "PageSize":{"shape":"PageSize"},
         "PageToken":{"shape":"PageToken"}
@@ -611,6 +631,7 @@
       "type":"structure",
       "members":{
         "AcceptLanguage":{"shape":"AcceptLanguage"},
+        "AccessLevelFilter":{"shape":"AccessLevelFilter"},
         "PageSize":{"shape":"PageSize"},
         "PageToken":{"shape":"PageToken"}
       }

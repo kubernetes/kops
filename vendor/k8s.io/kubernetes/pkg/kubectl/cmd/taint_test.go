@@ -27,8 +27,9 @@ import (
 
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
-	"k8s.io/kubernetes/pkg/client/unversioned/fake"
+	"k8s.io/kubernetes/pkg/client/restclient/fake"
 	"k8s.io/kubernetes/pkg/conversion"
+	cmdtesting "k8s.io/kubernetes/pkg/kubectl/cmd/testing"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/runtime"
 )
@@ -251,16 +252,21 @@ func TestTaint(t *testing.T) {
 
 	for _, test := range tests {
 		oldNode, expectNewNode := generateNodeAndTaintedNode(test.oldTaints, test.newTaints)
-
 		new_node := &api.Node{}
 		tainted := false
-		f, tf, codec, ns := NewAPIFactory()
+		f, tf, codec, ns := cmdtesting.NewAPIFactory()
 
 		tf.Client = &fake.RESTClient{
 			NegotiatedSerializer: ns,
 			Client: fake.CreateHTTPClient(func(req *http.Request) (*http.Response, error) {
 				m := &MyReq{req}
 				switch {
+				case m.isFor("GET", "/version"):
+					resp, err := genResponseWithJsonEncodedBody(serverVersion_1_5_0)
+					if err != nil {
+						t.Fatalf("error: failed to generate server version response: %#v\n", serverVersion_1_5_0)
+					}
+					return resp, nil
 				case m.isFor("GET", "/nodes/node-name"):
 					return &http.Response{StatusCode: 200, Header: defaultHeader(), Body: objBody(codec, oldNode)}, nil
 				case m.isFor("PATCH", "/nodes/node-name"), m.isFor("PUT", "/nodes/node-name"):

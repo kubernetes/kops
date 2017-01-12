@@ -20,34 +20,45 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"reflect"
 	"strings"
+	"time"
 
-	"github.com/renstrom/dedent"
+	"github.com/jonboulle/clockwork"
 	"github.com/spf13/cobra"
 
 	"k8s.io/kubernetes/pkg/api"
+	apierrors "k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/meta"
+	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/apis/policy"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/client/restclient"
 	"k8s.io/kubernetes/pkg/fields"
+	"k8s.io/kubernetes/pkg/kubectl"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
 	"k8s.io/kubernetes/pkg/kubelet/types"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/util/wait"
 )
 
 type DrainOptions struct {
 	client             *internalclientset.Clientset
 	restClient         *restclient.RESTClient
-	factory            *cmdutil.Factory
+	factory            cmdutil.Factory
 	Force              bool
 	GracePeriodSeconds int
 	IgnoreDaemonsets   bool
+	Timeout            time.Duration
+	backOff            clockwork.Clock
 	DeleteLocalData    bool
 	mapper             meta.RESTMapper
 	nodeInfo           *resource.Info
 	out                io.Writer
+	errOut             io.Writer
 	typer              runtime.ObjectTyper
 }
 
@@ -62,25 +73,28 @@ type fatal struct {
 }
 
 const (
+	EvictionKind        = "Eviction"
+	EvictionSubresource = "pods/eviction"
+
 	kDaemonsetFatal      = "DaemonSet-managed pods (use --ignore-daemonsets to ignore)"
 	kDaemonsetWarning    = "Ignoring DaemonSet-managed pods"
 	kLocalStorageFatal   = "pods with local storage (use --delete-local-data to override)"
 	kLocalStorageWarning = "Deleting pods with local storage"
 	kUnmanagedFatal      = "pods not managed by ReplicationController, ReplicaSet, Job, or DaemonSet (use --force to override)"
 	kUnmanagedWarning    = "Deleting pods not managed by ReplicationController, ReplicaSet, Job, or DaemonSet"
+	kMaxNodeUpdateRetry  = 10
 )
 
 var (
-	cordon_long = dedent.Dedent(`
-		Mark node as unschedulable.
-		`)
-	cordon_example = dedent.Dedent(`
+	cordon_long = templates.LongDesc(`
+		Mark node as unschedulable.`)
+
+	cordon_example = templates.Examples(`
 		# Mark node "foo" as unschedulable.
-		kubectl cordon foo
-		`)
+		kubectl cordon foo`)
 )
 
-func NewCmdCordon(f *cmdutil.Factory, out io.Writer) *cobra.Command {
+func NewCmdCordon(f cmdutil.Factory, out io.Writer) *cobra.Command {
 	options := &DrainOptions{factory: f, out: out}
 
 	cmd := &cobra.Command{
@@ -97,16 +111,15 @@ func NewCmdCordon(f *cmdutil.Factory, out io.Writer) *cobra.Command {
 }
 
 var (
-	uncordon_long = dedent.Dedent(`
-		Mark node as schedulable.
-		`)
-	uncordon_example = dedent.Dedent(`
+	uncordon_long = templates.LongDesc(`
+		Mark node as schedulable.`)
+
+	uncordon_example = templates.Examples(`
 		# Mark node "foo" as schedulable.
-		$ kubectl uncordon foo
-		`)
+		$ kubectl uncordon foo`)
 )
 
-func NewCmdUncordon(f *cmdutil.Factory, out io.Writer) *cobra.Command {
+func NewCmdUncordon(f cmdutil.Factory, out io.Writer) *cobra.Command {
 	options := &DrainOptions{factory: f, out: out}
 
 	cmd := &cobra.Command{
@@ -123,7 +136,7 @@ func NewCmdUncordon(f *cmdutil.Factory, out io.Writer) *cobra.Command {
 }
 
 var (
-	drain_long = dedent.Dedent(`
+	drain_long = templates.LongDesc(`
 		Drain node in preparation for maintenance.
 
 		The given node will be marked unschedulable to prevent new pods from arriving.
@@ -139,20 +152,18 @@ var (
 		When you are ready to put the node back into service, use kubectl uncordon, which
 		will make the node schedulable again.
 
-		![Workflow](http://kubernetes.io/images/docs/kubectl_drain.svg)
-		`)
+		![Workflow](http://kubernetes.io/images/docs/kubectl_drain.svg)`)
 
-	drain_example = dedent.Dedent(`
+	drain_example = templates.Examples(`
 		# Drain node "foo", even if there are pods not managed by a ReplicationController, ReplicaSet, Job, or DaemonSet on it.
 		$ kubectl drain foo --force
 
 		# As above, but abort if there are pods not managed by a ReplicationController, ReplicaSet, Job, or DaemonSet, and use a grace period of 15 minutes.
-		$ kubectl drain foo --grace-period=900
-		`)
+		$ kubectl drain foo --grace-period=900`)
 )
 
-func NewCmdDrain(f *cmdutil.Factory, out io.Writer) *cobra.Command {
-	options := &DrainOptions{factory: f, out: out}
+func NewCmdDrain(f cmdutil.Factory, out, errOut io.Writer) *cobra.Command {
+	options := &DrainOptions{factory: f, out: out, errOut: errOut, backOff: clockwork.NewRealClock()}
 
 	cmd := &cobra.Command{
 		Use:     "drain NODE",
@@ -168,6 +179,7 @@ func NewCmdDrain(f *cmdutil.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.IgnoreDaemonsets, "ignore-daemonsets", false, "Ignore DaemonSet-managed pods.")
 	cmd.Flags().BoolVar(&options.DeleteLocalData, "delete-local-data", false, "Continue even if there are pods using emptyDir (local data that will be deleted when the node is drained).")
 	cmd.Flags().IntVar(&options.GracePeriodSeconds, "grace-period", -1, "Period of time in seconds given to each pod to terminate gracefully. If negative, the default value specified in the pod will be used.")
+	cmd.Flags().DurationVar(&options.Timeout, "timeout", 0, "The length of time to wait before giving up on a delete, zero means determine a timeout from the size of the object")
 	return cmd
 }
 
@@ -219,16 +231,43 @@ func (o *DrainOptions) RunDrain() error {
 		return err
 	}
 
+	err := o.deleteOrEvictPodsSimple()
+	// TODO: update IsTooManyRequests() when the TooManyRequests(429) error returned from the API server has a non-empty Reason field
+	for i := 1; i <= maxPatchRetry && apierrors.IsTooManyRequests(err); i++ {
+		if i > triesBeforeBackOff {
+			currBackOffPeriod := time.Duration(math.Exp2(float64(i-triesBeforeBackOff))) * backOffPeriod
+			fmt.Fprintf(o.errOut, "Retry in %v\n", currBackOffPeriod)
+			o.backOff.Sleep(currBackOffPeriod)
+		}
+		fmt.Fprintf(o.errOut, "Retrying\n")
+		err = o.deleteOrEvictPodsSimple()
+	}
+	if err == nil {
+		cmdutil.PrintSuccess(o.mapper, false, o.out, "node", o.nodeInfo.Name, false, "drained")
+	}
+	return err
+}
+
+func (o *DrainOptions) deleteOrEvictPodsSimple() error {
 	pods, err := o.getPodsForDeletion()
 	if err != nil {
 		return err
 	}
-
-	if err = o.deletePods(pods); err != nil {
-		return err
+	if o.Timeout == 0 {
+		o.Timeout = kubectl.Timeout + time.Duration(10*len(pods))*time.Second
 	}
-	cmdutil.PrintSuccess(o.mapper, false, o.out, "node", o.nodeInfo.Name, false, "drained")
-	return nil
+	err = o.deleteOrEvictPods(pods)
+	if err != nil {
+		pendingPods, newErr := o.getPodsForDeletion()
+		if newErr != nil {
+			return newErr
+		}
+		fmt.Fprintf(o.errOut, "There are pending pods when an error occurred: %v\n", err)
+		for _, pendingPod := range pendingPods {
+			fmt.Fprintf(o.errOut, "%s/%s\n", "pod", pendingPod.Name)
+		}
+	}
+	return err
 }
 
 func (o *DrainOptions) getController(sr *api.SerializedReference) (interface{}, error) {
@@ -241,6 +280,8 @@ func (o *DrainOptions) getController(sr *api.SerializedReference) (interface{}, 
 		return o.client.Batch().Jobs(sr.Reference.Namespace).Get(sr.Reference.Name)
 	case "ReplicaSet":
 		return o.client.Extensions().ReplicaSets(sr.Reference.Namespace).Get(sr.Reference.Name)
+	case "StatefulSet":
+		return o.client.Apps().StatefulSets(sr.Reference.Namespace).Get(sr.Reference.Name)
 	}
 	return nil, fmt.Errorf("Unknown controller kind %q", sr.Reference.Kind)
 }
@@ -250,7 +291,6 @@ func (o *DrainOptions) getPodCreator(pod api.Pod) (*api.SerializedReference, err
 	if !found {
 		return nil, nil
 	}
-
 	// Now verify that the specified creator actually exists.
 	sr := &api.SerializedReference{}
 	if err := runtime.DecodeInto(o.factory.Decoder(true), []byte(creatorRef), sr); err != nil {
@@ -378,28 +418,123 @@ func (o *DrainOptions) getPodsForDeletion() (pods []api.Pod, err error) {
 		return []api.Pod{}, errors.New(fs.Message())
 	}
 	if len(ws) > 0 {
-		fmt.Fprintf(o.out, "WARNING: %s\n", ws.Message())
+		fmt.Fprintf(o.errOut, "WARNING: %s\n", ws.Message())
 	}
 	return pods, nil
 }
 
-// deletePods deletes the pods on the api server
-func (o *DrainOptions) deletePods(pods []api.Pod) error {
-	deleteOptions := api.DeleteOptions{}
+func (o *DrainOptions) deletePod(pod api.Pod) error {
+	deleteOptions := &api.DeleteOptions{}
 	if o.GracePeriodSeconds >= 0 {
 		gracePeriodSeconds := int64(o.GracePeriodSeconds)
 		deleteOptions.GracePeriodSeconds = &gracePeriodSeconds
 	}
+	return o.client.Core().Pods(pod.Namespace).Delete(pod.Name, deleteOptions)
+}
+
+func (o *DrainOptions) evictPod(pod api.Pod, policyGroupVersion string) error {
+	deleteOptions := &api.DeleteOptions{}
+	if o.GracePeriodSeconds >= 0 {
+		gracePeriodSeconds := int64(o.GracePeriodSeconds)
+		deleteOptions.GracePeriodSeconds = &gracePeriodSeconds
+	}
+	eviction := &policy.Eviction{
+		TypeMeta: unversioned.TypeMeta{
+			APIVersion: policyGroupVersion,
+			Kind:       EvictionKind,
+		},
+		ObjectMeta: api.ObjectMeta{
+			Name:      pod.Name,
+			Namespace: pod.Namespace,
+		},
+		DeleteOptions: deleteOptions,
+	}
+	// Remember to change change the URL manipulation func when Evction's version change
+	return o.client.Policy().Evictions(eviction.Namespace).Evict(eviction)
+}
+
+// deleteOrEvictPods deletes or evicts the pods on the api server
+func (o *DrainOptions) deleteOrEvictPods(pods []api.Pod) error {
+	if len(pods) == 0 {
+		return nil
+	}
+
+	policyGroupVersion, err := SupportEviction(o.client)
+	if err != nil {
+		return err
+	}
 
 	for _, pod := range pods {
-		err := o.client.Core().Pods(pod.Namespace).Delete(pod.Name, &deleteOptions)
+		if len(policyGroupVersion) > 0 {
+			err = o.evictPod(pod, policyGroupVersion)
+		} else {
+			err = o.deletePod(pod)
+		}
 		if err != nil {
 			return err
 		}
-		cmdutil.PrintSuccess(o.mapper, false, o.out, "pod", pod.Name, false, "deleted")
 	}
 
-	return nil
+	getPodFn := func(namespace, name string) (*api.Pod, error) {
+		return o.client.Core().Pods(namespace).Get(name)
+	}
+	_, err = o.waitForDelete(pods, kubectl.Interval, o.Timeout, getPodFn)
+	return err
+}
+
+func (o *DrainOptions) waitForDelete(pods []api.Pod, interval, timeout time.Duration, getPodFn func(string, string) (*api.Pod, error)) ([]api.Pod, error) {
+	err := wait.PollImmediate(interval, timeout, func() (bool, error) {
+		pendingPods := []api.Pod{}
+		for i, pod := range pods {
+			p, err := getPodFn(pod.Namespace, pod.Name)
+			if apierrors.IsNotFound(err) || (p != nil && p.ObjectMeta.UID != pod.ObjectMeta.UID) {
+				cmdutil.PrintSuccess(o.mapper, false, o.out, "pod", pod.Name, false, "deleted")
+				continue
+			} else if err != nil {
+				return false, err
+			} else {
+				pendingPods = append(pendingPods, pods[i])
+			}
+		}
+		pods = pendingPods
+		if len(pendingPods) > 0 {
+			return false, nil
+		}
+		return true, nil
+	})
+	return pods, err
+}
+
+// SupportEviction uses Discovery API to find out if the server support eviction subresource
+// If support, it will return its groupVersion; Otherwise, it will return ""
+func SupportEviction(clientset *internalclientset.Clientset) (string, error) {
+	discoveryClient := clientset.Discovery()
+	groupList, err := discoveryClient.ServerGroups()
+	if err != nil {
+		return "", err
+	}
+	foundPolicyGroup := false
+	var policyGroupVersion string
+	for _, group := range groupList.Groups {
+		if group.Name == "policy" {
+			foundPolicyGroup = true
+			policyGroupVersion = group.PreferredVersion.GroupVersion
+			break
+		}
+	}
+	if !foundPolicyGroup {
+		return "", nil
+	}
+	resourceList, err := discoveryClient.ServerResourcesForGroupVersion("v1")
+	if err != nil {
+		return "", err
+	}
+	for _, resource := range resourceList.APIResources {
+		if resource.Name == EvictionSubresource && resource.Kind == EvictionKind {
+			return policyGroupVersion, nil
+		}
+	}
+	return "", nil
 }
 
 // RunCordonOrUncordon runs either Cordon or Uncordon.  The desired value for
@@ -417,7 +552,21 @@ func (o *DrainOptions) RunCordonOrUncordon(desired bool) error {
 		} else {
 			helper := resource.NewHelper(o.restClient, o.nodeInfo.Mapping)
 			unsched.SetBool(desired)
-			_, err := helper.Replace(cmdNamespace, o.nodeInfo.Name, true, o.nodeInfo.Object)
+			var err error
+			for i := 0; i < kMaxNodeUpdateRetry; i++ {
+				// We don't care about what previous versions may exist, we always want
+				// to overwrite, and Replace always sets current ResourceVersion if version is "".
+				helper.Versioner.SetResourceVersion(o.nodeInfo.Object, "")
+				_, err = helper.Replace(cmdNamespace, o.nodeInfo.Name, true, o.nodeInfo.Object)
+				if err != nil {
+					if !apierrors.IsConflict(err) {
+						return err
+					}
+				} else {
+					break
+				}
+				// It's a race, no need to sleep
+			}
 			if err != nil {
 				return err
 			}

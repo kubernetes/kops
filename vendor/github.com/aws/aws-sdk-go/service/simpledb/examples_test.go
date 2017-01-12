@@ -16,7 +16,13 @@ var _ time.Duration
 var _ bytes.Buffer
 
 func ExampleSimpleDB_BatchDeleteAttributes() {
-	svc := simpledb.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := simpledb.New(sess)
 
 	params := &simpledb.BatchDeleteAttributesInput{
 		DomainName: aws.String("String"), // Required
@@ -48,7 +54,13 @@ func ExampleSimpleDB_BatchDeleteAttributes() {
 }
 
 func ExampleSimpleDB_BatchPutAttributes() {
-	svc := simpledb.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := simpledb.New(sess)
 
 	params := &simpledb.BatchPutAttributesInput{
 		DomainName: aws.String("String"), // Required
@@ -81,7 +93,13 @@ func ExampleSimpleDB_BatchPutAttributes() {
 }
 
 func ExampleSimpleDB_CreateDomain() {
-	svc := simpledb.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := simpledb.New(sess)
 
 	params := &simpledb.CreateDomainInput{
 		DomainName: aws.String("String"), // Required
@@ -100,7 +118,13 @@ func ExampleSimpleDB_CreateDomain() {
 }
 
 func ExampleSimpleDB_DeleteAttributes() {
-	svc := simpledb.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := simpledb.New(sess)
 
 	params := &simpledb.DeleteAttributesInput{
 		DomainName: aws.String("String"), // Required
@@ -132,7 +156,13 @@ func ExampleSimpleDB_DeleteAttributes() {
 }
 
 func ExampleSimpleDB_DeleteDomain() {
-	svc := simpledb.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := simpledb.New(sess)
 
 	params := &simpledb.DeleteDomainInput{
 		DomainName: aws.String("String"), // Required
@@ -151,7 +181,13 @@ func ExampleSimpleDB_DeleteDomain() {
 }
 
 func ExampleSimpleDB_DomainMetadata() {
-	svc := simpledb.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := simpledb.New(sess)
 
 	params := &simpledb.DomainMetadataInput{
 		DomainName: aws.String("String"), // Required
@@ -170,7 +206,13 @@ func ExampleSimpleDB_DomainMetadata() {
 }
 
 func ExampleSimpleDB_GetAttributes() {
-	svc := simpledb.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := simpledb.New(sess)
 
 	params := &simpledb.GetAttributesInput{
 		DomainName: aws.String("String"), // Required
@@ -195,7 +237,13 @@ func ExampleSimpleDB_GetAttributes() {
 }
 
 func ExampleSimpleDB_ListDomains() {
-	svc := simpledb.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := simpledb.New(sess)
 
 	params := &simpledb.ListDomainsInput{
 		MaxNumberOfDomains: aws.Int64(1),
@@ -215,7 +263,13 @@ func ExampleSimpleDB_ListDomains() {
 }
 
 func ExampleSimpleDB_PutAttributes() {
-	svc := simpledb.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := simpledb.New(sess)
 
 	params := &simpledb.PutAttributesInput{
 		Attributes: []*simpledb.ReplaceableAttribute{ // Required
@@ -248,7 +302,13 @@ func ExampleSimpleDB_PutAttributes() {
 }
 
 func ExampleSimpleDB_Select() {
-	svc := simpledb.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := simpledb.New(sess)
 
 	params := &simpledb.SelectInput{
 		SelectExpression: aws.String("String"), // Required

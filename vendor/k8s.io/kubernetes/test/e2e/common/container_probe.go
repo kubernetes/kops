@@ -24,6 +24,7 @@ import (
 	"k8s.io/kubernetes/pkg/util/intstr"
 	"k8s.io/kubernetes/pkg/util/uuid"
 	"k8s.io/kubernetes/test/e2e/framework"
+	testutils "k8s.io/kubernetes/test/utils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -51,7 +52,7 @@ var _ = framework.KubeDescribe("Probing container", func() {
 
 		p, err := podClient.Get(p.Name)
 		framework.ExpectNoError(err)
-		isReady, err := framework.PodRunningReady(p)
+		isReady, err := testutils.PodRunningReady(p)
 		framework.ExpectNoError(err)
 		Expect(isReady).To(BeTrue(), "pod should be ready")
 
@@ -85,7 +86,7 @@ var _ = framework.KubeDescribe("Probing container", func() {
 		p, err := podClient.Get(p.Name)
 		framework.ExpectNoError(err)
 
-		isReady, err := framework.PodRunningReady(p)
+		isReady, err := testutils.PodRunningReady(p)
 		Expect(isReady).NotTo(BeTrue(), "pod should be not ready")
 
 		restartCount := getRestartCount(p)
@@ -232,6 +233,35 @@ var _ = framework.KubeDescribe("Probing container", func() {
 		}, 0, defaultObservationTimeout)
 	})
 
+	It("should be restarted with a docker exec liveness probe with timeout [Conformance]", func() {
+		// TODO: enable this test once the default exec handler supports timeout.
+		Skip("The default exec handler, dockertools.NativeExecHandler, does not support timeouts due to a limitation in the Docker Remote API")
+		runLivenessTest(f, &api.Pod{
+			ObjectMeta: api.ObjectMeta{
+				Name:   "liveness-exec",
+				Labels: map[string]string{"test": "liveness"},
+			},
+			Spec: api.PodSpec{
+				Containers: []api.Container{
+					{
+						Name:    "liveness",
+						Image:   "gcr.io/google_containers/busybox:1.24",
+						Command: []string{"/bin/sh", "-c", "sleep 600"},
+						LivenessProbe: &api.Probe{
+							Handler: api.Handler{
+								Exec: &api.ExecAction{
+									Command: []string{"/bin/sh", "-c", "sleep 10"},
+								},
+							},
+							InitialDelaySeconds: 15,
+							TimeoutSeconds:      1,
+							FailureThreshold:    1,
+						},
+					},
+				},
+			},
+		}, 1, defaultObservationTimeout)
+	})
 })
 
 func getContainerStartedTime(p *api.Pod, containerName string) (time.Time, error) {
@@ -330,7 +360,7 @@ func runLivenessTest(f *framework.Framework, pod *api.Pod, expectNumRestarts int
 	// Wait until the pod is not pending. (Here we need to check for something other than
 	// 'Pending' other than checking for 'Running', since when failures occur, we go to
 	// 'Terminated' which can cause indefinite blocking.)
-	framework.ExpectNoError(framework.WaitForPodNotPending(f.Client, ns, pod.Name, pod.ResourceVersion),
+	framework.ExpectNoError(framework.WaitForPodNotPending(f.ClientSet, ns, pod.Name, pod.ResourceVersion),
 		fmt.Sprintf("starting pod %s in namespace %s", pod.Name, ns))
 	framework.Logf("Started pod %s in namespace %s", pod.Name, ns)
 

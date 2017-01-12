@@ -28,6 +28,7 @@ NUM_NODES=${NUM_NODES:-100}
 MASTER_SIZE=${MASTER_SIZE:-n1-standard-$(get-master-size)}
 MASTER_DISK_TYPE=pd-ssd
 MASTER_DISK_SIZE=${MASTER_DISK_SIZE:-20GB}
+MASTER_ROOT_DISK_SIZE=${KUBEMARK_MASTER_ROOT_DISK_SIZE:-10GB}
 REGISTER_MASTER_KUBELET=${REGISTER_MASTER:-false}
 PREEMPTIBLE_NODE=${PREEMPTIBLE_NODE:-false}
 
@@ -41,14 +42,16 @@ INSTANCE_PREFIX="${INSTANCE_PREFIX:-"default"}"
 MASTER_NAME="${INSTANCE_PREFIX}-kubemark-master"
 MASTER_TAG="kubemark-master"
 MASTER_IP_RANGE="${MASTER_IP_RANGE:-10.246.0.0/24}"
-CLUSTER_IP_RANGE="${CLUSTER_IP_RANGE:-10.240.0.0/13}"
+CLUSTER_IP_RANGE="${CLUSTER_IP_RANGE:-10.240.0.0/11}"
 RUNTIME_CONFIG="${KUBE_RUNTIME_CONFIG:-}"
 TERMINATED_POD_GC_THRESHOLD=${TERMINATED_POD_GC_THRESHOLD:-100}
 
-# Set etcd version (e.g. 3.0.4-migration.1) if you need non-default version.
-TEST_ETCD_VERSION="${TEST_ETCD_VERSION:-}"
+# Set etcd image (e.g. 3.0.14-experimental.1) version (e.g. 3.0.14) if you need
+# non-default version.
+ETCD_IMAGE="${TEST_ETCD_IMAGE:-}"
+ETCD_VERSION="${TEST_ETCD_VERSION:-}"
 # Storage backend. 'etcd2' supported, 'etcd3' experimental.
-STORAGE_BACKEND=${STORAGE_BACKEND:-etcd2}
+STORAGE_BACKEND=${STORAGE_BACKEND:-}
 
 # Default Log level for all components in test clusters and variables to override it in specific components.
 TEST_CLUSTER_LOG_LEVEL="${TEST_CLUSTER_LOG_LEVEL:---v=2}"

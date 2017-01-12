@@ -16,7 +16,13 @@ var _ time.Duration
 var _ bytes.Buffer
 
 func ExampleCodePipeline_AcknowledgeJob() {
-	svc := codepipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
 
 	params := &codepipeline.AcknowledgeJobInput{
 		JobId: aws.String("JobId"), // Required
@@ -36,7 +42,13 @@ func ExampleCodePipeline_AcknowledgeJob() {
 }
 
 func ExampleCodePipeline_AcknowledgeThirdPartyJob() {
-	svc := codepipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
 
 	params := &codepipeline.AcknowledgeThirdPartyJobInput{
 		ClientToken: aws.String("ClientToken"),     // Required
@@ -57,7 +69,13 @@ func ExampleCodePipeline_AcknowledgeThirdPartyJob() {
 }
 
 func ExampleCodePipeline_CreateCustomActionType() {
-	svc := codepipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
 
 	params := &codepipeline.CreateCustomActionTypeInput{
 		Category: aws.String("ActionCategory"), // Required
@@ -104,7 +122,13 @@ func ExampleCodePipeline_CreateCustomActionType() {
 }
 
 func ExampleCodePipeline_CreatePipeline() {
-	svc := codepipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
 
 	params := &codepipeline.CreatePipelineInput{
 		Pipeline: &codepipeline.PipelineDeclaration{ // Required
@@ -178,7 +202,13 @@ func ExampleCodePipeline_CreatePipeline() {
 }
 
 func ExampleCodePipeline_DeleteCustomActionType() {
-	svc := codepipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
 
 	params := &codepipeline.DeleteCustomActionTypeInput{
 		Category: aws.String("ActionCategory"), // Required
@@ -199,7 +229,13 @@ func ExampleCodePipeline_DeleteCustomActionType() {
 }
 
 func ExampleCodePipeline_DeletePipeline() {
-	svc := codepipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
 
 	params := &codepipeline.DeletePipelineInput{
 		Name: aws.String("PipelineName"), // Required
@@ -218,7 +254,13 @@ func ExampleCodePipeline_DeletePipeline() {
 }
 
 func ExampleCodePipeline_DisableStageTransition() {
-	svc := codepipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
 
 	params := &codepipeline.DisableStageTransitionInput{
 		PipelineName:   aws.String("PipelineName"),        // Required
@@ -240,7 +282,13 @@ func ExampleCodePipeline_DisableStageTransition() {
 }
 
 func ExampleCodePipeline_EnableStageTransition() {
-	svc := codepipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
 
 	params := &codepipeline.EnableStageTransitionInput{
 		PipelineName:   aws.String("PipelineName"),        // Required
@@ -261,7 +309,13 @@ func ExampleCodePipeline_EnableStageTransition() {
 }
 
 func ExampleCodePipeline_GetJobDetails() {
-	svc := codepipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
 
 	params := &codepipeline.GetJobDetailsInput{
 		JobId: aws.String("JobId"), // Required
@@ -280,7 +334,13 @@ func ExampleCodePipeline_GetJobDetails() {
 }
 
 func ExampleCodePipeline_GetPipeline() {
-	svc := codepipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
 
 	params := &codepipeline.GetPipelineInput{
 		Name:    aws.String("PipelineName"), // Required
@@ -299,8 +359,40 @@ func ExampleCodePipeline_GetPipeline() {
 	fmt.Println(resp)
 }
 
+func ExampleCodePipeline_GetPipelineExecution() {
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
+
+	params := &codepipeline.GetPipelineExecutionInput{
+		PipelineExecutionId: aws.String("PipelineExecutionId"), // Required
+		PipelineName:        aws.String("PipelineName"),        // Required
+	}
+	resp, err := svc.GetPipelineExecution(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
 func ExampleCodePipeline_GetPipelineState() {
-	svc := codepipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
 
 	params := &codepipeline.GetPipelineStateInput{
 		Name: aws.String("PipelineName"), // Required
@@ -319,7 +411,13 @@ func ExampleCodePipeline_GetPipelineState() {
 }
 
 func ExampleCodePipeline_GetThirdPartyJobDetails() {
-	svc := codepipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
 
 	params := &codepipeline.GetThirdPartyJobDetailsInput{
 		ClientToken: aws.String("ClientToken"),     // Required
@@ -339,7 +437,13 @@ func ExampleCodePipeline_GetThirdPartyJobDetails() {
 }
 
 func ExampleCodePipeline_ListActionTypes() {
-	svc := codepipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
 
 	params := &codepipeline.ListActionTypesInput{
 		ActionOwnerFilter: aws.String("ActionOwner"),
@@ -359,7 +463,13 @@ func ExampleCodePipeline_ListActionTypes() {
 }
 
 func ExampleCodePipeline_ListPipelines() {
-	svc := codepipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
 
 	params := &codepipeline.ListPipelinesInput{
 		NextToken: aws.String("NextToken"),
@@ -378,7 +488,13 @@ func ExampleCodePipeline_ListPipelines() {
 }
 
 func ExampleCodePipeline_PollForJobs() {
-	svc := codepipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
 
 	params := &codepipeline.PollForJobsInput{
 		ActionTypeId: &codepipeline.ActionTypeId{ // Required
@@ -407,7 +523,13 @@ func ExampleCodePipeline_PollForJobs() {
 }
 
 func ExampleCodePipeline_PollForThirdPartyJobs() {
-	svc := codepipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
 
 	params := &codepipeline.PollForThirdPartyJobsInput{
 		ActionTypeId: &codepipeline.ActionTypeId{ // Required
@@ -432,7 +554,13 @@ func ExampleCodePipeline_PollForThirdPartyJobs() {
 }
 
 func ExampleCodePipeline_PutActionRevision() {
-	svc := codepipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
 
 	params := &codepipeline.PutActionRevisionInput{
 		ActionName: aws.String("ActionName"), // Required
@@ -458,7 +586,13 @@ func ExampleCodePipeline_PutActionRevision() {
 }
 
 func ExampleCodePipeline_PutApprovalResult() {
-	svc := codepipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
 
 	params := &codepipeline.PutApprovalResultInput{
 		ActionName:   aws.String("ActionName"),   // Required
@@ -467,8 +601,8 @@ func ExampleCodePipeline_PutApprovalResult() {
 			Status:  aws.String("ApprovalStatus"),  // Required
 			Summary: aws.String("ApprovalSummary"), // Required
 		},
-		StageName: aws.String("StageName"), // Required
-		Token:     aws.String("ApprovalToken"),
+		StageName: aws.String("StageName"),     // Required
+		Token:     aws.String("ApprovalToken"), // Required
 	}
 	resp, err := svc.PutApprovalResult(params)
 
@@ -484,7 +618,13 @@ func ExampleCodePipeline_PutApprovalResult() {
 }
 
 func ExampleCodePipeline_PutJobFailureResult() {
-	svc := codepipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
 
 	params := &codepipeline.PutJobFailureResultInput{
 		FailureDetails: &codepipeline.FailureDetails{ // Required
@@ -508,7 +648,13 @@ func ExampleCodePipeline_PutJobFailureResult() {
 }
 
 func ExampleCodePipeline_PutJobSuccessResult() {
-	svc := codepipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
 
 	params := &codepipeline.PutJobSuccessResultInput{
 		JobId:             aws.String("JobId"), // Required
@@ -516,6 +662,8 @@ func ExampleCodePipeline_PutJobSuccessResult() {
 		CurrentRevision: &codepipeline.CurrentRevision{
 			ChangeIdentifier: aws.String("RevisionChangeIdentifier"), // Required
 			Revision:         aws.String("Revision"),                 // Required
+			Created:          aws.Time(time.Now()),
+			RevisionSummary:  aws.String("RevisionSummary"),
 		},
 		ExecutionDetails: &codepipeline.ExecutionDetails{
 			ExternalExecutionId: aws.String("ExecutionId"),
@@ -537,7 +685,13 @@ func ExampleCodePipeline_PutJobSuccessResult() {
 }
 
 func ExampleCodePipeline_PutThirdPartyJobFailureResult() {
-	svc := codepipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
 
 	params := &codepipeline.PutThirdPartyJobFailureResultInput{
 		ClientToken: aws.String("ClientToken"), // Required
@@ -562,7 +716,13 @@ func ExampleCodePipeline_PutThirdPartyJobFailureResult() {
 }
 
 func ExampleCodePipeline_PutThirdPartyJobSuccessResult() {
-	svc := codepipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
 
 	params := &codepipeline.PutThirdPartyJobSuccessResultInput{
 		ClientToken:       aws.String("ClientToken"),     // Required
@@ -571,6 +731,8 @@ func ExampleCodePipeline_PutThirdPartyJobSuccessResult() {
 		CurrentRevision: &codepipeline.CurrentRevision{
 			ChangeIdentifier: aws.String("RevisionChangeIdentifier"), // Required
 			Revision:         aws.String("Revision"),                 // Required
+			Created:          aws.Time(time.Now()),
+			RevisionSummary:  aws.String("RevisionSummary"),
 		},
 		ExecutionDetails: &codepipeline.ExecutionDetails{
 			ExternalExecutionId: aws.String("ExecutionId"),
@@ -592,7 +754,13 @@ func ExampleCodePipeline_PutThirdPartyJobSuccessResult() {
 }
 
 func ExampleCodePipeline_RetryStageExecution() {
-	svc := codepipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
 
 	params := &codepipeline.RetryStageExecutionInput{
 		PipelineExecutionId: aws.String("PipelineExecutionId"), // Required
@@ -614,7 +782,13 @@ func ExampleCodePipeline_RetryStageExecution() {
 }
 
 func ExampleCodePipeline_StartPipelineExecution() {
-	svc := codepipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
 
 	params := &codepipeline.StartPipelineExecutionInput{
 		Name: aws.String("PipelineName"), // Required
@@ -633,7 +807,13 @@ func ExampleCodePipeline_StartPipelineExecution() {
 }
 
 func ExampleCodePipeline_UpdatePipeline() {
-	svc := codepipeline.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := codepipeline.New(sess)
 
 	params := &codepipeline.UpdatePipelineInput{
 		Pipeline: &codepipeline.PipelineDeclaration{ // Required

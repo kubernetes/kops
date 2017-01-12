@@ -33,25 +33,26 @@ func newInstanceGroupVFS(c *VFSClientset, clusterName string) *InstanceGroupVFS 
 		glog.Fatalf("clusterName is required")
 	}
 
-	key := "instancegroup"
+	kind := "InstanceGroup"
 
 	r := &InstanceGroupVFS{}
-	r.init(key, c.basePath.Join(clusterName, key), v1alpha1.SchemeGroupVersion)
+	r.init(kind, c.basePath.Join(clusterName, "instancegroup"), StoreVersion)
+	defaultReadVersion := v1alpha1.SchemeGroupVersion.WithKind(kind)
+	r.defaultReadVersion = &defaultReadVersion
 	return r
 }
 
 var _ simple.InstanceGroupInterface = &InstanceGroupVFS{}
 
 func (c *InstanceGroupVFS) Get(name string) (*api.InstanceGroup, error) {
-	v := &api.InstanceGroup{}
-	found, err := c.get(name, v)
+	o, err := c.get(name)
 	if err != nil {
 		return nil, err
 	}
-	if !found {
+	if o == nil {
 		return nil, nil
 	}
-	return v, nil
+	return o.(*api.InstanceGroup), nil
 }
 
 func (c *InstanceGroupVFS) List(options k8sapi.ListOptions) (*api.InstanceGroupList, error) {

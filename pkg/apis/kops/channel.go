@@ -21,6 +21,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"net/url"
 )
@@ -30,7 +31,7 @@ const DefaultChannel = "stable"
 
 type Channel struct {
 	unversioned.TypeMeta `json:",inline"`
-	ObjectMeta    `json:"metadata,omitempty"`
+	ObjectMeta           api.ObjectMeta `json:"metadata,omitempty"`
 
 	Spec ChannelSpec `json:"spec,omitempty"`
 }
@@ -71,11 +72,11 @@ func LoadChannel(location string) (*Channel, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error reading channel %q: %v", resolved, err)
 	}
-	err = ParseYaml(channelBytes, channel)
+	err = ParseRawYaml(channelBytes, channel)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing channel %q: %v", resolved, err)
 	}
-	glog.V(4).Info("Channel contents: %s", string(channelBytes))
+	glog.V(4).Infof("Channel contents: %s", string(channelBytes))
 	return channel, nil
 }
 

@@ -25,7 +25,7 @@ import (
 	"k8s.io/kops/util/pkg/tables"
 	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 	"os"
 	"strconv"
@@ -33,11 +33,13 @@ import (
 )
 
 type RollingUpdateClusterCmd struct {
-	Yes            bool
-	Force          bool
-	CloudOnly      bool
-	MasterInterval time.Duration
-	NodeInterval   time.Duration
+	Yes       bool
+	Force     bool
+	CloudOnly bool
+
+	MasterInterval  time.Duration
+	NodeInterval    time.Duration
+	BastionInterval time.Duration
 
 	cobraCommand *cobra.Command
 }
@@ -57,8 +59,10 @@ func init() {
 	cmd.Flags().BoolVar(&rollingupdateCluster.Yes, "yes", false, "perform rolling update without confirmation")
 	cmd.Flags().BoolVar(&rollingupdateCluster.Force, "force", false, "Force rolling update, even if no changes")
 	cmd.Flags().BoolVar(&rollingupdateCluster.CloudOnly, "cloudonly", false, "Perform rolling update without confirming progress with k8s")
+
 	cmd.Flags().DurationVar(&rollingupdateCluster.MasterInterval, "master-interval", 5*time.Minute, "Time to wait between restarting masters")
 	cmd.Flags().DurationVar(&rollingupdateCluster.NodeInterval, "node-interval", 2*time.Minute, "Time to wait between restarting nodes")
+	cmd.Flags().DurationVar(&rollingupdateCluster.BastionInterval, "bastion-interval", 5*time.Minute, "Time to wait between restarting bastions")
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		err := rollingupdateCluster.Run(args)
@@ -84,7 +88,7 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 		return err
 	}
 
-	contextName := cluster.Name
+	contextName := cluster.ObjectMeta.Name
 	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 		clientcmd.NewDefaultClientConfigLoadingRules(),
 		&clientcmd.ConfigOverrides{CurrentContext: contextName}).ClientConfig()
@@ -93,14 +97,14 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 	}
 
 	var nodes []v1.Node
-	var k8sClient *release_1_3.Clientset
+	var k8sClient *release_1_5.Clientset
 	if !c.CloudOnly {
-		k8sClient, err = release_1_3.NewForConfig(config)
+		k8sClient, err = release_1_5.NewForConfig(config)
 		if err != nil {
 			return fmt.Errorf("cannot build kube client for %q: %v", contextName, err)
 		}
 
-		nodeList, err := k8sClient.Core().Nodes().List(k8sapi.ListOptions{})
+		nodeList, err := k8sClient.Core().Nodes().List(v1.ListOptions{})
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to reach the kubernetes API.\n")
 			fmt.Fprintf(os.Stderr, "Use --cloudonly to do a rolling-update without confirming progress with the k8s API\n\n")
@@ -112,7 +116,7 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 		}
 	}
 
-	list, err := clientset.InstanceGroups(cluster.Name).List(k8sapi.ListOptions{})
+	list, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).List(k8sapi.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -142,7 +146,7 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 	{
 		t := &tables.Table{}
 		t.AddColumn("NAME", func(r *kutil.CloudInstanceGroup) string {
-			return r.InstanceGroup.Name
+			return r.InstanceGroup.ObjectMeta.Name
 		})
 		t.AddColumn("STATUS", func(r *kutil.CloudInstanceGroup) string {
 			return r.Status

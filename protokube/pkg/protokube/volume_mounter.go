@@ -105,7 +105,7 @@ func (k *VolumeMountController) safeFormatAndMount(device string, mountpoint str
 
 	// If we are containerized, we still first SafeFormatAndMount in our namespace
 	// This is because SafeFormatAndMount doesn't seem to work in a container
-	safeFormatAndMount := &mount.SafeFormatAndMount{Interface: mount.New(), Runner: exec.New()}
+	safeFormatAndMount := &mount.SafeFormatAndMount{Interface: mount.New(""), Runner: exec.New()}
 
 	// Check if it is already mounted
 	mounts, err := safeFormatAndMount.List()

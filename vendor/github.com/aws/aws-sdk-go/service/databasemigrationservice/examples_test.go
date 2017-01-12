@@ -16,7 +16,13 @@ var _ time.Duration
 var _ bytes.Buffer
 
 func ExampleDatabaseMigrationService_AddTagsToResource() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.AddTagsToResourceInput{
 		ResourceArn: aws.String("String"), // Required
@@ -42,7 +48,13 @@ func ExampleDatabaseMigrationService_AddTagsToResource() {
 }
 
 func ExampleDatabaseMigrationService_CreateEndpoint() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.CreateEndpointInput{
 		EndpointIdentifier:        aws.String("String"),                       // Required
@@ -79,7 +91,13 @@ func ExampleDatabaseMigrationService_CreateEndpoint() {
 }
 
 func ExampleDatabaseMigrationService_CreateReplicationInstance() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.CreateReplicationInstanceInput{
 		ReplicationInstanceClass:         aws.String("String"), // Required
@@ -119,7 +137,13 @@ func ExampleDatabaseMigrationService_CreateReplicationInstance() {
 }
 
 func ExampleDatabaseMigrationService_CreateReplicationSubnetGroup() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.CreateReplicationSubnetGroupInput{
 		ReplicationSubnetGroupDescription: aws.String("String"), // Required
@@ -150,7 +174,13 @@ func ExampleDatabaseMigrationService_CreateReplicationSubnetGroup() {
 }
 
 func ExampleDatabaseMigrationService_CreateReplicationTask() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.CreateReplicationTaskInput{
 		MigrationType:             aws.String("MigrationTypeValue"), // Required
@@ -183,7 +213,13 @@ func ExampleDatabaseMigrationService_CreateReplicationTask() {
 }
 
 func ExampleDatabaseMigrationService_DeleteCertificate() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.DeleteCertificateInput{
 		CertificateArn: aws.String("String"), // Required
@@ -202,7 +238,13 @@ func ExampleDatabaseMigrationService_DeleteCertificate() {
 }
 
 func ExampleDatabaseMigrationService_DeleteEndpoint() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.DeleteEndpointInput{
 		EndpointArn: aws.String("String"), // Required
@@ -221,7 +263,13 @@ func ExampleDatabaseMigrationService_DeleteEndpoint() {
 }
 
 func ExampleDatabaseMigrationService_DeleteReplicationInstance() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.DeleteReplicationInstanceInput{
 		ReplicationInstanceArn: aws.String("String"), // Required
@@ -240,7 +288,13 @@ func ExampleDatabaseMigrationService_DeleteReplicationInstance() {
 }
 
 func ExampleDatabaseMigrationService_DeleteReplicationSubnetGroup() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.DeleteReplicationSubnetGroupInput{
 		ReplicationSubnetGroupIdentifier: aws.String("String"), // Required
@@ -259,7 +313,13 @@ func ExampleDatabaseMigrationService_DeleteReplicationSubnetGroup() {
 }
 
 func ExampleDatabaseMigrationService_DeleteReplicationTask() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.DeleteReplicationTaskInput{
 		ReplicationTaskArn: aws.String("String"), // Required
@@ -278,7 +338,13 @@ func ExampleDatabaseMigrationService_DeleteReplicationTask() {
 }
 
 func ExampleDatabaseMigrationService_DescribeAccountAttributes() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	var params *databasemigrationservice.DescribeAccountAttributesInput
 	resp, err := svc.DescribeAccountAttributes(params)
@@ -295,7 +361,13 @@ func ExampleDatabaseMigrationService_DescribeAccountAttributes() {
 }
 
 func ExampleDatabaseMigrationService_DescribeCertificates() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.DescribeCertificatesInput{
 		Filters: []*databasemigrationservice.Filter{
@@ -325,7 +397,13 @@ func ExampleDatabaseMigrationService_DescribeCertificates() {
 }
 
 func ExampleDatabaseMigrationService_DescribeConnections() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.DescribeConnectionsInput{
 		Filters: []*databasemigrationservice.Filter{
@@ -355,7 +433,13 @@ func ExampleDatabaseMigrationService_DescribeConnections() {
 }
 
 func ExampleDatabaseMigrationService_DescribeEndpointTypes() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.DescribeEndpointTypesInput{
 		Filters: []*databasemigrationservice.Filter{
@@ -385,7 +469,13 @@ func ExampleDatabaseMigrationService_DescribeEndpointTypes() {
 }
 
 func ExampleDatabaseMigrationService_DescribeEndpoints() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.DescribeEndpointsInput{
 		Filters: []*databasemigrationservice.Filter{
@@ -415,7 +505,13 @@ func ExampleDatabaseMigrationService_DescribeEndpoints() {
 }
 
 func ExampleDatabaseMigrationService_DescribeOrderableReplicationInstances() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.DescribeOrderableReplicationInstancesInput{
 		Marker:     aws.String("String"),
@@ -435,7 +531,13 @@ func ExampleDatabaseMigrationService_DescribeOrderableReplicationInstances() {
 }
 
 func ExampleDatabaseMigrationService_DescribeRefreshSchemasStatus() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.DescribeRefreshSchemasStatusInput{
 		EndpointArn: aws.String("String"), // Required
@@ -454,7 +556,13 @@ func ExampleDatabaseMigrationService_DescribeRefreshSchemasStatus() {
 }
 
 func ExampleDatabaseMigrationService_DescribeReplicationInstances() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.DescribeReplicationInstancesInput{
 		Filters: []*databasemigrationservice.Filter{
@@ -484,7 +592,13 @@ func ExampleDatabaseMigrationService_DescribeReplicationInstances() {
 }
 
 func ExampleDatabaseMigrationService_DescribeReplicationSubnetGroups() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.DescribeReplicationSubnetGroupsInput{
 		Filters: []*databasemigrationservice.Filter{
@@ -514,7 +628,13 @@ func ExampleDatabaseMigrationService_DescribeReplicationSubnetGroups() {
 }
 
 func ExampleDatabaseMigrationService_DescribeReplicationTasks() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.DescribeReplicationTasksInput{
 		Filters: []*databasemigrationservice.Filter{
@@ -544,7 +664,13 @@ func ExampleDatabaseMigrationService_DescribeReplicationTasks() {
 }
 
 func ExampleDatabaseMigrationService_DescribeSchemas() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.DescribeSchemasInput{
 		EndpointArn: aws.String("String"), // Required
@@ -565,7 +691,13 @@ func ExampleDatabaseMigrationService_DescribeSchemas() {
 }
 
 func ExampleDatabaseMigrationService_DescribeTableStatistics() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.DescribeTableStatisticsInput{
 		ReplicationTaskArn: aws.String("String"), // Required
@@ -586,7 +718,13 @@ func ExampleDatabaseMigrationService_DescribeTableStatistics() {
 }
 
 func ExampleDatabaseMigrationService_ImportCertificate() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.ImportCertificateInput{
 		CertificateIdentifier: aws.String("String"), // Required
@@ -606,7 +744,13 @@ func ExampleDatabaseMigrationService_ImportCertificate() {
 }
 
 func ExampleDatabaseMigrationService_ListTagsForResource() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.ListTagsForResourceInput{
 		ResourceArn: aws.String("String"), // Required
@@ -625,7 +769,13 @@ func ExampleDatabaseMigrationService_ListTagsForResource() {
 }
 
 func ExampleDatabaseMigrationService_ModifyEndpoint() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.ModifyEndpointInput{
 		EndpointArn:               aws.String("String"), // Required
@@ -655,7 +805,13 @@ func ExampleDatabaseMigrationService_ModifyEndpoint() {
 }
 
 func ExampleDatabaseMigrationService_ModifyReplicationInstance() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.ModifyReplicationInstanceInput{
 		ReplicationInstanceArn:        aws.String("String"), // Required
@@ -687,7 +843,13 @@ func ExampleDatabaseMigrationService_ModifyReplicationInstance() {
 }
 
 func ExampleDatabaseMigrationService_ModifyReplicationSubnetGroup() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.ModifyReplicationSubnetGroupInput{
 		ReplicationSubnetGroupIdentifier: aws.String("String"), // Required
@@ -711,7 +873,13 @@ func ExampleDatabaseMigrationService_ModifyReplicationSubnetGroup() {
 }
 
 func ExampleDatabaseMigrationService_RefreshSchemas() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.RefreshSchemasInput{
 		EndpointArn:            aws.String("String"), // Required
@@ -731,7 +899,13 @@ func ExampleDatabaseMigrationService_RefreshSchemas() {
 }
 
 func ExampleDatabaseMigrationService_RemoveTagsFromResource() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.RemoveTagsFromResourceInput{
 		ResourceArn: aws.String("String"), // Required
@@ -754,7 +928,13 @@ func ExampleDatabaseMigrationService_RemoveTagsFromResource() {
 }
 
 func ExampleDatabaseMigrationService_StartReplicationTask() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.StartReplicationTaskInput{
 		ReplicationTaskArn:       aws.String("String"),                        // Required
@@ -775,7 +955,13 @@ func ExampleDatabaseMigrationService_StartReplicationTask() {
 }
 
 func ExampleDatabaseMigrationService_StopReplicationTask() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.StopReplicationTaskInput{
 		ReplicationTaskArn: aws.String("String"), // Required
@@ -794,7 +980,13 @@ func ExampleDatabaseMigrationService_StopReplicationTask() {
 }
 
 func ExampleDatabaseMigrationService_TestConnection() {
-	svc := databasemigrationservice.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := databasemigrationservice.New(sess)
 
 	params := &databasemigrationservice.TestConnectionInput{
 		EndpointArn:            aws.String("String"), // Required

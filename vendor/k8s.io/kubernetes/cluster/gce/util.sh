@@ -277,7 +277,7 @@ function upload-server-tars() {
     local staging_bucket="gs://kubernetes-staging-${project_hash}${suffix}"
 
     # Ensure the buckets are created
-    if ! gsutil ls "${staging_bucket}" ; then
+    if ! gsutil ls "${staging_bucket}" >/dev/null; then
       echo "Creating ${staging_bucket}"
       gsutil mb -l "${region}" "${staging_bucket}"
     fi
@@ -614,7 +614,7 @@ function kube-up() {
   if [[ ${KUBE_USE_EXISTING_MASTER:-} == "true" ]]; then
     parse-master-env
     create-nodes
-  elif [[ ${KUBE_EXPERIMENTAL_REPLICATE_EXISTING_MASTER:-} == "true" ]]; then
+  elif [[ ${KUBE_REPLICATE_EXISTING_MASTER:-} == "true" ]]; then
     if  [[ "${MASTER_OS_DISTRIBUTION}" != "gci" && "${MASTER_OS_DISTRIBUTION}" != "debian" ]]; then
       echo "Master replication supported only for gci and debian"
       return 1
@@ -669,12 +669,22 @@ function create-network() {
     gcloud compute networks create --project "${PROJECT}" "${NETWORK}" --range "10.240.0.0/16"
   fi
 
-  if ! gcloud compute firewall-rules --project "${PROJECT}" describe "${NETWORK}-default-internal" &>/dev/null; then
-    gcloud compute firewall-rules create "${NETWORK}-default-internal" \
+  if ! gcloud compute firewall-rules --project "${PROJECT}" describe "${NETWORK}-default-internal-master" &>/dev/null; then
+    gcloud compute firewall-rules create "${NETWORK}-default-internal-master" \
       --project "${PROJECT}" \
       --network "${NETWORK}" \
       --source-ranges "10.0.0.0/8" \
-      --allow "tcp:1-65535,udp:1-65535,icmp" &
+      --allow "tcp:1-2379,tcp:2382-65535,udp:1-65535,icmp" \
+      --target-tags "${MASTER_TAG}"&
+  fi
+
+  if ! gcloud compute firewall-rules --project "${PROJECT}" describe "${NETWORK}-default-internal-node" &>/dev/null; then
+    gcloud compute firewall-rules create "${NETWORK}-default-internal-node" \
+      --project "${PROJECT}" \
+      --network "${NETWORK}" \
+      --source-ranges "10.0.0.0/8" \
+      --allow "tcp:1-65535,udp:1-65535,icmp" \
+      --target-tags "${NODE_TAG}"&
   fi
 
   if ! gcloud compute firewall-rules describe --project "${PROJECT}" "${NETWORK}-default-ssh" &>/dev/null; then
@@ -683,6 +693,27 @@ function create-network() {
       --network "${NETWORK}" \
       --source-ranges "0.0.0.0/0" \
       --allow "tcp:22" &
+  fi
+}
+
+function delete-firewall-rules() {
+  for fw in $@; do
+    if [[ -n $(gcloud compute firewall-rules --project "${PROJECT}" describe "${fw}" --format='value(name)' 2>/dev/null || true) ]]; then
+      gcloud compute firewall-rules delete --project "${PROJECT}" --quiet "${fw}" &
+    fi
+  done
+  kube::util::wait-for-jobs || {
+    echo -e "${color_red}Failed to delete firewall rules.${color_norm}" >&2
+  }
+}
+
+function delete-network() {
+  if [[ -n $(gcloud compute networks --project "${PROJECT}" describe "${NETWORK}" --format='value(name)' 2>/dev/null || true) ]]; then
+    if ! gcloud compute networks delete --project "${PROJECT}" --quiet "${NETWORK}"; then
+      echo "Failed to delete network '${NETWORK}'. Listing firewall-rules:"
+      gcloud compute firewall-rules --project "${PROJECT}" list --filter="network=${NETWORK}"
+      return 1
+    fi
   fi
 }
 
@@ -698,6 +729,98 @@ function get-master-root-disk-size() {
   fi
 }
 
+# Assumes:
+#   NUM_NODES
+# Sets:
+#   MASTER_DISK_SIZE
+function get-master-disk-size() {
+  if [[ "${NUM_NODES}" -le "1000" ]]; then
+    export MASTER_DISK_SIZE="20GB"
+  else
+    export MASTER_DISK_SIZE="100GB"
+  fi
+}
+
+# Generates SSL certificates for etcd cluster. Uses cfssl program.
+#
+# Assumed vars:
+#   KUBE_TEMP: temporary directory
+#
+# Args:
+#  $1: CA certificate
+#  $2: CA key
+#
+# If CA cert/key is empty, the function will also generate certs for CA.
+#
+# Vars set:
+#   ETCD_CA_KEY_BASE64
+#   ETCD_CA_CERT_BASE64
+#   ETCD_PEER_KEY_BASE64
+#   ETCD_PEER_CERT_BASE64
+#
+function create-etcd-certs {
+  local ca_cert=${1:-}
+  local ca_key=${2:-}
+
+  mkdir -p "${KUBE_TEMP}/cfssl"
+  pushd "${KUBE_TEMP}/cfssl"
+
+  kernel=$(uname -s)
+  case "${kernel}" in
+    Linux)
+      curl -s -L -o cfssl https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
+      curl -s -L -o cfssljson https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
+      ;;
+    Darwin)
+      curl -s -L -o cfssl https://pkg.cfssl.org/R1.2/cfssl_darwin-amd64
+      curl -s -L -o cfssljson https://pkg.cfssl.org/R1.2/cfssljson_darwin-amd64
+      ;;
+    *)
+      echo "Unknown, unsupported platform: ${kernel}." >&2
+      echo "Supported platforms: Linux, Darwin." >&2
+      exit 2
+  esac
+
+  chmod +x cfssl
+  chmod +x cfssljson
+
+  cat >ca-config.json <<EOF
+{
+    "signing": {
+        "default": {
+            "expiry": "168h"
+        },
+        "profiles": {
+            "client-server": {
+                "expiry": "43800h",
+                "usages": [
+                    "signing",
+                    "key encipherment"
+                ]
+            }
+        }
+    }
+}
+EOF
+  if [[ ! -z "${ca_key}" && ! -z "${ca_cert}" ]]; then
+    echo "${ca_key}" | base64 --decode > ca-key.pem
+    echo "${ca_cert}" | base64 --decode | gunzip > ca.pem
+  else
+    ./cfssl print-defaults csr > ca-csr.json
+    ./cfssl gencert -initca ca-csr.json | ./cfssljson -bare ca -
+  fi
+
+  echo '{"CN":"'"${MASTER_NAME}"'","hosts":[""],"key":{"algo":"ecdsa","size":256}}' \
+      | ./cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=client-server -hostname="${MASTER_NAME}" - \
+      | ./cfssljson -bare etcd
+
+  ETCD_CA_KEY_BASE64=$(cat "ca-key.pem" | base64 | tr -d '\r\n')
+  ETCD_CA_CERT_BASE64=$(cat "ca.pem" | gzip | base64 | tr -d '\r\n')
+  ETCD_PEER_KEY_BASE64=$(cat "etcd-key.pem" | base64 | tr -d '\r\n')
+  ETCD_PEER_CERT_BASE64=$(cat "etcd.pem" | gzip | base64 | tr -d '\r\n')
+  popd
+}
+
 function create-master() {
   echo "Starting master and configuring firewalls"
   gcloud compute firewall-rules create "${MASTER_NAME}-https" \
@@ -708,6 +831,7 @@ function create-master() {
 
   # We have to make sure the disk is created before creating the master VM, so
   # run this in the foreground.
+  get-master-disk-size
   gcloud compute disks create "${MASTER_NAME}-pd" \
     --project "${PROJECT}" \
     --zone "${ZONE}" \
@@ -723,6 +847,16 @@ function create-master() {
       --size "${CLUSTER_REGISTRY_DISK_SIZE}" &
   fi
 
+  # Create rule for accessing and securing etcd servers.
+  if ! gcloud compute firewall-rules --project "${PROJECT}" describe "${MASTER_NAME}-etcd" &>/dev/null; then
+    gcloud compute firewall-rules create "${MASTER_NAME}-etcd" \
+      --project "${PROJECT}" \
+      --network "${NETWORK}" \
+      --source-tags "${MASTER_TAG}" \
+      --allow "tcp:2380,tcp:2381" \
+      --target-tags "${MASTER_TAG}" &
+  fi
+
   # Generate a bearer token for this cluster. We push this separately
   # from the other cluster variables so that the client (this
   # computer) can forget it later. This should disappear with
@@ -736,7 +870,15 @@ function create-master() {
   MASTER_RESERVED_IP=$(gcloud compute addresses describe "${MASTER_NAME}-ip" \
     --project "${PROJECT}" --region "${REGION}" -q --format='value(address)')
 
+  if [[ "${REGISTER_MASTER_KUBELET:-}" == "true" ]]; then
+    KUBELET_APISERVER="${MASTER_RESERVED_IP}"
+  fi
+
+  KUBERNETES_MASTER_NAME="${MASTER_RESERVED_IP}"
+  MASTER_ADVERTISE_ADDRESS="${MASTER_RESERVED_IP}"
+
   create-certs "${MASTER_RESERVED_IP}"
+  create-etcd-certs
 
   # Sets MASTER_ROOT_DISK_SIZE that is used by create-master-instance
   get-master-root-disk-size
@@ -762,7 +904,7 @@ function add-replica-to-etcd() {
     --project "${PROJECT}" \
     --zone "${EXISTING_MASTER_ZONE}" \
     --command \
-      "curl localhost:${client_port}/v2/members -XPOST -H \"Content-Type: application/json\" -d '{\"peerURLs\":[\"http://${REPLICA_NAME}:${internal_port}\"]}'"
+      "curl localhost:${client_port}/v2/members -XPOST -H \"Content-Type: application/json\" -d '{\"peerURLs\":[\"https://${REPLICA_NAME}:${internal_port}\"]}'"
   return $?
 }
 
@@ -799,6 +941,7 @@ function replicate-master() {
 
   # We have to make sure the disk is created before creating the master VM, so
   # run this in the foreground.
+  get-master-disk-size
   gcloud compute disks create "${REPLICA_NAME}-pd" \
     --project "${PROJECT}" \
     --zone "${ZONE}" \
@@ -1120,12 +1263,15 @@ function check-cluster() {
 # returns the result of ssh command which removes replica
 function remove-replica-from-etcd() {
   local -r port="${1}"
+  [[ -n "${EXISTING_MASTER_NAME}" ]] || return
   gcloud compute ssh "${EXISTING_MASTER_NAME}" \
     --project "${PROJECT}" \
     --zone "${EXISTING_MASTER_ZONE}" \
     --command \
-    "curl -s localhost:${port}/v2/members/\$(curl -s localhost:${port}/v2/members -XGET | sed 's/{\\\"id/\n/g' | grep ${REPLICA_NAME} | cut -f 3 -d \\\") -XDELETE -L 2>/dev/null"
-  return $?
+    "curl -s localhost:${port}/v2/members/\$(curl -s localhost:${port}/v2/members -XGET | sed 's/{\\\"id/\n/g' | grep ${REPLICA_NAME}\\\" | cut -f 3 -d \\\") -XDELETE -L 2>/dev/null"
+  local -r res=$?
+  echo "Removing etcd replica, name: ${REPLICA_NAME}, port: ${port}, result: ${res}"
+  return "${res}"
 }
 
 # Delete a kubernetes cluster. This is called from test-teardown.
@@ -1235,14 +1381,15 @@ function kube-down() {
   if [[ "${REMAINING_MASTER_COUNT}" == "1" ]]; then
     if gcloud compute forwarding-rules describe "${MASTER_NAME}" --region "${REGION}" --project "${PROJECT}" &>/dev/null; then
       detect-master
-      local EXISTING_MASTER_ZONE=$(gcloud compute instances list "${MASTER_NAME}" \
+      local REMAINING_REPLICA_NAME="$(get-replica-name)"
+      local REMAINING_REPLICA_ZONE=$(gcloud compute instances list "${REMAINING_REPLICA_NAME}" \
         --project "${PROJECT}" --format="value(zone)")
       gcloud compute forwarding-rules delete \
         --project "${PROJECT}" \
         --region "${REGION}" \
         --quiet \
         "${MASTER_NAME}"
-      attach-external-ip "${MASTER_NAME}" "${EXISTING_MASTER_ZONE}" "${KUBE_MASTER_IP}"
+      attach-external-ip "${REMAINING_REPLICA_NAME}" "${REMAINING_REPLICA_ZONE}" "${KUBE_MASTER_IP}"
       gcloud compute target-pools delete \
         --project "${PROJECT}" \
         --region "${REGION}" \
@@ -1253,13 +1400,8 @@ function kube-down() {
 
   # If there are no more remaining master replicas, we should delete all remaining network resources.
   if [[ "${REMAINING_MASTER_COUNT}" == "0" ]]; then
-    # Delete firewall rule for the master.
-    if gcloud compute firewall-rules describe --project "${PROJECT}" "${MASTER_NAME}-https" &>/dev/null; then
-      gcloud compute firewall-rules delete  \
-        --project "${PROJECT}" \
-        --quiet \
-        "${MASTER_NAME}-https"
-    fi
+    # Delete firewall rule for the master, etcd servers, and nodes.
+    delete-firewall-rules "${MASTER_NAME}-https" "${MASTER_NAME}-etcd" "${NODE_TAG}-all"
     # Delete the master's reserved IP
     if gcloud compute addresses describe "${MASTER_NAME}-ip" --region "${REGION}" --project "${PROJECT}" &>/dev/null; then
       gcloud compute addresses delete \
@@ -1267,13 +1409,6 @@ function kube-down() {
         --region "${REGION}" \
         --quiet \
         "${MASTER_NAME}-ip"
-    fi
-    # Delete firewall rule for minions.
-    if gcloud compute firewall-rules describe --project "${PROJECT}" "${NODE_TAG}-all" &>/dev/null; then
-      gcloud compute firewall-rules delete  \
-        --project "${PROJECT}" \
-        --quiet \
-        "${NODE_TAG}-all"
     fi
   fi
 
@@ -1297,37 +1432,48 @@ function kube-down() {
     done
   fi
 
-  # Delete routes.
-  local -a routes
-  # Clean up all routes w/ names like "<cluster-name>-<node-GUID>"
-  # e.g. "kubernetes-12345678-90ab-cdef-1234-567890abcdef". The name is
-  # determined by the node controller on the master.
-  # Note that this is currently a noop, as synchronously deleting the node MIG
-  # first allows the master to cleanup routes itself.
-  local TRUNCATED_PREFIX="${INSTANCE_PREFIX:0:26}"
-  routes=( $(gcloud compute routes list --project "${PROJECT}" \
-    --regexp "${TRUNCATED_PREFIX}-.{8}-.{4}-.{4}-.{4}-.{12}"  \
-    --format='value(name)') )
-  while (( "${#routes[@]}" > 0 )); do
-    echo Deleting routes "${routes[*]::${batch}}"
-    gcloud compute routes delete \
-      --project "${PROJECT}" \
-      --quiet \
-      "${routes[@]::${batch}}"
-    routes=( "${routes[@]:${batch}}" )
-  done
-
-  # Delete persistent disk for influx-db.
-  if gcloud compute disks describe "${INSTANCE_PREFIX}"-influxdb-pd --zone "${ZONE}" --project "${PROJECT}" &>/dev/null; then
-    gcloud compute disks delete \
-      --project "${PROJECT}" \
-      --quiet \
-      --zone "${ZONE}" \
-      "${INSTANCE_PREFIX}"-influxdb-pd
-  fi
-
-  # If there are no more remaining master replicas, we should update kubeconfig.
+  # If there are no more remaining master replicas: delete routes, pd for influxdb and update kubeconfig
   if [[ "${REMAINING_MASTER_COUNT}" == "0" ]]; then
+    # Delete routes.
+    local -a routes
+    # Clean up all routes w/ names like "<cluster-name>-<node-GUID>"
+    # e.g. "kubernetes-12345678-90ab-cdef-1234-567890abcdef". The name is
+    # determined by the node controller on the master.
+    # Note that this is currently a noop, as synchronously deleting the node MIG
+    # first allows the master to cleanup routes itself.
+    local TRUNCATED_PREFIX="${INSTANCE_PREFIX:0:26}"
+    routes=( $(gcloud compute routes list --project "${PROJECT}" \
+      --regexp "${TRUNCATED_PREFIX}-.{8}-.{4}-.{4}-.{4}-.{12}"  \
+      --format='value(name)') )
+    while (( "${#routes[@]}" > 0 )); do
+      echo Deleting routes "${routes[*]::${batch}}"
+      gcloud compute routes delete \
+        --project "${PROJECT}" \
+        --quiet \
+        "${routes[@]::${batch}}"
+      routes=( "${routes[@]:${batch}}" )
+    done
+
+    # Delete persistent disk for influx-db.
+    if gcloud compute disks describe "${INSTANCE_PREFIX}"-influxdb-pd --zone "${ZONE}" --project "${PROJECT}" &>/dev/null; then
+      gcloud compute disks delete \
+        --project "${PROJECT}" \
+        --quiet \
+        --zone "${ZONE}" \
+        "${INSTANCE_PREFIX}"-influxdb-pd
+    fi
+
+    # Delete all remaining firewall rules and network.
+    delete-firewall-rules \
+      "${NETWORK}-default-internal-master" \
+      "${NETWORK}-default-internal-node" \
+      "${NETWORK}-default-ssh" \
+      "${NETWORK}-default-internal"  # Pre-1.5 clusters
+    if [[ "${KUBE_DELETE_NETWORK}" == "true" ]]; then
+      delete-network || true  # might fail if there are leaked firewall rules
+    fi
+
+    # If there are no more remaining master replicas, we should update kubeconfig.
     export CONTEXT="${PROJECT}_${INSTANCE_PREFIX}"
     clear-kubeconfig
   fi
@@ -1346,7 +1492,7 @@ function kube-down() {
 function get-replica-name() {
   echo $(gcloud compute instances list \
     --project "${PROJECT}" \
-    --zone "${ZONE}" \
+    --zones "${ZONE}" \
     --regexp "$(get-replica-name-regexp)" \
     --format "value(name)" | head -n1)
 }
@@ -1628,7 +1774,7 @@ function kube-push() {
 #   KUBE_ROOT
 function test-build-release() {
   # Make a release
-  "${KUBE_ROOT}/build/release.sh"
+  "${KUBE_ROOT}/build-tools/release.sh"
 }
 
 # Execute prior to running tests to initialize required structure. This is
@@ -1694,14 +1840,9 @@ function test-setup() {
 function test-teardown() {
   detect-project
   echo "Shutting down test cluster in background."
-  gcloud compute firewall-rules delete  \
-    --project "${PROJECT}" \
-    --quiet \
-    "${NODE_TAG}-${INSTANCE_PREFIX}-http-alt" || true
-  gcloud compute firewall-rules delete  \
-    --project "${PROJECT}" \
-    --quiet \
-    "${NODE_TAG}-${INSTANCE_PREFIX}-nodeports" || true
+  delete-firewall-rules \
+    "${NODE_TAG}-${INSTANCE_PREFIX}-http-alt" \
+    "${NODE_TAG}-${INSTANCE_PREFIX}-nodeports"
   if [[ ${MULTIZONE:-} == "true" ]]; then
       local zones=( ${E2E_ZONES} )
       # tear them down in reverse order, finally tearing down the master too.

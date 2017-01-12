@@ -18,6 +18,7 @@ package awsup
 
 import (
 	"fmt"
+
 	"github.com/golang/glog"
 )
 
@@ -110,6 +111,22 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		MemoryGB:       8,
 		ECU:            36 * BurstableCreditsToECUS,
 		Cores:          2,
+		EphemeralDisks: nil,
+		Burstable:      true,
+	},
+	{
+		Name:           "t2.xlarge",
+		MemoryGB:       16,
+		ECU:            54 * BurstableCreditsToECUS,
+		Cores:          4,
+		EphemeralDisks: nil,
+		Burstable:      true,
+	},
+	{
+		Name:           "t2.2xlarge",
+		MemoryGB:       32,
+		ECU:            81 * BurstableCreditsToECUS,
+		Cores:          8,
 		EphemeralDisks: nil,
 		Burstable:      true,
 	},
@@ -419,5 +436,49 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            349,
 		Cores:          128,
 		EphemeralDisks: []int{1920, 1920},
+	},
+
+	// r4 family
+	{
+		Name:           "r4.large",
+		MemoryGB:       15.25,
+		ECU:            7,
+		Cores:          2,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "r4.xlarge",
+		MemoryGB:       30.5,
+		ECU:            13.5,
+		Cores:          4,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "r4.2xlarge",
+		MemoryGB:       61,
+		ECU:            27,
+		Cores:          8,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "r4.4xlarge",
+		MemoryGB:       122,
+		ECU:            53,
+		Cores:          16,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "r4.8xlarge",
+		MemoryGB:       244,
+		ECU:            99,
+		Cores:          32,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "r4.16xlarge",
+		MemoryGB:       488,
+		ECU:            195,
+		Cores:          64,
+		EphemeralDisks: nil,
 	},
 }

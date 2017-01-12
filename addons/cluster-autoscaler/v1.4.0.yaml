@@ -1,0 +1,42 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: cluster-autoscaler
+  labels:
+    k8s-app: cluster-autoscaler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: cluster-autoscaler
+  template:
+    metadata:
+      labels:
+        k8s-app: cluster-autoscaler
+    spec:
+        containers:
+          - name: cluster-autoscaler
+            image: {{IMAGE}}
+            resources:
+              limits:
+                cpu: 100m
+                memory: 300Mi
+              requests:
+                cpu: 100m
+                memory: 300Mi
+            command:
+              - ./cluster-autoscaler
+              - --cloud-provider={{CLOUD_PROVIDER}}
+              - --nodes={{MIN_NODES}}:{{MAX_NODES}}:{{GROUP_NAME}}
+            env:
+              - name: AWS_REGION
+                value: {{AWS_REGION}}
+            volumeMounts:
+              - name: ssl-certs
+                mountPath: {{SSL_CERT_PATH}}
+                readOnly: true
+        volumes:
+          - name: ssl-certs
+            hostPath:
+              path: {{SSL_CERT_PATH}}

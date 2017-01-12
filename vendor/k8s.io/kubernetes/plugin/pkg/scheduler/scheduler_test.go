@@ -18,6 +18,7 @@ package scheduler
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -185,6 +186,7 @@ func TestSchedulerNoPhantomPodAfterExpire(t *testing.T) {
 	scache := schedulercache.New(100*time.Millisecond, stop)
 	pod := podWithPort("pod.Name", "", 8080)
 	node := api.Node{ObjectMeta: api.ObjectMeta{Name: "machine1"}}
+	scache.AddNode(&node)
 	nodeLister := algorithm.FakeNodeLister([]*api.Node{&node})
 	predicateMap := map[string]algorithm.FitPredicate{"PodFitsHostPorts": predicates.PodFitsHostPorts}
 	scheduler, bindingChan, _ := setupTestSchedulerWithOnePodOnNode(t, queuedPodStore, scache, nodeLister, predicateMap, pod, &node)
@@ -242,6 +244,7 @@ func TestSchedulerNoPhantomPodAfterDelete(t *testing.T) {
 	scache := schedulercache.New(10*time.Minute, stop)
 	firstPod := podWithPort("pod.Name", "", 8080)
 	node := api.Node{ObjectMeta: api.ObjectMeta{Name: "machine1"}}
+	scache.AddNode(&node)
 	nodeLister := algorithm.FakeNodeLister([]*api.Node{&node})
 	predicateMap := map[string]algorithm.FitPredicate{"PodFitsHostPorts": predicates.PodFitsHostPorts}
 	scheduler, bindingChan, errChan := setupTestSchedulerWithOnePodOnNode(t, queuedPodStore, scache, nodeLister, predicateMap, firstPod, &node)
@@ -329,49 +332,66 @@ func TestSchedulerFailedSchedulingReasons(t *testing.T) {
 	defer close(stop)
 	queuedPodStore := clientcache.NewFIFO(clientcache.MetaNamespaceKeyFunc)
 	scache := schedulercache.New(10*time.Minute, stop)
-	node := api.Node{
-		ObjectMeta: api.ObjectMeta{Name: "machine1"},
-		Status: api.NodeStatus{
-			Capacity: api.ResourceList{
-				api.ResourceCPU:    *(resource.NewQuantity(2, resource.DecimalSI)),
-				api.ResourceMemory: *(resource.NewQuantity(100, resource.DecimalSI)),
-				api.ResourcePods:   *(resource.NewQuantity(10, resource.DecimalSI)),
-			},
-			Allocatable: api.ResourceList{
-				api.ResourceCPU:    *(resource.NewQuantity(2, resource.DecimalSI)),
-				api.ResourceMemory: *(resource.NewQuantity(100, resource.DecimalSI)),
-				api.ResourcePods:   *(resource.NewQuantity(10, resource.DecimalSI)),
-			}},
+
+	// Design the baseline for the pods, and we will make nodes that dont fit it later.
+	var cpu = int64(4)
+	var mem = int64(500)
+	podWithTooBigResourceRequests := podWithResources("bar", "", api.ResourceList{
+		api.ResourceCPU:    *(resource.NewQuantity(cpu, resource.DecimalSI)),
+		api.ResourceMemory: *(resource.NewQuantity(mem, resource.DecimalSI)),
+	}, api.ResourceList{
+		api.ResourceCPU:    *(resource.NewQuantity(cpu, resource.DecimalSI)),
+		api.ResourceMemory: *(resource.NewQuantity(mem, resource.DecimalSI)),
+	})
+
+	// create several nodes which cannot schedule the above pod
+	nodes := []*api.Node{}
+	for i := 0; i < 100; i++ {
+		node := api.Node{
+			ObjectMeta: api.ObjectMeta{Name: fmt.Sprintf("machine%v", i)},
+			Status: api.NodeStatus{
+				Capacity: api.ResourceList{
+					api.ResourceCPU:    *(resource.NewQuantity(cpu/2, resource.DecimalSI)),
+					api.ResourceMemory: *(resource.NewQuantity(mem/5, resource.DecimalSI)),
+					api.ResourcePods:   *(resource.NewQuantity(10, resource.DecimalSI)),
+				},
+				Allocatable: api.ResourceList{
+					api.ResourceCPU:    *(resource.NewQuantity(cpu/2, resource.DecimalSI)),
+					api.ResourceMemory: *(resource.NewQuantity(mem/5, resource.DecimalSI)),
+					api.ResourcePods:   *(resource.NewQuantity(10, resource.DecimalSI)),
+				}},
+		}
+		scache.AddNode(&node)
+		nodes = append(nodes, &node)
 	}
-	scache.AddNode(&node)
-	nodeLister := algorithm.FakeNodeLister([]*api.Node{&node})
+	nodeLister := algorithm.FakeNodeLister(nodes)
 	predicateMap := map[string]algorithm.FitPredicate{
 		"PodFitsResources": predicates.PodFitsResources,
 	}
 
+	// Create expected failure reasons for all the nodes.  Hopefully they will get rolled up into a non-spammy summary.
+	failedPredicatesMap := FailedPredicateMap{}
+	for _, node := range nodes {
+		failedPredicatesMap[node.Name] = []algorithm.PredicateFailureReason{
+			predicates.NewInsufficientResourceError(api.ResourceCPU, 4000, 0, 2000),
+			predicates.NewInsufficientResourceError(api.ResourceMemory, 500, 0, 100),
+		}
+	}
 	scheduler, _, errChan := setupTestScheduler(queuedPodStore, scache, nodeLister, predicateMap)
 
-	podWithTooBigResourceRequests := podWithResources("bar", "", api.ResourceList{
-		api.ResourceCPU:    *(resource.NewQuantity(4, resource.DecimalSI)),
-		api.ResourceMemory: *(resource.NewQuantity(500, resource.DecimalSI)),
-	}, api.ResourceList{
-		api.ResourceCPU:    *(resource.NewQuantity(4, resource.DecimalSI)),
-		api.ResourceMemory: *(resource.NewQuantity(500, resource.DecimalSI)),
-	})
 	queuedPodStore.Add(podWithTooBigResourceRequests)
 	scheduler.scheduleOne()
-
 	select {
 	case err := <-errChan:
 		expectErr := &FitError{
-			Pod: podWithTooBigResourceRequests,
-			FailedPredicates: FailedPredicateMap{node.Name: []algorithm.PredicateFailureReason{
-				predicates.NewInsufficientResourceError(api.ResourceCPU, 4000, 0, 2000),
-				predicates.NewInsufficientResourceError(api.ResourceMemory, 500, 0, 100),
-			}},
+			Pod:              podWithTooBigResourceRequests,
+			FailedPredicates: failedPredicatesMap,
+		}
+		if len(fmt.Sprint(expectErr)) > 150 {
+			t.Errorf("message is too spammy ! %v ", len(fmt.Sprint(expectErr)))
 		}
 		if !reflect.DeepEqual(expectErr, err) {
-			t.Errorf("err want=%+v, get=%+v", expectErr, err)
+			t.Errorf("\n err \nWANT=%+v,\nGOT=%+v", expectErr, err)
 		}
 	case <-time.After(wait.ForeverTestTimeout):
 		t.Fatalf("timeout after %v", wait.ForeverTestTimeout)
@@ -386,6 +406,7 @@ func setupTestScheduler(queuedPodStore *clientcache.FIFO, scache schedulercache.
 		predicateMap,
 		algorithm.EmptyMetadataProducer,
 		[]algorithm.PriorityConfig{},
+		algorithm.EmptyMetadataProducer,
 		[]algorithm.SchedulerExtender{})
 	bindingChan := make(chan *api.Binding, 1)
 	errChan := make(chan error, 1)

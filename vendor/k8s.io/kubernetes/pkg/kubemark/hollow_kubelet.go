@@ -34,6 +34,7 @@ import (
 	"k8s.io/kubernetes/pkg/util/mount"
 	"k8s.io/kubernetes/pkg/util/oom"
 	"k8s.io/kubernetes/pkg/volume/empty_dir"
+	"k8s.io/kubernetes/pkg/volume/secret"
 	"k8s.io/kubernetes/test/utils"
 
 	"github.com/golang/glog"
@@ -61,6 +62,8 @@ func NewHollowKubelet(
 	// -----------------
 	// Injected objects
 	// -----------------
+	volumePlugins := empty_dir.ProbeVolumePlugins()
+	volumePlugins = append(volumePlugins, secret.ProbeVolumePlugins()...)
 	d := &kubelet.KubeletDeps{
 		KubeClient:        client,
 		DockerClient:      dockerClient,
@@ -68,11 +71,11 @@ func NewHollowKubelet(
 		Cloud:             nil,
 		OSInterface:       &containertest.FakeOS{},
 		ContainerManager:  containerManager,
-		VolumePlugins:     empty_dir.ProbeVolumePlugins(),
+		VolumePlugins:     volumePlugins,
 		TLSOptions:        nil,
 		OOMAdjuster:       oom.NewFakeOOMAdjuster(),
 		Writer:            &kubeio.StdWriter{},
-		Mounter:           mount.New(),
+		Mounter:           mount.New("" /* default mount path */),
 	}
 
 	return &HollowKubelet{
@@ -103,6 +106,7 @@ func GetHollowKubeletConfig(
 	// Do the external -> internal conversion to make sure that defaults
 	// are set for fields not overridden in NewHollowKubelet.
 	tmp := &v1alpha1.KubeletConfiguration{}
+	api.Scheme.Default(tmp)
 	c := &componentconfig.KubeletConfiguration{}
 	api.Scheme.Convert(tmp, c, nil)
 
@@ -137,9 +141,8 @@ func GetHollowKubeletConfig(
 	c.EnableCustomMetrics = false
 	c.EnableDebuggingHandlers = true
 	c.EnableServer = true
-	c.CgroupsPerQOS = false
-	// Since this kubelet runs with --configure-cbr0=false, it needs to use
-	// hairpin-veth to allow hairpin packets. Note that this deviates from
+	c.ExperimentalCgroupsPerQOS = false
+	// hairpin-veth is used to allow hairpin packets. Note that this deviates from
 	// what the "real" kubelet currently does, because there's no way to
 	// set promiscuous mode on docker0.
 	c.HairpinMode = componentconfig.HairpinVeth

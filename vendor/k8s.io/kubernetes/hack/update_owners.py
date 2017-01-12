@@ -14,12 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import collections
 import csv
 import re
 import json
 import os
 import random
+import subprocess
 import sys
 import time
 import urllib2
@@ -33,6 +35,13 @@ SKIP_MAINTAINERS = {
     'a-robinson', 'aronchick', 'bgrant0607-nocc', 'david-mcmahon',
     'goltermann', 'sarahnovotny'}
 
+
+def normalize(name):
+    name = re.sub(r'\[.*?\]|\{.*?\}', '', name)
+    name = re.sub(r'\s+', ' ', name)
+    return name.strip()
+
+
 def get_test_history(days_ago):
     url = time.strftime(GCS_URL_BASE + 'logs/%Y-%m-%d.json',
                         time.gmtime(time.time() - days_ago * 24 * 60 * 60))
@@ -43,10 +52,19 @@ def get_test_history(days_ago):
     return json.loads(content)
 
 
-def normalize(name):
-    name = re.sub(r'\[.*?\]|\{.*?\}', '', name)
-    name = re.sub(r'\s+', ' ', name)
-    return name.strip()
+def get_test_names_from_test_history():
+    test_names = set()
+    for days_ago in range(4):
+        test_history = get_test_history(days_ago)
+        test_names.update(normalize(name) for name in test_history['test_names'])
+    return test_names
+
+
+def get_test_names_from_local_files():
+    tests_json = subprocess.check_output(['go', 'run', 'test/list/main.go', '-json'])
+    tests = json.loads(tests_json)
+    return {normalize(t['Name'] + (' ' + t['TestName'] if 'k8s.io/' not in t['Name'] else ''))
+            for t in tests}
 
 
 def load_owners(fname):
@@ -97,11 +115,26 @@ def get_maintainers():
     return sorted(ret - SKIP_MAINTAINERS)
 
 
+def detect_github_username():
+    origin_url = subprocess.check_output(['git', 'config', 'remote.origin.url'])
+    m = re.search(r'github.com[:/](.*)/', origin_url)
+    if m and m.group(1) != 'kubernetes':
+        return m.group(1)
+    raise ValueError('unable to determine GitHub user from '
+                     '`git config remote.origin.url` output, run with --user instead')
+
+
 def main():
-    test_names = set()
-    for days_ago in range(4):
-        test_history = get_test_history(days_ago)
-        test_names.update(normalize(name) for name in test_history['test_names'])
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--history', action='store_true', help='Generate test list from result history.')
+    parser.add_argument('--user', help='User to assign new tests to (or RANDOM, default: current GitHub user).')
+    parser.add_argument('--check', action='store_true', help='Exit with a nonzero status if the test list has changed.')
+    options = parser.parse_args()
+
+    if options.history:
+        test_names = get_test_names_from_test_history()
+    else:
+        test_names = get_test_names_from_local_files()
     test_names.add('DEFAULT')
     test_names = sorted(test_names)
     owners = load_owners(OWNERS_PATH)
@@ -111,9 +144,21 @@ def main():
     maintainers = get_maintainers()
 
     print '# OUTDATED TESTS (%d):' % len(outdated_tests)
-    print  '\n'.join(outdated_tests)
+    print  '\n'.join('%s -- %s%s' %
+                     (t, owners[t][0], ['', ' (random)'][owners[t][1]])
+                      for t in outdated_tests)
     print '# NEW TESTS (%d):' % len(new_tests)
     print  '\n'.join(new_tests)
+
+    if options.check:
+        if new_tests or outdated_tests:
+            print
+            print 'ERROR: the test list has changed'
+            sys.exit(1)
+        sys.exit(0)
+
+    if not options.user:
+        options.user = detect_github_username()
 
     for name in outdated_tests:
         owners.pop(name)
@@ -130,13 +175,19 @@ def main():
         owner for name, (owner, random) in owners.iteritems()
         if owner in maintainers)
     for test_name in set(test_names) - set(owners):
-        new_owner, _count = random.choice(owner_counts.most_common()[-4:])
+        random_assignment = True
+        if options.user.lower() == 'random':
+            new_owner, _count = random.choice(owner_counts.most_common()[-4:])
+        else:
+            new_owner = options.user
+            random_assignment = False
         owner_counts[new_owner] += 1
-        owners[test_name] = (new_owner, True)
+        owners[test_name] = (new_owner, random_assignment)
 
-    print '# Tests per maintainer:'
-    for owner, count in owner_counts.most_common():
-        print '%-20s %3d' % (owner, count)
+    if options.user.lower() == 'random':
+        print '# Tests per maintainer:'
+        for owner, count in owner_counts.most_common():
+            print '%-20s %3d' % (owner, count)
 
     write_owners(OWNERS_PATH, owners)
 

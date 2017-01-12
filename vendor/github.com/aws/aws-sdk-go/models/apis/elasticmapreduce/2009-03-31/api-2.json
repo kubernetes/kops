@@ -49,6 +49,32 @@
         {"shape":"InvalidRequestException"}
       ]
     },
+    "CreateSecurityConfiguration":{
+      "name":"CreateSecurityConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateSecurityConfigurationInput"},
+      "output":{"shape":"CreateSecurityConfigurationOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidRequestException"}
+      ]
+    },
+    "DeleteSecurityConfiguration":{
+      "name":"DeleteSecurityConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteSecurityConfigurationInput"},
+      "output":{"shape":"DeleteSecurityConfigurationOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidRequestException"}
+      ]
+    },
     "DescribeCluster":{
       "name":"DescribeCluster",
       "http":{
@@ -74,6 +100,19 @@
         {"shape":"InternalServerError"}
       ],
       "deprecated":true
+    },
+    "DescribeSecurityConfiguration":{
+      "name":"DescribeSecurityConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeSecurityConfigurationInput"},
+      "output":{"shape":"DescribeSecurityConfigurationOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidRequestException"}
+      ]
     },
     "DescribeStep":{
       "name":"DescribeStep",
@@ -135,6 +174,19 @@
       },
       "input":{"shape":"ListInstancesInput"},
       "output":{"shape":"ListInstancesOutput"},
+      "errors":[
+        {"shape":"InternalServerException"},
+        {"shape":"InvalidRequestException"}
+      ]
+    },
+    "ListSecurityConfigurations":{
+      "name":"ListSecurityConfigurations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListSecurityConfigurationsInput"},
+      "output":{"shape":"ListSecurityConfigurationsOutput"},
       "errors":[
         {"shape":"InternalServerException"},
         {"shape":"InvalidRequestException"}
@@ -343,7 +395,8 @@
         "ServiceRole":{"shape":"String"},
         "NormalizedInstanceHours":{"shape":"Integer"},
         "MasterPublicDnsName":{"shape":"String"},
-        "Configurations":{"shape":"ConfigurationList"}
+        "Configurations":{"shape":"ConfigurationList"},
+        "SecurityConfiguration":{"shape":"XmlString"}
       }
     },
     "ClusterId":{"type":"string"},
@@ -435,7 +488,41 @@
       "type":"list",
       "member":{"shape":"Configuration"}
     },
+    "CreateSecurityConfigurationInput":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "SecurityConfiguration"
+      ],
+      "members":{
+        "Name":{"shape":"XmlString"},
+        "SecurityConfiguration":{"shape":"String"}
+      }
+    },
+    "CreateSecurityConfigurationOutput":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "CreationDateTime"
+      ],
+      "members":{
+        "Name":{"shape":"XmlString"},
+        "CreationDateTime":{"shape":"Date"}
+      }
+    },
     "Date":{"type":"timestamp"},
+    "DeleteSecurityConfigurationInput":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{"shape":"XmlString"}
+      }
+    },
+    "DeleteSecurityConfigurationOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
     "DescribeClusterInput":{
       "type":"structure",
       "required":["ClusterId"],
@@ -462,6 +549,21 @@
       "type":"structure",
       "members":{
         "JobFlows":{"shape":"JobFlowDetailList"}
+      }
+    },
+    "DescribeSecurityConfigurationInput":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{"shape":"XmlString"}
+      }
+    },
+    "DescribeSecurityConfigurationOutput":{
+      "type":"structure",
+      "members":{
+        "Name":{"shape":"XmlString"},
+        "SecurityConfiguration":{"shape":"String"},
+        "CreationDateTime":{"shape":"Date"}
       }
     },
     "DescribeStepInput":{
@@ -550,6 +652,14 @@
       "min":1
     },
     "ErrorMessage":{"type":"string"},
+    "FailureDetails":{
+      "type":"structure",
+      "members":{
+        "Reason":{"shape":"String"},
+        "Message":{"shape":"String"},
+        "LogFile":{"shape":"String"}
+      }
+    },
     "HadoopJarStepConfig":{
       "type":"structure",
       "required":["Jar"],
@@ -1011,6 +1121,19 @@
         "Marker":{"shape":"Marker"}
       }
     },
+    "ListSecurityConfigurationsInput":{
+      "type":"structure",
+      "members":{
+        "Marker":{"shape":"Marker"}
+      }
+    },
+    "ListSecurityConfigurationsOutput":{
+      "type":"structure",
+      "members":{
+        "SecurityConfigurations":{"shape":"SecurityConfigurationList"},
+        "Marker":{"shape":"Marker"}
+      }
+    },
     "ListStepsInput":{
       "type":"structure",
       "required":["ClusterId"],
@@ -1092,7 +1215,8 @@
         "VisibleToAllUsers":{"shape":"Boolean"},
         "JobFlowRole":{"shape":"XmlString"},
         "ServiceRole":{"shape":"XmlString"},
-        "Tags":{"shape":"TagList"}
+        "Tags":{"shape":"TagList"},
+        "SecurityConfiguration":{"shape":"XmlString"}
       }
     },
     "RunJobFlowOutput":{
@@ -1107,6 +1231,17 @@
       "members":{
         "Path":{"shape":"XmlString"},
         "Args":{"shape":"XmlStringList"}
+      }
+    },
+    "SecurityConfigurationList":{
+      "type":"list",
+      "member":{"shape":"SecurityConfigurationSummary"}
+    },
+    "SecurityConfigurationSummary":{
+      "type":"structure",
+      "members":{
+        "Name":{"shape":"XmlString"},
+        "CreationDateTime":{"shape":"Date"}
       }
     },
     "SecurityGroupsList":{
@@ -1245,6 +1380,7 @@
       "members":{
         "State":{"shape":"StepState"},
         "StateChangeReason":{"shape":"StepStateChangeReason"},
+        "FailureDetails":{"shape":"FailureDetails"},
         "Timeline":{"shape":"StepTimeline"}
       }
     },

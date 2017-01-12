@@ -27,10 +27,11 @@ import (
 	"time"
 
 	"k8s.io/kubernetes/pkg/api"
-	client "k8s.io/kubernetes/pkg/client/unversioned"
+	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/util/wait"
 	"k8s.io/kubernetes/test/e2e/framework"
+	testutils "k8s.io/kubernetes/test/utils"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -55,10 +56,10 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 	forEachPod := func(selectorKey string, selectorValue string, fn func(api.Pod)) {
 		clusterState(selectorKey, selectorValue).ForEach(fn)
 	}
-	var c *client.Client
+	var c clientset.Interface
 	var ns string
 	BeforeEach(func() {
-		c = f.Client
+		c = f.ClientSet
 		ns = f.Namespace.Name
 	})
 
@@ -94,10 +95,10 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 			framework.RunKubectlOrDie("create", "-f", sentinelControllerYaml, nsFlag)
 			framework.RunKubectlOrDie("create", "-f", controllerYaml, nsFlag)
 			label := labels.SelectorFromSet(labels.Set(map[string]string{sentinelRC: "true"}))
-			err = framework.WaitForPodsWithLabelRunning(c, ns, label)
+			err = testutils.WaitForPodsWithLabelRunning(c, ns, label)
 			Expect(err).NotTo(HaveOccurred())
 			label = labels.SelectorFromSet(labels.Set(map[string]string{"name": redisRC}))
-			err = framework.WaitForPodsWithLabelRunning(c, ns, label)
+			err = testutils.WaitForPodsWithLabelRunning(c, ns, label)
 			Expect(err).NotTo(HaveOccurred())
 
 			By("scaling up the deployment")
@@ -110,7 +111,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 			checkAllLogs := func() {
 				selectorKey, selectorValue := "name", redisRC
 				label := labels.SelectorFromSet(labels.Set(map[string]string{selectorKey: selectorValue}))
-				err = framework.WaitForPodsWithLabelRunning(c, ns, label)
+				err = testutils.WaitForPodsWithLabelRunning(c, ns, label)
 				Expect(err).NotTo(HaveOccurred())
 				forEachPod(selectorKey, selectorValue, func(pod api.Pod) {
 					if pod.Name != bootstrapPodName {
@@ -120,7 +121,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 				})
 				selectorKey, selectorValue = sentinelRC, "true"
 				label = labels.SelectorFromSet(labels.Set(map[string]string{selectorKey: selectorValue}))
-				err = framework.WaitForPodsWithLabelRunning(c, ns, label)
+				err = testutils.WaitForPodsWithLabelRunning(c, ns, label)
 				Expect(err).NotTo(HaveOccurred())
 				forEachPod(selectorKey, selectorValue, func(pod api.Pod) {
 					if pod.Name != bootstrapPodName {
@@ -158,7 +159,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 				framework.RunKubectlOrDie("create", "-f", masterYaml, nsFlag)
 				selectorKey, selectorValue := "component", "spark-master"
 				label := labels.SelectorFromSet(labels.Set(map[string]string{selectorKey: selectorValue}))
-				err := framework.WaitForPodsWithLabelRunning(c, ns, label)
+				err := testutils.WaitForPodsWithLabelRunning(c, ns, label)
 				Expect(err).NotTo(HaveOccurred())
 
 				framework.Logf("Now polling for Master startup...")
@@ -185,7 +186,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 				framework.RunKubectlOrDie("create", "-f", workerControllerYaml, nsFlag)
 				selectorKey, selectorValue := "component", "spark-worker"
 				label := labels.SelectorFromSet(labels.Set(map[string]string{selectorKey: selectorValue}))
-				err := framework.WaitForPodsWithLabelRunning(c, ns, label)
+				err := testutils.WaitForPodsWithLabelRunning(c, ns, label)
 				Expect(err).NotTo(HaveOccurred())
 
 				// For now, scaling is orthogonal to the core test.
@@ -223,7 +224,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 			By("Creating a Cassandra RC")
 			framework.RunKubectlOrDie("create", "-f", controllerYaml, nsFlag)
 			label := labels.SelectorFromSet(labels.Set(map[string]string{"app": "cassandra"}))
-			err = framework.WaitForPodsWithLabelRunning(c, ns, label)
+			err = testutils.WaitForPodsWithLabelRunning(c, ns, label)
 			Expect(err).NotTo(HaveOccurred())
 			forEachPod("app", "cassandra", func(pod api.Pod) {
 				framework.Logf("Verifying pod %v ", pod.Name)
@@ -243,8 +244,8 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 		})
 	})
 
-	framework.KubeDescribe("CassandraPetSet", func() {
-		It("should create petset", func() {
+	framework.KubeDescribe("CassandraStatefulSet", func() {
+		It("should create statefulset", func() {
 			mkpath := func(file string) string {
 				return filepath.Join(framework.TestContext.RepoRoot, "examples/storage/cassandra", file)
 			}
@@ -252,14 +253,14 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 			nsFlag := fmt.Sprintf("--namespace=%v", ns)
 
 			// have to change dns prefix because of the dynamic namespace
-			input, err := ioutil.ReadFile(mkpath("cassandra-petset.yaml"))
+			input, err := ioutil.ReadFile(mkpath("cassandra-statefulset.yaml"))
 			Expect(err).NotTo(HaveOccurred())
 
 			output := strings.Replace(string(input), "cassandra-0.cassandra.default.svc.cluster.local", "cassandra-0.cassandra."+ns+".svc.cluster.local", -1)
 
-			petSetYaml := "/tmp/cassandra-petset.yaml"
+			statefulsetYaml := "/tmp/cassandra-statefulset.yaml"
 
-			err = ioutil.WriteFile(petSetYaml, []byte(output), 0644)
+			err = ioutil.WriteFile(statefulsetYaml, []byte(output), 0644)
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Starting the cassandra service")
@@ -268,21 +269,21 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 			err = framework.WaitForService(c, ns, "cassandra", true, framework.Poll, framework.ServiceRespondingTimeout)
 			Expect(err).NotTo(HaveOccurred())
 
-			// Create an PetSet with n nodes in it.  Each node will then be verified.
-			By("Creating a Cassandra PetSet")
+			// Create an StatefulSet with n nodes in it.  Each node will then be verified.
+			By("Creating a Cassandra StatefulSet")
 
-			framework.RunKubectlOrDie("create", "-f", petSetYaml, nsFlag)
+			framework.RunKubectlOrDie("create", "-f", statefulsetYaml, nsFlag)
 
-			petsetPoll := 30 * time.Second
-			petsetTimeout := 10 * time.Minute
+			statefulsetPoll := 30 * time.Second
+			statefulsetTimeout := 10 * time.Minute
 			// TODO - parse this number out of the yaml
 			numPets := 3
 			label := labels.SelectorFromSet(labels.Set(map[string]string{"app": "cassandra"}))
-			err = wait.PollImmediate(petsetPoll, petsetTimeout,
+			err = wait.PollImmediate(statefulsetPoll, statefulsetTimeout,
 				func() (bool, error) {
-					podList, err := c.Pods(ns).List(api.ListOptions{LabelSelector: label})
+					podList, err := c.Core().Pods(ns).List(api.ListOptions{LabelSelector: label})
 					if err != nil {
-						return false, fmt.Errorf("Unable to get list of pods in petset %s", label)
+						return false, fmt.Errorf("Unable to get list of pods in statefulset %s", label)
 					}
 					ExpectNoError(err)
 					if len(podList.Items) < numPets {
@@ -311,8 +312,8 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 					framework.Failf("Cassandra pod ip %s is not reporting Up and Normal 'UN' via nodetool status", pod.Status.PodIP)
 				}
 			})
-			// using out of petset e2e as deleting pvc is a pain
-			deleteAllPetSets(c, ns)
+			// using out of statefulset e2e as deleting pvc is a pain
+			deleteAllStatefulSets(c, ns)
 		})
 	})
 
@@ -354,7 +355,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 			By("starting workers")
 			framework.RunKubectlOrDie("create", "-f", workerControllerJson, nsFlag)
 			label := labels.SelectorFromSet(labels.Set(map[string]string{"name": "storm-worker"}))
-			err = framework.WaitForPodsWithLabelRunning(c, ns, label)
+			err = testutils.WaitForPodsWithLabelRunning(c, ns, label)
 			Expect(err).NotTo(HaveOccurred())
 			forEachPod("name", "storm-worker", func(pod api.Pod) {
 				//do nothing, just wait for the pod to be running
@@ -395,7 +396,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 				err := framework.WaitForPodNameRunningInNamespace(c, podName, ns)
 				Expect(err).NotTo(HaveOccurred())
 				for t := time.Now(); time.Since(t) < timeout; time.Sleep(framework.Poll) {
-					pod, err := c.Pods(ns).Get(podName)
+					pod, err := c.Core().Pods(ns).Get(podName)
 					framework.ExpectNoError(err, fmt.Sprintf("getting pod %s", podName))
 					stat := api.GetExistingContainerStatus(pod.Status.ContainerStatuses, podName)
 					framework.Logf("Pod: %s, restart count:%d", stat.Name, stat.RestartCount)
@@ -490,7 +491,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 			framework.RunKubectlOrDie("create", "-f", driverServiceYaml, nsFlag)
 			framework.RunKubectlOrDie("create", "-f", rethinkDbControllerYaml, nsFlag)
 			label := labels.SelectorFromSet(labels.Set(map[string]string{"db": "rethinkdb"}))
-			err := framework.WaitForPodsWithLabelRunning(c, ns, label)
+			err := testutils.WaitForPodsWithLabelRunning(c, ns, label)
 			Expect(err).NotTo(HaveOccurred())
 			checkDbInstances := func() {
 				forEachPod("db", "rethinkdb", func(pod api.Pod) {
@@ -503,7 +504,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			By("scaling rethinkdb")
-			framework.ScaleRC(c, f.ClientSet, ns, "rethinkdb-rc", 2, true)
+			framework.ScaleRC(f.ClientSet, ns, "rethinkdb-rc", 2, true)
 			checkDbInstances()
 
 			By("starting admin")
@@ -533,7 +534,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 			framework.RunKubectlOrDie("create", "-f", serviceYaml, nsFlag)
 			framework.RunKubectlOrDie("create", "-f", controllerYaml, nsFlag)
 			label := labels.SelectorFromSet(labels.Set(map[string]string{"name": "hazelcast"}))
-			err := framework.WaitForPodsWithLabelRunning(c, ns, label)
+			err := testutils.WaitForPodsWithLabelRunning(c, ns, label)
 			Expect(err).NotTo(HaveOccurred())
 			forEachPod("name", "hazelcast", func(pod api.Pod) {
 				_, err := framework.LookForStringInLog(ns, pod.Name, "hazelcast", "Members [1]", serverStartTimeout)
@@ -546,7 +547,7 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			By("scaling hazelcast")
-			framework.ScaleRC(c, f.ClientSet, ns, "hazelcast", 2, true)
+			framework.ScaleRC(f.ClientSet, ns, "hazelcast", 2, true)
 			forEachPod("name", "hazelcast", func(pod api.Pod) {
 				_, err := framework.LookForStringInLog(ns, pod.Name, "hazelcast", "Members [2]", serverStartTimeout)
 				Expect(err).NotTo(HaveOccurred())
@@ -555,11 +556,11 @@ var _ = framework.KubeDescribe("[Feature:Example]", func() {
 	})
 })
 
-func makeHttpRequestToService(c *client.Client, ns, service, path string, timeout time.Duration) (string, error) {
+func makeHttpRequestToService(c clientset.Interface, ns, service, path string, timeout time.Duration) (string, error) {
 	var result []byte
 	var err error
 	for t := time.Now(); time.Since(t) < timeout; time.Sleep(framework.Poll) {
-		proxyRequest, errProxy := framework.GetServicesProxyRequest(c, c.Get())
+		proxyRequest, errProxy := framework.GetServicesProxyRequest(c, c.Core().RESTClient().Get())
 		if errProxy != nil {
 			break
 		}

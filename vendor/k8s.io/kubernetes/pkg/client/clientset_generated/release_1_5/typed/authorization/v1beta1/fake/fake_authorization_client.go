@@ -22,24 +22,25 @@ import (
 	core "k8s.io/kubernetes/pkg/client/testing/core"
 )
 
-type FakeAuthorization struct {
+type FakeAuthorizationV1beta1 struct {
 	*core.Fake
 }
 
-func (c *FakeAuthorization) LocalSubjectAccessReviews(namespace string) v1beta1.LocalSubjectAccessReviewInterface {
+func (c *FakeAuthorizationV1beta1) LocalSubjectAccessReviews(namespace string) v1beta1.LocalSubjectAccessReviewInterface {
 	return &FakeLocalSubjectAccessReviews{c, namespace}
 }
 
-func (c *FakeAuthorization) SelfSubjectAccessReviews() v1beta1.SelfSubjectAccessReviewInterface {
+func (c *FakeAuthorizationV1beta1) SelfSubjectAccessReviews() v1beta1.SelfSubjectAccessReviewInterface {
 	return &FakeSelfSubjectAccessReviews{c}
 }
 
-func (c *FakeAuthorization) SubjectAccessReviews() v1beta1.SubjectAccessReviewInterface {
+func (c *FakeAuthorizationV1beta1) SubjectAccessReviews() v1beta1.SubjectAccessReviewInterface {
 	return &FakeSubjectAccessReviews{c}
 }
 
-// GetRESTClient returns a RESTClient that is used to communicate
+// RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *FakeAuthorization) GetRESTClient() *restclient.RESTClient {
-	return nil
+func (c *FakeAuthorizationV1beta1) RESTClient() restclient.Interface {
+	var ret *restclient.RESTClient
+	return ret
 }

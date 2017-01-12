@@ -6,26 +6,26 @@
     "DeleteConfigurationRecorder": "<p>Deletes the configuration recorder.</p> <p>After the configuration recorder is deleted, AWS Config will not record resource configuration changes until you create a new configuration recorder.</p> <p>This action does not delete the configuration information that was previously recorded. You will be able to access the previously recorded information by using the <code>GetResourceConfigHistory</code> action, but you will not be able to access this information in the AWS Config console until you create a new configuration recorder.</p>",
     "DeleteDeliveryChannel": "<p>Deletes the delivery channel.</p> <p>Before you can delete the delivery channel, you must stop the configuration recorder by using the <a>StopConfigurationRecorder</a> action.</p>",
     "DeleteEvaluationResults": "<p>Deletes the evaluation results for the specified Config rule. You can specify one Config rule per request. After you delete the evaluation results, you can call the <a>StartConfigRulesEvaluation</a> API to start evaluating your AWS resources against the rule.</p>",
-    "DeliverConfigSnapshot": "<p>Schedules delivery of a configuration snapshot to the Amazon S3 bucket in the specified delivery channel. After the delivery has started, AWS Config sends following notifications using an Amazon SNS topic that you have specified.</p> <ul> <li>Notification of starting the delivery.</li> <li>Notification of delivery completed, if the delivery was successfully completed.</li> <li>Notification of delivery failure, if the delivery failed to complete.</li> </ul>",
-    "DescribeComplianceByConfigRule": "<p>Indicates whether the specified AWS Config rules are compliant. If a rule is noncompliant, this action returns the number of AWS resources that do not comply with the rule.</p> <p>A rule is compliant if all of the evaluated resources comply with it, and it is noncompliant if any of these resources do not comply. </p> <p>If AWS Config has no current evaluation results for the rule, it returns <code>INSUFFICIENT_DATA</code>. This result might indicate one of the following conditions:</p> <ul> <li>AWS Config has never invoked an evaluation for the rule. To check whether it has, use the <code>DescribeConfigRuleEvaluationStatus</code> action to get the <code>LastSuccessfulInvocationTime</code> and <code>LastFailedInvocationTime</code>.</li> <li>The rule's AWS Lambda function is failing to send evaluation results to AWS Config. Verify that the role that you assigned to your configuration recorder includes the <code>config:PutEvaluations</code> permission. If the rule is a custom rule, verify that the AWS Lambda execution role includes the <code>config:PutEvaluations</code> permission.</li> <li>The rule's AWS Lambda function has returned <code>NOT_APPLICABLE</code> for all evaluation results. This can occur if the resources were deleted or removed from the rule's scope.</li> </ul>",
-    "DescribeComplianceByResource": "<p>Indicates whether the specified AWS resources are compliant. If a resource is noncompliant, this action returns the number of AWS Config rules that the resource does not comply with. </p> <p>A resource is compliant if it complies with all the AWS Config rules that evaluate it. It is noncompliant if it does not comply with one or more of these rules.</p> <p>If AWS Config has no current evaluation results for the resource, it returns <code>INSUFFICIENT_DATA</code>. This result might indicate one of the following conditions about the rules that evaluate the resource:</p> <ul> <li>AWS Config has never invoked an evaluation for the rule. To check whether it has, use the <code>DescribeConfigRuleEvaluationStatus</code> action to get the <code>LastSuccessfulInvocationTime</code> and <code>LastFailedInvocationTime</code>.</li> <li>The rule's AWS Lambda function is failing to send evaluation results to AWS Config. Verify that the role that you assigned to your configuration recorder includes the <code>config:PutEvaluations</code> permission. If the rule is a custom rule, verify that the AWS Lambda execution role includes the <code>config:PutEvaluations</code> permission.</li> <li>The rule's AWS Lambda function has returned <code>NOT_APPLICABLE</code> for all evaluation results. This can occur if the resources were deleted or removed from the rule's scope.</li> </ul>",
+    "DeliverConfigSnapshot": "<p>Schedules delivery of a configuration snapshot to the Amazon S3 bucket in the specified delivery channel. After the delivery has started, AWS Config sends following notifications using an Amazon SNS topic that you have specified.</p> <ul> <li> <p>Notification of starting the delivery.</p> </li> <li> <p>Notification of delivery completed, if the delivery was successfully completed.</p> </li> <li> <p>Notification of delivery failure, if the delivery failed to complete.</p> </li> </ul>",
+    "DescribeComplianceByConfigRule": "<p>Indicates whether the specified AWS Config rules are compliant. If a rule is noncompliant, this action returns the number of AWS resources that do not comply with the rule.</p> <p>A rule is compliant if all of the evaluated resources comply with it, and it is noncompliant if any of these resources do not comply.</p> <p>If AWS Config has no current evaluation results for the rule, it returns <code>INSUFFICIENT_DATA</code>. This result might indicate one of the following conditions:</p> <ul> <li> <p>AWS Config has never invoked an evaluation for the rule. To check whether it has, use the <code>DescribeConfigRuleEvaluationStatus</code> action to get the <code>LastSuccessfulInvocationTime</code> and <code>LastFailedInvocationTime</code>.</p> </li> <li> <p>The rule's AWS Lambda function is failing to send evaluation results to AWS Config. Verify that the role that you assigned to your configuration recorder includes the <code>config:PutEvaluations</code> permission. If the rule is a custom rule, verify that the AWS Lambda execution role includes the <code>config:PutEvaluations</code> permission.</p> </li> <li> <p>The rule's AWS Lambda function has returned <code>NOT_APPLICABLE</code> for all evaluation results. This can occur if the resources were deleted or removed from the rule's scope.</p> </li> </ul>",
+    "DescribeComplianceByResource": "<p>Indicates whether the specified AWS resources are compliant. If a resource is noncompliant, this action returns the number of AWS Config rules that the resource does not comply with.</p> <p>A resource is compliant if it complies with all the AWS Config rules that evaluate it. It is noncompliant if it does not comply with one or more of these rules.</p> <p>If AWS Config has no current evaluation results for the resource, it returns <code>INSUFFICIENT_DATA</code>. This result might indicate one of the following conditions about the rules that evaluate the resource:</p> <ul> <li> <p>AWS Config has never invoked an evaluation for the rule. To check whether it has, use the <code>DescribeConfigRuleEvaluationStatus</code> action to get the <code>LastSuccessfulInvocationTime</code> and <code>LastFailedInvocationTime</code>.</p> </li> <li> <p>The rule's AWS Lambda function is failing to send evaluation results to AWS Config. Verify that the role that you assigned to your configuration recorder includes the <code>config:PutEvaluations</code> permission. If the rule is a custom rule, verify that the AWS Lambda execution role includes the <code>config:PutEvaluations</code> permission.</p> </li> <li> <p>The rule's AWS Lambda function has returned <code>NOT_APPLICABLE</code> for all evaluation results. This can occur if the resources were deleted or removed from the rule's scope.</p> </li> </ul>",
     "DescribeConfigRuleEvaluationStatus": "<p>Returns status information for each of your AWS managed Config rules. The status includes information such as the last time AWS Config invoked the rule, the last time AWS Config failed to invoke the rule, and the related error for the last failure.</p>",
     "DescribeConfigRules": "<p>Returns details about your AWS Config rules.</p>",
-    "DescribeConfigurationRecorderStatus": "<p>Returns the current status of the specified configuration recorder. If a configuration recorder is not specified, this action returns the status of all configuration recorder associated with the account.</p> <note> <p>Currently, you can specify only one configuration recorder per account.</p> </note>",
-    "DescribeConfigurationRecorders": "<p>Returns the name of one or more specified configuration recorders. If the recorder name is not specified, this action returns the names of all the configuration recorders associated with the account. </p> <note> <p>Currently, you can specify only one configuration recorder per account.</p> </note>",
-    "DescribeDeliveryChannelStatus": "<p>Returns the current status of the specified delivery channel. If a delivery channel is not specified, this action returns the current status of all delivery channels associated with the account. </p> <note> <p>Currently, you can specify only one delivery channel per account.</p> </note>",
-    "DescribeDeliveryChannels": "<p>Returns details about the specified delivery channel. If a delivery channel is not specified, this action returns the details of all delivery channels associated with the account. </p> <note> <p>Currently, you can specify only one delivery channel per account.</p> </note>",
+    "DescribeConfigurationRecorderStatus": "<p>Returns the current status of the specified configuration recorder. If a configuration recorder is not specified, this action returns the status of all configuration recorder associated with the account.</p> <note> <p>Currently, you can specify only one configuration recorder per region in your account.</p> </note>",
+    "DescribeConfigurationRecorders": "<p>Returns the details for the specified configuration recorders. If the configuration recorder is not specified, this action returns the details for all configuration recorders associated with the account.</p> <note> <p>Currently, you can specify only one configuration recorder per region in your account.</p> </note>",
+    "DescribeDeliveryChannelStatus": "<p>Returns the current status of the specified delivery channel. If a delivery channel is not specified, this action returns the current status of all delivery channels associated with the account.</p> <note> <p>Currently, you can specify only one delivery channel per region in your account.</p> </note>",
+    "DescribeDeliveryChannels": "<p>Returns details about the specified delivery channel. If a delivery channel is not specified, this action returns the details of all delivery channels associated with the account.</p> <note> <p>Currently, you can specify only one delivery channel per region in your account.</p> </note>",
     "GetComplianceDetailsByConfigRule": "<p>Returns the evaluation results for the specified AWS Config rule. The results indicate which AWS resources were evaluated by the rule, when each resource was last evaluated, and whether each resource complies with the rule.</p>",
     "GetComplianceDetailsByResource": "<p>Returns the evaluation results for the specified AWS resource. The results indicate which AWS Config rules were used to evaluate the resource, when each rule was last used, and whether the resource complies with each rule.</p>",
     "GetComplianceSummaryByConfigRule": "<p>Returns the number of AWS Config rules that are compliant and noncompliant, up to a maximum of 25 for each.</p>",
     "GetComplianceSummaryByResourceType": "<p>Returns the number of resources that are compliant and the number that are noncompliant. You can specify one or more resource types to get these numbers for each resource type. The maximum number returned is 100.</p>",
     "GetResourceConfigHistory": "<p>Returns a list of configuration items for the specified resource. The list contains details about each state of the resource during the specified time interval.</p> <p>The response is paginated, and by default, AWS Config returns a limit of 10 configuration items per page. You can customize this number with the <code>limit</code> parameter. The response includes a <code>nextToken</code> string, and to get the next page of results, run the request again and enter this string for the <code>nextToken</code> parameter.</p> <note> <p>Each call to the API is limited to span a duration of seven days. It is likely that the number of records returned is smaller than the specified <code>limit</code>. In such cases, you can make another call, using the <code>nextToken</code>.</p> </note>",
     "ListDiscoveredResources": "<p>Accepts a resource type and returns a list of resource identifiers for the resources of that type. A resource identifier includes the resource type, ID, and (if available) the custom resource name. The results consist of resources that AWS Config has discovered, including those that AWS Config is not currently recording. You can narrow the results to include only resources that have specific resource IDs or a resource name.</p> <note> <p>You can specify either resource IDs or a resource name but not both in the same request.</p> </note> <p>The response is paginated, and by default AWS Config lists 100 resource identifiers on each page. You can customize this number with the <code>limit</code> parameter. The response includes a <code>nextToken</code> string, and to get the next page of results, run the request again and enter this string for the <code>nextToken</code> parameter.</p>",
-    "PutConfigRule": "<p>Adds or updates an AWS Config rule for evaluating whether your AWS resources comply with your desired configurations. </p> <p>You can use this action for custom Config rules and AWS managed Config rules. A custom Config rule is a rule that you develop and maintain. An AWS managed Config rule is a customizable, predefined rule that AWS Config provides.</p> <p>If you are adding a new custom Config rule, you must first create the AWS Lambda function that the rule invokes to evaluate your resources. When you use the <code>PutConfigRule</code> action to add the rule to AWS Config, you must specify the Amazon Resource Name (ARN) that AWS Lambda assigns to the function. Specify the ARN for the <code>SourceIdentifier</code> key. This key is part of the <code>Source</code> object, which is part of the <code>ConfigRule</code> object. </p> <p>If you are adding a new AWS managed Config rule, specify the rule's identifier for the <code>SourceIdentifier</code> key. To reference AWS managed Config rule identifiers, see <a href=\"http://docs.aws.amazon.com/config/latest/developerguide/evaluate-config_use-managed-rules.html\">Using AWS Managed Config Rules</a>.</p> <p>For any new rule that you add, specify the <code>ConfigRuleName</code> in the <code>ConfigRule</code> object. Do not specify the <code>ConfigRuleArn</code> or the <code>ConfigRuleId</code>. These values are generated by AWS Config for new rules.</p> <p>If you are updating a rule that you have added previously, specify the rule's <code>ConfigRuleName</code>, <code>ConfigRuleId</code>, or <code>ConfigRuleArn</code> in the <code>ConfigRule</code> data type that you use in this request.</p> <p>The maximum number of rules that AWS Config supports is 25.</p> <p>For more information about developing and using AWS Config rules, see <a href=\"http://docs.aws.amazon.com/config/latest/developerguide/evaluate-config.html\">Evaluating AWS Resource Configurations with AWS Config</a> in the <i>AWS Config Developer Guide</i>.</p> <p/>",
-    "PutConfigurationRecorder": "<p>Creates a new configuration recorder to record the selected resource configurations.</p> <p>You can use this action to change the role <code>roleARN</code> and/or the <code>recordingGroup</code> of an existing recorder. To change the role, call the action on the existing configuration recorder and specify a role.</p> <note> <p>Currently, you can specify only one configuration recorder per account.</p> <p>If <code>ConfigurationRecorder</code> does not have the <b>recordingGroup</b> parameter specified, the default is to record all supported resource types.</p> </note>",
-    "PutDeliveryChannel": "<p>Creates a delivery channel object to deliver configuration information to an Amazon S3 bucket and Amazon SNS topic.</p> <p>Before you can create a delivery channel, you must create a configuration recorder.</p> <p>You can use this action to change the Amazon S3 bucket or an Amazon SNS topic of the existing delivery channel. To change the Amazon S3 bucket or an Amazon SNS topic, call this action and specify the changed values for the S3 bucket and the SNS topic. If you specify a different value for either the S3 bucket or the SNS topic, this action will keep the existing value for the parameter that is not changed.</p> <note> <p>You can have only one delivery channel per AWS account.</p> </note>",
+    "PutConfigRule": "<p>Adds or updates an AWS Config rule for evaluating whether your AWS resources comply with your desired configurations.</p> <p>You can use this action for custom Config rules and AWS managed Config rules. A custom Config rule is a rule that you develop and maintain. An AWS managed Config rule is a customizable, predefined rule that AWS Config provides.</p> <p>If you are adding a new custom Config rule, you must first create the AWS Lambda function that the rule invokes to evaluate your resources. When you use the <code>PutConfigRule</code> action to add the rule to AWS Config, you must specify the Amazon Resource Name (ARN) that AWS Lambda assigns to the function. Specify the ARN for the <code>SourceIdentifier</code> key. This key is part of the <code>Source</code> object, which is part of the <code>ConfigRule</code> object. </p> <p>If you are adding a new AWS managed Config rule, specify the rule's identifier for the <code>SourceIdentifier</code> key. To reference AWS managed Config rule identifiers, see <a href=\"http://docs.aws.amazon.com/config/latest/developerguide/evaluate-config_use-managed-rules.html\">Using AWS Managed Config Rules</a>.</p> <p>For any new rule that you add, specify the <code>ConfigRuleName</code> in the <code>ConfigRule</code> object. Do not specify the <code>ConfigRuleArn</code> or the <code>ConfigRuleId</code>. These values are generated by AWS Config for new rules.</p> <p>If you are updating a rule that you added previously, you can specify the rule by <code>ConfigRuleName</code>, <code>ConfigRuleId</code>, or <code>ConfigRuleArn</code> in the <code>ConfigRule</code> data type that you use in this request.</p> <p>The maximum number of rules that AWS Config supports is 25.</p> <p>For more information about developing and using AWS Config rules, see <a href=\"http://docs.aws.amazon.com/config/latest/developerguide/evaluate-config.html\">Evaluating AWS Resource Configurations with AWS Config</a> in the <i>AWS Config Developer Guide</i>.</p>",
+    "PutConfigurationRecorder": "<p>Creates a new configuration recorder to record the selected resource configurations.</p> <p>You can use this action to change the role <code>roleARN</code> and/or the <code>recordingGroup</code> of an existing recorder. To change the role, call the action on the existing configuration recorder and specify a role.</p> <note> <p>Currently, you can specify only one configuration recorder per region in your account.</p> <p>If <code>ConfigurationRecorder</code> does not have the <b>recordingGroup</b> parameter specified, the default is to record all supported resource types.</p> </note>",
+    "PutDeliveryChannel": "<p>Creates a delivery channel object to deliver configuration information to an Amazon S3 bucket and Amazon SNS topic.</p> <p>Before you can create a delivery channel, you must create a configuration recorder.</p> <p>You can use this action to change the Amazon S3 bucket or an Amazon SNS topic of the existing delivery channel. To change the Amazon S3 bucket or an Amazon SNS topic, call this action and specify the changed values for the S3 bucket and the SNS topic. If you specify a different value for either the S3 bucket or the SNS topic, this action will keep the existing value for the parameter that is not changed.</p> <note> <p>You can have only one delivery channel per region in your account.</p> </note>",
     "PutEvaluations": "<p>Used by an AWS Lambda function to deliver evaluation results to AWS Config. This action is required in every AWS Lambda function that is invoked by an AWS Config rule.</p>",
-    "StartConfigRulesEvaluation": "<p>Evaluates your resources against the specified Config rules. You can specify up to 25 Config rules per request.</p> <p>An existing <a>StartConfigRulesEvaluation</a> call must complete for the rules that you specified before you can call the API again. If you chose to have AWS Config stream to an Amazon SNS topic, you will receive a notification when the evaluation starts.</p>",
+    "StartConfigRulesEvaluation": "<p>Evaluates your resources against the specified Config rules. You can specify up to 25 Config rules per request.</p> <p>An existing <a>StartConfigRulesEvaluation</a> call must complete for the specified rules before you can call the API again. If you chose to have AWS Config stream to an Amazon SNS topic, you will receive a <code>ConfigRuleEvaluationStarted</code> notification when the evaluation starts.</p> <note> <p>You don't need to call the <code>StartConfigRulesEvaluation</code> API to run an evaluation for a new rule. When you create a new rule, AWS Config automatically evaluates your resources against the rule. </p> </note> <p>The <code>StartConfigRulesEvaluation</code> API is useful if you want to run on-demand evaluations, such as the following example:</p> <ol> <li> <p>You have a custom rule that evaluates your IAM resources every 24 hours.</p> </li> <li> <p>You update your Lambda function to add additional conditions to your rule.</p> </li> <li> <p>Instead of waiting for the next periodic evaluation, you call the <code>StartConfigRulesEvaluation</code> API.</p> </li> <li> <p>AWS Config invokes your Lambda function and evaluates your IAM resources.</p> </li> <li> <p>Your custom rule will still run periodic evaluations every 24 hours.</p> </li> </ol>",
     "StartConfigurationRecorder": "<p>Starts recording configurations of the AWS resources you have selected to record in your AWS account.</p> <p>You must have created at least one delivery channel to successfully start the configuration recorder.</p>",
     "StopConfigurationRecorder": "<p>Stops recording configurations of the AWS resources you have selected to record in your AWS account.</p>"
   },
@@ -64,7 +64,7 @@
       "base": null,
       "refs": {
         "ComplianceContributorCount$CapExceeded": "<p>Indicates whether the maximum count is reached.</p>",
-        "ConfigRuleEvaluationStatus$FirstEvaluationStarted": "<p>Indicates whether AWS Config has evaluated your resources against the rule at least once.</p> <ul> <li><code>true</code> - AWS Config has evaluated your AWS resources against the rule at least once.</li> <li><code>false</code> - AWS Config has not once finished evaluating your AWS resources against the rule.</li> </ul>",
+        "ConfigRuleEvaluationStatus$FirstEvaluationStarted": "<p>Indicates whether AWS Config has evaluated your resources against the rule at least once.</p> <ul> <li> <p> <code>true</code> - AWS Config has evaluated your AWS resources against the rule at least once.</p> </li> <li> <p> <code>false</code> - AWS Config has not once finished evaluating your AWS resources against the rule.</p> </li> </ul>",
         "ConfigurationRecorderStatus$recording": "<p>Specifies whether the recorder is currently recording or not.</p>",
         "ListDiscoveredResourcesRequest$includeDeletedResources": "<p>Specifies whether AWS Config includes deleted resources in the results. By default, deleted resources are not included.</p>"
       }
@@ -74,7 +74,7 @@
       "refs": {
         "DeleteDeliveryChannelRequest$DeliveryChannelName": "<p>The name of the delivery channel to delete.</p>",
         "DeliverConfigSnapshotRequest$deliveryChannelName": "<p>The name of the delivery channel through which the snapshot is delivered.</p>",
-        "DeliveryChannel$name": "<p>The name of the delivery channel. By default, AWS Config assigns the name &quot;default&quot; when creating the delivery channel. To change the delivery channel name, you must use the DeleteDeliveryChannel action to delete your current delivery channel, and then you must use the PutDeliveryChannel command to create a delivery channel that has the desired name.</p>",
+        "DeliveryChannel$name": "<p>The name of the delivery channel. By default, AWS Config assigns the name \"default\" when creating the delivery channel. To change the delivery channel name, you must use the DeleteDeliveryChannel action to delete your current delivery channel, and then you must use the PutDeliveryChannel command to create a delivery channel that has the desired name.</p>",
         "DeliveryChannelNameList$member": null
       }
     },
@@ -92,7 +92,7 @@
       }
     },
     "ComplianceByConfigRule": {
-      "base": "<p>Indicates whether an AWS Config rule is compliant. A rule is compliant if all of the resources that the rule evaluated comply with it, and it is noncompliant if any of these resources do not comply. </p>",
+      "base": "<p>Indicates whether an AWS Config rule is compliant. A rule is compliant if all of the resources that the rule evaluated comply with it, and it is noncompliant if any of these resources do not comply.</p>",
       "refs": {
         "ComplianceByConfigRules$member": null
       }
@@ -104,7 +104,7 @@
       }
     },
     "ComplianceByResource": {
-      "base": "<p>Indicates whether an AWS resource that is evaluated according to one or more AWS Config rules is compliant. A resource is compliant if it complies with all of the rules that evaluate it, and it is noncompliant if it does not comply with one or more of these rules. </p>",
+      "base": "<p>Indicates whether an AWS resource that is evaluated according to one or more AWS Config rules is compliant. A resource is compliant if it complies with all of the rules that evaluate it, and it is noncompliant if it does not comply with one or more of these rules.</p>",
       "refs": {
         "ComplianceByResources$member": null
       }
@@ -116,7 +116,7 @@
       }
     },
     "ComplianceContributorCount": {
-      "base": "<p>The number of AWS resources or AWS Config rules responsible for the current compliance of the item, up to a maximum number. </p>",
+      "base": "<p>The number of AWS resources or AWS Config rules responsible for the current compliance of the item, up to a maximum number.</p>",
       "refs": {
         "Compliance$ComplianceContributorCount": "<p>The number of AWS resources or AWS Config rules that cause a result of <code>NON_COMPLIANT</code>, up to a maximum number.</p>",
         "ComplianceSummary$CompliantResourceCount": "<p>The number of AWS Config rules or AWS resources that are compliant, up to a maximum of 25 for rules and 100 for resources.</p>",
@@ -174,7 +174,7 @@
       }
     },
     "ConfigRule": {
-      "base": "<p>An AWS Lambda function that evaluates configuration items to assess whether your AWS resources comply with your desired configurations. This function can run when AWS Config detects a configuration change to an AWS resource and at a periodic frequency that you choose (for example, every 24 hours).</p> <note> <p>You can use the AWS CLI and AWS SDKs if you want to create a rule that triggers evaluations for your resources when AWS Config delivers the configuration snapshot. For more information, see <a>ConfigSnapshotDeliveryProperties</a>.</p> </note> <p>For more information about developing and using AWS Config rules, see <a href=\"http://docs.aws.amazon.com/config/latest/developerguide/evaluate-config.html\">Evaluating AWS Resource Configurations with AWS Config</a> in the <i>AWS Config Developer Guide</i>.</p>",
+      "base": "<p>An AWS Config rule represents an AWS Lambda function that you create for a custom rule or a predefined function for an AWS managed rule. The function evaluates configuration items to assess whether your AWS resources comply with your desired configurations. This function can run when AWS Config detects a configuration change to an AWS resource and at a periodic frequency that you choose (for example, every 24 hours).</p> <note> <p>You can use the AWS CLI and AWS SDKs if you want to create a rule that triggers evaluations for your resources when AWS Config delivers the configuration snapshot. For more information, see <a>ConfigSnapshotDeliveryProperties</a>.</p> </note> <p>For more information about developing and using AWS Config rules, see <a href=\"http://docs.aws.amazon.com/config/latest/developerguide/evaluate-config.html\">Evaluating AWS Resource Configurations with AWS Config</a> in the <i>AWS Config Developer Guide</i>.</p>",
       "refs": {
         "ConfigRules$member": null,
         "PutConfigRuleRequest$ConfigRule": null
@@ -196,7 +196,7 @@
       "base": null,
       "refs": {
         "DescribeComplianceByConfigRuleRequest$ConfigRuleNames": "<p>Specify one or more AWS Config rule names to filter the results by rule.</p>",
-        "DescribeConfigRuleEvaluationStatusRequest$ConfigRuleNames": "<p>The name of the AWS managed Config rules for which you want status information. If you do not specify any names, AWS Config returns status information for all AWS managed Config rules that you use. </p>",
+        "DescribeConfigRuleEvaluationStatusRequest$ConfigRuleNames": "<p>The name of the AWS managed Config rules for which you want status information. If you do not specify any names, AWS Config returns status information for all AWS managed Config rules that you use.</p>",
         "DescribeConfigRulesRequest$ConfigRuleNames": "<p>The names of the AWS Config rules for which you want details. If you do not specify any names, AWS Config returns details for all your rules.</p>"
       }
     },
@@ -213,13 +213,13 @@
       }
     },
     "ConfigSnapshotDeliveryProperties": {
-      "base": "<p>Shows the options for how often AWS Config delivers configuration snapshots to the Amazon S3 bucket in your delivery channel.</p> <note> <p>If you want to create a rule that triggers evaluations for your resources when AWS Config delivers the configuration snapshot, see the following:</p> </note> <p>The frequency for a rule that triggers evaluations for your resources when AWS Config delivers the configuration snapshot is set by one of two values, depending on which is less frequent:</p> <ul> <li> <p>The value for the <code>deliveryFrequency</code> parameter within the delivery channel configuration, which sets how often AWS Config delivers configuration snapshots. This value also sets how often AWS Config invokes evaluations for Config rules.</p> </li> <li> <p>The value for the <code>MaximumExecutionFrequency</code> parameter, which sets the maximum frequency with which AWS Config invokes evaluations for the rule. For more information, see <a>ConfigRule</a>.</p> </li> </ul> <p>If the <code>deliveryFrequency</code> value is less frequent than the <code>MaximumExecutionFrequency</code> value for a rule, AWS Config invokes the rule only as often as the <code>deliveryFrequency</code> value. </p> <ol> <li> <p>For example, you have a rule and you specify the <code>MaximumExecutionFrequency</code> value to be <code>Six_Hours</code>. </p> </li> <li> <p>You then specify the delivery channel <code>deliveryFrequency</code> value to <code>TwentyFour_Hours</code>. </p> </li> <li> <p>Because the value for <code>deliveryFrequency</code> is less frequent than <code>MaximumExecutionFrequency</code>, AWS Config invokes evaluations for the rule every 24 hours. </p> </li> </ol> <p>You should set the <code>MaximumExecutionFrequency</code> value to be at least as frequent as the <code>deliveryFrequency</code> value. You can view the <code>deliveryFrequency</code> value by using the <code>DescribeDeliveryChannnels</code> action.</p> <p>To update the frequency with which AWS Config delivers your configuration snapshots, use the <code>PutDeliveryChannel</code> action.</p>",
+      "base": "<p>Provides options for how often AWS Config delivers configuration snapshots to the Amazon S3 bucket in your delivery channel.</p> <note> <p>If you want to create a rule that triggers evaluations for your resources when AWS Config delivers the configuration snapshot, see the following:</p> </note> <p>The frequency for a rule that triggers evaluations for your resources when AWS Config delivers the configuration snapshot is set by one of two values, depending on which is less frequent:</p> <ul> <li> <p>The value for the <code>deliveryFrequency</code> parameter within the delivery channel configuration, which sets how often AWS Config delivers configuration snapshots. This value also sets how often AWS Config invokes evaluations for Config rules.</p> </li> <li> <p>The value for the <code>MaximumExecutionFrequency</code> parameter, which sets the maximum frequency with which AWS Config invokes evaluations for the rule. For more information, see <a>ConfigRule</a>.</p> </li> </ul> <p>If the <code>deliveryFrequency</code> value is less frequent than the <code>MaximumExecutionFrequency</code> value for a rule, AWS Config invokes the rule only as often as the <code>deliveryFrequency</code> value.</p> <ol> <li> <p>For example, you want your rule to run evaluations when AWS Config delivers the configuration snapshot.</p> </li> <li> <p>You specify the <code>MaximumExecutionFrequency</code> value for <code>Six_Hours</code>. </p> </li> <li> <p>You then specify the delivery channel <code>deliveryFrequency</code> value for <code>TwentyFour_Hours</code>.</p> </li> <li> <p>Because the value for <code>deliveryFrequency</code> is less frequent than <code>MaximumExecutionFrequency</code>, AWS Config invokes evaluations for the rule every 24 hours. </p> </li> </ol> <p>You should set the <code>MaximumExecutionFrequency</code> value to be at least as frequent as the <code>deliveryFrequency</code> value. You can view the <code>deliveryFrequency</code> value by using the <code>DescribeDeliveryChannnels</code> action.</p> <p>To update the <code>deliveryFrequency</code> with which AWS Config delivers your configuration snapshots, use the <code>PutDeliveryChannel</code> action.</p>",
       "refs": {
         "DeliveryChannel$configSnapshotDeliveryProperties": null
       }
     },
     "ConfigStreamDeliveryInfo": {
-      "base": "<p>A list that contains the status of the delivery of the configuration stream notification to the Amazon SNS topic. </p>",
+      "base": "<p>A list that contains the status of the delivery of the configuration stream notification to the Amazon SNS topic.</p>",
       "refs": {
         "DeliveryChannelStatus$configStreamDeliveryInfo": "<p>A list containing the status of the delivery of the configuration stream notification to the specified Amazon SNS topic.</p>"
       }
@@ -251,7 +251,7 @@
     "ConfigurationItemMD5Hash": {
       "base": null,
       "refs": {
-        "ConfigurationItem$configurationItemMD5Hash": "<p>Unique MD5 hash that represents the configuration item&apos;s state.</p> <p>You can use MD5 hash to compare the states of two or more configuration items that are associated with the same resource.</p>"
+        "ConfigurationItem$configurationItemMD5Hash": "<p>Unique MD5 hash that represents the configuration item's state.</p> <p>You can use MD5 hash to compare the states of two or more configuration items that are associated with the same resource.</p>"
       }
     },
     "ConfigurationItemStatus": {
@@ -276,7 +276,7 @@
     "ConfigurationRecorderNameList": {
       "base": null,
       "refs": {
-        "DescribeConfigurationRecorderStatusRequest$ConfigurationRecorderNames": "<p>The name(s) of the configuration recorder. If the name is not specified, the action returns the current status of all the configuration recorders associated with the account. </p>",
+        "DescribeConfigurationRecorderStatusRequest$ConfigurationRecorderNames": "<p>The name(s) of the configuration recorder. If the name is not specified, the action returns the current status of all the configuration recorders associated with the account.</p>",
         "DescribeConfigurationRecordersRequest$ConfigurationRecorderNames": "<p>A list of configuration recorder names.</p>"
       }
     },
@@ -289,7 +289,7 @@
     "ConfigurationRecorderStatusList": {
       "base": null,
       "refs": {
-        "DescribeConfigurationRecorderStatusResponse$ConfigurationRecordersStatus": "<p> A list that contains status of the specified recorders. </p>"
+        "DescribeConfigurationRecorderStatusResponse$ConfigurationRecordersStatus": "<p>A list that contains status of the specified recorders.</p>"
       }
     },
     "ConfigurationStateId": {
@@ -320,7 +320,7 @@
       }
     },
     "DeleteConfigRuleRequest": {
-      "base": null,
+      "base": "<p/>",
       "refs": {
       }
     },
@@ -330,12 +330,12 @@
       }
     },
     "DeleteDeliveryChannelRequest": {
-      "base": "<p> The input for the <a>DeleteDeliveryChannel</a> action. The action accepts the following data in JSON format. </p>",
+      "base": "<p>The input for the <a>DeleteDeliveryChannel</a> action. The action accepts the following data in JSON format. </p>",
       "refs": {
       }
     },
     "DeleteEvaluationResultsRequest": {
-      "base": null,
+      "base": "<p/>",
       "refs": {
       }
     },
@@ -345,12 +345,12 @@
       }
     },
     "DeliverConfigSnapshotRequest": {
-      "base": "<p> The input for the <a>DeliverConfigSnapshot</a> action. </p>",
+      "base": "<p>The input for the <a>DeliverConfigSnapshot</a> action.</p>",
       "refs": {
       }
     },
     "DeliverConfigSnapshotResponse": {
-      "base": "<p> The output for the <a>DeliverConfigSnapshot</a> action in JSON format. </p>",
+      "base": "<p>The output for the <a>DeliverConfigSnapshot</a> action in JSON format.</p>",
       "refs": {
       }
     },
@@ -375,7 +375,7 @@
       }
     },
     "DeliveryChannelStatus": {
-      "base": "<p>The status of a specified delivery channel.</p> <p>Valid values: <code>Success</code> | <code>Failure</code></p>",
+      "base": "<p>The status of a specified delivery channel.</p> <p>Valid values: <code>Success</code> | <code>Failure</code> </p>",
       "refs": {
         "DeliveryChannelStatusList$member": null
       }
@@ -390,46 +390,46 @@
       "base": null,
       "refs": {
         "ConfigExportDeliveryInfo$lastStatus": "<p>Status of the last attempted delivery.</p>",
-        "ConfigStreamDeliveryInfo$lastStatus": "<p>Status of the last attempted delivery.</p> <p><b>Note</b> Providing an SNS topic on a <a href=\"http://docs.aws.amazon.com/config/latest/APIReference/API_DeliveryChannel.html\">DeliveryChannel</a> for AWS Config is optional. If the SNS delivery is turned off, the last status will be <b>Not_Applicable</b>.</p>"
+        "ConfigStreamDeliveryInfo$lastStatus": "<p>Status of the last attempted delivery.</p> <p> <b>Note</b> Providing an SNS topic on a <a href=\"http://docs.aws.amazon.com/config/latest/APIReference/API_DeliveryChannel.html\">DeliveryChannel</a> for AWS Config is optional. If the SNS delivery is turned off, the last status will be <b>Not_Applicable</b>.</p>"
       }
     },
     "DescribeComplianceByConfigRuleRequest": {
-      "base": null,
+      "base": "<p/>",
       "refs": {
       }
     },
     "DescribeComplianceByConfigRuleResponse": {
-      "base": null,
+      "base": "<p/>",
       "refs": {
       }
     },
     "DescribeComplianceByResourceRequest": {
-      "base": null,
+      "base": "<p/>",
       "refs": {
       }
     },
     "DescribeComplianceByResourceResponse": {
-      "base": null,
+      "base": "<p/>",
       "refs": {
       }
     },
     "DescribeConfigRuleEvaluationStatusRequest": {
-      "base": null,
+      "base": "<p/>",
       "refs": {
       }
     },
     "DescribeConfigRuleEvaluationStatusResponse": {
-      "base": null,
+      "base": "<p/>",
       "refs": {
       }
     },
     "DescribeConfigRulesRequest": {
-      "base": null,
+      "base": "<p/>",
       "refs": {
       }
     },
     "DescribeConfigRulesResponse": {
-      "base": null,
+      "base": "<p/>",
       "refs": {
       }
     },
@@ -492,7 +492,7 @@
       }
     },
     "EvaluationResult": {
-      "base": "<p>The details of an AWS Config evaluation. Provides the AWS resource that was evaluated, the compliance of the resource, related timestamps, and supplementary information. </p>",
+      "base": "<p>The details of an AWS Config evaluation. Provides the AWS resource that was evaluated, the compliance of the resource, related timestamps, and supplementary information.</p>",
       "refs": {
         "EvaluationResults$member": null
       }
@@ -530,37 +530,37 @@
       }
     },
     "GetComplianceDetailsByConfigRuleRequest": {
-      "base": null,
+      "base": "<p/>",
       "refs": {
       }
     },
     "GetComplianceDetailsByConfigRuleResponse": {
-      "base": null,
+      "base": "<p/>",
       "refs": {
       }
     },
     "GetComplianceDetailsByResourceRequest": {
-      "base": null,
+      "base": "<p/>",
       "refs": {
       }
     },
     "GetComplianceDetailsByResourceResponse": {
-      "base": null,
+      "base": "<p/>",
       "refs": {
       }
     },
     "GetComplianceSummaryByConfigRuleResponse": {
-      "base": null,
+      "base": "<p/>",
       "refs": {
       }
     },
     "GetComplianceSummaryByResourceTypeRequest": {
-      "base": null,
+      "base": "<p/>",
       "refs": {
       }
     },
     "GetComplianceSummaryByResourceTypeResponse": {
-      "base": null,
+      "base": "<p/>",
       "refs": {
       }
     },
@@ -586,7 +586,7 @@
       }
     },
     "InsufficientPermissionsException": {
-      "base": "<p>Indicates one of the following errors:</p> <ul> <li>The rule cannot be created because the IAM role assigned to AWS Config lacks permissions to perform the config:Put* action.</li> <li>The AWS Lambda function cannot be invoked. Check the function ARN, and check the function's permissions.</li> </ul>",
+      "base": "<p>Indicates one of the following errors:</p> <ul> <li> <p>The rule cannot be created because the IAM role assigned to AWS Config lacks permissions to perform the config:Put* action.</p> </li> <li> <p>The AWS Lambda function cannot be invoked. Check the function ARN, and check the function's permissions.</p> </li> </ul>",
       "refs": {
       }
     },
@@ -672,17 +672,17 @@
       }
     },
     "LimitExceededException": {
-      "base": "<p>This exception is thrown when the previous <a>StartConfigRulesEvaluation</a> call is in progress or a previous evaluation is in progress.</p>",
+      "base": "<p>This exception is thrown if an evaluation is in progress or if you call the <a>StartConfigRulesEvaluation</a> API more than once per minute.</p>",
       "refs": {
       }
     },
     "ListDiscoveredResourcesRequest": {
-      "base": null,
+      "base": "<p/>",
       "refs": {
       }
     },
     "ListDiscoveredResourcesResponse": {
-      "base": null,
+      "base": "<p/>",
       "refs": {
       }
     },
@@ -704,15 +704,15 @@
     "MaximumExecutionFrequency": {
       "base": null,
       "refs": {
-        "ConfigRule$MaximumExecutionFrequency": "<p>If you want to create a rule that evaluates at a frequency that is independent of the configuration snapshot delivery, use the <code>MaximumExecutionFrequency</code> parameter in the <a>SourceDetail</a> object.</p> <note> <p>If you want to create a rule that triggers evaluations for your resources when AWS Config delivers the configuration snapshot, see the following:</p> </note> <p>A rule that runs an evaluation when AWS Config delivers a configuration snapshot cannot run evaluations more frequently than AWS Config delivers the snapshots. Set the value of the <code>MaximumExecutionFrequency</code> to be equal to or greater than the value of the <code>deliveryFrequency</code> key, which is part of <code>ConfigSnapshotDeliveryProperties</code>.</p> <p>For more information, see <a>ConfigSnapshotDeliveryProperties</a>.</p>",
+        "ConfigRule$MaximumExecutionFrequency": "<p>The maximum frequency with which AWS Config runs evaluations for a rule. You can specify a value for <code>MaximumExecutionFrequency</code> when:</p> <ul> <li> <p>You are using an AWS managed rule that is triggered at a periodic frequency.</p> </li> <li> <p>Your custom rule is triggered when AWS Config delivers the configuration snapshot.</p> </li> </ul> <p>For more information, see <a>ConfigSnapshotDeliveryProperties</a>.</p>",
         "ConfigSnapshotDeliveryProperties$deliveryFrequency": "<p>The frequency with which AWS Config delivers configuration snapshots.</p>",
-        "SourceDetail$MaximumExecutionFrequency": "<p>If the trigger type for your rule includes periodic, AWS Config runs evaluations for the rule at a frequency that you choose. If you specify a value for <code>MaximumExecutionFrequency</code>, then <code>MessageType</code> must use the <code>ScheduledNotification</code> value.</p>"
+        "SourceDetail$MaximumExecutionFrequency": "<p>The frequency that you want AWS Config to run evaluations for a rule that is triggered periodically. If you specify a value for <code>MaximumExecutionFrequency</code>, then <code>MessageType</code> must use the <code>ScheduledNotification</code> value.</p>"
       }
     },
     "MessageType": {
       "base": null,
       "refs": {
-        "SourceDetail$MessageType": "<p>The type of SNS message that triggers AWS Config to run an evaluation.</p> <p>For evaluations that are initiated when AWS Config delivers a configuration item change notification, you must use <code>ConfigurationItemChangeNotification</code>. </p> <p>For evaluations that are initiated at a frequency that you choose (for example, every 24 hours), you must use <code>ScheduledNotification</code>.</p> <p>For evaluations that are initiated when AWS Config delivers a configuration snapshot, you must use <code>ConfigurationSnapshotDeliveryCompleted</code>.</p>"
+        "SourceDetail$MessageType": "<p>The type of notification that triggers AWS Config to run an evaluation. You can specify the following notification types:</p> <p> <code>ConfigurationItemChangeNotification</code> - Triggers an evaluation when AWS Config delivers a configuration item change notification.</p> <p> <code>ScheduledNotification</code> - Triggers a periodic evaluation at the frequency specified for <code>MaximumExecutionFrequency</code>.</p> <p> <code>ConfigurationSnapshotDeliveryCompleted</code> - Triggers a periodic evaluation when AWS Config delivers a configuration snapshot.</p>"
       }
     },
     "Name": {
@@ -782,7 +782,7 @@
       }
     },
     "PutConfigRuleRequest": {
-      "base": null,
+      "base": "<p/>",
       "refs": {
       }
     },
@@ -797,19 +797,19 @@
       }
     },
     "PutEvaluationsRequest": {
-      "base": null,
+      "base": "<p/>",
       "refs": {
       }
     },
     "PutEvaluationsResponse": {
-      "base": null,
+      "base": "<p/>",
       "refs": {
       }
     },
     "RecorderName": {
       "base": null,
       "refs": {
-        "ConfigurationRecorder$name": "<p>The name of the recorder. By default, AWS Config automatically assigns the name &quot;default&quot; when creating the configuration recorder. You cannot change the assigned name.</p>",
+        "ConfigurationRecorder$name": "<p>The name of the recorder. By default, AWS Config automatically assigns the name \"default\" when creating the configuration recorder. You cannot change the assigned name.</p>",
         "ConfigurationRecorderNameList$member": null,
         "DeleteConfigurationRecorderRequest$ConfigurationRecorderName": "<p>The name of the configuration recorder to be deleted. You can retrieve the name of your configuration recorder by using the <code>DescribeConfigurationRecorders</code> action.</p>",
         "StartConfigurationRecorderRequest$ConfigurationRecorderName": "<p>The name of the recorder object that records each configuration change made to the resources.</p>",
@@ -867,7 +867,7 @@
     "ResourceCreationTime": {
       "base": null,
       "refs": {
-        "ConfigurationItem$resourceCreationTime": "<p>The time stamp when the resource was created. </p>"
+        "ConfigurationItem$resourceCreationTime": "<p>The time stamp when the resource was created.</p>"
       }
     },
     "ResourceDeletionTime": {
@@ -947,7 +947,7 @@
       }
     },
     "Scope": {
-      "base": "<p>Defines which resources trigger an evaluation for an AWS Config rule. The scope can include one or more resource types, a combination of a tag key and value, or a combination of one resource type and one resource ID. Specify a scope to constrain which resources trigger an evaluation for a rule. Otherwise, evaluations for the rule are triggered when any resource in your recording group changes in configuration. </p>",
+      "base": "<p>Defines which resources trigger an evaluation for an AWS Config rule. The scope can include one or more resource types, a combination of a tag key and value, or a combination of one resource type and one resource ID. Specify a scope to constrain which resources trigger an evaluation for a rule. Otherwise, evaluations for the rule are triggered when any resource in your recording group changes in configuration.</p>",
       "refs": {
         "ConfigRule$Scope": "<p>Defines which resources can trigger an evaluation for the rule. The scope can include one or more resource types, a combination of one resource type and one resource ID, or a combination of a tag key and value. Specify a scope to constrain the resources that can trigger an evaluation for the rule. If you do not specify a scope, evaluations are triggered when any resource in the recording group changes.</p>"
       }
@@ -959,7 +959,7 @@
       }
     },
     "SourceDetail": {
-      "base": "<p>Provides the source and the message type that trigger AWS Config to evaluate your AWS resources against a rule. It also provides the frequency with which you want AWS Config to run evaluations for the rule if the trigger type is periodic.</p>",
+      "base": "<p>Provides the source and the message types that trigger AWS Config to evaluate your AWS resources against a rule. It also provides the frequency with which you want AWS Config to run evaluations for the rule if the trigger type is periodic. You can specify the parameter values for <code>SourceDetail</code> only for custom rules. </p>",
       "refs": {
         "SourceDetails$member": null
       }
@@ -971,7 +971,7 @@
       }
     },
     "StartConfigRulesEvaluationRequest": {
-      "base": null,
+      "base": "<p/>",
       "refs": {
       }
     },
@@ -1049,7 +1049,7 @@
         "ResourceTypes$member": null,
         "Scope$TagValue": "<p>The tag value applied to only those AWS resources that you want to trigger an evaluation for the rule. If you specify a value for <code>TagValue</code>, you must also specify a value for <code>TagKey</code>.</p>",
         "Scope$ComplianceResourceId": "<p>The IDs of the only AWS resource that you want to trigger an evaluation for the rule. If you specify a resource ID, you must specify one resource type for <code>ComplianceResourceTypes</code>.</p>",
-        "Source$SourceIdentifier": "<p>For AWS managed Config rules, a pre-defined identifier from a list. To reference the list, see <a href=\"http://docs.aws.amazon.com/config/latest/developerguide/evaluate-config_use-managed-rules.html\">Using AWS Managed Config Rules</a>.</p> <p>For custom Config rules, the identifier is the Amazon Resource Name (ARN) of the rule's AWS Lambda function.</p>"
+        "Source$SourceIdentifier": "<p>For AWS Config managed rules, a predefined identifier from a list. For example, <code>IAM_PASSWORD_POLICY</code> is a managed rule. To reference a managed rule, see <a href=\"http://docs.aws.amazon.com/config/latest/developerguide/evaluate-config_use-managed-rules.html\">Using AWS Managed Config Rules</a>.</p> <p>For custom rules, the identifier is the Amazon Resource Name (ARN) of the rule's AWS Lambda function, such as <code>arn:aws:lambda:us-east-1:123456789012:function:custom_rule_name</code>.</p>"
       }
     },
     "StringWithCharLimit64": {

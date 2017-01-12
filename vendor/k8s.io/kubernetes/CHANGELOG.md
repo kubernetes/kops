@@ -1,11 +1,77 @@
 <!-- BEGIN MUNGE: GENERATED_TOC -->
 
-- [v1.3.8](#v138)
-  - [Downloads](#downloads)
-  - [Changelog since v1.3.7](#changelog-since-v137)
+- [v1.4.6](#v146)
+  - [Downloads for v1.4.6](#downloads-for-v146)
+    - [Client Binaries](#client-binaries)
+    - [Server Binaries](#server-binaries)
+  - [Changelog since v1.4.5](#changelog-since-v145)
     - [Other notable changes](#other-notable-changes)
-- [v1.4.0](#v140)
+- [v1.3.10](#v1310)
+  - [Downloads for v1.3.10](#downloads-for-v1310)
+    - [Client Binaries](#client-binaries-1)
+    - [Server Binaries](#server-binaries-1)
+  - [Changelog since v1.3.9](#changelog-since-v139)
+    - [Other notable changes](#other-notable-changes-1)
+- [v1.4.5](#v145)
+  - [Downloads for v1.4.5](#downloads-for-v145)
+    - [Client Binaries](#client-binaries-2)
+    - [Server Binaries](#server-binaries-2)
+  - [Changelog since v1.4.4](#changelog-since-v144)
+    - [Other notable changes](#other-notable-changes-2)
+- [v1.5.0-alpha.2](#v150-alpha2)
+  - [Downloads for v1.5.0-alpha.2](#downloads-for-v150-alpha2)
+    - [Client Binaries](#client-binaries-3)
+    - [Server Binaries](#server-binaries-3)
+  - [Changelog since v1.5.0-alpha.1](#changelog-since-v150-alpha1)
+    - [Action Required](#action-required)
+    - [Other notable changes](#other-notable-changes-3)
+- [v1.2.7](#v127)
+  - [Downloads for v1.2.7](#downloads-for-v127)
+    - [Client Binaries](#client-binaries-4)
+    - [Server Binaries](#server-binaries-4)
+  - [Changelog since v1.2.6](#changelog-since-v126)
+    - [Other notable changes](#other-notable-changes-4)
+- [v1.4.4](#v144)
+  - [Downloads for v1.4.4](#downloads-for-v144)
+    - [Client Binaries](#client-binaries-5)
+    - [Server Binaries](#server-binaries-5)
+  - [Changelog since v1.4.3](#changelog-since-v143)
+    - [Other notable changes](#other-notable-changes-5)
+- [v1.3.9](#v139)
+  - [Downloads](#downloads)
+  - [Changelog since v1.3.8](#changelog-since-v138)
+    - [Other notable changes](#other-notable-changes-6)
+- [v1.4.3](#v143)
   - [Downloads](#downloads-1)
+  - [Changelog since v1.4.2-beta.1](#changelog-since-v142-beta1)
+    - [Other notable changes](#other-notable-changes-7)
+- [v1.4.2](#v142)
+  - [Downloads](#downloads-2)
+  - [Changelog since v1.4.2-beta.1](#changelog-since-v142-beta1-1)
+    - [Other notable changes](#other-notable-changes-8)
+- [v1.5.0-alpha.1](#v150-alpha1)
+  - [Downloads](#downloads-3)
+  - [Changelog since v1.4.0-alpha.3](#changelog-since-v140-alpha3)
+    - [Experimental Features](#experimental-features)
+    - [Action Required](#action-required-1)
+    - [Other notable changes](#other-notable-changes-9)
+- [v1.4.2-beta.1](#v142-beta1)
+  - [Downloads](#downloads-4)
+  - [Changelog since v1.4.1](#changelog-since-v141)
+    - [Other notable changes](#other-notable-changes-10)
+- [v1.4.1](#v141)
+  - [Downloads](#downloads-5)
+  - [Changelog since v1.4.1-beta.2](#changelog-since-v141-beta2)
+- [v1.4.1-beta.2](#v141-beta2)
+  - [Downloads](#downloads-6)
+  - [Changelog since v1.4.0](#changelog-since-v140)
+    - [Other notable changes](#other-notable-changes-11)
+- [v1.3.8](#v138)
+  - [Downloads](#downloads-7)
+  - [Changelog since v1.3.7](#changelog-since-v137)
+    - [Other notable changes](#other-notable-changes-12)
+- [v1.4.0](#v140)
+  - [Downloads](#downloads-8)
   - [Major Themes](#major-themes)
   - [Features](#features)
   - [Known Issues](#known-issues)
@@ -17,94 +83,94 @@
   - [Action Required Before Upgrading](#action-required-before-upgrading)
   - [Previous Releases Included in v1.4.0](#previous-releases-included-in-v140)
 - [v1.4.0-beta.11](#v140-beta11)
-  - [Downloads](#downloads-2)
+  - [Downloads](#downloads-9)
   - [Changelog since v1.4.0-beta.10](#changelog-since-v140-beta10)
 - [v1.4.0-beta.10](#v140-beta10)
-  - [Downloads](#downloads-3)
+  - [Downloads](#downloads-10)
   - [Changelog since v1.4.0-beta.8](#changelog-since-v140-beta8)
-    - [Other notable changes](#other-notable-changes-1)
+    - [Other notable changes](#other-notable-changes-13)
 - [v1.4.0-beta.8](#v140-beta8)
-  - [Downloads](#downloads-4)
+  - [Downloads](#downloads-11)
   - [Changelog since v1.4.0-beta.7](#changelog-since-v140-beta7)
 - [v1.4.0-beta.7](#v140-beta7)
-  - [Downloads](#downloads-5)
+  - [Downloads](#downloads-12)
   - [Changelog since v1.4.0-beta.6](#changelog-since-v140-beta6)
-    - [Other notable changes](#other-notable-changes-2)
+    - [Other notable changes](#other-notable-changes-14)
 - [v1.4.0-beta.6](#v140-beta6)
-  - [Downloads](#downloads-6)
+  - [Downloads](#downloads-13)
   - [Changelog since v1.4.0-beta.5](#changelog-since-v140-beta5)
-    - [Other notable changes](#other-notable-changes-3)
+    - [Other notable changes](#other-notable-changes-15)
 - [v1.4.0-beta.5](#v140-beta5)
-  - [Downloads](#downloads-7)
+  - [Downloads](#downloads-14)
   - [Changelog since v1.4.0-beta.3](#changelog-since-v140-beta3)
-    - [Other notable changes](#other-notable-changes-4)
+    - [Other notable changes](#other-notable-changes-16)
 - [v1.3.7](#v137)
-  - [Downloads](#downloads-8)
+  - [Downloads](#downloads-15)
   - [Changelog since v1.3.6](#changelog-since-v136)
-    - [Other notable changes](#other-notable-changes-5)
+    - [Other notable changes](#other-notable-changes-17)
 - [v1.4.0-beta.3](#v140-beta3)
-  - [Downloads](#downloads-9)
+  - [Downloads](#downloads-16)
   - [Changelog since v1.4.0-beta.2](#changelog-since-v140-beta2)
   - [Behavior changes caused by enabling the garbage collector](#behavior-changes-caused-by-enabling-the-garbage-collector)
     - [kubectl rolling-update](#kubectl-rolling-update)
     - [kubectl delete](#kubectl-delete)
     - [DELETE operation in REST API](#delete-operation-in-rest-api-1)
 - [v1.4.0-beta.2](#v140-beta2)
-  - [Downloads](#downloads-10)
-  - [Changelog since v1.4.0-beta.1](#changelog-since-v140-beta1)
-    - [Other notable changes](#other-notable-changes-6)
-- [v1.4.0-beta.1](#v140-beta1)
-  - [Downloads](#downloads-11)
-  - [Changelog since v1.4.0-alpha.3](#changelog-since-v140-alpha3)
-    - [Action Required](#action-required)
-    - [Other notable changes](#other-notable-changes-7)
-- [v1.3.6](#v136)
-  - [Downloads](#downloads-12)
-  - [Changelog since v1.3.5](#changelog-since-v135)
-    - [Other notable changes](#other-notable-changes-8)
-- [v1.4.0-alpha.3](#v140-alpha3)
-  - [Downloads](#downloads-13)
-  - [Changelog since v1.4.0-alpha.2](#changelog-since-v140-alpha2)
-    - [Action Required](#action-required-1)
-    - [Other notable changes](#other-notable-changes-9)
-- [v1.3.5](#v135)
-  - [Downloads](#downloads-14)
-  - [Changelog since v1.3.4](#changelog-since-v134)
-    - [Other notable changes](#other-notable-changes-10)
-- [v1.3.4](#v134)
-  - [Downloads](#downloads-15)
-  - [Changelog since v1.3.3](#changelog-since-v133)
-    - [Other notable changes](#other-notable-changes-11)
-- [v1.4.0-alpha.2](#v140-alpha2)
-  - [Downloads](#downloads-16)
-  - [Changelog since v1.4.0-alpha.1](#changelog-since-v140-alpha1)
-    - [Action Required](#action-required-2)
-    - [Other notable changes](#other-notable-changes-12)
-- [v1.3.3](#v133)
   - [Downloads](#downloads-17)
+  - [Changelog since v1.4.0-beta.1](#changelog-since-v140-beta1)
+    - [Other notable changes](#other-notable-changes-18)
+- [v1.4.0-beta.1](#v140-beta1)
+  - [Downloads](#downloads-18)
+  - [Changelog since v1.4.0-alpha.3](#changelog-since-v140-alpha3-1)
+    - [Action Required](#action-required-2)
+    - [Other notable changes](#other-notable-changes-19)
+- [v1.3.6](#v136)
+  - [Downloads](#downloads-19)
+  - [Changelog since v1.3.5](#changelog-since-v135)
+    - [Other notable changes](#other-notable-changes-20)
+- [v1.4.0-alpha.3](#v140-alpha3)
+  - [Downloads](#downloads-20)
+  - [Changelog since v1.4.0-alpha.2](#changelog-since-v140-alpha2)
+    - [Action Required](#action-required-3)
+    - [Other notable changes](#other-notable-changes-21)
+- [v1.3.5](#v135)
+  - [Downloads](#downloads-21)
+  - [Changelog since v1.3.4](#changelog-since-v134)
+    - [Other notable changes](#other-notable-changes-22)
+- [v1.3.4](#v134)
+  - [Downloads](#downloads-22)
+  - [Changelog since v1.3.3](#changelog-since-v133)
+    - [Other notable changes](#other-notable-changes-23)
+- [v1.4.0-alpha.2](#v140-alpha2)
+  - [Downloads](#downloads-23)
+  - [Changelog since v1.4.0-alpha.1](#changelog-since-v140-alpha1)
+    - [Action Required](#action-required-4)
+    - [Other notable changes](#other-notable-changes-24)
+- [v1.3.3](#v133)
+  - [Downloads](#downloads-24)
   - [Changelog since v1.3.2](#changelog-since-v132)
-    - [Other notable changes](#other-notable-changes-13)
+    - [Other notable changes](#other-notable-changes-25)
   - [Known Issues](#known-issues-1)
 - [v1.3.2](#v132)
-  - [Downloads](#downloads-18)
+  - [Downloads](#downloads-25)
   - [Changelog since v1.3.1](#changelog-since-v131)
-    - [Other notable changes](#other-notable-changes-14)
+    - [Other notable changes](#other-notable-changes-26)
 - [v1.3.1](#v131)
-  - [Downloads](#downloads-19)
+  - [Downloads](#downloads-26)
   - [Changelog since v1.3.0](#changelog-since-v130)
-    - [Other notable changes](#other-notable-changes-15)
+    - [Other notable changes](#other-notable-changes-27)
 - [v1.2.6](#v126)
-  - [Downloads](#downloads-20)
+  - [Downloads](#downloads-27)
   - [Changelog since v1.2.5](#changelog-since-v125)
-    - [Other notable changes](#other-notable-changes-16)
+    - [Other notable changes](#other-notable-changes-28)
 - [v1.4.0-alpha.1](#v140-alpha1)
-  - [Downloads](#downloads-21)
+  - [Downloads](#downloads-28)
   - [Changelog since v1.3.0](#changelog-since-v130-1)
-    - [Experimental Features](#experimental-features)
-    - [Action Required](#action-required-3)
-    - [Other notable changes](#other-notable-changes-17)
+    - [Experimental Features](#experimental-features-1)
+    - [Action Required](#action-required-5)
+    - [Other notable changes](#other-notable-changes-29)
 - [v1.3.0](#v130)
-  - [Downloads](#downloads-22)
+  - [Downloads](#downloads-29)
   - [Highlights](#highlights)
   - [Known Issues and Important Steps before Upgrading](#known-issues-and-important-steps-before-upgrading)
       - [ThirdPartyResource](#thirdpartyresource)
@@ -115,72 +181,72 @@
   - [Provider-specific Notes](#provider-specific-notes)
   - [Previous Releases Included in v1.3.0](#previous-releases-included-in-v130)
 - [v1.3.0-beta.3](#v130-beta3)
-  - [Downloads](#downloads-23)
-  - [Changelog since v1.3.0-beta.2](#changelog-since-v130-beta2)
-    - [Action Required](#action-required-4)
-    - [Other notable changes](#other-notable-changes-18)
-- [v1.2.5](#v125)
-  - [Downloads](#downloads-24)
-  - [Changes since v1.2.4](#changes-since-v124)
-    - [Other notable changes](#other-notable-changes-19)
-- [v1.3.0-beta.2](#v130-beta2)
-  - [Downloads](#downloads-25)
-  - [Changes since v1.3.0-beta.1](#changes-since-v130-beta1)
-    - [Experimental Features](#experimental-features-1)
-    - [Other notable changes](#other-notable-changes-20)
-- [v1.3.0-beta.1](#v130-beta1)
-  - [Downloads](#downloads-26)
-  - [Changes since v1.3.0-alpha.5](#changes-since-v130-alpha5)
-    - [Action Required](#action-required-5)
-    - [Other notable changes](#other-notable-changes-21)
-- [v1.3.0-alpha.5](#v130-alpha5)
-  - [Downloads](#downloads-27)
-  - [Changes since v1.3.0-alpha.4](#changes-since-v130-alpha4)
-    - [Action Required](#action-required-6)
-    - [Other notable changes](#other-notable-changes-22)
-- [v1.3.0-alpha.4](#v130-alpha4)
-  - [Downloads](#downloads-28)
-  - [Changes since v1.3.0-alpha.3](#changes-since-v130-alpha3)
-    - [Action Required](#action-required-7)
-    - [Other notable changes](#other-notable-changes-23)
-- [v1.2.4](#v124)
-  - [Downloads](#downloads-29)
-  - [Changes since v1.2.3](#changes-since-v123)
-    - [Other notable changes](#other-notable-changes-24)
-- [v1.3.0-alpha.3](#v130-alpha3)
   - [Downloads](#downloads-30)
-  - [Changes since v1.3.0-alpha.2](#changes-since-v130-alpha2)
-    - [Action Required](#action-required-8)
-    - [Other notable changes](#other-notable-changes-25)
-- [v1.2.3](#v123)
-  - [Downloads](#downloads-31)
-  - [Changes since v1.2.2](#changes-since-v122)
-    - [Action Required](#action-required-9)
-    - [Other notable changes](#other-notable-changes-26)
-- [v1.3.0-alpha.2](#v130-alpha2)
-  - [Downloads](#downloads-32)
-  - [Changes since v1.3.0-alpha.1](#changes-since-v130-alpha1)
-    - [Other notable changes](#other-notable-changes-27)
-- [v1.2.2](#v122)
-  - [Downloads](#downloads-33)
-  - [Changes since v1.2.1](#changes-since-v121)
-    - [Other notable changes](#other-notable-changes-28)
-- [v1.2.1](#v121)
-  - [Downloads](#downloads-34)
-  - [Changes since v1.2.0](#changes-since-v120)
-    - [Other notable changes](#other-notable-changes-29)
-- [v1.3.0-alpha.1](#v130-alpha1)
-  - [Downloads](#downloads-35)
-  - [Changes since v1.2.0](#changes-since-v120-1)
-    - [Action Required](#action-required-10)
+  - [Changelog since v1.3.0-beta.2](#changelog-since-v130-beta2)
+    - [Action Required](#action-required-6)
     - [Other notable changes](#other-notable-changes-30)
-- [v1.2.0](#v120)
+- [v1.2.5](#v125)
+  - [Downloads](#downloads-31)
+  - [Changes since v1.2.4](#changes-since-v124)
+    - [Other notable changes](#other-notable-changes-31)
+- [v1.3.0-beta.2](#v130-beta2)
+  - [Downloads](#downloads-32)
+  - [Changes since v1.3.0-beta.1](#changes-since-v130-beta1)
+    - [Experimental Features](#experimental-features-2)
+    - [Other notable changes](#other-notable-changes-32)
+- [v1.3.0-beta.1](#v130-beta1)
+  - [Downloads](#downloads-33)
+  - [Changes since v1.3.0-alpha.5](#changes-since-v130-alpha5)
+    - [Action Required](#action-required-7)
+    - [Other notable changes](#other-notable-changes-33)
+- [v1.3.0-alpha.5](#v130-alpha5)
+  - [Downloads](#downloads-34)
+  - [Changes since v1.3.0-alpha.4](#changes-since-v130-alpha4)
+    - [Action Required](#action-required-8)
+    - [Other notable changes](#other-notable-changes-34)
+- [v1.3.0-alpha.4](#v130-alpha4)
+  - [Downloads](#downloads-35)
+  - [Changes since v1.3.0-alpha.3](#changes-since-v130-alpha3)
+    - [Action Required](#action-required-9)
+    - [Other notable changes](#other-notable-changes-35)
+- [v1.2.4](#v124)
   - [Downloads](#downloads-36)
+  - [Changes since v1.2.3](#changes-since-v123)
+    - [Other notable changes](#other-notable-changes-36)
+- [v1.3.0-alpha.3](#v130-alpha3)
+  - [Downloads](#downloads-37)
+  - [Changes since v1.3.0-alpha.2](#changes-since-v130-alpha2)
+    - [Action Required](#action-required-10)
+    - [Other notable changes](#other-notable-changes-37)
+- [v1.2.3](#v123)
+  - [Downloads](#downloads-38)
+  - [Changes since v1.2.2](#changes-since-v122)
+    - [Action Required](#action-required-11)
+    - [Other notable changes](#other-notable-changes-38)
+- [v1.3.0-alpha.2](#v130-alpha2)
+  - [Downloads](#downloads-39)
+  - [Changes since v1.3.0-alpha.1](#changes-since-v130-alpha1)
+    - [Other notable changes](#other-notable-changes-39)
+- [v1.2.2](#v122)
+  - [Downloads](#downloads-40)
+  - [Changes since v1.2.1](#changes-since-v121)
+    - [Other notable changes](#other-notable-changes-40)
+- [v1.2.1](#v121)
+  - [Downloads](#downloads-41)
+  - [Changes since v1.2.0](#changes-since-v120)
+    - [Other notable changes](#other-notable-changes-41)
+- [v1.3.0-alpha.1](#v130-alpha1)
+  - [Downloads](#downloads-42)
+  - [Changes since v1.2.0](#changes-since-v120-1)
+    - [Action Required](#action-required-12)
+    - [Other notable changes](#other-notable-changes-42)
+- [v1.2.0](#v120)
+  - [Downloads](#downloads-43)
   - [Changes since v1.1.1](#changes-since-v111)
     - [Major Themes](#major-themes-1)
     - [Other notable improvements](#other-notable-improvements)
-    - [Experimental Features](#experimental-features-2)
-    - [Action required](#action-required-11)
+    - [Experimental Features](#experimental-features-3)
+    - [Action required](#action-required-13)
     - [Known Issues](#known-issues-2)
       - [Docker Known Issues](#docker-known-issues)
         - [1.9.1](#191)
@@ -192,6 +258,719 @@
 <!-- END MUNGE: GENERATED_TOC -->
 
 <!-- NEW RELEASE NOTES ENTRY -->
+
+
+# v1.4.6
+
+[Documentation](http://kubernetes.github.io) & [Examples](http://releases.k8s.io/release-1.4/examples)
+
+## Downloads for v1.4.6
+
+
+filename | sha256 hash
+-------- | -----------
+[kubernetes.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.6/kubernetes.tar.gz) | `6f8242aa29493e1f824997748419e4a287c28b06ed13f17b1ba94bf07fdfa3be`
+[kubernetes-src.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.6/kubernetes-src.tar.gz) | `a2a2d885d246300b52adb5d7e1471b382c77d90a816618518c2a6e9941208e40`
+
+### Client Binaries
+
+filename | sha256 hash
+-------- | -----------
+[kubernetes-client-darwin-386.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.6/kubernetes-client-darwin-386.tar.gz) | `4db6349c976f893d0000dcb5b2ab09327824d0c38b3beab961711a0951cdfc82`
+[kubernetes-client-darwin-amd64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.6/kubernetes-client-darwin-amd64.tar.gz) | `2d31dea858569f518410effb20d3c3b9a6798d706dacbafd85f1f67f9ccbe288`
+[kubernetes-client-linux-386.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.6/kubernetes-client-linux-386.tar.gz) | `7980cf6132a7a6bf3816b8fd60d7bc1c9cb447d45196c31312b9d73567010909`
+[kubernetes-client-linux-amd64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.6/kubernetes-client-linux-amd64.tar.gz) | `95b3cbd339f7d104d5b69b08d53060bfc78bd4ee7a94ede7ba4c0a76b615f8b1`
+[kubernetes-client-linux-arm64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.6/kubernetes-client-linux-arm64.tar.gz) | `0f03cff262b0f4cc218b0f79294b4cbd8f92146c31137c75a27012d956864c79`
+[kubernetes-client-linux-arm.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.6/kubernetes-client-linux-arm.tar.gz) | `f8c76fe8c41a5084cc1a1ab3e08d7e2d815f7baedfadac0dc6f9157ed2c607c9`
+[kubernetes-client-windows-386.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.6/kubernetes-client-windows-386.tar.gz) | `c29b3c8c8a72246852db048e922ad2221f35e1c309571f73fd9f3d9b01be5f79`
+[kubernetes-client-windows-amd64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.6/kubernetes-client-windows-amd64.tar.gz) | `95bf20bdbe354476bbd3647adf72985698ded53a59819baa8268b5811e19f952`
+
+### Server Binaries
+
+filename | sha256 hash
+-------- | -----------
+[kubernetes-server-linux-amd64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.6/kubernetes-server-linux-amd64.tar.gz) | `f0a60c45f3360696431288826e56df3b8c18c1dc6fc3f0ea83409f970395e38f`
+[kubernetes-server-linux-arm64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.6/kubernetes-server-linux-arm64.tar.gz) | `8c667d4792fcfee821a2041e5d0356e1abc2b3fa6fe7b69c5479e48c858ba29c`
+[kubernetes-server-linux-arm.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.6/kubernetes-server-linux-arm.tar.gz) | `c57246d484b5f98d6aa16591f2b4c4c1a01ebbc7be05bce8690a4f3b88582844`
+
+## Changelog since v1.4.5
+
+### Other notable changes
+
+* Fix issue in reconstruct volume data when kubelet restarts ([#36616](https://github.com/kubernetes/kubernetes/pull/36616), [@jingxu97](https://github.com/jingxu97))
+* Add sync state loop in master's volume reconciler ([#34859](https://github.com/kubernetes/kubernetes/pull/34859), [@jingxu97](https://github.com/jingxu97))
+* AWS: strong-typing for k8s vs aws volume ids ([#35883](https://github.com/kubernetes/kubernetes/pull/35883), [@justinsb](https://github.com/justinsb))
+* Bump GCI version to gci-beta-55-8872-47-0 ([#36679](https://github.com/kubernetes/kubernetes/pull/36679), [@mtaufen](https://github.com/mtaufen))
+* Fix fetching pids running in a cgroup, which caused problems with OOM score adjustments & setting the /system cgroup ("misc" in the summary API). ([#36614](https://github.com/kubernetes/kubernetes/pull/36614), [@timstclair](https://github.com/timstclair))
+* DELETE requests can now pass in their DeleteOptions as a query parameter or a body parameter, rather than just as a body parameter. ([#35806](https://github.com/kubernetes/kubernetes/pull/35806), [@bdbauer](https://github.com/bdbauer))
+* rkt: Convert image name to be a valid acidentifier ([#34375](https://github.com/kubernetes/kubernetes/pull/34375), [@euank](https://github.com/euank))
+* Remove stale volumes if endpoint/svc creation fails. ([#35285](https://github.com/kubernetes/kubernetes/pull/35285), [@humblec](https://github.com/humblec))
+* Remove Job also from .status.active for Replace strategy ([#35420](https://github.com/kubernetes/kubernetes/pull/35420), [@soltysh](https://github.com/soltysh))
+* Update PodAntiAffinity to ignore calls to subresources ([#35608](https://github.com/kubernetes/kubernetes/pull/35608), [@soltysh](https://github.com/soltysh))
+* Adds TCPCloseWaitTimeout option to kube-proxy for sysctl nf_conntrack_tcp_timeout_time_wait ([#35919](https://github.com/kubernetes/kubernetes/pull/35919), [@bowei](https://github.com/bowei))
+* Fix how we iterate over active jobs when removing them for Replace policy ([#36161](https://github.com/kubernetes/kubernetes/pull/36161), [@soltysh](https://github.com/soltysh))
+* Bump GCI version to latest m55 version in GCE for K8s 1.4 ([#36302](https://github.com/kubernetes/kubernetes/pull/36302), [@mtaufen](https://github.com/mtaufen))
+* Add a check for file size if the reading content returns empty ([#33976](https://github.com/kubernetes/kubernetes/pull/33976), [@jingxu97](https://github.com/jingxu97))
+* Add a retry when reading a file content from a container ([#35560](https://github.com/kubernetes/kubernetes/pull/35560), [@jingxu97](https://github.com/jingxu97))
+* Skip CLOSE_WAIT e2e test if server is 1.4.5 ([#36404](https://github.com/kubernetes/kubernetes/pull/36404), [@bowei](https://github.com/bowei))
+* Adds etcd3 changes ([#36232](https://github.com/kubernetes/kubernetes/pull/36232), [@wojtek-t](https://github.com/wojtek-t))
+* Adds TCPCloseWaitTimeout option to kube-proxy for sysctl nf_conntrack_tcp_timeout_time_wait ([#36099](https://github.com/kubernetes/kubernetes/pull/36099), [@bowei](https://github.com/bowei))
+
+
+
+# v1.3.10
+
+[Documentation](http://kubernetes.github.io) & [Examples](http://releases.k8s.io/release-1.3/examples)
+
+## Downloads for v1.3.10
+
+
+filename | sha256 hash
+-------- | -----------
+[kubernetes.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.3.10/kubernetes.tar.gz) | `0f61517fbab1feafbe1024da0b88bfe16e61fed7e612285d70e3ecb53ce518cf`
+[kubernetes-src.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.3.10/kubernetes-src.tar.gz) | `7b1be0dcc12ae1b0cb1928b770c1025755fd0858ce7520907bacda19e5bfa53f`
+
+### Client Binaries
+
+filename | sha256 hash
+-------- | -----------
+[kubernetes-client-darwin-386.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.3.10/kubernetes-client-darwin-386.tar.gz) | `64a7012411a506ff7825e7b9c64b50197917d6f4e1128ea0e7b30a121059da47`
+[kubernetes-client-darwin-amd64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.3.10/kubernetes-client-darwin-amd64.tar.gz) | `5d85843e643eaebe3e34e48810f4786430b5ecce915144e01ba2d8539aa77364`
+[kubernetes-client-linux-386.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.3.10/kubernetes-client-linux-386.tar.gz) | `06d478c601b1d4aa1fc539e9120adbcbbd2fb370d062516f84a064e465d8eadc`
+[kubernetes-client-linux-amd64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.3.10/kubernetes-client-linux-amd64.tar.gz) | `fe571542482b8ba3ff94b9e5e9657f6ab4fc0feb8971930dc80b7ae2548d669b`
+[kubernetes-client-linux-arm64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.3.10/kubernetes-client-linux-arm64.tar.gz) | `176b52d35150ca9f08a7e90e33e2839b7574afe350edf4fafa46745d77bb5aa4`
+[kubernetes-client-linux-arm.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.3.10/kubernetes-client-linux-arm.tar.gz) | `1c3bf4ac1e4eb0e02f785db725efd490beaf06c8acd26d694971ba510b60a94d`
+[kubernetes-client-linux-ppc64le.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.3.10/kubernetes-client-linux-ppc64le.tar.gz) | `172cd0af71fcba7c51e9476732dbe86ba251c03b1d74f912111e4e755be540ce`
+[kubernetes-client-windows-386.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.3.10/kubernetes-client-windows-386.tar.gz) | `f2d2f82d7e285c98d8cc58a8a6e13a1122c9f60bb2c73e4cefe3555f963e56cd`
+[kubernetes-client-windows-amd64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.3.10/kubernetes-client-windows-amd64.tar.gz) | `ac0aa2b09dfeb8001e76f3aefe82c7bd2fda5bd0ef744ac3aed966b99c8dc8e5`
+
+### Server Binaries
+
+filename | sha256 hash
+-------- | -----------
+[kubernetes-server-linux-amd64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.3.10/kubernetes-server-linux-amd64.tar.gz) | `bf0d3924ff84c95c316fcb4b21876cc019bd648ca8ab87fd6b2712ccda30992b`
+[kubernetes-server-linux-arm64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.3.10/kubernetes-server-linux-arm64.tar.gz) | `45e88d1c8edc17d7f1deab8d040a769d8647203c465d76763abb1ce445a98773`
+[kubernetes-server-linux-arm.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.3.10/kubernetes-server-linux-arm.tar.gz) | `40ac46a265021615637f07d532cd563b4256dcf340a27c594bfd3501fe66b84c`
+[kubernetes-server-linux-ppc64le.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.3.10/kubernetes-server-linux-ppc64le.tar.gz) | `faa5075ab3e6688666bbbb274fa55a825513ee082a3b17bcddb5b8f4fd6f9aa0`
+
+## Changelog since v1.3.9
+
+### Other notable changes
+
+* gci: decouple from the built-in kubelet version ([#31367](https://github.com/kubernetes/kubernetes/pull/31367), [@Amey-D](https://github.com/Amey-D))
+* Bump GCE debian image to container-vm-v20161025 (CVE-2016-5195 Dirty… ([#35825](https://github.com/kubernetes/kubernetes/pull/35825), [@dchen1107](https://github.com/dchen1107))
+* Add RELEASE_INFRA_PUSH related code to support pushes from kubernetes/release. ([#28922](https://github.com/kubernetes/kubernetes/pull/28922), [@david-mcmahon](https://github.com/david-mcmahon))
+
+
+
+# v1.4.5
+
+[Documentation](http://kubernetes.github.io) & [Examples](http://releases.k8s.io/release-1.4/examples)
+
+## Downloads for v1.4.5
+
+
+filename | sha256 hash
+-------- | -----------
+[kubernetes.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.5/kubernetes.tar.gz) | `339f4d1c7a374ddb32334268c4af8dae0b86d1567a9c812087d672a7defe233c`
+[kubernetes-src.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.5/kubernetes-src.tar.gz) | `69b1b022400794d491200a9365ea9bf735567348d0299920462cf7167c76ba61`
+
+### Client Binaries
+
+filename | sha256 hash
+-------- | -----------
+[kubernetes-client-darwin-386.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.5/kubernetes-client-darwin-386.tar.gz) | `6012dab54687f7eb41ce9cd6b4676e15b774fbfbeadb7e00c806ba3f63fe10ce`
+[kubernetes-client-darwin-amd64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.5/kubernetes-client-darwin-amd64.tar.gz) | `981b321f4393fc9892c6558321e1d8ee6d8256b85f09266c8794fdcee9cb1c07`
+[kubernetes-client-linux-386.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.5/kubernetes-client-linux-386.tar.gz) | `75ce408ef9f4b277718701c025955cd628eeee4180d8e9e7fd8ecf008878429f`
+[kubernetes-client-linux-amd64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.5/kubernetes-client-linux-amd64.tar.gz) | `0c0768d7646cec490ca1e47a4e2f519724fc75d984d411aa92fe17a82356532b`
+[kubernetes-client-linux-arm64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.5/kubernetes-client-linux-arm64.tar.gz) | `910a6465b1ecbf1aae8f6cd16e35ac7ad7b0e598557941937d02d16520e2e37c`
+[kubernetes-client-linux-arm.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.5/kubernetes-client-linux-arm.tar.gz) | `29644cca627cdce6c7aad057d9680eee87d21b1bbd6af02f7277f24eccbc95f7`
+[kubernetes-client-windows-386.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.5/kubernetes-client-windows-386.tar.gz) | `dc249cc0f6cbb0e0705f7b43929461b6702ae91148218da070bb99e8a8f6f108`
+[kubernetes-client-windows-amd64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.5/kubernetes-client-windows-amd64.tar.gz) | `d60d275ad5f45ebe83a458912de96fd8381540d4bcf91023fe2173af6acd535b`
+
+### Server Binaries
+
+filename | sha256 hash
+-------- | -----------
+[kubernetes-server-linux-amd64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.5/kubernetes-server-linux-amd64.tar.gz) | `25e12aaf3f93c320f6aa640bb1430d4c0e99e3b0e83bcef660d2a513bdef2c20`
+[kubernetes-server-linux-arm64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.5/kubernetes-server-linux-arm64.tar.gz) | `e768146c9476b96f092409030349b4c5bb9682287567fe2732888ad5ed1d3ede`
+[kubernetes-server-linux-arm.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.5/kubernetes-server-linux-arm.tar.gz) | `26581dc0fc31542c831a588baad9ad391598e5b2ff299a0fc92a2c04990b3edd`
+
+## Changelog since v1.4.4
+
+### Other notable changes
+
+* Fix volume states out of sync problem after kubelet restarts ([#33616](https://github.com/kubernetes/kubernetes/pull/33616), [@jingxu97](https://github.com/jingxu97))
+* cross: add IsNotMountPoint() to mount_unsupported.go ([#35566](https://github.com/kubernetes/kubernetes/pull/35566), [@rootfs](https://github.com/rootfs))
+* Bump GCE debian image to container-vm-v20161025 (CVE-2016-5195 Dirty COW) ([#35825](https://github.com/kubernetes/kubernetes/pull/35825), [@dchen1107](https://github.com/dchen1107))
+* Avoid overriding system and kubelet cgroups on GCI ([#35319](https://github.com/kubernetes/kubernetes/pull/35319), [@vishh](https://github.com/vishh))
+        * Make the kubectl from k8s release the default on GCI
+* kubelet summary rootfs now refers to the filesystem that contains the Kubelet RootDirectory (var/lib/kubelet) instead of cadvisor's rootfs ( / ), since they may be different filesystems. ([#35136](https://github.com/kubernetes/kubernetes/pull/35136), [@dashpole](https://github.com/dashpole))
+* Fix cadvisor_unsupported and the crossbuild ([#35817](https://github.com/kubernetes/kubernetes/pull/35817), [@luxas](https://github.com/luxas))
+* kubenet: SyncHostports for both running and ready to run pods. ([#31388](https://github.com/kubernetes/kubernetes/pull/31388), [@yifan-gu](https://github.com/yifan-gu))
+* GC pod ips ([#35572](https://github.com/kubernetes/kubernetes/pull/35572), [@bprashanth](https://github.com/bprashanth))
+* Fix version string generation for local version different from release and not based on `-alpha.no` or `-beta.no` suffixed tag. ([#34612](https://github.com/kubernetes/kubernetes/pull/34612), [@jellonek](https://github.com/jellonek))
+* Node status updater should SetNodeStatusUpdateNeeded if it fails to update status ([#34368](https://github.com/kubernetes/kubernetes/pull/34368), [@jingxu97](https://github.com/jingxu97))
+* Fixed flakes caused by petset tests. ([#35158](https://github.com/kubernetes/kubernetes/pull/35158), [@foxish](https://github.com/foxish))
+* Added rkt binary to GCI ([#35321](https://github.com/kubernetes/kubernetes/pull/35321), [@vishh](https://github.com/vishh))
+* Bump container-vm version in config-test.sh ([#35705](https://github.com/kubernetes/kubernetes/pull/35705), [@mtaufen](https://github.com/mtaufen))
+* Delete all firewall rules (and optionally network) on GCE/GKE cluster teardown ([#34577](https://github.com/kubernetes/kubernetes/pull/34577), [@ixdy](https://github.com/ixdy))
+* Fixed mutation warning in Attach/Detach controller ([#35273](https://github.com/kubernetes/kubernetes/pull/35273), [@jsafrane](https://github.com/jsafrane))
+* Dynamic provisioning for vSphere ([#30836](https://github.com/kubernetes/kubernetes/pull/30836), [@abrarshivani](https://github.com/abrarshivani))
+* Update grafana version used by default in kubernetes to 3.1.1 ([#35435](https://github.com/kubernetes/kubernetes/pull/35435), [@Crassirostris](https://github.com/Crassirostris))
+* vSphere Kube-up: resolve vm-names on all nodes ([#35365](https://github.com/kubernetes/kubernetes/pull/35365), [@kerneltime](https://github.com/kerneltime))
+* Improve source IP preservation test, fail the test instead of panic. ([#34030](https://github.com/kubernetes/kubernetes/pull/34030), [@MrHohn](https://github.com/MrHohn))
+* Fix [#31085](https://github.com/kubernetes/kubernetes/pull/31085), include output checking in retry loop ([#34107](https://github.com/kubernetes/kubernetes/pull/34107), [@MrHohn](https://github.com/MrHohn))
+* vSphere kube-up: Wait for cbr0 configuration to complete before setting up routes. ([#35232](https://github.com/kubernetes/kubernetes/pull/35232), [@kerneltime](https://github.com/kerneltime))
+* Substitute gcloud regex with regexp ([#35346](https://github.com/kubernetes/kubernetes/pull/35346), [@bprashanth](https://github.com/bprashanth))
+* Fix PDB e2e test, off-by-one ([#35274](https://github.com/kubernetes/kubernetes/pull/35274), [@soltysh](https://github.com/soltysh))
+* etcd3: API storage - decouple decorator from filter ([#31189](https://github.com/kubernetes/kubernetes/pull/31189), [@hongchaodeng](https://github.com/hongchaodeng))
+* etcd3: v3client + grpc client leak fix ([#31704](https://github.com/kubernetes/kubernetes/pull/31704), [@timothysc](https://github.com/timothysc))
+* etcd3: watcher logging error ([#32831](https://github.com/kubernetes/kubernetes/pull/32831), [@hongchaodeng](https://github.com/hongchaodeng))
+* etcd: watcher centralize error handling ([#32907](https://github.com/kubernetes/kubernetes/pull/32907), [@hongchaodeng](https://github.com/hongchaodeng))
+* etcd: stop watcher when watch channel is closed ([#33003](https://github.com/kubernetes/kubernetes/pull/33003), [@hongchaodeng](https://github.com/hongchaodeng))
+* etcd3: dereference the UID pointer for a readable error message. ([#33349](https://github.com/kubernetes/kubernetes/pull/33349), [@madhusudancs](https://github.com/madhusudancs))
+* etcd3: pass SelectionPredicate instead of Filter to storage layer ([#31190](https://github.com/kubernetes/kubernetes/pull/31190), [@hongchaodeng](https://github.com/hongchaodeng))
+* etcd3: make gets for previous value in watch serialize-able ([#34089](https://github.com/kubernetes/kubernetes/pull/34089), [@wojtek-t](https://github.com/wojtek-t))
+* etcd3: minor cleanups ([#34234](https://github.com/kubernetes/kubernetes/pull/34234), [@wojtek-t](https://github.com/wojtek-t))
+* etcd3: update etcd godep to 3.0.9 to address TestWatch issues ([#32822](https://github.com/kubernetes/kubernetes/pull/32822), [@timothysc](https://github.com/timothysc))
+* etcd3: update to etcd 3.0.10 ([#33393](https://github.com/kubernetes/kubernetes/pull/33393), [@timothysc](https://github.com/timothysc))
+* etcd3: use PrevKV to remove additional get ([#34246](https://github.com/kubernetes/kubernetes/pull/34246), [@hongchaodeng](https://github.com/hongchaodeng))
+* etcd3: avoid unnecessary decoding in etcd3 client  ([#34435](https://github.com/kubernetes/kubernetes/pull/34435), [@wojtek-t](https://github.com/wojtek-t))
+* etcd3: fix suite ([#32477](https://github.com/kubernetes/kubernetes/pull/32477), [@wojtek-t](https://github.com/wojtek-t))
+
+
+
+# v1.5.0-alpha.2
+
+[Documentation](http://kubernetes.github.io) & [Examples](http://releases.k8s.io/master/examples)
+
+## Downloads for v1.5.0-alpha.2
+
+
+filename | sha256 hash
+-------- | -----------
+[kubernetes.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.5.0-alpha.2/kubernetes.tar.gz) | `77f04c646657b683210a17aeca62e56bf985702b267942b41729406970c40cee`
+[kubernetes-src.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.5.0-alpha.2/kubernetes-src.tar.gz) | `f6090cc853e56159099bf12169f0d84e29fd2c055b0c7dbdac755ee94439a6a6`
+
+### Client Binaries
+
+filename | sha256 hash
+-------- | -----------
+[kubernetes-client-darwin-386.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.5.0-alpha.2/kubernetes-client-darwin-386.tar.gz) | `917adbc70156d55371c1aea62279a521e930e7ff130728aa176505f0268182e3`
+[kubernetes-client-darwin-amd64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.5.0-alpha.2/kubernetes-client-darwin-amd64.tar.gz) | `9c8084eeab05b6db0508f789cb8a05b4f864ee23ea37b43e17af0026fb67defa`
+[kubernetes-client-linux-386.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.5.0-alpha.2/kubernetes-client-linux-386.tar.gz) | `3498f9cd73bb947b7cd8c4e5fb3ebe0676fbc98cf346a807f1b7c252aa068d68`
+[kubernetes-client-linux-amd64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.5.0-alpha.2/kubernetes-client-linux-amd64.tar.gz) | `e9bf2e48212bb275b113d0a1f6091c4692126c8af3c4e0a986e483ec27190e82`
+[kubernetes-client-linux-arm64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.5.0-alpha.2/kubernetes-client-linux-arm64.tar.gz) | `9c514a482d4dd44d64f3d47eb3d64b434343f10abdecf1b5176ff0078d3b7008`
+[kubernetes-client-linux-arm.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.5.0-alpha.2/kubernetes-client-linux-arm.tar.gz) | `c51a8ebc2c3ca2f914042a6017852feb315fd3ceba8b0d5186349b553da11fdb`
+[kubernetes-client-windows-386.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.5.0-alpha.2/kubernetes-client-windows-386.tar.gz) | `32b006e1f9e6c14fe399806bb82ec4bf8658ab9828753d1b14732bb8dbb72062`
+[kubernetes-client-windows-amd64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.5.0-alpha.2/kubernetes-client-windows-amd64.tar.gz) | `1e142f1fe76bdd660b4f1be51eef4e51705585fccb94e674a7d891ffe8c3b4e3`
+
+### Server Binaries
+
+filename | sha256 hash
+-------- | -----------
+[kubernetes-server-linux-amd64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.5.0-alpha.2/kubernetes-server-linux-amd64.tar.gz) | `4a3b550a1ede8bebd14413a37e3fc10c8403a3e3fbbce096de443351d076817a`
+[kubernetes-server-linux-arm64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.5.0-alpha.2/kubernetes-server-linux-arm64.tar.gz) | `00e58bb04bf150c554f28d8fd2f72fbdd1e7918999aaea9c88c91c8f71946ffe`
+[kubernetes-server-linux-arm.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.5.0-alpha.2/kubernetes-server-linux-arm.tar.gz) | `6837ff73249c0f3e7ba2d7c00321274db0f97b5cd0b4dc58d5cc3a2119e1c820`
+
+## Changelog since v1.5.0-alpha.1
+
+### Action Required
+
+* Deprecate the --reconcile-cidr kubelet flag because it has no function anymore ([#35523](https://github.com/kubernetes/kubernetes/pull/35523), [@luxas](https://github.com/luxas))
+* Removed the deprecated kubelet --configure-cbr0 flag, and with that the "classic" networking mode as well ([#34906](https://github.com/kubernetes/kubernetes/pull/34906), [@luxas](https://github.com/luxas))
+* New client-go structure ([#34989](https://github.com/kubernetes/kubernetes/pull/34989), [@caesarxuchao](https://github.com/caesarxuchao))
+* Remove scheduler flags that were marked as deprecated 2+ releases ago. ([#34471](https://github.com/kubernetes/kubernetes/pull/34471), [@timothysc](https://github.com/timothysc))
+
+### Other notable changes
+
+* Make the fake RESTClient usable by all the API groups, not just core. ([#35492](https://github.com/kubernetes/kubernetes/pull/35492), [@madhusudancs](https://github.com/madhusudancs))
+* Adding support for DeleteOptions.OrphanDependents for federated namespaces. Setting it to false while deleting a federated namespace also deletes the corresponding namespace from all registered clusters. ([#34648](https://github.com/kubernetes/kubernetes/pull/34648), [@nikhiljindal](https://github.com/nikhiljindal))
+* Kubelet flag '--mounter-path' renamed to '--experimental-mounter-path' ([#35646](https://github.com/kubernetes/kubernetes/pull/35646), [@vishh](https://github.com/vishh))
+* Node status updater should SetNodeStatusUpdateNeeded if it fails to update status ([#34368](https://github.com/kubernetes/kubernetes/pull/34368), [@jingxu97](https://github.com/jingxu97))
+* Deprecate OpenAPI spec for GroupVersion endpoints in favor of single spec /swagger.json ([#35388](https://github.com/kubernetes/kubernetes/pull/35388), [@mbohlool](https://github.com/mbohlool))
+* kubelet authn/authz ([#34381](https://github.com/kubernetes/kubernetes/pull/34381), [@liggitt](https://github.com/liggitt))
+* Fix volume states out of sync problem after kubelet restarts ([#33616](https://github.com/kubernetes/kubernetes/pull/33616), [@jingxu97](https://github.com/jingxu97))
+* Added rkt binary to GCI ([#35321](https://github.com/kubernetes/kubernetes/pull/35321), [@vishh](https://github.com/vishh))
+* Fixed mutation warning in Attach/Detach controller ([#35273](https://github.com/kubernetes/kubernetes/pull/35273), [@jsafrane](https://github.com/jsafrane))
+* Don't count failed pods as "not-ready" ([#35404](https://github.com/kubernetes/kubernetes/pull/35404), [@brendandburns](https://github.com/brendandburns))
+* fixed typo in script which made setting custom cidr in gce using kube-up impossible ([#35267](https://github.com/kubernetes/kubernetes/pull/35267), [@tommywo](https://github.com/tommywo))
+* The podGC controller will now always run, irrespective of the value supplied to the "terminated-pod-gc-threshold" flag supplied to the controller manager.  ([#35476](https://github.com/kubernetes/kubernetes/pull/35476), [@foxish](https://github.com/foxish))
+    * The specific behavior of the podGC controller to clean up terminated pods is still governed by the flag, but the podGC's responsibilities have evolved beyond just cleaning up terminated pods.
+* Update grafana version used by default in kubernetes to 3.1.1 ([#35435](https://github.com/kubernetes/kubernetes/pull/35435), [@Crassirostris](https://github.com/Crassirostris))
+* vSphere Kube-up: resolve vm-names on all nodes ([#35365](https://github.com/kubernetes/kubernetes/pull/35365), [@kerneltime](https://github.com/kerneltime))
+* bootstrap: Start hostNetwork pods even if network plugin not ready ([#33347](https://github.com/kubernetes/kubernetes/pull/33347), [@justinsb](https://github.com/justinsb))
+* Factor out post-init swagger and OpenAPI routes ([#32590](https://github.com/kubernetes/kubernetes/pull/32590), [@sttts](https://github.com/sttts))
+* Substitute gcloud regex with regexp ([#35346](https://github.com/kubernetes/kubernetes/pull/35346), [@bprashanth](https://github.com/bprashanth))
+* Remove support for multi-architecture code in `kubeadm`, which was released untested. ([#35124](https://github.com/kubernetes/kubernetes/pull/35124), [@errordeveloper](https://github.com/errordeveloper))
+* vSphere kube-up: Wait for cbr0 configuration to complete before setting up routes. ([#35232](https://github.com/kubernetes/kubernetes/pull/35232), [@kerneltime](https://github.com/kerneltime))
+* Remove last probe time from replica sets ([#35199](https://github.com/kubernetes/kubernetes/pull/35199), [@kargakis](https://github.com/kargakis))
+* Update the GCI image to gci-dev-55-8872-18-0 ([#35243](https://github.com/kubernetes/kubernetes/pull/35243), [@maisem](https://github.com/maisem))
+* Add `--mounter-path` flag to kubelet that will allow overriding the `mount` command used by kubelet ([#34994](https://github.com/kubernetes/kubernetes/pull/34994), [@jingxu97](https://github.com/jingxu97))
+* Fix a bug under the rkt runtime whereby image-registries with ports would not be fetched from ([#34375](https://github.com/kubernetes/kubernetes/pull/34375), [@euank](https://github.com/euank))
+* Updated default Elasticsearch and Kibana used for elasticsearch logging destination to versions 2.4.1 and 4.6.1 respectively. ([#34969](https://github.com/kubernetes/kubernetes/pull/34969), [@Crassirostris](https://github.com/Crassirostris))
+* Loadbalanced client src ip preservation enters beta ([#33957](https://github.com/kubernetes/kubernetes/pull/33957), [@bprashanth](https://github.com/bprashanth))
+* Add NodePort value in kubectl output ([#34922](https://github.com/kubernetes/kubernetes/pull/34922), [@zreigz](https://github.com/zreigz))
+* kubectl drain now waits until pods have been delete from the Node before exiting ([#34778](https://github.com/kubernetes/kubernetes/pull/34778), [@ymqytw](https://github.com/ymqytw))
+* Don't report FS stats for system containers in the Kubelet Summary API ([#34998](https://github.com/kubernetes/kubernetes/pull/34998), [@timstclair](https://github.com/timstclair))
+* Fixed flakes caused by petset tests. ([#35158](https://github.com/kubernetes/kubernetes/pull/35158), [@foxish](https://github.com/foxish))
+* Add validation that detects repeated keys in the labels and annotations maps ([#34407](https://github.com/kubernetes/kubernetes/pull/34407), [@brendandburns](https://github.com/brendandburns))
+* Change merge key for VolumeMount to mountPath ([#35071](https://github.com/kubernetes/kubernetes/pull/35071), [@thockin](https://github.com/thockin))
+* kubelet: storage: don't hang kubelet on unresponsive nfs ([#35038](https://github.com/kubernetes/kubernetes/pull/35038), [@sjenning](https://github.com/sjenning))
+* Fix kube vsphere.kerneltime ([#34997](https://github.com/kubernetes/kubernetes/pull/34997), [@kerneltime](https://github.com/kerneltime))
+* Add PSP support for seccomp profiles ([#28300](https://github.com/kubernetes/kubernetes/pull/28300), [@pweil-](https://github.com/pweil-))
+* Updated Go to 1.7 ([#28742](https://github.com/kubernetes/kubernetes/pull/28742), [@jessfraz](https://github.com/jessfraz))
+* HPA: fixed wrong count for target replicas calculations ([#34821](https://github.com/kubernetes/kubernetes/pull/34821)). ([#34955](https://github.com/kubernetes/kubernetes/pull/34955), [@jszczepkowski](https://github.com/jszczepkowski))
+* Improves how 'kubectl' uses the terminal size when printing help and usage. ([#34502](https://github.com/kubernetes/kubernetes/pull/34502), [@fabianofranz](https://github.com/fabianofranz))
+* Updated Elasticsearch image from version 1.5.1 to version 2.4.1. Updated Kibana image from version 4.0.2 to version 4.6.1. ([#34562](https://github.com/kubernetes/kubernetes/pull/34562), [@Crassirostris](https://github.com/Crassirostris))
+* libvirt-coreos: Download the coreos_production_qemu_image over SSL. ([#34646](https://github.com/kubernetes/kubernetes/pull/34646), [@roberthbailey](https://github.com/roberthbailey))
+* Add a new global option "--request-timeout" to the `kubectl` client ([#33958](https://github.com/kubernetes/kubernetes/pull/33958), [@juanvallejo](https://github.com/juanvallejo))
+* Add support for admission controller based on namespace node selectors. ([#24980](https://github.com/kubernetes/kubernetes/pull/24980), [@aveshagarwal](https://github.com/aveshagarwal))
+* Add 'kubectl set resources' ([#27206](https://github.com/kubernetes/kubernetes/pull/27206), [@JacobTanenbaum](https://github.com/JacobTanenbaum))
+* Support trust id as a scope in the OpenStack authentication logic ([#32111](https://github.com/kubernetes/kubernetes/pull/32111), [@MatMaul](https://github.com/MatMaul))
+* Only wait for cache syncs once in NodeController ([#34851](https://github.com/kubernetes/kubernetes/pull/34851), [@ncdc](https://github.com/ncdc))
+* NodeController waits for informer sync before doing anything ([#34809](https://github.com/kubernetes/kubernetes/pull/34809), [@gmarek](https://github.com/gmarek))
+* azure: lower log priority for skipped nic update message ([#34730](https://github.com/kubernetes/kubernetes/pull/34730), [@colemickens](https://github.com/colemickens))
+* Security Group support for OpenStack Load Balancers ([#31921](https://github.com/kubernetes/kubernetes/pull/31921), [@grahamhayes](https://github.com/grahamhayes))
+* Make NodeController recognize deletion tombstones ([#34786](https://github.com/kubernetes/kubernetes/pull/34786), [@davidopp](https://github.com/davidopp))
+* Delete all firewall rules (and optionally network) on GCE/GKE cluster teardown ([#34577](https://github.com/kubernetes/kubernetes/pull/34577), [@ixdy](https://github.com/ixdy))
+* Fix panic in NodeController caused by receiving DeletedFinalStateUnknown object from the cache. ([#34694](https://github.com/kubernetes/kubernetes/pull/34694), [@gmarek](https://github.com/gmarek))
+* azure: add PrimaryAvailabilitySet to config, only use nodes in that set in the loadbalancer pool ([#34526](https://github.com/kubernetes/kubernetes/pull/34526), [@colemickens](https://github.com/colemickens))
+* Fix leaking ingress resources in federated ingress e2e test. ([#34652](https://github.com/kubernetes/kubernetes/pull/34652), [@quinton-hoole](https://github.com/quinton-hoole))
+* pvc.Spec.Resources.Requests min and max can be enforced with a LimitRange of type "PersistentVolumeClaim" in the namespace ([#30145](https://github.com/kubernetes/kubernetes/pull/30145), [@markturansky](https://github.com/markturansky))
+* Federated DaemonSet controller. Supports all the API that regular DaemonSet has. ([#34319](https://github.com/kubernetes/kubernetes/pull/34319), [@mwielgus](https://github.com/mwielgus))
+* New federation deployment mechanism now allows non-GCP clusters. ([#34620](https://github.com/kubernetes/kubernetes/pull/34620), [@madhusudancs](https://github.com/madhusudancs))
+        * Writes the federation kubeconfig to the local kubeconfig file.
+* Update the series and the README to reflect the change. ([#30374](https://github.com/kubernetes/kubernetes/pull/30374), [@mbruzek](https://github.com/mbruzek))
+* Replica set conditions API ([#33905](https://github.com/kubernetes/kubernetes/pull/33905), [@kargakis](https://github.com/kargakis))
+* etcd3: avoid unnecessary decoding in etcd3 client  ([#34435](https://github.com/kubernetes/kubernetes/pull/34435), [@wojtek-t](https://github.com/wojtek-t))
+* Test x509 intermediates correctly ([#34524](https://github.com/kubernetes/kubernetes/pull/34524), [@liggitt](https://github.com/liggitt))
+* Add `cifs-utils` to the hyperkube image. ([#34416](https://github.com/kubernetes/kubernetes/pull/34416), [@colemickens](https://github.com/colemickens))
+* etcd3: use PrevKV to remove additional get ([#34246](https://github.com/kubernetes/kubernetes/pull/34246), [@hongchaodeng](https://github.com/hongchaodeng))
+* Fix upgrade.sh image setup ([#34468](https://github.com/kubernetes/kubernetes/pull/34468), [@mtaufen](https://github.com/mtaufen))
+
+
+
+# v1.2.7
+
+[Documentation](http://kubernetes.github.io) & [Examples](http://releases.k8s.io/release-1.2/examples)
+
+## Downloads for v1.2.7
+
+
+filename | sha256 hash
+-------- | -----------
+[kubernetes.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.2.7/kubernetes.tar.gz) | `53db157923c17fa7a0addb3e4dfe7d1b9194b9266a87d371a251d5bb790a1832`
+[kubernetes-src.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.2.7/kubernetes-src.tar.gz) | `e6e46831706743d8263581d0575507cf5ffc265096d22e5e84cf1c3ae925db5e`
+
+### Client Binaries
+
+filename | sha256 hash
+-------- | -----------
+[kubernetes-client-darwin-386.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.2.7/kubernetes-client-darwin-386.tar.gz) | `8418767e45c62c2ef5f9b4479ed02af64e190ce07dcbafa1920e93e71f419c55`
+[kubernetes-client-darwin-amd64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.2.7/kubernetes-client-darwin-amd64.tar.gz) | `41d742c2c55e7686311978eaaddee3844b990a0fe49fa8597158bcb0ee4c05c9`
+[kubernetes-client-linux-386.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.2.7/kubernetes-client-linux-386.tar.gz) | `619e0a450cddf10ed1d42ed1d6330d41a75b9c1e00eb654cbe4b0422cd6099c5`
+[kubernetes-client-linux-amd64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.2.7/kubernetes-client-linux-amd64.tar.gz) | `9a5fcd87514b88eb25173e574aef5b5343816c07ab5947d06787c9f12c40f54a`
+[kubernetes-client-linux-arm.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.2.7/kubernetes-client-linux-arm.tar.gz) | `fd6e39b4a56e03448382825f27f4f30a2e981a8d20f4a8cedbd084bbb4577d42`
+[kubernetes-client-windows-386.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.2.7/kubernetes-client-windows-386.tar.gz) | `862625cb3d9445cff1b09e4ebcdb60dd93b5b2dc34bb6022d2eeed7c8d8bc5d8`
+[kubernetes-client-windows-amd64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.2.7/kubernetes-client-windows-amd64.tar.gz) | `054337e41187e39950de93e4670bc78a95b6901cc2f95c50ff437d9825ae94c5`
+
+### Server Binaries
+
+filename | sha256 hash
+-------- | -----------
+[kubernetes-server-linux-amd64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.2.7/kubernetes-server-linux-amd64.tar.gz) | `fef041e9cbe5bcf8fd708f81ee2e2783429af1ab9cfb151d645ef9be96e19b73`
+[kubernetes-server-linux-arm.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.2.7/kubernetes-server-linux-arm.tar.gz) | `ce02d7bcd75c31db4f7b9922c19ea2a3312b0ba579b0dcd96b279b661eca18a8`
+
+## Changelog since v1.2.6
+
+### Other notable changes
+
+* Test x509 intermediates correctly ([#34524](https://github.com/kubernetes/kubernetes/pull/34524), [@liggitt](https://github.com/liggitt))
+
+
+
+# v1.4.4
+
+[Documentation](http://kubernetes.github.io) & [Examples](http://releases.k8s.io/release-1.4/examples)
+
+## Downloads for v1.4.4
+
+
+filename | sha256 hash
+-------- | -----------
+[kubernetes.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.4/kubernetes.tar.gz) | `2732bfc56ceabc872b6af3f460cbda68c2384c95a1c0c72eb33e5ff0e03dc9da`
+[kubernetes-src.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.4/kubernetes-src.tar.gz) | `29c6cf1567e6b7f6c3ecb71acead083b7535b22ac20bd8166b29074e8a0f6441`
+
+### Client Binaries
+
+filename | sha256 hash
+-------- | -----------
+[kubernetes-client-darwin-386.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.4/kubernetes-client-darwin-386.tar.gz) | `e983b1837e4165e4bc8e361000468421f16dbd5ae90b0c49af6280dbcecf57b1`
+[kubernetes-client-darwin-amd64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.4/kubernetes-client-darwin-amd64.tar.gz) | `8c58231c8340e546336b70d86b6a76285b9f7a0c13b802b350b68610dfaedb35`
+[kubernetes-client-linux-386.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.4/kubernetes-client-linux-386.tar.gz) | `33e5d2da52325367db08bcc80791cef2e21fdae176b496b063b3a37115f3f075`
+[kubernetes-client-linux-amd64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.4/kubernetes-client-linux-amd64.tar.gz) | `5fd6215ef0673f5a8e385660cf233d67d26dd79568c69e2328b103fbf1bd752a`
+[kubernetes-client-linux-arm64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.4/kubernetes-client-linux-arm64.tar.gz) | `2d6d0400cd59b042e2da074cbd3b13b9dc61da1dbba04468d67119294cf72435`
+[kubernetes-client-linux-arm.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.4/kubernetes-client-linux-arm.tar.gz) | `ff99f26082a77e37caa66aa07ec56bfc7963e6ac782550be5090a8b158f7e89a`
+[kubernetes-client-windows-386.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.4/kubernetes-client-windows-386.tar.gz) | `82e762727a8f607180a1e339e058cc9739ad55960d3517c5170bcd5b64179f13`
+[kubernetes-client-windows-amd64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.4/kubernetes-client-windows-amd64.tar.gz) | `4de735ba72c729589efbcd2b8fc4920786fffd96850173c13cbf469819d00808`
+
+### Server Binaries
+
+filename | sha256 hash
+-------- | -----------
+[kubernetes-server-linux-amd64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.4/kubernetes-server-linux-amd64.tar.gz) | `6d5ff37941328df33c0efc5876bb7b82722bc584f1976fe632915db7bf3f316a`
+[kubernetes-server-linux-arm64.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.4/kubernetes-server-linux-arm64.tar.gz) | `6ec40848ea29c0982b89c746d716b0958438a6eb774aea20a5ef7885a7060aed`
+[kubernetes-server-linux-arm.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.4/kubernetes-server-linux-arm.tar.gz) | `43d6a3260d73cfe652af2ffa7b7092444fe57429cb45e90eb99f0a70012ee033`
+
+## Changelog since v1.4.3
+
+### Other notable changes
+
+* Update the GCI image to gci-dev-55-8872-18-0 ([#35243](https://github.com/kubernetes/kubernetes/pull/35243), [@maisem](https://github.com/maisem))
+* Change merge key for VolumeMount to mountPath ([#35071](https://github.com/kubernetes/kubernetes/pull/35071), [@thockin](https://github.com/thockin))
+* Turned-off etcd listening on public ports as potentially insecure. Removed ([#35192](https://github.com/kubernetes/kubernetes/pull/35192), [@jszczepkowski](https://github.com/jszczepkowski))
+    * experimental support for master replication.
+* Add support for vSphere Cloud Provider when deploying via kubeup on vSphere. ([#31467](https://github.com/kubernetes/kubernetes/pull/31467), [@kerneltime](https://github.com/kerneltime))
+* Fix kube vsphere.kerneltime ([#34997](https://github.com/kubernetes/kubernetes/pull/34997), [@kerneltime](https://github.com/kerneltime))
+* HPA: fixed wrong count for target replicas calculations ([#34821](https://github.com/kubernetes/kubernetes/pull/34821)). ([#34955](https://github.com/kubernetes/kubernetes/pull/34955), [@jszczepkowski](https://github.com/jszczepkowski))
+* Fix leaking ingress resources in federated ingress e2e test. ([#34652](https://github.com/kubernetes/kubernetes/pull/34652), [@quinton-hoole](https://github.com/quinton-hoole))
+* azure: add PrimaryAvailabilitySet to config, only use nodes in that set in the loadbalancer pool ([#34526](https://github.com/kubernetes/kubernetes/pull/34526), [@colemickens](https://github.com/colemickens))
+* azure: lower log priority for skipped nic update message ([#34730](https://github.com/kubernetes/kubernetes/pull/34730), [@colemickens](https://github.com/colemickens))
+
+
+
+# v1.3.9
+
+[Documentation](http://kubernetes.github.io) & [Examples](http://releases.k8s.io/release-1.3/examples)
+
+## Downloads
+
+binary | sha256 hash
+------ | -----------
+[kubernetes.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.3.9/kubernetes.tar.gz) | `a994c732d2b852bbee55a78601d50d046323021a99b0801aea07dacf64c2c59a`
+
+## Changelog since v1.3.8
+
+### Other notable changes
+
+* Test x509 intermediates correctly ([#34524](https://github.com/kubernetes/kubernetes/pull/34524), [@liggitt](https://github.com/liggitt))
+* Remove headers that are unnecessary for proxy target ([#34076](https://github.com/kubernetes/kubernetes/pull/34076), [@mbohlool](https://github.com/mbohlool))
+
+
+
+# v1.4.3
+
+[Documentation](http://kubernetes.github.io) & [Examples](http://releases.k8s.io/release-1.4/examples)
+
+## Downloads
+
+binary | sha256 hash
+------ | -----------
+[kubernetes.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.3/kubernetes.tar.gz) | `c3dccccc005bc22eaf814ccb8e72b4f876167ab38ac594bb7e44c98f162a0f1c`
+
+## Changelog since v1.4.2-beta.1
+
+### Other notable changes
+
+* Fix non-starting node controller in 1.4 branch ([#34895](https://github.com/kubernetes/kubernetes/pull/34895), [@wojtek-t](https://github.com/wojtek-t))
+* Cherrypick [#34851](https://github.com/kubernetes/kubernetes/pull/34851) "Only wait for cache syncs once in NodeController" ([#34861](https://github.com/kubernetes/kubernetes/pull/34861), [@jessfraz](https://github.com/jessfraz))
+* NodeController waits for informer sync before doing anything ([#34809](https://github.com/kubernetes/kubernetes/pull/34809), [@gmarek](https://github.com/gmarek))
+* Make NodeController recognize deletion tombstones ([#34786](https://github.com/kubernetes/kubernetes/pull/34786), [@davidopp](https://github.com/davidopp))
+* Fix panic in NodeController caused by receiving DeletedFinalStateUnknown object from the cache. ([#34694](https://github.com/kubernetes/kubernetes/pull/34694), [@gmarek](https://github.com/gmarek))
+* Update GlusterFS provisioning readme with endpoint/service details ([#31854](https://github.com/kubernetes/kubernetes/pull/31854), [@humblec](https://github.com/humblec))
+* Add logging for enabled/disabled API Groups ([#32198](https://github.com/kubernetes/kubernetes/pull/32198), [@deads2k](https://github.com/deads2k))
+* New federation deployment mechanism now allows non-GCP clusters. ([#34620](https://github.com/kubernetes/kubernetes/pull/34620), [@madhusudancs](https://github.com/madhusudancs))
+        * Writes the federation kubeconfig to the local kubeconfig file.
+
+
+
+# v1.4.2
+
+[Documentation](http://kubernetes.github.io) & [Examples](http://releases.k8s.io/release-1.4/examples)
+
+## Downloads
+
+binary | sha256 hash
+------ | -----------
+[kubernetes.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.2/kubernetes.tar.gz) | `0730e207944ca96c9d9588a571a5eff0f8fdbb0e1287423513a2b2a4baca9f77`
+
+## Changelog since v1.4.2-beta.1
+
+### Other notable changes
+
+* Cherrypick [#34851](https://github.com/kubernetes/kubernetes/pull/34851) "Only wait for cache syncs once in NodeController" ([#34861](https://github.com/kubernetes/kubernetes/pull/34861), [@jessfraz](https://github.com/jessfraz))
+* NodeController waits for informer sync before doing anything ([#34809](https://github.com/kubernetes/kubernetes/pull/34809), [@gmarek](https://github.com/gmarek))
+* Make NodeController recognize deletion tombstones ([#34786](https://github.com/kubernetes/kubernetes/pull/34786), [@davidopp](https://github.com/davidopp))
+* Fix panic in NodeController caused by receiving DeletedFinalStateUnknown object from the cache. ([#34694](https://github.com/kubernetes/kubernetes/pull/34694), [@gmarek](https://github.com/gmarek))
+* Update GlusterFS provisioning readme with endpoint/service details ([#31854](https://github.com/kubernetes/kubernetes/pull/31854), [@humblec](https://github.com/humblec))
+* Add logging for enabled/disabled API Groups ([#32198](https://github.com/kubernetes/kubernetes/pull/32198), [@deads2k](https://github.com/deads2k))
+* New federation deployment mechanism now allows non-GCP clusters. ([#34620](https://github.com/kubernetes/kubernetes/pull/34620), [@madhusudancs](https://github.com/madhusudancs))
+        * Writes the federation kubeconfig to the local kubeconfig file.
+
+
+
+# v1.5.0-alpha.1
+
+[Documentation](http://kubernetes.github.io) & [Examples](http://releases.k8s.io/master/examples)
+
+## Downloads
+
+binary | sha256 hash
+------ | -----------
+[kubernetes.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.5.0-alpha.1/kubernetes.tar.gz) | `86bfcfffaa210ddf18983ff066470ef9c06ee00449b2238043e2777aac2c906d`
+
+## Changelog since v1.4.0-alpha.3
+
+### Experimental Features
+
+* `kubeadm` (alpha) provides an easy way to securely bootstrap Kubernetes on Linux, see http://kubernetes.io/docs/kubeadm/ ([#33262](https://github.com/kubernetes/kubernetes/pull/33262), [@errordeveloper](https://github.com/errordeveloper))
+* Alpha JWS Discovery API for locating an apiserver securely ([#32203](https://github.com/kubernetes/kubernetes/pull/32203), [@dgoodwin](https://github.com/dgoodwin))
+
+### Action Required
+
+* kube-apiserver learned the '--anonymous-auth' flag, which defaults to true. When enabled, requests to the secure port that are not rejected by other configured authentication methods are treated as anonymous requests, and given a username of 'system:anonymous' and a group of 'system:unauthenticated'.  ([#32386](https://github.com/kubernetes/kubernetes/pull/32386), [@liggitt](https://github.com/liggitt))
+    * Authenticated users are decorated with a 'system:authenticated' group.
+    * NOTE: anonymous access is enabled by default. If you rely on authentication alone to authorize access, change to use an authorization mode other than AlwaysAllow, or or set '--anonymous-auth=false'.
+* The NamespaceExists and NamespaceAutoProvision admission controllers have been removed. ([#31250](https://github.com/kubernetes/kubernetes/pull/31250), [@derekwaynecarr](https://github.com/derekwaynecarr))
+    * All cluster operators should use NamespaceLifecycle.
+* Federation binaries and their corresponding docker images - `federation-apiserver` and `federation-controller-manager` are now folded in to the `hyperkube` binary. If you were using one of these binaries or docker images, please switch to using the `hyperkube` version. Please refer to the federation manifests - `federation/manifests/federation-apiserver.yaml` and `federation/manifests/federation-controller-manager-deployment.yaml` for examples. ([#29929](https://github.com/kubernetes/kubernetes/pull/29929), [@madhusudancs](https://github.com/madhusudancs))
+
+### Other notable changes
+
+* The kube-apiserver --service-account-key-file option can be specified multiple times, or can point to a file containing multiple keys, to enable rotation of signing keys. ([#34029](https://github.com/kubernetes/kubernetes/pull/34029), [@liggitt](https://github.com/liggitt))
+* The apiserver now uses addresses reported by the kubelet in the Node object's status for apiserver->kubelet communications, rather than the name of the Node object. The address type used defaults to `InternalIP`, `ExternalIP`, and `LegacyHostIP` address types, in that order. ([#33718](https://github.com/kubernetes/kubernetes/pull/33718), [@justinsb](https://github.com/justinsb))
+* Federated deployment controller that supports the same api as the regular kubernetes deployment controller. ([#34109](https://github.com/kubernetes/kubernetes/pull/34109), [@mwielgus](https://github.com/mwielgus))
+* Match GroupVersionKind against specific version ([#34010](https://github.com/kubernetes/kubernetes/pull/34010), [@soltysh](https://github.com/soltysh))
+* fix yaml decode issue ([#34297](https://github.com/kubernetes/kubernetes/pull/34297), [@AdoHe](https://github.com/AdoHe))
+* kubectl annotate now supports --dry-run ([#34199](https://github.com/kubernetes/kubernetes/pull/34199), [@asalkeld](https://github.com/asalkeld))
+* kubectl: Add external ip information to node when '-o wide' is used ([#33552](https://github.com/kubernetes/kubernetes/pull/33552), [@floreks](https://github.com/floreks))
+* Update GCI base image: ([#34156](https://github.com/kubernetes/kubernetes/pull/34156), [@adityakali](https://github.com/adityakali))
+        * Enabled VXLAN and IP_SET config options in kernel to support some networking tools (ebtools)
+        * OpenSSL CVE fixes
+* ContainerVm/GCI image: try to use ifdown/ifup if available ([#33595](https://github.com/kubernetes/kubernetes/pull/33595), [@freehan](https://github.com/freehan))
+* Use manifest digest (as `docker-pullable://`) as ImageID when available (exposes a canonical, pullable image ID for containers). ([#33014](https://github.com/kubernetes/kubernetes/pull/33014), [@DirectXMan12](https://github.com/DirectXMan12))
+* Add kubelet awareness to taint tolerant match caculator. ([#26501](https://github.com/kubernetes/kubernetes/pull/26501), [@resouer](https://github.com/resouer))
+* Fix nil pointer issue when getting metrics from volume mounter ([#34251](https://github.com/kubernetes/kubernetes/pull/34251), [@jingxu97](https://github.com/jingxu97))
+* Enforce Disk based pod eviction with GCI base image in Kubelet ([#33520](https://github.com/kubernetes/kubernetes/pull/33520), [@vishh](https://github.com/vishh))
+* Remove headers that are unnecessary for proxy target ([#34076](https://github.com/kubernetes/kubernetes/pull/34076), [@mbohlool](https://github.com/mbohlool))
+* Add missing argument to log message in federated ingress controller. ([#34158](https://github.com/kubernetes/kubernetes/pull/34158), [@quinton-hoole](https://github.com/quinton-hoole))
+* The kubelet --eviction-minimum-reclaim option can now take precentages as well as absolute values for resources quantities ([#33392](https://github.com/kubernetes/kubernetes/pull/33392), [@sjenning](https://github.com/sjenning))
+* The implicit registration of Prometheus metrics for workqueue has been removed, and a plug-able interface was added. If you were using workqueue in your own binaries and want these metrics, add the following to your imports in the main package: "k8s.io/pkg/util/workqueue/prometheus". ([#33792](https://github.com/kubernetes/kubernetes/pull/33792), [@caesarxuchao](https://github.com/caesarxuchao))
+* Add kubectl --node-port option for specifying the service nodeport ([#33319](https://github.com/kubernetes/kubernetes/pull/33319), [@juanvallejo](https://github.com/juanvallejo))
+* To reduce memory usage to reasonable levels in smaller clusters, kube-apiserver now sets the deserialization cache size based on the target memory usage. ([#34000](https://github.com/kubernetes/kubernetes/pull/34000), [@wojtek-t](https://github.com/wojtek-t))
+* use service accounts as clients for controllers ([#33310](https://github.com/kubernetes/kubernetes/pull/33310), [@deads2k](https://github.com/deads2k))
+* Add a new option "--local" to the `kubectl annotate` ([#34074](https://github.com/kubernetes/kubernetes/pull/34074), [@asalkeld](https://github.com/asalkeld))
+* Add a new option "--local" to the `kubectl label` ([#33990](https://github.com/kubernetes/kubernetes/pull/33990), [@asalkeld](https://github.com/asalkeld))
+* Initialize podsWithAffinity to avoid scheduler panic ([#33967](https://github.com/kubernetes/kubernetes/pull/33967), [@xiang90](https://github.com/xiang90))
+* Fix base image pinning during upgrades via cluster/gce/upgrade.sh ([#33147](https://github.com/kubernetes/kubernetes/pull/33147), [@vishh](https://github.com/vishh))
+* Remove the flannel experimental overlay ([#33862](https://github.com/kubernetes/kubernetes/pull/33862), [@luxas](https://github.com/luxas))
+* CRI: Remove the mount name and port name. ([#33970](https://github.com/kubernetes/kubernetes/pull/33970), [@yifan-gu](https://github.com/yifan-gu))
+* Enable kubectl describe rs to work when apiserver does not support pods ([#33794](https://github.com/kubernetes/kubernetes/pull/33794), [@nikhiljindal](https://github.com/nikhiljindal))
+* Heal the namespaceless ingresses in federation e2e. ([#33977](https://github.com/kubernetes/kubernetes/pull/33977), [@quinton-hoole](https://github.com/quinton-hoole))
+* Fix issue in updating device path when volume is attached multiple times ([#33796](https://github.com/kubernetes/kubernetes/pull/33796), [@jingxu97](https://github.com/jingxu97))
+* ECDSA keys can now be used for signing and verifying service account tokens. ([#33565](https://github.com/kubernetes/kubernetes/pull/33565), [@liggitt](https://github.com/liggitt))
+* OnlyLocal nodeports ([#33587](https://github.com/kubernetes/kubernetes/pull/33587), [@bprashanth](https://github.com/bprashanth))
+* Remove flannel because now everything here is upstreamed ([#33860](https://github.com/kubernetes/kubernetes/pull/33860), [@luxas](https://github.com/luxas))
+* Use patched golang1.7.1 for cross-builds targeting darwin ([#33803](https://github.com/kubernetes/kubernetes/pull/33803), [@ixdy](https://github.com/ixdy))
+* Bump up addon kube-dns to v20 for graceful termination ([#33774](https://github.com/kubernetes/kubernetes/pull/33774), [@MrHohn](https://github.com/MrHohn))
+* Creating LoadBalancer Service with "None" ClusterIP is no longer possible ([#33274](https://github.com/kubernetes/kubernetes/pull/33274), [@nebril](https://github.com/nebril))
+* Increase timeout for federated ingress test. ([#33610](https://github.com/kubernetes/kubernetes/pull/33610), [@quinton-hoole](https://github.com/quinton-hoole))
+* Use UpdateStatus, not Update, to add LoadBalancerStatus to Federated Ingress.  ([#33605](https://github.com/kubernetes/kubernetes/pull/33605), [@quinton-hoole](https://github.com/quinton-hoole))
+* add anytoken authenticator ([#33378](https://github.com/kubernetes/kubernetes/pull/33378), [@deads2k](https://github.com/deads2k))
+* Fixes in HPA: consider only running pods; proper denominator in avg request calculations. ([#33735](https://github.com/kubernetes/kubernetes/pull/33735), [@jszczepkowski](https://github.com/jszczepkowski))
+* When CORS Handler is enabled, we now add a new HTTP header named "Access-Control-Expose-Headers" with a value of "Date". This allows the "Date" HTTP header to be accessed from XHR/JavaScript. ([#33242](https://github.com/kubernetes/kubernetes/pull/33242), [@dims](https://github.com/dims))
+* promote contrib/mesos to incubator ([#33658](https://github.com/kubernetes/kubernetes/pull/33658), [@deads2k](https://github.com/deads2k))
+* MinReadySeconds / AvailableReplicas for ReplicaSets ([#32771](https://github.com/kubernetes/kubernetes/pull/32771), [@kargakis](https://github.com/kargakis))
+* Kubectl drain will now drain finished Pods ([#31763](https://github.com/kubernetes/kubernetes/pull/31763), [@fraenkel](https://github.com/fraenkel))
+* Adds the -deployment option to e2e.go, adds the ability to run e2e.go using a `kops` deployment. ([#33518](https://github.com/kubernetes/kubernetes/pull/33518), [@zmerlynn](https://github.com/zmerlynn))
+* Tune down initialDelaySeconds for readinessProbe. ([#33146](https://github.com/kubernetes/kubernetes/pull/33146), [@MrHohn](https://github.com/MrHohn))
+* kube-proxy: Add a lower-bound for conntrack (128k default) ([#33051](https://github.com/kubernetes/kubernetes/pull/33051), [@thockin](https://github.com/thockin))
+* local-up-cluster.sh: add SERVICE_CLUSTER_IP_RANGE as option ([#32921](https://github.com/kubernetes/kubernetes/pull/32921), [@aanm](https://github.com/aanm))
+* Default HTTP2 on, post fixes from [#29001](https://github.com/kubernetes/kubernetes/pull/29001) ([#32231](https://github.com/kubernetes/kubernetes/pull/32231), [@timothysc](https://github.com/timothysc))
+* Split dns healthcheck into two different urls ([#32406](https://github.com/kubernetes/kubernetes/pull/32406), [@MrHohn](https://github.com/MrHohn))
+* Remove kubectl namespace command ([#33275](https://github.com/kubernetes/kubernetes/pull/33275), [@maciaszczykm](https://github.com/maciaszczykm))
+* Automatic generation of man pages ([#33277](https://github.com/kubernetes/kubernetes/pull/33277), [@mkumatag](https://github.com/mkumatag))
+* Fixes memory/goroutine leak in Federation Service controller. ([#33359](https://github.com/kubernetes/kubernetes/pull/33359), [@shashidharatd](https://github.com/shashidharatd))
+* Switch k8s on GCE to use GCI by default ([#33353](https://github.com/kubernetes/kubernetes/pull/33353), [@vishh](https://github.com/vishh))
+* Move HighWaterMark to the top of the struct in order to fix arm, second time ([#33376](https://github.com/kubernetes/kubernetes/pull/33376), [@luxas](https://github.com/luxas))
+* Fix race condition in setting node statusUpdateNeeded flag  ([#32807](https://github.com/kubernetes/kubernetes/pull/32807), [@jingxu97](https://github.com/jingxu97))
+* Fix the DOCKER_OPTS appending bug. ([#33163](https://github.com/kubernetes/kubernetes/pull/33163), [@DjangoPeng](https://github.com/DjangoPeng))
+* Send recycle events from pod to pv. ([#27714](https://github.com/kubernetes/kubernetes/pull/27714), [@jsafrane](https://github.com/jsafrane))
+* Add port forwarding for rkt with kvm stage1 ([#32126](https://github.com/kubernetes/kubernetes/pull/32126), [@jjlakis](https://github.com/jjlakis))
+* The value of the `versioned.Event` object (returned by watch APIs) in the Swagger 1.2 schemas has been updated from `*versioned.Event` which was not expected by many client tools. The new value is consistent with other structs returned by the API. ([#33007](https://github.com/kubernetes/kubernetes/pull/33007), [@smarterclayton](https://github.com/smarterclayton))
+* Remove cpu limits for dns pod to avoid CPU starvation ([#33227](https://github.com/kubernetes/kubernetes/pull/33227), [@vishh](https://github.com/vishh))
+* Allow secure access to apiserver from Admission Controllers ([#31491](https://github.com/kubernetes/kubernetes/pull/31491), [@dims](https://github.com/dims))
+* Resolves x509 verification issue with masters dialing nodes when started with --kubelet-certificate-authority ([#33141](https://github.com/kubernetes/kubernetes/pull/33141), [@liggitt](https://github.com/liggitt))
+* Fix possible panic in PodAffinityChecker ([#33086](https://github.com/kubernetes/kubernetes/pull/33086), [@ivan4th](https://github.com/ivan4th))
+* Upgrading Container-VM base image for k8s on GCE. Brief changelog as follows: ([#32738](https://github.com/kubernetes/kubernetes/pull/32738), [@Amey-D](https://github.com/Amey-D))
+    *     - Fixed performance regression in veth device driver
+    *     - Docker and related binaries are statically linked
+    *     - Fixed the issue of systemd being oom-killable
+* Move HighWaterMark to the top of the struct in order to fix arm ([#33117](https://github.com/kubernetes/kubernetes/pull/33117), [@luxas](https://github.com/luxas))
+* kubenet: SyncHostports for both running and ready to run pods. ([#31388](https://github.com/kubernetes/kubernetes/pull/31388), [@yifan-gu](https://github.com/yifan-gu))
+* Limit the number of names per image reported in the node status ([#32914](https://github.com/kubernetes/kubernetes/pull/32914), [@yujuhong](https://github.com/yujuhong))
+* Support Quobyte as StorageClass ([#31434](https://github.com/kubernetes/kubernetes/pull/31434), [@johscheuer](https://github.com/johscheuer))
+* Use a patched go1.7.1 for building linux/arm ([#32517](https://github.com/kubernetes/kubernetes/pull/32517), [@luxas](https://github.com/luxas))
+* Add line break after events in kubectl describe ([#31463](https://github.com/kubernetes/kubernetes/pull/31463), [@fabianofranz](https://github.com/fabianofranz))
+* Specific error message on failed rolling update issued by older kubectl against 1.4 master ([#32751](https://github.com/kubernetes/kubernetes/pull/32751), [@caesarxuchao](https://github.com/caesarxuchao))
+* Make the informer library available for the go client library. ([#32718](https://github.com/kubernetes/kubernetes/pull/32718), [@mikedanese](https://github.com/mikedanese))
+* Added --log-facility flag to enhance dnsmasq logging ([#32422](https://github.com/kubernetes/kubernetes/pull/32422), [@MrHohn](https://github.com/MrHohn))
+* Set Dashboard UI to final 1.4 version ([#32666](https://github.com/kubernetes/kubernetes/pull/32666), [@bryk](https://github.com/bryk))
+* Fix audit_test regex for iso8601 timestamps ([#32593](https://github.com/kubernetes/kubernetes/pull/32593), [@johnbieren](https://github.com/johnbieren))
+* Docker digest validation is too strict ([#32627](https://github.com/kubernetes/kubernetes/pull/32627), [@smarterclayton](https://github.com/smarterclayton))
+* Bumped Heapster to v1.2.0. ([#32649](https://github.com/kubernetes/kubernetes/pull/32649), [@piosz](https://github.com/piosz))
+    * More details about the release https://github.com/kubernetes/heapster/releases/tag/v1.2.0
+* add local subject access review API ([#32407](https://github.com/kubernetes/kubernetes/pull/32407), [@deads2k](https://github.com/deads2k))
+* make --runtime-config=api/all=true|false work ([#32582](https://github.com/kubernetes/kubernetes/pull/32582), [@jlowdermilk](https://github.com/jlowdermilk))
+* Added new kubelet flags `--cni-bin-dir` and `--cni-conf-dir` to specify where CNI files are located. ([#32151](https://github.com/kubernetes/kubernetes/pull/32151), [@bboreham](https://github.com/bboreham))
+    * Fixed CNI configuration on GCI platform when using CNI.
+* Move push-ci-build.sh to kubernetes/release repo ([#32444](https://github.com/kubernetes/kubernetes/pull/32444), [@david-mcmahon](https://github.com/david-mcmahon))
+* Generate separate OpenAPI spec for each API GroupVersion on /<Group>/<Version>/swagger.json ([#31468](https://github.com/kubernetes/kubernetes/pull/31468), [@mbohlool](https://github.com/mbohlool))
+* vendor: update github.com/coreos/go-oidc client package ([#31564](https://github.com/kubernetes/kubernetes/pull/31564), [@ericchiang](https://github.com/ericchiang))
+* Fixed an issue that caused a credential error when deploying federation control plane onto a GKE cluster. ([#31747](https://github.com/kubernetes/kubernetes/pull/31747), [@madhusudancs](https://github.com/madhusudancs))
+* NONE ([#32229](https://github.com/kubernetes/kubernetes/pull/32229), [@errordeveloper](https://github.com/errordeveloper))
+* Error if a contextName is provided but not found in the kubeconfig. ([#31767](https://github.com/kubernetes/kubernetes/pull/31767), [@asalkeld](https://github.com/asalkeld))
+* Use a Deployment for kube-dns ([#32018](https://github.com/kubernetes/kubernetes/pull/32018), [@MrHohn](https://github.com/MrHohn))
+* NONE ([#32067](https://github.com/kubernetes/kubernetes/pull/32067), [@erikh](https://github.com/erikh))
+* Support graceful termination in kube-dns ([#31894](https://github.com/kubernetes/kubernetes/pull/31894), [@MrHohn](https://github.com/MrHohn))
+* When prompting for passwords, don't echo to the terminal ([#31586](https://github.com/kubernetes/kubernetes/pull/31586), [@brendandburns](https://github.com/brendandburns))
+* add group prefix matching for kubectl usage ([#32140](https://github.com/kubernetes/kubernetes/pull/32140), [@deads2k](https://github.com/deads2k))
+* Stick to 2.2.1 etcd ([#32404](https://github.com/kubernetes/kubernetes/pull/32404), [@caesarxuchao](https://github.com/caesarxuchao))
+* Fix a bug in kubelet hostport logic which flushes KUBE-MARK-MASQ iptables chain ([#32413](https://github.com/kubernetes/kubernetes/pull/32413), [@freehan](https://github.com/freehan))
+* Make sure finalizers prevent deletion on storage that supports graceful deletion ([#32351](https://github.com/kubernetes/kubernetes/pull/32351), [@caesarxuchao](https://github.com/caesarxuchao))
+* AWS: Change default networking for kube-up to kubenet ([#32239](https://github.com/kubernetes/kubernetes/pull/32239), [@zmerlynn](https://github.com/zmerlynn))
+* Use etcd 2.3.7 ([#32359](https://github.com/kubernetes/kubernetes/pull/32359), [@wojtek-t](https://github.com/wojtek-t))
+* Allow missing keys in jsonpath ([#31714](https://github.com/kubernetes/kubernetes/pull/31714), [@smarterclayton](https://github.com/smarterclayton))
+* Changes 'kubectl rollout status' to wait until all updated replicas are available before finishing. ([#31499](https://github.com/kubernetes/kubernetes/pull/31499), [@areed](https://github.com/areed))
+* add selfsubjectaccessreview API ([#31271](https://github.com/kubernetes/kubernetes/pull/31271), [@deads2k](https://github.com/deads2k))
+* Add kubectl describe cmd support for vSphere volume ([#31045](https://github.com/kubernetes/kubernetes/pull/31045), [@abrarshivani](https://github.com/abrarshivani))
+* Enable kubelet eviction whenever inodes free is < 5% on GCE ([#31545](https://github.com/kubernetes/kubernetes/pull/31545), [@vishh](https://github.com/vishh))
+* Use federated namespace instead of the bootstrap cluster's namespace in Ingress e2e tests. ([#32105](https://github.com/kubernetes/kubernetes/pull/32105), [@madhusudancs](https://github.com/madhusudancs))
+* Move StorageClass to a storage group ([#31886](https://github.com/kubernetes/kubernetes/pull/31886), [@deads2k](https://github.com/deads2k))
+* Some components like kube-dns and kube-proxy could fail to load the service account token when started within a pod. Properly handle empty configurations to try loading the service account config. ([#31947](https://github.com/kubernetes/kubernetes/pull/31947), [@smarterclayton](https://github.com/smarterclayton))
+* Removed comments in json config when using kubectl edit with -o json ([#31685](https://github.com/kubernetes/kubernetes/pull/31685), [@jellonek](https://github.com/jellonek))
+* fixes invalid null selector issue in sysdig example yaml ([#31393](https://github.com/kubernetes/kubernetes/pull/31393), [@baldwinSPC](https://github.com/baldwinSPC))
+* Rescheduler which ensures that critical pods are always scheduled enabled by default in GCE. ([#31974](https://github.com/kubernetes/kubernetes/pull/31974), [@piosz](https://github.com/piosz))
+* retry oauth token fetch in gce cloudprovider ([#32021](https://github.com/kubernetes/kubernetes/pull/32021), [@mikedanese](https://github.com/mikedanese))
+* Deprecate the old cbr0 and flannel networking modes ([#31197](https://github.com/kubernetes/kubernetes/pull/31197), [@freehan](https://github.com/freehan))
+* AWS: fix volume device assignment race condition ([#31090](https://github.com/kubernetes/kubernetes/pull/31090), [@justinsb](https://github.com/justinsb))
+* The certificates API group has been renamed to certificates.k8s.io ([#31887](https://github.com/kubernetes/kubernetes/pull/31887), [@liggitt](https://github.com/liggitt))
+* Increase Dashboard UI version to v1.4.0-beta2 ([#31518](https://github.com/kubernetes/kubernetes/pull/31518), [@bryk](https://github.com/bryk))
+* Fixed incomplete kubectl bash completion. ([#31333](https://github.com/kubernetes/kubernetes/pull/31333), [@xingzhou](https://github.com/xingzhou))
+* Added liveness probe to Heapster service. ([#31878](https://github.com/kubernetes/kubernetes/pull/31878), [@mksalawa](https://github.com/mksalawa))
+* Adding clusters to the list of valid resources printed by kubectl help ([#31719](https://github.com/kubernetes/kubernetes/pull/31719), [@nikhiljindal](https://github.com/nikhiljindal))
+* Kubernetes server components using `kubeconfig` files no longer default to `http://localhost:8080`.  Administrators must specify a server value in their kubeconfig files. ([#30808](https://github.com/kubernetes/kubernetes/pull/30808), [@smarterclayton](https://github.com/smarterclayton))
+* Update influxdb to 0.12 ([#31519](https://github.com/kubernetes/kubernetes/pull/31519), [@piosz](https://github.com/piosz))
+* Include security options in the container created event ([#31557](https://github.com/kubernetes/kubernetes/pull/31557), [@timstclair](https://github.com/timstclair))
+* Federation can now be deployed using the `federation/deploy/deploy.sh` script. This script does not depend on any of the development environment shell library/scripts. This is an alternative to the current `federation-up.sh`/`federation-down.sh` scripts. Both the scripts are going to co-exist in this release, but the `federation-up.sh`/`federation-down.sh` scripts might be removed in a future release in favor of `federation/deploy/deploy.sh` script. ([#30744](https://github.com/kubernetes/kubernetes/pull/30744), [@madhusudancs](https://github.com/madhusudancs))
+* Add get/delete cluster, delete context to kubectl config ([#29821](https://github.com/kubernetes/kubernetes/pull/29821), [@alexbrand](https://github.com/alexbrand))
+* rkt: Force `rkt fetch` to fetch from remote to conform the image pull policy. ([#31378](https://github.com/kubernetes/kubernetes/pull/31378), [@yifan-gu](https://github.com/yifan-gu))
+* Allow services which use same port, different protocol to use the same nodePort for both ([#30253](https://github.com/kubernetes/kubernetes/pull/30253), [@AdoHe](https://github.com/AdoHe))
+* Handle overlapping deployments gracefully ([#30730](https://github.com/kubernetes/kubernetes/pull/30730), [@janetkuo](https://github.com/janetkuo))
+* Remove environment variables and internal Kubernetes Docker labels from cAdvisor Prometheus metric labels. ([#31064](https://github.com/kubernetes/kubernetes/pull/31064), [@grobie](https://github.com/grobie))
+    * Old behavior:
+    * - environment variables explicitly whitelisted via --docker-env-metadata-whitelist were exported as `container_env_*=*`. Default is zero so by default non were exported
+    * - all docker labels were exported as `container_label_*=*`
+    * New behavior:
+    * - Only `container_name`, `pod_name`, `namespace`, `id`, `image`, and `name` labels are exposed
+    * - no environment variables will be exposed ever via /metrics, even if whitelisted
+* Filter duplicate network packets in promiscuous bridge mode (with ebtables) ([#28717](https://github.com/kubernetes/kubernetes/pull/28717), [@freehan](https://github.com/freehan))
+* Refactor to simplify the hard-traveled path of the KubeletConfiguration object ([#29216](https://github.com/kubernetes/kubernetes/pull/29216), [@mtaufen](https://github.com/mtaufen))
+* Fix overflow issue in controller-manager rate limiter ([#31396](https://github.com/kubernetes/kubernetes/pull/31396), [@foxish](https://github.com/foxish))
+
+
+
+# v1.4.2-beta.1
+
+[Documentation](http://kubernetes.github.io) & [Examples](http://releases.k8s.io/release-1.4/examples)
+
+## Downloads
+
+binary | sha256 hash
+------ | -----------
+[kubernetes.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.2-beta.1/kubernetes.tar.gz) | `b72986a0adcb7e08feb580c5d72de129ac2ecc128c154fd79785bac2d2e760f7`
+
+## Changelog since v1.4.1
+
+### Other notable changes
+
+* Fix base image pinning during upgrades via cluster/gce/upgrade.sh ([#33147](https://github.com/kubernetes/kubernetes/pull/33147), [@vishh](https://github.com/vishh))
+* Fix upgrade.sh image setup ([#34468](https://github.com/kubernetes/kubernetes/pull/34468), [@mtaufen](https://github.com/mtaufen))
+* Add `cifs-utils` to the hyperkube image. ([#34416](https://github.com/kubernetes/kubernetes/pull/34416), [@colemickens](https://github.com/colemickens))
+* Match GroupVersionKind against specific version ([#34010](https://github.com/kubernetes/kubernetes/pull/34010), [@soltysh](https://github.com/soltysh))
+* Fixed an issue that caused a credential error when deploying federation control plane onto a GKE cluster. ([#31747](https://github.com/kubernetes/kubernetes/pull/31747), [@madhusudancs](https://github.com/madhusudancs))
+* Test x509 intermediates correctly ([#34524](https://github.com/kubernetes/kubernetes/pull/34524), [@liggitt](https://github.com/liggitt))
+
+
+
+# v1.4.1
+
+[Documentation](http://kubernetes.github.io) & [Examples](http://releases.k8s.io/release-1.4/examples)
+
+## Downloads
+
+binary | sha256 hash
+------ | -----------
+[kubernetes.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.1/kubernetes.tar.gz) | `b51971d872426ba71bb09b9a9191bb95fc0e48390dc287a9080e3876c8e19a95`
+
+## Changelog since v1.4.1-beta.2
+
+**No notable changes for this release**
+
+
+
+# v1.4.1-beta.2
+
+[Documentation](http://kubernetes.github.io) & [Examples](http://releases.k8s.io/release-1.4/examples)
+
+## Downloads
+
+binary | sha256 hash
+------ | -----------
+[kubernetes.tar.gz](https://storage.googleapis.com/kubernetes-release/release/v1.4.1-beta.2/kubernetes.tar.gz) | `708fbaabf17a69c69c2c9a715e152a29d47334b8c98d217ba17e9b42d6770f25`
+
+## Changelog since v1.4.0
+
+### Other notable changes
+
+* Update GCI base image: ([#34156](https://github.com/kubernetes/kubernetes/pull/34156), [@adityakali](https://github.com/adityakali))
+        * Enabled VXLAN and IP_SET config options in kernel to support some networking tools (ebtools)
+        * OpenSSL CVE fixes
+* ContainerVm/GCI image: try to use ifdown/ifup if available ([#33595](https://github.com/kubernetes/kubernetes/pull/33595), [@freehan](https://github.com/freehan))
+* Make the informer library available for the go client library. ([#32718](https://github.com/kubernetes/kubernetes/pull/32718), [@mikedanese](https://github.com/mikedanese))
+* Enforce Disk based pod eviction with GCI base image in Kubelet ([#33520](https://github.com/kubernetes/kubernetes/pull/33520), [@vishh](https://github.com/vishh))
+* Fix nil pointer issue when getting metrics from volume mounter ([#34251](https://github.com/kubernetes/kubernetes/pull/34251), [@jingxu97](https://github.com/jingxu97))
+* Enable kubectl describe rs to work when apiserver does not support pods ([#33794](https://github.com/kubernetes/kubernetes/pull/33794), [@nikhiljindal](https://github.com/nikhiljindal))
+* Increase timeout for federated ingress test. ([#33610](https://github.com/kubernetes/kubernetes/pull/33610), [@quinton-hoole](https://github.com/quinton-hoole))
+* Remove headers that are unnecessary for proxy target ([#34076](https://github.com/kubernetes/kubernetes/pull/34076), [@mbohlool](https://github.com/mbohlool))
+* Support graceful termination in kube-dns ([#31894](https://github.com/kubernetes/kubernetes/pull/31894), [@MrHohn](https://github.com/MrHohn))
+* Added --log-facility flag to enhance dnsmasq logging ([#32422](https://github.com/kubernetes/kubernetes/pull/32422), [@MrHohn](https://github.com/MrHohn))
+* Split dns healthcheck into two different urls ([#32406](https://github.com/kubernetes/kubernetes/pull/32406), [@MrHohn](https://github.com/MrHohn))
+* Tune down initialDelaySeconds for readinessProbe. ([#33146](https://github.com/kubernetes/kubernetes/pull/33146), [@MrHohn](https://github.com/MrHohn))
+* Bump up addon kube-dns to v20 for graceful termination ([#33774](https://github.com/kubernetes/kubernetes/pull/33774), [@MrHohn](https://github.com/MrHohn))
+* Send recycle events from pod to pv. ([#27714](https://github.com/kubernetes/kubernetes/pull/27714), [@jsafrane](https://github.com/jsafrane))
+* Limit the number of names per image reported in the node status ([#32914](https://github.com/kubernetes/kubernetes/pull/32914), [@yujuhong](https://github.com/yujuhong))
+* Fixes in HPA: consider only running pods; proper denominator in avg request calculations. ([#33735](https://github.com/kubernetes/kubernetes/pull/33735), [@jszczepkowski](https://github.com/jszczepkowski))
+* Fix audit_test regex for iso8601 timestamps ([#32593](https://github.com/kubernetes/kubernetes/pull/32593), [@johnbieren](https://github.com/johnbieren))
+* Limit the number of names per image reported in the node status ([#32914](https://github.com/kubernetes/kubernetes/pull/32914), [@yujuhong](https://github.com/yujuhong))
+* Fix the DOCKER_OPTS appending bug. ([#33163](https://github.com/kubernetes/kubernetes/pull/33163), [@DjangoPeng](https://github.com/DjangoPeng))
+* Remove cpu limits for dns pod to avoid CPU starvation ([#33227](https://github.com/kubernetes/kubernetes/pull/33227), [@vishh](https://github.com/vishh))
+* Fixes memory/goroutine leak in Federation Service controller. ([#33359](https://github.com/kubernetes/kubernetes/pull/33359), [@shashidharatd](https://github.com/shashidharatd))
+* Use UpdateStatus, not Update, to add LoadBalancerStatus to Federated Ingress.  ([#33605](https://github.com/kubernetes/kubernetes/pull/33605), [@quinton-hoole](https://github.com/quinton-hoole))
+* Initialize podsWithAffinity to avoid scheduler panic ([#33967](https://github.com/kubernetes/kubernetes/pull/33967), [@xiang90](https://github.com/xiang90))
+* Heal the namespaceless ingresses in federation e2e. ([#33977](https://github.com/kubernetes/kubernetes/pull/33977), [@quinton-hoole](https://github.com/quinton-hoole))
+* Add missing argument to log message in federated ingress controller. ([#34158](https://github.com/kubernetes/kubernetes/pull/34158), [@quinton-hoole](https://github.com/quinton-hoole))
+* Fix issue in updating device path when volume is attached multiple times ([#33796](https://github.com/kubernetes/kubernetes/pull/33796), [@jingxu97](https://github.com/jingxu97))
+* To reduce memory usage to reasonable levels in smaller clusters, kube-apiserver now sets the deserialization cache size based on the target memory usage. ([#34000](https://github.com/kubernetes/kubernetes/pull/34000), [@wojtek-t](https://github.com/wojtek-t))
+* Fix possible panic in PodAffinityChecker ([#33086](https://github.com/kubernetes/kubernetes/pull/33086), [@ivan4th](https://github.com/ivan4th))
+* Fix race condition in setting node statusUpdateNeeded flag  ([#32807](https://github.com/kubernetes/kubernetes/pull/32807), [@jingxu97](https://github.com/jingxu97))
+* kube-proxy: Add a lower-bound for conntrack (128k default) ([#33051](https://github.com/kubernetes/kubernetes/pull/33051), [@thockin](https://github.com/thockin))
+* Use patched golang1.7.1 for cross-builds targeting darwin ([#33803](https://github.com/kubernetes/kubernetes/pull/33803), [@ixdy](https://github.com/ixdy))
+* Move HighWaterMark to the top of the struct in order to fix arm ([#33117](https://github.com/kubernetes/kubernetes/pull/33117), [@luxas](https://github.com/luxas))
+* Move HighWaterMark to the top of the struct in order to fix arm, second time ([#33376](https://github.com/kubernetes/kubernetes/pull/33376), [@luxas](https://github.com/luxas))
+
 
 
 # v1.3.8

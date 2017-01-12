@@ -17,57 +17,65 @@ limitations under the License.
 package vfsclientset
 
 import (
-	k8sapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
-	"time"
-	"fmt"
-	"os"
-	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kops/pkg/apis/kops/registry"
-	"reflect"
-	api "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kubernetes/pkg/runtime/serializer/json"
 	"bytes"
+	"fmt"
+	"github.com/golang/glog"
+	kops "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/v1alpha1"
+	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/runtime"
+	"os"
+	"reflect"
+	"sort"
+	"time"
 )
 
+var StoreVersion = v1alpha1.SchemeGroupVersion
+
 type commonVFS struct {
-	key      string
-	basePath vfs.Path
-	encoder runtime.Encoder
+	kind               string
+	basePath           vfs.Path
+	decoder            runtime.Decoder
+	encoder            runtime.Encoder
+	defaultReadVersion *unversioned.GroupVersionKind
 }
 
-func (c*commonVFS) init(key string, basePath vfs.Path, storeVersion runtime.GroupVersioner) {
-	yamlSerde := json.NewYAMLSerializer(json.DefaultMetaFactory, k8sapi.Scheme, k8sapi.Scheme)
-	encoder := k8sapi.Codecs.EncoderForVersion(yamlSerde, storeVersion)
+func (c *commonVFS) init(kind string, basePath vfs.Path, storeVersion runtime.GroupVersioner) {
+	yaml, ok := runtime.SerializerInfoForMediaType(api.Codecs.SupportedMediaTypes(), "application/yaml")
+	if !ok {
+		glog.Fatalf("no YAML serializer registered")
+	}
+	c.encoder = api.Codecs.EncoderForVersion(yaml.Serializer, storeVersion)
+	c.decoder = api.Codecs.DecoderToVersion(yaml.Serializer, kops.SchemeGroupVersion)
 
-	c.key = key
+	c.kind = kind
 	c.basePath = basePath
-	c.encoder = encoder
 }
 
-func (c *commonVFS) get(name string, dest interface{}) (bool, error) {
-	err := registry.ReadConfig(c.basePath.Join(name), dest)
+func (c *commonVFS) get(name string) (runtime.Object, error) {
+	o, err := c.readConfig(c.basePath.Join(name))
 	if err != nil {
 		if os.IsNotExist(err) {
-			return false, nil
+			return nil, nil
 		}
-		return false, fmt.Errorf("error reading %s %q: %v", c.key, name, err)
+		return nil, fmt.Errorf("error reading %s %q: %v", c.kind, name, err)
 	}
-	return true, nil
+	return o, nil
 }
 
-func (c *commonVFS) list(items interface{}, options k8sapi.ListOptions) (interface{}, error) {
+func (c *commonVFS) list(items interface{}, options api.ListOptions) (interface{}, error) {
 	return c.readAll(items)
 }
 
-func (c *commonVFS) create(i api.ApiType) (error) {
-	objectMeta, err := k8sapi.ObjectMetaFor(i)
+func (c *commonVFS) create(i runtime.Object) error {
+	objectMeta, err := api.ObjectMetaFor(i)
 	if err != nil {
 		return err
 	}
 
-	err = i.Validate()
+	err = i.(kops.ApiType).Validate()
 	if err != nil {
 		return err
 	}
@@ -81,14 +89,13 @@ func (c *commonVFS) create(i api.ApiType) (error) {
 		if os.IsExist(err) {
 			return err
 		}
-		return fmt.Errorf("error writing %s: %v", c.key, err)
+		return fmt.Errorf("error writing %s: %v", c.kind, err)
 	}
 
 	return nil
 }
 
-
-func (c*commonVFS) serialize(o runtime.Object) ([]byte, error) {
+func (c *commonVFS) serialize(o runtime.Object) ([]byte, error) {
 	var b bytes.Buffer
 	err := c.encoder.Encode(o, &b)
 	if err != nil {
@@ -98,8 +105,23 @@ func (c*commonVFS) serialize(o runtime.Object) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
+func (c *commonVFS) readConfig(configPath vfs.Path) (runtime.Object, error) {
+	data, err := configPath.ReadFile()
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, err
+		}
+		return nil, fmt.Errorf("error reading %s: %v", configPath, err)
+	}
 
-func (c*commonVFS) writeConfig(configPath vfs.Path, o runtime.Object, writeOptions ...vfs.WriteOption) error {
+	object, _, err := c.decoder.Decode(data, c.defaultReadVersion, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing %s: %v", configPath, err)
+	}
+	return object, nil
+}
+
+func (c *commonVFS) writeConfig(configPath vfs.Path, o runtime.Object, writeOptions ...vfs.WriteOption) error {
 	data, err := c.serialize(o)
 	if err != nil {
 		return fmt.Errorf("error marshalling object: %v", err)
@@ -130,6 +152,7 @@ func (c*commonVFS) writeConfig(configPath vfs.Path, o runtime.Object, writeOptio
 	}
 	if err != nil {
 		if create && os.IsExist(err) {
+			glog.Warningf("failed to create file as already exists: %v", configPath)
 			return err
 		}
 		return fmt.Errorf("error writing configuration file %s: %v", configPath, err)
@@ -137,14 +160,13 @@ func (c*commonVFS) writeConfig(configPath vfs.Path, o runtime.Object, writeOptio
 	return nil
 }
 
-
-func (c *commonVFS) update(i api.ApiType) (error) {
-	objectMeta, err := k8sapi.ObjectMetaFor(i)
+func (c *commonVFS) update(i runtime.Object) error {
+	objectMeta, err := api.ObjectMetaFor(i)
 	if err != nil {
 		return err
 	}
 
-	err = i.Validate()
+	err = i.(kops.ApiType).Validate()
 	if err != nil {
 		return err
 	}
@@ -153,22 +175,22 @@ func (c *commonVFS) update(i api.ApiType) (error) {
 		objectMeta.CreationTimestamp = unversioned.NewTime(time.Now().UTC())
 	}
 
-	err = registry.WriteConfig(c.basePath.Join(objectMeta.Name), i, vfs.WriteOptionOnlyIfExists)
+	err = c.writeConfig(c.basePath.Join(objectMeta.Name), i, vfs.WriteOptionOnlyIfExists)
 	if err != nil {
-		return fmt.Errorf("error writing %s: %v", c.key, err)
+		return fmt.Errorf("error writing %s: %v", c.kind, err)
 	}
 
 	return nil
 }
 
-func (c *commonVFS) delete(name string, options *k8sapi.DeleteOptions) (error) {
+func (c *commonVFS) delete(name string, options *api.DeleteOptions) error {
 	p := c.basePath.Join(name)
 	err := p.Remove()
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil
 		}
-		return fmt.Errorf("error deleting %s configuration %q: %v", c.key, name, err)
+		return fmt.Errorf("error deleting %s configuration %q: %v", c.kind, name, err)
 	}
 	return nil
 }
@@ -176,8 +198,12 @@ func (c *commonVFS) delete(name string, options *k8sapi.DeleteOptions) (error) {
 func (c *commonVFS) listNames() ([]string, error) {
 	keys, err := listChildNames(c.basePath)
 	if err != nil {
-		return nil, fmt.Errorf("error listing %s in state store: %v", c.key, err)
+		return nil, fmt.Errorf("error listing %s in state store: %v", c.kind, err)
 	}
+
+	// Seems to be an assumption in k8s APIs that items are always returned sorted
+	sort.Strings(keys)
+
 	return keys, nil
 }
 
@@ -188,26 +214,22 @@ func (c *commonVFS) readAll(items interface{}) (interface{}, error) {
 		return nil, fmt.Errorf("expected slice, got %T", items)
 	}
 
-	elemType := sliceType.Elem()
-
 	names, err := c.listNames()
 	if err != nil {
 		return nil, err
 	}
 
 	for _, name := range names {
-		elemValue := reflect.New(elemType)
-
-		found, err := c.get(name, elemValue.Interface())
+		o, err := c.get(name)
 		if err != nil {
 			return nil, err
 		}
 
-		if !found {
-			return nil, fmt.Errorf("%s was listed, but then not found %q", c.key, name)
+		if o == nil {
+			return nil, fmt.Errorf("%s was listed, but then not found %q", c.kind, name)
 		}
 
-		sliceValue = reflect.Append(sliceValue, elemValue.Elem())
+		sliceValue = reflect.Append(sliceValue, reflect.ValueOf(o).Elem())
 	}
 
 	return sliceValue.Interface(), nil

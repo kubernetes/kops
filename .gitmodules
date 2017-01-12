@@ -208,3 +208,24 @@
 [submodule "_vendor/cloud.google.com/go"]
 	path = _vendor/cloud.google.com/go
 	url = https://github.com/GoogleCloudPlatform/google-cloud-go
+[submodule "_vendor/github.com/cpuguy83/go-md2man"]
+	path = _vendor/github.com/cpuguy83/go-md2man
+	url = https://github.com/cpuguy83/go-md2man.git
+[submodule "_vendor/github.com/russross/blackfriday"]
+	path = _vendor/github.com/russross/blackfriday
+	url = https://github.com/russross/blackfriday.git
+[submodule "_vendor/github.com/shurcooL/sanitized_anchor_name"]
+	path = _vendor/github.com/shurcooL/sanitized_anchor_name
+	url = https://github.com/shurcooL/sanitized_anchor_name.git
+[submodule "_vendor/github.com/exponent-io/jsonpath"]
+	path = _vendor/github.com/exponent-io/jsonpath
+	url = https://github.com/exponent-io/jsonpath
+[submodule "_vendor/github.com/mitchellh/go-wordwrap"]
+	path = _vendor/github.com/mitchellh/go-wordwrap
+	url = https://github.com/mitchellh/go-wordwrap
+[submodule "_vendor/github.com/dgrijalva/jwt-go"]
+	path = _vendor/github.com/dgrijalva/jwt-go
+	url = https://github.com/dgrijalva/jwt-go
+[submodule "_vendor/github.com/sergi/go-diff"]
+	path = _vendor/github.com/sergi/go-diff
+	url = https://github.com/sergi/go-diff.git

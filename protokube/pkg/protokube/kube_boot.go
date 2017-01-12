@@ -17,9 +17,12 @@ limitations under the License.
 package protokube
 
 import (
-	"github.com/golang/glog"
+	"fmt"
 	"net"
+	"os/exec"
 	"time"
+
+	"github.com/golang/glog"
 )
 
 type KubeBoot struct {
@@ -108,18 +111,34 @@ func (k *KubeBoot) syncOnce() error {
 	}
 
 	if k.Master {
-		err := ApplyMasterTaints(k.Kubernetes)
-		if err != nil {
+		if err := ApplyMasterTaints(k.Kubernetes); err != nil {
 			glog.Warningf("error updating master taints: %v", err)
 		}
 	}
 
+	// Ensure kubelet is running. We avoid doing this automatically so
+	// that when kubelet comes up the first time, all volume mounts
+	// and DNS are available, avoiding the scenario where
+	// etcd/apiserver retry too many times and go into backoff.
+	if err := enableKubelet(); err != nil {
+		glog.Warningf("error ensuring kubelet started: %v", err)
+	}
+
 	for _, channel := range k.Channels {
-		err := ApplyChannel(channel)
-		if err != nil {
+		if err := ApplyChannel(channel); err != nil {
 			glog.Warningf("error applying channel %q: %v", channel, err)
 		}
 	}
 
+	return nil
+}
+
+// enableKubelet: Make sure kubelet is running.
+func enableKubelet() error {
+	cmd := exec.Command("systemctl", "start", "--no-block", "kubelet")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("error starting kubelet: %v\nOutput: %s", err, output)
+	}
 	return nil
 }

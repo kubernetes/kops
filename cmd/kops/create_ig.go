@@ -27,13 +27,17 @@ import (
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type CreateInstanceGroupOptions struct {
+	Role string
 }
 
 func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
-	options := &CreateInstanceGroupOptions{}
+	options := &CreateInstanceGroupOptions{
+		Role: string(api.InstanceGroupRoleNode),
+	}
 
 	cmd := &cobra.Command{
 		Use:     "instancegroup",
@@ -48,10 +52,18 @@ func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 		},
 	}
 
+	// TODO: Create Enum helper - or is there one in k8s already?
+	var allRoles []string
+	for _, r := range api.AllInstanceGroupRoles {
+		allRoles = append(allRoles, string(r))
+	}
+
+	cmd.Flags().StringVar(&options.Role, "role", options.Role, "Type of instance group to create ("+strings.Join(allRoles, ",")+")")
+
 	return cmd
 }
 
-func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, c *CreateInstanceGroupOptions) error {
+func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, out io.Writer, options *CreateInstanceGroupOptions) error {
 	if len(args) == 0 {
 		return fmt.Errorf("Specify name of instance group to create")
 	}
@@ -72,7 +84,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		return err
 	}
 
-	existing, err := clientset.InstanceGroups(cluster.Name).Get(groupName)
+	existing, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).Get(groupName)
 	if err != nil {
 		return err
 	}
@@ -83,8 +95,13 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 
 	// Populate some defaults
 	ig := &api.InstanceGroup{}
-	ig.Name = groupName
-	ig.Spec.Role = api.InstanceGroupRoleNode
+	ig.ObjectMeta.Name = groupName
+
+	role, ok := api.ParseInstanceGroupRole(options.Role, true)
+	if !ok {
+		return fmt.Errorf("unknown role %q", options.Role)
+	}
+	ig.Spec.Role = role
 
 	ig, err = cloudup.PopulateInstanceGroupSpec(cluster, ig, channel)
 	if err != nil {
@@ -95,7 +112,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		edit = editor.NewDefaultEditor(editorEnvs)
 	)
 
-	raw, err := api.ToYaml(ig)
+	raw, err := api.ToVersionedYaml(ig)
 	if err != nil {
 		return err
 	}
@@ -112,10 +129,13 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		return fmt.Errorf("error launching editor: %v", err)
 	}
 
-	group := &api.InstanceGroup{}
-	err = api.ParseYaml(edited, group)
+	obj, _, err := api.ParseVersionedYaml(edited)
 	if err != nil {
 		return fmt.Errorf("error parsing yaml: %v", err)
+	}
+	group, ok := obj.(*api.InstanceGroup)
+	if !ok {
+		return fmt.Errorf("unexpected object type: %T", obj)
 	}
 
 	err = group.Validate()
@@ -123,7 +143,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		return err
 	}
 
-	_, err = clientset.InstanceGroups(cluster.Name).Create(group)
+	_, err = clientset.InstanceGroups(cluster.ObjectMeta.Name).Create(group)
 	if err != nil {
 		return fmt.Errorf("error storing InstanceGroup: %v", err)
 	}

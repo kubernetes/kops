@@ -26,13 +26,12 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
+//go:generate fitask -type=VPCDHCPOptionsAssociation
 type VPCDHCPOptionsAssociation struct {
+	Name *string
+
 	VPC         *VPC
 	DHCPOptions *DHCPOptions
-}
-
-func (e *VPCDHCPOptionsAssociation) String() string {
-	return fi.TaskAsString(e)
 }
 
 func (e *VPCDHCPOptionsAssociation) Find(c *fi.Context) (*VPCDHCPOptionsAssociation, error) {
@@ -53,6 +52,10 @@ func (e *VPCDHCPOptionsAssociation) Find(c *fi.Context) (*VPCDHCPOptionsAssociat
 	actual := &VPCDHCPOptionsAssociation{}
 	actual.VPC = &VPC{ID: vpc.VpcId}
 	actual.DHCPOptions = &DHCPOptions{ID: vpc.DhcpOptionsId}
+
+	// Prevent spurious changes
+	actual.Name = e.Name
+
 	return actual, nil
 }
 
@@ -106,5 +109,5 @@ func (_ *VPCDHCPOptionsAssociation) RenderTerraform(t *terraform.TerraformTarget
 		DHCPOptionsID: e.DHCPOptions.TerraformLink(),
 	}
 
-	return t.RenderResource("aws_vpc_dhcp_options_association", *e.VPC.Name, tf)
+	return t.RenderResource("aws_vpc_dhcp_options_association", *e.Name, tf)
 }

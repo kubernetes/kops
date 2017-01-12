@@ -54,9 +54,48 @@ func buildCluster(clusterArgs interface{}) *api.Cluster {
 			KubernetesVersion: cParams.KubernetesVersion,
 			Networking:        networking,
 			UpdatePolicy:      fi.String(cParams.UpdatePolicy),
+			Topology: &api.TopologySpec{
+				Masters: api.TopologyPublic,
+				Nodes:   api.TopologyPublic,
+			},
 		},
 	}
 }
+
+func TestBuildTags_CloudProvider_AWS_Weave(t *testing.T) {
+
+	c := buildCluster(nil)
+	networking := &api.NetworkingSpec{Weave: &api.WeaveNetworkingSpec{}}
+
+	c.Spec.Networking = networking
+
+	tags, err := buildCloudupTags(c)
+	if err != nil {
+		t.Fatalf("buildCloudupTags error: %v", err)
+	}
+
+	if !tags.Has("_aws") {
+		t.Fatal("tag _aws not found")
+	}
+
+	if !tags.Has("_networking_cni") {
+		t.Fatal("tag _networking_cni not found")
+	}
+
+	if tags.Has("_networking_kubenet") {
+		t.Fatal("tag _networking_kubenet found")
+	}
+
+	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
+	if err != nil {
+		t.Fatalf("buildNodeupTags error: %v", err)
+	}
+
+	if !nodeUpTags.Has("_aws") {
+		t.Fatal("nodeUpTag _aws not found")
+	}
+}
+
 func TestBuildTags_CloudProvider_AWS(t *testing.T) {
 
 	c := buildCluster(nil)
@@ -66,11 +105,11 @@ func TestBuildTags_CloudProvider_AWS(t *testing.T) {
 		t.Fatalf("buildCloudupTags error: %v", err)
 	}
 
-	if _, found := tags["_aws"]; !found {
+	if !tags.Has("_aws") {
 		t.Fatal("tag _aws not found")
 	}
 
-	if _, found := tags["_networking_cni"]; !found {
+	if !tags.Has("_networking_cni") {
 		t.Fatal("tag _networking_cni not found")
 	}
 
@@ -79,7 +118,7 @@ func TestBuildTags_CloudProvider_AWS(t *testing.T) {
 		t.Fatalf("buildNodeupTags error: %v", err)
 	}
 
-	if !stringSliceContains(nodeUpTags, "_aws") {
+	if !nodeUpTags.Has("_aws") {
 		t.Fatal("nodeUpTag _aws not found")
 	}
 }
@@ -99,7 +138,7 @@ func TestBuildTags_KubernetesVersions(t *testing.T) {
 			t.Fatalf("buildCloudupTags error: %v", err)
 		}
 
-		if _, found := tags[tag]; !found {
+		if !tags.Has(tag) {
 			t.Fatalf("tag %q not found for %q: %v", tag, version, tags)
 		}
 	}
@@ -118,7 +157,7 @@ func TestBuildTags_UpdatePolicy_Nil(t *testing.T) {
 		t.Fatalf("buildNodeupTags error: %v", err)
 	}
 
-	if !stringSliceContains(nodeUpTags, "_automatic_upgrades") {
+	if !nodeUpTags.Has("_automatic_upgrades") {
 		t.Fatal("nodeUpTag _automatic_upgrades not found")
 	}
 }
@@ -136,16 +175,7 @@ func TestBuildTags_UpdatePolicy_None(t *testing.T) {
 		t.Fatalf("buildNodeupTags error: %v", err)
 	}
 
-	if stringSliceContains(nodeUpTags, "_automatic_upgrades") {
+	if nodeUpTags.Has("_automatic_upgrades") {
 		t.Fatal("nodeUpTag _automatic_upgrades found unexpectedly")
 	}
-}
-
-func stringSliceContains(haystack []string, needle string) bool {
-	for _, s := range haystack {
-		if needle == s {
-			return true
-		}
-	}
-	return false
 }

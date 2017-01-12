@@ -18,13 +18,14 @@ package kops
 
 import (
 	"fmt"
+	"net"
+	"net/url"
+	"strings"
+
 	"github.com/blang/semver"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/util/validation"
 	"k8s.io/kubernetes/pkg/util/validation/field"
-	"net"
-	"net/url"
-	"strings"
 )
 
 func (c *Cluster) Validate(strict bool) error {
@@ -34,28 +35,28 @@ func (c *Cluster) Validate(strict bool) error {
 
 	specPath := field.NewPath("Cluster").Child("Spec")
 
-	if c.Name == "" {
+	if c.ObjectMeta.Name == "" {
 		return field.Required(field.NewPath("Name"), "Cluster Name is required (e.g. --name=mycluster.myzone.com)")
 	}
 
 	{
 		// Must be a dns name
-		errs := validation.IsDNS1123Subdomain(c.Name)
+		errs := validation.IsDNS1123Subdomain(c.ObjectMeta.Name)
 		if len(errs) != 0 {
 			return fmt.Errorf("Cluster Name must be a valid DNS name (e.g. --name=mycluster.myzone.com) errors: %s", strings.Join(errs, ", "))
 		}
 
-		if !strings.Contains(c.Name, ".") {
+		if !strings.Contains(c.ObjectMeta.Name, ".") {
 			// Tolerate if this is a cluster we are importing for upgrade
-			if c.Annotations[AnnotationNameManagement] != AnnotationValueManagementImported {
+			if c.ObjectMeta.Annotations[AnnotationNameManagement] != AnnotationValueManagementImported {
 				return fmt.Errorf("Cluster Name must be a fully-qualified DNS name (e.g. --name=mycluster.myzone.com)")
 			}
 		}
 	}
 
-	if len(c.Spec.Zones) == 0 {
+	if len(c.Spec.Subnets) == 0 {
 		// TODO: Auto choose zones from region?
-		return fmt.Errorf("must configure at least one Zone (use --zones)")
+		return fmt.Errorf("must configure at least one Subnet (use --zones)")
 	}
 
 	if strict && c.Spec.Kubelet == nil {
@@ -213,21 +214,21 @@ func (c *Cluster) Validate(strict bool) error {
 		}
 	}
 
-	// Check that the zone CIDRs are all consistent
+	// Check that the subnet CIDRs are all consistent
 	{
-		for _, z := range c.Spec.Zones {
-			if z.CIDR == "" {
+		for _, s := range c.Spec.Subnets {
+			if s.CIDR == "" {
 				if strict {
-					return fmt.Errorf("Zone %q did not have a CIDR set", z.Name)
+					return fmt.Errorf("Subnet %q did not have a CIDR set", s.SubnetName)
 				}
 			} else {
-				_, zoneCIDR, err := net.ParseCIDR(z.CIDR)
+				_, subnetCIDR, err := net.ParseCIDR(s.CIDR)
 				if err != nil {
-					return fmt.Errorf("Zone %q had an invalid CIDR: %q", z.Name, z.CIDR)
+					return fmt.Errorf("Subnet %q had an invalid CIDR: %q", s.SubnetName, s.CIDR)
 				}
 
-				if !isSubnet(networkCIDR, zoneCIDR) {
-					return fmt.Errorf("Zone %q had a CIDR %q that was not a subnet of the NetworkCIDR %q", z.Name, z.CIDR, c.Spec.NetworkCIDR)
+				if !isSubnet(networkCIDR, subnetCIDR) {
+					return fmt.Errorf("Subnet %q had a CIDR %q that was not a subnet of the NetworkCIDR %q", s.SubnetName, s.CIDR, c.Spec.NetworkCIDR)
 				}
 			}
 		}
@@ -244,14 +245,24 @@ func (c *Cluster) Validate(strict bool) error {
 	}
 
 	// AdminAccess
-	if strict && len(c.Spec.AdminAccess) == 0 {
-		return fmt.Errorf("AdminAccess not configured")
+	if strict && len(c.Spec.SSHAccess) == 0 {
+		return fmt.Errorf("SSHAccess not configured")
+	}
+	for _, cidr := range c.Spec.SSHAccess {
+		_, _, err := net.ParseCIDR(cidr)
+		if err != nil {
+			return fmt.Errorf("SSHAccess rule %q could not be parsed (invalid CIDR)", cidr)
+		}
 	}
 
-	for _, adminAccess := range c.Spec.AdminAccess {
-		_, _, err := net.ParseCIDR(adminAccess)
+	// AdminAccess
+	if strict && len(c.Spec.APIAccess) == 0 {
+		return fmt.Errorf("APIAccess not configured")
+	}
+	for _, cidr := range c.Spec.APIAccess {
+		_, _, err := net.ParseCIDR(cidr)
 		if err != nil {
-			return fmt.Errorf("AdminAccess rule %q could not be parsed (invalid CIDR)", adminAccess)
+			return fmt.Errorf("APIAccess rule %q could not be parsed (invalid CIDR)", cidr)
 		}
 	}
 
@@ -287,8 +298,43 @@ func (c *Cluster) Validate(strict bool) error {
 		if strict && c.Spec.MasterKubelet.APIServers == "" {
 			return field.Required(masterKubeletPath.Child("APIServers"), "")
 		}
-		if c.Spec.Kubelet.APIServers != "" && !isValidAPIServersURL(c.Spec.MasterKubelet.APIServers) {
+		if c.Spec.MasterKubelet.APIServers != "" && !isValidAPIServersURL(c.Spec.MasterKubelet.APIServers) {
 			return field.Invalid(masterKubeletPath.Child("APIServers"), c.Spec.MasterKubelet.APIServers, "Not a valid APIServer URL")
+		}
+	}
+
+	// Topology support
+	if c.Spec.Topology == nil {
+		// This is a case of an older cluster making changes with newer code.. Adding this in for backwards
+		// compatibility.. Putting this in validation because it can be called from a few places in the code
+		// base.. all of which make the assumption that the validation should work for their current
+		// representation of the cluster..
+		// @kris-nova
+		// #960
+		// #943
+		c.Spec.Topology = &TopologySpec{Masters: TopologyPublic, Nodes: TopologyPublic}
+	}
+
+	if c.Spec.Topology.Masters != "" && c.Spec.Topology.Nodes != "" {
+		if c.Spec.Topology.Masters != TopologyPublic && c.Spec.Topology.Masters != TopologyPrivate {
+			return fmt.Errorf("Invalid Masters value for Topology")
+		} else if c.Spec.Topology.Nodes != TopologyPublic && c.Spec.Topology.Nodes != TopologyPrivate {
+			return fmt.Errorf("Invalid Nodes value for Topology")
+			// Until we support other topologies - these must match
+		} else if c.Spec.Topology.Masters != c.Spec.Topology.Nodes {
+			return fmt.Errorf("Topology Nodes must match Topology Masters")
+		}
+
+	} else {
+		return fmt.Errorf("Topology requires non-nil values for Masters and Nodes")
+	}
+
+	if c.Spec.Topology.Bastion != nil {
+		if c.Spec.Topology.Masters == TopologyPublic || c.Spec.Topology.Nodes == TopologyPublic {
+			return fmt.Errorf("Bastion supports only Private Masters and Nodes")
+		}
+		if fi.Int64Value(c.Spec.Topology.Bastion.IdleTimeout) <= int64(0) {
+			return fmt.Errorf("Bastion IdleTimeout should be greater than zero")
 		}
 	}
 
@@ -312,8 +358,8 @@ func (c *Cluster) Validate(strict bool) error {
 				if m.Name == "" {
 					return fmt.Errorf("EtcdMember did not have Name in cluster %q", etcd.Name)
 				}
-				if fi.StringValue(m.Zone) == "" {
-					return fmt.Errorf("EtcdMember did not have Zone in cluster %q", etcd.Name)
+				if fi.StringValue(m.InstanceGroup) == "" {
+					return fmt.Errorf("EtcdMember did not have InstanceGroup in cluster %q", etcd.Name)
 				}
 			}
 		}

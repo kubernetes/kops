@@ -13,17 +13,17 @@ import (
 
 // Overview
 //
-//  AWS Service Catalog (https://aws.amazon.com/servicecatalog/) allows organizations
+// AWS Service Catalog (https://aws.amazon.com/servicecatalog/) allows organizations
 // to create and manage catalogs of IT services that are approved for use on
 // AWS. This documentation provides reference material for the AWS Service Catalog
 // end user API. To get the most out of this documentation, you need to be familiar
 // with the terminology discussed in AWS Service Catalog Concepts (http://docs.aws.amazon.com/servicecatalog/latest/userguide/what-is_concepts.html).
 //
-//  Additional Resources
+// Additional Resources
 //
-//    AWS Service Catalog Administrator Guide (http://docs.aws.amazon.com/servicecatalog/latest/adminguide/introduction.html)
+//    * AWS Service Catalog Administrator Guide (http://docs.aws.amazon.com/servicecatalog/latest/adminguide/introduction.html)
 //
-//    AWS Service Catalog User Guide (http://docs.aws.amazon.com/servicecatalog/latest/userguide/introduction.html)
+//    * AWS Service Catalog User Guide (http://docs.aws.amazon.com/servicecatalog/latest/userguide/introduction.html)
 //The service client's operations are safe to be used concurrently.
 // It is not safe to mutate any of the client's properties though.
 type ServiceCatalog struct {

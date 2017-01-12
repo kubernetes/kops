@@ -18,13 +18,14 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/spf13/cobra"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/util/pkg/tables"
 	k8sapi "k8s.io/kubernetes/pkg/api"
-	"os"
-	"strings"
 )
 
 type GetClustersCmd struct {
@@ -68,7 +69,7 @@ func (c *GetClustersCmd) Run(args []string) error {
 		m := make(map[string]*api.Cluster)
 		for i := range clusterList.Items {
 			c := &clusterList.Items[i]
-			m[c.Name] = c
+			m[c.ObjectMeta.Name] = c
 		}
 		for _, arg := range args {
 			ig := m[arg]
@@ -90,53 +91,66 @@ func (c *GetClustersCmd) Run(args []string) error {
 		return nil
 	}
 
-	output := getCmd.output
-	if output == OutputTable {
+	if c.FullSpec {
+		var err error
+		clusters, err = fullClusterSpecs(clusters)
+		if err != nil {
+			return err
+		}
+	}
+
+	switch getCmd.output {
+	case OutputTable:
+
 		t := &tables.Table{}
 		t.AddColumn("NAME", func(c *api.Cluster) string {
-			return c.Name
+			return c.ObjectMeta.Name
 		})
 		t.AddColumn("CLOUD", func(c *api.Cluster) string {
 			return c.Spec.CloudProvider
 		})
-		t.AddColumn("ZONES", func(c *api.Cluster) string {
-			var zoneNames []string
-			for _, z := range c.Spec.Zones {
-				zoneNames = append(zoneNames, z.Name)
+		t.AddColumn("SUBNETS", func(c *api.Cluster) string {
+			var subnetNames []string
+			for _, s := range c.Spec.Subnets {
+				subnetNames = append(subnetNames, s.SubnetName)
 			}
-			return strings.Join(zoneNames, ",")
+			return strings.Join(subnetNames, ",")
 		})
-		return t.Render(clusters, os.Stdout, "NAME", "CLOUD", "ZONES")
-	} else if output == OutputYaml {
-		if c.FullSpec {
-			var fullSpecs []*api.Cluster
-			for _, cluster := range clusters {
-				configBase, err := registry.ConfigBase(cluster)
-				if err != nil {
-					return fmt.Errorf("error reading full cluster spec for %q: %v", cluster.Name, err)
-				}
-				fullSpec := &api.Cluster{}
-				err = registry.ReadConfig(configBase.Join(registry.PathClusterCompleted), fullSpec)
-				if err != nil {
-					return fmt.Errorf("error reading full cluster spec for %q: %v", cluster.Name, err)
-				}
-				fullSpecs = append(fullSpecs, fullSpec)
-			}
-			clusters = fullSpecs
-		}
+		return t.Render(clusters, os.Stdout, "NAME", "CLOUD", "SUBNETS")
 
+	case OutputYaml:
 		for _, cluster := range clusters {
-			y, err := api.ToYaml(cluster)
-			if err != nil {
-				return fmt.Errorf("error marshaling yaml for %q: %v", cluster.Name, err)
-			}
-			_, err = os.Stdout.Write(y)
-			if err != nil {
-				return fmt.Errorf("error writing to stdout: %v", err)
+			if err := marshalToWriter(cluster, marshalYaml, os.Stdout); err != nil {
+				return err
 			}
 		}
 		return nil
-	} else {
-		return fmt.Errorf("Unknown output format: %q", output)
+	case OutputJSON:
+		for _, cluster := range clusters {
+			if err := marshalToWriter(cluster, marshalJSON, os.Stdout); err != nil {
+				return err
+			}
+		}
+		return nil
+
+	default:
+		return fmt.Errorf("Unknown output format: %q", getCmd.output)
 	}
+}
+
+func fullClusterSpecs(clusters []*api.Cluster) ([]*api.Cluster, error) {
+	var fullSpecs []*api.Cluster
+	for _, cluster := range clusters {
+		configBase, err := registry.ConfigBase(cluster)
+		if err != nil {
+			return nil, fmt.Errorf("error reading full cluster spec for %q: %v", cluster.ObjectMeta.Name, err)
+		}
+		fullSpec := &api.Cluster{}
+		err = registry.ReadConfigDeprecated(configBase.Join(registry.PathClusterCompleted), fullSpec)
+		if err != nil {
+			return nil, fmt.Errorf("error reading full cluster spec for %q: %v", cluster.ObjectMeta.Name, err)
+		}
+		fullSpecs = append(fullSpecs, fullSpec)
+	}
+	return fullSpecs, nil
 }

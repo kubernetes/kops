@@ -16,8 +16,8 @@ import (
 // applications running in on-premises data centers, their associated dependencies,
 // and their performance profile.
 //
-//  Planning data center migrations can involve thousands of workloads that
-// are often deeply interdependent. Application discovery and dependency mapping
+// Planning data center migrations can involve thousands of workloads that are
+// often deeply interdependent. Application discovery and dependency mapping
 // are important early first steps in the migration process, but difficult to
 // perform at scale due to the lack of automated tools.
 //
@@ -41,12 +41,12 @@ import (
 // programming language or platform that you're using. For more information,
 // see AWS SDKs (http://aws.amazon.com/tools/#SDKs).
 //
-// This guide is intended for use with the  AWS Discovery Service User Guide
-//  (http://docs.aws.amazon.com/application-discovery/latest/userguide/what-is-appdiscovery.html).
+// This guide is intended for use with the AWS Discovery Service User Guide
+// (http://docs.aws.amazon.com/application-discovery/latest/userguide/what-is-appdiscovery.html).
 //
 // The following are short descriptions of each API action, organized by function.
 //
-//  Managing AWS Agents Using the Application Discovery Service
+// Managing AWS Agents Using the Application Discovery Service
 //
 // An AWS agent is software that you install on on-premises servers and virtual
 // machines that are targeted for discovery and migration. Agents run on Linux
@@ -55,46 +55,47 @@ import (
 // the following information and send it to the Application Discovery Service
 // using Secure Sockets Layer (SSL) encryption:
 //
-//   User information (user name, home directory)
+//    * User information (user name, home directory)
 //
-//   Group information (name)
+//    * Group information (name)
 //
-//   List of installed packages
+//    * List of installed packages
 //
-//   List of kernel modules
+//    * List of kernel modules
 //
-//   All create and stop process events
+//    * All create and stop process events
 //
-//   DNS queries
+//    * DNS queries
 //
-//   NIC information
+//    * NIC information
 //
-//   TCP/UDP process listening ports
+//    * TCP/UDP process listening ports
 //
-//   TCPV4/V6 connections
+//    * TCPV4/V6 connections
 //
-//   Operating system information
+//    * Operating system information
 //
-//   System performance
+//    * System performance
 //
-//   Process performance
+//    * Process performance
 //
-//   The Application Discovery Service API includes the following actions to
-// manage AWS agents:
+// The Application Discovery Service API includes the following actions to manage
+// AWS agents:
 //
-//    StartDataCollectionByAgentIds: Instructs the specified agents to start
-// collecting data. The Application Discovery Service takes several minutes
-// to receive and process data after you initiate data collection.
+//    * StartDataCollectionByAgentIds: Instructs the specified agents to start
+//    collecting data. The Application Discovery Service takes several minutes
+//    to receive and process data after you initiate data collection.
 //
-//    StopDataCollectionByAgentIds: Instructs the specified agents to stop
-// collecting data.
+//    * StopDataCollectionByAgentIds: Instructs the specified agents to stop
+//    collecting data.
 //
-//    DescribeAgents: Lists AWS agents by ID or lists all agents associated
-// with your user account if you did not specify an agent ID. The output includes
-// agent IDs, IP addresses, media access control (MAC) addresses, agent health,
-// host name where the agent resides, and the version number of each agent.
+//    * DescribeAgents: Lists AWS agents by ID or lists all agents associated
+//    with your user account if you did not specify an agent ID. The output
+//    includes agent IDs, IP addresses, media access control (MAC) addresses,
+//    agent health, host name where the agent resides, and the version number
+//    of each agent.
 //
-//    Querying Configuration Items
+// Querying Configuration Items
 //
 // A configuration item is an IT asset that was discovered in your data center
 // by an AWS agent. When you use the Application Discovery Service, you can
@@ -102,110 +103,116 @@ import (
 // Server, Process, and Connection configuration items. This means you can specify
 // a value for the following keys and query your IT assets:
 //
-//  Server    server.HostName
+// Server
 //
-//   server.osName
+//    * server.HostName
 //
-//   server.osVersion
+//    * server.osName
 //
-//   server.configurationId
+//    * server.osVersion
 //
-//   server.agentId
+//    * server.configurationId
 //
-//    Process    process.name
+//    * server.agentId
 //
-//   process.CommandLine
+// Process
 //
-//   process.configurationId
+//    * process.name
 //
-//   server.hostName
+//    * process.CommandLine
 //
-//   server.osName
+//    * process.configurationId
 //
-//   server.osVersion
+//    * server.hostName
 //
-//   server.configurationId
+//    * server.osName
 //
-//   server.agentId
+//    * server.osVersion
 //
-//    Connection    connection.sourceIp
+//    * server.configurationId
 //
-//   connection.sourcePort
+//    * server.agentId
 //
-//   connection.destinationIp
+// Connection
 //
-//   connection.destinationPort
+//    * connection.sourceIp
 //
-//   sourceProcess.configurationId
+//    * connection.sourcePort
 //
-//   sourceProcess.commandLine
+//    * connection.destinationIp
 //
-//   sourceProcess.name
+//    * connection.destinationPort
 //
-//   destinationProcessId.configurationId
+//    * sourceProcess.configurationId
 //
-//   destinationProcess.commandLine
+//    * sourceProcess.commandLine
 //
-//   destinationProcess.name
+//    * sourceProcess.name
 //
-//   sourceServer.configurationId
+//    * destinationProcessId.configurationId
 //
-//   sourceServer.hostName
+//    * destinationProcess.commandLine
 //
-//   sourceServer.osName
+//    * destinationProcess.name
 //
-//   sourceServer.osVersion
+//    * sourceServer.configurationId
 //
-//   destinationServer.configurationId
+//    * sourceServer.hostName
 //
-//   destinationServer.hostName
+//    * sourceServer.osName
 //
-//   destinationServer.osName
+//    * sourceServer.osVersion
 //
-//   destinationServer.osVersion
+//    * destinationServer.configurationId
 //
-//   The Application Discovery Service includes the following actions for querying
+//    * destinationServer.hostName
+//
+//    * destinationServer.osName
+//
+//    * destinationServer.osVersion
+//
+// The Application Discovery Service includes the following actions for querying
 // configuration items.
 //
-//    DescribeConfigurations: Retrieves a list of attributes for a specific
-// configuration ID. For example, the output for a server configuration item
-// includes a list of attributes about the server, including host name, operating
-// system, number of network cards, etc.
+//    * DescribeConfigurations: Retrieves a list of attributes for a specific
+//    configuration ID. For example, the output for a server configuration item
+//    includes a list of attributes about the server, including host name, operating
+//    system, number of network cards, etc.
 //
-//    ListConfigurations: Retrieves a list of configuration items according
-// to the criteria you specify in a filter. The filter criteria identify relationship
-// requirements. For example, you can specify filter criteria of process.name
-// with values of nginx and apache.
+//    * ListConfigurations: Retrieves a list of configuration items according
+//    to the criteria you specify in a filter. The filter criteria identify
+//    relationship requirements. For example, you can specify filter criteria
+//    of process.name with values of nginx and apache.
 //
-//    Tagging Discovered Configuration Items
+// Tagging Discovered Configuration Items
 //
-// You can tag discovered configuration items. Tags are metadata that help
-// you categorize IT assets in your data center. Tags use a key-value format.
-// For example, {"key": "serverType", "value": "webServer"}.
+// You can tag discovered configuration items. Tags are metadata that help you
+// categorize IT assets in your data center. Tags use a key-value format. For
+// example, {"key": "serverType", "value": "webServer"}.
 //
-//    CreateTags: Creates one or more tags for a configuration items.
+//    * CreateTags: Creates one or more tags for a configuration items.
 //
-//    DescribeTags: Retrieves a list of configuration items that are tagged
-// with a specific tag. Or, retrieves a list of all tags assigned to a specific
-// configuration item.
+//    * DescribeTags: Retrieves a list of configuration items that are tagged
+//    with a specific tag. Or, retrieves a list of all tags assigned to a specific
+//    configuration item.
 //
-//    DeleteTags: Deletes the association between a configuration item and
-// one or more tags.
+//    * DeleteTags: Deletes the association between a configuration item and
+//    one or more tags.
 //
-//    Exporting Data
+// Exporting Data
 //
 // You can export data as a CSV file to an Amazon S3 bucket or into your preferred
 // visualization tool or cloud migration solution to help reduce the complexity
 // and time in planning your cloud migration.
 //
-//    ExportConfigurations: Exports all discovered configuration data to an
-// Amazon S3 bucket. Data includes tags and tag associations, processes, connections,
-// servers, and system performance. This API returns an export ID which you
-// can query using the GetExportStatus API.
+//    * ExportConfigurations: Exports all discovered configuration data to an
+//    Amazon S3 bucket. Data includes tags and tag associations, processes,
+//    connections, servers, and system performance. This API returns an export
+//    ID which you can query using the GetExportStatus API.
 //
-//    DescribeExportConfigurations: Gets the status of the data export. When
-// the export is complete, the service returns an Amazon S3 URL where you can
-// download CSV files that include the data.
+//    * DescribeExportConfigurations: Gets the status of the data export. When
+//    the export is complete, the service returns an Amazon S3 URL where you
+//    can download CSV files that include the data.
 //The service client's operations are safe to be used concurrently.
 // It is not safe to mutate any of the client's properties though.
 type ApplicationDiscoveryService struct {

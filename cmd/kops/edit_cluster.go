@@ -74,7 +74,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 		return err
 	}
 
-	list, err := clientset.InstanceGroups(oldCluster.Name).List(k8sapi.ListOptions{})
+	list, err := clientset.InstanceGroups(oldCluster.ObjectMeta.Name).List(k8sapi.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -88,9 +88,9 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 	)
 
 	ext := "yaml"
-	raw, err := api.ToYaml(oldCluster)
+	raw, err := api.ToVersionedYaml(oldCluster)
 	if err != nil {
-		return fmt.Errorf("error reading config file: %v", err)
+		return err
 	}
 
 	// launch the editor
@@ -109,12 +109,15 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 		return nil
 	}
 
-	newCluster := &api.Cluster{}
-	err = api.ParseYaml(edited, newCluster)
+	newObj, _, err := api.ParseVersionedYaml(edited)
 	if err != nil {
 		return fmt.Errorf("error parsing config: %v", err)
 	}
 
+	newCluster, ok := newObj.(*api.Cluster)
+	if !ok {
+		return fmt.Errorf("object was not of expected type: %T", newObj)
+	}
 	err = newCluster.PerformAssignments()
 	if err != nil {
 		return fmt.Errorf("error populating configuration: %v", err)
@@ -141,7 +144,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 		return err
 	}
 
-	err = registry.WriteConfig(configBase.Join(registry.PathClusterCompleted), fullCluster)
+	err = registry.WriteConfigDeprecated(configBase.Join(registry.PathClusterCompleted), fullCluster)
 	if err != nil {
 		return fmt.Errorf("error writing completed cluster spec: %v", err)
 	}

@@ -40,9 +40,12 @@ import (
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/certificates"
 	"k8s.io/kubernetes/pkg/apis/extensions"
+	"k8s.io/kubernetes/pkg/apis/policy"
 	"k8s.io/kubernetes/pkg/apis/storage"
+	storageutil "k8s.io/kubernetes/pkg/apis/storage/util"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	client "k8s.io/kubernetes/pkg/client/unversioned"
+	coreclient "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/core/internalversion"
+	extensionsclient "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/extensions/internalversion"
 	deploymentutil "k8s.io/kubernetes/pkg/controller/deployment/util"
 	"k8s.io/kubernetes/pkg/fieldpath"
 	"k8s.io/kubernetes/pkg/fields"
@@ -114,10 +117,11 @@ func describerMap(c clientset.Interface) map[unversioned.GroupKind]Describer {
 		extensions.Kind("Job"):                         &JobDescriber{c},
 		extensions.Kind("Ingress"):                     &IngressDescriber{c},
 		batch.Kind("Job"):                              &JobDescriber{c},
-		batch.Kind("ScheduledJob"):                     &ScheduledJobDescriber{c},
-		apps.Kind("PetSet"):                            &PetSetDescriber{c},
+		batch.Kind("CronJob"):                          &CronJobDescriber{c},
+		apps.Kind("StatefulSet"):                       &StatefulSetDescriber{c},
 		certificates.Kind("CertificateSigningRequest"): &CertificateSigningRequestDescriber{c},
 		storage.Kind("StorageClass"):                   &StorageClassDescriber{c},
+		policy.Kind("PodDisruptionBudget"):             &PodDisruptionBudgetDescriber{c},
 	}
 
 	return m
@@ -212,6 +216,71 @@ func describeNamespace(namespace *api.Namespace, resourceQuotaList *api.Resource
 	})
 }
 
+func describeLimitRangeSpec(spec api.LimitRangeSpec, prefix string, w io.Writer) {
+	for i := range spec.Limits {
+		item := spec.Limits[i]
+		maxResources := item.Max
+		minResources := item.Min
+		defaultLimitResources := item.Default
+		defaultRequestResources := item.DefaultRequest
+		ratio := item.MaxLimitRequestRatio
+
+		set := map[api.ResourceName]bool{}
+		for k := range maxResources {
+			set[k] = true
+		}
+		for k := range minResources {
+			set[k] = true
+		}
+		for k := range defaultLimitResources {
+			set[k] = true
+		}
+		for k := range defaultRequestResources {
+			set[k] = true
+		}
+		for k := range ratio {
+			set[k] = true
+		}
+
+		for k := range set {
+			// if no value is set, we output -
+			maxValue := "-"
+			minValue := "-"
+			defaultLimitValue := "-"
+			defaultRequestValue := "-"
+			ratioValue := "-"
+
+			maxQuantity, maxQuantityFound := maxResources[k]
+			if maxQuantityFound {
+				maxValue = maxQuantity.String()
+			}
+
+			minQuantity, minQuantityFound := minResources[k]
+			if minQuantityFound {
+				minValue = minQuantity.String()
+			}
+
+			defaultLimitQuantity, defaultLimitQuantityFound := defaultLimitResources[k]
+			if defaultLimitQuantityFound {
+				defaultLimitValue = defaultLimitQuantity.String()
+			}
+
+			defaultRequestQuantity, defaultRequestQuantityFound := defaultRequestResources[k]
+			if defaultRequestQuantityFound {
+				defaultRequestValue = defaultRequestQuantity.String()
+			}
+
+			ratioQuantity, ratioQuantityFound := ratio[k]
+			if ratioQuantityFound {
+				ratioValue = ratioQuantity.String()
+			}
+
+			msg := "%s%s\t%v\t%v\t%v\t%v\t%v\t%v\n"
+			fmt.Fprintf(w, msg, prefix, item.Type, k, minValue, maxValue, defaultRequestValue, defaultLimitValue, ratioValue)
+		}
+	}
+}
+
 // DescribeLimitRanges merges a set of limit range items into a single tabular description
 func DescribeLimitRanges(limitRanges *api.LimitRangeList, w io.Writer) {
 	if len(limitRanges.Items) == 0 {
@@ -221,68 +290,7 @@ func DescribeLimitRanges(limitRanges *api.LimitRangeList, w io.Writer) {
 	fmt.Fprintf(w, "Resource Limits\n Type\tResource\tMin\tMax\tDefault Request\tDefault Limit\tMax Limit/Request Ratio\n")
 	fmt.Fprintf(w, " ----\t--------\t---\t---\t---------------\t-------------\t-----------------------\n")
 	for _, limitRange := range limitRanges.Items {
-		for i := range limitRange.Spec.Limits {
-			item := limitRange.Spec.Limits[i]
-			maxResources := item.Max
-			minResources := item.Min
-			defaultLimitResources := item.Default
-			defaultRequestResources := item.DefaultRequest
-			ratio := item.MaxLimitRequestRatio
-
-			set := map[api.ResourceName]bool{}
-			for k := range maxResources {
-				set[k] = true
-			}
-			for k := range minResources {
-				set[k] = true
-			}
-			for k := range defaultLimitResources {
-				set[k] = true
-			}
-			for k := range defaultRequestResources {
-				set[k] = true
-			}
-			for k := range ratio {
-				set[k] = true
-			}
-
-			for k := range set {
-				// if no value is set, we output -
-				maxValue := "-"
-				minValue := "-"
-				defaultLimitValue := "-"
-				defaultRequestValue := "-"
-				ratioValue := "-"
-
-				maxQuantity, maxQuantityFound := maxResources[k]
-				if maxQuantityFound {
-					maxValue = maxQuantity.String()
-				}
-
-				minQuantity, minQuantityFound := minResources[k]
-				if minQuantityFound {
-					minValue = minQuantity.String()
-				}
-
-				defaultLimitQuantity, defaultLimitQuantityFound := defaultLimitResources[k]
-				if defaultLimitQuantityFound {
-					defaultLimitValue = defaultLimitQuantity.String()
-				}
-
-				defaultRequestQuantity, defaultRequestQuantityFound := defaultRequestResources[k]
-				if defaultRequestQuantityFound {
-					defaultRequestValue = defaultRequestQuantity.String()
-				}
-
-				ratioQuantity, ratioQuantityFound := ratio[k]
-				if ratioQuantityFound {
-					ratioValue = ratioQuantity.String()
-				}
-
-				msg := " %s\t%v\t%v\t%v\t%v\t%v\t%v\n"
-				fmt.Fprintf(w, msg, item.Type, k, minValue, maxValue, defaultRequestValue, defaultLimitValue, ratioValue)
-			}
-		}
+		describeLimitRangeSpec(limitRange.Spec, " ", w)
 	}
 }
 
@@ -350,68 +358,7 @@ func describeLimitRange(limitRange *api.LimitRange) (string, error) {
 		fmt.Fprintf(out, "Namespace:\t%s\n", limitRange.Namespace)
 		fmt.Fprintf(out, "Type\tResource\tMin\tMax\tDefault Request\tDefault Limit\tMax Limit/Request Ratio\n")
 		fmt.Fprintf(out, "----\t--------\t---\t---\t---------------\t-------------\t-----------------------\n")
-		for i := range limitRange.Spec.Limits {
-			item := limitRange.Spec.Limits[i]
-			maxResources := item.Max
-			minResources := item.Min
-			defaultLimitResources := item.Default
-			defaultRequestResources := item.DefaultRequest
-			ratio := item.MaxLimitRequestRatio
-
-			set := map[api.ResourceName]bool{}
-			for k := range maxResources {
-				set[k] = true
-			}
-			for k := range minResources {
-				set[k] = true
-			}
-			for k := range defaultLimitResources {
-				set[k] = true
-			}
-			for k := range defaultRequestResources {
-				set[k] = true
-			}
-			for k := range ratio {
-				set[k] = true
-			}
-
-			for k := range set {
-				// if no value is set, we output -
-				maxValue := "-"
-				minValue := "-"
-				defaultLimitValue := "-"
-				defaultRequestValue := "-"
-				ratioValue := "-"
-
-				maxQuantity, maxQuantityFound := maxResources[k]
-				if maxQuantityFound {
-					maxValue = maxQuantity.String()
-				}
-
-				minQuantity, minQuantityFound := minResources[k]
-				if minQuantityFound {
-					minValue = minQuantity.String()
-				}
-
-				defaultLimitQuantity, defaultLimitQuantityFound := defaultLimitResources[k]
-				if defaultLimitQuantityFound {
-					defaultLimitValue = defaultLimitQuantity.String()
-				}
-
-				defaultRequestQuantity, defaultRequestQuantityFound := defaultRequestResources[k]
-				if defaultRequestQuantityFound {
-					defaultRequestValue = defaultRequestQuantity.String()
-				}
-
-				ratioQuantity, ratioQuantityFound := ratio[k]
-				if ratioQuantityFound {
-					ratioValue = ratioQuantity.String()
-				}
-
-				msg := "%v\t%v\t%v\t%v\t%v\t%v\t%v\n"
-				fmt.Fprintf(out, msg, item.Type, k, minValue, maxValue, defaultRequestValue, defaultLimitValue, ratioValue)
-			}
-		}
+		describeLimitRangeSpec(limitRange.Spec, "", out)
 		return nil
 	})
 }
@@ -627,6 +574,8 @@ func describeVolumes(volumes []api.Volume, out io.Writer, space string) {
 			printVsphereVolumeSource(volume.VolumeSource.VsphereVolume, out)
 		case volume.VolumeSource.Cinder != nil:
 			printCinderVolumeSource(volume.VolumeSource.Cinder, out)
+		case volume.VolumeSource.PhotonPersistentDisk != nil:
+			printPhotonPersistentDiskVolumeSource(volume.VolumeSource.PhotonPersistentDisk, out)
 		default:
 			fmt.Fprintf(out, "  <unknown>\n")
 		}
@@ -761,6 +710,14 @@ func printVsphereVolumeSource(vsphere *api.VsphereVirtualDiskVolumeSource, out i
 		"    FSType:\t%v\n",
 		vsphere.VolumePath, vsphere.FSType)
 }
+
+func printPhotonPersistentDiskVolumeSource(photon *api.PhotonPersistentDiskVolumeSource, out io.Writer) {
+	fmt.Fprintf(out, "    Type:\tPhotonPersistentDisk (a Persistent Disk resource in photon platform)\n"+
+		"    PdID:\t%v\n"+
+		"    FSType:\t%v\n",
+		photon.PdID, photon.FSType)
+}
+
 func printCinderVolumeSource(cinder *api.CinderVolumeSource, out io.Writer) {
 	fmt.Fprintf(out, "    Type:\tCinder (a Persistent Disk resource in OpenStack)\n"+
 		"    VolumeID:\t%v\n"+
@@ -791,6 +748,7 @@ func (d *PersistentVolumeDescriber) Describe(namespace, name string, describerSe
 	return tabbedString(func(out io.Writer) error {
 		fmt.Fprintf(out, "Name:\t%s\n", pv.Name)
 		printLabelsMultiline(out, "Labels", pv.Labels)
+		fmt.Fprintf(out, "StorageClass:\t%s\n", storageutil.GetStorageClassAnnotation(pv.ObjectMeta))
 		fmt.Fprintf(out, "Status:\t%s\n", pv.Status.Phase)
 		if pv.Spec.ClaimRef != nil {
 			fmt.Fprintf(out, "Claim:\t%s\n", pv.Spec.ClaimRef.Namespace+"/"+pv.Spec.ClaimRef.Name)
@@ -824,6 +782,10 @@ func (d *PersistentVolumeDescriber) Describe(namespace, name string, describerSe
 			printVsphereVolumeSource(pv.Spec.VsphereVolume, out)
 		case pv.Spec.Cinder != nil:
 			printCinderVolumeSource(pv.Spec.Cinder, out)
+		case pv.Spec.AzureDisk != nil:
+			printAzureDiskVolumeSource(pv.Spec.AzureDisk, out)
+		case pv.Spec.PhotonPersistentDisk != nil:
+			printPhotonPersistentDiskVolumeSource(pv.Spec.PhotonPersistentDisk, out)
 		}
 
 		if events != nil {
@@ -860,6 +822,7 @@ func (d *PersistentVolumeClaimDescriber) Describe(namespace, name string, descri
 	return tabbedString(func(out io.Writer) error {
 		fmt.Fprintf(out, "Name:\t%s\n", pvc.Name)
 		fmt.Fprintf(out, "Namespace:\t%s\n", pvc.Namespace)
+		fmt.Fprintf(out, "StorageClass:\t%s\n", storageutil.GetStorageClassAnnotation(pvc.ObjectMeta))
 		fmt.Fprintf(out, "Status:\t%v\n", pvc.Status.Phase)
 		fmt.Fprintf(out, "Volume:\t%s\n", pvc.Spec.VolumeName)
 		printLabelsMultiline(out, "Labels", pvc.Labels)
@@ -1193,20 +1156,17 @@ func (d *ReplicaSetDescriber) Describe(namespace, name string, describerSettings
 		return "", err
 	}
 
-	running, waiting, succeeded, failed, err := getPodStatusForController(pc, selector)
-	if err != nil {
-		return "", err
-	}
+	running, waiting, succeeded, failed, getPodErr := getPodStatusForController(pc, selector)
 
 	var events *api.EventList
 	if describerSettings.ShowEvents {
 		events, _ = d.Core().Events(namespace).Search(rs)
 	}
 
-	return describeReplicaSet(rs, events, running, waiting, succeeded, failed)
+	return describeReplicaSet(rs, events, running, waiting, succeeded, failed, getPodErr)
 }
 
-func describeReplicaSet(rs *extensions.ReplicaSet, events *api.EventList, running, waiting, succeeded, failed int) (string, error) {
+func describeReplicaSet(rs *extensions.ReplicaSet, events *api.EventList, running, waiting, succeeded, failed int, getPodErr error) (string, error) {
 	return tabbedString(func(out io.Writer) error {
 		fmt.Fprintf(out, "Name:\t%s\n", rs.Name)
 		fmt.Fprintf(out, "Namespace:\t%s\n", rs.Namespace)
@@ -1214,7 +1174,12 @@ func describeReplicaSet(rs *extensions.ReplicaSet, events *api.EventList, runnin
 		fmt.Fprintf(out, "Selector:\t%s\n", unversioned.FormatLabelSelector(rs.Spec.Selector))
 		printLabelsMultiline(out, "Labels", rs.Labels)
 		fmt.Fprintf(out, "Replicas:\t%d current / %d desired\n", rs.Status.Replicas, rs.Spec.Replicas)
-		fmt.Fprintf(out, "Pods Status:\t%d Running / %d Waiting / %d Succeeded / %d Failed\n", running, waiting, succeeded, failed)
+		fmt.Fprintf(out, "Pods Status:\t")
+		if getPodErr != nil {
+			fmt.Fprintf(out, "error in fetching pods: %s\n", getPodErr)
+		} else {
+			fmt.Fprintf(out, "%d Running / %d Waiting / %d Succeeded / %d Failed\n", running, waiting, succeeded, failed)
+		}
 		describeVolumes(rs.Spec.Template.Spec.Volumes, out, "")
 		if events != nil {
 			DescribeEvents(events, out)
@@ -1271,13 +1236,13 @@ func describeJob(job *batch.Job, events *api.EventList) (string, error) {
 	})
 }
 
-// ScheduledJobDescriber generates information about a scheduled job and the jobs it has created.
-type ScheduledJobDescriber struct {
+// CronJobDescriber generates information about a scheduled job and the jobs it has created.
+type CronJobDescriber struct {
 	clientset.Interface
 }
 
-func (d *ScheduledJobDescriber) Describe(namespace, name string, describerSettings DescriberSettings) (string, error) {
-	scheduledJob, err := d.Batch().ScheduledJobs(namespace).Get(name)
+func (d *CronJobDescriber) Describe(namespace, name string, describerSettings DescriberSettings) (string, error) {
+	scheduledJob, err := d.Batch().CronJobs(namespace).Get(name)
 	if err != nil {
 		return "", err
 	}
@@ -1287,10 +1252,10 @@ func (d *ScheduledJobDescriber) Describe(namespace, name string, describerSettin
 		events, _ = d.Core().Events(namespace).Search(scheduledJob)
 	}
 
-	return describeScheduledJob(scheduledJob, events)
+	return describeCronJob(scheduledJob, events)
 }
 
-func describeScheduledJob(scheduledJob *batch.ScheduledJob, events *api.EventList) (string, error) {
+func describeCronJob(scheduledJob *batch.CronJob, events *api.EventList) (string, error) {
 	return tabbedString(func(out io.Writer) error {
 		fmt.Fprintf(out, "Name:\t%s\n", scheduledJob.Name)
 		fmt.Fprintf(out, "Namespace:\t%s\n", scheduledJob.Namespace)
@@ -1838,6 +1803,7 @@ func (d *NodeDescriber) Describe(namespace, name string, describerSettings Descr
 func describeNode(node *api.Node, nodeNonTerminatedPodsList *api.PodList, events *api.EventList, canViewPods bool) (string, error) {
 	return tabbedString(func(out io.Writer) error {
 		fmt.Fprintf(out, "Name:\t%s\n", node.Name)
+		fmt.Fprintf(out, "Role:\t%s\n", findNodeRole(node))
 		printLabelsMultiline(out, "Labels", node.Labels)
 		printTaintsInAnnotationMultiline(out, "Taints", node.Annotations)
 		fmt.Fprintf(out, "CreationTimestamp:\t%s\n", node.CreationTimestamp.Time.Format(time.RFC1123Z))
@@ -1914,12 +1880,12 @@ func describeNode(node *api.Node, nodeNonTerminatedPodsList *api.PodList, events
 	})
 }
 
-type PetSetDescriber struct {
+type StatefulSetDescriber struct {
 	client clientset.Interface
 }
 
-func (p *PetSetDescriber) Describe(namespace, name string, describerSettings DescriberSettings) (string, error) {
-	ps, err := p.client.Apps().PetSets(namespace).Get(name)
+func (p *StatefulSetDescriber) Describe(namespace, name string, describerSettings DescriberSettings) (string, error) {
+	ps, err := p.client.Apps().StatefulSets(namespace).Get(name)
 	if err != nil {
 		return "", err
 	}
@@ -2210,6 +2176,13 @@ func (dd *DeploymentDescriber) Describe(namespace, name string, describerSetting
 			ru := d.Spec.Strategy.RollingUpdate
 			fmt.Fprintf(out, "RollingUpdateStrategy:\t%s max unavailable, %s max surge\n", ru.MaxUnavailable.String(), ru.MaxSurge.String())
 		}
+		if len(d.Status.Conditions) > 0 {
+			fmt.Fprint(out, "Conditions:\n  Type\tStatus\tReason\n")
+			fmt.Fprint(out, "  ----\t------\t------\n")
+			for _, c := range d.Status.Conditions {
+				fmt.Fprintf(out, "  %v \t%v\t%v\n", c.Type, c.Status, c.Reason)
+			}
+		}
 		oldRSs, _, newRS, err := deploymentutil.GetAllReplicaSets(d, dd)
 		if err == nil {
 			fmt.Fprintf(out, "OldReplicaSets:\t%s\n", printReplicaSetsByLabels(oldRSs))
@@ -2238,7 +2211,7 @@ func (dd *DeploymentDescriber) Describe(namespace, name string, describerSetting
 // of getting all DS's and searching through them manually).
 // TODO: write an interface for controllers and fuse getReplicationControllersForLabels
 // and getDaemonSetsForLabels.
-func getDaemonSetsForLabels(c client.DaemonSetInterface, labelsToMatch labels.Labels) ([]extensions.DaemonSet, error) {
+func getDaemonSetsForLabels(c extensionsclient.DaemonSetInterface, labelsToMatch labels.Labels) ([]extensions.DaemonSet, error) {
 	// Get all daemon sets
 	// TODO: this needs a namespace scope as argument
 	dss, err := c.List(api.ListOptions{})
@@ -2289,7 +2262,7 @@ func printReplicaSetsByLabels(matchingRSs []*extensions.ReplicaSet) string {
 	return list
 }
 
-func getPodStatusForController(c client.PodInterface, selector labels.Selector) (running, waiting, succeeded, failed int, err error) {
+func getPodStatusForController(c coreclient.PodInterface, selector labels.Selector) (running, waiting, succeeded, failed int, err error) {
 	options := api.ListOptions{LabelSelector: selector}
 	rcPods, err := c.List(options)
 	if err != nil {
@@ -2420,11 +2393,47 @@ func (s *StorageClassDescriber) Describe(namespace, name string, describerSettin
 	}
 	return tabbedString(func(out io.Writer) error {
 		fmt.Fprintf(out, "Name:\t%s\n", sc.Name)
+		fmt.Fprintf(out, "IsDefaultClass:\t%s\n", storageutil.IsDefaultAnnotationText(sc.ObjectMeta))
 		fmt.Fprintf(out, "Annotations:\t%s\n", labels.FormatLabels(sc.Annotations))
 		fmt.Fprintf(out, "Provisioner:\t%s\n", sc.Provisioner)
 		fmt.Fprintf(out, "Parameters:\t%s\n", labels.FormatLabels(sc.Parameters))
 		if describerSettings.ShowEvents {
 			events, err := s.Core().Events(namespace).Search(sc)
+			if err != nil {
+				return err
+			}
+			if events != nil {
+				DescribeEvents(events, out)
+			}
+		}
+		return nil
+	})
+}
+
+type PodDisruptionBudgetDescriber struct {
+	clientset.Interface
+}
+
+func (p *PodDisruptionBudgetDescriber) Describe(namespace, name string, describerSettings DescriberSettings) (string, error) {
+	pdb, err := p.Policy().PodDisruptionBudgets(namespace).Get(name)
+	if err != nil {
+		return "", err
+	}
+	return tabbedString(func(out io.Writer) error {
+		fmt.Fprintf(out, "Name:\t%s\n", pdb.Name)
+		fmt.Fprintf(out, "Min available:\t%s\n", pdb.Spec.MinAvailable.String())
+		if pdb.Spec.Selector != nil {
+			fmt.Fprintf(out, "Selector:\t%s\n", unversioned.FormatLabelSelector(pdb.Spec.Selector))
+		} else {
+			fmt.Fprintf(out, "Selector:\t<unset>\n")
+		}
+		fmt.Fprintf(out, "Status:\n")
+		fmt.Fprintf(out, "    Allowed disruptions:\t%d\n", pdb.Status.PodDisruptionsAllowed)
+		fmt.Fprintf(out, "    Current:\t%d\n", pdb.Status.CurrentHealthy)
+		fmt.Fprintf(out, "    Desired:\t%d\n", pdb.Status.DesiredHealthy)
+		fmt.Fprintf(out, "    Total:\t%d\n", pdb.Status.ExpectedPods)
+		if describerSettings.ShowEvents {
+			events, err := p.Core().Events(namespace).Search(pdb)
 			if err != nil {
 				return err
 			}

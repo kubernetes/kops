@@ -11,9 +11,8 @@ import (
 	"github.com/aws/aws-sdk-go/private/protocol/jsonrpc"
 )
 
-// This is the Amazon WorkSpaces API Reference. This guide provides detailed
-// information about Amazon WorkSpaces operations, data types, parameters, and
-// errors.
+// This reference provides detailed information about the Amazon WorkSpaces
+// operations.
 //The service client's operations are safe to be used concurrently.
 // It is not safe to mutate any of the client's properties though.
 type WorkSpaces struct {

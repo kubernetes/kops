@@ -23,6 +23,7 @@ import (
 	"io"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kubernetes/pkg/util/sets"
 	"os"
 	"path"
 )
@@ -30,7 +31,7 @@ import (
 type CloudInitTarget struct {
 	Config *CloudConfig
 	out    io.Writer
-	Tags   map[string]struct{}
+	Tags   sets.String
 }
 
 type AddBehaviour int
@@ -40,7 +41,7 @@ const (
 	Once
 )
 
-func NewCloudInitTarget(out io.Writer, tags map[string]struct{}) *CloudInitTarget {
+func NewCloudInitTarget(out io.Writer, tags sets.String) *CloudInitTarget {
 	t := &CloudInitTarget{
 		Config: &CloudConfig{},
 		out:    out,

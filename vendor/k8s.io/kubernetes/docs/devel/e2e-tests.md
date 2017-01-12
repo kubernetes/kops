@@ -1,37 +1,3 @@
-<!-- BEGIN MUNGE: UNVERSIONED_WARNING -->
-
-<!-- BEGIN STRIP_FOR_RELEASE -->
-
-<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
-     width="25" height="25">
-<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
-     width="25" height="25">
-<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
-     width="25" height="25">
-<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
-     width="25" height="25">
-<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING"
-     width="25" height="25">
-
-<h2>PLEASE NOTE: This document applies to the HEAD of the source tree</h2>
-
-If you are using a released version of Kubernetes, you should
-refer to the docs that go with that version.
-
-<!-- TAG RELEASE_LINK, added by the munger automatically -->
-<strong>
-The latest release of this document can be found
-[here](http://releases.k8s.io/release-1.4/docs/devel/e2e-tests.md).
-
-Documentation for other releases can be found at
-[releases.k8s.io](http://releases.k8s.io).
-</strong>
---
-
-<!-- END STRIP_FOR_RELEASE -->
-
-<!-- END MUNGE: UNVERSIONED_WARNING -->
-
 # End-to-End Testing in Kubernetes
 
 Updated: 5/3/2016
@@ -136,6 +102,9 @@ go run hack/e2e.go -v --test --test_args="--ginkgo.skip=Pods.*env"
 
 # Run tests in parallel, skip any that must be run serially
 GINKGO_PARALLEL=y go run hack/e2e.go --v --test --test_args="--ginkgo.skip=\[Serial\]"
+
+# Run tests in parallel, skip any that must be run serially and keep the test namespace if test failed
+GINKGO_PARALLEL=y go run hack/e2e.go --v --test --test_args="--ginkgo.skip=\[Serial\] --delete-namespace-on-falure=false"
 
 # Flags can be combined, and their actions will take place in this order:
 # --build, --up, --test, --down
@@ -302,7 +271,7 @@ Next, specify the docker repository where your ci images will be pushed.
 * Push the federation container images
 
   ```sh
-  $ build/push-federation-images.sh
+  $ build-tools/push-federation-images.sh
   ```
 
 #### Deploy federation control plane
@@ -383,6 +352,9 @@ sudo PATH=$PATH hack/local-up-cluster.sh
 This will start a single-node Kubernetes cluster than runs pods using the local
 docker daemon. Press Control-C to stop the cluster.
 
+You can generate a valid kubeconfig file by following instructions printed at the
+end of aforementioned script.
+
 #### Testing against local clusters
 
 In order to run an E2E test against a locally running cluster, point the tests
@@ -390,13 +362,15 @@ at a custom host directly:
 
 ```sh
 export KUBECONFIG=/path/to/kubeconfig
-go run hack/e2e.go -v --test --check_node_count=false
+export KUBE_MASTER_IP="http://127.0.0.1:<PORT>"
+export KUBE_MASTER=local
+go run hack/e2e.go -v --test
 ```
 
 To control the tests that are run:
 
 ```sh
-go run hack/e2e.go -v --test --check_node_count=false --test_args="--ginkgo.focus="Secrets"
+go run hack/e2e.go -v --test --test_args="--ginkgo.focus=\"Secrets\""
 ```
 
 ### Version-skewed and upgrade testing

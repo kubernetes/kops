@@ -18,6 +18,8 @@ const opAddTagsToResource = "AddTagsToResource"
 // value can be used to capture response data after the request's "Send" method
 // is called.
 //
+// See AddTagsToResource for usage and error information.
+//
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
 // access properties on the request object before or after sending the request. If
@@ -52,6 +54,8 @@ func (c *SSM) AddTagsToResourceRequest(input *AddTagsToResourceInput) (req *requ
 	return
 }
 
+// AddTagsToResource API operation for Amazon Simple Systems Management Service.
+//
 // Adds or overwrites one or more tags for the specified resource. Tags are
 // metadata that you assign to your managed instances. Tags enable you to categorize
 // your managed instances in different ways, for example, by purpose, owner,
@@ -62,7 +66,7 @@ func (c *SSM) AddTagsToResourceRequest(input *AddTagsToResourceInput) (req *requ
 // and Value=Production, Pre-Production, or Test. Each resource can have a maximum
 // of 10 tags.
 //
-//  We recommend that you devise a set of tag keys that meets your needs for
+// We recommend that you devise a set of tag keys that meets your needs for
 // each resource type. Using a consistent set of tag keys makes it easier for
 // you to manage your resources. You can search and filter the resources based
 // on the tags you add. Tags don't have any semantic meaning to Amazon EC2 and
@@ -70,6 +74,26 @@ func (c *SSM) AddTagsToResourceRequest(input *AddTagsToResourceInput) (req *requ
 //
 // For more information about tags, see Tagging Your Amazon EC2 Resources (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html)
 // in the Amazon EC2 User Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation AddTagsToResource for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidResourceType
+//   The resource type is not valid. If you are attempting to tag an instance,
+//   the instance must be a registered, managed instance.
+//
+//   * InvalidResourceId
+//   The resource ID is not valid. Verify that you entered the correct ID and
+//   try again.
+//
+//   * InternalServerError
+//   An error occurred on the server side.
+//
 func (c *SSM) AddTagsToResource(input *AddTagsToResourceInput) (*AddTagsToResourceOutput, error) {
 	req, out := c.AddTagsToResourceRequest(input)
 	err := req.Send()
@@ -82,6 +106,8 @@ const opCancelCommand = "CancelCommand"
 // client's request for the CancelCommand operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See CancelCommand for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -117,8 +143,32 @@ func (c *SSM) CancelCommandRequest(input *CancelCommandInput) (req *request.Requ
 	return
 }
 
+// CancelCommand API operation for Amazon Simple Systems Management Service.
+//
 // Attempts to cancel the command specified by the Command ID. There is no guarantee
 // that the command will be terminated and the underlying process stopped.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation CancelCommand for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An error occurred on the server side.
+//
+//   * InvalidCommandId
+
+//
+//   * InvalidInstanceId
+//   The instance is not in valid state. Valid states are: Running, Pending, Stopped,
+//   Stopping. Invalid states are: Shutting-down and Terminated.
+//
+//   * DuplicateInstanceId
+//   You cannot specify an instance ID in more than one association.
+//
 func (c *SSM) CancelCommand(input *CancelCommandInput) (*CancelCommandOutput, error) {
 	req, out := c.CancelCommandRequest(input)
 	err := req.Send()
@@ -131,6 +181,8 @@ const opCreateActivation = "CreateActivation"
 // client's request for the CreateActivation operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See CreateActivation for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -166,6 +218,8 @@ func (c *SSM) CreateActivationRequest(input *CreateActivationInput) (req *reques
 	return
 }
 
+// CreateActivation API operation for Amazon Simple Systems Management Service.
+//
 // Registers your on-premises server or virtual machine with Amazon EC2 so that
 // you can manage these resources using Run Command. An on-premises server or
 // virtual machine that has been registered with EC2 is called a managed instance.
@@ -173,6 +227,18 @@ func (c *SSM) CreateActivationRequest(input *CreateActivationInput) (req *reques
 // (Linux) (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/managed-instances.html)
 // or Setting Up Managed Instances (Windows) (http://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/managed-instances.html)
 // in the Amazon EC2 User Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation CreateActivation for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An error occurred on the server side.
+//
 func (c *SSM) CreateActivation(input *CreateActivationInput) (*CreateActivationOutput, error) {
 	req, out := c.CreateActivationRequest(input)
 	err := req.Send()
@@ -185,6 +251,8 @@ const opCreateAssociation = "CreateAssociation"
 // client's request for the CreateAssociation operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See CreateAssociation for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -220,13 +288,49 @@ func (c *SSM) CreateAssociationRequest(input *CreateAssociationInput) (req *requ
 	return
 }
 
+// CreateAssociation API operation for Amazon Simple Systems Management Service.
+//
 // Associates the specified SSM document with the specified instance.
 //
 // When you associate an SSM document with an instance, the configuration agent
-// on the instance processes the document and configures the instance as specified.
+// on the instance (SSM agent for Linux and EC2Config service for Windows) processes
+// the document and configures the instance as specified.
 //
 // If you associate a document with an instance that already has an associated
 // document, the system throws the AssociationAlreadyExists exception.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation CreateAssociation for usage and error information.
+//
+// Returned Error Codes:
+//   * AssociationAlreadyExists
+//   The specified association already exists.
+//
+//   * AssociationLimitExceeded
+//   You can have at most 2,000 active associations.
+//
+//   * InternalServerError
+//   An error occurred on the server side.
+//
+//   * InvalidDocument
+//   The specified document does not exist.
+//
+//   * InvalidInstanceId
+//   The instance is not in valid state. Valid states are: Running, Pending, Stopped,
+//   Stopping. Invalid states are: Shutting-down and Terminated.
+//
+//   * UnsupportedPlatformType
+//   The document does not support the platform type of the given instance ID(s).
+//   For example, you sent an SSM document for a Windows instance to a Linux instance.
+//
+//   * InvalidParameters
+//   You must specify values for all required parameters in the SSM document.
+//   You can only supply values to parameters defined in the SSM document.
+//
 func (c *SSM) CreateAssociation(input *CreateAssociationInput) (*CreateAssociationOutput, error) {
 	req, out := c.CreateAssociationRequest(input)
 	err := req.Send()
@@ -239,6 +343,8 @@ const opCreateAssociationBatch = "CreateAssociationBatch"
 // client's request for the CreateAssociationBatch operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See CreateAssociationBatch for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -274,13 +380,49 @@ func (c *SSM) CreateAssociationBatchRequest(input *CreateAssociationBatchInput) 
 	return
 }
 
+// CreateAssociationBatch API operation for Amazon Simple Systems Management Service.
+//
 // Associates the specified SSM document with the specified instances.
 //
 // When you associate an SSM document with an instance, the configuration agent
-// on the instance processes the document and configures the instance as specified.
+// on the instance (SSM agent for Linux and EC2Config service for Windows) processes
+// the document and configures the instance as specified.
 //
 // If you associate a document with an instance that already has an associated
 // document, the system throws the AssociationAlreadyExists exception.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation CreateAssociationBatch for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An error occurred on the server side.
+//
+//   * InvalidDocument
+//   The specified document does not exist.
+//
+//   * InvalidInstanceId
+//   The instance is not in valid state. Valid states are: Running, Pending, Stopped,
+//   Stopping. Invalid states are: Shutting-down and Terminated.
+//
+//   * InvalidParameters
+//   You must specify values for all required parameters in the SSM document.
+//   You can only supply values to parameters defined in the SSM document.
+//
+//   * DuplicateInstanceId
+//   You cannot specify an instance ID in more than one association.
+//
+//   * AssociationLimitExceeded
+//   You can have at most 2,000 active associations.
+//
+//   * UnsupportedPlatformType
+//   The document does not support the platform type of the given instance ID(s).
+//   For example, you sent an SSM document for a Windows instance to a Linux instance.
+//
 func (c *SSM) CreateAssociationBatch(input *CreateAssociationBatchInput) (*CreateAssociationBatchOutput, error) {
 	req, out := c.CreateAssociationBatchRequest(input)
 	err := req.Send()
@@ -293,6 +435,8 @@ const opCreateDocument = "CreateDocument"
 // client's request for the CreateDocument operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See CreateDocument for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -328,10 +472,36 @@ func (c *SSM) CreateDocumentRequest(input *CreateDocumentInput) (req *request.Re
 	return
 }
 
+// CreateDocument API operation for Amazon Simple Systems Management Service.
+//
 // Creates an SSM document.
 //
 // After you create an SSM document, you can use CreateAssociation to associate
 // it with one or more running instances.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation CreateDocument for usage and error information.
+//
+// Returned Error Codes:
+//   * DocumentAlreadyExists
+//   The specified SSM document already exists.
+//
+//   * MaxDocumentSizeExceeded
+//   The size limit of an SSM document is 64 KB.
+//
+//   * InternalServerError
+//   An error occurred on the server side.
+//
+//   * InvalidDocumentContent
+//   The content for the SSM document is not valid.
+//
+//   * DocumentLimitExceeded
+//   You can have at most 200 active SSM documents.
+//
 func (c *SSM) CreateDocument(input *CreateDocumentInput) (*CreateDocumentOutput, error) {
 	req, out := c.CreateDocumentRequest(input)
 	err := req.Send()
@@ -344,6 +514,8 @@ const opDeleteActivation = "DeleteActivation"
 // client's request for the DeleteActivation operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DeleteActivation for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -379,10 +551,32 @@ func (c *SSM) DeleteActivationRequest(input *DeleteActivationInput) (req *reques
 	return
 }
 
+// DeleteActivation API operation for Amazon Simple Systems Management Service.
+//
 // Deletes an activation. You are not required to delete an activation. If you
 // delete an activation, you can no longer use it to register additional managed
 // instances. Deleting an activation does not de-register managed instances.
 // You must manually de-register managed instances.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation DeleteActivation for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidActivationId
+//   The activation ID is not valid. Verify the you entered the correct ActivationId
+//   or ActivationCode and try again.
+//
+//   * InvalidActivation
+//   The activation is not valid. The activation might have been deleted, or the
+//   ActivationId and the ActivationCode do not match.
+//
+//   * InternalServerError
+//   An error occurred on the server side.
+//
 func (c *SSM) DeleteActivation(input *DeleteActivationInput) (*DeleteActivationOutput, error) {
 	req, out := c.DeleteActivationRequest(input)
 	err := req.Send()
@@ -395,6 +589,8 @@ const opDeleteAssociation = "DeleteAssociation"
 // client's request for the DeleteAssociation operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DeleteAssociation for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -430,12 +626,40 @@ func (c *SSM) DeleteAssociationRequest(input *DeleteAssociationInput) (req *requ
 	return
 }
 
+// DeleteAssociation API operation for Amazon Simple Systems Management Service.
+//
 // Disassociates the specified SSM document from the specified instance.
 //
 // When you disassociate an SSM document from an instance, it does not change
 // the configuration of the instance. To change the configuration state of an
 // instance after you disassociate a document, you must create a new document
 // with the desired configuration and associate it with the instance.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation DeleteAssociation for usage and error information.
+//
+// Returned Error Codes:
+//   * AssociationDoesNotExist
+//   The specified association does not exist.
+//
+//   * InternalServerError
+//   An error occurred on the server side.
+//
+//   * InvalidDocument
+//   The specified document does not exist.
+//
+//   * InvalidInstanceId
+//   The instance is not in valid state. Valid states are: Running, Pending, Stopped,
+//   Stopping. Invalid states are: Shutting-down and Terminated.
+//
+//   * TooManyUpdates
+//   There are concurrent updates for a resource that supports one update at a
+//   time.
+//
 func (c *SSM) DeleteAssociation(input *DeleteAssociationInput) (*DeleteAssociationOutput, error) {
 	req, out := c.DeleteAssociationRequest(input)
 	err := req.Send()
@@ -448,6 +672,8 @@ const opDeleteDocument = "DeleteDocument"
 // client's request for the DeleteDocument operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DeleteDocument for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -483,10 +709,35 @@ func (c *SSM) DeleteDocumentRequest(input *DeleteDocumentInput) (req *request.Re
 	return
 }
 
+// DeleteDocument API operation for Amazon Simple Systems Management Service.
+//
 // Deletes the SSM document and all instance associations to the document.
 //
 // Before you delete the SSM document, we recommend that you use DeleteAssociation
 // to disassociate all instances that are associated with the document.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation DeleteDocument for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An error occurred on the server side.
+//
+//   * InvalidDocument
+//   The specified document does not exist.
+//
+//   * InvalidDocumentOperation
+//   You attempted to delete a document while it is still shared. You must stop
+//   sharing the document before you can delete it.
+//
+//   * AssociatedInstances
+//   You must disassociate an SSM document from all instances before you can delete
+//   it.
+//
 func (c *SSM) DeleteDocument(input *DeleteDocumentInput) (*DeleteDocumentOutput, error) {
 	req, out := c.DeleteDocumentRequest(input)
 	err := req.Send()
@@ -499,6 +750,8 @@ const opDeregisterManagedInstance = "DeregisterManagedInstance"
 // client's request for the DeregisterManagedInstance operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DeregisterManagedInstance for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -534,9 +787,27 @@ func (c *SSM) DeregisterManagedInstanceRequest(input *DeregisterManagedInstanceI
 	return
 }
 
+// DeregisterManagedInstance API operation for Amazon Simple Systems Management Service.
+//
 // Removes the server or virtual machine from the list of registered servers.
 // You can reregister the instance again at any time. If you don’t plan to use
 // Run Command on the server, we suggest uninstalling the SSM agent first.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation DeregisterManagedInstance for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidInstanceId
+//   The instance is not in valid state. Valid states are: Running, Pending, Stopped,
+//   Stopping. Invalid states are: Shutting-down and Terminated.
+//
+//   * InternalServerError
+//   An error occurred on the server side.
+//
 func (c *SSM) DeregisterManagedInstance(input *DeregisterManagedInstanceInput) (*DeregisterManagedInstanceOutput, error) {
 	req, out := c.DeregisterManagedInstanceRequest(input)
 	err := req.Send()
@@ -549,6 +820,8 @@ const opDescribeActivations = "DescribeActivations"
 // client's request for the DescribeActivations operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeActivations for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -590,9 +863,30 @@ func (c *SSM) DescribeActivationsRequest(input *DescribeActivationsInput) (req *
 	return
 }
 
+// DescribeActivations API operation for Amazon Simple Systems Management Service.
+//
 // Details about the activation, including: the date and time the activation
 // was created, the expiration date, the IAM role assigned to the instances
 // in the activation, and the number of instances activated by this registration.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation DescribeActivations for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidFilter
+//   The filter name is not valid. Verify the you entered the correct name and
+//   try again.
+//
+//   * InvalidNextToken
+//   The specified token is not valid.
+//
+//   * InternalServerError
+//   An error occurred on the server side.
+//
 func (c *SSM) DescribeActivations(input *DescribeActivationsInput) (*DescribeActivationsOutput, error) {
 	req, out := c.DescribeActivationsRequest(input)
 	err := req.Send()
@@ -631,6 +925,8 @@ const opDescribeAssociation = "DescribeAssociation"
 // value can be used to capture response data after the request's "Send" method
 // is called.
 //
+// See DescribeAssociation for usage and error information.
+//
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
 // access properties on the request object before or after sending the request. If
@@ -665,7 +961,31 @@ func (c *SSM) DescribeAssociationRequest(input *DescribeAssociationInput) (req *
 	return
 }
 
+// DescribeAssociation API operation for Amazon Simple Systems Management Service.
+//
 // Describes the associations for the specified SSM document or instance.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation DescribeAssociation for usage and error information.
+//
+// Returned Error Codes:
+//   * AssociationDoesNotExist
+//   The specified association does not exist.
+//
+//   * InternalServerError
+//   An error occurred on the server side.
+//
+//   * InvalidDocument
+//   The specified document does not exist.
+//
+//   * InvalidInstanceId
+//   The instance is not in valid state. Valid states are: Running, Pending, Stopped,
+//   Stopping. Invalid states are: Shutting-down and Terminated.
+//
 func (c *SSM) DescribeAssociation(input *DescribeAssociationInput) (*DescribeAssociationOutput, error) {
 	req, out := c.DescribeAssociationRequest(input)
 	err := req.Send()
@@ -678,6 +998,8 @@ const opDescribeDocument = "DescribeDocument"
 // client's request for the DescribeDocument operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeDocument for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -713,7 +1035,24 @@ func (c *SSM) DescribeDocumentRequest(input *DescribeDocumentInput) (req *reques
 	return
 }
 
+// DescribeDocument API operation for Amazon Simple Systems Management Service.
+//
 // Describes the specified SSM document.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation DescribeDocument for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An error occurred on the server side.
+//
+//   * InvalidDocument
+//   The specified document does not exist.
+//
 func (c *SSM) DescribeDocument(input *DescribeDocumentInput) (*DescribeDocumentOutput, error) {
 	req, out := c.DescribeDocumentRequest(input)
 	err := req.Send()
@@ -726,6 +1065,8 @@ const opDescribeDocumentPermission = "DescribeDocumentPermission"
 // client's request for the DescribeDocumentPermission operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeDocumentPermission for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -761,9 +1102,30 @@ func (c *SSM) DescribeDocumentPermissionRequest(input *DescribeDocumentPermissio
 	return
 }
 
+// DescribeDocumentPermission API operation for Amazon Simple Systems Management Service.
+//
 // Describes the permissions for an SSM document. If you created the document,
 // you are the owner. If a document is shared, it can either be shared privately
 // (by specifying a user’s AWS account ID) or publicly (All).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation DescribeDocumentPermission for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An error occurred on the server side.
+//
+//   * InvalidDocument
+//   The specified document does not exist.
+//
+//   * InvalidPermissionType
+//   The permission type is not supported. Share is the only supported permission
+//   type.
+//
 func (c *SSM) DescribeDocumentPermission(input *DescribeDocumentPermissionInput) (*DescribeDocumentPermissionOutput, error) {
 	req, out := c.DescribeDocumentPermissionRequest(input)
 	err := req.Send()
@@ -776,6 +1138,8 @@ const opDescribeInstanceInformation = "DescribeInstanceInformation"
 // client's request for the DescribeInstanceInformation operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeInstanceInformation for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -817,12 +1181,39 @@ func (c *SSM) DescribeInstanceInformationRequest(input *DescribeInstanceInformat
 	return
 }
 
+// DescribeInstanceInformation API operation for Amazon Simple Systems Management Service.
+//
 // Describes one or more of your instances. You can use this to get information
-// about instances like the operating system platform, the SSM agent version,
-// status etc. If you specify one or more instance IDs, it returns information
-// for those instances. If you do not specify instance IDs, it returns information
-// for all your instances. If you specify an instance ID that is not valid or
-// an instance that you do not own, you receive an error.
+// about instances like the operating system platform, the SSM agent version
+// (Linux), status etc. If you specify one or more instance IDs, it returns
+// information for those instances. If you do not specify instance IDs, it returns
+// information for all your instances. If you specify an instance ID that is
+// not valid or an instance that you do not own, you receive an error.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation DescribeInstanceInformation for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An error occurred on the server side.
+//
+//   * InvalidInstanceId
+//   The instance is not in valid state. Valid states are: Running, Pending, Stopped,
+//   Stopping. Invalid states are: Shutting-down and Terminated.
+//
+//   * InvalidNextToken
+//   The specified token is not valid.
+//
+//   * InvalidInstanceInformationFilterValue
+//   The specified filter value is not valid.
+//
+//   * InvalidFilterKey
+//   The specified key is not valid.
+//
 func (c *SSM) DescribeInstanceInformation(input *DescribeInstanceInformationInput) (*DescribeInstanceInformationOutput, error) {
 	req, out := c.DescribeInstanceInformationRequest(input)
 	err := req.Send()
@@ -861,6 +1252,8 @@ const opGetDocument = "GetDocument"
 // value can be used to capture response data after the request's "Send" method
 // is called.
 //
+// See GetDocument for usage and error information.
+//
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
 // access properties on the request object before or after sending the request. If
@@ -895,7 +1288,24 @@ func (c *SSM) GetDocumentRequest(input *GetDocumentInput) (req *request.Request,
 	return
 }
 
+// GetDocument API operation for Amazon Simple Systems Management Service.
+//
 // Gets the contents of the specified SSM document.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation GetDocument for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An error occurred on the server side.
+//
+//   * InvalidDocument
+//   The specified document does not exist.
+//
 func (c *SSM) GetDocument(input *GetDocumentInput) (*GetDocumentOutput, error) {
 	req, out := c.GetDocumentRequest(input)
 	err := req.Send()
@@ -908,6 +1318,8 @@ const opListAssociations = "ListAssociations"
 // client's request for the ListAssociations operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See ListAssociations for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -949,7 +1361,24 @@ func (c *SSM) ListAssociationsRequest(input *ListAssociationsInput) (req *reques
 	return
 }
 
+// ListAssociations API operation for Amazon Simple Systems Management Service.
+//
 // Lists the associations for the specified SSM document or instance.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation ListAssociations for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An error occurred on the server side.
+//
+//   * InvalidNextToken
+//   The specified token is not valid.
+//
 func (c *SSM) ListAssociations(input *ListAssociationsInput) (*ListAssociationsOutput, error) {
 	req, out := c.ListAssociationsRequest(input)
 	err := req.Send()
@@ -987,6 +1416,8 @@ const opListCommandInvocations = "ListCommandInvocations"
 // client's request for the ListCommandInvocations operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See ListCommandInvocations for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -1028,11 +1459,38 @@ func (c *SSM) ListCommandInvocationsRequest(input *ListCommandInvocationsInput) 
 	return
 }
 
+// ListCommandInvocations API operation for Amazon Simple Systems Management Service.
+//
 // An invocation is copy of a command sent to a specific instance. A command
 // can apply to one or more instances. A command invocation applies to one instance.
 // For example, if a user executes SendCommand against three instances, then
 // a command invocation is created for each requested instance ID. ListCommandInvocations
 // provide status about command execution.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation ListCommandInvocations for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An error occurred on the server side.
+//
+//   * InvalidCommandId
+
+//
+//   * InvalidInstanceId
+//   The instance is not in valid state. Valid states are: Running, Pending, Stopped,
+//   Stopping. Invalid states are: Shutting-down and Terminated.
+//
+//   * InvalidFilterKey
+//   The specified key is not valid.
+//
+//   * InvalidNextToken
+//   The specified token is not valid.
+//
 func (c *SSM) ListCommandInvocations(input *ListCommandInvocationsInput) (*ListCommandInvocationsOutput, error) {
 	req, out := c.ListCommandInvocationsRequest(input)
 	err := req.Send()
@@ -1070,6 +1528,8 @@ const opListCommands = "ListCommands"
 // client's request for the ListCommands operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See ListCommands for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -1111,7 +1571,34 @@ func (c *SSM) ListCommandsRequest(input *ListCommandsInput) (req *request.Reques
 	return
 }
 
+// ListCommands API operation for Amazon Simple Systems Management Service.
+//
 // Lists the commands requested by users of the AWS account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation ListCommands for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An error occurred on the server side.
+//
+//   * InvalidCommandId
+
+//
+//   * InvalidInstanceId
+//   The instance is not in valid state. Valid states are: Running, Pending, Stopped,
+//   Stopping. Invalid states are: Shutting-down and Terminated.
+//
+//   * InvalidFilterKey
+//   The specified key is not valid.
+//
+//   * InvalidNextToken
+//   The specified token is not valid.
+//
 func (c *SSM) ListCommands(input *ListCommandsInput) (*ListCommandsOutput, error) {
 	req, out := c.ListCommandsRequest(input)
 	err := req.Send()
@@ -1149,6 +1636,8 @@ const opListDocuments = "ListDocuments"
 // client's request for the ListDocuments operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See ListDocuments for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -1190,7 +1679,27 @@ func (c *SSM) ListDocumentsRequest(input *ListDocumentsInput) (req *request.Requ
 	return
 }
 
+// ListDocuments API operation for Amazon Simple Systems Management Service.
+//
 // Describes one or more of your SSM documents.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation ListDocuments for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An error occurred on the server side.
+//
+//   * InvalidNextToken
+//   The specified token is not valid.
+//
+//   * InvalidFilterKey
+//   The specified key is not valid.
+//
 func (c *SSM) ListDocuments(input *ListDocumentsInput) (*ListDocumentsOutput, error) {
 	req, out := c.ListDocumentsRequest(input)
 	err := req.Send()
@@ -1229,6 +1738,8 @@ const opListTagsForResource = "ListTagsForResource"
 // value can be used to capture response data after the request's "Send" method
 // is called.
 //
+// See ListTagsForResource for usage and error information.
+//
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
 // access properties on the request object before or after sending the request. If
@@ -1263,7 +1774,29 @@ func (c *SSM) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *
 	return
 }
 
+// ListTagsForResource API operation for Amazon Simple Systems Management Service.
+//
 // Returns a list of the tags assigned to the specified resource.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation ListTagsForResource for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidResourceType
+//   The resource type is not valid. If you are attempting to tag an instance,
+//   the instance must be a registered, managed instance.
+//
+//   * InvalidResourceId
+//   The resource ID is not valid. Verify that you entered the correct ID and
+//   try again.
+//
+//   * InternalServerError
+//   An error occurred on the server side.
+//
 func (c *SSM) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
 	req, out := c.ListTagsForResourceRequest(input)
 	err := req.Send()
@@ -1276,6 +1809,8 @@ const opModifyDocumentPermission = "ModifyDocumentPermission"
 // client's request for the ModifyDocumentPermission operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See ModifyDocumentPermission for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -1311,10 +1846,39 @@ func (c *SSM) ModifyDocumentPermissionRequest(input *ModifyDocumentPermissionInp
 	return
 }
 
+// ModifyDocumentPermission API operation for Amazon Simple Systems Management Service.
+//
 // Share a document publicly or privately. If you share a document privately,
 // you must specify the AWS user account IDs for those people who can use the
 // document. If you share a document publicly, you must specify All as the account
 // ID.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation ModifyDocumentPermission for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An error occurred on the server side.
+//
+//   * InvalidDocument
+//   The specified document does not exist.
+//
+//   * InvalidPermissionType
+//   The permission type is not supported. Share is the only supported permission
+//   type.
+//
+//   * DocumentPermissionLimit
+//   The document cannot be shared with more AWS user accounts. You can share
+//   a document with a maximum of 20 accounts. You can publicly share up to five
+//   documents. If you need to increase this limit, contact AWS Support.
+//
+//   * DocumentLimitExceeded
+//   You can have at most 200 active SSM documents.
+//
 func (c *SSM) ModifyDocumentPermission(input *ModifyDocumentPermissionInput) (*ModifyDocumentPermissionOutput, error) {
 	req, out := c.ModifyDocumentPermissionRequest(input)
 	err := req.Send()
@@ -1327,6 +1891,8 @@ const opRemoveTagsFromResource = "RemoveTagsFromResource"
 // client's request for the RemoveTagsFromResource operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See RemoveTagsFromResource for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -1362,7 +1928,29 @@ func (c *SSM) RemoveTagsFromResourceRequest(input *RemoveTagsFromResourceInput) 
 	return
 }
 
+// RemoveTagsFromResource API operation for Amazon Simple Systems Management Service.
+//
 // Removes all tags from the specified resource.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation RemoveTagsFromResource for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidResourceType
+//   The resource type is not valid. If you are attempting to tag an instance,
+//   the instance must be a registered, managed instance.
+//
+//   * InvalidResourceId
+//   The resource ID is not valid. Verify that you entered the correct ID and
+//   try again.
+//
+//   * InternalServerError
+//   An error occurred on the server side.
+//
 func (c *SSM) RemoveTagsFromResource(input *RemoveTagsFromResourceInput) (*RemoveTagsFromResourceOutput, error) {
 	req, out := c.RemoveTagsFromResourceRequest(input)
 	err := req.Send()
@@ -1375,6 +1963,8 @@ const opSendCommand = "SendCommand"
 // client's request for the SendCommand operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See SendCommand for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -1410,7 +2000,56 @@ func (c *SSM) SendCommandRequest(input *SendCommandInput) (req *request.Request,
 	return
 }
 
+// SendCommand API operation for Amazon Simple Systems Management Service.
+//
 // Executes commands on one or more remote instances.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation SendCommand for usage and error information.
+//
+// Returned Error Codes:
+//   * DuplicateInstanceId
+//   You cannot specify an instance ID in more than one association.
+//
+//   * InternalServerError
+//   An error occurred on the server side.
+//
+//   * InvalidInstanceId
+//   The instance is not in valid state. Valid states are: Running, Pending, Stopped,
+//   Stopping. Invalid states are: Shutting-down and Terminated.
+//
+//   * InvalidDocument
+//   The specified document does not exist.
+//
+//   * InvalidOutputFolder
+//   The S3 bucket does not exist.
+//
+//   * InvalidParameters
+//   You must specify values for all required parameters in the SSM document.
+//   You can only supply values to parameters defined in the SSM document.
+//
+//   * UnsupportedPlatformType
+//   The document does not support the platform type of the given instance ID(s).
+//   For example, you sent an SSM document for a Windows instance to a Linux instance.
+//
+//   * MaxDocumentSizeExceeded
+//   The size limit of an SSM document is 64 KB.
+//
+//   * InvalidRole
+//   The role name can't contain invalid characters. Also verify that you specified
+//   an IAM role for notifications that includes the required trust policy. For
+//   information about configuring the IAM role for SSM notifications, see Configuring
+//   SNS Notifications SSM (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/rc-sns.html)
+//   in the Amazon Elastic Compute Cloud User Guide .
+//
+//   * InvalidNotificationConfig
+//   One or more configuration items is not valid. Verify that a valid Amazon
+//   Resource Name (ARN) was provided for an Amazon SNS topic.
+//
 func (c *SSM) SendCommand(input *SendCommandInput) (*SendCommandOutput, error) {
 	req, out := c.SendCommandRequest(input)
 	err := req.Send()
@@ -1423,6 +2062,8 @@ const opUpdateAssociationStatus = "UpdateAssociationStatus"
 // client's request for the UpdateAssociationStatus operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See UpdateAssociationStatus for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -1458,7 +2099,38 @@ func (c *SSM) UpdateAssociationStatusRequest(input *UpdateAssociationStatusInput
 	return
 }
 
+// UpdateAssociationStatus API operation for Amazon Simple Systems Management Service.
+//
 // Updates the status of the SSM document associated with the specified instance.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation UpdateAssociationStatus for usage and error information.
+//
+// Returned Error Codes:
+//   * InternalServerError
+//   An error occurred on the server side.
+//
+//   * InvalidInstanceId
+//   The instance is not in valid state. Valid states are: Running, Pending, Stopped,
+//   Stopping. Invalid states are: Shutting-down and Terminated.
+//
+//   * InvalidDocument
+//   The specified document does not exist.
+//
+//   * AssociationDoesNotExist
+//   The specified association does not exist.
+//
+//   * StatusUnchanged
+//   The updated status is the same as the current status.
+//
+//   * TooManyUpdates
+//   There are concurrent updates for a resource that supports one update at a
+//   time.
+//
 func (c *SSM) UpdateAssociationStatus(input *UpdateAssociationStatusInput) (*UpdateAssociationStatusOutput, error) {
 	req, out := c.UpdateAssociationStatusRequest(input)
 	err := req.Send()
@@ -1471,6 +2143,8 @@ const opUpdateManagedInstanceRole = "UpdateManagedInstanceRole"
 // client's request for the UpdateManagedInstanceRole operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See UpdateManagedInstanceRole for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -1506,8 +2180,26 @@ func (c *SSM) UpdateManagedInstanceRoleRequest(input *UpdateManagedInstanceRoleI
 	return
 }
 
+// UpdateManagedInstanceRole API operation for Amazon Simple Systems Management Service.
+//
 // Assigns or changes an Amazon Identity and Access Management (IAM) role to
 // the managed instance.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Management Service's
+// API operation UpdateManagedInstanceRole for usage and error information.
+//
+// Returned Error Codes:
+//   * InvalidInstanceId
+//   The instance is not in valid state. Valid states are: Running, Pending, Stopped,
+//   Stopping. Invalid states are: Shutting-down and Terminated.
+//
+//   * InternalServerError
+//   An error occurred on the server side.
+//
 func (c *SSM) UpdateManagedInstanceRole(input *UpdateManagedInstanceRoleInput) (*UpdateManagedInstanceRoleOutput, error) {
 	req, out := c.UpdateManagedInstanceRoleRequest(input)
 	err := req.Send()
@@ -1560,18 +2252,78 @@ func (s Activation) GoString() string {
 	return s.String()
 }
 
+// SetActivationId sets the ActivationId field's value.
+func (s *Activation) SetActivationId(v string) *Activation {
+	s.ActivationId = &v
+	return s
+}
+
+// SetCreatedDate sets the CreatedDate field's value.
+func (s *Activation) SetCreatedDate(v time.Time) *Activation {
+	s.CreatedDate = &v
+	return s
+}
+
+// SetDefaultInstanceName sets the DefaultInstanceName field's value.
+func (s *Activation) SetDefaultInstanceName(v string) *Activation {
+	s.DefaultInstanceName = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *Activation) SetDescription(v string) *Activation {
+	s.Description = &v
+	return s
+}
+
+// SetExpirationDate sets the ExpirationDate field's value.
+func (s *Activation) SetExpirationDate(v time.Time) *Activation {
+	s.ExpirationDate = &v
+	return s
+}
+
+// SetExpired sets the Expired field's value.
+func (s *Activation) SetExpired(v bool) *Activation {
+	s.Expired = &v
+	return s
+}
+
+// SetIamRole sets the IamRole field's value.
+func (s *Activation) SetIamRole(v string) *Activation {
+	s.IamRole = &v
+	return s
+}
+
+// SetRegistrationLimit sets the RegistrationLimit field's value.
+func (s *Activation) SetRegistrationLimit(v int64) *Activation {
+	s.RegistrationLimit = &v
+	return s
+}
+
+// SetRegistrationsCount sets the RegistrationsCount field's value.
+func (s *Activation) SetRegistrationsCount(v int64) *Activation {
+	s.RegistrationsCount = &v
+	return s
+}
+
 type AddTagsToResourceInput struct {
 	_ struct{} `type:"structure"`
 
 	// The resource ID you want to tag.
+	//
+	// ResourceId is a required field
 	ResourceId *string `type:"string" required:"true"`
 
 	// Specifies the type of resource you are tagging.
+	//
+	// ResourceType is a required field
 	ResourceType *string `type:"string" required:"true" enum:"ResourceTypeForTagging"`
 
 	// One or more tags. The value parameter is required, but if you don't want
 	// the tag to have a value, specify the parameter with no value, and we set
 	// the value to an empty string.
+	//
+	// Tags is a required field
 	Tags []*Tag `type:"list" required:"true"`
 }
 
@@ -1614,6 +2366,24 @@ func (s *AddTagsToResourceInput) Validate() error {
 	return nil
 }
 
+// SetResourceId sets the ResourceId field's value.
+func (s *AddTagsToResourceInput) SetResourceId(v string) *AddTagsToResourceInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *AddTagsToResourceInput) SetResourceType(v string) *AddTagsToResourceInput {
+	s.ResourceType = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *AddTagsToResourceInput) SetTags(v []*Tag) *AddTagsToResourceInput {
+	s.Tags = v
+	return s
+}
+
 type AddTagsToResourceOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -1649,6 +2419,18 @@ func (s Association) GoString() string {
 	return s.String()
 }
 
+// SetInstanceId sets the InstanceId field's value.
+func (s *Association) SetInstanceId(v string) *Association {
+	s.InstanceId = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Association) SetName(v string) *Association {
+	s.Name = &v
+	return s
+}
+
 // Describes the parameters for a document.
 type AssociationDescription struct {
 	_ struct{} `type:"structure"`
@@ -1679,14 +2461,48 @@ func (s AssociationDescription) GoString() string {
 	return s.String()
 }
 
+// SetDate sets the Date field's value.
+func (s *AssociationDescription) SetDate(v time.Time) *AssociationDescription {
+	s.Date = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *AssociationDescription) SetInstanceId(v string) *AssociationDescription {
+	s.InstanceId = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *AssociationDescription) SetName(v string) *AssociationDescription {
+	s.Name = &v
+	return s
+}
+
+// SetParameters sets the Parameters field's value.
+func (s *AssociationDescription) SetParameters(v map[string][]*string) *AssociationDescription {
+	s.Parameters = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *AssociationDescription) SetStatus(v *AssociationStatus) *AssociationDescription {
+	s.Status = v
+	return s
+}
+
 // Describes a filter.
 type AssociationFilter struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the filter.
+	//
+	// Key is a required field
 	Key *string `locationName:"key" type:"string" required:"true" enum:"AssociationFilterKey"`
 
 	// The filter value.
+	//
+	// Value is a required field
 	Value *string `locationName:"value" min:"1" type:"string" required:"true"`
 }
 
@@ -1719,6 +2535,18 @@ func (s *AssociationFilter) Validate() error {
 	return nil
 }
 
+// SetKey sets the Key field's value.
+func (s *AssociationFilter) SetKey(v string) *AssociationFilter {
+	s.Key = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *AssociationFilter) SetValue(v string) *AssociationFilter {
+	s.Value = &v
+	return s
+}
+
 // Describes an association status.
 type AssociationStatus struct {
 	_ struct{} `type:"structure"`
@@ -1727,12 +2555,18 @@ type AssociationStatus struct {
 	AdditionalInfo *string `type:"string"`
 
 	// The date when the status changed.
+	//
+	// Date is a required field
 	Date *time.Time `type:"timestamp" timestampFormat:"unix" required:"true"`
 
 	// The reason for the status.
+	//
+	// Message is a required field
 	Message *string `type:"string" required:"true"`
 
 	// The status.
+	//
+	// Name is a required field
 	Name *string `type:"string" required:"true" enum:"AssociationStatusName"`
 }
 
@@ -1765,10 +2599,36 @@ func (s *AssociationStatus) Validate() error {
 	return nil
 }
 
+// SetAdditionalInfo sets the AdditionalInfo field's value.
+func (s *AssociationStatus) SetAdditionalInfo(v string) *AssociationStatus {
+	s.AdditionalInfo = &v
+	return s
+}
+
+// SetDate sets the Date field's value.
+func (s *AssociationStatus) SetDate(v time.Time) *AssociationStatus {
+	s.Date = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *AssociationStatus) SetMessage(v string) *AssociationStatus {
+	s.Message = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *AssociationStatus) SetName(v string) *AssociationStatus {
+	s.Name = &v
+	return s
+}
+
 type CancelCommandInput struct {
 	_ struct{} `type:"structure"`
 
 	// The ID of the command you want to cancel.
+	//
+	// CommandId is a required field
 	CommandId *string `min:"36" type:"string" required:"true"`
 
 	// (Optional) A list of instance IDs on which you want to cancel the command.
@@ -1804,6 +2664,18 @@ func (s *CancelCommandInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetCommandId sets the CommandId field's value.
+func (s *CancelCommandInput) SetCommandId(v string) *CancelCommandInput {
+	s.CommandId = &v
+	return s
+}
+
+// SetInstanceIds sets the InstanceIds field's value.
+func (s *CancelCommandInput) SetInstanceIds(v []*string) *CancelCommandInput {
+	s.InstanceIds = v
+	return s
 }
 
 // Whether or not the command was successfully canceled. There is no guarantee
@@ -1880,14 +2752,90 @@ func (s Command) GoString() string {
 	return s.String()
 }
 
+// SetCommandId sets the CommandId field's value.
+func (s *Command) SetCommandId(v string) *Command {
+	s.CommandId = &v
+	return s
+}
+
+// SetComment sets the Comment field's value.
+func (s *Command) SetComment(v string) *Command {
+	s.Comment = &v
+	return s
+}
+
+// SetDocumentName sets the DocumentName field's value.
+func (s *Command) SetDocumentName(v string) *Command {
+	s.DocumentName = &v
+	return s
+}
+
+// SetExpiresAfter sets the ExpiresAfter field's value.
+func (s *Command) SetExpiresAfter(v time.Time) *Command {
+	s.ExpiresAfter = &v
+	return s
+}
+
+// SetInstanceIds sets the InstanceIds field's value.
+func (s *Command) SetInstanceIds(v []*string) *Command {
+	s.InstanceIds = v
+	return s
+}
+
+// SetNotificationConfig sets the NotificationConfig field's value.
+func (s *Command) SetNotificationConfig(v *NotificationConfig) *Command {
+	s.NotificationConfig = v
+	return s
+}
+
+// SetOutputS3BucketName sets the OutputS3BucketName field's value.
+func (s *Command) SetOutputS3BucketName(v string) *Command {
+	s.OutputS3BucketName = &v
+	return s
+}
+
+// SetOutputS3KeyPrefix sets the OutputS3KeyPrefix field's value.
+func (s *Command) SetOutputS3KeyPrefix(v string) *Command {
+	s.OutputS3KeyPrefix = &v
+	return s
+}
+
+// SetParameters sets the Parameters field's value.
+func (s *Command) SetParameters(v map[string][]*string) *Command {
+	s.Parameters = v
+	return s
+}
+
+// SetRequestedDateTime sets the RequestedDateTime field's value.
+func (s *Command) SetRequestedDateTime(v time.Time) *Command {
+	s.RequestedDateTime = &v
+	return s
+}
+
+// SetServiceRole sets the ServiceRole field's value.
+func (s *Command) SetServiceRole(v string) *Command {
+	s.ServiceRole = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *Command) SetStatus(v string) *Command {
+	s.Status = &v
+	return s
+}
+
 // Describes a command filter.
 type CommandFilter struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the filter. For example, requested date and time.
+	//
+	// Key is a required field
 	Key *string `locationName:"key" type:"string" required:"true" enum:"CommandFilterKey"`
 
 	// The filter value. For example: June 30, 2015.
+	//
+	// Value is a required field
 	Value *string `locationName:"value" min:"1" type:"string" required:"true"`
 }
 
@@ -1918,6 +2866,18 @@ func (s *CommandFilter) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetKey sets the Key field's value.
+func (s *CommandFilter) SetKey(v string) *CommandFilter {
+	s.Key = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *CommandFilter) SetValue(v string) *CommandFilter {
+	s.Value = &v
+	return s
 }
 
 // An invocation is copy of a command sent to a specific instance. A command
@@ -1971,6 +2931,66 @@ func (s CommandInvocation) GoString() string {
 	return s.String()
 }
 
+// SetCommandId sets the CommandId field's value.
+func (s *CommandInvocation) SetCommandId(v string) *CommandInvocation {
+	s.CommandId = &v
+	return s
+}
+
+// SetCommandPlugins sets the CommandPlugins field's value.
+func (s *CommandInvocation) SetCommandPlugins(v []*CommandPlugin) *CommandInvocation {
+	s.CommandPlugins = v
+	return s
+}
+
+// SetComment sets the Comment field's value.
+func (s *CommandInvocation) SetComment(v string) *CommandInvocation {
+	s.Comment = &v
+	return s
+}
+
+// SetDocumentName sets the DocumentName field's value.
+func (s *CommandInvocation) SetDocumentName(v string) *CommandInvocation {
+	s.DocumentName = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *CommandInvocation) SetInstanceId(v string) *CommandInvocation {
+	s.InstanceId = &v
+	return s
+}
+
+// SetNotificationConfig sets the NotificationConfig field's value.
+func (s *CommandInvocation) SetNotificationConfig(v *NotificationConfig) *CommandInvocation {
+	s.NotificationConfig = v
+	return s
+}
+
+// SetRequestedDateTime sets the RequestedDateTime field's value.
+func (s *CommandInvocation) SetRequestedDateTime(v time.Time) *CommandInvocation {
+	s.RequestedDateTime = &v
+	return s
+}
+
+// SetServiceRole sets the ServiceRole field's value.
+func (s *CommandInvocation) SetServiceRole(v string) *CommandInvocation {
+	s.ServiceRole = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *CommandInvocation) SetStatus(v string) *CommandInvocation {
+	s.Status = &v
+	return s
+}
+
+// SetTraceOutput sets the TraceOutput field's value.
+func (s *CommandInvocation) SetTraceOutput(v string) *CommandInvocation {
+	s.TraceOutput = &v
+	return s
+}
+
 // Describes plugin details.
 type CommandPlugin struct {
 	_ struct{} `type:"structure"`
@@ -2015,6 +3035,54 @@ func (s CommandPlugin) GoString() string {
 	return s.String()
 }
 
+// SetName sets the Name field's value.
+func (s *CommandPlugin) SetName(v string) *CommandPlugin {
+	s.Name = &v
+	return s
+}
+
+// SetOutput sets the Output field's value.
+func (s *CommandPlugin) SetOutput(v string) *CommandPlugin {
+	s.Output = &v
+	return s
+}
+
+// SetOutputS3BucketName sets the OutputS3BucketName field's value.
+func (s *CommandPlugin) SetOutputS3BucketName(v string) *CommandPlugin {
+	s.OutputS3BucketName = &v
+	return s
+}
+
+// SetOutputS3KeyPrefix sets the OutputS3KeyPrefix field's value.
+func (s *CommandPlugin) SetOutputS3KeyPrefix(v string) *CommandPlugin {
+	s.OutputS3KeyPrefix = &v
+	return s
+}
+
+// SetResponseCode sets the ResponseCode field's value.
+func (s *CommandPlugin) SetResponseCode(v int64) *CommandPlugin {
+	s.ResponseCode = &v
+	return s
+}
+
+// SetResponseFinishDateTime sets the ResponseFinishDateTime field's value.
+func (s *CommandPlugin) SetResponseFinishDateTime(v time.Time) *CommandPlugin {
+	s.ResponseFinishDateTime = &v
+	return s
+}
+
+// SetResponseStartDateTime sets the ResponseStartDateTime field's value.
+func (s *CommandPlugin) SetResponseStartDateTime(v time.Time) *CommandPlugin {
+	s.ResponseStartDateTime = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *CommandPlugin) SetStatus(v string) *CommandPlugin {
+	s.Status = &v
+	return s
+}
+
 type CreateActivationInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2032,6 +3100,8 @@ type CreateActivationInput struct {
 
 	// The Amazon Identity and Access Management (IAM) role that you want to assign
 	// to the managed instance.
+	//
+	// IamRole is a required field
 	IamRole *string `type:"string" required:"true"`
 
 	// Specify the maximum number of managed instances you want to register. The
@@ -2065,6 +3135,36 @@ func (s *CreateActivationInput) Validate() error {
 	return nil
 }
 
+// SetDefaultInstanceName sets the DefaultInstanceName field's value.
+func (s *CreateActivationInput) SetDefaultInstanceName(v string) *CreateActivationInput {
+	s.DefaultInstanceName = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateActivationInput) SetDescription(v string) *CreateActivationInput {
+	s.Description = &v
+	return s
+}
+
+// SetExpirationDate sets the ExpirationDate field's value.
+func (s *CreateActivationInput) SetExpirationDate(v time.Time) *CreateActivationInput {
+	s.ExpirationDate = &v
+	return s
+}
+
+// SetIamRole sets the IamRole field's value.
+func (s *CreateActivationInput) SetIamRole(v string) *CreateActivationInput {
+	s.IamRole = &v
+	return s
+}
+
+// SetRegistrationLimit sets the RegistrationLimit field's value.
+func (s *CreateActivationInput) SetRegistrationLimit(v int64) *CreateActivationInput {
+	s.RegistrationLimit = &v
+	return s
+}
+
 type CreateActivationOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2087,10 +3187,24 @@ func (s CreateActivationOutput) GoString() string {
 	return s.String()
 }
 
+// SetActivationCode sets the ActivationCode field's value.
+func (s *CreateActivationOutput) SetActivationCode(v string) *CreateActivationOutput {
+	s.ActivationCode = &v
+	return s
+}
+
+// SetActivationId sets the ActivationId field's value.
+func (s *CreateActivationOutput) SetActivationId(v string) *CreateActivationOutput {
+	s.ActivationId = &v
+	return s
+}
+
 type CreateAssociationBatchInput struct {
 	_ struct{} `type:"structure"`
 
 	// One or more associations.
+	//
+	// Entries is a required field
 	Entries []*CreateAssociationBatchRequestEntry `locationNameList:"entries" type:"list" required:"true"`
 }
 
@@ -2117,6 +3231,12 @@ func (s *CreateAssociationBatchInput) Validate() error {
 	return nil
 }
 
+// SetEntries sets the Entries field's value.
+func (s *CreateAssociationBatchInput) SetEntries(v []*CreateAssociationBatchRequestEntry) *CreateAssociationBatchInput {
+	s.Entries = v
+	return s
+}
+
 type CreateAssociationBatchOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2135,6 +3255,18 @@ func (s CreateAssociationBatchOutput) String() string {
 // GoString returns the string representation
 func (s CreateAssociationBatchOutput) GoString() string {
 	return s.String()
+}
+
+// SetFailed sets the Failed field's value.
+func (s *CreateAssociationBatchOutput) SetFailed(v []*FailedCreateAssociation) *CreateAssociationBatchOutput {
+	s.Failed = v
+	return s
+}
+
+// SetSuccessful sets the Successful field's value.
+func (s *CreateAssociationBatchOutput) SetSuccessful(v []*AssociationDescription) *CreateAssociationBatchOutput {
+	s.Successful = v
+	return s
 }
 
 // Describes the association of an SSM document and an instance.
@@ -2161,13 +3293,35 @@ func (s CreateAssociationBatchRequestEntry) GoString() string {
 	return s.String()
 }
 
+// SetInstanceId sets the InstanceId field's value.
+func (s *CreateAssociationBatchRequestEntry) SetInstanceId(v string) *CreateAssociationBatchRequestEntry {
+	s.InstanceId = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateAssociationBatchRequestEntry) SetName(v string) *CreateAssociationBatchRequestEntry {
+	s.Name = &v
+	return s
+}
+
+// SetParameters sets the Parameters field's value.
+func (s *CreateAssociationBatchRequestEntry) SetParameters(v map[string][]*string) *CreateAssociationBatchRequestEntry {
+	s.Parameters = v
+	return s
+}
+
 type CreateAssociationInput struct {
 	_ struct{} `type:"structure"`
 
 	// The instance ID.
+	//
+	// InstanceId is a required field
 	InstanceId *string `type:"string" required:"true"`
 
 	// The name of the SSM document.
+	//
+	// Name is a required field
 	Name *string `type:"string" required:"true"`
 
 	// The parameters for the documents runtime configuration.
@@ -2200,6 +3354,24 @@ func (s *CreateAssociationInput) Validate() error {
 	return nil
 }
 
+// SetInstanceId sets the InstanceId field's value.
+func (s *CreateAssociationInput) SetInstanceId(v string) *CreateAssociationInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateAssociationInput) SetName(v string) *CreateAssociationInput {
+	s.Name = &v
+	return s
+}
+
+// SetParameters sets the Parameters field's value.
+func (s *CreateAssociationInput) SetParameters(v map[string][]*string) *CreateAssociationInput {
+	s.Parameters = v
+	return s
+}
+
 type CreateAssociationOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2217,13 +3389,23 @@ func (s CreateAssociationOutput) GoString() string {
 	return s.String()
 }
 
+// SetAssociationDescription sets the AssociationDescription field's value.
+func (s *CreateAssociationOutput) SetAssociationDescription(v *AssociationDescription) *CreateAssociationOutput {
+	s.AssociationDescription = v
+	return s
+}
+
 type CreateDocumentInput struct {
 	_ struct{} `type:"structure"`
 
 	// A valid JSON string.
+	//
+	// Content is a required field
 	Content *string `min:"1" type:"string" required:"true"`
 
 	// A name for the SSM document.
+	//
+	// Name is a required field
 	Name *string `type:"string" required:"true"`
 }
 
@@ -2256,6 +3438,18 @@ func (s *CreateDocumentInput) Validate() error {
 	return nil
 }
 
+// SetContent sets the Content field's value.
+func (s *CreateDocumentInput) SetContent(v string) *CreateDocumentInput {
+	s.Content = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateDocumentInput) SetName(v string) *CreateDocumentInput {
+	s.Name = &v
+	return s
+}
+
 type CreateDocumentOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2273,10 +3467,18 @@ func (s CreateDocumentOutput) GoString() string {
 	return s.String()
 }
 
+// SetDocumentDescription sets the DocumentDescription field's value.
+func (s *CreateDocumentOutput) SetDocumentDescription(v *DocumentDescription) *CreateDocumentOutput {
+	s.DocumentDescription = v
+	return s
+}
+
 type DeleteActivationInput struct {
 	_ struct{} `type:"structure"`
 
 	// The ID of the activation that you want to delete.
+	//
+	// ActivationId is a required field
 	ActivationId *string `type:"string" required:"true"`
 }
 
@@ -2303,6 +3505,12 @@ func (s *DeleteActivationInput) Validate() error {
 	return nil
 }
 
+// SetActivationId sets the ActivationId field's value.
+func (s *DeleteActivationInput) SetActivationId(v string) *DeleteActivationInput {
+	s.ActivationId = &v
+	return s
+}
+
 type DeleteActivationOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -2321,9 +3529,13 @@ type DeleteAssociationInput struct {
 	_ struct{} `type:"structure"`
 
 	// The ID of the instance.
+	//
+	// InstanceId is a required field
 	InstanceId *string `type:"string" required:"true"`
 
 	// The name of the SSM document.
+	//
+	// Name is a required field
 	Name *string `type:"string" required:"true"`
 }
 
@@ -2353,6 +3565,18 @@ func (s *DeleteAssociationInput) Validate() error {
 	return nil
 }
 
+// SetInstanceId sets the InstanceId field's value.
+func (s *DeleteAssociationInput) SetInstanceId(v string) *DeleteAssociationInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *DeleteAssociationInput) SetName(v string) *DeleteAssociationInput {
+	s.Name = &v
+	return s
+}
+
 type DeleteAssociationOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -2371,6 +3595,8 @@ type DeleteDocumentInput struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the SSM document.
+	//
+	// Name is a required field
 	Name *string `type:"string" required:"true"`
 }
 
@@ -2397,6 +3623,12 @@ func (s *DeleteDocumentInput) Validate() error {
 	return nil
 }
 
+// SetName sets the Name field's value.
+func (s *DeleteDocumentInput) SetName(v string) *DeleteDocumentInput {
+	s.Name = &v
+	return s
+}
+
 type DeleteDocumentOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -2416,6 +3648,8 @@ type DeregisterManagedInstanceInput struct {
 
 	// The ID assigned to the managed instance when you registered it using the
 	// activation process.
+	//
+	// InstanceId is a required field
 	InstanceId *string `type:"string" required:"true"`
 }
 
@@ -2440,6 +3674,12 @@ func (s *DeregisterManagedInstanceInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *DeregisterManagedInstanceInput) SetInstanceId(v string) *DeregisterManagedInstanceInput {
+	s.InstanceId = &v
+	return s
 }
 
 type DeregisterManagedInstanceOutput struct {
@@ -2475,6 +3715,18 @@ func (s DescribeActivationsFilter) String() string {
 // GoString returns the string representation
 func (s DescribeActivationsFilter) GoString() string {
 	return s.String()
+}
+
+// SetFilterKey sets the FilterKey field's value.
+func (s *DescribeActivationsFilter) SetFilterKey(v string) *DescribeActivationsFilter {
+	s.FilterKey = &v
+	return s
+}
+
+// SetFilterValues sets the FilterValues field's value.
+func (s *DescribeActivationsFilter) SetFilterValues(v []*string) *DescribeActivationsFilter {
+	s.FilterValues = v
+	return s
 }
 
 type DescribeActivationsInput struct {
@@ -2515,6 +3767,24 @@ func (s *DescribeActivationsInput) Validate() error {
 	return nil
 }
 
+// SetFilters sets the Filters field's value.
+func (s *DescribeActivationsInput) SetFilters(v []*DescribeActivationsFilter) *DescribeActivationsInput {
+	s.Filters = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeActivationsInput) SetMaxResults(v int64) *DescribeActivationsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeActivationsInput) SetNextToken(v string) *DescribeActivationsInput {
+	s.NextToken = &v
+	return s
+}
+
 type DescribeActivationsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2536,13 +3806,29 @@ func (s DescribeActivationsOutput) GoString() string {
 	return s.String()
 }
 
+// SetActivationList sets the ActivationList field's value.
+func (s *DescribeActivationsOutput) SetActivationList(v []*Activation) *DescribeActivationsOutput {
+	s.ActivationList = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeActivationsOutput) SetNextToken(v string) *DescribeActivationsOutput {
+	s.NextToken = &v
+	return s
+}
+
 type DescribeAssociationInput struct {
 	_ struct{} `type:"structure"`
 
 	// The instance ID.
+	//
+	// InstanceId is a required field
 	InstanceId *string `type:"string" required:"true"`
 
 	// The name of the SSM document.
+	//
+	// Name is a required field
 	Name *string `type:"string" required:"true"`
 }
 
@@ -2572,6 +3858,18 @@ func (s *DescribeAssociationInput) Validate() error {
 	return nil
 }
 
+// SetInstanceId sets the InstanceId field's value.
+func (s *DescribeAssociationInput) SetInstanceId(v string) *DescribeAssociationInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *DescribeAssociationInput) SetName(v string) *DescribeAssociationInput {
+	s.Name = &v
+	return s
+}
+
 type DescribeAssociationOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2589,10 +3887,18 @@ func (s DescribeAssociationOutput) GoString() string {
 	return s.String()
 }
 
+// SetAssociationDescription sets the AssociationDescription field's value.
+func (s *DescribeAssociationOutput) SetAssociationDescription(v *AssociationDescription) *DescribeAssociationOutput {
+	s.AssociationDescription = v
+	return s
+}
+
 type DescribeDocumentInput struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the SSM document.
+	//
+	// Name is a required field
 	Name *string `type:"string" required:"true"`
 }
 
@@ -2619,6 +3925,12 @@ func (s *DescribeDocumentInput) Validate() error {
 	return nil
 }
 
+// SetName sets the Name field's value.
+func (s *DescribeDocumentInput) SetName(v string) *DescribeDocumentInput {
+	s.Name = &v
+	return s
+}
+
 type DescribeDocumentOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2636,13 +3948,23 @@ func (s DescribeDocumentOutput) GoString() string {
 	return s.String()
 }
 
+// SetDocument sets the Document field's value.
+func (s *DescribeDocumentOutput) SetDocument(v *DocumentDescription) *DescribeDocumentOutput {
+	s.Document = v
+	return s
+}
+
 type DescribeDocumentPermissionInput struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the document for which you are the owner.
+	//
+	// Name is a required field
 	Name *string `type:"string" required:"true"`
 
 	// The permission type for the document. The permission type can be Share.
+	//
+	// PermissionType is a required field
 	PermissionType *string `type:"string" required:"true" enum:"DocumentPermissionType"`
 }
 
@@ -2672,6 +3994,18 @@ func (s *DescribeDocumentPermissionInput) Validate() error {
 	return nil
 }
 
+// SetName sets the Name field's value.
+func (s *DescribeDocumentPermissionInput) SetName(v string) *DescribeDocumentPermissionInput {
+	s.Name = &v
+	return s
+}
+
+// SetPermissionType sets the PermissionType field's value.
+func (s *DescribeDocumentPermissionInput) SetPermissionType(v string) *DescribeDocumentPermissionInput {
+	s.PermissionType = &v
+	return s
+}
+
 type DescribeDocumentPermissionOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2688,6 +4022,12 @@ func (s DescribeDocumentPermissionOutput) String() string {
 // GoString returns the string representation
 func (s DescribeDocumentPermissionOutput) GoString() string {
 	return s.String()
+}
+
+// SetAccountIds sets the AccountIds field's value.
+func (s *DescribeDocumentPermissionOutput) SetAccountIds(v []*string) *DescribeDocumentPermissionOutput {
+	s.AccountIds = v
+	return s
 }
 
 type DescribeInstanceInformationInput struct {
@@ -2742,6 +4082,24 @@ func (s *DescribeInstanceInformationInput) Validate() error {
 	return nil
 }
 
+// SetInstanceInformationFilterList sets the InstanceInformationFilterList field's value.
+func (s *DescribeInstanceInformationInput) SetInstanceInformationFilterList(v []*InstanceInformationFilter) *DescribeInstanceInformationInput {
+	s.InstanceInformationFilterList = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeInstanceInformationInput) SetMaxResults(v int64) *DescribeInstanceInformationInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeInstanceInformationInput) SetNextToken(v string) *DescribeInstanceInformationInput {
+	s.NextToken = &v
+	return s
+}
+
 type DescribeInstanceInformationOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2763,6 +4121,18 @@ func (s DescribeInstanceInformationOutput) GoString() string {
 	return s.String()
 }
 
+// SetInstanceInformationList sets the InstanceInformationList field's value.
+func (s *DescribeInstanceInformationOutput) SetInstanceInformationList(v []*InstanceInformation) *DescribeInstanceInformationOutput {
+	s.InstanceInformationList = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeInstanceInformationOutput) SetNextToken(v string) *DescribeInstanceInformationOutput {
+	s.NextToken = &v
+	return s
+}
+
 // Describes an SSM document.
 type DocumentDescription struct {
 	_ struct{} `type:"structure"`
@@ -2775,12 +4145,12 @@ type DocumentDescription struct {
 
 	// The Sha256 or Sha1 hash created by the system when the document was created.
 	//
-	//  Sha1 hashes have been deprecated.
+	// Sha1 hashes have been deprecated.
 	Hash *string `type:"string"`
 
 	// Sha256 or Sha1.
 	//
-	//  Sha1 hashes have been deprecated.
+	// Sha1 hashes have been deprecated.
 	HashType *string `type:"string" enum:"DocumentHashType"`
 
 	// The name of the SSM document.
@@ -2812,14 +4182,78 @@ func (s DocumentDescription) GoString() string {
 	return s.String()
 }
 
+// SetCreatedDate sets the CreatedDate field's value.
+func (s *DocumentDescription) SetCreatedDate(v time.Time) *DocumentDescription {
+	s.CreatedDate = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *DocumentDescription) SetDescription(v string) *DocumentDescription {
+	s.Description = &v
+	return s
+}
+
+// SetHash sets the Hash field's value.
+func (s *DocumentDescription) SetHash(v string) *DocumentDescription {
+	s.Hash = &v
+	return s
+}
+
+// SetHashType sets the HashType field's value.
+func (s *DocumentDescription) SetHashType(v string) *DocumentDescription {
+	s.HashType = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *DocumentDescription) SetName(v string) *DocumentDescription {
+	s.Name = &v
+	return s
+}
+
+// SetOwner sets the Owner field's value.
+func (s *DocumentDescription) SetOwner(v string) *DocumentDescription {
+	s.Owner = &v
+	return s
+}
+
+// SetParameters sets the Parameters field's value.
+func (s *DocumentDescription) SetParameters(v []*DocumentParameter) *DocumentDescription {
+	s.Parameters = v
+	return s
+}
+
+// SetPlatformTypes sets the PlatformTypes field's value.
+func (s *DocumentDescription) SetPlatformTypes(v []*string) *DocumentDescription {
+	s.PlatformTypes = v
+	return s
+}
+
+// SetSha1 sets the Sha1 field's value.
+func (s *DocumentDescription) SetSha1(v string) *DocumentDescription {
+	s.Sha1 = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *DocumentDescription) SetStatus(v string) *DocumentDescription {
+	s.Status = &v
+	return s
+}
+
 // Describes a filter.
 type DocumentFilter struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the filter.
+	//
+	// Key is a required field
 	Key *string `locationName:"key" type:"string" required:"true" enum:"DocumentFilterKey"`
 
 	// The value of the filter.
+	//
+	// Value is a required field
 	Value *string `locationName:"value" min:"1" type:"string" required:"true"`
 }
 
@@ -2852,6 +4286,18 @@ func (s *DocumentFilter) Validate() error {
 	return nil
 }
 
+// SetKey sets the Key field's value.
+func (s *DocumentFilter) SetKey(v string) *DocumentFilter {
+	s.Key = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *DocumentFilter) SetValue(v string) *DocumentFilter {
+	s.Value = &v
+	return s
+}
+
 // Describes the name of an SSM document.
 type DocumentIdentifier struct {
 	_ struct{} `type:"structure"`
@@ -2874,6 +4320,24 @@ func (s DocumentIdentifier) String() string {
 // GoString returns the string representation
 func (s DocumentIdentifier) GoString() string {
 	return s.String()
+}
+
+// SetName sets the Name field's value.
+func (s *DocumentIdentifier) SetName(v string) *DocumentIdentifier {
+	s.Name = &v
+	return s
+}
+
+// SetOwner sets the Owner field's value.
+func (s *DocumentIdentifier) SetOwner(v string) *DocumentIdentifier {
+	s.Owner = &v
+	return s
+}
+
+// SetPlatformTypes sets the PlatformTypes field's value.
+func (s *DocumentIdentifier) SetPlatformTypes(v []*string) *DocumentIdentifier {
+	s.PlatformTypes = v
+	return s
 }
 
 // Parameters specified in the SSM document that execute on the server when
@@ -2906,6 +4370,30 @@ func (s DocumentParameter) GoString() string {
 	return s.String()
 }
 
+// SetDefaultValue sets the DefaultValue field's value.
+func (s *DocumentParameter) SetDefaultValue(v string) *DocumentParameter {
+	s.DefaultValue = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *DocumentParameter) SetDescription(v string) *DocumentParameter {
+	s.Description = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *DocumentParameter) SetName(v string) *DocumentParameter {
+	s.Name = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *DocumentParameter) SetType(v string) *DocumentParameter {
+	s.Type = &v
+	return s
+}
+
 // Describes a failed association.
 type FailedCreateAssociation struct {
 	_ struct{} `type:"structure"`
@@ -2930,10 +4418,30 @@ func (s FailedCreateAssociation) GoString() string {
 	return s.String()
 }
 
+// SetEntry sets the Entry field's value.
+func (s *FailedCreateAssociation) SetEntry(v *CreateAssociationBatchRequestEntry) *FailedCreateAssociation {
+	s.Entry = v
+	return s
+}
+
+// SetFault sets the Fault field's value.
+func (s *FailedCreateAssociation) SetFault(v string) *FailedCreateAssociation {
+	s.Fault = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *FailedCreateAssociation) SetMessage(v string) *FailedCreateAssociation {
+	s.Message = &v
+	return s
+}
+
 type GetDocumentInput struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the SSM document.
+	//
+	// Name is a required field
 	Name *string `type:"string" required:"true"`
 }
 
@@ -2960,6 +4468,12 @@ func (s *GetDocumentInput) Validate() error {
 	return nil
 }
 
+// SetName sets the Name field's value.
+func (s *GetDocumentInput) SetName(v string) *GetDocumentInput {
+	s.Name = &v
+	return s
+}
+
 type GetDocumentOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2980,6 +4494,18 @@ func (s GetDocumentOutput) GoString() string {
 	return s.String()
 }
 
+// SetContent sets the Content field's value.
+func (s *GetDocumentOutput) SetContent(v string) *GetDocumentOutput {
+	s.Content = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *GetDocumentOutput) SetName(v string) *GetDocumentOutput {
+	s.Name = &v
+	return s
+}
+
 // Describes a filter for a specific list of instances.
 type InstanceInformation struct {
 	_ struct{} `type:"structure"`
@@ -2987,7 +4513,7 @@ type InstanceInformation struct {
 	// The activation ID created by SSM when the server or VM was registered.
 	ActivationId *string `type:"string"`
 
-	// The version of the SSM agent running on your instance.
+	// The version of the SSM agent running on your Linux instance.
 	AgentVersion *string `type:"string"`
 
 	// The fully qualified host name of the managed instance.
@@ -3041,14 +4567,108 @@ func (s InstanceInformation) GoString() string {
 	return s.String()
 }
 
+// SetActivationId sets the ActivationId field's value.
+func (s *InstanceInformation) SetActivationId(v string) *InstanceInformation {
+	s.ActivationId = &v
+	return s
+}
+
+// SetAgentVersion sets the AgentVersion field's value.
+func (s *InstanceInformation) SetAgentVersion(v string) *InstanceInformation {
+	s.AgentVersion = &v
+	return s
+}
+
+// SetComputerName sets the ComputerName field's value.
+func (s *InstanceInformation) SetComputerName(v string) *InstanceInformation {
+	s.ComputerName = &v
+	return s
+}
+
+// SetIPAddress sets the IPAddress field's value.
+func (s *InstanceInformation) SetIPAddress(v string) *InstanceInformation {
+	s.IPAddress = &v
+	return s
+}
+
+// SetIamRole sets the IamRole field's value.
+func (s *InstanceInformation) SetIamRole(v string) *InstanceInformation {
+	s.IamRole = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *InstanceInformation) SetInstanceId(v string) *InstanceInformation {
+	s.InstanceId = &v
+	return s
+}
+
+// SetIsLatestVersion sets the IsLatestVersion field's value.
+func (s *InstanceInformation) SetIsLatestVersion(v bool) *InstanceInformation {
+	s.IsLatestVersion = &v
+	return s
+}
+
+// SetLastPingDateTime sets the LastPingDateTime field's value.
+func (s *InstanceInformation) SetLastPingDateTime(v time.Time) *InstanceInformation {
+	s.LastPingDateTime = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *InstanceInformation) SetName(v string) *InstanceInformation {
+	s.Name = &v
+	return s
+}
+
+// SetPingStatus sets the PingStatus field's value.
+func (s *InstanceInformation) SetPingStatus(v string) *InstanceInformation {
+	s.PingStatus = &v
+	return s
+}
+
+// SetPlatformName sets the PlatformName field's value.
+func (s *InstanceInformation) SetPlatformName(v string) *InstanceInformation {
+	s.PlatformName = &v
+	return s
+}
+
+// SetPlatformType sets the PlatformType field's value.
+func (s *InstanceInformation) SetPlatformType(v string) *InstanceInformation {
+	s.PlatformType = &v
+	return s
+}
+
+// SetPlatformVersion sets the PlatformVersion field's value.
+func (s *InstanceInformation) SetPlatformVersion(v string) *InstanceInformation {
+	s.PlatformVersion = &v
+	return s
+}
+
+// SetRegistrationDate sets the RegistrationDate field's value.
+func (s *InstanceInformation) SetRegistrationDate(v time.Time) *InstanceInformation {
+	s.RegistrationDate = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *InstanceInformation) SetResourceType(v string) *InstanceInformation {
+	s.ResourceType = &v
+	return s
+}
+
 // Describes a filter for a specific list of instances.
 type InstanceInformationFilter struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the filter.
+	//
+	// Key is a required field
 	Key *string `locationName:"key" type:"string" required:"true" enum:"InstanceInformationFilterKey"`
 
 	// The filter values.
+	//
+	// ValueSet is a required field
 	ValueSet []*string `locationName:"valueSet" locationNameList:"InstanceInformationFilterValue" min:"1" type:"list" required:"true"`
 }
 
@@ -3081,10 +4701,24 @@ func (s *InstanceInformationFilter) Validate() error {
 	return nil
 }
 
+// SetKey sets the Key field's value.
+func (s *InstanceInformationFilter) SetKey(v string) *InstanceInformationFilter {
+	s.Key = &v
+	return s
+}
+
+// SetValueSet sets the ValueSet field's value.
+func (s *InstanceInformationFilter) SetValueSet(v []*string) *InstanceInformationFilter {
+	s.ValueSet = v
+	return s
+}
+
 type ListAssociationsInput struct {
 	_ struct{} `type:"structure"`
 
 	// One or more filters. Use a filter to return a more specific list of results.
+	//
+	// AssociationFilterList is a required field
 	AssociationFilterList []*AssociationFilter `locationNameList:"AssociationFilter" min:"1" type:"list" required:"true"`
 
 	// The maximum number of items to return for this call. The call also returns
@@ -3136,6 +4770,24 @@ func (s *ListAssociationsInput) Validate() error {
 	return nil
 }
 
+// SetAssociationFilterList sets the AssociationFilterList field's value.
+func (s *ListAssociationsInput) SetAssociationFilterList(v []*AssociationFilter) *ListAssociationsInput {
+	s.AssociationFilterList = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListAssociationsInput) SetMaxResults(v int64) *ListAssociationsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListAssociationsInput) SetNextToken(v string) *ListAssociationsInput {
+	s.NextToken = &v
+	return s
+}
+
 type ListAssociationsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3155,6 +4807,18 @@ func (s ListAssociationsOutput) String() string {
 // GoString returns the string representation
 func (s ListAssociationsOutput) GoString() string {
 	return s.String()
+}
+
+// SetAssociations sets the Associations field's value.
+func (s *ListAssociationsOutput) SetAssociations(v []*Association) *ListAssociationsOutput {
+	s.Associations = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListAssociationsOutput) SetNextToken(v string) *ListAssociationsOutput {
+	s.NextToken = &v
+	return s
 }
 
 type ListCommandInvocationsInput struct {
@@ -3223,6 +4887,42 @@ func (s *ListCommandInvocationsInput) Validate() error {
 	return nil
 }
 
+// SetCommandId sets the CommandId field's value.
+func (s *ListCommandInvocationsInput) SetCommandId(v string) *ListCommandInvocationsInput {
+	s.CommandId = &v
+	return s
+}
+
+// SetDetails sets the Details field's value.
+func (s *ListCommandInvocationsInput) SetDetails(v bool) *ListCommandInvocationsInput {
+	s.Details = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *ListCommandInvocationsInput) SetFilters(v []*CommandFilter) *ListCommandInvocationsInput {
+	s.Filters = v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *ListCommandInvocationsInput) SetInstanceId(v string) *ListCommandInvocationsInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListCommandInvocationsInput) SetMaxResults(v int64) *ListCommandInvocationsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListCommandInvocationsInput) SetNextToken(v string) *ListCommandInvocationsInput {
+	s.NextToken = &v
+	return s
+}
+
 type ListCommandInvocationsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3242,6 +4942,18 @@ func (s ListCommandInvocationsOutput) String() string {
 // GoString returns the string representation
 func (s ListCommandInvocationsOutput) GoString() string {
 	return s.String()
+}
+
+// SetCommandInvocations sets the CommandInvocations field's value.
+func (s *ListCommandInvocationsOutput) SetCommandInvocations(v []*CommandInvocation) *ListCommandInvocationsOutput {
+	s.CommandInvocations = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListCommandInvocationsOutput) SetNextToken(v string) *ListCommandInvocationsOutput {
+	s.NextToken = &v
+	return s
 }
 
 type ListCommandsInput struct {
@@ -3306,6 +5018,36 @@ func (s *ListCommandsInput) Validate() error {
 	return nil
 }
 
+// SetCommandId sets the CommandId field's value.
+func (s *ListCommandsInput) SetCommandId(v string) *ListCommandsInput {
+	s.CommandId = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *ListCommandsInput) SetFilters(v []*CommandFilter) *ListCommandsInput {
+	s.Filters = v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *ListCommandsInput) SetInstanceId(v string) *ListCommandsInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListCommandsInput) SetMaxResults(v int64) *ListCommandsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListCommandsInput) SetNextToken(v string) *ListCommandsInput {
+	s.NextToken = &v
+	return s
+}
+
 type ListCommandsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3325,6 +5067,18 @@ func (s ListCommandsOutput) String() string {
 // GoString returns the string representation
 func (s ListCommandsOutput) GoString() string {
 	return s.String()
+}
+
+// SetCommands sets the Commands field's value.
+func (s *ListCommandsOutput) SetCommands(v []*Command) *ListCommandsOutput {
+	s.Commands = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListCommandsOutput) SetNextToken(v string) *ListCommandsOutput {
+	s.NextToken = &v
+	return s
 }
 
 type ListDocumentsInput struct {
@@ -3379,6 +5133,24 @@ func (s *ListDocumentsInput) Validate() error {
 	return nil
 }
 
+// SetDocumentFilterList sets the DocumentFilterList field's value.
+func (s *ListDocumentsInput) SetDocumentFilterList(v []*DocumentFilter) *ListDocumentsInput {
+	s.DocumentFilterList = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListDocumentsInput) SetMaxResults(v int64) *ListDocumentsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListDocumentsInput) SetNextToken(v string) *ListDocumentsInput {
+	s.NextToken = &v
+	return s
+}
+
 type ListDocumentsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3400,13 +5172,29 @@ func (s ListDocumentsOutput) GoString() string {
 	return s.String()
 }
 
+// SetDocumentIdentifiers sets the DocumentIdentifiers field's value.
+func (s *ListDocumentsOutput) SetDocumentIdentifiers(v []*DocumentIdentifier) *ListDocumentsOutput {
+	s.DocumentIdentifiers = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListDocumentsOutput) SetNextToken(v string) *ListDocumentsOutput {
+	s.NextToken = &v
+	return s
+}
+
 type ListTagsForResourceInput struct {
 	_ struct{} `type:"structure"`
 
 	// The resource ID for which you want to see a list of tags.
+	//
+	// ResourceId is a required field
 	ResourceId *string `type:"string" required:"true"`
 
 	// Returns a list of tags for a specific resource type.
+	//
+	// ResourceType is a required field
 	ResourceType *string `type:"string" required:"true" enum:"ResourceTypeForTagging"`
 }
 
@@ -3436,6 +5224,18 @@ func (s *ListTagsForResourceInput) Validate() error {
 	return nil
 }
 
+// SetResourceId sets the ResourceId field's value.
+func (s *ListTagsForResourceInput) SetResourceId(v string) *ListTagsForResourceInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *ListTagsForResourceInput) SetResourceType(v string) *ListTagsForResourceInput {
+	s.ResourceType = &v
+	return s
+}
+
 type ListTagsForResourceOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3453,6 +5253,12 @@ func (s ListTagsForResourceOutput) GoString() string {
 	return s.String()
 }
 
+// SetTagList sets the TagList field's value.
+func (s *ListTagsForResourceOutput) SetTagList(v []*Tag) *ListTagsForResourceOutput {
+	s.TagList = v
+	return s
+}
+
 type ModifyDocumentPermissionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3467,9 +5273,13 @@ type ModifyDocumentPermissionInput struct {
 	AccountIdsToRemove []*string `locationNameList:"AccountId" type:"list"`
 
 	// The name of the document that you want to share.
+	//
+	// Name is a required field
 	Name *string `type:"string" required:"true"`
 
 	// The permission type for the document. The permission type can be Share.
+	//
+	// PermissionType is a required field
 	PermissionType *string `type:"string" required:"true" enum:"DocumentPermissionType"`
 }
 
@@ -3497,6 +5307,30 @@ func (s *ModifyDocumentPermissionInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAccountIdsToAdd sets the AccountIdsToAdd field's value.
+func (s *ModifyDocumentPermissionInput) SetAccountIdsToAdd(v []*string) *ModifyDocumentPermissionInput {
+	s.AccountIdsToAdd = v
+	return s
+}
+
+// SetAccountIdsToRemove sets the AccountIdsToRemove field's value.
+func (s *ModifyDocumentPermissionInput) SetAccountIdsToRemove(v []*string) *ModifyDocumentPermissionInput {
+	s.AccountIdsToRemove = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *ModifyDocumentPermissionInput) SetName(v string) *ModifyDocumentPermissionInput {
+	s.Name = &v
+	return s
+}
+
+// SetPermissionType sets the PermissionType field's value.
+func (s *ModifyDocumentPermissionInput) SetPermissionType(v string) *ModifyDocumentPermissionInput {
+	s.PermissionType = &v
+	return s
 }
 
 type ModifyDocumentPermissionOutput struct {
@@ -3543,16 +5377,40 @@ func (s NotificationConfig) GoString() string {
 	return s.String()
 }
 
+// SetNotificationArn sets the NotificationArn field's value.
+func (s *NotificationConfig) SetNotificationArn(v string) *NotificationConfig {
+	s.NotificationArn = &v
+	return s
+}
+
+// SetNotificationEvents sets the NotificationEvents field's value.
+func (s *NotificationConfig) SetNotificationEvents(v []*string) *NotificationConfig {
+	s.NotificationEvents = v
+	return s
+}
+
+// SetNotificationType sets the NotificationType field's value.
+func (s *NotificationConfig) SetNotificationType(v string) *NotificationConfig {
+	s.NotificationType = &v
+	return s
+}
+
 type RemoveTagsFromResourceInput struct {
 	_ struct{} `type:"structure"`
 
 	// The resource ID for which you want to remove tags.
+	//
+	// ResourceId is a required field
 	ResourceId *string `type:"string" required:"true"`
 
 	// The type of resource of which you want to remove a tag.
+	//
+	// ResourceType is a required field
 	ResourceType *string `type:"string" required:"true" enum:"ResourceTypeForTagging"`
 
 	// Tag keys that you want to remove from the specified resource.
+	//
+	// TagKeys is a required field
 	TagKeys []*string `type:"list" required:"true"`
 }
 
@@ -3585,6 +5443,24 @@ func (s *RemoveTagsFromResourceInput) Validate() error {
 	return nil
 }
 
+// SetResourceId sets the ResourceId field's value.
+func (s *RemoveTagsFromResourceInput) SetResourceId(v string) *RemoveTagsFromResourceInput {
+	s.ResourceId = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *RemoveTagsFromResourceInput) SetResourceType(v string) *RemoveTagsFromResourceInput {
+	s.ResourceType = &v
+	return s
+}
+
+// SetTagKeys sets the TagKeys field's value.
+func (s *RemoveTagsFromResourceInput) SetTagKeys(v []*string) *RemoveTagsFromResourceInput {
+	s.TagKeys = v
+	return s
+}
+
 type RemoveTagsFromResourceOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -3608,20 +5484,24 @@ type SendCommandInput struct {
 
 	// The Sha256 or Sha1 hash created by the system when the document was created.
 	//
-	//  Sha1 hashes have been deprecated.
+	// Sha1 hashes have been deprecated.
 	DocumentHash *string `type:"string"`
 
 	// Sha256 or Sha1.
 	//
-	//  Sha1 hashes have been deprecated.
+	// Sha1 hashes have been deprecated.
 	DocumentHashType *string `type:"string" enum:"DocumentHashType"`
 
 	// Required. The name of the SSM document to execute. This can be an SSM public
 	// document or a custom document.
+	//
+	// DocumentName is a required field
 	DocumentName *string `type:"string" required:"true"`
 
 	// Required. The instance IDs where the command should execute. You can specify
 	// a maximum of 50 IDs.
+	//
+	// InstanceIds is a required field
 	InstanceIds []*string `min:"1" type:"list" required:"true"`
 
 	// Configurations for sending notifications.
@@ -3681,6 +5561,72 @@ func (s *SendCommandInput) Validate() error {
 	return nil
 }
 
+// SetComment sets the Comment field's value.
+func (s *SendCommandInput) SetComment(v string) *SendCommandInput {
+	s.Comment = &v
+	return s
+}
+
+// SetDocumentHash sets the DocumentHash field's value.
+func (s *SendCommandInput) SetDocumentHash(v string) *SendCommandInput {
+	s.DocumentHash = &v
+	return s
+}
+
+// SetDocumentHashType sets the DocumentHashType field's value.
+func (s *SendCommandInput) SetDocumentHashType(v string) *SendCommandInput {
+	s.DocumentHashType = &v
+	return s
+}
+
+// SetDocumentName sets the DocumentName field's value.
+func (s *SendCommandInput) SetDocumentName(v string) *SendCommandInput {
+	s.DocumentName = &v
+	return s
+}
+
+// SetInstanceIds sets the InstanceIds field's value.
+func (s *SendCommandInput) SetInstanceIds(v []*string) *SendCommandInput {
+	s.InstanceIds = v
+	return s
+}
+
+// SetNotificationConfig sets the NotificationConfig field's value.
+func (s *SendCommandInput) SetNotificationConfig(v *NotificationConfig) *SendCommandInput {
+	s.NotificationConfig = v
+	return s
+}
+
+// SetOutputS3BucketName sets the OutputS3BucketName field's value.
+func (s *SendCommandInput) SetOutputS3BucketName(v string) *SendCommandInput {
+	s.OutputS3BucketName = &v
+	return s
+}
+
+// SetOutputS3KeyPrefix sets the OutputS3KeyPrefix field's value.
+func (s *SendCommandInput) SetOutputS3KeyPrefix(v string) *SendCommandInput {
+	s.OutputS3KeyPrefix = &v
+	return s
+}
+
+// SetParameters sets the Parameters field's value.
+func (s *SendCommandInput) SetParameters(v map[string][]*string) *SendCommandInput {
+	s.Parameters = v
+	return s
+}
+
+// SetServiceRoleArn sets the ServiceRoleArn field's value.
+func (s *SendCommandInput) SetServiceRoleArn(v string) *SendCommandInput {
+	s.ServiceRoleArn = &v
+	return s
+}
+
+// SetTimeoutSeconds sets the TimeoutSeconds field's value.
+func (s *SendCommandInput) SetTimeoutSeconds(v int64) *SendCommandInput {
+	s.TimeoutSeconds = &v
+	return s
+}
+
 type SendCommandOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3699,6 +5645,12 @@ func (s SendCommandOutput) GoString() string {
 	return s.String()
 }
 
+// SetCommand sets the Command field's value.
+func (s *SendCommandOutput) SetCommand(v *Command) *SendCommandOutput {
+	s.Command = v
+	return s
+}
+
 // Metadata that you assign to your managed instances. Tags enable you to categorize
 // your managed instances in different ways, for example, by purpose, owner,
 // or environment.
@@ -3706,9 +5658,13 @@ type Tag struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the tag.
+	//
+	// Key is a required field
 	Key *string `min:"1" type:"string" required:"true"`
 
 	// The value of the tag.
+	//
+	// Value is a required field
 	Value *string `min:"1" type:"string" required:"true"`
 }
 
@@ -3744,16 +5700,34 @@ func (s *Tag) Validate() error {
 	return nil
 }
 
+// SetKey sets the Key field's value.
+func (s *Tag) SetKey(v string) *Tag {
+	s.Key = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *Tag) SetValue(v string) *Tag {
+	s.Value = &v
+	return s
+}
+
 type UpdateAssociationStatusInput struct {
 	_ struct{} `type:"structure"`
 
 	// The association status.
+	//
+	// AssociationStatus is a required field
 	AssociationStatus *AssociationStatus `type:"structure" required:"true"`
 
 	// The ID of the instance.
+	//
+	// InstanceId is a required field
 	InstanceId *string `type:"string" required:"true"`
 
 	// The name of the SSM document.
+	//
+	// Name is a required field
 	Name *string `type:"string" required:"true"`
 }
 
@@ -3791,6 +5765,24 @@ func (s *UpdateAssociationStatusInput) Validate() error {
 	return nil
 }
 
+// SetAssociationStatus sets the AssociationStatus field's value.
+func (s *UpdateAssociationStatusInput) SetAssociationStatus(v *AssociationStatus) *UpdateAssociationStatusInput {
+	s.AssociationStatus = v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *UpdateAssociationStatusInput) SetInstanceId(v string) *UpdateAssociationStatusInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateAssociationStatusInput) SetName(v string) *UpdateAssociationStatusInput {
+	s.Name = &v
+	return s
+}
+
 type UpdateAssociationStatusOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3808,13 +5800,23 @@ func (s UpdateAssociationStatusOutput) GoString() string {
 	return s.String()
 }
 
+// SetAssociationDescription sets the AssociationDescription field's value.
+func (s *UpdateAssociationStatusOutput) SetAssociationDescription(v *AssociationDescription) *UpdateAssociationStatusOutput {
+	s.AssociationDescription = v
+	return s
+}
+
 type UpdateManagedInstanceRoleInput struct {
 	_ struct{} `type:"structure"`
 
 	// The IAM role you want to assign or change.
+	//
+	// IamRole is a required field
 	IamRole *string `type:"string" required:"true"`
 
 	// The ID of the managed instance where you want to update the role.
+	//
+	// InstanceId is a required field
 	InstanceId *string `type:"string" required:"true"`
 }
 
@@ -3844,6 +5846,18 @@ func (s *UpdateManagedInstanceRoleInput) Validate() error {
 	return nil
 }
 
+// SetIamRole sets the IamRole field's value.
+func (s *UpdateManagedInstanceRoleInput) SetIamRole(v string) *UpdateManagedInstanceRoleInput {
+	s.IamRole = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *UpdateManagedInstanceRoleInput) SetInstanceId(v string) *UpdateManagedInstanceRoleInput {
+	s.InstanceId = &v
+	return s
+}
+
 type UpdateManagedInstanceRoleOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -3859,199 +5873,248 @@ func (s UpdateManagedInstanceRoleOutput) GoString() string {
 }
 
 const (
-	// @enum AssociationFilterKey
+	// AssociationFilterKeyInstanceId is a AssociationFilterKey enum value
 	AssociationFilterKeyInstanceId = "InstanceId"
-	// @enum AssociationFilterKey
+
+	// AssociationFilterKeyName is a AssociationFilterKey enum value
 	AssociationFilterKeyName = "Name"
 )
 
 const (
-	// @enum AssociationStatusName
+	// AssociationStatusNamePending is a AssociationStatusName enum value
 	AssociationStatusNamePending = "Pending"
-	// @enum AssociationStatusName
+
+	// AssociationStatusNameSuccess is a AssociationStatusName enum value
 	AssociationStatusNameSuccess = "Success"
-	// @enum AssociationStatusName
+
+	// AssociationStatusNameFailed is a AssociationStatusName enum value
 	AssociationStatusNameFailed = "Failed"
 )
 
 const (
-	// @enum CommandFilterKey
+	// CommandFilterKeyInvokedAfter is a CommandFilterKey enum value
 	CommandFilterKeyInvokedAfter = "InvokedAfter"
-	// @enum CommandFilterKey
+
+	// CommandFilterKeyInvokedBefore is a CommandFilterKey enum value
 	CommandFilterKeyInvokedBefore = "InvokedBefore"
-	// @enum CommandFilterKey
+
+	// CommandFilterKeyStatus is a CommandFilterKey enum value
 	CommandFilterKeyStatus = "Status"
 )
 
 const (
-	// @enum CommandInvocationStatus
+	// CommandInvocationStatusPending is a CommandInvocationStatus enum value
 	CommandInvocationStatusPending = "Pending"
-	// @enum CommandInvocationStatus
+
+	// CommandInvocationStatusInProgress is a CommandInvocationStatus enum value
 	CommandInvocationStatusInProgress = "InProgress"
-	// @enum CommandInvocationStatus
+
+	// CommandInvocationStatusCancelling is a CommandInvocationStatus enum value
 	CommandInvocationStatusCancelling = "Cancelling"
-	// @enum CommandInvocationStatus
+
+	// CommandInvocationStatusSuccess is a CommandInvocationStatus enum value
 	CommandInvocationStatusSuccess = "Success"
-	// @enum CommandInvocationStatus
+
+	// CommandInvocationStatusTimedOut is a CommandInvocationStatus enum value
 	CommandInvocationStatusTimedOut = "TimedOut"
-	// @enum CommandInvocationStatus
+
+	// CommandInvocationStatusCancelled is a CommandInvocationStatus enum value
 	CommandInvocationStatusCancelled = "Cancelled"
-	// @enum CommandInvocationStatus
+
+	// CommandInvocationStatusFailed is a CommandInvocationStatus enum value
 	CommandInvocationStatusFailed = "Failed"
 )
 
 const (
-	// @enum CommandPluginStatus
+	// CommandPluginStatusPending is a CommandPluginStatus enum value
 	CommandPluginStatusPending = "Pending"
-	// @enum CommandPluginStatus
+
+	// CommandPluginStatusInProgress is a CommandPluginStatus enum value
 	CommandPluginStatusInProgress = "InProgress"
-	// @enum CommandPluginStatus
+
+	// CommandPluginStatusSuccess is a CommandPluginStatus enum value
 	CommandPluginStatusSuccess = "Success"
-	// @enum CommandPluginStatus
+
+	// CommandPluginStatusTimedOut is a CommandPluginStatus enum value
 	CommandPluginStatusTimedOut = "TimedOut"
-	// @enum CommandPluginStatus
+
+	// CommandPluginStatusCancelled is a CommandPluginStatus enum value
 	CommandPluginStatusCancelled = "Cancelled"
-	// @enum CommandPluginStatus
+
+	// CommandPluginStatusFailed is a CommandPluginStatus enum value
 	CommandPluginStatusFailed = "Failed"
 )
 
 const (
-	// @enum CommandStatus
+	// CommandStatusPending is a CommandStatus enum value
 	CommandStatusPending = "Pending"
-	// @enum CommandStatus
+
+	// CommandStatusInProgress is a CommandStatus enum value
 	CommandStatusInProgress = "InProgress"
-	// @enum CommandStatus
+
+	// CommandStatusCancelling is a CommandStatus enum value
 	CommandStatusCancelling = "Cancelling"
-	// @enum CommandStatus
+
+	// CommandStatusSuccess is a CommandStatus enum value
 	CommandStatusSuccess = "Success"
-	// @enum CommandStatus
+
+	// CommandStatusTimedOut is a CommandStatus enum value
 	CommandStatusTimedOut = "TimedOut"
-	// @enum CommandStatus
+
+	// CommandStatusCancelled is a CommandStatus enum value
 	CommandStatusCancelled = "Cancelled"
-	// @enum CommandStatus
+
+	// CommandStatusFailed is a CommandStatus enum value
 	CommandStatusFailed = "Failed"
 )
 
 const (
-	// @enum DescribeActivationsFilterKeys
+	// DescribeActivationsFilterKeysActivationIds is a DescribeActivationsFilterKeys enum value
 	DescribeActivationsFilterKeysActivationIds = "ActivationIds"
-	// @enum DescribeActivationsFilterKeys
+
+	// DescribeActivationsFilterKeysDefaultInstanceName is a DescribeActivationsFilterKeys enum value
 	DescribeActivationsFilterKeysDefaultInstanceName = "DefaultInstanceName"
-	// @enum DescribeActivationsFilterKeys
+
+	// DescribeActivationsFilterKeysIamRole is a DescribeActivationsFilterKeys enum value
 	DescribeActivationsFilterKeysIamRole = "IamRole"
 )
 
 const (
-	// @enum DocumentFilterKey
+	// DocumentFilterKeyName is a DocumentFilterKey enum value
 	DocumentFilterKeyName = "Name"
-	// @enum DocumentFilterKey
+
+	// DocumentFilterKeyOwner is a DocumentFilterKey enum value
 	DocumentFilterKeyOwner = "Owner"
-	// @enum DocumentFilterKey
+
+	// DocumentFilterKeyPlatformTypes is a DocumentFilterKey enum value
 	DocumentFilterKeyPlatformTypes = "PlatformTypes"
 )
 
 const (
-	// @enum DocumentHashType
+	// DocumentHashTypeSha256 is a DocumentHashType enum value
 	DocumentHashTypeSha256 = "Sha256"
-	// @enum DocumentHashType
+
+	// DocumentHashTypeSha1 is a DocumentHashType enum value
 	DocumentHashTypeSha1 = "Sha1"
 )
 
 const (
-	// @enum DocumentParameterType
+	// DocumentParameterTypeString is a DocumentParameterType enum value
 	DocumentParameterTypeString = "String"
-	// @enum DocumentParameterType
+
+	// DocumentParameterTypeStringList is a DocumentParameterType enum value
 	DocumentParameterTypeStringList = "StringList"
 )
 
 const (
-	// @enum DocumentPermissionType
+	// DocumentPermissionTypeShare is a DocumentPermissionType enum value
 	DocumentPermissionTypeShare = "Share"
 )
 
 const (
-	// @enum DocumentStatus
+	// DocumentStatusCreating is a DocumentStatus enum value
 	DocumentStatusCreating = "Creating"
-	// @enum DocumentStatus
+
+	// DocumentStatusActive is a DocumentStatus enum value
 	DocumentStatusActive = "Active"
-	// @enum DocumentStatus
+
+	// DocumentStatusDeleting is a DocumentStatus enum value
 	DocumentStatusDeleting = "Deleting"
 )
 
 const (
-	// @enum Fault
+	// FaultClient is a Fault enum value
 	FaultClient = "Client"
-	// @enum Fault
+
+	// FaultServer is a Fault enum value
 	FaultServer = "Server"
-	// @enum Fault
+
+	// FaultUnknown is a Fault enum value
 	FaultUnknown = "Unknown"
 )
 
 const (
-	// @enum InstanceInformationFilterKey
+	// InstanceInformationFilterKeyInstanceIds is a InstanceInformationFilterKey enum value
 	InstanceInformationFilterKeyInstanceIds = "InstanceIds"
-	// @enum InstanceInformationFilterKey
+
+	// InstanceInformationFilterKeyAgentVersion is a InstanceInformationFilterKey enum value
 	InstanceInformationFilterKeyAgentVersion = "AgentVersion"
-	// @enum InstanceInformationFilterKey
+
+	// InstanceInformationFilterKeyPingStatus is a InstanceInformationFilterKey enum value
 	InstanceInformationFilterKeyPingStatus = "PingStatus"
-	// @enum InstanceInformationFilterKey
+
+	// InstanceInformationFilterKeyPlatformTypes is a InstanceInformationFilterKey enum value
 	InstanceInformationFilterKeyPlatformTypes = "PlatformTypes"
-	// @enum InstanceInformationFilterKey
+
+	// InstanceInformationFilterKeyActivationIds is a InstanceInformationFilterKey enum value
 	InstanceInformationFilterKeyActivationIds = "ActivationIds"
-	// @enum InstanceInformationFilterKey
+
+	// InstanceInformationFilterKeyIamRole is a InstanceInformationFilterKey enum value
 	InstanceInformationFilterKeyIamRole = "IamRole"
-	// @enum InstanceInformationFilterKey
+
+	// InstanceInformationFilterKeyResourceType is a InstanceInformationFilterKey enum value
 	InstanceInformationFilterKeyResourceType = "ResourceType"
 )
 
 const (
-	// @enum NotificationEvent
+	// NotificationEventAll is a NotificationEvent enum value
 	NotificationEventAll = "All"
-	// @enum NotificationEvent
+
+	// NotificationEventInProgress is a NotificationEvent enum value
 	NotificationEventInProgress = "InProgress"
-	// @enum NotificationEvent
+
+	// NotificationEventSuccess is a NotificationEvent enum value
 	NotificationEventSuccess = "Success"
-	// @enum NotificationEvent
+
+	// NotificationEventTimedOut is a NotificationEvent enum value
 	NotificationEventTimedOut = "TimedOut"
-	// @enum NotificationEvent
+
+	// NotificationEventCancelled is a NotificationEvent enum value
 	NotificationEventCancelled = "Cancelled"
-	// @enum NotificationEvent
+
+	// NotificationEventFailed is a NotificationEvent enum value
 	NotificationEventFailed = "Failed"
 )
 
 const (
-	// @enum NotificationType
+	// NotificationTypeCommand is a NotificationType enum value
 	NotificationTypeCommand = "Command"
-	// @enum NotificationType
+
+	// NotificationTypeInvocation is a NotificationType enum value
 	NotificationTypeInvocation = "Invocation"
 )
 
 const (
-	// @enum PingStatus
+	// PingStatusOnline is a PingStatus enum value
 	PingStatusOnline = "Online"
-	// @enum PingStatus
+
+	// PingStatusConnectionLost is a PingStatus enum value
 	PingStatusConnectionLost = "ConnectionLost"
-	// @enum PingStatus
+
+	// PingStatusInactive is a PingStatus enum value
 	PingStatusInactive = "Inactive"
 )
 
 const (
-	// @enum PlatformType
+	// PlatformTypeWindows is a PlatformType enum value
 	PlatformTypeWindows = "Windows"
-	// @enum PlatformType
+
+	// PlatformTypeLinux is a PlatformType enum value
 	PlatformTypeLinux = "Linux"
 )
 
 const (
-	// @enum ResourceType
+	// ResourceTypeManagedInstance is a ResourceType enum value
 	ResourceTypeManagedInstance = "ManagedInstance"
-	// @enum ResourceType
+
+	// ResourceTypeDocument is a ResourceType enum value
 	ResourceTypeDocument = "Document"
-	// @enum ResourceType
+
+	// ResourceTypeEc2instance is a ResourceType enum value
 	ResourceTypeEc2instance = "EC2Instance"
 )
 
 const (
-	// @enum ResourceTypeForTagging
+	// ResourceTypeForTaggingManagedInstance is a ResourceTypeForTagging enum value
 	ResourceTypeForTaggingManagedInstance = "ManagedInstance"
 )

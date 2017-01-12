@@ -31,6 +31,7 @@ import (
 
 	"github.com/golang/glog"
 	utilExec "k8s.io/kubernetes/pkg/util/exec"
+	"k8s.io/kubernetes/pkg/util/sets"
 )
 
 const (
@@ -52,7 +53,9 @@ const (
 // Mounter provides the default implementation of mount.Interface
 // for the linux platform.  This implementation assumes that the
 // kubelet is running in the host's root mount namespace.
-type Mounter struct{}
+type Mounter struct {
+	mounterPath string
+}
 
 // Mount mounts source to target as fstype with given options. 'source' and 'fstype' must
 // be an emtpy string in case it's not required, e.g. for remount, or for auto filesystem
@@ -60,17 +63,23 @@ type Mounter struct{}
 // currently come from mount(8), e.g. "ro", "remount", "bind", etc. If no more option is
 // required, call Mount with an empty string list or nil.
 func (mounter *Mounter) Mount(source string, target string, fstype string, options []string) error {
+	// Path to mounter binary. Set to mount accessible via $PATH by default.
+	// All Linux distros are expected to be shipped with a mount utility that an support bind mounts.
+	mounterPath := defaultMountCommand
 	bind, bindRemountOpts := isBind(options)
-
 	if bind {
-		err := doMount(source, target, fstype, []string{"bind"})
+		err := doMount(mounterPath, source, target, fstype, []string{"bind"})
 		if err != nil {
 			return err
 		}
-		return doMount(source, target, fstype, bindRemountOpts)
-	} else {
-		return doMount(source, target, fstype, options)
+		return doMount(mounterPath, source, target, fstype, bindRemountOpts)
 	}
+	// These filesystem types are expected to be supported by the mount utility on the host across all Linux distros.
+	var defaultMounterFsTypes = sets.NewString("tmpfs", "ext4", "ext3", "ext2")
+	if !defaultMounterFsTypes.Has(fstype) {
+		mounterPath = mounter.mounterPath
+	}
+	return doMount(mounterPath, source, target, fstype, options)
 }
 
 // isBind detects whether a bind mount is being requested and makes the remount options to
@@ -99,15 +108,17 @@ func isBind(options []string) (bool, []string) {
 }
 
 // doMount runs the mount command.
-func doMount(source string, target string, fstype string, options []string) error {
-	glog.V(5).Infof("Mounting %s %s %s %v", source, target, fstype, options)
+func doMount(mountCmd string, source string, target string, fstype string, options []string) error {
+	glog.V(4).Infof("Mounting %s %s %s %v with command: %q", source, target, fstype, options, mountCmd)
 	mountArgs := makeMountArgs(source, target, fstype, options)
-	command := exec.Command("mount", mountArgs...)
+
+	glog.V(4).Infof("Mounting cmd (%s) with arguments (%s)", mountCmd, mountArgs)
+	command := exec.Command(mountCmd, mountArgs...)
 	output, err := command.CombinedOutput()
 	if err != nil {
-		glog.Errorf("Mount failed: %v\nMounting arguments: %s %s %s %v\nOutput: %s\n", err, source, target, fstype, options, string(output))
-		return fmt.Errorf("mount failed: %v\nMounting arguments: %s %s %s %v\nOutput: %s\n",
-			err, source, target, fstype, options, string(output))
+		glog.Errorf("Mount failed: %v\nMounting command: %s\nMounting arguments: %s %s %s %v\nOutput: %s\n", err, mountCmd, source, target, fstype, options, string(output))
+		return fmt.Errorf("mount failed: %v\nMounting command: %s\nMounting arguments: %s %s %s %v\nOutput: %s\n",
+			err, mountCmd, source, target, fstype, options, string(output))
 	}
 	return err
 }
@@ -133,7 +144,7 @@ func makeMountArgs(source, target, fstype string, options []string) []string {
 
 // Unmount unmounts the target.
 func (mounter *Mounter) Unmount(target string) error {
-	glog.V(5).Infof("Unmounting %s", target)
+	glog.V(4).Infof("Unmounting %s", target)
 	command := exec.Command("umount", target)
 	output, err := command.CombinedOutput()
 	if err != nil {
@@ -154,6 +165,10 @@ func (*Mounter) List() ([]MountPoint, error) {
 // will return true. When in fact /tmp/b is a mount point. If this situation
 // if of interest to you, don't use this function...
 func (mounter *Mounter) IsLikelyNotMountPoint(file string) (bool, error) {
+	return IsNotMountPoint(file)
+}
+
+func IsNotMountPoint(file string) (bool, error) {
 	stat, err := os.Stat(file)
 	if err != nil {
 		return true, err
@@ -171,9 +186,10 @@ func (mounter *Mounter) IsLikelyNotMountPoint(file string) (bool, error) {
 }
 
 // DeviceOpened checks if block device in use by calling Open with O_EXCL flag.
-// Returns true if open returns errno EBUSY, and false if errno is nil.
-// Returns an error if errno is any error other than EBUSY.
-// Returns with error if pathname is not a device.
+// If pathname is not a device, log and return false with nil error.
+// If open returns errno EBUSY, return true with nil error.
+// If open returns nil, return false with nil error.
+// Otherwise, return false with error
 func (mounter *Mounter) DeviceOpened(pathname string) (bool, error) {
 	return exclusiveOpenFailsOnDevice(pathname)
 }
@@ -185,11 +201,16 @@ func (mounter *Mounter) PathIsDevice(pathname string) (bool, error) {
 }
 
 func exclusiveOpenFailsOnDevice(pathname string) (bool, error) {
-	if isDevice, err := pathIsDevice(pathname); !isDevice {
+	isDevice, err := pathIsDevice(pathname)
+	if err != nil {
 		return false, fmt.Errorf(
 			"PathIsDevice failed for path %q: %v",
 			pathname,
 			err)
+	}
+	if !isDevice {
+		glog.Errorf("Path %q is not refering to a device.", pathname)
+		return false, nil
 	}
 	fd, errno := syscall.Open(pathname, syscall.O_RDONLY|syscall.O_EXCL, 0)
 	// If the device is in use, open will return an invalid fd.

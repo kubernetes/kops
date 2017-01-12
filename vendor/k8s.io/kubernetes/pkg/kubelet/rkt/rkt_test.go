@@ -40,7 +40,6 @@ import (
 	"k8s.io/kubernetes/pkg/kubelet/network"
 	"k8s.io/kubernetes/pkg/kubelet/network/kubenet"
 	"k8s.io/kubernetes/pkg/kubelet/network/mock_network"
-	"k8s.io/kubernetes/pkg/kubelet/rkt/mock_os"
 	"k8s.io/kubernetes/pkg/kubelet/types"
 	kubetypes "k8s.io/kubernetes/pkg/types"
 	"k8s.io/kubernetes/pkg/util/errors"
@@ -310,6 +309,33 @@ func TestListImages(t *testing.T) {
 				{
 					ID:       "sha512-c6b597f42816",
 					RepoTags: []string{"coreos.com/rkt/stage1-coreos:0.10.0"},
+					Size:     400,
+				},
+			},
+		},
+		{
+			[]*rktapi.Image{
+				{
+					Id:      "sha512-a2fb8f390702",
+					Name:    "quay.io_443/coreos/alpine-sh",
+					Version: "latest",
+					Annotations: []*rktapi.KeyValue{
+						{
+							Key:   appcDockerRegistryURL,
+							Value: "quay.io:443",
+						},
+						{
+							Key:   appcDockerRepository,
+							Value: "coreos/alpine-sh",
+						},
+					},
+					Size: 400,
+				},
+			},
+			[]kubecontainer.Image{
+				{
+					ID:       "sha512-a2fb8f390702",
+					RepoTags: []string{"quay.io:443/coreos/alpine-sh:latest"},
 					Size:     400,
 				},
 			},
@@ -786,7 +812,7 @@ func TestGetPodStatus(t *testing.T) {
 			if !ok {
 				t.Errorf("osStat called with %v, but only knew about %#v", name, podTimes)
 			}
-			mockFI := mock_os.NewMockFileInfo(ctrl)
+			mockFI := containertesting.NewMockFileInfo(ctrl)
 			mockFI.EXPECT().ModTime().Return(podTime)
 			return mockFI, nil
 		}
@@ -1754,7 +1780,7 @@ func TestGarbageCollect(t *testing.T) {
 			var fileInfos []os.FileInfo
 
 			for _, name := range serviceFileNames {
-				mockFI := mock_os.NewMockFileInfo(ctrl)
+				mockFI := containertesting.NewMockFileInfo(ctrl)
 				mockFI.EXPECT().Name().Return(name)
 				fileInfos = append(fileInfos, mockFI)
 			}

@@ -4,24 +4,27 @@
   "operations": {
     "CheckDomainAvailability": "<p>This operation checks the availability of one domain name. Note that if the availability status of a domain is pending, you must submit another request to determine the availability of the domain name.</p>",
     "DeleteTagsForDomain": "<p>This operation deletes the specified tags for a domain.</p> <p>All tag operations are eventually consistent; subsequent operations may not immediately represent all issued operations.</p>",
-    "DisableDomainAutoRenew": "<p>This operation disables automatic renewal of domain registration for the specified domain.</p> <note>Caution! Amazon Route 53 doesn't have a manual renewal process, so if you disable automatic renewal, registration for the domain will not be renewed when the expiration date passes, and you will lose control of the domain name.</note>",
+    "DisableDomainAutoRenew": "<p>This operation disables automatic renewal of domain registration for the specified domain.</p>",
     "DisableDomainTransferLock": "<p>This operation removes the transfer lock on the domain (specifically the <code>clientTransferProhibited</code> status) to allow domain transfers. We recommend you refrain from performing this action unless you intend to transfer the domain to a different registrar. Successful submission returns an operation ID that you can use to track the progress and completion of the action. If the request is not completed successfully, the domain registrant will be notified by email.</p>",
     "EnableDomainAutoRenew": "<p>This operation configures Amazon Route 53 to automatically renew the specified domain before the domain registration expires. The cost of renewing your domain registration is billed to your AWS account.</p> <p>The period during which you can renew a domain name varies by TLD. For a list of TLDs and their renewal policies, see <a href=\"http://wiki.gandi.net/en/domains/renew#renewal_restoration_and_deletion_times\">\"Renewal, restoration, and deletion times\"</a> on the website for our registrar partner, Gandi. Route 53 requires that you renew before the end of the renewal period that is listed on the Gandi website so we can complete processing before the deadline.</p>",
     "EnableDomainTransferLock": "<p>This operation sets the transfer lock on the domain (specifically the <code>clientTransferProhibited</code> status) to prevent domain transfers. Successful submission returns an operation ID that you can use to track the progress and completion of the action. If the request is not completed successfully, the domain registrant will be notified by email.</p>",
     "GetContactReachabilityStatus": "<p>For operations that require confirmation that the email address for the registrant contact is valid, such as registering a new domain, this operation returns information about whether the registrant contact has responded.</p> <p>If you want us to resend the email, use the <code>ResendContactReachabilityEmail</code> operation.</p>",
     "GetDomainDetail": "<p>This operation returns detailed information about the domain. The domain's contact information is also returned as part of the output.</p>",
+    "GetDomainSuggestions": "<p>The GetDomainSuggestions operation returns a list of suggested domain names given a string, which can either be a domain name or simply a word or phrase (without spaces).</p> <p> Parameters: <ul><li>DomainName (string): The basis for your domain suggestion search, a string with (or without) top-level domain specified.</li> <li>SuggestionCount (int): The number of domain suggestions to be returned, maximum 50, minimum 1.</li> <li>OnlyAvailable (bool): If true, availability check will be performed on suggestion results, and only available domains will be returned. If false, suggestions will be returned without checking whether the domain is actually available, and caller will have to call checkDomainAvailability for each suggestion to determine availability for registration.</li> </ul> </p>",
     "GetOperationDetail": "<p>This operation returns the current status of an operation that is not completed.</p>",
     "ListDomains": "<p>This operation returns all the domain names registered with Amazon Route 53 for the current AWS account.</p>",
     "ListOperations": "<p>This operation returns the operation IDs of operations that are not yet complete.</p>",
     "ListTagsForDomain": "<p>This operation returns all of the tags that are associated with the specified domain.</p> <p>All tag operations are eventually consistent; subsequent operations may not immediately represent all issued operations.</p>",
     "RegisterDomain": "<p>This operation registers a domain. Domains are registered by the AWS registrar partner, Gandi. For some top-level domains (TLDs), this operation requires extra parameters.</p> <p>When you register a domain, Amazon Route 53 does the following:</p> <ul> <li>Creates a Amazon Route 53 hosted zone that has the same name as the domain. Amazon Route 53 assigns four name servers to your hosted zone and automatically updates your domain registration with the names of these name servers.</li> <li>Enables autorenew, so your domain registration will renew automatically each year. We'll notify you in advance of the renewal date so you can choose whether to renew the registration.</li> <li>Optionally enables privacy protection, so WHOIS queries return contact information for our registrar partner, Gandi, instead of the information you entered for registrant, admin, and tech contacts.</li> <li>If registration is successful, returns an operation ID that you can use to track the progress and completion of the action. If the request is not completed successfully, the domain registrant is notified by email.</li> <li>Charges your AWS account an amount based on the top-level domain. For more information, see <a href=\"http://aws.amazon.com/route53/pricing/\">Amazon Route 53 Pricing</a>.</li> </ul>",
+    "RenewDomain": "<p>This operation renews a domain for the specified number of years. The cost of renewing your domain is billed to your AWS account.</p> <p>We recommend that you renew your domain several weeks before the expiration date. Some TLD registries delete domains before the expiration date if you haven't renewed far enough in advance. For more information about renewing domain registration, see <a href=\"http://docs.aws.amazon.com/console/route53/domain-renew\">Renewing Registration for a Domain</a> in the Amazon Route 53 documentation.</p>",
     "ResendContactReachabilityEmail": "<p>For operations that require confirmation that the email address for the registrant contact is valid, such as registering a new domain, this operation resends the confirmation email to the current email address for the registrant contact. </p>",
     "RetrieveDomainAuthCode": "<p>This operation returns the AuthCode for the domain. To transfer a domain to another registrar, you provide this value to the new registrar.</p>",
     "TransferDomain": "<p>This operation transfers a domain from another registrar to Amazon Route 53. When the transfer is complete, the domain is registered with the AWS registrar partner, Gandi.</p> <p>For transfer requirements, a detailed procedure, and information about viewing the status of a domain transfer, see <a href=\"http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/domain-transfer-to-route-53.html\">Transferring Registration for a Domain to Amazon Route 53</a> in the Amazon Route 53 Developer Guide.</p> <p>If the registrar for your domain is also the DNS service provider for the domain, we highly recommend that you consider transferring your DNS service to Amazon Route 53 or to another DNS service provider before you transfer your registration. Some registrars provide free DNS service when you purchase a domain registration. When you transfer the registration, the previous registrar will not renew your domain registration and could end your DNS service at any time.</p> <note>Caution! If the registrar for your domain is also the DNS service provider for the domain and you don't transfer DNS service to another provider, your website, email, and the web applications associated with the domain might become unavailable.</note> <p>If the transfer is successful, this method returns an operation ID that you can use to track the progress and completion of the action. If the transfer doesn't complete successfully, the domain registrant will be notified by email.</p>",
     "UpdateDomainContact": "<p>This operation updates the contact information for a particular domain. Information for at least one contact (registrant, administrator, or technical) must be supplied for update.</p> <p>If the update is successful, this method returns an operation ID that you can use to track the progress and completion of the action. If the request is not completed successfully, the domain registrant will be notified by email.</p>",
     "UpdateDomainContactPrivacy": "<p>This operation updates the specified domain contact's privacy setting. When the privacy option is enabled, personal information such as postal or email address is hidden from the results of a public WHOIS query. The privacy services are provided by the AWS registrar, Gandi. For more information, see the <a href=\"http://www.gandi.net/domain/whois/?currency=USD&amp;amp;lang=en\">Gandi privacy features</a>.</p> <p>This operation only affects the privacy of the specified contact type (registrant, administrator, or tech). Successful acceptance returns an operation ID that you can use with GetOperationDetail to track the progress and completion of the action. If the request is not completed successfully, the domain registrant will be notified by email.</p>",
     "UpdateDomainNameservers": "<p>This operation replaces the current set of name servers for the domain with the specified set of name servers. If you use Amazon Route 53 as your DNS service, specify the four name servers in the delegation set for the hosted zone for the domain. </p> <p>If successful, this operation returns an operation ID that you can use to track the progress and completion of the action. If the request is not completed successfully, the domain registrant will be notified by email.</p>",
-    "UpdateTagsForDomain": "<p>This operation adds or updates tags for a specified domain.</p> <p>All tag operations are eventually consistent; subsequent operations may not immediately represent all issued operations.</p>"
+    "UpdateTagsForDomain": "<p>This operation adds or updates tags for a specified domain.</p> <p>All tag operations are eventually consistent; subsequent operations may not immediately represent all issued operations.</p>",
+    "ViewBilling": "<p>This operation returns all the domain-related billing records for the current AWS account for a specified period</p>"
   },
   "shapes": {
     "AddressLine": {
@@ -29,6 +32,18 @@
       "refs": {
         "ContactDetail$AddressLine1": "<p>First line of the contact&apos;s address.</p> <p>Type: String</p> <p>Default: None</p> <p>Constraints: Maximum 255 characters.</p> <p>Parents: <code>RegistrantContact</code>, <code>AdminContact</code>, <code>TechContact</code></p> <p>Required: Yes</p>",
         "ContactDetail$AddressLine2": "<p>Second line of contact&apos;s address, if any.</p> <p>Type: String</p> <p>Default: None</p> <p>Constraints: Maximum 255 characters.</p> <p>Parents: <code>RegistrantContact</code>, <code>AdminContact</code>, <code>TechContact</code></p> <p>Required: No</p>"
+      }
+    },
+    "BillingRecord": {
+      "base": null,
+      "refs": {
+        "BillingRecords$member": null
+      }
+    },
+    "BillingRecords": {
+      "base": null,
+      "refs": {
+        "ViewBillingResponse$BillingRecords": "<p>A summary of billing records.</p> <p>Type: Complex type containing a list of billing record summaries.</p> <p>Children: <code>DomainName</code>, <code>Operation</code>, <code>InvoiceId</code>, <code>BillDate</code> and <code>Price</code></p>"
       }
     },
     "Boolean": {
@@ -40,6 +55,7 @@
         "GetDomainDetailResponse$AdminPrivacy": "<p>Specifies whether contact information for the admin contact is concealed from WHOIS queries. If the value is <code>true</code>, WHOIS (\"who is\") queries will return contact information for our registrar partner, Gandi, instead of the contact information that you enter.</p> <p>Type: Boolean</p>",
         "GetDomainDetailResponse$RegistrantPrivacy": "<p>Specifies whether contact information for the registrant contact is concealed from WHOIS queries. If the value is <code>true</code>, WHOIS (\"who is\") queries will return contact information for our registrar partner, Gandi, instead of the contact information that you enter.</p> <p>Type: Boolean</p>",
         "GetDomainDetailResponse$TechPrivacy": "<p>Specifies whether contact information for the tech contact is concealed from WHOIS queries. If the value is <code>true</code>, WHOIS (\"who is\") queries will return contact information for our registrar partner, Gandi, instead of the contact information that you enter.</p> <p>Type: Boolean</p>",
+        "GetDomainSuggestionsRequest$OnlyAvailable": null,
         "RegisterDomainRequest$AutoRenew": "<p>Indicates whether the domain will be automatically renewed (<code>true</code>) or not (<code>false</code>). Autorenewal only takes effect after the account is charged.</p> <p>Type: Boolean</p> <p>Valid values: <code>true</code> | <code>false</code></p> <p>Default: <code>true</code></p> <p>Required: No</p>",
         "RegisterDomainRequest$PrivacyProtectAdminContact": "<p>Whether you want to conceal contact information from WHOIS queries. If you specify true, WHOIS (\"who is\") queries will return contact information for our registrar partner, Gandi, instead of the contact information that you enter.</p> <p>Type: Boolean</p> <p>Default: <code>true</code></p> <p>Valid values: <code>true</code> | <code>false</code></p> <p>Required: No</p>",
         "RegisterDomainRequest$PrivacyProtectRegistrantContact": "<p>Whether you want to conceal contact information from WHOIS queries. If you specify true, WHOIS (\"who is\") queries will return contact information for our registrar partner, Gandi, instead of the contact information that you enter.</p> <p>Type: Boolean</p> <p>Default: <code>true</code></p> <p>Valid values: <code>true</code> | <code>false</code></p> <p>Required: No</p>",
@@ -115,6 +131,12 @@
         "ContactDetail$CountryCode": "<p>Code for the country of the contact&apos;s address.</p> <p>Type: String</p> <p>Default: None</p> <p>Constraints: Maximum 255 characters.</p> <p>Parents: <code>RegistrantContact</code>, <code>AdminContact</code>, <code>TechContact</code></p> <p>Required: Yes</p>"
       }
     },
+    "CurrentExpiryYear": {
+      "base": null,
+      "refs": {
+        "RenewDomainRequest$CurrentExpiryYear": "<p>The year when the registration for the domain is set to expire. This value must match the current expiration date for the domain.</p> <p>Type: Integer</p> <p>Default: None</p> <p>Valid values: Integer</p> <p>Required: Yes</p>"
+      }
+    },
     "DNSSec": {
       "base": null,
       "refs": {
@@ -172,10 +194,12 @@
     "DomainName": {
       "base": null,
       "refs": {
+        "BillingRecord$DomainName": "<p>The name of a domain.</p> <p>Type: String</p>",
         "CheckDomainAvailabilityRequest$DomainName": "<p>The name of a domain.</p> <p>Type: String</p> <p>Default: None</p> <p>Constraints: The domain name can contain only the letters a through z, the numbers 0 through 9, and hyphen (-). Internationalized Domain Names are not supported.</p> <p>Required: Yes</p>",
         "DeleteTagsForDomainRequest$DomainName": "<p>The domain for which you want to delete one or more tags.</p> <p>The name of a domain.</p> <p>Type: String</p> <p>Default: None</p> <p>Constraints: The domain name can contain only the letters a through z, the numbers 0 through 9, and hyphen (-). Hyphens are allowed only when they&apos;re surrounded by letters, numbers, or other hyphens. You can&apos;t specify a hyphen at the beginning or end of a label. To specify an Internationalized Domain Name, you must convert the name to Punycode.</p> <p>Required: Yes</p>",
         "DisableDomainAutoRenewRequest$DomainName": null,
         "DisableDomainTransferLockRequest$DomainName": "<p>The name of a domain.</p> <p>Type: String</p> <p>Default: None</p> <p>Constraints: The domain name can contain only the letters a through z, the numbers 0 through 9, and hyphen (-). Internationalized Domain Names are not supported.</p> <p>Required: Yes</p>",
+        "DomainSuggestion$DomainName": null,
         "DomainSummary$DomainName": "<p>The name of a domain.</p> <p>Type: String</p>",
         "EnableDomainAutoRenewRequest$DomainName": null,
         "EnableDomainTransferLockRequest$DomainName": "<p>The name of a domain.</p> <p>Type: String</p> <p>Default: None</p> <p>Constraints: The domain name can contain only the letters a through z, the numbers 0 through 9, and hyphen (-). Internationalized Domain Names are not supported.</p> <p>Required: Yes</p>",
@@ -183,9 +207,11 @@
         "GetContactReachabilityStatusResponse$domainName": "<p>The domain name for which you requested the reachability status.</p>",
         "GetDomainDetailRequest$DomainName": "<p>The name of a domain.</p> <p>Type: String</p> <p>Default: None</p> <p>Constraints: The domain name can contain only the letters a through z, the numbers 0 through 9, and hyphen (-). Internationalized Domain Names are not supported.</p> <p>Required: Yes</p>",
         "GetDomainDetailResponse$DomainName": "<p>The name of a domain.</p> <p>Type: String</p>",
+        "GetDomainSuggestionsRequest$DomainName": null,
         "GetOperationDetailResponse$DomainName": "<p>The name of a domain.</p> <p>Type: String</p>",
         "ListTagsForDomainRequest$DomainName": "<p>The domain for which you want to get a list of tags.</p>",
         "RegisterDomainRequest$DomainName": "<p>The name of a domain.</p> <p>Type: String</p> <p>Default: None</p> <p>Constraints: The domain name can contain only the letters a through z, the numbers 0 through 9, and hyphen (-). Internationalized Domain Names are not supported.</p> <p>Required: Yes</p>",
+        "RenewDomainRequest$DomainName": null,
         "ResendContactReachabilityEmailRequest$domainName": "<p>The name of the domain for which you want Amazon Route 53 to resend a confirmation email to the registrant contact.</p> <p>Type: String</p> <p>Default: None</p> <p>Required: Yes</p>",
         "ResendContactReachabilityEmailResponse$domainName": "<p>The domain name for which you requested a confirmation email.</p>",
         "RetrieveDomainAuthCodeRequest$DomainName": "<p>The name of a domain.</p> <p>Type: String</p> <p>Default: None</p> <p>Constraints: The domain name can contain only the letters a through z, the numbers 0 through 9, and hyphen (-). Internationalized Domain Names are not supported.</p> <p>Required: Yes</p>",
@@ -206,6 +232,18 @@
       "base": null,
       "refs": {
         "GetDomainDetailResponse$StatusList": "<p>An array of domain name status codes, also known as Extensible Provisioning Protocol (EPP) status codes.</p> <p>ICANN, the organization that maintains a central database of domain names, has developed a set of domain name status codes that tell you the status of a variety of operations on a domain name, for example, registering a domain name, transferring a domain name to another registrar, renewing the registration for a domain name, and so on. All registrars use this same set of status codes.</p> <p>For a current list of domain name status codes and an explanation of what each code means, go to the <a href=\"https://www.icann.org/\">ICANN website</a> and search for <code>epp status codes</code>. (Search on the ICANN website; web searches sometimes return an old version of the document.)</p> <p>Type: Array of String</p>"
+      }
+    },
+    "DomainSuggestion": {
+      "base": null,
+      "refs": {
+        "DomainSuggestionsList$member": null
+      }
+    },
+    "DomainSuggestionsList": {
+      "base": null,
+      "refs": {
+        "GetDomainSuggestionsResponse$SuggestionsList": null
       }
     },
     "DomainSummary": {
@@ -229,6 +267,7 @@
       "base": null,
       "refs": {
         "RegisterDomainRequest$DurationInYears": "<p>The number of years the domain will be registered. Domains are registered for a minimum of one year. The maximum period depends on the top-level domain.</p> <p>Type: Integer</p> <p>Default: 1</p> <p>Valid values: Integer from 1 to 10</p> <p>Required: Yes</p>",
+        "RenewDomainRequest$DurationInYears": "<p>The number of years that you want to renew the domain for. The maximum number of years depends on the top-level domain. For the range of valid values for your domain, see <a href=\"http://docs.aws.amazon.com/console/route53/domain-tld-list\">Domains that You Can Register with Amazon Route 53</a> in the Amazon Route 53 documentation.</p> <p>Type: Integer</p> <p>Default: 1</p> <p>Valid values: Integer from 1 to 10</p> <p>Required: No</p>",
         "TransferDomainRequest$DurationInYears": "<p>The number of years the domain will be registered. Domains are registered for a minimum of one year. The maximum period depends on the top-level domain.</p> <p>Type: Integer</p> <p>Default: 1</p> <p>Valid values: Integer from 1 to 10</p> <p>Required: Yes</p>"
       }
     },
@@ -322,6 +361,16 @@
       "refs": {
       }
     },
+    "GetDomainSuggestionsRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "GetDomainSuggestionsResponse": {
+      "base": null,
+      "refs": {
+      }
+    },
     "GetOperationDetailRequest": {
       "base": "<p>The GetOperationDetail request includes the following element.</p>",
       "refs": {
@@ -350,9 +399,21 @@
         "Nameserver$Name": "<p>The fully qualified host name of the name server.</p> <p>Type: String</p> <p>Constraint: Maximum 255 characterss</p> <p>Parent: <code>Nameservers</code></p>"
       }
     },
+    "Integer": {
+      "base": null,
+      "refs": {
+        "GetDomainSuggestionsRequest$SuggestionCount": null
+      }
+    },
     "InvalidInput": {
       "base": "<p>The requested item is not acceptable. For example, for an OperationId it may refer to the ID of an operation that is already completed. For a domain name, it may not be a valid domain name or belong to the requester account.</p>",
       "refs": {
+      }
+    },
+    "InvoiceId": {
+      "base": null,
+      "refs": {
+        "BillingRecord$InvoiceId": "<p>The ID of the invoice that is associated with the billing record.</p> <p>Type: String</p>"
       }
     },
     "LangCode": {
@@ -416,6 +477,7 @@
         "GetOperationDetailResponse$OperationId": "<p>The identifier for the operation.</p> <p>Type: String</p>",
         "OperationSummary$OperationId": "<p>Identifier returned to track the requested action.</p> <p>Type: String</p>",
         "RegisterDomainResponse$OperationId": "<p>Identifier for tracking the progress of the request. To use this ID to query the operation status, use GetOperationDetail.</p> <p>Type: String</p> <p>Default: None</p> <p>Constraints: Maximum 255 characters.</p>",
+        "RenewDomainResponse$OperationId": null,
         "TransferDomainResponse$OperationId": "<p>Identifier for tracking the progress of the request. To use this ID to query the operation status, use GetOperationDetail.</p> <p>Type: String</p> <p>Default: None</p> <p>Constraints: Maximum 255 characters.</p>",
         "UpdateDomainContactPrivacyResponse$OperationId": "<p>Identifier for tracking the progress of the request. To use this ID to query the operation status, use GetOperationDetail.</p> <p>Type: String</p> <p>Default: None</p> <p>Constraints: Maximum 255 characters.</p>",
         "UpdateDomainContactResponse$OperationId": "<p>Identifier for tracking the progress of the request. To use this ID to query the operation status, use GetOperationDetail.</p> <p>Type: String</p> <p>Default: None</p> <p>Constraints: Maximum 255 characters.</p>",
@@ -449,6 +511,7 @@
     "OperationType": {
       "base": null,
       "refs": {
+        "BillingRecord$Operation": "<p>The operation that you were charged for.</p> <p>Type: String</p> <p>Valid values: <ul> <li><code>REGISTER_DOMAIN</code></li> <li><code>TRANSFER_IN_DOMAIN</code></li> <li><code>RENEW_DOMAIN</code></li> <li><code>CHANGE_DOMAIN_OWNER</code></li> </ul> </p>",
         "GetOperationDetailResponse$Type": "<p>The type of operation that was requested.</p> <p>Type: String</p>",
         "OperationSummary$Type": "<p>Type of the action requested.</p> <p>Type: String</p> <p>Valid values: <code>REGISTER_DOMAIN</code> | <code>DELETE_DOMAIN</code> | <code>TRANSFER_IN_DOMAIN</code> | <code>UPDATE_DOMAIN_CONTACT</code> | <code>UPDATE_NAMESERVER</code> | <code>CHANGE_PRIVACY_PROTECTION</code> | <code>DOMAIN_LOCK</code></p>"
       }
@@ -459,14 +522,23 @@
         "ListDomainsRequest$Marker": "<p>For an initial request for a list of domains, omit this element. If the number of domains that are associated with the current AWS account is greater than the value that you specified for <code>MaxItems</code>, you can use <code>Marker</code> to return additional domains. Get the value of <code>NextPageMarker</code> from the previous response, and submit another request that includes the value of <code>NextPageMarker</code> in the <code>Marker</code> element.</p> <p>Type: String</p> <p>Default: None</p> <p>Constraints: The marker must match the value specified in the previous request. </p> <p>Required: No</p>",
         "ListDomainsResponse$NextPageMarker": "<p>If there are more domains than you specified for <code>MaxItems</code> in the request, submit another request and include the value of <code>NextPageMarker</code> in the value of <code>Marker</code>.</p> <p>Type: String</p> <p>Parent: <code>Operations</code></p>",
         "ListOperationsRequest$Marker": "<p>For an initial request for a list of operations, omit this element. If the number of operations that are not yet complete is greater than the value that you specified for <code>MaxItems</code>, you can use <code>Marker</code> to return additional operations. Get the value of <code>NextPageMarker</code> from the previous response, and submit another request that includes the value of <code>NextPageMarker</code> in the <code>Marker</code> element.</p> <p>Type: String</p> <p>Default: None</p> <p>Required: No</p>",
-        "ListOperationsResponse$NextPageMarker": "<p>If there are more operations than you specified for <code>MaxItems</code> in the request, submit another request and include the value of <code>NextPageMarker</code> in the value of <code>Marker</code>.</p> <p>Type: String</p> <p>Parent: <code>Operations</code></p>"
+        "ListOperationsResponse$NextPageMarker": "<p>If there are more operations than you specified for <code>MaxItems</code> in the request, submit another request and include the value of <code>NextPageMarker</code> in the value of <code>Marker</code>.</p> <p>Type: String</p> <p>Parent: <code>Operations</code></p>",
+        "ViewBillingRequest$Marker": "<p>For an initial request for a list of billing records, omit this element. If the number of billing records that are associated with the current AWS account during the specified period is greater than the value that you specified for <code>MaxItems</code>, you can use <code>Marker</code> to return additional billing records. Get the value of <code>NextPageMarker</code> from the previous response, and submit another request that includes the value of <code>NextPageMarker</code> in the <code>Marker</code> element. </p> <p>Type: String</p> <p>Default: None</p> <p>Constraints: The marker must match the value of <code>NextPageMarker</code> that was returned in the previous response.</p> <p>Required: No</p>",
+        "ViewBillingResponse$NextPageMarker": "<p>If there are more billing records than you specified for <code>MaxItems</code> in the request, submit another request and include the value of <code>NextPageMarker</code> in the value of <code>Marker</code>.</p> <p>Type: String</p> <p>Parent: <code>BillingRecords</code></p>"
       }
     },
     "PageMaxItems": {
       "base": null,
       "refs": {
         "ListDomainsRequest$MaxItems": "<p>Number of domains to be returned.</p> <p>Type: Integer</p> <p>Default: 20</p> <p>Constraints: A numeral between 1 and 100.</p> <p>Required: No</p>",
-        "ListOperationsRequest$MaxItems": "<p>Number of domains to be returned.</p> <p>Type: Integer</p> <p>Default: 20</p> <p>Constraints: A value between 1 and 100.</p> <p>Required: No</p>"
+        "ListOperationsRequest$MaxItems": "<p>Number of domains to be returned.</p> <p>Type: Integer</p> <p>Default: 20</p> <p>Constraints: A value between 1 and 100.</p> <p>Required: No</p>",
+        "ViewBillingRequest$MaxItems": "<p>The number of billing records to be returned.</p> <p>Type: Integer</p> <p>Default: 20</p> <p>Constraints: A value between 1 and 100.</p> <p>Required: No</p>"
+      }
+    },
+    "Price": {
+      "base": null,
+      "refs": {
+        "BillingRecord$Price": "<p>The price that you were charged for the operation, in US dollars.</p> <p>Type: Double</p> <p>Example value: 12.0</p>"
       }
     },
     "ReachabilityStatus": {
@@ -509,6 +581,16 @@
         "GetDomainDetailResponse$RegistryDomainId": "<p>Reserved for future use.</p>"
       }
     },
+    "RenewDomainRequest": {
+      "base": "<p>A <code>RenewDomain</code> request includes the number of years that you want to renew for and the current expiration year.</p>",
+      "refs": {
+      }
+    },
+    "RenewDomainResponse": {
+      "base": null,
+      "refs": {
+      }
+    },
     "Reseller": {
       "base": null,
       "refs": {
@@ -539,6 +621,12 @@
       "base": null,
       "refs": {
         "ContactDetail$State": "<p>The state or province of the contact&apos;s city.</p> <p>Type: String</p> <p>Default: None</p> <p>Constraints: Maximum 255 characters.</p> <p>Parents: <code>RegistrantContact</code>, <code>AdminContact</code>, <code>TechContact</code></p> <p>Required: No</p>"
+      }
+    },
+    "String": {
+      "base": null,
+      "refs": {
+        "DomainSuggestion$Availability": null
       }
     },
     "TLDRulesViolation": {
@@ -581,12 +669,15 @@
     "Timestamp": {
       "base": null,
       "refs": {
+        "BillingRecord$BillDate": "<p>The date that the operation was billed, in Unix format.</p> <p>Type: Double</p>",
         "DomainSummary$Expiry": "<p>Expiration date of the domain in Coordinated Universal Time (UTC).</p> <p>Type: Long</p>",
         "GetDomainDetailResponse$CreationDate": "<p>The date when the domain was created as found in the response to a WHOIS query. The date format is Unix time.</p>",
         "GetDomainDetailResponse$UpdatedDate": "<p>The last updated date of the domain as found in the response to a WHOIS query. The date format is Unix time.</p>",
         "GetDomainDetailResponse$ExpirationDate": "<p>The date when the registration for the domain is set to expire. The date format is Unix time.</p>",
         "GetOperationDetailResponse$SubmittedDate": "<p>The date when the request was submitted.</p>",
-        "OperationSummary$SubmittedDate": "<p>The date when the request was submitted.</p>"
+        "OperationSummary$SubmittedDate": "<p>The date when the request was submitted.</p>",
+        "ViewBillingRequest$Start": "<p>The beginning date and time for the time period for which you want a list of billing records. Specify the date in Unix time format.</p> <p>Type: Double</p> <p>Default: None</p> <p>Required: Yes</p>",
+        "ViewBillingRequest$End": "<p>The end date and time for the time period for which you want a list of billing records. Specify the date in Unix time format.</p> <p>Type: Double</p> <p>Default: None</p> <p>Required: Yes</p>"
       }
     },
     "TransferDomainRequest": {
@@ -641,6 +732,16 @@
     },
     "UpdateTagsForDomainResponse": {
       "base": null,
+      "refs": {
+      }
+    },
+    "ViewBillingRequest": {
+      "base": "<p>The ViewBilling request includes the following elements.</p>",
+      "refs": {
+      }
+    },
+    "ViewBillingResponse": {
+      "base": "<p>The ViewBilling response includes the following elements.</p>",
       "refs": {
       }
     },

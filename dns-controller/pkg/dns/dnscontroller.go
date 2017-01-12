@@ -22,14 +22,14 @@ import (
 
 	"github.com/golang/glog"
 
-	"k8s.io/kops/dns-controller/pkg/util"
-	"k8s.io/kops/upup/pkg/fi/utils"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider/rrstype"
 	"sort"
 	"strings"
 	"sync"
 	"sync/atomic"
+
+	"k8s.io/kops/dns-controller/pkg/util"
+	"k8s.io/kubernetes/federation/pkg/dnsprovider"
+	"k8s.io/kubernetes/federation/pkg/dnsprovider/rrstype"
 )
 
 // DNSController applies the desired DNS state to the DNS backend
@@ -247,7 +247,7 @@ func (c *DNSController) runOnce() error {
 		}
 		oldValues := oldValueMap[k]
 
-		if utils.StringSlicesEqual(newValues, oldValues) {
+		if util.StringSlicesEqual(newValues, oldValues) {
 			glog.V(4).Infof("no change to records for %s", k)
 			continue
 		}

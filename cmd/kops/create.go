@@ -18,14 +18,18 @@ package main
 
 import (
 	"fmt"
+	"io"
+
+	"bytes"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"io"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/util/pkg/vfs"
 	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/errors"
+	"k8s.io/kubernetes/pkg/api/unversioned"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
 )
@@ -50,7 +54,7 @@ func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 			}
 			//cmdutil.CheckErr(ValidateArgs(cmd, args))
 			//cmdutil.CheckErr(cmdutil.ValidateOutputArgs(cmd))
-			cmdutil.CheckErr(RunCreate(f, cmd, out, options))
+			cmdutil.CheckErr(RunCreate(f, out, options))
 		},
 	}
 
@@ -71,7 +75,7 @@ func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunCreate(f *util.Factory, cmd *cobra.Command, out io.Writer, c *CreateOptions) error {
+func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 	clientset, err := f.Clientset()
 	if err != nil {
 		return err
@@ -88,46 +92,54 @@ func RunCreate(f *util.Factory, cmd *cobra.Command, out io.Writer, c *CreateOpti
 			return fmt.Errorf("error reading file %q: %v", f, err)
 		}
 
-		o, gvk, err := codec.Decode(contents, nil, nil)
-		if err != nil {
-			return fmt.Errorf("error parsing file %q: %v", f, err)
-		}
+		sections := bytes.Split(contents, []byte("\n---\n"))
 
-		switch v := o.(type) {
-		case *kopsapi.Federation:
-			_, err = clientset.Federations().Create(v)
+		for _, section := range sections {
+			defaults := &unversioned.GroupVersionKind{
+				Group:   v1alpha1.SchemeGroupVersion.Group,
+				Version: v1alpha1.SchemeGroupVersion.Version,
+			}
+			o, gvk, err := codec.Decode(section, defaults, nil)
 			if err != nil {
-				if errors.IsAlreadyExists(err) {
-					return fmt.Errorf("federation %q already exists", v.Name)
-				}
-				return fmt.Errorf("error creating federation: %v", err)
+				return fmt.Errorf("error parsing file %q: %v", f, err)
 			}
 
-		case *kopsapi.Cluster:
-			_, err = clientset.Clusters().Create(v)
-			if err != nil {
-				if errors.IsAlreadyExists(err) {
-					return fmt.Errorf("cluster %q already exists", v.Name)
+			switch v := o.(type) {
+			case *kopsapi.Federation:
+				_, err = clientset.Federations().Create(v)
+				if err != nil {
+					if errors.IsAlreadyExists(err) {
+						return fmt.Errorf("federation %q already exists", v.ObjectMeta.Name)
+					}
+					return fmt.Errorf("error creating federation: %v", err)
 				}
-				return fmt.Errorf("error creating cluster: %v", err)
-			}
 
-		case *kopsapi.InstanceGroup:
-			clusterName := v.Labels[ClusterNameLabel]
-			if clusterName == "" {
-				return fmt.Errorf("must specify %q label with cluster name to create instanceGroup", ClusterNameLabel)
-			}
-			_, err = clientset.InstanceGroups(clusterName).Create(v)
-			if err != nil {
-				if errors.IsAlreadyExists(err) {
-					return fmt.Errorf("instanceGroup %q already exists", v.Name)
+			case *kopsapi.Cluster:
+				_, err = clientset.Clusters().Create(v)
+				if err != nil {
+					if errors.IsAlreadyExists(err) {
+						return fmt.Errorf("cluster %q already exists", v.ObjectMeta.Name)
+					}
+					return fmt.Errorf("error creating cluster: %v", err)
 				}
-				return fmt.Errorf("error creating instanceGroup: %v", err)
-			}
 
-		default:
-			glog.V(2).Infof("Type of object was %T", v)
-			return fmt.Errorf("Unhandled kind %q in %q", gvk, f)
+			case *kopsapi.InstanceGroup:
+				clusterName := v.ObjectMeta.Labels[ClusterNameLabel]
+				if clusterName == "" {
+					return fmt.Errorf("must specify %q label with cluster name to create instanceGroup", ClusterNameLabel)
+				}
+				_, err = clientset.InstanceGroups(clusterName).Create(v)
+				if err != nil {
+					if errors.IsAlreadyExists(err) {
+						return fmt.Errorf("instanceGroup %q already exists", v.ObjectMeta.Name)
+					}
+					return fmt.Errorf("error creating instanceGroup: %v", err)
+				}
+
+			default:
+				glog.V(2).Infof("Type of object was %T", v)
+				return fmt.Errorf("Unhandled kind %q in %q", gvk, f)
+			}
 		}
 
 	}

@@ -1,5 +1,6 @@
 {
   "version": "2.0",
+  "service": "<fullname>Amazon Elasticsearch Configuration Service</fullname> <p>Use the Amazon Elasticsearch configuration API to create, configure, and manage Elasticsearch domains.</p> <p>The endpoint for configuration service requests is region-specific: es.<i>region</i>.amazonaws.com. For example, es.us-east-1.amazonaws.com. For a current list of supported regions and endpoints, see <a href=\"http://docs.aws.amazon.com/general/latest/gr/rande.html#elasticsearch-service-regions\" target=\"_blank\">Regions and Endpoints</a>.</p>",
   "operations": {
     "AddTags": "<p>Attaches tags to an existing Elasticsearch domain. Tags are a set of case-sensitive key value pairs. An Elasticsearch domain may have up to 10 tags. See <a href=\"http://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-managedomains.html#es-managedomains-awsresorcetagging\" target=\"_blank\"> Tagging Amazon Elasticsearch Service Domains for more information.</a></p>",
     "CreateElasticsearchDomain": "<p>Creates a new Elasticsearch domain. For more information, see <a href=\"http://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-createupdatedomains.html#es-createdomains\" target=\"_blank\">Creating Elasticsearch Domains</a> in the <i>Amazon Elasticsearch Service Developer Guide</i>.</p>",
@@ -12,7 +13,6 @@
     "RemoveTags": "<p>Removes the specified set of tags from the specified Elasticsearch domain.</p>",
     "UpdateElasticsearchDomainConfig": "<p>Modifies the cluster configuration of the specified Elasticsearch domain, setting as setting the instance type and the number of instances. </p>"
   },
-  "service": "<fullname>Amazon Elasticsearch Configuration Service</fullname> <p>Use the Amazon Elasticsearch configuration API to create, configure, and manage Elasticsearch domains.</p> <p>The endpoint for configuration service requests is region-specific: es.<i>region</i>.amazonaws.com. For example, es.us-east-1.amazonaws.com. For a current list of supported regions and endpoints, see <a href=\"http://docs.aws.amazon.com/general/latest/gr/rande.html#cloudsearch_region\" target=\"_blank\">Regions and Endpoints</a>.</p>",
   "shapes": {
     "ARN": {
       "base": "<p>The Amazon Resource Name (ARN) of the Elasticsearch domain. See <a href=\"http://docs.aws.amazon.com/IAM/latest/UserGuide/index.html?Using_Identifiers.html\" target=\"_blank\">Identifiers for IAM Entities</a> in <i>Using AWS Identity and Access Management</i> for more information.</p>",
@@ -217,6 +217,20 @@
         "DescribeElasticsearchDomainsResponse$DomainStatusList": "<p>The status of the domains requested in the <code>DescribeElasticsearchDomains</code> request.</p>"
       }
     },
+    "ElasticsearchVersionStatus": {
+      "base": "<p> Status of the Elasticsearch version options for the specified Elasticsearch domain.</p>",
+      "refs": {
+        "ElasticsearchDomainConfig$ElasticsearchVersion": "<p>String of format X.Y to specify version for the Elasticsearch domain.</p>"
+      }
+    },
+    "ElasticsearchVersionString": {
+      "base": null,
+      "refs": {
+        "CreateElasticsearchDomainRequest$ElasticsearchVersion": "<p>String of format X.Y to specify version for the Elasticsearch domain eg. \"1.5\" or \"2.3\". For more information, see <a href=\"http://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-createupdatedomains.html#es-createdomains\" target=\"_blank\">Creating Elasticsearch Domains</a> in the <i>Amazon Elasticsearch Service Developer Guide</i>.</p>",
+        "ElasticsearchDomainStatus$ElasticsearchVersion": null,
+        "ElasticsearchVersionStatus$Options": "<p> Specifies the Elasticsearch version for the specified Elasticsearch domain.</p>"
+      }
+    },
     "ErrorMessage": {
       "base": null,
       "refs": {
@@ -276,6 +290,7 @@
         "AdvancedOptionsStatus$Status": "<p> Specifies the status of <code>OptionStatus</code> for advanced options for the specified Elasticsearch domain.</p>",
         "EBSOptionsStatus$Status": "<p> Specifies the status of the EBS options for the specified Elasticsearch domain.</p>",
         "ElasticsearchClusterConfigStatus$Status": "<p> Specifies the status of the configuration for the specified Elasticsearch domain.</p>",
+        "ElasticsearchVersionStatus$Status": "<p> Specifies the status of the Elasticsearch version options for the specified Elasticsearch domain.</p>",
         "SnapshotOptionsStatus$Status": "<p>Specifies the status of a daily automated snapshot.</p>"
       }
     },

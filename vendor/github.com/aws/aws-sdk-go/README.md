@@ -17,7 +17,7 @@ If you are using Go 1.5 with the `GO15VENDOREXPERIMENT=1` vendoring flag, or 1.6
 
     go get -u github.com/aws/aws-sdk-go
 
-Otherwise if your Go environment does not have vendoring support enabled, or you do not want to include the vendored SDK's dependencies you can use the following command to retrieve the SDK and its non-testing dependencies using `go get`. 
+Otherwise if your Go environment does not have vendoring support enabled, or you do not want to include the vendored SDK's dependencies you can use the following command to retrieve the SDK and its non-testing dependencies using `go get`.
 
     go get -u github.com/aws/aws-sdk-go/aws/...
     go get -u github.com/aws/aws-sdk-go/service/...
@@ -25,7 +25,7 @@ Otherwise if your Go environment does not have vendoring support enabled, or you
 If you're looking to retrieve just the SDK without any dependencies use the following command.
 
     go get -d github.com/aws/aws-sdk-go/
- 
+
 These two processes will still include the `vendor` folder and it should be deleted if its not going to be used by your environment.
 
     rm -rf $GOPATH/src/github.com/aws/aws-sdk-go/vendor
@@ -61,8 +61,8 @@ AWS_ACCESS_KEY_ID=AKID1234567890
 AWS_SECRET_ACCESS_KEY=MY-SECRET-KEY
 ```
 
-### AWS CLI config file (`~/.aws/config`)
-The AWS SDK for Go does not support the AWS CLI's config file. The SDK will not use any contents from this file. The SDK only supports the shared credentials file (`~/.aws/credentials`). #384 tracks this feature request discussion.
+### AWS shared config file (`~/.aws/config`)
+The AWS SDK for Go added support the shared config file in release [v1.3.0](https://github.com/aws/aws-sdk-go/releases/tag/v1.3.0). You can opt into enabling support for the shared config by setting the environment variable `AWS_SDK_LOAD_CONFIG` to a truthy value. See the [Session](https://github.com/aws/aws-sdk-go/wiki/sessions) wiki for more information about this feature.
 
 ## Using the Go SDK
 
@@ -84,10 +84,15 @@ import (
 )
 
 func main() {
+	sess, err := session.NewSession()
+	if err != nil {
+		panic(err)
+	}
+
 	// Create an EC2 service object in the "us-west-2" region
 	// Note that you can also configure your region globally by
 	// exporting the AWS_REGION environment variable
-	svc := ec2.New(session.New(), &aws.Config{Region: aws.String("us-west-2")})
+	svc := ec2.New(sess, &aws.Config{Region: aws.String("us-west-2")})
 
 	// Call the DescribeInstances Operation
 	resp, err := svc.DescribeInstances(nil)

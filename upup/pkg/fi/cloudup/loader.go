@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kubernetes/pkg/util/sets"
 	"os"
 	"reflect"
 	"strings"
@@ -45,7 +46,7 @@ type Loader struct {
 
 	ModelStore vfs.Path
 
-	Tags              map[string]struct{}
+	Tags              sets.String
 	TemplateFunctions template.FuncMap
 
 	typeMap map[string]reflect.Type
@@ -53,6 +54,8 @@ type Loader struct {
 	templates []*template.Template
 
 	Resources map[string]fi.Resource
+
+	Builders []fi.ModelBuilder
 
 	tasks map[string]fi.Task
 }
@@ -164,6 +167,17 @@ func (l *Loader) BuildTasks(modelStore vfs.Path, models []string) (map[string]fi
 		}
 	}
 
+	for _, builder := range l.Builders {
+		context := &fi.ModelBuilderContext{
+			Tasks: l.tasks,
+		}
+		err := builder.Build(context)
+		if err != nil {
+			return nil, err
+		}
+		l.tasks = context.Tasks
+	}
+
 	err := l.processDeferrals()
 	if err != nil {
 		return nil, err
@@ -193,13 +207,22 @@ func (l *Loader) processDeferrals() error {
 					if hn, ok := intf.(fi.HasName); ok {
 						name := hn.GetName()
 						if name != nil {
-							primary := l.tasks[*name]
+							typeNameForTask := fi.TypeNameForTask(intf)
+							primary := l.tasks[typeNameForTask+"/"+*name]
 							if primary == nil {
-								glog.Infof("Known tasks:")
+								primary = l.tasks[*name]
+							}
+							if primary == nil {
+								keys := sets.NewString()
 								for k := range l.tasks {
+									keys.Insert(k)
+								}
+								glog.Infof("Known tasks:")
+								for _, k := range keys.List() {
 									glog.Infof("  %s", k)
 								}
-								return fmt.Errorf("Unable to find task %q, referenced from %s:%s", *name, taskKey, path)
+
+								return fmt.Errorf("Unable to find task %q, referenced from %s:%s", typeNameForTask+"/"+*name, taskKey, path)
 							}
 
 							glog.V(11).Infof("Replacing task %q at %s:%s", *name, taskKey, path)
@@ -207,26 +230,28 @@ func (l *Loader) processDeferrals() error {
 						}
 						return utils.SkipReflection
 					} else if rh, ok := intf.(*fi.ResourceHolder); ok {
-						//Resources can contain template 'arguments', separated by spaces
-						// <resourcename> <arg1> <arg2>
-						tokens := strings.Split(rh.Name, " ")
-						match := tokens[0]
-						args := tokens[1:]
+						if rh.Resource == nil {
+							//Resources can contain template 'arguments', separated by spaces
+							// <resourcename> <arg1> <arg2>
+							tokens := strings.Split(rh.Name, " ")
+							match := tokens[0]
+							args := tokens[1:]
 
-						match = strings.TrimPrefix(match, "resources/")
-						resource := l.Resources[match]
+							match = strings.TrimPrefix(match, "resources/")
+							resource := l.Resources[match]
 
-						if resource == nil {
-							glog.Infof("Known resources:")
-							for k := range l.Resources {
-								glog.Infof("  %s", k)
+							if resource == nil {
+								glog.Infof("Known resources:")
+								for k := range l.Resources {
+									glog.Infof("  %s", k)
+								}
+								return fmt.Errorf("Unable to find resource %q, referenced from %s:%s", rh.Name, taskKey, path)
 							}
-							return fmt.Errorf("Unable to find resource %q, referenced from %s:%s", rh.Name, taskKey, path)
-						}
 
-						err := l.populateResource(rh, resource, args)
-						if err != nil {
-							return fmt.Errorf("error setting resource value: %v", err)
+							err := l.populateResource(rh, resource, args)
+							if err != nil {
+								return fmt.Errorf("error setting resource value: %v", err)
+							}
 						}
 						return utils.SkipReflection
 					}
@@ -351,7 +376,6 @@ func (l *Loader) loadObjectMap(key string, data map[string]interface{}) (map[str
 				return nil, fmt.Errorf("cannot determine type for %q", k)
 			}
 		}
-
 		t, found := l.typeMap[typeId]
 		if !found {
 			return nil, fmt.Errorf("unknown type %q (in %q)", typeId, key)
@@ -366,6 +390,7 @@ func (l *Loader) loadObjectMap(key string, data map[string]interface{}) (map[str
 		}
 		err = json.Unmarshal(jsonValue, o.Interface())
 		if err != nil {
+			glog.V(2).Infof("JSON was %q", string(jsonValue))
 			return nil, fmt.Errorf("error parsing %q: %v", key, err)
 		}
 		glog.V(4).Infof("Built %s:%s => %v", key, k, o.Interface())

@@ -23,7 +23,6 @@ import (
 	"strconv"
 	"time"
 
-	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/test/e2e/framework"
 
@@ -49,7 +48,7 @@ var _ = framework.KubeDescribe("[Feature:Federation]", func() {
 
 	var _ = Describe("Federated Services", func() {
 		BeforeEach(func() {
-			framework.SkipUnlessFederated(f.Client)
+			framework.SkipUnlessFederated(f.ClientSet)
 
 			// TODO: Federation API server should be able to answer this.
 			if federationName = os.Getenv("FEDERATION_NAME"); federationName == "" {
@@ -71,12 +70,12 @@ var _ = framework.KubeDescribe("[Feature:Federation]", func() {
 			)
 
 			BeforeEach(func() {
-				framework.SkipUnlessFederated(f.Client)
+				framework.SkipUnlessFederated(f.ClientSet)
 				// Placeholder
 			})
 
 			AfterEach(func() {
-				framework.SkipUnlessFederated(f.Client)
+				framework.SkipUnlessFederated(f.ClientSet)
 
 				if service != nil {
 					By(fmt.Sprintf("Deleting service shards and their provider resources in underlying clusters for service %q in namespace %q", service.Name, nsName))
@@ -87,26 +86,26 @@ var _ = framework.KubeDescribe("[Feature:Federation]", func() {
 			})
 
 			It("should succeed", func() {
-				framework.SkipUnlessFederated(f.Client)
+				framework.SkipUnlessFederated(f.ClientSet)
 
 				nsName = f.FederationNamespace.Name
-				service = createServiceOrFail(f.FederationClientset_1_4, nsName, FederatedServiceName)
+				service = createServiceOrFail(f.FederationClientset_1_5, nsName, FederatedServiceName)
 				By(fmt.Sprintf("Creation of service %q in namespace %q succeeded.  Deleting service.", service.Name, nsName))
 
 				// Cleanup
-				err := f.FederationClientset_1_4.Services(nsName).Delete(service.Name, &api.DeleteOptions{})
+				err := f.FederationClientset_1_5.Services(nsName).Delete(service.Name, &v1.DeleteOptions{})
 				framework.ExpectNoError(err, "Error deleting service %q in namespace %q", service.Name, service.Namespace)
 				By(fmt.Sprintf("Deletion of service %q in namespace %q succeeded.", service.Name, nsName))
 			})
 
 			It("should create matching services in underlying clusters", func() {
-				framework.SkipUnlessFederated(f.Client)
+				framework.SkipUnlessFederated(f.ClientSet)
 
 				nsName = f.FederationNamespace.Name
-				service = createServiceOrFail(f.FederationClientset_1_4, nsName, FederatedServiceName)
+				service = createServiceOrFail(f.FederationClientset_1_5, nsName, FederatedServiceName)
 				defer func() { // Cleanup
 					By(fmt.Sprintf("Deleting service %q in namespace %q", service.Name, nsName))
-					err := f.FederationClientset_1_4.Services(nsName).Delete(service.Name, &api.DeleteOptions{})
+					err := f.FederationClientset_1_5.Services(nsName).Delete(service.Name, &v1.DeleteOptions{})
 					framework.ExpectNoError(err, "Error deleting service %q in namespace %q", service.Name, nsName)
 				}()
 				waitForServiceShardsOrFail(nsName, service, clusters)
@@ -120,22 +119,22 @@ var _ = framework.KubeDescribe("[Feature:Federation]", func() {
 			)
 
 			BeforeEach(func() {
-				framework.SkipUnlessFederated(f.Client)
+				framework.SkipUnlessFederated(f.ClientSet)
 
 				nsName := f.FederationNamespace.Name
 				createBackendPodsOrFail(clusters, nsName, FederatedServicePodName)
-				service = createServiceOrFail(f.FederationClientset_1_4, nsName, FederatedServiceName)
+				service = createServiceOrFail(f.FederationClientset_1_5, nsName, FederatedServiceName)
 				waitForServiceShardsOrFail(nsName, service, clusters)
 			})
 
 			AfterEach(func() {
-				framework.SkipUnlessFederated(f.Client)
+				framework.SkipUnlessFederated(f.ClientSet)
 
 				nsName := f.FederationNamespace.Name
 				deleteBackendPodsOrFail(clusters, nsName)
 
 				if service != nil {
-					deleteServiceOrFail(f.FederationClientset_1_4, nsName, service.Name)
+					deleteServiceOrFail(f.FederationClientset_1_5, nsName, service.Name)
 
 					By(fmt.Sprintf("Deleting service shards and their provider resources in underlying clusters for service %q in namespace %q", service.Name, nsName))
 					cleanupServiceShardsAndProviderResources(nsName, service, clusters)
@@ -147,7 +146,7 @@ var _ = framework.KubeDescribe("[Feature:Federation]", func() {
 			})
 
 			It("should be able to discover a federated service", func() {
-				framework.SkipUnlessFederated(f.Client)
+				framework.SkipUnlessFederated(f.ClientSet)
 
 				nsName := f.FederationNamespace.Name
 				svcDNSNames := []string{
@@ -167,7 +166,7 @@ var _ = framework.KubeDescribe("[Feature:Federation]", func() {
 
 			Context("non-local federated service", func() {
 				BeforeEach(func() {
-					framework.SkipUnlessFederated(f.Client)
+					framework.SkipUnlessFederated(f.ClientSet)
 
 					// Delete all the backend pods from the shard which is local to the discovery pod.
 					deleteOneBackendPodOrFail(clusters[primaryClusterName])
@@ -175,7 +174,7 @@ var _ = framework.KubeDescribe("[Feature:Federation]", func() {
 				})
 
 				It("should be able to discover a non-local federated service", func() {
-					framework.SkipUnlessFederated(f.Client)
+					framework.SkipUnlessFederated(f.ClientSet)
 
 					nsName := f.FederationNamespace.Name
 					svcDNSNames := []string{
@@ -191,7 +190,7 @@ var _ = framework.KubeDescribe("[Feature:Federation]", func() {
 				// TTL and/or running the pods in parallel.
 				Context("[Slow] missing local service", func() {
 					It("should never find DNS entries for a missing local service", func() {
-						framework.SkipUnlessFederated(f.Client)
+						framework.SkipUnlessFederated(f.ClientSet)
 
 						nsName := f.FederationNamespace.Name
 						localSvcDNSNames := []string{

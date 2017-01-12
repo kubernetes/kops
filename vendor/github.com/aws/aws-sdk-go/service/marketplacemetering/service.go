@@ -19,7 +19,7 @@ import (
 //
 // Submitting Metering Records
 //
-//   MeterUsage- Submits the metering record for a Marketplace product.
+//    * MeterUsage- Submits the metering record for a Marketplace product.
 //The service client's operations are safe to be used concurrently.
 // It is not safe to mutate any of the client's properties though.
 type MarketplaceMetering struct {

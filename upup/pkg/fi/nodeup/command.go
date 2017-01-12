@@ -18,9 +18,14 @@ package nodeup
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"io"
 	"io/ioutil"
+	"os/exec"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/upup/pkg/fi"
@@ -29,13 +34,11 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
-	"os/exec"
-	"strconv"
-	"strings"
+	"k8s.io/kubernetes/pkg/util/sets"
 )
 
 // We should probably retry for a long time - there is not really any great fallback
-const MaxAttemptsWithNoProgress = 100
+const MaxTaskDuration = 365 * 24 * time.Hour
 
 type NodeUpCommand struct {
 	config         *NodeUpConfig
@@ -123,7 +126,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 		err = utils.YamlUnmarshal(b, c.cluster)
 		if err != nil {
-			return fmt.Errorf("error parsing Cluster %q: %v", clusterLocation, err)
+			return fmt.Errorf("error parsing Cluster %q: %v", p, err)
 		}
 	}
 
@@ -174,13 +177,9 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("error determining OS tags: %v", err)
 	}
 
-	tags := make(map[string]struct{})
-	for _, tag := range osTags {
-		tags[tag] = struct{}{}
-	}
-	for _, tag := range c.config.Tags {
-		tags[tag] = struct{}{}
-	}
+	tags := sets.NewString()
+	tags.Insert(osTags...)
+	tags.Insert(c.config.Tags...)
 
 	glog.Infof("Config tags: %v", c.config.Tags)
 	glog.Infof("OS tags: %v", osTags)
@@ -232,7 +231,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 	defer context.Close()
 
-	err = context.RunTasks(MaxAttemptsWithNoProgress)
+	err = context.RunTasks(MaxTaskDuration)
 	if err != nil {
 		glog.Exitf("error running tasks: %v", err)
 	}

@@ -119,6 +119,8 @@ func (c *DeleteCluster) ListResources() (map[string]*ResourceTracker, error) {
 		// ASG
 		ListAutoScalingGroups,
 		ListAutoScalingLaunchConfigurations,
+		// LC
+
 		// Route 53
 		ListRoute53Records,
 		// IAM
@@ -252,7 +254,6 @@ func (c *DeleteCluster) DeleteResources(resources map[string]*ResourceTracker) e
 	iterationsWithNoProgress := 0
 	for {
 		// TODO: Some form of default ordering based on types?
-		// TODO: Give up eventually?
 
 		failed := make(map[string]*ResourceTracker)
 
@@ -365,7 +366,7 @@ func (c *DeleteCluster) DeleteResources(resources map[string]*ResourceTracker) e
 		}
 
 		iterationsWithNoProgress++
-		if iterationsWithNoProgress > 30 {
+		if iterationsWithNoProgress > 42 {
 			return fmt.Errorf("Not making progress deleting resources; giving up")
 		}
 
@@ -792,13 +793,15 @@ func DeleteSubnet(cloud fi.Cloud, tracker *ResourceTracker) error {
 }
 
 func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
+	c := cloud.(awsup.AWSCloud)
 	subnets, err := DescribeSubnets(cloud)
 	if err != nil {
 		return nil, fmt.Errorf("error listing subnets: %v", err)
 	}
 
 	var trackers []*ResourceTracker
-
+	elasticIPs := make(map[string]bool)
+	ngws := make(map[string]bool)
 	for _, subnet := range subnets {
 		tracker := &ResourceTracker{
 			Name:    FindName(subnet.Tags),
@@ -807,12 +810,86 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 			deleter: DeleteSubnet,
 		}
 
+		// Get tags and append with EIPs/NGWs as needed
+		for _, tag := range subnet.Tags {
+			name := aws.StringValue(tag.Key)
+			ip := ""
+			if name == "AssociatedElasticIp" {
+				ip = aws.StringValue(tag.Value)
+			}
+			if ip != "" {
+				elasticIPs[ip] = true
+			}
+			id := ""
+			if name == "AssociatedNatgateway" {
+				id = aws.StringValue(tag.Value)
+			}
+			if id != "" {
+				ngws[id] = true
+			}
+		}
+
 		var blocks []string
 		blocks = append(blocks, "vpc:"+aws.StringValue(subnet.VpcId))
 
 		tracker.blocks = blocks
 
 		trackers = append(trackers, tracker)
+
+		// Associated Elastic IPs
+		if len(elasticIPs) != 0 {
+			glog.V(2).Infof("Querying EC2 Elastic IPs")
+			request := &ec2.DescribeAddressesInput{}
+			response, err := c.EC2().DescribeAddresses(request)
+			if err != nil {
+				return nil, fmt.Errorf("error describing addresses: %v", err)
+			}
+
+			for _, address := range response.Addresses {
+				ip := aws.StringValue(address.PublicIp)
+				if !elasticIPs[ip] {
+					continue
+				}
+
+				tracker := &ResourceTracker{
+					Name:    ip,
+					ID:      aws.StringValue(address.AllocationId),
+					Type:    "elastic-ip",
+					deleter: DeleteElasticIP,
+				}
+
+				trackers = append(trackers, tracker)
+
+			}
+		}
+
+		// Associated Nat Gateways
+		if len(ngws) != 0 {
+			glog.V(2).Infof("Querying Nat Gateways")
+			request := &ec2.DescribeNatGatewaysInput{}
+			response, err := c.EC2().DescribeNatGateways(request)
+			if err != nil {
+				return nil, fmt.Errorf("error describing nat gateways: %v", err)
+			}
+
+			for _, ngw := range response.NatGateways {
+				id := aws.StringValue(ngw.NatGatewayId)
+				if !ngws[id] {
+					continue
+				}
+
+				tracker := &ResourceTracker{
+					Name:    id,
+					ID:      aws.StringValue(ngw.NatGatewayId),
+					Type:    "natgateway",
+					deleter: DeleteNGW,
+				}
+
+				trackers = append(trackers, tracker)
+
+			}
+		}
+
 	}
 
 	return trackers, nil
@@ -1261,9 +1338,12 @@ func ListAutoScalingLaunchConfigurations(cloud fi.Cloud, clusterName string) ([]
 				continue
 			}
 
-			glog.V(8).Infof("UserData: %s", string(userData))
+			//I finally found what was polluting logs with the bash scripts.
+			//glog.V(8).Infof("UserData: %s", string(userData))
 
-			if extractClusterName(userData) == clusterName {
+			// Adding in strings.Contains() here on cluster name, making the grand assumption that if our clustername string is present
+			// in the name of the LC, it's safe to delete. This solves the bastion LC problem.
+			if extractClusterName(userData) == clusterName || strings.Contains(*t.LaunchConfigurationName, clusterName) {
 				tracker := &ResourceTracker{
 					Name:    aws.StringValue(t.LaunchConfigurationName),
 					ID:      aws.StringValue(t.LaunchConfigurationName),
@@ -1480,6 +1560,25 @@ func DeleteElasticIP(cloud fi.Cloud, t *ResourceTracker) error {
 	return nil
 }
 
+func DeleteNGW(cloud fi.Cloud, t *ResourceTracker) error {
+	c := cloud.(awsup.AWSCloud)
+
+	id := t.ID
+
+	glog.V(2).Infof("Removing NGW %s", t.Name)
+	request := &ec2.DeleteNatGatewayInput{
+		NatGatewayId: &id,
+	}
+	_, err := c.EC2().DeleteNatGateway(request)
+	if err != nil {
+		if IsDependencyViolation(err) {
+			return err
+		}
+		return fmt.Errorf("error deleting ngw %q: %v", t.Name, err)
+	}
+	return nil
+}
+
 func deleteRoute53Records(cloud fi.Cloud, zone *route53.HostedZone, trackers []*ResourceTracker) error {
 	c := cloud.(awsup.AWSCloud)
 
@@ -1540,7 +1639,7 @@ func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*ResourceTracker,
 	var trackers []*ResourceTracker
 
 	for i := range zones {
-		// Be super careful becasue we close over this later (in groupDeleter)
+		// Be super careful because we close over this later (in groupDeleter)
 		zone := zones[i]
 
 		hostedZoneID := strings.TrimPrefix(aws.StringValue(zone.Id), "/hostedzone/")

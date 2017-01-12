@@ -19,18 +19,21 @@ package main
 import (
 	goflag "flag"
 	"fmt"
+	"io"
+	"os"
+
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"io"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/upup/pkg/kutil"
-	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
-	"os"
+	"k8s.io/kubernetes/pkg/util/validation/field"
+
+	// Register our APIs
+	_ "k8s.io/kops/pkg/apis/kops/install"
 )
 
 type Factory interface {
@@ -61,26 +64,11 @@ It allows you to create, destroy, upgrade and maintain clusters.`,
 }
 
 func Execute() {
-	if err := initializeSchemas(); err != nil {
-		exitWithError(fmt.Errorf("initialization error: %v", err))
-	}
-
 	goflag.Set("logtostderr", "true")
 	goflag.CommandLine.Parse([]string{})
 	if err := rootCommand.cobraCommand.Execute(); err != nil {
 		exitWithError(err)
 	}
-}
-
-func initializeSchemas() error {
-	scheme := k8sapi.Scheme //runtime.NewScheme()
-	if err := kopsapi.AddToScheme(scheme); err != nil {
-		return err
-	}
-	if err := v1alpha1.AddToScheme(scheme); err != nil {
-		return err
-	}
-	return nil
 }
 
 func init() {
@@ -107,9 +95,12 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.PersistentFlags().StringVarP(&rootCommand.clusterName, "name", "", "", "Name of cluster")
 
 	// create subcommands
+	cmd.AddCommand(NewCmdCompletion(f, out))
 	cmd.AddCommand(NewCmdCreate(f, out))
 	cmd.AddCommand(NewCmdEdit(f, out))
 	cmd.AddCommand(NewCmdUpdate(f, out))
+	cmd.AddCommand(NewCmdReplace(f, out))
+	cmd.AddCommand(NewCmdValidate(f, out))
 
 	return cmd
 }
@@ -217,14 +208,22 @@ func (c *RootCmd) Clientset() (simple.Clientset, error) {
 }
 
 func (c *RootCmd) Cluster() (*kopsapi.Cluster, error) {
-	clientset, err := c.Clientset()
-	if err != nil {
-		return nil, err
-	}
-
 	clusterName := c.ClusterName()
 	if clusterName == "" {
 		return nil, fmt.Errorf("--name is required")
+	}
+
+	return GetCluster(c.factory, clusterName)
+}
+
+func GetCluster(factory *util.Factory, clusterName string) (*kopsapi.Cluster, error) {
+	if clusterName == "" {
+		return nil, field.Required(field.NewPath("ClusterName"), "Cluster name is required")
+	}
+
+	clientset, err := factory.Clientset()
+	if err != nil {
+		return nil, err
 	}
 
 	cluster, err := clientset.Clusters().Get(clusterName)
@@ -235,8 +234,8 @@ func (c *RootCmd) Cluster() (*kopsapi.Cluster, error) {
 		return nil, fmt.Errorf("cluster %q not found", clusterName)
 	}
 
-	if clusterName != cluster.Name {
-		return nil, fmt.Errorf("cluster name did not match expected name: %v vs %v", clusterName, cluster.Name)
+	if clusterName != cluster.ObjectMeta.Name {
+		return nil, fmt.Errorf("cluster name did not match expected name: %v vs %v", clusterName, cluster.ObjectMeta.Name)
 	}
 	return cluster, nil
 }

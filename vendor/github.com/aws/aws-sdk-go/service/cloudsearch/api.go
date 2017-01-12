@@ -17,6 +17,8 @@ const opBuildSuggesters = "BuildSuggesters"
 // value can be used to capture response data after the request's "Send" method
 // is called.
 //
+// See BuildSuggesters for usage and error information.
+//
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
 // access properties on the request object before or after sending the request. If
@@ -51,9 +53,31 @@ func (c *CloudSearch) BuildSuggestersRequest(input *BuildSuggestersInput) (req *
 	return
 }
 
+// BuildSuggesters API operation for Amazon CloudSearch.
+//
 // Indexes the search suggestions. For more information, see Configuring Suggesters
 // (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/getting-suggestions.html#configuring-suggesters)
 // in the Amazon CloudSearch Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudSearch's
+// API operation BuildSuggesters for usage and error information.
+//
+// Returned Error Codes:
+//   * BaseException
+//   An error occurred while processing the request.
+//
+//   * InternalException
+//   An internal error occurred while processing the request. If this problem
+//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//
+//   * ResourceNotFound
+//   The request was rejected because it attempted to reference a resource that
+//   does not exist.
+//
 func (c *CloudSearch) BuildSuggesters(input *BuildSuggestersInput) (*BuildSuggestersOutput, error) {
 	req, out := c.BuildSuggestersRequest(input)
 	err := req.Send()
@@ -66,6 +90,8 @@ const opCreateDomain = "CreateDomain"
 // client's request for the CreateDomain operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See CreateDomain for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -101,9 +127,30 @@ func (c *CloudSearch) CreateDomainRequest(input *CreateDomainInput) (req *reques
 	return
 }
 
+// CreateDomain API operation for Amazon CloudSearch.
+//
 // Creates a new search domain. For more information, see Creating a Search
-// Domain (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/creating-domains.html"
-// target="_blank) in the Amazon CloudSearch Developer Guide.
+// Domain (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/creating-domains.html)
+// in the Amazon CloudSearch Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudSearch's
+// API operation CreateDomain for usage and error information.
+//
+// Returned Error Codes:
+//   * BaseException
+//   An error occurred while processing the request.
+//
+//   * InternalException
+//   An internal error occurred while processing the request. If this problem
+//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//
+//   * LimitExceeded
+//   The request was rejected because a resource limit has already been met.
+//
 func (c *CloudSearch) CreateDomain(input *CreateDomainInput) (*CreateDomainOutput, error) {
 	req, out := c.CreateDomainRequest(input)
 	err := req.Send()
@@ -116,6 +163,8 @@ const opDefineAnalysisScheme = "DefineAnalysisScheme"
 // client's request for the DefineAnalysisScheme operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DefineAnalysisScheme for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -151,10 +200,38 @@ func (c *CloudSearch) DefineAnalysisSchemeRequest(input *DefineAnalysisSchemeInp
 	return
 }
 
+// DefineAnalysisScheme API operation for Amazon CloudSearch.
+//
 // Configures an analysis scheme that can be applied to a text or text-array
 // field to define language-specific text processing options. For more information,
-// see Configuring Analysis Schemes (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-analysis-schemes.html"
-// target="_blank) in the Amazon CloudSearch Developer Guide.
+// see Configuring Analysis Schemes (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-analysis-schemes.html)
+// in the Amazon CloudSearch Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudSearch's
+// API operation DefineAnalysisScheme for usage and error information.
+//
+// Returned Error Codes:
+//   * BaseException
+//   An error occurred while processing the request.
+//
+//   * InternalException
+//   An internal error occurred while processing the request. If this problem
+//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//
+//   * LimitExceeded
+//   The request was rejected because a resource limit has already been met.
+//
+//   * InvalidType
+//   The request was rejected because it specified an invalid type definition.
+//
+//   * ResourceNotFound
+//   The request was rejected because it attempted to reference a resource that
+//   does not exist.
+//
 func (c *CloudSearch) DefineAnalysisScheme(input *DefineAnalysisSchemeInput) (*DefineAnalysisSchemeOutput, error) {
 	req, out := c.DefineAnalysisSchemeRequest(input)
 	err := req.Send()
@@ -167,6 +244,8 @@ const opDefineExpression = "DefineExpression"
 // client's request for the DefineExpression operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DefineExpression for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -202,10 +281,38 @@ func (c *CloudSearch) DefineExpressionRequest(input *DefineExpressionInput) (req
 	return
 }
 
+// DefineExpression API operation for Amazon CloudSearch.
+//
 // Configures an Expression for the search domain. Used to create new expressions
 // and modify existing ones. If the expression exists, the new configuration
-// replaces the old one. For more information, see Configuring Expressions (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-expressions.html"
-// target="_blank) in the Amazon CloudSearch Developer Guide.
+// replaces the old one. For more information, see Configuring Expressions (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-expressions.html)
+// in the Amazon CloudSearch Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudSearch's
+// API operation DefineExpression for usage and error information.
+//
+// Returned Error Codes:
+//   * BaseException
+//   An error occurred while processing the request.
+//
+//   * InternalException
+//   An internal error occurred while processing the request. If this problem
+//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//
+//   * LimitExceeded
+//   The request was rejected because a resource limit has already been met.
+//
+//   * InvalidType
+//   The request was rejected because it specified an invalid type definition.
+//
+//   * ResourceNotFound
+//   The request was rejected because it attempted to reference a resource that
+//   does not exist.
+//
 func (c *CloudSearch) DefineExpression(input *DefineExpressionInput) (*DefineExpressionOutput, error) {
 	req, out := c.DefineExpressionRequest(input)
 	err := req.Send()
@@ -218,6 +325,8 @@ const opDefineIndexField = "DefineIndexField"
 // client's request for the DefineIndexField operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DefineIndexField for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -253,14 +362,42 @@ func (c *CloudSearch) DefineIndexFieldRequest(input *DefineIndexFieldInput) (req
 	return
 }
 
+// DefineIndexField API operation for Amazon CloudSearch.
+//
 // Configures an IndexField for the search domain. Used to create new fields
 // and modify existing ones. You must specify the name of the domain you are
 // configuring and an index field configuration. The index field configuration
 // specifies a unique name, the index field type, and the options you want to
 // configure for the field. The options you can specify depend on the IndexFieldType.
 // If the field exists, the new configuration replaces the old one. For more
-// information, see Configuring Index Fields (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-index-fields.html"
-// target="_blank) in the Amazon CloudSearch Developer Guide.
+// information, see Configuring Index Fields (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-index-fields.html)
+// in the Amazon CloudSearch Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudSearch's
+// API operation DefineIndexField for usage and error information.
+//
+// Returned Error Codes:
+//   * BaseException
+//   An error occurred while processing the request.
+//
+//   * InternalException
+//   An internal error occurred while processing the request. If this problem
+//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//
+//   * LimitExceeded
+//   The request was rejected because a resource limit has already been met.
+//
+//   * InvalidType
+//   The request was rejected because it specified an invalid type definition.
+//
+//   * ResourceNotFound
+//   The request was rejected because it attempted to reference a resource that
+//   does not exist.
+//
 func (c *CloudSearch) DefineIndexField(input *DefineIndexFieldInput) (*DefineIndexFieldOutput, error) {
 	req, out := c.DefineIndexFieldRequest(input)
 	err := req.Send()
@@ -273,6 +410,8 @@ const opDefineSuggester = "DefineSuggester"
 // client's request for the DefineSuggester operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DefineSuggester for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -308,12 +447,40 @@ func (c *CloudSearch) DefineSuggesterRequest(input *DefineSuggesterInput) (req *
 	return
 }
 
+// DefineSuggester API operation for Amazon CloudSearch.
+//
 // Configures a suggester for a domain. A suggester enables you to display possible
 // matches before users finish typing their queries. When you configure a suggester,
 // you must specify the name of the text field you want to search for possible
 // matches and a unique name for the suggester. For more information, see Getting
-// Search Suggestions (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/getting-suggestions.html"
-// target="_blank) in the Amazon CloudSearch Developer Guide.
+// Search Suggestions (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/getting-suggestions.html)
+// in the Amazon CloudSearch Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudSearch's
+// API operation DefineSuggester for usage and error information.
+//
+// Returned Error Codes:
+//   * BaseException
+//   An error occurred while processing the request.
+//
+//   * InternalException
+//   An internal error occurred while processing the request. If this problem
+//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//
+//   * LimitExceeded
+//   The request was rejected because a resource limit has already been met.
+//
+//   * InvalidType
+//   The request was rejected because it specified an invalid type definition.
+//
+//   * ResourceNotFound
+//   The request was rejected because it attempted to reference a resource that
+//   does not exist.
+//
 func (c *CloudSearch) DefineSuggester(input *DefineSuggesterInput) (*DefineSuggesterOutput, error) {
 	req, out := c.DefineSuggesterRequest(input)
 	err := req.Send()
@@ -326,6 +493,8 @@ const opDeleteAnalysisScheme = "DeleteAnalysisScheme"
 // client's request for the DeleteAnalysisScheme operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DeleteAnalysisScheme for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -361,9 +530,34 @@ func (c *CloudSearch) DeleteAnalysisSchemeRequest(input *DeleteAnalysisSchemeInp
 	return
 }
 
+// DeleteAnalysisScheme API operation for Amazon CloudSearch.
+//
 // Deletes an analysis scheme. For more information, see Configuring Analysis
-// Schemes (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-analysis-schemes.html"
-// target="_blank) in the Amazon CloudSearch Developer Guide.
+// Schemes (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-analysis-schemes.html)
+// in the Amazon CloudSearch Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudSearch's
+// API operation DeleteAnalysisScheme for usage and error information.
+//
+// Returned Error Codes:
+//   * BaseException
+//   An error occurred while processing the request.
+//
+//   * InternalException
+//   An internal error occurred while processing the request. If this problem
+//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//
+//   * InvalidType
+//   The request was rejected because it specified an invalid type definition.
+//
+//   * ResourceNotFound
+//   The request was rejected because it attempted to reference a resource that
+//   does not exist.
+//
 func (c *CloudSearch) DeleteAnalysisScheme(input *DeleteAnalysisSchemeInput) (*DeleteAnalysisSchemeOutput, error) {
 	req, out := c.DeleteAnalysisSchemeRequest(input)
 	err := req.Send()
@@ -376,6 +570,8 @@ const opDeleteDomain = "DeleteDomain"
 // client's request for the DeleteDomain operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DeleteDomain for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -411,10 +607,28 @@ func (c *CloudSearch) DeleteDomainRequest(input *DeleteDomainInput) (req *reques
 	return
 }
 
+// DeleteDomain API operation for Amazon CloudSearch.
+//
 // Permanently deletes a search domain and all of its data. Once a domain has
 // been deleted, it cannot be recovered. For more information, see Deleting
-// a Search Domain (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/deleting-domains.html"
-// target="_blank) in the Amazon CloudSearch Developer Guide.
+// a Search Domain (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/deleting-domains.html)
+// in the Amazon CloudSearch Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudSearch's
+// API operation DeleteDomain for usage and error information.
+//
+// Returned Error Codes:
+//   * BaseException
+//   An error occurred while processing the request.
+//
+//   * InternalException
+//   An internal error occurred while processing the request. If this problem
+//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//
 func (c *CloudSearch) DeleteDomain(input *DeleteDomainInput) (*DeleteDomainOutput, error) {
 	req, out := c.DeleteDomainRequest(input)
 	err := req.Send()
@@ -427,6 +641,8 @@ const opDeleteExpression = "DeleteExpression"
 // client's request for the DeleteExpression operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DeleteExpression for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -462,9 +678,34 @@ func (c *CloudSearch) DeleteExpressionRequest(input *DeleteExpressionInput) (req
 	return
 }
 
+// DeleteExpression API operation for Amazon CloudSearch.
+//
 // Removes an Expression from the search domain. For more information, see Configuring
-// Expressions (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-expressions.html"
-// target="_blank) in the Amazon CloudSearch Developer Guide.
+// Expressions (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-expressions.html)
+// in the Amazon CloudSearch Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudSearch's
+// API operation DeleteExpression for usage and error information.
+//
+// Returned Error Codes:
+//   * BaseException
+//   An error occurred while processing the request.
+//
+//   * InternalException
+//   An internal error occurred while processing the request. If this problem
+//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//
+//   * InvalidType
+//   The request was rejected because it specified an invalid type definition.
+//
+//   * ResourceNotFound
+//   The request was rejected because it attempted to reference a resource that
+//   does not exist.
+//
 func (c *CloudSearch) DeleteExpression(input *DeleteExpressionInput) (*DeleteExpressionOutput, error) {
 	req, out := c.DeleteExpressionRequest(input)
 	err := req.Send()
@@ -477,6 +718,8 @@ const opDeleteIndexField = "DeleteIndexField"
 // client's request for the DeleteIndexField operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DeleteIndexField for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -512,9 +755,34 @@ func (c *CloudSearch) DeleteIndexFieldRequest(input *DeleteIndexFieldInput) (req
 	return
 }
 
+// DeleteIndexField API operation for Amazon CloudSearch.
+//
 // Removes an IndexField from the search domain. For more information, see Configuring
-// Index Fields (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-index-fields.html"
-// target="_blank) in the Amazon CloudSearch Developer Guide.
+// Index Fields (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-index-fields.html)
+// in the Amazon CloudSearch Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudSearch's
+// API operation DeleteIndexField for usage and error information.
+//
+// Returned Error Codes:
+//   * BaseException
+//   An error occurred while processing the request.
+//
+//   * InternalException
+//   An internal error occurred while processing the request. If this problem
+//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//
+//   * InvalidType
+//   The request was rejected because it specified an invalid type definition.
+//
+//   * ResourceNotFound
+//   The request was rejected because it attempted to reference a resource that
+//   does not exist.
+//
 func (c *CloudSearch) DeleteIndexField(input *DeleteIndexFieldInput) (*DeleteIndexFieldOutput, error) {
 	req, out := c.DeleteIndexFieldRequest(input)
 	err := req.Send()
@@ -527,6 +795,8 @@ const opDeleteSuggester = "DeleteSuggester"
 // client's request for the DeleteSuggester operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DeleteSuggester for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -562,9 +832,34 @@ func (c *CloudSearch) DeleteSuggesterRequest(input *DeleteSuggesterInput) (req *
 	return
 }
 
+// DeleteSuggester API operation for Amazon CloudSearch.
+//
 // Deletes a suggester. For more information, see Getting Search Suggestions
-// (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/getting-suggestions.html"
-// target="_blank) in the Amazon CloudSearch Developer Guide.
+// (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/getting-suggestions.html)
+// in the Amazon CloudSearch Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudSearch's
+// API operation DeleteSuggester for usage and error information.
+//
+// Returned Error Codes:
+//   * BaseException
+//   An error occurred while processing the request.
+//
+//   * InternalException
+//   An internal error occurred while processing the request. If this problem
+//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//
+//   * InvalidType
+//   The request was rejected because it specified an invalid type definition.
+//
+//   * ResourceNotFound
+//   The request was rejected because it attempted to reference a resource that
+//   does not exist.
+//
 func (c *CloudSearch) DeleteSuggester(input *DeleteSuggesterInput) (*DeleteSuggesterOutput, error) {
 	req, out := c.DeleteSuggesterRequest(input)
 	err := req.Send()
@@ -577,6 +872,8 @@ const opDescribeAnalysisSchemes = "DescribeAnalysisSchemes"
 // client's request for the DescribeAnalysisSchemes operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeAnalysisSchemes for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -612,13 +909,35 @@ func (c *CloudSearch) DescribeAnalysisSchemesRequest(input *DescribeAnalysisSche
 	return
 }
 
+// DescribeAnalysisSchemes API operation for Amazon CloudSearch.
+//
 // Gets the analysis schemes configured for a domain. An analysis scheme defines
 // language-specific text processing options for a text field. Can be limited
 // to specific analysis schemes by name. By default, shows all analysis schemes
 // and includes any pending changes to the configuration. Set the Deployed option
 // to true to show the active configuration and exclude pending changes. For
-// more information, see Configuring Analysis Schemes (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-analysis-schemes.html"
-// target="_blank) in the Amazon CloudSearch Developer Guide.
+// more information, see Configuring Analysis Schemes (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-analysis-schemes.html)
+// in the Amazon CloudSearch Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudSearch's
+// API operation DescribeAnalysisSchemes for usage and error information.
+//
+// Returned Error Codes:
+//   * BaseException
+//   An error occurred while processing the request.
+//
+//   * InternalException
+//   An internal error occurred while processing the request. If this problem
+//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//
+//   * ResourceNotFound
+//   The request was rejected because it attempted to reference a resource that
+//   does not exist.
+//
 func (c *CloudSearch) DescribeAnalysisSchemes(input *DescribeAnalysisSchemesInput) (*DescribeAnalysisSchemesOutput, error) {
 	req, out := c.DescribeAnalysisSchemesRequest(input)
 	err := req.Send()
@@ -631,6 +950,8 @@ const opDescribeAvailabilityOptions = "DescribeAvailabilityOptions"
 // client's request for the DescribeAvailabilityOptions operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeAvailabilityOptions for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -666,11 +987,42 @@ func (c *CloudSearch) DescribeAvailabilityOptionsRequest(input *DescribeAvailabi
 	return
 }
 
+// DescribeAvailabilityOptions API operation for Amazon CloudSearch.
+//
 // Gets the availability options configured for a domain. By default, shows
 // the configuration with any pending changes. Set the Deployed option to true
 // to show the active configuration and exclude pending changes. For more information,
-// see Configuring Availability Options (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-availability-options.html"
-// target="_blank) in the Amazon CloudSearch Developer Guide.
+// see Configuring Availability Options (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-availability-options.html)
+// in the Amazon CloudSearch Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudSearch's
+// API operation DescribeAvailabilityOptions for usage and error information.
+//
+// Returned Error Codes:
+//   * BaseException
+//   An error occurred while processing the request.
+//
+//   * InternalException
+//   An internal error occurred while processing the request. If this problem
+//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//
+//   * InvalidType
+//   The request was rejected because it specified an invalid type definition.
+//
+//   * LimitExceeded
+//   The request was rejected because a resource limit has already been met.
+//
+//   * ResourceNotFound
+//   The request was rejected because it attempted to reference a resource that
+//   does not exist.
+//
+//   * DisabledAction
+//   The request was rejected because it attempted an operation which is not enabled.
+//
 func (c *CloudSearch) DescribeAvailabilityOptions(input *DescribeAvailabilityOptionsInput) (*DescribeAvailabilityOptionsOutput, error) {
 	req, out := c.DescribeAvailabilityOptionsRequest(input)
 	err := req.Send()
@@ -683,6 +1035,8 @@ const opDescribeDomains = "DescribeDomains"
 // client's request for the DescribeDomains operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeDomains for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -718,12 +1072,30 @@ func (c *CloudSearch) DescribeDomainsRequest(input *DescribeDomainsInput) (req *
 	return
 }
 
+// DescribeDomains API operation for Amazon CloudSearch.
+//
 // Gets information about the search domains owned by this account. Can be limited
 // to specific domains. Shows all domains by default. To get the number of searchable
 // documents in a domain, use the console or submit a matchall request to your
-// domain's search endpoint: q=matchall&amp;q.parser=structured&amp;size=0.
-// For more information, see Getting Information about a Search Domain (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/getting-domain-info.html"
-// target="_blank) in the Amazon CloudSearch Developer Guide.
+// domain's search endpoint: q=matchall&q.parser=structured&size=0.
+// For more information, see Getting Information about a Search Domain (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/getting-domain-info.html)
+// in the Amazon CloudSearch Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudSearch's
+// API operation DescribeDomains for usage and error information.
+//
+// Returned Error Codes:
+//   * BaseException
+//   An error occurred while processing the request.
+//
+//   * InternalException
+//   An internal error occurred while processing the request. If this problem
+//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//
 func (c *CloudSearch) DescribeDomains(input *DescribeDomainsInput) (*DescribeDomainsOutput, error) {
 	req, out := c.DescribeDomainsRequest(input)
 	err := req.Send()
@@ -736,6 +1108,8 @@ const opDescribeExpressions = "DescribeExpressions"
 // client's request for the DescribeExpressions operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeExpressions for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -771,12 +1145,34 @@ func (c *CloudSearch) DescribeExpressionsRequest(input *DescribeExpressionsInput
 	return
 }
 
+// DescribeExpressions API operation for Amazon CloudSearch.
+//
 // Gets the expressions configured for the search domain. Can be limited to
 // specific expressions by name. By default, shows all expressions and includes
 // any pending changes to the configuration. Set the Deployed option to true
 // to show the active configuration and exclude pending changes. For more information,
-// see Configuring Expressions (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-expressions.html"
-// target="_blank) in the Amazon CloudSearch Developer Guide.
+// see Configuring Expressions (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-expressions.html)
+// in the Amazon CloudSearch Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudSearch's
+// API operation DescribeExpressions for usage and error information.
+//
+// Returned Error Codes:
+//   * BaseException
+//   An error occurred while processing the request.
+//
+//   * InternalException
+//   An internal error occurred while processing the request. If this problem
+//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//
+//   * ResourceNotFound
+//   The request was rejected because it attempted to reference a resource that
+//   does not exist.
+//
 func (c *CloudSearch) DescribeExpressions(input *DescribeExpressionsInput) (*DescribeExpressionsOutput, error) {
 	req, out := c.DescribeExpressionsRequest(input)
 	err := req.Send()
@@ -789,6 +1185,8 @@ const opDescribeIndexFields = "DescribeIndexFields"
 // client's request for the DescribeIndexFields operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeIndexFields for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -824,12 +1222,34 @@ func (c *CloudSearch) DescribeIndexFieldsRequest(input *DescribeIndexFieldsInput
 	return
 }
 
+// DescribeIndexFields API operation for Amazon CloudSearch.
+//
 // Gets information about the index fields configured for the search domain.
 // Can be limited to specific fields by name. By default, shows all fields and
 // includes any pending changes to the configuration. Set the Deployed option
 // to true to show the active configuration and exclude pending changes. For
-// more information, see Getting Domain Information (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/getting-domain-info.html"
-// target="_blank) in the Amazon CloudSearch Developer Guide.
+// more information, see Getting Domain Information (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/getting-domain-info.html)
+// in the Amazon CloudSearch Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudSearch's
+// API operation DescribeIndexFields for usage and error information.
+//
+// Returned Error Codes:
+//   * BaseException
+//   An error occurred while processing the request.
+//
+//   * InternalException
+//   An internal error occurred while processing the request. If this problem
+//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//
+//   * ResourceNotFound
+//   The request was rejected because it attempted to reference a resource that
+//   does not exist.
+//
 func (c *CloudSearch) DescribeIndexFields(input *DescribeIndexFieldsInput) (*DescribeIndexFieldsOutput, error) {
 	req, out := c.DescribeIndexFieldsRequest(input)
 	err := req.Send()
@@ -842,6 +1262,8 @@ const opDescribeScalingParameters = "DescribeScalingParameters"
 // client's request for the DescribeScalingParameters operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeScalingParameters for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -877,10 +1299,32 @@ func (c *CloudSearch) DescribeScalingParametersRequest(input *DescribeScalingPar
 	return
 }
 
+// DescribeScalingParameters API operation for Amazon CloudSearch.
+//
 // Gets the scaling parameters configured for a domain. A domain's scaling parameters
 // specify the desired search instance type and replication count. For more
-// information, see Configuring Scaling Options (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-scaling-options.html"
-// target="_blank) in the Amazon CloudSearch Developer Guide.
+// information, see Configuring Scaling Options (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-scaling-options.html)
+// in the Amazon CloudSearch Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudSearch's
+// API operation DescribeScalingParameters for usage and error information.
+//
+// Returned Error Codes:
+//   * BaseException
+//   An error occurred while processing the request.
+//
+//   * InternalException
+//   An internal error occurred while processing the request. If this problem
+//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//
+//   * ResourceNotFound
+//   The request was rejected because it attempted to reference a resource that
+//   does not exist.
+//
 func (c *CloudSearch) DescribeScalingParameters(input *DescribeScalingParametersInput) (*DescribeScalingParametersOutput, error) {
 	req, out := c.DescribeScalingParametersRequest(input)
 	err := req.Send()
@@ -893,6 +1337,8 @@ const opDescribeServiceAccessPolicies = "DescribeServiceAccessPolicies"
 // client's request for the DescribeServiceAccessPolicies operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeServiceAccessPolicies for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -928,12 +1374,34 @@ func (c *CloudSearch) DescribeServiceAccessPoliciesRequest(input *DescribeServic
 	return
 }
 
+// DescribeServiceAccessPolicies API operation for Amazon CloudSearch.
+//
 // Gets information about the access policies that control access to the domain's
 // document and search endpoints. By default, shows the configuration with any
 // pending changes. Set the Deployed option to true to show the active configuration
 // and exclude pending changes. For more information, see Configuring Access
-// for a Search Domain (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-access.html"
-// target="_blank) in the Amazon CloudSearch Developer Guide.
+// for a Search Domain (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-access.html)
+// in the Amazon CloudSearch Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudSearch's
+// API operation DescribeServiceAccessPolicies for usage and error information.
+//
+// Returned Error Codes:
+//   * BaseException
+//   An error occurred while processing the request.
+//
+//   * InternalException
+//   An internal error occurred while processing the request. If this problem
+//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//
+//   * ResourceNotFound
+//   The request was rejected because it attempted to reference a resource that
+//   does not exist.
+//
 func (c *CloudSearch) DescribeServiceAccessPolicies(input *DescribeServiceAccessPoliciesInput) (*DescribeServiceAccessPoliciesOutput, error) {
 	req, out := c.DescribeServiceAccessPoliciesRequest(input)
 	err := req.Send()
@@ -946,6 +1414,8 @@ const opDescribeSuggesters = "DescribeSuggesters"
 // client's request for the DescribeSuggesters operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See DescribeSuggesters for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -981,13 +1451,35 @@ func (c *CloudSearch) DescribeSuggestersRequest(input *DescribeSuggestersInput) 
 	return
 }
 
+// DescribeSuggesters API operation for Amazon CloudSearch.
+//
 // Gets the suggesters configured for a domain. A suggester enables you to display
 // possible matches before users finish typing their queries. Can be limited
 // to specific suggesters by name. By default, shows all suggesters and includes
 // any pending changes to the configuration. Set the Deployed option to true
 // to show the active configuration and exclude pending changes. For more information,
-// see Getting Search Suggestions (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/getting-suggestions.html"
-// target="_blank) in the Amazon CloudSearch Developer Guide.
+// see Getting Search Suggestions (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/getting-suggestions.html)
+// in the Amazon CloudSearch Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudSearch's
+// API operation DescribeSuggesters for usage and error information.
+//
+// Returned Error Codes:
+//   * BaseException
+//   An error occurred while processing the request.
+//
+//   * InternalException
+//   An internal error occurred while processing the request. If this problem
+//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//
+//   * ResourceNotFound
+//   The request was rejected because it attempted to reference a resource that
+//   does not exist.
+//
 func (c *CloudSearch) DescribeSuggesters(input *DescribeSuggestersInput) (*DescribeSuggestersOutput, error) {
 	req, out := c.DescribeSuggestersRequest(input)
 	err := req.Send()
@@ -1000,6 +1492,8 @@ const opIndexDocuments = "IndexDocuments"
 // client's request for the IndexDocuments operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See IndexDocuments for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -1035,9 +1529,31 @@ func (c *CloudSearch) IndexDocumentsRequest(input *IndexDocumentsInput) (req *re
 	return
 }
 
+// IndexDocuments API operation for Amazon CloudSearch.
+//
 // Tells the search domain to start indexing its documents using the latest
 // indexing options. This operation must be invoked to activate options whose
 // OptionStatus is RequiresIndexDocuments.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudSearch's
+// API operation IndexDocuments for usage and error information.
+//
+// Returned Error Codes:
+//   * BaseException
+//   An error occurred while processing the request.
+//
+//   * InternalException
+//   An internal error occurred while processing the request. If this problem
+//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//
+//   * ResourceNotFound
+//   The request was rejected because it attempted to reference a resource that
+//   does not exist.
+//
 func (c *CloudSearch) IndexDocuments(input *IndexDocumentsInput) (*IndexDocumentsOutput, error) {
 	req, out := c.IndexDocumentsRequest(input)
 	err := req.Send()
@@ -1050,6 +1566,8 @@ const opListDomainNames = "ListDomainNames"
 // client's request for the ListDomainNames operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See ListDomainNames for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -1085,7 +1603,21 @@ func (c *CloudSearch) ListDomainNamesRequest(input *ListDomainNamesInput) (req *
 	return
 }
 
+// ListDomainNames API operation for Amazon CloudSearch.
+//
 // Lists all search domains owned by an account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudSearch's
+// API operation ListDomainNames for usage and error information.
+//
+// Returned Error Codes:
+//   * BaseException
+//   An error occurred while processing the request.
+//
 func (c *CloudSearch) ListDomainNames(input *ListDomainNamesInput) (*ListDomainNamesOutput, error) {
 	req, out := c.ListDomainNamesRequest(input)
 	err := req.Send()
@@ -1098,6 +1630,8 @@ const opUpdateAvailabilityOptions = "UpdateAvailabilityOptions"
 // client's request for the UpdateAvailabilityOptions operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See UpdateAvailabilityOptions for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -1133,12 +1667,43 @@ func (c *CloudSearch) UpdateAvailabilityOptionsRequest(input *UpdateAvailability
 	return
 }
 
+// UpdateAvailabilityOptions API operation for Amazon CloudSearch.
+//
 // Configures the availability options for a domain. Enabling the Multi-AZ option
 // expands an Amazon CloudSearch domain to an additional Availability Zone in
 // the same Region to increase fault tolerance in the event of a service disruption.
 // Changes to the Multi-AZ option can take about half an hour to become active.
-// For more information, see Configuring Availability Options (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-availability-options.html"
-// target="_blank) in the Amazon CloudSearch Developer Guide.
+// For more information, see Configuring Availability Options (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-availability-options.html)
+// in the Amazon CloudSearch Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudSearch's
+// API operation UpdateAvailabilityOptions for usage and error information.
+//
+// Returned Error Codes:
+//   * BaseException
+//   An error occurred while processing the request.
+//
+//   * InternalException
+//   An internal error occurred while processing the request. If this problem
+//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//
+//   * InvalidType
+//   The request was rejected because it specified an invalid type definition.
+//
+//   * LimitExceeded
+//   The request was rejected because a resource limit has already been met.
+//
+//   * ResourceNotFound
+//   The request was rejected because it attempted to reference a resource that
+//   does not exist.
+//
+//   * DisabledAction
+//   The request was rejected because it attempted an operation which is not enabled.
+//
 func (c *CloudSearch) UpdateAvailabilityOptions(input *UpdateAvailabilityOptionsInput) (*UpdateAvailabilityOptionsOutput, error) {
 	req, out := c.UpdateAvailabilityOptionsRequest(input)
 	err := req.Send()
@@ -1151,6 +1716,8 @@ const opUpdateScalingParameters = "UpdateScalingParameters"
 // client's request for the UpdateScalingParameters operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See UpdateScalingParameters for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -1186,14 +1753,42 @@ func (c *CloudSearch) UpdateScalingParametersRequest(input *UpdateScalingParamet
 	return
 }
 
+// UpdateScalingParameters API operation for Amazon CloudSearch.
+//
 // Configures scaling parameters for a domain. A domain's scaling parameters
 // specify the desired search instance type and replication count. Amazon CloudSearch
 // will still automatically scale your domain based on the volume of data and
 // traffic, but not below the desired instance type and replication count. If
 // the Multi-AZ option is enabled, these values control the resources used per
 // Availability Zone. For more information, see Configuring Scaling Options
-// (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-scaling-options.html"
-// target="_blank) in the Amazon CloudSearch Developer Guide.
+// (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-scaling-options.html)
+// in the Amazon CloudSearch Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudSearch's
+// API operation UpdateScalingParameters for usage and error information.
+//
+// Returned Error Codes:
+//   * BaseException
+//   An error occurred while processing the request.
+//
+//   * InternalException
+//   An internal error occurred while processing the request. If this problem
+//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//
+//   * LimitExceeded
+//   The request was rejected because a resource limit has already been met.
+//
+//   * ResourceNotFound
+//   The request was rejected because it attempted to reference a resource that
+//   does not exist.
+//
+//   * InvalidType
+//   The request was rejected because it specified an invalid type definition.
+//
 func (c *CloudSearch) UpdateScalingParameters(input *UpdateScalingParametersInput) (*UpdateScalingParametersOutput, error) {
 	req, out := c.UpdateScalingParametersRequest(input)
 	err := req.Send()
@@ -1206,6 +1801,8 @@ const opUpdateServiceAccessPolicies = "UpdateServiceAccessPolicies"
 // client's request for the UpdateServiceAccessPolicies operation. The "output" return
 // value can be used to capture response data after the request's "Send" method
 // is called.
+//
+// See UpdateServiceAccessPolicies for usage and error information.
 //
 // Creating a request object using this method should be used when you want to inject
 // custom logic into the request's lifecycle using a custom handler, or if you want to
@@ -1241,10 +1838,37 @@ func (c *CloudSearch) UpdateServiceAccessPoliciesRequest(input *UpdateServiceAcc
 	return
 }
 
+// UpdateServiceAccessPolicies API operation for Amazon CloudSearch.
+//
 // Configures the access rules that control access to the domain's document
 // and search endpoints. For more information, see  Configuring Access for an
-// Amazon CloudSearch Domain (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-access.html"
-// target="_blank).
+// Amazon CloudSearch Domain (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-access.html).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudSearch's
+// API operation UpdateServiceAccessPolicies for usage and error information.
+//
+// Returned Error Codes:
+//   * BaseException
+//   An error occurred while processing the request.
+//
+//   * InternalException
+//   An internal error occurred while processing the request. If this problem
+//   persists, report an issue from the Service Health Dashboard (http://status.aws.amazon.com/).
+//
+//   * LimitExceeded
+//   The request was rejected because a resource limit has already been met.
+//
+//   * ResourceNotFound
+//   The request was rejected because it attempted to reference a resource that
+//   does not exist.
+//
+//   * InvalidType
+//   The request was rejected because it specified an invalid type definition.
+//
 func (c *CloudSearch) UpdateServiceAccessPolicies(input *UpdateServiceAccessPoliciesInput) (*UpdateServiceAccessPoliciesOutput, error) {
 	req, out := c.UpdateServiceAccessPoliciesRequest(input)
 	err := req.Send()
@@ -1257,12 +1881,16 @@ type AccessPoliciesStatus struct {
 	_ struct{} `type:"structure"`
 
 	// Access rules for a domain's document or search service endpoints. For more
-	// information, see Configuring Access for a Search Domain (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-access.html"
-	// target="_blank) in the Amazon CloudSearch Developer Guide. The maximum size
-	// of a policy document is 100 KB.
+	// information, see Configuring Access for a Search Domain (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-access.html)
+	// in the Amazon CloudSearch Developer Guide. The maximum size of a policy document
+	// is 100 KB.
+	//
+	// Options is a required field
 	Options *string `type:"string" required:"true"`
 
 	// The status of domain configuration option.
+	//
+	// Status is a required field
 	Status *OptionStatus `type:"structure" required:"true"`
 }
 
@@ -1276,6 +1904,18 @@ func (s AccessPoliciesStatus) GoString() string {
 	return s.String()
 }
 
+// SetOptions sets the Options field's value.
+func (s *AccessPoliciesStatus) SetOptions(v string) *AccessPoliciesStatus {
+	s.Options = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *AccessPoliciesStatus) SetStatus(v *OptionStatus) *AccessPoliciesStatus {
+	s.Status = v
+	return s
+}
+
 // Synonyms, stopwords, and stemming options for an analysis scheme. Includes
 // tokenization dictionary for Japanese.
 type AnalysisOptions struct {
@@ -1283,8 +1923,8 @@ type AnalysisOptions struct {
 
 	// The level of algorithmic stemming to perform: none, minimal, light, or full.
 	// The available levels vary depending on the language. For more information,
-	// see Language Specific Text Processing Settings (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/text-processing.html#text-processing-settings"
-	// target="_blank) in the Amazon CloudSearch Developer Guide
+	// see Language Specific Text Processing Settings (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/text-processing.html#text-processing-settings)
+	// in the Amazon CloudSearch Developer Guide
 	AlgorithmicStemming *string `type:"string" enum:"AlgorithmicStemming"`
 
 	// A JSON array that contains a collection of terms, tokens, readings and part
@@ -1328,6 +1968,36 @@ func (s AnalysisOptions) GoString() string {
 	return s.String()
 }
 
+// SetAlgorithmicStemming sets the AlgorithmicStemming field's value.
+func (s *AnalysisOptions) SetAlgorithmicStemming(v string) *AnalysisOptions {
+	s.AlgorithmicStemming = &v
+	return s
+}
+
+// SetJapaneseTokenizationDictionary sets the JapaneseTokenizationDictionary field's value.
+func (s *AnalysisOptions) SetJapaneseTokenizationDictionary(v string) *AnalysisOptions {
+	s.JapaneseTokenizationDictionary = &v
+	return s
+}
+
+// SetStemmingDictionary sets the StemmingDictionary field's value.
+func (s *AnalysisOptions) SetStemmingDictionary(v string) *AnalysisOptions {
+	s.StemmingDictionary = &v
+	return s
+}
+
+// SetStopwords sets the Stopwords field's value.
+func (s *AnalysisOptions) SetStopwords(v string) *AnalysisOptions {
+	s.Stopwords = &v
+	return s
+}
+
+// SetSynonyms sets the Synonyms field's value.
+func (s *AnalysisOptions) SetSynonyms(v string) *AnalysisOptions {
+	s.Synonyms = &v
+	return s
+}
+
 // Configuration information for an analysis scheme. Each analysis scheme has
 // a unique name and specifies the language of the text to be processed. The
 // following options can be configured for an analysis scheme: Synonyms, Stopwords,
@@ -1339,12 +2009,16 @@ type AnalysisScheme struct {
 	// tokenization dictionary for Japanese.
 	AnalysisOptions *AnalysisOptions `type:"structure"`
 
-	// An IETF RFC 4646 (http://tools.ietf.org/html/rfc4646" target="_blank) language
-	// code or mul for multiple languages.
+	// An IETF RFC 4646 (http://tools.ietf.org/html/rfc4646) language code or mul
+	// for multiple languages.
+	//
+	// AnalysisSchemeLanguage is a required field
 	AnalysisSchemeLanguage *string `type:"string" required:"true" enum:"AnalysisSchemeLanguage"`
 
 	// Names must begin with a letter and can contain the following characters:
 	// a-z (lowercase), 0-9, and _ (underscore).
+	//
+	// AnalysisSchemeName is a required field
 	AnalysisSchemeName *string `min:"1" type:"string" required:"true"`
 }
 
@@ -1377,6 +2051,24 @@ func (s *AnalysisScheme) Validate() error {
 	return nil
 }
 
+// SetAnalysisOptions sets the AnalysisOptions field's value.
+func (s *AnalysisScheme) SetAnalysisOptions(v *AnalysisOptions) *AnalysisScheme {
+	s.AnalysisOptions = v
+	return s
+}
+
+// SetAnalysisSchemeLanguage sets the AnalysisSchemeLanguage field's value.
+func (s *AnalysisScheme) SetAnalysisSchemeLanguage(v string) *AnalysisScheme {
+	s.AnalysisSchemeLanguage = &v
+	return s
+}
+
+// SetAnalysisSchemeName sets the AnalysisSchemeName field's value.
+func (s *AnalysisScheme) SetAnalysisSchemeName(v string) *AnalysisScheme {
+	s.AnalysisSchemeName = &v
+	return s
+}
+
 // The status and configuration of an AnalysisScheme.
 type AnalysisSchemeStatus struct {
 	_ struct{} `type:"structure"`
@@ -1385,9 +2077,13 @@ type AnalysisSchemeStatus struct {
 	// a unique name and specifies the language of the text to be processed. The
 	// following options can be configured for an analysis scheme: Synonyms, Stopwords,
 	// StemmingDictionary, JapaneseTokenizationDictionary and AlgorithmicStemming.
+	//
+	// Options is a required field
 	Options *AnalysisScheme `type:"structure" required:"true"`
 
 	// The status of domain configuration option.
+	//
+	// Status is a required field
 	Status *OptionStatus `type:"structure" required:"true"`
 }
 
@@ -1401,14 +2097,30 @@ func (s AnalysisSchemeStatus) GoString() string {
 	return s.String()
 }
 
+// SetOptions sets the Options field's value.
+func (s *AnalysisSchemeStatus) SetOptions(v *AnalysisScheme) *AnalysisSchemeStatus {
+	s.Options = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *AnalysisSchemeStatus) SetStatus(v *OptionStatus) *AnalysisSchemeStatus {
+	s.Status = v
+	return s
+}
+
 // The status and configuration of the domain's availability options.
 type AvailabilityOptionsStatus struct {
 	_ struct{} `type:"structure"`
 
 	// The availability options configured for the domain.
+	//
+	// Options is a required field
 	Options *bool `type:"boolean" required:"true"`
 
 	// The status of domain configuration option.
+	//
+	// Status is a required field
 	Status *OptionStatus `type:"structure" required:"true"`
 }
 
@@ -1422,6 +2134,18 @@ func (s AvailabilityOptionsStatus) GoString() string {
 	return s.String()
 }
 
+// SetOptions sets the Options field's value.
+func (s *AvailabilityOptionsStatus) SetOptions(v bool) *AvailabilityOptionsStatus {
+	s.Options = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *AvailabilityOptionsStatus) SetStatus(v *OptionStatus) *AvailabilityOptionsStatus {
+	s.Status = v
+	return s
+}
+
 // Container for the parameters to the BuildSuggester operation. Specifies the
 // name of the domain you want to update.
 type BuildSuggestersInput struct {
@@ -1431,6 +2155,8 @@ type BuildSuggestersInput struct {
 	// the domains owned by an account within an AWS region. Domain names start
 	// with a letter or number and can contain the following characters: a-z (lowercase),
 	// 0-9, and - (hyphen).
+	//
+	// DomainName is a required field
 	DomainName *string `min:"3" type:"string" required:"true"`
 }
 
@@ -1460,6 +2186,12 @@ func (s *BuildSuggestersInput) Validate() error {
 	return nil
 }
 
+// SetDomainName sets the DomainName field's value.
+func (s *BuildSuggestersInput) SetDomainName(v string) *BuildSuggestersInput {
+	s.DomainName = &v
+	return s
+}
+
 // The result of a BuildSuggester request. Contains a list of the fields used
 // for suggestions.
 type BuildSuggestersOutput struct {
@@ -1479,6 +2211,12 @@ func (s BuildSuggestersOutput) GoString() string {
 	return s.String()
 }
 
+// SetFieldNames sets the FieldNames field's value.
+func (s *BuildSuggestersOutput) SetFieldNames(v []*string) *BuildSuggestersOutput {
+	s.FieldNames = v
+	return s
+}
+
 // Container for the parameters to the CreateDomain operation. Specifies a name
 // for the new search domain.
 type CreateDomainInput struct {
@@ -1487,6 +2225,8 @@ type CreateDomainInput struct {
 	// A name for the domain you are creating. Allowed characters are a-z (lower-case
 	// letters), 0-9, and hyphen (-). Domain names must start with a letter or number
 	// and be at least 3 and no more than 28 characters long.
+	//
+	// DomainName is a required field
 	DomainName *string `min:"3" type:"string" required:"true"`
 }
 
@@ -1516,6 +2256,12 @@ func (s *CreateDomainInput) Validate() error {
 	return nil
 }
 
+// SetDomainName sets the DomainName field's value.
+func (s *CreateDomainInput) SetDomainName(v string) *CreateDomainInput {
+	s.DomainName = &v
+	return s
+}
+
 // The result of a CreateDomainRequest. Contains the status of a newly created
 // domain.
 type CreateDomainOutput struct {
@@ -1533,6 +2279,12 @@ func (s CreateDomainOutput) String() string {
 // GoString returns the string representation
 func (s CreateDomainOutput) GoString() string {
 	return s.String()
+}
+
+// SetDomainStatus sets the DomainStatus field's value.
+func (s *CreateDomainOutput) SetDomainStatus(v *DomainStatus) *CreateDomainOutput {
+	s.DomainStatus = v
+	return s
 }
 
 // Options for a field that contains an array of dates. Present if IndexFieldType
@@ -1564,6 +2316,36 @@ func (s DateArrayOptions) String() string {
 // GoString returns the string representation
 func (s DateArrayOptions) GoString() string {
 	return s.String()
+}
+
+// SetDefaultValue sets the DefaultValue field's value.
+func (s *DateArrayOptions) SetDefaultValue(v string) *DateArrayOptions {
+	s.DefaultValue = &v
+	return s
+}
+
+// SetFacetEnabled sets the FacetEnabled field's value.
+func (s *DateArrayOptions) SetFacetEnabled(v bool) *DateArrayOptions {
+	s.FacetEnabled = &v
+	return s
+}
+
+// SetReturnEnabled sets the ReturnEnabled field's value.
+func (s *DateArrayOptions) SetReturnEnabled(v bool) *DateArrayOptions {
+	s.ReturnEnabled = &v
+	return s
+}
+
+// SetSearchEnabled sets the SearchEnabled field's value.
+func (s *DateArrayOptions) SetSearchEnabled(v bool) *DateArrayOptions {
+	s.SearchEnabled = &v
+	return s
+}
+
+// SetSourceFields sets the SourceFields field's value.
+func (s *DateArrayOptions) SetSourceFields(v string) *DateArrayOptions {
+	s.SourceFields = &v
+	return s
 }
 
 // Options for a date field. Dates and times are specified in UTC (Coordinated
@@ -1628,6 +2410,42 @@ func (s *DateOptions) Validate() error {
 	return nil
 }
 
+// SetDefaultValue sets the DefaultValue field's value.
+func (s *DateOptions) SetDefaultValue(v string) *DateOptions {
+	s.DefaultValue = &v
+	return s
+}
+
+// SetFacetEnabled sets the FacetEnabled field's value.
+func (s *DateOptions) SetFacetEnabled(v bool) *DateOptions {
+	s.FacetEnabled = &v
+	return s
+}
+
+// SetReturnEnabled sets the ReturnEnabled field's value.
+func (s *DateOptions) SetReturnEnabled(v bool) *DateOptions {
+	s.ReturnEnabled = &v
+	return s
+}
+
+// SetSearchEnabled sets the SearchEnabled field's value.
+func (s *DateOptions) SetSearchEnabled(v bool) *DateOptions {
+	s.SearchEnabled = &v
+	return s
+}
+
+// SetSortEnabled sets the SortEnabled field's value.
+func (s *DateOptions) SetSortEnabled(v bool) *DateOptions {
+	s.SortEnabled = &v
+	return s
+}
+
+// SetSourceField sets the SourceField field's value.
+func (s *DateOptions) SetSourceField(v string) *DateOptions {
+	s.SourceField = &v
+	return s
+}
+
 // Container for the parameters to the DefineAnalysisScheme operation. Specifies
 // the name of the domain you want to update and the analysis scheme configuration.
 type DefineAnalysisSchemeInput struct {
@@ -1637,12 +2455,16 @@ type DefineAnalysisSchemeInput struct {
 	// a unique name and specifies the language of the text to be processed. The
 	// following options can be configured for an analysis scheme: Synonyms, Stopwords,
 	// StemmingDictionary, JapaneseTokenizationDictionary and AlgorithmicStemming.
+	//
+	// AnalysisScheme is a required field
 	AnalysisScheme *AnalysisScheme `type:"structure" required:"true"`
 
 	// A string that represents the name of a domain. Domain names are unique across
 	// the domains owned by an account within an AWS region. Domain names start
 	// with a letter or number and can contain the following characters: a-z (lowercase),
 	// 0-9, and - (hyphen).
+	//
+	// DomainName is a required field
 	DomainName *string `min:"3" type:"string" required:"true"`
 }
 
@@ -1680,12 +2502,26 @@ func (s *DefineAnalysisSchemeInput) Validate() error {
 	return nil
 }
 
+// SetAnalysisScheme sets the AnalysisScheme field's value.
+func (s *DefineAnalysisSchemeInput) SetAnalysisScheme(v *AnalysisScheme) *DefineAnalysisSchemeInput {
+	s.AnalysisScheme = v
+	return s
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *DefineAnalysisSchemeInput) SetDomainName(v string) *DefineAnalysisSchemeInput {
+	s.DomainName = &v
+	return s
+}
+
 // The result of a DefineAnalysisScheme request. Contains the status of the
 // newly-configured analysis scheme.
 type DefineAnalysisSchemeOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The status and configuration of an AnalysisScheme.
+	//
+	// AnalysisScheme is a required field
 	AnalysisScheme *AnalysisSchemeStatus `type:"structure" required:"true"`
 }
 
@@ -1699,6 +2535,12 @@ func (s DefineAnalysisSchemeOutput) GoString() string {
 	return s.String()
 }
 
+// SetAnalysisScheme sets the AnalysisScheme field's value.
+func (s *DefineAnalysisSchemeOutput) SetAnalysisScheme(v *AnalysisSchemeStatus) *DefineAnalysisSchemeOutput {
+	s.AnalysisScheme = v
+	return s
+}
+
 // Container for the parameters to the DefineExpression operation. Specifies
 // the name of the domain you want to update and the expression you want to
 // configure.
@@ -1709,11 +2551,15 @@ type DefineExpressionInput struct {
 	// the domains owned by an account within an AWS region. Domain names start
 	// with a letter or number and can contain the following characters: a-z (lowercase),
 	// 0-9, and - (hyphen).
+	//
+	// DomainName is a required field
 	DomainName *string `min:"3" type:"string" required:"true"`
 
 	// A named expression that can be evaluated at search time. Can be used to sort
 	// the search results, define other expressions, or return computed information
 	// in the search results.
+	//
+	// Expression is a required field
 	Expression *Expression `type:"structure" required:"true"`
 }
 
@@ -1751,12 +2597,26 @@ func (s *DefineExpressionInput) Validate() error {
 	return nil
 }
 
+// SetDomainName sets the DomainName field's value.
+func (s *DefineExpressionInput) SetDomainName(v string) *DefineExpressionInput {
+	s.DomainName = &v
+	return s
+}
+
+// SetExpression sets the Expression field's value.
+func (s *DefineExpressionInput) SetExpression(v *Expression) *DefineExpressionInput {
+	s.Expression = v
+	return s
+}
+
 // The result of a DefineExpression request. Contains the status of the newly-configured
 // expression.
 type DefineExpressionOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The value of an Expression and its current status.
+	//
+	// Expression is a required field
 	Expression *ExpressionStatus `type:"structure" required:"true"`
 }
 
@@ -1770,6 +2630,12 @@ func (s DefineExpressionOutput) GoString() string {
 	return s.String()
 }
 
+// SetExpression sets the Expression field's value.
+func (s *DefineExpressionOutput) SetExpression(v *ExpressionStatus) *DefineExpressionOutput {
+	s.Expression = v
+	return s
+}
+
 // Container for the parameters to the DefineIndexField operation. Specifies
 // the name of the domain you want to update and the index field configuration.
 type DefineIndexFieldInput struct {
@@ -1779,9 +2645,13 @@ type DefineIndexFieldInput struct {
 	// the domains owned by an account within an AWS region. Domain names start
 	// with a letter or number and can contain the following characters: a-z (lowercase),
 	// 0-9, and - (hyphen).
+	//
+	// DomainName is a required field
 	DomainName *string `min:"3" type:"string" required:"true"`
 
 	// The index field and field options you want to configure.
+	//
+	// IndexField is a required field
 	IndexField *IndexField `type:"structure" required:"true"`
 }
 
@@ -1819,12 +2689,26 @@ func (s *DefineIndexFieldInput) Validate() error {
 	return nil
 }
 
+// SetDomainName sets the DomainName field's value.
+func (s *DefineIndexFieldInput) SetDomainName(v string) *DefineIndexFieldInput {
+	s.DomainName = &v
+	return s
+}
+
+// SetIndexField sets the IndexField field's value.
+func (s *DefineIndexFieldInput) SetIndexField(v *IndexField) *DefineIndexFieldInput {
+	s.IndexField = v
+	return s
+}
+
 // The result of a DefineIndexField request. Contains the status of the newly-configured
 // index field.
 type DefineIndexFieldOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The value of an IndexField and its current status.
+	//
+	// IndexField is a required field
 	IndexField *IndexFieldStatus `type:"structure" required:"true"`
 }
 
@@ -1838,6 +2722,12 @@ func (s DefineIndexFieldOutput) GoString() string {
 	return s.String()
 }
 
+// SetIndexField sets the IndexField field's value.
+func (s *DefineIndexFieldOutput) SetIndexField(v *IndexFieldStatus) *DefineIndexFieldOutput {
+	s.IndexField = v
+	return s
+}
+
 // Container for the parameters to the DefineSuggester operation. Specifies
 // the name of the domain you want to update and the suggester configuration.
 type DefineSuggesterInput struct {
@@ -1847,11 +2737,15 @@ type DefineSuggesterInput struct {
 	// the domains owned by an account within an AWS region. Domain names start
 	// with a letter or number and can contain the following characters: a-z (lowercase),
 	// 0-9, and - (hyphen).
+	//
+	// DomainName is a required field
 	DomainName *string `min:"3" type:"string" required:"true"`
 
 	// Configuration information for a search suggester. Each suggester has a unique
 	// name and specifies the text field you want to use for suggestions. The following
 	// options can be configured for a suggester: FuzzyMatching, SortExpression.
+	//
+	// Suggester is a required field
 	Suggester *Suggester `type:"structure" required:"true"`
 }
 
@@ -1889,12 +2783,26 @@ func (s *DefineSuggesterInput) Validate() error {
 	return nil
 }
 
+// SetDomainName sets the DomainName field's value.
+func (s *DefineSuggesterInput) SetDomainName(v string) *DefineSuggesterInput {
+	s.DomainName = &v
+	return s
+}
+
+// SetSuggester sets the Suggester field's value.
+func (s *DefineSuggesterInput) SetSuggester(v *Suggester) *DefineSuggesterInput {
+	s.Suggester = v
+	return s
+}
+
 // The result of a DefineSuggester request. Contains the status of the newly-configured
 // suggester.
 type DefineSuggesterOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The value of a Suggester and its current status.
+	//
+	// Suggester is a required field
 	Suggester *SuggesterStatus `type:"structure" required:"true"`
 }
 
@@ -1908,6 +2816,12 @@ func (s DefineSuggesterOutput) GoString() string {
 	return s.String()
 }
 
+// SetSuggester sets the Suggester field's value.
+func (s *DefineSuggesterOutput) SetSuggester(v *SuggesterStatus) *DefineSuggesterOutput {
+	s.Suggester = v
+	return s
+}
+
 // Container for the parameters to the DeleteAnalysisScheme operation. Specifies
 // the name of the domain you want to update and the analysis scheme you want
 // to delete.
@@ -1915,12 +2829,16 @@ type DeleteAnalysisSchemeInput struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the analysis scheme you want to delete.
+	//
+	// AnalysisSchemeName is a required field
 	AnalysisSchemeName *string `min:"1" type:"string" required:"true"`
 
 	// A string that represents the name of a domain. Domain names are unique across
 	// the domains owned by an account within an AWS region. Domain names start
 	// with a letter or number and can contain the following characters: a-z (lowercase),
 	// 0-9, and - (hyphen).
+	//
+	// DomainName is a required field
 	DomainName *string `min:"3" type:"string" required:"true"`
 }
 
@@ -1956,12 +2874,26 @@ func (s *DeleteAnalysisSchemeInput) Validate() error {
 	return nil
 }
 
+// SetAnalysisSchemeName sets the AnalysisSchemeName field's value.
+func (s *DeleteAnalysisSchemeInput) SetAnalysisSchemeName(v string) *DeleteAnalysisSchemeInput {
+	s.AnalysisSchemeName = &v
+	return s
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *DeleteAnalysisSchemeInput) SetDomainName(v string) *DeleteAnalysisSchemeInput {
+	s.DomainName = &v
+	return s
+}
+
 // The result of a DeleteAnalysisScheme request. Contains the status of the
 // deleted analysis scheme.
 type DeleteAnalysisSchemeOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The status of the analysis scheme being deleted.
+	//
+	// AnalysisScheme is a required field
 	AnalysisScheme *AnalysisSchemeStatus `type:"structure" required:"true"`
 }
 
@@ -1975,12 +2907,20 @@ func (s DeleteAnalysisSchemeOutput) GoString() string {
 	return s.String()
 }
 
+// SetAnalysisScheme sets the AnalysisScheme field's value.
+func (s *DeleteAnalysisSchemeOutput) SetAnalysisScheme(v *AnalysisSchemeStatus) *DeleteAnalysisSchemeOutput {
+	s.AnalysisScheme = v
+	return s
+}
+
 // Container for the parameters to the DeleteDomain operation. Specifies the
 // name of the domain you want to delete.
 type DeleteDomainInput struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the domain you want to permanently delete.
+	//
+	// DomainName is a required field
 	DomainName *string `min:"3" type:"string" required:"true"`
 }
 
@@ -2010,6 +2950,12 @@ func (s *DeleteDomainInput) Validate() error {
 	return nil
 }
 
+// SetDomainName sets the DomainName field's value.
+func (s *DeleteDomainInput) SetDomainName(v string) *DeleteDomainInput {
+	s.DomainName = &v
+	return s
+}
+
 // The result of a DeleteDomain request. Contains the status of a newly deleted
 // domain, or no status if the domain has already been completely deleted.
 type DeleteDomainOutput struct {
@@ -2029,6 +2975,12 @@ func (s DeleteDomainOutput) GoString() string {
 	return s.String()
 }
 
+// SetDomainStatus sets the DomainStatus field's value.
+func (s *DeleteDomainOutput) SetDomainStatus(v *DomainStatus) *DeleteDomainOutput {
+	s.DomainStatus = v
+	return s
+}
+
 // Container for the parameters to the DeleteExpression operation. Specifies
 // the name of the domain you want to update and the name of the expression
 // you want to delete.
@@ -2039,9 +2991,13 @@ type DeleteExpressionInput struct {
 	// the domains owned by an account within an AWS region. Domain names start
 	// with a letter or number and can contain the following characters: a-z (lowercase),
 	// 0-9, and - (hyphen).
+	//
+	// DomainName is a required field
 	DomainName *string `min:"3" type:"string" required:"true"`
 
 	// The name of the Expression to delete.
+	//
+	// ExpressionName is a required field
 	ExpressionName *string `min:"1" type:"string" required:"true"`
 }
 
@@ -2077,12 +3033,26 @@ func (s *DeleteExpressionInput) Validate() error {
 	return nil
 }
 
+// SetDomainName sets the DomainName field's value.
+func (s *DeleteExpressionInput) SetDomainName(v string) *DeleteExpressionInput {
+	s.DomainName = &v
+	return s
+}
+
+// SetExpressionName sets the ExpressionName field's value.
+func (s *DeleteExpressionInput) SetExpressionName(v string) *DeleteExpressionInput {
+	s.ExpressionName = &v
+	return s
+}
+
 // The result of a DeleteExpression request. Specifies the expression being
 // deleted.
 type DeleteExpressionOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The status of the expression being deleted.
+	//
+	// Expression is a required field
 	Expression *ExpressionStatus `type:"structure" required:"true"`
 }
 
@@ -2096,6 +3066,12 @@ func (s DeleteExpressionOutput) GoString() string {
 	return s.String()
 }
 
+// SetExpression sets the Expression field's value.
+func (s *DeleteExpressionOutput) SetExpression(v *ExpressionStatus) *DeleteExpressionOutput {
+	s.Expression = v
+	return s
+}
+
 // Container for the parameters to the DeleteIndexField operation. Specifies
 // the name of the domain you want to update and the name of the index field
 // you want to delete.
@@ -2106,10 +3082,14 @@ type DeleteIndexFieldInput struct {
 	// the domains owned by an account within an AWS region. Domain names start
 	// with a letter or number and can contain the following characters: a-z (lowercase),
 	// 0-9, and - (hyphen).
+	//
+	// DomainName is a required field
 	DomainName *string `min:"3" type:"string" required:"true"`
 
 	// The name of the index field your want to remove from the domain's indexing
 	// options.
+	//
+	// IndexFieldName is a required field
 	IndexFieldName *string `min:"1" type:"string" required:"true"`
 }
 
@@ -2145,11 +3125,25 @@ func (s *DeleteIndexFieldInput) Validate() error {
 	return nil
 }
 
+// SetDomainName sets the DomainName field's value.
+func (s *DeleteIndexFieldInput) SetDomainName(v string) *DeleteIndexFieldInput {
+	s.DomainName = &v
+	return s
+}
+
+// SetIndexFieldName sets the IndexFieldName field's value.
+func (s *DeleteIndexFieldInput) SetIndexFieldName(v string) *DeleteIndexFieldInput {
+	s.IndexFieldName = &v
+	return s
+}
+
 // The result of a DeleteIndexField request.
 type DeleteIndexFieldOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The status of the index field being deleted.
+	//
+	// IndexField is a required field
 	IndexField *IndexFieldStatus `type:"structure" required:"true"`
 }
 
@@ -2163,6 +3157,12 @@ func (s DeleteIndexFieldOutput) GoString() string {
 	return s.String()
 }
 
+// SetIndexField sets the IndexField field's value.
+func (s *DeleteIndexFieldOutput) SetIndexField(v *IndexFieldStatus) *DeleteIndexFieldOutput {
+	s.IndexField = v
+	return s
+}
+
 // Container for the parameters to the DeleteSuggester operation. Specifies
 // the name of the domain you want to update and name of the suggester you want
 // to delete.
@@ -2173,9 +3173,13 @@ type DeleteSuggesterInput struct {
 	// the domains owned by an account within an AWS region. Domain names start
 	// with a letter or number and can contain the following characters: a-z (lowercase),
 	// 0-9, and - (hyphen).
+	//
+	// DomainName is a required field
 	DomainName *string `min:"3" type:"string" required:"true"`
 
 	// Specifies the name of the suggester you want to delete.
+	//
+	// SuggesterName is a required field
 	SuggesterName *string `min:"1" type:"string" required:"true"`
 }
 
@@ -2211,12 +3215,26 @@ func (s *DeleteSuggesterInput) Validate() error {
 	return nil
 }
 
+// SetDomainName sets the DomainName field's value.
+func (s *DeleteSuggesterInput) SetDomainName(v string) *DeleteSuggesterInput {
+	s.DomainName = &v
+	return s
+}
+
+// SetSuggesterName sets the SuggesterName field's value.
+func (s *DeleteSuggesterInput) SetSuggesterName(v string) *DeleteSuggesterInput {
+	s.SuggesterName = &v
+	return s
+}
+
 // The result of a DeleteSuggester request. Contains the status of the deleted
 // suggester.
 type DeleteSuggesterOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The status of the suggester being deleted.
+	//
+	// Suggester is a required field
 	Suggester *SuggesterStatus `type:"structure" required:"true"`
 }
 
@@ -2228,6 +3246,12 @@ func (s DeleteSuggesterOutput) String() string {
 // GoString returns the string representation
 func (s DeleteSuggesterOutput) GoString() string {
 	return s.String()
+}
+
+// SetSuggester sets the Suggester field's value.
+func (s *DeleteSuggesterOutput) SetSuggester(v *SuggesterStatus) *DeleteSuggesterOutput {
+	s.Suggester = v
+	return s
 }
 
 // Container for the parameters to the DescribeAnalysisSchemes operation. Specifies
@@ -2246,6 +3270,8 @@ type DescribeAnalysisSchemesInput struct {
 	Deployed *bool `type:"boolean"`
 
 	// The name of the domain you want to describe.
+	//
+	// DomainName is a required field
 	DomainName *string `min:"3" type:"string" required:"true"`
 }
 
@@ -2275,12 +3301,32 @@ func (s *DescribeAnalysisSchemesInput) Validate() error {
 	return nil
 }
 
+// SetAnalysisSchemeNames sets the AnalysisSchemeNames field's value.
+func (s *DescribeAnalysisSchemesInput) SetAnalysisSchemeNames(v []*string) *DescribeAnalysisSchemesInput {
+	s.AnalysisSchemeNames = v
+	return s
+}
+
+// SetDeployed sets the Deployed field's value.
+func (s *DescribeAnalysisSchemesInput) SetDeployed(v bool) *DescribeAnalysisSchemesInput {
+	s.Deployed = &v
+	return s
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *DescribeAnalysisSchemesInput) SetDomainName(v string) *DescribeAnalysisSchemesInput {
+	s.DomainName = &v
+	return s
+}
+
 // The result of a DescribeAnalysisSchemes request. Contains the analysis schemes
 // configured for the domain specified in the request.
 type DescribeAnalysisSchemesOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The analysis scheme descriptions.
+	//
+	// AnalysisSchemes is a required field
 	AnalysisSchemes []*AnalysisSchemeStatus `type:"list" required:"true"`
 }
 
@@ -2292,6 +3338,12 @@ func (s DescribeAnalysisSchemesOutput) String() string {
 // GoString returns the string representation
 func (s DescribeAnalysisSchemesOutput) GoString() string {
 	return s.String()
+}
+
+// SetAnalysisSchemes sets the AnalysisSchemes field's value.
+func (s *DescribeAnalysisSchemesOutput) SetAnalysisSchemes(v []*AnalysisSchemeStatus) *DescribeAnalysisSchemesOutput {
+	s.AnalysisSchemes = v
+	return s
 }
 
 // Container for the parameters to the DescribeAvailabilityOptions operation.
@@ -2306,6 +3358,8 @@ type DescribeAvailabilityOptionsInput struct {
 	Deployed *bool `type:"boolean"`
 
 	// The name of the domain you want to describe.
+	//
+	// DomainName is a required field
 	DomainName *string `min:"3" type:"string" required:"true"`
 }
 
@@ -2335,6 +3389,18 @@ func (s *DescribeAvailabilityOptionsInput) Validate() error {
 	return nil
 }
 
+// SetDeployed sets the Deployed field's value.
+func (s *DescribeAvailabilityOptionsInput) SetDeployed(v bool) *DescribeAvailabilityOptionsInput {
+	s.Deployed = &v
+	return s
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *DescribeAvailabilityOptionsInput) SetDomainName(v string) *DescribeAvailabilityOptionsInput {
+	s.DomainName = &v
+	return s
+}
+
 // The result of a DescribeAvailabilityOptions request. Indicates whether or
 // not the Multi-AZ option is enabled for the domain specified in the request.
 type DescribeAvailabilityOptionsOutput struct {
@@ -2353,6 +3419,12 @@ func (s DescribeAvailabilityOptionsOutput) String() string {
 // GoString returns the string representation
 func (s DescribeAvailabilityOptionsOutput) GoString() string {
 	return s.String()
+}
+
+// SetAvailabilityOptions sets the AvailabilityOptions field's value.
+func (s *DescribeAvailabilityOptionsOutput) SetAvailabilityOptions(v *AvailabilityOptionsStatus) *DescribeAvailabilityOptionsOutput {
+	s.AvailabilityOptions = v
+	return s
 }
 
 // Container for the parameters to the DescribeDomains operation. By default
@@ -2375,12 +3447,20 @@ func (s DescribeDomainsInput) GoString() string {
 	return s.String()
 }
 
+// SetDomainNames sets the DomainNames field's value.
+func (s *DescribeDomainsInput) SetDomainNames(v []*string) *DescribeDomainsInput {
+	s.DomainNames = v
+	return s
+}
+
 // The result of a DescribeDomains request. Contains the status of the domains
 // specified in the request or all domains owned by the account.
 type DescribeDomainsOutput struct {
 	_ struct{} `type:"structure"`
 
 	// A list that contains the status of each requested domain.
+	//
+	// DomainStatusList is a required field
 	DomainStatusList []*DomainStatus `type:"list" required:"true"`
 }
 
@@ -2392,6 +3472,12 @@ func (s DescribeDomainsOutput) String() string {
 // GoString returns the string representation
 func (s DescribeDomainsOutput) GoString() string {
 	return s.String()
+}
+
+// SetDomainStatusList sets the DomainStatusList field's value.
+func (s *DescribeDomainsOutput) SetDomainStatusList(v []*DomainStatus) *DescribeDomainsOutput {
+	s.DomainStatusList = v
+	return s
 }
 
 // Container for the parameters to the DescribeDomains operation. Specifies
@@ -2407,6 +3493,8 @@ type DescribeExpressionsInput struct {
 	Deployed *bool `type:"boolean"`
 
 	// The name of the domain you want to describe.
+	//
+	// DomainName is a required field
 	DomainName *string `min:"3" type:"string" required:"true"`
 
 	// Limits the DescribeExpressions response to the specified expressions. If
@@ -2440,12 +3528,32 @@ func (s *DescribeExpressionsInput) Validate() error {
 	return nil
 }
 
+// SetDeployed sets the Deployed field's value.
+func (s *DescribeExpressionsInput) SetDeployed(v bool) *DescribeExpressionsInput {
+	s.Deployed = &v
+	return s
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *DescribeExpressionsInput) SetDomainName(v string) *DescribeExpressionsInput {
+	s.DomainName = &v
+	return s
+}
+
+// SetExpressionNames sets the ExpressionNames field's value.
+func (s *DescribeExpressionsInput) SetExpressionNames(v []*string) *DescribeExpressionsInput {
+	s.ExpressionNames = v
+	return s
+}
+
 // The result of a DescribeExpressions request. Contains the expressions configured
 // for the domain specified in the request.
 type DescribeExpressionsOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The expressions configured for the domain.
+	//
+	// Expressions is a required field
 	Expressions []*ExpressionStatus `type:"list" required:"true"`
 }
 
@@ -2457,6 +3565,12 @@ func (s DescribeExpressionsOutput) String() string {
 // GoString returns the string representation
 func (s DescribeExpressionsOutput) GoString() string {
 	return s.String()
+}
+
+// SetExpressions sets the Expressions field's value.
+func (s *DescribeExpressionsOutput) SetExpressions(v []*ExpressionStatus) *DescribeExpressionsOutput {
+	s.Expressions = v
+	return s
 }
 
 // Container for the parameters to the DescribeIndexFields operation. Specifies
@@ -2472,6 +3586,8 @@ type DescribeIndexFieldsInput struct {
 	Deployed *bool `type:"boolean"`
 
 	// The name of the domain you want to describe.
+	//
+	// DomainName is a required field
 	DomainName *string `min:"3" type:"string" required:"true"`
 
 	// A list of the index fields you want to describe. If not specified, information
@@ -2505,12 +3621,32 @@ func (s *DescribeIndexFieldsInput) Validate() error {
 	return nil
 }
 
+// SetDeployed sets the Deployed field's value.
+func (s *DescribeIndexFieldsInput) SetDeployed(v bool) *DescribeIndexFieldsInput {
+	s.Deployed = &v
+	return s
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *DescribeIndexFieldsInput) SetDomainName(v string) *DescribeIndexFieldsInput {
+	s.DomainName = &v
+	return s
+}
+
+// SetFieldNames sets the FieldNames field's value.
+func (s *DescribeIndexFieldsInput) SetFieldNames(v []*string) *DescribeIndexFieldsInput {
+	s.FieldNames = v
+	return s
+}
+
 // The result of a DescribeIndexFields request. Contains the index fields configured
 // for the domain specified in the request.
 type DescribeIndexFieldsOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The index fields configured for the domain.
+	//
+	// IndexFields is a required field
 	IndexFields []*IndexFieldStatus `type:"list" required:"true"`
 }
 
@@ -2524,6 +3660,12 @@ func (s DescribeIndexFieldsOutput) GoString() string {
 	return s.String()
 }
 
+// SetIndexFields sets the IndexFields field's value.
+func (s *DescribeIndexFieldsOutput) SetIndexFields(v []*IndexFieldStatus) *DescribeIndexFieldsOutput {
+	s.IndexFields = v
+	return s
+}
+
 // Container for the parameters to the DescribeScalingParameters operation.
 // Specifies the name of the domain you want to describe.
 type DescribeScalingParametersInput struct {
@@ -2533,6 +3675,8 @@ type DescribeScalingParametersInput struct {
 	// the domains owned by an account within an AWS region. Domain names start
 	// with a letter or number and can contain the following characters: a-z (lowercase),
 	// 0-9, and - (hyphen).
+	//
+	// DomainName is a required field
 	DomainName *string `min:"3" type:"string" required:"true"`
 }
 
@@ -2562,12 +3706,20 @@ func (s *DescribeScalingParametersInput) Validate() error {
 	return nil
 }
 
+// SetDomainName sets the DomainName field's value.
+func (s *DescribeScalingParametersInput) SetDomainName(v string) *DescribeScalingParametersInput {
+	s.DomainName = &v
+	return s
+}
+
 // The result of a DescribeScalingParameters request. Contains the scaling parameters
 // configured for the domain specified in the request.
 type DescribeScalingParametersOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The status and configuration of a search domain's scaling parameters.
+	//
+	// ScalingParameters is a required field
 	ScalingParameters *ScalingParametersStatus `type:"structure" required:"true"`
 }
 
@@ -2579,6 +3731,12 @@ func (s DescribeScalingParametersOutput) String() string {
 // GoString returns the string representation
 func (s DescribeScalingParametersOutput) GoString() string {
 	return s.String()
+}
+
+// SetScalingParameters sets the ScalingParameters field's value.
+func (s *DescribeScalingParametersOutput) SetScalingParameters(v *ScalingParametersStatus) *DescribeScalingParametersOutput {
+	s.ScalingParameters = v
+	return s
 }
 
 // Container for the parameters to the DescribeServiceAccessPolicies operation.
@@ -2593,6 +3751,8 @@ type DescribeServiceAccessPoliciesInput struct {
 	Deployed *bool `type:"boolean"`
 
 	// The name of the domain you want to describe.
+	//
+	// DomainName is a required field
 	DomainName *string `min:"3" type:"string" required:"true"`
 }
 
@@ -2622,11 +3782,25 @@ func (s *DescribeServiceAccessPoliciesInput) Validate() error {
 	return nil
 }
 
+// SetDeployed sets the Deployed field's value.
+func (s *DescribeServiceAccessPoliciesInput) SetDeployed(v bool) *DescribeServiceAccessPoliciesInput {
+	s.Deployed = &v
+	return s
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *DescribeServiceAccessPoliciesInput) SetDomainName(v string) *DescribeServiceAccessPoliciesInput {
+	s.DomainName = &v
+	return s
+}
+
 // The result of a DescribeServiceAccessPolicies request.
 type DescribeServiceAccessPoliciesOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The access rules configured for the domain specified in the request.
+	//
+	// AccessPolicies is a required field
 	AccessPolicies *AccessPoliciesStatus `type:"structure" required:"true"`
 }
 
@@ -2638,6 +3812,12 @@ func (s DescribeServiceAccessPoliciesOutput) String() string {
 // GoString returns the string representation
 func (s DescribeServiceAccessPoliciesOutput) GoString() string {
 	return s.String()
+}
+
+// SetAccessPolicies sets the AccessPolicies field's value.
+func (s *DescribeServiceAccessPoliciesOutput) SetAccessPolicies(v *AccessPoliciesStatus) *DescribeServiceAccessPoliciesOutput {
+	s.AccessPolicies = v
+	return s
 }
 
 // Container for the parameters to the DescribeSuggester operation. Specifies
@@ -2653,6 +3833,8 @@ type DescribeSuggestersInput struct {
 	Deployed *bool `type:"boolean"`
 
 	// The name of the domain you want to describe.
+	//
+	// DomainName is a required field
 	DomainName *string `min:"3" type:"string" required:"true"`
 
 	// The suggesters you want to describe.
@@ -2685,11 +3867,31 @@ func (s *DescribeSuggestersInput) Validate() error {
 	return nil
 }
 
+// SetDeployed sets the Deployed field's value.
+func (s *DescribeSuggestersInput) SetDeployed(v bool) *DescribeSuggestersInput {
+	s.Deployed = &v
+	return s
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *DescribeSuggestersInput) SetDomainName(v string) *DescribeSuggestersInput {
+	s.DomainName = &v
+	return s
+}
+
+// SetSuggesterNames sets the SuggesterNames field's value.
+func (s *DescribeSuggestersInput) SetSuggesterNames(v []*string) *DescribeSuggestersInput {
+	s.SuggesterNames = v
+	return s
+}
+
 // The result of a DescribeSuggesters request.
 type DescribeSuggestersOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The suggesters configured for the domain specified in the request.
+	//
+	// Suggesters is a required field
 	Suggesters []*SuggesterStatus `type:"list" required:"true"`
 }
 
@@ -2701,6 +3903,12 @@ func (s DescribeSuggestersOutput) String() string {
 // GoString returns the string representation
 func (s DescribeSuggestersOutput) GoString() string {
 	return s.String()
+}
+
+// SetSuggesters sets the Suggesters field's value.
+func (s *DescribeSuggestersOutput) SetSuggesters(v []*SuggesterStatus) *DescribeSuggestersOutput {
+	s.Suggesters = v
+	return s
 }
 
 // Options for a search suggester.
@@ -2724,6 +3932,8 @@ type DocumentSuggesterOptions struct {
 	SortExpression *string `type:"string"`
 
 	// The name of the index field you want to use for suggestions.
+	//
+	// SourceField is a required field
 	SourceField *string `min:"1" type:"string" required:"true"`
 }
 
@@ -2753,13 +3963,31 @@ func (s *DocumentSuggesterOptions) Validate() error {
 	return nil
 }
 
+// SetFuzzyMatching sets the FuzzyMatching field's value.
+func (s *DocumentSuggesterOptions) SetFuzzyMatching(v string) *DocumentSuggesterOptions {
+	s.FuzzyMatching = &v
+	return s
+}
+
+// SetSortExpression sets the SortExpression field's value.
+func (s *DocumentSuggesterOptions) SetSortExpression(v string) *DocumentSuggesterOptions {
+	s.SortExpression = &v
+	return s
+}
+
+// SetSourceField sets the SourceField field's value.
+func (s *DocumentSuggesterOptions) SetSourceField(v string) *DocumentSuggesterOptions {
+	s.SourceField = &v
+	return s
+}
+
 // The current status of the search domain.
 type DomainStatus struct {
 	_ struct{} `type:"structure"`
 
 	// The Amazon Resource Name (ARN) of the search domain. See Identifiers for
-	// IAM Entities (http://docs.aws.amazon.com/IAM/latest/UserGuide/index.html?Using_Identifiers.html"
-	// target="_blank) in Using AWS Identity and Access Management for more information.
+	// IAM Entities (http://docs.aws.amazon.com/IAM/latest/UserGuide/index.html?Using_Identifiers.html)
+	// in Using AWS Identity and Access Management for more information.
 	ARN *string `type:"string"`
 
 	// True if the search domain is created. It can take several minutes to initialize
@@ -2778,12 +4006,16 @@ type DomainStatus struct {
 	DocService *ServiceEndpoint `type:"structure"`
 
 	// An internally generated unique identifier for a domain.
+	//
+	// DomainId is a required field
 	DomainId *string `min:"1" type:"string" required:"true"`
 
 	// A string that represents the name of a domain. Domain names are unique across
 	// the domains owned by an account within an AWS region. Domain names start
 	// with a letter or number and can contain the following characters: a-z (lowercase),
 	// 0-9, and - (hyphen).
+	//
+	// DomainName is a required field
 	DomainName *string `min:"3" type:"string" required:"true"`
 
 	Limits *Limits `type:"structure"`
@@ -2793,6 +4025,8 @@ type DomainStatus struct {
 
 	// True if IndexDocuments needs to be called to activate the current domain
 	// configuration.
+	//
+	// RequiresIndexDocuments is a required field
 	RequiresIndexDocuments *bool `type:"boolean" required:"true"`
 
 	// The number of search instances that are available to process search requests.
@@ -2816,6 +4050,84 @@ func (s DomainStatus) String() string {
 // GoString returns the string representation
 func (s DomainStatus) GoString() string {
 	return s.String()
+}
+
+// SetARN sets the ARN field's value.
+func (s *DomainStatus) SetARN(v string) *DomainStatus {
+	s.ARN = &v
+	return s
+}
+
+// SetCreated sets the Created field's value.
+func (s *DomainStatus) SetCreated(v bool) *DomainStatus {
+	s.Created = &v
+	return s
+}
+
+// SetDeleted sets the Deleted field's value.
+func (s *DomainStatus) SetDeleted(v bool) *DomainStatus {
+	s.Deleted = &v
+	return s
+}
+
+// SetDocService sets the DocService field's value.
+func (s *DomainStatus) SetDocService(v *ServiceEndpoint) *DomainStatus {
+	s.DocService = v
+	return s
+}
+
+// SetDomainId sets the DomainId field's value.
+func (s *DomainStatus) SetDomainId(v string) *DomainStatus {
+	s.DomainId = &v
+	return s
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *DomainStatus) SetDomainName(v string) *DomainStatus {
+	s.DomainName = &v
+	return s
+}
+
+// SetLimits sets the Limits field's value.
+func (s *DomainStatus) SetLimits(v *Limits) *DomainStatus {
+	s.Limits = v
+	return s
+}
+
+// SetProcessing sets the Processing field's value.
+func (s *DomainStatus) SetProcessing(v bool) *DomainStatus {
+	s.Processing = &v
+	return s
+}
+
+// SetRequiresIndexDocuments sets the RequiresIndexDocuments field's value.
+func (s *DomainStatus) SetRequiresIndexDocuments(v bool) *DomainStatus {
+	s.RequiresIndexDocuments = &v
+	return s
+}
+
+// SetSearchInstanceCount sets the SearchInstanceCount field's value.
+func (s *DomainStatus) SetSearchInstanceCount(v int64) *DomainStatus {
+	s.SearchInstanceCount = &v
+	return s
+}
+
+// SetSearchInstanceType sets the SearchInstanceType field's value.
+func (s *DomainStatus) SetSearchInstanceType(v string) *DomainStatus {
+	s.SearchInstanceType = &v
+	return s
+}
+
+// SetSearchPartitionCount sets the SearchPartitionCount field's value.
+func (s *DomainStatus) SetSearchPartitionCount(v int64) *DomainStatus {
+	s.SearchPartitionCount = &v
+	return s
+}
+
+// SetSearchService sets the SearchService field's value.
+func (s *DomainStatus) SetSearchService(v *ServiceEndpoint) *DomainStatus {
+	s.SearchService = v
+	return s
 }
 
 // Options for a field that contains an array of double-precision 64-bit floating
@@ -2848,6 +4160,36 @@ func (s DoubleArrayOptions) String() string {
 // GoString returns the string representation
 func (s DoubleArrayOptions) GoString() string {
 	return s.String()
+}
+
+// SetDefaultValue sets the DefaultValue field's value.
+func (s *DoubleArrayOptions) SetDefaultValue(v float64) *DoubleArrayOptions {
+	s.DefaultValue = &v
+	return s
+}
+
+// SetFacetEnabled sets the FacetEnabled field's value.
+func (s *DoubleArrayOptions) SetFacetEnabled(v bool) *DoubleArrayOptions {
+	s.FacetEnabled = &v
+	return s
+}
+
+// SetReturnEnabled sets the ReturnEnabled field's value.
+func (s *DoubleArrayOptions) SetReturnEnabled(v bool) *DoubleArrayOptions {
+	s.ReturnEnabled = &v
+	return s
+}
+
+// SetSearchEnabled sets the SearchEnabled field's value.
+func (s *DoubleArrayOptions) SetSearchEnabled(v bool) *DoubleArrayOptions {
+	s.SearchEnabled = &v
+	return s
+}
+
+// SetSourceFields sets the SourceFields field's value.
+func (s *DoubleArrayOptions) SetSourceFields(v string) *DoubleArrayOptions {
+	s.SourceFields = &v
+	return s
 }
 
 // Options for a double-precision 64-bit floating point field. Present if IndexFieldType
@@ -2899,6 +4241,42 @@ func (s *DoubleOptions) Validate() error {
 	return nil
 }
 
+// SetDefaultValue sets the DefaultValue field's value.
+func (s *DoubleOptions) SetDefaultValue(v float64) *DoubleOptions {
+	s.DefaultValue = &v
+	return s
+}
+
+// SetFacetEnabled sets the FacetEnabled field's value.
+func (s *DoubleOptions) SetFacetEnabled(v bool) *DoubleOptions {
+	s.FacetEnabled = &v
+	return s
+}
+
+// SetReturnEnabled sets the ReturnEnabled field's value.
+func (s *DoubleOptions) SetReturnEnabled(v bool) *DoubleOptions {
+	s.ReturnEnabled = &v
+	return s
+}
+
+// SetSearchEnabled sets the SearchEnabled field's value.
+func (s *DoubleOptions) SetSearchEnabled(v bool) *DoubleOptions {
+	s.SearchEnabled = &v
+	return s
+}
+
+// SetSortEnabled sets the SortEnabled field's value.
+func (s *DoubleOptions) SetSortEnabled(v bool) *DoubleOptions {
+	s.SortEnabled = &v
+	return s
+}
+
+// SetSourceField sets the SourceField field's value.
+func (s *DoubleOptions) SetSourceField(v string) *DoubleOptions {
+	s.SourceField = &v
+	return s
+}
+
 // A named expression that can be evaluated at search time. Can be used to sort
 // the search results, define other expressions, or return computed information
 // in the search results.
@@ -2907,12 +4285,16 @@ type Expression struct {
 
 	// Names must begin with a letter and can contain the following characters:
 	// a-z (lowercase), 0-9, and _ (underscore).
+	//
+	// ExpressionName is a required field
 	ExpressionName *string `min:"1" type:"string" required:"true"`
 
 	// The expression to evaluate for sorting while processing a search request.
 	// The Expression syntax is based on JavaScript expressions. For more information,
-	// see Configuring Expressions (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-expressions.html"
-	// target="_blank) in the Amazon CloudSearch Developer Guide.
+	// see Configuring Expressions (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-expressions.html)
+	// in the Amazon CloudSearch Developer Guide.
+	//
+	// ExpressionValue is a required field
 	ExpressionValue *string `min:"1" type:"string" required:"true"`
 }
 
@@ -2948,14 +4330,30 @@ func (s *Expression) Validate() error {
 	return nil
 }
 
+// SetExpressionName sets the ExpressionName field's value.
+func (s *Expression) SetExpressionName(v string) *Expression {
+	s.ExpressionName = &v
+	return s
+}
+
+// SetExpressionValue sets the ExpressionValue field's value.
+func (s *Expression) SetExpressionValue(v string) *Expression {
+	s.ExpressionValue = &v
+	return s
+}
+
 // The value of an Expression and its current status.
 type ExpressionStatus struct {
 	_ struct{} `type:"structure"`
 
 	// The expression that is evaluated for sorting while processing a search request.
+	//
+	// Options is a required field
 	Options *Expression `type:"structure" required:"true"`
 
 	// The status of domain configuration option.
+	//
+	// Status is a required field
 	Status *OptionStatus `type:"structure" required:"true"`
 }
 
@@ -2969,6 +4367,18 @@ func (s ExpressionStatus) GoString() string {
 	return s.String()
 }
 
+// SetOptions sets the Options field's value.
+func (s *ExpressionStatus) SetOptions(v *Expression) *ExpressionStatus {
+	s.Options = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *ExpressionStatus) SetStatus(v *OptionStatus) *ExpressionStatus {
+	s.Status = v
+	return s
+}
+
 // Container for the parameters to the IndexDocuments operation. Specifies the
 // name of the domain you want to re-index.
 type IndexDocumentsInput struct {
@@ -2978,6 +4388,8 @@ type IndexDocumentsInput struct {
 	// the domains owned by an account within an AWS region. Domain names start
 	// with a letter or number and can contain the following characters: a-z (lowercase),
 	// 0-9, and - (hyphen).
+	//
+	// DomainName is a required field
 	DomainName *string `min:"3" type:"string" required:"true"`
 }
 
@@ -3007,6 +4419,12 @@ func (s *IndexDocumentsInput) Validate() error {
 	return nil
 }
 
+// SetDomainName sets the DomainName field's value.
+func (s *IndexDocumentsInput) SetDomainName(v string) *IndexDocumentsInput {
+	s.DomainName = &v
+	return s
+}
+
 // The result of an IndexDocuments request. Contains the status of the indexing
 // operation, including the fields being indexed.
 type IndexDocumentsOutput struct {
@@ -3024,6 +4442,12 @@ func (s IndexDocumentsOutput) String() string {
 // GoString returns the string representation
 func (s IndexDocumentsOutput) GoString() string {
 	return s.String()
+}
+
+// SetFieldNames sets the FieldNames field's value.
+func (s *IndexDocumentsOutput) SetFieldNames(v []*string) *IndexDocumentsOutput {
+	s.FieldNames = v
+	return s
 }
 
 // Configuration information for a field in the index, including its name, type,
@@ -3064,12 +4488,16 @@ type IndexField struct {
 	//
 	// The name score is reserved and cannot be used as a field name. To reference
 	// a document's ID, you can use the name _id.
+	//
+	// IndexFieldName is a required field
 	IndexFieldName *string `min:"1" type:"string" required:"true"`
 
 	// The type of field. The valid options for a field depend on the field type.
 	// For more information about the supported field types, see Configuring Index
-	// Fields (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-index-fields.html"
-	// target="_blank) in the Amazon CloudSearch Developer Guide.
+	// Fields (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-index-fields.html)
+	// in the Amazon CloudSearch Developer Guide.
+	//
+	// IndexFieldType is a required field
 	IndexFieldType *string `type:"string" required:"true" enum:"IndexFieldType"`
 
 	// Options for a field that contains an array of 64-bit signed integers. Present
@@ -3165,15 +4593,97 @@ func (s *IndexField) Validate() error {
 	return nil
 }
 
+// SetDateArrayOptions sets the DateArrayOptions field's value.
+func (s *IndexField) SetDateArrayOptions(v *DateArrayOptions) *IndexField {
+	s.DateArrayOptions = v
+	return s
+}
+
+// SetDateOptions sets the DateOptions field's value.
+func (s *IndexField) SetDateOptions(v *DateOptions) *IndexField {
+	s.DateOptions = v
+	return s
+}
+
+// SetDoubleArrayOptions sets the DoubleArrayOptions field's value.
+func (s *IndexField) SetDoubleArrayOptions(v *DoubleArrayOptions) *IndexField {
+	s.DoubleArrayOptions = v
+	return s
+}
+
+// SetDoubleOptions sets the DoubleOptions field's value.
+func (s *IndexField) SetDoubleOptions(v *DoubleOptions) *IndexField {
+	s.DoubleOptions = v
+	return s
+}
+
+// SetIndexFieldName sets the IndexFieldName field's value.
+func (s *IndexField) SetIndexFieldName(v string) *IndexField {
+	s.IndexFieldName = &v
+	return s
+}
+
+// SetIndexFieldType sets the IndexFieldType field's value.
+func (s *IndexField) SetIndexFieldType(v string) *IndexField {
+	s.IndexFieldType = &v
+	return s
+}
+
+// SetIntArrayOptions sets the IntArrayOptions field's value.
+func (s *IndexField) SetIntArrayOptions(v *IntArrayOptions) *IndexField {
+	s.IntArrayOptions = v
+	return s
+}
+
+// SetIntOptions sets the IntOptions field's value.
+func (s *IndexField) SetIntOptions(v *IntOptions) *IndexField {
+	s.IntOptions = v
+	return s
+}
+
+// SetLatLonOptions sets the LatLonOptions field's value.
+func (s *IndexField) SetLatLonOptions(v *LatLonOptions) *IndexField {
+	s.LatLonOptions = v
+	return s
+}
+
+// SetLiteralArrayOptions sets the LiteralArrayOptions field's value.
+func (s *IndexField) SetLiteralArrayOptions(v *LiteralArrayOptions) *IndexField {
+	s.LiteralArrayOptions = v
+	return s
+}
+
+// SetLiteralOptions sets the LiteralOptions field's value.
+func (s *IndexField) SetLiteralOptions(v *LiteralOptions) *IndexField {
+	s.LiteralOptions = v
+	return s
+}
+
+// SetTextArrayOptions sets the TextArrayOptions field's value.
+func (s *IndexField) SetTextArrayOptions(v *TextArrayOptions) *IndexField {
+	s.TextArrayOptions = v
+	return s
+}
+
+// SetTextOptions sets the TextOptions field's value.
+func (s *IndexField) SetTextOptions(v *TextOptions) *IndexField {
+	s.TextOptions = v
+	return s
+}
+
 // The value of an IndexField and its current status.
 type IndexFieldStatus struct {
 	_ struct{} `type:"structure"`
 
 	// Configuration information for a field in the index, including its name, type,
 	// and options. The supported options depend on the IndexFieldType.
+	//
+	// Options is a required field
 	Options *IndexField `type:"structure" required:"true"`
 
 	// The status of domain configuration option.
+	//
+	// Status is a required field
 	Status *OptionStatus `type:"structure" required:"true"`
 }
 
@@ -3185,6 +4695,18 @@ func (s IndexFieldStatus) String() string {
 // GoString returns the string representation
 func (s IndexFieldStatus) GoString() string {
 	return s.String()
+}
+
+// SetOptions sets the Options field's value.
+func (s *IndexFieldStatus) SetOptions(v *IndexField) *IndexFieldStatus {
+	s.Options = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *IndexFieldStatus) SetStatus(v *OptionStatus) *IndexFieldStatus {
+	s.Status = v
+	return s
 }
 
 // Options for a field that contains an array of 64-bit signed integers. Present
@@ -3217,6 +4739,36 @@ func (s IntArrayOptions) String() string {
 // GoString returns the string representation
 func (s IntArrayOptions) GoString() string {
 	return s.String()
+}
+
+// SetDefaultValue sets the DefaultValue field's value.
+func (s *IntArrayOptions) SetDefaultValue(v int64) *IntArrayOptions {
+	s.DefaultValue = &v
+	return s
+}
+
+// SetFacetEnabled sets the FacetEnabled field's value.
+func (s *IntArrayOptions) SetFacetEnabled(v bool) *IntArrayOptions {
+	s.FacetEnabled = &v
+	return s
+}
+
+// SetReturnEnabled sets the ReturnEnabled field's value.
+func (s *IntArrayOptions) SetReturnEnabled(v bool) *IntArrayOptions {
+	s.ReturnEnabled = &v
+	return s
+}
+
+// SetSearchEnabled sets the SearchEnabled field's value.
+func (s *IntArrayOptions) SetSearchEnabled(v bool) *IntArrayOptions {
+	s.SearchEnabled = &v
+	return s
+}
+
+// SetSourceFields sets the SourceFields field's value.
+func (s *IntArrayOptions) SetSourceFields(v string) *IntArrayOptions {
+	s.SourceFields = &v
+	return s
 }
 
 // Options for a 64-bit signed integer field. Present if IndexFieldType specifies
@@ -3266,6 +4818,42 @@ func (s *IntOptions) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetDefaultValue sets the DefaultValue field's value.
+func (s *IntOptions) SetDefaultValue(v int64) *IntOptions {
+	s.DefaultValue = &v
+	return s
+}
+
+// SetFacetEnabled sets the FacetEnabled field's value.
+func (s *IntOptions) SetFacetEnabled(v bool) *IntOptions {
+	s.FacetEnabled = &v
+	return s
+}
+
+// SetReturnEnabled sets the ReturnEnabled field's value.
+func (s *IntOptions) SetReturnEnabled(v bool) *IntOptions {
+	s.ReturnEnabled = &v
+	return s
+}
+
+// SetSearchEnabled sets the SearchEnabled field's value.
+func (s *IntOptions) SetSearchEnabled(v bool) *IntOptions {
+	s.SearchEnabled = &v
+	return s
+}
+
+// SetSortEnabled sets the SortEnabled field's value.
+func (s *IntOptions) SetSortEnabled(v bool) *IntOptions {
+	s.SortEnabled = &v
+	return s
+}
+
+// SetSourceField sets the SourceField field's value.
+func (s *IntOptions) SetSourceField(v string) *IntOptions {
+	s.SourceField = &v
+	return s
 }
 
 // Options for a latlon field. A latlon field contains a location stored as
@@ -3329,11 +4917,49 @@ func (s *LatLonOptions) Validate() error {
 	return nil
 }
 
+// SetDefaultValue sets the DefaultValue field's value.
+func (s *LatLonOptions) SetDefaultValue(v string) *LatLonOptions {
+	s.DefaultValue = &v
+	return s
+}
+
+// SetFacetEnabled sets the FacetEnabled field's value.
+func (s *LatLonOptions) SetFacetEnabled(v bool) *LatLonOptions {
+	s.FacetEnabled = &v
+	return s
+}
+
+// SetReturnEnabled sets the ReturnEnabled field's value.
+func (s *LatLonOptions) SetReturnEnabled(v bool) *LatLonOptions {
+	s.ReturnEnabled = &v
+	return s
+}
+
+// SetSearchEnabled sets the SearchEnabled field's value.
+func (s *LatLonOptions) SetSearchEnabled(v bool) *LatLonOptions {
+	s.SearchEnabled = &v
+	return s
+}
+
+// SetSortEnabled sets the SortEnabled field's value.
+func (s *LatLonOptions) SetSortEnabled(v bool) *LatLonOptions {
+	s.SortEnabled = &v
+	return s
+}
+
+// SetSourceField sets the SourceField field's value.
+func (s *LatLonOptions) SetSourceField(v string) *LatLonOptions {
+	s.SourceField = &v
+	return s
+}
+
 type Limits struct {
 	_ struct{} `type:"structure"`
 
+	// MaximumPartitionCount is a required field
 	MaximumPartitionCount *int64 `min:"1" type:"integer" required:"true"`
 
+	// MaximumReplicationCount is a required field
 	MaximumReplicationCount *int64 `min:"1" type:"integer" required:"true"`
 }
 
@@ -3345,6 +4971,18 @@ func (s Limits) String() string {
 // GoString returns the string representation
 func (s Limits) GoString() string {
 	return s.String()
+}
+
+// SetMaximumPartitionCount sets the MaximumPartitionCount field's value.
+func (s *Limits) SetMaximumPartitionCount(v int64) *Limits {
+	s.MaximumPartitionCount = &v
+	return s
+}
+
+// SetMaximumReplicationCount sets the MaximumReplicationCount field's value.
+func (s *Limits) SetMaximumReplicationCount(v int64) *Limits {
+	s.MaximumReplicationCount = &v
+	return s
 }
 
 type ListDomainNamesInput struct {
@@ -3380,6 +5018,12 @@ func (s ListDomainNamesOutput) GoString() string {
 	return s.String()
 }
 
+// SetDomainNames sets the DomainNames field's value.
+func (s *ListDomainNamesOutput) SetDomainNames(v map[string]*string) *ListDomainNamesOutput {
+	s.DomainNames = v
+	return s
+}
+
 // Options for a field that contains an array of literal strings. Present if
 // IndexFieldType specifies the field is of type literal-array. All options
 // are enabled by default.
@@ -3410,6 +5054,36 @@ func (s LiteralArrayOptions) String() string {
 // GoString returns the string representation
 func (s LiteralArrayOptions) GoString() string {
 	return s.String()
+}
+
+// SetDefaultValue sets the DefaultValue field's value.
+func (s *LiteralArrayOptions) SetDefaultValue(v string) *LiteralArrayOptions {
+	s.DefaultValue = &v
+	return s
+}
+
+// SetFacetEnabled sets the FacetEnabled field's value.
+func (s *LiteralArrayOptions) SetFacetEnabled(v bool) *LiteralArrayOptions {
+	s.FacetEnabled = &v
+	return s
+}
+
+// SetReturnEnabled sets the ReturnEnabled field's value.
+func (s *LiteralArrayOptions) SetReturnEnabled(v bool) *LiteralArrayOptions {
+	s.ReturnEnabled = &v
+	return s
+}
+
+// SetSearchEnabled sets the SearchEnabled field's value.
+func (s *LiteralArrayOptions) SetSearchEnabled(v bool) *LiteralArrayOptions {
+	s.SearchEnabled = &v
+	return s
+}
+
+// SetSourceFields sets the SourceFields field's value.
+func (s *LiteralArrayOptions) SetSourceFields(v string) *LiteralArrayOptions {
+	s.SourceFields = &v
+	return s
 }
 
 // Options for literal field. Present if IndexFieldType specifies the field
@@ -3472,11 +5146,49 @@ func (s *LiteralOptions) Validate() error {
 	return nil
 }
 
+// SetDefaultValue sets the DefaultValue field's value.
+func (s *LiteralOptions) SetDefaultValue(v string) *LiteralOptions {
+	s.DefaultValue = &v
+	return s
+}
+
+// SetFacetEnabled sets the FacetEnabled field's value.
+func (s *LiteralOptions) SetFacetEnabled(v bool) *LiteralOptions {
+	s.FacetEnabled = &v
+	return s
+}
+
+// SetReturnEnabled sets the ReturnEnabled field's value.
+func (s *LiteralOptions) SetReturnEnabled(v bool) *LiteralOptions {
+	s.ReturnEnabled = &v
+	return s
+}
+
+// SetSearchEnabled sets the SearchEnabled field's value.
+func (s *LiteralOptions) SetSearchEnabled(v bool) *LiteralOptions {
+	s.SearchEnabled = &v
+	return s
+}
+
+// SetSortEnabled sets the SortEnabled field's value.
+func (s *LiteralOptions) SetSortEnabled(v bool) *LiteralOptions {
+	s.SortEnabled = &v
+	return s
+}
+
+// SetSourceField sets the SourceField field's value.
+func (s *LiteralOptions) SetSourceField(v string) *LiteralOptions {
+	s.SourceField = &v
+	return s
+}
+
 // The status of domain configuration option.
 type OptionStatus struct {
 	_ struct{} `type:"structure"`
 
 	// A timestamp for when this option was created.
+	//
+	// CreationDate is a required field
 	CreationDate *time.Time `type:"timestamp" timestampFormat:"iso8601" required:"true"`
 
 	// Indicates that the option will be deleted once processing is complete.
@@ -3484,16 +5196,21 @@ type OptionStatus struct {
 
 	// The state of processing a change to an option. Possible values:
 	//
-	//   RequiresIndexDocuments: the option's latest value will not be deployed
-	// until IndexDocuments has been called and indexing is complete.  Processing:
-	// the option's latest value is in the process of being activated.   Active:
-	// the option's latest value is completely deployed.  FailedToValidate: the
-	// option value is not compatible with the domain's data and cannot be used
-	// to index the data. You must either modify the option value or update or remove
-	// the incompatible documents.
+	//    * RequiresIndexDocuments: the option's latest value will not be deployed
+	//    until IndexDocuments has been called and indexing is complete.
+	//    * Processing: the option's latest value is in the process of being activated.
+	//
+	//    * Active: the option's latest value is completely deployed.
+	//    * FailedToValidate: the option value is not compatible with the domain's
+	//    data and cannot be used to index the data. You must either modify the
+	//    option value or update or remove the incompatible documents.
+	//
+	// State is a required field
 	State *string `type:"string" required:"true" enum:"OptionState"`
 
 	// A timestamp for when this option was last updated.
+	//
+	// UpdateDate is a required field
 	UpdateDate *time.Time `type:"timestamp" timestampFormat:"iso8601" required:"true"`
 
 	// A unique integer that indicates when this option was last updated.
@@ -3508,6 +5225,36 @@ func (s OptionStatus) String() string {
 // GoString returns the string representation
 func (s OptionStatus) GoString() string {
 	return s.String()
+}
+
+// SetCreationDate sets the CreationDate field's value.
+func (s *OptionStatus) SetCreationDate(v time.Time) *OptionStatus {
+	s.CreationDate = &v
+	return s
+}
+
+// SetPendingDeletion sets the PendingDeletion field's value.
+func (s *OptionStatus) SetPendingDeletion(v bool) *OptionStatus {
+	s.PendingDeletion = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *OptionStatus) SetState(v string) *OptionStatus {
+	s.State = &v
+	return s
+}
+
+// SetUpdateDate sets the UpdateDate field's value.
+func (s *OptionStatus) SetUpdateDate(v time.Time) *OptionStatus {
+	s.UpdateDate = &v
+	return s
+}
+
+// SetUpdateVersion sets the UpdateVersion field's value.
+func (s *OptionStatus) SetUpdateVersion(v int64) *OptionStatus {
+	s.UpdateVersion = &v
+	return s
 }
 
 // The desired instance type and desired number of replicas of each index partition.
@@ -3536,14 +5283,36 @@ func (s ScalingParameters) GoString() string {
 	return s.String()
 }
 
+// SetDesiredInstanceType sets the DesiredInstanceType field's value.
+func (s *ScalingParameters) SetDesiredInstanceType(v string) *ScalingParameters {
+	s.DesiredInstanceType = &v
+	return s
+}
+
+// SetDesiredPartitionCount sets the DesiredPartitionCount field's value.
+func (s *ScalingParameters) SetDesiredPartitionCount(v int64) *ScalingParameters {
+	s.DesiredPartitionCount = &v
+	return s
+}
+
+// SetDesiredReplicationCount sets the DesiredReplicationCount field's value.
+func (s *ScalingParameters) SetDesiredReplicationCount(v int64) *ScalingParameters {
+	s.DesiredReplicationCount = &v
+	return s
+}
+
 // The status and configuration of a search domain's scaling parameters.
 type ScalingParametersStatus struct {
 	_ struct{} `type:"structure"`
 
 	// The desired instance type and desired number of replicas of each index partition.
+	//
+	// Options is a required field
 	Options *ScalingParameters `type:"structure" required:"true"`
 
 	// The status of domain configuration option.
+	//
+	// Status is a required field
 	Status *OptionStatus `type:"structure" required:"true"`
 }
 
@@ -3555,6 +5324,18 @@ func (s ScalingParametersStatus) String() string {
 // GoString returns the string representation
 func (s ScalingParametersStatus) GoString() string {
 	return s.String()
+}
+
+// SetOptions sets the Options field's value.
+func (s *ScalingParametersStatus) SetOptions(v *ScalingParameters) *ScalingParametersStatus {
+	s.Options = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *ScalingParametersStatus) SetStatus(v *OptionStatus) *ScalingParametersStatus {
+	s.Status = v
+	return s
 }
 
 // The endpoint to which service requests can be submitted.
@@ -3576,6 +5357,12 @@ func (s ServiceEndpoint) GoString() string {
 	return s.String()
 }
 
+// SetEndpoint sets the Endpoint field's value.
+func (s *ServiceEndpoint) SetEndpoint(v string) *ServiceEndpoint {
+	s.Endpoint = &v
+	return s
+}
+
 // Configuration information for a search suggester. Each suggester has a unique
 // name and specifies the text field you want to use for suggestions. The following
 // options can be configured for a suggester: FuzzyMatching, SortExpression.
@@ -3583,10 +5370,14 @@ type Suggester struct {
 	_ struct{} `type:"structure"`
 
 	// Options for a search suggester.
+	//
+	// DocumentSuggesterOptions is a required field
 	DocumentSuggesterOptions *DocumentSuggesterOptions `type:"structure" required:"true"`
 
 	// Names must begin with a letter and can contain the following characters:
 	// a-z (lowercase), 0-9, and _ (underscore).
+	//
+	// SuggesterName is a required field
 	SuggesterName *string `min:"1" type:"string" required:"true"`
 }
 
@@ -3624,6 +5415,18 @@ func (s *Suggester) Validate() error {
 	return nil
 }
 
+// SetDocumentSuggesterOptions sets the DocumentSuggesterOptions field's value.
+func (s *Suggester) SetDocumentSuggesterOptions(v *DocumentSuggesterOptions) *Suggester {
+	s.DocumentSuggesterOptions = v
+	return s
+}
+
+// SetSuggesterName sets the SuggesterName field's value.
+func (s *Suggester) SetSuggesterName(v string) *Suggester {
+	s.SuggesterName = &v
+	return s
+}
+
 // The value of a Suggester and its current status.
 type SuggesterStatus struct {
 	_ struct{} `type:"structure"`
@@ -3631,9 +5434,13 @@ type SuggesterStatus struct {
 	// Configuration information for a search suggester. Each suggester has a unique
 	// name and specifies the text field you want to use for suggestions. The following
 	// options can be configured for a suggester: FuzzyMatching, SortExpression.
+	//
+	// Options is a required field
 	Options *Suggester `type:"structure" required:"true"`
 
 	// The status of domain configuration option.
+	//
+	// Status is a required field
 	Status *OptionStatus `type:"structure" required:"true"`
 }
 
@@ -3645,6 +5452,18 @@ func (s SuggesterStatus) String() string {
 // GoString returns the string representation
 func (s SuggesterStatus) GoString() string {
 	return s.String()
+}
+
+// SetOptions sets the Options field's value.
+func (s *SuggesterStatus) SetOptions(v *Suggester) *SuggesterStatus {
+	s.Options = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *SuggesterStatus) SetStatus(v *OptionStatus) *SuggesterStatus {
+	s.Status = v
+	return s
 }
 
 // Options for a field that contains an array of text strings. Present if IndexFieldType
@@ -3677,6 +5496,36 @@ func (s TextArrayOptions) String() string {
 // GoString returns the string representation
 func (s TextArrayOptions) GoString() string {
 	return s.String()
+}
+
+// SetAnalysisScheme sets the AnalysisScheme field's value.
+func (s *TextArrayOptions) SetAnalysisScheme(v string) *TextArrayOptions {
+	s.AnalysisScheme = &v
+	return s
+}
+
+// SetDefaultValue sets the DefaultValue field's value.
+func (s *TextArrayOptions) SetDefaultValue(v string) *TextArrayOptions {
+	s.DefaultValue = &v
+	return s
+}
+
+// SetHighlightEnabled sets the HighlightEnabled field's value.
+func (s *TextArrayOptions) SetHighlightEnabled(v bool) *TextArrayOptions {
+	s.HighlightEnabled = &v
+	return s
+}
+
+// SetReturnEnabled sets the ReturnEnabled field's value.
+func (s *TextArrayOptions) SetReturnEnabled(v bool) *TextArrayOptions {
+	s.ReturnEnabled = &v
+	return s
+}
+
+// SetSourceFields sets the SourceFields field's value.
+func (s *TextArrayOptions) SetSourceFields(v string) *TextArrayOptions {
+	s.SourceFields = &v
+	return s
 }
 
 // Options for text field. Present if IndexFieldType specifies the field is
@@ -3740,6 +5589,42 @@ func (s *TextOptions) Validate() error {
 	return nil
 }
 
+// SetAnalysisScheme sets the AnalysisScheme field's value.
+func (s *TextOptions) SetAnalysisScheme(v string) *TextOptions {
+	s.AnalysisScheme = &v
+	return s
+}
+
+// SetDefaultValue sets the DefaultValue field's value.
+func (s *TextOptions) SetDefaultValue(v string) *TextOptions {
+	s.DefaultValue = &v
+	return s
+}
+
+// SetHighlightEnabled sets the HighlightEnabled field's value.
+func (s *TextOptions) SetHighlightEnabled(v bool) *TextOptions {
+	s.HighlightEnabled = &v
+	return s
+}
+
+// SetReturnEnabled sets the ReturnEnabled field's value.
+func (s *TextOptions) SetReturnEnabled(v bool) *TextOptions {
+	s.ReturnEnabled = &v
+	return s
+}
+
+// SetSortEnabled sets the SortEnabled field's value.
+func (s *TextOptions) SetSortEnabled(v bool) *TextOptions {
+	s.SortEnabled = &v
+	return s
+}
+
+// SetSourceField sets the SourceField field's value.
+func (s *TextOptions) SetSourceField(v string) *TextOptions {
+	s.SourceField = &v
+	return s
+}
+
 // Container for the parameters to the UpdateAvailabilityOptions operation.
 // Specifies the name of the domain you want to update and the Multi-AZ availability
 // option.
@@ -3750,12 +5635,16 @@ type UpdateAvailabilityOptionsInput struct {
 	// the domains owned by an account within an AWS region. Domain names start
 	// with a letter or number and can contain the following characters: a-z (lowercase),
 	// 0-9, and - (hyphen).
+	//
+	// DomainName is a required field
 	DomainName *string `min:"3" type:"string" required:"true"`
 
 	// You expand an existing search domain to a second Availability Zone by setting
 	// the Multi-AZ option to true. Similarly, you can turn off the Multi-AZ option
 	// to downgrade the domain to a single Availability Zone by setting the Multi-AZ
 	// option to false.
+	//
+	// MultiAZ is a required field
 	MultiAZ *bool `type:"boolean" required:"true"`
 }
 
@@ -3788,6 +5677,18 @@ func (s *UpdateAvailabilityOptionsInput) Validate() error {
 	return nil
 }
 
+// SetDomainName sets the DomainName field's value.
+func (s *UpdateAvailabilityOptionsInput) SetDomainName(v string) *UpdateAvailabilityOptionsInput {
+	s.DomainName = &v
+	return s
+}
+
+// SetMultiAZ sets the MultiAZ field's value.
+func (s *UpdateAvailabilityOptionsInput) SetMultiAZ(v bool) *UpdateAvailabilityOptionsInput {
+	s.MultiAZ = &v
+	return s
+}
+
 // The result of a UpdateAvailabilityOptions request. Contains the status of
 // the domain's availability options.
 type UpdateAvailabilityOptionsOutput struct {
@@ -3808,6 +5709,12 @@ func (s UpdateAvailabilityOptionsOutput) GoString() string {
 	return s.String()
 }
 
+// SetAvailabilityOptions sets the AvailabilityOptions field's value.
+func (s *UpdateAvailabilityOptionsOutput) SetAvailabilityOptions(v *AvailabilityOptionsStatus) *UpdateAvailabilityOptionsOutput {
+	s.AvailabilityOptions = v
+	return s
+}
+
 // Container for the parameters to the UpdateScalingParameters operation. Specifies
 // the name of the domain you want to update and the scaling parameters you
 // want to configure.
@@ -3818,9 +5725,13 @@ type UpdateScalingParametersInput struct {
 	// the domains owned by an account within an AWS region. Domain names start
 	// with a letter or number and can contain the following characters: a-z (lowercase),
 	// 0-9, and - (hyphen).
+	//
+	// DomainName is a required field
 	DomainName *string `min:"3" type:"string" required:"true"`
 
 	// The desired instance type and desired number of replicas of each index partition.
+	//
+	// ScalingParameters is a required field
 	ScalingParameters *ScalingParameters `type:"structure" required:"true"`
 }
 
@@ -3853,12 +5764,26 @@ func (s *UpdateScalingParametersInput) Validate() error {
 	return nil
 }
 
+// SetDomainName sets the DomainName field's value.
+func (s *UpdateScalingParametersInput) SetDomainName(v string) *UpdateScalingParametersInput {
+	s.DomainName = &v
+	return s
+}
+
+// SetScalingParameters sets the ScalingParameters field's value.
+func (s *UpdateScalingParametersInput) SetScalingParameters(v *ScalingParameters) *UpdateScalingParametersInput {
+	s.ScalingParameters = v
+	return s
+}
+
 // The result of a UpdateScalingParameters request. Contains the status of the
 // newly-configured scaling parameters.
 type UpdateScalingParametersOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The status and configuration of a search domain's scaling parameters.
+	//
+	// ScalingParameters is a required field
 	ScalingParameters *ScalingParametersStatus `type:"structure" required:"true"`
 }
 
@@ -3872,6 +5797,12 @@ func (s UpdateScalingParametersOutput) GoString() string {
 	return s.String()
 }
 
+// SetScalingParameters sets the ScalingParameters field's value.
+func (s *UpdateScalingParametersOutput) SetScalingParameters(v *ScalingParametersStatus) *UpdateScalingParametersOutput {
+	s.ScalingParameters = v
+	return s
+}
+
 // Container for the parameters to the UpdateServiceAccessPolicies operation.
 // Specifies the name of the domain you want to update and the access rules
 // you want to configure.
@@ -3880,12 +5811,16 @@ type UpdateServiceAccessPoliciesInput struct {
 
 	// The access rules you want to configure. These rules replace any existing
 	// rules.
+	//
+	// AccessPolicies is a required field
 	AccessPolicies *string `type:"string" required:"true"`
 
 	// A string that represents the name of a domain. Domain names are unique across
 	// the domains owned by an account within an AWS region. Domain names start
 	// with a letter or number and can contain the following characters: a-z (lowercase),
 	// 0-9, and - (hyphen).
+	//
+	// DomainName is a required field
 	DomainName *string `min:"3" type:"string" required:"true"`
 }
 
@@ -3918,12 +5853,26 @@ func (s *UpdateServiceAccessPoliciesInput) Validate() error {
 	return nil
 }
 
+// SetAccessPolicies sets the AccessPolicies field's value.
+func (s *UpdateServiceAccessPoliciesInput) SetAccessPolicies(v string) *UpdateServiceAccessPoliciesInput {
+	s.AccessPolicies = &v
+	return s
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *UpdateServiceAccessPoliciesInput) SetDomainName(v string) *UpdateServiceAccessPoliciesInput {
+	s.DomainName = &v
+	return s
+}
+
 // The result of an UpdateServiceAccessPolicies request. Contains the new access
 // policies.
 type UpdateServiceAccessPoliciesOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The access rules configured for the domain.
+	//
+	// AccessPolicies is a required field
 	AccessPolicies *AccessPoliciesStatus `type:"structure" required:"true"`
 }
 
@@ -3937,167 +5886,233 @@ func (s UpdateServiceAccessPoliciesOutput) GoString() string {
 	return s.String()
 }
 
+// SetAccessPolicies sets the AccessPolicies field's value.
+func (s *UpdateServiceAccessPoliciesOutput) SetAccessPolicies(v *AccessPoliciesStatus) *UpdateServiceAccessPoliciesOutput {
+	s.AccessPolicies = v
+	return s
+}
+
 const (
-	// @enum AlgorithmicStemming
+	// AlgorithmicStemmingNone is a AlgorithmicStemming enum value
 	AlgorithmicStemmingNone = "none"
-	// @enum AlgorithmicStemming
+
+	// AlgorithmicStemmingMinimal is a AlgorithmicStemming enum value
 	AlgorithmicStemmingMinimal = "minimal"
-	// @enum AlgorithmicStemming
+
+	// AlgorithmicStemmingLight is a AlgorithmicStemming enum value
 	AlgorithmicStemmingLight = "light"
-	// @enum AlgorithmicStemming
+
+	// AlgorithmicStemmingFull is a AlgorithmicStemming enum value
 	AlgorithmicStemmingFull = "full"
 )
 
-// An IETF RFC 4646 (http://tools.ietf.org/html/rfc4646" target="_blank) language
-// code or mul for multiple languages.
+// An IETF RFC 4646 (http://tools.ietf.org/html/rfc4646) language code or mul
+// for multiple languages.
 const (
-	// @enum AnalysisSchemeLanguage
+	// AnalysisSchemeLanguageAr is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageAr = "ar"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageBg is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageBg = "bg"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageCa is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageCa = "ca"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageCs is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageCs = "cs"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageDa is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageDa = "da"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageDe is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageDe = "de"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageEl is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageEl = "el"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageEn is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageEn = "en"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageEs is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageEs = "es"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageEu is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageEu = "eu"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageFa is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageFa = "fa"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageFi is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageFi = "fi"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageFr is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageFr = "fr"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageGa is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageGa = "ga"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageGl is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageGl = "gl"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageHe is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageHe = "he"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageHi is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageHi = "hi"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageHu is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageHu = "hu"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageHy is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageHy = "hy"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageId is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageId = "id"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageIt is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageIt = "it"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageJa is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageJa = "ja"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageKo is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageKo = "ko"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageLv is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageLv = "lv"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageMul is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageMul = "mul"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageNl is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageNl = "nl"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageNo is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageNo = "no"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguagePt is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguagePt = "pt"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageRo is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageRo = "ro"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageRu is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageRu = "ru"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageSv is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageSv = "sv"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageTh is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageTh = "th"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageTr is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageTr = "tr"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageZhHans is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageZhHans = "zh-Hans"
-	// @enum AnalysisSchemeLanguage
+
+	// AnalysisSchemeLanguageZhHant is a AnalysisSchemeLanguage enum value
 	AnalysisSchemeLanguageZhHant = "zh-Hant"
 )
 
 // The type of field. The valid options for a field depend on the field type.
 // For more information about the supported field types, see Configuring Index
-// Fields (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-index-fields.html"
-// target="_blank) in the Amazon CloudSearch Developer Guide.
+// Fields (http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-index-fields.html)
+// in the Amazon CloudSearch Developer Guide.
 const (
-	// @enum IndexFieldType
+	// IndexFieldTypeInt is a IndexFieldType enum value
 	IndexFieldTypeInt = "int"
-	// @enum IndexFieldType
+
+	// IndexFieldTypeDouble is a IndexFieldType enum value
 	IndexFieldTypeDouble = "double"
-	// @enum IndexFieldType
+
+	// IndexFieldTypeLiteral is a IndexFieldType enum value
 	IndexFieldTypeLiteral = "literal"
-	// @enum IndexFieldType
+
+	// IndexFieldTypeText is a IndexFieldType enum value
 	IndexFieldTypeText = "text"
-	// @enum IndexFieldType
+
+	// IndexFieldTypeDate is a IndexFieldType enum value
 	IndexFieldTypeDate = "date"
-	// @enum IndexFieldType
+
+	// IndexFieldTypeLatlon is a IndexFieldType enum value
 	IndexFieldTypeLatlon = "latlon"
-	// @enum IndexFieldType
+
+	// IndexFieldTypeIntArray is a IndexFieldType enum value
 	IndexFieldTypeIntArray = "int-array"
-	// @enum IndexFieldType
+
+	// IndexFieldTypeDoubleArray is a IndexFieldType enum value
 	IndexFieldTypeDoubleArray = "double-array"
-	// @enum IndexFieldType
+
+	// IndexFieldTypeLiteralArray is a IndexFieldType enum value
 	IndexFieldTypeLiteralArray = "literal-array"
-	// @enum IndexFieldType
+
+	// IndexFieldTypeTextArray is a IndexFieldType enum value
 	IndexFieldTypeTextArray = "text-array"
-	// @enum IndexFieldType
+
+	// IndexFieldTypeDateArray is a IndexFieldType enum value
 	IndexFieldTypeDateArray = "date-array"
 )
 
 // The state of processing a change to an option. One of:
 //
-//  RequiresIndexDocuments: The option's latest value will not be deployed
-// until IndexDocuments has been called and indexing is complete. Processing:
-// The option's latest value is in the process of being activated. Active: The
-// option's latest value is fully deployed.  FailedToValidate: The option value
-// is not compatible with the domain's data and cannot be used to index the
-// data. You must either modify the option value or update or remove the incompatible
-// documents.
+//    * RequiresIndexDocuments: The option's latest value will not be deployed
+//    until IndexDocuments has been called and indexing is complete.
+//    * Processing: The option's latest value is in the process of being activated.
+//
+//    * Active: The option's latest value is fully deployed.
+//    * FailedToValidate: The option value is not compatible with the domain's
+//    data and cannot be used to index the data. You must either modify the
+//    option value or update or remove the incompatible documents.
 const (
-	// @enum OptionState
+	// OptionStateRequiresIndexDocuments is a OptionState enum value
 	OptionStateRequiresIndexDocuments = "RequiresIndexDocuments"
-	// @enum OptionState
+
+	// OptionStateProcessing is a OptionState enum value
 	OptionStateProcessing = "Processing"
-	// @enum OptionState
+
+	// OptionStateActive is a OptionState enum value
 	OptionStateActive = "Active"
-	// @enum OptionState
+
+	// OptionStateFailedToValidate is a OptionState enum value
 	OptionStateFailedToValidate = "FailedToValidate"
 )
 
 // The instance type (such as search.m1.small) on which an index partition is
 // hosted.
 const (
-	// @enum PartitionInstanceType
+	// PartitionInstanceTypeSearchM1Small is a PartitionInstanceType enum value
 	PartitionInstanceTypeSearchM1Small = "search.m1.small"
-	// @enum PartitionInstanceType
+
+	// PartitionInstanceTypeSearchM1Large is a PartitionInstanceType enum value
 	PartitionInstanceTypeSearchM1Large = "search.m1.large"
-	// @enum PartitionInstanceType
+
+	// PartitionInstanceTypeSearchM2Xlarge is a PartitionInstanceType enum value
 	PartitionInstanceTypeSearchM2Xlarge = "search.m2.xlarge"
-	// @enum PartitionInstanceType
+
+	// PartitionInstanceTypeSearchM22xlarge is a PartitionInstanceType enum value
 	PartitionInstanceTypeSearchM22xlarge = "search.m2.2xlarge"
-	// @enum PartitionInstanceType
+
+	// PartitionInstanceTypeSearchM3Medium is a PartitionInstanceType enum value
 	PartitionInstanceTypeSearchM3Medium = "search.m3.medium"
-	// @enum PartitionInstanceType
+
+	// PartitionInstanceTypeSearchM3Large is a PartitionInstanceType enum value
 	PartitionInstanceTypeSearchM3Large = "search.m3.large"
-	// @enum PartitionInstanceType
+
+	// PartitionInstanceTypeSearchM3Xlarge is a PartitionInstanceType enum value
 	PartitionInstanceTypeSearchM3Xlarge = "search.m3.xlarge"
-	// @enum PartitionInstanceType
+
+	// PartitionInstanceTypeSearchM32xlarge is a PartitionInstanceType enum value
 	PartitionInstanceTypeSearchM32xlarge = "search.m3.2xlarge"
 )
 
 const (
-	// @enum SuggesterFuzzyMatching
+	// SuggesterFuzzyMatchingNone is a SuggesterFuzzyMatching enum value
 	SuggesterFuzzyMatchingNone = "none"
-	// @enum SuggesterFuzzyMatching
+
+	// SuggesterFuzzyMatchingLow is a SuggesterFuzzyMatching enum value
 	SuggesterFuzzyMatchingLow = "low"
-	// @enum SuggesterFuzzyMatching
+
+	// SuggesterFuzzyMatchingHigh is a SuggesterFuzzyMatching enum value
 	SuggesterFuzzyMatchingHigh = "high"
 )

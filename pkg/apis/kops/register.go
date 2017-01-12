@@ -23,7 +23,7 @@ import (
 
 var (
 	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
-	AddToScheme = SchemeBuilder.AddToScheme
+	AddToScheme   = SchemeBuilder.AddToScheme
 )
 
 // GroupName is the group name use in this package
@@ -45,8 +45,11 @@ func Resource(resource string) unversioned.GroupResource {
 func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&Cluster{},
+		&ClusterList{},
 		&InstanceGroup{},
+		&InstanceGroupList{},
 		&Federation{},
+		&FederationList{},
 	)
 	return nil
 }

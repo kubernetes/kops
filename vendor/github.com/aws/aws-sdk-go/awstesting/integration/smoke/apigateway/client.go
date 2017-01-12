@@ -6,11 +6,11 @@ package apigateway
 import (
 	"github.com/aws/aws-sdk-go/awstesting/integration/smoke"
 	"github.com/aws/aws-sdk-go/service/apigateway"
-	. "github.com/lsegal/gucumber"
+	"github.com/gucumber/gucumber"
 )
 
 func init() {
-	Before("@apigateway", func() {
-		World["client"] = apigateway.New(smoke.Session)
+	gucumber.Before("@apigateway", func() {
+		gucumber.World["client"] = apigateway.New(smoke.Session)
 	})
 }

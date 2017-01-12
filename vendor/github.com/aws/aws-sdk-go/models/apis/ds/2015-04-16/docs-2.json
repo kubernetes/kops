@@ -2,7 +2,8 @@
   "version": "2.0",
   "service": "<fullname>AWS Directory Service</fullname> <p>This is the <i>AWS Directory Service API Reference</i>. This guide provides detailed information about AWS Directory Service operations, data types, parameters, and errors.</p>",
   "operations": {
-    "AddTagsToResource": "<p>Adds or overwrites one or more tags for the specified Amazon Directory Services directory. Each directory can have a maximum of 10 tags. Each tag consists of a key and optional value. Tag keys must be unique per resource.</p>",
+    "AddIpRoutes": "<p>If the DNS server for your on-premises domain uses a publicly addressable IP address, you must add a CIDR address block to correctly route traffic to and from your Microsoft AD on Amazon Web Services. <i>AddIpRoutes</i> adds this address block. You can also use <i>AddIpRoutes</i> to facilitate routing traffic that uses public IP ranges from your Microsoft AD on AWS to a peer VPC. </p>",
+    "AddTagsToResource": "<p>Adds or overwrites one or more tags for the specified Amazon Directory Services directory. Each directory can have a maximum of 10 tags. Each tag consists of a key and optional value. Tag keys must be unique to each resource.</p>",
     "ConnectDirectory": "<p>Creates an AD Connector to connect to an on-premises directory.</p>",
     "CreateAlias": "<p>Creates an alias for a directory and assigns the alias to the directory. The alias is used to construct the access URL for the directory, such as <code>http://&lt;alias&gt;.awsapps.com</code>.</p> <important> <p>After an alias has been created, it cannot be deleted or reused, so this operation should only be used when absolutely necessary.</p> </important>",
     "CreateComputer": "<p>Creates a computer account in the specified directory, and joins the computer to the directory.</p>",
@@ -27,8 +28,10 @@
     "EnableSso": "<p>Enables single-sign on for a directory.</p>",
     "GetDirectoryLimits": "<p>Obtains directory limit information for the current region.</p>",
     "GetSnapshotLimits": "<p>Obtains the manual snapshot limits for a directory.</p>",
+    "ListIpRoutes": "<p>Lists the address blocks that you have added to a directory.</p>",
     "ListTagsForResource": "<p>Lists all tags on an Amazon Directory Services directory.</p>",
     "RegisterEventTopic": "<p>Associates a directory with an SNS topic. This establishes the directory as a publisher to the specified SNS topic. You can then receive email or text (SMS) messages when the status of your directory changes. You get notified if your directory goes from an Active status to an Impaired or Inoperable status. You also receive a notification when the directory returns to an Active status.</p>",
+    "RemoveIpRoutes": "<p>Removes IP address blocks from a directory.</p>",
     "RemoveTagsFromResource": "<p>Removes tags from an Amazon Directory Services directory.</p>",
     "RestoreFromSnapshot": "<p>Restores a directory using an existing directory snapshot.</p> <p>When you restore a directory from a snapshot, any changes made to the directory after the snapshot date are overwritten.</p> <p>This action returns as soon as the restore operation is initiated. You can monitor the progress of the restore operation by calling the <a>DescribeDirectories</a> operation with the directory identifier. When the <b>DirectoryDescription.Stage</b> value changes to <code>Active</code>, the restore operation is complete.</p>",
     "UpdateConditionalForwarder": "<p>Updates a conditional forwarder that has been set up for your AWS directory.</p>",
@@ -42,6 +45,16 @@
         "DirectoryDescription$AccessUrl": "<p>The access URL for the directory, such as <code>http://&lt;alias&gt;.awsapps.com</code>. If no alias has been created for the directory, <code>&lt;alias&gt;</code> is the directory identifier, such as <code>d-XXXXXXXXXX</code>.</p>"
       }
     },
+    "AddIpRoutesRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "AddIpRoutesResult": {
+      "base": null,
+      "refs": {
+      }
+    },
     "AddTagsToResourceRequest": {
       "base": null,
       "refs": {
@@ -50,6 +63,12 @@
     "AddTagsToResourceResult": {
       "base": null,
       "refs": {
+      }
+    },
+    "AddedDateTime": {
+      "base": null,
+      "refs": {
+        "IpRouteInfo$AddedDateTime": "<p>The date and time the address block was added to the directory.</p>"
       }
     },
     "AliasName": {
@@ -101,6 +120,20 @@
       "refs": {
         "DirectoryConnectSettingsDescription$AvailabilityZones": "<p>A list of the Availability Zones that the directory is in.</p>",
         "DirectoryVpcSettingsDescription$AvailabilityZones": "<p>The list of Availability Zones that the directory is in.</p>"
+      }
+    },
+    "CidrIp": {
+      "base": null,
+      "refs": {
+        "CidrIps$member": null,
+        "IpRoute$CidrIp": "<p>IP address block using CIDR format, for example 10.0.0.0/24. This is often the address block of the DNS server used for your on-premises domain. For a single IP address use a CIDR address block with /32. For example 10.0.0.0/32.</p>",
+        "IpRouteInfo$CidrIp": "<p>IP address block in the <a>IpRoute</a>.</p>"
+      }
+    },
+    "CidrIps": {
+      "base": null,
+      "refs": {
+        "RemoveIpRoutesRequest$CidrIps": "<p>IP address blocks that you want to remove.</p>"
       }
     },
     "ClientException": {
@@ -359,7 +392,9 @@
         "ConnectDirectoryRequest$Description": "<p>A textual description for the directory.</p>",
         "CreateDirectoryRequest$Description": "<p>A textual description for the directory.</p>",
         "CreateMicrosoftADRequest$Description": "<p>A textual description for the directory. This label will appear on the AWS console <code>Directory Details</code> page after the directory is created.</p>",
-        "DirectoryDescription$Description": "<p>The textual description for the directory.</p>"
+        "DirectoryDescription$Description": "<p>The textual description for the directory.</p>",
+        "IpRoute$Description": "<p>Description of the address block.</p>",
+        "IpRouteInfo$Description": "<p>Description of the <a>IpRouteInfo</a>.</p>"
       }
     },
     "DirectoryConnectSettings": {
@@ -389,6 +424,7 @@
     "DirectoryId": {
       "base": null,
       "refs": {
+        "AddIpRoutesRequest$DirectoryId": "<p>Identifier (ID) of the directory to which to add the address block.</p>",
         "ConnectDirectoryResult$DirectoryId": "<p>The identifier of the new directory.</p>",
         "CreateAliasRequest$DirectoryId": "<p>The identifier of the directory for which to create the alias.</p>",
         "CreateAliasResult$DirectoryId": "<p>The identifier of the directory.</p>",
@@ -414,7 +450,10 @@
         "EnableSsoRequest$DirectoryId": "<p>The identifier of the directory for which to enable single-sign on.</p>",
         "EventTopic$DirectoryId": "<p>The Directory ID of an AWS Directory Service directory that will publish status messages to an SNS topic.</p>",
         "GetSnapshotLimitsRequest$DirectoryId": "<p>Contains the identifier of the directory to obtain the limits for.</p>",
+        "IpRouteInfo$DirectoryId": "<p>Identifier (ID) of the directory associated with the IP addresses.</p>",
+        "ListIpRoutesRequest$DirectoryId": "<p>Identifier (ID) of the directory for which you want to retrieve the IP addresses.</p>",
         "RegisterEventTopicRequest$DirectoryId": "<p>The Directory ID that will publish status messages to the SNS topic.</p>",
+        "RemoveIpRoutesRequest$DirectoryId": "<p>Identifier (ID) of the directory from which you want to remove the IP addresses.</p>",
         "Snapshot$DirectoryId": "<p>The directory identifier.</p>",
         "Trust$DirectoryId": "<p>The Directory ID of the AWS directory involved in the trust relationship.</p>",
         "UpdateConditionalForwarderRequest$DirectoryId": "<p>The directory ID of the AWS directory for which to update the conditional forwarder.</p>",
@@ -579,6 +618,7 @@
         "InsufficientPermissionsException$Message": null,
         "InvalidNextTokenException$Message": null,
         "InvalidParameterException$Message": null,
+        "IpRouteLimitExceededException$Message": null,
         "ServiceException$Message": null,
         "SnapshotLimitExceededException$Message": null,
         "TagLimitExceededException$Message": null,
@@ -633,6 +673,47 @@
         "DirectoryConnectSettingsDescription$ConnectIps": "<p>The IP addresses of the AD Connector servers.</p>"
       }
     },
+    "IpRoute": {
+      "base": "<p>IP address block. This is often the address block of the DNS server used for your on-premises domain. </p>",
+      "refs": {
+        "IpRoutes$member": null
+      }
+    },
+    "IpRouteInfo": {
+      "base": "<p>Information about one or more IP address blocks.</p>",
+      "refs": {
+        "IpRoutesInfo$member": null
+      }
+    },
+    "IpRouteLimitExceededException": {
+      "base": "<p>The maximum allowed number of IP addresses was exceeded. The default limit is 100 IP address blocks.</p>",
+      "refs": {
+      }
+    },
+    "IpRouteStatusMsg": {
+      "base": null,
+      "refs": {
+        "IpRouteInfo$IpRouteStatusMsg": "<p>The status of the IP address block.</p>"
+      }
+    },
+    "IpRouteStatusReason": {
+      "base": null,
+      "refs": {
+        "IpRouteInfo$IpRouteStatusReason": "<p>The reason for the IpRouteStatusMsg.</p>"
+      }
+    },
+    "IpRoutes": {
+      "base": null,
+      "refs": {
+        "AddIpRoutesRequest$IpRoutes": "<p>IP address blocks, using CIDR format, of the traffic to route. This is often the IP address block of the DNS server used for your on-premises domain.</p>"
+      }
+    },
+    "IpRoutesInfo": {
+      "base": null,
+      "refs": {
+        "ListIpRoutesResult$IpRoutesInfo": "<p>A list of <a>IpRoute</a>s.</p>"
+      }
+    },
     "LastUpdatedDateTime": {
       "base": null,
       "refs": {
@@ -658,9 +739,20 @@
         "DirectoryLimits$CloudOnlyMicrosoftADCurrentCount": "<p>The current number of Microsoft AD directories in the region.</p>",
         "DirectoryLimits$ConnectedDirectoriesLimit": "<p>The maximum number of connected directories allowed in the region.</p>",
         "DirectoryLimits$ConnectedDirectoriesCurrentCount": "<p>The current number of connected directories in the region.</p>",
+        "ListIpRoutesRequest$Limit": "<p>Maximum number of items to return. If this value is zero, the maximum number of items is specified by the limitations of the operation.</p>",
         "ListTagsForResourceRequest$Limit": "<p>Reserved for future use.</p>",
         "SnapshotLimits$ManualSnapshotsLimit": "<p>The maximum number of manual snapshots allowed.</p>",
         "SnapshotLimits$ManualSnapshotsCurrentCount": "<p>The current number of manual snapshots of the directory.</p>"
+      }
+    },
+    "ListIpRoutesRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "ListIpRoutesResult": {
+      "base": null,
+      "refs": {
       }
     },
     "ListTagsForResourceRequest": {
@@ -688,6 +780,8 @@
         "DescribeSnapshotsResult$NextToken": "<p>If not null, more results are available. Pass this value in the <i>NextToken</i> member of a subsequent call to <a>DescribeSnapshots</a>.</p>",
         "DescribeTrustsRequest$NextToken": "<p>The <i>DescribeTrustsResult.NextToken</i> value from a previous call to <a>DescribeTrusts</a>. Pass null if this is the first call.</p>",
         "DescribeTrustsResult$NextToken": "<p>If not null, more results are available. Pass this value for the <i>NextToken</i> parameter in a subsequent call to <a>DescribeTrusts</a> to retrieve the next set of items.</p>",
+        "ListIpRoutesRequest$NextToken": "<p>The <i>ListIpRoutes.NextToken</i> value from a previous call to <a>ListIpRoutes</a>. Pass null if this is the first call.</p>",
+        "ListIpRoutesResult$NextToken": "<p>If not null, more results are available. Pass this value for the <i>NextToken</i> parameter in a subsequent call to <a>ListIpRoutes</a> to retrieve the next set of items.</p>",
         "ListTagsForResourceRequest$NextToken": "<p>Reserved for future use.</p>",
         "ListTagsForResourceResult$NextToken": "<p>Reserved for future use.</p>"
       }
@@ -740,7 +834,7 @@
     "RadiusSharedSecret": {
       "base": null,
       "refs": {
-        "RadiusSettings$SharedSecret": "<p>The shared secret code that was specified when your RADIUS endpoints were created.</p>"
+        "RadiusSettings$SharedSecret": "<p>Not currently used.</p>"
       }
     },
     "RadiusStatus": {
@@ -783,6 +877,16 @@
         "DescribeConditionalForwardersRequest$RemoteDomainNames": "<p>The fully qualified domain names (FQDN) of the remote domains for which to get the list of associated conditional forwarders. If this member is null, all conditional forwarders are returned.</p>"
       }
     },
+    "RemoveIpRoutesRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "RemoveIpRoutesResult": {
+      "base": null,
+      "refs": {
+      }
+    },
     "RemoveTagsFromResourceRequest": {
       "base": null,
       "refs": {
@@ -811,6 +915,7 @@
         "InsufficientPermissionsException$RequestId": null,
         "InvalidNextTokenException$RequestId": null,
         "InvalidParameterException$RequestId": null,
+        "IpRouteLimitExceededException$RequestId": null,
         "ServiceException$RequestId": null,
         "SnapshotLimitExceededException$RequestId": null,
         "TagLimitExceededException$RequestId": null,
@@ -820,9 +925,9 @@
     "ResourceId": {
       "base": null,
       "refs": {
-        "AddTagsToResourceRequest$ResourceId": "<p>The ID of the directory to which to add the tag.</p>",
-        "ListTagsForResourceRequest$ResourceId": "<p>The ID of the directory for which you want to retrieve tags.</p>",
-        "RemoveTagsFromResourceRequest$ResourceId": "<p>The ID of the directory from which to remove the tag.</p>"
+        "AddTagsToResourceRequest$ResourceId": "<p>Identifier (ID) for the directory to which to add the tag.</p>",
+        "ListTagsForResourceRequest$ResourceId": "<p>Identifier (ID) of the directory for which you want to retrieve tags.</p>",
+        "RemoveTagsFromResourceRequest$ResourceId": "<p>Identifier (ID) of the directory from which to remove the tag.</p>"
       }
     },
     "RestoreFromSnapshotRequest": {
@@ -972,7 +1077,7 @@
     "TagKey": {
       "base": null,
       "refs": {
-        "Tag$Key": "<p>A key is the required name of the tag. The string value can be from 1 to 128 Unicode characters in length and cannot be prefixed with \"aws:\". The string can only contain only the set of Unicode letters, digits, white-space, '_', '.', '/', '=', '+', '-' (Java regex: \"^([\\\\p{L}\\\\p{Z}\\\\p{N}_.:/=+\\\\-]*)$\").</p>",
+        "Tag$Key": "<p>Required name of the tag. The string value can be Unicode characters and cannot be prefixed with \"aws:\". The string can contain only the set of Unicode letters, digits, white-space, '_', '.', '/', '=', '+', '-' (Java regex: \"^([\\\\p{L}\\\\p{Z}\\\\p{N}_.:/=+\\\\-]*)$\").</p>",
         "TagKeys$member": null
       }
     },
@@ -990,7 +1095,7 @@
     "TagValue": {
       "base": null,
       "refs": {
-        "Tag$Value": "<p>A value is the optional value of the tag. The string value can be from 1 to 256 Unicode characters in length. The string can only contain only the set of Unicode letters, digits, white-space, '_', '.', '/', '=', '+', '-' (Java regex: \"^([\\\\p{L}\\\\p{Z}\\\\p{N}_.:/=+\\\\-]*)$\").</p>"
+        "Tag$Value": "<p>The optional value of the tag. The string value can be Unicode characters. The string can contain only the set of Unicode letters, digits, white-space, '_', '.', '/', '=', '+', '-' (Java regex: \"^([\\\\p{L}\\\\p{Z}\\\\p{N}_.:/=+\\\\-]*)$\").</p>"
       }
     },
     "Tags": {
@@ -1112,6 +1217,12 @@
     "UpdateRadiusResult": {
       "base": "<p>Contains the results of the <a>UpdateRadius</a> operation.</p>",
       "refs": {
+      }
+    },
+    "UpdateSecurityGroupForDirectoryControllers": {
+      "base": null,
+      "refs": {
+        "AddIpRoutesRequest$UpdateSecurityGroupForDirectoryControllers": "<p>If set to true, updates the inbound and outbound rules of the security group that has the description: \"AWS created security group for <i>directory ID</i> directory controllers.\" Following are the new rules: </p> <p>Inbound:</p> <ul> <li> <p>Type: Custom UDP Rule, Protocol: UDP, Range: 88, Source: 0.0.0.0/0</p> </li> <li> <p>Type: Custom UDP Rule, Protocol: UDP, Range: 123, Source: 0.0.0.0/0</p> </li> <li> <p>Type: Custom UDP Rule, Protocol: UDP, Range: 138, Source: 0.0.0.0/0</p> </li> <li> <p>Type: Custom UDP Rule, Protocol: UDP, Range: 389, Source: 0.0.0.0/0</p> </li> <li> <p>Type: Custom UDP Rule, Protocol: UDP, Range: 464, Source: 0.0.0.0/0</p> </li> <li> <p>Type: Custom UDP Rule, Protocol: UDP, Range: 445, Source: 0.0.0.0/0</p> </li> <li> <p>Type: Custom TCP Rule, Protocol: TCP, Range: 88, Source: 0.0.0.0/0</p> </li> <li> <p>Type: Custom TCP Rule, Protocol: TCP, Range: 135, Source: 0.0.0.0/0</p> </li> <li> <p>Type: Custom TCP Rule, Protocol: TCP, Range: 445, Source: 0.0.0.0/0</p> </li> <li> <p>Type: Custom TCP Rule, Protocol: TCP, Range: 464, Source: 0.0.0.0/0</p> </li> <li> <p>Type: Custom TCP Rule, Protocol: TCP, Range: 636, Source: 0.0.0.0/0</p> </li> <li> <p>Type: Custom TCP Rule, Protocol: TCP, Range: 1024-65535, Source: 0.0.0.0/0</p> </li> <li> <p>Type: Custom TCP Rule, Protocol: TCP, Range: 3268-33269, Source: 0.0.0.0/0</p> </li> <li> <p>Type: DNS (UDP), Protocol: UDP, Range: 53, Source: 0.0.0.0/0</p> </li> <li> <p>Type: DNS (TCP), Protocol: TCP, Range: 53, Source: 0.0.0.0/0</p> </li> <li> <p>Type: LDAP, Protocol: TCP, Range: 389, Source: 0.0.0.0/0</p> </li> <li> <p>Type: All ICMP, Protocol: All, Range: N/A, Source: 0.0.0.0/0</p> </li> </ul> <p/> <p>Outbound:</p> <ul> <li> <p>Type: All traffic, Protocol: All, Range: All, Destination: 0.0.0.0/0</p> </li> </ul> <p>These security rules impact an internal network interface that is not exposed publicly.</p>"
       }
     },
     "UseSameUsername": {

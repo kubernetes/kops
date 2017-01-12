@@ -6,11 +6,11 @@ package codepipeline
 import (
 	"github.com/aws/aws-sdk-go/awstesting/integration/smoke"
 	"github.com/aws/aws-sdk-go/service/codepipeline"
-	. "github.com/lsegal/gucumber"
+	"github.com/gucumber/gucumber"
 )
 
 func init() {
-	Before("@codepipeline", func() {
-		World["client"] = codepipeline.New(smoke.Session)
+	gucumber.Before("@codepipeline", func() {
+		gucumber.World["client"] = codepipeline.New(smoke.Session)
 	})
 }

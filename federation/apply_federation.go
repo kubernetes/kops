@@ -17,35 +17,35 @@ limitations under the License.
 package federation
 
 import (
-	"fmt"
-	"k8s.io/kops/upup/pkg/fi/fitasks"
-	"k8s.io/kops/upup/pkg/fi"
-	"crypto/rsa"
-	crypto_rand "crypto/rand"
-	k8sapiv1 "k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kops/federation/tasks"
-	"text/template"
 	"bytes"
+	crypto_rand "crypto/rand"
+	"crypto/rsa"
+	"fmt"
+	"github.com/golang/glog"
 	"k8s.io/kops/federation/model"
 	"k8s.io/kops/federation/targets/kubernetes"
+	"k8s.io/kops/federation/tasks"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/apis/kops/registry"
-	"k8s.io/kubernetes/pkg/api/errors"
-	"k8s.io/kops/upup/pkg/kutil"
+	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/k8sapi"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3"
-	"k8s.io/kubernetes/federation/client/clientset_generated/federation_release_1_4"
-	"github.com/golang/glog"
+	"k8s.io/kops/upup/pkg/kutil"
+	"k8s.io/kubernetes/federation/client/clientset_generated/federation_release_1_5"
+	"k8s.io/kubernetes/pkg/api/errors"
+	k8sapiv1 "k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
 	"strings"
+	"text/template"
 )
 
 type ApplyFederationOperation struct {
-	Federation              *kopsapi.Federation
-	KopsClient              simple.Clientset
+	Federation *kopsapi.Federation
+	KopsClient simple.Clientset
 
-	namespace               string
-	name                    string
+	namespace string
+	name      string
 
 	apiserverDeploymentName string
 	apiserverServiceName    string
@@ -54,14 +54,13 @@ type ApplyFederationOperation struct {
 	apiserverSecretName     string
 }
 
-func (o*ApplyFederationOperation)  FindKubecfg() (*kutil.KubeconfigBuilder, error) {
+func (o *ApplyFederationOperation) FindKubecfg() (*kutil.KubeconfigBuilder, error) {
 	// TODO: Only if not yet set?
 	//	hasKubecfg, err := hasKubecfg(f.Name)
 	//	if err != nil {
 	//		glog.Warningf("error reading kubecfg: %v", err)
 	//		hasKubecfg = true
 	//	}
-
 
 	// Loop through looking for a configured cluster
 	for _, controller := range o.Federation.Spec.Controllers {
@@ -78,11 +77,11 @@ func (o*ApplyFederationOperation)  FindKubecfg() (*kutil.KubeconfigBuilder, erro
 		apiserverKeypair := o.buildApiserverKeypair()
 
 		federationConfiguration := &FederationConfiguration{
-			Namespace: o.namespace,
-			ApiserverSecretName: o.apiserverSecretName,
+			Namespace:            o.namespace,
+			ApiserverSecretName:  o.apiserverSecretName,
 			ApiserverServiceName: o.apiserverServiceName,
-			ApiserverKeypair: apiserverKeypair,
-			KubeconfigSecretName:"federation-apiserver-kubeconfig",
+			ApiserverKeypair:     apiserverKeypair,
+			KubeconfigSecretName: "federation-apiserver-kubeconfig",
 		}
 		k, err := federationConfiguration.extractKubecfg(context, o.Federation)
 		if err != nil {
@@ -98,7 +97,7 @@ func (o*ApplyFederationOperation)  FindKubecfg() (*kutil.KubeconfigBuilder, erro
 	return nil, nil
 }
 
-func (o*ApplyFederationOperation)  Run() error {
+func (o *ApplyFederationOperation) Run() error {
 	o.namespace = "federation"
 	o.name = "federation"
 
@@ -112,7 +111,7 @@ func (o*ApplyFederationOperation)  Run() error {
 
 	// TODO: sync clusters
 
-	var controllerKubernetesClients []release_1_3.Interface
+	var controllerKubernetesClients []release_1_5.Interface
 	for _, controller := range o.Federation.Spec.Controllers {
 		cluster, err := o.KopsClient.Clusters().Get(controller)
 		if err != nil {
@@ -141,11 +140,11 @@ func (o*ApplyFederationOperation)  Run() error {
 	if err != nil {
 		return err
 	}
-	federationControllerClient, err := federation_release_1_4.NewForConfig(federationRestConfig)
+	federationControllerClient, err := federation_release_1_5.NewForConfig(federationRestConfig)
 	if err != nil {
 		return err
 	}
-	//k8sControllerClient, err := release_1_3.NewForConfig(federationRestConfig)
+	//k8sControllerClient, err := release_1_5.NewForConfig(federationRestConfig)
 	//if err != nil {
 	//	return err
 	//}
@@ -157,16 +156,16 @@ func (o*ApplyFederationOperation)  Run() error {
 			return fmt.Errorf("error reading cluster %q: %v", member, err)
 		}
 
-		clusterName := strings.Replace(cluster.Name, ".", "-", -1)
+		clusterName := strings.Replace(cluster.ObjectMeta.Name, ".", "-", -1)
 
 		a := &FederationCluster{
-			FederationNamespace : o.namespace,
+			FederationNamespace: o.namespace,
 
 			ControllerKubernetesClients: controllerKubernetesClients,
-			FederationClient: federationControllerClient,
+			FederationClient:            federationControllerClient,
 
-			ClusterSecretName: "secret-" + cluster.Name,
-			ClusterName: clusterName,
+			ClusterSecretName: "secret-" + cluster.ObjectMeta.Name,
+			ClusterName:       clusterName,
 			ApiserverHostname: cluster.Spec.MasterPublicName,
 		}
 		err = a.Run(cluster)
@@ -186,7 +185,7 @@ func (o*ApplyFederationOperation)  Run() error {
 
 // Builds a fi.Context applying to the federation namespace in the specified cluster
 // Note that this operates inside the cluster, for example the KeyStore is backed by secrets in the namespace
-func (o*ApplyFederationOperation) federationContextForCluster(cluster *kopsapi.Cluster) (*fi.Context, error) {
+func (o *ApplyFederationOperation) federationContextForCluster(cluster *kopsapi.Cluster) (*fi.Context, error) {
 	clusterKeystore, err := registry.KeyStore(cluster)
 	if err != nil {
 		return nil, err
@@ -207,12 +206,12 @@ func (o*ApplyFederationOperation) federationContextForCluster(cluster *kopsapi.C
 	return context, nil
 }
 
-func (o*ApplyFederationOperation) buildApiserverKeypair() (*fitasks.Keypair) {
+func (o *ApplyFederationOperation) buildApiserverKeypair() *fitasks.Keypair {
 	keypairName := "secret-" + o.apiserverHostName
 	keypair := &fitasks.Keypair{
-		Name: fi.String(keypairName),
-		Subject:  "cn=" + o.Federation.Name,
-		Type: "server",
+		Name:    fi.String(keypairName),
+		Subject: "cn=" + o.Federation.ObjectMeta.Name,
+		Type:    "server",
 	}
 
 	// So it has a valid cert inside the cluster
@@ -228,7 +227,7 @@ func (o*ApplyFederationOperation) buildApiserverKeypair() (*fitasks.Keypair) {
 	return keypair
 }
 
-func (o*ApplyFederationOperation) runOnCluster(context *fi.Context, cluster *kopsapi.Cluster) error {
+func (o *ApplyFederationOperation) runOnCluster(context *fi.Context, cluster *kopsapi.Cluster) error {
 	_, _, err := EnsureCASecret(context.Keystore)
 	if err != nil {
 		return err
@@ -248,10 +247,10 @@ func (o*ApplyFederationOperation) runOnCluster(context *fi.Context, cluster *kop
 
 	federationConfiguration := &FederationConfiguration{
 		ApiserverServiceName: o.apiserverServiceName,
-		Namespace: o.namespace,
-		ApiserverSecretName: o.apiserverSecretName,
-		ApiserverKeypair: apiserverKeypair,
-		KubeconfigSecretName:"federation-apiserver-kubeconfig",
+		Namespace:            o.namespace,
+		ApiserverSecretName:  o.apiserverSecretName,
+		ApiserverKeypair:     apiserverKeypair,
+		KubeconfigSecretName: "federation-apiserver-kubeconfig",
 	}
 	err = federationConfiguration.EnsureConfiguration(context)
 	if err != nil {
@@ -268,7 +267,7 @@ func (o*ApplyFederationOperation) runOnCluster(context *fi.Context, cluster *kop
 	}
 
 	applyManifestTask := tasks.KubernetesResource{
-		Name: fi.String(o.name),
+		Name:     fi.String(o.name),
 		Manifest: fi.WrapResource(fi.NewStringResource(manifest)),
 	}
 	err = applyManifestTask.Run(context)
@@ -279,7 +278,7 @@ func (o*ApplyFederationOperation) runOnCluster(context *fi.Context, cluster *kop
 	return nil
 }
 
-func (o*ApplyFederationOperation) buildTemplateData() map[string]string {
+func (o *ApplyFederationOperation) buildTemplateData() map[string]string {
 	namespace := o.namespace
 	name := o.name
 
@@ -325,7 +324,7 @@ func (o*ApplyFederationOperation) buildTemplateData() map[string]string {
 	return data
 }
 
-func (o*ApplyFederationOperation) executeTemplate(key string, templateDefinition string) (string, error) {
+func (o *ApplyFederationOperation) executeTemplate(key string, templateDefinition string) (string, error) {
 	data := o.buildTemplateData()
 
 	t := template.New(key)
@@ -358,7 +357,7 @@ func (o*ApplyFederationOperation) executeTemplate(key string, templateDefinition
 	return buffer.String(), nil
 }
 
-func (o*ApplyFederationOperation) EnsureNamespace(c *fi.Context) error {
+func (o *ApplyFederationOperation) EnsureNamespace(c *fi.Context) error {
 	k8s := c.Target.(*kubernetes.KubernetesTarget).KubernetesClient
 
 	ns, err := k8s.Core().Namespaces().Get(o.namespace)
@@ -381,7 +380,7 @@ func (o*ApplyFederationOperation) EnsureNamespace(c *fi.Context) error {
 	return nil
 }
 
-func (o*ApplyFederationOperation) ensureFederationNamespace(k8s federation_release_1_4.Interface, name string) (*k8sapiv1.Namespace, error) {
+func (o *ApplyFederationOperation) ensureFederationNamespace(k8s federation_release_1_5.Interface, name string) (*k8sapiv1.Namespace, error) {
 	return mutateNamespace(k8s, name, func(n *k8sapiv1.Namespace) (*k8sapiv1.Namespace, error) {
 		if n == nil {
 			n = &k8sapiv1.Namespace{}

@@ -226,7 +226,8 @@
         {"shape":"EC2ThrottledException"},
         {"shape":"EC2AccessDeniedException"},
         {"shape":"InvalidSubnetIDException"},
-        {"shape":"InvalidSecurityGroupIDException"}
+        {"shape":"InvalidSecurityGroupIDException"},
+        {"shape":"InvalidZipFileException"}
       ]
     },
     "InvokeAsync":{
@@ -844,6 +845,15 @@
       "error":{"httpStatusCode":502},
       "exception":true
     },
+    "InvalidZipFileException":{
+      "type":"structure",
+      "members":{
+        "Type":{"shape":"String"},
+        "Message":{"shape":"String"}
+      },
+      "error":{"httpStatusCode":502},
+      "exception":true
+    },
     "InvocationRequest":{
       "type":"structure",
       "required":["FunctionName"],
@@ -1219,6 +1229,14 @@
       "member":{"shape":"SubnetId"},
       "max":16
     },
+    "ThrottleReason":{
+      "type":"string",
+      "enum":[
+        "ConcurrentInvocationLimitExceeded",
+        "FunctionInvocationRateLimitExceeded",
+        "CallerRateLimitExceeded"
+      ]
+    },
     "Timeout":{
       "type":"integer",
       "min":1
@@ -1233,7 +1251,8 @@
           "locationName":"Retry-After"
         },
         "Type":{"shape":"String"},
-        "message":{"shape":"String"}
+        "message":{"shape":"String"},
+        "Reason":{"shape":"ThrottleReason"}
       },
       "error":{"httpStatusCode":429},
       "exception":true

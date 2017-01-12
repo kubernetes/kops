@@ -40,8 +40,11 @@ var CommonImageWhiteList = sets.NewString(
 	"gcr.io/google_containers/mounttest:0.7",
 	"gcr.io/google_containers/mounttest-user:0.3",
 	"gcr.io/google_containers/netexec:1.4",
+	"gcr.io/google_containers/netexec:1.5",
 	"gcr.io/google_containers/nginx-slim:0.7",
 	"gcr.io/google_containers/serve_hostname:v1.4",
 	"gcr.io/google_containers/test-webserver:e2e",
 	"gcr.io/google_containers/hostexec:1.2",
+	"gcr.io/google_containers/volume-nfs:0.8",
+	"gcr.io/google_containers/volume-gluster:0.2",
 )

@@ -22,16 +22,17 @@ import (
 	core "k8s.io/kubernetes/pkg/client/testing/core"
 )
 
-type FakeCertificates struct {
+type FakeCertificatesV1alpha1 struct {
 	*core.Fake
 }
 
-func (c *FakeCertificates) CertificateSigningRequests() v1alpha1.CertificateSigningRequestInterface {
+func (c *FakeCertificatesV1alpha1) CertificateSigningRequests() v1alpha1.CertificateSigningRequestInterface {
 	return &FakeCertificateSigningRequests{c}
 }
 
-// GetRESTClient returns a RESTClient that is used to communicate
+// RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *FakeCertificates) GetRESTClient() *restclient.RESTClient {
-	return nil
+func (c *FakeCertificatesV1alpha1) RESTClient() restclient.Interface {
+	var ret *restclient.RESTClient
+	return ret
 }

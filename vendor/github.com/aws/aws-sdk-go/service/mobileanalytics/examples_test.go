@@ -16,7 +16,13 @@ var _ time.Duration
 var _ bytes.Buffer
 
 func ExampleMobileAnalytics_PutEvents() {
-	svc := mobileanalytics.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := mobileanalytics.New(sess)
 
 	params := &mobileanalytics.PutEventsInput{
 		ClientContext: aws.String("String"), // Required

@@ -19,31 +19,36 @@ package cmd
 import (
 	"fmt"
 	"io"
+	gruntime "runtime"
 
-	"github.com/renstrom/dedent"
 	"github.com/spf13/cobra"
 
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/kubectl"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
 	"k8s.io/kubernetes/pkg/runtime"
 )
 
 var (
-	create_long = dedent.Dedent(`
+	create_long = templates.LongDesc(`
 		Create a resource by filename or stdin.
 
 		JSON and YAML formats are accepted.`)
-	create_example = dedent.Dedent(`
+
+	create_example = templates.Examples(`
 		# Create a pod using the data in pod.json.
 		kubectl create -f ./pod.json
 
 		# Create a pod based on the JSON passed into stdin.
-		cat pod.json | kubectl create -f -`)
+		cat pod.json | kubectl create -f -
+
+		# Edit the data in docker-registry.yaml in JSON using the v1 API format then create the resource using the edited data.
+		kubectl create -f docker-registry.yaml --edit --output-version=v1 -o json`)
 )
 
-func NewCmdCreate(f *cmdutil.Factory, out io.Writer) *cobra.Command {
+func NewCmdCreate(f cmdutil.Factory, out, errOut io.Writer) *cobra.Command {
 	options := &resource.FilenameOptions{}
 
 	cmd := &cobra.Command{
@@ -53,12 +58,12 @@ func NewCmdCreate(f *cmdutil.Factory, out io.Writer) *cobra.Command {
 		Example: create_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			if cmdutil.IsFilenameEmpty(options.Filenames) {
-				cmd.Help()
+				defaultRunFunc := cmdutil.DefaultSubCommandRun(errOut)
+				defaultRunFunc(cmd, args)
 				return
 			}
 			cmdutil.CheckErr(ValidateArgs(cmd, args))
-			cmdutil.CheckErr(cmdutil.ValidateOutputArgs(cmd))
-			cmdutil.CheckErr(RunCreate(f, cmd, out, options))
+			cmdutil.CheckErr(RunCreate(f, cmd, out, errOut, options))
 		},
 	}
 
@@ -66,18 +71,21 @@ func NewCmdCreate(f *cmdutil.Factory, out io.Writer) *cobra.Command {
 	cmdutil.AddFilenameOptionFlags(cmd, options, usage)
 	cmd.MarkFlagRequired("filename")
 	cmdutil.AddValidateFlags(cmd)
-	cmdutil.AddOutputFlagsForMutation(cmd)
+	cmdutil.AddPrinterFlags(cmd)
+	cmd.Flags().Bool("edit", false, "Edit the API resource before creating")
+	cmd.Flags().Bool("windows-line-endings", gruntime.GOOS == "windows", "Only relevant if --edit=true. Use Windows line-endings (default Unix line-endings)")
 	cmdutil.AddApplyAnnotationFlags(cmd)
 	cmdutil.AddRecordFlag(cmd)
+	cmdutil.AddDryRunFlag(cmd)
 	cmdutil.AddInclude3rdPartyFlags(cmd)
 
 	// create subcommands
 	cmd.AddCommand(NewCmdCreateNamespace(f, out))
 	cmd.AddCommand(NewCmdCreateQuota(f, out))
-	cmd.AddCommand(NewCmdCreateSecret(f, out))
+	cmd.AddCommand(NewCmdCreateSecret(f, out, errOut))
 	cmd.AddCommand(NewCmdCreateConfigMap(f, out))
 	cmd.AddCommand(NewCmdCreateServiceAccount(f, out))
-	cmd.AddCommand(NewCmdCreateService(f, out))
+	cmd.AddCommand(NewCmdCreateService(f, out, errOut))
 	cmd.AddCommand(NewCmdCreateDeployment(f, out))
 	return cmd
 }
@@ -89,7 +97,10 @@ func ValidateArgs(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func RunCreate(f *cmdutil.Factory, cmd *cobra.Command, out io.Writer, options *resource.FilenameOptions) error {
+func RunCreate(f cmdutil.Factory, cmd *cobra.Command, out, errOut io.Writer, options *resource.FilenameOptions) error {
+	if cmdutil.GetFlagBool(cmd, "edit") {
+		return RunEditOnCreate(f, out, errOut, cmd, options)
+	}
 	schema, err := f.Validator(cmdutil.GetFlagBool(cmd, "validate"), cmdutil.GetFlagString(cmd, "schema-cache-dir"))
 	if err != nil {
 		return err
@@ -116,6 +127,8 @@ func RunCreate(f *cmdutil.Factory, cmd *cobra.Command, out io.Writer, options *r
 		return err
 	}
 
+	dryRun := cmdutil.GetFlagBool(cmd, "dry-run")
+
 	count := 0
 	err = r.Visit(func(info *resource.Info, err error) error {
 		if err != nil {
@@ -131,8 +144,10 @@ func RunCreate(f *cmdutil.Factory, cmd *cobra.Command, out io.Writer, options *r
 			}
 		}
 
-		if err := createAndRefresh(info); err != nil {
-			return cmdutil.AddSourceToErr("creating", info.Source, err)
+		if !dryRun {
+			if err := createAndRefresh(info); err != nil {
+				return cmdutil.AddSourceToErr("creating", info.Source, err)
+			}
 		}
 
 		count++
@@ -140,7 +155,8 @@ func RunCreate(f *cmdutil.Factory, cmd *cobra.Command, out io.Writer, options *r
 		if !shortOutput {
 			f.PrintObjectSpecificMessage(info.Object, out)
 		}
-		cmdutil.PrintSuccess(mapper, shortOutput, out, info.Mapping.Resource, info.Name, false, "created")
+
+		cmdutil.PrintSuccess(mapper, shortOutput, out, info.Mapping.Resource, info.Name, dryRun, "created")
 		return nil
 	})
 	if err != nil {
@@ -150,6 +166,10 @@ func RunCreate(f *cmdutil.Factory, cmd *cobra.Command, out io.Writer, options *r
 		return fmt.Errorf("no objects passed to create")
 	}
 	return nil
+}
+
+func RunEditOnCreate(f cmdutil.Factory, out, errOut io.Writer, cmd *cobra.Command, options *resource.FilenameOptions) error {
+	return runEdit(f, out, errOut, cmd, []string{}, options, EditBeforeCreateMode)
 }
 
 // createAndRefresh creates an object from input info and refreshes info with that object
@@ -183,7 +203,7 @@ type CreateSubcommandOptions struct {
 }
 
 // RunCreateSubcommand executes a create subcommand using the specified options
-func RunCreateSubcommand(f *cmdutil.Factory, cmd *cobra.Command, out io.Writer, options *CreateSubcommandOptions) error {
+func RunCreateSubcommand(f cmdutil.Factory, cmd *cobra.Command, out io.Writer, options *CreateSubcommandOptions) error {
 	namespace, _, err := f.DefaultNamespace()
 	if err != nil {
 		return err

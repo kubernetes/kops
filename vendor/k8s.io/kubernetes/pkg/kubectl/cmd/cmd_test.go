@@ -18,7 +18,7 @@ package cmd
 
 import (
 	"bytes"
-	"errors"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -29,22 +29,22 @@ import (
 	"time"
 
 	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/meta"
 	"k8s.io/kubernetes/pkg/api/testapi"
 	"k8s.io/kubernetes/pkg/api/unversioned"
-	"k8s.io/kubernetes/pkg/api/validation"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
+	"k8s.io/kubernetes/pkg/apimachinery/registered"
 	"k8s.io/kubernetes/pkg/client/restclient"
-	"k8s.io/kubernetes/pkg/client/typed/discovery"
-	client "k8s.io/kubernetes/pkg/client/unversioned"
-	"k8s.io/kubernetes/pkg/client/unversioned/fake"
+	"k8s.io/kubernetes/pkg/client/restclient/fake"
 	"k8s.io/kubernetes/pkg/kubectl"
+	cmdtesting "k8s.io/kubernetes/pkg/kubectl/cmd/testing"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
-	"k8s.io/kubernetes/pkg/kubectl/resource"
 	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/runtime/serializer"
 	"k8s.io/kubernetes/pkg/util/strings"
+	"k8s.io/kubernetes/pkg/version"
 )
+
+var serverVersion_1_5_0 = version.Info{
+	GitVersion: "v1.5.0",
+}
 
 func initTestErrorHandler(t *testing.T) {
 	cmdutil.BehaviorOnFatal(func(str string, code int) {
@@ -64,7 +64,7 @@ func defaultClientConfig() *restclient.Config {
 		ContentConfig: restclient.ContentConfig{
 			NegotiatedSerializer: api.Codecs,
 			ContentType:          runtime.ContentTypeJSON,
-			GroupVersion:         testapi.Default.GroupVersion(),
+			GroupVersion:         &registered.GroupOrDie(api.GroupName).GroupVersion,
 		},
 	}
 }
@@ -78,90 +78,6 @@ func defaultClientConfigForVersion(version *unversioned.GroupVersion) *restclien
 			GroupVersion:         version,
 		},
 	}
-}
-
-type internalType struct {
-	Kind       string
-	APIVersion string
-
-	Name string
-}
-
-type externalType struct {
-	Kind       string `json:"kind"`
-	APIVersion string `json:"apiVersion"`
-
-	Name string `json:"name"`
-}
-
-type ExternalType2 struct {
-	Kind       string `json:"kind"`
-	APIVersion string `json:"apiVersion"`
-
-	Name string `json:"name"`
-}
-
-func (obj *internalType) GetObjectKind() unversioned.ObjectKind { return obj }
-func (obj *internalType) SetGroupVersionKind(gvk unversioned.GroupVersionKind) {
-	obj.APIVersion, obj.Kind = gvk.ToAPIVersionAndKind()
-}
-func (obj *internalType) GroupVersionKind() unversioned.GroupVersionKind {
-	return unversioned.FromAPIVersionAndKind(obj.APIVersion, obj.Kind)
-}
-func (obj *externalType) GetObjectKind() unversioned.ObjectKind { return obj }
-func (obj *externalType) SetGroupVersionKind(gvk unversioned.GroupVersionKind) {
-	obj.APIVersion, obj.Kind = gvk.ToAPIVersionAndKind()
-}
-func (obj *externalType) GroupVersionKind() unversioned.GroupVersionKind {
-	return unversioned.FromAPIVersionAndKind(obj.APIVersion, obj.Kind)
-}
-func (obj *ExternalType2) GetObjectKind() unversioned.ObjectKind { return obj }
-func (obj *ExternalType2) SetGroupVersionKind(gvk unversioned.GroupVersionKind) {
-	obj.APIVersion, obj.Kind = gvk.ToAPIVersionAndKind()
-}
-func (obj *ExternalType2) GroupVersionKind() unversioned.GroupVersionKind {
-	return unversioned.FromAPIVersionAndKind(obj.APIVersion, obj.Kind)
-}
-
-var versionErr = errors.New("not a version")
-
-func versionErrIfFalse(b bool) error {
-	if b {
-		return nil
-	}
-	return versionErr
-}
-
-var validVersion = testapi.Default.GroupVersion().Version
-var internalGV = unversioned.GroupVersion{Group: "apitest", Version: runtime.APIVersionInternal}
-var unlikelyGV = unversioned.GroupVersion{Group: "apitest", Version: "unlikelyversion"}
-var validVersionGV = unversioned.GroupVersion{Group: "apitest", Version: validVersion}
-
-func newExternalScheme() (*runtime.Scheme, meta.RESTMapper, runtime.Codec) {
-	scheme := runtime.NewScheme()
-	scheme.AddKnownTypeWithName(internalGV.WithKind("Type"), &internalType{})
-	scheme.AddKnownTypeWithName(unlikelyGV.WithKind("Type"), &externalType{})
-	//This tests that kubectl will not confuse the external scheme with the internal scheme, even when they accidentally have versions of the same name.
-	scheme.AddKnownTypeWithName(validVersionGV.WithKind("Type"), &ExternalType2{})
-
-	codecs := serializer.NewCodecFactory(scheme)
-	codec := codecs.LegacyCodec(unlikelyGV)
-	mapper := meta.NewDefaultRESTMapper([]unversioned.GroupVersion{unlikelyGV, validVersionGV}, func(version unversioned.GroupVersion) (*meta.VersionInterfaces, error) {
-		return &meta.VersionInterfaces{
-			ObjectConvertor:  scheme,
-			MetadataAccessor: meta.NewAccessor(),
-		}, versionErrIfFalse(version == validVersionGV || version == unlikelyGV)
-	})
-	for _, gv := range []unversioned.GroupVersion{unlikelyGV, validVersionGV} {
-		for kind := range scheme.KnownTypes(gv) {
-			gvk := gv.WithKind(kind)
-
-			scope := meta.RESTScopeNamespace
-			mapper.Add(gvk, scope)
-		}
-	}
-
-	return scheme, mapper, codec
 }
 
 type testPrinter struct {
@@ -197,193 +113,16 @@ func (t *testDescriber) Describe(namespace, name string, describerSettings kubec
 	return t.Output, t.Err
 }
 
-type testFactory struct {
-	Mapper       meta.RESTMapper
-	Typer        runtime.ObjectTyper
-	Client       kubectl.RESTClient
-	Describer    kubectl.Describer
-	Printer      kubectl.ResourcePrinter
-	Validator    validation.Schema
-	Namespace    string
-	ClientConfig *restclient.Config
-	Err          error
-}
-
-func NewTestFactory() (*cmdutil.Factory, *testFactory, runtime.Codec, runtime.NegotiatedSerializer) {
-	scheme, mapper, codec := newExternalScheme()
-	t := &testFactory{
-		Validator: validation.NullSchema{},
-		Mapper:    mapper,
-		Typer:     scheme,
-	}
-	negotiatedSerializer := serializer.NegotiatedSerializerWrapper(
-		runtime.SerializerInfo{Serializer: codec},
-		runtime.StreamSerializerInfo{})
-	return &cmdutil.Factory{
-		Object: func() (meta.RESTMapper, runtime.ObjectTyper) {
-			priorityRESTMapper := meta.PriorityRESTMapper{
-				Delegate: t.Mapper,
-				ResourcePriority: []unversioned.GroupVersionResource{
-					{Group: meta.AnyGroup, Version: "v1", Resource: meta.AnyResource},
-				},
-				KindPriority: []unversioned.GroupVersionKind{
-					{Group: meta.AnyGroup, Version: "v1", Kind: meta.AnyKind},
-				},
-			}
-			return priorityRESTMapper, t.Typer
-		},
-		ClientForMapping: func(*meta.RESTMapping) (resource.RESTClient, error) {
-			return t.Client, t.Err
-		},
-		Decoder: func(bool) runtime.Decoder {
-			return codec
-		},
-		JSONEncoder: func() runtime.Encoder {
-			return codec
-		},
-		Describer: func(*meta.RESTMapping) (kubectl.Describer, error) {
-			return t.Describer, t.Err
-		},
-		Printer: func(mapping *meta.RESTMapping, options kubectl.PrintOptions) (kubectl.ResourcePrinter, error) {
-			return t.Printer, t.Err
-		},
-		Validator: func(validate bool, cacheDir string) (validation.Schema, error) {
-			return t.Validator, t.Err
-		},
-		DefaultNamespace: func() (string, bool, error) {
-			return t.Namespace, false, t.Err
-		},
-		ClientConfig: func() (*restclient.Config, error) {
-			return t.ClientConfig, t.Err
-		},
-	}, t, codec, negotiatedSerializer
-}
-
-func NewMixedFactory(apiClient resource.RESTClient) (*cmdutil.Factory, *testFactory, runtime.Codec) {
-	f, t, c, _ := NewTestFactory()
-	var multiRESTMapper meta.MultiRESTMapper
-	multiRESTMapper = append(multiRESTMapper, t.Mapper)
-	multiRESTMapper = append(multiRESTMapper, testapi.Default.RESTMapper())
-	f.Object = func() (meta.RESTMapper, runtime.ObjectTyper) {
-		priorityRESTMapper := meta.PriorityRESTMapper{
-			Delegate: multiRESTMapper,
-			ResourcePriority: []unversioned.GroupVersionResource{
-				{Group: meta.AnyGroup, Version: "v1", Resource: meta.AnyResource},
-			},
-			KindPriority: []unversioned.GroupVersionKind{
-				{Group: meta.AnyGroup, Version: "v1", Kind: meta.AnyKind},
-			},
-		}
-		return priorityRESTMapper, runtime.MultiObjectTyper{t.Typer, api.Scheme}
-	}
-	f.ClientForMapping = func(m *meta.RESTMapping) (resource.RESTClient, error) {
-		if m.ObjectConvertor == api.Scheme {
-			return apiClient, t.Err
-		}
-		return t.Client, t.Err
-	}
-	return f, t, c
-}
-
-func NewAPIFactory() (*cmdutil.Factory, *testFactory, runtime.Codec, runtime.NegotiatedSerializer) {
-	t := &testFactory{
-		Validator: validation.NullSchema{},
-	}
-
-	f := &cmdutil.Factory{
-		Object: func() (meta.RESTMapper, runtime.ObjectTyper) {
-			return testapi.Default.RESTMapper(), api.Scheme
-		},
-		UnstructuredObject: func() (meta.RESTMapper, runtime.ObjectTyper, error) {
-			groupResources := testDynamicResources()
-			mapper := discovery.NewRESTMapper(groupResources, meta.InterfacesForUnstructured)
-			typer := discovery.NewUnstructuredObjectTyper(groupResources)
-
-			return cmdutil.NewShortcutExpander(mapper, nil), typer, nil
-		},
-		ClientSet: func() (*internalclientset.Clientset, error) {
-			// Swap out the HTTP client out of the client with the fake's version.
-			fakeClient := t.Client.(*fake.RESTClient)
-			restClient, err := restclient.RESTClientFor(t.ClientConfig)
-			if err != nil {
-				panic(err)
-			}
-			restClient.Client = fakeClient.Client
-			return internalclientset.New(restClient), t.Err
-		},
-		RESTClient: func() (*restclient.RESTClient, error) {
-			// Swap out the HTTP client out of the client with the fake's version.
-			fakeClient := t.Client.(*fake.RESTClient)
-			restClient, err := restclient.RESTClientFor(t.ClientConfig)
-			if err != nil {
-				panic(err)
-			}
-			restClient.Client = fakeClient.Client
-			return restClient, t.Err
-		},
-		ClientForMapping: func(*meta.RESTMapping) (resource.RESTClient, error) {
-			return t.Client, t.Err
-		},
-		UnstructuredClientForMapping: func(*meta.RESTMapping) (resource.RESTClient, error) {
-			return t.Client, t.Err
-		},
-		Decoder: func(bool) runtime.Decoder {
-			return testapi.Default.Codec()
-		},
-		JSONEncoder: func() runtime.Encoder {
-			return testapi.Default.Codec()
-		},
-		Describer: func(*meta.RESTMapping) (kubectl.Describer, error) {
-			return t.Describer, t.Err
-		},
-		Printer: func(mapping *meta.RESTMapping, options kubectl.PrintOptions) (kubectl.ResourcePrinter, error) {
-			return t.Printer, t.Err
-		},
-		Validator: func(validate bool, cacheDir string) (validation.Schema, error) {
-			return t.Validator, t.Err
-		},
-		DefaultNamespace: func() (string, bool, error) {
-			return t.Namespace, false, t.Err
-		},
-		ClientConfig: func() (*restclient.Config, error) {
-			return t.ClientConfig, t.Err
-		},
-		Generators: func(cmdName string) map[string]kubectl.Generator {
-			return cmdutil.DefaultGenerators(cmdName)
-		},
-		LogsForObject: func(object, options runtime.Object) (*restclient.Request, error) {
-			fakeClient := t.Client.(*fake.RESTClient)
-			c := client.NewOrDie(t.ClientConfig)
-			c.Client = fakeClient.Client
-
-			switch t := object.(type) {
-			case *api.Pod:
-				opts, ok := options.(*api.PodLogOptions)
-				if !ok {
-					return nil, errors.New("provided options object is not a PodLogOptions")
-				}
-				return c.Pods(t.Namespace).GetLogs(t.Name, opts), nil
-			default:
-				fqKinds, _, err := api.Scheme.ObjectKinds(object)
-				if err != nil {
-					return nil, err
-				}
-				return nil, fmt.Errorf("cannot get the logs from %v", fqKinds[0])
-			}
-		},
-	}
-	rf := cmdutil.NewFactory(nil)
-	f.MapBasedSelectorForObject = rf.MapBasedSelectorForObject
-	f.PortsForObject = rf.PortsForObject
-	f.ProtocolsForObject = rf.ProtocolsForObject
-	f.LabelsForObject = rf.LabelsForObject
-	f.CanBeExposed = rf.CanBeExposed
-	f.PrintObjectSpecificMessage = rf.PrintObjectSpecificMessage
-	return f, t, testapi.Default.Codec(), testapi.Default.NegotiatedSerializer()
-}
-
 func objBody(codec runtime.Codec, obj runtime.Object) io.ReadCloser {
 	return ioutil.NopCloser(bytes.NewReader([]byte(runtime.EncodeOrDie(codec, obj))))
+}
+
+func policyObjBody(obj runtime.Object) io.ReadCloser {
+	return ioutil.NopCloser(bytes.NewReader([]byte(runtime.EncodeOrDie(testapi.Policy.Codec(), obj))))
+}
+
+func bytesBody(bodyBytes []byte) io.ReadCloser {
+	return ioutil.NopCloser(bytes.NewReader(bodyBytes))
 }
 
 func stringBody(body string) io.ReadCloser {
@@ -411,7 +150,7 @@ func stringBody(body string) io.ReadCloser {
 //}
 
 func Example_printReplicationControllerWithNamespace() {
-	f, tf, _, ns := NewAPIFactory()
+	f, tf, _, ns := cmdtesting.NewAPIFactory()
 	tf.Printer = kubectl.NewHumanReadablePrinter(kubectl.PrintOptions{
 		WithNamespace: true,
 		ColumnLabels:  []string{},
@@ -461,7 +200,7 @@ func Example_printReplicationControllerWithNamespace() {
 }
 
 func Example_printMultiContainersReplicationControllerWithWide() {
-	f, tf, _, ns := NewAPIFactory()
+	f, tf, _, ns := cmdtesting.NewAPIFactory()
 	tf.Printer = kubectl.NewHumanReadablePrinter(kubectl.PrintOptions{
 		Wide:         true,
 		ColumnLabels: []string{},
@@ -513,7 +252,7 @@ func Example_printMultiContainersReplicationControllerWithWide() {
 }
 
 func Example_printReplicationController() {
-	f, tf, _, ns := NewAPIFactory()
+	f, tf, _, ns := cmdtesting.NewAPIFactory()
 	tf.Printer = kubectl.NewHumanReadablePrinter(kubectl.PrintOptions{
 		ColumnLabels: []string{},
 	})
@@ -564,7 +303,7 @@ func Example_printReplicationController() {
 }
 
 func Example_printPodWithWideFormat() {
-	f, tf, _, ns := NewAPIFactory()
+	f, tf, _, ns := cmdtesting.NewAPIFactory()
 	tf.Printer = kubectl.NewHumanReadablePrinter(kubectl.PrintOptions{
 		Wide:         true,
 		ColumnLabels: []string{},
@@ -604,7 +343,7 @@ func Example_printPodWithWideFormat() {
 }
 
 func Example_printPodWithShowLabels() {
-	f, tf, _, ns := NewAPIFactory()
+	f, tf, _, ns := cmdtesting.NewAPIFactory()
 	tf.Printer = kubectl.NewHumanReadablePrinter(kubectl.PrintOptions{
 		ShowLabels:   true,
 		ColumnLabels: []string{},
@@ -739,7 +478,7 @@ func newAllPhasePodList() *api.PodList {
 }
 
 func Example_printPodHideTerminated() {
-	f, tf, _, ns := NewAPIFactory()
+	f, tf, _, ns := cmdtesting.NewAPIFactory()
 	tf.Printer = kubectl.NewHumanReadablePrinter(kubectl.PrintOptions{
 		ColumnLabels: []string{},
 	})
@@ -771,7 +510,7 @@ func Example_printPodHideTerminated() {
 }
 
 func Example_printPodShowAll() {
-	f, tf, _, ns := NewAPIFactory()
+	f, tf, _, ns := cmdtesting.NewAPIFactory()
 	tf.Printer = kubectl.NewHumanReadablePrinter(kubectl.PrintOptions{
 		ShowAll:      true,
 		ColumnLabels: []string{},
@@ -797,7 +536,7 @@ func Example_printPodShowAll() {
 }
 
 func Example_printServiceWithNamespacesAndLabels() {
-	f, tf, _, ns := NewAPIFactory()
+	f, tf, _, ns := cmdtesting.NewAPIFactory()
 	tf.Printer = kubectl.NewHumanReadablePrinter(kubectl.PrintOptions{
 		WithNamespace: true,
 		ColumnLabels:  []string{"l1"},
@@ -891,4 +630,12 @@ func TestNormalizationFuncGlobalExistence(t *testing.T) {
 	if reflect.ValueOf(sub.Flags().GetNormalizeFunc()).Pointer() != reflect.ValueOf(root.Flags().GetNormalizeFunc()).Pointer() {
 		t.Fatal("child and root commands should have the same normalization functions")
 	}
+}
+
+func genResponseWithJsonEncodedBody(bodyStruct interface{}) (*http.Response, error) {
+	jsonBytes, err := json.Marshal(bodyStruct)
+	if err != nil {
+		return nil, err
+	}
+	return &http.Response{StatusCode: 200, Header: defaultHeader(), Body: bytesBody(jsonBytes)}, nil
 }

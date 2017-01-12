@@ -19,6 +19,7 @@ package v1
 import (
 	api "k8s.io/kubernetes/pkg/api"
 	v1 "k8s.io/kubernetes/pkg/api/v1"
+	restclient "k8s.io/kubernetes/pkg/client/restclient"
 	watch "k8s.io/kubernetes/pkg/watch"
 )
 
@@ -32,25 +33,25 @@ type LimitRangesGetter interface {
 type LimitRangeInterface interface {
 	Create(*v1.LimitRange) (*v1.LimitRange, error)
 	Update(*v1.LimitRange) (*v1.LimitRange, error)
-	Delete(name string, options *api.DeleteOptions) error
-	DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error
+	Delete(name string, options *v1.DeleteOptions) error
+	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
 	Get(name string) (*v1.LimitRange, error)
-	List(opts api.ListOptions) (*v1.LimitRangeList, error)
-	Watch(opts api.ListOptions) (watch.Interface, error)
+	List(opts v1.ListOptions) (*v1.LimitRangeList, error)
+	Watch(opts v1.ListOptions) (watch.Interface, error)
 	Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1.LimitRange, err error)
 	LimitRangeExpansion
 }
 
 // limitRanges implements LimitRangeInterface
 type limitRanges struct {
-	client *CoreClient
+	client restclient.Interface
 	ns     string
 }
 
 // newLimitRanges returns a LimitRanges
-func newLimitRanges(c *CoreClient, namespace string) *limitRanges {
+func newLimitRanges(c *CoreV1Client, namespace string) *limitRanges {
 	return &limitRanges{
-		client: c,
+		client: c.RESTClient(),
 		ns:     namespace,
 	}
 }
@@ -81,7 +82,7 @@ func (c *limitRanges) Update(limitRange *v1.LimitRange) (result *v1.LimitRange, 
 }
 
 // Delete takes name of the limitRange and deletes it. Returns an error if one occurs.
-func (c *limitRanges) Delete(name string, options *api.DeleteOptions) error {
+func (c *limitRanges) Delete(name string, options *v1.DeleteOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("limitranges").
@@ -92,7 +93,7 @@ func (c *limitRanges) Delete(name string, options *api.DeleteOptions) error {
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *limitRanges) DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error {
+func (c *limitRanges) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("limitranges").
@@ -115,7 +116,7 @@ func (c *limitRanges) Get(name string) (result *v1.LimitRange, err error) {
 }
 
 // List takes label and field selectors, and returns the list of LimitRanges that match those selectors.
-func (c *limitRanges) List(opts api.ListOptions) (result *v1.LimitRangeList, err error) {
+func (c *limitRanges) List(opts v1.ListOptions) (result *v1.LimitRangeList, err error) {
 	result = &v1.LimitRangeList{}
 	err = c.client.Get().
 		Namespace(c.ns).
@@ -127,7 +128,7 @@ func (c *limitRanges) List(opts api.ListOptions) (result *v1.LimitRangeList, err
 }
 
 // Watch returns a watch.Interface that watches the requested limitRanges.
-func (c *limitRanges) Watch(opts api.ListOptions) (watch.Interface, error) {
+func (c *limitRanges) Watch(opts v1.ListOptions) (watch.Interface, error) {
 	return c.client.Get().
 		Prefix("watch").
 		Namespace(c.ns).

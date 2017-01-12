@@ -22,26 +22,24 @@ import (
 
 	"github.com/golang/glog"
 
+	"strings"
+
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/util"
-	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/v1"
-	client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3/typed/core/v1"
-	"k8s.io/kubernetes/pkg/fields"
-	"k8s.io/kubernetes/pkg/labels"
+	client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5/typed/core/v1"
 	"k8s.io/kubernetes/pkg/watch"
-	"strings"
 )
 
 // ServiceController watches for services with dns annotations
 type ServiceController struct {
 	util.Stoppable
-	kubeClient *client.CoreClient
+	kubeClient client.CoreV1Interface
 	scope      dns.Scope
 }
 
 // newServiceController creates a serviceController
-func NewServiceController(kubeClient *client.CoreClient, dns dns.Context) (*ServiceController, error) {
+func NewServiceController(kubeClient client.CoreV1Interface, dns dns.Context) (*ServiceController, error) {
 	scope, err := dns.CreateScope("service")
 	if err != nil {
 		return nil, fmt.Errorf("error building dns scope: %v", err)
@@ -67,11 +65,11 @@ func (c *ServiceController) Run() {
 
 func (c *ServiceController) runWatcher(stopCh <-chan struct{}) {
 	runOnce := func() (bool, error) {
-		var listOpts api.ListOptions
+		var listOpts v1.ListOptions
 		glog.Warningf("querying without label filter")
-		listOpts.LabelSelector = labels.Everything()
+		//listOpts.LabelSelector = labels.Everything()
 		glog.Warningf("querying without field filter")
-		listOpts.FieldSelector = fields.Everything()
+		//listOpts.FieldSelector = fields.Everything()
 		serviceList, err := c.kubeClient.Services("").List(listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error listing services: %v", err)
@@ -84,9 +82,9 @@ func (c *ServiceController) runWatcher(stopCh <-chan struct{}) {
 		c.scope.MarkReady()
 
 		glog.Warningf("querying without label filter")
-		listOpts.LabelSelector = labels.Everything()
+		//listOpts.LabelSelector = labels.Everything()
 		glog.Warningf("querying without field filter")
-		listOpts.FieldSelector = fields.Everything()
+		//listOpts.FieldSelector = fields.Everything()
 		listOpts.Watch = true
 		listOpts.ResourceVersion = serviceList.ResourceVersion
 		watcher, err := c.kubeClient.Services("").Watch(listOpts)
@@ -139,26 +137,59 @@ func (c *ServiceController) updateServiceRecords(service *v1.Service) {
 	var records []dns.Record
 
 	specExternal := service.Annotations[AnnotationNameDnsExternal]
-	if specExternal != "" {
+	specInternal := service.Annotations[AnnotationNameDnsInternal]
+	if len(specExternal) != 0 || len(specInternal) != 0 {
 		var ingresses []dns.Record
-		for i := range service.Status.LoadBalancer.Ingress {
-			ingress := &service.Status.LoadBalancer.Ingress[i]
-			if ingress.Hostname != "" {
-				// TODO: Support ELB aliases
-				ingresses = append(ingresses, dns.Record{
-					RecordType: dns.RecordTypeCNAME,
-					Value:      ingress.Hostname,
-				})
+
+		if service.Spec.Type == v1.ServiceTypeLoadBalancer {
+			for i := range service.Status.LoadBalancer.Ingress {
+				ingress := &service.Status.LoadBalancer.Ingress[i]
+				if ingress.Hostname != "" {
+					// TODO: Support ELB aliases
+					ingresses = append(ingresses, dns.Record{
+						RecordType: dns.RecordTypeCNAME,
+						Value:      ingress.Hostname,
+					})
+					glog.V(4).Infof("Found CNAME record for service %s/%s: %q", service.Namespace, service.Name, ingress.Hostname)
+				}
+				if ingress.IP != "" {
+					ingresses = append(ingresses, dns.Record{
+						RecordType: dns.RecordTypeA,
+						Value:      ingress.IP,
+					})
+					glog.V(4).Infof("Found A record for service %s/%s: %q", service.Namespace, service.Name, ingress.IP)
+				}
 			}
-			if ingress.IP != "" {
-				ingresses = append(ingresses, dns.Record{
-					RecordType: dns.RecordTypeA,
-					Value:      ingress.IP,
-				})
+		} else if service.Spec.Type == v1.ServiceTypeNodePort {
+			var roleType string
+			if len(specExternal) != 0 && len(specInternal) != 0 {
+				glog.Warningln("DNS Records not possible for both Internal and Externals IPs.")
+				return
+			} else if len(specInternal) != 0 {
+				roleType = dns.RoleTypeInternal
+			} else {
+				roleType = dns.RoleTypeExternal
 			}
+			ingresses = append(ingresses, dns.Record{
+				RecordType: dns.RecordTypeAlias,
+				Value:      dns.AliasForNodesInRole("node", roleType),
+			})
+			glog.V(4).Infof("Setting internal alias for NodePort service %s/%s", service.Namespace, service.Name)
+		} else {
+			// TODO: Emit event so that users are informed of this
+			glog.V(2).Infof("Cannot expose service %s/%s of type %q", service.Namespace, service.Name, service.Spec.Type)
 		}
 
-		tokens := strings.Split(specExternal, ",")
+		var tokens []string
+
+		if len(specExternal) != 0 {
+			tokens = append(tokens, strings.Split(specExternal, ",")...)
+		}
+
+		if len(specInternal) != 0 {
+			tokens = append(tokens, strings.Split(specInternal, ",")...)
+		}
+
 		for _, token := range tokens {
 			token = strings.TrimSpace(token)
 
@@ -171,7 +202,7 @@ func (c *ServiceController) updateServiceRecords(service *v1.Service) {
 			}
 		}
 	} else {
-		glog.V(4).Infof("Service %q did not have %s annotation", service.Name, AnnotationNameDnsInternal)
+		glog.V(8).Infof("Service %s/%s did not have %s annotation", service.Namespace, service.Name, AnnotationNameDnsExternal)
 	}
 
 	c.scope.Replace(service.Name, records)

@@ -3,10 +3,10 @@
   "metadata":{
     "apiVersion":"2012-06-01",
     "endpointPrefix":"elasticloadbalancing",
+    "protocol":"query",
     "serviceFullName":"Elastic Load Balancing",
     "signatureVersion":"v4",
-    "xmlNamespace":"http://elasticloadbalancing.amazonaws.com/doc/2012-06-01/",
-    "protocol":"query"
+    "xmlNamespace":"http://elasticloadbalancing.amazonaws.com/doc/2012-06-01/"
   },
   "operations":{
     "AddTags":{
@@ -21,33 +21,9 @@
         "resultWrapper":"AddTagsResult"
       },
       "errors":[
-        {
-          "shape":"AccessPointNotFoundException",
-          "error":{
-            "code":"LoadBalancerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"TooManyTagsException",
-          "error":{
-            "code":"TooManyTags",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"DuplicateTagKeysException",
-          "error":{
-            "code":"DuplicateTagKeys",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"AccessPointNotFoundException"},
+        {"shape":"TooManyTagsException"},
+        {"shape":"DuplicateTagKeysException"}
       ]
     },
     "ApplySecurityGroupsToLoadBalancer":{
@@ -62,33 +38,9 @@
         "resultWrapper":"ApplySecurityGroupsToLoadBalancerResult"
       },
       "errors":[
-        {
-          "shape":"AccessPointNotFoundException",
-          "error":{
-            "code":"LoadBalancerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"InvalidConfigurationRequestException",
-          "error":{
-            "code":"InvalidConfigurationRequest",
-            "httpStatusCode":409,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"InvalidSecurityGroupException",
-          "error":{
-            "code":"InvalidSecurityGroup",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"AccessPointNotFoundException"},
+        {"shape":"InvalidConfigurationRequestException"},
+        {"shape":"InvalidSecurityGroupException"}
       ]
     },
     "AttachLoadBalancerToSubnets":{
@@ -103,42 +55,10 @@
         "resultWrapper":"AttachLoadBalancerToSubnetsResult"
       },
       "errors":[
-        {
-          "shape":"AccessPointNotFoundException",
-          "error":{
-            "code":"LoadBalancerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"InvalidConfigurationRequestException",
-          "error":{
-            "code":"InvalidConfigurationRequest",
-            "httpStatusCode":409,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"SubnetNotFoundException",
-          "error":{
-            "code":"SubnetNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"InvalidSubnetException",
-          "error":{
-            "code":"InvalidSubnet",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"AccessPointNotFoundException"},
+        {"shape":"InvalidConfigurationRequestException"},
+        {"shape":"SubnetNotFoundException"},
+        {"shape":"InvalidSubnetException"}
       ]
     },
     "ConfigureHealthCheck":{
@@ -153,15 +73,7 @@
         "resultWrapper":"ConfigureHealthCheckResult"
       },
       "errors":[
-        {
-          "shape":"AccessPointNotFoundException",
-          "error":{
-            "code":"LoadBalancerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"AccessPointNotFoundException"}
       ]
     },
     "CreateAppCookieStickinessPolicy":{
@@ -176,42 +88,10 @@
         "resultWrapper":"CreateAppCookieStickinessPolicyResult"
       },
       "errors":[
-        {
-          "shape":"AccessPointNotFoundException",
-          "error":{
-            "code":"LoadBalancerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"DuplicatePolicyNameException",
-          "error":{
-            "code":"DuplicatePolicyName",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"TooManyPoliciesException",
-          "error":{
-            "code":"TooManyPolicies",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"InvalidConfigurationRequestException",
-          "error":{
-            "code":"InvalidConfigurationRequest",
-            "httpStatusCode":409,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"AccessPointNotFoundException"},
+        {"shape":"DuplicatePolicyNameException"},
+        {"shape":"TooManyPoliciesException"},
+        {"shape":"InvalidConfigurationRequestException"}
       ]
     },
     "CreateLBCookieStickinessPolicy":{
@@ -226,42 +106,10 @@
         "resultWrapper":"CreateLBCookieStickinessPolicyResult"
       },
       "errors":[
-        {
-          "shape":"AccessPointNotFoundException",
-          "error":{
-            "code":"LoadBalancerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"DuplicatePolicyNameException",
-          "error":{
-            "code":"DuplicatePolicyName",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"TooManyPoliciesException",
-          "error":{
-            "code":"TooManyPolicies",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"InvalidConfigurationRequestException",
-          "error":{
-            "code":"InvalidConfigurationRequest",
-            "httpStatusCode":409,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"AccessPointNotFoundException"},
+        {"shape":"DuplicatePolicyNameException"},
+        {"shape":"TooManyPoliciesException"},
+        {"shape":"InvalidConfigurationRequestException"}
       ]
     },
     "CreateLoadBalancer":{
@@ -276,96 +124,17 @@
         "resultWrapper":"CreateLoadBalancerResult"
       },
       "errors":[
-        {
-          "shape":"DuplicateAccessPointNameException",
-          "error":{
-            "code":"DuplicateLoadBalancerName",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"TooManyAccessPointsException",
-          "error":{
-            "code":"TooManyLoadBalancers",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"CertificateNotFoundException",
-          "error":{
-            "code":"CertificateNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"InvalidConfigurationRequestException",
-          "error":{
-            "code":"InvalidConfigurationRequest",
-            "httpStatusCode":409,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"SubnetNotFoundException",
-          "error":{
-            "code":"SubnetNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"InvalidSubnetException",
-          "error":{
-            "code":"InvalidSubnet",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"InvalidSecurityGroupException",
-          "error":{
-            "code":"InvalidSecurityGroup",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"InvalidSchemeException",
-          "error":{
-            "code":"InvalidScheme",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"TooManyTagsException",
-          "error":{
-            "code":"TooManyTags",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"DuplicateTagKeysException",
-          "error":{
-            "code":"DuplicateTagKeys",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"DuplicateAccessPointNameException"},
+        {"shape":"TooManyAccessPointsException"},
+        {"shape":"CertificateNotFoundException"},
+        {"shape":"InvalidConfigurationRequestException"},
+        {"shape":"SubnetNotFoundException"},
+        {"shape":"InvalidSubnetException"},
+        {"shape":"InvalidSecurityGroupException"},
+        {"shape":"InvalidSchemeException"},
+        {"shape":"TooManyTagsException"},
+        {"shape":"DuplicateTagKeysException"},
+        {"shape":"UnsupportedProtocolException"}
       ]
     },
     "CreateLoadBalancerListeners":{
@@ -380,42 +149,11 @@
         "resultWrapper":"CreateLoadBalancerListenersResult"
       },
       "errors":[
-        {
-          "shape":"AccessPointNotFoundException",
-          "error":{
-            "code":"LoadBalancerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"DuplicateListenerException",
-          "error":{
-            "code":"DuplicateListener",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"CertificateNotFoundException",
-          "error":{
-            "code":"CertificateNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"InvalidConfigurationRequestException",
-          "error":{
-            "code":"InvalidConfigurationRequest",
-            "httpStatusCode":409,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"AccessPointNotFoundException"},
+        {"shape":"DuplicateListenerException"},
+        {"shape":"CertificateNotFoundException"},
+        {"shape":"InvalidConfigurationRequestException"},
+        {"shape":"UnsupportedProtocolException"}
       ]
     },
     "CreateLoadBalancerPolicy":{
@@ -430,51 +168,11 @@
         "resultWrapper":"CreateLoadBalancerPolicyResult"
       },
       "errors":[
-        {
-          "shape":"AccessPointNotFoundException",
-          "error":{
-            "code":"LoadBalancerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"PolicyTypeNotFoundException",
-          "error":{
-            "code":"PolicyTypeNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"DuplicatePolicyNameException",
-          "error":{
-            "code":"DuplicatePolicyName",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"TooManyPoliciesException",
-          "error":{
-            "code":"TooManyPolicies",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"InvalidConfigurationRequestException",
-          "error":{
-            "code":"InvalidConfigurationRequest",
-            "httpStatusCode":409,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"AccessPointNotFoundException"},
+        {"shape":"PolicyTypeNotFoundException"},
+        {"shape":"DuplicatePolicyNameException"},
+        {"shape":"TooManyPoliciesException"},
+        {"shape":"InvalidConfigurationRequestException"}
       ]
     },
     "DeleteLoadBalancer":{
@@ -501,15 +199,7 @@
         "resultWrapper":"DeleteLoadBalancerListenersResult"
       },
       "errors":[
-        {
-          "shape":"AccessPointNotFoundException",
-          "error":{
-            "code":"LoadBalancerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"AccessPointNotFoundException"}
       ]
     },
     "DeleteLoadBalancerPolicy":{
@@ -524,24 +214,8 @@
         "resultWrapper":"DeleteLoadBalancerPolicyResult"
       },
       "errors":[
-        {
-          "shape":"AccessPointNotFoundException",
-          "error":{
-            "code":"LoadBalancerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"InvalidConfigurationRequestException",
-          "error":{
-            "code":"InvalidConfigurationRequest",
-            "httpStatusCode":409,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"AccessPointNotFoundException"},
+        {"shape":"InvalidConfigurationRequestException"}
       ]
     },
     "DeregisterInstancesFromLoadBalancer":{
@@ -556,24 +230,8 @@
         "resultWrapper":"DeregisterInstancesFromLoadBalancerResult"
       },
       "errors":[
-        {
-          "shape":"AccessPointNotFoundException",
-          "error":{
-            "code":"LoadBalancerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"InvalidEndPointException",
-          "error":{
-            "code":"InvalidInstance",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"AccessPointNotFoundException"},
+        {"shape":"InvalidEndPointException"}
       ]
     },
     "DescribeInstanceHealth":{
@@ -588,24 +246,8 @@
         "resultWrapper":"DescribeInstanceHealthResult"
       },
       "errors":[
-        {
-          "shape":"AccessPointNotFoundException",
-          "error":{
-            "code":"LoadBalancerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"InvalidEndPointException",
-          "error":{
-            "code":"InvalidInstance",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"AccessPointNotFoundException"},
+        {"shape":"InvalidEndPointException"}
       ]
     },
     "DescribeLoadBalancerAttributes":{
@@ -620,24 +262,8 @@
         "resultWrapper":"DescribeLoadBalancerAttributesResult"
       },
       "errors":[
-        {
-          "shape":"AccessPointNotFoundException",
-          "error":{
-            "code":"LoadBalancerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"LoadBalancerAttributeNotFoundException",
-          "error":{
-            "code":"LoadBalancerAttributeNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"AccessPointNotFoundException"},
+        {"shape":"LoadBalancerAttributeNotFoundException"}
       ]
     },
     "DescribeLoadBalancerPolicies":{
@@ -652,24 +278,8 @@
         "resultWrapper":"DescribeLoadBalancerPoliciesResult"
       },
       "errors":[
-        {
-          "shape":"AccessPointNotFoundException",
-          "error":{
-            "code":"LoadBalancerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"PolicyNotFoundException",
-          "error":{
-            "code":"PolicyNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"AccessPointNotFoundException"},
+        {"shape":"PolicyNotFoundException"}
       ]
     },
     "DescribeLoadBalancerPolicyTypes":{
@@ -684,15 +294,7 @@
         "resultWrapper":"DescribeLoadBalancerPolicyTypesResult"
       },
       "errors":[
-        {
-          "shape":"PolicyTypeNotFoundException",
-          "error":{
-            "code":"PolicyTypeNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"PolicyTypeNotFoundException"}
       ]
     },
     "DescribeLoadBalancers":{
@@ -707,15 +309,8 @@
         "resultWrapper":"DescribeLoadBalancersResult"
       },
       "errors":[
-        {
-          "shape":"AccessPointNotFoundException",
-          "error":{
-            "code":"LoadBalancerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"AccessPointNotFoundException"},
+        {"shape":"DependencyThrottleException"}
       ]
     },
     "DescribeTags":{
@@ -730,15 +325,7 @@
         "resultWrapper":"DescribeTagsResult"
       },
       "errors":[
-        {
-          "shape":"AccessPointNotFoundException",
-          "error":{
-            "code":"LoadBalancerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"AccessPointNotFoundException"}
       ]
     },
     "DetachLoadBalancerFromSubnets":{
@@ -753,24 +340,8 @@
         "resultWrapper":"DetachLoadBalancerFromSubnetsResult"
       },
       "errors":[
-        {
-          "shape":"AccessPointNotFoundException",
-          "error":{
-            "code":"LoadBalancerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"InvalidConfigurationRequestException",
-          "error":{
-            "code":"InvalidConfigurationRequest",
-            "httpStatusCode":409,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"AccessPointNotFoundException"},
+        {"shape":"InvalidConfigurationRequestException"}
       ]
     },
     "DisableAvailabilityZonesForLoadBalancer":{
@@ -785,24 +356,8 @@
         "resultWrapper":"DisableAvailabilityZonesForLoadBalancerResult"
       },
       "errors":[
-        {
-          "shape":"AccessPointNotFoundException",
-          "error":{
-            "code":"LoadBalancerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"InvalidConfigurationRequestException",
-          "error":{
-            "code":"InvalidConfigurationRequest",
-            "httpStatusCode":409,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"AccessPointNotFoundException"},
+        {"shape":"InvalidConfigurationRequestException"}
       ]
     },
     "EnableAvailabilityZonesForLoadBalancer":{
@@ -817,15 +372,7 @@
         "resultWrapper":"EnableAvailabilityZonesForLoadBalancerResult"
       },
       "errors":[
-        {
-          "shape":"AccessPointNotFoundException",
-          "error":{
-            "code":"LoadBalancerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"AccessPointNotFoundException"}
       ]
     },
     "ModifyLoadBalancerAttributes":{
@@ -840,33 +387,9 @@
         "resultWrapper":"ModifyLoadBalancerAttributesResult"
       },
       "errors":[
-        {
-          "shape":"AccessPointNotFoundException",
-          "error":{
-            "code":"LoadBalancerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"LoadBalancerAttributeNotFoundException",
-          "error":{
-            "code":"LoadBalancerAttributeNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"InvalidConfigurationRequestException",
-          "error":{
-            "code":"InvalidConfigurationRequest",
-            "httpStatusCode":409,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"AccessPointNotFoundException"},
+        {"shape":"LoadBalancerAttributeNotFoundException"},
+        {"shape":"InvalidConfigurationRequestException"}
       ]
     },
     "RegisterInstancesWithLoadBalancer":{
@@ -881,24 +404,8 @@
         "resultWrapper":"RegisterInstancesWithLoadBalancerResult"
       },
       "errors":[
-        {
-          "shape":"AccessPointNotFoundException",
-          "error":{
-            "code":"LoadBalancerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"InvalidEndPointException",
-          "error":{
-            "code":"InvalidInstance",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"AccessPointNotFoundException"},
+        {"shape":"InvalidEndPointException"}
       ]
     },
     "RemoveTags":{
@@ -913,15 +420,7 @@
         "resultWrapper":"RemoveTagsResult"
       },
       "errors":[
-        {
-          "shape":"AccessPointNotFoundException",
-          "error":{
-            "code":"LoadBalancerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"AccessPointNotFoundException"}
       ]
     },
     "SetLoadBalancerListenerSSLCertificate":{
@@ -936,42 +435,11 @@
         "resultWrapper":"SetLoadBalancerListenerSSLCertificateResult"
       },
       "errors":[
-        {
-          "shape":"CertificateNotFoundException",
-          "error":{
-            "code":"CertificateNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"AccessPointNotFoundException",
-          "error":{
-            "code":"LoadBalancerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"ListenerNotFoundException",
-          "error":{
-            "code":"ListenerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"InvalidConfigurationRequestException",
-          "error":{
-            "code":"InvalidConfigurationRequest",
-            "httpStatusCode":409,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"CertificateNotFoundException"},
+        {"shape":"AccessPointNotFoundException"},
+        {"shape":"ListenerNotFoundException"},
+        {"shape":"InvalidConfigurationRequestException"},
+        {"shape":"UnsupportedProtocolException"}
       ]
     },
     "SetLoadBalancerPoliciesForBackendServer":{
@@ -986,33 +454,9 @@
         "resultWrapper":"SetLoadBalancerPoliciesForBackendServerResult"
       },
       "errors":[
-        {
-          "shape":"AccessPointNotFoundException",
-          "error":{
-            "code":"LoadBalancerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"PolicyNotFoundException",
-          "error":{
-            "code":"PolicyNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"InvalidConfigurationRequestException",
-          "error":{
-            "code":"InvalidConfigurationRequest",
-            "httpStatusCode":409,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"AccessPointNotFoundException"},
+        {"shape":"PolicyNotFoundException"},
+        {"shape":"InvalidConfigurationRequestException"}
       ]
     },
     "SetLoadBalancerPoliciesOfListener":{
@@ -1027,42 +471,10 @@
         "resultWrapper":"SetLoadBalancerPoliciesOfListenerResult"
       },
       "errors":[
-        {
-          "shape":"AccessPointNotFoundException",
-          "error":{
-            "code":"LoadBalancerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"PolicyNotFoundException",
-          "error":{
-            "code":"PolicyNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"ListenerNotFoundException",
-          "error":{
-            "code":"ListenerNotFound",
-            "httpStatusCode":400,
-            "senderFault":true
-          },
-          "exception":true
-        },
-        {
-          "shape":"InvalidConfigurationRequestException",
-          "error":{
-            "code":"InvalidConfigurationRequest",
-            "httpStatusCode":409,
-            "senderFault":true
-          },
-          "exception":true
-        }
+        {"shape":"AccessPointNotFoundException"},
+        {"shape":"PolicyNotFoundException"},
+        {"shape":"ListenerNotFoundException"},
+        {"shape":"InvalidConfigurationRequestException"}
       ]
     }
   },
@@ -1129,13 +541,24 @@
     "AdditionalAttribute":{
       "type":"structure",
       "members":{
-        "Key":{"shape":"StringVal"},
-        "Value":{"shape":"StringVal"}
+        "Key":{"shape":"AdditionalAttributeKey"},
+        "Value":{"shape":"AdditionalAttributeValue"}
       }
+    },
+    "AdditionalAttributeKey":{
+      "type":"string",
+      "max":256,
+      "pattern":"^[a-zA-Z0-9.]+$"
+    },
+    "AdditionalAttributeValue":{
+      "type":"string",
+      "max":256,
+      "pattern":"^[a-zA-Z0-9.]+$"
     },
     "AdditionalAttributes":{
       "type":"list",
-      "member":{"shape":"AdditionalAttribute"}
+      "member":{"shape":"AdditionalAttribute"},
+      "max":10
     },
     "AppCookieStickinessPolicies":{
       "type":"list",
@@ -1396,6 +819,17 @@
       "members":{
       }
     },
+    "DependencyThrottleException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"DependencyThrottle",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
     "DeregisterEndPointsInput":{
       "type":"structure",
       "required":[
@@ -1575,24 +1009,24 @@
     },
     "HealthCheckInterval":{
       "type":"integer",
-      "min":1,
-      "max":300
+      "max":300,
+      "min":5
     },
     "HealthCheckTarget":{"type":"string"},
     "HealthCheckTimeout":{
       "type":"integer",
-      "min":1,
-      "max":300
+      "max":60,
+      "min":2
     },
     "HealthyThreshold":{
       "type":"integer",
-      "min":2,
-      "max":10
+      "max":10,
+      "min":2
     },
     "IdleTimeout":{
       "type":"integer",
-      "min":1,
-      "max":3600
+      "max":3600,
+      "min":1
     },
     "Instance":{
       "type":"structure",
@@ -1603,8 +1037,8 @@
     "InstanceId":{"type":"string"},
     "InstancePort":{
       "type":"integer",
-      "min":1,
-      "max":65535
+      "max":65535,
+      "min":1
     },
     "InstanceState":{
       "type":"structure",
@@ -1783,8 +1217,8 @@
     "LoadBalancerNamesMax20":{
       "type":"list",
       "member":{"shape":"AccessPointName"},
-      "min":1,
-      "max":20
+      "max":20,
+      "min":1
     },
     "LoadBalancerScheme":{"type":"string"},
     "Marker":{"type":"string"},
@@ -1808,8 +1242,8 @@
     },
     "PageSize":{
       "type":"integer",
-      "min":1,
-      "max":400
+      "max":400,
+      "min":1
     },
     "Policies":{
       "type":"structure",
@@ -2038,7 +1472,6 @@
       }
     },
     "State":{"type":"string"},
-    "StringVal":{"type":"string"},
     "SubnetId":{"type":"string"},
     "SubnetNotFoundException":{
       "type":"structure",
@@ -2076,8 +1509,8 @@
     },
     "TagKey":{
       "type":"string",
-      "min":1,
       "max":128,
+      "min":1,
       "pattern":"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)$"
     },
     "TagKeyList":{
@@ -2098,8 +1531,8 @@
     },
     "TagValue":{
       "type":"string",
-      "min":0,
       "max":256,
+      "min":0,
       "pattern":"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)$"
     },
     "TooManyAccessPointsException":{
@@ -2137,8 +1570,19 @@
     },
     "UnhealthyThreshold":{
       "type":"integer",
-      "min":2,
-      "max":10
+      "max":10,
+      "min":2
+    },
+    "UnsupportedProtocolException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"UnsupportedProtocol",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
     },
     "VPCId":{"type":"string"}
   }

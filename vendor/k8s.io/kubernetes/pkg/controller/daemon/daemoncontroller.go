@@ -28,8 +28,8 @@ import (
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/cache"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	unversionedcore "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/core/unversioned"
-	unversionedextensions "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/extensions/unversioned"
+	unversionedcore "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/core/internalversion"
+	unversionedextensions "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/extensions/internalversion"
 	"k8s.io/kubernetes/pkg/client/record"
 	"k8s.io/kubernetes/pkg/controller"
 	"k8s.io/kubernetes/pkg/controller/informers"
@@ -97,8 +97,8 @@ func NewDaemonSetsController(daemonSetInformer informers.DaemonSetInformer, podI
 	// TODO: remove the wrapper when every clients have moved to use the clientset.
 	eventBroadcaster.StartRecordingToSink(&unversionedcore.EventSinkImpl{Interface: kubeClient.Core().Events("")})
 
-	if kubeClient != nil && kubeClient.Core().GetRESTClient().GetRateLimiter() != nil {
-		metrics.RegisterMetricAndTrackRateLimiterUsage("daemon_controller", kubeClient.Core().GetRESTClient().GetRateLimiter())
+	if kubeClient != nil && kubeClient.Core().RESTClient().GetRateLimiter() != nil {
+		metrics.RegisterMetricAndTrackRateLimiterUsage("daemon_controller", kubeClient.Core().RESTClient().GetRateLimiter())
 	}
 	dsc := &DaemonSetsController{
 		kubeClient:    kubeClient,
@@ -531,10 +531,11 @@ func (dsc *DaemonSetsController) manage(ds *extensions.DaemonSet) error {
 	return utilerrors.NewAggregate(errors)
 }
 
-func storeDaemonSetStatus(dsClient unversionedextensions.DaemonSetInterface, ds *extensions.DaemonSet, desiredNumberScheduled, currentNumberScheduled, numberMisscheduled int) error {
+func storeDaemonSetStatus(dsClient unversionedextensions.DaemonSetInterface, ds *extensions.DaemonSet, desiredNumberScheduled, currentNumberScheduled, numberMisscheduled, numberReady int) error {
 	if int(ds.Status.DesiredNumberScheduled) == desiredNumberScheduled &&
 		int(ds.Status.CurrentNumberScheduled) == currentNumberScheduled &&
-		int(ds.Status.NumberMisscheduled) == numberMisscheduled {
+		int(ds.Status.NumberMisscheduled) == numberMisscheduled &&
+		int(ds.Status.NumberReady) == numberReady {
 		return nil
 	}
 
@@ -543,6 +544,7 @@ func storeDaemonSetStatus(dsClient unversionedextensions.DaemonSetInterface, ds 
 		ds.Status.DesiredNumberScheduled = int32(desiredNumberScheduled)
 		ds.Status.CurrentNumberScheduled = int32(currentNumberScheduled)
 		ds.Status.NumberMisscheduled = int32(numberMisscheduled)
+		ds.Status.NumberReady = int32(numberReady)
 
 		if _, updateErr = dsClient.UpdateStatus(ds); updateErr == nil {
 			return nil
@@ -570,7 +572,7 @@ func (dsc *DaemonSetsController) updateDaemonSetStatus(ds *extensions.DaemonSet)
 		return fmt.Errorf("couldn't get list of nodes when updating daemon set %#v: %v", ds, err)
 	}
 
-	var desiredNumberScheduled, currentNumberScheduled, numberMisscheduled int
+	var desiredNumberScheduled, currentNumberScheduled, numberMisscheduled, numberReady int
 	for _, node := range nodeList.Items {
 		shouldRun := dsc.nodeShouldRunDaemonPod(&node, ds)
 
@@ -580,6 +582,12 @@ func (dsc *DaemonSetsController) updateDaemonSetStatus(ds *extensions.DaemonSet)
 			desiredNumberScheduled++
 			if scheduled {
 				currentNumberScheduled++
+				// Sort the daemon pods by creation time, so the the oldest is first.
+				daemonPods, _ := nodeToDaemonPods[node.Name]
+				sort.Sort(podByCreationTimestamp(daemonPods))
+				if api.IsPodReady(daemonPods[0]) {
+					numberReady++
+				}
 			}
 		} else {
 			if scheduled {
@@ -588,7 +596,7 @@ func (dsc *DaemonSetsController) updateDaemonSetStatus(ds *extensions.DaemonSet)
 		}
 	}
 
-	err = storeDaemonSetStatus(dsc.kubeClient.Extensions().DaemonSets(ds.Namespace), ds, desiredNumberScheduled, currentNumberScheduled, numberMisscheduled)
+	err = storeDaemonSetStatus(dsc.kubeClient.Extensions().DaemonSets(ds.Namespace), ds, desiredNumberScheduled, currentNumberScheduled, numberMisscheduled, numberReady)
 	if err != nil {
 		return fmt.Errorf("error storing status for daemon set %#v: %v", ds, err)
 	}
@@ -679,6 +687,14 @@ func (dsc *DaemonSetsController) nodeShouldRunDaemonPod(node *api.Node, ds *exte
 	}
 	for _, r := range reasons {
 		glog.V(4).Infof("GeneralPredicates failed on ds '%s/%s' for reason: %v", ds.ObjectMeta.Namespace, ds.ObjectMeta.Name, r.GetReason())
+		switch reason := r.(type) {
+		case *predicates.InsufficientResourceError:
+			dsc.eventRecorder.Eventf(ds, api.EventTypeNormal, "FailedPlacement", "failed to place pod on %q: %s", node.ObjectMeta.Name, reason.Error())
+		case *predicates.PredicateFailureError:
+			if reason == predicates.ErrPodNotFitsHostPorts {
+				dsc.eventRecorder.Eventf(ds, api.EventTypeNormal, "FailedPlacement", "failed to place pod on %q: host port conflict", node.ObjectMeta.Name)
+			}
+		}
 	}
 	return fit
 }

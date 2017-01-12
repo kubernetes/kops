@@ -38,6 +38,7 @@
       "errors":[
         {"shape":"ThrottledException"},
         {"shape":"InternalErrorException"},
+        {"shape":"AuthorizationErrorException"},
         {"shape":"InvalidParameterException"}
       ]
     },
@@ -203,6 +204,7 @@
       "errors":[
         {"shape":"ThrottledException"},
         {"shape":"InternalErrorException"},
+        {"shape":"AuthorizationErrorException"},
         {"shape":"InvalidParameterException"}
       ]
     },
@@ -274,6 +276,7 @@
       "errors":[
         {"shape":"ThrottledException"},
         {"shape":"InternalErrorException"},
+        {"shape":"AuthorizationErrorException"},
         {"shape":"InvalidParameterException"}
       ]
     },
@@ -360,6 +363,7 @@
       "errors":[
         {"shape":"ThrottledException"},
         {"shape":"InternalErrorException"},
+        {"shape":"AuthorizationErrorException"},
         {"shape":"InvalidParameterException"}
       ]
     },
@@ -440,7 +444,8 @@
       "errors":[
         {"shape":"InvalidParameterException"},
         {"shape":"ThrottledException"},
-        {"shape":"InternalErrorException"}
+        {"shape":"InternalErrorException"},
+        {"shape":"AuthorizationErrorException"}
       ]
     },
     "SetSubscriptionAttributes":{

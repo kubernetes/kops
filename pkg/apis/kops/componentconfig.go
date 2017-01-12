@@ -16,20 +16,6 @@ limitations under the License.
 
 package kops
 
-import (
-	"k8s.io/kubernetes/pkg/api/unversioned"
-)
-
-// Configuration for each component
-// Wherever possible, we try to use the types & names in https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
-
-type KubeletConfig struct {
-	unversioned.TypeMeta `json:",inline"`
-	ObjectMeta    `json:"metadata,omitempty"`
-
-	Spec ClusterSpec `json:"spec,omitempty"`
-}
-
 type KubeletConfigSpec struct {
 	APIServers string `json:"apiServers,omitempty" flag:"api-servers"`
 
@@ -374,21 +360,26 @@ type KubeAPIServerConfig struct {
 
 	LogLevel int `json:"logLevel,omitempty" flag:"v"`
 
-	CloudProvider         string            `json:"cloudProvider,omitempty" flag:"cloud-provider"`
-	SecurePort            int               `json:"securePort,omitempty" flag:"secure-port"`
-	Address               string            `json:"address,omitempty" flag:"address"`
-	EtcdServers           []string          `json:"etcdServers,omitempty" flag:"etcd-servers"`
-	EtcdServersOverrides  []string          `json:"etcdServersOverrides,omitempty" flag:"etcd-servers-overrides"`
-	AdmissionControl      []string          `json:"admissionControl,omitempty" flag:"admission-control"`
-	ServiceClusterIPRange string            `json:"serviceClusterIPRange,omitempty" flag:"service-cluster-ip-range"`
-	ClientCAFile          string            `json:"clientCAFile,omitempty" flag:"client-ca-file"`
-	BasicAuthFile         string            `json:"basicAuthFile,omitempty" flag:"basic-auth-file"`
-	TLSCertFile           string            `json:"tlsCertFile,omitempty" flag:"tls-cert-file"`
-	TLSPrivateKeyFile     string            `json:"tlsPrivateKeyFile,omitempty" flag:"tls-private-key-file"`
-	TokenAuthFile         string            `json:"tokenAuthFile,omitempty" flag:"token-auth-file"`
-	AllowPrivileged       *bool             `json:"allowPrivileged,omitempty" flag:"allow-privileged"`
-	APIServerCount        *int              `json:"apiServerCount,omitempty" flag:"apiserver-count"`
-	RuntimeConfig         map[string]string `json:"runtimeConfig,omitempty" flag:"runtime-config"`
+	CloudProvider         string   `json:"cloudProvider,omitempty" flag:"cloud-provider"`
+	SecurePort            int      `json:"securePort,omitempty" flag:"secure-port"`
+	Address               string   `json:"address,omitempty" flag:"address"`
+	EtcdServers           []string `json:"etcdServers,omitempty" flag:"etcd-servers"`
+	EtcdServersOverrides  []string `json:"etcdServersOverrides,omitempty" flag:"etcd-servers-overrides"`
+	AdmissionControl      []string `json:"admissionControl,omitempty" flag:"admission-control"`
+	ServiceClusterIPRange string   `json:"serviceClusterIPRange,omitempty" flag:"service-cluster-ip-range"`
+	ClientCAFile          string   `json:"clientCAFile,omitempty" flag:"client-ca-file"`
+	BasicAuthFile         string   `json:"basicAuthFile,omitempty" flag:"basic-auth-file"`
+	TLSCertFile           string   `json:"tlsCertFile,omitempty" flag:"tls-cert-file"`
+	TLSPrivateKeyFile     string   `json:"tlsPrivateKeyFile,omitempty" flag:"tls-private-key-file"`
+	TokenAuthFile         string   `json:"tokenAuthFile,omitempty" flag:"token-auth-file"`
+	AllowPrivileged       *bool    `json:"allowPrivileged,omitempty" flag:"allow-privileged"`
+	APIServerCount        *int     `json:"apiServerCount,omitempty" flag:"apiserver-count"`
+	// keys and values in RuntimeConfig are parsed into the `--runtime-config` parameter
+	// for KubeAPIServer, concatenated with commas. ex: `--runtime-config=key1=value1,key2=value2`.
+	// Use this to enable alpha resources on kube-apiserver
+	RuntimeConfig map[string]string `json:"runtimeConfig,omitempty" flag:"runtime-config"`
+
+	AnonymousAuth *bool `json:"anonymousAuth,omitempty" flag:"anonymous-auth"`
 }
 
 type KubeControllerManagerConfig struct {

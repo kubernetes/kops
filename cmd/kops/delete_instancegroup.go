@@ -67,7 +67,7 @@ func (c *DeleteInstanceceGroupCmd) Run(groupName string) error {
 		return err
 	}
 
-	group, err := clientset.InstanceGroups(cluster.Name).Get(groupName)
+	group, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).Get(groupName)
 	if err != nil {
 		return fmt.Errorf("error reading InstanceGroup %q: %v", groupName, err)
 	}
@@ -90,7 +90,7 @@ func (c *DeleteInstanceceGroupCmd) Run(groupName string) error {
 		return err
 	}
 
-	fmt.Printf("InstanceGroup %q deleted\n", group.Name)
+	fmt.Printf("InstanceGroup %q deleted\n", group.ObjectMeta.Name)
 
 	return nil
 }

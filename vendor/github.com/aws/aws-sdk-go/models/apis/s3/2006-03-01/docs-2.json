@@ -26,7 +26,7 @@
     "GetBucketNotification": "Deprecated, see the GetBucketNotificationConfiguration operation.",
     "GetBucketNotificationConfiguration": "Returns the notification configuration of a bucket.",
     "GetBucketPolicy": "Returns the policy of a specified bucket.",
-    "GetBucketReplication": "Deprecated, see the GetBucketReplicationConfiguration operation.",
+    "GetBucketReplication": "Returns the replication configuration of a bucket.",
     "GetBucketRequestPayment": "Returns the request payment configuration of a bucket.",
     "GetBucketTagging": "Returns the tag set associated with the bucket.",
     "GetBucketVersioning": "Returns the versioning state of a bucket.",
@@ -1764,6 +1764,8 @@
       "base": null,
       "refs": {
         "CompletedPart$PartNumber": "Part number that identifies the part. This is a positive integer between 1 and 10,000.",
+        "GetObjectRequest$PartNumber": "Part number of the object being read. This is a positive integer between 1 and 10,000. Effectively performs a 'ranged' GET request for the part specified. Useful for downloading just a part of an object.",
+        "HeadObjectRequest$PartNumber": "Part number of the object being read. This is a positive integer between 1 and 10,000. Effectively performs a 'ranged' HEAD request for the part specified. Useful querying about the size of the part and the number of parts in this object.",
         "Part$PartNumber": "Part number identifying the part. This is a positive integer between 1 and 10,000.",
         "UploadPartCopyRequest$PartNumber": "Part number of part being copied. This is a positive integer between 1 and 10,000.",
         "UploadPartRequest$PartNumber": "Part number of part being uploaded. This is a positive integer between 1 and 10,000."
@@ -1780,6 +1782,13 @@
       "base": null,
       "refs": {
         "ListPartsOutput$Parts": null
+      }
+    },
+    "PartsCount": {
+      "base": null,
+      "refs": {
+        "GetObjectOutput$PartsCount": "The count of parts this object has.",
+        "HeadObjectOutput$PartsCount": "The count of parts this object has."
       }
     },
     "Payer": {
@@ -2045,6 +2054,8 @@
         "GetObjectRequest$RequestPayer": null,
         "GetObjectTorrentRequest$RequestPayer": null,
         "HeadObjectRequest$RequestPayer": null,
+        "ListObjectsRequest$RequestPayer": "Confirms that the requester knows that she or he will be charged for the list objects request. Bucket owners need not specify this parameter in their requests.",
+        "ListObjectsV2Request$RequestPayer": "Confirms that the requester knows that she or he will be charged for the list objects request in V2 style. Bucket owners need not specify this parameter in their requests.",
         "ListPartsRequest$RequestPayer": null,
         "PutObjectAclRequest$RequestPayer": null,
         "PutObjectRequest$RequestPayer": null,

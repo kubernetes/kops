@@ -39,7 +39,7 @@ func TestCanSupport(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpDir)
 	plugMgr := volume.VolumePluginMgr{}
-	plugMgr.InitPlugins(ProbeVolumePlugins(), volumetest.NewFakeVolumeHost(tmpDir, nil, nil, "" /* rootContext */))
+	plugMgr.InitPlugins(ProbeVolumePlugins(), volumetest.NewFakeVolumeHost(tmpDir, nil, nil))
 
 	plug, err := plugMgr.FindPluginByName(azureDataDiskPluginName)
 	if err != nil {
@@ -91,6 +91,14 @@ func (fake *fakeAzureProvider) InstanceID(name string) (string, error) {
 	return "localhost", nil
 }
 
+func (fake *fakeAzureProvider) CreateVolume(name, storageAccount, storageType, location string, requestGB int) (string, string, int, error) {
+	return "", "", 0, fmt.Errorf("not implemented")
+}
+
+func (fake *fakeAzureProvider) DeleteVolume(name, uri string) error {
+	return fmt.Errorf("not implemented")
+}
+
 func TestPlugin(t *testing.T) {
 	tmpDir, err := utiltesting.MkTmpdir("azure_ddTest")
 	if err != nil {
@@ -98,7 +106,7 @@ func TestPlugin(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpDir)
 	plugMgr := volume.VolumePluginMgr{}
-	plugMgr.InitPlugins(ProbeVolumePlugins(), volumetest.NewFakeVolumeHost(tmpDir, nil, nil, "" /* rootContext */))
+	plugMgr.InitPlugins(ProbeVolumePlugins(), volumetest.NewFakeVolumeHost(tmpDir, nil, nil))
 
 	plug, err := plugMgr.FindPluginByName(azureDataDiskPluginName)
 	if err != nil {

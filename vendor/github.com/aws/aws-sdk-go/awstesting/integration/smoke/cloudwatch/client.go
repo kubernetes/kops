@@ -6,11 +6,11 @@ package cloudwatch
 import (
 	"github.com/aws/aws-sdk-go/awstesting/integration/smoke"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
-	. "github.com/lsegal/gucumber"
+	"github.com/gucumber/gucumber"
 )
 
 func init() {
-	Before("@cloudwatch", func() {
-		World["client"] = cloudwatch.New(smoke.Session)
+	gucumber.Before("@cloudwatch", func() {
+		gucumber.World["client"] = cloudwatch.New(smoke.Session)
 	})
 }

@@ -61,8 +61,8 @@ type PodGCController struct {
 }
 
 func NewPodGC(kubeClient clientset.Interface, podInformer cache.SharedIndexInformer, terminatedPodThreshold int) *PodGCController {
-	if kubeClient != nil && kubeClient.Core().GetRESTClient().GetRateLimiter() != nil {
-		metrics.RegisterMetricAndTrackRateLimiterUsage("gc_controller", kubeClient.Core().GetRESTClient().GetRateLimiter())
+	if kubeClient != nil && kubeClient.Core().RESTClient().GetRateLimiter() != nil {
+		metrics.RegisterMetricAndTrackRateLimiterUsage("gc_controller", kubeClient.Core().RESTClient().GetRateLimiter())
 	}
 	gcc := &PodGCController{
 		kubeClient:             kubeClient,
@@ -112,6 +112,10 @@ func (gcc *PodGCController) Run(stop <-chan struct{}) {
 }
 
 func (gcc *PodGCController) gc() {
+	if !gcc.podController.HasSynced() || !gcc.nodeController.HasSynced() {
+		glog.V(2).Infof("PodGCController is waiting for informer sync...")
+		return
+	}
 	pods, err := gcc.podStore.List(labels.Everything())
 	if err != nil {
 		glog.Errorf("Error while listing all Pods: %v", err)
@@ -121,6 +125,7 @@ func (gcc *PodGCController) gc() {
 		gcc.gcTerminated(pods)
 	}
 	gcc.gcOrphaned(pods)
+	gcc.gcUnscheduledTerminating(pods)
 }
 
 func isPodTerminated(pod *api.Pod) bool {
@@ -164,7 +169,7 @@ func (gcc *PodGCController) gcTerminated(pods []*api.Pod) {
 	wait.Wait()
 }
 
-// cleanupOrphanedPods deletes pods that are bound to nodes that don't exist.
+// gcOrphaned deletes pods that are bound to nodes that don't exist.
 func (gcc *PodGCController) gcOrphaned(pods []*api.Pod) {
 	glog.V(4).Infof("GC'ing orphaned")
 
@@ -179,7 +184,25 @@ func (gcc *PodGCController) gcOrphaned(pods []*api.Pod) {
 		if err := gcc.deletePod(pod.Namespace, pod.Name); err != nil {
 			utilruntime.HandleError(err)
 		} else {
-			glog.V(4).Infof("Forced deletion of oprhaned Pod %s succeeded", pod.Name)
+			glog.V(0).Infof("Forced deletion of orphaned Pod %s succeeded", pod.Name)
+		}
+	}
+}
+
+// gcUnscheduledTerminating deletes pods that are terminating and haven't been scheduled to a particular node.
+func (gcc *PodGCController) gcUnscheduledTerminating(pods []*api.Pod) {
+	glog.V(4).Infof("GC'ing unscheduled pods which are terminating.")
+
+	for _, pod := range pods {
+		if pod.DeletionTimestamp == nil || len(pod.Spec.NodeName) > 0 {
+			continue
+		}
+
+		glog.V(2).Infof("Found unscheduled terminating Pod %v not assigned to any Node. Deleting.", pod.Name)
+		if err := gcc.deletePod(pod.Namespace, pod.Name); err != nil {
+			utilruntime.HandleError(err)
+		} else {
+			glog.V(0).Infof("Forced deletion of unscheduled terminating Pod %s succeeded", pod.Name)
 		}
 	}
 }

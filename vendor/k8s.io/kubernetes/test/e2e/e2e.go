@@ -94,7 +94,7 @@ var _ = ginkgo.SynchronizedBeforeSuite(func() []byte {
 		framework.Failf("Failed to setup provider config: %v", err)
 	}
 
-	c, err := framework.LoadClient()
+	c, err := framework.LoadInternalClientset()
 	if err != nil {
 		glog.Fatal("Error loading client: ", err)
 	}
@@ -116,6 +116,11 @@ var _ = ginkgo.SynchronizedBeforeSuite(func() []byte {
 		}
 	}
 
+	// In large clusters we may get to this point but still have a bunch
+	// of nodes without Routes created. Since this would make a node
+	// unschedulable, we need to wait until all of them are schedulable.
+	framework.ExpectNoError(framework.WaitForAllNodesSchedulable(c, framework.NodeSchedulableTimeout))
+
 	// Ensure all pods are running and ready before starting tests (otherwise,
 	// cluster infrastructure pods that are being pulled or started can block
 	// test pods from running, and tests that ensure all pods are running and
@@ -123,7 +128,7 @@ var _ = ginkgo.SynchronizedBeforeSuite(func() []byte {
 	podStartupTimeout := framework.TestContext.SystemPodsStartupTimeout
 	if err := framework.WaitForPodsRunningReady(c, api.NamespaceSystem, int32(framework.TestContext.MinStartupPods), podStartupTimeout, framework.ImagePullerLabels); err != nil {
 		framework.DumpAllNamespaceInfo(c, clientset, api.NamespaceSystem)
-		framework.LogFailedContainers(c, api.NamespaceSystem)
+		framework.LogFailedContainers(c, api.NamespaceSystem, framework.Logf)
 		framework.RunKubernetesServiceTestContainer(c, api.NamespaceDefault)
 		framework.Failf("Error waiting for all pods to be running and ready: %v", err)
 	}
@@ -139,7 +144,7 @@ var _ = ginkgo.SynchronizedBeforeSuite(func() []byte {
 	// Dump the output of the nethealth containers only once per run
 	if framework.TestContext.DumpLogsOnFailure {
 		framework.Logf("Dumping network health container logs from all nodes")
-		framework.LogContainersInPodsWithLabels(c, api.NamespaceSystem, framework.ImagePullerLabels, "nethealth")
+		framework.LogContainersInPodsWithLabels(c, api.NamespaceSystem, framework.ImagePullerLabels, "nethealth", framework.Logf)
 	}
 
 	// Reference common test to make the import valid.

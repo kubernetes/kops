@@ -66,7 +66,7 @@ var _ = framework.KubeDescribe("Loadbalancing: L7 [Feature:Ingress]", func() {
 
 	BeforeEach(func() {
 		f.BeforeEach()
-		jig = newTestJig(f.Client)
+		jig = newTestJig(f.ClientSet)
 		ns = f.Namespace.Name
 	})
 
@@ -119,6 +119,7 @@ var _ = framework.KubeDescribe("Loadbalancing: L7 [Feature:Ingress]", func() {
 		})
 
 		It("shoud create ingress with given static-ip ", func() {
+			// ip released when the rest of lb resources are deleted in cleanupGCE
 			ip := gceController.staticIP(ns)
 			By(fmt.Sprintf("allocated static ip %v: %v through the GCE cloud provider", ns, ip))
 

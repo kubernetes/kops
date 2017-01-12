@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kubernetes/pkg/util/sets"
 	"os"
 	"path"
 	"strings"
@@ -29,7 +30,7 @@ type TreeWalker struct {
 	Contexts       map[string]Handler
 	Extensions     map[string]Handler
 	DefaultHandler Handler
-	Tags           map[string]struct{}
+	Tags           sets.String
 }
 
 type TreeWalkItem struct {
@@ -116,7 +117,7 @@ func (t *TreeWalker) walkDirectory(parent *TreeWalkItem) error {
 				// Only descend into the tag directory if we have the tag
 				_, found := t.Tags[fileName]
 				if !found {
-					glog.V(2).Infof("Skipping directory as tag not present: %q", f)
+					glog.V(2).Infof("Skipping directory %q as tag %q not present", f, fileName)
 					continue
 				} else {
 					i.Tags = append(i.Tags, fileName)

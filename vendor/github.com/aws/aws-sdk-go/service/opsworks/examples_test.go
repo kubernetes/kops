@@ -16,7 +16,13 @@ var _ time.Duration
 var _ bytes.Buffer
 
 func ExampleOpsWorks_AssignInstance() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.AssignInstanceInput{
 		InstanceId: aws.String("String"), // Required
@@ -39,7 +45,13 @@ func ExampleOpsWorks_AssignInstance() {
 }
 
 func ExampleOpsWorks_AssignVolume() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.AssignVolumeInput{
 		VolumeId:   aws.String("String"), // Required
@@ -59,7 +71,13 @@ func ExampleOpsWorks_AssignVolume() {
 }
 
 func ExampleOpsWorks_AssociateElasticIp() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.AssociateElasticIpInput{
 		ElasticIp:  aws.String("String"), // Required
@@ -79,7 +97,13 @@ func ExampleOpsWorks_AssociateElasticIp() {
 }
 
 func ExampleOpsWorks_AttachElasticLoadBalancer() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.AttachElasticLoadBalancerInput{
 		ElasticLoadBalancerName: aws.String("String"), // Required
@@ -99,7 +123,13 @@ func ExampleOpsWorks_AttachElasticLoadBalancer() {
 }
 
 func ExampleOpsWorks_CloneStack() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.CloneStackInput{
 		ServiceRoleArn: aws.String("String"), // Required
@@ -158,7 +188,13 @@ func ExampleOpsWorks_CloneStack() {
 }
 
 func ExampleOpsWorks_CreateApp() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.CreateAppInput{
 		Name:    aws.String("String"),  // Required
@@ -219,7 +255,13 @@ func ExampleOpsWorks_CreateApp() {
 }
 
 func ExampleOpsWorks_CreateDeployment() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.CreateDeploymentInput{
 		Command: &opsworks.DeploymentCommand{ // Required
@@ -259,7 +301,13 @@ func ExampleOpsWorks_CreateDeployment() {
 }
 
 func ExampleOpsWorks_CreateInstance() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.CreateInstanceInput{
 		InstanceType: aws.String("String"), // Required
@@ -312,7 +360,13 @@ func ExampleOpsWorks_CreateInstance() {
 }
 
 func ExampleOpsWorks_CreateLayer() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.CreateLayerInput{
 		Name:      aws.String("String"),    // Required
@@ -392,7 +446,13 @@ func ExampleOpsWorks_CreateLayer() {
 }
 
 func ExampleOpsWorks_CreateStack() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.CreateStackInput{
 		DefaultInstanceProfileArn: aws.String("String"), // Required
@@ -445,7 +505,13 @@ func ExampleOpsWorks_CreateStack() {
 }
 
 func ExampleOpsWorks_CreateUserProfile() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.CreateUserProfileInput{
 		IamUserArn:          aws.String("String"), // Required
@@ -467,7 +533,13 @@ func ExampleOpsWorks_CreateUserProfile() {
 }
 
 func ExampleOpsWorks_DeleteApp() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DeleteAppInput{
 		AppId: aws.String("String"), // Required
@@ -486,7 +558,13 @@ func ExampleOpsWorks_DeleteApp() {
 }
 
 func ExampleOpsWorks_DeleteInstance() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DeleteInstanceInput{
 		InstanceId:      aws.String("String"), // Required
@@ -507,7 +585,13 @@ func ExampleOpsWorks_DeleteInstance() {
 }
 
 func ExampleOpsWorks_DeleteLayer() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DeleteLayerInput{
 		LayerId: aws.String("String"), // Required
@@ -526,7 +610,13 @@ func ExampleOpsWorks_DeleteLayer() {
 }
 
 func ExampleOpsWorks_DeleteStack() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DeleteStackInput{
 		StackId: aws.String("String"), // Required
@@ -545,7 +635,13 @@ func ExampleOpsWorks_DeleteStack() {
 }
 
 func ExampleOpsWorks_DeleteUserProfile() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DeleteUserProfileInput{
 		IamUserArn: aws.String("String"), // Required
@@ -564,7 +660,13 @@ func ExampleOpsWorks_DeleteUserProfile() {
 }
 
 func ExampleOpsWorks_DeregisterEcsCluster() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DeregisterEcsClusterInput{
 		EcsClusterArn: aws.String("String"), // Required
@@ -583,7 +685,13 @@ func ExampleOpsWorks_DeregisterEcsCluster() {
 }
 
 func ExampleOpsWorks_DeregisterElasticIp() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DeregisterElasticIpInput{
 		ElasticIp: aws.String("String"), // Required
@@ -602,7 +710,13 @@ func ExampleOpsWorks_DeregisterElasticIp() {
 }
 
 func ExampleOpsWorks_DeregisterInstance() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DeregisterInstanceInput{
 		InstanceId: aws.String("String"), // Required
@@ -621,7 +735,13 @@ func ExampleOpsWorks_DeregisterInstance() {
 }
 
 func ExampleOpsWorks_DeregisterRdsDbInstance() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DeregisterRdsDbInstanceInput{
 		RdsDbInstanceArn: aws.String("String"), // Required
@@ -640,7 +760,13 @@ func ExampleOpsWorks_DeregisterRdsDbInstance() {
 }
 
 func ExampleOpsWorks_DeregisterVolume() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DeregisterVolumeInput{
 		VolumeId: aws.String("String"), // Required
@@ -659,7 +785,13 @@ func ExampleOpsWorks_DeregisterVolume() {
 }
 
 func ExampleOpsWorks_DescribeAgentVersions() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DescribeAgentVersionsInput{
 		ConfigurationManager: &opsworks.StackConfigurationManager{
@@ -682,7 +814,13 @@ func ExampleOpsWorks_DescribeAgentVersions() {
 }
 
 func ExampleOpsWorks_DescribeApps() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DescribeAppsInput{
 		AppIds: []*string{
@@ -705,7 +843,13 @@ func ExampleOpsWorks_DescribeApps() {
 }
 
 func ExampleOpsWorks_DescribeCommands() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DescribeCommandsInput{
 		CommandIds: []*string{
@@ -729,7 +873,13 @@ func ExampleOpsWorks_DescribeCommands() {
 }
 
 func ExampleOpsWorks_DescribeDeployments() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DescribeDeploymentsInput{
 		AppId: aws.String("String"),
@@ -753,7 +903,13 @@ func ExampleOpsWorks_DescribeDeployments() {
 }
 
 func ExampleOpsWorks_DescribeEcsClusters() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DescribeEcsClustersInput{
 		EcsClusterArns: []*string{
@@ -778,7 +934,13 @@ func ExampleOpsWorks_DescribeEcsClusters() {
 }
 
 func ExampleOpsWorks_DescribeElasticIps() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DescribeElasticIpsInput{
 		InstanceId: aws.String("String"),
@@ -802,7 +964,13 @@ func ExampleOpsWorks_DescribeElasticIps() {
 }
 
 func ExampleOpsWorks_DescribeElasticLoadBalancers() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DescribeElasticLoadBalancersInput{
 		LayerIds: []*string{
@@ -825,7 +993,13 @@ func ExampleOpsWorks_DescribeElasticLoadBalancers() {
 }
 
 func ExampleOpsWorks_DescribeInstances() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DescribeInstancesInput{
 		InstanceIds: []*string{
@@ -849,7 +1023,13 @@ func ExampleOpsWorks_DescribeInstances() {
 }
 
 func ExampleOpsWorks_DescribeLayers() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DescribeLayersInput{
 		LayerIds: []*string{
@@ -872,7 +1052,13 @@ func ExampleOpsWorks_DescribeLayers() {
 }
 
 func ExampleOpsWorks_DescribeLoadBasedAutoScaling() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DescribeLoadBasedAutoScalingInput{
 		LayerIds: []*string{ // Required
@@ -894,7 +1080,13 @@ func ExampleOpsWorks_DescribeLoadBasedAutoScaling() {
 }
 
 func ExampleOpsWorks_DescribeMyUserProfile() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	var params *opsworks.DescribeMyUserProfileInput
 	resp, err := svc.DescribeMyUserProfile(params)
@@ -911,7 +1103,13 @@ func ExampleOpsWorks_DescribeMyUserProfile() {
 }
 
 func ExampleOpsWorks_DescribePermissions() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DescribePermissionsInput{
 		IamUserArn: aws.String("String"),
@@ -931,7 +1129,13 @@ func ExampleOpsWorks_DescribePermissions() {
 }
 
 func ExampleOpsWorks_DescribeRaidArrays() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DescribeRaidArraysInput{
 		InstanceId: aws.String("String"),
@@ -955,7 +1159,13 @@ func ExampleOpsWorks_DescribeRaidArrays() {
 }
 
 func ExampleOpsWorks_DescribeRdsDbInstances() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DescribeRdsDbInstancesInput{
 		StackId: aws.String("String"), // Required
@@ -978,7 +1188,13 @@ func ExampleOpsWorks_DescribeRdsDbInstances() {
 }
 
 func ExampleOpsWorks_DescribeServiceErrors() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DescribeServiceErrorsInput{
 		InstanceId: aws.String("String"),
@@ -1002,7 +1218,13 @@ func ExampleOpsWorks_DescribeServiceErrors() {
 }
 
 func ExampleOpsWorks_DescribeStackProvisioningParameters() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DescribeStackProvisioningParametersInput{
 		StackId: aws.String("String"), // Required
@@ -1021,7 +1243,13 @@ func ExampleOpsWorks_DescribeStackProvisioningParameters() {
 }
 
 func ExampleOpsWorks_DescribeStackSummary() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DescribeStackSummaryInput{
 		StackId: aws.String("String"), // Required
@@ -1040,7 +1268,13 @@ func ExampleOpsWorks_DescribeStackSummary() {
 }
 
 func ExampleOpsWorks_DescribeStacks() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DescribeStacksInput{
 		StackIds: []*string{
@@ -1062,7 +1296,13 @@ func ExampleOpsWorks_DescribeStacks() {
 }
 
 func ExampleOpsWorks_DescribeTimeBasedAutoScaling() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DescribeTimeBasedAutoScalingInput{
 		InstanceIds: []*string{ // Required
@@ -1084,7 +1324,13 @@ func ExampleOpsWorks_DescribeTimeBasedAutoScaling() {
 }
 
 func ExampleOpsWorks_DescribeUserProfiles() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DescribeUserProfilesInput{
 		IamUserArns: []*string{
@@ -1106,7 +1352,13 @@ func ExampleOpsWorks_DescribeUserProfiles() {
 }
 
 func ExampleOpsWorks_DescribeVolumes() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DescribeVolumesInput{
 		InstanceId:  aws.String("String"),
@@ -1131,7 +1383,13 @@ func ExampleOpsWorks_DescribeVolumes() {
 }
 
 func ExampleOpsWorks_DetachElasticLoadBalancer() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DetachElasticLoadBalancerInput{
 		ElasticLoadBalancerName: aws.String("String"), // Required
@@ -1151,7 +1409,13 @@ func ExampleOpsWorks_DetachElasticLoadBalancer() {
 }
 
 func ExampleOpsWorks_DisassociateElasticIp() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.DisassociateElasticIpInput{
 		ElasticIp: aws.String("String"), // Required
@@ -1170,7 +1434,13 @@ func ExampleOpsWorks_DisassociateElasticIp() {
 }
 
 func ExampleOpsWorks_GetHostnameSuggestion() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.GetHostnameSuggestionInput{
 		LayerId: aws.String("String"), // Required
@@ -1189,7 +1459,13 @@ func ExampleOpsWorks_GetHostnameSuggestion() {
 }
 
 func ExampleOpsWorks_GrantAccess() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.GrantAccessInput{
 		InstanceId:        aws.String("String"), // Required
@@ -1209,7 +1485,13 @@ func ExampleOpsWorks_GrantAccess() {
 }
 
 func ExampleOpsWorks_RebootInstance() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.RebootInstanceInput{
 		InstanceId: aws.String("String"), // Required
@@ -1228,7 +1510,13 @@ func ExampleOpsWorks_RebootInstance() {
 }
 
 func ExampleOpsWorks_RegisterEcsCluster() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.RegisterEcsClusterInput{
 		EcsClusterArn: aws.String("String"), // Required
@@ -1248,7 +1536,13 @@ func ExampleOpsWorks_RegisterEcsCluster() {
 }
 
 func ExampleOpsWorks_RegisterElasticIp() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.RegisterElasticIpInput{
 		ElasticIp: aws.String("String"), // Required
@@ -1268,7 +1562,13 @@ func ExampleOpsWorks_RegisterElasticIp() {
 }
 
 func ExampleOpsWorks_RegisterInstance() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.RegisterInstanceInput{
 		StackId:  aws.String("String"), // Required
@@ -1296,7 +1596,13 @@ func ExampleOpsWorks_RegisterInstance() {
 }
 
 func ExampleOpsWorks_RegisterRdsDbInstance() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.RegisterRdsDbInstanceInput{
 		DbPassword:       aws.String("String"), // Required
@@ -1318,7 +1624,13 @@ func ExampleOpsWorks_RegisterRdsDbInstance() {
 }
 
 func ExampleOpsWorks_RegisterVolume() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.RegisterVolumeInput{
 		StackId:     aws.String("String"), // Required
@@ -1338,7 +1650,13 @@ func ExampleOpsWorks_RegisterVolume() {
 }
 
 func ExampleOpsWorks_SetLoadBasedAutoScaling() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.SetLoadBasedAutoScalingInput{
 		LayerId: aws.String("String"), // Required
@@ -1382,7 +1700,13 @@ func ExampleOpsWorks_SetLoadBasedAutoScaling() {
 }
 
 func ExampleOpsWorks_SetPermission() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.SetPermissionInput{
 		IamUserArn: aws.String("String"), // Required
@@ -1405,7 +1729,13 @@ func ExampleOpsWorks_SetPermission() {
 }
 
 func ExampleOpsWorks_SetTimeBasedAutoScaling() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.SetTimeBasedAutoScalingInput{
 		InstanceId: aws.String("String"), // Required
@@ -1454,7 +1784,13 @@ func ExampleOpsWorks_SetTimeBasedAutoScaling() {
 }
 
 func ExampleOpsWorks_StartInstance() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.StartInstanceInput{
 		InstanceId: aws.String("String"), // Required
@@ -1473,7 +1809,13 @@ func ExampleOpsWorks_StartInstance() {
 }
 
 func ExampleOpsWorks_StartStack() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.StartStackInput{
 		StackId: aws.String("String"), // Required
@@ -1492,7 +1834,13 @@ func ExampleOpsWorks_StartStack() {
 }
 
 func ExampleOpsWorks_StopInstance() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.StopInstanceInput{
 		InstanceId: aws.String("String"), // Required
@@ -1511,7 +1859,13 @@ func ExampleOpsWorks_StopInstance() {
 }
 
 func ExampleOpsWorks_StopStack() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.StopStackInput{
 		StackId: aws.String("String"), // Required
@@ -1530,7 +1884,13 @@ func ExampleOpsWorks_StopStack() {
 }
 
 func ExampleOpsWorks_UnassignInstance() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.UnassignInstanceInput{
 		InstanceId: aws.String("String"), // Required
@@ -1549,7 +1909,13 @@ func ExampleOpsWorks_UnassignInstance() {
 }
 
 func ExampleOpsWorks_UnassignVolume() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.UnassignVolumeInput{
 		VolumeId: aws.String("String"), // Required
@@ -1568,7 +1934,13 @@ func ExampleOpsWorks_UnassignVolume() {
 }
 
 func ExampleOpsWorks_UpdateApp() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.UpdateAppInput{
 		AppId: aws.String("String"), // Required
@@ -1628,7 +2000,13 @@ func ExampleOpsWorks_UpdateApp() {
 }
 
 func ExampleOpsWorks_UpdateElasticIp() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.UpdateElasticIpInput{
 		ElasticIp: aws.String("String"), // Required
@@ -1648,7 +2026,13 @@ func ExampleOpsWorks_UpdateElasticIp() {
 }
 
 func ExampleOpsWorks_UpdateInstance() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.UpdateInstanceInput{
 		InstanceId:           aws.String("String"), // Required
@@ -1681,7 +2065,13 @@ func ExampleOpsWorks_UpdateInstance() {
 }
 
 func ExampleOpsWorks_UpdateLayer() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.UpdateLayerInput{
 		LayerId: aws.String("String"), // Required
@@ -1760,7 +2150,13 @@ func ExampleOpsWorks_UpdateLayer() {
 }
 
 func ExampleOpsWorks_UpdateMyUserProfile() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.UpdateMyUserProfileInput{
 		SshPublicKey: aws.String("String"),
@@ -1779,7 +2175,13 @@ func ExampleOpsWorks_UpdateMyUserProfile() {
 }
 
 func ExampleOpsWorks_UpdateRdsDbInstance() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.UpdateRdsDbInstanceInput{
 		RdsDbInstanceArn: aws.String("String"), // Required
@@ -1800,7 +2202,13 @@ func ExampleOpsWorks_UpdateRdsDbInstance() {
 }
 
 func ExampleOpsWorks_UpdateStack() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.UpdateStackInput{
 		StackId:      aws.String("String"), // Required
@@ -1852,7 +2260,13 @@ func ExampleOpsWorks_UpdateStack() {
 }
 
 func ExampleOpsWorks_UpdateUserProfile() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.UpdateUserProfileInput{
 		IamUserArn:          aws.String("String"), // Required
@@ -1874,7 +2288,13 @@ func ExampleOpsWorks_UpdateUserProfile() {
 }
 
 func ExampleOpsWorks_UpdateVolume() {
-	svc := opsworks.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := opsworks.New(sess)
 
 	params := &opsworks.UpdateVolumeInput{
 		VolumeId:   aws.String("String"), // Required

@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io"
 	"net"
 	"sort"
 	"testing"
@@ -28,12 +27,15 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/testapi"
+	"k8s.io/kubernetes/pkg/api/resource"
+	"k8s.io/kubernetes/pkg/apimachinery/registered"
+	"k8s.io/kubernetes/pkg/client/testing/core"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
 	containertest "k8s.io/kubernetes/pkg/kubelet/container/testing"
+	"k8s.io/kubernetes/pkg/kubelet/server/remotecommand"
 	"k8s.io/kubernetes/pkg/labels"
+	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/types"
-	"k8s.io/kubernetes/pkg/util/term"
 )
 
 func TestMakeMounts(t *testing.T) {
@@ -111,47 +113,6 @@ func TestMakeMounts(t *testing.T) {
 	assert.Equal(t, expectedMounts, mounts, "mounts of container %+v", container)
 }
 
-type fakeContainerCommandRunner struct {
-	// what was passed in
-	Cmd    []string
-	ID     kubecontainer.ContainerID
-	PodID  types.UID
-	E      error
-	Stdin  io.Reader
-	Stdout io.WriteCloser
-	Stderr io.WriteCloser
-	TTY    bool
-	Port   uint16
-	Stream io.ReadWriteCloser
-
-	// what to return
-	StdoutData string
-	StderrData string
-}
-
-func (f *fakeContainerCommandRunner) ExecInContainer(id kubecontainer.ContainerID, cmd []string, in io.Reader, out, err io.WriteCloser, tty bool, resize <-chan term.Size) error {
-	// record params
-	f.Cmd = cmd
-	f.ID = id
-	f.Stdin = in
-	f.Stdout = out
-	f.Stderr = err
-	f.TTY = tty
-
-	// Copy stdout/stderr data
-	fmt.Fprint(out, f.StdoutData)
-	fmt.Fprint(out, f.StderrData)
-
-	return f.E
-}
-
-func (f *fakeContainerCommandRunner) PortForward(pod *kubecontainer.Pod, port uint16, stream io.ReadWriteCloser) error {
-	f.PodID = pod.ID
-	f.Port = port
-	f.Stream = stream
-	return nil
-}
-
 func TestRunInContainerNoSuchPod(t *testing.T) {
 	testKubelet := newTestKubelet(t, false /* controllerAttachDetachEnabled */)
 	kubelet := testKubelet.kubelet
@@ -171,14 +132,13 @@ func TestRunInContainerNoSuchPod(t *testing.T) {
 }
 
 func TestRunInContainer(t *testing.T) {
-	for _, testError := range []error{nil, errors.New("foo")} {
+	for _, testError := range []error{nil, errors.New("bar")} {
 		testKubelet := newTestKubelet(t, false /* controllerAttachDetachEnabled */)
 		kubelet := testKubelet.kubelet
 		fakeRuntime := testKubelet.fakeRuntime
-		fakeCommandRunner := fakeContainerCommandRunner{
-			E:          testError,
-			StdoutData: "foo",
-			StderrData: "bar",
+		fakeCommandRunner := containertest.FakeContainerCommandRunner{
+			Err:    testError,
+			Stdout: "foo",
 		}
 		kubelet.runner = &fakeCommandRunner
 
@@ -197,11 +157,11 @@ func TestRunInContainer(t *testing.T) {
 		}
 		cmd := []string{"ls"}
 		actualOutput, err := kubelet.RunInContainer("podFoo_nsFoo", "", "containerFoo", cmd)
-		assert.Equal(t, containerID, fakeCommandRunner.ID, "(testError=%v) ID", testError)
+		assert.Equal(t, containerID, fakeCommandRunner.ContainerID, "(testError=%v) ID", testError)
 		assert.Equal(t, cmd, fakeCommandRunner.Cmd, "(testError=%v) command", testError)
 		// this isn't 100% foolproof as a bug in a real ContainerCommandRunner where it fails to copy to stdout/stderr wouldn't be caught by this test
-		assert.Equal(t, "foobar", string(actualOutput), "(testError=%v) output", testError)
-		assert.Equal(t, fmt.Sprintf("%s", err), fmt.Sprintf("%s", testError), "(testError=%v) err", testError)
+		assert.Equal(t, "foo", string(actualOutput), "(testError=%v) output", testError)
+		assert.Equal(t, err, testError, "(testError=%v) err", testError)
 	}
 }
 
@@ -463,7 +423,7 @@ func TestMakeEnvironmentVariables(t *testing.T) {
 						Name: "POD_NAME",
 						ValueFrom: &api.EnvVarSource{
 							FieldRef: &api.ObjectFieldSelector{
-								APIVersion: testapi.Default.GroupVersion().String(),
+								APIVersion: registered.GroupOrDie(api.GroupName).GroupVersion.String(),
 								FieldPath:  "metadata.name",
 							},
 						},
@@ -472,7 +432,7 @@ func TestMakeEnvironmentVariables(t *testing.T) {
 						Name: "POD_NAMESPACE",
 						ValueFrom: &api.EnvVarSource{
 							FieldRef: &api.ObjectFieldSelector{
-								APIVersion: testapi.Default.GroupVersion().String(),
+								APIVersion: registered.GroupOrDie(api.GroupName).GroupVersion.String(),
 								FieldPath:  "metadata.namespace",
 							},
 						},
@@ -481,7 +441,7 @@ func TestMakeEnvironmentVariables(t *testing.T) {
 						Name: "POD_NODE_NAME",
 						ValueFrom: &api.EnvVarSource{
 							FieldRef: &api.ObjectFieldSelector{
-								APIVersion: testapi.Default.GroupVersion().String(),
+								APIVersion: registered.GroupOrDie(api.GroupName).GroupVersion.String(),
 								FieldPath:  "spec.nodeName",
 							},
 						},
@@ -490,7 +450,7 @@ func TestMakeEnvironmentVariables(t *testing.T) {
 						Name: "POD_SERVICE_ACCOUNT_NAME",
 						ValueFrom: &api.EnvVarSource{
 							FieldRef: &api.ObjectFieldSelector{
-								APIVersion: testapi.Default.GroupVersion().String(),
+								APIVersion: registered.GroupOrDie(api.GroupName).GroupVersion.String(),
 								FieldPath:  "spec.serviceAccountName",
 							},
 						},
@@ -499,7 +459,7 @@ func TestMakeEnvironmentVariables(t *testing.T) {
 						Name: "POD_IP",
 						ValueFrom: &api.EnvVarSource{
 							FieldRef: &api.ObjectFieldSelector{
-								APIVersion: testapi.Default.GroupVersion().String(),
+								APIVersion: registered.GroupOrDie(api.GroupName).GroupVersion.String(),
 								FieldPath:  "status.podIP",
 							},
 						},
@@ -529,7 +489,7 @@ func TestMakeEnvironmentVariables(t *testing.T) {
 						Name: "POD_NAME",
 						ValueFrom: &api.EnvVarSource{
 							FieldRef: &api.ObjectFieldSelector{
-								APIVersion: testapi.Default.GroupVersion().String(),
+								APIVersion: registered.GroupOrDie(api.GroupName).GroupVersion.String(),
 								FieldPath:  "metadata.name",
 							},
 						},
@@ -1051,73 +1011,6 @@ func TestPodPhaseWithRestartOnFailure(t *testing.T) {
 	}
 }
 
-func TestExecInContainerNoSuchPod(t *testing.T) {
-	testKubelet := newTestKubelet(t, false /* controllerAttachDetachEnabled */)
-	kubelet := testKubelet.kubelet
-	fakeRuntime := testKubelet.fakeRuntime
-	fakeCommandRunner := fakeContainerCommandRunner{}
-	kubelet.runner = &fakeCommandRunner
-	fakeRuntime.PodList = []*containertest.FakePod{}
-
-	podName := "podFoo"
-	podNamespace := "nsFoo"
-	containerID := "containerFoo"
-	err := kubelet.ExecInContainer(
-		kubecontainer.GetPodFullName(&api.Pod{ObjectMeta: api.ObjectMeta{Name: podName, Namespace: podNamespace}}),
-		"",
-		containerID,
-		[]string{"ls"},
-		nil,
-		nil,
-		nil,
-		false,
-		nil,
-	)
-	require.Error(t, err)
-	require.True(t, fakeCommandRunner.ID.IsEmpty(), "Unexpected invocation of runner.ExecInContainer")
-}
-
-func TestExecInContainerNoSuchContainer(t *testing.T) {
-	testKubelet := newTestKubelet(t, false /* controllerAttachDetachEnabled */)
-	kubelet := testKubelet.kubelet
-	fakeRuntime := testKubelet.fakeRuntime
-	fakeCommandRunner := fakeContainerCommandRunner{}
-	kubelet.runner = &fakeCommandRunner
-
-	podName := "podFoo"
-	podNamespace := "nsFoo"
-	containerID := "containerFoo"
-	fakeRuntime.PodList = []*containertest.FakePod{
-		{Pod: &kubecontainer.Pod{
-			ID:        "12345678",
-			Name:      podName,
-			Namespace: podNamespace,
-			Containers: []*kubecontainer.Container{
-				{Name: "bar",
-					ID: kubecontainer.ContainerID{Type: "test", ID: "barID"}},
-			},
-		}},
-	}
-
-	err := kubelet.ExecInContainer(
-		kubecontainer.GetPodFullName(&api.Pod{ObjectMeta: api.ObjectMeta{
-			UID:       "12345678",
-			Name:      podName,
-			Namespace: podNamespace,
-		}}),
-		"",
-		containerID,
-		[]string{"ls"},
-		nil,
-		nil,
-		nil,
-		false,
-		nil,
-	)
-	require.Error(t, err)
-	require.True(t, fakeCommandRunner.ID.IsEmpty(), "Unexpected invocation of runner.ExecInContainer")
-}
-
 type fakeReadWriteCloser struct{}
 
 func (f *fakeReadWriteCloser) Write(data []byte) (int, error) {
@@ -1132,116 +1025,195 @@ func (f *fakeReadWriteCloser) Close() error {
 	return nil
 }
 
-func TestExecInContainer(t *testing.T) {
-	testKubelet := newTestKubelet(t, false /* controllerAttachDetachEnabled */)
-	kubelet := testKubelet.kubelet
-	fakeRuntime := testKubelet.fakeRuntime
-	fakeCommandRunner := fakeContainerCommandRunner{}
-	kubelet.runner = &fakeCommandRunner
+func TestExec(t *testing.T) {
+	const (
+		podName                = "podFoo"
+		podNamespace           = "nsFoo"
+		podUID       types.UID = "12345678"
+		containerID            = "containerFoo"
+		tty                    = true
+	)
+	var (
+		podFullName = kubecontainer.GetPodFullName(podWithUidNameNs(podUID, podName, podNamespace))
+		command     = []string{"ls"}
+		stdin       = &bytes.Buffer{}
+		stdout      = &fakeReadWriteCloser{}
+		stderr      = &fakeReadWriteCloser{}
+	)
 
-	podName := "podFoo"
-	podNamespace := "nsFoo"
-	containerID := "containerFoo"
-	command := []string{"ls"}
-	stdin := &bytes.Buffer{}
-	stdout := &fakeReadWriteCloser{}
-	stderr := &fakeReadWriteCloser{}
-	tty := true
-	fakeRuntime.PodList = []*containertest.FakePod{
-		{Pod: &kubecontainer.Pod{
-			ID:        "12345678",
-			Name:      podName,
-			Namespace: podNamespace,
-			Containers: []*kubecontainer.Container{
-				{Name: containerID,
-					ID: kubecontainer.ContainerID{Type: "test", ID: containerID},
+	testcases := []struct {
+		description string
+		podFullName string
+		container   string
+		expectError bool
+	}{{
+		description: "success case",
+		podFullName: podFullName,
+		container:   containerID,
+	}, {
+		description: "no such pod",
+		podFullName: "bar" + podFullName,
+		container:   containerID,
+		expectError: true,
+	}, {
+		description: "no such container",
+		podFullName: podFullName,
+		container:   "containerBar",
+		expectError: true,
+	}}
+
+	for _, tc := range testcases {
+		testKubelet := newTestKubelet(t, false /* controllerAttachDetachEnabled */)
+		kubelet := testKubelet.kubelet
+		testKubelet.fakeRuntime.PodList = []*containertest.FakePod{
+			{Pod: &kubecontainer.Pod{
+				ID:        podUID,
+				Name:      podName,
+				Namespace: podNamespace,
+				Containers: []*kubecontainer.Container{
+					{Name: containerID,
+						ID: kubecontainer.ContainerID{Type: "test", ID: containerID},
+					},
 				},
-			},
-		}},
+			}},
+		}
+
+		{ // No streaming case
+			description := "no streaming - " + tc.description
+			redirect, err := kubelet.GetExec(tc.podFullName, podUID, tc.container, command, remotecommand.Options{})
+			assert.Error(t, err, description)
+			assert.Nil(t, redirect, description)
+
+			err = kubelet.ExecInContainer(tc.podFullName, podUID, tc.container, command, stdin, stdout, stderr, tty, nil, 0)
+			assert.Error(t, err, description)
+		}
+		{ // Direct streaming case
+			description := "direct streaming - " + tc.description
+			fakeRuntime := &containertest.FakeDirectStreamingRuntime{FakeRuntime: testKubelet.fakeRuntime}
+			kubelet.containerRuntime = fakeRuntime
+
+			redirect, err := kubelet.GetExec(tc.podFullName, podUID, tc.container, command, remotecommand.Options{})
+			assert.NoError(t, err, description)
+			assert.Nil(t, redirect, description)
+
+			err = kubelet.ExecInContainer(tc.podFullName, podUID, tc.container, command, stdin, stdout, stderr, tty, nil, 0)
+			if tc.expectError {
+				assert.Error(t, err, description)
+			} else {
+				assert.NoError(t, err, description)
+				assert.Equal(t, fakeRuntime.Args.ContainerID.ID, containerID, description+": ID")
+				assert.Equal(t, fakeRuntime.Args.Cmd, command, description+": Command")
+				assert.Equal(t, fakeRuntime.Args.Stdin, stdin, description+": Stdin")
+				assert.Equal(t, fakeRuntime.Args.Stdout, stdout, description+": Stdout")
+				assert.Equal(t, fakeRuntime.Args.Stderr, stderr, description+": Stderr")
+				assert.Equal(t, fakeRuntime.Args.TTY, tty, description+": TTY")
+			}
+		}
+		{ // Indirect streaming case
+			description := "indirect streaming - " + tc.description
+			fakeRuntime := &containertest.FakeIndirectStreamingRuntime{FakeRuntime: testKubelet.fakeRuntime}
+			kubelet.containerRuntime = fakeRuntime
+
+			redirect, err := kubelet.GetExec(tc.podFullName, podUID, tc.container, command, remotecommand.Options{})
+			if tc.expectError {
+				assert.Error(t, err, description)
+			} else {
+				assert.NoError(t, err, description)
+				assert.Equal(t, containertest.FakeHost, redirect.Host, description+": redirect")
+			}
+
+			err = kubelet.ExecInContainer(tc.podFullName, podUID, tc.container, command, stdin, stdout, stderr, tty, nil, 0)
+			assert.Error(t, err, description)
+		}
 	}
-
-	err := kubelet.ExecInContainer(
-		kubecontainer.GetPodFullName(podWithUidNameNs("12345678", podName, podNamespace)),
-		"",
-		containerID,
-		[]string{"ls"},
-		stdin,
-		stdout,
-		stderr,
-		tty,
-		nil,
-	)
-	require.NoError(t, err)
-	require.Equal(t, fakeCommandRunner.ID.ID, containerID, "ID")
-	require.Equal(t, fakeCommandRunner.Cmd, command, "Command")
-	require.Equal(t, fakeCommandRunner.Stdin, stdin, "Stdin")
-	require.Equal(t, fakeCommandRunner.Stdout, stdout, "Stdout")
-	require.Equal(t, fakeCommandRunner.Stderr, stderr, "Stderr")
-	require.Equal(t, fakeCommandRunner.TTY, tty, "TTY")
-}
-
-func TestPortForwardNoSuchPod(t *testing.T) {
-	testKubelet := newTestKubelet(t, false /* controllerAttachDetachEnabled */)
-	kubelet := testKubelet.kubelet
-	fakeRuntime := testKubelet.fakeRuntime
-	fakeRuntime.PodList = []*containertest.FakePod{}
-	fakeCommandRunner := fakeContainerCommandRunner{}
-	kubelet.runner = &fakeCommandRunner
-
-	podName := "podFoo"
-	podNamespace := "nsFoo"
-	var port uint16 = 5000
-
-	err := kubelet.PortForward(
-		kubecontainer.GetPodFullName(&api.Pod{ObjectMeta: api.ObjectMeta{Name: podName, Namespace: podNamespace}}),
-		"",
-		port,
-		nil,
-	)
-	require.Error(t, err)
-	require.True(t, fakeCommandRunner.ID.IsEmpty(), "unexpected invocation of runner.PortForward")
 }
 
 func TestPortForward(t *testing.T) {
-	testKubelet := newTestKubelet(t, false /* controllerAttachDetachEnabled */)
-	kubelet := testKubelet.kubelet
-	fakeRuntime := testKubelet.fakeRuntime
-
-	podName := "podFoo"
-	podNamespace := "nsFoo"
-	podID := types.UID("12345678")
-	fakeRuntime.PodList = []*containertest.FakePod{
-		{Pod: &kubecontainer.Pod{
-			ID:        podID,
-			Name:      podName,
-			Namespace: podNamespace,
-			Containers: []*kubecontainer.Container{
-				{
-					Name: "foo",
-					ID:   kubecontainer.ContainerID{Type: "test", ID: "containerFoo"},
-				},
-			},
-		}},
-	}
-	fakeCommandRunner := fakeContainerCommandRunner{}
-	kubelet.runner = &fakeCommandRunner
-
-	var port uint16 = 5000
-	stream := &fakeReadWriteCloser{}
-	err := kubelet.PortForward(
-		kubecontainer.GetPodFullName(&api.Pod{ObjectMeta: api.ObjectMeta{
-			UID:       "12345678",
-			Name:      podName,
-			Namespace: podNamespace,
-		}}),
-		"",
-		port,
-		stream,
+	const (
+		podName                = "podFoo"
+		podNamespace           = "nsFoo"
+		podUID       types.UID = "12345678"
+		port         uint16    = 5000
 	)
-	require.NoError(t, err)
-	require.Equal(t, fakeCommandRunner.PodID, podID, "Pod ID")
-	require.Equal(t, fakeCommandRunner.Port, port, "Port")
-	require.Equal(t, fakeCommandRunner.Stream, stream, "stream")
+	var (
+		stream = &fakeReadWriteCloser{}
+	)
+
+	testcases := []struct {
+		description string
+		podName     string
+		expectError bool
+	}{{
+		description: "success case",
+		podName:     podName,
+	}, {
+		description: "no such pod",
+		podName:     "bar",
+		expectError: true,
+	}}
+
+	for _, tc := range testcases {
+		testKubelet := newTestKubelet(t, false /* controllerAttachDetachEnabled */)
+		kubelet := testKubelet.kubelet
+		testKubelet.fakeRuntime.PodList = []*containertest.FakePod{
+			{Pod: &kubecontainer.Pod{
+				ID:        podUID,
+				Name:      podName,
+				Namespace: podNamespace,
+				Containers: []*kubecontainer.Container{
+					{Name: "foo",
+						ID: kubecontainer.ContainerID{Type: "test", ID: "foo"},
+					},
+				},
+			}},
+		}
+
+		podFullName := kubecontainer.GetPodFullName(podWithUidNameNs(podUID, tc.podName, podNamespace))
+		{ // No streaming case
+			description := "no streaming - " + tc.description
+			redirect, err := kubelet.GetPortForward(tc.podName, podNamespace, podUID)
+			assert.Error(t, err, description)
+			assert.Nil(t, redirect, description)
+
+			err = kubelet.PortForward(podFullName, podUID, port, stream)
+			assert.Error(t, err, description)
+		}
+		{ // Direct streaming case
+			description := "direct streaming - " + tc.description
+			fakeRuntime := &containertest.FakeDirectStreamingRuntime{FakeRuntime: testKubelet.fakeRuntime}
+			kubelet.containerRuntime = fakeRuntime
+
+			redirect, err := kubelet.GetPortForward(tc.podName, podNamespace, podUID)
+			assert.NoError(t, err, description)
+			assert.Nil(t, redirect, description)
+
+			err = kubelet.PortForward(podFullName, podUID, port, stream)
+			if tc.expectError {
+				assert.Error(t, err, description)
+			} else {
+				assert.NoError(t, err, description)
+				require.Equal(t, fakeRuntime.Args.Pod.ID, podUID, description+": Pod UID")
+				require.Equal(t, fakeRuntime.Args.Port, port, description+": Port")
+				require.Equal(t, fakeRuntime.Args.Stream, stream, description+": stream")
+			}
+		}
+		{ // Indirect streaming case
+			description := "indirect streaming - " + tc.description
+			fakeRuntime := &containertest.FakeIndirectStreamingRuntime{FakeRuntime: testKubelet.fakeRuntime}
+			kubelet.containerRuntime = fakeRuntime
+
+			redirect, err := kubelet.GetPortForward(tc.podName, podNamespace, podUID)
+			if tc.expectError {
+				assert.Error(t, err, description)
+			} else {
+				assert.NoError(t, err, description)
+				assert.Equal(t, containertest.FakeHost, redirect.Host, description+": redirect")
+			}
+
+			err = kubelet.PortForward(podFullName, podUID, port, stream)
+			assert.Error(t, err, description)
+		}
+	}
 }
 
 // Tests that identify the host port conflicts are detected correctly.
@@ -1261,4 +1233,293 @@ func TestGetHostPortConflicts(t *testing.T) {
 	// The new pod should cause conflict and be reported.
 	pods = append(pods, expected)
 	assert.True(t, hasHostPortConflicts(pods), "Should have port conflicts")
+}
+
+func TestMakeDevices(t *testing.T) {
+	testCases := []struct {
+		container *api.Container
+		devices   []kubecontainer.DeviceInfo
+		test      string
+	}{
+		{
+			test:      "no device",
+			container: &api.Container{},
+			devices:   nil,
+		},
+		{
+			test: "gpu",
+			container: &api.Container{
+				Resources: api.ResourceRequirements{
+					Limits: map[api.ResourceName]resource.Quantity{
+						api.ResourceNvidiaGPU: resource.MustParse("1000"),
+					},
+				},
+			},
+			devices: []kubecontainer.DeviceInfo{
+				{PathOnHost: "/dev/nvidia0", PathInContainer: "/dev/nvidia0", Permissions: "mrw"},
+				{PathOnHost: "/dev/nvidiactl", PathInContainer: "/dev/nvidiactl", Permissions: "mrw"},
+				{PathOnHost: "/dev/nvidia-uvm", PathInContainer: "/dev/nvidia-uvm", Permissions: "mrw"},
+			},
+		},
+	}
+
+	for _, test := range testCases {
+		assert.Equal(t, test.devices, makeDevices(test.container), "[test %q]", test.test)
+	}
+}
+
+func TestHasPrivilegedContainer(t *testing.T) {
+	newBoolPtr := func(b bool) *bool {
+		return &b
+	}
+	tests := map[string]struct {
+		securityContext *api.SecurityContext
+		expected        bool
+	}{
+		"nil sc": {
+			securityContext: nil,
+			expected:        false,
+		},
+		"nil privleged": {
+			securityContext: &api.SecurityContext{},
+			expected:        false,
+		},
+		"false privleged": {
+			securityContext: &api.SecurityContext{Privileged: newBoolPtr(false)},
+			expected:        false,
+		},
+		"true privleged": {
+			securityContext: &api.SecurityContext{Privileged: newBoolPtr(true)},
+			expected:        true,
+		},
+	}
+
+	for k, v := range tests {
+		pod := &api.Pod{
+			Spec: api.PodSpec{
+				Containers: []api.Container{
+					{SecurityContext: v.securityContext},
+				},
+			},
+		}
+		actual := hasPrivilegedContainer(pod)
+		if actual != v.expected {
+			t.Errorf("%s expected %t but got %t", k, v.expected, actual)
+		}
+	}
+}
+
+func TestHasHostMountPVC(t *testing.T) {
+	tests := map[string]struct {
+		pvError       error
+		pvcError      error
+		expected      bool
+		podHasPVC     bool
+		pvcIsHostPath bool
+	}{
+		"no pvc": {podHasPVC: false, expected: false},
+		"error fetching pvc": {
+			podHasPVC: true,
+			pvcError:  fmt.Errorf("foo"),
+			expected:  false,
+		},
+		"error fetching pv": {
+			podHasPVC: true,
+			pvError:   fmt.Errorf("foo"),
+			expected:  false,
+		},
+		"host path pvc": {
+			podHasPVC:     true,
+			pvcIsHostPath: true,
+			expected:      true,
+		},
+		"non host path pvc": {
+			podHasPVC:     true,
+			pvcIsHostPath: false,
+			expected:      false,
+		},
+	}
+
+	for k, v := range tests {
+		testKubelet := newTestKubelet(t, false)
+		pod := &api.Pod{
+			Spec: api.PodSpec{},
+		}
+
+		volumeToReturn := &api.PersistentVolume{
+			Spec: api.PersistentVolumeSpec{},
+		}
+
+		if v.podHasPVC {
+			pod.Spec.Volumes = []api.Volume{
+				{
+					VolumeSource: api.VolumeSource{
+						PersistentVolumeClaim: &api.PersistentVolumeClaimVolumeSource{},
+					},
+				},
+			}
+
+			if v.pvcIsHostPath {
+				volumeToReturn.Spec.PersistentVolumeSource = api.PersistentVolumeSource{
+					HostPath: &api.HostPathVolumeSource{},
+				}
+			}
+
+		}
+
+		testKubelet.fakeKubeClient.AddReactor("get", "persistentvolumeclaims", func(action core.Action) (bool, runtime.Object, error) {
+			return true, &api.PersistentVolumeClaim{
+				Spec: api.PersistentVolumeClaimSpec{
+					VolumeName: "foo",
+				},
+			}, v.pvcError
+		})
+		testKubelet.fakeKubeClient.AddReactor("get", "persistentvolumes", func(action core.Action) (bool, runtime.Object, error) {
+			return true, volumeToReturn, v.pvError
+		})
+
+		actual := testKubelet.kubelet.hasHostMountPVC(pod)
+		if actual != v.expected {
+			t.Errorf("%s expected %t but got %t", k, v.expected, actual)
+		}
+
+	}
+}
+
+func TestHasNonNamespacedCapability(t *testing.T) {
+	createPodWithCap := func(caps []api.Capability) *api.Pod {
+		pod := &api.Pod{
+			Spec: api.PodSpec{
+				Containers: []api.Container{{}},
+			},
+		}
+
+		if len(caps) > 0 {
+			pod.Spec.Containers[0].SecurityContext = &api.SecurityContext{
+				Capabilities: &api.Capabilities{
+					Add: caps,
+				},
+			}
+		}
+		return pod
+	}
+
+	nilCaps := createPodWithCap([]api.Capability{api.Capability("foo")})
+	nilCaps.Spec.Containers[0].SecurityContext = nil
+
+	tests := map[string]struct {
+		pod      *api.Pod
+		expected bool
+	}{
+		"nil security contxt":           {createPodWithCap(nil), false},
+		"nil caps":                      {nilCaps, false},
+		"namespaced cap":                {createPodWithCap([]api.Capability{api.Capability("foo")}), false},
+		"non-namespaced cap MKNOD":      {createPodWithCap([]api.Capability{api.Capability("MKNOD")}), true},
+		"non-namespaced cap SYS_TIME":   {createPodWithCap([]api.Capability{api.Capability("SYS_TIME")}), true},
+		"non-namespaced cap SYS_MODULE": {createPodWithCap([]api.Capability{api.Capability("SYS_MODULE")}), true},
+	}
+
+	for k, v := range tests {
+		actual := hasNonNamespacedCapability(v.pod)
+		if actual != v.expected {
+			t.Errorf("%s failed, expected %t but got %t", k, v.expected, actual)
+		}
+	}
+}
+
+func TestHasHostVolume(t *testing.T) {
+	pod := &api.Pod{
+		Spec: api.PodSpec{
+			Volumes: []api.Volume{
+				{
+					VolumeSource: api.VolumeSource{
+						HostPath: &api.HostPathVolumeSource{},
+					},
+				},
+			},
+		},
+	}
+
+	result := hasHostVolume(pod)
+	if !result {
+		t.Errorf("expected host volume to enable host user namespace")
+	}
+
+	pod.Spec.Volumes[0].VolumeSource.HostPath = nil
+	result = hasHostVolume(pod)
+	if result {
+		t.Errorf("expected nil host volume to not enable host user namespace")
+	}
+}
+
+func TestHasHostNamespace(t *testing.T) {
+	tests := map[string]struct {
+		psc      *api.PodSecurityContext
+		expected bool
+	}{
+		"nil psc": {psc: nil, expected: false},
+		"host pid true": {
+			psc: &api.PodSecurityContext{
+				HostPID: true,
+			},
+			expected: true,
+		},
+		"host ipc true": {
+			psc: &api.PodSecurityContext{
+				HostIPC: true,
+			},
+			expected: true,
+		},
+		"host net true": {
+			psc: &api.PodSecurityContext{
+				HostNetwork: true,
+			},
+			expected: true,
+		},
+		"no host ns": {
+			psc:      &api.PodSecurityContext{},
+			expected: false,
+		},
+	}
+
+	for k, v := range tests {
+		pod := &api.Pod{
+			Spec: api.PodSpec{
+				SecurityContext: v.psc,
+			},
+		}
+		actual := hasHostNamespace(pod)
+		if actual != v.expected {
+			t.Errorf("%s failed, expected %t but got %t", k, v.expected, actual)
+		}
+	}
+}
+
+func TestTruncatePodHostname(t *testing.T) {
+	for c, test := range map[string]struct {
+		input  string
+		output string
+	}{
+		"valid hostname": {
+			input:  "test.pod.hostname",
+			output: "test.pod.hostname",
+		},
+		"too long hostname": {
+			input:  "1234567.1234567.1234567.1234567.1234567.1234567.1234567.1234567.1234567.", // 8*9=72 chars
+			output: "1234567.1234567.1234567.1234567.1234567.1234567.1234567.1234567",          //8*8-1=63 chars
+		},
+		"hostname end with .": {
+			input:  "1234567.1234567.1234567.1234567.1234567.1234567.1234567.123456.1234567.", // 8*9-1=71 chars
+			output: "1234567.1234567.1234567.1234567.1234567.1234567.1234567.123456",          //8*8-2=62 chars
+		},
+		"hostname end with -": {
+			input:  "1234567.1234567.1234567.1234567.1234567.1234567.1234567.123456-1234567.", // 8*9-1=71 chars
+			output: "1234567.1234567.1234567.1234567.1234567.1234567.1234567.123456",          //8*8-2=62 chars
+		},
+	} {
+		t.Logf("TestCase: %q", c)
+		output, err := truncatePodHostnameIfNeeded("test-pod", test.input)
+		assert.NoError(t, err)
+		assert.Equal(t, test.output, output)
+	}
 }

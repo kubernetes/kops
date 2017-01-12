@@ -20,11 +20,12 @@ import (
 	"fmt"
 	"os"
 
+	"strings"
+
 	"github.com/spf13/cobra"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/tables"
-	"strings"
 )
 
 type GetSecretsCommand struct {
@@ -147,9 +148,10 @@ func (c *GetSecretsCommand) Run(args []string) error {
 
 		return nil
 	}
+	switch getCmd.output {
 
-	output := getCmd.output
-	if output == OutputTable {
+	case OutputTable:
+
 		t := &tables.Table{}
 		t.AddColumn("NAME", func(i *fi.KeystoreItem) string {
 			return i.Name
@@ -161,9 +163,12 @@ func (c *GetSecretsCommand) Run(args []string) error {
 			return i.Type
 		})
 		return t.Render(items, os.Stdout, "TYPE", "NAME", "ID")
-	} else if output == OutputYaml {
+
+	case OutputYaml:
 		return fmt.Errorf("yaml output format is not (currently) supported for secrets")
-	} else if output == "plaintext" {
+	case OutputJSON:
+		return fmt.Errorf("json output format is not (currently) supported for secrets")
+	case "plaintext":
 		for _, i := range items {
 			var data string
 			switch i.Type {
@@ -187,8 +192,8 @@ func (c *GetSecretsCommand) Run(args []string) error {
 			}
 		}
 		return nil
-	} else {
-		return fmt.Errorf("Unknown output format: %q", output)
-	}
 
+	default:
+		return fmt.Errorf("Unknown output format: %q", getCmd.output)
+	}
 }

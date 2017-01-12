@@ -76,7 +76,6 @@ var _ = framework.KubeDescribe("InitContainer", func() {
 				},
 			},
 		}
-		defer podClient.Delete(pod.Name, nil)
 		startedPod := podClient.Create(pod)
 		w, err := podClient.Watch(api.SingleObject(startedPod.ObjectMeta))
 		Expect(err).NotTo(HaveOccurred(), "error watching a pod")
@@ -129,18 +128,17 @@ var _ = framework.KubeDescribe("InitContainer", func() {
 				Containers: []api.Container{
 					{
 						Name:  "run1",
-						Image: framework.GetPauseImageName(f.Client),
+						Image: framework.GetPauseImageName(f.ClientSet),
 						Resources: api.ResourceRequirements{
 							Limits: api.ResourceList{
 								api.ResourceCPU:    *resource.NewMilliQuantity(100, resource.DecimalSI),
-								api.ResourceMemory: *resource.NewQuantity(10*1024*1024, resource.DecimalSI),
+								api.ResourceMemory: *resource.NewQuantity(30*1024*1024, resource.DecimalSI),
 							},
 						},
 					},
 				},
 			},
 		}
-		defer podClient.Delete(pod.Name, nil)
 		startedPod := podClient.Create(pod)
 		w, err := podClient.Watch(api.SingleObject(startedPod.ObjectMeta))
 		Expect(err).NotTo(HaveOccurred(), "error watching a pod")
@@ -193,18 +191,17 @@ var _ = framework.KubeDescribe("InitContainer", func() {
 				Containers: []api.Container{
 					{
 						Name:  "run1",
-						Image: framework.GetPauseImageName(f.Client),
+						Image: framework.GetPauseImageName(f.ClientSet),
 						Resources: api.ResourceRequirements{
 							Limits: api.ResourceList{
 								api.ResourceCPU:    *resource.NewMilliQuantity(100, resource.DecimalSI),
-								api.ResourceMemory: *resource.NewQuantity(10*1024*1024, resource.DecimalSI),
+								api.ResourceMemory: *resource.NewQuantity(30*1024*1024, resource.DecimalSI),
 							},
 						},
 					},
 				},
 			},
 		}
-		defer podClient.Delete(pod.Name, nil)
 		startedPod := podClient.Create(pod)
 		w, err := podClient.Watch(api.SingleObject(startedPod.ObjectMeta))
 		Expect(err).NotTo(HaveOccurred(), "error watching a pod")
@@ -309,15 +306,15 @@ var _ = framework.KubeDescribe("InitContainer", func() {
 						Resources: api.ResourceRequirements{
 							Limits: api.ResourceList{
 								api.ResourceCPU:    *resource.NewMilliQuantity(100, resource.DecimalSI),
-								api.ResourceMemory: *resource.NewQuantity(10*1024*1024, resource.DecimalSI),
+								api.ResourceMemory: *resource.NewQuantity(30*1024*1024, resource.DecimalSI),
 							},
 						},
 					},
 				},
 			},
 		}
-		defer podClient.Delete(pod.Name, nil)
 		startedPod := podClient.Create(pod)
+
 		w, err := podClient.Watch(api.SingleObject(startedPod.ObjectMeta))
 		Expect(err).NotTo(HaveOccurred(), "error watching a pod")
 

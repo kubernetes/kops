@@ -16,7 +16,13 @@ var _ time.Duration
 var _ bytes.Buffer
 
 func ExampleSSM_AddTagsToResource() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.AddTagsToResourceInput{
 		ResourceId:   aws.String("ResourceId"),             // Required
@@ -43,7 +49,13 @@ func ExampleSSM_AddTagsToResource() {
 }
 
 func ExampleSSM_CancelCommand() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.CancelCommandInput{
 		CommandId: aws.String("CommandId"), // Required
@@ -66,7 +78,13 @@ func ExampleSSM_CancelCommand() {
 }
 
 func ExampleSSM_CreateActivation() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.CreateActivationInput{
 		IamRole:             aws.String("IamRole"), // Required
@@ -89,7 +107,13 @@ func ExampleSSM_CreateActivation() {
 }
 
 func ExampleSSM_CreateAssociation() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.CreateAssociationInput{
 		InstanceId: aws.String("InstanceId"),   // Required
@@ -116,7 +140,13 @@ func ExampleSSM_CreateAssociation() {
 }
 
 func ExampleSSM_CreateAssociationBatch() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.CreateAssociationBatchInput{
 		Entries: []*ssm.CreateAssociationBatchRequestEntry{ // Required
@@ -148,7 +178,13 @@ func ExampleSSM_CreateAssociationBatch() {
 }
 
 func ExampleSSM_CreateDocument() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.CreateDocumentInput{
 		Content: aws.String("DocumentContent"), // Required
@@ -168,7 +204,13 @@ func ExampleSSM_CreateDocument() {
 }
 
 func ExampleSSM_DeleteActivation() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.DeleteActivationInput{
 		ActivationId: aws.String("ActivationId"), // Required
@@ -187,7 +229,13 @@ func ExampleSSM_DeleteActivation() {
 }
 
 func ExampleSSM_DeleteAssociation() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.DeleteAssociationInput{
 		InstanceId: aws.String("InstanceId"),   // Required
@@ -207,7 +255,13 @@ func ExampleSSM_DeleteAssociation() {
 }
 
 func ExampleSSM_DeleteDocument() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.DeleteDocumentInput{
 		Name: aws.String("DocumentName"), // Required
@@ -226,7 +280,13 @@ func ExampleSSM_DeleteDocument() {
 }
 
 func ExampleSSM_DeregisterManagedInstance() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.DeregisterManagedInstanceInput{
 		InstanceId: aws.String("ManagedInstanceId"), // Required
@@ -245,7 +305,13 @@ func ExampleSSM_DeregisterManagedInstance() {
 }
 
 func ExampleSSM_DescribeActivations() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.DescribeActivationsInput{
 		Filters: []*ssm.DescribeActivationsFilter{
@@ -275,7 +341,13 @@ func ExampleSSM_DescribeActivations() {
 }
 
 func ExampleSSM_DescribeAssociation() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.DescribeAssociationInput{
 		InstanceId: aws.String("InstanceId"),   // Required
@@ -295,7 +367,13 @@ func ExampleSSM_DescribeAssociation() {
 }
 
 func ExampleSSM_DescribeDocument() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.DescribeDocumentInput{
 		Name: aws.String("DocumentARN"), // Required
@@ -314,7 +392,13 @@ func ExampleSSM_DescribeDocument() {
 }
 
 func ExampleSSM_DescribeDocumentPermission() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.DescribeDocumentPermissionInput{
 		Name:           aws.String("DocumentName"),           // Required
@@ -334,7 +418,13 @@ func ExampleSSM_DescribeDocumentPermission() {
 }
 
 func ExampleSSM_DescribeInstanceInformation() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.DescribeInstanceInformationInput{
 		InstanceInformationFilterList: []*ssm.InstanceInformationFilter{
@@ -364,7 +454,13 @@ func ExampleSSM_DescribeInstanceInformation() {
 }
 
 func ExampleSSM_GetDocument() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.GetDocumentInput{
 		Name: aws.String("DocumentARN"), // Required
@@ -383,7 +479,13 @@ func ExampleSSM_GetDocument() {
 }
 
 func ExampleSSM_ListAssociations() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.ListAssociationsInput{
 		AssociationFilterList: []*ssm.AssociationFilter{ // Required
@@ -410,7 +512,13 @@ func ExampleSSM_ListAssociations() {
 }
 
 func ExampleSSM_ListCommandInvocations() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.ListCommandInvocationsInput{
 		CommandId: aws.String("CommandId"),
@@ -440,7 +548,13 @@ func ExampleSSM_ListCommandInvocations() {
 }
 
 func ExampleSSM_ListCommands() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.ListCommandsInput{
 		CommandId: aws.String("CommandId"),
@@ -469,7 +583,13 @@ func ExampleSSM_ListCommands() {
 }
 
 func ExampleSSM_ListDocuments() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.ListDocumentsInput{
 		DocumentFilterList: []*ssm.DocumentFilter{
@@ -496,7 +616,13 @@ func ExampleSSM_ListDocuments() {
 }
 
 func ExampleSSM_ListTagsForResource() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.ListTagsForResourceInput{
 		ResourceId:   aws.String("ResourceId"),             // Required
@@ -516,7 +642,13 @@ func ExampleSSM_ListTagsForResource() {
 }
 
 func ExampleSSM_ModifyDocumentPermission() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.ModifyDocumentPermissionInput{
 		Name:           aws.String("DocumentName"),           // Required
@@ -544,7 +676,13 @@ func ExampleSSM_ModifyDocumentPermission() {
 }
 
 func ExampleSSM_RemoveTagsFromResource() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.RemoveTagsFromResourceInput{
 		ResourceId:   aws.String("ResourceId"),             // Required
@@ -568,7 +706,13 @@ func ExampleSSM_RemoveTagsFromResource() {
 }
 
 func ExampleSSM_SendCommand() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.SendCommandInput{
 		DocumentName: aws.String("DocumentARN"), // Required
@@ -613,7 +757,13 @@ func ExampleSSM_SendCommand() {
 }
 
 func ExampleSSM_UpdateAssociationStatus() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.UpdateAssociationStatusInput{
 		AssociationStatus: &ssm.AssociationStatus{ // Required
@@ -639,7 +789,13 @@ func ExampleSSM_UpdateAssociationStatus() {
 }
 
 func ExampleSSM_UpdateManagedInstanceRole() {
-	svc := ssm.New(session.New())
+	sess, err := session.NewSession()
+	if err != nil {
+		fmt.Println("failed to create session,", err)
+		return
+	}
+
+	svc := ssm.New(sess)
 
 	params := &ssm.UpdateManagedInstanceRoleInput{
 		IamRole:    aws.String("IamRole"),           // Required

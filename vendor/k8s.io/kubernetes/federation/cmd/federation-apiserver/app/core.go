@@ -34,6 +34,7 @@ import (
 	"k8s.io/kubernetes/pkg/api/rest"
 	"k8s.io/kubernetes/pkg/apimachinery/registered"
 	"k8s.io/kubernetes/pkg/genericapiserver"
+	configmapetcd "k8s.io/kubernetes/pkg/registry/core/configmap/etcd"
 	eventetcd "k8s.io/kubernetes/pkg/registry/core/event/etcd"
 	namespaceetcd "k8s.io/kubernetes/pkg/registry/core/namespace/etcd"
 	secretetcd "k8s.io/kubernetes/pkg/registry/core/secret/etcd"
@@ -44,6 +45,7 @@ func installCoreAPIs(s *options.ServerRunOptions, g *genericapiserver.GenericAPI
 	serviceStore, serviceStatusStore := serviceetcd.NewREST(restOptionsFactory.NewFor(api.Resource("service")))
 	namespaceStore, namespaceStatusStore, namespaceFinalizeStore := namespaceetcd.NewREST(restOptionsFactory.NewFor(api.Resource("namespaces")))
 	secretStore := secretetcd.NewREST(restOptionsFactory.NewFor(api.Resource("secrets")))
+	configMapStore := configmapetcd.NewREST(restOptionsFactory.NewFor(api.Resource("configmaps")))
 	eventStore := eventetcd.NewREST(restOptionsFactory.NewFor(api.Resource("events")), uint64(s.EventTTL.Seconds()))
 	coreResources := map[string]rest.Storage{
 		"secrets":             secretStore,
@@ -53,6 +55,7 @@ func installCoreAPIs(s *options.ServerRunOptions, g *genericapiserver.GenericAPI
 		"namespaces/status":   namespaceStatusStore,
 		"namespaces/finalize": namespaceFinalizeStore,
 		"events":              eventStore,
+		"configmaps":          configMapStore,
 	}
 	coreGroupMeta := registered.GroupOrDie(core.GroupName)
 	apiGroupInfo := genericapiserver.APIGroupInfo{
@@ -61,12 +64,11 @@ func installCoreAPIs(s *options.ServerRunOptions, g *genericapiserver.GenericAPI
 			v1.SchemeGroupVersion.Version: coreResources,
 		},
 		OptionsExternalVersion: &registered.GroupOrDie(core.GroupName).GroupVersion,
-		IsLegacyGroup:          true,
 		Scheme:                 core.Scheme,
 		ParameterCodec:         core.ParameterCodec,
 		NegotiatedSerializer:   core.Codecs,
 	}
-	if err := g.InstallAPIGroup(&apiGroupInfo); err != nil {
+	if err := g.InstallLegacyAPIGroup(genericapiserver.DefaultLegacyAPIPrefix, &apiGroupInfo); err != nil {
 		glog.Fatalf("Error in registering group version: %+v.\n Error: %v\n", apiGroupInfo, err)
 	}
 }

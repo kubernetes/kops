@@ -34,7 +34,7 @@ import (
 	"k8s.io/kubernetes/pkg/api/resource"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apimachinery/registered"
-	client "k8s.io/kubernetes/pkg/client/unversioned"
+	unversionedcore "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/core/internalversion"
 	awscloud "k8s.io/kubernetes/pkg/cloudprovider/providers/aws"
 	gcecloud "k8s.io/kubernetes/pkg/cloudprovider/providers/gce"
 	"k8s.io/kubernetes/pkg/types"
@@ -49,12 +49,13 @@ const (
 	nodeStatusPollTime  = 1 * time.Second
 	gcePDRetryTimeout   = 5 * time.Minute
 	gcePDRetryPollTime  = 5 * time.Second
+	maxReadRetry        = 3
 )
 
 var _ = framework.KubeDescribe("Pod Disks", func() {
 	var (
-		podClient  client.PodInterface
-		nodeClient client.NodeInterface
+		podClient  unversionedcore.PodInterface
+		nodeClient unversionedcore.NodeInterface
 		host0Name  types.NodeName
 		host1Name  types.NodeName
 	)
@@ -63,9 +64,9 @@ var _ = framework.KubeDescribe("Pod Disks", func() {
 	BeforeEach(func() {
 		framework.SkipUnlessNodeCountIsAtLeast(2)
 
-		podClient = f.Client.Pods(f.Namespace.Name)
-		nodeClient = f.Client.Nodes()
-		nodes := framework.GetReadySchedulableNodesOrDie(f.Client)
+		podClient = f.ClientSet.Core().Pods(f.Namespace.Name)
+		nodeClient = f.ClientSet.Core().Nodes()
+		nodes := framework.GetReadySchedulableNodesOrDie(f.ClientSet)
 
 		Expect(len(nodes.Items)).To(BeNumerically(">=", 2), "Requires at least 2 nodes")
 
@@ -450,13 +451,28 @@ func deletePDWithRetry(diskName string) {
 
 func verifyPDContentsViaContainer(f *framework.Framework, podName, containerName string, fileAndContentToVerify map[string]string) {
 	for filePath, expectedContents := range fileAndContentToVerify {
-		v, err := f.ReadFileViaContainer(podName, containerName, filePath)
-		if err != nil {
-			framework.Logf("Error reading file: %v", err)
+		var value string
+		// Add a retry to avoid temporal failure in reading the content
+		for i := 0; i < maxReadRetry; i++ {
+			v, err := f.ReadFileViaContainer(podName, containerName, filePath)
+			value = v
+			if err != nil {
+				framework.Logf("Error reading file: %v", err)
+			}
+			framework.ExpectNoError(err)
+			framework.Logf("Read file %q with content: %v (iteration %d)", filePath, v, i)
+			if strings.TrimSpace(v) != strings.TrimSpace(expectedContents) {
+				framework.Logf("Warning: read content <%q> does not match execpted content <%q>.", v, expectedContents)
+				size, err := f.CheckFileSizeViaContainer(podName, containerName, filePath)
+				if err != nil {
+					framework.Logf("Error checking file size: %v", err)
+				}
+				framework.Logf("Check file %q size: %q", filePath, size)
+			} else {
+				break
+			}
 		}
-		framework.ExpectNoError(err)
-		framework.Logf("Read file %q with content: %v", filePath, v)
-		Expect(strings.TrimSpace(v)).To(Equal(strings.TrimSpace(expectedContents)))
+		Expect(strings.TrimSpace(value)).To(Equal(strings.TrimSpace(expectedContents)))
 	}
 }
 
@@ -695,7 +711,7 @@ func detachAndDeletePDs(diskName string, hosts []types.NodeName) {
 }
 
 func waitForPDInVolumesInUse(
-	nodeClient client.NodeInterface,
+	nodeClient unversionedcore.NodeInterface,
 	diskName string,
 	nodeName types.NodeName,
 	timeout time.Duration,
