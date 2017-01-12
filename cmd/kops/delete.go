@@ -43,7 +43,7 @@ var deleteCmd = &cobra.Command{
 		if !confirmDelete && len(args) >= 3 {
 			message := fmt.Sprintf(
 				"Do you really want to %s? This action cannot be undone.",
-				strings.Join(args, " "),
+				strings.Join(args[1:], " "),
 			)
 
 			c := &ui.ConfirmArgs{
