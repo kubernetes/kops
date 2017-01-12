@@ -81,7 +81,7 @@ func GetConfirm(c *ConfirmArgs) (bool, error) {
 
 	fmt.Printf("invalid response: %s\n\n", response)
 
-	// if c.RetryCount exceeds the requested number of retries then five up
+	// if c.RetryCount exceeds the requested number of retries then give up
 	if c.RetryCount >= c.Retries {
 		return false, nil
 	}
