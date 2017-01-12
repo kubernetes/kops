@@ -24,11 +24,12 @@ with other infrastructure (but not a second cluster!), but this is not really re
 
 ### Supported CNI Networking
 
-Two different providers are currently built into kops:
+Several different providers are currently built into kops:
 
 1. kopeio-vxlan
 2. [weave](https://github.com/weaveworks/weave-kube)
 3. [Calico](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/installation/hosted/)
+4. [Canal (Flannel + Calico)](https://github.com/projectcalico/canal)
 
 The manifests for the providers are included with kops, and you simply use `--networking provider-name`.
 Replace the provider name with the names listed above with you `kops cluster create`.  For instance
@@ -45,7 +46,6 @@ and libraries for writing plugins to configure network interfaces in Linux conta
 has built in support for CNI networking components.  Various solutions exist that
 support Kubernetes CNI networking, listed in alphabetical order:
 
-- [Canal](https://github.com/tigera/canal/tree/master/k8s-install/kubeadm)
 - [Romana](https://github.com/romana/romana/tree/master/containerize#using-kops)
 
 This is not an all comprehensive list. At the time of writing this documentation, weave has
@@ -67,7 +67,7 @@ The `--networking` option accepts the three different values defined above: `kub
 
 #### Installation Weave on a new Cluster
 
-The following command setups a cluster, in HA mode, that is ready for a CNI installation.
+The following command sets up a cluster, in HA mode, that is ready for a CNI installation.
 
 ```console
 $ export $ZONE=mylistofzones
@@ -96,7 +96,7 @@ The above daemonset installation requires K8s 1.4.x or above.
 
 #### Installing Calico on a new Cluster
 
-The following command setups a cluster, in HA mode, with Calico as the CNI and Network Policy provider.
+The following command sets up a cluster, in HA mode, with Calico as the CNI and Network Policy provider.
 
 ```console
 $ export $ZONES=mylistofzones
@@ -126,6 +126,43 @@ For help with Calico or to report any issues:
 #### Calico Backend
 
 Calico currently uses etcd as a backend for storing information about workloads and policies.  Calico does not interfere with normal etcd operations and does not require special handling when upgrading etcd.  For more information please visit the [etcd Docs](https://coreos.com/etcd/docs/latest/)
+
+### Canal Example for CNI and Network Policy
+
+Canal is a project that combines [Flannel](https://github.com/coreos/flannel) and [Calico](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/installation/hosted/) for CNI Networking.  It uses Flannel for networking pod traffic between hosts via VXLAN and Calico for network policy enforcement and pod to pod traffic.
+
+#### Installing Canal on a new Cluster
+
+The following command sets up a cluster, in HA mode, with Canal as the CNI and networking policy provider 
+
+```console
+$ export $ZONES=mylistofzones
+$ kops create cluster \
+  --zones $ZONES \
+  --master-zones $ZONES \
+  --master-size m4.large \
+  --node-size m4.large \
+  --networking canal \
+  --yes \
+  --name myclustername.mydns.io
+```
+
+The above will deploy a daemonset installation which requires K8s 1.4.x or above.
+
+#### Getting help with Canal
+
+For problems with deploying Canal please post an issue to Github:
+
+- [Canal Issues](https://github.com/projectcalico/canal/issues)
+
+For support with Calico Policies you can reach out on Slack or Github:
+
+- [Calico Github](https://github.com/projectcalico/calico)
+- [Calico Users Slack](https://calicousers.slack.com)
+
+For support with Flannel you can submit an issue on Github:
+
+- [Flannel](https://github.com/coreos/flannel/issues)
 
 ### Validating CNI Installation
 
