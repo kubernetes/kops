@@ -266,6 +266,7 @@ func (c *populateClusterSpec) run() error {
 			codeModels = append(codeModels, &components.DockerOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.NetworkingOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeletOptionsBuilder{Context: optionsContext})
+			codeModels = append(codeModels, &components.KubeControllerManagerOptionsBuilder{Context: optionsContext})
 			fileModels = append(fileModels, m)
 
 		default:
