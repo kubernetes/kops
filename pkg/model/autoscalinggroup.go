@@ -18,12 +18,13 @@ package model
 
 import (
 	"fmt"
+	"text/template"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/nodeup"
-	"text/template"
 )
 
 const (
@@ -59,12 +60,18 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				volumeType = DefaultVolumeType
 			}
 
-			t := &awstasks.LaunchConfiguration{
-				Name: s(name),
+			var securityGroups []*awstasks.SecurityGroup
+			if sgs := ig.Spec.SecurityGroups; len(sgs) == 0 {
+				securityGroups = append(securityGroups, b.LinkToSecurityGroup(ig.Spec.Role))
+			} else {
+				for _, sgName := range sgs {
+					securityGroups = append(securityGroups, &awstasks.SecurityGroup{Name: &sgName})
+				}
+			}
 
-				SecurityGroups: []*awstasks.SecurityGroup{
-					b.LinkToSecurityGroup(ig.Spec.Role),
-				},
+			t := &awstasks.LaunchConfiguration{
+				Name:               s(name),
+				SecurityGroups:     securityGroups,
 				IAMInstanceProfile: b.LinkToIAMInstanceProfile(ig),
 				ImageID:            s(ig.Spec.Image),
 				InstanceType:       s(ig.Spec.MachineType),
