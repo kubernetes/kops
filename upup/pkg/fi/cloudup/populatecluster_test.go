@@ -450,3 +450,46 @@ func TestPopulateCluster_DockerVersion(t *testing.T) {
 		}
 	}
 }
+
+func TestPopulateCluster_KubeController_High_Enough_Version(t *testing.T) {
+	c := buildMinimalCluster()
+	c.Spec.KubernetesVersion = "v1.5.2"
+
+	err := PerformAssignments(c)
+	if err != nil {
+		t.Fatalf("error from PerformAssignments: %v", err)
+	}
+
+	addEtcdClusters(c)
+
+	full, err := PopulateClusterSpec(c)
+	if err != nil {
+		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
+	}
+
+	if full.Spec.KubeControllerManager.AttachDetachReconcileSyncPeriod == nil {
+		t.Fatalf("Attache Detach not set correctly")
+	}
+
+}
+
+func TestPopulateCluster_KubeController_Fail(t *testing.T) {
+	c := buildMinimalCluster()
+	c.Spec.KubernetesVersion = "1.4.7"
+
+	err := PerformAssignments(c)
+	if err != nil {
+		t.Fatalf("error from PerformAssignments: %v", err)
+	}
+
+	addEtcdClusters(c)
+
+	full, err := PopulateClusterSpec(c)
+	if err != nil {
+		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
+	}
+
+	if full.Spec.KubeControllerManager.AttachDetachReconcileSyncPeriod != nil {
+		t.Fatalf("Attach Detach is not supported in 1.4.7")
+	}
+}
