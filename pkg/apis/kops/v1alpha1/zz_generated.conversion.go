@@ -1013,6 +1013,7 @@ func autoConvert_v1alpha1_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	} else {
 		out.LeaderElection = nil
 	}
+	out.AttachDetachReconcileSyncPeriod = in.AttachDetachReconcileSyncPeriod
 	return nil
 }
 
@@ -1041,6 +1042,7 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha1_KubeControllerMana
 	} else {
 		out.LeaderElection = nil
 	}
+	out.AttachDetachReconcileSyncPeriod = in.AttachDetachReconcileSyncPeriod
 	return nil
 }
 
