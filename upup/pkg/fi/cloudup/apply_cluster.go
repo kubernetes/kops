@@ -491,6 +491,10 @@ func (c *ApplyClusterCmd) Run() error {
 		NodeUpConfigBuilder: renderNodeUpConfig,
 		NodeUpSourceHash:    "",
 		NodeUpSource:        c.NodeUpSource,
+		PreInstallScriptHash: "",
+		PreInstallScriptSource: c.PreInstallScriptSource,
+		PostInstallScriptHash: "",
+		PostInstallScriptSource: c.PostInstallScriptSource,
 	})
 
 	//// TotalNodeCount computes the total count of nodes
@@ -515,20 +519,6 @@ func (c *ApplyClusterCmd) Run() error {
 		return region
 	}
 	l.TemplateFunctions["Masters"] = tf.modelContext.MasterInstanceGroups
-
-	l.TemplateFunctions["PreInstallScriptSource"] = func() string {
-		return c.PreInstallScriptSource
-	}
-	l.TemplateFunctions["PreInstallScriptHash"] = func() string {
-		return ""
-	}
-
-	l.TemplateFunctions["PostInstallScriptSource"] = func() string {
-		return c.PostInstallScriptSource
-	}
-	l.TemplateFunctions["PostInstallScriptHash"] = func() string {
-		return ""
-	}
 
 	tf.AddTo(l.TemplateFunctions)
 

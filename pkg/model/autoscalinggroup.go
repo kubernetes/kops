@@ -22,6 +22,12 @@ type AutoscalingGroupModelBuilder struct {
 	NodeUpSource     string
 	NodeUpSourceHash string
 
+	PreInstallScriptSource string
+	PreInstallScriptHash string
+
+	PostInstallScriptSource string
+	PostInstallScriptHash string
+
 	NodeUpConfigBuilder func(ig *kops.InstanceGroup) (*nodeup.NodeUpConfig, error)
 }
 
@@ -149,6 +155,18 @@ func (b *AutoscalingGroupModelBuilder) resourceNodeUp(ig *kops.InstanceGroup) (*
 		},
 		"NodeUpSourceHash": func() string {
 			return b.NodeUpSourceHash
+		},
+		"PreInstallScriptSource": func() string {
+			return b.PreInstallScriptSource
+		},
+		"PreInstallScriptHash": func() string {
+			return b.PreInstallScriptHash
+		},
+		"PostInstallScriptSource": func() string {
+			return b.PostInstallScriptSource
+		},
+		"PostInstallScriptHash": func() string {
+			return b.PostInstallScriptHash
 		},
 		"KubeEnv": func() (string, error) {
 			config, err := b.NodeUpConfigBuilder(ig)
