@@ -54,6 +54,11 @@ func usesCNI(c *api.Cluster) bool {
 		return true
 	}
 
+	if networkConfig.Canal != nil {
+		// Canal uses CNI
+		return true
+	}
+
 	if networkConfig.CNI != nil {
 		// CNI definitely uses CNI!
 		return true

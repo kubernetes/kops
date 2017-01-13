@@ -119,7 +119,7 @@ func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTa
 		return nil, fmt.Errorf("Networking is not set, and should not be nil here")
 	}
 
-	if networking.CNI != nil || networking.Weave != nil || networking.Calico != nil || networking.Canal != nil{
+	if networking.CNI != nil || networking.Weave != nil || networking.Calico != nil || networking.Canal != nil {
 		// external is based on cni, weave, flannel, calico, etc
 		tags.Insert("_networking_cni")
 	}

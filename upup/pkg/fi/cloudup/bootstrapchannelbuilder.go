@@ -207,7 +207,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		manifests[key] = "addons/" + location
 	}
 
-	if b.cluster.Spec.Networking.Calico != nil {
+	if b.cluster.Spec.Networking.Canal != nil {
 		key := "networking.projectcalico.org"
 		version := "1.0-canal"
 
