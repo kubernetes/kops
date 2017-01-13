@@ -16,6 +16,9 @@ limitations under the License.
 
 package kops
 
+import 	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+
+
 type KubeletConfigSpec struct {
 	APIServers string `json:"apiServers,omitempty" flag:"api-servers"`
 
@@ -533,6 +536,10 @@ type KubeControllerManagerConfig struct {
 	//// corresponding flag of the kube-apiserver. WARNING: the generic garbage
 	//// collector is an alpha feature.
 	//EnableGarbageCollector bool `json:"enableGarbageCollector"`
+
+	// ReconcilerSyncLoopPeriod is the amount of time the reconciler sync states loop
+	// wait between successive executions. Is set to 1 min by kops by default
+	AttachDetachReconcileSyncPeriod metav1.Duration `json:"attachDetachReconcileSyncPeriod,omitempty" flag:"attach-detach-reconcile-sync-period"`
 }
 
 type KubeSchedulerConfig struct {
