@@ -227,6 +227,11 @@ func (d *dockerVersion) matches(arch Architecture, dockerVersion string, distro 
 }
 
 func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
+	if b.Distribution == distros.DistributionCoreOS {
+		glog.Infof("Detected CoreOS; won't install Docker")
+		return nil
+	}
+
 	// Add Apache2 license
 	{
 		t := &nodetasks.File{

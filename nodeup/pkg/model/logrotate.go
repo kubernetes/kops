@@ -14,17 +14,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package tags
+package model
 
-const (
-	TagOSFamilyRHEL   = "_rhel_family"
-	TagOSFamilyDebian = "_debian_family"
-
-	TagSystemd = "_systemd"
-
-	TagCNI = "_networking_cni"
+import (
+	"github.com/golang/glog"
+	"k8s.io/kops/nodeup/pkg/distros"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
-type HasTags interface {
-	HasTag(tag string) bool
+// LogrotateBuilder install kubectl
+type LogrotateBuilder struct {
+	*NodeupModelContext
+}
+
+var _ fi.ModelBuilder = &LogrotateBuilder{}
+
+func (b *LogrotateBuilder) Build(c *fi.ModelBuilderContext) error {
+	if b.Distribution == distros.DistributionCoreOS {
+		glog.Infof("Detected CoreOS; won't install logrotate")
+		return nil
+	}
+
+	c.AddTask(&nodetasks.Package{Name: "logrotate"})
+
+	return nil
 }
