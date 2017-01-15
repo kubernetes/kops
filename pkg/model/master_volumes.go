@@ -67,7 +67,7 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 				return fmt.Errorf("Subnet %q did not specify a zone", subnet.Name)
 			}
 
-			volumeSize := int64(fi.IntValue(m.VolumeSize))
+			volumeSize := int64(fi.Int32Value(m.VolumeSize))
 			if volumeSize == 0 {
 				volumeSize = DefaultEtcdVolumeSize
 			}

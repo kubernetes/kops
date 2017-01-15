@@ -134,8 +134,8 @@ func (x *ImportCluster) ImportAWSCluster() error {
 
 	masterGroup := &api.InstanceGroup{}
 	masterGroup.Spec.Role = api.InstanceGroupRoleMaster
-	masterGroup.Spec.MinSize = fi.Int(1)
-	masterGroup.Spec.MaxSize = fi.Int(1)
+	masterGroup.Spec.MinSize = fi.Int32(1)
+	masterGroup.Spec.MaxSize = fi.Int32(1)
 
 	masterGroup.Spec.MachineType = aws.StringValue(masterInstance.InstanceType)
 
@@ -294,17 +294,17 @@ func (x *ImportCluster) ImportAWSCluster() error {
 		if len(groups) == 1 {
 			glog.Warningf("Multiple Autoscaling groups found")
 		}
-		minSize := 0
-		maxSize := 0
+		minSize := int32(0)
+		maxSize := int32(0)
 		for _, group := range groups {
-			minSize += int(aws.Int64Value(group.MinSize))
-			maxSize += int(aws.Int64Value(group.MaxSize))
+			minSize += int32(aws.Int64Value(group.MinSize))
+			maxSize += int32(aws.Int64Value(group.MaxSize))
 		}
 		if minSize != 0 {
-			nodeGroup.Spec.MinSize = fi.Int(minSize)
+			nodeGroup.Spec.MinSize = fi.Int32(minSize)
 		}
 		if maxSize != 0 {
-			nodeGroup.Spec.MaxSize = fi.Int(maxSize)
+			nodeGroup.Spec.MaxSize = fi.Int32(maxSize)
 		}
 
 		// Determine the machine type
@@ -700,7 +700,7 @@ func (u *UserDataConfiguration) ParseBool(key string) *bool {
 	return fi.Bool(false)
 }
 
-func (u *UserDataConfiguration) ParseInt(key string) (*int, error) {
+func (u *UserDataConfiguration) ParseInt64(key string) (*int64, error) {
 	s := u.Settings[key]
 	if s == "" {
 		return nil, nil
@@ -711,7 +711,7 @@ func (u *UserDataConfiguration) ParseInt(key string) (*int, error) {
 		return nil, fmt.Errorf("error parsing key %q=%q", key, s)
 	}
 
-	return fi.Int(int(n)), nil
+	return fi.Int64(n), nil
 }
 
 func (u *UserDataConfiguration) ParseCert(key string) (*fi.Certificate, error) {

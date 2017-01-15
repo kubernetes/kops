@@ -45,7 +45,7 @@ type CreateClusterOptions struct {
 	MasterZones       string
 	NodeSize          string
 	MasterSize        string
-	NodeCount         int
+	NodeCount         int32
 	Project           string
 	KubernetesVersion string
 	OutDir            string
@@ -129,7 +129,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.VPCID, "vpc", options.VPCID, "Set to use a shared VPC")
 	cmd.Flags().StringVar(&options.NetworkCIDR, "network-cidr", options.NetworkCIDR, "Set to override the default network CIDR")
 
-	cmd.Flags().IntVar(&options.NodeCount, "node-count", options.NodeCount, "Set the number of nodes")
+	cmd.Flags().Int32Var(&options.NodeCount, "node-count", options.NodeCount, "Set the number of nodes")
 
 	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Image to use")
 
@@ -273,8 +273,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				g := &api.InstanceGroup{}
 				g.Spec.Role = api.InstanceGroupRoleMaster
 				g.Spec.Subnets = []string{subnet.Name}
-				g.Spec.MinSize = fi.Int(1)
-				g.Spec.MaxSize = fi.Int(1)
+				g.Spec.MinSize = fi.Int32(1)
+				g.Spec.MaxSize = fi.Int32(1)
 				g.ObjectMeta.Name = "master-" + subnet.Name // Subsequent masters (if we support that) could be <zone>-1, <zone>-2
 				instanceGroups = append(instanceGroups, g)
 				masters = append(masters, g)
@@ -290,8 +290,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				g := &api.InstanceGroup{}
 				g.Spec.Role = api.InstanceGroupRoleMaster
 				g.Spec.Subnets = []string{subnetName}
-				g.Spec.MinSize = fi.Int(1)
-				g.Spec.MaxSize = fi.Int(1)
+				g.Spec.MinSize = fi.Int32(1)
+				g.Spec.MaxSize = fi.Int32(1)
 				g.ObjectMeta.Name = "master-" + subnetName
 				instanceGroups = append(instanceGroups, g)
 				masters = append(masters, g)
@@ -379,8 +379,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 	if c.NodeCount != 0 {
 		for _, group := range nodes {
-			group.Spec.MinSize = fi.Int(c.NodeCount)
-			group.Spec.MaxSize = fi.Int(c.NodeCount)
+			group.Spec.MinSize = fi.Int32(c.NodeCount)
+			group.Spec.MaxSize = fi.Int32(c.NodeCount)
 		}
 	}
 
