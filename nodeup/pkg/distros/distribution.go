@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package model
+package distros
 
 import (
 	"github.com/golang/glog"
@@ -28,6 +28,7 @@ var (
 	DistributionXenial  Distribution = "xenial"
 	DistributionRhel7   Distribution = "rhel7"
 	DistributionCentos7 Distribution = "centos7"
+	DistributionCoreOS  Distribution = "coreos"
 )
 
 func (d Distribution) BuildTags() []string {
@@ -42,6 +43,8 @@ func (d Distribution) BuildTags() []string {
 		t = []string{"_centos7"}
 	case DistributionRhel7:
 		t = []string{"_rhel7"}
+	case DistributionCoreOS:
+		t = []string{"_coreos"}
 	default:
 		glog.Fatalf("unknown distribution: %s", d)
 		return nil
@@ -64,7 +67,7 @@ func (d Distribution) IsDebianFamily() bool {
 	switch d {
 	case DistributionJessie, DistributionXenial:
 		return true
-	case DistributionCentos7, DistributionRhel7:
+	case DistributionCentos7, DistributionRhel7, DistributionCoreOS:
 		return false
 	default:
 		glog.Fatalf("unknown distribution: %s", d)
@@ -74,10 +77,10 @@ func (d Distribution) IsDebianFamily() bool {
 
 func (d Distribution) IsRHELFamily() bool {
 	switch d {
-	case DistributionJessie, DistributionXenial:
-		return false
 	case DistributionCentos7, DistributionRhel7:
 		return true
+	case DistributionJessie, DistributionXenial, DistributionCoreOS:
+		return false
 	default:
 		glog.Fatalf("unknown distribution: %s", d)
 		return false
@@ -89,7 +92,9 @@ func (d Distribution) IsSystemd() bool {
 	case DistributionJessie, DistributionXenial:
 		return true
 	case DistributionCentos7, DistributionRhel7:
-		return false
+		return true
+	case DistributionCoreOS:
+		return true
 	default:
 		glog.Fatalf("unknown distribution: %s", d)
 		return false
