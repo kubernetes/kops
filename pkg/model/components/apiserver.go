@@ -41,7 +41,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		if count == 0 {
 			return fmt.Errorf("no instance groups found")
 		}
-		options.KubeAPIServer.APIServerCount = fi.Int(count)
+		options.KubeAPIServer.APIServerCount = fi.Int32(int32(count))
 	}
 
 	if options.KubeAPIServer.StorageBackend == nil {
