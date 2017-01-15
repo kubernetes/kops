@@ -59,6 +59,20 @@ spec:
 
 This block contains configuration for the `kube-apiserver`.
 
+#### oidc flags for Open ID Connect Tokens
+
+Read more about this here: https://kubernetes.io/docs/admin/authentication/#openid-connect-tokens
+
+```yaml
+spec:
+  kubeAPIServer:
+    oidcIssuerURL: https://your-oidc-provider.svc.cluster.local
+    oidcClientID: kubernetes
+    oidcUsernameClaim: sub
+    oidcGroupsClaim: user_roles
+    oidcCAFile: /etc/kubernetes/ssl/kc-ca.pem
+```
+
 #### runtimeConfig
 
 Keys and values here are translated into `--runtime-config` values for `kube-apiserver`, separated by commas.
