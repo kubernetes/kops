@@ -21,6 +21,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/federation/targets/kubernetes"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/kutil"
@@ -260,7 +261,7 @@ func (o *FederationConfiguration) EnsureConfiguration(c *fi.Context) error {
 	})
 
 	// TODO: Prefer username / password or token?
-	user := kutil.KubectlUser{
+	user := kubeconfig.KubectlUser{
 		Username: UserAdmin,
 		Password: adminPassword,
 		//Token: adminToken,
@@ -273,7 +274,7 @@ func (o *FederationConfiguration) EnsureConfiguration(c *fi.Context) error {
 	return nil
 }
 
-func (o *FederationConfiguration) ensureSecretKubeconfig(c *fi.Context, caCert *fi.Certificate, user kutil.KubectlUser) error {
+func (o *FederationConfiguration) ensureSecretKubeconfig(c *fi.Context, caCert *fi.Certificate, user kubeconfig.KubectlUser) error {
 	k8s := c.Target.(*kubernetes.KubernetesTarget).KubernetesClient
 
 	_, err := mutateSecret(k8s, o.Namespace, o.KubeconfigSecretName, func(s *v1.Secret) (*v1.Secret, error) {
@@ -281,14 +282,14 @@ func (o *FederationConfiguration) ensureSecretKubeconfig(c *fi.Context, caCert *
 		var err error
 
 		{
-			kubeconfig := &kutil.KubectlConfig{
+			conf := &kubeconfig.KubectlConfig{
 				ApiVersion: "v1",
 				Kind:       "Config",
 			}
 
-			cluster := &kutil.KubectlClusterWithName{
+			cluster := &kubeconfig.KubectlClusterWithName{
 				Name: o.ApiserverServiceName,
-				Cluster: kutil.KubectlCluster{
+				Cluster: kubeconfig.KubectlCluster{
 					Server: "https://" + o.ApiserverServiceName,
 				},
 			}
@@ -301,25 +302,25 @@ func (o *FederationConfiguration) ensureSecretKubeconfig(c *fi.Context, caCert *
 				cluster.Cluster.CertificateAuthorityData = caCertData
 			}
 
-			kubeconfig.Clusters = append(kubeconfig.Clusters, cluster)
+			conf.Clusters = append(conf.Clusters, cluster)
 
-			user := &kutil.KubectlUserWithName{
+			user := &kubeconfig.KubectlUserWithName{
 				Name: o.ApiserverServiceName,
 				User: user,
 			}
-			kubeconfig.Users = append(kubeconfig.Users, user)
+			conf.Users = append(conf.Users, user)
 
-			context := &kutil.KubectlContextWithName{
+			context := &kubeconfig.KubectlContextWithName{
 				Name: o.ApiserverServiceName,
-				Context: kutil.KubectlContext{
+				Context: kubeconfig.KubectlContext{
 					Cluster: cluster.Name,
 					User:    user.Name,
 				},
 			}
-			kubeconfig.CurrentContext = o.ApiserverServiceName
-			kubeconfig.Contexts = append(kubeconfig.Contexts, context)
+			conf.CurrentContext = o.ApiserverServiceName
+			conf.Contexts = append(conf.Contexts, context)
 
-			kubeconfigData, err = kopsapi.ToRawYaml(kubeconfig)
+			kubeconfigData, err = kopsapi.ToRawYaml(conf)
 			if err != nil {
 				return nil, fmt.Errorf("error building kubeconfig: %v", err)
 			}
