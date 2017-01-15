@@ -53,11 +53,11 @@ func BoolValue(v *bool) bool {
 	return *v
 }
 
-func Int(v int) *int {
+func Int32(v int32) *int32 {
 	return &v
 }
 
-func IntValue(v *int) int {
+func Int32Value(v *int32) int32 {
 	if v == nil {
 		return 0
 	}
