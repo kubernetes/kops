@@ -16,6 +16,7 @@ k8s.io/kops/federation
 k8s.io/kops/federation/model
 k8s.io/kops/federation/targets/kubernetes
 k8s.io/kops/federation/tasks
+k8s.io/kops/nodeup/pkg/distros
 k8s.io/kops/nodeup/pkg/model
 k8s.io/kops/nodeup/pkg/model/resources
 k8s.io/kops/pkg/apis/kops
