@@ -21,6 +21,7 @@ import (
 	"github.com/blang/semver"
 	"github.com/golang/glog"
 	"k8s.io/kops/nodeup/pkg/model/resources"
+	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
@@ -296,7 +297,7 @@ func (b *DockerBuilder) buildSystemdService(dockerVersion semver.Version) *nodet
 		hasDockerBabysitter = true
 	}
 
-	manifest := &ServiceManifest{}
+	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Docker Application Container Engine")
 	manifest.Set("Unit", "Documentation", "https://docs.docker.com")
 
