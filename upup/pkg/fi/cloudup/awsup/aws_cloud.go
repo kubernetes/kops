@@ -56,7 +56,11 @@ const DeleteTagsLogInterval = 10 // this is in "retry intervals"
 
 const TagClusterName = "KubernetesCluster"
 
-const WellKnownAccountKopeio = "383156758163"
+const (
+	WellKnownAccountKopeio = "383156758163"
+	WellKnownAccountRedhat = "309956199498"
+	WellKnownAccountCoreOS = "595879546273"
+)
 
 type AWSCloud interface {
 	fi.Cloud
@@ -575,8 +579,10 @@ func resolveImage(ec2Client ec2iface.EC2API, name string) (*ec2.Image, error) {
 			switch owner {
 			case "kope.io":
 				owner = WellKnownAccountKopeio
+			case "coreos.com":
+				owner = WellKnownAccountCoreOS
 			case "redhat.com":
-				owner = "309956199498"
+				owner = WellKnownAccountRedhat
 			}
 
 			request.Owners = []*string{&owner}

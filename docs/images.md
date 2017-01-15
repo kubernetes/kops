@@ -85,9 +85,21 @@ RHEL7 support is still experimental, but should work.  Please report any issues.
 The following steps are known:
 
 * Redhat AMIs can be found using `aws ec2 describe-images --region=us-east-1 --owner=309956199498 --filters Name=virtualization-type,Values=hvm`
-* You can specify the name using the owner alias, for example `redhat.com/RHEL-7.2_HVM-20161025-x86_64-1-Hourly2-GP2`
+* You can specify the name using the 'redhat.com` owner alias, for example `redhat.com/RHEL-7.2_HVM-20161025-x86_64-1-Hourly2-GP2`
 
 Be aware of the following limitations:
 
 * RHEL 7.2 is the recommended minimum version
 * RHEL7 AMIs are running an older kernel than we prefer to run elsewhere
+
+## CoreOS
+
+CoreOS support is highly experimental.  Please report any issues.
+
+The following steps are known:
+
+* CoreOS AMIs can be found using `aws ec2 describe-images --region=us-east-1 --owner=595879546273 --filters Name=virtualization-type,Values=hvm`
+* You can specify the name using the 'coreos.com` owner alias, for example `coreos.com/CoreOS-stable-1235.6.0-hvm`
+
+
+
