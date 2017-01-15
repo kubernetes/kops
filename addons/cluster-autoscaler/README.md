@@ -2,7 +2,7 @@
 
 ```bash
 CLOUD_PROVIDER=aws
-IMAGE=gcr.io/google_containers/cluster-autoscaler:v0.3.0
+IMAGE=gcr.io/google_containers/cluster-autoscaler:v0.4.0
 MIN_NODES=1
 MAX_NODES=5
 AWS_REGION=us-east-1

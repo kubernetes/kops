@@ -135,6 +135,9 @@ type ClusterSpec struct {
 	//   missing: default policy (currently OS security upgrades that do not require a reboot)
 	UpdatePolicy *string `json:"updatePolicy,omitempty"`
 
+	// Additional policies to add for roles
+	AdditionalPolicies *map[string]string `json:"additionalPolicies,omitempty"`
+
 	//HairpinMode                   string `json:",omitempty"`
 	//
 	//OpencontrailTag               string `json:",omitempty"`
@@ -295,7 +298,7 @@ type EtcdMemberSpec struct {
 	InstanceGroup *string `json:"instanceGroup,omitempty"`
 
 	VolumeType      *string `json:"volumeType,omitempty"`
-	VolumeSize      *int    `json:"volumeSize,omitempty"`
+	VolumeSize      *int32  `json:"volumeSize,omitempty"`
 	KmsKeyId        *string `json:"kmsKeyId,omitempty"`
 	EncryptedVolume *bool   `json:"encryptedVolume,omitempty"`
 }

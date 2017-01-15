@@ -34,6 +34,7 @@ import (
 
 	// Register our APIs
 	_ "k8s.io/kops/pkg/apis/kops/install"
+	"k8s.io/kops/pkg/kubeconfig"
 )
 
 type Factory interface {
@@ -100,6 +101,7 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.AddCommand(NewCmdEdit(f, out))
 	cmd.AddCommand(NewCmdUpdate(f, out))
 	cmd.AddCommand(NewCmdReplace(f, out))
+	cmd.AddCommand(NewCmdRollingUpdate(f, out))
 	cmd.AddCommand(NewCmdToolbox(f, out))
 	cmd.AddCommand(NewCmdValidate(f, out))
 
@@ -183,7 +185,7 @@ func (c *RootCmd) ClusterName() string {
 	return c.clusterName
 }
 
-func readKubectlClusterConfig() (*kutil.KubectlClusterWithName, error) {
+func readKubectlClusterConfig() (*kubeconfig.KubectlClusterWithName, error) {
 	kubectl := &kutil.Kubectl{}
 	context, err := kubectl.GetCurrentContext()
 	if err != nil {

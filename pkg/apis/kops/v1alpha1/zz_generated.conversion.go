@@ -22,6 +22,7 @@ package v1alpha1
 
 import (
 	kops "k8s.io/kops/pkg/apis/kops"
+	api "k8s.io/kubernetes/pkg/api"
 	conversion "k8s.io/kubernetes/pkg/conversion"
 	runtime "k8s.io/kubernetes/pkg/runtime"
 )
@@ -40,6 +41,8 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_kops_CNINetworkingSpec_To_v1alpha1_CNINetworkingSpec,
 		Convert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec,
 		Convert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec,
+		Convert_v1alpha1_CanalNetworkingSpec_To_kops_CanalNetworkingSpec,
+		Convert_kops_CanalNetworkingSpec_To_v1alpha1_CanalNetworkingSpec,
 		Convert_v1alpha1_ClassicNetworkingSpec_To_kops_ClassicNetworkingSpec,
 		Convert_kops_ClassicNetworkingSpec_To_v1alpha1_ClassicNetworkingSpec,
 		Convert_v1alpha1_Cluster_To_kops_Cluster,
@@ -183,6 +186,22 @@ func Convert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec(in *kops
 	return autoConvert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec(in, out, s)
 }
 
+func autoConvert_v1alpha1_CanalNetworkingSpec_To_kops_CanalNetworkingSpec(in *CanalNetworkingSpec, out *kops.CanalNetworkingSpec, s conversion.Scope) error {
+	return nil
+}
+
+func Convert_v1alpha1_CanalNetworkingSpec_To_kops_CanalNetworkingSpec(in *CanalNetworkingSpec, out *kops.CanalNetworkingSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha1_CanalNetworkingSpec_To_kops_CanalNetworkingSpec(in, out, s)
+}
+
+func autoConvert_kops_CanalNetworkingSpec_To_v1alpha1_CanalNetworkingSpec(in *kops.CanalNetworkingSpec, out *CanalNetworkingSpec, s conversion.Scope) error {
+	return nil
+}
+
+func Convert_kops_CanalNetworkingSpec_To_v1alpha1_CanalNetworkingSpec(in *kops.CanalNetworkingSpec, out *CanalNetworkingSpec, s conversion.Scope) error {
+	return autoConvert_kops_CanalNetworkingSpec_To_v1alpha1_CanalNetworkingSpec(in, out, s)
+}
+
 func autoConvert_v1alpha1_ClassicNetworkingSpec_To_kops_ClassicNetworkingSpec(in *ClassicNetworkingSpec, out *kops.ClassicNetworkingSpec, s conversion.Scope) error {
 	return nil
 }
@@ -200,6 +219,9 @@ func Convert_kops_ClassicNetworkingSpec_To_v1alpha1_ClassicNetworkingSpec(in *ko
 }
 
 func autoConvert_v1alpha1_Cluster_To_kops_Cluster(in *Cluster, out *kops.Cluster, s conversion.Scope) error {
+	if err := api.Convert_v1_TypeMeta_To_v1_TypeMeta(&in.TypeMeta, &out.TypeMeta, s); err != nil {
+		return err
+	}
 	// TODO: Inefficient conversion - can we improve it?
 	if err := s.Convert(&in.ObjectMeta, &out.ObjectMeta, 0); err != nil {
 		return err
@@ -215,6 +237,9 @@ func Convert_v1alpha1_Cluster_To_kops_Cluster(in *Cluster, out *kops.Cluster, s 
 }
 
 func autoConvert_kops_Cluster_To_v1alpha1_Cluster(in *kops.Cluster, out *Cluster, s conversion.Scope) error {
+	if err := api.Convert_v1_TypeMeta_To_v1_TypeMeta(&in.TypeMeta, &out.TypeMeta, s); err != nil {
+		return err
+	}
 	// TODO: Inefficient conversion - can we improve it?
 	if err := s.Convert(&in.ObjectMeta, &out.ObjectMeta, 0); err != nil {
 		return err
@@ -230,6 +255,9 @@ func Convert_kops_Cluster_To_v1alpha1_Cluster(in *kops.Cluster, out *Cluster, s 
 }
 
 func autoConvert_v1alpha1_ClusterList_To_kops_ClusterList(in *ClusterList, out *kops.ClusterList, s conversion.Scope) error {
+	if err := api.Convert_v1_TypeMeta_To_v1_TypeMeta(&in.TypeMeta, &out.TypeMeta, s); err != nil {
+		return err
+	}
 	out.ListMeta = in.ListMeta
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
@@ -250,6 +278,9 @@ func Convert_v1alpha1_ClusterList_To_kops_ClusterList(in *ClusterList, out *kops
 }
 
 func autoConvert_kops_ClusterList_To_v1alpha1_ClusterList(in *kops.ClusterList, out *ClusterList, s conversion.Scope) error {
+	if err := api.Convert_v1_TypeMeta_To_v1_TypeMeta(&in.TypeMeta, &out.TypeMeta, s); err != nil {
+		return err
+	}
 	out.ListMeta = in.ListMeta
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
@@ -300,6 +331,7 @@ func autoConvert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	// WARNING: in.AdminAccess requires manual conversion: does not exist in peer-type
 	out.IsolateMasters = in.IsolateMasters
 	out.UpdatePolicy = in.UpdatePolicy
+	out.AdditionalPolicies = in.AdditionalPolicies
 	if in.EtcdClusters != nil {
 		in, out := &in.EtcdClusters, &out.EtcdClusters
 		*out = make([]*kops.EtcdClusterSpec, len(*in))
@@ -436,6 +468,7 @@ func autoConvert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, 
 	// WARNING: in.KubernetesAPIAccess requires manual conversion: does not exist in peer-type
 	out.IsolateMasters = in.IsolateMasters
 	out.UpdatePolicy = in.UpdatePolicy
+	out.AdditionalPolicies = in.AdditionalPolicies
 	if in.EtcdClusters != nil {
 		in, out := &in.EtcdClusters, &out.EtcdClusters
 		*out = make([]*EtcdClusterSpec, len(*in))
@@ -686,6 +719,9 @@ func Convert_kops_ExternalNetworkingSpec_To_v1alpha1_ExternalNetworkingSpec(in *
 }
 
 func autoConvert_v1alpha1_Federation_To_kops_Federation(in *Federation, out *kops.Federation, s conversion.Scope) error {
+	if err := api.Convert_v1_TypeMeta_To_v1_TypeMeta(&in.TypeMeta, &out.TypeMeta, s); err != nil {
+		return err
+	}
 	// TODO: Inefficient conversion - can we improve it?
 	if err := s.Convert(&in.ObjectMeta, &out.ObjectMeta, 0); err != nil {
 		return err
@@ -701,6 +737,9 @@ func Convert_v1alpha1_Federation_To_kops_Federation(in *Federation, out *kops.Fe
 }
 
 func autoConvert_kops_Federation_To_v1alpha1_Federation(in *kops.Federation, out *Federation, s conversion.Scope) error {
+	if err := api.Convert_v1_TypeMeta_To_v1_TypeMeta(&in.TypeMeta, &out.TypeMeta, s); err != nil {
+		return err
+	}
 	// TODO: Inefficient conversion - can we improve it?
 	if err := s.Convert(&in.ObjectMeta, &out.ObjectMeta, 0); err != nil {
 		return err
@@ -716,6 +755,9 @@ func Convert_kops_Federation_To_v1alpha1_Federation(in *kops.Federation, out *Fe
 }
 
 func autoConvert_v1alpha1_FederationList_To_kops_FederationList(in *FederationList, out *kops.FederationList, s conversion.Scope) error {
+	if err := api.Convert_v1_TypeMeta_To_v1_TypeMeta(&in.TypeMeta, &out.TypeMeta, s); err != nil {
+		return err
+	}
 	out.ListMeta = in.ListMeta
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
@@ -736,6 +778,9 @@ func Convert_v1alpha1_FederationList_To_kops_FederationList(in *FederationList, 
 }
 
 func autoConvert_kops_FederationList_To_v1alpha1_FederationList(in *kops.FederationList, out *FederationList, s conversion.Scope) error {
+	if err := api.Convert_v1_TypeMeta_To_v1_TypeMeta(&in.TypeMeta, &out.TypeMeta, s); err != nil {
+		return err
+	}
 	out.ListMeta = in.ListMeta
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
@@ -778,6 +823,9 @@ func Convert_kops_FederationSpec_To_v1alpha1_FederationSpec(in *kops.FederationS
 }
 
 func autoConvert_v1alpha1_InstanceGroup_To_kops_InstanceGroup(in *InstanceGroup, out *kops.InstanceGroup, s conversion.Scope) error {
+	if err := api.Convert_v1_TypeMeta_To_v1_TypeMeta(&in.TypeMeta, &out.TypeMeta, s); err != nil {
+		return err
+	}
 	// TODO: Inefficient conversion - can we improve it?
 	if err := s.Convert(&in.ObjectMeta, &out.ObjectMeta, 0); err != nil {
 		return err
@@ -793,6 +841,9 @@ func Convert_v1alpha1_InstanceGroup_To_kops_InstanceGroup(in *InstanceGroup, out
 }
 
 func autoConvert_kops_InstanceGroup_To_v1alpha1_InstanceGroup(in *kops.InstanceGroup, out *InstanceGroup, s conversion.Scope) error {
+	if err := api.Convert_v1_TypeMeta_To_v1_TypeMeta(&in.TypeMeta, &out.TypeMeta, s); err != nil {
+		return err
+	}
 	// TODO: Inefficient conversion - can we improve it?
 	if err := s.Convert(&in.ObjectMeta, &out.ObjectMeta, 0); err != nil {
 		return err
@@ -808,6 +859,9 @@ func Convert_kops_InstanceGroup_To_v1alpha1_InstanceGroup(in *kops.InstanceGroup
 }
 
 func autoConvert_v1alpha1_InstanceGroupList_To_kops_InstanceGroupList(in *InstanceGroupList, out *kops.InstanceGroupList, s conversion.Scope) error {
+	if err := api.Convert_v1_TypeMeta_To_v1_TypeMeta(&in.TypeMeta, &out.TypeMeta, s); err != nil {
+		return err
+	}
 	out.ListMeta = in.ListMeta
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
@@ -828,6 +882,9 @@ func Convert_v1alpha1_InstanceGroupList_To_kops_InstanceGroupList(in *InstanceGr
 }
 
 func autoConvert_kops_InstanceGroupList_To_v1alpha1_InstanceGroupList(in *kops.InstanceGroupList, out *InstanceGroupList, s conversion.Scope) error {
+	if err := api.Convert_v1_TypeMeta_To_v1_TypeMeta(&in.TypeMeta, &out.TypeMeta, s); err != nil {
+		return err
+	}
 	out.ListMeta = in.ListMeta
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
@@ -918,6 +975,11 @@ func autoConvert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.AnonymousAuth = in.AnonymousAuth
 	out.KubeletPreferredAddressTypes = in.KubeletPreferredAddressTypes
 	out.StorageBackend = in.StorageBackend
+	out.OIDCUsernameClaim = in.OIDCUsernameClaim
+	out.OIDCGroupsClaim = in.OIDCGroupsClaim
+	out.OIDCIssuerURL = in.OIDCIssuerURL
+	out.OIDCClientID = in.OIDCClientID
+	out.OIDCCAFile = in.OIDCCAFile
 	return nil
 }
 
@@ -948,6 +1010,11 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *ko
 	out.AnonymousAuth = in.AnonymousAuth
 	out.KubeletPreferredAddressTypes = in.KubeletPreferredAddressTypes
 	out.StorageBackend = in.StorageBackend
+	out.OIDCUsernameClaim = in.OIDCUsernameClaim
+	out.OIDCGroupsClaim = in.OIDCGroupsClaim
+	out.OIDCIssuerURL = in.OIDCIssuerURL
+	out.OIDCClientID = in.OIDCClientID
+	out.OIDCCAFile = in.OIDCCAFile
 	return nil
 }
 
@@ -976,6 +1043,7 @@ func autoConvert_v1alpha1_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	} else {
 		out.LeaderElection = nil
 	}
+	out.AttachDetachReconcileSyncPeriod = in.AttachDetachReconcileSyncPeriod
 	return nil
 }
 
@@ -1004,6 +1072,7 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha1_KubeControllerMana
 	} else {
 		out.LeaderElection = nil
 	}
+	out.AttachDetachReconcileSyncPeriod = in.AttachDetachReconcileSyncPeriod
 	return nil
 }
 
@@ -1277,6 +1346,15 @@ func autoConvert_v1alpha1_NetworkingSpec_To_kops_NetworkingSpec(in *NetworkingSp
 	} else {
 		out.Calico = nil
 	}
+	if in.Canal != nil {
+		in, out := &in.Canal, &out.Canal
+		*out = new(kops.CanalNetworkingSpec)
+		if err := Convert_v1alpha1_CanalNetworkingSpec_To_kops_CanalNetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Canal = nil
+	}
 	return nil
 }
 
@@ -1347,6 +1425,15 @@ func autoConvert_kops_NetworkingSpec_To_v1alpha1_NetworkingSpec(in *kops.Network
 		}
 	} else {
 		out.Calico = nil
+	}
+	if in.Canal != nil {
+		in, out := &in.Canal, &out.Canal
+		*out = new(CanalNetworkingSpec)
+		if err := Convert_kops_CanalNetworkingSpec_To_v1alpha1_CanalNetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Canal = nil
 	}
 	return nil
 }

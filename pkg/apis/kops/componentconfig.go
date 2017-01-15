@@ -16,10 +16,12 @@ limitations under the License.
 
 package kops
 
+import metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+
 type KubeletConfigSpec struct {
 	APIServers string `json:"apiServers,omitempty" flag:"api-servers"`
 
-	LogLevel *int `json:"logLevel,omitempty" flag:"v"`
+	LogLevel *int32 `json:"logLevel,omitempty" flag:"v"`
 
 	// Configuration flags - a subset of https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
 
@@ -301,7 +303,7 @@ type KubeProxyConfig struct {
 	// TODO: Better type ?
 	CPURequest string `json:"cpuRequest,omitempty"` // e.g. "20m"
 
-	LogLevel int `json:"logLevel,omitempty" flag:"v"`
+	LogLevel int32 `json:"logLevel,omitempty" flag:"v"`
 
 	// Configuration flags - a subset of https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
 
@@ -358,10 +360,10 @@ type KubeAPIServerConfig struct {
 	PathSrvSshproxy   string `json:"pathSrvSshproxy,omitempty"`
 	Image             string `json:"image,omitempty"`
 
-	LogLevel int `json:"logLevel,omitempty" flag:"v"`
+	LogLevel int32 `json:"logLevel,omitempty" flag:"v"`
 
 	CloudProvider         string   `json:"cloudProvider,omitempty" flag:"cloud-provider"`
-	SecurePort            int      `json:"securePort,omitempty" flag:"secure-port"`
+	SecurePort            int32    `json:"securePort,omitempty" flag:"secure-port"`
 	Address               string   `json:"address,omitempty" flag:"address"`
 	EtcdServers           []string `json:"etcdServers,omitempty" flag:"etcd-servers"`
 	EtcdServersOverrides  []string `json:"etcdServersOverrides,omitempty" flag:"etcd-servers-overrides"`
@@ -373,7 +375,7 @@ type KubeAPIServerConfig struct {
 	TLSPrivateKeyFile     string   `json:"tlsPrivateKeyFile,omitempty" flag:"tls-private-key-file"`
 	TokenAuthFile         string   `json:"tokenAuthFile,omitempty" flag:"token-auth-file"`
 	AllowPrivileged       *bool    `json:"allowPrivileged,omitempty" flag:"allow-privileged"`
-	APIServerCount        *int     `json:"apiServerCount,omitempty" flag:"apiserver-count"`
+	APIServerCount        *int32   `json:"apiServerCount,omitempty" flag:"apiserver-count"`
 	// keys and values in RuntimeConfig are parsed into the `--runtime-config` parameter
 	// for KubeAPIServer, concatenated with commas. ex: `--runtime-config=key1=value1,key2=value2`.
 	// Use this to enable alpha resources on kube-apiserver
@@ -384,11 +386,26 @@ type KubeAPIServerConfig struct {
 	KubeletPreferredAddressTypes []string `json:"kubeletPreferredAddressTypes,omitempty" flag:"kubelet-preferred-address-types"`
 
 	StorageBackend *string `json:"storageBackend,omitempty" flag:"storage-backend"`
+
+	// The OpenID claim to use as the user name.
+	// Note that claims other than the default ('sub') is not guaranteed to be unique and immutable.
+	OIDCUsernameClaim *string `json:"oidcUsernameClaim,omitempty" flag:"oidc-username-claim"`
+	// If provided, the name of a custom OpenID Connect claim for specifying user groups.
+	// The claim value is expected to be a string or array of strings.
+	OIDCGroupsClaim *string `json:"oidcGroupsClaim,omitempty" flag:"oidc-groups-claim"`
+	// The URL of the OpenID issuer, only HTTPS scheme will be accepted.
+	// If set, it will be used to verify the OIDC JSON Web Token (JWT).
+	OIDCIssuerURL *string `json:"oidcIssuerURL,omitempty" flag:"oidc-issuer-url"`
+	// The client ID for the OpenID Connect client, must be set if oidc-issuer-url is set.
+	OIDCClientID *string `json:"oidcClientID,omitempty" flag:"oidc-client-id"`
+	// If set, the OpenID server's certificate will be verified by one of the authorities in the oidc-ca-file
+	// otherwise the host's root CA set will be used.
+	OIDCCAFile *string `json:"oidcCAFile,omitempty" flag:"oidc-ca-file"`
 }
 
 type KubeControllerManagerConfig struct {
 	Master   string `json:"master,omitempty" flag:"master"`
-	LogLevel int    `json:"logLevel,omitempty" flag:"v"`
+	LogLevel int32  `json:"logLevel,omitempty" flag:"v"`
 
 	ServiceAccountPrivateKeyFile string `json:"serviceAccountPrivateKeyFile,omitempty" flag:"service-account-private-key-file"`
 
@@ -533,11 +550,15 @@ type KubeControllerManagerConfig struct {
 	//// corresponding flag of the kube-apiserver. WARNING: the generic garbage
 	//// collector is an alpha feature.
 	//EnableGarbageCollector bool `json:"enableGarbageCollector"`
+
+	// ReconcilerSyncLoopPeriod is the amount of time the reconciler sync states loop
+	// wait between successive executions. Is set to 1 min by kops by default
+	AttachDetachReconcileSyncPeriod *metav1.Duration `json:"attachDetachReconcileSyncPeriod,omitempty" flag:"attach-detach-reconcile-sync-period"`
 }
 
 type KubeSchedulerConfig struct {
 	Master   string `json:"master,omitempty" flag:"master"`
-	LogLevel int    `json:"logLevel,omitempty" flag:"v"`
+	LogLevel int32  `json:"logLevel,omitempty" flag:"v"`
 
 	Image string `json:"image,omitempty"`
 

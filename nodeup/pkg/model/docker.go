@@ -20,7 +20,9 @@ import (
 	"fmt"
 	"github.com/blang/semver"
 	"github.com/golang/glog"
+	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model/resources"
+	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
@@ -39,7 +41,7 @@ type dockerVersion struct {
 	Hash    string
 
 	DockerVersion string
-	Distros       []Distribution
+	Distros       []distros.Distribution
 	Dependencies  []string
 	Architectures []Architecture
 }
@@ -51,7 +53,7 @@ var dockerVersions = []dockerVersion{
 	{
 		DockerVersion: "1.11.2",
 		Name:          "docker-engine",
-		Distros:       []Distribution{DistributionJessie},
+		Distros:       []distros.Distribution{distros.DistributionJessie},
 		Architectures: []Architecture{ArchitectureAmd64},
 		Version:       "1.11.2-0~jessie",
 		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.11.2-0~jessie_amd64.deb",
@@ -63,7 +65,7 @@ var dockerVersions = []dockerVersion{
 	{
 		DockerVersion: "1.11.2",
 		Name:          "docker-engine",
-		Distros:       []Distribution{DistributionXenial},
+		Distros:       []distros.Distribution{distros.DistributionXenial},
 		Architectures: []Architecture{ArchitectureAmd64},
 		Version:       "1.11.2-0~xenial",
 		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.11.2-0~xenial_amd64.deb",
@@ -75,7 +77,7 @@ var dockerVersions = []dockerVersion{
 	{
 		DockerVersion: "1.11.2",
 		Name:          "docker-engine",
-		Distros:       []Distribution{DistributionRhel7, DistributionCentos7},
+		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
 		Architectures: []Architecture{ArchitectureAmd64},
 		Version:       "1.11.2",
 		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.11.2-1.el7.centos.x86_64.rpm",
@@ -85,7 +87,7 @@ var dockerVersions = []dockerVersion{
 	{
 		DockerVersion: "1.11.2",
 		Name:          "docker-engine-selinux",
-		Distros:       []Distribution{DistributionRhel7, DistributionCentos7},
+		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
 		Architectures: []Architecture{ArchitectureAmd64},
 		Version:       "1.11.2",
 		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.11.2-1.el7.centos.noarch.rpm",
@@ -96,7 +98,7 @@ var dockerVersions = []dockerVersion{
 	{
 		DockerVersion: "1.12.1",
 		Name:          "docker-engine",
-		Distros:       []Distribution{DistributionJessie},
+		Distros:       []distros.Distribution{distros.DistributionJessie},
 		Architectures: []Architecture{ArchitectureAmd64},
 		Version:       "1.12.1-0~jessie",
 		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.1-0~jessie_amd64.deb",
@@ -108,7 +110,7 @@ var dockerVersions = []dockerVersion{
 	{
 		DockerVersion: "1.12.1",
 		Name:          "docker-engine",
-		Distros:       []Distribution{DistributionXenial},
+		Distros:       []distros.Distribution{distros.DistributionXenial},
 		Architectures: []Architecture{ArchitectureAmd64},
 		Version:       "1.12.1-0~xenial",
 		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.1-0~xenial_amd64.deb",
@@ -120,7 +122,7 @@ var dockerVersions = []dockerVersion{
 	{
 		DockerVersion: "1.12.1",
 		Name:          "docker-engine",
-		Distros:       []Distribution{DistributionRhel7, DistributionCentos7},
+		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
 		Architectures: []Architecture{ArchitectureAmd64},
 		Version:       "1.12.1",
 		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.12.1-1.el7.centos.x86_64.rpm",
@@ -130,7 +132,7 @@ var dockerVersions = []dockerVersion{
 	{
 		DockerVersion: "1.12.1",
 		Name:          "docker-engine-selinux",
-		Distros:       []Distribution{DistributionRhel7, DistributionCentos7},
+		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
 		Architectures: []Architecture{ArchitectureAmd64},
 		Version:       "1.12.1",
 		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.12.1-1.el7.centos.noarch.rpm",
@@ -141,7 +143,7 @@ var dockerVersions = []dockerVersion{
 	{
 		DockerVersion: "1.12.3",
 		Name:          "docker-engine",
-		Distros:       []Distribution{DistributionJessie},
+		Distros:       []distros.Distribution{distros.DistributionJessie},
 		Architectures: []Architecture{ArchitectureAmd64},
 		Version:       "1.12.3-0~jessie",
 		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.3-0~jessie_amd64.deb",
@@ -155,7 +157,7 @@ var dockerVersions = []dockerVersion{
 	{
 		DockerVersion: "1.12.3",
 		Name:          "docker-engine",
-		Distros:       []Distribution{DistributionJessie},
+		Distros:       []distros.Distribution{distros.DistributionJessie},
 		Architectures: []Architecture{ArchitectureArm},
 		Version:       "1.12.3-0~jessie",
 		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.3-0~jessie_armhf.deb",
@@ -167,7 +169,7 @@ var dockerVersions = []dockerVersion{
 	{
 		DockerVersion: "1.12.3",
 		Name:          "docker-engine",
-		Distros:       []Distribution{DistributionXenial},
+		Distros:       []distros.Distribution{distros.DistributionXenial},
 		Architectures: []Architecture{ArchitectureAmd64},
 		Version:       "1.12.3-0~xenial",
 		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.3-0~xenial_amd64.deb",
@@ -179,7 +181,7 @@ var dockerVersions = []dockerVersion{
 	{
 		DockerVersion: "1.12.3",
 		Name:          "docker-engine",
-		Distros:       []Distribution{DistributionRhel7, DistributionCentos7},
+		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
 		Architectures: []Architecture{ArchitectureAmd64},
 		Version:       "1.12.3",
 		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.12.3-1.el7.centos.x86_64.rpm",
@@ -189,7 +191,7 @@ var dockerVersions = []dockerVersion{
 	{
 		DockerVersion: "1.12.3",
 		Name:          "docker-engine-selinux",
-		Distros:       []Distribution{DistributionRhel7, DistributionCentos7},
+		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
 		Architectures: []Architecture{ArchitectureAmd64},
 		Version:       "1.12.3",
 		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.12.3-1.el7.centos.noarch.rpm",
@@ -197,7 +199,7 @@ var dockerVersions = []dockerVersion{
 	},
 }
 
-func (d *dockerVersion) matches(arch Architecture, dockerVersion string, distro Distribution) bool {
+func (d *dockerVersion) matches(arch Architecture, dockerVersion string, distro distros.Distribution) bool {
 	if d.DockerVersion != dockerVersion {
 		return false
 	}
@@ -296,7 +298,7 @@ func (b *DockerBuilder) buildSystemdService(dockerVersion semver.Version) *nodet
 		hasDockerBabysitter = true
 	}
 
-	manifest := &ServiceManifest{}
+	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Docker Application Container Engine")
 	manifest.Set("Unit", "Documentation", "https://docs.docker.com")
 

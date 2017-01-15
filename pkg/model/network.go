@@ -22,6 +22,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kubernetes/pkg/util/sets"
+	"runtime/debug"
 )
 
 // NetworkModelBuilder configures network objects
@@ -32,6 +33,10 @@ type NetworkModelBuilder struct {
 var _ fi.ModelBuilder = &NetworkModelBuilder{}
 
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
+
+	// Kris and Eric - debug.PrintStack() to connect this to
+	// We need to connect this function to /go/src/k8s.io/kops/upup/pkg/fi/executor.go
+
 	sharedVPC := b.Cluster.SharedVPC()
 
 	// VPC that holds everything for the cluster
@@ -100,6 +105,13 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	privateZones := sets.NewString()
+
+	// Kris and Eric
+	//
+	// If NgwId == nil
+	// 	no change
+	// else
+	//	new task, but this task will use existing ID
 
 	for i := range b.Cluster.Spec.Subnets {
 		subnetSpec := &b.Cluster.Spec.Subnets[i]

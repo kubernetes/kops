@@ -14,19 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package nodeup
+package flagbuilder
 
 import (
 	"fmt"
-	"github.com/golang/glog"
-	"k8s.io/kops/upup/pkg/fi/utils"
 	"reflect"
 	"sort"
 	"strings"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/upup/pkg/fi/utils"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 )
 
-// buildFlags is a template helper, which builds a string containing the flags to be passed to a command
-func buildFlags(options interface{}) (string, error) {
+// BuildFlags builds flag arguments based on "flag" tags on the structure
+func BuildFlags(options interface{}) (string, error) {
 	var flags []string
 
 	walker := func(path string, field *reflect.StructField, val reflect.Value) error {
@@ -103,6 +105,9 @@ func buildFlags(options interface{}) (string, error) {
 
 		case bool, int, int32, int64, float32, float64:
 			vString := fmt.Sprintf("%v", v)
+			flag = fmt.Sprintf("--%s=%s", flagName, vString)
+		case metav1.Duration:
+			vString := v.Duration.String()
 			flag = fmt.Sprintf("--%s=%s", flagName, vString)
 
 		default:

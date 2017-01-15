@@ -208,8 +208,8 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 	}
 
 	if b.cluster.Spec.Networking.Canal != nil {
-		key := "networking.projectcalico.org"
-		version := "1.0-canal"
+		key := "networking.projectcalico.org.canal"
+		version := "1.0"
 
 		// TODO: Create configuration object for cni providers (maybe create it but orphan it)?
 		location := key + "/v" + version + ".yaml"

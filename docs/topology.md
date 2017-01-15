@@ -34,28 +34,3 @@ To specify a topology use the `--topology` or `-t` flag as in :
 kops create cluster ... --topology public|private
 ```
 
-# Troubleshooting
-
-### 1) Unable to forward agent to master via bastion
-
-Verify your local agent is configured correctly
-
-```
-$ ssh-add -L
-ssh-rsa <PUBLIC_RSA_HASH> /Users/kris/.ssh/id_rsa
-```
-
-If that command returns no results, add the agent to `ssh-agent`
-
-```
-ssh-add ~/.ssh/id_rsa
-```
-
-Check the agent is now added using `ssh-add -L`
-
-SSH into the bastion, then into a master
-
-```
-ssh -A admin@<bastion_elb_a_record>
-ssh admin@<master_ip>
-```

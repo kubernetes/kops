@@ -26,6 +26,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/util/pkg/vfs"
@@ -49,9 +50,6 @@ type templateFunctions struct {
 	secretStore fi.SecretStore
 
 	tags sets.String
-
-	// kubeletConfig is the kubelet config for the current node
-	kubeletConfig *api.KubeletConfigSpec
 }
 
 // newTemplateFunctions is the constructor for templateFunctions
@@ -87,29 +85,6 @@ func newTemplateFunctions(nodeupConfig *NodeUpConfig, cluster *api.Cluster, inst
 		return nil, fmt.Errorf("KeyStore not set")
 	}
 
-	{
-		instanceGroup := t.instanceGroup
-		if instanceGroup == nil {
-			// Old clusters might not have exported instance groups
-			// in that case we build a synthetic instance group with the information that BuildKubeletConfigSpec needs
-			// TODO: Remove this once we have a stable release
-			glog.Warningf("Building a synthetic instance group")
-			instanceGroup = &api.InstanceGroup{}
-			instanceGroup.ObjectMeta.Name = "synthetic"
-			if t.IsMaster() {
-				instanceGroup.Spec.Role = api.InstanceGroupRoleMaster
-			} else {
-				instanceGroup.Spec.Role = api.InstanceGroupRoleNode
-			}
-			t.instanceGroup = instanceGroup
-		}
-		kubeletConfigSpec, err := api.BuildKubeletConfigSpec(cluster, instanceGroup)
-		if err != nil {
-			return nil, fmt.Errorf("error building kubelet config: %v", err)
-		}
-		t.kubeletConfig = kubeletConfigSpec
-	}
-
 	return t, nil
 }
 
@@ -123,7 +98,7 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 	dest["AllTokens"] = t.AllTokens
 	dest["GetToken"] = t.GetToken
 
-	dest["BuildFlags"] = buildFlags
+	dest["BuildFlags"] = flagbuilder.BuildFlags
 	dest["Base64Encode"] = func(s string) string {
 		return base64.StdEncoding.EncodeToString([]byte(s))
 	}
@@ -144,9 +119,6 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 		return t.cluster.Spec.KubeControllerManager
 	}
 	dest["KubeProxy"] = t.KubeProxyConfig
-	dest["KubeletConfig"] = func() *api.KubeletConfigSpec {
-		return t.kubeletConfig
-	}
 
 	dest["ClusterName"] = func() string {
 		return t.cluster.ObjectMeta.Name
@@ -276,7 +248,7 @@ func (t *templateFunctions) ProtokubeFlags() *ProtokubeFlags {
 		f.Channels = t.nodeupConfig.Channels
 	}
 
-	f.LogLevel = fi.Int(4)
+	f.LogLevel = fi.Int32(4)
 	f.Containerized = fi.Bool(true)
 
 	zone := t.cluster.Spec.DNSZone

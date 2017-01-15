@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
@@ -33,6 +34,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/upup/pkg/fi/nodeup/tags"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/util/sets"
@@ -173,34 +175,42 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	//	c.Config.Tags = append(c.Config.Tags, "_not_config_store")
 	//}
 
-	distribution, err := FindDistribution(c.FSRoot)
+	distribution, err := distros.FindDistribution(c.FSRoot)
 	if err != nil {
 		return fmt.Errorf("error determining OS distribution: %v", err)
 	}
 
 	osTags := distribution.BuildTags()
 
-	tags := sets.NewString()
-	tags.Insert(osTags...)
-	tags.Insert(c.config.Tags...)
+	nodeTags := sets.NewString()
+	nodeTags.Insert(osTags...)
+	nodeTags.Insert(c.config.Tags...)
 
 	glog.Infof("Config tags: %v", c.config.Tags)
 	glog.Infof("OS tags: %v", osTags)
 
-	modelContext := &model.NodeupModelContext{
-		Cluster:      c.cluster,
-		Distribution: distribution,
-		Architecture: model.ArchitectureAmd64,
-	}
-
-	loader := NewLoader(c.config, c.cluster, assets, tags)
-
-	loader.Builders = append(loader.Builders, &model.DockerBuilder{NodeupModelContext: modelContext})
-	loader.Builders = append(loader.Builders, &model.SysctlBuilder{NodeupModelContext: modelContext})
-	tf, err := newTemplateFunctions(c.config, c.cluster, c.instanceGroup, tags)
+	tf, err := newTemplateFunctions(c.config, c.cluster, c.instanceGroup, nodeTags)
 	if err != nil {
 		return fmt.Errorf("error initializing: %v", err)
 	}
+
+	modelContext := &model.NodeupModelContext{
+		Cluster:       c.cluster,
+		Distribution:  distribution,
+		Architecture:  model.ArchitectureAmd64,
+		InstanceGroup: c.instanceGroup,
+		IsMaster:      nodeTags.Has(TagMaster),
+		UsesCNI:       nodeTags.Has(tags.TagCNI),
+		Assets:        assets,
+		KeyStore:      tf.keyStore,
+		SecretStore:   tf.secretStore,
+	}
+
+	loader := NewLoader(c.config, c.cluster, assets, nodeTags)
+	loader.Builders = append(loader.Builders, &model.DockerBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.KubeletBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.SysctlBuilder{NodeupModelContext: modelContext})
+
 	tf.populate(loader.TemplateFunctions)
 
 	taskMap, err := loader.Build(c.ModelDir)
@@ -231,13 +241,13 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	case "direct":
 		target = &local.LocalTarget{
 			CacheDir: c.CacheDir,
-			Tags:     tags,
+			Tags:     nodeTags,
 		}
 	case "dryrun":
 		target = fi.NewDryRunTarget(out)
 	case "cloudinit":
 		checkExisting = false
-		target = cloudinit.NewCloudInitTarget(out, tags)
+		target = cloudinit.NewCloudInitTarget(out, nodeTags)
 	default:
 		return fmt.Errorf("unsupported target type %q", c.Target)
 	}
