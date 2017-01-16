@@ -49,6 +49,8 @@ brew install kubernetes-cli
 
 In this example we will be using a dedicated IAM user to use with kops. This user will need basic API security credentials in order to use kops. Create the user and credentials using the AWS console. [More information](https://aws.amazon.com/documentation/iam/).
 
+Kubernetes kops uses the official AWS Go SDK, so all we need to do here is set up your system to use the official AWS supported methods of registering security credentials defined [here](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials). Here is an example using the aws command line tool to set up your security credentials.
+
 To create a IAM user for kops do the following:
 
 - Navigate to the IAM home page after logging onto the console
@@ -70,8 +72,6 @@ To create a IAM user for kops do the following:
 * Click on Download .csv
 * Run aws configure
 * Run aws iam list-users
-
-Kubernetes kops uses the official AWS Go SDK, so all we need to do here is set up your system to use the official AWS supported methods of registering security credentials defined [here](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials). Here is an example using the aws command line tool to set up your security credentials.
 
 #### OS X
 
