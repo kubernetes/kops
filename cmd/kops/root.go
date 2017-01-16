@@ -34,6 +34,7 @@ import (
 
 	// Register our APIs
 	_ "k8s.io/kops/pkg/apis/kops/install"
+	"k8s.io/kops/pkg/kubeconfig"
 )
 
 type Factory interface {
@@ -183,7 +184,7 @@ func (c *RootCmd) ClusterName() string {
 	return c.clusterName
 }
 
-func readKubectlClusterConfig() (*kutil.KubectlClusterWithName, error) {
+func readKubectlClusterConfig() (*kubeconfig.KubectlClusterWithName, error) {
 	kubectl := &kutil.Kubectl{}
 	context, err := kubectl.GetCurrentContext()
 	if err != nil {
