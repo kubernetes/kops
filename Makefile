@@ -293,9 +293,8 @@ examples:
 # api machinery regenerate
 
 apimachinery:
-	# conversion: go install ./cmd/libs/go2idl/conversion-gen
+	./hack/make-apimachinery.sh
 	${GOPATH}/bin/conversion-gen --skip-unsafe=true --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha1 --v=8  --output-file-base=zz_generated.conversion
-	# defaulters: go install ./cmd/libs/go2idl/defaulter-gen
 	${GOPATH}/bin/defaulter-gen --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha1 --v=8  --output-file-base=zz_generated.defaults
 	${GOPATH}/bin/defaulter-gen --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha2 --v=8  --output-file-base=zz_generated.defaults
 	#go install github.com/ugorji/go/codec/codecgen
