@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"io/ioutil"
+	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 	"os"
 	"os/exec"
@@ -59,7 +60,7 @@ func (k *Kubectl) GetCurrentContext() (string, error) {
 	//return s, nil
 }
 
-func (k *Kubectl) GetConfig(minify bool) (*KubectlConfig, error) {
+func (k *Kubectl) GetConfig(minify bool) (*kubeconfig.KubectlConfig, error) {
 	output := "json"
 	// TODO: --context doesn't seem to work
 	args := []string{"config", "view"}
@@ -80,7 +81,7 @@ func (k *Kubectl) GetConfig(minify bool) (*KubectlConfig, error) {
 
 	glog.V(8).Infof("config = %q", configString)
 
-	config := &KubectlConfig{}
+	config := &kubeconfig.KubectlConfig{}
 	err = json.Unmarshal([]byte(configString), config)
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse current config from kubectl: %v", err)
@@ -136,46 +137,4 @@ func (k *Kubectl) execKubectl(args ...string) (string, string, error) {
 	}
 
 	return stdout.String(), stderr.String(), err
-}
-
-type KubectlConfig struct {
-	Kind           string                    `json:"kind"`
-	ApiVersion     string                    `json:"apiVersion"`
-	CurrentContext string                    `json:"current-context"`
-	Clusters       []*KubectlClusterWithName `json:"clusters"`
-	Contexts       []*KubectlContextWithName `json:"contexts"`
-	Users          []*KubectlUserWithName    `json:"users"`
-}
-
-type KubectlClusterWithName struct {
-	Name    string         `json:"name"`
-	Cluster KubectlCluster `json:"cluster"`
-}
-
-type KubectlCluster struct {
-	Server                   string `json:"server"`
-	CertificateAuthorityData []byte `json:"certificate-authority-data,omitempty"`
-}
-
-type KubectlContextWithName struct {
-	Name    string         `json:"name"`
-	Context KubectlContext `json:"context"`
-}
-
-type KubectlContext struct {
-	Cluster string `json:"cluster"`
-	User    string `json:"user"`
-}
-
-type KubectlUserWithName struct {
-	Name string      `json:"name"`
-	User KubectlUser `json:"user"`
-}
-
-type KubectlUser struct {
-	ClientCertificateData []byte `json:"client-certificate-data,omitempty"`
-	ClientKeyData         []byte `json:"client-key-data,omitempty"`
-	Password              string `json:"password,omitempty"`
-	Username              string `json:"username,omitempty"`
-	Token                 string `json:"token,omitempty"`
 }
