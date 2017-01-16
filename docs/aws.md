@@ -51,15 +51,15 @@ In this example we will be using a dedicated IAM user to use with kops. This use
 
 To create a IAM user for kops do the following:
 
-* Navigate to the IAM home page after logging onto the console
-* Click the Groups link on the left tab and then click Create New Group
-* Set Group Name: to kops and then click Next Step
-* Attach the following policies and then click Next Step:
-..AmazonEC2FullAccess
-..AmazonRoute53FullAccess
-..AmazonS3FullAccess
-..IAMFullAccess
-..AmazonVPCFullAccess
+- Navigate to the IAM home page after logging onto the console
+- Click the Groups link on the left tab and then click Create New Group
+- Set Group Name: to kops and then click Next Step
+- Attach the following policies and then click Next Step:
+ - AmazonEC2FullAccess
+ - AmazonRoute53FullAccess
+ - AmazonS3FullAccess
+ - IAMFullAccess
+ - AmazonVPCFullAccess
 * Click Create Group
 * Click the Users link on the left tab and then click Add user
 * Set User name to kops
