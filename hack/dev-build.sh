@@ -80,7 +80,7 @@ KOPS_BASE_URL="https://${NODEUP_BUCKET}.s3.amazonaws.com/kops/${GIT_VER}/"
 echo ==========
 echo "Starting build"
 
-make ci && S3_BUCKET=s3://${NODEUP_BUCKET} make upload
+#make ci && S3_BUCKET=s3://${NODEUP_BUCKET} make upload
 
 echo ==========
 echo "Deleting cluster ${CLUSTER_NAME}. Elle est finie."
@@ -105,9 +105,11 @@ KOPS_BASE_URL=${KOPS_BASE_URL} kops create cluster \
   --master-size $MASTER_SIZE \
   --topology $TOPOLOGY \
   --networking $NETWORKING \
+  --kubernetes-version "1.5.2" \
   -v $VERBOSITY \
-  --image $IMAGE \
-  --yes
+  --image $IMAGE 
+  #\
+  #--yes
 
 echo ==========
 echo "Your k8s cluster ${CLUSTER_NAME}, awaits your bidding."

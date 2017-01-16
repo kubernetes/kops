@@ -39,6 +39,7 @@ var _ loader.OptionsBuilder = &KubeControllerManagerOptionsBuilder{}
 
 // BuildOptions tests for options to be added to the model
 func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error {
+
 	options := o.(*kops.ClusterSpec)
 
 	if options.KubeControllerManager == nil {
@@ -70,11 +71,12 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	// if 1.4.8+ and 1.5.2+
 	if kubernetesVersion.GTE(*k8sv148) || kubernetesVersion.GTE(*k8sv152) {
 
+		glog.Info("k-c-m default-attach-detach-reconcile-sync-period correct version found")
 		// If not set ... or set to 0s ... which is stupid
 		if options.KubeControllerManager.AttachDetachReconcileSyncPeriod == nil ||
 			options.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration.String() == "0s" {
 
-			glog.V(8).Info("k-c-m default-attach-detach-reconcile-sync-period flag is set to defatul")
+			glog.V(8).Info("k-c-m default-attach-detach-reconcile-sync-period flag is set to default")
 			options.KubeControllerManager.AttachDetachReconcileSyncPeriod = &metav1.Duration{Duration: defaultAttachDetachReconcileSyncPeriod}
 
 			// If less than 1 min and greater than 1 sec ... you get a warning
@@ -89,7 +91,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		}
 	} else {
 
-		glog.V(8).Info("not setting k-c-m default-attach-detach-reconcile-sync-period, k8s version is too low")
+		glog.Info("not setting k-c-m default-attach-detach-reconcile-sync-period, k8s version is too low")
 		options.KubeControllerManager.AttachDetachReconcileSyncPeriod = nil
 	}
 

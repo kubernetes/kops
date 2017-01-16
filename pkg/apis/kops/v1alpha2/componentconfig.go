@@ -16,7 +16,7 @@ limitations under the License.
 
 package v1alpha2
 
-import 	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+import metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 
 type KubeletConfigSpec struct {
 	APIServers string `json:"apiServers,omitempty" flag:"api-servers"`
