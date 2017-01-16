@@ -44,3 +44,15 @@ type Record struct {
 func AliasForNodesInRole(role, roleType string) string {
 	return "node/role=" + role + "/" + roleType
 }
+
+func (r *Record) String() string {
+	s := "Record:[Type=" + string(r.RecordType) + ",FQDN=" + r.FQDN + ",Value=" + r.Value
+
+	if r.AliasTarget {
+		s += ",AliasTarget"
+	}
+
+	s += "]"
+
+	return s
+}

@@ -144,6 +144,8 @@ func precreateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 		return fmt.Errorf("error getting DNS resource records for %q", zone.Name())
 	}
 
+	// TODO: We should change the filter to be a suffix match instead
+	//records, err := rrs.List("", "")
 	records, err := rrs.List()
 	if err != nil {
 		return fmt.Errorf("error listing DNS resource records for %q: %v", zone.Name(), err)
