@@ -63,11 +63,12 @@ func Test_Build_KCM_Builder_Lower_Version(t *testing.T) {
 		t.Fatalf("k-c-m builder errors: %v", err)
 	}
 
-	if spec.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration != 0 {
+	if spec.KubeControllerManager.AttachDetachReconcileSyncPeriod != nil {
 		t.Fatalf("k-c-m builder cannot be set for k8s %s", spec.KubernetesVersion)
 	}
 
 }
+
 
 func Test_Build_KCM_Builder_High_Enough_Version(t *testing.T) {
 	c := buildCluster(ClusterParams{KubernetesVersion:"1.4.8"})

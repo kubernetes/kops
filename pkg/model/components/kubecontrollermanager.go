@@ -29,6 +29,18 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		options.KubeControllerManager = &kops.KubeControllerManagerConfig{}
 	}
 
+	k8sv148, err := kops.ParseKubernetesVersion("v1.4.8")
+
+	if err != nil {
+		return fmt.Errorf("Unable to parse kubernetesVersion v1.4.8")
+	}
+
+	k8sv152, _ := kops.ParseKubernetesVersion("v1.5.2")
+
+	if err != nil {
+		return fmt.Errorf("Unable to parse kubernetesVersion v1.5.2")
+	}
+
 	kubernetesVersion, err := b.Context.KubernetesVersion()
 	if err != nil {
 		return fmt.Errorf("Unable to parse kubernetesVersion")
@@ -40,22 +52,29 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	// TLDR; set this too low, and have a few PVC, and you will spam AWS api
 
 	// if 1.4.8+ and 1.5.2+
-	if (kubernetesVersion.Major == 1 && kubernetesVersion.Minor == 4 && kubernetesVersion.Patch >= 8) ||
-		(kubernetesVersion.Major == 1 && kubernetesVersion.Minor <= 5 && kubernetesVersion.Patch >= 2) {
+	if kubernetesVersion.GTE(*k8sv148) || kubernetesVersion.GTE(*k8sv152) {
 
 		// If not set ... or set to 0s ... which is stupid
-		if options.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration.String() == "0s" {
-			options.KubeControllerManager.AttachDetachReconcileSyncPeriod = metav1.Duration{Duration: 1 * time.Minute}
+		if options.KubeControllerManager.AttachDetachReconcileSyncPeriod == nil ||
+			options.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration.String() == "0s" {
+
+			glog.V(8).Info("k-c-m default-attach-detach-reconcile-sync-period flag is set to defatul")
+			options.KubeControllerManager.AttachDetachReconcileSyncPeriod = &metav1.Duration{Duration: defaultAttachDetachReconcileSyncPeriod}
 
 			// If less than 1 min and greater than 1 sec ... you get a warning
 		} else if options.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration < defaultAttachDetachReconcileSyncPeriod &&
 			options.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration > time.Second {
-			glog.Infof("k-c-m default-attach-detach-reconcile-sync-period flag is set lower than recommended")
+
+			glog.Info("k-c-m default-attach-detach-reconcile-sync-period flag is set lower than recommended")
 
 			// If less than 1sec you get an error.  Controller no worky .. it goes boom.
 		} else if options.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration < time.Second {
 			return fmt.Errorf("Unable to set k-c-m default-attach-detach-reconcile-sync-period flag lower than 1 second")
 		}
+	} else {
+
+		glog.V(8).Info("not setting k-c-m default-attach-detach-reconcile-sync-period, k8s version is too low")
+		options.KubeControllerManager.AttachDetachReconcileSyncPeriod = nil
 	}
 
 	return nil
