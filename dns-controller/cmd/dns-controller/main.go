@@ -88,7 +88,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	dnsController, err := dns.NewDNSController(dnsProvider, zoneRules)
+	dnsCache, err := dns.NewDNSCache(dnsProvider)
+	if err != nil {
+		glog.Errorf("Error initializing DNS cache: %v", err)
+		os.Exit(1)
+	}
+
+	dnsController, err := dns.NewDNSController(dnsCache, zoneRules)
 	if err != nil {
 		glog.Errorf("Error building DNS controller: %v", err)
 		os.Exit(1)
