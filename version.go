@@ -19,6 +19,9 @@ package kops
 // This should be replaced by the makefile
 var Version = "1.5.0"
 
+// This should be replaced by the makefile
+var GitVersion = ""
+
 // DefaultProtokubeImageName is the name of the protokube image, as we would pass to "docker run"
 func DefaultProtokubeImageName() string {
 	return "protokube:" + Version

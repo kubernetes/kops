@@ -16,10 +16,13 @@ limitations under the License.
 
 package model
 
-import "k8s.io/kops/pkg/apis/kops"
+import (
+	"k8s.io/kops/nodeup/pkg/distros"
+	"k8s.io/kops/pkg/apis/kops"
+)
 
 type NodeupModelContext struct {
 	Cluster      *kops.Cluster
 	Architecture Architecture
-	Distribution Distribution
+	Distribution distros.Distribution
 }
