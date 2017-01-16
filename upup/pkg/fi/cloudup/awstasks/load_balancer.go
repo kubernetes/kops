@@ -417,6 +417,10 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 		}
 	}
 
+	if err := t.AddELBTags(*e.ID, t.Cloud.BuildTags(e.Name)); err != nil {
+		return err
+	}
+
 	if changes.HealthCheck != nil && e.HealthCheck != nil {
 		request := &elb.ConfigureHealthCheckInput{}
 		request.LoadBalancerName = e.ID
@@ -435,7 +439,12 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 			return fmt.Errorf("error configuring health checks on ELB: %v", err)
 		}
 	}
-	return t.AddELBTags(*e.ID, t.Cloud.BuildTags(e.Name))
+
+	if err := e.modifyLoadBalancerAttributes(t, a, e, changes); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type terraformLoadBalancer struct {
