@@ -95,6 +95,14 @@ func findELBAttributes(cloud awsup.AWSCloud, name string) (*elb.LoadBalancerAttr
 }
 
 func (_ *LoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget, a, e, changes *LoadBalancer) error {
+	if changes.AccessLog == nil &&
+		changes.ConnectionDraining == nil &&
+		changes.ConnectionSettings == nil &&
+		changes.CrossZoneLoadBalancing == nil {
+		glog.V(4).Infof("No LoadBalancerAttribute changes; skipping update")
+		return nil
+	}
+
 	id := fi.StringValue(e.ID)
 
 	request := &elb.ModifyLoadBalancerAttributesInput{}
