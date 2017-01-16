@@ -41,6 +41,7 @@ const (
 	TypeAutoscalingLaunchConfig = "autoscaling-config"
 	TypeNatGateway              = "nat-gateway"
 	TypeElasticIp               = "elastic-ip"
+	TypeLoadBalancer            = "load-balancer"
 )
 
 // DeleteCluster implements deletion of cluster cloud resources
@@ -1636,6 +1637,14 @@ func DeleteELB(cloud fi.Cloud, r *ResourceTracker) error {
 	return nil
 }
 
+func DumpELB(r *ResourceTracker) (interface{}, error) {
+	data := make(map[string]interface{})
+	data["id"] = r.ID
+	data["type"] = TypeLoadBalancer
+	data["raw"] = r.obj
+	return data, nil
+}
+
 func ListELBs(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
 	elbs, elbTags, err := DescribeELBs(cloud)
 	if err != nil {
@@ -1648,8 +1657,10 @@ func ListELBs(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
 		tracker := &ResourceTracker{
 			Name:    FindELBName(elbTags[id]),
 			ID:      id,
-			Type:    "load-balancer",
+			Type:    TypeLoadBalancer,
 			deleter: DeleteELB,
+			Dumper:  DumpELB,
+			obj:     elb,
 		}
 
 		var blocks []string
