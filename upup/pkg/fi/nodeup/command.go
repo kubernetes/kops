@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
@@ -173,7 +174,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	//	c.Config.Tags = append(c.Config.Tags, "_not_config_store")
 	//}
 
-	distribution, err := FindDistribution(c.FSRoot)
+	distribution, err := distros.FindDistribution(c.FSRoot)
 	if err != nil {
 		return fmt.Errorf("error determining OS distribution: %v", err)
 	}
