@@ -60,21 +60,22 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				volumeType = DefaultVolumeType
 			}
 
-			var securityGroups []*awstasks.SecurityGroup
-			if sgs := ig.Spec.SecurityGroups; len(sgs) == 0 {
-				securityGroups = append(securityGroups, b.LinkToSecurityGroup(ig.Spec.Role))
-			} else {
+			var preSecurityGroups []*string
+			if sgs := ig.Spec.SecurityGroups; len(sgs) != 0 {
 				for _, sgName := range sgs {
-					securityGroups = append(securityGroups, &awstasks.SecurityGroup{Name: &sgName})
+					preSecurityGroups = append(preSecurityGroups, &sgName)
 				}
 			}
 
 			t := &awstasks.LaunchConfiguration{
-				Name:               s(name),
-				SecurityGroups:     securityGroups,
-				IAMInstanceProfile: b.LinkToIAMInstanceProfile(ig),
-				ImageID:            s(ig.Spec.Image),
-				InstanceType:       s(ig.Spec.MachineType),
+				Name: s(name),
+				SecurityGroups: []*awstasks.SecurityGroup{
+					b.LinkToSecurityGroup(ig.Spec.Role),
+				},
+				PredefinedSecurityGroups: preSecurityGroups,
+				IAMInstanceProfile:       b.LinkToIAMInstanceProfile(ig),
+				ImageID:                  s(ig.Spec.Image),
+				InstanceType:             s(ig.Spec.MachineType),
 
 				RootVolumeSize: i64(volumeSize),
 				RootVolumeType: s(volumeType),

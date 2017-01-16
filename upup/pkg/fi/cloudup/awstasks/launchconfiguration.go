@@ -36,12 +36,13 @@ type LaunchConfiguration struct {
 
 	UserData *fi.ResourceHolder
 
-	ImageID            *string
-	InstanceType       *string
-	SSHKey             *SSHKey
-	SecurityGroups     []*SecurityGroup
-	AssociatePublicIP  *bool
-	IAMInstanceProfile *IAMInstanceProfile
+	ImageID                  *string
+	InstanceType             *string
+	SSHKey                   *SSHKey
+	SecurityGroups           []*SecurityGroup
+	PredefinedSecurityGroups []*string
+	AssociatePublicIP        *bool
+	IAMInstanceProfile       *IAMInstanceProfile
 
 	// RootVolumeSize is the size of the EBS root volume to use, in GB
 	RootVolumeSize *int64
@@ -233,6 +234,9 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 	securityGroupIDs := []*string{}
 	for _, sg := range e.SecurityGroups {
 		securityGroupIDs = append(securityGroupIDs, sg.ID)
+	}
+	for _, sgID := range e.PredefinedSecurityGroups {
+		securityGroupIDs = append(securityGroupIDs, sgID)
 	}
 	request.SecurityGroups = securityGroupIDs
 	request.AssociatePublicIpAddress = e.AssociatePublicIP
