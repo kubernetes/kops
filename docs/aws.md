@@ -47,7 +47,29 @@ brew install kubernetes-cli
 ### Setting up a kops IAM user
 
 
-In this example we will be using a dedicated IAM user to use with kops. This user will need basic API security credentials in order to use kops. Create the user and credentials using the AWS console. [More information](http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.html).
+In this example we will be using a dedicated IAM user to use with kops. This user will need basic API security credentials in order to use kops. Create the user and credentials using the AWS console. [More information](https://aws.amazon.com/documentation/iam/).
+
+To create a IAM user for kops do the following:
+
+* Navigate to the IAM home page after logging onto the console
+* Click the Groups link on the left tab and then click Create New Group
+* Set Group Name: to kops and then click Next Step
+* Attach the following policies and then click Next Step:
+..AmazonEC2FullAccess
+..AmazonRoute53FullAccess
+..AmazonS3FullAccess
+..IAMFullAccess
+..AmazonVPCFullAccess
+* Click Create Group
+* Click the Users link on the left tab and then click Add user
+* Set User name to kops
+* Select Access type Programmatic access
+* Click Next: Permissions
+* Select the kops Group and click Next: Review
+* Click Create user
+* Click on Download .csv
+* Run aws configure
+* Run aws iam list-users
 
 Kubernetes kops uses the official AWS Go SDK, so all we need to do here is set up your system to use the official AWS supported methods of registering security credentials defined [here](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials). Here is an example using the aws command line tool to set up your security credentials.
 
@@ -74,7 +96,7 @@ aws configure # Input your credentials here
 aws iam list-users
 ```
 
-PyPi is the officially supported `aws cli` download avenue, and kops suggests using it. [More information](https://pypi.python.org/pypi/awscli) on the package. 
+PyPi is the officially supported `aws cli` download avenue, and kops suggests using it. [More information](https://pypi.python.org/pypi/awscli) on the package.
 
 #### Other Platforms
 
