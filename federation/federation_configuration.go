@@ -171,7 +171,7 @@ func (o *FederationConfiguration) EnsureConfiguration(c *fi.Context) error {
 	k8s := c.Target.(*kubernetes.KubernetesTarget).KubernetesClient
 
 	adminPassword := ""
-	adminToken := ""
+	//adminToken := ""
 
 	_, err = mutateSecret(k8s, o.Namespace, o.ApiserverSecretName, func(s *v1.Secret) (*v1.Secret, error) {
 		basicAuthData, err := o.findBasicAuth(s)
@@ -218,9 +218,9 @@ func (o *FederationConfiguration) EnsureConfiguration(c *fi.Context) error {
 				if err != nil {
 					return nil, err
 				}
-				adminToken = string(s.Data)
+				//adminToken = string(s.Data)
 			} else {
-				adminToken = u.Secret
+				//adminToken = u.Secret
 			}
 		}
 
