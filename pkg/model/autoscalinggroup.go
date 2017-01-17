@@ -50,7 +50,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// LaunchConfiguration
 		var launchConfiguration *awstasks.LaunchConfiguration
 		{
-			volumeSize := int64(fi.IntValue(ig.Spec.RootVolumeSize))
+			volumeSize := fi.Int32Value(ig.Spec.RootVolumeSize)
 			if volumeSize == 0 {
 				volumeSize = DefaultVolumeSize
 			}
@@ -69,7 +69,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				ImageID:            s(ig.Spec.Image),
 				InstanceType:       s(ig.Spec.MachineType),
 
-				RootVolumeSize: i64(volumeSize),
+				RootVolumeSize: i64(int64(volumeSize)),
 				RootVolumeType: s(volumeType),
 			}
 
@@ -146,10 +146,10 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				LaunchConfiguration: launchConfiguration,
 			}
 
-			minSize := 1
-			maxSize := 1
+			minSize := int32(1)
+			maxSize := int32(1)
 			if ig.Spec.MinSize != nil {
-				minSize = *ig.Spec.MinSize
+				minSize = fi.Int32Value(ig.Spec.MinSize)
 			} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
 				minSize = 2
 			}

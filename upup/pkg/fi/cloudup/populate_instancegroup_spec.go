@@ -62,30 +62,30 @@ func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup, c
 			ig.Spec.MachineType = defaultMasterMachineType(cluster)
 		}
 		if ig.Spec.MinSize == nil {
-			ig.Spec.MinSize = fi.Int(1)
+			ig.Spec.MinSize = fi.Int32(1)
 		}
 		if ig.Spec.MaxSize == nil {
-			ig.Spec.MaxSize = fi.Int(1)
+			ig.Spec.MaxSize = fi.Int32(1)
 		}
 	} else if ig.Spec.Role == api.InstanceGroupRoleBastion {
 		if ig.Spec.MachineType == "" {
 			ig.Spec.MachineType = defaultBastionMachineType(cluster)
 		}
 		if ig.Spec.MinSize == nil {
-			ig.Spec.MinSize = fi.Int(1)
+			ig.Spec.MinSize = fi.Int32(1)
 		}
 		if ig.Spec.MaxSize == nil {
-			ig.Spec.MaxSize = fi.Int(1)
+			ig.Spec.MaxSize = fi.Int32(1)
 		}
 	} else {
 		if ig.Spec.MachineType == "" {
 			ig.Spec.MachineType = defaultNodeMachineType(cluster)
 		}
 		if ig.Spec.MinSize == nil {
-			ig.Spec.MinSize = fi.Int(2)
+			ig.Spec.MinSize = fi.Int32(2)
 		}
 		if ig.Spec.MaxSize == nil {
-			ig.Spec.MaxSize = fi.Int(2)
+			ig.Spec.MaxSize = fi.Int32(2)
 		}
 	}
 
