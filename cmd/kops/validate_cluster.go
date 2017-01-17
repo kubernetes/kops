@@ -125,10 +125,10 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		return strings.Join(c.Spec.Subnets, ",")
 	})
 	t.AddColumn("MIN", func(c api.InstanceGroup) string {
-		return intPointerToString(c.Spec.MinSize)
+		return int32PointerToString(c.Spec.MinSize)
 	})
 	t.AddColumn("MAX", func(c api.InstanceGroup) string {
-		return intPointerToString(c.Spec.MaxSize)
+		return int32PointerToString(c.Spec.MaxSize)
 	})
 
 	fmt.Fprintln(out, "INSTANCE GROUPS")

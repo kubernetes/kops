@@ -49,15 +49,15 @@ type InstanceGroupSpec struct {
 	Role InstanceGroupRole `json:"role,omitempty"`
 
 	Image   string `json:"image,omitempty"`
-	MinSize *int   `json:"minSize,omitempty"`
-	MaxSize *int   `json:"maxSize,omitempty"`
+	MinSize *int32 `json:"minSize,omitempty"`
+	MaxSize *int32 `json:"maxSize,omitempty"`
 	//NodeInstancePrefix string `json:",omitempty"`
 	//NodeLabels         string `json:",omitempty"`
 	MachineType string `json:"machineType,omitempty"`
 	//NodeTag            string `json:",omitempty"`
 
 	// RootVolumeSize is the size of the EBS root volume to use, in GB
-	RootVolumeSize *int `json:"rootVolumeSize,omitempty"`
+	RootVolumeSize *int32 `json:"rootVolumeSize,omitempty"`
 	// RootVolumeType is the type of the EBS root volume to use (e.g. gp2)
 	RootVolumeType *string `json:"rootVolumeType,omitempty"`
 
