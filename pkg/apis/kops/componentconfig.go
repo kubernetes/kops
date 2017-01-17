@@ -19,7 +19,7 @@ package kops
 type KubeletConfigSpec struct {
 	APIServers string `json:"apiServers,omitempty" flag:"api-servers"`
 
-	LogLevel *int `json:"logLevel,omitempty" flag:"v"`
+	LogLevel *int32 `json:"logLevel,omitempty" flag:"v"`
 
 	// Configuration flags - a subset of https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
 
@@ -301,7 +301,7 @@ type KubeProxyConfig struct {
 	// TODO: Better type ?
 	CPURequest string `json:"cpuRequest,omitempty"` // e.g. "20m"
 
-	LogLevel int `json:"logLevel,omitempty" flag:"v"`
+	LogLevel int32 `json:"logLevel,omitempty" flag:"v"`
 
 	// Configuration flags - a subset of https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
 
@@ -358,10 +358,10 @@ type KubeAPIServerConfig struct {
 	PathSrvSshproxy   string `json:"pathSrvSshproxy,omitempty"`
 	Image             string `json:"image,omitempty"`
 
-	LogLevel int `json:"logLevel,omitempty" flag:"v"`
+	LogLevel int32 `json:"logLevel,omitempty" flag:"v"`
 
 	CloudProvider         string   `json:"cloudProvider,omitempty" flag:"cloud-provider"`
-	SecurePort            int      `json:"securePort,omitempty" flag:"secure-port"`
+	SecurePort            int32    `json:"securePort,omitempty" flag:"secure-port"`
 	Address               string   `json:"address,omitempty" flag:"address"`
 	EtcdServers           []string `json:"etcdServers,omitempty" flag:"etcd-servers"`
 	EtcdServersOverrides  []string `json:"etcdServersOverrides,omitempty" flag:"etcd-servers-overrides"`
@@ -373,7 +373,7 @@ type KubeAPIServerConfig struct {
 	TLSPrivateKeyFile     string   `json:"tlsPrivateKeyFile,omitempty" flag:"tls-private-key-file"`
 	TokenAuthFile         string   `json:"tokenAuthFile,omitempty" flag:"token-auth-file"`
 	AllowPrivileged       *bool    `json:"allowPrivileged,omitempty" flag:"allow-privileged"`
-	APIServerCount        *int     `json:"apiServerCount,omitempty" flag:"apiserver-count"`
+	APIServerCount        *int32   `json:"apiServerCount,omitempty" flag:"apiserver-count"`
 	// keys and values in RuntimeConfig are parsed into the `--runtime-config` parameter
 	// for KubeAPIServer, concatenated with commas. ex: `--runtime-config=key1=value1,key2=value2`.
 	// Use this to enable alpha resources on kube-apiserver
@@ -388,7 +388,7 @@ type KubeAPIServerConfig struct {
 
 type KubeControllerManagerConfig struct {
 	Master   string `json:"master,omitempty" flag:"master"`
-	LogLevel int    `json:"logLevel,omitempty" flag:"v"`
+	LogLevel int32  `json:"logLevel,omitempty" flag:"v"`
 
 	ServiceAccountPrivateKeyFile string `json:"serviceAccountPrivateKeyFile,omitempty" flag:"service-account-private-key-file"`
 
@@ -537,7 +537,7 @@ type KubeControllerManagerConfig struct {
 
 type KubeSchedulerConfig struct {
 	Master   string `json:"master,omitempty" flag:"master"`
-	LogLevel int    `json:"logLevel,omitempty" flag:"v"`
+	LogLevel int32  `json:"logLevel,omitempty" flag:"v"`
 
 	Image string `json:"image,omitempty"`
 

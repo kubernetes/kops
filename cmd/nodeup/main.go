@@ -20,21 +20,21 @@ import (
 	"flag"
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/kops"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi/nodeup"
 	"os"
 	"time"
 )
 
-var (
-	// value overwritten during build. This can be used to resolve issues.
-	BuildVersion = "0.1"
-)
-
 const retryInterval = 30 * time.Second
 
 func main() {
-	fmt.Printf("nodeup version %s\n", BuildVersion)
+	gitVersion := ""
+	if kops.GitVersion != "" {
+		gitVersion = " (git-" + kops.GitVersion + ")"
+	}
+	fmt.Printf("nodeup version %s%s\n", kops.Version, gitVersion)
 
 	var flagConf string
 	flag.StringVar(&flagConf, "conf", "node.yaml", "configuration location")
