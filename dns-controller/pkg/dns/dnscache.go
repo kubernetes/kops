@@ -18,10 +18,11 @@ package dns
 
 import (
 	"fmt"
-	"github.com/golang/glog"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	"sync"
 	"time"
+
+	"github.com/golang/glog"
+	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 )
 
 // dnsCache is a wrapper around the DNS provider, adding some caching
@@ -52,8 +53,8 @@ func nanoTime() int64 {
 	return time.Now().UnixNano()
 }
 
-// ListZones returns the cached list of zones, as long as it is no older than validity
-// This is not a cheap call with a large number of hosted zones, hence the caching
+// ListZones returns the zones, using a cached copy if validity has not yet expired.
+// This is not a cheap call with a large number of hosted zones, hence the caching.
 func (d *dnsCache) ListZones(validity time.Duration) ([]dnsprovider.Zone, error) {
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
@@ -64,10 +65,10 @@ func (d *dnsCache) ListZones(validity time.Duration) ([]dnsprovider.Zone, error)
 		if (d.cachedZonesTimestamp + validity.Nanoseconds()) > now {
 			return d.cachedZones, nil
 		} else {
-			glog.V(2).Infof("Listing all DNS zones (cache expired)")
+			glog.V(2).Infof("querying all DNS zones (cache expired)")
 		}
 	} else {
-		glog.V(2).Infof("Listing all DNS zones (no cached results)")
+		glog.V(2).Infof("querying all DNS zones (no cached results)")
 	}
 
 	zones, err := d.zonesProvider.List()

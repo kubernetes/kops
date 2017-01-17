@@ -422,8 +422,6 @@ func (o *dnsOp) deleteRecords(k recordKey) error {
 	}
 
 	rrs, err := o.listRecords(zone)
-	//glog.V(2).Infof("Querying dnsprovider records for zone %q, name %q, type %q", zone.Name(), fqdn, k.RecordType)
-	//rrs, err := rrsProvider.List(fqdn, rrstype.RrsType(k.RecordType))
 	if err != nil {
 		return fmt.Errorf("error querying resource records for zone %q: %v", zone.Name(), err)
 	}
