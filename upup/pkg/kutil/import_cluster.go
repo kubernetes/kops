@@ -700,20 +700,6 @@ func (u *UserDataConfiguration) ParseBool(key string) *bool {
 	return fi.Bool(false)
 }
 
-func (u *UserDataConfiguration) ParseInt64(key string) (*int64, error) {
-	s := u.Settings[key]
-	if s == "" {
-		return nil, nil
-	}
-
-	n, err := strconv.ParseInt(s, 10, 64)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing key %q=%q", key, s)
-	}
-
-	return fi.Int64(n), nil
-}
-
 func (u *UserDataConfiguration) ParseCert(key string) (*fi.Certificate, error) {
 	s := u.Settings[key]
 	if s == "" {
