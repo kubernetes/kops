@@ -32,7 +32,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
-	"k8s.io/kops/upup/pkg/kutil"
 	"sort"
 )
 
@@ -46,7 +45,7 @@ type CreateClusterOptions struct {
 	MasterZones       string
 	NodeSize          string
 	MasterSize        string
-	NodeCount         int
+	NodeCount         int32
 	Project           string
 	KubernetesVersion string
 	OutDir            string
@@ -71,8 +70,6 @@ type CreateClusterOptions struct {
 	// Enable/Disable Bastion Host complete setup
 	Bastion bool
 
-	NgwIds  string
-	NgwEips string
 }
 
 func (o *CreateClusterOptions) InitDefaults() {
@@ -133,7 +130,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.VPCID, "vpc", options.VPCID, "Set to use a shared VPC")
 	cmd.Flags().StringVar(&options.NetworkCIDR, "network-cidr", options.NetworkCIDR, "Set to override the default network CIDR")
 
-	cmd.Flags().IntVar(&options.NodeCount, "node-count", options.NodeCount, "Set the number of nodes")
+	cmd.Flags().Int32Var(&options.NodeCount, "node-count", options.NodeCount, "Set the number of nodes")
 
 	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Image to use")
 
@@ -277,8 +274,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				g := &api.InstanceGroup{}
 				g.Spec.Role = api.InstanceGroupRoleMaster
 				g.Spec.Subnets = []string{subnet.Name}
-				g.Spec.MinSize = fi.Int(1)
-				g.Spec.MaxSize = fi.Int(1)
+				g.Spec.MinSize = fi.Int32(1)
+				g.Spec.MaxSize = fi.Int32(1)
 				g.ObjectMeta.Name = "master-" + subnet.Name // Subsequent masters (if we support that) could be <zone>-1, <zone>-2
 				instanceGroups = append(instanceGroups, g)
 				masters = append(masters, g)
@@ -294,8 +291,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				g := &api.InstanceGroup{}
 				g.Spec.Role = api.InstanceGroupRoleMaster
 				g.Spec.Subnets = []string{subnetName}
-				g.Spec.MinSize = fi.Int(1)
-				g.Spec.MaxSize = fi.Int(1)
+				g.Spec.MinSize = fi.Int32(1)
+				g.Spec.MaxSize = fi.Int32(1)
 				g.ObjectMeta.Name = "master-" + subnetName
 				instanceGroups = append(instanceGroups, g)
 				masters = append(masters, g)
@@ -383,8 +380,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 	if c.NodeCount != 0 {
 		for _, group := range nodes {
-			group.Spec.MinSize = fi.Int(c.NodeCount)
-			group.Spec.MaxSize = fi.Int(c.NodeCount)
+			group.Spec.MinSize = fi.Int32(c.NodeCount)
+			group.Spec.MaxSize = fi.Int32(c.NodeCount)
 		}
 	}
 
@@ -505,32 +502,6 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return fmt.Errorf("Invalid topology %s.", c.Topology)
 	}
 
-	// NAT Gateway/ElasticIP
-	if c.NgwIds != "" {
-		ngwEipList := make([]string, 0)
-		// Perhaps abstract parseZoneList into something more general
-		// But it works for processing comma-delimited strings for now
-		for _, ngwEip := range parseZoneList(c.NgwEips) {
-			ngwEipList = append(ngwEipList, ngwEip)
-		}
-
-		ngwIdList := make([]string, 0)
-		for _, ngwId := range parseZoneList(c.NgwIds) {
-			ngwIdList = append(ngwIdList, ngwId)
-		}
-
-		gatewayIndex := 0
-		for i := range cluster.Spec.Subnets {
-			subnet := &cluster.Spec.Subnets[i]
-			if subnet.Type == api.SubnetTypePrivate {
-				subnet.NgwId = ngwIdList[gatewayIndex]
-				subnet.NgwEip = ngwEipList[gatewayIndex]
-				gatewayIndex++
-			}
-			// fmt.Printf("This is cluster.Spec.Subnets %+v\n", subnet)
-		}
-	}
-
 	// DNS
 	if c.DNSType == "" {
 		// The flag default should have set this, but we might be being called as a library
@@ -616,11 +587,6 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return err
 	}
 
-	secretStore, err := registry.SecretStore(cluster)
-	if err != nil {
-		return err
-	}
-
 	err = registry.WriteConfigDeprecated(configBase.Join(registry.PathClusterCompleted), fullCluster)
 	if err != nil {
 		return fmt.Errorf("error writing completed cluster spec: %v", err)
@@ -635,19 +601,26 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 	if targetName != "" {
 		if isDryrun {
-			fmt.Print("Previewing changes that will be made:\n\n")
+			fmt.Fprintf(out, "Previewing changes that will be made:\n\n")
 		}
 
-		applyCmd := &cloudup.ApplyClusterCmd{
-			Cluster:    fullCluster,
-			Models:     strings.Split(c.Models, ","),
-			Clientset:  clientset,
-			TargetName: targetName,
-			OutDir:     c.OutDir,
-			DryRun:     isDryrun,
-		}
+		// TODO: Maybe just embed UpdateClusterOptions in CreateClusterOptions?
+		updateClusterOptions := &UpdateClusterOptions{}
+		updateClusterOptions.InitDefaults()
 
-		err = applyCmd.Run()
+		updateClusterOptions.Yes = c.Yes
+		updateClusterOptions.Target = c.Target
+		updateClusterOptions.Models = c.Models
+		updateClusterOptions.OutDir = c.OutDir
+
+		// SSHPublicKey has already been mapped
+		updateClusterOptions.SSHPublicKey = ""
+
+		// No equivalent options:
+		//  updateClusterOptions.MaxTaskDuration = c.MaxTaskDuration
+		//  updateClusterOptions.CreateKubecfg = c.CreateKubecfg
+
+		err := RunUpdateCluster(f, clusterName, out, updateClusterOptions)
 		if err != nil {
 			return err
 		}
@@ -673,20 +646,6 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			_, err := out.Write(sb.Bytes())
 			if err != nil {
 				return fmt.Errorf("error writing to output: %v", err)
-			}
-		} else {
-			glog.Infof("Exporting kubecfg for cluster")
-
-			x := &kutil.CreateKubecfg{
-				ContextName:  cluster.ObjectMeta.Name,
-				KeyStore:     keyStore,
-				SecretStore:  secretStore,
-				KubeMasterIP: cluster.Spec.MasterPublicName,
-			}
-
-			err = x.WriteKubecfg()
-			if err != nil {
-				return err
 			}
 		}
 	}

@@ -28,6 +28,11 @@ import (
 // For example, it assigns stable Keys to InstanceGroups & Masters, and
 // it assigns CIDRs to subnets
 // We also assign KubernetesVersion, because we want it to be explicit
+//
+// PerformAssignments is called on create, as well as an update. In fact
+// any time Run() is called in apply_cluster.go we will reach this function.
+// Please do all after-market logic here.
+//
 func PerformAssignments(c *kops.Cluster) error {
 
 	// Topology support
@@ -57,6 +62,7 @@ func PerformAssignments(c *kops.Cluster) error {
 
 	return ensureKubernetesVersion(c)
 }
+
 
 // ensureKubernetesVersion populates KubernetesVersion, if it is not already set
 // It will be populated with the latest stable kubernetes version, or the version from the channel

@@ -92,7 +92,7 @@ func TestPopulateCluster_Default_NoError(t *testing.T) {
 func TestPopulateCluster_Docker_Spec(t *testing.T) {
 	c := buildMinimalCluster()
 	c.Spec.Docker = &api.DockerConfig{
-		MTU:              fi.Int(5678),
+		MTU:              fi.Int32(5678),
 		InsecureRegistry: fi.String("myregistry.com:1234"),
 	}
 
@@ -108,7 +108,7 @@ func TestPopulateCluster_Docker_Spec(t *testing.T) {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)
 	}
 
-	if fi.IntValue(full.Spec.Docker.MTU) != 5678 {
+	if fi.Int32Value(full.Spec.Docker.MTU) != 5678 {
 		t.Fatalf("Unexpected Docker MTU: %v", full.Spec.Docker.MTU)
 	}
 
@@ -370,8 +370,8 @@ func TestPopulateCluster_APIServerCount(t *testing.T) {
 		t.Fatalf("error during build: %v", err)
 	}
 
-	if fi.IntValue(full.Spec.KubeAPIServer.APIServerCount) != 3 {
-		t.Fatalf("Unexpected APIServerCount: %v", fi.IntValue(full.Spec.KubeAPIServer.APIServerCount))
+	if fi.Int32Value(full.Spec.KubeAPIServer.APIServerCount) != 3 {
+		t.Fatalf("Unexpected APIServerCount: %v", fi.Int32Value(full.Spec.KubeAPIServer.APIServerCount))
 	}
 }
 

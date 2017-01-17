@@ -47,7 +47,7 @@ func (l LoggingRetryer) RetryRules(r *request.Request) time.Duration {
 	}
 	methodDescription := service + "/" + name
 
-	glog.Infof("Retryable error %d from %s - will retry after delay of %v", r.HTTPResponse.StatusCode, methodDescription, duration)
+	glog.Infof("Retryable error %d (%s) from %s - will retry after delay of %v", r.HTTPResponse.StatusCode, r.HTTPResponse.Status, methodDescription, duration)
 
 	return duration
 }

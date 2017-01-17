@@ -257,7 +257,7 @@ func (c *DNSController) runOnce() error {
 		ttl := DefaultTTL
 		glog.Infof("Using default TTL of %v", ttl)
 
-		glog.V(4).Infof("updating records for %s: %v -> %v", k, newValues, oldValues)
+		glog.V(4).Infof("updating records for %s: %v -> %v", k, oldValues, newValues)
 
 		err := op.updateRecords(k, newValues, int64(ttl.Seconds()))
 		if err != nil {
@@ -415,7 +415,7 @@ func (o *dnsOp) deleteRecords(k recordKey) error {
 }
 
 func (o *dnsOp) updateRecords(k recordKey, newRecords []string, ttl int64) error {
-	glog.V(2).Infof("Updating records for %s: %v", k, newRecords)
+	glog.V(2).Infof("applying changes to DNS provider for %s: %v", k, newRecords)
 
 	fqdn := EnsureDotSuffix(k.FQDN)
 

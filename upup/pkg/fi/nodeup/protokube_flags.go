@@ -17,9 +17,9 @@ limitations under the License.
 package nodeup
 
 type ProtokubeFlags struct {
-	Master        *bool `json:"master,omitempty" flag:"master"`
-	Containerized *bool `json:"containerized,omitempty" flag:"containerized"`
-	LogLevel      *int  `json:"logLevel,omitempty" flag:"v"`
+	Master        *bool  `json:"master,omitempty" flag:"master"`
+	Containerized *bool  `json:"containerized,omitempty" flag:"containerized"`
+	LogLevel      *int32 `json:"logLevel,omitempty" flag:"v"`
 
 	DNSProvider *string `json:"dnsProvider,omitempty" flag:"dns"`
 
