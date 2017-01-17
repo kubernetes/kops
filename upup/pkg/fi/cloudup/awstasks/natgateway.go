@@ -233,6 +233,7 @@ func (e *NatGateway) waitAvailable(cloud awsup.AWSCloud) error {
 
 func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway) error {
 	// New NGW
+
 	var id *string
 	if a == nil {
 		glog.V(2).Infof("Creating Nat Gateway")
