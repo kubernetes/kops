@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"k8s.io/kops"
+	"k8s.io/kops/nodeup/pkg/bootstrap"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi/nodeup"
 	"os"
@@ -50,6 +51,9 @@ func main() {
 	target := "direct"
 	flag.StringVar(&target, "target", target, "Target - direct, cloudinit")
 
+	install := false
+	flag.BoolVar(&install, "install", install, "If true, will install a systemd unit instead of running directly")
+
 	if dryrun {
 		target = "dryrun"
 	}
@@ -64,17 +68,47 @@ func main() {
 	retries := flagRetries
 
 	for {
-		cmd := &nodeup.NodeUpCommand{
-			ConfigLocation: flagConf,
-			Target:         target,
-			CacheDir:       flagCacheDir,
-			FSRoot:         flagRootFS,
-			ModelDir:       models.NewAssetPath("nodeup"),
-		}
-		err := cmd.Run(os.Stdout)
-		if err == nil {
-			fmt.Printf("success")
-			os.Exit(0)
+		var err error
+		if install {
+			var command []string
+			for i := 0; i < len(os.Args); i++ {
+				s := os.Args[i]
+				if s == "-install" || s == "--install" {
+					continue
+				}
+				if i == 0 {
+					// We could also try to evaluate based on cwd
+					s, err = os.Readlink("/proc/self/exe")
+					if err != nil {
+						glog.Fatalf("error reading /proc/self/exe link: %v", err)
+					}
+				}
+				command = append(command, s)
+			}
+			i := bootstrap.Installation{
+				MaxTaskDuration: 5 * time.Minute,
+				CacheDir:        flagCacheDir,
+				Command:         command,
+				FSRoot:          flagRootFS,
+			}
+			err = i.Run()
+			if err == nil {
+				fmt.Printf("service installed")
+				os.Exit(0)
+			}
+		} else {
+			cmd := &nodeup.NodeUpCommand{
+				ConfigLocation: flagConf,
+				Target:         target,
+				CacheDir:       flagCacheDir,
+				FSRoot:         flagRootFS,
+				ModelDir:       models.NewAssetPath("nodeup"),
+			}
+			err = cmd.Run(os.Stdout)
+			if err == nil {
+				fmt.Printf("success")
+				os.Exit(0)
+			}
 		}
 
 		if retries == 0 {

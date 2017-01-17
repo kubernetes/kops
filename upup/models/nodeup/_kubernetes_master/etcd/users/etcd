@@ -1,5 +1,0 @@
-# TODO: Should we set a consistent UID in case we remount?
-
-shell: /sbin/nologin
-home: /var/etcd
-

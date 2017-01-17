@@ -120,14 +120,9 @@ function download-release() {
     echo "Couldn't download release. Retrying..."
   done
 
-  echo "Running release install script"
-  # We run in the background to work around https://github.com/docker/docker/issues/23793
-  run-nodeup &
-}
-
-function run-nodeup() {
-  sleep 1
-  ( cd ${INSTALL_DIR}; ./nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8 )
+  echo "Running nodeup"
+  # We can't run in the foreground because of https://github.com/docker/docker/issues/23793
+  ( cd ${INSTALL_DIR}; ./nodeup --install --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8  )
 }
 
 ####################################################################################

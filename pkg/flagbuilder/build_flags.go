@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package nodeup
+package flagbuilder
 
 import (
 	"fmt"
@@ -26,7 +26,7 @@ import (
 )
 
 // buildFlags is a template helper, which builds a string containing the flags to be passed to a command
-func buildFlags(options interface{}) (string, error) {
+func BuildFlags(options interface{}) (string, error) {
 	var flags []string
 
 	walker := func(path string, field *reflect.StructField, val reflect.Value) error {
