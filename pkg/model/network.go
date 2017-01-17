@@ -22,6 +22,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kubernetes/pkg/util/sets"
+	//"google.golang.org/api/content/v2"
 )
 
 // NetworkModelBuilder configures network objects
@@ -32,6 +33,7 @@ type NetworkModelBuilder struct {
 var _ fi.ModelBuilder = &NetworkModelBuilder{}
 
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
+
 	sharedVPC := b.Cluster.SharedVPC()
 
 	// VPC that holds everything for the cluster
@@ -112,6 +114,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			CIDR:             s(subnetSpec.CIDR),
 			Shared:           fi.Bool(sharedSubnet),
 		}
+
 		if subnetSpec.ProviderID != "" {
 			subnet.ID = s(subnetSpec.ProviderID)
 		}
@@ -148,21 +151,49 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	for _, zone := range privateZones.List() {
+	for i, zone := range privateZones.List() {
+
 		utilitySubnet, err := b.LinkToUtilitySubnetInZone(zone)
 		if err != nil {
 			return err
 		}
 
+		// Has an existing NgwId been entered?
+		// NGWs look like this: ngwId: nat-09c4180b76a36ca2c
+		ngwId := b.Cluster.Spec.Subnets[i].NgwId
+
+		// Was an elasticIp also allocated? This needs to be the ElasticIP
+		// associated with the NAT Gateway ngwEips look like: ngwEip: eipalloc-e1fc20df
+		ngwEip := b.Cluster.Spec.Subnets[i].NgwEip
+
+		// If these get triggered, something has gone wrong in pkg/apis/kops/validation.go
+		if ngwId != "" && ngwEip == "" {
+			return fmt.Errorf("must specify the associated ElasticIP when specifying NAT Gateways")
+		}
+
+		if ngwEip != "" && ngwId == "" {
+			return fmt.Errorf("must specify a NAT Gateway when specifying ElasticIP")
+		}
+
 		// Every NGW needs a public (Elastic) IP address, every private
 		// subnet needs a NGW, lets create it. We tie it to a subnet
 		// so we can track it in AWS
-		eip := &awstasks.ElasticIP{
-			Name: s(zone + "." + b.ClusterName()),
-			AssociatedNatGatewayRouteTable: b.LinkToPrivateRouteTableInZone(zone),
-		}
-		c.AddTask(eip)
+		var eip = &awstasks.ElasticIP{}
+		if ngwEip == "" {
+			eip = &awstasks.ElasticIP{
+				Name: s(zone + "." + b.ClusterName()),
+				AssociatedNatGatewayRouteTable: b.LinkToPrivateRouteTableInZone(zone),
+			}
 
+		} else {
+			eip = &awstasks.ElasticIP{
+				Name: s(zone + "." + b.ClusterName()),
+				AssociatedNatGatewayRouteTable: b.LinkToPrivateRouteTableInZone(zone),
+				ID: s(ngwEip),
+			}
+		}
+
+		c.AddTask(eip)
 		// NAT Gateway
 		//
 		// All private subnets will need a NGW, one per zone
@@ -170,13 +201,24 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// The instances in the private subnet can access the Internet by
 		// using a network address translation (NAT) gateway that resides
 		// in the public subnet.
-		ngw := &awstasks.NatGateway{
-			Name:      s(zone + "." + b.ClusterName()),
-			Subnet:    utilitySubnet,
-			ElasticIP: eip,
 
-			AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone),
+		var ngw = &awstasks.NatGateway{}
+		if ngwId == "" {
+			ngw = &awstasks.NatGateway{
+				Name:                 s(zone + "." + b.ClusterName()),
+				Subnet:               utilitySubnet,
+				ElasticIP:            eip,
+				AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone),
+			}
+		} else {
+			ngw = &awstasks.NatGateway{
+				Name:      s(zone + "." + b.ClusterName()),
+				Subnet:    utilitySubnet,
+				ElasticIP: eip,
+				ID:        s(ngwId),
+			}
 		}
+
 		c.AddTask(ngw)
 
 		// Private Route Table
