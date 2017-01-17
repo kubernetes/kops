@@ -22,8 +22,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kubernetes/pkg/util/sets"
-	//"google.golang.org/api/content/v2"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"strings"
 )
 
 // NetworkModelBuilder configures network objects
@@ -160,27 +159,10 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return err
 		}
 
-		// Has an existing NgwId been entered?
-		// NGWs look like this: ngwId: nat-09c4180b76a36ca2c
-		//ngwId := b.Cluster.Spec.Subnets[i].NgwId
-
-		// Was an elasticIp also allocated? This needs to be the ElasticIP
-		// associated with the NAT Gateway ngwEips look like: ngwEip: eipalloc-e1fc20df
-		//ngwEip := b.Cluster.Spec.Subnets[i].NgwEip
-
-		// If these get triggered, something has gone wrong in pkg/apis/kops/validation.go
-		//if ngwId != "" && ngwEip == "" {
-		//	return fmt.Errorf("must specify the associated ElasticIP when specifying NAT Gateways")
-		//}
-		//
-		//if ngwEip != "" && ngwId == "" {
-		//	return fmt.Errorf("must specify a NAT Gateway when specifying ElasticIP")
-		//}
-
 		// If EgressID == ""
 		// 	Exactly as kops is today
 		// else
-		// 	if strings.Contians(EgressID, "ngw-")
+		// 	if strings.Contians(EgressID, "nat-")
 		//		<context for pre-defined nat gateway>
 		// 		Set ngwid
 		//	else
@@ -189,40 +171,65 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		//		// Open an issue and past the issue number here
 
 
-		// Every NGW needs a public (Elastic) IP address, every private
-		// subnet needs a NGW, lets create it. We tie it to a subnet
-		// so we can track it in AWS
-		var eip = &awstasks.ElasticIP{}
-
-		eip = &awstasks.ElasticIP{
-			Name:                           s(zone + "." + b.ClusterName()),
-			AssociatedNatGatewayRouteTable: b.LinkToPrivateRouteTableInZone(zone),
-		}
-
-		c.AddTask(eip)
-		// NAT Gateway
-		//
-		// All private subnets will need a NGW, one per zone
-		//
-		// The instances in the private subnet can access the Internet by
-		// using a network address translation (NAT) gateway that resides
-		// in the public subnet.
+		// TODO!!!!: THIS CURRENTLY DELETES MY EXISTING NAT GATEWAY. BAD!!
 
 		var ngw = &awstasks.NatGateway{}
-		ngw = &awstasks.NatGateway{
-			Name:                 s(zone + "." + b.ClusterName()),
-			Subnet:               utilitySubnet,
-			ElasticIP:            eip,
-			AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone), // Unsure about this?
-			EgressId:	      s(b.Cluster.Spec.Subnets[i].EgressID),
+		if b.Cluster.Spec.Subnets[i].EgressID != "" {
+			if strings.Contains(b.Cluster.Spec.Subnets[i].EgressID, "nat-") {
+				// fmt.Printf("i have detected a nat gateway via egressId: %+v\n", b.Cluster.Spec.Subnets[i].EgressID)
+
+				ngw = &awstasks.NatGateway{
+					Name:                 s(zone + "." + b.ClusterName()),
+					Subnet:               utilitySubnet,
+					ID:		      s(b.Cluster.Spec.Subnets[i].EgressID),
+					AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone),
+					Shared:		      fi.Bool(true),
+					// Do I really need this EgressID here if the logic to decide this is a NGW is
+					// right here?
+				}
+
+				c.AddTask(ngw)
+
+			}
+		} else {
+
+			// Every NGW needs a public (Elastic) IP address, every private
+			// subnet needs a NGW, lets create it. We tie it to a subnet
+			// so we can track it in AWS
+			var eip = &awstasks.ElasticIP{}
+
+			eip = &awstasks.ElasticIP{
+				Name:                           s(zone + "." + b.ClusterName()),
+				AssociatedNatGatewayRouteTable: b.LinkToPrivateRouteTableInZone(zone),
+			}
+
+			c.AddTask(eip)
+			// NAT Gateway
+			//
+			// All private subnets will need a NGW, one per zone
+			//
+			// The instances in the private subnet can access the Internet by
+			// using a network address translation (NAT) gateway that resides
+			// in the public subnet.
+
+			var ngw = &awstasks.NatGateway{}
+			ngw = &awstasks.NatGateway{
+				Name:                 s(zone + "." + b.ClusterName()),
+				Subnet:               utilitySubnet,
+				ElasticIP:            eip,
+				AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone), // Unsure about this?
+				EgressId:	      s(b.Cluster.Spec.Subnets[i].EgressID),
+			}
+			//ngw = &awstasks.NatGateway{
+			//	Name:      s(zone + "." + b.ClusterName()),
+			//	Subnet:    utilitySubnet,
+			//	ElasticIP: eip,
+			//	ID:        s(ngwId),
+			//}
+			c.AddTask(ngw)
 		}
-		//ngw = &awstasks.NatGateway{
-		//	Name:      s(zone + "." + b.ClusterName()),
-		//	Subnet:    utilitySubnet,
-		//	ElasticIP: eip,
-		//	ID:        s(ngwId),
-		//}
-		c.AddTask(ngw)
+
+
 
 		// Private Route Table
 		//
