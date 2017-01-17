@@ -156,7 +156,9 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		DryRun:          isDryrun,
 		MaxTaskDuration: c.MaxTaskDuration,
 	}
+
 	err = applyCmd.Run()
+
 	if err != nil {
 		return err
 	}
