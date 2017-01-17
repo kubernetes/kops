@@ -399,7 +399,8 @@ func (o *dnsOp) listRecords(zone dnsprovider.Zone) ([]dnsprovider.ResourceRecord
 		}
 
 		glog.V(2).Infof("Querying all dnsprovider records for zone %q", zone.Name())
-		rrs, err := rrsProvider.List()
+		var err error
+		rrs, err = rrsProvider.List()
 		if err != nil {
 			return nil, fmt.Errorf("error querying resource records for zone %q: %v", zone.Name(), err)
 		}
@@ -482,6 +483,8 @@ func (o *dnsOp) updateRecords(k recordKey, newRecords []string, ttl int64) error
 
 		if existing != nil {
 			glog.Warningf("Found multiple matching records: %v and %v", existing, rr)
+		} else {
+			glog.V(8).Infof("Found matching record: %s %s", k.RecordType, rrName)
 		}
 		existing = rr
 	}
@@ -492,6 +495,7 @@ func (o *dnsOp) updateRecords(k recordKey, newRecords []string, ttl int64) error
 	}
 
 	if existing != nil {
+		glog.V(2).Infof("will remove existing dns record %s %s", existing.Type(), existing.Name())
 		cs.Remove(existing)
 	}
 
