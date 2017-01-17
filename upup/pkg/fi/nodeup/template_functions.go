@@ -26,6 +26,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/util/pkg/vfs"
@@ -123,7 +124,7 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 	dest["AllTokens"] = t.AllTokens
 	dest["GetToken"] = t.GetToken
 
-	dest["BuildFlags"] = buildFlags
+	dest["BuildFlags"] = flagbuilder.BuildFlags
 	dest["Base64Encode"] = func(s string) string {
 		return base64.StdEncoding.EncodeToString([]byte(s))
 	}
