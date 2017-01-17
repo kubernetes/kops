@@ -317,12 +317,19 @@ type ClusterSubnetSpec struct {
 	CIDR string `json:"cidr,omitempty"`
 
 	// ProviderID is the cloud provider id for the objects associated with the zone (the subnet on AWS)
-	ProviderID string `json:"subnetId,omitempty"`
+	ProviderID string `json:"id,omitempty"`
 
-	NgwId  string `json:"ngwId,omitempty"`
-	NgwEip string `json:"ngwEip,omitempty"`
-	// TODO: ACTIVATE EGRESSIP AND WRITE THE LOGIC TO ALLOW SMARTER AND BROADER SPECING OF EXISTING COMPONENTS
-	// EgressIP   string     `json:"egressIP,omitempty"`
+
+
+	// TODO We can probably delete these
+	//NgwId  string `json:"ngwId,omitempty"`
+	//NgwEip string `json:"ngwEip,omitempty"`
+
+
+	EgressID   string     `json:"egressID,omitempty"`
+
+
+
 	Type SubnetType `json:"type,omitempty"`
 }
 
