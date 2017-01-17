@@ -37,7 +37,7 @@ type dnsCache struct {
 	cachedZonesTimestamp int64
 }
 
-func NewDNSCache(provider dnsprovider.Interface) (*dnsCache, error) {
+func newDNSCache(provider dnsprovider.Interface) (*dnsCache, error) {
 	zonesProvider, ok := provider.Zones()
 	if !ok {
 		return nil, fmt.Errorf("DNS provider does not support zones")

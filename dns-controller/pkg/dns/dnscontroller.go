@@ -80,9 +80,10 @@ type DNSControllerScope struct {
 var _ Scope = &DNSControllerScope{}
 
 // NewDnsController creates a DnsController
-func NewDNSController(dnsCache *dnsCache, zoneRules *ZoneRules) (*DNSController, error) {
-	if dnsCache == nil {
-		return nil, fmt.Errorf("must pass DNS provider")
+func NewDNSController(dnsProvider dnsprovider.Interface, zoneRules *ZoneRules) (*DNSController, error) {
+	dnsCache, err := newDNSCache(dnsProvider)
+	if err != nil {
+		return fmt.Errorf("error initializing DNS cache: %v", err)
 	}
 
 	c := &DNSController{

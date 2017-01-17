@@ -132,12 +132,7 @@ func run() error {
 			return fmt.Errorf("unexpected zone flags: %q", err)
 		}
 
-		dnsCache, err := dns.NewDNSCache(dnsProvider)
-		if err != nil {
-			return err
-		}
-
-		dnsController, err = dns.NewDNSController(dnsCache, zoneRules)
+		dnsController, err = dns.NewDNSController(dnsProvider, zoneRules)
 		if err != nil {
 			return err
 		}
