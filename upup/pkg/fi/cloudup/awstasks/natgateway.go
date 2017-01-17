@@ -34,6 +34,9 @@ type NatGateway struct {
 	Subnet    *Subnet
 	ID        *string
 
+	EgressId *string
+
+
 	// We can't tag NatGateways, so we have to find through a surrogate
 	AssociatedRouteTable *RouteTable
 }
@@ -45,17 +48,54 @@ func (e *NatGateway) CompareWithID() *string {
 }
 
 func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
-	ngw, err := e.findNatGateway(c)
-	if err != nil {
-		return nil, err
-	}
-	if ngw == nil {
-		return nil, nil
+
+	cloud := c.Cloud.(awsup.AWSCloud)
+	var ngw *ec2.NatGateway
+	var eip string
+	actual := &NatGateway{}
+	if *e.ID != "" {
+		// We have an existing NGW, lets look up the EIP
+		request := & ec2.DescribeNatGatewaysInput{}
+		response, err := cloud.EC2().DescribeNatGateways(request)
+		if err != nil {
+			//fabulous err handling
+			_ := err
+		}
+
+		// Some error checking here for NGWS > 1
+
+		if len(response.NatGateways) != 1 {
+			// Error here
+		}
+		if len(response.NatGateways) == 1 {
+			ngw := response.NatGateways[0]
+		}else {
+			// really crazy error here
+		}
+
+		if len(response.NatGateways[0].NatGatewayAddresses) != 1 {
+			// Error here
+		}
+		if len(response.NatGateways[0].NatGatewayAddresses) == 1 {
+			eip = *response.NatGateways[0].NatGatewayAddresses[0].AllocationId
+			actual.ElasticIP = eip
+		} else {
+			// Another really terrible erro
+		}
+
+	}else {
+		ngw, err := e.findNatGateway(c)
+		if err != nil {
+			return nil, err
+		}
+		if ngw == nil {
+			return nil, nil
+		}
 	}
 
-	actual := &NatGateway{
-		ID: ngw.NatGatewayId,
-	}
+	actual.ID = ngw.NatGatewayId
+
+
 	actual.Subnet = e.Subnet
 	if len(ngw.NatGatewayAddresses) == 0 {
 		// Not sure if this ever happens
@@ -68,6 +108,7 @@ func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 
 	// NATGateways don't have a Name (no tags), so we set the name to avoid spurious changes
 	actual.Name = e.Name
+
 
 	actual.AssociatedRouteTable = e.AssociatedRouteTable
 
