@@ -28,6 +28,7 @@ k8s.io/kops/pkg/client/simple
 k8s.io/kops/pkg/client/simple/vfsclientset
 k8s.io/kops/pkg/diff
 k8s.io/kops/pkg/featureflag
+k8s.io/kops/pkg/flagbuilder
 k8s.io/kops/pkg/kubeconfig
 k8s.io/kops/pkg/model
 k8s.io/kops/pkg/model/components
