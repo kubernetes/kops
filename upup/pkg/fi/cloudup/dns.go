@@ -67,6 +67,11 @@ func findZone(cluster *api.Cluster, cloud fi.Cloud) (dnsprovider.Zone, error) {
 	}
 
 	if len(matches) > 1 {
+		glog.Infof("Found multiple DNS Zones matching %q, please specify --dns-zone=<id> to indicate the one you want", cluster.Spec.DNSZone)
+		for _, zone := range zones {
+			id := zone.ID()
+			glog.Infof("\t--dns-zone=%s", id)
+		}
 		return nil, fmt.Errorf("found multiple DNS Zones matching %q", cluster.Spec.DNSZone)
 	}
 
