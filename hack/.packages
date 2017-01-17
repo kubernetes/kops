@@ -16,6 +16,7 @@ k8s.io/kops/federation
 k8s.io/kops/federation/model
 k8s.io/kops/federation/targets/kubernetes
 k8s.io/kops/federation/tasks
+k8s.io/kops/nodeup/pkg/distros
 k8s.io/kops/nodeup/pkg/model
 k8s.io/kops/nodeup/pkg/model/resources
 k8s.io/kops/pkg/apis/kops
@@ -27,10 +28,12 @@ k8s.io/kops/pkg/client/simple
 k8s.io/kops/pkg/client/simple/vfsclientset
 k8s.io/kops/pkg/diff
 k8s.io/kops/pkg/featureflag
+k8s.io/kops/pkg/kubeconfig
 k8s.io/kops/pkg/model
 k8s.io/kops/pkg/model/components
 k8s.io/kops/pkg/model/iam
 k8s.io/kops/pkg/model/resources
+k8s.io/kops/pkg/systemd
 k8s.io/kops/pkg/validation
 k8s.io/kops/protokube/cmd/protokube
 k8s.io/kops/protokube/pkg/protokube

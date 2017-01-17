@@ -229,3 +229,6 @@
 [submodule "_vendor/github.com/sergi/go-diff"]
 	path = _vendor/github.com/sergi/go-diff
 	url = https://github.com/sergi/go-diff.git
+[submodule "_vendor/k8s.io/gengo"]
+	path = _vendor/k8s.io/gengo
+	url = https://github.com/kubernetes/gengo.git
