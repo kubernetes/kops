@@ -90,6 +90,7 @@ func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup, c
 	}
 
 	if ig.Spec.AssociatePublicIP == nil {
+		// TODO: Only if a Public IG
 		ig.Spec.AssociatePublicIP = fi.Bool(true)
 	}
 
