@@ -44,38 +44,44 @@ brew install kubernetes-cli
 
 ## Setup your environment
 
-### Setting up a kops IAM user
+## Create an IAM user for kops
+In this example we will be using a dedicated IAM user to use with kops. This user will need basic API security credentials in order to use kops. Create the user and credentials using the AWS console. [More information](https://aws.amazon.com/documentation/iam/)
 
+The kops user will require the following IAM permission to function properly:
+```
+AmazonEC2FullAccess
+AmazonRoute53FullAccess
+AmazonS3FullAccess
+IAMFullAccess
+AmazonVPCFullAccess
+```
 
-In this example we will be using a dedicated IAM user to use with kops. This user will need basic API security credentials in order to use kops. Create the user and credentials using the AWS console. [More information](https://aws.amazon.com/documentation/iam/).
+If you already have a functioning AWS cli envrionment, you can create the kops user by doing the following:
 
-Kubernetes kops uses the official AWS Go SDK, so all we need to do here is set up your system to use the official AWS supported methods of registering security credentials defined [here](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials). Here is an example using the aws command line tool to set up your security credentials.
+```bash
+aws iam create-group --group-name kops
 
-To create a IAM user for kops do the following:
+export arns="
+arn:aws:iam::aws:policy/AmazonEC2FullAccess
+arn:aws:iam::aws:policy/AmazonRoute53FullAccess
+arn:aws:iam::aws:policy/AmazonS3FullAccess
+arn:aws:iam::aws:policy/IAMFullAccess
+arn:aws:iam::aws:policy/AmazonVPCFullAccess"
 
-- Navigate to the IAM home page after logging onto the console
-- Click the Groups link on the left tab and then click Create New Group
-- Set Group Name: to kops and then click Next Step
-- Attach the following policies and then click Next Step:
- - AmazonEC2FullAccess
- - AmazonRoute53FullAccess
- - AmazonS3FullAccess
- - IAMFullAccess
- - AmazonVPCFullAccess
-* Click Create Group
-* Click the Users link on the left tab and then click Add user
-* Set User name to kops
-* Select Access type Programmatic access
-* Click Next: Permissions
-* Select the kops Group and click Next: Review
-* Click Create user
-* Click on Download .csv
-* Run aws configure
-* Run aws iam list-users
+for arn in $arns; do aws iam attach-group-policy --policy-arn "$arn" --group-name kops; done
+
+aws iam create-user --user-name testuser
+
+aws iam add-user-to-group --user-name kops --group-name kops
+
+aws iam create-access-key --user-name kops
+# make not of the SecretAccesKey and AccessKeyID in the returned json output
+```
+Kubernetes kops uses the official AWS Go SDK, so all we need to do here is set up your system to use the official AWS supported methods of registering security credentials defined [here](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials). Follow the example below to configure the aws command line tool to set up the security credentials for the kops user you just created.
+
+## Install aws cli
 
 #### OS X
-
-##### Installing aws cli
 
 The officially supported way of installing the tool is with `pip` as in
 
