@@ -468,7 +468,7 @@ func TestPopulateCluster_KubeController_High_Enough_Version(t *testing.T) {
 	}
 
 	if full.Spec.KubeControllerManager.AttachDetachReconcileSyncPeriod == nil {
-		t.Fatalf("Attache Detach not set correctly")
+		t.Fatalf("AttachDetachReconcileSyncPeriod not set correctly")
 	}
 
 }
@@ -490,6 +490,6 @@ func TestPopulateCluster_KubeController_Fail(t *testing.T) {
 	}
 
 	if full.Spec.KubeControllerManager.AttachDetachReconcileSyncPeriod != nil {
-		t.Fatalf("Attach Detach is not supported in 1.4.7")
+		t.Fatalf("AttachDetachReconcileSyncPeriodh is not supported in 1.4.7")
 	}
 }
