@@ -21,6 +21,8 @@ const (
 	TagOSFamilyDebian = "_debian_family"
 
 	TagSystemd = "_systemd"
+
+	TagCNI = "_networking_cni"
 )
 
 type HasTags interface {
