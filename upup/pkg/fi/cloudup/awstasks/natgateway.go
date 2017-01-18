@@ -282,7 +282,6 @@ func (e *NatGateway) waitAvailable(cloud awsup.AWSCloud) error {
 
 func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway) error {
 	// New NGW
-	fmt.Printf("I'm in natgateway.go RenderAWS and this is e: %+v\n", e)
 
 	var id *string
 	if a == nil {
@@ -316,14 +315,12 @@ func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway)
 		return fmt.Errorf("unable to tag subnet %v", err)
 	}
 
-	// Is the above subnet tag still needed? TODO: Update the deletion logic that uses this?
-
-	// If this is a Nat Gateway that is shared, let's tag it so at deletion time we don't delete it
-	err = t.AddAWSTags(*e.AssociatedRouteTable.ID, tags)
-	if err != nil {
-		return fmt.Errorf("Unable to tag associated route table %v", err)
+	// If this is a shared NGW, we need to leave some additional tags so we don't delete existing resources
+	if *e.Shared == true {
+		glog.V(2).Infof("tagging route table %s to track shared NGW", *e.AssociatedRouteTable.ID)
+		err = t.AddAWSTags(*e.AssociatedRouteTable.ID, tags)
 	}
-	fmt.Printf("I'm still here in natgateway.go RenderAWS and this is after tagging: %+v\n", e)
+
 	return nil
 }
 

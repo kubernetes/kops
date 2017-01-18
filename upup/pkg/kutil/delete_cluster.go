@@ -203,7 +203,6 @@ func (c *DeleteCluster) ListResources() (map[string]*ResourceTracker, error) {
 			routeTableIds.Insert(id)
 		}
 		natGateways, err := FindNatGateways(cloud, routeTableIds)
-		fmt.Printf("I'm back and you returned %v gateways", natGateways)
 		if err != nil {
 			return nil, err
 		}
@@ -930,7 +929,7 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 			rtRequest := &ec2.DescribeRouteTablesInput{}
 			rtResponse, err := c.EC2().DescribeRouteTables(rtRequest)
 
-			// sharedNgwIds is like a whitelist for shared Ngws. Building it up in this block
+			// sharedNgwIds is like a whitelist for shared Ngws that we can ensure are not deleted
 			sharedNgwIds := sets.NewString()
 			{
 				for _, rt := range rtResponse.RouteTables {
@@ -1482,6 +1481,7 @@ func FindNatGateways(cloud fi.Cloud, routeTableIds sets.String) ([]*ResourceTrac
 				for _, route := range rt.Routes {
 					if route.NatGatewayId != nil {
 						natGatewayIds.Insert(*route.NatGatewayId)
+						fmt.Printf("inserting %s to be deleted\n", *route.NatGatewayId)
 					}
 				}
 			}
