@@ -183,14 +183,14 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					Subnet:               utilitySubnet,
 					ID:		      s(b.Cluster.Spec.Subnets[i].EgressID),
 					AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone),
+					// If we're here, it means this NatGateway was specified, so we are Shared
 					Shared:		      fi.Bool(true),
-					// Do I really need this EgressID here if the logic to decide this is a NGW is
-					// right here?
 				}
 
 				c.AddTask(ngw)
 
 			}
+
 		} else {
 
 			// Every NGW needs a public (Elastic) IP address, every private

@@ -51,7 +51,6 @@ func (e *NatGateway) CompareWithID() *string {
 
 func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 
-	fmt.Printf("I'm in natgateway.go and this is the NatGateway struct: %+v\n", e)
 	cloud := c.Cloud.(awsup.AWSCloud)
 	var ngw *ec2.NatGateway
 	//var eip *ElasticIP
@@ -65,49 +64,32 @@ func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 			NatGatewayIds: ngwIds,
 		}
 		response, err := cloud.EC2().DescribeNatGateways(request)
-		fmt.Printf("I'm in natgateway.go this is the response from DescribeNatGateways: %+v\n", response)
-
-		//I'm in natgateway.go this is the response from DescribeNatGateways: {
-		//NatGateways: [{
-		//	CreateTime: 2017-01-04 23:10:50.881 +0000 UTC,
-		//	NatGatewayAddresses: [{
-		//		AllocationId: "eipalloc-3cc21e02",
-		//		NetworkInterfaceId: "eni-b844bc48",
-		//		PrivateIp: "172.20.34.81",
-		//		PublicIp: "34.195.179.247"
-		//	}],
-		//	NatGatewayId: "nat-054d482e169ea1583",
-		//	State: "available",
-		//	SubnetId: "subnet-b692fa9b",
-		//	VpcId: "vpc-f80abf9e"
-		//}]
-		//}
+		glog.V(6).Infof("I'm in natgateway.go this is the response from DescribeNatGateways: %+v\n", response)
 
 		if err != nil {
-			//fabulous err handling
-			//_ := err
+			return nil, fmt.Errorf("error listing Nat Gateways %v", err)
 		}
 
-		// Some error checking here for NGWS > 1
-
 		if len(response.NatGateways) != 1 {
-			// Error here
+			return nil, fmt.Errorf("found %b NAT Gateways, expected 1", len(response.NatGateways))
 		}
 		if len(response.NatGateways) == 1 {
 			ngw = response.NatGateways[0]
 		}else {
-			// really crazy error here
+			// If this happens, stranger things are occurring
+			return nil, fmt.Errorf("you have broken the space time continuum. NGWs == 1 && != 1")
 		}
 
 		if len(response.NatGateways[0].NatGatewayAddresses) != 1 {
-			// Error here
+			return nil, fmt.Errorf("found %b EIP Addresses for 1 NAT Gateway, expected 1", len(response.NatGateways))
 		}
 		if len(response.NatGateways[0].NatGatewayAddresses) == 1 {
 
 			actual.ElasticIP = &ElasticIP{ ID: response.NatGateways[0].NatGatewayAddresses[0].AllocationId }
 
 		} else {
-			// Another really terrible erro
+			// If this happens, stranger things are occurring again
+			return nil, fmt.Errorf("boom!")
 		}
 
 	}else {

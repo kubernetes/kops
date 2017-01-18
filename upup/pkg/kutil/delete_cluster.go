@@ -1431,7 +1431,7 @@ func FindNatGateways(cloud fi.Cloud, routeTableIds sets.String) ([]*ResourceTrac
 	c := cloud.(awsup.AWSCloud)
 
 	natGatewayIds := sets.NewString()
-
+	fmt.Printf("natGatewaysIds: %+v", natGatewayIds)
 	{
 		request := &ec2.DescribeRouteTablesInput{}
 		for routeTableId := range routeTableIds {
@@ -1451,20 +1451,20 @@ func FindNatGateways(cloud fi.Cloud, routeTableIds sets.String) ([]*ResourceTrac
 		}
 	}
 
-	{
-		// We could do this to find if a NAT gateway is shared
-
-		//request := &ec2.DescribeRouteTablesInput{}
-		//request.Filters = append(request.Filters, awsup.NewEC2Filter("route.nat-gateway-id", natGatewayId))
-		//response, err := c.EC2().DescribeRouteTables(request)
-		//if err != nil {
-		//	return fmt.Errorf("error from DescribeRouteTables: %v", err)
-		//}
-		//
-		//for _, rt := range response.RouteTables {
-		//	routeTableId := aws.StringValue(rt.RouteTableId)
-		//}
-	}
+	//{
+	//	 // We could do this to find if a NAT gateway is shared
+	//
+	//	request := &ec2.DescribeRouteTablesInput{}
+	//	request.Filters = append(request.Filters, awsup.NewEC2Filter("route.nat-gateway-id", natGatewayIds[0]))
+	//	response, err := c.EC2().DescribeRouteTables(request)
+	//	if err != nil {
+	//		return fmt.Errorf("error from DescribeRouteTables: %v", err)
+	//	}
+	//
+	//	for _, rt := range response.RouteTables {
+	//		routeTableId := aws.StringValue(rt.RouteTableId)
+	//	}
+	//}
 
 	var trackers []*ResourceTracker
 
