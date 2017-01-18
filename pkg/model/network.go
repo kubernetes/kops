@@ -159,20 +159,6 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return err
 		}
 
-		// If EgressID == ""
-		// 	Exactly as kops is today
-		// else
-		// 	if strings.Contians(EgressID, "nat-")
-		//		<context for pre-defined nat gateway>
-		// 		Set ngwid
-		//	else
-		//		// error here
-		//		// Note to eventually support more EgressID's
-		//		// Open an issue and past the issue number here
-
-
-		// TODO!!!!: THIS CURRENTLY DELETES MY EXISTING NAT GATEWAY. BAD!!
-
 		var ngw = &awstasks.NatGateway{}
 		if b.Cluster.Spec.Subnets[i].EgressID != "" {
 			if strings.Contains(b.Cluster.Spec.Subnets[i].EgressID, "nat-") {
@@ -189,6 +175,8 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 				c.AddTask(ngw)
 
+			} else {
+				return fmt.Errorf("kops currently only supports re-use of NAT Gateways. We will support more eventually! Please see https://github.com/kubernetes/kops/issues/1530")
 			}
 
 		} else {

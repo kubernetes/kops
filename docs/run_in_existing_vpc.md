@@ -113,25 +113,22 @@ kops update cluster ${CLUSTER_NAME} --yes
 
 ### Shared NAT Gateways
 
-On AWS in private [topology](docs/topology.md), `kops` creates one NAT Gateway (NGW) per private subnet. If your shared VPC is already set up with an NGW in the subnet that `kops` deploys private resources to, it is possible to specify the ID and have `kops`/`kubernetes` use it.
+On AWS in private [topology](docs/topology.md), `kops` creates one NAT Gateway (NGW) per AZ. If your shared VPC is already set up with an NGW in the subnet that `kops` deploys private resources to, it is possible to specify the ID and have `kops`/`kubernetes` use it.
 
 After creating a basic cluster spec, edit your cluster to specify NGW:
 
 `kops edit cluster ${CLUSTER_NAME}`
 
-Please note, ngwID and ngwEip are a pair. You must specify both the NGW ID as well as the EIP Allocation ID associated with it.
 ```yaml
 spec:
   subnets:
   - cidr: 10.20.64.0/21
     name: us-east-1a
-    ngwEip: eipalloc-12345
-    ngwId: nat-987654321
+    egressId: nat-987654321
     type: Private
     zone: us-east-1a
   - cidr: 10.20.32.0/21
     name: utility-us-east-1a
-    subnetId: subnet-12345
     type: Utility
     zone: us-east-1a
 ```

@@ -57,30 +57,26 @@ spec:
 
 ### cluster.spec Subnet Keys
 
-#### subnetId
+#### id
 ID of a subnet to share in an existing VPC.
 
-#### ngwId/ngwEip
-NgwId: ID of an existing AWS NAT Gateway (NGW) to be used for a Private subnet.
-NgwEip: ID of the AWS ElasticIP allocation connected to the specified NGW
+#### egressId
+The resource identifier (ID) of something in your existing VPC that you would like to use as "egress" to the outside world. This feature was originally envisioned to allow re-use of NAT Gateways so the correct form for this field is as follows.
 
-If you wish to use a shared NGW, you MUST specify the ElasticIP associated with it. At this time, there is no reason to specify an ElasticIP without a corresponding NGW.
-
-```yaml
+```
 spec:
   subnets:
   - cidr: 10.20.64.0/21
     name: us-east-1a
-    ngwEip: eipalloc-12345
-    ngwId: nat-987654321
+    egressId: nat-987654321
     type: Private
     zone: us-east-1a
   - cidr: 10.20.32.0/21
     name: utility-us-east-1a
-    subnetId: subnet-12345
+    id: subnet-12345
     type: Utility
     zone: us-east-1a
-```
+At this time
 
 ### kubeAPIServer
 
