@@ -153,7 +153,7 @@ IAMFullAccess
 AmazonVPCFullAccess
 ```
 
-If you already have a functioning AWS cli envrionment, you can create the kops user by doing the following:
+You can create a kops IAM user from the command line using the following:
 
 ```bash
 aws iam create-group --group-name kops
