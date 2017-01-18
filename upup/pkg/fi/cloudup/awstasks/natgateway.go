@@ -64,7 +64,6 @@ func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 			NatGatewayIds: ngwIds,
 		}
 		response, err := cloud.EC2().DescribeNatGateways(request)
-		glog.V(6).Infof("I'm in natgateway.go this is the response from DescribeNatGateways: %+v\n", response)
 
 		if err != nil {
 			return nil, fmt.Errorf("error listing Nat Gateways %v", err)
@@ -283,6 +282,7 @@ func (e *NatGateway) waitAvailable(cloud awsup.AWSCloud) error {
 
 func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway) error {
 	// New NGW
+	fmt.Printf("I'm in natgateway.go RenderAWS and this is e: %+v\n", e)
 
 	var id *string
 	if a == nil {
@@ -313,8 +313,17 @@ func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway)
 	tags["AssociatedNatgateway"] = *id
 	err := t.AddAWSTags(*e.Subnet.ID, tags)
 	if err != nil {
-		return fmt.Errorf("Unable to tag subnet %v", err)
+		return fmt.Errorf("unable to tag subnet %v", err)
 	}
+
+	// Is the above subnet tag still needed? TODO: Update the deletion logic that uses this?
+
+	// If this is a Nat Gateway that is shared, let's tag it so at deletion time we don't delete it
+	err = t.AddAWSTags(*e.AssociatedRouteTable.ID, tags)
+	if err != nil {
+		return fmt.Errorf("Unable to tag associated route table %v", err)
+	}
+	fmt.Printf("I'm still here in natgateway.go RenderAWS and this is after tagging: %+v\n", e)
 	return nil
 }
 
