@@ -25,6 +25,7 @@ limitations under the License.
 package featureflag
 
 import (
+	"github.com/golang/glog"
 	"os"
 	"strings"
 	"sync"
@@ -40,7 +41,9 @@ var DNSPreCreate = New("DNSPreCreate", Bool(true))
 var flags = make(map[string]*FeatureFlag)
 var flagsMutex sync.Mutex
 
-var initFlags sync.Once
+func init() {
+	ParseFlags(os.Getenv("KOPS_FEATURE_FLAGS"))
+}
 
 type FeatureFlag struct {
 	Key          string
@@ -75,17 +78,12 @@ func ParseFlags(f string) {
 		} else {
 			ff = New(s, nil)
 		}
+		glog.Infof("FeatureFlag %q=%v", ff.Key, enabled)
 		ff.enabled = &enabled
 	}
 }
 
-func readEnv() {
-	ParseFlags(os.Getenv("KOPS_FEATURE_FLAGS"))
-}
-
 func New(key string, defaultValue *bool) *FeatureFlag {
-	initFlags.Do(readEnv)
-
 	flagsMutex.Lock()
 	defer flagsMutex.Unlock()
 
