@@ -326,6 +326,10 @@ func (c *Cluster) Validate(strict bool) error {
 			if bastion.IdleTimeoutSeconds != nil && *bastion.IdleTimeoutSeconds <= 0 {
 				return fmt.Errorf("Bastion IdleTimeoutSeconds should be greater than zero")
 			}
+			if bastion.IdleTimeoutSeconds != nil && *bastion.IdleTimeoutSeconds > 3600 {
+				return fmt.Errorf("Bastion IdleTimeoutSeconds cannot be greater than one hour")
+			}
+
 		}
 	}
 
