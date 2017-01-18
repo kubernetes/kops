@@ -52,7 +52,11 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		return fmt.Errorf("Unable to parse kubernetesVersion %s", err)
 	}
 
-	k8sv152, _ := kops.ParseKubernetesVersion("v1.5.2")
+	k8sv152, err := kops.ParseKubernetesVersion("v1.5.2")
+
+	if err != nil {
+		return fmt.Errorf("Unable to parse kubernetesVersion %s", err)
+	}
 
 	if err != nil {
 		return fmt.Errorf("Unable to parse kubernetesVersion %s", err)
@@ -76,22 +80,23 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		if options.KubeControllerManager.AttachDetachReconcileSyncPeriod == nil ||
 			options.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration.String() == "0s" {
 
-			glog.V(8).Info("AttachDetachReconcileSyncPeriod is not set; will set to default %v", defaultAttachDetachReconcileSyncPeriod)
+			glog.V(8).Infof("AttachDetachReconcileSyncPeriod is not set; will set to default %v", defaultAttachDetachReconcileSyncPeriod)
 			options.KubeControllerManager.AttachDetachReconcileSyncPeriod = &metav1.Duration{Duration: defaultAttachDetachReconcileSyncPeriod}
 
 			// If less than 1 min and greater than 1 sec ... you get a warning
 		} else if options.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration < defaultAttachDetachReconcileSyncPeriod &&
 			options.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration > time.Second {
 
-			glog.Info("KubeControllerManager AttachDetachReconcileSyncPeriod is set lower than recommended")
+			glog.Infof("KubeControllerManager AttachDetachReconcileSyncPeriod is set lower than recommended: %s", defaultAttachDetachReconcileSyncPeriod)
 
-			// If less than 1sec you get an error.  Controller no worky .. it goes boom.
+			// If less than 1sec you get an error.  Controller is coded to not allow configuration
+			// less than one second.
 		} else if options.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration < time.Second {
-			return fmt.Errorf("Unable to set AttachDetachReconcileSyncPeriod than 1 second")
+			return fmt.Errorf("AttachDetachReconcileSyncPeriod cannot be set to less than 1 second")
 		}
 	} else {
 
-		glog.Info("not setting AttachDetachReconcileSyncPeriod, k8s version is too low")
+		glog.V(4).Infof("not setting AttachDetachReconcileSyncPeriod, k8s version is too low")
 		options.KubeControllerManager.AttachDetachReconcileSyncPeriod = nil
 	}
 
