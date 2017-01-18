@@ -30,14 +30,14 @@ const (
 	defaultAttachDetachReconcileSyncPeriod = time.Minute
 )
 
-// KubeControllerManagerOptionsBuilder adds options for the k-c-m to the model
+// KubeControllerManagerOptionsBuilder adds options for the kubernetes controller manager to the model.
 type KubeControllerManagerOptionsBuilder struct {
 	Context *OptionsContext
 }
 
 var _ loader.OptionsBuilder = &KubeControllerManagerOptionsBuilder{}
 
-// BuildOptions tests for options to be added to the model
+// BuildOptions generates the configurations used to create kubernetes controller manager manifest
 func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error {
 
 	options := o.(*kops.ClusterSpec)
