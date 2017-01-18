@@ -79,7 +79,7 @@ func Test_Build_KCM_Builder_High_Enough_Version(t *testing.T) {
 	}
 
 	if spec.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration != time.Minute {
-		t.Fatalf("k-c-m builder should be set to 1m - %s", spec.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration.String())
+		t.Fatalf("AttachDetachReconcileSyncPeriod should be set to 1m - %s", spec.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration.String())
 	}
 
 }
