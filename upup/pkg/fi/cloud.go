@@ -27,6 +27,23 @@ type Cloud interface {
 	ProviderID() CloudProviderID
 
 	DNS() (dnsprovider.Interface, error)
+
+	// FindVPCInfo looks up the specified VPC by id, returning info if found, otherwise (nil, nil)
+	FindVPCInfo(id string) (*VPCInfo, error)
+}
+
+type VPCInfo struct {
+	// CIDR is the IP address range for the VPC
+	CIDR string
+
+	// Subnets is a list of subnets that are part of the VPC
+	Subnets []*SubnetInfo
+}
+
+type SubnetInfo struct {
+	ID   string
+	Zone string
+	CIDR string
 }
 
 // zonesToCloud allows us to infer from certain well-known zones to a cloud

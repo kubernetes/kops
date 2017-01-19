@@ -3,15 +3,14 @@
 When launching into a shared VPC, the VPC & the Internet Gateway will be reused. By default we create a new subnet per zone,
 and a new route table, but you can also use a shared subnet (see [below](#running-in-a-shared-subnet)).
 
-Use kops create cluster with the `--vpc` and `--network-cidr` arguments for your existing VPC:
+Use kops create cluster with the `--vpc` argument for your existing VPC:
 
 
 ```
 export KOPS_STATE_STORE=s3://<somes3bucket>
 export CLUSTER_NAME=<sharedvpc.mydomain.com>
 
-kops create cluster --zones=us-east-1b --name=${CLUSTER_NAME} \
-  --vpc=vpc-a80734c1 --network-cidr=10.100.0.0/16
+kops create cluster --zones=us-east-1b --name=${CLUSTER_NAME} --vpc=vpc-12345678
 ```
 
 Then `kops edit cluster ${CLUSTER_NAME}` should show you something like:
@@ -23,17 +22,18 @@ metadata:
 spec:
   cloudProvider: aws
   networkCIDR: 10.100.0.0/16
-  networkID: vpc-a80734c1
+  networkID: vpc-12345678
   nonMasqueradeCIDR: 100.64.0.0/10
-  zones:
+  subnets:
   - cidr: 10.100.32.0/19
-    name: eu-central-1a
+    name: us-east-1b
+    type: Public
+    zone: us-east-1b
 ```
 
 
 Verify that networkCIDR & networkID match your VPC CIDR & ID.  You likely need to set the CIDR on each of the Zones,
 because subnets in a VPC cannot overlap.
-
 
 You can then run `kops update cluster` in preview mode (without --yes).  You don't need any arguments,
 because they're all in the cluster spec:
@@ -91,13 +91,18 @@ spec:
   networkCIDR: 10.100.0.0/16
   networkID: vpc-a80734c1
   nonMasqueradeCIDR: 100.64.0.0/10
-  zones:
-  - cidr: 10.100.32.0/19
-    name: eu-central-1a
+  subnets:
+  - cidr: 10.0.32.0/19 # You can delete the CIDR here; it will be queried
+    name: us-east-1d
+    type: Public
+    zone: us-east-1d
     id: subnet-1234567 # Replace this with the ID of your subnet
 ```
 
-Make sure that the CIDR matches the CIDR of your subnet. Then update your cluster through the normal update procedure:
+If you specify the CIDR, it must match the CIDR for the subnet; otherwise it will be populated by querying the subnet.
+It is probably easier to specify the `id` and remove the `cidr`!  Remember also that the zone must match the subnet Zone.  
+
+Then update your cluster through the normal update procedure:
 
 ```
 kops update cluster ${CLUSTER_NAME}
