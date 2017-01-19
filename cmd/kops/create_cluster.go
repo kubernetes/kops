@@ -508,7 +508,10 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 
 	case api.TopologyPrivate:
-		if !supportsPrivateTopology(cluster.Spec.Networking) {
+		if c.AssociatePublicIP == true {
+			return fmt.Errorf("Unable to associate public IPs in private topology")
+		}
+		if !hasValidNetwork(cluster.Spec.Networking) {
 			return fmt.Errorf("Invalid networking option %s. Currently only '--networking kopeio-vxlan', '--networking weave', '--networking calico' (or '--networking cni') are supported for private topologies", c.Networking)
 		}
 		cluster.Spec.Topology = &api.TopologySpec{
@@ -720,7 +723,21 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	return nil
 }
 
-func supportsPrivateTopology(n *api.NetworkingSpec) bool {
+
+func parseZoneList(s string) []string {
+	var filtered []string
+	for _, v := range strings.Split(s, ",") {
+		v = strings.TrimSpace(v)
+		if v == "" {
+			continue
+		}
+		v = strings.ToLower(v)
+		filtered = append(filtered, v)
+	}
+	return filtered
+}
+
+func hasValidNetwork(n *api.NetworkingSpec) bool {
 
 	if n.CNI != nil || n.Kopeio != nil || n.Weave != nil || n.Calico != nil {
 		return true
