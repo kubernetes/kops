@@ -18,11 +18,13 @@ package flagbuilder
 
 import (
 	"fmt"
-	"github.com/golang/glog"
-	"k8s.io/kops/upup/pkg/fi/utils"
 	"reflect"
 	"sort"
 	"strings"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/upup/pkg/fi/utils"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 )
 
 // BuildFlags builds flag arguments based on "flag" tags on the structure
@@ -103,6 +105,9 @@ func BuildFlags(options interface{}) (string, error) {
 
 		case bool, int, int32, int64, float32, float64:
 			vString := fmt.Sprintf("%v", v)
+			flag = fmt.Sprintf("--%s=%s", flagName, vString)
+		case metav1.Duration:
+			vString := v.Duration.String()
 			flag = fmt.Sprintf("--%s=%s", flagName, vString)
 
 		default:
