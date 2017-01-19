@@ -1901,6 +1901,9 @@ func ListIAMRoles(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error
 	remove["masters."+clusterName] = true
 	remove["nodes."+clusterName] = true
 	remove["bastions."+clusterName] = true
+	remove["additional.nodes."+clusterName] = true
+	remove["additional.masters."+clusterName] = true
+	remove["additional.bastions."+clusterName] = true
 
 	var roles []*iam.Role
 	// Find roles matching remove map
@@ -1979,6 +1982,9 @@ func ListIAMInstanceProfiles(cloud fi.Cloud, clusterName string) ([]*ResourceTra
 	remove["masters."+clusterName] = true
 	remove["nodes."+clusterName] = true
 	remove["bastions."+clusterName] = true
+	remove["additional.nodes."+clusterName] = true
+	remove["additional.masters."+clusterName] = true
+	remove["additional.bastions."+clusterName] = true
 
 	var profiles []*iam.InstanceProfile
 
