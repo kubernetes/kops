@@ -24,23 +24,6 @@ import (
 	"k8s.io/kops/util/pkg/ui"
 )
 
-// TestContainsString tests the ContainsString() function
-func TestContainsString(t *testing.T) {
-	testString := "my test string"
-	answer := ui.ContainsString(strings.Split(testString, " "), "my")
-	if !answer {
-		t.Fatal("Failed to find string using ui.ContainsString()")
-	}
-	answer = ui.ContainsString(strings.Split(testString, " "), "string")
-	if !answer {
-		t.Fatal("Failed to find string using ui.ContainsString()")
-	}
-	answer = ui.ContainsString(strings.Split(testString, " "), "random")
-	if answer {
-		t.Fatal("Found string that does not exist using ui.ContainsString()")
-	}
-}
-
 // TestConfirmation attempts to test the majority of the ui.GetConfirm function used in the 'kogs delete' commands
 func TestConfirmation(t *testing.T) {
 	var out bytes.Buffer

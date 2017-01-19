@@ -22,7 +22,6 @@ import (
 	"io"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/federation"
-	"os"
 )
 
 type UpdateFederationOptions struct {
@@ -36,7 +35,7 @@ func NewCmdUpdateFederation(f *util.Factory, out io.Writer) *cobra.Command {
 		Short: "Update federation",
 		Long:  `Updates a k8s federation.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := RunUpdateFederation(f, cmd, args, os.Stdout, options)
+			err := RunUpdateFederation(f, cmd, args, out, options)
 			if err != nil {
 				exitWithError(err)
 			}
