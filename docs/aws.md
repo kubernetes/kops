@@ -148,6 +148,8 @@ subdomain.kubernetes.com.        172800  IN  NS  ns-1022.awsdns-35.com.
 subdomain.kubernetes.com.        172800  IN  NS  ns-1149.awsdns-27.co.uk.
 ```
 
+Note that kops will assume that the hosted zone you are using is publicly resolvable. If you plan on using a private DNS hosted zone, please set `--dns private`
+
 ## Setting up a state store for your cluster
 
 
