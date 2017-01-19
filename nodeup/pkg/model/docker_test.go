@@ -18,6 +18,7 @@ package model
 
 import (
 	"io/ioutil"
+	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi"
@@ -55,7 +56,7 @@ func runDockerBuilderTest(t *testing.T, key string) {
 	nodeUpModelContext := &NodeupModelContext{
 		Cluster:      cluster,
 		Architecture: "amd64",
-		Distribution: DistributionXenial,
+		Distribution: distros.DistributionXenial,
 	}
 
 	builder := DockerBuilder{NodeupModelContext: nodeUpModelContext}
