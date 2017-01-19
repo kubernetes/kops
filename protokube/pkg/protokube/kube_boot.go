@@ -135,6 +135,9 @@ func (k *KubeBoot) syncOnce() error {
 
 // enableKubelet: Make sure kubelet is running.
 func enableKubelet() error {
+	// TODO: Check/log status of kubelet
+	// (in particular, we want to avoid kubernetes/kubernetes#40123 )
+	glog.V(2).Infof("ensuring that kubelet systemd service is running")
 	cmd := exec.Command("systemctl", "start", "--no-block", "kubelet")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
