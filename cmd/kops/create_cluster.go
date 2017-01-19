@@ -69,7 +69,6 @@ type CreateClusterOptions struct {
 
 	// Enable/Disable Bastion Host complete setup
 	Bastion bool
-
 }
 
 func (o *CreateClusterOptions) InitDefaults() {
@@ -522,7 +521,6 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.Topology.DNS.Type = api.DNSTypePrivate
 	default:
 		return fmt.Errorf("unknown DNSType: %q", c.DNSType)
-
 	}
 
 	sshPublicKeys := make(map[string][]byte)

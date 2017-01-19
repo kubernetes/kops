@@ -328,14 +328,11 @@ func (c *Cluster) Validate(strict bool) error {
 			}
 		}
 	}
-	// Validate specification of NAT Gateway and EIP assignment
+	// Egress specification support
 	{
 		for _, s := range c.Spec.Subnets {
-			if s.NgwId != "" && s.NgwEip == "" {
-				return fmt.Errorf("Must specify the associated ElasticIP when specifying NAT Gateways")
-			}
-			if s.NgwEip != "" && s.NgwId == "" {
-				return fmt.Errorf("Must specify a NAT Gateway when specifying ElasticIP")
+			if s.Egress != "" && !(strings.Contains("nat-", s.Egress)) {
+				return fmt.Errorf("egress must be of type NAT Gateway")
 			}
 		}
 	}
