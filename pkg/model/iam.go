@@ -17,11 +17,14 @@ limitations under the License.
 package model
 
 import (
+	"encoding/json"
 	"fmt"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+	"reflect"
+	"strings"
 	"text/template"
 )
 
@@ -64,7 +67,7 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		var iamRole *awstasks.IAMRole
 		{
-			rolePolicy, err := b.buildAWSIAMRolePolicy(role)
+			rolePolicy, err := b.buildAWSIAMRolePolicy()
 			if err != nil {
 				return err
 			}
@@ -107,6 +110,63 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 			c.AddTask(iamInstanceProfileRole)
 		}
+
+		// Generate additional policies if needed, and attach to existing instance profile
+		if b.Cluster.Spec.AdditionalPolicies != nil {
+			roleAsString := reflect.ValueOf(role).String()
+			additionalPolicies := *(b.Cluster.Spec.AdditionalPolicies)
+
+			if additionalPolicy, ok := additionalPolicies[strings.ToLower(roleAsString)]; ok {
+				roleName := "additional." + name
+
+				var iamRole *awstasks.IAMRole
+				{
+					rolePolicy, err := b.buildAWSIAMRolePolicy()
+					if err != nil {
+						return err
+					}
+
+					iamRole = &awstasks.IAMRole{
+						Name:               s(roleName),
+						RolePolicyDocument: fi.WrapResource(rolePolicy),
+					}
+					c.AddTask(iamRole)
+
+				}
+
+				{
+					p := &iam.IAMPolicy{
+						Version: iam.IAMPolicyDefaultVersion,
+					}
+
+					statements := make([]*iam.IAMStatement, 0)
+					json.Unmarshal([]byte(additionalPolicy), &statements)
+					p.Statement = append(p.Statement, statements...)
+
+					policy, err := p.AsJSON()
+					if err != nil {
+						return fmt.Errorf("error building IAM policy: %v", err)
+					}
+
+					t := &awstasks.IAMRolePolicy{
+						Name:           s(roleName),
+						Role:           iamRole,
+						PolicyDocument: fi.WrapResource(fi.NewStringResource(policy)),
+					}
+					c.AddTask(t)
+				}
+
+				{
+					iamInstanceProfileRole := &awstasks.IAMInstanceProfileRole{
+						Name: s(roleName),
+
+						InstanceProfile: iamInstanceProfile,
+						Role:            iamRole,
+					}
+					c.AddTask(iamInstanceProfileRole)
+				}
+			}
+		}
 	}
 
 	return nil
@@ -132,7 +192,7 @@ func (b *IAMModelBuilder) buildAWSIAMPolicy(role kops.InstanceGroupRole) (string
 }
 
 // buildAWSIAMRolePolicy produces the AWS IAM role policy for the given role
-func (b *IAMModelBuilder) buildAWSIAMRolePolicy(role kops.InstanceGroupRole) (fi.Resource, error) {
+func (b *IAMModelBuilder) buildAWSIAMRolePolicy() (fi.Resource, error) {
 	functions := template.FuncMap{
 		"IAMServiceEC2": func() string {
 			// IAMServiceEC2 returns the name of the IAM service for EC2 in the current region
