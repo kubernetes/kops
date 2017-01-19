@@ -53,16 +53,17 @@ func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 
 	cloud := c.Cloud.(awsup.AWSCloud)
 	var ngw *ec2.NatGateway
-	//var eip *ElasticIP
 	actual := &NatGateway{}
+
 	if *e.ID != "" {
 		// We have an existing NGW, lets look up the EIP
 		var ngwIds []*string
 		ngwIds = append(ngwIds, e.ID)
 
-		request := & ec2.DescribeNatGatewaysInput{
+		request := &ec2.DescribeNatGatewaysInput{
 			NatGatewayIds: ngwIds,
 		}
+
 		response, err := cloud.EC2().DescribeNatGateways(request)
 
 		if err != nil {
@@ -74,7 +75,7 @@ func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 		}
 		if len(response.NatGateways) == 1 {
 			ngw = response.NatGateways[0]
-		}else {
+		} else {
 			// If this happens, stranger things are occurring
 			return nil, fmt.Errorf("you have broken the space time continuum. NGWs == 1 && != 1")
 		}
@@ -84,14 +85,14 @@ func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 		}
 		if len(response.NatGateways[0].NatGatewayAddresses) == 1 {
 
-			actual.ElasticIP = &ElasticIP{ ID: response.NatGateways[0].NatGatewayAddresses[0].AllocationId }
+			actual.ElasticIP = &ElasticIP{ID: response.NatGateways[0].NatGatewayAddresses[0].AllocationId}
 
 		} else {
 			// If this happens, stranger things are occurring again
 			return nil, fmt.Errorf("boom!")
 		}
 
-	}else {
+	} else {
 		ngw, err := e.findNatGateway(c)
 		if err != nil {
 			return nil, err
@@ -102,7 +103,6 @@ func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 	}
 
 	actual.ID = ngw.NatGatewayId
-
 
 	actual.Subnet = e.Subnet
 	if len(ngw.NatGatewayAddresses) == 0 {
@@ -116,7 +116,6 @@ func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 
 	// NATGateways don't have a Name (no tags), so we set the name to avoid spurious changes
 	actual.Name = e.Name
-
 
 	actual.AssociatedRouteTable = e.AssociatedRouteTable
 

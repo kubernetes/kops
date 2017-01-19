@@ -135,7 +135,7 @@ func (c *DeleteCluster) ListResources() (map[string]*ResourceTracker, error) {
 			return nil, err
 		}
 		for _, t := range trackers {
-			resources[t.Type + ":" + t.ID] = t
+			resources[t.Type+":"+t.ID] = t
 		}
 	}
 
@@ -156,8 +156,8 @@ func (c *DeleteCluster) ListResources() (map[string]*ResourceTracker, error) {
 				if vpcID == "" || igwID == "" {
 					continue
 				}
-				if resources["vpc:" + vpcID] != nil && resources["internet-gateway:" + igwID] == nil {
-					resources["internet-gateway:" + igwID] = &ResourceTracker{
+				if resources["vpc:"+vpcID] != nil && resources["internet-gateway:"+igwID] == nil {
+					resources["internet-gateway:"+igwID] = &ResourceTracker{
 						Name:    FindName(igw.Tags),
 						ID:      igwID,
 						Type:    "internet-gateway",
@@ -184,7 +184,7 @@ func (c *DeleteCluster) ListResources() (map[string]*ResourceTracker, error) {
 		}
 
 		for _, t := range lcs {
-			resources[t.Type + ":" + t.ID] = t
+			resources[t.Type+":"+t.ID] = t
 		}
 	}
 
@@ -208,7 +208,7 @@ func (c *DeleteCluster) ListResources() (map[string]*ResourceTracker, error) {
 		}
 
 		for _, t := range natGateways {
-			resources[t.Type + ":" + t.ID] = t
+			resources[t.Type+":"+t.ID] = t
 		}
 	}
 
@@ -236,7 +236,7 @@ func addUntaggedRouteTables(cloud awsup.AWSCloud, clusterName string, resources 
 			continue
 		}
 
-		if resources["vpc:" + vpcID] == nil {
+		if resources["vpc:"+vpcID] == nil {
 			// Not deleting this VPC; ignore
 			continue
 		}
@@ -259,8 +259,8 @@ func addUntaggedRouteTables(cloud awsup.AWSCloud, clusterName string, resources 
 		}
 
 		t := buildTrackerForRouteTable(rt)
-		if resources[t.Type + ":" + t.ID] == nil {
-			resources[t.Type + ":" + t.ID] = t
+		if resources[t.Type+":"+t.ID] == nil {
+			resources[t.Type+":"+t.ID] = t
 		}
 	}
 
@@ -789,8 +789,8 @@ func ListKeypairs(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error
 
 	glog.V(2).Infof("Listing EC2 Keypairs")
 	request := &ec2.DescribeKeyPairsInput{
-		// We need to match both the name and a prefix
-		//Filters: []*ec2.Filter{awsup.NewEC2Filter("key-name", keypairName)},
+	// We need to match both the name and a prefix
+	//Filters: []*ec2.Filter{awsup.NewEC2Filter("key-name", keypairName)},
 	}
 	response, err := c.EC2().DescribeKeyPairs(request)
 	if err != nil {
@@ -958,7 +958,7 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 					continue
 				}
 				if sharedNgwIds.Has(id) {
-				// If we find this NGW in our whitelist- skip it (don't delete!)
+					// If we find this NGW in our whitelist- skip it (don't delete!)
 					continue
 				}
 
@@ -1934,9 +1934,9 @@ func ListIAMRoles(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error
 	c := cloud.(awsup.AWSCloud)
 
 	remove := make(map[string]bool)
-	remove["masters." + clusterName] = true
-	remove["nodes." + clusterName] = true
-	remove["bastions." + clusterName] = true
+	remove["masters."+clusterName] = true
+	remove["nodes."+clusterName] = true
+	remove["bastions."+clusterName] = true
 
 	var roles []*iam.Role
 	// Find roles matching remove map
@@ -2012,9 +2012,9 @@ func ListIAMInstanceProfiles(cloud fi.Cloud, clusterName string) ([]*ResourceTra
 	c := cloud.(awsup.AWSCloud)
 
 	remove := make(map[string]bool)
-	remove["masters." + clusterName] = true
-	remove["nodes." + clusterName] = true
-	remove["bastions." + clusterName] = true
+	remove["masters."+clusterName] = true
+	remove["nodes."+clusterName] = true
+	remove["bastions."+clusterName] = true
 
 	var profiles []*iam.InstanceProfile
 

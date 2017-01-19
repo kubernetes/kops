@@ -151,14 +151,16 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	// Loop over subnets
+	// Loop over zones
 	for i, zone := range privateZones.List() {
 
 		utilitySubnet, err := b.LinkToUtilitySubnetInZone(zone)
 		if err != nil {
 			return err
 		}
+		if i == 0 {
 
+		}
 		var ngw = &awstasks.NatGateway{}
 		if b.Cluster.Spec.Subnets[i].EgressID != "" {
 			if strings.Contains(b.Cluster.Spec.Subnets[i].EgressID, "nat-") {
@@ -167,10 +169,10 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				ngw = &awstasks.NatGateway{
 					Name:                 s(zone + "." + b.ClusterName()),
 					Subnet:               utilitySubnet,
-					ID:		      s(b.Cluster.Spec.Subnets[i].EgressID),
+					ID:                   s(b.Cluster.Spec.Subnets[i].EgressID),
 					AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone),
 					// If we're here, it means this NatGateway was specified, so we are Shared
-					Shared:		      fi.Bool(true),
+					Shared: fi.Bool(true),
 				}
 
 				c.AddTask(ngw)
@@ -187,7 +189,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			var eip = &awstasks.ElasticIP{}
 
 			eip = &awstasks.ElasticIP{
-				Name:                           s(zone + "." + b.ClusterName()),
+				Name: s(zone + "." + b.ClusterName()),
 				AssociatedNatGatewayRouteTable: b.LinkToPrivateRouteTableInZone(zone),
 			}
 
@@ -200,24 +202,15 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			// using a network address translation (NAT) gateway that resides
 			// in the public subnet.
 
-			var ngw = &awstasks.NatGateway{}
+			//var ngw = &awstasks.NatGateway{}
 			ngw = &awstasks.NatGateway{
 				Name:                 s(zone + "." + b.ClusterName()),
 				Subnet:               utilitySubnet,
 				ElasticIP:            eip,
 				AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone), // Unsure about this?
-				EgressId:	      s(b.Cluster.Spec.Subnets[i].EgressID),
 			}
-			//ngw = &awstasks.NatGateway{
-			//	Name:      s(zone + "." + b.ClusterName()),
-			//	Subnet:    utilitySubnet,
-			//	ElasticIP: eip,
-			//	ID:        s(ngwId),
-			//}
 			c.AddTask(ngw)
 		}
-
-
 
 		// Private Route Table
 		//

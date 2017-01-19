@@ -69,7 +69,6 @@ type CreateClusterOptions struct {
 
 	// Enable/Disable Bastion Host complete setup
 	Bastion bool
-
 }
 
 func (o *CreateClusterOptions) InitDefaults() {
