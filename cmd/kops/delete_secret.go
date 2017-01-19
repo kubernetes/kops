@@ -20,45 +20,61 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"io"
+	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-type DeleteSecretCmd struct {
+type DeleteSecretOptions struct {
+	ClusterName string
+	SecretType  string
+	SecretName  string
+	SecretID    string
 }
 
-var deleteSecretCmd DeleteSecretCmd
+func NewCmdDeleteSecret(f *util.Factory, out io.Writer) *cobra.Command {
+	options := &DeleteSecretOptions{}
 
-func init() {
 	cmd := &cobra.Command{
 		Use:   "secret",
 		Short: "Delete secret",
 		Long:  `Delete a secret.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := deleteSecretCmd.Run(args)
+			if len(args) != 2 && len(args) != 3 {
+				exitWithError(fmt.Errorf("Syntax: <type> <name> [<id>]"))
+			}
+
+			options.SecretType = args[0]
+			options.SecretName = args[1]
+			if len(args) == 3 {
+				options.SecretID = args[2]
+			}
+
+			options.ClusterName = rootCommand.ClusterName()
+
+			err := RunDeleteSecret(f, out, options)
 			if err != nil {
 				exitWithError(err)
 			}
 		},
 	}
 
-	deleteCmd.AddCommand(cmd)
+	return cmd
 }
 
-func (c *DeleteSecretCmd) Run(args []string) error {
-	if len(args) != 2 && len(args) != 3 {
-		return fmt.Errorf("Syntax: <type> <name> [<id>]")
+func RunDeleteSecret(f *util.Factory, out io.Writer, options *DeleteSecretOptions) error {
+	if options.ClusterName == "" {
+		return fmt.Errorf("ClusterName is required")
+	}
+	if options.SecretType == "" {
+		return fmt.Errorf("SecretType is required")
+	}
+	if options.SecretName == "" {
+		return fmt.Errorf("SecretName is required")
 	}
 
-	secretType := args[0]
-	secretName := args[1]
-
-	secretID := ""
-	if len(args) == 3 {
-		secretID = args[2]
-	}
-
-	cluster, err := rootCommand.Cluster()
+	cluster, err := GetCluster(f, options.ClusterName)
 	if err != nil {
 		return err
 	}
@@ -73,15 +89,15 @@ func (c *DeleteSecretCmd) Run(args []string) error {
 		return err
 	}
 
-	secrets, err := listSecrets(keyStore, secretStore, secretType, []string{secretName})
+	secrets, err := listSecrets(keyStore, secretStore, options.SecretType, []string{options.SecretName})
 	if err != nil {
 		return err
 	}
 
-	if secretID != "" {
+	if options.SecretID != "" {
 		var matches []*fi.KeystoreItem
 		for _, s := range secrets {
-			if s.Id == secretID {
+			if s.Id == options.SecretID {
 				matches = append(matches, s)
 			}
 		}
