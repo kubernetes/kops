@@ -175,10 +175,13 @@ func (c *ApplyChannelCmd) Run(args []string) error {
 		if err != nil {
 			return fmt.Errorf("error updating %q: %v", needUpdate.Name, err)
 		}
-		if update.NewVersion.Version != nil {
-			fmt.Printf("Updated %q to %d\n", update.Name, *update.NewVersion)
-		} else {
-			fmt.Printf("Updated %q\n", update.Name)
+		// Could have been a concurrent request
+		if update != nil {
+			if update.NewVersion.Version != nil {
+				fmt.Printf("Updated %q to %d\n", update.Name, *update.NewVersion)
+			} else {
+				fmt.Printf("Updated %q\n", update.Name)
+			}
 		}
 	}
 
