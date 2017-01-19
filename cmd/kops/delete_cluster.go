@@ -18,6 +18,9 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/spf13/cobra"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
@@ -28,7 +31,6 @@ import (
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kops/util/pkg/vfs"
-	"os"
 )
 
 type DeleteClusterCmd struct {
@@ -55,7 +57,15 @@ func init() {
 
 	deleteCmd.AddCommand(cmd)
 
-	cmd.Flags().BoolVar(&deleteCluster.Yes, "yes", false, "Delete without confirmation")
+	// had to do this because this init function is running before the flag is set
+	for _, arg := range os.Args {
+		arg = strings.ToLower(arg)
+		if arg == "-y" || arg == "--yes" {
+			deleteCluster.Yes = true
+			break
+		}
+	}
+
 	cmd.Flags().BoolVar(&deleteCluster.Unregister, "unregister", false, "Don't delete cloud resources, just unregister the cluster")
 	cmd.Flags().BoolVar(&deleteCluster.External, "external", false, "Delete an external cluster")
 
