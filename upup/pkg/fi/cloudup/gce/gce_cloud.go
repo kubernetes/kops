@@ -19,6 +19,7 @@ package gce
 import (
 	"fmt"
 
+	"github.com/golang/glog"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/compute/v1"
@@ -74,4 +75,9 @@ func (c *GCECloud) DNS() (dnsprovider.Interface, error) {
 		return nil, fmt.Errorf("Error building (k8s) DNS provider: %v", err)
 	}
 	return provider, nil
+}
+
+func (c *GCECloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
+	glog.Warningf("FindVPCInfo not (yet) implemented on GCE")
+	return nil, nil
 }

@@ -414,18 +414,6 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.KubernetesVersion = c.KubernetesVersion
 	}
 
-	if c.VPCID != "" {
-		cluster.Spec.NetworkID = c.VPCID
-	}
-
-	if c.NetworkCIDR != "" {
-		cluster.Spec.NetworkCIDR = c.NetworkCIDR
-	}
-
-	if cluster.SharedVPC() && cluster.Spec.NetworkCIDR == "" {
-		return fmt.Errorf("Must specify NetworkCIDR when VPC is set")
-	}
-
 	if cluster.Spec.CloudProvider == "" {
 		for _, subnet := range cluster.Spec.Subnets {
 			cloud, known := fi.GuessCloudForZone(subnet.Zone)
@@ -437,6 +425,33 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 		if cluster.Spec.CloudProvider == "" {
 			return fmt.Errorf("unable to infer CloudProvider from Zones (is there a typo in --zones?)")
+		}
+	}
+
+	cloud, err := cloudup.BuildCloud(cluster)
+	if err != nil {
+		return err
+	}
+
+	if c.VPCID != "" {
+		cluster.Spec.NetworkID = c.VPCID
+	}
+
+	if c.NetworkCIDR != "" {
+		cluster.Spec.NetworkCIDR = c.NetworkCIDR
+	}
+
+	if cluster.SharedVPC() && cluster.Spec.NetworkCIDR == "" {
+		vpcInfo, err := cloud.FindVPCInfo(cluster.Spec.NetworkID)
+		if err != nil {
+			return err
+		}
+		if vpcInfo == nil {
+			return fmt.Errorf("unable to find VPC ID %q", cluster.Spec.NetworkID)
+		}
+		cluster.Spec.NetworkCIDR = vpcInfo.CIDR
+		if cluster.Spec.NetworkCIDR == "" {
+			return fmt.Errorf("Unable to infer NetworkCIDR from VPC ID, please specify --network-cidr")
 		}
 	}
 
