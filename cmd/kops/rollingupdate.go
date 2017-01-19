@@ -18,21 +18,19 @@ package main
 
 import (
 	"github.com/spf13/cobra"
+	"io"
+	"k8s.io/kops/cmd/kops/util"
 )
 
-// rollingupdateCmd represents the rollingupdate command
-type RollingUpdateCmd struct {
-	cobraCommand *cobra.Command
-}
-
-var rollingUpdateCommand = RollingUpdateCmd{
-	cobraCommand: &cobra.Command{
+func NewCmdRollingUpdate(f *util.Factory, out io.Writer) *cobra.Command {
+	cmd := &cobra.Command{
 		Use:   "rolling-update",
 		Short: "rolling update clusters",
 		Long:  `rolling update clusters`,
-	},
-}
+	}
 
-func init() {
-	rootCommand.AddCommand(rollingUpdateCommand.cobraCommand)
+	// create subcommands
+	cmd.AddCommand(NewCmdRollingUpdateCluster(f, out))
+
+	return cmd
 }
