@@ -175,7 +175,7 @@ ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.kubernetes.com 
  - Information on adding NS records with [Godaddy.com](https://www.godaddy.com/help/set-custom-nameservers-for-domains-registered-with-godaddy-12317)
  - Information on adding NS records with [Google Cloud Platform](https://cloud.google.com/dns/update-name-servers)
 
-#### Using Public/Private DNS
+#### Using Public/Private DNS (1.5+)
 
 Kops by default will assume that the NS records created above are publicly available. If the values above are not publicly available, kops will have undesired results.
 
