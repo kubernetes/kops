@@ -90,7 +90,7 @@ We will now need to set up DNS for cluster, find one of the scenarios below (A,B
 
 If you bought your domain with AWS, then you should already have a hosted zone in Route53.
 
-If you plan on using your base domain, then no more work is needed. If you plan on using a subdomain to build your clusters on you will need to create a 2nd hosted zone in Route53. Note that the hosted zone must be public and have a valid domain name.
+If you plan on using your base domain, then no more work is needed. If you plan on using a subdomain to build your clusters on you will need to create a 2nd hosted zone in Route53.
 
 ```bash
 ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.kubernetes.com --caller-reference $ID
@@ -147,6 +147,8 @@ subdomain.kubernetes.com.        172800  IN  NS  ns-75.awsdns-04.org.
 subdomain.kubernetes.com.        172800  IN  NS  ns-1022.awsdns-35.com.
 subdomain.kubernetes.com.        172800  IN  NS  ns-1149.awsdns-27.co.uk.
 ```
+
+Note that kops will assume that the hosted zone you are using is publicly resolvable. If you plan on using a private DNS hosted zone, please set `--dns private`
 
 ## Setting up a state store for your cluster
 
