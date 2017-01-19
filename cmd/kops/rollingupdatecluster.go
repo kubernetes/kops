@@ -19,6 +19,8 @@ package main
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"io"
+	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/kutil"
@@ -32,7 +34,7 @@ import (
 	"time"
 )
 
-type RollingUpdateClusterCmd struct {
+type RollingUpdateOptions struct {
 	Yes       bool
 	Force     bool
 	CloudOnly bool
@@ -41,49 +43,75 @@ type RollingUpdateClusterCmd struct {
 	NodeInterval    time.Duration
 	BastionInterval time.Duration
 
-	cobraCommand *cobra.Command
+	ClusterName string
+
+	// InstanceGroups is the list of instance groups to rolling-update;
+	// if not specified all instance groups will be updated
+	InstanceGroups []string
 }
 
-var rollingupdateCluster = RollingUpdateClusterCmd{
-	cobraCommand: &cobra.Command{
+func (o *RollingUpdateOptions) InitDefaults() {
+	o.Yes = false
+	o.Force = false
+	o.CloudOnly = false
+
+	o.MasterInterval = 5 * time.Minute
+	o.NodeInterval = 2 * time.Minute
+	o.BastionInterval = 5 * time.Minute
+}
+
+func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
+	var options RollingUpdateOptions
+	options.InitDefaults()
+
+	cmd := &cobra.Command{
 		Use:   "cluster",
 		Short: "rolling-update cluster",
 		Long:  `rolling-updates a k8s cluster.`,
-	},
-}
+	}
 
-func init() {
-	cmd := rollingupdateCluster.cobraCommand
-	rollingUpdateCommand.cobraCommand.AddCommand(cmd)
+	cmd.Flags().BoolVar(&options.Yes, "yes", options.Yes, "perform rolling update without confirmation")
+	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force rolling update, even if no changes")
+	cmd.Flags().BoolVar(&options.CloudOnly, "cloudonly", options.CloudOnly, "Perform rolling update without confirming progress with k8s")
 
-	cmd.Flags().BoolVar(&rollingupdateCluster.Yes, "yes", false, "perform rolling update without confirmation")
-	cmd.Flags().BoolVar(&rollingupdateCluster.Force, "force", false, "Force rolling update, even if no changes")
-	cmd.Flags().BoolVar(&rollingupdateCluster.CloudOnly, "cloudonly", false, "Perform rolling update without confirming progress with k8s")
+	cmd.Flags().DurationVar(&options.MasterInterval, "master-interval", options.MasterInterval, "Time to wait between restarting masters")
+	cmd.Flags().DurationVar(&options.NodeInterval, "node-interval", options.NodeInterval, "Time to wait between restarting nodes")
+	cmd.Flags().DurationVar(&options.BastionInterval, "bastion-interval", options.BastionInterval, "Time to wait between restarting bastions")
 
-	cmd.Flags().DurationVar(&rollingupdateCluster.MasterInterval, "master-interval", 5*time.Minute, "Time to wait between restarting masters")
-	cmd.Flags().DurationVar(&rollingupdateCluster.NodeInterval, "node-interval", 2*time.Minute, "Time to wait between restarting nodes")
-	cmd.Flags().DurationVar(&rollingupdateCluster.BastionInterval, "bastion-interval", 5*time.Minute, "Time to wait between restarting bastions")
+	cmd.Flags().StringSliceVar(&options.InstanceGroups, "instance-group", options.InstanceGroups, "List of instance groups to update (defaults to all if not specified)")
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
-		err := rollingupdateCluster.Run(args)
+		err := rootCommand.ProcessArgs(args)
 		if err != nil {
 			exitWithError(err)
+			return
+		}
+
+		clusterName := rootCommand.ClusterName()
+		if clusterName == "" {
+			exitWithError(fmt.Errorf("--name is required"))
+			return
+		}
+
+		options.ClusterName = clusterName
+
+		err = RunRollingUpdateCluster(f, os.Stdout, &options)
+		if err != nil {
+			exitWithError(err)
+			return
 		}
 	}
+
+	return cmd
 }
 
-func (c *RollingUpdateClusterCmd) Run(args []string) error {
-	err := rootCommand.ProcessArgs(args)
+func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpdateOptions) error {
+	clientset, err := f.Clientset()
 	if err != nil {
 		return err
 	}
 
-	cluster, err := rootCommand.Cluster()
-	if err != nil {
-		return err
-	}
-
-	clientset, err := rootCommand.Clientset()
+	cluster, err := GetCluster(f, options.ClusterName)
 	if err != nil {
 		return err
 	}
@@ -98,7 +126,7 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 
 	var nodes []v1.Node
 	var k8sClient *k8s_clientset.Clientset
-	if !c.CloudOnly {
+	if !options.CloudOnly {
 		k8sClient, err = k8s_clientset.NewForConfig(config)
 		if err != nil {
 			return fmt.Errorf("cannot build kube client for %q: %v", contextName, err)
@@ -120,9 +148,31 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 	if err != nil {
 		return err
 	}
-	var instancegroups []*api.InstanceGroup
+
+	var instanceGroups []*api.InstanceGroup
 	for i := range list.Items {
-		instancegroups = append(instancegroups, &list.Items[i])
+		instanceGroups = append(instanceGroups, &list.Items[i])
+	}
+
+	if len(options.InstanceGroups) != 0 {
+		var filtered []*api.InstanceGroup
+
+		for _, instanceGroupName := range options.InstanceGroups {
+			var found *api.InstanceGroup
+			for _, ig := range instanceGroups {
+				if ig.ObjectMeta.Name == instanceGroupName {
+					found = ig
+					break
+				}
+			}
+			if found == nil {
+				return fmt.Errorf("InstanceGroup %q not found", instanceGroupName)
+			}
+
+			filtered = append(filtered, found)
+		}
+
+		instanceGroups = filtered
 	}
 
 	cloud, err := cloudup.BuildCloud(cluster)
@@ -131,14 +181,14 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 	}
 
 	d := &kutil.RollingUpdateCluster{
-		MasterInterval: c.MasterInterval,
-		NodeInterval:   c.NodeInterval,
-		Force:          c.Force,
+		MasterInterval: options.MasterInterval,
+		NodeInterval:   options.NodeInterval,
+		Force:          options.Force,
 	}
 	d.Cloud = cloud
 
 	warnUnmatched := true
-	groups, err := kutil.FindCloudInstanceGroups(cloud, cluster, instancegroups, warnUnmatched, nodes)
+	groups, err := kutil.FindCloudInstanceGroups(cloud, cluster, instanceGroups, warnUnmatched, nodes)
 	if err != nil {
 		return err
 	}
@@ -183,10 +233,10 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 		}
 
 		columns := []string{"NAME", "STATUS", "NEEDUPDATE", "READY", "MIN", "MAX"}
-		if !c.CloudOnly {
+		if !options.CloudOnly {
 			columns = append(columns, "NODES")
 		}
-		err := t.Render(l, os.Stdout, columns...)
+		err := t.Render(l, out, columns...)
 		if err != nil {
 			return err
 		}
@@ -199,12 +249,12 @@ func (c *RollingUpdateClusterCmd) Run(args []string) error {
 		}
 	}
 
-	if !needUpdate && !c.Force {
+	if !needUpdate && !options.Force {
 		fmt.Printf("\nNo rolling-update required\n")
 		return nil
 	}
 
-	if !c.Yes {
+	if !options.Yes {
 		fmt.Printf("\nMust specify --yes to rolling-update\n")
 		return nil
 	}
