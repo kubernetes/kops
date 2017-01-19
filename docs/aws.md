@@ -44,16 +44,9 @@ brew install kubernetes-cli
 
 ## Setup your environment
 
-### Setting up a kops IAM user
-
-
-In this example we will be using a dedicated IAM user to use with kops. This user will need basic API security credentials in order to use kops. Create the user and credentials using the AWS console. [More information](http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.html).
-
-Kubernetes kops uses the official AWS Go SDK, so all we need to do here is set up your system to use the official AWS supported methods of registering security credentials defined [here](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials). Here is an example using the aws command line tool to set up your security credentials.
+## Install aws cli
 
 #### OS X
-
-##### Installing aws cli
 
 The officially supported way of installing the tool is with `pip` as in
 
@@ -74,7 +67,7 @@ aws configure # Input your credentials here
 aws iam list-users
 ```
 
-PyPi is the officially supported `aws cli` download avenue, and kops suggests using it. [More information](https://pypi.python.org/pypi/awscli) on the package. 
+PyPi is the officially supported `aws cli` download avenue, and kops suggests using it. [More information](https://pypi.python.org/pypi/awscli) on the package.
 
 #### Other Platforms
 
@@ -148,8 +141,42 @@ subdomain.kubernetes.com.        172800  IN  NS  ns-1022.awsdns-35.com.
 subdomain.kubernetes.com.        172800  IN  NS  ns-1149.awsdns-27.co.uk.
 ```
 
-## Setting up a state store for your cluster
+## Create an IAM user for kops
+In this example we will be using a dedicated IAM user to use with kops. This user will need basic API security credentials in order to use kops. Create the user and credentials using the AWS console. [More information](https://aws.amazon.com/documentation/iam/)
 
+The kops user will require the following IAM permission to function properly:
+```
+AmazonEC2FullAccess
+AmazonRoute53FullAccess
+AmazonS3FullAccess
+IAMFullAccess
+AmazonVPCFullAccess
+```
+
+You can create a kops IAM user from the command line using the following:
+
+```bash
+aws iam create-group --group-name kops
+
+export arns="
+arn:aws:iam::aws:policy/AmazonEC2FullAccess
+arn:aws:iam::aws:policy/AmazonRoute53FullAccess
+arn:aws:iam::aws:policy/AmazonS3FullAccess
+arn:aws:iam::aws:policy/IAMFullAccess
+arn:aws:iam::aws:policy/AmazonVPCFullAccess"
+
+for arn in $arns; do aws iam attach-group-policy --policy-arn "$arn" --group-name kops; done
+
+aws iam create-user --user-name testuser
+
+aws iam add-user-to-group --user-name kops --group-name kops
+
+aws iam create-access-key --user-name kops
+# make note of the SecretAccesKey and AccessKeyID in the returned json output
+```
+Kubernetes kops uses the official AWS Go SDK, so all we need to do here is set up your system to use the official AWS supported methods of registering security credentials defined [here](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials). Follow the example below to configure the aws command line tool to set up the security credentials for the kops user you just created.
+
+## Setting up a state store for your cluster
 
 In this example we will be creating a dedicated S3 bucket for kops to use. This is where kops will store the state of your cluster and the representation of your cluster, and serves as the source of truth for our cluster configuration throughout the process. We will call this kubernetes-com-state-store. We recommend keeping the creation confined to us-east-1, otherwise more input will be needed here.
 
