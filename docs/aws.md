@@ -74,8 +74,6 @@ aws configure # Input your credentials here
 aws iam list-users
 ```
 
-PyPi is the officially supported `aws cli` download avenue, and kops suggests using it. [More information](https://pypi.python.org/pypi/awscli) on the package. 
-
 #### Other Platforms
 
 Official documentation [here](http://docs.aws.amazon.com/cli/latest/userguide/installing.html)
@@ -239,7 +237,9 @@ kubectl -n kube-system get po
 
 ## What's next?
 
-Kops has a ton of great features, and an amazing support team. We recommend researching [other interesting modes](commands.md#other-interesting-modes) to learn more about generating Terraform configurations, or running your cluster in HA (Highly Available). Also be sure to check out how to run a [private network topology](topology.md) in AWS.
+Kops has a ton of great features, and an amazing support team. We recommend researching [other interesting modes](commands.md#other-interesting-modes) to learn more about generating Terraform configurations, or running your cluster in HA (Highly Available). You might want to take a peek at the [cluster spec docs](cluster_spec.md) for helping to configure these "other interesting modes". Also be sure to check out how to run a [private network topology](topology.md) in AWS.
+
+
 
 Explore the program, and work on getting your `cluster config` hammered out!
 

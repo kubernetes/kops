@@ -63,7 +63,6 @@ func PerformAssignments(c *kops.Cluster) error {
 	return ensureKubernetesVersion(c)
 }
 
-
 // ensureKubernetesVersion populates KubernetesVersion, if it is not already set
 // It will be populated with the latest stable kubernetes version, or the version from the channel
 func ensureKubernetesVersion(c *kops.Cluster) error {
