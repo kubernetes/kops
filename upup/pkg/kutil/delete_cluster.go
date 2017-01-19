@@ -921,10 +921,33 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 		}
 
 		// Associated Nat Gateways
+		// Note: Jan 2017 @geojaz we musn't delete any shared NAT Gateways here.
+		// Since we don't have tagging on the NGWs, we have to read the route tables
+
 		if len(ngws) != 0 {
+
+			rtRequest := &ec2.DescribeRouteTablesInput{}
+			rtResponse, err := c.EC2().DescribeRouteTables(rtRequest)
+
+			// sharedNgwIds is like a whitelist for shared Ngws that we can ensure are not deleted
+			sharedNgwIds := sets.NewString()
+			{
+				for _, rt := range rtResponse.RouteTables {
+					for _, t := range rt.Tags {
+						k := *t.Key
+						v := *t.Value
+						if k == "AssociatedNatgateway" {
+							sharedNgwIds.Insert(v)
+						}
+					}
+				}
+
+			}
+
 			glog.V(2).Infof("Querying Nat Gateways")
 			request := &ec2.DescribeNatGatewaysInput{}
 			response, err := c.EC2().DescribeNatGateways(request)
+
 			if err != nil {
 				return nil, fmt.Errorf("error describing NatGateways: %v", err)
 			}
@@ -932,6 +955,10 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 			for _, ngw := range response.NatGateways {
 				id := aws.StringValue(ngw.NatGatewayId)
 				if !ngws[id] {
+					continue
+				}
+				if sharedNgwIds.Has(id) {
+					// If we find this NGW in our whitelist- skip it (don't delete!)
 					continue
 				}
 
@@ -1431,7 +1458,6 @@ func FindNatGateways(cloud fi.Cloud, routeTableIds sets.String) ([]*ResourceTrac
 	c := cloud.(awsup.AWSCloud)
 
 	natGatewayIds := sets.NewString()
-
 	{
 		request := &ec2.DescribeRouteTablesInput{}
 		for routeTableId := range routeTableIds {
@@ -1441,33 +1467,43 @@ func FindNatGateways(cloud fi.Cloud, routeTableIds sets.String) ([]*ResourceTrac
 		if err != nil {
 			return nil, fmt.Errorf("error from DescribeRouteTables: %v", err)
 		}
-
+		shared := false
 		for _, rt := range response.RouteTables {
-			for _, route := range rt.Routes {
-				if route.NatGatewayId != nil {
-					natGatewayIds.Insert(*route.NatGatewayId)
+			shared = false
+			for _, t := range rt.Tags {
+				k := *t.Key
+				// v := *t.Value
+				if k == "AssociatedNatgateway" {
+					shared = true
+				}
+			}
+			if shared == false {
+				for _, route := range rt.Routes {
+					if route.NatGatewayId != nil {
+						natGatewayIds.Insert(*route.NatGatewayId)
+						fmt.Printf("inserting %s to be deleted\n", *route.NatGatewayId)
+					}
 				}
 			}
 		}
 	}
-
-	{
-		// We could do this to find if a NAT gateway is shared
-
-		//request := &ec2.DescribeRouteTablesInput{}
-		//request.Filters = append(request.Filters, awsup.NewEC2Filter("route.nat-gateway-id", natGatewayId))
-		//response, err := c.EC2().DescribeRouteTables(request)
-		//if err != nil {
-		//	return fmt.Errorf("error from DescribeRouteTables: %v", err)
-		//}
-		//
-		//for _, rt := range response.RouteTables {
-		//	routeTableId := aws.StringValue(rt.RouteTableId)
-		//}
-	}
+	// I think this is now out of date. @geojaz 1/2017
+	//{
+	//	 // We could do this to find if a NAT gateway is shared
+	//
+	//	request := &ec2.DescribeRouteTablesInput{}
+	//	request.Filters = append(request.Filters, awsup.NewEC2Filter("route.nat-gateway-id", natGatewayIds[0]))
+	//	response, err := c.EC2().DescribeRouteTables(request)
+	//	if err != nil {
+	//		return fmt.Errorf("error from DescribeRouteTables: %v", err)
+	//	}
+	//
+	//	for _, rt := range response.RouteTables {
+	//		routeTableId := aws.StringValue(rt.RouteTableId)
+	//	}
+	//}
 
 	var trackers []*ResourceTracker
-
 	if len(natGatewayIds) != 0 {
 		request := &ec2.DescribeNatGatewaysInput{}
 		for natGatewayId := range natGatewayIds {
