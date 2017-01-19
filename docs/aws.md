@@ -90,7 +90,7 @@ We will now need to set up DNS for cluster, find one of the scenarios below (A,B
 
 If you bought your domain with AWS, then you should already have a hosted zone in Route53.
 
-If you plan on using your base domain, then no more work is needed. If you plan on using a subdomain to build your clusters on you will need to create a 2nd hosted zone in Route53.
+If you plan on using your base domain, then no more work is needed. If you plan on using a subdomain to build your clusters on you will need to create a 2nd hosted zone in Route53. Note that the hosted zone must be public and have a valid domain name.
 
 ```bash
 ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.kubernetes.com --caller-reference $ID
