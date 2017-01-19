@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
 	"net"
 	"sort"
 )
@@ -42,6 +43,53 @@ func (a ByZone) Less(i, j int) bool {
 func assignCIDRsToSubnets(c *kops.Cluster) error {
 	// TODO: We probably could query for the existing subnets & allocate appropriately
 	// for now we'll require users to set CIDRs themselves
+
+	if allSubnetsHaveCIDRs(c) {
+		glog.V(4).Infof("All subnets have CIDRs; skipping asssignment logic")
+		return nil
+	}
+
+	if c.Spec.NetworkID != "" {
+		cloud, err := BuildCloud(c)
+		if err != nil {
+			return err
+		}
+
+		vpcInfo, err := cloud.FindVPCInfo(c.Spec.NetworkID)
+		if err != nil {
+			return err
+		}
+		if vpcInfo == nil {
+			return fmt.Errorf("VPC %q not found", c.Spec.NetworkID)
+		}
+
+		subnetByID := make(map[string]*fi.SubnetInfo)
+		for _, subnetInfo := range vpcInfo.Subnets {
+			subnetByID[subnetInfo.ID] = subnetInfo
+		}
+		for i := range c.Spec.Subnets {
+			subnet := &c.Spec.Subnets[i]
+			if subnet.ProviderID != "" {
+				cloudSubnet := subnetByID[subnet.ProviderID]
+				if cloudSubnet == nil {
+					return fmt.Errorf("Subnet %q not found in VPC %q", subnet.ProviderID, c.Spec.NetworkID)
+				}
+				if subnet.CIDR == "" {
+					subnet.CIDR = cloudSubnet.CIDR
+					if subnet.CIDR == "" {
+						return fmt.Errorf("Subnet %q did not have CIDR", subnet.ProviderID)
+					}
+				} else if subnet.CIDR != cloudSubnet.CIDR {
+					return fmt.Errorf("Subnet %q has configured CIDR %q, but the actual CIDR found was %q", subnet.ProviderID, subnet.CIDR, cloudSubnet.CIDR)
+				}
+
+				if subnet.Zone != cloudSubnet.Zone {
+					return fmt.Errorf("Subnet %q has configured Zone %q, but the actual Zone found was %q", subnet.ProviderID, subnet.Zone, cloudSubnet.Zone)
+				}
+
+			}
+		}
+	}
 
 	if allSubnetsHaveCIDRs(c) {
 		glog.V(4).Infof("All subnets have CIDRs; skipping asssignment logic")

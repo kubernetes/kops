@@ -3,7 +3,7 @@
 When launching into a shared VPC, the VPC & the Internet Gateway will be reused. By default we create a new subnet per zone,
 and a new route table, but you can also use a shared subnet (see [below](#running-in-a-shared-subnet)).
 
-Use kops create cluster with the `--vpc` and `--network-cidr` arguments for your existing VPC:
+Use kops create cluster with the `--vpc` argument for your existing VPC:
 
 
 ```
@@ -12,8 +12,7 @@ export CLUSTER_NAME=<sharedvpc.mydomain.com>
 export VPC_ID=vpc-12345678 # replace with your VPC id
 export NETWORK_CIDR=10.100.0.0/16 # replace with the cidr for the VPC ${VPC_ID}
 
-kops create cluster --zones=us-east-1b --name=${CLUSTER_NAME} \
-  --vpc=${VPC_ID} --network-cidr=${NETWORK_CIDR}
+kops create cluster --zones=us-east-1b --name=${CLUSTER_NAME} --vpc=${VPC_ID}
 ```
 
 Then `kops edit cluster ${CLUSTER_NAME}` will show you something like:
@@ -37,7 +36,6 @@ spec:
 
 Verify that networkCIDR & networkID match your VPC CIDR & ID.  You likely need to set the CIDR on each of the Zones,
 because subnets in a VPC cannot overlap.
-
 
 You can then run `kops update cluster` in preview mode (without --yes).  You don't need any arguments,
 because they're all in the cluster spec:
@@ -98,14 +96,17 @@ spec:
   networkID: ${VPC_ID}
   nonMasqueradeCIDR: 100.64.0.0/10
   subnets:
-  - cidr: 172.20.32.0/19
+  - cidr: 172.20.32.0/19 # You can delete the CIDR here; it will be queried
     name: us-east-1b
-    id: subnet-id123
     type: Public
     zone: us-east-1b
+    id: subnet-1234567 # Replace this with the ID of your subnet
 ```
 
-Make sure that the CIDR matches the CIDR of your subnet. Then update your cluster through the normal update procedure:
+If you specify the CIDR, it must match the CIDR for the subnet; otherwise it will be populated by querying the subnet.
+It is probably easier to specify the `id` and remove the `cidr`!  Remember also that the zone must match the subnet Zone.
+
+Then update your cluster through the normal update procedure:
 
 ```
 kops update cluster ${CLUSTER_NAME}
