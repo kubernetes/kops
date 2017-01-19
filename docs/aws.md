@@ -90,11 +90,67 @@ We will now need to set up DNS for cluster, find one of the scenarios below (A,B
 
 If you bought your domain with AWS, then you should already have a hosted zone in Route53.
 
-If you plan on using your base domain, then no more work is needed. If you plan on using a subdomain to build your clusters on you will need to create a 2nd hosted zone in Route53.
+If you plan on using your base domain, then no more work is needed. 
+
+#### Setting up a subdomain
+
+If you plan on using a subdomain to build your clusters on you will need to create a 2nd hosted zone in Route53, and then set up route delegation. This is basically copying the NS servers of your **SUBDOMAIN** up to the **PARENT** domain in Route53. 
+
+  - Create the subdomain, and note your **SUBDOMAIN** name servers (If you have already done this you can also [get the values](ns.md))
 
 ```bash
-ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.kubernetes.com --caller-reference $ID
+ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.kubernetes.com --caller-reference $ID | jq .DelegationSet.NameServers
 ```
+
+  - Note your **PARENT** hosted zone id
+
+```bash
+aws route53 list-hosted-zones | jq '.HostedZones[] | select(.Name=="kubernetes.com.") | .Id' 
+```
+
+ - Create a new JSON file with your values (`subdomain.json`)
+ 
+ Note: The NS values here are for the **SUBDOMAIN**
+ 
+ ```
+ {
+   "Comment": "Create a subdomain NS record in the parent domain",
+   "Changes": [
+     {
+       "Action": "CREATE",
+       "ResourceRecordSet": {
+         "Name": "subdomain.kubernetes.com",
+         "Type": "NS",
+         "TTL": 300,
+         "ResourceRecords": [
+           {
+             "Value": "ns-1.awsdns-1.co.uk"
+           },
+           {
+             "Value": "ns-2.awsdns-2.org"
+           },
+           {
+             "Value": "ns-3.awsdns-3.com"
+           },
+           {
+             "Value": "ns-4.awsdns-4.net"
+           }
+         ]
+       }
+     }
+   ]
+ }
+ ```
+ 
+ - Apply the **SUBDOMAIN** NS records to the **PARENT** hosted zone
+ 
+ ```
+ aws route53 change-resource-record-sets \
+  --hosted-zone-id <parent-zone-id> \
+  --change-batch subdomain.json
+```
+
+Now traffic to `*.kubernetes.com` will be routed to the correct subdomain hosted zone in Route 53.
 
 ### (B) Setting up DNS for your cluster, with another registrar.
 
@@ -108,33 +164,30 @@ Here we will be creating a hosted zone in AWS Route53, and migrating the subdoma
 
 You might need to grab [jq](https://github.com/stedolan/jq/wiki/Installation) for some of these.
 
-  - Create the subdomain
+  - Create the subdomain, and note your name servers (If you have already done this you can also [get the values](ns.md))
 
 ```bash
-ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.kubernetes.com --caller-reference $ID
+ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.kubernetes.com --caller-reference $ID | jq .DelegationSet.NameServers
 ```
 
-  - Note your hosted zone ID
-
-```bash
-aws route53 list-hosted-zones | jq '.HostedZones[] | select(.Name=="subdomain.kubernetes.com") | .Id'
-```
-
-  - Note your nameservers for the subdomain
-
-```bash
-aws route53 get-hosted-zone --id "/hostedzone/Z1K7H5F7891012" | jq .DelegationSet.NameServers
-```
-
-  - You will now go to your registrars page and log in. You will need to create a new **subdomain**, and use the 4 NS records listed above for the new subdomain. This **MUST** be done in order to use your cluster. Do **NOT** change your top level NS record, or you might take your site offline.
+ - You will now go to your registrars page and log in. You will need to create a new **SUBDOMAIN**, and use the 4 NS records listed above for the new **SUBDOMAIN**. This **MUST** be done in order to use your cluster. Do **NOT** change your top level NS record, or you might take your site offline.
 
  - Information on adding NS records with [Godaddy.com](https://www.godaddy.com/help/set-custom-nameservers-for-domains-registered-with-godaddy-12317)
  - Information on adding NS records with [Google Cloud Platform](https://cloud.google.com/dns/update-name-servers)
 
+#### Using Public/Private DNS
+
+Kops by default will assume that the NS records created above are publicly available. If the values above are not publicly available, kops will have undesired results.
+
+Note: There is a DNS flag that can be configured if you plan on using private DNS records
+
+```
+kops create cluster --dns private $NAME
+```
 
 ## Testing your DNS setup
 
-You should now able to dig your domain (or subdomain) and see the AWS Name Servers on the other end. This **MUST** be completed before moving on.
+You should now able to dig your domain (or subdomain) and see the AWS Name Servers on the other end.
 
 ```bash
 dig ns subdomain.kubernetes.com
@@ -142,22 +195,27 @@ dig ns subdomain.kubernetes.com
 
 ```
 ;; ANSWER SECTION:
-subdomain.kubernetes.com.        172800  IN  NS  ns-613.awsdns-13.net.
-subdomain.kubernetes.com.        172800  IN  NS  ns-75.awsdns-04.org.
-subdomain.kubernetes.com.        172800  IN  NS  ns-1022.awsdns-35.com.
-subdomain.kubernetes.com.        172800  IN  NS  ns-1149.awsdns-27.co.uk.
+subdomain.kubernetes.com.        172800  IN  NS  ns-1.awsdns-1.net.
+subdomain.kubernetes.com.        172800  IN  NS  ns-2.awsdns-2.org.
+subdomain.kubernetes.com.        172800  IN  NS  ns-3.awsdns-3.com.
+subdomain.kubernetes.com.        172800  IN  NS  ns-4.awsdns-4.co.uk.
 ```
 
-Note that kops will assume that the hosted zone you are using is publicly resolvable. If you plan on using a private DNS hosted zone, please set `--dns private`
+Note that a `dig on` `kubernetes.com` should yield **the exact same nameservers** as `subdomain.kubernetes.com`
+
+This is a critical component of setting up the cluster. If you are experiencing problems with the Kubernetes API not coming up, chances are something is amiss around DNS. 
+
+**Please DO NOT MOVE ON until you have validated your NS records!**
 
 ## Setting up a state store for your cluster
-
 
 In this example we will be creating a dedicated S3 bucket for kops to use. This is where kops will store the state of your cluster and the representation of your cluster, and serves as the source of truth for our cluster configuration throughout the process. We will call this kubernetes-com-state-store. We recommend keeping the creation confined to us-east-1, otherwise more input will be needed here.
 
 ```bash
 aws s3api create-bucket --bucket kubernetes-com-state-store --region us-east-1
 ```
+
+Note: We **STRONGLY** recommend versioning your S3 bucket in case you ever need to revert or recover a previous state store.
 
 ## Creating your first cluster
 
