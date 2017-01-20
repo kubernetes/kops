@@ -1,15 +1,11 @@
 ## kops rolling-update cluster
 
-Rolling update a cluster
+rolling-update cluster
 
 ### Synopsis
 
 
-Rolling update a cluster instance groups.
-		
-This command updates the running instances to match the cloud specifications.
-
-To perform rolling update, you need to update the cloud resources first with "kops update cluster"
+rolling-updates a k8s cluster.
 
 ```
 kops rolling-update cluster

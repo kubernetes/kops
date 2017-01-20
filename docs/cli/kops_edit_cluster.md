@@ -7,10 +7,6 @@ Edit cluster
 
 Edit a cluster configuration.
 
-This command changes the cloud specification in the registry.
-
-It does not update the cloud resources, to apply the changes use "kops update cluster".
-
 ```
 kops edit cluster
 ```
@@ -31,5 +27,5 @@ kops edit cluster
 ```
 
 ### SEE ALSO
-* [kops edit](kops_edit.md)	 - Edit resource
+* [kops edit](kops_edit.md)	 - edit items
 
