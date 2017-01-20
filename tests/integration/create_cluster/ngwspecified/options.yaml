@@ -4,5 +4,4 @@ Cloud: aws
 Topology: private
 Networking: kopeio-vxlan
 Bastion: true
-NgwEips: eipalloc-e12345
-NgwIds: nat-09123456
+Egress: nat-09123456

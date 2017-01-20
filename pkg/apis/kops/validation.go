@@ -335,7 +335,7 @@ func (c *Cluster) Validate(strict bool) error {
 	// Egress specification support
 	{
 		for _, s := range c.Spec.Subnets {
-			if s.Egress != "" && !(strings.Contains("nat-", s.Egress)) {
+			if s.Egress != "" && !strings.HasPrefix(s.Egress, "nat-") {
 				return fmt.Errorf("egress must be of type NAT Gateway")
 			}
 		}
