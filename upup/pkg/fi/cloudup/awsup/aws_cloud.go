@@ -218,6 +218,10 @@ func (c *awsCloudImplementation) GetTags(resourceID string) (map[string]string, 
 }
 
 func getTags(c AWSCloud, resourceId string) (map[string]string, error) {
+	if resourceId == "" {
+		return nil, fmt.Errorf("resourceId not provided to getTags")
+	}
+
 	tags := map[string]string{}
 
 	request := &ec2.DescribeTagsInput{
