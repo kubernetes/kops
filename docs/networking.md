@@ -28,6 +28,7 @@ Two different providers are currently built into kops:
 
 1. kopeio-vxlan
 2. [weave](https://github.com/weaveworks/weave-kube)
+2. [flannel](https://github.com/coreos/flannel)
 3. [Calico](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/installation/hosted/)
 
 The manifests for the providers are included with kops, and you simply use `--networking provider-name`.
@@ -36,7 +37,7 @@ to install `kopeio-vxlan` execute the following:
 
 ```console
 $ kops create cluster --networking kopeio-vxlan
-``` 
+```
 
 ### CNI Networking
 
@@ -92,6 +93,26 @@ $ kubectl create -f https://git.io/weave-kube
 
 The above daemonset installation requires K8s 1.4.x or above.
 
+### Flannel Example for CNI and Network Policy
+
+#### Installing Flannel on a new Cluster
+
+The following command setups a cluster, in HA mode, with Flannel as the CNI and Network Policy provider.
+
+```console
+$ export $ZONES=mylistofzones
+$ kops create cluster \
+  --zones $ZONES \
+  --master-zones $ZONES \
+  --master-size m4.large \
+  --node-size m4.large \
+  --networking flannel \
+  --yes \
+  --name myclustername.mydns.io
+```
+
+The above will deploy a daemonset installation which requires K8s 1.4.x or above.
+
 ### Calico Example for CNI and Network Policy
 
 #### Installing Calico on a new Cluster
@@ -114,7 +135,7 @@ The above will deploy a daemonset installation which requires K8s 1.4.x or above
 
 #### More information about Calico
 
-For Calico specific documentation please visit the [Calico Docs](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/). 
+For Calico specific documentation please visit the [Calico Docs](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/).
 
 #### Getting help with Calico
 
