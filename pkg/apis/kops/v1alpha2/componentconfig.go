@@ -77,6 +77,10 @@ type KubeletConfigSpec struct {
 	HairpinMode string `json:"hairpinMode,omitempty" flag:"hairpin-mode"`
 	// The node has babysitter process monitoring docker and kubelet.
 	BabysitDaemons *bool `json:"babysitDaemons,omitempty" flag:"babysit-daemons"`
+
+	// maxPods is the number of pods that can run on this Kubelet.
+	MaxPods *int32 `json:"maxPods,omitempty" flag:"max-pods"`
+
 	// The CIDR to use for pod IP addresses, only used in standalone mode.
 	// In cluster mode, this is obtained from the master.
 	PodCIDR string `json:"podCIDR,omitempty" flag:"pod-cidr"`
