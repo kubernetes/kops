@@ -35,6 +35,7 @@ spec:
     nodes: private
   zones:
   - cidr: 172.20.0.0/22
+    egress: nat-09123456
     name: us-test-1a
     privateCIDR: 172.20.32.0/19
 
