@@ -302,6 +302,11 @@ type KubeletConfigSpec struct {
 	// image garbage collection is never run. Lowest disk usage to garbage
 	// collect to.
 	ImageGCLowThresholdPercent *int32 `json:"imageGCLowThresholdPercent,omitempty" flag:"image-gc-low-threshold"`
+
+	// terminatedPodGCThreshold is the number of terminated pods that can exist
+	// before the terminated pod garbage collector starts deleting terminated pods.
+	// If <= 0, the terminated pod garbage collector is disabled.
+	TerminatedPodGCThreshold *int32 `json:"terminatedPodGCThreshold,omitempty" flag:"terminated-pod-gc-threshold"`
 }
 
 type KubeProxyConfig struct {
@@ -488,10 +493,6 @@ type KubeControllerManagerConfig struct {
 	//// minResyncPeriod is the resync period in reflectors; will be random between
 	//// minResyncPeriod and 2*minResyncPeriod.
 	//MinResyncPeriod unversioned.Duration `json:"minResyncPeriod"`
-	//// terminatedPodGCThreshold is the number of terminated pods that can exist
-	//// before the terminated pod garbage collector starts deleting terminated pods.
-	//// If <= 0, the terminated pod garbage collector is disabled.
-	//TerminatedPodGCThreshold int32 `json:"terminatedPodGCThreshold"`
 	//// horizontalPodAutoscalerSyncPeriod is the period for syncing the number of
 	//// pods in horizontal pod autoscaler.
 	//HorizontalPodAutoscalerSyncPeriod unversioned.Duration `json:"horizontalPodAutoscalerSyncPeriod"`
