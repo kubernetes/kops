@@ -59,7 +59,7 @@ func DefaultDeltaRunMethod(e Task, c *Context) error {
 		}
 	}
 
-	if producesDeletions, ok := e.(ProducesDeletions); ok {
+	if producesDeletions, ok := e.(ProducesDeletions); ok && c.Target.ProcessDeletions() {
 		var deletions []Deletion
 		deletions, err = producesDeletions.FindDeletions(c)
 		if err != nil {
@@ -67,6 +67,8 @@ func DefaultDeltaRunMethod(e Task, c *Context) error {
 		}
 		for _, deletion := range deletions {
 			if _, ok := c.Target.(*DryRunTarget); ok {
+				err = c.Target.(*DryRunTarget).Delete(deletion)
+			} else if _, ok := c.Target.(*DryRunTarget); ok {
 				err = c.Target.(*DryRunTarget).Delete(deletion)
 			} else {
 				err = deletion.Delete(c.Target)
