@@ -159,7 +159,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return err
 		}
 
-		var ngw = &awstasks.NatGateway{}
+		var ngw *awstasks.NatGateway
 		if b.Cluster.Spec.Subnets[i].Egress != "" {
 			if strings.Contains(b.Cluster.Spec.Subnets[i].Egress, "nat-") {
 
@@ -204,7 +204,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				Name:                 s(zone + "." + b.ClusterName()),
 				Subnet:               utilitySubnet,
 				ElasticIP:            eip,
-				AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone), // Unsure about this?
+				AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone),
 			}
 			c.AddTask(ngw)
 		}
