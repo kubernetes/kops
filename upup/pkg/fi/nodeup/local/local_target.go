@@ -32,6 +32,11 @@ func (t *LocalTarget) Finish(taskMap map[string]fi.Task) error {
 	return nil
 }
 
+func (t *LocalTarget) ProcessDeletions() bool {
+	// We don't expect any, but it would be our job to process them
+	return true
+}
+
 func (t *LocalTarget) HasTag(tag string) bool {
 	_, found := t.Tags[tag]
 	return found

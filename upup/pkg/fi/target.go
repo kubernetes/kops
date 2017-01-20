@@ -19,4 +19,8 @@ package fi
 type Target interface {
 	// Lifecycle methods, called by the driver
 	Finish(taskMap map[string]Task) error
+
+	// ProcessDeletions returns true if we should delete resources
+	// Some providers (e.g. Terraform) actively keep state, and will delete resources automatically
+	ProcessDeletions() bool
 }
