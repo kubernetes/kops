@@ -487,33 +487,6 @@ resource "aws_security_group_rule" "node-egress" {
   cidr_blocks = ["0.0.0.0/0"]
 }
 
-resource "aws_security_group_rule" "node-to-master-protocol-ipip" {
-  type = "ingress"
-  security_group_id = "${aws_security_group.masters-privatecanal-example-com.id}"
-  source_security_group_id = "${aws_security_group.nodes-privatecanal-example-com.id}"
-  from_port = 0
-  to_port = 65535
-  protocol = "4"
-}
-
-resource "aws_security_group_rule" "node-to-master-tcp-179" {
-  type = "ingress"
-  security_group_id = "${aws_security_group.masters-privatecanal-example-com.id}"
-  source_security_group_id = "${aws_security_group.nodes-privatecanal-example-com.id}"
-  from_port = 179
-  to_port = 179
-  protocol = "tcp"
-}
-
-resource "aws_security_group_rule" "node-to-master-tcp-4001" {
-  type = "ingress"
-  security_group_id = "${aws_security_group.masters-privatecanal-example-com.id}"
-  source_security_group_id = "${aws_security_group.nodes-privatecanal-example-com.id}"
-  from_port = 4001
-  to_port = 4001
-  protocol = "tcp"
-}
-
 resource "aws_security_group_rule" "node-to-master-tcp-4194" {
   type = "ingress"
   security_group_id = "${aws_security_group.masters-privatecanal-example-com.id}"
