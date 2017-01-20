@@ -234,5 +234,7 @@ type ClusterSubnetSpec struct {
 	ProviderID string `json:"subnetId,omitempty"`
 	NgwId string `json:"ngwId,omitempty"`
 
+	Egress string `json:"egress,omitempty"`
+
 	Type SubnetType `json:"type,omitempty"`
 }

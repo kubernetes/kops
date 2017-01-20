@@ -69,6 +69,9 @@ type CreateClusterOptions struct {
 
 	// Enable/Disable Bastion Host complete setup
 	Bastion bool
+
+	// Egress configuration - FOR TESTING ONLY
+	Egress string
 }
 
 func (o *CreateClusterOptions) InitDefaults() {
@@ -251,8 +254,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			subnetName := zoneName
 			if existingSubnets[subnetName] == nil {
 				cluster.Spec.Subnets = append(cluster.Spec.Subnets, api.ClusterSubnetSpec{
-					Name: subnetName,
-					Zone: subnetName,
+					Name:   subnetName,
+					Zone:   subnetName,
+					Egress: c.Egress,
 				})
 			}
 		}
