@@ -220,8 +220,10 @@ type KubeletConfigSpec struct {
 	HairpinMode string `json:"hairpinMode,omitempty" flag:"hairpin-mode"`
 	// The node has babysitter process monitoring docker and kubelet.
 	BabysitDaemons *bool `json:"babysitDaemons,omitempty" flag:"babysit-daemons"`
-	//// maxPods is the number of pods that can run on this Kubelet.
-	//MaxPods int32 `json:"maxPods"`
+
+	// maxPods is the number of pods that can run on this Kubelet.
+	MaxPods *int32 `json:"maxPods,omitempty" flag:"max-pods"`
+
 	//// nvidiaGPUs is the number of NVIDIA GPU devices on this node.
 	//NvidiaGPUs int32 `json:"nvidiaGPUs"`
 	//// dockerExecHandlerName is the handler to use when executing a command
