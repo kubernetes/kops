@@ -149,13 +149,6 @@ type KubeletConfigSpec struct {
 	//// minimumGCAge is the minimum age for a unused image before it is
 	//// garbage collected.
 	//ImageMinimumGCAge unversioned.Duration `json:"imageMinimumGCAge"`
-	//// imageGCHighThresholdPercent is the percent of disk usage after which
-	//// image garbage collection is always run.
-	//ImageGCHighThresholdPercent int32 `json:"imageGCHighThresholdPercent"`
-	//// imageGCLowThresholdPercent is the percent of disk usage before which
-	//// image garbage collection is never run. Lowest disk usage to garbage
-	//// collect to.
-	//ImageGCLowThresholdPercent int32 `json:"imageGCLowThresholdPercent"`
 	//// lowDiskSpaceThresholdMB is the absolute free disk space, in MB, to
 	//// maintain. When disk space falls below this threshold, new pods would
 	//// be rejected.
@@ -300,6 +293,14 @@ type KubeletConfigSpec struct {
 	// and overrides the default MTU for cases where it cannot be automatically
 	// computed (such as IPSEC).
 	NetworkPluginMTU *int32 `json:"networkPluginMTU,omitEmpty" flag:"network-plugin-mtu"`
+
+	// imageGCHighThresholdPercent is the percent of disk usage after which
+	// image garbage collection is always run.
+	ImageGCHighThresholdPercent *int32 `json:"imageGCHighThresholdPercent,omitempty" flag:"image-gc-high-threshold"`
+	// imageGCLowThresholdPercent is the percent of disk usage before which
+	// image garbage collection is never run. Lowest disk usage to garbage
+	// collect to.
+	ImageGCLowThresholdPercent *int32 `json:"imageGCLowThresholdPercent,omitempty" flag:"image-gc-low-threshold"`
 }
 
 type KubeProxyConfig struct {
