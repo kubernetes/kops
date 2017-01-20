@@ -74,6 +74,8 @@ aws configure # Input your credentials here
 aws iam list-users
 ```
 
+PyPi is the officially supported `aws cli` download avenue, and kops suggests using it. [More information](https://pypi.python.org/pypi/awscli) on the package.
+
 #### Other Platforms
 
 Official documentation [here](http://docs.aws.amazon.com/cli/latest/userguide/installing.html)
