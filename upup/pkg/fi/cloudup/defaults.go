@@ -34,6 +34,24 @@ import (
 // Please do all after-market logic here.
 //
 func PerformAssignments(c *kops.Cluster) error {
+	cloud, err := BuildCloud(c)
+	if err != nil {
+		return err
+	}
+
+	if c.SharedVPC() && c.Spec.NetworkCIDR == "" {
+		vpcInfo, err := cloud.FindVPCInfo(c.Spec.NetworkID)
+		if err != nil {
+			return err
+		}
+		if vpcInfo == nil {
+			return fmt.Errorf("unable to find VPC ID %q", c.Spec.NetworkID)
+		}
+		c.Spec.NetworkCIDR = vpcInfo.CIDR
+		if c.Spec.NetworkCIDR == "" {
+			return fmt.Errorf("Unable to infer NetworkCIDR from VPC ID, please specify --network-cidr")
+		}
+	}
 
 	// Topology support
 	// TODO Kris: Unsure if this needs to be here, or if the API conversion code will handle it
@@ -42,7 +60,7 @@ func PerformAssignments(c *kops.Cluster) error {
 	}
 
 	if c.Spec.NetworkCIDR == "" && !c.SharedVPC() {
-		// TODO: Choose non-overlapping networking CIDRs for VPCs?
+		// TODO: Choose non-overlapping networking CIDRs for VPCs, using vpcInfo
 		c.Spec.NetworkCIDR = "172.20.0.0/16"
 	}
 
@@ -55,7 +73,8 @@ func PerformAssignments(c *kops.Cluster) error {
 		c.Spec.MasterPublicName = "api." + c.ObjectMeta.Name
 	}
 
-	err := assignCIDRsToSubnets(c)
+	// TODO: Use vpcInfo
+	err = assignCIDRsToSubnets(c)
 	if err != nil {
 		return err
 	}
