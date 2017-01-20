@@ -30,6 +30,8 @@ import (
 const MockAWSRegion = "us-mock-1"
 
 func buildDefaultCluster(t *testing.T) *api.Cluster {
+	awsup.InstallMockAWSCloud(MockAWSRegion, "abcd")
+
 	c := buildMinimalCluster()
 
 	err := PerformAssignments(c)
@@ -56,8 +58,6 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 			c.Spec.EtcdClusters = append(c.Spec.EtcdClusters, etcd)
 		}
 	}
-
-	awsup.InstallMockAWSCloud(MockAWSRegion, "abcd")
 
 	fullSpec, err := PopulateClusterSpec(c)
 	if err != nil {
