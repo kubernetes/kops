@@ -44,7 +44,7 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 	} else if networking.External != nil {
 		// external is based on kubenet
 		tags.Insert("_networking_kubenet", "_networking_external")
-	} else if networking.CNI != nil || networking.Weave != nil || networking.Calico != nil {
+	} else if networking.CNI != nil || networking.Flannel != nil || networking.Weave != nil || networking.Calico != nil {
 		tags.Insert("_networking_cni")
 	} else if networking.Kopeio != nil {
 		// TODO combine with the External

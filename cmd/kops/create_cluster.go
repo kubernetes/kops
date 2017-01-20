@@ -133,7 +133,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Image to use")
 
-	cmd.Flags().StringVar(&options.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external, cni, kopeio-vxlan, weave, calico.")
+	cmd.Flags().StringVar(&options.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external, cni, kopeio-vxlan, flannel, weave, calico.")
 
 	cmd.Flags().StringVar(&options.DNSZone, "dns-zone", options.DNSZone, "DNS hosted zone to use (defaults to longest matching zone)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
@@ -228,6 +228,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.Networking.CNI = &api.CNINetworkingSpec{}
 	case "kopeio-vxlan":
 		cluster.Spec.Networking.Kopeio = &api.KopeioNetworkingSpec{}
+  case "flannel":
+		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{}
 	case "weave":
 		cluster.Spec.Networking.Weave = &api.WeaveNetworkingSpec{}
 	case "calico":
@@ -461,7 +463,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 	case api.TopologyPrivate:
 		if !supportsPrivateTopology(cluster.Spec.Networking) {
-			return fmt.Errorf("Invalid networking option %s. Currently only '--networking kopeio-vxlan', '--networking weave', '--networking calico' (or '--networking cni') are supported for private topologies", c.Networking)
+			return fmt.Errorf("Invalid networking option %s. Currently only '--networking kopeio-vxlan', '--networking flannel', '--networking weave', '--networking calico' (or '--networking cni') are supported for private topologies", c.Networking)
 		}
 		cluster.Spec.Topology = &api.TopologySpec{
 			Masters: api.TopologyPrivate,
@@ -666,7 +668,7 @@ func parseZoneList(s string) []string {
 
 func supportsPrivateTopology(n *api.NetworkingSpec) bool {
 
-	if n.CNI != nil || n.Kopeio != nil || n.Weave != nil || n.Calico != nil {
+	if n.CNI != nil || n.Kopeio != nil || n.Flannel != nil || n.Weave != nil || n.Calico != nil {
 		return true
 	}
 	return false
