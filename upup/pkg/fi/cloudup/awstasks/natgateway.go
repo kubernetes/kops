@@ -34,6 +34,11 @@ type NatGateway struct {
 	Subnet    *Subnet
 	ID        *string
 
+	EgressId *string
+
+	// Shared is set if this is a shared NatGateway
+	Shared *bool
+
 	// We can't tag NatGateways, so we have to find through a surrogate
 	AssociatedRouteTable *RouteTable
 }
@@ -45,17 +50,54 @@ func (e *NatGateway) CompareWithID() *string {
 }
 
 func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
-	ngw, err := e.findNatGateway(c)
-	if err != nil {
-		return nil, err
-	}
-	if ngw == nil {
-		return nil, nil
+
+	cloud := c.Cloud.(awsup.AWSCloud)
+	var ngw *ec2.NatGateway
+	actual := &NatGateway{}
+
+	if e.ID != nil && *e.ID != "" {
+		// We have an existing NGW, lets look up the EIP
+		var ngwIds []*string
+		ngwIds = append(ngwIds, e.ID)
+
+		request := &ec2.DescribeNatGatewaysInput{
+			NatGatewayIds: ngwIds,
+		}
+
+		response, err := cloud.EC2().DescribeNatGateways(request)
+
+		if err != nil {
+			return nil, fmt.Errorf("error listing Nat Gateways %v", err)
+		}
+
+		if len(response.NatGateways) != 1 {
+			return nil, fmt.Errorf("found %b NAT Gateways, expected 1", len(response.NatGateways))
+		}
+		if len(response.NatGateways) == 1 {
+			ngw = response.NatGateways[0]
+		}
+
+		if len(response.NatGateways[0].NatGatewayAddresses) != 1 {
+			return nil, fmt.Errorf("found %b EIP Addresses for 1 NAT Gateway, expected 1", len(response.NatGateways))
+		}
+		if len(response.NatGateways[0].NatGatewayAddresses) == 1 {
+
+			actual.ElasticIP = &ElasticIP{ID: response.NatGateways[0].NatGatewayAddresses[0].AllocationId}
+
+		}
+	} else {
+		// This is the normal/default path
+		ngw, err := e.findNatGateway(c)
+		if err != nil {
+			return nil, err
+		}
+		if ngw == nil {
+			return nil, nil
+		}
 	}
 
-	actual := &NatGateway{
-		ID: ngw.NatGatewayId,
-	}
+	actual.ID = ngw.NatGatewayId
+
 	actual.Subnet = e.Subnet
 	if len(ngw.NatGatewayAddresses) == 0 {
 		// Not sure if this ever happens
@@ -233,6 +275,7 @@ func (e *NatGateway) waitAvailable(cloud awsup.AWSCloud) error {
 
 func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway) error {
 	// New NGW
+
 	var id *string
 	if a == nil {
 		glog.V(2).Infof("Creating Nat Gateway")
@@ -262,8 +305,19 @@ func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway)
 	tags["AssociatedNatgateway"] = *id
 	err := t.AddAWSTags(*e.Subnet.ID, tags)
 	if err != nil {
-		return fmt.Errorf("Unable to tag subnet %v", err)
+		return fmt.Errorf("unable to tag subnet %v", err)
 	}
+
+	// If this is a shared NGW, we need to tag it
+	// The tag that implies "shared" is `AssociatedNatgateway`=> NGW-ID
+	// This is better than just a tag that's shared because this lets us create a whitelist of these NGWs
+	// without doing a bunch more work in `kutil/delete_cluster.go`
+
+	if *e.Shared == true {
+		glog.V(2).Infof("tagging route table %s to track shared NGW", *e.AssociatedRouteTable.ID)
+		err = t.AddAWSTags(*e.AssociatedRouteTable.ID, tags)
+	}
+
 	return nil
 }
 
