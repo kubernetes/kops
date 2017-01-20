@@ -33,6 +33,9 @@ type DockerConfig struct {
 	InsecureRegistry *string `json:"insecureRegistry,omitempty" flag:"insecure-registry"`
 	MTU              *int32  `json:"mtu,omitempty" flag:"mtu"`
 
+	// The bridge cidr (--bip) flag
+	BridgeIP *string `json:"bridgeIP,omitempty" flag:"bip"`
+
 	// The version of docker to install
 	// Be careful if changing this; not all docker versions are validated, and they will break in bad ways.
 	Version *string `json:"version,omitempty"`
