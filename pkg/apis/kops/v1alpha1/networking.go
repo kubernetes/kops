@@ -22,6 +22,7 @@ type NetworkingSpec struct {
 	Kubenet  *KubenetNetworkingSpec  `json:"kubenet,omitempty"`
 	External *ExternalNetworkingSpec `json:"external,omitempty"`
 	CNI      *CNINetworkingSpec      `json:"cni,omitempty"`
+	Flannel  *FlannelNetworkingSpec  `json:"flannel,omitempty"`
 	Kopeio   *KopeioNetworkingSpec   `json:"kopeio,omitempty"`
 	Weave    *WeaveNetworkingSpec    `json:"weave,omitempty"`
 	Calico   *CalicoNetworkingSpec   `json:"calico,omitempty"`
@@ -44,6 +45,10 @@ type ExternalNetworkingSpec struct {
 // Networking is not managed by kops - we can create options here that directly configure e.g. weave
 // but this is useful for arbitrary network modes or for modes that don't need additional configuration.
 type CNINetworkingSpec struct {
+}
+
+// Flannel declares that we want Flannel networking
+type FlannelNetworkingSpec struct {
 }
 
 // Kopeio declares that we want Kopeio networking
