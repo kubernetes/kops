@@ -8,11 +8,10 @@ Kubernetes has two strategies for high availability:
 * Run a single cluster in multiple cloud zones, with redundant components
 
 kops has experimental early support for federation, but it already has good support for a cluster than runs
-with redundant components.  kops is able to create multiple kubernetes masters, so in the event of 
-a master instance failure kubernetes API will continue to operate.
+with redundant components.  kops is able to create multiple kubernetes masters, so in the event of
+a master instance failure, the kubernetes API will continue to operate.
 
-Even with a single master, if the master fails, the Kubernetes API will be unavailable, but nodes & pods on those
-nodes should continue to operate.  We can't do anything that involves the API (adding nodes, scaling pods, replacing
+However, when running kubernetes with a single master, if the master fails, the kubernetes API will be unavailable, but pods and services that are running on the (unaffected) nodes should continue to operate.  In this situation, we won't be able to do anything that involves the API (adding nodes, scaling pods, replacing
 terminated pods), and kubectl won't work.  However your application should continue to run, and most applications
 could probably tolerate an API outage of an hour or more.
 
@@ -30,7 +29,7 @@ In short:
 
 ## Using Kops HA
 
-We can create HA cluster using kops, but only when we first create a cluster.  Currently it is not possible to change
+We can create HA clusters using kops, but only it's important to note that you must plan for this at time of cluster creation.  Currently it is not possible to change
 the etcd cluster size (i.e. we cannot change an HA cluster to be non-HA, or a non-HA cluster to be HA.) [Issue #1512](https://github.com/kubernetes/kops/issues/1512)
 
 When you first call `kops create cluster`, you specify the `--master-zones` flag listing the zones you want your masters
@@ -51,9 +50,9 @@ kops create cluster \
 Kubernetes relies on a key-value store called "etcd", which uses the Quorum approach to consistency,
 so it is available if 51% of the nodes are available.
 
-As a result there are few considerations that need to be taken into account when using kops with HA:
+As a result there are a few considerations that need to be taken into account when using kops with HA:
 
-* Only odd number of masters instances should be created, as an even number is likely _less_ reliable than the lower odd number. 
+* Only odd number of masters instances should be created, as an even number is likely _less_ reliable than the lower odd number.
 * Kops has experimental support for running multiple masters in the same AZ, but it should be used carefully.
   If we create 2 (or more) masters in the same AZ, then failure of the AZ will likely cause etcd to lose quorum
   and stop operating (with 3 nodes).  Running in the same AZ therefore increases the risk of cluster disruption,
