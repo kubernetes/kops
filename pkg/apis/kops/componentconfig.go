@@ -273,8 +273,10 @@ type KubeletConfigSpec struct {
 	NodeLabels map[string]string `json:"nodeLabels,omitempty" flag:"node-labels"`
 	// nonMasqueradeCIDR configures masquerading: traffic to IPs outside this range will use IP masquerade.
 	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty" flag:"non-masquerade-cidr"`
-	//// enable gathering custom metrics.
-	//EnableCustomMetrics bool `json:"enableCustomMetrics"`
+
+	// enable gathering custom metrics.
+	EnableCustomMetrics *bool `json:"enableCustomMetrics,omitempty" flag:"enable-custom-metrics"`
+
 	//// Comma-delimited list of hard eviction expressions.  For example, 'memory.available<300Mi'.
 	//EvictionHard string `json:"evictionHard,omitempty"`
 	//// Comma-delimited list of soft eviction expressions.  For example, 'memory.available<300Mi'.
