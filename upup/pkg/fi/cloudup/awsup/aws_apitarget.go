@@ -37,6 +37,10 @@ func NewAWSAPITarget(cloud AWSCloud) *AWSAPITarget {
 	}
 }
 
+func (t *AWSAPITarget) ProcessDeletions() bool {
+	return true
+}
+
 func (t *AWSAPITarget) Finish(taskMap map[string]fi.Task) error {
 	return nil
 }

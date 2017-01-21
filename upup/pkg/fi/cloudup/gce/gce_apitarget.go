@@ -35,3 +35,7 @@ func NewGCEAPITarget(cloud *GCECloud) *GCEAPITarget {
 func (t *GCEAPITarget) Finish(taskMap map[string]fi.Task) error {
 	return nil
 }
+
+func (t *GCEAPITarget) ProcessDeletions() bool {
+	return true
+}
