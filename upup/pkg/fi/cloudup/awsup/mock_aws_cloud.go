@@ -177,3 +177,7 @@ func (c *MockAWSCloud) Route53() route53iface.Route53API {
 	}
 	return c.MockRoute53
 }
+
+func (c *MockAWSCloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
+	return nil, fmt.Errorf("MockAWSCloud FindVPCInfo not implemented")
+}
