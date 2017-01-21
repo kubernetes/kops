@@ -322,13 +322,13 @@ func TestPopulateCluster_TopologyInvalidValue_Required(t *testing.T) {
 	expectErrorFromPopulateCluster(t, c, "Topology")
 }
 
-func TestPopulateCluster_TopologyInvalidMatchingValues_Required(t *testing.T) {
-	// We can't have a bastion with public masters / nodes
-	c := buildMinimalCluster()
-	c.Spec.Topology.Masters = api.TopologyPublic
-	c.Spec.Topology.Nodes = api.TopologyPrivate
-	expectErrorFromPopulateCluster(t, c, "Topology")
-}
+//func TestPopulateCluster_TopologyInvalidMatchingValues_Required(t *testing.T) {
+//	// We can't have a bastion with public masters / nodes
+//	c := buildMinimalCluster()
+//	c.Spec.Topology.Masters = api.TopologyPublic
+//	c.Spec.Topology.Nodes = api.TopologyPrivate
+//	expectErrorFromPopulateCluster(t, c, "Topology")
+//}
 
 func TestPopulateCluster_BastionInvalidMatchingValues_Required(t *testing.T) {
 	// We can't have a bastion with public masters / nodes
