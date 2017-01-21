@@ -14,43 +14,43 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package model
+package systemd
 
 import "bytes"
 
-type ServiceManifest struct {
-	Sections []*ServiceManifestSection
+type Manifest struct {
+	Sections []*ManifestSection
 }
 
-type ServiceManifestSection struct {
+type ManifestSection struct {
 	Key     string
-	Entries []*ServiceManifestEntry
+	Entries []*ManifestEntry
 }
 
-type ServiceManifestEntry struct {
+type ManifestEntry struct {
 	Key   string
 	Value string
 }
 
-func (s *ServiceManifest) Set(sectionKey string, key string, value string) {
+func (s *Manifest) Set(sectionKey string, key string, value string) {
 	section := s.getOrCreateSection(sectionKey)
 	section.Set(key, value)
 }
 
-func (s *ServiceManifest) getOrCreateSection(key string) *ServiceManifestSection {
+func (s *Manifest) getOrCreateSection(key string) *ManifestSection {
 	for _, section := range s.Sections {
 		if section.Key == key {
 			return section
 		}
 	}
-	section := &ServiceManifestSection{
+	section := &ManifestSection{
 		Key: key,
 	}
 	s.Sections = append(s.Sections, section)
 	return section
 }
 
-func (s *ServiceManifest) Render() string {
+func (s *Manifest) Render() string {
 	var b bytes.Buffer
 
 	for i, section := range s.Sections {
@@ -63,7 +63,7 @@ func (s *ServiceManifest) Render() string {
 	return b.String()
 }
 
-func (s *ServiceManifestSection) Set(key string, value string) {
+func (s *ManifestSection) Set(key string, value string) {
 	for _, entry := range s.Entries {
 		if entry.Key == key {
 			entry.Value = value
@@ -71,14 +71,14 @@ func (s *ServiceManifestSection) Set(key string, value string) {
 		}
 	}
 
-	entry := &ServiceManifestEntry{
+	entry := &ManifestEntry{
 		Key:   key,
 		Value: value,
 	}
 	s.Entries = append(s.Entries, entry)
 }
 
-func (s *ServiceManifestSection) Render() string {
+func (s *ManifestSection) Render() string {
 	var b bytes.Buffer
 
 	b.WriteString("[" + s.Key + "]\n")

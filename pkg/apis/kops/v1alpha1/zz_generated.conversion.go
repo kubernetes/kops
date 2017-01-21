@@ -313,6 +313,7 @@ func autoConvert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	// WARNING: in.AdminAccess requires manual conversion: does not exist in peer-type
 	out.IsolateMasters = in.IsolateMasters
 	out.UpdatePolicy = in.UpdatePolicy
+	out.AdditionalPolicies = in.AdditionalPolicies
 	if in.EtcdClusters != nil {
 		in, out := &in.EtcdClusters, &out.EtcdClusters
 		*out = make([]*kops.EtcdClusterSpec, len(*in))
@@ -449,6 +450,7 @@ func autoConvert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, 
 	// WARNING: in.KubernetesAPIAccess requires manual conversion: does not exist in peer-type
 	out.IsolateMasters = in.IsolateMasters
 	out.UpdatePolicy = in.UpdatePolicy
+	out.AdditionalPolicies = in.AdditionalPolicies
 	if in.EtcdClusters != nil {
 		in, out := &in.EtcdClusters, &out.EtcdClusters
 		*out = make([]*EtcdClusterSpec, len(*in))
@@ -957,6 +959,11 @@ func autoConvert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.AnonymousAuth = in.AnonymousAuth
 	out.KubeletPreferredAddressTypes = in.KubeletPreferredAddressTypes
 	out.StorageBackend = in.StorageBackend
+	out.OIDCUsernameClaim = in.OIDCUsernameClaim
+	out.OIDCGroupsClaim = in.OIDCGroupsClaim
+	out.OIDCIssuerURL = in.OIDCIssuerURL
+	out.OIDCClientID = in.OIDCClientID
+	out.OIDCCAFile = in.OIDCCAFile
 	return nil
 }
 
@@ -987,6 +994,11 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *ko
 	out.AnonymousAuth = in.AnonymousAuth
 	out.KubeletPreferredAddressTypes = in.KubeletPreferredAddressTypes
 	out.StorageBackend = in.StorageBackend
+	out.OIDCUsernameClaim = in.OIDCUsernameClaim
+	out.OIDCGroupsClaim = in.OIDCGroupsClaim
+	out.OIDCIssuerURL = in.OIDCIssuerURL
+	out.OIDCClientID = in.OIDCClientID
+	out.OIDCCAFile = in.OIDCCAFile
 	return nil
 }
 
@@ -1015,6 +1027,7 @@ func autoConvert_v1alpha1_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	} else {
 		out.LeaderElection = nil
 	}
+	out.AttachDetachReconcileSyncPeriod = in.AttachDetachReconcileSyncPeriod
 	return nil
 }
 
@@ -1043,6 +1056,7 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha1_KubeControllerMana
 	} else {
 		out.LeaderElection = nil
 	}
+	out.AttachDetachReconcileSyncPeriod = in.AttachDetachReconcileSyncPeriod
 	return nil
 }
 

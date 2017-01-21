@@ -67,6 +67,11 @@ func findZone(cluster *api.Cluster, cloud fi.Cloud) (dnsprovider.Zone, error) {
 	}
 
 	if len(matches) > 1 {
+		glog.Infof("Found multiple DNS Zones matching %q, please specify --dns-zone=<id> to indicate the one you want", cluster.Spec.DNSZone)
+		for _, zone := range zones {
+			id := zone.ID()
+			glog.Infof("\t--dns-zone=%s", id)
+		}
 		return nil, fmt.Errorf("found multiple DNS Zones matching %q", cluster.Spec.DNSZone)
 	}
 
@@ -144,6 +149,8 @@ func precreateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 		return fmt.Errorf("error getting DNS resource records for %q", zone.Name())
 	}
 
+	// TODO: We should change the filter to be a suffix match instead
+	//records, err := rrs.List("", "")
 	records, err := rrs.List()
 	if err != nil {
 		return fmt.Errorf("error listing DNS resource records for %q: %v", zone.Name(), err)

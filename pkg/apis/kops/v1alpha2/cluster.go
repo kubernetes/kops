@@ -134,6 +134,9 @@ type ClusterSpec struct {
 	//   missing: default policy (currently OS security upgrades that do not require a reboot)
 	UpdatePolicy *string `json:"updatePolicy,omitempty"`
 
+	// Additional policies to add for roles
+	AdditionalPolicies *map[string]string `json:"additionalPolicies,omitempty"`
+
 	// EtcdClusters stores the configuration for each cluster
 	EtcdClusters []*EtcdClusterSpec `json:"etcdClusters,omitempty"`
 
@@ -201,7 +204,7 @@ type EtcdMemberSpec struct {
 	InstanceGroup *string `json:"instanceGroup,omitempty"`
 
 	VolumeType      *string `json:"volumeType,omitempty"`
-	VolumeSize      *int    `json:"volumeSize,omitempty"`
+	VolumeSize      *int32  `json:"volumeSize,omitempty"`
 	KmsKeyId        *string `json:"kmsKeyId,omitempty"`
 	EncryptedVolume *bool   `json:"encryptedVolume,omitempty"`
 }
@@ -224,6 +227,8 @@ type ClusterSubnetSpec struct {
 
 	// ProviderID is the cloud provider id for the objects associated with the zone (the subnet on AWS)
 	ProviderID string `json:"id,omitempty"`
+
+	Egress string `json:"egress,omitempty"`
 
 	Type SubnetType `json:"type,omitempty"`
 }

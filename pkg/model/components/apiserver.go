@@ -18,9 +18,11 @@ package components
 
 import (
 	"fmt"
+	"github.com/blang/semver"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
+	"k8s.io/kubernetes/pkg/api"
 )
 
 // KubeAPIServerOptionsBuilder adds options for the apiserver to the model
@@ -41,12 +43,36 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		if count == 0 {
 			return fmt.Errorf("no instance groups found")
 		}
-		options.KubeAPIServer.APIServerCount = fi.Int(count)
+		options.KubeAPIServer.APIServerCount = fi.Int32(int32(count))
 	}
 
 	if options.KubeAPIServer.StorageBackend == nil {
 		// For the moment, we continue to use etcd2
 		options.KubeAPIServer.StorageBackend = fi.String("etcd2")
+	}
+
+	k8sVersion, err := b.Context.KubernetesVersion()
+	if err != nil {
+		return err
+	}
+	if options.KubeAPIServer.KubeletPreferredAddressTypes == nil {
+		if k8sVersion.GTE(semver.MustParse("1.5.0")) {
+			// Default precedence
+			//options.KubeAPIServer.KubeletPreferredAddressTypes = []string {
+			//	string(api.NodeHostName),
+			//	string(api.NodeInternalIP),
+			//	string(api.NodeExternalIP),
+			//	string(api.NodeLegacyHostIP),
+			//}
+
+			// We prioritize the internal IP above the hostname
+			options.KubeAPIServer.KubeletPreferredAddressTypes = []string{
+				string(api.NodeInternalIP),
+				string(api.NodeHostName),
+				string(api.NodeExternalIP),
+				string(api.NodeLegacyHostIP),
+			}
+		}
 	}
 
 	return nil

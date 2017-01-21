@@ -21,6 +21,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kubernetes/pkg/util/exec"
 	"k8s.io/kubernetes/pkg/util/mount"
+	"k8s.io/kubernetes/pkg/util/sets"
 	"os"
 	"sort"
 	"time"
@@ -179,9 +180,6 @@ func (k *VolumeMountController) attachMasterVolumes() ([]*Volume, error) {
 		return nil, err
 	}
 
-	// TODO: Only mount one of e.g. an etcd cluster?
-	// Currently taken care of by zone rules though
-
 	var tryAttach []*Volume
 	var attached []*Volume
 	for _, v := range volumes {
@@ -193,20 +191,50 @@ func (k *VolumeMountController) attachMasterVolumes() ([]*Volume, error) {
 		}
 	}
 
-	if len(tryAttach) != 0 {
-		sort.Stable(ByEtcdClusterName(tryAttach))
+	if len(tryAttach) == 0 {
+		return attached, nil
+	}
 
-		for _, v := range tryAttach {
-			glog.V(2).Infof("Trying to mount master volume: %q", v.ID)
+	// Make sure we don't try to mount multiple volumes from the same cluster
+	attachedClusters := sets.NewString()
+	for _, attached := range attached {
+		for _, etcdCluster := range attached.Info.EtcdClusters {
+			attachedClusters.Insert(etcdCluster.ClusterKey)
+		}
+	}
 
-			err := k.provider.AttachVolume(v)
-			if err != nil {
-				glog.Warningf("Error attaching volume %q: %v", v.ID, err)
-			} else {
-				if v.LocalDevice == "" {
-					glog.Fatalf("AttachVolume did not set LocalDevice")
-				}
-				attached = append(attached, v)
+	// Mount in a consistent order
+	sort.Stable(ByEtcdClusterName(tryAttach))
+
+	// Actually attempt the mounting
+	for _, v := range tryAttach {
+		alreadyMounted := ""
+		for _, etcdCluster := range v.Info.EtcdClusters {
+			if attachedClusters.Has(etcdCluster.ClusterKey) {
+				alreadyMounted = etcdCluster.ClusterKey
+			}
+		}
+
+		if alreadyMounted != "" {
+			glog.V(2).Infof("Skipping mount of master volume %q, because etcd cluster %q is already mounted", v.ID, alreadyMounted)
+			continue
+		}
+
+		glog.V(2).Infof("Trying to mount master volume: %q", v.ID)
+
+		err := k.provider.AttachVolume(v)
+		if err != nil {
+			// We are racing with other instances here; this can happen
+			glog.Warningf("Error attaching volume %q: %v", v.ID, err)
+		} else {
+			if v.LocalDevice == "" {
+				glog.Fatalf("AttachVolume did not set LocalDevice")
+			}
+			attached = append(attached, v)
+
+			// Mark this cluster as attached now
+			for _, etcdCluster := range v.Info.EtcdClusters {
+				attachedClusters.Insert(etcdCluster.ClusterKey)
 			}
 		}
 	}
@@ -215,7 +243,7 @@ func (k *VolumeMountController) attachMasterVolumes() ([]*Volume, error) {
 }
 
 // ByEtcdClusterName sorts volumes so that we mount in a consistent order,
-// and in particular we try to mount the main etcd volume before the events etcd volume
+// and in addition we try to mount the main etcd volume before the events etcd volume
 type ByEtcdClusterName []*Volume
 
 func (a ByEtcdClusterName) Len() int {

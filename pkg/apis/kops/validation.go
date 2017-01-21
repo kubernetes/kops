@@ -326,6 +326,18 @@ func (c *Cluster) Validate(strict bool) error {
 			if bastion.IdleTimeoutSeconds != nil && *bastion.IdleTimeoutSeconds <= 0 {
 				return fmt.Errorf("Bastion IdleTimeoutSeconds should be greater than zero")
 			}
+			if bastion.IdleTimeoutSeconds != nil && *bastion.IdleTimeoutSeconds > 3600 {
+				return fmt.Errorf("Bastion IdleTimeoutSeconds cannot be greater than one hour")
+			}
+
+		}
+	}
+	// Egress specification support
+	{
+		for _, s := range c.Spec.Subnets {
+			if s.Egress != "" && !strings.HasPrefix(s.Egress, "nat-") {
+				return fmt.Errorf("egress must be of type NAT Gateway")
+			}
 		}
 	}
 

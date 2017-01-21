@@ -151,6 +151,13 @@ find kubernetes/server/bin -type f -name "kube???" | xargs -I {} /bin/bash -c "s
 aws s3 sync  --acl public-read  kubernetes/server/bin/ s3://${S3_BUCKET_NAME}/kubernetes/dev/v1.6.0-dev/bin/linux/amd64/
 ```
 
+### Example e2e command
+
+```
+go run hack/e2e.go -v -up -down -kops `which kops` -kops-cluster test.test-aws.k8s.io -kops-state s3://k8s-kops-state-store/ -kops-nodes=
+4 -deployment kops --kops-kubernetes-version https://storage.googleapis.com/kubernetes-release-dev/ci/$(curl  -SsL https://storage.googleapis.com/kubernetes-release-dev/ci/latest-green.txt)
+```
+
 (note the `v1.6.0-dev`: we insert a kubernetes version so that kops can
 automatically detect which k8s version is in use, which it uses to control
 flags that are not compatible between versions)

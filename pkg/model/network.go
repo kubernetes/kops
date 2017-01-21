@@ -22,6 +22,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kubernetes/pkg/util/sets"
+	"strings"
 )
 
 // NetworkModelBuilder configures network objects
@@ -32,6 +33,7 @@ type NetworkModelBuilder struct {
 var _ fi.ModelBuilder = &NetworkModelBuilder{}
 
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
+
 	sharedVPC := b.Cluster.SharedVPC()
 
 	// VPC that holds everything for the cluster
@@ -112,6 +114,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			CIDR:             s(subnetSpec.CIDR),
 			Shared:           fi.Bool(sharedSubnet),
 		}
+
 		if subnetSpec.ProviderID != "" {
 			subnet.ID = s(subnetSpec.ProviderID)
 		}
@@ -148,36 +151,63 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	for _, zone := range privateZones.List() {
+	// Loop over zones
+	for i, zone := range privateZones.List() {
+
 		utilitySubnet, err := b.LinkToUtilitySubnetInZone(zone)
 		if err != nil {
 			return err
 		}
 
-		// Every NGW needs a public (Elastic) IP address, every private
-		// subnet needs a NGW, lets create it. We tie it to a subnet
-		// so we can track it in AWS
-		eip := &awstasks.ElasticIP{
-			Name: s(zone + "." + b.ClusterName()),
-			AssociatedNatGatewayRouteTable: b.LinkToPrivateRouteTableInZone(zone),
-		}
-		c.AddTask(eip)
+		var ngw *awstasks.NatGateway
+		if b.Cluster.Spec.Subnets[i].Egress != "" {
+			if strings.Contains(b.Cluster.Spec.Subnets[i].Egress, "nat-") {
 
-		// NAT Gateway
-		//
-		// All private subnets will need a NGW, one per zone
-		//
-		// The instances in the private subnet can access the Internet by
-		// using a network address translation (NAT) gateway that resides
-		// in the public subnet.
-		ngw := &awstasks.NatGateway{
-			Name:      s(zone + "." + b.ClusterName()),
-			Subnet:    utilitySubnet,
-			ElasticIP: eip,
+				ngw = &awstasks.NatGateway{
+					Name:                 s(zone + "." + b.ClusterName()),
+					Subnet:               utilitySubnet,
+					ID:                   s(b.Cluster.Spec.Subnets[i].Egress),
+					AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone),
+					// If we're here, it means this NatGateway was specified, so we are Shared
+					Shared: fi.Bool(true),
+				}
 
-			AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone),
+				c.AddTask(ngw)
+
+			} else {
+				return fmt.Errorf("kops currently only supports re-use of NAT Gateways. We will support more eventually! Please see https://github.com/kubernetes/kops/issues/1530")
+			}
+
+		} else {
+
+			// Every NGW needs a public (Elastic) IP address, every private
+			// subnet needs a NGW, lets create it. We tie it to a subnet
+			// so we can track it in AWS
+			var eip = &awstasks.ElasticIP{}
+
+			eip = &awstasks.ElasticIP{
+				Name: s(zone + "." + b.ClusterName()),
+				AssociatedNatGatewayRouteTable: b.LinkToPrivateRouteTableInZone(zone),
+			}
+
+			c.AddTask(eip)
+			// NAT Gateway
+			//
+			// All private subnets will need a NGW, one per zone
+			//
+			// The instances in the private subnet can access the Internet by
+			// using a network address translation (NAT) gateway that resides
+			// in the public subnet.
+
+			//var ngw = &awstasks.NatGateway{}
+			ngw = &awstasks.NatGateway{
+				Name:                 s(zone + "." + b.ClusterName()),
+				Subnet:               utilitySubnet,
+				ElasticIP:            eip,
+				AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone),
+			}
+			c.AddTask(ngw)
 		}
-		c.AddTask(ngw)
 
 		// Private Route Table
 		//
