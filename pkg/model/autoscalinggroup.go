@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model/resources"
 	"k8s.io/kops/upup/pkg/fi"
@@ -88,48 +89,45 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 
 			{
+				// TODO: Wrapper / helper class to analyze clusters
+				subnetMap := make(map[string]*kops.ClusterSubnetSpec)
+				for i := range b.Cluster.Spec.Subnets {
+					subnet := &b.Cluster.Spec.Subnets[i]
+					subnetMap[subnet.Name] = subnet
+				}
+
+				var subnetType kops.SubnetType
+				for _, subnetName := range ig.Spec.Subnets {
+					subnet := subnetMap[subnetName]
+					if subnet == nil {
+						return fmt.Errorf("InstanceGroup %q uses subnet %q that does not exist", ig.ObjectMeta.Name, subnetName)
+					}
+					if subnetType != "" && subnetType != subnet.Type {
+						return fmt.Errorf("InstanceGroup %q cannot be in subnets of different Type", ig.ObjectMeta.Name)
+					}
+					subnetType = subnet.Type
+				}
+
 				associatePublicIP := true
-				switch ig.Spec.Role {
-				case kops.InstanceGroupRoleMaster:
-					switch b.Cluster.Spec.Topology.Masters {
-					case kops.TopologyPrivate:
-						associatePublicIP = false
-						// TODO: what if AssociatePublicIP is set
-
-					case kops.TopologyPublic:
-						associatePublicIP = true
-						if ig.Spec.AssociatePublicIP != nil {
-							associatePublicIP = *ig.Spec.AssociatePublicIP
-						}
-
-					default:
-						return fmt.Errorf("unhandled master topology %q", b.Cluster.Spec.Topology.Masters)
-					}
-
-				case kops.InstanceGroupRoleNode:
-					switch b.Cluster.Spec.Topology.Nodes {
-					case kops.TopologyPrivate:
-						associatePublicIP = false
-						// TODO: We probably should honor AssociatePublicIP
-
-					case kops.TopologyPublic:
-						associatePublicIP = true
-						if ig.Spec.AssociatePublicIP != nil {
-							associatePublicIP = *ig.Spec.AssociatePublicIP
-						}
-
-					default:
-						return fmt.Errorf("unhandled master topology %q", b.Cluster.Spec.Topology.Masters)
-					}
-
-				case kops.InstanceGroupRoleBastion:
+				switch subnetType {
+				case kops.SubnetTypePublic, kops.SubnetTypeUtility:
 					associatePublicIP = true
 					if ig.Spec.AssociatePublicIP != nil {
 						associatePublicIP = *ig.Spec.AssociatePublicIP
 					}
 
+				case kops.SubnetTypePrivate:
+					associatePublicIP = false
+					if ig.Spec.AssociatePublicIP != nil {
+						// This isn't meaningful - private subnets can't have public ip
+						//associatePublicIP = *ig.Spec.AssociatePublicIP
+						if *ig.Spec.AssociatePublicIP {
+							glog.Warningf("Ignoring private InstanceGroup %q with AssociatePublicIP=true", ig.ObjectMeta.Name)
+						}
+					}
+
 				default:
-					return fmt.Errorf("Unknown instance group role %q", ig.Spec.Role)
+					return fmt.Errorf("unknown subnet type %q", subnetType)
 				}
 				t.AssociatePublicIP = &associatePublicIP
 			}

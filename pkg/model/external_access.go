@@ -41,7 +41,12 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// SSH is open to AdminCIDR set
-	if b.Cluster.Spec.Topology.Masters == kops.TopologyPublic {
+	if b.UsesSSHBastion() {
+		// If we are using a bastion, we only access through the bastion
+		// This is admittedly a little odd... adding a bastion shuts down direct access to the masters/nodes
+		// But I think we can always add more permissions in this case later, but we can't easily take them away
+		glog.V(2).Infof("bastion is in use; won't configure SSH access to master / node instances")
+	} else {
 		for _, sshAccess := range b.Cluster.Spec.SSHAccess {
 			c.AddTask(&awstasks.SecurityGroupRule{
 				Name:          s("ssh-external-to-master-" + sshAccess),
@@ -51,12 +56,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				ToPort:        i64(22),
 				CIDR:          s(sshAccess),
 			})
-		}
-	}
 
-	// SSH is open to AdminCIDR set
-	if b.Cluster.Spec.Topology.Nodes == kops.TopologyPublic {
-		for _, sshAccess := range b.Cluster.Spec.SSHAccess {
 			c.AddTask(&awstasks.SecurityGroupRule{
 				Name:          s("ssh-external-to-node-" + sshAccess),
 				SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
