@@ -43,6 +43,15 @@ func (e *Subnet) CompareWithID() *string {
 	return e.ID
 }
 
+// OrderSubnetsById implements sort.Interface for []Subnet, based on ID
+type OrderSubnetsById []*Subnet
+
+func (a OrderSubnetsById) Len() int      { return len(a) }
+func (a OrderSubnetsById) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a OrderSubnetsById) Less(i, j int) bool {
+	return fi.StringValue(a[i].ID) < fi.StringValue(a[j].ID)
+}
+
 func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 	subnet, err := e.findEc2Subnet(c)
 	if err != nil {
