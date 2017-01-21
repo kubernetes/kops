@@ -15,7 +15,7 @@ var getCmd = GetCmd{
 	cobraCommand: &cobra.Command{
 		Use:        "get",
 		SuggestFor: []string{"list"},
-		Short:      "list or get objects",
+		Short:      "List all instances of a resource.",
 		Long:       `list or get objects`,
 	},
 }

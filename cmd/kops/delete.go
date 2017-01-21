@@ -7,8 +7,8 @@ import (
 // deleteCmd represents the delete command
 var deleteCmd = &cobra.Command{
 	Use:   "delete",
-	Short: "delete clusters",
-	Long:  `Delete clusters`,
+	Short: "Delete clusters and other resources.",
+	Long:  `Delete resources, such as clusters, instance groups, and secrets.'`,
 }
 
 func init() {
