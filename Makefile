@@ -31,6 +31,8 @@ MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
 DNS_CONTROLLER_TAG=1.5.0
 
+GITSHA := $(shell cd ${GOPATH_1ST}/src/k8s.io/kops; git describe --always)
+
 ifndef VERSION
   # To keep both CI and end-users building from source happy,
   # we expect that CI sets CI=1.
@@ -45,11 +47,10 @@ ifndef VERSION
   ifndef CI
     VERSION=1.5.0-alpha3
   else
-    VERSION := git-$(shell git describe --always)
+    VERSION := git-${GITSHA}
   endif
 endif
 
-GITSHA := $(shell git describe --always)
 
 # Go exports:
 
