@@ -88,6 +88,11 @@ func (t *TerraformTarget) AddFile(resourceType string, resourceName string, key 
 	return l, nil
 }
 
+func (t *TerraformTarget) ProcessDeletions() bool {
+	// Terraform tracks & performs deletions itself
+	return false
+}
+
 func (t *TerraformTarget) RenderResource(resourceType string, resourceName string, e interface{}) error {
 	res := &terraformResource{
 		ResourceType: resourceType,
