@@ -19,14 +19,25 @@ package protokube
 import (
 	"bytes"
 	"fmt"
-	"github.com/ghodss/yaml"
 	"github.com/golang/glog"
 	"io/ioutil"
+	"k8s.io/kubernetes/pkg/api/resource"
 	"os"
 	"path"
 	"strings"
 	"time"
 )
+
+type EtcdClusterSpec struct {
+	ClusterKey string `json:"clusterKey,omitempty"`
+
+	NodeName  string   `json:"nodeName,omitempty"`
+	NodeNames []string `json:"nodeNames,omitempty"`
+}
+
+func (e *EtcdClusterSpec) String() string {
+	return DebugString(e)
+}
 
 type EtcdCluster struct {
 	PeerPort     int
@@ -38,7 +49,7 @@ type EtcdCluster struct {
 	Me           *EtcdNode
 	Nodes        []*EtcdNode
 	PodName      string
-	CPURequest   string
+	CPURequest   resource.Quantity
 
 	Spec *EtcdClusterSpec
 
@@ -71,25 +82,34 @@ func newEtcdController(kubeBoot *KubeBoot, v *Volume, spec *EtcdClusterSpec) (*E
 		kubeBoot: kubeBoot,
 	}
 
-	modelTemplatePath := path.Join(kubeBoot.ModelDir, spec.ClusterKey+".config")
-	modelTemplate, err := ioutil.ReadFile(modelTemplatePath)
-	if err != nil {
-		return nil, fmt.Errorf("error reading model template %q: %v", modelTemplatePath, err)
-	}
-
 	cluster := &EtcdCluster{}
 	cluster.Spec = spec
 	cluster.VolumeMountPath = v.Mountpoint
 
-	model, err := ExecuteTemplate("model-etcd-"+spec.ClusterKey, string(modelTemplate), cluster)
-	if err != nil {
-		return nil, fmt.Errorf("error executing etcd model template %q: %v", modelTemplatePath, err)
+	cluster.ClusterName = "etcd-" + spec.ClusterKey
+	cluster.DataDirName = "data-" + spec.ClusterKey
+	cluster.PodName = "etcd-server-" + spec.ClusterKey
+	cluster.CPURequest = resource.MustParse("100m")
+	cluster.ClientPort = 4001
+	cluster.PeerPort = 2380
+
+	// We used to build this through text files ... it turns out to just be more complicated than code!
+	switch spec.ClusterKey {
+	case "main":
+		cluster.ClusterName = "etcd"
+		cluster.DataDirName = "data"
+		cluster.PodName = "etcd-server"
+		cluster.CPURequest = resource.MustParse("200m")
+
+	case "events":
+		cluster.ClientPort = 4002
+		cluster.PeerPort = 2381
+
+	default:
+		return nil, fmt.Errorf("unknown Etcd ClusterKey %q", spec.ClusterKey)
+
 	}
 
-	err = yaml.Unmarshal([]byte(model), cluster)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing etcd model template %q: %v", modelTemplatePath, err)
-	}
 	k.cluster = cluster
 
 	return k, nil
@@ -122,10 +142,6 @@ func (c *EtcdCluster) configure(k *KubeBoot) error {
 
 	if c.PodName == "" {
 		c.PodName = c.ClusterName
-	}
-
-	if c.CPURequest == "" {
-		c.CPURequest = "100m"
 	}
 
 	err := touchFile(PathFor(c.LogFile))
@@ -163,14 +179,10 @@ func (c *EtcdCluster) configure(k *KubeBoot) error {
 		return fmt.Errorf("my node name %s not found in cluster %v", c.Spec.NodeName, strings.Join(c.Spec.NodeNames, ","))
 	}
 
-	manifestTemplatePath := "templates/etcd/manifest.template"
-	manifestTemplate, err := ioutil.ReadFile(manifestTemplatePath)
+	pod := BuildEtcdManifest(c)
+	manifest, err := ToVersionedYaml(pod)
 	if err != nil {
-		return fmt.Errorf("error reading etcd manifest template %q: %v", manifestTemplatePath, err)
-	}
-	manifest, err := ExecuteTemplate("etcd-manifest", string(manifestTemplate), c)
-	if err != nil {
-		return fmt.Errorf("error executing etcd manifest template: %v", err)
+		return fmt.Errorf("error marshalling pod to yaml: %v", err)
 	}
 
 	// Time to write the manifest!
