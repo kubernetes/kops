@@ -31,7 +31,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/upup/pkg/kutil"
 	k8sapi "k8s.io/kubernetes/pkg/api"
-	"os"
 	"strings"
 	"time"
 )
@@ -72,7 +71,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 			clusterName := rootCommand.ClusterName()
 
-			err = RunUpdateCluster(f, clusterName, os.Stdout, options)
+			err = RunUpdateCluster(f, clusterName, out, options)
 			if err != nil {
 				exitWithError(err)
 			}

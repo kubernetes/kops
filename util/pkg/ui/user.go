@@ -17,23 +17,26 @@ limitations under the License.
 package ui
 
 import (
+	"bufio"
 	"fmt"
 	"io"
+	"k8s.io/kubernetes/pkg/util/sets"
+	"os"
 	"strings"
 )
 
 // ConfirmArgs encapsulates the arguments that can he passed to GetConfirm
 type ConfirmArgs struct {
-	Out        io.Writer // os.Stdout or &bytes.Buffer used to putput the message above the confirmation
+	Out        io.Writer // os.Stdout or &bytes.Buffer used to output the message above the confirmation
 	Message    string    // what you want to say to the user before confirming
-	Default    string    // if you hit enter instead of yes or no shoudl it approve or deny
+	Default    string    // if you hit enter instead of yes or no should it approve or deny
 	TestVal    string    // if you need to test without the interactive prompt then set the user response here
 	Retries    int       // how many tines to ask for a valid confirmation before giving up
-	RetryCount int       // how many attempts have been made
+	retryCount int       // how many attempts have been made
 }
 
 // GetConfirm prompts a user for a yes or no answer.
-// In order to test this function som extra parameters are reqired:
+// In order to test this function some extra parameters are required:
 //
 // out: an io.Writer that allows you to direct prints to stdout or another location
 // message: the string that will be printed just before prompting for a yes or no.
@@ -42,60 +45,58 @@ func GetConfirm(c *ConfirmArgs) (bool, error) {
 	if c.Default != "" {
 		c.Default = strings.ToLower(c.Default)
 	}
-	answerTemplate := "(%s/%s)"
-	switch c.Default {
-	case "yes", "y":
-		c.Message = c.Message + fmt.Sprintf(answerTemplate, "Y", "n")
-	case "no", "n":
-		c.Message = c.Message + fmt.Sprintf(answerTemplate, "y", "N")
-	default:
-		c.Message = c.Message + fmt.Sprintf(answerTemplate, "y", "n")
-	}
-	fmt.Fprintln(c.Out, c.Message)
 
-	// these are the acceptable answers
-	okayResponses := []string{"y", "yes"}
-	nokayResponses := []string{"n", "no"}
-	response := c.TestVal
-
-	// only prompt user if you predefined answer was passed in
-	if response == "" {
-		_, err := fmt.Scanln(&response)
-		if err != nil {
-			return false, err
+	for {
+		answerTemplate := " (%s/%s)"
+		message := c.Message
+		switch c.Default {
+		case "yes", "y":
+			message = c.Message + fmt.Sprintf(answerTemplate, "Y", "n")
+		case "no", "n":
+			message = c.Message + fmt.Sprintf(answerTemplate, "y", "N")
+		default:
+			message = c.Message + fmt.Sprintf(answerTemplate, "y", "n")
 		}
-	}
+		fmt.Fprintln(c.Out, message)
 
-	responseLower := strings.ToLower(response)
-	// make sure the response is valid
-	if ContainsString(okayResponses, responseLower) {
-		return true, nil
-	} else if ContainsString(nokayResponses, responseLower) {
-		return false, nil
-	} else if c.Default != "" && response == "" {
-		if string(c.Default[0]) == "y" {
+		// these are the acceptable answers
+		okayResponses := sets.NewString("y", "yes")
+		nokayResponses := sets.NewString("n", "no")
+		response := c.TestVal
+
+		// only prompt user if no predefined answer was passed in
+		if response == "" {
+			var err error
+
+			reader := bufio.NewReader(os.Stdin)
+			response, err = reader.ReadString('\n')
+			if err != nil {
+				return false, fmt.Errorf("error reading from input: %v", err)
+			}
+
+			response = strings.TrimSpace(response)
+		}
+
+		responseLower := strings.ToLower(response)
+		// make sure the response is valid
+		if okayResponses.Has(responseLower) {
 			return true, nil
+		} else if nokayResponses.Has(responseLower) {
+			return false, nil
+		} else if c.Default != "" && response == "" {
+			if string(c.Default[0]) == "y" {
+				return true, nil
+			}
+			return false, nil
 		}
-		return false, nil
-	}
 
-	fmt.Printf("invalid response: %s\n\n", response)
+		fmt.Printf("invalid response: %s\n\n", response)
 
-	// if c.RetryCount exceeds the requested number of retries then give up
-	if c.RetryCount >= c.Retries {
-		return false, nil
-	}
-
-	c.RetryCount++
-	return GetConfirm(c)
-}
-
-// ContainsString returns true if slice contains the element
-func ContainsString(slice []string, element string) bool {
-	for _, arg := range slice {
-		if arg == element {
-			return true
+		// if c.RetryCount exceeds the requested number of retries then give up
+		if c.retryCount >= c.Retries {
+			return false, nil
 		}
+
+		c.retryCount++
 	}
-	return false
 }

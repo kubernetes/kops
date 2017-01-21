@@ -17,55 +17,28 @@ limitations under the License.
 package main
 
 import (
-	"fmt"
-	"os"
-	"strings"
-
-	"k8s.io/kops/util/pkg/ui"
-
 	"github.com/spf13/cobra"
+	"io"
+	"k8s.io/kops/cmd/kops/util"
 )
 
-var confirmDelete bool
-
-// deleteCmd represents the delete command
-var deleteCmd = &cobra.Command{
-	Use:        "delete",
-	Short:      "delete clusters",
-	Long:       `Delete clusters`,
-	SuggestFor: []string{"rm"},
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		// cobra doesn't give you the full arg list even though it should.
-		args = os.Args
-
-		// args should be [delete, resource, resource name]
-		// if there are less args than 3 confirming isnt necessary as the child command will fail
-		if !confirmDelete && len(args) >= 3 {
-			message := fmt.Sprintf(
-				"Do you really want to %s? This action cannot be undone.",
-				strings.Join(args[1:], " "),
-			)
-
-			c := &ui.ConfirmArgs{
-				Out:     os.Stdout,
-				Message: message,
-				Default: "no",
-				Retries: 2,
-			}
-
-			confirmed, err := ui.GetConfirm(c)
-			if err != nil {
-				exitWithError(err)
-			}
-			if !confirmed {
-				os.Exit(1)
-			}
-
-		}
-	},
+type DeleteOptions struct {
 }
 
-func init() {
-	deleteCmd.PersistentFlags().BoolVarP(&confirmDelete, "yes", "y", false, "Auto confirm deletetion.")
-	rootCommand.AddCommand(deleteCmd)
+func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
+	//options := &DeleteOptions{}
+
+	cmd := &cobra.Command{
+		Use:        "delete",
+		Short:      "delete clusters",
+		Long:       `Delete clusters`,
+		SuggestFor: []string{"rm"},
+	}
+
+	// create subcommands
+	cmd.AddCommand(NewCmdDeleteCluster(f, out))
+	cmd.AddCommand(NewCmdDeleteInstanceGroup(f, out))
+	cmd.AddCommand(NewCmdDeleteSecret(f, out))
+
+	return cmd
 }
