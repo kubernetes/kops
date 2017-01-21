@@ -156,6 +156,16 @@ func (m *KopsModelContext) UsesBastionDns() bool {
 	return false
 }
 
+func (m *KopsModelContext) UsesSSHBastion() bool {
+	for _, ig := range m.InstanceGroups {
+		if ig.Spec.Role == kops.InstanceGroupRoleBastion {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (m *KopsModelContext) UseLoadBalancerForAPI() bool {
 	if m.Cluster.Spec.API == nil {
 		return false
