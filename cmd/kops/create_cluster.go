@@ -527,6 +527,27 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return fmt.Errorf("unknown DNSType: %q", c.DNSType)
 	}
 
+	// Populate the API access, so that it can be discoverable
+	// TODO: This is the same code as in defaults - try to dedup?
+	if cluster.Spec.API == nil {
+		cluster.Spec.API = &api.AccessSpec{}
+	}
+	if cluster.Spec.API.IsEmpty() {
+		switch cluster.Spec.Topology.Masters {
+		case api.TopologyPublic:
+			cluster.Spec.API.DNS = &api.DNSAccessSpec{}
+
+		case api.TopologyPrivate:
+			cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
+
+		default:
+			glog.Infof("unknown master topology type: %q", cluster.Spec.Topology.Masters)
+		}
+	}
+	if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Type == "" {
+		cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypePublic
+	}
+
 	sshPublicKeys := make(map[string][]byte)
 	if c.SSHPublicKey != "" {
 		c.SSHPublicKey = utils.ExpandPath(c.SSHPublicKey)
