@@ -20,16 +20,23 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"io"
+	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/kutil"
+	"k8s.io/kops/util/pkg/ui"
+	"os"
 )
 
-type DeleteInstanceceGroupCmd struct {
+type DeleteInstanceGroupOptions struct {
+	Yes         bool
+	ClusterName string
+	GroupName   string
 }
 
-var deleteInstanceceGroupCmd DeleteInstanceceGroupCmd
+func NewCmdDeleteInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
+	options := &DeleteInstanceGroupOptions{}
 
-func init() {
 	cmd := &cobra.Command{
 		Use:     "instancegroup",
 		Aliases: []string{"instancegroups", "ig"},
@@ -42,27 +49,67 @@ func init() {
 			if len(args) != 1 {
 				exitWithError(fmt.Errorf("Can only edit one instance group at a time!"))
 			}
-			err := deleteInstanceceGroupCmd.Run(args[0])
+
+			groupName := args[0]
+			options.GroupName = groupName
+
+			options.ClusterName = rootCommand.ClusterName()
+
+			if !options.Yes {
+				message := fmt.Sprintf("Do you really want to delete instance group %q? This action cannot be undone.", groupName)
+
+				c := &ui.ConfirmArgs{
+					Out:     out,
+					Message: message,
+					Default: "no",
+					Retries: 2,
+				}
+
+				confirmed, err := ui.GetConfirm(c)
+				if err != nil {
+					exitWithError(err)
+				}
+				if !confirmed {
+					os.Exit(1)
+				} else {
+					options.Yes = true
+				}
+			}
+
+			err := RunDeleteInstanceGroup(f, out, options)
 			if err != nil {
 				exitWithError(err)
 			}
 		},
 	}
 
-	deleteCmd.AddCommand(cmd)
+	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Specify --yes to immediately delete the instance group")
+
+	return cmd
 }
 
-func (c *DeleteInstanceceGroupCmd) Run(groupName string) error {
+func RunDeleteInstanceGroup(f *util.Factory, out io.Writer, options *DeleteInstanceGroupOptions) error {
+	groupName := options.GroupName
 	if groupName == "" {
-		return fmt.Errorf("name is required")
+		return fmt.Errorf("GroupName is required")
 	}
 
-	cluster, err := rootCommand.Cluster()
+	clusterName := options.ClusterName
+	if clusterName == "" {
+		return fmt.Errorf("ClusterName is required")
+	}
+
+	if !options.Yes {
+		// Just for sanity / safety
+		return fmt.Errorf("Yes must be specified")
+	}
+
+	cluster, err := GetCluster(f, clusterName)
 	if err != nil {
 		return err
 	}
 
-	clientset, err := rootCommand.Clientset()
+	clientset, err := f.Clientset()
 	if err != nil {
 		return err
 	}
@@ -90,7 +137,7 @@ func (c *DeleteInstanceceGroupCmd) Run(groupName string) error {
 		return err
 	}
 
-	fmt.Printf("InstanceGroup %q deleted\n", group.ObjectMeta.Name)
+	fmt.Fprintf(out, "InstanceGroup %q deleted\n", group.ObjectMeta.Name)
 
 	return nil
 }
