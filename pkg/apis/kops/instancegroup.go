@@ -24,6 +24,8 @@ import (
 	"k8s.io/kubernetes/pkg/util/validation/field"
 )
 
+const LabelClusterName = "kops.k8s.io/cluster"
+
 // InstanceGroup represents a group of instances (either nodes or masters) with the same configuration
 type InstanceGroup struct {
 	v1.TypeMeta `json:",inline"`
