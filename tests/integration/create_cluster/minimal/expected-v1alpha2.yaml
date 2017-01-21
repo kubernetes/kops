@@ -41,6 +41,8 @@ apiVersion: kops/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal.example.com
   name: master-us-test-1a
 spec:
   associatePublicIp: true
@@ -58,6 +60,8 @@ apiVersion: kops/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal.example.com
   name: nodes
 spec:
   associatePublicIp: true
