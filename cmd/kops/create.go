@@ -7,7 +7,7 @@ import (
 // createCmd represents the create command
 var createCmd = &cobra.Command{
 	Use:   "create",
-	Short: "Create a resource by filename or stdin.",
+	Short: "create resources",
 	Long:  `Create resources`,
 }
 
