@@ -27,7 +27,7 @@ func NewCmdValidate(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "validate",
 		//SuggestFor: []string{"val"},
-		Short: "Validate Cluster",
+		Short: "Run validation check on Kubernetes cluster.",
 		Long:  `Validate a Kubernetes Cluster`,
 	}
 

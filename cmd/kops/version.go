@@ -30,7 +30,7 @@ type VersionCmd struct {
 var versionCmd = VersionCmd{
 	cobraCommand: &cobra.Command{
 		Use:   "version",
-		Short: "Print the client version information",
+		Short: "Print the client version information.",
 	},
 }
 
