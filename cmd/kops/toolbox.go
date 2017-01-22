@@ -7,7 +7,7 @@ import (
 // toolboxCmd represents the toolbox command
 var toolboxCmd = &cobra.Command{
 	Use:   "toolbox",
-	Short: "Misc infrequently used commands",
+	Short: "Misc infrequently used commands.",
 }
 
 func init() {

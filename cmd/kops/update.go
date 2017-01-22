@@ -7,7 +7,7 @@ import (
 // updateCmd represents the create command
 var updateCmd = &cobra.Command{
 	Use:   "update",
-	Short: "update clusters",
+	Short: "Creates or updates cloud resources to match cluster spec.",
 	Long:  `Update clusters`,
 }
 

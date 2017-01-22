@@ -12,7 +12,7 @@ type RollingUpdateCmd struct {
 var rollingUpdateCommand = RollingUpdateCmd{
 	cobraCommand: &cobra.Command{
 		Use:   "rolling-update",
-		Short: "rolling update clusters",
+		Short: "Initiate rolling updates on clusters.",
 		Long:  `rolling update clusters`,
 	},
 }
