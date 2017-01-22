@@ -201,8 +201,6 @@ subdomain.kubernetes.com.        172800  IN  NS  ns-3.awsdns-3.com.
 subdomain.kubernetes.com.        172800  IN  NS  ns-4.awsdns-4.co.uk.
 ```
 
-Note that a `dig on` `kubernetes.com` should yield **the exact same nameservers** as `subdomain.kubernetes.com`
-
 This is a critical component of setting up the cluster. If you are experiencing problems with the Kubernetes API not coming up, chances are something is amiss around DNS. 
 
 **Please DO NOT MOVE ON until you have validated your NS records!**
