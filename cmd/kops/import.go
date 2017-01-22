@@ -23,7 +23,7 @@ import (
 // importCmd represents the import command
 var importCmd = &cobra.Command{
 	Use:   "import",
-	Short: "import clusters",
+	Short: "Import existing resources into the state store.",
 	Long:  `import clusters`,
 }
 
