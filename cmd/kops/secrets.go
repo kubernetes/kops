@@ -7,8 +7,8 @@ import (
 // secretsCmd represents the secrets command
 var secretsCmd = &cobra.Command{
 	Use:   "secrets",
-	Short: "Manage secrets & keys.",
-	Long:  `Manage secrets & keys.`,
+	Short: "Manage secrets & keys",
+	Long:  `Manage secrets & keys`,
 }
 
 func init() {

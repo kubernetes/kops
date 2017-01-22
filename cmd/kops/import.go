@@ -7,8 +7,8 @@ import (
 // importCmd represents the import command
 var importCmd = &cobra.Command{
 	Use:   "import",
-	Short: "Import existing resources into the state store.",
-	Long:  `Import existing resources, such as clusters into the state store.`,
+	Short: "import clusters",
+	Long:  `import clusters`,
 }
 
 func init() {

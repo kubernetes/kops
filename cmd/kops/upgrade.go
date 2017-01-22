@@ -7,7 +7,7 @@ import (
 // upgradeCmd represents the upgrade command
 var upgradeCmd = &cobra.Command{
 	Use:   "upgrade",
-	Short: "Automates checking for and applying Kubernetes updates.",
+	Short: "upgrade clusters",
 	Long:  `upgrade clusters`,
 }
 
