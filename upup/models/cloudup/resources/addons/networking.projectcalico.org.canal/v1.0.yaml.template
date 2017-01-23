@@ -23,6 +23,7 @@ data:
         "type": "calico",
         "log_level": "info",
         "datastore_type": "kubernetes",
+        "hostname": "__KUBERNETES_NODE_NAME__",
         "ipam": {
             "type": "host-local",
             "subnet": "usePodCidr"
@@ -33,7 +34,8 @@ data:
         },
         "kubernetes": {
             "k8s_api_root": "https://__KUBERNETES_SERVICE_HOST__:__KUBERNETES_SERVICE_PORT__",
-            "kubeconfig": "__KUBECONFIG_FILEPATH__"
+            "kubeconfig": "__KUBECONFIG_FILEPATH__",
+            "node_name": "__KUBERNETES_NODE_NAME__"
         }
     }
 
@@ -96,6 +98,11 @@ spec:
             # No IP address needed.
             - name: IP
               value: ""
+            # Set the hostname based on the k8s node name.
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
           securityContext:
             privileged: true
           volumeMounts:
@@ -117,6 +124,11 @@ spec:
                 configMapKeyRef:
                   name: canal-config
                   key: cni_network_config
+            # Set the hostname based on the k8s node name.
+            - name: KUBERNETES_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
           volumeMounts:
             - mountPath: /host/opt/cni/bin
               name: cni-bin-dir

@@ -273,7 +273,6 @@ func (e *NatGateway) waitAvailable(cloud awsup.AWSCloud) error {
 }
 
 func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway) error {
-
 	// New NGW
 
 	var id *string
