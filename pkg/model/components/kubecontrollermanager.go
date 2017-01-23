@@ -73,7 +73,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	// TLDR; set this too low, and have a few EBS Volumes, and you will spam AWS api
 
 	// if 1.4.8+ and 1.5.2+
-	if kubernetesVersion.GTE(*k8sv148) || kubernetesVersion.GTE(*k8sv152) {
+	if (kubernetesVersion.GTE(*k8sv148) && kubernetesVersion.Minor == 4) || kubernetesVersion.GTE(*k8sv152) {
 
 		glog.V(4).Infof("Kubernetes version %q supports AttachDetachReconcileSyncPeriod; will configure", kubernetesVersion)
 		// If not set ... or set to 0s ... which is stupid
