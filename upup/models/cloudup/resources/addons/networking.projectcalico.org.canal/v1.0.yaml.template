@@ -82,6 +82,9 @@ spec:
         # host.
         - name: calico-node
           image: calico/node:v1.0.0
+          resources:
+            requests:
+              cpu: 10m
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -117,6 +120,9 @@ spec:
         - name: install-cni
           image: calico/cni:v1.5.5
           command: ["/install-cni.sh"]
+          resources:
+            requests:
+              cpu: 10m
           env:
             # The CNI network config to install on each node.
             - name: CNI_NETWORK_CONFIG
@@ -141,6 +147,9 @@ spec:
           command: [ "/opt/bin/flanneld", "--ip-masq", "--kube-subnet-mgr" ]
           securityContext:
             privileged: true
+          resources:
+            requests:
+              cpu: 10m
           env:
           - name: POD_NAME
             valueFrom:
