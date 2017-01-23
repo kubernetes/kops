@@ -44,17 +44,6 @@ const (
 	TypeLoadBalancer            = "load-balancer"
 )
 
-// DeleteCluster implements deletion of cluster cloud resources
-// The algorithm is pretty simple: it discovers all the resources it can (primary using tags),
-// and then it repeatedly attempts to delete them all until they are all deleted.
-// There are a few tweaks to that approach, like choosing a default ordering, but it is not much
-// smarter.  Cluster deletion is a fairly rare operation anyway, and also some dependencies are invisible
-// (e.g. ELB dependencies).
-type DeleteCluster struct {
-	ClusterName string
-	Cloud       fi.Cloud
-}
-
 type ResourceTracker struct {
 	Name string
 	Type string
@@ -100,125 +89,6 @@ func buildEC2Filters(cloud fi.Cloud) []*ec2.Filter {
 		filters = append(filters, filter)
 	}
 	return filters
-}
-
-func (c *DeleteCluster) ListResources() (map[string]*ResourceTracker, error) {
-	cloud := c.Cloud.(awsup.AWSCloud)
-
-	resources := make(map[string]*ResourceTracker)
-
-	listFunctions := []listFn{
-		// EC2
-		ListInstances,
-		ListKeypairs,
-		ListSecurityGroups,
-		ListVolumes,
-		// EC2 VPC
-		ListDhcpOptions,
-		ListInternetGateways,
-		ListRouteTables,
-		ListSubnets,
-		ListVPCs,
-		// ELBs
-		ListELBs,
-		// ASG
-		ListAutoScalingGroups,
-
-		// Route 53
-		ListRoute53Records,
-		// IAM
-		ListIAMInstanceProfiles,
-		ListIAMRoles,
-	}
-	for _, fn := range listFunctions {
-		trackers, err := fn(cloud, c.ClusterName)
-		if err != nil {
-			return nil, err
-		}
-		for _, t := range trackers {
-			resources[t.Type+":"+t.ID] = t
-		}
-	}
-
-	{
-		// Gateways weren't tagged in kube-up
-		// If we are deleting the VPC, we should delete the attached gateway
-		// (no real reason not to; easy to recreate; no real state etc)
-
-		gateways, err := DescribeInternetGatewaysIgnoreTags(cloud)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, igw := range gateways {
-			for _, attachment := range igw.Attachments {
-				vpcID := aws.StringValue(attachment.VpcId)
-				igwID := aws.StringValue(igw.InternetGatewayId)
-				if vpcID == "" || igwID == "" {
-					continue
-				}
-				if resources["vpc:"+vpcID] != nil && resources["internet-gateway:"+igwID] == nil {
-					resources["internet-gateway:"+igwID] = &ResourceTracker{
-						Name:    FindName(igw.Tags),
-						ID:      igwID,
-						Type:    "internet-gateway",
-						deleter: DeleteInternetGateway,
-					}
-				}
-			}
-		}
-	}
-
-	{
-		// We delete a launch configuration if it is bound to one of the tagged security groups
-		securityGroups := sets.NewString()
-		for k := range resources {
-			if !strings.HasPrefix(k, "security-group:") {
-				continue
-			}
-			id := strings.TrimPrefix(k, "security-group:")
-			securityGroups.Insert(id)
-		}
-		lcs, err := FindAutoScalingLaunchConfigurations(cloud, securityGroups)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, t := range lcs {
-			resources[t.Type+":"+t.ID] = t
-		}
-	}
-
-	if err := addUntaggedRouteTables(cloud, c.ClusterName, resources); err != nil {
-		return nil, err
-	}
-
-	{
-		// We delete a NAT gateway if it is linked to our route table
-		routeTableIds := sets.NewString()
-		for k := range resources {
-			if !strings.HasPrefix(k, ec2.ResourceTypeRouteTable+":") {
-				continue
-			}
-			id := strings.TrimPrefix(k, ec2.ResourceTypeRouteTable+":")
-			routeTableIds.Insert(id)
-		}
-		natGateways, err := FindNatGateways(cloud, routeTableIds)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, t := range natGateways {
-			resources[t.Type+":"+t.ID] = t
-		}
-	}
-
-	for k, t := range resources {
-		if t.done {
-			delete(resources, k)
-		}
-	}
-	return resources, nil
 }
 
 func addUntaggedRouteTables(cloud awsup.AWSCloud, clusterName string, resources map[string]*ResourceTracker) error {
@@ -268,7 +138,7 @@ func addUntaggedRouteTables(cloud awsup.AWSCloud, clusterName string, resources 
 	return nil
 }
 
-func (c *DeleteCluster) DeleteResources(resources map[string]*ResourceTracker) error {
+func (c *AwsCluster) DeleteResources(resources map[string]*ResourceTracker) error {
 	depMap := make(map[string][]string)
 
 	done := make(map[string]*ResourceTracker)
