@@ -30,7 +30,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/upup/pkg/kutil"
-	"os"
+	k8sapi "k8s.io/kubernetes/pkg/api"
 	"strings"
 	"time"
 )
@@ -71,7 +71,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 			clusterName := rootCommand.ClusterName()
 
-			err = RunUpdateCluster(f, clusterName, os.Stdout, options)
+			err = RunUpdateCluster(f, clusterName, out, options)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -147,6 +147,17 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		glog.Infof("Using SSH public key: %v\n", c.SSHPublicKey)
 	}
 
+	var instanceGroups []*kops.InstanceGroup
+	{
+		list, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).List(k8sapi.ListOptions{})
+		if err != nil {
+			return err
+		}
+		for i := range list.Items {
+			instanceGroups = append(instanceGroups, &list.Items[i])
+		}
+	}
+
 	applyCmd := &cloudup.ApplyClusterCmd{
 		Cluster:         cluster,
 		Models:          strings.Split(c.Models, ","),
@@ -155,7 +166,9 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		OutDir:          c.OutDir,
 		DryRun:          isDryrun,
 		MaxTaskDuration: c.MaxTaskDuration,
+		InstanceGroups:  instanceGroups,
 	}
+
 	err = applyCmd.Run()
 	if err != nil {
 		return err
@@ -221,7 +234,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 			}
 			fmt.Fprintf(sb, "Suggestions:\n")
 			fmt.Fprintf(sb, " * list nodes: kubectl get nodes --show-labels\n")
-			if cluster.Spec.Topology.Masters == kops.TopologyPublic {
+			if !usesBastion(instanceGroups) {
 				fmt.Fprintf(sb, " * ssh to the master: ssh -i ~/.ssh/id_rsa admin@%s\n", cluster.Spec.MasterPublicName)
 			} else {
 				fmt.Fprintf(sb, " * ssh to the bastion: ssh -i ~/.ssh/id_rsa admin@%s\n", cluster.Spec.MasterPublicName)
@@ -237,6 +250,16 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 	}
 
 	return nil
+}
+
+func usesBastion(instanceGroups []*kops.InstanceGroup) bool {
+	for _, ig := range instanceGroups {
+		if ig.Spec.Role == kops.InstanceGroupRoleBastion {
+			return true
+		}
+	}
+
+	return false
 }
 
 func hasKubecfg(contextName string) (bool, error) {

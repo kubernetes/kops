@@ -35,9 +35,6 @@ import (
 	"k8s.io/kubernetes/pkg/runtime/schema"
 )
 
-// TODO: Move to field on instancegroup?
-const ClusterNameLabel = "kops.k8s.io/cluster"
-
 type CreateOptions struct {
 	resource.FilenameOptions
 }
@@ -131,9 +128,9 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 				}
 
 			case *kopsapi.InstanceGroup:
-				clusterName := v.ObjectMeta.Labels[ClusterNameLabel]
+				clusterName := v.ObjectMeta.Labels[kopsapi.LabelClusterName]
 				if clusterName == "" {
-					return fmt.Errorf("must specify %q label with cluster name to create instanceGroup", ClusterNameLabel)
+					return fmt.Errorf("must specify %q label with cluster name to create instanceGroup", kopsapi.LabelClusterName)
 				}
 				_, err = clientset.InstanceGroups(clusterName).Create(v)
 				if err != nil {

@@ -106,8 +106,6 @@ func (_ *IAMRolePolicy) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRoleP
 		if changes.PolicyDocument != nil {
 			glog.V(2).Infof("Applying changed role policy to %q:", *e.Name)
 
-			var err error
-
 			actualPolicy := ""
 			if a.PolicyDocument != nil {
 				actualPolicy, err = a.PolicyDocument.AsString()

@@ -51,6 +51,12 @@ func TestCreateClusterPrivate(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/private", "v1alpha2")
 }
 
+// TestCreateClusterWithNGWSpecified runs kops create cluster private.example.com --zones us-test-1a --master-zones us-test-1a
+func TestCreateClusterWithNGWSpecified(t *testing.T) {
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ngwspecified", "v1alpha1")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ngwspecified", "v1alpha2")
+}
+
 func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string) {
 	var stdout bytes.Buffer
 

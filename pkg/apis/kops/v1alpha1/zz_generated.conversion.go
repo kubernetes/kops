@@ -598,6 +598,7 @@ func autoConvert_v1alpha1_DockerConfig_To_kops_DockerConfig(in *DockerConfig, ou
 	out.Storage = in.Storage
 	out.InsecureRegistry = in.InsecureRegistry
 	out.MTU = in.MTU
+	out.BridgeIP = in.BridgeIP
 	out.Version = in.Version
 	return nil
 }
@@ -614,6 +615,7 @@ func autoConvert_kops_DockerConfig_To_v1alpha1_DockerConfig(in *kops.DockerConfi
 	out.Storage = in.Storage
 	out.InsecureRegistry = in.InsecureRegistry
 	out.MTU = in.MTU
+	out.BridgeIP = in.BridgeIP
 	out.Version = in.Version
 	return nil
 }
@@ -962,7 +964,8 @@ func autoConvert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.OIDCIssuerURL = in.OIDCIssuerURL
 	out.OIDCClientID = in.OIDCClientID
 	out.OIDCCAFile = in.OIDCCAFile
-
+	out.AuthorizationMode = in.AuthorizationMode
+	out.AuthorizationRBACSuperUser = in.AuthorizationRBACSuperUser
 	return nil
 }
 
@@ -998,6 +1001,8 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *ko
 	out.OIDCIssuerURL = in.OIDCIssuerURL
 	out.OIDCClientID = in.OIDCClientID
 	out.OIDCCAFile = in.OIDCCAFile
+	out.AuthorizationMode = in.AuthorizationMode
+	out.AuthorizationRBACSuperUser = in.AuthorizationRBACSuperUser
 	return nil
 }
 
@@ -1169,12 +1174,17 @@ func autoConvert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.ConfigureCBR0 = in.ConfigureCBR0
 	out.HairpinMode = in.HairpinMode
 	out.BabysitDaemons = in.BabysitDaemons
+	out.MaxPods = in.MaxPods
 	out.PodCIDR = in.PodCIDR
 	out.ReconcileCIDR = in.ReconcileCIDR
 	out.RegisterSchedulable = in.RegisterSchedulable
 	out.NodeLabels = in.NodeLabels
 	out.NonMasqueradeCIDR = in.NonMasqueradeCIDR
+	out.EnableCustomMetrics = in.EnableCustomMetrics
 	out.NetworkPluginMTU = in.NetworkPluginMTU
+	out.ImageGCHighThresholdPercent = in.ImageGCHighThresholdPercent
+	out.ImageGCLowThresholdPercent = in.ImageGCLowThresholdPercent
+	out.TerminatedPodGCThreshold = in.TerminatedPodGCThreshold
 	return nil
 }
 
@@ -1200,12 +1210,17 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec(in *kops.K
 	out.ConfigureCBR0 = in.ConfigureCBR0
 	out.HairpinMode = in.HairpinMode
 	out.BabysitDaemons = in.BabysitDaemons
+	out.MaxPods = in.MaxPods
 	out.PodCIDR = in.PodCIDR
 	out.ReconcileCIDR = in.ReconcileCIDR
 	out.RegisterSchedulable = in.RegisterSchedulable
 	out.NodeLabels = in.NodeLabels
 	out.NonMasqueradeCIDR = in.NonMasqueradeCIDR
+	out.EnableCustomMetrics = in.EnableCustomMetrics
 	out.NetworkPluginMTU = in.NetworkPluginMTU
+	out.ImageGCHighThresholdPercent = in.ImageGCHighThresholdPercent
+	out.ImageGCLowThresholdPercent = in.ImageGCLowThresholdPercent
+	out.TerminatedPodGCThreshold = in.TerminatedPodGCThreshold
 	return nil
 }
 

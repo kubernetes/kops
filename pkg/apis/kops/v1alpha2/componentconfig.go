@@ -77,6 +77,10 @@ type KubeletConfigSpec struct {
 	HairpinMode string `json:"hairpinMode,omitempty" flag:"hairpin-mode"`
 	// The node has babysitter process monitoring docker and kubelet.
 	BabysitDaemons *bool `json:"babysitDaemons,omitempty" flag:"babysit-daemons"`
+
+	// maxPods is the number of pods that can run on this Kubelet.
+	MaxPods *int32 `json:"maxPods,omitempty" flag:"max-pods"`
+
 	// The CIDR to use for pod IP addresses, only used in standalone mode.
 	// In cluster mode, this is obtained from the master.
 	PodCIDR string `json:"podCIDR,omitempty" flag:"pod-cidr"`
@@ -91,10 +95,26 @@ type KubeletConfigSpec struct {
 	// nonMasqueradeCIDR configures masquerading: traffic to IPs outside this range will use IP masquerade.
 	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty" flag:"non-masquerade-cidr"`
 
+	// enable gathering custom metrics.
+	EnableCustomMetrics *bool `json:"enableCustomMetrics,omitempty" flag:"enable-custom-metrics"`
+
 	// networkPluginMTU is the MTU to be passed to the network plugin,
 	// and overrides the default MTU for cases where it cannot be automatically
 	// computed (such as IPSEC).
 	NetworkPluginMTU *int32 `json:"networkPluginMTU,omitEmpty" flag:"network-plugin-mtu"`
+
+	// imageGCHighThresholdPercent is the percent of disk usage after which
+	// image garbage collection is always run.
+	ImageGCHighThresholdPercent *int32 `json:"imageGCHighThresholdPercent,omitempty" flag:"image-gc-high-threshold"`
+	// imageGCLowThresholdPercent is the percent of disk usage before which
+	// image garbage collection is never run. Lowest disk usage to garbage
+	// collect to.
+	ImageGCLowThresholdPercent *int32 `json:"imageGCLowThresholdPercent,omitempty" flag:"image-gc-low-threshold"`
+
+	// terminatedPodGCThreshold is the number of terminated pods that can exist
+	// before the terminated pod garbage collector starts deleting terminated pods.
+	// If <= 0, the terminated pod garbage collector is disabled.
+	TerminatedPodGCThreshold *int32 `json:"terminatedPodGCThreshold,omitempty" flag:"terminated-pod-gc-threshold"`
 }
 
 type KubeProxyConfig struct {
@@ -156,6 +176,9 @@ type KubeAPIServerConfig struct {
 	// If set, the OpenID server's certificate will be verified by one of the authorities in the oidc-ca-file
 	// otherwise the host's root CA set will be used.
 	OIDCCAFile *string `json:"oidcCAFile,omitempty" flag:"oidc-ca-file"`
+
+	AuthorizationMode          *string `json:"authorizationMode,omitempty" flag:"authorization-mode"`
+	AuthorizationRBACSuperUser *string `json:"authorizationRbacSuperUser,omitempty" flag:"authorization-rbac-super-user"`
 }
 
 type KubeControllerManagerConfig struct {

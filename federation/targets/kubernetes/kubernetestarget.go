@@ -69,6 +69,11 @@ func (t *KubernetesTarget) Finish(taskMap map[string]fi.Task) error {
 	return nil
 }
 
+func (t *KubernetesTarget) ProcessDeletions() bool {
+	// We don't expect any, but it would be up to us to process
+	return true
+}
+
 func (t *KubernetesTarget) Apply(manifest []byte) error {
 	context := t.cluster.ObjectMeta.Name
 

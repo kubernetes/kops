@@ -3,18 +3,19 @@
 When launching into a shared VPC, the VPC & the Internet Gateway will be reused. By default we create a new subnet per zone,
 and a new route table, but you can also use a shared subnet (see [below](#running-in-a-shared-subnet)).
 
-Use kops create cluster with the `--vpc` and `--network-cidr` arguments for your existing VPC:
+Use kops create cluster with the `--vpc` argument for your existing VPC:
 
 
 ```
 export KOPS_STATE_STORE=s3://<somes3bucket>
 export CLUSTER_NAME=<sharedvpc.mydomain.com>
+export VPC_ID=vpc-12345678 # replace with your VPC id
+export NETWORK_CIDR=10.100.0.0/16 # replace with the cidr for the VPC ${VPC_ID}
 
-kops create cluster --zones=us-east-1b --name=${CLUSTER_NAME} \
-  --vpc=vpc-a80734c1 --network-cidr=10.100.0.0/16
+kops create cluster --zones=us-east-1b --name=${CLUSTER_NAME} --vpc=${VPC_ID}
 ```
 
-Then `kops edit cluster ${CLUSTER_NAME}` should show you something like:
+Then `kops edit cluster ${CLUSTER_NAME}` will show you something like:
 
 ```
 metadata:
@@ -22,18 +23,19 @@ metadata:
   name: ${CLUSTER_NAME}
 spec:
   cloudProvider: aws
-  networkCIDR: 10.100.0.0/16
-  networkID: vpc-a80734c1
+  networkCIDR: ${NETWORK_CIDR}
+  networkID: ${VPC_ID}
   nonMasqueradeCIDR: 100.64.0.0/10
-  zones:
-  - cidr: 10.100.32.0/19
-    name: eu-central-1a
+  subnets:
+  - cidr: 172.20.32.0/19
+    name: us-east-1b
+    type: Public
+    zone: us-east-1b
 ```
 
 
 Verify that networkCIDR & networkID match your VPC CIDR & ID.  You likely need to set the CIDR on each of the Zones,
 because subnets in a VPC cannot overlap.
-
 
 You can then run `kops update cluster` in preview mode (without --yes).  You don't need any arguments,
 because they're all in the cluster spec:
@@ -74,11 +76,13 @@ probably remove that tag to indicate that the resources are not owned by that cl
 deleting the cluster won't try to delete the VPC.  (Deleting the VPC won't succeed anyway, because it's in use,
 but it's better to avoid the later confusion!)
 
-## Running in a shared subnet
+## Advanced Options for Creating Clusters in Existing VPCs
 
-You can also use a shared subnet. Doing so is not recommended unless you are using external networking ([kope-routing](https://github.com/kopeio/kope-routing)).
+### Shared Subnets
 
-Edit your cluster to add the ID of the subnet:
+`kops` can create a cluster in shared subnets in both public and private network [topologies](docs/topology.md). Doing so is not recommended unless you are using [external networking](docs/networking.md#supported-cni-networking)
+
+After creating a basic cluster spec, edit your cluster to add the ID of the subnet:
 
 `kops edit cluster ${CLUSTER_NAME}`
 
@@ -88,19 +92,46 @@ metadata:
   name: ${CLUSTER_NAME}
 spec:
   cloudProvider: aws
-  networkCIDR: 10.100.0.0/16
-  networkID: vpc-a80734c1
+  networkCIDR: ${NETWORK_CIDR}
+  networkID: ${VPC_ID}
   nonMasqueradeCIDR: 100.64.0.0/10
-  zones:
-  - cidr: 10.100.32.0/19
-    name: eu-central-1a
+  subnets:
+  - cidr: 172.20.32.0/19 # You can delete the CIDR here; it will be queried
+    name: us-east-1b
+    type: Public
+    zone: us-east-1b
     id: subnet-1234567 # Replace this with the ID of your subnet
 ```
 
-Make sure that the CIDR matches the CIDR of your subnet. Then update your cluster through the normal update procedure:
+If you specify the CIDR, it must match the CIDR for the subnet; otherwise it will be populated by querying the subnet.
+It is probably easier to specify the `id` and remove the `cidr`!  Remember also that the zone must match the subnet Zone.
+
+Then update your cluster through the normal update procedure:
 
 ```
 kops update cluster ${CLUSTER_NAME}
 # Review changes
 kops update cluster ${CLUSTER_NAME} --yes
+```
+
+### Shared NAT Gateways
+
+On AWS in private [topology](docs/topology.md), `kops` creates one NAT Gateway (NGW) per AZ. If your shared VPC is already set up with an NGW in the subnet that `kops` deploys private resources to, it is possible to specify the ID and have `kops`/`kubernetes` use it.
+
+After creating a basic cluster spec, edit your cluster to specify NGW:
+
+`kops edit cluster ${CLUSTER_NAME}`
+
+```yaml
+spec:
+  subnets:
+  - cidr: 10.20.64.0/21
+    name: us-east-1a
+    egress: nat-987654321
+    type: Private
+    zone: us-east-1a
+  - cidr: 10.20.32.0/21
+    name: utility-us-east-1a
+    type: Utility
+    zone: us-east-1a
 ```
