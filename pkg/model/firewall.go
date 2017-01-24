@@ -102,11 +102,13 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) error {
 			udpPorts = append(udpPorts, 4789)
 		}
 
-    if b.Cluster.Spec.Networking.Flannel != nil {
-      udpPorts = append(udpPorts, 8285)
-    }
+		if b.Cluster.Spec.Networking.Flannel != nil {
+			glog.Warningf("FLANNEL")
+			udpPorts = append(udpPorts, 8285)
+		}
 
 		if b.Cluster.Spec.Networking.Weave != nil {
+			glog.Warningf("WEAVE")
 			udpPorts = append(udpPorts, 6783)
 			tcpPorts = append(tcpPorts, 6783)
 			udpPorts = append(udpPorts, 6784)

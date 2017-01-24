@@ -54,7 +54,7 @@ func (c *OptionsContext) UsesKubenet() (bool, error) {
 	} else if networking.External != nil {
 		// external is based on kubenet
 		return true, nil
-	} else if networking.CNI != nil || networking.Flannel != nil || networking.Weave != nil || networking.Calico != nil {
+	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil {
 		return false, nil
 	} else if networking.Kopeio != nil {
 		// Kopeio is based on kubenet / external

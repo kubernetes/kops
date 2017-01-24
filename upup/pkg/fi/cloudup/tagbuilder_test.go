@@ -62,10 +62,10 @@ func buildCluster(clusterArgs interface{}) *api.Cluster {
 	}
 }
 
-func TestBuildTags_CloudProvider_AWS_Flannel(t *testing.T) {
+func TestBuildTags_CloudProvider_AWS_Weave(t *testing.T) {
 
 	c := buildCluster(nil)
-	networking := &api.NetworkingSpec{Flannel: &api.FlannelNetworkingSpec{}}
+	networking := &api.NetworkingSpec{Weave: &api.WeaveNetworkingSpec{}}
 
 	c.Spec.Networking = networking
 
@@ -96,10 +96,10 @@ func TestBuildTags_CloudProvider_AWS_Flannel(t *testing.T) {
 	}
 }
 
-func TestBuildTags_CloudProvider_AWS_Weave(t *testing.T) {
+func TestBuildTags_CloudProvider_AWS_Flannel(t *testing.T) {
 
 	c := buildCluster(nil)
-	networking := &api.NetworkingSpec{Weave: &api.WeaveNetworkingSpec{}}
+	networking := &api.NetworkingSpec{Flannel: &api.FlannelNetworkingSpec{}}
 
 	c.Spec.Networking = networking
 

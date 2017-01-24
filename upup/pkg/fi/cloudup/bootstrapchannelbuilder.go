@@ -173,9 +173,9 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		manifests[key] = "addons/" + location
 	}
 
-  if b.cluster.Spec.Networking.Flannel != nil {
-		key := "networking.flannel"
-		version := "0.7.0"
+	if b.cluster.Spec.Networking.Weave != nil {
+		key := "networking.weave"
+		version := "1.8.2"
 
 		// TODO: Create configuration object for cni providers (maybe create it but orphan it)?
 		location := key + "/v" + version + ".yaml"
@@ -190,9 +190,9 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		manifests[key] = "addons/" + location
 	}
 
-	if b.cluster.Spec.Networking.Weave != nil {
-		key := "networking.weave"
-		version := "1.8.2"
+	if b.cluster.Spec.Networking.Flannel != nil {
+		key := "networking.flannel"
+		version := "0.7.0"
 
 		// TODO: Create configuration object for cni providers (maybe create it but orphan it)?
 		location := key + "/v" + version + ".yaml"
