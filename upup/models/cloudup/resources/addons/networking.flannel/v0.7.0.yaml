@@ -2,11 +2,13 @@ kind: ServiceAccount
 apiVersion: v1
 metadata:
   name: flannel
+  namespace: kube-system
 ---
 kind: ConfigMap
 apiVersion: v1
 metadata:
   name: kube-flannel-cfg
+  namespace: kube-system
   labels:
     k8s-app: flannel
 data:
@@ -21,7 +23,7 @@ data:
     }
   net-conf.json: |
     {
-      "Network": "10.244.0.0/16",
+      "Network": "100.64.0.0/16",
       "Backend": {
         "Type": "udp"
       }
@@ -31,6 +33,7 @@ kind: DaemonSet
 apiVersion: extensions/v1beta1
 metadata:
   name: kube-flannel-ds
+  namespace: kube-system
   labels:
     k8s-app: flannel
     role.kubernetes.io/networking: "1"
