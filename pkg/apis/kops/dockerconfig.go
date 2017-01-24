@@ -16,10 +16,6 @@ limitations under the License.
 
 package kops
 
-import (
-	"k8s.io/kubernetes/pkg/util/validation/field"
-)
-
 type DockerConfig struct {
 	Bridge   *string `json:"bridge,omitempty" flag:"bridge"`
 	LogLevel *string `json:"logLevel,omitempty" flag:"log-level"`
@@ -39,12 +35,4 @@ type DockerConfig struct {
 	// The version of docker to install
 	// Be careful if changing this; not all docker versions are validated, and they will break in bad ways.
 	Version *string `json:"version,omitempty"`
-}
-
-var validDockerConfigStorageValues = []string{"aufs", "btrfs", "devicemapper", "overlay", "overlay2", "zfs"}
-
-func ValidateDockerConfig(config *DockerConfig, fldPath *field.Path) field.ErrorList {
-	allErrs := field.ErrorList{}
-	allErrs = append(allErrs, IsValidValue(fldPath.Child("storage"), config.Storage, validDockerConfigStorageValues)...)
-	return allErrs
 }

@@ -14,21 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package kops
+package validation
 
 import (
 	"fmt"
-	"net"
-	"net/url"
-	"strings"
-
 	"github.com/blang/semver"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/util/validation"
 	"k8s.io/kubernetes/pkg/util/validation/field"
+	"net"
+	"strings"
 )
 
-func (c *Cluster) Validate(strict bool) error {
+// legacy contains validation functions that don't match the apimachinery style
+
+func ValidateCluster(c *kops.Cluster, strict bool) error {
 	specField := field.NewPath("Spec")
 
 	var err error
@@ -48,7 +50,7 @@ func (c *Cluster) Validate(strict bool) error {
 
 		if !strings.Contains(c.ObjectMeta.Name, ".") {
 			// Tolerate if this is a cluster we are importing for upgrade
-			if c.ObjectMeta.Annotations[AnnotationNameManagement] != AnnotationValueManagementImported {
+			if c.ObjectMeta.Annotations[kops.AnnotationNameManagement] != kops.AnnotationValueManagementImported {
 				return fmt.Errorf("Cluster Name must be a fully-qualified DNS name (e.g. --name=mycluster.myzone.com)")
 			}
 		}
@@ -237,7 +239,7 @@ func (c *Cluster) Validate(strict bool) error {
 	// UpdatePolicy
 	if c.Spec.UpdatePolicy != nil {
 		switch *c.Spec.UpdatePolicy {
-		case UpdatePolicyExternal:
+		case kops.UpdatePolicyExternal:
 		// Valid
 		default:
 			return fmt.Errorf("unrecognized value for UpdatePolicy: %v", *c.Spec.UpdatePolicy)
@@ -306,9 +308,9 @@ func (c *Cluster) Validate(strict bool) error {
 	// Topology support
 	if c.Spec.Topology != nil {
 		if c.Spec.Topology.Masters != "" && c.Spec.Topology.Nodes != "" {
-			if c.Spec.Topology.Masters != TopologyPublic && c.Spec.Topology.Masters != TopologyPrivate {
+			if c.Spec.Topology.Masters != kops.TopologyPublic && c.Spec.Topology.Masters != kops.TopologyPrivate {
 				return fmt.Errorf("Invalid Masters value for Topology")
-			} else if c.Spec.Topology.Nodes != TopologyPublic && c.Spec.Topology.Nodes != TopologyPrivate {
+			} else if c.Spec.Topology.Nodes != kops.TopologyPublic && c.Spec.Topology.Nodes != kops.TopologyPrivate {
 				return fmt.Errorf("Invalid Nodes value for Topology")
 			}
 
@@ -317,7 +319,7 @@ func (c *Cluster) Validate(strict bool) error {
 		}
 		if c.Spec.Topology.Bastion != nil {
 			bastion := c.Spec.Topology.Bastion
-			if c.Spec.Topology.Masters == TopologyPublic || c.Spec.Topology.Nodes == TopologyPublic {
+			if c.Spec.Topology.Masters == kops.TopologyPublic || c.Spec.Topology.Nodes == kops.TopologyPublic {
 				return fmt.Errorf("Bastion supports only Private Masters and Nodes")
 			}
 			if bastion.IdleTimeoutSeconds != nil && *bastion.IdleTimeoutSeconds <= 0 {
@@ -371,7 +373,7 @@ func (c *Cluster) Validate(strict bool) error {
 			return field.Required(specField.Child("KubernetesVersion"), "")
 		}
 	} else {
-		sv, err := ParseKubernetesVersion(c.Spec.KubernetesVersion)
+		sv, err := util.ParseKubernetesVersion(c.Spec.KubernetesVersion)
 		if err != nil {
 			return field.Invalid(specField.Child("KubernetesVersion"), c.Spec.KubernetesVersion, "unable to determine kubernetes version")
 		}
@@ -383,22 +385,16 @@ func (c *Cluster) Validate(strict bool) error {
 		}
 	}
 
+	errs := newValidateCluster(c)
+	if len(errs) != 0 {
+		return errs[0]
+	}
+
 	return nil
 }
 
-func isValidAPIServersURL(s string) bool {
-	u, err := url.Parse(s)
-	if err != nil {
-		return false
-	}
-	if u.Host == "" || u.Scheme == "" {
-		return false
-	}
-	return true
-}
-
-func DeepValidate(c *Cluster, groups []*InstanceGroup, strict bool) error {
-	err := c.Validate(strict)
+func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool) error {
+	err := ValidateCluster(c, strict)
 	if err != nil {
 		return err
 	}
@@ -433,41 +429,4 @@ func DeepValidate(c *Cluster, groups []*InstanceGroup, strict bool) error {
 	}
 
 	return nil
-}
-
-// isSubnet checks if child is a subnet of parent
-func isSubnet(parent *net.IPNet, child *net.IPNet) bool {
-	parentOnes, parentBits := parent.Mask.Size()
-	childOnes, childBits := child.Mask.Size()
-	if childBits != parentBits {
-		return false
-	}
-	if parentOnes > childOnes {
-		return false
-	}
-	childMasked := child.IP.Mask(parent.Mask)
-	parentMasked := parent.IP.Mask(parent.Mask)
-	return childMasked.Equal(parentMasked)
-}
-
-// subnetsOverlap checks if two subnets overlap
-func subnetsOverlap(l *net.IPNet, r *net.IPNet) bool {
-	return l.Contains(r.IP) || r.Contains(l.IP)
-}
-
-func IsValidValue(fldPath *field.Path, v *string, validValues []string) field.ErrorList {
-	allErrs := field.ErrorList{}
-	if v != nil {
-		found := false
-		for _, validValue := range validValues {
-			if *v == validValue {
-				found = true
-				break
-			}
-		}
-		if !found {
-			allErrs = append(allErrs, field.NotSupported(fldPath, *v, validValues))
-		}
-	}
-	return allErrs
 }
