@@ -26,7 +26,7 @@ kops create cluster
       --master-zones string         Zones in which to run masters (must be an odd number)
       --model string                Models to apply (separate multiple models with commas) (default "config,proto,cloudup")
       --network-cidr string         Set to override the default network CIDR
-      --networking string           Networking mode to use.  kubenet (default), classic, external, cni, kopeio-vxlan, flannel, weave, calico. (default "kubenet")
+      --networking string           Networking mode to use.  kubenet (default), classic, external, cni, kopeio-vxlan, weave, flannel, calico. (default "kubenet")
       --node-count int              Set the number of nodes
       --node-size string            Set instance size for nodes
       --out string                  Path to write any local output
