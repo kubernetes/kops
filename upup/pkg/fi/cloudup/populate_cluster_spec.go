@@ -152,8 +152,7 @@ func (c *populateClusterSpec) run() error {
 					instanceGroupName := fi.StringValue(m.InstanceGroup)
 
 					if etcdInstanceGroups[instanceGroupName] != nil {
-						// Maybe this should just be a warning
-						return fmt.Errorf("EtcdMembers are in the same InstanceGroup %q in etcd-cluster %q", instanceGroupName, etcd.Name)
+						glog.Warningf("EtcdMembers are in the same InstanceGroup %q in etcd-cluster %q", instanceGroupName, etcd.Name)
 					}
 
 					//if clusterSubnets[zone] == nil {
