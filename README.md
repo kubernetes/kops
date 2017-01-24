@@ -12,34 +12,20 @@ The easiest way to get a production grade Kubernetes cluster up and running.
 
 We like to think of it as `kubectl` for clusters.
 
-`kops` lets you deploy production-grade Kubernetes clusters from the command line, with
-options that support HA Masters. Kubernetes Operations supports deploying
-Kubernetes on Amazon Web Services (AWS) and support for more platforms is planned.
-
-## Launching a Kubernetes cluster hosted on AWS
-
-Check out our [tutorial](/docs/aws.md) for launching a Kubernetes cluster hosted
-on AWS.
-
-<p align="center">
-  <a href="https://asciinema.org/a/97298">
-  <img src="https://asciinema.org/a/97298.png" width="885"></image>
-  </a>
-</p>
-
+`kops` lets you deploy production-grade, with highly available masters,
+Kubernetes clusters from the command line.  Deployment is currently supported
+on Amazon Web Services (AWS), with more platforms planned.
 
 ## Features
 
-* Automated Kubernetes cluster [CRUD](/docs/commands.md) for ([AWS](/docs/aws.md))
-* Highly Available (HA) Kubernetes Masters Setup
-* Uses a state-sync model for **dry-run** and automatic **idempotency**
-* Custom support for `kubectl` [add-ons](/docs/addons.md)
-* Kops can generate [Terraform configuration](/docs/terraform.md)
-* Based on a simple meta-model defined in a directory tree
-* Command line [autocomplete](/docs/cli/kops_completion.md)
-* Community support
-* [Upgrade from kube-up](/docs/upgrade_from_kubeup.md)
-
+* Automate the provisioning of Kubernetes clusters in ([AWS](/docs/aws.md))
+* Deploy Highly Available (HA) Kubernetes Masters
+* Supports upgrading from [kube-up](/docs/upgrade_from_kubeup.md)
+* Built on a state-sync model for **dry-runs** and automatic **idempotency**
+* Ability to generate [Terraform configuration](/docs/terraform.md)
+* Supports custom [add-ons](/docs/addons.md) for `kubectl`
+* Command line [autocompletion](/docs/cli/kops_completion.md)
+* Community supported!
 
 ## Installing
 
@@ -81,6 +67,17 @@ See [building notes](/docs/build.md) for more information.
 
 At this time, Windows is not a supported platform.
 
+## Launching a Kubernetes cluster hosted on AWS
+
+Check out our [tutorial](/docs/aws.md) for launching a Kubernetes cluster hosted
+on AWS.
+
+<p align="center">
+  <a href="https://asciinema.org/a/97298">
+  <img src="https://asciinema.org/a/97298.png" width="885"></image>
+  </a>
+</p>
+
 ## Getting involved!
 
 Want to contribute to kops? We would love the extra help from the community. We
@@ -112,12 +109,7 @@ A great place to get involved or ask questions is [#sig-cluster-lifecycle](https
  - Look at our [other interesting modes](/docs/commands.md#other-interesting-modes)
  - Full command line interface [documentation](/docs/cli/kops.md)
 
-## History
-
-View our [changelog](HISTORY.md)
-
 ## GitHub Issues
-
 
 #### Bugs
 
