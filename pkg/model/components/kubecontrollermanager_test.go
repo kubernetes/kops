@@ -17,10 +17,10 @@ limitations under the License.
 package components
 
 import (
+	api "k8s.io/kops/pkg/apis/kops"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"testing"
 	"time"
-
-	api "k8s.io/kops/pkg/apis/kops"
 )
 
 type ClusterParams struct {
@@ -40,30 +40,65 @@ func buildCluster() *api.Cluster {
 }
 
 func Test_Build_KCM_Builder_Lower_Version(t *testing.T) {
-	c := buildCluster()
+	versions := []string{"v1.4.0", "v1.4.7", "v1.5.0"}
 
-	kcm := &KubeControllerManagerOptionsBuilder{
-		Context: &OptionsContext{
-			Cluster: c,
-		},
-	}
+	for _, v := range versions {
 
-	spec := c.Spec
-	err := kcm.BuildOptions(&spec)
+		c := buildCluster()
 
-	if err != nil {
-		t.Fatalf("unexpected error from BuildOptions: %v", err)
-	}
+		kcm := &KubeControllerManagerOptionsBuilder{
+			Context: &OptionsContext{
+				Cluster: c,
+			},
+		}
 
-	if spec.KubeControllerManager.AttachDetachReconcileSyncPeriod != nil {
-		t.Fatalf("AttachDetachReconcileSyncPeriod should not be set for old kubernetes version %s", spec.KubernetesVersion)
+		spec := c.Spec
+
+		spec.KubernetesVersion = v
+		err := kcm.BuildOptions(&spec)
+
+		if err != nil {
+			t.Fatalf("unexpected error from BuildOptions: %v", err)
+		}
+
+		if spec.KubeControllerManager.AttachDetachReconcileSyncPeriod != nil {
+			t.Fatalf("AttachDetachReconcileSyncPeriod should not be set for old kubernetes version %s", spec.KubernetesVersion)
+		}
 	}
 
 }
 
 func Test_Build_KCM_Builder_High_Enough_Version(t *testing.T) {
+	versions := []string{"v1.4.8", "v1.5.2", "v1.9.0", "v2.4.0"}
+	for _, v := range versions {
+
+		c := buildCluster()
+		c.Spec.KubernetesVersion = v
+
+		kcm := &KubeControllerManagerOptionsBuilder{
+			Context: &OptionsContext{
+				Cluster: c,
+			},
+		}
+
+		spec := c.Spec
+		err := kcm.BuildOptions(&spec)
+
+		if err != nil {
+			t.Fatalf("unexpected error from BuildOptions %s", err)
+		}
+
+		if spec.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration != time.Minute {
+			t.Fatalf("AttachDetachReconcileSyncPeriod should be set to 1m - %s, for k8s version %s", spec.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration.String(), spec.KubernetesVersion)
+		}
+	}
+
+}
+
+func Test_Build_KCM_Builder_Change_Duration(t *testing.T) {
+
 	c := buildCluster()
-	c.Spec.KubernetesVersion = "1.4.8"
+	c.Spec.KubernetesVersion = "v1.5.2"
 
 	kcm := &KubeControllerManagerOptionsBuilder{
 		Context: &OptionsContext{
@@ -72,14 +107,21 @@ func Test_Build_KCM_Builder_High_Enough_Version(t *testing.T) {
 	}
 
 	spec := c.Spec
+
+	spec.KubeControllerManager = &api.KubeControllerManagerConfig{
+		AttachDetachReconcileSyncPeriod: &metav1.Duration{},
+	}
+
+	spec.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration = time.Minute * 5
+
 	err := kcm.BuildOptions(&spec)
 
 	if err != nil {
 		t.Fatalf("unexpected error from BuildOptions %s", err)
 	}
 
-	if spec.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration != time.Minute {
-		t.Fatalf("AttachDetachReconcileSyncPeriod should be set to 1m - %s", spec.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration.String())
+	if spec.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration != time.Minute*5 {
+		t.Fatalf("AttachDetachReconcileSyncPeriod should be set to 5m - %s, for k8s version %s", spec.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration.String(), spec.KubernetesVersion)
 	}
 
 }
