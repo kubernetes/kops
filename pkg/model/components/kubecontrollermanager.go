@@ -22,6 +22,7 @@ import (
 
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 )
@@ -46,13 +47,13 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		options.KubeControllerManager = &kops.KubeControllerManagerConfig{}
 	}
 
-	k8sv148, err := kops.ParseKubernetesVersion("v1.4.8")
+	k8sv148, err := util.ParseKubernetesVersion("v1.4.8")
 
 	if err != nil {
 		return fmt.Errorf("Unable to parse kubernetesVersion %s", err)
 	}
 
-	k8sv152, err := kops.ParseKubernetesVersion("v1.5.2")
+	k8sv152, err := util.ParseKubernetesVersion("v1.5.2")
 
 	if err != nil {
 		return fmt.Errorf("Unable to parse kubernetesVersion %s", err)
