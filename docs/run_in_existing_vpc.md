@@ -135,3 +135,12 @@ spec:
     type: Utility
     zone: us-east-1a
 ```
+
+Please note:
+
+* You must specify pre-create subnets for all the subnets, or for none of them.
+* kops won't alter your existing subnets.  Therefore they must be correctly set up with route tables etc.  The
+  Public or Utility subnets should have public IPs and an internet gateway configured as their default route
+  in their route table.  Private subnets should not have public IPs, and will typically have a NAT gateway
+  configured as their default route.
+* kops won't create a route-table at all if we're not creating subnets.
