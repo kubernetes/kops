@@ -41,7 +41,7 @@ func (b *DockerOptionsBuilder) BuildOptions(o interface{}) error {
 			return fmt.Errorf("KubernetesVersion is required")
 		}
 
-		sv, err := kops.ParseKubernetesVersion(options.KubernetesVersion)
+		sv, err := b.Context.KubernetesVersion()
 		if err != nil {
 			return fmt.Errorf("unable to determine kubernetes version from %q", options.KubernetesVersion)
 		}

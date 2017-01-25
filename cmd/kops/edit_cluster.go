@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
@@ -128,7 +129,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 		return err
 	}
 
-	err = api.DeepValidate(fullCluster, instancegroups, true)
+	err = validation.DeepValidate(fullCluster, instancegroups, true)
 	if err != nil {
 		return err
 	}

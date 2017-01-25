@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"github.com/blang/semver"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
 )
 
 // OptionsContext is the context object for options builders
@@ -35,7 +36,7 @@ func (c *OptionsContext) KubernetesVersion() (*semver.Version, error) {
 		return nil, fmt.Errorf("KubernetesVersion is required")
 	}
 
-	sv, err := kops.ParseKubernetesVersion(kubernetesVersion)
+	sv, err := util.ParseKubernetesVersion(kubernetesVersion)
 	if err != nil {
 		return nil, fmt.Errorf("unable to determine kubernetes version from %q", kubernetesVersion)
 	}

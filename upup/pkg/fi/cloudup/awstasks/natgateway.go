@@ -260,7 +260,7 @@ func (e *NatGateway) waitAvailable(cloud awsup.AWSCloud) error {
 		return fmt.Errorf("NAT Gateway %q did not have ID", e.Name)
 	}
 
-	glog.Infof("Waiting for NAT Gateway %q to be available", id)
+	glog.Infof("Waiting for NAT Gateway %q to be available (this often takes about 5 minutes)", id)
 	params := &ec2.DescribeNatGatewaysInput{
 		NatGatewayIds: []*string{e.ID},
 	}

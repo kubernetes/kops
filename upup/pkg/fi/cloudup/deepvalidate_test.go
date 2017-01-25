@@ -19,6 +19,7 @@ package cloudup
 import (
 	"fmt"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/upup/pkg/fi"
 	"strings"
 	"testing"
@@ -29,7 +30,7 @@ func TestDeepValidate_OK(t *testing.T) {
 	var groups []*api.InstanceGroup
 	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1a"))
 	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-mock-1a"))
-	err := api.DeepValidate(c, groups, true)
+	err := validation.DeepValidate(c, groups, true)
 	if err != nil {
 		t.Fatalf("Expected no error from DeepValidate, got %v", err)
 	}
@@ -106,7 +107,7 @@ func TestDeepValidate_DuplicateZones(t *testing.T) {
 	var groups []*api.InstanceGroup
 	groups = append(groups, buildMinimalMasterInstanceGroup("dup1"))
 	groups = append(groups, buildMinimalNodeInstanceGroup("dup1"))
-	expectErrorFromDeepValidate(t, c, groups, "Subnets contained a duplicate value: dup1")
+	expectErrorFromDeepValidate(t, c, groups, "subnets with duplicate name \"dup1\" found")
 }
 
 func TestDeepValidate_ExtraMasterZone(t *testing.T) {
@@ -142,7 +143,7 @@ func TestDeepValidate_EvenEtcdClusterSize(t *testing.T) {
 }
 
 func expectErrorFromDeepValidate(t *testing.T, c *api.Cluster, groups []*api.InstanceGroup, message string) {
-	err := api.DeepValidate(c, groups, true)
+	err := validation.DeepValidate(c, groups, true)
 	if err == nil {
 		t.Fatalf("Expected error %q from DeepValidate (strict=true), not no error raised", message)
 	}

@@ -61,17 +61,6 @@ func (v *VolumeInfo) String() string {
 	return DebugString(v)
 }
 
-type EtcdClusterSpec struct {
-	ClusterKey string
-
-	NodeName  string
-	NodeNames []string
-}
-
-func (e *EtcdClusterSpec) String() string {
-	return DebugString(e)
-}
-
 // Parses a tag on a volume that encodes an etcd cluster role
 // The format is "<myname>/<allnames>", e.g. "node1/node1,node2,node3"
 func ParseEtcdClusterSpec(clusterKey, v string) (*EtcdClusterSpec, error) {

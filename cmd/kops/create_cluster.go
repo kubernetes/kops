@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -525,6 +526,27 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return fmt.Errorf("unknown DNSType: %q", c.DNSType)
 	}
 
+	// Populate the API access, so that it can be discoverable
+	// TODO: This is the same code as in defaults - try to dedup?
+	if cluster.Spec.API == nil {
+		cluster.Spec.API = &api.AccessSpec{}
+	}
+	if cluster.Spec.API.IsEmpty() {
+		switch cluster.Spec.Topology.Masters {
+		case api.TopologyPublic:
+			cluster.Spec.API.DNS = &api.DNSAccessSpec{}
+
+		case api.TopologyPrivate:
+			cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
+
+		default:
+			return fmt.Errorf("unknown master topology type: %q", cluster.Spec.Topology.Masters)
+		}
+	}
+	if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Type == "" {
+		cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypePublic
+	}
+
 	sshPublicKeys := make(map[string][]byte)
 	if c.SSHPublicKey != "" {
 		c.SSHPublicKey = utils.ExpandPath(c.SSHPublicKey)
@@ -552,7 +574,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	}
 
 	strict := false
-	err = api.DeepValidate(cluster, instanceGroups, strict)
+	err = validation.DeepValidate(cluster, instanceGroups, strict)
 	if err != nil {
 		return err
 	}
@@ -571,7 +593,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		fullInstanceGroups = append(fullInstanceGroups, fullGroup)
 	}
 
-	err = api.DeepValidate(fullCluster, fullInstanceGroups, true)
+	err = validation.DeepValidate(fullCluster, fullInstanceGroups, true)
 	if err != nil {
 		return err
 	}

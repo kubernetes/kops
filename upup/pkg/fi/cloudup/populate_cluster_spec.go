@@ -26,6 +26,7 @@ import (
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/models"
@@ -87,7 +88,7 @@ func PopulateClusterSpec(cluster *api.Cluster) (*api.Cluster, error) {
 // @kris-nova
 //
 func (c *populateClusterSpec) run() error {
-	err := c.InputCluster.Validate(false)
+	err := validation.ValidateCluster(c.InputCluster, false)
 	if err != nil {
 		return err
 	}
@@ -152,8 +153,7 @@ func (c *populateClusterSpec) run() error {
 					instanceGroupName := fi.StringValue(m.InstanceGroup)
 
 					if etcdInstanceGroups[instanceGroupName] != nil {
-						// Maybe this should just be a warning
-						return fmt.Errorf("EtcdMembers are in the same InstanceGroup %q in etcd-cluster %q", instanceGroupName, etcd.Name)
+						glog.Warningf("EtcdMembers are in the same InstanceGroup %q in etcd-cluster %q (fault-tolerance may be reduced)", instanceGroupName, etcd.Name)
 					}
 
 					//if clusterSubnets[zone] == nil {
@@ -293,7 +293,7 @@ func (c *populateClusterSpec) run() error {
 	fullCluster.Spec = *completed
 	tf.cluster = fullCluster
 
-	err = fullCluster.Validate(true)
+	err = validation.ValidateCluster(fullCluster, true)
 	if err != nil {
 		return fmt.Errorf("Completed cluster failed validation: %v", err)
 	}
