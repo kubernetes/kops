@@ -22,6 +22,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
+	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/util/pkg/vfs"
 	k8sapi "k8s.io/kubernetes/pkg/api"
@@ -85,7 +86,7 @@ func (c *ClusterVFS) List(options k8sapi.ListOptions) (*api.ClusterList, error) 
 }
 
 func (r *ClusterVFS) Create(c *api.Cluster) (*api.Cluster, error) {
-	err := c.Validate(false)
+	err := validation.ValidateCluster(c, false)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +112,7 @@ func (r *ClusterVFS) Create(c *api.Cluster) (*api.Cluster, error) {
 }
 
 func (r *ClusterVFS) Update(c *api.Cluster) (*api.Cluster, error) {
-	err := c.Validate(false)
+	err := validation.ValidateCluster(c, false)
 	if err != nil {
 		return nil, err
 	}
