@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2016 The Kubernetes Authors.
+# Copyright 2017 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,19 +22,33 @@
 # Convenience script for developing kops AND nodeup.
 #
 # This script (by design) will handle building a full kops cluster in AWS,
-# with a custom version of the Nodeup binary compiled at runtime.
+# with a custom version of the nodeup, protokube and dnscontroller.
 #
 # This script and Makefile uses aws client
 # https://aws.amazon.com/cli/
 # and make sure you `aws configure`
 #
-# Example usage
+# # Example usage
 #
 # KOPS_STATE_STORE="s3://my-dev-s3-state \
 # CLUSTER_NAME="fullcluster.name.mydomain.io" \
 # NODEUP_BUCKET="s3-devel-bucket-name-store-nodeup" \
 # IMAGE="kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21" \
 # ./dev-build.sh
+# 
+# # TLDR;
+# 1. setup dns in route53
+# 2. create s3 buckets - state store and nodeup bucket
+# 3. set zones appropriately, you need 3 zones in a region for HA
+# 4. run script
+# 5. find bastion to ssh into (look in ELBs)
+# 6. use ssh-agent and ssh -A
+# 7. your pem will be the access token
+# 8. user is admin, and the default is debian
+# 
+# # For more details see:
+#
+# https://github.com/kubernetes/kops/blob/master/docs/aws.md
 #
 ###############################################################################
 
@@ -63,6 +77,7 @@ NODE_SIZE=${NODE_SIZE:-m4.xlarge}
 MASTER_ZONES=${MASTER_ZONES:-"us-west-2a,us-west-2b,us-west-2c"}
 MASTER_SIZE=${MASTER_SIZE:-m4.large}
 
+
 # NETWORK
 TOPOLOGY=${TOPOLOGY:-private}
 NETWORKING=${NETWORKING:-weave}
@@ -75,12 +90,14 @@ cd $KOPS_DIRECTORY/..
 GIT_VER=git-$(git describe --always)
 [ -z "$GIT_VER" ] && echo "we do not have GIT_VER something is very wrong" && exit 1;
 
-KOPS_BASE_URL="https://${NODEUP_BUCKET}.s3.amazonaws.com/kops/${GIT_VER}/"
 
 echo ==========
 echo "Starting build"
 
 make ci && S3_BUCKET=s3://${NODEUP_BUCKET} make upload
+
+KOPS_CHANNEL=$(kops version | awk '{ print $2 }')
+KOPS_BASE_URL="http://${NODEUP_BUCKET}.s3.amazonaws.com/kops/${KOPS_CHANNEL}/"
 
 echo ==========
 echo "Deleting cluster ${CLUSTER_NAME}. Elle est finie."
@@ -94,7 +111,9 @@ kops delete cluster \
 echo ==========
 echo "Creating cluster ${CLUSTER_NAME}"
 
-KOPS_BASE_URL=${KOPS_BASE_URL} kops create cluster \
+NODEUP_URL=${KOPS_BASE_URL}linux/amd64/nodeup \
+KOPS_BASE_URL=${KOPS_BASE_URL} \
+kops create cluster \
   --name $CLUSTER_NAME \
   --state $KOPS_STATE_STORE \
   --node-count $NODE_COUNT \
@@ -103,11 +122,14 @@ KOPS_BASE_URL=${KOPS_BASE_URL} kops create cluster \
   --cloud aws \
   --node-size $NODE_SIZE \
   --master-size $MASTER_SIZE \
-  --topology $TOPOLOGY \
-  --networking $NETWORKING \
   -v $VERBOSITY \
   --image $IMAGE \
+  --kubernetes-version "1.5.2" \
+  --topology $TOPOLOGY \
+  --networking $NETWORKING \
+  --bastion="true" \
   --yes
+
 
 echo ==========
 echo "Your k8s cluster ${CLUSTER_NAME}, awaits your bidding."
