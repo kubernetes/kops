@@ -19,6 +19,7 @@ kops create cluster
       --bastion                     Pass the --bastion flag to enable a bastion instance group. Only applies to private topology.
       --channel string              Channel for default versions and configuration to use (default "stable")
       --cloud string                Cloud provider to use - gce, aws
+      --dns string                  DNS hosted zone to use: public|private. Default is 'public'. (default "Public")
       --dns-zone string             DNS hosted zone to use (defaults to longest matching zone)
       --image string                Image to use
       --kubernetes-version string   Version of kubernetes to run (defaults to version in channel)
@@ -27,7 +28,7 @@ kops create cluster
       --model string                Models to apply (separate multiple models with commas) (default "config,proto,cloudup")
       --network-cidr string         Set to override the default network CIDR
       --networking string           Networking mode to use.  kubenet (default), classic, external, cni, kopeio-vxlan, weave, flannel, calico. (default "kubenet")
-      --node-count int              Set the number of nodes
+      --node-count int32            Set the number of nodes
       --node-size string            Set instance size for nodes
       --out string                  Path to write any local output
       --project string              Project to use (must be set on GCE)
@@ -56,3 +57,4 @@ kops create cluster
 
 ### SEE ALSO
 * [kops create](kops_create.md)	 - Create a resource by filename or stdin
+
