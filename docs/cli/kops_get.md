@@ -10,7 +10,7 @@ list or get objects
 ### Options
 
 ```
-  -o, --output string   output format.  One of: table, yaml (default "table")
+  -o, --output string   output format.  One of: table, yaml, json (default "table")
 ```
 
 ### Options inherited from parent commands

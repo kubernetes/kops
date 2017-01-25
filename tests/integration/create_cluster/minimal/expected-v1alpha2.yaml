@@ -4,6 +4,8 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   name: minimal.example.com
 spec:
+  api:
+    dns: {}
   channel: stable
   cloudProvider: aws
   configBase: memfs://tests/minimal.example.com
@@ -28,6 +30,8 @@ spec:
     type: Public
     zone: us-test-1a
   topology:
+    dns:
+      type: Public
     masters: public
     nodes: public
 
@@ -37,6 +41,8 @@ apiVersion: kops/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal.example.com
   name: master-us-test-1a
 spec:
   associatePublicIp: true
@@ -54,6 +60,8 @@ apiVersion: kops/v1alpha2
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: minimal.example.com
   name: nodes
 spec:
   associatePublicIp: true

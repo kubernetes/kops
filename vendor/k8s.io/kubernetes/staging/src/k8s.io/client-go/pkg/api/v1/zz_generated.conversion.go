@@ -22,7 +22,7 @@ package v1
 
 import (
 	api "k8s.io/client-go/pkg/api"
-	unversioned "k8s.io/client-go/pkg/api/unversioned"
+	meta_v1 "k8s.io/client-go/pkg/apis/meta/v1"
 	conversion "k8s.io/client-go/pkg/conversion"
 	runtime "k8s.io/client-go/pkg/runtime"
 	types "k8s.io/client-go/pkg/types"
@@ -119,8 +119,6 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_api_EventSource_To_v1_EventSource,
 		Convert_v1_ExecAction_To_api_ExecAction,
 		Convert_api_ExecAction_To_v1_ExecAction,
-		Convert_v1_ExportOptions_To_api_ExportOptions,
-		Convert_api_ExportOptions_To_v1_ExportOptions,
 		Convert_v1_FCVolumeSource_To_api_FCVolumeSource,
 		Convert_api_FCVolumeSource_To_v1_FCVolumeSource,
 		Convert_v1_FlexVolumeSource_To_api_FlexVolumeSource,
@@ -189,6 +187,8 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_api_NodeList_To_v1_NodeList,
 		Convert_v1_NodeProxyOptions_To_api_NodeProxyOptions,
 		Convert_api_NodeProxyOptions_To_v1_NodeProxyOptions,
+		Convert_v1_NodeResources_To_api_NodeResources,
+		Convert_api_NodeResources_To_v1_NodeResources,
 		Convert_v1_NodeSelector_To_api_NodeSelector,
 		Convert_api_NodeSelector_To_v1_NodeSelector,
 		Convert_v1_NodeSelectorRequirement_To_api_NodeSelectorRequirement,
@@ -207,8 +207,6 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_api_ObjectMeta_To_v1_ObjectMeta,
 		Convert_v1_ObjectReference_To_api_ObjectReference,
 		Convert_api_ObjectReference_To_v1_ObjectReference,
-		Convert_v1_OwnerReference_To_api_OwnerReference,
-		Convert_api_OwnerReference_To_v1_OwnerReference,
 		Convert_v1_PersistentVolume_To_api_PersistentVolume,
 		Convert_api_PersistentVolume_To_v1_PersistentVolume,
 		Convert_v1_PersistentVolumeClaim_To_api_PersistentVolumeClaim,
@@ -333,6 +331,8 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_api_ServiceSpec_To_v1_ServiceSpec,
 		Convert_v1_ServiceStatus_To_api_ServiceStatus,
 		Convert_api_ServiceStatus_To_v1_ServiceStatus,
+		Convert_v1_Sysctl_To_api_Sysctl,
+		Convert_api_Sysctl_To_v1_Sysctl,
 		Convert_v1_TCPSocketAction_To_api_TCPSocketAction,
 		Convert_api_TCPSocketAction_To_v1_TCPSocketAction,
 		Convert_v1_Taint_To_api_Taint,
@@ -1340,26 +1340,6 @@ func Convert_api_ExecAction_To_v1_ExecAction(in *api.ExecAction, out *ExecAction
 	return autoConvert_api_ExecAction_To_v1_ExecAction(in, out, s)
 }
 
-func autoConvert_v1_ExportOptions_To_api_ExportOptions(in *ExportOptions, out *api.ExportOptions, s conversion.Scope) error {
-	out.Export = in.Export
-	out.Exact = in.Exact
-	return nil
-}
-
-func Convert_v1_ExportOptions_To_api_ExportOptions(in *ExportOptions, out *api.ExportOptions, s conversion.Scope) error {
-	return autoConvert_v1_ExportOptions_To_api_ExportOptions(in, out, s)
-}
-
-func autoConvert_api_ExportOptions_To_v1_ExportOptions(in *api.ExportOptions, out *ExportOptions, s conversion.Scope) error {
-	out.Export = in.Export
-	out.Exact = in.Exact
-	return nil
-}
-
-func Convert_api_ExportOptions_To_v1_ExportOptions(in *api.ExportOptions, out *ExportOptions, s conversion.Scope) error {
-	return autoConvert_api_ExportOptions_To_v1_ExportOptions(in, out, s)
-}
-
 func autoConvert_v1_FCVolumeSource_To_api_FCVolumeSource(in *FCVolumeSource, out *api.FCVolumeSource, s conversion.Scope) error {
 	out.TargetWWNs = *(*[]string)(unsafe.Pointer(&in.TargetWWNs))
 	out.Lun = (*int32)(unsafe.Pointer(in.Lun))
@@ -2152,6 +2132,24 @@ func Convert_api_NodeProxyOptions_To_v1_NodeProxyOptions(in *api.NodeProxyOption
 	return autoConvert_api_NodeProxyOptions_To_v1_NodeProxyOptions(in, out, s)
 }
 
+func autoConvert_v1_NodeResources_To_api_NodeResources(in *NodeResources, out *api.NodeResources, s conversion.Scope) error {
+	out.Capacity = *(*api.ResourceList)(unsafe.Pointer(&in.Capacity))
+	return nil
+}
+
+func Convert_v1_NodeResources_To_api_NodeResources(in *NodeResources, out *api.NodeResources, s conversion.Scope) error {
+	return autoConvert_v1_NodeResources_To_api_NodeResources(in, out, s)
+}
+
+func autoConvert_api_NodeResources_To_v1_NodeResources(in *api.NodeResources, out *NodeResources, s conversion.Scope) error {
+	out.Capacity = *(*ResourceList)(unsafe.Pointer(&in.Capacity))
+	return nil
+}
+
+func Convert_api_NodeResources_To_v1_NodeResources(in *api.NodeResources, out *NodeResources, s conversion.Scope) error {
+	return autoConvert_api_NodeResources_To_v1_NodeResources(in, out, s)
+}
+
 func autoConvert_v1_NodeSelector_To_api_NodeSelector(in *NodeSelector, out *api.NodeSelector, s conversion.Scope) error {
 	out.NodeSelectorTerms = *(*[]api.NodeSelectorTerm)(unsafe.Pointer(&in.NodeSelectorTerms))
 	return nil
@@ -2343,11 +2341,11 @@ func autoConvert_v1_ObjectMeta_To_api_ObjectMeta(in *ObjectMeta, out *api.Object
 	out.ResourceVersion = in.ResourceVersion
 	out.Generation = in.Generation
 	out.CreationTimestamp = in.CreationTimestamp
-	out.DeletionTimestamp = (*unversioned.Time)(unsafe.Pointer(in.DeletionTimestamp))
+	out.DeletionTimestamp = (*meta_v1.Time)(unsafe.Pointer(in.DeletionTimestamp))
 	out.DeletionGracePeriodSeconds = (*int64)(unsafe.Pointer(in.DeletionGracePeriodSeconds))
 	out.Labels = *(*map[string]string)(unsafe.Pointer(&in.Labels))
 	out.Annotations = *(*map[string]string)(unsafe.Pointer(&in.Annotations))
-	out.OwnerReferences = *(*[]api.OwnerReference)(unsafe.Pointer(&in.OwnerReferences))
+	out.OwnerReferences = *(*[]meta_v1.OwnerReference)(unsafe.Pointer(&in.OwnerReferences))
 	out.Finalizers = *(*[]string)(unsafe.Pointer(&in.Finalizers))
 	out.ClusterName = in.ClusterName
 	return nil
@@ -2366,11 +2364,11 @@ func autoConvert_api_ObjectMeta_To_v1_ObjectMeta(in *api.ObjectMeta, out *Object
 	out.ResourceVersion = in.ResourceVersion
 	out.Generation = in.Generation
 	out.CreationTimestamp = in.CreationTimestamp
-	out.DeletionTimestamp = (*unversioned.Time)(unsafe.Pointer(in.DeletionTimestamp))
+	out.DeletionTimestamp = (*meta_v1.Time)(unsafe.Pointer(in.DeletionTimestamp))
 	out.DeletionGracePeriodSeconds = (*int64)(unsafe.Pointer(in.DeletionGracePeriodSeconds))
 	out.Labels = *(*map[string]string)(unsafe.Pointer(&in.Labels))
 	out.Annotations = *(*map[string]string)(unsafe.Pointer(&in.Annotations))
-	out.OwnerReferences = *(*[]OwnerReference)(unsafe.Pointer(&in.OwnerReferences))
+	out.OwnerReferences = *(*[]meta_v1.OwnerReference)(unsafe.Pointer(&in.OwnerReferences))
 	out.Finalizers = *(*[]string)(unsafe.Pointer(&in.Finalizers))
 	out.ClusterName = in.ClusterName
 	return nil
@@ -2408,32 +2406,6 @@ func autoConvert_api_ObjectReference_To_v1_ObjectReference(in *api.ObjectReferen
 
 func Convert_api_ObjectReference_To_v1_ObjectReference(in *api.ObjectReference, out *ObjectReference, s conversion.Scope) error {
 	return autoConvert_api_ObjectReference_To_v1_ObjectReference(in, out, s)
-}
-
-func autoConvert_v1_OwnerReference_To_api_OwnerReference(in *OwnerReference, out *api.OwnerReference, s conversion.Scope) error {
-	out.APIVersion = in.APIVersion
-	out.Kind = in.Kind
-	out.Name = in.Name
-	out.UID = types.UID(in.UID)
-	out.Controller = (*bool)(unsafe.Pointer(in.Controller))
-	return nil
-}
-
-func Convert_v1_OwnerReference_To_api_OwnerReference(in *OwnerReference, out *api.OwnerReference, s conversion.Scope) error {
-	return autoConvert_v1_OwnerReference_To_api_OwnerReference(in, out, s)
-}
-
-func autoConvert_api_OwnerReference_To_v1_OwnerReference(in *api.OwnerReference, out *OwnerReference, s conversion.Scope) error {
-	out.APIVersion = in.APIVersion
-	out.Kind = in.Kind
-	out.Name = in.Name
-	out.UID = types.UID(in.UID)
-	out.Controller = (*bool)(unsafe.Pointer(in.Controller))
-	return nil
-}
-
-func Convert_api_OwnerReference_To_v1_OwnerReference(in *api.OwnerReference, out *OwnerReference, s conversion.Scope) error {
-	return autoConvert_api_OwnerReference_To_v1_OwnerReference(in, out, s)
 }
 
 func autoConvert_v1_PersistentVolume_To_api_PersistentVolume(in *PersistentVolume, out *api.PersistentVolume, s conversion.Scope) error {
@@ -2526,7 +2498,7 @@ func Convert_api_PersistentVolumeClaimList_To_v1_PersistentVolumeClaimList(in *a
 
 func autoConvert_v1_PersistentVolumeClaimSpec_To_api_PersistentVolumeClaimSpec(in *PersistentVolumeClaimSpec, out *api.PersistentVolumeClaimSpec, s conversion.Scope) error {
 	out.AccessModes = *(*[]api.PersistentVolumeAccessMode)(unsafe.Pointer(&in.AccessModes))
-	out.Selector = (*unversioned.LabelSelector)(unsafe.Pointer(in.Selector))
+	out.Selector = (*meta_v1.LabelSelector)(unsafe.Pointer(in.Selector))
 	if err := Convert_v1_ResourceRequirements_To_api_ResourceRequirements(&in.Resources, &out.Resources, s); err != nil {
 		return err
 	}
@@ -2540,7 +2512,7 @@ func Convert_v1_PersistentVolumeClaimSpec_To_api_PersistentVolumeClaimSpec(in *P
 
 func autoConvert_api_PersistentVolumeClaimSpec_To_v1_PersistentVolumeClaimSpec(in *api.PersistentVolumeClaimSpec, out *PersistentVolumeClaimSpec, s conversion.Scope) error {
 	out.AccessModes = *(*[]PersistentVolumeAccessMode)(unsafe.Pointer(&in.AccessModes))
-	out.Selector = (*unversioned.LabelSelector)(unsafe.Pointer(in.Selector))
+	out.Selector = (*meta_v1.LabelSelector)(unsafe.Pointer(in.Selector))
 	if err := Convert_api_ResourceRequirements_To_v1_ResourceRequirements(&in.Resources, &out.Resources, s); err != nil {
 		return err
 	}
@@ -2803,7 +2775,7 @@ func Convert_api_PodAffinity_To_v1_PodAffinity(in *api.PodAffinity, out *PodAffi
 }
 
 func autoConvert_v1_PodAffinityTerm_To_api_PodAffinityTerm(in *PodAffinityTerm, out *api.PodAffinityTerm, s conversion.Scope) error {
-	out.LabelSelector = (*unversioned.LabelSelector)(unsafe.Pointer(in.LabelSelector))
+	out.LabelSelector = (*meta_v1.LabelSelector)(unsafe.Pointer(in.LabelSelector))
 	out.Namespaces = *(*[]string)(unsafe.Pointer(&in.Namespaces))
 	out.TopologyKey = in.TopologyKey
 	return nil
@@ -2814,7 +2786,7 @@ func Convert_v1_PodAffinityTerm_To_api_PodAffinityTerm(in *PodAffinityTerm, out 
 }
 
 func autoConvert_api_PodAffinityTerm_To_v1_PodAffinityTerm(in *api.PodAffinityTerm, out *PodAffinityTerm, s conversion.Scope) error {
-	out.LabelSelector = (*unversioned.LabelSelector)(unsafe.Pointer(in.LabelSelector))
+	out.LabelSelector = (*meta_v1.LabelSelector)(unsafe.Pointer(in.LabelSelector))
 	out.Namespaces = *(*[]string)(unsafe.Pointer(&in.Namespaces))
 	out.TopologyKey = in.TopologyKey
 	return nil
@@ -2971,7 +2943,7 @@ func autoConvert_v1_PodLogOptions_To_api_PodLogOptions(in *PodLogOptions, out *a
 	out.Follow = in.Follow
 	out.Previous = in.Previous
 	out.SinceSeconds = (*int64)(unsafe.Pointer(in.SinceSeconds))
-	out.SinceTime = (*unversioned.Time)(unsafe.Pointer(in.SinceTime))
+	out.SinceTime = (*meta_v1.Time)(unsafe.Pointer(in.SinceTime))
 	out.Timestamps = in.Timestamps
 	out.TailLines = (*int64)(unsafe.Pointer(in.TailLines))
 	out.LimitBytes = (*int64)(unsafe.Pointer(in.LimitBytes))
@@ -2987,7 +2959,7 @@ func autoConvert_api_PodLogOptions_To_v1_PodLogOptions(in *api.PodLogOptions, ou
 	out.Follow = in.Follow
 	out.Previous = in.Previous
 	out.SinceSeconds = (*int64)(unsafe.Pointer(in.SinceSeconds))
-	out.SinceTime = (*unversioned.Time)(unsafe.Pointer(in.SinceTime))
+	out.SinceTime = (*meta_v1.Time)(unsafe.Pointer(in.SinceTime))
 	out.Timestamps = in.Timestamps
 	out.TailLines = (*int64)(unsafe.Pointer(in.TailLines))
 	out.LimitBytes = (*int64)(unsafe.Pointer(in.LimitBytes))
@@ -3038,7 +3010,7 @@ func autoConvert_api_PodSecurityContext_To_v1_PodSecurityContext(in *api.PodSecu
 }
 
 func autoConvert_v1_PodSignature_To_api_PodSignature(in *PodSignature, out *api.PodSignature, s conversion.Scope) error {
-	out.PodController = (*api.OwnerReference)(unsafe.Pointer(in.PodController))
+	out.PodController = (*meta_v1.OwnerReference)(unsafe.Pointer(in.PodController))
 	return nil
 }
 
@@ -3047,7 +3019,7 @@ func Convert_v1_PodSignature_To_api_PodSignature(in *PodSignature, out *api.PodS
 }
 
 func autoConvert_api_PodSignature_To_v1_PodSignature(in *api.PodSignature, out *PodSignature, s conversion.Scope) error {
-	out.PodController = (*OwnerReference)(unsafe.Pointer(in.PodController))
+	out.PodController = (*meta_v1.OwnerReference)(unsafe.Pointer(in.PodController))
 	return nil
 }
 
@@ -3092,6 +3064,7 @@ func autoConvert_v1_PodSpec_To_api_PodSpec(in *PodSpec, out *api.PodSpec, s conv
 	out.ImagePullSecrets = *(*[]api.LocalObjectReference)(unsafe.Pointer(&in.ImagePullSecrets))
 	out.Hostname = in.Hostname
 	out.Subdomain = in.Subdomain
+	out.Affinity = (*api.Affinity)(unsafe.Pointer(in.Affinity))
 	return nil
 }
 
@@ -3128,6 +3101,7 @@ func autoConvert_api_PodSpec_To_v1_PodSpec(in *api.PodSpec, out *PodSpec, s conv
 	out.ImagePullSecrets = *(*[]LocalObjectReference)(unsafe.Pointer(&in.ImagePullSecrets))
 	out.Hostname = in.Hostname
 	out.Subdomain = in.Subdomain
+	out.Affinity = (*Affinity)(unsafe.Pointer(in.Affinity))
 	return nil
 }
 
@@ -3138,9 +3112,10 @@ func autoConvert_v1_PodStatus_To_api_PodStatus(in *PodStatus, out *api.PodStatus
 	out.Reason = in.Reason
 	out.HostIP = in.HostIP
 	out.PodIP = in.PodIP
-	out.StartTime = (*unversioned.Time)(unsafe.Pointer(in.StartTime))
+	out.StartTime = (*meta_v1.Time)(unsafe.Pointer(in.StartTime))
 	out.InitContainerStatuses = *(*[]api.ContainerStatus)(unsafe.Pointer(&in.InitContainerStatuses))
 	out.ContainerStatuses = *(*[]api.ContainerStatus)(unsafe.Pointer(&in.ContainerStatuses))
+	out.QOSClass = api.PodQOSClass(in.QOSClass)
 	return nil
 }
 
@@ -3155,7 +3130,8 @@ func autoConvert_api_PodStatus_To_v1_PodStatus(in *api.PodStatus, out *PodStatus
 	out.Reason = in.Reason
 	out.HostIP = in.HostIP
 	out.PodIP = in.PodIP
-	out.StartTime = (*unversioned.Time)(unsafe.Pointer(in.StartTime))
+	out.StartTime = (*meta_v1.Time)(unsafe.Pointer(in.StartTime))
+	out.QOSClass = PodQOSClass(in.QOSClass)
 	out.InitContainerStatuses = *(*[]ContainerStatus)(unsafe.Pointer(&in.InitContainerStatuses))
 	out.ContainerStatuses = *(*[]ContainerStatus)(unsafe.Pointer(&in.ContainerStatuses))
 	return nil
@@ -4153,6 +4129,26 @@ func autoConvert_api_ServiceStatus_To_v1_ServiceStatus(in *api.ServiceStatus, ou
 
 func Convert_api_ServiceStatus_To_v1_ServiceStatus(in *api.ServiceStatus, out *ServiceStatus, s conversion.Scope) error {
 	return autoConvert_api_ServiceStatus_To_v1_ServiceStatus(in, out, s)
+}
+
+func autoConvert_v1_Sysctl_To_api_Sysctl(in *Sysctl, out *api.Sysctl, s conversion.Scope) error {
+	out.Name = in.Name
+	out.Value = in.Value
+	return nil
+}
+
+func Convert_v1_Sysctl_To_api_Sysctl(in *Sysctl, out *api.Sysctl, s conversion.Scope) error {
+	return autoConvert_v1_Sysctl_To_api_Sysctl(in, out, s)
+}
+
+func autoConvert_api_Sysctl_To_v1_Sysctl(in *api.Sysctl, out *Sysctl, s conversion.Scope) error {
+	out.Name = in.Name
+	out.Value = in.Value
+	return nil
+}
+
+func Convert_api_Sysctl_To_v1_Sysctl(in *api.Sysctl, out *Sysctl, s conversion.Scope) error {
+	return autoConvert_api_Sysctl_To_v1_Sysctl(in, out, s)
 }
 
 func autoConvert_v1_TCPSocketAction_To_api_TCPSocketAction(in *TCPSocketAction, out *api.TCPSocketAction, s conversion.Scope) error {

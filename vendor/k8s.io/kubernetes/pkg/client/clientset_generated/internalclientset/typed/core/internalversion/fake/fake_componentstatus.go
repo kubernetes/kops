@@ -18,9 +18,10 @@ package fake
 
 import (
 	api "k8s.io/kubernetes/pkg/api"
-	unversioned "k8s.io/kubernetes/pkg/api/unversioned"
+	v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	core "k8s.io/kubernetes/pkg/client/testing/core"
 	labels "k8s.io/kubernetes/pkg/labels"
+	schema "k8s.io/kubernetes/pkg/runtime/schema"
 	watch "k8s.io/kubernetes/pkg/watch"
 )
 
@@ -29,7 +30,7 @@ type FakeComponentStatuses struct {
 	Fake *FakeCore
 }
 
-var componentstatusesResource = unversioned.GroupVersionResource{Group: "", Version: "", Resource: "componentstatuses"}
+var componentstatusesResource = schema.GroupVersionResource{Group: "", Version: "", Resource: "componentstatuses"}
 
 func (c *FakeComponentStatuses) Create(componentStatus *api.ComponentStatus) (result *api.ComponentStatus, err error) {
 	obj, err := c.Fake.
@@ -62,7 +63,7 @@ func (c *FakeComponentStatuses) DeleteCollection(options *api.DeleteOptions, lis
 	return err
 }
 
-func (c *FakeComponentStatuses) Get(name string) (result *api.ComponentStatus, err error) {
+func (c *FakeComponentStatuses) Get(name string, options v1.GetOptions) (result *api.ComponentStatus, err error) {
 	obj, err := c.Fake.
 		Invokes(core.NewRootGetAction(componentstatusesResource, name), &api.ComponentStatus{})
 	if obj == nil {

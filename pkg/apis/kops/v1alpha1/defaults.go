@@ -17,9 +17,56 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"github.com/golang/glog"
 	"k8s.io/kubernetes/pkg/runtime"
 )
 
 func addDefaultingFuncs(scheme *runtime.Scheme) error {
-	return nil
+	RegisterDefaults(scheme)
+	return scheme.AddDefaultingFuncs(
+		SetDefaults_ClusterSpec,
+	)
+}
+
+func SetDefaults_ClusterSpec(obj *ClusterSpec) {
+	if obj.Topology == nil {
+		obj.Topology = &TopologySpec{}
+	}
+
+	if obj.Topology.Masters == "" {
+		obj.Topology.Masters = TopologyPublic
+	}
+
+	if obj.Topology.Nodes == "" {
+		obj.Topology.Nodes = TopologyPublic
+	}
+
+	if obj.Topology.DNS == nil {
+		obj.Topology.DNS = &DNSSpec{}
+	}
+
+	if obj.Topology.DNS.Type == "" {
+		obj.Topology.DNS.Type = DNSTypePublic
+	}
+
+	if obj.API == nil {
+		obj.API = &AccessSpec{}
+	}
+
+	if obj.API.IsEmpty() {
+		switch obj.Topology.Masters {
+		case TopologyPublic:
+			obj.API.DNS = &DNSAccessSpec{}
+
+		case TopologyPrivate:
+			obj.API.LoadBalancer = &LoadBalancerAccessSpec{}
+
+		default:
+			glog.Infof("unknown master topology type: %q", obj.Topology.Masters)
+		}
+	}
+
+	if obj.API.LoadBalancer != nil && obj.API.LoadBalancer.Type == "" {
+		obj.API.LoadBalancer.Type = LoadBalancerTypePublic
+	}
 }

@@ -22,7 +22,8 @@ import (
 
 	"github.com/golang/glog"
 	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	meta_v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/util/wait"
 )
 
@@ -41,15 +42,14 @@ const (
 // TODO: should we pool the api client connection? My initial thought is no.
 type NodeAPIAdapter struct {
 	// K8s API client this sucker talks to K8s directly - not kubectl, hard api call
-	// TODO: change this to the client that drain usages
-	client release_1_5.Interface
+	client k8s_clientset.Interface
 
 	//TODO: convert to arg on WaitForNodeToBe
 	// K8s timeout on method call
 	timeout time.Duration
 }
 
-func NewNodeAPIAdapter(client release_1_5.Interface, timeout time.Duration) (*NodeAPIAdapter, error) {
+func NewNodeAPIAdapter(client k8s_clientset.Interface, timeout time.Duration) (*NodeAPIAdapter, error) {
 	if client == nil {
 		return nil, fmt.Errorf("client not provided")
 	}
@@ -111,7 +111,7 @@ func (nodeAA *NodeAPIAdapter) WaitForNodeToBe(nodeName string, conditionType v1.
 
 	var cond *v1.NodeCondition
 	err := wait.PollImmediate(Poll, nodeAA.timeout, func() (bool, error) {
-		node, err := nodeAA.client.Core().Nodes().Get(nodeName)
+		node, err := nodeAA.client.Core().Nodes().Get(nodeName, meta_v1.GetOptions{})
 		// FIXME this is not erroring on 500's for instance.  We will keep looping
 		if err != nil {
 			// TODO: Check if e.g. NotFound

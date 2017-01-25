@@ -23,6 +23,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/tables"
@@ -264,7 +265,7 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 			return err
 		}
 
-		err = api.DeepValidate(fullCluster, instanceGroups, true)
+		err = validation.DeepValidate(fullCluster, instanceGroups, true)
 		if err != nil {
 			return err
 		}

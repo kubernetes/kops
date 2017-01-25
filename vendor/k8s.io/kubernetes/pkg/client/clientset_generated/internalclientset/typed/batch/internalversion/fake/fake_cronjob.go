@@ -18,10 +18,11 @@ package fake
 
 import (
 	api "k8s.io/kubernetes/pkg/api"
-	unversioned "k8s.io/kubernetes/pkg/api/unversioned"
 	batch "k8s.io/kubernetes/pkg/apis/batch"
+	v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	core "k8s.io/kubernetes/pkg/client/testing/core"
 	labels "k8s.io/kubernetes/pkg/labels"
+	schema "k8s.io/kubernetes/pkg/runtime/schema"
 	watch "k8s.io/kubernetes/pkg/watch"
 )
 
@@ -31,7 +32,7 @@ type FakeCronJobs struct {
 	ns   string
 }
 
-var cronjobsResource = unversioned.GroupVersionResource{Group: "batch", Version: "", Resource: "cronjobs"}
+var cronjobsResource = schema.GroupVersionResource{Group: "batch", Version: "", Resource: "cronjobs"}
 
 func (c *FakeCronJobs) Create(cronJob *batch.CronJob) (result *batch.CronJob, err error) {
 	obj, err := c.Fake.
@@ -77,7 +78,7 @@ func (c *FakeCronJobs) DeleteCollection(options *api.DeleteOptions, listOptions 
 	return err
 }
 
-func (c *FakeCronJobs) Get(name string) (result *batch.CronJob, err error) {
+func (c *FakeCronJobs) Get(name string, options v1.GetOptions) (result *batch.CronJob, err error) {
 	obj, err := c.Fake.
 		Invokes(core.NewGetAction(cronjobsResource, c.ns, name), &batch.CronJob{})
 

@@ -18,10 +18,11 @@ package fake
 
 import (
 	api "k8s.io/kubernetes/pkg/api"
-	unversioned "k8s.io/kubernetes/pkg/api/unversioned"
 	extensions "k8s.io/kubernetes/pkg/apis/extensions"
+	v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	core "k8s.io/kubernetes/pkg/client/testing/core"
 	labels "k8s.io/kubernetes/pkg/labels"
+	schema "k8s.io/kubernetes/pkg/runtime/schema"
 	watch "k8s.io/kubernetes/pkg/watch"
 )
 
@@ -31,7 +32,7 @@ type FakeReplicaSets struct {
 	ns   string
 }
 
-var replicasetsResource = unversioned.GroupVersionResource{Group: "extensions", Version: "", Resource: "replicasets"}
+var replicasetsResource = schema.GroupVersionResource{Group: "extensions", Version: "", Resource: "replicasets"}
 
 func (c *FakeReplicaSets) Create(replicaSet *extensions.ReplicaSet) (result *extensions.ReplicaSet, err error) {
 	obj, err := c.Fake.
@@ -77,7 +78,7 @@ func (c *FakeReplicaSets) DeleteCollection(options *api.DeleteOptions, listOptio
 	return err
 }
 
-func (c *FakeReplicaSets) Get(name string) (result *extensions.ReplicaSet, err error) {
+func (c *FakeReplicaSets) Get(name string, options v1.GetOptions) (result *extensions.ReplicaSet, err error) {
 	obj, err := c.Fake.
 		Invokes(core.NewGetAction(replicasetsResource, c.ns, name), &extensions.ReplicaSet{})
 

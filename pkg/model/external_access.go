@@ -21,7 +21,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
-	"strconv"
 )
 
 // ExternalAccessModelBuilder configures security group rules for external access
@@ -42,10 +41,15 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// SSH is open to AdminCIDR set
-	if b.Cluster.IsTopologyPublic() {
-		for i, sshAccess := range b.Cluster.Spec.SSHAccess {
+	if b.UsesSSHBastion() {
+		// If we are using a bastion, we only access through the bastion
+		// This is admittedly a little odd... adding a bastion shuts down direct access to the masters/nodes
+		// But I think we can always add more permissions in this case later, but we can't easily take them away
+		glog.V(2).Infof("bastion is in use; won't configure SSH access to master / node instances")
+	} else {
+		for _, sshAccess := range b.Cluster.Spec.SSHAccess {
 			c.AddTask(&awstasks.SecurityGroupRule{
-				Name:          s("ssh-external-to-master-" + strconv.Itoa(i)),
+				Name:          s("ssh-external-to-master-" + sshAccess),
 				SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 				Protocol:      s("tcp"),
 				FromPort:      i64(22),
@@ -54,7 +58,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			})
 
 			c.AddTask(&awstasks.SecurityGroupRule{
-				Name:          s("ssh-external-to-node-" + strconv.Itoa(i)),
+				Name:          s("ssh-external-to-node-" + sshAccess),
 				SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
 				Protocol:      s("tcp"),
 				FromPort:      i64(22),
@@ -62,15 +66,17 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				CIDR:          s(sshAccess),
 			})
 		}
+	}
 
+	if !b.UseLoadBalancerForAPI() {
 		// Configuration for the master, when not using a Loadbalancer (ELB)
 		// We expect that either the IP address is published, or DNS is set up to point to the IPs
 		// We need to open security groups directly to the master nodes (instead of via the ELB)
 
 		// HTTPS to the master is allowed (for API access)
-		for i, apiAccess := range b.Cluster.Spec.KubernetesAPIAccess {
+		for _, apiAccess := range b.Cluster.Spec.KubernetesAPIAccess {
 			t := &awstasks.SecurityGroupRule{
-				Name:          s("https-external-to-master-" + strconv.Itoa(i)),
+				Name:          s("https-external-to-master-" + apiAccess),
 				SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 				Protocol:      s("tcp"),
 				FromPort:      i64(443),

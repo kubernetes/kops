@@ -19,14 +19,15 @@ package federation
 import (
 	"fmt"
 	"github.com/golang/glog"
-	"k8s.io/kubernetes/federation/client/clientset_generated/federation_release_1_5"
+	"k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset"
 	"k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/v1"
+	meta_v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 )
 
-func findNamespace(k8s federation_release_1_5.Interface, name string) (*v1.Namespace, error) {
+func findNamespace(k8s federation_clientset.Interface, name string) (*v1.Namespace, error) {
 	glog.V(2).Infof("querying k8s for federation Namespace %s", name)
-	c, err := k8s.Core().Namespaces().Get(name)
+	c, err := k8s.Core().Namespaces().Get(name, meta_v1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil, nil
@@ -37,7 +38,7 @@ func findNamespace(k8s federation_release_1_5.Interface, name string) (*v1.Names
 	return c, nil
 }
 
-func mutateNamespace(k8s federation_release_1_5.Interface, name string, fn func(s *v1.Namespace) (*v1.Namespace, error)) (*v1.Namespace, error) {
+func mutateNamespace(k8s federation_clientset.Interface, name string, fn func(s *v1.Namespace) (*v1.Namespace, error)) (*v1.Namespace, error) {
 	existing, err := findNamespace(k8s, name)
 	if err != nil {
 		return nil, err

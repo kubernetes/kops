@@ -18,10 +18,11 @@ package fake
 
 import (
 	api "k8s.io/kubernetes/pkg/api"
-	unversioned "k8s.io/kubernetes/pkg/api/unversioned"
 	extensions "k8s.io/kubernetes/pkg/apis/extensions"
+	v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	core "k8s.io/kubernetes/pkg/client/testing/core"
 	labels "k8s.io/kubernetes/pkg/labels"
+	schema "k8s.io/kubernetes/pkg/runtime/schema"
 	watch "k8s.io/kubernetes/pkg/watch"
 )
 
@@ -30,7 +31,7 @@ type FakePodSecurityPolicies struct {
 	Fake *FakeExtensions
 }
 
-var podsecuritypoliciesResource = unversioned.GroupVersionResource{Group: "extensions", Version: "", Resource: "podsecuritypolicies"}
+var podsecuritypoliciesResource = schema.GroupVersionResource{Group: "extensions", Version: "", Resource: "podsecuritypolicies"}
 
 func (c *FakePodSecurityPolicies) Create(podSecurityPolicy *extensions.PodSecurityPolicy) (result *extensions.PodSecurityPolicy, err error) {
 	obj, err := c.Fake.
@@ -63,7 +64,7 @@ func (c *FakePodSecurityPolicies) DeleteCollection(options *api.DeleteOptions, l
 	return err
 }
 
-func (c *FakePodSecurityPolicies) Get(name string) (result *extensions.PodSecurityPolicy, err error) {
+func (c *FakePodSecurityPolicies) Get(name string, options v1.GetOptions) (result *extensions.PodSecurityPolicy, err error) {
 	obj, err := c.Fake.
 		Invokes(core.NewRootGetAction(podsecuritypoliciesResource, name), &extensions.PodSecurityPolicy{})
 	if obj == nil {

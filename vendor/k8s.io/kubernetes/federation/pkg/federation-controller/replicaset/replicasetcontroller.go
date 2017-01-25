@@ -27,7 +27,7 @@ import (
 
 	fed "k8s.io/kubernetes/federation/apis/federation"
 	fedv1 "k8s.io/kubernetes/federation/apis/federation/v1beta1"
-	fedclientset "k8s.io/kubernetes/federation/client/clientset_generated/federation_release_1_5"
+	fedclientset "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset"
 	fedutil "k8s.io/kubernetes/federation/pkg/federation-controller/util"
 	"k8s.io/kubernetes/federation/pkg/federation-controller/util/deletionhelper"
 	"k8s.io/kubernetes/federation/pkg/federation-controller/util/eventsink"
@@ -38,10 +38,9 @@ import (
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	extensionsv1 "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
 	"k8s.io/kubernetes/pkg/client/cache"
-	kubeclientset "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	kubeclientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/client/record"
 	"k8s.io/kubernetes/pkg/controller"
-	"k8s.io/kubernetes/pkg/conversion"
 	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/util/flowcontrol"
 	"k8s.io/kubernetes/pkg/util/wait"
@@ -106,7 +105,7 @@ type ReplicaSetController struct {
 func NewReplicaSetController(federationClient fedclientset.Interface) *ReplicaSetController {
 	broadcaster := record.NewBroadcaster()
 	broadcaster.StartRecordingToSink(eventsink.NewFederatedEventSink(federationClient))
-	recorder := broadcaster.NewRecorder(api.EventSource{Component: "federated-replicaset-controller"})
+	recorder := broadcaster.NewRecorder(apiv1.EventSource{Component: "federated-replicaset-controller"})
 
 	frsc := &ReplicaSetController{
 		fedClient:           federationClient,
@@ -125,13 +124,11 @@ func NewReplicaSetController(federationClient fedclientset.Interface) *ReplicaSe
 	replicaSetFedInformerFactory := func(cluster *fedv1.Cluster, clientset kubeclientset.Interface) (cache.Store, cache.ControllerInterface) {
 		return cache.NewInformer(
 			&cache.ListWatch{
-				ListFunc: func(options api.ListOptions) (runtime.Object, error) {
-					versionedOptions := fedutil.VersionizeV1ListOptions(options)
-					return clientset.Extensions().ReplicaSets(apiv1.NamespaceAll).List(versionedOptions)
+				ListFunc: func(options apiv1.ListOptions) (runtime.Object, error) {
+					return clientset.Extensions().ReplicaSets(apiv1.NamespaceAll).List(options)
 				},
-				WatchFunc: func(options api.ListOptions) (watch.Interface, error) {
-					versionedOptions := fedutil.VersionizeV1ListOptions(options)
-					return clientset.Extensions().ReplicaSets(apiv1.NamespaceAll).Watch(versionedOptions)
+				WatchFunc: func(options apiv1.ListOptions) (watch.Interface, error) {
+					return clientset.Extensions().ReplicaSets(apiv1.NamespaceAll).Watch(options)
 				},
 			},
 			&extensionsv1.ReplicaSet{},
@@ -154,13 +151,11 @@ func NewReplicaSetController(federationClient fedclientset.Interface) *ReplicaSe
 	podFedInformerFactory := func(cluster *fedv1.Cluster, clientset kubeclientset.Interface) (cache.Store, cache.ControllerInterface) {
 		return cache.NewInformer(
 			&cache.ListWatch{
-				ListFunc: func(options api.ListOptions) (runtime.Object, error) {
-					versionedOptions := fedutil.VersionizeV1ListOptions(options)
-					return clientset.Core().Pods(apiv1.NamespaceAll).List(versionedOptions)
+				ListFunc: func(options apiv1.ListOptions) (runtime.Object, error) {
+					return clientset.Core().Pods(apiv1.NamespaceAll).List(options)
 				},
-				WatchFunc: func(options api.ListOptions) (watch.Interface, error) {
-					versionedOptions := fedutil.VersionizeV1ListOptions(options)
-					return clientset.Core().Pods(apiv1.NamespaceAll).Watch(versionedOptions)
+				WatchFunc: func(options apiv1.ListOptions) (watch.Interface, error) {
+					return clientset.Core().Pods(apiv1.NamespaceAll).Watch(options)
 				},
 			},
 			&apiv1.Pod{},
@@ -176,13 +171,11 @@ func NewReplicaSetController(federationClient fedclientset.Interface) *ReplicaSe
 
 	frsc.replicaSetStore.Indexer, frsc.replicaSetController = cache.NewIndexerInformer(
 		&cache.ListWatch{
-			ListFunc: func(options api.ListOptions) (runtime.Object, error) {
-				versionedOptions := fedutil.VersionizeV1ListOptions(options)
-				return frsc.fedClient.Extensions().ReplicaSets(apiv1.NamespaceAll).List(versionedOptions)
+			ListFunc: func(options apiv1.ListOptions) (runtime.Object, error) {
+				return frsc.fedClient.Extensions().ReplicaSets(apiv1.NamespaceAll).List(options)
 			},
-			WatchFunc: func(options api.ListOptions) (watch.Interface, error) {
-				versionedOptions := fedutil.VersionizeV1ListOptions(options)
-				return frsc.fedClient.Extensions().ReplicaSets(apiv1.NamespaceAll).Watch(versionedOptions)
+			WatchFunc: func(options apiv1.ListOptions) (watch.Interface, error) {
+				return frsc.fedClient.Extensions().ReplicaSets(apiv1.NamespaceAll).Watch(options)
 			},
 		},
 		&extensionsv1.ReplicaSet{},
@@ -489,7 +482,7 @@ func (frsc *ReplicaSetController) reconcileReplicaSet(key string) (reconciliatio
 		// don't delete local replicasets for now. Do not reconcile it anymore.
 		return statusAllOk, nil
 	}
-	obj, err := conversion.NewCloner().DeepCopy(objFromStore)
+	obj, err := api.Scheme.DeepCopy(objFromStore)
 	frs, ok := obj.(*extensionsv1.ReplicaSet)
 	if err != nil || !ok {
 		glog.Errorf("Error in retrieving obj from store: %v, %v", ok, err)
@@ -562,9 +555,10 @@ func (frsc *ReplicaSetController) reconcileReplicaSet(key string) (reconciliatio
 			return statusError, err
 		}
 
+		// The object can be modified.
 		lrs := &extensionsv1.ReplicaSet{
-			ObjectMeta: fedutil.CopyObjectMeta(frs.ObjectMeta),
-			Spec:       frs.Spec,
+			ObjectMeta: fedutil.DeepCopyRelevantObjectMeta(frs.ObjectMeta),
+			Spec:       *fedutil.DeepCopyApiTypeOrPanic(&frs.Spec).(*extensionsv1.ReplicaSetSpec),
 		}
 		specReplicas := int32(replicas)
 		lrs.Spec.Replicas = &specReplicas
@@ -595,10 +589,12 @@ func (frsc *ReplicaSetController) reconcileReplicaSet(key string) (reconciliatio
 			}
 			fedStatus.Replicas += currentLrs.Status.Replicas
 			fedStatus.FullyLabeledReplicas += currentLrs.Status.FullyLabeledReplicas
-			// leave the replicaset even the replicas dropped to 0
+			fedStatus.ReadyReplicas += currentLrs.Status.ReadyReplicas
+			fedStatus.AvailableReplicas += currentLrs.Status.AvailableReplicas
 		}
 	}
-	if fedStatus.Replicas != frs.Status.Replicas || fedStatus.FullyLabeledReplicas != frs.Status.FullyLabeledReplicas {
+	if fedStatus.Replicas != frs.Status.Replicas || fedStatus.FullyLabeledReplicas != frs.Status.FullyLabeledReplicas ||
+		fedStatus.ReadyReplicas != frs.Status.ReadyReplicas || fedStatus.AvailableReplicas != frs.Status.AvailableReplicas {
 		frs.Status = fedStatus
 		_, err = frsc.fedClient.Extensions().ReplicaSets(frs.Namespace).UpdateStatus(frs)
 		if err != nil {

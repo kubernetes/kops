@@ -22,7 +22,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/apis/meta/v1"
 	"net/url"
 )
 
@@ -31,8 +31,8 @@ const DefaultChannel = "stable"
 const AlphaChannel = "alpha"
 
 type Channel struct {
-	unversioned.TypeMeta `json:",inline"`
-	ObjectMeta           api.ObjectMeta `json:"metadata,omitempty"`
+	v1.TypeMeta `json:",inline"`
+	ObjectMeta  api.ObjectMeta `json:"metadata,omitempty"`
 
 	Spec ChannelSpec `json:"spec,omitempty"`
 }

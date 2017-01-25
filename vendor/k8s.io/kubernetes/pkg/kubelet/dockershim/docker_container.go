@@ -28,12 +28,12 @@ import (
 	dockerstrslice "github.com/docker/engine-api/types/strslice"
 	"github.com/golang/glog"
 
-	runtimeApi "k8s.io/kubernetes/pkg/kubelet/api/v1alpha1/runtime"
+	runtimeapi "k8s.io/kubernetes/pkg/kubelet/api/v1alpha1/runtime"
 	"k8s.io/kubernetes/pkg/kubelet/dockertools"
 )
 
 // ListContainers lists all containers matching the filter.
-func (ds *dockerService) ListContainers(filter *runtimeApi.ContainerFilter) ([]*runtimeApi.Container, error) {
+func (ds *dockerService) ListContainers(filter *runtimeapi.ContainerFilter) ([]*runtimeapi.Container, error) {
 	opts := dockertypes.ContainerListOptions{All: true}
 
 	opts.Filter = dockerfilters.NewArgs()
@@ -63,7 +63,7 @@ func (ds *dockerService) ListContainers(filter *runtimeApi.ContainerFilter) ([]*
 		return nil, err
 	}
 	// Convert docker to runtime api containers.
-	result := []*runtimeApi.Container{}
+	result := []*runtimeapi.Container{}
 	for i := range containers {
 		c := containers[i]
 
@@ -82,7 +82,7 @@ func (ds *dockerService) ListContainers(filter *runtimeApi.ContainerFilter) ([]*
 // Docker cannot store the log to an arbitrary location (yet), so we create an
 // symlink at LogPath, linking to the actual path of the log.
 // TODO: check if the default values returned by the runtime API are ok.
-func (ds *dockerService) CreateContainer(podSandboxID string, config *runtimeApi.ContainerConfig, sandboxConfig *runtimeApi.PodSandboxConfig) (string, error) {
+func (ds *dockerService) CreateContainer(podSandboxID string, config *runtimeapi.ContainerConfig, sandboxConfig *runtimeapi.PodSandboxConfig) (string, error) {
 	if config == nil {
 		return "", fmt.Errorf("container config is nil")
 	}
@@ -124,14 +124,6 @@ func (ds *dockerService) CreateContainer(podSandboxID string, config *runtimeApi
 		Binds: generateMountBindings(config.GetMounts()),
 	}
 
-	// Apply cgroupsParent derived from the sandbox config.
-	if lc := sandboxConfig.GetLinux(); lc != nil {
-		// Apply Cgroup options.
-		// TODO: Check if this works with per-pod cgroups.
-		// TODO: we need to pass the cgroup in syntax expected by cgroup driver but shim does not use docker info yet...
-		hc.CgroupParent = lc.GetCgroupParent()
-	}
-
 	// Apply Linux-specific options if applicable.
 	if lc := config.GetLinux(); lc != nil {
 		// Apply resource options.
@@ -152,6 +144,16 @@ func (ds *dockerService) CreateContainer(podSandboxID string, config *runtimeApi
 
 		// Apply security context.
 		applyContainerSecurityContext(lc, podSandboxID, createConfig.Config, hc)
+	}
+
+	// Apply cgroupsParent derived from the sandbox config.
+	if lc := sandboxConfig.GetLinux(); lc != nil {
+		// Apply Cgroup options.
+		cgroupParent, err := ds.GenerateExpectedCgroupParent(lc.GetCgroupParent())
+		if err != nil {
+			return "", fmt.Errorf("failed to generate cgroup parent in expected syntax for container %q: %v", config.Metadata.GetName(), err)
+		}
+		hc.CgroupParent = cgroupParent
 	}
 
 	// Set devices for container.
@@ -283,7 +285,7 @@ func getContainerTimestamps(r *dockertypes.ContainerJSON) (time.Time, time.Time,
 }
 
 // ContainerStatus inspects the docker container and returns the status.
-func (ds *dockerService) ContainerStatus(containerID string) (*runtimeApi.ContainerStatus, error) {
+func (ds *dockerService) ContainerStatus(containerID string) (*runtimeapi.ContainerStatus, error) {
 	r, err := ds.client.InspectContainer(containerID)
 	if err != nil {
 		return nil, err
@@ -303,11 +305,11 @@ func (ds *dockerService) ContainerStatus(containerID string) (*runtimeApi.Contai
 	imageID := toPullableImageID(r.Image, ir)
 
 	// Convert the mounts.
-	mounts := []*runtimeApi.Mount{}
+	mounts := []*runtimeapi.Mount{}
 	for i := range r.Mounts {
 		m := r.Mounts[i]
 		readonly := !m.RW
-		mounts = append(mounts, &runtimeApi.Mount{
+		mounts = append(mounts, &runtimeapi.Mount{
 			HostPath:      &m.Source,
 			ContainerPath: &m.Destination,
 			Readonly:      &readonly,
@@ -315,11 +317,11 @@ func (ds *dockerService) ContainerStatus(containerID string) (*runtimeApi.Contai
 		})
 	}
 	// Interpret container states.
-	var state runtimeApi.ContainerState
+	var state runtimeapi.ContainerState
 	var reason, message string
 	if r.State.Running {
 		// Container is running.
-		state = runtimeApi.ContainerState_CONTAINER_RUNNING
+		state = runtimeapi.ContainerState_CONTAINER_RUNNING
 	} else {
 		// Container is *not* running. We need to get more details.
 		//    * Case 1: container has run and exited with non-zero finishedAt
@@ -328,7 +330,7 @@ func (ds *dockerService) ContainerStatus(containerID string) (*runtimeApi.Contai
 		//              time, but a non-zero exit code.
 		//    * Case 3: container has been created, but not started (yet).
 		if !finishedAt.IsZero() { // Case 1
-			state = runtimeApi.ContainerState_CONTAINER_EXITED
+			state = runtimeapi.ContainerState_CONTAINER_EXITED
 			switch {
 			case r.State.OOMKilled:
 				// TODO: consider exposing OOMKilled via the runtimeAPI.
@@ -341,13 +343,13 @@ func (ds *dockerService) ContainerStatus(containerID string) (*runtimeApi.Contai
 				reason = "Error"
 			}
 		} else if r.State.ExitCode != 0 { // Case 2
-			state = runtimeApi.ContainerState_CONTAINER_EXITED
+			state = runtimeapi.ContainerState_CONTAINER_EXITED
 			// Adjust finshedAt and startedAt time to createdAt time to avoid
 			// the confusion.
 			finishedAt, startedAt = createdAt, createdAt
 			reason = "ContainerCannotRun"
 		} else { // Case 3
-			state = runtimeApi.ContainerState_CONTAINER_CREATED
+			state = runtimeapi.ContainerState_CONTAINER_CREATED
 		}
 		message = r.State.Error
 	}
@@ -362,10 +364,10 @@ func (ds *dockerService) ContainerStatus(containerID string) (*runtimeApi.Contai
 	}
 
 	labels, annotations := extractLabels(r.Config.Labels)
-	return &runtimeApi.ContainerStatus{
+	return &runtimeapi.ContainerStatus{
 		Id:          &r.ID,
 		Metadata:    metadata,
-		Image:       &runtimeApi.ImageSpec{Image: &r.Config.Image},
+		Image:       &runtimeapi.ImageSpec{Image: &r.Config.Image},
 		ImageRef:    &imageID,
 		Mounts:      mounts,
 		ExitCode:    &exitCode,

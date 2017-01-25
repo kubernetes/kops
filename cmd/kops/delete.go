@@ -18,16 +18,27 @@ package main
 
 import (
 	"github.com/spf13/cobra"
+	"io"
+	"k8s.io/kops/cmd/kops/util"
 )
 
-// deleteCmd represents the delete command
-var deleteCmd = &cobra.Command{
-	Use:        "delete",
-	Short:      "delete clusters",
-	Long:       `Delete clusters`,
-	SuggestFor: []string{"rm"},
+type DeleteOptions struct {
 }
 
-func init() {
-	rootCommand.AddCommand(deleteCmd)
+func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
+	//options := &DeleteOptions{}
+
+	cmd := &cobra.Command{
+		Use:        "delete",
+		Short:      "delete clusters",
+		Long:       `Delete clusters`,
+		SuggestFor: []string{"rm"},
+	}
+
+	// create subcommands
+	cmd.AddCommand(NewCmdDeleteCluster(f, out))
+	cmd.AddCommand(NewCmdDeleteInstanceGroup(f, out))
+	cmd.AddCommand(NewCmdDeleteSecret(f, out))
+
+	return cmd
 }

@@ -124,6 +124,10 @@ resource "aws_elb" "api-privatecalico-example-com" {
     interval = 10
     timeout = 5
   }
+  tags = {
+    KubernetesCluster = "privatecalico.example.com"
+    Name = "api.privatecalico.example.com"
+  }
 }
 
 resource "aws_elb" "bastion-privatecalico-example-com" {
@@ -144,6 +148,10 @@ resource "aws_elb" "bastion-privatecalico-example-com" {
     timeout = 5
   }
   idle_timeout = 300
+  tags = {
+    KubernetesCluster = "privatecalico.example.com"
+    Name = "bastion.privatecalico.example.com"
+  }
 }
 
 resource "aws_iam_instance_profile" "bastions-privatecalico-example-com" {
@@ -214,7 +222,7 @@ resource "aws_launch_configuration" "bastion-privatecalico-example-com" {
   key_name = "${aws_key_pair.kubernetes-privatecalico-example-com-c4a6ed9aa889b9e2c39cd663eb9c7157.id}"
   iam_instance_profile = "${aws_iam_instance_profile.bastions-privatecalico-example-com.id}"
   security_groups = ["${aws_security_group.bastion-privatecalico-example-com.id}"]
-  associate_public_ip_address = false
+  associate_public_ip_address = true
   root_block_device = {
     volume_type = "gp2"
     volume_size = 20
@@ -389,15 +397,6 @@ resource "aws_security_group_rule" "all-master-to-node" {
   protocol = "-1"
 }
 
-resource "aws_security_group_rule" "all-node-to-master" {
-  type = "ingress"
-  security_group_id = "${aws_security_group.masters-privatecalico-example-com.id}"
-  source_security_group_id = "${aws_security_group.nodes-privatecalico-example-com.id}"
-  from_port = 0
-  to_port = 0
-  protocol = "-1"
-}
-
 resource "aws_security_group_rule" "all-node-to-node" {
   type = "ingress"
   security_group_id = "${aws_security_group.nodes-privatecalico-example-com.id}"
@@ -486,6 +485,51 @@ resource "aws_security_group_rule" "node-egress" {
   to_port = 0
   protocol = "-1"
   cidr_blocks = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "node-to-master-protocol-ipip" {
+  type = "ingress"
+  security_group_id = "${aws_security_group.masters-privatecalico-example-com.id}"
+  source_security_group_id = "${aws_security_group.nodes-privatecalico-example-com.id}"
+  from_port = 0
+  to_port = 65535
+  protocol = "4"
+}
+
+resource "aws_security_group_rule" "node-to-master-tcp-179" {
+  type = "ingress"
+  security_group_id = "${aws_security_group.masters-privatecalico-example-com.id}"
+  source_security_group_id = "${aws_security_group.nodes-privatecalico-example-com.id}"
+  from_port = 179
+  to_port = 179
+  protocol = "tcp"
+}
+
+resource "aws_security_group_rule" "node-to-master-tcp-4001" {
+  type = "ingress"
+  security_group_id = "${aws_security_group.masters-privatecalico-example-com.id}"
+  source_security_group_id = "${aws_security_group.nodes-privatecalico-example-com.id}"
+  from_port = 4001
+  to_port = 4001
+  protocol = "tcp"
+}
+
+resource "aws_security_group_rule" "node-to-master-tcp-4194" {
+  type = "ingress"
+  security_group_id = "${aws_security_group.masters-privatecalico-example-com.id}"
+  source_security_group_id = "${aws_security_group.nodes-privatecalico-example-com.id}"
+  from_port = 4194
+  to_port = 4194
+  protocol = "tcp"
+}
+
+resource "aws_security_group_rule" "node-to-master-tcp-443" {
+  type = "ingress"
+  security_group_id = "${aws_security_group.masters-privatecalico-example-com.id}"
+  source_security_group_id = "${aws_security_group.nodes-privatecalico-example-com.id}"
+  from_port = 443
+  to_port = 443
+  protocol = "tcp"
 }
 
 resource "aws_security_group_rule" "ssh-elb-to-bastion" {

@@ -30,10 +30,11 @@ import (
 	"golang.org/x/net/context"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/testapi"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/fields"
 	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 	"k8s.io/kubernetes/pkg/storage"
 	"k8s.io/kubernetes/pkg/util/wait"
 	"k8s.io/kubernetes/pkg/watch"
@@ -322,7 +323,7 @@ type testCodec struct {
 	runtime.Codec
 }
 
-func (c *testCodec) Decode(data []byte, defaults *unversioned.GroupVersionKind, into runtime.Object) (runtime.Object, *unversioned.GroupVersionKind, error) {
+func (c *testCodec) Decode(data []byte, defaults *schema.GroupVersionKind, into runtime.Object) (runtime.Object, *schema.GroupVersionKind, error) {
 	return nil, nil, errors.New("Expected decoding failure")
 }
 
@@ -360,8 +361,8 @@ func testCheckStop(t *testing.T, i int, w watch.Interface) {
 			switch e.Object.(type) {
 			case *api.Pod:
 				obj = e.Object.(*api.Pod).Name
-			case *unversioned.Status:
-				obj = e.Object.(*unversioned.Status).Message
+			case *metav1.Status:
+				obj = e.Object.(*metav1.Status).Message
 			}
 			t.Errorf("#%d: ResultChan should have been closed. Event: %s. Object: %s", i, e.Type, obj)
 		}

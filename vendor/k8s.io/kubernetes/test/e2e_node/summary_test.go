@@ -20,12 +20,13 @@ import (
 	"fmt"
 	"time"
 
-	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/resource"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/api/v1"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/kubelet/api/v1alpha1/stats"
 	"k8s.io/kubernetes/test/e2e/framework"
 
+	systemdutil "github.com/coreos/go-systemd/util"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gstruct"
@@ -66,7 +67,7 @@ var _ = framework.KubeDescribe("Summary API", func() {
 				"StartTime": recent(maxStartAge),
 				"CPU": ptrMatchAllFields(gstruct.Fields{
 					"Time":                 recent(maxStatsAge),
-					"UsageNanoCores":       bounded(100000, 2E9),
+					"UsageNanoCores":       bounded(10000, 2E9),
 					"UsageCoreNanoSeconds": bounded(10000000, 1E15),
 				}),
 				"Memory": ptrMatchAllFields(gstruct.Fields{
@@ -83,6 +84,15 @@ var _ = framework.KubeDescribe("Summary API", func() {
 				"Logs":               BeNil(),
 				"UserDefinedMetrics": BeEmpty(),
 			})
+			systemContainers := gstruct.Elements{
+				"kubelet": sysContExpectations,
+				"runtime": sysContExpectations,
+			}
+			// The Kubelet only manages the 'misc' system container if the host is not running systemd.
+			if !systemdutil.IsRunningSystemd() {
+				framework.Logf("Host not running systemd; expecting 'misc' system container.")
+				systemContainers["misc"] = sysContExpectations
+			}
 			// Expectations for pods.
 			podExpectations := gstruct.MatchAllFields(gstruct.Fields{
 				"PodRef":    gstruct.Ignore(),
@@ -147,12 +157,9 @@ var _ = framework.KubeDescribe("Summary API", func() {
 			})
 			matchExpectations := ptrMatchAllFields(gstruct.Fields{
 				"Node": gstruct.MatchAllFields(gstruct.Fields{
-					"NodeName":  Equal(framework.TestContext.NodeName),
-					"StartTime": recent(maxStartAge),
-					"SystemContainers": gstruct.MatchElements(summaryObjectID, gstruct.IgnoreExtras, gstruct.Elements{
-						"kubelet": sysContExpectations,
-						"runtime": sysContExpectations,
-					}),
+					"NodeName":         Equal(framework.TestContext.NodeName),
+					"StartTime":        recent(maxStartAge),
+					"SystemContainers": gstruct.MatchAllElements(summaryObjectID, systemContainers),
 					"CPU": ptrMatchAllFields(gstruct.Fields{
 						"Time":                 recent(maxStatsAge),
 						"UsageNanoCores":       bounded(100E3, 2E9),
@@ -211,39 +218,39 @@ var _ = framework.KubeDescribe("Summary API", func() {
 })
 
 func createSummaryTestPods(f *framework.Framework, names ...string) {
-	pods := make([]*api.Pod, 0, len(names))
+	pods := make([]*v1.Pod, 0, len(names))
 	for _, name := range names {
-		pods = append(pods, &api.Pod{
-			ObjectMeta: api.ObjectMeta{
+		pods = append(pods, &v1.Pod{
+			ObjectMeta: v1.ObjectMeta{
 				Name: name,
 			},
-			Spec: api.PodSpec{
-				RestartPolicy: api.RestartPolicyAlways,
-				Containers: []api.Container{
+			Spec: v1.PodSpec{
+				RestartPolicy: v1.RestartPolicyAlways,
+				Containers: []v1.Container{
 					{
 						Name:    "busybox-container",
 						Image:   "gcr.io/google_containers/busybox:1.24",
 						Command: []string{"sh", "-c", "ping -c 1 google.com; while true; do echo 'hello world' >> /test-empty-dir-mnt/file ; sleep 1; done"},
-						Resources: api.ResourceRequirements{
-							Limits: api.ResourceList{
+						Resources: v1.ResourceRequirements{
+							Limits: v1.ResourceList{
 								// Must set memory limit to get MemoryStats.AvailableBytes
-								api.ResourceMemory: resource.MustParse("10M"),
+								v1.ResourceMemory: resource.MustParse("10M"),
 							},
 						},
-						VolumeMounts: []api.VolumeMount{
+						VolumeMounts: []v1.VolumeMount{
 							{MountPath: "/test-empty-dir-mnt", Name: "test-empty-dir"},
 						},
 					},
 				},
-				SecurityContext: &api.PodSecurityContext{
-					SELinuxOptions: &api.SELinuxOptions{
+				SecurityContext: &v1.PodSecurityContext{
+					SELinuxOptions: &v1.SELinuxOptions{
 						Level: "s0",
 					},
 				},
-				Volumes: []api.Volume{
+				Volumes: []v1.Volume{
 					// TODO(#28393): Test secret volumes
 					// TODO(#28394): Test hostpath volumes
-					{Name: "test-empty-dir", VolumeSource: api.VolumeSource{EmptyDir: &api.EmptyDirVolumeSource{}}},
+					{Name: "test-empty-dir", VolumeSource: v1.VolumeSource{EmptyDir: &v1.EmptyDirVolumeSource{}}},
 				},
 			},
 		})
@@ -280,7 +287,7 @@ func bounded(lower, upper interface{}) types.GomegaMatcher {
 }
 
 func recent(d time.Duration) types.GomegaMatcher {
-	return WithTransform(func(t unversioned.Time) time.Time {
+	return WithTransform(func(t metav1.Time) time.Time {
 		return t.Time
 	}, And(
 		BeTemporally(">=", time.Now().Add(-d)),

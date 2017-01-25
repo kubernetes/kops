@@ -15,4 +15,5 @@ limitations under the License.
 */
 
 // +k8s:conversion-gen=k8s.io/kops/pkg/apis/kops
+// +k8s:defaulter-gen=TypeMeta
 package v1alpha1

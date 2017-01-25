@@ -22,7 +22,7 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/kubernetes/cmd/kubernetes-discovery/discoverysummarizer"
+	"k8s.io/kubernetes/cmd/kubernetes-discovery/pkg/legacy"
 	"k8s.io/kubernetes/examples/apiserver"
 )
 
@@ -50,7 +50,7 @@ func runDiscoverySummarizer(t *testing.T) string {
 	configFilePath := "../../../cmd/kubernetes-discovery/config.json"
 	port := "9090"
 	serverURL := "http://localhost:" + port
-	s, err := discoverysummarizer.NewDiscoverySummarizer(configFilePath)
+	s, err := legacy.NewDiscoverySummarizer(configFilePath)
 	if err != nil {
 		t.Errorf("unexpected error: %v\n", err)
 	}
@@ -68,15 +68,15 @@ func runDiscoverySummarizer(t *testing.T) string {
 func runAPIServer(t *testing.T, stopCh <-chan struct{}) string {
 	serverRunOptions := apiserver.NewServerRunOptions()
 	// Change the ports, because otherwise it will fail if examples/apiserver/apiserver_test and this are run in parallel.
-	serverRunOptions.SecurePort = 6443 + 3
-	serverRunOptions.InsecurePort = 8080 + 3
+	serverRunOptions.SecureServing.ServingOptions.BindPort = 6443 + 3
+	serverRunOptions.InsecureServing.BindPort = 8080 + 3
 	go func() {
-		if err := apiserver.Run(serverRunOptions, stopCh); err != nil {
+		if err := serverRunOptions.Run(stopCh); err != nil {
 			t.Fatalf("Error in bringing up the example apiserver: %v", err)
 		}
 	}()
 
-	serverURL := fmt.Sprintf("http://localhost:%d", serverRunOptions.InsecurePort)
+	serverURL := fmt.Sprintf("http://localhost:%d", serverRunOptions.InsecureServing.BindPort)
 	if err := waitForServerUp(serverURL); err != nil {
 		t.Fatalf("%v", err)
 	}

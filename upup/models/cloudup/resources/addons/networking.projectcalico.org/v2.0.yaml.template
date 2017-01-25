@@ -60,6 +60,7 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-node
+    role.kubernetes.io/networking: "1"
 spec:
   selector:
     matchLabels:
@@ -68,6 +69,7 @@ spec:
     metadata:
       labels:
         k8s-app: calico-node
+        role.kubernetes.io/networking: "1"
     spec:
       hostNetwork: true
       containers:
@@ -165,6 +167,7 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico-policy
+    role.kubernetes.io/networking: "1"
 spec:
   # The policy controller can only have a single active instance.
   replicas: 1
@@ -174,6 +177,7 @@ spec:
       namespace: kube-system
       labels:
         k8s-app: calico-policy-controller
+        role.kubernetes.io/networking: "1"
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
         scheduler.alpha.kubernetes.io/tolerations: |
@@ -217,6 +221,7 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: calico
+    role.kubernetes.io/networking: "1"
 spec:
   template:
     metadata:

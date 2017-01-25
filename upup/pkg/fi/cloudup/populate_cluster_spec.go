@@ -26,6 +26,7 @@ import (
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/models"
@@ -87,7 +88,7 @@ func PopulateClusterSpec(cluster *api.Cluster) (*api.Cluster, error) {
 // @kris-nova
 //
 func (c *populateClusterSpec) run() error {
-	err := c.InputCluster.Validate(false)
+	err := validation.ValidateCluster(c.InputCluster, false)
 	if err != nil {
 		return err
 	}
@@ -152,8 +153,7 @@ func (c *populateClusterSpec) run() error {
 					instanceGroupName := fi.StringValue(m.InstanceGroup)
 
 					if etcdInstanceGroups[instanceGroupName] != nil {
-						// Maybe this should just be a warning
-						return fmt.Errorf("EtcdMembers are in the same InstanceGroup %q in etcd-cluster %q", instanceGroupName, etcd.Name)
+						glog.Warningf("EtcdMembers are in the same InstanceGroup %q in etcd-cluster %q (fault-tolerance may be reduced)", instanceGroupName, etcd.Name)
 					}
 
 					//if clusterSubnets[zone] == nil {
@@ -223,14 +223,6 @@ func (c *populateClusterSpec) run() error {
 		return err
 	}
 
-	// Hard coding topology here
-	//
-	// We want topology to pass through
-	// Otherwise we were losing the pointer
-	// TODO: This should not be needed...
-	cluster.Spec.Topology = c.InputCluster.Spec.Topology
-	//cluster.Spec.Topology.Bastion = c.InputCluster.Spec.Topology.Bastion
-
 	if cluster.Spec.DNSZone == "" {
 		dns, err := cloud.DNS()
 		if err != nil {
@@ -238,7 +230,7 @@ func (c *populateClusterSpec) run() error {
 		}
 		dnsZone, err := FindDNSHostedZone(dns, cluster.ObjectMeta.Name)
 		if err != nil {
-			return fmt.Errorf("Error determining default DNS zone; please specify --dns-zone: %v", err)
+			return fmt.Errorf("error determining default DNS zone: %v", err)
 		}
 		glog.Infof("Defaulting DNS zone to: %s", dnsZone)
 		cluster.Spec.DNSZone = dnsZone
@@ -274,6 +266,7 @@ func (c *populateClusterSpec) run() error {
 			codeModels = append(codeModels, &components.DockerOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.NetworkingOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeletOptionsBuilder{Context: optionsContext})
+			codeModels = append(codeModels, &components.KubeControllerManagerOptionsBuilder{Context: optionsContext})
 			fileModels = append(fileModels, m)
 
 		default:
@@ -300,7 +293,7 @@ func (c *populateClusterSpec) run() error {
 	fullCluster.Spec = *completed
 	tf.cluster = fullCluster
 
-	err = fullCluster.Validate(true)
+	err = validation.ValidateCluster(fullCluster, true)
 	if err != nil {
 		return fmt.Errorf("Completed cluster failed validation: %v", err)
 	}

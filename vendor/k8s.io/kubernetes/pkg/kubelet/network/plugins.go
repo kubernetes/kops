@@ -21,12 +21,12 @@ import (
 	"net"
 	"strings"
 
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
+	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 
 	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/apis/componentconfig"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
 	utilerrors "k8s.io/kubernetes/pkg/util/errors"
 	utilexec "k8s.io/kubernetes/pkg/util/exec"
@@ -86,7 +86,7 @@ type NetworkPlugin interface {
 // PodNetworkStatus stores the network status of a pod (currently just the primary IP address)
 // This struct represents version "v1beta1"
 type PodNetworkStatus struct {
-	unversioned.TypeMeta `json:",inline"`
+	metav1.TypeMeta `json:",inline"`
 
 	// IP is the primary ipv4/ipv6 address of the pod. Among other things it is the address that -
 	//   - kube expects to be reachable across the cluster
@@ -102,7 +102,7 @@ type PodNetworkStatus struct {
 type LegacyHost interface {
 	// Get the pod structure by its name, namespace
 	// Only used for hostport management and bw shaping
-	GetPodByName(namespace, name string) (*api.Pod, bool)
+	GetPodByName(namespace, name string) (*v1.Pod, bool)
 
 	// GetKubeClient returns a client interface
 	// Only used in testing

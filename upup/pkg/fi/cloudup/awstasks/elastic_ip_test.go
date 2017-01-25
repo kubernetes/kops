@@ -47,8 +47,8 @@ func TestElasticIPCreate(t *testing.T) {
 			CIDR: s("172.20.1.0/24"),
 		}
 		eip1 := &ElasticIP{
-			Name:   s("eip1"),
-			Subnet: subnet1,
+			Name:        s("eip1"),
+			TagOnSubnet: subnet1,
 		}
 
 		return map[string]fi.Task{

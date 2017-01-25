@@ -22,13 +22,13 @@ import (
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/kutil"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 )
 
 type KubernetesTarget struct {
 	//kubectlContext string
 	//keystore *k8sapi.KubernetesKeystore
-	KubernetesClient release_1_5.Interface
+	KubernetesClient k8s_clientset.Interface
 	cluster          *kopsapi.Cluster
 }
 
@@ -50,7 +50,7 @@ func NewKubernetesTarget(clientset simple.Clientset, keystore fi.Keystore, clust
 		return nil, fmt.Errorf("error building configuration for cluster %q: %v", cluster.ObjectMeta.Name, err)
 	}
 
-	k8sClient, err := release_1_5.NewForConfig(clientConfig)
+	k8sClient, err := k8s_clientset.NewForConfig(clientConfig)
 	if err != nil {
 		return nil, fmt.Errorf("cannot build k8s client: %v", err)
 	}
@@ -67,6 +67,11 @@ var _ fi.Target = &KubernetesTarget{}
 
 func (t *KubernetesTarget) Finish(taskMap map[string]fi.Task) error {
 	return nil
+}
+
+func (t *KubernetesTarget) ProcessDeletions() bool {
+	// We don't expect any, but it would be up to us to process
+	return true
 }
 
 func (t *KubernetesTarget) Apply(manifest []byte) error {

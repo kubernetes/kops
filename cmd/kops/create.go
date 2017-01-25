@@ -30,13 +30,10 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/errors"
-	"k8s.io/kubernetes/pkg/api/unversioned"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 )
-
-// TODO: Move to field on instancegroup?
-const ClusterNameLabel = "kops.k8s.io/cluster"
 
 type CreateOptions struct {
 	resource.FilenameOptions
@@ -96,7 +93,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 		sections := bytes.Split(contents, []byte("\n---\n"))
 
 		for _, section := range sections {
-			defaults := &unversioned.GroupVersionKind{
+			defaults := &schema.GroupVersionKind{
 				Group:   v1alpha1.SchemeGroupVersion.Group,
 				Version: v1alpha1.SchemeGroupVersion.Version,
 			}
@@ -131,9 +128,9 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 				}
 
 			case *kopsapi.InstanceGroup:
-				clusterName := v.ObjectMeta.Labels[ClusterNameLabel]
+				clusterName := v.ObjectMeta.Labels[kopsapi.LabelClusterName]
 				if clusterName == "" {
-					return fmt.Errorf("must specify %q label with cluster name to create instanceGroup", ClusterNameLabel)
+					return fmt.Errorf("must specify %q label with cluster name to create instanceGroup", kopsapi.LabelClusterName)
 				}
 				_, err = clientset.InstanceGroups(clusterName).Create(v)
 				if err != nil {

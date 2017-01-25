@@ -17,21 +17,21 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/api/v1"
+	meta_v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 )
 
 // InstanceGroup represents a group of instances (either nodes or masters) with the same configuration
 type InstanceGroup struct {
-	unversioned.TypeMeta `json:",inline"`
-	ObjectMeta           api.ObjectMeta `json:"metadata,omitempty"`
+	meta_v1.TypeMeta `json:",inline"`
+	ObjectMeta       v1.ObjectMeta `json:"metadata,omitempty"`
 
 	Spec InstanceGroupSpec `json:"spec,omitempty"`
 }
 
 type InstanceGroupList struct {
-	unversioned.TypeMeta `json:",inline"`
-	unversioned.ListMeta `json:"metadata,omitempty"`
+	meta_v1.TypeMeta `json:",inline"`
+	meta_v1.ListMeta `json:"metadata,omitempty"`
 
 	Items []InstanceGroup `json:"items"`
 }
@@ -49,15 +49,15 @@ type InstanceGroupSpec struct {
 	Role InstanceGroupRole `json:"role,omitempty"`
 
 	Image   string `json:"image,omitempty"`
-	MinSize *int   `json:"minSize,omitempty"`
-	MaxSize *int   `json:"maxSize,omitempty"`
+	MinSize *int32 `json:"minSize,omitempty"`
+	MaxSize *int32 `json:"maxSize,omitempty"`
 	//NodeInstancePrefix string `json:",omitempty"`
 	//NodeLabels         string `json:",omitempty"`
 	MachineType string `json:"machineType,omitempty"`
 	//NodeTag            string `json:",omitempty"`
 
 	// RootVolumeSize is the size of the EBS root volume to use, in GB
-	RootVolumeSize *int `json:"rootVolumeSize,omitempty"`
+	RootVolumeSize *int32 `json:"rootVolumeSize,omitempty"`
 	// RootVolumeType is the type of the EBS root volume to use (e.g. gp2)
 	RootVolumeType *string `json:"rootVolumeType,omitempty"`
 

@@ -4,10 +4,8 @@ licenses(["notice"])
 
 load(
     "@io_bazel_rules_go//go:def.bzl",
-    "go_binary",
     "go_library",
     "go_test",
-    "cgo_library",
 )
 
 go_library(
@@ -25,9 +23,10 @@ go_library(
     deps = [
         "//pkg/api:go_default_library",
         "//pkg/api/errors:go_default_library",
-        "//pkg/api/unversioned:go_default_library",
+        "//pkg/api/v1:go_default_library",
         "//pkg/apis/componentconfig:go_default_library",
         "//pkg/apis/componentconfig/v1alpha1:go_default_library",
+        "//pkg/apis/meta/v1:go_default_library",
         "//pkg/kubelet/api/v1alpha1/stats:go_default_library",
         "//pkg/labels:go_default_library",
         "//pkg/util/procfs:go_default_library",
@@ -59,6 +58,7 @@ go_test(
         "e2e_node_suite_test.go",
         "garbage_collector_test.go",
         "image_id_test.go",
+        "inode_eviction_test.go",
         "kubelet_test.go",
         "lifecycle_hook_test.go",
         "log_path_test.go",
@@ -68,16 +68,17 @@ go_test(
         "restart_test.go",
         "runtime_conformance_test.go",
         "summary_test.go",
+        "volume_manager_test.go",
     ],
     library = "go_default_library",
     tags = ["automanaged"],
     deps = [
-        "//pkg/api:go_default_library",
         "//pkg/api/errors:go_default_library",
         "//pkg/api/resource:go_default_library",
-        "//pkg/api/unversioned:go_default_library",
+        "//pkg/api/v1:go_default_library",
+        "//pkg/apis/meta/v1:go_default_library",
         "//pkg/client/cache:go_default_library",
-        "//pkg/client/clientset_generated/internalclientset:go_default_library",
+        "//pkg/client/clientset_generated/clientset:go_default_library",
         "//pkg/kubelet:go_default_library",
         "//pkg/kubelet/api/v1alpha1/stats:go_default_library",
         "//pkg/kubelet/cm:go_default_library",
@@ -89,6 +90,7 @@ go_test(
         "//pkg/labels:go_default_library",
         "//pkg/metrics:go_default_library",
         "//pkg/runtime:go_default_library",
+        "//pkg/runtime/schema:go_default_library",
         "//pkg/security/apparmor:go_default_library",
         "//pkg/types:go_default_library",
         "//pkg/util/intstr:go_default_library",
@@ -99,6 +101,7 @@ go_test(
         "//test/e2e_node/services:go_default_library",
         "//test/e2e_node/system:go_default_library",
         "//test/utils:go_default_library",
+        "//vendor:github.com/coreos/go-systemd/util",
         "//vendor:github.com/davecgh/go-spew/spew",
         "//vendor:github.com/golang/glog",
         "//vendor:github.com/kardianos/osext",
@@ -109,7 +112,5 @@ go_test(
         "//vendor:github.com/onsi/gomega/gstruct",
         "//vendor:github.com/onsi/gomega/types",
         "//vendor:github.com/spf13/pflag",
-        "//vendor:k8s.io/client-go/pkg/api/errors",
-        "//vendor:k8s.io/client-go/pkg/api/unversioned",
     ],
 )

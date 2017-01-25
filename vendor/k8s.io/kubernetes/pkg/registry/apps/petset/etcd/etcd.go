@@ -20,69 +20,38 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/rest"
 	appsapi "k8s.io/kubernetes/pkg/apis/apps"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/registry/apps/petset"
-	"k8s.io/kubernetes/pkg/registry/cachesize"
 	"k8s.io/kubernetes/pkg/registry/generic"
-	"k8s.io/kubernetes/pkg/registry/generic/registry"
+	genericregistry "k8s.io/kubernetes/pkg/registry/generic/registry"
 	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/storage"
 )
 
 // rest implements a RESTStorage for replication controllers against etcd
 type REST struct {
-	*registry.Store
+	*genericregistry.Store
 }
 
 // NewREST returns a RESTStorage object that will work against replication controllers.
-func NewREST(opts generic.RESTOptions) (*REST, *StatusREST) {
-	prefix := "/" + opts.ResourcePrefix
-
-	newListFunc := func() runtime.Object { return &appsapi.StatefulSetList{} }
-	storageInterface, dFunc := opts.Decorator(
-		opts.StorageConfig,
-		cachesize.GetWatchCacheSizeByResource(cachesize.StatefulSet),
-		&appsapi.StatefulSet{},
-		prefix,
-		petset.Strategy,
-		newListFunc,
-		storage.NoTriggerPublisher,
-	)
-
-	store := &registry.Store{
-		NewFunc: func() runtime.Object { return &appsapi.StatefulSet{} },
-
-		// NewListFunc returns an object capable of storing results of an etcd list.
-		NewListFunc: newListFunc,
-		// Produces a statefulSet that etcd understands, to the root of the resource
-		// by combining the namespace in the context with the given prefix
-		KeyRootFunc: func(ctx api.Context) string {
-			return registry.NamespaceKeyRootFunc(ctx, prefix)
-		},
-		// Produces a statefulSet that etcd understands, to the resource by combining
-		// the namespace in the context with the given prefix
-		KeyFunc: func(ctx api.Context, name string) (string, error) {
-			return registry.NamespaceKeyFunc(ctx, prefix, name)
-		},
-		// Retrieve the name field of a replication controller
+func NewREST(optsGetter generic.RESTOptionsGetter) (*REST, *StatusREST) {
+	store := &genericregistry.Store{
+		NewFunc:     func() runtime.Object { return &appsapi.StatefulSet{} },
+		NewListFunc: func() runtime.Object { return &appsapi.StatefulSetList{} },
 		ObjectNameFunc: func(obj runtime.Object) (string, error) {
 			return obj.(*appsapi.StatefulSet).Name, nil
 		},
-		// Used to match objects based on labels/fields for list and watch
-		PredicateFunc:           petset.MatchStatefulSet,
-		QualifiedResource:       appsapi.Resource("statefulsets"),
-		EnableGarbageCollection: opts.EnableGarbageCollection,
-		DeleteCollectionWorkers: opts.DeleteCollectionWorkers,
+		PredicateFunc:     petset.MatchStatefulSet,
+		QualifiedResource: appsapi.Resource("statefulsets"),
 
-		// Used to validate controller creation
 		CreateStrategy: petset.Strategy,
-
-		// Used to validate controller updates
 		UpdateStrategy: petset.Strategy,
 		DeleteStrategy: petset.Strategy,
-
-		Storage:     storageInterface,
-		DestroyFunc: dFunc,
 	}
+	options := &generic.StoreOptions{RESTOptions: optsGetter, AttrFunc: petset.GetAttrs}
+	if err := store.CompleteWithOptions(options); err != nil {
+		panic(err) // TODO: Propagate error up
+	}
+
 	statusStore := *store
 	statusStore.UpdateStrategy = petset.StatusStrategy
 	return &REST{store}, &StatusREST{store: &statusStore}
@@ -90,7 +59,7 @@ func NewREST(opts generic.RESTOptions) (*REST, *StatusREST) {
 
 // StatusREST implements the REST endpoint for changing the status of an statefulSet
 type StatusREST struct {
-	store *registry.Store
+	store *genericregistry.Store
 }
 
 func (r *StatusREST) New() runtime.Object {
@@ -98,8 +67,8 @@ func (r *StatusREST) New() runtime.Object {
 }
 
 // Get retrieves the object from the storage. It is required to support Patch.
-func (r *StatusREST) Get(ctx api.Context, name string) (runtime.Object, error) {
-	return r.store.Get(ctx, name)
+func (r *StatusREST) Get(ctx api.Context, name string, options *metav1.GetOptions) (runtime.Object, error) {
+	return r.store.Get(ctx, name, options)
 }
 
 // Update alters the status subset of an object.

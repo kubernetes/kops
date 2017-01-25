@@ -18,10 +18,11 @@ package fake
 
 import (
 	api "k8s.io/kubernetes/pkg/api"
-	unversioned "k8s.io/kubernetes/pkg/api/unversioned"
 	certificates "k8s.io/kubernetes/pkg/apis/certificates"
+	v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	core "k8s.io/kubernetes/pkg/client/testing/core"
 	labels "k8s.io/kubernetes/pkg/labels"
+	schema "k8s.io/kubernetes/pkg/runtime/schema"
 	watch "k8s.io/kubernetes/pkg/watch"
 )
 
@@ -30,7 +31,7 @@ type FakeCertificateSigningRequests struct {
 	Fake *FakeCertificates
 }
 
-var certificatesigningrequestsResource = unversioned.GroupVersionResource{Group: "certificates.k8s.io", Version: "", Resource: "certificatesigningrequests"}
+var certificatesigningrequestsResource = schema.GroupVersionResource{Group: "certificates.k8s.io", Version: "", Resource: "certificatesigningrequests"}
 
 func (c *FakeCertificateSigningRequests) Create(certificateSigningRequest *certificates.CertificateSigningRequest) (result *certificates.CertificateSigningRequest, err error) {
 	obj, err := c.Fake.
@@ -72,7 +73,7 @@ func (c *FakeCertificateSigningRequests) DeleteCollection(options *api.DeleteOpt
 	return err
 }
 
-func (c *FakeCertificateSigningRequests) Get(name string) (result *certificates.CertificateSigningRequest, err error) {
+func (c *FakeCertificateSigningRequests) Get(name string, options v1.GetOptions) (result *certificates.CertificateSigningRequest, err error) {
 	obj, err := c.Fake.
 		Invokes(core.NewRootGetAction(certificatesigningrequestsResource, name), &certificates.CertificateSigningRequest{})
 	if obj == nil {

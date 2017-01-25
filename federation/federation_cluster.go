@@ -21,19 +21,21 @@ import (
 	"github.com/golang/glog"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kubernetes/federation/apis/federation/v1beta1"
-	"k8s.io/kubernetes/federation/client/clientset_generated/federation_release_1_5"
+	"k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset"
 	"k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	meta_v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 )
 
 type FederationCluster struct {
 	FederationNamespace string
 
-	ControllerKubernetesClients []release_1_5.Interface
-	FederationClient            federation_release_1_5.Interface
+	ControllerKubernetesClients []k8s_clientset.Interface
+	FederationClient            federation_clientset.Interface
 
 	ClusterSecretName string
 
@@ -58,25 +60,25 @@ func (o *FederationCluster) Run(cluster *kopsapi.Cluster) error {
 		KubeMasterIP: cluster.Spec.MasterPublicName,
 	}
 
-	kubeconfig, err := k.ExtractKubeconfig()
+	conf, err := k.ExtractKubeconfig()
 	if err != nil {
 		return fmt.Errorf("error building connection information for cluster %q: %v", cluster.ObjectMeta.Name, err)
 	}
 
-	user := kutil.KubectlUser{
-		ClientCertificateData: kubeconfig.ClientCert,
-		ClientKeyData:         kubeconfig.ClientKey,
+	user := kubeconfig.KubectlUser{
+		ClientCertificateData: conf.ClientCert,
+		ClientKeyData:         conf.ClientKey,
 	}
 	// username/password or bearer token may be set, but not both
-	if kubeconfig.KubeBearerToken != "" {
-		user.Token = kubeconfig.KubeBearerToken
+	if conf.KubeBearerToken != "" {
+		user.Token = conf.KubeBearerToken
 	} else {
-		user.Username = kubeconfig.KubeUser
-		user.Password = kubeconfig.KubePassword
+		user.Username = conf.KubeUser
+		user.Password = conf.KubePassword
 	}
 
 	for _, k8s := range o.ControllerKubernetesClients {
-		if err := o.ensureFederationSecret(k8s, kubeconfig.CACert, user); err != nil {
+		if err := o.ensureFederationSecret(k8s, conf.CACert, user); err != nil {
 			return err
 		}
 	}
@@ -88,20 +90,20 @@ func (o *FederationCluster) Run(cluster *kopsapi.Cluster) error {
 	return nil
 }
 
-func (o *FederationCluster) ensureFederationSecret(k8s release_1_5.Interface, caCertData []byte, user kutil.KubectlUser) error {
+func (o *FederationCluster) ensureFederationSecret(k8s k8s_clientset.Interface, caCertData []byte, user kubeconfig.KubectlUser) error {
 	_, err := mutateSecret(k8s, o.FederationNamespace, o.ClusterSecretName, func(s *v1.Secret) (*v1.Secret, error) {
 		var kubeconfigData []byte
 		var err error
 
 		{
-			kubeconfig := &kutil.KubectlConfig{
+			conf := &kubeconfig.KubectlConfig{
 				ApiVersion: "v1",
 				Kind:       "Config",
 			}
 
-			cluster := &kutil.KubectlClusterWithName{
+			cluster := &kubeconfig.KubectlClusterWithName{
 				Name: o.ClusterName,
-				Cluster: kutil.KubectlCluster{
+				Cluster: kubeconfig.KubectlCluster{
 					Server: "https://" + o.ApiserverHostname,
 				},
 			}
@@ -110,25 +112,25 @@ func (o *FederationCluster) ensureFederationSecret(k8s release_1_5.Interface, ca
 				cluster.Cluster.CertificateAuthorityData = caCertData
 			}
 
-			kubeconfig.Clusters = append(kubeconfig.Clusters, cluster)
+			conf.Clusters = append(conf.Clusters, cluster)
 
-			user := &kutil.KubectlUserWithName{
+			user := &kubeconfig.KubectlUserWithName{
 				Name: o.ClusterName,
 				User: user,
 			}
-			kubeconfig.Users = append(kubeconfig.Users, user)
+			conf.Users = append(conf.Users, user)
 
-			context := &kutil.KubectlContextWithName{
+			context := &kubeconfig.KubectlContextWithName{
 				Name: o.ClusterName,
-				Context: kutil.KubectlContext{
+				Context: kubeconfig.KubectlContext{
 					Cluster: cluster.Name,
 					User:    user.Name,
 				},
 			}
-			kubeconfig.CurrentContext = o.ClusterName
-			kubeconfig.Contexts = append(kubeconfig.Contexts, context)
+			conf.CurrentContext = o.ClusterName
+			conf.Contexts = append(conf.Contexts, context)
 
-			kubeconfigData, err = kopsapi.ToRawYaml(kubeconfig)
+			kubeconfigData, err = kopsapi.ToRawYaml(conf)
 			if err != nil {
 				return nil, fmt.Errorf("error building kubeconfig: %v", err)
 			}
@@ -149,7 +151,7 @@ func (o *FederationCluster) ensureFederationSecret(k8s release_1_5.Interface, ca
 	return err
 }
 
-func (o *FederationCluster) ensureFederationCluster(federationClient federation_release_1_5.Interface) error {
+func (o *FederationCluster) ensureFederationCluster(federationClient federation_clientset.Interface) error {
 	_, err := mutateCluster(federationClient, o.ClusterName, func(c *v1beta1.Cluster) (*v1beta1.Cluster, error) {
 		if c == nil {
 			c = &v1beta1.Cluster{}
@@ -176,9 +178,9 @@ func (o *FederationCluster) ensureFederationCluster(federationClient federation_
 	return err
 }
 
-func findCluster(k8s federation_release_1_5.Interface, name string) (*v1beta1.Cluster, error) {
+func findCluster(k8s federation_clientset.Interface, name string) (*v1beta1.Cluster, error) {
 	glog.V(2).Infof("querying k8s for federation cluster %s", name)
-	c, err := k8s.Federation().Clusters().Get(name)
+	c, err := k8s.Federation().Clusters().Get(name, meta_v1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil, nil
@@ -189,7 +191,7 @@ func findCluster(k8s federation_release_1_5.Interface, name string) (*v1beta1.Cl
 	return c, nil
 }
 
-func mutateCluster(k8s federation_release_1_5.Interface, name string, fn func(s *v1beta1.Cluster) (*v1beta1.Cluster, error)) (*v1beta1.Cluster, error) {
+func mutateCluster(k8s federation_clientset.Interface, name string, fn func(s *v1beta1.Cluster) (*v1beta1.Cluster, error)) (*v1beta1.Cluster, error) {
 	existing, err := findCluster(k8s, name)
 	if err != nil {
 		return nil, err

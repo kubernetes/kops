@@ -21,8 +21,9 @@ import (
 	"time"
 
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 )
 
 // A cluster to validate
@@ -50,7 +51,7 @@ type ValidationNode struct {
 
 // TODO: change this to the client that drain usages
 // ValidateCluster validate a k8s cluster with a provided instance group list
-func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupList, clusterKubernetesClient release_1_5.Interface) (*ValidationCluster, error) {
+func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupList, clusterKubernetesClient k8s_clientset.Interface) (*ValidationCluster, error) {
 	var instanceGroups []*kops.InstanceGroup
 	validationCluster := &ValidationCluster{}
 
@@ -58,9 +59,9 @@ func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupLi
 		ig := &instanceGroupList.Items[i]
 		instanceGroups = append(instanceGroups, ig)
 		if ig.Spec.Role == kops.InstanceGroupRoleMaster {
-			validationCluster.MastersCount += *ig.Spec.MinSize
+			validationCluster.MastersCount += int(fi.Int32Value(ig.Spec.MinSize))
 		} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
-			validationCluster.NodesCount += *ig.Spec.MinSize
+			validationCluster.NodesCount += int(fi.Int32Value(ig.Spec.MinSize))
 		}
 	}
 
@@ -135,14 +136,12 @@ func validateTheNodes(clusterName string, validationCluster *ValidationCluster) 
 	}
 
 	validationCluster.MastersReady = true
-	if len(validationCluster.MastersNotReadyArray) != 0 || validationCluster.MastersCount !=
-		len(validationCluster.MastersReadyArray) {
+	if len(validationCluster.MastersNotReadyArray) != 0 || validationCluster.MastersCount != len(validationCluster.MastersReadyArray) {
 		validationCluster.MastersReady = false
 	}
 
 	validationCluster.NodesReady = true
-	if len(validationCluster.NodesNotReadyArray) != 0 || validationCluster.NodesCount !=
-		len(validationCluster.NodesReadyArray) {
+	if len(validationCluster.NodesNotReadyArray) != 0 || validationCluster.NodesCount != len(validationCluster.NodesReadyArray) {
 		validationCluster.NodesReady = false
 	}
 

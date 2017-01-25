@@ -24,14 +24,14 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/diff"
 	k8sapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/apis/meta/v1"
 	"path"
 	"strings"
 	"testing"
 	"time"
 )
 
-var MagicTimestamp = unversioned.Time{Time: time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC)}
+var MagicTimestamp = v1.Time{Time: time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC)}
 
 // TestCreateClusterMinimal runs kops create cluster minimal.example.com --zones us-test-1a
 func TestCreateClusterMinimal(t *testing.T) {
@@ -49,6 +49,12 @@ func TestCreateClusterHA(t *testing.T) {
 func TestCreateClusterPrivate(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/private", "v1alpha1")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/private", "v1alpha2")
+}
+
+// TestCreateClusterWithNGWSpecified runs kops create cluster private.example.com --zones us-test-1a --master-zones us-test-1a
+func TestCreateClusterWithNGWSpecified(t *testing.T) {
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ngwspecified", "v1alpha1")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ngwspecified", "v1alpha2")
 }
 
 func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string) {

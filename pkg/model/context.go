@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/featureflag"
 	"strings"
 )
 
@@ -150,14 +149,44 @@ func (m *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 	return labels, nil
 }
 
+func (m *KopsModelContext) UsesBastionDns() bool {
+	if m.Cluster.Spec.Topology.Bastion != nil && m.Cluster.Spec.Topology.Bastion.BastionPublicName != "" {
+		return true
+	}
+	return false
+}
+
+func (m *KopsModelContext) UsesSSHBastion() bool {
+	for _, ig := range m.InstanceGroups {
+		if ig.Spec.Role == kops.InstanceGroupRoleBastion {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (m *KopsModelContext) UseLoadBalancerForAPI() bool {
-	return m.Cluster.Spec.Topology.Masters == kops.TopologyPrivate
+	if m.Cluster.Spec.API == nil {
+		return false
+	}
+	return m.Cluster.Spec.API.LoadBalancer != nil
 }
 
 func (m *KopsModelContext) UsePrivateDNS() bool {
-	if featureflag.PreviewPrivateDNS.Enabled() {
-		glog.Infof("PreviewPrivateDNS enabled; using private DNS")
-		return true
+	topology := m.Cluster.Spec.Topology
+	if topology != nil && topology.DNS != nil {
+		switch topology.DNS.Type {
+		case kops.DNSTypePublic:
+			return false
+		case kops.DNSTypePrivate:
+			return true
+
+		default:
+			glog.Warningf("Unknown DNS type %q", topology.DNS.Type)
+			return false
+		}
 	}
+
 	return false
 }

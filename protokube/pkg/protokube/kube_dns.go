@@ -17,22 +17,28 @@ limitations under the License.
 package protokube
 
 import (
-	"fmt"
+	"github.com/golang/glog"
+	"k8s.io/kops/dns-controller/pkg/dns"
 	"time"
 )
 
 const defaultTTL = time.Minute
 
-type DNSProvider interface {
-	Set(fqdn string, recordType string, value string, ttl time.Duration) error
-}
-
 // CreateInternalDNSNameRecord maps a FQDN to the internal IP address of the current machine
 func (k *KubeBoot) CreateInternalDNSNameRecord(fqdn string) error {
-	err := k.DNS.Set(fqdn, "A", k.InternalIP.String(), defaultTTL)
-	if err != nil {
-		return fmt.Errorf("error configuring DNS name %q: %v", fqdn, err)
+	ttl := defaultTTL
+	if ttl != dns.DefaultTTL {
+		glog.Infof("Ignoring ttl %v for %q", ttl, fqdn)
 	}
+
+	var records []dns.Record
+	records = append(records, dns.Record{
+		RecordType: dns.RecordTypeA,
+		FQDN:       fqdn,
+		Value:      k.InternalIP.String(),
+	})
+	k.DNSScope.Replace(fqdn, records)
+
 	return nil
 }
 

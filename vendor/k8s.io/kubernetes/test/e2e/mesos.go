@@ -19,9 +19,9 @@ package e2e
 import (
 	"fmt"
 
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
+	"k8s.io/kubernetes/pkg/api/v1"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/util/wait"
 	"k8s.io/kubernetes/test/e2e/framework"
@@ -45,7 +45,7 @@ var _ = framework.KubeDescribe("Mesos", func() {
 		nodeClient := f.ClientSet.Core().Nodes()
 
 		rackA := labels.SelectorFromSet(map[string]string{"k8s.mesosphere.io/attribute-rack": "1"})
-		options := api.ListOptions{LabelSelector: rackA}
+		options := v1.ListOptions{LabelSelector: rackA.String()}
 		nodes, err := nodeClient.List(options)
 		if err != nil {
 			framework.Failf("Failed to query for node: %v", err)
@@ -54,7 +54,7 @@ var _ = framework.KubeDescribe("Mesos", func() {
 
 		var addr string
 		for _, a := range nodes.Items[0].Status.Addresses {
-			if a.Type == api.NodeInternalIP {
+			if a.Type == v1.NodeInternalIP {
 				addr = a.Address
 			}
 		}
@@ -68,7 +68,7 @@ var _ = framework.KubeDescribe("Mesos", func() {
 		nodelist := framework.GetReadySchedulableNodesOrDie(client)
 		const ns = "static-pods"
 		numpods := int32(len(nodelist.Items))
-		framework.ExpectNoError(framework.WaitForPodsRunningReady(client, ns, numpods, wait.ForeverTestTimeout, map[string]string{}),
+		framework.ExpectNoError(framework.WaitForPodsRunningReady(client, ns, numpods, wait.ForeverTestTimeout, map[string]string{}, false),
 			fmt.Sprintf("number of static pods in namespace %s is %d", ns, numpods))
 	})
 
@@ -79,18 +79,18 @@ var _ = framework.KubeDescribe("Mesos", func() {
 		// scheduled onto it.
 		By("Trying to launch a pod with a label to get a node which can launch it.")
 		podName := "with-label"
-		_, err := c.Core().Pods(ns).Create(&api.Pod{
-			TypeMeta: unversioned.TypeMeta{
+		_, err := c.Core().Pods(ns).Create(&v1.Pod{
+			TypeMeta: metav1.TypeMeta{
 				Kind: "Pod",
 			},
-			ObjectMeta: api.ObjectMeta{
+			ObjectMeta: v1.ObjectMeta{
 				Name: podName,
 				Annotations: map[string]string{
 					"k8s.mesosphere.io/roles": "public",
 				},
 			},
-			Spec: api.PodSpec{
-				Containers: []api.Container{
+			Spec: v1.PodSpec{
+				Containers: []v1.Container{
 					{
 						Name:  podName,
 						Image: framework.GetPauseImageName(f.ClientSet),
@@ -101,7 +101,7 @@ var _ = framework.KubeDescribe("Mesos", func() {
 		framework.ExpectNoError(err)
 
 		framework.ExpectNoError(framework.WaitForPodNameRunningInNamespace(c, podName, ns))
-		pod, err := c.Core().Pods(ns).Get(podName)
+		pod, err := c.Core().Pods(ns).Get(podName, metav1.GetOptions{})
 		framework.ExpectNoError(err)
 
 		nodeClient := f.ClientSet.Core().Nodes()
@@ -110,7 +110,7 @@ var _ = framework.KubeDescribe("Mesos", func() {
 		rack2 := labels.SelectorFromSet(map[string]string{
 			"k8s.mesosphere.io/attribute-rack": "2",
 		})
-		options := api.ListOptions{LabelSelector: rack2}
+		options := v1.ListOptions{LabelSelector: rack2.String()}
 		nodes, err := nodeClient.List(options)
 		framework.ExpectNoError(err)
 

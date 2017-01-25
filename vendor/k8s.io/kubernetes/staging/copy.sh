@@ -33,7 +33,7 @@ readonly VERIFYONLY
 
 echo "**PLEASE** run \"godep restore\" before running this script"
 # PREREQUISITES: run `godep restore` in the main repo before calling this script.
-CLIENTSET="release_1_5"
+CLIENTSET="clientset"
 MAIN_REPO_FROM_SRC="k8s.io/kubernetes"
 MAIN_REPO="${GOPATH%:*}/src/${MAIN_REPO_FROM_SRC}"
 CLIENT_REPO_FROM_SRC="k8s.io/client-go"
@@ -61,8 +61,8 @@ function mkcp() {
 
 echo "copying client packages"
 mkcp "pkg/client/clientset_generated/${CLIENTSET}" "pkg/client/clientset_generated"
-mkcp "/pkg/client/record/" "/pkg/client"
-mkcp "/pkg/client/cache/" "/pkg/client"
+mkcp "/pkg/client/record" "/pkg/client"
+mkcp "/pkg/client/cache" "/pkg/client"
 # TODO: make this test file not depending on pkg/client/unversioned
 rm "${CLIENT_REPO_TEMP}"/pkg/client/cache/listwatch_test.go
 mkcp "/pkg/client/restclient" "/pkg/client"
@@ -85,8 +85,8 @@ echo "generating vendor/"
 GO15VENDOREXPERIMENT=1 godep save ./...
 popd > /dev/null
 
-echo "moving vendor/k8s.io/kuberentes"
-cp -rn "${CLIENT_REPO_TEMP}"/vendor/k8s.io/kubernetes/. "${CLIENT_REPO_TEMP}"/
+echo "moving vendor/k8s.io/kubernetes"
+cp -rn "${CLIENT_REPO_TEMP}"/vendor/k8s.io/kubernetes/* "${CLIENT_REPO_TEMP}"/
 rm -rf "${CLIENT_REPO_TEMP}"/vendor/k8s.io/kubernetes
 # client-go will share the vendor of the main repo for now. When client-go
 # becomes a standalone repo, it will have its own vendor
@@ -110,7 +110,7 @@ gofmt -w -r 'Scheme -> api.Scheme' "${CLIENT_REPO_TEMP}"/pkg/api/v1/ref.go
 sed -i 's/package api/package v1/g' "${CLIENT_REPO_TEMP}"/pkg/api/v1/ref.go
 # ref.go refers api.Scheme, so manually import /pkg/api
 sed -i "s,import (,import (\n\"${CLIENT_REPO_FROM_SRC}/pkg/api\",g" "${CLIENT_REPO_TEMP}"/pkg/api/v1/ref.go
-gofmt -w "${CLIENT_REPO_TEMP}"/pkg/api/v1/ref.go 
+gofmt -w "${CLIENT_REPO_TEMP}"/pkg/api/v1/ref.go
 # rewrite pkg/client/record to v1
 gofmt -w -r 'api.a -> v1.a' "${CLIENT_REPO_TEMP}"/pkg/client/record
 # need to call sed to rewrite the strings in test cases...
@@ -173,7 +173,7 @@ mvfolder cmd/kubeadm/app/apis/kubeadm pkg/apis/kubeadm
 if [ "$(find "${CLIENT_REPO_TEMP}"/pkg/client -type f -name "*.go")" ]; then
     echo "${CLIENT_REPO_TEMP}/pkg/client is expected to be empty"
     exit 1
-else 
+else
     rm -r "${CLIENT_REPO_TEMP}"/pkg/client
 fi
 mvfolder third_party pkg/third_party

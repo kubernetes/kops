@@ -22,9 +22,9 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
-	"k8s.io/kubernetes/pkg/apis/batch"
+	"k8s.io/kubernetes/pkg/api/v1"
+	batch "k8s.io/kubernetes/pkg/apis/batch/v2alpha1"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/types"
 	//"k8s.io/kubernetes/pkg/controller"
 	// "k8s.io/kubernetes/pkg/util/rand"
@@ -38,31 +38,31 @@ func TestGetJobFromTemplate(t *testing.T) {
 	var no bool = false
 
 	sj := batch.CronJob{
-		ObjectMeta: api.ObjectMeta{
+		ObjectMeta: v1.ObjectMeta{
 			Name:      "mycronjob",
 			Namespace: "snazzycats",
 			UID:       types.UID("1a2b3c"),
-			SelfLink:  "/apis/extensions/v1beta1/namespaces/snazzycats/jobs/mycronjob",
+			SelfLink:  "/apis/batch/v1/namespaces/snazzycats/jobs/mycronjob",
 		},
 		Spec: batch.CronJobSpec{
 			Schedule:          "* * * * ?",
 			ConcurrencyPolicy: batch.AllowConcurrent,
 			JobTemplate: batch.JobTemplateSpec{
-				ObjectMeta: api.ObjectMeta{
+				ObjectMeta: v1.ObjectMeta{
 					Labels:      map[string]string{"a": "b"},
 					Annotations: map[string]string{"x": "y"},
 				},
 				Spec: batch.JobSpec{
 					ActiveDeadlineSeconds: &one,
 					ManualSelector:        &no,
-					Template: api.PodTemplateSpec{
-						ObjectMeta: api.ObjectMeta{
+					Template: v1.PodTemplateSpec{
+						ObjectMeta: v1.ObjectMeta{
 							Labels: map[string]string{
 								"foo": "bar",
 							},
 						},
-						Spec: api.PodSpec{
-							Containers: []api.Container{
+						Spec: v1.PodSpec{
+							Containers: []v1.Container{
 								{Image: "foo/bar"},
 							},
 						},
@@ -86,11 +86,11 @@ func TestGetJobFromTemplate(t *testing.T) {
 	if len(job.ObjectMeta.Annotations) != 2 {
 		t.Errorf("Wrong number of annotations")
 	}
-	v, ok := job.ObjectMeta.Annotations[api.CreatedByAnnotation]
+	v, ok := job.ObjectMeta.Annotations[v1.CreatedByAnnotation]
 	if !ok {
 		t.Errorf("Missing created-by annotation")
 	}
-	expectedCreatedBy := `{"kind":"SerializedReference","apiVersion":"v1","reference":{"kind":"CronJob","namespace":"snazzycats","name":"mycronjob","uid":"1a2b3c","apiVersion":"extensions"}}
+	expectedCreatedBy := `{"kind":"SerializedReference","apiVersion":"v1","reference":{"kind":"CronJob","namespace":"snazzycats","name":"mycronjob","uid":"1a2b3c","apiVersion":"batch"}}
 `
 	if len(v) != len(expectedCreatedBy) {
 		t.Errorf("Wrong length for created-by annotation, expected %v got %v", len(expectedCreatedBy), len(v))
@@ -102,22 +102,22 @@ func TestGetJobFromTemplate(t *testing.T) {
 
 func TestGetParentUIDFromJob(t *testing.T) {
 	j := &batch.Job{
-		ObjectMeta: api.ObjectMeta{
+		ObjectMeta: v1.ObjectMeta{
 			Name:      "foobar",
-			Namespace: api.NamespaceDefault,
+			Namespace: v1.NamespaceDefault,
 		},
 		Spec: batch.JobSpec{
-			Selector: &unversioned.LabelSelector{
+			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{"foo": "bar"},
 			},
-			Template: api.PodTemplateSpec{
-				ObjectMeta: api.ObjectMeta{
+			Template: v1.PodTemplateSpec{
+				ObjectMeta: v1.ObjectMeta{
 					Labels: map[string]string{
 						"foo": "bar",
 					},
 				},
-				Spec: api.PodSpec{
-					Containers: []api.Container{
+				Spec: v1.PodSpec{
+					Containers: []v1.Container{
 						{Image: "foo/bar"},
 					},
 				},
@@ -126,7 +126,7 @@ func TestGetParentUIDFromJob(t *testing.T) {
 		Status: batch.JobStatus{
 			Conditions: []batch.JobCondition{{
 				Type:   batch.JobComplete,
-				Status: api.ConditionTrue,
+				Status: v1.ConditionTrue,
 			}},
 		},
 	}
@@ -140,7 +140,7 @@ func TestGetParentUIDFromJob(t *testing.T) {
 	}
 	{
 		// Case 2: Has UID annotation
-		j.ObjectMeta.Annotations = map[string]string{api.CreatedByAnnotation: `{"kind":"SerializedReference","apiVersion":"v1","reference":{"kind":"CronJob","namespace":"default","name":"pi","uid":"5ef034e0-1890-11e6-8935-42010af0003e","apiVersion":"extensions","resourceVersion":"427339"}}`}
+		j.ObjectMeta.Annotations = map[string]string{v1.CreatedByAnnotation: `{"kind":"SerializedReference","apiVersion":"v1","reference":{"kind":"CronJob","namespace":"default","name":"pi","uid":"5ef034e0-1890-11e6-8935-42010af0003e","apiVersion":"extensions","resourceVersion":"427339"}}`}
 
 		expectedUID := types.UID("5ef034e0-1890-11e6-8935-42010af0003e")
 
@@ -158,9 +158,9 @@ func TestGroupJobsByParent(t *testing.T) {
 	uid1 := types.UID("11111111-1111-1111-1111-111111111111")
 	uid2 := types.UID("22222222-2222-2222-2222-222222222222")
 	uid3 := types.UID("33333333-3333-3333-3333-333333333333")
-	createdBy1 := map[string]string{api.CreatedByAnnotation: `{"kind":"SerializedReference","apiVersion":"v1","reference":{"kind":"CronJob","namespace":"x","name":"pi","uid":"11111111-1111-1111-1111-111111111111","apiVersion":"extensions","resourceVersion":"111111"}}`}
-	createdBy2 := map[string]string{api.CreatedByAnnotation: `{"kind":"SerializedReference","apiVersion":"v1","reference":{"kind":"CronJob","namespace":"x","name":"pi","uid":"22222222-2222-2222-2222-222222222222","apiVersion":"extensions","resourceVersion":"222222"}}`}
-	createdBy3 := map[string]string{api.CreatedByAnnotation: `{"kind":"SerializedReference","apiVersion":"v1","reference":{"kind":"CronJob","namespace":"y","name":"pi","uid":"33333333-3333-3333-3333-333333333333","apiVersion":"extensions","resourceVersion":"333333"}}`}
+	createdBy1 := map[string]string{v1.CreatedByAnnotation: `{"kind":"SerializedReference","apiVersion":"v1","reference":{"kind":"CronJob","namespace":"x","name":"pi","uid":"11111111-1111-1111-1111-111111111111","apiVersion":"extensions","resourceVersion":"111111"}}`}
+	createdBy2 := map[string]string{v1.CreatedByAnnotation: `{"kind":"SerializedReference","apiVersion":"v1","reference":{"kind":"CronJob","namespace":"x","name":"pi","uid":"22222222-2222-2222-2222-222222222222","apiVersion":"extensions","resourceVersion":"222222"}}`}
+	createdBy3 := map[string]string{v1.CreatedByAnnotation: `{"kind":"SerializedReference","apiVersion":"v1","reference":{"kind":"CronJob","namespace":"y","name":"pi","uid":"33333333-3333-3333-3333-333333333333","apiVersion":"extensions","resourceVersion":"333333"}}`}
 	noCreatedBy := map[string]string{}
 
 	{
@@ -176,7 +176,7 @@ func TestGroupJobsByParent(t *testing.T) {
 	{
 		// Case 2: there is one controller with no job.
 		sjs := []batch.CronJob{
-			{ObjectMeta: api.ObjectMeta{Name: "e", Namespace: "x", UID: uid1}},
+			{ObjectMeta: v1.ObjectMeta{Name: "e", Namespace: "x", UID: uid1}},
 		}
 		js := []batch.Job{}
 		jobsBySj := groupJobsByParent(sjs, js)
@@ -188,10 +188,10 @@ func TestGroupJobsByParent(t *testing.T) {
 	{
 		// Case 3: there is one controller with one job it created.
 		sjs := []batch.CronJob{
-			{ObjectMeta: api.ObjectMeta{Name: "e", Namespace: "x", UID: uid1}},
+			{ObjectMeta: v1.ObjectMeta{Name: "e", Namespace: "x", UID: uid1}},
 		}
 		js := []batch.Job{
-			{ObjectMeta: api.ObjectMeta{Name: "a", Namespace: "x", Annotations: createdBy1}},
+			{ObjectMeta: v1.ObjectMeta{Name: "a", Namespace: "x", Annotations: createdBy1}},
 		}
 		jobsBySj := groupJobsByParent(sjs, js)
 
@@ -211,18 +211,18 @@ func TestGroupJobsByParent(t *testing.T) {
 		// Case 4: Two namespaces, one has two jobs from one controller, other has 3 jobs from two controllers.
 		// There are also two jobs with no created-by annotation.
 		js := []batch.Job{
-			{ObjectMeta: api.ObjectMeta{Name: "a", Namespace: "x", Annotations: createdBy1}},
-			{ObjectMeta: api.ObjectMeta{Name: "b", Namespace: "x", Annotations: createdBy2}},
-			{ObjectMeta: api.ObjectMeta{Name: "c", Namespace: "x", Annotations: createdBy1}},
-			{ObjectMeta: api.ObjectMeta{Name: "d", Namespace: "x", Annotations: noCreatedBy}},
-			{ObjectMeta: api.ObjectMeta{Name: "a", Namespace: "y", Annotations: createdBy3}},
-			{ObjectMeta: api.ObjectMeta{Name: "b", Namespace: "y", Annotations: createdBy3}},
-			{ObjectMeta: api.ObjectMeta{Name: "d", Namespace: "y", Annotations: noCreatedBy}},
+			{ObjectMeta: v1.ObjectMeta{Name: "a", Namespace: "x", Annotations: createdBy1}},
+			{ObjectMeta: v1.ObjectMeta{Name: "b", Namespace: "x", Annotations: createdBy2}},
+			{ObjectMeta: v1.ObjectMeta{Name: "c", Namespace: "x", Annotations: createdBy1}},
+			{ObjectMeta: v1.ObjectMeta{Name: "d", Namespace: "x", Annotations: noCreatedBy}},
+			{ObjectMeta: v1.ObjectMeta{Name: "a", Namespace: "y", Annotations: createdBy3}},
+			{ObjectMeta: v1.ObjectMeta{Name: "b", Namespace: "y", Annotations: createdBy3}},
+			{ObjectMeta: v1.ObjectMeta{Name: "d", Namespace: "y", Annotations: noCreatedBy}},
 		}
 		sjs := []batch.CronJob{
-			{ObjectMeta: api.ObjectMeta{Name: "e", Namespace: "x", UID: uid1}},
-			{ObjectMeta: api.ObjectMeta{Name: "f", Namespace: "x", UID: uid2}},
-			{ObjectMeta: api.ObjectMeta{Name: "g", Namespace: "y", UID: uid3}},
+			{ObjectMeta: v1.ObjectMeta{Name: "e", Namespace: "x", UID: uid1}},
+			{ObjectMeta: v1.ObjectMeta{Name: "f", Namespace: "x", UID: uid2}},
+			{ObjectMeta: v1.ObjectMeta{Name: "g", Namespace: "y", UID: uid3}},
 		}
 
 		jobsBySj := groupJobsByParent(sjs, js)
@@ -270,9 +270,9 @@ func TestGetRecentUnmetScheduleTimes(t *testing.T) {
 	}
 
 	sj := batch.CronJob{
-		ObjectMeta: api.ObjectMeta{
+		ObjectMeta: v1.ObjectMeta{
 			Name:      "mycronjob",
-			Namespace: api.NamespaceDefault,
+			Namespace: v1.NamespaceDefault,
 			UID:       types.UID("1a2b3c"),
 		},
 		Spec: batch.CronJobSpec{
@@ -284,7 +284,7 @@ func TestGetRecentUnmetScheduleTimes(t *testing.T) {
 	{
 		// Case 1: no known start times, and none needed yet.
 		// Creation time is before T1.
-		sj.ObjectMeta.CreationTimestamp = unversioned.Time{Time: T1.Add(-10 * time.Minute)}
+		sj.ObjectMeta.CreationTimestamp = metav1.Time{Time: T1.Add(-10 * time.Minute)}
 		// Current time is more than creation time, but less than T1.
 		now := T1.Add(-7 * time.Minute)
 		times, err := getRecentUnmetScheduleTimes(sj, now)
@@ -298,7 +298,7 @@ func TestGetRecentUnmetScheduleTimes(t *testing.T) {
 	{
 		// Case 2: no known start times, and one needed.
 		// Creation time is before T1.
-		sj.ObjectMeta.CreationTimestamp = unversioned.Time{Time: T1.Add(-10 * time.Minute)}
+		sj.ObjectMeta.CreationTimestamp = metav1.Time{Time: T1.Add(-10 * time.Minute)}
 		// Current time is after T1
 		now := T1.Add(2 * time.Second)
 		times, err := getRecentUnmetScheduleTimes(sj, now)
@@ -314,9 +314,9 @@ func TestGetRecentUnmetScheduleTimes(t *testing.T) {
 	{
 		// Case 3: known LastScheduleTime, no start needed.
 		// Creation time is before T1.
-		sj.ObjectMeta.CreationTimestamp = unversioned.Time{Time: T1.Add(-10 * time.Minute)}
+		sj.ObjectMeta.CreationTimestamp = metav1.Time{Time: T1.Add(-10 * time.Minute)}
 		// Status shows a start at the expected time.
-		sj.Status.LastScheduleTime = &unversioned.Time{Time: T1}
+		sj.Status.LastScheduleTime = &metav1.Time{Time: T1}
 		// Current time is after T1
 		now := T1.Add(2 * time.Minute)
 		times, err := getRecentUnmetScheduleTimes(sj, now)
@@ -330,9 +330,9 @@ func TestGetRecentUnmetScheduleTimes(t *testing.T) {
 	{
 		// Case 4: known LastScheduleTime, a start needed
 		// Creation time is before T1.
-		sj.ObjectMeta.CreationTimestamp = unversioned.Time{Time: T1.Add(-10 * time.Minute)}
+		sj.ObjectMeta.CreationTimestamp = metav1.Time{Time: T1.Add(-10 * time.Minute)}
 		// Status shows a start at the expected time.
-		sj.Status.LastScheduleTime = &unversioned.Time{Time: T1}
+		sj.Status.LastScheduleTime = &metav1.Time{Time: T1}
 		// Current time is after T1 and after T2
 		now := T2.Add(5 * time.Minute)
 		times, err := getRecentUnmetScheduleTimes(sj, now)
@@ -347,8 +347,8 @@ func TestGetRecentUnmetScheduleTimes(t *testing.T) {
 	}
 	{
 		// Case 5: known LastScheduleTime, two starts needed
-		sj.ObjectMeta.CreationTimestamp = unversioned.Time{Time: T1.Add(-2 * time.Hour)}
-		sj.Status.LastScheduleTime = &unversioned.Time{Time: T1.Add(-1 * time.Hour)}
+		sj.ObjectMeta.CreationTimestamp = metav1.Time{Time: T1.Add(-2 * time.Hour)}
+		sj.Status.LastScheduleTime = &metav1.Time{Time: T1.Add(-1 * time.Hour)}
 		// Current time is after T1 and after T2
 		now := T2.Add(5 * time.Minute)
 		times, err := getRecentUnmetScheduleTimes(sj, now)
@@ -368,8 +368,8 @@ func TestGetRecentUnmetScheduleTimes(t *testing.T) {
 	}
 	{
 		// Case 6: now is way way ahead of last start time.
-		sj.ObjectMeta.CreationTimestamp = unversioned.Time{Time: T1.Add(-2 * time.Hour)}
-		sj.Status.LastScheduleTime = &unversioned.Time{Time: T1.Add(-1 * time.Hour)}
+		sj.ObjectMeta.CreationTimestamp = metav1.Time{Time: T1.Add(-2 * time.Hour)}
+		sj.Status.LastScheduleTime = &metav1.Time{Time: T1.Add(-1 * time.Hour)}
 		now := T2.Add(10 * 24 * time.Hour)
 		_, err := getRecentUnmetScheduleTimes(sj, now)
 		if err == nil {

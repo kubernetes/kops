@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kubernetes/pkg/util/sets"
@@ -30,6 +31,8 @@ import (
 const MockAWSRegion = "us-mock-1"
 
 func buildDefaultCluster(t *testing.T) *api.Cluster {
+	awsup.InstallMockAWSCloud(MockAWSRegion, "abcd")
+
 	c := buildMinimalCluster()
 
 	err := PerformAssignments(c)
@@ -56,8 +59,6 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 			c.Spec.EtcdClusters = append(c.Spec.EtcdClusters, etcd)
 		}
 	}
-
-	awsup.InstallMockAWSCloud(MockAWSRegion, "abcd")
 
 	fullSpec, err := PopulateClusterSpec(c)
 	if err != nil {
@@ -105,12 +106,12 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 
 func TestValidateFull_Default_Validates(t *testing.T) {
 	c := buildDefaultCluster(t)
-	err := c.Validate(false)
+	err := validation.ValidateCluster(c, false)
 	if err != nil {
 		glog.Infof("Cluster: %v", c)
 		t.Fatalf("Validate gave unexpected error (strict=false): %v", err)
 	}
-	err = c.Validate(true)
+	err = validation.ValidateCluster(c, true)
 	if err != nil {
 		t.Fatalf("Validate gave unexpected error (strict=true): %v", err)
 	}
@@ -178,7 +179,7 @@ func TestValidate_ClusterName_Import(t *testing.T) {
 }
 
 func expectErrorFromValidate(t *testing.T, c *api.Cluster, message string) {
-	err := c.Validate(false)
+	err := validation.ValidateCluster(c, false)
 	if err == nil {
 		t.Fatalf("Expected error from Validate")
 	}
@@ -189,7 +190,7 @@ func expectErrorFromValidate(t *testing.T, c *api.Cluster, message string) {
 }
 
 func expectNoErrorFromValidate(t *testing.T, c *api.Cluster) {
-	err := c.Validate(false)
+	err := validation.ValidateCluster(c, false)
 	if err != nil {
 		t.Fatalf("Unexpected error from Validate: %v", err)
 	}

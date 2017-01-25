@@ -1,5 +1,5 @@
 /*
-Copyright 2014 The Kubernetes Authors.
+Copyright 2016 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -86,7 +86,7 @@ func TestConfigDirCleaner(t *testing.T) {
 				"manifests",
 			},
 		},
-		"preserve cloud-config.json": {
+		"preserve cloud-config": {
 			setupDirs: []string{
 				"manifests",
 				"pki",
@@ -97,12 +97,12 @@ func TestConfigDirCleaner(t *testing.T) {
 				"pki/ca.pem",
 				"admin.conf",
 				"kubelet.conf",
-				"cloud-config.json",
+				"cloud-config",
 			},
 			verifyExists: []string{
 				"manifests",
 				"pki",
-				"cloud-config.json",
+				"cloud-config",
 			},
 		},
 		"preserve hidden files and directories": {
@@ -117,13 +117,13 @@ func TestConfigDirCleaner(t *testing.T) {
 				"pki/ca.pem",
 				"admin.conf",
 				"kubelet.conf",
-				".cloud-config.json",
+				".cloud-config",
 				".mydir/.myfile",
 			},
 			verifyExists: []string{
 				"manifests",
 				"pki",
-				".cloud-config.json",
+				".cloud-config",
 				".mydir",
 				".mydir/.myfile",
 			},
@@ -162,7 +162,7 @@ func TestConfigDirCleaner(t *testing.T) {
 			}
 		}
 
-		resetConfigDir(tmpDir)
+		resetConfigDir(tmpDir, filepath.Join(tmpDir, "pki"))
 
 		// Verify the files we cleanup implicitly in every test:
 		assertExists(t, tmpDir)

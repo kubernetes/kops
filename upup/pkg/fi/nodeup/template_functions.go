@@ -26,6 +26,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/util/pkg/vfs"
@@ -49,9 +50,6 @@ type templateFunctions struct {
 	secretStore fi.SecretStore
 
 	tags sets.String
-
-	// kubeletConfig is the kubelet config for the current node
-	kubeletConfig *api.KubeletConfigSpec
 }
 
 // newTemplateFunctions is the constructor for templateFunctions
@@ -87,37 +85,11 @@ func newTemplateFunctions(nodeupConfig *NodeUpConfig, cluster *api.Cluster, inst
 		return nil, fmt.Errorf("KeyStore not set")
 	}
 
-	{
-		instanceGroup := t.instanceGroup
-		if instanceGroup == nil {
-			// Old clusters might not have exported instance groups
-			// in that case we build a synthetic instance group with the information that BuildKubeletConfigSpec needs
-			// TODO: Remove this once we have a stable release
-			glog.Warningf("Building a synthetic instance group")
-			instanceGroup = &api.InstanceGroup{}
-			instanceGroup.ObjectMeta.Name = "synthetic"
-			if t.IsMaster() {
-				instanceGroup.Spec.Role = api.InstanceGroupRoleMaster
-			} else {
-				instanceGroup.Spec.Role = api.InstanceGroupRoleNode
-			}
-			t.instanceGroup = instanceGroup
-		}
-		kubeletConfigSpec, err := api.BuildKubeletConfigSpec(cluster, instanceGroup)
-		if err != nil {
-			return nil, fmt.Errorf("error building kubelet config: %v", err)
-		}
-		t.kubeletConfig = kubeletConfigSpec
-	}
-
 	return t, nil
 }
 
 func (t *templateFunctions) populate(dest template.FuncMap) {
 	dest["Arch"] = func() string { return runtime.GOARCH }
-
-	dest["IsTopologyPublic"] = t.cluster.IsTopologyPublic
-	dest["IsTopologyPrivate"] = t.cluster.IsTopologyPrivate
 
 	dest["CACertificatePool"] = t.CACertificatePool
 	dest["CACertificate"] = t.CACertificate
@@ -126,7 +98,7 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 	dest["AllTokens"] = t.AllTokens
 	dest["GetToken"] = t.GetToken
 
-	dest["BuildFlags"] = buildFlags
+	dest["BuildFlags"] = flagbuilder.BuildFlags
 	dest["Base64Encode"] = func(s string) string {
 		return base64.StdEncoding.EncodeToString([]byte(s))
 	}
@@ -147,9 +119,6 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 		return t.cluster.Spec.KubeControllerManager
 	}
 	dest["KubeProxy"] = t.KubeProxyConfig
-	dest["KubeletConfig"] = func() *api.KubeletConfigSpec {
-		return t.kubeletConfig
-	}
 
 	dest["ClusterName"] = func() string {
 		return t.cluster.ObjectMeta.Name
@@ -159,6 +128,8 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 	dest["ProtokubeImagePullCommand"] = t.ProtokubeImagePullCommand
 
 	dest["ProtokubeFlags"] = t.ProtokubeFlags
+
+	dest["BuildAPIServerAnnotations"] = t.BuildAPIServerAnnotations
 }
 
 // IsMaster returns true if we are tagged as a master
@@ -277,10 +248,22 @@ func (t *templateFunctions) ProtokubeFlags() *ProtokubeFlags {
 		f.Channels = t.nodeupConfig.Channels
 	}
 
-	f.LogLevel = fi.Int(8)
+	f.LogLevel = fi.Int32(4)
 	f.Containerized = fi.Bool(true)
-	if t.cluster.Spec.DNSZone != "" {
-		f.DNSZoneName = fi.String(t.cluster.Spec.DNSZone)
+
+	zone := t.cluster.Spec.DNSZone
+	if zone != "" {
+		if strings.Contains(zone, ".") {
+			// match by name
+			f.Zone = append(f.Zone, zone)
+		} else {
+			// match by id
+			f.Zone = append(f.Zone, "*/"+zone)
+		}
+	} else {
+		glog.Warningf("DNSZone not specified; protokube won't be able to update DNS")
+		// TODO: Should we permit wildcard updates if zone is not specified?
+		//argv = append(argv, "--zone=*/*")
 	}
 
 	return f
@@ -300,4 +283,13 @@ func (t *templateFunctions) KubeProxyConfig() *api.KubeProxyConfig {
 	}
 
 	return config
+}
+
+func (t *templateFunctions) BuildAPIServerAnnotations() map[string]string {
+	annotations := make(map[string]string)
+	annotations["dns.alpha.kubernetes.io/internal"] = t.cluster.Spec.MasterInternalName
+	if t.cluster.Spec.API != nil && t.cluster.Spec.API.DNS != nil {
+		annotations["dns.alpha.kubernetes.io/external"] = t.cluster.Spec.MasterPublicName
+	}
+	return annotations
 }

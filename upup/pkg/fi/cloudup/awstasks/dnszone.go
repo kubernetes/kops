@@ -33,8 +33,9 @@ import (
 
 //go:generate fitask -type=DNSZone
 type DNSZone struct {
-	Name *string
-	ID   *string
+	Name    *string
+	DNSName *string
+	ZoneID  *string
 
 	Private    *bool
 	PrivateVPC *VPC
@@ -60,7 +61,12 @@ func (e *DNSZone) Find(c *fi.Context) (*DNSZone, error) {
 
 	actual := &DNSZone{}
 	actual.Name = e.Name
-	actual.ID = z.HostedZone.Id
+	if z.HostedZone.Name != nil {
+		actual.DNSName = fi.String(strings.TrimSuffix(*z.HostedZone.Name, "."))
+	}
+	if z.HostedZone.Id != nil {
+		actual.ZoneID = fi.String(strings.TrimPrefix(*z.HostedZone.Id, "/hostedzone/"))
+	}
 	actual.Private = z.HostedZone.Config.PrivateZone
 
 	// If the zone is private, but we don't want it to be, that will be an error
@@ -77,8 +83,11 @@ func (e *DNSZone) Find(c *fi.Context) (*DNSZone, error) {
 		}
 	}
 
-	if e.ID == nil {
-		e.ID = actual.ID
+	if e.ZoneID == nil {
+		e.ZoneID = actual.ZoneID
+	}
+	if e.DNSName == nil {
+		e.DNSName = actual.DNSName
 	}
 
 	return actual, nil
@@ -86,24 +95,15 @@ func (e *DNSZone) Find(c *fi.Context) (*DNSZone, error) {
 
 func (e *DNSZone) findExisting(cloud awsup.AWSCloud) (*route53.GetHostedZoneOutput, error) {
 	findID := ""
-	if e.ID != nil {
-		findID = *e.ID
-	} else if e.Name != nil && !strings.Contains(*e.Name, ".") {
-		// Looks like a hosted zone ID
-		findID = *e.Name
-	}
-	if findID != "" {
+	if e.ZoneID != nil {
 		request := &route53.GetHostedZoneInput{
-			Id: aws.String(findID),
+			Id: e.ZoneID,
 		}
 
 		response, err := cloud.Route53().GetHostedZone(request)
 		if err != nil {
 			if awsup.AWSErrorCode(err) == "NoSuchHostedZone" {
-				if e.ID != nil {
-					return nil, nil
-				}
-				// Otherwise continue ... maybe the name was not an id after all...
+				return nil, nil
 			} else {
 				return nil, fmt.Errorf("error fetching DNS HostedZone %q: %v", findID, err)
 			}
@@ -112,7 +112,7 @@ func (e *DNSZone) findExisting(cloud awsup.AWSCloud) (*route53.GetHostedZoneOutp
 		}
 	}
 
-	findName := fi.StringValue(e.Name)
+	findName := fi.StringValue(e.DNSName)
 	if findName == "" {
 		return nil, nil
 	}
@@ -165,10 +165,10 @@ func (s *DNSZone) CheckChanges(a, e, changes *DNSZone) error {
 }
 
 func (_ *DNSZone) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSZone) error {
-	name := aws.StringValue(e.Name)
+	name := aws.StringValue(e.DNSName)
 	if a == nil {
 		request := &route53.CreateHostedZoneInput{}
-		request.Name = e.Name
+		request.Name = e.DNSName
 		nonce := rand.Int63()
 		request.CallerReference = aws.String(strconv.FormatInt(nonce, 10))
 
@@ -186,11 +186,11 @@ func (_ *DNSZone) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSZone) error
 			return fmt.Errorf("error creating DNS HostedZone %q: %v", name, err)
 		}
 
-		e.ID = response.HostedZone.Id
+		e.ZoneID = response.HostedZone.Id
 	} else {
 		if changes.PrivateVPC != nil {
 			request := &route53.AssociateVPCWithHostedZoneInput{
-				HostedZoneId: a.ID,
+				HostedZoneId: a.ZoneID,
 				VPC: &route53.VPC{
 					VPCId:     e.PrivateVPC.ID,
 					VPCRegion: aws.String(t.Cloud.Region()),
@@ -227,10 +227,12 @@ type terraformRoute53Zone struct {
 func (_ *DNSZone) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *DNSZone) error {
 	cloud := t.Cloud.(awsup.AWSCloud)
 
+	dnsName := fi.StringValue(e.DNSName)
+
 	// As a special case, we check for an existing zone
 	// It is really painful to have TF create a new one...
 	// (you have to reconfigure the DNS NS records)
-	glog.Infof("Check for existing route53 zone to re-use with name %q", *e.Name)
+	glog.Infof("Check for existing route53 zone to re-use with name %q", dnsName)
 	z, err := e.findExisting(cloud)
 	if err != nil {
 		return err
@@ -239,7 +241,7 @@ func (_ *DNSZone) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *D
 	if z != nil {
 		glog.Infof("Existing zone %q found; will configure TF to reuse", aws.StringValue(z.HostedZone.Name))
 
-		e.ID = z.HostedZone.Id
+		e.ZoneID = z.HostedZone.Id
 	}
 
 	if z == nil {
@@ -271,9 +273,9 @@ func (_ *DNSZone) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *D
 }
 
 func (e *DNSZone) TerraformLink() *terraform.Literal {
-	if e.ID != nil {
-		glog.V(4).Infof("reusing existing route53 zone with id %q", *e.ID)
-		return terraform.LiteralFromStringValue(*e.ID)
+	if e.ZoneID != nil {
+		glog.V(4).Infof("reusing existing route53 zone with id %q", *e.ZoneID)
+		return terraform.LiteralFromStringValue(*e.ZoneID)
 	}
 
 	return terraform.LiteralSelfLink("aws_route53_zone", *e.Name)

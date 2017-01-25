@@ -27,13 +27,13 @@ import (
 	"syscall"
 	"time"
 
+	"io/ioutil"
+
 	"github.com/containernetworking/cni/libcni"
 	cnitypes "github.com/containernetworking/cni/pkg/types"
 	"github.com/golang/glog"
 	"github.com/vishvananda/netlink"
-	"github.com/vishvananda/netlink/nl"
-	"io/ioutil"
-	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/apis/componentconfig"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
 	"k8s.io/kubernetes/pkg/kubelet/network"
@@ -295,37 +295,6 @@ func (plugin *kubenetNetworkPlugin) clearBridgeAddressesExcept(keep *net.IPNet) 
 	}
 }
 
-// ensureBridgeTxQueueLen() ensures that the bridge interface's TX queue
-// length is greater than zero.  Due to a CNI <= 0.3.0 'bridge' plugin bug,
-// the bridge is initially created with a TX queue length of 0, which gets
-// used as the packet limit for FIFO traffic shapers, which drops packets.
-// TODO: remove when we can depend on a fixed CNI
-func (plugin *kubenetNetworkPlugin) ensureBridgeTxQueueLen() {
-	bridge, err := netlink.LinkByName(BridgeName)
-	if err != nil {
-		return
-	}
-
-	if bridge.Attrs().TxQLen > 0 {
-		return
-	}
-
-	req := nl.NewNetlinkRequest(syscall.RTM_NEWLINK, syscall.NLM_F_ACK)
-	msg := nl.NewIfInfomsg(syscall.AF_UNSPEC)
-	req.AddData(msg)
-
-	nameData := nl.NewRtAttr(syscall.IFLA_IFNAME, nl.ZeroTerminated(BridgeName))
-	req.AddData(nameData)
-
-	qlen := nl.NewRtAttr(syscall.IFLA_TXQLEN, nl.Uint32Attr(1000))
-	req.AddData(qlen)
-
-	_, err = req.Execute(syscall.NETLINK_ROUTE, 0)
-	if err != nil {
-		glog.V(5).Infof("Failed to set bridge tx queue length: %v", err)
-	}
-}
-
 func (plugin *kubenetNetworkPlugin) Name() string {
 	return KubenetPluginName
 }
@@ -337,7 +306,7 @@ func (plugin *kubenetNetworkPlugin) Capabilities() utilsets.Int {
 // setup sets up networking through CNI using the given ns/name and sandbox ID.
 // TODO: Don't pass the pod to this method, it only needs it for bandwidth
 // shaping and hostport management.
-func (plugin *kubenetNetworkPlugin) setup(namespace string, name string, id kubecontainer.ContainerID, pod *api.Pod) error {
+func (plugin *kubenetNetworkPlugin) setup(namespace string, name string, id kubecontainer.ContainerID, pod *v1.Pod) error {
 	// Bring up container loopback interface
 	if _, err := plugin.addContainerToNetwork(plugin.loConfig, "lo", namespace, name, id); err != nil {
 		return err
@@ -788,7 +757,6 @@ func (plugin *kubenetNetworkPlugin) delContainerFromNetwork(config *libcni.Netwo
 func (plugin *kubenetNetworkPlugin) shaper() bandwidth.BandwidthShaper {
 	if plugin.bandwidthShaper == nil {
 		plugin.bandwidthShaper = bandwidth.NewTCShaper(BridgeName)
-		plugin.ensureBridgeTxQueueLen()
 		plugin.bandwidthShaper.ReconcileInterface()
 	}
 	return plugin.bandwidthShaper

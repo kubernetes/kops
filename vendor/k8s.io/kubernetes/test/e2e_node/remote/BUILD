@@ -4,15 +4,19 @@ licenses(["notice"])
 
 load(
     "@io_bazel_rules_go//go:def.bzl",
-    "go_binary",
     "go_library",
-    "go_test",
-    "cgo_library",
 )
 
 go_library(
     name = "go_default_library",
-    srcs = ["remote.go"],
+    srcs = [
+        "node_conformance.go",
+        "node_e2e.go",
+        "remote.go",
+        "ssh.go",
+        "types.go",
+        "utils.go",
+    ],
     tags = ["automanaged"],
     deps = [
         "//pkg/util/errors:go_default_library",

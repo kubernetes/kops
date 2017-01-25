@@ -25,7 +25,7 @@ do
 	for j in ${BAD_HEADERS}
 	do
 		:
-	        HEADER=$(cat ${KUBE_ROOT}/hack/boilerplate/boilerplate.${i}.txt | sed 's/YEAR/2016/')
+	        HEADER=$(cat ${KUBE_ROOT}/hack/boilerplate/boilerplate.${i}.txt | sed 's/YEAR/2017/')
 			value=$(<${j})
 			if [[ "$j" != *$i ]]
             then

@@ -4,6 +4,8 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   name: ha.example.com
 spec:
+  api:
+    dns: {}
   channel: stable
   cloudProvider: aws
   configBase: memfs://tests/ha.example.com
@@ -31,6 +33,8 @@ spec:
     kubenet: {}
   nonMasqueradeCIDR: 100.64.0.0/10
   topology:
+    dns:
+      type: Public
     masters: public
     nodes: public
   zones:
@@ -47,6 +51,8 @@ apiVersion: kops/v1alpha1
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: ha.example.com
   name: master-us-test-1a
 spec:
   associatePublicIp: true
@@ -64,6 +70,8 @@ apiVersion: kops/v1alpha1
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: ha.example.com
   name: master-us-test-1b
 spec:
   associatePublicIp: true
@@ -81,6 +89,8 @@ apiVersion: kops/v1alpha1
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: ha.example.com
   name: master-us-test-1c
 spec:
   associatePublicIp: true
@@ -98,6 +108,8 @@ apiVersion: kops/v1alpha1
 kind: InstanceGroup
 metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: ha.example.com
   name: nodes
 spec:
   associatePublicIp: true

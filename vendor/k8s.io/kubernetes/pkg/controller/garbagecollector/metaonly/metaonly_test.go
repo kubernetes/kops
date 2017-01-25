@@ -23,21 +23,22 @@ import (
 
 	_ "k8s.io/kubernetes/pkg/api/install"
 	"k8s.io/kubernetes/pkg/api/meta"
-	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/api/v1"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 	"k8s.io/kubernetes/pkg/runtime/serializer"
 )
 
 func getPod() *v1.Pod {
 	return &v1.Pod{
-		TypeMeta: unversioned.TypeMeta{
+		TypeMeta: metav1.TypeMeta{
 			Kind:       "Pod",
 			APIVersion: "v1",
 		},
 		ObjectMeta: v1.ObjectMeta{
 			Name: "pod",
-			OwnerReferences: []v1.OwnerReference{
+			OwnerReferences: []metav1.OwnerReference{
 				{UID: "1234"},
 			},
 		},
@@ -62,7 +63,7 @@ func getPodJson(t *testing.T) []byte {
 
 func getPodListJson(t *testing.T) []byte {
 	data, err := json.Marshal(&v1.PodList{
-		TypeMeta: unversioned.TypeMeta{
+		TypeMeta: metav1.TypeMeta{
 			Kind:       "PodList",
 			APIVersion: "v1",
 		},
@@ -91,7 +92,7 @@ func TestDecodeToMetadataOnlyObject(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected to get a JSON serializer")
 	}
-	codec := cf.DecoderToVersion(info.Serializer, unversioned.GroupVersion{Group: "SOMEGROUP", Version: "SOMEVERSION"})
+	codec := cf.DecoderToVersion(info.Serializer, schema.GroupVersion{Group: "SOMEGROUP", Version: "SOMEVERSION"})
 	// decode with into
 	into := &MetadataOnlyObject{}
 	ret, _, err := codec.Decode(data, nil, into)
@@ -137,7 +138,7 @@ func TestDecodeToMetadataOnlyObjectList(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected to get a JSON serializer")
 	}
-	codec := cf.DecoderToVersion(info.Serializer, unversioned.GroupVersion{Group: "SOMEGROUP", Version: "SOMEVERSION"})
+	codec := cf.DecoderToVersion(info.Serializer, schema.GroupVersion{Group: "SOMEGROUP", Version: "SOMEVERSION"})
 	// decode with into
 	into := &MetadataOnlyObjectList{}
 	ret, _, err := codec.Decode(data, nil, into)

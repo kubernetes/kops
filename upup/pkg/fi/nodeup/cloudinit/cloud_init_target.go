@@ -73,6 +73,11 @@ func (t *CloudInitTarget) HasTag(tag string) bool {
 	return found
 }
 
+func (t *CloudInitTarget) ProcessDeletions() bool {
+	// We don't expect any, but it would be our job to process them
+	return true
+}
+
 func (t *CloudInitTarget) AddMkdirpCommand(p string, dirMode os.FileMode) {
 	t.AddCommand(Once, "mkdir", "-p", "-m", fi.FileModeToString(dirMode), p)
 

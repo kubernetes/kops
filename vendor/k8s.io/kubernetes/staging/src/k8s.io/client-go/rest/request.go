@@ -33,12 +33,13 @@ import (
 
 	"github.com/golang/glog"
 	"k8s.io/client-go/pkg/api/errors"
-	"k8s.io/client-go/pkg/api/unversioned"
 	"k8s.io/client-go/pkg/api/v1"
 	pathvalidation "k8s.io/client-go/pkg/api/validation/path"
+	metav1 "k8s.io/client-go/pkg/apis/meta/v1"
 	"k8s.io/client-go/pkg/fields"
 	"k8s.io/client-go/pkg/labels"
 	"k8s.io/client-go/pkg/runtime"
+	"k8s.io/client-go/pkg/runtime/schema"
 	"k8s.io/client-go/pkg/runtime/serializer/streaming"
 	"k8s.io/client-go/pkg/util/flowcontrol"
 	"k8s.io/client-go/pkg/util/net"
@@ -333,10 +334,10 @@ func (r resourceTypeToFieldMapping) filterField(resourceType, field, value strin
 	return fMapping.filterField(field, value)
 }
 
-type versionToResourceToFieldMapping map[unversioned.GroupVersion]resourceTypeToFieldMapping
+type versionToResourceToFieldMapping map[schema.GroupVersion]resourceTypeToFieldMapping
 
 // filterField transforms the given field/value selector for the given groupVersion and resource
-func (v versionToResourceToFieldMapping) filterField(groupVersion *unversioned.GroupVersion, resourceType, field, value string) (newField, newValue string, err error) {
+func (v versionToResourceToFieldMapping) filterField(groupVersion *schema.GroupVersion, resourceType, field, value string) (newField, newValue string, err error) {
 	rMapping, ok := v[*groupVersion]
 	if !ok {
 		// no groupVersion overrides registered, default to identity mapping
@@ -404,7 +405,7 @@ func (r *Request) FieldsSelectorParam(s fields.Selector) *Request {
 		r.err = err
 		return r
 	}
-	return r.setParam(unversioned.FieldSelectorQueryParam(r.content.GroupVersion.String()), s2.String())
+	return r.setParam(metav1.FieldSelectorQueryParam(r.content.GroupVersion.String()), s2.String())
 }
 
 // LabelsSelectorParam adds the given selector as a query parameter
@@ -418,7 +419,7 @@ func (r *Request) LabelsSelectorParam(s labels.Selector) *Request {
 	if s.Empty() {
 		return r
 	}
-	return r.setParam(unversioned.LabelSelectorQueryParam(r.content.GroupVersion.String()), s.String())
+	return r.setParam(metav1.LabelSelectorQueryParam(r.content.GroupVersion.String()), s.String())
 }
 
 // UintParam creates a query parameter with the given value.
@@ -453,14 +454,14 @@ func (r *Request) VersionedParams(obj runtime.Object, codec runtime.ParameterCod
 		for _, value := range v {
 			// TODO: Move it to setParam method, once we get rid of
 			// FieldSelectorParam & LabelSelectorParam methods.
-			if k == unversioned.LabelSelectorQueryParam(r.content.GroupVersion.String()) && value == "" {
+			if k == metav1.LabelSelectorQueryParam(r.content.GroupVersion.String()) && value == "" {
 				// Don't set an empty selector for backward compatibility.
 				// Since there is no way to get the difference between empty
 				// and unspecified string, we don't set it to avoid having
 				// labelSelector= param in every request.
 				continue
 			}
-			if k == unversioned.FieldSelectorQueryParam(r.content.GroupVersion.String()) {
+			if k == metav1.FieldSelectorQueryParam(r.content.GroupVersion.String()) {
 				if len(value) == 0 {
 					// Don't set an empty selector for backward compatibility.
 					// Since there is no way to get the difference between empty
@@ -539,10 +540,10 @@ func (r *Request) Body(obj interface{}) *Request {
 			r.err = err
 			return r
 		}
-		glog.V(8).Infof("Request Body: %#v", string(data))
+		glogBody("Request Body", data)
 		r.body = bytes.NewReader(data)
 	case []byte:
-		glog.V(8).Infof("Request Body: %#v", string(t))
+		glogBody("Request Body", t)
 		r.body = bytes.NewReader(t)
 	case io.Reader:
 		r.body = t
@@ -556,7 +557,7 @@ func (r *Request) Body(obj interface{}) *Request {
 			r.err = err
 			return r
 		}
-		glog.V(8).Infof("Request Body: %#v", string(data))
+		glogBody("Request Body", data)
 		r.body = bytes.NewReader(data)
 		r.SetHeader("Content-Type", r.content.ContentType)
 	default:
@@ -693,9 +694,10 @@ func updateURLMetrics(req *Request, resp *http.Response, err error) {
 		url = req.baseURL.Host
 	}
 
-	// If we have an error (i.e. apiserver down) we report that as a metric label.
+	// Errors can be arbitrary strings. Unbound label cardinality is not suitable for a metric
+	// system so we just report them as `<error>`.
 	if err != nil {
-		metrics.RequestResult.Increment(err.Error(), req.verb, url)
+		metrics.RequestResult.Increment("<error>", req.verb, url)
 	} else {
 		//Metrics for failure codes
 		metrics.RequestResult.Increment(strconv.Itoa(resp.StatusCode), req.verb, url)
@@ -876,6 +878,7 @@ func (r *Request) DoRaw() ([]byte, error) {
 	var result Result
 	err := r.request(func(req *http.Request, resp *http.Response) {
 		result.body, result.err = ioutil.ReadAll(resp.Body)
+		glogBody("Response Body", result.body)
 		if resp.StatusCode < http.StatusOK || resp.StatusCode > http.StatusPartialContent {
 			result.err = r.transformUnstructuredResponseError(resp, req, result.body)
 		}
@@ -895,15 +898,7 @@ func (r *Request) transformResponse(resp *http.Response, req *http.Request) Resu
 		}
 	}
 
-	if glog.V(8) {
-		if bytes.IndexFunc(body, func(r rune) bool {
-			return r < 0x0a
-		}) != -1 {
-			glog.Infof("Response Body:\n%s", hex.Dump(body))
-		} else {
-			glog.Infof("Response Body: %s", string(body))
-		}
-	}
+	glogBody("Response Body", body)
 
 	// verify the content type is accurate
 	contentType := resp.Header.Get("Content-Type")
@@ -955,6 +950,21 @@ func (r *Request) transformResponse(resp *http.Response, req *http.Request) Resu
 	}
 }
 
+// glogBody logs a body output that could be either JSON or protobuf. It explicitly guards against
+// allocating a new string for the body output unless necessary. Uses a simple heuristic to determine
+// whether the body is printable.
+func glogBody(prefix string, body []byte) {
+	if glog.V(8) {
+		if bytes.IndexFunc(body, func(r rune) bool {
+			return r < 0x0a
+		}) != -1 {
+			glog.Infof("%s:\n%s", prefix, hex.Dump(body))
+		} else {
+			glog.Infof("%s: %s", prefix, string(body))
+		}
+	}
+}
+
 // maxUnstructuredResponseTextBytes is an upper bound on how much output to include in the unstructured error.
 const maxUnstructuredResponseTextBytes = 2048
 
@@ -992,7 +1002,6 @@ func (r *Request) newUnstructuredResponseError(body []byte, isTextResponse bool,
 	if len(body) > maxUnstructuredResponseTextBytes {
 		body = body[:maxUnstructuredResponseTextBytes]
 	}
-	glog.V(8).Infof("Response Body: %#v", string(body))
 
 	message := "unknown"
 	if isTextResponse {
@@ -1001,7 +1010,7 @@ func (r *Request) newUnstructuredResponseError(body []byte, isTextResponse bool,
 	return errors.NewGenericServerResponse(
 		statusCode,
 		method,
-		unversioned.GroupResource{
+		schema.GroupResource{
 			Group:    r.content.GroupVersion.Group,
 			Resource: r.resource,
 		},
@@ -1082,9 +1091,9 @@ func (r Result) Get() (runtime.Object, error) {
 		return nil, err
 	}
 	switch t := out.(type) {
-	case *unversioned.Status:
+	case *metav1.Status:
 		// any status besides StatusSuccess is considered an error.
-		if t.Status != unversioned.StatusSuccess {
+		if t.Status != metav1.StatusSuccess {
 			return nil, errors.FromObject(t)
 		}
 	}
@@ -1117,9 +1126,9 @@ func (r Result) Into(obj runtime.Object) error {
 	// if a different object is returned, see if it is Status and avoid double decoding
 	// the object.
 	switch t := out.(type) {
-	case *unversioned.Status:
+	case *metav1.Status:
 		// any status besides StatusSuccess is considered an error.
-		if t.Status != unversioned.StatusSuccess {
+		if t.Status != metav1.StatusSuccess {
 			return errors.FromObject(t)
 		}
 	}
@@ -1146,15 +1155,15 @@ func (r Result) Error() error {
 
 	// attempt to convert the body into a Status object
 	// to be backwards compatible with old servers that do not return a version, default to "v1"
-	out, _, err := r.decoder.Decode(r.body, &unversioned.GroupVersionKind{Version: "v1"}, nil)
+	out, _, err := r.decoder.Decode(r.body, &schema.GroupVersionKind{Version: "v1"}, nil)
 	if err != nil {
 		glog.V(5).Infof("body was not decodable (unable to check for Status): %v", err)
 		return r.err
 	}
 	switch t := out.(type) {
-	case *unversioned.Status:
+	case *metav1.Status:
 		// because we default the kind, we *must* check for StatusFailure
-		if t.Status == unversioned.StatusFailure {
+		if t.Status == metav1.StatusFailure {
 			return errors.FromObject(t)
 		}
 	}

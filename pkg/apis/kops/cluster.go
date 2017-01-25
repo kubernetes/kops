@@ -20,19 +20,19 @@ import (
 	"fmt"
 
 	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/apis/meta/v1"
 )
 
 type Cluster struct {
-	unversioned.TypeMeta `json:",inline"`
-	ObjectMeta           api.ObjectMeta `json:"metadata,omitempty"`
+	v1.TypeMeta `json:",inline"`
+	ObjectMeta  api.ObjectMeta `json:"metadata,omitempty"`
 
 	Spec ClusterSpec `json:"spec,omitempty"`
 }
 
 type ClusterList struct {
-	unversioned.TypeMeta `json:",inline"`
-	unversioned.ListMeta `json:"metadata,omitempty"`
+	v1.TypeMeta `json:",inline"`
+	v1.ListMeta `json:"metadata,omitempty"`
 
 	Items []Cluster `json:"items"`
 }
@@ -135,6 +135,9 @@ type ClusterSpec struct {
 	//   missing: default policy (currently OS security upgrades that do not require a reboot)
 	UpdatePolicy *string `json:"updatePolicy,omitempty"`
 
+	// Additional policies to add for roles
+	AdditionalPolicies *map[string]string `json:"additionalPolicies,omitempty"`
+
 	//HairpinMode                   string `json:",omitempty"`
 	//
 	//OpencontrailTag               string `json:",omitempty"`
@@ -233,6 +236,33 @@ type ClusterSpec struct {
 
 	// Networking configuration
 	Networking *NetworkingSpec `json:"networking,omitempty"`
+
+	// API field controls how the API is exposed outside the cluster
+	API *AccessSpec `json:"api,omitempty"`
+}
+
+type AccessSpec struct {
+	DNS          *DNSAccessSpec          `json:"dns,omitempty"`
+	LoadBalancer *LoadBalancerAccessSpec `json:"loadBalancer,omitempty"`
+}
+
+func (s *AccessSpec) IsEmpty() bool {
+	return s.DNS == nil && s.LoadBalancer == nil
+}
+
+type DNSAccessSpec struct {
+}
+
+// LoadBalancerType string describes LoadBalancer types (public, internal)
+type LoadBalancerType string
+
+const (
+	LoadBalancerTypePublic   LoadBalancerType = "Public"
+	LoadBalancerTypeInternal LoadBalancerType = "Internal"
+)
+
+type LoadBalancerAccessSpec struct {
+	Type LoadBalancerType `json:"type,omitempty"`
 }
 
 type KubeDNSConfig struct {
@@ -268,7 +298,7 @@ type EtcdMemberSpec struct {
 	InstanceGroup *string `json:"instanceGroup,omitempty"`
 
 	VolumeType      *string `json:"volumeType,omitempty"`
-	VolumeSize      *int    `json:"volumeSize,omitempty"`
+	VolumeSize      *int32  `json:"volumeSize,omitempty"`
 	KmsKeyId        *string `json:"kmsKeyId,omitempty"`
 	EncryptedVolume *bool   `json:"encryptedVolume,omitempty"`
 }
@@ -291,6 +321,8 @@ type ClusterSubnetSpec struct {
 
 	// ProviderID is the cloud provider id for the objects associated with the zone (the subnet on AWS)
 	ProviderID string `json:"id,omitempty"`
+
+	Egress string `json:"egress,omitempty"`
 
 	Type SubnetType `json:"type,omitempty"`
 }
@@ -317,6 +349,7 @@ func (c *Cluster) FillDefaults() error {
 	// Topology support
 	if c.Spec.Topology == nil {
 		c.Spec.Topology = &TopologySpec{Masters: TopologyPublic, Nodes: TopologyPublic}
+		c.Spec.Topology.DNS = &DNSSpec{Type: DNSTypePublic}
 	}
 
 	if len(c.Spec.KubernetesAPIAccess) == 0 {
@@ -369,24 +402,4 @@ func (c *Cluster) FillDefaults() error {
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
 func (c *Cluster) SharedVPC() bool {
 	return c.Spec.NetworkID != ""
-}
-
-// --------------------------------------------------------------------------------------------
-// Network Topology functions for template parsing
-//
-// Each of these functions can be used in the model templates
-// The go template package currently only supports boolean
-// operations, so the logic is mapped here as *Cluster functions.
-//
-// A function will need to be defined for all new topologies, if we plan to use them in the
-// model templates.
-// --------------------------------------------------------------------------------------------
-func (c *Cluster) IsTopologyPrivate() bool {
-	return (c.Spec.Topology.Masters == TopologyPrivate && c.Spec.Topology.Nodes == TopologyPrivate)
-}
-func (c *Cluster) IsTopologyPublic() bool {
-	return (c.Spec.Topology.Masters == TopologyPublic && c.Spec.Topology.Nodes == TopologyPublic)
-}
-func (c *Cluster) IsTopologyPrivateMasters() bool {
-	return (c.Spec.Topology.Masters == TopologyPrivate && c.Spec.Topology.Nodes == TopologyPublic)
 }

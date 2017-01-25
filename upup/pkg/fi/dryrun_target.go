@@ -57,6 +57,11 @@ func NewDryRunTarget(out io.Writer) *DryRunTarget {
 	return t
 }
 
+func (t *DryRunTarget) ProcessDeletions() bool {
+	// We display deletions
+	return true
+}
+
 func (t *DryRunTarget) Render(a, e, changes Task) error {
 	valA := reflect.ValueOf(a)
 	aIsNil := valA.IsNil()

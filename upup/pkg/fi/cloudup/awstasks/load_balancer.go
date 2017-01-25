@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"sort"
 )
 
 //go:generate fitask -type=LoadBalancer
@@ -287,11 +288,23 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 		e.ID = actual.ID
 	}
 
+	// TODO: Make Normalize a standard method
+	actual.Normalize()
+
 	return actual, nil
 }
 
 func (e *LoadBalancer) Run(c *fi.Context) error {
+	// TODO: Make Normalize a standard method
+	e.Normalize()
+
 	return fi.DefaultDeltaRunMethod(e, c)
+}
+
+func (e *LoadBalancer) Normalize() {
+	// We need to sort our arrays consistently, so we don't get spurious changes
+	sort.Stable(OrderSubnetsById(e.Subnets))
+	sort.Stable(OrderSecurityGroupsById(e.SecurityGroups))
 }
 
 func (s *LoadBalancer) CheckChanges(a, e, changes *LoadBalancer) error {
@@ -392,7 +405,17 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 		e.HostedZoneId = lb.CanonicalHostedZoneNameID
 	} else {
 		if changes.Subnets != nil {
-			return fmt.Errorf("subnet changes on LoadBalancer not yet implemented")
+			var expectedSubnets []string
+			for _, s := range e.Subnets {
+				expectedSubnets = append(expectedSubnets, fi.StringValue(s.ID))
+			}
+
+			var actualSubnets []string
+			for _, s := range a.Subnets {
+				actualSubnets = append(actualSubnets, fi.StringValue(s.ID))
+			}
+
+			return fmt.Errorf("subnet changes on LoadBalancer not yet implemented: actual=%s -> expected=%s", actualSubnets, expectedSubnets)
 		}
 
 		if changes.Listeners != nil {
@@ -417,6 +440,10 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 		}
 	}
 
+	if err := t.AddELBTags(*e.ID, t.Cloud.BuildTags(e.Name)); err != nil {
+		return err
+	}
+
 	if changes.HealthCheck != nil && e.HealthCheck != nil {
 		request := &elb.ConfigureHealthCheckInput{}
 		request.LoadBalancerName = e.ID
@@ -435,7 +462,12 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 			return fmt.Errorf("error configuring health checks on ELB: %v", err)
 		}
 	}
-	return t.AddELBTags(*e.ID, t.Cloud.BuildTags(e.Name))
+
+	if err := e.modifyLoadBalancerAttributes(t, a, e, changes); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type terraformLoadBalancer struct {
@@ -454,6 +486,8 @@ type terraformLoadBalancer struct {
 	CrossZoneLoadBalancing *bool `json:"cross_zone_load_balancing,omitempty"`
 
 	IdleTimeout *int64 `json:"idle_timeout,omitempty"`
+
+	Tags map[string]string `json:"tags,omitempty"`
 }
 
 type terraformLoadBalancerListener struct {
@@ -472,6 +506,8 @@ type terraformLoadBalancerHealthCheck struct {
 }
 
 func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LoadBalancer) error {
+	cloud := t.Cloud.(awsup.AWSCloud)
+
 	elbName := e.ID
 	if elbName == nil {
 		elbName = e.Name
@@ -537,6 +573,8 @@ func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 	if e.CrossZoneLoadBalancing != nil {
 		tf.CrossZoneLoadBalancing = e.CrossZoneLoadBalancing.Enabled
 	}
+
+	tf.Tags = cloud.BuildTags(e.Name)
 
 	return t.RenderResource("aws_elb", *e.Name, tf)
 }

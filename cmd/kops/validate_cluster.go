@@ -30,7 +30,7 @@ import (
 	"k8s.io/kops/util/pkg/tables"
 	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 )
 
@@ -99,7 +99,7 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		return fmt.Errorf("Cannot load kubecfg settings for %q: %v\n", contextName, err)
 	}
 
-	k8sClient, err := release_1_5.NewForConfig(config)
+	k8sClient, err := k8s_clientset.NewForConfig(config)
 	if err != nil {
 		return fmt.Errorf("Cannot build kube api client for %q: %v\n", contextName, err)
 	}
@@ -125,10 +125,10 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		return strings.Join(c.Spec.Subnets, ",")
 	})
 	t.AddColumn("MIN", func(c api.InstanceGroup) string {
-		return intPointerToString(c.Spec.MinSize)
+		return int32PointerToString(c.Spec.MinSize)
 	})
 	t.AddColumn("MAX", func(c api.InstanceGroup) string {
-		return intPointerToString(c.Spec.MaxSize)
+		return int32PointerToString(c.Spec.MaxSize)
 	})
 
 	fmt.Fprintln(out, "INSTANCE GROUPS")

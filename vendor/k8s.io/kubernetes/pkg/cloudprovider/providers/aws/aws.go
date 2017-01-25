@@ -41,11 +41,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/golang/glog"
 
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/service"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/pkg/api/v1/service"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/cloudprovider"
-	aws_credentials "k8s.io/kubernetes/pkg/credentialprovider/aws"
+	awscredentials "k8s.io/kubernetes/pkg/credentialprovider/aws"
 	"k8s.io/kubernetes/pkg/types"
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/kubernetes/pkg/volume"
@@ -172,7 +172,7 @@ const DefaultVolumeType = "gp2"
 // See http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/volume_limits.html#linux-specific-volume-limits
 const DefaultMaxEBSVolumes = 39
 
-// Used to call aws_credentials.Init() just once
+// Used to call awscredentials.Init() just once
 var once sync.Once
 
 // Services is an abstraction over AWS, to allow mocking/other implementations
@@ -365,6 +365,9 @@ type Cloud struct {
 	// and then get a second request before we attach the volume
 	attachingMutex sync.Mutex
 	attaching      map[types.NodeName]map[mountDevice]awsVolumeID
+
+	// state of our device allocator for each node
+	deviceAllocators map[types.NodeName]DeviceAllocator
 }
 
 var _ Volumes = &Cloud{}
@@ -720,7 +723,7 @@ func getAvailabilityZone(metadata EC2Metadata) (string, error) {
 }
 
 func isRegionValid(region string) bool {
-	for _, r := range aws_credentials.AWSRegions {
+	for _, r := range awscredentials.AWSRegions {
 		if r == region {
 			return true
 		}
@@ -796,7 +799,8 @@ func newAWSCloud(config io.Reader, awsServices Services) (*Cloud, error) {
 		cfg:      cfg,
 		region:   regionName,
 
-		attaching: make(map[types.NodeName]map[mountDevice]awsVolumeID),
+		attaching:        make(map[types.NodeName]map[mountDevice]awsVolumeID),
+		deviceAllocators: make(map[types.NodeName]DeviceAllocator),
 	}
 
 	selfAWSInstance, err := awsCloud.buildSelfAWSInstance()
@@ -836,7 +840,7 @@ func newAWSCloud(config io.Reader, awsServices Services) (*Cloud, error) {
 
 	// Register handler for ECR credentials
 	once.Do(func() {
-		aws_credentials.Init()
+		awscredentials.Init()
 	})
 
 	return awsCloud, nil
@@ -878,17 +882,17 @@ func (c *Cloud) Routes() (cloudprovider.Routes, bool) {
 }
 
 // NodeAddresses is an implementation of Instances.NodeAddresses.
-func (c *Cloud) NodeAddresses(name types.NodeName) ([]api.NodeAddress, error) {
+func (c *Cloud) NodeAddresses(name types.NodeName) ([]v1.NodeAddress, error) {
 	if c.selfAWSInstance.nodeName == name || len(name) == 0 {
-		addresses := []api.NodeAddress{}
+		addresses := []v1.NodeAddress{}
 
 		internalIP, err := c.metadata.GetMetadata("local-ipv4")
 		if err != nil {
 			return nil, err
 		}
-		addresses = append(addresses, api.NodeAddress{Type: api.NodeInternalIP, Address: internalIP})
+		addresses = append(addresses, v1.NodeAddress{Type: v1.NodeInternalIP, Address: internalIP})
 		// Legacy compatibility: the private ip was the legacy host ip
-		addresses = append(addresses, api.NodeAddress{Type: api.NodeLegacyHostIP, Address: internalIP})
+		addresses = append(addresses, v1.NodeAddress{Type: v1.NodeLegacyHostIP, Address: internalIP})
 
 		externalIP, err := c.metadata.GetMetadata("public-ipv4")
 		if err != nil {
@@ -896,7 +900,7 @@ func (c *Cloud) NodeAddresses(name types.NodeName) ([]api.NodeAddress, error) {
 			// but the AWS client masks all failures with the same error description.
 			glog.V(2).Info("Could not determine public IP from AWS metadata.")
 		} else {
-			addresses = append(addresses, api.NodeAddress{Type: api.NodeExternalIP, Address: externalIP})
+			addresses = append(addresses, v1.NodeAddress{Type: v1.NodeExternalIP, Address: externalIP})
 		}
 
 		return addresses, nil
@@ -906,7 +910,7 @@ func (c *Cloud) NodeAddresses(name types.NodeName) ([]api.NodeAddress, error) {
 		return nil, fmt.Errorf("getInstanceByNodeName failed for %q with %v", name, err)
 	}
 
-	addresses := []api.NodeAddress{}
+	addresses := []v1.NodeAddress{}
 
 	if !isNilOrEmpty(instance.PrivateIpAddress) {
 		ipAddress := *instance.PrivateIpAddress
@@ -914,10 +918,10 @@ func (c *Cloud) NodeAddresses(name types.NodeName) ([]api.NodeAddress, error) {
 		if ip == nil {
 			return nil, fmt.Errorf("EC2 instance had invalid private address: %s (%s)", orEmpty(instance.InstanceId), ipAddress)
 		}
-		addresses = append(addresses, api.NodeAddress{Type: api.NodeInternalIP, Address: ip.String()})
+		addresses = append(addresses, v1.NodeAddress{Type: v1.NodeInternalIP, Address: ip.String()})
 
 		// Legacy compatibility: the private ip was the legacy host ip
-		addresses = append(addresses, api.NodeAddress{Type: api.NodeLegacyHostIP, Address: ip.String()})
+		addresses = append(addresses, v1.NodeAddress{Type: v1.NodeLegacyHostIP, Address: ip.String()})
 	}
 
 	// TODO: Other IP addresses (multiple ips)?
@@ -927,7 +931,7 @@ func (c *Cloud) NodeAddresses(name types.NodeName) ([]api.NodeAddress, error) {
 		if ip == nil {
 			return nil, fmt.Errorf("EC2 instance had invalid public address: %s (%s)", orEmpty(instance.InstanceId), ipAddress)
 		}
-		addresses = append(addresses, api.NodeAddress{Type: api.NodeExternalIP, Address: ip.String()})
+		addresses = append(addresses, v1.NodeAddress{Type: v1.NodeExternalIP, Address: ip.String()})
 	}
 
 	return addresses, nil
@@ -1030,19 +1034,13 @@ func (c *Cloud) getInstancesByRegex(regex string) ([]types.NodeName, error) {
 	return matchingInstances, nil
 }
 
-// List is an implementation of Instances.List.
-func (c *Cloud) List(filter string) ([]types.NodeName, error) {
-	// TODO: Should really use tag query. No need to go regexp.
-	return c.getInstancesByRegex(filter)
-}
-
 // getAllZones retrieves  a list of all the zones in which nodes are running
 // It currently involves querying all instances
 func (c *Cloud) getAllZones() (sets.String, error) {
 	// We don't currently cache this; it is currently used only in volume
 	// creation which is expected to be a comparatively rare occurrence.
 
-	// TODO: Caching / expose api.Nodes to the cloud provider?
+	// TODO: Caching / expose v1.Nodes to the cloud provider?
 	// TODO: We could also query for subnets, I think
 
 	filters := []*ec2.Filter{newEc2Filter("instance-state-name", "running")}
@@ -1216,20 +1214,17 @@ func (c *Cloud) getMountDevice(i *awsInstance, volumeID awsVolumeID, assign bool
 		return mountDevice(""), false, nil
 	}
 
-	// Find the first unused device in sequence 'ba', 'bb', 'bc', ... 'bz', 'ca', ... 'zz'
-	var chosen mountDevice
-	for first := 'b'; first <= 'z' && chosen == ""; first++ {
-		for second := 'a'; second <= 'z' && chosen == ""; second++ {
-			candidate := mountDevice(fmt.Sprintf("%c%c", first, second))
-			if _, found := deviceMappings[candidate]; !found {
-				chosen = candidate
-				break
-			}
-		}
+	// Find the next unused device name
+	deviceAllocator := c.deviceAllocators[i.nodeName]
+	if deviceAllocator == nil {
+		// we want device names with two significant characters, starting with
+		// /dev/xvdba (leaving xvda - xvdz and xvdaa-xvdaz to the system)
+		deviceAllocator = NewDeviceAllocator(2, "ba")
+		c.deviceAllocators[i.nodeName] = deviceAllocator
 	}
-
-	if chosen == "" {
-		glog.Warningf("Could not assign a mount device (all in use?).  mappings=%v", deviceMappings)
+	chosen, err := deviceAllocator.GetNext(deviceMappings)
+	if err != nil {
+		glog.Warningf("Could not assign a mount device.  mappings=%v, error: %v", deviceMappings, err)
 		return "", false, fmt.Errorf("Too many EBS volumes attached to node %s.", i.nodeName)
 	}
 
@@ -1694,12 +1689,12 @@ func (c *Cloud) GetVolumeLabels(volumeName KubernetesVolumeID) (map[string]strin
 		return nil, fmt.Errorf("volume did not have AZ information: %q", info.VolumeId)
 	}
 
-	labels[unversioned.LabelZoneFailureDomain] = az
+	labels[metav1.LabelZoneFailureDomain] = az
 	region, err := azToRegion(az)
 	if err != nil {
 		return nil, err
 	}
-	labels[unversioned.LabelZoneRegion] = region
+	labels[metav1.LabelZoneRegion] = region
 
 	return labels, nil
 }
@@ -2464,7 +2459,7 @@ func getPortSets(annotation string) (ports *portSets) {
 
 // buildListener creates a new listener from the given port, adding an SSL certificate
 // if indicated by the appropriate annotations.
-func buildListener(port api.ServicePort, annotations map[string]string, sslPorts *portSets) (*elb.Listener, error) {
+func buildListener(port v1.ServicePort, annotations map[string]string, sslPorts *portSets) (*elb.Listener, error) {
 	loadBalancerPort := int64(port.Port)
 	portName := strings.ToLower(port.Name)
 	instancePort := int64(port.NodePort)
@@ -2498,13 +2493,21 @@ func buildListener(port api.ServicePort, annotations map[string]string, sslPorts
 	return listener, nil
 }
 
+func nodeNames(nodes []*v1.Node) sets.String {
+	ret := sets.String{}
+	for _, node := range nodes {
+		ret.Insert(node.Name)
+	}
+	return ret
+}
+
 // EnsureLoadBalancer implements LoadBalancer.EnsureLoadBalancer
-func (c *Cloud) EnsureLoadBalancer(clusterName string, apiService *api.Service, hosts []string) (*api.LoadBalancerStatus, error) {
+func (c *Cloud) EnsureLoadBalancer(clusterName string, apiService *v1.Service, nodes []*v1.Node) (*v1.LoadBalancerStatus, error) {
 	annotations := apiService.Annotations
 	glog.V(2).Infof("EnsureLoadBalancer(%v, %v, %v, %v, %v, %v, %v, %v)",
-		clusterName, apiService.Namespace, apiService.Name, c.region, apiService.Spec.LoadBalancerIP, apiService.Spec.Ports, hosts, annotations)
+		clusterName, apiService.Namespace, apiService.Name, c.region, apiService.Spec.LoadBalancerIP, apiService.Spec.Ports, nodes, annotations)
 
-	if apiService.Spec.SessionAffinity != api.ServiceAffinityNone {
+	if apiService.Spec.SessionAffinity != v1.ServiceAffinityNone {
 		// ELB supports sticky sessions, but only when configured for HTTP/HTTPS
 		return nil, fmt.Errorf("unsupported load balancer affinity: %v", apiService.Spec.SessionAffinity)
 	}
@@ -2517,7 +2520,7 @@ func (c *Cloud) EnsureLoadBalancer(clusterName string, apiService *api.Service, 
 	listeners := []*elb.Listener{}
 	portList := getPortSets(annotations[ServiceAnnotationLoadBalancerSSLPorts])
 	for _, port := range apiService.Spec.Ports {
-		if port.Protocol != api.ProtocolTCP {
+		if port.Protocol != v1.ProtocolTCP {
 			return nil, fmt.Errorf("Only TCP LoadBalancer is supported for AWS ELB")
 		}
 		if port.NodePort == 0 {
@@ -2535,8 +2538,7 @@ func (c *Cloud) EnsureLoadBalancer(clusterName string, apiService *api.Service, 
 		return nil, fmt.Errorf("LoadBalancerIP cannot be specified for AWS ELB")
 	}
 
-	hostSet := sets.NewString(hosts...)
-	instances, err := c.getInstancesByNodeNamesCached(hostSet)
+	instances, err := c.getInstancesByNodeNamesCached(nodeNames(nodes))
 	if err != nil {
 		return nil, err
 	}
@@ -2773,7 +2775,7 @@ func (c *Cloud) EnsureLoadBalancer(clusterName string, apiService *api.Service, 
 }
 
 // GetLoadBalancer is an implementation of LoadBalancer.GetLoadBalancer
-func (c *Cloud) GetLoadBalancer(clusterName string, service *api.Service) (*api.LoadBalancerStatus, bool, error) {
+func (c *Cloud) GetLoadBalancer(clusterName string, service *v1.Service) (*v1.LoadBalancerStatus, bool, error) {
 	loadBalancerName := cloudprovider.GetLoadBalancerName(service)
 	lb, err := c.describeLoadBalancer(loadBalancerName)
 	if err != nil {
@@ -2788,13 +2790,13 @@ func (c *Cloud) GetLoadBalancer(clusterName string, service *api.Service) (*api.
 	return status, true, nil
 }
 
-func toStatus(lb *elb.LoadBalancerDescription) *api.LoadBalancerStatus {
-	status := &api.LoadBalancerStatus{}
+func toStatus(lb *elb.LoadBalancerDescription) *v1.LoadBalancerStatus {
+	status := &v1.LoadBalancerStatus{}
 
 	if !isNilOrEmpty(lb.DNSName) {
-		var ingress api.LoadBalancerIngress
+		var ingress v1.LoadBalancerIngress
 		ingress.Hostname = orEmpty(lb.DNSName)
-		status.Ingress = []api.LoadBalancerIngress{ingress}
+		status.Ingress = []v1.LoadBalancerIngress{ingress}
 	}
 
 	return status
@@ -2989,7 +2991,7 @@ func (c *Cloud) updateInstanceSecurityGroupsForLoadBalancer(lb *elb.LoadBalancer
 }
 
 // EnsureLoadBalancerDeleted implements LoadBalancer.EnsureLoadBalancerDeleted.
-func (c *Cloud) EnsureLoadBalancerDeleted(clusterName string, service *api.Service) error {
+func (c *Cloud) EnsureLoadBalancerDeleted(clusterName string, service *v1.Service) error {
 	loadBalancerName := cloudprovider.GetLoadBalancerName(service)
 	lb, err := c.describeLoadBalancer(loadBalancerName)
 	if err != nil {
@@ -3085,9 +3087,8 @@ func (c *Cloud) EnsureLoadBalancerDeleted(clusterName string, service *api.Servi
 }
 
 // UpdateLoadBalancer implements LoadBalancer.UpdateLoadBalancer
-func (c *Cloud) UpdateLoadBalancer(clusterName string, service *api.Service, hosts []string) error {
-	hostSet := sets.NewString(hosts...)
-	instances, err := c.getInstancesByNodeNamesCached(hostSet)
+func (c *Cloud) UpdateLoadBalancer(clusterName string, service *v1.Service, nodes []*v1.Node) error {
+	instances, err := c.getInstancesByNodeNamesCached(nodeNames(nodes))
 	if err != nil {
 		return err
 	}

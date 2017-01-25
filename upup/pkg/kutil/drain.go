@@ -22,7 +22,6 @@ package kutil
 ////
 
 // TODO: remove kubectl dependencies
-// TODO: when we upgrade there are multiple calls that take metav1.GetOptions{}
 // TODO: can we use our own client instead of building it again
 // TODO: refactor our client to be like this client
 
@@ -41,9 +40,7 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 	apierrors "k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/meta"
-	// TODO: replace when we push version
-	//metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
-	metav1 "k8s.io/kubernetes/pkg/api/unversioned"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/apis/policy"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/client/restclient"
@@ -146,7 +143,7 @@ func NewDrainOptions(command *DrainCommand, clusterName string) (*DrainOptions, 
 
 }
 
-func(o *DrainOptions) DrainTheNode(nodeName string)(err error) {
+func (o *DrainOptions) DrainTheNode(nodeName string) (err error) {
 
 	err = o.SetupDrain(nodeName)
 
@@ -260,18 +257,18 @@ func (o *DrainOptions) deleteOrEvictPodsSimple() error {
 func (o *DrainOptions) getController(sr *api.SerializedReference) (interface{}, error) {
 	switch sr.Reference.Kind {
 	case "ReplicationController":
-		return o.client.Core().ReplicationControllers(sr.Reference.Namespace).Get(sr.Reference.Name)
+		return o.client.Core().ReplicationControllers(sr.Reference.Namespace).Get(sr.Reference.Name, metav1.GetOptions{})
 	case "DaemonSet":
-		return o.client.Extensions().DaemonSets(sr.Reference.Namespace).Get(sr.Reference.Name)
+		return o.client.Extensions().DaemonSets(sr.Reference.Namespace).Get(sr.Reference.Name, metav1.GetOptions{})
 	case "Job":
-		return o.client.Batch().Jobs(sr.Reference.Namespace).Get(sr.Reference.Name)
+		return o.client.Batch().Jobs(sr.Reference.Namespace).Get(sr.Reference.Name, metav1.GetOptions{})
 	case "ReplicaSet":
-		return o.client.Extensions().ReplicaSets(sr.Reference.Namespace).Get(sr.Reference.Name)
+		return o.client.Extensions().ReplicaSets(sr.Reference.Namespace).Get(sr.Reference.Name, metav1.GetOptions{})
 	case "PetSet":
 		// TODO: how the heck do you write this
 		return "PetSet", nil
 	case "StatefulSet":
-		return o.client.Apps().StatefulSets(sr.Reference.Namespace).Get(sr.Reference.Name)
+		return o.client.Apps().StatefulSets(sr.Reference.Namespace).Get(sr.Reference.Name, metav1.GetOptions{})
 	}
 	return nil, fmt.Errorf("unknown controller kind %q", sr.Reference.Kind)
 }
@@ -326,7 +323,7 @@ func (o *DrainOptions) daemonsetFilter(pod api.Pod) (bool, *warning, *fatal) {
 	if sr == nil || sr.Reference.Kind != "DaemonSet" {
 		return true, nil, nil
 	}
-	if _, err := o.client.Extensions().DaemonSets(sr.Reference.Namespace).Get(sr.Reference.Name); err != nil {
+	if _, err := o.client.Extensions().DaemonSets(sr.Reference.Namespace).Get(sr.Reference.Name, metav1.GetOptions{}); err != nil {
 		return false, nil, &fatal{err.Error()}
 	}
 	if !o.IgnoreDaemonsets {
@@ -459,7 +456,7 @@ func (o *DrainOptions) deleteOrEvictPods(pods []api.Pod) error {
 	}
 
 	getPodFn := func(namespace, name string) (*api.Pod, error) {
-		return o.client.Core().Pods(namespace).Get(name)
+		return o.client.Core().Pods(namespace).Get(name, metav1.GetOptions{})
 	}
 
 	if len(policyGroupVersion) > 0 {

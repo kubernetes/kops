@@ -22,10 +22,11 @@ import (
 	"strings"
 	"time"
 
-	clientset "k8s.io/kubernetes/federation/client/clientset_generated/federation_release_1_5/typed/core/v1"
-	"k8s.io/kubernetes/pkg/api"
+	clientset "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/core/v1"
 	"k8s.io/kubernetes/pkg/api/errors"
+	"k8s.io/kubernetes/pkg/api/v1"
 	api_v1 "k8s.io/kubernetes/pkg/api/v1"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/util/wait"
 	"k8s.io/kubernetes/test/e2e/framework"
 
@@ -59,11 +60,11 @@ var _ = framework.KubeDescribe("Federation namespace [Feature:Federation]", func
 
 		AfterEach(func() {
 			framework.SkipUnlessFederated(f.ClientSet)
-			deleteAllTestNamespaces(false,
+			deleteAllTestNamespaces(nil,
 				f.FederationClientset_1_5.Core().Namespaces().List,
 				f.FederationClientset_1_5.Core().Namespaces().Delete)
 			for _, cluster := range clusters {
-				deleteAllTestNamespaces(false,
+				deleteAllTestNamespaces(nil,
 					cluster.Core().Namespaces().List,
 					cluster.Core().Namespaces().Delete)
 			}
@@ -76,22 +77,30 @@ var _ = framework.KubeDescribe("Federation namespace [Feature:Federation]", func
 			nsName := createNamespace(f.FederationClientset_1_5.Core().Namespaces())
 
 			By(fmt.Sprintf("Deleting namespace %s", nsName))
-			deleteAllTestNamespaces(false,
+			deleteAllTestNamespaces(nil,
 				f.FederationClientset_1_5.Core().Namespaces().List,
 				f.FederationClientset_1_5.Core().Namespaces().Delete)
 			By(fmt.Sprintf("Verified that deletion succeeded"))
 		})
+
 		It("should be deleted from underlying clusters when OrphanDependents is false", func() {
 			framework.SkipUnlessFederated(f.ClientSet)
-
-			verifyNsCascadingDeletion(f.FederationClientset_1_5.Core().Namespaces(), clusters, false)
+			orphanDependents := false
+			verifyNsCascadingDeletion(f.FederationClientset_1_5.Core().Namespaces(), clusters, &orphanDependents)
 			By(fmt.Sprintf("Verified that namespaces were deleted from underlying clusters"))
 		})
 
 		It("should not be deleted from underlying clusters when OrphanDependents is true", func() {
 			framework.SkipUnlessFederated(f.ClientSet)
+			orphanDependents := true
+			verifyNsCascadingDeletion(f.FederationClientset_1_5.Core().Namespaces(), clusters, &orphanDependents)
+			By(fmt.Sprintf("Verified that namespaces were not deleted from underlying clusters"))
+		})
 
-			verifyNsCascadingDeletion(f.FederationClientset_1_5.Core().Namespaces(), clusters, true)
+		It("should not be deleted from underlying clusters when OrphanDependents is nil", func() {
+			framework.SkipUnlessFederated(f.ClientSet)
+
+			verifyNsCascadingDeletion(f.FederationClientset_1_5.Core().Namespaces(), clusters, nil)
 			By(fmt.Sprintf("Verified that namespaces were not deleted from underlying clusters"))
 		})
 
@@ -103,7 +112,7 @@ var _ = framework.KubeDescribe("Federation namespace [Feature:Federation]", func
 			// Create resources in the namespace.
 			event := api_v1.Event{
 				ObjectMeta: api_v1.ObjectMeta{
-					Name:      api.SimpleNameGenerator.GenerateName(eventNamePrefix),
+					Name:      v1.SimpleNameGenerator.GenerateName(eventNamePrefix),
 					Namespace: nsName,
 				},
 				InvolvedObject: api_v1.ObjectReference{
@@ -119,12 +128,12 @@ var _ = framework.KubeDescribe("Federation namespace [Feature:Federation]", func
 			}
 
 			By(fmt.Sprintf("Deleting namespace %s", nsName))
-			deleteAllTestNamespaces(false,
+			deleteAllTestNamespaces(nil,
 				f.FederationClientset_1_5.Core().Namespaces().List,
 				f.FederationClientset_1_5.Core().Namespaces().Delete)
 
 			By(fmt.Sprintf("Verify that event %s was deleted as well", event.Name))
-			latestEvent, err := f.FederationClientset_1_5.Core().Events(nsName).Get(event.Name)
+			latestEvent, err := f.FederationClientset_1_5.Core().Events(nsName).Get(event.Name, metav1.GetOptions{})
 			if !errors.IsNotFound(err) {
 				framework.Failf("Event %s should have been deleted. Found: %v", event.Name, latestEvent)
 			}
@@ -133,16 +142,16 @@ var _ = framework.KubeDescribe("Federation namespace [Feature:Federation]", func
 	})
 })
 
-// Verifies that namespaces are deleted from underlying clusters when orphan dependents is false
-// and they are not deleted when orphan dependents is true.
-func verifyNsCascadingDeletion(nsClient clientset.NamespaceInterface,
-	clusters map[string]*cluster, orphanDependents bool) {
+// verifyNsCascadingDeletion verifies that namespaces are deleted from
+// underlying clusters when orphan dependents is false and they are not
+// deleted when orphan dependents is true.
+func verifyNsCascadingDeletion(nsClient clientset.NamespaceInterface, clusters map[string]*cluster, orphanDependents *bool) {
 	nsName := createNamespace(nsClient)
 	// Check subclusters if the namespace was created there.
 	By(fmt.Sprintf("Waiting for namespace %s to be created in all underlying clusters", nsName))
 	err := wait.Poll(5*time.Second, 2*time.Minute, func() (bool, error) {
 		for _, cluster := range clusters {
-			_, err := cluster.Core().Namespaces().Get(nsName)
+			_, err := cluster.Core().Namespaces().Get(nsName, metav1.GetOptions{})
 			if err != nil && !errors.IsNotFound(err) {
 				return false, err
 			}
@@ -159,11 +168,13 @@ func verifyNsCascadingDeletion(nsClient clientset.NamespaceInterface,
 
 	By(fmt.Sprintf("Verifying namespaces %s in underlying clusters", nsName))
 	errMessages := []string{}
+	// namespace should be present in underlying clusters unless orphanDependents is false.
+	shouldExist := orphanDependents == nil || *orphanDependents == true
 	for clusterName, clusterClientset := range clusters {
-		_, err := clusterClientset.Core().Namespaces().Get(nsName)
-		if orphanDependents && errors.IsNotFound(err) {
+		_, err := clusterClientset.Core().Namespaces().Get(nsName, metav1.GetOptions{})
+		if shouldExist && errors.IsNotFound(err) {
 			errMessages = append(errMessages, fmt.Sprintf("unexpected NotFound error for namespace %s in cluster %s, expected namespace to exist", nsName, clusterName))
-		} else if !orphanDependents && (err == nil || !errors.IsNotFound(err)) {
+		} else if !shouldExist && !errors.IsNotFound(err) {
 			errMessages = append(errMessages, fmt.Sprintf("expected NotFound error for namespace %s in cluster %s, got error: %v", nsName, clusterName, err))
 		}
 	}
@@ -175,7 +186,7 @@ func verifyNsCascadingDeletion(nsClient clientset.NamespaceInterface,
 func createNamespace(nsClient clientset.NamespaceInterface) string {
 	ns := api_v1.Namespace{
 		ObjectMeta: api_v1.ObjectMeta{
-			Name: api.SimpleNameGenerator.GenerateName(namespacePrefix),
+			Name: v1.SimpleNameGenerator.GenerateName(namespacePrefix),
 		},
 	}
 	By(fmt.Sprintf("Creating namespace %s", ns.Name))
@@ -185,7 +196,7 @@ func createNamespace(nsClient clientset.NamespaceInterface) string {
 	return ns.Name
 }
 
-func deleteAllTestNamespaces(orphanDependents bool, lister func(api_v1.ListOptions) (*api_v1.NamespaceList, error), deleter func(string, *api_v1.DeleteOptions) error) {
+func deleteAllTestNamespaces(orphanDependents *bool, lister func(api_v1.ListOptions) (*api_v1.NamespaceList, error), deleter func(string, *api_v1.DeleteOptions) error) {
 	list, err := lister(api_v1.ListOptions{})
 	if err != nil {
 		framework.Failf("Failed to get all namespaes: %v", err)
@@ -194,7 +205,7 @@ func deleteAllTestNamespaces(orphanDependents bool, lister func(api_v1.ListOptio
 	for _, namespace := range list.Items {
 		if strings.HasPrefix(namespace.Name, namespacePrefix) {
 			By(fmt.Sprintf("Deleting ns: %s, found by listing", namespace.Name))
-			err := deleter(namespace.Name, &api_v1.DeleteOptions{OrphanDependents: &orphanDependents})
+			err := deleter(namespace.Name, &api_v1.DeleteOptions{OrphanDependents: orphanDependents})
 			if err != nil {
 				framework.Failf("Failed to set %s for deletion: %v", namespace.Name, err)
 			}

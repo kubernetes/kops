@@ -17,10 +17,11 @@ limitations under the License.
 package cloudup
 
 import (
-	"github.com/golang/glog"
-	"k8s.io/kops"
 	"os"
 	"strings"
+
+	"github.com/golang/glog"
+	"k8s.io/kops"
 )
 
 // baseUrl caches the BaseUrl value
@@ -33,15 +34,7 @@ func BaseUrl() string {
 		return baseUrl
 	}
 
-	// We prefer KOPS_BASE_URL, but we will accept KOPS_URL (for now!)
 	baseUrl = os.Getenv("KOPS_BASE_URL")
-	if baseUrl == "" {
-		baseUrl = os.Getenv("KOPS_URL")
-		if baseUrl != "" {
-			glog.Warningf("Using deprecated KOPS_URL envrionment variable - please use KOPS_BASE_URL instead")
-		}
-	}
-
 	if baseUrl == "" {
 		baseUrl = "https://kubeupv2.s3.amazonaws.com/kops/" + kops.Version + "/"
 		glog.V(4).Infof("Using default base url: %q", baseUrl)

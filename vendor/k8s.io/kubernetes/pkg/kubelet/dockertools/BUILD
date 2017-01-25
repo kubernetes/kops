@@ -4,10 +4,8 @@ licenses(["notice"])
 
 load(
     "@io_bazel_rules_go//go:def.bzl",
-    "go_binary",
     "go_library",
     "go_test",
-    "cgo_library",
 )
 
 go_library(
@@ -29,7 +27,8 @@ go_library(
     tags = ["automanaged"],
     deps = [
         "//pkg/api:go_default_library",
-        "//pkg/api/unversioned:go_default_library",
+        "//pkg/api/v1:go_default_library",
+        "//pkg/apis/meta/v1:go_default_library",
         "//pkg/client/record:go_default_library",
         "//pkg/credentialprovider:go_default_library",
         "//pkg/kubelet/cm:go_default_library",
@@ -48,6 +47,7 @@ go_library(
         "//pkg/kubelet/util/cache:go_default_library",
         "//pkg/kubelet/util/format:go_default_library",
         "//pkg/runtime:go_default_library",
+        "//pkg/runtime/schema:go_default_library",
         "//pkg/security/apparmor:go_default_library",
         "//pkg/securitycontext:go_default_library",
         "//pkg/types:go_default_library",
@@ -62,7 +62,7 @@ go_library(
         "//pkg/util/sets:go_default_library",
         "//pkg/util/strings:go_default_library",
         "//pkg/util/term:go_default_library",
-        "//vendor:github.com/coreos/go-semver/semver",
+        "//pkg/util/version:go_default_library",
         "//vendor:github.com/docker/distribution/digest",
         "//vendor:github.com/docker/distribution/reference",
         "//vendor:github.com/docker/docker/pkg/jsonmessage",
@@ -84,6 +84,7 @@ go_test(
     srcs = [
         "container_gc_test.go",
         "convert_test.go",
+        "docker_manager_linux_test.go",
         "docker_manager_test.go",
         "docker_test.go",
         "images_test.go",
@@ -96,11 +97,11 @@ go_test(
     library = "go_default_library",
     tags = [
         "automanaged",
-        "skip",
     ],
     deps = [
         "//pkg/api:go_default_library",
         "//pkg/api/testapi:go_default_library",
+        "//pkg/api/v1:go_default_library",
         "//pkg/apis/componentconfig:go_default_library",
         "//pkg/client/record:go_default_library",
         "//pkg/credentialprovider:go_default_library",

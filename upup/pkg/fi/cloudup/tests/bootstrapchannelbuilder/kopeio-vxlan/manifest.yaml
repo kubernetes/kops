@@ -9,24 +9,29 @@ spec:
     selector:
       k8s-addon: core.addons.k8s.io
     version: 1.4.0
-  - manifest: kube-dns.addons.k8s.io/v1.5.0.yaml
+  - manifest: kube-dns.addons.k8s.io/v1.5.1.yaml
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
-    version: 1.5.0
+    version: 1.5.1
   - manifest: limit-range.addons.k8s.io/v1.5.0.yaml
     name: limit-range.addons.k8s.io
     selector:
       k8s-addon: limit-range.addons.k8s.io
     version: 1.5.0
-  - manifest: dns-controller.addons.k8s.io/v1.4.1.yaml
+  - manifest: dns-controller.addons.k8s.io/v1.5.1.yaml
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
-    version: 1.4.1
+    version: 1.5.1
+  - manifest: storage-aws.addons.k8s.io/v1.5.0.yaml
+    name: storage-aws.addons.k8s.io
+    selector:
+      k8s-addon: storage-aws.addons.k8s.io
+    version: 1.5.0
   - manifest: networking.kope.io/v1.0.20161116.yaml
     name: networking.kope.io
     selector:
-      k8s-addon: networking.kope.io
+      role.kubernetes.io/networking: "1"
     version: 1.0.20161116
 

@@ -43,7 +43,41 @@ func (e *Subnet) CompareWithID() *string {
 	return e.ID
 }
 
+// OrderSubnetsById implements sort.Interface for []Subnet, based on ID
+type OrderSubnetsById []*Subnet
+
+func (a OrderSubnetsById) Len() int      { return len(a) }
+func (a OrderSubnetsById) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a OrderSubnetsById) Less(i, j int) bool {
+	return fi.StringValue(a[i].ID) < fi.StringValue(a[j].ID)
+}
+
 func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
+	subnet, err := e.findEc2Subnet(c)
+	if err != nil {
+		return nil, err
+	}
+
+	if subnet == nil {
+		return nil, nil
+	}
+
+	actual := &Subnet{
+		ID:               subnet.SubnetId,
+		AvailabilityZone: subnet.AvailabilityZone,
+		VPC:              &VPC{ID: subnet.VpcId},
+		CIDR:             subnet.CidrBlock,
+		Name:             findNameTag(subnet.Tags),
+		Shared:           e.Shared,
+	}
+
+	glog.V(2).Infof("found matching subnet %q", *actual.ID)
+	e.ID = actual.ID
+
+	return actual, nil
+}
+
+func (e *Subnet) findEc2Subnet(c *fi.Context) (*ec2.Subnet, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
 	request := &ec2.DescribeSubnetsInput{}
@@ -66,19 +100,7 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 	}
 
 	subnet := response.Subnets[0]
-	actual := &Subnet{
-		ID:               subnet.SubnetId,
-		AvailabilityZone: subnet.AvailabilityZone,
-		VPC:              &VPC{ID: subnet.VpcId},
-		CIDR:             subnet.CidrBlock,
-		Name:             findNameTag(subnet.Tags),
-		Shared:           e.Shared,
-	}
-
-	glog.V(2).Infof("found matching subnet %q", *actual.ID)
-	e.ID = actual.ID
-
-	return actual, nil
+	return subnet, nil
 }
 
 func (e *Subnet) Run(c *fi.Context) error {

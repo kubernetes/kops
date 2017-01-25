@@ -24,10 +24,10 @@ import (
 	"sync"
 	"time"
 
-	federation_api "k8s.io/kubernetes/federation/apis/federation/v1beta1"
+	federationapi "k8s.io/kubernetes/federation/apis/federation/v1beta1"
 	"k8s.io/kubernetes/federation/pkg/federation-controller/util"
 	"k8s.io/kubernetes/pkg/api"
-	api_v1 "k8s.io/kubernetes/pkg/api/v1"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/client/testing/core"
 	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/util/wait"
@@ -36,7 +36,11 @@ import (
 	"github.com/golang/glog"
 )
 
-// A structure that distributes eventes to multiple watchers.
+const (
+	pushTimeout = 5 * time.Second
+)
+
+// A structure that distributes events to multiple watchers.
 type WatcherDispatcher struct {
 	sync.Mutex
 	watchers       []*watch.RaceFreeFakeWatcher
@@ -58,6 +62,7 @@ func (wd *WatcherDispatcher) Stop() {
 	wd.Lock()
 	defer wd.Unlock()
 	close(wd.stopChan)
+	glog.Infof("Stopping WatcherDispatcher")
 	for _, watcher := range wd.watchers {
 		watcher.Stop()
 	}
@@ -141,7 +146,7 @@ func RegisterFakeWatch(resource string, client *core.Fake) *WatcherDispatcher {
 	dispatcher := &WatcherDispatcher{
 		watchers:       make([]*watch.RaceFreeFakeWatcher, 0),
 		eventsSoFar:    make([]*watch.Event, 0),
-		orderExecution: make(chan func()),
+		orderExecution: make(chan func(), 100),
 		stopChan:       make(chan struct{}),
 	}
 	go func() {
@@ -199,12 +204,21 @@ func RegisterFakeCopyOnUpdate(resource string, client *core.Fake, watcher *Watch
 	client.AddReactor("update", resource, func(action core.Action) (bool, runtime.Object, error) {
 		updateAction := action.(core.UpdateAction)
 		originalObj := updateAction.GetObject()
+		glog.V(7).Infof("Updating %s: %v", resource, updateAction.GetObject())
+
 		// Create a copy of the object here to prevent data races while reading the object in go routine.
 		obj := copy(originalObj)
-		watcher.orderExecution <- func() {
+		operation := func() {
 			glog.V(4).Infof("Object updated. Writing to channel: %v", obj)
 			watcher.Modify(obj)
 			objChan <- obj
+		}
+		select {
+		case watcher.orderExecution <- operation:
+			break
+		case <-time.After(pushTimeout):
+			glog.Errorf("Fake client execution channel blocked")
+			glog.Errorf("Tried to push %v", updateAction)
 		}
 		return true, originalObj, nil
 	})
@@ -250,7 +264,7 @@ func CheckObjectFromChan(c chan runtime.Object, checkFunction CheckingFunction) 
 }
 
 // CompareObjectMeta returns an error when the given objects are not equivalent.
-func CompareObjectMeta(a, b api_v1.ObjectMeta) error {
+func CompareObjectMeta(a, b apiv1.ObjectMeta) error {
 	if a.Namespace != b.Namespace {
 		return fmt.Errorf("Different namespace expected:%s observed:%s", a.Namespace, b.Namespace)
 	}
@@ -258,10 +272,10 @@ func CompareObjectMeta(a, b api_v1.ObjectMeta) error {
 		return fmt.Errorf("Different name expected:%s observed:%s", a.Namespace, b.Namespace)
 	}
 	if !reflect.DeepEqual(a.Labels, b.Labels) && (len(a.Labels) != 0 || len(b.Labels) != 0) {
-		return fmt.Errorf("Labels are different expected:%v observerd:%v", a.Labels, b.Labels)
+		return fmt.Errorf("Labels are different expected:%v observed:%v", a.Labels, b.Labels)
 	}
 	if !reflect.DeepEqual(a.Annotations, b.Annotations) && (len(a.Annotations) != 0 || len(b.Annotations) != 0) {
-		return fmt.Errorf("Annotations are different expected:%v observerd:%v", a.Annotations, b.Annotations)
+		return fmt.Errorf("Annotations are different expected:%v observed:%v", a.Annotations, b.Annotations)
 	}
 	return nil
 }
@@ -272,15 +286,15 @@ func ToFederatedInformerForTestOnly(informer util.FederatedInformer) util.Federa
 }
 
 // NewCluster builds a new cluster object.
-func NewCluster(name string, readyStatus api_v1.ConditionStatus) *federation_api.Cluster {
-	return &federation_api.Cluster{
-		ObjectMeta: api_v1.ObjectMeta{
+func NewCluster(name string, readyStatus apiv1.ConditionStatus) *federationapi.Cluster {
+	return &federationapi.Cluster{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:        name,
 			Annotations: map[string]string{},
 		},
-		Status: federation_api.ClusterStatus{
-			Conditions: []federation_api.ClusterCondition{
-				{Type: federation_api.ClusterReady, Status: readyStatus},
+		Status: federationapi.ClusterStatus{
+			Conditions: []federationapi.ClusterCondition{
+				{Type: federationapi.ClusterReady, Status: readyStatus},
 			},
 		},
 	}
@@ -319,6 +333,6 @@ func MetaAndSpecCheckingFunction(expected runtime.Object) CheckingFunction {
 		if util.ObjectMetaAndSpecEquivalent(obj, expected) {
 			return nil
 		}
-		return fmt.Errorf("Object different expected=%#v  received=%#v", expected, obj)
+		return fmt.Errorf("Object different expected=%#v received=%#v", expected, obj)
 	}
 }

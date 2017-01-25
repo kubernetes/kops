@@ -218,6 +218,10 @@ func (c *awsCloudImplementation) GetTags(resourceID string) (map[string]string, 
 }
 
 func getTags(c AWSCloud, resourceId string) (map[string]string, error) {
+	if resourceId == "" {
+		return nil, fmt.Errorf("resourceId not provided to getTags")
+	}
+
 	tags := map[string]string{}
 
 	request := &ec2.DescribeTagsInput{
@@ -673,4 +677,44 @@ func (c *awsCloudImplementation) Autoscaling() *autoscaling.AutoScaling {
 
 func (c *awsCloudImplementation) Route53() route53iface.Route53API {
 	return c.route53
+}
+
+func (c *awsCloudImplementation) FindVPCInfo(vpcID string) (*fi.VPCInfo, error) {
+	vpc, err := c.DescribeVPC(vpcID)
+	if err != nil {
+		return nil, err
+	}
+	if vpc == nil {
+		return nil, nil
+	}
+
+	vpcInfo := &fi.VPCInfo{
+		CIDR: aws.StringValue(vpc.CidrBlock),
+	}
+
+	// Find subnets in the VPC
+	{
+		glog.V(2).Infof("Calling DescribeSubnets for subnets in VPC %q", vpcID)
+		request := &ec2.DescribeSubnetsInput{
+			Filters: []*ec2.Filter{NewEC2Filter("vpc-id", vpcID)},
+		}
+
+		response, err := c.ec2.DescribeSubnets(request)
+		if err != nil {
+			return nil, fmt.Errorf("error listing subnets in VPC %q: %v", vpcID, err)
+		}
+		if response != nil {
+			for _, subnet := range response.Subnets {
+				subnetInfo := &fi.SubnetInfo{
+					ID:   aws.StringValue(subnet.SubnetId),
+					CIDR: aws.StringValue(subnet.CidrBlock),
+					Zone: aws.StringValue(subnet.AvailabilityZone),
+				}
+
+				vpcInfo.Subnets = append(vpcInfo.Subnets, subnetInfo)
+			}
+		}
+	}
+
+	return vpcInfo, nil
 }

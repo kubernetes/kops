@@ -54,7 +54,7 @@ func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
 	}
 
 	request := &route53.ListResourceRecordSetsInput{
-		HostedZoneId: e.Zone.ID,
+		HostedZoneId: e.Zone.ZoneID,
 		// TODO: Start at correct name?
 	}
 
@@ -153,7 +153,7 @@ func (_ *DNSName) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSName) error
 	changeBatch.Changes = []*route53.Change{change}
 
 	request := &route53.ChangeResourceRecordSetsInput{}
-	request.HostedZoneId = e.Zone.ID
+	request.HostedZoneId = e.Zone.ZoneID
 	request.ChangeBatch = changeBatch
 
 	glog.V(2).Infof("Updating DNS record %q", *e.Name)

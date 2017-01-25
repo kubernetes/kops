@@ -30,7 +30,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 )
 
 // RollingUpdateCluster restarts cluster nodes
@@ -40,6 +40,10 @@ type RollingUpdateCluster struct {
 	MasterInterval  time.Duration
 	NodeInterval    time.Duration
 	BastionInterval time.Duration
+	K8sClient       *k8s_clientset.Clientset
+
+	ForceDrain     bool
+	FailOnValidate bool
 
 	Force bool
 }
@@ -50,11 +54,12 @@ type RollingUpdateData struct {
 	Force             bool
 	Interval          time.Duration
 	InstanceGroupList *api.InstanceGroupList
-	K8sClient         *release_1_5.Clientset
+	IsBastion         bool
+
+	K8sClient *k8s_clientset.Clientset
 
 	ForceDrain     bool
 	FailOnValidate bool
-	IsBastion      bool
 }
 
 // TODO move retries to RollingUpdateCluster
@@ -118,7 +123,7 @@ func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroup
 }
 
 // Perform a rolling update on a K8s Cluster
-func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, instanceGroups *api.InstanceGroupList, k8sClient *release_1_5.Clientset, forceDrain bool, failOnValidate bool) error {
+func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, instanceGroups *api.InstanceGroupList) error {
 	if len(groups) == 0 {
 		return nil
 	}
@@ -156,14 +161,14 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 				defer wg.Done()
 
 				rollingUpdateData := &RollingUpdateData{
-					Cloud: c.Cloud,
-					Force: c.Force,
-					Interval: c.MasterInterval,
+					Cloud:             c.Cloud,
+					Force:             c.Force,
+					Interval:          c.MasterInterval,
 					InstanceGroupList: instanceGroups,
-					K8sClient: k8sClient,
-					ForceDrain: forceDrain,
-					FailOnValidate: failOnValidate,
-					IsBastion: true,
+					IsBastion:         true,
+					K8sClient:         c.K8sClient,
+					FailOnValidate:    c.FailOnValidate,
+					ForceDrain:        c.ForceDrain,
 				}
 
 				err := group.RollingUpdate(rollingUpdateData)
@@ -197,14 +202,14 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 
 			for k, group := range masterGroups {
 				rollingUpdateData := &RollingUpdateData{
-					Cloud: c.Cloud,
-					Force: c.Force,
-					Interval: c.MasterInterval,
+					Cloud:             c.Cloud,
+					Force:             c.Force,
+					Interval:          c.MasterInterval,
 					InstanceGroupList: instanceGroups,
-					K8sClient: k8sClient,
-					ForceDrain: forceDrain,
-					FailOnValidate: failOnValidate,
-					IsBastion: false,
+					IsBastion:         false,
+					K8sClient:         c.K8sClient,
+					FailOnValidate:    c.FailOnValidate,
+					ForceDrain:        c.ForceDrain,
 				}
 
 				err := group.RollingUpdate(rollingUpdateData)
@@ -233,14 +238,14 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 				defer wg.Done()
 
 				rollingUpdateData := &RollingUpdateData{
-					Cloud: c.Cloud,
-					Force: c.Force,
-					Interval: c.NodeInterval,
+					Cloud:             c.Cloud,
+					Force:             c.Force,
+					Interval:          c.NodeInterval,
 					InstanceGroupList: instanceGroups,
-					K8sClient: k8sClient,
-					ForceDrain: forceDrain,
-					FailOnValidate: failOnValidate,
-					IsBastion: false,
+					IsBastion:         false,
+					K8sClient:         c.K8sClient,
+					FailOnValidate:    c.FailOnValidate,
+					ForceDrain:        c.ForceDrain,
 				}
 
 				err := group.RollingUpdate(rollingUpdateData)
@@ -321,7 +326,6 @@ func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group, nodeMa
 	return n
 }
 
-
 // RollingUpdate performs a rolling update on a list of ec2 instances.
 func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData) error {
 	c := rollingUpdateData.Cloud.(awsup.AWSCloud)
@@ -338,7 +342,6 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData)
 			return fmt.Errorf("Cluster %s does not pass validateion", update[0].Node.ClusterName)
 		}
 	}
-
 
 	for _, u := range update {
 

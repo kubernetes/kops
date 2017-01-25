@@ -42,12 +42,10 @@ import (
 
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/testapi"
-	// TODO: replace when we push version
-	//metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
-	metav1 "k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apimachinery/registered"
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/extensions"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/apis/policy"
 	"k8s.io/kubernetes/pkg/client/restclient"
 	"k8s.io/kubernetes/pkg/client/restclient/fake"
@@ -259,7 +257,7 @@ func TestDrain(t *testing.T) {
 				expectFatal:  true,
 				expectDelete: false,
 			},
-			*/
+		*/
 		{
 			description:  "DS-managed pod with --ignore-daemonsets",
 			node:         node,

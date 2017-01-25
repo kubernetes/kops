@@ -214,15 +214,6 @@ resource "aws_security_group_rule" "all-master-to-node" {
   protocol = "-1"
 }
 
-resource "aws_security_group_rule" "all-node-to-master" {
-  type = "ingress"
-  security_group_id = "${aws_security_group.masters-minimal-141-example-com.id}"
-  source_security_group_id = "${aws_security_group.nodes-minimal-141-example-com.id}"
-  from_port = 0
-  to_port = 0
-  protocol = "-1"
-}
-
 resource "aws_security_group_rule" "all-node-to-node" {
   type = "ingress"
   security_group_id = "${aws_security_group.nodes-minimal-141-example-com.id}"
@@ -232,7 +223,7 @@ resource "aws_security_group_rule" "all-node-to-node" {
   protocol = "-1"
 }
 
-resource "aws_security_group_rule" "https-external-to-master-0" {
+resource "aws_security_group_rule" "https-external-to-master-0-0-0-0--0" {
   type = "ingress"
   security_group_id = "${aws_security_group.masters-minimal-141-example-com.id}"
   from_port = 443
@@ -259,7 +250,25 @@ resource "aws_security_group_rule" "node-egress" {
   cidr_blocks = ["0.0.0.0/0"]
 }
 
-resource "aws_security_group_rule" "ssh-external-to-master-0" {
+resource "aws_security_group_rule" "node-to-master-tcp-4194" {
+  type = "ingress"
+  security_group_id = "${aws_security_group.masters-minimal-141-example-com.id}"
+  source_security_group_id = "${aws_security_group.nodes-minimal-141-example-com.id}"
+  from_port = 4194
+  to_port = 4194
+  protocol = "tcp"
+}
+
+resource "aws_security_group_rule" "node-to-master-tcp-443" {
+  type = "ingress"
+  security_group_id = "${aws_security_group.masters-minimal-141-example-com.id}"
+  source_security_group_id = "${aws_security_group.nodes-minimal-141-example-com.id}"
+  from_port = 443
+  to_port = 443
+  protocol = "tcp"
+}
+
+resource "aws_security_group_rule" "ssh-external-to-master-0-0-0-0--0" {
   type = "ingress"
   security_group_id = "${aws_security_group.masters-minimal-141-example-com.id}"
   from_port = 22
@@ -268,7 +277,7 @@ resource "aws_security_group_rule" "ssh-external-to-master-0" {
   cidr_blocks = ["0.0.0.0/0"]
 }
 
-resource "aws_security_group_rule" "ssh-external-to-node-0" {
+resource "aws_security_group_rule" "ssh-external-to-node-0-0-0-0--0" {
   type = "ingress"
   security_group_id = "${aws_security_group.nodes-minimal-141-example-com.id}"
   from_port = 22

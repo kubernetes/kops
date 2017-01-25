@@ -22,14 +22,15 @@ import (
 	"reflect"
 	"sort"
 
+	"github.com/golang/glog"
+
 	"k8s.io/kubernetes/pkg/api/meta"
-	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/api/v1"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+	"k8s.io/kubernetes/pkg/apis/meta/v1/unstructured"
 	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/util/integer"
 	"k8s.io/kubernetes/pkg/util/jsonpath"
-
-	"github.com/golang/glog"
 )
 
 // Sorting printer sorts list types before delegating to another printer.
@@ -103,14 +104,16 @@ func SortObjects(decoder runtime.Decoder, objs []runtime.Object, fieldInput stri
 		switch u := item.(type) {
 		case *runtime.Unknown:
 			var err error
-			if objs[ix], _, err = decoder.Decode(u.Raw, nil, nil); err != nil {
+			// decode runtime.Unknown to runtime.Unstructured for sorting.
+			// we don't actually want the internal versions of known types.
+			if objs[ix], _, err = decoder.Decode(u.Raw, nil, &unstructured.Unstructured{}); err != nil {
 				return nil, err
 			}
 		}
 	}
 
 	var values [][]reflect.Value
-	if unstructured, ok := objs[0].(*runtime.Unstructured); ok {
+	if unstructured, ok := objs[0].(*unstructured.Unstructured); ok {
 		values, err = parser.FindResults(unstructured.Object)
 	} else {
 		values, err = parser.FindResults(reflect.ValueOf(objs[0]).Elem().Interface())
@@ -166,10 +169,10 @@ func isLess(i, j reflect.Value) (bool, error) {
 	case reflect.Ptr:
 		return isLess(i.Elem(), j.Elem())
 	case reflect.Struct:
-		// sort unversioned.Time
+		// sort metav1.Time
 		in := i.Interface()
-		if t, ok := in.(unversioned.Time); ok {
-			return t.Before(j.Interface().(unversioned.Time)), nil
+		if t, ok := in.(metav1.Time); ok {
+			return t.Before(j.Interface().(metav1.Time)), nil
 		}
 		// fallback to the fields comparison
 		for idx := 0; idx < i.NumField(); idx++ {
@@ -264,7 +267,7 @@ func (r *RuntimeSort) Less(i, j int) bool {
 	var jValues [][]reflect.Value
 	var err error
 
-	if unstructured, ok := iObj.(*runtime.Unstructured); ok {
+	if unstructured, ok := iObj.(*unstructured.Unstructured); ok {
 		iValues, err = parser.FindResults(unstructured.Object)
 	} else {
 		iValues, err = parser.FindResults(reflect.ValueOf(iObj).Elem().Interface())
@@ -273,7 +276,7 @@ func (r *RuntimeSort) Less(i, j int) bool {
 		glog.Fatalf("Failed to get i values for %#v using %s (%#v)", iObj, r.field, err)
 	}
 
-	if unstructured, ok := jObj.(*runtime.Unstructured); ok {
+	if unstructured, ok := jObj.(*unstructured.Unstructured); ok {
 		jValues, err = parser.FindResults(unstructured.Object)
 	} else {
 		jValues, err = parser.FindResults(reflect.ValueOf(jObj).Elem().Interface())

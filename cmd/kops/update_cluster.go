@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -29,7 +30,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/upup/pkg/kutil"
-	"os"
+	k8sapi "k8s.io/kubernetes/pkg/api"
 	"strings"
 	"time"
 )
@@ -70,7 +71,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 			clusterName := rootCommand.ClusterName()
 
-			err = RunUpdateCluster(f, clusterName, os.Stdout, options)
+			err = RunUpdateCluster(f, clusterName, out, options)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -146,6 +147,17 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		glog.Infof("Using SSH public key: %v\n", c.SSHPublicKey)
 	}
 
+	var instanceGroups []*kops.InstanceGroup
+	{
+		list, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).List(k8sapi.ListOptions{})
+		if err != nil {
+			return err
+		}
+		for i := range list.Items {
+			instanceGroups = append(instanceGroups, &list.Items[i])
+		}
+	}
+
 	applyCmd := &cloudup.ApplyClusterCmd{
 		Cluster:         cluster,
 		Models:          strings.Split(c.Models, ","),
@@ -154,7 +166,9 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		OutDir:          c.OutDir,
 		DryRun:          isDryrun,
 		MaxTaskDuration: c.MaxTaskDuration,
+		InstanceGroups:  instanceGroups,
 	}
+
 	err = applyCmd.Run()
 	if err != nil {
 		return err
@@ -163,9 +177,9 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 	if isDryrun {
 		target := applyCmd.Target.(*fi.DryRunTarget)
 		if target.HasChanges() {
-			fmt.Printf("Must specify --yes to apply changes\n")
+			fmt.Fprintf(out, "Must specify --yes to apply changes\n")
 		} else {
-			fmt.Printf("No changes need to be applied\n")
+			fmt.Fprintf(out, "No changes need to be applied\n")
 		}
 		return nil
 	}
@@ -202,23 +216,67 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		}
 
 		if !hasKubecfg {
+			sb := new(bytes.Buffer)
+
 			// Assume initial creation
-			fmt.Printf("\n")
-			fmt.Printf("Cluster is starting.  It should be ready in a few minutes.\n")
-			fmt.Printf("\n")
-			fmt.Printf("Suggestions:\n")
-			fmt.Printf(" * list nodes: kubectl get nodes --show-labels\n")
-			if cluster.Spec.Topology.Masters == kops.TopologyPublic {
-				fmt.Printf(" * ssh to the master: ssh -i ~/.ssh/id_rsa admin@%s\n", cluster.Spec.MasterPublicName)
+			if c.Target == cloudup.TargetTerraform {
+				fmt.Fprintf(sb, "\n")
+				fmt.Fprintf(sb, "Terraform output has been placed into %s\n", c.OutDir)
+				fmt.Fprintf(sb, "Run these commands to apply the configuration:\n")
+				fmt.Fprintf(sb, "   cd %s\n", c.OutDir)
+				fmt.Fprintf(sb, "   terraform plan\n")
+				fmt.Fprintf(sb, "   terraform apply\n")
+				fmt.Fprintf(sb, "\n")
 			} else {
-				fmt.Printf(" * ssh to the bastion: ssh -i ~/.ssh/id_rsa admin@%s\n", cluster.Spec.MasterPublicName)
+				fmt.Fprintf(sb, "\n")
+				fmt.Fprintf(sb, "Cluster is starting.  It should be ready in a few minutes.\n")
+				fmt.Fprintf(sb, "\n")
 			}
-			fmt.Printf(" * read about installing addons: https://github.com/kubernetes/kops/blob/master/docs/addons.md\n")
-			fmt.Printf("\n")
+			fmt.Fprintf(sb, "Suggestions:\n")
+			fmt.Fprintf(sb, " * list nodes: kubectl get nodes --show-labels\n")
+			if !usesBastion(instanceGroups) {
+				fmt.Fprintf(sb, " * ssh to the master: ssh -i ~/.ssh/id_rsa admin@%s\n", cluster.Spec.MasterPublicName)
+			} else {
+				bastionPublicName := findBastionPublicName(cluster)
+				if bastionPublicName != "" {
+					fmt.Fprintf(sb, " * ssh to the bastion: ssh -i ~/.ssh/id_rsa admin@%s\n", bastionPublicName)
+				} else {
+					fmt.Fprintf(sb, " * to ssh to the bastion, you probably want to configure a bastionPublicName")
+				}
+			}
+			fmt.Fprintf(sb, " * read about installing addons: https://github.com/kubernetes/kops/blob/master/docs/addons.md\n")
+			fmt.Fprintf(sb, "\n")
+
+			_, err := out.Write(sb.Bytes())
+			if err != nil {
+				return fmt.Errorf("error writing to output: %v", err)
+			}
 		}
 	}
 
 	return nil
+}
+
+func usesBastion(instanceGroups []*kops.InstanceGroup) bool {
+	for _, ig := range instanceGroups {
+		if ig.Spec.Role == kops.InstanceGroupRoleBastion {
+			return true
+		}
+	}
+
+	return false
+}
+
+func findBastionPublicName(c *kops.Cluster) string {
+	topology := c.Spec.Topology
+	if topology == nil {
+		return ""
+	}
+	bastion := topology.Bastion
+	if bastion == nil {
+		return ""
+	}
+	return bastion.BastionPublicName
 }
 
 func hasKubecfg(contextName string) (bool, error) {

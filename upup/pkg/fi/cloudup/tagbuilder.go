@@ -28,6 +28,7 @@ import (
 
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/util/sets"
 )
@@ -55,18 +56,6 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 		return nil, fmt.Errorf("No networking mode set")
 	}
 
-	// Network Topologies
-	if cluster.Spec.Topology == nil {
-		return nil, fmt.Errorf("missing topology spec")
-	}
-	if cluster.Spec.Topology.Masters == api.TopologyPublic && cluster.Spec.Topology.Nodes == api.TopologyPublic {
-		tags.Insert("_topology_public")
-	} else if cluster.Spec.Topology.Masters == api.TopologyPrivate && cluster.Spec.Topology.Nodes == api.TopologyPrivate {
-		tags.Insert("_topology_private")
-	} else {
-		return nil, fmt.Errorf("Unable to parse topology. Unsupported topology configuration. Masters and nodes must match!")
-	}
-
 	switch cluster.Spec.CloudProvider {
 	case "gce":
 		{
@@ -85,7 +74,7 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 
 	versionTag := ""
 	if cluster.Spec.KubernetesVersion != "" {
-		sv, err := api.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
+		sv, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
 		if err != nil {
 			return nil, fmt.Errorf("unable to determine kubernetes version from %q", cluster.Spec.KubernetesVersion)
 		}

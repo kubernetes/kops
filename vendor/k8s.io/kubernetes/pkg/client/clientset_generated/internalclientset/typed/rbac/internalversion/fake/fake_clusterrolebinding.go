@@ -18,10 +18,11 @@ package fake
 
 import (
 	api "k8s.io/kubernetes/pkg/api"
-	unversioned "k8s.io/kubernetes/pkg/api/unversioned"
+	v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	rbac "k8s.io/kubernetes/pkg/apis/rbac"
 	core "k8s.io/kubernetes/pkg/client/testing/core"
 	labels "k8s.io/kubernetes/pkg/labels"
+	schema "k8s.io/kubernetes/pkg/runtime/schema"
 	watch "k8s.io/kubernetes/pkg/watch"
 )
 
@@ -30,7 +31,7 @@ type FakeClusterRoleBindings struct {
 	Fake *FakeRbac
 }
 
-var clusterrolebindingsResource = unversioned.GroupVersionResource{Group: "rbac.authorization.k8s.io", Version: "", Resource: "clusterrolebindings"}
+var clusterrolebindingsResource = schema.GroupVersionResource{Group: "rbac.authorization.k8s.io", Version: "", Resource: "clusterrolebindings"}
 
 func (c *FakeClusterRoleBindings) Create(clusterRoleBinding *rbac.ClusterRoleBinding) (result *rbac.ClusterRoleBinding, err error) {
 	obj, err := c.Fake.
@@ -63,7 +64,7 @@ func (c *FakeClusterRoleBindings) DeleteCollection(options *api.DeleteOptions, l
 	return err
 }
 
-func (c *FakeClusterRoleBindings) Get(name string) (result *rbac.ClusterRoleBinding, err error) {
+func (c *FakeClusterRoleBindings) Get(name string, options v1.GetOptions) (result *rbac.ClusterRoleBinding, err error) {
 	obj, err := c.Fake.
 		Invokes(core.NewRootGetAction(clusterrolebindingsResource, name), &rbac.ClusterRoleBinding{})
 	if obj == nil {

@@ -23,10 +23,17 @@ import (
 	"time"
 
 	"k8s.io/kubernetes/pkg/api"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	coreclientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/core/internalversion"
+	apierrors "k8s.io/kubernetes/pkg/api/errors"
+	"k8s.io/kubernetes/pkg/api/v1"
+	legacyv1 "k8s.io/kubernetes/pkg/api/v1"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+	rbacv1alpha1 "k8s.io/kubernetes/pkg/apis/rbac/v1alpha1"
+	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
+	coreclientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset/typed/core/v1"
 	"k8s.io/kubernetes/pkg/fields"
 	"k8s.io/kubernetes/pkg/labels"
+	"k8s.io/kubernetes/pkg/runtime/schema"
+	"k8s.io/kubernetes/pkg/serviceaccount"
 	"k8s.io/kubernetes/pkg/util/system"
 	"k8s.io/kubernetes/pkg/util/uuid"
 	"k8s.io/kubernetes/test/e2e/framework"
@@ -54,7 +61,40 @@ var _ = framework.KubeDescribe("NodeProblemDetector", func() {
 		name = "node-problem-detector-" + uid
 		configName = "node-problem-detector-config-" + uid
 		// There is no namespace for Node, event recorder will set default namespace for node events.
-		eventNamespace = api.NamespaceDefault
+		eventNamespace = v1.NamespaceDefault
+
+		// this test wants extra permissions.  Since the namespace names are unique, we can leave this
+		// lying around so we don't have to race any caches
+		_, err := f.ClientSet.Rbac().ClusterRoleBindings().Create(&rbacv1alpha1.ClusterRoleBinding{
+			ObjectMeta: legacyv1.ObjectMeta{
+				Name: f.Namespace.Name + "--cluster-admin",
+			},
+			RoleRef: rbacv1alpha1.RoleRef{
+				APIGroup: "rbac.authorization.k8s.io",
+				Kind:     "ClusterRole",
+				Name:     "cluster-admin",
+			},
+			Subjects: []rbacv1alpha1.Subject{
+				{
+					Kind:      rbacv1alpha1.ServiceAccountKind,
+					Namespace: f.Namespace.Name,
+					Name:      "default",
+				},
+			},
+		})
+		if apierrors.IsForbidden(err) {
+			// The user is not allowed to create ClusterRoleBindings. This
+			// probably means that RBAC is not being used. If RBAC is being
+			// used, this test will probably fail later.
+			framework.Logf("Attempt to create ClusterRoleBinding was forbidden: %v.", err)
+			return
+		}
+		framework.ExpectNoError(err)
+
+		err = framework.WaitForAuthorizationUpdate(f.ClientSet.Authorization(),
+			serviceaccount.MakeUsername(f.Namespace.Name, "default"),
+			"", "create", schema.GroupResource{Resource: "pods"}, true)
+		framework.ExpectNoError(err)
 	})
 
 	// Test kernel monitor. We may add other tests if we have more problem daemons in the future.
@@ -63,7 +103,7 @@ var _ = framework.KubeDescribe("NodeProblemDetector", func() {
 			// Use test condition to avoid conflict with real node problem detector
 			// TODO(random-liu): Now node condition could be arbitrary string, consider wether we need to
 			// add TestCondition when switching to predefined condition list.
-			condition    = api.NodeConditionType("TestCondition")
+			condition    = v1.NodeConditionType("TestCondition")
 			lookback     = time.Hour // Assume the test won't take more than 1 hour, in fact it usually only takes 90 seconds.
 			startPattern = "test reboot"
 
@@ -88,8 +128,8 @@ var _ = framework.KubeDescribe("NodeProblemDetector", func() {
 			permMessage    = "permanent error"
 		)
 		var source, config, tmpDir string
-		var node *api.Node
-		var eventListOptions api.ListOptions
+		var node *v1.Node
+		var eventListOptions v1.ListOptions
 		injectCommand := func(timestamp time.Time, log string, num int) string {
 			var commands []string
 			for i := 0; i < num; i++ {
@@ -132,11 +172,11 @@ var _ = framework.KubeDescribe("NodeProblemDetector", func() {
 				]
 			}`
 			By("Get a non master node to run the pod")
-			nodes, err := c.Core().Nodes().List(api.ListOptions{})
+			nodes, err := c.Core().Nodes().List(v1.ListOptions{})
 			Expect(err).NotTo(HaveOccurred())
 			node = nil
 			for _, n := range nodes.Items {
-				if !system.IsMasterNode(&n) {
+				if !system.IsMasterNode(n.Name) {
 					node = &n
 					break
 				}
@@ -146,70 +186,71 @@ var _ = framework.KubeDescribe("NodeProblemDetector", func() {
 			selector := fields.Set{
 				"involvedObject.kind":      "Node",
 				"involvedObject.name":      node.Name,
-				"involvedObject.namespace": api.NamespaceAll,
+				"involvedObject.namespace": v1.NamespaceAll,
 				"source":                   source,
-			}.AsSelector()
-			eventListOptions = api.ListOptions{FieldSelector: selector}
+			}.AsSelector().String()
+			eventListOptions = v1.ListOptions{FieldSelector: selector}
 			By("Create the test log file")
 			tmpDir = "/tmp/" + name
 			cmd := fmt.Sprintf("mkdir %s; > %s/%s", tmpDir, tmpDir, logFile)
 			Expect(framework.IssueSSHCommand(cmd, framework.TestContext.Provider, node)).To(Succeed())
 			By("Create config map for the node problem detector")
-			_, err = c.Core().ConfigMaps(ns).Create(&api.ConfigMap{
-				ObjectMeta: api.ObjectMeta{
+			_, err = c.Core().ConfigMaps(ns).Create(&v1.ConfigMap{
+				ObjectMeta: v1.ObjectMeta{
 					Name: configName,
 				},
 				Data: map[string]string{configFile: config},
 			})
 			Expect(err).NotTo(HaveOccurred())
 			By("Create the node problem detector")
-			_, err = c.Core().Pods(ns).Create(&api.Pod{
-				ObjectMeta: api.ObjectMeta{
+			_, err = c.Core().Pods(ns).Create(&v1.Pod{
+				ObjectMeta: v1.ObjectMeta{
 					Name: name,
 				},
-				Spec: api.PodSpec{
+				Spec: v1.PodSpec{
 					NodeName:        node.Name,
-					SecurityContext: &api.PodSecurityContext{HostNetwork: true},
-					Volumes: []api.Volume{
+					HostNetwork:     true,
+					SecurityContext: &v1.PodSecurityContext{},
+					Volumes: []v1.Volume{
 						{
 							Name: configVolume,
-							VolumeSource: api.VolumeSource{
-								ConfigMap: &api.ConfigMapVolumeSource{
-									LocalObjectReference: api.LocalObjectReference{Name: configName},
+							VolumeSource: v1.VolumeSource{
+								ConfigMap: &v1.ConfigMapVolumeSource{
+									LocalObjectReference: v1.LocalObjectReference{Name: configName},
 								},
 							},
 						},
 						{
 							Name: logVolume,
-							VolumeSource: api.VolumeSource{
-								HostPath: &api.HostPathVolumeSource{Path: tmpDir},
+							VolumeSource: v1.VolumeSource{
+								HostPath: &v1.HostPathVolumeSource{Path: tmpDir},
 							},
 						},
 						{
 							Name: localtimeVolume,
-							VolumeSource: api.VolumeSource{
-								HostPath: &api.HostPathVolumeSource{Path: etcLocaltime},
+							VolumeSource: v1.VolumeSource{
+								HostPath: &v1.HostPathVolumeSource{Path: etcLocaltime},
 							},
 						},
 					},
-					Containers: []api.Container{
+					Containers: []v1.Container{
 						{
 							Name:            name,
 							Image:           image,
 							Command:         []string{"/node-problem-detector", "--kernel-monitor=" + filepath.Join(configDir, configFile)},
-							ImagePullPolicy: api.PullAlways,
-							Env: []api.EnvVar{
+							ImagePullPolicy: v1.PullAlways,
+							Env: []v1.EnvVar{
 								{
 									Name: "NODE_NAME",
-									ValueFrom: &api.EnvVarSource{
-										FieldRef: &api.ObjectFieldSelector{
+									ValueFrom: &v1.EnvVarSource{
+										FieldRef: &v1.ObjectFieldSelector{
 											APIVersion: "v1",
 											FieldPath:  "spec.nodeName",
 										},
 									},
 								},
 							},
-							VolumeMounts: []api.VolumeMount{
+							VolumeMounts: []v1.VolumeMount{
 								{
 									Name:      logVolume,
 									MountPath: logDir,
@@ -248,13 +289,13 @@ var _ = framework.KubeDescribe("NodeProblemDetector", func() {
 				events           int
 				conditionReason  string
 				conditionMessage string
-				conditionType    api.ConditionStatus
+				conditionType    v1.ConditionStatus
 			}{
 				{
 					description:      "should generate default node condition",
 					conditionReason:  defaultReason,
 					conditionMessage: defaultMessage,
-					conditionType:    api.ConditionFalse,
+					conditionType:    v1.ConditionFalse,
 				},
 				{
 					description:      "should not generate events for too old log",
@@ -263,7 +304,7 @@ var _ = framework.KubeDescribe("NodeProblemDetector", func() {
 					messageNum:       3,
 					conditionReason:  defaultReason,
 					conditionMessage: defaultMessage,
-					conditionType:    api.ConditionFalse,
+					conditionType:    v1.ConditionFalse,
 				},
 				{
 					description:      "should not change node condition for too old log",
@@ -272,7 +313,7 @@ var _ = framework.KubeDescribe("NodeProblemDetector", func() {
 					messageNum:       1,
 					conditionReason:  defaultReason,
 					conditionMessage: defaultMessage,
-					conditionType:    api.ConditionFalse,
+					conditionType:    v1.ConditionFalse,
 				},
 				{
 					description:      "should generate event for old log within lookback duration",
@@ -282,7 +323,7 @@ var _ = framework.KubeDescribe("NodeProblemDetector", func() {
 					events:           3,
 					conditionReason:  defaultReason,
 					conditionMessage: defaultMessage,
-					conditionType:    api.ConditionFalse,
+					conditionType:    v1.ConditionFalse,
 				},
 				{
 					description:      "should change node condition for old log within lookback duration",
@@ -292,7 +333,7 @@ var _ = framework.KubeDescribe("NodeProblemDetector", func() {
 					events:           3, // event number should not change
 					conditionReason:  permReason,
 					conditionMessage: permMessage,
-					conditionType:    api.ConditionTrue,
+					conditionType:    v1.ConditionTrue,
 				},
 				{
 					description:      "should reset node condition if the node is reboot",
@@ -302,7 +343,7 @@ var _ = framework.KubeDescribe("NodeProblemDetector", func() {
 					events:           3, // event number should not change
 					conditionReason:  defaultReason,
 					conditionMessage: defaultMessage,
-					conditionType:    api.ConditionFalse,
+					conditionType:    v1.ConditionFalse,
 				},
 				{
 					description:      "should generate event for new log",
@@ -312,7 +353,7 @@ var _ = framework.KubeDescribe("NodeProblemDetector", func() {
 					events:           6,
 					conditionReason:  defaultReason,
 					conditionMessage: defaultMessage,
-					conditionType:    api.ConditionFalse,
+					conditionType:    v1.ConditionFalse,
 				},
 				{
 					description:      "should change node condition for new log",
@@ -322,7 +363,7 @@ var _ = framework.KubeDescribe("NodeProblemDetector", func() {
 					events:           6, // event number should not change
 					conditionReason:  permReason,
 					conditionMessage: permMessage,
-					conditionType:    api.ConditionTrue,
+					conditionType:    v1.ConditionTrue,
 				},
 			} {
 				By(test.description)
@@ -360,13 +401,13 @@ var _ = framework.KubeDescribe("NodeProblemDetector", func() {
 				framework.Logf("Node Problem Detector logs:\n %s", log)
 			}
 			By("Delete the node problem detector")
-			c.Core().Pods(ns).Delete(name, api.NewDeleteOptions(0))
+			c.Core().Pods(ns).Delete(name, v1.NewDeleteOptions(0))
 			By("Wait for the node problem detector to disappear")
 			Expect(framework.WaitForPodToDisappear(c, ns, name, labels.Everything(), pollInterval, pollTimeout)).To(Succeed())
 			By("Delete the config map")
 			c.Core().ConfigMaps(ns).Delete(configName, nil)
 			By("Clean up the events")
-			Expect(c.Core().Events(eventNamespace).DeleteCollection(api.NewDeleteOptions(0), eventListOptions)).To(Succeed())
+			Expect(c.Core().Events(eventNamespace).DeleteCollection(v1.NewDeleteOptions(0), eventListOptions)).To(Succeed())
 			By("Clean up the node condition")
 			patch := []byte(fmt.Sprintf(`{"status":{"conditions":[{"$patch":"delete","type":"%s"}]}}`, condition))
 			c.Core().RESTClient().Patch(api.StrategicMergePatchType).Resource("nodes").Name(node.Name).SubResource("status").Body(patch).Do()
@@ -377,7 +418,7 @@ var _ = framework.KubeDescribe("NodeProblemDetector", func() {
 })
 
 // verifyEvents verifies there are num specific events generated
-func verifyEvents(e coreclientset.EventInterface, options api.ListOptions, num int, reason, message string) error {
+func verifyEvents(e coreclientset.EventInterface, options v1.ListOptions, num int, reason, message string) error {
 	events, err := e.List(options)
 	if err != nil {
 		return err
@@ -396,7 +437,7 @@ func verifyEvents(e coreclientset.EventInterface, options api.ListOptions, num i
 }
 
 // verifyNoEvents verifies there is no event generated
-func verifyNoEvents(e coreclientset.EventInterface, options api.ListOptions) error {
+func verifyNoEvents(e coreclientset.EventInterface, options v1.ListOptions) error {
 	events, err := e.List(options)
 	if err != nil {
 		return err
@@ -408,12 +449,12 @@ func verifyNoEvents(e coreclientset.EventInterface, options api.ListOptions) err
 }
 
 // verifyCondition verifies specific node condition is generated, if reason and message are empty, they will not be checked
-func verifyCondition(n coreclientset.NodeInterface, nodeName string, condition api.NodeConditionType, status api.ConditionStatus, reason, message string) error {
-	node, err := n.Get(nodeName)
+func verifyCondition(n coreclientset.NodeInterface, nodeName string, condition v1.NodeConditionType, status v1.ConditionStatus, reason, message string) error {
+	node, err := n.Get(nodeName, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	_, c := api.GetNodeCondition(&node.Status, condition)
+	_, c := v1.GetNodeCondition(&node.Status, condition)
 	if c == nil {
 		return fmt.Errorf("node condition %q not found", condition)
 	}

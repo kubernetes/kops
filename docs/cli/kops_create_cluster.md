@@ -16,7 +16,7 @@ kops create cluster
 ```
       --admin-access string         Restrict access to admin endpoints (SSH, HTTPS) to this CIDR.  If not set, access will not be restricted by IP.
       --associate-public-ip         Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'. (default true)
-      --bastion                     Specify --bastion=[true|false] to turn enable/disable bastion setup. Default to 'false' when topology is 'public' and defaults to 'true' if topology is 'private'.
+      --bastion                     Pass the --bastion flag to enable a bastion instance group. Only applies to private topology.
       --channel string              Channel for default versions and configuration to use (default "stable")
       --cloud string                Cloud provider to use - gce, aws
       --dns-zone string             DNS hosted zone to use (defaults to longest matching zone)
@@ -26,7 +26,7 @@ kops create cluster
       --master-zones string         Zones in which to run masters (must be an odd number)
       --model string                Models to apply (separate multiple models with commas) (default "config,proto,cloudup")
       --network-cidr string         Set to override the default network CIDR
-      --networking string           Networking mode to use.  kubenet (default), classic, external, cni, kopeio-vxlan, weave. (default "kubenet")
+      --networking string           Networking mode to use.  kubenet (default), classic, external, cni, kopeio-vxlan, weave, calico. (default "kubenet")
       --node-count int              Set the number of nodes
       --node-size string            Set instance size for nodes
       --out string                  Path to write any local output
@@ -56,3 +56,4 @@ kops create cluster
 
 ### SEE ALSO
 * [kops create](kops_create.md)	 - Create a resource by filename or stdin
+

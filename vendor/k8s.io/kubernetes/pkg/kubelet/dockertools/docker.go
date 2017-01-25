@@ -31,7 +31,7 @@ import (
 	dockerapi "github.com/docker/engine-api/client"
 	dockertypes "github.com/docker/engine-api/types"
 	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/credentialprovider"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
 	"k8s.io/kubernetes/pkg/kubelet/images"
@@ -93,7 +93,7 @@ func SetContainerNamePrefix(prefix string) {
 
 // DockerPuller is an abstract interface for testability.  It abstracts image pull operations.
 type DockerPuller interface {
-	Pull(image string, secrets []api.Secret) error
+	Pull(image string, secrets []v1.Secret) error
 	IsImagePresent(image string) (bool, error)
 }
 
@@ -225,7 +225,7 @@ func matchImageIDOnly(inspected dockertypes.ImageInspect, image string) bool {
 	return false
 }
 
-func (p dockerPuller) Pull(image string, secrets []api.Secret) error {
+func (p dockerPuller) Pull(image string, secrets []v1.Secret) error {
 	keyring, err := credentialprovider.MakeDockerKeyring(secrets, p.keyring)
 	if err != nil {
 		return err
@@ -293,7 +293,7 @@ func (p dockerPuller) IsImagePresent(image string) (bool, error) {
 // Although rand.Uint32() is not really unique, but it's enough for us because error will
 // only occur when instances of the same container in the same pod have the same UID. The
 // chance is really slim.
-func BuildDockerName(dockerName KubeletContainerName, container *api.Container) (string, string, string) {
+func BuildDockerName(dockerName KubeletContainerName, container *v1.Container) (string, string, string) {
 	containerName := dockerName.ContainerName + "." + strconv.FormatUint(kubecontainer.HashContainer(container), 16)
 	stableName := fmt.Sprintf("%s_%s_%s_%s",
 		containerNamePrefix,
@@ -365,7 +365,7 @@ func getDockerClient(dockerEndpoint string) (*dockerapi.Client, error) {
 // is the timeout for docker requests. If timeout is exceeded, the request
 // will be cancelled and throw out an error. If requestTimeout is 0, a default
 // value will be applied.
-func ConnectToDockerOrDie(dockerEndpoint string, requestTimeout time.Duration) DockerInterface {
+func ConnectToDockerOrDie(dockerEndpoint string, requestTimeout, imagePullProgressDeadline time.Duration) DockerInterface {
 	if dockerEndpoint == "fake://" {
 		return NewFakeDockerClient()
 	}
@@ -374,7 +374,7 @@ func ConnectToDockerOrDie(dockerEndpoint string, requestTimeout time.Duration) D
 		glog.Fatalf("Couldn't connect to docker: %v", err)
 	}
 	glog.Infof("Start docker client with request timeout=%v", requestTimeout)
-	return newKubeDockerClient(client, requestTimeout)
+	return newKubeDockerClient(client, requestTimeout, imagePullProgressDeadline)
 }
 
 // GetKubeletDockerContainers lists all container or just the running ones.

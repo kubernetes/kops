@@ -12,7 +12,7 @@ The easiest way to get a production grade Kubernetes cluster up and running.
 
 We like to think of it as `kubectl` for clusters.
 
-`kops` lets you deploy grade Kubernetes clusters from the command line, with
+`kops` lets you deploy production-grade Kubernetes clusters from the command line, with
 options that support HA Masters. Kubernetes Operations supports deploying
 Kubernetes on Amazon Web Services (AWS) and support for more platforms is planned.
 
@@ -39,6 +39,8 @@ on AWS.
 * Command line [autocomplete](/docs/cli/kops_completion.md)
 * Community support
 * [Upgrade from kube-up](/docs/upgrade_from_kubeup.md)
+
+
 ## Installing
 
 `kubectl` is required, see [here](http://kubernetes.io/docs/user-guide/prereqs/).
