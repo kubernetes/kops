@@ -140,6 +140,17 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 			Resource: []string{"*"},
 		})
 
+                p.Statement = append(p.Statement, &IAMStatement{
+                        Effect:   IAMStatementEffectAllow,
+                        Action:   []string{
+                                  "autoscaling:DescribeAutoScalingGroups",
+                                  "autoscaling:DescribeAutoScalingInstances",
+                                  "autoscaling:SetDesiredCapacity",
+                                  "autoscaling:TerminateInstanceInAutoScalingGroup",
+			},
+                        Resource: []string{"*"},
+                })
+
 		// Restrict the KMS permissions to only the keys that are being used
 		kmsKeyIDs := sets.NewString()
 		for _, e := range b.Cluster.Spec.EtcdClusters {
