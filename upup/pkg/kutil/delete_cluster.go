@@ -858,8 +858,8 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 	}
 
 	var trackers []*ResourceTracker
-	elasticIPs := make(map[string]bool)
-	ngws := make(map[string]bool)
+	elasticIPs := sets.NewString()
+	ngws := sets.NewString()
 	for _, subnet := range subnets {
 		tracker := &ResourceTracker{
 			Name:    FindName(subnet.Tags),
@@ -867,114 +867,109 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 			Type:    "subnet",
 			deleter: DeleteSubnet,
 		}
+		tracker.blocks = append(tracker.blocks, "vpc:"+aws.StringValue(subnet.VpcId))
+		trackers = append(trackers, tracker)
 
 		// Get tags and append with EIPs/NGWs as needed
 		for _, tag := range subnet.Tags {
 			name := aws.StringValue(tag.Key)
-			ip := ""
 			if name == "AssociatedElasticIp" {
-				ip = aws.StringValue(tag.Value)
+				eip := aws.StringValue(tag.Value)
+				if eip != "" {
+					elasticIPs.Insert(eip)
+				}
 			}
-			if ip != "" {
-				elasticIPs[ip] = true
-			}
-			id := ""
 			if name == "AssociatedNatgateway" {
-				id = aws.StringValue(tag.Value)
-			}
-			if id != "" {
-				ngws[id] = true
+				ngwID := aws.StringValue(tag.Value)
+				if ngwID != "" {
+					ngws.Insert(ngwID)
+				}
 			}
 		}
+	}
 
-		var blocks []string
-		blocks = append(blocks, "vpc:"+aws.StringValue(subnet.VpcId))
-
-		tracker.blocks = blocks
-
-		trackers = append(trackers, tracker)
-
-		// Associated Elastic IPs
-		if len(elasticIPs) != 0 {
-			glog.V(2).Infof("Querying EC2 Elastic IPs")
-			request := &ec2.DescribeAddressesInput{}
-			response, err := c.EC2().DescribeAddresses(request)
-			if err != nil {
-				return nil, fmt.Errorf("error describing addresses: %v", err)
-			}
-
-			for _, address := range response.Addresses {
-				ip := aws.StringValue(address.PublicIp)
-				if !elasticIPs[ip] {
-					continue
-				}
-
-				tracker := &ResourceTracker{
-					Name:    ip,
-					ID:      aws.StringValue(address.AllocationId),
-					Type:    TypeElasticIp,
-					deleter: DeleteElasticIP,
-				}
-
-				trackers = append(trackers, tracker)
-
-			}
+	// Associated Elastic IPs
+	if elasticIPs.Len() != 0 {
+		glog.V(2).Infof("Querying EC2 Elastic IPs")
+		request := &ec2.DescribeAddressesInput{}
+		response, err := c.EC2().DescribeAddresses(request)
+		if err != nil {
+			return nil, fmt.Errorf("error describing addresses: %v", err)
 		}
 
-		// Associated Nat Gateways
-		// Note: Jan 2017 @geojaz we musn't delete any shared NAT Gateways here.
-		// Since we don't have tagging on the NGWs, we have to read the route tables
+		for _, address := range response.Addresses {
+			ip := aws.StringValue(address.PublicIp)
+			if elasticIPs.Has(ip) {
+				continue
+			}
 
-		if len(ngws) != 0 {
+			tracker := &ResourceTracker{
+				Name:    ip,
+				ID:      aws.StringValue(address.AllocationId),
+				Type:    TypeElasticIp,
+				deleter: DeleteElasticIP,
+			}
+			trackers = append(trackers, tracker)
+		}
+	}
 
-			rtRequest := &ec2.DescribeRouteTablesInput{}
-			rtResponse, err := c.EC2().DescribeRouteTables(rtRequest)
+	// Associated Nat Gateways
+	// Note: we must not delete any shared NAT Gateways here.
+	// Since we don't have tagging on the NGWs, we have to read the route tables
+	if ngws.Len() != 0 {
 
-			// sharedNgwIds is like a whitelist for shared Ngws that we can ensure are not deleted
-			sharedNgwIds := sets.NewString()
-			{
-				for _, rt := range rtResponse.RouteTables {
-					for _, t := range rt.Tags {
-						k := *t.Key
-						v := *t.Value
-						if k == "AssociatedNatgateway" {
-							sharedNgwIds.Insert(v)
-						}
+		rtRequest := &ec2.DescribeRouteTablesInput{}
+		rtResponse, err := c.EC2().DescribeRouteTables(rtRequest)
+
+		// sharedNgwIds is the set of IDs for shared NGWs, that we should not delete
+		sharedNgwIds := sets.NewString()
+		{
+			for _, rt := range rtResponse.RouteTables {
+				for _, t := range rt.Tags {
+					k := aws.StringValue(t.Key)
+					v := aws.StringValue(t.Value)
+
+					if k == "AssociatedNatgateway" {
+						sharedNgwIds.Insert(v)
 					}
 				}
-
 			}
 
-			glog.V(2).Infof("Querying Nat Gateways")
-			request := &ec2.DescribeNatGatewaysInput{}
-			response, err := c.EC2().DescribeNatGateways(request)
-
-			if err != nil {
-				return nil, fmt.Errorf("error describing NatGateways: %v", err)
-			}
-
-			for _, ngw := range response.NatGateways {
-				id := aws.StringValue(ngw.NatGatewayId)
-				if !ngws[id] {
-					continue
-				}
-				if sharedNgwIds.Has(id) {
-					// If we find this NGW in our whitelist- skip it (don't delete!)
-					continue
-				}
-
-				tracker := &ResourceTracker{
-					Name:    id,
-					ID:      aws.StringValue(ngw.NatGatewayId),
-					Type:    TypeNatGateway,
-					deleter: DeleteNatGateway,
-				}
-
-				trackers = append(trackers, tracker)
-
-			}
 		}
 
+		glog.V(2).Infof("Querying Nat Gateways")
+		request := &ec2.DescribeNatGatewaysInput{}
+		response, err := c.EC2().DescribeNatGateways(request)
+		if err != nil {
+			return nil, fmt.Errorf("error describing NatGateways: %v", err)
+		}
+
+		for _, ngw := range response.NatGateways {
+			id := aws.StringValue(ngw.NatGatewayId)
+			if !ngws.Has(id) {
+				continue
+			}
+			if sharedNgwIds.Has(id) {
+				// If we find this NGW in our list of shared NGWs, skip it (don't delete!)
+				continue
+			}
+
+			tracker := &ResourceTracker{
+				Name:    id,
+				ID:      aws.StringValue(ngw.NatGatewayId),
+				Type:    TypeNatGateway,
+				deleter: DeleteNatGateway,
+			}
+
+			// The NAT gateway blocks deletion of any associated Elastic IPs
+			for _, address := range ngw.NatGatewayAddresses {
+				if address.AllocationId != nil {
+					tracker.blocks = append(tracker.blocks, TypeElasticIp+":"+aws.StringValue(address.AllocationId))
+				}
+			}
+
+			trackers = append(trackers, tracker)
+		}
 	}
 
 	return trackers, nil
@@ -1488,21 +1483,6 @@ func FindNatGateways(cloud fi.Cloud, routeTableIds sets.String) ([]*ResourceTrac
 			}
 		}
 	}
-	// I think this is now out of date. @geojaz 1/2017
-	//{
-	//	 // We could do this to find if a NAT gateway is shared
-	//
-	//	request := &ec2.DescribeRouteTablesInput{}
-	//	request.Filters = append(request.Filters, awsup.NewEC2Filter("route.nat-gateway-id", natGatewayIds[0]))
-	//	response, err := c.EC2().DescribeRouteTables(request)
-	//	if err != nil {
-	//		return fmt.Errorf("error from DescribeRouteTables: %v", err)
-	//	}
-	//
-	//	for _, rt := range response.RouteTables {
-	//		routeTableId := aws.StringValue(rt.RouteTableId)
-	//	}
-	//}
 
 	var trackers []*ResourceTracker
 	if len(natGatewayIds) != 0 {
