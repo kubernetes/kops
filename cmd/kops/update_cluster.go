@@ -237,7 +237,12 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 			if !usesBastion(instanceGroups) {
 				fmt.Fprintf(sb, " * ssh to the master: ssh -i ~/.ssh/id_rsa admin@%s\n", cluster.Spec.MasterPublicName)
 			} else {
-				fmt.Fprintf(sb, " * ssh to the bastion: ssh -i ~/.ssh/id_rsa admin@%s\n", cluster.Spec.MasterPublicName)
+				bastionPublicName := findBastionPublicName(cluster)
+				if bastionPublicName != "" {
+					fmt.Fprintf(sb, " * ssh to the bastion: ssh -i ~/.ssh/id_rsa admin@%s\n", bastionPublicName)
+				} else {
+					fmt.Fprintf(sb, " * to ssh to the bastion, you probably want to configure a bastionPublicName")
+				}
 			}
 			fmt.Fprintf(sb, " * read about installing addons: https://github.com/kubernetes/kops/blob/master/docs/addons.md\n")
 			fmt.Fprintf(sb, "\n")
@@ -260,6 +265,18 @@ func usesBastion(instanceGroups []*kops.InstanceGroup) bool {
 	}
 
 	return false
+}
+
+func findBastionPublicName(c *kops.Cluster) string {
+	topology := c.Spec.Topology
+	if topology == nil {
+		return ""
+	}
+	bastion := topology.Bastion
+	if bastion == nil {
+		return ""
+	}
+	return bastion.BastionPublicName
 }
 
 func hasKubecfg(contextName string) (bool, error) {
