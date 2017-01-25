@@ -12,9 +12,22 @@ The easiest way to get a production grade Kubernetes cluster up and running.
 
 We like to think of it as `kubectl` for clusters.
 
-`kops` lets you deploy production-grade, with highly available masters,
-Kubernetes clusters from the command line.  Deployment is currently supported
-on Amazon Web Services (AWS), with more platforms planned.
+`kops` lets you deploy production-grade, highly available, Kubernetes clusters
+from the command line.  Deployment is currently supported on Amazon Web
+Services (AWS), with more platforms planned.
+
+## Can I see it in action?
+
+<p align="center">
+  <a href="https://asciinema.org/a/97298">
+  <img src="https://asciinema.org/a/97298.png" width="885"></image>
+  </a>
+</p>
+
+## Launching a Kubernetes cluster hosted on AWS
+
+To replicate the above demo, check out our [tutorial](/docs/aws.md) for
+launching a Kubernetes cluster hosted on AWS.
 
 ## Features
 
@@ -67,16 +80,10 @@ See [building notes](/docs/build.md) for more information.
 
 At this time, Windows is not a supported platform.
 
-## Launching a Kubernetes cluster hosted on AWS
+## History
 
-Check out our [tutorial](/docs/aws.md) for launching a Kubernetes cluster hosted
-on AWS.
-
-<p align="center">
-  <a href="https://asciinema.org/a/97298">
-  <img src="https://asciinema.org/a/97298.png" width="885"></image>
-  </a>
-</p>
+See the [releases](https://github.com/kubernetes/kops/releases) for more
+information on changes between releases.
 
 ## Getting involved!
 
