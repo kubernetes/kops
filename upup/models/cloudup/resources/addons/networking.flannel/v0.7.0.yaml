@@ -23,7 +23,7 @@ data:
     }
   net-conf.json: |
     {
-      "Network": "100.64.0.0/16",
+      "Network": "100.64.0.0/10",
       "Backend": {
         "Type": "udp"
       }
