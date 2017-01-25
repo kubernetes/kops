@@ -22,6 +22,8 @@ import (
 	"k8s.io/kubernetes/pkg/api/validation"
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/kubernetes/pkg/util/validation/field"
+	"net"
+	"strings"
 )
 
 var validDockerConfigStorageValues = []string{"aufs", "btrfs", "devicemapper", "overlay", "overlay2", "zfs"}
@@ -43,6 +45,33 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 
 	allErrs = append(allErrs, validateSubnets(spec.Subnets, field.NewPath("spec"))...)
 
+	// SSHAccess
+	for i, cidr := range spec.SSHAccess {
+		allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("sshAccess").Index(i))...)
+	}
+
+	// AdminAccess
+	for i, cidr := range spec.KubernetesAPIAccess {
+		allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("kubernetesAPIAccess").Index(i))...)
+	}
+
+	return allErrs
+}
+
+func validateCIDR(cidr string, fieldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	_, _, err := net.ParseCIDR(cidr)
+	if err != nil {
+		detail := "Could not be parsed as a CIDR"
+		if !strings.Contains(cidr, "/") {
+			ip := net.ParseIP(cidr)
+			if ip != nil {
+				detail += fmt.Sprintf(" (did you mean \"%s/32\")", cidr)
+			}
+		}
+		allErrs = append(allErrs, field.Invalid(fieldPath, cidr, detail))
+	}
 	return allErrs
 }
 
@@ -65,7 +94,7 @@ func validateSubnets(subnets []kops.ClusterSubnetSpec, fieldPath *field.Path) fi
 		for i := range subnets {
 			name := subnets[i].Name
 			if names.Has(name) {
-				allErrs = append(allErrs, field.Invalid(fieldPath, subnets, fmt.Sprintf("Subnets with duplicate name %q found", name)))
+				allErrs = append(allErrs, field.Invalid(fieldPath, subnets, fmt.Sprintf("subnets with duplicate name %q found", name)))
 			}
 			names.Insert(name)
 		}

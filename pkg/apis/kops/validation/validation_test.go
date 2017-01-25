@@ -33,6 +33,72 @@ func Test_Validate_DNS(t *testing.T) {
 	}
 }
 
+func TestValidateCIDR(t *testing.T) {
+	grid := []struct {
+		Input          string
+		ExpectedErrors []string
+		ExpectedDetail string
+	}{
+		{
+			Input: "192.168.0.1/32",
+		},
+		{
+			Input:          "192.168.0.1",
+			ExpectedErrors: []string{"Invalid value::CIDR"},
+			ExpectedDetail: "Could not be parsed as a CIDR (did you mean \"192.168.0.1/32\")",
+		},
+		{
+			Input:          "",
+			ExpectedErrors: []string{"Invalid value::CIDR"},
+		},
+		{
+			Input:          "invalid.example.com",
+			ExpectedErrors: []string{"Invalid value::CIDR"},
+			ExpectedDetail: "Could not be parsed as a CIDR",
+		},
+	}
+	for _, g := range grid {
+		errs := validateCIDR(g.Input, field.NewPath("CIDR"))
+
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+
+		if g.ExpectedDetail != "" {
+			found := false
+			for _, err := range errs {
+				if err.Detail == g.ExpectedDetail {
+					found = true
+				}
+			}
+			if !found {
+				for _, err := range errs {
+					t.Logf("found detail: %q", err.Detail)
+				}
+
+				t.Errorf("did not find expected error %q", g.ExpectedDetail)
+			}
+		}
+	}
+}
+
+func testErrors(t *testing.T, context interface{}, actual field.ErrorList, expectedErrors []string) {
+	if len(expectedErrors) == 0 {
+		if len(actual) != 0 {
+			t.Errorf("unexpected errors from %q: %v", context, actual)
+		}
+	} else {
+		errStrings := sets.NewString()
+		for _, err := range actual {
+			errStrings.Insert(err.Type.String() + "::" + err.Field)
+		}
+
+		for _, expected := range expectedErrors {
+			if !errStrings.Has(expected) {
+				t.Errorf("expected error %v from %q, was not found in %q", expected, context, errStrings.List())
+			}
+		}
+	}
+}
+
 func TestValidateSubnets(t *testing.T) {
 	grid := []struct {
 		Input          []kops.ClusterSubnetSpec
@@ -73,22 +139,7 @@ func TestValidateSubnets(t *testing.T) {
 	for _, g := range grid {
 		errs := validateSubnets(g.Input, field.NewPath("Subnets"))
 
-		if len(g.ExpectedErrors) == 0 {
-			if len(errs) != 0 {
-				t.Errorf("unexpected errors from %q: %v", g.Input, errs)
-			}
-		} else {
-			errStrings := sets.NewString()
-			for _, err := range errs {
-				errStrings.Insert(err.Type.String() + "::" + err.Field)
-			}
-
-			for _, expected := range g.ExpectedErrors {
-				if !errStrings.Has(expected) {
-					t.Errorf("expected error %v from %q, was not found in %q", expected, g.Input, errStrings.List())
-				}
-			}
-		}
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
 
