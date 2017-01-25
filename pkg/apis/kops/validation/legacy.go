@@ -250,22 +250,10 @@ func ValidateCluster(c *kops.Cluster, strict bool) error {
 	if strict && len(c.Spec.SSHAccess) == 0 {
 		return fmt.Errorf("SSHAccess not configured")
 	}
-	for _, cidr := range c.Spec.SSHAccess {
-		_, _, err := net.ParseCIDR(cidr)
-		if err != nil {
-			return fmt.Errorf("SSHAccess rule %q could not be parsed (invalid CIDR)", cidr)
-		}
-	}
 
 	// AdminAccess
 	if strict && len(c.Spec.KubernetesAPIAccess) == 0 {
 		return fmt.Errorf("KubernetesAPIAccess not configured")
-	}
-	for _, cidr := range c.Spec.KubernetesAPIAccess {
-		_, _, err := net.ParseCIDR(cidr)
-		if err != nil {
-			return fmt.Errorf("KubernetesAPIAccess rule %q could not be parsed (invalid CIDR)", cidr)
-		}
 	}
 
 	// KubeProxy
