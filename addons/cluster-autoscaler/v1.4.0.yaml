@@ -14,6 +14,8 @@ spec:
     metadata:
       labels:
         k8s-app: cluster-autoscaler
+      annotations:
+        scheduler.alpha.kubernetes.io/tolerations: '[{"key":"dedicated", "value":"master"}]'
     spec:
         containers:
           - name: cluster-autoscaler
@@ -40,3 +42,5 @@ spec:
           - name: ssl-certs
             hostPath:
               path: {{SSL_CERT_PATH}}
+        nodeSelector:
+          kubernetes.io/role: master
