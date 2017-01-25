@@ -19,8 +19,10 @@ package cloudup
 import (
 	"fmt"
 
+	"github.com/blang/semver"
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -208,9 +210,19 @@ func defaultBastionMachineType(cluster *api.Cluster) string {
 // defaultImage returns the default Image, based on the cloudprovider
 func defaultImage(cluster *api.Cluster, channel *api.Channel) string {
 	if channel != nil {
-		image := channel.FindImage(fi.CloudProviderID(cluster.Spec.CloudProvider))
-		if image != nil {
-			return image.Name
+		var kubernetesVersion *semver.Version
+		if cluster.Spec.KubernetesVersion != "" {
+			var err error
+			kubernetesVersion, err = util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
+			if err != nil {
+				glog.Warningf("cannot parse KubernetesVersion %q in cluster", cluster.Spec.KubernetesVersion)
+			}
+		}
+		if kubernetesVersion != nil {
+			image := channel.FindImage(fi.CloudProviderID(cluster.Spec.CloudProvider), *kubernetesVersion)
+			if image != nil {
+				return image.Name
+			}
 		}
 	}
 
