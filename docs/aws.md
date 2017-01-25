@@ -47,7 +47,7 @@ brew install kubernetes-cli
 ### Setting up a kops IAM user
 
 
-In this example we will be using a dedicated IAM user to use with kops. This user will need basic API security credentials in order to use kops. Create the user and credentials using the AWS console. [More information](http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.html).
+In this example we will be using a dedicated IAM user to use with kops. This user will need basic API security credentials in order to use kops. Create the user and credentials using the AWS console. [More information](http://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_create.html).
 
 Kubernetes kops uses the official AWS Go SDK, so all we need to do here is set up your system to use the official AWS supported methods of registering security credentials defined [here](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials). Here is an example using the aws command line tool to set up your security credentials.
 
@@ -170,7 +170,7 @@ You might need to grab [jq](https://github.com/stedolan/jq/wiki/Installation) fo
 ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.kubernetes.com --caller-reference $ID | jq .DelegationSet.NameServers
 ```
 
- - You will now go to your registrars page and log in. You will need to create a new **SUBDOMAIN**, and use the 4 NS records listed above for the new **SUBDOMAIN**. This **MUST** be done in order to use your cluster. Do **NOT** change your top level NS record, or you might take your site offline.
+ - You will now go to your registrars page and log in. You will need to create a new **SUBDOMAIN**, and use the 4 NS records received from the above command for the new **SUBDOMAIN**. This **MUST** be done in order to use your cluster. Do **NOT** change your top level NS record, or you might take your site offline.
 
  - Information on adding NS records with [Godaddy.com](https://www.godaddy.com/help/set-custom-nameservers-for-domains-registered-with-godaddy-12317)
  - Information on adding NS records with [Google Cloud Platform](https://cloud.google.com/dns/update-name-servers)
