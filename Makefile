@@ -242,6 +242,7 @@ gofmt:
 	gofmt -w -s tests/
 	gofmt -w -s protokube/cmd
 	gofmt -w -s protokube/pkg
+	gofmt -w -s protokube/tests
 	gofmt -w -s dns-controller/cmd
 	gofmt -w -s dns-controller/pkg
 
