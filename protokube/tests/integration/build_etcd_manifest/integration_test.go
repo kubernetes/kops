@@ -23,8 +23,8 @@ import (
 	"path"
 	"testing"
 
-	"strings"
 	"k8s.io/kops/protokube/pkg/protokube"
+	"strings"
 
 	_ "k8s.io/kubernetes/pkg/api/install"
 	"strconv"
@@ -54,14 +54,14 @@ func runTest(t *testing.T, srcDir string) {
 	}
 
 	cluster.Me = &protokube.EtcdNode{
-		Name: "node0",
+		Name:         "node0",
 		InternalName: "node0" + ".internal",
 	}
 
 	for i := 0; i <= 2; i++ {
 		node := &protokube.EtcdNode{
-			Name: "node" + strconv.Itoa(i),
-			InternalName: "node"  + strconv.Itoa(i) + ".internal",
+			Name:         "node" + strconv.Itoa(i),
+			InternalName: "node" + strconv.Itoa(i) + ".internal",
 		}
 		cluster.Nodes = append(cluster.Nodes, node)
 	}
