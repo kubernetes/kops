@@ -951,6 +951,7 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 			}
 			if sharedNgwIds.Has(id) {
 				// If we find this NGW in our list of shared NGWs, skip it (don't delete!)
+				glog.V(2).Infof("Won't delete shared NAT gateway %q", id)
 				continue
 			}
 
