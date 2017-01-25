@@ -9,11 +9,11 @@ spec:
     selector:
       k8s-addon: core.addons.k8s.io
     version: 1.4.0
-  - manifest: kube-dns.addons.k8s.io/v1.5.0.yaml
+  - manifest: kube-dns.addons.k8s.io/v1.5.1.yaml
     name: kube-dns.addons.k8s.io
     selector:
       k8s-addon: kube-dns.addons.k8s.io
-    version: 1.5.0
+    version: 1.5.1
   - manifest: limit-range.addons.k8s.io/v1.5.0.yaml
     name: limit-range.addons.k8s.io
     selector:
