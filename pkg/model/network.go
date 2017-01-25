@@ -76,6 +76,15 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// TODO: would be good to create these as shared, to verify them
 	}
 
+	allSubnetsShared := true
+	for i := range b.Cluster.Spec.Subnets {
+		subnetSpec := &b.Cluster.Spec.Subnets[i]
+		sharedSubnet := subnetSpec.ProviderID != ""
+		if !sharedSubnet {
+			allSubnetsShared = false
+		}
+	}
+
 	// We always have a public route table, though for private networks it is only used for NGWs and ELBs
 	var publicRouteTable *awstasks.RouteTable
 	{
@@ -87,18 +96,21 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		c.AddTask(igw)
 
-		publicRouteTable = &awstasks.RouteTable{
-			Name: s(b.ClusterName()),
-			VPC:  b.LinkToVPC(),
-		}
-		c.AddTask(publicRouteTable)
+		if !allSubnetsShared {
+			publicRouteTable = &awstasks.RouteTable{
+				Name: s(b.ClusterName()),
+				VPC:  b.LinkToVPC(),
+			}
+			c.AddTask(publicRouteTable)
 
-		c.AddTask(&awstasks.Route{
-			Name:            s("0.0.0.0/0"),
-			CIDR:            s("0.0.0.0/0"),
-			RouteTable:      publicRouteTable,
-			InternetGateway: igw,
-		})
+			// TODO: Validate when allSubnetsShared
+			c.AddTask(&awstasks.Route{
+				Name:            s("0.0.0.0/0"),
+				CIDR:            s("0.0.0.0/0"),
+				RouteTable:      publicRouteTable,
+				InternetGateway: igw,
+			})
+		}
 	}
 
 	privateZones := sets.NewString()
@@ -143,9 +155,9 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					Subnet:     subnet,
 				})
 
+				// TODO: validate even if shared?
 				privateZones.Insert(subnetSpec.Zone)
 			}
-
 		default:
 			return fmt.Errorf("subnet %q has unknown type %q", subnetSpec.Name, subnetSpec.Type)
 		}
