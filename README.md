@@ -93,11 +93,14 @@ to working with newcomers, helping with PRs, and discussing new features.
 We recommend letting us know **beforehand** if you plan on attending so we can
 have time to prepare for the call.
 
-| Maintainer   | Schedule      |  URL |
-|--------------|---------------|-------|
-| [@justinsb](https://github.com/justinsb)             |  2nd / 4th Friday 9am PDT | [Zoom](https://zoom.us/my/k8ssigaws) |
-| [@chrislovecnm](https://github.com/chrislovecnm)     |  2nd / 4th Friday 9am PDT | [Zoom](https://zoom.us/my/k8ssigaws) |
-| [@kris-nova](https://github.com/kris-nova)           |  2nd / 4th Friday 9am PDT | [Zoom](https://zoom.us/my/k8ssigaws) |
+Office hours are every other week, on odd week numbers. Easy command for number
+of the week: `date +%V`.
+
+| Maintainer   |  URL |
+|--------------|-------|
+| [@justinsb](https://github.com/justinsb)             | [Zoom](https://zoom.us/my/k8ssigaws) |
+| [@chrislovecnm](https://github.com/chrislovecnm)     | [Zoom](https://zoom.us/my/k8ssigaws) |
+| [@kris-nova](https://github.com/kris-nova)           | [Zoom](https://zoom.us/my/k8ssigaws) |
 
 Reach out to us on [kubernetes slack](https://github.com/kubernetes/community#slack-chat).
 A great place to get involved or ask questions is [#sig-cluster-lifecycle](https://kubernetes.slack.com/?redir=%2Fmessages%2Fsig-cluster-lifecycle%2F).
