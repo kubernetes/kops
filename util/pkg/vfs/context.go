@@ -44,7 +44,7 @@ var Context = VFSContext{
 //   metadata: reads from instance metadata on GCE/AWS
 //   http / https: reads from HTTP
 func (c *VFSContext) ReadFile(location string) ([]byte, error) {
-	if strings.Contains(location, "://") {
+	if strings.Contains(location, "://") && !strings.HasPrefix(location, "file://") {
 		// Handle our special case schemas
 		u, err := url.Parse(location)
 		if err != nil {
@@ -70,8 +70,9 @@ func (c *VFSContext) ReadFile(location string) ([]byte, error) {
 		case "http", "https":
 			return c.readHttpLocation(location, nil)
 		}
-
 	}
+
+	location = strings.TrimPrefix(location, "file://")
 
 	p, err := c.BuildVfsPath(location)
 	if err != nil {
