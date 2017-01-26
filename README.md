@@ -81,7 +81,7 @@ See [building notes](/docs/build.md) for more information.
 
 At this time, Windows is not a supported platform.
 
-## Getting involved!
+## Getting involved and contributing!
 
 Want to contribute to kops? We would love the extra help from the community. We
 have a quickstart guide on [adding a feature](/docs/development/adding_a_feature.md).
@@ -90,20 +90,14 @@ Kops also has time set aside every other week to offer help and guidance to the
 community. Kops maintainers have agreed to set aside time specifically dedicated
 to working with newcomers, helping with PRs, and discussing new features.
 
-We recommend letting us know **beforehand** if you plan on attending so we can
-have time to prepare for the call.
+Please feel free to reach out **beforehand** if you plan on attending!
 
-Office hours are every other week, on odd week numbers. Easy command for number
-of the week: `date +%V`.
-
-| Maintainer   |  URL |
-|--------------|-------|
-| [@justinsb](https://github.com/justinsb)             | [Zoom](https://zoom.us/my/k8ssigaws) |
-| [@chrislovecnm](https://github.com/chrislovecnm)     | [Zoom](https://zoom.us/my/k8ssigaws) |
-| [@kris-nova](https://github.com/kris-nova)           | [Zoom](https://zoom.us/my/k8ssigaws) |
+Office hours, on [Zoom](https://zoom.us/my/k8ssigaws video
+conference are on Fridays at 9 am PT every other week, on odd week numbers.
+Easy command for number of the week: `date +%V`.
 
 Reach out to us on [kubernetes slack](https://github.com/kubernetes/community#slack-chat).
-A great place to get involved or ask questions is [#sig-cluster-lifecycle](https://kubernetes.slack.com/?redir=%2Fmessages%2Fsig-cluster-lifecycle%2F).
+A great place to get involved or ask questions is [#kops](https://kubernetes.slack.com/?redir=%2Fmessages%2Fkops%2F).
 
 ## Other Resources
 
