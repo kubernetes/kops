@@ -92,7 +92,7 @@ to working with newcomers, helping with PRs, and discussing new features.
 
 Please feel free to reach out **beforehand** if you plan on attending!
 
-Office hours, on [Zoom](https://zoom.us/my/k8ssigaws video
+Office hours, on [Zoom](https://zoom.us/my/k8ssigaws) video
 conference are on Fridays at 9 am PT every other week, on odd week numbers.
 Easy command for number of the week: `date +%V`.
 
