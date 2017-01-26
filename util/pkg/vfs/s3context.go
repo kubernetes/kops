@@ -20,11 +20,11 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/golang/glog"
 	"os"
 	"sync"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"time"
 )
 
@@ -121,7 +121,7 @@ func bruteforceBucketLocation(region *string, request *s3.GetBucketLocationInput
 	session, _ := session.NewSession(&aws.Config{Region: region})
 	regions, err := ec2.New(session).DescribeRegions(nil)
 
-	if (err != nil) {
+	if err != nil {
 		return nil, fmt.Errorf("Unable to list AWS regions: %v", err)
 	}
 
@@ -133,16 +133,16 @@ func bruteforceBucketLocation(region *string, request *s3.GetBucketLocationInput
 			s3Client := s3.New(session, &aws.Config{Region: aws.String(regionName)})
 			result, bucketError := s3Client.GetBucketLocation(request)
 
-			if (bucketError == nil) {
+			if bucketError == nil {
 				out <- result
 			}
-		} (*region.RegionName);
+		}(*region.RegionName)
 	}
 
 	select {
 	case bucketLocation := <-out:
 		return bucketLocation, nil
-	case <- time.After(5 * 1e9):
+	case <-time.After(5 * 1e9):
 		return nil, fmt.Errorf("Could not retrieve location for AWS bucket %s", *request.Bucket)
 	}
 }
