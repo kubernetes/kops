@@ -23,6 +23,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -133,6 +134,9 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 	//	return err
 	//}
 
+	// So we can propose an image for the upgraded k8s version
+	upgradedKubernetesVersion := cluster.Spec.KubernetesVersion
+
 	if channelClusterSpec.KubernetesVersion != "" && cluster.Spec.KubernetesVersion != channelClusterSpec.KubernetesVersion {
 		actions = append(actions, &upgradeAction{
 			Item:     "Cluster",
@@ -143,6 +147,8 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 				cluster.Spec.KubernetesVersion = channelClusterSpec.KubernetesVersion
 			},
 		})
+
+		upgradedKubernetesVersion = channelClusterSpec.KubernetesVersion
 	}
 
 	// Prompt to upgrade addins?
@@ -174,7 +180,12 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 
 	// Prompt to upgrade image
 	{
-		image := channel.FindImage(cloud.ProviderID())
+		sv, err := util.ParseKubernetesVersion(upgradedKubernetesVersion)
+		if err != nil {
+			// We could continue, but something has gone wrong here...
+			return fmt.Errorf("unable to parse kubernetes version %q", upgradedKubernetesVersion)
+		}
+		image := channel.FindImage(cloud.ProviderID(), *sv)
 
 		if image == nil {
 			glog.Warningf("No matching images specified in channel; cannot prompt for upgrade")
