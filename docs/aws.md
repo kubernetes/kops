@@ -147,7 +147,7 @@ aws route53 list-hosted-zones | jq '.HostedZones[] | select(.Name=="kubernetes.c
  ```
  aws route53 change-resource-record-sets \
   --hosted-zone-id <parent-zone-id> \
-  --change-batch subdomain.json
+  --change-batch file://subdomain.json
 ```
 
 Now traffic to `*.kubernetes.com` will be routed to the correct subdomain hosted zone in Route 53.
