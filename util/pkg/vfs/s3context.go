@@ -24,6 +24,8 @@ import (
 	"github.com/golang/glog"
 	"os"
 	"sync"
+	"github.com/aws/aws-sdk-go/service/ec2"
+	"time"
 )
 
 type S3Context struct {
@@ -73,19 +75,15 @@ func (s *S3Context) getRegionForBucket(bucket string) (string, error) {
 	if awsRegion == "" {
 		awsRegion = "us-east-1"
 	}
-	s3Client, err := s.getClient(awsRegion)
-	if err != nil {
-		return "", fmt.Errorf("unable to get client for querying s3 bucket location: %v", err)
+
+	request := &s3.GetBucketLocationInput{
+		Bucket: aws.String(bucket),
 	}
 
-	request := &s3.GetBucketLocationInput{}
-	request.Bucket = aws.String(bucket)
+	response, err := bruteforceBucketLocation(&awsRegion, request)
 
-	glog.V(2).Infof("Querying S3 for bucket location for %q", bucket)
-	response, err := s3Client.GetBucketLocation(request)
 	if err != nil {
-		// TODO: Auto-create bucket?
-		return "", fmt.Errorf("error getting location for S3 bucket %q: %v", bucket, err)
+		return "", err
 	}
 
 	if response.LocationConstraint == nil {
@@ -105,4 +103,46 @@ func (s *S3Context) getRegionForBucket(bucket string) (string, error) {
 	s.bucketLocations[bucket] = region
 
 	return region, nil
+}
+
+/*
+Amazon's S3 API provides the GetBucketLocation call to determine the region in which a bucket is located.
+This call can however only be used globally by the owner of the bucket, as mentioned on the documentation page.
+
+For S3 buckets that are shared across multiple AWS accounts using bucket policies the call will only work if it is sent
+to the correct region in the first place.
+
+This method will attempt to "bruteforce" the bucket location by sending a request to every available region and picking
+out the first result.
+
+See also: https://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/GetBucketLocationRequest
+*/
+func bruteforceBucketLocation(region *string, request *s3.GetBucketLocationInput) (*s3.GetBucketLocationOutput, error) {
+	session, _ := session.NewSession(&aws.Config{Region: region})
+	regions, err := ec2.New(session).DescribeRegions(nil)
+
+	if (err != nil) {
+		return nil, fmt.Errorf("Unable to list AWS regions: %v", err)
+	}
+
+	glog.V(2).Infof("Querying S3 for bucket location for %s", *request.Bucket)
+
+	out := make(chan *s3.GetBucketLocationOutput)
+	for _, region := range regions.Regions {
+		go func(regionName string) {
+			s3Client := s3.New(session, &aws.Config{Region: aws.String(regionName)})
+			result, bucketError := s3Client.GetBucketLocation(request)
+
+			if (bucketError == nil) {
+				out <- result
+			}
+		} (*region.RegionName);
+	}
+
+	select {
+	case bucketLocation := <-out:
+		return bucketLocation, nil
+	case <- time.After(5 * 1e9):
+		return nil, fmt.Errorf("Could not retrieve location for AWS bucket %s", *request.Bucket)
+	}
 }
