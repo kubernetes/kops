@@ -25,6 +25,9 @@ package kutil
 // TODO: can we use our own client instead of building it again
 // TODO: refactor our client to be like this client
 
+// FIXME: look at 1.5 refactor
+// FIXME: we are deleting local storage for daemon sets, and why even delete local storage??
+
 import (
 	"errors"
 	"fmt"
@@ -265,7 +268,8 @@ func (o *DrainOptions) getController(sr *api.SerializedReference) (interface{}, 
 	case "ReplicaSet":
 		return o.client.Extensions().ReplicaSets(sr.Reference.Namespace).Get(sr.Reference.Name, metav1.GetOptions{})
 	case "PetSet":
-		// TODO: how the heck do you write this
+		// FIXME: how the heck do you write this
+		// FIXME: Can we use the go client to make 1.4 and 1.5 calls :)
 		return "PetSet", nil
 	case "StatefulSet":
 		return o.client.Apps().StatefulSets(sr.Reference.Namespace).Get(sr.Reference.Name, metav1.GetOptions{})
