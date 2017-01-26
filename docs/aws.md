@@ -215,6 +215,14 @@ aws s3api create-bucket --bucket kubernetes-com-state-store --region us-east-1
 
 Note: We **STRONGLY** recommend versioning your S3 bucket in case you ever need to revert or recover a previous state store.
 
+### Sharing an S3 bucket across multiple accounts
+
+If you configure a single S3 bucket to maintain kops state for clusters across multiple accounts, you may want to override the object ACLs which kops places on the state files.
+
+To do this you should set the environment variable `KOPS_STATE_S3_ACL` to the preferred object ACL, for example `bucket-owner-full-control`.
+
+For available canned ACLs please consult [Amazon's S3 documentation](http://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl).
+
 ## Creating your first cluster
 
 #### Setup your environment for kops
