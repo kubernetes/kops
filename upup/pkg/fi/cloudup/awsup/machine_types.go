@@ -481,7 +481,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          64,
 		EphemeralDisks: nil,
 	},
-	
+
 	// p2 family
 	{
 		Name:           "p2.xlarge",
