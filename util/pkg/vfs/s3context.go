@@ -142,7 +142,7 @@ func bruteforceBucketLocation(region *string, bucket *string) (*s3.GetBucketLoca
 	select {
 	case bucketLocation := <-out:
 		return bucketLocation, nil
-	case <-time.After(5 * 1e9):
+	case <-time.After(5 * time.Second):
 		return nil, fmt.Errorf("Could not retrieve location for AWS bucket %s", *bucket)
 	}
 }
