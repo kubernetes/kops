@@ -22,8 +22,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/spf13/cobra"
 	"io"
+
+	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
@@ -42,7 +43,11 @@ func NewCmdEditCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "cluster",
 		Short: "Edit cluster",
-		Long:  `Edit a cluster configuration.`,
+		Long: `Edit a cluster configuration.
+
+This command changes the cloud specification in the registry.
+
+It does not update the cloud resources, to apply the changes use "kops update cluster".`,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := RunEditCluster(f, cmd, args, out, options)
 			if err != nil {
