@@ -236,7 +236,10 @@ type ClusterSpec struct {
 	Networking *NetworkingSpec `json:"networking,omitempty"`
 
 	// API field controls how the API is exposed outside the cluster
-	API *AccessSpec `json:"api,omitempty"`
+	API         *AccessSpec `json:"api,omitempty"`
+
+	// Tags for AWS resources
+	CloudLabels map[string]string `json:"cloudLabels,omitempty"`
 }
 
 type AccessSpec struct {

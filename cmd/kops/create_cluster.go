@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"strconv"
 	"strings"
+	"encoding/csv"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -74,6 +75,9 @@ type CreateClusterOptions struct {
 
 	// Enable/Disable Bastion Host complete setup
 	Bastion bool
+
+	// Specify tags for AWS resources
+	CloudLabels string
 
 	// Egress configuration - FOR TESTING ONLY
 	Egress string
@@ -172,6 +176,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	// Bastion
 	cmd.Flags().BoolVar(&options.Bastion, "bastion", options.Bastion, "Pass the --bastion flag to enable a bastion instance group. Only applies to private topology.")
+
+	// Allow custom tags from the CLI
+	cmd.Flags().StringVar(&options.CloudLabels, "cloud-labels", options.CloudLabels, "A list of KV pairs used to tag all kops-created AWS resources (eg \"Owner=John Doe,Team=Some Team\").")
 
 	return cmd
 }
@@ -285,6 +292,11 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	var masters []*api.InstanceGroup
 	var nodes []*api.InstanceGroup
 	var instanceGroups []*api.InstanceGroup
+	cloudLabels, err := parseCloudLabels(c.CloudLabels)
+	if err != nil {
+		return fmt.Errorf("error parsing global cloud labels: %v", err)
+	}
+	cluster.Spec.CloudLabels = cloudLabels
 
 	// Build the master subnets
 	// The master zones is the default set of zones unless explicitly set
@@ -759,4 +771,31 @@ func trimCommonPrefix(names []string) []string {
 	}
 
 	return names
+}
+
+// parseCloudLabels takes a CSV list of key=value records and parses them into a map. Nested '='s are supported via
+// quoted strings (eg `foo="bar=baz"` parses to map[string]string{"foo":"bar=baz"}. Nested commas are not supported.
+func parseCloudLabels (s string) (map[string]string, error) {
+
+	// Replace commas with newlines to allow a single pass with csv.Reader.
+	// We can't use csv.Reader for the initial split because it would see each key=value record as a single field
+	// and significantly complicates using quoted fields as keys or values.
+	records := strings.Replace(s,",","\n",-1)
+
+	// Let the CSV library do the heavy-lifting in handling nested ='s
+	r := csv.NewReader(strings.NewReader(records))
+	r.Comma = '='
+	r.FieldsPerRecord = 2
+	r.LazyQuotes = false
+	r.TrimLeadingSpace = true
+	kvPairs, err := r.ReadAll()
+	if err != nil {
+		return nil, fmt.Errorf("One or more key=value pairs are malformed:\n%s\n:%v", records, err)
+	}
+
+	m := make(map[string]string, len(kvPairs))
+	for _, pair := range kvPairs {
+		m[pair[0]] = pair[1]
+	}
+	return m, nil
 }

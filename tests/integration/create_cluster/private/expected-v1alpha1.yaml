@@ -10,6 +10,10 @@ spec:
     loadBalancer:
       type: Public
   channel: stable
+  cloudLabels:
+    Owner: John Doe
+    dn: 'cn=John Doe: dc=example dc=com'
+    foo/bar: fib+baz
   cloudProvider: aws
   configBase: memfs://tests/private.example.com
   etcdClusters:
