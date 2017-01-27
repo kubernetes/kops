@@ -17,15 +17,21 @@ limitations under the License.
 package main
 
 import (
-	"github.com/spf13/cobra"
 	"io"
+
+	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 )
 
 func NewCmdEdit(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "edit",
-		Short: "edit items",
+		Short: "Edit resource",
+		Long: `Edit a resource configuration.
+	
+This command changes the cloud specification in the registry.
+
+It does not update the cloud resources, to apply the changes use "kops update cluster".`,
 	}
 
 	// create subcommands

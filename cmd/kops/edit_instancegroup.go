@@ -22,8 +22,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/spf13/cobra"
 	"io"
+
+	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -40,7 +41,11 @@ func NewCmdEditInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 		Use:     "instancegroup",
 		Aliases: []string{"instancegroups", "ig"},
 		Short:   "Edit instancegroup",
-		Long:    `Edit an instancegroup configuration.`,
+		Long: `Edit an instancegroup configuration.
+
+This command changes the cloud specification in the registry.
+
+It does not update the cloud resources, to apply the changes use "kops update cluster".`,
 		Run: func(cmd *cobra.Command, args []string) {
 
 			err := RunEditInstanceGroup(f, cmd, args, os.Stdout, options)
