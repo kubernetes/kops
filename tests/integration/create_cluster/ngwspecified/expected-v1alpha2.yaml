@@ -19,12 +19,16 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
+  kubernetesApiAccess:
+  - 0.0.0.0/0
   kubernetesVersion: v1.4.7
   masterPublicName: api.private.example.com
   networkCIDR: 172.20.0.0/16
   networking:
     kopeio: {}
   nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+  - 0.0.0.0/0
   subnets:
   - cidr: 172.20.32.0/19
     egress: nat-09123456
