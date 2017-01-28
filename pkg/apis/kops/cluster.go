@@ -112,12 +112,10 @@ type ClusterSpec struct {
 	// It cannot overlap ServiceClusterIPRange
 	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty"`
 
-	// SSHAccess determines the permitted access to SSH
-	// Currently only a single CIDR is supported (though a richer grammar could be added in future)
+	// SSHAccess is a list of the CIDRs that can access SSH.
 	SSHAccess []string `json:"sshAccess,omitempty"`
 
-	// KubernetesAPIAccess determines the permitted access to the Kubernetes API endpoints (master HTTPS)
-	// Currently only a single CIDR is supported (though a richer grammar could be added in future)
+	// KubernetesAPIAccess is a list of the CIDRs that can access the Kubernetes API endpoint (master HTTPS)
 	KubernetesAPIAccess []string `json:"kubernetesApiAccess,omitempty"`
 
 	// IsolatesMasters determines whether we should lock down masters so that they are not on the pod network.
@@ -341,19 +339,10 @@ type ClusterSubnetSpec struct {
 // This is different from PerformAssignments, because these values are changeable, and thus we don't need to
 // store them (i.e. we don't need to 'lock them')
 func (c *Cluster) FillDefaults() error {
-	// TODO: Move elsewhere
-	if len(c.Spec.SSHAccess) == 0 {
-		c.Spec.SSHAccess = append(c.Spec.SSHAccess, "0.0.0.0/0")
-	}
-
 	// Topology support
 	if c.Spec.Topology == nil {
 		c.Spec.Topology = &TopologySpec{Masters: TopologyPublic, Nodes: TopologyPublic}
 		c.Spec.Topology.DNS = &DNSSpec{Type: DNSTypePublic}
-	}
-
-	if len(c.Spec.KubernetesAPIAccess) == 0 {
-		c.Spec.KubernetesAPIAccess = append(c.Spec.KubernetesAPIAccess, "0.0.0.0/0")
 	}
 
 	if c.Spec.Networking == nil {
