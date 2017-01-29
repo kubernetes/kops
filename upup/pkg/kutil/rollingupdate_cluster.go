@@ -269,6 +269,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 		}
 	}
 
+	glog.Info("\nRolling update completed!\n")
 	return nil
 }
 

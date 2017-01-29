@@ -149,6 +149,6 @@ func validateTheNodes(clusterName string, validationCluster *ValidationCluster) 
 		return validationCluster, nil
 	} else {
 		// TODO: This isn't an error...
-		return validationCluster, fmt.Errorf("Your cluster is NOT ready %s", clusterName)
+		return validationCluster, fmt.Errorf("Your cluster is NOT ready")
 	}
 }
