@@ -197,12 +197,12 @@ func (c *KubeconfigBuilder) DeleteKubeConfig() {
 	c.execKubectl("config", "unset", fmt.Sprintf("contexts.%s", c.Context))
 	config, err := clientcmd.LoadFromFile(c.KubeconfigPath)
 	if err != nil {
-		fmt.Printf("Error reading kube config.")
+		fmt.Printf("kubectl unset current-context failed: %v", err)
 	}
 	if config.CurrentContext == c.Context {
 		c.execKubectl("config", "unset", "current-context")
 	}
-	fmt.Printf("Deleted kContextubectl config for %s\n", c.Context)
+	fmt.Printf("Deleted kubectl config for %s\n", c.Context)
 }
 
 // get the correct path.  Handle empty and multiple values.
