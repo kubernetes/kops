@@ -22,6 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -132,11 +133,11 @@ func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 		}
 
 		if changes != nil && changes.EnableDNSSupport != nil {
-			return fmt.Errorf("VPC with id %q was set to be shared, but did not have EnableDNSSupport=true", fi.StringValue(e.ID))
-		}
-
-		if changes != nil && changes.EnableDNSHostnames != nil {
-			return fmt.Errorf("VPC with id %q was set to be shared, but did not have EnableDNSHostnames=true", fi.StringValue(e.ID))
+			if featureflag.VPCSkipEnableDNSSupport.Enabled() {
+				glog.Warningf("VPC did not have EnableDNSSupport=true, but ignoring because of VPCSkipEnableDNSSupport feature-flag")
+			} else {
+				return fmt.Errorf("VPC with id %q was set to be shared, but did not have EnableDNSSupport=true.", fi.StringValue(e.ID))
+			}
 		}
 
 		return nil
