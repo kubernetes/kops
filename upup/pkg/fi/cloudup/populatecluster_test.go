@@ -35,6 +35,10 @@ func buildMinimalCluster() *api.Cluster {
 		{Name: "subnet-us-mock-1b", Zone: "us-mock-1b", CIDR: "172.20.2.0/24"},
 		{Name: "subnet-us-mock-1c", Zone: "us-mock-1c", CIDR: "172.20.3.0/24"},
 	}
+
+	c.Spec.KubernetesAPIAccess = []string{"0.0.0.0/0"}
+	c.Spec.SSHAccess = []string{"0.0.0.0/0"}
+
 	// Default to public topology
 	c.Spec.Topology = &api.TopologySpec{
 		Masters: api.TopologyPublic,
