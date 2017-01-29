@@ -37,6 +37,7 @@ func Bool(b bool) *bool {
 
 // DNSPreCreate controls whether we pre-create DNS records.
 var DNSPreCreate = New("DNSPreCreate", Bool(true))
+var VPCSkipEnableDNSSupport = New("VPCSkipEnableDNSSupport", Bool(true))
 
 var flags = make(map[string]*FeatureFlag)
 var flagsMutex sync.Mutex
