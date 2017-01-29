@@ -195,6 +195,8 @@ func (m *KopsModelContext) UsePrivateDNS() bool {
 
 // KubernetesVersion parses the semver version of kubernetes, from the cluster spec
 func (c *KopsModelContext) KubernetesVersion() (semver.Version, error) {
+	// TODO: Remove copy-pasting c.f. https://github.com/kubernetes/kops/blob/master/pkg/model/components/context.go#L32
+
 	kubernetesVersion := c.Cluster.Spec.KubernetesVersion
 
 	if kubernetesVersion == "" {
@@ -211,9 +213,6 @@ func (c *KopsModelContext) KubernetesVersion() (semver.Version, error) {
 
 // VersionGTE is a simplified semver comparison
 func VersionGTE(version semver.Version, major uint64, minor uint64) bool {
-	if version.Major > major {
-		return true
-	}
 	if version.Major > major {
 		return true
 	}
