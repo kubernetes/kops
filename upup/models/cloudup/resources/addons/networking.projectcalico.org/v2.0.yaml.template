@@ -77,7 +77,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: quay.io/calico/node:v1.0.0
+          image: calico/node:v1.0.1
           resources:
             requests:
               cpu: 10m
@@ -189,7 +189,7 @@ spec:
       hostNetwork: true
       containers:
         - name: calico-policy-controller
-          image: calico/kube-policy-controller:v0.5.1
+          image: calico/kube-policy-controller:v0.5.2
           resources:
             requests:
               cpu: 10m
@@ -237,7 +237,7 @@ spec:
       containers:
         # Writes basic configuration to datastore.
         - name: configure-calico
-          image: calico/ctl:v1.0.0
+          image: calico/ctl:v1.0.1
           args:
           - apply
           - -f
