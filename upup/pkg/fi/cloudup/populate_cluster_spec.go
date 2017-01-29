@@ -232,7 +232,7 @@ func (c *populateClusterSpec) run() error {
 		if err != nil {
 			return fmt.Errorf("error determining default DNS zone: %v", err)
 		}
-		glog.Infof("Defaulting DNS zone to: %s", dnsZone)
+		glog.V(2).Infof("Defaulting DNS zone to: %s", dnsZone)
 		cluster.Spec.DNSZone = dnsZone
 	}
 	tags, err := buildCloudupTags(cluster)
