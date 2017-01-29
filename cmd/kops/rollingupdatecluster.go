@@ -18,8 +18,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"io"
+	"os"
+	"strconv"
+	"time"
+
+	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -29,9 +33,6 @@ import (
 	"k8s.io/kubernetes/pkg/api/v1"
 	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
-	"os"
-	"strconv"
-	"time"
 )
 
 type RollingUpdateOptions struct {
@@ -66,8 +67,12 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "cluster",
-		Short: "rolling-update cluster",
-		Long:  `rolling-updates a k8s cluster.`,
+		Short: "Rolling update a cluster",
+		Long: `Rolling update a cluster instance groups.
+		
+This command updates the running instances to match the cloud specifications.
+
+To perform rolling update, you need to update the cloud resources first with "kops update cluster"`,
 	}
 
 	cmd.Flags().BoolVar(&options.Yes, "yes", options.Yes, "perform rolling update without confirmation")
