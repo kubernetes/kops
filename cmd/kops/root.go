@@ -141,7 +141,8 @@ func (c *RootCmd) ProcessArgs(args []string) error {
 	if len(args) == 1 {
 		// Assume <clustername>
 		if c.clusterName != "" {
-			return fmt.Errorf("Cannot specify cluster via --name and positional argument")
+			return fmt.Errorf("Invalid command syntax. Unable to use --name with other positional command arguments. Try: kops <cmd1> <cmd2> --positional-arg 'val' ${NAME}")
+			//return fmt.Errorf("Cannot specify cluster via --name and positional argument")
 		}
 		c.clusterName = args[0]
 		return nil
