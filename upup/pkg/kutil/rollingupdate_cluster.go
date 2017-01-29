@@ -122,6 +122,9 @@ func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroup
 	return groups, nil
 }
 
+// TODO: should we check to see if api updates exist in the cluster
+// TODO: for instance should we check if Petsets exist when upgrading 1.4.x -> 1.5.x
+
 // Perform a rolling update on a K8s Cluster
 func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, instanceGroups *api.InstanceGroupList) error {
 	if len(groups) == 0 {
@@ -182,7 +185,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 		wg.Wait()
 	}
 
-	// Upgrade master first
+	// Upgrade master next
 	{
 		var wg sync.WaitGroup
 
@@ -225,6 +228,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 	}
 
 	// Upgrade nodes, with greater parallelism
+	// TODO increase each instancegroups nodes by one
 	{
 		var wg sync.WaitGroup
 
@@ -337,6 +341,8 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData)
 
 	if !rollingUpdateData.IsBastion {
 		// Validate the cluster if the node is not a bastion
+		// TODO: should we do this or be able to force??
+		// Use case is that we have a messed up cluster and need to change the version to fix the cluster
 		_, err := validate.ValidateCluster(update[0].Node.ClusterName, rollingUpdateData.InstanceGroupList, rollingUpdateData.K8sClient)
 		if err != nil {
 			return fmt.Errorf("Cluster %s does not pass validateion", update[0].Node.ClusterName)
@@ -395,11 +401,10 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData)
 				_, err = validate.ValidateCluster(u.Node.ClusterName, rollingUpdateData.InstanceGroupList, rollingUpdateData.K8sClient)
 
 				if err != nil {
-					glog.V(2).Infof("Unable to validate k8s cluster %s, %v.", u.Node.ClusterName, err)
-					time.Sleep(rollingUpdateData.Interval)
+					glog.Infof("Unable to validate k8s cluster: %s.", err)
+					time.Sleep(rollingUpdateData.Interval / 2)
 				} else {
-					glog.V(2).Infof("Cluster %s is validated proceeding with next step in rolling update",
-						u.Node.ClusterName)
+					glog.Info("Cluster validated proceeding with next step in rolling update")
 					break
 				}
 			}

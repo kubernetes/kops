@@ -65,6 +65,7 @@ func (o *RollingUpdateOptions) InitDefaults() {
 }
 
 func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
+
 	var options RollingUpdateOptions
 	options.InitDefaults()
 
@@ -93,26 +94,18 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 			return
 		}
 
-		cmd.Run = func(cmd *cobra.Command, args []string) {
-			err := rootCommand.ProcessArgs(args)
-			if err != nil {
-				exitWithError(err)
-				return
-			}
+		clusterName := rootCommand.ClusterName()
+		if clusterName == "" {
+			exitWithError(fmt.Errorf("--name is required"))
+			return
+		}
 
-			clusterName := rootCommand.ClusterName()
-			if clusterName == "" {
-				exitWithError(fmt.Errorf("--name is required"))
-				return
-			}
+		options.ClusterName = clusterName
 
-			options.ClusterName = clusterName
-
-			err = RunRollingUpdateCluster(f, os.Stdout, &options)
-			if err != nil {
-				exitWithError(err)
-				return
-			}
+		err = RunRollingUpdateCluster(f, os.Stdout, &options)
+		if err != nil {
+			exitWithError(err)
+			return
 		}
 
 	}
