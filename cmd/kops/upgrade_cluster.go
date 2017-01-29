@@ -150,7 +150,7 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		return err
 	}
 
-	if v1.Compare(v2) == -1 {
+	if v1.LT(v2) {
 		actions = append(actions, &upgradeAction{
 			Item:     "Cluster",
 			Property: "KubernetesVersion",
