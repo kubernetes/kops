@@ -184,13 +184,15 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		return nil
 	}
 
-	// TODO: Only if not yet set?
+	firstRun := false
+
 	if !isDryrun && c.CreateKubecfg {
 		hasKubecfg, err := hasKubecfg(cluster.ObjectMeta.Name)
 		if err != nil {
 			glog.Warningf("error reading kubecfg: %v", err)
 			hasKubecfg = true
 		}
+		firstRun = !hasKubecfg
 
 		kubecfgCert, err := keyStore.FindCert("kubecfg")
 		if err != nil {
@@ -214,24 +216,35 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		} else {
 			glog.Infof("kubecfg cert not found; won't export kubecfg")
 		}
+	}
 
-		if !hasKubecfg {
-			sb := new(bytes.Buffer)
+	if !isDryrun {
+		sb := new(bytes.Buffer)
 
-			// Assume initial creation
-			if c.Target == cloudup.TargetTerraform {
-				fmt.Fprintf(sb, "\n")
-				fmt.Fprintf(sb, "Terraform output has been placed into %s\n", c.OutDir)
+		if c.Target == cloudup.TargetTerraform {
+			fmt.Fprintf(sb, "\n")
+			fmt.Fprintf(sb, "Terraform output has been placed into %s\n", c.OutDir)
+
+			if firstRun {
 				fmt.Fprintf(sb, "Run these commands to apply the configuration:\n")
 				fmt.Fprintf(sb, "   cd %s\n", c.OutDir)
 				fmt.Fprintf(sb, "   terraform plan\n")
 				fmt.Fprintf(sb, "   terraform apply\n")
 				fmt.Fprintf(sb, "\n")
-			} else {
-				fmt.Fprintf(sb, "\n")
-				fmt.Fprintf(sb, "Cluster is starting.  It should be ready in a few minutes.\n")
-				fmt.Fprintf(sb, "\n")
 			}
+		} else if firstRun {
+			fmt.Fprintf(sb, "\n")
+			fmt.Fprintf(sb, "Cluster is starting.  It should be ready in a few minutes.\n")
+			fmt.Fprintf(sb, "\n")
+		} else {
+			// TODO: Different message if no changes were needed
+			fmt.Fprintf(sb, "\n")
+			fmt.Fprintf(sb, "Cluster changes have been applied to the cloud.\n")
+			fmt.Fprintf(sb, "\n")
+		}
+
+		// More suggestions on first run
+		if firstRun {
 			fmt.Fprintf(sb, "Suggestions:\n")
 			fmt.Fprintf(sb, " * list nodes: kubectl get nodes --show-labels\n")
 			if !usesBastion(instanceGroups) {
@@ -246,11 +259,18 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 			}
 			fmt.Fprintf(sb, " * read about installing addons: https://github.com/kubernetes/kops/blob/master/docs/addons.md\n")
 			fmt.Fprintf(sb, "\n")
+		}
 
-			_, err := out.Write(sb.Bytes())
-			if err != nil {
-				return fmt.Errorf("error writing to output: %v", err)
-			}
+		if !firstRun {
+			// TODO: Detect if rolling-update is needed
+			fmt.Fprintf(sb, "\n")
+			fmt.Fprintf(sb, "Changes may require instances to restart: kops rolling-update cluster\n")
+			fmt.Fprintf(sb, "\n")
+		}
+
+		_, err := out.Write(sb.Bytes())
+		if err != nil {
+			return fmt.Errorf("error writing to output: %v", err)
 		}
 	}
 
