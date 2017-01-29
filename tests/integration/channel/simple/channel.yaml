@@ -1,5 +1,6 @@
 spec:
   images:
+    # We put the "legacy" version first, for kops versions that don't support versions ( < 1.5.0 )
     - name: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
       providerID: aws
       kubernetesVersion: ">=1.4.0 <1.5.0"
