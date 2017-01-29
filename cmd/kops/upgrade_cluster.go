@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/blang/semver"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	api "k8s.io/kops/pkg/apis/kops"
@@ -140,17 +139,17 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 	// So we can propose an image for the upgraded k8s version
 	upgradedKubernetesVersion := clusterKubernetesVersion
 
-	v1, err := semver.Parse(ParseVersion(clusterKubernetesVersion))
+	v1, err := util.ParseKubernetesVersion(clusterKubernetesVersion)
 	if err != nil {
 		return err
 	}
 
-	v2, err := semver.Parse(ParseVersion(channelKubernetesVersion))
+	v2, err := util.ParseKubernetesVersion(channelKubernetesVersion)
 	if err != nil {
 		return err
 	}
 
-	if v1.LT(v2) {
+	if v1.LT(*v2) {
 		actions = append(actions, &upgradeAction{
 			Item:     "Cluster",
 			Property: "KubernetesVersion",
@@ -313,11 +312,4 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 	}
 
 	return nil
-}
-
-func ParseVersion(s string) string {
-	if s[:1] == "v" {
-		return s[1:]
-	}
-	return s
 }
