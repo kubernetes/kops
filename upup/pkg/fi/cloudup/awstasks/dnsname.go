@@ -42,6 +42,11 @@ type DNSName struct {
 func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
+	if e.Zone == nil || e.Zone.ZoneID == nil {
+		glog.V(4).Infof("Zone / ZoneID not found for %s, skipping Find", fi.StringValue(e.Name))
+		return nil, nil
+	}
+
 	findName := fi.StringValue(e.Name)
 	if findName == "" {
 		return nil, nil
