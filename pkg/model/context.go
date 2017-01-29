@@ -18,8 +18,10 @@ package model
 
 import (
 	"fmt"
+	"github.com/blang/semver"
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"strings"
 )
 
@@ -188,5 +190,34 @@ func (m *KopsModelContext) UsePrivateDNS() bool {
 		}
 	}
 
+	return false
+}
+
+// KubernetesVersion parses the semver version of kubernetes, from the cluster spec
+func (c *KopsModelContext) KubernetesVersion() (semver.Version, error) {
+	// TODO: Remove copy-pasting c.f. https://github.com/kubernetes/kops/blob/master/pkg/model/components/context.go#L32
+
+	kubernetesVersion := c.Cluster.Spec.KubernetesVersion
+
+	if kubernetesVersion == "" {
+		return semver.Version{}, fmt.Errorf("KubernetesVersion is required")
+	}
+
+	sv, err := util.ParseKubernetesVersion(kubernetesVersion)
+	if err != nil {
+		return semver.Version{}, fmt.Errorf("unable to determine kubernetes version from %q", kubernetesVersion)
+	}
+
+	return *sv, nil
+}
+
+// VersionGTE is a simplified semver comparison
+func VersionGTE(version semver.Version, major uint64, minor uint64) bool {
+	if version.Major > major {
+		return true
+	}
+	if version.Major == major && version.Minor >= minor {
+		return true
+	}
 	return false
 }

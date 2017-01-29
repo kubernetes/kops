@@ -107,7 +107,7 @@ func TestDeepValidate_DuplicateZones(t *testing.T) {
 	var groups []*api.InstanceGroup
 	groups = append(groups, buildMinimalMasterInstanceGroup("dup1"))
 	groups = append(groups, buildMinimalNodeInstanceGroup("dup1"))
-	expectErrorFromDeepValidate(t, c, groups, "Subnets with duplicate name \"dup1\" found")
+	expectErrorFromDeepValidate(t, c, groups, "subnets with duplicate name \"dup1\" found")
 }
 
 func TestDeepValidate_ExtraMasterZone(t *testing.T) {

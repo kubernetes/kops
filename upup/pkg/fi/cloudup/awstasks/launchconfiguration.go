@@ -49,7 +49,7 @@ type LaunchConfiguration struct {
 	RootVolumeType *string
 
 	// SpotPrice is set to the spot-price bid if this is a spot pricing request
-	SpotPrice *string
+	SpotPrice string
 
 	ID *string
 }
@@ -105,7 +105,7 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 		SSHKey:             &SSHKey{Name: lc.KeyName},
 		AssociatePublicIP:  lc.AssociatePublicIpAddress,
 		IAMInstanceProfile: &IAMInstanceProfile{Name: lc.IamInstanceProfile},
-		SpotPrice:          lc.SpotPrice,
+		SpotPrice:          aws.StringValue(lc.SpotPrice),
 	}
 
 	securityGroups := []*SecurityGroup{}
@@ -236,7 +236,9 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 	}
 	request.SecurityGroups = securityGroupIDs
 	request.AssociatePublicIpAddress = e.AssociatePublicIP
-	request.SpotPrice = e.SpotPrice
+	if e.SpotPrice != "" {
+		request.SpotPrice = aws.String(e.SpotPrice)
+	}
 
 	// Build up the actual block device mappings
 	{
@@ -337,7 +339,10 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 		NamePrefix:   fi.String(*e.Name + "-"),
 		ImageID:      image.ImageId,
 		InstanceType: e.InstanceType,
-		SpotPrice:    e.SpotPrice,
+	}
+
+	if e.SpotPrice != "" {
+		tf.SpotPrice = aws.String(e.SpotPrice)
 	}
 
 	if e.SSHKey != nil {

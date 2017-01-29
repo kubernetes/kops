@@ -481,4 +481,27 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          64,
 		EphemeralDisks: nil,
 	},
+
+	// p2 family
+	{
+		Name:           "p2.xlarge",
+		MemoryGB:       61,
+		ECU:            12,
+		Cores:          4,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "p2.8xlarge",
+		MemoryGB:       488,
+		ECU:            94,
+		Cores:          32,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "p2.16xlarge",
+		MemoryGB:       732,
+		ECU:            188,
+		Cores:          64,
+		EphemeralDisks: nil,
+	},
 }

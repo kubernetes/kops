@@ -336,6 +336,12 @@ func (e *SecurityGroup) FindDeletions(c *fi.Context) ([]fi.Deletion, error) {
 			if !ok {
 				continue
 			}
+
+			if er.SourceGroup != nil && er.SourceGroup.ID == nil {
+				glog.V(4).Infof("Deletion skipping find of SecurityGroupRule %s, because SourceGroup was not found", fi.StringValue(er.Name))
+				return nil, nil
+			}
+
 			if er.matches(permission) {
 				found = true
 			}

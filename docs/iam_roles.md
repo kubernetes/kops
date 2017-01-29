@@ -103,3 +103,25 @@ Now you can update to have the changes take effect:
 ```
 kops update cluster ${CLUSTER_NAME} --yes
 ```
+
+You can have an additional policy for each kops role (node, master, bastion). For instance, if you wanted to apply one set of additional permissions to the master instances, and another to the nodes, you could do the following:
+
+```
+  additionalPolicies:
+    node: |
+      [
+        {
+          "Effect": "Allow",
+          "Action": ["es:*"],
+          "Resource": ["*"]
+        }
+      ]
+    master: |
+      [
+        {
+          "Effect": "Allow",
+          "Action": ["dynamodb:*"],
+          "Resource": ["*"]
+        }
+      ]
+```

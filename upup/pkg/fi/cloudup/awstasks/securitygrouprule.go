@@ -53,6 +53,11 @@ func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 		return nil, nil
 	}
 
+	if e.SourceGroup != nil && e.SourceGroup.ID == nil {
+		glog.V(4).Infof("Skipping find of SecurityGroupRule %s, because SourceGroup was not found", fi.StringValue(e.Name))
+		return nil, nil
+	}
+
 	request := &ec2.DescribeSecurityGroupsInput{
 		Filters: []*ec2.Filter{
 			awsup.NewEC2Filter("group-id", *e.SecurityGroup.ID),

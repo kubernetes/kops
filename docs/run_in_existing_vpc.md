@@ -114,6 +114,8 @@ kops update cluster ${CLUSTER_NAME}
 kops update cluster ${CLUSTER_NAME} --yes
 ```
 
+If you run in AWS private topology with shared subnets, and you would like Kubernetes to provision resources in these shared subnets, you must create tags on them with Key=value `KubernetesCluster=<clustername>`. This is important, for example, if your `utility` subnets are shared, you will not be able to launch any services that create Elastic Load Balancers (ELBs).
+
 ### Shared NAT Gateways
 
 On AWS in private [topology](docs/topology.md), `kops` creates one NAT Gateway (NGW) per AZ. If your shared VPC is already set up with an NGW in the subnet that `kops` deploys private resources to, it is possible to specify the ID and have `kops`/`kubernetes` use it.
@@ -135,3 +137,12 @@ spec:
     type: Utility
     zone: us-east-1a
 ```
+
+Please note:
+
+* You must specify pre-create subnets for all the subnets, or for none of them.
+* kops won't alter your existing subnets.  Therefore they must be correctly set up with route tables etc.  The
+  Public or Utility subnets should have public IPs and an internet gateway configured as their default route
+  in their route table.  Private subnets should not have public IPs, and will typically have a NAT gateway
+  configured as their default route.
+* kops won't create a route-table at all if we're not creating subnets.

@@ -4,6 +4,8 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   name: private.example.com
 spec:
+  adminAccess:
+  - 0.0.0.0/0
   api:
     loadBalancer:
       type: Public
@@ -48,7 +50,6 @@ metadata:
     kops.k8s.io/cluster: private.example.com
   name: bastions
 spec:
-  associatePublicIp: true
   image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
   machineType: t2.micro
   maxSize: 1
@@ -67,7 +68,6 @@ metadata:
     kops.k8s.io/cluster: private.example.com
   name: master-us-test-1a
 spec:
-  associatePublicIp: true
   image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
   machineType: m3.medium
   maxSize: 1
@@ -86,7 +86,6 @@ metadata:
     kops.k8s.io/cluster: private.example.com
   name: nodes
 spec:
-  associatePublicIp: true
   image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
   machineType: t2.medium
   maxSize: 2

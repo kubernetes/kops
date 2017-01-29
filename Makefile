@@ -45,7 +45,7 @@ ifndef VERSION
   # We expect that if you are uploading nodeup/protokube, you will set
   # VERSION (along with S3_BUCKET), either directly or by setting CI=1
   ifndef CI
-    VERSION=1.5.0-alpha4
+    VERSION=1.5.0-beta1
   else
     VERSION := git-${GITSHA}
   endif
@@ -242,6 +242,7 @@ gofmt:
 	gofmt -w -s tests/
 	gofmt -w -s protokube/cmd
 	gofmt -w -s protokube/pkg
+	gofmt -w -s protokube/tests
 	gofmt -w -s dns-controller/cmd
 	gofmt -w -s dns-controller/pkg
 

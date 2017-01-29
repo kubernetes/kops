@@ -55,9 +55,9 @@ type CreateClusterOptions struct {
 	VPCID             string
 	NetworkCIDR       string
 	DNSZone           string
-	AdminAccess       string
+	AdminAccess       []string
 	Networking        string
-	AssociatePublicIP bool
+	AssociatePublicIP *bool
 
 	// Channel is the location of the api.Channel to use for our defaults
 	Channel string
@@ -81,22 +81,30 @@ func (o *CreateClusterOptions) InitDefaults() {
 	o.Models = strings.Join(cloudup.CloudupModels, ",")
 	o.SSHPublicKey = "~/.ssh/id_rsa.pub"
 	o.Networking = "kubenet"
-	o.AssociatePublicIP = true
 	o.Channel = api.DefaultChannel
 	o.Topology = api.TopologyPublic
 	o.DNSType = string(api.DNSTypePublic)
 	o.Bastion = false
+
+	// Default to open API & SSH access
+	o.AdminAccess = []string{"0.0.0.0/0"}
 }
 
 func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateClusterOptions{}
 	options.InitDefaults()
 
+	associatePublicIP := false
+
 	cmd := &cobra.Command{
 		Use:   "cluster",
 		Short: "Create cluster",
 		Long:  `Creates a k8s cluster.`,
 		Run: func(cmd *cobra.Command, args []string) {
+			if cmd.Flag("associate-public-ip").Changed {
+				options.AssociatePublicIP = &associatePublicIP
+			}
+
 			err := rootCommand.ProcessArgs(args)
 			if err != nil {
 				exitWithError(err)
@@ -141,9 +149,10 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.DNSZone, "dns-zone", options.DNSZone, "DNS hosted zone to use (defaults to longest matching zone)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
-	cmd.Flags().StringVar(&options.AdminAccess, "admin-access", options.AdminAccess, "Restrict access to admin endpoints (SSH, HTTPS) to this CIDR.  If not set, access will not be restricted by IP.")
+	cmd.Flags().StringSliceVar(&options.AdminAccess, "admin-access", options.AdminAccess, "Restrict access to admin endpoints (SSH, HTTPS) to this CIDR.  If not set, access will not be restricted by IP.")
 
-	cmd.Flags().BoolVar(&options.AssociatePublicIP, "associate-public-ip", options.AssociatePublicIP, "Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.")
+	// TODO: Can we deprecate this flag - it is awkward?
+	cmd.Flags().BoolVar(&associatePublicIP, "associate-public-ip", false, "Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.")
 
 	cmd.Flags().StringVar(&options.Channel, "channel", options.Channel, "Channel for default versions and configuration to use")
 
@@ -378,8 +387,10 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 	}
 
-	for _, group := range instanceGroups {
-		group.Spec.AssociatePublicIP = fi.Bool(c.AssociatePublicIP)
+	if c.AssociatePublicIP != nil {
+		for _, group := range instanceGroups {
+			group.Spec.AssociatePublicIP = c.AssociatePublicIP
+		}
 	}
 
 	if c.NodeCount != 0 {
@@ -557,9 +568,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		glog.Infof("Using SSH public key: %v\n", c.SSHPublicKey)
 	}
 
-	if c.AdminAccess != "" {
-		cluster.Spec.SSHAccess = []string{c.AdminAccess}
-		cluster.Spec.KubernetesAPIAccess = []string{c.AdminAccess}
+	if len(c.AdminAccess) != 0 {
+		cluster.Spec.SSHAccess = c.AdminAccess
+		cluster.Spec.KubernetesAPIAccess = c.AdminAccess
 	}
 
 	err = cloudup.PerformAssignments(cluster)
