@@ -85,7 +85,8 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 
 			if fi.StringValue(ig.Spec.MaxPrice) != "" {
-				t.SpotPrice = ig.Spec.MaxPrice
+				spotPrice := fi.StringValue(ig.Spec.MaxPrice)
+				t.SpotPrice = spotPrice
 			}
 
 			{
