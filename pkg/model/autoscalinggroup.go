@@ -123,7 +123,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 						// This isn't meaningful - private subnets can't have public ip
 						//associatePublicIP = *ig.Spec.AssociatePublicIP
 						if *ig.Spec.AssociatePublicIP {
-							glog.Warningf("Ignoring private InstanceGroup %q with AssociatePublicIP=true", ig.ObjectMeta.Name)
+							glog.Warningf("Ignoring AssociatePublicIP=true for private InstanceGroup %q", ig.ObjectMeta.Name)
 						}
 					}
 
