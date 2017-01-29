@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -33,16 +34,30 @@ type NetworkModelBuilder struct {
 var _ fi.ModelBuilder = &NetworkModelBuilder{}
 
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
+	kubernetesVersion, err := b.KubernetesVersion()
+	if err != nil {
+		return err
+	}
 
 	sharedVPC := b.Cluster.SharedVPC()
 
 	// VPC that holds everything for the cluster
 	{
 		t := &awstasks.VPC{
-			Name:               s(b.ClusterName()),
-			EnableDNSHostnames: fi.Bool(true),
-			EnableDNSSupport:   fi.Bool(true),
-			Shared:             fi.Bool(sharedVPC),
+			Name:             s(b.ClusterName()),
+			Shared:           fi.Bool(sharedVPC),
+			EnableDNSSupport: fi.Bool(true),
+		}
+
+		if sharedVPC && VersionGTE(kubernetesVersion, 1, 5) {
+			// If we're running k8s 1.5, and we have e.g.  --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP,LegacyHostIP
+			// then we don't need EnableDNSHostnames any more
+			glog.V(4).Infof("Kubernetes version %q; skipping EnableDNSHostnames requirement on VPC", kubernetesVersion)
+		} else {
+			// In theory we don't need to enable it for >= 1.5,
+			// but seems safer to stick with existing behaviour
+
+			t.EnableDNSHostnames = fi.Bool(true)
 		}
 
 		if b.Cluster.Spec.NetworkID != "" {
