@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/blang/semver"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	api "k8s.io/kops/pkg/apis/kops"
@@ -134,21 +135,32 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 	//	return err
 	//}
 
+	clusterKubernetesVersion := cluster.Spec.KubernetesVersion
+	channelKubernetesVersion := channelClusterSpec.KubernetesVersion
 	// So we can propose an image for the upgraded k8s version
-	upgradedKubernetesVersion := cluster.Spec.KubernetesVersion
+	upgradedKubernetesVersion := clusterKubernetesVersion
 
-	if channelClusterSpec.KubernetesVersion != "" && cluster.Spec.KubernetesVersion != channelClusterSpec.KubernetesVersion {
+	v1, err := semver.Parse(ParseVersion(clusterKubernetesVersion))
+	if err != nil {
+		return err
+	}
+
+	v2, err := semver.Parse(ParseVersion(channelKubernetesVersion))
+	if err != nil {
+		return err
+	}
+
+	if v1.Compare(v2) == -1 {
 		actions = append(actions, &upgradeAction{
 			Item:     "Cluster",
 			Property: "KubernetesVersion",
-			Old:      cluster.Spec.KubernetesVersion,
-			New:      channelClusterSpec.KubernetesVersion,
+			Old:      clusterKubernetesVersion,
+			New:      channelKubernetesVersion,
 			apply: func() {
-				cluster.Spec.KubernetesVersion = channelClusterSpec.KubernetesVersion
+				cluster.Spec.KubernetesVersion = channelKubernetesVersion
 			},
 		})
-
-		upgradedKubernetesVersion = channelClusterSpec.KubernetesVersion
+		upgradedKubernetesVersion = channelKubernetesVersion
 	}
 
 	// Prompt to upgrade addins?
@@ -301,4 +313,11 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 	}
 
 	return nil
+}
+
+func ParseVersion(s string) string {
+	if s[:1] == "v" {
+		return s[1:]
+	}
+	return s
 }
