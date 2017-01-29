@@ -138,16 +138,31 @@ func (c *RootCmd) ProcessArgs(args []string) error {
 	if len(args) == 0 {
 		return nil
 	}
+
 	if len(args) == 1 {
 		// Assume <clustername>
-		if c.clusterName != "" {
-			return fmt.Errorf("Cannot specify cluster via --name and positional argument")
+		if c.clusterName == "" {
+			c.clusterName = args[0]
+			return nil
 		}
-		c.clusterName = args[0]
-		return nil
 	}
 
-	return fmt.Errorf("expected a single <clustername> to be passed as an argument")
+	fmt.Printf("\nFound multiple arguments which look like a cluster name\n")
+	if c.clusterName != "" {
+		fmt.Printf("\t%q (via flag)\n", c.clusterName)
+	}
+	for _, arg := range args {
+		fmt.Printf("\t%q (as argument)\n", arg)
+	}
+	fmt.Printf("\n")
+	fmt.Printf("This often happens if you specify an argument to a boolean flag without using =\n")
+	fmt.Printf("For example: use `--bastion=true` or `--bastion`, not `--bastion true`\n\n")
+
+	if len(args) == 1 {
+		return fmt.Errorf("Cannot specify cluster via --name and positional argument")
+	} else {
+		return fmt.Errorf("expected a single <clustername> to be passed as an argument")
+	}
 }
 
 func (c *RootCmd) ClusterName() string {
