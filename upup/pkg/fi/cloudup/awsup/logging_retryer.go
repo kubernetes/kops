@@ -17,6 +17,7 @@ limitations under the License.
 package awsup
 
 import (
+	"fmt"
 	"github.com/aws/aws-sdk-go/aws/client"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/golang/glog"
@@ -47,7 +48,15 @@ func (l LoggingRetryer) RetryRules(r *request.Request) time.Duration {
 	}
 	methodDescription := service + "/" + name
 
-	glog.Infof("Retryable error %d (%s) from %s - will retry after delay of %v", r.HTTPResponse.StatusCode, r.HTTPResponse.Status, methodDescription, duration)
+	var errorDescription string
+	if r.Error != nil {
+		// We could check aws error Code & Message, but we expect them to be in the string
+		errorDescription = fmt.Sprintf("%v", r.Error)
+	} else {
+		errorDescription = fmt.Sprintf("%d %s", r.HTTPResponse.StatusCode, r.HTTPResponse.Status)
+	}
+
+	glog.Infof("Retryable error (%s) from %s - will retry after delay of %v", errorDescription, methodDescription, duration)
 
 	return duration
 }
