@@ -565,6 +565,10 @@ func DeleteSecurityGroup(cloud fi.Cloud, t *ResourceTracker) error {
 		}
 		response, err := c.EC2().DescribeSecurityGroups(request)
 		if err != nil {
+			if awsup.AWSErrorCode(err) == "InvalidGroup.NotFound" {
+				glog.V(2).Infof("Got InvalidGroup.NotFound error describing SecurityGroup %q; will treat as already-deleted", id)
+				return nil
+			}
 			return fmt.Errorf("error describing SecurityGroup %q: %v", id, err)
 		}
 
@@ -842,7 +846,10 @@ func DeleteSubnet(cloud fi.Cloud, tracker *ResourceTracker) error {
 	}
 	_, err := c.EC2().DeleteSubnet(request)
 	if err != nil {
-		if IsDependencyViolation(err) {
+		if awsup.AWSErrorCode(err) == "InvalidSubnetID.NotFound" {
+			glog.V(2).Infof("Got InvalidSubnetID.NotFound error deleting subnet %q; will treat as already-deleted", id)
+			return nil
+		} else if IsDependencyViolation(err) {
 			return err
 		}
 		return fmt.Errorf("error deleting Subnet %q: %v", id, err)
@@ -1892,6 +1899,11 @@ func DeleteIAMRole(cloud fi.Cloud, r *ResourceTracker) error {
 			return true
 		})
 		if err != nil {
+			if awsup.AWSErrorCode(err) == "NoSuchEntity" {
+				glog.V(2).Infof("Got NoSuchEntity describing IAM RolePolicy %q; will treat as already-deleted", roleName)
+				return nil
+			}
+
 			return fmt.Errorf("error listing IAM role policies for %q: %v", roleName, err)
 		}
 	}
