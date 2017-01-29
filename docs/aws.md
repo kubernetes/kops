@@ -90,11 +90,11 @@ We will now need to set up DNS for cluster, find one of the scenarios below (A,B
 
 If you bought your domain with AWS, then you should already have a hosted zone in Route53.
 
-If you plan on using your base domain, then no more work is needed. 
+If you plan on using your base domain, then no more work is needed.
 
 #### Setting up a subdomain
 
-If you plan on using a subdomain to build your clusters on you will need to create a 2nd hosted zone in Route53, and then set up route delegation. This is basically copying the NS servers of your **SUBDOMAIN** up to the **PARENT** domain in Route53. 
+If you plan on using a subdomain to build your clusters on you will need to create a 2nd hosted zone in Route53, and then set up route delegation. This is basically copying the NS servers of your **SUBDOMAIN** up to the **PARENT** domain in Route53.
 
   - Create the subdomain, and note your **SUBDOMAIN** name servers (If you have already done this you can also [get the values](ns.md))
 
@@ -105,13 +105,13 @@ ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.kubernetes.com 
   - Note your **PARENT** hosted zone id
 
 ```bash
-aws route53 list-hosted-zones | jq '.HostedZones[] | select(.Name=="kubernetes.com.") | .Id' 
+aws route53 list-hosted-zones | jq '.HostedZones[] | select(.Name=="kubernetes.com.") | .Id'
 ```
 
  - Create a new JSON file with your values (`subdomain.json`)
- 
+
  Note: The NS values here are for the **SUBDOMAIN**
- 
+
  ```
  {
    "Comment": "Create a subdomain NS record in the parent domain",
@@ -141,9 +141,9 @@ aws route53 list-hosted-zones | jq '.HostedZones[] | select(.Name=="kubernetes.c
    ]
  }
  ```
- 
+
  - Apply the **SUBDOMAIN** NS records to the **PARENT** hosted zone
- 
+
  ```
  aws route53 change-resource-record-sets \
   --hosted-zone-id <parent-zone-id> \
@@ -201,9 +201,44 @@ subdomain.kubernetes.com.        172800  IN  NS  ns-3.awsdns-3.com.
 subdomain.kubernetes.com.        172800  IN  NS  ns-4.awsdns-4.co.uk.
 ```
 
-This is a critical component of setting up the cluster. If you are experiencing problems with the Kubernetes API not coming up, chances are something is amiss around DNS. 
+This is a critical component of setting up the cluster. If you are experiencing problems with the Kubernetes API not coming up, chances are something is amiss around DNS.
 
 **Please DO NOT MOVE ON until you have validated your NS records!**
+
+## Create an IAM user for kops
+In this example we will be using a dedicated IAM user to use with kops. This user will need basic API security credentials in order to use kops. Create the user and credentials using the AWS console. [More information](https://aws.amazon.com/documentation/iam/)
+
+The kops user will require the following IAM permission to function properly:
+```
+AmazonEC2FullAccess
+AmazonRoute53FullAccess
+AmazonS3FullAccess
+IAMFullAccess
+AmazonVPCFullAccess
+```
+
+You can create a kops IAM user from the command line using the following:
+
+```bash
+aws iam create-group --group-name kops
+
+export arns="
+arn:aws:iam::aws:policy/AmazonEC2FullAccess
+arn:aws:iam::aws:policy/AmazonRoute53FullAccess
+arn:aws:iam::aws:policy/AmazonS3FullAccess
+arn:aws:iam::aws:policy/IAMFullAccess
+arn:aws:iam::aws:policy/AmazonVPCFullAccess"
+
+for arn in $arns; do aws iam attach-group-policy --policy-arn "$arn" --group-name kops; done
+
+aws iam create-user --user-name testuser
+
+aws iam add-user-to-group --user-name kops --group-name kops
+
+aws iam create-access-key --user-name kops
+# make note of the SecretAccesKey and AccessKeyID in the returned json output
+```
+Kubernetes kops uses the official AWS Go SDK, so all we need to do here is set up your system to use the official AWS supported methods of registering security credentials defined [here](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials).
 
 ## Setting up a state store for your cluster
 
