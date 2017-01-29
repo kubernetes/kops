@@ -354,7 +354,7 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData)
 		if !rollingUpdateData.IsBastion {
 			drain, err := NewDrainOptions(nil, u.Node.ClusterName)
 
-			// FIXME forceDrain <- name stinks
+			// TODO: forceDrain <- should we change the name??
 
 			if err != nil {
 				glog.Warningf("Error creating drain: %v", err)
