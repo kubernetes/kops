@@ -2,38 +2,15 @@
   <img src="img/k8s-aws.png"> </image>
 </p>
 
-
-
 # Getting Started
 
 ## Install kops
 
-From Homebrew:
-
-```bash
-brew update && brew install --HEAD kops
-```
-
-From Source:
-
-```bash
-go get -d k8s.io/kops
-cd ${GOPATH}/src/k8s.io/kops/
-git checkout release
-make
-```
-
-See our [installation guide](build.md) for more information
+Before we can bring up the cluster we need to [install the CLI tool](install.md) `kops`.
 
 ## Install kubectl
 
-It is a good idea to grab a fresh copy of `kubectl` now if you don't already have it.
-
-#### OS X
-
-```
-brew install kubernetes-cli
-```
+In order to control Kubernetes clusters we need to [install the CLI tool](install.md) `kubectl`.
 
 #### Other Platforms
 
