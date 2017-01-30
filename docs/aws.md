@@ -210,6 +210,8 @@ Servers on the other end.
 dig ns subdomain.example.com
 ```
 
+Should return something similar to:
+
 ```
 ;; ANSWER SECTION:
 subdomain.example.com.        172800  IN  NS  ns-1.awsdns-1.net.
@@ -224,46 +226,67 @@ with the clusters DNS.
 
 **Please DO NOT MOVE ON until you have validated your NS records!**
 
-## Setting up a state store for your cluster
+## Cluster State storage
 
-In this example we will be creating a dedicated S3 bucket for kops to use. This is where kops will store the state of your cluster and the representation of your cluster, and serves as the source of truth for our cluster configuration throughout the process. We will call this kubernetes-com-state-store. We recommend keeping the creation confined to us-east-1, otherwise more input will be needed here.
+In order to store the state of your cluster, and the representation of your
+cluster, we need to create a dedicated S3 bucket for `kops` to use.  This
+bucket will become the source of truth for our cluster configuration.  In
+this guide we'll call this bucket `example-com-state-store`, but you should
+add a custom prefix as bucket names need to be unique.
+
+We recommend keeping the creation of this bucket confined to us-east-1,
+otherwise more work will be required.
 
 ```bash
-aws s3api create-bucket --bucket kubernetes-com-state-store --region us-east-1
+aws s3api create-bucket --bucket prefix-example-com-state-store --region us-east-1
 ```
 
-Note: We **STRONGLY** recommend versioning your S3 bucket in case you ever need to revert or recover a previous state store.
+Note: We **STRONGLY** recommend versioning your S3 bucket in case you ever need
+to revert or recover a previous state store.
+
+```bash
+aws s3api put-bucket-versioning --bucket prefix-example-com-state-store  --versioning-configuration Status=Enabled
+```
 
 ### Sharing an S3 bucket across multiple accounts
 
-If you configure a single S3 bucket to maintain kops state for clusters across multiple accounts, you may want to override the object ACLs which kops places on the state files.
+If you configure a single S3 bucket to maintain kops state for clusters across
+multiple accounts, you may want to override the object ACLs which kops places
+on the state files.
 
-To do this you should set the environment variable `KOPS_STATE_S3_ACL` to the preferred object ACL, for example `bucket-owner-full-control`.
+To do this you should set the environment variable `KOPS_STATE_S3_ACL` to the
+preferred object ACL, for example `bucket-owner-full-control`.
 
-For available canned ACLs please consult [Amazon's S3 documentation](http://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl).
+For available canned ACLs please consult [Amazon's S3
+documentation](http://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl).
 
-## Creating your first cluster
+# Creating your first cluster
 
-#### Setup your environment for kops
+## Prepare local environment
 
-Okay! We are ready to start creating our first cluster. Lets first set up a few environmental variables to make this process as clean as possible.
+We're ready to start creating our first cluster!  Let's first setup a few
+environment variables to make this process easier.
 
 ```bash
-export NAME=myfirstcluster.kubernetes.com
-export KOPS_STATE_STORE=s3://kubernetes-com-state-store
+export NAME=myfirstcluster.example.com
+export KOPS_STATE_STORE=s3://prefix-example-com-state-store
 ```
 
-Note: You don’t have to use environmental variables here. You can always define the values using the –name and –state flags later.
+Note: You don’t have to use environmental variables here. You can always define
+the values using the –name and –state flags later.
 
-#### Form your create cluster command
+## Create cluster configuration
 
-We will need to note which availability zones are available to us. In this example we will be deploying our cluster to the us-west-2 region.
+We will need to note which availability zones are available to us. In this
+example we will be deploying our cluster to the us-west-2 region.
 
 ```bash
 aws ec2 describe-availability-zones --region us-west-2
 ```
 
-Lets form our create cluster command. This is the most basic example, a more verbose example on can be found [here](advanced_create.md)
+Below is a create cluster command.  We'll use the most basic example possible,
+with more verbose examples in [advanced creation](advanced_create.md).  The
+below command will generate a cluster configuration, but not start building it.
 
 ```bash
 kops create cluster \
@@ -271,72 +294,88 @@ kops create cluster \
     ${NAME}
 ```
 
-kops will deploy these instances using AWS auto scaling groups, so each instance should be ephemeral and will rebuild itself if taken offline for any reason.
+All instances created by `kops` will be built within ASG (Auto Scaling Groups),
+which means each instance will be automatically monitored and rebuilt by AWS if
+it suffers any failure.
 
-#### Cluster Configuration
+## Customize Cluster Configuration
 
-We now have created the underlying cluster configuration, lets take a look at every aspect that will define our cluster.
+Now we have a cluster configuration, we can look at every aspect that defines
+our cluster by editing the description.
 
 ```bash
 kops edit cluster ${NAME}
 ```
 
-This will open in your text editor of choice. You can always change your editor of choice
+This opens your editor (as defined by $EDITOR) and allows you to edit the
+configuration.  The configuration is loaded from the S3 bucket we created
+earlier, and automatically updated when we save and exit the editor.
 
-```bash
-cat "export EDITOR=/usr/bin/emacs" ~/.bash_profile && source ~/.bash_profile
-```
+We'll leave everything set to the defaults for now, but the rest of the `kops`
+documentation covers additional settings and configuration you can enable.
 
-This will open up the cluster config (that is actually stored in the S3 bucket we created earlier!) in your favorite text editor. Here is where we can optionally really tweak our cluster for our use case. In this tutorial, we leave it default for now.
+## Build the Cluster
 
-#### Apply the changes
+Now we take the final step of actually building the cluster.  This'll take a
+while.  Once it finishes you'll have to wait longer while the booted instances
+finish downloading Kubernetes components and reach a "ready" state.
 
 ```bash
 kops update cluster ${NAME} --yes
 ```
 
+## Use the Cluster
 
-## Accessing your cluster
+Remember when you installed `kubectl` earlier? The configuration for your
+cluster was automatically generated and written to `~/.kube/config` for you!
 
-A friendly reminder that kops runs asynchronously, and it will take your cluster a few minutes to come online.
-
-Remember when you installed `kubectl` earlier? The configuration for your cluster was automatically generated and written to `~/.kube/config` for you!
-
-A simple Kubernetes API call can be used to check if the API is online and listening. Let's use `kubectl`
+A simple Kubernetes API call can be used to check if the API is online and
+listening. Let's use `kubectl` to check the nodes.
 
 ```bash
 kubectl get nodes
 ```
 
-You will see a list of nodes that should match the `--zones` flag defined earlier. This is a great sign that your Kubernetes cluster is online and working.
+You will see a list of nodes that should match the `--zones` flag defined
+earlier. This is a great sign that your Kubernetes cluster is online and
+working.
 
-Also kops ships with a handy validation tool that can be ran to ensure your cluster is working as expected.
+Also `kops` ships with a handy validation tool that can be ran to ensure your
+cluster is working as expected.
 
 ```bash
 kops validate cluster
 ```
 
-Another great one liner
+You can look at all the system components with the following command.
 
 ```
 kubectl -n kube-system get po
 ```
 
-## What's next?
+# What's next?
 
-Kops has a ton of great features, and an amazing support team. We recommend researching [other interesting modes](commands.md#other-interesting-modes) to learn more about generating Terraform configurations, or running your cluster in HA (Highly Available). You might want to take a peek at the [cluster spec docs](cluster_spec.md) for helping to configure these "other interesting modes". Also be sure to check out how to run a [private network topology](topology.md) in AWS.
+We've barely scratched the surface of the capabilities of `kops` in this guide,
+and we recommend researching [other interesting
+modes](commands.md#other-interesting-modes) to learn more about generating
+Terraform configurations, or running your cluster in an HA (Highly Available)
+mode.
 
-
-
-Explore the program, and work on getting your `cluster config` hammered out!
+The [cluster spec docs](cluster_spec.md) can help to configure these "other
+interesting modes". Also be sure to check out how to run a [private network
+topology](topology.md) in AWS.
 
 ## Feedback
 
-We love feedback from the community, and if you are reading this we would love to hear from you and get your thoughts. Read more about [getting involved](https://github.com/kubernetes/kops/blob/master/README.md#getting-involved) to find out how to track us down.
+There's an incredible team behind Kops and we encourage you to reach out to the
+community on the Kubernetes
+Slack(https://github.com/kubernetes/community#slack-chat).  Bring your
+questions, comments, and requests and meet the people behind the project!
 
+## Legal
 
-###### Legal
+*AWS Trademark used with limited permission under the [AWS Trademark
+Guidelines](https://aws.amazon.com/trademark-guidelines/)*
 
-*AWS Trademark used with limited permission under the [AWS Trademark Guidelines](https://aws.amazon.com/trademark-guidelines/)*
-
-*Kubernetes Logo used with permission under the [Kubernetes Branding Guidelines](https://github.com/kubernetes/kubernetes/blob/master/logo/usage_guidelines.md)*
+*Kubernetes Logo used with permission under the [Kubernetes Branding
+Guidelines](https://github.com/kubernetes/kubernetes/blob/master/logo/usage_guidelines.md)*
