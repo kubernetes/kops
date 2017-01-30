@@ -13,19 +13,19 @@ spec:
   configBase: memfs://tests/ha.example.com
   etcdClusters:
   - etcdMembers:
-    - name: us-test-1a
+    - name: a
       zone: us-test-1a
-    - name: us-test-1b
+    - name: b
       zone: us-test-1b
-    - name: us-test-1c
+    - name: c
       zone: us-test-1c
     name: main
   - etcdMembers:
-    - name: us-test-1a
+    - name: a
       zone: us-test-1a
-    - name: us-test-1b
+    - name: b
       zone: us-test-1b
-    - name: us-test-1c
+    - name: c
       zone: us-test-1c
     name: events
   kubernetesVersion: v1.4.7
