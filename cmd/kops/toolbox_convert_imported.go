@@ -42,6 +42,7 @@ func (o *ToolboxConvertImportedOptions) InitDefaults() {
 
 func NewCmdToolboxConvertImported(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &ToolboxConvertImportedOptions{}
+	options.InitDefaults()
 
 	cmd := &cobra.Command{
 		Use:   "convert-imported",
