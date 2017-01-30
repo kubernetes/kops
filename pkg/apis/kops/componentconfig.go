@@ -26,7 +26,7 @@ type KubeletConfigSpec struct {
 	// Configuration flags - a subset of https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
 
 	// config is the path to the config file or directory of files
-	Config string `json:"config,omitempty" flag:"config"`
+	PodManifestPath string `json:"podManifestPath,omitempty" flag:"pod-manifest-path"`
 	//// syncFrequency is the max period between synchronizing running
 	//// containers and config
 	//SyncFrequency unversioned.Duration `json:"syncFrequency"`
