@@ -37,29 +37,29 @@ import (
 )
 
 type CreateClusterOptions struct {
-	ClusterName            string
-	Yes                    bool
-	Target                 string
-	Models                 string
-	Cloud                  string
-	Zones                  string
-	MasterZones            string
-	NodeSize               string
-	MasterSize             string
-	NodeCount              int32
-	Project                string
-	KubernetesVersion      string
-	OutDir                 string
-	Image                  string
-	SSHPublicKey           string
-	VPCID                  string
-	NetworkCIDR            string
-	DNSZone                string
-	AdminAccess            []string
-	Networking             string
-	NodeSecurityGroupIDs   string
-	MasterSecurityGroupIDs string
-	AssociatePublicIP      *bool
+	ClusterName          string
+	Yes                  bool
+	Target               string
+	Models               string
+	Cloud                string
+	Zones                []string
+	MasterZones          []string
+	NodeSize             string
+	MasterSize           string
+	NodeCount            int32
+	Project              string
+	KubernetesVersion    string
+	OutDir               string
+	Image                string
+	SSHPublicKey         string
+	VPCID                string
+	NetworkCIDR          string
+	DNSZone              string
+	AdminAccess          []string
+	Networking           string
+	NodeSecurityGroups   []string
+	MasterSecurityGroups []string
+	AssociatePublicIP    *bool
 
 	// Channel is the location of the api.Channel to use for our defaults
 	Channel string
