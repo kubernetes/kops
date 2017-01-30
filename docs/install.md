@@ -1,4 +1,30 @@
-# Building from source
+# Installing Kops (Binaries)
+
+## Darwin (MacOS)
+
+From Homebrew:
+
+```bash
+brew update && brew install --HEAD kops
+```
+
+
+# Installing Kubectl
+
+`kubectl` is the CLI tool to manage and operate Kubernetes clusters.  You can install it as follows.
+
+## Darwin (MacOS)
+
+```
+brew install kubernetes-cli
+```
+
+## Other Platforms
+
+* [Kubernetes Latest Release](https://github.com/kubernetes/kubernetes/releases/latest)
+* [Installation Guide](http://kubernetes.io/docs/user-guide/prereqs/)
+
+# Installing Kops (Source)
 
 ```
 go get -d k8s.io/kops
@@ -9,7 +35,6 @@ make
 
 * The `release` branch is where releases are taken from.  This is the stable code branch.
 * The `master` branch  _should_ also be functional, but is where active development happens, so may be less stable.
-
 
 ## Cross Compiling
 
