@@ -111,28 +111,13 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			c.AddTask(iamInstanceProfileRole)
 		}
 
-		// Generate additional policies if needed, and attach to existing instance profile
+		// Generate additional policies if needed, and attach to existing role
 		if b.Cluster.Spec.AdditionalPolicies != nil {
 			roleAsString := reflect.ValueOf(role).String()
 			additionalPolicies := *(b.Cluster.Spec.AdditionalPolicies)
 
 			if additionalPolicy, ok := additionalPolicies[strings.ToLower(roleAsString)]; ok {
-				roleName := "additional." + name
-
-				var iamRole *awstasks.IAMRole
-				{
-					rolePolicy, err := b.buildAWSIAMRolePolicy()
-					if err != nil {
-						return err
-					}
-
-					iamRole = &awstasks.IAMRole{
-						Name:               s(roleName),
-						RolePolicyDocument: fi.WrapResource(rolePolicy),
-					}
-					c.AddTask(iamRole)
-
-				}
+				additionalPolicyName := "additional." + name
 
 				{
 					p := &iam.IAMPolicy{
@@ -149,21 +134,11 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					}
 
 					t := &awstasks.IAMRolePolicy{
-						Name:           s(roleName),
+						Name:           s(additionalPolicyName),
 						Role:           iamRole,
 						PolicyDocument: fi.WrapResource(fi.NewStringResource(policy)),
 					}
 					c.AddTask(t)
-				}
-
-				{
-					iamInstanceProfileRole := &awstasks.IAMInstanceProfileRole{
-						Name: s(roleName),
-
-						InstanceProfile: iamInstanceProfile,
-						Role:            iamRole,
-					}
-					c.AddTask(iamInstanceProfileRole)
 				}
 			}
 		}
