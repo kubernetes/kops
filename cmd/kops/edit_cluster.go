@@ -155,5 +155,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 		return fmt.Errorf("error writing completed cluster spec: %v", err)
 	}
 
+	fmt.Println("Edit successful, please verify the changes with `kops get cluster -o yaml`")
+
 	return nil
 }
