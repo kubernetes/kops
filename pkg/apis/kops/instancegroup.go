@@ -81,8 +81,8 @@ type InstanceGroupSpec struct {
 	// AssociatePublicIP is true if we want instances to have a public IP
 	AssociatePublicIP *bool `json:"associatePublicIp,omitempty"`
 
-	// AdditionalSecurityGroupIDs attaches additional security groups (e.g. i-123456)
-	AdditionalSecurityGroupIDs []string `json:"additionalSecurityGroupIDs,omitempty"`
+	// AdditionalSecurityGroups attaches additional security groups (e.g. i-123456)
+	AdditionalSecurityGroups []string `json:"additionalSecurityGroups,omitempty"`
 
 	// CloudLabels indicates the labels for instances in this group, at the AWS level
 	CloudLabels map[string]string `json:"cloudLabels,omitempty"`
