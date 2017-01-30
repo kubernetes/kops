@@ -66,7 +66,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				SecurityGroups: []*awstasks.SecurityGroup{
 					b.LinkToSecurityGroup(ig.Spec.Role),
 				},
-				AdditionalSecurityGroupIDs: ig.Spec.AdditionalSecurityGroupIDs,
+				AdditionalSecurityGroupIDs: ig.Spec.AdditionalSecurityGroups,
 				IAMInstanceProfile:         b.LinkToIAMInstanceProfile(ig),
 				ImageID:                    s(ig.Spec.Image),
 				InstanceType:               s(ig.Spec.MachineType),
