@@ -77,102 +77,125 @@ aws iam list-users
 
 ## Configure DNS
 
-We will now need to set up DNS for cluster, find one of the scenarios below (A,B,C) that match your situation.
+In order to build a Kubernetes cluster with `kops`, we need to prepare
+somewhere to build the required DNS records.  There are three scenarios
+below and you should choose the one that most closely matches your AWS
+situation.
 
-### (A) Setting up DNS for your cluster, with AWS as your registrar
+### Scenario 1a: A Domain purchased/hosted via AWS
 
-If you bought your domain with AWS, then you should already have a hosted zone in Route53.
+If you bought your domain with AWS, then you should already have a hosted zone
+in Route53.  If you plan to use this domain then no more work is needed.
 
-If you plan on using your base domain, then no more work is needed.
+In this example you own `example.com` and your records for Kubernetes would
+look like `etcd-us-east-1c.internal.clustername.example.com`
 
-#### Setting up a subdomain
+### Scenario 1b: A subdomain under a domain purchased/hosted via AWS
 
-If you plan on using a subdomain to build your clusters on you will need to create a 2nd hosted zone in Route53, and then set up route delegation. This is basically copying the NS servers of your **SUBDOMAIN** up to the **PARENT** domain in Route53.
+In this scenario you want to contain all kubernetes records under a subdomain
+of a domain you host in Route53.  This requires creating a second hosted zone
+in route53, and then setting up route delegation to the new zone.
 
-  - Create the subdomain, and note your **SUBDOMAIN** name servers (If you have already done this you can also [get the values](ns.md))
+In this example you own `example.com` and your records for Kubernetes would
+look like `etcd-us-east-1c.internal.clustername.kubernetes.example.com`
+
+This is copying the NS servers of your **SUBDOMAIN** up to the **PARENT**
+domain in Route53.  To do this you should:
+
+* Create the subdomain, and note your **SUBDOMAIN** name servers (If you have
+  already done this you can also [get the values](ns.md))
 
 ```bash
-ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.kubernetes.com --caller-reference $ID | jq .DelegationSet.NameServers
+ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.example.com --caller-reference $ID | jq .DelegationSet.NameServers
 ```
 
-  - Note your **PARENT** hosted zone id
+* Note your **PARENT** hosted zone id
 
 ```bash
-aws route53 list-hosted-zones | jq '.HostedZones[] | select(.Name=="kubernetes.com.") | .Id'
+# Note: This example assumes you have jq installed locally.
+aws route53 list-hosted-zones | jq '.HostedZones[] | select(.Name=="example.com.") | .Id'
 ```
 
- - Create a new JSON file with your values (`subdomain.json`)
+* Create a new JSON file with your values (`subdomain.json`)
 
- Note: The NS values here are for the **SUBDOMAIN**
+Note: The NS values here are for the **SUBDOMAIN**
 
- ```
- {
-   "Comment": "Create a subdomain NS record in the parent domain",
-   "Changes": [
-     {
-       "Action": "CREATE",
-       "ResourceRecordSet": {
-         "Name": "subdomain.kubernetes.com",
-         "Type": "NS",
-         "TTL": 300,
-         "ResourceRecords": [
-           {
-             "Value": "ns-1.awsdns-1.co.uk"
-           },
-           {
-             "Value": "ns-2.awsdns-2.org"
-           },
-           {
-             "Value": "ns-3.awsdns-3.com"
-           },
-           {
-             "Value": "ns-4.awsdns-4.net"
-           }
-         ]
-       }
-     }
-   ]
- }
- ```
-
- - Apply the **SUBDOMAIN** NS records to the **PARENT** hosted zone
-
- ```
- aws route53 change-resource-record-sets \
-  --hosted-zone-id <parent-zone-id> \
-  --change-batch file://subdomain.json
+```
+{
+  "Comment": "Create a subdomain NS record in the parent domain",
+  "Changes": [
+    {
+      "Action": "CREATE",
+      "ResourceRecordSet": {
+        "Name": "subdomain.example.com",
+        "Type": "NS",
+        "TTL": 300,
+        "ResourceRecords": [
+          {
+            "Value": "ns-1.awsdns-1.co.uk"
+          },
+          {
+            "Value": "ns-2.awsdns-2.org"
+          },
+          {
+            "Value": "ns-3.awsdns-3.com"
+          },
+          {
+            "Value": "ns-4.awsdns-4.net"
+          }
+        ]
+      }
+    }
+  ]
+}
 ```
 
-Now traffic to `*.kubernetes.com` will be routed to the correct subdomain hosted zone in Route 53.
+* Apply the **SUBDOMAIN** NS records to the **PARENT** hosted zone.
 
-### (B) Setting up DNS for your cluster, with another registrar.
+```
+aws route53 change-resource-record-sets \
+ --hosted-zone-id <parent-zone-id> \
+ --change-batch file://subdomain.json
+```
+
+Now traffic to `*.example.com` will be routed to the correct subdomain hosted zone in Route53.
+
+### Scenario 2: Setting up Route53 for a domain purchased with another registrar
 
 If you bought your domain elsewhere, and would like to dedicate the entire domain to AWS you should follow the guide [here](http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/domain-transfer-to-route-53.html)
 
-### (C) Setting up a subdomain for clusters, with another registrar while keeping your top level domain the same
+### Scenario 3: Subdomain for clusters in route53, leaving the domain at another registrar
 
-If you bought your domain elsewhere, but **only want to use a subdomain in AWS Route53** you must modify your registrar's NS (NameServer) records. See the example below.
+If you bought your domain elsewhere, but **only want to use a subdomain in AWS
+Route53** you must modify your registrar's NS (NameServer) records.  We'll create
+a hosted zone in Route53, and then migrate the subdomain's NS records to your
+other registrar.
 
-Here we will be creating a hosted zone in AWS Route53, and migrating the subdomain's NS records to your other registrar.
+You might need to grab [jq](https://github.com/stedolan/jq/wiki/Installation)
+for some of these instructions.
 
-You might need to grab [jq](https://github.com/stedolan/jq/wiki/Installation) for some of these.
-
-  - Create the subdomain, and note your name servers (If you have already done this you can also [get the values](ns.md))
+* Create the subdomain, and note your name servers (If you have already done
+  this you can also [get the values](ns.md))
 
 ```bash
 ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.kubernetes.com --caller-reference $ID | jq .DelegationSet.NameServers
 ```
 
- - You will now go to your registrars page and log in. You will need to create a new **SUBDOMAIN**, and use the 4 NS records listed above for the new **SUBDOMAIN**. This **MUST** be done in order to use your cluster. Do **NOT** change your top level NS record, or you might take your site offline.
+* You will now go to your registrars page and log in. You will need to create a
+  new **SUBDOMAIN**, and use the 4 NS records listed above for the new
+  **SUBDOMAIN**. This **MUST** be done in order to use your cluster. Do **NOT**
+  change your top level NS record, or you might take your site offline.
 
- - Information on adding NS records with [Godaddy.com](https://www.godaddy.com/help/set-custom-nameservers-for-domains-registered-with-godaddy-12317)
- - Information on adding NS records with [Google Cloud Platform](https://cloud.google.com/dns/update-name-servers)
+* Information on adding NS records with
+  [Godaddy.com](https://www.godaddy.com/help/set-custom-nameservers-for-domains-registered-with-godaddy-12317)
+* Information on adding NS records with [Google Cloud
+  Platform](https://cloud.google.com/dns/update-name-servers)
 
-#### Using Public/Private DNS (1.5+)
+#### Using Public/Private DNS (Kops 1.5+)
 
-Kops by default will assume that the NS records created above are publicly available. If the values above are not publicly available, kops will have undesired results.
-
-Note: There is a DNS flag that can be configured if you plan on using private DNS records
+By default the assumption is that NS records are publically available.  If you
+require private DNS records you should modify the commands we run later in this
+guide to include:
 
 ```
 kops create cluster --dns private $NAME
@@ -180,25 +203,26 @@ kops create cluster --dns private $NAME
 
 ## Testing your DNS setup
 
-You should now able to dig your domain (or subdomain) and see the AWS Name Servers on the other end.
+You should now able to dig your domain (or subdomain) and see the AWS Name
+Servers on the other end.
 
 ```bash
-dig ns subdomain.kubernetes.com
+dig ns subdomain.example.com
 ```
 
 ```
 ;; ANSWER SECTION:
-subdomain.kubernetes.com.        172800  IN  NS  ns-1.awsdns-1.net.
-subdomain.kubernetes.com.        172800  IN  NS  ns-2.awsdns-2.org.
-subdomain.kubernetes.com.        172800  IN  NS  ns-3.awsdns-3.com.
-subdomain.kubernetes.com.        172800  IN  NS  ns-4.awsdns-4.co.uk.
+subdomain.example.com.        172800  IN  NS  ns-1.awsdns-1.net.
+subdomain.example.com.        172800  IN  NS  ns-2.awsdns-2.org.
+subdomain.example.com.        172800  IN  NS  ns-3.awsdns-3.com.
+subdomain.example.com.        172800  IN  NS  ns-4.awsdns-4.co.uk.
 ```
 
-This is a critical component of setting up the cluster. If you are experiencing problems with the Kubernetes API not coming up, chances are something is amiss around DNS.
+This is a critical component of setting up clusters. If you are experiencing
+problems with the Kubernetes API not coming up, chances are something is wrong
+with the clusters DNS.
 
 **Please DO NOT MOVE ON until you have validated your NS records!**
-
-Kubernetes kops uses the official AWS Go SDK, so all we need to do here is set up your system to use the official AWS supported methods of registering security credentials defined [here](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials).
 
 ## Setting up a state store for your cluster
 
