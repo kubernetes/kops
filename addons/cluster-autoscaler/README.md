@@ -1,12 +1,14 @@
 # Cluster Autoscaler Addon
 
+Note that you likely want to change `AWS_REGION` and `GROUP_NAME`, and probably `MIN_NODES` and `MAX_NODES`
+
 ```bash
 CLOUD_PROVIDER=aws
 IMAGE=gcr.io/google_containers/cluster-autoscaler:v0.4.0
 MIN_NODES=1
 MAX_NODES=5
 AWS_REGION=us-east-1
-GROUP_NAME="k8s-worker"
+GROUP_NAME="nodes.k8s.example.com"
 SSL_CERT_PATH="/etc/ssl/certs/ca-certificates.crt" # (/etc/ssl/certs for gce)
 
 addon=cluster-autoscaler.yml
