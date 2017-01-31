@@ -37,27 +37,29 @@ import (
 )
 
 type CreateClusterOptions struct {
-	ClusterName       string
-	Yes               bool
-	Target            string
-	Models            string
-	Cloud             string
-	Zones             string
-	MasterZones       string
-	NodeSize          string
-	MasterSize        string
-	NodeCount         int32
-	Project           string
-	KubernetesVersion string
-	OutDir            string
-	Image             string
-	SSHPublicKey      string
-	VPCID             string
-	NetworkCIDR       string
-	DNSZone           string
-	AdminAccess       []string
-	Networking        string
-	AssociatePublicIP *bool
+	ClusterName          string
+	Yes                  bool
+	Target               string
+	Models               string
+	Cloud                string
+	Zones                []string
+	MasterZones          []string
+	NodeSize             string
+	MasterSize           string
+	NodeCount            int32
+	Project              string
+	KubernetesVersion    string
+	OutDir               string
+	Image                string
+	SSHPublicKey         string
+	VPCID                string
+	NetworkCIDR          string
+	DNSZone              string
+	AdminAccess          []string
+	Networking           string
+	NodeSecurityGroups   []string
+	MasterSecurityGroups []string
+	AssociatePublicIP    *bool
 
 	// Channel is the location of the api.Channel to use for our defaults
 	Channel string
@@ -126,8 +128,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.Cloud, "cloud", options.Cloud, "Cloud provider to use - gce, aws")
 
-	cmd.Flags().StringVar(&options.Zones, "zones", options.Zones, "Zones in which to run the cluster")
-	cmd.Flags().StringVar(&options.MasterZones, "master-zones", options.MasterZones, "Zones in which to run masters (must be an odd number)")
+	cmd.Flags().StringSliceVar(&options.Zones, "zones", options.Zones, "Zones in which to run the cluster")
+	cmd.Flags().StringSliceVar(&options.MasterZones, "master-zones", options.MasterZones, "Zones in which to run masters (must be an odd number)")
 
 	cmd.Flags().StringVar(&options.Project, "project", options.Project, "Project to use (must be set on GCE)")
 	cmd.Flags().StringVar(&options.KubernetesVersion, "kubernetes-version", options.KubernetesVersion, "Version of kubernetes to run (defaults to version in channel)")
@@ -153,6 +155,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	// TODO: Can we deprecate this flag - it is awkward?
 	cmd.Flags().BoolVar(&associatePublicIP, "associate-public-ip", false, "Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.")
+
+	cmd.Flags().StringSliceVar(&options.NodeSecurityGroups, "node-security-groups", options.NodeSecurityGroups, "Add precreated additional security groups to nodes.")
+	cmd.Flags().StringSliceVar(&options.MasterSecurityGroups, "master-security-groups", options.MasterSecurityGroups, "Add precreated additional security groups to masters.")
 
 	cmd.Flags().StringVar(&options.Channel, "channel", options.Channel, "Channel for default versions and configuration to use")
 
@@ -251,13 +256,13 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 	glog.V(4).Infof("networking mode=%s => %s", c.Networking, fi.DebugAsJsonString(cluster.Spec.Networking))
 
-	if c.Zones != "" {
+	if len(c.Zones) != 0 {
 		existingSubnets := make(map[string]*api.ClusterSubnetSpec)
 		for i := range cluster.Spec.Subnets {
 			subnet := &cluster.Spec.Subnets[i]
 			existingSubnets[subnet.Name] = subnet
 		}
-		for _, zoneName := range parseZoneList(c.Zones) {
+		for _, zoneName := range c.Zones {
 			// We create default subnets named the same as the zones
 			subnetName := zoneName
 			if existingSubnets[subnetName] == nil {
@@ -278,7 +283,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	var nodes []*api.InstanceGroup
 	var instanceGroups []*api.InstanceGroup
 
-	if c.MasterZones == "" {
+	if len(c.MasterZones) == 0 {
 		if len(masters) == 0 {
 			// We default to single-master (not HA), unless the user explicitly specifies it
 			// HA master is a little slower, not as well tested yet, and requires more resources
@@ -300,7 +305,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	} else {
 		if len(masters) == 0 {
 			// Use the specified master zones (this is how the user gets HA master)
-			for _, subnetName := range parseZoneList(c.MasterZones) {
+			for _, subnetName := range c.MasterZones {
 				g := &api.InstanceGroup{}
 				g.Spec.Role = api.InstanceGroupRoleMaster
 				g.Spec.Subnets = []string{subnetName}
@@ -370,6 +375,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	if len(nodes) == 0 {
 		g := &api.InstanceGroup{}
 		g.Spec.Role = api.InstanceGroupRoleNode
+
 		g.ObjectMeta.Name = "nodes"
 		instanceGroups = append(instanceGroups, g)
 		nodes = append(nodes, g)
@@ -397,6 +403,18 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		for _, group := range nodes {
 			group.Spec.MinSize = fi.Int32(c.NodeCount)
 			group.Spec.MaxSize = fi.Int32(c.NodeCount)
+		}
+	}
+
+	if len(c.NodeSecurityGroups) > 0 {
+		for _, group := range nodes {
+			group.Spec.AdditionalSecurityGroups = c.NodeSecurityGroups
+		}
+	}
+
+	if len(c.MasterSecurityGroups) > 0 {
+		for _, group := range masters {
+			group.Spec.AdditionalSecurityGroups = c.MasterSecurityGroups
 		}
 	}
 
@@ -682,19 +700,6 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	}
 
 	return nil
-}
-
-func parseZoneList(s string) []string {
-	var filtered []string
-	for _, v := range strings.Split(s, ",") {
-		v = strings.TrimSpace(v)
-		if v == "" {
-			continue
-		}
-		v = strings.ToLower(v)
-		filtered = append(filtered, v)
-	}
-	return filtered
 }
 
 func supportsPrivateTopology(n *api.NetworkingSpec) bool {
