@@ -41,6 +41,9 @@ var DNSPreCreate = New("DNSPreCreate", Bool(true))
 // VPCSkipEnableDNSSupport if set will make that a VPC does not need DNSSupport enabled
 var VPCSkipEnableDNSSupport = New("VPCSkipEnableDNSSupport", Bool(false))
 
+// SkipTerraformFormat if set will mean that we will not `tf fmt` the generated terraform
+var SkipTerraformFormat = New("SkipTerraformFormat", Bool(false))
+
 var flags = make(map[string]*FeatureFlag)
 var flagsMutex sync.Mutex
 
