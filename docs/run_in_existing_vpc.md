@@ -12,7 +12,7 @@ export CLUSTER_NAME=<sharedvpc.mydomain.com>
 export VPC_ID=vpc-12345678 # replace with your VPC id
 export NETWORK_CIDR=10.100.0.0/16 # replace with the cidr for the VPC ${VPC_ID}
 
-kops create cluster --zones=us-east-1b --name=${CLUSTER_NAME} --vpc=${VPC_ID}
+kops create cluster --zones=us-east-1b --name=${CLUSTER_NAME} --vpc=${VPC_ID} --network-cidr=${NETWORK_CIDR}
 ```
 
 Then `kops edit cluster ${CLUSTER_NAME}` will show you something like:
