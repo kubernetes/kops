@@ -76,7 +76,20 @@ func (s *S3Context) getRegionForBucket(bucket string) (string, error) {
 		awsRegion = "us-east-1"
 	}
 
-	response, err := bruteforceBucketLocation(&awsRegion, &bucket)
+	request := &s3.GetBucketLocationInput{
+		Bucket: &bucket,
+	}
+	var response *s3.GetBucketLocationOutput
+
+	s3Client, err := s.getClient(awsRegion)
+
+	// Attempt one GetBucketLocation call the "normal" way (i.e. as the bucket owner)
+	response, err = s3Client.GetBucketLocation(request)
+
+	// and fallback to brute-forcing if it fails
+	if err != nil {
+		response, err = bruteforceBucketLocation(&awsRegion, request)
+	}
 
 	if err != nil {
 		return "", err
@@ -113,7 +126,7 @@ out the first result.
 
 See also: https://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/GetBucketLocationRequest
 */
-func bruteforceBucketLocation(region *string, bucket *string) (*s3.GetBucketLocationOutput, error) {
+func bruteforceBucketLocation(region *string, request *s3.GetBucketLocationInput) (*s3.GetBucketLocationOutput, error) {
 	session, _ := session.NewSession(&aws.Config{Region: region})
 	regions, err := ec2.New(session).DescribeRegions(nil)
 
@@ -121,11 +134,7 @@ func bruteforceBucketLocation(region *string, bucket *string) (*s3.GetBucketLoca
 		return nil, fmt.Errorf("Unable to list AWS regions: %v", err)
 	}
 
-	request := &s3.GetBucketLocationInput{
-		Bucket: bucket,
-	}
-
-	glog.V(2).Infof("Querying S3 for bucket location for %s", *bucket)
+	glog.V(2).Infof("Querying S3 for bucket location for %s", *request.Bucket)
 
 	out := make(chan *s3.GetBucketLocationOutput)
 	for _, region := range regions.Regions {
@@ -143,6 +152,6 @@ func bruteforceBucketLocation(region *string, bucket *string) (*s3.GetBucketLoca
 	case bucketLocation := <-out:
 		return bucketLocation, nil
 	case <-time.After(5 * time.Second):
-		return nil, fmt.Errorf("Could not retrieve location for AWS bucket %s", *bucket)
+		return nil, fmt.Errorf("Could not retrieve location for AWS bucket %s", *request.Bucket)
 	}
 }
