@@ -133,6 +133,7 @@ for i in ${NS}; do kubectl get secrets --namespace=${i} --no-headers | grep "kub
 sleep 60 # Allow for new secrets to be created
 kubectl delete pods -lk8s-app=dns-controller --namespace=kube-system
 kubectl delete pods -lk8s-app=kube-dns --namespace=kube-system
+kubectl delete pods -lk8s-app=kube-dns-autoscaler --namespace=kube-system
 ```
 
 You probably also want to delete the imported DNS services from prior versions:
