@@ -289,7 +289,7 @@ func (b *DockerBuilder) buildSystemdService(dockerVersion semver.Version) *nodet
 
 	var dockerdCommand string
 	if oldDocker {
-		dockerdCommand = "/usr/bin/docker dameon"
+		dockerdCommand = "/usr/bin/docker daemon"
 	} else {
 		dockerdCommand = "/usr/bin/dockerd"
 	}
@@ -365,7 +365,7 @@ func (b *DockerBuilder) buildSystemdService(dockerVersion semver.Version) *nodet
 	glog.V(8).Infof("Built service manifest %q\n%s", "docker", manifestString)
 
 	service := &nodetasks.Service{
-		Name:       "docker",
+		Name:       "docker.service",
 		Definition: s(manifestString),
 	}
 
