@@ -188,7 +188,7 @@ func (p *S3Path) ReadDir() ([]Path, error) {
 	}
 
 	prefix := p.key
-	if !strings.HasSuffix(prefix, "/") {
+	if prefix != "" && !strings.HasSuffix(prefix, "/") {
 		prefix += "/"
 	}
 	request := &s3.ListObjectsInput{}
@@ -234,7 +234,11 @@ func (p *S3Path) ReadTree() ([]Path, error) {
 
 	request := &s3.ListObjectsInput{}
 	request.Bucket = aws.String(p.bucket)
-	request.Prefix = aws.String(p.key)
+	prefix := p.key
+	if prefix != "" && !strings.HasSuffix(prefix, "/") {
+		prefix += "/"
+	}
+	request.Prefix = aws.String(prefix)
 	// No delimiter for recursive search
 
 	var paths []Path
