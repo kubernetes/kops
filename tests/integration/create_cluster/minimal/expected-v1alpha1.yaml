@@ -13,11 +13,11 @@ spec:
   configBase: memfs://tests/minimal.example.com
   etcdClusters:
   - etcdMembers:
-    - name: us-test-1a
+    - name: a
       zone: us-test-1a
     name: main
   - etcdMembers:
-    - name: us-test-1a
+    - name: a
       zone: us-test-1a
     name: events
   kubernetesVersion: v1.4.7
