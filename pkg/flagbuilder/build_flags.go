@@ -48,6 +48,9 @@ func BuildFlags(options interface{}) (string, error) {
 		}
 		flagName := tag
 
+		// If the "unset" value is not empty string, by setting this tag we avoid passing spurious flag values
+		flagEmpty := field.Tag.Get("flag-empty")
+
 		// We do have to do this, even though the recursive walk will do it for us
 		// because when we descend we won't have `field` set
 		if val.Kind() == reflect.Ptr {
@@ -99,16 +102,21 @@ func BuildFlags(options interface{}) (string, error) {
 		switch v := val.Interface().(type) {
 		case string:
 			vString := fmt.Sprintf("%v", v)
-			if vString != "" {
+			if vString != "" && vString != flagEmpty {
 				flag = fmt.Sprintf("--%s=%s", flagName, vString)
 			}
 
 		case bool, int, int32, int64, float32, float64:
 			vString := fmt.Sprintf("%v", v)
-			flag = fmt.Sprintf("--%s=%s", flagName, vString)
+			if vString != flagEmpty {
+				flag = fmt.Sprintf("--%s=%s", flagName, vString)
+			}
+
 		case metav1.Duration:
 			vString := v.Duration.String()
-			flag = fmt.Sprintf("--%s=%s", flagName, vString)
+			if vString != flagEmpty {
+				flag = fmt.Sprintf("--%s=%s", flagName, vString)
+			}
 
 		default:
 			return fmt.Errorf("BuildFlags of value type not handled: %T %s=%v", v, path, v)
