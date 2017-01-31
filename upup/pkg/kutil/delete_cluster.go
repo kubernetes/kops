@@ -1009,6 +1009,11 @@ func DeleteRouteTable(cloud fi.Cloud, r *ResourceTracker) error {
 	}
 	_, err := c.EC2().DeleteRouteTable(request)
 	if err != nil {
+		if awsup.AWSErrorCode(err) == "InvalidRouteTableID.NotFound" {
+			glog.V(2).Infof("Got InvalidRouteTableID.NotFound error describing RouteTable %q; will treat as already-deleted", id)
+			return nil
+		}
+
 		if IsDependencyViolation(err) {
 			return err
 		}
@@ -1738,6 +1743,11 @@ func DeleteElasticIP(cloud fi.Cloud, t *ResourceTracker) error {
 	}
 	_, err := c.EC2().ReleaseAddress(request)
 	if err != nil {
+		if awsup.AWSErrorCode(err) == "InvalidAllocationID.NotFound" {
+			glog.V(2).Infof("Got InvalidAllocationID.NotFound error describing ElasticIP %q; will treat as already-deleted", id)
+			return nil
+		}
+
 		if IsDependencyViolation(err) {
 			return err
 		}
