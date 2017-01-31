@@ -13,3 +13,9 @@ $ KOPS="docker run -v $HOME/.aws:/root/.aws:ro -v $HOME/.ssh:/root/.ssh:ro -v $H
 This creates a shell variable that runs the `kops` container with `~/.aws` mounted in (for AWS credentials), `~/.ssh` mounted in (for SSH keys, for AWS specifically), and `~/.kube` mounted in (so `kubectl` can add newly created clusters).
 
 After this, you can just use `$KOPS` where you would generally use `kops`, e.g. `$KOPS get cluster`.
+
+To build the lighter version:
+```shell
+$ docker built -t kops:light -f Dockerfile-light .
+$ KOPS="docker run -v $HOME/.aws:/root/.aws:ro -v $HOME/.ssh:/root/.ssh:ro -v $HOME/.kube:/root/.kube -it kops:light --state=$KOPS_STATE_STORE"
+  ```
