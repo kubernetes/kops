@@ -1,4 +1,10 @@
 ClusterName: ha.example.com
-Zones: us-test-1a,us-test-1b,us-test-1c
-MasterZones: us-test-1a,us-test-1b,us-test-1c
+Zones:
+- us-test-1a
+- us-test-1b
+- us-test-1c
+MasterZones:
+- us-test-1a
+- us-test-1b
+- us-test-1c
 Cloud: aws
