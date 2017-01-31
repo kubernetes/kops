@@ -275,5 +275,5 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		return nil
 	}
 
-	return d.RollingUpdate(groups, list)
+	return d.RollingUpdate(groups, list, options.CloudOnly, options.ClusterName)
 }

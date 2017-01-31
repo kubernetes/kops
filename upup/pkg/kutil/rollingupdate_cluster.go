@@ -60,6 +60,9 @@ type RollingUpdateData struct {
 
 	ForceDrain     bool
 	FailOnValidate bool
+
+	CloudOnly   bool
+	ClusterName string
 }
 
 // TODO move retries to RollingUpdateCluster
@@ -126,7 +129,7 @@ func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroup
 // TODO: for instance should we check if Petsets exist when upgrading 1.4.x -> 1.5.x
 
 // Perform a rolling update on a K8s Cluster
-func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, instanceGroups *api.InstanceGroupList) error {
+func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, instanceGroups *api.InstanceGroupList, cloudOnly bool, clusterName string) error {
 	if len(groups) == 0 {
 		return nil
 	}
@@ -172,6 +175,8 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 					K8sClient:         c.K8sClient,
 					FailOnValidate:    c.FailOnValidate,
 					ForceDrain:        c.ForceDrain,
+					CloudOnly:         cloudOnly,
+					ClusterName:       clusterName,
 				}
 
 				err := group.RollingUpdate(rollingUpdateData)
@@ -213,6 +218,8 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 					K8sClient:         c.K8sClient,
 					FailOnValidate:    c.FailOnValidate,
 					ForceDrain:        c.ForceDrain,
+					CloudOnly:         cloudOnly,
+					ClusterName:       clusterName,
 				}
 
 				err := group.RollingUpdate(rollingUpdateData)
@@ -250,6 +257,8 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 					K8sClient:         c.K8sClient,
 					FailOnValidate:    c.FailOnValidate,
 					ForceDrain:        c.ForceDrain,
+					CloudOnly:         cloudOnly,
+					ClusterName:       clusterName,
 				}
 
 				err := group.RollingUpdate(rollingUpdateData)
@@ -333,6 +342,12 @@ func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group, nodeMa
 
 // RollingUpdate performs a rolling update on a list of ec2 instances.
 func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData) error {
+
+	// we should not get here, but hey I am going to check
+	if rollingUpdateData == nil || rollingUpdateData.InstanceGroupList == nil || rollingUpdateData.K8sClient == nil {
+		return fmt.Errorf("RollingUpdate is missing a data element: %v", rollingUpdateData)
+	}
+
 	c := rollingUpdateData.Cloud.(awsup.AWSCloud)
 
 	update := n.NeedUpdate
@@ -340,13 +355,10 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData)
 		update = append(update, n.Ready...)
 	}
 
-	if !rollingUpdateData.IsBastion {
-		// Validate the cluster if the node is not a bastion
-		// TODO: should we do this or be able to force??
-		// Use case is that we have a messed up cluster and need to change the version to fix the cluster
-		_, err := validate.ValidateCluster(update[0].Node.ClusterName, rollingUpdateData.InstanceGroupList, rollingUpdateData.K8sClient)
+	if !rollingUpdateData.IsBastion && rollingUpdateData.FailOnValidate && !rollingUpdateData.CloudOnly {
+		_, err := validate.ValidateCluster(rollingUpdateData.ClusterName, rollingUpdateData.InstanceGroupList, rollingUpdateData.K8sClient)
 		if err != nil {
-			return fmt.Errorf("Cluster %s does not pass validateion", update[0].Node.ClusterName)
+			return fmt.Errorf("Cluster %s does not pass validateion", rollingUpdateData.ClusterName)
 		}
 	}
 
@@ -354,8 +366,6 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData)
 
 		if !rollingUpdateData.IsBastion {
 			drain, err := NewDrainOptions(nil, u.Node.ClusterName)
-
-			// TODO: forceDrain <- should we change the name??
 
 			if err != nil {
 				glog.Warningf("Error creating drain: %v", err)
@@ -376,9 +386,7 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData)
 		// TODO: Temporarily increase size of ASG?
 		// TODO: Remove from ASG first so status is immediately updated?
 		// TODO: Batch termination, like a rolling-update
-
 		// TODO: check if an asg is running the correct number of instances
-		// TODO: if not the cluster will not validate
 
 		instanceID := aws.StringValue(u.ASGInstance.InstanceId)
 		glog.Infof("Stopping instance %q in AWS ASG %q", instanceID, n.ASGName)
@@ -399,18 +407,21 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData)
 			// TODO: do we need to respect cloud only??
 			for i := 0; i <= retries; i++ {
 
-				_, err = validate.ValidateCluster(u.Node.ClusterName, rollingUpdateData.InstanceGroupList, rollingUpdateData.K8sClient)
-
-				if err != nil {
-					glog.Infof("Unable to validate k8s cluster: %s.", err)
-					time.Sleep(rollingUpdateData.Interval / 2)
+				if rollingUpdateData.CloudOnly {
+					time.Sleep(rollingUpdateData.Interval)
 				} else {
-					glog.Info("Cluster validated proceeding with next step in rolling update")
-					break
+					_, err = validate.ValidateCluster(rollingUpdateData.ClusterName, rollingUpdateData.InstanceGroupList, rollingUpdateData.K8sClient)
+					if err != nil {
+						glog.Infof("Unable to validate k8s cluster: %s.", err)
+						time.Sleep(rollingUpdateData.Interval / 2)
+					} else {
+						glog.Info("Cluster validated proceeding with next step in rolling update")
+						break
+					}
 				}
 			}
 
-			if err != nil && rollingUpdateData.FailOnValidate {
+			if err != nil && rollingUpdateData.FailOnValidate && !rollingUpdateData.CloudOnly {
 				return fmt.Errorf("validation timed out while performing rolling update: %v", err)
 			}
 		}
