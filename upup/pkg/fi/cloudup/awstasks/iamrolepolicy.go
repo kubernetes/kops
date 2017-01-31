@@ -128,7 +128,7 @@ func (_ *IAMRolePolicy) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRoleP
 	if doPut {
 		request := &iam.PutRolePolicyInput{}
 		request.PolicyDocument = aws.String(policy)
-		request.RoleName = e.Name
+		request.RoleName = e.Role.Name
 		request.PolicyName = e.Name
 
 		_, err = t.Cloud.IAM().PutRolePolicy(request)
