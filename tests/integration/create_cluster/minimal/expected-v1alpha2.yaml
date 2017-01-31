@@ -12,11 +12,11 @@ spec:
   etcdClusters:
   - etcdMembers:
     - instanceGroup: master-us-test-1a
-      name: us-test-1a
+      name: a
     name: main
   - etcdMembers:
     - instanceGroup: master-us-test-1a
-      name: us-test-1a
+      name: a
     name: events
   kubernetesApiAccess:
   - 0.0.0.0/0

@@ -1,0 +1,6 @@
+ClusterName: ha.example.com
+Zones:
+- us-test-1a
+- us-test-1b
+MasterCount: 5
+Cloud: aws

@@ -11,20 +11,28 @@ spec:
   configBase: memfs://tests/ha.example.com
   etcdClusters:
   - etcdMembers:
-    - instanceGroup: master-us-test-1a
-      name: a
-    - instanceGroup: master-us-test-1b
-      name: b
-    - instanceGroup: master-us-test-1c
-      name: c
+    - instanceGroup: master-us-test-1a-1
+      name: a-1
+    - instanceGroup: master-us-test-1b-1
+      name: b-1
+    - instanceGroup: master-us-test-1a-2
+      name: a-2
+    - instanceGroup: master-us-test-1b-2
+      name: b-2
+    - instanceGroup: master-us-test-1a-3
+      name: a-3
     name: main
   - etcdMembers:
-    - instanceGroup: master-us-test-1a
-      name: a
-    - instanceGroup: master-us-test-1b
-      name: b
-    - instanceGroup: master-us-test-1c
-      name: c
+    - instanceGroup: master-us-test-1a-1
+      name: a-1
+    - instanceGroup: master-us-test-1b-1
+      name: b-1
+    - instanceGroup: master-us-test-1a-2
+      name: a-2
+    - instanceGroup: master-us-test-1b-2
+      name: b-2
+    - instanceGroup: master-us-test-1a-3
+      name: a-3
     name: events
   kubernetesApiAccess:
   - 0.0.0.0/0
@@ -45,10 +53,6 @@ spec:
     name: us-test-1b
     type: Public
     zone: us-test-1b
-  - cidr: 172.20.96.0/19
-    name: us-test-1c
-    type: Public
-    zone: us-test-1c
   topology:
     dns:
       type: Public
@@ -63,7 +67,7 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
     kops.k8s.io/cluster: ha.example.com
-  name: master-us-test-1a
+  name: master-us-test-1a-1
 spec:
   image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
   machineType: m3.medium
@@ -81,7 +85,43 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
     kops.k8s.io/cluster: ha.example.com
-  name: master-us-test-1b
+  name: master-us-test-1a-2
+spec:
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test-1a
+
+---
+
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: ha.example.com
+  name: master-us-test-1a-3
+spec:
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  machineType: m3.medium
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test-1a
+
+---
+
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2017-01-01T00:00:00Z"
+  labels:
+    kops.k8s.io/cluster: ha.example.com
+  name: master-us-test-1b-1
 spec:
   image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
   machineType: m3.medium
@@ -99,7 +139,7 @@ metadata:
   creationTimestamp: "2017-01-01T00:00:00Z"
   labels:
     kops.k8s.io/cluster: ha.example.com
-  name: master-us-test-1c
+  name: master-us-test-1b-2
 spec:
   image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
   machineType: m3.medium
@@ -107,7 +147,7 @@ spec:
   minSize: 1
   role: Master
   subnets:
-  - us-test-1c
+  - us-test-1b
 
 ---
 
@@ -127,4 +167,3 @@ spec:
   subnets:
   - us-test-1a
   - us-test-1b
-  - us-test-1c
