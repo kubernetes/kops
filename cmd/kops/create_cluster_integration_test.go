@@ -45,6 +45,12 @@ func TestCreateClusterHA(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha", "v1alpha2")
 }
 
+// TestCreateClusterHASharedZones tests kops create cluster when the master count is bigger than the numebr of zones
+func TestCreateClusterHASharedZones(t *testing.T) {
+	// Cannot be expressed in v1alpha1 API:	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_shared_zones", "v1alpha1")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_shared_zones", "v1alpha2")
+}
+
 // TestCreateClusterPrivate runs kops create cluster private.example.com --zones us-test-1a --master-zones us-test-1a
 func TestCreateClusterPrivate(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/private", "v1alpha1")
