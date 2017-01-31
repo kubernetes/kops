@@ -81,6 +81,9 @@ type KubeletConfigSpec struct {
 	// maxPods is the number of pods that can run on this Kubelet.
 	MaxPods *int32 `json:"maxPods,omitempty" flag:"max-pods"`
 
+	// nvidiaGPUs is the number of NVIDIA GPU devices on this node.
+	NvidiaGPUs int32 `json:"nvidiaGPUs,omitempty" flag:"experimental-nvidia-gpus"`
+
 	// The CIDR to use for pod IP addresses, only used in standalone mode.
 	// In cluster mode, this is obtained from the master.
 	PodCIDR string `json:"podCIDR,omitempty" flag:"pod-cidr"`
