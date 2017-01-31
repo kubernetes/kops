@@ -64,6 +64,9 @@ func (x *ImportCluster) ImportAWSCluster() error {
 
 	cluster.Spec.Channel = api.DefaultChannel
 
+	cluster.Spec.KubernetesAPIAccess = []string{"0.0.0.0/0"}
+	cluster.Spec.SSHAccess = []string{"0.0.0.0/0"}
+
 	configBase, err := x.Clientset.Clusters().(*vfsclientset.ClusterVFS).ConfigBase(clusterName)
 	if err != nil {
 		return fmt.Errorf("error building ConfigBase for cluster: %v", err)
@@ -354,10 +357,17 @@ func (x *ImportCluster) ImportAWSCluster() error {
 		}
 
 		for _, ig := range masterInstanceGroups {
-			etcdCluster.Members = append(etcdCluster.Members, &api.EtcdMemberSpec{
-				Name:          ig.ObjectMeta.Name,
+			member := &api.EtcdMemberSpec{
 				InstanceGroup: fi.String(ig.ObjectMeta.Name),
-			})
+			}
+
+			name := ig.ObjectMeta.Name
+			// We expect the IG to have a `master-` prefix, but this is both superfluous
+			// and not how we named things previously
+			name = strings.TrimPrefix(name, "master-")
+			member.Name = name
+
+			etcdCluster.Members = append(etcdCluster.Members, member)
 		}
 
 		cluster.Spec.EtcdClusters = append(cluster.Spec.EtcdClusters, etcdCluster)
