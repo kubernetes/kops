@@ -27,6 +27,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kubernetes/pkg/client/restclient"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
+	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd/api"
 )
 
 // KubeconfigBuilder builds a kubecfg file
@@ -58,6 +59,53 @@ func NewKubeconfigBuilder() *KubeconfigBuilder {
 	kubeConfig := os.Getenv(clientcmd.RecommendedConfigPathEnvVar)
 	c.KubeconfigPath = c.getKubectlPath(kubeConfig)
 	return c
+}
+
+func DeleteConfig(name string) error {
+	filename := clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename()
+	config, err := clientcmd.LoadFromFile(filename)
+	if err != nil {
+		return fmt.Errorf("error loading kube config: %v", err)
+	}
+
+	if api.IsConfigEmpty(config) {
+		return fmt.Errorf("kube config is empty")
+	}
+
+	_, ok := config.Clusters[name]
+	if !ok {
+		return fmt.Errorf("cluster %s does not exist", name)
+	}
+	delete(config.Clusters, name)
+
+	_, ok = config.AuthInfos[name]
+	if !ok {
+		return fmt.Errorf("user %s does not exist", name)
+	}
+	delete(config.AuthInfos, name)
+
+	_, ok = config.AuthInfos[fmt.Sprintf("%s-basic-auth", name)]
+	if !ok {
+		return fmt.Errorf("user %s-basic-auth does not exist", name)
+	}
+	delete(config.AuthInfos, fmt.Sprintf("%s-basic-auth", name))
+
+	_, ok = config.Contexts[name]
+	if !ok {
+		return fmt.Errorf("context %s does not exist", name)
+	}
+	delete(config.Contexts, name)
+
+	if config.CurrentContext == name {
+		config.CurrentContext = ""
+	}
+
+	err = clientcmd.WriteToFile(*config, filename)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Create new Rest Client
