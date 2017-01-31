@@ -110,6 +110,11 @@ func (_ *IAMRolePolicy) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRoleP
 		glog.V(2).Infof("Deleting role policy %s/%s", aws.StringValue(e.Role.Name), aws.StringValue(e.Name))
 		_, err = t.Cloud.IAM().DeleteRolePolicy(request)
 		if err != nil {
+			if awsup.AWSErrorCode(err) == "NoSuchEntity" {
+				// Already deleted
+				glog.V(2).Infof("Got NoSuchEntity deleting role policy %s/%s; assuming does not exist", aws.StringValue(e.Role.Name), aws.StringValue(e.Name))
+				return nil
+			}
 			return fmt.Errorf("error deleting IAMRolePolicy: %v", err)
 		}
 		return nil
