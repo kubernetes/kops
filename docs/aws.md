@@ -24,7 +24,8 @@ In order to control Kubernetes clusters we need to [install the CLI tool](instal
 
 In order to correctly prepare your AWS account for `kops`, we require you to
 install the AWS CLI tools, and have API credentials for an account that has
-administrator level privileges.
+the permissions to create a new IAM account for `kops` later in the guide.
+
 
 Once you've [installed the AWS CLI tools](install.md) and have correctly setup
 your system to use the official AWS methods of registering security credentials
