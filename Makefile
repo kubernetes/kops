@@ -275,7 +275,7 @@ verify-gofmt:
 verify-packages:
 	hack/verify-packages.sh
 
-ci: kops nodeup-gocode examples test govet verify-boilerplate verify-gofmt verify-packages
+ci: kops nodeup-gocode examples test govet verify-boilerplate verify-gofmt verify-packages gen-cli-docs
 	echo "Done!"
 
 # --------------------------------------------------
