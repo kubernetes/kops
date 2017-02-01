@@ -44,7 +44,7 @@ func NewCmdToolboxDump(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "dump",
-		Short: "Dump information about a cluster",
+		Short: "Dump cloud information about a cluster",
 		Run: func(cmd *cobra.Command, args []string) {
 			if err := rootCommand.ProcessArgs(args); err != nil {
 				exitWithError(err)
@@ -60,6 +60,7 @@ func NewCmdToolboxDump(f *util.Factory, out io.Writer) *cobra.Command {
 	}
 
 	// TODO: Push up to top-level command?
+	// Yes please! (@kris-nova)
 	cmd.Flags().StringVarP(&options.Output, "output", "o", options.Output, "output format.  One of: yaml, json")
 
 	return cmd
@@ -89,7 +90,8 @@ func RunToolboxDump(f *util.Factory, out io.Writer, options *ToolboxDumpOptions)
 		return err
 	}
 
-	d := &kutil.DeleteCluster{}
+	// Todo lets make this smart enough to detect the cloud and switch on the ClusterResources interface
+	d := &kutil.AwsCluster{}
 	d.ClusterName = options.ClusterName
 	d.Cloud = cloud
 
