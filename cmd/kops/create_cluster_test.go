@@ -21,12 +21,12 @@ import (
 )
 
 func TestParseCloudLabels(t *testing.T) {
-	expect := map[string]string{"foo":"bar", "fib":"baz"}
+	expect := map[string]string{"foo": "bar", "fib": "baz"}
 	checkParse(t, "", map[string]string{}, false)
 	checkParse(t, "foo=bar,fib=baz", expect, false)
 	checkParse(t, `foo=bar,"fib"="baz"`, expect, false)
 	checkParse(t, `"fo\""o"=bar,"fi\b"="baz"`,
-		map[string]string{`fo\"o`:"bar", `fi\b`:"baz"}, false)
+		map[string]string{`fo\"o`: "bar", `fi\b`: "baz"}, false)
 	checkParse(t, `fo"o=bar,fib=baz`, expect, true)
 	checkParse(t, `fo,o=bar,fib=baz`, expect, true)
 }
