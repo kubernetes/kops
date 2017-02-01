@@ -27,6 +27,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi/utils"
+	"sort"
 )
 
 // DryRunTarget is a special Target that does not execute anything, but instead tracks all changes.
@@ -47,6 +48,24 @@ type render struct {
 	aIsNil  bool
 	e       Task
 	changes Task
+}
+
+// ByTaskKey sorts []*render by TaskKey (type/name)
+type ByTaskKey []*render
+
+func (a ByTaskKey) Len() int      { return len(a) }
+func (a ByTaskKey) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a ByTaskKey) Less(i, j int) bool {
+	return buildTaskKey(a[i].e) < buildTaskKey(a[j].e)
+}
+
+// DeletionByTaskName sorts []Deletion by TaskName
+type DeletionByTaskName []Deletion
+
+func (a DeletionByTaskName) Len() int      { return len(a) }
+func (a DeletionByTaskName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a DeletionByTaskName) Less(i, j int) bool {
+	return a[i].TaskName() < a[i].TaskName()
 }
 
 var _ Target = &DryRunTarget{}
@@ -116,6 +135,10 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 				updates = append(updates, r)
 			}
 		}
+
+		// Give everything a consistent ordering
+		sort.Sort(ByTaskKey(creates))
+		sort.Sort(ByTaskKey(updates))
 
 		if len(creates) != 0 {
 			fmt.Fprintf(b, "Will create resources:\n")
@@ -267,6 +290,9 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 	}
 
 	if len(t.deletions) != 0 {
+		// Give everything a consistent ordering
+		sort.Sort(DeletionByTaskName(t.deletions))
+
 		fmt.Fprintf(b, "Will delete items:\n")
 		for _, d := range t.deletions {
 			fmt.Fprintf(b, "  %-20s %s\n", d.TaskName(), d.Item())
