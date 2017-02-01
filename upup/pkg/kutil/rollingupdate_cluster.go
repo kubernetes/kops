@@ -356,7 +356,7 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData)
 	if !rollingUpdateData.IsBastion && rollingUpdateData.FailOnValidate && !rollingUpdateData.CloudOnly {
 		_, err := validate.ValidateCluster(rollingUpdateData.ClusterName, rollingUpdateData.InstanceGroupList, rollingUpdateData.K8sClient)
 		if err != nil {
-			return fmt.Errorf("Cluster %s does not pass validateion", rollingUpdateData.ClusterName)
+			return fmt.Errorf("Cluster %s does not pass validation", rollingUpdateData.ClusterName)
 		}
 	}
 
