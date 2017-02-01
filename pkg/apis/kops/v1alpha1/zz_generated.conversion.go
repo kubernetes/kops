@@ -1177,6 +1177,7 @@ func autoConvert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.HairpinMode = in.HairpinMode
 	out.BabysitDaemons = in.BabysitDaemons
 	out.MaxPods = in.MaxPods
+	out.NvidiaGPUs = in.NvidiaGPUs
 	out.PodCIDR = in.PodCIDR
 	out.ReconcileCIDR = in.ReconcileCIDR
 	out.RegisterSchedulable = in.RegisterSchedulable
@@ -1213,6 +1214,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec(in *kops.K
 	out.HairpinMode = in.HairpinMode
 	out.BabysitDaemons = in.BabysitDaemons
 	out.MaxPods = in.MaxPods
+	out.NvidiaGPUs = in.NvidiaGPUs
 	out.PodCIDR = in.PodCIDR
 	out.ReconcileCIDR = in.ReconcileCIDR
 	out.RegisterSchedulable = in.RegisterSchedulable
