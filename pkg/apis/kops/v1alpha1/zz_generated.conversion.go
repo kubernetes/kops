@@ -899,7 +899,10 @@ func autoConvert_v1alpha1_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	// WARNING: in.Zones requires manual conversion: does not exist in peer-type
 	out.MaxPrice = in.MaxPrice
 	out.AssociatePublicIP = in.AssociatePublicIP
+	out.AdditionalLoadBalancers = in.AdditionalLoadBalancers
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
+	out.AdditionalTargetGroups = in.AdditionalTargetGroups
+
 	out.CloudLabels = in.CloudLabels
 	out.NodeLabels = in.NodeLabels
 	return nil
@@ -916,7 +919,9 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha1_InstanceGroupSpec(in *kops.I
 	// WARNING: in.Subnets requires manual conversion: does not exist in peer-type
 	out.MaxPrice = in.MaxPrice
 	out.AssociatePublicIP = in.AssociatePublicIP
+	out.AdditionalLoadBalancers = in.AdditionalLoadBalancers
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
+	out.AdditionalTargetGroups = in.AdditionalTargetGroups
 	out.CloudLabels = in.CloudLabels
 	out.NodeLabels = in.NodeLabels
 	return nil

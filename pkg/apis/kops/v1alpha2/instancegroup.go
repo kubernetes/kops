@@ -84,4 +84,10 @@ type InstanceGroupSpec struct {
 
 	// NodeLabels indicates the kubernetes labels for nodes in this group
 	NodeLabels map[string]string `json:"nodeLabels,omitempty"`
+
+	// AdditionalLoadBalancers Associate instancegroup with self-managed load balancers
+	AdditionalLoadBalancers []string `json:"additionalLoadBalancers,omitempty"`
+
+	// AdditionalLoadBalancers Associate instancegroup with self-managed target groups
+	AdditionalTargetGroups []string `json:"additionalTargetGroups,omitempty"`
 }
