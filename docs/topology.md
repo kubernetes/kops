@@ -34,3 +34,12 @@ To specify a topology use the `--topology` or `-t` flag as in :
 kops create cluster ... --topology public|private
 ```
 
+In the case of a private cluster you must also set a networking option other
+than `kubenet`.  Currently the supported options are:
+
+- kopeio-vxlan
+- weave
+- calico
+- cni
+
+More information about [networking options](networking.md) can be found in our documentation.
