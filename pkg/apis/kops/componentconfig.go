@@ -21,7 +21,7 @@ import metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 type KubeletConfigSpec struct {
 	APIServers string `json:"apiServers,omitempty" flag:"api-servers"`
 
-	LogLevel *int32 `json:"logLevel,omitempty" flag:"v"`
+	LogLevel *int32 `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
 
 	// Configuration flags - a subset of https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
 
@@ -219,7 +219,7 @@ type KubeletConfigSpec struct {
 	MaxPods *int32 `json:"maxPods,omitempty" flag:"max-pods"`
 
 	// nvidiaGPUs is the number of NVIDIA GPU devices on this node.
-	NvidiaGPUs int32 `json:"nvidiaGPUs,omitempty" flag:"experimental-nvidia-gpus"`
+	NvidiaGPUs int32 `json:"nvidiaGPUs,omitempty" flag:"experimental-nvidia-gpus" flag-empty:"0"`
 
 	//// dockerExecHandlerName is the handler to use when executing a command
 	//// in a container. Valid values are 'native' and 'nsenter'. Defaults to
@@ -274,16 +274,6 @@ type KubeletConfigSpec struct {
 	// enable gathering custom metrics.
 	EnableCustomMetrics *bool `json:"enableCustomMetrics,omitempty" flag:"enable-custom-metrics"`
 
-	//// Comma-delimited list of hard eviction expressions.  For example, 'memory.available<300Mi'.
-	//EvictionHard string `json:"evictionHard,omitempty"`
-	//// Comma-delimited list of soft eviction expressions.  For example, 'memory.available<300Mi'.
-	//EvictionSoft string `json:"evictionSoft,omitempty"`
-	//// Comma-delimeted list of grace periods for each soft eviction signal.  For example, 'memory.available=30s'.
-	//EvictionSoftGracePeriod string `json:"evictionSoftGracePeriod,omitempty"`
-	//// Duration for which the kubelet has to wait before transitioning out of an eviction pressure condition.
-	//EvictionPressureTransitionPeriod unversioned.Duration `json:"evictionPressureTransitionPeriod,omitempty"`
-	//// Maximum allowed grace period (in seconds) to use when terminating pods in response to a soft eviction threshold being met.
-	//EvictionMaxPodGracePeriod int32 `json:"evictionMaxPodGracePeriod,omitempty"`
 	//// Maximum number of pods per core. Cannot exceed MaxPods
 	//PodsPerCore int32 `json:"podsPerCore"`
 	//// enableControllerAttachDetach enables the Attach/Detach controller to
@@ -308,6 +298,19 @@ type KubeletConfigSpec struct {
 	// before the terminated pod garbage collector starts deleting terminated pods.
 	// If <= 0, the terminated pod garbage collector is disabled.
 	TerminatedPodGCThreshold *int32 `json:"terminatedPodGCThreshold,omitempty" flag:"terminated-pod-gc-threshold"`
+
+	// Comma-delimited list of hard eviction expressions.  For example, 'memory.available<300Mi'.
+	EvictionHard *string `json:"evictionHard,omitempty" flag:"eviction-hard"`
+	// Comma-delimited list of soft eviction expressions.  For example, 'memory.available<300Mi'.
+	EvictionSoft string `json:"evictionSoft,omitempty" flag:"eviction-soft"`
+	// Comma-delimited list of grace periods for each soft eviction signal.  For example, 'memory.available=30s'.
+	EvictionSoftGracePeriod string `json:"evictionSoftGracePeriod,omitempty" flag:"eviction-soft-grace-period"`
+	// Duration for which the kubelet has to wait before transitioning out of an eviction pressure condition.
+	EvictionPressureTransitionPeriod metav1.Duration `json:"evictionPressureTransitionPeriod,omitempty" flag:"eviction-pressure-transition-period" flag-empty:"0s"`
+	// Maximum allowed grace period (in seconds) to use when terminating pods in response to a soft eviction threshold being met.
+	EvictionMaxPodGracePeriod int32 `json:"evictionMaxPodGracePeriod,omitempty" flag:"eviction-max-pod-grace-period" flag-empty:"0"`
+	// Comma-delimited list of minimum reclaims (e.g. imagefs.available=2Gi) that describes the minimum amount of resource the kubelet will reclaim when performing a pod eviction if that resource is under pressure.
+	EvictionMinimumReclaim string `json:"evictionMinimumReclaim,omitempty" flag:"eviction-minimum-reclaim"`
 }
 
 type KubeProxyConfig struct {
@@ -420,7 +423,7 @@ type KubeAPIServerConfig struct {
 
 type KubeControllerManagerConfig struct {
 	Master   string `json:"master,omitempty" flag:"master"`
-	LogLevel int32  `json:"logLevel,omitempty" flag:"v"`
+	LogLevel int32  `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
 
 	ServiceAccountPrivateKeyFile string `json:"serviceAccountPrivateKeyFile,omitempty" flag:"service-account-private-key-file"`
 
