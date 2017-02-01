@@ -61,6 +61,10 @@ type CreateClusterOptions struct {
 	Networking           string
 	NodeSecurityGroups   []string
 	MasterSecurityGroups []string
+	NodeTargetGroups     []string
+	MasterTargetGroups   []string
+	NodeLoadBalancers    []string
+	MasterLoadBalancers  []string
 	AssociatePublicIP    *bool
 
 	// Channel is the location of the api.Channel to use for our defaults
@@ -161,6 +165,12 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringSliceVar(&options.NodeSecurityGroups, "node-security-groups", options.NodeSecurityGroups, "Add precreated additional security groups to nodes.")
 	cmd.Flags().StringSliceVar(&options.MasterSecurityGroups, "master-security-groups", options.MasterSecurityGroups, "Add precreated additional security groups to masters.")
+
+	cmd.Flags().StringSliceVar(&options.NodeTargetGroups, "node-target-groups", options.NodeTargetGroups, "Associate nodes with self-managed target groups.")
+	cmd.Flags().StringSliceVar(&options.MasterTargetGroups, "master-target-groups", options.MasterTargetGroups, "Associate masters with self-managed target groups.")
+
+	cmd.Flags().StringSliceVar(&options.NodeLoadBalancers, "node-load-balancers", options.NodeLoadBalancers, "Associate nodes with self-managed load balancers.")
+	cmd.Flags().StringSliceVar(&options.MasterLoadBalancers, "master-load-balancers", options.MasterLoadBalancers, "Associate masters with self-managed load balancers.")
 
 	cmd.Flags().StringVar(&options.Channel, "channel", options.Channel, "Channel for default versions and configuration to use")
 
@@ -433,6 +443,30 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	if len(c.MasterSecurityGroups) > 0 {
 		for _, group := range masters {
 			group.Spec.AdditionalSecurityGroups = c.MasterSecurityGroups
+		}
+	}
+
+	if len(c.NodeTargetGroups) > 0 {
+		for _, group := range nodes {
+			group.Spec.AdditionalTargetGroups = c.NodeTargetGroups
+		}
+	}
+
+	if len(c.MasterTargetGroups) > 0 {
+		for _, group := range masters {
+			group.Spec.AdditionalTargetGroups = c.MasterTargetGroups
+		}
+	}
+
+	if len(c.NodeLoadBalancers) > 0 {
+		for _, group := range nodes {
+			group.Spec.AdditionalLoadBalancers = c.NodeLoadBalancers
+		}
+	}
+
+	if len(c.MasterLoadBalancers) > 0 {
+		for _, group := range masters {
+			group.Spec.AdditionalLoadBalancers = c.MasterLoadBalancers
 		}
 	}
 
