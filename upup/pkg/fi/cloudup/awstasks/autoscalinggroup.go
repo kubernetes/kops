@@ -374,14 +374,14 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		if attachLoadBalancerTargetGroupsRequest.TargetGroupARNs != nil {
 			_, err := t.Cloud.Autoscaling().AttachLoadBalancerTargetGroups(attachLoadBalancerTargetGroupsRequest)
 			if err != nil {
-				return fmt.Errorf("error updating AutoscalingGroup targetGroups: %v", err)
+				return fmt.Errorf("error attaching AutoscalingGroup targetGroups: %v", err)
 			}
 		}
 
 		if detachLoadBalancerTargetGroupsRequest.TargetGroupARNs != nil {
 			_, err := t.Cloud.Autoscaling().DetachLoadBalancerTargetGroups(detachLoadBalancerTargetGroupsRequest)
 			if err != nil {
-				return fmt.Errorf("error updating AutoscalingGroup targetGroups: %v", err)
+				return fmt.Errorf("error detaching AutoscalingGroup targetGroups: %v", err)
 			}
 		}
 	}
