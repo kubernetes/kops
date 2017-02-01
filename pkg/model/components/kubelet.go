@@ -20,6 +20,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
+	"strings"
 )
 
 // KubeletOptionsBuilder adds options for kubelets
@@ -65,6 +66,24 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 		if usesKubenet {
 			options.Kubelet.ReconcileCIDR = fi.Bool(true)
+		}
+	}
+
+	if kubernetesVersion.Major == 1 && kubernetesVersion.Minor >= 4 {
+		// For pod eviction in low memory or empty disk situations
+		if options.Kubelet.EvictionHard == nil {
+			evictionHard := []string{
+				// TODO: Some people recommend 250Mi, but this would hurt small machines
+				"memory.available<100Mi",
+
+				// Disk eviction (evict old images)
+				// We don't need to specify both, but it seems harmless / safer
+				"nodefs.available<10%",
+				"nodefs.inodesFree<5%",
+				"imagefs.available<10%",
+				"imagefs.inodesFree<5%",
+			}
+			options.Kubelet.EvictionHard = fi.String(strings.Join(evictionHard, ","))
 		}
 	}
 
