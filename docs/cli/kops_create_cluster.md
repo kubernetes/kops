@@ -23,6 +23,8 @@ kops create cluster
       --image string                    Image to use
       --kubernetes-version string       Version of kubernetes to run (defaults to version in channel)
       --master-security-groups string   Add precreated additional security groups to masters.
+      --master-target-groups string     Associate masters with self-managed target groups
+      --master-load-balancers string    Associate masters with self-managed load balancers
       --master-size string              Set instance size for masters
       --master-zones string             Zones in which to run masters (must be an odd number)
       --model string                    Models to apply (separate multiple models with commas) (default "config,proto,cloudup")
@@ -30,6 +32,8 @@ kops create cluster
       --networking string               Networking mode to use.  kubenet (default), classic, external, cni, kopeio-vxlan, weave, calico. (default "kubenet")
       --node-count int                  Set the number of nodes
       --node-security-groups string     Add precreated additional security groups to nodes.
+      --node-target-groups string       Associate nodes with self-managed target groups
+      --node-load-balancers string      Associate nodes with self-managed load balancers
       --node-size string                Set instance size for nodes
       --out string                      Path to write any local output
       --project string                  Project to use (must be set on GCE)
