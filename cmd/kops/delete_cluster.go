@@ -118,7 +118,8 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 			}
 		}
 
-		d := &kutil.DeleteCluster{}
+		// Todo lets make this smart enough to detect the cloud and switch on the ClusterResources interface
+		d := &kutil.AwsCluster{}
 		d.ClusterName = clusterName
 		d.Cloud = cloud
 
