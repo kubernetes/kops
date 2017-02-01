@@ -59,7 +59,7 @@ The officially supported way of installing the tool is with `pip` as in
 pip install awscli
 ```
 
-You can also grab the tool with homebrew, although this is not officially supported.
+You can also grab the tool with homebrew, although this is not officially supported by AWS.
 
 ```bash
 brew update && brew install awscli
