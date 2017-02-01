@@ -73,7 +73,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Use:   "cluster",
 		Short: "Rolling update a cluster",
 		Long: `Rolling update a cluster instance groups.
-		
+
 This command updates the running instances to match the cloud specifications.
 
 To perform rolling update, you need to update the cloud resources first with "kops update cluster"`,
@@ -193,16 +193,6 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		return err
 	}
 
-	d := &kutil.RollingUpdateCluster{
-		MasterInterval: options.MasterInterval,
-		NodeInterval:   options.NodeInterval,
-		Force:          options.Force,
-		K8sClient:      k8sClient,
-		ForceDrain:     options.ForceDrain,
-		FailOnValidate: options.FailOnValidate,
-	}
-	d.Cloud = cloud
-
 	warnUnmatched := true
 	groups, err := kutil.FindCloudInstanceGroups(cloud, cluster, instanceGroups, warnUnmatched, nodes)
 	if err != nil {
@@ -275,5 +265,17 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		return nil
 	}
 
-	return d.RollingUpdate(groups, list, options.CloudOnly, options.ClusterName)
+	d := &kutil.RollingUpdateCluster{
+		MasterInterval: options.MasterInterval,
+		NodeInterval:   options.NodeInterval,
+		Force:          options.Force,
+		K8sClient:      k8sClient,
+		ForceDrain:     options.ForceDrain,
+		FailOnValidate: options.FailOnValidate,
+		CloudOnly:      options.CloudOnly,
+		ClusterName:    options.ClusterName,
+		Cloud:          cloud,
+	}
+
+	return d.RollingUpdate(groups, list)
 }

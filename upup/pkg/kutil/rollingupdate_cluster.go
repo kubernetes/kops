@@ -16,6 +16,8 @@ limitations under the License.
 
 package kutil
 
+// TODO move this business logic into a service than can be called via the api
+
 import (
 	"fmt"
 	"sync"
@@ -46,6 +48,9 @@ type RollingUpdateCluster struct {
 	FailOnValidate bool
 
 	Force bool
+
+	CloudOnly   bool
+	ClusterName string
 }
 
 // RollingUpdateData is used to pass information to perform a rolling update
@@ -129,7 +134,7 @@ func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroup
 // TODO: for instance should we check if Petsets exist when upgrading 1.4.x -> 1.5.x
 
 // Perform a rolling update on a K8s Cluster
-func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, instanceGroups *api.InstanceGroupList, cloudOnly bool, clusterName string) error {
+func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, instanceGroups *api.InstanceGroupList) error {
 	if len(groups) == 0 {
 		return nil
 	}
@@ -166,18 +171,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 
 				defer wg.Done()
 
-				rollingUpdateData := &RollingUpdateData{
-					Cloud:             c.Cloud,
-					Force:             c.Force,
-					Interval:          c.MasterInterval,
-					InstanceGroupList: instanceGroups,
-					IsBastion:         true,
-					K8sClient:         c.K8sClient,
-					FailOnValidate:    c.FailOnValidate,
-					ForceDrain:        c.ForceDrain,
-					CloudOnly:         cloudOnly,
-					ClusterName:       clusterName,
-				}
+				rollingUpdateData := c.CreateRollingUpdateData(instanceGroups, true)
 
 				err := group.RollingUpdate(rollingUpdateData)
 
@@ -218,8 +212,8 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 					K8sClient:         c.K8sClient,
 					FailOnValidate:    c.FailOnValidate,
 					ForceDrain:        c.ForceDrain,
-					CloudOnly:         cloudOnly,
-					ClusterName:       clusterName,
+					CloudOnly:         c.CloudOnly,
+					ClusterName:       c.ClusterName,
 				}
 
 				err := group.RollingUpdate(rollingUpdateData)
@@ -248,18 +242,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 
 				defer wg.Done()
 
-				rollingUpdateData := &RollingUpdateData{
-					Cloud:             c.Cloud,
-					Force:             c.Force,
-					Interval:          c.NodeInterval,
-					InstanceGroupList: instanceGroups,
-					IsBastion:         false,
-					K8sClient:         c.K8sClient,
-					FailOnValidate:    c.FailOnValidate,
-					ForceDrain:        c.ForceDrain,
-					CloudOnly:         cloudOnly,
-					ClusterName:       clusterName,
-				}
+				rollingUpdateData := c.CreateRollingUpdateData(instanceGroups, false)
 
 				err := group.RollingUpdate(rollingUpdateData)
 
@@ -280,6 +263,21 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 
 	glog.Info("\nRolling update completed!\n")
 	return nil
+}
+
+func (c *RollingUpdateCluster) CreateRollingUpdateData(instanceGroups *api.InstanceGroupList, isBastion bool) *RollingUpdateData {
+	return &RollingUpdateData{
+		Cloud:             c.Cloud,
+		Force:             c.Force,
+		Interval:          c.NodeInterval,
+		InstanceGroupList: instanceGroups,
+		IsBastion:         isBastion,
+		K8sClient:         c.K8sClient,
+		FailOnValidate:    c.FailOnValidate,
+		ForceDrain:        c.ForceDrain,
+		CloudOnly:         c.CloudOnly,
+		ClusterName:       c.ClusterName,
+	}
 }
 
 // CloudInstanceGroup is the AWS ASG backing an InstanceGroup
