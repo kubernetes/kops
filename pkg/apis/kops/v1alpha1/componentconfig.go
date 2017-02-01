@@ -217,8 +217,9 @@ type KubeletConfigSpec struct {
 	// maxPods is the number of pods that can run on this Kubelet.
 	MaxPods *int32 `json:"maxPods,omitempty" flag:"max-pods"`
 
-	//// nvidiaGPUs is the number of NVIDIA GPU devices on this node.
-	//NvidiaGPUs int32 `json:"nvidiaGPUs"`
+	// nvidiaGPUs is the number of NVIDIA GPU devices on this node.
+	NvidiaGPUs int32 `json:"nvidiaGPUs,omitempty" flag:"experimental-nvidia-gpus"`
+
 	//// dockerExecHandlerName is the handler to use when executing a command
 	//// in a container. Valid values are 'native' and 'nsenter'. Defaults to
 	//// 'native'.
