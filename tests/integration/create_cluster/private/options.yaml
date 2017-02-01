@@ -5,6 +5,16 @@ Cloud: aws
 Topology: private
 Networking: kopeio-vxlan
 Bastion: true
+NodeTargetGroups:
+- arn:aws:elasticloadbalancing:eu-west-1:123456789012:targetgroup/targetgroupname/123ab4567890c1d1
+MasterTargetGroups:
+- arn:aws:elasticloadbalancing:eu-west-1:123456789012:targetgroup/targetgroupname/123ab4567890c1d2
+NodeLoadBalancers:
+- load-balancer-name-1
+- load-balancer-name-2
+MasterLoadBalancers:
+- load-balancer-name-3
+- load-balancer-name-4
 NodeSecurityGroups:
 - sg-exampleid
 - sg-exampleid2
