@@ -36,7 +36,6 @@ type ClusterResources interface {
 	DeleteResources(resources map[string]*ResourceTracker) error
 }
 
-
 // AwsCluster is an implementation of ClusterResources
 // The algorithm is pretty simple: it discovers all the resources it can (primary using tags)
 // There are a few tweaks to that approach, like choosing a default ordering, but it is not much
@@ -84,7 +83,7 @@ func (c *AwsCluster) ListResources() (map[string]*ResourceTracker, error) {
 			return nil, err
 		}
 		for _, t := range trackers {
-			resources[t.Type + ":" + t.ID] = t
+			resources[t.Type+":"+t.ID] = t
 		}
 	}
 
@@ -105,8 +104,8 @@ func (c *AwsCluster) ListResources() (map[string]*ResourceTracker, error) {
 				if vpcID == "" || igwID == "" {
 					continue
 				}
-				if resources["vpc:" + vpcID] != nil && resources["internet-gateway:" + igwID] == nil {
-					resources["internet-gateway:" + igwID] = &ResourceTracker{
+				if resources["vpc:"+vpcID] != nil && resources["internet-gateway:"+igwID] == nil {
+					resources["internet-gateway:"+igwID] = &ResourceTracker{
 						Name:    FindName(igw.Tags),
 						ID:      igwID,
 						Type:    "internet-gateway",
@@ -133,7 +132,7 @@ func (c *AwsCluster) ListResources() (map[string]*ResourceTracker, error) {
 		}
 
 		for _, t := range lcs {
-			resources[t.Type + ":" + t.ID] = t
+			resources[t.Type+":"+t.ID] = t
 		}
 	}
 
@@ -157,7 +156,7 @@ func (c *AwsCluster) ListResources() (map[string]*ResourceTracker, error) {
 		}
 
 		for _, t := range natGateways {
-			resources[t.Type + ":" + t.ID] = t
+			resources[t.Type+":"+t.ID] = t
 		}
 	}
 
