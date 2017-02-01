@@ -114,6 +114,14 @@ func BuildFlags(options interface{}) (string, error) {
 
 		case metav1.Duration:
 			vString := v.Duration.String()
+
+			// See https://github.com/kubernetes/kubernetes/issues/40783
+			// Go renders a time.Duration to `0` in <= 1.6, and `0s` in >= 1.7
+			// We force it to be `0s`, regardless of value
+			if vString == "0" {
+				vString = "0s"
+			}
+
 			if vString != flagEmpty {
 				flag = fmt.Sprintf("--%s=%s", flagName, vString)
 			}
