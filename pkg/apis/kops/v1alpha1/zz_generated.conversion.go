@@ -1188,6 +1188,12 @@ func autoConvert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.ImageGCHighThresholdPercent = in.ImageGCHighThresholdPercent
 	out.ImageGCLowThresholdPercent = in.ImageGCLowThresholdPercent
 	out.TerminatedPodGCThreshold = in.TerminatedPodGCThreshold
+	out.EvictionHard = in.EvictionHard
+	out.EvictionSoft = in.EvictionSoft
+	out.EvictionSoftGracePeriod = in.EvictionSoftGracePeriod
+	out.EvictionPressureTransitionPeriod = in.EvictionPressureTransitionPeriod
+	out.EvictionMaxPodGracePeriod = in.EvictionMaxPodGracePeriod
+	out.EvictionMinimumReclaim = in.EvictionMinimumReclaim
 	return nil
 }
 
@@ -1225,6 +1231,12 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec(in *kops.K
 	out.ImageGCHighThresholdPercent = in.ImageGCHighThresholdPercent
 	out.ImageGCLowThresholdPercent = in.ImageGCLowThresholdPercent
 	out.TerminatedPodGCThreshold = in.TerminatedPodGCThreshold
+	out.EvictionHard = in.EvictionHard
+	out.EvictionSoft = in.EvictionSoft
+	out.EvictionSoftGracePeriod = in.EvictionSoftGracePeriod
+	out.EvictionPressureTransitionPeriod = in.EvictionPressureTransitionPeriod
+	out.EvictionMaxPodGracePeriod = in.EvictionMaxPodGracePeriod
+	out.EvictionMinimumReclaim = in.EvictionMinimumReclaim
 	return nil
 }
 
