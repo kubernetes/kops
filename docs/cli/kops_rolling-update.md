@@ -24,5 +24,5 @@ rolling update clusters
 
 ### SEE ALSO
 * [kops](kops.md)	 - kops is kubernetes ops
-* [kops rolling-update cluster](kops_rolling-update_cluster.md)	 - rolling-update cluster
+* [kops rolling-update cluster](kops_rolling-update_cluster.md)	 - Rolling update a cluster
 
