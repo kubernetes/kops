@@ -342,8 +342,17 @@ func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group, nodeMa
 func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData) error {
 
 	// we should not get here, but hey I am going to check
-	if rollingUpdateData == nil || rollingUpdateData.InstanceGroupList == nil || rollingUpdateData.K8sClient == nil {
-		return fmt.Errorf("RollingUpdate is missing a data element: %v", rollingUpdateData)
+	if rollingUpdateData == nil {
+		return fmt.Errorf("RollingUpdate cannot be nil")
+	}
+
+	// Do not need a k8s client if you are doing cloud only
+	if rollingUpdateData.K8sClient == nil && !rollingUpdateData.CloudOnly {
+		return fmt.Errorf("RollingUpdate is missing a k8s client")
+	}
+
+	if rollingUpdateData.InstanceGroupList == nil {
+		return fmt.Errorf("RollingUpdate is missing a the InstanceGroupList")
 	}
 
 	c := rollingUpdateData.Cloud.(awsup.AWSCloud)
@@ -353,6 +362,7 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData)
 		update = append(update, n.Ready...)
 	}
 
+	// TODO is this logic correct
 	if !rollingUpdateData.IsBastion && rollingUpdateData.FailOnValidate && !rollingUpdateData.CloudOnly {
 		_, err := validate.ValidateCluster(rollingUpdateData.ClusterName, rollingUpdateData.InstanceGroupList, rollingUpdateData.K8sClient)
 		if err != nil {
@@ -363,20 +373,24 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData)
 	for _, u := range update {
 
 		if !rollingUpdateData.IsBastion {
-			drain, err := NewDrainOptions(nil, u.Node.ClusterName)
-
-			if err != nil {
-				glog.Warningf("Error creating drain: %v", err)
-				if rollingUpdateData.ForceDrain == false {
-					return err
-				}
+			if rollingUpdateData.CloudOnly {
+				glog.Warningf("not draining nodes - cloud only is set")
 			} else {
-				err = drain.DrainTheNode(u.Node.Name)
+				drain, err := NewDrainOptions(nil, u.Node.ClusterName)
+
 				if err != nil {
-					glog.Warningf("setupErr: %v", err)
-				}
-				if rollingUpdateData.ForceDrain == false {
-					return err
+					glog.Warningf("Error creating drain: %v", err)
+					if rollingUpdateData.ForceDrain == false {
+						return err
+					}
+				} else {
+					err = drain.DrainTheNode(u.Node.Name)
+					if err != nil {
+						glog.Warningf("setupErr: %v", err)
+					}
+					if rollingUpdateData.ForceDrain == false {
+						return err
+					}
 				}
 			}
 		}
@@ -406,6 +420,7 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData)
 			for i := 0; i <= retries; i++ {
 
 				if rollingUpdateData.CloudOnly {
+					glog.Warningf("sleeping only - not validating nodes as cloudonly flag is set")
 					time.Sleep(rollingUpdateData.Interval)
 				} else {
 					_, err = validate.ValidateCluster(rollingUpdateData.ClusterName, rollingUpdateData.InstanceGroupList, rollingUpdateData.K8sClient)
@@ -419,7 +434,9 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData)
 				}
 			}
 
-			if err != nil && rollingUpdateData.FailOnValidate && !rollingUpdateData.CloudOnly {
+			if rollingUpdateData.CloudOnly {
+				glog.Warningf("not validating nodes as cloudonly flag is set")
+			} else if err != nil && rollingUpdateData.FailOnValidate {
 				return fmt.Errorf("validation timed out while performing rolling update: %v", err)
 			}
 		}

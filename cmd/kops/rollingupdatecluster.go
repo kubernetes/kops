@@ -145,6 +145,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 			return fmt.Errorf("cannot build kube client for %q: %v", contextName, err)
 		}
 
+		// TODO use k8s client here so that we can be backwards compat
 		nodeList, err := k8sClient.Core().Nodes().List(v1.ListOptions{})
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to reach the kubernetes API.\n")
