@@ -487,13 +487,13 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	l.Builders = append(l.Builders, &model.AutoscalingGroupModelBuilder{
-		KopsModelContext:    modelContext,
-		NodeUpConfigBuilder: renderNodeUpConfig,
-		NodeUpSourceHash:    "",
-		NodeUpSource:        c.NodeUpSource,
-		PreInstallScriptHash: "",
-		PreInstallScriptSource: c.PreInstallScriptSource,
-		PostInstallScriptHash: "",
+		KopsModelContext:        modelContext,
+		NodeUpConfigBuilder:     renderNodeUpConfig,
+		NodeUpSourceHash:        "",
+		NodeUpSource:            c.NodeUpSource,
+		PreInstallScriptHash:    "",
+		PreInstallScriptSource:  c.PreInstallScriptSource,
+		PostInstallScriptHash:   "",
 		PostInstallScriptSource: c.PostInstallScriptSource,
 	})
 

@@ -23,10 +23,10 @@ type AutoscalingGroupModelBuilder struct {
 	NodeUpSourceHash string
 
 	PreInstallScriptSource string
-	PreInstallScriptHash string
+	PreInstallScriptHash   string
 
 	PostInstallScriptSource string
-	PostInstallScriptHash string
+	PostInstallScriptHash   string
 
 	NodeUpConfigBuilder func(ig *kops.InstanceGroup) (*nodeup.NodeUpConfig, error)
 }
