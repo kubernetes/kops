@@ -27,5 +27,5 @@ kops edit federation
 ```
 
 ### SEE ALSO
-* [kops edit](kops_edit.md)	 - edit items
+* [kops edit](kops_edit.md)	 - Edit resource
 

@@ -11,6 +11,12 @@ Delete an instancegroup configuration.
 kops delete instancegroup
 ```
 
+### Options
+
+```
+  -y, --yes   Specify --yes to immediately delete the instance group
+```
+
 ### Options inherited from parent commands
 
 ```

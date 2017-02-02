@@ -28,7 +28,7 @@ It allows you to create, destroy, upgrade and maintain clusters.
 * [kops create](kops_create.md)	 - Create a resource by filename or stdin
 * [kops delete](kops_delete.md)	 - delete clusters
 * [kops describe](kops_describe.md)	 - describe objects
-* [kops edit](kops_edit.md)	 - edit items
+* [kops edit](kops_edit.md)	 - Edit resource
 * [kops export](kops_export.md)	 - export clusters/kubecfg
 * [kops get](kops_get.md)	 - list or get objects
 * [kops import](kops_import.md)	 - import clusters

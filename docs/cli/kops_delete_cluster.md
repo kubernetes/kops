@@ -17,7 +17,7 @@ kops delete cluster CLUSTERNAME [--yes]
       --external        Delete an external cluster
       --region string   region
       --unregister      Don't delete cloud resources, just unregister the cluster
-      --yes             Delete without confirmation
+  -y, --yes             Specify --yes to delete the cluster
 ```
 
 ### Options inherited from parent commands
