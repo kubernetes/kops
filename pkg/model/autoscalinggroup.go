@@ -173,6 +173,22 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				t.Subnets = append(t.Subnets, b.LinkToSubnet(subnet))
 			}
 
+			if ig.Spec.AdditionalTargetGroups != nil {
+				for i := range ig.Spec.AdditionalTargetGroups {
+					t.TargetGroupARNs = append(t.TargetGroupARNs, &ig.Spec.AdditionalTargetGroups[i])
+				}
+			} else {
+				t.TargetGroupARNs = make([]*string, 0)
+			}
+
+			if ig.Spec.AdditionalLoadBalancers != nil {
+				for i := range ig.Spec.AdditionalLoadBalancers {
+					t.LoadBalancerNames = append(t.LoadBalancerNames, &ig.Spec.AdditionalLoadBalancers[i])
+				}
+			} else {
+				t.LoadBalancerNames = make([]*string, 0)
+			}
+
 			tags, err := b.CloudTagsForInstanceGroup(ig)
 			if err != nil {
 				return fmt.Errorf("error building cloud tags: %v", err)

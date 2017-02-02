@@ -35,10 +35,12 @@ import (
 type AutoscalingGroup struct {
 	Name *string
 
-	MinSize *int64
-	MaxSize *int64
-	Subnets []*Subnet
-	Tags    map[string]string
+	LoadBalancerNames []*string
+	MinSize           *int64
+	MaxSize           *int64
+	Subnets           []*Subnet
+	TargetGroupARNs   []*string
+	Tags              map[string]string
 
 	LaunchConfiguration *LaunchConfiguration
 }
@@ -107,6 +109,17 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 	actual.MinSize = g.MinSize
 	actual.MaxSize = g.MaxSize
 
+	actual.LoadBalancerNames = g.LoadBalancerNames
+	actual.TargetGroupARNs = g.TargetGroupARNs
+
+	if actual.LoadBalancerNames == nil {
+		actual.LoadBalancerNames = make([]*string, 0)
+	}
+
+	if actual.TargetGroupARNs == nil {
+		actual.TargetGroupARNs = make([]*string, 0)
+	}
+
 	if g.VPCZoneIdentifier != nil {
 		subnets := strings.Split(*g.VPCZoneIdentifier, ",")
 		for _, subnet := range subnets {
@@ -145,6 +158,7 @@ func (s *AutoscalingGroup) CheckChanges(a, e, changes *AutoscalingGroup) error {
 			return fi.RequiredField("Name")
 		}
 	}
+
 	return nil
 }
 
@@ -154,6 +168,96 @@ func (e *AutoscalingGroup) buildTags(cloud fi.Cloud) map[string]string {
 		tags[k] = v
 	}
 	return tags
+}
+
+func (a *AutoscalingGroup) checkLoadBalancersAttachments(e *AutoscalingGroup, c *AutoscalingGroup) *autoscaling.AttachLoadBalancersInput {
+	var attachLoadBalancersRequest *autoscaling.AttachLoadBalancersInput
+	attachLoadBalancersRequest = &autoscaling.AttachLoadBalancersInput{}
+	attachLoadBalancersRequest.AutoScalingGroupName = e.Name
+
+	if c.LoadBalancerNames != nil {
+		for i := range e.LoadBalancerNames {
+			attach := true
+			for j := range a.LoadBalancerNames {
+				if *a.LoadBalancerNames[i] == *e.LoadBalancerNames[j] {
+					attach = false
+				}
+			}
+			if attach == true {
+				attachLoadBalancersRequest.LoadBalancerNames = append(attachLoadBalancersRequest.LoadBalancerNames, e.LoadBalancerNames[i])
+				c.LoadBalancerNames = nil
+			}
+		}
+	}
+	return attachLoadBalancersRequest
+}
+
+func (a *AutoscalingGroup) checkLoadBalancersDetachments(e *AutoscalingGroup, c *AutoscalingGroup) *autoscaling.DetachLoadBalancersInput {
+	var detachLoadBalancersRequest *autoscaling.DetachLoadBalancersInput
+	detachLoadBalancersRequest = &autoscaling.DetachLoadBalancersInput{}
+	detachLoadBalancersRequest.AutoScalingGroupName = e.Name
+
+	if c.LoadBalancerNames != nil {
+		for i := range a.LoadBalancerNames {
+			detach := true
+			for j := range e.LoadBalancerNames {
+				if *a.LoadBalancerNames[i] == *e.LoadBalancerNames[j] {
+					detach = false
+				}
+			}
+			if detach == true {
+				detachLoadBalancersRequest.LoadBalancerNames = append(detachLoadBalancersRequest.LoadBalancerNames, a.LoadBalancerNames[i])
+				c.LoadBalancerNames = nil
+			}
+		}
+	}
+	return detachLoadBalancersRequest
+}
+
+func (a *AutoscalingGroup) checkLoadBalancerTargetGroupsAttachments(e *AutoscalingGroup, c *AutoscalingGroup) *autoscaling.AttachLoadBalancerTargetGroupsInput {
+	var attachLoadBalancerTargetGroupsRequest *autoscaling.AttachLoadBalancerTargetGroupsInput
+	attachLoadBalancerTargetGroupsRequest = &autoscaling.AttachLoadBalancerTargetGroupsInput{}
+	attachLoadBalancerTargetGroupsRequest.AutoScalingGroupName = e.Name
+
+	if c.TargetGroupARNs != nil {
+		for i := range a.TargetGroupARNs {
+			attach := true
+			for j := range e.TargetGroupARNs {
+				if *a.TargetGroupARNs[i] == *e.TargetGroupARNs[j] {
+					attach = false
+				}
+			}
+			if attach == true {
+				attachLoadBalancerTargetGroupsRequest.TargetGroupARNs = append(attachLoadBalancerTargetGroupsRequest.TargetGroupARNs, a.TargetGroupARNs[i])
+				c.TargetGroupARNs = nil
+			}
+		}
+	}
+
+	return attachLoadBalancerTargetGroupsRequest
+}
+
+func (a *AutoscalingGroup) checkLoadBalancerTargetGroupsDetachments(e *AutoscalingGroup, c *AutoscalingGroup) *autoscaling.DetachLoadBalancerTargetGroupsInput {
+	var detachLoadBalancerTargetGroupsRequest *autoscaling.DetachLoadBalancerTargetGroupsInput
+	detachLoadBalancerTargetGroupsRequest = &autoscaling.DetachLoadBalancerTargetGroupsInput{}
+	detachLoadBalancerTargetGroupsRequest.AutoScalingGroupName = e.Name
+
+	if c.TargetGroupARNs != nil {
+		for i := range a.TargetGroupARNs {
+			detach := true
+			for j := range e.TargetGroupARNs {
+				if *a.TargetGroupARNs[i] == *e.TargetGroupARNs[j] {
+					detach = false
+				}
+			}
+			if detach == true {
+				detachLoadBalancerTargetGroupsRequest.TargetGroupARNs = append(detachLoadBalancerTargetGroupsRequest.TargetGroupARNs, a.TargetGroupARNs[i])
+				c.TargetGroupARNs = nil
+			}
+		}
+	}
+
+	return detachLoadBalancerTargetGroupsRequest
 }
 
 func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *AutoscalingGroup) error {
@@ -176,6 +280,8 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		request.LaunchConfigurationName = e.LaunchConfiguration.ID
 		request.MinSize = e.MinSize
 		request.MaxSize = e.MaxSize
+		request.LoadBalancerNames = e.LoadBalancerNames
+		request.TargetGroupARNs = e.TargetGroupARNs
 
 		var subnetIDs []string
 		for _, s := range e.Subnets {
@@ -215,6 +321,16 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			changes.Subnets = nil
 		}
 
+		if changes.TargetGroupARNs != nil {
+			changes.TargetGroupARNs = e.TargetGroupARNs
+		}
+
+		attachLoadBalancersRequest := a.checkLoadBalancersAttachments(e, changes)
+		detachLoadBalancersRequest := a.checkLoadBalancersDetachments(e, changes)
+
+		attachLoadBalancerTargetGroupsRequest := a.checkLoadBalancerTargetGroupsAttachments(e, changes)
+		detachLoadBalancerTargetGroupsRequest := a.checkLoadBalancerTargetGroupsDetachments(e, changes)
+
 		var tagsRequest *autoscaling.CreateOrUpdateTagsInput
 		if changes.Tags != nil {
 			tagsRequest = &autoscaling.CreateOrUpdateTagsInput{}
@@ -238,6 +354,34 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			_, err := t.Cloud.Autoscaling().CreateOrUpdateTags(tagsRequest)
 			if err != nil {
 				return fmt.Errorf("error updating AutoscalingGroup tags: %v", err)
+			}
+		}
+
+		if attachLoadBalancersRequest.LoadBalancerNames != nil {
+			_, err := t.Cloud.Autoscaling().AttachLoadBalancers(attachLoadBalancersRequest)
+			if err != nil {
+				return fmt.Errorf("error attaching AutoscalingGroup loadBalancers: %v", err)
+			}
+		}
+
+		if detachLoadBalancersRequest.LoadBalancerNames != nil {
+			_, err := t.Cloud.Autoscaling().DetachLoadBalancers(detachLoadBalancersRequest)
+			if err != nil {
+				return fmt.Errorf("error detaching AutoscalingGroup loadBalancers: %v", err)
+			}
+		}
+
+		if attachLoadBalancerTargetGroupsRequest.TargetGroupARNs != nil {
+			_, err := t.Cloud.Autoscaling().AttachLoadBalancerTargetGroups(attachLoadBalancerTargetGroupsRequest)
+			if err != nil {
+				return fmt.Errorf("error attaching AutoscalingGroup targetGroups: %v", err)
+			}
+		}
+
+		if detachLoadBalancerTargetGroupsRequest.TargetGroupARNs != nil {
+			_, err := t.Cloud.Autoscaling().DetachLoadBalancerTargetGroups(detachLoadBalancerTargetGroupsRequest)
+			if err != nil {
+				return fmt.Errorf("error detaching AutoscalingGroup targetGroups: %v", err)
 			}
 		}
 	}
