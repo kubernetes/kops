@@ -185,7 +185,7 @@ func (c *KubeconfigBuilder) WriteKubecfg() error {
 		}
 	}
 	fmt.Printf("Wrote config for %s to %q\n", c.Context, c.KubeconfigPath)
-	fmt.Printf("Kops has changed your kubectl context to %s\n", c.Context)
+	fmt.Printf("Kops has set your kubectl context to %s\n", c.Context)
 	return nil
 }
 

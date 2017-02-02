@@ -44,17 +44,6 @@ const (
 	TypeLoadBalancer            = "load-balancer"
 )
 
-// DeleteCluster implements deletion of cluster cloud resources
-// The algorithm is pretty simple: it discovers all the resources it can (primary using tags),
-// and then it repeatedly attempts to delete them all until they are all deleted.
-// There are a few tweaks to that approach, like choosing a default ordering, but it is not much
-// smarter.  Cluster deletion is a fairly rare operation anyway, and also some dependencies are invisible
-// (e.g. ELB dependencies).
-type DeleteCluster struct {
-	ClusterName string
-	Cloud       fi.Cloud
-}
-
 type ResourceTracker struct {
 	Name string
 	Type string
@@ -100,125 +89,6 @@ func buildEC2Filters(cloud fi.Cloud) []*ec2.Filter {
 		filters = append(filters, filter)
 	}
 	return filters
-}
-
-func (c *DeleteCluster) ListResources() (map[string]*ResourceTracker, error) {
-	cloud := c.Cloud.(awsup.AWSCloud)
-
-	resources := make(map[string]*ResourceTracker)
-
-	listFunctions := []listFn{
-		// EC2
-		ListInstances,
-		ListKeypairs,
-		ListSecurityGroups,
-		ListVolumes,
-		// EC2 VPC
-		ListDhcpOptions,
-		ListInternetGateways,
-		ListRouteTables,
-		ListSubnets,
-		ListVPCs,
-		// ELBs
-		ListELBs,
-		// ASG
-		ListAutoScalingGroups,
-
-		// Route 53
-		ListRoute53Records,
-		// IAM
-		ListIAMInstanceProfiles,
-		ListIAMRoles,
-	}
-	for _, fn := range listFunctions {
-		trackers, err := fn(cloud, c.ClusterName)
-		if err != nil {
-			return nil, err
-		}
-		for _, t := range trackers {
-			resources[t.Type+":"+t.ID] = t
-		}
-	}
-
-	{
-		// Gateways weren't tagged in kube-up
-		// If we are deleting the VPC, we should delete the attached gateway
-		// (no real reason not to; easy to recreate; no real state etc)
-
-		gateways, err := DescribeInternetGatewaysIgnoreTags(cloud)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, igw := range gateways {
-			for _, attachment := range igw.Attachments {
-				vpcID := aws.StringValue(attachment.VpcId)
-				igwID := aws.StringValue(igw.InternetGatewayId)
-				if vpcID == "" || igwID == "" {
-					continue
-				}
-				if resources["vpc:"+vpcID] != nil && resources["internet-gateway:"+igwID] == nil {
-					resources["internet-gateway:"+igwID] = &ResourceTracker{
-						Name:    FindName(igw.Tags),
-						ID:      igwID,
-						Type:    "internet-gateway",
-						deleter: DeleteInternetGateway,
-					}
-				}
-			}
-		}
-	}
-
-	{
-		// We delete a launch configuration if it is bound to one of the tagged security groups
-		securityGroups := sets.NewString()
-		for k := range resources {
-			if !strings.HasPrefix(k, "security-group:") {
-				continue
-			}
-			id := strings.TrimPrefix(k, "security-group:")
-			securityGroups.Insert(id)
-		}
-		lcs, err := FindAutoScalingLaunchConfigurations(cloud, securityGroups)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, t := range lcs {
-			resources[t.Type+":"+t.ID] = t
-		}
-	}
-
-	if err := addUntaggedRouteTables(cloud, c.ClusterName, resources); err != nil {
-		return nil, err
-	}
-
-	{
-		// We delete a NAT gateway if it is linked to our route table
-		routeTableIds := sets.NewString()
-		for k := range resources {
-			if !strings.HasPrefix(k, ec2.ResourceTypeRouteTable+":") {
-				continue
-			}
-			id := strings.TrimPrefix(k, ec2.ResourceTypeRouteTable+":")
-			routeTableIds.Insert(id)
-		}
-		natGateways, err := FindNatGateways(cloud, routeTableIds)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, t := range natGateways {
-			resources[t.Type+":"+t.ID] = t
-		}
-	}
-
-	for k, t := range resources {
-		if t.done {
-			delete(resources, k)
-		}
-	}
-	return resources, nil
 }
 
 func addUntaggedRouteTables(cloud awsup.AWSCloud, clusterName string, resources map[string]*ResourceTracker) error {
@@ -268,7 +138,7 @@ func addUntaggedRouteTables(cloud awsup.AWSCloud, clusterName string, resources 
 	return nil
 }
 
-func (c *DeleteCluster) DeleteResources(resources map[string]*ResourceTracker) error {
+func (c *AwsCluster) DeleteResources(resources map[string]*ResourceTracker) error {
 	depMap := make(map[string][]string)
 
 	done := make(map[string]*ResourceTracker)
@@ -565,6 +435,10 @@ func DeleteSecurityGroup(cloud fi.Cloud, t *ResourceTracker) error {
 		}
 		response, err := c.EC2().DescribeSecurityGroups(request)
 		if err != nil {
+			if awsup.AWSErrorCode(err) == "InvalidGroup.NotFound" {
+				glog.V(2).Infof("Got InvalidGroup.NotFound error describing SecurityGroup %q; will treat as already-deleted", id)
+				return nil
+			}
 			return fmt.Errorf("error describing SecurityGroup %q: %v", id, err)
 		}
 
@@ -842,7 +716,10 @@ func DeleteSubnet(cloud fi.Cloud, tracker *ResourceTracker) error {
 	}
 	_, err := c.EC2().DeleteSubnet(request)
 	if err != nil {
-		if IsDependencyViolation(err) {
+		if awsup.AWSErrorCode(err) == "InvalidSubnetID.NotFound" {
+			glog.V(2).Infof("Got InvalidSubnetID.NotFound error deleting subnet %q; will treat as already-deleted", id)
+			return nil
+		} else if IsDependencyViolation(err) {
 			return err
 		}
 		return fmt.Errorf("error deleting Subnet %q: %v", id, err)
@@ -1002,6 +879,11 @@ func DeleteRouteTable(cloud fi.Cloud, r *ResourceTracker) error {
 	}
 	_, err := c.EC2().DeleteRouteTable(request)
 	if err != nil {
+		if awsup.AWSErrorCode(err) == "InvalidRouteTableID.NotFound" {
+			glog.V(2).Infof("Got InvalidRouteTableID.NotFound error describing RouteTable %q; will treat as already-deleted", id)
+			return nil
+		}
+
 		if IsDependencyViolation(err) {
 			return err
 		}
@@ -1731,6 +1613,11 @@ func DeleteElasticIP(cloud fi.Cloud, t *ResourceTracker) error {
 	}
 	_, err := c.EC2().ReleaseAddress(request)
 	if err != nil {
+		if awsup.AWSErrorCode(err) == "InvalidAllocationID.NotFound" {
+			glog.V(2).Infof("Got InvalidAllocationID.NotFound error describing ElasticIP %q; will treat as already-deleted", id)
+			return nil
+		}
+
 		if IsDependencyViolation(err) {
 			return err
 		}
@@ -1892,6 +1779,11 @@ func DeleteIAMRole(cloud fi.Cloud, r *ResourceTracker) error {
 			return true
 		})
 		if err != nil {
+			if awsup.AWSErrorCode(err) == "NoSuchEntity" {
+				glog.V(2).Infof("Got NoSuchEntity describing IAM RolePolicy %q; will treat as already-deleted", roleName)
+				return nil
+			}
+
 			return fmt.Errorf("error listing IAM role policies for %q: %v", roleName, err)
 		}
 	}
@@ -1929,9 +1821,6 @@ func ListIAMRoles(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error
 	remove["masters."+clusterName] = true
 	remove["nodes."+clusterName] = true
 	remove["bastions."+clusterName] = true
-	remove["additional.nodes."+clusterName] = true
-	remove["additional.masters."+clusterName] = true
-	remove["additional.bastions."+clusterName] = true
 
 	var roles []*iam.Role
 	// Find roles matching remove map
@@ -2010,9 +1899,6 @@ func ListIAMInstanceProfiles(cloud fi.Cloud, clusterName string) ([]*ResourceTra
 	remove["masters."+clusterName] = true
 	remove["nodes."+clusterName] = true
 	remove["bastions."+clusterName] = true
-	remove["additional.nodes."+clusterName] = true
-	remove["additional.masters."+clusterName] = true
-	remove["additional.bastions."+clusterName] = true
 
 	var profiles []*iam.InstanceProfile
 

@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"strconv"
 	"strings"
 
 	"github.com/golang/glog"
@@ -33,31 +34,34 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
-	"sort"
+	"k8s.io/kubernetes/pkg/util/sets"
 )
 
 type CreateClusterOptions struct {
-	ClusterName       string
-	Yes               bool
-	Target            string
-	Models            string
-	Cloud             string
-	Zones             string
-	MasterZones       string
-	NodeSize          string
-	MasterSize        string
-	NodeCount         int32
-	Project           string
-	KubernetesVersion string
-	OutDir            string
-	Image             string
-	SSHPublicKey      string
-	VPCID             string
-	NetworkCIDR       string
-	DNSZone           string
-	AdminAccess       []string
-	Networking        string
-	AssociatePublicIP *bool
+	ClusterName          string
+	Yes                  bool
+	Target               string
+	Models               string
+	Cloud                string
+	Zones                []string
+	MasterZones          []string
+	NodeSize             string
+	MasterSize           string
+	MasterCount          int32
+	NodeCount            int32
+	Project              string
+	KubernetesVersion    string
+	OutDir               string
+	Image                string
+	SSHPublicKey         string
+	VPCID                string
+	NetworkCIDR          string
+	DNSZone              string
+	AdminAccess          []string
+	Networking           string
+	NodeSecurityGroups   []string
+	MasterSecurityGroups []string
+	AssociatePublicIP    *bool
 
 	// Channel is the location of the api.Channel to use for our defaults
 	Channel string
@@ -126,8 +130,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.Cloud, "cloud", options.Cloud, "Cloud provider to use - gce, aws")
 
-	cmd.Flags().StringVar(&options.Zones, "zones", options.Zones, "Zones in which to run the cluster")
-	cmd.Flags().StringVar(&options.MasterZones, "master-zones", options.MasterZones, "Zones in which to run masters (must be an odd number)")
+	cmd.Flags().StringSliceVar(&options.Zones, "zones", options.Zones, "Zones in which to run the cluster")
+	cmd.Flags().StringSliceVar(&options.MasterZones, "master-zones", options.MasterZones, "Zones in which to run masters (must be an odd number)")
 
 	cmd.Flags().StringVar(&options.Project, "project", options.Project, "Project to use (must be set on GCE)")
 	cmd.Flags().StringVar(&options.KubernetesVersion, "kubernetes-version", options.KubernetesVersion, "Version of kubernetes to run (defaults to version in channel)")
@@ -141,6 +145,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.VPCID, "vpc", options.VPCID, "Set to use a shared VPC")
 	cmd.Flags().StringVar(&options.NetworkCIDR, "network-cidr", options.NetworkCIDR, "Set to override the default network CIDR")
 
+	cmd.Flags().Int32Var(&options.MasterCount, "master-count", options.MasterCount, "Set the number of masters.  Defaults to one master per master-zone")
 	cmd.Flags().Int32Var(&options.NodeCount, "node-count", options.NodeCount, "Set the number of nodes")
 
 	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Image to use")
@@ -153,6 +158,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	// TODO: Can we deprecate this flag - it is awkward?
 	cmd.Flags().BoolVar(&associatePublicIP, "associate-public-ip", false, "Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.")
+
+	cmd.Flags().StringSliceVar(&options.NodeSecurityGroups, "node-security-groups", options.NodeSecurityGroups, "Add precreated additional security groups to nodes.")
+	cmd.Flags().StringSliceVar(&options.MasterSecurityGroups, "master-security-groups", options.MasterSecurityGroups, "Add precreated additional security groups to masters.")
 
 	cmd.Flags().StringVar(&options.Channel, "channel", options.Channel, "Channel for default versions and configuration to use")
 
@@ -251,13 +259,13 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 	glog.V(4).Infof("networking mode=%s => %s", c.Networking, fi.DebugAsJsonString(cluster.Spec.Networking))
 
-	if c.Zones != "" {
+	if len(c.Zones) != 0 {
 		existingSubnets := make(map[string]*api.ClusterSubnetSpec)
 		for i := range cluster.Spec.Subnets {
 			subnet := &cluster.Spec.Subnets[i]
 			existingSubnets[subnet.Name] = subnet
 		}
-		for _, zoneName := range parseZoneList(c.Zones) {
+		for _, zoneName := range c.Zones {
 			// We create default subnets named the same as the zones
 			subnetName := zoneName
 			if existingSubnets[subnetName] == nil {
@@ -278,87 +286,102 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	var nodes []*api.InstanceGroup
 	var instanceGroups []*api.InstanceGroup
 
-	if c.MasterZones == "" {
-		if len(masters) == 0 {
-			// We default to single-master (not HA), unless the user explicitly specifies it
-			// HA master is a little slower, not as well tested yet, and requires more resources
-			// Probably best not to make it the silent default!
-			for _, subnet := range cluster.Spec.Subnets {
-				g := &api.InstanceGroup{}
-				g.Spec.Role = api.InstanceGroupRoleMaster
-				g.Spec.Subnets = []string{subnet.Name}
-				g.Spec.MinSize = fi.Int32(1)
-				g.Spec.MaxSize = fi.Int32(1)
-				g.ObjectMeta.Name = "master-" + subnet.Name // Subsequent masters (if we support that) could be <zone>-1, <zone>-2
-				instanceGroups = append(instanceGroups, g)
-				masters = append(masters, g)
-
-				// Don't force HA master
-				break
+	// Build the master subnets
+	// The master zones is the default set of zones unless explicitly set
+	// The master count is the number of master zones unless explicitly set
+	// We then round-robin around the zones
+	if len(masters) == 0 {
+		var masterSubnets []*api.ClusterSubnetSpec
+		if len(c.MasterZones) != 0 {
+			for _, subnetName := range c.MasterZones {
+				subnet := findSubnet(cluster, subnetName)
+				if subnet == nil {
+					// Should have been caught already
+					return fmt.Errorf("master-zone %q not included in zones", subnetName)
+				}
+				masterSubnets = append(masterSubnets, subnet)
 			}
-		}
-	} else {
-		if len(masters) == 0 {
-			// Use the specified master zones (this is how the user gets HA master)
-			for _, subnetName := range parseZoneList(c.MasterZones) {
-				g := &api.InstanceGroup{}
-				g.Spec.Role = api.InstanceGroupRoleMaster
-				g.Spec.Subnets = []string{subnetName}
-				g.Spec.MinSize = fi.Int32(1)
-				g.Spec.MaxSize = fi.Int32(1)
-				g.ObjectMeta.Name = "master-" + subnetName
-				instanceGroups = append(instanceGroups, g)
-				masters = append(masters, g)
+
+			if c.MasterCount != 0 && c.MasterCount < int32(len(masterSubnets)) {
+				return fmt.Errorf("specified %d master zones, but also requested %d masters.  If specifying both, the count should match.", len(masterSubnets), c.MasterCount)
 			}
 		} else {
-			// This is hard, because of the etcd cluster
-			return fmt.Errorf("Cannot change master-zones from the CLI")
+			for i := range cluster.Spec.Subnets {
+				masterSubnets = append(masterSubnets, &cluster.Spec.Subnets[i])
+			}
+		}
+
+		if len(masterSubnets) == 0 {
+			// Should be unreachable
+			return fmt.Errorf("cannot determine master subnets")
+		}
+
+		masterCount := c.MasterCount
+		if masterCount == 0 {
+			masterCount = int32(len(masterSubnets))
+		}
+
+		for i := 0; i < int(masterCount); i++ {
+			subnet := masterSubnets[i%len(masterSubnets)]
+			name := subnet.Name
+			if int(masterCount) > len(masterSubnets) {
+				name += "-" + strconv.Itoa(1+(i/len(masterSubnets)))
+			}
+
+			g := &api.InstanceGroup{}
+			g.Spec.Role = api.InstanceGroupRoleMaster
+			g.Spec.Subnets = []string{subnet.Name}
+			g.Spec.MinSize = fi.Int32(1)
+			g.Spec.MaxSize = fi.Int32(1)
+			g.ObjectMeta.Name = "master-" + name
+			instanceGroups = append(instanceGroups, g)
+			masters = append(masters, g)
 		}
 	}
 
 	if len(cluster.Spec.EtcdClusters) == 0 {
-		subnetMap := make(map[string]*api.ClusterSubnetSpec)
-		for i := range cluster.Spec.Subnets {
-			subnet := &cluster.Spec.Subnets[i]
-			subnetMap[subnet.Name] = subnet
-		}
-
-		var masterNames []string
-		masterInstanceGroups := make(map[string]*api.InstanceGroup)
+		masterAZs := sets.NewString()
+		duplicateAZs := false
 		for _, ig := range masters {
 			if len(ig.Spec.Subnets) != 1 {
 				return fmt.Errorf("unexpected subnets for master instance group %q (expected exactly only, found %d)", ig.ObjectMeta.Name, len(ig.Spec.Subnets))
 			}
-			masterNames = append(masterNames, ig.Spec.Subnets[0])
-
 			for _, subnetName := range ig.Spec.Subnets {
-				subnet := subnetMap[subnetName]
+				subnet := findSubnet(cluster, subnetName)
 				if subnet == nil {
 					return fmt.Errorf("cannot find subnet %q (declared in instance group %q, not found in cluster)", subnetName, ig.ObjectMeta.Name)
 				}
 
-				if masterInstanceGroups[subnetName] != nil {
-					return fmt.Errorf("found two master instance groups in subnet %q", subnetName)
+				if masterAZs.Has(subnet.Zone) {
+					duplicateAZs = true
 				}
 
-				masterInstanceGroups[subnetName] = ig
+				masterAZs.Insert(subnet.Zone)
 			}
 		}
 
-		sort.Strings(masterNames)
+		if duplicateAZs {
+			glog.Warningf("Running with masters in the same AZs; redundancy will be reduced")
+		}
 
 		for _, etcdCluster := range cloudup.EtcdClusters {
 			etcd := &api.EtcdClusterSpec{}
 			etcd.Name = etcdCluster
-			for _, masterName := range masterNames {
-				ig := masterInstanceGroups[masterName]
-				m := &api.EtcdMemberSpec{}
 
+			var names []string
+			for _, ig := range masters {
 				name := ig.ObjectMeta.Name
 				// We expect the IG to have a `master-` prefix, but this is both superfluous
 				// and not how we named things previously
 				name = strings.TrimPrefix(name, "master-")
-				m.Name = name
+				names = append(names, name)
+			}
+
+			names = trimCommonPrefix(names)
+
+			for i, ig := range masters {
+				m := &api.EtcdMemberSpec{}
+				m.Name = names[i]
 
 				m.InstanceGroup = fi.String(ig.ObjectMeta.Name)
 				etcd.Members = append(etcd.Members, m)
@@ -370,6 +393,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	if len(nodes) == 0 {
 		g := &api.InstanceGroup{}
 		g.Spec.Role = api.InstanceGroupRoleNode
+
 		g.ObjectMeta.Name = "nodes"
 		instanceGroups = append(instanceGroups, g)
 		nodes = append(nodes, g)
@@ -397,6 +421,18 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		for _, group := range nodes {
 			group.Spec.MinSize = fi.Int32(c.NodeCount)
 			group.Spec.MaxSize = fi.Int32(c.NodeCount)
+		}
+	}
+
+	if len(c.NodeSecurityGroups) > 0 {
+		for _, group := range nodes {
+			group.Spec.AdditionalSecurityGroups = c.NodeSecurityGroups
+		}
+	}
+
+	if len(c.MasterSecurityGroups) > 0 {
+		for _, group := range masters {
+			group.Spec.AdditionalSecurityGroups = c.MasterSecurityGroups
 		}
 	}
 
@@ -684,23 +720,43 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	return nil
 }
 
-func parseZoneList(s string) []string {
-	var filtered []string
-	for _, v := range strings.Split(s, ",") {
-		v = strings.TrimSpace(v)
-		if v == "" {
-			continue
-		}
-		v = strings.ToLower(v)
-		filtered = append(filtered, v)
-	}
-	return filtered
-}
-
 func supportsPrivateTopology(n *api.NetworkingSpec) bool {
 
 	if n.CNI != nil || n.Kopeio != nil || n.Weave != nil || n.Calico != nil {
 		return true
 	}
 	return false
+}
+
+func findSubnet(c *api.Cluster, subnetName string) *api.ClusterSubnetSpec {
+	for i := range c.Spec.Subnets {
+		if c.Spec.Subnets[i].Name == subnetName {
+			return &c.Spec.Subnets[i]
+		}
+	}
+	return nil
+}
+
+func trimCommonPrefix(names []string) []string {
+	// Trim shared prefix to keep the lengths sane
+	// (this only applies to new clusters...)
+	for len(names) != 0 && len(names[0]) > 1 {
+		prefix := names[0][:1]
+		allMatch := true
+		for _, name := range names {
+			if !strings.HasPrefix(name, prefix) {
+				allMatch = false
+			}
+		}
+
+		if !allMatch {
+			break
+		}
+
+		for i := range names {
+			names[i] = strings.TrimPrefix(names[i], prefix)
+		}
+	}
+
+	return names
 }

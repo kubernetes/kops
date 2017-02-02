@@ -111,61 +111,43 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			c.AddTask(iamInstanceProfileRole)
 		}
 
-		// Generate additional policies if needed, and attach to existing instance profile
-		if b.Cluster.Spec.AdditionalPolicies != nil {
-			roleAsString := reflect.ValueOf(role).String()
-			additionalPolicies := *(b.Cluster.Spec.AdditionalPolicies)
+		// Generate additional policies if needed, and attach to existing role
+		{
+			additionalPolicy := ""
+			if b.Cluster.Spec.AdditionalPolicies != nil {
+				roleAsString := reflect.ValueOf(role).String()
+				additionalPolicies := *(b.Cluster.Spec.AdditionalPolicies)
 
-			if additionalPolicy, ok := additionalPolicies[strings.ToLower(roleAsString)]; ok {
-				roleName := "additional." + name
-
-				var iamRole *awstasks.IAMRole
-				{
-					rolePolicy, err := b.buildAWSIAMRolePolicy()
-					if err != nil {
-						return err
-					}
-
-					iamRole = &awstasks.IAMRole{
-						Name:               s(roleName),
-						RolePolicyDocument: fi.WrapResource(rolePolicy),
-					}
-					c.AddTask(iamRole)
-
-				}
-
-				{
-					p := &iam.IAMPolicy{
-						Version: iam.IAMPolicyDefaultVersion,
-					}
-
-					statements := make([]*iam.IAMStatement, 0)
-					json.Unmarshal([]byte(additionalPolicy), &statements)
-					p.Statement = append(p.Statement, statements...)
-
-					policy, err := p.AsJSON()
-					if err != nil {
-						return fmt.Errorf("error building IAM policy: %v", err)
-					}
-
-					t := &awstasks.IAMRolePolicy{
-						Name:           s(roleName),
-						Role:           iamRole,
-						PolicyDocument: fi.WrapResource(fi.NewStringResource(policy)),
-					}
-					c.AddTask(t)
-				}
-
-				{
-					iamInstanceProfileRole := &awstasks.IAMInstanceProfileRole{
-						Name: s(roleName),
-
-						InstanceProfile: iamInstanceProfile,
-						Role:            iamRole,
-					}
-					c.AddTask(iamInstanceProfileRole)
-				}
+				additionalPolicy = additionalPolicies[strings.ToLower(roleAsString)]
 			}
+
+			additionalPolicyName := "additional." + name
+
+			t := &awstasks.IAMRolePolicy{
+				Name: s(additionalPolicyName),
+				Role: iamRole,
+			}
+
+			if additionalPolicy != "" {
+				p := &iam.IAMPolicy{
+					Version: iam.IAMPolicyDefaultVersion,
+				}
+
+				statements := make([]*iam.IAMStatement, 0)
+				json.Unmarshal([]byte(additionalPolicy), &statements)
+				p.Statement = append(p.Statement, statements...)
+
+				policy, err := p.AsJSON()
+				if err != nil {
+					return fmt.Errorf("error building IAM policy: %v", err)
+				}
+
+				t.PolicyDocument = fi.WrapResource(fi.NewStringResource(policy))
+			} else {
+				t.PolicyDocument = fi.WrapResource(fi.NewStringResource(""))
+			}
+
+			c.AddTask(t)
 		}
 	}
 

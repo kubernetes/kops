@@ -22,6 +22,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/hashicorp/hcl/hcl/ast"
 	hcl_printer "github.com/hashicorp/hcl/hcl/printer"
+	"k8s.io/kops/pkg/featureflag"
 	"strings"
 )
 
@@ -99,6 +100,7 @@ func hclPrint(node ast.Node) ([]byte, error) {
 
 	// Remove extra whitespace...
 	s = strings.Replace(s, "\n\n", "\n", -1)
+
 	// ...but leave whitespace between resources
 	s = strings.Replace(s, "}\nresource", "}\n\nresource", -1)
 
@@ -107,5 +109,16 @@ func hclPrint(node ast.Node) ([]byte, error) {
 	s = strings.Replace(s, "(\\\"", "(\"", -1)
 	s = strings.Replace(s, "\\\")", "\")", -1)
 
-	return []byte(s), nil
+	if featureflag.SkipTerraformFormat.Enabled() {
+		glog.Infof("feature-flag SkipTerraformFormat was set; skipping terraform format")
+		return []byte(s), nil
+	}
+
+	// Apply Terraform style (alignment etc.)
+	formatted, err := hcl_printer.Format([]byte(s))
+	if err != nil {
+		return nil, fmt.Errorf("error formatting HCL: %v", err)
+	}
+
+	return formatted, nil
 }

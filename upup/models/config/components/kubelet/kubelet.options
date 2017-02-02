@@ -1,6 +1,6 @@
 Kubelet:
   EnableDebuggingHandlers: true
-  Config: /etc/kubernetes/manifests
+  PodManifestPath: /etc/kubernetes/manifests
   AllowPrivileged: true
   LogLevel: 2
   ClusterDNS: {{ WellKnownServiceIP 10 }}

@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"time"
 )
 
 //go:generate fitask -type=LaunchConfiguration
@@ -36,12 +37,13 @@ type LaunchConfiguration struct {
 
 	UserData *fi.ResourceHolder
 
-	ImageID            *string
-	InstanceType       *string
-	SSHKey             *SSHKey
-	SecurityGroups     []*SecurityGroup
-	AssociatePublicIP  *bool
-	IAMInstanceProfile *IAMInstanceProfile
+	ImageID                    *string
+	InstanceType               *string
+	SSHKey                     *SSHKey
+	SecurityGroups             []*SecurityGroup
+	AdditionalSecurityGroupIDs []string
+	AssociatePublicIP          *bool
+	IAMInstanceProfile         *IAMInstanceProfile
 
 	// RootVolumeSize is the size of the EBS root volume to use, in GB
 	RootVolumeSize *int64
@@ -227,13 +229,20 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 	request.LaunchConfigurationName = &launchConfigurationName
 	request.ImageId = image.ImageId
 	request.InstanceType = e.InstanceType
+
 	if e.SSHKey != nil {
 		request.KeyName = e.SSHKey.Name
 	}
+
 	securityGroupIDs := []*string{}
 	for _, sg := range e.SecurityGroups {
 		securityGroupIDs = append(securityGroupIDs, sg.ID)
 	}
+
+	for i := range e.AdditionalSecurityGroupIDs {
+		securityGroupIDs = append(securityGroupIDs, &e.AdditionalSecurityGroupIDs[i])
+	}
+
 	request.SecurityGroups = securityGroupIDs
 	request.AssociatePublicIpAddress = e.AssociatePublicIP
 	if e.SpotPrice != "" {
@@ -275,6 +284,7 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 	}
 
 	attempt := 0
+	maxAttempts := 10
 	for {
 		attempt++
 		_, err = t.Cloud.Autoscaling().CreateLaunchConfiguration(request)
@@ -286,7 +296,12 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 		if awsup.AWSErrorCode(err) == "ValidationError" {
 			message := awsup.AWSErrorMessage(err)
 			if strings.Contains(message, "not authorized") || strings.Contains(message, "Invalid IamInstance") {
-				return fmt.Errorf("IAM instance profile not yet created/propagated (original error: %v)", message)
+				if attempt > maxAttempts {
+					return fmt.Errorf("IAM instance profile not yet created/propagated (original error: %v)", message)
+				}
+				glog.Infof("waiting for IAM instance profile %q to be ready", fi.StringValue(e.IAMInstanceProfile.Name))
+				time.Sleep(10 * time.Second)
+				continue
 			}
 			glog.V(4).Infof("ErrorCode=%q, Message=%q", awsup.AWSErrorCode(err), awsup.AWSErrorMessage(err))
 			return fmt.Errorf("error creating AutoscalingLaunchConfiguration: %v", err)

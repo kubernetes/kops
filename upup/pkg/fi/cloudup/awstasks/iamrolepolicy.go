@@ -32,9 +32,12 @@ import (
 
 //go:generate fitask -type=IAMRolePolicy
 type IAMRolePolicy struct {
-	ID             *string
-	Name           *string
-	Role           *IAMRole
+	ID   *string
+	Name *string
+	Role *IAMRole
+
+	// The PolicyDocument to create as an inline policy.
+	// If the PolicyDocument is empty, the policy will be removed.
 	PolicyDocument *fi.ResourceHolder
 }
 
@@ -97,6 +100,26 @@ func (_ *IAMRolePolicy) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRoleP
 		return fmt.Errorf("error rendering PolicyDocument: %v", err)
 	}
 
+	if policy == "" {
+		// A deletion
+
+		request := &iam.DeleteRolePolicyInput{}
+		request.RoleName = e.Role.Name
+		request.PolicyName = e.Name
+
+		glog.V(2).Infof("Deleting role policy %s/%s", aws.StringValue(e.Role.Name), aws.StringValue(e.Name))
+		_, err = t.Cloud.IAM().DeleteRolePolicy(request)
+		if err != nil {
+			if awsup.AWSErrorCode(err) == "NoSuchEntity" {
+				// Already deleted
+				glog.V(2).Infof("Got NoSuchEntity deleting role policy %s/%s; assuming does not exist", aws.StringValue(e.Role.Name), aws.StringValue(e.Name))
+				return nil
+			}
+			return fmt.Errorf("error deleting IAMRolePolicy: %v", err)
+		}
+		return nil
+	}
+
 	doPut := false
 
 	if a == nil {
@@ -128,7 +151,7 @@ func (_ *IAMRolePolicy) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRoleP
 	if doPut {
 		request := &iam.PutRolePolicyInput{}
 		request.PolicyDocument = aws.String(policy)
-		request.RoleName = e.Name
+		request.RoleName = e.Role.Name
 		request.PolicyName = e.Name
 
 		_, err = t.Cloud.IAM().PutRolePolicy(request)
@@ -148,6 +171,17 @@ type terraformIAMRolePolicy struct {
 }
 
 func (_ *IAMRolePolicy) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMRolePolicy) error {
+	{
+		policyString, err := e.PolicyDocument.AsString()
+		if err != nil {
+			return fmt.Errorf("error rendering PolicyDocument: %v", err)
+		}
+		if policyString == "" {
+			// A deletion; we simply don't render; terraform will observe the removal
+			return nil
+		}
+	}
+
 	policy, err := t.AddFile("aws_iam_role_policy", *e.Name, "policy", e.PolicyDocument)
 	if err != nil {
 		return fmt.Errorf("error rendering PolicyDocument: %v", err)

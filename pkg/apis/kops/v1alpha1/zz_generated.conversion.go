@@ -899,6 +899,7 @@ func autoConvert_v1alpha1_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	// WARNING: in.Zones requires manual conversion: does not exist in peer-type
 	out.MaxPrice = in.MaxPrice
 	out.AssociatePublicIP = in.AssociatePublicIP
+	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
 	out.CloudLabels = in.CloudLabels
 	out.NodeLabels = in.NodeLabels
 	return nil
@@ -915,6 +916,7 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha1_InstanceGroupSpec(in *kops.I
 	// WARNING: in.Subnets requires manual conversion: does not exist in peer-type
 	out.MaxPrice = in.MaxPrice
 	out.AssociatePublicIP = in.AssociatePublicIP
+	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
 	out.CloudLabels = in.CloudLabels
 	out.NodeLabels = in.NodeLabels
 	return nil
@@ -1159,7 +1161,7 @@ func Convert_kops_KubeSchedulerConfig_To_v1alpha1_KubeSchedulerConfig(in *kops.K
 func autoConvert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *KubeletConfigSpec, out *kops.KubeletConfigSpec, s conversion.Scope) error {
 	out.APIServers = in.APIServers
 	out.LogLevel = in.LogLevel
-	out.Config = in.Config
+	out.PodManifestPath = in.PodManifestPath
 	out.HostnameOverride = in.HostnameOverride
 	out.AllowPrivileged = in.AllowPrivileged
 	out.EnableDebuggingHandlers = in.EnableDebuggingHandlers
@@ -1175,6 +1177,7 @@ func autoConvert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.HairpinMode = in.HairpinMode
 	out.BabysitDaemons = in.BabysitDaemons
 	out.MaxPods = in.MaxPods
+	out.NvidiaGPUs = in.NvidiaGPUs
 	out.PodCIDR = in.PodCIDR
 	out.ReconcileCIDR = in.ReconcileCIDR
 	out.RegisterSchedulable = in.RegisterSchedulable
@@ -1185,6 +1188,12 @@ func autoConvert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.ImageGCHighThresholdPercent = in.ImageGCHighThresholdPercent
 	out.ImageGCLowThresholdPercent = in.ImageGCLowThresholdPercent
 	out.TerminatedPodGCThreshold = in.TerminatedPodGCThreshold
+	out.EvictionHard = in.EvictionHard
+	out.EvictionSoft = in.EvictionSoft
+	out.EvictionSoftGracePeriod = in.EvictionSoftGracePeriod
+	out.EvictionPressureTransitionPeriod = in.EvictionPressureTransitionPeriod
+	out.EvictionMaxPodGracePeriod = in.EvictionMaxPodGracePeriod
+	out.EvictionMinimumReclaim = in.EvictionMinimumReclaim
 	return nil
 }
 
@@ -1195,7 +1204,7 @@ func Convert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *KubeletCon
 func autoConvert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec(in *kops.KubeletConfigSpec, out *KubeletConfigSpec, s conversion.Scope) error {
 	out.APIServers = in.APIServers
 	out.LogLevel = in.LogLevel
-	out.Config = in.Config
+	out.PodManifestPath = in.PodManifestPath
 	out.HostnameOverride = in.HostnameOverride
 	out.AllowPrivileged = in.AllowPrivileged
 	out.EnableDebuggingHandlers = in.EnableDebuggingHandlers
@@ -1211,6 +1220,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec(in *kops.K
 	out.HairpinMode = in.HairpinMode
 	out.BabysitDaemons = in.BabysitDaemons
 	out.MaxPods = in.MaxPods
+	out.NvidiaGPUs = in.NvidiaGPUs
 	out.PodCIDR = in.PodCIDR
 	out.ReconcileCIDR = in.ReconcileCIDR
 	out.RegisterSchedulable = in.RegisterSchedulable
@@ -1221,6 +1231,12 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec(in *kops.K
 	out.ImageGCHighThresholdPercent = in.ImageGCHighThresholdPercent
 	out.ImageGCLowThresholdPercent = in.ImageGCLowThresholdPercent
 	out.TerminatedPodGCThreshold = in.TerminatedPodGCThreshold
+	out.EvictionHard = in.EvictionHard
+	out.EvictionSoft = in.EvictionSoft
+	out.EvictionSoftGracePeriod = in.EvictionSoftGracePeriod
+	out.EvictionPressureTransitionPeriod = in.EvictionPressureTransitionPeriod
+	out.EvictionMaxPodGracePeriod = in.EvictionMaxPodGracePeriod
+	out.EvictionMinimumReclaim = in.EvictionMinimumReclaim
 	return nil
 }
 

@@ -37,8 +37,15 @@ func Bool(b bool) *bool {
 
 // DNSPreCreate controls whether we pre-create DNS records.
 var DNSPreCreate = New("DNSPreCreate", Bool(true))
-var VPCSkipEnableDNSSupport = New("VPCSkipEnableDNSSupport", Bool(true))
+
+// if set will use new rolling update code that will drain and validate
 var ValidiateAndDrainRollingUpdate = New("ValidiateAndDrainRollingUpdate", Bool(true))
+
+// VPCSkipEnableDNSSupport if set will make that a VPC does not need DNSSupport enabled
+var VPCSkipEnableDNSSupport = New("VPCSkipEnableDNSSupport", Bool(false))
+
+// SkipTerraformFormat if set will mean that we will not `tf fmt` the generated terraform
+var SkipTerraformFormat = New("SkipTerraformFormat", Bool(false))
 
 var flags = make(map[string]*FeatureFlag)
 var flagsMutex sync.Mutex
