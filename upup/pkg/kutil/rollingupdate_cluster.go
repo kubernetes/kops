@@ -16,23 +16,19 @@ limitations under the License.
 
 package kutil
 
-// TODO move this business logic into a service than can be called via the api
-
 import (
 	"fmt"
-	"sync"
-	"time"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
-	validate "k8s.io/kops/pkg/validation"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kubernetes/pkg/api/v1"
 	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
+	"sync"
+	"time"
 )
 
 // RollingUpdateCluster restarts cluster nodes
@@ -42,38 +38,10 @@ type RollingUpdateCluster struct {
 	MasterInterval  time.Duration
 	NodeInterval    time.Duration
 	BastionInterval time.Duration
-	K8sClient       *k8s_clientset.Clientset
-
-	ForceDrain     bool
-	FailOnValidate bool
 
 	Force bool
-
-	CloudOnly   bool
-	ClusterName string
 }
 
-// RollingUpdateData is used to pass information to perform a rolling update
-type RollingUpdateData struct {
-	Cloud             fi.Cloud
-	Force             bool
-	Interval          time.Duration
-	InstanceGroupList *api.InstanceGroupList
-	IsBastion         bool
-
-	K8sClient *k8s_clientset.Clientset
-
-	ForceDrain     bool
-	FailOnValidate bool
-
-	CloudOnly   bool
-	ClusterName string
-}
-
-// TODO move retries to RollingUpdateCluster
-const retries = 8
-
-// Find CloudInstanceGroups
 func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroups []*api.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*CloudInstanceGroup, error) {
 	awsCloud := cloud.(awsup.AWSCloud)
 
@@ -130,11 +98,7 @@ func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroup
 	return groups, nil
 }
 
-// TODO: should we check to see if api updates exist in the cluster
-// TODO: for instance should we check if Petsets exist when upgrading 1.4.x -> 1.5.x
-
-// Perform a rolling update on a K8s Cluster
-func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, instanceGroups *api.InstanceGroupList) error {
+func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, k8sClient *k8s_clientset.Clientset) error {
 	if len(groups) == 0 {
 		return nil
 	}
@@ -171,9 +135,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 
 				defer wg.Done()
 
-				rollingUpdateData := c.CreateRollingUpdateData(instanceGroups, true)
-
-				err := group.RollingUpdate(rollingUpdateData)
+				err := group.RollingUpdate(c.Cloud, c.Force, c.BastionInterval, k8sClient)
 
 				resultsMutex.Lock()
 				results[k] = err
@@ -184,7 +146,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 		wg.Wait()
 	}
 
-	// Upgrade master next
+	// Upgrade master first
 	{
 		var wg sync.WaitGroup
 
@@ -203,20 +165,8 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 			defer wg.Done()
 
 			for k, group := range masterGroups {
-				rollingUpdateData := &RollingUpdateData{
-					Cloud:             c.Cloud,
-					Force:             c.Force,
-					Interval:          c.MasterInterval,
-					InstanceGroupList: instanceGroups,
-					IsBastion:         false,
-					K8sClient:         c.K8sClient,
-					FailOnValidate:    c.FailOnValidate,
-					ForceDrain:        c.ForceDrain,
-					CloudOnly:         c.CloudOnly,
-					ClusterName:       c.ClusterName,
-				}
+				err := group.RollingUpdate(c.Cloud, c.Force, c.MasterInterval, k8sClient)
 
-				err := group.RollingUpdate(rollingUpdateData)
 				resultsMutex.Lock()
 				results[k] = err
 				resultsMutex.Unlock()
@@ -229,7 +179,6 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 	}
 
 	// Upgrade nodes, with greater parallelism
-	// TODO increase each instancegroups nodes by one
 	{
 		var wg sync.WaitGroup
 
@@ -242,9 +191,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 
 				defer wg.Done()
 
-				rollingUpdateData := c.CreateRollingUpdateData(instanceGroups, false)
-
-				err := group.RollingUpdate(rollingUpdateData)
+				err := group.RollingUpdate(c.Cloud, c.Force, c.NodeInterval, k8sClient)
 
 				resultsMutex.Lock()
 				results[k] = err
@@ -261,23 +208,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 		}
 	}
 
-	glog.Info("\nRolling update completed!\n")
 	return nil
-}
-
-func (c *RollingUpdateCluster) CreateRollingUpdateData(instanceGroups *api.InstanceGroupList, isBastion bool) *RollingUpdateData {
-	return &RollingUpdateData{
-		Cloud:             c.Cloud,
-		Force:             c.Force,
-		Interval:          c.NodeInterval,
-		InstanceGroupList: instanceGroups,
-		IsBastion:         isBastion,
-		K8sClient:         c.K8sClient,
-		FailOnValidate:    c.FailOnValidate,
-		ForceDrain:        c.ForceDrain,
-		CloudOnly:         c.CloudOnly,
-		ClusterName:       c.ClusterName,
-	}
 }
 
 // CloudInstanceGroup is the AWS ASG backing an InstanceGroup
@@ -338,70 +269,24 @@ func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group, nodeMa
 	return n
 }
 
-// RollingUpdate performs a rolling update on a list of ec2 instances.
-func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData) error {
-
-	// we should not get here, but hey I am going to check
-	if rollingUpdateData == nil {
-		return fmt.Errorf("RollingUpdate cannot be nil")
-	}
-
-	// Do not need a k8s client if you are doing cloud only
-	if rollingUpdateData.K8sClient == nil && !rollingUpdateData.CloudOnly {
-		return fmt.Errorf("RollingUpdate is missing a k8s client")
-	}
-
-	if rollingUpdateData.InstanceGroupList == nil {
-		return fmt.Errorf("RollingUpdate is missing a the InstanceGroupList")
-	}
-
-	c := rollingUpdateData.Cloud.(awsup.AWSCloud)
+func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, interval time.Duration, k8sClient *k8s_clientset.Clientset) error {
+	c := cloud.(awsup.AWSCloud)
 
 	update := n.NeedUpdate
-	if rollingUpdateData.Force {
+	if force {
 		update = append(update, n.Ready...)
 	}
-
-	// TODO is this logic correct
-	if !rollingUpdateData.IsBastion && rollingUpdateData.FailOnValidate && !rollingUpdateData.CloudOnly {
-		_, err := validate.ValidateCluster(rollingUpdateData.ClusterName, rollingUpdateData.InstanceGroupList, rollingUpdateData.K8sClient)
-		if err != nil {
-			return fmt.Errorf("Cluster %s does not pass validation", rollingUpdateData.ClusterName)
-		}
-	}
-
 	for _, u := range update {
-
-		if !rollingUpdateData.IsBastion {
-			if rollingUpdateData.CloudOnly {
-				glog.Warningf("not draining nodes - cloud only is set")
-			} else {
-				drain, err := NewDrainOptions(nil, u.Node.ClusterName)
-
-				if err != nil {
-					glog.Warningf("Error creating drain: %v", err)
-					if rollingUpdateData.ForceDrain == false {
-						return err
-					}
-				} else {
-					err = drain.DrainTheNode(u.Node.Name)
-					if err != nil {
-						glog.Warningf("setupErr: %v", err)
-					}
-					if rollingUpdateData.ForceDrain == false {
-						return err
-					}
-				}
-			}
-		}
-
-		// TODO: Temporarily increase size of ASG?
-		// TODO: Remove from ASG first so status is immediately updated?
-		// TODO: Batch termination, like a rolling-update
-		// TODO: check if an asg is running the correct number of instances
-
 		instanceID := aws.StringValue(u.ASGInstance.InstanceId)
 		glog.Infof("Stopping instance %q in AWS ASG %q", instanceID, n.ASGName)
+
+		// TODO: Evacuate through k8s first?
+
+		// TODO: Temporarily increase size of ASG?
+
+		// TODO: Remove from ASG first so status is immediately updated?
+
+		// TODO: Batch termination, like a rolling-update
 
 		request := &ec2.TerminateInstancesInput{
 			InstanceIds: []*string{u.ASGInstance.InstanceId},
@@ -411,42 +296,13 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateData)
 			return fmt.Errorf("error deleting instance %q: %v", instanceID, err)
 		}
 
-		if !rollingUpdateData.IsBastion {
-			// Wait for new EC2 instances to be created
-			time.Sleep(rollingUpdateData.Interval)
-
-			// Wait until the cluster is happy
-			// TODO: do we need to respect cloud only??
-			for i := 0; i <= retries; i++ {
-
-				if rollingUpdateData.CloudOnly {
-					glog.Warningf("sleeping only - not validating nodes as cloudonly flag is set")
-					time.Sleep(rollingUpdateData.Interval)
-				} else {
-					_, err = validate.ValidateCluster(rollingUpdateData.ClusterName, rollingUpdateData.InstanceGroupList, rollingUpdateData.K8sClient)
-					if err != nil {
-						glog.Infof("Unable to validate k8s cluster: %s.", err)
-						time.Sleep(rollingUpdateData.Interval / 2)
-					} else {
-						glog.Info("Cluster validated proceeding with next step in rolling update")
-						break
-					}
-				}
-			}
-
-			if rollingUpdateData.CloudOnly {
-				glog.Warningf("not validating nodes as cloudonly flag is set")
-			} else if err != nil && rollingUpdateData.FailOnValidate {
-				return fmt.Errorf("validation timed out while performing rolling update: %v", err)
-			}
-		}
-
+		// TODO: Wait for node to appear back in k8s
+		time.Sleep(interval)
 	}
 
 	return nil
 }
 
-// Delete a ASG
 func (g *CloudInstanceGroup) Delete(cloud fi.Cloud) error {
 	c := cloud.(awsup.AWSCloud)
 
