@@ -22,6 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elb"
@@ -66,7 +67,7 @@ type AWSCloud interface {
 	EC2() ec2iface.EC2API
 	IAM() *iam.IAM
 	ELB() *elb.ELB
-	Autoscaling() *autoscaling.AutoScaling
+	Autoscaling() autoscalingiface.AutoScalingAPI
 	Route53() route53iface.Route53API
 
 	// TODO: Document and rationalize these tags/filters methods
@@ -671,7 +672,7 @@ func (c *awsCloudImplementation) ELB() *elb.ELB {
 	return c.elb
 }
 
-func (c *awsCloudImplementation) Autoscaling() *autoscaling.AutoScaling {
+func (c *awsCloudImplementation) Autoscaling() autoscalingiface.AutoScalingAPI {
 	return c.autoscaling
 }
 
