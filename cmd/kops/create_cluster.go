@@ -508,7 +508,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 
 	case api.TopologyPrivate:
-		if c.AssociatePublicIP == true {
+		if *c.AssociatePublicIP == true {
 			return fmt.Errorf("Unable to associate public IPs in private topology")
 		}
 		if !hasValidNetwork(cluster.Spec.Networking) {
