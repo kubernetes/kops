@@ -1,11 +1,15 @@
 ## kops edit
 
-edit items
+Edit resource
 
 ### Synopsis
 
 
-edit items
+Edit a resource configuration.
+	
+This command changes the cloud specification in the registry.
+
+It does not update the cloud resources, to apply the changes use "kops update cluster".
 
 ### Options inherited from parent commands
 
