@@ -132,7 +132,7 @@ func (c *VFSContext) readHttpLocation(httpURL string, httpHeaders map[string]str
 		}
 		if response.StatusCode == 404 {
 			// We retry on 404s in case of eventual consistency
-			return true, os.ErrNotExist
+			return false, os.ErrNotExist
 		}
 		if response.StatusCode >= 500 && response.StatusCode <= 599 {
 			// Retry on 5XX errors
@@ -173,17 +173,18 @@ func RetryWithBackoff(backoff wait.Backoff, condition func() (bool, error)) (boo
 
 		i++
 
-		ok, err := condition()
-		if ok {
-			return ok, err
+		done, err := condition()
+		if done {
+			return done, err
 		}
-		noMoreRetries := (i + 1) >= backoff.Steps
+		noMoreRetries := i >= backoff.Steps
 		if !noMoreRetries && err != nil {
 			glog.V(2).Infof("retrying after error %v", err)
 		}
 
 		if noMoreRetries {
-			return ok, err
+			glog.V(2).Infof("hit maximum retries %d with error %v", i, err)
+			return done, err
 		}
 	}
 }
