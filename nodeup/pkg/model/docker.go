@@ -302,6 +302,11 @@ func (b *DockerBuilder) buildSystemdService(dockerVersion semver.Version) *nodet
 	manifest.Set("Unit", "Description", "Docker Application Container Engine")
 	manifest.Set("Unit", "Documentation", "https://docs.docker.com")
 
+	if b.Distribution.IsRHELFamily() && !oldDocker {
+		// See https://github.com/docker/docker/pull/24804
+		usesDockerSocket = false
+	}
+
 	if usesDockerSocket {
 		manifest.Set("Unit", "After", "network.target docker.socket")
 		manifest.Set("Unit", "Requires", "docker.socket")
