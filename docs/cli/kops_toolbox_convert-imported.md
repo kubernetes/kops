@@ -14,7 +14,7 @@ kops toolbox convert-imported
 ### Options
 
 ```
-      --channel string   Channel to use for upgrade
+      --channel string   Channel to use for upgrade (default "stable")
       --newname string   new cluster name
 ```
 
