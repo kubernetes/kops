@@ -275,7 +275,7 @@ verify-gofmt:
 verify-packages:
 	hack/verify-packages.sh
 
-ci: kops nodeup-gocode examples test govet verify-boilerplate verify-gofmt verify-packages
+ci: govet verify-gofmt kops nodeup-gocode examples test verify-boilerplate verify-packages
 	echo "Done!"
 
 # --------------------------------------------------
