@@ -92,8 +92,13 @@ func Convert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 		out.Subnets = nil
 	}
 
-	out.SSHAccess = in.AdminAccess
-	out.KubernetesAPIAccess = in.AdminAccess
+	adminAccess := in.AdminAccess
+	if len(adminAccess) == 0 {
+		// The default in v1alpha1 was 0.0.0.0/0
+		adminAccess = []string{"0.0.0.0/0"}
+	}
+	out.SSHAccess = adminAccess
+	out.KubernetesAPIAccess = adminAccess
 
 	return autoConvert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in, out, s)
 }
