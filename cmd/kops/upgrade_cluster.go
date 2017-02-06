@@ -134,21 +134,32 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 	//	return err
 	//}
 
+	clusterKubernetesVersion := cluster.Spec.KubernetesVersion
+	channelKubernetesVersion := channelClusterSpec.KubernetesVersion
 	// So we can propose an image for the upgraded k8s version
-	upgradedKubernetesVersion := cluster.Spec.KubernetesVersion
+	upgradedKubernetesVersion := clusterKubernetesVersion
 
-	if channelClusterSpec.KubernetesVersion != "" && cluster.Spec.KubernetesVersion != channelClusterSpec.KubernetesVersion {
+	v1, err := util.ParseKubernetesVersion(clusterKubernetesVersion)
+	if err != nil {
+		return err
+	}
+
+	v2, err := util.ParseKubernetesVersion(channelKubernetesVersion)
+	if err != nil {
+		return err
+	}
+
+	if v1.LT(*v2) {
 		actions = append(actions, &upgradeAction{
 			Item:     "Cluster",
 			Property: "KubernetesVersion",
-			Old:      cluster.Spec.KubernetesVersion,
-			New:      channelClusterSpec.KubernetesVersion,
+			Old:      clusterKubernetesVersion,
+			New:      channelKubernetesVersion,
 			apply: func() {
-				cluster.Spec.KubernetesVersion = channelClusterSpec.KubernetesVersion
+				cluster.Spec.KubernetesVersion = channelKubernetesVersion
 			},
 		})
-
-		upgradedKubernetesVersion = channelClusterSpec.KubernetesVersion
+		upgradedKubernetesVersion = channelKubernetesVersion
 	}
 
 	// Prompt to upgrade addins?
