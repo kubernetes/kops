@@ -91,8 +91,9 @@ func ensureKubernetesVersion(c *kops.Cluster) error {
 			if err != nil {
 				return err
 			}
-			if channel.Spec.Cluster.KubernetesVersion != "" {
-				c.Spec.KubernetesVersion = channel.Spec.Cluster.KubernetesVersion
+			kubernetesVersion := kops.RecommendedKubernetesVersion(channel)
+			if kubernetesVersion != nil {
+				c.Spec.KubernetesVersion = kubernetesVersion.String()
 			}
 		}
 	}

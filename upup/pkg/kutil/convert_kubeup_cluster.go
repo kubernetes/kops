@@ -86,8 +86,11 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 	}
 
 	// Set KubernetesVersion from channel
-	if x.Channel != nil && x.Channel.Spec.Cluster != nil && x.Channel.Spec.Cluster.KubernetesVersion != "" {
-		cluster.Spec.KubernetesVersion = x.Channel.Spec.Cluster.KubernetesVersion
+	if x.Channel != nil {
+		kubernetesVersion := api.RecommendedKubernetesVersion(x.Channel)
+		if kubernetesVersion != nil {
+			cluster.Spec.KubernetesVersion = kubernetesVersion.String()
+		}
 	}
 
 	err = cloudup.PerformAssignments(cluster)

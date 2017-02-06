@@ -272,7 +272,7 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	dockerSemver, err := semver.Parse(dockerVersion)
+	dockerSemver, err := semver.ParseTolerant(dockerVersion)
 	if err != nil {
 		return fmt.Errorf("error parsing docker version %q as semver: %v", dockerVersion, err)
 	}

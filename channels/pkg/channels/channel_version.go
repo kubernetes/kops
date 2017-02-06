@@ -96,12 +96,12 @@ func (c *ChannelVersion) Replaces(existing *ChannelVersion) bool {
 		if c.Version == nil {
 			return false
 		}
-		cVersion, err := semver.Parse(*c.Version)
+		cVersion, err := semver.ParseTolerant(*c.Version)
 		if err != nil {
 			glog.Warningf("error parsing version %q; will ignore this version", *c.Version)
 			return false
 		}
-		existingVersion, err := semver.Parse(*existing.Version)
+		existingVersion, err := semver.ParseTolerant(*existing.Version)
 		if err != nil {
 			glog.Warningf("error parsing existing version %q", *existing.Version)
 			return true
