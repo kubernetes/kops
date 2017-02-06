@@ -69,7 +69,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Use:   "cluster",
 		Short: "Rolling update a cluster",
 		Long: `Rolling update a cluster instance groups.
-		
+
 This command updates the running instances to match the cloud specifications.
 
 To perform rolling update, you need to update the cloud resources first with "kops update cluster"`,

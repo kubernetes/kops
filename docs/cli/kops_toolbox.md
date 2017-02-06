@@ -25,5 +25,5 @@ Misc infrequently used commands
 ### SEE ALSO
 * [kops](kops.md)	 - kops is kubernetes ops
 * [kops toolbox convert-imported](kops_toolbox_convert-imported.md)	 - Convert an imported cluster into a kops cluster
-* [kops toolbox dump](kops_toolbox_dump.md)	 - Dump information about a cluster
+* [kops toolbox dump](kops_toolbox_dump.md)	 - Dump cloud information about a cluster
 
