@@ -16,7 +16,12 @@ limitations under the License.
 
 package kops
 
-import "k8s.io/kops/upup/pkg/fi/utils"
+import (
+	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kops/pkg/apis/kops/util"
+	"github.com/blang/semver"
+	"fmt"
+)
 
 const RoleLabelName = "kubernetes.io/role"
 const RoleMasterLabelValue = "master"
@@ -54,6 +59,22 @@ func BuildKubeletConfigSpec(cluster *Cluster, instanceGroup *InstanceGroup) (*Ku
 			c.NodeLabels = make(map[string]string)
 		}
 		c.NodeLabels[k] = v
+	}
+
+
+	sv, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
+	if err != nil {
+		return c, fmt.Errorf("Failed to lookup kubernetes version: %v", err)
+	}
+	// TODO: Is there a better place to define the 1.6.0 version for this? Maybe a feature flag?
+	if sv.GTE(semver.Version{1,6,0,nil,nil}) {
+		// --register-with-taints flag is supported by the kubelet version
+		for i, t := range instanceGroup.Spec.Taints {
+			if c.Taints == nil {
+				c.Taints = make([]string, len(instanceGroup.Spec.Taints))
+			}
+			c.Taints[i] = t
+		}
 	}
 
 	return c, nil

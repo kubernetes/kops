@@ -89,6 +89,9 @@ type InstanceGroupSpec struct {
 
 	// NodeLabels indicates the kubernetes labels for nodes in this group
 	NodeLabels map[string]string `json:"nodeLabels,omitempty"`
+
+	// Taints indicates the kubernetes taints for nodes in this group
+	Taints []string `json:"taints,omitempty"`
 }
 
 // PerformAssignmentsInstanceGroups populates InstanceGroups with default values
