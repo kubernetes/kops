@@ -38,6 +38,8 @@ if [ -z "$2" ]; then
     usage
 fi
 
+command -v aws >/dev/null 2>&1 || { echo >&2 "The aws cli is required to run this script."; exit 1; }
+
 GROUP=$1
 USER=$2
 
