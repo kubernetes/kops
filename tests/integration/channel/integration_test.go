@@ -250,6 +250,60 @@ func TestFindImage(t *testing.T) {
 	}
 }
 
+// TestRecommendedKubernetesVersion tests the version logic kubernetes kops versions
+func TestRecommendedKubernetesVersion(t *testing.T) {
+	srcDir := "simple"
+	sourcePath := path.Join(srcDir, "channel.yaml")
+	sourceBytes, err := ioutil.ReadFile(sourcePath)
+	if err != nil {
+		t.Fatalf("unexpected error reading sourcePath %q: %v", sourcePath, err)
+	}
+
+	channel, err := kops.ParseChannel(sourceBytes)
+	if err != nil {
+		t.Fatalf("failed to parse channel: %v", err)
+	}
+
+	grid := []struct {
+		KopsVersion               string
+		ExpectedKubernetesVersion string
+	}{
+		{
+			KopsVersion:               "1.4.4",
+			ExpectedKubernetesVersion: "1.4.8",
+		},
+		{
+			KopsVersion:               "1.4.5",
+			ExpectedKubernetesVersion: "1.4.8",
+		},
+		{
+			KopsVersion:               "1.5.0",
+			ExpectedKubernetesVersion: "1.5.2",
+		},
+		{
+			KopsVersion:               "1.5.0-beta2",
+			ExpectedKubernetesVersion: "1.5.0",
+		},
+	}
+	for _, g := range grid {
+		kubernetesVersion := kops.RecommendedKubernetesVersion(channel, g.KopsVersion)
+		if semverString(kubernetesVersion) != g.ExpectedKubernetesVersion {
+			t.Errorf("unexpected result from RecommendedKubernetesVersion(%q): expected=%q, actual=%q", g.KopsVersion, g.ExpectedKubernetesVersion, semverString(kubernetesVersion))
+			continue
+		}
+	}
+}
+
+func TestOrdering(t *testing.T) {
+	if !semver.MustParse("1.5.0").GTE(semver.MustParse("1.5.0-alpha1")) {
+		t.Fatalf("Expected: 1.5.0 >= 1.5.0-alpha1")
+	}
+
+	if !semver.MustParseRange(">=1.5.0-alpha1")(semver.MustParse("1.5.0")) {
+		t.Fatalf("Expected: '>=1.5.0-alpha1' to include 1.5.0")
+	}
+}
+
 func semverString(sv *semver.Version) string {
 	if sv == nil {
 		return ""

@@ -23,6 +23,7 @@ import (
 	"github.com/blang/semver"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
@@ -140,7 +141,7 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		}
 	}
 
-	proposedKubernetesVersion := api.RecommendedKubernetesVersion(channel)
+	proposedKubernetesVersion := api.RecommendedKubernetesVersion(channel, kops.Version)
 
 	// We won't propose a downgrade
 	// TODO: What if a kubernetes version is bad?

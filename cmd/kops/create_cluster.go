@@ -26,6 +26,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	"k8s.io/kops"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
@@ -228,6 +229,11 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 	if channel.Spec.Cluster != nil {
 		cluster.Spec = *channel.Spec.Cluster
+
+		kubernetesVersion := api.RecommendedKubernetesVersion(channel, kops.Version)
+		if kubernetesVersion != nil {
+			cluster.Spec.KubernetesVersion = kubernetesVersion.String()
+		}
 	}
 	cluster.Spec.Channel = c.Channel
 
