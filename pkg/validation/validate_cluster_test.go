@@ -32,7 +32,7 @@ func Test_ValidateClusterPositive(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	validationCluster := &ValidationCluster{NodeList: nodeList, NodesCount: 1, MastersCount: 1, ComponentsHealthy: true, PodsHealthy: true}
+	validationCluster := &ValidationCluster{NodeList: nodeList, NodesCount: 1, MastersCount: 1}
 	validationCluster, err = validateTheNodes("foo", validationCluster)
 
 	if err != nil {
@@ -64,7 +64,8 @@ func Test_ValidateClusterComponents(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	validationCluster := &ValidationCluster{NodeList: nodeList, NodesCount: 1, MastersCount: 1, ComponentsHealthy: false, PodsHealthy: true}
+	var component = make([]string, 1)
+	validationCluster := &ValidationCluster{NodeList: nodeList, NodesCount: 1, MastersCount: 1, ComponentFailures: component}
 	validationCluster, err = validateTheNodes("foo", validationCluster)
 
 	if err == nil {
@@ -80,7 +81,8 @@ func Test_ValidateClusterPods(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	validationCluster := &ValidationCluster{NodeList: nodeList, NodesCount: 1, MastersCount: 1, ComponentsHealthy: true, PodsHealthy: false}
+	var pod = make([]string, 1)
+	validationCluster := &ValidationCluster{NodeList: nodeList, NodesCount: 1, MastersCount: 1, PodFailures: pod}
 	validationCluster, err = validateTheNodes("foo", validationCluster)
 
 	if err == nil {
