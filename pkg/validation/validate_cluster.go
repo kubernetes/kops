@@ -40,8 +40,8 @@ type ValidationCluster struct {
 
 	NodeList *v1.NodeList `json:"nodeList,omitempty"`
 
-	ComponentsHealthy bool `json:"componentsHealthy,omitempty"`
-	PodsHealthy       bool `json:"podsHealthy,omitempty"`
+	ComponentFailures []string `json:"componentFailures,omitempty"`
+	PodFailures       []string `json:"podFailures,omitempty"`
 }
 
 // A K8s node to be validated
@@ -86,12 +86,12 @@ func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupLi
 		return nil, fmt.Errorf("Cannot get nodes for %q: %v", clusterName, err)
 	}
 
-	validationCluster.ComponentsHealthy, err = collectComponentStatus(clusterKubernetesClient)
+	validationCluster.ComponentFailures, err = collectComponentFailures(clusterKubernetesClient)
 	if err != nil {
 		return nil, fmt.Errorf("Cannot get component status for %q: %v", clusterName, err)
 	}
 
-	validationCluster.PodsHealthy, err = collectPodHealth(clusterKubernetesClient)
+	validationCluster.PodFailures, err = collectPodFailures(clusterKubernetesClient)
 	if err != nil {
 		return nil, fmt.Errorf("Cannot get pod health for %q: %v", clusterName, err)
 	}
@@ -109,39 +109,32 @@ func getRoleNode(node *v1.Node) string {
 	return role
 }
 
-func collectComponentStatus(client k8s_clientset.Interface) (bool, error) {
+func collectComponentFailures(client k8s_clientset.Interface) (failures []string, err error) {
 	componentList, err := client.CoreV1().ComponentStatuses().List(v1.ListOptions{})
-	if err != nil {
-		fmt.Println("first error")
-		return false, err
-	}
-
-	fmt.Println("looop")
-	for _, component := range componentList.Items {
-		for _, condition := range component.Conditions {
-			if condition.Status != "True" {
-				fmt.Println("bad status")
-				return false, nil
+	if err == nil {
+		for _, component := range componentList.Items {
+			for _, condition := range component.Conditions {
+				if condition.Status != "True" {
+					failures = append(failures, component.Name)
+				}
 			}
 		}
 	}
-	return true, nil
+	return
 }
 
-func collectPodHealth(client k8s_clientset.Interface) (bool, error) {
+func collectPodFailures(client k8s_clientset.Interface) (failures []string, err error) {
 	pods, err := client.CoreV1().Pods("kube-system").List(v1.ListOptions{})
-	if err != nil {
-		return false, err
-	}
-
-	for _, pod := range pods.Items {
-		for _, status := range pod.Status.ContainerStatuses {
-			if !status.Ready {
-				return false, nil
+	if err == nil {
+		for _, pod := range pods.Items {
+			for _, status := range pod.Status.ContainerStatuses {
+				if !status.Ready {
+					failures = append(failures, pod.Name)
+				}
 			}
 		}
 	}
-	return true, nil
+	return
 }
 
 func validateTheNodes(clusterName string, validationCluster *ValidationCluster) (*ValidationCluster, error) {
@@ -200,11 +193,11 @@ func validateTheNodes(clusterName string, validationCluster *ValidationCluster) 
 		return validationCluster, fmt.Errorf("Your nodes are NOT ready %s", clusterName)
 	}
 
-	if !validationCluster.ComponentsHealthy {
+	if len(validationCluster.ComponentFailures) != 0 {
 		return validationCluster, fmt.Errorf("Your components are NOT healthy %s", clusterName)
 	}
 
-	if !validationCluster.PodsHealthy {
+	if len(validationCluster.PodFailures) != 0 {
 		return validationCluster, fmt.Errorf("Your kube-system pods are NOT healthy %s", clusterName)
 	}
 
