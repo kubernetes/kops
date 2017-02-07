@@ -19,8 +19,6 @@ package kutil
 // Based off of drain in kubectl
 // https://github.com/kubernetes/kubernetes/blob/master/pkg/kubectl/cmd/drain.go
 
-// FIXME: we are deleting local storage for daemon sets, and why even delete local storage??
-
 import (
 	"errors"
 	"fmt"
@@ -50,7 +48,7 @@ import (
 	"k8s.io/kubernetes/pkg/util/wait"
 )
 
-// DrainOptions For Draining Node
+// DrainOptions For Draining Node.
 type DrainOptions struct {
 	client             *internalclientset.Clientset
 	restClient         *restclient.RESTClient
@@ -66,7 +64,7 @@ type DrainOptions struct {
 	typer              runtime.ObjectTyper
 }
 
-// Allow tweaking default options for draining nodes
+// Allow tweaking default options for draining nodes.
 type DrainCommand struct {
 	Force              bool
 	IgnoreDaemonsets   bool
@@ -98,7 +96,7 @@ const (
 	kMaxNodeUpdateRetry  = 10
 )
 
-// Create a NewDrainOptions
+// Create a NewDrainOptions.
 func NewDrainOptions(command *DrainCommand, clusterName string) (*DrainOptions, error) {
 
 	config := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
@@ -139,6 +137,7 @@ func NewDrainOptions(command *DrainCommand, clusterName string) (*DrainOptions, 
 
 }
 
+// DrainTheNode drains a k8s node.
 func (o *DrainOptions) DrainTheNode(nodeName string) (err error) {
 
 	err = o.SetupDrain(nodeName)
@@ -156,7 +155,7 @@ func (o *DrainOptions) DrainTheNode(nodeName string) (err error) {
 }
 
 // SetupDrain populates some fields from the factory, grabs command line
-// arguments and looks up the node using Builder
+// arguments and looks up the node using Builder.
 func (o *DrainOptions) SetupDrain(nodeName string) error {
 
 	if nodeName == "" {
@@ -211,7 +210,7 @@ func (o *DrainOptions) SetupDrain(nodeName string) error {
 	return nil
 }
 
-// RunDrain runs the 'drain' command
+// RunDrain runs the 'drain' command.
 func (o *DrainOptions) RunDrain() error {
 	if o.nodeInfo == nil {
 		return fmt.Errorf("nodeInfo is not setup")
@@ -223,9 +222,9 @@ func (o *DrainOptions) RunDrain() error {
 
 	err := o.deleteOrEvictPodsSimple()
 	if err == nil {
-		glog.V(2).Infof("Drained node %s", o.nodeInfo.Name)
+		glog.V(2).Infof("Drained node %s.", o.nodeInfo.Name)
 	} else {
-		glog.V(2).Infof("Error draining node %s - %v", o.nodeInfo.Name, err)
+		glog.V(2).Infof("Error draining node %s - %v.", o.nodeInfo.Name, err)
 	}
 	return err
 }
@@ -242,9 +241,9 @@ func (o *DrainOptions) deleteOrEvictPodsSimple() error {
 		if newErr != nil {
 			return newErr
 		}
-		glog.Fatalf("There are pending pods when an error occurred: %v\n", err)
+		glog.Fatalf("There are pending pods when an error occurred: %v.\n", err)
 		for _, pendingPod := range pendingPods {
-			glog.Fatalf("%s/%s\n", "pod", pendingPod.Name)
+			glog.Fatalf("%s/%s.\n", "pod", pendingPod.Name)
 		}
 	}
 	return err
@@ -261,8 +260,6 @@ func (o *DrainOptions) getController(sr *api.SerializedReference) (interface{}, 
 	case "ReplicaSet":
 		return o.client.Extensions().ReplicaSets(sr.Reference.Namespace).Get(sr.Reference.Name, metav1.GetOptions{})
 	case "PetSet":
-		// FIXME: how the heck do you write this
-		// FIXME: Can we use the go client to make 1.4 and 1.5 calls :)
 		return "PetSet", nil
 	case "StatefulSet":
 		return o.client.Apps().StatefulSets(sr.Reference.Namespace).Get(sr.Reference.Name, metav1.GetOptions{})
@@ -347,12 +344,23 @@ func hasLocalStorage(pod api.Pod) bool {
 }
 
 func (o *DrainOptions) localStorageFilter(pod api.Pod) (bool, *warning, *fatal) {
+
+	// So this filter is not ignoring daemonsets.
+	// Do not like duplicating this, but not sure what choice I have.
+	dsFilter, warningDs, fatalDs := o.daemonsetFilter(pod)
+
+	if dsFilter == false {
+		glog.V(2).Infof("Skipping pod because it is a Daemonset: %s.", pod.Name)
+		return false, warningDs, fatalDs
+	}
+
 	if !hasLocalStorage(pod) {
 		return true, nil, nil
 	}
 	if !o.DeleteLocalData {
 		return false, nil, &fatal{kLocalStorageFatal}
 	}
+
 	return true, &warning{kLocalStorageWarning}, nil
 }
 
