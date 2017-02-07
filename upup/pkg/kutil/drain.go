@@ -16,16 +16,9 @@ limitations under the License.
 
 package kutil
 
-////
 // Based off of drain in kubectl
 // https://github.com/kubernetes/kubernetes/blob/master/pkg/kubectl/cmd/drain.go
-////
 
-// TODO: remove kubectl dependencies
-// TODO: can we use our own client instead of building it again
-// TODO: refactor our client to be like this client
-
-// FIXME: look at 1.5 refactor
 // FIXME: we are deleting local storage for daemon sets, and why even delete local storage??
 
 import (
@@ -139,7 +132,7 @@ func NewDrainOptions(command *DrainCommand, clusterName string) (*DrainOptions, 
 		backOff:            clockwork.NewRealClock(),
 		Force:              true,
 		IgnoreDaemonsets:   true,
-		DeleteLocalData:    false, // TODO: should this be true?
+		DeleteLocalData:    true,
 		GracePeriodSeconds: -1,
 		Timeout:            duration,
 	}, nil
@@ -151,12 +144,12 @@ func (o *DrainOptions) DrainTheNode(nodeName string) (err error) {
 	err = o.SetupDrain(nodeName)
 
 	if err != nil {
-		return fmt.Errorf("Error setting up the drain: %v, node: %s", err, nodeName)
+		return fmt.Errorf("error setting up the drain: %v, node: %s", err, nodeName)
 	}
 	err = o.RunDrain()
 
 	if err != nil {
-		return fmt.Errorf("Drain failed %v, %s", err, nodeName)
+		return fmt.Errorf("drain failed %v, %s", err, nodeName)
 	}
 
 	return nil
@@ -207,7 +200,7 @@ func (o *DrainOptions) SetupDrain(nodeName string) error {
 	})
 
 	if err != nil {
-		glog.Fatalf("Error getting nodeInfo %v", err)
+		glog.Fatalf("Error getting nodeInfo %v.", err)
 		return fmt.Errorf("vistor problem %v", err)
 	}
 
@@ -389,8 +382,7 @@ func (o *DrainOptions) getPodsForDeletion() (pods []api.Pod, err error) {
 
 	for _, pod := range podList.Items {
 		podOk := true
-		// FIXME: The localStorageFilter is coming back with daemonsets
-		// FIXME: The filters are not excluding each other
+
 		for _, filt := range []podFilter{mirrorPodFilter, o.localStorageFilter, o.unreplicatedFilter, o.daemonsetFilter} {
 			filterOk, w, f := filt(pod)
 
@@ -411,9 +403,9 @@ func (o *DrainOptions) getPodsForDeletion() (pods []api.Pod, err error) {
 		return []api.Pod{}, errors.New(fs.Message())
 	}
 	if len(ws) > 0 {
-		glog.Warningf("WARNING: %s\n", ws.Message())
+		glog.Warningf("WARNING: %s\n.", ws.Message())
 	}
-	glog.V(2).Infof("Pods to delete: %v", pods)
+	glog.V(2).Infof("Pods to delete: %v.", pods)
 	return pods, nil
 }
 
@@ -467,7 +459,7 @@ func (o *DrainOptions) deleteOrEvictPods(pods []api.Pod) error {
 		err = o.evictPods(pods, policyGroupVersion, getPodFn)
 
 		if err != nil {
-			glog.Warningf("Error attempting to evict pod, will delete pod - err: %v", err)
+			glog.Warningf("Error attempting to evict pod, will delete pod - err: %v.", err)
 			return o.deletePods(pods, getPodFn)
 		}
 
@@ -558,7 +550,7 @@ func (o *DrainOptions) waitForDelete(pods []api.Pod, interval, timeout time.Dura
 		for i, pod := range pods {
 			p, err := getPodFn(pod.Namespace, pod.Name)
 			if apierrors.IsNotFound(err) || (p != nil && p.ObjectMeta.UID != pod.ObjectMeta.UID) {
-				glog.V(2).Infof("Deleted pod %s, %s", pod.Name, verbStr)
+				glog.V(2).Infof("Deleted pod %s, %s.", pod.Name, verbStr)
 				continue
 			} else if err != nil {
 				return false, err
@@ -612,7 +604,7 @@ func SupportEviction(clientset *internalclientset.Clientset) (string, error) {
 func (o *DrainOptions) RunCordonOrUncordon(desired bool) error {
 	cmdNamespace, _, err := o.factory.DefaultNamespace()
 	if err != nil {
-		glog.V(2).Infof("Error node %s - %v", o.nodeInfo.Name, err)
+		glog.V(2).Infof("Error node %s - %v.", o.nodeInfo.Name, err)
 		return err
 	}
 
@@ -626,7 +618,7 @@ func (o *DrainOptions) RunCordonOrUncordon(desired bool) error {
 	if o.nodeInfo.Mapping.GroupVersionKind.Kind == "Node" {
 		unsched := reflect.ValueOf(o.nodeInfo.Object).Elem().FieldByName("Spec").FieldByName("Unschedulable")
 		if unsched.Bool() == desired {
-			glog.V(2).Infof("Node is already: %s", already(desired))
+			glog.V(2).Infof("Node is already: %s.", already(desired))
 		} else {
 			helper := resource.NewHelper(o.restClient, o.nodeInfo.Mapping)
 			unsched.SetBool(desired)
@@ -648,10 +640,10 @@ func (o *DrainOptions) RunCordonOrUncordon(desired bool) error {
 			if err != nil {
 				return err
 			}
-			glog.V(2).Infof("Node %s is : %s", o.nodeInfo.Name, changed(desired))
+			glog.V(2).Infof("Node %s is : %s.", o.nodeInfo.Name, changed(desired))
 		}
 	} else {
-		glog.V(2).Infof("Node %s is : skipped", o.nodeInfo.Name)
+		glog.V(2).Infof("Node %s is : skipped.", o.nodeInfo.Name)
 	}
 
 	return nil
