@@ -623,38 +623,38 @@ func (c *ApplyClusterCmd) upgradeSpecs() error {
 
 // validateKopsVersion ensures that kops meet the version requirements / recommendations in the channel
 func (c *ApplyClusterCmd) validateKopsVersion() error {
-	kopsVersion, err := semver.Parse(kops.Version)
+	kopsVersion, err := semver.ParseTolerant(kops.Version)
 	if err != nil {
 		glog.Warningf("unable to parse kops version %q", kops.Version)
 		// Not a hard-error
 		return nil
 	}
 
-	versionInfo := api.FindVersionInfo(c.channel.Spec.KopsVersions, kopsVersion)
+	versionInfo := api.FindKopsVersionSpec(c.channel.Spec.KopsVersions, kopsVersion)
 	if versionInfo == nil {
 		glog.Warningf("unable to find version information for kops version %q in channel", kopsVersion)
 		// Not a hard-error
 		return nil
 	}
 
-	recommended, err := api.FindRecommendedUpgrade(versionInfo, kopsVersion)
+	recommended, err := versionInfo.FindRecommendedUpgrade(kopsVersion)
 	if err != nil {
 		glog.Warningf("unable to parse version recommendation for kops version %q in channel", kopsVersion)
 	}
 
-	required, err := api.IsUpgradeRequired(versionInfo, kopsVersion)
+	required, err := versionInfo.IsUpgradeRequired(kopsVersion)
 	if err != nil {
 		glog.Warningf("unable to parse version requirement for kops version %q in channel", kopsVersion)
 	}
 
-	if recommended != "" && !required {
+	if recommended != nil && !required {
 		fmt.Printf("\n")
 		fmt.Printf(starline)
 		fmt.Printf("\n")
 		fmt.Printf("A new kops version is available: %s\n", recommended)
 		fmt.Printf("\n")
 		fmt.Printf("Upgrading is recommended\n")
-		fmt.Printf("More information: %s\n", buildPermalink("upgrade_kops", recommended))
+		fmt.Printf("More information: %s\n", buildPermalink("upgrade_kops", recommended.String()))
 		fmt.Printf("\n")
 		fmt.Printf(starline)
 		fmt.Printf("\n")
@@ -662,18 +662,17 @@ func (c *ApplyClusterCmd) validateKopsVersion() error {
 		fmt.Printf("\n")
 		fmt.Printf(starline)
 		fmt.Printf("\n")
-		if recommended != "" {
+		if recommended != nil {
 			fmt.Printf("A new kops version is available: %s\n", recommended)
 		}
 		fmt.Printf("\n")
 		fmt.Printf("This version of kops is no longer supported; upgrading is required\n")
 		fmt.Printf("(you can bypass this check by exporting KOPS_RUN_OBSOLETE_VERSION)\n")
 		fmt.Printf("\n")
-		fmt.Printf("More information: %s\n", buildPermalink("upgrade_kops", recommended))
+		fmt.Printf("More information: %s\n", buildPermalink("upgrade_kops", recommended.String()))
 		fmt.Printf("\n")
 		fmt.Printf(starline)
 		fmt.Printf("\n")
-
 	}
 
 	if required {
@@ -697,31 +696,31 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 	// TODO: make util.ParseKubernetesVersion not return a pointer
 	kubernetesVersion := *parsed
 
-	versionInfo := api.FindVersionInfo(c.channel.Spec.KubernetesVersions, kubernetesVersion)
+	versionInfo := api.FindKubernetesVersionSpec(c.channel.Spec.KubernetesVersions, kubernetesVersion)
 	if versionInfo == nil {
 		glog.Warningf("unable to find version information for kubernetes version %q in channel", kubernetesVersion)
 		// Not a hard-error
 		return nil
 	}
 
-	recommended, err := api.FindRecommendedUpgrade(versionInfo, kubernetesVersion)
+	recommended, err := versionInfo.FindRecommendedUpgrade(kubernetesVersion)
 	if err != nil {
 		glog.Warningf("unable to parse version recommendation for kubernetes version %q in channel", kubernetesVersion)
 	}
 
-	required, err := api.IsUpgradeRequired(versionInfo, kubernetesVersion)
+	required, err := versionInfo.IsUpgradeRequired(kubernetesVersion)
 	if err != nil {
 		glog.Warningf("unable to parse version requirement for kubernetes version %q in channel", kubernetesVersion)
 	}
 
-	if recommended != "" && !required {
+	if recommended != nil && !required {
 		fmt.Printf("\n")
 		fmt.Printf(starline)
 		fmt.Printf("\n")
 		fmt.Printf("A new kubernetes version is available: %s\n", recommended)
 		fmt.Printf("Upgrading is recommended (try kops upgrade cluster)\n")
 		fmt.Printf("\n")
-		fmt.Printf("More information: %s\n", buildPermalink("upgrade_k8s", recommended))
+		fmt.Printf("More information: %s\n", buildPermalink("upgrade_k8s", recommended.String()))
 		fmt.Printf("\n")
 		fmt.Printf(starline)
 		fmt.Printf("\n")
@@ -729,14 +728,14 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 		fmt.Printf("\n")
 		fmt.Printf(starline)
 		fmt.Printf("\n")
-		if recommended != "" {
+		if recommended != nil {
 			fmt.Printf("A new kubernetes version is available: %s\n", recommended)
 		}
 		fmt.Printf("\n")
 		fmt.Printf("This version of kubernetes is no longer supported; upgrading is required\n")
 		fmt.Printf("(you can bypass this check by exporting KOPS_RUN_OBSOLETE_VERSION)\n")
 		fmt.Printf("\n")
-		fmt.Printf("More information: %s\n", buildPermalink("upgrade_k8s", recommended))
+		fmt.Printf("More information: %s\n", buildPermalink("upgrade_k8s", recommended.String()))
 		fmt.Printf("\n")
 		fmt.Printf(starline)
 		fmt.Printf("\n")
