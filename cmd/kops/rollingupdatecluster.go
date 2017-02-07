@@ -37,13 +37,22 @@ import (
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 )
 
+// Command Object for a Rolling Update.
 type RollingUpdateOptions struct {
 	Yes       bool
 	Force     bool
 	CloudOnly bool
 
-	ForceDrain      bool
-	FailOnValidate  bool
+	// The following two variables are when kops is validating a cluster
+	// during a rolling update.
+
+	// FailOnDrainError fail rolling-update if drain errors.
+	FailOnDrainError bool
+
+	// FailOnValidate fail the cluster rolling-update when the cluster
+	// does not validate, after a validation period.
+	FailOnValidate bool
+
 	MasterInterval  time.Duration
 	NodeInterval    time.Duration
 	BastionInterval time.Duration
@@ -59,6 +68,8 @@ func (o *RollingUpdateOptions) InitDefaults() {
 	o.Yes = false
 	o.Force = false
 	o.CloudOnly = false
+	o.FailOnDrainError = false
+	o.FailOnValidate = true
 
 	o.MasterInterval = 5 * time.Minute
 	o.NodeInterval = 2 * time.Minute
@@ -66,6 +77,7 @@ func (o *RollingUpdateOptions) InitDefaults() {
 }
 
 func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
+
 	var options RollingUpdateOptions
 	options.InitDefaults()
 
@@ -86,13 +98,13 @@ To perform rolling update, you need to update the cloud resources first with "ko
 	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force rolling update, even if no changes")
 	cmd.Flags().BoolVar(&options.CloudOnly, "cloudonly", options.CloudOnly, "Perform rolling update without confirming progress with k8s")
 
-	cmd.Flags().DurationVar(&options.MasterInterval, "master-interval", 5*time.Minute, "Time to wait between restarting masters")
-	cmd.Flags().DurationVar(&options.NodeInterval, "node-interval", 2*time.Minute, "Time to wait between restarting nodes")
-	cmd.Flags().DurationVar(&options.BastionInterval, "bastion-interval", 5*time.Minute, "Time to wait between restarting bastions")
+	cmd.Flags().DurationVar(&options.MasterInterval, "master-interval", options.MasterInterval, "Time to wait between restarting masters")
+	cmd.Flags().DurationVar(&options.NodeInterval, "node-interval", options.NodeInterval, "Time to wait between restarting nodes")
+	cmd.Flags().DurationVar(&options.BastionInterval, "bastion-interval", options.BastionInterval, "Time to wait between restarting bastions")
 	cmd.Flags().StringSliceVar(&options.InstanceGroups, "instance-group", options.InstanceGroups, "List of instance groups to update (defaults to all if not specified)")
 
-	cmd.Flags().BoolVar(&options.ForceDrain, "force-drain", true, "The node will be upgraded if the drain fails, if set to false the rolling update will fail if a drain fails.")
-	cmd.Flags().BoolVar(&options.FailOnValidate, "validate", true, "Validate the cluster, and if the validation fails stop the rolling-update.")
+	cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", false, "The rolling-update will fail if draining a node fails. Enable with KOPS_FEATURE_FLAGS='+ValidiateAndDrainRollingUpdate'")
+	cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate", true, "The rolling-update will fail if the cluster fails to validate. Enable with KOPS_FEATURE_FLAGS='+ValidiateAndDrainRollingUpdate'")
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		err := rootCommand.ProcessArgs(args)
@@ -114,12 +126,14 @@ To perform rolling update, you need to update the cloud resources first with "ko
 			exitWithError(err)
 			return
 		}
+
 	}
 
 	return cmd
 }
 
 func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpdateOptions) error {
+
 	clientset, err := f.Clientset()
 	if err != nil {
 		return err
@@ -194,13 +208,6 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		return err
 	}
 
-	d := &kutil.RollingUpdateCluster{
-		MasterInterval: options.MasterInterval,
-		NodeInterval:   options.NodeInterval,
-		Force:          options.Force,
-	}
-	d.Cloud = cloud
-
 	warnUnmatched := true
 	groups, err := kutil.FindCloudInstanceGroups(cloud, cluster, instanceGroups, warnUnmatched, nodes)
 	if err != nil {
@@ -264,28 +271,28 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 	}
 
 	if !needUpdate && !options.Force {
-		fmt.Printf("\nNo rolling-update required\n")
+		fmt.Printf("\nNo rolling-update required.\n")
 		return nil
 	}
 
 	if !options.Yes {
-		fmt.Printf("\nMust specify --yes to rolling-update\n")
+		fmt.Printf("\nMust specify --yes to rolling-update.\n")
 		return nil
 	}
 
 	if featureflag.DrainAndValidateRollingUpdate.Enabled() {
-		d := &kutil.RollingUpdateClusterDV{
-			MasterInterval: options.MasterInterval,
-			NodeInterval:   options.NodeInterval,
-			Force:          options.Force,
-			K8sClient:      k8sClient,
-			ForceDrain:     options.ForceDrain,
-			FailOnValidate: options.FailOnValidate,
-			CloudOnly:      options.CloudOnly,
-			ClusterName:    options.ClusterName,
-			Cloud:          cloud,
+		d := &kutil.RollingUpdateClusterDrainValidate{
+			MasterInterval:   options.MasterInterval,
+			NodeInterval:     options.NodeInterval,
+			Force:            options.Force,
+			K8sClient:        k8sClient,
+			FailOnDrainError: options.FailOnDrainError,
+			FailOnValidate:   options.FailOnValidate,
+			CloudOnly:        options.CloudOnly,
+			ClusterName:      options.ClusterName,
+			Cloud:            cloud,
 		}
-		glog.V(2).Infof("New rolling update with drain and validate enabled")
+		glog.V(2).Infof("New rolling update with drain and validate enabled.")
 		return d.RollingUpdateDrainValidate(groups, list)
 	} else {
 		d := &kutil.RollingUpdateCluster{

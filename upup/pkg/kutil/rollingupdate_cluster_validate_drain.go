@@ -16,8 +16,6 @@ limitations under the License.
 
 package kutil
 
-// TODO move this business logic into a service than can be called via the api
-
 import (
 	"fmt"
 	"sync"
@@ -34,7 +32,7 @@ import (
 )
 
 // RollingUpdateCluster restarts cluster nodes
-type RollingUpdateClusterDV struct {
+type RollingUpdateClusterDrainValidate struct {
 	Cloud fi.Cloud
 
 	MasterInterval  time.Duration
@@ -42,8 +40,8 @@ type RollingUpdateClusterDV struct {
 	BastionInterval time.Duration
 	K8sClient       *k8s_clientset.Clientset
 
-	ForceDrain     bool
-	FailOnValidate bool
+	FailOnDrainError bool
+	FailOnValidate   bool
 
 	Force bool
 
@@ -52,7 +50,7 @@ type RollingUpdateClusterDV struct {
 }
 
 // RollingUpdateData is used to pass information to perform a rolling update
-type RollingUpdateDataDV struct {
+type RollingUpdateDataDrainValidate struct {
 	Cloud             fi.Cloud
 	Force             bool
 	Interval          time.Duration
@@ -61,21 +59,17 @@ type RollingUpdateDataDV struct {
 
 	K8sClient *k8s_clientset.Clientset
 
-	ForceDrain     bool
-	FailOnValidate bool
+	FailOnDrainError bool
+	FailOnValidate   bool
 
 	CloudOnly   bool
 	ClusterName string
 }
 
-// TODO move retries to RollingUpdateCluster
 const retries = 8
 
-// TODO: should we check to see if api updates exist in the cluster
-// TODO: for instance should we check if Petsets exist when upgrading 1.4.x -> 1.5.x
-
 // Perform a rolling update on a K8s Cluster
-func (c *RollingUpdateClusterDV) RollingUpdateDrainValidate(groups map[string]*CloudInstanceGroup, instanceGroups *api.InstanceGroupList) error {
+func (c *RollingUpdateClusterDrainValidate) RollingUpdateDrainValidate(groups map[string]*CloudInstanceGroup, instanceGroups *api.InstanceGroupList) error {
 	if len(groups) == 0 {
 		return nil
 	}
@@ -95,7 +89,7 @@ func (c *RollingUpdateClusterDV) RollingUpdateDrainValidate(groups map[string]*C
 		case api.InstanceGroupRoleBastion:
 			bastionGroups[k] = group
 		default:
-			return fmt.Errorf("unknown group type for group %q", group.InstanceGroup.ObjectMeta.Name)
+			return fmt.Errorf("unknown group type for group: %q", group.InstanceGroup.ObjectMeta.Name)
 		}
 	}
 
@@ -114,7 +108,7 @@ func (c *RollingUpdateClusterDV) RollingUpdateDrainValidate(groups map[string]*C
 
 				rollingUpdateData := c.CreateRollingUpdateData(instanceGroups, true)
 
-				err := group.RollingUpdateDV(rollingUpdateData)
+				err := group.RollingUpdateDrainValidate(rollingUpdateData)
 
 				resultsMutex.Lock()
 				results[k] = err
@@ -146,7 +140,7 @@ func (c *RollingUpdateClusterDV) RollingUpdateDrainValidate(groups map[string]*C
 			for k, group := range masterGroups {
 				rollingUpdateData := c.CreateRollingUpdateData(instanceGroups, false)
 
-				err := group.RollingUpdateDV(rollingUpdateData)
+				err := group.RollingUpdateDrainValidate(rollingUpdateData)
 				resultsMutex.Lock()
 				results[k] = err
 				resultsMutex.Unlock()
@@ -159,7 +153,6 @@ func (c *RollingUpdateClusterDV) RollingUpdateDrainValidate(groups map[string]*C
 	}
 
 	// Upgrade nodes, with greater parallelism
-	// TODO increase each instancegroups nodes by one
 	{
 		var wg sync.WaitGroup
 
@@ -174,7 +167,7 @@ func (c *RollingUpdateClusterDV) RollingUpdateDrainValidate(groups map[string]*C
 
 				rollingUpdateData := c.CreateRollingUpdateData(instanceGroups, false)
 
-				err := group.RollingUpdateDV(rollingUpdateData)
+				err := group.RollingUpdateDrainValidate(rollingUpdateData)
 
 				resultsMutex.Lock()
 				results[k] = err
@@ -195,8 +188,8 @@ func (c *RollingUpdateClusterDV) RollingUpdateDrainValidate(groups map[string]*C
 	return nil
 }
 
-func (c *RollingUpdateClusterDV) CreateRollingUpdateData(instanceGroups *api.InstanceGroupList, isBastion bool) *RollingUpdateDataDV {
-	return &RollingUpdateDataDV{
+func (c *RollingUpdateClusterDrainValidate) CreateRollingUpdateData(instanceGroups *api.InstanceGroupList, isBastion bool) *RollingUpdateDataDrainValidate {
+	return &RollingUpdateDataDrainValidate{
 		Cloud:             c.Cloud,
 		Force:             c.Force,
 		Interval:          c.NodeInterval,
@@ -204,27 +197,27 @@ func (c *RollingUpdateClusterDV) CreateRollingUpdateData(instanceGroups *api.Ins
 		IsBastion:         isBastion,
 		K8sClient:         c.K8sClient,
 		FailOnValidate:    c.FailOnValidate,
-		ForceDrain:        c.ForceDrain,
+		FailOnDrainError:  c.FailOnDrainError,
 		CloudOnly:         c.CloudOnly,
 		ClusterName:       c.ClusterName,
 	}
 }
 
 // RollingUpdate performs a rolling update on a list of ec2 instances.
-func (n *CloudInstanceGroup) RollingUpdateDV(rollingUpdateData *RollingUpdateDataDV) error {
+func (n *CloudInstanceGroup) RollingUpdateDrainValidate(rollingUpdateData *RollingUpdateDataDrainValidate) error {
 
 	// we should not get here, but hey I am going to check
 	if rollingUpdateData == nil {
-		return fmt.Errorf("RollingUpdate cannot be nil")
+		return fmt.Errorf("rollingUpdate cannot be nil")
 	}
 
 	// Do not need a k8s client if you are doing cloud only
 	if rollingUpdateData.K8sClient == nil && !rollingUpdateData.CloudOnly {
-		return fmt.Errorf("RollingUpdate is missing a k8s client")
+		return fmt.Errorf("rollingUpdate is missing a k8s client")
 	}
 
 	if rollingUpdateData.InstanceGroupList == nil {
-		return fmt.Errorf("RollingUpdate is missing a the InstanceGroupList")
+		return fmt.Errorf("rollingUpdate is missing a the InstanceGroupList")
 	}
 
 	c := rollingUpdateData.Cloud.(awsup.AWSCloud)
@@ -234,11 +227,10 @@ func (n *CloudInstanceGroup) RollingUpdateDV(rollingUpdateData *RollingUpdateDat
 		update = append(update, n.Ready...)
 	}
 
-	// TODO is this logic correct
 	if !rollingUpdateData.IsBastion && rollingUpdateData.FailOnValidate && !rollingUpdateData.CloudOnly {
 		_, err := validate.ValidateCluster(rollingUpdateData.ClusterName, rollingUpdateData.InstanceGroupList, rollingUpdateData.K8sClient)
 		if err != nil {
-			return fmt.Errorf("Cluster %s does not pass validation", rollingUpdateData.ClusterName)
+			return fmt.Errorf("cluster %s does not pass validation", rollingUpdateData.ClusterName)
 		}
 	}
 
@@ -246,34 +238,38 @@ func (n *CloudInstanceGroup) RollingUpdateDV(rollingUpdateData *RollingUpdateDat
 
 		if !rollingUpdateData.IsBastion {
 			if rollingUpdateData.CloudOnly {
-				glog.Warningf("not draining nodes - cloud only is set")
+				glog.Warningf("Not draining nodes - cloud only is set.")
 			} else {
+
 				drain, err := NewDrainOptions(nil, u.Node.ClusterName)
 
 				if err != nil {
-					glog.Warningf("Error creating drain: %v", err)
-					if rollingUpdateData.ForceDrain == false {
-						return err
+
+					glog.Warningf("Error creating drain: %v.", err)
+					if rollingUpdateData.FailOnDrainError {
+						return fmt.Errorf("error creating drain: %v.", err)
+					} else {
+						glog.Infof("Proceeding with rolling-update since fail-on-drain-error is set to false.")
 					}
+
 				} else {
+
 					err = drain.DrainTheNode(u.Node.Name)
 					if err != nil {
-						glog.Warningf("setupErr: %v", err)
+						glog.Warningf("Error draining node: %v.", err)
+						if rollingUpdateData.FailOnDrainError {
+							return fmt.Errorf("error draining node: %v", err)
+						} else {
+							glog.Infof("Proceeding with rolling-update since fail-on-drain-error is set to false.")
+						}
 					}
-					if rollingUpdateData.ForceDrain == false {
-						return err
-					}
+
 				}
 			}
 		}
 
-		// TODO: Temporarily increase size of ASG?
-		// TODO: Remove from ASG first so status is immediately updated?
-		// TODO: Batch termination, like a rolling-update
-		// TODO: check if an asg is running the correct number of instances
-
 		instanceID := aws.StringValue(u.ASGInstance.InstanceId)
-		glog.Infof("Stopping instance %q in AWS ASG %q", instanceID, n.ASGName)
+		glog.Infof("Stopping instance %q in AWS ASG %q.", instanceID, n.ASGName)
 
 		request := &ec2.TerminateInstancesInput{
 			InstanceIds: []*string{u.ASGInstance.InstanceId},
@@ -284,30 +280,29 @@ func (n *CloudInstanceGroup) RollingUpdateDV(rollingUpdateData *RollingUpdateDat
 		}
 
 		if !rollingUpdateData.IsBastion {
+
 			// Wait for new EC2 instances to be created
 			time.Sleep(rollingUpdateData.Interval)
 
-			// Wait until the cluster is happy
-			// TODO: do we need to respect cloud only??
-			for i := 0; i <= retries; i++ {
+			if rollingUpdateData.CloudOnly {
+				glog.Warningf("Not validating nodes as cloudonly flag is set.")
+				return nil
+			}
 
-				if rollingUpdateData.CloudOnly {
-					glog.Warningf("sleeping only - not validating nodes as cloudonly flag is set")
-					time.Sleep(rollingUpdateData.Interval)
+			// Wait until the cluster is happy
+			for i := 0; i <= retries; i++ {
+				_, err = validate.ValidateCluster(rollingUpdateData.ClusterName, rollingUpdateData.InstanceGroupList, rollingUpdateData.K8sClient)
+				if err != nil {
+					glog.Infof("Unable to validate k8s cluster: %s.", err)
+					time.Sleep(rollingUpdateData.Interval / 2)
 				} else {
-					_, err = validate.ValidateCluster(rollingUpdateData.ClusterName, rollingUpdateData.InstanceGroupList, rollingUpdateData.K8sClient)
-					if err != nil {
-						glog.Infof("Unable to validate k8s cluster: %s.", err)
-						time.Sleep(rollingUpdateData.Interval / 2)
-					} else {
-						glog.Info("Cluster validated proceeding with next step in rolling update")
-						break
-					}
+					glog.Info("Cluster validated proceeding with next step in rolling update.")
+					break
 				}
 			}
 
 			if rollingUpdateData.CloudOnly {
-				glog.Warningf("not validating nodes as cloudonly flag is set")
+				glog.Warningf("Not validating nodes as cloudonly flag is set.")
 			} else if err != nil && rollingUpdateData.FailOnValidate {
 				return fmt.Errorf("validation timed out while performing rolling update: %v", err)
 			}
