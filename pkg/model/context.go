@@ -18,11 +18,13 @@ package model
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/blang/semver"
 	"github.com/golang/glog"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
-	"strings"
 )
 
 type KopsModelContext struct {
