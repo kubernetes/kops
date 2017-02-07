@@ -31,7 +31,7 @@ import (
 	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 )
 
-// RollingUpdateCluster restarts cluster nodes
+// RollingUpdateClusterDrainValidate restarts cluster nodes.
 type RollingUpdateClusterDrainValidate struct {
 	Cloud fi.Cloud
 
@@ -49,7 +49,7 @@ type RollingUpdateClusterDrainValidate struct {
 	ClusterName string
 }
 
-// RollingUpdateData is used to pass information to perform a rolling update
+// RollingUpdateDataDrainValidate is used to pass information to perform a rolling update.
 type RollingUpdateDataDrainValidate struct {
 	Cloud             fi.Cloud
 	Force             bool
@@ -68,7 +68,7 @@ type RollingUpdateDataDrainValidate struct {
 
 const retries = 8
 
-// Perform a rolling update on a K8s Cluster
+// RollingUpdateDrainValidate performs a rolling update on a K8s Cluster.
 func (c *RollingUpdateClusterDrainValidate) RollingUpdateDrainValidate(groups map[string]*CloudInstanceGroup, instanceGroups *api.InstanceGroupList) error {
 	if len(groups) == 0 {
 		return nil
@@ -188,6 +188,7 @@ func (c *RollingUpdateClusterDrainValidate) RollingUpdateDrainValidate(groups ma
 	return nil
 }
 
+// CreateRollingUpdateData creates a RollingUpdateClusterDrainValidate struct.
 func (c *RollingUpdateClusterDrainValidate) CreateRollingUpdateData(instanceGroups *api.InstanceGroupList, isBastion bool) *RollingUpdateDataDrainValidate {
 	return &RollingUpdateDataDrainValidate{
 		Cloud:             c.Cloud,
@@ -203,7 +204,7 @@ func (c *RollingUpdateClusterDrainValidate) CreateRollingUpdateData(instanceGrou
 	}
 }
 
-// RollingUpdate performs a rolling update on a list of ec2 instances.
+// RollingUpdateDrainValidate performs a rolling update on a list of ec2 instances.
 func (n *CloudInstanceGroup) RollingUpdateDrainValidate(rollingUpdateData *RollingUpdateDataDrainValidate) error {
 
 	// we should not get here, but hey I am going to check
