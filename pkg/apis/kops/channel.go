@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"github.com/blang/semver"
 	"github.com/golang/glog"
-	"k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
@@ -276,8 +275,7 @@ func (c *Channel) FindImage(provider fi.CloudProviderID, kubernetesVersion semve
 	return matches[0]
 }
 
-func RecommendedKubernetesVersion(c *Channel) *semver.Version {
-	kopsVersionString := kops.Version
+func RecommendedKubernetesVersion(c *Channel, kopsVersionString string) *semver.Version {
 	kopsVersion, err := semver.ParseTolerant(kopsVersionString)
 	if err != nil {
 		glog.Warningf("unable to parse kops version %q", kopsVersionString)
