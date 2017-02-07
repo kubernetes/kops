@@ -39,7 +39,7 @@ if [ -z "$2" ]; then
 fi
 
 GROUP=$1
-USER=$1
+USER=$2
 
 aws iam create-group --group-name ${GROUP}
 
