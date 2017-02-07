@@ -18,6 +18,8 @@ package model
 
 import (
 	"fmt"
+	"strings"
+
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -25,7 +27,6 @@ import (
 	"k8s.io/kubernetes/pkg/api/v1"
 	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/util/intstr"
-	"strings"
 )
 
 // KubeAPIServerBuilder install kube-apiserver (just the manifest at the moment)
@@ -43,12 +44,12 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		pod, err := b.buildPod()
 		if err != nil {
-			return fmt.Errorf("error building kube-apiserver pod: %v", err)
+			return fmt.Errorf("error building kube-apiserver manifest: %v", err)
 		}
 
 		manifest, err := ToVersionedYaml(pod)
 		if err != nil {
-			return fmt.Errorf("error marshalling pod to yaml: %v", err)
+			return fmt.Errorf("error marshalling manifest to yaml: %v", err)
 		}
 
 		t := &nodetasks.File{
@@ -144,21 +145,6 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 
 	return pod, nil
 }
-
-//// hasHostPath is used to check if the directory exists.  We use it because usually we don't want to set up a host-path
-//// mapping if the host path doesn't exist, in case the volume is mounted read-only: docker will try to create the host-path
-//// it will fail if the volume is read only, and that will prevent the container from starting.
-//func hasHostPath(path string) bool {
-//	_, err := os.Stat(path)
-//	if err != nil {
-//		if os.IsNotExist(err) {
-//			return false
-//		} else {
-//			glog.Warningf("error checking if host path %q exists: %v", path, err)
-//		}
-//	}
-//	return true
-//}
 
 func addHostPathMapping(pod *v1.Pod, container *v1.Container, name string, path string, readOnly bool) {
 	pod.Spec.Volumes = append(pod.Spec.Volumes, v1.Volume{
