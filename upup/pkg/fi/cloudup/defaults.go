@@ -22,6 +22,8 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/vfs"
 	"strings"
+
+	kopsversion "k8s.io/kops"
 )
 
 // PerformAssignments populates values that are required and immutable
@@ -91,10 +93,15 @@ func ensureKubernetesVersion(c *kops.Cluster) error {
 			if err != nil {
 				return err
 			}
-			kubernetesVersion := kops.RecommendedKubernetesVersion(channel)
+			kubernetesVersion := kops.RecommendedKubernetesVersion(channel, kopsversion.Version)
 			if kubernetesVersion != nil {
 				c.Spec.KubernetesVersion = kubernetesVersion.String()
+				glog.Infof("Using KubernetesVersion %q from channel %q", c.Spec.KubernetesVersion, c.Spec.Channel)
+			} else {
+				glog.Warningf("Cannot determine recommended kubernetes version from channel %q", c.Spec.Channel)
 			}
+		} else {
+			glog.Warningf("Channel is not set; cannot determine KubernetesVersion from channel")
 		}
 	}
 
