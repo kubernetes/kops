@@ -68,12 +68,12 @@ func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupLi
 	}
 
 	if len(instanceGroups) == 0 {
-		return validationCluster, fmt.Errorf("No InstanceGroup objects found")
+		return validationCluster, fmt.Errorf("no InstanceGroup objects found")
 	}
 
 	timeout, err := time.ParseDuration("30s")
 	if err != nil {
-		return nil, fmt.Errorf("Cannot set timeout %q: %v", clusterName, err)
+		return nil, fmt.Errorf("cannot set timeout %q: %v", clusterName, err)
 	}
 
 	nodeAA, err := NewNodeAPIAdapter(clusterKubernetesClient, timeout)
@@ -83,17 +83,17 @@ func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupLi
 
 	validationCluster.NodeList, err = nodeAA.GetAllNodes()
 	if err != nil {
-		return nil, fmt.Errorf("Cannot get nodes for %q: %v", clusterName, err)
+		return nil, fmt.Errorf("cannot get nodes for %q: %v", clusterName, err)
 	}
 
 	validationCluster.ComponentFailures, err = collectComponentFailures(clusterKubernetesClient)
 	if err != nil {
-		return nil, fmt.Errorf("Cannot get component status for %q: %v", clusterName, err)
+		return nil, fmt.Errorf("cannot get component status for %q: %v", clusterName, err)
 	}
 
 	validationCluster.PodFailures, err = collectPodFailures(clusterKubernetesClient)
 	if err != nil {
-		return nil, fmt.Errorf("Cannot get pod health for %q: %v", clusterName, err)
+		return nil, fmt.Errorf("cannot get pod health for %q: %v", clusterName, err)
 	}
 
 	return validateTheNodes(clusterName, validationCluster)
@@ -114,7 +114,7 @@ func collectComponentFailures(client k8s_clientset.Interface) (failures []string
 	if err == nil {
 		for _, component := range componentList.Items {
 			for _, condition := range component.Conditions {
-				if condition.Status != "True" {
+				if condition.Status != v1.ConditionTrue {
 					failures = append(failures, component.Name)
 				}
 			}
@@ -186,19 +186,19 @@ func validateTheNodes(clusterName string, validationCluster *ValidationCluster) 
 	}
 
 	if !validationCluster.MastersReady {
-		return validationCluster, fmt.Errorf("Your masters are NOT ready %s", clusterName)
+		return validationCluster, fmt.Errorf("your masters are NOT ready %s", clusterName)
 	}
 
 	if !validationCluster.NodesReady {
-		return validationCluster, fmt.Errorf("Your nodes are NOT ready %s", clusterName)
+		return validationCluster, fmt.Errorf("your nodes are NOT ready %s", clusterName)
 	}
 
 	if len(validationCluster.ComponentFailures) != 0 {
-		return validationCluster, fmt.Errorf("Your components are NOT healthy %s", clusterName)
+		return validationCluster, fmt.Errorf("your components are NOT healthy %s", clusterName)
 	}
 
 	if len(validationCluster.PodFailures) != 0 {
-		return validationCluster, fmt.Errorf("Your kube-system pods are NOT healthy %s", clusterName)
+		return validationCluster, fmt.Errorf("your kube-system pods are NOT healthy %s", clusterName)
 	}
 
 	return validationCluster, nil
