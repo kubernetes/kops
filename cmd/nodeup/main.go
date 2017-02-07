@@ -19,13 +19,14 @@ package main // import "k8s.io/kops/cmd/nodeup"
 import (
 	"flag"
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/golang/glog"
 	"k8s.io/kops"
 	"k8s.io/kops/nodeup/pkg/bootstrap"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi/nodeup"
-	"os"
-	"time"
 )
 
 const retryInterval = 30 * time.Second
@@ -70,6 +71,8 @@ func main() {
 	for {
 		var err error
 		if install {
+			// create a systemd unit to bootstrap kops
+			// using the same args as we were called with
 			var command []string
 			for i := 0; i < len(os.Args); i++ {
 				s := os.Args[i]
