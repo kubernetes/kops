@@ -6,8 +6,11 @@ Rolling update a cluster
 
 
 Rolling update a cluster instance groups.
-		
+
 This command updates the running instances to match the cloud specifications.
+
+Use KOPS_FEATURE_FLAGS="+ValidiateAndDrainRollingUpdate" to use beta code that drains the nodes
+and validates the cluser.
 
 To perform rolling update, you need to update the cloud resources first with "kops update cluster"
 
@@ -20,6 +23,8 @@ kops rolling-update cluster
 ```
       --bastion-interval duration    Time to wait between restarting bastions (default 5m0s)
       --cloudonly                    Perform rolling update without confirming progress with k8s
+      --fail-on-drain-error          The rolling-update will fail if draining a node fails. Enable with KOPS_FEATURE_FLAGS='+ValidiateAndDrainRollingUpdate'
+      --fail-on-validate             The rolling-update will fail if the cluster fails to validate. Enable with KOPS_FEATURE_FLAGS='+ValidiateAndDrainRollingUpdate' (default true)
       --force                        Force rolling update, even if no changes
       --instance-group stringSlice   List of instance groups to update (defaults to all if not specified)
       --master-interval duration     Time to wait between restarting masters (default 5m0s)
