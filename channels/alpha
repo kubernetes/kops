@@ -20,8 +20,10 @@ spec:
     requiredVersion: 1.4.2
   kopsVersions:
   - range: ">=1.5.0-alpha1"
-    recommendedVersion: 1.5.0-beta1
-    #requiredVersion: 1.5.0-beta1
+    recommendedVersion: 1.5.0-beta2
+    #requiredVersion: 1.5.0-beta2
+    kubernetesVersion: 1.5.2
   - range: "<1.5.0"
     recommendedVersion: 1.4.4
     #requiredVersion: 1.4.4
+    kubernetesVersion: 1.4.8
