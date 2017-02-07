@@ -31,7 +31,7 @@ import (
 	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 )
 
-// RollingUpdateCluster restarts cluster nodes
+// RollingUpdateClusterDrainValidate restarts cluster nodes.
 type RollingUpdateClusterDrainValidate struct {
 	Cloud fi.Cloud
 
@@ -49,7 +49,7 @@ type RollingUpdateClusterDrainValidate struct {
 	ClusterName string
 }
 
-// RollingUpdateData is used to pass information to perform a rolling update
+// RollingUpdateDataDrainValidate is used to pass information to perform a rolling update.
 type RollingUpdateDataDrainValidate struct {
 	Cloud             fi.Cloud
 	Force             bool
@@ -68,7 +68,7 @@ type RollingUpdateDataDrainValidate struct {
 
 const retries = 8
 
-// Perform a rolling update on a K8s Cluster
+// RollingUpdateDrainValidate performs a rolling update on a K8s Cluster.
 func (c *RollingUpdateClusterDrainValidate) RollingUpdateDrainValidate(groups map[string]*CloudInstanceGroup, instanceGroups *api.InstanceGroupList) error {
 	if len(groups) == 0 {
 		return nil
@@ -184,10 +184,11 @@ func (c *RollingUpdateClusterDrainValidate) RollingUpdateDrainValidate(groups ma
 		}
 	}
 
-	glog.Info("\nRolling update completed!\n")
+	glog.Infof("\nRolling update completed!\n")
 	return nil
 }
 
+// CreateRollingUpdateData creates a RollingUpdateClusterDrainValidate struct.
 func (c *RollingUpdateClusterDrainValidate) CreateRollingUpdateData(instanceGroups *api.InstanceGroupList, isBastion bool) *RollingUpdateDataDrainValidate {
 	return &RollingUpdateDataDrainValidate{
 		Cloud:             c.Cloud,
@@ -203,7 +204,7 @@ func (c *RollingUpdateClusterDrainValidate) CreateRollingUpdateData(instanceGrou
 	}
 }
 
-// RollingUpdate performs a rolling update on a list of ec2 instances.
+// RollingUpdateDrainValidate performs a rolling update on a list of ec2 instances.
 func (n *CloudInstanceGroup) RollingUpdateDrainValidate(rollingUpdateData *RollingUpdateDataDrainValidate) error {
 
 	// we should not get here, but hey I am going to check
@@ -293,17 +294,15 @@ func (n *CloudInstanceGroup) RollingUpdateDrainValidate(rollingUpdateData *Rolli
 			for i := 0; i <= retries; i++ {
 				_, err = validate.ValidateCluster(rollingUpdateData.ClusterName, rollingUpdateData.InstanceGroupList, rollingUpdateData.K8sClient)
 				if err != nil {
-					glog.Infof("Unable to validate k8s cluster: %s.", err)
+					glog.Infof("Waiting longer for kops validate to pass: %s.", err)
 					time.Sleep(rollingUpdateData.Interval / 2)
 				} else {
-					glog.Info("Cluster validated proceeding with next step in rolling update.")
+					glog.Infof("Cluster validated proceeding with next step in rolling update.")
 					break
 				}
 			}
 
-			if rollingUpdateData.CloudOnly {
-				glog.Warningf("Not validating nodes as cloudonly flag is set.")
-			} else if err != nil && rollingUpdateData.FailOnValidate {
+			if err != nil && rollingUpdateData.FailOnValidate {
 				return fmt.Errorf("validation timed out while performing rolling update: %v", err)
 			}
 		}
