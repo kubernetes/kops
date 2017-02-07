@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/blang/semver"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	api "k8s.io/kops/pkg/apis/kops"
@@ -129,26 +130,40 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		channelClusterSpec = &api.ClusterSpec{}
 	}
 
-	//latestKubernetesVersion, err := api.FindLatestKubernetesVersion()
-	//if err != nil {
-	//	return err
-	//}
+	var currentKubernetesVersion *semver.Version
+	{
+		sv, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
+		if err != nil {
+			glog.Warningf("error parsing KubernetesVersion %q", cluster.Spec.KubernetesVersion)
+		} else {
+			currentKubernetesVersion = sv
+		}
+	}
 
-	// So we can propose an image for the upgraded k8s version
-	upgradedKubernetesVersion := cluster.Spec.KubernetesVersion
+	proposedKubernetesVersion := api.RecommendedKubernetesVersion(channel)
 
-	if channelClusterSpec.KubernetesVersion != "" && cluster.Spec.KubernetesVersion != channelClusterSpec.KubernetesVersion {
+	// We won't propose a downgrade
+	// TODO: What if a kubernetes version is bad?
+	if currentKubernetesVersion != nil && proposedKubernetesVersion != nil && currentKubernetesVersion.GT(*proposedKubernetesVersion) {
+		glog.Warningf("cluster version %q is greater than recommended version %q", *currentKubernetesVersion, *proposedKubernetesVersion)
+		proposedKubernetesVersion = currentKubernetesVersion
+	}
+
+	if proposedKubernetesVersion != nil && currentKubernetesVersion != nil && currentKubernetesVersion.NE(*proposedKubernetesVersion) {
 		actions = append(actions, &upgradeAction{
 			Item:     "Cluster",
 			Property: "KubernetesVersion",
 			Old:      cluster.Spec.KubernetesVersion,
-			New:      channelClusterSpec.KubernetesVersion,
+			New:      proposedKubernetesVersion.String(),
 			apply: func() {
-				cluster.Spec.KubernetesVersion = channelClusterSpec.KubernetesVersion
+				cluster.Spec.KubernetesVersion = proposedKubernetesVersion.String()
 			},
 		})
+	}
 
-		upgradedKubernetesVersion = channelClusterSpec.KubernetesVersion
+	// For further calculations, default to the current kubernetes version
+	if proposedKubernetesVersion == nil {
+		proposedKubernetesVersion = currentKubernetesVersion
 	}
 
 	// Prompt to upgrade addins?
@@ -179,13 +194,8 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 	}
 
 	// Prompt to upgrade image
-	{
-		sv, err := util.ParseKubernetesVersion(upgradedKubernetesVersion)
-		if err != nil {
-			// We could continue, but something has gone wrong here...
-			return fmt.Errorf("unable to parse kubernetes version %q", upgradedKubernetesVersion)
-		}
-		image := channel.FindImage(cloud.ProviderID(), *sv)
+	if proposedKubernetesVersion != nil {
+		image := channel.FindImage(cloud.ProviderID(), *proposedKubernetesVersion)
 
 		if image == nil {
 			glog.Warningf("No matching images specified in channel; cannot prompt for upgrade")

@@ -80,13 +80,13 @@ func TestKopsUpgrades(t *testing.T) {
 	for _, g := range grid {
 		kopsVersion := semver.MustParse(g.KopsVersion)
 
-		versionInfo := kops.FindVersionInfo(channel.Spec.KopsVersions, kopsVersion)
+		versionInfo := kops.FindKopsVersionSpec(channel.Spec.KopsVersions, kopsVersion)
 		if versionInfo == nil {
 			t.Errorf("unable to find version information for kops version %q in channel", kopsVersion)
 			continue
 		}
 
-		actual, err := kops.FindRecommendedUpgrade(versionInfo, kopsVersion)
+		actual, err := versionInfo.FindRecommendedUpgrade(kopsVersion)
 		if g.ExpectedError {
 			if err == nil {
 				t.Errorf("expected error from FindRecommendedUpgrade(%q)", g.KopsVersion)
@@ -98,12 +98,12 @@ func TestKopsUpgrades(t *testing.T) {
 				continue
 			}
 		}
-		if actual != g.ExpectedUpgrade {
+		if semverString(actual) != g.ExpectedUpgrade {
 			t.Errorf("unexpected result from IsUpgradeRequired(%q): expected=%q, actual=%q", g.KopsVersion, g.ExpectedUpgrade, actual)
 			continue
 		}
 
-		required, err := kops.IsUpgradeRequired(versionInfo, kopsVersion)
+		required, err := versionInfo.IsUpgradeRequired(kopsVersion)
 		if err != nil {
 			t.Errorf("unexpected error from IsUpgradeRequired(%q)", g.KopsVersion, err)
 			continue
@@ -174,13 +174,13 @@ func TestKubernetesUpgrades(t *testing.T) {
 	for _, g := range grid {
 		kubernetesVersion := semver.MustParse(g.KubernetesVersion)
 
-		versionInfo := kops.FindVersionInfo(channel.Spec.KubernetesVersions, kubernetesVersion)
+		versionInfo := kops.FindKubernetesVersionSpec(channel.Spec.KubernetesVersions, kubernetesVersion)
 		if versionInfo == nil {
 			t.Errorf("unable to find version information for kubernetes version %q in channel", kubernetesVersion)
 			continue
 		}
 
-		actual, err := kops.FindRecommendedUpgrade(versionInfo, kubernetesVersion)
+		actual, err := versionInfo.FindRecommendedUpgrade(kubernetesVersion)
 		if g.ExpectedError {
 			if err == nil {
 				t.Errorf("expected error from FindRecommendedUpgrade(%q)", g.KubernetesVersion)
@@ -192,12 +192,12 @@ func TestKubernetesUpgrades(t *testing.T) {
 				continue
 			}
 		}
-		if actual != g.ExpectedUpgrade {
+		if semverString(actual) != g.ExpectedUpgrade {
 			t.Errorf("unexpected result from IsUpgradeRequired(%q): expected=%q, actual=%q", g.KubernetesVersion, g.ExpectedUpgrade, actual)
 			continue
 		}
 
-		required, err := kops.IsUpgradeRequired(versionInfo, kubernetesVersion)
+		required, err := versionInfo.IsUpgradeRequired(kubernetesVersion)
 		if err != nil {
 			t.Errorf("unexpected error from IsUpgradeRequired(%q)", g.KubernetesVersion, err)
 			continue
@@ -248,4 +248,11 @@ func TestFindImage(t *testing.T) {
 			t.Errorf("unexpected image from FindImage(%q): expected=%q, actual=%q", g.KubernetesVersion, g.ExpectedImage, name)
 		}
 	}
+}
+
+func semverString(sv *semver.Version) string {
+	if sv == nil {
+		return ""
+	}
+	return sv.String()
 }
