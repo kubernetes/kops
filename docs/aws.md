@@ -61,7 +61,7 @@ arn:aws:iam::aws:policy/AmazonVPCFullAccess"
 
 for arn in $arns; do aws iam attach-group-policy --policy-arn "$arn" --group-name kops; done
 
-aws iam create-user --user-name testuser
+aws iam create-user --user-name kops
 
 aws iam add-user-to-group --user-name kops --group-name kops
 
