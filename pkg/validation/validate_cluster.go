@@ -39,6 +39,9 @@ type ValidationCluster struct {
 	NodesCount         int               `json:"nodesCount,omitempty"`
 
 	NodeList *v1.NodeList `json:"nodeList,omitempty"`
+
+	ComponentsHealthy bool `json:"componentsHealthy,omitempty"`
+	PodsHealthy       bool `json:"podsHealthy,omitempty"`
 }
 
 // A K8s node to be validated
@@ -83,6 +86,16 @@ func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupLi
 		return nil, fmt.Errorf("Cannot get nodes for %q: %v", clusterName, err)
 	}
 
+	validationCluster.ComponentsHealthy, err = collectComponentStatus(clusterKubernetesClient)
+	if err != nil {
+		return nil, fmt.Errorf("Cannot get component status for %q: %v", clusterName, err)
+	}
+
+	validationCluster.PodsHealthy, err = collectPodHealth(clusterKubernetesClient)
+	if err != nil {
+		return nil, fmt.Errorf("Cannot get pod health for %q: %v", clusterName, err)
+	}
+
 	return validateTheNodes(clusterName, validationCluster)
 
 }
@@ -94,6 +107,41 @@ func getRoleNode(node *v1.Node) string {
 	}
 
 	return role
+}
+
+func collectComponentStatus(client k8s_clientset.Interface) (bool, error) {
+	componentList, err := client.CoreV1().ComponentStatuses().List(v1.ListOptions{})
+	if err != nil {
+		fmt.Println("first error")
+		return false, err
+	}
+
+	fmt.Println("looop")
+	for _, component := range componentList.Items {
+		for _, condition := range component.Conditions {
+			if condition.Status != "True" {
+				fmt.Println("bad status")
+				return false, nil
+			}
+		}
+	}
+	return true, nil
+}
+
+func collectPodHealth(client k8s_clientset.Interface) (bool, error) {
+	pods, err := client.CoreV1().Pods("kube-system").List(v1.ListOptions{})
+	if err != nil {
+		return false, err
+	}
+
+	for _, pod := range pods.Items {
+		for _, status := range pod.Status.ContainerStatuses {
+			if !status.Ready {
+				return false, nil
+			}
+		}
+	}
+	return true, nil
 }
 
 func validateTheNodes(clusterName string, validationCluster *ValidationCluster) (*ValidationCluster, error) {
@@ -144,10 +192,21 @@ func validateTheNodes(clusterName string, validationCluster *ValidationCluster) 
 		validationCluster.NodesReady = false
 	}
 
-	if validationCluster.MastersReady && validationCluster.NodesReady {
-		return validationCluster, nil
-	} else {
-		// TODO: This isn't an error...
-		return validationCluster, fmt.Errorf("Your cluster is NOT ready %s", clusterName)
+	if !validationCluster.MastersReady {
+		return validationCluster, fmt.Errorf("Your masters are NOT ready %s", clusterName)
 	}
+
+	if !validationCluster.NodesReady {
+		return validationCluster, fmt.Errorf("Your nodes are NOT ready %s", clusterName)
+	}
+
+	if !validationCluster.ComponentsHealthy {
+		return validationCluster, fmt.Errorf("Your components are NOT healthy %s", clusterName)
+	}
+
+	if !validationCluster.PodsHealthy {
+		return validationCluster, fmt.Errorf("Your kube-system pods are NOT healthy %s", clusterName)
+	}
+
+	return validationCluster, nil
 }
