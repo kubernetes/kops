@@ -8,3 +8,4 @@ MasterZones:
 - us-test-1b
 - us-test-1c
 Cloud: aws
+KubernetesVersion: v1.4.8
