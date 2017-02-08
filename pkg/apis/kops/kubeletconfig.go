@@ -66,6 +66,10 @@ func BuildKubeletConfigSpec(cluster *Cluster, instanceGroup *InstanceGroup) (*Ku
 	if err != nil {
 		return c, fmt.Errorf("Failed to lookup kubernetes version: %v", err)
 	}
+
+	// This was available in the first 1.6.0 alpha, no need to rely on semver's pre/build ordering
+	sv.Pre=nil
+	sv.Build = nil
 	// TODO: Is there a better place to define the 1.6.0 version for this? Maybe a feature flag?
 	if sv.GTE(semver.Version{1,6,0,nil,nil}) {
 		// --register-with-taints flag is supported by the kubelet version
