@@ -64,6 +64,12 @@ ifdef STATIC_BUILD
   EXTRA_LDFLAGS=-s
 endif
 
+SHASUMCMD := $(shell sha1sum --help 2> /dev/null)
+
+ifndef SHASUMCMD
+	$(error "sha1sum command is not available")
+endif
+
 kops: kops-gobindata
 	go install ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/...
 
