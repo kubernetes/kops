@@ -25,7 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
-	validate "k8s.io/kops/pkg/validation"
+	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
@@ -218,7 +218,7 @@ func (n *CloudInstanceGroup) RollingUpdateDrainValidate(rollingUpdateData *Rolli
 	}
 
 	if rollingUpdateData.InstanceGroupList == nil {
-		return fmt.Errorf("rollingUpdate is missing a the InstanceGroupList")
+		return fmt.Errorf("rollingUpdate is missing the InstanceGroupList")
 	}
 
 	c := rollingUpdateData.Cloud.(awsup.AWSCloud)
@@ -229,7 +229,7 @@ func (n *CloudInstanceGroup) RollingUpdateDrainValidate(rollingUpdateData *Rolli
 	}
 
 	if !rollingUpdateData.IsBastion && rollingUpdateData.FailOnValidate && !rollingUpdateData.CloudOnly {
-		_, err := validate.ValidateCluster(rollingUpdateData.ClusterName, rollingUpdateData.InstanceGroupList, rollingUpdateData.K8sClient)
+		_, err := validation.ValidateCluster(rollingUpdateData.ClusterName, rollingUpdateData.InstanceGroupList, rollingUpdateData.K8sClient)
 		if err != nil {
 			return fmt.Errorf("cluster %s does not pass validation", rollingUpdateData.ClusterName)
 		}
@@ -292,7 +292,7 @@ func (n *CloudInstanceGroup) RollingUpdateDrainValidate(rollingUpdateData *Rolli
 
 			// Wait until the cluster is happy
 			for i := 0; i <= retries; i++ {
-				_, err = validate.ValidateCluster(rollingUpdateData.ClusterName, rollingUpdateData.InstanceGroupList, rollingUpdateData.K8sClient)
+				_, err = validation.ValidateCluster(rollingUpdateData.ClusterName, rollingUpdateData.InstanceGroupList, rollingUpdateData.K8sClient)
 				if err != nil {
 					glog.Infof("Waiting longer for kops validate to pass: %s.", err)
 					time.Sleep(rollingUpdateData.Interval / 2)
