@@ -17,9 +17,10 @@ limitations under the License.
 package model
 
 import (
+	"strings"
+
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"strings"
 )
 
 // SysctlBuilder set up our sysctls
@@ -93,6 +94,10 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			"# Increase size of file handles and inode cache",
 			"fs.file-max = 2097152",
+			"",
+
+			"# Increase size of conntrack table size to avoid poor iptables performance",
+			"net.netfilter.nf_conntrack_max = 1000000",
 			"",
 		)
 	}
