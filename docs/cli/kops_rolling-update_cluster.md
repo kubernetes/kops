@@ -7,12 +7,12 @@ Rolling update a cluster
 
 Rolling update a cluster instance groups.
 
-This command updates the running instances to match the cloud specifications.
-
-Use KOPS_FEATURE_FLAGS="+ValidiateAndDrainRollingUpdate" to use beta code that drains the nodes
-and validates the cluser.
+This command updates a kubernetes cluseter to match the cloud, and kops specifications.
 
 To perform rolling update, you need to update the cloud resources first with "kops update cluster"
+
+Use KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate" to use beta code that drains the nodes
+and validates the cluser.
 
 ```
 kops rolling-update cluster
@@ -23,12 +23,13 @@ kops rolling-update cluster
 ```
       --bastion-interval duration    Time to wait between restarting bastions (default 5m0s)
       --cloudonly                    Perform rolling update without confirming progress with k8s
-      --fail-on-drain-error          The rolling-update will fail if draining a node fails. Enable with KOPS_FEATURE_FLAGS='+ValidiateAndDrainRollingUpdate'
-      --fail-on-validate             The rolling-update will fail if the cluster fails to validate. Enable with KOPS_FEATURE_FLAGS='+ValidiateAndDrainRollingUpdate' (default true)
+      --fail-on-drain-error          The rolling-update will fail if draining a node fails. Enable with KOPS_FEATURE_FLAGS='+DrainAndValidateRollingUpdate'
+      --fail-on-validate             The rolling-update will fail if the cluster fails to validate. Enable with KOPS_FEATURE_FLAGS='+DrainAndValidateRollingUpdate' (default true)
       --force                        Force rolling update, even if no changes
       --instance-group stringSlice   List of instance groups to update (defaults to all if not specified)
       --master-interval duration     Time to wait between restarting masters (default 5m0s)
       --node-interval duration       Time to wait between restarting nodes (default 2m0s)
+      --validate-retries int         The number of times that a node will be validated.  Between validation kops sleeps the master-interval/2 or node-interval/2 duration. Enable with KOPS_FEATURE_FLAGS='+DrainAndValidateRollingUpdate' (default 8)
       --yes                          perform rolling update without confirmation
 ```
 
