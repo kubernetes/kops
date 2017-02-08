@@ -327,6 +327,9 @@ func ValidateCluster(c *kops.Cluster, strict bool) error {
 			if s.Egress != "" && !strings.HasPrefix(s.Egress, "nat-") {
 				return fmt.Errorf("egress must be of type NAT Gateway")
 			}
+			if s.Egress != "" && !(s.Type == "Private") {
+				return fmt.Errorf("egress can only be specified for Private subnets")
+			}
 		}
 	}
 
