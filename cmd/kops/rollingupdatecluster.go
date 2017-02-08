@@ -88,7 +88,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 This command updates the running instances to match the cloud specifications.
 
-Use KOPS_FEATURE_FLAGS="+ValidiateAndDrainRollingUpdate" to use beta code that drains the nodes
+Use KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate" to use beta code that drains the nodes
 and validates the cluser.
 
 To perform rolling update, you need to update the cloud resources first with "kops update cluster"`,
@@ -103,8 +103,8 @@ To perform rolling update, you need to update the cloud resources first with "ko
 	cmd.Flags().DurationVar(&options.BastionInterval, "bastion-interval", options.BastionInterval, "Time to wait between restarting bastions")
 	cmd.Flags().StringSliceVar(&options.InstanceGroups, "instance-group", options.InstanceGroups, "List of instance groups to update (defaults to all if not specified)")
 
-	cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", false, "The rolling-update will fail if draining a node fails. Enable with KOPS_FEATURE_FLAGS='+ValidiateAndDrainRollingUpdate'")
-	cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate", true, "The rolling-update will fail if the cluster fails to validate. Enable with KOPS_FEATURE_FLAGS='+ValidiateAndDrainRollingUpdate'")
+	cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", false, "The rolling-update will fail if draining a node fails. Enable with KOPS_FEATURE_FLAGS='+DrainAndValidateRollingUpdate'")
+	cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate", true, "The rolling-update will fail if the cluster fails to validate. Enable with KOPS_FEATURE_FLAGS='+DrainAndValidateRollingUpdate'")
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		err := rootCommand.ProcessArgs(args)
