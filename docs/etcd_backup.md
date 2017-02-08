@@ -20,8 +20,8 @@ out of the box.
 
 Therefore we have to either manually backup the etcd volumes regularly or use
 other AWS services to do this in a automated, scheduled way. You can for example
-use CloudWatch to trigger an AWS Lamda with a defined schedule (e.g. once per
-hour). The Lamda will then create a new snapshot of all etcd volumes. A complete
+use CloudWatch to trigger an AWS Lambda with a defined schedule (e.g. once per
+hour). The Lambda will then create a new snapshot of all etcd volumes. A complete
 guide on how to setup automated snapshots can be found [here](https://serverlesscode.com/post/lambda-schedule-ebs-snapshot-backups/).
 
 Note: this is one of many examples on how to do scheduled snapshots.
