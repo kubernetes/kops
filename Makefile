@@ -64,10 +64,10 @@ ifdef STATIC_BUILD
   EXTRA_LDFLAGS=-s
 endif
 
-SHASUMCMD := $(shell sha1sum --help 2> /dev/null)
-
 ifndef SHASUMCMD
-	$(error "sha1sum command is not available")
+  SHASUMCMD := $(shell sha1sum --help 2> /dev/null)
+else
+  $(error "sha1sum command is not available")
 endif
 
 kops: kops-gobindata
