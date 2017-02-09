@@ -285,12 +285,12 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 			MasterInterval:   options.MasterInterval,
 			NodeInterval:     options.NodeInterval,
 			Force:            options.Force,
+			Cloud:            cloud,
 			K8sClient:        k8sClient,
 			FailOnDrainError: options.FailOnDrainError,
 			FailOnValidate:   options.FailOnValidate,
 			CloudOnly:        options.CloudOnly,
 			ClusterName:      options.ClusterName,
-			Cloud:            cloud,
 		}
 		glog.V(2).Infof("New rolling update with drain and validate enabled.")
 		return d.RollingUpdateDrainValidate(groups, list)

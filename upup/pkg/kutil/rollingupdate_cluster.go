@@ -40,6 +40,12 @@ type RollingUpdateCluster struct {
 	BastionInterval time.Duration
 
 	Force bool
+
+	K8sClient        *k8s_clientset.Clientset
+	FailOnDrainError bool
+	FailOnValidate   bool
+	CloudOnly        bool
+	ClusterName      string
 }
 
 func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroups []*api.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*CloudInstanceGroup, error) {
