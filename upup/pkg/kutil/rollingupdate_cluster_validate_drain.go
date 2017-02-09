@@ -17,6 +17,7 @@ limitations under the License.
 package kutil
 
 import (
+/*
 	"fmt"
 	"sync"
 	"time"
@@ -26,34 +27,14 @@ import (
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/validation"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/pkg/featureflag"
-	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
+*/
 )
 
-// RollingUpdateClusterDrainValidate restarts cluster nodes.
-type RollingUpdateClusterDrainValidate struct {
-	Cloud fi.Cloud
-
-	MasterInterval  time.Duration
-	NodeInterval    time.Duration
-	BastionInterval time.Duration
-	K8sClient       *k8s_clientset.Clientset
-
-	FailOnDrainError bool
-	FailOnValidate   bool
-
-	Force bool
-
-	CloudOnly   bool
-	ClusterName string
-
-}
-const retries = 8
-
+/*
 // RollingUpdateDrainValidate performs a rolling update on a K8s Cluster.
-func (c *RollingUpdateClusterDrainValidate) RollingUpdateDrainValidate(groups map[string]*CloudInstanceGroup, instanceGroups *api.InstanceGroupList) error {
+func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, instanceGroups *api.InstanceGroupList) error {
 	if len(groups) == 0 {
 		return nil
 	}
@@ -90,7 +71,7 @@ func (c *RollingUpdateClusterDrainValidate) RollingUpdateDrainValidate(groups ma
 
 				defer wg.Done()
 
-				err := group.RollingUpdateDrainValidate(c, instanceGroups,true, c.BastionInterval)
+				err := group.RollingUpdate(c, instanceGroups,true, c.BastionInterval)
 
 				resultsMutex.Lock()
 				results[k] = err
@@ -121,7 +102,7 @@ func (c *RollingUpdateClusterDrainValidate) RollingUpdateDrainValidate(groups ma
 
 			for k, group := range masterGroups {
 				// FIXME refactor
-				err := group.RollingUpdateDrainValidate(c, instanceGroups,false, c.MasterInterval)
+				err := group.RollingUpdate(c, instanceGroups,false, c.MasterInterval)
 				resultsMutex.Lock()
 				results[k] = err
 				resultsMutex.Unlock()
@@ -146,7 +127,7 @@ func (c *RollingUpdateClusterDrainValidate) RollingUpdateDrainValidate(groups ma
 
 				defer wg.Done()
 
-				err := group.RollingUpdateDrainValidate(c, instanceGroups,false, c.NodeInterval)
+				err := group.RollingUpdate(c, instanceGroups,false, c.NodeInterval)
 
 				resultsMutex.Lock()
 				results[k] = err
@@ -166,9 +147,11 @@ func (c *RollingUpdateClusterDrainValidate) RollingUpdateDrainValidate(groups ma
 	glog.Infof("\nRolling update completed!\n")
 	return nil
 }
+*/
 
+/*
 // ValidateClusterWithRetries runs our validation methods on the K8s Cluster x times and then fails.
-func (n *CloudInstanceGroup) ValidateClusterWithRetries(rollingUpdateData *RollingUpdateClusterDrainValidate, instanceGroupList *api.InstanceGroupList,t time.Duration) (err error) {
+func (n *CloudInstanceGroup) ValidateClusterWithRetries(rollingUpdateData *RollingUpdateCluster, instanceGroupList *api.InstanceGroupList,t time.Duration) (err error) {
 
 	for i := 0; i <= retries; i++ {
 		_, err = validation.ValidateCluster(rollingUpdateData.ClusterName, instanceGroupList, rollingUpdateData.K8sClient)
@@ -185,7 +168,7 @@ func (n *CloudInstanceGroup) ValidateClusterWithRetries(rollingUpdateData *Rolli
 }
 
 // ValidateCluster runs our validation methods on the K8s Cluster.
-func (n *CloudInstanceGroup) ValidateCluster(rollingUpdateData *RollingUpdateClusterDrainValidate, instanceGroupList *api.InstanceGroupList) error {
+func (n *CloudInstanceGroup) ValidateCluster(rollingUpdateData *RollingUpdateCluster, instanceGroupList *api.InstanceGroupList) error {
 
 	_, err := validation.ValidateCluster(rollingUpdateData.ClusterName, instanceGroupList, rollingUpdateData.K8sClient)
 	if err != nil {
@@ -216,7 +199,7 @@ func (n *CloudInstanceGroup) DeleteAWSInstance(u *CloudInstanceGroupInstance, c 
 }
 
 // DrainNode drains a K8s node.
-func (n *CloudInstanceGroup) DrainNode(u *CloudInstanceGroupInstance, rollingUpdateData *RollingUpdateClusterDrainValidate) error {
+func (n *CloudInstanceGroup) DrainNode(u *CloudInstanceGroupInstance, rollingUpdateData *RollingUpdateCluster) error {
 	drain, err := NewDrainOptions(nil, rollingUpdateData.ClusterName)
 
 	if err != nil {
@@ -250,7 +233,7 @@ func (n *CloudInstanceGroup) DrainNode(u *CloudInstanceGroupInstance, rollingUpd
 // TODO: Batch termination, like a rolling-update
 
 // RollingUpdateDrainValidate performs a rolling update on a list of ec2 instances.
-func (n *CloudInstanceGroup) RollingUpdateDrainValidate(rollingUpdateData *RollingUpdateClusterDrainValidate, instanceGroupList *api.InstanceGroupList, isBastion bool, t time.Duration) (err error) {
+func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateCluster, instanceGroupList *api.InstanceGroupList, isBastion bool, t time.Duration) (err error) {
 
 	// we should not get here, but hey I am going to check
 	if rollingUpdateData == nil {
@@ -336,3 +319,4 @@ func (n *CloudInstanceGroup) RollingUpdateDrainValidate(rollingUpdateData *Rolli
 
 	return nil
 }
+*/

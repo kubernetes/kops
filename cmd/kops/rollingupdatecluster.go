@@ -53,6 +53,8 @@ type RollingUpdateOptions struct {
 	// does not validate, after a validation period.
 	FailOnValidate bool
 
+	ValidateRetries int
+
 	MasterInterval  time.Duration
 	NodeInterval    time.Duration
 	BastionInterval time.Duration
@@ -74,6 +76,8 @@ func (o *RollingUpdateOptions) InitDefaults() {
 	o.MasterInterval = 5 * time.Minute
 	o.NodeInterval = 2 * time.Minute
 	o.BastionInterval = 5 * time.Minute
+
+	o.ValidateRetries = 8
 }
 
 func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
@@ -105,6 +109,7 @@ To perform rolling update, you need to update the cloud resources first with "ko
 
 	cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", false, "The rolling-update will fail if draining a node fails. Enable with KOPS_FEATURE_FLAGS='+DrainAndValidateRollingUpdate'")
 	cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate", true, "The rolling-update will fail if the cluster fails to validate. Enable with KOPS_FEATURE_FLAGS='+DrainAndValidateRollingUpdate'")
+	cmd.Flags().IntVar(&options.ValidateRetries, "validate-retries", 8, "The rolling-update will fail if the cluster fails to validate within the number of retries. Enable with KOPS_FEATURE_FLAGS='+DrainAndValidateRollingUpdate'")
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		err := rootCommand.ProcessArgs(args)
@@ -150,6 +155,10 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		&clientcmd.ConfigOverrides{CurrentContext: contextName}).ClientConfig()
 	if err != nil {
 		return fmt.Errorf("cannot load kubecfg settings for %q: %v", contextName, err)
+	}
+
+	if options.ValidateRetries <= 0 {
+		return fmt.Errorf("validate-retries flag cannot be 0 or smaller")
 	}
 
 	var nodes []v1.Node
@@ -281,26 +290,19 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 	}
 
 	if featureflag.DrainAndValidateRollingUpdate.Enabled() {
-		d := &kutil.RollingUpdateClusterDrainValidate{
-			MasterInterval:   options.MasterInterval,
-			NodeInterval:     options.NodeInterval,
-			Force:            options.Force,
-			Cloud:            cloud,
-			K8sClient:        k8sClient,
-			FailOnDrainError: options.FailOnDrainError,
-			FailOnValidate:   options.FailOnValidate,
-			CloudOnly:        options.CloudOnly,
-			ClusterName:      options.ClusterName,
-		}
 		glog.V(2).Infof("New rolling update with drain and validate enabled.")
-		return d.RollingUpdateDrainValidate(groups, list)
-	} else {
-		d := &kutil.RollingUpdateCluster{
-			MasterInterval: options.MasterInterval,
-			NodeInterval:   options.NodeInterval,
-			Force:          options.Force,
-			Cloud:          cloud,
-		}
-		return d.RollingUpdate(groups, k8sClient)
 	}
+	d := &kutil.RollingUpdateCluster{
+		MasterInterval:   options.MasterInterval,
+		NodeInterval:     options.NodeInterval,
+		Force:            options.Force,
+		Cloud:            cloud,
+		K8sClient:        k8sClient,
+		FailOnDrainError: options.FailOnDrainError,
+		FailOnValidate:   options.FailOnValidate,
+		CloudOnly:        options.CloudOnly,
+		ClusterName:      options.ClusterName,
+		ValidateRetries:  options.ValidateRetries,
+	}
+	return d.RollingUpdate(groups, list)
 }
