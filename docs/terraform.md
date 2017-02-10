@@ -20,7 +20,7 @@ You could keep your Terraform state locally, but we **strongly recommend** savin
 $ terraform remote config \
   -backend=s3 \
   -backend-config="bucket=mycompany.terraform>" \
-  -backend-config="key=sandbox/infrastructure.tfstate" \
+  -backend-config="key=infrastructure.tfstate" \
   -backend-config="region=us-east-1"
 ```
 
@@ -32,9 +32,9 @@ For example, a complete setup might be:
 
 ```
 $ kops create cluster \
-  --name=sandbox.kubernetes.mycompany.tld \
+  --name=kubernetes.mydomain.com \
   --state=s3://mycompany.kubernetes \
-  --dns-zone=sandbox.kubernetes.mycompany.tld \
+  --dns-zone=kubernetes.mydomain.com \
   [... your other options ...]
   --out=. \
   --target=terraform
@@ -55,7 +55,7 @@ It's possible to use Terraform to make changes to your infrastructure as defined
 
 ```
 $ kops edit cluster \
-  --name=sandbox.kubernetes.mycompany.tld \
+  --name=kubernetes.mydomain.com \
   --state=s3://mycompany.kubernetes
 
 # editor opens, make your changes ...
@@ -65,7 +65,7 @@ Then output your changes/edits to kops cluster state into the Terraform files. R
 
 ```
 $ kops update cluster \
-  --name=sandbox.kubernetes.mycompany.tld \
+  --name=kubernetes.mydomain.com \
   --state=s3://mycompany.kubernetes \
   --out=. \
   --target=terraform
@@ -88,7 +88,7 @@ When you eventually `terraform destroy` the cluster, you should still run `kops 
 $ terraform plan -destroy
 $ terraform destroy
 $ kops delete cluster --yes \
-  --name=sandbox.kubernetes.mycompany.tld \
+  --name=kubernetes.mydomain.com \
   --state=s3://mycompany.kubernetes
 ```
 
@@ -111,14 +111,14 @@ The workaround is that you don't use terraform for the `proto` phase (you can't 
 
 ```
 $ kops create cluster \
-  --name=sandbox.kubernetes.mycompany.tld \
+  --name=kubernetes.mydomain.com \
   --state=s3://mycompany.kubernetes \
   [... your other options ...]
   --out=. \
   --target=terraform
 
 $ kops update cluster \
-  --name=sandbox.kubernetes.mycompany.tld \
+  --name=kubernetes.mydomain.com \
   --state=s3://mycompany.kubernetes \
   --model=proto \
   --yes
@@ -128,7 +128,7 @@ And then you can use terraform to do the remainder of the installation:
 
 ```
 $ kops update cluster \
-  --name=sandbox.kubernetes.mycompany.tld \
+  --name=kubernetes.mydomain.com \
   --state=s3://mycompany.kubernetes \
   --model=cloudup \
   --out=. \
