@@ -76,6 +76,13 @@ aws configure # Input your credentials here
 aws iam list-users
 ```
 
+Be sure to export AWS_ACCESS_KEY and AWS_SECRET_ACCESS_KEY so that kops can use them to make API calls
+
+```bash
+AWS_ACCESS_KEY=<access key>
+AWS_SECRET_ACCESS_KEY=<secret key>
+```
+
 ## Configure DNS
 
 In order to build a Kubernetes cluster with `kops`, we need to prepare
