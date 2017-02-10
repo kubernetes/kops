@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/golang/glog"
 	"k8s.io/kops/nodeup/pkg/distros"
@@ -27,6 +28,10 @@ import (
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+)
+
+const (
+	coreosPluginDir = "/opt/kubernetes/kubelet-plugins/volume/exec/"
 )
 
 // KubeletBuilder install kubelet
@@ -40,6 +45,13 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 	kubeletConfig, err := b.buildKubeletConfig()
 	if err != nil {
 		return fmt.Errorf("error building kubelet config: %v", err)
+	}
+
+	if b.Distribution == distros.DistributionCoreOS {
+		kubeletConfig.VolumePluginDirectory = coreosPluginDir
+		if err := os.MkdirAll(coreosPluginDir, 0750); err != nil {
+			return err
+		}
 	}
 
 	// Add sysconfig file
