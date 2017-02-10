@@ -69,7 +69,7 @@ func BuildKubeletConfigSpec(cluster *Cluster, instanceGroup *InstanceGroup) (*Ku
 	// --register-with-taints was available in the first 1.6.0 alpha, no need to rely on semver's pre/build ordering
 	sv.Pre = nil
 	sv.Build = nil
-	if sv.GTE(semver.Version{1, 6, 0, nil, nil}) {
+	if sv.GTE(semver.Version{Major: 1, Minor: 6, Patch: 0, Pre: nil, Build: nil}) {
 		for i, t := range instanceGroup.Spec.Taints {
 			if c.Taints == nil {
 				c.Taints = make([]string, len(instanceGroup.Spec.Taints))
