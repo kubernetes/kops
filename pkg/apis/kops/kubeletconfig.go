@@ -67,18 +67,21 @@ func BuildKubeletConfigSpec(cluster *Cluster, instanceGroup *InstanceGroup) (*Ku
 		return c, fmt.Errorf("Failed to lookup kubernetes version: %v", err)
 	}
 
-	// This was available in the first 1.6.0 alpha, no need to rely on semver's pre/build ordering
+	// --register-with-taints was available in the first 1.6.0 alpha, no need to rely on semver's pre/build ordering
 	sv.Pre=nil
 	sv.Build = nil
-	// TODO: Is there a better place to define the 1.6.0 version for this? Maybe a feature flag?
 	if sv.GTE(semver.Version{1,6,0,nil,nil}) {
-		// --register-with-taints flag is supported by the kubelet version
 		for i, t := range instanceGroup.Spec.Taints {
 			if c.Taints == nil {
 				c.Taints = make([]string, len(instanceGroup.Spec.Taints))
 			}
 			c.Taints[i] = t
 		}
+
+		// Enable scheduling since it can be controlled via taints.
+		// For pre-1.6.0 clusters, this is handled by taints.go
+		registerSchedulable := true
+		c.RegisterSchedulable = &registerSchedulable
 	}
 
 	return c, nil

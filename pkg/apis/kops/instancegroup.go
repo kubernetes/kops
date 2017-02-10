@@ -25,6 +25,7 @@ import (
 )
 
 const LabelClusterName = "kops.k8s.io/cluster"
+const TaintNoScheduleMaster = "dedicated=master:NoSchedule"
 
 // InstanceGroup represents a group of instances (either nodes or masters) with the same configuration
 type InstanceGroup struct {

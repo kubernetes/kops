@@ -38,9 +38,9 @@ type nodePatchSpec struct {
 	Unschedulable *bool `json:"unschedulable,omitempty"`
 }
 
-// ApplyMasterTaints finds masters that have not yet been tainted, and applies the master taint
-// Once the kubelet support --taints (like --labels) this can probably go away entirely.
-// It also sets the unschedulable flag to false, so pods (with a toleration) can target the node
+// ApplyMasterTaints finds masters that have not yet been tainted, and applies the master taint.
+// Once all supported kubelet versions accept the --register-with-taints flag introduced in 1.6.0, this can probably
+// go away entirely. It also sets the unschedulable flag to false, so pods (with a toleration) can target the node
 func ApplyMasterTaints(kubeContext *KubernetesContext) error {
 	client, err := kubeContext.KubernetesClient()
 	if err != nil {
@@ -68,7 +68,7 @@ func ApplyMasterTaints(kubeContext *KubernetesContext) error {
 		nodeTaintJSON := node.Annotations[v1.TaintsAnnotationKey]
 		if nodeTaintJSON != "" {
 			if nodeTaintJSON != string(taintJSON) {
-				glog.Infof("Node %q had unexpected taint: %v", node.Name, nodeTaintJSON)
+				glog.Infof("Node %q is registered with taint: %v", node.Name, nodeTaintJSON)
 			}
 			continue
 		}
