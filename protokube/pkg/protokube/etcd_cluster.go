@@ -19,13 +19,14 @@ package protokube
 import (
 	"bytes"
 	"fmt"
-	"github.com/golang/glog"
 	"io/ioutil"
-	"k8s.io/kubernetes/pkg/api/resource"
 	"os"
 	"path"
 	"strings"
 	"time"
+
+	"github.com/golang/glog"
+	"k8s.io/kubernetes/pkg/api/resource"
 )
 
 type EtcdClusterSpec struct {
@@ -136,17 +137,9 @@ func (c *EtcdCluster) configure(k *KubeBoot) error {
 		// For sanity, and to avoid collisions in directories / dns
 		return fmt.Errorf("unexpected name for etcd cluster (must start with etcd): %q", name)
 	}
-	if c.LogFile == "" {
-		c.LogFile = "/var/log/" + name + ".log"
-	}
 
 	if c.PodName == "" {
 		c.PodName = c.ClusterName
-	}
-
-	err := touchFile(PathFor(c.LogFile))
-	if err != nil {
-		return fmt.Errorf("error touching log-file %q: %v", c.LogFile, err)
 	}
 
 	if c.ClusterToken == "" {

@@ -70,7 +70,7 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	redirectCommand := []string{
-		"/bin/sh", "-c", "/usr/local/bin/kube-apiserver " + flags + " 1>>/var/log/kube-apiserver.log 2>&1",
+		"/bin/sh", "-c", "/usr/local/bin/kube-apiserver " + flags,
 	}
 
 	pod := &v1.Pod{
@@ -138,8 +138,6 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	if b.Cluster.Spec.KubeAPIServer.PathSrvSshproxy != "" {
 		addHostPathMapping(pod, container, "srvsshproxy", b.Cluster.Spec.KubeAPIServer.PathSrvSshproxy, false)
 	}
-
-	addHostPathMapping(pod, container, "logfile", "/var/log/kube-apiserver.log", false)
 
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)
 

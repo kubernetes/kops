@@ -18,9 +18,10 @@ package protokube
 
 import (
 	"fmt"
+	"strings"
+
 	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/util/intstr"
-	"strings"
 )
 
 // BuildEtcdManifest creates the pod spec, based on the etcd cluster
@@ -49,7 +50,7 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 			Command: []string{
 				"/bin/sh",
 				"-c",
-				"/usr/local/bin/etcd 1>>/var/log/etcd.log 2>&1",
+				"/usr/local/bin/etcd",
 			},
 
 			// Note that we listen on 0.0.0.0, not 127.0.0.1, so we can support etcd clusters
@@ -107,11 +108,6 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 			},
 		})
 
-		container.VolumeMounts = append(container.VolumeMounts, v1.VolumeMount{
-			Name:      "varlogetcd",
-			MountPath: "/var/log/etcd.log",
-			ReadOnly:  false,
-		})
 		pod.Spec.Volumes = append(pod.Spec.Volumes, v1.Volume{
 			Name: "varlogetcd",
 			VolumeSource: v1.VolumeSource{

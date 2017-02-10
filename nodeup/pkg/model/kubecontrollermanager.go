@@ -18,6 +18,8 @@ package model
 
 import (
 	"fmt"
+	"strings"
+
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -25,7 +27,6 @@ import (
 	"k8s.io/kubernetes/pkg/api/v1"
 	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/util/intstr"
-	"strings"
 )
 
 // KubeControllerManagerBuilder install kube-controller-manager (just the manifest at the moment)
@@ -69,7 +70,7 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	redirectCommand := []string{
-		"/bin/sh", "-c", "/usr/local/bin/kube-controller-manager " + flags + " 1>>/var/log/kube-controller-manager.log 2>&1",
+		"/bin/sh", "-c", "/usr/local/bin/kube-controller-manager " + flags,
 	}
 
 	pod := &v1.Pod{
@@ -120,8 +121,6 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 	if b.Cluster.Spec.KubeControllerManager.PathSrvKubernetes != "" {
 		addHostPathMapping(pod, container, "srvkube", b.Cluster.Spec.KubeControllerManager.PathSrvKubernetes, true)
 	}
-
-	addHostPathMapping(pod, container, "logfile", "/var/log/kube-controller-manager.log", false)
 
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)
 
