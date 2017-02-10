@@ -34,21 +34,21 @@ DNS_CONTROLLER_TAG=1.5.1
 GITSHA := $(shell cd ${GOPATH_1ST}/src/k8s.io/kops; git describe --always)
 
 ifndef VERSION
-  # To keep both CI and end-users building from source happy,
-  # we expect that CI sets CI=1.
-  #
-  # For end users, they need only build kops, and they can use the last
-  # released version of nodeup/protokube.
-  # For CI, we continue to build a synthetic version from the git SHA, so
-  # we never cross versions.
-  #
-  # We expect that if you are uploading nodeup/protokube, you will set
-  # VERSION (along with S3_BUCKET), either directly or by setting CI=1
-  ifndef CI
-    VERSION=1.5.1
-  else
-    VERSION := git-${GITSHA}
-  endif
+	# To keep both CI and end-users building from source happy,
+	# we expect that CI sets CI=1.
+	#
+	# For end users, they need only build kops, and they can use the last
+	# released version of nodeup/protokube.
+	# For CI, we continue to build a synthetic version from the git SHA, so
+	# we never cross versions.
+	#
+	# We expect that if you are uploading nodeup/protokube, you will set
+	# VERSION (along with S3_BUCKET), either directly or by setting CI=1
+	ifndef CI
+		VERSION=1.5.1
+	else
+		VERSION := git-${GITSHA}
+	endif
 endif
 
 
@@ -58,10 +58,10 @@ GO15VENDOREXPERIMENT=1
 export GO15VENDOREXPERIMENT
 
 ifdef STATIC_BUILD
-  CGO_ENABLED=0
-  export CGO_ENABLED
-  EXTRA_BUILDFLAGS=-installsuffix cgo
-  EXTRA_LDFLAGS=-s
+	CGO_ENABLED=0
+	export CGO_ENABLED
+	EXTRA_BUILDFLAGS=-installsuffix cgo
+	EXTRA_LDFLAGS=-s
 endif
 
 SHASUMCMD := $(shell sha1sum --help 2> /dev/null)
@@ -192,7 +192,7 @@ protokube-image: protokube-build-in-docker
 
 protokube-export: protokube-image
 	mkdir -p .build/dist/images
-	docker save protokube:${VERSION} | gzip -c  > .build/dist/images/protokube.tar.gz
+	docker save protokube:${VERSION} | gzip -c	> .build/dist/images/protokube.tar.gz
 	(sha1sum .build/dist/images/protokube.tar.gz | cut -d' ' -f1) > .build/dist/images/protokube.tar.gz.sha1
 
 # protokube-push is no longer used (we upload a docker image tar file to S3 instead),
@@ -233,7 +233,7 @@ dns-controller-push: dns-controller-image
 
 # See docs/development/dependencies.md
 copydeps:
-	rsync -avz _vendor/ vendor/ --delete --exclude vendor/  --exclude .git
+	rsync -avz _vendor/ vendor/ --delete --exclude vendor/	--exclude .git
 
 gofmt:
 	gofmt -w -s channels/
@@ -255,16 +255,16 @@ gofmt:
 
 govet:
 	go vet \
-	  k8s.io/kops/cmd/... \
-	  k8s.io/kops/pkg/... \
-	  k8s.io/kops/channels/... \
-	  k8s.io/kops/examples/... \
-	  k8s.io/kops/federation/... \
-	  k8s.io/kops/nodeup/... \
-	  k8s.io/kops/util/... \
-	  k8s.io/kops/upup/... \
-	  k8s.io/kops/protokube/... \
-	  k8s.io/kops/dns-controller/...
+		k8s.io/kops/cmd/... \
+		k8s.io/kops/pkg/... \
+		k8s.io/kops/channels/... \
+		k8s.io/kops/examples/... \
+		k8s.io/kops/federation/... \
+		k8s.io/kops/nodeup/... \
+		k8s.io/kops/util/... \
+		k8s.io/kops/upup/... \
+		k8s.io/kops/protokube/... \
+		k8s.io/kops/dns-controller/...
 
 
 # --------------------------------------------------
