@@ -68,7 +68,7 @@ func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupLi
 		return validationCluster, fmt.Errorf("No InstanceGroup objects found")
 	}
 
-	timeout, err := time.ParseDuration("30s")
+	timeout, err := time.ParseDuration("10s")
 	if err != nil {
 		return nil, fmt.Errorf("Cannot set timeout %q: %v", clusterName, err)
 	}
@@ -80,7 +80,7 @@ func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupLi
 
 	validationCluster.NodeList, err = nodeAA.GetAllNodes()
 	if err != nil {
-		return nil, fmt.Errorf("Cannot get nodes for %q: %v", clusterName, err)
+		return nil, fmt.Errorf("Cannot reach API server: %v", err)
 	}
 
 	return validateTheNodes(clusterName, validationCluster)
