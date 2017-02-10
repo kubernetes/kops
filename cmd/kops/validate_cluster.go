@@ -165,6 +165,24 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		return fmt.Errorf("cannot render nodes for %q: %v", cluster.ObjectMeta.Name, err)
 	}
 
+	if len(validationCluster.ComponentFailures) != 0 {
+		fmt.Fprintln(out, "\nComponent Failures")
+		err = t.Render(validationCluster.ComponentFailures, out, "NAME")
+
+		if err != nil {
+			return fmt.Errorf("cannot render components for %q: %v", cluster.ObjectMeta.Name, err)
+		}
+	}
+
+	if len(validationCluster.PodFailures) != 0 {
+		fmt.Fprintln(out, "\nPod Failures in kube-system")
+		err = t.Render(validationCluster.PodFailures, out, "NAME")
+
+		if err != nil {
+			return fmt.Errorf("cannot render pods for %q: %v", cluster.ObjectMeta.Name, err)
+		}
+	}
+
 	if validationFailed == nil {
 		fmt.Fprintf(out, "\nYour cluster %s is ready\n", cluster.ObjectMeta.Name)
 		return nil
@@ -174,6 +192,6 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		fmt.Fprint(out, "\nValidation Failed\n")
 		fmt.Fprintf(out, "Ready Master(s) %d out of %d.\n", len(validationCluster.MastersReadyArray), validationCluster.MastersCount)
 		fmt.Fprintf(out, "Ready Node(s) %d out of %d.\n", len(validationCluster.NodesReadyArray), validationCluster.NodesCount)
-		return fmt.Errorf("Your cluster %s is NOT ready.\n", cluster.ObjectMeta.Name)
+		return validationFailed
 	}
 }
