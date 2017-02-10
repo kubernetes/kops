@@ -96,6 +96,40 @@ func TestBuildTags_CloudProvider_AWS_Weave(t *testing.T) {
 	}
 }
 
+func TestBuildTags_CloudProvider_AWS_Flannel(t *testing.T) {
+
+	c := buildCluster(nil)
+	networking := &api.NetworkingSpec{Flannel: &api.FlannelNetworkingSpec{}}
+
+	c.Spec.Networking = networking
+
+	tags, err := buildCloudupTags(c)
+	if err != nil {
+		t.Fatalf("buildCloudupTags error: %v", err)
+	}
+
+	if !tags.Has("_aws") {
+		t.Fatal("tag _aws not found")
+	}
+
+	if !tags.Has("_networking_cni") {
+		t.Fatal("tag _networking_cni not found")
+	}
+
+	if tags.Has("_networking_kubenet") {
+		t.Fatal("tag _networking_kubenet found")
+	}
+
+	nodeUpTags, err := buildNodeupTags(api.InstanceGroupRoleNode, c, tags)
+	if err != nil {
+		t.Fatalf("buildNodeupTags error: %v", err)
+	}
+
+	if !nodeUpTags.Has("_aws") {
+		t.Fatal("nodeUpTag _aws not found")
+	}
+}
+
 func TestBuildTags_CloudProvider_AWS_Calico(t *testing.T) {
 
 	c := buildCluster(nil)
