@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"

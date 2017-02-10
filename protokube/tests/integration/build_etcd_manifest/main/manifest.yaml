@@ -11,7 +11,7 @@ spec:
   - command:
     - /bin/sh
     - -c
-    - /usr/local/bin/etcd 1>>/var/log/etcd.log 2>&1
+    - /usr/local/bin/etcd
     env:
     - name: ETCD_NAME
       value: node0
@@ -53,14 +53,9 @@ spec:
     volumeMounts:
     - mountPath: /var/etcd/data-main
       name: varetcdata
-    - mountPath: /var/log/etcd.log
-      name: varlogetcd
   hostNetwork: true
   volumes:
   - hostPath:
       path: /mnt/main/var/etcd/data-main
     name: varetcdata
-  - hostPath:
-      path: /var/log/main.log
-    name: varlogetcd
 status: {}

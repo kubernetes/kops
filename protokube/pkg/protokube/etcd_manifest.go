@@ -108,15 +108,6 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 			},
 		})
 
-		pod.Spec.Volumes = append(pod.Spec.Volumes, v1.Volume{
-			Name: "varlogetcd",
-			VolumeSource: v1.VolumeSource{
-				HostPath: &v1.HostPathVolumeSource{
-					Path: c.LogFile,
-				},
-			},
-		})
-
 		pod.Spec.Containers = append(pod.Spec.Containers, container)
 	}
 

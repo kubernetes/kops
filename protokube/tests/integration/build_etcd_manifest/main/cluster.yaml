@@ -6,4 +6,3 @@ cpuRequest: "200m"
 clientPort: 4001
 peerPort: 2380
 clusterToken: token-main
-logFile: /var/log/main.log
