@@ -17,10 +17,10 @@ limitations under the License.
 package kops
 
 import (
-	"k8s.io/kops/upup/pkg/fi/utils"
-	"k8s.io/kops/pkg/apis/kops/util"
-	"github.com/blang/semver"
 	"fmt"
+	"github.com/blang/semver"
+	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 const RoleLabelName = "kubernetes.io/role"
@@ -61,16 +61,15 @@ func BuildKubeletConfigSpec(cluster *Cluster, instanceGroup *InstanceGroup) (*Ku
 		c.NodeLabels[k] = v
 	}
 
-
 	sv, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
 	if err != nil {
 		return c, fmt.Errorf("Failed to lookup kubernetes version: %v", err)
 	}
 
 	// --register-with-taints was available in the first 1.6.0 alpha, no need to rely on semver's pre/build ordering
-	sv.Pre=nil
+	sv.Pre = nil
 	sv.Build = nil
-	if sv.GTE(semver.Version{1,6,0,nil,nil}) {
+	if sv.GTE(semver.Version{1, 6, 0, nil, nil}) {
 		for i, t := range instanceGroup.Spec.Taints {
 			if c.Taints == nil {
 				c.Taints = make([]string, len(instanceGroup.Spec.Taints))

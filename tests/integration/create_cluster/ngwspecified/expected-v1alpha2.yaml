@@ -82,6 +82,8 @@ spec:
   role: Master
   subnets:
   - us-test-1a
+  taints:
+  - dedicated=master:NoSchedule
 
 ---
 
