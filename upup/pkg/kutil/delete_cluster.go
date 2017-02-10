@@ -776,7 +776,7 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 
 		for _, address := range response.Addresses {
 			ip := aws.StringValue(address.PublicIp)
-			if elasticIPs.Has(ip) {
+			if !elasticIPs.Has(ip) {
 				continue
 			}
 
