@@ -1194,6 +1194,7 @@ func autoConvert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.EvictionPressureTransitionPeriod = in.EvictionPressureTransitionPeriod
 	out.EvictionMaxPodGracePeriod = in.EvictionMaxPodGracePeriod
 	out.EvictionMinimumReclaim = in.EvictionMinimumReclaim
+	out.VolumePluginDirectory = in.VolumePluginDirectory
 	return nil
 }
 
@@ -1237,6 +1238,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec(in *kops.K
 	out.EvictionPressureTransitionPeriod = in.EvictionPressureTransitionPeriod
 	out.EvictionMaxPodGracePeriod = in.EvictionMaxPodGracePeriod
 	out.EvictionMinimumReclaim = in.EvictionMinimumReclaim
+	out.VolumePluginDirectory = in.VolumePluginDirectory
 	return nil
 }
 
