@@ -8,7 +8,7 @@ The Terraform output should be reasonably stable (i.e. the text files should onl
 
 Note that if you modify the Terraform files that kops spits out, it will override your changes with the configuration state defined by it's own configs. In other terms, kops own state is the ultimate source of truth (as far as kops is concerned), and Terraform is a representation of that state for your convenience.
 
-Ps: Steps below assume a recent version of Terraform. There's a workaround for a bug if you are using a Terraform version before 0.7 that you should be aware of (see _"Caveats"_ section).
+Ps: Steps below assume a recent version of Terraform. There's a workaround for a bug if you are using a Terraform version before 0.7 that you should be aware of (see [_"Caveats"_ section](#caveats)).
 
 ### Using Terraform
 
