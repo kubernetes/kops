@@ -367,6 +367,10 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 	for _, sg := range e.SecurityGroups {
 		tf.SecurityGroups = append(tf.SecurityGroups, sg.TerraformLink())
 	}
+
+	for _, sg := range e.AdditionalSecurityGroupIDs {
+		tf.SecurityGroups = append(tf.SecurityGroups, terraform.LiteralFromStringValue(sg))
+	}
 	tf.AssociatePublicIpAddress = e.AssociatePublicIP
 
 	{
