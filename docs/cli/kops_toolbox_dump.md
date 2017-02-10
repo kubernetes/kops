@@ -1,11 +1,11 @@
 ## kops toolbox dump
 
-Dump cloud information about a cluster
+Dump information about a cluster
 
 ### Synopsis
 
 
-Dump cloud information about a cluster
+Dump information about a cluster
 
 ```
 kops toolbox dump

@@ -49,6 +49,11 @@ func usesCNI(c *api.Cluster) bool {
 		return true
 	}
 
+	if networkConfig.Flannel != nil {
+		//  Weave uses CNI
+		return true
+	}
+
 	if networkConfig.Calico != nil {
 		//  Calico uses CNI
 		return true

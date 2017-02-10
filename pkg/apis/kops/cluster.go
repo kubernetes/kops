@@ -362,6 +362,8 @@ func (c *Cluster) FillDefaults() error {
 		// OK
 	} else if c.Spec.Networking.Weave != nil {
 		// OK
+	} else if c.Spec.Networking.Flannel != nil {
+		// OK
 	} else if c.Spec.Networking.Calico != nil {
 		// OK
 	} else {
