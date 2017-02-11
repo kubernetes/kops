@@ -21,6 +21,7 @@ import (
 
 	"io"
 
+	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
@@ -182,9 +183,11 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 		}
 	}
 
-	err = kutil.DeleteConfig(clusterName)
+	b := kutil.NewKubeconfigBuilder()
+	b.Context = clusterName
+	err = b.DeleteKubeConfig()
 	if err != nil {
-		return fmt.Errorf("error deleting kube config: %v", err)
+		glog.Warningf("error removing kube config: %v", err)
 	}
 
 	fmt.Fprintf(out, "\nCluster deleted\n")
