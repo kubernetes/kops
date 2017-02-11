@@ -30,11 +30,15 @@ type PackagesBuilder struct {
 var _ fi.ModelBuilder = &DockerBuilder{}
 
 func (b *PackagesBuilder) Build(c *fi.ModelBuilderContext) error {
-	// kubelet needs ebtables - kops #1711
+	// kubelet needs:
+	//   ebtables - kops #1711
+	//   ethtool - kops #1830
 	if b.Distribution.IsDebianFamily() {
 		c.AddTask(&nodetasks.Package{Name: "ebtables"})
+		c.AddTask(&nodetasks.Package{Name: "ethtool"})
 	} else if b.Distribution.IsRHELFamily() {
 		c.AddTask(&nodetasks.Package{Name: "ebtables"})
+		c.AddTask(&nodetasks.Package{Name: "ethtool"})
 	} else {
 		// Hopefully it's already installed
 		glog.Infof("ebtables package not known for distro %q", b.Distribution)
