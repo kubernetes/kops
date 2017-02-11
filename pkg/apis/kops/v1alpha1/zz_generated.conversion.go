@@ -902,6 +902,7 @@ func autoConvert_v1alpha1_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
 	out.CloudLabels = in.CloudLabels
 	out.NodeLabels = in.NodeLabels
+	out.Taints = in.Taints
 	return nil
 }
 
@@ -919,6 +920,7 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha1_InstanceGroupSpec(in *kops.I
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
 	out.CloudLabels = in.CloudLabels
 	out.NodeLabels = in.NodeLabels
+	out.Taints = in.Taints
 	return nil
 }
 
@@ -1195,6 +1197,7 @@ func autoConvert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.EvictionMaxPodGracePeriod = in.EvictionMaxPodGracePeriod
 	out.EvictionMinimumReclaim = in.EvictionMinimumReclaim
 	out.VolumePluginDirectory = in.VolumePluginDirectory
+	out.Taints = in.Taints
 	return nil
 }
 
@@ -1239,6 +1242,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec(in *kops.K
 	out.EvictionMaxPodGracePeriod = in.EvictionMaxPodGracePeriod
 	out.EvictionMinimumReclaim = in.EvictionMinimumReclaim
 	out.VolumePluginDirectory = in.VolumePluginDirectory
+	out.Taints = in.Taints
 	return nil
 }
 
