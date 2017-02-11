@@ -19,8 +19,9 @@ package main
 import (
 	"fmt"
 
-	"github.com/spf13/cobra"
 	"io"
+
+	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
@@ -181,9 +182,10 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 		}
 	}
 
-	b := kutil.NewKubeconfigBuilder()
-	b.Context = cluster.ObjectMeta.Name
-	b.DeleteKubeConfig()
+	err = kutil.DeleteConfig(clusterName)
+	if err != nil {
+		return fmt.Errorf("error deleting kube config: %v", err)
+	}
 
 	fmt.Fprintf(out, "\nCluster deleted\n")
 	return nil
