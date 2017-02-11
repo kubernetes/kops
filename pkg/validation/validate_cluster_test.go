@@ -57,6 +57,40 @@ func Test_ValidateClusterMasterAndNodeNotReady(t *testing.T) {
 	}
 }
 
+func Test_ValidateClusterComponents(t *testing.T) {
+	nodeList, err := dummyClient("true", "true").Core().Nodes().List(v1.ListOptions{})
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	var component = make([]string, 1)
+	validationCluster := &ValidationCluster{NodeList: nodeList, NodesCount: 1, MastersCount: 1, ComponentFailures: component}
+	validationCluster, err = validateTheNodes("foo", validationCluster)
+
+	if err == nil {
+		printDebug(validationCluster)
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func Test_ValidateClusterPods(t *testing.T) {
+	nodeList, err := dummyClient("true", "true").Core().Nodes().List(v1.ListOptions{})
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	var pod = make([]string, 1)
+	validationCluster := &ValidationCluster{NodeList: nodeList, NodesCount: 1, MastersCount: 1, PodFailures: pod}
+	validationCluster, err = validateTheNodes("foo", validationCluster)
+
+	if err == nil {
+		printDebug(validationCluster)
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
 func Test_ValidateClusterNodeNotReady(t *testing.T) {
 	nodeList, err := dummyClient("true", "false").Core().Nodes().List(v1.ListOptions{})
 
