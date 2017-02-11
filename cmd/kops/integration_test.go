@@ -67,6 +67,12 @@ func TestPrivateCalico(t *testing.T) {
 	runTest(t, "privatecalico.example.com", "../../tests/integration/privatecalico", "v1alpha2", true)
 }
 
+// TestPrivateCanal runs the test on a configuration with private topology, canal networking
+func TestPrivateCanal(t *testing.T) {
+	runTest(t, "privatecanal.example.com", "../../tests/integration/privatecanal", "v1alpha1", true)
+	runTest(t, "privatecanal.example.com", "../../tests/integration/privatecanal", "v1alpha2", true)
+}
+
 func runTest(t *testing.T, clusterName string, srcDir string, version string, private bool) {
 	var stdout bytes.Buffer
 
