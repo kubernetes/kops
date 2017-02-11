@@ -14,6 +14,7 @@ k8s.io/kops/dns-controller/pkg/util
 k8s.io/kops/dns-controller/pkg/watchers
 k8s.io/kops/examples/kops-api-example
 k8s.io/kops/federation
+k8s.io/kops/federation/model
 k8s.io/kops/federation/targets/kubernetes
 k8s.io/kops/federation/tasks
 k8s.io/kops/nodeup/pkg/distros
