@@ -19,10 +19,13 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/golang/glog"
-	"github.com/spf13/cobra"
 	"io"
 	"io/ioutil"
+	"strings"
+	"time"
+
+	"github.com/golang/glog"
+	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
@@ -31,8 +34,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/upup/pkg/kutil"
 	k8sapi "k8s.io/kubernetes/pkg/api"
-	"strings"
-	"time"
 )
 
 type UpdateClusterOptions struct {
@@ -246,6 +247,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		// More suggestions on first run
 		if firstRun {
 			fmt.Fprintf(sb, "Suggestions:\n")
+			fmt.Fprintf(sb, " * validate cluster: kops validate cluster\n")
 			fmt.Fprintf(sb, " * list nodes: kubectl get nodes --show-labels\n")
 			if !usesBastion(instanceGroups) {
 				fmt.Fprintf(sb, " * ssh to the master: ssh -i ~/.ssh/id_rsa admin@%s\n", cluster.Spec.MasterPublicName)
