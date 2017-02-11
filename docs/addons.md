@@ -35,3 +35,12 @@ Install using:
 ```
 kubectl create -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/monitoring-standalone/v1.2.0.yaml
 ```
+
+### Route53 Mapper
+
+Automates creation and updating of entries on Route53 with `A` records pointing
+to ELB-backed `LoadBalancer` services created by Kubernetes. Install using:
+
+```
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/monitoring-standalone/v1.2.0.yaml
+```
