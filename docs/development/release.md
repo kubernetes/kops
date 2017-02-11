@@ -47,6 +47,8 @@ git push --tags
 
 ## Upload to github
 
+Manually create a release on github & upload, but soon we'll publish shipbot which automates this...
+
 ```
 bazel run //cmd/shipbot -- -tag ${TAG}
 ```
@@ -63,3 +65,12 @@ e.g. `git log 1.5.0-alpha2..1.5.0-alpha3 > /tmp/relnotes`
 * Add notes
 * Publish it
 
+## Update the alpha channel and/or stable channel
+
+Once we are satisfied the release is sound:
+
+* Bump the kops recommended version in the alpha channel
+
+Once we are satisfied the release is stable:
+
+* Bump the kops recommended version in the stable channel
