@@ -41,6 +41,8 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_kops_CNINetworkingSpec_To_v1alpha1_CNINetworkingSpec,
 		Convert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec,
 		Convert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec,
+		Convert_v1alpha1_CanalNetworkingSpec_To_kops_CanalNetworkingSpec,
+		Convert_kops_CanalNetworkingSpec_To_v1alpha1_CanalNetworkingSpec,
 		Convert_v1alpha1_ClassicNetworkingSpec_To_kops_ClassicNetworkingSpec,
 		Convert_kops_ClassicNetworkingSpec_To_v1alpha1_ClassicNetworkingSpec,
 		Convert_v1alpha1_Cluster_To_kops_Cluster,
@@ -182,6 +184,22 @@ func autoConvert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec(in *
 
 func Convert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec(in *kops.CalicoNetworkingSpec, out *CalicoNetworkingSpec, s conversion.Scope) error {
 	return autoConvert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec(in, out, s)
+}
+
+func autoConvert_v1alpha1_CanalNetworkingSpec_To_kops_CanalNetworkingSpec(in *CanalNetworkingSpec, out *kops.CanalNetworkingSpec, s conversion.Scope) error {
+	return nil
+}
+
+func Convert_v1alpha1_CanalNetworkingSpec_To_kops_CanalNetworkingSpec(in *CanalNetworkingSpec, out *kops.CanalNetworkingSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha1_CanalNetworkingSpec_To_kops_CanalNetworkingSpec(in, out, s)
+}
+
+func autoConvert_kops_CanalNetworkingSpec_To_v1alpha1_CanalNetworkingSpec(in *kops.CanalNetworkingSpec, out *CanalNetworkingSpec, s conversion.Scope) error {
+	return nil
+}
+
+func Convert_kops_CanalNetworkingSpec_To_v1alpha1_CanalNetworkingSpec(in *kops.CanalNetworkingSpec, out *CanalNetworkingSpec, s conversion.Scope) error {
+	return autoConvert_kops_CanalNetworkingSpec_To_v1alpha1_CanalNetworkingSpec(in, out, s)
 }
 
 func autoConvert_v1alpha1_ClassicNetworkingSpec_To_kops_ClassicNetworkingSpec(in *ClassicNetworkingSpec, out *kops.ClassicNetworkingSpec, s conversion.Scope) error {
@@ -1362,6 +1380,15 @@ func autoConvert_v1alpha1_NetworkingSpec_To_kops_NetworkingSpec(in *NetworkingSp
 	} else {
 		out.Calico = nil
 	}
+	if in.Canal != nil {
+		in, out := &in.Canal, &out.Canal
+		*out = new(kops.CanalNetworkingSpec)
+		if err := Convert_v1alpha1_CanalNetworkingSpec_To_kops_CanalNetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Canal = nil
+	}
 	return nil
 }
 
@@ -1432,6 +1459,15 @@ func autoConvert_kops_NetworkingSpec_To_v1alpha1_NetworkingSpec(in *kops.Network
 		}
 	} else {
 		out.Calico = nil
+	}
+	if in.Canal != nil {
+		in, out := &in.Canal, &out.Canal
+		*out = new(CanalNetworkingSpec)
+		if err := Convert_kops_CanalNetworkingSpec_To_v1alpha1_CanalNetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Canal = nil
 	}
 	return nil
 }
