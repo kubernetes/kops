@@ -49,7 +49,7 @@ func ValidateRegion(region string) error {
 
 		response, err := client.DescribeRegions(request)
 		if err != nil {
-			return fmt.Errorf("Got an error while querying for valid regions (verify your AWS credentials?)")
+			return fmt.Errorf("Got an error while querying for valid regions (verify your AWS credentials?): %v", err)
 		}
 		allRegions = response.Regions
 	}
