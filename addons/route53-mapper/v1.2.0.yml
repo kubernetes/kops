@@ -16,7 +16,11 @@ spec:
     metadata:
       labels:
         app: route53-mapper
+      annotations:
+        scheduler.alpha.kubernetes.io/tolerations: '[{"key":"dedicated", "value":"master"}]'
     spec:
+      nodeSelector:
+        kubernetes.io/role: master
       containers:
         - image: quay.io/molecule/route53-kubernetes:v1.2.0
           name: route53-mapper
