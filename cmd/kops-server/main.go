@@ -14,8 +14,33 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// +k8s:conversion-gen=k8s.io/kops/pkg/apis/kops
-// +k8s:defaulter-gen=TypeMeta
+package main
 
-// +groupName=kops
-package v1alpha1
+import (
+	"flag"
+	"os"
+	"runtime"
+
+	"k8s.io/kops/pkg/apiserver/cmd/server"
+	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
+	"k8s.io/kubernetes/pkg/util/logs"
+	"math/rand"
+	"time"
+)
+
+func main() {
+	rand.Seed(time.Now().UTC().UnixNano())
+
+	logs.InitLogs()
+	defer logs.FlushLogs()
+
+	if len(os.Getenv("GOMAXPROCS")) == 0 {
+		runtime.GOMAXPROCS(runtime.NumCPU())
+	}
+
+	cmd := server.NewCommandStartKopsServer(os.Stdout, os.Stderr)
+	cmd.Flags().AddGoFlagSet(flag.CommandLine)
+	if err := cmd.Execute(); err != nil {
+		cmdutil.CheckErr(err)
+	}
+}

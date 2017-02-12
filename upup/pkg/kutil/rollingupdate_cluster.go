@@ -118,7 +118,6 @@ func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroup
 
 // RollingUpdateDrainValidate performs a rolling update on a K8s Cluster.
 func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, instanceGroups *api.InstanceGroupList) error {
-
 	if len(groups) == 0 {
 		glog.Infof("Cloud Instance Group length is zero. Not doing a rolling-update.")
 		return nil

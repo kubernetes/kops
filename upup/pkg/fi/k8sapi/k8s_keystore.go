@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/upup/pkg/fi"
@@ -79,7 +79,7 @@ func (c *KubernetesKeystore) issueCert(id string, serial *big.Int, privateKey *f
 }
 
 func (c *KubernetesKeystore) findSecret(id string) (*v1.Secret, error) {
-	secret, err := c.client.CoreV1().Secrets(c.namespace).Get(id, meta_v1.GetOptions{})
+	secret, err := c.client.CoreV1().Secrets(c.namespace).Get(id, metav1.GetOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return nil, nil
