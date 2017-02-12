@@ -29,7 +29,10 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup"
 )
 
-const retryInterval = 30 * time.Second
+const (
+	retryInterval = 30 * time.Second
+	procSelfExe   = "/proc/self/exe"
+)
 
 func main() {
 	gitVersion := ""
@@ -52,8 +55,8 @@ func main() {
 	target := "direct"
 	flag.StringVar(&target, "target", target, "Target - direct, cloudinit")
 
-	install := false
-	flag.BoolVar(&install, "install", install, "If true, will install a systemd unit instead of running directly")
+	installSystemdUnit := false
+	flag.BoolVar(&installSystemdUnit, "install-systemd-unit", installSystemdUnit, "If true, will install a systemd unit instead of running directly")
 
 	if dryrun {
 		target = "dryrun"
@@ -70,20 +73,29 @@ func main() {
 
 	for {
 		var err error
-		if install {
+		if installSystemdUnit {
 			// create a systemd unit to bootstrap kops
 			// using the same args as we were called with
 			var command []string
 			for i := 0; i < len(os.Args); i++ {
 				s := os.Args[i]
-				if s == "-install" || s == "--install" {
+				if s == "-install-systemd-unit" || s == "--install-systemd-unit" {
 					continue
 				}
 				if i == 0 {
 					// We could also try to evaluate based on cwd
-					s, err = os.Readlink("/proc/self/exe")
+					if _, err := os.Stat(procSelfExe); os.IsNotExist(err) {
+						glog.Fatalf("file %v does not exists", procSelfExe)
+					}
+
+					fi, err := os.Lstat(procSelfExe)
+					if fi.Mode()&os.ModeSymlink != os.ModeSymlink {
+						glog.Fatalf("file %v is not a symlink", procSelfExe)
+					}
+
+					s, err = os.Readlink(procSelfExe)
 					if err != nil {
-						glog.Fatalf("error reading /proc/self/exe link: %v", err)
+						glog.Fatalf("error reading %v link: %v", procSelfExe, err)
 					}
 				}
 				command = append(command, s)
