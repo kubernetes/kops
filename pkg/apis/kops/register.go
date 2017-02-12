@@ -63,6 +63,7 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&Federation{},
 		&FederationList{},
 	)
+	//metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil
 }
 

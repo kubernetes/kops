@@ -60,7 +60,7 @@ func mutateNamespace(k8s federation_clientset.Interface, name string, fn func(s 
 		return created, nil
 	} else {
 		glog.V(2).Infof("updating federation Namespace %s", name)
-		created, err := k8s.Core().Namespaces().Update(updated)
+		created, err := k8s.CoreV1().Namespaces().Update(updated)
 		if err != nil {
 			return nil, fmt.Errorf("error updating federation Namespace %s: %v", name, err)
 		}

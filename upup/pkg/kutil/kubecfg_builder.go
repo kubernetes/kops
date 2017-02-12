@@ -80,8 +80,8 @@ func (b *KubeconfigBuilder) DeleteKubeConfig() error {
 }
 
 // Create new Rest Client
-func (c *KubeconfigBuilder) BuildRestConfig() (*restclient.Config, error) {
-	restConfig := &restclient.Config{
+func (c *KubeconfigBuilder) BuildRestConfig() (*rest.Config, error) {
+	restConfig := &rest.Config{
 		Host: "https://" + c.KubeMasterIP,
 	}
 	restConfig.CAData = c.CACert
