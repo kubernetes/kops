@@ -235,7 +235,15 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 			}
 		} else if firstRun {
 			fmt.Fprintf(sb, "\n")
-			fmt.Fprintf(sb, "Cluster is starting.  It should be ready in a few minutes.\n")
+			fmt.Fprintf(sb, "Cluster is starting.  It should be ready soon!\n")
+			url, err := getEc2UrlFromCluster(cluster)
+			if err != nil {
+				// Todo @kris-nova should we fail here or just neglect to offer the console link? A failure here would suggest we are crossing regions in subnets, which would be very strange.
+				return err
+			}
+			if url != "" {
+				fmt.Fprintf(sb, "You can view your cluster instances in the console here: %s\n", url)
+			}
 			fmt.Fprintf(sb, "\n")
 		} else {
 			// TODO: Different message if no changes were needed
@@ -249,18 +257,23 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 			fmt.Fprintf(sb, "Suggestions:\n")
 			fmt.Fprintf(sb, " * validate cluster: kops validate cluster\n")
 			fmt.Fprintf(sb, " * list nodes: kubectl get nodes --show-labels\n")
+			fmt.Fprintf(sb, " * download kubeconfig: kops export kubecfg --name %s\n", clusterName)
+			fmt.Fprintf(sb, " * read about installing addons: https://github.com/kubernetes/kops/blob/master/docs/addons.md\n")
+			fmt.Fprintf(sb, "\n")
 			if !usesBastion(instanceGroups) {
 				fmt.Fprintf(sb, " * ssh to the master: ssh -i ~/.ssh/id_rsa admin@%s\n", cluster.Spec.MasterPublicName)
 			} else {
 				bastionPublicName := findBastionPublicName(cluster)
 				if bastionPublicName != "" {
-					fmt.Fprintf(sb, " * ssh to the bastion: ssh -i ~/.ssh/id_rsa admin@%s\n", bastionPublicName)
+					fmt.Fprintf(sb, "Accessing your cluster via the bastion:\n")
+					fmt.Fprintf(sb, " * You may now access your bastion server via SSH.\n")
+					fmt.Fprintf(sb, " * Make sure your agent is being managed by ssh-agent: ssh-add -l should return a result. (Otherwise you need to add your key to the agent. EX: ssh-add ~/.ssh/id_rsa)\n")
+					fmt.Fprintf(sb, " * Access the bastion using whatever key you used to build the cluster with. Default: ~/.ssh_id_rsa\n")
+					fmt.Fprintf(sb, " * You can now ssh to a bastion server for this cluster: ssh -A -i ~/.ssh/id_rsa admin@%s\n", bastionPublicName)
 				} else {
-					fmt.Fprintf(sb, " * to ssh to the bastion, you probably want to configure a bastionPublicName")
+					fmt.Fprintf(sb, " * In order to ssh into the bastion, you will need to configure a bastionPublicName\n")
 				}
 			}
-			fmt.Fprintf(sb, " * read about installing addons: https://github.com/kubernetes/kops/blob/master/docs/addons.md\n")
-			fmt.Fprintf(sb, "\n")
 		}
 
 		if !firstRun {
@@ -315,4 +328,21 @@ func hasKubecfg(contextName string) (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+// getEc2UrlFromCluster will take a fleshed out Cluster{} and attempt to derive a resolvable
+// AWS EC2 URL from the spec.
+func getEc2UrlFromCluster(c *kops.Cluster) (string, error) {
+	region := ""
+	for _, subnet := range c.Spec.Subnets {
+		zone := subnet.Zone
+		// Drop last char from AZ to get region
+		r := zone[:len(zone)-1]
+		if region == "" {
+			region = r
+		} else if region != r {
+			return "", fmt.Errorf("unable to validate region from zones in cluster spec.")
+		}
+	}
+	return fmt.Sprintf("https://%s.console.aws.amazon.com/ec2", region), nil
 }
