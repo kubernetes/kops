@@ -83,21 +83,23 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 			Resource: []string{"*"},
 		})
 
-		// No longer needed in 1.3
-		//p.Statement = append(p.Statement, &IAMStatement{
-		//	Effect: IAMStatementEffectAllow,
-		//	Action: []string{ "ec2:AttachVolume" },
-		//	Resource: []string{"*"},
-		//})
-		//p.Statement = append(p.Statement, &IAMStatement{
-		//	Effect: IAMStatementEffectAllow,
-		//	Action: []string{ "ec2:DetachVolume" },
-		//	Resource: []string{"*"},
-		//})
+		p.Statement = append(p.Statement, &IAMStatement{
+			Effect: IAMStatementEffectAllow,
+			Action: []string{"route53:ChangeResourceRecordSets",
+				"route53:ListResourceRecordSets",
+				"route53:GetHostedZone"},
+			Resource: []string{"arn:aws:route53:::hostedzone/" + b.Cluster.Spec.DNSZone},
+		})
 
 		p.Statement = append(p.Statement, &IAMStatement{
 			Effect:   IAMStatementEffectAllow,
-			Action:   []string{"route53:*"},
+			Action:   []string{"route53:GetChange"},
+			Resource: []string{"arn:aws:route53:::change/*"},
+		})
+
+		p.Statement = append(p.Statement, &IAMStatement{
+			Effect:   IAMStatementEffectAllow,
+			Action:   []string{"route53:ListHostedZones"},
 			Resource: []string{"*"},
 		})
 	}
@@ -129,8 +131,21 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 		})
 
 		p.Statement = append(p.Statement, &IAMStatement{
+			Effect: IAMStatementEffectAllow,
+			Action: []string{"route53:ChangeResourceRecordSets",
+				"route53:ListResourceRecordSets",
+				"route53:GetHostedZone"},
+			Resource: []string{"arn:aws:route53:::hostedzone/" + b.Cluster.Spec.DNSZone},
+		})
+		p.Statement = append(p.Statement, &IAMStatement{
 			Effect:   IAMStatementEffectAllow,
-			Action:   []string{"route53:*"},
+			Action:   []string{"route53:GetChange"},
+			Resource: []string{"arn:aws:route53:::change/*"},
+		})
+
+		p.Statement = append(p.Statement, &IAMStatement{
+			Effect:   IAMStatementEffectAllow,
+			Action:   []string{"route53:ListHostedZones"},
 			Resource: []string{"*"},
 		})
 
