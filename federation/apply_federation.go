@@ -22,10 +22,7 @@ import (
 	"crypto/rsa"
 	"fmt"
 	"github.com/golang/glog"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/federation/model"
 	"k8s.io/kops/federation/targets/kubernetestarget"
 	"k8s.io/kops/federation/tasks"
@@ -36,7 +33,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/k8sapi"
 	"k8s.io/kops/upup/pkg/kutil"
-	federation_clientset "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset"
+	"k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset"
 	k8sapiv1 "k8s.io/kubernetes/pkg/api/v1"
 	"strings"
 	"text/template"
@@ -146,10 +143,10 @@ func (o *ApplyFederationOperation) Run() error {
 	if err != nil {
 		return err
 	}
-	//k8sControllerClient, err := release_1_5.NewForConfig(federationRestConfig)
-	//if err != nil {
-	//	return err
-	//}
+	k8sClient, err := kubernetes.NewForConfig(federationRestConfig)
+	if err != nil {
+		return err
+	}
 
 	for _, member := range o.Federation.Spec.Members {
 		glog.V(2).Infof("configuring member cluster %q", member)
@@ -178,7 +175,7 @@ func (o *ApplyFederationOperation) Run() error {
 
 	// Create default namespace
 	glog.V(2).Infof("Ensuring default namespace exists")
-	if _, err := o.ensureFederationNamespace(federationControllerClient, "default"); err != nil {
+	if _, err := o.ensureFederationNamespace(k8sClient, "default"); err != nil {
 		return err
 	}
 
@@ -362,7 +359,7 @@ func (o *ApplyFederationOperation) executeTemplate(key string, templateDefinitio
 func (o *ApplyFederationOperation) EnsureNamespace(c *fi.Context) error {
 	k8s := c.Target.(*kubernetestarget.KubernetesTarget).KubernetesClient
 
-	ns, err := k8s.Core().Namespaces().Get(o.namespace, meta_v1.GetOptions{})
+	ns, err := k8s.CoreV1().Namespaces().Get(o.namespace, metav1.GetOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			ns = nil
