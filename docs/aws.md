@@ -35,7 +35,7 @@ as [defined here](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/conf
 
 In order to build clusters within AWS we'll create a dedicated IAM user for
 `kops`.  This user requires API credentials in order to use `kops`.  Create
-the user, and credentials, using the [AWS console](http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSGettingStartedGuide/AWSCredentials.html).
+the user, and credentials, using the [AWS console](http://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_create.html#id_users_create_console).
 
 The `kops` user will require the following IAM permissions to function properly:
 
