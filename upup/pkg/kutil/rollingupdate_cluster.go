@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -98,7 +97,7 @@ func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroup
 	return groups, nil
 }
 
-func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, k8sClient *k8s_clientset.Clientset) error {
+func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, k8sClient k8s_clientset.Interface) error {
 	if len(groups) == 0 {
 		return nil
 	}
@@ -269,7 +268,7 @@ func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group, nodeMa
 	return n
 }
 
-func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, interval time.Duration, k8sClient *k8s_clientset.Clientset) error {
+func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, interval time.Duration, k8sClient k8s_clientset.Interface) error {
 	c := cloud.(awsup.AWSCloud)
 
 	update := n.NeedUpdate
@@ -288,10 +287,11 @@ func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, interval 
 
 		// TODO: Batch termination, like a rolling-update
 
-		request := &ec2.TerminateInstancesInput{
-			InstanceIds: []*string{u.ASGInstance.InstanceId},
+		request := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
+			InstanceId:                     u.ASGInstance.InstanceId,
+			ShouldDecrementDesiredCapacity: aws.Bool(false),
 		}
-		_, err := c.EC2().TerminateInstances(request)
+		_, err := c.Autoscaling().TerminateInstanceInAutoScalingGroup(request)
 		if err != nil {
 			return fmt.Errorf("error deleting instance %q: %v", instanceID, err)
 		}
