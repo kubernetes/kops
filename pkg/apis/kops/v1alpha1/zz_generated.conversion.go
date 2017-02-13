@@ -1002,6 +1002,10 @@ func autoConvert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.OIDCIssuerURL = in.OIDCIssuerURL
 	out.OIDCClientID = in.OIDCClientID
 	out.OIDCCAFile = in.OIDCCAFile
+	out.AuditLogPath = in.AuditLogPath
+	out.AuditLogMaxage = in.AuditLogMaxage
+	out.AuditLogMaxbackup = in.AuditLogMaxbackup
+	out.AuditLogMaxsize = in.AuditLogMaxsize
 	out.AuthorizationMode = in.AuthorizationMode
 	out.AuthorizationRBACSuperUser = in.AuthorizationRBACSuperUser
 	return nil
@@ -1039,6 +1043,10 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *ko
 	out.OIDCIssuerURL = in.OIDCIssuerURL
 	out.OIDCClientID = in.OIDCClientID
 	out.OIDCCAFile = in.OIDCCAFile
+	out.AuditLogPath = in.AuditLogPath
+	out.AuditLogMaxage = in.AuditLogMaxage
+	out.AuditLogMaxbackup = in.AuditLogMaxbackup
+	out.AuditLogMaxsize = in.AuditLogMaxsize
 	out.AuthorizationMode = in.AuthorizationMode
 	out.AuthorizationRBACSuperUser = in.AuthorizationRBACSuperUser
 	return nil
