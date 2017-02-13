@@ -26,6 +26,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
@@ -260,4 +261,25 @@ func (_ *ElasticIP) RenderTerraform(t *terraform.TerraformTarget, a, e, changes 
 
 func (e *ElasticIP) TerraformLink() *terraform.Literal {
 	return terraform.LiteralProperty("aws_eip", *e.Name, "id")
+}
+
+type cloudformationElasticIP struct {
+	Domain *string `json:"Domain"`
+}
+
+func (_ *ElasticIP) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *ElasticIP) error {
+	tf := &cloudformationElasticIP{
+		Domain: aws.String("vpc"),
+	}
+
+	return t.RenderResource("AWS::EC2::EIP", *e.Name, tf)
+}
+
+// Removed because you normally want CloudformationAllocationID
+//func (e *ElasticIP) CloudformationLink() *cloudformation.Literal {
+//	return cloudformation.Ref("AWS::EC2::EIP", *e.Name)
+//}
+
+func (e *ElasticIP) CloudformationAllocationID() *cloudformation.Literal {
+	return cloudformation.GetAtt("AWS::EC2::EIP", *e.Name, "AllocationId")
 }

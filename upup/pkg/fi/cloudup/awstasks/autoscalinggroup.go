@@ -28,6 +28,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
@@ -294,4 +295,55 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 
 func (e *AutoscalingGroup) TerraformLink() *terraform.Literal {
 	return terraform.LiteralProperty("aws_autoscaling_group", *e.Name, "id")
+}
+
+type cloudformationASGTag struct {
+	Key               *string `json:"Key"`
+	Value             *string `json:"Value"`
+	PropagateAtLaunch *bool   `json:"PropagateAtLaunch"`
+}
+type cloudformationAutoscalingGroup struct {
+	//Name                    *string              `json:"name,omitempty"`
+	LaunchConfigurationName *cloudformation.Literal   `json:"LaunchConfigurationName,omitempty"`
+	MaxSize                 *int64                    `json:"MaxSize,omitempty"`
+	MinSize                 *int64                    `json:"MinSize,omitempty"`
+	VPCZoneIdentifier       []*cloudformation.Literal `json:"VPCZoneIdentifier,omitempty"`
+	Tags                    []*cloudformationASGTag   `json:"Tags,omitempty"`
+
+	LoadBalancerNames []*cloudformation.Literal `json:"LoadBalancerNames,omitempty"`
+}
+
+func (_ *AutoscalingGroup) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *AutoscalingGroup) error {
+	tf := &cloudformationAutoscalingGroup{
+		//Name:                    e.Name,
+		MinSize:                 e.MinSize,
+		MaxSize:                 e.MaxSize,
+		LaunchConfigurationName: e.LaunchConfiguration.CloudformationLink(),
+	}
+
+	for _, s := range e.Subnets {
+		tf.VPCZoneIdentifier = append(tf.VPCZoneIdentifier, s.CloudformationLink())
+	}
+
+	tags := e.buildTags(t.Cloud)
+	// Make sure we output in a stable order
+	var tagKeys []string
+	for k := range tags {
+		tagKeys = append(tagKeys, k)
+	}
+	sort.Strings(tagKeys)
+	for _, k := range tagKeys {
+		v := tags[k]
+		tf.Tags = append(tf.Tags, &cloudformationASGTag{
+			Key:               fi.String(k),
+			Value:             fi.String(v),
+			PropagateAtLaunch: fi.Bool(true),
+		})
+	}
+
+	return t.RenderResource("AWS::AutoScaling::AutoScalingGroup", *e.Name, tf)
+}
+
+func (e *AutoscalingGroup) CloudformationLink() *cloudformation.Literal {
+	return cloudformation.Ref("AWS::AutoScaling::AutoScalingGroup", *e.Name)
 }

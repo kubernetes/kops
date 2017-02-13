@@ -25,6 +25,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
@@ -157,6 +158,26 @@ func (e *LoadBalancerAttachment) TerraformLink() *terraform.Literal {
 		return terraform.LiteralProperty("aws_autoscaling_attachment", *e.AutoscalingGroup.Name, "id")
 	} else if e.AutoscalingGroup == nil && e.Instance != nil {
 		return terraform.LiteralProperty("aws_elb_attachment", *e.LoadBalancer.Name, "id")
+	}
+	return nil
+}
+
+func (_ *LoadBalancerAttachment) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *LoadBalancerAttachment) error {
+	if e.AutoscalingGroup != nil {
+		cfObj, ok := t.Find(e.AutoscalingGroup.CloudformationLink())
+		if !ok {
+			// topo-sort fail?
+			return fmt.Errorf("AutoScalingGroup not yet rendered")
+		}
+		cf, ok := cfObj.(*cloudformationAutoscalingGroup)
+		if !ok {
+			return fmt.Errorf("unexpected type for CF record: %T", cfObj)
+		}
+
+		cf.LoadBalancerNames = append(cf.LoadBalancerNames, e.LoadBalancer.CloudformationLink())
+	}
+	if e.Instance != nil {
+		return fmt.Errorf("expected Instance to be nil")
 	}
 	return nil
 }

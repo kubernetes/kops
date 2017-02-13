@@ -23,6 +23,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
@@ -110,4 +111,18 @@ func (_ *VPCDHCPOptionsAssociation) RenderTerraform(t *terraform.TerraformTarget
 	}
 
 	return t.RenderResource("aws_vpc_dhcp_options_association", *e.Name, tf)
+}
+
+type cloudformationVPCDHCPOptionsAssociation struct {
+	VpcId         *cloudformation.Literal `json:"VpcId"`
+	DhcpOptionsId *cloudformation.Literal `json:"DhcpOptionsId"`
+}
+
+func (_ *VPCDHCPOptionsAssociation) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *VPCDHCPOptionsAssociation) error {
+	tf := &cloudformationVPCDHCPOptionsAssociation{
+		VpcId:         e.VPC.CloudformationLink(),
+		DhcpOptionsId: e.DHCPOptions.CloudformationLink(),
+	}
+
+	return t.RenderResource("AWS::EC2::VPCDHCPOptionsAssociation", *e.Name, tf)
 }

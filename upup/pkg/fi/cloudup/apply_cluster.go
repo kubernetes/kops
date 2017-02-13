@@ -34,6 +34,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -530,6 +531,11 @@ func (c *ApplyClusterCmd) Run() error {
 		checkExisting = false
 		outDir := c.OutDir
 		target = terraform.NewTerraformTarget(cloud, region, project, outDir)
+
+	case TargetCloudformation:
+		checkExisting = false
+		outDir := c.OutDir
+		target = cloudformation.NewCloudformationTarget(cloud, region, project, outDir)
 
 	case TargetDryRun:
 		target = fi.NewDryRunTarget(os.Stdout)
