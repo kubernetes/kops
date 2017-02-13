@@ -3,7 +3,7 @@
 Two IAM roles are created for the cluster: one for the masters, and one for the nodes.
 
 > Work is being done on scoping permissions to the minimum required to setup and maintain cluster. 
-> Please not that currently all Pods running on your cluster have access to instance IAM role.
+> Please note that currently all Pods running on your cluster have access to instance IAM role.
 > Consider using projects such as [kube2iam](https://github.com/jtblin/kube2iam) to prevent that. 
 
 Master permissions:
