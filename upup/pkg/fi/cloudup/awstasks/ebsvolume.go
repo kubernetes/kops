@@ -23,6 +23,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
@@ -170,4 +171,30 @@ func (_ *EBSVolume) RenderTerraform(t *terraform.TerraformTarget, a, e, changes 
 
 func (e *EBSVolume) TerraformLink() *terraform.Literal {
 	return terraform.LiteralSelfLink("aws_ebs_volume", *e.Name)
+}
+
+type cloudformationVolume struct {
+	AvailabilityZone *string             `json:"AvailabilityZone,omitempty"`
+	Size             *int64              `json:"Size,omitempty"`
+	Type             *string             `json:"VolumeType,omitempty"`
+	KmsKeyId         *string             `json:"KmsKeyId,omitempty"`
+	Encrypted        *bool               `json:"Encrypted,omitempty"`
+	Tags             []cloudformationTag `json:"Tags,omitempty"`
+}
+
+func (_ *EBSVolume) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *EBSVolume) error {
+	cf := &cloudformationVolume{
+		AvailabilityZone: e.AvailabilityZone,
+		Size:             e.SizeGB,
+		Type:             e.VolumeType,
+		KmsKeyId:         e.KmsKeyId,
+		Encrypted:        e.Encrypted,
+		Tags:             buildCloudformationTags(e.Tags),
+	}
+
+	return t.RenderResource("AWS::EC2::Volume", *e.Name, cf)
+}
+
+func (e *EBSVolume) CloudformationLink() *cloudformation.Literal {
+	return cloudformation.Ref("AWS::EC2::Volume", *e.Name)
 }

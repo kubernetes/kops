@@ -24,6 +24,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kubernetes/pkg/util/validation/field"
 	"strings"
@@ -330,4 +331,54 @@ func (_ *SecurityGroupRule) RenderTerraform(t *terraform.TerraformTarget, a, e, 
 		tf.CIDRBlocks = append(tf.CIDRBlocks, *e.CIDR)
 	}
 	return t.RenderResource("aws_security_group_rule", *e.Name, tf)
+}
+
+type cloudformationSecurityGroupIngress struct {
+	SecurityGroup *cloudformation.Literal `json:"GroupId,omitempty"`
+	SourceGroup   *cloudformation.Literal `json:"SourceSecurityGroupId,omitempty"`
+
+	FromPort *int64 `json:"FromPort,omitempty"`
+	ToPort   *int64 `json:"ToPort,omitempty"`
+
+	Protocol *string `json:"IpProtocol,omitempty"`
+	CidrIp   *string `json:"CidrIp,omitempty"`
+}
+
+func (_ *SecurityGroupRule) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *SecurityGroupRule) error {
+	cfType := "AWS::EC2::SecurityGroupIngress"
+	if fi.BoolValue(e.Egress) {
+		cfType = "AWS::EC2::SecurityGroupEgress"
+	}
+
+	tf := &cloudformationSecurityGroupIngress{
+		SecurityGroup: e.SecurityGroup.CloudformationLink(),
+		FromPort:      e.FromPort,
+		ToPort:        e.ToPort,
+		Protocol:      e.Protocol,
+	}
+
+	if e.Protocol == nil {
+		tf.Protocol = fi.String("-1")
+		tf.FromPort = fi.Int64(0)
+		tf.ToPort = fi.Int64(0)
+	}
+
+	if tf.FromPort == nil {
+		// FromPort is required by tf
+		tf.FromPort = fi.Int64(0)
+	}
+	if tf.ToPort == nil {
+		// ToPort is required by tf
+		tf.ToPort = fi.Int64(65535)
+	}
+
+	if e.SourceGroup != nil {
+		tf.SourceGroup = e.SourceGroup.CloudformationLink()
+	}
+
+	if e.CIDR != nil {
+		tf.CidrIp = e.CIDR
+	}
+
+	return t.RenderResource(cfType, *e.Name, tf)
 }

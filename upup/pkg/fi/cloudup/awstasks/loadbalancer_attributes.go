@@ -38,10 +38,17 @@ func (_ *LoadBalancerAccessLog) GetDependencies(tasks map[string]fi.Task) []fi.T
 }
 
 type terraformLoadBalancerAccessLog struct {
-	EmitInterval   *int64  `json:"internal,omitempty"`
+	EmitInterval   *int64  `json:"interval,omitempty"`
 	Enabled        *bool   `json:"enabled,omitempty"`
 	S3BucketName   *string `json:"bucket,omitempty"`
-	S3BucketPrefix *string `json:"bucekt_prefix,omitempty"`
+	S3BucketPrefix *string `json:"bucket_prefix,omitempty"`
+}
+
+type cloudformationLoadBalancerAccessLog struct {
+	EmitInterval   *int64  `json:"EmitInterval,omitempty"`
+	Enabled        *bool   `json:"Enabled,omitempty"`
+	S3BucketName   *string `json:"S3BucketName,omitempty"`
+	S3BucketPrefix *string `json:"S3BucketPrefix,omitempty"`
 }
 
 //type LoadBalancerAdditionalAttribute struct {

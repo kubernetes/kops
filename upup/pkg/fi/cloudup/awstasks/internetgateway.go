@@ -23,6 +23,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
@@ -218,4 +219,82 @@ func (e *InternetGateway) TerraformLink() *terraform.Literal {
 	}
 
 	return terraform.LiteralProperty("aws_internet_gateway", *e.Name, "id")
+}
+
+type cloudformationInternetGateway struct {
+	Tags []cloudformationTag `json:"Tags,omitempty"`
+}
+
+type cloudformationVpcGatewayAttachment struct {
+	VpcId             *cloudformation.Literal `json:"VpcId,omitempty"`
+	InternetGatewayId *cloudformation.Literal `json:"InternetGatewayId,omitempty"`
+}
+
+func (_ *InternetGateway) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *InternetGateway) error {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		// Not cloudformation owned / managed
+
+		// But ... attempt to discover the ID so CloudformationLink works
+		if e.ID == nil {
+			request := &ec2.DescribeInternetGatewaysInput{}
+			vpcID := fi.StringValue(e.VPC.ID)
+			if vpcID == "" {
+				return fmt.Errorf("VPC ID is required when InternetGateway is shared")
+			}
+			request.Filters = []*ec2.Filter{awsup.NewEC2Filter("attachment.vpc-id", vpcID)}
+			igw, err := findInternetGateway(t.Cloud.(awsup.AWSCloud), request)
+			if err != nil {
+				return err
+			}
+			if igw == nil {
+				glog.Warningf("Cannot find internet gateway for VPC %q", vpcID)
+			} else {
+				e.ID = igw.InternetGatewayId
+			}
+		}
+
+		return nil
+	}
+
+	cloud := t.Cloud.(awsup.AWSCloud)
+
+	{
+		cf := &cloudformationInternetGateway{
+			Tags: buildCloudformationTags(cloud.BuildTags(e.Name)),
+		}
+
+		err := t.RenderResource("AWS::EC2::InternetGateway", *e.Name, cf)
+		if err != nil {
+			return err
+		}
+	}
+
+	{
+		cf := &cloudformationVpcGatewayAttachment{
+			VpcId:             e.VPC.CloudformationLink(),
+			InternetGatewayId: e.CloudformationLink(),
+		}
+
+		err := t.RenderResource("AWS::EC2::VPCGatewayAttachment", *e.Name, cf)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (e *InternetGateway) CloudformationLink() *cloudformation.Literal {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		if e.ID == nil {
+			glog.Fatalf("ID must be set, if InternetGateway is shared: %s", e)
+		}
+
+		glog.V(4).Infof("reusing existing InternetGateway with id %q", *e.ID)
+		return cloudformation.LiteralString(*e.ID)
+	}
+
+	return cloudformation.Ref("AWS::EC2::InternetGateway", *e.Name)
 }

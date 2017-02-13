@@ -50,6 +50,13 @@ func TestMinimal(t *testing.T) {
 	runTest(t, "minimal.example.com", "../../tests/integration/minimal", "v1alpha2", false)
 }
 
+// TestMinimalCloudformation runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
+func TestMinimalCloudformation(t *testing.T) {
+	//runTestCloudformation(t, "minimal.example.com", "../../tests/integration/minimal", "v1alpha0", false)
+	//runTestCloudformation(t, "minimal.example.com", "../../tests/integration/minimal", "v1alpha1", false)
+	runTestCloudformation(t, "minimal.example.com", "../../tests/integration/minimal", "v1alpha2", false)
+}
+
 // TestMinimal_141 runs the test on a configuration from 1.4.1 release
 func TestMinimal_141(t *testing.T) {
 	runTest(t, "minimal-141.example.com", "../../tests/integration/minimal-141", "v1alpha0", false)
@@ -209,6 +216,97 @@ func runTest(t *testing.T, clusterName string, srcDir string, version string, pr
 	}
 }
 
+func runTestCloudformation(t *testing.T, clusterName string, srcDir string, version string, private bool) {
+	var stdout bytes.Buffer
+
+	inputYAML := "in-" + version + ".yaml"
+	expectedCfPath := "cloudformation.json"
+
+	factoryOptions := &util.FactoryOptions{}
+	factoryOptions.RegistryPath = "memfs://tests"
+
+	h := NewIntegrationTestHarness(t)
+	defer h.Close()
+
+	h.SetupMockAWS()
+
+	factory := util.NewFactory(factoryOptions)
+
+	{
+		options := &CreateOptions{}
+		options.Filenames = []string{path.Join(srcDir, inputYAML)}
+
+		err := RunCreate(factory, &stdout, options)
+		if err != nil {
+			t.Fatalf("error running %q create: %v", inputYAML, err)
+		}
+	}
+
+	{
+		options := &CreateSecretPublickeyOptions{}
+		options.ClusterName = clusterName
+		options.Name = "admin"
+		options.PublicKeyPath = path.Join(srcDir, "id_rsa.pub")
+
+		err := RunCreateSecretPublicKey(factory, &stdout, options)
+		if err != nil {
+			t.Fatalf("error running %q create: %v", inputYAML, err)
+		}
+	}
+
+	{
+		options := &UpdateClusterOptions{}
+		options.InitDefaults()
+		options.Target = "cloudformation"
+		options.OutDir = path.Join(h.TempDir, "out")
+		options.MaxTaskDuration = 30 * time.Second
+
+		// We don't test it here, and it adds a dependency on kubectl
+		options.CreateKubecfg = false
+
+		err := RunUpdateCluster(factory, clusterName, &stdout, options)
+		if err != nil {
+			t.Fatalf("error running update cluster %q: %v", clusterName, err)
+		}
+	}
+
+	// Compare main files
+	{
+		files, err := ioutil.ReadDir(path.Join(h.TempDir, "out"))
+		if err != nil {
+			t.Fatalf("failed to read dir: %v", err)
+		}
+
+		var fileNames []string
+		for _, f := range files {
+			fileNames = append(fileNames, f.Name())
+		}
+		sort.Strings(fileNames)
+
+		actualFilenames := strings.Join(fileNames, ",")
+		expectedFilenames := "kubernetes.json"
+		if actualFilenames != expectedFilenames {
+			t.Fatalf("unexpected files.  actual=%q, expected=%q", actualFilenames, expectedFilenames)
+		}
+
+		actualCF, err := ioutil.ReadFile(path.Join(h.TempDir, "out", "kubernetes.json"))
+		if err != nil {
+			t.Fatalf("unexpected error reading actual cloudformation output: %v", err)
+		}
+		expectedCF, err := ioutil.ReadFile(path.Join(srcDir, expectedCfPath))
+		if err != nil {
+			t.Fatalf("unexpected error reading expected cloudformation output: %v", err)
+		}
+
+		if !bytes.Equal(actualCF, expectedCF) {
+			diffString := diff.FormatDiff(string(expectedCF), string(actualCF))
+			t.Logf("diff:\n%s\n", diffString)
+
+			t.Fatalf("cloudformation output differed from expected")
+		}
+	}
+}
+
 type IntegrationTestHarness struct {
 	TempDir string
 	T       *testing.T
@@ -256,6 +354,8 @@ func (h *IntegrationTestHarness) SetupMockAWS() {
 		ImageId: aws.String("ami-12345678"),
 		Name:    aws.String("k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21"),
 		OwnerId: aws.String(awsup.WellKnownAccountKopeio),
+
+		RootDeviceName: aws.String("/dev/xvda"),
 	})
 }
 

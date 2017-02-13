@@ -1,0 +1,660 @@
+{
+  "Resources": {
+    "AWSAutoScalingAutoScalingGroupmasterustest1amastersminimalexamplecom": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "LaunchConfigurationName": {
+          "Ref": "AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexamplecom"
+        },
+        "MaxSize": 1,
+        "MinSize": 1,
+        "VPCZoneIdentifier": [
+          {
+            "Ref": "AWSEC2Subnetustest1aminimalexamplecom"
+          }
+        ],
+        "Tag": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "Name",
+            "Value": "master-us-test-1a.masters.minimal.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/role/master",
+            "Value": "1",
+            "PropagateAtLaunch": true
+          }
+        ]
+      }
+    },
+    "AWSAutoScalingAutoScalingGroupnodesminimalexamplecom": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "LaunchConfigurationName": {
+          "Ref": "AWSAutoScalingLaunchConfigurationnodesminimalexamplecom"
+        },
+        "MaxSize": 2,
+        "MinSize": 2,
+        "VPCZoneIdentifier": [
+          {
+            "Ref": "AWSEC2Subnetustest1aminimalexamplecom"
+          }
+        ],
+        "Tag": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "Name",
+            "Value": "nodes.minimal.example.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/role/node",
+            "Value": "1",
+            "PropagateAtLaunch": true
+          }
+        ]
+      }
+    },
+    "AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexamplecom": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "AssociatePublicIpAddress": true,
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/xvda",
+            "Ebs": {
+              "VolumeType": "gp2",
+              "VolumeSize": 20,
+              "DeleteOnTermination": true
+            }
+          },
+          {
+            "DeviceName": "/dev/sdc",
+            "VirtualName": "ephemeral0"
+          }
+        ],
+        "IamInstanceProfile": {
+          "Ref": "AWSIAMInstanceProfilemastersminimalexamplecom"
+        },
+        "ImageId": "ami-12345678",
+        "InstanceType": "m3.medium",
+        "KeyName": "kubernetes.minimal.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+        "SecurityGroups": [
+          {
+            "Ref": "AWSEC2SecurityGroupmastersminimalexamplecom"
+          }
+        ],
+        "UserData": "#!/bin/bash\n# Copyright 2016 The Kubernetes Authors All rights reserved.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\nset -o errexit\nset -o nounset\nset -o pipefail\n\nNODEUP_URL=https://kubeupv2.s3.amazonaws.com/kops/1.5.1/linux/amd64/nodeup\nNODEUP_HASH=\n\nfunction ensure-install-dir() {\n  INSTALL_DIR=\"/var/cache/kubernetes-install\"\n  mkdir -p ${INSTALL_DIR}\n  cd ${INSTALL_DIR}\n}\n\n# Retry a download until we get it. Takes a hash and a set of URLs.\n#\n# $1 is the sha1 of the URL. Can be \"\" if the sha1 is unknown.\n# $2+ are the URLs to download.\ndownload-or-bust() {\n  local -r hash=\"$1\"\n  shift 1\n\n  urls=( $* )\n  while true; do\n    for url in \"${urls[@]}\"; do\n      local file=\"${url##*/}\"\n      rm -f \"${file}\"\n      if ! curl -f --ipv4 -Lo \"${file}\" --connect-timeout 20 --retry 6 --retry-delay 10 \"${url}\"; then\n        echo \"== Failed to download ${url}. Retrying. ==\"\n      elif [[ -n \"${hash}\" ]] \u0026\u0026 ! validate-hash \"${file}\" \"${hash}\"; then\n        echo \"== Hash validation of ${url} failed. Retrying. ==\"\n      else\n        if [[ -n \"${hash}\" ]]; then\n          echo \"== Downloaded ${url} (SHA1 = ${hash}) ==\"\n        else\n          echo \"== Downloaded ${url} ==\"\n        fi\n        return\n      fi\n    done\n\n    echo \"All downloads failed; sleeping before retrying\"\n    sleep 60\n  done\n}\n\nvalidate-hash() {\n  local -r file=\"$1\"\n  local -r expected=\"$2\"\n  local actual\n\n  actual=$(sha1sum ${file} | awk '{ print $1 }') || true\n  if [[ \"${actual}\" != \"${expected}\" ]]; then\n    echo \"== ${file} corrupted, sha1 ${actual} doesn't match expected ${expected} ==\"\n    return 1\n  fi\n}\n\nfunction split-commas() {\n  echo $1 | tr \",\" \"\\n\"\n}\n\nfunction try-download-release() {\n  # TODO(zmerlynn): Now we REALLY have no excuse not to do the reboot\n  # optimization.\n\n  local -r nodeup_urls=( $(split-commas \"${NODEUP_URL}\") )\n  local -r nodeup_filename=\"${nodeup_urls[0]##*/}\"\n  if [[ -n \"${NODEUP_HASH:-}\" ]]; then\n    local -r nodeup_hash=\"${NODEUP_HASH}\"\n  else\n  # TODO: Remove?\n    echo \"Downloading sha1 (not found in env)\"\n    download-or-bust \"\" \"${nodeup_urls[@]/%/.sha1}\"\n    local -r nodeup_hash=$(cat \"${nodeup_filename}.sha1\")\n  fi\n\n  echo \"Downloading nodeup (${nodeup_urls[@]})\"\n  download-or-bust \"${nodeup_hash}\" \"${nodeup_urls[@]}\"\n\n  chmod +x nodeup\n}\n\nfunction download-release() {\n  # In case of failure checking integrity of release, retry.\n  until try-download-release; do\n    sleep 15\n    echo \"Couldn't download release. Retrying...\"\n  done\n\n  echo \"Running release install script\"\n  # We run in the background to work around https://github.com/docker/docker/issues/23793\n  run-nodeup \u0026\n}\n\nfunction run-nodeup() {\n  sleep 1\n  ( cd ${INSTALL_DIR}; ./nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8 )\n}\n\n####################################################################################\n\n/bin/systemd-machine-id-setup || echo \"failed to set up ensure machine-id configured\"\n\necho \"== nodeup node config starting ==\"\nensure-install-dir\n\ncat \u003e kube_env.yaml \u003c\u003c __EOF_KUBE_ENV\nAssets:\n- 5e486d4a2700a3a61c4edfd97fb088984a7f734f@https://storage.googleapis.com/kubernetes-release/release/v1.5.2/bin/linux/amd64/kubelet\n- 10e675883b167140f78ddf7ed92f936dca291647@https://storage.googleapis.com/kubernetes-release/release/v1.5.2/bin/linux/amd64/kubectl\n- 19d49f7b2b99cd2493d5ae0ace896c64e289ccbb@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-07a8a28637e97b22eb8dfe710eeae1344f69d16e.tar.gz\nClusterName: minimal.example.com\nConfigBase: memfs://clusters.example.com/minimal.example.com\nInstanceGroupName: master-us-test-1a\nTags:\n- _automatic_upgrades\n- _aws\n- _cni_bridge\n- _cni_host_local\n- _cni_loopback\n- _cni_ptp\n- _kubernetes_master\n- _kubernetes_pool\n- _protokube\nchannels:\n- memfs://clusters.example.com/minimal.example.com/addons/bootstrap-channel.yaml\nprotokubeImage:\n  hash: 6805cba0ea13805b2fa439914679a083be7ac959\n  name: protokube:1.5.1\n  source: https://kubeupv2.s3.amazonaws.com/kops/1.5.1/images/protokube.tar.gz\n\n__EOF_KUBE_ENV\n\ndownload-release\necho \"== nodeup node config done ==\"\n"
+      }
+    },
+    "AWSAutoScalingLaunchConfigurationnodesminimalexamplecom": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "AssociatePublicIpAddress": true,
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/xvda",
+            "Ebs": {
+              "VolumeType": "gp2",
+              "VolumeSize": 20,
+              "DeleteOnTermination": true
+            }
+          }
+        ],
+        "IamInstanceProfile": {
+          "Ref": "AWSIAMInstanceProfilenodesminimalexamplecom"
+        },
+        "ImageId": "ami-12345678",
+        "InstanceType": "t2.medium",
+        "KeyName": "kubernetes.minimal.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+        "SecurityGroups": [
+          {
+            "Ref": "AWSEC2SecurityGroupnodesminimalexamplecom"
+          }
+        ],
+        "UserData": "#!/bin/bash\n# Copyright 2016 The Kubernetes Authors All rights reserved.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#     http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License.\n\nset -o errexit\nset -o nounset\nset -o pipefail\n\nNODEUP_URL=https://kubeupv2.s3.amazonaws.com/kops/1.5.1/linux/amd64/nodeup\nNODEUP_HASH=\n\nfunction ensure-install-dir() {\n  INSTALL_DIR=\"/var/cache/kubernetes-install\"\n  mkdir -p ${INSTALL_DIR}\n  cd ${INSTALL_DIR}\n}\n\n# Retry a download until we get it. Takes a hash and a set of URLs.\n#\n# $1 is the sha1 of the URL. Can be \"\" if the sha1 is unknown.\n# $2+ are the URLs to download.\ndownload-or-bust() {\n  local -r hash=\"$1\"\n  shift 1\n\n  urls=( $* )\n  while true; do\n    for url in \"${urls[@]}\"; do\n      local file=\"${url##*/}\"\n      rm -f \"${file}\"\n      if ! curl -f --ipv4 -Lo \"${file}\" --connect-timeout 20 --retry 6 --retry-delay 10 \"${url}\"; then\n        echo \"== Failed to download ${url}. Retrying. ==\"\n      elif [[ -n \"${hash}\" ]] \u0026\u0026 ! validate-hash \"${file}\" \"${hash}\"; then\n        echo \"== Hash validation of ${url} failed. Retrying. ==\"\n      else\n        if [[ -n \"${hash}\" ]]; then\n          echo \"== Downloaded ${url} (SHA1 = ${hash}) ==\"\n        else\n          echo \"== Downloaded ${url} ==\"\n        fi\n        return\n      fi\n    done\n\n    echo \"All downloads failed; sleeping before retrying\"\n    sleep 60\n  done\n}\n\nvalidate-hash() {\n  local -r file=\"$1\"\n  local -r expected=\"$2\"\n  local actual\n\n  actual=$(sha1sum ${file} | awk '{ print $1 }') || true\n  if [[ \"${actual}\" != \"${expected}\" ]]; then\n    echo \"== ${file} corrupted, sha1 ${actual} doesn't match expected ${expected} ==\"\n    return 1\n  fi\n}\n\nfunction split-commas() {\n  echo $1 | tr \",\" \"\\n\"\n}\n\nfunction try-download-release() {\n  # TODO(zmerlynn): Now we REALLY have no excuse not to do the reboot\n  # optimization.\n\n  local -r nodeup_urls=( $(split-commas \"${NODEUP_URL}\") )\n  local -r nodeup_filename=\"${nodeup_urls[0]##*/}\"\n  if [[ -n \"${NODEUP_HASH:-}\" ]]; then\n    local -r nodeup_hash=\"${NODEUP_HASH}\"\n  else\n  # TODO: Remove?\n    echo \"Downloading sha1 (not found in env)\"\n    download-or-bust \"\" \"${nodeup_urls[@]/%/.sha1}\"\n    local -r nodeup_hash=$(cat \"${nodeup_filename}.sha1\")\n  fi\n\n  echo \"Downloading nodeup (${nodeup_urls[@]})\"\n  download-or-bust \"${nodeup_hash}\" \"${nodeup_urls[@]}\"\n\n  chmod +x nodeup\n}\n\nfunction download-release() {\n  # In case of failure checking integrity of release, retry.\n  until try-download-release; do\n    sleep 15\n    echo \"Couldn't download release. Retrying...\"\n  done\n\n  echo \"Running release install script\"\n  # We run in the background to work around https://github.com/docker/docker/issues/23793\n  run-nodeup \u0026\n}\n\nfunction run-nodeup() {\n  sleep 1\n  ( cd ${INSTALL_DIR}; ./nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8 )\n}\n\n####################################################################################\n\n/bin/systemd-machine-id-setup || echo \"failed to set up ensure machine-id configured\"\n\necho \"== nodeup node config starting ==\"\nensure-install-dir\n\ncat \u003e kube_env.yaml \u003c\u003c __EOF_KUBE_ENV\nAssets:\n- 5e486d4a2700a3a61c4edfd97fb088984a7f734f@https://storage.googleapis.com/kubernetes-release/release/v1.5.2/bin/linux/amd64/kubelet\n- 10e675883b167140f78ddf7ed92f936dca291647@https://storage.googleapis.com/kubernetes-release/release/v1.5.2/bin/linux/amd64/kubectl\n- 19d49f7b2b99cd2493d5ae0ace896c64e289ccbb@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-07a8a28637e97b22eb8dfe710eeae1344f69d16e.tar.gz\nClusterName: minimal.example.com\nConfigBase: memfs://clusters.example.com/minimal.example.com\nInstanceGroupName: nodes\nTags:\n- _automatic_upgrades\n- _aws\n- _cni_bridge\n- _cni_host_local\n- _cni_loopback\n- _cni_ptp\n- _kubernetes_pool\n- _protokube\nchannels:\n- memfs://clusters.example.com/minimal.example.com/addons/bootstrap-channel.yaml\nprotokubeImage:\n  hash: 6805cba0ea13805b2fa439914679a083be7ac959\n  name: protokube:1.5.1\n  source: https://kubeupv2.s3.amazonaws.com/kops/1.5.1/images/protokube.tar.gz\n\n__EOF_KUBE_ENV\n\ndownload-release\necho \"== nodeup node config done ==\"\n"
+      }
+    },
+    "AWSEC2DHCPOptionsminimalexamplecom": {
+      "Type": "AWS::EC2::DHCPOptions",
+      "Properties": {
+        "DomainName": "us-test-1.compute.internal",
+        "DomainNameServers": [
+          "AmazonProvidedDNS"
+        ],
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "minimal.example.com"
+          }
+        ]
+      }
+    },
+    "AWSEC2InternetGatewayminimalexamplecom": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "minimal.example.com"
+          }
+        ]
+      }
+    },
+    "AWSEC2Route00000": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableminimalexamplecom"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "AWSEC2InternetGatewayminimalexamplecom"
+        }
+      }
+    },
+    "AWSEC2RouteTableminimalexamplecom": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCminimalexamplecom"
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "minimal.example.com"
+          }
+        ]
+      }
+    },
+    "AWSEC2SecurityGroupEgressmasteregress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupEgressnodeegress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesminimalexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressallmastertomaster": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressallmastertonode": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesminimalexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressallnodetonode": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesminimalexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesminimalexamplecom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngresshttpsexternaltomaster00000": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalexamplecom"
+        },
+        "FromPort": 443,
+        "ToPort": 443,
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressnodetomastertcp4194": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesminimalexamplecom"
+        },
+        "FromPort": 4194,
+        "ToPort": 4194,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressnodetomastertcp443": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesminimalexamplecom"
+        },
+        "FromPort": 443,
+        "ToPort": 443,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngresssshexternaltomaster00000": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngresssshexternaltonode00000": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesminimalexamplecom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupmastersminimalexamplecom": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCminimalexamplecom"
+        },
+        "GroupDescription": "Security group for masters",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "masters.minimal.example.com"
+          }
+        ]
+      }
+    },
+    "AWSEC2SecurityGroupnodesminimalexamplecom": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCminimalexamplecom"
+        },
+        "GroupDescription": "Security group for nodes",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "nodes.minimal.example.com"
+          }
+        ]
+      }
+    },
+    "AWSEC2SubnetRouteTableAssociationustest1aminimalexamplecom": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "AWSEC2Subnetustest1aminimalexamplecom"
+        },
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableminimalexamplecom"
+        }
+      }
+    },
+    "AWSEC2Subnetustest1aminimalexamplecom": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCminimalexamplecom"
+        },
+        "CidrBlock": "172.20.32.0/19",
+        "AvailabilityZone": "us-test-1a",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.minimal.example.com"
+          }
+        ]
+      }
+    },
+    "AWSEC2VPCDHCPOptionsAssociationminimalexamplecom": {
+      "Type": "AWS::EC2::VPCDHCPOptionsAssociation",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCminimalexamplecom"
+        },
+        "DhcpOptionsId": {
+          "Ref": "AWSEC2DHCPOptionsminimalexamplecom"
+        }
+      }
+    },
+    "AWSEC2VPCGatewayAttachmentminimalexamplecom": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCminimalexamplecom"
+        },
+        "InternetGatewayId": {
+          "Ref": "AWSEC2InternetGatewayminimalexamplecom"
+        }
+      }
+    },
+    "AWSEC2VPCminimalexamplecom": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "172.20.0.0/16",
+        "EnableDnsHostnames": true,
+        "EnableDnsSupport": true,
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "minimal.example.com"
+          }
+        ]
+      }
+    },
+    "AWSEC2Volumeustest1aetcdeventsminimalexamplecom": {
+      "Type": "AWS::EC2::Volume",
+      "Properties": {
+        "AvailabilityZone": "us-test-1a",
+        "Size": 20,
+        "VolumeType": "gp2",
+        "Encrypted": false,
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.etcd-events.minimal.example.com"
+          },
+          {
+            "Key": "k8s.io/etcd/events",
+            "Value": "us-test-1a/us-test-1a"
+          },
+          {
+            "Key": "k8s.io/role/master",
+            "Value": "1"
+          }
+        ]
+      }
+    },
+    "AWSEC2Volumeustest1aetcdmainminimalexamplecom": {
+      "Type": "AWS::EC2::Volume",
+      "Properties": {
+        "AvailabilityZone": "us-test-1a",
+        "Size": 20,
+        "VolumeType": "gp2",
+        "Encrypted": false,
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "minimal.example.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-test-1a.etcd-main.minimal.example.com"
+          },
+          {
+            "Key": "k8s.io/etcd/main",
+            "Value": "us-test-1a/us-test-1a"
+          },
+          {
+            "Key": "k8s.io/role/master",
+            "Value": "1"
+          }
+        ]
+      }
+    },
+    "AWSIAMInstanceProfilemastersminimalexamplecom": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolemastersminimalexamplecom"
+          }
+        ]
+      }
+    },
+    "AWSIAMInstanceProfilenodesminimalexamplecom": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolenodesminimalexamplecom"
+          }
+        ]
+      }
+    },
+    "AWSIAMPolicymastersminimalexamplecom": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "masters.minimal.example.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolemastersminimalexamplecom"
+          }
+        ],
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "ecr:GetAuthorizationToken",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:GetRepositoryPolicy",
+                "ecr:DescribeRepositories",
+                "ecr:ListImages",
+                "ecr:BatchGetImage"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "route53:*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "elasticloadbalancing:*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "autoscaling:DescribeAutoScalingGroups",
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:SetDesiredCapacity",
+                "autoscaling:TerminateInstanceInAutoScalingGroup"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSIAMPolicynodesminimalexamplecom": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "nodes.minimal.example.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolenodesminimalexamplecom"
+          }
+        ],
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "ec2:Describe*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "route53:*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ecr:GetAuthorizationToken",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:GetRepositoryPolicy",
+                "ecr:DescribeRepositories",
+                "ecr:ListImages",
+                "ecr:BatchGetImage"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSIAMRolemastersminimalexamplecom": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "masters.minimal.example.com",
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSIAMRolenodesminimalexamplecom": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "nodes.minimal.example.com",
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    }
+  }
+}
