@@ -24,6 +24,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
@@ -221,7 +222,6 @@ type terraformRoute struct {
 	InternetGatewayID *terraform.Literal `json:"gateway_id,omitempty"`
 	NATGatewayID      *terraform.Literal `json:"nat_gateway_id,omitempty"`
 	InstanceID        *terraform.Literal `json:"instance_id,omitempty"`
-	// TODO Kris - Add terraform support for NAT Gateway routes
 }
 
 func (_ *Route) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Route) error {
@@ -243,4 +243,34 @@ func (_ *Route) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Rou
 	}
 
 	return t.RenderResource("aws_route", *e.Name, tf)
+}
+
+type cloudformationRoute struct {
+	RouteTableID      *cloudformation.Literal `json:"RouteTableId"`
+	CIDR              *string                 `json:"DestinationCidrBlock,omitempty"`
+	InternetGatewayID *cloudformation.Literal `json:"GatewayId,omitempty"`
+	NATGatewayID      *cloudformation.Literal `json:"NatGatewayId,omitempty"`
+	InstanceID        *cloudformation.Literal `json:"InstanceId,omitempty"`
+}
+
+func (_ *Route) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *Route) error {
+	tf := &cloudformationRoute{
+		CIDR:         e.CIDR,
+		RouteTableID: e.RouteTable.CloudformationLink(),
+	}
+
+	if e.InternetGateway == nil && e.NatGateway == nil {
+		return fmt.Errorf("missing target for route")
+	} else if e.InternetGateway != nil {
+		tf.InternetGatewayID = e.InternetGateway.CloudformationLink()
+	} else if e.NatGateway != nil {
+		tf.NATGatewayID = e.NatGateway.CloudformationLink()
+	}
+
+	if e.Instance != nil {
+		return fmt.Errorf("instance cloudformation routes not yet implemented")
+		//tf.InstanceID = e.Instance.CloudformationLink()
+	}
+
+	return t.RenderResource("AWS::EC2::Route", *e.Name, tf)
 }

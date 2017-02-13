@@ -24,6 +24,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"strconv"
 	"strings"
@@ -180,6 +181,30 @@ func (_ *SecurityGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, chan
 
 func (e *SecurityGroup) TerraformLink() *terraform.Literal {
 	return terraform.LiteralProperty("aws_security_group", *e.Name, "id")
+}
+
+type cloudformationSecurityGroup struct {
+	//Name        *string            `json:"name"`
+	VpcId       *cloudformation.Literal `json:"VpcId"`
+	Description *string                 `json:"GroupDescription"`
+	Tags        []cloudformationTag     `json:"Tags,omitempty"`
+}
+
+func (_ *SecurityGroup) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *SecurityGroup) error {
+	cloud := t.Cloud.(awsup.AWSCloud)
+
+	tf := &cloudformationSecurityGroup{
+		//Name:        e.Name,
+		VpcId:       e.VPC.CloudformationLink(),
+		Description: e.Description,
+		Tags:        buildCloudformationTags(cloud.BuildTags(e.Name)),
+	}
+
+	return t.RenderResource("AWS::EC2::SecurityGroup", *e.Name, tf)
+}
+
+func (e *SecurityGroup) CloudformationLink() *cloudformation.Literal {
+	return cloudformation.Ref("AWS::EC2::SecurityGroup", *e.Name)
 }
 
 type deleteSecurityGroupRule struct {
