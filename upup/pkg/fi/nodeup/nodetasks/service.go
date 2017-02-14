@@ -40,6 +40,8 @@ const (
 	// But we use it in two ways: we update the docker manifest, and we install our own
 	// package (protokube, kubelet).  Maybe we should have the idea of a "system" package.
 	centosSystemdSystemPath = "/usr/lib/systemd/system"
+
+	coreosSystemdSystemPath = "/etc/systemd/system"
 )
 
 type Service struct {
@@ -142,6 +144,8 @@ func (e *Service) systemdSystemPath(target tags.HasTags) (string, error) {
 		return debianSystemdSystemPath, nil
 	} else if target.HasTag(tags.TagOSFamilyRHEL) {
 		return centosSystemdSystemPath, nil
+	} else if target.HasTag("_coreos") {
+		return coreosSystemdSystemPath, nil
 	} else {
 		return "", fmt.Errorf("unsupported systemd system")
 	}
