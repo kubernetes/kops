@@ -24,11 +24,15 @@ spec:
 When configuring a LoadBalancer, you can also choose to have a public ELB or an internal (VPC only) ELB.  The `type`
 field should be `Public` or `Internal`.
 
+Additionally, you can increase idle timeout of the load balancer by setting its `idleTimeoutSeconds`. The default idle timeout is 5 minutes, with a maximum of 1200 seconds (20 minutes) being allowed by AWS.
+For more information see [configuring idle timeouts](http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/config-idle-timeout.html).
+
 ```yaml
 spec:
   api:
     loadBalancer:
       type: Public
+      idleTimeoutSeconds: 300
 ```
 
 ### sshAccess
