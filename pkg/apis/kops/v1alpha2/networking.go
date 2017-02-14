@@ -24,6 +24,7 @@ type NetworkingSpec struct {
 	CNI      *CNINetworkingSpec      `json:"cni,omitempty"`
 	Kopeio   *KopeioNetworkingSpec   `json:"kopeio,omitempty"`
 	Weave    *WeaveNetworkingSpec    `json:"weave,omitempty"`
+	Flannel  *FlannelNetworkingSpec  `json:"flannel,omitempty"`
 	Calico   *CalicoNetworkingSpec   `json:"calico,omitempty"`
 	Canal    *CanalNetworkingSpec    `json:"canal,omitempty"`
 }
@@ -53,6 +54,10 @@ type KopeioNetworkingSpec struct {
 
 // Weave declares that we want Weave networking
 type WeaveNetworkingSpec struct {
+}
+
+// Flannel declares that we want Flannel networking
+type FlannelNetworkingSpec struct {
 }
 
 // Calico declares that we want Calico networking
