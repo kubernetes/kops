@@ -190,6 +190,23 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		manifests[key] = "addons/" + location
 	}
 
+	if b.cluster.Spec.Networking.Flannel != nil {
+		key := "networking.flannel"
+		version := "0.7.0"
+
+		// TODO: Create configuration object for cni providers (maybe create it but orphan it)?
+		location := key + "/v" + version + ".yaml"
+
+		addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+			Name:     fi.String(key),
+			Version:  fi.String(version),
+			Selector: map[string]string{"role.kubernetes.io/networking": "1"},
+			Manifest: fi.String(location),
+		})
+
+		manifests[key] = "addons/" + location
+	}
+
 	if b.cluster.Spec.Networking.Calico != nil {
 		key := "networking.projectcalico.org"
 		version := "2.0"

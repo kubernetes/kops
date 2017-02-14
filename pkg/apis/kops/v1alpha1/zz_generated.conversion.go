@@ -69,6 +69,8 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_kops_FederationList_To_v1alpha1_FederationList,
 		Convert_v1alpha1_FederationSpec_To_kops_FederationSpec,
 		Convert_kops_FederationSpec_To_v1alpha1_FederationSpec,
+		Convert_v1alpha1_FlannelNetworkingSpec_To_kops_FlannelNetworkingSpec,
+		Convert_kops_FlannelNetworkingSpec_To_v1alpha1_FlannelNetworkingSpec,
 		Convert_v1alpha1_InstanceGroup_To_kops_InstanceGroup,
 		Convert_kops_InstanceGroup_To_v1alpha1_InstanceGroup,
 		Convert_v1alpha1_InstanceGroupList_To_kops_InstanceGroupList,
@@ -824,6 +826,22 @@ func Convert_kops_FederationSpec_To_v1alpha1_FederationSpec(in *kops.FederationS
 	return autoConvert_kops_FederationSpec_To_v1alpha1_FederationSpec(in, out, s)
 }
 
+func autoConvert_v1alpha1_FlannelNetworkingSpec_To_kops_FlannelNetworkingSpec(in *FlannelNetworkingSpec, out *kops.FlannelNetworkingSpec, s conversion.Scope) error {
+	return nil
+}
+
+func Convert_v1alpha1_FlannelNetworkingSpec_To_kops_FlannelNetworkingSpec(in *FlannelNetworkingSpec, out *kops.FlannelNetworkingSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha1_FlannelNetworkingSpec_To_kops_FlannelNetworkingSpec(in, out, s)
+}
+
+func autoConvert_kops_FlannelNetworkingSpec_To_v1alpha1_FlannelNetworkingSpec(in *kops.FlannelNetworkingSpec, out *FlannelNetworkingSpec, s conversion.Scope) error {
+	return nil
+}
+
+func Convert_kops_FlannelNetworkingSpec_To_v1alpha1_FlannelNetworkingSpec(in *kops.FlannelNetworkingSpec, out *FlannelNetworkingSpec, s conversion.Scope) error {
+	return autoConvert_kops_FlannelNetworkingSpec_To_v1alpha1_FlannelNetworkingSpec(in, out, s)
+}
+
 func autoConvert_v1alpha1_InstanceGroup_To_kops_InstanceGroup(in *InstanceGroup, out *kops.InstanceGroup, s conversion.Scope) error {
 	if err := api.Convert_v1_TypeMeta_To_v1_TypeMeta(&in.TypeMeta, &out.TypeMeta, s); err != nil {
 		return err
@@ -1371,6 +1389,15 @@ func autoConvert_v1alpha1_NetworkingSpec_To_kops_NetworkingSpec(in *NetworkingSp
 	} else {
 		out.Weave = nil
 	}
+	if in.Flannel != nil {
+		in, out := &in.Flannel, &out.Flannel
+		*out = new(kops.FlannelNetworkingSpec)
+		if err := Convert_v1alpha1_FlannelNetworkingSpec_To_kops_FlannelNetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Flannel = nil
+	}
 	if in.Calico != nil {
 		in, out := &in.Calico, &out.Calico
 		*out = new(kops.CalicoNetworkingSpec)
@@ -1450,6 +1477,15 @@ func autoConvert_kops_NetworkingSpec_To_v1alpha1_NetworkingSpec(in *kops.Network
 		}
 	} else {
 		out.Weave = nil
+	}
+	if in.Flannel != nil {
+		in, out := &in.Flannel, &out.Flannel
+		*out = new(FlannelNetworkingSpec)
+		if err := Convert_kops_FlannelNetworkingSpec_To_v1alpha1_FlannelNetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Flannel = nil
 	}
 	if in.Calico != nil {
 		in, out := &in.Calico, &out.Calico
