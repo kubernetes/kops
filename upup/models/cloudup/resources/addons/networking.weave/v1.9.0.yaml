@@ -50,12 +50,20 @@ spec:
               mountPath: /host/var/lib/dbus
           resources:
             requests:
-              cpu: 10m
+              cpu: 100m
+              memory: 200Mi
+            limits:
+              cpu: 100m
+              memory: 200Mi
         - name: weave-npc
           image: weaveworks/weave-npc:1.9.0
           resources:
             requests:
-              cpu: 10m
+              cpu: 100m
+              memory: 200Mi
+            limits:
+              cpu: 100m
+              memory: 200Mi
           securityContext:
             privileged: true
       restartPolicy: Always
