@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 
 	"github.com/golang/glog"
 	"k8s.io/kops/nodeup/pkg/distros"
@@ -113,24 +114,33 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 	c.AddTask(b.buildSystemdService())
 
 	if b.Distribution == distros.DistributionCoreOS {
-		resp, err := http.Get(socatStaticBinarySHA)
+		sha1URL := os.Getenv("SOCAT_SHA1_URL")
+		if sha1URL == "" {
+			sha1URL = socatStaticBinarySHA
+		}
+		resp, err := http.Get(sha1URL)
 		if err != nil {
-			return fmt.Errorf("unexpected error downloading socat SHA from %v: %v", socatStaticBinarySHA, err)
+			return fmt.Errorf("unexpected error downloading socat SHA from %v: %v", sha1URL, err)
 		}
 		defer resp.Body.Close()
 
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return fmt.Errorf("unexpected error downloading socat SHA from %v: %v", socatStaticBinarySHA, err)
+			return fmt.Errorf("unexpected error downloading socat SHA from %v: %v", sha1URL, err)
 		}
 
 		hash := &hashing.Hash{
 			Algorithm: hashing.HashAlgorithmSHA256,
 			HashValue: body,
 		}
-		_, err = fi.DownloadURL(socatStaticBinary, "/opt/bin/socat", hash)
+
+		socatURL := os.Getenv("SOCAT_URL")
+		if socatURL == "" {
+			socatURL = socatStaticBinaryURL
+		}
+		_, err = fi.DownloadURL(socatURL, "/opt/bin/socat", hash)
 		if err != nil {
-			return fmt.Errorf("unexpected error downloading socat from %v: %v", socatStaticBinary, err)
+			return fmt.Errorf("unexpected error downloading socat from %v: %v", socatURL, err)
 		}
 	}
 
