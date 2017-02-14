@@ -139,6 +139,8 @@ resource "aws_elb" "api-privateflannel-example-com" {
     timeout             = 5
   }
 
+  idle_timeout = 300
+
   tags = {
     KubernetesCluster = "privateflannel.example.com"
     Name              = "api.privateflannel.example.com"
