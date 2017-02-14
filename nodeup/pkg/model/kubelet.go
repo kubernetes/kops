@@ -18,6 +18,9 @@ package model
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net/http"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
@@ -34,6 +37,8 @@ type KubeletBuilder struct {
 }
 
 var _ fi.ModelBuilder = &DockerBuilder{}
+
+const socatStaticBinaryURL = "https://github.com/aledbf/socat-static-binary/releases/download/v0.0.1/socat-linux-amd64"
 
 func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 	kubeletConfig, err := b.buildKubeletConfig()
@@ -104,6 +109,26 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	c.AddTask(b.buildSystemdService())
+
+	if b.Distribution == distros.DistributionCoreOS {
+		resp, err := http.Get(socatStaticBinaryURL)
+		if err != nil {
+			return fmt.Errorf("unexpected error downloading socat from %v: %v", socatStaticBinaryURL, err)
+		}
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return fmt.Errorf("unexpected error downloading socat from %v: %v", socatStaticBinaryURL, err)
+		}
+
+		t := &nodetasks.File{
+			Path:     "/opt/bin/socat",
+			Contents: fi.NewBytesResource(body),
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0755"),
+		}
+		c.AddTask(t)
+	}
 
 	return nil
 }
