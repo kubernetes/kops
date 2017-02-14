@@ -26,7 +26,7 @@ spec:
       hostPID: true
       containers:
         - name: weave
-          image: weaveworks/weave-kube:1.8.2
+          image: weaveworks/weave-kube:1.9.0
           command:
             - /home/weave/launch.sh
           livenessProbe:
@@ -41,16 +41,18 @@ spec:
             - name: weavedb
               mountPath: /weavedb
             - name: cni-bin
-              mountPath: /opt
+              mountPath: /host/opt
             - name: cni-bin2
-              mountPath: /host_home
+              mountPath: /host/home
             - name: cni-conf
-              mountPath: /etc
+              mountPath: /host/etc
+            - name: dbus
+              mountPath: /host/var/lib/dbus
           resources:
             requests:
               cpu: 10m
         - name: weave-npc
-          image: weaveworks/weave-npc:1.8.2
+          image: weaveworks/weave-npc:1.9.0
           resources:
             requests:
               cpu: 10m
@@ -69,3 +71,6 @@ spec:
         - name: cni-conf
           hostPath:
             path: /etc
+        - name: dbus
+          hostPath:
+            path: /var/lib/dbus
