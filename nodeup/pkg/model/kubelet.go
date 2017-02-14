@@ -18,6 +18,9 @@ package model
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net/http"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
@@ -26,6 +29,7 @@ import (
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/util/pkg/hashing"
 )
 
 // KubeletBuilder install kubelet
@@ -34,6 +38,9 @@ type KubeletBuilder struct {
 }
 
 var _ fi.ModelBuilder = &DockerBuilder{}
+
+const socatStaticBinaryURL = "https://github.com/aledbf/socat-static-binary/releases/download/v0.0.1/socat-linux-amd64"
+const socatStaticBinarySHA = "https://github.com/aledbf/socat-static-binary/releases/download/v0.0.1/socat-linux-amd64.sha1"
 
 func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 	kubeletConfig, err := b.buildKubeletConfig()
@@ -104,6 +111,28 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	c.AddTask(b.buildSystemdService())
+
+	if b.Distribution == distros.DistributionCoreOS {
+		resp, err := http.Get(socatStaticBinarySHA)
+		if err != nil {
+			return fmt.Errorf("unexpected error downloading socat SHA from %v: %v", socatStaticBinarySHA, err)
+		}
+		defer resp.Body.Close()
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return fmt.Errorf("unexpected error downloading socat SHA from %v: %v", socatStaticBinarySHA, err)
+		}
+
+		hash := &hashing.Hash{
+			Algorithm: hashing.HashAlgorithmSHA256,
+			HashValue: body,
+		}
+		_, err = fi.DownloadURL(socatStaticBinary, "/opt/bin/socat", hash)
+		if err != nil {
+			return fmt.Errorf("unexpected error downloading socat from %v: %v", socatStaticBinary, err)
+		}
+	}
 
 	return nil
 }
