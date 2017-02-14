@@ -24,6 +24,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"os/exec"
+	"strings"
 )
 
 // UserTask is responsible for creating a user, by calling useradd
@@ -38,6 +39,16 @@ var _ fi.Task = &UserTask{}
 
 func (e *UserTask) String() string {
 	return fmt.Sprintf("User: %s", e.Name)
+}
+
+var _ fi.HasName = &File{}
+
+func (f *UserTask) GetName() *string {
+	return &f.Name
+}
+
+func (f *UserTask) SetName(name string) {
+	glog.Fatalf("SetName not supported for User task")
 }
 
 func NewUserTask(name string, contents string, meta string) (fi.Task, error) {
@@ -94,6 +105,7 @@ func (_ *UserTask) RenderLocal(t *local.LocalTarget, a, e, changes *UserTask) er
 		args := buildUseraddArgs(e)
 		glog.Infof("Creating user %q", e.Name)
 		cmd := exec.Command("useradd", args...)
+		glog.V(2).Infof("running command: useradd %s", strings.Join(args, " "))
 		output, err := cmd.CombinedOutput()
 		if err != nil {
 			return fmt.Errorf("error creating user: %v\nOutput: %s", err, output)
@@ -112,6 +124,7 @@ func (_ *UserTask) RenderLocal(t *local.LocalTarget, a, e, changes *UserTask) er
 			args = append(args, e.Name)
 			glog.Infof("Reconfiguring user %q", e.Name)
 			cmd := exec.Command("usermod", args...)
+			glog.V(2).Infof("running command: usermod %s", strings.Join(args, " "))
 			output, err := cmd.CombinedOutput()
 			if err != nil {
 				return fmt.Errorf("error reconfiguring user: %v\nOutput: %s", err, output)

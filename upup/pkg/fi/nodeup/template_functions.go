@@ -89,7 +89,9 @@ func newTemplateFunctions(nodeupConfig *NodeUpConfig, cluster *api.Cluster, inst
 }
 
 func (t *templateFunctions) populate(dest template.FuncMap) {
-	dest["Arch"] = func() string { return runtime.GOARCH }
+	dest["Arch"] = func() string {
+		return runtime.GOARCH
+	}
 
 	dest["CACertificatePool"] = t.CACertificatePool
 	dest["CACertificate"] = t.CACertificate
@@ -102,8 +104,6 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 	dest["Base64Encode"] = func(s string) string {
 		return base64.StdEncoding.EncodeToString([]byte(s))
 	}
-	dest["HasTag"] = t.HasTag
-	dest["IsMaster"] = t.IsMaster
 
 	// TODO: We may want to move these to a nodeset / masterset specific thing
 	dest["KubeDNS"] = func() *api.KubeDNSConfig {
@@ -128,19 +128,6 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 	dest["ProtokubeImagePullCommand"] = t.ProtokubeImagePullCommand
 
 	dest["ProtokubeFlags"] = t.ProtokubeFlags
-
-	dest["BuildAPIServerAnnotations"] = t.BuildAPIServerAnnotations
-}
-
-// IsMaster returns true if we are tagged as a master
-func (t *templateFunctions) IsMaster() bool {
-	return t.HasTag(TagMaster)
-}
-
-// Tag returns true if we are tagged with the specified tag
-func (t *templateFunctions) HasTag(tag string) bool {
-	_, found := t.tags[tag]
-	return found
 }
 
 // CACertificatePool returns the set of valid CA certificates for the cluster
@@ -237,11 +224,22 @@ func (t *templateFunctions) ProtokubeImagePullCommand() string {
 	return "/usr/bin/docker pull " + t.nodeupConfig.ProtokubeImage.Source
 }
 
+// IsMaster returns true if we are tagged as a master
+func (t *templateFunctions) isMaster() bool {
+	return t.hasTag(TagMaster)
+}
+
+// Tag returns true if we are tagged with the specified tag
+func (t *templateFunctions) hasTag(tag string) bool {
+	_, found := t.tags[tag]
+	return found
+}
+
 // ProtokubeFlags returns the flags object for protokube
 func (t *templateFunctions) ProtokubeFlags() *ProtokubeFlags {
 	f := &ProtokubeFlags{}
 
-	master := t.IsMaster()
+	master := t.isMaster()
 
 	f.Master = fi.Bool(master)
 	if master {
@@ -277,19 +275,10 @@ func (t *templateFunctions) KubeProxyConfig() *api.KubeProxyConfig {
 	// As a special case, if this is the master, we point kube-proxy to the local IP
 	// This prevents a circular dependency where kube-proxy can't come up until DNS comes up,
 	// which would mean that DNS can't rely on API to come up
-	if t.IsMaster() {
+	if t.isMaster() {
 		glog.Infof("kube-proxy running on the master; setting API endpoint to localhost")
 		config.Master = "http://127.0.0.1:8080"
 	}
 
 	return config
-}
-
-func (t *templateFunctions) BuildAPIServerAnnotations() map[string]string {
-	annotations := make(map[string]string)
-	annotations["dns.alpha.kubernetes.io/internal"] = t.cluster.Spec.MasterInternalName
-	if t.cluster.Spec.API != nil && t.cluster.Spec.API.DNS != nil {
-		annotations["dns.alpha.kubernetes.io/external"] = t.cluster.Spec.MasterPublicName
-	}
-	return annotations
 }
