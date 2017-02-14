@@ -28,8 +28,9 @@ Several different providers are currently built into kops:
 
 1. kopeio-vxlan
 2. [weave](https://github.com/weaveworks/weave-kube)
-3. [Calico](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/installation/hosted/)
-4. [Canal (Flannel + Calico)](https://github.com/projectcalico/canal)
+3. [flannel](https://github.com/coreos/flannel)
+4. [Calico](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/installation/hosted/)
+5. [Canal (Flannel + Calico)](https://github.com/projectcalico/canal)
 
 The manifests for the providers are included with kops, and you simply use `--networking provider-name`.
 Replace the provider name with the names listed above with you `kops cluster create`.  For instance
@@ -37,7 +38,7 @@ to install `kopeio-vxlan` execute the following:
 
 ```console
 $ kops create cluster --networking kopeio-vxlan
-``` 
+```
 
 ### CNI Networking
 
@@ -114,7 +115,7 @@ The above will deploy a daemonset installation which requires K8s 1.4.x or above
 
 #### More information about Calico
 
-For Calico specific documentation please visit the [Calico Docs](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/). 
+For Calico specific documentation please visit the [Calico Docs](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/).
 
 #### Getting help with Calico
 
@@ -133,7 +134,7 @@ Canal is a project that combines [Flannel](https://github.com/coreos/flannel) an
 
 #### Installing Canal on a new Cluster
 
-The following command sets up a cluster, in HA mode, with Canal as the CNI and networking policy provider 
+The following command sets up a cluster, in HA mode, with Canal as the CNI and networking policy provider
 
 ```console
 $ export $ZONES=mylistofzones

@@ -108,6 +108,10 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) error {
 			udpPorts = append(udpPorts, 6784)
 		}
 
+		if b.Cluster.Spec.Networking.Flannel != nil {
+			udpPorts = append(udpPorts, 8285)
+		}
+
 		if b.Cluster.Spec.Networking.Calico != nil {
 			// Calico needs to access etcd
 			// TODO: Remove, replace with etcd in calico manifest
