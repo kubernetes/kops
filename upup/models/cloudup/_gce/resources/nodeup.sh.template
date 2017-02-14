@@ -20,6 +20,9 @@ set -o pipefail
 NODEUP_URL={{ NodeUpSource }}
 NODEUP_HASH={{ NodeUpSourceHash }}
 
+POST_INSTALL_SCRIPT_URL={{ PostInstallScriptSource }}
+POST_INSTALL_SCRIPT_HASH={{ PostInstallScriptHash }}
+
 function ensure-basic-networking() {
   # Deal with GCE networking bring-up race. (We rely on DNS for a lot,
   # and it's just not worth doing a whole lot of startup work if this
@@ -136,6 +139,43 @@ function run-nodeup() {
   ( cd ${INSTALL_DIR}; ./nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8 )
 }
 
+function try-download-post-install() {
+  # TODO(zmerlynn): Now we REALLY have no excuse not to do the reboot
+  # optimization.
+
+  local -r post_install_urls=( $(split-commas "${POST_INSTALL_SCRIPT_URL}") )
+  post_install_filename="${post_install_urls[0]##*/}"
+  if [[ -n "${POST_INSTALL_SCRIPT_HASH:-}" ]]; then
+    local -r nodeup_hash="${POST_INSTALL_SCRIPT_HASH}"
+  else
+    echo "Downloading sha1 (not found in env)"
+    download-or-bust "" "${post_install_urls[@]/%/.sha1}"
+    local -r post_install_hash=$(cat "${post_install_filename}.sha1")
+  fi
+
+  echo "Downloading post-install script (${post_install_urls[@]})"
+  download-or-bust "${post_install_hash}" "${post_install_urls[@]}"
+
+  chmod +x "${post_install_filename}"
+}
+
+function download-post-install() {
+  # In case of failure checking integrity of release, retry.
+  until try-download-post-install; do
+    sleep 15
+    echo "Couldn't download release. Retrying..."
+  done
+
+  echo "Running post-install script"
+  # We run in the background to work around https://github.com/docker/docker/issues/23793
+  run-post-install &
+}
+
+function run-post-install() {
+  sleep 1
+  ( cd ${INSTALL_DIR}; ./"${post_install_filename}" )
+}
+
 ####################################################################################
 
 echo "== nodeup node config starting =="
@@ -143,3 +183,11 @@ ensure-basic-networking
 ensure-install-dir
 download-release
 echo "== nodeup node config done =="
+
+if [[ ! -z $POST_INSTALL_SCRIPT_URL ]]; then
+  # Wait for nodeup to finish
+  wait $!
+  echo "== post-install script starting"
+  download-post-install
+  echo "== post-install script done"
+fi

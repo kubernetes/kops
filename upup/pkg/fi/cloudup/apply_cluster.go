@@ -58,6 +58,12 @@ type ApplyClusterCmd struct {
 	// NodeUpSource is the location from which we download nodeup
 	NodeUpSource string
 
+	// PreInstallScriptSource is the location from which we downlad a script to be run at the start of cloud-init
+	PreInstallScriptSource string
+
+	// PostInstallScriptSource is the location from which we download a script to be run at the end of cloud-init
+	PostInstallScriptSource string
+
 	// Models is a list of cloudup models to apply
 	Models []string
 
@@ -221,6 +227,26 @@ func (c *ApplyClusterCmd) Run() error {
 
 	if c.NodeUpSource == "" {
 		c.NodeUpSource = NodeUpLocation()
+	}
+
+	if c.PreInstallScriptSource == "" {
+		location := os.Getenv("PRE_INSTALL_SCRIPT_URL")
+		if location == "" {
+			glog.V(2).Infof("No pre-install script provided")
+		} else {
+			glog.Warningf("Using pre-install script from PRE_INSTALL_SCRIPT_URL env var: %q", location)
+		}
+		c.PreInstallScriptSource = location
+	}
+
+	if c.PostInstallScriptSource == "" {
+		location := os.Getenv("POST_INSTALL_SCRIPT_URL")
+		if location == "" {
+			glog.V(2).Infof("No post install script provided")
+		} else {
+			glog.Warningf("Using post install script from POST_INSTALL_SCRIPT_URL env var: %q", location)
+		}
+		c.PostInstallScriptSource = location
 	}
 
 	checkExisting := true
@@ -475,10 +501,14 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	l.Builders = append(l.Builders, &model.AutoscalingGroupModelBuilder{
-		KopsModelContext:    modelContext,
-		NodeUpConfigBuilder: renderNodeUpConfig,
-		NodeUpSourceHash:    "",
-		NodeUpSource:        c.NodeUpSource,
+		KopsModelContext:        modelContext,
+		NodeUpConfigBuilder:     renderNodeUpConfig,
+		NodeUpSourceHash:        "",
+		NodeUpSource:            c.NodeUpSource,
+		PreInstallScriptHash:    "",
+		PreInstallScriptSource:  c.PreInstallScriptSource,
+		PostInstallScriptHash:   "",
+		PostInstallScriptSource: c.PostInstallScriptSource,
 	})
 
 	//// TotalNodeCount computes the total count of nodes

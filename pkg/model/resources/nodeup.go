@@ -38,6 +38,12 @@ set -o pipefail
 NODEUP_URL={{ NodeUpSource }}
 NODEUP_HASH={{ NodeUpSourceHash }}
 
+PRE_INSTALL_SCRIPT_URL={{ PreInstallScriptSource }}
+PRE_INSTALL_SCRIPT_HASH={{ PreInstallScriptHash }}
+
+POST_INSTALL_SCRIPT_URL={{ PostInstallScriptSource }}
+POST_INSTALL_SCRIPT_HASH={{ PostInstallScriptHash }}
+
 function ensure-install-dir() {
   INSTALL_DIR="/var/cache/kubernetes-install"
   mkdir -p ${INSTALL_DIR}
@@ -92,55 +98,80 @@ function split-commas() {
   echo $1 | tr "," "\n"
 }
 
-function try-download-release() {
-  # TODO(zmerlynn): Now we REALLY have no excuse not to do the reboot
-  # optimization.
+# Takes the URL of a file, downloads the file's hash if needed, and then
+# downloads the file.
+#
+# $1 the sha1 of the resource
+# $2 the url for the resource
+#
+# Sets $filename as the filename of the resource
+function try-download() {
+  local -r hash="$1"
+  local -r url_list=( $(split-commas "${url_list}") )
 
-  local -r nodeup_urls=( $(split-commas "${NODEUP_URL}") )
-  local -r nodeup_filename="${nodeup_urls[0]##*/}"
-  if [[ -n "${NODEUP_HASH:-}" ]]; then
-    local -r nodeup_hash="${NODEUP_HASH}"
+  filename="${url_list[0]##*/}"
+  if [[ -n "${hash:-}" ]]; then
+    local -r file_hash="${hash}"
   else
-  # TODO: Remove?
-    echo "Downloading sha1 (not found in env)"
-    download-or-bust "" "${nodeup_urls[@]/%/.sha1}"
-    local -r nodeup_hash=$(cat "${nodeup_filename}.sha1")
+    echo "Downloading sha1 (not passed as argument)"
+    download-or-bust "" "${url_list[@]/%/.sha1}"
+    local -r file_hash=$(cat "${filename}.sha1")
   fi
 
-  echo "Downloading nodeup (${nodeup_urls[@]})"
-  download-or-bust "${nodeup_hash}" "${nodeup_urls[@]}"
+  echo "Downloading ${filename}"
+  download-or-bust "${file_hash}" "${url_list[@]}"
 
-  chmod +x nodeup
+  chmod +x "${filename}" &
 }
 
-function download-release() {
-  # In case of failure checking integrity of release, retry.
-  until try-download-release; do
+# Attempts to download a resource
+function download() {
+  local -r hash="$1"
+  local -r url_list="$2"
+
+  until try-download "${hash}" "${url_list}"; do
     sleep 15
-    echo "Couldn't download release. Retrying..."
+    echo "Couldn't download ${url_list}. Retrying..."
   done
-
-  echo "Running release install script"
-  # We run in the background to work around https://github.com/docker/docker/issues/23793
-  run-nodeup &
 }
 
-function run-nodeup() {
+function run() {
+  local -r cmd="$1"
+
+  echo "Running '${cmd}'"
   sleep 1
-  ( cd ${INSTALL_DIR}; ./nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8 )
+  ( cd ${INSTALL_DIR}; eval "./${cmd}" )
 }
-
 ####################################################################################
 
 /bin/systemd-machine-id-setup || echo "failed to set up ensure machine-id configured"
+ensure-install-dir
+
+if [[ ! -z ${PRE_INSTALL_SCRIPT_URL} ]]; then
+  echo "== pre-install script starting"
+  download "${PRE_INSTALL_SCRIPT_HASH}" "${PRE_INSTALL_SCRIPT_URL}"
+  run "${filename}"
+  echo "== pre-install script done"
+fi
 
 echo "== nodeup node config starting =="
-ensure-install-dir
 
 cat > kube_env.yaml << __EOF_KUBE_ENV
 {{ KubeEnv }}
 __EOF_KUBE_ENV
 
-download-release
+download "${NODEUP_HASH}" "${NODEUP_URL}"
+# We run in the background to work around https://github.com/docker/docker/issues/23793
+run "${filename} --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8" &
+wait
+
 echo "== nodeup node config done =="
+
+if [[ ! -z ${POST_INSTALL_SCRIPT_URL} ]]; then
+  echo "== post-install script starting"
+  download "${POST_INSTALL_SCRIPT_HASH}" "${POST_INSTALL_SCRIPT_URL}"
+  run "${filename}"
+  echo "== post-install script done"
+fi
+
 `
