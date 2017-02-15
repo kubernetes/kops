@@ -130,11 +130,12 @@ kops-dist: crossbuild-in-docker
 	(sha1sum .build/dist/darwin/amd64/kops | cut -d' ' -f1) > .build/dist/darwin/amd64/kops.sha1
 	(sha1sum .build/dist/linux/amd64/kops | cut -d' ' -f1) > .build/dist/linux/amd64/kops.sha1
 
-version-dist: nodeup-dist kops-dist protokube-export
+version-dist: nodeup-dist kops-dist protokube-export utils-dist
 	rm -rf .build/upload
 	mkdir -p .build/upload/kops/${VERSION}/linux/amd64/
 	mkdir -p .build/upload/kops/${VERSION}/darwin/amd64/
 	mkdir -p .build/upload/kops/${VERSION}/images/
+	mkdir -p .build/upload/utils/${VERSION}/linux/amd64/
 	cp .build/dist/nodeup .build/upload/kops/${VERSION}/linux/amd64/nodeup
 	cp .build/dist/nodeup.sha1 .build/upload/kops/${VERSION}/linux/amd64/nodeup.sha1
 	cp .build/dist/images/protokube.tar.gz .build/upload/kops/${VERSION}/images/protokube.tar.gz
@@ -143,6 +144,8 @@ version-dist: nodeup-dist kops-dist protokube-export
 	cp .build/dist/linux/amd64/kops.sha1 .build/upload/kops/${VERSION}/linux/amd64/kops.sha1
 	cp .build/dist/darwin/amd64/kops .build/upload/kops/${VERSION}/darwin/amd64/kops
 	cp .build/dist/darwin/amd64/kops.sha1 .build/upload/kops/${VERSION}/darwin/amd64/kops.sha1
+	cp .build/dist/linux/amd64/utils.tar.gz .build/upload/kops/${VERSION}/linux/amd64/utils.tar.gz
+	cp .build/dist/linux/amd64/utils.tar.gz.sha1 .build/upload/kops/${VERSION}/linux/amd64/utils.tar.gz.sha1
 
 upload: kops version-dist
 	aws s3 sync --acl public-read .build/upload/ ${S3_BUCKET}
@@ -227,6 +230,14 @@ dns-controller-image: dns-controller-build-in-docker
 
 dns-controller-push: dns-controller-image
 	docker push ${DOCKER_REGISTRY}/dns-controller:${DNS_CONTROLLER_TAG}
+
+# --------------------------------------------------
+# static utils
+
+utils-dist:
+	docker build -t utils-builder images/utils-builder
+	mkdir -p .build/dist/linux/amd64/
+	docker run -v `pwd`/.build/dist/linux/amd64/:/dist utils-builder /extract.sh
 
 # --------------------------------------------------
 # development targets
