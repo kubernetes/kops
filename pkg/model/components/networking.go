@@ -31,7 +31,9 @@ type NetworkingOptionsBuilder struct {
 var _ loader.OptionsBuilder = &NetworkingOptionsBuilder{}
 
 func (b *NetworkingOptionsBuilder) BuildOptions(o interface{}) error {
-	k8sVersion, err := b.Context.KubernetesVersion()
+	clusterSpec := o.(*kops.ClusterSpec)
+
+	k8sVersion, err := KubernetesVersion(clusterSpec)
 	if err != nil {
 		return err
 	}
@@ -41,7 +43,7 @@ func (b *NetworkingOptionsBuilder) BuildOptions(o interface{}) error {
 		options.Kubelet = &kops.KubeletConfigSpec{}
 	}
 
-	networking := b.Context.Cluster.Spec.Networking
+	networking := clusterSpec.Networking
 	if networking == nil {
 		return fmt.Errorf("networking not set")
 	}
