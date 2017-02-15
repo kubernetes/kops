@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/golang/glog"
 	"k8s.io/kops/nodeup/pkg/distros"
@@ -41,7 +42,7 @@ type KubeletBuilder struct {
 var _ fi.ModelBuilder = &DockerBuilder{}
 
 const socatStaticBinaryURL = "https://github.com/aledbf/socat-static-binary/releases/download/v0.0.1/socat-linux-amd64"
-const socatStaticBinarySHA = "https://github.com/aledbf/socat-static-binary/releases/download/v0.0.1/socat-linux-amd64.sha1"
+const socatStaticBinarySHA256 = "https://github.com/aledbf/socat-static-binary/releases/download/v0.0.1/socat-linux-amd64.sha256"
 
 func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 	kubeletConfig, err := b.buildKubeletConfig()
@@ -114,33 +115,39 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 	c.AddTask(b.buildSystemdService())
 
 	if b.Distribution == distros.DistributionCoreOS {
-		sha1URL := os.Getenv("SOCAT_SHA1_URL")
-		if sha1URL == "" {
-			sha1URL = socatStaticBinarySHA
+		sha256URL := os.Getenv("SOCAT_SHA256_URL")
+		if sha256URL == "" {
+			sha256URL = socatStaticBinarySHA256
 		}
-		resp, err := http.Get(sha1URL)
+		resp, err := http.Get(sha256URL)
 		if err != nil {
-			return fmt.Errorf("unexpected error downloading socat SHA from %v: %v", sha1URL, err)
+			return fmt.Errorf("unexpected error downloading socat SHA256 from %v: %v", sha256URL, err)
 		}
 		defer resp.Body.Close()
 
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return fmt.Errorf("unexpected error downloading socat SHA from %v: %v", sha1URL, err)
+			return fmt.Errorf("unexpected error downloading socat SHA256 from %v: %v", sha256URL, err)
 		}
 
-		hash := &hashing.Hash{
-			Algorithm: hashing.HashAlgorithmSHA256,
-			HashValue: body,
+		socatHash := strings.TrimSpace(string(body))
+		hash, err := hashing.FromString(socatHash)
+		if err != nil {
+			return fmt.Errorf("unexpected error reading socat SHA: %s", err)
 		}
 
 		socatURL := os.Getenv("SOCAT_URL")
 		if socatURL == "" {
 			socatURL = socatStaticBinaryURL
 		}
-		_, err = fi.DownloadURL(socatURL, "/opt/bin/socat", hash)
+
+		_, err = fi.DownloadURL(socatURL, "/opt/kubernetes/bin/socat", hash)
 		if err != nil {
 			return fmt.Errorf("unexpected error downloading socat from %v: %v", socatURL, err)
+		}
+		err = os.Chmod("/opt/kubernetes/bin/socat", 0755)
+		if err != nil {
+			return fmt.Errorf("failed setting executable on socat binary: %s", err)
 		}
 	}
 
@@ -162,6 +169,10 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	manifest.Set("Unit", "Description", "Kubernetes Kubelet Server")
 	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kubernetes")
 	manifest.Set("Unit", "After", "docker.service")
+
+	if b.Distribution == distros.DistributionCoreOS {
+		manifest.Set("Service", "Environment", "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/kubernetes/bin")
+	}
 
 	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/kubelet")
 	manifest.Set("Service", "ExecStart", kubeletCommand+" \"$DAEMON_ARGS\"")
