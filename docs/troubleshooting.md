@@ -1,4 +1,6 @@
-## Troubleshooting 
+# Troubleshooting 
+
+## Installation
 
 ##### Make sure `$GOPATH` is set, and your [workspace](https://golang.org/doc/code.html#Workspaces) is configured.
 
