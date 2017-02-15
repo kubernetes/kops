@@ -1,7 +1,0 @@
-Kubelet:
-  CloudProvider: gce
-  HairpinMode: promiscuous-bridge
-  RuntimeCgroups: /docker-daemon
-  KubeletCgroups: /kubelet
-  SystemCgroups: /system
-  CgroupRoot: /

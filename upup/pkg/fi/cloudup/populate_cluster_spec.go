@@ -254,17 +254,19 @@ func (c *populateClusterSpec) run() error {
 
 	tf.AddTo(templateFunctions)
 
-	optionsContext := &components.OptionsContext{
-		Cluster: cluster,
-	}
+	optionsContext := &components.OptionsContext{}
 	var fileModels []string
 	var codeModels []loader.OptionsBuilder
 	for _, m := range c.Models {
 		switch m {
 		case "config":
+			// Note: DefaultOptionsBuilder comes first
+			codeModels = append(codeModels, &components.DefaultsOptionsBuilder{Context: optionsContext})
+
 			codeModels = append(codeModels, &components.KubeAPIServerOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.DockerOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.NetworkingOptionsBuilder{Context: optionsContext})
+			codeModels = append(codeModels, &components.KubeDnsOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeletOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeControllerManagerOptionsBuilder{Context: optionsContext})
 			fileModels = append(fileModels, m)
