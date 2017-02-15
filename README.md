@@ -76,7 +76,7 @@ $ git checkout release
 $ make
 ```
 
-See [building notes](/docs/build.md) for more information.
+See the [install notes](/docs/install.md) for more information.
 
 At this time, Windows is not a supported platform.
 
