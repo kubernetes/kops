@@ -18,6 +18,11 @@ To change the SSH public key on an existing cluster:
 * `kops update cluster --yes` to reconfigure the auto-scaling groups
 * `kops rolling-update cluster --name <clustername> --yes` to immediately roll all the machines so they have the new key (optional)
 
+## IAM roles
+
+All Pods running on your cluster have access to underlying instance IAM role.
+Currently permission scope is quite broad. See [iam_roles.md](iam_roles.md) for details and ways to mitigate that.
+
 
 ## Kubernetes API
 
