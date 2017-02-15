@@ -548,11 +548,13 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			bastionGroup := &api.InstanceGroup{}
 			bastionGroup.Spec.Role = api.InstanceGroupRoleBastion
 			bastionGroup.ObjectMeta.Name = "bastions"
+			bastionGroup.Spec.Image = c.Image
 			instanceGroups = append(instanceGroups, bastionGroup)
 
 			cluster.Spec.Topology.Bastion = &api.BastionSpec{
 				BastionPublicName: "bastion." + clusterName,
 			}
+
 		}
 
 	default:
