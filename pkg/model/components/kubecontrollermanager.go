@@ -41,10 +41,10 @@ var _ loader.OptionsBuilder = &KubeControllerManagerOptionsBuilder{}
 // BuildOptions generates the configurations used to create kubernetes controller manager manifest
 func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error {
 
-	options := o.(*kops.ClusterSpec)
+	clusterSpec := o.(*kops.ClusterSpec)
 
-	if options.KubeControllerManager == nil {
-		options.KubeControllerManager = &kops.KubeControllerManagerConfig{}
+	if clusterSpec.KubeControllerManager == nil {
+		clusterSpec.KubeControllerManager = &kops.KubeControllerManagerConfig{}
 	}
 
 	k8sv148, err := util.ParseKubernetesVersion("v1.4.8")
@@ -63,7 +63,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		return fmt.Errorf("Unable to parse kubernetesVersion %s", err)
 	}
 
-	kubernetesVersion, err := b.Context.KubernetesVersion()
+	kubernetesVersion, err := KubernetesVersion(clusterSpec)
 	if err != nil {
 		return fmt.Errorf("Unable to parse kubernetesVersion %s", err)
 	}
@@ -78,27 +78,27 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 
 		glog.V(4).Infof("Kubernetes version %q supports AttachDetachReconcileSyncPeriod; will configure", kubernetesVersion)
 		// If not set ... or set to 0s ... which is stupid
-		if options.KubeControllerManager.AttachDetachReconcileSyncPeriod == nil ||
-			options.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration.String() == "0s" {
+		if clusterSpec.KubeControllerManager.AttachDetachReconcileSyncPeriod == nil ||
+			clusterSpec.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration.String() == "0s" {
 
 			glog.V(8).Infof("AttachDetachReconcileSyncPeriod is not set; will set to default %v", defaultAttachDetachReconcileSyncPeriod)
-			options.KubeControllerManager.AttachDetachReconcileSyncPeriod = &metav1.Duration{Duration: defaultAttachDetachReconcileSyncPeriod}
+			clusterSpec.KubeControllerManager.AttachDetachReconcileSyncPeriod = &metav1.Duration{Duration: defaultAttachDetachReconcileSyncPeriod}
 
 			// If less than 1 min and greater than 1 sec ... you get a warning
-		} else if options.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration < defaultAttachDetachReconcileSyncPeriod &&
-			options.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration > time.Second {
+		} else if clusterSpec.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration < defaultAttachDetachReconcileSyncPeriod &&
+			clusterSpec.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration > time.Second {
 
 			glog.Infof("KubeControllerManager AttachDetachReconcileSyncPeriod is set lower than recommended: %s", defaultAttachDetachReconcileSyncPeriod)
 
 			// If less than 1sec you get an error.  Controller is coded to not allow configuration
 			// less than one second.
-		} else if options.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration < time.Second {
+		} else if clusterSpec.KubeControllerManager.AttachDetachReconcileSyncPeriod.Duration < time.Second {
 			return fmt.Errorf("AttachDetachReconcileSyncPeriod cannot be set to less than 1 second")
 		}
 	} else {
 
 		glog.V(4).Infof("not setting AttachDetachReconcileSyncPeriod, k8s version is too low")
-		options.KubeControllerManager.AttachDetachReconcileSyncPeriod = nil
+		clusterSpec.KubeControllerManager.AttachDetachReconcileSyncPeriod = nil
 	}
 
 	return nil

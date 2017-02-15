@@ -41,6 +41,7 @@ type Keypair struct {
 }
 
 var _ fi.HasCheckExisting = &Keypair{}
+var _ fi.HasName = &Keypair{}
 
 // It's important always to check for the existing key, so we don't regenerate keys e.g. on terraform
 func (e *Keypair) CheckExisting(c *fi.Context) bool {
