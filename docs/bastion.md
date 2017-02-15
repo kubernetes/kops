@@ -49,7 +49,7 @@ If you do not want the bastion instance group created at all, simply drop the `-
 
 ### Using a public CNAME to access your bastion
 
-By default the bastion instance group will create a public CNAME alias that will point to the bastion ELB. 
+By default the bastion instance group will create a public CNAME alias that will point to the bastion ELB.
 
 The default bastion name is `bastion.$NAME` as in
 
@@ -105,7 +105,7 @@ spec:
       idleTimeoutSeconds: 1200
 ```
 
-Where the maximum value is 1200 seconds (20 minutes) allowed by AWS. [More information](http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/config-idle-timeout.html)
+Where the maximum value is 3600 seconds (60 minutes) allowed by AWS. For more information see [configuring idle timeouts](http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/config-idle-timeout.html).
 
 ### Using the bastion
 
@@ -113,7 +113,7 @@ Once your cluster is setup and you need to SSH into the bastion you can access a
 
 ```bash
 # Verify you have an SSH agent running. This should match whatever you built your cluster with.
-ssh-add -l 
+ssh-add -l
 # If you need to add an agent
 ssh-add path/to/public/key
 
