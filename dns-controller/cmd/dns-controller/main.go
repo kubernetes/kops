@@ -18,6 +18,9 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"os"
+
 	"github.com/golang/glog"
 	"github.com/spf13/pflag"
 	"k8s.io/kops/dns-controller/pkg/dns"
@@ -26,7 +29,6 @@ import (
 	client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset/typed/core/v1"
 	client_extensions "k8s.io/kubernetes/pkg/client/clientset_generated/clientset/typed/extensions/v1beta1"
 	kubectl_util "k8s.io/kubernetes/pkg/kubectl/cmd/util"
-	"os"
 
 	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
 	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns"
@@ -34,9 +36,14 @@ import (
 
 var (
 	flags = pflag.NewFlagSet("", pflag.ExitOnError)
+
+	// value overwritten during build. This can be used to resolve issues.
+	BuildVersion = "0.1"
 )
 
 func main() {
+	fmt.Printf("dns-controller version %s\n", BuildVersion)
+
 	dnsProviderId := "aws-route53"
 	flags.StringVar(&dnsProviderId, "dns", dnsProviderId, "DNS provider we should use (aws-route53, google-clouddns)")
 
