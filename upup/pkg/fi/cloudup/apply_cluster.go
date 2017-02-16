@@ -348,6 +348,10 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	clusterTags, err := buildCloudupTags(cluster)
+
+	fmt.Println(clusterTags)
+	os.Exit(1)
+
 	if err != nil {
 		return err
 	}
