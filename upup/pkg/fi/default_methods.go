@@ -53,9 +53,16 @@ func DefaultDeltaRunMethod(e Task, c *Context) error {
 			return err
 		}
 
-		err = c.Render(a, e, changes)
+		shouldCreate, err := invokeShouldCreate(a, e, changes)
 		if err != nil {
 			return err
+		}
+
+		if shouldCreate {
+			err = c.Render(a, e, changes)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -108,4 +115,20 @@ func invokeFind(e Task, c *Context) (Task, error) {
 		err = rv[1].Interface().(error)
 	}
 	return task, err
+}
+
+// invokeShouldCreate calls the ShouldCreate method by reflection, if it exists
+func invokeShouldCreate(a, e, changes Task) (bool, error) {
+	rv, err := utils.InvokeMethod(e, "ShouldCreate", a, e, changes)
+	if err != nil {
+		if utils.IsMethodNotFound(err) {
+			return true, nil
+		}
+		return false, err
+	}
+	shouldCreate := rv[0].Interface().(bool)
+	if !rv[1].IsNil() {
+		err = rv[1].Interface().(error)
+	}
+	return shouldCreate, err
 }

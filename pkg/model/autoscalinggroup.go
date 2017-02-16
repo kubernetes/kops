@@ -66,13 +66,24 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				SecurityGroups: []*awstasks.SecurityGroup{
 					b.LinkToSecurityGroup(ig.Spec.Role),
 				},
-				AdditionalSecurityGroupIDs: ig.Spec.AdditionalSecurityGroups,
-				IAMInstanceProfile:         b.LinkToIAMInstanceProfile(ig),
-				ImageID:                    s(ig.Spec.Image),
-				InstanceType:               s(ig.Spec.MachineType),
+				IAMInstanceProfile: b.LinkToIAMInstanceProfile(ig),
+				ImageID:            s(ig.Spec.Image),
+				InstanceType:       s(ig.Spec.MachineType),
 
 				RootVolumeSize: i64(int64(volumeSize)),
 				RootVolumeType: s(volumeType),
+			}
+
+			for _, id := range ig.Spec.AdditionalSecurityGroups {
+				sgTask := &awstasks.SecurityGroup{
+					Name:   fi.String(id),
+					ID:     fi.String(id),
+					Shared: fi.Bool(true),
+				}
+				if err := c.EnsureTask(sgTask); err != nil {
+					return err
+				}
+				t.SecurityGroups = append(t.SecurityGroups, sgTask)
 			}
 
 			var err error
