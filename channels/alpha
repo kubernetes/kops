@@ -8,22 +8,22 @@ spec:
       providerID: aws
       kubernetesVersion: ">=1.5.0"
   cluster:
-    kubernetesVersion: v1.5.2
+    kubernetesVersion: v1.5.3
     networking:
       kubenet: {}
   kubernetesVersions:
   - range: ">=1.5.0"
-    recommendedVersion: 1.5.2
+    recommendedVersion: 1.5.3
     requiredVersion: 1.5.1
   - range: "<1.5.0"
-    recommendedVersion: 1.4.8
+    recommendedVersion: 1.4.9
     requiredVersion: 1.4.2
   kopsVersions:
   - range: ">=1.5.0-alpha1"
     recommendedVersion: 1.5.1
     #requiredVersion: 1.5.1
-    kubernetesVersion: 1.5.2
+    kubernetesVersion: 1.5.3
   - range: "<1.5.0"
     recommendedVersion: 1.4.4
     #requiredVersion: 1.4.4
-    kubernetesVersion: 1.4.8
+    kubernetesVersion: 1.4.9
