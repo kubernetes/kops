@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"sort"
 	"time"
 )
 
@@ -37,13 +38,12 @@ type LaunchConfiguration struct {
 
 	UserData *fi.ResourceHolder
 
-	ImageID                    *string
-	InstanceType               *string
-	SSHKey                     *SSHKey
-	SecurityGroups             []*SecurityGroup
-	AdditionalSecurityGroupIDs []string
-	AssociatePublicIP          *bool
-	IAMInstanceProfile         *IAMInstanceProfile
+	ImageID            *string
+	InstanceType       *string
+	SSHKey             *SSHKey
+	SecurityGroups     []*SecurityGroup
+	AssociatePublicIP  *bool
+	IAMInstanceProfile *IAMInstanceProfile
 
 	// RootVolumeSize is the size of the EBS root volume to use, in GB
 	RootVolumeSize *int64
@@ -114,6 +114,8 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 	for _, sgID := range lc.SecurityGroups {
 		securityGroups = append(securityGroups, &SecurityGroup{ID: sgID})
 	}
+	sort.Sort(OrderSecurityGroupsById(securityGroups))
+
 	actual.SecurityGroups = securityGroups
 
 	// Find the root volume
@@ -194,7 +196,15 @@ func (e *LaunchConfiguration) buildRootDevice(cloud awsup.AWSCloud) (map[string]
 }
 
 func (e *LaunchConfiguration) Run(c *fi.Context) error {
+	// TODO: Make Normalize a standard method
+	e.Normalize()
+
 	return fi.DefaultDeltaRunMethod(e, c)
+}
+
+func (e *LaunchConfiguration) Normalize() {
+	// We need to sort our arrays consistently, so we don't get spurious changes
+	sort.Stable(OrderSecurityGroupsById(e.SecurityGroups))
 }
 
 func (s *LaunchConfiguration) CheckChanges(a, e, changes *LaunchConfiguration) error {
@@ -237,10 +247,6 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 	securityGroupIDs := []*string{}
 	for _, sg := range e.SecurityGroups {
 		securityGroupIDs = append(securityGroupIDs, sg.ID)
-	}
-
-	for i := range e.AdditionalSecurityGroupIDs {
-		securityGroupIDs = append(securityGroupIDs, &e.AdditionalSecurityGroupIDs[i])
 	}
 
 	request.SecurityGroups = securityGroupIDs
@@ -368,9 +374,6 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 		tf.SecurityGroups = append(tf.SecurityGroups, sg.TerraformLink())
 	}
 
-	for _, sg := range e.AdditionalSecurityGroupIDs {
-		tf.SecurityGroups = append(tf.SecurityGroups, terraform.LiteralFromStringValue(sg))
-	}
 	tf.AssociatePublicIpAddress = e.AssociatePublicIP
 
 	{
