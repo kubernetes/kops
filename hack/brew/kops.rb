@@ -14,6 +14,7 @@ class Kops < Formula
 
   depends_on "go" => :build
   depends_on "kubernetes-cli"
+  depends_on "md5sha1sum"
 
   def install
     ENV["VERSION"] = version unless build.head?
