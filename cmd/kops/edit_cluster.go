@@ -26,9 +26,10 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/edit"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	k8sapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
+	util_editor "k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
 	"os"
 	"path/filepath"
 	"strings"
@@ -90,7 +91,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 	}
 
 	var (
-		edit = editor.NewDefaultEditor(editorEnvs)
+		editor = util_editor.NewDefaultEditor(editorEnvs)
 	)
 
 	ext := "yaml"
@@ -120,7 +121,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 
 		// launch the editor
 		editedDiff := edited
-		edited, file, err = edit.LaunchTempFile(fmt.Sprintf("%s-edit-", filepath.Base(os.Args[0])), ext, buf)
+		edited, file, err = editor.LaunchTempFile(fmt.Sprintf("%s-edit-", filepath.Base(os.Args[0])), ext, buf)
 		if err != nil {
 			return preservedFile(fmt.Errorf("error launching editor: %v", err), results.file, out)
 		}
@@ -162,6 +163,27 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 				file: file,
 			}
 			results.header.addError(fmt.Sprintf("object was not of expected type: %T", newObj))
+			containsError = true
+			continue
+		}
+
+		extraFields, err := edit.HasExtraFields(string(edited), newObj)
+		if err != nil {
+			results = editResults{
+				file: file,
+			}
+			results.header.addError(fmt.Sprintf("error checking for extra fields: %v", err))
+			containsError = true
+			continue
+		}
+		if extraFields != "" {
+			results = editResults{
+				file: file,
+			}
+			lines := strings.Split(extraFields, "\n")
+			for _, line := range lines {
+				results.header.addExtraFields(line)
+			}
 			containsError = true
 			continue
 		}
@@ -217,15 +239,21 @@ type editResults struct {
 }
 
 type editHeader struct {
-	errors []string
+	errors      []string
+	extraFields []string
 }
 
 func (h *editHeader) addError(err string) {
 	h.errors = append(h.errors, err)
 }
 
+func (h *editHeader) addExtraFields(line string) {
+	h.extraFields = append(h.extraFields, line)
+}
+
 func (h *editHeader) flush() {
 	h.errors = []string{}
+	h.extraFields = []string{}
 }
 
 func (h *editHeader) writeTo(w io.Writer) error {
@@ -236,6 +264,13 @@ func (h *editHeader) writeTo(w io.Writer) error {
 `)
 	for _, error := range h.errors {
 		fmt.Fprintf(w, "# %s\n", error)
+		fmt.Fprintln(w, "#")
+	}
+	if len(h.extraFields) != 0 {
+		fmt.Fprintf(w, "# Found fields that are not recognized\n")
+		for _, l := range h.extraFields {
+			fmt.Fprintf(w, "# %s\n", l)
+		}
 		fmt.Fprintln(w, "#")
 	}
 	return nil
