@@ -241,7 +241,6 @@ func (h *editHeader) writeTo(w io.Writer) error {
 	return nil
 }
 
-
 // stripComments is used for dropping comments from a YAML file
 func stripComments(file []byte) []byte {
 	stripped := []byte{}
