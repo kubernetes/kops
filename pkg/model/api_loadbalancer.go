@@ -18,10 +18,14 @@ package model
 
 import (
 	"fmt"
+	"time"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
+
+const LoadBalancerDefaultIdleTimeout = 5 * time.Minute
 
 // APILoadBalancerBuilder builds a LoadBalancer for accessing the API
 type APILoadBalancerBuilder struct {
@@ -79,6 +83,11 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			elbSubnets = append(elbSubnets, b.LinkToSubnet(subnet))
 		}
 
+		idleTimeout := LoadBalancerDefaultIdleTimeout
+		if lbSpec.IdleTimeoutSeconds != nil {
+			idleTimeout = time.Second * time.Duration(*lbSpec.IdleTimeoutSeconds)
+		}
+
 		elb = &awstasks.LoadBalancer{
 			Name: s("api." + b.ClusterName()),
 			ID:   s(elbID),
@@ -97,6 +106,10 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				Interval:           i64(10),
 				HealthyThreshold:   i64(2),
 				UnhealthyThreshold: i64(2),
+			},
+
+			ConnectionSettings: &awstasks.LoadBalancerConnectionSettings{
+				IdleTimeout: i64(int64(idleTimeout.Seconds())),
 			},
 		}
 

@@ -260,7 +260,8 @@ const (
 )
 
 type LoadBalancerAccessSpec struct {
-	Type LoadBalancerType `json:"type,omitempty"`
+	Type               LoadBalancerType `json:"type,omitempty"`
+	IdleTimeoutSeconds *int64           `json:"idleTimeoutSeconds,omitempty"`
 }
 
 type KubeDNSConfig struct {
