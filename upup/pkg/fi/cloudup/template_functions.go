@@ -29,15 +29,12 @@ package cloudup
 
 import (
 	"encoding/base64"
-	"encoding/binary"
 	"fmt"
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/util/sets"
-	"math/big"
-	"net"
 	"strings"
 	"text/template"
 )
@@ -52,38 +49,6 @@ type TemplateFunctions struct {
 	modelContext *model.KopsModelContext
 }
 
-func (tf *TemplateFunctions) WellKnownServiceIP(id int) (net.IP, error) {
-	_, cidr, err := net.ParseCIDR(tf.cluster.Spec.ServiceClusterIPRange)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing ServiceClusterIPRange %q: %v", tf.cluster.Spec.ServiceClusterIPRange, err)
-	}
-
-	ip4 := cidr.IP.To4()
-	if ip4 != nil {
-		n := binary.BigEndian.Uint32(ip4)
-		n += uint32(id)
-		serviceIP := make(net.IP, len(ip4))
-		binary.BigEndian.PutUint32(serviceIP, n)
-		return serviceIP, nil
-	}
-
-	ip6 := cidr.IP.To16()
-	if ip6 != nil {
-		baseIPInt := big.NewInt(0)
-		baseIPInt.SetBytes(ip6)
-		serviceIPInt := big.NewInt(0)
-		serviceIPInt.Add(big.NewInt(int64(id)), baseIPInt)
-		serviceIP := make(net.IP, len(ip6))
-		serviceIPBytes := serviceIPInt.Bytes()
-		for i := range serviceIPBytes {
-			serviceIP[len(serviceIP)-len(serviceIPBytes)+i] = serviceIPBytes[i]
-		}
-		return serviceIP, nil
-	}
-
-	return nil, fmt.Errorf("Unexpected IP address type for ServiceClusterIPRange: %s", tf.cluster.Spec.ServiceClusterIPRange)
-}
-
 // This will define the available functions we can use in our YAML models
 // If we are trying to get a new function implemented it MUST
 // be defined here.
@@ -95,8 +60,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 
 	// Network topology definitions
 	dest["GetELBName32"] = tf.modelContext.GetELBName32
-
-	dest["WellKnownServiceIP"] = tf.WellKnownServiceIP
 
 	dest["Base64Encode"] = func(s string) string {
 		return base64.StdEncoding.EncodeToString([]byte(s))

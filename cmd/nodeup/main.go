@@ -19,15 +19,20 @@ package main // import "k8s.io/kops/cmd/nodeup"
 import (
 	"flag"
 	"fmt"
-	"github.com/golang/glog"
-	"k8s.io/kops"
-	"k8s.io/kops/upup/models"
-	"k8s.io/kops/upup/pkg/fi/nodeup"
 	"os"
 	"time"
+
+	"github.com/golang/glog"
+	"k8s.io/kops"
+	"k8s.io/kops/nodeup/pkg/bootstrap"
+	"k8s.io/kops/upup/models"
+	"k8s.io/kops/upup/pkg/fi/nodeup"
 )
 
-const retryInterval = 30 * time.Second
+const (
+	retryInterval = 30 * time.Second
+	procSelfExe   = "/proc/self/exe"
+)
 
 func main() {
 	gitVersion := ""
@@ -50,6 +55,9 @@ func main() {
 	target := "direct"
 	flag.StringVar(&target, "target", target, "Target - direct, cloudinit")
 
+	installSystemdUnit := false
+	flag.BoolVar(&installSystemdUnit, "install-systemd-unit", installSystemdUnit, "If true, will install a systemd unit instead of running directly")
+
 	if dryrun {
 		target = "dryrun"
 	}
@@ -64,17 +72,58 @@ func main() {
 	retries := flagRetries
 
 	for {
-		cmd := &nodeup.NodeUpCommand{
-			ConfigLocation: flagConf,
-			Target:         target,
-			CacheDir:       flagCacheDir,
-			FSRoot:         flagRootFS,
-			ModelDir:       models.NewAssetPath("nodeup"),
-		}
-		err := cmd.Run(os.Stdout)
-		if err == nil {
-			fmt.Printf("success")
-			os.Exit(0)
+		var err error
+		if installSystemdUnit {
+			// create a systemd unit to bootstrap kops
+			// using the same args as we were called with
+			var command []string
+			for i := 0; i < len(os.Args); i++ {
+				s := os.Args[i]
+				if s == "-install-systemd-unit" || s == "--install-systemd-unit" {
+					continue
+				}
+				if i == 0 {
+					// We could also try to evaluate based on cwd
+					if _, err := os.Stat(procSelfExe); os.IsNotExist(err) {
+						glog.Fatalf("file %v does not exists", procSelfExe)
+					}
+
+					fi, err := os.Lstat(procSelfExe)
+					if fi.Mode()&os.ModeSymlink != os.ModeSymlink {
+						glog.Fatalf("file %v is not a symlink", procSelfExe)
+					}
+
+					s, err = os.Readlink(procSelfExe)
+					if err != nil {
+						glog.Fatalf("error reading %v link: %v", procSelfExe, err)
+					}
+				}
+				command = append(command, s)
+			}
+			i := bootstrap.Installation{
+				MaxTaskDuration: 5 * time.Minute,
+				CacheDir:        flagCacheDir,
+				Command:         command,
+				FSRoot:          flagRootFS,
+			}
+			err = i.Run()
+			if err == nil {
+				fmt.Printf("service installed")
+				os.Exit(0)
+			}
+		} else {
+			cmd := &nodeup.NodeUpCommand{
+				ConfigLocation: flagConf,
+				Target:         target,
+				CacheDir:       flagCacheDir,
+				FSRoot:         flagRootFS,
+				ModelDir:       models.NewAssetPath("nodeup"),
+			}
+			err = cmd.Run(os.Stdout)
+			if err == nil {
+				fmt.Printf("success")
+				os.Exit(0)
+			}
 		}
 
 		if retries == 0 {

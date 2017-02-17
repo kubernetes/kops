@@ -18,16 +18,21 @@ package model
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/blang/semver"
 	"github.com/golang/glog"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
-	"strings"
+	"k8s.io/kops/pkg/model/components"
+	"net"
 )
 
 type KopsModelContext struct {
+	Cluster *kops.Cluster
+
 	Region         string
-	Cluster        *kops.Cluster
 	InstanceGroups []*kops.InstanceGroup
 
 	SSHPublicKeys [][]byte
@@ -220,4 +225,8 @@ func VersionGTE(version semver.Version, major uint64, minor uint64) bool {
 		return true
 	}
 	return false
+}
+
+func (c *KopsModelContext) WellKnownServiceIP(id int) (net.IP, error) {
+	return components.WellKnownServiceIP(&c.Cluster.Spec, id)
 }

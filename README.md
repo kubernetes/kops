@@ -76,7 +76,7 @@ $ git checkout release
 $ make
 ```
 
-See [building notes](/docs/build.md) for more information.
+See the [install notes](/docs/install.md) for more information.
 
 At this time, Windows is not a supported platform.
 
@@ -104,7 +104,7 @@ have time to prepare for the call.
 | [@kris-nova](https://github.com/kris-nova)           |  2nd / 4th Friday 9am PDT | [Zoom](https://zoom.us/my/k8ssigaws) |
 
 Reach out to us on [kubernetes slack](https://github.com/kubernetes/community#slack-chat).
-A great place to get involved or ask questions is [#sig-cluster-lifecycle](https://kubernetes.slack.com/?redir=%2Fmessages%2Fsig-cluster-lifecycle%2F).
+A great place to get involved or ask questions is [#kops](https://kubernetes.slack.com/messages/kops/).
 
 ## Other Resources
 

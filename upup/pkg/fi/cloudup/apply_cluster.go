@@ -378,6 +378,7 @@ func (c *ApplyClusterCmd) Run() error {
 				&model.ExternalAccessModelBuilder{KopsModelContext: modelContext},
 				&model.FirewallModelBuilder{KopsModelContext: modelContext},
 				&model.IAMModelBuilder{KopsModelContext: modelContext},
+				&model.PKIModelBuilder{KopsModelContext: modelContext},
 				&model.MasterVolumeBuilder{KopsModelContext: modelContext},
 				&model.NetworkModelBuilder{KopsModelContext: modelContext},
 				&model.SSHKeyModelBuilder{KopsModelContext: modelContext},
