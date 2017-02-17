@@ -316,10 +316,17 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateClust
 		glog.V(3).Info("Not validating the cluster as instance is a bastion.")
 	} else if rollingUpdateData.CloudOnly {
 		glog.V(3).Info("Not validating cluster as validation is turned off via the cloud-only flag.")
-	} else if rollingUpdateData.FailOnValidate && featureflag.DrainAndValidateRollingUpdate.Enabled() {
+	} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
 		if err = n.ValidateCluster(rollingUpdateData, instanceGroupList); err != nil {
-			glog.Errorf("Error validating cluster: %s.", err)
-			return err
+
+			glog.Warningf("Error validating cluster %q: %v.", rollingUpdateData.ClusterName, err)
+
+			if rollingUpdateData.FailOnValidate {
+				glog.Errorf("Error validating cluster: %v.", err)
+				return err
+			}
+
+			glog.Warningf("Cluster validation, proceeding since fail-on-validate is set to false")
 		}
 	}
 
@@ -344,9 +351,11 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateClust
 
 		} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
 
-			glog.Infof("Draining the node: %s.", u.Node.Name)
+			glog.Infof("Draining the node: %q.", u.Node.Name)
 
-			if err = n.DrainNode(u, rollingUpdateData); err == nil {
+			// FIXME: This seems to be happening a bit quickly.
+			// FIXME: We may need to wait till all of the pods are drained
+			if err = n.DrainNode(u, rollingUpdateData); err != nil {
 				glog.Errorf("Error draining node %q, instance id %q: %v", u.Node.Name, instanceId, err)
 				return err
 			}
