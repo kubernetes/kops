@@ -478,6 +478,14 @@ func DeleteSecurityGroup(cloud fi.Cloud, t *ResourceTracker) error {
 	return nil
 }
 
+func DumpSecurityGroup(r *ResourceTracker) (interface{}, error) {
+	data := make(map[string]interface{})
+	data["id"] = r.ID
+	data["type"] = ec2.ResourceTypeSecurityGroup
+	data["raw"] = r.obj
+	return data, nil
+}
+
 func ListSecurityGroups(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
 	groups, err := DescribeSecurityGroups(cloud)
 	if err != nil {
@@ -492,6 +500,8 @@ func ListSecurityGroups(cloud fi.Cloud, clusterName string) ([]*ResourceTracker,
 			ID:      aws.StringValue(sg.GroupId),
 			Type:    "security-group",
 			deleter: DeleteSecurityGroup,
+			Dumper:  DumpSecurityGroup,
+			obj:     sg,
 		}
 
 		var blocks []string
