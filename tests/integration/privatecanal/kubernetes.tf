@@ -1,3 +1,31 @@
+output "bastion_security_group_ids" {
+  value = ["${aws_security_group.bastion-privatecanal-example-com.id}"]
+}
+
+output "cluster_name" {
+  value = "privatecanal.example.com"
+}
+
+output "master_security_group_ids" {
+  value = ["${aws_security_group.masters-privatecanal-example-com.id}"]
+}
+
+output "node_security_group_ids" {
+  value = ["${aws_security_group.nodes-privatecanal-example-com.id}"]
+}
+
+output "node_subnet_ids" {
+  value = ["${aws_subnet.us-test-1a-privatecanal-example-com.id}"]
+}
+
+output "region" {
+  value = "us-test-1"
+}
+
+output "vpc_id" {
+  value = "${aws_vpc.privatecanal-example-com.id}"
+}
+
 resource "aws_autoscaling_attachment" "bastion-privatecanal-example-com" {
   elb                    = "${aws_elb.bastion-privatecanal-example-com.id}"
   autoscaling_group_name = "${aws_autoscaling_group.bastion-privatecanal-example-com.id}"
