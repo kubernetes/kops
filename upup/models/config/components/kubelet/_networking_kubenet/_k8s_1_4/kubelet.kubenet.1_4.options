@@ -1,8 +1,0 @@
-Kubelet:
-  # AWS MTU is 9001
-  NetworkPluginMTU: 9001
-
-# TODO: Having to duplicate MasterKubelet & Kubelet feels wrong
-MasterKubelet:
-  # AWS MTU is 9001
-  NetworkPluginMTU: 9001

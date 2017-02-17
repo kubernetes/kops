@@ -1,6 +1,0 @@
-KubeDNS:
-  Replicas: 2
-  ServerIP: {{ WellKnownServiceIP 10 }}
-  Domain: {{ .ClusterDNSDomain }}
-  # TODO: Once we start shipping more images, start using them
-  Image: gcr.io/google_containers/kubedns-amd64:1.3
