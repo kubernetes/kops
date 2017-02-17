@@ -34,12 +34,16 @@ type TerraformTarget struct {
 	Region  string
 	Project string
 
+	ClusterName string
+
 	outDir string
 
 	// mutex protects the following items (resources & files)
 	mutex sync.Mutex
 	// resources is a list of TF items that should be created
 	resources []*terraformResource
+	// outputs is a list of our TF output variables
+	outputs map[string]*terraformOutputVariable
 	// files is a map of TF resource files that should be created
 	files map[string][]byte
 }
@@ -49,8 +53,10 @@ func NewTerraformTarget(cloud fi.Cloud, region, project string, outDir string) *
 		Cloud:   cloud,
 		Region:  region,
 		Project: project,
+
 		outDir:  outDir,
 		files:   make(map[string][]byte),
+		outputs: make(map[string]*terraformOutputVariable),
 	}
 }
 
@@ -60,6 +66,12 @@ type terraformResource struct {
 	ResourceType string
 	ResourceName string
 	Item         interface{}
+}
+
+type terraformOutputVariable struct {
+	Key        string
+	Value      *Literal
+	ValueArray []*Literal
 }
 
 // A TF name can't have dots in it (if we want to refer to it from a literal),
@@ -108,6 +120,42 @@ func (t *TerraformTarget) RenderResource(resourceType string, resourceName strin
 	return nil
 }
 
+func (t *TerraformTarget) AddOutputVariable(key string, literal *Literal) error {
+	v := &terraformOutputVariable{
+		Key:   key,
+		Value: literal,
+	}
+
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+
+	if t.outputs[key] != nil {
+		return fmt.Errorf("duplicate variable: %q", key)
+	}
+	t.outputs[key] = v
+
+	return nil
+}
+
+func (t *TerraformTarget) AddOutputVariableArray(key string, literal *Literal) error {
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+
+	if t.outputs[key] == nil {
+		v := &terraformOutputVariable{
+			Key: key,
+		}
+		t.outputs[key] = v
+	}
+	if t.outputs[key].Value != nil {
+		return fmt.Errorf("variable %q is both an array and a scalar", key)
+	}
+
+	t.outputs[key].ValueArray = append(t.outputs[key].ValueArray, literal)
+
+	return nil
+}
+
 func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 	resourcesByType := make(map[string]map[string]interface{})
 
@@ -139,10 +187,35 @@ func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 		providersByName["aws"] = providerAWS
 	}
 
+	outputVariables := make(map[string]interface{})
+	for _, v := range t.outputs {
+		tfName := tfSanitize(v.Key)
+
+		if outputVariables[tfName] != nil {
+			return fmt.Errorf("duplicate variable found: %s", tfName)
+		}
+
+		tfVar := make(map[string]interface{})
+		if v.Value != nil {
+			tfVar["value"] = v.Value
+		} else {
+			dedup := true
+			sorted, err := sortLiterals(v.ValueArray, dedup)
+			if err != nil {
+				return fmt.Errorf("error sorting literals: %v", err)
+			}
+			tfVar["value"] = sorted
+		}
+		outputVariables[tfName] = tfVar
+	}
+
 	data := make(map[string]interface{})
 	data["resource"] = resourcesByType
 	if len(providersByName) != 0 {
 		data["provider"] = providersByName
+	}
+	if len(outputVariables) != 0 {
+		data["output"] = outputVariables
 	}
 
 	jsonBytes, err := json.MarshalIndent(data, "", "  ")
