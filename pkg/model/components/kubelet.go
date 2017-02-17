@@ -31,47 +31,70 @@ type KubeletOptionsBuilder struct {
 var _ loader.OptionsBuilder = &KubeletOptionsBuilder{}
 
 func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
-	options := o.(*kops.ClusterSpec)
+	clusterSpec := o.(*kops.ClusterSpec)
 
-	kubernetesVersion, err := b.Context.KubernetesVersion()
+	kubernetesVersion, err := KubernetesVersion(clusterSpec)
 	if err != nil {
 		return err
 	}
 
-	if options.Kubelet == nil {
-		options.Kubelet = &kops.KubeletConfigSpec{}
+	if clusterSpec.Kubelet == nil {
+		clusterSpec.Kubelet = &kops.KubeletConfigSpec{}
 	}
-	if options.MasterKubelet == nil {
-		options.MasterKubelet = &kops.KubeletConfigSpec{}
+	if clusterSpec.MasterKubelet == nil {
+		clusterSpec.MasterKubelet = &kops.KubeletConfigSpec{}
 	}
+
+	ip, err := WellKnownServiceIP(clusterSpec, 10)
+	if err != nil {
+		return err
+	}
+
+	// Standard options
+	clusterSpec.Kubelet.EnableDebuggingHandlers = fi.Bool(true)
+	clusterSpec.Kubelet.PodManifestPath = "/etc/kubernetes/manifests"
+	clusterSpec.Kubelet.AllowPrivileged = fi.Bool(true)
+	clusterSpec.Kubelet.LogLevel = fi.Int32(2)
+	clusterSpec.Kubelet.ClusterDNS = ip.String()
+	clusterSpec.Kubelet.ClusterDomain = clusterSpec.ClusterDNSDomain
+	clusterSpec.Kubelet.BabysitDaemons = fi.Bool(true)
+	clusterSpec.Kubelet.APIServers = "https://" + clusterSpec.MasterInternalName
+	clusterSpec.Kubelet.NonMasqueradeCIDR = clusterSpec.NonMasqueradeCIDR
+
+	clusterSpec.MasterKubelet.RegisterSchedulable = fi.Bool(false)
+	clusterSpec.MasterKubelet.APIServers = "http://127.0.0.1:8080"
+	// Replace the CIDR with a CIDR allocated by KCM (the default, but included for clarity)
+	// We _do_ allow debugging handlers, so we can do logs
+	// This does allow more access than we would like though
+	clusterSpec.MasterKubelet.EnableDebuggingHandlers = fi.Bool(true)
 
 	// In 1.5 we fixed this, but in 1.4 we need to set the PodCIDR on the master
 	// so that hostNetwork pods can come up
 	if kubernetesVersion.Major == 1 && kubernetesVersion.Minor <= 4 {
 		// We bootstrap with a fake CIDR, but then this will be replaced (unless we're running with _isolated_master)
-		options.MasterKubelet.PodCIDR = "10.123.45.0/28"
+		clusterSpec.MasterKubelet.PodCIDR = "10.123.45.0/28"
 	}
 
 	// 1.5 deprecates the reconcile cidr option (and 1.6 removes it)
 	if kubernetesVersion.Major == 1 && kubernetesVersion.Minor <= 4 {
-		options.MasterKubelet.ReconcileCIDR = fi.Bool(true)
+		clusterSpec.MasterKubelet.ReconcileCIDR = fi.Bool(true)
 
-		if fi.BoolValue(b.Context.Cluster.Spec.IsolateMasters) {
-			options.MasterKubelet.ReconcileCIDR = fi.Bool(false)
+		if fi.BoolValue(clusterSpec.IsolateMasters) {
+			clusterSpec.MasterKubelet.ReconcileCIDR = fi.Bool(false)
 		}
 
-		usesKubenet, err := b.Context.UsesKubenet()
+		usesKubenet, err := UsesKubenet(clusterSpec)
 		if err != nil {
 			return err
 		}
 		if usesKubenet {
-			options.Kubelet.ReconcileCIDR = fi.Bool(true)
+			clusterSpec.Kubelet.ReconcileCIDR = fi.Bool(true)
 		}
 	}
 
 	if kubernetesVersion.Major == 1 && kubernetesVersion.Minor >= 4 {
 		// For pod eviction in low memory or empty disk situations
-		if options.Kubelet.EvictionHard == nil {
+		if clusterSpec.Kubelet.EvictionHard == nil {
 			evictionHard := []string{
 				// TODO: Some people recommend 250Mi, but this would hurt small machines
 				"memory.available<100Mi",
@@ -83,15 +106,48 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 				"imagefs.available<10%",
 				"imagefs.inodesFree<5%",
 			}
-			options.Kubelet.EvictionHard = fi.String(strings.Join(evictionHard, ","))
+			clusterSpec.Kubelet.EvictionHard = fi.String(strings.Join(evictionHard, ","))
 		}
 	}
 
 	// IsolateMasters enables the legacy behaviour, where master pods on a separate network
 	// In newer versions of kubernetes, most of that functionality has been removed though
-	if fi.BoolValue(b.Context.Cluster.Spec.IsolateMasters) {
-		options.MasterKubelet.EnableDebuggingHandlers = fi.Bool(false)
-		options.MasterKubelet.HairpinMode = "none"
+	if fi.BoolValue(clusterSpec.IsolateMasters) {
+		clusterSpec.MasterKubelet.EnableDebuggingHandlers = fi.Bool(false)
+		clusterSpec.MasterKubelet.HairpinMode = "none"
+	}
+
+	cloudProvider := fi.CloudProviderID(clusterSpec.CloudProvider)
+
+	if cloudProvider == fi.CloudProviderAWS {
+		clusterSpec.Kubelet.CloudProvider = "aws"
+		clusterSpec.Kubelet.CgroupRoot = "docker"
+
+		// Use the hostname from the AWS metadata service
+		clusterSpec.Kubelet.HostnameOverride = "@aws"
+	}
+
+	if cloudProvider == fi.CloudProviderGCE {
+		clusterSpec.Kubelet.CloudProvider = "gce"
+		clusterSpec.Kubelet.HairpinMode = "promiscuous-bridge"
+
+		clusterSpec.Kubelet.RuntimeCgroups = "/docker-daemon"
+		clusterSpec.Kubelet.KubeletCgroups = "/kubelet"
+		clusterSpec.Kubelet.SystemCgroups = "/system"
+		clusterSpec.Kubelet.CgroupRoot = "/"
+	}
+
+	usesKubenet, err := UsesKubenet(clusterSpec)
+	if err != nil {
+		return err
+	}
+	if usesKubenet {
+		clusterSpec.Kubelet.NetworkPluginName = "kubenet"
+
+		if kubernetesVersion.Major == 1 && kubernetesVersion.Minor >= 4 {
+			// AWS MTU is 9001
+			clusterSpec.Kubelet.NetworkPluginMTU = fi.Int32(9001)
+		}
 	}
 
 	return nil

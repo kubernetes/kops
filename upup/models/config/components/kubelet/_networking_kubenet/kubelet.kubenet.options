@@ -1,2 +1,0 @@
-Kubelet:
-  NetworkPluginName: kubenet
