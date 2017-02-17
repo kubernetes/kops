@@ -33,29 +33,29 @@ type KubeAPIServerOptionsBuilder struct {
 var _ loader.OptionsBuilder = &KubeAPIServerOptionsBuilder{}
 
 func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
-	options := o.(*kops.ClusterSpec)
-	if options.KubeAPIServer == nil {
-		options.KubeAPIServer = &kops.KubeAPIServerConfig{}
+	clusterSpec := o.(*kops.ClusterSpec)
+	if clusterSpec.KubeAPIServer == nil {
+		clusterSpec.KubeAPIServer = &kops.KubeAPIServerConfig{}
 	}
 
-	if options.KubeAPIServer.APIServerCount == nil {
-		count := b.buildAPIServerCount()
+	if clusterSpec.KubeAPIServer.APIServerCount == nil {
+		count := b.buildAPIServerCount(clusterSpec)
 		if count == 0 {
 			return fmt.Errorf("no instance groups found")
 		}
-		options.KubeAPIServer.APIServerCount = fi.Int32(int32(count))
+		clusterSpec.KubeAPIServer.APIServerCount = fi.Int32(int32(count))
 	}
 
-	if options.KubeAPIServer.StorageBackend == nil {
+	if clusterSpec.KubeAPIServer.StorageBackend == nil {
 		// For the moment, we continue to use etcd2
-		options.KubeAPIServer.StorageBackend = fi.String("etcd2")
+		clusterSpec.KubeAPIServer.StorageBackend = fi.String("etcd2")
 	}
 
-	k8sVersion, err := b.Context.KubernetesVersion()
+	k8sVersion, err := KubernetesVersion(clusterSpec)
 	if err != nil {
 		return err
 	}
-	if options.KubeAPIServer.KubeletPreferredAddressTypes == nil {
+	if clusterSpec.KubeAPIServer.KubeletPreferredAddressTypes == nil {
 		if k8sVersion.GTE(semver.MustParse("1.5.0")) {
 			// Default precedence
 			//options.KubeAPIServer.KubeletPreferredAddressTypes = []string {
@@ -66,7 +66,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 			//}
 
 			// We prioritize the internal IP above the hostname
-			options.KubeAPIServer.KubeletPreferredAddressTypes = []string{
+			clusterSpec.KubeAPIServer.KubeletPreferredAddressTypes = []string{
 				string(api.NodeInternalIP),
 				string(api.NodeHostName),
 				string(api.NodeExternalIP),
@@ -78,7 +78,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	return nil
 }
 
-func (b *KubeAPIServerOptionsBuilder) buildAPIServerCount() int {
+func (b *KubeAPIServerOptionsBuilder) buildAPIServerCount(clusterSpec *kops.ClusterSpec) int {
 	// The --apiserver-count flag is (generally agreed) to be something we need to get rid of in k8s
 
 	// We should do something like this:
@@ -103,7 +103,7 @@ func (b *KubeAPIServerOptionsBuilder) buildAPIServerCount() int {
 	// the flag won't exist
 
 	counts := make(map[string]int)
-	for _, etcdCluster := range b.Context.Cluster.Spec.EtcdClusters {
+	for _, etcdCluster := range clusterSpec.EtcdClusters {
 		counts[etcdCluster.Name] = len(etcdCluster.Members)
 	}
 
