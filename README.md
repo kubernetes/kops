@@ -97,8 +97,8 @@ to working with newcomers, helping with PRs, and discussing new features.
 Please feel free to reach out **beforehand** if you plan on attending!
 
 Office hours, on [Zoom](https://zoom.us/my/k8ssigaws) video
-conference are on Fridays at 9 am PT every other week, on odd week numbers.
-Easy command for number of the week: `date +%V`.
+conference are on Fridays at [9 am PT](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12) every other week, on odd week numbers.
+Easy command for number of the week: `date +%V`. 
 
 Reach out to us on [kubernetes slack](https://github.com/kubernetes/community#slack-chat).
 
