@@ -49,7 +49,7 @@ func HasExtraFields(yaml string, object runtime.Object) (string, error) {
 	}
 
 	if !bytes.Equal(editedYaml, newYaml) {
-		discardedChanges := diff.FormatDiff(string(editedYaml), string(newYaml))
+		discardedChanges := diff.FormatDiff(string(newYaml), string(editedYaml))
 		return discardedChanges, nil
 	}
 
