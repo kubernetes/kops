@@ -1,6 +1,0 @@
-Multizone: true
-
-ClusterDNSDomain: cluster.local
-
-KubeUser: admin
-
