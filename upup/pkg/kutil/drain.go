@@ -19,6 +19,10 @@ package kutil
 // Based off of drain in kubectl
 // https://github.com/kubernetes/kubernetes/blob/master/pkg/kubectl/cmd/drain.go
 
+// TODO: Figure out how and if we are going to handle petsets.
+// TODO: Test more and determine if we mark to ignore DS, but they still are removed if they have local storage.
+// TODO: Probably write a unit test for upstream for the above statement?
+
 import (
 	"errors"
 	"fmt"
@@ -151,7 +155,29 @@ func (o *DrainOptions) DrainTheNode(nodeName string) (err error) {
 		return fmt.Errorf("drain failed %v, %s", err, nodeName)
 	}
 
-	return nil
+	defaultPodDrainDuration := 90 * time.Second // Default pod grace period + 30s
+
+	// Wait for the pods to get off of the node
+	time.Sleep(defaultPodDrainDuration)
+
+	// Wait two more times for the pods to leave and then bail
+	for i := 0; i <= 2; i++ {
+
+		pods, err := o.getPodsForDeletion()
+		if err != nil {
+			return fmt.Errorf("unable to retrieve the pod for a drain, so the drain failed %v, %s", err, nodeName)
+		}
+		if len(pods) != 0 {
+			glog.Infof("Node not drained, and waiting longer, so the drain failed: %v.", err)
+			time.Sleep(defaultPodDrainDuration)
+		} else {
+			glog.Infof("Node drained.")
+			return nil
+		}
+
+	}
+
+	return fmt.Errorf("the pods did not fully leave the node, so the drain failed %v, %s", err, nodeName)
 }
 
 // SetupDrain populates some fields from the factory, grabs command line
@@ -259,6 +285,8 @@ func (o *DrainOptions) getController(sr *api.SerializedReference) (interface{}, 
 		return o.client.Batch().Jobs(sr.Reference.Namespace).Get(sr.Reference.Name, metav1.GetOptions{})
 	case "ReplicaSet":
 		return o.client.Extensions().ReplicaSets(sr.Reference.Namespace).Get(sr.Reference.Name, metav1.GetOptions{})
+	// TODO: do we want to support PetSet upgrades
+	// FIXME: test
 	case "PetSet":
 		return "PetSet", nil
 	case "StatefulSet":
