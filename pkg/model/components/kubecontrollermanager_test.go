@@ -47,9 +47,7 @@ func Test_Build_KCM_Builder_Lower_Version(t *testing.T) {
 		c := buildCluster()
 
 		kcm := &KubeControllerManagerOptionsBuilder{
-			Context: &OptionsContext{
-				Cluster: c,
-			},
+			Context: &OptionsContext{},
 		}
 
 		spec := c.Spec
@@ -76,9 +74,7 @@ func Test_Build_KCM_Builder_High_Enough_Version(t *testing.T) {
 		c.Spec.KubernetesVersion = v
 
 		kcm := &KubeControllerManagerOptionsBuilder{
-			Context: &OptionsContext{
-				Cluster: c,
-			},
+			Context: &OptionsContext{},
 		}
 
 		spec := c.Spec
@@ -101,9 +97,7 @@ func Test_Build_KCM_Builder_Change_Duration(t *testing.T) {
 	c.Spec.KubernetesVersion = "v1.5.2"
 
 	kcm := &KubeControllerManagerOptionsBuilder{
-		Context: &OptionsContext{
-			Cluster: c,
-		},
+		Context: &OptionsContext{},
 	}
 
 	spec := c.Spec

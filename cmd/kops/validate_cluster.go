@@ -138,17 +138,17 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		return fmt.Errorf("cannot render nodes for %q: %v", cluster.ObjectMeta.Name, err)
 	}
 
-	t = &tables.Table{}
+	nodeTable := &tables.Table{}
 
-	t.AddColumn("NAME", func(n v1.Node) string {
+	nodeTable.AddColumn("NAME", func(n v1.Node) string {
 		return n.Name
 	})
 
-	t.AddColumn("READY", func(n v1.Node) v1.ConditionStatus {
+	nodeTable.AddColumn("READY", func(n v1.Node) v1.ConditionStatus {
 		return validation.GetNodeConditionStatus(&n)
 	})
 
-	t.AddColumn("ROLE", func(n v1.Node) string {
+	nodeTable.AddColumn("ROLE", func(n v1.Node) string {
 		// TODO: Maybe print the instance group role instead?
 		// TODO: Maybe include the instance group name?
 		role := "node"
@@ -159,15 +159,20 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 	})
 
 	fmt.Fprintln(out, "\nNODE STATUS")
-	err = t.Render(validationCluster.NodeList.Items, out, "NAME", "ROLE", "READY")
+	err = nodeTable.Render(validationCluster.NodeList.Items, out, "NAME", "ROLE", "READY")
 
 	if err != nil {
 		return fmt.Errorf("cannot render nodes for %q: %v", cluster.ObjectMeta.Name, err)
 	}
 
 	if len(validationCluster.ComponentFailures) != 0 {
+		componentFailuresTable := &tables.Table{}
+		componentFailuresTable.AddColumn("NAME", func(s string) string {
+			return s
+		})
+
 		fmt.Fprintln(out, "\nComponent Failures")
-		err = t.Render(validationCluster.ComponentFailures, out, "NAME")
+		err = componentFailuresTable.Render(validationCluster.ComponentFailures, out, "NAME")
 
 		if err != nil {
 			return fmt.Errorf("cannot render components for %q: %v", cluster.ObjectMeta.Name, err)
@@ -175,8 +180,13 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 	}
 
 	if len(validationCluster.PodFailures) != 0 {
+		podFailuresTable := &tables.Table{}
+		podFailuresTable.AddColumn("NAME", func(s string) string {
+			return s
+		})
+
 		fmt.Fprintln(out, "\nPod Failures in kube-system")
-		err = t.Render(validationCluster.PodFailures, out, "NAME")
+		err = podFailuresTable.Render(validationCluster.PodFailures, out, "NAME")
 
 		if err != nil {
 			return fmt.Errorf("cannot render pods for %q: %v", cluster.ObjectMeta.Name, err)

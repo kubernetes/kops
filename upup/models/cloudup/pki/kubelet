@@ -1,3 +1,0 @@
-keypair/kubelet:
-  subject: cn=kubelet
-  type: client
