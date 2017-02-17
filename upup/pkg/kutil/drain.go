@@ -16,12 +16,11 @@ limitations under the License.
 
 package kutil
 
-// Based off of drain in kubectl
+// Based off of drain in kubectl:
 // https://github.com/kubernetes/kubernetes/blob/master/pkg/kubectl/cmd/drain.go
-
-// TODO: Figure out how and if we are going to handle petsets.
-// TODO: Test more and determine if we mark to ignore DS, but they still are removed if they have local storage.
-// TODO: Probably write a unit test for upstream for the above statement?
+// We have duplicated this code because the Drain options struct has private members that are setup
+// via a cobra cmd object, and I would rather not hack that.
+// Also, logging is a bit cleaner not using the kubectl code directly.
 
 import (
 	"errors"
@@ -155,29 +154,11 @@ func (o *DrainOptions) DrainTheNode(nodeName string) (err error) {
 		return fmt.Errorf("drain failed %v, %s", err, nodeName)
 	}
 
-	defaultPodDrainDuration := 90 * time.Second // Default pod grace period + 30s
+	// Sleep a bit extra to let pods clear the node.
+	// 90 seconds equals the default pod termination period plus 30 seconds.
+	time.Sleep(time.Second * 90)
 
-	// Wait for the pods to get off of the node
-	time.Sleep(defaultPodDrainDuration)
-
-	// Wait two more times for the pods to leave and then bail
-	for i := 0; i <= 2; i++ {
-
-		pods, err := o.getPodsForDeletion()
-		if err != nil {
-			return fmt.Errorf("unable to retrieve the pod for a drain, so the drain failed %v, %s", err, nodeName)
-		}
-		if len(pods) != 0 {
-			glog.Infof("Node not drained, and waiting longer, so the drain failed: %v.", err)
-			time.Sleep(defaultPodDrainDuration)
-		} else {
-			glog.Infof("Node drained.")
-			return nil
-		}
-
-	}
-
-	return fmt.Errorf("the pods did not fully leave the node, so the drain failed %v, %s", err, nodeName)
+	return nil
 }
 
 // SetupDrain populates some fields from the factory, grabs command line
@@ -219,7 +200,7 @@ func (o *DrainOptions) SetupDrain(nodeName string) error {
 		if err != nil {
 			return fmt.Errorf("internal vistor problem %v", err)
 		}
-		glog.V(2).Infof("info %v", info)
+		glog.V(5).Infof("info %v", info)
 		o.nodeInfo = info
 		return nil
 	})
@@ -236,21 +217,15 @@ func (o *DrainOptions) SetupDrain(nodeName string) error {
 	return nil
 }
 
-// RunDrain runs the 'drain' command.
+// RunDrain runs the 'drain' command
 func (o *DrainOptions) RunDrain() error {
-	if o.nodeInfo == nil {
-		return fmt.Errorf("nodeInfo is not setup")
-	}
 	if err := o.RunCordonOrUncordon(true); err != nil {
-		glog.V(2).Infof("Error cordon node %v - %v", o.nodeInfo.Name, err)
 		return err
 	}
 
 	err := o.deleteOrEvictPodsSimple()
 	if err == nil {
-		glog.V(2).Infof("Drained node %s.", o.nodeInfo.Name)
-	} else {
-		glog.V(2).Infof("Error draining node %s - %v.", o.nodeInfo.Name, err)
+		glog.Infof("node %q drained", o.nodeInfo.Name)
 	}
 	return err
 }
@@ -267,9 +242,9 @@ func (o *DrainOptions) deleteOrEvictPodsSimple() error {
 		if newErr != nil {
 			return newErr
 		}
-		glog.Fatalf("There are pending pods when an error occurred: %v.\n", err)
+		glog.Warningf("There are pending pods when an error occurred: %v\n", err)
 		for _, pendingPod := range pendingPods {
-			glog.Fatalf("%s/%s.\n", "pod", pendingPod.Name)
+			glog.Warningf("%s/%s\n", "pod", pendingPod.Name)
 		}
 	}
 	return err
@@ -285,14 +260,10 @@ func (o *DrainOptions) getController(sr *api.SerializedReference) (interface{}, 
 		return o.client.Batch().Jobs(sr.Reference.Namespace).Get(sr.Reference.Name, metav1.GetOptions{})
 	case "ReplicaSet":
 		return o.client.Extensions().ReplicaSets(sr.Reference.Namespace).Get(sr.Reference.Name, metav1.GetOptions{})
-	// TODO: do we want to support PetSet upgrades
-	// FIXME: test
-	case "PetSet":
-		return "PetSet", nil
 	case "StatefulSet":
 		return o.client.Apps().StatefulSets(sr.Reference.Namespace).Get(sr.Reference.Name, metav1.GetOptions{})
 	}
-	return nil, fmt.Errorf("unknown controller kind %q", sr.Reference.Kind)
+	return nil, fmt.Errorf("Unknown controller kind %q", sr.Reference.Kind)
 }
 
 func (o *DrainOptions) getPodCreator(pod api.Pod) (*api.SerializedReference, error) {
@@ -372,23 +343,12 @@ func hasLocalStorage(pod api.Pod) bool {
 }
 
 func (o *DrainOptions) localStorageFilter(pod api.Pod) (bool, *warning, *fatal) {
-
-	// So this filter is not ignoring daemonsets.
-	// Do not like duplicating this, but not sure what choice I have.
-	dsFilter, warningDs, fatalDs := o.daemonsetFilter(pod)
-
-	if dsFilter == false {
-		glog.V(2).Infof("Skipping pod because it is a Daemonset: %s.", pod.Name)
-		return false, warningDs, fatalDs
-	}
-
 	if !hasLocalStorage(pod) {
 		return true, nil, nil
 	}
 	if !o.DeleteLocalData {
 		return false, nil, &fatal{kLocalStorageFatal}
 	}
-
 	return true, &warning{kLocalStorageWarning}, nil
 }
 
@@ -418,7 +378,6 @@ func (o *DrainOptions) getPodsForDeletion() (pods []api.Pod, err error) {
 
 	for _, pod := range podList.Items {
 		podOk := true
-
 		for _, filt := range []podFilter{mirrorPodFilter, o.localStorageFilter, o.unreplicatedFilter, o.daemonsetFilter} {
 			filterOk, w, f := filt(pod)
 
@@ -439,9 +398,8 @@ func (o *DrainOptions) getPodsForDeletion() (pods []api.Pod, err error) {
 		return []api.Pod{}, errors.New(fs.Message())
 	}
 	if len(ws) > 0 {
-		glog.Warningf("WARNING: %s\n.", ws.Message())
+		glog.V(3).Infof("%s", ws.Message())
 	}
-	glog.V(2).Infof("Pods to delete: %v.", pods)
 	return pods, nil
 }
 
@@ -460,7 +418,6 @@ func (o *DrainOptions) evictPod(pod api.Pod, policyGroupVersion string) error {
 		gracePeriodSeconds := int64(o.GracePeriodSeconds)
 		deleteOptions.GracePeriodSeconds = &gracePeriodSeconds
 	}
-
 	eviction := &policy.Eviction{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: policyGroupVersion,
@@ -484,7 +441,7 @@ func (o *DrainOptions) deleteOrEvictPods(pods []api.Pod) error {
 
 	policyGroupVersion, err := SupportEviction(o.client)
 	if err != nil {
-		return fmt.Errorf("error deleteOrEvictPods ~ SupportEviction: %v", err)
+		return err
 	}
 
 	getPodFn := func(namespace, name string) (*api.Pod, error) {
@@ -492,14 +449,7 @@ func (o *DrainOptions) deleteOrEvictPods(pods []api.Pod) error {
 	}
 
 	if len(policyGroupVersion) > 0 {
-		err = o.evictPods(pods, policyGroupVersion, getPodFn)
-
-		if err != nil {
-			glog.Warningf("Error attempting to evict pod, will delete pod - err: %v.", err)
-			return o.deletePods(pods, getPodFn)
-		}
-
-		return nil
+		return o.evictPods(pods, policyGroupVersion, getPodFn)
 	} else {
 		return o.deletePods(pods, getPodFn)
 	}
@@ -515,17 +465,30 @@ func (o *DrainOptions) evictPods(pods []api.Pod, policyGroupVersion string, getP
 			for {
 				err = o.evictPod(pod, policyGroupVersion)
 				if err == nil {
+					glog.V(3).Infof("evicted pod %q", pod.Name)
 					break
 				} else if apierrors.IsTooManyRequests(err) {
 					time.Sleep(5 * time.Second)
 				} else {
-					errCh <- fmt.Errorf("error when evicting pod %q: %v", pod.Name, err)
-					return
+
+					// TODO this is the work around that I put in place for problems with evictions
+					// TODO see https://github.com/kubernetes/kubernetes/issues/41656
+					glog.Infof("trying to delete pod, because of error when evicting pod %q: %v", pod.Name, err)
+
+					err2 := o.deletePod(pod)
+
+					if err2 != nil {
+						errCh <- fmt.Errorf("error when deleting, and evicting pod %q: %v, %v", pod.Name, err, err2)
+						return
+					}
+
+					break
 				}
 			}
 			podArray := []api.Pod{pod}
 			_, err = o.waitForDelete(podArray, kubectl.Interval, time.Duration(math.MaxInt64), true, getPodFn)
 			if err == nil {
+				glog.V(3).Infof("finished evicting pod %q", pod.Name)
 				doneCh <- true
 			} else {
 				errCh <- fmt.Errorf("error when waiting for pod %q terminating: %v", pod.Name, err)
@@ -551,7 +514,7 @@ func (o *DrainOptions) evictPods(pods []api.Pod, policyGroupVersion string, getP
 				return nil
 			}
 		case <-time.After(globalTimeout):
-			return fmt.Errorf("drain did not complete within %v", globalTimeout)
+			return fmt.Errorf("Drain did not complete within %v", globalTimeout)
 		}
 	}
 }
@@ -586,7 +549,7 @@ func (o *DrainOptions) waitForDelete(pods []api.Pod, interval, timeout time.Dura
 		for i, pod := range pods {
 			p, err := getPodFn(pod.Namespace, pod.Name)
 			if apierrors.IsNotFound(err) || (p != nil && p.ObjectMeta.UID != pod.ObjectMeta.UID) {
-				glog.V(2).Infof("Deleted pod %s, %s.", pod.Name, verbStr)
+				glog.V(3).Infof("pod %q %s", pod.Name, verbStr)
 				continue
 			} else if err != nil {
 				return false, err
@@ -627,8 +590,8 @@ func SupportEviction(clientset *internalclientset.Clientset) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	for _, resource := range resourceList.APIResources {
-		if resource.Name == EvictionSubresource && resource.Kind == EvictionKind {
+	for _, r := range resourceList.APIResources {
+		if r.Name == EvictionSubresource && r.Kind == EvictionKind {
 			return policyGroupVersion, nil
 		}
 	}
@@ -640,21 +603,13 @@ func SupportEviction(clientset *internalclientset.Clientset) (string, error) {
 func (o *DrainOptions) RunCordonOrUncordon(desired bool) error {
 	cmdNamespace, _, err := o.factory.DefaultNamespace()
 	if err != nil {
-		glog.V(2).Infof("Error node %s - %v.", o.nodeInfo.Name, err)
 		return err
-	}
-
-	if o.nodeInfo == nil {
-		return fmt.Errorf("nodeInfo nil")
-	}
-	if o.nodeInfo.Mapping == nil {
-		return fmt.Errorf("Mapping nil")
 	}
 
 	if o.nodeInfo.Mapping.GroupVersionKind.Kind == "Node" {
 		unsched := reflect.ValueOf(o.nodeInfo.Object).Elem().FieldByName("Spec").FieldByName("Unschedulable")
 		if unsched.Bool() == desired {
-			glog.V(2).Infof("Node is already: %s.", already(desired))
+			glog.V(3).Infof("node cordon or uncordon %q %q %q", o.nodeInfo.Mapping.Resource, o.nodeInfo.Name, already(desired))
 		} else {
 			helper := resource.NewHelper(o.restClient, o.nodeInfo.Mapping)
 			unsched.SetBool(desired)
@@ -676,10 +631,10 @@ func (o *DrainOptions) RunCordonOrUncordon(desired bool) error {
 			if err != nil {
 				return err
 			}
-			glog.V(2).Infof("Node %s is : %s.", o.nodeInfo.Name, changed(desired))
+			glog.V(3).Infof("node cordon or uncordon %q %q %q", o.nodeInfo.Mapping.Resource, o.nodeInfo.Name, changed(desired))
 		}
 	} else {
-		glog.V(2).Infof("Node %s is : skipped.", o.nodeInfo.Name)
+		glog.V(3).Infof("node cordon or uncordon %q %q %q", o.nodeInfo.Mapping.Resource, o.nodeInfo.Name, "skipped")
 	}
 
 	return nil

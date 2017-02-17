@@ -116,6 +116,38 @@ func TestDrain(t *testing.T) {
 		},
 	}
 
+	// TODO add this into upstream
+	/*
+		deployment := extensions.Deployment{
+			ObjectMeta: api.ObjectMeta{
+				Name:              "deploymentName",
+				Namespace:         "default",
+				CreationTimestamp: metav1.Time{Time: time.Now()},
+			},
+			Spec: extensions.DeploymentSpec{
+				Selector: &metav1.LabelSelector{MatchLabels: labels},
+				Replicas: 4,
+				Strategy: extensions.DeploymentStrategy{
+					Type: "RollingUpdate",
+				},
+				Template: api.PodTemplateSpec{
+					ObjectMeta: api.ObjectMeta{
+						Labels:            labels,
+						CreationTimestamp: metav1.Time{Time: time.Now()},
+						Namespace:         "default",
+					},
+					Spec: api.PodSpec{
+						Containers: []api.Container{
+							{
+								Name:  "dnscontroller",
+								Image: "kopio/dnscontoller:1.5.1",
+							},
+						},
+					},
+				},
+			},
+		} */
+
 	ds := extensions.DaemonSet{
 		ObjectMeta: api.ObjectMeta{
 			Name:              "ds",
@@ -273,7 +305,7 @@ func TestDrain(t *testing.T) {
 			expectDelete: false,
 		},
 		/*
-			// FIXME I am getting  -test.v -test.run ^TestDrain$ drain_test.go:483: Job-managed pod: pod never evicted
+			// TODO I am getting  -test.v -test.run ^TestDrain$ drain_test.go:483: Job-managed pod: pod never evicted
 			{
 				description:  "Job-managed pod",
 				node:         node,
