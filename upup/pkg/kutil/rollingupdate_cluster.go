@@ -180,11 +180,11 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 
 			for k, group := range masterGroups {
 				err := group.RollingUpdate(c, instanceGroups, false, c.MasterInterval)
+
 				resultsMutex.Lock()
 				results[k] = err
 				resultsMutex.Unlock()
 
-				// FIXME ask @justinsb
 				// TODO: Bail on error?
 			}
 		}()
@@ -222,7 +222,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 		}
 	}
 
-	glog.Infof("\nRolling update completed!\n")
+	glog.Infof("Rolling update completed!")
 	return nil
 }
 
@@ -353,8 +353,6 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateClust
 
 			glog.Infof("Draining the node: %q.", u.Node.Name)
 
-			// FIXME: This seems to be happening a bit quickly.
-			// FIXME: We may need to wait till all of the pods are drained
 			if err = n.DrainNode(u, rollingUpdateData); err != nil {
 				glog.Errorf("Error draining node %q, instance id %q: %v", u.Node.Name, instanceId, err)
 				return err
@@ -395,6 +393,8 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateClust
 // ValidateClusterWithRetries runs our validation methods on the K8s Cluster x times and then fails.
 func (n *CloudInstanceGroup) ValidateClusterWithRetries(rollingUpdateData *RollingUpdateCluster, instanceGroupList *api.InstanceGroupList, t time.Duration) (err error) {
 
+	// TODO - We are going to need to improve Validate to allow for more than one node, not master
+	// TODO - going down at a time.
 	for i := 0; i <= rollingUpdateData.ValidateRetries; i++ {
 
 		if _, err = validation.ValidateCluster(rollingUpdateData.ClusterName, instanceGroupList, rollingUpdateData.K8sClient); err != nil {
