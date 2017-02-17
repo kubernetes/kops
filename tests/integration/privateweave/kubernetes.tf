@@ -139,6 +139,8 @@ resource "aws_elb" "api-privateweave-example-com" {
     timeout             = 5
   }
 
+  idle_timeout = 300
+
   tags = {
     KubernetesCluster = "privateweave.example.com"
     Name              = "api.privateweave.example.com"

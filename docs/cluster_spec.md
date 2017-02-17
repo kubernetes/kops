@@ -24,11 +24,15 @@ spec:
 When configuring a LoadBalancer, you can also choose to have a public ELB or an internal (VPC only) ELB.  The `type`
 field should be `Public` or `Internal`.
 
+Additionally, you can increase idle timeout of the load balancer by setting its `idleTimeoutSeconds`. The default idle timeout is 5 minutes, with a maximum of 3600 seconds (60 minutes) being allowed by AWS.
+For more information see [configuring idle timeouts](http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/config-idle-timeout.html).
+
 ```yaml
 spec:
   api:
     loadBalancer:
       type: Public
+      idleTimeoutSeconds: 300
 ```
 
 ### sshAccess
@@ -63,7 +67,7 @@ ID of a subnet to share in an existing VPC.
 #### egress
 The resource identifier (ID) of something in your existing VPC that you would like to use as "egress" to the outside world.
 
-This feature was originally envisioned to allow re-use of NAT Gateways. In this case, the usage is as follows. Although NAT gateways are "public"-facing resources, in the Cluster spec, you must specify them in the private subnet section. One way to think about this is that you are specifying "egress", which is the default route out from this private subnet. 
+This feature was originally envisioned to allow re-use of NAT Gateways. In this case, the usage is as follows. Although NAT gateways are "public"-facing resources, in the Cluster spec, you must specify them in the private subnet section. One way to think about this is that you are specifying "egress", which is the default route out from this private subnet.
 
 ```
 spec:
