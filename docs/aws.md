@@ -72,8 +72,13 @@ You should record the SecretAccessKey and AccessKeyID in the returned JSON
 output, and then use them below:
 
 ```bash
-aws configure # Input your credentials here
-aws iam list-users
+# configure the aws client to use your new IAM user
+aws configure           # Use your new access and secret key here
+aws iam list-users      # you should see a list of all your IAM users here
+
+# Because "aws configure" doesn't export these vars for kops to use, we export them now
+export AWS_ACCESS_KEY_ID=<access key>
+export AWS_SECRET_ACCESS_KEY=<secret key>
 ```
 
 ## Configure DNS
