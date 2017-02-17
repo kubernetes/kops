@@ -29,9 +29,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/validation"
-	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
-	"k8s.io/kops/upup/pkg/fi/utils"
 	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
 )
@@ -155,30 +153,6 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 	err = registry.WriteConfigDeprecated(configBase.Join(registry.PathClusterCompleted), fullCluster)
 	if err != nil {
 		return fmt.Errorf("error writing completed cluster spec: %v", err)
-	}
-
-	// Convert the cluster back to YAML for comparison purposes
-	newYaml, err := api.ToVersionedYaml(newCluster)
-	if err != nil {
-		return err
-	}
-
-	// Marshal the edited YAML to a map; this will prevent bad diffs due to sorting
-	var editedYamlObj map[string]interface{}
-	err = utils.YamlUnmarshal([]byte(edited), &editedYamlObj)
-	if err != nil {
-		return err
-	}
-
-	// Convert the object back to YAML so that we can compare it to the cluster YAML
-	editedYaml, err := utils.YamlMarshal(editedYamlObj)
-	if err != nil {
-		return err
-	}
-
-	if !bytes.Equal(editedYaml, newYaml) {
-		discardedChanges := diff.FormatDiff(string(editedYaml), string(newYaml))
-		fmt.Fprintln(os.Stderr, "Not all edits were applied:\n"+discardedChanges)
 	}
 
 	return nil
