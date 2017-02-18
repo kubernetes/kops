@@ -1,8 +1,5 @@
 FROM alpine:3.5
 
-# KOPS_GITISH: Modify to build at an explicit tag/gitish
-ARG KOPS_GITISH=HEAD
-
 # KUBECTL_SOURCE: Change to kubernetes-dev/ci for CI
 ARG KUBECTL_SOURCE=kubernetes-release/release
 
