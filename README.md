@@ -87,8 +87,15 @@ information on changes between releases.
 
 ## Getting involved and contributing!
 
-Want to contribute to kops? We would love the extra help from the community. We
-have a quickstart guide on [adding a feature](/docs/development/adding_a_feature.md).
+Are you interested in contributing to kops? We the maintainers and community would love your suggestions, contributions, and help! We have a quickstart guide on [adding a feature](/docs/development/adding_a_feature.md) and the maintainers can be contacted at any time to learn more about how to get involved. 
+
+### Maintainers
+
+* [@justinsb](https://github.com/justinsb)     
+* [@chrislovecnm](https://github.com/chrislovecnm)
+* [@kris-nova](https://github.com/kris-nova)
+* [@geojaz](https://github.com/geojaz)
+* [@yissachar](https://github.com/yissachar)
 
 Kops also has time set aside every other week to offer help and guidance to the
 community. Kops maintainers have agreed to set aside time specifically dedicated
@@ -97,10 +104,10 @@ to working with newcomers, helping with PRs, and discussing new features.
 Please feel free to reach out **beforehand** if you plan on attending!
 
 Office hours, on [Zoom](https://zoom.us/my/k8ssigaws) video
-conference are on Fridays at [9 am PT](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12) every other week, on odd week numbers.
+conference are on Fridays at [5pm UTC/9 am US Pacific](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12) every other week, on odd week numbers.
 Easy command for number of the week: `date +%V`. 
 
-Reach out to us on [kubernetes slack](https://github.com/kubernetes/community#slack-chat).
+The maintainers and other community members are generally available on the [kubernetes slack](https://github.com/kubernetes/community#slack-chat) in #kops, so come find and chat with us about how kops can be better for you! 
 
 ## Other Resources
 
