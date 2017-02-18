@@ -30,6 +30,6 @@ RUN apt-get update && \
     rm -rf /go /usr/local/go && \
     apt-get autoremove --purge -y curl jq git gcc make && \
     rm -rf /var/lib/apt/lists/* && \
-    echo "=== Built kops at ${GITISH}, fetched kubectl ${KUBECTL_VERSION} ==="
+    echo "=== Built kops at ${KOPS_GITISH}, fetched kubectl ${KUBECTL_VERSION} ==="
 
 ENTRYPOINT ["/usr/bin/kops"]
