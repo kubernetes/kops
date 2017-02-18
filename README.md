@@ -85,7 +85,7 @@ At this time, Windows is not a supported platform.
 See the [releases](https://github.com/kubernetes/kops/releases) for more
 information on changes between releases.
 
-## Getting involved!
+## Getting involved and contributing!
 
 Want to contribute to kops? We would love the extra help from the community. We
 have a quickstart guide on [adding a feature](/docs/development/adding_a_feature.md).
@@ -94,17 +94,13 @@ Kops also has time set aside every other week to offer help and guidance to the
 community. Kops maintainers have agreed to set aside time specifically dedicated
 to working with newcomers, helping with PRs, and discussing new features.
 
-We recommend letting us know **beforehand** if you plan on attending so we can
-have time to prepare for the call.
+Please feel free to reach out **beforehand** if you plan on attending!
 
-| Maintainer   | Schedule      |  URL |
-|--------------|---------------|-------|
-| [@justinsb](https://github.com/justinsb)             |  2nd / 4th Friday 9am PDT | [Zoom](https://zoom.us/my/k8ssigaws) |
-| [@chrislovecnm](https://github.com/chrislovecnm)     |  2nd / 4th Friday 9am PDT | [Zoom](https://zoom.us/my/k8ssigaws) |
-| [@kris-nova](https://github.com/kris-nova)           |  2nd / 4th Friday 9am PDT | [Zoom](https://zoom.us/my/k8ssigaws) |
+Office hours, on [Zoom](https://zoom.us/my/k8ssigaws) video
+conference are on Fridays at [9 am PT](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12) every other week, on odd week numbers.
+Easy command for number of the week: `date +%V`. 
 
 Reach out to us on [kubernetes slack](https://github.com/kubernetes/community#slack-chat).
-A great place to get involved or ask questions is [#kops](https://kubernetes.slack.com/messages/kops/).
 
 ## Other Resources
 
