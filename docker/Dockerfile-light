@@ -8,7 +8,7 @@ ARG KUBECTL_TRACK=stable.txt
 
 ARG KUBECTL_ARCH=linux/amd64
 
-RUN apk add --no-cache --update ca-certificates curl jq && \
+RUN apk add --no-cache --update ca-certificates vim curl jq && \
     KOPS_URL=$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | jq -r ".assets[] | select(.name == \"kops-linux-amd64\") | .browser_download_url") && \
     curl -SsL --retry 5 "${KOPS_URL}" > /usr/local/bin/kops && \
     chmod +x /usr/local/bin/kops && \
