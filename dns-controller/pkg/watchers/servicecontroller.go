@@ -137,8 +137,7 @@ func (c *ServiceController) updateServiceRecords(service *v1.Service) {
 	var records []dns.Record
 
 	specExternal := service.Annotations[AnnotationNameDnsExternal]
-	specInternal := service.Annotations[AnnotationNameDnsInternal]
-	if len(specExternal) != 0 || len(specInternal) != 0 {
+	if len(specExternal) != 0 {
 		var ingresses []dns.Record
 
 		if service.Spec.Type == v1.ServiceTypeLoadBalancer {
@@ -161,36 +160,17 @@ func (c *ServiceController) updateServiceRecords(service *v1.Service) {
 				}
 			}
 		} else if service.Spec.Type == v1.ServiceTypeNodePort {
-			var roleType string
-			if len(specExternal) != 0 && len(specInternal) != 0 {
-				glog.Warningln("DNS Records not possible for both Internal and Externals IPs.")
-				return
-			} else if len(specInternal) != 0 {
-				roleType = dns.RoleTypeInternal
-			} else {
-				roleType = dns.RoleTypeExternal
-			}
 			ingresses = append(ingresses, dns.Record{
 				RecordType: dns.RecordTypeAlias,
-				Value:      dns.AliasForNodesInRole("node", roleType),
+				Value:      dns.AliasForNodesInRole("node", dns.RoleTypeExternal),
 			})
-			glog.V(4).Infof("Setting internal alias for NodePort service %s/%s", service.Namespace, service.Name)
+			glog.V(4).Infof("Setting external alias for NodePort service %s/%s", service.Namespace, service.Name)
 		} else {
 			// TODO: Emit event so that users are informed of this
 			glog.V(2).Infof("Cannot expose service %s/%s of type %q", service.Namespace, service.Name, service.Spec.Type)
 		}
 
-		var tokens []string
-
-		if len(specExternal) != 0 {
-			tokens = append(tokens, strings.Split(specExternal, ",")...)
-		}
-
-		if len(specInternal) != 0 {
-			tokens = append(tokens, strings.Split(specInternal, ",")...)
-		}
-
-		for _, token := range tokens {
+		for _, token := range strings.Split(specExternal, ",") {
 			token = strings.TrimSpace(token)
 
 			fqdn := dns.EnsureDotSuffix(token)
@@ -203,6 +183,22 @@ func (c *ServiceController) updateServiceRecords(service *v1.Service) {
 		}
 	} else {
 		glog.V(8).Infof("Service %s/%s did not have %s annotation", service.Namespace, service.Name, AnnotationNameDnsExternal)
+	}
+
+	specInternal := service.Annotations[AnnotationNameDnsInternal]
+	if len(specInternal) != 0 {
+		ingress := dns.Record{
+			RecordType: dns.RecordTypeA,
+			Value:      service.Spec.ClusterIP,
+		}
+		for _, token := range strings.Split(specInternal, ",") {
+			token = strings.TrimSpace(token)
+			r := ingress
+			r.FQDN = dns.EnsureDotSuffix(token)
+			records = append(records, r)
+		}
+	} else {
+		glog.V(8).Infof("Service %s/%s did not have %s annotation", service.Namespace, service.Name, AnnotationNameDnsInternal)
 	}
 
 	c.scope.Replace(service.Name, records)

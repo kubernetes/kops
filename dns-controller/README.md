@@ -10,13 +10,12 @@ we just expose it via DNS.
 
 The dns-controller recognizes annotations on nodes.
 
-`dns.alpha.kubernetes.io/external` will set up records for accessing the resource externally
-
-`dns.alpha.kubernetes.io/internal` will set up records for accessing the resource internally
+* `dns.alpha.kubernetes.io/external` will set up records for accessing the resource externally
+* `dns.alpha.kubernetes.io/internal` will set up records for accessing the resource internally
 
 When added on `Service` controllers:
 
-`dns.alpha.kubernetes.io/external` creates a Route53 A record with `public` IPs of all the nodes
-`dns.alpha.kubernetes.io/internal` creates a Route53 A record with `private` IPs of all the nodes
+* `dns.alpha.kubernetes.io/external` creates a Route53 A record with the IPs of the load balancer (type=LoadBalancer) or all the nodes (type=NodePort)
+* `dns.alpha.kubernetes.io/internal` creates a Route53 A record with spec.clusterIP of the service
 
 The syntax is a comma separated list of fully qualified domain names.

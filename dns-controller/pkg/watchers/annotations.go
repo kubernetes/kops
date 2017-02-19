@@ -21,5 +21,5 @@ package watchers
 const AnnotationNameDnsExternal = "dns.alpha.kubernetes.io/external"
 
 // AnnotationNameDnsInternal is used to set up a DNS name for accessing the resource from inside the cluster
-// This is only supported on Pods currently, and maps to the Internal address
+// For Pods it maps to the Internal address, for Services it maps to the ClusterIP.
 const AnnotationNameDnsInternal = "dns.alpha.kubernetes.io/internal"
