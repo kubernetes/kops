@@ -27,6 +27,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"time"
 )
@@ -427,4 +428,128 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 
 func (e *LaunchConfiguration) TerraformLink() *terraform.Literal {
 	return terraform.LiteralProperty("aws_launch_configuration", *e.Name, "id")
+}
+
+type cloudformationLaunchConfiguration struct {
+	AssociatePublicIpAddress *bool                        `json:"AssociatePublicIpAddress,omitempty"`
+	BlockDeviceMappings      []*cloudformationBlockDevice `json:"BlockDeviceMappings,omitempty"`
+	IAMInstanceProfile       *cloudformation.Literal      `json:"IamInstanceProfile,omitempty"`
+	ImageID                  *string                      `json:"ImageId,omitempty"`
+	InstanceType             *string                      `json:"InstanceType,omitempty"`
+	KeyName                  *string                      `json:"KeyName,omitempty"`
+	SecurityGroups           []*cloudformation.Literal    `json:"SecurityGroups,omitempty"`
+	SpotPrice                *string                      `json:"SpotPrice,omitempty"`
+	UserData                 *string                      `json:"UserData,omitempty"`
+
+	//NamePrefix               *string                 `json:"name_prefix,omitempty"`
+	//Lifecycle                *cloudformation.Lifecycle    `json:"lifecycle,omitempty"`
+}
+
+type cloudformationBlockDevice struct {
+	// For ephemeral devices
+	DeviceName  *string `json:"DeviceName,omitempty"`
+	VirtualName *string `json:"VirtualName,omitempty"`
+
+	// For root
+	Ebs *cloudformationBlockDeviceEBS `json:"Ebs,omitempty"`
+}
+
+type cloudformationBlockDeviceEBS struct {
+	VolumeType          *string `json:"VolumeType,omitempty"`
+	VolumeSize          *int64  `json:"VolumeSize,omitempty"`
+	DeleteOnTermination *bool   `json:"DeleteOnTermination,omitempty"`
+}
+
+func (_ *LaunchConfiguration) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *LaunchConfiguration) error {
+	cloud := t.Cloud.(awsup.AWSCloud)
+
+	if e.ImageID == nil {
+		return fi.RequiredField("ImageID")
+	}
+	image, err := cloud.ResolveImage(*e.ImageID)
+	if err != nil {
+		return err
+	}
+
+	cf := &cloudformationLaunchConfiguration{
+		//NamePrefix:   fi.String(*e.Name + "-"),
+		ImageID:      image.ImageId,
+		InstanceType: e.InstanceType,
+	}
+
+	if e.SpotPrice != "" {
+		cf.SpotPrice = aws.String(e.SpotPrice)
+	}
+
+	if e.SSHKey != nil {
+		if e.SSHKey.Name == nil {
+			return fmt.Errorf("SSHKey Name not set")
+		}
+		cf.KeyName = e.SSHKey.Name
+	}
+
+	for _, sg := range e.SecurityGroups {
+		cf.SecurityGroups = append(cf.SecurityGroups, sg.CloudformationLink())
+	}
+	cf.AssociatePublicIpAddress = e.AssociatePublicIP
+
+	{
+		rootDevices, err := e.buildRootDevice(cloud)
+		if err != nil {
+			return err
+		}
+
+		ephemeralDevices, err := buildEphemeralDevices(e.InstanceType)
+		if err != nil {
+			return err
+		}
+
+		if len(rootDevices) != 0 {
+			if len(rootDevices) != 1 {
+				return fmt.Errorf("unexpectedly found multiple root devices")
+			}
+
+			for deviceName, bdm := range rootDevices {
+				d := &cloudformationBlockDevice{
+					DeviceName: fi.String(deviceName),
+					Ebs: &cloudformationBlockDeviceEBS{
+						VolumeType:          bdm.EbsVolumeType,
+						VolumeSize:          bdm.EbsVolumeSize,
+						DeleteOnTermination: fi.Bool(true),
+					},
+				}
+				cf.BlockDeviceMappings = append(cf.BlockDeviceMappings, d)
+			}
+		}
+
+		if len(ephemeralDevices) != 0 {
+			for deviceName, bdm := range ephemeralDevices {
+				cf.BlockDeviceMappings = append(cf.BlockDeviceMappings, &cloudformationBlockDevice{
+					VirtualName: bdm.VirtualName,
+					DeviceName:  fi.String(deviceName),
+				})
+			}
+		}
+	}
+
+	if e.UserData != nil {
+		d, err := e.UserData.AsBytes()
+		if err != nil {
+			return fmt.Errorf("error rendering AutoScalingLaunchConfiguration UserData: %v", err)
+		}
+		cf.UserData = aws.String(base64.StdEncoding.EncodeToString(d))
+	}
+
+	if e.IAMInstanceProfile != nil {
+		cf.IAMInstanceProfile = e.IAMInstanceProfile.CloudformationLink()
+	}
+
+	// So that we can update configurations
+	//tf.Lifecycle = &cloudformation.Lifecycle{CreateBeforeDestroy: fi.Bool(true)}
+
+	return t.RenderResource("AWS::AutoScaling::LaunchConfiguration", *e.Name, cf)
+}
+
+func (e *LaunchConfiguration) CloudformationLink() *cloudformation.Literal {
+	return cloudformation.Ref("AWS::AutoScaling::LaunchConfiguration", *e.Name)
 }

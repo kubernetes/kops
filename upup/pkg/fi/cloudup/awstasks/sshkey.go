@@ -33,6 +33,7 @@ import (
 	"golang.org/x/crypto/ssh"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
@@ -55,6 +56,10 @@ func (e *SSHKey) CompareWithID() *string {
 func (e *SSHKey) Find(c *fi.Context) (*SSHKey, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
+	return e.find(cloud)
+}
+
+func (e *SSHKey) find(cloud awsup.AWSCloud) (*SSHKey, error) {
 	request := &ec2.DescribeKeyPairsInput{
 		KeyNames: []*string{e.Name},
 	}
@@ -212,28 +217,34 @@ func (s *SSHKey) CheckChanges(a, e, changes *SSHKey) error {
 	return nil
 }
 
+func (e *SSHKey) createKeypair(cloud awsup.AWSCloud) error {
+	glog.V(2).Infof("Creating SSHKey with Name:%q", *e.Name)
+
+	request := &ec2.ImportKeyPairInput{
+		KeyName: e.Name,
+	}
+
+	if e.PublicKey != nil {
+		d, err := e.PublicKey.AsBytes()
+		if err != nil {
+			return fmt.Errorf("error rendering SSHKey PublicKey: %v", err)
+		}
+		request.PublicKeyMaterial = d
+	}
+
+	response, err := cloud.EC2().ImportKeyPair(request)
+	if err != nil {
+		return fmt.Errorf("error creating SSHKey: %v", err)
+	}
+
+	e.KeyFingerprint = response.KeyFingerprint
+
+	return nil
+}
+
 func (_ *SSHKey) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SSHKey) error {
 	if a == nil {
-		glog.V(2).Infof("Creating SSHKey with Name:%q", *e.Name)
-
-		request := &ec2.ImportKeyPairInput{
-			KeyName: e.Name,
-		}
-
-		if e.PublicKey != nil {
-			d, err := e.PublicKey.AsBytes()
-			if err != nil {
-				return fmt.Errorf("error rendering SSHKey PublicKey: %v", err)
-			}
-			request.PublicKeyMaterial = d
-		}
-
-		response, err := t.Cloud.EC2().ImportKeyPair(request)
-		if err != nil {
-			return fmt.Errorf("error creating SSHKey: %v", err)
-		}
-
-		e.KeyFingerprint = response.KeyFingerprint
+		return e.createKeypair(t.Cloud)
 	}
 
 	// No tags on SSH public key
@@ -263,4 +274,24 @@ func (_ *SSHKey) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SS
 func (e *SSHKey) TerraformLink() *terraform.Literal {
 	tfName := strings.Replace(*e.Name, ":", "", -1)
 	return terraform.LiteralProperty("aws_key_pair", tfName, "id")
+}
+
+func (_ *SSHKey) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *SSHKey) error {
+	cloud := t.Cloud.(awsup.AWSCloud)
+
+	glog.Warningf("Cloudformation does not manage SSH keys; pre-creating SSH key")
+
+	a, err := e.find(cloud)
+	if err != nil {
+		return err
+	}
+
+	if a == nil {
+		err := e.createKeypair(cloud)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

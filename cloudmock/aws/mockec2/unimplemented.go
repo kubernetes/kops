@@ -234,14 +234,6 @@ func (m *MockEC2) CreateInternetGateway(*ec2.CreateInternetGatewayInput) (*ec2.C
 	panic("Not implemented")
 	return nil, nil
 }
-func (m *MockEC2) CreateKeyPairRequest(*ec2.CreateKeyPairInput) (*request.Request, *ec2.CreateKeyPairOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) CreateKeyPair(*ec2.CreateKeyPairInput) (*ec2.CreateKeyPairOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
 func (m *MockEC2) CreateNatGatewayRequest(*ec2.CreateNatGatewayInput) (*request.Request, *ec2.CreateNatGatewayOutput) {
 	panic("Not implemented")
 	return nil, nil
@@ -706,14 +698,6 @@ func (m *MockEC2) DescribeInternetGateways(*ec2.DescribeInternetGatewaysInput) (
 	panic("Not implemented")
 	return nil, nil
 }
-func (m *MockEC2) DescribeKeyPairsRequest(*ec2.DescribeKeyPairsInput) (*request.Request, *ec2.DescribeKeyPairsOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DescribeKeyPairs(*ec2.DescribeKeyPairsInput) (*ec2.DescribeKeyPairsOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
 func (m *MockEC2) DescribeMovingAddressesRequest(*ec2.DescribeMovingAddressesInput) (*request.Request, *ec2.DescribeMovingAddressesOutput) {
 	panic("Not implemented")
 	return nil, nil
@@ -1115,14 +1099,6 @@ func (m *MockEC2) ImportInstanceRequest(*ec2.ImportInstanceInput) (*request.Requ
 	return nil, nil
 }
 func (m *MockEC2) ImportInstance(*ec2.ImportInstanceInput) (*ec2.ImportInstanceOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) ImportKeyPairRequest(*ec2.ImportKeyPairInput) (*request.Request, *ec2.ImportKeyPairOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) ImportKeyPair(*ec2.ImportKeyPairInput) (*ec2.ImportKeyPairOutput, error) {
 	panic("Not implemented")
 	return nil, nil
 }

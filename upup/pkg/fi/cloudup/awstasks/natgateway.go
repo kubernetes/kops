@@ -24,6 +24,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
@@ -339,4 +340,22 @@ func (_ *NatGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 
 func (e *NatGateway) TerraformLink() *terraform.Literal {
 	return terraform.LiteralProperty("aws_nat_gateway", *e.Name, "id")
+}
+
+type cloudformationNATGateway struct {
+	AllocationID *cloudformation.Literal `json:"AllocationId,omitempty"`
+	SubnetID     *cloudformation.Literal `json:"SubnetId,omitempty"`
+}
+
+func (_ *NatGateway) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *NatGateway) error {
+	tf := &cloudformationNATGateway{
+		AllocationID: e.ElasticIP.CloudformationAllocationID(),
+		SubnetID:     e.Subnet.CloudformationLink(),
+	}
+
+	return t.RenderResource("AWS::EC2::NatGateway", *e.Name, tf)
+}
+
+func (e *NatGateway) CloudformationLink() *cloudformation.Literal {
+	return cloudformation.Ref("AWS::EC2::NatGateway", *e.Name)
 }
