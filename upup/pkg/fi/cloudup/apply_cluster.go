@@ -34,6 +34,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -514,6 +515,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 	var target fi.Target
 	dryRun := false
+	shouldPrecreateDNS := true
 
 	switch c.TargetName {
 	case TargetDirect:
@@ -531,9 +533,24 @@ func (c *ApplyClusterCmd) Run() error {
 		outDir := c.OutDir
 		target = terraform.NewTerraformTarget(cloud, region, project, outDir)
 
+		// Can cause conflicts with terraform management
+		shouldPrecreateDNS = false
+
+	case TargetCloudformation:
+		checkExisting = false
+		outDir := c.OutDir
+		target = cloudformation.NewCloudformationTarget(cloud, region, project, outDir)
+
+		// Can cause conflicts with cloudformation management
+		shouldPrecreateDNS = false
+
 	case TargetDryRun:
 		target = fi.NewDryRunTarget(os.Stdout)
 		dryRun = true
+
+		// Avoid making changes on a dry-run
+		shouldPrecreateDNS = false
+
 	default:
 		return fmt.Errorf("unsupported target type %q", c.TargetName)
 	}
@@ -564,7 +581,7 @@ func (c *ApplyClusterCmd) Run() error {
 		return fmt.Errorf("error running tasks: %v", err)
 	}
 
-	if !dryRun {
+	if shouldPrecreateDNS {
 		if err := precreateDNS(cluster, cloud); err != nil {
 			return err
 		}

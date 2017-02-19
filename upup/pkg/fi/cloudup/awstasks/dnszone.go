@@ -24,6 +24,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"math/rand"
 	"reflect"
@@ -279,4 +280,56 @@ func (e *DNSZone) TerraformLink() *terraform.Literal {
 	}
 
 	return terraform.LiteralSelfLink("aws_route53_zone", *e.Name)
+}
+
+type cloudformationRoute53Zone struct {
+	Name *string                   `json:"Name"`
+	VPCs []*cloudformation.Literal `json:"VPCs,omitempty"`
+	Tags []cloudformationTag       `json:"HostedZoneTags,omitempty"`
+}
+
+func (_ *DNSZone) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *DNSZone) error {
+	cloud := t.Cloud.(awsup.AWSCloud)
+
+	dnsName := fi.StringValue(e.DNSName)
+
+	// As a special case, we check for an existing zone
+	// It is really painful to have TF create a new one...
+	// (you have to reconfigure the DNS NS records)
+	glog.Infof("Check for existing route53 zone to re-use with name %q", dnsName)
+	z, err := e.findExisting(cloud)
+	if err != nil {
+		return err
+	}
+
+	if z != nil {
+		glog.Infof("Existing zone %q found; will configure cloudformation to reuse", aws.StringValue(z.HostedZone.Name))
+
+		e.ZoneID = z.HostedZone.Id
+
+		// Don't render a task
+		return nil
+	}
+
+	if !fi.BoolValue(e.Private) {
+		return fmt.Errorf("Creation of public Route53 hosted zones is not supported for cloudformation")
+	}
+
+	// We will create private zones (and delete them)
+	tf := &cloudformationRoute53Zone{
+		Name: e.Name,
+		VPCs: []*cloudformation.Literal{e.PrivateVPC.CloudformationLink()},
+		Tags: buildCloudformationTags(cloud.BuildTags(e.Name)),
+	}
+
+	return t.RenderResource("AWS::Route53::HostedZone", *e.Name, tf)
+}
+
+func (e *DNSZone) CloudformationLink() *cloudformation.Literal {
+	if e.ZoneID != nil {
+		glog.V(4).Infof("reusing existing route53 zone with id %q", *e.ZoneID)
+		return cloudformation.LiteralString(*e.ZoneID)
+	}
+
+	return cloudformation.Ref("AWS::Route53::HostedZone", *e.Name)
 }

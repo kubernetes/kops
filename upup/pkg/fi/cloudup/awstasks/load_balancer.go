@@ -30,6 +30,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"sort"
 )
@@ -585,4 +586,138 @@ func (e *LoadBalancer) TerraformLink(params ...string) *terraform.Literal {
 		prop = params[0]
 	}
 	return terraform.LiteralProperty("aws_elb", *e.Name, prop)
+}
+
+type cloudformationLoadBalancer struct {
+	Name           *string                               `json:"LoadBalancerName,omitempty"`
+	Listener       []*cloudformationLoadBalancerListener `json:"Listeners,omitempty"`
+	SecurityGroups []*cloudformation.Literal             `json:"SecurityGroups,omitempty"`
+	Subnets        []*cloudformation.Literal             `json:"Subnets,omitempty"`
+	Scheme         *string                               `json:"Scheme,omitempty"`
+
+	HealthCheck *cloudformationLoadBalancerHealthCheck `json:"HealthCheck,omitempty"`
+	AccessLog   *cloudformationLoadBalancerAccessLog   `json:"AccessLoggingPolicy,omitempty"`
+
+	ConnectionDrainingPolicy *cloudformationConnectionDrainingPolicy `json:"ConnectionDrainingPolicy,omitempty"`
+	ConnectionSettings       *cloudformationConnectionSettings       `json:"ConnectionSettings,omitempty"`
+
+	CrossZoneLoadBalancing *bool `json:"CrossZone,omitempty"`
+
+	Tags []cloudformationTag `json:"Tags,omitempty"`
+}
+
+type cloudformationLoadBalancerListener struct {
+	InstancePort         int    `json:"InstancePort"`
+	InstanceProtocol     string `json:"InstanceProtocol"`
+	LoadBalancerPort     int64  `json:"LoadBalancerPort"`
+	LoadBalancerProtocol string `json:"Protocol"`
+}
+
+type cloudformationLoadBalancerHealthCheck struct {
+	Target             *string `json:"Target"`
+	HealthyThreshold   *int64  `json:"HealthyThreshold"`
+	UnhealthyThreshold *int64  `json:"UnhealthyThreshold"`
+	Interval           *int64  `json:"Interval"`
+	Timeout            *int64  `json:"Timeout"`
+}
+
+type cloudformationConnectionDrainingPolicy struct {
+	Enabled *bool  `json:"Enabled,omitempty"`
+	Timeout *int64 `json:"Timeout,omitempty"`
+}
+
+type cloudformationConnectionSettings struct {
+	IdleTimeout *int64 `json:"IdleTimeout,omitempty"`
+}
+
+func (_ *LoadBalancer) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *LoadBalancer) error {
+	// TODO: From http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-elb.html:
+	// If this resource has a public IP address and is also in a VPC that is defined in the same template,
+	// you must use the DependsOn attribute to declare a dependency on the VPC-gateway attachment.
+
+	cloud := t.Cloud.(awsup.AWSCloud)
+
+	elbName := e.ID
+	if elbName == nil {
+		elbName = e.Name
+	}
+
+	tf := &cloudformationLoadBalancer{
+		Name:   elbName,
+		Scheme: e.Scheme,
+	}
+
+	for _, subnet := range e.Subnets {
+		tf.Subnets = append(tf.Subnets, subnet.CloudformationLink())
+	}
+
+	for _, sg := range e.SecurityGroups {
+		tf.SecurityGroups = append(tf.SecurityGroups, sg.CloudformationLink())
+	}
+
+	for loadBalancerPort, listener := range e.Listeners {
+		loadBalancerPortInt, err := strconv.ParseInt(loadBalancerPort, 10, 64)
+		if err != nil {
+			return fmt.Errorf("error parsing load balancer listener port: %q", loadBalancerPort)
+		}
+
+		tf.Listener = append(tf.Listener, &cloudformationLoadBalancerListener{
+			InstanceProtocol:     "TCP",
+			InstancePort:         listener.InstancePort,
+			LoadBalancerPort:     loadBalancerPortInt,
+			LoadBalancerProtocol: "TCP",
+		})
+	}
+
+	if e.HealthCheck != nil {
+		tf.HealthCheck = &cloudformationLoadBalancerHealthCheck{
+			Target:             e.HealthCheck.Target,
+			HealthyThreshold:   e.HealthCheck.HealthyThreshold,
+			UnhealthyThreshold: e.HealthCheck.UnhealthyThreshold,
+			Interval:           e.HealthCheck.Interval,
+			Timeout:            e.HealthCheck.Timeout,
+		}
+	}
+
+	if e.AccessLog != nil {
+		tf.AccessLog = &cloudformationLoadBalancerAccessLog{
+			EmitInterval:   e.AccessLog.EmitInterval,
+			Enabled:        e.AccessLog.Enabled,
+			S3BucketName:   e.AccessLog.S3BucketName,
+			S3BucketPrefix: e.AccessLog.S3BucketPrefix,
+		}
+	}
+
+	if e.ConnectionDraining != nil {
+		tf.ConnectionDrainingPolicy = &cloudformationConnectionDrainingPolicy{
+			Enabled: e.ConnectionDraining.Enabled,
+			Timeout: e.ConnectionDraining.Timeout,
+		}
+	}
+
+	if e.ConnectionSettings != nil {
+		tf.ConnectionSettings = &cloudformationConnectionSettings{
+			IdleTimeout: e.ConnectionSettings.IdleTimeout,
+		}
+	}
+
+	if e.CrossZoneLoadBalancing != nil {
+		tf.CrossZoneLoadBalancing = e.CrossZoneLoadBalancing.Enabled
+	}
+
+	tf.Tags = buildCloudformationTags(cloud.BuildTags(e.Name))
+
+	return t.RenderResource("AWS::ElasticLoadBalancing::LoadBalancer", *e.Name, tf)
+}
+
+func (e *LoadBalancer) CloudformationLink() *cloudformation.Literal {
+	return cloudformation.Ref("AWS::ElasticLoadBalancing::LoadBalancer", *e.Name)
+}
+
+func (e *LoadBalancer) CloudformationAttrCanonicalHostedZoneNameID() *cloudformation.Literal {
+	return cloudformation.GetAtt("AWS::ElasticLoadBalancing::LoadBalancer", *e.Name, "CanonicalHostedZoneNameID")
+}
+
+func (e *LoadBalancer) CloudformationAttrDNSName() *cloudformation.Literal {
+	return cloudformation.GetAtt("AWS::ElasticLoadBalancing::LoadBalancer", *e.Name, "DNSName")
 }

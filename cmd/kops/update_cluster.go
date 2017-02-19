@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -107,6 +108,8 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 	if c.OutDir == "" {
 		if c.Target == cloudup.TargetTerraform {
 			c.OutDir = "out/terraform"
+		} else if c.Target == cloudup.TargetCloudformation {
+			c.OutDir = "out/cloudformation"
 		} else {
 			c.OutDir = "out"
 		}
@@ -231,6 +234,17 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 				fmt.Fprintf(sb, "   cd %s\n", c.OutDir)
 				fmt.Fprintf(sb, "   terraform plan\n")
 				fmt.Fprintf(sb, "   terraform apply\n")
+				fmt.Fprintf(sb, "\n")
+			}
+		} else if c.Target == cloudup.TargetCloudformation {
+			fmt.Fprintf(sb, "\n")
+			fmt.Fprintf(sb, "Cloudformation output has been placed into %s\n", c.OutDir)
+
+			if firstRun {
+				cfName := "kubernetes-" + strings.Replace(clusterName, ".", "-", -1)
+				cfPath := filepath.Join(c.OutDir, "kubernetes.json")
+				fmt.Fprintf(sb, "Run this command to apply the configuration:\n")
+				fmt.Fprintf(sb, "   aws cloudformation create-stack --capabilities CAPABILITY_NAMED_IAM --stack-name %s --template-body file://%s\n", cfName, cfPath)
 				fmt.Fprintf(sb, "\n")
 			}
 		} else if firstRun {

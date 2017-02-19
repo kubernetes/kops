@@ -38,6 +38,8 @@ type MockEC2 struct {
 	volumeNumber int
 	Volumes      []*ec2.Volume
 
+	KeyPairs []*ec2.KeyPairInfo
+
 	Tags []*ec2.TagDescription
 
 	vpcNumber int
