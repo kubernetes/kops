@@ -25,6 +25,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
@@ -119,4 +120,18 @@ func (_ *IAMInstanceProfileRole) RenderTerraform(t *terraform.TerraformTarget, a
 	}
 
 	return t.RenderResource("aws_iam_instance_profile", *e.InstanceProfile.Name, tf)
+}
+
+type cloudformationIAMInstanceProfile struct {
+	//Path  *string              `json:"name"`
+	Roles []*cloudformation.Literal `json:"Roles"`
+}
+
+func (_ *IAMInstanceProfileRole) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *IAMInstanceProfileRole) error {
+	cf := &cloudformationIAMInstanceProfile{
+		//Path:  e.InstanceProfile.Name,
+		Roles: []*cloudformation.Literal{e.Role.CloudformationLink()},
+	}
+
+	return t.RenderResource("AWS::IAM::InstanceProfile", *e.InstanceProfile.Name, cf)
 }

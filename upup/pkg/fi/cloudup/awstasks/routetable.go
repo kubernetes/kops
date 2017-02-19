@@ -23,6 +23,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
@@ -146,4 +147,24 @@ func (_ *RouteTable) RenderTerraform(t *terraform.TerraformTarget, a, e, changes
 
 func (e *RouteTable) TerraformLink() *terraform.Literal {
 	return terraform.LiteralProperty("aws_route_table", *e.Name, "id")
+}
+
+type cloudformationRouteTable struct {
+	VPCID *cloudformation.Literal `json:"VpcId,omitempty"`
+	Tags  []cloudformationTag     `json:"Tags,omitempty"`
+}
+
+func (_ *RouteTable) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *RouteTable) error {
+	cloud := t.Cloud.(awsup.AWSCloud)
+
+	cf := &cloudformationRouteTable{
+		VPCID: e.VPC.CloudformationLink(),
+		Tags:  buildCloudformationTags(cloud.BuildTags(e.Name)),
+	}
+
+	return t.RenderResource("AWS::EC2::RouteTable", *e.Name, cf)
+}
+
+func (e *RouteTable) CloudformationLink() *cloudformation.Literal {
+	return cloudformation.Ref("AWS::EC2::RouteTable", *e.Name)
 }

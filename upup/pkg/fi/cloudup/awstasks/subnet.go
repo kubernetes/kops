@@ -23,6 +23,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
@@ -221,4 +222,44 @@ func (e *Subnet) TerraformLink() *terraform.Literal {
 	}
 
 	return terraform.LiteralProperty("aws_subnet", *e.Name, "id")
+}
+
+type cloudformationSubnet struct {
+	VPCID            *cloudformation.Literal `json:"VpcId,omitempty"`
+	CIDR             *string                 `json:"CidrBlock,omitempty"`
+	AvailabilityZone *string                 `json:"AvailabilityZone,omitempty"`
+	Tags             []cloudformationTag     `json:"Tags,omitempty"`
+}
+
+func (_ *Subnet) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *Subnet) error {
+	cloud := t.Cloud.(awsup.AWSCloud)
+
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		// Not cloudformation owned / managed
+		return nil
+	}
+
+	cf := &cloudformationSubnet{
+		VPCID:            e.VPC.CloudformationLink(),
+		CIDR:             e.CIDR,
+		AvailabilityZone: e.AvailabilityZone,
+		Tags:             buildCloudformationTags(cloud.BuildTags(e.Name)),
+	}
+
+	return t.RenderResource("AWS::EC2::Subnet", *e.Name, cf)
+}
+
+func (e *Subnet) CloudformationLink() *cloudformation.Literal {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		if e.ID == nil {
+			glog.Fatalf("ID must be set, if subnet is shared: %s", e)
+		}
+
+		glog.V(4).Infof("reusing existing subnet with id %q", *e.ID)
+		return cloudformation.LiteralString(*e.ID)
+	}
+
+	return cloudformation.Ref("AWS::EC2::Subnet", *e.Name)
 }
