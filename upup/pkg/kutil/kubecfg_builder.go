@@ -171,13 +171,6 @@ func (c *KubeconfigBuilder) WriteKubecfg() error {
 
 	var userArgs []string
 
-	if c.KubeBearerToken != "" {
-		userArgs = append(userArgs, "--token="+c.KubeBearerToken)
-	} else if c.KubeUser != "" && c.KubePassword != "" {
-		userArgs = append(userArgs, "--username="+c.KubeUser)
-		userArgs = append(userArgs, "--password="+c.KubePassword)
-	}
-
 	if c.ClientCert != nil && c.ClientKey != nil {
 		clientCert := path.Join(tmpdir, "client.crt")
 		if err := ioutil.WriteFile(clientCert, c.ClientCert, 0600); err != nil {
@@ -191,6 +184,11 @@ func (c *KubeconfigBuilder) WriteKubecfg() error {
 		userArgs = append(userArgs, "--client-certificate="+clientCert)
 		userArgs = append(userArgs, "--client-key="+clientKey)
 		userArgs = append(userArgs, "--embed-certs=true")
+	} else if c.KubeBearerToken != "" {
+		userArgs = append(userArgs, "--token="+c.KubeBearerToken)
+	} else if c.KubeUser != "" && c.KubePassword != "" {
+		userArgs = append(userArgs, "--username="+c.KubeUser)
+		userArgs = append(userArgs, "--password="+c.KubePassword)
 	}
 
 	setClusterArgs := []string{"config", "set-cluster", c.Context}
