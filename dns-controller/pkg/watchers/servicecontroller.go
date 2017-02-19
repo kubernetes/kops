@@ -111,7 +111,7 @@ func (c *ServiceController) runWatcher(stopCh <-chan struct{}) {
 					c.updateServiceRecords(service)
 
 				case watch.Deleted:
-					c.scope.Replace(service.Name, nil)
+					c.scope.Replace(service.Namespace+"/"+service.Name, nil)
 
 				default:
 					glog.Warningf("Unknown event type: %v", event.Type)
@@ -205,5 +205,5 @@ func (c *ServiceController) updateServiceRecords(service *v1.Service) {
 		glog.V(8).Infof("Service %s/%s did not have %s annotation", service.Namespace, service.Name, AnnotationNameDnsExternal)
 	}
 
-	c.scope.Replace(service.Name, records)
+	c.scope.Replace(service.Namespace+"/"+service.Name, records)
 }

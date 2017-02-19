@@ -110,7 +110,7 @@ func (c *PodController) runWatcher(stopCh <-chan struct{}) {
 					c.updatePodRecords(pod)
 
 				case watch.Deleted:
-					c.scope.Replace(pod.Name, nil)
+					c.scope.Replace(pod.Namespace+"/"+pod.Name, nil)
 
 				default:
 					glog.Warningf("Unknown event type: %v", event.Type)
@@ -191,5 +191,5 @@ func (c *PodController) updatePodRecords(pod *v1.Pod) {
 		glog.V(4).Infof("Pod %q did not have %s label", pod.Name, AnnotationNameDnsInternal)
 	}
 
-	c.scope.Replace(pod.Name, records)
+	c.scope.Replace(pod.Namespace+"/"+pod.Name, records)
 }
