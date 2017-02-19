@@ -112,7 +112,7 @@ func (c *NodeController) runWatcher(stopCh <-chan struct{}) {
 					c.updateNodeRecords(node)
 
 				case watch.Deleted:
-					c.scope.Replace(node.Name, nil)
+					c.scope.Replace( /* no namespace for nodes */ node.Name, nil)
 				}
 			}
 		}
@@ -236,5 +236,5 @@ func (c *NodeController) updateNodeRecords(node *v1.Node) {
 		}
 	}
 
-	c.scope.Replace(node.Name, records)
+	c.scope.Replace( /* no namespace for nodes */ node.Name, records)
 }
