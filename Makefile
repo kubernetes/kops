@@ -29,7 +29,7 @@ GOVERSION=1.7.4
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
-DNS_CONTROLLER_TAG=1.5.1
+DNS_CONTROLLER_TAG=1.5.2
 
 GITSHA := $(shell cd ${GOPATH_1ST}/src/k8s.io/kops; git describe --always)
 
@@ -214,13 +214,13 @@ nodeup-dist:
 	(sha1sum .build/dist/nodeup | cut -d' ' -f1) > .build/dist/nodeup.sha1
 
 dns-controller-gocode:
-	go install k8s.io/kops/dns-controller/cmd/dns-controller
+	go install -ldflags "${EXTRA_LDFLAGS} -X main.BuildVersion=${DNS_CONTROLLER_TAG}" k8s.io/kops/dns-controller/cmd/dns-controller
 
 dns-controller-builder-image:
 	docker build -t dns-controller-builder images/dns-controller-builder
 
 dns-controller-build-in-docker: dns-controller-builder-image
-	docker run -t -e VERSION=${VERSION} -v `pwd`:/src dns-controller-builder /onbuild.sh
+	docker run -t -v `pwd`:/src dns-controller-builder /onbuild.sh
 
 dns-controller-image: dns-controller-build-in-docker
 	docker build -t ${DOCKER_REGISTRY}/dns-controller:${DNS_CONTROLLER_TAG}  -f images/dns-controller/Dockerfile .

@@ -110,7 +110,7 @@ func (c *IngressController) runWatcher(stopCh <-chan struct{}) {
 					c.updateIngressRecords(ingress)
 
 				case watch.Deleted:
-					c.scope.Replace(ingress.Name, nil)
+					c.scope.Replace(ingress.Namespace+"/"+ingress.Name, nil)
 
 				default:
 					glog.Warningf("Unknown event type: %v", event.Type)
@@ -167,5 +167,5 @@ func (c *IngressController) updateIngressRecords(ingress *v1beta1.Ingress) {
 		}
 	}
 
-	c.scope.Replace(ingress.Name, records)
+	c.scope.Replace(ingress.Namespace+"/"+ingress.Name, records)
 }
