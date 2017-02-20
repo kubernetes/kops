@@ -229,6 +229,7 @@ type ClusterSpec struct {
 	KubeProxy             *KubeProxyConfig             `json:"kubeProxy,omitempty"`
 	Kubelet               *KubeletConfigSpec           `json:"kubelet,omitempty"`
 	MasterKubelet         *KubeletConfigSpec           `json:"masterKubelet,omitempty"`
+	CloudConfig           *CloudConfiguration          `json:"cloudConfig,omitempty"`
 
 	// Networking configuration
 	Networking *NetworkingSpec `json:"networking,omitempty"`

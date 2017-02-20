@@ -48,6 +48,15 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 		if err != nil {
 			return fmt.Errorf("error building kubelet flags: %v", err)
 		}
+
+		// Add cloud config file if needed
+		// We build this flag differently because it depends on CloudConfig, and to expose it directly
+		// would be a degree of freedom we don't have (we'd have to write the config to different files)
+		// We can always add this later if it is needed.
+		if b.Cluster.Spec.CloudConfig != nil {
+			flags += " --cloud-config=" + CloudConfigFilePath
+		}
+
 		sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"
 
 		t := &nodetasks.File{

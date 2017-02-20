@@ -18,9 +18,9 @@ package gcemodel
 
 import (
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
-	"k8s.io/kops/pkg/apis/kops"
 )
 
 // ExternalAccessModelBuilder configures security group rules for external access

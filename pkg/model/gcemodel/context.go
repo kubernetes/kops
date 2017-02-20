@@ -17,11 +17,11 @@ limitations under the License.
 package gcemodel
 
 import (
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
-	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/model/components"
 )
 
 type GCEModelContext struct {

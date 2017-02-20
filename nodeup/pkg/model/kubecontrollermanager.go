@@ -68,6 +68,11 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 		return nil, fmt.Errorf("error building kube-controller-manager flags: %v", err)
 	}
 
+	// Add cloud config file if needed
+	if b.Cluster.Spec.CloudConfig != nil {
+		flags += " --cloud-config=" + CloudConfigFilePath
+	}
+
 	redirectCommand := []string{
 		"/bin/sh", "-c", "/usr/local/bin/kube-controller-manager " + flags + " 1>>/var/log/kube-controller-manager.log 2>&1",
 	}
@@ -115,6 +120,11 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 		name := strings.Replace(path, "/", "", -1)
 
 		addHostPathMapping(pod, container, name, path, true)
+	}
+
+	// Add cloud config file if needed
+	if b.Cluster.Spec.CloudConfig != nil {
+		addHostPathMapping(pod, container, "cloudconfig", CloudConfigFilePath, true)
 	}
 
 	if b.Cluster.Spec.KubeControllerManager.PathSrvKubernetes != "" {
