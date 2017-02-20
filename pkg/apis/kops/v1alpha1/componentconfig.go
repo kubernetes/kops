@@ -513,7 +513,7 @@ type KubeControllerManagerConfig struct {
 	//// case of node failure. For more details look into RateLimiter.
 	//DeletingPodsBurst int32 `json:"deletingPodsBurst"`
 	//// nodeMontiorGracePeriod is the amount of time which we allow a running node to be
-	//// unresponsive before marking it unhealty. Must be N times more than kubelet's
+	//// unresponsive before marking it unhealthy. Must be N times more than kubelet's
 	//// nodeStatusUpdateFrequency, where N means number of retries allowed for kubelet
 	//// to post node status.
 	//NodeMonitorGracePeriod unversioned.Duration `json:"nodeMonitorGracePeriod"`
@@ -521,7 +521,7 @@ type KubeControllerManagerConfig struct {
 	//// Retry interval equals node-sync-period.
 	//RegisterRetryCount int32 `json:"registerRetryCount"`
 	//// nodeStartupGracePeriod is the amount of time which we allow starting a node to
-	//// be unresponsive before marking it unhealty.
+	//// be unresponsive before marking it unhealthy.
 	//NodeStartupGracePeriod unversioned.Duration `json:"nodeStartupGracePeriod"`
 	//// nodeMonitorPeriod is the period for syncing NodeStatus in NodeController.
 	//NodeMonitorPeriod unversioned.Duration `json:"nodeMonitorPeriod"`
