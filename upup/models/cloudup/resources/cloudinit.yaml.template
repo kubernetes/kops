@@ -1,1 +1,0 @@
-{{ BuildNodeConfig "cloudinit" "resources/config.yaml.template" Args }}

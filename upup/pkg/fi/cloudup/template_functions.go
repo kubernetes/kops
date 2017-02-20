@@ -30,10 +30,11 @@ package cloudup
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
-	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kops/pkg/model/components"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kubernetes/pkg/util/sets"
 	"strings"
 	"text/template"
@@ -93,6 +94,10 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	}
 
 	dest["DnsControllerArgv"] = tf.DnsControllerArgv
+
+	// TODO: Only for GCE?
+	dest["EncodeGCELabel"] = gce.EncodeGCELabel
+
 }
 
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
@@ -102,29 +107,7 @@ func (tf *TemplateFunctions) SharedVPC() bool {
 
 // Image returns the docker image name for the specified component
 func (tf *TemplateFunctions) Image(component string) (string, error) {
-	if component == "kube-dns" {
-		// TODO: Once we are shipping different versions, start to use them
-		return "gcr.io/google_containers/kubedns-amd64:1.3", nil
-	}
-
-	if !isBaseURL(tf.cluster.Spec.KubernetesVersion) {
-		return "gcr.io/google_containers/" + component + ":" + "v" + tf.cluster.Spec.KubernetesVersion, nil
-	}
-
-	baseURL := tf.cluster.Spec.KubernetesVersion
-	baseURL = strings.TrimSuffix(baseURL, "/")
-
-	tagURL := baseURL + "/bin/linux/amd64/" + component + ".docker_tag"
-	glog.V(2).Infof("Downloading docker tag for %s from: %s", component, tagURL)
-
-	b, err := vfs.Context.ReadFile(tagURL)
-	if err != nil {
-		return "", fmt.Errorf("error reading tag file %q: %v", tagURL, err)
-	}
-	tag := strings.TrimSpace(string(b))
-	glog.V(2).Infof("Found tag %q for %q", tag, component)
-
-	return "gcr.io/google_containers/" + component + ":" + tag, nil
+	return components.Image(component, &tf.cluster.Spec)
 }
 
 // HasTag returns true if the specified tag is set
@@ -149,7 +132,16 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 	argv = append(argv, "/usr/bin/dns-controller")
 
 	argv = append(argv, "--watch-ingress=false")
-	argv = append(argv, "--dns=aws-route53")
+
+	switch fi.CloudProviderID(tf.cluster.Spec.CloudProvider) {
+	case fi.CloudProviderAWS:
+		argv = append(argv, "--dns=aws-route53")
+	case fi.CloudProviderGCE:
+		argv = append(argv, "--dns=google-clouddns")
+
+	default:
+		return nil, fmt.Errorf("unhandled cloudprovider %q", tf.cluster.Spec.CloudProvider)
+	}
 
 	zone := tf.cluster.Spec.DNSZone
 	if zone != "" {

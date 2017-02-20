@@ -188,6 +188,8 @@ func (r *VFSResource) Open() (io.Reader, error) {
 	return b, err
 }
 
+// ResourceHolder is used in JSON/YAML models; it holds a resource but renders to/from a string
+// After unmarshalling, the resource should be found by Name, and set on Resource
 type ResourceHolder struct {
 	Name     string
 	Resource Resource
@@ -195,6 +197,7 @@ type ResourceHolder struct {
 
 var _ Resource = &ResourceHolder{}
 
+// Open implements the Open method of the Resource interface
 func (o *ResourceHolder) Open() (io.Reader, error) {
 	if o.Resource == nil {
 		return nil, fmt.Errorf("ResourceHolder %q is not bound", o.Name)
@@ -202,6 +205,7 @@ func (o *ResourceHolder) Open() (io.Reader, error) {
 	return o.Resource.Open()
 }
 
+// UnmarshalJSON implements the special JSON marshalling for the resource, rendering the name
 func (o *ResourceHolder) UnmarshalJSON(data []byte) error {
 	var jsonName string
 	err := json.Unmarshal(data, &jsonName)
@@ -212,18 +216,22 @@ func (o *ResourceHolder) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// Unwrap returns the underlying resource
 func (o *ResourceHolder) Unwrap() Resource {
 	return o.Resource
 }
 
+// AsString returns the value of the resource as a string
 func (o *ResourceHolder) AsString() (string, error) {
 	return ResourceAsString(o.Unwrap())
 }
 
+// AsString returns the value of the resource as a byte-slice
 func (o *ResourceHolder) AsBytes() ([]byte, error) {
 	return ResourceAsBytes(o.Unwrap())
 }
 
+// WrapResource creates a ResourceHolder for the specified resource
 func WrapResource(r Resource) *ResourceHolder {
 	return &ResourceHolder{
 		Resource: r,

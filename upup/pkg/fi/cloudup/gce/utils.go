@@ -18,6 +18,7 @@ package gce
 
 import (
 	"google.golang.org/api/googleapi"
+	"strings"
 )
 
 func IsNotFound(err error) bool {
@@ -43,4 +44,10 @@ func IsNotReady(err error) bool {
 		}
 	}
 	return false
+}
+
+func SafeClusterName(clusterName string) string {
+	// GCE does not support . in tags / names
+	safeClusterName := strings.Replace(clusterName, ".", "-", -1)
+	return safeClusterName
 }

@@ -18,14 +18,14 @@ package gcetasks
 
 import (
 	"fmt"
-
-	"google.golang.org/api/compute/v1"
+	compute "google.golang.org/api/compute/v0.beta"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"strings"
 )
 
+// FirewallRule represents a GCE firewall rules
 //go:generate fitask -type=FirewallRule
 type FirewallRule struct {
 	Name         *string
@@ -71,6 +71,9 @@ func (e *FirewallRule) Run(c *fi.Context) error {
 }
 
 func (_ *FirewallRule) CheckChanges(a, e, changes *FirewallRule) error {
+	if e.Network == nil {
+		return fi.RequiredField("Network")
+	}
 	return nil
 }
 

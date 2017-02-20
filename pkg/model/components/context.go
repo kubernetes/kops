@@ -20,14 +20,19 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/blang/semver"
+	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/util/pkg/vfs"
 	"math/big"
 	"net"
+	"strings"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
 
 // OptionsContext is the context object for options builders
 type OptionsContext struct {
+	ClusterName string
 }
 
 // KubernetesVersion parses the semver version of kubernetes, from the cluster spec
@@ -96,4 +101,39 @@ func WellKnownServiceIP(clusterSpec *kops.ClusterSpec, id int) (net.IP, error) {
 	}
 
 	return nil, fmt.Errorf("Unexpected IP address type for ServiceClusterIPRange: %s", clusterSpec.ServiceClusterIPRange)
+}
+
+func IsBaseURL(kubernetesVersion string) bool {
+	return strings.HasPrefix(kubernetesVersion, "http:") || strings.HasPrefix(kubernetesVersion, "https:")
+}
+
+// Image returns the docker image name for the specified component
+func Image(component string, clusterSpec *kops.ClusterSpec) (string, error) {
+	if component == "kube-dns" {
+		// TODO: Once we are shipping different versions, start to use them
+		return "gcr.io/google_containers/kubedns-amd64:1.3", nil
+	}
+
+	if !IsBaseURL(clusterSpec.KubernetesVersion) {
+		return "gcr.io/google_containers/" + component + ":" + "v" + clusterSpec.KubernetesVersion, nil
+	}
+
+	baseURL := clusterSpec.KubernetesVersion
+	baseURL = strings.TrimSuffix(baseURL, "/")
+
+	tagURL := baseURL + "/bin/linux/amd64/" + component + ".docker_tag"
+	glog.V(2).Infof("Downloading docker tag for %s from: %s", component, tagURL)
+
+	b, err := vfs.Context.ReadFile(tagURL)
+	if err != nil {
+		return "", fmt.Errorf("error reading tag file %q: %v", tagURL, err)
+	}
+	tag := strings.TrimSpace(string(b))
+	glog.V(2).Infof("Found tag %q for %q", tag, component)
+
+	return "gcr.io/google_containers/" + component + ":" + tag, nil
+}
+
+func GCETagForRole(clusterName string, role kops.InstanceGroupRole) string {
+	return gce.SafeClusterName(clusterName) + "-" + gce.GceLabelNameRolePrefix + strings.ToLower(string(role))
 }
