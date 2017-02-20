@@ -55,6 +55,10 @@ func (c *AwsCluster) ListResources() (map[string]*ResourceTracker, error) {
 	// These are the functions that are used for looking up
 	// cluster resources by their tags.
 	listFunctions := []listFn{
+
+		// CloudFormation
+		ListCloudFormationStacks,
+
 		// EC2
 		ListInstances,
 		ListKeypairs,
