@@ -18,9 +18,9 @@ package gcemodel
 
 import (
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
-	"k8s.io/kops/pkg/apis/kops"
 )
 
 // FirewallModelBuilder configures firewall network objects
@@ -48,8 +48,8 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Allow all traffic from nodes -> nodes
 	{
 		t := &gcetasks.FirewallRule{
-			Name:    s(b.SafeObjectName("node-to-node")),
-			Network: b.LinkToNetwork(),
+			Name:       s(b.SafeObjectName("node-to-node")),
+			Network:    b.LinkToNetwork(),
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
 			Allowed:    []string{"tcp", "udp", "icmp", "esp", "ah", "sctp"},
@@ -66,8 +66,8 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Name:         s(b.SafeObjectName("cidr-to-node")),
 			Network:      b.LinkToNetwork(),
 			SourceRanges: []string{b.Cluster.Spec.NonMasqueradeCIDR},
-			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
-			Allowed:    []string{"tcp", "udp", "icmp", "esp", "ah", "sctp"},
+			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
+			Allowed:      []string{"tcp", "udp", "icmp", "esp", "ah", "sctp"},
 		}
 		c.AddTask(t)
 	}
@@ -75,8 +75,8 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Allow full traffic from master -> master
 	{
 		t := &gcetasks.FirewallRule{
-			Name:    s(b.SafeObjectName("master-to-master")),
-			Network: b.LinkToNetwork(),
+			Name:       s(b.SafeObjectName("master-to-master")),
+			Network:    b.LinkToNetwork(),
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			Allowed:    []string{"tcp", "udp", "icmp", "esp", "ah", "sctp"},
@@ -87,8 +87,8 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Allow full traffic from master -> node
 	{
 		t := &gcetasks.FirewallRule{
-			Name:    s(b.SafeObjectName("master-to-node")),
-			Network: b.LinkToNetwork(),
+			Name:       s(b.SafeObjectName("master-to-node")),
+			Network:    b.LinkToNetwork(),
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
 			Allowed:    []string{"tcp", "udp", "icmp", "esp", "ah", "sctp"},
@@ -99,8 +99,8 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Allow limited traffic from nodes -> masters
 	{
 		t := &gcetasks.FirewallRule{
-			Name:    s(b.SafeObjectName("node-to-master")),
-			Network: b.LinkToNetwork(),
+			Name:       s(b.SafeObjectName("node-to-master")),
+			Network:    b.LinkToNetwork(),
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			Allowed:    []string{"tcp:443", "tcp:4194"},
@@ -115,8 +115,8 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Name:         s(b.SafeObjectName("cidr-to-master")),
 			Network:      b.LinkToNetwork(),
 			SourceRanges: []string{b.Cluster.Spec.NonMasqueradeCIDR},
-			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
-			Allowed:    []string{"tcp:443", "tcp:4194"},
+			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
+			Allowed:      []string{"tcp:443", "tcp:4194"},
 		}
 		c.AddTask(t)
 	}

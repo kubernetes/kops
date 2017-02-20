@@ -29,9 +29,9 @@ import (
 // InstanceTemplate represents a GCE InstanceTemplate
 //go:generate fitask -type=InstanceTemplate
 type InstanceTemplate struct {
-	Name        *string
-	Network     *Network
-	Tags        []string
+	Name    *string
+	Network *Network
+	Tags    []string
 	//Labels      map[string]string
 	Preemptible *bool
 
