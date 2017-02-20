@@ -108,6 +108,8 @@ func (k *KubeBoot) syncOnce() error {
 		//k.MasterID = volumeInfo.MasterID
 
 		// TODO: Should we set up symlinks here?
+	} else {
+		glog.V(4).Infof("Not in role master; won't scan for volumes")
 	}
 
 	if k.Master {

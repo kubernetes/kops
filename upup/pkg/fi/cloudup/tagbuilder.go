@@ -59,7 +59,6 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 	switch cluster.Spec.CloudProvider {
 	case "gce":
 		{
-			glog.Fatalf("GCE is (probably) not working currently - please ping @justinsb for cleanup")
 			tags.Insert("_gce")
 		}
 

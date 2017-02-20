@@ -36,7 +36,9 @@ k8s.io/kops/pkg/featureflag
 k8s.io/kops/pkg/flagbuilder
 k8s.io/kops/pkg/kubeconfig
 k8s.io/kops/pkg/model
+k8s.io/kops/pkg/model/awsmodel
 k8s.io/kops/pkg/model/components
+k8s.io/kops/pkg/model/gcemodel
 k8s.io/kops/pkg/model/iam
 k8s.io/kops/pkg/model/resources
 k8s.io/kops/pkg/systemd
@@ -54,6 +56,7 @@ k8s.io/kops/upup/pkg/fi/cloudup
 k8s.io/kops/upup/pkg/fi/cloudup/awstasks
 k8s.io/kops/upup/pkg/fi/cloudup/awsup
 k8s.io/kops/upup/pkg/fi/cloudup/cloudformation
+k8s.io/kops/upup/pkg/fi/cloudup/dnstasks
 k8s.io/kops/upup/pkg/fi/cloudup/gce
 k8s.io/kops/upup/pkg/fi/cloudup/gcetasks
 k8s.io/kops/upup/pkg/fi/cloudup/terraform

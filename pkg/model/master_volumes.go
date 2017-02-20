@@ -18,15 +18,20 @@ package model
 
 import (
 	"fmt"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 	"sort"
 	"strings"
 )
 
 const (
-	DefaultEtcdVolumeSize = 20
-	DefaultEtcdVolumeType = "gp2"
+	DefaultEtcdVolumeSize    = 20
+	DefaultAWSEtcdVolumeType = "gp2"
+	DefaultGCEEtcdVolumeType = "pd-ssd"
 )
 
 // MasterVolumeBuilder builds master EBS volumes
@@ -67,46 +72,96 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 				return fmt.Errorf("Subnet %q did not specify a zone", subnet.Name)
 			}
 
-			volumeSize := int64(fi.Int32Value(m.VolumeSize))
+			volumeSize := fi.Int32Value(m.VolumeSize)
 			if volumeSize == 0 {
 				volumeSize = DefaultEtcdVolumeSize
 			}
-			volumeType := fi.StringValue(m.VolumeType)
-			if volumeType == "" {
-				volumeType = DefaultEtcdVolumeType
+
+			var allMembers []string
+			for _, m := range etcd.Members {
+				allMembers = append(allMembers, m.Name)
 			}
+			sort.Strings(allMembers)
 
-			encrypted := fi.BoolValue(m.EncryptedVolume)
-
-			// The tags are how protokube knows to mount the volume and use it for etcd
-			tags := make(map[string]string)
-			{
-				var allMembers []string
-				for _, m := range etcd.Members {
-					allMembers = append(allMembers, m.Name)
-				}
-
-				sort.Strings(allMembers)
-
-				// This is the configuration of the etcd cluster
-				tags["k8s.io/etcd/"+etcd.Name] = m.Name + "/" + strings.Join(allMembers, ",")
-
-				// This says "only mount on a master"
-				tags["k8s.io/role/master"] = "1"
+			switch fi.CloudProviderID(b.Cluster.Spec.CloudProvider) {
+			case fi.CloudProviderAWS:
+				b.addAWSVolume(c, name, volumeSize, subnet, etcd, m, allMembers)
+			case fi.CloudProviderGCE:
+				b.addGCEVolume(c, name, volumeSize, subnet, etcd, m, allMembers)
+			default:
+				return fmt.Errorf("unknown cloudprovider %q", b.Cluster.Spec.CloudProvider)
 			}
-
-			t := &awstasks.EBSVolume{
-				Name:             s(name),
-				AvailabilityZone: s(subnet.Zone),
-				SizeGB:           fi.Int64(volumeSize),
-				VolumeType:       s(volumeType),
-				KmsKeyId:         m.KmsKeyId,
-				Encrypted:        fi.Bool(encrypted),
-				Tags:             tags,
-			}
-
-			c.AddTask(t)
 		}
 	}
 	return nil
+}
+
+func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, subnet *kops.ClusterSubnetSpec, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) {
+	volumeType := fi.StringValue(m.VolumeType)
+	if volumeType == "" {
+		volumeType = DefaultAWSEtcdVolumeType
+	}
+
+	// The tags are how protokube knows to mount the volume and use it for etcd
+	tags := make(map[string]string)
+	//tags[awsup.TagClusterName] = b.C.cluster.Name
+	// This is the configuration of the etcd cluster
+	tags[awsup.TagNameEtcdClusterPrefix+etcd.Name] = m.Name + "/" + strings.Join(allMembers, ",")
+	// This says "only mount on a master"
+	tags[awsup.TagNameRolePrefix+"master"] = "1"
+
+	encrypted := fi.BoolValue(m.EncryptedVolume)
+
+	t := &awstasks.EBSVolume{
+		Name:             s(name),
+		AvailabilityZone: s(subnet.Zone),
+		SizeGB:           fi.Int64(int64(volumeSize)),
+		VolumeType:       s(volumeType),
+		KmsKeyId:         m.KmsKeyId,
+		Encrypted:        fi.Bool(encrypted),
+		Tags:             tags,
+	}
+
+	c.AddTask(t)
+}
+
+func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, subnet *kops.ClusterSubnetSpec, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) {
+	volumeType := fi.StringValue(m.VolumeType)
+	if volumeType == "" {
+		volumeType = DefaultGCEEtcdVolumeType
+	}
+
+	// TODO: Should no longer be needed because we trim prefixes
+	//// On GCE we are close to the length limits.  So,we remove the dashes from the keys
+	//// The name is normally something like "us-east1-a", and the dashes are particularly expensive
+	//// because of the escaping needed (3 characters for each dash)
+	//switch tf.cluster.Spec.CloudProvider {
+	//case string(fi.CloudProviderGCE):
+	//	// TODO: If we're still struggling for size, we don't need to put ourselves in the allmembers list
+	//	for i := range allMembers {
+	//		allMembers[i] = strings.Replace(allMembers[i], "-", "", -1)
+	//	}
+	//	meName = strings.Replace(meName, "-", "", -1)
+	//}
+
+	// This is the configuration of the etcd cluster
+	clusterSpec := m.Name + "/" + strings.Join(allMembers, ",")
+
+	// The tags are how protokube knows to mount the volume and use it for etcd
+	tags := make(map[string]string)
+	tags[gce.GceLabelNameKubernetesCluster] = gce.SafeClusterName(b.ClusterName())
+	tags[gce.GceLabelNameRolePrefix+"master"] = "master" // Can't start with a number
+	tags[gce.GceLabelNameEtcdClusterPrefix+etcd.Name] = gce.EncodeGCELabel(clusterSpec)
+
+	name = strings.Replace(name, ".", "-", -1)
+
+	t := &gcetasks.PersistentDisk{
+		Name:       s(name),
+		Zone:       s(subnet.Zone),
+		SizeGB:     fi.Int64(int64(volumeSize)),
+		VolumeType: s(volumeType),
+		Labels:     tags,
+	}
+
+	c.AddTask(t)
 }
