@@ -10,7 +10,6 @@ Master permissions:
 
 ```
 ec2:*
-route53:*
 elasticloadbalancing:*
 ecr:GetAuthorizationToken
 ecr:BatchCheckLayerAvailability
@@ -19,6 +18,11 @@ ecr:GetRepositoryPolicy
 ecr:DescribeRepositories
 ecr:ListImages
 ecr:BatchGetImage
+route53:ListHostedZones
+route53:GetChange
+// The following permissions are scoped to AWS Route53 HostedZone used to bootstrap the cluster
+// arn:aws:route53:::hostedzone/$hosted_zone_id
+route53:ChangeResourceRecordSets, ListResourceRecordSets, GetHostedZone
 
 // The following permissions are only created if you are using etcd volumes with "encrypted: true" and a custom kmsKeyId.
 // They are scoped to the kmsKeyId that you are using.
@@ -36,7 +40,6 @@ Node permissions:
 
 ```
 ec2:Describe*
-route53:*
 ecr:GetAuthorizationToken
 ecr:BatchCheckLayerAvailability
 ecr:GetDownloadUrlForLayer
@@ -44,6 +47,11 @@ ecr:GetRepositoryPolicy
 ecr:DescribeRepositories
 ecr:ListImages
 ecr:BatchGetImage
+route53:ListHostedZones
+route53:GetChange
+// The following permissions are scoped to AWS Route53 HostedZone used to bootstrap the cluster
+// arn:aws:route53:::hostedzone/$hosted_zone_id
+route53:ChangeResourceRecordSets, ListResourceRecordSets, GetHostedZone
 ```
 
 ## Adding Additional Policies
