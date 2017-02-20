@@ -52,7 +52,7 @@ const (
 var _ fi.HasDependencies = &Package{}
 
 // GetDependencies computes dependencies for the package task
-func (p *Package) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (e *Package) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	var deps []fi.Task
 
 	// UpdatePackages before we install any packages
@@ -63,7 +63,7 @@ func (p *Package) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	}
 
 	// If this package is a bare deb, install it after OS managed packages
-	if !p.isOSPackage() {
+	if !e.isOSPackage() {
 		for _, v := range tasks {
 			if vp, ok := v.(*Package); ok {
 				if vp.isOSPackage() {
@@ -171,8 +171,12 @@ func (e *Package) findDpkg(c *fi.Context) (*Package, error) {
 		case "un":
 			// unknown
 			installed = false
+		case "n":
+			// not installed
+			installed = false
 		default:
-			return nil, fmt.Errorf("unknown package state %q in line %q", state, line)
+			glog.Warningf("unknown package state %q for %q in line %q", state, e.Name, line)
+			return nil, fmt.Errorf("unknown package state %q for %q in line %q", state, e.Name, line)
 		}
 	}
 
@@ -239,7 +243,7 @@ func (e *Package) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
-func (s *Package) CheckChanges(a, e, changes *Package) error {
+func (_ *Package) CheckChanges(a, e, changes *Package) error {
 	return nil
 }
 
@@ -336,9 +340,9 @@ func (_ *Package) RenderLocal(t *local.LocalTarget, a, e, changes *Package) erro
 }
 
 func (_ *Package) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *Package) error {
+	packageName := e.Name
 	if e.Source != nil {
-
-		localFile := path.Join(localPackageDir, e.Name)
+		localFile := path.Join(localPackageDir, packageName)
 		t.AddMkdirpCommand(localPackageDir, 0755)
 
 		url := *e.Source
@@ -346,7 +350,7 @@ func (_ *Package) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *P
 
 		t.AddCommand(cloudinit.Always, "dpkg", "-i", localFile)
 	} else {
-		packageSpec := e.Name
+		packageSpec := packageName
 		if e.Version != nil {
 			packageSpec += " " + *e.Version
 		}

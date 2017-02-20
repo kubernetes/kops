@@ -247,7 +247,7 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext) error
 			RemoveExtraRules: []string{
 				"port=22",   // SSH
 				"port=443",  // k8s api
-				"port=4001", // etcd
+				"port=4001", // etcd main (etcd events is 4002)
 				"port=4789", // VXLAN
 				"port=179",  // Calico
 

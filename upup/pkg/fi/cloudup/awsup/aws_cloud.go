@@ -56,6 +56,10 @@ const DeleteTagsRetryInterval = 2 * time.Second
 const DeleteTagsLogInterval = 10 // this is in "retry intervals"
 
 const TagClusterName = "KubernetesCluster"
+const TagNameRolePrefix = "k8s.io/role/"
+const TagNameEtcdClusterPrefix = "k8s.io/etcd/"
+
+const TagRoleMaster = "master"
 
 const (
 	WellKnownAccountKopeio = "383156758163"
@@ -208,16 +212,25 @@ func (c *awsCloudImplementation) WithTags(tags map[string]string) AWSCloud {
 	return i
 }
 
+var tagsEventualConsistencyErrors = map[string]bool{
+	"InvalidInstanceID.NotFound":        true,
+	"InvalidRouteTableID.NotFound":      true,
+	"InvalidVpcID.NotFound":             true,
+	"InvalidGroup.NotFound":             true,
+	"InvalidSubnetID.NotFound":          true,
+	"InvalidDhcpOptionsID.NotFound":     true,
+	"InvalidInternetGatewayID.NotFound": true,
+}
+
 // isTagsEventualConsistencyError checks if the error is one of the errors encountered when we try to create/get tags before the resource has fully 'propagated' in EC2
 func isTagsEventualConsistencyError(err error) bool {
 	if awsErr, ok := err.(awserr.Error); ok {
-		switch awsErr.Code() {
-		case "InvalidInstanceID.NotFound", "InvalidRouteTableID.NotFound", "InvalidVpcID.NotFound", "InvalidGroup.NotFound", "InvalidSubnetID.NotFound", "InvalidInternetGatewayID.NotFound", "InvalidDhcpOptionsID.NotFound":
-			return true
-
-		default:
-			glog.Warningf("Uncategorized error in isTagsEventualConsistencyError: %v", awsErr.Code())
+		isEventualConsistency, found := tagsEventualConsistencyErrors[awsErr.Code()]
+		if found {
+			return isEventualConsistency
 		}
+
+		glog.Warningf("Uncategorized error in isTagsEventualConsistencyError: %v", awsErr.Code())
 	}
 	return false
 }

@@ -33,7 +33,7 @@ type KubeletBuilder struct {
 	*NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &DockerBuilder{}
+var _ fi.ModelBuilder = &KubeletBuilder{}
 
 func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 	kubeletConfig, err := b.buildKubeletConfig()

@@ -239,6 +239,7 @@ func (k *VolumeMountController) attachMasterVolumes() ([]*Volume, error) {
 		}
 	}
 
+	glog.V(2).Infof("Currently attached volumes: %v", attached)
 	return attached, nil
 }
 

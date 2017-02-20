@@ -26,4 +26,7 @@ type ProtokubeFlags struct {
 	Zone []string `json:"zone,omitempty" flag:"zone"`
 
 	Channels []string `json:"channels,omitempty" flag:"channels"`
+
+	DNSInternalSuffix *string `json:"dnsInternalSuffix,omitempty" flag:"dns-internal-suffix"`
+	Cloud             *string `json:"cloud,omitempty" flag:"cloud"`
 }

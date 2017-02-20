@@ -1,0 +1,13 @@
+> kops create cluster mixed.awsdata.com --zones us-east-1c --topology private --networking weave
+
+> kops edit cluster mixed.awsdata.com
+
+# Changed nodes to public here:
+
+```
+  topology:
+    dns:
+      type: Public
+    masters: private
+    nodes: public
+```
