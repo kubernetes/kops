@@ -293,7 +293,6 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 		if err != nil {
 			t.Fatalf("unexpected error reading actual cloudformation output: %v", err)
 		}
-
 		expectedCF, err := ioutil.ReadFile(path.Join(srcDir, expectedCfPath))
 		if err != nil {
 			t.Fatalf("unexpected error reading expected cloudformation output: %v", err)
