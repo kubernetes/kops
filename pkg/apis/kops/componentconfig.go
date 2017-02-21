@@ -420,6 +420,15 @@ type KubeAPIServerConfig struct {
 	// otherwise the host's root CA set will be used.
 	OIDCCAFile *string `json:"oidcCAFile,omitempty" flag:"oidc-ca-file"`
 
+	// If set, all requests coming to the apiserver will be logged to this file.
+	AuditLogPath *string `json:"auditLogPath,omitempty" flag:"audit-log-path"`
+	// The maximum number of days to retain old audit log files based on the timestamp encoded in their filename.
+	AuditLogMaxAge *int32 `json:"auditLogMaxAge,omitempty" flag:"audit-log-maxage"`
+	// The maximum number of old audit log files to retain.
+	AuditLogMaxBackups *int32 `json:"auditLogMaxBackups,omitempty" flag:"audit-log-maxbackup"`
+	// The maximum size in megabytes of the audit log file before it gets rotated. Defaults to 100MB.
+	AuditLogMaxSize *int32 `json:"auditLogMaxSize,omitempty" flag:"audit-log-maxsize"`
+
 	AuthorizationMode          *string `json:"authorizationMode,omitempty" flag:"authorization-mode"`
 	AuthorizationRBACSuperUser *string `json:"authorizationRbacSuperUser,omitempty" flag:"authorization-rbac-super-user"`
 }
