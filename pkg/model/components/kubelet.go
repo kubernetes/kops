@@ -119,9 +119,17 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 
 	cloudProvider := fi.CloudProviderID(clusterSpec.CloudProvider)
 
+	clusterSpec.Kubelet.CgroupRoot = "/"
+
 	if cloudProvider == fi.CloudProviderAWS {
 		clusterSpec.Kubelet.CloudProvider = "aws"
-		clusterSpec.Kubelet.CgroupRoot = "docker"
+
+		// For 1.6 we're using much cleaner cgroup hierarchies
+		// but we keep the settings we've tested for k8s 1.5 and lower
+		// (see https://github.com/kubernetes/kubernetes/pull/41349)
+		if kubernetesVersion.Major == 1 && kubernetesVersion.Minor <= 5 {
+			clusterSpec.Kubelet.CgroupRoot = "docker"
+		}
 
 		// Use the hostname from the AWS metadata service
 		clusterSpec.Kubelet.HostnameOverride = "@aws"
@@ -130,11 +138,6 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	if cloudProvider == fi.CloudProviderGCE {
 		clusterSpec.Kubelet.CloudProvider = "gce"
 		clusterSpec.Kubelet.HairpinMode = "promiscuous-bridge"
-
-		clusterSpec.Kubelet.RuntimeCgroups = "/docker-daemon"
-		clusterSpec.Kubelet.KubeletCgroups = "/kubelet"
-		clusterSpec.Kubelet.SystemCgroups = "/system"
-		clusterSpec.Kubelet.CgroupRoot = "/"
 	}
 
 	usesKubenet, err := UsesKubenet(clusterSpec)
