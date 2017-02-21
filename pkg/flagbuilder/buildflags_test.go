@@ -18,6 +18,7 @@ package flagbuilder
 
 import (
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
 	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"testing"
 	"time"
@@ -48,6 +49,19 @@ func TestKubeletConfigSpec(t *testing.T) {
 			},
 			Expected: "--api-servers=https://example.com",
 		},
+		{
+			Config: &kops.KubeletConfigSpec{
+				EvictionPressureTransitionPeriod: &metav1.Duration{5 * time.Second},
+			},
+			Expected: "--eviction-pressure-transition-period=5s",
+		},
+		{
+			Config: &kops.KubeletConfigSpec{
+				TerminatedPodGCThreshold: fi.Int32(1500),
+			},
+			Expected: "--terminated-pod-gc-threshold=1500",
+		},
+
 		{
 			Config:   &kops.KubeletConfigSpec{},
 			Expected: "",
