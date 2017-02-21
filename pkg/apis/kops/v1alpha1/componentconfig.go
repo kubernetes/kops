@@ -293,11 +293,6 @@ type KubeletConfigSpec struct {
 	// collect to.
 	ImageGCLowThresholdPercent *int32 `json:"imageGCLowThresholdPercent,omitempty" flag:"image-gc-low-threshold"`
 
-	// terminatedPodGCThreshold is the number of terminated pods that can exist
-	// before the terminated pod garbage collector starts deleting terminated pods.
-	// If <= 0, the terminated pod garbage collector is disabled.
-	TerminatedPodGCThreshold *int32 `json:"terminatedPodGCThreshold,omitempty" flag:"terminated-pod-gc-threshold"`
-
 	// Comma-delimited list of hard eviction expressions.  For example, 'memory.available<300Mi'.
 	EvictionHard *string `json:"evictionHard,omitempty" flag:"eviction-hard"`
 	// Comma-delimited list of soft eviction expressions.  For example, 'memory.available<300Mi'.
@@ -567,6 +562,11 @@ type KubeControllerManagerConfig struct {
 	// ReconcilerSyncLoopPeriod is the amount of time the reconciler sync states loop
 	// wait between successive executions. Is set to 1 min by kops by default
 	AttachDetachReconcileSyncPeriod *metav1.Duration `json:"attachDetachReconcileSyncPeriod,omitempty" flag:"attach-detach-reconcile-sync-period"`
+
+	// terminatedPodGCThreshold is the number of terminated pods that can exist
+	// before the terminated pod garbage collector starts deleting terminated pods.
+	// If <= 0, the terminated pod garbage collector is disabled.
+	TerminatedPodGCThreshold *int32 `json:"terminatedPodGCThreshold,omitempty" flag:"terminated-pod-gc-threshold"`
 }
 
 type KubeSchedulerConfig struct {
