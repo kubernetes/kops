@@ -17,10 +17,11 @@ limitations under the License.
 package components
 
 import (
+	"strings"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
-	"strings"
 )
 
 // KubeletOptionsBuilder adds options for kubelets
@@ -121,7 +122,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 
 	if cloudProvider == fi.CloudProviderAWS {
 		clusterSpec.Kubelet.CloudProvider = "aws"
-		clusterSpec.Kubelet.CgroupRoot = "docker"
+		clusterSpec.Kubelet.CgroupRoot = "/"
 
 		// Use the hostname from the AWS metadata service
 		clusterSpec.Kubelet.HostnameOverride = "@aws"
