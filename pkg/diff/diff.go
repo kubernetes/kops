@@ -158,11 +158,13 @@ func buildDiffLines(lString, rString string) []lineRecord {
 		}
 	}
 
-	if l != "" && r != "" {
-		if l == r {
-			results = append(results, lineRecord{Type: diffmatchpatch.DiffEqual, Line: l})
-		} else {
+	if l != "" && l == r {
+		results = append(results, lineRecord{Type: diffmatchpatch.DiffEqual, Line: l})
+	} else {
+		if l != "" {
 			results = append(results, lineRecord{Type: diffmatchpatch.DiffDelete, Line: l})
+		}
+		if r != "" {
 			results = append(results, lineRecord{Type: diffmatchpatch.DiffInsert, Line: r})
 		}
 	}
