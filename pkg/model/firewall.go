@@ -82,6 +82,17 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
+	// We _should_ block per port... but:
+	// * It causes e2e tests to break
+	// * Users expect to be able to reach pods
+	// * If users are running an overlay, we punch a hole in it anyway
+	//b.applyNodeToMasterAllowSpecificPorts(c)
+	b.applyNodeToMasterBlockSpecificPorts(c)
+
+	return nil
+}
+
+func (b *FirewallModelBuilder) applyNodeToMasterAllowSpecificPorts(c *fi.ModelBuilderContext) {
 	// TODO: We need to remove the ALL rule
 	//W1229 12:32:22.300132    9003 executor.go:109] error running task "SecurityGroupRule/node-to-master-443" (9m58s remaining to succeed): error creating SecurityGroupIngress: InvalidPermission.Duplicate: the specified rule "peer: sg-f6b1a68b, ALL, ALLOW" already exists
 	//status code: 400, request id: 6a69627f-9a26-4bd0-b294-a9a96f89bc46
@@ -160,8 +171,65 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) error {
 			Protocol:      s(awsName),
 		})
 	}
+}
 
-	return nil
+func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBuilderContext) {
+	type portRange struct {
+		From int
+		To   int
+	}
+
+	// TODO: Make less hacky
+	// TODO: Fix management - we need a wildcard matcher now
+	tcpRanges := []portRange{{From: 1, To: 4000}, {From: 4003, To: 65535}}
+	udpRanges := []portRange{{From: 1, To: 65535}}
+	protocols := []Protocol{}
+
+	if b.Cluster.Spec.Networking.Calico != nil {
+		// Calico needs to access etcd
+		// TODO: Remove, replace with etcd in calico manifest
+		glog.Warningf("Opening etcd port on masters for access from the nodes, for calico.  This is unsafe in untrusted environments.")
+		tcpRanges = []portRange{{From: 1, To: 4001}, {From: 4003, To: 65535}}
+		protocols = append(protocols, ProtocolIPIP)
+	}
+
+	for _, r := range udpRanges {
+		c.AddTask(&awstasks.SecurityGroupRule{
+			Name:          s(fmt.Sprintf("node-to-master-udp-%d-%d", r.From, r.To)),
+			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
+			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
+			FromPort:      i64(int64(r.From)),
+			ToPort:        i64(int64(r.To)),
+			Protocol:      s("udp"),
+		})
+	}
+	for _, r := range tcpRanges {
+		c.AddTask(&awstasks.SecurityGroupRule{
+			Name:          s(fmt.Sprintf("node-to-master-tcp-%d-%d", r.From, r.To)),
+			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
+			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
+			FromPort:      i64(int64(r.From)),
+			ToPort:        i64(int64(r.To)),
+			Protocol:      s("tcp"),
+		})
+	}
+	for _, protocol := range protocols {
+		awsName := strconv.Itoa(int(protocol))
+		name := awsName
+		switch protocol {
+		case ProtocolIPIP:
+			name = "ipip"
+		default:
+			glog.Warningf("unknown protocol %q - naming by number", awsName)
+		}
+
+		c.AddTask(&awstasks.SecurityGroupRule{
+			Name:          s("node-to-master-protocol-" + name),
+			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
+			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
+			Protocol:      s(awsName),
+		})
+	}
 }
 
 func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext) error {
