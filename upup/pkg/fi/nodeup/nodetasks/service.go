@@ -42,6 +42,8 @@ const (
 	centosSystemdSystemPath = "/usr/lib/systemd/system"
 
 	coreosSystemdSystemPath = "/etc/systemd/system"
+
+	containerosSystemdSystemPath = "/etc/systemd/system"
 )
 
 type Service struct {
@@ -146,6 +148,8 @@ func (e *Service) systemdSystemPath(target tags.HasTags) (string, error) {
 		return centosSystemdSystemPath, nil
 	} else if target.HasTag("_coreos") {
 		return coreosSystemdSystemPath, nil
+	} else if target.HasTag("_containeros") {
+		return containerosSystemdSystemPath, nil
 	} else {
 		return "", fmt.Errorf("unsupported systemd system")
 	}
