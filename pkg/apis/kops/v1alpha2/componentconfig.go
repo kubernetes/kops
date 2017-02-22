@@ -99,8 +99,10 @@ type KubeletConfigSpec struct {
 	// registerSchedulable tells the kubelet to register the node as
 	// schedulable. No-op if register-node is false.
 	RegisterSchedulable *bool `json:"registerSchedulable,omitempty" flag:"register-schedulable"`
+
 	// nodeLabels to add when registering the node in the cluster.
 	NodeLabels map[string]string `json:"nodeLabels,omitempty" flag:"node-labels"`
+
 	// nonMasqueradeCIDR configures masquerading: traffic to IPs outside this range will use IP masquerade.
 	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty" flag:"non-masquerade-cidr"`
 
