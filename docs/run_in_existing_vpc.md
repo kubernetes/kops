@@ -80,7 +80,7 @@ but it's better to avoid the later confusion!)
 
 ### Shared Subnets
 
-`kops` can create a cluster in shared subnets in both public and private network [topologies](docs/topology.md). Doing so is not recommended unless you are using [external networking](docs/networking.md#supported-cni-networking)
+`kops` can create a cluster in shared subnets in both public and private network [topologies](topology.md). Doing so is not recommended unless you are using [external networking](docs/networking.md#supported-cni-networking)
 
 After creating a basic cluster spec, edit your cluster to add the ID of the subnet:
 
