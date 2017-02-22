@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kubernetes/pkg/util/sets"
 	"sort"
 	"time"
 )
@@ -404,7 +405,8 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 
 		if len(ephemeralDevices) != 0 {
 			tf.EphemeralBlockDevice = []*terraformBlockDevice{}
-			for deviceName, bdm := range ephemeralDevices {
+			for _, deviceName := range sets.StringKeySet(ephemeralDevices).List() {
+				bdm := ephemeralDevices[deviceName]
 				tf.EphemeralBlockDevice = append(tf.EphemeralBlockDevice, &terraformBlockDevice{
 					VirtualName: bdm.VirtualName,
 					DeviceName:  fi.String(deviceName),
