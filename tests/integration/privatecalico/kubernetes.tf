@@ -535,40 +535,31 @@ resource "aws_security_group_rule" "node-to-master-protocol-ipip" {
   protocol                 = "4"
 }
 
-resource "aws_security_group_rule" "node-to-master-tcp-179" {
+resource "aws_security_group_rule" "node-to-master-tcp-1-4001" {
   type                     = "ingress"
   security_group_id        = "${aws_security_group.masters-privatecalico-example-com.id}"
   source_security_group_id = "${aws_security_group.nodes-privatecalico-example-com.id}"
-  from_port                = 179
-  to_port                  = 179
-  protocol                 = "tcp"
-}
-
-resource "aws_security_group_rule" "node-to-master-tcp-4001" {
-  type                     = "ingress"
-  security_group_id        = "${aws_security_group.masters-privatecalico-example-com.id}"
-  source_security_group_id = "${aws_security_group.nodes-privatecalico-example-com.id}"
-  from_port                = 4001
+  from_port                = 1
   to_port                  = 4001
   protocol                 = "tcp"
 }
 
-resource "aws_security_group_rule" "node-to-master-tcp-4194" {
+resource "aws_security_group_rule" "node-to-master-tcp-4003-65535" {
   type                     = "ingress"
   security_group_id        = "${aws_security_group.masters-privatecalico-example-com.id}"
   source_security_group_id = "${aws_security_group.nodes-privatecalico-example-com.id}"
-  from_port                = 4194
-  to_port                  = 4194
+  from_port                = 4003
+  to_port                  = 65535
   protocol                 = "tcp"
 }
 
-resource "aws_security_group_rule" "node-to-master-tcp-443" {
+resource "aws_security_group_rule" "node-to-master-udp-1-65535" {
   type                     = "ingress"
   security_group_id        = "${aws_security_group.masters-privatecalico-example-com.id}"
   source_security_group_id = "${aws_security_group.nodes-privatecalico-example-com.id}"
-  from_port                = 443
-  to_port                  = 443
-  protocol                 = "tcp"
+  from_port                = 1
+  to_port                  = 65535
+  protocol                 = "udp"
 }
 
 resource "aws_security_group_rule" "ssh-elb-to-bastion" {
