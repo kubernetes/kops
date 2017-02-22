@@ -52,7 +52,12 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 	if !(k8sVersion.Major == 1 && k8sVersion.Minor < 6) {
 		if b.IsMaster {
-			kubeletConfig.Taints = append(kubeletConfig.Taints, "dedicated=master:NoSchedule")
+			// We have a chicken-and-egg situation here with https://github.com/kubernetes/kubernetes/pull/38957
+			// * We can't apply the new toleration until the tolerations-in-field code merges upstream
+			// * We can't get the tolerations-in-fields PR to merge until we put the tolerations in the field
+			// For now, we just don't taint 1.6 masters.  Once #1812 merges, we'll fix this.
+			glog.Warningf("NOT TAINTING MASTERS FOR 1.6 - HACK!!!")
+			//kubeletConfig.Taints = append(kubeletConfig.Taints, "dedicated=master:NoSchedule")
 			if kubeletConfig.RegisterSchedulable != nil {
 				kubeletConfig.RegisterSchedulable = fi.Bool(true)
 			}
