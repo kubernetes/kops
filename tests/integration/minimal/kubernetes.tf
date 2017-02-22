@@ -267,22 +267,31 @@ resource "aws_security_group_rule" "node-egress" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
-resource "aws_security_group_rule" "node-to-master-tcp-4194" {
+resource "aws_security_group_rule" "node-to-master-tcp-1-4000" {
   type                     = "ingress"
   security_group_id        = "${aws_security_group.masters-minimal-example-com.id}"
   source_security_group_id = "${aws_security_group.nodes-minimal-example-com.id}"
-  from_port                = 4194
-  to_port                  = 4194
+  from_port                = 1
+  to_port                  = 4000
   protocol                 = "tcp"
 }
 
-resource "aws_security_group_rule" "node-to-master-tcp-443" {
+resource "aws_security_group_rule" "node-to-master-tcp-4003-65535" {
   type                     = "ingress"
   security_group_id        = "${aws_security_group.masters-minimal-example-com.id}"
   source_security_group_id = "${aws_security_group.nodes-minimal-example-com.id}"
-  from_port                = 443
-  to_port                  = 443
+  from_port                = 4003
+  to_port                  = 65535
   protocol                 = "tcp"
+}
+
+resource "aws_security_group_rule" "node-to-master-udp-1-65535" {
+  type                     = "ingress"
+  security_group_id        = "${aws_security_group.masters-minimal-example-com.id}"
+  source_security_group_id = "${aws_security_group.nodes-minimal-example-com.id}"
+  from_port                = 1
+  to_port                  = 65535
+  protocol                 = "udp"
 }
 
 resource "aws_security_group_rule" "ssh-external-to-master-0-0-0-0--0" {
