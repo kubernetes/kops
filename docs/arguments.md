@@ -43,12 +43,9 @@ Examples:
 
 ## cloud-labels
 
-`cloud-labels` specifies tags for AWS cloud resources. This applies to resources created by kops (VPCs, masters, nodes,
-bastions, etc).  Resources that are dynamically created by kubernetes (EBS volumes, service ELBs, etc.) will not be
-tagged by `cloud-labels`.
-
-The supported format is a CSV list of key=value pairs. Keys and values must not contain embedded commas but they may
-contain equals signs ('=') as long as the field is quoted: `
+`cloud-labels` specifies tags for instance groups in AWS. The supported format is a CSV list of key=value pairs.
+Keys and values must not contain embedded commas but they may contain equals signs ('=') as long as the field is
+quoted:
 * `--cloud-labels "Project=\"Name=Foo Customer=Acme\",Owner=Jane Doe"` will be parsed as {Project:"Name=Foo Customer=Acme",
 Owner: "Jane Doe"}
 
