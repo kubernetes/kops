@@ -77,7 +77,7 @@ type CreateClusterOptions struct {
 	// Enable/Disable Bastion Host complete setup
 	Bastion bool
 
-	// Specify tags for AWS resources
+	// Specify tags for AWS instance groups
 	CloudLabels string
 
 	// Egress configuration - FOR TESTING ONLY
@@ -179,7 +179,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.Bastion, "bastion", options.Bastion, "Pass the --bastion flag to enable a bastion instance group. Only applies to private topology.")
 
 	// Allow custom tags from the CLI
-	cmd.Flags().StringVar(&options.CloudLabels, "cloud-labels", options.CloudLabels, "A list of KV pairs used to tag all kops-created AWS resources (eg \"Owner=John Doe,Team=Some Team\").")
+	cmd.Flags().StringVar(&options.CloudLabels, "cloud-labels", options.CloudLabels, "A list of KV pairs used to tag all instance groups in AWS (eg \"Owner=John Doe,Team=Some Team\").")
 
 	return cmd
 }
