@@ -157,9 +157,10 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 // buildAWSIAMPolicy produces the AWS IAM policy for the given role
 func (b *IAMModelBuilder) buildAWSIAMPolicy(role kops.InstanceGroupRole) (string, error) {
 	pb := &iam.IAMPolicyBuilder{
-		Cluster: b.Cluster,
-		Role:    role,
-		Region:  b.Region,
+		Cluster:      b.Cluster,
+		Role:         role,
+		Region:       b.Region,
+		HostedZoneID: b.HostedZoneID,
 	}
 
 	policy, err := pb.BuildAWSIAMPolicy()

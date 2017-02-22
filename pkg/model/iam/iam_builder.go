@@ -68,9 +68,10 @@ func (l *IAMStatement) Equal(r *IAMStatement) bool {
 }
 
 type IAMPolicyBuilder struct {
-	Cluster *api.Cluster
-	Role    api.InstanceGroupRole
-	Region  string
+	Cluster      *api.Cluster
+	Role         api.InstanceGroupRole
+	Region       string
+	HostedZoneID string
 }
 
 func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
@@ -101,25 +102,6 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 			Resource: wildcard,
 		})
 
-		p.Statement = append(p.Statement, &IAMStatement{
-			Effect: IAMStatementEffectAllow,
-			Action: stringorslice.Of("route53:ChangeResourceRecordSets",
-				"route53:ListResourceRecordSets",
-				"route53:GetHostedZone"),
-			Resource: stringorslice.Slice([]string{"arn:aws:route53:::hostedzone/" + b.Cluster.Spec.DNSZone}),
-		})
-
-		p.Statement = append(p.Statement, &IAMStatement{
-			Effect:   IAMStatementEffectAllow,
-			Action:   stringorslice.Slice([]string{"route53:GetChange"}),
-			Resource: stringorslice.Slice([]string{"arn:aws:route53:::change/*"}),
-		})
-
-		p.Statement = append(p.Statement, &IAMStatement{
-			Effect:   IAMStatementEffectAllow,
-			Action:   stringorslice.Slice([]string{"route53:ListHostedZones"}),
-			Resource: wildcard,
-		})
 	}
 
 	{
@@ -145,25 +127,6 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 		p.Statement = append(p.Statement, &IAMStatement{
 			Effect:   IAMStatementEffectAllow,
 			Action:   stringorslice.Slice([]string{"ec2:*"}),
-			Resource: wildcard,
-		})
-
-		p.Statement = append(p.Statement, &IAMStatement{
-			Effect: IAMStatementEffectAllow,
-			Action: stringorslice.Of("route53:ChangeResourceRecordSets",
-				"route53:ListResourceRecordSets",
-				"route53:GetHostedZone"),
-			Resource: stringorslice.Slice([]string{"arn:aws:route53:::hostedzone/" + b.Cluster.Spec.DNSZone}),
-		})
-		p.Statement = append(p.Statement, &IAMStatement{
-			Effect:   IAMStatementEffectAllow,
-			Action:   stringorslice.Slice([]string{"route53:GetChange"}),
-			Resource: stringorslice.Slice([]string{"arn:aws:route53:::change/*"}),
-		})
-
-		p.Statement = append(p.Statement, &IAMStatement{
-			Effect:   IAMStatementEffectAllow,
-			Action:   stringorslice.Slice([]string{"route53:ListHostedZones"}),
 			Resource: wildcard,
 		})
 
@@ -211,6 +174,26 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 			})
 		}
 	}
+
+	p.Statement = append(p.Statement, &IAMStatement{
+		Effect: IAMStatementEffectAllow,
+		Action: stringorslice.Of("route53:ChangeResourceRecordSets",
+			"route53:ListResourceRecordSets",
+			"route53:GetHostedZone"),
+		Resource: stringorslice.Slice([]string{"arn:aws:route53:::hostedzone/" + b.HostedZoneID}),
+	})
+
+	p.Statement = append(p.Statement, &IAMStatement{
+		Effect:   IAMStatementEffectAllow,
+		Action:   stringorslice.Slice([]string{"route53:GetChange"}),
+		Resource: stringorslice.Slice([]string{"arn:aws:route53:::change/*"}),
+	})
+
+	p.Statement = append(p.Statement, &IAMStatement{
+		Effect:   IAMStatementEffectAllow,
+		Action:   stringorslice.Slice([]string{"route53:ListHostedZones"}),
+		Resource: wildcard,
+	})
 
 	// For S3 IAM permissions, we grant permissions to subtrees.  So find the parents;
 	// we don't need to grant mypath and mypath/child.
