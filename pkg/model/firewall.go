@@ -18,11 +18,12 @@ package model
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
-	"strconv"
 )
 
 type Protocol int
@@ -106,6 +107,9 @@ func (b *FirewallModelBuilder) applyNodeToMasterAllowSpecificPorts(c *fi.ModelBu
 
 	// allow cadvisor
 	tcpPorts = append(tcpPorts, 4194)
+
+	// kubelet read-only used by heapster
+	tcpPorts = append(tcpPorts, 10255)
 
 	if b.Cluster.Spec.Networking != nil {
 		if b.Cluster.Spec.Networking.Kopeio != nil {
