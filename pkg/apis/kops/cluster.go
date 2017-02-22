@@ -213,8 +213,6 @@ type ClusterSpec struct {
 	//KubeProxyTestArgs             string `json:",omitempty"`
 	//KubeProxyTestLogLevel         string `json:",omitempty"`
 
-	//NodeUp                        *NodeUpConfig `json:",omitempty"`
-
 	//// Masters is the configuration for each master in the cluster
 	//Masters []*MasterConfig `json:",omitempty"`
 
@@ -318,16 +316,6 @@ type ClusterSubnetSpec struct {
 
 	Type SubnetType `json:"type,omitempty"`
 }
-
-//type NodeUpConfig struct {
-//	Source     string `json:",omitempty"`
-//	SourceHash string `json:",omitempty"`
-//
-//	Tags       []string `json:",omitempty"`
-//
-//	// Assets that NodeUp should use.  This is a "search-path" for resolving dependencies.
-//	Assets     []string `json:",omitempty"`
-//}
 
 // FillDefaults populates default values.
 // This is different from PerformAssignments, because these values are changeable, and thus we don't need to
