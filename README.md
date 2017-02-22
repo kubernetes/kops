@@ -97,17 +97,23 @@ Are you interested in contributing to kops? We the maintainers and community wou
 * [@geojaz](https://github.com/geojaz)
 * [@yissachar](https://github.com/yissachar)
 
-Kops also has time set aside every other week to offer help and guidance to the
-community. Kops maintainers have agreed to set aside time specifically dedicated
-to working with newcomers, helping with PRs, and discussing new features.
+## Office Hours
 
-Please feel free to reach out **beforehand** if you plan on attending!
+Kops maintainers also have time (1 hour) set aside every other week to offer help and guidance to the
+community. This is the maintainer's **office hours**. During this time we might work with newcomers, help with PRs, and discuss new features. Anything goes.
+
+We encourage you to reach out **beforehand** if you plan on attending. We have an [agenda](https://docs.google.com/document/d/12QkyL0FkNbWPcLFxxRGSPt_tNPBHbmni3YLY-lHny7E/edit) where we track notes from office hours.
 
 Office hours, on [Zoom](https://zoom.us/my/k8ssigaws) video
 conference are on Fridays at [5pm UTC/9 am US Pacific](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12) every other week, on odd week numbers.
-Easy command for number of the week: `date +%V`. 
 
-The maintainers and other community members are generally available on the [kubernetes slack](https://github.com/kubernetes/community#slack-chat) in #kops, so come find and chat with us about how kops can be better for you! 
+You can check your week number using:
+
+```bash
+date +%V
+```
+
+The maintainers and other community members are generally available on the [kubernetes slack](https://github.com/kubernetes/community#slack-chat) in [#kops](https://kubernetes.slack.com/messages/kops/), so come find and chat with us about how kops can be better for you! 
 
 ## Other Resources
 
