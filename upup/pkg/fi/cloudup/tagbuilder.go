@@ -117,9 +117,6 @@ func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTa
 	case api.InstanceGroupRoleNode:
 		tags.Insert("_kubernetes_pool")
 
-		// TODO: Should we run _protokube on the nodes?
-		tags.Insert("_protokube")
-
 	case api.InstanceGroupRoleMaster:
 		tags.Insert("_kubernetes_master")
 
@@ -127,8 +124,6 @@ func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTa
 			// Run this master as a pool node also (start kube-proxy etc)
 			tags.Insert("_kubernetes_pool")
 		}
-
-		tags.Insert("_protokube")
 
 	case api.InstanceGroupRoleBastion:
 		// No tags
