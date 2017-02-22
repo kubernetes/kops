@@ -58,9 +58,7 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 			// For now, we just don't taint 1.6 masters.  Once #1812 merges, we'll fix this.
 			glog.Warningf("NOT TAINTING MASTERS FOR 1.6 - HACK!!!")
 			//kubeletConfig.Taints = append(kubeletConfig.Taints, "dedicated=master:NoSchedule")
-			if kubeletConfig.RegisterSchedulable != nil {
 				kubeletConfig.RegisterSchedulable = fi.Bool(true)
-			}
 		}
 	}
 
