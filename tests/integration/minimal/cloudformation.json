@@ -266,7 +266,7 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupIngressnodetomastertcp4194": {
+    "AWSEC2SecurityGroupIngressnodetomastertcp14000": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -275,12 +275,12 @@
         "SourceSecurityGroupId": {
           "Ref": "AWSEC2SecurityGroupnodesminimalexamplecom"
         },
-        "FromPort": 4194,
-        "ToPort": 4194,
+        "FromPort": 1,
+        "ToPort": 4000,
         "IpProtocol": "tcp"
       }
     },
-    "AWSEC2SecurityGroupIngressnodetomastertcp443": {
+    "AWSEC2SecurityGroupIngressnodetomastertcp400365535": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -289,9 +289,23 @@
         "SourceSecurityGroupId": {
           "Ref": "AWSEC2SecurityGroupnodesminimalexamplecom"
         },
-        "FromPort": 443,
-        "ToPort": 443,
+        "FromPort": 4003,
+        "ToPort": 65535,
         "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressnodetomasterudp165535": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersminimalexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesminimalexamplecom"
+        },
+        "FromPort": 1,
+        "ToPort": 65535,
+        "IpProtocol": "udp"
       }
     },
     "AWSEC2SecurityGroupIngresssshexternaltomaster00000": {
