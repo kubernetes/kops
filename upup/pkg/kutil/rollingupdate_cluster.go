@@ -39,6 +39,8 @@ type RollingUpdateCluster struct {
 	NodeInterval    time.Duration
 	BastionInterval time.Duration
 
+	Headroom int64
+
 	Force bool
 }
 
@@ -125,7 +127,6 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 	// Upgrade bastions first; if these go down we can't see anything
 	{
 		var wg sync.WaitGroup
-
 		for k, bastionGroup := range bastionGroups {
 			wg.Add(1)
 			go func(k string, group *CloudInstanceGroup) {
@@ -135,7 +136,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 
 				defer wg.Done()
 
-				err := group.RollingUpdate(c.Cloud, c.Force, c.BastionInterval, k8sClient)
+				err := group.RollingUpdate(c.Cloud, c.Force, c.BastionInterval, 0, k8sClient)
 
 				resultsMutex.Lock()
 				results[k] = err
@@ -165,7 +166,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 			defer wg.Done()
 
 			for k, group := range masterGroups {
-				err := group.RollingUpdate(c.Cloud, c.Force, c.MasterInterval, k8sClient)
+				err := group.RollingUpdate(c.Cloud, c.Force, c.MasterInterval, 0, k8sClient)
 
 				resultsMutex.Lock()
 				results[k] = err
@@ -191,7 +192,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 
 				defer wg.Done()
 
-				err := group.RollingUpdate(c.Cloud, c.Force, c.NodeInterval, k8sClient)
+				err := group.RollingUpdate(c.Cloud, c.Force, c.NodeInterval, c.Headroom, k8sClient)
 
 				resultsMutex.Lock()
 				results[k] = err
@@ -269,8 +270,41 @@ func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group, nodeMa
 	return n
 }
 
-func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, interval time.Duration, k8sClient *k8s_clientset.Clientset) error {
+func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, interval time.Duration, headroom int64, k8sClient *k8s_clientset.Clientset) error {
 	c := cloud.(awsup.AWSCloud)
+
+	if headroom > 0 {
+		describeParams := &autoscaling.DescribeAutoScalingGroupsInput{
+			AutoScalingGroupNames: []*string{aws.String(n.ASGName)},
+			MaxRecords: aws.Int64(1),
+		}
+
+		out, err := c.Autoscaling().DescribeAutoScalingGroups(describeParams)
+		if err != nil {
+			return fmt.Errorf("Error adding headroom to ASG %s: %v", n.ASGName, err)
+		}
+
+		currentCapacity := aws.Int64Value(out.AutoScalingGroups[0].DesiredCapacity)
+		desiredCapacity := currentCapacity + headroom
+
+		if desiredCapacity > *out.AutoScalingGroups[0].MaxSize {
+			return fmt.Errorf("Adding headroom exceeds ASG max, increase ASG max to continue.")
+		}
+
+		setParams := &autoscaling.SetDesiredCapacityInput{
+			AutoScalingGroupName: aws.String(n.ASGName),
+			DesiredCapacity: aws.Int64(desiredCapacity),
+		}
+
+		_, err = c.Autoscaling().SetDesiredCapacity(setParams)
+		if err != nil {
+			return fmt.Errorf("Error adding headroom to ASG %s: %v", n.ASGName, err)
+		}
+
+		glog.Infof("Waiting for headroom in ASG: %s", n.ASGName)
+		time.Sleep(interval)
+	}
+
 
 	update := n.NeedUpdate
 	if force {
@@ -281,8 +315,6 @@ func (n *CloudInstanceGroup) RollingUpdate(cloud fi.Cloud, force bool, interval 
 		glog.Infof("Stopping instance %q in AWS ASG %q", instanceID, n.ASGName)
 
 		// TODO: Evacuate through k8s first?
-
-		// TODO: Temporarily increase size of ASG?
 
 		// TODO: Remove from ASG first so status is immediately updated?
 

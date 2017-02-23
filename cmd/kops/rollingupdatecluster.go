@@ -44,6 +44,8 @@ type RollingUpdateOptions struct {
 	NodeInterval    time.Duration
 	BastionInterval time.Duration
 
+	Headroom int64
+
 	ClusterName string
 
 	// InstanceGroups is the list of instance groups to rolling-update;
@@ -59,6 +61,8 @@ func (o *RollingUpdateOptions) InitDefaults() {
 	o.MasterInterval = 5 * time.Minute
 	o.NodeInterval = 2 * time.Minute
 	o.BastionInterval = 5 * time.Minute
+
+	o.Headroom = 0
 }
 
 func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
@@ -82,6 +86,8 @@ To perform rolling update, you need to update the cloud resources first with "ko
 	cmd.Flags().DurationVar(&options.MasterInterval, "master-interval", options.MasterInterval, "Time to wait between restarting masters")
 	cmd.Flags().DurationVar(&options.NodeInterval, "node-interval", options.NodeInterval, "Time to wait between restarting nodes")
 	cmd.Flags().DurationVar(&options.BastionInterval, "bastion-interval", options.BastionInterval, "Time to wait between restarting bastions")
+
+	cmd.Flags().Int64Var(&options.Headroom, "headroom", options.Headroom, "Additional nodes to provision before starting rolling update (default 0)")
 
 	cmd.Flags().StringSliceVar(&options.InstanceGroups, "instance-group", options.InstanceGroups, "List of instance groups to update (defaults to all if not specified)")
 
@@ -188,6 +194,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 	d := &kutil.RollingUpdateCluster{
 		MasterInterval: options.MasterInterval,
 		NodeInterval:   options.NodeInterval,
+		Headroom:	options.Headroom,
 		Force:          options.Force,
 	}
 	d.Cloud = cloud
@@ -262,6 +269,11 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 	if !options.Yes {
 		fmt.Printf("\nMust specify --yes to rolling-update\n")
 		return nil
+	}
+
+	if options.Headroom > 0 {
+		fmt.Printf("\nkops will not apply headroom to master and bastion nodes\n")
+		fmt.Printf("Warning: kops will not terminate extra nodes added as headroom for rolling updates\n")
 	}
 
 	return d.RollingUpdate(groups, k8sClient)

@@ -19,7 +19,7 @@ package awsup
 import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elb"
@@ -66,6 +66,7 @@ func BuildMockAWSCloud(region string, zoneLetters string) *MockAWSCloud {
 
 type MockCloud struct {
 	MockEC2     ec2iface.EC2API
+	MockAutoscaling     autoscalingiface.AutoScalingAPI
 	MockRoute53 route53iface.Route53API
 }
 
@@ -166,9 +167,8 @@ func (c *MockAWSCloud) ELB() *elb.ELB {
 	return nil
 }
 
-func (c *MockAWSCloud) Autoscaling() *autoscaling.AutoScaling {
-	glog.Fatalf("MockAWSCloud Autoscaling not implemented")
-	return nil
+func (c *MockAWSCloud) Autoscaling() autoscalingiface.AutoScalingAPI {
+	return c.MockAutoscaling
 }
 
 func (c *MockAWSCloud) Route53() route53iface.Route53API {
