@@ -3,8 +3,8 @@ metadata:
   name: dns-controller
 spec:
   addons:
-  - version: 1.5.1
+  - version: 1.5.2
     selector:
       k8s-addon: dns-controller.addons.k8s.io
-    manifest: v1.5.1.yaml
+    manifest: v1.5.2.yaml
 
