@@ -96,6 +96,18 @@ func (s *IAMRolePolicy) CheckChanges(a, e, changes *IAMRolePolicy) error {
 	return nil
 }
 
+func (_ *IAMRolePolicy) ShouldCreate(a, e, changes *IAMRolePolicy) (bool, error) {
+	ePolicy, err := e.PolicyDocument.AsString()
+	if err != nil {
+		return false, fmt.Errorf("error rendering PolicyDocument: %v", err)
+	}
+
+	if a == nil && ePolicy == "" {
+		return false, nil
+	}
+	return true, nil
+}
+
 func (_ *IAMRolePolicy) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMRolePolicy) error {
 	policy, err := e.PolicyDocument.AsString()
 	if err != nil {

@@ -26,6 +26,20 @@ import (
 
 var SkipReflection = errors.New("skip this value")
 
+type MethodNotFoundError struct {
+	Name   string
+	Target interface{}
+}
+
+func (e *MethodNotFoundError) Error() string {
+	return fmt.Sprintf("method %s not found on %T", e.Name, e.Target)
+}
+
+func IsMethodNotFound(err error) bool {
+	_, ok := err.(*MethodNotFoundError)
+	return ok
+}
+
 // JsonMergeStruct merges src into dest
 // It uses a JSON marshal & unmarshal, so only fields that are JSON-visible will be copied
 func JsonMergeStruct(dest, src interface{}) {
@@ -46,7 +60,10 @@ func InvokeMethod(target interface{}, name string, args ...interface{}) ([]refle
 
 	method, found := v.Type().MethodByName(name)
 	if !found {
-		return nil, fmt.Errorf("method %q not found on %T", name, target)
+		return nil, &MethodNotFoundError{
+			Name:   name,
+			Target: target,
+		}
 	}
 
 	var argValues []reflect.Value
