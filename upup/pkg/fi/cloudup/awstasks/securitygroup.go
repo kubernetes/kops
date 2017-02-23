@@ -18,6 +18,8 @@ package awstasks
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -26,8 +28,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
-	"strconv"
-	"strings"
 )
 
 //go:generate fitask -type=SecurityGroup
@@ -39,6 +39,9 @@ type SecurityGroup struct {
 	VPC         *VPC
 
 	RemoveExtraRules []string
+
+	// Shared is set if this is a shared security group (one we don't create or own)
+	Shared *bool
 }
 
 var _ fi.CompareWithID = &SecurityGroup{}
@@ -76,6 +79,12 @@ func (e *SecurityGroup) Find(c *fi.Context) (*SecurityGroup, error) {
 	e.ID = actual.ID
 
 	actual.RemoveExtraRules = e.RemoveExtraRules
+
+	// Prevent spurious comparison failures
+	actual.Shared = e.Shared
+	if e.ID == nil {
+		e.ID = actual.ID
+	}
 
 	return actual, nil
 }
@@ -123,6 +132,13 @@ func (e *SecurityGroup) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
+func (_ *SecurityGroup) ShouldCreate(a, e, changes *SecurityGroup) (bool, error) {
+	if fi.BoolValue(e.Shared) {
+		return false, nil
+	}
+	return true, nil
+}
+
 func (_ *SecurityGroup) CheckChanges(a, e, changes *SecurityGroup) error {
 	if a != nil {
 		if changes.ID != nil {
@@ -139,6 +155,12 @@ func (_ *SecurityGroup) CheckChanges(a, e, changes *SecurityGroup) error {
 }
 
 func (_ *SecurityGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *SecurityGroup) error {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		// Do we want to do any verification of the security group?
+		return nil
+	}
+
 	if a == nil {
 		glog.V(2).Infof("Creating SecurityGroup with Name:%q VPC:%q", *e.Name, *e.VPC.ID)
 
@@ -168,6 +190,12 @@ type terraformSecurityGroup struct {
 
 func (_ *SecurityGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *SecurityGroup) error {
 	cloud := t.Cloud.(awsup.AWSCloud)
+
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		// Not terraform owned / managed
+		return nil
+	}
 
 	tf := &terraformSecurityGroup{
 		Name:        e.Name,
