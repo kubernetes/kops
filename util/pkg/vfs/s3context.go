@@ -18,14 +18,16 @@ package vfs
 
 import (
 	"fmt"
+	"os"
+	"sync"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/golang/glog"
-	"os"
-	"sync"
-	"time"
 )
 
 type S3Context struct {
@@ -74,6 +76,10 @@ func (s *S3Context) getRegionForBucket(bucket string) (string, error) {
 	awsRegion := os.Getenv("AWS_REGION")
 	if awsRegion == "" {
 		awsRegion = "us-east-1"
+	}
+
+	if err := validateRegion(awsRegion); err != nil {
+		return "", err
 	}
 
 	request := &s3.GetBucketLocationInput{
@@ -154,4 +160,17 @@ func bruteforceBucketLocation(region *string, request *s3.GetBucketLocationInput
 	case <-time.After(5 * time.Second):
 		return nil, fmt.Errorf("Could not retrieve location for AWS bucket %s", *request.Bucket)
 	}
+}
+
+func validateRegion(region string) error {
+	resolver := endpoints.DefaultResolver()
+	partitions := resolver.(endpoints.EnumPartitions).Partitions()
+	for _, p := range partitions {
+		for _, r := range p.Regions() {
+			if r.ID() == region {
+				return nil
+			}
+		}
+	}
+	return fmt.Errorf("%s is not a valid region\nPlease check that your region is formatted correctly (i.e. us-east-1)", region)
 }
