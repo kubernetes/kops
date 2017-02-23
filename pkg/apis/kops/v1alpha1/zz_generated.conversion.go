@@ -436,6 +436,7 @@ func autoConvert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	} else {
 		out.API = nil
 	}
+	out.CloudLabels = in.CloudLabels
 	return nil
 }
 
@@ -573,6 +574,7 @@ func autoConvert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, 
 	} else {
 		out.API = nil
 	}
+	out.CloudLabels = in.CloudLabels
 	return nil
 }
 

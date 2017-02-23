@@ -14,6 +14,7 @@ kops create cluster \
     --master-security-groups sg-12345678,i-abcd1234 \
     --topology private \
     --networking weave \
+    --cloud-labels "Team=Dev,Owner=John Doe" \
     --image 293135079892/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-11-16 \
     ${NAME}
 ```
