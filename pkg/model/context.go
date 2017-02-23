@@ -134,6 +134,11 @@ func (m *KopsModelContext) NodeInstanceGroups() []*kops.InstanceGroup {
 func (m *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (map[string]string, error) {
 	labels := make(map[string]string)
 
+	// Apply any user-specified global labels first so they can be overridden by IG-specific labels
+	for k, v := range m.Cluster.Spec.CloudLabels {
+		labels[k] = v
+	}
+
 	// Apply any user-specified labels
 	for k, v := range ig.Spec.CloudLabels {
 		labels[k] = v
