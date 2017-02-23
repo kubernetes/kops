@@ -22,6 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elb"
@@ -67,6 +68,7 @@ type AWSCloud interface {
 
 	Region() string
 
+	CloudFormation() *cloudformation.CloudFormation
 	EC2() ec2iface.EC2API
 	IAM() *iam.IAM
 	ELB() *elb.ELB
@@ -111,6 +113,7 @@ type AWSCloud interface {
 }
 
 type awsCloudImplementation struct {
+	cf          *cloudformation.CloudFormation
 	ec2         *ec2.EC2
 	iam         *iam.IAM
 	elb         *elb.ELB
@@ -149,6 +152,9 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		config = config.WithCredentialsChainVerboseErrors(true)
 
 		requestLogger := newRequestLogger(2)
+
+		c.cf = cloudformation.New(session.New(), config)
+		c.cf.Handlers.Send.PushFront(requestLogger)
 
 		c.ec2 = ec2.New(session.New(), config)
 		c.ec2.Handlers.Send.PushFront(requestLogger)
@@ -663,6 +669,10 @@ func (c *awsCloudImplementation) DNS() (dnsprovider.Interface, error) {
 		return nil, fmt.Errorf("Error building (k8s) DNS provider: %v", err)
 	}
 	return provider, nil
+}
+
+func (c *awsCloudImplementation) CloudFormation() *cloudformation.CloudFormation {
+	return c.cf
 }
 
 func (c *awsCloudImplementation) EC2() ec2iface.EC2API {
