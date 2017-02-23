@@ -18,11 +18,14 @@ package model
 
 import (
 	"fmt"
+	"sort"
 	"time"
 
+	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+	"k8s.io/kubernetes/pkg/util/sets"
 )
 
 const LoadBalancerDefaultIdleTimeout = 5 * time.Minute
@@ -54,14 +57,10 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		return fmt.Errorf("unhandled LoadBalancer type %q", lbSpec.Type)
 	}
 
-	var elb *awstasks.LoadBalancer
+	// Compute the subnets - only one per zone, and then break ties based on chooseBestSubnetForELB
+	var elbSubnets []*awstasks.Subnet
 	{
-		elbID, err := b.GetELBName32("api")
-		if err != nil {
-			return err
-		}
-
-		var elbSubnets []*awstasks.Subnet
+		subnetsByZone := make(map[string][]*kops.ClusterSubnetSpec)
 		for i := range b.Cluster.Spec.Subnets {
 			subnet := &b.Cluster.Spec.Subnets[i]
 
@@ -80,7 +79,21 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				return fmt.Errorf("subnet %q had unknown type %q", subnet.Name, subnet.Type)
 			}
 
+			subnetsByZone[subnet.Zone] = append(subnetsByZone[subnet.Zone], subnet)
+		}
+
+		for zone, subnets := range subnetsByZone {
+			subnet := b.chooseBestSubnetForELB(zone, subnets)
+
 			elbSubnets = append(elbSubnets, b.LinkToSubnet(subnet))
+		}
+	}
+
+	var elb *awstasks.LoadBalancer
+	{
+		elbID, err := b.GetELBName32("api")
+		if err != nil {
+			return err
 		}
 
 		idleTimeout := LoadBalancerDefaultIdleTimeout
@@ -188,4 +201,68 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	return nil
 
+}
+
+type scoredSubnet struct {
+	score  int
+	subnet *kops.ClusterSubnetSpec
+}
+
+type ByScoreDescending []*scoredSubnet
+
+func (a ByScoreDescending) Len() int      { return len(a) }
+func (a ByScoreDescending) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a ByScoreDescending) Less(i, j int) bool {
+	if a[i].score != a[j].score {
+		// ! to sort highest score first
+		return !(a[i].score < a[j].score)
+	}
+	// Use name to break ties consistently
+	return a[i].subnet.Name < a[j].subnet.Name
+}
+
+// Choose between subnets in a zone.
+// We have already applied the rules to match internal subnets to internal ELBs and vice-versa for public-facing ELBs.
+// For internal ELBs: we prefer the master subnets
+// For public facing ELBs: we prefer the utility subnets
+func (b *APILoadBalancerBuilder) chooseBestSubnetForELB(zone string, subnets []*kops.ClusterSubnetSpec) *kops.ClusterSubnetSpec {
+	if len(subnets) == 0 {
+		return nil
+	}
+	if len(subnets) == 1 {
+		return subnets[0]
+	}
+
+	migSubnets := sets.NewString()
+	for _, ig := range b.MasterInstanceGroups() {
+		for _, subnet := range ig.Spec.Subnets {
+			migSubnets.Insert(subnet)
+		}
+	}
+
+	var scoredSubnets []*scoredSubnet
+	for _, subnet := range subnets {
+		score := 0
+
+		if migSubnets.Has(subnet.Name) {
+			score += 1
+		}
+
+		if subnet.Type == kops.SubnetTypeUtility {
+			score += 1
+		}
+
+		scoredSubnets = append(scoredSubnets, &scoredSubnet{
+			score:  score,
+			subnet: subnet,
+		})
+	}
+
+	sort.Sort(ByScoreDescending(scoredSubnets))
+
+	if scoredSubnets[0].score == scoredSubnets[1].score {
+		glog.V(2).Infof("Making arbitrary choice between subnets in zone %q to attach to ELB (%q vs %q)", zone, scoredSubnets[0].subnet.Name, scoredSubnets[1].subnet.Name)
+	}
+
+	return scoredSubnets[0].subnet
 }
