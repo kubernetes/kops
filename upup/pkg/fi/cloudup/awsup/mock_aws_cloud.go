@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elb"
@@ -65,8 +66,9 @@ func BuildMockAWSCloud(region string, zoneLetters string) *MockAWSCloud {
 }
 
 type MockCloud struct {
-	MockEC2     ec2iface.EC2API
-	MockRoute53 route53iface.Route53API
+	MockCloudFormation *cloudformation.CloudFormation
+	MockEC2            ec2iface.EC2API
+	MockRoute53        route53iface.Route53API
 }
 
 func (c *MockCloud) ProviderID() fi.CloudProviderID {
@@ -147,6 +149,13 @@ func (c *MockAWSCloud) WithTags(tags map[string]string) AWSCloud {
 	*m = *c
 	m.tags = tags
 	return m
+}
+
+func (c *MockAWSCloud) CloudFormation() *cloudformation.CloudFormation {
+	if c.MockEC2 == nil {
+		glog.Fatalf("MockAWSCloud MockCloudFormation not set")
+	}
+	return c.MockCloudFormation
 }
 
 func (c *MockAWSCloud) EC2() ec2iface.EC2API {
