@@ -380,15 +380,17 @@ func ListCloudFormationStacks(cloud fi.Cloud, clusterName string) ([]*ResourceTr
 		return nil, fmt.Errorf("Unable to list CloudFormation stacks: %v", err)
 	}
 	for _, stack := range response.StackSummaries {
-		tracker := &ResourceTracker{
-			Name:    *stack.StackName,
-			ID:      *stack.StackId,
-			Type:    "cloud-formation",
-			deleter: DeleteCloudFormationStack,
-			Dumper:  DumpCloudFormationStack,
-			obj:     stack,
+		if *stack.StackName == clusterName {
+			tracker := &ResourceTracker{
+				Name:    *stack.StackName,
+				ID:      *stack.StackId,
+				Type:    "cloud-formation",
+				deleter: DeleteCloudFormationStack,
+				Dumper:  DumpCloudFormationStack,
+				obj:     stack,
+			}
+			trackers = append(trackers, tracker)
 		}
-		trackers = append(trackers, tracker)
 	}
 
 	return trackers, nil
