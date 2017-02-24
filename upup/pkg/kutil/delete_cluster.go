@@ -1420,7 +1420,7 @@ func FindNatGateways(cloud fi.Cloud, routeTableIds sets.String) ([]*ResourceTrac
 				for _, route := range rt.Routes {
 					if route.NatGatewayId != nil {
 						natGatewayIds.Insert(*route.NatGatewayId)
-						fmt.Printf("inserting %s to be deleted\n", *route.NatGatewayId)
+						glog.Infof("inserting %s to be deleted\n", *route.NatGatewayId)
 					}
 				}
 			}
