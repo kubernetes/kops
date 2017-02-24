@@ -19,11 +19,11 @@ spec:
     selector:
       k8s-addon: limit-range.addons.k8s.io
     version: 1.5.0
-  - manifest: dns-controller.addons.k8s.io/v1.5.1.yaml
+  - manifest: dns-controller.addons.k8s.io/v1.5.2.yaml
     name: dns-controller.addons.k8s.io
     selector:
       k8s-addon: dns-controller.addons.k8s.io
-    version: 1.5.1
+    version: 1.5.2
   - manifest: storage-aws.addons.k8s.io/v1.5.0.yaml
     name: storage-aws.addons.k8s.io
     selector:
