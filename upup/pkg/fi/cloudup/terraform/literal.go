@@ -16,7 +16,10 @@ limitations under the License.
 
 package terraform
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"sort"
+)
 
 type Literal struct {
 	value string
@@ -45,4 +48,44 @@ func LiteralProperty(resourceType, resourceName, prop string) *Literal {
 
 func LiteralFromStringValue(s string) *Literal {
 	return &Literal{value: s}
+}
+
+type literalWithJSON struct {
+	literal *Literal
+	key     string
+}
+
+type byKey []*literalWithJSON
+
+func (a byKey) Len() int      { return len(a) }
+func (a byKey) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a byKey) Less(i, j int) bool {
+	return a[i].key < a[j].key
+}
+
+func sortLiterals(v []*Literal, dedup bool) ([]*Literal, error) {
+	var proxies []*literalWithJSON
+	for _, l := range v {
+		k, err := json.Marshal(l)
+		if err != nil {
+			return nil, err
+		}
+		proxies = append(proxies, &literalWithJSON{
+			literal: l,
+			key:     string(k),
+		})
+	}
+
+	sort.Sort(byKey(proxies))
+
+	var sorted []*Literal
+	for i, p := range proxies {
+		if dedup && i != 0 && proxies[i-1].key == proxies[i].key {
+			continue
+		}
+
+		sorted = append(sorted, p.literal)
+	}
+
+	return sorted, nil
 }

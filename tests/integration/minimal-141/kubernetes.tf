@@ -1,3 +1,27 @@
+output "cluster_name" {
+  value = "minimal-141.example.com"
+}
+
+output "master_security_group_ids" {
+  value = ["${aws_security_group.masters-minimal-141-example-com.id}"]
+}
+
+output "node_security_group_ids" {
+  value = ["${aws_security_group.nodes-minimal-141-example-com.id}"]
+}
+
+output "node_subnet_ids" {
+  value = ["${aws_subnet.us-test-1a-minimal-141-example-com.id}"]
+}
+
+output "region" {
+  value = "us-test-1"
+}
+
+output "vpc_id" {
+  value = "${aws_vpc.minimal-141-example-com.id}"
+}
+
 resource "aws_autoscaling_group" "master-us-test-1a-masters-minimal-141-example-com" {
   name                 = "master-us-test-1a.masters.minimal-141.example.com"
   launch_configuration = "${aws_launch_configuration.master-us-test-1a-masters-minimal-141-example-com.id}"
