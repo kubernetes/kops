@@ -21,6 +21,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/pkg/systemd"
@@ -39,6 +40,26 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 	kubeletConfig, err := b.buildKubeletConfig()
 	if err != nil {
 		return fmt.Errorf("error building kubelet config: %v", err)
+	}
+
+	// As a temporary hack we set taints for k8s 1.6 via the kubelet
+	// We want to do something like https://github.com/kubernetes/kops/pull/1812
+	// But we also need to unblock the upstream PR
+	// TODO: Replace with #1812 - this logic is mostly borrowed from #1812 anyway
+	k8sVersion, err := util.ParseKubernetesVersion(b.Cluster.Spec.KubernetesVersion)
+	if err != nil || k8sVersion == nil {
+		return fmt.Errorf("cannot parse kubernetes version %q", b.Cluster.Spec.KubernetesVersion)
+	}
+	if !(k8sVersion.Major == 1 && k8sVersion.Minor < 6) {
+		if b.IsMaster {
+			// We have a chicken-and-egg situation here with https://github.com/kubernetes/kubernetes/pull/38957
+			// * We can't apply the new toleration until the tolerations-in-field code merges upstream
+			// * We can't get the tolerations-in-fields PR to merge until we put the tolerations in the field
+			// For now, we just don't taint 1.6 masters.  Once #1812 merges, we'll fix this.
+			glog.Warningf("NOT TAINTING MASTERS FOR 1.6 - HACK!!!")
+			//kubeletConfig.Taints = append(kubeletConfig.Taints, "dedicated=master:NoSchedule")
+				kubeletConfig.RegisterSchedulable = fi.Bool(true)
+		}
 	}
 
 	// Add sysconfig file

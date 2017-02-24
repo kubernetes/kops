@@ -1,1 +1,0 @@
-DAEMON_ARGS="{{ BuildFlags ProtokubeFlags }}"

@@ -19,10 +19,13 @@ package model
 import (
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 type NodeupModelContext struct {
+	NodeupConfig *nodeup.NodeUpConfig
+
 	Cluster       *kops.Cluster
 	InstanceGroup *kops.InstanceGroup
 	Architecture  Architecture

@@ -32,6 +32,10 @@ type KubeBoot struct {
 	//MasterID          int
 	//EtcdClusters      []*EtcdClusterSpec
 
+	// ApplyTaints controls whether we set taints based on the master label
+	// This should not be needed in k8s 1.6, because kubelet has the --taint flag
+	ApplyTaints bool
+
 	volumeMounter   *VolumeMountController
 	etcdControllers map[string]*EtcdController
 
@@ -110,7 +114,7 @@ func (k *KubeBoot) syncOnce() error {
 		// TODO: Should we set up symlinks here?
 	}
 
-	if k.Master {
+	if k.Master && k.ApplyTaints {
 		if err := ApplyMasterTaints(k.Kubernetes); err != nil {
 			glog.Warningf("error updating master taints: %v", err)
 		}

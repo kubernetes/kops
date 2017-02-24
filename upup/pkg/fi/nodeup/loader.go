@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -35,7 +36,7 @@ type Loader struct {
 	Builders []fi.ModelBuilder
 
 	templates []*template.Template
-	config    *NodeUpConfig
+	config    *nodeup.NodeUpConfig
 	cluster   *api.Cluster
 
 	assets *fi.AssetStore
@@ -45,7 +46,7 @@ type Loader struct {
 	TemplateFunctions template.FuncMap
 }
 
-func NewLoader(config *NodeUpConfig, cluster *api.Cluster, assets *fi.AssetStore, tags sets.String) *Loader {
+func NewLoader(config *nodeup.NodeUpConfig, cluster *api.Cluster, assets *fi.AssetStore, tags sets.String) *Loader {
 	l := &Loader{}
 	l.assets = assets
 	l.tasks = make(map[string]fi.Task)

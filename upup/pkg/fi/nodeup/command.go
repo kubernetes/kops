@@ -30,6 +30,7 @@ import (
 	"k8s.io/kops/nodeup/pkg/model"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
@@ -44,7 +45,7 @@ import (
 const MaxTaskDuration = 365 * 24 * time.Hour
 
 type NodeUpCommand struct {
-	config         *NodeUpConfig
+	config         *nodeup.NodeUpConfig
 	cluster        *api.Cluster
 	instanceGroup  *api.InstanceGroup
 	ConfigLocation string
@@ -195,6 +196,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 
 	modelContext := &model.NodeupModelContext{
+		NodeupConfig:  c.config,
 		Cluster:       c.cluster,
 		Distribution:  distribution,
 		Architecture:  model.ArchitectureAmd64,
@@ -208,6 +210,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	loader := NewLoader(c.config, c.cluster, assets, nodeTags)
 	loader.Builders = append(loader.Builders, &model.DockerBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.ProtokubeBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeletBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubectlBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.EtcdBuilder{NodeupModelContext: modelContext})

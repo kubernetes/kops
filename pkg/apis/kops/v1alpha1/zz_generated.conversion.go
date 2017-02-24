@@ -1230,6 +1230,7 @@ func autoConvert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.ReconcileCIDR = in.ReconcileCIDR
 	out.RegisterSchedulable = in.RegisterSchedulable
 	out.NodeLabels = in.NodeLabels
+	out.Taints = in.Taints
 	out.NonMasqueradeCIDR = in.NonMasqueradeCIDR
 	out.EnableCustomMetrics = in.EnableCustomMetrics
 	out.NetworkPluginMTU = in.NetworkPluginMTU
@@ -1273,6 +1274,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec(in *kops.K
 	out.ReconcileCIDR = in.ReconcileCIDR
 	out.RegisterSchedulable = in.RegisterSchedulable
 	out.NodeLabels = in.NodeLabels
+	out.Taints = in.Taints
 	out.NonMasqueradeCIDR = in.NonMasqueradeCIDR
 	out.EnableCustomMetrics = in.EnableCustomMetrics
 	out.NetworkPluginMTU = in.NetworkPluginMTU
