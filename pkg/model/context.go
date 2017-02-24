@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+	"net"
 	"strings"
 
 	"github.com/blang/semver"
@@ -26,7 +27,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/model/components"
-	"net"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
 
 type KopsModelContext struct {
@@ -148,15 +149,15 @@ func (m *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 	// The system tags take priority because the cluster likely breaks without them...
 
 	if ig.Spec.Role == kops.InstanceGroupRoleMaster {
-		labels["k8s.io/role/master"] = "1"
+		labels[awstasks.CloudTagInstanceGroupRolePrefix+strings.ToLower(string(kops.InstanceGroupRoleMaster))] = "1"
 	}
 
 	if ig.Spec.Role == kops.InstanceGroupRoleNode {
-		labels["k8s.io/role/node"] = "1"
+		labels[awstasks.CloudTagInstanceGroupRolePrefix+strings.ToLower(string(kops.InstanceGroupRoleNode))] = "1"
 	}
 
 	if ig.Spec.Role == kops.InstanceGroupRoleBastion {
-		labels["k8s.io/role/bastion"] = "1"
+		labels[awstasks.CloudTagInstanceGroupRolePrefix+strings.ToLower(string(kops.InstanceGroupRoleBastion))] = "1"
 	}
 
 	return labels, nil

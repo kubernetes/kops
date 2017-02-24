@@ -547,7 +547,24 @@ func (c *ApplyClusterCmd) Run() error {
 	case TargetTerraform:
 		checkExisting = false
 		outDir := c.OutDir
-		target = terraform.NewTerraformTarget(cloud, region, project, outDir)
+		tf := terraform.NewTerraformTarget(cloud, region, project, outDir)
+
+		// We include a few "util" variables in the TF output
+		if err := tf.AddOutputVariable("region", terraform.LiteralFromStringValue(region)); err != nil {
+			return err
+		}
+
+		if project != "" {
+			if err := tf.AddOutputVariable("project", terraform.LiteralFromStringValue(project)); err != nil {
+				return err
+			}
+		}
+
+		if err := tf.AddOutputVariable("cluster_name", terraform.LiteralFromStringValue(cluster.ObjectMeta.Name)); err != nil {
+			return err
+		}
+
+		target = tf
 
 		// Can cause conflicts with terraform management
 		shouldPrecreateDNS = false
