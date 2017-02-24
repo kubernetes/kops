@@ -1,0 +1,7 @@
+owner: kubernetes
+repo: kops
+assets:
+  - source: .build/dist/darwin/amd64/kops
+    githubName: kops-darwin-amd64
+  - source: .build/dist/linux/amd64/kops
+    githubName: kops-linux-amd64
