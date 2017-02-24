@@ -116,10 +116,14 @@ func ValidateCluster(c *kops.Cluster, strict bool) error {
 		}
 
 		if c.Spec.Kubelet != nil && c.Spec.Kubelet.NonMasqueradeCIDR != nonMasqueradeCIDRString {
-			return fmt.Errorf("Kubelet NonMasqueradeCIDR did not match cluster NonMasqueradeCIDR")
+			if strict || c.Spec.Kubelet.NonMasqueradeCIDR != "" {
+				return fmt.Errorf("Kubelet NonMasqueradeCIDR did not match cluster NonMasqueradeCIDR")
+			}
 		}
 		if c.Spec.MasterKubelet != nil && c.Spec.MasterKubelet.NonMasqueradeCIDR != nonMasqueradeCIDRString {
-			return fmt.Errorf("MasterKubelet NonMasqueradeCIDR did not match cluster NonMasqueradeCIDR")
+			if strict || c.Spec.MasterKubelet.NonMasqueradeCIDR != "" {
+				return fmt.Errorf("MasterKubelet NonMasqueradeCIDR did not match cluster NonMasqueradeCIDR")
+			}
 		}
 	}
 
@@ -142,7 +146,9 @@ func ValidateCluster(c *kops.Cluster, strict bool) error {
 			}
 
 			if c.Spec.KubeAPIServer != nil && c.Spec.KubeAPIServer.ServiceClusterIPRange != serviceClusterIPRangeString {
-				return fmt.Errorf("KubeAPIServer ServiceClusterIPRange did not match cluster ServiceClusterIPRange")
+				if strict || c.Spec.KubeAPIServer.ServiceClusterIPRange != "" {
+					return fmt.Errorf("KubeAPIServer ServiceClusterIPRange did not match cluster ServiceClusterIPRange")
+				}
 			}
 		}
 	}
