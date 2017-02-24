@@ -18,22 +18,46 @@ package flagbuilder
 
 import (
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
 	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"testing"
 	"time"
 )
 
 func TestBuildKCMFlags(t *testing.T) {
-	kcm := &kops.KubeControllerManagerConfig{
-		AttachDetachReconcileSyncPeriod: &metav1.Duration{Duration: time.Minute},
+	grid := []struct {
+		Config   interface{}
+		Expected string
+	}{
+		{
+			Config: &kops.KubeControllerManagerConfig{
+				AttachDetachReconcileSyncPeriod: &metav1.Duration{Duration: time.Minute},
+			},
+			Expected: "--attach-detach-reconcile-sync-period=1m0s",
+		},
+		{
+			Config: &kops.KubeControllerManagerConfig{
+				TerminatedPodGCThreshold: fi.Int32(1500),
+			},
+			Expected: "--terminated-pod-gc-threshold=1500",
+		},
+		{
+			Config:   &kops.KubeControllerManagerConfig{},
+			Expected: "",
+		},
 	}
-	actual, err := BuildFlags(kcm)
-	if err != nil {
-		t.Fatalf("error from BuildFlags: %v", err)
-	}
-	expected := "--attach-detach-reconcile-sync-period=1m0s"
-	if actual != expected {
-		t.Fatalf("unexpected flags.  actual=%q expected=%q", actual, expected)
+
+	for _, test := range grid {
+		actual, err := BuildFlags(test.Config)
+		if err != nil {
+			t.Errorf("error from BuildFlags: %v", err)
+			continue
+		}
+
+		if actual != test.Expected {
+			t.Errorf("unexpected flags.  actual=%q expected=%q", actual, test.Expected)
+			continue
+		}
 	}
 }
 
@@ -47,6 +71,12 @@ func TestKubeletConfigSpec(t *testing.T) {
 				APIServers: "https://example.com",
 			},
 			Expected: "--api-servers=https://example.com",
+		},
+		{
+			Config: &kops.KubeletConfigSpec{
+				EvictionPressureTransitionPeriod: &metav1.Duration{Duration: 5 * time.Second},
+			},
+			Expected: "--eviction-pressure-transition-period=5s",
 		},
 		{
 			Config:   &kops.KubeletConfigSpec{},
