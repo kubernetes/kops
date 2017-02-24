@@ -108,7 +108,7 @@ func addUntaggedRouteTables(cloud awsup.AWSCloud, clusterName string, resources 
 			continue
 		}
 
-		if resources["vpc:"+vpcID] == nil {
+		if resources["vpc:" + vpcID] == nil {
 			// Not deleting this VPC; ignore
 			continue
 		}
@@ -131,8 +131,8 @@ func addUntaggedRouteTables(cloud awsup.AWSCloud, clusterName string, resources 
 		}
 
 		t := buildTrackerForRouteTable(rt)
-		if resources[t.Type+":"+t.ID] == nil {
-			resources[t.Type+":"+t.ID] = t
+		if resources[t.Type + ":" + t.ID] == nil {
+			resources[t.Type + ":" + t.ID] = t
 		}
 	}
 
@@ -380,15 +380,17 @@ func ListCloudFormationStacks(cloud fi.Cloud, clusterName string) ([]*ResourceTr
 		return nil, fmt.Errorf("Unable to list CloudFormation stacks: %v", err)
 	}
 	for _, stack := range response.StackSummaries {
-		tracker := &ResourceTracker{
-			Name:    *stack.StackName,
-			ID:      *stack.StackId,
-			Type:    "cloud-formation",
-			deleter: DeleteCloudFormationStack,
-			Dumper:  DumpCloudFormationStack,
-			obj:     stack,
+		if *stack.StackName == clusterName {
+			tracker := &ResourceTracker{
+				Name:    *stack.StackName,
+				ID:      *stack.StackId,
+				Type:    "cloud-formation",
+				deleter: DeleteCloudFormationStack,
+				Dumper:  DumpCloudFormationStack,
+				obj:     stack,
+			}
+			trackers = append(trackers, tracker)
 		}
-		trackers = append(trackers, tracker)
 	}
 
 	return trackers, nil
@@ -722,8 +724,8 @@ func ListKeypairs(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error
 
 	glog.V(2).Infof("Listing EC2 Keypairs")
 	request := &ec2.DescribeKeyPairsInput{
-	// We need to match both the name and a prefix
-	//Filters: []*ec2.Filter{awsup.NewEC2Filter("key-name", keypairName)},
+		// We need to match both the name and a prefix
+		//Filters: []*ec2.Filter{awsup.NewEC2Filter("key-name", keypairName)},
 	}
 	response, err := c.EC2().DescribeKeyPairs(request)
 	if err != nil {
@@ -1876,9 +1878,9 @@ func ListIAMRoles(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error
 	c := cloud.(awsup.AWSCloud)
 
 	remove := make(map[string]bool)
-	remove["masters."+clusterName] = true
-	remove["nodes."+clusterName] = true
-	remove["bastions."+clusterName] = true
+	remove["masters." + clusterName] = true
+	remove["nodes." + clusterName] = true
+	remove["bastions." + clusterName] = true
 
 	var roles []*iam.Role
 	// Find roles matching remove map
@@ -1954,9 +1956,9 @@ func ListIAMInstanceProfiles(cloud fi.Cloud, clusterName string) ([]*ResourceTra
 	c := cloud.(awsup.AWSCloud)
 
 	remove := make(map[string]bool)
-	remove["masters."+clusterName] = true
-	remove["nodes."+clusterName] = true
-	remove["bastions."+clusterName] = true
+	remove["masters." + clusterName] = true
+	remove["nodes." + clusterName] = true
+	remove["bastions." + clusterName] = true
 
 	var profiles []*iam.InstanceProfile
 
