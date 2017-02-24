@@ -32,6 +32,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
+const CloudTagInstanceGroupRolePrefix = "k8s.io/role/"
+
 //go:generate fitask -type=AutoscalingGroup
 type AutoscalingGroup struct {
 	Name *string
@@ -288,6 +290,34 @@ func (_ *AutoscalingGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 			Value:             fi.String(v),
 			PropagateAtLaunch: fi.Bool(true),
 		})
+	}
+
+	if e.LaunchConfiguration != nil {
+		// Create TF output variable with security group ids
+		// This is in the launch configuration, but the ASG has the information about the instance group type
+
+		role := ""
+		for k := range e.Tags {
+			if strings.HasPrefix(k, CloudTagInstanceGroupRolePrefix) {
+				suffix := strings.TrimPrefix(k, CloudTagInstanceGroupRolePrefix)
+				if role != "" && role != suffix {
+					return fmt.Errorf("Found multiple role tags: %q vs %q", role, suffix)
+				}
+				role = suffix
+			}
+		}
+
+		if role != "" {
+			for _, sg := range e.LaunchConfiguration.SecurityGroups {
+				t.AddOutputVariableArray(role+"_security_group_ids", sg.TerraformLink())
+			}
+		}
+
+		if role == "node" {
+			for _, s := range e.Subnets {
+				t.AddOutputVariableArray(role+"_subnet_ids", s.TerraformLink())
+			}
+		}
 	}
 
 	return t.RenderResource("aws_autoscaling_group", *e.Name, tf)

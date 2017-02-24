@@ -201,6 +201,10 @@ type terraformVPC struct {
 func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) error {
 	cloud := t.Cloud.(awsup.AWSCloud)
 
+	if err := t.AddOutputVariable("vpc_id", e.TerraformLink()); err != nil {
+		return err
+	}
+
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		// Not terraform owned / managed

@@ -197,7 +197,7 @@ func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Su
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		// Not terraform owned / managed
-		return nil
+		return t.AddOutputVariableArray("subnet_ids", terraform.LiteralFromStringValue(*e.ID))
 	}
 
 	tf := &terraformSubnet{
