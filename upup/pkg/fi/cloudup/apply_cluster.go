@@ -218,6 +218,17 @@ func (c *ApplyClusterCmd) Run() error {
 			cniAsset, cniAssetHashString := findCNIAssets(cluster)
 			c.Assets = append(c.Assets, cniAssetHashString+"@"+cniAsset)
 		}
+
+		if needsStaticUtils(cluster, c.InstanceGroups) {
+			utilsLocation := BaseUrl() + "linux/amd64/utils.tar.gz"
+			glog.V(4).Infof("Using default utils.tar.gz location: %q", utilsLocation)
+
+			hash, err := findHash(utilsLocation)
+			if err != nil {
+				return err
+			}
+			c.Assets = append(c.Assets, hash.Hex()+"@"+utilsLocation)
+		}
 	}
 
 	if c.NodeUpSource == "" {
@@ -788,4 +799,11 @@ func ChannelForCluster(c *api.Cluster) (*api.Channel, error) {
 		channelLocation = api.DefaultChannel
 	}
 	return api.LoadChannel(channelLocation)
+}
+
+// needsStaticUtils checks if we need our static utils on this OS.
+// This is only needed currently on CoreOS, but we don't have a nice way to detect it yet
+func needsStaticUtils(c *api.Cluster, instanceGroups []*api.InstanceGroup) bool {
+	// TODO: Do real detection of CoreOS (but this has to work with AMI names, and maybe even forked AMIs)
+	return true
 }
