@@ -135,3 +135,39 @@ Line3`
 		t.Fatalf("unexpected diff.  expected=%v, actual=%v", expectedDiff, actual)
 	}
 }
+
+func Test_Diff_4(t *testing.T) {
+	l := `A
+B
+C
+D
+E
+F
+`
+	r := `A
+B
+C
+D
+E
+F`
+	expectedDiff := `...
+  D
+  E
+- F
++ F
+`
+	{
+		dmp := diffmatchpatch.New()
+		diffs := dmp.DiffMain(l, r, false)
+
+		// We do need to cleanup, as otherwise we get some spurious changes on complex diffs
+		diffs = dmp.DiffCleanupSemantic(diffs)
+
+		t.Logf("diffs %v", diffs)
+	}
+
+	actual := FormatDiff(l, r)
+	if actual != expectedDiff {
+		t.Fatalf("unexpected diff.  expected=%s, actual=%s", expectedDiff, actual)
+	}
+}
