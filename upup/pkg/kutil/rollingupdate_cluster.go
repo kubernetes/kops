@@ -32,6 +32,11 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kubernetes/pkg/api/v1"
 	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
+	"k8s.io/kubernetes/pkg/kubectl/cmd"
+	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
+	"github.com/spf13/cobra"
+	"os"
+	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 )
 
 // RollingUpdateCluster is a struct containing cluster information for a rolling update.
@@ -45,6 +50,7 @@ type RollingUpdateCluster struct {
 	Force bool
 
 	K8sClient        *k8s_clientset.Clientset
+	ClientConfig  clientcmd.ClientConfig
 	FailOnDrainError bool
 	FailOnValidate   bool
 	CloudOnly        bool
@@ -312,21 +318,22 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateClust
 		update = append(update, n.Ready...)
 	}
 
+	if len(update) == 0 {
+		return nil
+	}
+
 	if isBastion {
 		glog.V(3).Info("Not validating the cluster as instance is a bastion.")
 	} else if rollingUpdateData.CloudOnly {
 		glog.V(3).Info("Not validating cluster as validation is turned off via the cloud-only flag.")
 	} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
 		if err = n.ValidateCluster(rollingUpdateData, instanceGroupList); err != nil {
-
-			glog.Warningf("Error validating cluster %q: %v.", rollingUpdateData.ClusterName, err)
-
 			if rollingUpdateData.FailOnValidate {
-				glog.Errorf("Error validating cluster: %v.", err)
-				return err
+				return fmt.Errorf("error validating cluster: %v", err)
+			} else {
+				glog.V(2).Infof("Ignoring cluster validation error: %v", err)
+				glog.Infof("Cluster validation failed, but proceeding since fail-on-validate-error is set to false")
 			}
-
-			glog.Warningf("Cluster validation, proceeding since fail-on-validate is set to false")
 		}
 	}
 
@@ -334,9 +341,14 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateClust
 
 		instanceId := aws.StringValue(u.ASGInstance.InstanceId)
 
+		nodeName := ""
+		if u.Node != nil {
+			nodeName = u.Node.Name
+		}
+
 		if isBastion {
 
-			if err = n.DeleteAWSInstance(u, instanceId, "", c); err != nil {
+			if err = n.DeleteAWSInstance(u, instanceId, nodeName, c); err != nil {
 				glog.Errorf("Error deleting aws instance %q: %v", instanceId, err)
 				return err
 			}
@@ -351,16 +363,23 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateClust
 
 		} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
 
-			glog.Infof("Draining the node: %q.", u.Node.Name)
+			if u.Node != nil {
+				glog.Infof("Draining the node: %q.", nodeName)
 
-			if err = n.DrainNode(u, rollingUpdateData); err != nil {
-				glog.Errorf("Error draining node %q, instance id %q: %v", u.Node.Name, instanceId, err)
-				return err
+				if err = n.DrainNode(u, rollingUpdateData); err != nil {
+					if rollingUpdateData.FailOnDrainError {
+						return fmt.Errorf("Failed to drain node %q: %v", nodeName, err)
+					} else {
+						glog.Infof("Ignoring error draining node %q: %v", nodeName, err)
+					}
+				}
+			} else {
+				glog.Warningf("Skipping drain of instance %q, because it is not registered in kubernetes", instanceId)
 			}
 		}
 
-		if err = n.DeleteAWSInstance(u, instanceId, u.Node.Name, c); err != nil {
-			glog.Errorf("Error deleting aws instance %q, node %q: %v", instanceId, u.Node.Name, err)
+		if err = n.DeleteAWSInstance(u, instanceId, nodeName, c); err != nil {
+			glog.Errorf("Error deleting aws instance %q, node %q: %v", instanceId, nodeName, err)
 			return err
 		}
 
@@ -445,36 +464,33 @@ func (n *CloudInstanceGroup) DeleteAWSInstance(u *CloudInstanceGroupInstance, in
 
 }
 
+
+
 // DrainNode drains a K8s node.
 func (n *CloudInstanceGroup) DrainNode(u *CloudInstanceGroupInstance, rollingUpdateData *RollingUpdateCluster) error {
+	if rollingUpdateData.ClientConfig == nil {
+		return fmt.Errorf("ClientConfig not set")
+	}
+	f := cmdutil.NewFactory(rollingUpdateData.ClientConfig)
 
-	drain, err := NewDrainOptions(nil, rollingUpdateData.ClusterName)
+	// TODO: Send out somewhere else, also DrainOptions has errout
+	out := os.Stdout
 
+	options := &cmd.DrainOptions{factory: f, out: out}
+
+	cmd := &cobra.Command{
+		Use:     "cordon NODE",
+	}
+	args := []string{ u.Node.Name }
+	err := options.SetupDrain(cmd, args)
 	if err != nil {
-
-		glog.Warningf("API error setting up for drain, cluster %q: %v.", rollingUpdateData.ClusterName, err)
-
-		if rollingUpdateData.FailOnDrainError {
-			return fmt.Errorf("API error setting up for drain, cluster %q: %v", rollingUpdateData.ClusterName, err)
-		}
-
-		glog.Infof("Proceeding with rolling-update since fail-on-drain-error is set to false.")
-
-		return nil
-
+		return fmt.Errorf("error setting up drain: %v", err)
 	}
 
-	if err := drain.DrainTheNode(u.Node.Name); err != nil {
-
-		glog.Warningf("Error draining node %q: %v.", u.Node.Name, err)
-
-		if rollingUpdateData.FailOnDrainError {
-			return fmt.Errorf("error draining node %q: %v", u.Node.Name, err)
-		}
-
-		glog.Infof("Proceeding with rolling-update since fail-on-drain-error is set to false.")
+	err = options.RunCordonOrUncordon(true)
+	if err != nil {
+		return fmt.Errorf("error draining node: %v", err)
 	}
-
 	return nil
 }
 
