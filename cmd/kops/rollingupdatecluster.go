@@ -298,6 +298,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		Force:            options.Force,
 		Cloud:            cloud,
 		K8sClient:        k8sClient,
+		ClientConfig:        kutil.NewClientConfig(config, "kube-system"),
 		FailOnDrainError: options.FailOnDrainError,
 		FailOnValidate:   options.FailOnValidate,
 		CloudOnly:        options.CloudOnly,
