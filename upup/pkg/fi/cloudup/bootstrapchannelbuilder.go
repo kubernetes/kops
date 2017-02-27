@@ -18,9 +18,11 @@ package cloudup
 
 import (
 	"fmt"
+	"log"
 
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -85,7 +87,20 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	{
 		key := "kube-dns.addons.k8s.io"
-		version := "1.5.1"
+
+		kv, err := util.ParseKubernetesVersion(b.cluster.Spec.KubernetesVersion)
+		if err != nil {
+			log.Fatalf("unable to determine kubernetes version from %q",
+				b.cluster.Spec.KubernetesVersion)
+		}
+
+		var version string
+		switch {
+		case kv.Major == 1 && kv.Minor <= 5:
+			version = "1.5.1"
+		default:
+			version = "1.6.0"
+		}
 
 		location := key + "/v" + version + ".yaml"
 
