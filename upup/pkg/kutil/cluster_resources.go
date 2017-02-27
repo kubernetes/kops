@@ -57,7 +57,7 @@ func (c *AwsCluster) ListResources() (map[string]*ResourceTracker, error) {
 	listFunctions := []listFn{
 
 		// CloudFormation
-		ListCloudFormationStacks,
+		//ListCloudFormationStacks,
 
 		// EC2
 		ListInstances,
