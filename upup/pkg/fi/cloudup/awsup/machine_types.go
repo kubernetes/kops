@@ -396,6 +396,50 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks: []int{800, 800, 800, 800, 800, 800, 800, 800},
 	},
 
+	// i3 family
+	{
+		Name:           "i3.large",
+		MemoryGB:       15.25,
+		ECU:            9,
+		Cores:          2,
+		EphemeralDisks: []int{475},
+	},
+	{
+		Name:           "i3.xlarge",
+		MemoryGB:       30.5,
+		ECU:            14,
+		Cores:          4,
+		EphemeralDisks: []int{950},
+	},
+	{
+		Name:           "i3.2xlarge",
+		MemoryGB:       61,
+		ECU:            27,
+		Cores:          8,
+		EphemeralDisks: []int{1900},
+	},
+	{
+		Name:           "i3.4xlarge",
+		MemoryGB:       122,
+		ECU:            53,
+		Cores:          16,
+		EphemeralDisks: []int{1900, 1900},
+	},
+	{
+		Name:           "i3.8xlarge",
+		MemoryGB:       244,
+		ECU:            104,
+		Cores:          32,
+		EphemeralDisks: []int{1900, 1900, 1900, 1900},
+	},
+	{
+		Name:           "i3.16xlarge",
+		MemoryGB:       488,
+		ECU:            208,
+		Cores:          64,
+		EphemeralDisks: []int{1900, 1900, 1900, 1900, 1900, 1900, 1900, 1900},
+	},
+
 	// r3 family
 	{
 		Name:           "r3.large",
