@@ -10,7 +10,7 @@ For instance, if you are interested in finding the entry point to `kops create c
 
 ## 2) Storage
 
-We have an abstracted way of interacting with our storage, called the `clientset`. This is an ambiguous way of interacting with remote storage for `kops`. This is commonly referred to as the `kops` **STATE STORE**.
+We have an abstracted way of interacting with our storage, called the `clientset`. This is an abstract way of interacting with remote storage for `kops`. This is commonly referred to as the `kops` **STATE STORE**.
 
 We can access it through the `util.Factory` struct as in :
 
@@ -34,13 +34,13 @@ List()
 
 #### a) Cluster Spec
 
-The `kops` API is a definition of struct members in Go code found [here](https://github.com/kubernetes/kops/tree/master/pkg/apis/kops). The `kops` API does **NOT** match the command line interface (by design). We use the native Kubernetes API machinery to manage versioning the `kops` API.
+The `kops` API is a definition of struct members in Go code found [here](https://github.com/kubernetes/kops/tree/master/pkg/apis/kops). The `kops` API does **NOT** match the command line interface (by design). We use the native Kubernetes API machinery to manage versioning of the `kops` API.
 
-The base level struct of the API is `api.Cluster{}` which is defined [here](https://github.com/kubernetes/kops/blob/master/pkg/apis/kops/cluster.go#L40). The top level struct contains meta information about the API we are currently using, and the main definition of the cluster itself can be found in `cluster.Spec`
+The base level struct of the API is `api.Cluster{}` which is defined [here](https://github.com/kubernetes/kops/blob/master/pkg/apis/kops/cluster.go#L40). The top level struct contains meta information about the object such as the kind and version and the main data for the cluster itself can be found in `cluster.Spec`
 
-It is important to note that the API members are a representation of a Kubernetes cluster. These values are stored in the `kops` **STATE STORE** mentioned above for later use. By design `kops` will never store information about the cloud in the **STATE STORE**.
+It is important to note that the API members are a representation of a Kubernetes cluster. These values are stored in the `kops` **STATE STORE** mentioned above for later use. By design kops does not store information about the state of the cloud in the state store, if it can infer it from looking at the actual state of the cloud.
 
-More information on the API can be found here.
+More information on the API can be found [here](https://github.com/kubernetes/kops/blob/master/docs/cluster_spec.md).
 
 #### b) Instance Groups
 
@@ -128,5 +128,5 @@ A task is typically a representation of a single API call. The task interface is
 
 ## 5) Nodeup
 
-Nodeup is a standalone binary that handles bootstrapping the Kubernetes cluster. There is a shell script [here](https://github.com/kubernetes/kops/blob/master/upup/models/cloudup/_gce/resources/nodeup.sh.template) that will bootstrap nodeup. The AWS implementation uses `cloud-init` to run the script on an instance. All new clouds will need to figure out best practices for bootstrapping `nodeup` on their platform.
+Nodeup is a standalone binary that handles bootstrapping the Kubernetes cluster. There is a shell script [here](https://github.com/kubernetes/kops/blob/master/pkg/model/resources/nodeup.go) that will bootstrap nodeup. The AWS implementation uses `cloud-init` to run the script on an instance. All new clouds will need to figure out best practices for bootstrapping `nodeup` on their platform.
 
