@@ -32,7 +32,7 @@ In case the Kubernetes cluster fails in a way that too many master nodes can't
 access their etcd volumes it is impossible to get a etcd quorum.
 
 In this case it is now possible to restore the volume from a snapshot we created
-earlier. Details about creating a volume from a snaphot can be found in the
+earlier. Details about creating a volume from a snapshot can be found in the
 [AWS documentation](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-restoring-volume.html).
 
 Kubernetes uses protokube to identify the right volumes for etcd. Therefore it
