@@ -20,18 +20,19 @@ import (
 	"testing"
 
 	"io/ioutil"
+	"path"
+	"strings"
+
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
-	"path"
-	"strings"
 
 	// Register our APIs
 	_ "k8s.io/kops/pkg/apis/kops/install"
 )
 
-func TestBootstrapChanelBuilder_BuildTasks(t *testing.T) {
+func TestBootstrapChannelBuilder_BuildTasks(t *testing.T) {
 	runChannelBuilderTest(t, "simple")
 	runChannelBuilderTest(t, "kopeio-vxlan")
 }
@@ -85,7 +86,7 @@ func runChannelBuilderTest(t *testing.T, key string) {
 	}
 }
 
-func TestBootstrapChanelBuilder_buildManifest(t *testing.T) {
+func TestBootstrapChannelBuilder_buildManifest(t *testing.T) {
 	c := buildDefaultCluster(t)
 
 	c.Spec.Networking.Weave = &api.WeaveNetworkingSpec{}
