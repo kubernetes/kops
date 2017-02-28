@@ -19,7 +19,14 @@ package kops
 import metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 
 type KubeletConfigSpec struct {
+	// not used for clusters version 1.6 and later
 	APIServers string `json:"apiServers,omitempty" flag:"api-servers"`
+
+	// kubeconfigPath is the path to the kubeconfig file with authorization
+	// information and API server location
+	// kops will only use this for clusters version 1.6 and later
+	KubeconfigPath    string `json:"kubeconfigPath,omitempty" flag:"kubeconfig"`
+	RequireKubeconfig *bool  `json:"requireKubeconfig,omitempty" flag:"require-kubeconfig"`
 
 	LogLevel *int32 `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
 

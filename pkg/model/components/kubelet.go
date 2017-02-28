@@ -58,11 +58,9 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec.Kubelet.ClusterDNS = ip.String()
 	clusterSpec.Kubelet.ClusterDomain = clusterSpec.ClusterDNSDomain
 	clusterSpec.Kubelet.BabysitDaemons = fi.Bool(true)
-	clusterSpec.Kubelet.APIServers = "https://" + clusterSpec.MasterInternalName
 	clusterSpec.Kubelet.NonMasqueradeCIDR = clusterSpec.NonMasqueradeCIDR
 
 	clusterSpec.MasterKubelet.RegisterSchedulable = fi.Bool(false)
-	clusterSpec.MasterKubelet.APIServers = "http://127.0.0.1:8080"
 	// Replace the CIDR with a CIDR allocated by KCM (the default, but included for clarity)
 	// We _do_ allow debugging handlers, so we can do logs
 	// This does allow more access than we would like though
@@ -108,6 +106,18 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 			}
 			clusterSpec.Kubelet.EvictionHard = fi.String(strings.Join(evictionHard, ","))
 		}
+	}
+
+	if kubernetesVersion.Major == 1 && kubernetesVersion.Minor <= 5 {
+		clusterSpec.Kubelet.APIServers = "https://" + clusterSpec.MasterInternalName
+		clusterSpec.MasterKubelet.APIServers = "http://127.0.0.1:8080"
+	} else if kubernetesVersion.Major == 1 { // for 1.6+ use kubeconfig instead of api-servers
+		const kubeconfigPath = "/var/lib/kubelet/kubeconfig"
+		clusterSpec.Kubelet.KubeconfigPath = kubeconfigPath
+		clusterSpec.Kubelet.RequireKubeconfig = fi.Bool(true)
+
+		clusterSpec.MasterKubelet.KubeconfigPath = kubeconfigPath
+		clusterSpec.MasterKubelet.RequireKubeconfig = fi.Bool(true)
 	}
 
 	// IsolateMasters enables the legacy behaviour, where master pods on a separate network
