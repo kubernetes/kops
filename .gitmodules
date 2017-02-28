@@ -247,3 +247,6 @@
 [submodule "_vendor/k8s.io/apimachinery"]
 	path = _vendor/k8s.io/apimachinery
 	url = https://github.com/kubernetes/apimachinery
+[submodule "_vendor/k8s.io/client-go"]
+	path = _vendor/k8s.io/client-go
+	url = https://github.com/kubernetes/client-go
