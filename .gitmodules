@@ -244,3 +244,6 @@
 [submodule "_vendor/k8s.io/heapster"]
 	path = _vendor/k8s.io/heapster
 	url = https://github.com/kubernetes/heapster
+[submodule "_vendor/k8s.io/apimachinery"]
+	path = _vendor/k8s.io/apimachinery
+	url = https://github.com/kubernetes/apimachinery
