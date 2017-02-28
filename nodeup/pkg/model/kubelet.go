@@ -186,6 +186,12 @@ func (b *KubeletBuilder) buildKubeconfig() (string, error) {
 		return "", fmt.Errorf("error encoding CA certificate: %v", err)
 	}
 
+	if b.IsMaster {
+		cluster.Server = "http://127.0.0.1:8080"
+	} else {
+		cluster.Server = "https://" + b.Cluster.Spec.MasterInternalName
+	}
+
 	config := &kubeconfig.KubectlConfig{
 		ApiVersion: "v1",
 		Kind:       "Config",
