@@ -241,3 +241,6 @@
 [submodule "_vendor/github.com/renstrom/dedent"]
 	path = _vendor/github.com/renstrom/dedent
 	url = https://github.com/renstrom/dedent
+[submodule "_vendor/k8s.io/heapster"]
+	path = _vendor/k8s.io/heapster
+	url = https://github.com/kubernetes/heapster

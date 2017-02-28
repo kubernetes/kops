@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: heapster-apiserver
+  namespace: kube-system
+  labels:
+    kubernetes.io/name: "Heapster-apiserver"
+spec:
+  type: LoadBalancer
+  selector:
+    k8s-app: heapster
+    module: apiserver
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8082
+  - name: https
+    port: 443
+    targetPort: 6443
