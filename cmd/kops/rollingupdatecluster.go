@@ -53,6 +53,8 @@ type RollingUpdateOptions struct {
 	// does not validate, after a validation period.
 	FailOnValidate bool
 
+	DrainInterval time.Duration
+
 	ValidateRetries int
 
 	MasterInterval  time.Duration
@@ -78,6 +80,9 @@ func (o *RollingUpdateOptions) InitDefaults() {
 	o.BastionInterval = 5 * time.Minute
 
 	o.ValidateRetries = 8
+
+	o.DrainInterval = 90 * time.Second
+
 }
 
 func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
@@ -111,7 +116,8 @@ the environment variable is set.`,
 	if featureflag.DrainAndValidateRollingUpdate.Enabled() {
 		cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", true, "The rolling-update will fail if draining a node fails.")
 		cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate-error", true, "The rolling-update will fail if the cluster fails to validate.")
-		cmd.Flags().IntVar(&options.ValidateRetries, "validate-retries", 8, "The number of times that a node will be validated.  Between validation kops sleeps the master-interval/2 or node-interval/2 duration.")
+		cmd.Flags().IntVar(&options.ValidateRetries, "validate-retries", options.ValidateRetries, "The number of times that a node will be validated.  Between validation kops sleeps the master-interval/2 or node-interval/2 duration.")
+		cmd.Flags().DurationVar(&options.DrainInterval, "drain-interval", options.DrainInterval, "The duration that a rolling-update will wait after the node is drained.")
 	}
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
@@ -307,6 +313,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		CloudOnly:        options.CloudOnly,
 		ClusterName:      options.ClusterName,
 		ValidateRetries:  options.ValidateRetries,
+		DrainInterval:    options.DrainInterval,
 	}
 	return d.RollingUpdate(groups, list)
 }

@@ -56,6 +56,7 @@ type RollingUpdateCluster struct {
 	CloudOnly        bool
 	ClusterName      string
 	ValidateRetries  int
+	DrainInterval    time.Duration
 }
 
 // FindCloudInstanceGroups joins data from the cloud and the instance groups into a map that can be used for updates.
@@ -473,8 +474,16 @@ func (n *CloudInstanceGroup) DrainNode(u *CloudInstanceGroupInstance, rollingUpd
 
 	// TODO: Send out somewhere else, also DrainOptions has errout
 	out := os.Stdout
+	errOut := os.Stderr
 
-	options := &cmd.DrainOptions{Factory: f, Out: out}
+	options := &cmd.DrainOptions{
+		Factory:          f,
+		Out:              out,
+		IgnoreDaemonsets: true,
+		Force:            true,
+		DeleteLocalData:  true,
+		ErrOut:           errOut,
+	}
 
 	cmd := &cobra.Command{
 		Use: "cordon NODE",
@@ -487,8 +496,19 @@ func (n *CloudInstanceGroup) DrainNode(u *CloudInstanceGroupInstance, rollingUpd
 
 	err = options.RunCordonOrUncordon(true)
 	if err != nil {
+		return fmt.Errorf("error cordoning node node: %v", err)
+	}
+
+	err = options.RunDrain()
+	if err != nil {
 		return fmt.Errorf("error draining node: %v", err)
 	}
+
+	if rollingUpdateData.DrainInterval > time.Second*0 {
+		glog.V(3).Infof("Waiting for %s for pods to stabilize after draining.", rollingUpdateData.DrainInterval)
+		time.Sleep(rollingUpdateData.DrainInterval)
+	}
+
 	return nil
 }
 
