@@ -1,0 +1,56 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: heapster-apiserver
+  namespace: kube-system
+  labels:
+    k8s-app: heapster
+    module: apiserver
+    version: v6
+spec:
+  selector:
+    matchLabels:
+      k8s-app: heapster
+      module: apiserver
+      version: v6
+  template:
+    metadata:
+      name: heapster
+      labels:
+        k8s-app: heapster
+        module: apiserver
+        version: v6
+    spec:
+      containers:
+      - name: heapster
+        image: gcr.io/google_containers/heapster-amd64:v1.3.0-beta.0
+        command:
+        - /heapster
+        - --source=kubernetes.summary_api:''
+        - --api-server
+        - --service-cluster-ip-range=10.10.0.0/24
+        - --secure-port=6443
+        - --basic-auth-file=/srv/kubernetes/basic-auth.csv
+        - --token-auth-file=/srv/kubernetes/known-tokens.csv
+        - --client-ca-file=/srv/kubernetes/ca.crt
+        - --tls-cert-file=/srv/kubernetes/server.cert
+        - --tls-private-key-file=/srv/kubernetes/server.key
+        ports:
+        - containerPort: 6443
+          name: https
+        - containerPort: 8080
+          name: http
+        volumeMounts:
+        - name: heapster-apiserver-secrets
+          mountPath: /srv/kubernetes/
+          readOnly: true
+        - name: ssl-certs
+          mountPath: /etc/ssl/certs
+          readOnly: true
+      volumes:
+      - name: heapster-apiserver-secrets
+        secret:
+          secretName: heapster-apiserver-secrets
+      - name: ssl-certs
+        hostPath:
+          path: /etc/ssl/certs

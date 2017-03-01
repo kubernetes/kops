@@ -1,0 +1,9 @@
+language: go
+
+go_import_path: k8s.io/heapster
+
+go:
+  - 1.7
+
+script:
+  - make test-unit

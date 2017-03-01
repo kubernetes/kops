@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  labels:
+    k8s-app: heapster-test
+    name: heapster
+  name: heapster
+  namespace: heapster-e2e-tests
+spec:
+  replicas: 1
+  selector:
+    k8s-app: heapster-test
+  template:
+    metadata:
+      labels:
+        k8s-app: heapster-test
+    spec:
+      containers:
+      - name: heapster-test
+        image: gcr.io/google_containers/heapster-amd64:v1.3.0-beta.0
+        imagePullPolicy: Always
+        command:
+        - /heapster
+        - --source=kubernetes.summary_api:''
+        - --sink=log
+        volumeMounts:
+        - name: ssl-certs
+          mountPath: /etc/ssl/certs
+          readOnly: true
+      volumes:
+      - name: ssl-certs
+        hostPath:
+          path: /etc/ssl/certs
