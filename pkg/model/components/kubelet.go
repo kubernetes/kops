@@ -148,6 +148,12 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	if cloudProvider == fi.CloudProviderGCE {
 		clusterSpec.Kubelet.CloudProvider = "gce"
 		clusterSpec.Kubelet.HairpinMode = "promiscuous-bridge"
+
+		if clusterSpec.CloudConfig == nil {
+			clusterSpec.CloudConfig = &kops.CloudConfiguration{}
+		}
+		clusterSpec.CloudConfig.Multizone = fi.Bool(true)
+		clusterSpec.CloudConfig.NodeTags = fi.String(GCETagForRole(b.Context.ClusterName, kops.InstanceGroupRoleNode))
 	}
 
 	usesKubenet, err := UsesKubenet(clusterSpec)

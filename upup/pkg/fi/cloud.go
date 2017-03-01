@@ -126,6 +126,42 @@ var zonesToCloud = map[string]CloudProviderID{
 
 	"cn-north-1a": CloudProviderAWS,
 	"cn-north-1b": CloudProviderAWS,
+
+	// GCE
+	"asia-east1-a": CloudProviderGCE,
+	"asia-east1-b": CloudProviderGCE,
+	"asia-east1-c": CloudProviderGCE,
+	"asia-east1-d": CloudProviderGCE,
+
+	"asia-northeast1-a": CloudProviderGCE,
+	"asia-northeast1-b": CloudProviderGCE,
+	"asia-northeast1-c": CloudProviderGCE,
+	"asia-northeast1-d": CloudProviderGCE,
+
+	"europe-west1-a": CloudProviderGCE,
+	"europe-west1-b": CloudProviderGCE,
+	"europe-west1-c": CloudProviderGCE,
+	"europe-west1-d": CloudProviderGCE,
+	"europe-west1-e": CloudProviderGCE,
+
+	"us-central1-a": CloudProviderGCE,
+	"us-central1-b": CloudProviderGCE,
+	"us-central1-c": CloudProviderGCE,
+	"us-central1-d": CloudProviderGCE,
+	"us-central1-e": CloudProviderGCE,
+	"us-central1-f": CloudProviderGCE,
+	"us-central1-g": CloudProviderGCE,
+	"us-central1-h": CloudProviderGCE,
+
+	"us-east1-a": CloudProviderGCE,
+	"us-east1-b": CloudProviderGCE,
+	"us-east1-c": CloudProviderGCE,
+	"us-east1-d": CloudProviderGCE,
+
+	"us-west1-a": CloudProviderGCE,
+	"us-west1-b": CloudProviderGCE,
+	"us-west1-c": CloudProviderGCE,
+	"us-west1-d": CloudProviderGCE,
 }
 
 // GuessCloudForZone tries to infer the cloudprovider from the zone name

@@ -18,20 +18,21 @@ package fi
 
 import (
 	"fmt"
+	"github.com/golang/glog"
 	"io/ioutil"
+	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	"os"
 	"reflect"
 	"strings"
 	"time"
-
-	"github.com/golang/glog"
-	"k8s.io/kops/util/pkg/vfs"
 )
 
 type Context struct {
 	Tmpdir string
 
 	Target            Target
+	DNS               dnsprovider.Interface
 	Cloud             Cloud
 	Keystore          Keystore
 	SecretStore       SecretStore

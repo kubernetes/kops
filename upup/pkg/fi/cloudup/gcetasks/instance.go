@@ -18,9 +18,8 @@ package gcetasks
 
 import (
 	"fmt"
-
 	"github.com/golang/glog"
-	"google.golang.org/api/compute/v1"
+	compute "google.golang.org/api/compute/v0.beta"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -139,11 +138,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	if r.Metadata != nil {
 		actual.Metadata = make(map[string]fi.Resource)
 		for _, i := range r.Metadata.Items {
-			if i.Value == nil {
-				glog.Warningf("ignoring GCE instance metadata entry with nil-value: %q", i.Key)
-				continue
-			}
-			actual.Metadata[i.Key] = fi.NewStringResource(*i.Value)
+			actual.Metadata[i.Key] = fi.NewStringResource(i.Value)
 		}
 		actual.metadataFingerprint = r.Metadata.Fingerprint
 	}
@@ -157,26 +152,6 @@ func (e *Instance) Run(c *fi.Context) error {
 
 func (_ *Instance) CheckChanges(a, e, changes *Instance) error {
 	return nil
-}
-
-func expandScopeAlias(s string) string {
-	switch s {
-	case "storage-ro":
-		s = "https://www.googleapis.com/auth/devstorage.read_only"
-	case "storage-rw":
-		s = "https://www.googleapis.com/auth/devstorage.read_write"
-	case "compute-ro":
-		s = "https://www.googleapis.com/auth/compute.read_only"
-	case "compute-rw":
-		s = "https://www.googleapis.com/auth/compute"
-	case "monitoring":
-		s = "https://www.googleapis.com/auth/monitoring"
-	case "monitoring-write":
-		s = "https://www.googleapis.com/auth/monitoring.write"
-	case "logging-write":
-		s = "https://www.googleapis.com/auth/logging.write"
-	}
-	return s
 }
 
 func init() {
@@ -281,7 +256,7 @@ func (e *Instance) mapToGCE(project string, ipAddressResolver func(*IPAddress) (
 	if e.Scopes != nil {
 		var scopes []string
 		for _, s := range e.Scopes {
-			s = expandScopeAlias(s)
+			s = scopeToLongForm(s)
 
 			scopes = append(scopes, s)
 		}
@@ -299,7 +274,7 @@ func (e *Instance) mapToGCE(project string, ipAddressResolver func(*IPAddress) (
 		}
 		metadataItems = append(metadataItems, &compute.MetadataItems{
 			Key:   key,
-			Value: fi.String(v),
+			Value: v,
 		})
 	}
 
@@ -438,7 +413,9 @@ func BuildImageURL(defaultProject, nameSpec string) string {
 		glog.Exitf("Cannot parse image spec: %q", nameSpec)
 	}
 
-	return fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/global/images/%s", project, name)
+	u := fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/global/images/%s", project, name)
+	glog.V(4).Infof("Mapped image %q to URL %q", nameSpec, u)
+	return u
 }
 
 func ShortenImageURL(defaultProject string, imageURL string) (string, error) {
@@ -447,8 +424,10 @@ func ShortenImageURL(defaultProject string, imageURL string) (string, error) {
 		return "", err
 	}
 	if u.Project == defaultProject {
+		glog.V(4).Infof("Resolved image %q -> %q", imageURL, u.Name)
 		return u.Name, nil
 	} else {
+		glog.V(4).Infof("Resolved image %q -> %q", imageURL, u.Project+"/"+u.Name)
 		return u.Project + "/" + u.Name, nil
 	}
 }

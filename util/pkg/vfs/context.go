@@ -19,12 +19,16 @@ package vfs
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"golang.org/x/net/context"
+	"golang.org/x/oauth2/google"
+	storage "google.golang.org/api/storage/v1"
 	"io/ioutil"
 	"k8s.io/kubernetes/pkg/util/wait"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -33,6 +37,10 @@ import (
 type VFSContext struct {
 	s3Context    *S3Context
 	memfsContext *MemFSContext
+	// mutex guards gcsClient
+	mutex sync.Mutex
+	// The google cloud storage client, if initialized
+	gcsClient *storage.Service
 }
 
 var Context = VFSContext{
@@ -92,6 +100,10 @@ func (c *VFSContext) BuildVfsPath(p string) (Path, error) {
 
 	if strings.HasPrefix(p, "memfs://") {
 		return c.buildMemFSPath(p)
+	}
+
+	if strings.HasPrefix(p, "gs://") {
+		return c.buildGCSPath(p)
 	}
 
 	return nil, fmt.Errorf("unknown / unhandled path type: %q", p)
@@ -194,6 +206,9 @@ func (c *VFSContext) buildS3Path(p string) (*S3Path, error) {
 	if err != nil {
 		return nil, fmt.Errorf("invalid s3 path: %q", err)
 	}
+	if u.Scheme != "s3" {
+		return nil, fmt.Errorf("invalid s3 path: %q", err)
+	}
 
 	bucket := strings.TrimSuffix(u.Host, "/")
 	if bucket == "" {
@@ -222,4 +237,50 @@ func (c *VFSContext) ResetMemfsContext(clusterReadable bool) {
 	if clusterReadable {
 		c.memfsContext.MarkClusterReadable()
 	}
+}
+
+func (c *VFSContext) buildGCSPath(p string) (*GSPath, error) {
+	u, err := url.Parse(p)
+	if err != nil {
+		return nil, fmt.Errorf("invalid google cloud storage path: %q", err)
+	}
+
+	if u.Scheme != "gs" {
+		return nil, fmt.Errorf("invalid google cloud storage path: %q", err)
+	}
+
+	bucket := strings.TrimSuffix(u.Host, "/")
+
+	gcsClient, err := c.getGCSClient()
+	if err != nil {
+		return nil, err
+	}
+
+	gcsPath := NewGSPath(gcsClient, bucket, u.Path)
+	return gcsPath, nil
+}
+
+func (c *VFSContext) getGCSClient() (*storage.Service, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	if c.gcsClient != nil {
+		return c.gcsClient, nil
+	}
+
+	// TODO: Should we fall back to read-only?
+	scope := storage.DevstorageReadWriteScope
+
+	httpClient, err := google.DefaultClient(context.Background(), scope)
+	if err != nil {
+		return nil, fmt.Errorf("error building GCS HTTP client: %v", err)
+	}
+
+	gcsClient, err := storage.New(httpClient)
+	if err != nil {
+		return nil, fmt.Errorf("error building GCS client: %v", err)
+	}
+
+	c.gcsClient = gcsClient
+	return gcsClient, nil
 }

@@ -14,17 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package model
+package awsmodel
 
 import (
 	"fmt"
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/model/resources"
+	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
-	"k8s.io/kops/upup/pkg/fi/nodeup"
-	"text/template"
 )
 
 const (
@@ -34,12 +32,9 @@ const (
 
 // AutoscalingGroupModelBuilder configures AutoscalingGroup objects
 type AutoscalingGroupModelBuilder struct {
-	*KopsModelContext
+	*AWSModelContext
 
-	NodeUpSource     string
-	NodeUpSourceHash string
-
-	NodeUpConfigBuilder func(ig *kops.InstanceGroup) (*nodeup.NodeUpConfig, error)
+	BootstrapScript *model.BootstrapScript
 }
 
 var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
@@ -92,7 +87,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				return err
 			}
 
-			if t.UserData, err = b.resourceNodeUp(ig); err != nil {
+			if t.UserData, err = b.BootstrapScript.ResourceNodeUp(ig); err != nil {
 				return err
 			}
 
@@ -195,39 +190,4 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	return nil
-}
-
-func (b *AutoscalingGroupModelBuilder) resourceNodeUp(ig *kops.InstanceGroup) (*fi.ResourceHolder, error) {
-	if ig.Spec.Role == kops.InstanceGroupRoleBastion {
-		// Bastions are just bare machines (currently), used as SSH jump-hosts
-		return nil, nil
-	}
-
-	functions := template.FuncMap{
-		"NodeUpSource": func() string {
-			return b.NodeUpSource
-		},
-		"NodeUpSourceHash": func() string {
-			return b.NodeUpSourceHash
-		},
-		"KubeEnv": func() (string, error) {
-			config, err := b.NodeUpConfigBuilder(ig)
-			if err != nil {
-				return "", err
-			}
-
-			data, err := kops.ToRawYaml(config)
-			if err != nil {
-				return "", err
-			}
-
-			return string(data), nil
-		},
-	}
-
-	templateResource, err := NewTemplateResource("nodeup", resources.AWSNodeUpTemplate, functions, nil)
-	if err != nil {
-		return nil, err
-	}
-	return fi.WrapResource(templateResource), nil
 }
