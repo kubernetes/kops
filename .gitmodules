@@ -232,3 +232,21 @@
 [submodule "_vendor/k8s.io/gengo"]
 	path = _vendor/k8s.io/gengo
 	url = https://github.com/kubernetes/gengo.git
+[submodule "_vendor/k8s.io/heapster"]
+	path = _vendor/k8s.io/heapster
+	url = https://github.com/kubernetes/heapster
+[submodule "_vendor/github.com/MakeNowJust/heredoc"]
+	path = _vendor/github.com/MakeNowJust/heredoc
+	url = https://github.com/MakeNowJust/heredoc
+[submodule "_vendor/github.com/daviddengcn/go-colortext"]
+	path = _vendor/github.com/daviddengcn/go-colortext
+	url = https://github.com/daviddengcn/go-colortext
+[submodule "_vendor/github.com/docker/spdystream"]
+	path = _vendor/github.com/docker/spdystream
+	url = https://github.com/docker/spdystream
+[submodule "_vendor/github.com/renstrom/dedent"]
+	path = _vendor/github.com/renstrom/dedent
+	url = https://github.com/renstrom/dedent
+[submodule "_vendor/github.com/chai2010/gettext-go"]
+	path = _vendor/github.com/chai2010/gettext-go
+	url = https://github.com/chai2010/gettext-go
