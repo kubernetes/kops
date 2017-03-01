@@ -92,6 +92,11 @@ func TestPrivateCanal(t *testing.T) {
 	runTest(t, "privatecanal.example.com", "../../tests/integration/privatecanal", "v1alpha2", true, 1)
 }
 
+// TestPrivateKopeio runs the test on a configuration with private topology, kopeio networking
+func TestPrivateKopeio(t *testing.T) {
+	runTest(t, "privatekopeio.example.com", "../../tests/integration/privatekopeio", "v1alpha2", true, 1)
+}
+
 func runTest(t *testing.T, clusterName string, srcDir string, version string, private bool, zones int) {
 	var stdout bytes.Buffer
 
@@ -362,10 +367,16 @@ func (h *IntegrationTestHarness) SetupMockAWS() {
 	})
 
 	mockEC2.Images = append(mockEC2.Images, &ec2.Image{
-		ImageId: aws.String("ami-12345678"),
-		Name:    aws.String("k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21"),
-		OwnerId: aws.String(awsup.WellKnownAccountKopeio),
+		ImageId:        aws.String("ami-12345678"),
+		Name:           aws.String("k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21"),
+		OwnerId:        aws.String(awsup.WellKnownAccountKopeio),
+		RootDeviceName: aws.String("/dev/xvda"),
+	})
 
+	mockEC2.Images = append(mockEC2.Images, &ec2.Image{
+		ImageId:        aws.String("ami-15000000"),
+		Name:           aws.String("k8s-1.5-debian-jessie-amd64-hvm-ebs-2017-01-09"),
+		OwnerId:        aws.String(awsup.WellKnownAccountKopeio),
 		RootDeviceName: aws.String("/dev/xvda"),
 	})
 }
