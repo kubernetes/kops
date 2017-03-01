@@ -54,8 +54,12 @@ func ParseGoogleCloudURL(u string) (*GoogleCloudURL, error) {
 		return nil, fmt.Errorf("invalid google cloud URL (schema / host): %q", u)
 	}
 
-	if len(tokens) < 5 || tokens[3] != "compute" || tokens[4] != "v1" {
-		return nil, fmt.Errorf("invalid google cloud URL (not compute/v1): %q", u)
+	if len(tokens) < 5 || tokens[3] != "compute" {
+		return nil, fmt.Errorf("invalid google cloud URL (not compute): %q", u)
+	}
+
+	if tokens[4] != "v1" && tokens[4] != "beta" {
+		return nil, fmt.Errorf("invalid google cloud URL (not compute/v1 or compute/beta): %q", u)
 	}
 
 	parsed := &GoogleCloudURL{}

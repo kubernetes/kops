@@ -208,6 +208,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 
 	loader := NewLoader(c.config, c.cluster, assets, nodeTags)
 	loader.Builders = append(loader.Builders, &model.DockerBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.CloudConfigBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeletBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubectlBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.EtcdBuilder{NodeupModelContext: modelContext})

@@ -269,3 +269,10 @@ type LeaderElectionConfiguration struct {
 	// components for high availability.
 	LeaderElect *bool `json:"leaderElect,omitempty" flag:"leader-elect"`
 }
+
+type CloudConfiguration struct {
+	// GCE cloud-config options
+	Multizone          *bool   `json:"multizone,omitempty"`
+	NodeTags           *string `json:"nodeTags,omitempty"`
+	NodeInstancePrefix *string `json:"nodeInstancePrefix,omitempty"`
+}
