@@ -54,6 +54,8 @@ ifndef VERSION
   endif
 endif
 
+# + is valid in semver, but not in docker tags. Fixup CI versions.
+PROTOKUBE_TAG := $(subst +,-,${VERSION})
 
 # Go exports:
 
@@ -194,7 +196,7 @@ protokube-build-in-docker: protokube-builder-image
 	docker run -t -e VERSION=${VERSION} -v `pwd`:/src protokube-builder /onbuild.sh
 
 protokube-image: protokube-build-in-docker
-	docker build -t protokube:${VERSION} -f images/protokube/Dockerfile .
+	docker build -t protokube:${PROTOKUBE_TAG} -f images/protokube/Dockerfile .
 
 protokube-export: protokube-image
 	mkdir -p .build/dist/images
