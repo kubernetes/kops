@@ -37,6 +37,21 @@ func ValidateCluster(c *kops.Cluster, strict bool) error {
 
 	specPath := field.NewPath("Cluster").Child("Spec")
 
+	// kubernetesRelease is the version with only major & minor fields
+	var kubernetesRelease semver.Version
+
+	// KubernetesVersion
+	if c.Spec.KubernetesVersion == "" {
+		return field.Required(specField.Child("KubernetesVersion"), "")
+	} else {
+		sv, err := util.ParseKubernetesVersion(c.Spec.KubernetesVersion)
+		if err != nil {
+			return field.Invalid(specField.Child("KubernetesVersion"), c.Spec.KubernetesVersion, "unable to determine kubernetes version")
+		}
+
+		kubernetesRelease = semver.Version{Major: sv.Major, Minor: sv.Minor}
+	}
+
 	if c.ObjectMeta.Name == "" {
 		return field.Required(field.NewPath("Name"), "Cluster Name is required (e.g. --name=mycluster.myzone.com)")
 	}
@@ -281,9 +296,20 @@ func ValidateCluster(c *kops.Cluster, strict bool) error {
 	if c.Spec.Kubelet != nil {
 		kubeletPath := specPath.Child("Kubelet")
 
-		if strict && c.Spec.Kubelet.APIServers == "" {
-			return field.Required(kubeletPath.Child("APIServers"), "")
+		if kubernetesRelease.GTE(semver.MustParse("1.6.0")) {
+			// Flag removed in 1.6
+			if c.Spec.Kubelet.APIServers != "" {
+				return field.Invalid(
+					kubeletPath.Child("APIServers"),
+					c.Spec.Kubelet.APIServers,
+					"api-servers flag was removed in 1.6")
+			}
+		} else {
+			if strict && c.Spec.Kubelet.APIServers == "" {
+				return field.Required(kubeletPath.Child("APIServers"), "")
+			}
 		}
+
 		if c.Spec.Kubelet.APIServers != "" && !isValidAPIServersURL(c.Spec.Kubelet.APIServers) {
 			return field.Invalid(kubeletPath.Child("APIServers"), c.Spec.Kubelet.APIServers, "Not a valid APIServer URL")
 		}
@@ -293,9 +319,20 @@ func ValidateCluster(c *kops.Cluster, strict bool) error {
 	if c.Spec.MasterKubelet != nil {
 		masterKubeletPath := specPath.Child("MasterKubelet")
 
-		if strict && c.Spec.MasterKubelet.APIServers == "" {
-			return field.Required(masterKubeletPath.Child("APIServers"), "")
+		if kubernetesRelease.GTE(semver.MustParse("1.6.0")) {
+			// Flag removed in 1.6
+			if c.Spec.MasterKubelet.APIServers != "" {
+				return field.Invalid(
+					masterKubeletPath.Child("APIServers"),
+					c.Spec.MasterKubelet.APIServers,
+					"api-servers flag was removed in 1.6")
+			}
+		} else {
+			if strict && c.Spec.MasterKubelet.APIServers == "" {
+				return field.Required(masterKubeletPath.Child("APIServers"), "")
+			}
 		}
+
 		if c.Spec.MasterKubelet.APIServers != "" && !isValidAPIServersURL(c.Spec.MasterKubelet.APIServers) {
 			return field.Invalid(masterKubeletPath.Child("APIServers"), c.Spec.MasterKubelet.APIServers, "Not a valid APIServer URL")
 		}
@@ -366,21 +403,9 @@ func ValidateCluster(c *kops.Cluster, strict bool) error {
 		}
 	}
 
-	// KubernetesVersion
-	if c.Spec.KubernetesVersion == "" {
-		if strict {
-			return field.Required(specField.Child("KubernetesVersion"), "")
-		}
-	} else {
-		sv, err := util.ParseKubernetesVersion(c.Spec.KubernetesVersion)
-		if err != nil {
-			return field.Invalid(specField.Child("KubernetesVersion"), c.Spec.KubernetesVersion, "unable to determine kubernetes version")
-		}
-
-		if sv.GTE(semver.Version{Major: 1, Minor: 4}) {
-			if c.Spec.Networking != nil && c.Spec.Networking.Classic != nil {
-				return field.Invalid(specField.Child("Networking"), "classic", "classic networking is not supported with kubernetes versions 1.4 and later")
-			}
+	if kubernetesRelease.GTE(semver.MustParse("1.4.0")) {
+		if c.Spec.Networking != nil && c.Spec.Networking.Classic != nil {
+			return field.Invalid(specField.Child("Networking"), "classic", "classic networking is not supported with kubernetes versions 1.4 and later")
 		}
 	}
 
