@@ -19,7 +19,7 @@ package kops
 import metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 
 type KubeletConfigSpec struct {
-	// not used for clusters version 1.6 and later
+	// not used for clusters version 1.6 and later - flag removed
 	APIServers string `json:"apiServers,omitempty" flag:"api-servers"`
 
 	// kubeconfigPath is the path to the kubeconfig file with authorization
