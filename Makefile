@@ -31,6 +31,9 @@ MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
 DNS_CONTROLLER_TAG=1.5.2
 
+KOPS_RELEASE_VERSION=1.5.2-beta.2
+KOPS_CI_VERSION=1.6.0-alpha.0
+
 GITSHA := $(shell cd ${GOPATH_1ST}/src/k8s.io/kops; git describe --always)
 
 ifndef VERSION
@@ -45,9 +48,9 @@ ifndef VERSION
   # We expect that if you are uploading nodeup/protokube, you will set
   # VERSION (along with S3_BUCKET), either directly or by setting CI=1
   ifndef CI
-    VERSION=1.5.2-beta.2
+    VERSION=${KOPS_RELEASE_VERSION}
   else
-    VERSION := git-${GITSHA}
+    VERSION := ${KOPS_CI_VERSION}+${GITSHA}
   endif
 endif
 
@@ -155,7 +158,7 @@ gcs-upload: version-dist
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r .build/upload/kops/* ${GCS_LOCATION}
 
 # In CI testing, always upload the CI version.
-gcs-publish-ci: VERSION := git-$(shell git describe --always)
+gcs-publish-ci: VERSION := ${KOPS_CI_VERSION}+${GITSHA}
 gcs-publish-ci: gcs-upload
 	echo "${GCS_URL}/${VERSION}" > .build/upload/${LATEST_FILE}
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp .build/upload/${LATEST_FILE} ${GCS_LOCATION}
