@@ -56,7 +56,10 @@ func BuildCloud(cluster *api.Cluster) (fi.Cloud, error) {
 			if project == "" {
 				return nil, fmt.Errorf("project is required for GCE")
 			}
-			gceCloud, err := gce.NewGCECloud(region, project)
+
+			labels := map[string]string{gce.GceLabelNameKubernetesCluster: gce.SafeClusterName(cluster.ObjectMeta.Name)}
+
+			gceCloud, err := gce.NewGCECloud(region, project, labels)
 			if err != nil {
 				return nil, err
 			}
@@ -99,6 +102,39 @@ func BuildCloud(cluster *api.Cluster) (fi.Cloud, error) {
 	}
 	return cloud, nil
 }
+
+//func BuildDNS(cluster *api.Cluster, cloud fi.Cloud) (dns.Provider, error) {
+//	var p dns.Provider
+//
+//	switch cluster.Spec.CloudProvider {
+//	case "gce":
+//		{
+//			gceCloud := cloud.(*gce.GCECloud)
+//			glog.Infof("Creating google cloud dns provider for project %q", gceCloud.Project)
+//			k8sDNSProvider, err := clouddns.CreateInterface(gceCloud.Project, nil)
+//			if err != nil {
+//				return nil, fmt.Errorf("error building DNS provider: %v", err)
+//			}
+//
+//			p = &dns.KubernetesDNS{Provider: k8sDNSProvider}
+//		}
+//
+//	case "aws":
+//		{
+//			//awsCloud := cloud.(*awsup.AWSCloud)
+//			config := aws.NewConfig()
+//			client := route53.New(session.New(), config)
+//
+//			p = &dns.DirectRoute53DNS{
+//				Route53: client,
+//			}
+//		}
+//
+//	default:
+//		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
+//	}
+//	return p, nil
+//}
 
 func FindDNSHostedZone(dns dnsprovider.Interface, clusterDNSName string) (string, error) {
 	glog.V(2).Infof("Querying for all DNS zones to find match for %q", clusterDNSName)

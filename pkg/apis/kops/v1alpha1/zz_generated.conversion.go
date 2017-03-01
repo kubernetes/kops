@@ -45,6 +45,8 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_kops_CanalNetworkingSpec_To_v1alpha1_CanalNetworkingSpec,
 		Convert_v1alpha1_ClassicNetworkingSpec_To_kops_ClassicNetworkingSpec,
 		Convert_kops_ClassicNetworkingSpec_To_v1alpha1_ClassicNetworkingSpec,
+		Convert_v1alpha1_CloudConfiguration_To_kops_CloudConfiguration,
+		Convert_kops_CloudConfiguration_To_v1alpha1_CloudConfiguration,
 		Convert_v1alpha1_Cluster_To_kops_Cluster,
 		Convert_kops_Cluster_To_v1alpha1_Cluster,
 		Convert_v1alpha1_ClusterList_To_kops_ClusterList,
@@ -218,6 +220,28 @@ func autoConvert_kops_ClassicNetworkingSpec_To_v1alpha1_ClassicNetworkingSpec(in
 
 func Convert_kops_ClassicNetworkingSpec_To_v1alpha1_ClassicNetworkingSpec(in *kops.ClassicNetworkingSpec, out *ClassicNetworkingSpec, s conversion.Scope) error {
 	return autoConvert_kops_ClassicNetworkingSpec_To_v1alpha1_ClassicNetworkingSpec(in, out, s)
+}
+
+func autoConvert_v1alpha1_CloudConfiguration_To_kops_CloudConfiguration(in *CloudConfiguration, out *kops.CloudConfiguration, s conversion.Scope) error {
+	out.Multizone = in.Multizone
+	out.NodeTags = in.NodeTags
+	out.NodeInstancePrefix = in.NodeInstancePrefix
+	return nil
+}
+
+func Convert_v1alpha1_CloudConfiguration_To_kops_CloudConfiguration(in *CloudConfiguration, out *kops.CloudConfiguration, s conversion.Scope) error {
+	return autoConvert_v1alpha1_CloudConfiguration_To_kops_CloudConfiguration(in, out, s)
+}
+
+func autoConvert_kops_CloudConfiguration_To_v1alpha1_CloudConfiguration(in *kops.CloudConfiguration, out *CloudConfiguration, s conversion.Scope) error {
+	out.Multizone = in.Multizone
+	out.NodeTags = in.NodeTags
+	out.NodeInstancePrefix = in.NodeInstancePrefix
+	return nil
+}
+
+func Convert_kops_CloudConfiguration_To_v1alpha1_CloudConfiguration(in *kops.CloudConfiguration, out *CloudConfiguration, s conversion.Scope) error {
+	return autoConvert_kops_CloudConfiguration_To_v1alpha1_CloudConfiguration(in, out, s)
 }
 
 func autoConvert_v1alpha1_Cluster_To_kops_Cluster(in *Cluster, out *kops.Cluster, s conversion.Scope) error {
@@ -418,6 +442,15 @@ func autoConvert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	} else {
 		out.MasterKubelet = nil
 	}
+	if in.CloudConfig != nil {
+		in, out := &in.CloudConfig, &out.CloudConfig
+		*out = new(kops.CloudConfiguration)
+		if err := Convert_v1alpha1_CloudConfiguration_To_kops_CloudConfiguration(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.CloudConfig = nil
+	}
 	if in.Networking != nil {
 		in, out := &in.Networking, &out.Networking
 		*out = new(kops.NetworkingSpec)
@@ -555,6 +588,15 @@ func autoConvert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, 
 		}
 	} else {
 		out.MasterKubelet = nil
+	}
+	if in.CloudConfig != nil {
+		in, out := &in.CloudConfig, &out.CloudConfig
+		*out = new(CloudConfiguration)
+		if err := Convert_kops_CloudConfiguration_To_v1alpha1_CloudConfiguration(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.CloudConfig = nil
 	}
 	if in.Networking != nil {
 		in, out := &in.Networking, &out.Networking

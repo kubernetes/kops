@@ -19,6 +19,7 @@ package cloudup
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/kops/dns-controller/pkg/dns"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
@@ -158,7 +159,7 @@ func precreateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 
 	recordsMap := make(map[string]dnsprovider.ResourceRecordSet)
 	for _, record := range records {
-		name := strings.TrimSuffix(record.Name(), ".")
+		name := dns.EnsureDotSuffix(record.Name())
 		key := string(record.Type()) + "::" + name
 		recordsMap[key] = record
 	}
@@ -168,7 +169,7 @@ func precreateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 	var created []string
 
 	for _, dnsHostname := range dnsHostnames {
-		dnsHostname = strings.TrimSuffix(dnsHostname, ".")
+		dnsHostname = dns.EnsureDotSuffix(dnsHostname)
 		dnsRecord := recordsMap["A::"+dnsHostname]
 		found := false
 		if dnsRecord != nil {

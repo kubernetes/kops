@@ -18,11 +18,10 @@ package gce
 
 import (
 	"fmt"
-
 	"github.com/golang/glog"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
-	"google.golang.org/api/compute/v1"
+	compute "google.golang.org/api/compute/v0.beta"
 	"google.golang.org/api/storage/v1"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
@@ -36,7 +35,7 @@ type GCECloud struct {
 	Region  string
 	Project string
 
-	//tags    map[string]string
+	labels map[string]string
 }
 
 var _ fi.Cloud = &GCECloud{}
@@ -45,7 +44,7 @@ func (c *GCECloud) ProviderID() fi.CloudProviderID {
 	return fi.CloudProviderGCE
 }
 
-func NewGCECloud(region string, project string) (*GCECloud, error) {
+func NewGCECloud(region string, project string, labels map[string]string) (*GCECloud, error) {
 	c := &GCECloud{Region: region, Project: project}
 
 	ctx := context.Background()
@@ -66,11 +65,13 @@ func NewGCECloud(region string, project string) (*GCECloud, error) {
 	}
 	c.Storage = storageService
 
+	c.labels = labels
+
 	return c, nil
 }
 
 func (c *GCECloud) DNS() (dnsprovider.Interface, error) {
-	provider, err := dnsprovider.GetDnsProvider(clouddns.ProviderName, nil)
+	provider, err := clouddns.CreateInterface(c.Project, nil)
 	if err != nil {
 		return nil, fmt.Errorf("Error building (k8s) DNS provider: %v", err)
 	}
@@ -80,4 +81,25 @@ func (c *GCECloud) DNS() (dnsprovider.Interface, error) {
 func (c *GCECloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 	glog.Warningf("FindVPCInfo not (yet) implemented on GCE")
 	return nil, nil
+}
+
+func (c *GCECloud) Labels() map[string]string {
+	// Defensive copy
+	tags := make(map[string]string)
+	for k, v := range c.labels {
+		tags[k] = v
+	}
+	return tags
+}
+
+func (c *GCECloud) WaitForZoneOp(op *compute.Operation, zone string) error {
+	return WaitForZoneOp(c.Compute, op, c.Project, zone)
+}
+
+func (c *GCECloud) WaitForRegionOp(op *compute.Operation) error {
+	return WaitForRegionOp(c.Compute, op, c.Project)
+}
+
+func (c *GCECloud) WaitForGlobalOp(op *compute.Operation) error {
+	return WaitForGlobalOp(c.Compute, op, c.Project)
 }

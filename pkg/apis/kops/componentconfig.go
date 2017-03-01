@@ -174,8 +174,6 @@ type KubeletConfigSpec struct {
 	//VolumePluginDir string `json:"volumePluginDir"`
 	// cloudProvider is the provider for cloud services.
 	CloudProvider string `json:"cloudProvider,omitempty" flag:"cloud-provider"`
-	//// cloudConfigFile is the path to the cloud provider configuration file.
-	//CloudConfigFile string `json:"cloudConfigFile,omitempty"`
 	// KubeletCgroups is the absolute name of cgroups to isolate the kubelet in.
 	KubeletCgroups string `json:"kubeletCgroups,omitempty" flag:"kubelet-cgroups"`
 	// Cgroups that container runtime is expected to be isolated in.
@@ -453,8 +451,6 @@ type KubeControllerManagerConfig struct {
 	//Address string `json:"address"`
 	// cloudProvider is the provider for cloud services.
 	CloudProvider string `json:"cloudProvider,omitempty" flag:"cloud-provider"`
-	//// cloudConfigFile is the path to the cloud provider configuration file.
-	//CloudConfigFile string `json:"cloudConfigFile"`
 	//// concurrentEndpointSyncs is the number of endpoint syncing operations
 	//// that will be done concurrently. Larger number = faster endpoint updating,
 	//// but more CPU (and network) load.
@@ -650,4 +646,11 @@ type LeaderElectionConfiguration struct {
 	//// acquisition and renewal of a leadership. This is only applicable if
 	//// leader election is enabled.
 	//RetryPeriod unversioned.Duration `json:"retryPeriod"`
+}
+
+type CloudConfiguration struct {
+	// GCE cloud-config options
+	Multizone          *bool   `json:"multizone,omitempty"`
+	NodeTags           *string `json:"nodeTags,omitempty"`
+	NodeInstancePrefix *string `json:"nodeInstancePrefix,omitempty"`
 }

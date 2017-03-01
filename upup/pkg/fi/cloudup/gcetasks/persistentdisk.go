@@ -18,20 +18,23 @@ package gcetasks
 
 import (
 	"fmt"
-
-	"google.golang.org/api/compute/v1"
+	"github.com/golang/glog"
+	compute "google.golang.org/api/compute/v0.beta"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"reflect"
 	"strings"
 )
 
+// PersistentDisk represents a GCE PD
 //go:generate fitask -type=PersistentDisk
 type PersistentDisk struct {
 	Name       *string
 	VolumeType *string
 	SizeGB     *int64
 	Zone       *string
+	Labels     map[string]string
 }
 
 var _ fi.CompareWithID = &PersistentDisk{}
@@ -66,6 +69,8 @@ func (e *PersistentDisk) Find(c *fi.Context) (*PersistentDisk, error) {
 	actual.VolumeType = fi.String(lastComponent(r.Type))
 	actual.Zone = fi.String(lastComponent(r.Zone))
 	actual.SizeGB = &r.SizeGb
+
+	actual.Labels = r.Labels
 
 	return actual, nil
 }
@@ -120,8 +125,44 @@ func (_ *PersistentDisk) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Persisten
 		if err != nil {
 			return fmt.Errorf("error creating PersistentDisk: %v", err)
 		}
-	} else {
-		return fmt.Errorf("Cannot apply changes to PersistentDisk: %v", changes)
+	}
+
+	if changes.Labels != nil {
+		d, err := t.Cloud.Compute.Disks.Get(t.Cloud.Project, *e.Zone, disk.Name).Do()
+		if err != nil {
+			return fmt.Errorf("error reading created PersistentDisk: %v", err)
+		}
+
+		labelsRequest := &compute.ZoneSetLabelsRequest{
+			LabelFingerprint: d.LabelFingerprint,
+			Labels:           make(map[string]string),
+		}
+		// Danger: labels replace tags on instances; but thankfully volumes don't have tags
+		//for _, k := range d.Tags {
+		//	labelsRequest.Labels[k] = ""
+		//}
+		for k, v := range d.Labels {
+			labelsRequest.Labels[k] = v
+		}
+		for k, v := range t.Cloud.Labels() {
+			labelsRequest.Labels[k] = v
+		}
+		for k, v := range e.Labels {
+			labelsRequest.Labels[k] = v
+		}
+		glog.V(2).Infof("Setting labels on disk %q: %v", disk.Name, labelsRequest.Labels)
+		_, err = t.Cloud.Compute.Disks.SetLabels(t.Cloud.Project, *e.Zone, disk.Name, labelsRequest).Do()
+		if err != nil {
+			return fmt.Errorf("error setting labels on created PersistentDisk: %v", err)
+		}
+		changes.Labels = nil
+	}
+
+	if a != nil && changes != nil {
+		empty := &PersistentDisk{}
+		if !reflect.DeepEqual(empty, changes) {
+			return fmt.Errorf("Cannot apply changes to PersistentDisk: %v", changes)
+		}
 	}
 
 	return nil

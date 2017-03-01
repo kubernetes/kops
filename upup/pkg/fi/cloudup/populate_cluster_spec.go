@@ -226,8 +226,9 @@ func (c *populateClusterSpec) run() error {
 	if cluster.Spec.DNSZone == "" {
 		dns, err := cloud.DNS()
 		if err != nil {
-			return fmt.Errorf("error getting DNS for cloud: %v", err)
+			return err
 		}
+
 		dnsZone, err := FindDNSHostedZone(dns, cluster.ObjectMeta.Name)
 		if err != nil {
 			return fmt.Errorf("error determining default DNS zone: %v", err)
@@ -235,6 +236,7 @@ func (c *populateClusterSpec) run() error {
 		glog.V(2).Infof("Defaulting DNS zone to: %s", dnsZone)
 		cluster.Spec.DNSZone = dnsZone
 	}
+
 	tags, err := buildCloudupTags(cluster)
 
 	if err != nil {
@@ -254,7 +256,9 @@ func (c *populateClusterSpec) run() error {
 
 	tf.AddTo(templateFunctions)
 
-	optionsContext := &components.OptionsContext{}
+	optionsContext := &components.OptionsContext{
+		ClusterName: cluster.ObjectMeta.Name,
+	}
 	var fileModels []string
 	var codeModels []loader.OptionsBuilder
 	for _, m := range c.Models {

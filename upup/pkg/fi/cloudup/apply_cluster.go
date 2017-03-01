@@ -30,7 +30,11 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/model/awsmodel"
+	"k8s.io/kops/pkg/model/components"
+	"k8s.io/kops/pkg/model/gcemodel"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -48,6 +52,9 @@ import (
 const DefaultMaxTaskDuration = 10 * time.Minute
 
 const starline = "*********************************************************************************\n"
+
+// AlphaAllowGCE is a feature flag that gates GCE support while it is alpha
+var AlphaAllowGCE = featureflag.New("AlphaAllowGCE", featureflag.Bool(false))
 
 var CloudupModels = []string{"config", "proto", "cloudup"}
 
@@ -185,7 +192,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 	if len(c.Assets) == 0 {
 		var baseURL string
-		if isBaseURL(cluster.Spec.KubernetesVersion) {
+		if components.IsBaseURL(cluster.Spec.KubernetesVersion) {
 			baseURL = cluster.Spec.KubernetesVersion
 		} else {
 			baseURL = "https://storage.googleapis.com/kubernetes-release/release/v" + cluster.Spec.KubernetesVersion
@@ -241,6 +248,9 @@ func (c *ApplyClusterCmd) Run() error {
 		"keypair":     &fitasks.Keypair{},
 		"secret":      &fitasks.Secret{},
 		"managedFile": &fitasks.ManagedFile{},
+
+		// DNS
+		//"dnsZone": &dnstasks.DNSZone{},
 	})
 
 	cloud, err := BuildCloud(cluster)
@@ -275,7 +285,9 @@ func (c *ApplyClusterCmd) Run() error {
 			region = gceCloud.Region
 			project = gceCloud.Project
 
-			glog.Fatalf("GCE is (probably) not working currently - please ping @justinsb for cleanup")
+			if !AlphaAllowGCE.Enabled() {
+				return fmt.Errorf("GCE support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowGCE")
+			}
 
 			l.AddTypes(map[string]interface{}{
 				"persistentDisk":       &gcetasks.PersistentDisk{},
@@ -329,9 +341,9 @@ func (c *ApplyClusterCmd) Run() error {
 				"autoscalingGroup":    &awstasks.AutoscalingGroup{},
 				"launchConfiguration": &awstasks.LaunchConfiguration{},
 
-				// Route53
-				"dnsName": &awstasks.DNSName{},
-				"dnsZone": &awstasks.DNSZone{},
+				//// Route53
+				//"dnsName": &awstasks.DNSName{},
+				//"dnsZone": &awstasks.DNSZone{},
 			})
 
 			if len(sshPublicKeys) == 0 {
@@ -389,17 +401,45 @@ func (c *ApplyClusterCmd) Run() error {
 		case "cloudup":
 			l.Builders = append(l.Builders,
 				&BootstrapChannelBuilder{cluster: cluster},
-				&model.APILoadBalancerBuilder{KopsModelContext: modelContext},
-				&model.BastionModelBuilder{KopsModelContext: modelContext},
-				&model.DNSModelBuilder{KopsModelContext: modelContext},
-				&model.ExternalAccessModelBuilder{KopsModelContext: modelContext},
-				&model.FirewallModelBuilder{KopsModelContext: modelContext},
-				&model.IAMModelBuilder{KopsModelContext: modelContext},
-				&model.PKIModelBuilder{KopsModelContext: modelContext},
-				&model.MasterVolumeBuilder{KopsModelContext: modelContext},
-				&model.NetworkModelBuilder{KopsModelContext: modelContext},
-				&model.SSHKeyModelBuilder{KopsModelContext: modelContext},
 			)
+
+			switch fi.CloudProviderID(cluster.Spec.CloudProvider) {
+			case fi.CloudProviderAWS:
+				l.Builders = append(l.Builders,
+					&model.APILoadBalancerBuilder{KopsModelContext: modelContext},
+					&model.BastionModelBuilder{KopsModelContext: modelContext},
+					&model.DNSModelBuilder{KopsModelContext: modelContext},
+					&model.ExternalAccessModelBuilder{KopsModelContext: modelContext},
+					&model.FirewallModelBuilder{KopsModelContext: modelContext},
+					&model.IAMModelBuilder{KopsModelContext: modelContext},
+					&model.PKIModelBuilder{KopsModelContext: modelContext},
+					&model.MasterVolumeBuilder{KopsModelContext: modelContext},
+					&model.NetworkModelBuilder{KopsModelContext: modelContext},
+					&model.SSHKeyModelBuilder{KopsModelContext: modelContext},
+				)
+
+			case fi.CloudProviderGCE:
+				gceModelContext := &gcemodel.GCEModelContext{
+					KopsModelContext: modelContext,
+				}
+
+				l.Builders = append(l.Builders,
+					//&model.APILoadBalancerBuilder{KopsModelContext: modelContext},
+					//&model.BastionModelBuilder{KopsModelContext: modelContext},
+					//&model.DNSModelBuilder{KopsModelContext: modelContext},
+					&gcemodel.ExternalAccessModelBuilder{GCEModelContext: gceModelContext},
+					&gcemodel.FirewallModelBuilder{GCEModelContext: gceModelContext},
+					//&model.IAMModelBuilder{KopsModelContext: modelContext},
+					&model.PKIModelBuilder{KopsModelContext: modelContext},
+					&model.MasterVolumeBuilder{KopsModelContext: modelContext},
+					&gcemodel.NetworkModelBuilder{GCEModelContext: gceModelContext},
+					//&model.SSHKeyModelBuilder{KopsModelContext: modelContext},
+				)
+
+			default:
+				return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
+			}
+
 			fileModels = append(fileModels, m)
 
 		default:
@@ -445,7 +485,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 		var images []*nodeup.Image
 
-		if isBaseURL(cluster.Spec.KubernetesVersion) {
+		if components.IsBaseURL(cluster.Spec.KubernetesVersion) {
 			baseURL := cluster.Spec.KubernetesVersion
 			baseURL = strings.TrimSuffix(baseURL, "/")
 
@@ -492,12 +532,37 @@ func (c *ApplyClusterCmd) Run() error {
 		return config, nil
 	}
 
-	l.Builders = append(l.Builders, &model.AutoscalingGroupModelBuilder{
-		KopsModelContext:    modelContext,
+	bootstrapScriptBuilder := &model.BootstrapScript{
 		NodeUpConfigBuilder: renderNodeUpConfig,
 		NodeUpSourceHash:    "",
 		NodeUpSource:        c.NodeUpSource,
-	})
+	}
+	switch fi.CloudProviderID(cluster.Spec.CloudProvider) {
+	case fi.CloudProviderAWS:
+		awsModelContext := &awsmodel.AWSModelContext{
+			KopsModelContext: modelContext,
+		}
+
+		l.Builders = append(l.Builders, &awsmodel.AutoscalingGroupModelBuilder{
+			AWSModelContext: awsModelContext,
+			BootstrapScript: bootstrapScriptBuilder,
+		})
+
+	case fi.CloudProviderGCE:
+		{
+			gceModelContext := &gcemodel.GCEModelContext{
+				KopsModelContext: modelContext,
+			}
+
+			l.Builders = append(l.Builders, &gcemodel.AutoscalingGroupModelBuilder{
+				GCEModelContext: gceModelContext,
+				BootstrapScript: bootstrapScriptBuilder,
+			})
+		}
+
+	default:
+		return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
+	}
 
 	//// TotalNodeCount computes the total count of nodes
 	//l.TemplateFunctions["TotalNodeCount"] = func() (int, error) {
@@ -626,10 +691,6 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	return nil
-}
-
-func isBaseURL(kubernetesVersion string) bool {
-	return strings.HasPrefix(kubernetesVersion, "http:") || strings.HasPrefix(kubernetesVersion, "https:")
 }
 
 func findHash(url string) (*hashing.Hash, error) {
