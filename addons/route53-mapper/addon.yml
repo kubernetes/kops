@@ -1,0 +1,9 @@
+kind: Addons
+metadata:
+  name: route53-mapper
+spec:
+  addons:
+    - version: 1.2.0
+      selector:
+        k8s-addon: route53-mapper.addons.k8s.io
+      manifest: v1.2.0.yaml
