@@ -6,10 +6,14 @@ Rolling update a cluster
 
 
 Rolling update a cluster instance groups.
-		
-This command updates the running instances to match the cloud specifications.
+
+This command updates a kubernetes cluseter to match the cloud, and kops specifications.
 
 To perform rolling update, you need to update the cloud resources first with "kops update cluster"
+
+Use KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate" to use beta code that drains the nodes
+and validates the cluser.  New flags for Drain and Validation operations will be shown when
+the environment variable is set.
 
 ```
 kops rolling-update cluster
