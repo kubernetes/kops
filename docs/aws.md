@@ -182,7 +182,7 @@ Kops by default will assume that the NS records created above are publicly avail
 Note: There is a DNS flag that can be configured if you plan on using private DNS records
 
 ```
-kops create cluster --dns private $NAME
+kops create cluster --dns-zone private $NAME
 ```
 
 ## Testing your DNS setup
@@ -282,12 +282,6 @@ kubectl get nodes
 ```
 
 You will see a list of nodes that should match the `--zones` flag defined earlier. This is a great sign that your Kubernetes cluster is online and working.
-
-Also kops ships with a handy validation tool that can be ran to ensure your cluster is working as expected.
-
-```bash
-kops validate cluster
-```
 
 Another great one liner
 
