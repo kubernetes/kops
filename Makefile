@@ -162,7 +162,10 @@ gcs-upload: version-dist
 
 # In CI testing, always upload the CI version.
 gcs-publish-ci: VERSION := ${KOPS_CI_VERSION}+${GITSHA}
+gcs-publish-ci: PROTOKUBE_TAG := $(subst +,-,${VERSION})
 gcs-publish-ci: gcs-upload
+	echo "VERSION: ${VERSION}"
+	echo "PROTOKUBE_TAG: ${PROTOKUBE_TAG}"
 	echo "${GCS_URL}/${VERSION}" > .build/upload/${LATEST_FILE}
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp .build/upload/${LATEST_FILE} ${GCS_LOCATION}
 
@@ -201,14 +204,15 @@ protokube-image: protokube-build-in-docker
 
 protokube-export: protokube-image
 	mkdir -p .build/dist/images
-	docker save protokube:${PROTOKUBE_TAG} | gzip -c  > .build/dist/images/protokube.tar.gz
+	docker save protokube:${PROTOKUBE_TAG} > .build/dist/images/protokube.tar
+	gzip .build/dist/images/protokube.tar
 	(sha1sum .build/dist/images/protokube.tar.gz | cut -d' ' -f1) > .build/dist/images/protokube.tar.gz.sha1
 
 # protokube-push is no longer used (we upload a docker image tar file to S3 instead),
 # but we're keeping it around in case it is useful for development etc
 protokube-push: protokube-image
-	docker tag protokube:${VERSION} ${DOCKER_REGISTRY}/protokube:${VERSION}
-	docker push ${DOCKER_REGISTRY}/protokube:${VERSION}
+	docker tag protokube:${PROTOKUBE_TAG} ${DOCKER_REGISTRY}/protokube:${PROTOKUBE_TAG}
+	docker push ${DOCKER_REGISTRY}/protokube:${PROTOKUBE_TAG}
 
 nodeup: nodeup-dist
 
