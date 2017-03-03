@@ -25,17 +25,17 @@ import (
 
 	"github.com/ghodss/yaml"
 
+	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/diff"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kubernetes/pkg/api"
 	_ "k8s.io/kubernetes/pkg/api/install"
-	"k8s.io/kubernetes/pkg/api/meta"
 	"k8s.io/kubernetes/pkg/api/v1"
-	rbac "k8s.io/kubernetes/pkg/apis/rbac"
+	"k8s.io/kubernetes/pkg/apis/rbac"
 	_ "k8s.io/kubernetes/pkg/apis/rbac/install"
-	rbacv1alpha1 "k8s.io/kubernetes/pkg/apis/rbac/v1alpha1"
-	rbacvalidation "k8s.io/kubernetes/pkg/apis/rbac/validation"
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/util/diff"
-	"k8s.io/kubernetes/pkg/util/sets"
+	rbacv1beta1 "k8s.io/kubernetes/pkg/apis/rbac/v1beta1"
+	rbacregistryvalidation "k8s.io/kubernetes/pkg/registry/rbac/validation"
 	"k8s.io/kubernetes/plugin/pkg/auth/authorizer/rbac/bootstrappolicy"
 )
 
@@ -67,13 +67,13 @@ func getSemanticRoles(roles []rbac.ClusterRole) semanticRoles {
 func TestCovers(t *testing.T) {
 	semanticRoles := getSemanticRoles(bootstrappolicy.ClusterRoles())
 
-	if covers, miss := rbacvalidation.Covers(semanticRoles.admin.Rules, semanticRoles.edit.Rules); !covers {
+	if covers, miss := rbacregistryvalidation.Covers(semanticRoles.admin.Rules, semanticRoles.edit.Rules); !covers {
 		t.Errorf("failed to cover: %#v", miss)
 	}
-	if covers, miss := rbacvalidation.Covers(semanticRoles.admin.Rules, semanticRoles.view.Rules); !covers {
+	if covers, miss := rbacregistryvalidation.Covers(semanticRoles.admin.Rules, semanticRoles.view.Rules); !covers {
 		t.Errorf("failed to cover: %#v", miss)
 	}
-	if covers, miss := rbacvalidation.Covers(semanticRoles.edit.Rules, semanticRoles.view.Rules); !covers {
+	if covers, miss := rbacregistryvalidation.Covers(semanticRoles.edit.Rules, semanticRoles.view.Rules); !covers {
 		t.Errorf("failed to cover: %#v", miss)
 	}
 }
@@ -91,17 +91,17 @@ func TestAdminEditRelationship(t *testing.T) {
 
 	// confirm that the edit role doesn't already have extra powers
 	for _, rule := range additionalAdminPowers {
-		if covers, _ := rbacvalidation.Covers(semanticRoles.edit.Rules, []rbac.PolicyRule{rule}); covers {
+		if covers, _ := rbacregistryvalidation.Covers(semanticRoles.edit.Rules, []rbac.PolicyRule{rule}); covers {
 			t.Errorf("edit has extra powers: %#v", rule)
 		}
 	}
 	semanticRoles.edit.Rules = append(semanticRoles.edit.Rules, additionalAdminPowers...)
 
 	// at this point, we should have a two way covers relationship
-	if covers, miss := rbacvalidation.Covers(semanticRoles.admin.Rules, semanticRoles.edit.Rules); !covers {
+	if covers, miss := rbacregistryvalidation.Covers(semanticRoles.admin.Rules, semanticRoles.edit.Rules); !covers {
 		t.Errorf("admin has lost rules for: %#v", miss)
 	}
-	if covers, miss := rbacvalidation.Covers(semanticRoles.edit.Rules, semanticRoles.admin.Rules); !covers {
+	if covers, miss := rbacregistryvalidation.Covers(semanticRoles.edit.Rules, semanticRoles.admin.Rules); !covers {
 		t.Errorf("edit is missing rules for: %#v\nIf these should only be admin powers, add them to the list.  Otherwise, add them to the edit role.", miss)
 	}
 }
@@ -115,6 +115,12 @@ var viewEscalatingNamespaceResources = []rbac.PolicyRule{
 	rbac.NewRule(bootstrappolicy.Read...).Groups("").Resources("pods/portforward").RuleOrDie(),
 	rbac.NewRule(bootstrappolicy.Read...).Groups("").Resources("secrets").RuleOrDie(),
 	rbac.NewRule(bootstrappolicy.Read...).Groups("").Resources("services/proxy").RuleOrDie(),
+}
+
+// ungettableResources is the list of rules that don't allow to view (GET) them
+// this is purposefully separate list to distinguish from escalating privs
+var ungettableResources = []rbac.PolicyRule{
+	rbac.NewRule(bootstrappolicy.Read...).Groups("apps", "extensions").Resources("deployments/rollback").RuleOrDie(),
 }
 
 func TestEditViewRelationship(t *testing.T) {
@@ -136,19 +142,71 @@ func TestEditViewRelationship(t *testing.T) {
 
 	// confirm that the view role doesn't already have extra powers
 	for _, rule := range viewEscalatingNamespaceResources {
-		if covers, _ := rbacvalidation.Covers(semanticRoles.view.Rules, []rbac.PolicyRule{rule}); covers {
+		if covers, _ := rbacregistryvalidation.Covers(semanticRoles.view.Rules, []rbac.PolicyRule{rule}); covers {
 			t.Errorf("view has extra powers: %#v", rule)
 		}
 	}
 	semanticRoles.view.Rules = append(semanticRoles.view.Rules, viewEscalatingNamespaceResources...)
 
+	// confirm that the view role doesn't have ungettable resources
+	for _, rule := range ungettableResources {
+		if covers, _ := rbacregistryvalidation.Covers(semanticRoles.view.Rules, []rbac.PolicyRule{rule}); covers {
+			t.Errorf("view has ungettable resource: %#v", rule)
+		}
+	}
+	semanticRoles.view.Rules = append(semanticRoles.view.Rules, ungettableResources...)
+
 	// at this point, we should have a two way covers relationship
-	if covers, miss := rbacvalidation.Covers(semanticRoles.edit.Rules, semanticRoles.view.Rules); !covers {
+	if covers, miss := rbacregistryvalidation.Covers(semanticRoles.edit.Rules, semanticRoles.view.Rules); !covers {
 		t.Errorf("edit has lost rules for: %#v", miss)
 	}
-	if covers, miss := rbacvalidation.Covers(semanticRoles.view.Rules, semanticRoles.edit.Rules); !covers {
+	if covers, miss := rbacregistryvalidation.Covers(semanticRoles.view.Rules, semanticRoles.edit.Rules); !covers {
 		t.Errorf("view is missing rules for: %#v\nIf these are escalating powers, add them to the list.  Otherwise, add them to the view role.", miss)
 	}
+}
+
+func TestBootstrapNamespaceRoles(t *testing.T) {
+	list := &api.List{}
+	names := sets.NewString()
+	roles := map[string]runtime.Object{}
+
+	namespaceRoles := bootstrappolicy.NamespaceRoles()
+	for _, namespace := range sets.StringKeySet(namespaceRoles).List() {
+		bootstrapRoles := namespaceRoles[namespace]
+		for i := range bootstrapRoles {
+			role := bootstrapRoles[i]
+			names.Insert(role.Name)
+			roles[role.Name] = &role
+		}
+
+		for _, name := range names.List() {
+			list.Items = append(list.Items, roles[name])
+		}
+	}
+
+	testObjects(t, list, "namespace-roles.yaml")
+}
+
+func TestBootstrapNamespaceRoleBindings(t *testing.T) {
+	list := &api.List{}
+	names := sets.NewString()
+	roleBindings := map[string]runtime.Object{}
+
+	namespaceRoleBindings := bootstrappolicy.NamespaceRoleBindings()
+	for _, namespace := range sets.StringKeySet(namespaceRoleBindings).List() {
+		bootstrapRoleBindings := namespaceRoleBindings[namespace]
+		for i := range bootstrapRoleBindings {
+			roleBinding := bootstrapRoleBindings[i]
+			names.Insert(roleBinding.Name)
+			roleBindings[roleBinding.Name] = &roleBinding
+		}
+
+		for _, name := range names.List() {
+			list.Items = append(list.Items, roleBindings[name])
+		}
+	}
+
+	testObjects(t, list, "namespace-role-bindings.yaml")
 }
 
 func TestBootstrapClusterRoles(t *testing.T) {
@@ -222,11 +280,11 @@ func testObjects(t *testing.T, list *api.List, fixtureFilename string) {
 		t.Fatal(err)
 	}
 
-	if err := runtime.EncodeList(api.Codecs.LegacyCodec(v1.SchemeGroupVersion, rbacv1alpha1.SchemeGroupVersion), list.Items); err != nil {
+	if err := runtime.EncodeList(api.Codecs.LegacyCodec(v1.SchemeGroupVersion, rbacv1beta1.SchemeGroupVersion), list.Items); err != nil {
 		t.Fatal(err)
 	}
 
-	jsonData, err := runtime.Encode(api.Codecs.LegacyCodec(v1.SchemeGroupVersion, rbacv1alpha1.SchemeGroupVersion), list)
+	jsonData, err := runtime.Encode(api.Codecs.LegacyCodec(v1.SchemeGroupVersion, rbacv1beta1.SchemeGroupVersion), list)
 	if err != nil {
 		t.Fatal(err)
 	}

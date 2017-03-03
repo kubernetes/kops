@@ -21,8 +21,8 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset"
 	"k8s.io/kubernetes/pkg/api/errors"
-	"k8s.io/kubernetes/pkg/api/v1"
-	meta_v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+	"k8s.io/client-go/pkg/api/v1"
+	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func findNamespace(k8s federation_clientset.Interface, name string) (*v1.Namespace, error) {

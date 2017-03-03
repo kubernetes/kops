@@ -1,0 +1,74 @@
+- name: install packages
+  yum: name={{ item }} state=present
+  with_items:
+    - epel-release
+    - centos-release-gluster
+    - wget 
+    - git 
+    - net-tools 
+    - bind-utils 
+    - iptables-services 
+    - bridge-utils 
+    - bash-completion
+    - dnsmasq
+
+- name: install ansible
+  yum: name={{ item }} state=present
+  with_items:
+    - ansible
+    - pyOpenSSL
+
+- name: get openshift-ansible release 1.3
+  git: repo=https://github.com/openshift/openshift-ansible dest=/home/vagrant/openshift-ansible version=3cc5b0562de1b8a2334104542c15a6cce67b68bf
+
+- name: copy hosts.conf
+  copy: src=hosts.conf dest=/home/vagrant force=yes mode=0644
+
+- name: copy dnsmasq.conf
+  copy: src=dnsmasq.conf dest=/etc force=yes mode=0644
+
+- name: copy topology.json
+  copy: src=topology.json dest=/home/vagrant force=yes mode=0666
+
+- name: copy heketi-cli
+  copy: src=heketi-cli dest=/usr/bin force=yes mode=0755
+
+- name: mkdir /usr/share/heketi
+  file: path=/usr/share/heketi state=directory mode=0755
+
+- name: copy templates
+  copy: src=templates dest=/usr/share/heketi mode=0644
+
+- name: restart dnsmasq
+  service: name=dnsmasq enabled=yes state=restarted
+
+- name: setup resolv.conf 
+  lineinfile: dest=/etc/rc.d/rc.local regexp="^sed" line="sed -i '1s/^/nameserver 127.0.0.1\\n/' /etc/resolv.conf"
+
+- name: make rc.local executable
+  command: chmod a+x /etc/rc.d/rc.local
+
+- name: get oc client
+  unarchive: src=https://github.com/openshift/origin/releases/download/v1.3.0/openshift-origin-client-tools-v1.3.0-3ab7af3d097b57f933eccef684a714f2368804e7-linux-64bit.tar.gz dest=/home/vagrant copy=no
+
+- name: copy oc to /usr/bin
+  command: cp /home/vagrant/openshift-origin-client-tools-v1.3.0-3ab7af3d097b57f933eccef684a714f2368804e7-linux-64bit/oc /usr/bin
+
+- name: install openshift this can take about 20 mins
+  command: ansible-playbook -i hosts.conf openshift-ansible/playbooks/byo/config.yml
+  args:
+      chdir: /home/vagrant
+      creates: /home/vagrant/.kube/config
+  become: yes
+  become_user: vagrant
+  environment:
+      ANSIBLE_HOST_KEY_CHECKING: False
+
+- name: login to openshift cluster
+  become: yes
+  become_user: vagrant
+  command: oc login https://192.168.10.90:8443 --insecure-skip-tls-verify=true --username=admin --password=admin
+  args:
+      chdir: /home/vagrant
+      creates: /home/vagrant/.kube/config
+

@@ -24,7 +24,7 @@ import (
 	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
 	"google.golang.org/api/googleapi"
-	"k8s.io/kubernetes/pkg/util/wait"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"time"
 )
 

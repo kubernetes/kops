@@ -26,8 +26,8 @@ import (
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/watchers"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
-	client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset/typed/core/v1"
-	client_extensions "k8s.io/kubernetes/pkg/client/clientset_generated/clientset/typed/extensions/v1beta1"
+	client "k8s.io/client-go/kubernetes/typed/core/v1"
+	client_extensions "k8s.io/client-go/kubernetes/typed/extensions/v1beta1"
 	kubectl_util "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 
 	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"

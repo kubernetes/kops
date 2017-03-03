@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"k8s.io/kops/channels/pkg/api"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	"k8s.io/kubernetes/pkg/util/validation/field"
+	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"net/url"
 )
 

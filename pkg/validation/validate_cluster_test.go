@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"testing"
 
-	"k8s.io/kubernetes/pkg/api/resource"
-	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
+	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/kubernetes/fake"
 )
 
 func Test_ValidateClusterPositive(t *testing.T) {

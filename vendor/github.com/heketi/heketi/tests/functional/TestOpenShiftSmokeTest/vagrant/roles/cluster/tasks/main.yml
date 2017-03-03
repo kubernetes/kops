@@ -1,0 +1,34 @@
+- name: iptables 24007
+  command: iptables -A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 24007 -j ACCEPT
+
+- name: iptables 24008
+  command: iptables -A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 24008 -j ACCEPT
+
+- name: iptables 2222
+  command: iptables -A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 2222 -j ACCEPT
+
+- name: iptables 49152
+  command: iptables -A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m multiport --dports 49152:49251 -j ACCEPT
+
+- name: save iptables
+  command: service iptables save
+
+- name: copy heketi docker image
+  copy: src=heketi-docker-ci.img dest=/home/vagrant force=yes mode=0644
+
+- name: register docker image
+  command: docker load -i heketi-docker-ci.img
+
+- name: retag :ci to :dev
+  command: docker tag heketi/heketi:ci heketi/heketi:dev
+  ignore_errors: yes
+
+- name: copy gluster docker image
+  copy: src=gluster-docker-ci.img dest=/home/vagrant force=yes mode=0644
+
+- name: register gluster docker image
+  command: docker load -i gluster-docker-ci.img
+
+- name: retag :ci to :latest
+  command: docker tag heketi/gluster:ci heketi/gluster:latest
+  ignore_errors: yes

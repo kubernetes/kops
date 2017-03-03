@@ -22,8 +22,8 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kubernetes/pkg/api/v1"
-	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
+	"k8s.io/client-go/pkg/api/v1"
+	k8s_clientset "k8s.io/client-go/kubernetes"
 )
 
 // A cluster to validate

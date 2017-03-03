@@ -17,7 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type MasterConfiguration struct {
@@ -29,12 +29,28 @@ type MasterConfiguration struct {
 	Networking        Networking `json:"networking"`
 	KubernetesVersion string     `json:"kubernetesVersion"`
 	CloudProvider     string     `json:"cloudProvider"`
+	AuthorizationMode string     `json:"authorizationMode"`
+
+	// SelfHosted enables an alpha deployment type where the apiserver, scheduler, and
+	// controller manager are managed by Kubernetes itself. This option is likely to
+	// become the default in the future.
+	SelfHosted bool `json:"selfHosted"`
+
+	APIServerExtraArgs         map[string]string `json:"apiServerExtraArgs"`
+	ControllerManagerExtraArgs map[string]string `json:"controllerManagerExtraArgs"`
+	SchedulerExtraArgs         map[string]string `json:"schedulerExtraArgs"`
+
+	// APIServerCertSANs sets extra Subject Alternative Names for the API Server signing cert
+	APIServerCertSANs []string `json:"apiServerCertSANs"`
+	// CertificatesDir specifies where to store or look for all required certificates
+	CertificatesDir string `json:"certificatesDir"`
 }
 
 type API struct {
-	AdvertiseAddresses []string `json:"advertiseAddresses"`
-	ExternalDNSNames   []string `json:"externalDNSNames"`
-	Port               int32    `json:"port"`
+	// AdvertiseAddress sets the address for the API server to advertise.
+	AdvertiseAddress string `json:"advertiseAddress"`
+	// BindPort sets the secure port for the API Server to bind to
+	BindPort int32 `json:"bindPort"`
 }
 
 type Discovery struct {
@@ -70,17 +86,15 @@ type Etcd struct {
 	KeyFile   string   `json:"keyFile"`
 }
 
-type Secrets struct {
-	GivenToken  string `json:"givenToken"`  // dot-separated `<TokenID>.<Token>` set by the user
-	TokenID     string `json:"tokenID"`     // optional on master side, will be generated if not specified
-	Token       []byte `json:"token"`       // optional on master side, will be generated if not specified
-	BearerToken string `json:"bearerToken"` // set based on Token
-}
-
 type NodeConfiguration struct {
 	metav1.TypeMeta `json:",inline"`
 
-	Discovery Discovery `json:"discovery"`
+	CACertPath               string   `json:"caCertPath"`
+	DiscoveryFile            string   `json:"discoveryFile"`
+	DiscoveryToken           string   `json:"discoveryToken"`
+	DiscoveryTokenAPIServers []string `json:"discoveryTokenAPIServers"`
+	TLSBootstrapToken        string   `json:"tlsBootstrapToken"`
+	Token                    string   `json:"token"`
 }
 
 // ClusterInfo TODO add description

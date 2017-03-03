@@ -1,0 +1,23 @@
+- name: make user admin a cluster admin
+  command: /usr/local/bin/oadm policy add-cluster-role-to-user cluster-admin admin
+
+- name: setup router privileges
+  command: /usr/local/bin/oadm policy add-scc-to-user privileged -z router
+
+- name: setup deployer privileges
+  command: /usr/local/bin/oadm policy add-scc-to-user privileged -z default
+
+- name: deploy a router
+  command: /usr/local/bin/oadm router --replicas=3 --service-account=router --credentials=/etc/origin/master/openshift-router.kubeconfig
+
+- name: wait for router in 192.168.10.100
+  wait_for: host=192.168.10.100 port=80 state=started timeout=1800
+
+- name: setup subdomain
+  lineinfile: dest=/etc/origin/master/master-config.yaml regexp="^  subdomain:" line="  subdomain{{':'}} cloudapps.example.com"
+
+- name: restart master
+  service: name=origin-master state=restarted
+
+- name: wait until master is ready
+  wait_for: host=192.168.10.90 port=8443 state=started timeout=1800
