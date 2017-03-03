@@ -41,12 +41,11 @@ spec:
           - /cluster-proportional-autoscaler
           - --namespace=kube-system
           - --configmap=kube-dns-autoscaler
-          - --mode=linear
           # Should keep target in sync with cluster/addons/dns/kubedns-controller.yaml.base
           - --target=Deployment/kube-dns
           # When cluster is using large nodes(with more cores), "coresPerReplica" should dominate.
           # If using small nodes, "nodesPerReplica" should dominate.
-          - --default-params={"linear":{"coresPerReplica":256,"nodesPerReplica":16,"min":2}}
+          - --default-params={"linear":{"coresPerReplica":256,"nodesPerReplica":16,"preventSinglePointFailure":true}}
           - --logtostderr=true
           - --v=2
 
