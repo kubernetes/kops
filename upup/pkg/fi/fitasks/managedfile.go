@@ -19,7 +19,7 @@ package fitasks
 import (
 	"fmt"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kubernetes/pkg/util/validation/field"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"os"
 )
 

@@ -25,6 +25,7 @@ metadata:
   labels:
     k8s-app: kube-dns
     kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
 spec:
   # replicas: not specified here:
   # 1. In order to make Addon Manager do not reconcile this replicas parameter.
@@ -43,11 +44,18 @@ spec:
         k8s-app: kube-dns
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
-        scheduler.alpha.kubernetes.io/tolerations: '[{"key":"CriticalAddonsOnly", "operator":"Exists"}]'
     spec:
+      tolerations:
+      - key: "CriticalAddonsOnly"
+        operator": "Exists"
+      volumes:
+      - name: kube-dns-config
+        configMap:
+          name: kube-dns
+          optional: true
       containers:
       - name: kubedns
-        image: gcr.io/google_containers/kubedns-amd64:1.9
+        image: gcr.io/google_containers/k8s-dns-kube-dns-amd64:1.13.0
         resources:
           # TODO: Set memory limits when we've profiled the container for large
           # clusters, then set request = limit to keep this container in
@@ -79,7 +87,7 @@ spec:
         args:
         - --domain=$DNS_DOMAIN.
         - --dns-port=10053
-        - --config-map=kube-dns
+        - --config-dir=/kube-dns-config
         - --v=2
         env:
         - name: PROMETHEUS_PORT
@@ -94,8 +102,11 @@ spec:
         - containerPort: 10055
           name: metrics
           protocol: TCP
+        volumeMounts:
+        - name: kube-dns-config
+          mountPath: /kube-dns-config
       - name: dnsmasq
-        image: gcr.io/google_containers/kube-dnsmasq-amd64:1.4
+        image: gcr.io/google_containers/k8s-dns-dnsmasq-amd64:1.13.0
         livenessProbe:
           httpGet:
             path: /healthcheck/dnsmasq
@@ -107,8 +118,9 @@ spec:
           failureThreshold: 5
         args:
         - --cache-size=1000
-        - --no-resolv
-        - --server=127.0.0.1#10053
+        - --server=/$DNS_DOMAIN/127.0.0.1#10053
+        - --server=/in-addr.arpa/127.0.0.1#10053
+        - --server=/ip6.arpa/127.0.0.1#10053
         - --log-facility=-
         ports:
         - containerPort: 53
@@ -123,7 +135,7 @@ spec:
             cpu: 150m
             memory: 10Mi
       - name: sidecar
-        image: gcr.io/google_containers/k8s-dns-sidecar-amd64:1.10.0
+        image: gcr.io/google_containers/k8s-dns-sidecar-amd64:1.13.0
         livenessProbe:
           httpGet:
             path: /metrics
@@ -147,3 +159,4 @@ spec:
             memory: 20Mi
             cpu: 10m
       dnsPolicy: Default  # Don't use cluster DNS.
+      serviceAccountName: kube-dns

@@ -1,0 +1,160 @@
+{
+  "kind": "Service",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "heketi",
+    "labels": {
+      "glusterfs": "heketi-service",
+      "deploy-heketi": "support"
+    },
+    "annotations": {
+      "description": "Exposes Heketi Service"
+    }
+  },
+  "spec": {
+    "selector": {
+        "name": "heketi"
+    },
+    "ports": [
+      {
+        "name": "heketi",
+        "port": 8080,
+        "targetPort": 8080
+      }
+    ]
+  }
+}
+{
+    "kind": "Deployment",
+    "apiVersion": "extensions/v1beta1",
+    "metadata": {
+        "name": "heketi",
+        "labels": {
+            "glusterfs": "heketi-deployment"
+        },
+        "annotations": {
+            "description": "Defines how to deploy Heketi"
+        }
+    },
+    "spec": {
+        "replicas":1,
+        "template": {
+            "metadata": {
+                "name": "heketi",
+                "labels": {
+                    "name": "heketi",
+                    "glusterfs": "heketi-pod"
+                }
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "image": "heketi/heketi:dev",
+                        "imagePullPolicy": "Always",
+                        "name": "heketi",
+                        "env": [
+                          {
+                            "name": "HEKETI_USER_KEY",
+                            "value": "<User Key>"
+                          },
+                          {
+                            "name": "HEKETI_ADMIN_KEY",
+                            "value": "<Admin Key>"
+                          },
+                          {
+                            "name": "HEKETI_EXECUTOR",
+                            "value": "kubernetes"
+                          },
+                          {
+                            "name": "HEKETI_KUBE_USE_SECRET",
+                            "value": "<Bool to use Secret>"
+                          },
+                          {
+                            "name": "HEKETI_KUBE_TOKENFILE",
+                            "value": "/var/lib/heketi/secret/token"
+                          },
+                          {
+                            "name": "HEKETI_FSTAB",
+                            "value": "/var/lib/heketi/fstab"
+                          },
+                          {
+                            "name": "HEKETI_SNAPSHOT_LIMIT",
+                            "value": "14"
+                          },
+                          {
+                            "name": "HEKETI_KUBE_CERTFILE",
+                            "value": "<Path tp ca.crt>"
+                          },
+                          {
+                            "name": "HEKETI_KUBE_INSECURE",
+                            "value": "<Bool to enable Insecure connection>"
+                          },
+                          {
+                            "name": "HEKETI_KUBE_USER",
+                            "value": "<Kube username>"
+                          },
+                          {
+                            "name": "HEKETI_KUBE_PASSWORD",
+                            "value": "<Kube password>"
+                          },
+                          {
+                            "name": "HEKETI_KUBE_NAMESPACE",
+                            "value": "<Kube namespace>"
+                          },
+                          {
+                            "name": "HEKETI_KUBE_APIHOST",
+                            "value": "<Kube ApiHost>"
+                          }
+                        ],
+                        "ports": [
+                          {
+                            "containerPort": 8080
+                          }
+                        ],
+                        "volumeMounts": [
+                          {
+                            "name": "db",
+                            "mountPath": "/var/lib/heketi"
+                          },
+                          {
+                            "name": "secret",
+                            "mountPath": "/var/lib/heketi/secret"
+                          }
+                        ],
+                        "readinessProbe": {
+                          "timeoutSeconds": 3,
+                          "initialDelaySeconds": 3,
+                          "httpGet": {
+                            "path": "/hello",
+                            "port": 8080
+                          }
+                        },
+                        "livenessProbe": {
+                          "timeoutSeconds": 3,
+                          "initialDelaySeconds": 30,
+                          "httpGet": {
+                            "path": "/hello",
+                            "port": 8080
+                          }
+                        }
+                      }
+                    ],
+                    "volumes": [
+                      {
+                        "name": "db",
+                        "glusterfs": {
+                          "endpoints": "heketi-storage-endpoints",
+                          "path": "heketidbstorage"
+                        }
+                      },
+                      {
+                        "name": "secret",
+                        "secret": {
+                          "secretName": "<name of the secret>"
+                        }
+                      }
+                    ]
+            }
+        }
+    }
+}

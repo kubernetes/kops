@@ -21,7 +21,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kops/channels/pkg/channels"
 	"k8s.io/kops/util/pkg/tables"
-	"k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/client-go/pkg/api/v1"
 	"os"
 )
 

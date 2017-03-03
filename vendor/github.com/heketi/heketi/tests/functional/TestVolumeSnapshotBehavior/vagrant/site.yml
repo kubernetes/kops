@@ -1,0 +1,9 @@
+- hosts: all
+  sudo: True
+  roles:
+    - common
+
+- hosts: gluster
+  sudo: True
+  roles:
+    - gluster

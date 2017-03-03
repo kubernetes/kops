@@ -17,7 +17,7 @@ limitations under the License.
 package kops
 
 import (
-	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // ApiType adds a Validate() method to runtime.Object

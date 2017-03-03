@@ -18,18 +18,22 @@ package options
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
+	"github.com/golang/glog"
 	"github.com/spf13/pflag"
 
-	"k8s.io/kubernetes/pkg/genericapiserver"
-	genericoptions "k8s.io/kubernetes/pkg/genericapiserver/options"
+	genericapiserver "k8s.io/apiserver/pkg/server"
+	genericoptions "k8s.io/apiserver/pkg/server/options"
 	"k8s.io/kubernetes/pkg/kubeapiserver/authenticator"
+	authzmodes "k8s.io/kubernetes/pkg/kubeapiserver/authorizer/modes"
 )
 
 type BuiltInAuthenticationOptions struct {
 	Anonymous       *AnonymousAuthenticationOptions
 	AnyToken        *AnyTokenAuthenticationOptions
+	BootstrapToken  *BootstrapTokenAuthenticationOptions
 	ClientCert      *genericoptions.ClientCertAuthenticationOptions
 	Keystone        *KeystoneAuthenticationOptions
 	OIDC            *OIDCAuthenticationOptions
@@ -45,6 +49,10 @@ type AnyTokenAuthenticationOptions struct {
 }
 
 type AnonymousAuthenticationOptions struct {
+	Allow bool
+}
+
+type BootstrapTokenAuthenticationOptions struct {
 	Allow bool
 }
 
@@ -87,6 +95,7 @@ func (s *BuiltInAuthenticationOptions) WithAll() *BuiltInAuthenticationOptions {
 	return s.
 		WithAnyonymous().
 		WithAnyToken().
+		WithBootstrapToken().
 		WithClientCert().
 		WithKeystone().
 		WithOIDC().
@@ -104,6 +113,11 @@ func (s *BuiltInAuthenticationOptions) WithAnyonymous() *BuiltInAuthenticationOp
 
 func (s *BuiltInAuthenticationOptions) WithAnyToken() *BuiltInAuthenticationOptions {
 	s.AnyToken = &AnyTokenAuthenticationOptions{}
+	return s
+}
+
+func (s *BuiltInAuthenticationOptions) WithBootstrapToken() *BuiltInAuthenticationOptions {
+	s.BootstrapToken = &BootstrapTokenAuthenticationOptions{}
 	return s
 }
 
@@ -167,6 +181,12 @@ func (s *BuiltInAuthenticationOptions) AddFlags(fs *pflag.FlagSet) {
 			"If set, your server will be INSECURE.  Any token will be allowed and user information will be parsed "+
 			"from the token as `username/group1,group2`")
 
+	}
+
+	if s.BootstrapToken != nil {
+		fs.BoolVar(&s.BootstrapToken.Allow, "experimental-bootstrap-token-auth", s.BootstrapToken.Allow, ""+
+			"Enable to allow secrets of type 'bootstrap.kubernetes.io/token' in the 'kube-system' "+
+			"namespace to be used for TLS bootstrapping authentication.")
 	}
 
 	if s.ClientCert != nil {
@@ -252,6 +272,10 @@ func (s *BuiltInAuthenticationOptions) ToAuthenticationConfig() authenticator.Au
 		ret.AnyToken = s.AnyToken.Allow
 	}
 
+	if s.BootstrapToken != nil {
+		ret.BootstrapToken = s.BootstrapToken.Allow
+	}
+
 	if s.ClientCert != nil {
 		ret.ClientCAFile = s.ClientCert.ClientCA
 	}
@@ -294,8 +318,8 @@ func (s *BuiltInAuthenticationOptions) ToAuthenticationConfig() authenticator.Au
 	return ret
 }
 
-func (o *BuiltInAuthenticationOptions) Apply(c *genericapiserver.Config) error {
-	if o == nil || o.PasswordFile == nil {
+func (o *BuiltInAuthenticationOptions) ApplyTo(c *genericapiserver.Config) error {
+	if o == nil {
 		return nil
 	}
 
@@ -313,6 +337,30 @@ func (o *BuiltInAuthenticationOptions) Apply(c *genericapiserver.Config) error {
 		}
 	}
 
-	c.SupportsBasicAuth = len(o.PasswordFile.BasicAuthFile) > 0
+	c.SupportsBasicAuth = o.PasswordFile != nil && len(o.PasswordFile.BasicAuthFile) > 0
+
 	return nil
+}
+
+// ApplyAuthorization will conditionally modify the authentication options based on the authorization options
+func (o *BuiltInAuthenticationOptions) ApplyAuthorization(authorization *BuiltInAuthorizationOptions) {
+	if o == nil || authorization == nil || o.Anonymous == nil {
+		return
+	}
+
+	// authorization ModeAlwaysAllow cannot be combined with AnonymousAuth.
+	// in such a case the AnonymousAuth is stomped to false and you get a message
+	if o.Anonymous.Allow {
+		found := false
+		for _, mode := range strings.Split(authorization.Mode, ",") {
+			if mode == authzmodes.ModeAlwaysAllow {
+				found = true
+				break
+			}
+		}
+		if found {
+			glog.Warningf("AnonymousAuth is not allowed with the AllowAll authorizer.  Resetting AnonymousAuth to false. You should use a different authorizer")
+			o.Anonymous.Allow = false
+		}
+	}
 }

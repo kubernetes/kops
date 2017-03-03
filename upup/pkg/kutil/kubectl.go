@@ -23,7 +23,7 @@ import (
 	"github.com/golang/glog"
 	"io/ioutil"
 	"k8s.io/kops/pkg/kubeconfig"
-	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
+	"k8s.io/client-go/tools/clientcmd"
 	"os"
 	"os/exec"
 	"strings"

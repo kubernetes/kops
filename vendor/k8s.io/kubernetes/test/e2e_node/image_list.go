@@ -23,7 +23,7 @@ import (
 
 	"github.com/golang/glog"
 
-	"k8s.io/kubernetes/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/sets"
 	commontest "k8s.io/kubernetes/test/e2e/common"
 	"k8s.io/kubernetes/test/e2e/framework"
 )
@@ -42,6 +42,7 @@ var NodeImageWhiteList = sets.NewString(
 	"gcr.io/google-containers/stress:v1",
 	"gcr.io/google_containers/busybox:1.24",
 	"gcr.io/google_containers/busybox@sha256:4bdd623e848417d96127e16037743f0cd8b528c026e9175e22a84f639eca58ff",
+	"gcr.io/google_containers/node-problem-detector:v0.3.0-alpha.1",
 	"gcr.io/google_containers/nginx-slim:0.7",
 	"gcr.io/google_containers/serve_hostname:v1.4",
 	"gcr.io/google_containers/netexec:1.7",

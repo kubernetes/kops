@@ -22,7 +22,7 @@ import (
 
 	_ "k8s.io/kops/pkg/apis/kops/install"
 	_ "k8s.io/kubernetes/pkg/api/install"
-	"k8s.io/kubernetes/pkg/apimachinery/registered"
+	"k8s.io/apimachinery/pkg/apimachinery/registered"
 )
 
 func init() {

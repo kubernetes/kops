@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,22 +17,20 @@ limitations under the License.
 package v1beta1
 
 import (
-	fmt "fmt"
-	api "k8s.io/kubernetes/pkg/api"
-	registered "k8s.io/kubernetes/pkg/apimachinery/registered"
-	restclient "k8s.io/kubernetes/pkg/client/restclient"
-	schema "k8s.io/kubernetes/pkg/runtime/schema"
-	serializer "k8s.io/kubernetes/pkg/runtime/serializer"
+	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
+	rest "k8s.io/client-go/rest"
+	v1beta1 "k8s.io/kubernetes/pkg/apis/storage/v1beta1"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/scheme"
 )
 
 type StorageV1beta1Interface interface {
-	RESTClient() restclient.Interface
+	RESTClient() rest.Interface
 	StorageClassesGetter
 }
 
-// StorageV1beta1Client is used to interact with features provided by the k8s.io/kubernetes/pkg/apimachinery/registered.Group group.
+// StorageV1beta1Client is used to interact with features provided by the storage.k8s.io group.
 type StorageV1beta1Client struct {
-	restClient restclient.Interface
+	restClient rest.Interface
 }
 
 func (c *StorageV1beta1Client) StorageClasses() StorageClassInterface {
@@ -40,12 +38,12 @@ func (c *StorageV1beta1Client) StorageClasses() StorageClassInterface {
 }
 
 // NewForConfig creates a new StorageV1beta1Client for the given config.
-func NewForConfig(c *restclient.Config) (*StorageV1beta1Client, error) {
+func NewForConfig(c *rest.Config) (*StorageV1beta1Client, error) {
 	config := *c
 	if err := setConfigDefaults(&config); err != nil {
 		return nil, err
 	}
-	client, err := restclient.RESTClientFor(&config)
+	client, err := rest.RESTClientFor(&config)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +52,7 @@ func NewForConfig(c *restclient.Config) (*StorageV1beta1Client, error) {
 
 // NewForConfigOrDie creates a new StorageV1beta1Client for the given config and
 // panics if there is an error in the config.
-func NewForConfigOrDie(c *restclient.Config) *StorageV1beta1Client {
+func NewForConfigOrDie(c *rest.Config) *StorageV1beta1Client {
 	client, err := NewForConfig(c)
 	if err != nil {
 		panic(err)
@@ -63,34 +61,26 @@ func NewForConfigOrDie(c *restclient.Config) *StorageV1beta1Client {
 }
 
 // New creates a new StorageV1beta1Client for the given RESTClient.
-func New(c restclient.Interface) *StorageV1beta1Client {
+func New(c rest.Interface) *StorageV1beta1Client {
 	return &StorageV1beta1Client{c}
 }
 
-func setConfigDefaults(config *restclient.Config) error {
-	gv, err := schema.ParseGroupVersion("storage.k8s.io/v1beta1")
-	if err != nil {
-		return err
-	}
-	// if storage.k8s.io/v1beta1 is not enabled, return an error
-	if !registered.IsEnabledVersion(gv) {
-		return fmt.Errorf("storage.k8s.io/v1beta1 is not enabled")
-	}
+func setConfigDefaults(config *rest.Config) error {
+	gv := v1beta1.SchemeGroupVersion
+	config.GroupVersion = &gv
 	config.APIPath = "/apis"
-	if config.UserAgent == "" {
-		config.UserAgent = restclient.DefaultKubernetesUserAgent()
-	}
-	copyGroupVersion := gv
-	config.GroupVersion = &copyGroupVersion
+	config.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: scheme.Codecs}
 
-	config.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: api.Codecs}
+	if config.UserAgent == "" {
+		config.UserAgent = rest.DefaultKubernetesUserAgent()
+	}
 
 	return nil
 }
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *StorageV1beta1Client) RESTClient() restclient.Interface {
+func (c *StorageV1beta1Client) RESTClient() rest.Interface {
 	if c == nil {
 		return nil
 	}

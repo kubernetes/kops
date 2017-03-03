@@ -22,27 +22,31 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/tools/cache"
 	federationapi "k8s.io/kubernetes/federation/apis/federation/v1beta1"
 	fakefedclientset "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/fake"
 	"k8s.io/kubernetes/federation/pkg/federation-controller/util"
 	"k8s.io/kubernetes/federation/pkg/federation-controller/util/deletionhelper"
 	. "k8s.io/kubernetes/federation/pkg/federation-controller/util/test"
-	"k8s.io/kubernetes/pkg/api/errors"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	extensionsv1beta1 "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
-	"k8s.io/kubernetes/pkg/client/cache"
 	kubeclientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	fakekubeclientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/types"
-	"k8s.io/kubernetes/pkg/util/wait"
 
 	"github.com/golang/glog"
 	"github.com/stretchr/testify/assert"
 )
 
 const (
-	maxTrials = 20
+	maxTrials         = 20
+	clusters   string = "clusters"
+	ingresses  string = "ingresses"
+	configmaps string = "configmaps"
 )
 
 func TestIngressController(t *testing.T) {
@@ -56,28 +60,28 @@ func TestIngressController(t *testing.T) {
 
 	t.Log("Creating fake infrastructure")
 	fedClient := &fakefedclientset.Clientset{}
-	RegisterFakeList("clusters", &fedClient.Fake, &fakeClusterList)
-	RegisterFakeList("ingresses", &fedClient.Fake, &extensionsv1beta1.IngressList{Items: []extensionsv1beta1.Ingress{}})
-	fedIngressWatch := RegisterFakeWatch("ingresses", &fedClient.Fake)
-	clusterWatch := RegisterFakeWatch("clusters", &fedClient.Fake)
-	fedClusterUpdateChan := RegisterFakeCopyOnUpdate("clusters", &fedClient.Fake, clusterWatch)
-	fedIngressUpdateChan := RegisterFakeCopyOnUpdate("ingresses", &fedClient.Fake, fedIngressWatch)
+	RegisterFakeList(clusters, &fedClient.Fake, &fakeClusterList)
+	RegisterFakeList(ingresses, &fedClient.Fake, &extensionsv1beta1.IngressList{Items: []extensionsv1beta1.Ingress{}})
+	fedIngressWatch := RegisterFakeWatch(ingresses, &fedClient.Fake)
+	clusterWatch := RegisterFakeWatch(clusters, &fedClient.Fake)
+	fedClusterUpdateChan := RegisterFakeCopyOnUpdate(clusters, &fedClient.Fake, clusterWatch)
+	fedIngressUpdateChan := RegisterFakeCopyOnUpdate(ingresses, &fedClient.Fake, fedIngressWatch)
 
 	cluster1Client := &fakekubeclientset.Clientset{}
-	RegisterFakeList("ingresses", &cluster1Client.Fake, &extensionsv1beta1.IngressList{Items: []extensionsv1beta1.Ingress{}})
-	RegisterFakeList("configmaps", &cluster1Client.Fake, &fakeConfigMapList1)
-	cluster1IngressWatch := RegisterFakeWatch("ingresses", &cluster1Client.Fake)
-	cluster1ConfigMapWatch := RegisterFakeWatch("configmaps", &cluster1Client.Fake)
-	cluster1IngressCreateChan := RegisterFakeCopyOnCreate("ingresses", &cluster1Client.Fake, cluster1IngressWatch)
-	cluster1IngressUpdateChan := RegisterFakeCopyOnUpdate("ingresses", &cluster1Client.Fake, cluster1IngressWatch)
+	RegisterFakeList(ingresses, &cluster1Client.Fake, &extensionsv1beta1.IngressList{Items: []extensionsv1beta1.Ingress{}})
+	RegisterFakeList(configmaps, &cluster1Client.Fake, &fakeConfigMapList1)
+	cluster1IngressWatch := RegisterFakeWatch(ingresses, &cluster1Client.Fake)
+	cluster1ConfigMapWatch := RegisterFakeWatch(configmaps, &cluster1Client.Fake)
+	cluster1IngressCreateChan := RegisterFakeCopyOnCreate(ingresses, &cluster1Client.Fake, cluster1IngressWatch)
+	cluster1IngressUpdateChan := RegisterFakeCopyOnUpdate(ingresses, &cluster1Client.Fake, cluster1IngressWatch)
 
 	cluster2Client := &fakekubeclientset.Clientset{}
-	RegisterFakeList("ingresses", &cluster2Client.Fake, &extensionsv1beta1.IngressList{Items: []extensionsv1beta1.Ingress{}})
-	RegisterFakeList("configmaps", &cluster2Client.Fake, &fakeConfigMapList2)
-	cluster2IngressWatch := RegisterFakeWatch("ingresses", &cluster2Client.Fake)
-	cluster2ConfigMapWatch := RegisterFakeWatch("configmaps", &cluster2Client.Fake)
-	cluster2IngressCreateChan := RegisterFakeCopyOnCreate("ingresses", &cluster2Client.Fake, cluster2IngressWatch)
-	cluster2ConfigMapUpdateChan := RegisterFakeCopyOnUpdate("configmaps", &cluster2Client.Fake, cluster2ConfigMapWatch)
+	RegisterFakeList(ingresses, &cluster2Client.Fake, &extensionsv1beta1.IngressList{Items: []extensionsv1beta1.Ingress{}})
+	RegisterFakeList(configmaps, &cluster2Client.Fake, &fakeConfigMapList2)
+	cluster2IngressWatch := RegisterFakeWatch(ingresses, &cluster2Client.Fake)
+	cluster2ConfigMapWatch := RegisterFakeWatch(configmaps, &cluster2Client.Fake)
+	cluster2IngressCreateChan := RegisterFakeCopyOnCreate(ingresses, &cluster2Client.Fake, cluster2IngressWatch)
+	cluster2ConfigMapUpdateChan := RegisterFakeCopyOnUpdate(configmaps, &cluster2Client.Fake, cluster2ConfigMapWatch)
 
 	clientFactoryFunc := func(cluster *federationapi.Cluster) (kubeclientset.Interface, error) {
 		switch cluster.Name {
@@ -108,7 +112,7 @@ func TestIngressController(t *testing.T) {
 	// Add another test without that annotation when
 	// https://github.com/kubernetes/kubernetes/issues/36540 is fixed.
 	fedIngress := extensionsv1beta1.Ingress{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test-ingress",
 			Namespace: "mynamespace",
 			SelfLink:  "/api/v1/namespaces/mynamespace/ingress/test-ingress",
@@ -129,21 +133,20 @@ func TestIngressController(t *testing.T) {
 	t.Log("Adding Ingress UID ConfigMap to cluster 1")
 	cluster1ConfigMapWatch.Add(cfg1)
 
-	// Test add federated ingress.
-	t.Log("Adding Federated Ingress")
-	fedIngressWatch.Add(&fedIngress)
-
-	t.Log("Checking that UID annotation on Cluster 1 annotation was correctly updated after adding Federated Ingress")
+	t.Log("Checking that UID annotation on Cluster 1 annotation was correctly updated prior to adding Federated Ingress")
 	cluster := GetClusterFromChan(fedClusterUpdateChan)
 	assert.NotNil(t, cluster)
 	assert.Equal(t, cluster.ObjectMeta.Annotations[uidAnnotationKey], cfg1.Data[uidKey])
 
+	// Test add federated ingress.
+	t.Log("Adding Federated Ingress")
+	fedIngressWatch.Add(&fedIngress)
+
 	t.Logf("Checking that appropriate finalizers are added")
-	// There should be 2 updates to add both the finalizers.
+	// There should be an update to add both the finalizers.
 	updatedIngress := GetIngressFromChan(t, fedIngressUpdateChan)
 	assert.True(t, ingressController.hasFinalizerFunc(updatedIngress, deletionhelper.FinalizerDeleteFromUnderlyingClusters))
-	updatedIngress = GetIngressFromChan(t, fedIngressUpdateChan)
-	assert.True(t, ingressController.hasFinalizerFunc(updatedIngress, apiv1.FinalizerOrphan), fmt.Sprintf("ingress does not have the orphan finalizer: %v", updatedIngress))
+	assert.True(t, ingressController.hasFinalizerFunc(updatedIngress, metav1.FinalizerOrphanDependents), fmt.Sprintf("ingress does not have the orphan finalizer: %v", updatedIngress))
 	fedIngress = *updatedIngress
 
 	t.Log("Checking that Ingress was correctly created in cluster 1")
@@ -263,6 +266,11 @@ func TestIngressController(t *testing.T) {
 
 func GetIngressFromChan(t *testing.T, c chan runtime.Object) *extensionsv1beta1.Ingress {
 	obj := GetObjectFromChan(c)
+
+	if obj == nil {
+		return nil
+	}
+
 	ingress, ok := obj.(*extensionsv1beta1.Ingress)
 	if !ok {
 		t.Logf("Object on channel was not of type *extensionsv1beta1.Ingress: %v", obj)
@@ -271,18 +279,25 @@ func GetIngressFromChan(t *testing.T, c chan runtime.Object) *extensionsv1beta1.
 }
 
 func GetConfigMapFromChan(c chan runtime.Object) *apiv1.ConfigMap {
-	configMap, _ := GetObjectFromChan(c).(*apiv1.ConfigMap)
-	return configMap
+	if configMap := GetObjectFromChan(c); configMap == nil {
+		return nil
+	} else {
+		return configMap.(*apiv1.ConfigMap)
+	}
+
 }
 
 func GetClusterFromChan(c chan runtime.Object) *federationapi.Cluster {
-	cluster, _ := GetObjectFromChan(c).(*federationapi.Cluster)
-	return cluster
+	if cluster := GetObjectFromChan(c); cluster == nil {
+		return nil
+	} else {
+		return cluster.(*federationapi.Cluster)
+	}
 }
 
 func NewConfigMap(uid string) *apiv1.ConfigMap {
 	return &apiv1.ConfigMap{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      uidConfigMapName,
 			Namespace: uidConfigMapNamespace,
 			SelfLink:  "/api/v1/namespaces/" + uidConfigMapNamespace + "/configmap/" + uidConfigMapName,
@@ -304,7 +319,7 @@ func WaitForFinalizersInFederationStore(ingressController *IngressController, st
 			return false, err
 		}
 		ingress := obj.(*extensionsv1beta1.Ingress)
-		if ingressController.hasFinalizerFunc(ingress, apiv1.FinalizerOrphan) &&
+		if ingressController.hasFinalizerFunc(ingress, metav1.FinalizerOrphanDependents) &&
 			ingressController.hasFinalizerFunc(ingress, deletionhelper.FinalizerDeleteFromUnderlyingClusters) {
 			return true, nil
 		}

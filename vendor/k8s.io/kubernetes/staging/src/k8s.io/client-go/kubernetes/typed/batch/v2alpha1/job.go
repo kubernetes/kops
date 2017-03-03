@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@ limitations under the License.
 package v2alpha1
 
 import (
-	api "k8s.io/client-go/pkg/api"
-	v1 "k8s.io/client-go/pkg/api/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	types "k8s.io/apimachinery/pkg/types"
+	watch "k8s.io/apimachinery/pkg/watch"
+	scheme "k8s.io/client-go/kubernetes/scheme"
 	v2alpha1 "k8s.io/client-go/pkg/apis/batch/v2alpha1"
-	meta_v1 "k8s.io/client-go/pkg/apis/meta/v1"
-	watch "k8s.io/client-go/pkg/watch"
 	rest "k8s.io/client-go/rest"
 )
 
@@ -38,10 +38,10 @@ type JobInterface interface {
 	UpdateStatus(*v2alpha1.Job) (*v2alpha1.Job, error)
 	Delete(name string, options *v1.DeleteOptions) error
 	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string, options meta_v1.GetOptions) (*v2alpha1.Job, error)
+	Get(name string, options v1.GetOptions) (*v2alpha1.Job, error)
 	List(opts v1.ListOptions) (*v2alpha1.JobList, error)
 	Watch(opts v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v2alpha1.Job, err error)
+	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v2alpha1.Job, err error)
 	JobExpansion
 }
 
@@ -116,20 +116,20 @@ func (c *jobs) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOp
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("jobs").
-		VersionedParams(&listOptions, api.ParameterCodec).
+		VersionedParams(&listOptions, scheme.ParameterCodec).
 		Body(options).
 		Do().
 		Error()
 }
 
 // Get takes name of the job, and returns the corresponding job object, and an error if there is any.
-func (c *jobs) Get(name string, options meta_v1.GetOptions) (result *v2alpha1.Job, err error) {
+func (c *jobs) Get(name string, options v1.GetOptions) (result *v2alpha1.Job, err error) {
 	result = &v2alpha1.Job{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("jobs").
 		Name(name).
-		VersionedParams(&options, api.ParameterCodec).
+		VersionedParams(&options, scheme.ParameterCodec).
 		Do().
 		Into(result)
 	return
@@ -141,7 +141,7 @@ func (c *jobs) List(opts v1.ListOptions) (result *v2alpha1.JobList, err error) {
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("jobs").
-		VersionedParams(&opts, api.ParameterCodec).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Do().
 		Into(result)
 	return
@@ -149,16 +149,16 @@ func (c *jobs) List(opts v1.ListOptions) (result *v2alpha1.JobList, err error) {
 
 // Watch returns a watch.Interface that watches the requested jobs.
 func (c *jobs) Watch(opts v1.ListOptions) (watch.Interface, error) {
+	opts.Watch = true
 	return c.client.Get().
-		Prefix("watch").
 		Namespace(c.ns).
 		Resource("jobs").
-		VersionedParams(&opts, api.ParameterCodec).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Watch()
 }
 
 // Patch applies the patch and returns the patched job.
-func (c *jobs) Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v2alpha1.Job, err error) {
+func (c *jobs) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v2alpha1.Job, err error) {
 	result = &v2alpha1.Job{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).
