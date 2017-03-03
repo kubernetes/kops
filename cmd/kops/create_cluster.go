@@ -64,6 +64,7 @@ type CreateClusterOptions struct {
 	NodeSecurityGroups   []string
 	MasterSecurityGroups []string
 	AssociatePublicIP    *bool
+	AdditionalSANs       []string
 
 	// Channel is the location of the api.Channel to use for our defaults
 	Channel string
@@ -167,6 +168,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringSliceVar(&options.NodeSecurityGroups, "node-security-groups", options.NodeSecurityGroups, "Add precreated additional security groups to nodes.")
 	cmd.Flags().StringSliceVar(&options.MasterSecurityGroups, "master-security-groups", options.MasterSecurityGroups, "Add precreated additional security groups to masters.")
 
+	cmd.Flags().StringSliceVar(&options.AdditionalSANs, "additional-sans", options.AdditionalSANs, "Add additional Subject Alternate Names to the kops generated apiserver cert")
+
 	cmd.Flags().StringVar(&options.Channel, "channel", options.Channel, "Channel for default versions and configuration to use")
 
 	// Network topology
@@ -251,6 +254,10 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return fmt.Errorf("error building ConfigBase for cluster: %v", err)
 	}
 	cluster.Spec.ConfigBase = configBase.Path()
+
+	if len(c.AdditionalSANs) > 0 {
+		cluster.Spec.AdditionalSANs = c.AdditionalSANs
+	}
 
 	cluster.Spec.Networking = &api.NetworkingSpec{}
 	switch c.Networking {

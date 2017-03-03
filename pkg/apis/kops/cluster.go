@@ -67,6 +67,9 @@ type ClusterSpec struct {
 	// MasterInternalName is the internal DNS name for the master nodes
 	MasterInternalName string `json:"masterInternalName,omitempty"`
 
+	// AdditionalSANs adds additional Subject Alternate Names to apiserver cert that kops generates
+	AdditionalSANs []string `json:"additionalSans,omitempty"`
+
 	// The CIDR used for the AWS VPC / GCE Network, or otherwise allocated to k8s
 	// This is a real CIDR, not the internal k8s network
 	NetworkCIDR string `json:"networkCIDR,omitempty"`

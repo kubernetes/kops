@@ -14,6 +14,7 @@ kops create cluster
 ### Options
 
 ```
+      --additional-sans                      Add additional Subject Alternate Names to the kops generated apiserver cert
       --admin-access stringSlice             Restrict access to admin endpoints (SSH, HTTPS) to this CIDR.  If not set, access will not be restricted by IP. (default [0.0.0.0/0])
       --associate-public-ip                  Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.
       --bastion                              Pass the --bastion flag to enable a bastion instance group. Only applies to private topology.
