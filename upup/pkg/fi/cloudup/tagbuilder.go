@@ -66,6 +66,10 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 		{
 			tags.Insert("_aws")
 		}
+	case "vsphere":
+		{
+			tags.Insert("_vsphere")
+		}
 
 	default:
 		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
