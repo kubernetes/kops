@@ -21,6 +21,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"strings"
+	"github.com/golang/glog"
 )
 
 // KubeletOptionsBuilder adds options for kubelets
@@ -154,6 +155,19 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 		clusterSpec.CloudConfig.Multizone = fi.Bool(true)
 		clusterSpec.CloudConfig.NodeTags = fi.String(GCETagForRole(b.Context.ClusterName, kops.InstanceGroupRoleNode))
+	}
+
+	if cloudProvider == fi.CloudProviderVSphere {
+		glog.Info("In kubenet for vsphere cloud provider")
+		clusterSpec.Kubelet.CloudProvider = "vsphere"
+		clusterSpec.Kubelet.HairpinMode = "vmw-bridge"
+
+		if clusterSpec.CloudConfig == nil {
+			clusterSpec.CloudConfig = &kops.CloudConfiguration{}
+		}
+		clusterSpec.CloudConfig.Multizone = fi.Bool(true)
+		var vsphere_node_tag = "vsphere_node_tag"
+		clusterSpec.CloudConfig.NodeTags = &vsphere_node_tag
 	}
 
 	usesKubenet, err := UsesKubenet(clusterSpec)
