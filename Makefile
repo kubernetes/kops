@@ -205,7 +205,7 @@ protokube-image: protokube-build-in-docker
 protokube-export: protokube-image
 	mkdir -p .build/dist/images
 	docker save protokube:${PROTOKUBE_TAG} > .build/dist/images/protokube.tar
-	gzip .build/dist/images/protokube.tar
+	gzip --force --best .build/dist/images/protokube.tar
 	(sha1sum .build/dist/images/protokube.tar.gz | cut -d' ' -f1) > .build/dist/images/protokube.tar.gz.sha1
 
 # protokube-push is no longer used (we upload a docker image tar file to S3 instead),
