@@ -19,13 +19,12 @@ package kops
 import (
 	"fmt"
 
-	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type Cluster struct {
 	v1.TypeMeta `json:",inline"`
-	ObjectMeta  api.ObjectMeta `json:"metadata,omitempty"`
+	ObjectMeta  v1.ObjectMeta `json:"metadata,omitempty"`
 
 	Spec ClusterSpec `json:"spec,omitempty"`
 }

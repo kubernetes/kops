@@ -26,7 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/client-go/pkg/api/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 // KubeAPIServerBuilder install kube-apiserver (just the manifest at the moment)
@@ -83,7 +83,7 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 			APIVersion: "v1",
 			Kind:       "Pod",
 		},
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:        "kube-apiserver",
 			Namespace:   "kube-system",
 			Annotations: b.buildAnnotations(),

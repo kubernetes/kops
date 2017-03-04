@@ -19,12 +19,25 @@ package kops
 import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/apimachinery/announced"
+	"k8s.io/apimachinery/pkg/apimachinery/registered"
+	"os"
 )
 
 var (
 	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
 	AddToScheme   = SchemeBuilder.AddToScheme
 )
+
+// GroupFactoryRegistry is the APIGroupFactoryRegistry (overlaps a bit with Registry, see comments in package for details)
+var GroupFactoryRegistry = make(announced.APIGroupFactoryRegistry)
+
+// Registry is an instance of an API registry.  This is an interim step to start removing the idea of a global
+// API registry.
+var Registry = registered.NewOrDie(os.Getenv("KOPS_API_VERSIONS"))
+
+// Scheme is the default instance of runtime.Scheme to which types in the Kops API are already registered.
+var Scheme = runtime.NewScheme()
 
 // GroupName is the group name use in this package
 const GroupName = "kops"

@@ -19,18 +19,22 @@ package vfsclientset
 import (
 	"bytes"
 	"fmt"
+
 	"github.com/golang/glog"
 	kops "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
+	// FIXME how do I get rid of this??
 	"os"
 	"reflect"
 	"sort"
 	"time"
+
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/kubernetes/pkg/api"
 )
 
 var StoreVersion = v1alpha2.SchemeGroupVersion
@@ -66,12 +70,12 @@ func (c *commonVFS) get(name string) (runtime.Object, error) {
 	return o, nil
 }
 
-func (c *commonVFS) list(items interface{}, options api.ListOptions) (interface{}, error) {
+func (c *commonVFS) list(items interface{}, options v1.ListOptions) (interface{}, error) {
 	return c.readAll(items)
 }
 
 func (c *commonVFS) create(i runtime.Object) error {
-	objectMeta, err := api.ObjectMetaFor(i)
+	objectMeta, err := v1.ObjectMetaFor(i)
 	if err != nil {
 		return err
 	}
@@ -162,7 +166,7 @@ func (c *commonVFS) writeConfig(configPath vfs.Path, o runtime.Object, writeOpti
 }
 
 func (c *commonVFS) update(i runtime.Object) error {
-	objectMeta, err := api.ObjectMetaFor(i)
+	objectMeta, err := v1.ObjectMetaFor(i)
 	if err != nil {
 		return err
 	}
@@ -184,7 +188,7 @@ func (c *commonVFS) update(i runtime.Object) error {
 	return nil
 }
 
-func (c *commonVFS) delete(name string, options *api.DeleteOptions) error {
+func (c *commonVFS) delete(name string, options *metav1.DeleteOptions) error {
 	p := c.basePath.Join(name)
 	err := p.Remove()
 	if err != nil {

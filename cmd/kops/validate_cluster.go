@@ -28,10 +28,11 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/util/pkg/tables"
-	k8sapi "k8s.io/kubernetes/pkg/api"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/pkg/api/v1"
 	k8s_clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/kops/upup/pkg/fi/k8sapi"
 )
 
 type ValidateClusterOptions struct {
@@ -73,7 +74,7 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		return err
 	}
 
-	list, err := clientSet.InstanceGroups(cluster.ObjectMeta.Name).List(k8sapi.ListOptions{})
+	list, err := clientSet.InstanceGroups(cluster.ObjectMeta.Name).List(metav1.ListOptions{})
 	if err != nil {
 		return fmt.Errorf("cannot get InstanceGroups for %q: %v", cluster.ObjectMeta.Name, err)
 	}

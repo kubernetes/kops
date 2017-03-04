@@ -18,7 +18,7 @@ package simple
 
 import (
 	api "k8s.io/kops/pkg/apis/kops"
-	k8sapi "k8s.io/kubernetes/pkg/api"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // InstanceGroupInterface has methods to work with InstanceGroup resources.
@@ -26,10 +26,10 @@ type InstanceGroupInterface interface {
 	Create(*api.InstanceGroup) (*api.InstanceGroup, error)
 	Update(*api.InstanceGroup) (*api.InstanceGroup, error)
 	//UpdateStatus(*api.InstanceGroup) (*api.InstanceGroup, error)
-	Delete(name string, options *k8sapi.DeleteOptions) error
+	Delete(name string, options *metav1.DeleteOptions) error
 	//DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error
 	Get(name string) (*api.InstanceGroup, error)
-	List(opts k8sapi.ListOptions) (*api.InstanceGroupList, error)
+	List(opts metav1.ListOptions) (*api.InstanceGroupList, error)
 	//Watch(opts k8sapi.ListOptions) (watch.Interface, error)
 	//Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *api.InstanceGroup, err error)
 	//InstanceGroupExpansion

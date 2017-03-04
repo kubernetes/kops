@@ -33,10 +33,10 @@ import (
 	"k8s.io/kops/upup/pkg/fi/k8sapi"
 	"k8s.io/kops/upup/pkg/kutil"
 	federation_clientset "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset"
-	"k8s.io/kubernetes/pkg/api/errors"
-	k8sapiv1 "k8s.io/client-go/pkg/api/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	k8sapiv1 "k8s.io/kubernetes/pkg/api/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	k8s_clientset "k8s.io/client-go/kubernetes"
+	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"strings"
 	"text/template"
 )

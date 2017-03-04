@@ -17,14 +17,13 @@ limitations under the License.
 package kops
 
 import (
-	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // Federation represents a federated set of kubernetes clusters
 type Federation struct {
 	v1.TypeMeta `json:",inline"`
-	ObjectMeta  api.ObjectMeta `json:"metadata,omitempty"`
+	ObjectMeta  v1.ObjectMeta `json:"metadata,omitempty"`
 
 	Spec FederationSpec `json:"spec,omitempty"`
 }
