@@ -24,7 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/client-go/pkg/api/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"strings"
 )
 
@@ -82,7 +82,7 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 			APIVersion: "v1",
 			Kind:       "Pod",
 		},
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "kube-controller-manager",
 			Namespace: "kube-system",
 			Labels: map[string]string{

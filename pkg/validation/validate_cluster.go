@@ -23,6 +23,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/client-go/pkg/api/v1"
+	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8s_clientset "k8s.io/client-go/kubernetes"
 )
 
@@ -110,7 +111,7 @@ func getRoleNode(node *v1.Node) string {
 }
 
 func collectComponentFailures(client k8s_clientset.Interface) (failures []string, err error) {
-	componentList, err := client.CoreV1().ComponentStatuses().List(v1.ListOptions{})
+	componentList, err := client.CoreV1().ComponentStatuses().List(meta_v1.ListOptions{})
 	if err == nil {
 		for _, component := range componentList.Items {
 			for _, condition := range component.Conditions {
@@ -124,7 +125,7 @@ func collectComponentFailures(client k8s_clientset.Interface) (failures []string
 }
 
 func collectPodFailures(client k8s_clientset.Interface) (failures []string, err error) {
-	pods, err := client.CoreV1().Pods("kube-system").List(v1.ListOptions{})
+	pods, err := client.CoreV1().Pods("kube-system").List(meta_v1.ListOptions{})
 	if err == nil {
 		for _, pod := range pods.Items {
 			for _, status := range pod.Status.ContainerStatuses {

@@ -25,7 +25,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/util/pkg/vfs"
-	k8sapi "k8s.io/kubernetes/pkg/api"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
 	"strings"
@@ -59,7 +59,7 @@ func (c *ClusterVFS) ConfigBase(clusterName string) (vfs.Path, error) {
 	return configPath, nil
 }
 
-func (c *ClusterVFS) List(options k8sapi.ListOptions) (*api.ClusterList, error) {
+func (c *ClusterVFS) List(options metav1.ListOptions) (*api.ClusterList, error) {
 	names, err := c.listNames()
 	if err != nil {
 		return nil, err

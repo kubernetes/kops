@@ -23,16 +23,18 @@ import (
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/apimachinery/pkg/apimachinery/announced"
+	"k8s.io/apimachinery/pkg/apimachinery/registered"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
+
 func init() {
-	if err := register(); err != nil {
-		panic(err)
-	}
+	register(kops.GroupFactoryRegistry, kops.Registry, kops.Scheme)
 }
 
-func register() error {
-	return announced.NewGroupMetaFactory(
+func register(groupFactoryRegistry announced.APIGroupFactoryRegistry, registry *registered.APIRegistrationManager, scheme *runtime.Scheme) error {
+
+	if err:= announced.NewGroupMetaFactory(
 		&announced.GroupMetaFactoryArgs{
 			GroupName: kops.GroupName,
 			VersionPreferenceOrder: []string{
@@ -47,5 +49,9 @@ func register() error {
 			v1alpha1.SchemeGroupVersion.Version: v1alpha1.AddToScheme,
 			v1alpha2.SchemeGroupVersion.Version: v1alpha2.AddToScheme,
 		},
-	).Announce().RegisterAndEnable()
+	).Announce(groupFactoryRegistry).RegisterAndEnable(registry, scheme); err != nil {
+		return err
+	}
+
+	return nil
 }

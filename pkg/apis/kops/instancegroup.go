@@ -19,7 +19,6 @@ package kops
 import (
 	"fmt"
 	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 )
@@ -29,7 +28,7 @@ const LabelClusterName = "kops.k8s.io/cluster"
 // InstanceGroup represents a group of instances (either nodes or masters) with the same configuration
 type InstanceGroup struct {
 	v1.TypeMeta `json:",inline"`
-	ObjectMeta  api.ObjectMeta `json:"metadata,omitempty"`
+	ObjectMeta  v1.ObjectMeta `json:"metadata,omitempty"`
 
 	Spec InstanceGroupSpec `json:"spec,omitempty"`
 }

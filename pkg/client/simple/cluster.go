@@ -18,7 +18,7 @@ package simple
 
 import (
 	api "k8s.io/kops/pkg/apis/kops"
-	k8sapi "k8s.io/kubernetes/pkg/api"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // ClusterInterface has methods to work with Cluster resources.
@@ -29,7 +29,7 @@ type ClusterInterface interface {
 	//Delete(name string, options *api.DeleteOptions) error
 	//DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error
 	Get(name string) (*api.Cluster, error)
-	List(opts k8sapi.ListOptions) (*api.ClusterList, error)
+	List(opts metav1.ListOptions) (*api.ClusterList, error)
 	//Watch(opts k8sapi.ListOptions) (watch.Interface, error)
 	//Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *api.Cluster, err error)
 	//ClusterExpansion

@@ -22,7 +22,7 @@ import (
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/kutil"
-	k8s_clientset "k8s.io/client-go/kubernetes"
+	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 )
 
 type KubernetesTarget struct {

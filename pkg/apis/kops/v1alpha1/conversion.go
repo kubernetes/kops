@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	"fmt"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kubernetes/pkg/conversion"
+	"k8s.io/apimachinery/pkg/conversion"
 	"reflect"
 	"sort"
 	"strings"
