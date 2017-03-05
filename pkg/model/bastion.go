@@ -174,7 +174,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Create ELB itself
 	var elb *awstasks.LoadBalancer
 	{
-		elbID, err := b.GetELBName32("bastion")
+		loadBalancerName, err := b.GetELBName32("bastion")
 		if err != nil {
 			return err
 		}
@@ -185,8 +185,8 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		elb = &awstasks.LoadBalancer{
-			Name: s("bastion." + b.ClusterName()),
-			ID:   s(elbID),
+			Name:             s("bastion." + b.ClusterName()),
+			LoadBalancerName: s(loadBalancerName),
 			SecurityGroups: []*awstasks.SecurityGroup{
 				b.LinkToELBSecurityGroup(BastionELBSecurityGroupPrefix),
 			},
