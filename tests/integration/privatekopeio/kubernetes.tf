@@ -143,7 +143,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privatekopeio-example-com" {
 }
 
 resource "aws_elb" "api-privatekopeio-example-com" {
-  name = "api-privatekopeio"
+  name = "api-privatekopeio-example-com"
 
   listener = {
     instance_port     = 443
@@ -172,7 +172,7 @@ resource "aws_elb" "api-privatekopeio-example-com" {
 }
 
 resource "aws_elb" "bastion-privatekopeio-example-com" {
-  name = "bastion-privatekopeio"
+  name = "bastion-privatekopeio-exa-d8ef8e"
 
   listener = {
     instance_port     = 22

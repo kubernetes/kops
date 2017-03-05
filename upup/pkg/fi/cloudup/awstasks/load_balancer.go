@@ -69,7 +69,7 @@ type LoadBalancer struct {
 var _ fi.CompareWithID = &LoadBalancer{}
 
 func (e *LoadBalancer) CompareWithID() *string {
-	return e.LoadBalancerName
+	return e.Name
 }
 
 type LoadBalancerListener struct {
@@ -186,33 +186,27 @@ func findLoadBalancerByNameTag(cloud awsup.AWSCloud, findNameTag string) (*elb.L
 
 		// TODO: Filter by cluster?
 
-		tagRequest := &elb.DescribeTagsInput{}
-
+		var names []string
 		nameToELB := make(map[string]*elb.LoadBalancerDescription)
 		for _, elb := range p.LoadBalancerDescriptions {
 			name := aws.StringValue(elb.LoadBalancerName)
 			nameToELB[name] = elb
-
-			tagRequest.LoadBalancerNames = append(tagRequest.LoadBalancerNames, elb.LoadBalancerName)
+			names = append(names, name)
 		}
 
-		// TODO: Cache?
-		glog.V(2).Infof("Querying ELB tags for findLoadBalancerByNameTag")
-		tagResponse, err := cloud.ELB().DescribeTags(tagRequest)
+		tagMap, err := describeLoadBalancerTags(cloud, names)
 		if err != nil {
-			innerError = fmt.Errorf("error listing elb Tags: %v", err)
+			innerError = err
 			return false
 		}
 
-		for _, t := range tagResponse.TagDescriptions {
-			elbName := aws.StringValue(t.LoadBalancerName)
-
-			name, foundNameTag := awsup.FindELBTag(t.Tags, "Name")
+		for loadBalancerName, tags := range tagMap {
+			name, foundNameTag := awsup.FindELBTag(tags, "Name")
 			if !foundNameTag || name != findNameTag {
 				continue
 			}
 
-			elb := nameToELB[elbName]
+			elb := nameToELB[loadBalancerName]
 			found = append(found, elb)
 		}
 		return true
@@ -248,10 +242,30 @@ func describeLoadBalancers(cloud awsup.AWSCloud, request *elb.DescribeLoadBalanc
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error listing elb Tags: %v", err)
 	}
 
 	return found, nil
+}
+
+func describeLoadBalancerTags(cloud awsup.AWSCloud, loadBalancerNames []string) (map[string][]*elb.Tag, error) {
+	// TODO: Filter by cluster?
+
+	request := &elb.DescribeTagsInput{}
+	request.LoadBalancerNames = aws.StringSlice(loadBalancerNames)
+
+	// TODO: Cache?
+	glog.V(2).Infof("Querying ELB tags for %s", loadBalancerNames)
+	response, err := cloud.ELB().DescribeTags(request)
+	if err != nil {
+		return nil, err
+	}
+
+	tagMap := make(map[string][]*elb.Tag)
+	for _, tagset := range response.TagDescriptions {
+		tagMap[aws.StringValue(tagset.LoadBalancerName)] = tagset.Tags
+	}
+	return tagMap, nil
 }
 
 func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
@@ -357,6 +371,14 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 		e.HostedZoneId = actual.HostedZoneId
 	}
 	if e.LoadBalancerName == nil {
+		e.LoadBalancerName = actual.LoadBalancerName
+	}
+
+	// We allow for the LoadBalancerName to be wrong:
+	// 1. We don't want to force a rename of the ELB, because that is a destructive operation
+	// 2. We were creating ELBs with insufficiently qualified names previously
+	if fi.StringValue(e.LoadBalancerName) != fi.StringValue(actual.LoadBalancerName) {
+		glog.V(2).Infof("Resuing existing load balancer with name: %q", actual.LoadBalancerName)
 		e.LoadBalancerName = actual.LoadBalancerName
 	}
 
