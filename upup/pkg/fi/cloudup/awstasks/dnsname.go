@@ -115,7 +115,7 @@ func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
 			if lb == nil {
 				glog.Warningf("Unable to find load balancer with DNS name: %q", dnsName)
 			} else {
-				actual.TargetLoadBalancer = &LoadBalancer{ID: lb.LoadBalancerName}
+				actual.TargetLoadBalancer = &LoadBalancer{LoadBalancerName: lb.LoadBalancerName}
 			}
 		}
 	}

@@ -35,13 +35,18 @@ import (
 	"sort"
 )
 
+// LoadBalancer manages an ELB.  We find the existing ELB using the Name tag.
+
 //go:generate fitask -type=LoadBalancer
 type LoadBalancer struct {
+	// We use the Name tag to find the existing ELB, because we are (more or less) unrestricted when
+	// it comes to tag values, but the LoadBalancerName is length limited
 	Name *string
 
-	// ID is the name in ELB, possibly different from our name
+	// LoadBalancerName is the name in ELB, possibly different from our name
 	// (ELB is restricted as to names, so we have limited choices!)
-	ID *string
+	// We use the Name tag to find the existing ELB.
+	LoadBalancerName *string
 
 	DNSName      *string
 	HostedZoneId *string
@@ -64,7 +69,7 @@ type LoadBalancer struct {
 var _ fi.CompareWithID = &LoadBalancer{}
 
 func (e *LoadBalancer) CompareWithID() *string {
-	return e.ID
+	return e.LoadBalancerName
 }
 
 type LoadBalancerListener struct {
@@ -88,12 +93,14 @@ func (e *LoadBalancerListener) GetDependencies(tasks map[string]fi.Task) []fi.Ta
 	return nil
 }
 
-func findLoadBalancer(cloud awsup.AWSCloud, name string) (*elb.LoadBalancerDescription, error) {
+func findLoadBalancerByLoadBalancerName(cloud awsup.AWSCloud, loadBalancerName string) (*elb.LoadBalancerDescription, error) {
 	request := &elb.DescribeLoadBalancersInput{
-		LoadBalancerNames: []*string{&name},
+		LoadBalancerNames: []*string{&loadBalancerName},
 	}
 	found, err := describeLoadBalancers(cloud, request, func(lb *elb.LoadBalancerDescription) bool {
-		if aws.StringValue(lb.LoadBalancerName) == name {
+		// TODO: Filter by cluster?
+
+		if aws.StringValue(lb.LoadBalancerName) == loadBalancerName {
 			return true
 		}
 
@@ -116,7 +123,7 @@ func findLoadBalancer(cloud awsup.AWSCloud, name string) (*elb.LoadBalancerDescr
 	}
 
 	if len(found) != 1 {
-		return nil, fmt.Errorf("Found multiple ELBs with name %q", name)
+		return nil, fmt.Errorf("Found multiple ELBs with name %q", loadBalancerName)
 	}
 
 	return found[0], nil
@@ -135,6 +142,8 @@ func findLoadBalancerByAlias(cloud awsup.AWSCloud, alias *route53.AliasTarget) (
 	matchHostedZoneId := aws.StringValue(alias.HostedZoneId)
 
 	found, err := describeLoadBalancers(cloud, request, func(lb *elb.LoadBalancerDescription) bool {
+		// TODO: Filter by cluster?
+
 		if matchHostedZoneId != aws.StringValue(lb.CanonicalHostedZoneNameID) {
 			return false
 		}
@@ -154,6 +163,73 @@ func findLoadBalancerByAlias(cloud awsup.AWSCloud, alias *route53.AliasTarget) (
 
 	if len(found) != 1 {
 		return nil, fmt.Errorf("Found multiple ELBs with DNSName %q", dnsName)
+	}
+
+	return found[0], nil
+}
+
+func findLoadBalancerByNameTag(cloud awsup.AWSCloud, findNameTag string) (*elb.LoadBalancerDescription, error) {
+	// TODO: Any way around this?
+	glog.V(2).Infof("Listing all ELBs for findLoadBalancerByNameTag")
+
+	request := &elb.DescribeLoadBalancersInput{}
+	// ELB DescribeTags has a limit of 20 names, so we set the page size here to 20 also
+	request.PageSize = aws.Int64(20)
+
+	var found []*elb.LoadBalancerDescription
+
+	var innerError error
+	err := cloud.ELB().DescribeLoadBalancersPages(request, func(p *elb.DescribeLoadBalancersOutput, lastPage bool) bool {
+		if len(p.LoadBalancerDescriptions) == 0 {
+			return true
+		}
+
+		// TODO: Filter by cluster?
+
+		tagRequest := &elb.DescribeTagsInput{}
+
+		nameToELB := make(map[string]*elb.LoadBalancerDescription)
+		for _, elb := range p.LoadBalancerDescriptions {
+			name := aws.StringValue(elb.LoadBalancerName)
+			nameToELB[name] = elb
+
+			tagRequest.LoadBalancerNames = append(tagRequest.LoadBalancerNames, elb.LoadBalancerName)
+		}
+
+		// TODO: Cache?
+		glog.V(2).Infof("Querying ELB tags for findLoadBalancerByNameTag")
+		tagResponse, err := cloud.ELB().DescribeTags(tagRequest)
+		if err != nil {
+			innerError = fmt.Errorf("error listing elb Tags: %v", err)
+			return false
+		}
+
+		for _, t := range tagResponse.TagDescriptions {
+			elbName := aws.StringValue(t.LoadBalancerName)
+
+			name, foundNameTag := awsup.FindELBTag(t.Tags, "Name")
+			if !foundNameTag || name != findNameTag {
+				continue
+			}
+
+			elb := nameToELB[elbName]
+			found = append(found, elb)
+		}
+		return true
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error describing LoadBalancers: %v", err)
+	}
+	if innerError != nil {
+		return nil, fmt.Errorf("error describing LoadBalancers: %v", innerError)
+	}
+
+	if len(found) == 0 {
+		return nil, nil
+	}
+
+	if len(found) != 1 {
+		return nil, fmt.Errorf("Found multiple ELBs with Name %q", findNameTag)
 	}
 
 	return found[0], nil
@@ -181,12 +257,7 @@ func describeLoadBalancers(cloud awsup.AWSCloud, request *elb.DescribeLoadBalanc
 func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
-	elbName := fi.StringValue(e.ID)
-	if elbName == "" {
-		elbName = fi.StringValue(e.Name)
-	}
-
-	lb, err := findLoadBalancer(cloud, elbName)
+	lb, err := findLoadBalancerByNameTag(cloud, fi.StringValue(e.Name))
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +267,7 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 
 	actual := &LoadBalancer{}
 	actual.Name = e.Name
-	actual.ID = lb.LoadBalancerName
+	actual.LoadBalancerName = lb.LoadBalancerName
 	actual.DNSName = lb.DNSName
 	actual.HostedZoneId = lb.CanonicalHostedZoneNameID
 	actual.Scheme = lb.Scheme
@@ -227,7 +298,7 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	actual.HealthCheck = healthcheck
 
 	// Extract attributes
-	lbAttributes, err := findELBAttributes(cloud, elbName)
+	lbAttributes, err := findELBAttributes(cloud, aws.StringValue(lb.LoadBalancerName))
 	if err != nil {
 		return nil, err
 	}
@@ -285,8 +356,8 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	if e.HostedZoneId == nil {
 		e.HostedZoneId = actual.HostedZoneId
 	}
-	if e.ID == nil {
-		e.ID = actual.ID
+	if e.LoadBalancerName == nil {
+		e.LoadBalancerName = actual.LoadBalancerName
 	}
 
 	// TODO: Make Normalize a standard method
@@ -351,18 +422,15 @@ func (s *LoadBalancer) CheckChanges(a, e, changes *LoadBalancer) error {
 }
 
 func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalancer) error {
-	elbName := e.ID
-	if elbName == nil {
-		elbName = e.Name
-	}
-
-	if elbName == nil {
-		return fi.RequiredField("ID")
-	}
-
+	var loadBalancerName string
 	if a == nil {
+		if e.LoadBalancerName == nil {
+			return fi.RequiredField("LoadBalancerName")
+		}
+		loadBalancerName = *e.LoadBalancerName
+
 		request := &elb.CreateLoadBalancerInput{}
-		request.LoadBalancerName = elbName
+		request.LoadBalancerName = e.LoadBalancerName
 		request.Scheme = e.Scheme
 
 		for _, subnet := range e.Subnets {
@@ -384,7 +452,7 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 			request.Listeners = append(request.Listeners, awsListener)
 		}
 
-		glog.V(2).Infof("Creating ELB with Name:%q", *e.ID)
+		glog.V(2).Infof("Creating ELB with Name:%q", loadBalancerName)
 
 		response, err := t.Cloud.ELB().CreateLoadBalancer(request)
 		if err != nil {
@@ -392,19 +460,20 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 		}
 
 		e.DNSName = response.DNSName
-		e.ID = elbName
 
-		lb, err := findLoadBalancer(t.Cloud, *e.ID)
+		// Requery to get the CanonicalHostedZoneNameID
+		lb, err := findLoadBalancerByLoadBalancerName(t.Cloud, loadBalancerName)
 		if err != nil {
 			return err
 		}
 		if lb == nil {
 			// TODO: Retry?  Is this async
-			return fmt.Errorf("Unable to find newly created ELB")
+			return fmt.Errorf("Unable to find newly created ELB %q", loadBalancerName)
 		}
-
 		e.HostedZoneId = lb.CanonicalHostedZoneNameID
 	} else {
+		loadBalancerName = fi.StringValue(a.LoadBalancerName)
+
 		if changes.Subnets != nil {
 			var expectedSubnets []string
 			for _, s := range e.Subnets {
@@ -421,7 +490,7 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 
 		if changes.Listeners != nil {
 			request := &elb.CreateLoadBalancerListenersInput{}
-			request.LoadBalancerName = elbName
+			request.LoadBalancerName = aws.String(loadBalancerName)
 
 			for loadBalancerPort, listener := range changes.Listeners {
 				loadBalancerPortInt, err := strconv.ParseInt(loadBalancerPort, 10, 64)
@@ -441,13 +510,13 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 		}
 	}
 
-	if err := t.AddELBTags(*e.ID, t.Cloud.BuildTags(e.Name)); err != nil {
+	if err := t.AddELBTags(loadBalancerName, t.Cloud.BuildTags(e.Name)); err != nil {
 		return err
 	}
 
 	if changes.HealthCheck != nil && e.HealthCheck != nil {
 		request := &elb.ConfigureHealthCheckInput{}
-		request.LoadBalancerName = e.ID
+		request.LoadBalancerName = aws.String(loadBalancerName)
 		request.HealthCheck = &elb.HealthCheck{
 			Target:             e.HealthCheck.Target,
 			HealthyThreshold:   e.HealthCheck.HealthyThreshold,
@@ -456,7 +525,7 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 			Timeout:            e.HealthCheck.Timeout,
 		}
 
-		glog.V(2).Infof("Configuring health checks on ELB %q", *e.ID)
+		glog.V(2).Infof("Configuring health checks on ELB %q", loadBalancerName)
 
 		_, err := t.Cloud.ELB().ConfigureHealthCheck(request)
 		if err != nil {
@@ -472,11 +541,11 @@ func (_ *LoadBalancer) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalan
 }
 
 type terraformLoadBalancer struct {
-	Name           *string                          `json:"name"`
-	Listener       []*terraformLoadBalancerListener `json:"listener"`
-	SecurityGroups []*terraform.Literal             `json:"security_groups"`
-	Subnets        []*terraform.Literal             `json:"subnets"`
-	Internal       *bool                            `json:"internal,omitempty"`
+	LoadBalancerName *string                          `json:"name"`
+	Listener         []*terraformLoadBalancerListener `json:"listener"`
+	SecurityGroups   []*terraform.Literal             `json:"security_groups"`
+	Subnets          []*terraform.Literal             `json:"subnets"`
+	Internal         *bool                            `json:"internal,omitempty"`
 
 	HealthCheck *terraformLoadBalancerHealthCheck `json:"health_check,omitempty"`
 	AccessLog   *terraformLoadBalancerAccessLog   `json:"access_logs,omitempty"`
@@ -509,13 +578,12 @@ type terraformLoadBalancerHealthCheck struct {
 func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *LoadBalancer) error {
 	cloud := t.Cloud.(awsup.AWSCloud)
 
-	elbName := e.ID
-	if elbName == nil {
-		elbName = e.Name
+	if e.LoadBalancerName == nil {
+		return fi.RequiredField("LoadBalancerName")
 	}
 
 	tf := &terraformLoadBalancer{
-		Name: elbName,
+		LoadBalancerName: e.LoadBalancerName,
 	}
 	if fi.StringValue(e.Scheme) == "internal" {
 		tf.Internal = fi.Bool(true)
@@ -589,11 +657,11 @@ func (e *LoadBalancer) TerraformLink(params ...string) *terraform.Literal {
 }
 
 type cloudformationLoadBalancer struct {
-	Name           *string                               `json:"LoadBalancerName,omitempty"`
-	Listener       []*cloudformationLoadBalancerListener `json:"Listeners,omitempty"`
-	SecurityGroups []*cloudformation.Literal             `json:"SecurityGroups,omitempty"`
-	Subnets        []*cloudformation.Literal             `json:"Subnets,omitempty"`
-	Scheme         *string                               `json:"Scheme,omitempty"`
+	LoadBalancerName *string                               `json:"LoadBalancerName,omitempty"`
+	Listener         []*cloudformationLoadBalancerListener `json:"Listeners,omitempty"`
+	SecurityGroups   []*cloudformation.Literal             `json:"SecurityGroups,omitempty"`
+	Subnets          []*cloudformation.Literal             `json:"Subnets,omitempty"`
+	Scheme           *string                               `json:"Scheme,omitempty"`
 
 	HealthCheck *cloudformationLoadBalancerHealthCheck `json:"HealthCheck,omitempty"`
 	AccessLog   *cloudformationLoadBalancerAccessLog   `json:"AccessLoggingPolicy,omitempty"`
@@ -637,14 +705,13 @@ func (_ *LoadBalancer) RenderCloudformation(t *cloudformation.CloudformationTarg
 
 	cloud := t.Cloud.(awsup.AWSCloud)
 
-	elbName := e.ID
-	if elbName == nil {
-		elbName = e.Name
+	if e.LoadBalancerName == nil {
+		return fi.RequiredField("LoadBalancerName")
 	}
 
 	tf := &cloudformationLoadBalancer{
-		Name:   elbName,
-		Scheme: e.Scheme,
+		LoadBalancerName: e.LoadBalancerName,
+		Scheme:           e.Scheme,
 	}
 
 	for _, subnet := range e.Subnets {
