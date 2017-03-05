@@ -110,10 +110,10 @@ func (_ *LoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget, a, e,
 		return nil
 	}
 
-	id := fi.StringValue(e.ID)
+	loadBalancerName := fi.StringValue(e.LoadBalancerName)
 
 	request := &elb.ModifyLoadBalancerAttributesInput{}
-	request.LoadBalancerName = e.ID
+	request.LoadBalancerName = e.LoadBalancerName
 	request.LoadBalancerAttributes = &elb.LoadBalancerAttributes{}
 
 	// Setting mandatory attributes to default values if empty
@@ -167,11 +167,11 @@ func (_ *LoadBalancer) modifyLoadBalancerAttributes(t *awsup.AWSAPITarget, a, e,
 		request.LoadBalancerAttributes.ConnectionSettings.IdleTimeout = e.ConnectionSettings.IdleTimeout
 	}
 
-	glog.V(2).Infof("Configuring ELB attributes for ELB %q", id)
+	glog.V(2).Infof("Configuring ELB attributes for ELB %q", loadBalancerName)
 
 	_, err := t.Cloud.ELB().ModifyLoadBalancerAttributes(request)
 	if err != nil {
-		return fmt.Errorf("error configuring ELB attributes for ELB %q: %v", id, err)
+		return fmt.Errorf("error configuring ELB attributes for ELB %q: %v", loadBalancerName, err)
 	}
 
 	return nil
