@@ -42,6 +42,7 @@ type KopsModelContext struct {
 
 // Will attempt to calculate a meaningful name for an ELB given a prefix
 // Will never return a string longer than 32 chars
+// Note this is _not_ the primary identifier for the ELB - we use the Name tag for that.
 func (m *KopsModelContext) GetELBName32(prefix string) (string, error) {
 	var returnString string
 	c := m.Cluster.ObjectMeta.Name
