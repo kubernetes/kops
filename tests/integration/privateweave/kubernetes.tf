@@ -147,7 +147,7 @@ resource "aws_eip" "us-test-1a-privateweave-example-com" {
 }
 
 resource "aws_elb" "api-privateweave-example-com" {
-  name = "api-privateweave"
+  name = "api-privateweave-example-com"
 
   listener = {
     instance_port     = 443
@@ -176,7 +176,7 @@ resource "aws_elb" "api-privateweave-example-com" {
 }
 
 resource "aws_elb" "bastion-privateweave-example-com" {
-  name = "bastion-privateweave"
+  name = "bastion-privateweave-example-com"
 
   listener = {
     instance_port     = 22

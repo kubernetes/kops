@@ -91,10 +91,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	var elb *awstasks.LoadBalancer
 	{
-		loadBalancerName, err := b.GetELBName32("api")
-		if err != nil {
-			return err
-		}
+		loadBalancerName := b.GetELBName32("api")
 
 		idleTimeout := LoadBalancerDefaultIdleTimeout
 		if lbSpec.IdleTimeoutSeconds != nil {
