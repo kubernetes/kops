@@ -84,6 +84,8 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 
 	codec := codecs.UniversalDecoder(kopsapi.SchemeGroupVersion)
 
+	var clusterName = ""
+	var cSpec = false
 	for _, f := range c.Filenames {
 		contents, err := vfs.Context.ReadFile(f)
 		if err != nil {
@@ -91,7 +93,6 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 		}
 
 		sections := bytes.Split(contents, []byte("\n---\n"))
-
 		for _, section := range sections {
 			defaults := &schema.GroupVersionKind{
 				Group:   v1alpha1.SchemeGroupVersion.Group,
@@ -125,10 +126,12 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 						return fmt.Errorf("cluster %q already exists", v.ObjectMeta.Name)
 					}
 					return fmt.Errorf("error creating cluster: %v", err)
+				} else {
+					cSpec = true
 				}
 
 			case *kopsapi.InstanceGroup:
-				clusterName := v.ObjectMeta.Labels[kopsapi.LabelClusterName]
+				clusterName = v.ObjectMeta.Labels[kopsapi.LabelClusterName]
 				if clusterName == "" {
 					return fmt.Errorf("must specify %q label with cluster name to create instanceGroup", kopsapi.LabelClusterName)
 				}
@@ -147,6 +150,23 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 		}
 
 	}
+	{
+		var sb bytes.Buffer
+		fmt.Fprintf(&sb, "\n")
+		fmt.Fprintf(&sb, "Your input has been successfully parsed.\n")
+		fmt.Fprintf(&sb, "\n")
 
+		// This isn't pretty.
+		// The point is to give some sort of feedback if the input was successfully parsed.
+		// And if this was a full cluster spec, let's show how to deploy the cluster.
+		if clusterName != "" && cSpec {
+			fmt.Fprintf(&sb, "To deploy these resources, run: kops update cluster %s --yes\n", clusterName)
+			fmt.Fprintf(&sb, "\n")
+		}
+		_, err := out.Write(sb.Bytes())
+		if err != nil {
+			return fmt.Errorf("error writing to output: %v", err)
+		}
+	}
 	return nil
 }
