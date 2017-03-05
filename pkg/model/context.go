@@ -17,18 +17,22 @@ limitations under the License.
 package model
 
 import (
+	"encoding/base32"
 	"fmt"
+	"hash/fnv"
 	"net"
 	"strings"
 
 	"github.com/blang/semver"
 	"github.com/golang/glog"
-
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
+
+var UseLegacyELBName = featureflag.New("UseLegacyELBName", featureflag.Bool(false))
 
 type KopsModelContext struct {
 	Cluster *kops.Cluster
@@ -43,23 +47,41 @@ type KopsModelContext struct {
 // Will attempt to calculate a meaningful name for an ELB given a prefix
 // Will never return a string longer than 32 chars
 // Note this is _not_ the primary identifier for the ELB - we use the Name tag for that.
-func (m *KopsModelContext) GetELBName32(prefix string) (string, error) {
-	var returnString string
+func (m *KopsModelContext) GetELBName32(prefix string) string {
 	c := m.Cluster.ObjectMeta.Name
-	s := strings.Split(c, ".")
 
-	// TODO: We used to have this...
-	//master-{{ replace .ClusterName "." "-" }}
-	// TODO: strings.Split cannot return empty
-	if len(s) > 0 {
-		returnString = fmt.Sprintf("%s-%s", prefix, s[0])
-	} else {
-		returnString = fmt.Sprintf("%s-%s", prefix, c)
+	if UseLegacyELBName.Enabled() {
+		tokens := strings.Split(c, ".")
+		s := fmt.Sprintf("%s-%s", prefix, tokens[0])
+		if len(s) > 32 {
+			s = s[:32]
+		}
+		glog.Infof("UseLegacyELBName feature-flag is set; built legacy name %q", s)
+		return s
 	}
-	if len(returnString) > 32 {
-		returnString = returnString[:32]
+
+	// The LoadBalancerName is exposed publicly as the DNS name for the load balancer.
+	// So this will likely become visible in a CNAME record - this is potentially some
+	// information leakage.
+	// But... if a user can see the CNAME record, they can see the actual record also,
+	// which will be the full cluster name.
+	s := prefix + "-" + strings.Replace(c, ".", "-", -1)
+	if len(s) > 32 {
+		// We have a 32 character limit for ELB names
+		h := fnv.New32a()
+		if _, err := h.Write([]byte(s)); err != nil {
+			glog.Fatalf("error hashing values: %v", err)
+		}
+		hashString := base32.HexEncoding.EncodeToString(h.Sum(nil))
+		hashString = strings.ToLower(hashString)
+		if len(hashString) > 6 {
+			hashString = hashString[:6]
+		}
+
+		s = s[:(32-len(hashString)-1)] + "-" + hashString
 	}
-	return returnString, nil
+
+	return s
 }
 
 func (m *KopsModelContext) ClusterName() string {
