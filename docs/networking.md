@@ -22,6 +22,10 @@ routing table, and thus it requires its own subnet.  It is theoretically possibl
 with other infrastructure (but not a second cluster!), but this is not really recommended.  Certain
 `cni` networking solutions claim to address these problems.
 
+Users running `--topology private` will not be able to choose `kubenet` networking because `kubenet`
+requires a single routing table. These advanced users are usually running in multiple availability zones
+and NAT gateways are single AZ, multiple route tables are needed to use each NAT gateway.
+
 ### Supported CNI Networking
 
 Several different providers are currently built into kops:
