@@ -23,9 +23,9 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	"strings"
-	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 )
 
 func BuildCloud(cluster *api.Cluster) (fi.Cloud, error) {
