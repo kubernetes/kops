@@ -34,5 +34,5 @@ cp /go/bin/channels /src/.build/artifacts/
 
 # channels uses protokube
 cd /src/.build/artifacts/
-curl -O https://storage.googleapis.com/kubernetes-release/release/v1.5.1/bin/linux/amd64/kubectl
+curl -O https://storage.googleapis.com/kubernetes-release/release/v1.6.0-beta.1/bin/linux/amd64/kubectl
 chmod +x kubectl
