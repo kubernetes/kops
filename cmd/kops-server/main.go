@@ -29,6 +29,7 @@ import (
 )
 
 func main() {
+	flag.Parse()
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	logs.InitLogs()
