@@ -47,6 +47,7 @@ k8s.io/kops/pkg/model/components
 k8s.io/kops/pkg/model/gcemodel
 k8s.io/kops/pkg/model/iam
 k8s.io/kops/pkg/model/resources
+k8s.io/kops/pkg/model/vspheremodel
 k8s.io/kops/pkg/systemd
 k8s.io/kops/pkg/util/stringorslice
 k8s.io/kops/pkg/validation
@@ -66,6 +67,8 @@ k8s.io/kops/upup/pkg/fi/cloudup/dnstasks
 k8s.io/kops/upup/pkg/fi/cloudup/gce
 k8s.io/kops/upup/pkg/fi/cloudup/gcetasks
 k8s.io/kops/upup/pkg/fi/cloudup/terraform
+k8s.io/kops/upup/pkg/fi/cloudup/vsphere
+k8s.io/kops/upup/pkg/fi/cloudup/vspheretasks
 k8s.io/kops/upup/pkg/fi/fitasks
 k8s.io/kops/upup/pkg/fi/k8sapi
 k8s.io/kops/upup/pkg/fi/loader
