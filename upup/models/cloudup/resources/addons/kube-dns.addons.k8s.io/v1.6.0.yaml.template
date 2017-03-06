@@ -228,11 +228,3 @@ spec:
   - name: dns-tcp
     port: 53
     protocol: TCP
-
----
-
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: kube-dns
-  namespace: kube-system
