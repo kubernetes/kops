@@ -31,16 +31,16 @@ import (
 
 // Default Machine types for various types of instance group machine
 const (
-	defaultNodeMachineTypeAWS = "t2.medium"
-	defaultNodeMachineTypeGCE = "n1-standard-2"
+	defaultNodeMachineTypeAWS     = "t2.medium"
+	defaultNodeMachineTypeGCE     = "n1-standard-2"
 	defaultNodeMachineTypeVSphere = "vsphere_node"
 
-	defaultBastionMachineTypeAWS = "t2.micro"
-	defaultBastionMachineTypeGCE = "f1-micro"
+	defaultBastionMachineTypeAWS     = "t2.micro"
+	defaultBastionMachineTypeGCE     = "f1-micro"
 	defaultBastionMachineTypeVSphere = "vsphere_bastion"
 
-	defaultMasterMachineTypeGCE = "n1-standard-1"
-	defaultMasterMachineTypeAWS = "m3.medium"
+	defaultMasterMachineTypeGCE     = "n1-standard-1"
+	defaultMasterMachineTypeAWS     = "m3.medium"
 	defaultMasterMachineTypeVSphere = "vsphere_master"
 )
 
