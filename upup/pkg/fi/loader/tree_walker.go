@@ -19,8 +19,8 @@ package loader
 import (
 	"fmt"
 	"github.com/golang/glog"
-	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/kops/util/pkg/vfs"
 	"os"
 	"path"
 	"strings"

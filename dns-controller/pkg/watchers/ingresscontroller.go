@@ -22,11 +22,11 @@ import (
 
 	"github.com/golang/glog"
 
+	client_extensions "k8s.io/client-go/kubernetes/typed/extensions/v1beta1"
+	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/util"
-	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
-	client_extensions "k8s.io/client-go/kubernetes/typed/extensions/v1beta1"
 	"k8s.io/kubernetes/pkg/watch"
 )
 

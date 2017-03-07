@@ -17,8 +17,8 @@ limitations under the License.
 package v1alpha2
 
 import (
-	"k8s.io/client-go/pkg/api/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/pkg/api/v1"
 )
 
 // Federation represents a federated set of kubernetes clusters

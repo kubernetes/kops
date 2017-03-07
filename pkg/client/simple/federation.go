@@ -17,8 +17,8 @@ limitations under the License.
 package simple
 
 import (
-	api "k8s.io/kops/pkg/apis/kops"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	api "k8s.io/kops/pkg/apis/kops"
 )
 
 // FederationInterface has methods to work with Federation resources.
