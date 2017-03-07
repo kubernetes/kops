@@ -19,21 +19,37 @@ package vsphere
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	k8sroute53 "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
+	"os"
 )
 
 type VSphereCloud struct {
-	// dummy field
-	name   string
-	Region string
+	Server     string
+	Datacenter string
+	Cluster    string
+	Username   string
+	Password   string
 }
 
 var _ fi.Cloud = &VSphereCloud{}
 
 func (c *VSphereCloud) ProviderID() fi.CloudProviderID {
 	return fi.CloudProviderVSphere
+}
+
+func NewVSphereCloud(spec *kops.ClusterSpec) (*VSphereCloud, error) {
+	server := spec.VSphereServer
+	datacenter := spec.VSphereDatacenter
+	cluster := spec.VSphereResourcePool
+	username := os.Getenv("VSPHERE_USERNAME")
+	password := os.Getenv("VSPHERE_PASSWORD")
+
+	c := &VSphereCloud{Server: server, Datacenter: datacenter, Cluster: cluster, Username: username, Password: password}
+	// TODO: create a client of govmomi here?
+	return c, nil
 }
 
 func (c *VSphereCloud) DNS() (dnsprovider.Interface, error) {
