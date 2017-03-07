@@ -1,6 +1,19 @@
 # Kops HTTP API Server
 
-### Notes:
+### Building
 
+To build the API container run the following
 
- - https://github.com/kubernetes/kubernetes/pull/40803
+Note: This is a MAJOR clockwork, and a lot of assumptions and hardcoding exist here for now.
+
+```bash
+make uas-build
+```
+
+### Deploy to a cluster
+
+From the kops directory run the following `helm` command
+
+```bash
+helm install charts/kops --namespace kops
+```
