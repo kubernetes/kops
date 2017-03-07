@@ -274,3 +274,6 @@
 [submodule "_vendor/github.com/golang/protobuf"]
 	path = _vendor/github.com/golang/protobuf
 	url = https://github.com/golang/protobuf
+[submodule "_vendor/github.com/vmware/govmomi"]
+	path = _vendor/github.com/vmware/govmomi
+	url = https://github.com/vmware/govmomi.git
