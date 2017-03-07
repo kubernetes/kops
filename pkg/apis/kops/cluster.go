@@ -241,6 +241,11 @@ type ClusterSpec struct {
 
 	// Tags for AWS instance groups
 	CloudLabels map[string]string `json:"cloudLabels,omitempty"`
+
+	// vSphere required specs
+	VSphereServer       string
+	VSphereDatacenter   string
+	VSphereResourcePool string
 }
 
 type AuthorizationSpec struct {

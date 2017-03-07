@@ -94,6 +94,11 @@ type CreateClusterOptions struct {
 	// Specify tenancy (default or dedicated) for masters and nodes
 	MasterTenancy string
 	NodeTenancy   string
+
+	// vSphere options
+	VSphereServer       string
+	VSphereDatacenter   string
+	VSphereResourcePool string
 }
 
 func (o *CreateClusterOptions) InitDefaults() {
@@ -147,7 +152,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.Target, "target", options.Target, "Target - direct, terraform, cloudformation")
 	cmd.Flags().StringVar(&options.Models, "model", options.Models, "Models to apply (separate multiple models with commas)")
 
-	cmd.Flags().StringVar(&options.Cloud, "cloud", options.Cloud, "Cloud provider to use - gce, aws")
+	cmd.Flags().StringVar(&options.Cloud, "cloud", options.Cloud, "Cloud provider to use - gce, aws, vsphere")
 
 	cmd.Flags().StringSliceVar(&options.Zones, "zones", options.Zones, "Zones in which to run the cluster")
 	cmd.Flags().StringSliceVar(&options.MasterZones, "master-zones", options.MasterZones, "Zones in which to run masters (must be an odd number)")
@@ -202,6 +207,10 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.MasterTenancy, "master-tenancy", options.MasterTenancy, "The tenancy of the master group on AWS. Can either be default or dedicated.")
 	cmd.Flags().StringVar(&options.NodeTenancy, "node-tenancy", options.NodeTenancy, "The tenancy of the node group on AWS. Can be either default or dedicated.")
 
+	// vSphere flags
+	cmd.Flags().StringVar(&options.VSphereServer, "vsphere-server", options.VSphereServer, "vsphere-server is required for vSphere. Set vCenter URL Ex: 10.192.10.30 or myvcenter.io (without https://)")
+	cmd.Flags().StringVar(&options.VSphereDatacenter, "vsphere-datacenter", options.VSphereDatacenter, "vsphere-datacenter is required for vSphere. Set the name of the datacenter in which to deploy Kubernetes VMs.")
+	cmd.Flags().StringVar(&options.VSphereResourcePool, "vsphere-resource-pool", options.VSphereDatacenter, "vsphere-resource-pool is required for vSphere. Set a valid Cluster, Host or Resource Pool in which to deploy Kubernetes VMs.")
 	return cmd
 }
 
@@ -515,6 +524,23 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 	if c.Cloud != "" {
 		cluster.Spec.CloudProvider = c.Cloud
+
+		if c.Cloud == "vsphere" {
+			if c.VSphereServer == "" {
+				return fmt.Errorf("vsphere-server is required for vSphere. Set vCenter URL Ex: 10.192.10.30 or myvcenter.io (without https://)")
+			}
+			cluster.Spec.VSphereServer = c.VSphereServer
+
+			if c.VSphereDatacenter == "" {
+				return fmt.Errorf("vsphere-datacenter is required for vSphere. Set the name of the datacenter in which to deploy Kubernetes VMs.")
+			}
+			cluster.Spec.VSphereDatacenter = c.VSphereDatacenter
+
+			if c.VSphereResourcePool == "" {
+				return fmt.Errorf("vsphere-resource-pool is required for vSphere. Set a valid Cluster, Host or Resource Pool in which to deploy Kubernetes VMs.")
+			}
+			cluster.Spec.VSphereResourcePool = c.VSphereResourcePool
+		}
 	}
 
 	if c.Project != "" {

@@ -99,8 +99,11 @@ func BuildCloud(cluster *api.Cluster) (fi.Cloud, error) {
 		}
 	case "vsphere":
 		{
-			cloud = &vsphere.VSphereCloud{}
-			fmt.Println("VSphere: In VSphere cloud provider")
+			vsphereCloud, err := vsphere.NewVSphereCloud(&cluster.Spec)
+			if err != nil {
+				return nil, err
+			}
+			cloud = vsphereCloud
 		}
 
 	default:

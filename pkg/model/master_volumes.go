@@ -88,6 +88,8 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 				b.addAWSVolume(c, name, volumeSize, subnet, etcd, m, allMembers)
 			case fi.CloudProviderGCE:
 				b.addGCEVolume(c, name, volumeSize, subnet, etcd, m, allMembers)
+			case fi.CloudProviderVSphere:
+				b.addVSphereVolume(c, name, volumeSize, subnet, etcd, m, allMembers)
 			default:
 				return fmt.Errorf("unknown cloudprovider %q", b.Cluster.Spec.CloudProvider)
 			}
@@ -164,4 +166,8 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, name strin
 	}
 
 	c.AddTask(t)
+}
+
+func (b *MasterVolumeBuilder) addVSphereVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, subnet *kops.ClusterSubnetSpec, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) {
+	fmt.Print("addVSphereVolume to be implemented")
 }
