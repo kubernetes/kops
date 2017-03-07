@@ -17,10 +17,10 @@ limitations under the License.
 package vfsclientset
 
 import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/pkg/client/simple"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type FederationVFS struct {

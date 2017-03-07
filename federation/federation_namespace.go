@@ -19,10 +19,10 @@ package federation
 import (
 	"fmt"
 	"github.com/golang/glog"
-	"k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/kubernetes/pkg/api/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset"
+	"k8s.io/kubernetes/pkg/api/v1"
 )
 
 // FIXME federation has not migrated to the client-go interfaces yet

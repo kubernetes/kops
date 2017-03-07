@@ -20,9 +20,9 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/golang/glog"
-	k8sapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	k8sapi "k8s.io/kubernetes/pkg/api"
 )
 
 func decoder() runtime.Decoder {

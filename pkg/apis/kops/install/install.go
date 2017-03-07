@@ -19,14 +19,13 @@ limitations under the License.
 package install
 
 import (
-	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/v1alpha1"
-	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/apimachinery/pkg/apimachinery/announced"
 	"k8s.io/apimachinery/pkg/apimachinery/registered"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/v1alpha1"
+	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 )
-
 
 func init() {
 	register(kops.GroupFactoryRegistry, kops.Registry, kops.Scheme)
@@ -34,7 +33,7 @@ func init() {
 
 func register(groupFactoryRegistry announced.APIGroupFactoryRegistry, registry *registered.APIRegistrationManager, scheme *runtime.Scheme) error {
 
-	if err:= announced.NewGroupMetaFactory(
+	if err := announced.NewGroupMetaFactory(
 		&announced.GroupMetaFactoryArgs{
 			GroupName: kops.GroupName,
 			VersionPreferenceOrder: []string{

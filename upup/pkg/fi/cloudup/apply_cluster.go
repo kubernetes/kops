@@ -24,6 +24,7 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
@@ -46,7 +47,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const DefaultMaxTaskDuration = 10 * time.Minute
