@@ -659,6 +659,7 @@ func autoConvert_v1alpha1_DockerConfig_To_kops_DockerConfig(in *DockerConfig, ou
 	out.LogLevel = in.LogLevel
 	out.IPTables = in.IPTables
 	out.IPMasq = in.IPMasq
+	out.LogOpts = in.LogOpts
 	out.Storage = in.Storage
 	out.InsecureRegistry = in.InsecureRegistry
 	out.MTU = in.MTU
@@ -676,6 +677,7 @@ func autoConvert_kops_DockerConfig_To_v1alpha1_DockerConfig(in *kops.DockerConfi
 	out.LogLevel = in.LogLevel
 	out.IPTables = in.IPTables
 	out.IPMasq = in.IPMasq
+	out.LogOpts = in.LogOpts
 	out.Storage = in.Storage
 	out.InsecureRegistry = in.InsecureRegistry
 	out.MTU = in.MTU
@@ -1250,6 +1252,8 @@ func Convert_kops_KubeSchedulerConfig_To_v1alpha1_KubeSchedulerConfig(in *kops.K
 
 func autoConvert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *KubeletConfigSpec, out *kops.KubeletConfigSpec, s conversion.Scope) error {
 	out.APIServers = in.APIServers
+	out.KubeconfigPath = in.KubeconfigPath
+	out.RequireKubeconfig = in.RequireKubeconfig
 	out.LogLevel = in.LogLevel
 	out.PodManifestPath = in.PodManifestPath
 	out.HostnameOverride = in.HostnameOverride
@@ -1293,6 +1297,8 @@ func Convert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *KubeletCon
 
 func autoConvert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec(in *kops.KubeletConfigSpec, out *KubeletConfigSpec, s conversion.Scope) error {
 	out.APIServers = in.APIServers
+	out.KubeconfigPath = in.KubeconfigPath
+	out.RequireKubeconfig = in.RequireKubeconfig
 	out.LogLevel = in.LogLevel
 	out.PodManifestPath = in.PodManifestPath
 	out.HostnameOverride = in.HostnameOverride
