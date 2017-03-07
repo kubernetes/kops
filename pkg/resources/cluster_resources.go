@@ -55,6 +55,8 @@ func (c *AwsCluster) ListResources() (map[string]*ResourceTracker, error) {
 		return c.listResourcesAWS()
 	case fi.CloudProviderGCE:
 		return c.listResourcesGCE()
+	case fi.CloudProviderVSphere:
+		return c.listResourcesVSphere()
 	default:
 		return nil, fmt.Errorf("Delete on clusters on %q not (yet) supported", c.Cloud.ProviderID())
 	}
