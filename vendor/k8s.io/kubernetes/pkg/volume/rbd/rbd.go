@@ -90,10 +90,6 @@ func (plugin *rbdPlugin) SupportsMountOption() bool {
 	return true
 }
 
-func (plugin *rbdPlugin) SupportsBulkVolumeVerification() bool {
-	return false
-}
-
 func (plugin *rbdPlugin) GetAccessModes() []v1.PersistentVolumeAccessMode {
 	return []v1.PersistentVolumeAccessMode{
 		v1.ReadWriteOnce,

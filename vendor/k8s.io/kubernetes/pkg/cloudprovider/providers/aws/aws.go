@@ -330,8 +330,8 @@ type Volumes interface {
 	// Check if the volume is already attached to the node with the specified NodeName
 	DiskIsAttached(diskName KubernetesVolumeID, nodeName types.NodeName) (bool, error)
 
-	// Check if disks specified in argument map are still attached to their respective nodes.
-	DisksAreAttached(map[types.NodeName][]KubernetesVolumeID) (map[types.NodeName]map[KubernetesVolumeID]bool, error)
+	// Check if a list of volumes are attached to the node with the specified NodeName
+	DisksAreAttached(diskNames []KubernetesVolumeID, nodeName types.NodeName) (map[KubernetesVolumeID]bool, error)
 }
 
 // InstanceGroups is an interface for managing cloud-managed instance groups / autoscaling instance groups
@@ -1777,66 +1777,36 @@ func (c *Cloud) DiskIsAttached(diskName KubernetesVolumeID, nodeName types.NodeN
 	return false, nil
 }
 
-func (c *Cloud) DisksAreAttached(nodeDisks map[types.NodeName][]KubernetesVolumeID) (map[types.NodeName]map[KubernetesVolumeID]bool, error) {
-	attached := make(map[types.NodeName]map[KubernetesVolumeID]bool)
-
-	if len(nodeDisks) == 0 {
-		return attached, nil
-	}
-
-	dnsNameSlice := []string{}
-	for nodeName, diskNames := range nodeDisks {
-		for _, diskName := range diskNames {
-			setNodeDisk(attached, diskName, nodeName, false)
+func (c *Cloud) DisksAreAttached(diskNames []KubernetesVolumeID, nodeName types.NodeName) (map[KubernetesVolumeID]bool, error) {
+	idToDiskName := make(map[awsVolumeID]KubernetesVolumeID)
+	attached := make(map[KubernetesVolumeID]bool)
+	for _, diskName := range diskNames {
+		volumeID, err := diskName.mapToAWSVolumeID()
+		if err != nil {
+			return nil, fmt.Errorf("error mapping volume spec %q to aws id: %v", diskName, err)
 		}
-		dnsNameSlice = append(dnsNameSlice, mapNodeNameToPrivateDNSName(nodeName))
+		idToDiskName[volumeID] = diskName
+		attached[diskName] = false
 	}
-
-	awsInstances, err := c.getInstancesByNodeNames(dnsNameSlice)
+	_, instance, err := c.getFullInstance(nodeName)
 	if err != nil {
-		// When there is an error fetching instance information
-		// it is safer to return nil and let volume information not be touched.
-		return nil, err
-	}
-
-	if len(awsInstances) == 0 {
-		glog.V(2).Infof("DisksAreAttached will assume no disks are attached to any node on AWS cluster.")
-		return attached, nil
-	}
-
-	awsInstanceMap := make(map[types.NodeName]*ec2.Instance)
-	for _, awsInstance := range awsInstances {
-		awsInstanceMap[mapInstanceToNodeName(awsInstance)] = awsInstance
-	}
-
-	// Note that we check that the volume is attached to the correct node, not that it is attached to _a_ node
-	for nodeName, diskNames := range nodeDisks {
-		awsInstance := awsInstanceMap[nodeName]
-		if awsInstance == nil {
+		if err == cloudprovider.InstanceNotFound {
 			// If instance no longer exists, safe to assume volume is not attached.
 			glog.Warningf(
 				"Node %q does not exist. DisksAreAttached will assume disks %v are not attached to it.",
 				nodeName,
 				diskNames)
-			continue
+			return attached, nil
 		}
 
-		idToDiskName := make(map[awsVolumeID]KubernetesVolumeID)
-		for _, diskName := range diskNames {
-			volumeID, err := diskName.mapToAWSVolumeID()
-			if err != nil {
-				return nil, fmt.Errorf("error mapping volume spec %q to aws id: %v", diskName, err)
-			}
-			idToDiskName[volumeID] = diskName
-		}
-
-		for _, blockDevice := range awsInstance.BlockDeviceMappings {
-			volumeID := awsVolumeID(aws.StringValue(blockDevice.Ebs.VolumeId))
-			diskName, found := idToDiskName[volumeID]
-			if found {
-				// Disk is still attached to node
-				setNodeDisk(attached, diskName, nodeName, true)
-			}
+		return attached, err
+	}
+	for _, blockDevice := range instance.BlockDeviceMappings {
+		volumeID := awsVolumeID(aws.StringValue(blockDevice.Ebs.VolumeId))
+		diskName, found := idToDiskName[volumeID]
+		if found {
+			// Disk is still attached to node
+			attached[diskName] = true
 		}
 	}
 
@@ -3176,24 +3146,7 @@ func (c *Cloud) getInstancesByNodeNamesCached(nodeNames sets.String) ([]*ec2.Ins
 			return c.lastInstancesByNodeNames, nil
 		}
 	}
-	instances, err := c.getInstancesByNodeNames(nodeNames.List())
-
-	if err != nil {
-		return nil, err
-	}
-
-	if len(instances) == 0 {
-		return nil, nil
-	}
-
-	glog.V(2).Infof("Caching instances for %v", nodeNames)
-	c.lastNodeNames = nodeNames
-	c.lastInstancesByNodeNames = instances
-	return instances, nil
-}
-
-func (c *Cloud) getInstancesByNodeNames(nodeNames []string) ([]*ec2.Instance, error) {
-	names := aws.StringSlice(nodeNames)
+	names := aws.StringSlice(nodeNames.List())
 
 	nodeNameFilter := &ec2.Filter{
 		Name:   aws.String("private-dns-name"),
@@ -3215,6 +3168,10 @@ func (c *Cloud) getInstancesByNodeNames(nodeNames []string) ([]*ec2.Instance, er
 		glog.V(3).Infof("Failed to find any instances %v", nodeNames)
 		return nil, nil
 	}
+
+	glog.V(2).Infof("Caching instances for %v", nodeNames)
+	c.lastNodeNames = nodeNames
+	c.lastInstancesByNodeNames = instances
 	return instances, nil
 }
 
@@ -3293,19 +3250,4 @@ func (c *Cloud) getFullInstance(nodeName types.NodeName) (*awsInstance, *ec2.Ins
 	}
 	awsInstance := newAWSInstance(c.ec2, instance)
 	return awsInstance, instance, err
-}
-
-func setNodeDisk(
-	nodeDiskMap map[types.NodeName]map[KubernetesVolumeID]bool,
-	volumeID KubernetesVolumeID,
-	nodeName types.NodeName,
-	check bool) {
-
-	volumeMap := nodeDiskMap[nodeName]
-
-	if volumeMap == nil {
-		volumeMap = make(map[KubernetesVolumeID]bool)
-		nodeDiskMap[nodeName] = volumeMap
-	}
-	volumeMap[volumeID] = check
 }

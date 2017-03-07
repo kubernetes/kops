@@ -30,7 +30,6 @@ func NewCmdPhase(out io.Writer) *cobra.Command {
 		RunE:  subCmdRunE("phase"),
 	}
 	cmd.AddCommand(NewCmdKubeConfig(out))
-	cmd.AddCommand(NewCmdCerts())
 	return cmd
 }
 

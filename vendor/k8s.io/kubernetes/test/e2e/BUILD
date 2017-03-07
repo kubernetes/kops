@@ -64,6 +64,7 @@ go_library(
         "network_partition.go",
         "networking.go",
         "networking_perf.go",
+        "node_problem_detector.go",
         "nodeoutofdisk.go",
         "opaque_resource.go",
         "pd.go",
