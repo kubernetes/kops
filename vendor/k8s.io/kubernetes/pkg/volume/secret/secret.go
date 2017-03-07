@@ -89,10 +89,6 @@ func (plugin *secretPlugin) SupportsMountOption() bool {
 	return false
 }
 
-func (plugin *secretPlugin) SupportsBulkVolumeVerification() bool {
-	return false
-}
-
 func (plugin *secretPlugin) NewMounter(spec *volume.Spec, pod *v1.Pod, opts volume.VolumeOptions) (volume.Mounter, error) {
 	return &secretVolumeMounter{
 		secretVolume: &secretVolume{

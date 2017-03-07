@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
    "title": "Generic API Server",
-   "version": "v1.7.0"
+   "version": "v1.6.0"
   },
   "paths": {
    "/api/": {
@@ -12674,7 +12674,7 @@
       "description": "Restart policy for all containers within the pod. One of Always, OnFailure, Never. Default to Always. More info: http://kubernetes.io/docs/user-guide/pod-states#restartpolicy",
       "type": "string"
      },
-     "schedulerName": {
+     "schedulername": {
       "description": "If specified, the pod will be dispatched by specified scheduler. If not specified, the pod will be dispatched by default scheduler.",
       "type": "string"
      },

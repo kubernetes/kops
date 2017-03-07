@@ -83,10 +83,6 @@ func (plugin *azureFilePlugin) SupportsMountOption() bool {
 	return true
 }
 
-func (plugin *azureFilePlugin) SupportsBulkVolumeVerification() bool {
-	return false
-}
-
 func (plugin *azureFilePlugin) GetAccessModes() []v1.PersistentVolumeAccessMode {
 	return []v1.PersistentVolumeAccessMode{
 		v1.ReadWriteOnce,

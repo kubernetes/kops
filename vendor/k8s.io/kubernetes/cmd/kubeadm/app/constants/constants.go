@@ -56,6 +56,8 @@ const (
 	ControllerManagerKubeConfigFileName = "controller-manager.conf"
 	SchedulerKubeConfigFileName         = "scheduler.conf"
 
+	DefaultCertDir = "/etc/kubernetes/pki"
+
 	// Important: a "v"-prefix shouldn't exist here; semver doesn't allow that
 	MinimumControlPlaneVersion = "1.6.0-alpha.2"
 

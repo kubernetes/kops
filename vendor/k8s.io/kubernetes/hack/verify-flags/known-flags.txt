@@ -20,7 +20,6 @@ apiserver-advertise-address
 apiserver-arg-overrides
 apiserver-arg-overrides
 apiserver-bind-port
-apiserver-cert-extra-sans
 apiserver-count
 apiserver-count
 apiserver-count
@@ -32,11 +31,6 @@ api-servers
 api-server-service-type
 api-token
 api-version
-apiserver-arg-overrides
-apiserver-count
-apiserver-count
-apiserver-enable-basic-auth
-apiserver-enable-token-auth
 attach-detach-reconcile-sync-period
 audit-log-maxage
 audit-log-maxbackup
@@ -73,7 +67,6 @@ build-only
 build-tag
 ca-cert-path
 cadvisor-port
-cert-altnames
 cert-dir
 certificate-authority
 cgroup-driver
@@ -165,7 +158,6 @@ discovery-file
 discovery-port
 discovery-token
 dns-bind-address
-dns-domain
 dns-port
 dns-provider
 dns-provider-config

@@ -2036,7 +2036,7 @@ run_rc_tests() {
   # Post-condition: frontend replication controller is created
   kube::test::get_object_assert rc "{{range.items}}{{$id_field}}:{{end}}" 'frontend:'
   # Describe command should print detailed information
-  kube::test::describe_object_assert rc 'frontend' "Name:" "Pod Template:" "Labels:" "Selector:" "Replicas:" "Pods Status:" "Volumes:" "GET_HOSTS_FROM:"
+  kube::test::describe_object_assert rc 'frontend' "Name:" "Image(s):" "Labels:" "Selector:" "Replicas:" "Pods Status:"
   # Describe command should print events information by default
   kube::test::describe_object_events_assert rc 'frontend'
   # Describe command should not print events information when show-events=false
@@ -2044,7 +2044,7 @@ run_rc_tests() {
   # Describe command should print events information when show-events=true
   kube::test::describe_object_events_assert rc 'frontend' true
   # Describe command (resource only) should print detailed information
-  kube::test::describe_resource_assert rc "Name:" "Name:" "Pod Template:" "Labels:" "Selector:" "Replicas:" "Pods Status:" "Volumes:" "GET_HOSTS_FROM:"
+  kube::test::describe_resource_assert rc "Name:" "Name:" "Image(s):" "Labels:" "Selector:" "Replicas:" "Pods Status:"
   # Describe command should print events information by default
   kube::test::describe_resource_events_assert rc
   # Describe command should not print events information when show-events=false
@@ -2444,7 +2444,7 @@ run_rs_tests() {
   # Post-condition: frontend replica set is created
   kube::test::get_object_assert rs "{{range.items}}{{$id_field}}:{{end}}" 'frontend:'
   # Describe command should print detailed information
-  kube::test::describe_object_assert rs 'frontend' "Name:" "Pod Template:" "Labels:" "Selector:" "Replicas:" "Pods Status:" "Volumes:"
+  kube::test::describe_object_assert rs 'frontend' "Name:" "Image(s):" "Labels:" "Selector:" "Replicas:" "Pods Status:"
   # Describe command should print events information by default
   kube::test::describe_object_events_assert rs 'frontend'
   # Describe command should not print events information when show-events=false
@@ -2452,7 +2452,7 @@ run_rs_tests() {
   # Describe command should print events information when show-events=true
   kube::test::describe_object_events_assert rs 'frontend' true
   # Describe command (resource only) should print detailed information
-  kube::test::describe_resource_assert rs "Name:" "Pod Template:" "Labels:" "Selector:" "Replicas:" "Pods Status:" "Volumes:"
+  kube::test::describe_resource_assert rs "Name:" "Name:" "Image(s):" "Labels:" "Selector:" "Replicas:" "Pods Status:"
   # Describe command should print events information by default
   kube::test::describe_resource_events_assert rs
   # Describe command should not print events information when show-events=false
@@ -2747,7 +2747,6 @@ runTests() {
   hpa_max_field=".spec.maxReplicas"
   hpa_cpu_field=".spec.targetCPUUtilizationPercentage"
   statefulset_replicas_field=".spec.replicas"
-  statefulset_observed_generation=".status.observedGeneration"
   job_parallelism_field=".spec.parallelism"
   deployment_replicas=".spec.replicas"
   secret_data=".data"
@@ -3181,12 +3180,10 @@ runTests() {
     ### Scale statefulset test with current-replicas and replicas
     # Pre-condition: 0 replicas
     kube::test::get_object_assert 'statefulset nginx' "{{$statefulset_replicas_field}}" '0'
-    kube::test::wait_object_assert 'statefulset nginx' "{{$statefulset_observed_generation}}" '1'
     # Command: Scale up
     kubectl scale --current-replicas=0 --replicas=1 statefulset nginx "${kube_flags[@]}"
     # Post-condition: 1 replica, named nginx-0
     kube::test::get_object_assert 'statefulset nginx' "{{$statefulset_replicas_field}}" '1'
-    kube::test::wait_object_assert 'statefulset nginx' "{{$statefulset_observed_generation}}" '2'
     # Typically we'd wait and confirm that N>1 replicas are up, but this framework
     # doesn't start  the scheduler, so pet-0 will block all others.
     # TODO: test robust scaling in an e2e.

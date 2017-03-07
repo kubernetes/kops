@@ -22,6 +22,7 @@ import (
 
 type EnvParams struct {
 	KubernetesDir    string
+	HostPKIPath      string
 	HostEtcdPath     string
 	HyperkubeImage   string
 	RepositoryPrefix string
@@ -39,7 +40,6 @@ type MasterConfiguration struct {
 	KubernetesVersion string
 	CloudProvider     string
 	AuthorizationMode string
-
 	// SelfHosted enables an alpha deployment type where the apiserver, scheduler, and
 	// controller manager are managed by Kubernetes itself. This option is likely to
 	// become the default in the future.
@@ -48,18 +48,12 @@ type MasterConfiguration struct {
 	APIServerExtraArgs         map[string]string
 	ControllerManagerExtraArgs map[string]string
 	SchedulerExtraArgs         map[string]string
-
-	// APIServerCertSANs sets extra Subject Alternative Names for the API Server signing cert
-	APIServerCertSANs []string
-	// CertificatesDir specifies where to store or look for all required certificates
-	CertificatesDir string
 }
 
 type API struct {
-	// AdvertiseAddress sets the address for the API server to advertise.
 	AdvertiseAddress string
-	// BindPort sets the secure port for the API Server to bind to
-	BindPort int32
+	ExternalDNSNames []string
+	BindPort         int32
 }
 
 type Discovery struct {

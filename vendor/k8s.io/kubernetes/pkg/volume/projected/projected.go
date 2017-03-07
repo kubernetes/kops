@@ -96,10 +96,6 @@ func (plugin *projectedPlugin) SupportsMountOption() bool {
 	return false
 }
 
-func (plugin *projectedPlugin) SupportsBulkVolumeVerification() bool {
-	return false
-}
-
 func (plugin *projectedPlugin) NewMounter(spec *volume.Spec, pod *v1.Pod, opts volume.VolumeOptions) (volume.Mounter, error) {
 	return &projectedVolumeMounter{
 		projectedVolume: &projectedVolume{

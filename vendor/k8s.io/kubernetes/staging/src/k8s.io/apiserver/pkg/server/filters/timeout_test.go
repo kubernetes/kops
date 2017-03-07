@@ -17,18 +17,15 @@ limitations under the License.
 package filters
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"testing"
 	"time"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/util/diff"
+	"strings"
 )
 
 func TestTimeout(t *testing.T) {
@@ -53,7 +50,7 @@ func TestTimeout(t *testing.T) {
 	sendResponse <- struct{}{}
 	res, err := http.Get(ts.URL)
 	if err != nil {
-		t.Fatal(err)
+		t.Error(err)
 	}
 	if res.StatusCode != http.StatusOK {
 		t.Errorf("got res.StatusCode %d; expected %d", res.StatusCode, http.StatusOK)
@@ -70,18 +67,14 @@ func TestTimeout(t *testing.T) {
 	timeout <- time.Time{}
 	res, err = http.Get(ts.URL)
 	if err != nil {
-		t.Fatal(err)
+		t.Error(err)
 	}
 	if res.StatusCode != http.StatusGatewayTimeout {
 		t.Errorf("got res.StatusCode %d; expected %d", res.StatusCode, http.StatusServiceUnavailable)
 	}
 	body, _ = ioutil.ReadAll(res.Body)
-	status := &metav1.Status{}
-	if err := json.Unmarshal(body, status); err != nil {
-		t.Fatal(err)
-	}
-	if !reflect.DeepEqual(status, &timeoutErr.ErrStatus) {
-		t.Errorf("unexpected object: %s", diff.ObjectReflectDiff(&timeoutErr.ErrStatus, status))
+	if !strings.Contains(string(body), timeoutErr.Error()) {
+		t.Errorf("got body %q; expected it to contain %q", string(body), timeoutErr.Error())
 	}
 
 	// Now try to send a response

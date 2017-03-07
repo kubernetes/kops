@@ -24,7 +24,6 @@ import (
 	"os"
 
 	setutil "k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/apimachinery/pkg/util/validation"
 	certutil "k8s.io/client-go/util/cert"
 	kubeadmapi "k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm"
 	kubeadmconstants "k8s.io/kubernetes/cmd/kubeadm/app/constants"
@@ -41,22 +40,34 @@ import (
 
 // CreatePKIAssets will create and write to disk all PKI assets necessary to establish the control plane.
 // It generates a self-signed CA certificate and a server certificate (signed by the CA)
-func CreatePKIAssets(cfg *kubeadmapi.MasterConfiguration) error {
-	pkiDir := cfg.CertificatesDir
+func CreatePKIAssets(cfg *kubeadmapi.MasterConfiguration, pkiDir string) error {
+	altNames := certutil.AltNames{}
+
+	// First, define all domains this cert should be signed for
+	internalAPIServerFQDN := []string{
+		"kubernetes",
+		"kubernetes.default",
+		"kubernetes.default.svc",
+		fmt.Sprintf("kubernetes.default.svc.%s", cfg.Networking.DNSDomain),
+	}
 	hostname, err := os.Hostname()
 	if err != nil {
 		return fmt.Errorf("couldn't get the hostname: %v", err)
 	}
+	altNames.DNSNames = append(cfg.API.ExternalDNSNames, hostname)
+	altNames.DNSNames = append(altNames.DNSNames, internalAPIServerFQDN...)
 
-	_, svcSubnet, err := net.ParseCIDR(cfg.Networking.ServiceSubnet)
+	// and lastly, extract the internal IP address for the API server
+	_, n, err := net.ParseCIDR(cfg.Networking.ServiceSubnet)
 	if err != nil {
 		return fmt.Errorf("error parsing CIDR %q: %v", cfg.Networking.ServiceSubnet, err)
 	}
+	internalAPIServerVirtualIP, err := ipallocator.GetIndexedIP(n, 1)
+	if err != nil {
+		return fmt.Errorf("unable to allocate IP address for the API server from the given CIDR (%q) [%v]", &cfg.Networking.ServiceSubnet, err)
+	}
 
-	// Build the list of SANs
-	altNames := getAltNames(cfg.APIServerCertSANs, hostname, cfg.Networking.DNSDomain, svcSubnet)
-	// Append the address the API Server is advertising
-	altNames.IPs = append(altNames.IPs, net.ParseIP(cfg.API.AdvertiseAddress))
+	altNames.IPs = append(altNames.IPs, internalAPIServerVirtualIP, net.ParseIP(cfg.API.AdvertiseAddress))
 
 	var caCert *x509.Certificate
 	var caKey *rsa.PrivateKey
@@ -115,7 +126,6 @@ func CreatePKIAssets(cfg *kubeadmapi.MasterConfiguration) error {
 			return fmt.Errorf("failure while saving API server certificate and key [%v]", err)
 		}
 		fmt.Println("[certificates] Generated API server certificate and key.")
-		fmt.Printf("[certificates] API Server serving cert is signed for DNS names %v and IPs %v\n", altNames.DNSNames, altNames.IPs)
 	}
 
 	// If at least one of them exists, we should try to load them
@@ -148,9 +158,9 @@ func CreatePKIAssets(cfg *kubeadmapi.MasterConfiguration) error {
 	}
 
 	// If the key exists, we should try to load it
-	if pkiutil.CertOrKeyExist(pkiDir, kubeadmconstants.ServiceAccountKeyBaseName) {
+	if pkiutil.CertOrKeyExist(pkiDir, kubeadmconstants.ServiceAccountPrivateKeyName) {
 		// Try to load sa.key from the PKI directory
-		_, err := pkiutil.TryLoadKeyFromDisk(pkiDir, kubeadmconstants.ServiceAccountKeyBaseName)
+		_, err := pkiutil.TryLoadKeyFromDisk(pkiDir, kubeadmconstants.ServiceAccountPrivateKeyName)
 		if err != nil {
 			return fmt.Errorf("certificate and/or key existed but they could not be loaded properly [%v]", err)
 		}
@@ -166,11 +176,12 @@ func CreatePKIAssets(cfg *kubeadmapi.MasterConfiguration) error {
 		if err = pkiutil.WriteKey(pkiDir, kubeadmconstants.ServiceAccountKeyBaseName, saTokenSigningKey); err != nil {
 			return fmt.Errorf("failure while saving service account token signing key [%v]", err)
 		}
+		fmt.Println("[certificates] Generated service account token signing key.")
 
 		if err = pkiutil.WritePublicKey(pkiDir, kubeadmconstants.ServiceAccountKeyBaseName, &saTokenSigningKey.PublicKey); err != nil {
 			return fmt.Errorf("failure while saving service account token signing public key [%v]", err)
 		}
-		fmt.Println("[certificates] Generated service account token signing key and public key.")
+		fmt.Println("[certificates] Generated service account token signing public key.")
 	}
 
 	// front proxy CA and client certs are used to secure a front proxy authenticator which is used to assert identity
@@ -243,7 +254,7 @@ func CreatePKIAssets(cfg *kubeadmapi.MasterConfiguration) error {
 	return nil
 }
 
-// checkAltNamesExist verifies that the cert is valid for all IPs and DNS names it should be valid for
+// Verify that the cert is valid for all IPs and DNS names it should be valid for
 func checkAltNamesExist(IPs []net.IP, DNSNames []string, altNames certutil.AltNames) bool {
 	dnsset := setutil.NewString(DNSNames...)
 
@@ -267,34 +278,4 @@ func checkAltNamesExist(IPs []net.IP, DNSNames []string, altNames certutil.AltNa
 		}
 	}
 	return true
-}
-
-// getAltNames builds an AltNames object for the certutil to use when generating the certificates
-func getAltNames(cfgAltNames []string, hostname, dnsdomain string, svcSubnet *net.IPNet) certutil.AltNames {
-	altNames := certutil.AltNames{
-		DNSNames: []string{
-			hostname,
-			"kubernetes",
-			"kubernetes.default",
-			"kubernetes.default.svc",
-			fmt.Sprintf("kubernetes.default.svc.%s", dnsdomain),
-		},
-	}
-
-	// Populate IPs/DNSNames from AltNames
-	for _, altname := range cfgAltNames {
-		if ip := net.ParseIP(altname); ip != nil {
-			altNames.IPs = append(altNames.IPs, ip)
-		} else if len(validation.IsDNS1123Subdomain(altname)) == 0 {
-			altNames.DNSNames = append(altNames.DNSNames, altname)
-		}
-	}
-
-	// and lastly, extract the internal IP address for the API server
-	internalAPIServerVirtualIP, err := ipallocator.GetIndexedIP(svcSubnet, 1)
-	if err != nil {
-		fmt.Printf("[certs] WARNING: Unable to get first IP address from the given CIDR (%s): %v\n", svcSubnet.String(), err)
-	}
-	altNames.IPs = append(altNames.IPs, internalAPIServerVirtualIP)
-	return altNames
 }
