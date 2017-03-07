@@ -365,11 +365,8 @@ func (c *ApplyClusterCmd) Run() error {
 	case fi.CloudProviderVSphere:
 		{
 			vsphereCloud := cloud.(*vsphere.VSphereCloud)
-			region = vsphereCloud.Region
-
-			//if !AlphaAllowGCE.Enabled() {
-			//	return fmt.Errorf("GCE support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowGCE")
-			//}
+			// TODO: map region with vCenter cluster, or datacenter, or datastore?
+			region = vsphereCloud.Cluster
 
 			l.AddTypes(map[string]interface{}{
 				"instance": &vspheretasks.VirtualMachine{},
