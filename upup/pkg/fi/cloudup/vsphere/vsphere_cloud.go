@@ -41,11 +41,14 @@ func (c *VSphereCloud) ProviderID() fi.CloudProviderID {
 }
 
 func NewVSphereCloud(spec *kops.ClusterSpec) (*VSphereCloud, error) {
-	server := spec.VSphereServer
-	datacenter := spec.VSphereDatacenter
-	cluster := spec.VSphereResourcePool
+	server := spec.CloudConfig.VSphereServer
+	datacenter := spec.CloudConfig.VSphereDatacenter
+	cluster := spec.CloudConfig.VSphereResourcePool
 	username := os.Getenv("VSPHERE_USERNAME")
 	password := os.Getenv("VSPHERE_PASSWORD")
+	if username == "" || password == "" {
+		return nil, fmt.Errorf("Failed to detect vSphere username and password. Please set env variables: VSPHERE_USERNAME and VSPHERE_PASSWORD accordingly.")
+	}
 
 	c := &VSphereCloud{Server: server, Datacenter: datacenter, Cluster: cluster, Username: username, Password: password}
 	// TODO: create a client of govmomi here?

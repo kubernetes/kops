@@ -526,20 +526,24 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.CloudProvider = c.Cloud
 
 		if c.Cloud == "vsphere" {
+			if cluster.Spec.CloudConfig == nil {
+				cluster.Spec.CloudConfig = &api.CloudConfiguration{}
+			}
+
 			if c.VSphereServer == "" {
 				return fmt.Errorf("vsphere-server is required for vSphere. Set vCenter URL Ex: 10.192.10.30 or myvcenter.io (without https://)")
 			}
-			cluster.Spec.VSphereServer = c.VSphereServer
+			cluster.Spec.CloudConfig.VSphereServer = c.VSphereServer
 
 			if c.VSphereDatacenter == "" {
 				return fmt.Errorf("vsphere-datacenter is required for vSphere. Set the name of the datacenter in which to deploy Kubernetes VMs.")
 			}
-			cluster.Spec.VSphereDatacenter = c.VSphereDatacenter
+			cluster.Spec.CloudConfig.VSphereDatacenter = c.VSphereDatacenter
 
 			if c.VSphereResourcePool == "" {
 				return fmt.Errorf("vsphere-resource-pool is required for vSphere. Set a valid Cluster, Host or Resource Pool in which to deploy Kubernetes VMs.")
 			}
-			cluster.Spec.VSphereResourcePool = c.VSphereResourcePool
+			cluster.Spec.CloudConfig.VSphereResourcePool = c.VSphereResourcePool
 		}
 	}
 
