@@ -18,7 +18,7 @@
 
 TMP_DOCS="${KUBE_ROOT}/.build/docs"
 rm -rf $TMP_DOCS
-mkdir $TMP_DOCS
+mkdir -p $TMP_DOCS
 
 command -v uname >/dev/null 2>&1 || { echo >&2 "uname must be installed. Aborting."; exit 1; }
 OS=$(uname -s)
