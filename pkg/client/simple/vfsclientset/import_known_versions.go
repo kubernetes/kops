@@ -33,6 +33,7 @@ import (
 	_ "k8s.io/client-go/pkg/apis/rbac/install"
 	_ "k8s.io/client-go/pkg/apis/settings/install"
 	_ "k8s.io/client-go/pkg/apis/storage/install"
+	_ "k8s.io/kops/pkg/apis/kops/install"
 )
 
 func init() {
