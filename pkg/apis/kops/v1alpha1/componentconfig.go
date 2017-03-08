@@ -668,4 +668,9 @@ type CloudConfiguration struct {
 	Multizone          *bool   `json:"multizone,omitempty"`
 	NodeTags           *string `json:"nodeTags,omitempty"`
 	NodeInstancePrefix *string `json:"nodeInstancePrefix,omitempty"`
+
+	// vSphere cloud-config specs
+	VSphereServer       string `json:"vSphereServer,omitempty"`
+	VSphereDatacenter   string `json:"vSphereDatacenter,omitempty"`
+	VSphereResourcePool string `json:"vSphereResourcePool,omitempty"`
 }

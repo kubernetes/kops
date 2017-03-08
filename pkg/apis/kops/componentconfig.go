@@ -691,4 +691,9 @@ type CloudConfiguration struct {
 	NodeInstancePrefix *string `json:"nodeInstancePrefix,omitempty"`
 	// AWS cloud-config options
 	DisableSecurityGroupIngress *bool `json:"disableSecurityGroupIngress,omitempty"`
+
+	// vSphere cloud-config specs
+	VSphereServer       string `json:"vSphereServer,omitempty"`
+	VSphereDatacenter   string `json:"vSphereDatacenter,omitempty"`
+	VSphereResourcePool string `json:"vSphereResourcePool,omitempty"`
 }
