@@ -25,13 +25,14 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
+	//	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 func init() {
-	register(kops.GroupFactoryRegistry, kops.Registry, kops.Scheme)
+	Install(kops.GroupFactoryRegistry, kops.Registry, kops.Scheme)
 }
 
-func register(groupFactoryRegistry announced.APIGroupFactoryRegistry, registry *registered.APIRegistrationManager, scheme *runtime.Scheme) error {
+func Install(groupFactoryRegistry announced.APIGroupFactoryRegistry, registry *registered.APIRegistrationManager, scheme *runtime.Scheme) error {
 
 	if err := announced.NewGroupMetaFactory(
 		&announced.GroupMetaFactoryArgs{
@@ -41,7 +42,7 @@ func register(groupFactoryRegistry announced.APIGroupFactoryRegistry, registry *
 				v1alpha1.SchemeGroupVersion.Version,
 			},
 			ImportPrefix: "k8s.io/kops/pkg/apis/kops",
-			// ?? RootScopedKinds:            sets.NewString("NodeMetrics"),
+			//RootScopedKinds:            sets.NewString("Cluster"),
 			AddInternalObjectsToScheme: kops.AddToScheme,
 		},
 		announced.VersionToSchemeFunc{

@@ -17,11 +17,14 @@ limitations under the License.
 package kops
 
 import (
+	"os"
+
 	"k8s.io/apimachinery/pkg/apimachinery/announced"
 	"k8s.io/apimachinery/pkg/apimachinery/registered"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"os"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
 )
 
 var (
@@ -45,6 +48,9 @@ const GroupName = "kops"
 // SchemeGroupVersion is group version used to register these objects
 var SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: runtime.APIVersionInternal}
 
+// Codecs provides access to encoding and decoding for the scheme
+var Codecs = serializer.NewCodecFactory(Scheme)
+
 // Kind takes an unqualified kind and returns a Group qualified GroupKind
 func Kind(kind string) schema.GroupKind {
 	return SchemeGroupVersion.WithKind(kind).GroupKind()
@@ -63,6 +69,7 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&InstanceGroupList{},
 		&Federation{},
 		&FederationList{},
+		&metav1.ListOptions{},
 	)
 	return nil
 }

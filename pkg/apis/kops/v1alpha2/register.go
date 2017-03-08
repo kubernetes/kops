@@ -17,9 +17,9 @@ limitations under the License.
 package v1alpha2
 
 import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/pkg/api/v1"
 )
 
 var (
@@ -53,7 +53,7 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&InstanceGroupList{},
 		&Federation{},
 		&FederationList{},
-		&v1.ListOptions{},
+		&metav1.ListOptions{},
 	)
 	// ?? versionedwatch.AddToGroupVersion(scheme, SchemeGroupVersion)
 

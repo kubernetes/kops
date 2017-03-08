@@ -20,6 +20,7 @@ import (
 	"testing"
 	"time"
 
+	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/pkg/api/v1"
 )
@@ -66,7 +67,7 @@ func TestWaitForNodeToBeNotReady(t *testing.T) {
 
 func setupNodeAA(t *testing.T, conditions []v1.NodeCondition, nodeName string) *NodeAPIAdapter {
 	node := &v1.Node{
-		ObjectMeta: v1.ObjectMeta{Name: nodeName},
+		ObjectMeta: meta_v1.ObjectMeta{Name: nodeName},
 		Spec:       v1.NodeSpec{Unschedulable: false},
 		Status:     v1.NodeStatus{Conditions: conditions},
 	}

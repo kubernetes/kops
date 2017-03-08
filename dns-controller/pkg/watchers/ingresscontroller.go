@@ -22,12 +22,12 @@ import (
 
 	"github.com/golang/glog"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
 	client_extensions "k8s.io/client-go/kubernetes/typed/extensions/v1beta1"
-	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/util"
-	"k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
-	"k8s.io/kubernetes/pkg/watch"
 )
 
 // IngressController watches for Ingress objects with dns labels
@@ -64,7 +64,7 @@ func (c *IngressController) Run() {
 
 func (c *IngressController) runWatcher(stopCh <-chan struct{}) {
 	runOnce := func() (bool, error) {
-		var listOpts v1.ListOptions
+		var listOpts metav1.ListOptions
 		glog.Warningf("querying without label filter")
 		//listOpts.LabelSelector = labels.Everything()
 		glog.Warningf("querying without field filter")

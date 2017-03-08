@@ -28,6 +28,7 @@ import (
 )
 
 func encoder() runtime.Encoder {
+	// This encoder is kubernetes core, not kops encoder
 	yaml, ok := runtime.SerializerInfoForMediaType(api.Codecs.SupportedMediaTypes(), "application/yaml")
 	if !ok {
 		glog.Fatalf("no YAML serializer registered")

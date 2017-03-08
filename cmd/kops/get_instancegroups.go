@@ -65,7 +65,7 @@ func (c *GetInstanceGroupsCmd) Run(args []string) error {
 
 	list, err := clientset.InstanceGroups(clusterName).List(metav1.ListOptions{})
 	if err != nil {
-		return err
+		return fmt.Errorf("Error listing InstanceGroups: %v", err)
 	}
 
 	var instancegroups []*api.InstanceGroup
