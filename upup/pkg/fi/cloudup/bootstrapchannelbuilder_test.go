@@ -47,6 +47,7 @@ func runChannelBuilderTest(t *testing.T, key string) {
 	}
 	obj, _, err := api.ParseVersionedYaml(clusterYaml)
 	if err != nil {
+		t.Logf("%v", api.Codecs.SupportedMediaTypes())
 		t.Fatalf("error parsing cluster yaml %q: %v", clusterYamlPath, err)
 	}
 	cluster := obj.(*api.Cluster)

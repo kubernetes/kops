@@ -18,12 +18,11 @@ package v1alpha1
 
 import (
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/pkg/api/v1"
 )
 
 type Federation struct {
 	meta_v1.TypeMeta `json:",inline"`
-	ObjectMeta       v1.ObjectMeta `json:"metadata,omitempty"`
+	ObjectMeta       meta_v1.ObjectMeta `json:"metadata,omitempty"`
 
 	Spec FederationSpec `json:"spec"`
 }

@@ -21,7 +21,7 @@ import (
 	"fmt"
 
 	"github.com/golang/glog"
-	kops "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/util/pkg/vfs"
 	// FIXME how do I get rid of this??
@@ -34,7 +34,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/kubernetes/pkg/api"
 )
 
 var StoreVersion = v1alpha2.SchemeGroupVersion
@@ -48,12 +47,12 @@ type commonVFS struct {
 }
 
 func (c *commonVFS) init(kind string, basePath vfs.Path, storeVersion runtime.GroupVersioner) {
-	yaml, ok := runtime.SerializerInfoForMediaType(api.Codecs.SupportedMediaTypes(), "application/yaml")
+	yaml, ok := runtime.SerializerInfoForMediaType(kops.Codecs.SupportedMediaTypes(), "application/yaml")
 	if !ok {
 		glog.Fatalf("no YAML serializer registered")
 	}
-	c.encoder = api.Codecs.EncoderForVersion(yaml.Serializer, storeVersion)
-	c.decoder = api.Codecs.DecoderToVersion(yaml.Serializer, kops.SchemeGroupVersion)
+	c.encoder = kops.Codecs.EncoderForVersion(yaml.Serializer, storeVersion)
+	c.decoder = kops.Codecs.DecoderToVersion(yaml.Serializer, kops.SchemeGroupVersion)
 
 	c.kind = kind
 	c.basePath = basePath
@@ -116,7 +115,7 @@ func (c *commonVFS) readConfig(configPath vfs.Path) (runtime.Object, error) {
 		if os.IsNotExist(err) {
 			return nil, err
 		}
-		return nil, fmt.Errorf("error reading %s: %v", configPath, err)
+		return nil, fmt.Errorf("error reading config %s: %v", configPath, err)
 	}
 
 	object, _, err := c.decoder.Decode(data, c.defaultReadVersion, nil)

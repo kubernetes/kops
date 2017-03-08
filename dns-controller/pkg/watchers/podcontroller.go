@@ -22,11 +22,12 @@ import (
 
 	"github.com/golang/glog"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
 	client "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/util"
-	"k8s.io/kubernetes/pkg/watch"
 	"strings"
 )
 
@@ -64,7 +65,7 @@ func (c *PodController) Run() {
 
 func (c *PodController) runWatcher(stopCh <-chan struct{}) {
 	runOnce := func() (bool, error) {
-		var listOpts v1.ListOptions
+		var listOpts metav1.ListOptions
 		glog.Warningf("querying without label filter")
 		//listOpts.LabelSelector = labels.Everything()
 		glog.Warningf("querying without field filter")

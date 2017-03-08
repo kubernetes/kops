@@ -270,10 +270,7 @@ func Convert_kops_CloudConfiguration_To_v1alpha2_CloudConfiguration(in *kops.Clo
 }
 
 func autoConvert_v1alpha2_Cluster_To_kops_Cluster(in *Cluster, out *kops.Cluster, s conversion.Scope) error {
-	// TODO: Inefficient conversion - can we improve it?
-	if err := s.Convert(&in.ObjectMeta, &out.ObjectMeta, 0); err != nil {
-		return err
-	}
+	out.ObjectMeta = in.ObjectMeta
 	if err := Convert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(&in.Spec, &out.Spec, s); err != nil {
 		return err
 	}
@@ -285,10 +282,7 @@ func Convert_v1alpha2_Cluster_To_kops_Cluster(in *Cluster, out *kops.Cluster, s 
 }
 
 func autoConvert_kops_Cluster_To_v1alpha2_Cluster(in *kops.Cluster, out *Cluster, s conversion.Scope) error {
-	// TODO: Inefficient conversion - can we improve it?
-	if err := s.Convert(&in.ObjectMeta, &out.ObjectMeta, 0); err != nil {
-		return err
-	}
+	out.ObjectMeta = in.ObjectMeta
 	if err := Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(&in.Spec, &out.Spec, s); err != nil {
 		return err
 	}
@@ -844,10 +838,7 @@ func Convert_kops_ExternalNetworkingSpec_To_v1alpha2_ExternalNetworkingSpec(in *
 }
 
 func autoConvert_v1alpha2_Federation_To_kops_Federation(in *Federation, out *kops.Federation, s conversion.Scope) error {
-	// TODO: Inefficient conversion - can we improve it?
-	if err := s.Convert(&in.ObjectMeta, &out.ObjectMeta, 0); err != nil {
-		return err
-	}
+	out.ObjectMeta = in.ObjectMeta
 	if err := Convert_v1alpha2_FederationSpec_To_kops_FederationSpec(&in.Spec, &out.Spec, s); err != nil {
 		return err
 	}
@@ -859,10 +850,7 @@ func Convert_v1alpha2_Federation_To_kops_Federation(in *Federation, out *kops.Fe
 }
 
 func autoConvert_kops_Federation_To_v1alpha2_Federation(in *kops.Federation, out *Federation, s conversion.Scope) error {
-	// TODO: Inefficient conversion - can we improve it?
-	if err := s.Convert(&in.ObjectMeta, &out.ObjectMeta, 0); err != nil {
-		return err
-	}
+	out.ObjectMeta = in.ObjectMeta
 	if err := Convert_kops_FederationSpec_To_v1alpha2_FederationSpec(&in.Spec, &out.Spec, s); err != nil {
 		return err
 	}
@@ -952,10 +940,7 @@ func Convert_kops_FlannelNetworkingSpec_To_v1alpha2_FlannelNetworkingSpec(in *ko
 }
 
 func autoConvert_v1alpha2_InstanceGroup_To_kops_InstanceGroup(in *InstanceGroup, out *kops.InstanceGroup, s conversion.Scope) error {
-	// TODO: Inefficient conversion - can we improve it?
-	if err := s.Convert(&in.ObjectMeta, &out.ObjectMeta, 0); err != nil {
-		return err
-	}
+	out.ObjectMeta = in.ObjectMeta
 	if err := Convert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(&in.Spec, &out.Spec, s); err != nil {
 		return err
 	}
@@ -967,10 +952,7 @@ func Convert_v1alpha2_InstanceGroup_To_kops_InstanceGroup(in *InstanceGroup, out
 }
 
 func autoConvert_kops_InstanceGroup_To_v1alpha2_InstanceGroup(in *kops.InstanceGroup, out *InstanceGroup, s conversion.Scope) error {
-	// TODO: Inefficient conversion - can we improve it?
-	if err := s.Convert(&in.ObjectMeta, &out.ObjectMeta, 0); err != nil {
-		return err
-	}
+	out.ObjectMeta = in.ObjectMeta
 	if err := Convert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(&in.Spec, &out.Spec, s); err != nil {
 		return err
 	}

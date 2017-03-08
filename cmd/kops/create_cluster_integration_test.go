@@ -24,7 +24,6 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/diff"
-	k8sapi "k8s.io/kubernetes/pkg/api"
 	"path"
 	"strings"
 	"testing"
@@ -119,7 +118,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 	}
 
 	// Compare cluster
-	clusters, err := clientset.Clusters().List(k8sapi.ListOptions{})
+	clusters, err := clientset.Clusters().List(v1.ListOptions{})
 	if err != nil {
 		t.Fatalf("error listing clusters: %v", err)
 	}
@@ -143,7 +142,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 
 	// Compare instance groups
 
-	instanceGroups, err := clientset.InstanceGroups(clusters.Items[0].ObjectMeta.Name).List(k8sapi.ListOptions{})
+	instanceGroups, err := clientset.InstanceGroups(clusters.Items[0].ObjectMeta.Name).List(v1.ListOptions{})
 	if err != nil {
 		t.Fatalf("error listing instance groups: %v", err)
 	}
