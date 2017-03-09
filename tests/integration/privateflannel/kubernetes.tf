@@ -147,7 +147,7 @@ resource "aws_eip" "us-test-1a-privateflannel-example-com" {
 }
 
 resource "aws_elb" "api-privateflannel-example-com" {
-  name = "api-privateflannel"
+  name = "api-privateflannel-exampl-hsu11v"
 
   listener = {
     instance_port     = 443
@@ -176,7 +176,7 @@ resource "aws_elb" "api-privateflannel-example-com" {
 }
 
 resource "aws_elb" "bastion-privateflannel-example-com" {
-  name = "bastion-privateflannel"
+  name = "bastion-privateflannel-ex-753531"
 
   listener = {
     instance_port     = 22

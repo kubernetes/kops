@@ -115,7 +115,17 @@ func (e *DNSName) Find(c *fi.Context) (*DNSName, error) {
 			if lb == nil {
 				glog.Warningf("Unable to find load balancer with DNS name: %q", dnsName)
 			} else {
-				actual.TargetLoadBalancer = &LoadBalancer{ID: lb.LoadBalancerName}
+				loadBalancerName := aws.StringValue(lb.LoadBalancerName)
+				tagMap, err := describeLoadBalancerTags(cloud, []string{loadBalancerName})
+				if err != nil {
+					return nil, err
+				}
+				tags := tagMap[loadBalancerName]
+				nameTag, _ := awsup.FindELBTag(tags, "Name")
+				if nameTag == "" {
+					return nil, fmt.Errorf("Found ELB %q linked to DNS name %q, but it did not have a Name tag", loadBalancerName, fi.StringValue(e.Name))
+				}
+				actual.TargetLoadBalancer = &LoadBalancer{Name: fi.String(nameTag)}
 			}
 		}
 	}

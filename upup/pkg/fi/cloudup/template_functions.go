@@ -59,9 +59,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	// Remember that we may be on a different arch from the target.  Hard-code for now.
 	dest["Arch"] = func() string { return "amd64" }
 
-	// Network topology definitions
-	dest["GetELBName32"] = tf.modelContext.GetELBName32
-
 	dest["Base64Encode"] = func(s string) string {
 		return base64.StdEncoding.EncodeToString([]byte(s))
 	}
