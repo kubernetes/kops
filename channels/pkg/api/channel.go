@@ -18,14 +18,13 @@ package api
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/client-go/pkg/api/v1"
 )
 
 type Addons struct {
 	metav1.TypeMeta `json:",inline"`
 
 	// We use v1.ObjectMeta so we don't serialize everything, even though we are using the full api machinery here (yet!)
-	ObjectMeta v1.ObjectMeta `json:"metadata,omitempty"`
+	ObjectMeta metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	Spec AddonsSpec `json:"spec,omitempty"`
 }
