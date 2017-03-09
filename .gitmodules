@@ -283,3 +283,6 @@
 [submodule "_vendor/github.com/clusterhq/flocker-go"]
 	path = _vendor/github.com/clusterhq/flocker-go
 	url = https://github.com/clusterhq/flocker-go
+[submodule "_vendor/github.com/rackspace/gophercloud"]
+	path = _vendor/github.com/rackspace/gophercloud
+	url = https://github.com/rackspace/gophercloud
