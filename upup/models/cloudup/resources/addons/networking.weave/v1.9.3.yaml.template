@@ -57,6 +57,9 @@ spec:
             limits:
               cpu: 100m
               memory: 200Mi
+          env:
+            - name: IPALLOC_RANGE
+              value: {{ .NonMasqueradeCIDR }}
         - name: weave-npc
           image: weaveworks/weave-npc:1.9.3
           resources:
@@ -68,6 +71,9 @@ spec:
               memory: 200Mi
           securityContext:
             privileged: true
+          env:
+            - name: IPALLOC_RANGE
+              value: {{ .NonMasqueradeCIDR }}
       restartPolicy: Always
       volumes:
         - name: weavedb
