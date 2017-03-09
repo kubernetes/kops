@@ -208,6 +208,16 @@ func (_ *SecurityGroup) RenderTerraform(t *terraform.TerraformTarget, a, e, chan
 }
 
 func (e *SecurityGroup) TerraformLink() *terraform.Literal {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		// Not terraform owned / managed
+		if e.ID != nil {
+			return terraform.LiteralFromStringValue(*e.ID)
+		} else {
+			glog.Warningf("ID not set on shared subnet %v", e)
+		}
+	}
+
 	return terraform.LiteralProperty("aws_security_group", *e.Name, "id")
 }
 
@@ -219,6 +229,12 @@ type cloudformationSecurityGroup struct {
 }
 
 func (_ *SecurityGroup) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *SecurityGroup) error {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		// Not cloudformation owned / managed
+		return nil
+	}
+
 	cloud := t.Cloud.(awsup.AWSCloud)
 
 	tf := &cloudformationSecurityGroup{
@@ -232,6 +248,16 @@ func (_ *SecurityGroup) RenderCloudformation(t *cloudformation.CloudformationTar
 }
 
 func (e *SecurityGroup) CloudformationLink() *cloudformation.Literal {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		// Not cloudformation owned / managed
+		if e.ID != nil {
+			return cloudformation.LiteralString(*e.ID)
+		} else {
+			glog.Warningf("ID not set on shared subnet %v", e)
+		}
+	}
+
 	return cloudformation.Ref("AWS::EC2::SecurityGroup", *e.Name)
 }
 
