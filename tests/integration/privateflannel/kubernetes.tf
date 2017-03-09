@@ -147,7 +147,7 @@ resource "aws_eip" "us-test-1a-privateflannel-example-com" {
 }
 
 resource "aws_elb" "api-privateflannel-example-com" {
-  name = "api-privateflannel-example-com"
+  name = "api-privateflannel-exampl-hsu11v"
 
   listener = {
     instance_port     = 443

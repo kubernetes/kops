@@ -143,7 +143,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privatekopeio-example-com" {
 }
 
 resource "aws_elb" "api-privatekopeio-example-com" {
-  name = "api-privatekopeio-example-com"
+  name = "api-privatekopeio-example-tl2bv8"
 
   listener = {
     instance_port     = 443
