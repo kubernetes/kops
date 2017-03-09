@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+	"k8s.io/kubernetes/pkg/util/rand"
 )
 
 type KopsModelContext struct {
@@ -55,9 +56,9 @@ func (m *KopsModelContext) GetELBName32(prefix string) (string, error) {
 	} else {
 		returnString = fmt.Sprintf("%s-%s", prefix, c)
 	}
-	if len(returnString) > 32 {
-		returnString = returnString[:32]
-	}
+
+	r := rand.String(6)
+	returnString = fmt.Sprintf("%.25s-%.6s", returnString, r)
 	return returnString, nil
 }
 
