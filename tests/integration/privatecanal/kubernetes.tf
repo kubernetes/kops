@@ -147,7 +147,7 @@ resource "aws_eip" "us-test-1a-privatecanal-example-com" {
 }
 
 resource "aws_elb" "api-privatecanal-example-com" {
-  name = "api-privatecanal"
+  name = "api-privatecanal-example--6tql53"
 
   listener = {
     instance_port     = 443
@@ -176,7 +176,7 @@ resource "aws_elb" "api-privatecanal-example-com" {
 }
 
 resource "aws_elb" "bastion-privatecanal-example-com" {
-  name = "bastion-privatecanal"
+  name = "bastion-privatecanal-exam-hmhsp5"
 
   listener = {
     instance_port     = 22

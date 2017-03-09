@@ -147,7 +147,7 @@ resource "aws_eip" "us-test-1a-privatecalico-example-com" {
 }
 
 resource "aws_elb" "api-privatecalico-example-com" {
-  name = "api-privatecalico"
+  name = "api-privatecalico-example-0uch4k"
 
   listener = {
     instance_port     = 443
@@ -176,7 +176,7 @@ resource "aws_elb" "api-privatecalico-example-com" {
 }
 
 resource "aws_elb" "bastion-privatecalico-example-com" {
-  name = "bastion-privatecalico"
+  name = "bastion-privatecalico-exa-hocohm"
 
   listener = {
     instance_port     = 22
