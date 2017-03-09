@@ -18,11 +18,13 @@ package main
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/spf13/cobra"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/channels/pkg/channels"
 	"k8s.io/kops/util/pkg/tables"
-	"os"
 )
 
 type GetAddonsCmd struct {
@@ -59,7 +61,7 @@ func (c *GetAddonsCmd) Run(args []string) error {
 		return err
 	}
 
-	namespaces, err := k8sClient.Namespaces().List(v1.ListOptions{})
+	namespaces, err := k8sClient.Namespaces().List(metav1.ListOptions{})
 	if err != nil {
 		return fmt.Errorf("error listing namespaces: %v", err)
 	}
