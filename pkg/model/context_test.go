@@ -30,11 +30,11 @@ func Test_GetELBName32(t *testing.T) {
 	}{
 		{
 			"bastion", "mycluster",
-			"bastion-mycluster",
+			"bastion-mycluster-vnrjie",
 		},
 		{
 			"bastion", "mycluster.example.com",
-			"bastion-mycluster-example-com",
+			"bastion-mycluster-example-o8elkm",
 		},
 		{
 			"api", "this.is.a.very.long.cluster.example.com",
