@@ -66,20 +66,24 @@ func (m *KopsModelContext) GetELBName32(prefix string) string {
 	// But... if a user can see the CNAME record, they can see the actual record also,
 	// which will be the full cluster name.
 	s := prefix + "-" + strings.Replace(c, ".", "-", -1)
-	if len(s) > 32 {
-		// We have a 32 character limit for ELB names
-		h := fnv.New32a()
-		if _, err := h.Write([]byte(s)); err != nil {
-			glog.Fatalf("error hashing values: %v", err)
-		}
-		hashString := base32.HexEncoding.EncodeToString(h.Sum(nil))
-		hashString = strings.ToLower(hashString)
-		if len(hashString) > 6 {
-			hashString = hashString[:6]
-		}
 
-		s = s[:(32-len(hashString)-1)] + "-" + hashString
+	// We have a 32 character limit for ELB names
+	// But we always compute the hash and add it, lest we trick users into assuming that we never do this
+	h := fnv.New32a()
+	if _, err := h.Write([]byte(s)); err != nil {
+		glog.Fatalf("error hashing values: %v", err)
 	}
+	hashString := base32.HexEncoding.EncodeToString(h.Sum(nil))
+	hashString = strings.ToLower(hashString)
+	if len(hashString) > 6 {
+		hashString = hashString[:6]
+	}
+
+	maxBaseLength := 32 - len(hashString) - 1
+	if len(s) > maxBaseLength {
+		s = s[:maxBaseLength]
+	}
+	s = s + "-" + hashString
 
 	return s
 }
