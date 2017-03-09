@@ -91,10 +91,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	var elb *awstasks.LoadBalancer
 	{
-		elbID, err := b.GetELBName32("api")
-		if err != nil {
-			return err
-		}
+		loadBalancerName := b.GetELBName32("api")
 
 		idleTimeout := LoadBalancerDefaultIdleTimeout
 		if lbSpec.IdleTimeoutSeconds != nil {
@@ -102,8 +99,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		elb = &awstasks.LoadBalancer{
-			Name: s("api." + b.ClusterName()),
-			ID:   s(elbID),
+			Name:             s("api." + b.ClusterName()),
+			LoadBalancerName: s(loadBalancerName),
 			SecurityGroups: []*awstasks.SecurityGroup{
 				b.LinkToELBSecurityGroup("api"),
 			},

@@ -59,6 +59,10 @@ func (e *LoadBalancerAttachment) Find(c *fi.Context) (*LoadBalancerAttachment, e
 		return actual, nil
 		// ASG only
 	} else if e.AutoscalingGroup != nil && e.Instance == nil {
+		if aws.StringValue(e.LoadBalancer.LoadBalancerName) == "" {
+			return nil, fmt.Errorf("LoadBalancer did not have LoadBalancerName set")
+		}
+
 		g, err := findAutoscalingGroup(cloud, *e.AutoscalingGroup.Name)
 		if err != nil {
 			return nil, err
@@ -68,7 +72,7 @@ func (e *LoadBalancerAttachment) Find(c *fi.Context) (*LoadBalancerAttachment, e
 		}
 
 		for _, name := range g.LoadBalancerNames {
-			if aws.StringValue(name) != *e.LoadBalancer.ID {
+			if aws.StringValue(name) != *e.LoadBalancer.LoadBalancerName {
 				continue
 			}
 
@@ -106,25 +110,31 @@ func (s *LoadBalancerAttachment) CheckChanges(a, e, changes *LoadBalancerAttachm
 }
 
 func (_ *LoadBalancerAttachment) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *LoadBalancerAttachment) error {
+	if e.LoadBalancer == nil {
+		return fi.RequiredField("LoadBalancer")
+	}
+	loadBalancerName := fi.StringValue(e.LoadBalancer.LoadBalancerName)
+	if loadBalancerName == "" {
+		return fi.RequiredField("LoadBalancer.LoadBalancerName")
+	}
+
 	if e.AutoscalingGroup != nil && e.Instance == nil {
 		request := &autoscaling.AttachLoadBalancersInput{}
 		request.AutoScalingGroupName = e.AutoscalingGroup.Name
-		request.LoadBalancerNames = []*string{e.LoadBalancer.ID}
-		glog.V(2).Infof("Attaching autoscaling group %q to ELB %q", *e.AutoscalingGroup.Name, *e.LoadBalancer.Name)
+		request.LoadBalancerNames = aws.StringSlice([]string{loadBalancerName})
+
+		glog.V(2).Infof("Attaching autoscaling group %q to ELB %q", fi.StringValue(e.AutoscalingGroup.Name), loadBalancerName)
 		_, err := t.Cloud.Autoscaling().AttachLoadBalancers(request)
 		if err != nil {
 			return fmt.Errorf("error attaching autoscaling group to ELB: %v", err)
 		}
 	} else if e.AutoscalingGroup == nil && e.Instance != nil {
 		request := &elb.RegisterInstancesWithLoadBalancerInput{}
-		var instances []*elb.Instance
-		i := &elb.Instance{
-			InstanceId: e.Instance.ID,
-		}
-		instances = append(instances, i)
-		request.Instances = instances
+		request.Instances = append(request.Instances, &elb.Instance{InstanceId: e.Instance.ID})
+		request.LoadBalancerName = aws.String(loadBalancerName)
+
+		glog.V(2).Infof("Attaching instance %q to ELB %q", fi.StringValue(e.Instance.ID), loadBalancerName)
 		_, err := t.Cloud.ELB().RegisterInstancesWithLoadBalancer(request)
-		glog.V(2).Infof("Attaching instance %q to ELB %q", *e.AutoscalingGroup.Name, *e.LoadBalancer.Name)
 		if err != nil {
 			return fmt.Errorf("error attaching instance to ELB: %v", err)
 		}
