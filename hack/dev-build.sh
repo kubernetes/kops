@@ -94,7 +94,7 @@ GIT_VER=git-$(git describe --always)
 echo ==========
 echo "Starting build"
 
-make ci && S3_BUCKET=s3://${NODEUP_BUCKET} make upload
+make ci && CI=1 S3_BUCKET=s3://${NODEUP_BUCKET} make upload
 
 KOPS_CHANNEL=$(kops version | awk '{ print $2 }')
 KOPS_BASE_URL="http://${NODEUP_BUCKET}.s3.amazonaws.com/kops/${KOPS_CHANNEL}/"
@@ -124,7 +124,7 @@ kops create cluster \
   --master-size $MASTER_SIZE \
   -v $VERBOSITY \
   --image $IMAGE \
-  --kubernetes-version "1.5.2" \
+  --channel alpha \
   --topology $TOPOLOGY \
   --networking $NETWORKING \
   --bastion="true" \
