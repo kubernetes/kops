@@ -643,6 +643,8 @@ func (c *ApplyClusterCmd) Run() error {
 			target = gce.NewGCEAPITarget(cloud.(*gce.GCECloud))
 		case "aws":
 			target = awsup.NewAWSAPITarget(cloud.(awsup.AWSCloud))
+		case "vsphere":
+			target = vsphere.NewVSphereAPITarget(cloud.(*vsphere.VSphereCloud))
 		default:
 			return fmt.Errorf("direct configuration not supported with CloudProvider:%q", cluster.Spec.CloudProvider)
 		}
