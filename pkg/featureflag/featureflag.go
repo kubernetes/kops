@@ -35,6 +35,11 @@ func Bool(b bool) *bool {
 	return &b
 }
 
+// ExperimentalCriticalPodAnnotation controls if kubelet env varible is set to use
+// feature flag for ExperimentalCriticalPodAnnotation
+// See https://github.com/kubernetes/kubernetes/pull/41052
+var ExperimentalCriticalPodAnnotation = New("ExperimentalCriticalPodAnnotation", Bool(false))
+
 // DNSPreCreate controls whether we pre-create DNS records.
 var DNSPreCreate = New("DNSPreCreate", Bool(true))
 
@@ -87,7 +92,7 @@ func ParseFlags(f string) {
 		} else {
 			ff = New(s, nil)
 		}
-		glog.Infof("FeatureFlag %q=%v", ff.Key, enabled)
+		glog.V(1).Infof("FeatureFlag %q=%v", ff.Key, enabled)
 		ff.enabled = &enabled
 	}
 }

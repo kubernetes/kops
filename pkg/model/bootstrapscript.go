@@ -17,11 +17,14 @@ limitations under the License.
 package model
 
 import (
+	"fmt"
+	"text/template"
+
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup"
-	"text/template"
 )
 
 // BootstrapScript creates the bootstrap script
@@ -57,6 +60,13 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup) (*fi.ResourceHo
 			}
 
 			return string(data), nil
+		},
+		// Function to pass specific feature flags to nodeup
+		"FeatureFlags": func() string {
+			if featureflag.ExperimentalCriticalPodAnnotation.Enabled() {
+				return fmt.Sprintf("KOPS_FEATURE_FLAGS=\"+%s\"", featureflag.ExperimentalCriticalPodAnnotation.Key)
+			}
+			return ""
 		},
 	}
 
