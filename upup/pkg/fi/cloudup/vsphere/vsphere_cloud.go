@@ -41,9 +41,9 @@ func (c *VSphereCloud) ProviderID() fi.CloudProviderID {
 }
 
 func NewVSphereCloud(spec *kops.ClusterSpec) (*VSphereCloud, error) {
-	server := spec.CloudConfig.VSphereServer
-	datacenter := spec.CloudConfig.VSphereDatacenter
-	cluster := spec.CloudConfig.VSphereResourcePool
+	server := *spec.CloudConfig.VSphereServer
+	datacenter := *spec.CloudConfig.VSphereDatacenter
+	cluster := *spec.CloudConfig.VSphereResourcePool
 	username := os.Getenv("VSPHERE_USERNAME")
 	password := os.Getenv("VSPHERE_PASSWORD")
 	if username == "" || password == "" {
