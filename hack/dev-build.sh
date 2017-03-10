@@ -35,7 +35,7 @@
 # NODEUP_BUCKET="s3-devel-bucket-name-store-nodeup" \
 # IMAGE="kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21" \
 # ./dev-build.sh
-# 
+#
 # # TLDR;
 # 1. setup dns in route53
 # 2. create s3 buckets - state store and nodeup bucket
@@ -45,7 +45,7 @@
 # 6. use ssh-agent and ssh -A
 # 7. your pem will be the access token
 # 8. user is admin, and the default is debian
-# 
+#
 # # For more details see:
 #
 # https://github.com/kubernetes/kops/blob/master/docs/aws.md
@@ -94,15 +94,15 @@ GIT_VER=git-$(git describe --always)
 echo ==========
 echo "Starting build"
 
-make ci && S3_BUCKET=s3://${NODEUP_BUCKET} make upload
+make ci && CI=1 S3_BUCKET=s3://${NODEUP_BUCKET} make upload
 
-KOPS_CHANNEL=$(kops version | awk '{ print $2 }')
-KOPS_BASE_URL="http://${NODEUP_BUCKET}.s3.amazonaws.com/kops/${KOPS_CHANNEL}/"
+KOPS_CHANNEL=$($GOPATH/bin/kops version | awk '{ print $2 }')
+KOPS_BASE_URL="https://${NODEUP_BUCKET}.s3.amazonaws.com/kops/${KOPS_CHANNEL}/"
 
 echo ==========
 echo "Deleting cluster ${CLUSTER_NAME}. Elle est finie."
 
-kops delete cluster \
+$GOPATH/bin/kops delete cluster \
   --name $CLUSTER_NAME \
   --state $KOPS_STATE_STORE \
   -v $VERBOSITY \
@@ -113,7 +113,7 @@ echo "Creating cluster ${CLUSTER_NAME}"
 
 NODEUP_URL=${KOPS_BASE_URL}linux/amd64/nodeup \
 KOPS_BASE_URL=${KOPS_BASE_URL} \
-kops create cluster \
+$GOPATH/bin/kops create cluster \
   --name $CLUSTER_NAME \
   --state $KOPS_STATE_STORE \
   --node-count $NODE_COUNT \
@@ -124,7 +124,7 @@ kops create cluster \
   --master-size $MASTER_SIZE \
   -v $VERBOSITY \
   --image $IMAGE \
-  --kubernetes-version "1.5.2" \
+  --channel alpha \
   --topology $TOPOLOGY \
   --networking $NETWORKING \
   --bastion="true" \
