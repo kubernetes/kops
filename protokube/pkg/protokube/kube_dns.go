@@ -24,26 +24,50 @@ import (
 
 const defaultTTL = time.Minute
 
+type DNSProvider interface {
+	Replace(fqdn string, values []string) error
+	Run()
+}
+
 // CreateInternalDNSNameRecord maps a FQDN to the internal IP address of the current machine
 func (k *KubeBoot) CreateInternalDNSNameRecord(fqdn string) error {
-	ttl := defaultTTL
-	if ttl != dns.DefaultTTL {
-		glog.Infof("Ignoring ttl %v for %q", ttl, fqdn)
-	}
-
-	var records []dns.Record
-	records = append(records, dns.Record{
-		RecordType: dns.RecordTypeA,
-		FQDN:       fqdn,
-		Value:      k.InternalIP.String(),
-	})
-	k.DNSScope.Replace(fqdn, records)
-
-	return nil
+	values := []string{k.InternalIP.String()}
+	glog.Infof("Creating DNS record: %s => %s", fqdn, values)
+	return k.DNS.Replace(fqdn, values)
 }
 
 // BuildInternalDNSName builds a DNS name for use inside the cluster, adding our internal DNS suffix to the key,
 func (k *KubeBoot) BuildInternalDNSName(key string) string {
 	fqdn := key + k.InternalDNSSuffix
 	return fqdn
+}
+
+type KopsDnsProvider struct {
+	DNSScope      dns.Scope
+	DNSController *dns.DNSController
+}
+
+var _ DNSProvider = &KopsDnsProvider{}
+
+func (p *KopsDnsProvider) Replace(fqdn string, values []string) error {
+	ttl := defaultTTL
+	if ttl != dns.DefaultTTL {
+		glog.Infof("Ignoring ttl %v for %q", ttl, fqdn)
+	}
+
+	var records []dns.Record
+	for _, value := range values {
+		records = append(records, dns.Record{
+			RecordType: dns.RecordTypeA,
+			FQDN:       fqdn,
+			Value:      value,
+		})
+	}
+	p.DNSScope.Replace(fqdn, records)
+
+	return nil
+}
+
+func (p *KopsDnsProvider) Run() {
+	p.DNSController.Run()
 }

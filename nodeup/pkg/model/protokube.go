@@ -197,20 +197,40 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 		//argv = append(argv, "--zone=*/*")
 	}
 
+	// TODO: Are .local names necessarily invalid for "real DNS"? Do we need more qualificiation here?
+	if strings.HasSuffix(t.Cluster.Spec.MasterInternalName, ".local") {
+		glog.Warningf("MasterInternalName %q implies gossip DNS", t.Cluster.Spec.MasterInternalName)
+		f.DNSProvider = fi.String("gossip")
+
+		/// TODO: This is horrendous
+		internalSuffix := t.Cluster.Spec.MasterInternalName
+		internalSuffix = strings.TrimPrefix(internalSuffix, "api.")
+		f.DNSInternalSuffix = fi.String(internalSuffix)
+	}
+
 	if t.Cluster.Spec.CloudProvider != "" {
 		f.Cloud = fi.String(t.Cluster.Spec.CloudProvider)
 
-		switch fi.CloudProviderID(t.Cluster.Spec.CloudProvider) {
-		case fi.CloudProviderAWS:
-			f.DNSProvider = fi.String("aws-route53")
-		case fi.CloudProviderGCE:
-			f.DNSProvider = fi.String("google-clouddns")
-		default:
-			glog.Warningf("Unknown cloudprovider %q; won't set DNS provider")
+		if f.DNSProvider == nil {
+			switch fi.CloudProviderID(t.Cluster.Spec.CloudProvider) {
+			case fi.CloudProviderAWS:
+				f.DNSProvider = fi.String("aws-route53")
+			case fi.CloudProviderGCE:
+				f.DNSProvider = fi.String("google-clouddns")
+			default:
+				glog.Warningf("Unknown cloudprovider %q; won't set DNS provider")
+			}
 		}
 	}
 
-	f.DNSInternalSuffix = fi.String(".internal." + t.Cluster.ObjectMeta.Name)
+	//if f.DNSProvider == nil {
+	//	glog.Warningf("Defaulting to gossip DNS for protokube", t.Cluster.Spec.MasterInternalName)
+	//	f.DNSProvider = fi.String("gossip")
+	//}
+
+	if f.DNSInternalSuffix == nil {
+		f.DNSInternalSuffix = fi.String(".internal." + t.Cluster.ObjectMeta.Name)
+	}
 
 	if k8sVersion.Major == 1 && k8sVersion.Minor <= 5 {
 		f.ApplyTaints = fi.Bool(true)

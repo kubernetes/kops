@@ -22,10 +22,14 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/pflag"
 	"k8s.io/kops/dns-controller/pkg/dns"
+	"k8s.io/kops/protokube/pkg/gossip"
+	gossipdns "k8s.io/kops/protokube/pkg/gossip/dns"
+	"k8s.io/kops/protokube/pkg/gossip/mesh"
 	"k8s.io/kops/protokube/pkg/protokube"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	"net"
 	"os"
+	"path"
 	"strings"
 
 	// Load DNS plugins
@@ -81,6 +85,12 @@ func run() error {
 
 	flagChannels := ""
 	flag.StringVar(&flagChannels, "channels", flagChannels, "channels to install")
+
+	gossipListen := "0.0.0.0:3999"
+	flag.StringVar(&gossipListen, "gossip-listen", gossipListen, "address:port on which to bind for gossip")
+
+	var gossipSecret string
+	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
 
 	// Trick to avoid 'logging before flag.Parse' warning
 	flag.CommandLine.Parse([]string{})
@@ -163,42 +173,106 @@ func run() error {
 	//	os.Exit(1)
 	//}
 
-	var dnsScope dns.Scope
-	var dnsController *dns.DNSController
-	{
-		dnsProvider, err := dnsprovider.GetDnsProvider(dnsProviderId, nil)
-		if err != nil {
-			return fmt.Errorf("Error initializing DNS provider %q: %v", dnsProviderId, err)
-		}
-		if dnsProvider == nil {
-			return fmt.Errorf("DNS provider %q could not be initialized", dnsProviderId)
-		}
-
-		zoneRules, err := dns.ParseZoneRules(zones)
-		if err != nil {
-			return fmt.Errorf("unexpected zone flags: %q", err)
-		}
-
-		dnsController, err = dns.NewDNSController(dnsProvider, zoneRules)
-		if err != nil {
-			return err
-		}
-
-		dnsScope, err = dnsController.CreateScope("protokube")
-		if err != nil {
-			return err
-		}
-
-		// We don't really use readiness - our records are simple
-		dnsScope.MarkReady()
-	}
-
 	rootfs := "/"
 	if containerized {
 		rootfs = "/rootfs/"
 	}
 	protokube.RootFS = rootfs
 	protokube.Containerized = containerized
+
+	var dnsProvider protokube.DNSProvider
+	if dnsProviderId == "gossip" {
+		dnsTarget := &gossipdns.HostsFile{
+			Path: path.Join(rootfs, "etc/hosts"),
+		}
+
+		var gossipSeeds gossip.SeedProvider
+		var err error
+		var gossipName string
+		if cloud == "aws" {
+			gossipSeeds, err = volumes.(*protokube.AWSVolumes).GossipSeeds()
+			if err != nil {
+				return err
+			}
+			gossipName = volumes.(*protokube.AWSVolumes).InstanceID()
+		} else if cloud == "gce" {
+			gossipSeeds, err = volumes.(*protokube.GCEVolumes).GossipSeeds()
+			if err != nil {
+				return err
+			}
+			gossipName = volumes.(*protokube.GCEVolumes).InstanceName()
+		} else {
+			glog.Fatalf("seed provider for %q not yet implemented", cloud)
+		}
+
+		id := os.Getenv("HOSTNAME")
+		if id == "" {
+			glog.Warningf("Unable to fetch HOSTNAME for use as node identifier")
+		}
+
+		channelName := "dns"
+		gossipState, err := mesh.NewMeshGossiper(gossipListen, channelName, gossipName, []byte(gossipSecret), gossipSeeds)
+		if err != nil {
+			glog.Errorf("Error initializing gossip: %v", err)
+			os.Exit(1)
+		}
+
+		go func() {
+			// TODO: Cleanup
+			err := gossipState.Run()
+			if err != nil {
+				glog.Fatalf("gossip exited unexpectedly: %v", err)
+			} else {
+				glog.Fatalf("gossip exited unexpectedly, but without error")
+			}
+		}()
+
+		dnsView := gossipdns.NewDNSView(gossipState)
+		go func() {
+			gossipdns.RunDNSUpdates(dnsTarget, dnsView)
+			glog.Fatalf("RunDNSUpdates exited unexpectedly")
+		}()
+
+		zoneInfo := gossipdns.DNSZoneInfo{
+			Name: gossipdns.DefaultZoneName,
+		}
+		dnsProvider = &protokube.GossipDnsProvider{DNSView: dnsView, Zone: zoneInfo}
+	} else {
+		var dnsScope dns.Scope
+		var dnsController *dns.DNSController
+		{
+			dnsProvider, err := dnsprovider.GetDnsProvider(dnsProviderId, nil)
+			if err != nil {
+				return fmt.Errorf("Error initializing DNS provider %q: %v", dnsProviderId, err)
+			}
+			if dnsProvider == nil {
+				return fmt.Errorf("DNS provider %q could not be initialized", dnsProviderId)
+			}
+
+			zoneRules, err := dns.ParseZoneRules(zones)
+			if err != nil {
+				return fmt.Errorf("unexpected zone flags: %q", err)
+			}
+
+			dnsController, err = dns.NewDNSController([]dnsprovider.Interface{dnsProvider}, zoneRules)
+			if err != nil {
+				return err
+			}
+
+			dnsScope, err = dnsController.CreateScope("protokube")
+			if err != nil {
+				return err
+			}
+
+			// We don't really use readiness - our records are simple
+			dnsScope.MarkReady()
+		}
+
+		dnsProvider = &protokube.KopsDnsProvider{
+			DNSScope:      dnsScope,
+			DNSController: dnsController,
+		}
+	}
 
 	modelDir := "model/etcd"
 
@@ -218,7 +292,7 @@ func run() error {
 		InitializeRBAC: initializeRBAC,
 
 		ModelDir: modelDir,
-		DNSScope: dnsScope,
+		DNS:      dnsProvider,
 
 		Channels: channels,
 
@@ -226,7 +300,9 @@ func run() error {
 	}
 	k.Init(volumes)
 
-	go dnsController.Run()
+	if dnsProvider != nil {
+		go dnsProvider.Run()
+	}
 
 	k.RunSyncLoop()
 

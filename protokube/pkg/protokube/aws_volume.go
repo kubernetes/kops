@@ -24,6 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"k8s.io/kops/protokube/pkg/gossip"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"net"
 	"strings"
@@ -360,4 +361,12 @@ func (a *AWSVolumes) AttachVolume(volume *Volume) error {
 
 		time.Sleep(10 * time.Second)
 	}
+}
+
+func (a *AWSVolumes) GossipSeeds() (gossip.SeedProvider, error) {
+	return nil, fmt.Errorf("AWS seed provider not yet implemented")
+}
+
+func (a *AWSVolumes) InstanceID() string {
+	return a.instanceId
 }

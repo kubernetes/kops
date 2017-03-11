@@ -140,6 +140,10 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 		return nil, fmt.Errorf("unhandled cloudprovider %q", tf.cluster.Spec.CloudProvider)
 	}
 
+	if isGossipDns(tf.cluster.Spec.MasterInternalName) {
+		argv = append(argv, "--gossip-seed=127.0.0.1:3999")
+	}
+
 	zone := tf.cluster.Spec.DNSZone
 	if zone != "" {
 		if strings.Contains(zone, ".") {

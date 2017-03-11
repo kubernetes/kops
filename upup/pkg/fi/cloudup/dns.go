@@ -120,6 +120,14 @@ func validateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 	return nil
 }
 
+func isGossipDns(name string) bool {
+	normalized := "." + strings.TrimSuffix(name, ".")
+	if strings.HasSuffix(normalized, ".local") {
+		return true
+	}
+	return false
+}
+
 func precreateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 	// TODO: Move to update
 	if !featureflag.DNSPreCreate.Enabled() {
@@ -132,6 +140,16 @@ func precreateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 	// If we get the names wrong here, it doesn't really matter (extra DNS name, slower boot)
 
 	dnsHostnames := buildPrecreateDNSHostnames(cluster)
+
+	{
+		var filtered []string
+		for _, name := range dnsHostnames {
+			if !isGossipDns(name) {
+				filtered = append(filtered, name)
+			}
+		}
+		dnsHostnames = filtered
+	}
 
 	if len(dnsHostnames) == 0 {
 		glog.Infof("No DNS records to pre-create")
