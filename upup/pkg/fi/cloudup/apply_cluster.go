@@ -32,6 +32,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/awsmodel"
@@ -152,7 +153,7 @@ func (c *ApplyClusterCmd) Run() error {
 	if cluster.Spec.KubernetesVersion == "" {
 		return fmt.Errorf("KubernetesVersion not set")
 	}
-	if cluster.Spec.DNSZone == "" {
+	if cluster.Spec.DNSZone == "" && !dns.IsGossipHostname(cluster.ObjectMeta.Name) {
 		return fmt.Errorf("DNSZone not set")
 	}
 
@@ -365,15 +366,19 @@ func (c *ApplyClusterCmd) Run() error {
 
 	modelContext.Region = region
 
-	err = validateDNS(cluster, cloud)
-	if err != nil {
-		return err
+	if dns.IsGossipHostname(cluster.ObjectMeta.Name) {
+		glog.Infof("Gossip DNS: skipping DNS validation")
+	} else {
+		err = validateDNS(cluster, cloud)
+		if err != nil {
+			return err
+		}
+		dnszone, err := findZone(cluster, cloud)
+		if err != nil {
+			return err
+		}
+		modelContext.HostedZoneID = dnszone.ID()
 	}
-	dnszone, err := findZone(cluster, cloud)
-	if err != nil {
-		return err
-	}
-	modelContext.HostedZoneID = dnszone.ID()
 
 	clusterTags, err := buildCloudupTags(cluster)
 	if err != nil {
@@ -683,6 +688,10 @@ func (c *ApplyClusterCmd) Run() error {
 	err = context.RunTasks(c.MaxTaskDuration)
 	if err != nil {
 		return fmt.Errorf("error running tasks: %v", err)
+	}
+
+	if dns.IsGossipHostname(cluster.Name) {
+		shouldPrecreateDNS = false
 	}
 
 	if shouldPrecreateDNS {
