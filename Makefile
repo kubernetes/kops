@@ -103,6 +103,11 @@ codegen: kops-gobindata
 	PATH=${GOPATH_1ST}/bin:${PATH} go generate k8s.io/kops/upup/pkg/fi/cloudup/gcetasks
 	PATH=${GOPATH_1ST}/bin:${PATH} go generate k8s.io/kops/upup/pkg/fi/fitasks
 
+protobuf: protokube/pkg/gossip/mesh/mesh.pb.go
+
+protokube/pkg/gossip/mesh/mesh.pb.go: protokube/pkg/gossip/mesh/mesh.proto
+	cd ${GOPATH_1ST}/src; protoc --gofast_out=. k8s.io/kops/protokube/pkg/gossip/mesh/mesh.proto
+
 test:
 	go test k8s.io/kops/pkg/... -args -v=1 -logtostderr
 	go test k8s.io/kops/nodeup/pkg/... -args -v=1 -logtostderr
@@ -197,7 +202,7 @@ push-aws-run: push
 
 
 protokube-gocode:
-	go install k8s.io/kops/protokube/cmd/protokube
+	go install -tags 'peer_name_alternative peer_name_hash' k8s.io/kops/protokube/cmd/protokube
 
 protokube-builder-image:
 	docker build -t protokube-builder images/protokube-builder
@@ -233,7 +238,7 @@ nodeup-dist:
 	(${SHASUMCMD} .build/dist/nodeup | cut -d' ' -f1) > .build/dist/nodeup.sha1
 
 dns-controller-gocode:
-	go install -ldflags "${EXTRA_LDFLAGS} -X main.BuildVersion=${DNS_CONTROLLER_TAG}" k8s.io/kops/dns-controller/cmd/dns-controller
+	go install -tags 'peer_name_alternative peer_name_hash' -ldflags "${EXTRA_LDFLAGS} -X main.BuildVersion=${DNS_CONTROLLER_TAG}" k8s.io/kops/dns-controller/cmd/dns-controller
 
 dns-controller-builder-image:
 	docker build -t dns-controller-builder images/dns-controller-builder

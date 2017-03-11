@@ -27,8 +27,8 @@ import (
 
 // dnsCache is a wrapper around the DNS provider, adding some caching
 type dnsCache struct {
-	// zones is the DNS provider
-	zonesProvider dnsprovider.Zones
+	// zonesProviders is a slice of configured DNS providers
+	zonesProviders []dnsprovider.Zones
 
 	// mutex protects the following mutable state
 	mutex sync.Mutex
@@ -37,14 +37,18 @@ type dnsCache struct {
 	cachedZonesTimestamp int64
 }
 
-func newDNSCache(provider dnsprovider.Interface) (*dnsCache, error) {
-	zonesProvider, ok := provider.Zones()
-	if !ok {
-		return nil, fmt.Errorf("DNS provider does not support zones")
+func newDNSCache(providers []dnsprovider.Interface) (*dnsCache, error) {
+	var zonesProviders []dnsprovider.Zones
+	for _, provider := range providers {
+		zonesProvider, ok := provider.Zones()
+		if !ok {
+			return nil, fmt.Errorf("DNS provider does not support zones")
+		}
+		zonesProviders = append(zonesProviders, zonesProvider)
 	}
 
 	return &dnsCache{
-		zonesProvider: zonesProvider,
+		zonesProviders: zonesProviders,
 	}, nil
 }
 
@@ -71,13 +75,17 @@ func (d *dnsCache) ListZones(validity time.Duration) ([]dnsprovider.Zone, error)
 		glog.V(2).Infof("querying all DNS zones (no cached results)")
 	}
 
-	zones, err := d.zonesProvider.List()
-	if err != nil {
-		return nil, fmt.Errorf("error querying for DNS zones: %v", err)
-	}
+	var allZones []dnsprovider.Zone
+	for _, zonesProvider := range d.zonesProviders {
+		zones, err := zonesProvider.List()
+		if err != nil {
+			return nil, fmt.Errorf("error querying for DNS zones: %v", err)
+		}
 
-	d.cachedZones = zones
+		allZones = append(allZones, zones...)
+	}
+	d.cachedZones = allZones
 	d.cachedZonesTimestamp = now
 
-	return zones, nil
+	return allZones, nil
 }
