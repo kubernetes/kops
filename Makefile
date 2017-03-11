@@ -70,10 +70,10 @@ ifdef STATIC_BUILD
   EXTRA_LDFLAGS=-s
 endif
 
-SHASUMCMD := $(shell sha1sum --help 2> /dev/null)
+SHASUMCMD := $(shell command -v sha1sum || command -v shasum; 2> /dev/null)
 
 ifndef SHASUMCMD
-  $(error "sha1sum command is not available (on MacOS try 'brew install md5sha1sum')")
+  $(error "Neither sha1sum nor shasum command is available")
 endif
 
 kops: kops-gobindata
@@ -133,8 +133,8 @@ crossbuild-in-docker:
 
 kops-dist: crossbuild-in-docker
 	mkdir -p .build/dist/
-	(sha1sum .build/dist/darwin/amd64/kops | cut -d' ' -f1) > .build/dist/darwin/amd64/kops.sha1
-	(sha1sum .build/dist/linux/amd64/kops | cut -d' ' -f1) > .build/dist/linux/amd64/kops.sha1
+	(${SHASUMCMD} .build/dist/darwin/amd64/kops | cut -d' ' -f1) > .build/dist/darwin/amd64/kops.sha1
+	(${SHASUMCMD} .build/dist/linux/amd64/kops | cut -d' ' -f1) > .build/dist/linux/amd64/kops.sha1
 
 version-dist: nodeup-dist kops-dist protokube-export utils-dist
 	rm -rf .build/upload
@@ -206,7 +206,7 @@ protokube-export: protokube-image
 	mkdir -p .build/dist/images
 	docker save protokube:${PROTOKUBE_TAG} > .build/dist/images/protokube.tar
 	gzip --force --best .build/dist/images/protokube.tar
-	(sha1sum .build/dist/images/protokube.tar.gz | cut -d' ' -f1) > .build/dist/images/protokube.tar.gz.sha1
+	(${SHASUMCMD} .build/dist/images/protokube.tar.gz | cut -d' ' -f1) > .build/dist/images/protokube.tar.gz.sha1
 
 # protokube-push is no longer used (we upload a docker image tar file to S3 instead),
 # but we're keeping it around in case it is useful for development etc
@@ -224,7 +224,7 @@ nodeup-dist:
 	docker run --name=nodeup-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile nodeup-gocode
 	mkdir -p .build/dist
 	docker cp nodeup-build-${UNIQUE}:/go/bin/nodeup .build/dist/
-	(sha1sum .build/dist/nodeup | cut -d' ' -f1) > .build/dist/nodeup.sha1
+	(${SHASUMCMD} .build/dist/nodeup | cut -d' ' -f1) > .build/dist/nodeup.sha1
 
 dns-controller-gocode:
 	go install -ldflags "${EXTRA_LDFLAGS} -X main.BuildVersion=${DNS_CONTROLLER_TAG}" k8s.io/kops/dns-controller/cmd/dns-controller
