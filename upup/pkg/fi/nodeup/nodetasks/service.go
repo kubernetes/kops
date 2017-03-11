@@ -295,6 +295,9 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 				return err
 			}
 
+			// Include the systemd unit file itself
+			dependencies = append(dependencies, path.Join(systemdSystemPath, serviceName))
+
 			var newest time.Time
 			for _, dependency := range dependencies {
 				stat, err := os.Stat(dependency)
