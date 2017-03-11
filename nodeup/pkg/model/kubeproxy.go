@@ -22,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -188,6 +189,11 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 		// Map SSL certs from host: /usr/share/ca-certificates -> /etc/ssl/certs
 		sslCertsHost := addHostPathMapping(pod, container, "ssl-certs-hosts", "/usr/share/ca-certificates")
 		sslCertsHost.MountPath = "/etc/ssl/certs"
+	}
+
+	if dns.IsGossipHostname(b.Cluster.Name) {
+		// Map /etc/hosts from host, so that we see the updates that are made by protokube
+		addHostPathMapping(pod, container, "etchosts", "/etc/hosts")
 	}
 
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)
