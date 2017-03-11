@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/models"
@@ -224,7 +225,7 @@ func (c *populateClusterSpec) run() error {
 		return err
 	}
 
-	if cluster.Spec.DNSZone == "" {
+	if cluster.Spec.DNSZone == "" && !dns.IsGossipHostname(cluster.ObjectMeta.Name) {
 		dns, err := cloud.DNS()
 		if err != nil {
 			return err

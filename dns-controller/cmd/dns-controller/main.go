@@ -28,10 +28,14 @@ import (
 	"github.com/spf13/pflag"
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/watchers"
+	"k8s.io/kops/protokube/pkg/gossip"
+	gossipdns "k8s.io/kops/protokube/pkg/gossip/dns"
+	gossipdnsprovider "k8s.io/kops/protokube/pkg/gossip/dns/provider"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/kops/protokube/pkg/gossip/mesh"
 	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
 	k8scoredns "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/coredns"
 	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns"
@@ -52,6 +56,15 @@ func main() {
 
 	dnsProviderId := "aws-route53"
 	flags.StringVar(&dnsProviderId, "dns", dnsProviderId, "DNS provider we should use (aws-route53, google-clouddns, coredns)")
+
+	gossipListen := "0.0.0.0:3998"
+	flags.StringVar(&gossipListen, "gossip-listen", gossipListen, "The address on which to listen if gossip is enabled")
+
+	var gossipSeeds []string
+	flags.StringSliceVar(&gossipSeeds, "gossip-seed", gossipSeeds, "If set, will enable gossip zones and seed using the provided addresses")
+
+	var gossipSecret string
+	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
 
 	var zones []string
 	flags.StringSliceVarP(&zones, "zone", "z", []string{}, "Configure permitted zones and their mappings")
@@ -93,25 +106,67 @@ func main() {
 	//	glog.Fatalf("error building extensions REST client: %v", err)
 	//}
 
-	var file io.Reader
-	if dnsProviderId == k8scoredns.ProviderName {
-		var lines []string
-		lines = append(lines, "etcd-endpoints = "+dnsServer)
-		lines = append(lines, "zones = "+zones[0])
-		config := "[global]\n" + strings.Join(lines, "\n") + "\n"
-		file = bytes.NewReader([]byte(config))
-	}
-	dnsProvider, err := dnsprovider.GetDnsProvider(dnsProviderId, file)
-	if err != nil {
-		glog.Errorf("Error initializing DNS provider %q: %v", dnsProviderId, err)
-		os.Exit(1)
-	}
-	if dnsProvider == nil {
-		glog.Errorf("DNS provider was nil %q: %v", dnsProviderId, err)
-		os.Exit(1)
+	var dnsProviders []dnsprovider.Interface
+	{
+		var file io.Reader
+		if dnsProviderId == k8scoredns.ProviderName {
+			var lines []string
+			lines = append(lines, "etcd-endpoints = "+dnsServer)
+			lines = append(lines, "zones = "+zones[0])
+			config := "[global]\n" + strings.Join(lines, "\n") + "\n"
+			file = bytes.NewReader([]byte(config))
+		}
+		dnsProvider, err := dnsprovider.GetDnsProvider(dnsProviderId, file)
+		if err != nil {
+			glog.Errorf("Error initializing DNS provider %q: %v", dnsProviderId, err)
+			os.Exit(1)
+		}
+		if dnsProvider == nil {
+			glog.Errorf("DNS provider was nil %q: %v", dnsProviderId, err)
+			os.Exit(1)
+		}
+		dnsProviders = append(dnsProviders, dnsProvider)
 	}
 
-	dnsController, err := dns.NewDNSController(dnsProvider, zoneRules, dnsProviderId)
+	if len(gossipSeeds) != 0 {
+		gossipSeeds := gossip.NewStaticSeedProvider(gossipSeeds)
+
+		id := os.Getenv("HOSTNAME")
+		if id == "" {
+			glog.Warningf("Unable to fetch HOSTNAME for use as node identifier")
+		}
+		gossipName := "dns-controller." + id
+
+		channelName := "dns"
+		gossipState, err := mesh.NewMeshGossiper(gossipListen, channelName, gossipName, []byte(gossipSecret), gossipSeeds)
+		if err != nil {
+			glog.Errorf("Error initializing gossip: %v", err)
+			os.Exit(1)
+		}
+
+		go func() {
+			err := gossipState.Start()
+			if err != nil {
+				glog.Fatalf("gossip exited unexpectedly: %v", err)
+			} else {
+				glog.Fatalf("gossip exited unexpectedly, but without error")
+			}
+		}()
+
+		dnsView := gossipdns.NewDNSView(gossipState)
+		dnsProvider, err := gossipdnsprovider.New(dnsView)
+		if err != nil {
+			glog.Errorf("Error initializing gossip DNS provider: %v", err)
+			os.Exit(1)
+		}
+		if dnsProvider == nil {
+			glog.Errorf("Gossip DNS provider was nil: %v", err)
+			os.Exit(1)
+		}
+		dnsProviders = append(dnsProviders, dnsProvider)
+	}
+
+	dnsController, err := dns.NewDNSController(dnsProviders, zoneRules)
 	if err != nil {
 		glog.Errorf("Error building DNS controller: %v", err)
 		os.Exit(1)
