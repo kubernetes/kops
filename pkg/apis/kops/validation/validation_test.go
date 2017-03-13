@@ -93,7 +93,7 @@ func testErrors(t *testing.T, context interface{}, actual field.ErrorList, expec
 
 		for _, expected := range expectedErrors {
 			if !errStrings.Has(expected) {
-				t.Errorf("expected error %v from %q, was not found in %q", expected, context, errStrings.List())
+				t.Errorf("expected error %v from %v, was not found in %q", expected, context, errStrings.List())
 			}
 		}
 	}

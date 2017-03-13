@@ -440,6 +440,16 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool) er
 		if err != nil {
 			return err
 		}
+
+		// Additional cloud-specific validation rules,
+		// such as making sure that identifiers match the expected formats for the given cloud
+		switch fi.CloudProviderID(c.Spec.CloudProvider) {
+		case fi.CloudProviderAWS:
+			errs := awsValidateInstanceGroup(g)
+			if len(errs) != 0 {
+				return errs[0]
+			}
+		}
 	}
 
 	return nil
