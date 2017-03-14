@@ -48,26 +48,30 @@ func (o *VirtualMachine) String() string {
 }
 
 func (e *VirtualMachine) CompareWithID() *string {
-	glog.Info("VirtualMachine.CompareWithID invoked!")
+	glog.V(4).Info("VirtualMachine.CompareWithID invoked!")
 	return e.Name
 }
 
 func (e *VirtualMachine) Find(c *fi.Context) (*VirtualMachine, error) {
-	glog.Info("VirtualMachine.Find invoked!")
+	glog.V(4).Info("VirtualMachine.Find invoked!")
 	return nil, nil
 }
 
 func (e *VirtualMachine) Run(c *fi.Context) error {
-	glog.Info("VirtualMachine.Run invoked!")
+	glog.V(4).Info("VirtualMachine.Run invoked!")
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
 func (_ *VirtualMachine) CheckChanges(a, e, changes *VirtualMachine) error {
-	glog.Info("VirtualMachine.CheckChanges invoked!")
+	glog.V(4).Info("VirtualMachine.CheckChanges invoked!")
 	return nil
 }
 
 func (_ *VirtualMachine) RenderVSphere(t *vsphere.VSphereAPITarget, a, e, changes *VirtualMachine) error {
-	glog.Info("VirtualMachine.RenderVSphere invoked!")
+	glog.V(4).Infof("VirtualMachine.RenderVSphere invoked with a(%+v) e(%+v) and changes(%+v)", a, e, changes)
+	_, err := t.Cloud.CreateLinkClonedVm(changes.Name, changes.VMTemplateName)
+	if err != nil {
+		return err
+	}
 	return nil
 }
