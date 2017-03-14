@@ -681,7 +681,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 	if shouldPrecreateDNS {
 		if err := precreateDNS(cluster, cloud); err != nil {
-			return err
+			glog.Warningf("unable to pre-create DNS records - cluster startup may be slower: %v", err)
 		}
 	}
 
