@@ -17,7 +17,6 @@ limitations under the License.
 package vspheremodel
 
 import (
-	"github.com/golang/glog"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vspheretasks"
@@ -32,13 +31,16 @@ type AutoscalingGroupModelBuilder struct {
 
 var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
 
+const defaultVmTemplateName = "Ubuntu_16_10"
+
 func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	glog.Warning("AutoscalingGroupModelBuilder.Build not implemented for vsphere")
+	// Note that we are creating a VM per instance group. Instance group represents a group of VMs.
+	// This logic should change once we add support for multiple master and worker nodes.
 	for _, ig := range b.InstanceGroups {
 		name := b.AutoscalingGroupName(ig)
 		createVmTask := &vspheretasks.VirtualMachine{
 			Name:           &name,
-			VMTemplateName: fi.String("dummyVmTemplate"),
+			VMTemplateName: fi.String(defaultVmTemplateName),
 		}
 		c.AddTask(createVmTask)
 
