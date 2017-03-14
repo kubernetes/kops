@@ -96,7 +96,7 @@ echo "Starting build"
 
 make ci && CI=1 S3_BUCKET=s3://${NODEUP_BUCKET} make upload
 
-KOPS_CHANNEL=$(kops version | awk '{ print $2 }')
+KOPS_CHANNEL=$(kops version | awk '{ print $2 }' |sed 's/\+/%2B/')
 KOPS_BASE_URL="http://${NODEUP_BUCKET}.s3.amazonaws.com/kops/${KOPS_CHANNEL}/"
 
 echo ==========
