@@ -226,6 +226,13 @@ type terraformRoute53Zone struct {
 	Lifecycle *terraform.Lifecycle `json:"lifecycle,omitempty"`
 }
 
+type terraformRoute53ZoneData struct {
+	VpcId   *string `json:"vpc_id,omitempty"`
+	ZoneId  *string `json:"zone_id,omitempty"`
+	Name    *string `json:"name,omitempty"`
+	Private bool    `json:"private_zone,omitempty"`
+}
+
 func (_ *DNSZone) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *DNSZone) error {
 	cloud := t.Cloud.(awsup.AWSCloud)
 
@@ -265,12 +272,15 @@ func (_ *DNSZone) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *D
 		//
 		//return t.RenderResource("aws_route53_zone", *e.Name, tf)
 	} else {
+		tf := &terraformRoute53ZoneData{
+			Name: z.HostedZone.Name,
+		}
 		// Same problem here also...
 		if e.PrivateVPC != nil {
-			return fmt.Errorf("Route53 private hosted zones are not supported for terraform")
+			tf.VpcId = e.PrivateVPC.ID
 		}
 
-		return nil
+		return t.RenderData("aws_route53_zone", "dns_zone", tf)
 	}
 }
 
@@ -279,7 +289,7 @@ func (e *DNSZone) TerraformLink() *terraform.Literal {
 		glog.V(4).Infof("reusing existing route53 zone with id %q", *e.ZoneID)
 		return terraform.LiteralFromStringValue(*e.ZoneID)
 	}
-
+	//TODO JRN: Add in support for data link refs
 	return terraform.LiteralSelfLink("aws_route53_zone", *e.Name)
 }
 

@@ -42,6 +42,7 @@ type TerraformTarget struct {
 	mutex sync.Mutex
 	// resources is a list of TF items that should be created
 	resources []*terraformResource
+	data      []*terraformResource
 	// outputs is a list of our TF output variables
 	outputs map[string]*terraformOutputVariable
 	// files is a map of TF resource files that should be created
@@ -103,6 +104,21 @@ func (t *TerraformTarget) AddFile(resourceType string, resourceName string, key 
 func (t *TerraformTarget) ProcessDeletions() bool {
 	// Terraform tracks & performs deletions itself
 	return false
+}
+
+func (t *TerraformTarget) RenderData(resourceType string, resourceName string, e interface{}) error {
+	res := &terraformResource{
+		ResourceType: resourceType,
+		ResourceName: resourceName,
+		Item:         e,
+	}
+
+	t.mutex.Lock()
+	defer t.mutex.Unlock()
+
+	t.data = append(t.data, res)
+
+	return nil
 }
 
 func (t *TerraformTarget) RenderResource(resourceType string, resourceName string, e interface{}) error {
@@ -175,6 +191,23 @@ func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 		resources[tfName] = res.Item
 	}
 
+	dataByType := make(map[string]map[string]interface{})
+	for _, res := range t.data {
+		resources := dataByType[res.ResourceType]
+		if resources == nil {
+			resources = make(map[string]interface{})
+			dataByType[res.ResourceType] = resources
+		}
+
+		tfName := tfSanitize(res.ResourceName)
+
+		if resources[tfName] != nil {
+			return fmt.Errorf("duplicate data resource found: %s.%s", res.ResourceType, tfName)
+		}
+
+		resources[tfName] = res.Item
+	}
+
 	providersByName := make(map[string]map[string]interface{})
 	if t.Cloud.ProviderID() == fi.CloudProviderGCE {
 		providerGoogle := make(map[string]interface{})
@@ -211,6 +244,9 @@ func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 
 	data := make(map[string]interface{})
 	data["resource"] = resourcesByType
+	if len(dataByType) != 0 {
+		data["data"] = dataByType
+	}
 	if len(providersByName) != 0 {
 		data["provider"] = providersByName
 	}
