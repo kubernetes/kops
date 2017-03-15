@@ -195,6 +195,11 @@ push-gce-run: push
 push-aws-run: push
 	ssh -t ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8
 
+# Please read docs/development/vsphere-dev.md before trying this out.
+# Build protokube and nodeup. Pushes protokube to DOCKER_REGISTRY and scp nodeup binary to the TARGET. Uncomment ssh part to run nodeup at set TARGET.
+push-vsphere: nodeup protokube-push
+	scp -C .build/dist/nodeup  ${TARGET}:~/
+	# ssh -t root@10.161.56.108 'export AWS_ACCESS_KEY_ID="AKIAJ6UOKB6BGYLIQJEQ"; export AWS_SECRET_ACCESS_KEY="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"; export AWS_REGION="us-west-2"; SKIP_PACKAGE_UPDATE=1 ~/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8'
 
 protokube-gocode:
 	go install k8s.io/kops/protokube/cmd/protokube
