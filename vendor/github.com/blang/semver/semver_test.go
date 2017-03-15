@@ -30,6 +30,13 @@ var formatTests = []formatTest{
 	{Version{1, 2, 3, []PRVersion{prstr("alpha"), prstr("b-eta")}, nil}, "1.2.3-alpha.b-eta"},
 }
 
+var tolerantFormatTests = []formatTest{
+	{Version{1, 2, 3, nil, nil}, "v1.2.3"},
+	{Version{1, 2, 3, nil, nil}, "	1.2.3 "},
+	{Version{1, 2, 0, nil, nil}, "1.2"},
+	{Version{1, 0, 0, nil, nil}, "1"},
+}
+
 func TestStringer(t *testing.T) {
 	for _, test := range formatTests {
 		if res := test.v.String(); res != test.result {
@@ -41,6 +48,18 @@ func TestStringer(t *testing.T) {
 func TestParse(t *testing.T) {
 	for _, test := range formatTests {
 		if v, err := Parse(test.result); err != nil {
+			t.Errorf("Error parsing %q: %q", test.result, err)
+		} else if comp := v.Compare(test.v); comp != 0 {
+			t.Errorf("Parsing, expected %q but got %q, comp: %d ", test.v, v, comp)
+		} else if err := v.Validate(); err != nil {
+			t.Errorf("Error validating parsed version %q: %q", test.v, err)
+		}
+	}
+}
+
+func TestParseTolerant(t *testing.T) {
+	for _, test := range tolerantFormatTests {
+		if v, err := ParseTolerant(test.result); err != nil {
 			t.Errorf("Error parsing %q: %q", test.result, err)
 		} else if comp := v.Compare(test.v); comp != 0 {
 			t.Errorf("Parsing, expected %q but got %q, comp: %d ", test.v, v, comp)
@@ -184,6 +203,19 @@ func TestWrongFormat(t *testing.T) {
 	}
 }
 
+var wrongTolerantFormatTests = []wrongformatTest{
+	{nil, "1.0+abc"},
+	{nil, "1.0-rc.1"},
+}
+
+func TestWrongTolerantFormat(t *testing.T) {
+	for _, test := range wrongTolerantFormatTests {
+		if res, err := ParseTolerant(test.str); err == nil {
+			t.Errorf("Parsing wrong format version %q, expected error but got %q", test.str, res)
+		}
+	}
+}
+
 func TestCompareHelper(t *testing.T) {
 	v := Version{1, 0, 0, []PRVersion{prstr("alpha")}, nil}
 	v1 := Version{1, 0, 0, nil, nil}
@@ -316,6 +348,15 @@ func BenchmarkParseAverage(b *testing.B) {
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		Parse(formatTests[n%l].result)
+	}
+}
+
+func BenchmarkParseTolerantAverage(b *testing.B) {
+	l := len(tolerantFormatTests)
+	b.ReportAllocs()
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		ParseTolerant(tolerantFormatTests[n%l].result)
 	}
 }
 
