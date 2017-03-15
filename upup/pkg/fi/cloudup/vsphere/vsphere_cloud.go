@@ -173,3 +173,26 @@ func (c *VSphereCloud) CreateLinkClonedVm(vmName, vmImage *string) (string, erro
 
 	return clonedVm.Reference().Value, nil
 }
+
+func (c *VSphereCloud) PowerOn(vm string) error {
+	f := find.NewFinder(c.Client.Client, true)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	dc, err := f.Datacenter(ctx, c.Datacenter)
+	if err != nil {
+		return err
+	}
+	f.SetDatacenter(dc)
+
+	vmRef, err := f.VirtualMachine(ctx, vm)
+	if err != nil {
+		return err
+	}
+	task, err := vmRef.PowerOn(ctx)
+	if err != nil {
+		return err
+	}
+	task.Wait(ctx)
+	return nil
+}
