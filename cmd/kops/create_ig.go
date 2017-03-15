@@ -73,6 +73,9 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 	groupName := args[0]
 
 	cluster, err := rootCommand.Cluster()
+	if err != nil {
+		return err
+	}
 
 	clientset, err := rootCommand.Clientset()
 	if err != nil {
