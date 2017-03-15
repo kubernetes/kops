@@ -7,7 +7,7 @@ kops create cluster \
     --node-count 3 \
     --zones us-west-2a,us-west-2b,us-west-2c \
     --master-zones us-west-2a,us-west-2b,us-west-2c \
-    --dns-zone kubernetes.com \
+    --dns-zone example.com \
     --node-size t2.medium \
     --master-size t2.medium \
     --node-security-groups sg-12345678 \
