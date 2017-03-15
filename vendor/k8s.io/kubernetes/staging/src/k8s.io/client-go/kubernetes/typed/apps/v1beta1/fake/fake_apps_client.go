@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,6 +24,14 @@ import (
 
 type FakeAppsV1beta1 struct {
 	*testing.Fake
+}
+
+func (c *FakeAppsV1beta1) Deployments(namespace string) v1beta1.DeploymentInterface {
+	return &FakeDeployments{c, namespace}
+}
+
+func (c *FakeAppsV1beta1) Scales(namespace string) v1beta1.ScaleInterface {
+	return &FakeScales{c, namespace}
 }
 
 func (c *FakeAppsV1beta1) StatefulSets(namespace string) v1beta1.StatefulSetInterface {

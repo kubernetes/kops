@@ -10,19 +10,15 @@ parent = "smn_cli"
 
 # logs
 
-```markdown
-Usage:  docker logs [OPTIONS] CONTAINER
+    Usage: docker logs [OPTIONS] CONTAINER
 
-Fetch the logs of a container
+    Fetch the logs of a container
 
-Options:
-      --details        Show extra details provided to logs
-  -f, --follow         Follow log output
-      --help           Print usage
-      --since string   Show logs since timestamp
-      --tail string    Number of lines to show from the end of the logs (default "all")
-  -t, --timestamps     Show timestamps
-```
+      -f, --follow              Follow log output
+      --help                    Print usage
+      --since=""                Show logs since timestamp
+      -t, --timestamps          Show timestamps
+      --tail="all"              Number of lines to show from the end of the logs
 
 > **Note**: this command is available only for containers with `json-file` and
 > `journald` logging drivers.
@@ -39,10 +35,6 @@ The `docker logs --timestamps` command will add an [RFC3339Nano timestamp](https
 , for example `2014-09-16T06:17:46.000000000Z`, to each
 log entry. To ensure that the timestamps are aligned the
 nano-second part of the timestamp will be padded with zero when necessary.
-
-The `docker logs --details` command will add on extra attributes, such as
-environment variables and labels, provided to `--log-opt` when creating the
-container.
 
 The `--since` option shows only the container logs generated after
 a given date. You can specify the date as an RFC 3339 date, a UNIX

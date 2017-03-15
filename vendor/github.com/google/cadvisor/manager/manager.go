@@ -44,9 +44,10 @@ import (
 	"github.com/google/cadvisor/utils/sysfs"
 	"github.com/google/cadvisor/version"
 
+	"net/http"
+
 	"github.com/golang/glog"
 	"github.com/opencontainers/runc/libcontainer/cgroups"
-	"net/http"
 )
 
 var globalHousekeepingInterval = flag.Duration("global_housekeeping_interval", 1*time.Minute, "Interval between global housekeepings")
@@ -99,6 +100,9 @@ type Manager interface {
 
 	// Get version information about different components we depend on.
 	GetVersionInfo() (*info.VersionInfo, error)
+
+	// Get filesystem information for the filesystem that contains the given directory
+	GetDirFsInfo(dir string) (v2.FsInfo, error)
 
 	// Get filesystem information for a given label.
 	// Returns information for all global filesystems if label is empty.
@@ -460,7 +464,7 @@ func (self *manager) GetContainerInfoV2(containerName string, options v2.Request
 			continue
 		}
 
-		result.Stats = v2.ContainerStatsFromV1(&cinfo.Spec, stats)
+		result.Stats = v2.ContainerStatsFromV1(containerName, &cinfo.Spec, stats)
 		infos[name] = result
 	}
 
@@ -656,6 +660,27 @@ func (self *manager) getRequestedContainers(containerName string, options v2.Req
 	return containersMap, nil
 }
 
+func (self *manager) GetDirFsInfo(dir string) (v2.FsInfo, error) {
+	dirDevice, err := self.fsInfo.GetDirFsDevice(dir)
+	if err != nil {
+		return v2.FsInfo{}, fmt.Errorf("error trying to get filesystem Device for dir %v: err: %v", dir, err)
+	}
+	dirMountpoint, err := self.fsInfo.GetMountpointForDevice(dirDevice.Device)
+	if err != nil {
+		return v2.FsInfo{}, fmt.Errorf("error trying to get MountPoint for Root Device: %v, err: %v", dirDevice, err)
+	}
+	infos, err := self.GetFsInfo("")
+	if err != nil {
+		return v2.FsInfo{}, err
+	}
+	for _, info := range infos {
+		if info.Mountpoint == dirMountpoint {
+			return info, nil
+		}
+	}
+	return v2.FsInfo{}, fmt.Errorf("did not find fs info for dir: %v", dir)
+}
+
 func (self *manager) GetFsInfo(label string) ([]v2.FsInfo, error) {
 	var empty time.Time
 	// Get latest data from filesystems hanging off root container.
@@ -671,7 +696,8 @@ func (self *manager) GetFsInfo(label string) ([]v2.FsInfo, error) {
 		}
 	}
 	fsInfo := []v2.FsInfo{}
-	for _, fs := range stats[0].Filesystem {
+	for i := range stats[0].Filesystem {
+		fs := stats[0].Filesystem[i]
 		if len(label) != 0 && fs.Device != dev {
 			continue
 		}
@@ -683,6 +709,7 @@ func (self *manager) GetFsInfo(label string) ([]v2.FsInfo, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		fi := v2.FsInfo{
 			Device:     fs.Device,
 			Mountpoint: mountpoint,
@@ -690,7 +717,10 @@ func (self *manager) GetFsInfo(label string) ([]v2.FsInfo, error) {
 			Usage:      fs.Usage,
 			Available:  fs.Available,
 			Labels:     labels,
-			InodesFree: fs.InodesFree,
+		}
+		if fs.HasInodes {
+			fi.Inodes = &fs.Inodes
+			fi.InodesFree = &fs.InodesFree
 		}
 		fsInfo = append(fsInfo, fi)
 	}

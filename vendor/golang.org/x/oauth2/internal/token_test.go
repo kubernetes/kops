@@ -14,23 +14,22 @@ func TestRegisterBrokenAuthHeaderProvider(t *testing.T) {
 	RegisterBrokenAuthHeaderProvider("https://aaa.com/")
 	tokenURL := "https://aaa.com/token"
 	if providerAuthHeaderWorks(tokenURL) {
-		t.Errorf("URL: %s is a broken provider", tokenURL)
+		t.Errorf("got %q as unbroken; want broken", tokenURL)
 	}
 }
 
 func Test_providerAuthHeaderWorks(t *testing.T) {
 	for _, p := range brokenAuthHeaderProviders {
 		if providerAuthHeaderWorks(p) {
-			t.Errorf("URL: %s not found in list", p)
+			t.Errorf("got %q as unbroken; want broken", p)
 		}
 		p := fmt.Sprintf("%ssomesuffix", p)
 		if providerAuthHeaderWorks(p) {
-			t.Errorf("URL: %s not found in list", p)
+			t.Errorf("got %q as unbroken; want broken", p)
 		}
 	}
 	p := "https://api.not-in-the-list-example.com/"
 	if !providerAuthHeaderWorks(p) {
-		t.Errorf("URL: %s found in list", p)
+		t.Errorf("got %q as unbroken; want broken", p)
 	}
-
 }

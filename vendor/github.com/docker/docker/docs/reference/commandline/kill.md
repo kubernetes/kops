@@ -10,15 +10,12 @@ parent = "smn_cli"
 
 # kill
 
-```markdown
-Usage:  docker kill [OPTIONS] CONTAINER [CONTAINER...]
+    Usage: docker kill [OPTIONS] CONTAINER [CONTAINER...]
 
-Kill one or more running container
+    Kill a running container using SIGKILL or a specified signal
 
-Options:
-      --help            Print usage
-  -s, --signal string   Signal to send to the container (default "KILL")
-```
+      --help                 Print usage
+      -s, --signal="KILL"    Signal to send to the container
 
 The main process inside the container will be sent `SIGKILL`, or any
 signal specified with option `--signal`.

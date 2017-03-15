@@ -234,16 +234,6 @@ func (opt viewQuery) customizeCreateTable(conf *createTableConf) {
 	conf.viewQuery = string(opt)
 }
 
-type useStandardSQL struct{}
-
-// UseStandardSQL returns a CreateTableOption to set the table to use standard SQL.
-// The default setting is false (using legacy SQL).
-func UseStandardSQL() CreateTableOption { return useStandardSQL{} }
-
-func (opt useStandardSQL) customizeCreateTable(conf *createTableConf) {
-	conf.useStandardSQL = true
-}
-
 // TableMetadataPatch represents a set of changes to a table's metadata.
 type TableMetadataPatch struct {
 	s                             service

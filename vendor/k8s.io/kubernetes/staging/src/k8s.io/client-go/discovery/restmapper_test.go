@@ -14,18 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package discovery
+package discovery_test
 
 import (
 	"reflect"
 	"testing"
 
-	"k8s.io/client-go/pkg/api/errors"
-	"k8s.io/client-go/pkg/apimachinery/registered"
-	metav1 "k8s.io/client-go/pkg/apis/meta/v1"
-	"k8s.io/client-go/pkg/runtime/schema"
-	"k8s.io/client-go/pkg/version"
-	"k8s.io/client-go/rest"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/version"
+	. "k8s.io/client-go/discovery"
+	"k8s.io/client-go/pkg/api"
+	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/rest/fake"
 
 	"github.com/emicklei/go-restful/swagger"
@@ -34,6 +35,21 @@ import (
 
 func TestRESTMapper(t *testing.T) {
 	resources := []*APIGroupResources{
+		{
+			Group: metav1.APIGroup{
+				Name: "extensions",
+				Versions: []metav1.GroupVersionForDiscovery{
+					{Version: "v1beta"},
+				},
+				PreferredVersion: metav1.GroupVersionForDiscovery{Version: "v1beta"},
+			},
+			VersionedResources: map[string][]metav1.APIResource{
+				"v1beta": {
+					{Name: "jobs", Namespaced: true, Kind: "Job"},
+					{Name: "pods", Namespaced: true, Kind: "Pod"},
+				},
+			},
+		},
 		{
 			Group: metav1.APIGroup{
 				Versions: []metav1.GroupVersionForDiscovery{
@@ -51,20 +67,6 @@ func TestRESTMapper(t *testing.T) {
 				},
 			},
 		},
-		{
-			Group: metav1.APIGroup{
-				Name: "extensions",
-				Versions: []metav1.GroupVersionForDiscovery{
-					{Version: "v1beta"},
-				},
-				PreferredVersion: metav1.GroupVersionForDiscovery{Version: "v1beta"},
-			},
-			VersionedResources: map[string][]metav1.APIResource{
-				"v1beta": {
-					{Name: "jobs", Namespaced: true, Kind: "Job"},
-				},
-			},
-		},
 	}
 
 	restMapper := NewRESTMapper(resources, nil)
@@ -73,6 +75,15 @@ func TestRESTMapper(t *testing.T) {
 		input schema.GroupVersionResource
 		want  schema.GroupVersionKind
 	}{
+		{
+			input: schema.GroupVersionResource{
+				Resource: "pods",
+			},
+			want: schema.GroupVersionKind{
+				Version: "v1",
+				Kind:    "Pod",
+			},
+		},
 		{
 			input: schema.GroupVersionResource{
 				Version:  "v1",
@@ -132,6 +143,15 @@ func TestRESTMapper(t *testing.T) {
 	}{
 		{
 			input: schema.GroupVersionResource{
+				Resource: "pods",
+			},
+			want: schema.GroupVersionResource{
+				Version:  "v1",
+				Resource: "pods",
+			},
+		},
+		{
+			input: schema.GroupVersionResource{
 				Version:  "v1",
 				Resource: "pods",
 			},
@@ -188,7 +208,7 @@ func TestDeferredDiscoveryRESTMapper_CacheMiss(t *testing.T) {
 	assert := assert.New(t)
 
 	cdc := fakeCachedDiscoveryInterface{fresh: false}
-	m := NewDeferredDiscoveryRESTMapper(&cdc, registered.InterfacesFor)
+	m := NewDeferredDiscoveryRESTMapper(&cdc, api.Registry.InterfacesFor)
 	assert.False(cdc.fresh, "should NOT be fresh after instantiation")
 	assert.Zero(cdc.invalidateCalls, "should not have called Invalidate()")
 
@@ -246,7 +266,7 @@ func (c *fakeCachedDiscoveryInterface) Invalidate() {
 	c.enabledA = true
 }
 
-func (c *fakeCachedDiscoveryInterface) RESTClient() rest.Interface {
+func (c *fakeCachedDiscoveryInterface) RESTClient() restclient.Interface {
 	return &fake.RESTClient{}
 }
 

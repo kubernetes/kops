@@ -14,32 +14,30 @@ import (
 )
 
 func TestIsKilledFalseWithNonKilledProcess(t *testing.T) {
-	var lsCmd *exec.Cmd
-	if runtime.GOOS != "windows" {
-		lsCmd = exec.Command("ls")
-	} else {
-		lsCmd = exec.Command("cmd", "/c", "dir")
+	// TODO Windows: Port this test
+	if runtime.GOOS == "windows" {
+		t.Skip("Needs porting to Windows")
 	}
 
-	err := lsCmd.Run()
+	lsCmd := exec.Command("ls")
+	lsCmd.Start()
+	// Wait for it to finish
+	err := lsCmd.Wait()
 	if IsKilled(err) {
 		t.Fatalf("Expected the ls command to not be killed, was.")
 	}
 }
 
 func TestIsKilledTrueWithKilledProcess(t *testing.T) {
-	var longCmd *exec.Cmd
-	if runtime.GOOS != "windows" {
-		longCmd = exec.Command("top")
-	} else {
-		longCmd = exec.Command("powershell", "while ($true) { sleep 1 }")
+	// TODO Windows: Using golang 1.5.3, this seems to hit
+	// a bug in go where Process.Kill() causes a panic.
+	// Needs further investigation @jhowardmsft
+	if runtime.GOOS == "windows" {
+		t.SkipNow()
 	}
-
+	longCmd := exec.Command("top")
 	// Start a command
-	err := longCmd.Start()
-	if err != nil {
-		t.Fatal(err)
-	}
+	longCmd.Start()
 	// Capture the error when *dying*
 	done := make(chan error, 1)
 	go func() {
@@ -48,7 +46,7 @@ func TestIsKilledTrueWithKilledProcess(t *testing.T) {
 	// Then kill it
 	longCmd.Process.Kill()
 	// Get the error
-	err = <-done
+	err := <-done
 	if !IsKilled(err) {
 		t.Fatalf("Expected the command to be killed, was not.")
 	}
@@ -510,11 +508,9 @@ func TestChannelBufferTimeout(t *testing.T) {
 	buf := &ChannelBuffer{make(chan []byte, 1)}
 	defer buf.Close()
 
-	done := make(chan struct{}, 1)
 	go func() {
 		time.Sleep(100 * time.Millisecond)
 		io.Copy(buf, strings.NewReader(expected))
-		done <- struct{}{}
 	}()
 
 	// Wait long enough
@@ -523,7 +519,9 @@ func TestChannelBufferTimeout(t *testing.T) {
 	if err == nil && err.Error() != "timeout reading from channel" {
 		t.Fatalf("Expected an error, got %s", err)
 	}
-	<-done
+
+	// Wait for the end :)
+	time.Sleep(150 * time.Millisecond)
 }
 
 func TestChannelBuffer(t *testing.T) {

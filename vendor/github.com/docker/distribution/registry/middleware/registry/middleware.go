@@ -5,7 +5,6 @@ import (
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/context"
-	"github.com/docker/distribution/registry/storage"
 )
 
 // InitFunc is the type of a RegistryMiddleware factory function and is
@@ -13,7 +12,6 @@ import (
 type InitFunc func(ctx context.Context, registry distribution.Namespace, options map[string]interface{}) (distribution.Namespace, error)
 
 var middlewares map[string]InitFunc
-var registryoptions []storage.RegistryOption
 
 // Register is used to register an InitFunc for
 // a RegistryMiddleware backend with the given name.
@@ -39,16 +37,4 @@ func Get(ctx context.Context, name string, options map[string]interface{}, regis
 	}
 
 	return nil, fmt.Errorf("no registry middleware registered with name: %s", name)
-}
-
-// RegisterOptions adds more options to RegistryOption list. Options get applied before
-// any other configuration-based options.
-func RegisterOptions(options ...storage.RegistryOption) error {
-	registryoptions = append(registryoptions, options...)
-	return nil
-}
-
-// GetRegistryOptions returns list of RegistryOption.
-func GetRegistryOptions() []storage.RegistryOption {
-	return registryoptions
 }

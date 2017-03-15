@@ -51,9 +51,8 @@ func (c *DataPipeline) ActivatePipelineRequest(input *ActivatePipelineInput) (re
 		input = &ActivatePipelineInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ActivatePipelineOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -136,9 +135,8 @@ func (c *DataPipeline) AddTagsRequest(input *AddTagsInput) (req *request.Request
 		input = &AddTagsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AddTagsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -214,9 +212,8 @@ func (c *DataPipeline) CreatePipelineRequest(input *CreatePipelineInput) (req *r
 		input = &CreatePipelineInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreatePipelineOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -286,9 +283,8 @@ func (c *DataPipeline) DeactivatePipelineRequest(input *DeactivatePipelineInput)
 		input = &DeactivatePipelineInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeactivatePipelineOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -369,11 +365,10 @@ func (c *DataPipeline) DeletePipelineRequest(input *DeletePipelineInput) (req *r
 		input = &DeletePipelineInput{}
 	}
 
+	output = &DeletePipelineOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeletePipelineOutput{}
-	req.Data = output
 	return
 }
 
@@ -459,9 +454,8 @@ func (c *DataPipeline) DescribeObjectsRequest(input *DescribeObjectsInput) (req 
 		input = &DescribeObjectsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeObjectsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -564,9 +558,8 @@ func (c *DataPipeline) DescribePipelinesRequest(input *DescribePipelinesInput) (
 		input = &DescribePipelinesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribePipelinesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -650,9 +643,8 @@ func (c *DataPipeline) EvaluateExpressionRequest(input *EvaluateExpressionInput)
 		input = &EvaluateExpressionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &EvaluateExpressionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -733,9 +725,8 @@ func (c *DataPipeline) GetPipelineDefinitionRequest(input *GetPipelineDefinition
 		input = &GetPipelineDefinitionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetPipelineDefinitionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -818,9 +809,8 @@ func (c *DataPipeline) ListPipelinesRequest(input *ListPipelinesInput) (req *req
 		input = &ListPipelinesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListPipelinesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -915,9 +905,8 @@ func (c *DataPipeline) PollForTaskRequest(input *PollForTaskInput) (req *request
 		input = &PollForTaskInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PollForTaskOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1002,9 +991,8 @@ func (c *DataPipeline) PutPipelineDefinitionRequest(input *PutPipelineDefinition
 		input = &PutPipelineDefinitionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PutPipelineDefinitionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1099,9 +1087,8 @@ func (c *DataPipeline) QueryObjectsRequest(input *QueryObjectsInput) (req *reque
 		input = &QueryObjectsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &QueryObjectsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1203,9 +1190,8 @@ func (c *DataPipeline) RemoveTagsRequest(input *RemoveTagsInput) (req *request.R
 		input = &RemoveTagsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RemoveTagsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1281,9 +1267,8 @@ func (c *DataPipeline) ReportTaskProgressRequest(input *ReportTaskProgressInput)
 		input = &ReportTaskProgressInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ReportTaskProgressOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1373,9 +1358,8 @@ func (c *DataPipeline) ReportTaskRunnerHeartbeatRequest(input *ReportTaskRunnerH
 		input = &ReportTaskRunnerHeartbeatInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ReportTaskRunnerHeartbeatOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1448,11 +1432,10 @@ func (c *DataPipeline) SetStatusRequest(input *SetStatusInput) (req *request.Req
 		input = &SetStatusInput{}
 	}
 
+	output = &SetStatusOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &SetStatusOutput{}
-	req.Data = output
 	return
 }
 
@@ -1532,9 +1515,8 @@ func (c *DataPipeline) SetTaskStatusRequest(input *SetTaskStatusInput) (req *req
 		input = &SetTaskStatusInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &SetTaskStatusOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1617,9 +1599,8 @@ func (c *DataPipeline) ValidatePipelineDefinitionRequest(input *ValidatePipeline
 		input = &ValidatePipelineDefinitionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ValidatePipelineDefinitionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

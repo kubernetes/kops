@@ -1,11 +1,11 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/VbKRc7NKC963fgm8EKtLFdMwzaw\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/PdTT6Kk99c4WbnPvilAygJRMapM\"",
  "discoveryVersion": "v1",
  "id": "drive:v3",
  "name": "drive",
  "version": "v3",
- "revision": "20160616",
+ "revision": "20161103",
  "title": "Drive API",
  "description": "Manages files in Drive including uploading, downloading, searching, detecting changes, and updating sharing permissions.",
  "ownerDomain": "google.com",
@@ -135,7 +135,7 @@
     },
     "kind": {
      "type": "string",
-     "description": "This is always drive#about.",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"drive#about\".",
      "default": "drive#about"
     },
     "maxImportSizes": {
@@ -198,7 +198,7 @@
     },
     "kind": {
      "type": "string",
-     "description": "This is always drive#change.",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"drive#change\".",
      "default": "drive#change"
     },
     "removed": {
@@ -226,7 +226,7 @@
     },
     "kind": {
      "type": "string",
-     "description": "This is always drive#changeList.",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"drive#changeList\".",
      "default": "drive#changeList"
     },
     "newStartPageToken": {
@@ -334,7 +334,7 @@
     },
     "kind": {
      "type": "string",
-     "description": "This is always drive#comment.",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"drive#comment\".",
      "default": "drive#comment"
     },
     "modifiedTime": {
@@ -383,7 +383,7 @@
     },
     "kind": {
      "type": "string",
-     "description": "This is always drive#commentList.",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"drive#commentList\".",
      "default": "drive#commentList"
     },
     "nextPageToken": {
@@ -615,7 +615,7 @@
     },
     "kind": {
      "type": "string",
-     "description": "This is always drive#file.",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"drive#file\".",
      "default": "drive#file"
     },
     "lastModifyingUser": {
@@ -629,6 +629,10 @@
     "mimeType": {
      "type": "string",
      "description": "The MIME type of the file.\nDrive will attempt to automatically detect an appropriate value from uploaded content if no value is provided. The value cannot be changed unless a new revision is uploaded.\nIf a file is created with a Google Doc MIME type, the uploaded content will be imported if possible. The supported import formats are published in the About resource."
+    },
+    "modifiedByMe": {
+     "type": "boolean",
+     "description": "Whether the file has been modified by this user."
     },
     "modifiedByMeTime": {
      "type": "string",
@@ -789,7 +793,7 @@
     },
     "kind": {
      "type": "string",
-     "description": "This is always drive#fileList.",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"drive#fileList\".",
      "default": "drive#fileList"
     },
     "nextPageToken": {
@@ -812,7 +816,7 @@
     },
     "kind": {
      "type": "string",
-     "description": "This is always drive#generatedIds",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"drive#generatedIds\".",
      "default": "drive#generatedIds"
     },
     "space": {
@@ -853,7 +857,7 @@
     },
     "kind": {
      "type": "string",
-     "description": "This is always drive#permission.",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"drive#permission\".",
      "default": "drive#permission"
     },
     "photoLink": {
@@ -887,7 +891,7 @@
    "properties": {
     "kind": {
      "type": "string",
-     "description": "This is always drive#permissionList.",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"drive#permissionList\".",
      "default": "drive#permissionList"
     },
     "permissions": {
@@ -940,7 +944,7 @@
     },
     "kind": {
      "type": "string",
-     "description": "This is always drive#reply.",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"drive#reply\".",
      "default": "drive#reply"
     },
     "modifiedTime": {
@@ -957,7 +961,7 @@
    "properties": {
     "kind": {
      "type": "string",
-     "description": "This is always drive#replyList.",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"drive#replyList\".",
      "default": "drive#replyList"
     },
     "nextPageToken": {
@@ -988,7 +992,7 @@
     },
     "kind": {
      "type": "string",
-     "description": "This is always drive#revision.",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"drive#revision\".",
      "default": "drive#revision"
     },
     "lastModifyingUser": {
@@ -1038,8 +1042,12 @@
    "properties": {
     "kind": {
      "type": "string",
-     "description": "This is always drive#revisionList.",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"drive#revisionList\".",
      "default": "drive#revisionList"
+    },
+    "nextPageToken": {
+     "type": "string",
+     "description": "The page token for the next page of revisions. This will be absent if the end of the revisions list has been reached."
     },
     "revisions": {
      "type": "array",
@@ -1056,7 +1064,7 @@
    "properties": {
     "kind": {
      "type": "string",
-     "description": "This is always drive#startPageToken.",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"drive#startPageToken\".",
      "default": "drive#startPageToken"
     },
     "startPageToken": {
@@ -1080,7 +1088,7 @@
     },
     "kind": {
      "type": "string",
-     "description": "This is always drive#user.",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"drive#user\".",
      "default": "drive#user"
     },
     "me": {
@@ -2366,6 +2374,20 @@
        "description": "The ID of the file.",
        "required": true,
        "location": "path"
+      },
+      "pageSize": {
+       "type": "integer",
+       "description": "The maximum number of revisions to return per page.",
+       "default": "200",
+       "format": "int32",
+       "minimum": "1",
+       "maximum": "1000",
+       "location": "query"
+      },
+      "pageToken": {
+       "type": "string",
+       "description": "The token for continuing a previous list request on the next page. This should be set to the value of 'nextPageToken' from the previous response.",
+       "location": "query"
       }
      },
      "parameterOrder": [

@@ -104,7 +104,7 @@ func TestMedia(t *testing.T) {
 	if g.MultipartForm != nil {
 		t.Errorf("MultipartForm = %#v; want nil", g.MultipartForm)
 	}
-	if w := s.BasePath + "/b/mybucket/o?alt=json&uploadType=multipart"; g.RequestURI != w {
+	if w := "/b/mybucket/o?alt=json&uploadType=multipart"; g.RequestURI != w {
 		t.Errorf("RequestURI = %q; want %q", g.RequestURI, w)
 	}
 	if w := "\r\n\r\n" + body + "\r\n"; !strings.Contains(string(handler.body), w) {
@@ -247,7 +247,7 @@ func TestNoMedia(t *testing.T) {
 	if g.MultipartForm != nil {
 		t.Errorf("MultipartForm = %#v; want nil", g.MultipartForm)
 	}
-	if w := s.BasePath + "/b/mybucket/o?alt=json"; g.RequestURI != w {
+	if w := "/b/mybucket/o?alt=json"; g.RequestURI != w {
 		t.Errorf("RequestURI = %q; want %q", g.RequestURI, w)
 	}
 	if w := `{"bucket":"mybucket","contentEncoding":"utf-8","contentLanguage":"en","contentType":"plain/text","name":"filename"}` + "\n"; string(handler.body) != w {

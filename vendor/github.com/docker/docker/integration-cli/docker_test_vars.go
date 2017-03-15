@@ -10,10 +10,8 @@ import (
 )
 
 var (
-	// the docker client binary to use
+	// the docker binary to use
 	dockerBinary = "docker"
-	// the docker daemon binary to use
-	dockerdBinary = "dockerd"
 
 	// path to containerd's ctr binary
 	ctrBinary = "docker-containerd-ctr"
@@ -42,8 +40,8 @@ var (
 
 	// windowsDaemonKV is used on Windows to distinguish between different
 	// versions. This is necessary to enable certain tests based on whether
-	// the platform supports it. For example, Windows Server 2016 TP3 did
-	// not support volumes, but TP4 did.
+	// the platform supports it. For example, Windows Server 2016 TP3 does
+	// not support volumes, but TP4 does.
 	windowsDaemonKV int
 
 	// daemonDefaultImage is the name of the default image to use when running
@@ -61,13 +59,12 @@ var (
 	// driver of the daemon. This is initialized in docker_utils by sending
 	// a version call to the daemon and examining the response header.
 	daemonStorageDriver string
-
-	// WindowsBaseImage is the name of the base image for Windows testing
-	// Environment variable WINDOWS_BASE_IMAGE can override this
-	WindowsBaseImage = "windowsservercore"
 )
 
 const (
+	// WindowsBaseImage is the name of the base image for Windows testing
+	WindowsBaseImage = "windowsservercore"
+
 	// DefaultImage is the name of the base image for the majority of tests that
 	// are run across suites
 	DefaultImage = "busybox"
@@ -129,9 +126,4 @@ func init() {
 	}
 	volumesConfigPath = dockerBasePath + "/volumes"
 	containerStoragePath = dockerBasePath + "/containers"
-
-	if len(os.Getenv("WINDOWS_BASE_IMAGE")) > 0 {
-		WindowsBaseImage = os.Getenv("WINDOWS_BASE_IMAGE")
-		fmt.Println("INFO: Windows Base image is ", WindowsBaseImage)
-	}
 }

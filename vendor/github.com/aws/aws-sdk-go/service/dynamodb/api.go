@@ -55,9 +55,8 @@ func (c *DynamoDB) BatchGetItemRequest(input *BatchGetItemInput) (req *request.R
 		input = &BatchGetItemInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &BatchGetItemOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -206,9 +205,8 @@ func (c *DynamoDB) BatchWriteItemRequest(input *BatchWriteItemInput) (req *reque
 		input = &BatchWriteItemInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &BatchWriteItemOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -356,9 +354,8 @@ func (c *DynamoDB) CreateTableRequest(input *CreateTableInput) (req *request.Req
 		input = &CreateTableInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateTableOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -451,9 +448,8 @@ func (c *DynamoDB) DeleteItemRequest(input *DeleteItemInput) (req *request.Reque
 		input = &DeleteItemInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteItemOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -549,9 +545,8 @@ func (c *DynamoDB) DeleteTableRequest(input *DeleteTableInput) (req *request.Req
 		input = &DeleteTableInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteTableOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -651,9 +646,8 @@ func (c *DynamoDB) DescribeLimitsRequest(input *DescribeLimitsInput) (req *reque
 		input = &DescribeLimitsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeLimitsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -773,9 +767,8 @@ func (c *DynamoDB) DescribeTableRequest(input *DescribeTableInput) (req *request
 		input = &DescribeTableInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeTableOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -851,9 +844,8 @@ func (c *DynamoDB) GetItemRequest(input *GetItemInput) (req *request.Request, ou
 		input = &GetItemInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetItemOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -941,9 +933,8 @@ func (c *DynamoDB) ListTablesRequest(input *ListTablesInput) (req *request.Reque
 		input = &ListTablesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListTablesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1034,9 +1025,8 @@ func (c *DynamoDB) PutItemRequest(input *PutItemInput) (req *request.Request, ou
 		input = &PutItemInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PutItemOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1151,9 +1141,8 @@ func (c *DynamoDB) QueryRequest(input *QueryInput) (req *request.Request, output
 		input = &QueryInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &QueryOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1285,9 +1274,8 @@ func (c *DynamoDB) ScanRequest(input *ScanInput) (req *request.Request, output *
 		input = &ScanInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ScanOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1408,9 +1396,8 @@ func (c *DynamoDB) UpdateItemRequest(input *UpdateItemInput) (req *request.Reque
 		input = &UpdateItemInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateItemOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1500,9 +1487,8 @@ func (c *DynamoDB) UpdateTableRequest(input *UpdateTableInput) (req *request.Req
 		input = &UpdateTableInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateTableOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

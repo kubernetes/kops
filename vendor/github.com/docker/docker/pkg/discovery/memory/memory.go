@@ -1,18 +1,16 @@
 package memory
 
 import (
-	"sync"
 	"time"
 
 	"github.com/docker/docker/pkg/discovery"
 )
 
-// Discovery implements a discovery backend that keeps
+// Discovery implements a descovery backend that keeps
 // data in memory.
 type Discovery struct {
 	heartbeat time.Duration
 	values    []string
-	mu        sync.Mutex
 }
 
 func init() {
@@ -43,27 +41,21 @@ func (s *Discovery) Watch(stopCh <-chan struct{}) (<-chan discovery.Entries, <-c
 
 		// Send the initial entries if available.
 		var currentEntries discovery.Entries
-		var err error
-
-		s.mu.Lock()
 		if len(s.values) > 0 {
+			var err error
 			currentEntries, err = discovery.CreateEntries(s.values)
-		}
-		s.mu.Unlock()
-
-		if err != nil {
-			errCh <- err
-		} else if currentEntries != nil {
-			ch <- currentEntries
+			if err != nil {
+				errCh <- err
+			} else {
+				ch <- currentEntries
+			}
 		}
 
 		// Periodically send updates.
 		for {
 			select {
 			case <-ticker.C:
-				s.mu.Lock()
 				newEntries, err := discovery.CreateEntries(s.values)
-				s.mu.Unlock()
 				if err != nil {
 					errCh <- err
 					continue
@@ -86,8 +78,6 @@ func (s *Discovery) Watch(stopCh <-chan struct{}) (<-chan discovery.Entries, <-c
 
 // Register adds a new address to the discovery.
 func (s *Discovery) Register(addr string) error {
-	s.mu.Lock()
 	s.values = append(s.values, addr)
-	s.mu.Unlock()
 	return nil
 }

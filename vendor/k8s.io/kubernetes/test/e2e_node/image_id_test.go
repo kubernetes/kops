@@ -17,8 +17,8 @@ limitations under the License.
 package e2e_node
 
 import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/api/v1"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/kubelet/dockertools"
 	"k8s.io/kubernetes/test/e2e/framework"
 
@@ -35,7 +35,7 @@ var _ = framework.KubeDescribe("ImageID", func() {
 
 	It("should be set to the manifest digest (from RepoDigests) when available", func() {
 		podDesc := &v1.Pod{
-			ObjectMeta: v1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name: "pod-with-repodigest",
 			},
 			Spec: v1.PodSpec{
@@ -51,7 +51,7 @@ var _ = framework.KubeDescribe("ImageID", func() {
 		pod := f.PodClient().Create(podDesc)
 
 		framework.ExpectNoError(framework.WaitTimeoutForPodNoLongerRunningInNamespace(
-			f.ClientSet, pod.Name, f.Namespace.Name, "", framework.PodStartTimeout))
+			f.ClientSet, pod.Name, f.Namespace.Name, framework.PodStartTimeout))
 		runningPod, err := f.PodClient().Get(pod.Name, metav1.GetOptions{})
 		framework.ExpectNoError(err)
 

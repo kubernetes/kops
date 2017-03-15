@@ -3,9 +3,6 @@
 title = "Testing an insecure registry"
 description = "Deploying a Registry in an insecure fashion"
 keywords = ["registry, on-prem, images, tags, repository, distribution, insecure"]
-[menu.main]
-parent="smn_registry_ref"
-weight=5
 +++
 <![end-metadata]-->
 
@@ -63,7 +60,7 @@ This is more secure than the insecure registry solution.  You must configure eve
 
 2. Be sure to use the name `myregistrydomain.com` as a CN.
 
-3. Use the result to [start your registry with TLS enabled](./deploying.md#get-a-certificate)
+3. Use the result to [start your registry with TLS enabled](https://github.com/docker/distribution/blob/master/docs/deploying.md#get-a-certificate)
 
 4. Instruct every docker daemon to trust that certificate.
 

@@ -17,7 +17,7 @@ limitations under the License.
 package stats
 
 import (
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // Summary is a top-level container for holding NodeStats and PodStats.
@@ -191,6 +191,8 @@ type VolumeStats struct {
 
 // FsStats contains data about filesystem usage.
 type FsStats struct {
+	// The time at which these stats were updated.
+	Time metav1.Time `json:"time"`
 	// AvailableBytes represents the storage space available (bytes) for the filesystem.
 	// +optional
 	AvailableBytes *uint64 `json:"availableBytes,omitempty"`

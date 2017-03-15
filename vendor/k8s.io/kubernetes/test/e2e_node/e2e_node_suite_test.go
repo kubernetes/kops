@@ -31,8 +31,9 @@ import (
 	"testing"
 	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/api/v1"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	commontest "k8s.io/kubernetes/test/e2e/common"
 	"k8s.io/kubernetes/test/e2e/framework"
 	"k8s.io/kubernetes/test/e2e_node/services"
@@ -64,7 +65,6 @@ func init() {
 	// It seems that someone is using flag.Parse() after init() and TestMain().
 	// TODO(random-liu): Find who is using flag.Parse() and cause errors and move the following logic
 	// into TestContext.
-	pflag.CommandLine.MarkHidden("enable-cri")
 }
 
 func TestMain(m *testing.M) {
@@ -98,7 +98,7 @@ func TestE2eNode(t *testing.T) {
 				glog.Exitf("chroot %q failed: %v", rootfs, err)
 			}
 		}
-		if err := system.ValidateDefault(); err != nil {
+		if _, err := system.ValidateDefault(framework.TestContext.ContainerRuntime); err != nil {
 			glog.Exitf("system validation failed: %v", err)
 		}
 		return
@@ -114,7 +114,7 @@ func TestE2eNode(t *testing.T) {
 			glog.Errorf("Failed creating report directory: %v", err)
 		} else {
 			// Configure a junit reporter to write to the directory
-			junitFile := fmt.Sprintf("junit_%s%02d.xml", framework.TestContext.ReportPrefix, config.GinkgoConfig.ParallelNode)
+			junitFile := fmt.Sprintf("junit_%s_%02d.xml", framework.TestContext.ReportPrefix, config.GinkgoConfig.ParallelNode)
 			junitPath := path.Join(reportDir, junitFile)
 			reporters = append(reporters, morereporters.NewJUnitReporter(junitPath))
 		}
@@ -252,7 +252,7 @@ func updateTestContext() error {
 
 // getNode gets node object from the apiserver.
 func getNode(c *clientset.Clientset) (*v1.Node, error) {
-	nodes, err := c.Nodes().List(v1.ListOptions{})
+	nodes, err := c.Nodes().List(metav1.ListOptions{})
 	Expect(err).NotTo(HaveOccurred(), "should be able to list nodes.")
 	if nodes == nil {
 		return nil, fmt.Errorf("the node list is nil.")

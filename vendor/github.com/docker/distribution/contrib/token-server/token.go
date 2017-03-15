@@ -55,23 +55,6 @@ func ResolveScopeSpecifiers(ctx context.Context, scopeSpecs []string) []auth.Acc
 	return requestedAccessList
 }
 
-// ResolveScopeList converts a scope list from a token request's
-// `scope` parameter into a list of standard access objects.
-func ResolveScopeList(ctx context.Context, scopeList string) []auth.Access {
-	scopes := strings.Split(scopeList, " ")
-	return ResolveScopeSpecifiers(ctx, scopes)
-}
-
-// ToScopeList converts a list of access to a
-// scope list string
-func ToScopeList(access []auth.Access) string {
-	var s []string
-	for _, a := range access {
-		s = append(s, fmt.Sprintf("%s:%s:%s", a.Type, a.Name, a.Action))
-	}
-	return strings.Join(s, ",")
-}
-
 // TokenIssuer represents an issuer capable of generating JWT tokens
 type TokenIssuer struct {
 	Issuer     string

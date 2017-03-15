@@ -50,11 +50,10 @@ func (c *MobileAnalytics) PutEventsRequest(input *PutEventsInput) (req *request.
 		input = &PutEventsInput{}
 	}
 
+	output = &PutEventsOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &PutEventsOutput{}
-	req.Data = output
 	return
 }
 

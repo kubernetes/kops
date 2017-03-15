@@ -24,16 +24,15 @@ import (
 	"testing"
 
 	"golang.org/x/net/context"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/rand"
 	"k8s.io/kubernetes/pkg/cloudprovider"
-	"k8s.io/kubernetes/pkg/types"
-	"k8s.io/kubernetes/pkg/util/rand"
 )
 
 func configFromEnv() (cfg VSphereConfig, ok bool) {
 	var InsecureFlag bool
 	var err error
 	cfg.Global.VCenterIP = os.Getenv("VSPHERE_VCENTER")
-	cfg.Global.VCenterPort = os.Getenv("VSPHERE_VCENTER_PORT")
 	cfg.Global.User = os.Getenv("VSPHERE_USER")
 	cfg.Global.Password = os.Getenv("VSPHERE_PASSWORD")
 	cfg.Global.Datacenter = os.Getenv("VSPHERE_DATACENTER")
@@ -71,6 +70,7 @@ user = user
 password = password
 insecure-flag = true
 datacenter = us-west
+vm-uuid = 1234
 `))
 	if err != nil {
 		t.Fatalf("Should succeed when a valid config is provided: %s", err)
@@ -80,12 +80,12 @@ datacenter = us-west
 		t.Errorf("incorrect vcenter ip: %s", cfg.Global.VCenterIP)
 	}
 
-	if cfg.Global.VCenterPort != "443" {
-		t.Errorf("incorrect vcenter port: %s", cfg.Global.VCenterPort)
-	}
-
 	if cfg.Global.Datacenter != "us-west" {
 		t.Errorf("incorrect datacenter: %s", cfg.Global.Datacenter)
+	}
+
+	if cfg.Global.VMUUID != "1234" {
+		t.Errorf("incorrect vm-uuid: %s", cfg.Global.VMUUID)
 	}
 }
 
