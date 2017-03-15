@@ -3,7 +3,7 @@
  - Note your hosted zone ID
 
 ```bash
-aws route53 list-hosted-zones | jq '.HostedZones[] | select(.Name=="subdomain.kubernetes.com.") | .Id' 
+aws route53 list-hosted-zones | jq '.HostedZones[] | select(.Name=="subdomain.example.com.") | .Id'
 
 ```
 

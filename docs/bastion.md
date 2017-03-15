@@ -54,7 +54,7 @@ By default the bastion instance group will create a public CNAME alias that will
 The default bastion name is `bastion.$NAME` as in
 
 ```yaml
-bastion.example.kubernetes.com
+bastion.mycluster.example.com
 ```
 
 Unless a user is using `--dns-zone` which will inherently use the `basion-$ZONE` syntax.
@@ -65,7 +65,7 @@ You can define a custom bastion CNAME by editing the main cluster config `kops e
 spec:
   topology:
     bastion:
-      bastionPublicName: bastion.example.kubernetes.com
+      bastionPublicName: bastion.mycluster.example.com
 ```
 
 ### Using SSH agent to access your bastion
