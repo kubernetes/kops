@@ -23,8 +23,8 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/upup/pkg/fi/utils"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 )
 
 // BuildFlags builds flag arguments based on "flag" tags on the structure

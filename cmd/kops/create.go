@@ -23,16 +23,15 @@ import (
 	"bytes"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/vfs"
-	k8sapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/errors"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
-	"k8s.io/kubernetes/pkg/runtime/schema"
 )
 
 type CreateOptions struct {
@@ -80,7 +79,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 	}
 
 	// Codecs provides access to encoding and decoding for the scheme
-	codecs := k8sapi.Codecs //serializer.NewCodecFactory(scheme)
+	codecs := kopsapi.Codecs //serializer.NewCodecFactory(scheme)
 
 	codec := codecs.UniversalDecoder(kopsapi.SchemeGroupVersion)
 
@@ -106,7 +105,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 			case *kopsapi.Federation:
 				_, err = clientset.Federations().Create(v)
 				if err != nil {
-					if errors.IsAlreadyExists(err) {
+					if apierrors.IsAlreadyExists(err) {
 						return fmt.Errorf("federation %q already exists", v.ObjectMeta.Name)
 					}
 					return fmt.Errorf("error creating federation: %v", err)
@@ -121,7 +120,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 				}
 				_, err = clientset.Clusters().Create(v)
 				if err != nil {
-					if errors.IsAlreadyExists(err) {
+					if apierrors.IsAlreadyExists(err) {
 						return fmt.Errorf("cluster %q already exists", v.ObjectMeta.Name)
 					}
 					return fmt.Errorf("error creating cluster: %v", err)
@@ -134,7 +133,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 				}
 				_, err = clientset.InstanceGroups(clusterName).Create(v)
 				if err != nil {
-					if errors.IsAlreadyExists(err) {
+					if apierrors.IsAlreadyExists(err) {
 						return fmt.Errorf("instanceGroup %q already exists", v.ObjectMeta.Name)
 					}
 					return fmt.Errorf("error creating instanceGroup: %v", err)

@@ -24,6 +24,7 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/golang/glog"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
@@ -46,7 +47,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
-	k8sapi "k8s.io/kubernetes/pkg/api"
 )
 
 const DefaultMaxTaskDuration = 10 * time.Minute
@@ -101,7 +101,7 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	if c.InstanceGroups == nil {
-		list, err := c.Clientset.InstanceGroups(c.Cluster.ObjectMeta.Name).List(k8sapi.ListOptions{})
+		list, err := c.Clientset.InstanceGroups(c.Cluster.ObjectMeta.Name).List(metav1.ListOptions{})
 		if err != nil {
 			return err
 		}

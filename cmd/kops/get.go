@@ -22,8 +22,8 @@ import (
 	"io"
 
 	"github.com/spf13/cobra"
+	"k8s.io/apimachinery/pkg/runtime"
 	api "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kubernetes/pkg/runtime"
 )
 
 // GetCmd represents the get command

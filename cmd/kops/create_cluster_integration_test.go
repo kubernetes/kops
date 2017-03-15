@@ -20,18 +20,17 @@ import (
 	"bytes"
 	"github.com/golang/glog"
 	"io/ioutil"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/diff"
-	k8sapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/apis/meta/v1"
 	"path"
 	"strings"
 	"testing"
 	"time"
 )
 
-var MagicTimestamp = v1.Time{Time: time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC)}
+var MagicTimestamp = metav1.Time{Time: time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC)}
 
 // TestCreateClusterMinimal runs kops create cluster minimal.example.com --zones us-test-1a
 func TestCreateClusterMinimal(t *testing.T) {
@@ -119,7 +118,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 	}
 
 	// Compare cluster
-	clusters, err := clientset.Clusters().List(k8sapi.ListOptions{})
+	clusters, err := clientset.Clusters().List(metav1.ListOptions{})
 	if err != nil {
 		t.Fatalf("error listing clusters: %v", err)
 	}
@@ -143,7 +142,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 
 	// Compare instance groups
 
-	instanceGroups, err := clientset.InstanceGroups(clusters.Items[0].ObjectMeta.Name).List(k8sapi.ListOptions{})
+	instanceGroups, err := clientset.InstanceGroups(clusters.Items[0].ObjectMeta.Name).List(metav1.ListOptions{})
 	if err != nil {
 		t.Fatalf("error listing instance groups: %v", err)
 	}
