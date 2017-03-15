@@ -98,7 +98,7 @@ func TestPopulateCluster_Docker_Spec(t *testing.T) {
 	c.Spec.Docker = &api.DockerConfig{
 		MTU:              fi.Int32(5678),
 		InsecureRegistry: fi.String("myregistry.com:1234"),
-		LogOpts:          fi.String("env=FOO"),
+		LogOpt:           fi.String("env=FOO"),
 	}
 
 	err := PerformAssignments(c)
@@ -121,8 +121,8 @@ func TestPopulateCluster_Docker_Spec(t *testing.T) {
 		t.Fatalf("Unexpected Docker InsecureRegistry: %v", full.Spec.Docker.InsecureRegistry)
 	}
 
-	if fi.StringValue(full.Spec.Docker.LogOpts) != "env=FOO" {
-		t.Fatalf("Unexpected Docker LogOpts: %v", full.Spec.Docker.LogOpts)
+	if fi.StringValue(full.Spec.Docker.LogOpt) != "env=FOO" {
+		t.Fatalf("Unexpected Docker LogOpt: %v", full.Spec.Docker.LogOpt)
 	}
 }
 

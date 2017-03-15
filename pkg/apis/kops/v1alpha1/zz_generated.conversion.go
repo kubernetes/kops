@@ -659,7 +659,7 @@ func autoConvert_v1alpha1_DockerConfig_To_kops_DockerConfig(in *DockerConfig, ou
 	out.LogLevel = in.LogLevel
 	out.IPTables = in.IPTables
 	out.IPMasq = in.IPMasq
-	out.LogOpts = in.LogOpts
+	out.LogOpt = in.LogOpt
 	out.Storage = in.Storage
 	out.InsecureRegistry = in.InsecureRegistry
 	out.MTU = in.MTU
@@ -677,7 +677,7 @@ func autoConvert_kops_DockerConfig_To_v1alpha1_DockerConfig(in *kops.DockerConfi
 	out.LogLevel = in.LogLevel
 	out.IPTables = in.IPTables
 	out.IPMasq = in.IPMasq
-	out.LogOpts = in.LogOpts
+	out.LogOpt = in.LogOpt
 	out.Storage = in.Storage
 	out.InsecureRegistry = in.InsecureRegistry
 	out.MTU = in.MTU
