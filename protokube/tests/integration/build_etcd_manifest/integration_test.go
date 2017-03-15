@@ -18,16 +18,16 @@ package main
 
 import (
 	"io/ioutil"
-	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/diff"
 	"path"
+	"strconv"
+	"strings"
 	"testing"
 
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/protokube/pkg/protokube"
-	"strings"
 
-	_ "k8s.io/kubernetes/pkg/api/install"
-	"strconv"
+	_ "k8s.io/client-go/pkg/api/install"
 )
 
 func TestBuildEtcdManifest(t *testing.T) {

@@ -20,13 +20,15 @@ import (
 	"fmt"
 	"testing"
 
-	"k8s.io/kubernetes/pkg/api/resource"
-	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/pkg/api/v1"
 )
 
 func Test_ValidateClusterPositive(t *testing.T) {
-	nodeList, err := dummyClient("true", "true").Core().Nodes().List(v1.ListOptions{})
+	nodeList, err := dummyClient("true", "true").Core().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -42,7 +44,7 @@ func Test_ValidateClusterPositive(t *testing.T) {
 }
 
 func Test_ValidateClusterMasterAndNodeNotReady(t *testing.T) {
-	nodeList, err := dummyClient("false", "false").Core().Nodes().List(v1.ListOptions{})
+	nodeList, err := dummyClient("false", "false").Core().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -58,7 +60,7 @@ func Test_ValidateClusterMasterAndNodeNotReady(t *testing.T) {
 }
 
 func Test_ValidateClusterComponents(t *testing.T) {
-	nodeList, err := dummyClient("true", "true").Core().Nodes().List(v1.ListOptions{})
+	nodeList, err := dummyClient("true", "true").Core().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -75,7 +77,7 @@ func Test_ValidateClusterComponents(t *testing.T) {
 }
 
 func Test_ValidateClusterPods(t *testing.T) {
-	nodeList, err := dummyClient("true", "true").Core().Nodes().List(v1.ListOptions{})
+	nodeList, err := dummyClient("true", "true").Core().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -92,7 +94,7 @@ func Test_ValidateClusterPods(t *testing.T) {
 }
 
 func Test_ValidateClusterNodeNotReady(t *testing.T) {
-	nodeList, err := dummyClient("true", "false").Core().Nodes().List(v1.ListOptions{})
+	nodeList, err := dummyClient("true", "false").Core().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -108,7 +110,7 @@ func Test_ValidateClusterNodeNotReady(t *testing.T) {
 }
 
 func Test_ValidateClusterMastersNotEnough(t *testing.T) {
-	nodeList, err := dummyClient("true", "true").Core().Nodes().List(v1.ListOptions{})
+	nodeList, err := dummyClient("true", "true").Core().Nodes().List(metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -134,7 +136,7 @@ func printDebug(validationCluster *ValidationCluster) {
 
 const NODE_READY = "nodeReady"
 
-func dummyClient(masterReady string, nodeReady string) *fake.Clientset {
+func dummyClient(masterReady string, nodeReady string) kubernetes.Interface {
 	return fake.NewSimpleClientset(makeNodeList(
 		[]map[string]string{
 			{
@@ -158,7 +160,7 @@ func dummyNode(nodeMap map[string]string) v1.Node {
 		nodeReady = v1.ConditionTrue
 	}
 	expectedNode := v1.Node{
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: nodeMap["name"],
 			Labels: map[string]string{
 				"kubernetes.io/role": nodeMap["kubernetes.io/role"],

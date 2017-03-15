@@ -16,7 +16,7 @@ limitations under the License.
 
 package v1alpha2
 
-import metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 type KubeletConfigSpec struct {
 	// not used for clusters version 1.6 and later
