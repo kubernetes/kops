@@ -13,8 +13,11 @@ The kops project is released on an as-needed basis. The process is as follows:
 We maintain a `release-1.4` branch for kops 1.4.X, `release-1.5` for kops 1.5.X
 etc.
 
-We create new branches from master as a new kops version is released (or in
-preparation for the release).
+`master` is where development happens.  We create new branches from master as a
+new kops version is released, or in preparation for a new release.  As we are
+preparing for a new kubernetes release, we will try to advance the master branch
+to focus on the new functionality, and start cherry-picking back more selectively
+to the release branches only as needed.
 
 Generally we don't encourage users to run older kops versions, or older
 branches, because newer versions of kops should remain compatible with older
@@ -22,6 +25,10 @@ versions of Kubernetes.
 
 Releases should be done from the `release-1.X` branch.  The tags should be made
 on the release branches.
+
+We do currently maintain a `release` branch which should point to the same tag as
+the current `release-1.X` tag.
+
 
 ## Update versions
 
